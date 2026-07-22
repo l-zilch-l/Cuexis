@@ -1,0 +1,83 @@
+name: Windows MinGW
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.preset }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        preset:
+          - debug
+          - release
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up MinGW64
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-clang
+            mingw-w64-x86_64-clang-tools-extra
+
+      - name: Select hosted vcpkg
+        shell: msys2 {0}
+        run: |
+          if [[ -z "${VCPKG_INSTALLATION_ROOT:-}" ]]; then
+            echo "VCPKG_INSTALLATION_ROOT is not set on the hosted runner" >&2
+            exit 1
+          fi
+          printf 'VCPKG_ROOT=%s\n' "$VCPKG_INSTALLATION_ROOT" >> "$GITHUB_ENV"
+
+      - name: Locate build tools
+        shell: msys2 {0}
+        run: |
+          for tool in gcc g++ cmake ninja clang-format; do
+            if ! command -v "$tool" >/dev/null; then
+              echo "$tool is not available in the MinGW64 environment" >&2
+              exit 1
+            fi
+          done
+          gcc --version
+          g++ --version
+
+      - name: Configure
+        shell: msys2 {0}
+        run: >-
+          cmake --preset ${{ matrix.preset }} --fresh
+          -DCMAKE_C_COMPILER=gcc
+          -DCMAKE_CXX_COMPILER=g++
+          -DCMAKE_MAKE_PROGRAM=ninja
+          -DVCPKG_TARGET_TRIPLET=x64-mingw-dynamic
+
+      - name: Build
+        shell: msys2 {0}
+        run: cmake --build --preset ${{ matrix.preset }} --clean-first
+
+      - name: Test
+        shell: msys2 {0}
+        run: ctest --preset ${{ matrix.preset }} --no-tests=error
+
+      - name: Verify architecture
+        shell: msys2 {0}
+        run: ctest --preset ${{ matrix.preset }} --no-tests=error -R "^cuexis_architecture_tests$"
+
+      - name: Check formatting
+        if: matrix.preset == 'debug'
+        shell: msys2 {0}
+        run: cmake --build --preset debug --target cuexis_format_check
