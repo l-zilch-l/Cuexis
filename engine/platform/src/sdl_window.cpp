@@ -5,6 +5,7 @@
 
 #include <cuexis/platform_sdl/sdl_window.hpp>
 
+#include <exception>
 #include <memory>
 #include <string>
 #include <utility>
@@ -199,7 +200,9 @@ WindowState::WindowState(std::shared_ptr<RuntimeState> runtimeState, SDL_Window*
     : runtime(std::move(runtimeState)), window(nativeWindow), windowId(nativeWindowId) {}
 
 WindowState::~WindowState() {
-    runtime->threadChecker.assertCurrent();
+    if (!runtime || !runtime->threadChecker.isCurrent()) {
+        std::terminate();
+    }
     SDL_DestroyWindow(window);
     window = nullptr;
 }

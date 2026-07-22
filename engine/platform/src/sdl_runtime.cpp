@@ -5,6 +5,7 @@
 
 #include <cuexis/platform_sdl/sdl_runtime.hpp>
 
+#include <exception>
 #include <filesystem>
 #include <memory>
 #include <string>
@@ -102,7 +103,9 @@ RuntimeState::~RuntimeState() {
         return;
     }
 
-    threadChecker.assertCurrent();
+    if (!threadChecker.isCurrent()) {
+        std::terminate();
+    }
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
     videoInitialized = false;
 

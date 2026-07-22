@@ -11,4 +11,9 @@ target_include_directories(cuexis_assets
         "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
-target_link_libraries(cuexis_assets PUBLIC cuexis::core)
+target_link_libraries(cuexis_assets
+    PUBLIC
+        cuexis::core
+    PRIVATE
+        cuexis::filesystem
+)

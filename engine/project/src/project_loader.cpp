@@ -8,6 +8,7 @@
 
 #include <cuexis/core/error.hpp>
 #include <cuexis/core/uuid.hpp>
+#include <cuexis/filesystem/secure_file.hpp>
 #include <cuexis/json/parse.hpp>
 #include <cuexis/json/reader.hpp>
 
@@ -213,30 +214,20 @@ void addWarning(core::Diagnostics& diagnostics, std::string code, std::string me
 
 [[nodiscard]] core::Result<std::string> readBoundedFile(const fs::path& file,
                                                         std::size_t maxBytes) {
-    std::ifstream stream{file, std::ios::binary};
-    if (!stream) {
-        return core::unexpected(
-            core::Error{"project.file.open_failed", "Project file could not be opened"});
+    auto contents = filesystem::readBoundedTextFile(
+        file, {.root = file.parent_path(),
+               .maxBytes = maxBytes,
+               .errors = {.rootUnavailable = "project.file.open_failed",
+                          .openFailed = "project.file.open_failed",
+                          .outsideRoot = "project.file.outside_root",
+                          .notRegular = "project.file.not_regular",
+                          .tooLarge = "project.file.size_limit",
+                          .readFailed = "project.file.read_failed",
+                          .changedDuringRead = "project.file.changed_during_read"}});
+    if (!contents) {
+        return core::unexpected(std::move(contents.error()));
     }
-
-    std::string text;
-    text.reserve(std::min<std::size_t>(maxBytes, 64U * 1024U));
-    std::array<char, 8192> buffer{};
-    while (stream) {
-        stream.read(buffer.data(), static_cast<std::streamsize>(buffer.size()));
-        const auto count = static_cast<std::size_t>(stream.gcount());
-        if (count > maxBytes - std::min(text.size(), maxBytes)) {
-            return core::unexpected(core::Error{"project.file.size_limit",
-                                                "Project file exceeds the configured byte limit"}
-                                        .withContext("max_bytes", std::to_string(maxBytes)));
-        }
-        text.append(buffer.data(), count);
-    }
-    if (!stream.eof()) {
-        return core::unexpected(
-            core::Error{"project.file.read_failed", "Project file could not be read completely"});
-    }
-    return text;
+    return std::move(contents->text);
 }
 
 #if defined(_WIN32)

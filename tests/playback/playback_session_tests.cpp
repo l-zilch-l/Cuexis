@@ -1,16 +1,23 @@
 #include <cuexis/playback/playback_session.hpp>
 
+#include <cuexis/assets/asset_database.hpp>
+
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 #include <filesystem>
 #include <fstream>
+#include <future>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace {
+
+static_assert(!std::is_move_constructible_v<cuexis::playback::PlaybackSession>);
+static_assert(!std::is_move_assignable_v<cuexis::playback::PlaybackSession>);
 
 constexpr std::string_view chart = R"json(
 {
@@ -58,7 +65,8 @@ constexpr std::string_view chart = R"json(
 TEST_CASE("PlaybackSession drives a headless owning snapshot", "[playback][headless]") {
     cuexis::playback::PlaybackSession session;
     REQUIRE(session.loadChart(chart).has_value());
-    REQUIRE(session.state() == cuexis::playback::SessionState::Ready);
+    REQUIRE(session.state().has_value());
+    REQUIRE(*session.state() == cuexis::playback::SessionState::Ready);
     REQUIRE(
         session
             .update({.chartTimeMs = 250.0, .simulationDeltaTimeMs = 0.0, .timeDiscontinuityId = 0})
@@ -76,6 +84,16 @@ TEST_CASE("PlaybackSession drives a headless owning snapshot", "[playback][headl
     auto square = session.extractFrame({.width = 720, .height = 720});
     REQUIRE(square.has_value());
     CHECK(square->camera.projectionMatrix[0] > wideProjectionX);
+
+    cuexis::playback::FrameSnapshot reusable;
+    REQUIRE(session.extractFrame({.width = 1280, .height = 720}, reusable).has_value());
+    const auto* const objectBuffer = reusable.objects.data();
+    const auto* const idBuffer = reusable.objects.front().id.data();
+    REQUIRE(session.update({.chartTimeMs = 500.0, .simulationDeltaTimeMs = 250.0}).has_value());
+    REQUIRE(session.extractFrame({.width = 1280, .height = 720}, reusable).has_value());
+    CHECK(reusable.objects.data() == objectBuffer);
+    CHECK(reusable.objects.front().id.data() == idBuffer);
+    CHECK(reusable.objects.front().worldMatrix[12] == Catch::Approx(10.0F));
 
     const auto saved = *frame;
     REQUIRE(session.unload().has_value());
@@ -176,6 +194,76 @@ TEST_CASE("Stage 1C project samples all demo properties deterministically",
                   Catch::Approx(first->objects[objectIndex].worldMatrix[matrixIndex]));
         }
     }
+}
+
+TEST_CASE("PlaybackSession keeps the Stage 1B Renderable resource closure alive",
+          "[playback][stage1b][resources]") {
+    const auto projectRoot = std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" / "projects" /
+                             "stage1b_project" / "assets";
+    auto database = cuexis::assets::AssetDatabase::create(
+        {.roots = {{.root = {.id = "main", .path = projectRoot},
+                    .index = {.assets = {
+                                  {.id = {"material.basic"},
+                                   .type = cuexis::assets::AssetType::Material,
+                                   .source = "materials/basic.material.bin",
+                                   .dependencies = {{"texture.white"}}},
+                                  {.id = {"mesh.note"},
+                                   .type = cuexis::assets::AssetType::Mesh,
+                                   .source = "meshes/note.mesh.bin"},
+                                  {.id = {"texture.white"},
+                                   .type = cuexis::assets::AssetType::Texture,
+                                   .source = "textures/white.texture.bin"},
+                              }}}}});
+    REQUIRE(database.has_value());
+
+    cuexis::playback::PlaybackSession session{std::move(*database)};
+    REQUIRE(
+        session.loadChart(readFile(projectRoot / "charts" / "stage1b_example.cuexis.chart.json"))
+            .has_value());
+    const auto info = session.chartInfo();
+    REQUIRE(info.has_value());
+    CHECK(info->objectCount == 4);
+    CHECK(info->renderableCount == 3);
+    CHECK(info->resourceCount == 3);
+
+    REQUIRE(session.update({.chartTimeMs = 0.0}).has_value());
+    const auto snapshot = session.extractFrame({.width = 1280, .height = 720});
+    REQUIRE(snapshot.has_value());
+    CHECK(snapshot->objects.size() == 4);
+    CHECK(snapshot->camera.active);
+    REQUIRE(session.unload().has_value());
+}
+
+TEST_CASE("PlaybackSession rejects every stateful operation from a non-owner thread",
+          "[playback][thread]") {
+    cuexis::playback::PlaybackSession session;
+    auto worker = std::async(std::launch::async, [&session] {
+        std::vector<std::string> errors;
+        cuexis::playback::FrameSnapshot destination;
+        const auto record = [&errors](const auto& result) {
+            if (!result) {
+                errors.emplace_back(result.error().code());
+            }
+        };
+        record(session.state());
+        record(session.loadChart(chart));
+        record(session.update({.chartTimeMs = 0.0}));
+        record(session.extractFrame({.width = 1, .height = 1}));
+        record(session.extractFrame({.width = 1, .height = 1}, destination));
+        record(session.chartInfo());
+        record(session.diagnostics());
+        record(session.unload());
+        return errors;
+    });
+
+    const auto errors = worker.get();
+    REQUIRE(errors.size() == 8);
+    for (const auto& error : errors) {
+        CHECK(error == "playback.session.not_owner_thread");
+    }
+    REQUIRE(session.state().has_value());
+    CHECK(*session.state() == cuexis::playback::SessionState::Empty);
+    REQUIRE(session.loadChart(chart).has_value());
 }
 
 } // namespace

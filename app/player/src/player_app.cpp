@@ -11,6 +11,7 @@
 #include <cuexis/core/error.hpp>
 #include <cuexis/core/log.hpp>
 #include <cuexis/core/math.hpp>
+#include <cuexis/filesystem/secure_file.hpp>
 #include <cuexis/platform_sdl/sdl_runtime.hpp>
 #include <cuexis/platform_sdl/sdl_window.hpp>
 #include <cuexis/playback/playback_session.hpp>
@@ -26,7 +27,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
-#include <fstream>
 #include <iterator>
 #include <optional>
 #include <sstream>
@@ -145,44 +145,26 @@ class PlayerClock final {
     return *basePath / "assets" / "projects" / defaultProjectDirectory;
 }
 
-[[nodiscard]] auto readBoundedFile(const std::filesystem::path& path, std::size_t maxBytes,
+[[nodiscard]] auto readBoundedFile(const std::filesystem::path& path,
+                                   const std::filesystem::path& root, std::size_t maxBytes,
                                    std::string_view errorPrefix, std::string_view description)
     -> core::Result<std::string> {
-    std::error_code error;
-    const auto size = std::filesystem::file_size(path, error);
-    if (error) {
+    const auto prefix = std::string{errorPrefix};
+    auto contents = filesystem::readBoundedTextFile(
+        path, {.root = root,
+               .maxBytes = maxBytes,
+               .errors = {.rootUnavailable = prefix + ".open_failed",
+                          .openFailed = prefix + ".open_failed",
+                          .outsideRoot = prefix + ".outside_root",
+                          .notRegular = prefix + ".open_failed",
+                          .tooLarge = prefix + ".file_too_large",
+                          .readFailed = prefix + ".read_failed",
+                          .changedDuringRead = prefix + ".changed_during_read"}});
+    if (!contents) {
         return core::unexpected(
-            core::Error{std::string{errorPrefix} + ".open_failed",
-                        "Could not inspect the requested " + std::string{description} + " file"}
-                .withContext("file", path.filename().string()));
+            std::move(contents.error()).withContext("description", std::string{description}));
     }
-    if (size > maxBytes) {
-        return core::unexpected(core::Error{std::string{errorPrefix} + ".file_too_large",
-                                            "The requested " + std::string{description} +
-                                                " exceeds the input size limit"}
-                                    .withContext("size_bytes", std::to_string(size))
-                                    .withContext("limit_bytes", std::to_string(maxBytes)));
-    }
-
-    std::ifstream stream{path, std::ios::binary};
-    if (!stream) {
-        return core::unexpected(
-            core::Error{std::string{errorPrefix} + ".open_failed",
-                        "Could not open the requested " + std::string{description} + " file"}
-                .withContext("file", path.filename().string()));
-    }
-
-    std::string text(static_cast<std::size_t>(size), '\0');
-    if (!text.empty()) {
-        stream.read(text.data(), static_cast<std::streamsize>(text.size()));
-    }
-    if (stream.gcount() != static_cast<std::streamsize>(text.size())) {
-        return core::unexpected(
-            core::Error{std::string{errorPrefix} + ".read_failed",
-                        "Could not read the complete " + std::string{description} + " file"}
-                .withContext("file", path.filename().string()));
-    }
-    return text;
+    return std::move(contents->text);
 }
 
 [[nodiscard]] auto describeDiagnostic(const core::Diagnostic& diagnostic) -> std::string {
@@ -247,8 +229,8 @@ void logDiagnostics(std::string_view category, core::Diagnostics& diagnostics) {
 
     for (const auto& root : preparedProject.assetRoots) {
         const project::AssetIndexLimits limits;
-        auto text = readBoundedFile(root.assetIndexFile, limits.maxInputBytes, "player.asset_index",
-                                    "asset index");
+        auto text = readBoundedFile(root.assetIndexFile, root.absolutePath, limits.maxInputBytes,
+                                    "player.asset_index", "asset index");
         if (!text) {
             return core::unexpected(
                 std::move(text.error()).withContext("root_id", root.declaration.id));
@@ -360,7 +342,9 @@ auto run(int argumentCount, char** arguments) -> core::Result<void> {
                     std::string{"Starting Cuexis Player "} + std::string{version::display});
 
     std::optional<project::PreparedProject> preparedProject;
+    std::optional<assets::AssetDatabase> assetDatabase;
     std::filesystem::path chartPath;
+    std::filesystem::path chartRoot;
     if (options.projectPath.has_value()) {
         auto loadedProject = project::ProjectLoader::load(*options.projectPath);
         logDiagnostics("player.project", loadedProject.diagnostics);
@@ -376,34 +360,42 @@ auto run(int argumentCount, char** arguments) -> core::Result<void> {
         core::log::info("player.project", std::string{"Asset roots: "} +
                                               std::to_string(preparedProject->assetRoots.size()));
 
-        auto database = buildAssetDatabase(*preparedProject);
-        if (!database) {
-            return core::unexpected(std::move(database.error()));
+        auto databaseResult = buildAssetDatabase(*preparedProject);
+        if (!databaseResult) {
+            return core::unexpected(std::move(databaseResult.error()));
         }
         core::log::info("player.asset_database",
-                        std::string{"Indexed assets: "} + std::to_string(database->size()));
+                        std::string{"Indexed assets: "} + std::to_string(databaseResult->size()));
+        assetDatabase = std::move(*databaseResult);
         chartPath = preparedProject->chartFile;
-    } else {
-        std::error_code error;
-        if (!std::filesystem::is_regular_file(*options.chartPath, error) || error) {
-            return core::unexpected(
-                core::Error{"player.chart.open_failed",
-                            "Could not inspect the requested chart file"}
-                    .withContext("file", options.chartPath->filename().string()));
+        const auto* root = preparedProject->findAssetRoot(preparedProject->config.entry.chart.root);
+        if (root == nullptr) {
+            return core::unexpected(core::Error{"player.chart.root_missing",
+                                                "Prepared chart asset root is unavailable"});
         }
+        chartRoot = root->absolutePath;
+    } else {
         chartPath = *options.chartPath;
+        chartRoot =
+            chartPath.parent_path().empty() ? std::filesystem::path{"."} : chartPath.parent_path();
     }
 
-    auto chartText = readBoundedFile(chartPath, chartInputMaxBytes, "player.chart", "chart");
+    auto chartText =
+        readBoundedFile(chartPath, chartRoot, chartInputMaxBytes, "player.chart", "chart");
     if (!chartText) {
         return core::unexpected(std::move(chartText.error()));
     }
 
-    playback::PlaybackSession playbackSession;
-    if (auto result = playbackSession.loadChart(*chartText); !result) {
+    std::optional<playback::PlaybackSession> playbackSession;
+    if (assetDatabase.has_value()) {
+        playbackSession.emplace(std::move(*assetDatabase));
+    } else {
+        playbackSession.emplace();
+    }
+    if (auto result = playbackSession->loadChart(*chartText); !result) {
         return core::unexpected(std::move(result.error()));
     }
-    auto chartInfo = playbackSession.chartInfo();
+    auto chartInfo = playbackSession->chartInfo();
     if (!chartInfo) {
         return core::unexpected(std::move(chartInfo.error()));
     }
@@ -413,7 +405,8 @@ auto run(int argumentCount, char** arguments) -> core::Result<void> {
     }
     core::log::info("player.playback",
                     std::string{"Prepared objects: "} + std::to_string(chartInfo->objectCount) +
-                        ", behaviors: " + std::to_string(chartInfo->behaviorCount));
+                        ", behaviors: " + std::to_string(chartInfo->behaviorCount) +
+                        ", resources: " + std::to_string(chartInfo->resourceCount));
 
     auto runtimeResult = platform_sdl::SdlRuntime::create();
     if (!runtimeResult) {
@@ -467,6 +460,7 @@ auto run(int argumentCount, char** arguments) -> core::Result<void> {
     const NullJudgeSystem judgeSystem;
     std::uint32_t renderedFrames = 0;
     bool quitRequested = false;
+    playback::FrameSnapshot snapshot;
     while (!quitRequested) {
         quitRequested = window.pollEvents().quitRequested;
         if (quitRequested) {
@@ -476,7 +470,7 @@ auto run(int argumentCount, char** arguments) -> core::Result<void> {
         inputSource.poll();
         const auto runtimeFrame = clock.nextFrame(options.smokeTest, renderedFrames);
         judgeSystem.update(runtimeFrame.chartTimeMs);
-        if (auto result = playbackSession.update(runtimeFrame); !result) {
+        if (auto result = playbackSession->update(runtimeFrame); !result) {
             return core::unexpected(std::move(result.error()));
         }
 
@@ -488,13 +482,14 @@ auto run(int argumentCount, char** arguments) -> core::Result<void> {
         const auto drawableSize = *drawableSizeResult;
         const auto width = static_cast<std::uint32_t>(std::max(drawableSize.width, 1));
         const auto height = static_cast<std::uint32_t>(std::max(drawableSize.height, 1));
-        auto snapshot = playbackSession.extractFrame({.width = width, .height = height});
-        if (!snapshot) {
-            return core::unexpected(std::move(snapshot.error()));
+        if (auto result =
+                playbackSession->extractFrame({.width = width, .height = height}, snapshot);
+            !result) {
+            return core::unexpected(std::move(result.error()));
         }
 
         render::RenderScene scene;
-        if (auto result = appendSnapshotAxes(*snapshot, scene); !result) {
+        if (auto result = appendSnapshotAxes(snapshot, scene); !result) {
             return core::unexpected(std::move(result.error()));
         }
         if (scene.empty()) {
@@ -503,17 +498,17 @@ auto run(int argumentCount, char** arguments) -> core::Result<void> {
         }
         if (renderedFrames == 0) {
             core::log::info("player.snapshot",
-                            std::string{"Objects: "} + std::to_string(snapshot->objects.size()) +
+                            std::string{"Objects: "} + std::to_string(snapshot.objects.size()) +
                                 ", debug commands: " + std::to_string(scene.size()));
         }
 
         const render::RenderFrame renderOutput{
             .extent = {.width = width, .height = height},
-            .clearColor = {.red = snapshot->clearRed,
-                           .green = snapshot->clearGreen,
-                           .blue = snapshot->clearBlue,
-                           .alpha = snapshot->clearAlpha},
-            .viewProjection = viewProjectionFrom(*snapshot),
+            .clearColor = {.red = snapshot.clearRed,
+                           .green = snapshot.clearGreen,
+                           .blue = snapshot.clearBlue,
+                           .alpha = snapshot.clearAlpha},
+            .viewProjection = viewProjectionFrom(snapshot),
             .scene = &scene,
         };
 
@@ -540,7 +535,10 @@ auto run(int argumentCount, char** arguments) -> core::Result<void> {
                         std::string{"Completed frames: "} + std::to_string(renderedFrames));
     }
 
-    if (auto result = playbackSession.unload(); !result) {
+    if (auto result = backend.close(); !result) {
+        return core::unexpected(std::move(result.error()));
+    }
+    if (auto result = playbackSession->unload(); !result) {
         return core::unexpected(std::move(result.error()));
     }
     return {};

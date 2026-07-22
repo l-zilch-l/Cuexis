@@ -85,4 +85,36 @@ TEST_CASE("PropertyWriteBuffer enforces its configured budget", "[world][propert
     CHECK(result.error().code() == "world.property.write_limit");
 }
 
+TEST_CASE("Transform resolver rollback only restores entities written in the current frame",
+          "[world][property][sparse]") {
+    World world;
+    entt::entity first{entt::null};
+    entt::entity second{entt::null};
+    world.withRegistry([&](entt::registry& registry) {
+        first = registry.create();
+        second = registry.create();
+        registry.emplace<TransformComponent>(first);
+        registry.emplace<TransformComponent>(second);
+    });
+    auto captured = TransformPropertyResolver::capture(world);
+    REQUIRE(captured.has_value());
+    auto resolver = std::move(*captured);
+
+    const PropertyWrite firstWrite{first, PropertyId::TransformPositionX, 3.0};
+    REQUIRE(resolver.prepare(std::span{&firstWrite, 1}).has_value());
+    REQUIRE(resolver.commit(world).has_value());
+
+    const PropertyWrite secondWrite{second, PropertyId::TransformPositionY, 4.0};
+    REQUIRE(resolver.prepare(std::span{&secondWrite, 1}).has_value());
+    REQUIRE(resolver.commit(world).has_value());
+    resolver.rollback(world);
+
+    const auto positions = world.withRegistry([&](const entt::registry& registry) {
+        return std::pair{registry.get<TransformComponent>(first).position,
+                         registry.get<TransformComponent>(second).position};
+    });
+    CHECK(positions.first.x == Catch::Approx(3.0F));
+    CHECK(positions.second == Vec3{});
+}
+
 } // namespace

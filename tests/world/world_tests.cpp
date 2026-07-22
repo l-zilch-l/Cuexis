@@ -5,7 +5,21 @@
 #include <cuexis/world/transform_system.hpp>
 #include <cuexis/world/world.hpp>
 
+#include <algorithm>
 #include <array>
+#include <vector>
+
+namespace {
+
+struct TransformUpdateCounter final {
+    std::vector<entt::entity> entities;
+
+    void receive(entt::registry&, entt::entity entity) {
+        entities.push_back(entity);
+    }
+};
+
+} // namespace
 
 TEST_CASE("World scopes entity creation and destruction through callbacks", "[world]") {
     cuexis::world::World world;
@@ -123,4 +137,42 @@ TEST_CASE("World transform cycles fail without publishing partial matrices",
                registry.any_of<cuexis::world::WorldTransformComponent>(second);
     });
     CHECK_FALSE(published);
+}
+
+TEST_CASE("World transform cache publishes only a changed hierarchy subtree",
+          "[world][transform][sparse]") {
+    cuexis::world::World world;
+    entt::entity parent{entt::null};
+    entt::entity child{entt::null};
+    entt::entity unrelated{entt::null};
+    TransformUpdateCounter updates;
+    world.withRegistry([&](entt::registry& registry) {
+        parent = registry.create();
+        child = registry.create();
+        unrelated = registry.create();
+        registry.emplace<cuexis::world::TransformComponent>(parent);
+        registry.emplace<cuexis::world::TransformComponent>(child);
+        registry.emplace<cuexis::world::TransformComponent>(unrelated);
+        registry.emplace<cuexis::world::HierarchyComponent>(child, parent);
+        registry.on_update<cuexis::world::WorldTransformComponent>()
+            .connect<&TransformUpdateCounter::receive>(updates);
+    });
+
+    REQUIRE(cuexis::world::updateWorldTransforms(world).has_value());
+    REQUIRE(cuexis::world::updateWorldTransforms(world).has_value());
+    CHECK(updates.entities.empty());
+
+    world.withRegistry([&](entt::registry& registry) {
+        auto transform = registry.get<cuexis::world::TransformComponent>(parent);
+        transform.position.x = 2.0F;
+        registry.replace<cuexis::world::TransformComponent>(parent, transform);
+    });
+    REQUIRE(cuexis::world::updateWorldTransforms(world).has_value());
+    REQUIRE(updates.entities.size() == 2);
+    CHECK(std::find(updates.entities.begin(), updates.entities.end(), parent) !=
+          updates.entities.end());
+    CHECK(std::find(updates.entities.begin(), updates.entities.end(), child) !=
+          updates.entities.end());
+    CHECK(std::find(updates.entities.begin(), updates.entities.end(), unrelated) ==
+          updates.entities.end());
 }

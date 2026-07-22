@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <exception>
 #include <limits>
 #include <optional>
 #include <string>
@@ -468,6 +469,9 @@ OpenGlBackend::OpenGlBackend(platform_sdl::SdlWindowLease window, void* context,
       debugVertexBuffer_(debugVertexBuffer), viewProjectionLocation_(viewProjectionLocation) {}
 
 OpenGlBackend::~OpenGlBackend() {
+    if (context_ != nullptr && (!SDL_IsMainThread() || !ownerThread_.isCurrent())) {
+        std::terminate();
+    }
     release();
 }
 
@@ -477,12 +481,24 @@ OpenGlBackend::OpenGlBackend(OpenGlBackend&& other) noexcept
       debugVertexArray_(std::exchange(other.debugVertexArray_, 0)),
       debugVertexBuffer_(std::exchange(other.debugVertexBuffer_, 0)),
       viewProjectionLocation_(std::exchange(other.viewProjectionLocation_, -1)) {
-    other.ownerThread_.assertCurrent();
+    if (!SDL_IsMainThread() || !other.ownerThread_.isCurrent()) {
+        std::terminate();
+    }
 }
 
 auto OpenGlBackend::info() const noexcept -> const OpenGlInfo& {
     ownerThread_.assertCurrent();
     return info_;
+}
+
+auto OpenGlBackend::close() -> core::Result<void> {
+    if (!SDL_IsMainThread() || !ownerThread_.isCurrent()) {
+        return core::unexpected(core::Error{"render.opengl.not_main_thread",
+                                            "OpenGL backend must be closed on its owner thread"}
+                                    .withContext("operation", "close"));
+    }
+    release();
+    return {};
 }
 
 auto OpenGlBackend::renderFrame(const render::RenderFrame& frame) -> core::Result<void> {
@@ -584,14 +600,6 @@ void OpenGlBackend::release() noexcept {
     }
 
     if (!SDL_IsMainThread() || !ownerThread_.isCurrent()) {
-        core::log::error(
-            "render.opengl",
-            "Leaking an OpenGL context because its backend was destroyed off the SDL main thread");
-        context_ = nullptr;
-        debugProgram_ = 0;
-        debugVertexArray_ = 0;
-        debugVertexBuffer_ = 0;
-        viewProjectionLocation_ = -1;
         return;
     }
 

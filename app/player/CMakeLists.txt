@@ -13,6 +13,7 @@ target_link_libraries(
         cuexis::playback
         cuexis::assets
         cuexis::core
+        cuexis::filesystem
         cuexis::platform_sdl
         cuexis::project
         cuexis::render

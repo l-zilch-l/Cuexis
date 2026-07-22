@@ -32,6 +32,7 @@ target_include_directories(cuexis_core
 
 set(CUEXIS_ACTIVE_TARGETS
     cuexis_core
+    cuexis_filesystem
     cuexis_json_support
     cuexis_project
     cuexis_platform_sdl
@@ -51,6 +52,7 @@ set(CUEXIS_ACTIVE_TARGETS
 if(BUILD_TESTING)
     list(APPEND CUEXIS_ACTIVE_TARGETS
         cuexis_core_tests
+        cuexis_filesystem_tests
         cuexis_json_support_tests
         cuexis_project_tests
         cuexis_platform_sdl_tests
@@ -161,6 +163,10 @@ cuexis_verify_target_dependencies(cuexis_core
         glm::glm
         spdlog::spdlog
 )
+cuexis_verify_target_dependencies(cuexis_filesystem
+    ALLOWED
+        cuexis::core
+)
 cuexis_verify_target_dependencies(cuexis_platform_sdl
     ALLOWED
         cuexis::core
@@ -175,6 +181,7 @@ cuexis_verify_target_dependencies(cuexis_json_support
 cuexis_verify_target_dependencies(cuexis_project
     ALLOWED
         cuexis::core
+        cuexis::filesystem
         cuexis::json_support
 )
 cuexis_verify_target_dependencies(cuexis_world
@@ -185,6 +192,7 @@ cuexis_verify_target_dependencies(cuexis_world
 cuexis_verify_target_dependencies(cuexis_assets
     ALLOWED
         cuexis::core
+        cuexis::filesystem
 )
 cuexis_verify_target_dependencies(cuexis_chart
     ALLOWED
@@ -242,6 +250,7 @@ cuexis_verify_target_dependencies(cuexis_player
         cuexis::playback
         cuexis::assets
         cuexis::core
+        cuexis::filesystem
         cuexis::platform_sdl
         cuexis::project
         cuexis::render
@@ -252,6 +261,11 @@ if(BUILD_TESTING)
     cuexis_verify_target_dependencies(cuexis_core_tests
         ALLOWED
             cuexis::core
+            Catch2::Catch2WithMain
+    )
+    cuexis_verify_target_dependencies(cuexis_filesystem_tests
+        ALLOWED
+            cuexis::filesystem
             Catch2::Catch2WithMain
     )
     cuexis_verify_target_dependencies(cuexis_platform_sdl_tests
@@ -322,6 +336,7 @@ if(BUILD_TESTING)
     )
     cuexis_verify_target_dependencies(cuexis_playback_tests
         ALLOWED
+            cuexis::assets
             cuexis::playback
             Catch2::Catch2WithMain
     )

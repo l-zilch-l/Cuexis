@@ -96,10 +96,11 @@ auto TransformPropertyResolver::prepare(std::span<const PropertyWrite> writes)
     -> core::Result<void> {
     prepared_ = false;
     committed_ = false;
-    for (auto& entry : entries_) {
-        entry.candidate = entry.baseline;
-        entry.seenMask = 0;
+    for (const auto index : touchedEntries_) {
+        entries_[index].candidate = entries_[index].baseline;
+        entries_[index].seenMask = 0;
     }
+    touchedEntries_.clear();
 
     for (const auto& write : writes) {
         if (!isTransformProperty(write.property)) {
@@ -114,6 +115,10 @@ auto TransformPropertyResolver::prepare(std::span<const PropertyWrite> writes)
             return core::unexpected(entityError("world.property.transform_missing",
                                                 "Transform property target has no baseline",
                                                 write.entity));
+        }
+        const auto entryIndex = static_cast<std::size_t>(entry - entries_.begin());
+        if (entry->seenMask == 0U) {
+            touchedEntries_.push_back(entryIndex);
         }
         const auto mask = propertyMask(write.property);
         if ((entry->seenMask & mask) != 0U) {
@@ -171,7 +176,8 @@ auto TransformPropertyResolver::prepare(std::span<const PropertyWrite> writes)
         }
     }
 
-    for (const auto& entry : entries_) {
+    for (const auto index : touchedEntries_) {
+        const auto& entry = entries_[index];
         const auto matrix = core::composeTransform(entry.candidate.position,
                                                    entry.candidate.rotation, entry.candidate.scale);
         if (!matrix || !core::isFinite(*matrix)) {
@@ -190,7 +196,8 @@ auto TransformPropertyResolver::commit(World& world) -> core::Result<void> {
                                             "Transform resolver commit requires prepare"});
     }
     auto result = world.withRegistry([&](entt::registry& registry) -> core::Result<void> {
-        for (const auto& entry : entries_) {
+        for (const auto index : touchedEntries_) {
+            const auto& entry = entries_[index];
             if (!registry.valid(entry.entity) ||
                 !registry.all_of<TransformComponent>(entry.entity)) {
                 return core::unexpected(entityError(
@@ -198,7 +205,8 @@ auto TransformPropertyResolver::commit(World& world) -> core::Result<void> {
                     "A captured Transform baseline is no longer available", entry.entity));
             }
         }
-        for (auto& entry : entries_) {
+        for (const auto index : touchedEntries_) {
+            auto& entry = entries_[index];
             entry.previous = registry.get<TransformComponent>(entry.entity);
             registry.replace<TransformComponent>(entry.entity, entry.candidate);
         }
@@ -215,7 +223,8 @@ void TransformPropertyResolver::rollback(World& world) noexcept {
         return;
     }
     world.withRegistry([&](entt::registry& registry) {
-        for (const auto& entry : entries_) {
+        for (const auto index : touchedEntries_) {
+            const auto& entry = entries_[index];
             if (registry.valid(entry.entity) && registry.all_of<TransformComponent>(entry.entity)) {
                 registry.replace<TransformComponent>(entry.entity, entry.previous);
             }

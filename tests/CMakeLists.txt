@@ -1,6 +1,7 @@
 find_package(Catch2 3 CONFIG REQUIRED)
 
 add_subdirectory(core)
+add_subdirectory(filesystem)
 add_subdirectory(json_support)
 add_subdirectory(project)
 add_subdirectory(platform)

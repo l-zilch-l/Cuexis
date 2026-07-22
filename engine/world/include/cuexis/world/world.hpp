@@ -6,12 +6,15 @@
 //  World 不依赖 SDL、OpenGL、Chart 或 Asset 模块
 
 #include <functional>
+#include <optional>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include <entt/entity/registry.hpp>
 
 #include <cuexis/core/thread_checker.hpp>
+#include <cuexis/world/components.hpp>
 
 namespace cuexis::world {
 
@@ -50,7 +53,26 @@ class World final {
     }
 
   private:
+    struct TransformCacheEntry final {
+        entt::entity entity{entt::null};
+        entt::entity parent{entt::null};
+        std::optional<std::size_t> parentIndex;
+        TransformComponent local{};
+        core::Mat4 localMatrix{};
+        core::Mat4 world{};
+        std::vector<std::size_t> children;
+    };
+
+    friend auto updateWorldTransforms(World& world) -> core::Result<void>;
+
     entt::registry registry_{};
+    std::vector<TransformCacheEntry> transformCache_;
+    std::vector<std::size_t> transformOrder_;
+    std::vector<core::Mat4> transformLocalScratch_;
+    std::vector<core::Mat4> transformScratch_;
+    std::vector<bool> transformLocalDirty_;
+    std::vector<bool> transformDirty_;
+    bool transformCacheValid_{false};
     core::ThreadChecker threadChecker_{};
 };
 

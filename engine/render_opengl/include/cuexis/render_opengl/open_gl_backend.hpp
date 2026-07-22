@@ -80,6 +80,8 @@ class OpenGlBackend final : public render::RenderBackend {
     auto operator=(OpenGlBackend&& other) noexcept -> OpenGlBackend& = delete;
 
     [[nodiscard]] auto info() const noexcept -> const OpenGlInfo&;
+    // Releases all GPU, context and window resources on the owner thread.
+    [[nodiscard]] auto close() -> core::Result<void>;
     // Stage 0 rendering is bound to the SDL main thread that created this backend.
     auto renderFrame(const render::RenderFrame& frame) -> core::Result<void> override;
 

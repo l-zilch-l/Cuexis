@@ -30,6 +30,9 @@ static_assert(!std::is_invocable_v<decltype(&cuexis::render_opengl::OpenGlBacken
 static_assert(std::is_invocable_v<decltype(&cuexis::render_opengl::OpenGlBackend::create),
                                   cuexis::platform_sdl::SdlWindow&,
                                   cuexis::render_opengl::OpenGlContextConfiguration&&>);
+static_assert(
+    std::is_same_v<decltype(std::declval<cuexis::render_opengl::OpenGlBackend&>().close()),
+                   cuexis::core::Result<void>>);
 
 TEST_CASE("OpenGL configuration rejects invalid version components", "[render][opengl]") {
     auto runtime = cuexis::platform_sdl::SdlRuntime::create();

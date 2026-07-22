@@ -76,6 +76,7 @@ class TransformPropertyResolver final {
     };
 
     std::vector<Entry> entries_;
+    std::vector<std::size_t> touchedEntries_;
     bool prepared_{};
     bool committed_{};
 };

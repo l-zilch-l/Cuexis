@@ -5,11 +5,10 @@
 #include <cuexis/assets/asset_database.hpp>
 
 #include <cuexis/core/error.hpp>
+#include <cuexis/filesystem/secure_file.hpp>
 
 #include <algorithm>
 #include <cctype>
-#include <fstream>
-#include <limits>
 #include <map>
 #include <set>
 #include <sstream>
@@ -585,54 +584,29 @@ auto AssetDatabase::readBlob(const AssetId& id, const AssetBlobLimits& limits) c
     }
     const auto& stored = data_->records[found->second];
 
-    std::error_code error;
-    const auto canonicalSource = std::filesystem::weakly_canonical(stored.canonicalSource, error);
-    if (error || !isPathPrefix(data_->canonicalRoots[stored.rootIndex], canonicalSource) ||
-        !std::filesystem::is_regular_file(canonicalSource, error) || error) {
-        return core::unexpected(core::Error{"assets.blob.source_unavailable",
-                                            "Asset source is no longer an accessible regular file"}
-                                    .withContext("assetId", id.value)
-                                    .withContext("rootId", data_->roots[stored.rootIndex].id)
-                                    .withContext("source", stored.record.source));
+    const auto unavailable = std::string{"assets.blob.source_unavailable"};
+    auto contents = filesystem::readBoundedFile(
+        stored.canonicalSource, {.root = data_->canonicalRoots[stored.rootIndex],
+                                 .maxBytes = limits.maxBytes,
+                                 .errors = {.rootUnavailable = unavailable,
+                                            .openFailed = unavailable,
+                                            .outsideRoot = unavailable,
+                                            .notRegular = unavailable,
+                                            .tooLarge = "assets.blob.too_large",
+                                            .readFailed = "assets.blob.read_failed",
+                                            .changedDuringRead = "assets.blob.read_failed"}});
+    if (!contents) {
+        auto error = std::move(contents.error());
+        error.withContext("assetId", id.value)
+            .withContext("rootId", data_->roots[stored.rootIndex].id)
+            .withContext("source", stored.record.source);
+        return core::unexpected(std::move(error));
     }
 
-    const auto fileSize = std::filesystem::file_size(canonicalSource, error);
-    if (error) {
-        return core::unexpected(
-            core::Error{"assets.blob.size_failed", "Asset source size could not be read"}
-                .withContext("assetId", id.value));
-    }
-    if (fileSize > limits.maxBytes) {
-        return core::unexpected(
-            core::Error{"assets.blob.too_large", "Asset source exceeds the configured byte limit"}
-                .withContext("assetId", id.value)
-                .withContext("maxBytes", std::to_string(limits.maxBytes)));
-    }
-    if (fileSize > static_cast<std::uintmax_t>(std::numeric_limits<std::streamsize>::max())) {
-        return core::unexpected(core::Error{"assets.blob.stream_limit",
-                                            "Asset source is too large for a bounded stream read"}
-                                    .withContext("assetId", id.value));
-    }
-
-    std::ifstream stream{canonicalSource, std::ios::binary};
-    if (!stream) {
-        return core::unexpected(
-            core::Error{"assets.blob.open_failed", "Asset source could not be opened"}.withContext(
-                "assetId", id.value));
-    }
     AssetBlob blob;
     blob.rootId = data_->roots[stored.rootIndex].id;
     blob.source = stored.record.source;
-    blob.bytes.resize(static_cast<std::size_t>(fileSize));
-    if (!blob.bytes.empty()) {
-        stream.read(reinterpret_cast<char*>(blob.bytes.data()),
-                    static_cast<std::streamsize>(blob.bytes.size()));
-    }
-    if (!stream || stream.peek() != std::char_traits<char>::eof()) {
-        return core::unexpected(
-            core::Error{"assets.blob.read_failed", "Asset source could not be read completely"}
-                .withContext("assetId", id.value));
-    }
+    blob.bytes = std::move(contents->bytes);
     return blob;
 }
 

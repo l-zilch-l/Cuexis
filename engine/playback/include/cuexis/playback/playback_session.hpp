@@ -16,6 +16,10 @@
 #include <string_view>
 #include <vector>
 
+namespace cuexis::assets {
+class AssetDatabase;
+}
+
 namespace cuexis::playback {
 
 struct RuntimeFrame final {
@@ -66,6 +70,8 @@ struct FrameSnapshot final {
 struct ChartInfo final {
     std::size_t objectCount{};
     std::size_t behaviorCount{};
+    std::size_t renderableCount{};
+    std::size_t resourceCount{};
 };
 
 enum class SessionState {
@@ -79,27 +85,30 @@ enum class SessionState {
 class PlaybackSession final {
   public:
     PlaybackSession() noexcept;
+    explicit PlaybackSession(assets::AssetDatabase database);
     ~PlaybackSession();
 
     PlaybackSession(const PlaybackSession&) = delete;
     auto operator=(const PlaybackSession&) -> PlaybackSession& = delete;
-    PlaybackSession(PlaybackSession&&) noexcept;
-    auto operator=(PlaybackSession&&) noexcept -> PlaybackSession&;
+    PlaybackSession(PlaybackSession&&) = delete;
+    auto operator=(PlaybackSession&&) -> PlaybackSession& = delete;
 
-    [[nodiscard]] auto state() const noexcept -> SessionState;
+    [[nodiscard]] auto state() const -> core::Result<SessionState>;
 
     [[nodiscard]] auto loadChart(std::string_view jsonText) -> core::Result<void>;
 
     [[nodiscard]] auto update(const RuntimeFrame& frame) -> core::Result<void>;
     [[nodiscard]] auto extractFrame(const FrameViewport& viewport) const
         -> core::Result<FrameSnapshot>;
+    [[nodiscard]] auto extractFrame(const FrameViewport& viewport, FrameSnapshot& destination) const
+        -> core::Result<void>;
 
     [[nodiscard]] auto reload(std::string_view replacementJson, const RuntimeFrame& targetFrame,
                               ReloadPolicy policy) -> core::Result<void>;
     [[nodiscard]] auto unload() -> core::Result<void>;
 
-    [[nodiscard]] auto chartInfo() const noexcept -> core::Result<ChartInfo>;
-    [[nodiscard]] auto diagnostics() const noexcept -> const core::Diagnostics&;
+    [[nodiscard]] auto chartInfo() const -> core::Result<ChartInfo>;
+    [[nodiscard]] auto diagnostics() const -> core::Result<core::Diagnostics>;
 
   private:
     struct State;

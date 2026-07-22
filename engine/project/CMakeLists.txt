@@ -21,5 +21,6 @@ target_link_libraries(cuexis_project
     PUBLIC
         cuexis::core
     PRIVATE
+        cuexis::filesystem
         cuexis::json_support
 )
