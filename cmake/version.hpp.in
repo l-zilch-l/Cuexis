@@ -1,0 +1,22 @@
+#pragma once
+
+#include <cstdint>
+#include <string_view>
+
+namespace cuexis::version {
+
+// clang-format off
+inline constexpr std::uint32_t year = @CUEXIS_VERSION_YEAR@;
+inline constexpr std::uint32_t month = @CUEXIS_VERSION_MONTH@;
+inline constexpr std::uint32_t day = @CUEXIS_VERSION_DAY@;
+inline constexpr std::uint32_t hour = @CUEXIS_VERSION_HOUR@;
+inline constexpr std::uint32_t build = @CUEXIS_VERSION_BUILD@;
+// clang-format on
+
+inline constexpr std::string_view canonical = "@CUEXIS_VERSION_CANONICAL@";
+inline constexpr std::string_view suffix = "@CUEXIS_VERSION_SUFFIX@";
+inline constexpr std::string_view display = "@CUEXIS_VERSION_DISPLAY@";
+inline constexpr std::string_view cmakeProject = "@PROJECT_VERSION@";
+inline constexpr std::string_view manifest = "@CUEXIS_VCPKG_VERSION@";
+
+} // namespace cuexis::version

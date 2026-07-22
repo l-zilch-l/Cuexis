@@ -1,0 +1,25 @@
+{
+  "format": "cuexis.asset-index",
+  "version": 1,
+  "assets": [
+    {
+      "id": "material.basic",
+      "type": "material",
+      "source": "materials/basic.material.bin",
+      "dependencies": ["texture.white"]
+    },
+    {
+      "id": "mesh.note",
+      "type": "mesh",
+      "source": "meshes/note.mesh.bin",
+      "dependencies": []
+    },
+    {
+      "id": "texture.white",
+      "type": "texture",
+      "source": "textures/white.texture.bin",
+      "dependencies": []
+    }
+  ],
+  "extensions": {}
+}

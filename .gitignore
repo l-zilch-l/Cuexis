@@ -1,0 +1,10 @@
+/.idea/
+/.vs/
+/cmake-build-*/
+/out/
+/vcpkg_installed/
+
+CMakeUserPresets.json
+*.user
+*.VC.db
+*.VC.VC.opendb

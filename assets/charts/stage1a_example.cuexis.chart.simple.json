@@ -1,0 +1,62 @@
+{
+  "format": "cuexis.chart.simple",
+  "version": 1,
+  "chartId": "019b0000-0000-7abc-8def-000000000001",
+  "metadata": {
+    "title": "Stage 1A Simple Example",
+    "artist": "Cuexis",
+    "charter": "Cuexis Team"
+  },
+  "timing": {
+    "offsetMs": 0.0,
+    "bpm": 120.0
+  },
+  "camera": {
+    "type": "perspective",
+    "fovY": 45.0,
+    "near": 0.1,
+    "far": 1000.0,
+    "pitch": -15.0,
+    "yaw": 0.0,
+    "roll": 0.0,
+    "defaultTransform": {
+      "position": [0.0, 5.0, -10.0]
+    }
+  },
+  "templates": {
+    "note.standard": {
+      "kind": "note",
+      "transform": {
+        "scale": [0.25, 0.25, 0.25]
+      }
+    }
+  },
+  "behaviors": {},
+  "objects": {
+    "lane.main": {
+      "kind": "element",
+      "transform": {
+        "position": [-0.3, 0.0, 0.0],
+        "rotationDeg": [0.0, 0.0, 0.0],
+        "scale": [1.0, 1.0, 1.0]
+      }
+    },
+    "note.intro.001": {
+      "template": "template:note.standard",
+      "parent": "object:lane.main",
+      "beat": "4",
+      "transform": {
+        "position": [0.3, 0.0, 0.0]
+      }
+    },
+    "marker.child": {
+      "kind": "element",
+      "parent": "object:note.intro.001",
+      "transform": {
+        "position": [0.0, 0.3, 0.0],
+        "scale": [0.25, 0.25, 0.25]
+      }
+    }
+  },
+  "extensions": {}
+}

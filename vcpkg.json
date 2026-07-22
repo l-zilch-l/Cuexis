@@ -1,0 +1,16 @@
+{
+  "name": "cuexis",
+  "version-string": "26.07.18.18-1",
+  "dependencies": [
+    "sdl3",
+    "entt",
+    "glm",
+    "json-schema-validator",
+    "nlohmann-json",
+    "spdlog",
+    "fmt",
+    "glad",
+    "catch2",
+    "tl-expected"
+  ]
+}

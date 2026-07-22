@@ -1,0 +1,2 @@
+add_custom_target(cuexis_chart_validator)
+add_dependencies(cuexis_chart_validator cuexis_chart)

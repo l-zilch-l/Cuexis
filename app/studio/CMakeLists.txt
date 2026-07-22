@@ -1,0 +1,2 @@
+add_custom_target(cuexis_studio)
+add_dependencies(cuexis_studio cuexis_runtime)

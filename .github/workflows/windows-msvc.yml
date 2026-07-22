@@ -1,0 +1,81 @@
+name: Windows MSVC
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.preset }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        preset:
+          - debug
+          - release
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Configure MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Select hosted vcpkg
+        shell: pwsh
+        run: |
+          if (-not $env:VCPKG_INSTALLATION_ROOT) {
+            throw "VCPKG_INSTALLATION_ROOT is not set on the hosted runner"
+          }
+          "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" |
+            Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Locate build tools
+        shell: pwsh
+        run: |
+          $ninja = (Get-Command ninja.exe -ErrorAction SilentlyContinue |
+            Select-Object -First 1).Source
+          if (-not $ninja) {
+            throw "ninja.exe is not available on the hosted runner"
+          }
+          $clangFormat = (Get-Command clang-format.exe -ErrorAction SilentlyContinue |
+            Select-Object -First 1).Source
+          if (-not $clangFormat -and $env:VSINSTALLDIR) {
+            $candidate = Join-Path $env:VSINSTALLDIR "VC\Tools\Llvm\x64\bin\clang-format.exe"
+            if (Test-Path $candidate) {
+              $clangFormat = $candidate
+            }
+          }
+          if (-not $clangFormat) {
+            throw "clang-format.exe is not available on the hosted runner"
+          }
+          "CUEXIS_NINJA=$ninja" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "CUEXIS_CLANG_FORMAT=$clangFormat" |
+            Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Configure
+        shell: pwsh
+        run: >-
+          cmake --preset ${{ matrix.preset }} --fresh
+          "-DCMAKE_MAKE_PROGRAM=$env:CUEXIS_NINJA"
+          "-DCUEXIS_CLANG_FORMAT_EXECUTABLE=$env:CUEXIS_CLANG_FORMAT"
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }} --clean-first
+
+      - name: Test
+        run: ctest --preset ${{ matrix.preset }} --no-tests=error
+
+      - name: Verify architecture
+        run: ctest --preset ${{ matrix.preset }} --no-tests=error -R "^cuexis_architecture_tests$"
+
+      - name: Check formatting
+        if: matrix.preset == 'debug'
+        run: cmake --build --preset debug --target cuexis_format_check

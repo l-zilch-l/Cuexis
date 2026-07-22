@@ -1,0 +1,2 @@
+add_custom_target(cuexis_asset_importer)
+add_dependencies(cuexis_asset_importer cuexis_assets)

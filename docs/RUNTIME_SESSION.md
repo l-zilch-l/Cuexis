@@ -1,0 +1,161 @@
+# Cuexis RuntimeSession 规范
+
+状态：阶段 1C 已实现内部行为求值、RuntimeFrame 时间契约、事务式属性解析和 PlaybackSession headless 帧输出
+
+更新日期：2026-07-22
+
+## 职责与所有权
+
+一次 RuntimeSession 对应一次播放、Studio 预览或 headless SDK 会话的内部 Runtime 实例。它不是宿主直接集成的公共门面；ADR 0027 规定宿主、Player 和 Studio 统一通过 PlaybackSession 使用它。
+
+Session 拥有：
+
+```text
+World / EnTT Registry
+不可变 ChartRuntime
+ChartObjectId -> entt::entity 映射
+ResourceScope
+PropertyResolver 与初始属性状态
+每 Session 的 System 管线状态
+最后处理的 timeDiscontinuityId
+结构化 Diagnostics
+```
+
+Session 不拥有 ChartDocument、EditorDocument、ResourceManager、AssetDatabase、ContentProvider、AudioTransport、Renderer、RenderBackend、窗口或输入设备。这些依赖由 PlaybackSession 组合层及其宿主/应用适配器持有，并按显式生命周期比内部 RuntimeSession 活得更久。
+
+## PlaybackSession 公共门面
+
+PlaybackSession 负责把宿主输入组织成单一播放会话，并隐藏 RuntimeSession、World 和 EnTT：
+
+```text
+typed/memory Project 或 Chart source
+ContentProvider 与资源预算
+RuntimeFrame 与标准化 InputEvent
+RuntimeSession prepare/update/reload/unload
+extractResult()：从 Session 开始累积的判定事件、分数、连击和统计快照
+extractFrame()：后端无关的 FrameSnapshot/RenderPacket 提取
+startRecording()：按 chartTimeMs 记录全部 InputEvent
+stopRecording()：停止记录并返回可序列化 ReplayData
+loadReplay()：注入预记录 InputEvent 替代实时输入
+阶段 11 的 JudgementResult 与 ReplayData
+结构化 Diagnostics
+```
+
+PlaybackSession 不创建宿主窗口、不拥有宿主主循环，也不要求 SDL/OpenGL。当前 C++20 门面已提供 `loadChart(string_view)`、`update(RuntimeFrame)`、`extractFrame(FrameViewport)`、显式目标帧 `reload` 和 `unload`。`FrameSnapshot` 拥有对象 ID、World Matrix、Camera View/Projection 和视口数据；Reload/Unload 不使已返回 Snapshot 悬空。`findEntity(entt::entity)`、`withWorld` 和 Registry 访问只能作为内部或受限调试接口，不能进入安装后的 SDK 公共头。
+
+阶段 1B 的 `RuntimeSession` 可显式注入一个不可移动的外部 `ResourceManager`。无资源 Chart 仍可使用默认构造；含 Renderable 的 Chart 在没有 Manager 时稳定返回 `runtime.chart.renderable_resources_unsupported`。阶段 1C 的 PlaybackSession 使用无资源默认路径，Player 的 1C fixture 因此只包含 Transform、Camera、Element 和 Behavior。
+
+## 状态
+
+```text
+Empty -> Preparing -> Ready -> Running
+Running <-> Paused
+Ready/Running/Paused -> Reloading -> 原活动状态
+任意活动状态 -> Closing -> Empty
+运行期不可恢复错误 -> Failed
+```
+
+首次准备失败不发布半初始化 Session，只返回 Diagnostics。
+
+## PreparedRuntimeSession
+
+创建是事务：
+
+```text
+标准 ChartDocument 校验与编译
+-> 无副作用检查 ChartRuntime 排序、parent 和 Behavior 引用
+-> 生成不可变 ChartRuntime 和资源依赖清单
+-> 临时 ResourceScope 获取资源
+-> 临时 World 实例化
+-> 建立层级、初始属性和对象映射
+-> 检查 World 不变量
+-> 主线程帧安全点 commit
+```
+
+失败时按以下顺序清理：
+
+```text
+停止临时 System
+-> 销毁临时 World
+-> 释放临时 ResourceScope
+-> 返回 Diagnostics
+```
+
+World 必须在 Scope 前销毁，确保 Component 清理期间资源 Handle 仍受 Lease 保护。
+
+Prepared 数据同时绑定创建它的 Session token 和 ResourceManager token。跨 Session、跨 Manager、已经消费或 Session 地址复用后的提交均失败。Handle 除 index/generation 外还必须属于当前 Manager；Runtime 不接受只通过 `valid()` 但来源不同的 Handle。
+
+阶段 1B 的资源准备采用同步主线程路径。Mesh/Material 使用 Fallback 策略，Scope 对直接引用和 Material 等资源的传递依赖闭包去重；Component 只保存 Handle。准备诊断固定最多 1024 条，成功 commit 后成为 Session 的活动 Diagnostics。
+
+## Update 与时间不连续
+
+```cpp
+struct RuntimeFrame {
+    double chartTimeMs;
+    double simulationDeltaTimeMs;
+    std::uint64_t timeDiscontinuityId;
+};
+```
+
+ID 未变化时执行普通帧更新。ID 改变时，Behavior 绝对重采样，PropertyResolver 从初始值重算，状态型 System 接收 `onTimeDiscontinuity`。任何 System 不得继续累计跳转前的 delta。
+
+暂停或时间不连续后的首帧由宿主 Timeline、Player Timeline 或其他正式 Clock adapter 传入 `simulationDeltaTimeMs = 0`。Session 不自行控制 AudioTransport。HostClock 与 CuexisAudio 都必须归一化为同一 RuntimeFrame。`chartTimeMs` 必须有限（允许为负），delta 必须有限且非负；同一 discontinuity ID 下的向后时间移动拒绝，ID 变化后从目标绝对时间重采样而不消费跳转前 delta。
+
+更新顺序固定为 Behavior evaluate -> PropertyWriteBuffer -> Transform/FOV resolver -> World transform update。Resolver 每帧从 prepare 时捕获的初始值重建稀疏属性；Transform 与 Camera FOV 候选必须全部校验通过后才一次提交，不发布半帧结果。
+
+## Reload
+
+Chart Reload v1 使用完整替换，不进行 Entity 增量修补：
+
+```text
+旧 Session 继续运行
+-> 准备 Replacement
+-> 成功后在帧安全点交换
+-> Renderer 放弃旧提取数据
+-> 销毁旧 Session
+```
+
+准备失败保留旧 World、Scope 和活动 Diagnostics，并单独返回本次失败诊断。成功 Replacement 一次发布新 World、Scope 和 Diagnostics，再按 `World -> Scope` 顺序释放旧状态。
+
+调用方必须显式选择：
+
+```text
+KeepChartTime
+RestartAtZero
+```
+
+Reload 后旧 `entt::entity` 全部失效。跨 Reload 定位只使用 ChartObjectId。
+
+ResourceManager 的内容热重载保持 Handle，不要求重建 Session；只有 Chart/Component 结构变化才走 Replacement。
+
+阶段 1B 只保留 `contentRevision` 和 Reloading 状态扩展点，尚未实现文件监听或资源内容热重载 API。
+
+## Unload
+
+Unload 仅在主线程帧安全点执行：
+
+```text
+停止 update
+-> 停止提取新 RenderScene
+-> 使旧提取结果失效
+-> 销毁 World
+-> 释放 ResourceScope
+-> 清空映射与诊断
+-> Empty
+```
+
+GPU 对象延迟销毁由 RenderBackend 管理，Session 不直接等待或调用图形 API。
+
+## 错误等级
+
+```text
+Warning：Fallback、缺失 Optional、未知可选扩展；继续运行
+Recoverable：资源热重载或 Replacement 失败；保留上一有效状态
+Fatal：World 不变量破坏或 Required 资源不可恢复失效；停止更新并进入 Failed
+```
+
+Failed 可以保留最后一份 RenderScene 供错误 UI 使用，但不能继续改变 World。
+
+## 线程
+
+阶段 1 的 prepare、commit、swap 和 destroy 全部在 Session owner thread 同步执行。独立 Player/Studio 通常把它绑定到应用主线程；嵌入宿主可以为不同 Session 指定不同 owner thread，但同一 Session 不提供隐式并发访问。未来 Worker 只能生成 Prepared 数据；最终 World 发布和销毁仍在帧安全点，不为 Session 替换引入细粒度锁。

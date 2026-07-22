@@ -1,0 +1,112 @@
+{
+  "format": "cuexis.chart",
+  "version": 1,
+  "chartId": "019b0000-0000-7abc-8def-000000000001",
+  "metadata": {
+    "title": "Stage 1A Canonical Example",
+    "artist": "Cuexis"
+  },
+  "timing": {
+    "offsetMs": 0.0,
+    "defaultBpm": 120.0,
+    "bpmChanges": [],
+    "stops": []
+  },
+  "camera": {
+    "type": "perspective",
+    "fovY": 45.0,
+    "near": 0.1,
+    "far": 1000.0,
+    "pitch": -15.0,
+    "yaw": 0.0,
+    "roll": 0.0,
+    "defaultTransform": {
+      "position": [0.0, 5.0, -10.0]
+    }
+  },
+  "templates": [
+    {
+      "id": "019b0000-0000-7abc-8def-000000000020",
+      "name": "standard_note",
+      "extends": null,
+      "prototype": {
+        "components": {
+          "cuexis.transform": {
+            "version": 1,
+            "position": [0.0, 0.0, 0.0],
+            "rotation": [0.0, 0.0, 0.0, 1.0],
+            "scale": [1.0, 1.0, 1.0]
+          },
+          "cuexis.note": {
+            "version": 1,
+            "beat": { "numerator": 0, "denominator": 1 }
+          }
+        }
+      },
+      "extensions": {}
+    }
+  ],
+  "behaviors": [],
+  "objects": [
+    {
+      "id": "019b0000-0000-7abc-8def-000000000010",
+      "name": "lane",
+      "parent": null,
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [-0.3, 0.0, 0.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [1.0, 1.0, 1.0]
+        },
+        "cuexis.element": { "version": 1 }
+      },
+      "extensions": {}
+    },
+    {
+      "id": "019b0000-0000-7abc-8def-000000000011",
+      "name": "intro_note",
+      "parent": {
+        "domain": "object",
+        "id": "019b0000-0000-7abc-8def-000000000010"
+      },
+      "template": {
+        "domain": "template",
+        "id": "019b0000-0000-7abc-8def-000000000020"
+      },
+      "overrides": [
+        {
+          "op": "replace",
+          "path": "/components/cuexis.transform/position",
+          "value": [0.3, 0.0, 0.0]
+        },
+        {
+          "op": "replace",
+          "path": "/components/cuexis.note/beat",
+          "value": { "numerator": 4, "denominator": 1 }
+        }
+      ],
+      "extensions": {}
+    },
+    {
+      "id": "019b0000-0000-7abc-8def-000000000012",
+      "name": "note_marker",
+      "parent": {
+        "domain": "object",
+        "id": "019b0000-0000-7abc-8def-000000000011"
+      },
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [0.0, 0.3, 0.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [0.25, 0.25, 0.25]
+        },
+        "cuexis.element": { "version": 1 }
+      },
+      "extensions": {}
+    }
+  ],
+  "requiredExtensions": [],
+  "extensions": {}
+}

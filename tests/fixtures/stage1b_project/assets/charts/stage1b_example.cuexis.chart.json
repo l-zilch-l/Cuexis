@@ -1,0 +1,121 @@
+{
+  "format": "cuexis.chart",
+  "version": 1,
+  "chartId": "019b0000-0000-7abc-8def-000000000101",
+  "metadata": {
+    "title": "Stage 1B Resource Example",
+    "artist": "Cuexis"
+  },
+  "timing": {
+    "offsetMs": 0.0,
+    "defaultBpm": 120.0,
+    "bpmChanges": [],
+    "stops": []
+  },
+  "camera": {
+    "type": "perspective",
+    "fovY": 45.0,
+    "near": 0.1,
+    "far": 1000.0,
+    "pitch": -15.0,
+    "yaw": 0.0,
+    "roll": 0.0,
+    "defaultTransform": {
+      "position": [0.0, 5.0, -10.0]
+    }
+  },
+  "templates": [],
+  "behaviors": [],
+  "objects": [
+    {
+      "id": "019b0000-0000-7abc-8def-000000000110",
+      "name": "stage1b_root",
+      "parent": null,
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [-0.6, 0.0, 0.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [1.0, 1.0, 1.0]
+        },
+        "cuexis.renderable": {
+          "version": 1,
+          "mesh": {"domain": "asset", "id": "mesh.note"},
+          "material": {"domain": "asset", "id": "material.basic"}
+        }
+      },
+      "extensions": {}
+    },
+    {
+      "id": "019b0000-0000-7abc-8def-000000000111",
+      "name": "stage1b_child",
+      "parent": {
+        "domain": "object",
+        "id": "019b0000-0000-7abc-8def-000000000110"
+      },
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [0.6, 0.0, 0.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [0.75, 0.75, 0.75]
+        },
+        "cuexis.renderable": {
+          "version": 1,
+          "mesh": {"domain": "asset", "id": "mesh.note"},
+          "material": {"domain": "asset", "id": "material.basic"}
+        },
+        "cuexis.note": {
+          "version": 1,
+          "beat": {"numerator": 4, "denominator": 1}
+        }
+      },
+      "extensions": {}
+    },
+    {
+      "id": "019b0000-0000-7abc-8def-000000000112",
+      "name": "stage1b_marker",
+      "parent": {
+        "domain": "object",
+        "id": "019b0000-0000-7abc-8def-000000000111"
+      },
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [0.0, 0.4, 0.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [0.5, 0.5, 0.5]
+        },
+        "cuexis.renderable": {
+          "version": 1,
+          "mesh": {"domain": "asset", "id": "mesh.note"},
+          "material": {"domain": "asset", "id": "material.basic"}
+        }
+      },
+      "extensions": {}
+    },
+    {
+      "id": "019b0000-0000-7abc-8def-000000000120",
+      "name": "camera_main",
+      "parent": null,
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [0.0, 5.0, -10.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [1.0, 1.0, 1.0]
+        },
+        "cuexis.camera": {
+          "version": 1,
+          "type": "perspective",
+          "fovY": 45.0,
+          "near": 0.1,
+          "far": 1000.0
+        }
+      },
+      "extensions": {}
+    }
+  ],
+  "requiredExtensions": [],
+  "extensions": {}
+}
