@@ -1,5 +1,6 @@
 add_library(cuexis_filesystem STATIC
     src/secure_file.cpp
+    src/secure_file_test_support.hpp
 )
 add_library(cuexis::filesystem ALIAS cuexis_filesystem)
 

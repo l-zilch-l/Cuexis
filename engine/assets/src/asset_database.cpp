@@ -589,6 +589,7 @@ auto AssetDatabase::readBlob(const AssetId& id, const AssetBlobLimits& limits) c
         stored.canonicalSource, {.root = data_->canonicalRoots[stored.rootIndex],
                                  .maxBytes = limits.maxBytes,
                                  .errors = {.rootUnavailable = unavailable,
+                                            .rootChanged = unavailable,
                                             .openFailed = unavailable,
                                             .outsideRoot = unavailable,
                                             .notRegular = unavailable,

@@ -154,6 +154,7 @@ class PlayerClock final {
         path, {.root = root,
                .maxBytes = maxBytes,
                .errors = {.rootUnavailable = prefix + ".open_failed",
+                          .rootChanged = prefix + ".root_changed",
                           .openFailed = prefix + ".open_failed",
                           .outsideRoot = prefix + ".outside_root",
                           .notRegular = prefix + ".open_failed",

@@ -13,6 +13,7 @@ namespace cuexis::filesystem {
 
 struct ReadFileErrorCodes final {
     std::string rootUnavailable{"filesystem.file.root_unavailable"};
+    std::string rootChanged{"filesystem.file.root_changed"};
     std::string openFailed{"filesystem.file.open_failed"};
     std::string outsideRoot{"filesystem.file.outside_root"};
     std::string notRegular{"filesystem.file.not_regular"};

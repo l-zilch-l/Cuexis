@@ -218,6 +218,7 @@ void addWarning(core::Diagnostics& diagnostics, std::string code, std::string me
         file, {.root = file.parent_path(),
                .maxBytes = maxBytes,
                .errors = {.rootUnavailable = "project.file.open_failed",
+                          .rootChanged = "project.file.root_changed",
                           .openFailed = "project.file.open_failed",
                           .outsideRoot = "project.file.outside_root",
                           .notRegular = "project.file.not_regular",

@@ -2,6 +2,8 @@
 
 #include <cuexis/core/error.hpp>
 
+#include "secure_file_test_support.hpp"
+
 #include <algorithm>
 #include <cerrno>
 #include <cstdint>
@@ -22,6 +24,12 @@
 
 namespace cuexis::filesystem {
 namespace {
+
+void invokeHook(detail::ReadFileTestHooks::Hook hook, void* context) noexcept {
+    if (hook != nullptr) {
+        hook(context);
+    }
+}
 
 [[nodiscard]] auto fileError(const std::string& code, std::string message,
                              const std::filesystem::path& path) -> core::Error {
@@ -96,6 +104,11 @@ class UniqueHandle final {
     return true;
 }
 
+[[nodiscard]] auto samePath(const std::filesystem::path& left,
+                            const std::filesystem::path& right) noexcept -> bool {
+    return containsPath(left, right) && containsPath(right, left);
+}
+
 [[nodiscard]] auto sameIdentity(const BY_HANDLE_FILE_INFORMATION& left,
                                 const BY_HANDLE_FILE_INFORMATION& right) noexcept -> bool {
     return left.dwVolumeSerialNumber == right.dwVolumeSerialNumber &&
@@ -111,11 +124,13 @@ class UniqueHandle final {
 }
 
 [[nodiscard]] auto readPlatformFile(const std::filesystem::path& path,
-                                    const ReadFileOptions& options) -> core::Result<FileContents> {
-    const UniqueHandle root{
-        CreateFileW(options.root.c_str(), FILE_READ_ATTRIBUTES | FILE_LIST_DIRECTORY,
-                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING,
-                    FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, nullptr)};
+                                    const ReadFileOptions& options,
+                                    const detail::ReadFileTestHooks* hooks)
+    -> core::Result<FileContents> {
+    constexpr DWORD rootShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
+    const UniqueHandle root{CreateFileW(
+        options.root.c_str(), FILE_READ_ATTRIBUTES | FILE_LIST_DIRECTORY, rootShareMode, nullptr,
+        OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, nullptr)};
     if (root.get() == INVALID_HANDLE_VALUE) {
         return core::unexpected(fileError(options.errors.rootUnavailable,
                                           "Trusted file root could not be opened", path));
@@ -129,6 +144,9 @@ class UniqueHandle final {
         return core::unexpected(fileError(options.errors.rootUnavailable,
                                           "Trusted file root is not a stable directory", path));
     }
+    if (hooks != nullptr) {
+        invokeHook(hooks->afterRootValidated, hooks->context);
+    }
 
     const UniqueHandle file{
         CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
@@ -136,6 +154,22 @@ class UniqueHandle final {
     if (file.get() == INVALID_HANDLE_VALUE) {
         return core::unexpected(
             fileError(options.errors.openFailed, "Requested file could not be opened", path));
+    }
+    if (hooks != nullptr) {
+        invokeHook(hooks->afterFileOpened, hooks->context);
+    }
+
+    const UniqueHandle verifiedRoot{CreateFileW(
+        options.root.c_str(), FILE_READ_ATTRIBUTES | FILE_LIST_DIRECTORY, rootShareMode, nullptr,
+        OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, nullptr)};
+    BY_HANDLE_FILE_INFORMATION verifiedRootInformation{};
+    const auto verifiedRootPath = finalPath(verifiedRoot.get());
+    if (verifiedRoot.get() == INVALID_HANDLE_VALUE ||
+        !GetFileInformationByHandle(verifiedRoot.get(), &verifiedRootInformation) ||
+        !verifiedRootPath.has_value() || !sameIdentity(rootInformation, verifiedRootInformation) ||
+        !samePath(*resolvedRoot, *verifiedRootPath)) {
+        return core::unexpected(fileError(
+            options.errors.rootChanged, "Trusted file root changed while opening the file", path));
     }
 
     BY_HANDLE_FILE_INFORMATION before{};
@@ -247,7 +281,9 @@ class UniqueFd final {
 }
 
 [[nodiscard]] auto readPlatformFile(const std::filesystem::path& path,
-                                    const ReadFileOptions& options) -> core::Result<FileContents> {
+                                    const ReadFileOptions& options,
+                                    const detail::ReadFileTestHooks* hooks)
+    -> core::Result<FileContents> {
     std::error_code pathError;
     const auto absoluteRoot = std::filesystem::absolute(options.root, pathError).lexically_normal();
     const auto absolutePath = std::filesystem::absolute(path, pathError).lexically_normal();
@@ -282,6 +318,9 @@ class UniqueFd final {
         return core::unexpected(fileError(options.errors.rootUnavailable,
                                           "Trusted file root could not be opened", path));
     }
+    if (hooks != nullptr) {
+        invokeHook(hooks->afterRootValidated, hooks->context);
+    }
     for (std::size_t index = 0; index + 1 < components.size(); ++index) {
         UniqueFd next{openat(directory.get(), components[index].c_str(),
                              O_RDONLY | O_DIRECTORY | O_CLOEXEC | O_NOFOLLOW)};
@@ -298,6 +337,9 @@ class UniqueFd final {
     if (file.get() < 0) {
         return core::unexpected(
             fileError(options.errors.openFailed, "Requested file could not be opened", path));
+    }
+    if (hooks != nullptr) {
+        invokeHook(hooks->afterFileOpened, hooks->context);
     }
     struct stat before{};
     if (fstat(file.get(), &before) != 0 || !S_ISREG(before.st_mode)) {
@@ -349,9 +391,9 @@ class UniqueFd final {
 
 #endif
 
-} // namespace
-
-auto readBoundedFile(const std::filesystem::path& path, const ReadFileOptions& options)
+[[nodiscard]] auto readBoundedFileImpl(const std::filesystem::path& path,
+                                       const ReadFileOptions& options,
+                                       const detail::ReadFileTestHooks* hooks)
     -> core::Result<FileContents> {
     if (path.empty() || options.root.empty()) {
         return core::unexpected(fileError(
@@ -361,7 +403,14 @@ auto readBoundedFile(const std::filesystem::path& path, const ReadFileOptions& o
         return core::unexpected(core::Error{"filesystem.file.invalid_limit",
                                             "Bounded file byte limit must be non-zero"});
     }
-    return readPlatformFile(path, options);
+    return readPlatformFile(path, options, hooks);
+}
+
+} // namespace
+
+auto readBoundedFile(const std::filesystem::path& path, const ReadFileOptions& options)
+    -> core::Result<FileContents> {
+    return readBoundedFileImpl(path, options, nullptr);
 }
 
 auto readBoundedTextFile(const std::filesystem::path& path, const ReadFileOptions& options)
@@ -379,5 +428,14 @@ auto readBoundedTextFile(const std::filesystem::path& path, const ReadFileOption
     text.resolvedRoot = std::move(contents->resolvedRoot);
     return text;
 }
+
+namespace detail {
+
+auto readBoundedFileWithHooks(const std::filesystem::path& path, const ReadFileOptions& options,
+                              const ReadFileTestHooks& hooks) -> core::Result<FileContents> {
+    return readBoundedFileImpl(path, options, &hooks);
+}
+
+} // namespace detail
 
 } // namespace cuexis::filesystem

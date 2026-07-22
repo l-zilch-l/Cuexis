@@ -19,6 +19,14 @@ struct TransformUpdateCounter final {
     }
 };
 
+struct TransformUpdateCount final {
+    std::size_t value{};
+
+    void receive(entt::registry&, entt::entity) noexcept {
+        ++value;
+    }
+};
+
 } // namespace
 
 TEST_CASE("World scopes entity creation and destruction through callbacks", "[world]") {
@@ -175,4 +183,56 @@ TEST_CASE("World transform cache publishes only a changed hierarchy subtree",
           updates.entities.end());
     CHECK(std::find(updates.entities.begin(), updates.entities.end(), unrelated) ==
           updates.entities.end());
+}
+
+TEST_CASE("World transform cache preserves sparse work through the default object budget",
+          "[world][transform][scale]") {
+    constexpr std::array<std::size_t, 3> objectCounts{1'000, 10'000, 100'000};
+    for (const auto objectCount : objectCounts) {
+        CAPTURE(objectCount);
+        cuexis::world::World world;
+        entt::entity root{entt::null};
+        entt::entity leaf{entt::null};
+        world.withRegistry([&](entt::registry& registry) {
+            entt::entity parent{entt::null};
+            for (std::size_t index = 0; index < objectCount; ++index) {
+                const auto entity = registry.create();
+                registry.emplace<cuexis::world::TransformComponent>(entity);
+                if (parent != entt::null) {
+                    registry.emplace<cuexis::world::HierarchyComponent>(entity, parent);
+                } else {
+                    root = entity;
+                }
+                parent = entity;
+                leaf = entity;
+            }
+        });
+
+        REQUIRE(cuexis::world::updateWorldTransforms(world).has_value());
+        TransformUpdateCount updates;
+        world.withRegistry([&](entt::registry& registry) {
+            registry.on_update<cuexis::world::WorldTransformComponent>()
+                .connect<&TransformUpdateCount::receive>(updates);
+        });
+
+        REQUIRE(cuexis::world::updateWorldTransforms(world).has_value());
+        CHECK(updates.value == 0);
+
+        world.withRegistry([&](entt::registry& registry) {
+            auto transform = registry.get<cuexis::world::TransformComponent>(leaf);
+            transform.position.x = 1.0F;
+            registry.replace<cuexis::world::TransformComponent>(leaf, transform);
+        });
+        REQUIRE(cuexis::world::updateWorldTransforms(world).has_value());
+        CHECK(updates.value == 1);
+
+        updates.value = 0;
+        world.withRegistry([&](entt::registry& registry) {
+            auto transform = registry.get<cuexis::world::TransformComponent>(root);
+            transform.position.y = 1.0F;
+            registry.replace<cuexis::world::TransformComponent>(root, transform);
+        });
+        REQUIRE(cuexis::world::updateWorldTransforms(world).has_value());
+        CHECK(updates.value == objectCount);
+    }
 }
