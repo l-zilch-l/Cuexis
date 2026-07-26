@@ -154,6 +154,7 @@ struct ResourceManagerState final : std::enable_shared_from_this<ResourceManager
             .strongReferences = 0,
             .resource = std::move(resource),
             .pinned = true,
+            .retired = false,
         });
         typedPool.byId.emplace(id.value, 0);
         typedPool.fallbackIndex = 0;
@@ -212,6 +213,12 @@ struct ResourceManagerState final : std::enable_shared_from_this<ResourceManager
                 typedPool.slots.push_back(Slot<Tag>{
                     .id = id,
                     .state = ResourceState::Loading,
+                    .generation = 1,
+                    .contentRevision = 0,
+                    .strongReferences = 0,
+                    .resource = {},
+                    .pinned = false,
+                    .retired = false,
                 });
                 typedPool.byId.emplace(id.value, index);
             }

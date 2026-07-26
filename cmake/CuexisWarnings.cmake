@@ -14,6 +14,7 @@ function(cuexis_enable_warnings target)
             /permissive-
             /Zc:__cplusplus
             /utf-8
+            /EHsc
         )
         target_compile_definitions(${target} ${scope} NOMINMAX WIN32_LEAN_AND_MEAN)
         if(CUEXIS_WARNINGS_AS_ERRORS)

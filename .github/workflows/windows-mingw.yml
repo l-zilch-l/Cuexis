@@ -2,11 +2,16 @@ name: Windows MinGW
 
 on:
   push:
+    branches:
+      - master
   pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
+
+env:
+  VCPKG_COMMIT: 40f3c709db80acf154ac4b17a1f83c564ebd022e
 
 jobs:
   build-and-test:
@@ -23,6 +28,13 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Check out pinned vcpkg
+        uses: actions/checkout@v4
+        with:
+          repository: microsoft/vcpkg
+          ref: ${{ env.VCPKG_COMMIT }}
+          path: .vcpkg
+
       - name: Set up MinGW64
         uses: msys2/setup-msys2@v2
         with:
@@ -35,14 +47,11 @@ jobs:
             mingw-w64-x86_64-clang
             mingw-w64-x86_64-clang-tools-extra
 
-      - name: Select hosted vcpkg
-        shell: msys2 {0}
+      - name: Bootstrap pinned vcpkg
+        shell: pwsh
         run: |
-          if [[ -z "${VCPKG_INSTALLATION_ROOT:-}" ]]; then
-            echo "VCPKG_INSTALLATION_ROOT is not set on the hosted runner" >&2
-            exit 1
-          fi
-          printf 'VCPKG_ROOT=%s\n' "$VCPKG_INSTALLATION_ROOT" >> "$GITHUB_ENV"
+          .\.vcpkg\bootstrap-vcpkg.bat -disableMetrics
+          "VCPKG_ROOT=$env:GITHUB_WORKSPACE\.vcpkg" >> $env:GITHUB_ENV
 
       - name: Locate build tools
         shell: msys2 {0}

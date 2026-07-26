@@ -2,7 +2,7 @@
 
 状态：已接受
 
-更新日期：2026-07-20
+更新日期：2026-07-25
 
 ## 项目许可
 
@@ -41,6 +41,10 @@ MIT、BSD、Apache-2.0 和 zlib 等宽松许可证通常可以接受。MPL、LGP
 ```
 
 发布产物维护 `THIRD_PARTY_NOTICES`，列出直接依赖以及依法需要披露的传递依赖。不得仅依赖 vcpkg 缓存作为许可证记录。
+
+当前依赖图固定到 vcpkg baseline `40f3c709db80acf154ac4b17a1f83c564ebd022e`。更新
+baseline 时必须同步验证 `vcpkg.json`、`THIRD_PARTY_NOTICES.md`、安装许可证清单和所有 CI
+平台，不能依赖 hosted runner 恰好缓存的 port tree。
 
 ## 封装原则
 

@@ -89,8 +89,11 @@ auto updateWorldTransforms(World& world) -> core::Result<void> {
                 candidateCache.push_back(World::TransformCacheEntry{
                     .entity = entity,
                     .parent = parent,
+                    .parentIndex = std::nullopt,
                     .local = transform,
                     .localMatrix = *local,
+                    .world = {},
+                    .children = {},
                 });
             }
             std::sort(candidateCache.begin(), candidateCache.end(),
@@ -143,8 +146,9 @@ auto updateWorldTransforms(World& world) -> core::Result<void> {
             }
             for (std::size_t cursor = 0; cursor < candidateOrder.size(); ++cursor) {
                 const auto index = candidateOrder[cursor];
-                candidateOrder.insert(candidateOrder.end(), candidateCache[index].children.begin(),
-                                      candidateCache[index].children.end());
+                for (const auto childIndex : candidateCache[index].children) {
+                    candidateOrder.push_back(childIndex);
+                }
             }
             if (candidateOrder.size() != candidateCache.size()) {
                 auto error = core::Error{"world.transform.hierarchy_cycle",

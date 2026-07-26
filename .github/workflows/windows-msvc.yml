@@ -2,11 +2,16 @@ name: Windows MSVC
 
 on:
   push:
+    branches:
+      - master
   pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
+
+env:
+  VCPKG_COMMIT: 40f3c709db80acf154ac4b17a1f83c564ebd022e
 
 jobs:
   build-and-test:
@@ -23,16 +28,21 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Check out pinned vcpkg
+        uses: actions/checkout@v4
+        with:
+          repository: microsoft/vcpkg
+          ref: ${{ env.VCPKG_COMMIT }}
+          path: .vcpkg
+
       - name: Set up MSVC
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Select hosted vcpkg
+      - name: Bootstrap pinned vcpkg
         shell: pwsh
         run: |
-          if (-not $env:VCPKG_INSTALLATION_ROOT) {
-            throw "VCPKG_INSTALLATION_ROOT is not set on the hosted runner"
-          }
-          "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" >> $env:GITHUB_ENV
+          .\.vcpkg\bootstrap-vcpkg.bat -disableMetrics
+          "VCPKG_ROOT=$env:GITHUB_WORKSPACE\.vcpkg" >> $env:GITHUB_ENV
 
       - name: Configure
         run: cmake --preset ${{ matrix.preset }} --fresh
