@@ -6,6 +6,7 @@
 #include <cuexis/assets/resource_manager.hpp>
 #include <cuexis/chart/chart_loader.hpp>
 #include <cuexis/chart/chart_runtime.hpp>
+#include <cuexis/content/content_provider.hpp>
 #include <cuexis/core/error.hpp>
 #include <cuexis/core/math.hpp>
 #include <cuexis/core/thread_checker.hpp>
@@ -131,9 +132,13 @@ struct PlaybackSession::State final {
     State() = default;
     explicit State(assets::AssetDatabase database)
         : resourceManager(std::in_place, std::move(database)) {}
+    State(assets::AssetDatabase database, std::shared_ptr<content::IContentProvider> provider)
+        : contentProvider(std::move(provider)),
+          resourceManager(std::in_place, std::move(database), contentProvider) {}
 
     core::ThreadChecker ownerThread;
     // ResourceManager must outlive RuntimeSession and its ResourceScope.
+    std::shared_ptr<content::IContentProvider> contentProvider;
     std::optional<assets::ResourceManager> resourceManager;
     std::unique_ptr<runtime::RuntimeSession> runtimeSession;
     std::optional<chart::ChartRuntime> chartRuntime;
@@ -147,6 +152,10 @@ PlaybackSession::PlaybackSession() noexcept : state_(std::make_unique<State>()) 
 
 PlaybackSession::PlaybackSession(assets::AssetDatabase database)
     : state_(std::make_unique<State>(std::move(database))) {}
+
+PlaybackSession::PlaybackSession(assets::AssetDatabase database,
+                                 std::shared_ptr<content::IContentProvider> contentProvider)
+    : state_(std::make_unique<State>(std::move(database), std::move(contentProvider))) {}
 
 PlaybackSession::~PlaybackSession() {
     if (state_ && !state_->ownerThread.isCurrent()) {

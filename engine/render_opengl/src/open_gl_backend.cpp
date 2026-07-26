@@ -8,7 +8,6 @@
 #include <cuexis/render_opengl/open_gl_backend.hpp>
 
 #include <cuexis/core/error.hpp>
-#include <cuexis/core/log.hpp>
 #include <cuexis/platform_sdl/sdl_window.hpp>
 
 #include <SDL3/SDL.h>
@@ -85,18 +84,25 @@ ConfigurationState configurationState;
            (actualMajor == requestedMajor && actualMinor >= requestedMinor);
 }
 
+void logWarning(const std::shared_ptr<const core::LogSink>& sink,
+                std::string_view message) noexcept {
+    if (sink) {
+        sink->write(core::LogSeverity::Warning, "render.opengl", message);
+    }
+}
+
 class ContextGuard final {
   public:
-    explicit ContextGuard(SDL_GLContext context) noexcept : context_(context) {}
+    ContextGuard(SDL_GLContext context, std::shared_ptr<const core::LogSink> logSink) noexcept
+        : context_(context), logSink_(std::move(logSink)) {}
 
     ContextGuard(const ContextGuard&) = delete;
     auto operator=(const ContextGuard&) -> ContextGuard& = delete;
 
     ~ContextGuard() {
         if (context_ != nullptr && !SDL_GL_DestroyContext(context_)) {
-            core::log::warn("render.opengl",
-                            std::string{"Could not destroy a rolled-back OpenGL context: "} +
-                                sdlError());
+            logWarning(logSink_, std::string{"Could not destroy a rolled-back OpenGL context: "} +
+                                     sdlError());
         }
     }
 
@@ -106,6 +112,7 @@ class ContextGuard final {
 
   private:
     SDL_GLContext context_{};
+    std::shared_ptr<const core::LogSink> logSink_;
 };
 
 struct DebugVertex final {
@@ -382,9 +389,9 @@ auto OpenGlBackend::create(platform_sdl::SdlWindow& window,
     std::string debugContextError;
     if (context == nullptr && config.debugContext) {
         debugContextError = sdlError();
-        core::log::warn("render.opengl",
-                        std::string{"Debug context creation failed; retrying without it: "} +
-                            debugContextError);
+        logWarning(config.logSink,
+                   std::string{"Debug context creation failed; retrying without it: "} +
+                       debugContextError);
         if (auto result = setAttribute(SDL_GL_CONTEXT_FLAGS, 0, "context_flags_fallback");
             !result) {
             return core::unexpected(
@@ -399,7 +406,7 @@ auto OpenGlBackend::create(platform_sdl::SdlWindow& window,
         }
         return core::unexpected(std::move(error));
     }
-    ContextGuard contextGuard{context};
+    ContextGuard contextGuard{context, config.logSink};
 
     if (!SDL_GL_MakeCurrent(nativeWindow, context)) {
         return core::unexpected(core::Error{"render.opengl.context_current_failed", sdlError()});
@@ -435,9 +442,8 @@ auto OpenGlBackend::create(platform_sdl::SdlWindow& window,
     }
 
     if (!SDL_GL_SetSwapInterval(config.vsync ? 1 : 0)) {
-        core::log::warn("render.opengl",
-                        std::string{"Could not configure the requested swap interval: "} +
-                            sdlError());
+        logWarning(config.logSink,
+                   std::string{"Could not configure the requested swap interval: "} + sdlError());
     }
 
     OpenGlInfo info{
@@ -458,15 +464,18 @@ auto OpenGlBackend::create(platform_sdl::SdlWindow& window,
                          pipeline.program,
                          pipeline.vertexArray,
                          pipeline.vertexBuffer,
-                         pipeline.viewProjectionLocation};
+                         pipeline.viewProjectionLocation,
+                         config.logSink};
 }
 
 OpenGlBackend::OpenGlBackend(platform_sdl::SdlWindowLease window, void* context, OpenGlInfo info,
                              std::uint32_t debugProgram, std::uint32_t debugVertexArray,
-                             std::uint32_t debugVertexBuffer, int viewProjectionLocation) noexcept
+                             std::uint32_t debugVertexBuffer, int viewProjectionLocation,
+                             std::shared_ptr<const core::LogSink> logSink) noexcept
     : window_(std::move(window)), context_(context), info_(std::move(info)),
-      debugProgram_(debugProgram), debugVertexArray_(debugVertexArray),
-      debugVertexBuffer_(debugVertexBuffer), viewProjectionLocation_(viewProjectionLocation) {}
+      logSink_(std::move(logSink)), debugProgram_(debugProgram),
+      debugVertexArray_(debugVertexArray), debugVertexBuffer_(debugVertexBuffer),
+      viewProjectionLocation_(viewProjectionLocation) {}
 
 OpenGlBackend::~OpenGlBackend() {
     if (context_ != nullptr && (!SDL_IsMainThread() || !ownerThread_.isCurrent())) {
@@ -477,7 +486,8 @@ OpenGlBackend::~OpenGlBackend() {
 
 OpenGlBackend::OpenGlBackend(OpenGlBackend&& other) noexcept
     : window_(std::move(other.window_)), context_(std::exchange(other.context_, nullptr)),
-      info_(std::move(other.info_)), debugProgram_(std::exchange(other.debugProgram_, 0)),
+      info_(std::move(other.info_)), logSink_(std::move(other.logSink_)),
+      debugProgram_(std::exchange(other.debugProgram_, 0)),
       debugVertexArray_(std::exchange(other.debugVertexArray_, 0)),
       debugVertexBuffer_(std::exchange(other.debugVertexBuffer_, 0)),
       viewProjectionLocation_(std::exchange(other.viewProjectionLocation_, -1)) {
@@ -621,17 +631,16 @@ void OpenGlBackend::release() noexcept {
             glDeleteProgram(debugProgram_);
         }
     } else if (debugProgram_ != 0 || debugVertexArray_ != 0 || debugVertexBuffer_ != 0) {
-        core::log::warn("render.opengl",
-                        "Could not make the context current to release debug draw resources");
+        logWarning(logSink_, "Could not make the context current to release debug draw resources");
     }
     if (nativeWindow != nullptr && SDL_GL_GetCurrentContext() == context_ &&
         !SDL_GL_MakeCurrent(nativeWindow, nullptr)) {
-        core::log::warn("render.opengl",
-                        std::string{"Could not release the current OpenGL context: "} + sdlError());
+        logWarning(logSink_,
+                   std::string{"Could not release the current OpenGL context: "} + sdlError());
     }
     if (!SDL_GL_DestroyContext(static_cast<SDL_GLContext>(context_))) {
-        core::log::warn("render.opengl",
-                        std::string{"Could not destroy the OpenGL context cleanly: "} + sdlError());
+        logWarning(logSink_,
+                   std::string{"Could not destroy the OpenGL context cleanly: "} + sdlError());
     }
 
     context_ = nullptr;
@@ -640,6 +649,7 @@ void OpenGlBackend::release() noexcept {
     debugVertexBuffer_ = 0;
     viewProjectionLocation_ = -1;
     window_ = {};
+    logSink_.reset();
 }
 
 } // namespace cuexis::render_opengl

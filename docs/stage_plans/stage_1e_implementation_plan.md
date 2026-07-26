@@ -1,7 +1,8 @@
 # 阶段 1E 实施计划：SDK 封装与外部消费闭环
 
-状态：实施方向已接受，具体 ContentProvider/API/包布局待编码前确认  
+状态：实施中；ContentProvider、静态包、组件开关与外部 consumer 门禁已落地
 规划日期：2026-07-20  
+进展更新：2026-07-26
 强制前置：[阶段 1C 实施计划](stage_1c_implementation_plan.md)、[阶段 1D 实施计划](stage_1d_implementation_plan.md)  
 产品边界：[ADR 0027](../adr/0027-playback-sdk-product-boundary.md)、[SDK 转型方案](cuexis_sdk_transition_plan.md)
 
@@ -19,6 +20,11 @@ typed/memory Project or Chart source
 ```
 
 本阶段完成后，关闭 Player、Studio、SDL、OpenGL 和物理音频设备仍能完成 headless 播放闭环；独立 Player 继续使用相同 PlaybackSession，不保留应用私有 Runtime 路径。
+
+当前已通过 1C P3 修复完成同步 Filesystem/Memory/Host ContentProvider、ResourceManager 与
+Playback 注入、adapter-disabled preset、C++20 静态 `Cuexis::Playback`/`Cuexis::Content`
+安装导出，以及 add_subdirectory/find_package 两种隔离 consumer。共享库导出、完整组件矩阵
+和阶段 1E 最终 API 冻结仍未宣告完成。
 
 ## 2. 已接受边界
 

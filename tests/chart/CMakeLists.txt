@@ -13,7 +13,7 @@ add_executable(cuexis_chart_tests
 
 target_compile_definitions(cuexis_chart_tests
     PRIVATE
-        CUEXIS_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+        CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
 )
 
 target_link_libraries(cuexis_chart_tests

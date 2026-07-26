@@ -1,16 +1,31 @@
 {
   "name": "cuexis",
   "version-string": "26.07.18.18-1",
+  "default-features": [
+    "player",
+    "tests"
+  ],
   "dependencies": [
-    "sdl3",
     "entt",
     "glm",
     "json-schema-validator",
     "nlohmann-json",
-    "spdlog",
-    "fmt",
-    "glad",
-    "catch2",
     "tl-expected"
-  ]
+  ],
+  "features": {
+    "player": {
+      "description": "Build dependencies for the SDL/OpenGL Cuexis Player",
+      "dependencies": [
+        "glad",
+        "sdl3",
+        "spdlog"
+      ]
+    },
+    "tests": {
+      "description": "Catch2 dependency for Cuexis test targets",
+      "dependencies": [
+        "catch2"
+      ]
+    }
+  }
 }

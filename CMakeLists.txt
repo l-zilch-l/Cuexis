@@ -1,41 +1,96 @@
 cmake_minimum_required(VERSION 3.25)
 
-include(cmake/CuexisVersion.cmake)
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CuexisVersion.cmake")
 
 project(Cuexis VERSION ${CUEXIS_CMAKE_VERSION} LANGUAGES CXX)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+include(CTest)
+include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
+
+if(PROJECT_IS_TOP_LEVEL)
+    set(CUEXIS_TOP_LEVEL_DEFAULT ON)
+    set(CUEXIS_TESTS_DEFAULT "${BUILD_TESTING}")
+else()
+    set(CUEXIS_TOP_LEVEL_DEFAULT OFF)
+    set(CUEXIS_TESTS_DEFAULT OFF)
+endif()
+
+option(CUEXIS_BUILD_PLAYER "Build the Cuexis Player application" ${CUEXIS_TOP_LEVEL_DEFAULT})
+option(CUEXIS_BUILD_SDL_ADAPTER "Build the SDL platform adapter" ${CUEXIS_BUILD_PLAYER})
+option(CUEXIS_BUILD_OPENGL_ADAPTER "Build the OpenGL render adapter" ${CUEXIS_BUILD_PLAYER})
+option(CUEXIS_BUILD_DEVELOPER_TOOLS "Build repository developer-only targets"
+       ${CUEXIS_TOP_LEVEL_DEFAULT})
+option(CUEXIS_BUILD_TESTS "Build the Cuexis test suite" ${CUEXIS_TESTS_DEFAULT})
+option(CUEXIS_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
+option(CUEXIS_ENABLE_CLANG_TIDY "Run clang-tidy while compiling Cuexis targets" OFF)
+option(CUEXIS_ENABLE_COVERAGE "Enable compiler coverage instrumentation" OFF)
+
+if(CUEXIS_BUILD_TESTS AND NOT BUILD_TESTING)
+    enable_testing()
+endif()
+
+if(CUEXIS_BUILD_OPENGL_ADAPTER AND NOT CUEXIS_BUILD_SDL_ADAPTER)
+    message(FATAL_ERROR "CUEXIS_BUILD_OPENGL_ADAPTER requires CUEXIS_BUILD_SDL_ADAPTER")
+endif()
+if(CUEXIS_BUILD_PLAYER AND
+   (NOT CUEXIS_BUILD_SDL_ADAPTER OR NOT CUEXIS_BUILD_OPENGL_ADAPTER))
+    message(FATAL_ERROR "CUEXIS_BUILD_PLAYER requires the SDL and OpenGL adapters")
+endif()
+
+if(CUEXIS_ENABLE_SANITIZERS)
+    if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+        message(FATAL_ERROR "CUEXIS_ENABLE_SANITIZERS requires Clang or GCC")
+    endif()
+    add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+endif()
+
+if(CUEXIS_ENABLE_COVERAGE)
+    if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+        message(FATAL_ERROR "CUEXIS_ENABLE_COVERAGE requires Clang or GCC")
+    endif()
+    add_compile_options(--coverage -O0 -g)
+    add_link_options(--coverage)
+endif()
+
+if(CUEXIS_ENABLE_CLANG_TIDY)
+    find_program(CUEXIS_CLANG_TIDY_EXECUTABLE NAMES clang-tidy REQUIRED)
+    set(CMAKE_CXX_CLANG_TIDY
+        "${CUEXIS_CLANG_TIDY_EXECUTABLE};--config-file=${PROJECT_SOURCE_DIR}/.clang-tidy"
+    )
+endif()
+
+if(PROJECT_IS_TOP_LEVEL)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+endif()
 
 configure_file(
-    cmake/version.hpp.in
-    "${CMAKE_BINARY_DIR}/generated/cuexis/version.hpp"
+    "${PROJECT_SOURCE_DIR}/cmake/version.hpp.in"
+    "${PROJECT_BINARY_DIR}/generated/cuexis/version.hpp"
     @ONLY
 )
 
-include(CTest)
-include(cmake/CuexisWarnings.cmake)
-include(cmake/VerifyArchitecture.cmake)
+include("${PROJECT_SOURCE_DIR}/cmake/CuexisWarnings.cmake")
+include("${PROJECT_SOURCE_DIR}/cmake/VerifyArchitecture.cmake")
 
 add_subdirectory(engine)
-add_subdirectory(app)
-
-if(BUILD_TESTING)
-    add_subdirectory(tests)
+if(CUEXIS_BUILD_PLAYER)
+    add_subdirectory(app)
 endif()
 
-target_include_directories(cuexis_core
-    PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/generated>"
-)
+if(CUEXIS_BUILD_TESTS)
+    add_subdirectory(tests)
+endif()
 
 set(CUEXIS_ACTIVE_TARGETS
     cuexis_core
     cuexis_filesystem
+    cuexis_content
     cuexis_json_support
     cuexis_project
-    cuexis_platform_sdl
     cuexis_world
     cuexis_assets
     cuexis_chart
@@ -44,134 +99,253 @@ set(CUEXIS_ACTIVE_TARGETS
     cuexis_render
     cuexis_debug
     cuexis_runtime
-    cuexis_render_opengl
     cuexis_playback
-    cuexis_player
 )
 
-if(BUILD_TESTING)
+if(CUEXIS_BUILD_SDL_ADAPTER)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_platform_sdl)
+endif()
+if(CUEXIS_BUILD_OPENGL_ADAPTER)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_render_opengl)
+endif()
+if(CUEXIS_BUILD_PLAYER)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_player)
+endif()
+
+if(CUEXIS_BUILD_TESTS)
     list(APPEND CUEXIS_ACTIVE_TARGETS
         cuexis_core_tests
         cuexis_filesystem_tests
+        cuexis_content_tests
         cuexis_json_support_tests
         cuexis_project_tests
-        cuexis_platform_sdl_tests
         cuexis_assets_tests
         cuexis_chart_tests
         cuexis_behavior_tests
         cuexis_gameplay_tests
         cuexis_debug_tests
         cuexis_render_tests
-        cuexis_render_opengl_tests
         cuexis_runtime_tests
         cuexis_world_tests
         cuexis_playback_tests
     )
 
+    if(TARGET cuexis_platform_sdl_tests)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_platform_sdl_tests)
+    endif()
+    if(TARGET cuexis_render_opengl_tests)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_render_opengl_tests)
+    endif()
+
     add_test(
         NAME cuexis_architecture_tests
         COMMAND "${CMAKE_COMMAND}"
-            "-DCUEXIS_SOURCE_DIR=${CMAKE_SOURCE_DIR}"
-            -P "${CMAKE_SOURCE_DIR}/cmake/VerifyArchitecture.cmake"
+            "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+            -P "${PROJECT_SOURCE_DIR}/cmake/VerifyArchitecture.cmake"
     )
-    add_test(
-        NAME cuexis_player_rejects_unknown_argument
-        COMMAND "${CMAKE_COMMAND}"
-            "-DCUEXIS_PLAYER=$<TARGET_FILE:cuexis_player>"
-            -DCUEXIS_FAILURE_CASE=unknown_argument
-            -P "${CMAKE_SOURCE_DIR}/cmake/VerifyPlayerFailure.cmake"
-    )
-    add_test(
-        NAME cuexis_player_reports_sdl_init_failure
-        COMMAND "${CMAKE_COMMAND}"
-            "-DCUEXIS_PLAYER=$<TARGET_FILE:cuexis_player>"
-            -DCUEXIS_FAILURE_CASE=sdl_init
-            -P "${CMAKE_SOURCE_DIR}/cmake/VerifyPlayerFailure.cmake"
-    )
-    add_test(
-        NAME cuexis_player_requires_chart_path_value
-        COMMAND "${CMAKE_COMMAND}"
-            "-DCUEXIS_PLAYER=$<TARGET_FILE:cuexis_player>"
-            -DCUEXIS_FAILURE_CASE=missing_chart_argument
-            -P "${CMAKE_SOURCE_DIR}/cmake/VerifyPlayerFailure.cmake"
-    )
-    add_test(
-        NAME cuexis_player_reports_missing_chart
-        COMMAND "${CMAKE_COMMAND}"
-            "-DCUEXIS_PLAYER=$<TARGET_FILE:cuexis_player>"
-            -DCUEXIS_FAILURE_CASE=chart_open
-            -P "${CMAKE_SOURCE_DIR}/cmake/VerifyPlayerFailure.cmake"
-    )
-    add_test(
-        NAME cuexis_player_requires_project_path_value
-        COMMAND "${CMAKE_COMMAND}"
-            "-DCUEXIS_PLAYER=$<TARGET_FILE:cuexis_player>"
-            -DCUEXIS_FAILURE_CASE=missing_project_argument
-            -P "${CMAKE_SOURCE_DIR}/cmake/VerifyPlayerFailure.cmake"
-    )
-    add_test(
-        NAME cuexis_player_rejects_project_chart_conflict
-        COMMAND "${CMAKE_COMMAND}"
-            "-DCUEXIS_PLAYER=$<TARGET_FILE:cuexis_player>"
-            -DCUEXIS_FAILURE_CASE=project_chart_conflict
-            -P "${CMAKE_SOURCE_DIR}/cmake/VerifyPlayerFailure.cmake"
-    )
-    add_test(
-        NAME cuexis_player_reports_missing_project
-        COMMAND "${CMAKE_COMMAND}"
-            "-DCUEXIS_PLAYER=$<TARGET_FILE:cuexis_player>"
-            -DCUEXIS_FAILURE_CASE=project_open
-            -P "${CMAKE_SOURCE_DIR}/cmake/VerifyPlayerFailure.cmake"
-    )
+    if(CUEXIS_BUILD_PLAYER)
+        add_test(
+            NAME cuexis_player_rejects_unknown_argument
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_PLAYER=$<TARGET_FILE:cuexis_player>"
+                -DCUEXIS_FAILURE_CASE=unknown_argument
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyPlayerFailure.cmake"
+        )
+        add_test(
+            NAME cuexis_player_reports_sdl_init_failure
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_PLAYER=$<TARGET_FILE:cuexis_player>"
+                -DCUEXIS_FAILURE_CASE=sdl_init
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyPlayerFailure.cmake"
+        )
+        add_test(
+            NAME cuexis_player_requires_chart_path_value
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_PLAYER=$<TARGET_FILE:cuexis_player>"
+                -DCUEXIS_FAILURE_CASE=missing_chart_argument
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyPlayerFailure.cmake"
+        )
+        add_test(
+            NAME cuexis_player_reports_missing_chart
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_PLAYER=$<TARGET_FILE:cuexis_player>"
+                -DCUEXIS_FAILURE_CASE=chart_open
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyPlayerFailure.cmake"
+        )
+        add_test(
+            NAME cuexis_player_requires_project_path_value
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_PLAYER=$<TARGET_FILE:cuexis_player>"
+                -DCUEXIS_FAILURE_CASE=missing_project_argument
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyPlayerFailure.cmake"
+        )
+        add_test(
+            NAME cuexis_player_rejects_project_chart_conflict
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_PLAYER=$<TARGET_FILE:cuexis_player>"
+                -DCUEXIS_FAILURE_CASE=project_chart_conflict
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyPlayerFailure.cmake"
+        )
+        add_test(
+            NAME cuexis_player_reports_missing_project
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_PLAYER=$<TARGET_FILE:cuexis_player>"
+                -DCUEXIS_FAILURE_CASE=project_open
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyPlayerFailure.cmake"
+        )
+    endif()
+
+    if(PROJECT_IS_TOP_LEVEL)
+        foreach(consumer_mode IN ITEMS add_subdirectory find_package)
+            add_test(
+                NAME cuexis_external_consumer_${consumer_mode}
+                COMMAND "${CMAKE_COMMAND}"
+                    "-DCUEXIS_CONSUMER_MODE=${consumer_mode}"
+                    "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                    "-DCUEXIS_BINARY_DIR=${PROJECT_BINARY_DIR}"
+                    "-DCUEXIS_GENERATOR=${CMAKE_GENERATOR}"
+                    "-DCUEXIS_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+                    "-DCUEXIS_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}"
+                    "-DCUEXIS_VCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}"
+                    -P "${PROJECT_SOURCE_DIR}/cmake/VerifyExternalConsumer.cmake"
+            )
+            set_tests_properties(cuexis_external_consumer_${consumer_mode} PROPERTIES
+                LABELS "external;package"
+                RESOURCE_LOCK cuexis_external_consumer
+                TIMEOUT 900
+            )
+        endforeach()
+    endif()
 endif()
 
 foreach(target IN LISTS CUEXIS_ACTIVE_TARGETS)
     cuexis_enable_warnings(${target})
 endforeach()
 
-file(GLOB_RECURSE CUEXIS_FORMAT_FILES CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/app/*.cpp"
-    "${CMAKE_SOURCE_DIR}/app/*.hpp"
-    "${CMAKE_SOURCE_DIR}/cmake/*.hpp.in"
-    "${CMAKE_SOURCE_DIR}/engine/*.cpp"
-    "${CMAKE_SOURCE_DIR}/engine/*.hpp"
-    "${CMAKE_SOURCE_DIR}/tests/*.cpp"
-    "${CMAKE_SOURCE_DIR}/tests/*.hpp"
-)
+if(CUEXIS_BUILD_DEVELOPER_TOOLS)
+    file(GLOB_RECURSE CUEXIS_FORMAT_FILES CONFIGURE_DEPENDS
+        "${PROJECT_SOURCE_DIR}/app/*.cpp"
+        "${PROJECT_SOURCE_DIR}/app/*.hpp"
+        "${PROJECT_SOURCE_DIR}/cmake/*.hpp.in"
+        "${PROJECT_SOURCE_DIR}/engine/*.cpp"
+        "${PROJECT_SOURCE_DIR}/engine/*.hpp"
+        "${PROJECT_SOURCE_DIR}/tests/*.cpp"
+        "${PROJECT_SOURCE_DIR}/tests/*.hpp"
+    )
 
-find_program(CUEXIS_CLANG_FORMAT_EXECUTABLE NAMES clang-format)
-if(CUEXIS_CLANG_FORMAT_EXECUTABLE)
-    add_custom_target(cuexis_format_check
-        COMMAND "${CUEXIS_CLANG_FORMAT_EXECUTABLE}" --dry-run --Werror ${CUEXIS_FORMAT_FILES}
-        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-        VERBATIM
-    )
-else()
-    add_custom_target(cuexis_format_check
-        COMMAND "${CMAKE_COMMAND}" -E echo "clang-format was not found in PATH"
-        COMMAND "${CMAKE_COMMAND}" -E false
-        VERBATIM
-    )
+    find_program(CUEXIS_CLANG_FORMAT_EXECUTABLE NAMES clang-format)
+    if(CUEXIS_CLANG_FORMAT_EXECUTABLE)
+        add_custom_target(cuexis_format_check
+            COMMAND "${CUEXIS_CLANG_FORMAT_EXECUTABLE}" --dry-run --Werror
+                    ${CUEXIS_FORMAT_FILES}
+            WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+            VERBATIM
+        )
+    else()
+        add_custom_target(cuexis_format_check
+            COMMAND "${CMAKE_COMMAND}" -E echo "clang-format was not found in PATH"
+            COMMAND "${CMAKE_COMMAND}" -E false
+            VERBATIM
+        )
+    endif()
+
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_format_check)
 endif()
 
-list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_format_check)
+set(CUEXIS_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/Cuexis"
+    CACHE STRING "Cuexis CMake package installation directory"
+)
+set(CUEXIS_PLAYBACK_EXPORT_TARGETS
+    cuexis_core
+    cuexis_filesystem
+    cuexis_content
+    cuexis_json_support
+    cuexis_world
+    cuexis_assets
+    cuexis_chart
+    cuexis_behavior
+    cuexis_gameplay
+    cuexis_render
+    cuexis_runtime
+    cuexis_playback
+)
+
+install(TARGETS ${CUEXIS_PLAYBACK_EXPORT_TARGETS}
+    EXPORT CuexisTargets
+    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    FILE_SET HEADERS DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
+install(FILES "${PROJECT_BINARY_DIR}/generated/cuexis/version.hpp"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/cuexis"
+)
+
+configure_package_config_file(
+    "${PROJECT_SOURCE_DIR}/cmake/CuexisConfig.cmake.in"
+    "${PROJECT_BINARY_DIR}/CuexisConfig.cmake"
+    INSTALL_DESTINATION "${CUEXIS_INSTALL_CMAKEDIR}"
+)
+write_basic_package_version_file(
+    "${PROJECT_BINARY_DIR}/CuexisConfigVersion.cmake"
+    VERSION "${PROJECT_VERSION}"
+    COMPATIBILITY ExactVersion
+)
+install(EXPORT CuexisTargets
+    FILE CuexisTargets.cmake
+    NAMESPACE Cuexis::
+    DESTINATION "${CUEXIS_INSTALL_CMAKEDIR}"
+)
+install(FILES
+    "${PROJECT_BINARY_DIR}/CuexisConfig.cmake"
+    "${PROJECT_BINARY_DIR}/CuexisConfigVersion.cmake"
+    DESTINATION "${CUEXIS_INSTALL_CMAKEDIR}"
+)
+install(FILES
+    "${PROJECT_SOURCE_DIR}/LICENSE"
+    "${PROJECT_SOURCE_DIR}/THIRD_PARTY_NOTICES.md"
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/Cuexis"
+)
+
+set(CUEXIS_DISTRIBUTED_VCPKG_PORTS
+    entt
+    glm
+    json-schema-validator
+    nlohmann-json
+    tl-expected
+)
+foreach(port IN LISTS CUEXIS_DISTRIBUTED_VCPKG_PORTS)
+    set(copyright_file
+        "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/share/${port}/copyright")
+    if(EXISTS "${copyright_file}")
+        install(FILES "${copyright_file}"
+            DESTINATION "${CMAKE_INSTALL_DATADIR}/Cuexis/licenses"
+            RENAME "${port}-copyright.txt"
+        )
+    endif()
+endforeach()
 
 cuexis_verify_target_dependencies(cuexis_core
     ALLOWED
         tl::expected
-        fmt::fmt
         glm::glm
-        spdlog::spdlog
 )
 cuexis_verify_target_dependencies(cuexis_filesystem
     ALLOWED
         cuexis::core
 )
-cuexis_verify_target_dependencies(cuexis_platform_sdl
+cuexis_verify_target_dependencies(cuexis_content
     ALLOWED
         cuexis::core
-        SDL3::SDL3
+        cuexis::filesystem
 )
+if(TARGET cuexis_platform_sdl)
+    cuexis_verify_target_dependencies(cuexis_platform_sdl
+        ALLOWED
+            cuexis::core
+            SDL3::SDL3
+    )
+endif()
 cuexis_verify_target_dependencies(cuexis_json_support
     ALLOWED
         cuexis::core
@@ -191,8 +365,8 @@ cuexis_verify_target_dependencies(cuexis_world
 )
 cuexis_verify_target_dependencies(cuexis_assets
     ALLOWED
+        cuexis::content
         cuexis::core
-        cuexis::filesystem
 )
 cuexis_verify_target_dependencies(cuexis_chart
     ALLOWED
@@ -229,15 +403,18 @@ cuexis_verify_target_dependencies(cuexis_runtime
         cuexis::render
         cuexis::world
 )
-cuexis_verify_target_dependencies(cuexis_render_opengl
-    ALLOWED
-        cuexis::render
-        cuexis::platform_sdl
-        glad::glad
-        SDL3::SDL3
-)
+if(TARGET cuexis_render_opengl)
+    cuexis_verify_target_dependencies(cuexis_render_opengl
+        ALLOWED
+            cuexis::render
+            cuexis::platform_sdl
+            glad::glad
+            SDL3::SDL3
+    )
+endif()
 cuexis_verify_target_dependencies(cuexis_playback
     ALLOWED
+        cuexis::content
         cuexis::core
         cuexis::assets
         cuexis::chart
@@ -245,19 +422,22 @@ cuexis_verify_target_dependencies(cuexis_playback
         cuexis::runtime
         cuexis::world
 )
-cuexis_verify_target_dependencies(cuexis_player
-    ALLOWED
-        cuexis::playback
-        cuexis::assets
-        cuexis::core
-        cuexis::filesystem
-        cuexis::platform_sdl
-        cuexis::project
-        cuexis::render
-        cuexis::render_opengl
-)
+if(TARGET cuexis_player)
+    cuexis_verify_target_dependencies(cuexis_player
+        ALLOWED
+            cuexis::playback
+            cuexis::assets
+            cuexis::core
+            cuexis::filesystem
+            cuexis::platform_sdl
+            cuexis::project
+            cuexis::render
+            cuexis::render_opengl
+            spdlog::spdlog
+    )
+endif()
 
-if(BUILD_TESTING)
+if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_core_tests
         ALLOWED
             cuexis::core
@@ -268,11 +448,19 @@ if(BUILD_TESTING)
             cuexis::filesystem
             Catch2::Catch2WithMain
     )
-    cuexis_verify_target_dependencies(cuexis_platform_sdl_tests
+
+    cuexis_verify_target_dependencies(cuexis_content_tests
         ALLOWED
-            cuexis::platform_sdl
+            cuexis::content
             Catch2::Catch2WithMain
     )
+    if(TARGET cuexis_platform_sdl_tests)
+        cuexis_verify_target_dependencies(cuexis_platform_sdl_tests
+            ALLOWED
+                cuexis::platform_sdl
+                Catch2::Catch2WithMain
+        )
+    endif()
     cuexis_verify_target_dependencies(cuexis_json_support_tests
         ALLOWED
             cuexis::json_support
@@ -308,11 +496,13 @@ if(BUILD_TESTING)
             cuexis::debug
             Catch2::Catch2WithMain
     )
-    cuexis_verify_target_dependencies(cuexis_render_opengl_tests
-        ALLOWED
-            cuexis::render_opengl
-            Catch2::Catch2WithMain
-    )
+    if(TARGET cuexis_render_opengl_tests)
+        cuexis_verify_target_dependencies(cuexis_render_opengl_tests
+            ALLOWED
+                cuexis::render_opengl
+                Catch2::Catch2WithMain
+        )
+    endif()
     cuexis_verify_target_dependencies(cuexis_render_tests
         ALLOWED
             cuexis::render
@@ -343,6 +533,6 @@ if(BUILD_TESTING)
 endif()
 
 cuexis_verify_active_targets(
-    SOURCE_DIR "${CMAKE_SOURCE_DIR}"
+    SOURCE_DIR "${PROJECT_SOURCE_DIR}"
     ALLOWED ${CUEXIS_ACTIVE_TARGETS}
 )

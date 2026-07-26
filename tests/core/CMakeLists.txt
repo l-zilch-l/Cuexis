@@ -1,7 +1,7 @@
 add_executable(cuexis_core_tests
     diagnostic_tests.cpp
     error_tests.cpp
-    log_tests.cpp
+    log_sink_tests.cpp
     math_tests.cpp
     result_tests.cpp
     thread_checker_tests.cpp

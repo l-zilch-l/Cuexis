@@ -4,12 +4,19 @@ add_library(cuexis_runtime STATIC
 )
 add_library(cuexis::runtime ALIAS cuexis_runtime)
 
-target_compile_features(cuexis_runtime PUBLIC cxx_std_20)
+set_target_properties(cuexis_runtime PROPERTIES EXPORT_NAME InternalRuntime)
 
-target_include_directories(cuexis_runtime
+target_sources(cuexis_runtime
     PUBLIC
-        "${CMAKE_CURRENT_SOURCE_DIR}/include"
+        FILE_SET HEADERS
+        BASE_DIRS include
+        FILES
+            include/cuexis/runtime/chart_world_instantiator.hpp
+            include/cuexis/runtime/runtime_frame.hpp
+            include/cuexis/runtime/runtime_session.hpp
 )
+
+target_compile_features(cuexis_runtime PUBLIC cxx_std_20)
 
 target_link_libraries(cuexis_runtime
     PUBLIC

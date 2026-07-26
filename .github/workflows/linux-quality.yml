@@ -1,0 +1,137 @@
+name: Linux Quality
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  headless-build-and-test:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: GCC Release
+            preset: headless-release
+            compiler: g++
+          - name: Clang ASan + UBSan
+            preset: headless-sanitize
+            compiler: clang++
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y ninja-build clang
+
+      - name: Select hosted vcpkg
+        run: |
+          if [[ -z "${VCPKG_INSTALLATION_ROOT:-}" ]]; then
+            echo "VCPKG_INSTALLATION_ROOT is not set on the hosted runner" >&2
+            exit 1
+          fi
+          printf 'VCPKG_ROOT=%s\n' "$VCPKG_INSTALLATION_ROOT" >> "$GITHUB_ENV"
+
+      - name: Configure
+        run: >-
+          cmake --preset ${{ matrix.preset }} --fresh
+          -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
+          -DVCPKG_TARGET_TRIPLET=x64-linux
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }} --clean-first
+
+      - name: Test
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+        run: ctest --preset ${{ matrix.preset }} --no-tests=error
+
+      - name: Verify deterministic performance invariants
+        if: matrix.preset == 'headless-release'
+        run: >-
+          ctest --preset headless-release --no-tests=error
+          -R "World transform cache preserves sparse work through the default object budget|PlaybackSession drives a headless owning snapshot"
+
+  clang-tidy:
+    name: clang-tidy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y ninja-build clang clang-tidy
+
+      - name: Select hosted vcpkg
+        run: |
+          if [[ -z "${VCPKG_INSTALLATION_ROOT:-}" ]]; then
+            echo "VCPKG_INSTALLATION_ROOT is not set on the hosted runner" >&2
+            exit 1
+          fi
+          printf 'VCPKG_ROOT=%s\n' "$VCPKG_INSTALLATION_ROOT" >> "$GITHUB_ENV"
+
+      - name: Configure
+        run: >-
+          cmake --preset headless-clang-tidy --fresh
+          -DCMAKE_CXX_COMPILER=clang++
+          -DVCPKG_TARGET_TRIPLET=x64-linux
+
+      - name: Analyze Playback closure
+        run: cmake --build --preset headless-clang-tidy --target cuexis_playback
+
+  coverage:
+    name: GCC Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y ninja-build gcovr
+
+      - name: Select hosted vcpkg
+        run: |
+          if [[ -z "${VCPKG_INSTALLATION_ROOT:-}" ]]; then
+            echo "VCPKG_INSTALLATION_ROOT is not set on the hosted runner" >&2
+            exit 1
+          fi
+          printf 'VCPKG_ROOT=%s\n' "$VCPKG_INSTALLATION_ROOT" >> "$GITHUB_ENV"
+
+      - name: Configure
+        run: >-
+          cmake --preset headless-coverage --fresh
+          -DCMAKE_CXX_COMPILER=g++
+          -DVCPKG_TARGET_TRIPLET=x64-linux
+
+      - name: Build
+        run: cmake --build --preset headless-coverage --clean-first
+
+      - name: Test instrumented targets
+        run: >-
+          ctest --preset headless-coverage --no-tests=error
+          -E "^cuexis_external_consumer_"
+
+      - name: Enforce coverage baseline
+        run: >-
+          gcovr out/build/headless-coverage
+          --root .
+          --filter "engine/"
+          --exclude-unreachable-branches
+          --print-summary
+          --xml coverage.xml
+          --fail-under-line 40
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: cuexis-coverage
+          path: coverage.xml

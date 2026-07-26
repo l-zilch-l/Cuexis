@@ -1,6 +1,8 @@
 add_library(cuexis_chart STATIC)
 add_library(cuexis::chart ALIAS cuexis_chart)
 
+set_target_properties(cuexis_chart PROPERTIES EXPORT_NAME InternalChart)
+
 target_sources(cuexis_chart
     PRIVATE
         src/canonical_chart_loader.cpp

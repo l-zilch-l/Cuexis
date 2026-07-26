@@ -1,4 +1,5 @@
 #include <cuexis/assets/resource_manager.hpp>
+#include <cuexis/content/content_provider.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -87,7 +88,44 @@ auto basicDatabase(ResourceFixture& fixture) -> cuexis::assets::AssetDatabase {
     });
 }
 
+auto byteVector(std::string_view text) -> std::vector<std::byte> {
+    std::vector<std::byte> result;
+    result.reserve(text.size());
+    for (const unsigned char character : text) {
+        result.push_back(static_cast<std::byte>(character));
+    }
+    return result;
+}
+
 } // namespace
+
+TEST_CASE("ResourceManager reads logical assets only through an injected provider",
+          "[assets][resource][content]") {
+    auto database = cuexis::assets::AssetDatabase::create({
+        .roots = {{.root = {.id = "memory"},
+                   .index = {.assets = {{.id = {"mesh.memory"},
+                                         .type = cuexis::assets::AssetType::Mesh,
+                                         .source = "mesh.bin"}}}}},
+        .sourceMode = cuexis::assets::AssetSourceMode::Logical,
+    });
+    REQUIRE(database.has_value());
+    CHECK(database->defaultContentProvider() == nullptr);
+
+    auto provider = cuexis::content::MemoryContentProvider::create({{
+        .rootId = "memory",
+        .source = "mesh.bin",
+        .bytes = byteVector("memory-mesh"),
+        .revision = 42,
+    }});
+    REQUIRE(provider.has_value());
+
+    cuexis::assets::ResourceManager manager{std::move(*database), *provider};
+    auto lease = manager.loadMesh({"mesh.memory"});
+    REQUIRE(lease.has_value());
+    CHECK(lease->get()->bytes().size() == 11);
+    REQUIRE(lease->get()->blob != nullptr);
+    CHECK(lease->get()->blob->providerRevision == 42);
+}
 
 TEST_CASE("ResourceManager loads typed CPU blobs and rejects cross-manager handles",
           "[assets][resource]") {

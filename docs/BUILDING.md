@@ -1,8 +1,8 @@
 # Building Cuexis
 
-状态：阶段 1B 现行构建规范，已随 ADR 0028 和 cuexis_playback 更新；SDK 组件化与安装流程待阶段 1E 实现
+状态：阶段 1C 现行构建、安装与质量门禁规范
 
-更新日期：2026-07-21
+更新日期：2026-07-26
 
 ## 当前仓库说明
 
@@ -12,6 +12,8 @@
 
 ```text
 cuexis_core
+cuexis_filesystem
+cuexis_content
 cuexis_json_support
 cuexis_project
 cuexis_platform_sdl
@@ -29,7 +31,10 @@ cuexis_playback
 
 应用 target 为 `cuexis_player`。`app/studio/` 目录已存在但尚未接入 CMake。对应模块测试、架构扫描、Player 失败路径和 `cuexis_format_check` 由顶层 CMake 统一注册。
 
-ADR 0027 已将长期交付方向调整为 Playback SDK + 独立 Player + 独立 Studio。当前已实现基础 `cuexis_playback` 门面（`PlaybackSession::update()` 仍为 stub，不驱动行为求值）；组件化开关、`install/export` 和 `find_package(Cuexis)` 待阶段 1E 实现。相关改造与外部 consumer 门禁属于[SDK 转型方案](stage_plans/cuexis_sdk_transition_plan.md)和阶段 1E。
+ADR 0027 已将长期交付方向调整为 Playback SDK + 独立 Player + 独立 Studio。当前
+`cuexis_playback` 已通过正式 Runtime 路径驱动 Behavior，并具备无头组件开关、C++20 静态
+Playback 安装包、`add_subdirectory` 与 `find_package(Cuexis)` 外部 consumer 门禁。共享库、
+稳定 C ABI、Studio 与宿主专用 adapter 仍属于后续阶段。
 
 ## Windows/MSVC 前置条件
 
@@ -64,6 +69,21 @@ cmake --build --preset release --clean-first
 ctest --preset release --no-tests=error
 ```
 
+无 SDL/OpenGL/Player 的 Playback 构建：
+
+```powershell
+cmake --preset headless-debug --fresh
+cmake --build --preset headless-debug
+ctest --preset headless-debug --no-tests=error
+
+cmake --preset headless-release --fresh
+cmake --build --preset headless-release --clean-first
+ctest --preset headless-release --no-tests=error
+```
+
+Release 与 `headless-release` 预设强制 `CUEXIS_WARNINGS_AS_ERRORS=ON`。基础 Debug 预设保留
+`OFF`，便于日常开发先观察新工具链诊断。
+
 构建目录固定在 `out/build/<preset>`，安装或打包目录不得与源码混合。
 
 ## vcpkg
@@ -79,7 +99,10 @@ THIRD_PARTY_NOTICES.md
 
 不得把 `D:/vcpkg` 等机器路径提交到项目配置。
 
-当前 Windows/MSVC 验收固定 `x64-windows` triplet。直接依赖包括 SDL3、EnTT、GLM、nlohmann-json、json-schema-validator、spdlog、fmt、glad、Catch2 和 tl-expected；准确版本和许可证记录见根目录 `vcpkg.json` 与 `THIRD_PARTY_NOTICES.md`。运行时 DLL 由 vcpkg 的 CMake 集成复制到构建输出目录；正式安装和打包流程属于阶段 1E。
+当前 Windows/MSVC 验收固定 `x64-windows` triplet。无头基础依赖为 EnTT、GLM、
+nlohmann-json、json-schema-validator 和 tl-expected；`player` feature 增加 SDL3、glad 与
+spdlog，`tests` feature 增加 Catch2。准确版本和许可证记录见根目录 `vcpkg.json` 与
+`THIRD_PARTY_NOTICES.md`。
 
 ## 生成文件
 
@@ -125,33 +148,66 @@ Player 图形冒烟测试需要交互式桌面和支持 OpenGL 3.3 Core 的 GPU�
 找不到 cl.exe：从 Visual Studio Developer 环境运行
 找不到 vcpkg toolchain：检查 VCPKG_ROOT
 依赖版本漂移：检查 baseline 和 overlay port
-Catch2 测试未发现：确认 BUILD_TESTING 和 test preset
+Catch2 测试未发现：确认 CUEXIS_BUILD_TESTS、BUILD_TESTING 和 test preset
 OpenGL 启动失败：记录 SDL driver、GL version、vendor 和 renderer
 ```
 
-## SDK 转型后的构建门禁
+## SDK 组件与安装
 
-阶段 1E 实现后，本文件必须增加并实际验证以下入口；在对应 CMake 选项存在前不提供虚构命令。
-
-计划引入的 CMake 组件选项（来自 SDK 转型方案 §10）：
+当前选项：
 
 ```text
 CUEXIS_BUILD_PLAYER
-CUEXIS_BUILD_STUDIO
-CUEXIS_BUILD_SDL_BACKEND
-CUEXIS_BUILD_OPENGL_BACKEND
+CUEXIS_BUILD_SDL_ADAPTER
+CUEXIS_BUILD_OPENGL_ADAPTER
 CUEXIS_BUILD_TESTS
-CUEXIS_BUILD_EXAMPLES
-CUEXIS_BUILD_SHARED
+CUEXIS_BUILD_DEVELOPER_TOOLS
 ```
 
-门禁入口：
+作为顶层项目时默认构建 Player、adapter、测试和开发工具；作为 `add_subdirectory` 子项目时
+这些选项默认关闭。当前正式安装产物是 C++20 静态包，入口目标为 `Cuexis::Playback` 和
+`Cuexis::Content`：
 
-```text
-关闭 Player/Studio/SDL/OpenGL 后构建 headless Playback
-通过 add_subdirectory 的仓库外 consumer
-通过安装目录 find_package(Cuexis CONFIG REQUIRED) 的仓库外 consumer
-静态/共享库和受支持 MSVC Runtime 组合
-安装公共头依赖扫描、包版本与组件依赖检查
+```powershell
+cmake --install out/build/headless-release --prefix out/install/headless-release
 ```
+
+```cmake
+find_package(Cuexis CONFIG REQUIRED COMPONENTS Playback Content)
+target_link_libraries(my_host PRIVATE Cuexis::Playback Cuexis::Content)
+```
+
+安装树包含 `CuexisTargets.cmake`、`CuexisConfig.cmake`、精确版本兼容文件、生成的
+`cuexis/version.hpp`、许可证、第三方 notices 和实际无头依赖版权文本。CTest 中的
+`cuexis_external_consumer_add_subdirectory` 与 `cuexis_external_consumer_find_package` 会在隔离
+目录执行等价的 MemoryContentProvider 与 Playback 生命周期流程：
+
+```powershell
+ctest --preset headless-debug -R "^cuexis_external_consumer_" --output-on-failure
+```
+
+## 跨平台质量入口
+
+Linux/Clang 或 GCC 环境可使用：
+
+```bash
+cmake --preset headless-sanitize --fresh -DCMAKE_CXX_COMPILER=clang++ \
+  -DVCPKG_TARGET_TRIPLET=x64-linux
+cmake --build --preset headless-sanitize --clean-first
+ctest --preset headless-sanitize --no-tests=error
+
+cmake --preset headless-clang-tidy --fresh -DCMAKE_CXX_COMPILER=clang++ \
+  -DVCPKG_TARGET_TRIPLET=x64-linux
+cmake --build --preset headless-clang-tidy --target cuexis_playback
+
+cmake --preset headless-coverage --fresh -DCMAKE_CXX_COMPILER=g++ \
+  -DVCPKG_TARGET_TRIPLET=x64-linux
+cmake --build --preset headless-coverage --clean-first
+ctest --preset headless-coverage --no-tests=error -E "^cuexis_external_consumer_"
+```
+
+`.github/workflows/` 持续验证 Windows/MSVC、Windows/MinGW、Linux/GCC Release、
+Linux/Clang ASan+UBSan、clang-tidy 和不低于 40% 的 engine 行覆盖率。100k Transform 稀疏
+更新与 FrameSnapshot 缓冲复用是确定性结构门禁；墙钟时间只作为趋势证据，不作为跨机器
+硬阈值。
 

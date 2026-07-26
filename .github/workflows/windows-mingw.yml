@@ -77,6 +77,13 @@ jobs:
         shell: msys2 {0}
         run: ctest --preset ${{ matrix.preset }} --no-tests=error -R "^cuexis_architecture_tests$"
 
+      - name: Verify deterministic performance invariants
+        if: matrix.preset == 'release'
+        shell: msys2 {0}
+        run: >-
+          ctest --preset release --no-tests=error
+          -R "World transform cache preserves sparse work through the default object budget|PlaybackSession drives a headless owning snapshot"
+
       - name: Check formatting
         if: matrix.preset == 'debug'
         shell: msys2 {0}

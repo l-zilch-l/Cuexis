@@ -1,11 +1,16 @@
 add_library(cuexis_gameplay INTERFACE)
 add_library(cuexis::gameplay ALIAS cuexis_gameplay)
 
-target_compile_features(cuexis_gameplay INTERFACE cxx_std_20)
+set_target_properties(cuexis_gameplay PROPERTIES EXPORT_NAME InternalGameplay)
 
-target_include_directories(cuexis_gameplay
+target_sources(cuexis_gameplay
     INTERFACE
-        "${CMAKE_CURRENT_SOURCE_DIR}/include"
+        FILE_SET HEADERS
+        BASE_DIRS include
+        FILES
+            include/cuexis/gameplay/tags.hpp
 )
+
+target_compile_features(cuexis_gameplay INTERFACE cxx_std_20)
 
 target_link_libraries(cuexis_gameplay INTERFACE cuexis::core)

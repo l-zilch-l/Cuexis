@@ -1,6 +1,8 @@
 add_library(cuexis_render STATIC)
 add_library(cuexis::render ALIAS cuexis_render)
 
+set_target_properties(cuexis_render PROPERTIES EXPORT_NAME InternalRender)
+
 target_sources(cuexis_render
     PRIVATE
         src/render_scene.cpp
@@ -8,6 +10,7 @@ target_sources(cuexis_render
         FILE_SET HEADERS
         BASE_DIRS include
         FILES
+            include/cuexis/render/camera_component.hpp
             include/cuexis/render/render_backend.hpp
             include/cuexis/render/render_scene.hpp
             include/cuexis/render/renderable_component.hpp

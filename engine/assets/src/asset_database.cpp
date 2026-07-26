@@ -4,8 +4,8 @@
 
 #include <cuexis/assets/asset_database.hpp>
 
+#include <cuexis/content/content_provider.hpp>
 #include <cuexis/core/error.hpp>
-#include <cuexis/filesystem/secure_file.hpp>
 
 #include <algorithm>
 #include <cctype>
@@ -188,6 +188,7 @@ struct AssetDatabase::Data final {
     std::vector<std::filesystem::path> canonicalRoots;
     std::vector<StoredRecord> records;
     std::map<std::string, std::size_t, std::less<>> byId;
+    std::shared_ptr<content::IContentProvider> defaultContentProvider;
 };
 
 std::string_view assetTypeName(AssetType type) noexcept {
@@ -254,15 +255,19 @@ auto AssetDatabase::build(const AssetDatabaseInput& input, const AssetDatabaseLi
             valid = false;
         }
 
-        std::error_code error;
-        const auto canonicalRoot = std::filesystem::weakly_canonical(rootInput.root.path, error);
-        if (error || canonicalRoot.empty() ||
-            !std::filesystem::is_directory(canonicalRoot, error) || error) {
-            addError(diagnostics, "assets.database.root_unavailable",
-                     "Asset root does not name an accessible directory", fieldPath + ".root.path");
-            valid = false;
+        std::filesystem::path canonicalRoot;
+        if (input.sourceMode == AssetSourceMode::Filesystem) {
+            std::error_code error;
+            canonicalRoot = std::filesystem::weakly_canonical(rootInput.root.path, error);
+            if (error || canonicalRoot.empty() ||
+                !std::filesystem::is_directory(canonicalRoot, error) || error) {
+                addError(diagnostics, "assets.database.root_unavailable",
+                         "Asset root does not name an accessible directory",
+                         fieldPath + ".root.path");
+                valid = false;
+            }
         }
-        if (valid) {
+        if (valid && input.sourceMode == AssetSourceMode::Filesystem) {
             for (std::size_t previous = 0; previous < data->canonicalRoots.size(); ++previous) {
                 if (data->canonicalRoots[previous].empty()) {
                     continue;
@@ -305,7 +310,7 @@ auto AssetDatabase::build(const AssetDatabaseInput& input, const AssetDatabaseLi
     std::vector<PendingRecord> pending;
     pending.reserve(std::min(totalAssets, limits.maxAssets));
     std::map<std::string, std::size_t, std::less<>> byId;
-    std::map<std::string, std::string, std::less<>> byPhysicalSource;
+    std::map<std::string, std::string, std::less<>> byResolvedSource;
 
     for (std::size_t rootIndex = 0; rootIndex < input.roots.size(); ++rootIndex) {
         const auto& rootInput = input.roots[rootIndex];
@@ -367,7 +372,7 @@ auto AssetDatabase::build(const AssetDatabaseInput& input, const AssetDatabaseLi
             }
 
             std::filesystem::path canonicalSource;
-            if (valid) {
+            if (valid && input.sourceMode == AssetSourceMode::Filesystem) {
                 std::error_code error;
                 const auto joined =
                     data->canonicalRoots[rootIndex] / std::filesystem::path{record.source};
@@ -384,17 +389,19 @@ auto AssetDatabase::build(const AssetDatabaseInput& input, const AssetDatabaseLi
                 }
             }
             if (valid) {
-                const auto physicalKey = normalizedPhysicalKey(canonicalSource);
-                const auto existingSource = byPhysicalSource.find(physicalKey);
-                if (existingSource != byPhysicalSource.end()) {
+                const auto sourceKey = input.sourceMode == AssetSourceMode::Filesystem
+                                           ? normalizedPhysicalKey(canonicalSource)
+                                           : rootInput.root.id + "\n" + record.source;
+                const auto existingSource = byResolvedSource.find(sourceKey);
+                if (existingSource != byResolvedSource.end()) {
                     auto diagnostic = core::Diagnostic{
                         core::DiagnosticSeverity::Error, "assets.database.source_duplicate",
-                        "Two AssetIds resolve to the same physical source", fieldPath + ".source"};
+                        "Two AssetIds resolve to the same content source", fieldPath + ".source"};
                     diagnostic.withContext("otherAssetId", existingSource->second);
                     diagnostics.add(std::move(diagnostic));
                     valid = false;
                 } else {
-                    byPhysicalSource.emplace(physicalKey, record.id.value);
+                    byResolvedSource.emplace(sourceKey, record.id.value);
                 }
             }
             if (valid) {
@@ -458,6 +465,21 @@ auto AssetDatabase::build(const AssetDatabaseInput& input, const AssetDatabaseLi
     for (std::size_t index = 0; index < pending.size(); ++index) {
         if (colors[index] == 0) {
             visit(visit, index);
+        }
+    }
+
+    if (!diagnostics.hasErrors() && input.sourceMode == AssetSourceMode::Filesystem) {
+        std::vector<content::FilesystemContentRoot> roots;
+        roots.reserve(data->roots.size());
+        for (const auto& root : data->roots) {
+            roots.push_back(content::FilesystemContentRoot{.id = root.id, .path = root.path});
+        }
+        auto provider = content::FilesystemContentProvider::create(std::move(roots));
+        if (!provider) {
+            addError(diagnostics, "assets.database.content_provider_failed",
+                     "Filesystem content provider could not be created", "$.roots");
+        } else {
+            data->defaultContentProvider = std::move(*provider);
         }
     }
 
@@ -583,21 +605,27 @@ auto AssetDatabase::readBlob(const AssetId& id, const AssetBlobLimits& limits) c
                 .withContext("assetId", id.value));
     }
     const auto& stored = data_->records[found->second];
-
-    const auto unavailable = std::string{"assets.blob.source_unavailable"};
-    auto contents = filesystem::readBoundedFile(
-        stored.canonicalSource, {.root = data_->canonicalRoots[stored.rootIndex],
-                                 .maxBytes = limits.maxBytes,
-                                 .errors = {.rootUnavailable = unavailable,
-                                            .rootChanged = unavailable,
-                                            .openFailed = unavailable,
-                                            .outsideRoot = unavailable,
-                                            .notRegular = unavailable,
-                                            .tooLarge = "assets.blob.too_large",
-                                            .readFailed = "assets.blob.read_failed",
-                                            .changedDuringRead = "assets.blob.read_failed"}});
+    if (!data_->defaultContentProvider) {
+        return core::unexpected(core::Error{"assets.blob.provider_missing",
+                                            "AssetDatabase has no default content provider"}
+                                    .withContext("assetId", id.value));
+    }
+    auto contents =
+        data_->defaultContentProvider->readBlob({.rootId = data_->roots[stored.rootIndex].id,
+                                                 .source = stored.record.source,
+                                                 .maxBytes = limits.maxBytes});
     if (!contents) {
-        auto error = std::move(contents.error());
+        const auto providerCode = std::string{contents.error().code()};
+        auto code = std::string{"assets.blob.source_unavailable"};
+        if (providerCode == "content.filesystem.too_large" ||
+            providerCode == "content.provider.too_large") {
+            code = "assets.blob.too_large";
+        } else if (providerCode == "content.filesystem.read_failed" ||
+                   providerCode == "content.filesystem.changed_during_read") {
+            code = "assets.blob.read_failed";
+        }
+        auto error = core::Error{std::move(code), "Asset content could not be read"}.withCause(
+            std::move(contents.error()));
         error.withContext("assetId", id.value)
             .withContext("rootId", data_->roots[stored.rootIndex].id)
             .withContext("source", stored.record.source);
@@ -607,8 +635,14 @@ auto AssetDatabase::readBlob(const AssetId& id, const AssetBlobLimits& limits) c
     AssetBlob blob;
     blob.rootId = data_->roots[stored.rootIndex].id;
     blob.source = stored.record.source;
+    blob.providerRevision = contents->revision;
     blob.bytes = std::move(contents->bytes);
     return blob;
+}
+
+auto AssetDatabase::defaultContentProvider() const noexcept
+    -> std::shared_ptr<content::IContentProvider> {
+    return data_ ? data_->defaultContentProvider : nullptr;
 }
 
 const std::vector<AssetRoot>& AssetDatabase::roots() const noexcept {

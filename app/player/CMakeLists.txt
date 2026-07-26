@@ -3,7 +3,11 @@ add_executable(
     src/main.cpp
     src/player_app.cpp
     src/player_app.hpp
+    src/player_log.cpp
+    src/player_log.hpp
 )
+
+find_package(spdlog CONFIG REQUIRED)
 
 target_compile_features(cuexis_player PRIVATE cxx_std_20)
 
@@ -18,6 +22,7 @@ target_link_libraries(
         cuexis::project
         cuexis::render
         cuexis::render_opengl
+        spdlog::spdlog
 )
 
 file(GLOB_RECURSE CUEXIS_STAGE1C_PROJECT_FILES CONFIGURE_DEPENDS

@@ -9,6 +9,9 @@
 
 namespace cuexis::player {
 
-[[nodiscard]] auto run(int argumentCount, char** arguments) -> core::Result<void>;
+class PlayerLogger;
+
+[[nodiscard]] auto run(int argumentCount, char** arguments, PlayerLogger& logger)
+    -> core::Result<void>;
 
 } // namespace cuexis::player

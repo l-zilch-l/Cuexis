@@ -54,6 +54,11 @@ cuexis_playback 与 cuexis_judgement 的安装公共头使用更严格的封装�
 
 官方宿主适配器可以依赖对应引擎 SDK，但该依赖不得进入 Playback 核心。无法随 Cuexis 再分发的宿主 SDK 必须采用由消费者提供的查找方式，并在构建和许可证文档中明确说明。
 
+当前 C++20 静态 Playback 包安装到 `${CMAKE_INSTALL_DATADIR}/Cuexis`，并把实际无头链接
+闭包的 vcpkg copyright 文件安装到 `licenses/`。包配置只查找 EnTT、GLM、nlohmann-json、
+JSON Schema Validator 和 tl-expected，不得查找 SDL3、glad、spdlog 或 Catch2。Player 或
+其他可选组件形成正式分发物时，必须另行把其新增依赖许可证加入安装清单和 consumer 门禁。
+
 ## 例外流程
 
 引入大型依赖或具有传播性许可证的依赖时必须写 ADR，说明不用成熟库、自研以及其他候选的总成本。项目免费不构成忽略许可证义务的理由。

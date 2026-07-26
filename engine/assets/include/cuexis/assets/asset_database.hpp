@@ -6,6 +6,7 @@
 //  v1 类型只包含 Mesh、Material、Texture 的 CPU blob
 
 #include <cuexis/assets/asset_id.hpp>
+#include <cuexis/content/content_provider.hpp>
 #include <cuexis/core/diagnostic.hpp>
 #include <cuexis/core/result.hpp>
 
@@ -67,8 +68,17 @@ struct AssetRootIndex final {
     AssetIndex index;
 };
 
+enum class AssetSourceMode {
+    Filesystem,
+    Logical,
+};
+
 struct AssetDatabaseInput final {
     std::vector<AssetRootIndex> roots;
+    // Filesystem mode preserves the stage-1B physical validation and supplies a default
+    // FilesystemContentProvider. Logical mode validates only root/source identities and requires
+    // callers to inject a provider into ResourceManager or PlaybackSession.
+    AssetSourceMode sourceMode{AssetSourceMode::Filesystem};
 };
 
 struct AssetDatabaseLimits final {
@@ -90,6 +100,7 @@ struct AssetBlob final {
     std::vector<std::byte> bytes;
     std::string rootId;
     std::string source;
+    std::uint64_t providerRevision{};
 
     [[nodiscard]] std::span<const std::byte> span() const noexcept {
         return bytes;
@@ -128,6 +139,9 @@ class AssetDatabase final {
     // used to discover AssetIds.  The returned bytes are owned by the caller.
     [[nodiscard]] auto readBlob(const AssetId& id, const AssetBlobLimits& limits = {}) const
         -> core::Result<AssetBlob>;
+
+    [[nodiscard]] auto defaultContentProvider() const noexcept
+        -> std::shared_ptr<content::IContentProvider>;
 
     [[nodiscard]] const std::vector<AssetRoot>& roots() const noexcept;
 

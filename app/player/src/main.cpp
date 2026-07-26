@@ -3,9 +3,9 @@
 //  异常在模块边界捕获，转换为结构化错误日志后返回 EXIT_FAILURE
 
 #include "player_app.hpp"
+#include "player_log.hpp"
 
 #include <cuexis/core/error.hpp>
-#include <cuexis/core/log.hpp>
 
 #include <cstdlib>
 #include <exception>
@@ -13,17 +13,6 @@
 #include <string>
 
 namespace {
-
-class LogSession final {
-  public:
-    LogSession() = default;
-    ~LogSession() {
-        cuexis::core::log::shutdown();
-    }
-
-    LogSession(const LogSession&) = delete;
-    auto operator=(const LogSession&) -> LogSession& = delete;
-};
 
 void appendError(std::string& output, const cuexis::core::Error& error) {
     output.append(error.code());
@@ -53,27 +42,26 @@ void appendError(std::string& output, const cuexis::core::Error& error) {
 } // namespace
 
 int main(int argumentCount, char** arguments) {
-    auto logResult = cuexis::core::log::init("Cuexis Player");
-    if (!logResult) {
-        std::cerr << describeError(logResult.error()) << '\n';
+    auto logger = cuexis::player::PlayerLogger::create("Cuexis Player");
+    if (!logger) {
+        std::cerr << describeError(logger.error()) << '\n';
         return EXIT_FAILURE;
     }
-    const LogSession logSession;
 
     try {
-        auto result = cuexis::player::run(argumentCount, arguments);
+        auto result = cuexis::player::run(argumentCount, arguments, **logger);
         if (!result) {
-            cuexis::core::log::error("player.failure", describeError(result.error()));
+            (*logger)->error("player.failure", describeError(result.error()));
             return EXIT_FAILURE;
         }
         return EXIT_SUCCESS;
     } catch (const std::exception& exception) {
-        cuexis::core::log::error("player.exception",
-                                 std::string{"player.exception.std: "} + exception.what());
+        (*logger)->error("player.exception",
+                         std::string{"player.exception.std: "} + exception.what());
         return EXIT_FAILURE;
     } catch (...) {
-        cuexis::core::log::error("player.exception",
-                                 "player.exception.unknown: Unhandled non-standard exception");
+        (*logger)->error("player.exception",
+                         "player.exception.unknown: Unhandled non-standard exception");
         return EXIT_FAILURE;
     }
 }

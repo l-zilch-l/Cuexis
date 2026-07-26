@@ -6,6 +6,7 @@
 //  业务层不得直接调用 OpenGL；RenderScene 不暴露后端类型
 //  Debug Pipeline: 内联 GLSL 330 顶点/片段着色器，支持 DebugLine 渲染
 
+#include <cuexis/core/log_sink.hpp>
 #include <cuexis/core/result.hpp>
 #include <cuexis/core/thread_checker.hpp>
 #include <cuexis/platform_sdl/sdl_runtime.hpp>
@@ -13,6 +14,7 @@
 #include <cuexis/render/render_backend.hpp>
 
 #include <cstdint>
+#include <memory>
 #include <optional>
 #include <string>
 #include <utility>
@@ -30,6 +32,7 @@ struct OpenGlConfig final {
 #endif
     };
     bool vsync{true};
+    std::shared_ptr<const core::LogSink> logSink;
 };
 
 struct OpenGlInfo final {
@@ -88,13 +91,15 @@ class OpenGlBackend final : public render::RenderBackend {
   private:
     OpenGlBackend(platform_sdl::SdlWindowLease window, void* context, OpenGlInfo info,
                   std::uint32_t debugProgram, std::uint32_t debugVertexArray,
-                  std::uint32_t debugVertexBuffer, int viewProjectionLocation) noexcept;
+                  std::uint32_t debugVertexBuffer, int viewProjectionLocation,
+                  std::shared_ptr<const core::LogSink> logSink) noexcept;
 
     void release() noexcept;
 
     platform_sdl::SdlWindowLease window_{};
     void* context_{};
     OpenGlInfo info_{};
+    std::shared_ptr<const core::LogSink> logSink_;
     std::uint32_t debugProgram_{};
     std::uint32_t debugVertexArray_{};
     std::uint32_t debugVertexBuffer_{};

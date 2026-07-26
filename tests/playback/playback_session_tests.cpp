@@ -1,6 +1,7 @@
 #include <cuexis/playback/playback_session.hpp>
 
 #include <cuexis/assets/asset_database.hpp>
+#include <cuexis/content/content_provider.hpp>
 
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -215,8 +216,10 @@ TEST_CASE("PlaybackSession keeps the Stage 1B Renderable resource closure alive"
                                    .source = "textures/white.texture.bin"},
                               }}}}});
     REQUIRE(database.has_value());
+    auto provider = database->defaultContentProvider();
+    REQUIRE(provider != nullptr);
 
-    cuexis::playback::PlaybackSession session{std::move(*database)};
+    cuexis::playback::PlaybackSession session{std::move(*database), std::move(provider)};
     REQUIRE(
         session.loadChart(readFile(projectRoot / "charts" / "stage1b_example.cuexis.chart.json"))
             .has_value());

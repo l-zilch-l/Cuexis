@@ -4,6 +4,8 @@ find_package(nlohmann_json_schema_validator CONFIG REQUIRED)
 add_library(cuexis_json_support STATIC)
 add_library(cuexis::json_support ALIAS cuexis_json_support)
 
+set_target_properties(cuexis_json_support PROPERTIES EXPORT_NAME InternalJsonSupport)
+
 target_sources(cuexis_json_support
     PRIVATE
         src/json_conversion.hpp

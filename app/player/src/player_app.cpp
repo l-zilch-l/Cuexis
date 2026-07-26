@@ -5,11 +5,11 @@
 //  NullClock/NullInput/NullJudge 为阶段 1A/1B 占位
 
 #include "player_app.hpp"
+#include "player_log.hpp"
 
 #include <cuexis/assets/asset_database.hpp>
 #include <cuexis/core/diagnostic.hpp>
 #include <cuexis/core/error.hpp>
-#include <cuexis/core/log.hpp>
 #include <cuexis/core/math.hpp>
 #include <cuexis/filesystem/secure_file.hpp>
 #include <cuexis/platform_sdl/sdl_runtime.hpp>
@@ -180,19 +180,20 @@ class PlayerClock final {
     return output.str();
 }
 
-void logDiagnostics(std::string_view category, core::Diagnostics& diagnostics) {
+void logDiagnostics(PlayerLogger& logger, std::string_view category,
+                    core::Diagnostics& diagnostics) {
     diagnostics.sortDeterministically();
     for (const auto& diagnostic : diagnostics.items()) {
         const auto description = describeDiagnostic(diagnostic);
         switch (diagnostic.severity()) {
         case core::DiagnosticSeverity::Info:
-            core::log::info(category, description);
+            logger.info(category, description);
             break;
         case core::DiagnosticSeverity::Warning:
-            core::log::warn(category, description);
+            logger.warn(category, description);
             break;
         case core::DiagnosticSeverity::Error:
-            core::log::error(category, description);
+            logger.error(category, description);
             break;
         }
     }
@@ -223,7 +224,8 @@ void logDiagnostics(std::string_view category, core::Diagnostics& diagnostics) {
     return assets::AssetType::Mesh;
 }
 
-[[nodiscard]] auto buildAssetDatabase(const project::PreparedProject& preparedProject)
+[[nodiscard]] auto buildAssetDatabase(PlayerLogger& logger,
+                                      const project::PreparedProject& preparedProject)
     -> core::Result<assets::AssetDatabase> {
     assets::AssetDatabaseInput input;
     input.roots.reserve(preparedProject.assetRoots.size());
@@ -238,7 +240,7 @@ void logDiagnostics(std::string_view category, core::Diagnostics& diagnostics) {
         }
 
         auto parsed = project::AssetIndexReader::read(*text, limits);
-        logDiagnostics("player.asset_index", parsed.diagnostics);
+        logDiagnostics(logger, "player.asset_index", parsed.diagnostics);
         if (!parsed.hasValue()) {
             return core::unexpected(diagnosticsError("player.asset_index.load_failed",
                                                      "Asset Index loading produced errors",
@@ -267,7 +269,7 @@ void logDiagnostics(std::string_view category, core::Diagnostics& diagnostics) {
     }
 
     auto built = assets::AssetDatabase::build(input);
-    logDiagnostics("player.asset_database", built.diagnostics);
+    logDiagnostics(logger, "player.asset_database", built.diagnostics);
     if (!built.hasValue()) {
         return core::unexpected(diagnosticsError("player.asset_database.build_failed",
                                                  "AssetDatabase construction produced errors",
@@ -324,7 +326,7 @@ void logDiagnostics(std::string_view category, core::Diagnostics& diagnostics) {
 
 } // namespace
 
-auto run(int argumentCount, char** arguments) -> core::Result<void> {
+auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Result<void> {
     auto optionsResult = parseOptions(argumentCount, arguments);
     if (!optionsResult) {
         return core::unexpected(std::move(optionsResult.error()));
@@ -339,8 +341,8 @@ auto run(int argumentCount, char** arguments) -> core::Result<void> {
         options.projectPath = std::move(pathResult).value();
     }
 
-    core::log::info("player.startup",
-                    std::string{"Starting Cuexis Player "} + std::string{version::display});
+    logger.info("player.startup",
+                std::string{"Starting Cuexis Player "} + std::string{version::display});
 
     std::optional<project::PreparedProject> preparedProject;
     std::optional<assets::AssetDatabase> assetDatabase;
@@ -348,25 +350,24 @@ auto run(int argumentCount, char** arguments) -> core::Result<void> {
     std::filesystem::path chartRoot;
     if (options.projectPath.has_value()) {
         auto loadedProject = project::ProjectLoader::load(*options.projectPath);
-        logDiagnostics("player.project", loadedProject.diagnostics);
+        logDiagnostics(logger, "player.project", loadedProject.diagnostics);
         if (!loadedProject.hasValue()) {
             return core::unexpected(diagnosticsError("player.project.load_failed",
                                                      "ProjectConfig loading produced errors",
                                                      loadedProject.diagnostics));
         }
         preparedProject = std::move(*loadedProject.project);
-        core::log::info("player.project", std::string{"Format: "} + preparedProject->config.format +
-                                              " v" +
-                                              std::to_string(preparedProject->config.version));
-        core::log::info("player.project", std::string{"Asset roots: "} +
-                                              std::to_string(preparedProject->assetRoots.size()));
+        logger.info("player.project", std::string{"Format: "} + preparedProject->config.format +
+                                          " v" + std::to_string(preparedProject->config.version));
+        logger.info("player.project", std::string{"Asset roots: "} +
+                                          std::to_string(preparedProject->assetRoots.size()));
 
-        auto databaseResult = buildAssetDatabase(*preparedProject);
+        auto databaseResult = buildAssetDatabase(logger, *preparedProject);
         if (!databaseResult) {
             return core::unexpected(std::move(databaseResult.error()));
         }
-        core::log::info("player.asset_database",
-                        std::string{"Indexed assets: "} + std::to_string(databaseResult->size()));
+        logger.info("player.asset_database",
+                    std::string{"Indexed assets: "} + std::to_string(databaseResult->size()));
         assetDatabase = std::move(*databaseResult);
         chartPath = preparedProject->chartFile;
         const auto* root = preparedProject->findAssetRoot(preparedProject->config.entry.chart.root);
@@ -404,10 +405,10 @@ auto run(int argumentCount, char** arguments) -> core::Result<void> {
         return core::unexpected(
             core::Error{"player.chart.empty", "The committed chart contains no objects"});
     }
-    core::log::info("player.playback",
-                    std::string{"Prepared objects: "} + std::to_string(chartInfo->objectCount) +
-                        ", behaviors: " + std::to_string(chartInfo->behaviorCount) +
-                        ", resources: " + std::to_string(chartInfo->resourceCount));
+    logger.info("player.playback", std::string{"Prepared objects: "} +
+                                       std::to_string(chartInfo->objectCount) +
+                                       ", behaviors: " + std::to_string(chartInfo->behaviorCount) +
+                                       ", resources: " + std::to_string(chartInfo->resourceCount));
 
     auto runtimeResult = platform_sdl::SdlRuntime::create();
     if (!runtimeResult) {
@@ -417,11 +418,12 @@ auto run(int argumentCount, char** arguments) -> core::Result<void> {
     auto sdlRuntime = std::move(runtimeResult).value();
 
     const auto videoDriver = sdlRuntime.videoDriver();
-    core::log::info("player.sdl",
-                    std::string{"Video driver: "} +
-                        (videoDriver.empty() ? std::string{"unknown"} : std::string{videoDriver}));
+    logger.info("player.sdl",
+                std::string{"Video driver: "} +
+                    (videoDriver.empty() ? std::string{"unknown"} : std::string{videoDriver}));
 
-    const render_opengl::OpenGlConfig openGlConfig{};
+    auto openGlConfig = render_opengl::OpenGlConfig{};
+    openGlConfig.logSink = logger.sink();
     auto configureResult = render_opengl::configureOpenGlContext(sdlRuntime, openGlConfig);
     if (!configureResult) {
         return core::unexpected(
@@ -452,9 +454,9 @@ auto run(int argumentCount, char** arguments) -> core::Result<void> {
     auto backend = std::move(backendResult).value();
 
     const auto& openGlInfo = backend.info();
-    core::log::info("player.opengl", std::string{"Version: "} + openGlInfo.version);
-    core::log::info("player.opengl", std::string{"Vendor: "} + openGlInfo.vendor);
-    core::log::info("player.opengl", std::string{"Renderer: "} + openGlInfo.renderer);
+    logger.info("player.opengl", std::string{"Version: "} + openGlInfo.version);
+    logger.info("player.opengl", std::string{"Vendor: "} + openGlInfo.vendor);
+    logger.info("player.opengl", std::string{"Renderer: "} + openGlInfo.renderer);
 
     PlayerClock clock;
     const NullInputSource inputSource;
@@ -498,9 +500,9 @@ auto run(int argumentCount, char** arguments) -> core::Result<void> {
                 "player.render_scene.empty", "The frame snapshot did not produce debug geometry"});
         }
         if (renderedFrames == 0) {
-            core::log::info("player.snapshot",
-                            std::string{"Objects: "} + std::to_string(snapshot.objects.size()) +
-                                ", debug commands: " + std::to_string(scene.size()));
+            logger.info("player.snapshot", std::string{"Objects: "} +
+                                               std::to_string(snapshot.objects.size()) +
+                                               ", debug commands: " + std::to_string(scene.size()));
         }
 
         const render::RenderFrame renderOutput{
@@ -532,8 +534,8 @@ auto run(int argumentCount, char** arguments) -> core::Result<void> {
                 .withContext("rendered_frames", std::to_string(renderedFrames)));
     }
     if (options.smokeTest) {
-        core::log::info("player.smoke_test",
-                        std::string{"Completed frames: "} + std::to_string(renderedFrames));
+        logger.info("player.smoke_test",
+                    std::string{"Completed frames: "} + std::to_string(renderedFrames));
     }
 
     if (auto result = backend.close(); !result) {

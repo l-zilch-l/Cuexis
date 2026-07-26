@@ -9,6 +9,7 @@
 
 #include <cuexis/assets/asset_database.hpp>
 #include <cuexis/assets/resource_handle.hpp>
+#include <cuexis/content/content_provider.hpp>
 #include <cuexis/core/diagnostic.hpp>
 #include <cuexis/core/error.hpp>
 #include <cuexis/core/result.hpp>
@@ -170,6 +171,8 @@ class ResourceScope;
 class ResourceManager final {
   public:
     explicit ResourceManager(AssetDatabase database, ResourceManagerLimits limits = {});
+    ResourceManager(AssetDatabase database, std::shared_ptr<content::IContentProvider> provider,
+                    ResourceManagerLimits limits = {});
     ~ResourceManager();
 
     ResourceManager(const ResourceManager&) = delete;

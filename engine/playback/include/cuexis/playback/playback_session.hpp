@@ -20,6 +20,10 @@ namespace cuexis::assets {
 class AssetDatabase;
 }
 
+namespace cuexis::content {
+class IContentProvider;
+}
+
 namespace cuexis::playback {
 
 struct RuntimeFrame final {
@@ -86,6 +90,8 @@ class PlaybackSession final {
   public:
     PlaybackSession() noexcept;
     explicit PlaybackSession(assets::AssetDatabase database);
+    PlaybackSession(assets::AssetDatabase database,
+                    std::shared_ptr<content::IContentProvider> contentProvider);
     ~PlaybackSession();
 
     PlaybackSession(const PlaybackSession&) = delete;

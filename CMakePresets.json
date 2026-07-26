@@ -30,7 +30,59 @@
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
+        "CUEXIS_WARNINGS_AS_ERRORS": "ON",
         "CUEXIS_VERSION_SUFFIX": ""
+      }
+    },
+    {
+      "name": "headless-debug",
+      "displayName": "Headless Debug",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CUEXIS_VERSION_SUFFIX": "dev",
+        "CUEXIS_BUILD_PLAYER": "OFF",
+        "CUEXIS_BUILD_SDL_ADAPTER": "OFF",
+        "CUEXIS_BUILD_OPENGL_ADAPTER": "OFF",
+        "CUEXIS_BUILD_DEVELOPER_TOOLS": "OFF",
+        "VCPKG_MANIFEST_NO_DEFAULT_FEATURES": "ON",
+        "VCPKG_MANIFEST_FEATURES": "tests"
+      }
+    },
+    {
+      "name": "headless-release",
+      "displayName": "Headless Release",
+      "inherits": "headless-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CUEXIS_VERSION_SUFFIX": "",
+        "CUEXIS_WARNINGS_AS_ERRORS": "ON"
+      }
+    },
+    {
+      "name": "headless-sanitize",
+      "displayName": "Headless ASan + UBSan",
+      "inherits": "headless-debug",
+      "cacheVariables": {
+        "CUEXIS_ENABLE_SANITIZERS": "ON",
+        "CUEXIS_WARNINGS_AS_ERRORS": "ON"
+      }
+    },
+    {
+      "name": "headless-clang-tidy",
+      "displayName": "Headless clang-tidy",
+      "inherits": "headless-debug",
+      "cacheVariables": {
+        "CUEXIS_ENABLE_CLANG_TIDY": "ON",
+        "CUEXIS_WARNINGS_AS_ERRORS": "ON"
+      }
+    },
+    {
+      "name": "headless-coverage",
+      "displayName": "Headless Coverage",
+      "inherits": "headless-debug",
+      "cacheVariables": {
+        "CUEXIS_ENABLE_COVERAGE": "ON"
       }
     }
   ],
@@ -42,6 +94,26 @@
     {
       "name": "release",
       "configurePreset": "release"
+    },
+    {
+      "name": "headless-debug",
+      "configurePreset": "headless-debug"
+    },
+    {
+      "name": "headless-release",
+      "configurePreset": "headless-release"
+    },
+    {
+      "name": "headless-sanitize",
+      "configurePreset": "headless-sanitize"
+    },
+    {
+      "name": "headless-clang-tidy",
+      "configurePreset": "headless-clang-tidy"
+    },
+    {
+      "name": "headless-coverage",
+      "configurePreset": "headless-coverage"
     }
   ],
   "testPresets": [
@@ -58,6 +130,46 @@
     {
       "name": "release",
       "configurePreset": "release",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "headless-debug",
+      "configurePreset": "headless-debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "headless-release",
+      "configurePreset": "headless-release",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "headless-sanitize",
+      "configurePreset": "headless-sanitize",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "headless-coverage",
+      "configurePreset": "headless-coverage",
       "output": {
         "outputOnFailure": true
       },

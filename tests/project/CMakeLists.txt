@@ -5,7 +5,7 @@ add_executable(cuexis_project_tests
 
 target_compile_definitions(cuexis_project_tests
     PRIVATE
-        CUEXIS_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+        CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
 )
 
 target_link_libraries(cuexis_project_tests

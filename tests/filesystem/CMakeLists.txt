@@ -10,7 +10,7 @@ target_link_libraries(cuexis_filesystem_tests
 
 target_include_directories(cuexis_filesystem_tests
     PRIVATE
-        "${CMAKE_SOURCE_DIR}/engine/filesystem/src"
+        "${PROJECT_SOURCE_DIR}/engine/filesystem/src"
 )
 
 include(Catch)

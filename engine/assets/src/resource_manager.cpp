@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <exception>
 #include <limits>
 #include <map>
 #include <mutex>
@@ -93,9 +94,11 @@ struct ResourceLeaseControl final {
 };
 
 struct ResourceManagerState final : std::enable_shared_from_this<ResourceManagerState> {
-    explicit ResourceManagerState(AssetDatabase assetDatabase, ResourceManagerLimits resourceLimits)
-        : database(std::move(assetDatabase)), limits(resourceLimits), token(allocateToken()),
-          ownerThread(std::this_thread::get_id()) {
+    explicit ResourceManagerState(AssetDatabase assetDatabase,
+                                  std::shared_ptr<content::IContentProvider> contentProvider,
+                                  ResourceManagerLimits resourceLimits)
+        : database(std::move(assetDatabase)), provider(std::move(contentProvider)),
+          limits(resourceLimits), token(allocateToken()), ownerThread(std::this_thread::get_id()) {
         initializeFallback<MeshTag>();
         initializeFallback<MaterialTag>();
         initializeFallback<TextureTag>();
@@ -214,19 +217,52 @@ struct ResourceManagerState final : std::enable_shared_from_this<ResourceManager
             }
         }
 
-        auto blob = database.readBlob(id, AssetBlobLimits{limits.maxBlobBytes});
-        if (!blob) {
+        if (!provider) {
             std::scoped_lock lock{mutex};
             auto& slot = pool<Tag>().slots[index];
             slot.state = ResourceState::Failed;
             slot.resource.reset();
+            return core::unexpected(core::Error{"assets.resource.provider_missing",
+                                                "ResourceManager has no content provider"}
+                                        .withContext("assetId", id.value));
+        }
+
+        const auto rootId = database.rootIdOf(id);
+        auto providerBlob = [&]() -> core::Result<content::ContentBlob> {
+            try {
+                return provider->readBlob(
+                    {.rootId = rootId, .source = record->source, .maxBytes = limits.maxBlobBytes});
+            } catch (const std::exception& exception) {
+                return core::unexpected(core::Error{"assets.resource.provider_exception",
+                                                    "Content provider threw an exception"}
+                                            .withContext("exception", exception.what()));
+            } catch (...) {
+                return core::unexpected(core::Error{"assets.resource.provider_exception",
+                                                    "Content provider threw an exception"});
+            }
+        }();
+        if (!providerBlob || providerBlob->bytes.size() > limits.maxBlobBytes) {
+            std::scoped_lock lock{mutex};
+            auto& slot = pool<Tag>().slots[index];
+            slot.state = ResourceState::Failed;
+            slot.resource.reset();
+            auto cause = providerBlob
+                             ? core::Error{"assets.resource.provider_too_large",
+                                           "Content provider exceeded the resource byte limit"}
+                             : std::move(providerBlob.error());
             return core::unexpected(
                 core::Error{"assets.resource.load_failed", "CPU resource blob could not be loaded"}
                     .withContext("assetId", id.value)
-                    .withCause(std::move(blob.error())));
+                    .withContext("rootId", std::string{rootId})
+                    .withContext("source", record->source)
+                    .withCause(std::move(cause)));
         }
 
-        auto sharedBlob = std::make_shared<AssetBlob>(std::move(*blob));
+        auto sharedBlob = std::make_shared<AssetBlob>();
+        sharedBlob->rootId = std::string{rootId};
+        sharedBlob->source = record->source;
+        sharedBlob->providerRevision = providerBlob->revision;
+        sharedBlob->bytes = std::move(providerBlob->bytes);
         auto resource = std::make_shared<CpuResource<Tag>>(CpuResource<Tag>{id, sharedBlob});
         std::scoped_lock lock{mutex};
         auto& slot = pool<Tag>().slots[index];
@@ -405,6 +441,7 @@ struct ResourceManagerState final : std::enable_shared_from_this<ResourceManager
     }
 
     AssetDatabase database;
+    std::shared_ptr<content::IContentProvider> provider;
     ResourceManagerLimits limits;
     std::uint64_t token{};
     std::thread::id ownerThread;
@@ -496,7 +533,13 @@ auto handleFromEntry(AssetType type,
 } // namespace
 
 ResourceManager::ResourceManager(AssetDatabase database, ResourceManagerLimits limits)
-    : state_(std::make_shared<detail::ResourceManagerState>(std::move(database), limits)) {}
+    : ResourceManager(database, database.defaultContentProvider(), limits) {}
+
+ResourceManager::ResourceManager(AssetDatabase database,
+                                 std::shared_ptr<content::IContentProvider> provider,
+                                 ResourceManagerLimits limits)
+    : state_(std::make_shared<detail::ResourceManagerState>(std::move(database),
+                                                            std::move(provider), limits)) {}
 
 ResourceManager::~ResourceManager() = default;
 

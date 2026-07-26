@@ -31,10 +31,9 @@ class RationalBeat final {
     [[nodiscard]] auto toDouble() const noexcept -> double;
     [[nodiscard]] auto toString() const -> std::string;
 
-    [[nodiscard]] friend constexpr auto operator==(const RationalBeat&,
-                                                   const RationalBeat&) noexcept -> bool = default;
-    [[nodiscard]] friend auto operator<=>(const RationalBeat& left,
-                                          const RationalBeat& right) noexcept
+    friend constexpr auto operator==(const RationalBeat&, const RationalBeat&) noexcept
+        -> bool = default;
+    friend auto operator<=>(const RationalBeat& left, const RationalBeat& right) noexcept
         -> std::strong_ordering;
 
   private:
