@@ -699,10 +699,13 @@ auto SimpleChartImporter::import(std::string_view jsonText, const ChartLimits& l
         const auto bpmReader = timingReader->requiredField("bpm");
         const auto offset = offsetReader ? offsetReader->readNumber() : std::nullopt;
         const auto bpm = bpmReader ? bpmReader->readNumber() : std::nullopt;
-        if (offset && bpm && std::isfinite(*offset) && std::isfinite(*bpm) && *bpm > 0.0) {
+        const double offsetValue = offset.value_or(0.0);
+        const double bpmValue = bpm.value_or(0.0);
+        if (offset && bpm && std::isfinite(offsetValue) && std::isfinite(bpmValue) &&
+            bpmValue > 0.0) {
             json::Value::Object convertedTiming;
-            convertedTiming.emplace("offsetMs", json::Value{*offset});
-            convertedTiming.emplace("defaultBpm", json::Value{*bpm});
+            convertedTiming.emplace("offsetMs", json::Value{offsetValue});
+            convertedTiming.emplace("defaultBpm", json::Value{bpmValue});
             convertedTiming.emplace("bpmChanges", json::Value{json::Value::Array{}});
             convertedTiming.emplace("stops", json::Value{json::Value::Array{}});
             canonical.emplace("timing", json::Value{std::move(convertedTiming)});

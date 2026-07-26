@@ -838,6 +838,10 @@ struct RawTemplate final {
 
         RawTemplate raw{.id = ChartTemplateId{*id},
                         .name = readNullableName(*itemReader, limits, diagnostics),
+                        .extends = std::nullopt,
+                        .prototype = std::nullopt,
+                        .patches = {},
+                        .extensions = {},
                         .path = std::string{itemReader->fieldPath()}};
         if (extendsReader->value().isNull()) {
             const auto prototypeReader = itemReader->requiredField("prototype");
