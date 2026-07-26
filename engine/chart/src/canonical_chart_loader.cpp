@@ -842,7 +842,9 @@ struct RawTemplate final {
                         .prototype = std::nullopt,
                         .patches = {},
                         .extensions = {},
-                        .path = std::string{itemReader->fieldPath()}};
+                        .path = std::string{itemReader->fieldPath()},
+                        .state = RawTemplate::State::Unvisited,
+                        .expanded = std::nullopt};
         if (extendsReader->value().isNull()) {
             const auto prototypeReader = itemReader->requiredField("prototype");
             if (itemReader->optionalField("patch")) {
