@@ -1,6 +1,6 @@
 # 阶段 1C 实施计划：时间、基础行为与 Headless Playback 闭环
 
-状态：实现完成；API、时间、Snapshot、采样和预算语义按 ADR 0028/0029 落地，最终门禁结果记录于阶段报告  
+状态：功能边界实现完成；API、时间、Snapshot、采样和预算语义按 ADR 0028/0029 落地。2026-07-22 完成报告是历史执行快照；后续 260722 全量审查确认的 P1/P2 尚无完整关闭证据，因此最终验收状态以该审查及后续关闭报告为准
 规划日期：2026-07-18；SDK 调整：2026-07-20；实现完成：2026-07-22  
 前置基线：[阶段 1B 完成报告](../stage_reports/stage_1b_completion_report.md)  
 后续阶段：[阶段 1D 实施计划](stage_1d_implementation_plan.md)
@@ -256,8 +256,8 @@ BPM Changes、Stops 和 TimingMap 完整逆映射
 Material、Visibility、ParentBinding 与事件 Track
 Animation Layer、OverrideToken 和公开 BasePropertyCommand
 正式资源格式、Mesh GPU 绘制、异步资源与 Studio
-ContentProvider 完整抽象、install/export/find_package 和仓库外 consumer（阶段 1E）
-稳定 C ABI、语言绑定和 Unity/Unreal adapter（阶段 6 及以后）
+ContentProvider、install/export/find_package 和仓库外 consumer 的后续实现与验收（阶段 1E）
+稳定 C ABI、语言绑定和 Unity/Unreal adapter（阶段 12；阶段 11 完成后）
 正式 InputEvent、JudgementResult 和 ReplayData（阶段 11）
 ```
 

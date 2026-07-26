@@ -4,7 +4,15 @@
 
 ADR 0027 defines Cuexis as an embeddable **Cuexis Playback SDK** with two independent applications: Cuexis Player and Cuexis Studio. RuntimeSession, World, EnTT, SDL and OpenGL are internal/optional implementation details; external hosts use PlaybackSession, ContentProvider, RuntimeFrame, FrameSnapshot and later Judgement/Replay contracts.
 
-The current baseline includes a functioning `cuexis_playback` module (`PlaybackSession`, `FrameSnapshot`, `RuntimeFrame`, `IContentProvider`). `PlaybackSession::update()` is still a stub — it does not evaluate behaviors. Install/export packaging and external-consumer gates (phases 1C-1E) are not yet implemented. `cuexis_judgement` is planned for phase 11.
+The current baseline includes a functioning `cuexis_playback` module (`PlaybackSession`,
+`FrameSnapshot`, `RuntimeFrame`, `IContentProvider`). `PlaybackSession::update()` evaluates the
+phase 1C typed Behavior path. Synchronous Filesystem/Memory/Host ContentProvider support, a
+static C++20 install package, adapter-disabled presets, and add_subdirectory/find_package
+external-consumer gates are implemented. Phase 1E is still in progress: the final public API,
+complete component matrix, package compatibility policy, and shared-library scope are not
+frozen. The phase 1C feature boundary is implemented, but the later 260722 review still records
+unclosed P1/P2 findings; do not describe phase 1C as finally accepted until those findings have
+closure evidence. `cuexis_judgement` remains planned for a later phase.
 
 ## Build
 
@@ -102,6 +110,8 @@ When adding/removing a dependency, update **all** of:
 
 - Single source of truth: `cmake/CuexisVersion.cmake` (year/month/day/hour/build).
 - `vcpkg.json` `version-string` must match the canonical version from CuexisVersion.cmake **exactly** (mismatch = fatal configure error).
+- `CUEXIS_SDK_API_VERSION` is independent from the date-based build identity and controls the
+  installed CMake package compatibility version; stable C ABI versioning starts in phase 12.
 - Generated header: `${CMAKE_BINARY_DIR}/generated/cuexis/version.hpp` — never committed.
 - Format: `yy.mm.dd.hh-v[-suffix]` (UTC-based).
 
@@ -128,8 +138,10 @@ docs/        -> project docs (BUILDING.md, CODE_POLICY.md, etc.)
 - `docs/DEPENDENCY_POLICY.md` — dependency selection, recording, and licensing
 - `docs/VERSIONING.md` — version format and update process
 - `docs/adr/0027-playback-sdk-product-boundary.md` — accepted SDK product and host boundary
+- `docs/adr/0030-playback-preview-api-version-and-result.md` — preview Result, package-version,
+  and FrameSnapshot lifetime contract
 - `docs/stage_plans/stage_1b_implementation_plan.md` — completed phase 1B resource lifecycle plan
-- `docs/stage_plans/cuexis_sdk_transition_plan.md` — phase 0-11 SDK migration route
+- `docs/stage_plans/cuexis_sdk_transition_plan.md` — phase 0-12 SDK migration route
 - `docs/stage_plans/stage_1c_implementation_plan.md` — PlaybackSession, RuntimeFrame and headless Playback loop
 - `docs/stage_plans/stage_1d_implementation_plan.md` — HostClock/CuexisAudio dual-mode and audio adapter
 - `docs/stage_plans/stage_1e_implementation_plan.md` — packaging and external-consumer gate

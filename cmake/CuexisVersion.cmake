@@ -4,6 +4,10 @@ set(CUEXIS_VERSION_DAY 18)
 set(CUEXIS_VERSION_HOUR 18)
 set(CUEXIS_VERSION_BUILD 1)
 
+# Source-compatibility version of the installable C++ Playback preview.
+# This is intentionally independent from the date-based build identity below.
+set(CUEXIS_SDK_API_VERSION "0.1.0")
+
 set(CUEXIS_VERSION_SUFFIX "" CACHE STRING "Optional Cuexis build suffix")
 
 function(cuexis_validate_component name value minimum maximum)

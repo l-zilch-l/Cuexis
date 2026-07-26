@@ -53,7 +53,7 @@ Player 和 Studio 不得各自建立私有的 Chart -> Runtime 路径。可选�
 
 ### 立即冻结跨语言稳定 ABI
 
-拒绝。当前 PlaybackSession、帧输出、内容 Provider 和回放格式尚无外部消费证据；先冻结 C++ 所有权与线程语义，再在阶段 6 冻结 opaque handle C ABI。
+拒绝。当前 PlaybackSession、帧输出、内容 Provider 和回放格式尚无完整外部消费证据；先验证 C++ 所有权与线程语义，再完成必选 Judgement/Replay，最后冻结 opaque handle C ABI。
 
 ## 影响
 
@@ -64,3 +64,7 @@ Player 和 Studio 不得各自建立私有的 Chart -> Runtime 路径。可选�
 ## 后续风险
 
 宿主渲染互操作、二进制 ABI 和 ReplayData 格式是主要风险。必须先通过 headless consumer、Player 对照测试和至少一个真实宿主适配证明，再扩大公共契约；不得为了支持所有宿主提前建立无边界插件框架。
+
+## 路线澄清（2026-07-27）
+
+阶段 1E 的安装包和 external consumer 只构成 Playback Core C++ preview，不等于完整 Playback SDK v1 或稳定二进制产品。阶段 6 可以稳定 C++ 使用、弃用与升级政策，但不得在阶段 11 的必选 Input/Judgement/Replay 契约尚未实现和验证时冻结 C ABI。稳定 C ABI、语言绑定和正式宿主 adapter 进入阶段 12；完整 SDK v1 声明必须同时满足表现播放、内容、时间、Judgement、Replay、包分发和生命周期门禁。

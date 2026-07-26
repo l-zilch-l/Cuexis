@@ -205,7 +205,7 @@ AudioClock、音频设备与 Transport
 UserPreferences、DeviceProfile、Input/Calibration profile
 正式输入、判定、计分、Studio 与资源浏览器
 ContentProvider 完整抽象、install/export、仓库外 consumer（阶段 1E）
-稳定 C ABI、语言绑定（阶段 6 及以后）
+稳定 C ABI、语言绑定（本报告编写时的后续路线；当前已调整为阶段 12，见 ADR 0027）
 ```
 
 ## 10. 相关文档

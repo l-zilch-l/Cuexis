@@ -137,7 +137,7 @@ Unload 仅在主线程帧安全点执行：
 ```text
 停止 update
 -> 停止提取新 RenderScene
--> 使旧提取结果失效
+-> 使指向内部 World、Registry、Entity 或 RenderScene 的借用视图失效
 -> 销毁 World
 -> 释放 ResourceScope
 -> 清空映射与诊断
@@ -145,6 +145,10 @@ Unload 仅在主线程帧安全点执行：
 ```
 
 GPU 对象延迟销毁由 RenderBackend 管理，Session 不直接等待或调用图形 API。
+
+公共 `FrameSnapshot` 是拥有型值对象；成功返回后，其对象 ID、矩阵、相机和视口数据不再
+借用 Session 内存。后续 `update`、`reload`、`unload` 或 Session 销毁不得使已有 Snapshot
+悬空。调用方主动复用 destination Snapshot 时，只有被本次调用覆盖的同一个对象发生变化。
 
 ## 错误等级
 

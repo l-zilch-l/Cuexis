@@ -10,7 +10,8 @@ find_dependency(nlohmann_json_schema_validator CONFIG)
 
 include("${CMAKE_CURRENT_LIST_DIR}/CuexisTargets.cmake")
 
-set(Cuexis_VERSION "@PROJECT_VERSION@")
+set(Cuexis_VERSION "@CUEXIS_SDK_API_VERSION@")
+set(Cuexis_API_VERSION "@CUEXIS_SDK_API_VERSION@")
 set(Cuexis_VERSION_DISPLAY "@CUEXIS_VERSION_DISPLAY@")
 set(Cuexis_Playback_FOUND TRUE)
 set(Cuexis_Content_FOUND TRUE)

@@ -1,13 +1,13 @@
 # Cuexis SDK 改造与阶段路线调整方案
 
-状态：产品方向与阶段调整已接受；阶段 1C C++ 门面和持久化行为已按 ADR 0028/0029 落地，ABI、ContentProvider 与安装包仍按后续阶段确认  
+状态：产品方向与阶段调整已接受；阶段 1C 功能边界已落地，阶段 1E Playback Core preview 部分实施，稳定 C ABI 延后到必选 Judgement/Replay 完成后的阶段 12
 规划日期：2026-07-20  
 当前基线：[阶段 1B 完成报告](../stage_reports/stage_1b_completion_report.md)  
 相关实施计划：[阶段 1C](stage_1c_implementation_plan.md)、[阶段 1D](stage_1d_implementation_plan.md)、[阶段 1E](stage_1e_implementation_plan.md)
 
 ## 0. 文档定位
 
-本文定义 Cuexis 从“以完整音乐游戏引擎为长期方向”调整为“可嵌入的 Cuexis 谱面处理与播放 SDK”的正式产品方向，并重新审视阶段 0、1A、1B 已完成内容以及阶段 1C 至阶段 11 的后续路线。
+本文定义 Cuexis 从“以完整音乐游戏引擎为长期方向”调整为“可嵌入的 Cuexis 谱面处理与播放 SDK”的正式产品方向，并重新审视阶段 0、1A、1B 已完成内容以及阶段 1C 至阶段 12 的后续路线。
 
 本文与 [ADR 0027](../adr/0027-playback-sdk-product-boundary.md) 共同作为 SDK 产品边界和阶段调整的权威来源。既有阶段完成报告继续作为历史事实保留；既有 ADR 的内部模块决策在不与 ADR 0027 冲突时继续有效。本文中的示例类型名只表达职责，不代表已经冻结的公共 API。
 
@@ -140,11 +140,15 @@ entt::entity、entt::registry 或 cuexis::world::World
 SDL_Window、SDL_AudioDeviceID 或其他 SDL 类型
 GLuint、OpenGL Context 或后端专用枚举
 JSON DOM、nlohmann 类型或 Schema Validator 类型
-tl::expected、spdlog、fmt 或第三方容器类型
+spdlog、fmt 或第三方容器类型
 内部 ResourceManager 槽位、线程对象或后端缓存对象
 ```
 
-内部 C++ 模块可以继续使用现有依赖；高层 SDK 使用 Cuexis 自有 ID、数学值、状态、诊断和只读数据视图隔离它们。
+Playback Core preview 的 C++20 公共 API 允许使用 `cuexis::core::Result<T, E>`；该别名由
+`tl::expected` 实现，因此 preview consumer 存在明确的 `tl-expected` 头文件源码依赖。公共
+签名不得直接写出 `tl::expected`，也不得暴露其他第三方类型。这个例外只适用于不承诺二进制
+兼容的 C++ preview；阶段 12 的稳定 C ABI 不得暴露 `tl::expected`、STL 所有权或跨模块异常。
+其余高层 SDK 数据继续使用 Cuexis 自有 ID、数学值、状态、诊断和拥有型快照隔离内部实现。
 
 ## 6. API、ABI 与语言绑定策略
 
@@ -152,13 +156,19 @@ tl::expected、spdlog、fmt 或第三方容器类型
 
 ```text
 阶段 1E
-  冻结 C++ 所有权、线程和错误语义
+  验证 C++ 所有权、线程和错误语义，记录 preview 源码兼容范围
   提供 CMake package 和外部 C++ consumer
 
 阶段 6
-  根据真实宿主验证决定稳定 shared library 边界
-  增加 opaque handle C ABI 和薄 C++ RAII wrapper
-  再进入 Unity、C# 或其他语言适配
+  稳定 C++ 使用、弃用和升级政策
+  继续真实宿主验证，但不冻结 C ABI
+
+阶段 11
+  完成必选 Input/Judgement/Replay 公共契约、实现和外部消费验证
+
+阶段 12
+  根据完整 SDK 生命周期证据冻结 shared library 与 opaque handle C ABI
+  提供薄 C++ RAII wrapper，再进入 Unity、C# 或其他语言适配
 ```
 
 稳定二进制边界必须满足：
@@ -302,7 +312,7 @@ shared library 导出宏和符号可见性规则
 
 ```text
 add_subdirectory consumer
-find_package(Cuexis CONFIG REQUIRED) consumer
+find_package(Cuexis 0.1 CONFIG REQUIRED) consumer
 ```
 
 ## 11. 阶段 0 至 1B 调整
@@ -410,9 +420,9 @@ Player 使用 SDL 模式，headless consumer 使用 HostClock/FakeClock
 主音乐内容 Required 规则与音频设备所有权规则分开
 ```
 
-### 12.3 新增阶段 1E：SDK 封装与外部消费闭环
+### 12.3 新增阶段 1E：Playback Core Preview 与外部消费闭环
 
-新的第三方依赖目标使现有“1D 后直接进入阶段 2”的安排不再充分。正式新增 1E，专门验证 SDK 是否真的可以被仓库外项目消费。
+新的第三方依赖目标使现有“1D 后直接进入阶段 2”的安排不再充分。正式新增 1E，专门验证 Playback Core 是否可以作为 C++20 preview 被仓库外项目安装和消费。该阶段不宣告完整 Playback SDK v1，也不承诺稳定 ABI。
 
 任务：
 
@@ -494,9 +504,9 @@ Studio 可以编辑高级 Shader，但必须显示目标宿主兼容性
 原“Cuexis Player 产品化”调整为 SDK 与独立 Player 共同产品化：
 
 ```text
-稳定 PlaybackSession C++ API 和兼容性政策
-根据 1E 消费经验冻结 opaque handle C ABI
-提供薄 C++ RAII wrapper 和版本查询
+稳定 PlaybackSession C++ 使用、弃用和升级政策
+继续验证 shared-library 边界和真实宿主，但不冻结 opaque handle C ABI
+提供 preview 版本查询并为后续薄 C++ RAII wrapper 保留边界
 完善安装包、许可证、符号、Debug/Release 和升级说明
 完善 Player 用户控制、UserPreferences 和 AudioDeviceProfile
 Player 继续作为 SDK 的唯一独立参考播放器
@@ -615,6 +625,20 @@ ReplayData 序列化后反序列化再注入，结果与原始实时播放确定
 
 ReplayData 与 Session 配置快照按版本化格式序列化。版本不支持、快照字段不一致或回放内容受损时，回放加载失败并返回稳定诊断。
 
+### 12.15 阶段 12：稳定 ABI 与正式 Playback SDK v1
+
+前置条件：阶段 11 的 Input/Judgement/Replay 公共契约、实现、外部 consumer 和确定性回放门禁全部完成，且阶段 1E/6 已积累 C++ 所有权、线程、错误和真实宿主消费证据。
+
+```text
+冻结 opaque handle C ABI、allocator、字符串、数组、回调和快照有效期
+定义 C ABI version、符号可见性、兼容/弃用和 capability 查询
+验证 Windows CRT、Debug/Release、static/shared 与支持平台矩阵
+提供薄 C++ RAII wrapper 和至少一个正式宿主 adapter
+发布完整 Playback SDK v1 集成、升级、许可证和部署文档
+```
+
+阶段 12 不改变 Chart、Project、Asset Index、ReplayData 等内容格式版本；C ABI 版本、C++ SDK API 版本、项目显示版本和内容版本继续独立演进。
+
 ## 13. 配置整合调整
 
 现有“无全局 EngineConfig、应用层组合 typed config”的原则保留。配置消费者调整如下：
@@ -670,7 +694,7 @@ ReplayData 序列化/反序列化往返后，注入回放结果与原始实时�
 5. 引入 ContentProvider，同时保留现有 Filesystem 行为和路径安全
 6. 在 1E 完成安装包和外部 consumer
 7. 外部消费门禁通过后再扩展阶段 2 以上表现系统
-8. 生命周期稳定后再冻结 C ABI 和官方宿主 adapter
+8. 阶段 11 完成必选 Judgement/Replay 并通过外部验证后，阶段 12 再冻结 C ABI 和官方宿主 adapter
 ```
 
 不得通过一次性重写 Runtime、ResourceManager 或 Player 来完成转型。每一步都必须保持现有 Chart fixture、资源事务、Reload 回滚和 GPU smoke 可复核。
@@ -695,7 +719,7 @@ ReplayData 序列化/反序列化往返后，注入回放结果与原始实时�
 
 ```text
 Playback SDK + 独立 Player + 独立 Studio
-第一版使用 C++20 门面和 CMake package，稳定 C ABI 延后到阶段 6
+第一版使用 C++20 门面和 CMake package；1E 只交付 Playback Core preview，稳定 C ABI 延后到阶段 12
 第一版宿主渲染以 FrameSnapshot/RenderPacket 为主
 ProjectConfig 继续服务 Player/Studio，SDK 同时接受 typed/memory source
 新增阶段 1E，并覆盖原 1D 计划中的“不创建阶段 1E”结论
@@ -716,7 +740,7 @@ InputProfile、CalibrationProfile 与 JudgementConfigSnapshot 的具体格式
 
 ## 18. SDK 转型完成标准
 
-Cuexis 只有满足以下条件后，才能正式声明为可嵌入第三方依赖：
+Cuexis 只有满足以下条件后，才能声明完整 Playback SDK v1；阶段 1E 只能声明可安装的 Playback Core C++ preview：
 
 ```text
 仓库外工程可通过正式包配置消费 Cuexis Playback
@@ -729,5 +753,6 @@ Player 和 Studio 使用同一 SDK 路径，不存在应用私有 Runtime 分支
 判定、计分和统计对相同输入产生确定一致的累积结果
 按键采样记录完整可靠，回放结果与实时播放确定一致，ReplayData 可序列化往返
 版本、兼容性、许可证、部署文件和最小集成示例齐全
+阶段 12 的稳定 C ABI、支持矩阵与正式宿主 adapter 门禁通过
 Cuexis 核心范围不包含完成通用游戏所需的场景、玩法和平台外壳系统
 ```

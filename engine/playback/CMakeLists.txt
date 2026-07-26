@@ -19,12 +19,12 @@ target_compile_features(cuexis_playback PUBLIC cxx_std_20)
 
 target_link_libraries(cuexis_playback
     PUBLIC
+        cuexis::assets
         cuexis::content
         cuexis::core
     PRIVATE
         cuexis::chart
         cuexis::runtime
-        cuexis::assets
         cuexis::render
         cuexis::world
 )

@@ -288,8 +288,8 @@ configure_package_config_file(
 )
 write_basic_package_version_file(
     "${PROJECT_BINARY_DIR}/CuexisConfigVersion.cmake"
-    VERSION "${PROJECT_VERSION}"
-    COMPATIBILITY ExactVersion
+    VERSION "${CUEXIS_SDK_API_VERSION}"
+    COMPATIBILITY SameMinorVersion
 )
 install(EXPORT CuexisTargets
     FILE CuexisTargets.cmake
@@ -303,6 +303,7 @@ install(FILES
 )
 install(FILES
     "${PROJECT_SOURCE_DIR}/LICENSE"
+    "${PROJECT_SOURCE_DIR}/NOTICE"
     "${PROJECT_SOURCE_DIR}/THIRD_PARTY_NOTICES.md"
     DESTINATION "${CMAKE_INSTALL_DATADIR}/Cuexis"
 )

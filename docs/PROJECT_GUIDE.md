@@ -2,7 +2,7 @@
 
 ## 0. 文档状态
 
-本文档是项目的持续维护指南，同时记录已落地的工程状态、已确认的架构边界和后续阶段路线。阶段 0、阶段 1A、阶段 1B 与阶段 1C 已进入实现完成状态；ADR 0027 已将长期产品方向调整为可嵌入 Cuexis Playback SDK + 独立 Player + 独立 Studio。阶段 1D 及之后的章节描述后续设计约束和实施计划。
+本文档是项目的持续维护指南，同时记录已落地的工程状态、已确认的架构边界和后续阶段路线。阶段 0、阶段 1A 与阶段 1B 已完成验收；阶段 1C 的功能边界已经实现，但后续全量审查确认的 5 项 P1 和 11 项 P2 尚无完整关闭证据，因此不得再表述为最终验收完成。ADR 0027 已将长期产品方向调整为可嵌入 Cuexis Playback SDK + 独立 Player + 独立 Studio。阶段 1D 及之后的章节描述后续设计约束和实施计划。
 
 文档中的内容按以下方式理解：
 
@@ -15,7 +15,9 @@
 
 随着讨论推进，待讨论内容应转化为明确决策；重大技术决策还应同步形成 ADR。
 
-当前仓库已完成阶段 0 工程闭环、阶段 1A 规范谱面与实例化闭环、阶段 1B 资源生命周期闭环，以及阶段 1C typed Behavior、绝对时间采样、事务式 Property Resolver、RuntimeFrame、headless PlaybackSession 和 Player 单一路径。正式构建已包含 Project、JSON Support、Chart、Assets、Runtime、World、Render、OpenGL Backend、Debug、Behavior、现有 Gameplay 占位、SDL Platform、Playback 与 Player；安装包、ContentProvider 注入式改造、正式 Judgement/Replay、音频和 Studio 仍按阶段 1D/1E/11 路线推进。
+当前仓库已完成阶段 0 工程闭环、阶段 1A 规范谱面与实例化闭环、阶段 1B 资源生命周期闭环，以及阶段 1C typed Behavior、绝对时间采样、事务式 Property Resolver、RuntimeFrame、headless PlaybackSession 和 Player 单一路径。同步 Filesystem/Memory/Host ContentProvider、adapter-disabled preset、静态 C++20 安装包及 add_subdirectory/find_package external consumer 已提前落地，但这些只构成阶段 1E 的部分实现。正式 Judgement/Replay、音频、Studio、完整 1E API/组件矩阵与共享库范围仍未完成。
+
+当前状态的权威顺序固定为：本文第 0、30、32 节记录产品与阶段状态；`docs/BUILDING.md` 记录当前可执行构建和安装入口；最新阶段审查/补充报告记录尚未关闭的问题。完成报告和早期验证报告是带日期的历史证据，若与后续审查冲突，以后续审查与本节当前状态为准，不得从历史报告反推当前验收状态。
 
 文档职责：
 
@@ -405,7 +407,7 @@ cuexis_player
 cuexis_studio
 ```
 
-其中阶段 1A/1B/1C 已激活 `cuexis_core`、`cuexis_json_support`、`cuexis_project`、`cuexis_platform_sdl`、`cuexis_world`、`cuexis_assets`、`cuexis_chart`、`cuexis_behavior`、现有 `cuexis_gameplay` 占位、`cuexis_render`、`cuexis_debug`、`cuexis_runtime`、`cuexis_render_opengl`、`cuexis_playback` 和 `cuexis_player`。`cuexis_playback` 已提供 `loadChart`、`update`、`extractFrame`、显式目标帧 `reload` 和 `unload`；ContentProvider 注入式改造和安装包在阶段 1E 完成，`cuexis_judgement` 在阶段 11 交付；其余名称表示后续规划边界。
+当前激活 target 的准确清单以 `docs/BUILDING.md` 和根 CMake 为准。阶段 1C 后新增了 `cuexis_filesystem` 与 `cuexis_content`；`cuexis_playback` 已提供 `loadChart`、`update`、`extractFrame`、显式目标帧 `reload` 和 `unload`，并已接入 ContentProvider、静态安装包和两种 external consumer 门禁。阶段 1E 仍需冻结最终 API、组件矩阵、兼容性政策和 shared-library 范围；`cuexis_judgement` 尚未交付；其余名称表示后续规划边界。
 
 CMake 规则：
 
@@ -2030,6 +2032,12 @@ Timeline 在暂停时把 `simulationDeltaTimeMs` 设为 `0`，避免状态型系
 显示谱面编译警告和被跳过的层级子树
 ```
 
+音频诊断必须拆分为确定性帧轨迹和设备遥测。前者只包含规范化 RuntimeFrame、
+discontinuity 与后端无关 FrameSnapshot hash，可用于 HostClock/CuexisAudio parity；后者包含
+wall clock、presented source position、估算延迟、queue 和 underrun，只用于 drift 与设备趋势。
+两类数据按 frameIndex 关联但不得逐列混比，采集必须固定容量并显式报告 droppedRows，CSV 只能
+在 owner thread 离线导出。具体字段、公式和门禁见阶段 1D 实施计划。
+
 空间调试：
 
 ```text
@@ -2524,7 +2532,7 @@ Player 默认加载阶段 1B project fixture，--project 与 --chart 互斥，�
 
 #### 阶段 1C：时间、基础行为与 Headless Playback 闭环
 
-状态：实现完成。`behavior.transform.keyframe` v1、RuntimeFrame、PlaybackSession 和 Player 迁移按[阶段 1C 实施计划](stage_plans/stage_1c_implementation_plan.md)与 ADR 0028/0029 落地；完整 Debug/Release 门禁和阶段报告记录实际验证结果。
+状态：功能边界实现完成，最终验收待审查问题关闭。`behavior.transform.keyframe` v1、RuntimeFrame、PlaybackSession 和 Player 迁移按[阶段 1C 实施计划](stage_plans/stage_1c_implementation_plan.md)与 ADR 0028/0029 落地；但 [260722 全量审查](stage_reports/260722-1c-review.md)确认的 P1/P2 尚无完整关闭证据。原完成报告保留为 2026-07-22 的历史执行快照，不再单独证明当前最终验收状态。
 
 ```text
 实现基础 BehaviorSystem 与 Transform Keyframe（已完成）
@@ -2569,7 +2577,7 @@ HostClock 与 CuexisAudio 对相同 RuntimeFrame 序列产生相同表现结果
 
 #### 阶段 1E：SDK 封装与外部消费闭环
 
-状态：新增阶段，方向已接受；实施级细节见[阶段 1E 实施计划](stage_plans/stage_1e_implementation_plan.md)。
+状态：实施中。ContentProvider、静态包、adapter-disabled preset 与两种 external consumer 已落地；最终 API、完整组件矩阵、包兼容策略和 shared-library 范围尚未冻结。实施级细节见[阶段 1E 实施计划](stage_plans/stage_1e_implementation_plan.md)。
 
 ```text
 实现 cuexis_playback 的正式安装公共头边界
@@ -2742,15 +2750,15 @@ profile 不存在或版本不支持时导入失败；修改 profile 只失效受
 派生资产和 Shader 缓存记录规范化 profile 身份；后续 DeviceProfile 只能校验兼容 ID/约束，不能改变格式或复用不兼容缓存
 ```
 
-### 阶段 6：Playback SDK 与独立 Player 产品化，14-16 个月
+### 阶段 6：Playback C++ API 与独立 Player 产品化，14-16 个月
 
-目标：在阶段 1E 的外部消费基础上稳定 SDK 兼容边界，同时把独立 Player 产品化；Player 继续是参考应用，但不是唯一 SDK 消费者。
+目标：在阶段 1E 的外部消费基础上稳定 C++ 使用、弃用和升级政策，同时把独立 Player 产品化；Player 继续是参考应用，但不是唯一 SDK 消费者。本阶段不在必选 Judgement/Replay 之前冻结 C ABI。
 
 任务：
 
 ```text
-稳定 PlaybackSession C++ API、兼容性和弃用政策
-根据真实消费经验冻结 opaque handle C ABI 和薄 C++ RAII wrapper
+稳定 PlaybackSession C++ 使用、兼容性和弃用政策
+继续验证 shared-library 边界和真实宿主，但不冻结 opaque handle C ABI
 稳定并扩展 Cuexis Player 应用层组合、主循环和播放器生命周期
 实现配置解析/组合层，加载 ProjectConfig、Player UserPreferences、命名明确的 LaunchOptions 和 PreflightCapabilities；DeviceProfile 尚未定型时使用模块保守默认值
 在 Window、RenderBackend、Audio、ContentProvider、AssetDatabase 和 PlaybackSession 创建前生成不可变 ResolvedAppConfig，并为每次播放派生最小 ResolvedSessionConfig
@@ -2779,7 +2787,7 @@ AudioDeviceProfile 的缺失设备、损坏版本、非法校准值和具名内�
 相同来源生成的 ResolvedSessionConfig 具有可复现的规范化身份或内容 hash；创建 Session 后修改 UserPreferences 文件不会改变活动 Session 或确定性结果
 动态字段只经显式 apply 路径生效，静态字段只在明确重建 Session/Backend 后生效；UserPreferences 的允许映射不会修改 Chart、Behavior、Animation 或 World 领域数据
 不引入 Studio、编辑器文档或编辑器 UI 依赖
-稳定 C ABI 不暴露异常、标准库所有权、EnTT 或后端类型
+文档和包元数据明确本阶段仍是 C++ 源码兼容边界，不宣称稳定 C ABI
 ```
 
 ### 阶段 7：Cuexis Studio 核心，16-20 个月
@@ -2941,7 +2949,7 @@ FrameSnapshot/RenderPacket、Chart、Behavior、World 和 Judgement 不需要修
 
 ### 阶段 11：输入、判定、计分与确定性回放
 
-前置条件：完成阶段 7 Studio 核心和阶段 9A 性能验证。目标是交付 Playback SDK 必选的 `cuexis_judgement`，由宿主提交标准化输入，SDK 计算并返回判定、分数、连击和统计，同时记录和回放 InputEvent。完整玩法状态机、UI 和游戏流程仍由宿主拥有。
+前置条件：完成阶段 7 Studio 核心和阶段 9A 性能验证。目标是交付 Playback SDK 必选的 `cuexis_judgement`，由宿主提交标准化输入，SDK 计算并返回判定、分数、连击和统计，同时记录和回放 InputEvent，并据此完成稳定 ABI 前所需的最终 C++ 公共生命周期。完整玩法状态机、UI 和游戏流程仍由宿主拥有。
 
 任务：
 
@@ -2973,6 +2981,20 @@ ReplayData 序列化/反序列化往返保持结果，损坏或不支持版本�
 Replay 配置快照与活动 Session 不一致时加载失败并给出稳定诊断
 回放模式提交实时 InputEvent 时返回明确错误且不部分应用
 ```
+
+### 阶段 12：稳定 ABI 与正式 Playback SDK v1
+
+前置条件：阶段 11 的 Input/Judgement/Replay 公共契约、实现、external consumer 和确定性回放门禁全部完成。
+
+```text
+冻结 opaque handle C ABI、allocator、字符串、数组、回调与快照有效期
+定义独立 C ABI version、符号可见性、兼容/弃用和 capability 查询
+验证 Windows CRT、Debug/Release、static/shared 与支持平台矩阵
+提供薄 C++ RAII wrapper 和至少一个正式宿主 adapter
+发布完整 Playback SDK v1 集成、升级、许可证和部署文档
+```
+
+项目显示版本、C++ SDK API 版本、C ABI 版本与 Chart/Project/Asset/ReplayData 内容格式版本保持独立；任一版本变化不得隐式升级其他版本。
 
 ## 31. 风险控制
 
@@ -3033,7 +3055,7 @@ RuntimeSession 资源事务、Session/Manager owner 校验、活动 Diagnostics�
 Player 默认阶段 1B Project、--project/--chart 互斥、3 个 Renderable 和 Mesh/Material/Texture 依赖 demo
 ```
 
-阶段 1C 的时间、基础行为与 Headless Playback 闭环已完成。当前最高优先级按[阶段 1D 计划](stage_plans/stage_1d_implementation_plan.md)接入版本化主音乐内容、HostClock/CuexisAudio 双模式和可选 SDL Audio adapter，再由[阶段 1E](stage_plans/stage_1e_implementation_plan.md)完成 ContentProvider、安装包和仓库外 consumer。1D/1E 不提前冻结稳定 C ABI；正式 Judgement/Replay 在阶段 11 交付。
+阶段 1C 的功能边界已经实现，但当前最高优先级是先为 [260722 全量审查](stage_reports/260722-1c-review.md)中的 P1/P2 建立修复与关闭证据，恢复最终验收。随后按[阶段 1D 计划](stage_plans/stage_1d_implementation_plan.md)接入版本化主音乐内容、HostClock/CuexisAudio 双模式和可选 SDL Audio adapter，并继续完成[阶段 1E](stage_plans/stage_1e_implementation_plan.md)尚未冻结的 API、组件与兼容性工作。ContentProvider、静态安装包和仓库外 consumer 的第一版已经提前落地，不得继续描述为尚未实现。稳定 C ABI 必须在正式 Judgement/Replay 公共契约完成后再冻结。
 
 每次交付仍须按 `docs/BUILDING.md` 在目标环境执行 Debug 配置、构建、CTest、格式检查和 A/B 图形冒烟；Release 或后端相关改动还须验证 Release。精确结果记录在对应阶段报告，不固化在本指南中。
 

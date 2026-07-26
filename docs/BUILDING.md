@@ -173,14 +173,19 @@ cmake --install out/build/headless-release --prefix out/install/headless-release
 ```
 
 ```cmake
-find_package(Cuexis CONFIG REQUIRED COMPONENTS Playback Content)
+find_package(Cuexis 0.1 CONFIG REQUIRED COMPONENTS Playback Content)
 target_link_libraries(my_host PRIVATE Cuexis::Playback Cuexis::Content)
 ```
 
-安装树包含 `CuexisTargets.cmake`、`CuexisConfig.cmake`、精确版本兼容文件、生成的
-`cuexis/version.hpp`、许可证、第三方 notices 和实际无头依赖版权文本。CTest 中的
+`0.1` 是 Playback Core preview 的 SDK API 兼容版本，不是日期构建版本。安装后的
+`Cuexis_VERSION`/`Cuexis_API_VERSION` 返回完整 API 版本，`Cuexis_VERSION_DISPLAY` 返回
+`yy.mm.dd.hh-v[-suffix]` 构建身份。
+
+安装树包含 `CuexisTargets.cmake`、`CuexisConfig.cmake`、同 minor 版本兼容文件、生成的
+`cuexis/version.hpp`、`LICENSE`、`NOTICE`、第三方 notices 和实际无头依赖版权文本。CTest 中的
 `cuexis_external_consumer_add_subdirectory` 与 `cuexis_external_consumer_find_package` 会在隔离
-目录执行等价的 MemoryContentProvider 与 Playback 生命周期流程：
+目录执行等价的逻辑 Asset Index、HostContentProvider、Renderable 资源依赖闭包与 Playback
+生命周期流程：
 
 ```powershell
 ctest --preset headless-debug -R "^cuexis_external_consumer_" --output-on-failure

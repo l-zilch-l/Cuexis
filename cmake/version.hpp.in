@@ -16,6 +16,7 @@ inline constexpr std::uint32_t build = @CUEXIS_VERSION_BUILD@;
 inline constexpr std::string_view canonical = "@CUEXIS_VERSION_CANONICAL@";
 inline constexpr std::string_view suffix = "@CUEXIS_VERSION_SUFFIX@";
 inline constexpr std::string_view display = "@CUEXIS_VERSION_DISPLAY@";
+inline constexpr std::string_view sdkApi = "@CUEXIS_SDK_API_VERSION@";
 inline constexpr std::string_view cmakeProject = "@PROJECT_VERSION@";
 inline constexpr std::string_view manifest = "@CUEXIS_VCPKG_VERSION@";
 

@@ -2,7 +2,7 @@
 
 状态：已接受
 
-更新日期：2026-07-20
+更新日期：2026-07-27
 
 ## 格式
 
@@ -68,11 +68,19 @@ suffix 只来自允许集合或 exp.<name>
 
 ```text
 Cuexis display version     仓库/发行构建身份
-C++ SDK API policy         源码兼容和弃用策略，阶段 1E 首次记录
-C ABI version              shared library 二进制契约，阶段 6 首次冻结
+C++ SDK API version        CMake package 与源码兼容版本；preview 从 0.1.0 开始
+C ABI version              shared library 二进制契约，阶段 12 首次冻结
 Chart/Project/Asset format 各自持久化 format + version
 ReplayData format          阶段 11 冻结的独立持久化版本
 simulationVersion          粒子等确定性算法版本
 ```
 
-升级项目显示版本不得隐式升级内容格式或 ABI。安装包必须提供可查询的显示版本、ABI 版本和已启用组件；不兼容 ABI、未来内容版本和不支持的 ReplayData 版本必须稳定失败。
+当前 `CUEXIS_SDK_API_VERSION` 是 CMake package version 的唯一来源，生成头通过
+`cuexis::version::sdkApi` 暴露，package config 同时设置 `Cuexis_VERSION` 和
+`Cuexis_API_VERSION`。`Cuexis_VERSION_DISPLAY` 继续保存完整构建身份。preview 使用
+`SameMinorVersion`：`0.1.x` 内允许满足不高于已安装版本的请求，minor 或 major 变化必须由
+consumer 显式接受。日期构建号变化不改变 `find_package` 兼容性。
+
+升级项目显示版本不得隐式升级 SDK API、内容格式或 ABI。安装包必须提供可查询的显示版本、
+SDK API 版本和已启用组件；稳定 C ABI 在阶段 12 建立后再提供独立可查询版本。不兼容 API/ABI、
+未来内容版本和不支持的 ReplayData 版本必须稳定失败。

@@ -1,3 +1,4 @@
+#include <cuexis/assets/asset_database.hpp>
 #include <cuexis/content/content_provider.hpp>
 #include <cuexis/playback/playback_session.hpp>
 
@@ -6,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -30,6 +32,9 @@ constexpr std::string_view chart = R"json(
     "components":{
       "cuexis.transform":{"version":1,"position":[0,0,0],
                           "rotation":[0,0,0,1],"scale":[1,1,1]},
+      "cuexis.renderable":{"version":1,
+                            "mesh":{"domain":"asset","id":"mesh.note"},
+                            "material":{"domain":"asset","id":"material.note"}},
       "cuexis.behavior":{"version":1,"behavior":{"domain":"behavior","id":"move"}}
     },"extensions":{}
   }],
@@ -46,25 +51,77 @@ constexpr std::string_view chart = R"json(
     return 1;
 }
 
+[[nodiscard]] auto bytes(std::string_view value) -> std::vector<std::byte> {
+    std::vector<std::byte> result;
+    result.reserve(value.size());
+    for (const char character : value) {
+        result.push_back(std::byte{static_cast<unsigned char>(character)});
+    }
+    return result;
+}
+
 } // namespace
 
 int main() {
-    auto provider = cuexis::content::MemoryContentProvider::create({
-        {.rootId = "memory", .source = "payload.bin", .bytes = {std::byte{0x2A}}, .revision = 7},
-    });
-    if (!provider) {
-        return fail("MemoryContentProvider creation failed");
-    }
-    auto content =
-        (*provider)->readBlob({.rootId = "memory", .source = "payload.bin", .maxBytes = 1});
-    if (!content || content->bytes.size() != 1 || content->bytes[0] != std::byte{0x2A} ||
-        content->revision != 7) {
-        return fail("MemoryContentProvider read contract failed");
+    auto
+        database =
+            cuexis::assets::AssetDatabase::create(
+                {
+                    .roots = {{.root = {.id = "memory"},
+                               .index = {.assets =
+                                             {
+                                                 {.id = {"mesh.note"},
+                                                  .type = cuexis::assets::AssetType::Mesh,
+                                                  .source = "mesh.bin",
+                                                  .dependencies = {{"texture.note"}}},
+                                                 {.id = {"material.note"},
+                                                  .type = cuexis::assets::AssetType::Material,
+                                                  .source = "material.bin",
+                                                  .dependencies = {{"texture.note"}}},
+                                                 {.id = {"texture.note"},
+                                                  .type = cuexis::assets::AssetType::Texture,
+                                                  .source = "texture.bin"},
+                                             }}}},
+                    .sourceMode = cuexis::assets::AssetSourceMode::Logical,
+                });
+    if (!database) {
+        return fail("Logical AssetDatabase creation failed");
     }
 
-    cuexis::playback::PlaybackSession session;
+    std::size_t providerReads = 0;
+    auto provider = cuexis::content::HostContentProvider::create(
+        [&providerReads](const cuexis::content::ContentRequest& request)
+            -> cuexis::core::Result<cuexis::content::ContentBlob> {
+            if (request.rootId != "memory") {
+                return cuexis::core::unexpected(
+                    cuexis::core::Error{"consumer.root_missing", "Unexpected content root"});
+            }
+
+            std::string_view payload;
+            if (request.source == "mesh.bin") {
+                payload = "external-mesh";
+            } else if (request.source == "material.bin") {
+                payload = "external-material";
+            } else if (request.source == "texture.bin") {
+                payload = "external-texture";
+            } else {
+                return cuexis::core::unexpected(
+                    cuexis::core::Error{"consumer.source_missing", "Unexpected content source"});
+            }
+            ++providerReads;
+            return cuexis::content::ContentBlob{.bytes = bytes(payload), .revision = 9};
+        });
+    if (!provider) {
+        return fail("HostContentProvider creation failed");
+    }
+
+    cuexis::playback::PlaybackSession session{std::move(*database), std::move(*provider)};
     if (!session.loadChart(chart)) {
         return fail("PlaybackSession load failed");
+    }
+    const auto info = session.chartInfo();
+    if (!info || info->renderableCount != 1 || info->resourceCount != 3 || providerReads != 3) {
+        return fail("PlaybackSession did not load the indexed Renderable resource closure");
     }
     if (!session.update({.chartTimeMs = 250.0})) {
         return fail("PlaybackSession update failed");
@@ -83,6 +140,9 @@ int main() {
         !near(reloaded->objects[0].worldMatrix[12], 7.5F)) {
         return fail("PlaybackSession reloaded snapshot differed");
     }
+    if (first->objects.size() != 1 || !near(first->objects[0].worldMatrix[12], 5.0F)) {
+        return fail("Reload invalidated an owning FrameSnapshot");
+    }
 
     if (!session.unload()) {
         return fail("PlaybackSession unload failed");
@@ -90,6 +150,9 @@ int main() {
     const auto state = session.state();
     if (!state || *state != cuexis::playback::SessionState::Empty) {
         return fail("PlaybackSession did not return to Empty");
+    }
+    if (first->objects.size() != 1 || !near(first->objects[0].worldMatrix[12], 5.0F)) {
+        return fail("Unload invalidated an owning FrameSnapshot");
     }
 
     std::cout << "Cuexis external consumer passed\n";

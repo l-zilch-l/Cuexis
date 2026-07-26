@@ -96,6 +96,7 @@ else()
         lib/cmake/Cuexis/CuexisConfigVersion.cmake
         lib/cmake/Cuexis/CuexisTargets.cmake
         share/Cuexis/LICENSE
+        share/Cuexis/NOTICE
         share/Cuexis/THIRD_PARTY_NOTICES.md
         share/Cuexis/licenses/entt-copyright.txt
         share/Cuexis/licenses/glm-copyright.txt

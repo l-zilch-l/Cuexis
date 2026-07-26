@@ -1,14 +1,14 @@
 # 阶段 1E 实施计划：SDK 封装与外部消费闭环
 
-状态：实施中；ContentProvider、静态包、组件开关与外部 consumer 门禁已落地
+状态：Playback Core C++ preview 实施中；ContentProvider、静态包、组件开关与外部 consumer 基础门禁已落地
 规划日期：2026-07-20  
 进展更新：2026-07-26
-强制前置：[阶段 1C 实施计划](stage_1c_implementation_plan.md)、[阶段 1D 实施计划](stage_1d_implementation_plan.md)  
+最终验收前置：[阶段 1C 审查问题关闭](../stage_reports/260722-1c-review.md)、[阶段 1D 实施计划](stage_1d_implementation_plan.md)；独立的 packaging/consumer 工作允许提前实施
 产品边界：[ADR 0027](../adr/0027-playback-sdk-product-boundary.md)、[SDK 转型方案](cuexis_sdk_transition_plan.md)
 
 ## 1. 阶段目标
 
-阶段 1E 证明 Cuexis Playback 可以作为仓库外 C++ 项目的正式第三方依赖，而不只是仓库内 Player 的共享代码：
+阶段 1E 证明 Cuexis Playback Core 可以作为仓库外 C++ 项目的可安装 preview 依赖，而不只是仓库内 Player 的共享代码：
 
 ```text
 typed/memory Project or Chart source
@@ -19,7 +19,7 @@ typed/memory Project or Chart source
 -> external consumer
 ```
 
-本阶段完成后，关闭 Player、Studio、SDL、OpenGL 和物理音频设备仍能完成 headless 播放闭环；独立 Player 继续使用相同 PlaybackSession，不保留应用私有 Runtime 路径。
+本阶段完成后，关闭 Player、Studio、SDL、OpenGL 和物理音频设备仍能完成 headless 播放闭环；独立 Player 继续使用相同 PlaybackSession，不保留应用私有 Runtime 路径。该里程碑不等于完整 Playback SDK v1：正式 Judgement/Replay、长期 C++ 兼容承诺和稳定 C ABI 仍未交付。
 
 当前已通过 1C P3 修复完成同步 Filesystem/Memory/Host ContentProvider、ResourceManager 与
 Playback 注入、adapter-disabled preset、C++20 静态 `Cuexis::Playback`/`Cuexis::Content`
@@ -29,8 +29,9 @@ Playback 注入、adapter-disabled preset、C++20 静态 `Cuexis::Playback`/`Cue
 ## 2. 已接受边界
 
 ```text
-第一版正式消费接口为 C++20 + CMake package
-稳定 C ABI、语言绑定和官方 Unity/Unreal adapter 延后到阶段 6
+第一版 preview 消费接口为 C++20 + CMake package
+阶段 1E 只记录当前 C++ 源码兼容范围，不承诺长期 ABI
+稳定 C ABI、语言绑定和官方 Unity/Unreal adapter 必须在正式 Judgement/Replay 完成后进入阶段 12
 ProjectConfig 继续是 Player/Studio 标准入口
 SDK 同时接受 typed/memory source，不强制物理项目目录
 AssetId、Asset Index、Handle、Lease、Scope 和 ResourceManager 语义保持
@@ -82,7 +83,7 @@ Provider callback 的线程、重入、阻塞和数据有效期必须明确
 
 ## 4. Playback 公共头边界
 
-阶段 1C 的 PlaybackSession 第一版在 1E 整理为可安装公共组件。具体类型名仍在编码前评审，但公共职责固定为：
+阶段 1C 的 PlaybackSession 第一版在 1E 整理为可安装 preview 组件。具体类型名仍可在兼容政策约束下调整，但公共职责固定为：
 
 ```text
 创建：注入内容源、预算、能力和诊断 Sink
@@ -159,7 +160,7 @@ consumer_add_subdirectory
 
 consumer_find_package
   先安装到临时 prefix
-  再使用 find_package(Cuexis CONFIG REQUIRED)
+  再使用 find_package(Cuexis 0.1 CONFIG REQUIRED)
 ```
 
 consumer 不得：
@@ -179,7 +180,7 @@ headless fixture 应从内存或 consumer 自己的测试目录提供 Project/Ch
 ### 1E-0：契约与迁移清单
 
 - 冻结 ContentProvider 同步第一版的输入、输出、线程、重入、错误和 revision 语义。
-- 冻结 Playback 公共头 allowlist、FrameSnapshot 有效期和包组件名。
+- 冻结 Playback 公共头 allowlist、FrameSnapshot 有效期和 preview 包组件名；不把当前函数集合误称为长期稳定 ABI。
 - 明确旧 AssetDatabase `readBlob` 到 Provider 的兼容迁移，不一次性重写 ResourceManager。
 
 ### 1E-1：内容来源分离
@@ -194,7 +195,8 @@ headless fixture 应从内存或 consumer 自己的测试目录提供 Project/Ch
 - 整理阶段 1C 的 `cuexis_playback` target 与安装头。
 - 使用 Pimpl/内部实现或等价边界隐藏 RuntimeSession、World 和 EnTT。
 - 将 Player 组合逻辑中可复用的 load/update/reload/extract 迁入 Playback；CLI/窗口/设备保留在 App。
-- 增加 Session owner、跨 Session、销毁与 FrameSnapshot 失效测试。
+- 增加 Session owner、跨 Session、销毁测试，以及拥有型 FrameSnapshot 在
+  update/reload/unload/Session 销毁后仍保持数据有效的生命周期测试。
 
 ### 1E-3：组件化构建
 
@@ -223,7 +225,7 @@ headless fixture 应从内存或 consumer 自己的测试目录提供 Project/Ch
 | --- | --- |
 | Provider | filesystem/memory/host 等价输入、缺失、短读、超限、异常、revision、生命周期 |
 | Security | Filesystem containment 保留；Memory/Host 字节仍执行格式和预算校验 |
-| Playback | load/update/seek/reload/unload、失败回滚、FrameSnapshot 失效、错误 owner |
+| Playback | load/update/seek/reload/unload、失败回滚、FrameSnapshot 独立生命周期、错误 owner |
 | Multi-session | 独立 Clock/Provider、跨 Session 对象拒绝、无隐式全局当前状态 |
 | CMake | 顶层/子目录、组件禁用、无后端 configure、静态/共享支持矩阵 |
 | Install | headers、targets、config/version、generated header、licenses、NOTICES |
@@ -231,10 +233,10 @@ headless fixture 应从内存或 consumer 自己的测试目录提供 Project/Ch
 | Architecture | 公共头与 Playback 链接闭包不泄漏后端/实现依赖 |
 | Parity | Player、internal headless、external consumer 的 Runtime/Frame hash 一致 |
 
-## 10. 验收标准
+## 10. Playback Core Preview 验收标准
 
 ```text
-仓库外工程可以通过 add_subdirectory 或 find_package 消费 Cuexis::Playback
+仓库外工程可以通过 add_subdirectory 或 find_package 消费 Cuexis::Playback preview
 关闭 App、SDL、OpenGL 和物理音频时仍可完成完整 headless 播放流程
 Project/Chart 可以来自 typed/memory source，资源可以来自 HostContentProvider
 公共 SDK 头不暴露 EnTT、SDL、OpenGL、JSON DOM 或其他实现类型
@@ -248,7 +250,7 @@ Player 只使用正式 PlaybackSession，且结果与 external consumer 一致
 ## 11. 明确非目标
 
 ```text
-稳定 C ABI 和长期二进制兼容承诺
+稳定 C ABI、长期二进制兼容承诺和完整 Playback SDK v1 声明
 Unity、Unreal、C# 或其他正式语言绑定
 跨图形 API 离屏纹理共享
 异步 ContentProvider、协程、取消和流式资源
@@ -270,6 +272,6 @@ Studio 与完整 Player 产品化
 5. shared library 在阶段 1E 的支持范围；本阶段不冻结稳定 C ABI。
 6. external consumer fixture 的输入载体与确定性 hash 规范。
 
-## 14. 向阶段 2 和阶段 6 的交接
+## 14. 向阶段 2、6、11 和 12 的交接
 
-阶段 2 的 Behavior 扩展必须持续通过 external consumer 和 FrameSnapshot 验证，不能重新要求宿主访问 World/EnTT。阶段 6 在 1E 的真实消费证据上冻结 C ABI、语言包装和首个真实宿主 adapter；不得绕过 1E 的 C++ 所有权、线程和包组件边界。
+阶段 2 的 Behavior 扩展必须持续通过 external consumer 和 FrameSnapshot 验证，不能重新要求宿主访问 World/EnTT。阶段 6 在 1E 的真实消费证据上稳定 C++ 使用、弃用和升级政策，但不冻结 C ABI。阶段 11 完成正式 Input/Judgement/Replay 公共契约及实现；阶段 12 才能基于完整 SDK 生命周期冻结 C ABI、语言包装和首个正式宿主 adapter。所有后续阶段都不得绕过 1E 已确认的所有权、线程和包组件边界。

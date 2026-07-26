@@ -49,6 +49,12 @@ TEST_CASE("Generated display version contains only an allowed suffix", "[core][v
     REQUIRE(cuexis::version::display == expected);
 }
 
+TEST_CASE("Generated SDK API version is independent from the build identity", "[core][version]") {
+    REQUIRE(cuexis::version::sdkApi == "0.1.0");
+    REQUIRE(cuexis::version::sdkApi != cuexis::version::cmakeProject);
+    REQUIRE(cuexis::version::sdkApi != cuexis::version::display);
+}
+
 TEST_CASE("Generated version matches CMake project version", "[core][version]") {
     const auto expected =
         std::to_string(cuexis::version::year) + "." + std::to_string(cuexis::version::month) + "." +

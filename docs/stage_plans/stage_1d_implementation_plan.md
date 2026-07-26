@@ -1,9 +1,9 @@
 # 阶段 1D 实施计划：主音乐内容与可选音频适配器闭环
 
-状态：HostClock/CuexisAudio 双模式方向已接受，格式与具体 API 待编码前确认  
-规划日期：2026-07-18；SDK 调整：2026-07-20  
+状态：HostClock/CuexisAudio 双模式方向已接受，格式、诊断轨迹与具体 API 待编码前确认
+规划日期：2026-07-18；SDK 调整：2026-07-20；一致性修订：2026-07-27
 强制前置：[阶段 1C 实施计划](stage_1c_implementation_plan.md)  
-后续阶段：[阶段 1E 实施计划](stage_1e_implementation_plan.md)  
+并行 packaging 与最终验收：[阶段 1E 实施计划](stage_1e_implementation_plan.md)
 现有音频决策：[ADR 0012](../adr/0012-use-sdl3-audio-backend.md)、[ADR 0027](../adr/0027-playback-sdk-product-boundary.md)
 
 ## 1. 阶段目标
@@ -236,7 +236,45 @@ Pause、Stopped 和 discontinuity 后的首帧使用 `simulationDeltaTimeMs = 0`
 
 如果 Chart 明确无 `audio` block，Player/宿主可以使用 ChartClock。存在主音乐引用时，Required 内容或已选模式的初始化错误均为启动/播放错误，不允许静默无声运行；HostClock 是显式模式，不是失败 fallback。
 
-## 10. 实施批次
+## 10. 诊断轨迹与导出
+
+诊断必须区分确定性执行轨迹和设备遥测；两者可以按 `frameIndex` 关联，但不得混为同一
+parity 判据：
+
+```text
+确定性帧轨迹
+frameIndex, chartTimeMs, simulationDeltaTimeMs, discontinuityId, frameHash
+
+设备遥测
+frameIndex, wallClockMs, sourcePositionMs, estimatedOutputLatencyMs,
+queuedFrames, underrunCount, transportState
+```
+
+`frameHash` 只覆盖规范化 `RuntimeFrame` 与后端无关 `FrameSnapshot` 的稳定字段，不包含地址、
+容器 capacity、日志时间、GPU 对象或设备遥测。HostClock/CuexisAudio mode parity 只对输入相同
+RuntimeFrame 序列后的确定性帧轨迹做逐行比较。`wallClockMs`、latency、queue 和 underrun 受
+设备与调度影响，只用于设备趋势、人工 smoke 和问题定位，禁止跨模式逐列相等比较。
+
+音画 drift 使用已发布的 source position 和谱面 offset 计算：
+
+```text
+driftMs = chartTimeMs - (sourcePositionMs - offsetMs)
+```
+
+`sourcePositionMs` 是 AudioClock 的 presented position，不是 submitted/queued position；
+`offsetMs` 来自当前 TimingMap。drift 不得把 `estimatedOutputLatencyMs` 再减一次，也不得混入
+输入延迟或用户校准。
+
+轨迹采集归应用/宿主 owner thread 所有。音频实时路径只发布预分配的原子快照和计数，不写
+CSV、不格式化、不分配。默认每类轨迹最多 `65,536` 行且最多 `16 MiB`，以先到者为准；达到
+上限后停止追加、保留稳定前缀并累计 `droppedRows`，不得覆盖旧行或无界增长。任何自动 parity
+门禁要求 `droppedRows == 0`，否则结果为未完成而不是通过。
+
+运行结束后使用 locale-independent、RFC 4180 兼容的离线导出器写出两类 CSV。导出元数据至少
+包含 trace schema/version、构建显示版本、SDK API 版本、capturedRows、droppedRows 和
+`truncated`；浮点必须用可往返的有限十进制表示。原始设备标识和用户路径不得进入默认导出。
+
+## 11. 实施批次
 
 ### 1D-0：ADR 与格式冻结
 
@@ -274,6 +312,8 @@ Pause、Stopped 和 discontinuity 后的首帧使用 `simulationDeltaTimeMs = 0`
 ### 1D-5：诊断与验收
 
 - 日志输出请求/实际格式、queue、latency estimate、state、discontinuity 和 underrun count。
+- 实现固定容量的确定性帧轨迹与设备遥测采集，并在 owner thread 离线导出两类 CSV。
+- mode parity 只比较确定性帧轨迹；设备遥测只用于 drift、趋势和人工 smoke 证据。
 - 默认 CTest 只使用 Fake Clock、内存 PCM、损坏 WAV 和 SDL dummy driver，不依赖物理设备或墙钟。
 - Debug/Release 分别执行物理音频 smoke 和音画联合 smoke。
 
@@ -283,7 +323,7 @@ Pause、Stopped 和 discontinuity 后的首帧使用 `simulationDeltaTimeMs = 0`
 - Debug/Release fresh configure + clean build + 完整 CTest + format + architecture。
 - 保留 1C/1A GPU 回归，创建 `docs/stage_reports/stage_1d_completion_report.md`。
 
-## 11. 测试矩阵
+## 12. 测试矩阵
 
 | 范围 | 必须覆盖 |
 | --- | --- |
@@ -295,10 +335,12 @@ Pause、Stopped 和 discontinuity 后的首帧使用 `simulationDeltaTimeMs = 0`
 | Clock | source-frame 到 ms、segment 单调性、延迟修正、并发 snapshot |
 | Recovery | underrun 冻结/恢复/限频，设备失败，reload 成功/失败强保证 |
 | Timeline | offset 符号、Pause delta、Seek discontinuity、1C Transform 重采样 |
-| Mode parity | HostClock/CuexisAudio 对相同 RuntimeFrame 序列的表现结果一致 |
+| Deterministic trace | hash 字段、Seek/discontinuity、CSV 往返、行/字节上限、droppedRows |
+| Device telemetry | drift 公式、presented position、非确定列不参与逐列 parity |
+| Mode parity | HostClock/CuexisAudio 对相同 RuntimeFrame 序列的确定性帧轨迹一致 |
 | Architecture | audio 无 SDL、playback/runtime/chart 无 audio_sdl、audio_sdl 无 platform_sdl |
 
-## 12. 人工音频门禁
+## 13. 人工音频门禁
 
 Debug 和 Release 各在 Windows 默认设备执行一次：
 
@@ -307,18 +349,19 @@ Debug 和 Release 各在 Windows 默认设备执行一次：
 Pause 至少 2 秒，静音且 Clock 不前进
 Resume 连续；Seek 后 ID 只改变一次，画面跳到正确 Behavior 状态
 Stop 回到 0；失败 Reload 保留旧音乐
-记录设备格式、buffer、queue、估算延迟和 underrun
+导出确定性帧轨迹和设备遥测；记录格式、buffer、queue、drift、估算延迟和 underrun
+确认 capturedRows 符合预期且 droppedRows = 0
 ```
 
 物理设备和 GPU 不进入默认 CTest。托管 CI 只能证明纯逻辑、dummy backend、构建、格式和架构门禁，不能宣称覆盖真实听感或硬件时钟精度。
 
-## 13. 配置整合
+## 14. 配置整合
 
 阶段 1D 不新增 UserPreferences、DeviceProfile 或持久化 Audio 配置文件。CuexisAudio 的 `AudioConfig` 只有代码默认值和显式内存注入；HostClock contract 也是当前会话输入。Chart 的 `audio.mainMusic` 是确定性内容引用，不是设备配置。
 
 阶段 6 成为首个持久化 Player UserPreferences / AudioDeviceProfile 消费者，负责设备身份、输出校准、来源追踪和动态/重建设备应用规则。阶段 9A 再根据测量冻结设备预算。
 
-## 14. 明确非目标
+## 15. 明确非目标
 
 ```text
 特定设备持久化、UserPreferences、AudioDeviceProfile、校准
@@ -326,10 +369,11 @@ OGG/MP3/FLAC、流式解码、异步解码和文件热重载
 音效混音、空间音频、播放倍率、循环和 gapless
 设备热插拔自动恢复、平台专用精确硬件播放光标
 正式输入、判定、计分和 Studio 音频编辑
-ContentProvider 完整改造、SDK install/export 和仓库外 package consumer（阶段 1E）
+重做已落地的 ContentProvider、SDK install/export 或仓库外 consumer；1D 只扩展 AudioSource
+并保持现有门禁
 ```
 
-## 15. 待确认选择
+## 16. 待确认选择
 
 1. 使用 Asset Index v2 增加 `audio`，使用 Chart v2 增加 `audio.mainMusic`；ProjectConfig v1 不变。
 2. 采用 Source Handle/Lease -> AudioClipStore Handle/Lease 的双层派生资源所有权。
@@ -337,4 +381,6 @@ ContentProvider 完整改造、SDK install/export 和仓库外 package consumer�
 4. decoded PCM 固定 interleaved F32、1/2 channels，64 MiB encoded / 256 MiB decoded。
 5. 采用本计划的状态机、source-domain `presentedFrame` 和“已选模式不 silent fallback”规则。
 6. 冻结 HostClock/CuexisAudio 的显式模式选择、主音乐内容交付和错误边界。
-7. 阶段 1D 完成后进入新增阶段 1E，再由 1E 完成 ContentProvider、安装包和外部消费门禁。
+7. 1D 复用已落地的 ContentProvider、安装包和 external consumer；1E 最终验收以 1D 音频
+   契约通过为前置，但 packaging/consumer 工作可以并行推进。
+8. 采用本计划的双轨诊断、固定容量、停止追加与 `droppedRows` 失败门禁。
