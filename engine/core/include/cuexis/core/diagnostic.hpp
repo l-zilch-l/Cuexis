@@ -1,8 +1,9 @@
 #pragma once
 
-//  Diagnostic / Diagnostics — 结构化诊断系统
-//  用于批量校验问题（Chart 编译、资源加载等），包含严重级别、稳定 code、
-//  以 `$` 为根的字段路径和上下文键值。Diagnostics 支持有界容量和确定性排序。
+//  Diagnostic / Diagnostics - structured diagnostic system
+//  Used for bulk validation problems (chart compilation, resource loading, and similar);
+//  carries a severity, a stable code, a field path rooted at `$`, and context key/values.
+//  Diagnostics supports a bounded capacity and deterministic ordering.
 
 #include <cstddef>
 #include <optional>
@@ -52,7 +53,8 @@ class Diagnostics final {
     Diagnostics() = default;
     Diagnostics(std::size_t maxDiagnostics, Diagnostic limitDiagnostic);
 
-    // 有界容量包含一条调用方提供的上限诊断；0 容量会被归一化为 1 以保留上限诊断
+    // The bounded capacity includes one caller-supplied limit diagnostic; a capacity of 0 is
+    // normalized to 1 so that the limit diagnostic is preserved
     bool add(Diagnostic diagnostic);
     bool append(Diagnostics diagnostics);
     void clear() noexcept;
@@ -65,7 +67,7 @@ class Diagnostics final {
     [[nodiscard]] std::size_t count(DiagnosticSeverity severity) const noexcept;
     [[nodiscard]] const std::vector<Diagnostic>& items() const noexcept;
 
-    // 按稳定机器可读字段排序，确保输出可复现
+    // Sorts by stable machine-readable fields, ensuring reproducible output
     void sortDeterministically();
 
   private:

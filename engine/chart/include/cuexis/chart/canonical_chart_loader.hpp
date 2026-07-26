@@ -1,9 +1,10 @@
 #pragma once
 
-//  CanonicalChartLoader — 方案 A (cuexis.chart) 规范谱面 typed-reader
-//  使用 Cuexis JSON Value 和 typed Reader 读取结构与语义校验
-//  当前 loader 不调用 JSON Schema validator（Schema artifact 独立测试）
-//  结构权威是 typed Reader + Chart 语义校验代码
+//  CanonicalChartLoader - typed reader for scheme A (cuexis.chart) canonical charts
+//  Uses the Cuexis JSON Value and typed Reader for structural and semantic validation
+//  The loader does not currently invoke the JSON Schema validator (the Schema artifact is
+//  tested separately)
+//  The authority on structure is the typed Reader plus the Chart semantic validation code
 
 #include <cuexis/chart/chart_document.hpp>
 #include <cuexis/chart/limits.hpp>

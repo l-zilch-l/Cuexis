@@ -274,6 +274,7 @@ Pause、Stopped 和 discontinuity 后的首帧使用 `simulationDeltaTimeMs = 0`
 ### 1D-5：诊断与验收
 
 - 日志输出请求/实际格式、queue、latency estimate、state、discontinuity 和 underrun count。
+- 实现第 13 节 `--frame-stats` CSV 导出，默认关闭，不进入实时路径。
 - 默认 CTest 只使用 Fake Clock、内存 PCM、损坏 WAV 和 SDL dummy driver，不依赖物理设备或墙钟。
 - Debug/Release 分别执行物理音频 smoke 和音画联合 smoke。
 
@@ -296,6 +297,7 @@ Pause、Stopped 和 discontinuity 后的首帧使用 `simulationDeltaTimeMs = 0`
 | Recovery | underrun 冻结/恢复/限频，设备失败，reload 成功/失败强保证 |
 | Timeline | offset 符号、Pause delta、Seek discontinuity、1C Transform 重采样 |
 | Mode parity | HostClock/CuexisAudio 对相同 RuntimeFrame 序列的表现结果一致 |
+| Frame stats | CSV 列序与行数稳定、开启导出不改变 RuntimeFrame 序列、默认关闭时不产生文件 |
 | Architecture | audio 无 SDL、playback/runtime/chart 无 audio_sdl、audio_sdl 无 platform_sdl |
 
 ## 12. 人工音频门禁
@@ -312,13 +314,43 @@ Stop 回到 0；失败 Reload 保留旧音乐
 
 物理设备和 GPU 不进入默认 CTest。托管 CI 只能证明纯逻辑、dummy backend、构建、格式和架构门禁，不能宣称覆盖真实听感或硬件时钟精度。
 
-## 13. 配置整合
+## 13. 帧节奏与同步诊断导出
+
+第 12 节的人工门禁要求记录设备格式、buffer、queue、估算延迟和 underrun，但这些观察目前只以人工文字形式存在，无法回归比对，也无法定位「能播放但音画对不齐」这类只在时序上表现的问题。阶段 1D 因此增加一条确定性诊断导出路径。
+
+Player 增加默认关闭的逐帧统计导出：
+
+```text
+--frame-stats <path>
+```
+
+输出为固定列序的 CSV，每行对应一个 RuntimeFrame：
+
+```text
+frameIndex, wallClockMs, chartTimeMs, positionMs, simulationDeltaTimeMs,
+discontinuityId, estimatedOutputLatencyMs, underrunCount
+```
+
+该格式使第 11 节测试矩阵中 Clock、Timeline 和 Mode parity 三行从人工观察变为可断言数据：drift 由 `chartTimeMs` 与 `positionMs` 的差值序列直接计算；Pause 首帧的 `simulationDeltaTimeMs = 0`、Seek 后 `discontinuityId` 只改变一次均可由 CSV 断言；HostClock 与 CuexisAudio 的 mode parity 可以退化为两份 CSV 的逐列比对。
+
+约束：
+
+```text
+导出属于诊断路径，不得进入实时路径（见第 8 节实时路径禁止项）
+采样在 owner thread 写入有界缓冲，播放结束或显式 flush 时落盘
+开启导出不得改变 RuntimeFrame 序列，否则 mode parity 结论失效
+默认关闭，不产生文件、不影响默认 CTest 与人工门禁
+```
+
+不引入 profiler 依赖。Visual Studio 自带的 `VSDiagnostics.exe`（`Team Tools\DiagnosticsHub\Collector`）产出 `.diagsession` 二进制，只能在 IDE 内交互打开，无法进入 CTest、无法 diff、也无法被脚本或自动化读取；vcpkg 的 `tracy` port 同样以交互式 UI 为核心产物，并需要在 audio/runtime 路径插桩，与本阶段的模块边界和实时约束冲突。两者都不产出可断言产物，因此阶段 1D 只交付上述 CSV，profiler 接入留待阶段 9A 依据实测预算再评估。
+
+## 14. 配置整合
 
 阶段 1D 不新增 UserPreferences、DeviceProfile 或持久化 Audio 配置文件。CuexisAudio 的 `AudioConfig` 只有代码默认值和显式内存注入；HostClock contract 也是当前会话输入。Chart 的 `audio.mainMusic` 是确定性内容引用，不是设备配置。
 
 阶段 6 成为首个持久化 Player UserPreferences / AudioDeviceProfile 消费者，负责设备身份、输出校准、来源追踪和动态/重建设备应用规则。阶段 9A 再根据测量冻结设备预算。
 
-## 14. 明确非目标
+## 15. 明确非目标
 
 ```text
 特定设备持久化、UserPreferences、AudioDeviceProfile、校准
@@ -329,7 +361,7 @@ OGG/MP3/FLAC、流式解码、异步解码和文件热重载
 ContentProvider 完整改造、SDK install/export 和仓库外 package consumer（阶段 1E）
 ```
 
-## 15. 待确认选择
+## 16. 待确认选择
 
 1. 使用 Asset Index v2 增加 `audio`，使用 Chart v2 增加 `audio.mainMusic`；ProjectConfig v1 不变。
 2. 采用 Source Handle/Lease -> AudioClipStore Handle/Lease 的双层派生资源所有权。

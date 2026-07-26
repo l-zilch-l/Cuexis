@@ -1,8 +1,9 @@
 #pragma once
 
-//  Error — 统一的错误类型，必须包含稳定 error code 和可读 message
-//  程序判断应依赖 code，不能依赖可能本地化的 message 文本
-//  Error 支持附加上下文键值对和因果链（cause），便于诊断
+//  Error - the unified error type; must carry a stable error code and a readable message
+//  Program logic must branch on the code, never on the message text, which may be localized
+//  Error supports attached context key/value pairs and a causal chain (cause) to aid
+//  diagnosis
 
 #include <memory>
 #include <string>
@@ -24,15 +25,17 @@ class Error final {
     [[nodiscard]] std::string_view message() const noexcept;
     [[nodiscard]] const std::vector<ErrorContext>& context() const noexcept;
 
-    // 返回原因链中的上层错误；只要此 Error 持有其 cause，返回的指针就有效
+    // Returns the upstream error in the cause chain; the returned pointer stays valid as long
+    // as this Error holds its cause
     [[nodiscard]] const Error* cause() const noexcept;
 
-    // 链式附加诊断上下文（左值版本，返回自身引用）
+    // Chained diagnostic context (lvalue overload, returns a reference to itself)
     Error& withContext(std::string key, std::string value) &;
-    // 链式附加诊断上下文（右值版本，允许 Error{} << "key" << "value" 风格）
+    // Chained diagnostic context (rvalue overload, enables the Error{} << "key" << "value"
+    // style)
     Error&& withContext(std::string key, std::string value) &&;
 
-    // 设置因果链中的上游错误
+    // Sets the upstream error in the cause chain
     Error& withCause(Error cause) &;
     Error&& withCause(Error cause) &&;
 

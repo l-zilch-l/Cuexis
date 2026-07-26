@@ -1,7 +1,8 @@
 #pragma once
 
-//  AssetId — 可序列化的稳定资源标识符
-//  由 AssetDatabase 管理，业务层使用此 ID 请求资源；不得把文件路径当作 AssetId
+//  AssetId - serializable, stable resource identifier
+//  Owned by AssetDatabase; callers request resources by this ID and must never treat
+//  a file path as an AssetId
 
 #include <compare>
 #include <string>

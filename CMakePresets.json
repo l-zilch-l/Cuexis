@@ -10,6 +10,7 @@
         "BUILD_TESTING": "ON",
         "CMAKE_CXX_STANDARD": "20",
         "CMAKE_CXX_EXTENSIONS": "OFF",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "CUEXIS_WARNINGS_AS_ERRORS": "OFF",
         "VCPKG_TARGET_TRIPLET": "x64-windows"

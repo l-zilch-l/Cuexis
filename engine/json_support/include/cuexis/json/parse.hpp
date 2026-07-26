@@ -1,8 +1,9 @@
 #pragma once
 
-//  JSON 解析与序列化 — 封装 nlohmann::json，通过 ParseObserver 执行深度/字符串预算控制
-//  ParseLimits 由调用方（Chart/Project）提供，因为不同格式的预算不同
-//  parse 检查重复键、嵌套深度和字符串字节上限
+//  JSON parsing and serialization - wraps nlohmann::json and enforces depth/string budgets
+//  through ParseObserver
+//  ParseLimits is supplied by the caller (Chart/Project) because budgets differ per format
+//  parse checks for duplicate keys, nesting depth and the string byte ceiling
 
 #include <cuexis/core/result.hpp>
 #include <cuexis/json/value.hpp>
@@ -24,7 +25,7 @@ enum class SerializeStyle {
     Pretty,
 };
 
-// 预算由所属格式提供，因为 Chart 和配置的预算不同
+// The budget comes from the owning format, because Chart and configuration budgets differ
 [[nodiscard]] core::Result<Value> parse(std::string_view text, ParseLimits limits);
 [[nodiscard]] core::Result<std::string> serialize(const Value& value,
                                                   SerializeStyle style = SerializeStyle::Compact);

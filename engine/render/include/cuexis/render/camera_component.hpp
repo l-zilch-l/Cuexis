@@ -1,8 +1,9 @@
 #pragma once
 
-//  CameraComponent — 相机数据组件（所属 cuexis_render，不暴露图形后端类型）
-//  保存投影参数和缓存的 projection 矩阵
-//  projectionMatrix 在创建时根据 fovY/nearPlane/farPlane/aspect 计算
+//  CameraComponent - camera data component (owned by cuexis_render; exposes no graphics
+//  backend types)
+//  Holds the projection parameters and the cached projection matrix
+//  projectionMatrix is computed on creation from fovY/nearPlane/farPlane/aspect
 
 #include <cuexis/core/math.hpp>
 

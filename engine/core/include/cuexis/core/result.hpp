@@ -1,8 +1,10 @@
 #pragma once
 
-//  Result<T, E> — 基于 tl::expected 的统一错误处理类型
-//  可预期的运行时错误必须通过 Result 返回，异常不得跨模块公共边界
-//  禁止忽略 Result；若不需处理则必须显式调用 discard/log helper
+//  Result<T, E> - the unified error handling type, built on tl::expected
+//  Expected runtime errors must be returned through Result; exceptions must never cross a
+//  module public boundary
+//  Ignoring a Result is forbidden; when no handling is needed, call the discard/log helper
+//  explicitly
 
 #include <cuexis/core/error.hpp>
 
@@ -14,8 +16,8 @@ namespace cuexis::core {
 
 template <typename T, typename E = Error> using Result = tl::expected<T, E>;
 
-//  构造 unexpected 错误值，用于提前返回失败
-//  必须使用 [[nodiscard]] 防止调用方意外丢弃错误
+//  Builds an unexpected error value, used to return failure early
+//  [[nodiscard]] is required so callers cannot accidentally drop the error
 template <typename E> [[nodiscard]] constexpr auto unexpected(E&& error) {
     return tl::make_unexpected(std::forward<E>(error));
 }

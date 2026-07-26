@@ -1,8 +1,8 @@
 #pragma once
 
-//  BehaviorComponent — 行为组件，保存运行时行为索引
-//  阶段 1A 只作为 opaque 数据保留；Behavior Track 求值属于阶段 1C
-//  RuntimeBehaviorIndex: 紧凑句柄引用编译后的行为数据
+//  BehaviorComponent - behavior component holding a runtime behavior index
+//  Phase 1A keeps this as opaque data only; Behavior Track evaluation belongs to phase 1C
+//  RuntimeBehaviorIndex: compact handle referencing compiled behavior data
 
 #include <compare>
 #include <cstdint>

@@ -1,11 +1,13 @@
 #pragma once
 
-//  RuntimeSession — 一次播放或 Studio 预览的事务式运行时实例
-//  拥有 World、ChartRuntime、对象映射和 ResourceScope
-//  事务式 prepare/commit：先无副作用结构验证 → 临时 Scope 获取资源 → 实例化 World → commit 发布
-//  reload: 完整 Replacement，失败保留旧 World/Scope/诊断
-//  销毁顺序固定为 World → ResourceScope，确保 Component 清理时资源 Lease 仍有效
-//  PreparedSession 绑定 Session token + Manager token，拒绝跨 owner 提交
+//  RuntimeSession - transactional runtime instance for one playback or Studio preview
+//  Owns the World, the ChartRuntime, the object map and the ResourceScope
+//  Transactional prepare/commit: side-effect-free structural validation first, then acquire
+//  resources through a temporary Scope, then instantiate the World, then publish on commit
+//  reload: full replacement; on failure the old World/Scope/diagnostics are retained
+//  Destruction order is fixed as World then ResourceScope, so resource Leases remain valid
+//  while components are being cleaned up
+//  PreparedSession binds a session token plus a manager token and rejects cross-owner commits
 
 #include <cuexis/assets/resource_manager.hpp>
 #include <cuexis/chart/chart_runtime.hpp>

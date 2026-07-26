@@ -1,8 +1,10 @@
 #pragma once
 
-//  Cuexis-owned JSON Value — 基于 variant 的类型化 JSON 值
-//  公共接口只暴露此自有类型，不暴露 nlohmann::json 或其他第三方 JSON DOM
-//  类型区分 SignedInteger（int64_t）和 UnsignedInteger（uint64_t）以支持精确序列化
+//  Cuexis-owned JSON Value - a variant-based typed JSON value
+//  The public interface exposes only this owned type, never nlohmann::json or any other
+//  third-party JSON DOM
+//  The type distinguishes SignedInteger (int64_t) from UnsignedInteger (uint64_t) to support
+//  exact serialization
 
 #include <cstddef>
 #include <cstdint>

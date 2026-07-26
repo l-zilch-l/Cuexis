@@ -1,9 +1,12 @@
 #pragma once
 
-//  ChartRuntime — 编译后的谱面运行时数据
-//  不保存 entt::entity，不依赖 EnTT；定时已解析为 TimingMap
-//  RuntimeObject 使用索引引用父对象（非 Entity），Behavior 已解析为 type/version
-//  ChartCompiler: 按稳定 ID 排序编译，结果与 objects 数组顺序无关
+//  ChartRuntime - compiled chart runtime data
+//  Stores no entt::entity and does not depend on EnTT; timing is already resolved into a
+//  TimingMap
+//  RuntimeObject references its parent by index (not by Entity); Behavior is already
+//  resolved to type/version
+//  ChartCompiler: compiles in stable-ID order, so results are independent of the order of
+//  the objects array
 
 #include <cuexis/chart/chart_document.hpp>
 #include <cuexis/chart/limits.hpp>

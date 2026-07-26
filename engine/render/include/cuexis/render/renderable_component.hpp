@@ -1,8 +1,9 @@
 #pragma once
 
-//  RenderableComponent — 可渲染组件，保存类型化 Mesh/Material Handle
-//  不保存 Lease、裸资源指针、shared_ptr 或图形后端 ID
-//  Component 只存弱句柄；资源生命周期由 RuntimeSession 的 ResourceScope 管理
+//  RenderableComponent - renderable component holding typed Mesh/Material handles
+//  Stores no Lease, raw resource pointer, shared_ptr or graphics backend ID
+//  A Component stores only weak handles; resource lifetime is managed by the RuntimeSession
+//  ResourceScope
 
 #include <cuexis/assets/resource_handle.hpp>
 

@@ -1,10 +1,11 @@
 #pragma once
 
-//  ChartWorldInstantiator — 将 ChartRuntime 实例化到 EnTT World
-//  validate(): 无副作用结构验证（排序、parent 引用、Behavior 引用）
-//  instantiate(): 创建 Entity、设置 Component、建立层级和对象映射
-//  ObjectEntityMap: ChartObjectId 到 entt::entity 的会话期映射
-//  ResolvedRenderableResources: 已解析的类型化 Handle（阶段 1B）
+//  ChartWorldInstantiator - instantiates a ChartRuntime into the EnTT World
+//  validate(): side-effect-free structural validation (ordering, parent references,
+//  behavior references)
+//  instantiate(): creates entities, sets components, builds the hierarchy and object map
+//  ObjectEntityMap: session-scoped mapping from ChartObjectId to entt::entity
+//  ResolvedRenderableResources: already-resolved typed handles (phase 1B)
 
 #include <cuexis/assets/resource_handle.hpp>
 #include <cuexis/chart/chart_runtime.hpp>

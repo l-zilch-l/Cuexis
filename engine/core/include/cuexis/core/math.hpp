@@ -1,8 +1,9 @@
 #pragma once
 
-//  Cuexis 自有数学类型 — Vec3、Quat、Mat4（列向量，右手坐标系）
-//  内部使用 GLM 实现，仅对 Cuexis 公共接口暴露自有类型
-//  +X 向右，+Y 向上，+Z 向后；默认相机观察方向 -Z；世界单位 1 unit = 1 meter
+//  Cuexis-owned math types - Vec3, Quat, Mat4 (column vectors, right-handed)
+//  Implemented internally with GLM; only the Cuexis-owned types are exposed on the public
+//  interface
+//  +X right, +Y up, +Z back; the default camera looks down -Z; world unit 1 unit = 1 meter
 
 #include <cuexis/core/result.hpp>
 
@@ -29,7 +30,7 @@ struct Quat {
 };
 
 struct Mat4 {
-    // 列主序存储：element(row, column) 即 values[column * 4 + row]
+    // Column-major storage: element(row, column) is values[column * 4 + row]
     std::array<float, 16> values{
         1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F,
         0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F,
