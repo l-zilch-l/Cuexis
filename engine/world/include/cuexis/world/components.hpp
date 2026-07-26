@@ -1,9 +1,9 @@
 #pragma once
 
-//  World 模块基础 Component — 仅保存数据，不包含行为
-//  TransformComponent: 局部位置/旋转/缩放（右手坐标系，列向量，米制单位）
-//  HierarchyComponent: 父 Entity 引用（null 表示根节点）
-//  WorldTransformComponent: 缓存的世界矩阵（由 TransformSystem 计算）
+//  Base components of the World module - data only, no behavior
+//  TransformComponent: local position/rotation/scale (right-handed, column vectors, meters)
+//  HierarchyComponent: parent entity reference (null means a root node)
+//  WorldTransformComponent: the cached world matrix (computed by TransformSystem)
 
 #include <cuexis/core/math.hpp>
 

@@ -1,9 +1,10 @@
 #pragma once
 
-//  AssetDatabase — 不可变资产索引
-//  从 AssetDatabaseInput（各资产根及其 cuexis.asset-index.json）构建
-//  AssetId 到类型/来源/依赖的映射；目录枚举不用于发现 AssetId
-//  v1 类型只包含 Mesh、Material、Texture 的 CPU blob
+//  AssetDatabase - immutable asset index
+//  Built from AssetDatabaseInput (each asset root and its cuexis.asset-index.json)
+//  Maps AssetId to type/source/dependencies; directory enumeration is not used to
+//  discover AssetIds
+//  v1 types cover only CPU blobs for Mesh, Material and Texture
 
 #include <cuexis/assets/asset_id.hpp>
 #include <cuexis/content/content_provider.hpp>

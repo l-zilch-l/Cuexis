@@ -1,9 +1,12 @@
 #pragma once
 
-//  TimingMap — Beat 与 chartTimeMs 之间的双向转换
-//  v1 支持 offsetMs 和 defaultBpm；BPM Changes 和 Stops 当前必须为空（非空返回错误）
-//  chartTimeMs = audioTimeMs - offsetMs（正 offset 表示 Beat 0 在音频开始之后）
-//  使用 double 毫秒，但不通过逐帧累加建立映射（保证确定性）
+//  TimingMap - bidirectional conversion between Beat and chartTimeMs
+//  v1 supports offsetMs and defaultBpm; BPM changes and stops must currently be empty
+//  (a non-empty list returns an error)
+//  chartTimeMs = audioTimeMs - offsetMs (a positive offset means Beat 0 starts after the
+//  audio begins)
+//  Uses double milliseconds, but never builds the mapping by accumulating per frame (this
+//  guarantees determinism)
 
 #include <cuexis/chart/rational_beat.hpp>
 #include <cuexis/core/result.hpp>

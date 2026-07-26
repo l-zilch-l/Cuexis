@@ -312,7 +312,8 @@ CSV、不格式化、不分配。默认每类轨迹最多 `65,536` 行且最多 
 ### 1D-5：诊断与验收
 
 - 日志输出请求/实际格式、queue、latency estimate、state、discontinuity 和 underrun count。
-- 实现固定容量的确定性帧轨迹与设备遥测采集，并在 owner thread 离线导出两类 CSV。
+- 实现固定容量的确定性帧轨迹与设备遥测采集，并通过默认关闭的
+  `--frame-stats <path>` 在 owner thread 离线导出两类 CSV。
 - mode parity 只比较确定性帧轨迹；设备遥测只用于 drift、趋势和人工 smoke 证据。
 - 默认 CTest 只使用 Fake Clock、内存 PCM、损坏 WAV 和 SDL dummy driver，不依赖物理设备或墙钟。
 - Debug/Release 分别执行物理音频 smoke 和音画联合 smoke。
@@ -338,6 +339,7 @@ CSV、不格式化、不分配。默认每类轨迹最多 `65,536` 行且最多 
 | Deterministic trace | hash 字段、Seek/discontinuity、CSV 往返、行/字节上限、droppedRows |
 | Device telemetry | drift 公式、presented position、非确定列不参与逐列 parity |
 | Mode parity | HostClock/CuexisAudio 对相同 RuntimeFrame 序列的确定性帧轨迹一致 |
+| Frame stats | CSV 列序与行数稳定、开启导出不改变 RuntimeFrame 序列、默认关闭时不产生文件 |
 | Architecture | audio 无 SDL、playback/runtime/chart 无 audio_sdl、audio_sdl 无 platform_sdl |
 
 ## 13. 人工音频门禁
@@ -355,13 +357,60 @@ Stop 回到 0；失败 Reload 保留旧音乐
 
 物理设备和 GPU 不进入默认 CTest。托管 CI 只能证明纯逻辑、dummy backend、构建、格式和架构门禁，不能宣称覆盖真实听感或硬件时钟精度。
 
-## 14. 配置整合
+## 14. 帧节奏与同步诊断导出
+
+第 13 节的人工门禁要求记录设备格式、buffer、queue、估算延迟和 underrun，但这些观察不能
+单独作为确定性回归证据。阶段 1D 增加一条可脚本消费的诊断导出路径，用于同时定位时序和
+设备问题。
+
+Player 增加默认关闭的逐帧统计导出，`<path>` 是输出前缀：
+
+```text
+--frame-stats <path>
+```
+
+导出两个固定列序的 CSV，每行按 `frameIndex` 关联：
+
+确定性帧轨迹：
+
+```text
+frameIndex,chartTimeMs,simulationDeltaTimeMs,discontinuityId,frameHash
+```
+
+设备遥测：
+
+```text
+frameIndex,wallClockMs,sourcePositionMs,estimatedOutputLatencyMs,
+queuedFrames,underrunCount,transportState
+```
+
+确定性轨迹用于断言 Clock、Timeline、Pause、Seek 和 HostClock/CuexisAudio mode parity；
+`wallClockMs`、latency、queue 和 underrun 受设备与调度影响，只用于 drift、趋势和人工 smoke，
+禁止跨模式逐列比较。drift 使用 `chartTimeMs - (sourcePositionMs - offsetMs)`，不得重复扣除
+输出 latency。`frameHash` 只覆盖规范化 RuntimeFrame 与后端无关 FrameSnapshot 的稳定字段。
+
+约束：
+
+```text
+导出属于诊断路径，不得进入实时路径（见第 8 节实时路径禁止项）
+采样在 owner thread 写入有界缓冲，播放结束或显式 flush 时落盘；音频实时路径不写 CSV、不格式化、不分配
+开启导出不得改变 RuntimeFrame 序列，否则 mode parity 结论失效
+默认关闭，不产生文件、不影响默认 CTest 与人工门禁
+每类轨迹最多 65,536 行、最多 16 MiB；达到上限后停止追加并累计 droppedRows，parity 门禁要求 droppedRows = 0
+```
+
+不引入 profiler 依赖。Visual Studio 自带的 `VSDiagnostics.exe`（`Team Tools\DiagnosticsHub\Collector`）
+产出 `.diagsession` 二进制，只能在 IDE 内交互打开，无法进入 CTest、无法 diff，也无法被脚本读取；
+vcpkg 的 `tracy` port 同样以交互式 UI 为核心产物，并需要在 audio/runtime 路径插桩，与本阶段的
+模块边界和实时约束冲突。两者都不产出可断言产物，profiler 接入留待阶段 9A 依据实测预算再评估。
+
+## 15. 配置整合
 
 阶段 1D 不新增 UserPreferences、DeviceProfile 或持久化 Audio 配置文件。CuexisAudio 的 `AudioConfig` 只有代码默认值和显式内存注入；HostClock contract 也是当前会话输入。Chart 的 `audio.mainMusic` 是确定性内容引用，不是设备配置。
 
 阶段 6 成为首个持久化 Player UserPreferences / AudioDeviceProfile 消费者，负责设备身份、输出校准、来源追踪和动态/重建设备应用规则。阶段 9A 再根据测量冻结设备预算。
 
-## 15. 明确非目标
+## 16. 明确非目标
 
 ```text
 特定设备持久化、UserPreferences、AudioDeviceProfile、校准
@@ -373,7 +422,7 @@ OGG/MP3/FLAC、流式解码、异步解码和文件热重载
 并保持现有门禁
 ```
 
-## 16. 待确认选择
+## 17. 待确认选择
 
 1. 使用 Asset Index v2 增加 `audio`，使用 Chart v2 增加 `audio.mainMusic`；ProjectConfig v1 不变。
 2. 采用 Source Handle/Lease -> AudioClipStore Handle/Lease 的双层派生资源所有权。

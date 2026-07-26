@@ -1,8 +1,9 @@
 #pragma once
 
-//  ThreadChecker — 线程所有权检查器
-//  构造时记录创建线程，用于在 Debug 构建中断言调用方处于正确线程
-//  Main/Render/Audio Thread 的所有权规则依赖此类进行验证
+//  ThreadChecker - thread ownership checker
+//  Records the creating thread on construction so Debug builds can assert that the caller is
+//  on the correct thread
+//  The ownership rules for the Main/Render/Audio threads rely on this class for verification
 
 #include <thread>
 

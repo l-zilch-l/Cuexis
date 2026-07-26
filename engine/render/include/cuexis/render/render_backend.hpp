@@ -1,9 +1,11 @@
 #pragma once
 
-//  RenderBackend — 渲染后端抽象基类
-//  当前唯一实现为 OpenGL Backend（cuexis_render_opengl），Vulkan 后端为未来预留
-//  业务层不得直接调用 OpenGL；RenderScene 不包含后端类型
-//  RenderFrame: 单帧渲染输入，包含非拥有场景引用（仅 renderFrame() 期间有效）
+//  RenderBackend - abstract base class for render backends
+//  The only implementation today is the OpenGL backend (cuexis_render_opengl); a Vulkan
+//  backend is reserved for the future
+//  Callers must never invoke OpenGL directly; RenderScene contains no backend types
+//  RenderFrame: single-frame render input holding a non-owning scene reference (valid only
+//  for the duration of renderFrame())
 
 #include <cuexis/core/math.hpp>
 #include <cuexis/core/result.hpp>

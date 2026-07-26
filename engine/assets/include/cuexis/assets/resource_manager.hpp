@@ -1,11 +1,14 @@
 #pragma once
 
-//  ResourceManager / ResourceLease / ResourceScope — 资源生命周期管理
-//  ResourceManager: 持有 AssetDatabase，管理同步 CPU blob 加载和类型化槽位
-//  ResourceLease<T>: RAII 强引用（move-only），保证资源在持有期间存活
-//  ResourceScope: 批量持有 Lease，对直接和传递依赖去重
-//  ResourcePolicy: Required（缺失失败）、Fallback（错误占位资源）、Optional（跳过）
-//  contentRevision: 热重载扩展点；当前无文件监听或正式热重载 API
+//  ResourceManager / ResourceLease / ResourceScope - resource lifetime management
+//  ResourceManager: owns the AssetDatabase, manages synchronous CPU blob loading and
+//  typed slots
+//  ResourceLease<T>: RAII strong reference (move-only), keeps the resource alive while held
+//  ResourceScope: holds Leases in bulk, deduplicating direct and transitive dependencies
+//  ResourcePolicy: Required (fail when missing), Fallback (error placeholder resource),
+//  Optional (skip)
+//  contentRevision: hot-reload extension point; there is currently no file watching or
+//  formal hot-reload API
 
 #include <cuexis/assets/asset_database.hpp>
 #include <cuexis/assets/resource_handle.hpp>

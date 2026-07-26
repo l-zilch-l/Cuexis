@@ -1,8 +1,9 @@
 #pragma once
 
-//  JSON Schema 验证适配器 — 基于 nlohmann/json-schema-validator
-//  无效 Schema 本身作为操作错误返回；实例违规追加到 diagnostics
-//  当前 loader 尚未调用此 adapter，但 Schema artifact 和独立测试已建立
+//  JSON Schema validation adapter - built on nlohmann/json-schema-validator
+//  An invalid schema itself is returned as an operation error; instance violations are
+//  appended to diagnostics
+//  No loader calls this adapter yet, but the Schema artifact and its standalone tests exist
 
 #include <cuexis/core/diagnostic.hpp>
 #include <cuexis/core/result.hpp>
@@ -12,7 +13,8 @@
 
 namespace cuexis::json {
 
-// 无效 Schema 返回操作错误；实例违规追加到 diagnostics
+// An invalid schema returns an operation error; instance violations are appended to
+// diagnostics
 [[nodiscard]] core::Result<void> validateAgainstSchema(const Value& instance, const Value& schema,
                                                        core::Diagnostics& diagnostics,
                                                        std::string_view rootFieldPath = "$");

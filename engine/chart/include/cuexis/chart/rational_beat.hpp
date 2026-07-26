@@ -1,9 +1,11 @@
 #pragma once
 
-//  RationalBeat — 规范化有理数拍数，numerator/denominator，保存时约分
-//  方案 A 使用有理数；方案 B 的十进制 beat 通过 parseSimple() 根据原始文本精确转换
-//  零统一保存为 0/1；溢出检查受 ChartLimits 约束
-//  比较：先通分再比较，保证排序确定性
+//  RationalBeat - normalized rational beat count as numerator/denominator, reduced on store
+//  Scheme A uses rationals; scheme B decimal beats are converted exactly from the original
+//  text by parseSimple()
+//  Zero is always stored as 0/1; overflow checks are bounded by ChartLimits
+//  Comparison: operands are brought to a common denominator first, guaranteeing a
+//  deterministic ordering
 
 #include <cuexis/chart/limits.hpp>
 #include <cuexis/core/result.hpp>

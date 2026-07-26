@@ -1,8 +1,10 @@
 #pragma once
 
-//  typed Reader — 从 Cuexis Value 读取结构化数据，自动生成以 `$` 为根的字段路径诊断
-//  requiredField 缺失或类型错误时自动报告，optionalField 静默返回 nullopt
-//  rejectUnknownFields 用于检测未知字段，确保格式版本兼容性
+//  typed Reader - reads structured data from a Cuexis Value, automatically producing field
+//  path diagnostics rooted at `$`
+//  requiredField reports automatically when absent or mistyped; optionalField silently
+//  returns nullopt
+//  rejectUnknownFields detects unknown fields, which keeps format versions compatible
 
 #include <cuexis/core/diagnostic.hpp>
 #include <cuexis/json/value.hpp>

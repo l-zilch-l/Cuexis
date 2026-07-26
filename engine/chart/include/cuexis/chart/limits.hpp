@@ -1,8 +1,9 @@
 #pragma once
 
-//  ChartLimits — 谱面解析和编译的默认安全预算
-//  包括输入大小、嵌套深度、对象/模板/行为数量等上限
-//  调用方可以传入更严格的限制，但不得通过放宽预算改变格式语义
+//  ChartLimits - default safety budgets for chart parsing and compilation
+//  Covers input size, nesting depth, and object/template/behavior count ceilings
+//  Callers may supply stricter limits, but must never change format semantics by relaxing
+//  the budgets
 
 #include <cstddef>
 #include <cstdint>

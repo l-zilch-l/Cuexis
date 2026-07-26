@@ -50,6 +50,59 @@ Requires `clang-format` in PATH. Uses `.clang-format` (LLVM-based, 4-space inden
 
 Binary output directory: `out/build/{debug|release}/bin/`.
 
+### Running the player as a background process
+
+A synchronous shell call cannot observe a long-running or interactive player. Start it
+detached, poll the redirected logs, then stop it. The process survives between separate
+shell invocations, so the polling step can be a later command:
+
+```powershell
+$p = Start-Process -FilePath .\out\build\debug\bin\cuexis_player.exe `
+     -ArgumentList '--smoke-test' -PassThru -NoNewWindow `
+     -RedirectStandardOutput run.log -RedirectStandardError run.err
+# ... later, in the same or a different shell call ...
+Get-Content run.log -Tail 40
+if (-not $p.HasExited) { Stop-Process -Id $p.Id }
+```
+
+`-RedirectStandardOutput` and `-RedirectStandardError` must point at *different* files;
+PowerShell fails if both target the same path. Always stop the process when finished so no
+orphaned `cuexis_player.exe` holds the GPU context or the log files.
+
+### Static analysis, sanitizers and coverage
+
+`CMakePresets.json` defines `headless-sanitize`, `headless-clang-tidy` and
+`headless-coverage`. **All three are Linux/Clang/GCC-only** and are exercised by
+`.github/workflows/linux-quality.yml`, not locally on MSVC:
+
+| Preset | Requires | Status on Windows/MSVC |
+|---|---|---|
+| `headless-sanitize` | Clang or GCC | Fatal configure error |
+| `headless-coverage` | Clang or GCC + `gcovr` | Fatal configure error |
+| `headless-clang-tidy` | `clang-tidy` | Configures, but the build fails |
+
+`CMakeLists.txt` hard-stops sanitize/coverage with `requires Clang or GCC`, and both use
+GNU-style flags (`-fsanitize=address,undefined`, `--coverage`) that MSVC does not accept.
+`clang-cl` does not rescue them either: `-fno-omit-frame-pointer` is rejected as an unknown
+argument under `/WX`, and ASan conflicts with the debug runtime (`-MDd`).
+
+`headless-clang-tidy` configures cleanly on MSVC but **fails to build**: `/EHsc` is applied
+through `cuexis_enable_warnings` as a `PRIVATE` option that clang-tidy never receives, so
+every `try`/`throw` becomes `cannot use 'try' with exceptions disabled`. Do not treat that
+output as a real finding.
+
+For local static analysis on Windows, drive the tools directly against
+`compile_commands.json` (emitted by every preset) instead of using these presets:
+
+```powershell
+clang-tidy -p out\build\debug engine\playback\src\playback_session.cpp
+clangd --check=engine\playback\src\playback_session.cpp --compile-commands-dir=out\build\debug
+```
+
+`clangd --check` runs a full parse plus index of one file and reports diagnostics, which
+catches far more than a grep-level review. Both inherit the MSVC triple, include paths and
+`/std:c++20` from `compile_commands.json`.
+
 ## Architecture constraints (verified by CTest)
 
 These are enforced by `cuexis_architecture_tests` — any violation **fails the build**:
@@ -93,10 +146,13 @@ When adding/removing a dependency, update **all** of:
 | Test files | `<subject>_tests.cpp` |
 
 - Public headers in `include/cuexis/<module>/`, impl in `src/`.
+- **Installed public headers must be pure ASCII — no CJK comments, no `—`, `；`, `（）` or other non-ASCII punctuation.** This applies to every `engine/*/include/cuexis/**/*.hpp` that ships in the install tree. Write header comments in English.
 - Use `cuexis::core::Result<T, E>` (aliased to `tl::expected`) for recoverable errors — **never** ignore a `Result` without explicit discard/log.
 - Exceptions must not cross module public boundaries. Destructors and real-time paths (audio/render) must not throw.
 - Third-party types must not leak into Cuexis public API (exceptions: `tl::expected` in `core`).
 - No raw `new`/`delete` across module boundaries. Use `unique_ptr`, `shared_ptr` only when truly shared, raw ptrs for non-owning observers.
+
+**Why the ASCII rule matters**: the project compiles its own targets with `/utf-8` (`cmake/CuexisWarnings.cmake`), but that flag is `PRIVATE` and is *not* exported to consumers. An external consumer on a non-UTF-8 system codepage (e.g. `ACP=936`, Simplified Chinese Windows) parses non-ASCII comment bytes as the local encoding, which swallows the line ending and produces `error C2059`/`C2065` inside the header, plus cascading STL errors. This is exactly what broke `cuexis_external_consumer_find_package`. English-only ASCII comments in installed headers keep the SDK independent of any compiler encoding flag. Comments in `src/` and `tests/` are not affected by this rule.
 
 ## Testing
 

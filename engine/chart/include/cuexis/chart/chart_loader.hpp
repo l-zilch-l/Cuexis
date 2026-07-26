@@ -1,8 +1,9 @@
 #pragma once
 
-//  ChartLoader — 谱面加载入口，按显式 format 字段路由方案 A/B
-//  cuexis.chart -> CanonicalChartLoader；cuexis.chart.simple -> SimpleChartImporter
-//  未知 format 返回 UnsupportedFormat 诊断，不根据字段猜测格式
+//  ChartLoader - chart loading entry point; routes to scheme A/B by explicit format field
+//  cuexis.chart -> CanonicalChartLoader; cuexis.chart.simple -> SimpleChartImporter
+//  An unknown format yields an UnsupportedFormat diagnostic; the format is never guessed
+//  from the present fields
 
 #include <cuexis/chart/chart_document.hpp>
 #include <cuexis/chart/limits.hpp>

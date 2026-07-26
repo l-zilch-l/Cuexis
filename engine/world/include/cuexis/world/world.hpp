@@ -1,9 +1,10 @@
 #pragma once
 
-//  World — EnTT Registry 的线程安全封装
-//  通过 withRegistry() 回调访问，禁止返回 Registry 内部指针或引用
-//  ThreadChecker 确保所有操作在所属线程执行（Debug 构建断言）
-//  World 不依赖 SDL、OpenGL、Chart 或 Asset 模块
+//  World - thread-safe wrapper around the EnTT registry
+//  Accessed through the withRegistry() callback; returning internal registry pointers or
+//  references is forbidden
+//  ThreadChecker ensures every operation runs on the owning thread (asserted in Debug builds)
+//  World does not depend on the SDL, OpenGL, Chart or Asset modules
 
 #include <functional>
 #include <optional>

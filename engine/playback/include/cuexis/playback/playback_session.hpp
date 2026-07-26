@@ -1,10 +1,12 @@
 #pragma once
 
-//  PlaybackSession — 宿主集成的单一播放门面
-//  包装 RuntimeSession 的内部生命周期，隐藏 World、EnTT 和后端具体实现
-//  宿主拥有主循环、窗口和渲染后端；PlaybackSession 只消费 RuntimeFrame 并输出 FrameSnapshot
-//  判定与回放接口在阶段 11 由 cuexis_judgement 提供，PlaybackSession 为其预留扩展点
-//  公共头不暴露 entt、SDL、OpenGL、JSON DOM 或内部 Runtime 类型
+//  PlaybackSession - the single playback facade for host integration
+//  Wraps the internal RuntimeSession lifecycle, hiding World, EnTT and backend specifics
+//  The host owns the main loop, the window and the render backend; PlaybackSession only
+//  consumes RuntimeFrame and emits FrameSnapshot
+//  Judgement and replay interfaces arrive in phase 11 via cuexis_judgement; PlaybackSession
+//  reserves the extension points for them
+//  This public header exposes no entt, SDL, OpenGL, JSON DOM or internal Runtime types
 
 #include <cuexis/core/diagnostic.hpp>
 #include <cuexis/core/result.hpp>

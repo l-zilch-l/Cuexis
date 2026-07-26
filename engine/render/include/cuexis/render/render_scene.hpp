@@ -1,9 +1,10 @@
 #pragma once
 
-//  RenderScene / RenderCommand — 渲染前端的最小帧契约
-//  RenderSystem 生成 RenderScene；RenderBackend 消费 RenderScene 执行绘制
-//  阶段 1A/1B 仅支持 DebugLine 命令；完整 RenderGraph 留在后续阶段
-//  不暴露 OpenGL 或任何图形后端类型
+//  RenderScene / RenderCommand - the minimal frame contract of the render front end
+//  RenderSystem produces a RenderScene; RenderBackend consumes it to perform the draw
+//  Phases 1A/1B support the DebugLine command only; the full RenderGraph is left to later
+//  phases
+//  Exposes neither OpenGL nor any other graphics backend type
 
 #include <cuexis/core/math.hpp>
 #include <cuexis/core/result.hpp>

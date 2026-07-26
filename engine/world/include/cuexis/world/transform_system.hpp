@@ -1,8 +1,9 @@
 #pragma once
 
-//  TransformSystem — 世界矩阵更新
-//  按父级优先顺序自顶向下计算，脏标记避免无变化层级重复计算
-//  验证失败时保持原子性：失败后不部分更新 World 状态
+//  TransformSystem - world matrix updates
+//  Computes top-down in parent-first order; dirty flags avoid recomputing unchanged
+//  hierarchies
+//  Atomic on validation failure: no partial update is applied to the World state
 
 #include <cuexis/core/result.hpp>
 
@@ -10,7 +11,7 @@ namespace cuexis::world {
 
 class World;
 
-// 原子地重新计算所有世界矩阵；验证失败时不修改任何状态
+// Atomically recomputes every world matrix; nothing is modified if validation fails
 [[nodiscard]] auto updateWorldTransforms(World& world) -> core::Result<void>;
 
 } // namespace cuexis::world

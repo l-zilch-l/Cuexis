@@ -1,10 +1,12 @@
 #pragma once
 
-//  ChartDocument — 方案 A 规范谱面文档模型
-//  与 ChartRuntime 分离：ChartDocument 面向编辑/保存/迁移，ChartRuntime 面向播放
-//  类型使用稳定字符串 ID，不绑定 C++ 类名；使用 UUIDv7 作为持久化 ID
-//  Object 通过 Component 组合表达（noted/element/decoration），不建立平行对象容器
-//  OpaqueJson: 已规范化的 JSON 文本，v1 不产生运行时行为
+//  ChartDocument - document model for scheme A canonical charts
+//  Kept separate from ChartRuntime: ChartDocument targets editing/saving/migration,
+//  ChartRuntime targets playback
+//  Types use stable string IDs rather than C++ class names; UUIDv7 is used for persistent IDs
+//  Objects are expressed through Component composition (noted/element/decoration) instead of
+//  parallel object containers
+//  OpaqueJson: already-normalized JSON text; it produces no runtime behavior in v1
 
 #include <cuexis/chart/rational_beat.hpp>
 #include <cuexis/core/diagnostic.hpp>
