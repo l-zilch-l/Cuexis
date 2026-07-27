@@ -14,6 +14,7 @@
 
 #include <entt/entity/registry.hpp>
 
+#include <cuexis/core/result.hpp>
 #include <cuexis/core/thread_checker.hpp>
 #include <cuexis/world/components.hpp>
 
@@ -29,7 +30,11 @@ class World final {
     World(World&&) = delete;
     World& operator=(World&&) = delete;
 
-    template <typename Callback> decltype(auto) withRegistry(Callback&& callback) {
+    // The callback runs synchronously on the owner thread and is never retained. It must not
+    // re-enter this World or retain Registry references beyond the call.
+    template <typename Callback>
+    [[nodiscard]] auto withRegistry(Callback&& callback)
+        -> core::GuardedInvokeResult<Callback&&, entt::registry&> {
         threadChecker_.assertCurrent();
 
         using ReturnType = std::invoke_result_t<Callback&&, entt::registry&>;
@@ -38,10 +43,14 @@ class World final {
         static_assert(!std::is_pointer_v<std::remove_cv_t<ReturnType>>,
                       "World registry callbacks must not return pointers");
 
-        return std::invoke(std::forward<Callback>(callback), registry_);
+        return core::invokeGuarded("world.callback.exception",
+                                   "World registry callback raised an exception",
+                                   std::forward<Callback>(callback), registry_);
     }
 
-    template <typename Callback> decltype(auto) withRegistry(Callback&& callback) const {
+    template <typename Callback>
+    [[nodiscard]] auto withRegistry(Callback&& callback) const
+        -> core::GuardedInvokeResult<Callback&&, const entt::registry&> {
         threadChecker_.assertCurrent();
 
         using ReturnType = std::invoke_result_t<Callback&&, const entt::registry&>;
@@ -50,7 +59,9 @@ class World final {
         static_assert(!std::is_pointer_v<std::remove_cv_t<ReturnType>>,
                       "World registry callbacks must not return pointers");
 
-        return std::invoke(std::forward<Callback>(callback), registry_);
+        return core::invokeGuarded("world.callback.exception",
+                                   "World registry callback raised an exception",
+                                   std::forward<Callback>(callback), registry_);
     }
 
   private:

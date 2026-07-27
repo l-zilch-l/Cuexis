@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <numbers>
 
 namespace cuexis::core {
 namespace {
@@ -168,8 +169,26 @@ bool nearlyEqual(const Mat4& left, const Mat4& right, float tolerance) noexcept 
     return true;
 }
 
-Mat4 makePerspective(double fovYRadians, double aspectRatio, double nearPlane,
-                     double farPlane) noexcept {
+Result<Mat4> makePerspective(double fovYRadians, double aspectRatio, double nearPlane,
+                             double farPlane) noexcept {
+    if (!std::isfinite(fovYRadians) || !std::isfinite(aspectRatio) || !std::isfinite(nearPlane) ||
+        !std::isfinite(farPlane)) {
+        return unexpected(core::Error{"core.math.perspective_non_finite",
+                                      "Perspective parameters must be finite"});
+    }
+    if (fovYRadians <= 0.0 || fovYRadians >= std::numbers::pi) {
+        return unexpected(core::Error{"core.math.perspective_fov_invalid",
+                                      "Perspective vertical FOV must be in (0, pi) radians"});
+    }
+    if (aspectRatio <= 0.0) {
+        return unexpected(core::Error{"core.math.perspective_aspect_invalid",
+                                      "Perspective aspect ratio must be positive"});
+    }
+    if (nearPlane <= 0.0 || farPlane <= nearPlane) {
+        return unexpected(core::Error{"core.math.perspective_planes_invalid",
+                                      "Perspective planes must satisfy 0 < near < far"});
+    }
+
     const auto tanHalfFov = static_cast<float>(std::tan(fovYRadians * 0.5));
     Mat4 result{};
     result.values.fill(0.0F);
@@ -180,6 +199,10 @@ Mat4 makePerspective(double fovYRadians, double aspectRatio, double nearPlane,
     result.element(3, 2) =
         static_cast<float>((2.0 * farPlane * nearPlane) / (nearPlane - farPlane));
     result.element(3, 3) = 0.0F;
+    if (!isFinite(result)) {
+        return unexpected(core::Error{"core.math.perspective_result_non_finite",
+                                      "Perspective matrix is non-finite"});
+    }
     return result;
 }
 

@@ -1,0 +1,188 @@
+{
+  "format": "cuexis.chart",
+  "version": 2,
+  "chartId": "019b0000-0000-7abc-8def-000000000401",
+  "metadata": {
+    "title": "Stage 1D Main Music Example",
+    "artist": "Cuexis"
+  },
+  "timing": {
+    "offsetMs": 0.0,
+    "defaultBpm": 120.0,
+    "bpmChanges": [],
+    "stops": []
+  },
+  "audio": {
+    "version": 1,
+    "mainMusic": { "domain": "asset", "id": "audio.main" }
+  },
+  "camera": {
+    "type": "perspective",
+    "fovY": 55.0,
+    "near": 0.1,
+    "far": 1000.0,
+    "pitch": 0.0,
+    "yaw": 0.0,
+    "roll": 0.0,
+    "defaultTransform": {
+      "position": [0.0, 0.0, 10.0]
+    }
+  },
+  "templates": [],
+  "behaviors": [
+    {
+      "id": "camera.fov.demo",
+      "type": "behavior.transform.keyframe",
+      "version": 1,
+      "tracks": [
+        {
+          "property": "camera.fovY",
+          "keys": [
+            {
+              "beat": { "numerator": 0, "denominator": 1 },
+              "value": 55.0
+            },
+            {
+              "beat": { "numerator": 1, "denominator": 1 },
+              "value": 70.0,
+              "easing": "in_out_cubic"
+            },
+            {
+              "beat": { "numerator": 2, "denominator": 1 },
+              "value": 85.0,
+              "easing": "out_cubic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "transform.motion.demo",
+      "type": "behavior.transform.keyframe",
+      "version": 1,
+      "tracks": [
+        {
+          "property": "transform.position.x",
+          "keys": [
+            {
+              "beat": { "numerator": 0, "denominator": 1 },
+              "value": -1.5
+            },
+            {
+              "beat": { "numerator": 1, "denominator": 1 },
+              "value": 0.0,
+              "easing": "in_cubic"
+            },
+            {
+              "beat": { "numerator": 2, "denominator": 1 },
+              "value": 1.5,
+              "easing": "out_cubic"
+            }
+          ]
+        },
+        {
+          "property": "transform.rotation",
+          "keys": [
+            {
+              "beat": { "numerator": 0, "denominator": 1 },
+              "value": [0.0, 0.0, 0.0, 1.0]
+            },
+            {
+              "beat": { "numerator": 2, "denominator": 1 },
+              "value": [0.0, 1.0, 0.0, 0.0],
+              "easing": "linear"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "transform.scale.demo",
+      "type": "behavior.transform.keyframe",
+      "version": 1,
+      "tracks": [
+        {
+          "property": "transform.scale",
+          "keys": [
+            {
+              "beat": { "numerator": 0, "denominator": 1 },
+              "value": [1.0, 1.0, 1.0]
+            },
+            {
+              "beat": { "numerator": 2, "denominator": 1 },
+              "value": [1.75, 0.5, 1.25],
+              "easing": "in_out_cubic"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "id": "019b0000-0000-7abc-8def-000000000310",
+      "name": "camera",
+      "parent": null,
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [0.0, 0.0, 10.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [1.0, 1.0, 1.0]
+        },
+        "cuexis.camera": {
+          "version": 1,
+          "type": "perspective",
+          "fovY": 55.0,
+          "near": 0.1,
+          "far": 1000.0
+        },
+        "cuexis.behavior": {
+          "version": 1,
+          "behavior": { "domain": "behavior", "id": "camera.fov.demo" }
+        }
+      },
+      "extensions": {}
+    },
+    {
+      "id": "019b0000-0000-7abc-8def-000000000311",
+      "name": "moving_axis",
+      "parent": null,
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [-1.5, 0.0, 0.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [1.0, 1.0, 1.0]
+        },
+        "cuexis.element": { "version": 1 },
+        "cuexis.behavior": {
+          "version": 1,
+          "behavior": { "domain": "behavior", "id": "transform.motion.demo" }
+        }
+      },
+      "extensions": {}
+    },
+    {
+      "id": "019b0000-0000-7abc-8def-000000000312",
+      "name": "scaling_axis",
+      "parent": null,
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [1.5, 0.0, 0.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [1.0, 1.0, 1.0]
+        },
+        "cuexis.element": { "version": 1 },
+        "cuexis.behavior": {
+          "version": 1,
+          "behavior": { "domain": "behavior", "id": "transform.scale.demo" }
+        }
+      },
+      "extensions": {}
+    }
+  ],
+  "requiredExtensions": [],
+  "extensions": {}
+}

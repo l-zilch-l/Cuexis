@@ -1,8 +1,8 @@
 #pragma once
 
-//  Asset Index v1 — 每个资产根独立的 cuexis.asset-index.json
-//  声明资产类型（Mesh、Material、Texture）、来源路径和依赖关系
-//  目录枚举不参与 AssetId 发现；AssetDatabase 仅从此索引读取
+// Asset Index v1/v2 uses one cuexis.asset-index.json per asset root.
+// It declares Mesh, Material, Texture, and Audio types with source paths and dependencies.
+// Directory enumeration does not discover AssetIds; AssetDatabase reads only this index.
 
 #include <cuexis/core/diagnostic.hpp>
 #include <cuexis/project/project_config.hpp>
@@ -19,11 +19,13 @@ namespace cuexis::project {
 
 inline constexpr std::string_view assetIndexFormat = "cuexis.asset-index";
 inline constexpr std::uint32_t assetIndexFormatVersion = 1;
+inline constexpr std::uint32_t assetIndexFormatVersion2 = 2;
 
 enum class AssetType {
     Mesh,
     Material,
     Texture,
+    Audio,
 };
 
 [[nodiscard]] std::string_view assetTypeName(AssetType type) noexcept;

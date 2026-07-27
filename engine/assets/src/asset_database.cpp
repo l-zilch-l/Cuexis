@@ -1,6 +1,6 @@
 //  AssetDatabase 实现 — 从 AssetDatabaseInput 构建不可变资产索引
 //  build(): 校验全局 AssetId 唯一性、依赖存在性、循环依赖和来源 containment
-//  v1 通过有界文件读取提供 CPU blob；目录枚举不用于发现 AssetId
+//  v1 provides bounded render blobs; v2 adds bounded leaf Audio source blobs.
 
 #include <cuexis/assets/asset_database.hpp>
 
@@ -19,7 +19,8 @@ namespace cuexis::assets {
 namespace {
 
 constexpr std::string_view assetIndexFormat = "cuexis.asset-index";
-constexpr std::uint32_t assetIndexVersion = 1;
+constexpr std::uint32_t assetIndexVersion1 = 1;
+constexpr std::uint32_t assetIndexVersion2 = 2;
 
 struct PendingRecord final {
     AssetRecord record;
@@ -62,8 +63,11 @@ auto isPortableIdentifier(std::string_view value, std::size_t maxBytes) -> bool 
     return true;
 }
 
-auto isKnownAssetType(AssetType type) noexcept -> bool {
-    return type == AssetType::Mesh || type == AssetType::Material || type == AssetType::Texture;
+auto isKnownAssetType(AssetType type, std::uint32_t version) noexcept -> bool {
+    if (type == AssetType::Mesh || type == AssetType::Material || type == AssetType::Texture) {
+        return true;
+    }
+    return version == assetIndexVersion2 && type == AssetType::Audio;
 }
 
 auto isRootId(std::string_view value) -> bool {
@@ -199,6 +203,8 @@ std::string_view assetTypeName(AssetType type) noexcept {
         return "material";
     case AssetType::Texture:
         return "texture";
+    case AssetType::Audio:
+        return "audio";
     }
     return "unknown";
 }
@@ -223,6 +229,8 @@ auto AssetDatabase::build(const AssetDatabaseInput& input, const AssetDatabaseLi
     if (input.roots.size() > limits.maxRoots) {
         addError(diagnostics, "assets.database.root_limit",
                  "AssetDatabase asset root limit was exceeded", "$.roots");
+        diagnostics.sortDeterministically();
+        return {std::nullopt, std::move(diagnostics)};
     }
 
     auto data = std::make_shared<Data>();
@@ -249,7 +257,8 @@ auto AssetDatabase::build(const AssetDatabaseInput& input, const AssetDatabaseLi
                      "Asset index format is unsupported", fieldPath + ".index.format");
             valid = false;
         }
-        if (rootInput.index.version != assetIndexVersion) {
+        if (rootInput.index.version != assetIndexVersion1 &&
+            rootInput.index.version != assetIndexVersion2) {
             addError(diagnostics, "assets.database.index_version",
                      "Asset index version is unsupported", fieldPath + ".index.version");
             valid = false;
@@ -330,7 +339,7 @@ auto AssetDatabase::build(const AssetDatabaseInput& input, const AssetDatabaseLi
                          "AssetId is duplicated across the database", fieldPath + ".id");
                 valid = false;
             }
-            if (!isKnownAssetType(record.type)) {
+            if (!isKnownAssetType(record.type, rootInput.index.version)) {
                 addError(diagnostics, "assets.database.asset_type_invalid",
                          "Asset type is not supported by this database version",
                          fieldPath + ".type");
@@ -414,11 +423,27 @@ auto AssetDatabase::build(const AssetDatabaseInput& input, const AssetDatabaseLi
 
     for (std::size_t recordIndex = 0; recordIndex < pending.size(); ++recordIndex) {
         const auto& record = pending[recordIndex].record;
+        if (record.type == AssetType::Audio && !record.dependencies.empty()) {
+            auto diagnostic = core::Diagnostic{
+                core::DiagnosticSeverity::Error, "assets.database.audio_dependencies_not_empty",
+                "Audio assets must be dependency leaves", "$.dependencies"};
+            diagnostic.withContext("assetId", record.id.value);
+            diagnostics.add(std::move(diagnostic));
+        }
         for (const auto& dependency : record.dependencies) {
-            if (!byId.contains(dependency.value)) {
+            const auto dependencyRecord = byId.find(dependency.value);
+            if (dependencyRecord == byId.end()) {
                 auto diagnostic = core::Diagnostic{
                     core::DiagnosticSeverity::Error, "assets.database.dependency_missing",
                     "Asset dependency does not exist in the database", "$.dependencies"};
+                diagnostic.withContext("assetId", record.id.value)
+                    .withContext("dependency", dependency.value);
+                diagnostics.add(std::move(diagnostic));
+            } else if (record.type != AssetType::Audio &&
+                       pending[dependencyRecord->second].record.type == AssetType::Audio) {
+                auto diagnostic = core::Diagnostic{
+                    core::DiagnosticSeverity::Error, "assets.database.audio_dependency_forbidden",
+                    "Non-audio assets must not depend on Audio assets", "$.dependencies"};
                 diagnostic.withContext("assetId", record.id.value)
                     .withContext("dependency", dependency.value);
                 diagnostics.add(std::move(diagnostic));

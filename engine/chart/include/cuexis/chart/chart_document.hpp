@@ -61,6 +61,11 @@ struct ChartTiming final {
     double defaultBpm{120.0};
 };
 
+struct ChartAudioData final {
+    std::uint32_t version{1};
+    AssetId mainMusic;
+};
+
 struct TransformData final {
     core::Vec3 position{};
     core::Quat rotation{};
@@ -181,6 +186,8 @@ struct ChartDocument final {
     std::vector<ChartBehavior> behaviors;
     std::vector<ChartObject> objects;
     OpaqueJson extensions{};
+    std::uint32_t version{1};
+    std::optional<ChartAudioData> audio;
 };
 
 struct ChartDocumentResult final {

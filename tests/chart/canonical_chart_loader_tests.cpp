@@ -90,7 +90,7 @@ TEST_CASE("Canonical loader rejects unsupported versions timing events and requi
     constexpr std::string_view invalid = R"json(
 {
   "format": "cuexis.chart",
-  "version": 2,
+  "version": 3,
   "chartId": "019b0000-0000-7abc-8def-000000000001",
   "metadata": {},
   "timing": {
@@ -225,10 +225,58 @@ TEST_CASE("Canonical loader detects template inheritance cycles", "[chart][canon
   ],
   "behaviors":[],"objects":[],"requiredExtensions":[],"extensions":{}
 }
+
 )json";
     const auto loaded = cuexis::chart::CanonicalChartLoader::load(chart);
     REQUIRE_FALSE(loaded.hasValue());
     CHECK(hasDiagnostic(loaded.diagnostics, "chart.template.inheritance_cycle"));
+}
+
+TEST_CASE("Canonical loader exposes typed Chart v2 main music", "[chart][canonical][audio]") {
+    constexpr std::string_view audioBlock = R"json(
+  "audio":{"version":1,"mainMusic":{"domain":"asset","id":"audio.main"}},)json";
+    auto chart = std::string{minimalChart};
+    const auto version = chart.find("\"version\": 1");
+    REQUIRE(version != std::string::npos);
+    chart.replace(version, std::string_view{"\"version\": 1"}.size(), "\"version\": 2");
+    const auto metadata = chart.find("\"metadata\": {},");
+    REQUIRE(metadata != std::string::npos);
+    chart.insert(metadata + std::string_view{"\"metadata\": {},"}.size(), audioBlock);
+
+    const auto loaded = cuexis::chart::CanonicalChartLoader::load(chart);
+    REQUIRE(loaded.hasValue());
+    CHECK(loaded.document->version == 2);
+    REQUIRE(loaded.document->audio.has_value());
+    CHECK(loaded.document->audio->mainMusic.value == "audio.main");
+
+    auto v1Chart = std::string{minimalChart};
+    const auto v1Metadata = v1Chart.find("\"metadata\": {},");
+    REQUIRE(v1Metadata != std::string::npos);
+    v1Chart.insert(v1Metadata + std::string_view{"\"metadata\": {},"}.size(), audioBlock);
+    const auto v1Audio = cuexis::chart::CanonicalChartLoader::load(v1Chart);
+    REQUIRE_FALSE(v1Audio.hasValue());
+    CHECK(hasDiagnostic(v1Audio.diagnostics, "json.field.unknown", "$/audio"));
+}
+
+TEST_CASE("Canonical loader rejects invalid object camera fields without default fallback",
+          "[chart][canonical][camera][diagnostics]") {
+    auto invalid = std::string{minimalChart};
+    const auto component = invalid.find("{ \"cuexis.element\": { \"version\": 1 } }");
+    REQUIRE(component != std::string::npos);
+    invalid.replace(component,
+                    std::string_view{"{ \"cuexis.element\": { \"version\": 1 } }"}.size(),
+                    R"json({
+        "cuexis.camera":{"version":1,"type":"orthographic","fovY":0,"near":2,"far":1}
+      })json");
+
+    const auto loaded = cuexis::chart::CanonicalChartLoader::load(invalid);
+    REQUIRE_FALSE(loaded.hasValue());
+    CHECK(hasDiagnostic(loaded.diagnostics, "chart.camera.unsupported_type",
+                        "$/objects/0/components/cuexis.camera/type"));
+    CHECK(hasDiagnostic(loaded.diagnostics, "chart.camera.invalid_fov",
+                        "$/objects/0/components/cuexis.camera/fovY"));
+    CHECK(hasDiagnostic(loaded.diagnostics, "chart.camera.near_exceeds_far",
+                        "$/objects/0/components/cuexis.camera"));
 }
 
 TEST_CASE("Canonical loader expands the maximum template chain without recursive stack growth",

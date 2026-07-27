@@ -1,5 +1,6 @@
 add_library(cuexis_playback STATIC
     src/playback_session.cpp
+    src/runtime_timeline.cpp
 )
 add_library(cuexis::playback ALIAS cuexis_playback)
 add_library(Cuexis::Playback ALIAS cuexis_playback)
@@ -13,6 +14,7 @@ target_sources(cuexis_playback
         FILES
             include/cuexis/playback/content_provider.hpp
             include/cuexis/playback/playback_session.hpp
+            include/cuexis/playback/runtime_timeline.hpp
 )
 
 target_compile_features(cuexis_playback PUBLIC cxx_std_20)
@@ -20,6 +22,7 @@ target_compile_features(cuexis_playback PUBLIC cxx_std_20)
 target_link_libraries(cuexis_playback
     PUBLIC
         cuexis::assets
+        cuexis::audio
         cuexis::content
         cuexis::core
     PRIVATE

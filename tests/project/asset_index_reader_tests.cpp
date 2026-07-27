@@ -81,3 +81,48 @@ TEST_CASE("Asset Index Reader rejects unknown core fields and preserves opaque e
     CHECK(result.diagnostics.hasWarnings());
     CHECK(hasDiagnostic(result.diagnostics, "json.field.unknown", "$/futureCore"));
 }
+
+TEST_CASE("Asset Index Reader routes v1 and v2 audio semantics", "[project][asset-index][v2]") {
+    constexpr std::string_view v2 = R"json(
+{
+  "format":"cuexis.asset-index",
+  "version":2,
+  "assets":[
+    {"id":"audio.main","type":"audio","source":"audio/main.wav","dependencies":[]},
+    {"id":"mesh.note","type":"mesh","source":"mesh.bin","dependencies":[]}
+  ],
+  "extensions":{}
+}
+)json";
+    const auto accepted = cuexis::project::AssetIndexReader::read(v2);
+    REQUIRE(accepted.hasValue());
+    REQUIRE(accepted.document->version == 2);
+    REQUIRE(accepted.document->assets.size() == 2);
+    CHECK(accepted.document->assets[0].type == cuexis::project::AssetType::Audio);
+
+    auto v1 = std::string{v2};
+    const auto version = v1.find("\"version\":2");
+    REQUIRE(version != std::string::npos);
+    v1.replace(version, std::string_view{"\"version\":2"}.size(), "\"version\":1");
+    const auto rejected = cuexis::project::AssetIndexReader::read(v1);
+    REQUIRE_FALSE(rejected.hasValue());
+    CHECK(hasDiagnostic(rejected.diagnostics, "asset_index.type.unsupported", "$/assets/0/type"));
+}
+
+TEST_CASE("Asset Index v2 enforces audio leaf boundaries", "[project][asset-index][v2]") {
+    constexpr std::string_view invalid = R"json(
+{
+  "format":"cuexis.asset-index",
+  "version":2,
+  "assets":[
+    {"id":"audio.main","type":"audio","source":"audio/main.wav","dependencies":["mesh.note"]},
+    {"id":"mesh.note","type":"mesh","source":"mesh.bin","dependencies":["audio.main"]}
+  ],
+  "extensions":{}
+}
+)json";
+    const auto result = cuexis::project::AssetIndexReader::read(invalid);
+    REQUIRE_FALSE(result.hasValue());
+    CHECK(hasDiagnostic(result.diagnostics, "asset_index.audio.dependencies_not_empty"));
+    CHECK(hasDiagnostic(result.diagnostics, "asset_index.audio.dependency_forbidden"));
+}

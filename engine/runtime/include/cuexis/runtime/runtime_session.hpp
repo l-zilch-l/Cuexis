@@ -119,7 +119,7 @@ class RuntimeSession final {
 
     template <typename Callback>
     [[nodiscard]] auto withWorld(Callback&& callback)
-        -> core::Result<std::invoke_result_t<Callback&&, world::World&>> {
+        -> core::GuardedInvokeResult<Callback&&, world::World&> {
         using ReturnType = std::invoke_result_t<Callback&&, world::World&>;
         static_assert(!std::is_reference_v<ReturnType>,
                       "RuntimeSession World callbacks must not return references");
@@ -135,17 +135,16 @@ class RuntimeSession final {
                 core::Error{"runtime.session.empty", "RuntimeSession has no committed World"});
         }
 
-        if constexpr (std::is_void_v<ReturnType>) {
-            std::invoke(std::forward<Callback>(callback), *world_);
-            return {};
-        } else {
-            return std::invoke(std::forward<Callback>(callback), *world_);
-        }
+        // The callback runs synchronously on the owner thread and is never retained. It must not
+        // re-enter this RuntimeSession or retain World references beyond the call.
+        return core::invokeGuarded("runtime.session.callback_exception",
+                                   "RuntimeSession World callback raised an exception",
+                                   std::forward<Callback>(callback), *world_);
     }
 
     template <typename Callback>
     [[nodiscard]] auto withWorld(Callback&& callback) const
-        -> core::Result<std::invoke_result_t<Callback&&, const world::World&>> {
+        -> core::GuardedInvokeResult<Callback&&, const world::World&> {
         using ReturnType = std::invoke_result_t<Callback&&, const world::World&>;
         static_assert(!std::is_reference_v<ReturnType>,
                       "RuntimeSession World callbacks must not return references");
@@ -161,12 +160,9 @@ class RuntimeSession final {
                 core::Error{"runtime.session.empty", "RuntimeSession has no committed World"});
         }
 
-        if constexpr (std::is_void_v<ReturnType>) {
-            std::invoke(std::forward<Callback>(callback), *world_);
-            return {};
-        } else {
-            return std::invoke(std::forward<Callback>(callback), *world_);
-        }
+        return core::invokeGuarded("runtime.session.callback_exception",
+                                   "RuntimeSession World callback raised an exception",
+                                   std::forward<Callback>(callback), *world_);
     }
 
   private:

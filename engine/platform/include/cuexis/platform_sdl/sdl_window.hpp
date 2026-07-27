@@ -1,9 +1,9 @@
 #pragma once
 
-//  SdlWindow / SdlWindowLease — SDL3 窗口与租约模式
-//  SdlWindow 持有窗口所有权，SdlWindowLease 是共享弱引用，保持窗口和 SDL 运行时存活
-//  线程契约：所有操作必须在关联的 SDL 主线程执行
-//  Video Backend（OpenGL）通过 nativeHandle() 获取原生窗口句柄，不暴露 SDL 类型
+// SDL3 window ownership and lease types.
+// SdlWindow owns the window; SdlWindowLease keeps the window and SDL runtime alive.
+// Every operation must run on the associated SDL main thread.
+// Video backends use nativeHandle() without exposing SDL types.
 
 #include <memory>
 #include <string>

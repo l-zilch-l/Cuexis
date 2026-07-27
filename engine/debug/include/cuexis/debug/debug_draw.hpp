@@ -1,9 +1,9 @@
 #pragma once
 
-//  DebugDraw — 调试绘制，为每个有 Transform 的 Entity 渲染 XYZ 轴线
-//  读取 World 中的 TransformComponent 和 WorldTransformComponent
-//  通过 RenderScene.addDebugLine() 输出，不直接调用 OpenGL
-//  阶段 1A/1B 用此替代真实 Mesh GPU 绘制作为可视化输出
+// DebugDraw appends XYZ axes for entities with Transform components.
+// It reads TransformComponent and WorldTransformComponent from World.
+// Output goes through RenderScene::addDebugLine() without direct OpenGL calls.
+// Stages 1A and 1B use this as visible output before real Mesh GPU rendering.
 
 #include <cuexis/core/result.hpp>
 

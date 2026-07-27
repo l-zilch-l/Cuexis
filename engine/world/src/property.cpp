@@ -222,7 +222,7 @@ void TransformPropertyResolver::rollback(World& world) noexcept {
     if (!committed_) {
         return;
     }
-    world.withRegistry([&](entt::registry& registry) {
+    const auto rolledBack = world.withRegistry([&](entt::registry& registry) {
         for (const auto index : touchedEntries_) {
             const auto& entry = entries_[index];
             if (registry.valid(entry.entity) && registry.all_of<TransformComponent>(entry.entity)) {
@@ -230,6 +230,9 @@ void TransformPropertyResolver::rollback(World& world) noexcept {
             }
         }
     });
+    if (!rolledBack) {
+        std::terminate();
+    }
     committed_ = false;
 }
 

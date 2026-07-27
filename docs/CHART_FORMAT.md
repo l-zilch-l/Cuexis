@@ -1,12 +1,12 @@
-# Cuexis Chart Format v1
+# Cuexis Chart Format v1/v2
 
-状态：阶段 1C 已实现的方案 A v1 行为规范
+状态：阶段 1C 的方案 A v1 与阶段 1D 的 v2 主音乐扩展均已实现
 
-更新日期：2026-07-22
+更新日期：2026-07-27
 
 ## 1. 范围
 
-本文定义 `format: "cuexis.chart"` 的规范 ChartDocument 结构。它面向保存、迁移、Studio 编辑和 Playback SDK 编译，不是 ChartRuntime、World 或 FrameSnapshot 的内存布局。阶段 1C 已在阶段 1A/1B 的 format 路由、typed 结构读取、模板展开、资源事务与确定性编译基础上，激活 Behavior Track 的 typed 读取、编译和绝对时间求值。
+本文定义 `format: "cuexis.chart"` 的规范 ChartDocument 结构。它面向保存、迁移、Studio 编辑和 Playback SDK 编译，不是 ChartRuntime、World 或 FrameSnapshot 的内存布局。阶段 1C 已在阶段 1A/1B 的 format 路由、typed 结构读取、模板展开、资源事务与确定性编译基础上，激活 Behavior Track 的 typed 读取、编译和绝对时间求值。阶段 1D 按 ADR 0031 实现 v2 的可选主音乐引用、严格版本路由和 Playback 内容准备；v1 的字段和未知字段拒绝语义保持不变。
 
 `cuexis.chart.simple` 属于兼容导入格式，必须按 `docs/SIMPLE_CHART_FORMAT.md` 转换成本文结构。内部 Runtime、World 和各 System 只接收本文模型编译后的 ChartRuntime；嵌入宿主通过 PlaybackSession、FrameSnapshot、JudgementResult 和稳定查询接口交互，不接收 ChartRuntime 或 EnTT Entity。
 
@@ -44,9 +44,33 @@
 }
 ```
 
-必需字段：`format`、`version`、`chartId`、`metadata`、`timing`、`templates`、`behaviors`、`objects`、`requiredExtensions`、`extensions`。`camera` 为可选字段，省略时使用默认透视相机（fovY=60, near=0.1, far=1000, pitch/yaw/roll=0）。
+必需字段：`format`、`version`、`chartId`、`metadata`、`timing`、`templates`、`behaviors`、`objects`、`requiredExtensions`、`extensions`。`camera` 为可选字段，省略时使用默认透视相机（fovY=60, near=0.1, far=1000, pitch/yaw/roll=0）。v1 不接受顶层 `audio`。
 
 顶层数组顺序不具有运行语义。所有 ID 在对应域中必须唯一，编译器必须产生与输入数组顺序无关的确定性结果。
+
+## 2a. v2 主音乐
+
+v2 保留全部 v1 结构，并允许一个可选 typed `audio` block：
+
+```json
+"audio": {
+  "version": 1,
+  "mainMusic": {
+    "domain": "asset",
+    "id": "audio.main"
+  }
+}
+```
+
+省略 `audio` 表示明确没有主音乐，只能选择 ChartClock。存在 block 时 `version` 和
+`mainMusic` 都是必需字段，`domain` 必须为 `asset`；引用必须解析到 Asset Index v2 的 Audio
+叶节点，只能选择 HostClock 或 CuexisAudio。内容解析使用 Required 策略，任何模式失败都不得
+静默切换。`timing.offsetMs` 仍是 Beat 0 相对 source time 的唯一谱面 offset，设备配置、输出
+延迟和用户校准不得写入 `audio`。
+
+Reader 必须先按显式 `version` 路由，再使用对应字段表。v1 不接受 `audio`，v2 不得被伪装成
+v1；loader 不自动迁移或写回。`cuexis.chart.simple` 仍只有 v1。只有 Chart 文件、没有 Project
+和 Asset Index 的 `--chart` 入口遇到带主音乐的 v2 Chart 时必须明确失败。
 
 ## 3. Beat
 

@@ -6,6 +6,8 @@
 
 #include <entt/entity/registry.hpp>
 
+#include <utility>
+
 namespace {
 
 using cuexis::core::Quat;
@@ -16,11 +18,22 @@ using cuexis::world::TransformComponent;
 using cuexis::world::TransformPropertyResolver;
 using cuexis::world::World;
 
+template <typename WorldType, typename Callback>
+auto registryValue(WorldType& world, Callback&& callback) {
+    auto result = world.withRegistry(std::forward<Callback>(callback));
+    REQUIRE(result.has_value());
+    return std::move(*result);
+}
+
+template <typename Callback> void registryAction(World& world, Callback&& callback) {
+    REQUIRE(world.withRegistry(std::forward<Callback>(callback)).has_value());
+}
+
 TEST_CASE("Transform resolver rebuilds every frame from the captured baseline",
           "[world][property][determinism]") {
     World world;
     entt::entity entity{entt::null};
-    world.withRegistry([&](entt::registry& registry) {
+    registryAction(world, [&](entt::registry& registry) {
         entity = registry.create();
         registry.emplace<TransformComponent>(entity, Vec3{1.0F, 2.0F, 3.0F},
                                              Quat{0.0F, 0.0F, 0.0F, 1.0F}, Vec3{1.0F, 1.0F, 1.0F});
@@ -34,7 +47,7 @@ TEST_CASE("Transform resolver rebuilds every frame from the captured baseline",
     REQUIRE(writes.push(PropertyWrite{entity, PropertyId::TransformPositionX, 9.0}).has_value());
     REQUIRE(resolver.prepare(writes.writes()).has_value());
     REQUIRE(resolver.commit(world).has_value());
-    auto first = world.withRegistry([&](const entt::registry& registry) {
+    auto first = registryValue(world, [&](const entt::registry& registry) {
         return registry.get<TransformComponent>(entity).position;
     });
     CHECK(first.x == Catch::Approx(9.0F));
@@ -43,7 +56,7 @@ TEST_CASE("Transform resolver rebuilds every frame from the captured baseline",
     REQUIRE(writes.push(PropertyWrite{entity, PropertyId::TransformPositionY, 8.0}).has_value());
     REQUIRE(resolver.prepare(writes.writes()).has_value());
     REQUIRE(resolver.commit(world).has_value());
-    auto second = world.withRegistry([&](const entt::registry& registry) {
+    auto second = registryValue(world, [&](const entt::registry& registry) {
         return registry.get<TransformComponent>(entity).position;
     });
     CHECK(second.x == Catch::Approx(1.0F));
@@ -54,7 +67,7 @@ TEST_CASE("Transform resolver rebuilds every frame from the captured baseline",
 TEST_CASE("Transform resolver validates all writes before commit", "[world][property][rollback]") {
     World world;
     entt::entity entity{entt::null};
-    world.withRegistry([&](entt::registry& registry) {
+    registryAction(world, [&](entt::registry& registry) {
         entity = registry.create();
         registry.emplace<TransformComponent>(entity);
     });
@@ -69,8 +82,9 @@ TEST_CASE("Transform resolver validates all writes before commit", "[world][prop
                 .has_value());
     auto result = resolver.prepare(writes.writes());
     REQUIRE_FALSE(result.has_value());
-    const auto transform = world.withRegistry(
-        [&](const entt::registry& registry) { return registry.get<TransformComponent>(entity); });
+    const auto transform = registryValue(world, [&](const entt::registry& registry) {
+        return registry.get<TransformComponent>(entity);
+    });
     CHECK(transform.position == Vec3{});
     CHECK(transform.rotation == Quat{});
 }
@@ -90,7 +104,7 @@ TEST_CASE("Transform resolver rollback only restores entities written in the cur
     World world;
     entt::entity first{entt::null};
     entt::entity second{entt::null};
-    world.withRegistry([&](entt::registry& registry) {
+    registryAction(world, [&](entt::registry& registry) {
         first = registry.create();
         second = registry.create();
         registry.emplace<TransformComponent>(first);
@@ -109,7 +123,7 @@ TEST_CASE("Transform resolver rollback only restores entities written in the cur
     REQUIRE(resolver.commit(world).has_value());
     resolver.rollback(world);
 
-    const auto positions = world.withRegistry([&](const entt::registry& registry) {
+    const auto positions = registryValue(world, [&](const entt::registry& registry) {
         return std::pair{registry.get<TransformComponent>(first).position,
                          registry.get<TransformComponent>(second).position};
     });

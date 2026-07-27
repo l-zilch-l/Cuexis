@@ -2,9 +2,9 @@
 
 状态：Playback Core C++ preview 实施中；ContentProvider、静态包、组件开关与外部 consumer 基础门禁已落地
 规划日期：2026-07-20  
-进展更新：2026-07-26
+进展更新：2026-07-27
 最终验收前置：[阶段 1C 审查问题关闭](../stage_reports/260722-1c-review.md)、[阶段 1D 实施计划](stage_1d_implementation_plan.md)；独立的 packaging/consumer 工作允许提前实施
-产品边界：[ADR 0027](../adr/0027-playback-sdk-product-boundary.md)、[SDK 转型方案](cuexis_sdk_transition_plan.md)
+产品边界：[ADR 0027](../adr/0027-playback-sdk-product-boundary.md)、[ADR 0030](../adr/0030-playback-preview-api-version-and-result.md)、[ADR 0032](../adr/0032-playback-clock-and-prepared-audio-transaction.md)、[SDK 转型方案](cuexis_sdk_transition_plan.md)
 
 ## 1. 阶段目标
 
@@ -25,6 +25,10 @@ typed/memory Project or Chart source
 Playback 注入、adapter-disabled preset、C++20 静态 `Cuexis::Playback`/`Cuexis::Content`
 安装导出，以及 add_subdirectory/find_package 两种隔离 consumer。共享库导出、完整组件矩阵
 和阶段 1E 最终 API 冻结仍未宣告完成。
+
+阶段 1D 已在该基础上增加 `Cuexis::Audio` 与可选 `Cuexis::AudioSDL`，并把 preview SDK API
+提升到当前的 `0.2.0`。AudioSDL 只有在 consumer 显式请求对应 component 时才传播 SDL3；
+纯 Playback/HostClock consumer 不得因此查找、链接或初始化 SDL。
 
 ## 2. 已接受边界
 
@@ -87,10 +91,11 @@ Provider callback 的线程、重入、阻塞和数据有效期必须明确
 
 ```text
 创建：注入内容源、预算、能力和诊断 Sink
-加载：Project/Chart source -> 候选会话 -> 原子发布
+加载：Project/Chart source -> Prepared Playback -> adapter 内容准备/激活 -> 无失败 commit
 更新：显式 RuntimeFrame；阶段 11 再加入正式 InputEvent
 控制：Seek/Reload/Unload 的事务语义
 输出：不可变或调用期只读 FrameSnapshot
+内容：PlaybackContentInfo 与调用期 MainMusicSourceView，不返回资源 slot/Handle/Lease
 查询：稳定 Chart/Object/状态身份，不返回 Entity/World
 错误：稳定 code、上下文和有界 Diagnostics
 ```
@@ -110,7 +115,7 @@ RuntimeSession、World 和 Registry 私有访问头
 
 ## 5. CMake 组件化
 
-编码前确认最终选项名；至少表达以下能力：
+现有选项保持兼容；阶段 1D/1E 组件矩阵至少表达以下能力：
 
 ```text
 build Playback
@@ -122,6 +127,10 @@ build tests
 build examples/external consumers
 build static/shared
 ```
+
+安装 target 名冻结为 `Cuexis::Playback`、`Cuexis::Content`、`Cuexis::Audio` 和
+`Cuexis::AudioSDL`。Playback 可以传播后端无关 Audio；Playback 与 Audio 不得传播 SDL3，
+AudioSDL 可以传播其真实 SDL3 依赖。
 
 行为要求：
 
@@ -142,7 +151,7 @@ add_subdirectory 消费默认不构建 App、测试、format 或复制 fixture
 CuexisTargets.cmake
 CuexisConfig.cmake
 CuexisConfigVersion.cmake
-Cuexis::Playback 等命名空间目标
+Cuexis::Playback、Cuexis::Content、Cuexis::Audio 与可选 Cuexis::AudioSDL 命名空间目标
 公共 headers 与 generated version header
 按已选组件安装的运行库、导入库和许可证文件
 THIRD_PARTY_NOTICES 与实际分发组件一致
@@ -160,7 +169,8 @@ consumer_add_subdirectory
 
 consumer_find_package
   先安装到临时 prefix
-  再使用 find_package(Cuexis 0.1 CONFIG REQUIRED)
+  当前基线使用 find_package(Cuexis 0.2 CONFIG REQUIRED COMPONENTS Playback Content)
+  分别验证 Playback/Audio 与可选 AudioSDL component
 ```
 
 consumer 不得：
@@ -216,7 +226,7 @@ headless fixture 应从内存或 consumer 自己的测试目录提供 Project/Ch
 
 - Debug/Release fresh configure、clean build、完整 CTest、format、architecture。
 - 验证至少 headless-only、Player-full、static package 和支持的 shared package 组合。
-- 保留阶段 1A-1D 的 Chart、Project、GPU 和物理音频回归。
+- 保留阶段 1A-1D 的 Chart、Project、GPU 和物理音频回归，并验证 AudioSDL 未请求时 SDL3 不进入消费闭包。
 - 创建 `docs/stage_reports/stage_1e_completion_report.md`。
 
 ## 9. 测试矩阵
@@ -227,7 +237,7 @@ headless fixture 应从内存或 consumer 自己的测试目录提供 Project/Ch
 | Security | Filesystem containment 保留；Memory/Host 字节仍执行格式和预算校验 |
 | Playback | load/update/seek/reload/unload、失败回滚、FrameSnapshot 独立生命周期、错误 owner |
 | Multi-session | 独立 Clock/Provider、跨 Session 对象拒绝、无隐式全局当前状态 |
-| CMake | 顶层/子目录、组件禁用、无后端 configure、静态/共享支持矩阵 |
+| CMake | 顶层/子目录、组件禁用、无后端 configure、Audio/AudioSDL、静态/共享支持矩阵 |
 | Install | headers、targets、config/version、generated header、licenses、NOTICES |
 | Consumer | add_subdirectory 与 find_package 只使用公共接口 |
 | Architecture | 公共头与 Playback 链接闭包不泄漏后端/实现依赖 |
@@ -263,14 +273,16 @@ Studio 与完整 Player 产品化
 
 阶段 1E 不新增项目确定性字段或用户偏好格式。ContentProvider 和 HostCapabilities 是当前会话注入，不是全局配置文件。ProjectConfig v1/Asset Index 既有格式保持；typed/memory source 只是新的读取入口，不绕过 Schema、语义和预算校验。
 
-## 13. 编码前待确认
+## 13. 剩余待确认
 
-1. `cuexis_playback` 的最小公开类型、Pimpl/内部实现策略和错误返回形式。
-2. ContentProvider 同步接口、内容所有权、revision、线程与重入语义。
-3. FrameSnapshot 的有效期、复制/借用规则和大小预算。
-4. CMake 选项、导出组件、安装目录和 package version 兼容策略。
-5. shared library 在阶段 1E 的支持范围；本阶段不冻结稳定 C ABI。
-6. external consumer fixture 的输入载体与确定性 hash 规范。
+1. `cuexis_playback` 最终 Pimpl/内部实现拆分与仍未落地的错误返回细节。
+2. FrameSnapshot 的长期大小预算；拥有型有效期已经由 ADR 0030 冻结。
+3. shared library 在阶段 1E 的支持范围；本阶段不冻结稳定 C ABI。
+4. external consumer fixture 的最终确定性 hash 规范。
+
+同步 ContentProvider、Prepared Playback/MainMusicSourceView、owner-thread/reentry 规则、
+`Cuexis::Audio`/`Cuexis::AudioSDL` 名称和 `0.2.0` 版本提升已由 ADR 0030/0032 与阶段 1D 冻结，
+不再列为开放选择。
 
 ## 14. 向阶段 2、6、11 和 12 的交接
 

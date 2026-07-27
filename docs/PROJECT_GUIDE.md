@@ -2,7 +2,7 @@
 
 ## 0. 文档状态
 
-本文档是项目的持续维护指南，同时记录已落地的工程状态、已确认的架构边界和后续阶段路线。阶段 0、阶段 1A 与阶段 1B 已完成验收；阶段 1C 的功能边界已经实现，但后续全量审查确认的 5 项 P1 和 11 项 P2 尚无完整关闭证据，因此不得再表述为最终验收完成。ADR 0027 已将长期产品方向调整为可嵌入 Cuexis Playback SDK + 独立 Player + 独立 Studio。阶段 1D 及之后的章节描述后续设计约束和实施计划。
+本文档是项目的持续维护指南，同时记录已落地的工程状态、已确认的架构边界和后续阶段路线。阶段 0、阶段 1A、阶段 1B、阶段 1C 与阶段 1D 已完成验收；260722 全量审查的 R01-R21 已于 2026-07-26/27 全部关闭并补齐构建、CTest、架构和 external consumer 证据。ADR 0027 已将长期产品方向调整为可嵌入 Cuexis Playback SDK + 独立 Player + 独立 Studio。阶段 1D 章节记录已实现约束，后续章节描述继续演进的计划。
 
 文档中的内容按以下方式理解：
 
@@ -15,7 +15,7 @@
 
 随着讨论推进，待讨论内容应转化为明确决策；重大技术决策还应同步形成 ADR。
 
-当前仓库已完成阶段 0 工程闭环、阶段 1A 规范谱面与实例化闭环、阶段 1B 资源生命周期闭环，以及阶段 1C typed Behavior、绝对时间采样、事务式 Property Resolver、RuntimeFrame、headless PlaybackSession 和 Player 单一路径。同步 Filesystem/Memory/Host ContentProvider、adapter-disabled preset、静态 C++20 安装包及 add_subdirectory/find_package external consumer 已提前落地，但这些只构成阶段 1E 的部分实现。正式 Judgement/Replay、音频、Studio、完整 1E API/组件矩阵与共享库范围仍未完成。
+当前仓库已完成阶段 0 工程闭环、阶段 1A 规范谱面与实例化闭环、阶段 1B 资源生命周期闭环、阶段 1C typed Behavior 与 headless Playback，以及阶段 1D 主音乐内容、三模式时钟、Prepared Playback、后端无关 Audio 和可选 SDL Audio adapter。同步 Filesystem/Memory/Host ContentProvider、adapter-disabled preset、静态 C++20 安装包及 add_subdirectory/find_package external consumer 已提前落地，但这些只构成阶段 1E 的部分实现。正式 Judgement/Replay、Studio、完整 1E API/组件矩阵与共享库范围仍未完成。
 
 当前状态的权威顺序固定为：本文第 0、30、32 节记录产品与阶段状态；`docs/BUILDING.md` 记录当前可执行构建和安装入口；最新阶段审查/补充报告记录尚未关闭的问题。完成报告和早期验证报告是带日期的历史证据，若与后续审查冲突，以后续审查与本节当前状态为准，不得从历史报告反推当前验收状态。
 
@@ -1829,7 +1829,10 @@ ECS 操作
 设备错误和 underrun 日志
 ```
 
-WAV 使用 SDL 自带加载能力。后续压缩格式通过独立 `IAudioDecoder` 扩展，优先评估成熟且许可证兼容的开源解码库，不自行实现 OGG、MP3 或 FLAC 编解码器。Decoder 只输出 PCM 和音频格式，不控制设备、播放状态或 AudioClock。
+WAV 由 `audio_sdl::WavDecoder` 从已加载的有界内存扫描 RIFF chunk，并将 PCM/IEEE F32 转换为
+AudioClip；解码不调用 SDL 设备 API。后续压缩格式通过独立 `IAudioDecoder` 扩展，优先评估成熟且
+许可证兼容的开源解码库，不自行实现 OGG、MP3 或 FLAC 编解码器。Decoder 只输出 PCM 和音频
+格式，不控制设备、播放状态或 AudioClock。
 
 主音乐、音效和未来 Studio 预览可以绑定同一 SDL 播放设备的独立 AudioStream，但只有主音乐流可以成为 CuexisAudio 模式的谱面时间源；音效失败不得改变 `chartTimeMs`。HostClock 模式不创建 SDL 设备。
 
@@ -2036,7 +2039,8 @@ Timeline 在暂停时把 `simulationDeltaTimeMs` 设为 `0`，避免状态型系
 discontinuity 与后端无关 FrameSnapshot hash，可用于 HostClock/CuexisAudio parity；后者包含
 wall clock、presented source position、估算延迟、queue 和 underrun，只用于 drift 与设备趋势。
 两类数据按 frameIndex 关联但不得逐列混比，采集必须固定容量并显式报告 droppedRows，CSV 只能
-在 owner thread 离线导出。具体字段、公式和门禁见阶段 1D 实施计划。
+在 owner thread 离线导出。导出同时生成记录 schema/version、构建/API 版本、mode、行数、
+droppedRows 和截断状态的 metadata sidecar；具体字段、公式和门禁见阶段 1D 实施计划。
 
 空间调试：
 
@@ -2256,6 +2260,10 @@ docs/adr/0025-project-config-v1-and-path-security.md
 docs/adr/0026-asset-index-and-source-resolution.md
 docs/adr/0027-playback-sdk-product-boundary.md
 docs/adr/0028-camera-projection-and-events.md
+docs/adr/0029-behavior-track-v1.md
+docs/adr/0030-playback-preview-api-version-and-result.md
+docs/adr/0031-main-music-content-format-v2.md
+docs/adr/0032-playback-clock-and-prepared-audio-transaction.md
 ```
 
 每份 ADR 至少包含：
@@ -2532,14 +2540,14 @@ Player 默认加载阶段 1B project fixture，--project 与 --chart 互斥，�
 
 #### 阶段 1C：时间、基础行为与 Headless Playback 闭环
 
-状态：功能边界实现完成，最终验收待审查问题关闭。`behavior.transform.keyframe` v1、RuntimeFrame、PlaybackSession 和 Player 迁移按[阶段 1C 实施计划](stage_plans/stage_1c_implementation_plan.md)与 ADR 0028/0029 落地；但 [260722 全量审查](stage_reports/260722-1c-review.md)确认的 P1/P2 尚无完整关闭证据。原完成报告保留为 2026-07-22 的历史执行快照，不再单独证明当前最终验收状态。
+状态：实现与最终验收完成。`behavior.transform.keyframe` v1、RuntimeFrame、PlaybackSession 和 Player 迁移按[阶段 1C 实施计划](stage_plans/stage_1c_implementation_plan.md)与 ADR 0028/0029 落地；[260722 全量审查](stage_reports/260722-1c-review.md)的 R01-R21 已全部关闭。原完成报告正文保留 2026-07-22 执行数据，第 10 节记录 2026-07-27 最终关闭证据。
 
 ```text
 实现基础 BehaviorSystem 与 Transform Keyframe（已完成）
 以 chartTimeMs 驱动位置、旋转、缩放和 camera.fovY，并支持绝对时间重采样（已完成）
 建立第一版不暴露 RuntimeSession/World/EnTT 的 PlaybackSession 门面（已完成）
 支持宿主直接提交 RuntimeFrame，并输出不依赖 SDL/OpenGL 的 FrameSnapshot（已完成）
-Player 改为 PlaybackSession 的薄组合层，默认使用独立 stage1c_project（已完成）
+Player 改为 PlaybackSession 的薄组合层；确定性 smoke 使用 stage1c_project（已完成）
 ```
 
 验收标准（实现部分已完成，门禁结果见阶段报告）：
@@ -2554,14 +2562,21 @@ Player 与 headless consumer 对相同 Chart/RuntimeFrame 产生相同帧结果
 
 #### 阶段 1D：主音乐内容与可选音频适配器闭环
 
-状态：HostClock/CuexisAudio 双模式方向已接受，强制以 1C 的 RuntimeFrame/绝对重采样为前置；格式版本与具体音频所有权 API 仍须编码前确认。详见[阶段 1D 实施计划](stage_plans/stage_1d_implementation_plan.md)。
+状态：1D-0 至 1D-6 已实现并完成本地自动化、GPU 与物理默认音频设备脚本门禁。Chart/Asset
+Index v2、三种时钟模式、Prepared Playback、音频所有权与 reload 错误边界由 ADR 0031/0032
+冻结并落地，继续以 1C 的 RuntimeFrame/绝对重采样为基础。详见
+[阶段 1D 实施计划](stage_plans/stage_1d_implementation_plan.md)和
+[阶段 1D 完成报告](stage_reports/stage_1d_completion_report.md)。
 
 ```text
 建立 cuexis_audio 和 cuexis_audio_sdl
+实现 cuexis_audio 的 SourceClockSample，以及 cuexis_playback 的 RuntimeTimeline
 定义后端无关的 AudioConfig typed config，明确缓冲、音量、设备请求和输出延迟诊断的语义边界
 阶段 1D 只实现默认配置和显式内存注入；设备偏好延后到阶段 6，输出/输入/主观校准分别由专用 profile 持有
 实现 WAV 主音乐播放、暂停、停止、Seek、AudioClockSnapshot 和 discontinuity
-PlaybackSession 不依赖 cuexis_audio_sdl；正式支持宿主提供 HostClock
+PlaybackSession Prepared load/reload 内部持有 AudioSourceLease，只公开 MainMusicSourceView
+cuexis_playback 依赖 cuexis_audio，但不依赖 cuexis_audio_sdl；正式支持 ChartClock、HostClock 和 CuexisAudio
+导出 Cuexis::Audio 与可选 Cuexis::AudioSDL，并将 preview SDK API 提升到 0.2.0
 ```
 
 验收标准：
@@ -2571,7 +2586,7 @@ AudioConfig 在创建 AudioTransport 前完成校验，非法值不会留下半�
 cuexis_audio 公共配置不暴露 SDL 类型或不稳定的后端句柄
 主音乐可以驱动 chartTimeMs，且 Seek 后 Runtime 能重新求值
 AudioClock 的位置、估算输出延迟、播放状态和不连续事件可在调试界面或日志中诊断
-HostClock 与 CuexisAudio 对相同 RuntimeFrame 序列产生相同表现结果
+HostClock 与 CuexisAudio 对相同 SourceClockSample/control script 产生相同 RuntimeFrame 和表现结果
 未选择 SDL adapter 的 SDK consumer 不链接或初始化 SDL Audio
 ```
 
@@ -3009,7 +3024,7 @@ Replay 配置快照与活动 Session 不一致时加载失败并给出稳定诊�
 Runtime 聚合过多职责并演变为 God Object
 PlaybackSession 聚合过多职责或泄漏 Runtime/World
 宿主 VFS 绕过路径安全（ContentProvider 打开任意路径或跳过预算/格式校验）
-HostClock 与 CuexisAudio 时间语义分裂（两者必须归一化为同一 RuntimeFrame）
+三种 Clock 时间语义分裂（必须先归一化为 SourceClockSample，再由同一 RuntimeTimeline 生成 RuntimeFrame）
 Player 与 SDK 行为分叉（Player 绕过 PlaybackSession 直接使用内部 Runtime 路径）
 Studio 形成第二套 Runtime（Viewport 不使用同一 PlaybackSession 和编译路径）
 为支持所有宿主过早过度抽象（未用真实 consumer 验证前就建立动态插件框架）
@@ -3055,7 +3070,7 @@ RuntimeSession 资源事务、Session/Manager owner 校验、活动 Diagnostics�
 Player 默认阶段 1B Project、--project/--chart 互斥、3 个 Renderable 和 Mesh/Material/Texture 依赖 demo
 ```
 
-阶段 1C 的功能边界已经实现，但当前最高优先级是先为 [260722 全量审查](stage_reports/260722-1c-review.md)中的 P1/P2 建立修复与关闭证据，恢复最终验收。随后按[阶段 1D 计划](stage_plans/stage_1d_implementation_plan.md)接入版本化主音乐内容、HostClock/CuexisAudio 双模式和可选 SDL Audio adapter，并继续完成[阶段 1E](stage_plans/stage_1e_implementation_plan.md)尚未冻结的 API、组件与兼容性工作。ContentProvider、静态安装包和仓库外 consumer 的第一版已经提前落地，不得继续描述为尚未实现。稳定 C ABI 必须在正式 Judgement/Replay 公共契约完成后再冻结。
+阶段 1C 与阶段 1D 已完成最终验收。当前最高优先级是继续完成[阶段 1E](stage_plans/stage_1e_implementation_plan.md)尚未冻结的 API、完整组件矩阵、兼容性政策与共享库范围。ContentProvider、0.2.0 静态安装包、Audio/AudioSDL components 和仓库外 consumer 的第一版已经落地，不得继续描述为尚未实现。稳定 C ABI 必须在正式 Judgement/Replay 公共契约完成后再冻结。
 
 每次交付仍须按 `docs/BUILDING.md` 在目标环境执行 Debug 配置、构建、CTest、格式检查和 A/B 图形冒烟；Release 或后端相关改动还须验证 Release。精确结果记录在对应阶段报告，不固化在本指南中。
 
@@ -3074,7 +3089,7 @@ Shader Graph
 
 ## 33. 已决策边界与实施期复核
 
-ADR 0027 已冻结 Playback SDK + 独立 Player + 独立 Studio 的产品边界、headless 要求、宿主职责、Judgement/Replay 必选交付和阶段 1E。ADR 0024 继续冻结跨阶段配置规则；ADR 0025 与阶段 1B 实现冻结 ProjectConfig v1 文件/Schema/路径安全，ADR 0026 冻结 Asset Index v1。SDK 转型不修改这些历史格式语义，而是在阶段 1E 增加 typed/memory source 与 ContentProvider。UserPreferences、DeviceProfile、Input/Calibration Profile、ReplayData Schema 和 ABI 仍按首次消费阶段确认。
+ADR 0027 已冻结 Playback SDK + 独立 Player + 独立 Studio 的产品边界、headless 要求、宿主职责、Judgement/Replay 必选交付和阶段 1E。ADR 0024 继续冻结跨阶段配置规则；ADR 0025 与阶段 1B 实现冻结 ProjectConfig v1 文件/Schema/路径安全，ADR 0026 冻结 Asset Index v1；ADR 0031 新增 Asset Index/Chart v2 主音乐格式，ADR 0032 冻结三种 Clock、RuntimeTimeline 与 Prepared Playback。SDK 转型不修改历史 v1 格式语义，而是在阶段 1E 增加 typed/memory source 与 ContentProvider。UserPreferences、DeviceProfile、Input/Calibration Profile、ReplayData Schema 和 ABI 仍按首次消费阶段确认。
 
 以下细节有意延后到真实实现和测量数据出现后决定，它们不能用于改变现有模块边界：
 

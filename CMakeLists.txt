@@ -18,6 +18,7 @@ endif()
 
 option(CUEXIS_BUILD_PLAYER "Build the Cuexis Player application" ${CUEXIS_TOP_LEVEL_DEFAULT})
 option(CUEXIS_BUILD_SDL_ADAPTER "Build the SDL platform adapter" ${CUEXIS_BUILD_PLAYER})
+option(CUEXIS_BUILD_AUDIO_SDL_ADAPTER "Build the SDL audio adapter" ${CUEXIS_BUILD_PLAYER})
 option(CUEXIS_BUILD_OPENGL_ADAPTER "Build the OpenGL render adapter" ${CUEXIS_BUILD_PLAYER})
 option(CUEXIS_BUILD_DEVELOPER_TOOLS "Build repository developer-only targets"
        ${CUEXIS_TOP_LEVEL_DEFAULT})
@@ -34,8 +35,10 @@ if(CUEXIS_BUILD_OPENGL_ADAPTER AND NOT CUEXIS_BUILD_SDL_ADAPTER)
     message(FATAL_ERROR "CUEXIS_BUILD_OPENGL_ADAPTER requires CUEXIS_BUILD_SDL_ADAPTER")
 endif()
 if(CUEXIS_BUILD_PLAYER AND
-   (NOT CUEXIS_BUILD_SDL_ADAPTER OR NOT CUEXIS_BUILD_OPENGL_ADAPTER))
-    message(FATAL_ERROR "CUEXIS_BUILD_PLAYER requires the SDL and OpenGL adapters")
+   (NOT CUEXIS_BUILD_SDL_ADAPTER OR NOT CUEXIS_BUILD_AUDIO_SDL_ADAPTER OR
+    NOT CUEXIS_BUILD_OPENGL_ADAPTER))
+    message(FATAL_ERROR
+        "CUEXIS_BUILD_PLAYER requires the SDL platform, SDL audio, and OpenGL adapters")
 endif()
 
 if(CUEXIS_ENABLE_SANITIZERS)
@@ -87,6 +90,7 @@ endif()
 
 set(CUEXIS_ACTIVE_TARGETS
     cuexis_core
+    cuexis_audio
     cuexis_filesystem
     cuexis_content
     cuexis_json_support
@@ -105,6 +109,9 @@ set(CUEXIS_ACTIVE_TARGETS
 if(CUEXIS_BUILD_SDL_ADAPTER)
     list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_platform_sdl)
 endif()
+if(CUEXIS_BUILD_AUDIO_SDL_ADAPTER)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_audio_sdl)
+endif()
 if(CUEXIS_BUILD_OPENGL_ADAPTER)
     list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_render_opengl)
 endif()
@@ -115,6 +122,7 @@ endif()
 if(CUEXIS_BUILD_TESTS)
     list(APPEND CUEXIS_ACTIVE_TARGETS
         cuexis_core_tests
+        cuexis_audio_tests
         cuexis_filesystem_tests
         cuexis_content_tests
         cuexis_json_support_tests
@@ -133,8 +141,14 @@ if(CUEXIS_BUILD_TESTS)
     if(TARGET cuexis_platform_sdl_tests)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_platform_sdl_tests)
     endif()
+    if(TARGET cuexis_audio_sdl_tests)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_audio_sdl_tests)
+    endif()
     if(TARGET cuexis_render_opengl_tests)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_render_opengl_tests)
+    endif()
+    if(TARGET cuexis_player_diagnostics_tests)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_player_diagnostics_tests)
     endif()
 
     add_test(
@@ -196,7 +210,11 @@ if(CUEXIS_BUILD_TESTS)
     endif()
 
     if(PROJECT_IS_TOP_LEVEL)
-        foreach(consumer_mode IN ITEMS add_subdirectory find_package)
+        foreach(consumer_mode IN ITEMS
+                add_subdirectory
+                add_subdirectory_audio_sdl
+                find_package
+                find_package_audio_sdl)
             add_test(
                 NAME cuexis_external_consumer_${consumer_mode}
                 COMMAND "${CMAKE_COMMAND}"
@@ -205,6 +223,8 @@ if(CUEXIS_BUILD_TESTS)
                     "-DCUEXIS_BINARY_DIR=${PROJECT_BINARY_DIR}"
                     "-DCUEXIS_GENERATOR=${CMAKE_GENERATOR}"
                     "-DCUEXIS_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+                    "-DCUEXIS_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+                    "-DCUEXIS_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
                     "-DCUEXIS_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}"
                     "-DCUEXIS_VCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}"
                     -P "${PROJECT_SOURCE_DIR}/cmake/VerifyExternalConsumer.cmake"
@@ -257,6 +277,7 @@ set(CUEXIS_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/Cuexis"
 )
 set(CUEXIS_PLAYBACK_EXPORT_TARGETS
     cuexis_core
+    cuexis_audio
     cuexis_filesystem
     cuexis_content
     cuexis_json_support
@@ -277,6 +298,15 @@ install(TARGETS ${CUEXIS_PLAYBACK_EXPORT_TARGETS}
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
     FILE_SET HEADERS DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
+if(TARGET cuexis_audio_sdl)
+    install(TARGETS cuexis_audio_sdl
+        EXPORT CuexisAudioSDLTargets
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        FILE_SET HEADERS DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+    )
+endif()
 install(FILES "${PROJECT_BINARY_DIR}/generated/cuexis/version.hpp"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/cuexis"
 )
@@ -296,6 +326,13 @@ install(EXPORT CuexisTargets
     NAMESPACE Cuexis::
     DESTINATION "${CUEXIS_INSTALL_CMAKEDIR}"
 )
+if(TARGET cuexis_audio_sdl)
+    install(EXPORT CuexisAudioSDLTargets
+        FILE CuexisAudioSDLTargets.cmake
+        NAMESPACE Cuexis::
+        DESTINATION "${CUEXIS_INSTALL_CMAKEDIR}"
+    )
+endif()
 install(FILES
     "${PROJECT_BINARY_DIR}/CuexisConfig.cmake"
     "${PROJECT_BINARY_DIR}/CuexisConfigVersion.cmake"
@@ -315,6 +352,9 @@ set(CUEXIS_DISTRIBUTED_VCPKG_PORTS
     nlohmann-json
     tl-expected
 )
+if(TARGET cuexis_audio_sdl)
+    list(APPEND CUEXIS_DISTRIBUTED_VCPKG_PORTS sdl3)
+endif()
 foreach(port IN LISTS CUEXIS_DISTRIBUTED_VCPKG_PORTS)
     set(copyright_file
         "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/share/${port}/copyright")
@@ -331,6 +371,10 @@ cuexis_verify_target_dependencies(cuexis_core
         tl::expected
         glm::glm
 )
+cuexis_verify_target_dependencies(cuexis_audio
+    ALLOWED
+        cuexis::core
+)
 cuexis_verify_target_dependencies(cuexis_filesystem
     ALLOWED
         cuexis::core
@@ -344,6 +388,13 @@ if(TARGET cuexis_platform_sdl)
     cuexis_verify_target_dependencies(cuexis_platform_sdl
         ALLOWED
             cuexis::core
+            SDL3::SDL3
+    )
+endif()
+if(TARGET cuexis_audio_sdl)
+    cuexis_verify_target_dependencies(cuexis_audio_sdl
+        ALLOWED
+            cuexis::audio
             SDL3::SDL3
     )
 endif()
@@ -415,6 +466,7 @@ if(TARGET cuexis_render_opengl)
 endif()
 cuexis_verify_target_dependencies(cuexis_playback
     ALLOWED
+        cuexis::audio
         cuexis::content
         cuexis::core
         cuexis::assets
@@ -426,6 +478,8 @@ cuexis_verify_target_dependencies(cuexis_playback
 if(TARGET cuexis_player)
     cuexis_verify_target_dependencies(cuexis_player
         ALLOWED
+            cuexis::audio
+            cuexis::audio_sdl
             cuexis::playback
             cuexis::assets
             cuexis::core
@@ -444,6 +498,11 @@ if(CUEXIS_BUILD_TESTS)
             cuexis::core
             Catch2::Catch2WithMain
     )
+    cuexis_verify_target_dependencies(cuexis_audio_tests
+        ALLOWED
+            cuexis::audio
+            Catch2::Catch2WithMain
+    )
     cuexis_verify_target_dependencies(cuexis_filesystem_tests
         ALLOWED
             cuexis::filesystem
@@ -459,6 +518,14 @@ if(CUEXIS_BUILD_TESTS)
         cuexis_verify_target_dependencies(cuexis_platform_sdl_tests
             ALLOWED
                 cuexis::platform_sdl
+                Catch2::Catch2WithMain
+        )
+    endif()
+    if(TARGET cuexis_audio_sdl_tests)
+        cuexis_verify_target_dependencies(cuexis_audio_sdl_tests
+            ALLOWED
+                cuexis::audio
+                cuexis::audio_sdl
                 Catch2::Catch2WithMain
         )
     endif()
@@ -504,6 +571,15 @@ if(CUEXIS_BUILD_TESTS)
                 Catch2::Catch2WithMain
         )
     endif()
+    if(TARGET cuexis_player_diagnostics_tests)
+        cuexis_verify_target_dependencies(cuexis_player_diagnostics_tests
+            ALLOWED
+                cuexis::audio
+                cuexis::core
+                cuexis::playback
+                Catch2::Catch2WithMain
+        )
+    endif()
     cuexis_verify_target_dependencies(cuexis_render_tests
         ALLOWED
             cuexis::render
@@ -527,6 +603,7 @@ if(CUEXIS_BUILD_TESTS)
     )
     cuexis_verify_target_dependencies(cuexis_playback_tests
         ALLOWED
+            cuexis::audio
             cuexis::assets
             cuexis::playback
             Catch2::Catch2WithMain

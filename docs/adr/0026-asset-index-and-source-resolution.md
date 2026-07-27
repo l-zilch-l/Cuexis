@@ -98,3 +98,9 @@ RuntimeSession 注入外部 ResourceManager；PreparedRuntimeSession 绑定创�
 AssetDatabase 继续拥有不可变 AssetId/类型/逻辑来源/依赖索引，但实际字节读取将委托给注入的 ContentProvider。FilesystemContentProvider 保留 ADR 0025 的 containment；Memory/Host Provider 连接宿主 VFS、归档或内存。ResourceManager 只能请求已索引的逻辑来源，不直接打开任意路径。
 
 ContentProvider 的具体 C++ API 在阶段 1E 前确认；同步加载与现有 Handle/Lease/Scope 语义保持不变，不因 SDK 转型提前冻结异步任务系统。
+
+## 阶段 1D 补充（2026-07-27）
+
+[ADR 0031](0031-main-music-content-format-v2.md) 新增严格路由的 Asset Index v2，在保留 v1
+Mesh/Material/Texture 的基础上增加 Audio 叶节点。该决策不修改本 ADR 冻结的 v1 类型表、未知
+类型拒绝、路径安全、ContentProvider 或 Handle/Lease/Scope 语义；v1 Reader 仍必须拒绝 Audio。

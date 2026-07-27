@@ -2,12 +2,9 @@
 
 //  CameraComponent - camera data component (owned by cuexis_render; exposes no graphics
 //  backend types)
-//  Holds the projection parameters and the cached projection matrix
-//  projectionMatrix is computed on creation from fovY/nearPlane/farPlane/aspect
+//  Holds viewport-independent projection parameters. Viewport-aware matrices belong to the
+//  extracted render frame or Playback snapshot.
 
-#include <cuexis/core/math.hpp>
-
-#include <cstdint>
 #include <string>
 
 namespace cuexis::render {
@@ -20,7 +17,6 @@ struct CameraComponent final {
     double pitch{0.0};
     double yaw{0.0};
     double roll{0.0};
-    core::Mat4 projectionMatrix{};
 };
 
 } // namespace cuexis::render

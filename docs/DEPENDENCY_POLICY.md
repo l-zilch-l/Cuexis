@@ -2,7 +2,7 @@
 
 状态：已接受
 
-更新日期：2026-07-25
+更新日期：2026-07-27
 
 ## 项目许可
 
@@ -50,7 +50,7 @@ baseline 时必须同步验证 `vcpkg.json`、`THIRD_PARTY_NOTICES.md`、安装�
 
 第三方库可以用于内部实现，但除明确基础类型外，不进入 Cuexis 公共接口。Chart、Component 和资产格式不得保存第三方运行时对象。后端库通过模块边界封装，替换依赖不应要求修改无关模块。
 
-cuexis_playback 与 cuexis_judgement 的安装公共头使用更严格的封装规则：不得要求消费者包含 EnTT、SDL、OpenGL/GLAD、JSON 实现或日志实现头。可选后端依赖只能由对应 CMake component 传播，纯 `Cuexis::Playback`/headless consumer 不得被迫安装 SDL 或 OpenGL 依赖。
+cuexis_playback、cuexis_audio 与 cuexis_judgement 的安装公共头使用更严格的封装规则：不得要求消费者包含 EnTT、SDL、OpenGL/GLAD、JSON 实现或日志实现头。可选后端依赖只能由对应 CMake component 传播，纯 `Cuexis::Playback`/`Cuexis::Audio` headless consumer 不得被迫安装 SDL 或 OpenGL 依赖。
 
 ## SDK 分发
 
@@ -58,10 +58,12 @@ cuexis_playback 与 cuexis_judgement 的安装公共头使用更严格的封装�
 
 官方宿主适配器可以依赖对应引擎 SDK，但该依赖不得进入 Playback 核心。无法随 Cuexis 再分发的宿主 SDK 必须采用由消费者提供的查找方式，并在构建和许可证文档中明确说明。
 
-当前 C++20 静态 Playback 包安装到 `${CMAKE_INSTALL_DATADIR}/Cuexis`，并把实际无头链接
-闭包的 vcpkg copyright 文件安装到 `licenses/`。包配置只查找 EnTT、GLM、nlohmann-json、
-JSON Schema Validator 和 tl-expected，不得查找 SDL3、glad、spdlog 或 Catch2。Player 或
-其他可选组件形成正式分发物时，必须另行把其新增依赖许可证加入安装清单和 consumer 门禁。
+当前 C++20 静态 Playback 包安装 metadata 到 `${CMAKE_INSTALL_DATADIR}/Cuexis`，并把实际基础
+链接闭包的 vcpkg copyright 文件安装到 `licenses/`。基础 Playback/Content/Audio 包配置只查找
+EnTT、GLM、nlohmann-json、JSON Schema Validator 和 tl-expected，不得查找 SDL3、glad、
+spdlog 或 Catch2。显式请求 `AudioSDL` component 时才允许查找 SDL3，并载入独立的
+`CuexisAudioSDLTargets.cmake`；包含该组件的安装树必须额外分发 SDL3 copyright。Player 或其他
+可选组件形成正式分发物时，必须另行把其新增依赖许可证加入安装清单和 consumer 门禁。
 
 ## 例外流程
 

@@ -1,17 +1,21 @@
 # Building Cuexis
 
-状态：阶段 1C 现行构建、安装与质量门禁规范
+状态：阶段 1D 现行构建、安装与质量门禁规范
 
-更新日期：2026-07-26
+更新日期：2026-07-27
 
 ## 当前仓库说明
 
-当前仓库提供阶段 0 工程基础、阶段 1A Chart/Runtime 闭环、阶段 1B 的 ProjectConfig、Asset Index、AssetDatabase、ResourceManager、ResourceScope 和 Renderable Handle 实例化闭环，以及基础 `cuexis_playback` 模块（`PlaybackSession`、`FrameSnapshot`、`RuntimeFrame`、`IContentProvider`）与 ADR 0028 相机投影/事件扩展。以下命令是受支持的标准入口；旧的 IDE 私有构建目录和手工编译产物不能作为验收依据。
+当前仓库提供阶段 0 工程基础、阶段 1A Chart/Runtime 闭环、阶段 1B 资源生命周期、
+阶段 1C typed Behavior/Playback 闭环，以及阶段 1D 的主音乐内容、Prepared Playback、
+ChartClock/HostClock/CuexisAudio、RuntimeTimeline、WAV 解码和可选 SDL 音频适配器。以下命令是
+受支持的标准入口；旧的 IDE 私有构建目录和手工编译产物不能作为验收依据。
 
 当前正式激活的库 target 为：
 
 ```text
 cuexis_core
+cuexis_audio
 cuexis_filesystem
 cuexis_content
 cuexis_json_support
@@ -27,14 +31,16 @@ cuexis_debug
 cuexis_runtime
 cuexis_render_opengl
 cuexis_playback
+cuexis_audio_sdl
 ```
 
 应用 target 为 `cuexis_player`。`app/studio/` 目录已存在但尚未接入 CMake。对应模块测试、架构扫描、Player 失败路径和 `cuexis_format_check` 由顶层 CMake 统一注册。
 
 ADR 0027 已将长期交付方向调整为 Playback SDK + 独立 Player + 独立 Studio。当前
-`cuexis_playback` 已通过正式 Runtime 路径驱动 Behavior，并具备无头组件开关、C++20 静态
-Playback 安装包、`add_subdirectory` 与 `find_package(Cuexis)` 外部 consumer 门禁。共享库、
-稳定 C ABI、Studio 与宿主专用 adapter 仍属于后续阶段。
+`cuexis_playback` 已通过正式 Runtime 路径驱动 Behavior，并提供 Prepared load/reload、
+主音乐内容视图和后端无关 RuntimeTimeline。当前 C++20 静态包导出 Playback、Content、Audio，
+可选导出 AudioSDL；四类 `add_subdirectory`/`find_package(Cuexis)` 外部 consumer 门禁验证
+基础包不会引入 SDL。共享库、稳定 C ABI、Studio 与宿主专用 adapter 仍属于后续阶段。
 
 ## Windows/MSVC 前置条件
 
@@ -100,9 +106,9 @@ THIRD_PARTY_NOTICES.md
 不得把 `D:/vcpkg` 等机器路径提交到项目配置。
 
 当前 Windows/MSVC 验收固定 `x64-windows` triplet。无头基础依赖为 EnTT、GLM、
-nlohmann-json、json-schema-validator 和 tl-expected；`player` feature 增加 SDL3、glad 与
-spdlog，`tests` feature 增加 Catch2。准确版本和许可证记录见根目录 `vcpkg.json` 与
-`THIRD_PARTY_NOTICES.md`。
+nlohmann-json、json-schema-validator 和 tl-expected；`audio-sdl` feature 增加 SDL3，`player`
+feature 增加 SDL3、glad 与 spdlog，`tests` feature 增加 Catch2。准确版本和许可证记录见根目录
+`vcpkg.json` 与 `THIRD_PARTY_NOTICES.md`。
 
 ## 生成文件
 
@@ -128,11 +134,25 @@ cmake --build --preset release --clean-first
 ctest --preset release --no-tests=error
 ```
 
-Player 图形冒烟测试需要交互式桌面和支持 OpenGL 3.3 Core 的 GPU，因此与默认 CTest 分开执行。未给出 `--project` 或 `--chart` 时，Player 加载构建后复制到可执行文件旁的阶段 1B 项目：
+Player 冒烟测试需要交互式桌面和支持 OpenGL 3.3 Core 的 GPU，因此与默认 CTest 分开执行。
+普通启动和 `--audio-smoke-test` 在未给出 `--project`/`--chart` 时加载阶段 1D 项目；既有
+`--smoke-test` 固定加载无音频的阶段 1C 项目并保留三帧确定性语义：
 
 ```powershell
 .\out\build\debug\bin\cuexis_player.exe --smoke-test
 ```
+
+真实默认音频设备门禁执行 90 帧 load/play/pause/resume/seek/stop/reload 脚本，并可同时导出
+确定性帧轨迹、设备遥测和 metadata sidecar：
+
+```powershell
+.\out\build\debug\bin\cuexis_player.exe --audio-smoke-test `
+  --frame-stats .\out\artifacts\stage1d-debug
+```
+
+输出固定为 `<prefix>.frames.csv`、`<prefix>.audio.csv` 和 `<prefix>.meta.json`。人工门禁必须检查
+非静音连续播放、Pause 静音、Resume/Seek/Stop/Reload 行为，并确认 sidecar 中
+`droppedRows = 0`、`truncated = false`；物理设备听感与时钟精度不能由 dummy CTest 代替。
 
 阶段 1A 方案 A/B 仍可通过 `--chart` 作为无资源回归入口；方案 B 示例命令为：
 
@@ -140,7 +160,12 @@ Player 图形冒烟测试需要交互式桌面和支持 OpenGL 3.3 Core 的 GPU�
 .\out\build\debug\bin\cuexis_player.exe --smoke-test --chart .\out\build\debug\bin\assets\charts\stage1a_example.cuexis.chart.simple.json
 ```
 
-默认阶段 1B 项目包含 `cuexis.project.json`、独立 `cuexis.asset-index.json`、3 个 Renderable 对象和 Mesh/Material/Texture CPU blob；Material 依赖 Texture。构建时会先清理目标 demo project 目录再复制，避免遗留已删除资产。Player 实例化真实 typed Handle 和 Session ResourceScope，图形输出仍由 DebugDraw 为每个 Transform 生成 XYZ 轴线。冒烟模式创建 SDL3 Window 与 OpenGL Context、通过 OpenGL Debug Line 管线渲染三帧后自动退出。Release 或后端相关改动还应完成 Release build/test，以及默认 Project 与阶段 1A A/B Chart 回归冒烟；算法单元测试不得依赖窗口或 GPU。
+默认阶段 1D 项目包含 Chart v2、Asset Index v2、索引内非静音 WAV 和 typed
+`audio.mainMusic` 引用。Player 在 Window/GL/Audio device 创建前完成 Project、Index、Chart、
+Source 和 WAV preflight，再按内容选择 ChartClock 或 CuexisAudio；已选模式失败时不会静默回退。
+构建时会先清理目标 demo project 目录再复制，避免遗留已删除资产。Release 或后端相关改动还应
+完成 Release build/test、1C 三帧 GPU smoke、1D 物理音频 smoke，以及阶段 1A A/B Chart 回归；
+算法单元测试不得依赖窗口、GPU、物理音频设备或墙钟。
 
 ## 常见错误
 
@@ -159,33 +184,46 @@ OpenGL 启动失败：记录 SDL driver、GL version、vendor 和 renderer
 ```text
 CUEXIS_BUILD_PLAYER
 CUEXIS_BUILD_SDL_ADAPTER
+CUEXIS_BUILD_AUDIO_SDL_ADAPTER
 CUEXIS_BUILD_OPENGL_ADAPTER
 CUEXIS_BUILD_TESTS
 CUEXIS_BUILD_DEVELOPER_TOOLS
 ```
 
 作为顶层项目时默认构建 Player、adapter、测试和开发工具；作为 `add_subdirectory` 子项目时
-这些选项默认关闭。当前正式安装产物是 C++20 静态包，入口目标为 `Cuexis::Playback` 和
-`Cuexis::Content`：
+这些选项默认关闭。`CUEXIS_BUILD_AUDIO_SDL_ADAPTER` 与平台 SDL adapter 独立；只有 Player
+同时要求 SDL platform、SDL audio 和 OpenGL 三个 adapter。当前正式安装产物是 C++20 静态包，
+基础入口目标为 `Cuexis::Playback`、`Cuexis::Content` 和 `Cuexis::Audio`：
 
 ```powershell
 cmake --install out/build/headless-release --prefix out/install/headless-release
 ```
 
 ```cmake
-find_package(Cuexis 0.1 CONFIG REQUIRED COMPONENTS Playback Content)
-target_link_libraries(my_host PRIVATE Cuexis::Playback Cuexis::Content)
+find_package(Cuexis 0.2 CONFIG REQUIRED COMPONENTS Playback Content Audio)
+target_link_libraries(my_host PRIVATE Cuexis::Playback Cuexis::Content Cuexis::Audio)
 ```
 
-`0.1` 是 Playback Core preview 的 SDK API 兼容版本，不是日期构建版本。安装后的
+需要 SDL 音频 adapter 的包必须以启用 `CUEXIS_BUILD_AUDIO_SDL_ADAPTER=ON` 的配置构建和安装，
+并由 consumer 显式请求组件：
+
+```cmake
+find_package(Cuexis 0.2 CONFIG REQUIRED COMPONENTS Audio AudioSDL)
+target_link_libraries(my_host PRIVATE Cuexis::AudioSDL)
+```
+
+只有请求 `AudioSDL` 时 `CuexisConfig.cmake` 才查找 SDL3 并载入独立的
+`CuexisAudioSDLTargets.cmake`；基础 Playback/Content/Audio consumer 不查找 SDL3。
+
+`0.2` 是 Playback preview 的 SDK API 兼容版本，不是日期构建版本。安装后的
 `Cuexis_VERSION`/`Cuexis_API_VERSION` 返回完整 API 版本，`Cuexis_VERSION_DISPLAY` 返回
 `yy.mm.dd.hh-v[-suffix]` 构建身份。
 
 安装树包含 `CuexisTargets.cmake`、`CuexisConfig.cmake`、同 minor 版本兼容文件、生成的
 `cuexis/version.hpp`、`LICENSE`、`NOTICE`、第三方 notices 和实际无头依赖版权文本。CTest 中的
-`cuexis_external_consumer_add_subdirectory` 与 `cuexis_external_consumer_find_package` 会在隔离
-目录执行等价的逻辑 Asset Index、HostContentProvider、Renderable 资源依赖闭包与 Playback
-生命周期流程：
+四个 `cuexis_external_consumer_*` 门禁分别验证 add_subdirectory/find_package 的基础包和
+AudioSDL 组件。基础 find_package 门禁显式禁用 SDL3 查找；安装包门禁同时扫描全部已安装公共头
+是否为纯 ASCII，并校验基础许可证清单及 AudioSDL 安装的 SDL3 copyright：
 
 ```powershell
 ctest --preset headless-debug -R "^cuexis_external_consumer_" --output-on-failure

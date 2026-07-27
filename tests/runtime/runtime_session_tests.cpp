@@ -569,3 +569,19 @@ TEST_CASE("RuntimeSession instantiation is deterministic across separate Worlds"
     REQUIRE(secondMatrix.has_value());
     CHECK(cuexis::core::nearlyEqual(*firstMatrix, *secondMatrix));
 }
+
+TEST_CASE("RuntimeSession converts World callback exceptions to a stable Result error",
+          "[runtime][callback]") {
+    cuexis::runtime::RuntimeSession session;
+    auto prepared = session.prepare(singleObjectRuntime("object.callback"));
+    REQUIRE(prepared.hasValue());
+    REQUIRE(session.commit(std::move(*prepared.prepared)).has_value());
+
+    const auto result = session.withWorld(
+        [](cuexis::world::World&) -> void { throw std::runtime_error{"test callback failure"}; });
+    REQUIRE_FALSE(result.has_value());
+    CHECK(result.error().code() == "runtime.session.callback_exception");
+    REQUIRE(result.error().context().size() == 1);
+    CHECK(result.error().context()[0].key == "exception");
+    CHECK(result.error().context()[0].value == "test callback failure");
+}

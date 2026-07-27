@@ -19,6 +19,7 @@
 #include <entt/entity/registry.hpp>
 
 #include <algorithm>
+#include <atomic>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -33,6 +34,16 @@
 namespace cuexis::playback {
 namespace {
 
+std::atomic<std::uint64_t> nextPlaybackSessionToken{1};
+
+[[nodiscard]] auto allocatePlaybackSessionToken() noexcept -> std::uint64_t {
+    const auto token = nextPlaybackSessionToken.fetch_add(1, std::memory_order_relaxed);
+    if (token == 0) {
+        std::terminate();
+    }
+    return token;
+}
+
 void copyMatrix(const core::Mat4& source, float (&destination)[16]) noexcept {
     std::copy(source.values.begin(), source.values.end(), destination);
 }
@@ -43,18 +54,17 @@ void copyMatrix(const core::Mat4& source, float (&destination)[16]) noexcept {
                                  .timeDiscontinuityId = frame.timeDiscontinuityId};
 }
 
-[[nodiscard]] auto runtimeReloadPolicy(ReloadPolicy policy) noexcept -> runtime::ReloadPolicy {
-    return policy == ReloadPolicy::RestartAtZero ? runtime::ReloadPolicy::RestartAtZero
-                                                 : runtime::ReloadPolicy::KeepChartTime;
-}
-
 [[nodiscard]] auto operationError(std::string code, std::string message,
                                   const core::Diagnostics& diagnostics) -> core::Error {
     auto error = core::Error{std::move(code), std::move(message)};
-    if (!diagnostics.items().empty()) {
-        error.withContext("diagnostic_code", std::string{diagnostics.items().front().code()});
-        if (!diagnostics.items().front().fieldPath().empty()) {
-            error.withContext("field_path", std::string{diagnostics.items().front().fieldPath()});
+    const auto firstError = std::find_if(
+        diagnostics.items().begin(), diagnostics.items().end(), [](const core::Diagnostic& item) {
+            return item.severity() == core::DiagnosticSeverity::Error;
+        });
+    if (firstError != diagnostics.items().end()) {
+        error.withContext("diagnostic_code", std::string{firstError->code()});
+        if (!firstError->fieldPath().empty()) {
+            error.withContext("field_path", std::string{firstError->fieldPath()});
         }
     }
     return error;
@@ -74,6 +84,20 @@ struct SnapshotLayout final {
     return core::Error{"playback.session.not_owner_thread",
                        "PlaybackSession belongs to another thread"}
         .withContext("operation", std::string{operation});
+}
+
+[[nodiscard]] auto chartInfoFor(const chart::ChartRuntime& chartRuntime, std::size_t resourceCount)
+    -> ChartInfo {
+    return ChartInfo{
+        .objectCount = chartRuntime.objects.size(),
+        .behaviorCount = chartRuntime.behaviors.size(),
+        .renderableCount = static_cast<std::size_t>(
+            std::count_if(chartRuntime.objects.begin(), chartRuntime.objects.end(),
+                          [](const chart::RuntimeObject& object) {
+                              return object.components.renderable.has_value();
+                          })),
+        .resourceCount = resourceCount,
+    };
 }
 
 [[nodiscard]] auto buildSnapshotLayout(runtime::RuntimeSession& session,
@@ -119,10 +143,7 @@ struct SnapshotLayout final {
     if (!camera) {
         return core::unexpected(std::move(camera.error()));
     }
-    if (!*camera) {
-        return core::unexpected(std::move(camera->error()));
-    }
-    layout.activeCamera = **camera;
+    layout.activeCamera = *camera;
     return layout;
 }
 
@@ -141,12 +162,79 @@ struct PlaybackSession::State final {
     std::shared_ptr<content::IContentProvider> contentProvider;
     std::optional<assets::ResourceManager> resourceManager;
     std::unique_ptr<runtime::RuntimeSession> runtimeSession;
-    std::optional<chart::ChartRuntime> chartRuntime;
     SnapshotLayout snapshotLayout;
     std::optional<RuntimeFrame> lastFrame;
     core::Diagnostics diagnostics;
+    core::Diagnostics lastOperationDiagnostics;
+    std::optional<ChartInfo> activeChartInfo;
+    std::optional<PlaybackContentInfo> activeContentInfo;
+    std::optional<PlaybackMode> activeMode;
+    std::uint64_t sessionToken{allocatePlaybackSessionToken()};
+    std::uint64_t generation{1};
     SessionState sessionState{SessionState::Empty};
 };
+
+struct PreparedPlayback::State final {
+    PlaybackSession* owner{};
+    std::uint64_t ownerToken{};
+    std::uint64_t expectedGeneration{};
+    bool replacement{};
+    core::ThreadChecker ownerThread;
+    std::unique_ptr<runtime::RuntimeSession> runtimeSession;
+    SnapshotLayout snapshotLayout;
+    ChartInfo chartInfo;
+    PlaybackContentInfo contentInfo;
+    std::optional<assets::AudioSourceLease> audioSourceLease;
+    core::Diagnostics diagnostics;
+    std::optional<RuntimeFrame> targetFrame;
+    SessionState committedState{SessionState::Ready};
+};
+
+PreparedPlayback::PreparedPlayback() noexcept = default;
+
+PreparedPlayback::PreparedPlayback(std::unique_ptr<State> state) noexcept
+    : state_(std::move(state)) {}
+
+PreparedPlayback::~PreparedPlayback() {
+    if (state_ && !state_->ownerThread.isCurrent()) {
+        std::terminate();
+    }
+}
+
+PreparedPlayback::PreparedPlayback(PreparedPlayback&& other) noexcept
+    : state_(std::move(other.state_)) {
+    if (state_ && !state_->ownerThread.isCurrent()) {
+        std::terminate();
+    }
+}
+
+auto PreparedPlayback::operator=(PreparedPlayback&& other) noexcept -> PreparedPlayback& {
+    if ((state_ && !state_->ownerThread.isCurrent()) ||
+        (other.state_ && !other.state_->ownerThread.isCurrent())) {
+        std::terminate();
+    }
+    if (this != &other) {
+        state_ = std::move(other.state_);
+    }
+    return *this;
+}
+
+bool PreparedPlayback::valid() const noexcept {
+    return state_ && state_->ownerThread.isCurrent() && state_->runtimeSession != nullptr;
+}
+
+const PlaybackContentInfo* PreparedPlayback::contentInfo() const noexcept {
+    return valid() ? &state_->contentInfo : nullptr;
+}
+
+std::optional<MainMusicSourceView> PreparedPlayback::mainMusicSource() const noexcept {
+    if (!valid() || !state_->audioSourceLease || !state_->audioSourceLease->valid()) {
+        return std::nullopt;
+    }
+    const auto& source = state_->audioSourceLease->resource();
+    return MainMusicSourceView{source.id.value, state_->contentInfo.timingOffsetMs,
+                               source.blob->providerRevision, source.bytes()};
+}
 
 PlaybackSession::PlaybackSession() noexcept : state_(std::make_unique<State>()) {}
 
@@ -170,61 +258,191 @@ auto PlaybackSession::state() const -> core::Result<SessionState> {
     return state_->sessionState;
 }
 
-auto PlaybackSession::loadChart(std::string_view jsonText) -> core::Result<void> {
-    if (!state_->ownerThread.isCurrent()) {
-        return core::unexpected(ownerError("load_chart"));
-    }
-    if (state_->sessionState != SessionState::Empty) {
-        return core::unexpected(core::Error{"playback.session.not_empty",
-                                            "PlaybackSession must be Empty before loading"});
-    }
-    state_->diagnostics.clear();
+auto PlaybackSession::prepareLoad(std::string_view jsonText, PlaybackMode mode)
+    -> core::Result<PreparedPlayback> {
+    return prepare(jsonText, mode, nullptr, ReloadPolicy::KeepChartTime, false);
+}
 
+auto PlaybackSession::prepareReload(std::string_view replacementJson,
+                                    const RuntimeFrame& targetFrame, ReloadPolicy policy)
+    -> core::Result<PreparedPlayback> {
+    if (!state_->ownerThread.isCurrent()) {
+        return core::unexpected(ownerError("prepare_reload"));
+    }
+    if (!state_->activeMode) {
+        return core::unexpected(
+            core::Error{"playback.session.not_ready", "PlaybackSession has no active mode"});
+    }
+    return prepare(replacementJson, *state_->activeMode, &targetFrame, policy, true);
+}
+
+auto PlaybackSession::prepare(std::string_view jsonText, PlaybackMode mode,
+                              const RuntimeFrame* targetFrame, ReloadPolicy policy,
+                              bool replacement) -> core::Result<PreparedPlayback> {
+    if (!state_->ownerThread.isCurrent()) {
+        return core::unexpected(ownerError(replacement ? "prepare_reload" : "prepare_load"));
+    }
+    if ((!replacement && state_->sessionState != SessionState::Empty) ||
+        (replacement && state_->sessionState != SessionState::Ready &&
+         state_->sessionState != SessionState::Running)) {
+        return core::unexpected(
+            core::Error{replacement ? "playback.session.not_ready" : "playback.session.not_empty",
+                        replacement ? "PlaybackSession must be active before preparing a reload"
+                                    : "PlaybackSession must be Empty before preparing a load"});
+    }
+
+    core::Diagnostics diagnostics;
     const chart::ChartLimits limits;
     auto documentResult = chart::ChartLoader::load(jsonText, limits);
     const bool documentValid = documentResult.hasValue();
-    state_->diagnostics.append(std::move(documentResult.diagnostics));
+    diagnostics.append(std::move(documentResult.diagnostics));
     if (!documentValid) {
-        return core::unexpected(operationError(
-            "playback.chart.load_failed", "Chart loading produced errors", state_->diagnostics));
+        state_->lastOperationDiagnostics = diagnostics;
+        return core::unexpected(operationError(replacement ? "playback.chart.reload_load_failed"
+                                                           : "playback.chart.load_failed",
+                                               "Chart loading produced errors", diagnostics));
     }
 
     auto runtimeResult = chart::ChartCompiler::compile(*documentResult.document, limits);
     const bool runtimeValid = runtimeResult.hasValue();
-    state_->diagnostics.append(std::move(runtimeResult.diagnostics));
+    diagnostics.append(std::move(runtimeResult.diagnostics));
     if (!runtimeValid) {
-        return core::unexpected(operationError("playback.chart.compile_failed",
-                                               "Chart compilation produced errors",
-                                               state_->diagnostics));
+        state_->lastOperationDiagnostics = diagnostics;
+        return core::unexpected(operationError(replacement ? "playback.chart.reload_compile_failed"
+                                                           : "playback.chart.compile_failed",
+                                               "Chart compilation produced errors", diagnostics));
+    }
+    auto& chartRuntime = *runtimeResult.runtime;
+    const bool hasMainMusic = chartRuntime.mainMusic.has_value();
+    if ((mode == PlaybackMode::ChartClock && hasMainMusic) ||
+        (mode != PlaybackMode::ChartClock && !hasMainMusic)) {
+        return core::unexpected(
+            core::Error{"playback.mode.content_mismatch",
+                        mode == PlaybackMode::ChartClock
+                            ? "ChartClock requires a chart without main music"
+                            : "HostClock and CuexisAudio require a chart with main music"});
+    }
+
+    std::optional<assets::AudioSourceLease> audioSourceLease;
+    if (chartRuntime.mainMusic) {
+        if (!state_->resourceManager) {
+            return core::unexpected(core::Error{
+                "playback.content.asset_database_missing",
+                "A chart with main music requires an AssetDatabase and ContentProvider"});
+        }
+        auto source = state_->resourceManager->requestAudioSource(
+            assets::AssetId{chartRuntime.mainMusic->value}, assets::ResourcePolicy::Required);
+        const bool sourceValid = source.hasValue();
+        diagnostics.append(std::move(source.diagnostics));
+        if (!sourceValid) {
+            state_->lastOperationDiagnostics = diagnostics;
+            return core::unexpected(
+                operationError("playback.content.main_music_failed",
+                               "Required main music source could not be prepared", diagnostics));
+        }
+        audioSourceLease.emplace(std::move(*source.lease));
     }
 
     auto session = state_->resourceManager.has_value()
                        ? std::make_unique<runtime::RuntimeSession>(*state_->resourceManager)
                        : std::make_unique<runtime::RuntimeSession>();
-    auto prepared = session->prepare(*runtimeResult.runtime);
-    const bool preparedValid = prepared.hasValue();
-    state_->diagnostics.append(std::move(prepared.diagnostics));
+    auto runtimePrepared = session->prepare(chartRuntime);
+    const bool preparedValid = runtimePrepared.hasValue();
+    diagnostics.append(std::move(runtimePrepared.diagnostics));
     if (!preparedValid) {
+        state_->lastOperationDiagnostics = diagnostics;
         return core::unexpected(operationError("playback.session.prepare_failed",
                                                "RuntimeSession preparation produced errors",
-                                               state_->diagnostics));
+                                               diagnostics));
     }
-    if (auto committed = session->commit(std::move(*prepared.prepared)); !committed) {
+    if (auto committed = session->commit(std::move(*runtimePrepared.prepared)); !committed) {
         return core::unexpected(std::move(committed.error()));
     }
 
-    auto snapshotLayout = buildSnapshotLayout(*session, *runtimeResult.runtime);
+    std::optional<RuntimeFrame> committedFrame;
+    if (replacement && targetFrame != nullptr) {
+        committedFrame = *targetFrame;
+        committedFrame->simulationDeltaTimeMs = 0.0;
+        if (policy == ReloadPolicy::RestartAtZero) {
+            committedFrame->chartTimeMs = 0.0;
+        }
+        if (auto updated = session->update(runtimeFrame(*committedFrame)); !updated) {
+            return core::unexpected(std::move(updated.error()));
+        }
+    }
+
+    auto snapshotLayout = buildSnapshotLayout(*session, chartRuntime);
     if (!snapshotLayout) {
         return core::unexpected(std::move(snapshotLayout.error()));
     }
 
-    state_->runtimeSession = std::move(session);
-    state_->chartRuntime = std::move(*runtimeResult.runtime);
-    state_->snapshotLayout = std::move(*snapshotLayout);
-    state_->lastFrame.reset();
-    state_->diagnostics.sortDeterministically();
-    state_->sessionState = SessionState::Ready;
+    diagnostics.sortDeterministically();
+    auto prepared = std::make_unique<PreparedPlayback::State>();
+    prepared->owner = this;
+    prepared->ownerToken = state_->sessionToken;
+    prepared->expectedGeneration = state_->generation;
+    prepared->replacement = replacement;
+    prepared->runtimeSession = std::move(session);
+    prepared->snapshotLayout = std::move(*snapshotLayout);
+    prepared->chartInfo = chartInfoFor(chartRuntime, prepared->runtimeSession->resourceCount());
+    prepared->contentInfo = PlaybackContentInfo{
+        chartRuntime.chartId.value, chartRuntime.version, chartRuntime.timingMap.offsetMs(), mode,
+        chartRuntime.mainMusic ? std::optional<std::string>{chartRuntime.mainMusic->value}
+                               : std::nullopt};
+    prepared->audioSourceLease = std::move(audioSourceLease);
+    prepared->diagnostics = std::move(diagnostics);
+    prepared->targetFrame = committedFrame;
+    prepared->committedState = replacement ? state_->sessionState : SessionState::Ready;
+    return PreparedPlayback{std::move(prepared)};
+}
+
+auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> {
+    if (!state_->ownerThread.isCurrent()) {
+        return core::unexpected(ownerError("commit"));
+    }
+    if (!prepared.state_ || !prepared.state_->ownerThread.isCurrent()) {
+        return core::unexpected(core::Error{
+            "playback.prepared.invalid", "PreparedPlayback is empty or belongs to another thread"});
+    }
+    auto& candidate = *prepared.state_;
+    if (candidate.owner != this || candidate.ownerToken != state_->sessionToken) {
+        return core::unexpected(core::Error{"playback.prepared.wrong_session",
+                                            "PreparedPlayback belongs to another PlaybackSession"});
+    }
+    if (candidate.expectedGeneration != state_->generation) {
+        return core::unexpected(
+            core::Error{"playback.prepared.stale", "PlaybackSession changed after preparation"});
+    }
+    if ((!candidate.replacement && state_->sessionState != SessionState::Empty) ||
+        (candidate.replacement && state_->sessionState != SessionState::Ready &&
+         state_->sessionState != SessionState::Running)) {
+        return core::unexpected(core::Error{"playback.prepared.lifecycle_changed",
+                                            "PlaybackSession lifecycle changed after preparation"});
+    }
+
+    state_->runtimeSession = std::move(candidate.runtimeSession);
+    state_->snapshotLayout = std::move(candidate.snapshotLayout);
+    state_->activeChartInfo = candidate.chartInfo;
+    state_->activeContentInfo = std::move(candidate.contentInfo);
+    state_->activeMode = state_->activeContentInfo->mode;
+    state_->lastFrame = candidate.targetFrame;
+    state_->diagnostics = std::move(candidate.diagnostics);
+    state_->lastOperationDiagnostics = state_->diagnostics;
+    state_->sessionState = candidate.committedState;
+    ++state_->generation;
+    if (state_->generation == 0) {
+        ++state_->generation;
+    }
+    prepared.state_.reset();
     return {};
+}
+
+auto PlaybackSession::loadChart(std::string_view jsonText) -> core::Result<void> {
+    auto prepared = prepareLoad(jsonText, PlaybackMode::ChartClock);
+    if (!prepared) {
+        return core::unexpected(std::move(prepared.error()));
+    }
+    return commit(std::move(*prepared));
 }
 
 auto PlaybackSession::update(const RuntimeFrame& frame) -> core::Result<void> {
@@ -232,8 +450,7 @@ auto PlaybackSession::update(const RuntimeFrame& frame) -> core::Result<void> {
         return core::unexpected(ownerError("update"));
     }
     if (state_->sessionState != SessionState::Ready &&
-        state_->sessionState != SessionState::Running &&
-        state_->sessionState != SessionState::Paused) {
+        state_->sessionState != SessionState::Running) {
         return core::unexpected(core::Error{"playback.session.not_ready",
                                             "PlaybackSession must be active to receive updates"});
     }
@@ -243,6 +460,10 @@ auto PlaybackSession::update(const RuntimeFrame& frame) -> core::Result<void> {
     }
     state_->lastFrame = frame;
     state_->sessionState = SessionState::Running;
+    ++state_->generation;
+    if (state_->generation == 0) {
+        ++state_->generation;
+    }
     return {};
 }
 
@@ -261,7 +482,7 @@ auto PlaybackSession::extractFrame(const FrameViewport& viewport, FrameSnapshot&
         return core::unexpected(ownerError("extract_frame"));
     }
     if (state_->sessionState == SessionState::Empty || !state_->runtimeSession ||
-        !state_->chartRuntime.has_value()) {
+        !state_->activeChartInfo.has_value()) {
         return core::unexpected(
             core::Error{"playback.session.empty", "PlaybackSession has no committed World"});
     }
@@ -284,19 +505,23 @@ auto PlaybackSession::extractFrame(const FrameViewport& viewport, FrameSnapshot&
                 snapshot.objects.resize(state_->snapshotLayout.entities.size());
             }
 
-            std::size_t objectCount = 0;
-            for (const auto& entry : state_->snapshotLayout.entities) {
-                if (registry.all_of<world::WorldTransformComponent>(entry.entity)) {
-                    auto& object = snapshot.objects[objectCount++];
-                    if (object.id != entry.id.value) {
-                        object.id = entry.id.value;
-                    }
+            const core::Mat4 identity;
+            for (std::size_t index = 0; index < state_->snapshotLayout.entities.size(); ++index) {
+                const auto& entry = state_->snapshotLayout.entities[index];
+                auto& object = snapshot.objects[index];
+                if (object.id != entry.id.value) {
+                    object.id = entry.id.value;
+                }
+                object.hasTransform = registry.all_of<world::WorldTransformComponent>(entry.entity);
+                if (object.hasTransform) {
                     copyMatrix(registry.get<world::WorldTransformComponent>(entry.entity).matrix,
                                object.worldMatrix);
-                    object.visible = true;
+                } else {
+                    copyMatrix(identity, object.worldMatrix);
                 }
+                object.visible = true;
             }
-            snapshot.objects.resize(objectCount);
+            snapshot.objects.resize(state_->snapshotLayout.entities.size());
 
             if (!state_->snapshotLayout.activeCamera.has_value()) {
                 return {};
@@ -307,11 +532,14 @@ auto PlaybackSession::extractFrame(const FrameViewport& viewport, FrameSnapshot&
                                                     "Active camera is unavailable"});
             }
             const auto& camera = registry.get<render::CameraComponent>(activeCamera);
-            if (!std::isfinite(camera.fovY) || camera.fovY <= 0.0 || camera.fovY >= 179.0 ||
-                !std::isfinite(camera.nearPlane) || !std::isfinite(camera.farPlane) ||
-                camera.nearPlane <= 0.0 || camera.farPlane <= camera.nearPlane) {
+            const auto projection =
+                core::makePerspective(camera.fovY * 3.14159265358979323846 / 180.0,
+                                      static_cast<double>(viewport.width) / viewport.height,
+                                      camera.nearPlane, camera.farPlane);
+            if (!projection) {
                 return core::unexpected(core::Error{"playback.snapshot.camera_invalid",
-                                                    "Active camera parameters are invalid"});
+                                                    "Active camera parameters are invalid"}
+                                            .withCause(projection.error()));
             }
 
             snapshot.camera.active = true;
@@ -321,11 +549,7 @@ auto PlaybackSession::extractFrame(const FrameViewport& viewport, FrameSnapshot&
             snapshot.camera.pitch = camera.pitch;
             snapshot.camera.yaw = camera.yaw;
             snapshot.camera.roll = camera.roll;
-            const auto projection =
-                core::makePerspective(camera.fovY * 3.14159265358979323846 / 180.0,
-                                      static_cast<double>(viewport.width) / viewport.height,
-                                      camera.nearPlane, camera.farPlane);
-            copyMatrix(projection, snapshot.camera.projectionMatrix);
+            copyMatrix(*projection, snapshot.camera.projectionMatrix);
 
             core::Mat4 viewMatrix{};
             if (registry.all_of<world::WorldTransformComponent>(activeCamera)) {
@@ -345,66 +569,16 @@ auto PlaybackSession::extractFrame(const FrameViewport& viewport, FrameSnapshot&
     if (!extracted) {
         return core::unexpected(std::move(extracted.error()));
     }
-    if (!*extracted) {
-        return core::unexpected(std::move(extracted->error()));
-    }
     return {};
 }
 
 auto PlaybackSession::reload(std::string_view replacementJson, const RuntimeFrame& targetFrame,
                              ReloadPolicy policy) -> core::Result<void> {
-    if (!state_->ownerThread.isCurrent()) {
-        return core::unexpected(ownerError("reload"));
+    auto prepared = prepareReload(replacementJson, targetFrame, policy);
+    if (!prepared) {
+        return core::unexpected(std::move(prepared.error()));
     }
-    if (state_->sessionState != SessionState::Ready &&
-        state_->sessionState != SessionState::Running &&
-        state_->sessionState != SessionState::Paused) {
-        return core::unexpected(
-            core::Error{"playback.session.not_ready", "PlaybackSession must be active to reload"});
-    }
-
-    const chart::ChartLimits limits;
-    core::Diagnostics replacementDiagnostics;
-    auto documentResult = chart::ChartLoader::load(replacementJson, limits);
-    const bool documentValid = documentResult.hasValue();
-    replacementDiagnostics.append(std::move(documentResult.diagnostics));
-    if (!documentValid) {
-        return core::unexpected(operationError("playback.chart.reload_load_failed",
-                                               "Reload chart loading produced errors",
-                                               replacementDiagnostics));
-    }
-    auto runtimeResult = chart::ChartCompiler::compile(*documentResult.document, limits);
-    const bool runtimeValid = runtimeResult.hasValue();
-    replacementDiagnostics.append(std::move(runtimeResult.diagnostics));
-    if (!runtimeValid) {
-        return core::unexpected(operationError("playback.chart.reload_compile_failed",
-                                               "Reload chart compilation produced errors",
-                                               replacementDiagnostics));
-    }
-
-    auto reloadResult = state_->runtimeSession->reload(
-        *runtimeResult.runtime, runtimeFrame(targetFrame), runtimeReloadPolicy(policy));
-    if (!reloadResult.reloaded) {
-        return core::unexpected(operationError("playback.session.reload_failed",
-                                               "RuntimeSession reload produced errors",
-                                               reloadResult.diagnostics));
-    }
-    replacementDiagnostics.append(std::move(reloadResult.diagnostics));
-    replacementDiagnostics.sortDeterministically();
-    auto snapshotLayout = buildSnapshotLayout(*state_->runtimeSession, *runtimeResult.runtime);
-    if (!snapshotLayout) {
-        state_->sessionState = SessionState::Failed;
-        return core::unexpected(std::move(snapshotLayout.error()));
-    }
-    state_->diagnostics = std::move(replacementDiagnostics);
-    state_->chartRuntime = std::move(*runtimeResult.runtime);
-    state_->snapshotLayout = std::move(*snapshotLayout);
-    state_->lastFrame = targetFrame;
-    state_->lastFrame->simulationDeltaTimeMs = 0.0;
-    if (policy == ReloadPolicy::RestartAtZero) {
-        state_->lastFrame->chartTimeMs = 0.0;
-    }
-    return {};
+    return commit(std::move(*prepared));
 }
 
 auto PlaybackSession::unload() -> core::Result<void> {
@@ -420,11 +594,18 @@ auto PlaybackSession::unload() -> core::Result<void> {
         }
     }
     state_->runtimeSession.reset();
-    state_->chartRuntime.reset();
     state_->snapshotLayout = {};
     state_->lastFrame.reset();
     state_->diagnostics.clear();
+    state_->lastOperationDiagnostics.clear();
+    state_->activeChartInfo.reset();
+    state_->activeContentInfo.reset();
+    state_->activeMode.reset();
     state_->sessionState = SessionState::Empty;
+    ++state_->generation;
+    if (state_->generation == 0) {
+        ++state_->generation;
+    }
     return {};
 }
 
@@ -433,19 +614,24 @@ auto PlaybackSession::chartInfo() const -> core::Result<ChartInfo> {
         return core::unexpected(ownerError("chart_info"));
     }
     if (!state_->runtimeSession || state_->runtimeSession->empty() ||
-        !state_->chartRuntime.has_value()) {
+        !state_->activeChartInfo.has_value()) {
         return core::unexpected(
             core::Error{"playback.session.empty", "PlaybackSession has no committed data"});
     }
-    const auto renderableCount = static_cast<std::size_t>(
-        std::count_if(state_->chartRuntime->objects.begin(), state_->chartRuntime->objects.end(),
-                      [](const chart::RuntimeObject& object) {
-                          return object.components.renderable.has_value();
-                      }));
-    return ChartInfo{.objectCount = state_->chartRuntime->objects.size(),
-                     .behaviorCount = state_->chartRuntime->behaviors.size(),
-                     .renderableCount = renderableCount,
-                     .resourceCount = state_->runtimeSession->resourceCount()};
+    auto info = *state_->activeChartInfo;
+    info.resourceCount = state_->runtimeSession->resourceCount();
+    return info;
+}
+
+auto PlaybackSession::contentInfo() const -> core::Result<PlaybackContentInfo> {
+    if (!state_->ownerThread.isCurrent()) {
+        return core::unexpected(ownerError("content_info"));
+    }
+    if (!state_->activeContentInfo) {
+        return core::unexpected(
+            core::Error{"playback.session.empty", "PlaybackSession has no committed content"});
+    }
+    return *state_->activeContentInfo;
 }
 
 auto PlaybackSession::diagnostics() const -> core::Result<core::Diagnostics> {
@@ -453,6 +639,13 @@ auto PlaybackSession::diagnostics() const -> core::Result<core::Diagnostics> {
         return core::unexpected(ownerError("diagnostics"));
     }
     return state_->diagnostics;
+}
+
+auto PlaybackSession::lastOperationDiagnostics() const -> core::Result<core::Diagnostics> {
+    if (!state_->ownerThread.isCurrent()) {
+        return core::unexpected(ownerError("last_operation_diagnostics"));
+    }
+    return state_->lastOperationDiagnostics;
 }
 
 } // namespace cuexis::playback

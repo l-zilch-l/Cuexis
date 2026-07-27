@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cuexis.dev/schemas/cuexis.asset-index.v2.schema.json",
+  "title": "Cuexis Asset Index v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "version",
+    "assets",
+    "extensions"
+  ],
+  "properties": {
+    "format": { "const": "cuexis.asset-index" },
+    "version": { "const": 2 },
+    "assets": {
+      "type": "array",
+      "maxItems": 100000,
+      "items": { "$ref": "#/definitions/assetRecord" },
+      "uniqueItems": true
+    },
+    "extensions": {
+      "type": "object",
+      "maxProperties": 256
+    }
+  },
+  "definitions": {
+    "assetId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,255}$"
+    },
+    "portablePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096,
+      "pattern": "^[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$"
+    },
+    "assetRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "source", "dependencies"],
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "audio" } } },
+          "then": { "properties": { "dependencies": { "maxItems": 0 } } }
+        }
+      ],
+      "properties": {
+        "id": { "$ref": "#/definitions/assetId" },
+        "type": { "enum": ["mesh", "material", "texture", "audio"] },
+        "source": { "$ref": "#/definitions/portablePath" },
+        "dependencies": {
+          "type": "array",
+          "maxItems": 256,
+          "items": { "$ref": "#/definitions/assetId" },
+          "uniqueItems": true
+        },
+        "extensions": {
+          "type": "object",
+          "maxProperties": 256
+        }
+      }
+    }
+  }
+}

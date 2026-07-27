@@ -1,10 +1,10 @@
 #pragma once
 
-//  OpenGLBackend — OpenGL 3.3 Core Profile 渲染后端
-//  当前唯一 RenderBackend 实现；配置/创建/渲染/销毁均在 SDL 主线程
-//  OpenGL 类型（GLuint、SDL_GLContext）仅在 cuexis_render_opengl 模块内持有
-//  业务层不得直接调用 OpenGL；RenderScene 不暴露后端类型
-//  Debug Pipeline: 内联 GLSL 330 顶点/片段着色器，支持 DebugLine 渲染
+// OpenGL 3.3 Core Profile RenderBackend implementation.
+// Configuration, creation, rendering, and destruction run on the SDL main thread.
+// OpenGL types such as GLuint and SDL_GLContext remain private to this module.
+// Application code does not call OpenGL directly, and RenderScene exposes no backend types.
+// The debug pipeline uses inline GLSL 330 shaders to render DebugLine commands.
 
 #include <cuexis/core/log_sink.hpp>
 #include <cuexis/core/result.hpp>
