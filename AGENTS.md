@@ -10,9 +10,10 @@ phase 1C typed Behavior path. Synchronous Filesystem/Memory/Host ContentProvider
 static C++20 install package, adapter-disabled presets, and add_subdirectory/find_package
 external-consumer gates are implemented. Phase 1E is still in progress: the final public API,
 complete component matrix, package compatibility policy, and shared-library scope are not
-frozen. The phase 1C feature boundary is implemented, but the later 260722 review still records
-unclosed P1/P2 findings; do not describe phase 1C as finally accepted until those findings have
-closure evidence. `cuexis_judgement` remains planned for a later phase.
+frozen. Phase 1D is implemented: versioned main-music content, ChartClock/HostClock/CuexisAudio,
+RuntimeTimeline, Prepared Playback, `cuexis_audio`, and optional `cuexis_audio_sdl` are present.
+The phase 1C feature boundary and all R01-R21 findings from the 260722 review have closure
+evidence. `cuexis_judgement` remains planned for a later phase.
 
 ## Build
 
@@ -108,22 +109,27 @@ catches far more than a grep-level review. Both inherit the MSVC triple, include
 These are enforced by `cuexis_architecture_tests` — any violation **fails the build**:
 
 - **Core** (`cuexis_core`) must not include SDL, glad/GL, or platform headers.
-- **Chart** must not include EnTT, SDL, glad/GL, or `cuexis/world/` headers.
-- **Runtime** must not include SDL, glad/GL, `cuexis/platform_sdl/`, or `cuexis/render_opengl/` headers.
+- **Chart** must not include EnTT, SDL, glad/GL, World, Audio, or AudioSDL headers.
+- **Audio** must not include SDL, AudioSDL, or platform SDL headers.
+- **Runtime** must not include SDL, glad/GL, Audio, AudioSDL, platform SDL, or OpenGL adapter headers.
+- **Playback** must not include SDL, AudioSDL, platform SDL, or OpenGL adapter headers.
 - **nlohmann JSON** types must not appear outside `engine/json_support/`.
 - **OpenGL** calls and headers (`glad/GL/`) must only appear in `engine/render_opengl/`.
 - **GLM** types must not appear in any public header (`engine/*/include/*.hpp`).
+- Installed Playback headers must not expose EnTT, SDL, OpenGL/GLAD, JSON DOM, implementation
+  logging, RuntimeSession, or World types.
 
 ### Target dependency and allowlist verification (also CTest)
 
 Every `cuexis_*` CMake target has an explicit allowed-dependency list in the root `CMakeLists.txt`. Adding a new dependency to a target without updating its allowlist fails the build. Adding a new `cuexis_*` target without registering it in `CUEXIS_ACTIVE_TARGETS` (and the allowlists) fails the build. New test targets go in the `BUILD_TESTING` conditional block.
 
-Future constraints (not yet enforced):
-- Installed Playback headers must not expose EnTT, SDL, OpenGL/GLAD, JSON DOM or implementation logging types.
-- Headless Playback must configure and build without SDL/OpenGL adapters.
-- Player and Studio must use PlaybackSession instead of maintaining private Runtime paths.
+Headless presets and external-consumer gates verify that Playback configures and builds without
+SDL/OpenGL adapters and that optional adapters are not transitive Playback dependencies. Player
+already uses PlaybackSession instead of a private Runtime path.
+
+Future constraints:
+- Studio must use PlaybackSession instead of maintaining a private Runtime path.
 - `cuexis_judgement` must not depend on platform, audio, render backends or host-engine SDKs.
-- Optional adapters must not become transitive dependencies of the Playback core component.
 
 ## Adding or changing dependencies
 
@@ -175,7 +181,8 @@ When adding/removing a dependency, update **all** of:
 
 ```
 engine/      -> libraries (core, json_support, project, platform, world, assets, chart,
-                behavior, gameplay, render, debug, runtime, render_opengl, playback)
+                behavior, gameplay, audio, audio_sdl, render, debug, runtime,
+                render_opengl, playback)
 app/player/  -> the CLI player executable (cuexis_player)
 app/studio/  -> exists on disk, not yet wired into CMake
 tests/       -> Catch2 tests, mirrors engine/ structure
@@ -185,7 +192,9 @@ cmake/       -> custom cmake modules (warnings, arch verification, version)
 docs/        -> project docs (BUILDING.md, CODE_POLICY.md, etc.)
 ```
 
-`engine/animation/`, `engine/audio/`, `engine/audio_sdl/`, and `engine/particles/` contain stub CMakeLists.txt but are not wired into the build. `sdk/` and `adapters/` directories do not exist yet (planned).
+`engine/animation/` and `engine/particles/` contain stub CMakeLists.txt but are not wired into the
+build. `engine/audio/` and `engine/audio_sdl/` are active Stage 1D modules. `sdk/` and `adapters/`
+directories do not exist yet (planned).
 
 ## Key reference docs
 

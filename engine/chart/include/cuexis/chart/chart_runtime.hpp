@@ -48,6 +48,8 @@ struct ChartRuntime final {
     CameraData camera;
     std::vector<RuntimeBehavior> behaviors;
     std::vector<RuntimeObject> objects;
+    std::uint32_t version{1};
+    std::optional<AssetId> mainMusic;
 };
 
 struct ChartRuntimeResult final {

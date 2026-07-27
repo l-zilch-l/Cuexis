@@ -1,12 +1,12 @@
 # Third-Party Notices
 
-This file is the source-tree notice inventory for the current Cuexis stage 1C tree. Versions below are resolved by the pinned vcpkg baseline `40f3c709db80acf154ac4b17a1f83c564ebd022e`. Exact distributed transitive notices must be verified again before each release.
+This file is the source-tree notice inventory for the current Cuexis stage 1D tree. Versions below are resolved by the pinned vcpkg baseline `40f3c709db80acf154ac4b17a1f83c564ebd022e`. Exact distributed transitive notices must be verified again before each release.
 
 ## Direct Dependencies
 
 | Dependency | Version | Upstream | Purpose / owner | License | Player distribution | Alternative / exit path |
 | --- | --- | --- | --- | --- | --- | --- |
-| SDL3 | 3.4.12 | https://github.com/libsdl-org/SDL | Window, lifecycle events and OpenGL platform integration / `cuexis_platform_sdl`, `cuexis_render_opengl` | zlib; some configurations also contain MIT or Apache-2.0 code | Shared runtime library | Replace behind the platform and backend modules |
+| SDL3 | 3.4.12 | https://github.com/libsdl-org/SDL | Window/lifecycle/OpenGL platform integration and optional default-route audio transport / `cuexis_platform_sdl`, `cuexis_render_opengl`, `cuexis_audio_sdl` | zlib; some configurations also contain MIT or Apache-2.0 code | Shared runtime library for Player or an AudioSDL consumer | Replace behind the platform, render and audio adapter modules |
 | EnTT | 3.16.0 | https://github.com/skypjack/entt | Runtime ECS registry / `cuexis_world` | MIT | Header code is compiled into engine binaries | Replace only through the World boundary; a custom ECS is not planned |
 | GLM | 1.0.3 | https://github.com/g-truc/glm | Private vector, quaternion and matrix calculations behind Cuexis-owned math types / `cuexis_core`, Chart import and Runtime transforms | MIT | Header code is compiled into engine binaries | Replace behind Cuexis math conversion and transform functions |
 | spdlog | 1.17.0#1 | https://github.com/gabime/spdlog | Player-private structured logging / `cuexis_player` | MIT | Linked only into the optional Player | Replace inside the Player application; Playback receives instance-owned host sinks |
@@ -21,7 +21,8 @@ This file is the source-tree notice inventory for the current Cuexis stage 1C tr
 
 The glad package is generated from Khronos OpenGL/EGL registry inputs. The installed registry files carry per-file MIT, Apache-2.0 or Khronos notices. Packaging must preserve the notices required by the generated glad sources.
 
-The static headless Playback install copies the exact vcpkg copyright files for EnTT, GLM,
-JSON Schema Validator, nlohmann-json and tl-expected into `share/Cuexis/licenses`. This inventory
-does not replace those full texts. Player packaging must additionally preserve the SDL3, glad,
-spdlog and applicable fmt notices required by the artifacts it redistributes.
+The static base Playback/Content/Audio install copies the exact vcpkg copyright files for EnTT,
+GLM, JSON Schema Validator, nlohmann-json and tl-expected into `share/Cuexis/licenses`. An install
+that includes the optional AudioSDL component additionally copies the SDL3 copyright. This
+inventory does not replace those full texts. Player packaging must additionally preserve the
+SDL3, glad, spdlog and applicable fmt notices required by the artifacts it redistributes.

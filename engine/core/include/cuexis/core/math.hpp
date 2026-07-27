@@ -69,7 +69,7 @@ struct Mat4 {
 [[nodiscard]] bool nearlyEqual(const Mat4& left, const Mat4& right,
                                float tolerance = 1.0e-5F) noexcept;
 
-[[nodiscard]] Mat4 makePerspective(double fovYRadians, double aspectRatio, double nearPlane,
-                                   double farPlane) noexcept;
+[[nodiscard]] Result<Mat4> makePerspective(double fovYRadians, double aspectRatio, double nearPlane,
+                                           double farPlane) noexcept;
 
 } // namespace cuexis::core

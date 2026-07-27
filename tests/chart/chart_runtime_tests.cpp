@@ -165,3 +165,37 @@ TEST_CASE("ChartRuntime preserves backend-neutral render AssetIds", "[chart][run
     CHECK(runtime.runtime->objects[0].components.renderable->material.value ==
           "material.note.standard");
 }
+
+TEST_CASE("ChartRuntime validates programmatic default and object cameras",
+          "[chart][runtime][camera]") {
+    auto document = makeDocument({makeElement("019b0000-0000-7abc-8def-000000000010")});
+    document.camera.nearPlane = 10.0;
+    document.camera.farPlane = 1.0;
+    document.objects[0].components.camera =
+        cuexis::chart::CameraComponentData{"orthographic", 180.0, -1.0, 0.0};
+
+    const auto runtime = cuexis::chart::ChartCompiler::compile(document);
+    REQUIRE_FALSE(runtime.hasValue());
+    CHECK(hasDiagnostic(runtime.diagnostics, "chart.camera.unsupported_type"));
+    CHECK(hasDiagnostic(runtime.diagnostics, "chart.camera.invalid_fov"));
+    CHECK(hasDiagnostic(runtime.diagnostics, "chart.camera.invalid_near"));
+    CHECK(hasDiagnostic(runtime.diagnostics, "chart.camera.invalid_far"));
+    CHECK(hasDiagnostic(runtime.diagnostics, "chart.camera.near_exceeds_far"));
+}
+
+TEST_CASE("ChartRuntime preserves v2 main music and rejects audio on v1",
+          "[chart][runtime][audio]") {
+    auto v2 = makeDocument({makeElement("019b0000-0000-7abc-8def-000000000010")});
+    v2.version = 2;
+    v2.audio = cuexis::chart::ChartAudioData{1, cuexis::chart::AssetId{"audio.main"}};
+    const auto compiled = cuexis::chart::ChartCompiler::compile(v2);
+    REQUIRE(compiled.hasValue());
+    CHECK(compiled.runtime->version == 2);
+    REQUIRE(compiled.runtime->mainMusic.has_value());
+    CHECK(compiled.runtime->mainMusic->value == "audio.main");
+
+    v2.version = 1;
+    const auto rejected = cuexis::chart::ChartCompiler::compile(v2);
+    REQUIRE_FALSE(rejected.hasValue());
+    CHECK(hasDiagnostic(rejected.diagnostics, "chart.audio.not_available_in_v1"));
+}

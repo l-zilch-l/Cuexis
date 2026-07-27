@@ -143,6 +143,39 @@ TEST_CASE("AssetDatabase rejects unsupported typed input values",
     CHECK(hasDiagnostic(built.diagnostics, "assets.database.asset_type_invalid"));
 }
 
+TEST_CASE("AssetDatabase routes v2 Audio and enforces the audio dependency boundary",
+          "[assets][database][audio]") {
+    TemporaryAssetRoot root;
+    root.write("audio/main.wav", "wav");
+    root.write("mesh.bin", "mesh");
+
+    auto acceptedInput = inputFor(root, {{.id = {"audio.main"},
+                                          .type = cuexis::assets::AssetType::Audio,
+                                          .source = "audio/main.wav"}});
+    acceptedInput.roots[0].index.version = 2;
+    const auto accepted = cuexis::assets::AssetDatabase::build(acceptedInput);
+    REQUIRE(accepted.hasValue());
+    CHECK(accepted.database->typeOf({"audio.main"}) == cuexis::assets::AssetType::Audio);
+
+    auto v1Input = acceptedInput;
+    v1Input.roots[0].index.version = 1;
+    const auto v1 = cuexis::assets::AssetDatabase::build(v1Input);
+    REQUIRE_FALSE(v1.hasValue());
+    CHECK(hasDiagnostic(v1.diagnostics, "assets.database.asset_type_invalid"));
+
+    auto invalidInput = inputFor(root, {{.id = {"audio.main"},
+                                         .type = cuexis::assets::AssetType::Audio,
+                                         .source = "audio/main.wav"},
+                                        {.id = {"mesh.note"},
+                                         .type = cuexis::assets::AssetType::Mesh,
+                                         .source = "mesh.bin",
+                                         .dependencies = {{"audio.main"}}}});
+    invalidInput.roots[0].index.version = 2;
+    const auto invalid = cuexis::assets::AssetDatabase::build(invalidInput);
+    REQUIRE_FALSE(invalid.hasValue());
+    CHECK(hasDiagnostic(invalid.diagnostics, "assets.database.audio_dependency_forbidden"));
+}
+
 TEST_CASE("AssetDatabase rejects unsafe sources and overlapping roots",
           "[assets][database][security]") {
     TemporaryAssetRoot root;
@@ -253,4 +286,20 @@ TEST_CASE("AssetDatabase enforces read-time blob limits and containment rechecks
     const auto removed = database->readBlob({"mesh.note"});
     REQUIRE_FALSE(removed.has_value());
     CHECK(removed.error().code() == "assets.blob.source_unavailable");
+}
+
+TEST_CASE("AssetDatabase stops immediately when the root budget is exceeded",
+          "[assets][database][limits]") {
+    cuexis::assets::AssetDatabaseInput input;
+    input.roots = {
+        {.root = {.id = "one", .path = "missing-one"}, .index = {}},
+        {.root = {.id = "two", .path = "missing-two"}, .index = {}},
+    };
+    auto limits = cuexis::assets::AssetDatabaseLimits{};
+    limits.maxRoots = 1;
+
+    const auto built = cuexis::assets::AssetDatabase::build(input, limits);
+    CHECK_FALSE(built.hasValue());
+    REQUIRE(built.diagnostics.size() == 1);
+    CHECK(hasDiagnostic(built.diagnostics, "assets.database.root_limit"));
 }

@@ -108,7 +108,7 @@ void addSessionError(core::Diagnostics& diagnostics, const core::Error& error) {
     return behavior::Easing::Linear;
 }
 
-[[nodiscard]] auto buildEvaluationState(const chart::ChartRuntime& runtime,
+[[nodiscard]] auto buildEvaluationState(chart::ChartRuntime& runtime,
                                         const ObjectEntityMap& objects, const world::World& world)
     -> core::Result<std::unique_ptr<RuntimeEvaluationState>> {
     std::size_t requiredWrites = 0;
@@ -136,17 +136,17 @@ void addSessionError(core::Diagnostics& diagnostics, const core::Error& error) {
 
     auto state = std::make_unique<RuntimeEvaluationState>(requiredWrites);
     state->program.definitions.reserve(runtime.behaviors.size());
-    for (const auto& runtimeBehavior : runtime.behaviors) {
+    for (auto& runtimeBehavior : runtime.behaviors) {
         behavior::BehaviorDefinition definition;
         definition.tracks.reserve(runtimeBehavior.tracks.size());
-        for (const auto& runtimeTrack : runtimeBehavior.tracks) {
+        for (auto& runtimeTrack : runtimeBehavior.tracks) {
             behavior::BehaviorTrack track{.property = toPropertyId(runtimeTrack.property),
                                           .keys = {}};
             track.keys.reserve(runtimeTrack.keys.size());
-            for (const auto& runtimeKey : runtimeTrack.keys) {
+            for (auto& runtimeKey : runtimeTrack.keys) {
                 track.keys.push_back(behavior::BehaviorKey{
                     .chartTimeMs = runtimeKey.chartTimeMs,
-                    .value = runtimeKey.value,
+                    .value = std::move(runtimeKey.value),
                     .easing = toEasing(runtimeKey.easing),
                 });
             }
@@ -177,13 +177,17 @@ void addSessionError(core::Diagnostics& diagnostics, const core::Error& error) {
         });
     }
 
+    // The behavior evaluator owns its normalized program after preparation.  Do not retain a
+    // second copy of every key in the long-lived ChartRuntime.
+    runtime.behaviors.clear();
+
     auto resolver = world::TransformPropertyResolver::capture(world);
     if (!resolver) {
         return core::unexpected(std::move(resolver.error()));
     }
     state->transformResolver = std::move(*resolver);
 
-    world.withRegistry([&](const entt::registry& registry) {
+    auto cameras = world.withRegistry([&](const entt::registry& registry) {
         const auto cameraView = registry.view<const render::CameraComponent>();
         for (const entt::entity entity : cameraView) {
             const auto& camera = cameraView.get<const render::CameraComponent>(entity);
@@ -195,6 +199,9 @@ void addSessionError(core::Diagnostics& diagnostics, const core::Error& error) {
             });
         }
     });
+    if (!cameras) {
+        return core::unexpected(std::move(cameras.error()));
+    }
     std::sort(state->cameras.begin(), state->cameras.end(),
               [](const auto& left, const auto& right) {
                   return entt::to_integral(left.entity) < entt::to_integral(right.entity);
@@ -250,9 +257,6 @@ void addSessionError(core::Diagnostics& diagnostics, const core::Error& error) {
             auto& component = registry.get<render::CameraComponent>(camera.entity);
             camera.previous = component;
             component.fovY = camera.candidateFovY;
-            component.projectionMatrix =
-                core::makePerspective(camera.candidateFovY * 3.14159265358979323846 / 180.0, 1.0,
-                                      component.nearPlane, component.farPlane);
         }
         return {};
     });
@@ -266,7 +270,7 @@ void rollbackCameras(RuntimeEvaluationState& state, world::World& world) noexcep
     if (!state.camerasCommitted) {
         return;
     }
-    world.withRegistry([&](entt::registry& registry) {
+    const auto rolledBack = world.withRegistry([&](entt::registry& registry) {
         for (const auto& camera : state.cameras) {
             if (registry.valid(camera.entity) &&
                 registry.all_of<render::CameraComponent>(camera.entity)) {
@@ -274,6 +278,9 @@ void rollbackCameras(RuntimeEvaluationState& state, world::World& world) noexcep
             }
         }
     });
+    if (!rolledBack) {
+        std::terminate();
+    }
     state.camerasCommitted = false;
 }
 

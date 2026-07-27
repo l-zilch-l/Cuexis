@@ -13,6 +13,12 @@
     "tl-expected"
   ],
   "features": {
+    "audio-sdl": {
+      "description": "Build dependencies for the optional SDL audio adapter",
+      "dependencies": [
+        "sdl3"
+      ]
+    },
     "player": {
       "description": "Build dependencies for the SDL/OpenGL Cuexis Player",
       "dependencies": [

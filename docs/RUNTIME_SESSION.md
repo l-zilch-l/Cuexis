@@ -1,8 +1,8 @@
 # Cuexis RuntimeSession 规范
 
-状态：阶段 1C 已实现内部行为求值、RuntimeFrame 时间契约、事务式属性解析和 PlaybackSession headless 帧输出
+状态：阶段 1C 的内部行为与 headless Playback 已实现；阶段 1D 的 Prepared Playback、三模式时钟和 RuntimeTimeline 已实现
 
-更新日期：2026-07-22
+更新日期：2026-07-27
 
 ## 职责与所有权
 
@@ -43,19 +43,33 @@ loadReplay()：注入预记录 InputEvent 替代实时输入
 
 PlaybackSession 不创建宿主窗口、不拥有宿主主循环，也不要求 SDL/OpenGL。当前 C++20 门面已提供 `loadChart(string_view)`、`update(RuntimeFrame)`、`extractFrame(FrameViewport)`、显式目标帧 `reload` 和 `unload`。`FrameSnapshot` 拥有对象 ID、World Matrix、Camera View/Projection 和视口数据；Reload/Unload 不使已返回 Snapshot 悬空。`findEntity(entt::entity)`、`withWorld` 和 Registry 访问只能作为内部或受限调试接口，不能进入安装后的 SDK 公共头。
 
-阶段 1B 的 `RuntimeSession` 可显式注入一个不可移动的外部 `ResourceManager`。无资源 Chart 仍可使用默认构造；含 Renderable 的 Chart 在没有 Manager 时稳定返回 `runtime.chart.renderable_resources_unsupported`。阶段 1C 的 PlaybackSession 使用无资源默认路径，Player 的 1C fixture 因此只包含 Transform、Camera、Element 和 Behavior。
+阶段 1D 已增加 move-only、owner-thread 的 Prepared Playback load/reload。Prepared 对象内部持有
+候选 Runtime 与 AudioSourceLease，只公开 `PlaybackContentInfo` 和调用期有效的
+`MainMusicSourceView`；宿主和 adapter 不得看到 ResourceManager slot、Handle 或 Lease。
+确定性准备全部成功并完成音频激活后，Playback commit 只执行无分配、不可失败的状态交换。
+`cuexis_playback` 可以依赖后端无关的 `cuexis_audio` 以提供 RuntimeTimeline，但仍不得依赖
+`cuexis_audio_sdl` 或 SDL。
+
+阶段 1B 的 `RuntimeSession` 可显式注入一个不可移动的外部 `ResourceManager`。无资源 Chart 仍可使用默认构造；含 Renderable 的 Chart 在没有 Manager 时稳定返回 `runtime.chart.renderable_resources_unsupported`。PlaybackSession 在持有 AssetDatabase/ContentProvider 时内部拥有 ResourceManager，并保证 RuntimeSession/World/Scope 先于 Manager 销毁；无资源 1C fixture 与 Stage 1B Renderable Project 都走同一 Playback 门面。
+
+`withWorld()` 是 Runtime 内部/受限调试 callback 边界，只能在 Session owner thread 同步调用。
+callback 不得重入同一 Session，不得在返回后保留 World/Registry 引用或指针；阻塞 callback 会
+阻塞 owner thread。返回值始终为单层 `Result`，非 OOM 异常稳定转换为
+`runtime.session.callback_exception`。World 的 Registry callback 遵守同一规则，并转换为
+`world.callback.exception`。
 
 ## 状态
 
 ```text
 Empty -> Preparing -> Ready -> Running
-Running <-> Paused
-Ready/Running/Paused -> Reloading -> 原活动状态
+Ready/Running -> Reloading -> 原活动状态
 任意活动状态 -> Closing -> Empty
 运行期不可恢复错误 -> Failed
 ```
 
 首次准备失败不发布半初始化 Session，只返回 Diagnostics。
+Playback 的 SessionState 不包含 Paused；暂停属于 SourceClockSample/AudioTransport，并通过
+`simulationDeltaTimeMs = 0` 的 RuntimeFrame 表达。
 
 ## PreparedRuntimeSession
 
@@ -99,7 +113,11 @@ struct RuntimeFrame {
 
 ID 未变化时执行普通帧更新。ID 改变时，Behavior 绝对重采样，PropertyResolver 从初始值重算，状态型 System 接收 `onTimeDiscontinuity`。任何 System 不得继续累计跳转前的 delta。
 
-暂停或时间不连续后的首帧由宿主 Timeline、Player Timeline 或其他正式 Clock adapter 传入 `simulationDeltaTimeMs = 0`。Session 不自行控制 AudioTransport。HostClock 与 CuexisAudio 都必须归一化为同一 RuntimeFrame。`chartTimeMs` 必须有限（允许为负），delta 必须有限且非负；同一 discontinuity ID 下的向后时间移动拒绝，ID 变化后从目标绝对时间重采样而不消费跳转前 delta。
+暂停、Stopped 或时间不连续后的首帧由 RuntimeTimeline 传入
+`simulationDeltaTimeMs = 0`。Session 不自行控制 AudioTransport。ChartClock、HostClock 与
+CuexisAudio 都必须先归一化为 SourceClockSample，再由同一 RuntimeTimeline 生成
+RuntimeFrame。`chartTimeMs` 必须有限（允许为负），delta 必须有限且非负；同一
+discontinuity ID 下的向后时间移动拒绝，ID 变化后从目标绝对时间重采样而不消费跳转前 delta。
 
 更新顺序固定为 Behavior evaluate -> PropertyWriteBuffer -> Transform/FOV resolver -> World transform update。Resolver 每帧从 prepare 时捕获的初始值重建稀疏属性；Transform 与 Camera FOV 候选必须全部校验通过后才一次提交，不发布半帧结果。
 

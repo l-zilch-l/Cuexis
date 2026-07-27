@@ -2,12 +2,12 @@
 
 状态：已接受
 
-更新日期：2026-07-20
+更新日期：2026-07-27
 
 ## 时间域
 
 ```text
-sourceTimeMs HostClock 或 Cuexis AudioClock 提供的主时间位置
+sourceTimeMs ChartClock、HostClock 或 Cuexis AudioClock 提供的主时间位置
 audioTimeMs  Cuexis AudioClock 中从音频首采样开始的位置，是 sourceTimeMs 的一种来源
 offsetMs     Beat 0 在音频中的位置
 chartTimeMs  相对 Beat 0 的谱面时间
@@ -22,7 +22,15 @@ chartTimeMs = sourceTimeMs - offsetMs
 
 正 `offsetMs` 表示 Beat 0 出现在音频开始之后；负值表示 Beat 0 位于音频首采样之前。
 
-TimingMap 负责 `beat <-> chartTimeMs`。宿主 Timeline 或 Player Timeline 负责把 HostClock/Cuexis AudioClock、offset 和播放状态组合为 RuntimeFrame。Playback SDK 只消费已经明确来源和 discontinuity 的帧输入，不读取宿主墙钟。
+TimingMap 负责 `beat <-> chartTimeMs`。`cuexis_audio` 使用后端无关的
+`SourceClockSample{positionMs, state, discontinuityId}` 表达源时钟；`cuexis_playback` 的
+`RuntimeTimeline` 负责把 SourceClockSample、offset 和播放状态组合为 RuntimeFrame。
+PlaybackSession 仍只消费已经明确来源和 discontinuity 的 RuntimeFrame，不读取宿主墙钟，
+也不创建或控制 AudioTransport。
+
+单次准备显式选择 ChartClock、HostClock 或 CuexisAudio。ChartClock 只用于没有
+`audio.mainMusic` 的 Chart；HostClock 与 CuexisAudio 只用于声明了主音乐的 Chart。活动
+Session 与 reload 不得切换模式，初始化失败不得静默 fallback。
 
 ## 输入与判定时间
 
@@ -32,7 +40,9 @@ TimingMap 负责 `beat <-> chartTimeMs`。宿主 Timeline 或 Player Timeline �
 
 startRecording 记录的 InputEvent 时间戳使用 chartTimeMs 域，不使用宿主源时间或挂钟时间；loadReplay 注入的事件时间戳在同一 chartTimeMs 域匹配。
 
-HostClock 与 CuexisAudio 模式对相同的规范化 InputEvent 序列和 ResolvedSessionConfig 必须产生相同判定、计分和回放结果。输出延迟、输入延迟、用户校准和谱面 offset 是不同来源，不得合并成无来源的单一常数。
+HostClock 与 CuexisAudio 模式对相同的规范化 SourceClockSample/control script、InputEvent
+序列和 ResolvedSessionConfig 必须生成相同 RuntimeFrame，并产生相同表现、判定、计分和回放
+结果。输出延迟、输入延迟、用户校准和谱面 offset 是不同来源，不得合并成无来源的单一常数。
 
 ## BPM
 

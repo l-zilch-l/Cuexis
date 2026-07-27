@@ -1,9 +1,9 @@
 #pragma once
 
-//  ProjectConfig v1 — 固定文件 cuexis.project.json，format: "cuexis.project"
-//  包含项目身份（UUIDv7）、命名的资产根、入口谱面和 opaque extensions
-//  ProjectConfig 不包含窗口位置、音频设备、用户目录、设备预算或 profile 引用
-//  BootstrapLocator 使用 {root, path} 定位入口谱面，不把路径当作 AssetId
+// ProjectConfig v1 uses the fixed cuexis.project.json file and cuexis.project format identity.
+// It contains a UUIDv7 project identity, named asset roots, an entry chart, and opaque extensions.
+// It excludes window state, audio devices, user directories, device budgets, and profile refs.
+// BootstrapLocator identifies the entry chart by {root, path}; the path is not an AssetId.
 
 #include <cuexis/core/diagnostic.hpp>
 

@@ -263,7 +263,7 @@ auto ChartWorldInstantiator::instantiate(
         ObjectEntityMap objects;
         objects.entries_.reserve(runtime.objects.size());
 
-        world->withRegistry([&](entt::registry& registry) {
+        auto populated = world->withRegistry([&](entt::registry& registry) {
             for (const auto& object : runtime.objects) {
                 objects.entries_.push_back(
                     ObjectEntityEntry{.objectId = object.id, .entity = registry.create()});
@@ -300,12 +300,8 @@ auto ChartWorldInstantiator::instantiate(
                 }
                 if (object.components.camera.has_value()) {
                     const auto& cam = *object.components.camera;
-                    const auto fovRadians = cam.fovY * 3.14159265358979323846 / 180.0;
-                    const auto projection =
-                        core::makePerspective(fovRadians, 1.0, cam.nearPlane, cam.farPlane);
-                    registry.emplace<render::CameraComponent>(entity, cam.type, cam.fovY,
-                                                              cam.nearPlane, cam.farPlane, 0.0, 0.0,
-                                                              0.0, projection);
+                    registry.emplace<render::CameraComponent>(
+                        entity, cam.type, cam.fovY, cam.nearPlane, cam.farPlane, 0.0, 0.0, 0.0);
                 }
             }
 
@@ -337,14 +333,16 @@ auto ChartWorldInstantiator::instantiate(
             };
             registry.emplace<world::TransformComponent>(
                 cameraEntity, cameraPosition, cameraRotation, core::Vec3{1.0F, 1.0F, 1.0F});
-            const auto fovRadians = runtime.camera.fovY * 3.14159265358979323846 / 180.0;
-            const auto projection = core::makePerspective(fovRadians, 1.0, runtime.camera.nearPlane,
-                                                          runtime.camera.farPlane);
-            registry.emplace<render::CameraComponent>(
-                cameraEntity, runtime.camera.type, runtime.camera.fovY, runtime.camera.nearPlane,
-                runtime.camera.farPlane, runtime.camera.pitch, runtime.camera.yaw,
-                runtime.camera.roll, projection);
+            registry.emplace<render::CameraComponent>(cameraEntity, runtime.camera.type,
+                                                      runtime.camera.fovY, runtime.camera.nearPlane,
+                                                      runtime.camera.farPlane, runtime.camera.pitch,
+                                                      runtime.camera.yaw, runtime.camera.roll);
         });
+        if (!populated) {
+            addWorldError(result.diagnostics, populated.error());
+            result.diagnostics.sortDeterministically();
+            return result;
+        }
 
         auto transforms = world::updateWorldTransforms(*world);
         if (!transforms) {

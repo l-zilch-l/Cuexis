@@ -36,9 +36,11 @@ template <typename Tag> struct ResourceHandle final {
 struct MeshTag final {};
 struct MaterialTag final {};
 struct TextureTag final {};
+struct AudioSourceTag final {};
 
 using MeshHandle = ResourceHandle<MeshTag>;
 using MaterialHandle = ResourceHandle<MaterialTag>;
 using TextureHandle = ResourceHandle<TextureTag>;
+using AudioSourceHandle = ResourceHandle<AudioSourceTag>;
 
 } // namespace cuexis::assets

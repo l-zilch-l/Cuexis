@@ -48,11 +48,11 @@ class ResourceFixture final {
         std::filesystem::remove(root_ / std::filesystem::path{path});
     }
 
-    [[nodiscard]] auto database(std::vector<cuexis::assets::AssetRecord> records) const
-        -> cuexis::assets::AssetDatabase {
+    [[nodiscard]] auto database(std::vector<cuexis::assets::AssetRecord> records,
+                                std::uint32_t version = 1) const -> cuexis::assets::AssetDatabase {
         auto database = cuexis::assets::AssetDatabase::create({
             .roots = {{.root = {.id = "main", .path = root_},
-                       .index = {.assets = std::move(records)}}},
+                       .index = {.version = version, .assets = std::move(records)}}},
         });
         if (!database) {
             throw std::runtime_error{std::string{database.error().message()}};
@@ -158,6 +158,28 @@ TEST_CASE("ResourceManager loads typed CPU blobs and rejects cross-manager handl
     CHECK(metrics.ready == 1);
     CHECK(metrics.strongReferences == 1);
     CHECK(metrics.loadedBytes == 4);
+}
+
+TEST_CASE("ResourceManager loads AudioSource through its distinct typed handle",
+          "[assets][resource][audio]") {
+    ResourceFixture fixture;
+    fixture.write("main.wav", "encoded-wav");
+    auto database = fixture.database(
+        {{.id = {"audio.main"}, .type = cuexis::assets::AssetType::Audio, .source = "main.wav"}},
+        2);
+    cuexis::assets::ResourceManager manager{std::move(database)};
+
+    auto lease = manager.loadAudioSource({"audio.main"});
+    REQUIRE(lease.has_value());
+    CHECK(lease->get()->id.value == "audio.main");
+    CHECK(lease->get()->bytes().size() == 11);
+    CHECK(manager.get(lease->handle()).has_value());
+
+    auto scope = manager.createScope();
+    const auto requested = scope.requestAudioSource({"audio.main"});
+    REQUIRE(requested.hasValue());
+    CHECK(scope.contains(cuexis::assets::AssetType::Audio, {"audio.main"}));
+    CHECK(scope.contains(*requested.handle));
 }
 
 TEST_CASE("Lease release invalidates old handles and advances generation on reuse",

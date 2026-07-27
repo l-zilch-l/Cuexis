@@ -1,9 +1,8 @@
 #pragma once
 
-//  ProjectLoader / ProjectConfigReader — 项目配置加载器
-//  ProjectConfigReader：从 JSON 文本 typed-read ProjectConfig（不读取文件系统）
-//  ProjectLoader：定位固定文件名、校验物理 containment、规范化路径、生成 PreparedProject
-//  saveAtomic：通过临时文件写入并原子替换，失败保留上一有效文件
+// ProjectConfigReader reads typed ProjectConfig data from JSON without filesystem access.
+// ProjectLoader locates the fixed file, checks containment, and produces PreparedProject paths.
+// saveAtomic writes through a temporary file and preserves the prior file on failure.
 
 #include <cuexis/core/result.hpp>
 #include <cuexis/project/project_config.hpp>
@@ -22,11 +21,11 @@ class ProjectConfigReader final {
 
 class ProjectLoader final {
   public:
-    // locator 必须是项目目录或确切的 cuexis.project.json 文件路径
+    // locator must be a project directory or the exact cuexis.project.json path.
     [[nodiscard]] static ProjectLoadResult load(const std::filesystem::path& locator,
                                                 const ProjectLimits& limits = {});
 
-    // 加载内存中的 JSON 文本，同时执行与 load() 相同的物理路径检查
+    // Loads in-memory JSON while applying the same physical path checks as load().
     [[nodiscard]] static ProjectLoadResult loadText(std::string_view jsonText,
                                                     const std::filesystem::path& projectRoot,
                                                     const ProjectLimits& limits = {});
@@ -34,7 +33,7 @@ class ProjectLoader final {
     [[nodiscard]] static core::Result<std::filesystem::path>
     locateProjectFile(const std::filesystem::path& locator);
 
-    // 通过独占创建的临时文件写入，然后原子替换目标文件
+    // Writes through an exclusively created temporary file, then atomically replaces the target.
     [[nodiscard]] static core::Result<void> saveAtomic(const ProjectConfig& config,
                                                        const std::filesystem::path& locator,
                                                        const ProjectLimits& limits = {});

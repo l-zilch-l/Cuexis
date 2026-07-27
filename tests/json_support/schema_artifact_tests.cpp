@@ -93,3 +93,23 @@ TEST_CASE("Stage 1B schemas reject unknown core fields and unsupported asset typ
         "extensions":{}
     })");
 }
+
+TEST_CASE("Stage 1D chart and asset index schemas accept the shipped fixture",
+          "[json][schema][artifact][stage1d]") {
+    const auto source = std::filesystem::path{CUEXIS_SOURCE_DIR};
+    const auto chartSchema = parseArtifact(source / "schemas" / "cuexis.chart.v2.schema.json");
+    const auto indexSchema =
+        parseArtifact(source / "schemas" / "cuexis.asset-index.v2.schema.json");
+    const auto fixture = source / "assets" / "projects" / "stage1d_project" / "assets";
+
+    requireValid(chartSchema,
+                 parseArtifact(fixture / "charts" / "stage1d_example.cuexis.chart.json"));
+    requireValid(indexSchema, parseArtifact(fixture / "cuexis.asset-index.json"));
+
+    requireInvalid(indexSchema, R"({
+        "format":"cuexis.asset-index","version":2,
+        "assets":[{"id":"audio.main","type":"audio","source":"audio/main.wav",
+                   "dependencies":["mesh.note"]}],
+        "extensions":{}
+    })");
+}

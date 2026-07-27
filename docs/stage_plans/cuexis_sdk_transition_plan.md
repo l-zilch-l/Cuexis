@@ -1,8 +1,8 @@
 # Cuexis SDK 改造与阶段路线调整方案
 
-状态：产品方向与阶段调整已接受；阶段 1C 功能边界已落地，阶段 1E Playback Core preview 部分实施，稳定 C ABI 延后到必选 Judgement/Replay 完成后的阶段 12
+状态：产品方向与阶段调整已接受；阶段 1C、1D 功能边界已落地，阶段 1E Playback Core preview 部分实施，稳定 C ABI 延后到必选 Judgement/Replay 完成后的阶段 12
 规划日期：2026-07-20  
-当前基线：[阶段 1B 完成报告](../stage_reports/stage_1b_completion_report.md)  
+当前基线：[阶段 1D 完成报告](../stage_reports/stage_1d_completion_report.md)
 相关实施计划：[阶段 1C](stage_1c_implementation_plan.md)、[阶段 1D](stage_1d_implementation_plan.md)、[阶段 1E](stage_1e_implementation_plan.md)
 
 ## 0. 文档定位
@@ -224,22 +224,30 @@ simulationDeltaTimeMs
 timeDiscontinuityId
 ```
 
-音频支持两种同等正式的组合模式：
+音频/时间支持三种显式组合模式：
 
 ```text
+ChartClock 模式
+  只用于明确没有主音乐引用的 Chart
+  不创建音频设备
+
 HostClock 模式
   宿主负责播放主音乐
-  宿主把经过自身延迟模型处理的播放位置映射为 RuntimeFrame
+  宿主提交 SourceClockSample
   Cuexis 不创建音频设备
 
 CuexisAudio 模式
   cuexis_audio_sdl 或未来其他后端播放主音乐
-  AudioClockSnapshot 由应用组合为 RuntimeFrame
+  AudioClockSnapshot 转换为 SourceClockSample
 ```
 
-Chart 中存在主音乐引用时，内容引用仍是 Required；但“由谁解码和创建设备”由已选择的运行模式决定。SDL 设备失败导致启动失败是独立 Player 的策略，不得变成所有嵌入宿主的统一要求。已经明确选择的模式失败时仍禁止无诊断地切换模式。
+`cuexis_playback` 的 RuntimeTimeline 把三种来源、Chart offset 和播放状态统一为 RuntimeFrame。
+PlaybackSession 本身仍只消费 RuntimeFrame。Chart 中存在主音乐引用时，内容引用仍是 Required；
+但“由谁解码和创建设备”由已选择的运行模式决定。SDL 设备失败导致启动失败是独立 Player 的
+策略，不得变成所有嵌入宿主的统一要求。模式在准备时冻结，失败和 reload 均禁止无诊断切换。
 
-判定结果按 `chartTimeMs` 时间戳索引，与宿主时钟模式无关。同一谱面在 HostClock 与 CuexisAudio 模式下对相同 InputEvent 序列产生相同的判定结果。
+判定结果按 `chartTimeMs` 时间戳索引，与宿主时钟模式无关。同一谱面在 HostClock 与
+CuexisAudio 模式下对相同 SourceClockSample/control script 和 InputEvent 序列产生相同结果。
 
 ## 9. 渲染集成改造
 
@@ -312,8 +320,11 @@ shared library 导出宏和符号可见性规则
 
 ```text
 add_subdirectory consumer
-find_package(Cuexis 0.1 CONFIG REQUIRED) consumer
+find_package(Cuexis 0.2 CONFIG REQUIRED) consumer
 ```
+
+当前已落地基线为 `0.2`。consumer 必须显式请求该版本，并覆盖 Playback/Content/Audio 与
+可选 AudioSDL 的 component-aware 行为。
 
 ## 11. 阶段 0 至 1B 调整
 
@@ -409,15 +420,18 @@ Player 改为 PlaybackSession 的薄组合层
 
 ### 12.2 阶段 1D：主音乐内容与可选音频适配器
 
-保留 Asset Index v2、Chart v2 主音乐引用、AudioClip、AudioClock 和 SDL AudioTransport 的推荐设计，并调整为：
+按 ADR 0031/0032 冻结 Asset Index v2、Chart v2 主音乐引用、AudioClip、AudioClock、
+Prepared Playback 和 SDL AudioTransport：
 
 ```text
 cuexis_audio 保持后端无关
 cuexis_audio_sdl 是可选组件
-PlaybackSession 不依赖 cuexis_audio_sdl
-正式支持 HostClock 与 CuexisAudio 两种组合模式
-Player 使用 SDL 模式，headless consumer 使用 HostClock/FakeClock
+cuexis_playback 依赖 cuexis_audio，但不依赖 cuexis_audio_sdl/SDL
+正式支持 ChartClock、HostClock 与 CuexisAudio 三种不可变模式
+Player 使用 CuexisAudio，headless consumer 使用 ChartClock/HostClock/FakeClock
+Prepared Playback 内部持有 Source Lease，只公开 MainMusicSourceView
 主音乐内容 Required 规则与音频设备所有权规则分开
+安装导出 Cuexis::Audio 与显式请求的 Cuexis::AudioSDL，preview API 提升到 0.2.0
 ```
 
 ### 12.3 新增阶段 1E：Playback Core Preview 与外部消费闭环
@@ -690,7 +704,7 @@ ReplayData 序列化/反序列化往返后，注入回放结果与原始实时�
 1. 接受产品边界和 SDK 架构 ADR
 2. 在 1C 内建立 headless RuntimeFrame + PlaybackSession 最小闭环
 3. 将 Player 现有组合逻辑迁入可复用门面，Player 改为薄应用层
-4. 在 1D 建立 HostClock/CuexisAudio 双模式
+4. 在 1D 建立 ChartClock/HostClock/CuexisAudio、RuntimeTimeline 与 Prepared Playback
 5. 引入 ContentProvider，同时保留现有 Filesystem 行为和路径安全
 6. 在 1E 完成安装包和外部 consumer
 7. 外部消费门禁通过后再扩展阶段 2 以上表现系统
@@ -707,7 +721,7 @@ ReplayData 序列化/反序列化往返后，注入回放结果与原始实时�
 | 为支持所有宿主过度抽象 | 先用 headless consumer 和一个真实宿主验证，不提前建立动态插件框架 |
 | 公共 API 泄漏内部依赖 | 公共头 allowlist、安装后 consumer 和 include 扫描门禁 |
 | 宿主 VFS 绕过路径安全 | 所有字节继续做格式/预算校验；文件系统 containment 只归 Filesystem adapter |
-| 音频时间语义分裂 | HostClock 与 CuexisAudio 都归一化为同一 RuntimeFrame |
+| 音频时间语义分裂 | 三种 Clock 先归一化为 SourceClockSample，再由同一 RuntimeTimeline 生成 RuntimeFrame |
 | 任意 Shader 无法跨引擎 | Portable/Built-in/Host-specific Profile 分层和能力诊断 |
 | C ABI 过早冻结 | 先冻结 C++ 生命周期和所有权，再冻结 opaque handle ABI |
 | Player 与 SDK 行为分叉 | Player 必须只调用正式 Playback SDK，并做结果 hash 对照测试 |
@@ -725,13 +739,16 @@ ProjectConfig 继续服务 Player/Studio，SDK 同时接受 typed/memory source
 新增阶段 1E，并覆盖原 1D 计划中的“不创建阶段 1E”结论
 cuexis_judgement 是 SDK 必选交付模块，但无 InputEvent 时保持休眠
 ReplayData 使用版本化 Cuexis 自有格式身份，具体 Schema 在阶段 11 冻结
+阶段 1D 使用 ChartClock/HostClock/CuexisAudio 三种不可变模式和 Prepared Playback 内容边界
+cuexis_playback 可以依赖 cuexis_audio，但不得依赖 cuexis_audio_sdl/SDL
+1D 交付 Cuexis::Audio/Cuexis::AudioSDL components，并将 preview API 提升到 0.2.0
 ```
 
 以下细节仍须在对应阶段编码前确认：
 
 ```text
 第一版真实宿主适配目标；确认前只使用通用 external C++ consumer
-PlaybackSession 的具体 C++ 类型、函数和错误返回形式
+PlaybackSession 在 1D 已冻结类型之外的最终 C++ 函数集合和错误返回细节
 FrameSnapshot/RenderPacket 的内存布局与宿主上传策略
 C ABI 的 handle、字符串、数组、allocator 和兼容性细节
 ReplayData 的 format ID、Schema、迁移、大小预算和完整性校验

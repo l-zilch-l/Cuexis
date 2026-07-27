@@ -58,6 +58,7 @@ template <typename Tag> struct CpuResource final {
 using MeshResource = CpuResource<MeshTag>;
 using MaterialResource = CpuResource<MaterialTag>;
 using TextureResource = CpuResource<TextureTag>;
+using AudioSourceResource = CpuResource<AudioSourceTag>;
 
 namespace detail {
 struct ResourceLeaseControl;
@@ -127,6 +128,7 @@ template <typename Tag> class ResourceLease final {
 using MeshLease = ResourceLease<MeshTag>;
 using MaterialLease = ResourceLease<MaterialTag>;
 using TextureLease = ResourceLease<TextureTag>;
+using AudioSourceLease = ResourceLease<AudioSourceTag>;
 
 template <typename Lease> struct ResourceLoadResult final {
     std::optional<Lease> lease;
@@ -188,6 +190,7 @@ class ResourceManager final {
     [[nodiscard]] auto loadMesh(const AssetId& id) -> core::Result<MeshLease>;
     [[nodiscard]] auto loadMaterial(const AssetId& id) -> core::Result<MaterialLease>;
     [[nodiscard]] auto loadTexture(const AssetId& id) -> core::Result<TextureLease>;
+    [[nodiscard]] auto loadAudioSource(const AssetId& id) -> core::Result<AudioSourceLease>;
 
     [[nodiscard]] auto requestMesh(const AssetId& id, ResourcePolicy policy)
         -> ResourceLoadResult<MeshLease>;
@@ -195,18 +198,25 @@ class ResourceManager final {
         -> ResourceLoadResult<MaterialLease>;
     [[nodiscard]] auto requestTexture(const AssetId& id, ResourcePolicy policy)
         -> ResourceLoadResult<TextureLease>;
+    [[nodiscard]] auto requestAudioSource(const AssetId& id, ResourcePolicy policy)
+        -> ResourceLoadResult<AudioSourceLease>;
 
     [[nodiscard]] auto get(MeshHandle handle) const -> core::Result<const MeshResource*>;
     [[nodiscard]] auto get(MaterialHandle handle) const -> core::Result<const MaterialResource*>;
     [[nodiscard]] auto get(TextureHandle handle) const -> core::Result<const TextureResource*>;
+    [[nodiscard]] auto get(AudioSourceHandle handle) const
+        -> core::Result<const AudioSourceResource*>;
 
     [[nodiscard]] auto state(MeshHandle handle) const -> core::Result<ResourceState>;
     [[nodiscard]] auto state(MaterialHandle handle) const -> core::Result<ResourceState>;
     [[nodiscard]] auto state(TextureHandle handle) const -> core::Result<ResourceState>;
+    [[nodiscard]] auto state(AudioSourceHandle handle) const -> core::Result<ResourceState>;
 
     [[nodiscard]] auto contentRevision(MeshHandle handle) const -> core::Result<std::uint64_t>;
     [[nodiscard]] auto contentRevision(MaterialHandle handle) const -> core::Result<std::uint64_t>;
     [[nodiscard]] auto contentRevision(TextureHandle handle) const -> core::Result<std::uint64_t>;
+    [[nodiscard]] auto contentRevision(AudioSourceHandle handle) const
+        -> core::Result<std::uint64_t>;
 
     [[nodiscard]] std::uint64_t managerToken() const noexcept;
     [[nodiscard]] ResourceManagerMetrics metrics() const noexcept;
@@ -216,6 +226,7 @@ class ResourceManager final {
     [[nodiscard]] auto unload(MeshHandle handle) -> core::Result<void>;
     [[nodiscard]] auto unload(MaterialHandle handle) -> core::Result<void>;
     [[nodiscard]] auto unload(TextureHandle handle) -> core::Result<void>;
+    [[nodiscard]] auto unload(AudioSourceHandle handle) -> core::Result<void>;
     void unloadUnused() noexcept;
 
     [[nodiscard]] ResourceScope createScope();
@@ -248,6 +259,9 @@ class ResourceScope final {
     [[nodiscard]] auto requestTexture(const AssetId& id,
                                       ResourcePolicy policy = ResourcePolicy::Required)
         -> ResourceRequestResult<TextureHandle>;
+    [[nodiscard]] auto requestAudioSource(const AssetId& id,
+                                          ResourcePolicy policy = ResourcePolicy::Required)
+        -> ResourceRequestResult<AudioSourceHandle>;
 
     // Naming aliases for call sites that describe the operation as acquisition.
     [[nodiscard]] auto acquireMesh(const AssetId& id,
@@ -272,6 +286,7 @@ class ResourceScope final {
     [[nodiscard]] bool contains(MeshHandle handle) const noexcept;
     [[nodiscard]] bool contains(MaterialHandle handle) const noexcept;
     [[nodiscard]] bool contains(TextureHandle handle) const noexcept;
+    [[nodiscard]] bool contains(AudioSourceHandle handle) const noexcept;
     [[nodiscard]] std::uint64_t managerToken() const noexcept;
     void clear() noexcept;
 
@@ -305,11 +320,12 @@ class ResourceScope final {
         EntryResolution resolution{EntryResolution::Loaded};
         ResourcePolicy acquisitionPolicy{ResourcePolicy::Required};
         std::optional<core::Error> failureCause;
-        std::variant<MeshLease, MaterialLease, TextureLease> lease;
+        std::variant<MeshLease, MaterialLease, TextureLease, AudioSourceLease> lease;
     };
 
     struct UntypedRequestResult final {
-        std::optional<std::variant<MeshHandle, MaterialHandle, TextureHandle>> handle;
+        std::optional<std::variant<MeshHandle, MaterialHandle, TextureHandle, AudioSourceHandle>>
+            handle;
         core::Diagnostics diagnostics;
     };
 

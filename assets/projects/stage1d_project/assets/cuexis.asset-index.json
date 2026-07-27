@@ -1,0 +1,13 @@
+{
+  "format": "cuexis.asset-index",
+  "version": 2,
+  "assets": [
+    {
+      "id": "audio.main",
+      "type": "audio",
+      "source": "audio/main.wav",
+      "dependencies": []
+    }
+  ],
+  "extensions": {}
+}

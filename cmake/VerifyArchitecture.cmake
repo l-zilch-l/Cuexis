@@ -17,8 +17,31 @@ function(cuexis_verify_source_architecture source_dir)
     )
     foreach(source IN LISTS chart_sources)
         file(READ "${source}" contents)
-        if(contents MATCHES "#[ \t]*include[ \t]*[<\"](entt/|cuexis/world/|SDL|glad|GL/)")
+        if(contents MATCHES "#[ \t]*include[ \t]*[<\"](entt/|cuexis/world/|cuexis/audio/|cuexis/audio_sdl/|SDL|glad|GL/)")
             message(FATAL_ERROR "Chart includes a World, platform or graphics header: ${source}")
+        endif()
+    endforeach()
+
+    file(GLOB_RECURSE audio_sources
+        "${source_dir}/engine/audio/*.cpp"
+        "${source_dir}/engine/audio/*.hpp"
+    )
+    foreach(source IN LISTS audio_sources)
+        file(READ "${source}" contents)
+        if(contents MATCHES
+           "#[ \t]*include[ \t]*[<\"](SDL|cuexis/audio_sdl/|cuexis/platform_sdl/)")
+            message(FATAL_ERROR "Audio core includes an SDL adapter header: ${source}")
+        endif()
+    endforeach()
+
+    file(GLOB_RECURSE audio_sdl_sources
+        "${source_dir}/engine/audio_sdl/*.cpp"
+        "${source_dir}/engine/audio_sdl/*.hpp"
+    )
+    foreach(source IN LISTS audio_sdl_sources)
+        file(READ "${source}" contents)
+        if(contents MATCHES "#[ \t]*include[ \t]*[<\"]cuexis/platform_sdl/")
+            message(FATAL_ERROR "AudioSDL includes the platform SDL adapter: ${source}")
         endif()
     endforeach()
 
@@ -28,8 +51,20 @@ function(cuexis_verify_source_architecture source_dir)
     )
     foreach(source IN LISTS runtime_sources)
         file(READ "${source}" contents)
-        if(contents MATCHES "#[ \t]*include[ \t]*[<\"](SDL|glad|GL/|cuexis/platform_sdl/|cuexis/render_opengl/)")
+        if(contents MATCHES "#[ \t]*include[ \t]*[<\"](SDL|glad|GL/|cuexis/audio/|cuexis/audio_sdl/|cuexis/platform_sdl/|cuexis/render_opengl/)")
             message(FATAL_ERROR "Runtime includes a platform or backend header: ${source}")
+        endif()
+    endforeach()
+
+    file(GLOB_RECURSE playback_sources
+        "${source_dir}/engine/playback/*.cpp"
+        "${source_dir}/engine/playback/*.hpp"
+    )
+    foreach(source IN LISTS playback_sources)
+        file(READ "${source}" contents)
+        if(contents MATCHES
+           "#[ \t]*include[ \t]*[<\"](SDL|cuexis/audio_sdl/|cuexis/platform_sdl/|cuexis/render_opengl/)")
+            message(FATAL_ERROR "Playback includes an adapter header: ${source}")
         endif()
     endforeach()
 
@@ -64,6 +99,9 @@ function(cuexis_verify_source_architecture source_dir)
     file(GLOB_RECURSE public_headers "${source_dir}/engine/*/include/*.hpp")
     foreach(source IN LISTS public_headers)
         file(READ "${source}" contents)
+        if(contents MATCHES "[^ -~\t\r\n]")
+            message(FATAL_ERROR "Non-ASCII text escaped into an installed public header: ${source}")
+        endif()
         if(contents MATCHES "#[ \t]*include[ \t]*[<\"]glm/" OR
            contents MATCHES "(^|[^A-Za-z0-9_])glm::")
             message(FATAL_ERROR "GLM type escaped a Cuexis public header: ${source}")

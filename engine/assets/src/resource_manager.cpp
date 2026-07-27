@@ -45,6 +45,12 @@ template <> struct ResourceTraits<TextureTag> final {
     static constexpr std::string_view fallbackPayload = "CUEXIS_FALLBACK_TEXTURE_V1";
 };
 
+template <> struct ResourceTraits<AudioSourceTag> final {
+    static constexpr AssetType type = AssetType::Audio;
+    static constexpr std::string_view fallbackId = "cuexis.builtin.fallback.audio";
+    static constexpr std::string_view fallbackPayload = "CUEXIS_FALLBACK_AUDIO_SOURCE_V1";
+};
+
 template <typename Tag> struct Slot final {
     AssetId id;
     ResourceState state{ResourceState::Unloaded};
@@ -102,6 +108,7 @@ struct ResourceManagerState final : std::enable_shared_from_this<ResourceManager
         initializeFallback<MeshTag>();
         initializeFallback<MaterialTag>();
         initializeFallback<TextureTag>();
+        initializeFallback<AudioSourceTag>();
     }
 
     static auto allocateToken() noexcept -> std::uint64_t {
@@ -121,9 +128,11 @@ struct ResourceManagerState final : std::enable_shared_from_this<ResourceManager
             return meshes;
         } else if constexpr (std::is_same_v<Tag, MaterialTag>) {
             return materials;
-        } else {
-            static_assert(std::is_same_v<Tag, TextureTag>);
+        } else if constexpr (std::is_same_v<Tag, TextureTag>) {
             return textures;
+        } else {
+            static_assert(std::is_same_v<Tag, AudioSourceTag>);
+            return audioSources;
         }
     }
 
@@ -132,9 +141,11 @@ struct ResourceManagerState final : std::enable_shared_from_this<ResourceManager
             return meshes;
         } else if constexpr (std::is_same_v<Tag, MaterialTag>) {
             return materials;
-        } else {
-            static_assert(std::is_same_v<Tag, TextureTag>);
+        } else if constexpr (std::is_same_v<Tag, TextureTag>) {
             return textures;
+        } else {
+            static_assert(std::is_same_v<Tag, AudioSourceTag>);
+            return audioSources;
         }
     }
 
@@ -433,6 +444,9 @@ struct ResourceManagerState final : std::enable_shared_from_this<ResourceManager
         case AssetType::Texture:
             releaseLease<TextureTag>(index, generation);
             break;
+        case AssetType::Audio:
+            releaseLease<AudioSourceTag>(index, generation);
+            break;
         }
     }
 
@@ -456,6 +470,7 @@ struct ResourceManagerState final : std::enable_shared_from_this<ResourceManager
     Pool<MeshTag> meshes;
     Pool<MaterialTag> materials;
     Pool<TextureTag> textures;
+    Pool<AudioSourceTag> audioSources;
 };
 
 ResourceLeaseControl::~ResourceLeaseControl() {
@@ -518,14 +533,16 @@ auto requestDirect(const std::shared_ptr<detail::ResourceManagerState>& state, c
 }
 
 template <typename Tag>
-auto handleFromEntry(const std::variant<MeshLease, MaterialLease, TextureLease>& lease)
+auto handleFromEntry(
+    const std::variant<MeshLease, MaterialLease, TextureLease, AudioSourceLease>& lease)
     -> ResourceHandle<Tag> {
     return std::get<ResourceLease<Tag>>(lease).handle();
 }
 
-auto handleFromEntry(AssetType type,
-                     const std::variant<MeshLease, MaterialLease, TextureLease>& lease)
-    -> std::variant<MeshHandle, MaterialHandle, TextureHandle> {
+auto handleFromEntry(
+    AssetType type,
+    const std::variant<MeshLease, MaterialLease, TextureLease, AudioSourceLease>& lease)
+    -> std::variant<MeshHandle, MaterialHandle, TextureHandle, AudioSourceHandle> {
     switch (type) {
     case AssetType::Mesh:
         return handleFromEntry<MeshTag>(lease);
@@ -533,6 +550,8 @@ auto handleFromEntry(AssetType type,
         return handleFromEntry<MaterialTag>(lease);
     case AssetType::Texture:
         return handleFromEntry<TextureTag>(lease);
+    case AssetType::Audio:
+        return handleFromEntry<AudioSourceTag>(lease);
     }
     return MeshHandle{};
 }
@@ -562,6 +581,10 @@ auto ResourceManager::loadTexture(const AssetId& id) -> core::Result<TextureLeas
     return state_->load<TextureTag>(id);
 }
 
+auto ResourceManager::loadAudioSource(const AssetId& id) -> core::Result<AudioSourceLease> {
+    return state_->load<AudioSourceTag>(id);
+}
+
 auto ResourceManager::requestMesh(const AssetId& id, ResourcePolicy policy)
     -> ResourceLoadResult<MeshLease> {
     return requestDirect<MeshTag>(state_, id, policy);
@@ -577,6 +600,11 @@ auto ResourceManager::requestTexture(const AssetId& id, ResourcePolicy policy)
     return requestDirect<TextureTag>(state_, id, policy);
 }
 
+auto ResourceManager::requestAudioSource(const AssetId& id, ResourcePolicy policy)
+    -> ResourceLoadResult<AudioSourceLease> {
+    return requestDirect<AudioSourceTag>(state_, id, policy);
+}
+
 auto ResourceManager::get(MeshHandle handle) const -> core::Result<const MeshResource*> {
     return state_->get<MeshTag>(handle);
 }
@@ -587,6 +615,11 @@ auto ResourceManager::get(MaterialHandle handle) const -> core::Result<const Mat
 
 auto ResourceManager::get(TextureHandle handle) const -> core::Result<const TextureResource*> {
     return state_->get<TextureTag>(handle);
+}
+
+auto ResourceManager::get(AudioSourceHandle handle) const
+    -> core::Result<const AudioSourceResource*> {
+    return state_->get<AudioSourceTag>(handle);
 }
 
 auto ResourceManager::state(MeshHandle handle) const -> core::Result<ResourceState> {
@@ -601,6 +634,10 @@ auto ResourceManager::state(TextureHandle handle) const -> core::Result<Resource
     return state_->stateOf<TextureTag>(handle);
 }
 
+auto ResourceManager::state(AudioSourceHandle handle) const -> core::Result<ResourceState> {
+    return state_->stateOf<AudioSourceTag>(handle);
+}
+
 auto ResourceManager::contentRevision(MeshHandle handle) const -> core::Result<std::uint64_t> {
     return state_->revisionOf<MeshTag>(handle);
 }
@@ -611,6 +648,11 @@ auto ResourceManager::contentRevision(MaterialHandle handle) const -> core::Resu
 
 auto ResourceManager::contentRevision(TextureHandle handle) const -> core::Result<std::uint64_t> {
     return state_->revisionOf<TextureTag>(handle);
+}
+
+auto ResourceManager::contentRevision(AudioSourceHandle handle) const
+    -> core::Result<std::uint64_t> {
+    return state_->revisionOf<AudioSourceTag>(handle);
 }
 
 std::uint64_t ResourceManager::managerToken() const noexcept {
@@ -641,6 +683,7 @@ ResourceManagerMetrics ResourceManager::metrics() const noexcept {
     accumulate(state_->meshes);
     accumulate(state_->materials);
     accumulate(state_->textures);
+    accumulate(state_->audioSources);
     return result;
 }
 
@@ -661,6 +704,10 @@ auto ResourceManager::unload(TextureHandle handle) -> core::Result<void> {
     return state_->unload<TextureTag>(handle);
 }
 
+auto ResourceManager::unload(AudioSourceHandle handle) -> core::Result<void> {
+    return state_->unload<AudioSourceTag>(handle);
+}
+
 void ResourceManager::unloadUnused() noexcept {
     if (!state_) {
         return;
@@ -669,6 +716,7 @@ void ResourceManager::unloadUnused() noexcept {
     state_->unloadUnused<MeshTag>();
     state_->unloadUnused<MaterialTag>();
     state_->unloadUnused<TextureTag>();
+    state_->unloadUnused<AudioSourceTag>();
 }
 
 ResourceScope ResourceManager::createScope() {
@@ -787,7 +835,8 @@ auto ResourceScope::request(AssetType type, const AssetId& id, ResourcePolicy po
     std::vector<std::pair<AssetType, AssetId>> visiting;
     const auto acquire = [&](auto&& self, AssetType requestedType, const AssetId& requestedId,
                              std::size_t depth)
-        -> core::Result<std::variant<MeshHandle, MaterialHandle, TextureHandle>> {
+        -> core::Result<
+            std::variant<MeshHandle, MaterialHandle, TextureHandle, AudioSourceHandle>> {
         const auto held = entryIndex_.find(EntryKeyView{requestedType, requestedId.value});
         if (held != entryIndex_.end()) {
             const auto& entry = entries_[held->second];
@@ -915,6 +964,24 @@ auto ResourceScope::request(AssetType type, const AssetId& id, ResourcePolicy po
             }
             return handle;
         }
+        case AssetType::Audio: {
+            auto lease = state->load<AudioSourceTag>(requestedId);
+            if (!lease) {
+                return core::unexpected(std::move(lease.error()));
+            }
+            const auto handle = lease->handle();
+            if (!addEntry(Entry{.type = requestedType,
+                                .requestedId = requestedId,
+                                .resolution = EntryResolution::Loaded,
+                                .acquisitionPolicy = ResourcePolicy::Required,
+                                .failureCause = std::nullopt,
+                                .lease = std::move(*lease)})) {
+                return core::unexpected(
+                    core::Error{"assets.resource.scope_index_conflict",
+                                "ResourceScope already contains the requested resource key"});
+            }
+            return handle;
+        }
         }
         return core::unexpected(
             core::Error{"assets.resource.type_unknown", "Resource type is unknown"});
@@ -1020,6 +1087,33 @@ auto ResourceScope::request(AssetType type, const AssetId& id, ResourcePolicy po
                                   "Built-in fallback resource could not be acquired", id);
             break;
         }
+        case AssetType::Audio: {
+            auto fallback = state->fallback<AudioSourceTag>();
+            if (fallback) {
+                const auto handle = fallback->handle();
+                if (!addEntry(Entry{.type = type,
+                                    .requestedId = id,
+                                    .resolution = EntryResolution::Fallback,
+                                    .acquisitionPolicy = ResourcePolicy::Fallback,
+                                    .failureCause = loaded.error(),
+                                    .lease = std::move(*fallback)})) {
+                    appendErrorDiagnostic(diagnostics, loaded.error(),
+                                          core::DiagnosticSeverity::Error,
+                                          "assets.resource.scope_index_conflict",
+                                          "ResourceScope fallback key conflicts with an entry", id);
+                    break;
+                }
+                appendErrorDiagnostic(
+                    diagnostics, loaded.error(), core::DiagnosticSeverity::Warning,
+                    "assets.resource.fallback_used", "Built-in fallback resource was used", id);
+                diagnostics.sortDeterministically();
+                return {handle, std::move(diagnostics)};
+            }
+            appendErrorDiagnostic(diagnostics, fallback.error(), core::DiagnosticSeverity::Error,
+                                  "assets.resource.fallback_failed",
+                                  "Built-in fallback resource could not be acquired", id);
+            break;
+        }
         }
         break;
     }
@@ -1053,6 +1147,16 @@ auto ResourceScope::requestTexture(const AssetId& id, ResourcePolicy policy)
     std::optional<TextureHandle> handle;
     if (result.handle && std::holds_alternative<TextureHandle>(*result.handle)) {
         handle = std::get<TextureHandle>(*result.handle);
+    }
+    return {std::move(handle), std::move(result.diagnostics)};
+}
+
+auto ResourceScope::requestAudioSource(const AssetId& id, ResourcePolicy policy)
+    -> ResourceRequestResult<AudioSourceHandle> {
+    auto result = request(AssetType::Audio, id, policy);
+    std::optional<AudioSourceHandle> handle;
+    if (result.handle && std::holds_alternative<AudioSourceHandle>(*result.handle)) {
+        handle = std::get<AudioSourceHandle>(*result.handle);
     }
     return {std::move(handle), std::move(result.diagnostics)};
 }
@@ -1101,6 +1205,13 @@ bool ResourceScope::contains(TextureHandle handle) const noexcept {
     return std::any_of(entries_.begin(), entries_.end(), [&](const Entry& entry) {
         return std::holds_alternative<TextureLease>(entry.lease) &&
                std::get<TextureLease>(entry.lease).handle() == handle;
+    });
+}
+
+bool ResourceScope::contains(AudioSourceHandle handle) const noexcept {
+    return std::any_of(entries_.begin(), entries_.end(), [&](const Entry& entry) {
+        return std::holds_alternative<AudioSourceLease>(entry.lease) &&
+               std::get<AudioSourceLease>(entry.lease).handle() == handle;
     });
 }
 

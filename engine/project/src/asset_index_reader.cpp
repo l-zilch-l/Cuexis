@@ -1,6 +1,6 @@
 //  AssetIndexReader 实现 — 资产索引加载
 //  每个资产根独立一份 cuexis.asset-index.json，format: "cuexis.asset-index"
-//  资产类型：mesh、material、texture；依赖关系可声明（如 Material → Texture）
+//  v1 types: mesh, material, texture. v2 additionally supports leaf audio sources.
 //  目录枚举不参与 AssetId 发现，所有资产必须显式列入索引
 
 #include <cuexis/project/asset_index_reader.hpp>
@@ -95,6 +95,7 @@ void addWarning(core::Diagnostics& diagnostics, std::string code, std::string me
 }
 
 [[nodiscard]] std::optional<AssetType> readAssetType(const json::Reader& reader,
+                                                     std::uint32_t formatVersion,
                                                      core::Diagnostics& diagnostics) {
     const auto value = reader.readString();
     if (!value) {
@@ -109,8 +110,14 @@ void addWarning(core::Diagnostics& diagnostics, std::string code, std::string me
     if (*value == "texture") {
         return AssetType::Texture;
     }
+    if (*value == "audio" && formatVersion == assetIndexFormatVersion2) {
+        return AssetType::Audio;
+    }
     addError(diagnostics, "asset_index.type.unsupported",
-             "Asset type must be mesh, material, or texture", std::string{reader.fieldPath()});
+             formatVersion == assetIndexFormatVersion2
+                 ? "Asset type must be mesh, material, texture, or audio"
+                 : "Asset type must be mesh, material, or texture",
+             std::string{reader.fieldPath()});
     return std::nullopt;
 }
 
@@ -149,6 +156,8 @@ std::string_view assetTypeName(AssetType type) noexcept {
         return "material";
     case AssetType::Texture:
         return "texture";
+    case AssetType::Audio:
+        return "audio";
     }
     return "unknown";
 }
@@ -197,11 +206,11 @@ AssetIndexResult AssetIndexReader::read(std::string_view jsonText, const AssetIn
     }
     if (versionReader) {
         const auto value = versionReader->readInt64();
-        if (value && *value != assetIndexFormatVersion) {
+        if (value && *value != assetIndexFormatVersion && *value != assetIndexFormatVersion2) {
             addError(diagnostics, "asset_index.version.unsupported",
                      "Asset Index format version is unsupported",
                      std::string{versionReader->fieldPath()});
-        } else if (value) {
+        } else if (value && *value >= 0) {
             document.version = static_cast<std::uint32_t>(*value);
         }
     }
@@ -256,7 +265,7 @@ AssetIndexResult AssetIndexReader::read(std::string_view jsonText, const AssetIn
                     complete = false;
                 }
                 if (typeReader) {
-                    const auto value = readAssetType(*typeReader, diagnostics);
+                    const auto value = readAssetType(*typeReader, document.version, diagnostics);
                     if (value) {
                         record.type = *value;
                     } else {
@@ -338,6 +347,32 @@ AssetIndexResult AssetIndexReader::read(std::string_view jsonText, const AssetIn
         const auto value = readExtensions(*extensionsReader, limits, diagnostics);
         if (value) {
             document.extensions = *value;
+        }
+    }
+
+    if (document.version == assetIndexFormatVersion2) {
+        std::set<std::string, std::less<>> audioIds;
+        for (const auto& record : document.assets) {
+            if (record.type == AssetType::Audio) {
+                audioIds.insert(record.id);
+                if (!record.dependencies.empty()) {
+                    addError(diagnostics, "asset_index.audio.dependencies_not_empty",
+                             "Audio records must be dependency leaves",
+                             "$/assets/" + record.id + "/dependencies");
+                }
+            }
+        }
+        for (const auto& record : document.assets) {
+            if (record.type == AssetType::Audio) {
+                continue;
+            }
+            for (const auto& dependency : record.dependencies) {
+                if (audioIds.contains(dependency)) {
+                    addError(diagnostics, "asset_index.audio.dependency_forbidden",
+                             "Non-audio records must not depend on Audio records",
+                             "$/assets/" + record.id + "/dependencies");
+                }
+            }
         }
     }
 

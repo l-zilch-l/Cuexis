@@ -1,9 +1,9 @@
 #pragma once
 
-//  SDL3 平台抽象层 — SdlRuntime 管理 SDL 主线程视频运行时
-//  线程契约：创建、所有操作、移动构造/赋值和析构必须在 SDL 主线程执行
-//  业务代码不得直接依赖 SDL 类型；平台对象仅在此模块内持有
-//  executableBasePath() 解析真实可执行目录，不依赖 argv[0] 或当前工作目录
+// SDL3 platform adapter for the main-thread video runtime.
+// Creation, operations, moves, and destruction must run on the SDL main thread.
+// Application code does not depend on SDL types; this module owns platform objects.
+// executableBasePath() resolves the executable directory without argv[0] or the working directory.
 
 #include <filesystem>
 #include <memory>
@@ -19,10 +19,10 @@ struct RuntimeState;
 
 class SdlWindow;
 
-// 解析真实可执行文件目录，不依赖 argv[0] 或当前目录
+// Resolves the executable directory without relying on argv[0] or the working directory.
 [[nodiscard]] auto executableBasePath() -> core::Result<std::filesystem::path>;
 
-// 持有在 SDL 主线程上创建的共享 SDL 视频运行时
+// Owns the shared SDL video runtime created on the SDL main thread.
 //
 // Thread contract: create(), every operation on a non-empty instance, move construction,
 // move assignment, and destruction must run on the runtime owner thread. The owner thread is

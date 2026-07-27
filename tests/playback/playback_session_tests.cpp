@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <fstream>
 #include <future>
+#include <optional>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -19,6 +20,8 @@ namespace {
 
 static_assert(!std::is_move_constructible_v<cuexis::playback::PlaybackSession>);
 static_assert(!std::is_move_assignable_v<cuexis::playback::PlaybackSession>);
+static_assert(!std::is_copy_constructible_v<cuexis::playback::PreparedPlayback>);
+static_assert(std::is_nothrow_move_constructible_v<cuexis::playback::PreparedPlayback>);
 
 constexpr std::string_view chart = R"json(
 {
@@ -77,6 +80,7 @@ TEST_CASE("PlaybackSession drives a headless owning snapshot", "[playback][headl
     REQUIRE(frame.has_value());
     REQUIRE(frame->objects.size() == 1);
     CHECK(frame->objects[0].id == "019b0000-0000-7abc-8def-000000000210");
+    CHECK(frame->objects[0].hasTransform);
     CHECK(frame->objects[0].worldMatrix[12] == Catch::Approx(5.0F));
     CHECK(frame->camera.active);
     CHECK(frame->camera.fovY == Catch::Approx(75.0));
@@ -100,6 +104,38 @@ TEST_CASE("PlaybackSession drives a headless owning snapshot", "[playback][headl
     REQUIRE(session.unload().has_value());
     CHECK(saved.objects[0].worldMatrix[12] == Catch::Approx(5.0F));
     CHECK(saved.camera.fovY == Catch::Approx(75.0));
+}
+
+TEST_CASE("Playback snapshot includes non-spatial objects with explicit transform presence",
+          "[playback][snapshot]") {
+    constexpr std::string_view nonSpatialChart = R"json(
+{
+  "format":"cuexis.chart","version":1,
+  "chartId":"019b0000-0000-7abc-8def-000000000301","metadata":{},
+  "timing":{"offsetMs":0,"defaultBpm":120,"bpmChanges":[],"stops":[]},
+  "templates":[],"behaviors":[],
+  "objects":[{
+    "id":"019b0000-0000-7abc-8def-000000000310","parent":null,
+    "components":{"cuexis.element":{"version":1}},"extensions":{}
+  }],
+  "requiredExtensions":[],"extensions":{}
+}
+)json";
+
+    cuexis::playback::PlaybackSession session;
+    REQUIRE(session.loadChart(nonSpatialChart).has_value());
+    REQUIRE(session.update({.chartTimeMs = 0.0}).has_value());
+    const auto info = session.chartInfo();
+    const auto frame = session.extractFrame({.width = 640, .height = 480});
+    REQUIRE(info.has_value());
+    REQUIRE(frame.has_value());
+    REQUIRE(frame->objects.size() == info->objectCount);
+    REQUIRE(frame->objects.size() == 1);
+    CHECK_FALSE(frame->objects[0].hasTransform);
+    CHECK(frame->objects[0].worldMatrix[0] == Catch::Approx(1.0F));
+    CHECK(frame->objects[0].worldMatrix[5] == Catch::Approx(1.0F));
+    CHECK(frame->objects[0].worldMatrix[10] == Catch::Approx(1.0F));
+    CHECK(frame->objects[0].worldMatrix[15] == Catch::Approx(1.0F));
 }
 
 TEST_CASE("PlaybackSession host-driven seek and explicit reload sample the target frame",
@@ -128,6 +164,30 @@ TEST_CASE("PlaybackSession host-driven seek and explicit reload sample the targe
     REQUIRE(reloadFrame.has_value());
     CHECK(reloadFrame->objects[0].worldMatrix[12] == Catch::Approx(7.5F));
     CHECK(reloadFrame->camera.fovY == Catch::Approx(82.5));
+}
+
+TEST_CASE("PlaybackSession exposes complete diagnostics for a failed reload",
+          "[playback][reload][diagnostics]") {
+    cuexis::playback::PlaybackSession session;
+    REQUIRE(session.loadChart(chart).has_value());
+    REQUIRE(session.update({.chartTimeMs = 250.0}).has_value());
+
+    auto invalid = std::string{chart};
+    const auto fov = invalid.find("\"fovY\":60");
+    REQUIRE(fov != std::string::npos);
+    invalid.replace(fov, std::string_view{"\"fovY\":60"}.size(), "\"fovY\":0");
+    const auto nearPlane = invalid.find("\"near\":0.1");
+    REQUIRE(nearPlane != std::string::npos);
+    invalid.replace(nearPlane, std::string_view{"\"near\":0.1"}.size(), "\"near\":2");
+
+    const auto failed = session.reload(
+        invalid, {.chartTimeMs = 250.0, .simulationDeltaTimeMs = 0.0, .timeDiscontinuityId = 1},
+        cuexis::playback::ReloadPolicy::KeepChartTime);
+    REQUIRE_FALSE(failed.has_value());
+    REQUIRE(session.lastOperationDiagnostics().has_value());
+    CHECK(session.lastOperationDiagnostics()->hasErrors());
+    REQUIRE(session.state().has_value());
+    CHECK(*session.state() == cuexis::playback::SessionState::Running);
 }
 
 TEST_CASE("PlaybackSession instances are independent and validate lifecycle errors",
@@ -237,6 +297,113 @@ TEST_CASE("PlaybackSession keeps the Stage 1B Renderable resource closure alive"
     REQUIRE(session.unload().has_value());
 }
 
+TEST_CASE("PlaybackSession prepares typed main music before an atomic commit",
+          "[playback][audio][prepared]") {
+    const auto assetsRoot = std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" / "projects" /
+                            "stage1d_project" / "assets";
+    auto database = cuexis::assets::AssetDatabase::create({
+        .roots = {{.root = {.id = "main", .path = assetsRoot},
+                   .index = {.version = 2,
+                             .assets = {{.id = {"audio.main"},
+                                         .type = cuexis::assets::AssetType::Audio,
+                                         .source = "audio/main.wav"}}}}},
+    });
+    REQUIRE(database.has_value());
+    const auto chartText = readFile(assetsRoot / "charts" / "stage1d_example.cuexis.chart.json");
+
+    cuexis::playback::PlaybackSession session{std::move(*database)};
+    auto prepared = session.prepareLoad(chartText, cuexis::playback::PlaybackMode::CuexisAudio);
+    REQUIRE(prepared.has_value());
+    REQUIRE(prepared->valid());
+    REQUIRE(prepared->contentInfo() != nullptr);
+    CHECK(prepared->contentInfo()->chartFormatVersion == 2);
+    CHECK(prepared->contentInfo()->mode == cuexis::playback::PlaybackMode::CuexisAudio);
+    REQUIRE(prepared->contentInfo()->mainMusicAssetId.has_value());
+    CHECK(*prepared->contentInfo()->mainMusicAssetId == "audio.main");
+    const auto source = prepared->mainMusicSource();
+    REQUIRE(source.has_value());
+    CHECK(source->assetId == "audio.main");
+    CHECK(source->contentRevision != 0);
+    CHECK(source->bytes.size() == 192044);
+    REQUIRE(session.state().has_value());
+    CHECK(*session.state() == cuexis::playback::SessionState::Empty);
+
+    REQUIRE(session.commit(std::move(*prepared)).has_value());
+    CHECK_FALSE(prepared->valid());
+    const auto committed = session.contentInfo();
+    REQUIRE(committed.has_value());
+    CHECK(committed->mode == cuexis::playback::PlaybackMode::CuexisAudio);
+}
+
+TEST_CASE("PlaybackSession rejects mode mismatch and stale prepared tokens",
+          "[playback][audio][prepared]") {
+    const auto assetsRoot = std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" / "projects" /
+                            "stage1d_project" / "assets";
+    auto makeDatabase = [&]() {
+        return cuexis::assets::AssetDatabase::create({
+            .roots = {{.root = {.id = "main", .path = assetsRoot},
+                       .index = {.version = 2,
+                                 .assets = {{.id = {"audio.main"},
+                                             .type = cuexis::assets::AssetType::Audio,
+                                             .source = "audio/main.wav"}}}}},
+        });
+    };
+    const auto chartText = readFile(assetsRoot / "charts" / "stage1d_example.cuexis.chart.json");
+
+    auto mismatchDatabase = makeDatabase();
+    REQUIRE(mismatchDatabase.has_value());
+    cuexis::playback::PlaybackSession mismatch{std::move(*mismatchDatabase)};
+    const auto rejected =
+        mismatch.prepareLoad(chartText, cuexis::playback::PlaybackMode::ChartClock);
+    REQUIRE_FALSE(rejected.has_value());
+    CHECK(rejected.error().code() == "playback.mode.content_mismatch");
+
+    auto database = makeDatabase();
+    REQUIRE(database.has_value());
+    cuexis::playback::PlaybackSession session{std::move(*database)};
+    auto stale = session.prepareLoad(chartText, cuexis::playback::PlaybackMode::HostClock);
+    auto current = session.prepareLoad(chartText, cuexis::playback::PlaybackMode::HostClock);
+    REQUIRE(stale.has_value());
+    REQUIRE(current.has_value());
+    REQUIRE(session.commit(std::move(*current)).has_value());
+    const auto staleCommit = session.commit(std::move(*stale));
+    REQUIRE_FALSE(staleCommit.has_value());
+    CHECK(staleCommit.error().code() == "playback.prepared.stale");
+}
+
+TEST_CASE("PreparedPlayback expires after an active session update",
+          "[playback][prepared][ownership]") {
+    cuexis::playback::PlaybackSession session;
+    REQUIRE(session.loadChart(chart).has_value());
+    REQUIRE(session.update({.chartTimeMs = 0.0}).has_value());
+
+    auto prepared = session.prepareReload(
+        chart, {.chartTimeMs = 100.0, .simulationDeltaTimeMs = 0.0, .timeDiscontinuityId = 1},
+        cuexis::playback::ReloadPolicy::KeepChartTime);
+    REQUIRE(prepared.has_value());
+    REQUIRE(session.update({.chartTimeMs = 250.0, .simulationDeltaTimeMs = 250.0}).has_value());
+
+    const auto committed = session.commit(std::move(*prepared));
+    REQUIRE_FALSE(committed.has_value());
+    CHECK(committed.error().code() == "playback.prepared.stale");
+}
+
+TEST_CASE("PreparedPlayback rejects a same-address replacement owner",
+          "[playback][prepared][ownership]") {
+    std::optional<cuexis::playback::PlaybackSession> storage;
+    storage.emplace();
+    const auto* firstAddress = &*storage;
+    auto prepared = storage->prepareLoad(chart, cuexis::playback::PlaybackMode::ChartClock);
+    REQUIRE(prepared.has_value());
+
+    storage.reset();
+    storage.emplace();
+    REQUIRE(&*storage == firstAddress);
+    const auto committed = storage->commit(std::move(*prepared));
+    REQUIRE_FALSE(committed.has_value());
+    CHECK(committed.error().code() == "playback.prepared.wrong_session");
+}
+
 TEST_CASE("PlaybackSession rejects every stateful operation from a non-owner thread",
           "[playback][thread]") {
     cuexis::playback::PlaybackSession session;
@@ -255,12 +422,13 @@ TEST_CASE("PlaybackSession rejects every stateful operation from a non-owner thr
         record(session.extractFrame({.width = 1, .height = 1}, destination));
         record(session.chartInfo());
         record(session.diagnostics());
+        record(session.lastOperationDiagnostics());
         record(session.unload());
         return errors;
     });
 
     const auto errors = worker.get();
-    REQUIRE(errors.size() == 8);
+    REQUIRE(errors.size() == 9);
     for (const auto& error : errors) {
         CHECK(error == "playback.session.not_owner_thread");
     }

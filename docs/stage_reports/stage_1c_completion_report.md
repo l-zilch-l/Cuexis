@@ -1,12 +1,14 @@
 # Cuexis 阶段 1C 完成报告
 
-状态：2026-07-22 历史完成快照；当前验收状态由后续 260722 全量审查补充
+状态：最终验收完成；正文保留 2026-07-22 执行快照，2026-07-27 关闭证据见第 10 节
 报告日期：2026-07-22  
 完成版本：`26.07.18.18-1`  
 阶段目标：完成 typed Behavior Track、绝对时间采样、RuntimeFrame、拥有型 FrameSnapshot、
 headless Playback 与 Player 单一路径闭环。
 
-后续注记（2026-07-27）：本报告记录报告日期当时的实现与本地门禁，不再作为当前“无 P1/P2”结论。后续 [260722 全量审查](260722-1c-review.md)确认 5 项 P1、11 项 P2 和 5 项 P3/阶段性风险；其中 R17-R21 已修复并通过后续 CI，但该审查未记录全部 P1/P2 的关闭证据。当前状态以 `PROJECT_GUIDE.md` 第 0、30、32 节和最新关闭报告为准。
+后续注记（2026-07-27）：本报告正文记录报告日期当时的实现与门禁。后续
+[260722 全量审查](260722-1c-review.md)确认的 5 项 P1、11 项 P2 和 5 项 P3/阶段性风险已在
+2026-07-26/27 两批跟进中全部关闭；当前最终验收状态由该审查报告和本报告第 10 节共同证明。
 
 ## 1. 完成结论
 
@@ -233,3 +235,21 @@ GPU smoke 不进入托管 CI。工作流文件已经落地，但本次会话未�
 - [Simple Chart 格式](../SIMPLE_CHART_FORMAT.md)
 - [RuntimeSession 规范](../RUNTIME_SESSION.md)
 - [项目技术指南](../PROJECT_GUIDE.md)
+
+## 10. 2026-07-27 最终关闭附录
+
+后续修复补齐 Renderable 资源闭环、owner/shutdown、句柄式 filesystem containment、诊断分层、
+Camera 校验、无 Transform Snapshot、viewport-aware projection、公共数学输入契约和 callback
+异常边界。`ObjectSnapshot::hasTransform` 明确全部 Chart Object 的集合语义；
+`core::makePerspective()` 改为经过完整参数校验的 `Result<Mat4>`；World/Runtime callback 将非 OOM
+异常转换为稳定 Error，并禁止重入和保留 Registry/World 引用。
+
+最终关闭使用独立 MSVC Debug 构建验证全部激活 target。普通 CTest `188/188` 通过，1 项 Windows
+symlink 测试按环境条件跳过；受沙箱 vcpkg 写权限影响的 add_subdirectory 与 install +
+find_package external consumer 随后在完整 Visual Studio Developer 环境中独立重跑并全部通过。
+Core、Chart、World、Runtime、Playback 定向测试分别为 `26/104`、`44/292`、`11/107`、
+`21/152`、`8/156`（case/assertion），均通过。
+
+2026-07-27 没有重复运行 GPU smoke 与 Release 矩阵；正文第 5 节和全量审查 7.1 保留对应历史
+证据。本批修改不涉及 OpenGL/SDL 后端执行路径。阶段 1C 至此没有未关闭的原审查 P1/P2，正式
+进入阶段 1D 实施。

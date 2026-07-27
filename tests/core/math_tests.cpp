@@ -3,6 +3,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include <limits>
+#include <numbers>
 
 TEST_CASE("Mat4 defaults to column-major identity", "[core][math]") {
     const cuexis::core::Mat4 identity;
@@ -48,4 +49,28 @@ TEST_CASE("Parent world transform multiplies child local transform", "[core][mat
 
     REQUIRE(cuexis::core::nearlyEqual(cuexis::core::transformPoint(world, cuexis::core::Vec3{}),
                                       cuexis::core::Vec3{5.0F, 7.0F, 0.0F}));
+}
+
+TEST_CASE("Perspective matrix validates its complete public input contract", "[core][math]") {
+    const auto valid =
+        cuexis::core::makePerspective(std::numbers::pi / 3.0, 16.0 / 9.0, 0.1, 1000.0);
+    REQUIRE(valid.has_value());
+    CHECK(cuexis::core::isFinite(*valid));
+
+    const auto nonFinite =
+        cuexis::core::makePerspective(std::numeric_limits<double>::infinity(), 1.0, 0.1, 1000.0);
+    REQUIRE_FALSE(nonFinite.has_value());
+    CHECK(nonFinite.error().code() == "core.math.perspective_non_finite");
+
+    const auto badFov = cuexis::core::makePerspective(std::numbers::pi, 1.0, 0.1, 1000.0);
+    REQUIRE_FALSE(badFov.has_value());
+    CHECK(badFov.error().code() == "core.math.perspective_fov_invalid");
+
+    const auto badAspect = cuexis::core::makePerspective(1.0, 0.0, 0.1, 1000.0);
+    REQUIRE_FALSE(badAspect.has_value());
+    CHECK(badAspect.error().code() == "core.math.perspective_aspect_invalid");
+
+    const auto badPlanes = cuexis::core::makePerspective(1.0, 1.0, 1.0, 1.0);
+    REQUIRE_FALSE(badPlanes.has_value());
+    CHECK(badPlanes.error().code() == "core.math.perspective_planes_invalid");
 }

@@ -16,6 +16,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -139,6 +140,75 @@ void validateComponents(const ChartObject& object, const std::set<std::string>& 
     if (object.components.note && !object.components.note->beat) {
         addError(diagnostics, "chart.note.beat_missing", "Concrete note object requires a beat",
                  path + ".cuexis.note.beat");
+    }
+    if (object.components.camera) {
+        const auto& camera = *object.components.camera;
+        const std::string cameraPath = path + ".cuexis.camera";
+        if (camera.type != "perspective") {
+            addError(diagnostics, "chart.camera.unsupported_type",
+                     "Unsupported camera projection type; expected 'perspective'",
+                     cameraPath + ".type");
+        }
+        if (!std::isfinite(camera.fovY) || camera.fovY <= 0.0 || camera.fovY >= 179.0) {
+            addError(diagnostics, "chart.camera.invalid_fov",
+                     "Camera FOV must be finite and in (0, 179) degrees", cameraPath + ".fovY");
+        }
+        if (!std::isfinite(camera.nearPlane) || camera.nearPlane <= 0.0) {
+            addError(diagnostics, "chart.camera.invalid_near",
+                     "Camera near plane must be finite and positive", cameraPath + ".near");
+        }
+        if (!std::isfinite(camera.farPlane) || camera.farPlane <= 0.0) {
+            addError(diagnostics, "chart.camera.invalid_far",
+                     "Camera far plane must be finite and positive", cameraPath + ".far");
+        }
+        if (std::isfinite(camera.nearPlane) && std::isfinite(camera.farPlane) &&
+            camera.nearPlane >= camera.farPlane) {
+            addError(diagnostics, "chart.camera.near_exceeds_far",
+                     "Camera near plane must be less than far plane", cameraPath);
+        }
+    }
+}
+
+void validateDefaultCamera(const CameraData& camera, core::Diagnostics& diagnostics) {
+    constexpr std::string_view path = "$.camera";
+    if (camera.type != "perspective") {
+        addError(diagnostics, "chart.camera.unsupported_type",
+                 "Unsupported camera projection type; expected 'perspective'",
+                 std::string{path} + ".type");
+    }
+    if (!std::isfinite(camera.fovY) || camera.fovY <= 0.0 || camera.fovY >= 179.0) {
+        addError(diagnostics, "chart.camera.invalid_fov",
+                 "Camera FOV must be finite and in (0, 179) degrees", std::string{path} + ".fovY");
+    }
+    if (!std::isfinite(camera.nearPlane) || camera.nearPlane <= 0.0) {
+        addError(diagnostics, "chart.camera.invalid_near",
+                 "Camera near plane must be finite and positive", std::string{path} + ".near");
+    }
+    if (!std::isfinite(camera.farPlane) || camera.farPlane <= 0.0) {
+        addError(diagnostics, "chart.camera.invalid_far",
+                 "Camera far plane must be finite and positive", std::string{path} + ".far");
+    }
+    if (std::isfinite(camera.nearPlane) && std::isfinite(camera.farPlane) &&
+        camera.nearPlane >= camera.farPlane) {
+        addError(diagnostics, "chart.camera.near_exceeds_far",
+                 "Camera near plane must be less than far plane", std::string{path});
+    }
+    if (!std::isfinite(camera.pitch) || !std::isfinite(camera.yaw) || !std::isfinite(camera.roll)) {
+        addError(diagnostics, "chart.camera.rotation_non_finite",
+                 "Camera rotation angles must be finite", std::string{path});
+    }
+    if (camera.defaultTransform.has_value()) {
+        const auto& transform = *camera.defaultTransform;
+        if (!core::isFinite(transform.position) || !core::isFinite(transform.rotation) ||
+            !core::isFinite(transform.scale)) {
+            addError(diagnostics, "chart.transform.non_finite",
+                     "Transform components must contain only finite values",
+                     std::string{path} + ".defaultTransform");
+        } else if (!core::isNormalized(transform.rotation)) {
+            addError(diagnostics, "chart.transform.rotation_not_normalized",
+                     "Transform quaternion must be normalized",
+                     std::string{path} + ".defaultTransform.rotation");
+        }
     }
 }
 
@@ -281,6 +351,25 @@ auto ChartCompiler::compile(const ChartDocument& document, const ChartLimits& li
         addError(diagnostics, "chart.limit.behaviors", "Chart behavior count exceeds the limit",
                  "$.behaviors");
     }
+    if (document.version != 1 && document.version != 2) {
+        addError(diagnostics, "chart.version.unsupported", "Chart format version is unsupported",
+                 "$.version");
+    }
+    if (document.version == 1 && document.audio.has_value()) {
+        addError(diagnostics, "chart.audio.not_available_in_v1",
+                 "Chart v1 must not declare an audio block", "$.audio");
+    }
+    if (document.audio) {
+        if (document.audio->version != 1) {
+            addError(diagnostics, "chart.audio.version_unsupported",
+                     "Chart audio block version is unsupported", "$.audio.version");
+        }
+        if (document.audio->mainMusic.value.empty()) {
+            addError(diagnostics, "chart.audio.main_music_empty",
+                     "Chart main music AssetId must not be empty", "$.audio.mainMusic.id");
+        }
+    }
+    validateDefaultCamera(document.camera, diagnostics);
 
     auto timingMap = TimingMap::create(document.timing.defaultBpm, document.timing.offsetMs);
     if (!timingMap) {
@@ -397,8 +486,11 @@ auto ChartCompiler::compile(const ChartDocument& document, const ChartLimits& li
     }
 
     diagnostics.sortDeterministically();
+    const auto mainMusic =
+        document.audio ? std::optional<AssetId>{document.audio->mainMusic} : std::nullopt;
     return ChartRuntimeResult{ChartRuntime{document.chartId, std::move(*timingMap), document.camera,
-                                           std::move(runtimeBehaviors), std::move(runtimeObjects)},
+                                           std::move(runtimeBehaviors), std::move(runtimeObjects),
+                                           document.version, mainMusic},
                               std::move(diagnostics)};
 }
 

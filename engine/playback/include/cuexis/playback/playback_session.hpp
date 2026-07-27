@@ -14,6 +14,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -44,10 +46,32 @@ enum class ReloadPolicy {
     RestartAtZero,
 };
 
+enum class PlaybackMode {
+    ChartClock,
+    HostClock,
+    CuexisAudio,
+};
+
+struct PlaybackContentInfo final {
+    std::string chartId;
+    std::uint32_t chartFormatVersion{1};
+    double timingOffsetMs{};
+    PlaybackMode mode{PlaybackMode::ChartClock};
+    std::optional<std::string> mainMusicAssetId;
+};
+
+struct MainMusicSourceView final {
+    std::string_view assetId;
+    double timingOffsetMs{};
+    std::uint64_t contentRevision{};
+    std::span<const std::byte> bytes;
+};
+
 struct FrameSnapshot final {
     struct ObjectSnapshot final {
         std::string id;
         float worldMatrix[16]{}; // column-major Mat4 flattened
+        bool hasTransform{};
         bool visible{true};
     };
 
@@ -84,8 +108,31 @@ enum class SessionState {
     Empty,
     Ready,
     Running,
-    Paused,
     Failed,
+};
+
+class PlaybackSession;
+
+class PreparedPlayback final {
+  public:
+    PreparedPlayback() noexcept;
+    ~PreparedPlayback();
+
+    PreparedPlayback(const PreparedPlayback&) = delete;
+    auto operator=(const PreparedPlayback&) -> PreparedPlayback& = delete;
+    PreparedPlayback(PreparedPlayback&& other) noexcept;
+    auto operator=(PreparedPlayback&& other) noexcept -> PreparedPlayback&;
+
+    [[nodiscard]] bool valid() const noexcept;
+    [[nodiscard]] const PlaybackContentInfo* contentInfo() const noexcept;
+    [[nodiscard]] std::optional<MainMusicSourceView> mainMusicSource() const noexcept;
+
+  private:
+    friend class PlaybackSession;
+    struct State;
+    explicit PreparedPlayback(std::unique_ptr<State> state) noexcept;
+
+    std::unique_ptr<State> state_;
 };
 
 class PlaybackSession final {
@@ -103,6 +150,13 @@ class PlaybackSession final {
 
     [[nodiscard]] auto state() const -> core::Result<SessionState>;
 
+    [[nodiscard]] auto prepareLoad(std::string_view jsonText, PlaybackMode mode)
+        -> core::Result<PreparedPlayback>;
+    [[nodiscard]] auto prepareReload(std::string_view replacementJson,
+                                     const RuntimeFrame& targetFrame, ReloadPolicy policy)
+        -> core::Result<PreparedPlayback>;
+    [[nodiscard]] auto commit(PreparedPlayback&& prepared) -> core::Result<void>;
+
     [[nodiscard]] auto loadChart(std::string_view jsonText) -> core::Result<void>;
 
     [[nodiscard]] auto update(const RuntimeFrame& frame) -> core::Result<void>;
@@ -116,9 +170,15 @@ class PlaybackSession final {
     [[nodiscard]] auto unload() -> core::Result<void>;
 
     [[nodiscard]] auto chartInfo() const -> core::Result<ChartInfo>;
+    [[nodiscard]] auto contentInfo() const -> core::Result<PlaybackContentInfo>;
     [[nodiscard]] auto diagnostics() const -> core::Result<core::Diagnostics>;
+    [[nodiscard]] auto lastOperationDiagnostics() const -> core::Result<core::Diagnostics>;
 
   private:
+    [[nodiscard]] auto prepare(std::string_view jsonText, PlaybackMode mode,
+                               const RuntimeFrame* targetFrame, ReloadPolicy policy,
+                               bool replacement) -> core::Result<PreparedPlayback>;
+
     struct State;
     std::unique_ptr<State> state_;
 };

@@ -105,14 +105,28 @@ void addError(core::Diagnostics& diagnostics, const core::Error& error, std::str
     return std::string{*value};
 }
 
-[[nodiscard]] auto readVersion(const json::Reader& reader, core::Diagnostics& diagnostics,
-                               std::int64_t supported = 1) -> bool {
+[[nodiscard]] auto readVersion(const json::Reader& reader, core::Diagnostics& diagnostics)
+    -> std::optional<std::uint32_t> {
+    const auto version = reader.readInt64();
+    if (!version) {
+        return std::nullopt;
+    }
+    if (*version != 1 && *version != 2) {
+        addError(diagnostics, "chart.version.unsupported", "Chart format version is unsupported",
+                 std::string{reader.fieldPath()});
+        return std::nullopt;
+    }
+    return static_cast<std::uint32_t>(*version);
+}
+
+[[nodiscard]] auto readSupportedComponentVersion(const json::Reader& reader,
+                                                 core::Diagnostics& diagnostics) -> bool {
     const auto version = reader.readInt64();
     if (!version) {
         return false;
     }
-    if (*version != supported) {
-        addError(diagnostics, "chart.version.unsupported", "Chart format version is unsupported",
+    if (*version != 1) {
+        addError(diagnostics, "chart.version.unsupported", "Component version is unsupported",
                  std::string{reader.fieldPath()});
         return false;
     }
@@ -262,6 +276,31 @@ void addError(core::Diagnostics& diagnostics, const core::Error& error, std::str
     return id;
 }
 
+[[nodiscard]] auto readChartAudio(const json::Reader& reader, const ChartLimits& limits,
+                                  core::Diagnostics& diagnostics) -> std::optional<ChartAudioData> {
+    constexpr std::array knownFields{std::string_view{"version"}, std::string_view{"mainMusic"}};
+    if (reader.readObject() == nullptr) {
+        return std::nullopt;
+    }
+    reader.rejectUnknownFields(knownFields);
+    const auto versionReader = reader.requiredField("version");
+    const auto mainMusicReader = reader.requiredField("mainMusic");
+    if (!versionReader || !mainMusicReader) {
+        return std::nullopt;
+    }
+    const auto version = versionReader->readInt64();
+    const auto mainMusic = readReference(*mainMusicReader, "asset", limits, diagnostics);
+    if (version && *version != 1) {
+        addError(diagnostics, "chart.audio.version_unsupported",
+                 "Chart audio block version is unsupported",
+                 std::string{versionReader->fieldPath()});
+    }
+    if (!version || *version != 1 || !mainMusic) {
+        return std::nullopt;
+    }
+    return ChartAudioData{1, AssetId{std::move(*mainMusic)}};
+}
+
 [[nodiscard]] auto readBeat(const json::Reader& reader, const ChartLimits& limits,
                             core::Diagnostics& diagnostics) -> std::optional<RationalBeat> {
     constexpr std::array knownFields{std::string_view{"numerator"},
@@ -403,7 +442,7 @@ void addError(core::Diagnostics& diagnostics, const core::Error& error, std::str
 [[nodiscard]] auto readComponentVersion(const json::Reader& reader, core::Diagnostics& diagnostics)
     -> bool {
     const auto versionReader = reader.requiredField("version");
-    return versionReader && readVersion(*versionReader, diagnostics);
+    return versionReader && readSupportedComponentVersion(*versionReader, diagnostics);
 }
 
 [[nodiscard]] auto parseComponents(const json::Value& value, std::string path,
@@ -508,31 +547,76 @@ void addError(core::Diagnostics& diagnostics, const core::Error& error, std::str
         const auto farReader = component->requiredField("far");
         if (versionValid) {
             CameraComponentData cameraData;
+            bool cameraValid = true;
             if (typeReader) {
                 const auto type = typeReader->readString();
                 if (type && *type == "perspective") {
                     cameraData.type = *type;
+                } else if (type) {
+                    addError(diagnostics, "chart.camera.unsupported_type",
+                             "Unsupported camera projection type; expected 'perspective'",
+                             std::string{typeReader->fieldPath()});
+                    cameraValid = false;
+                } else {
+                    cameraValid = false;
                 }
+            } else {
+                cameraValid = false;
             }
             if (fovReader) {
                 const auto fov = fovReader->readNumber();
                 if (fov && std::isfinite(*fov) && *fov > 0.0 && *fov < 179.0) {
                     cameraData.fovY = *fov;
+                } else if (fov) {
+                    addError(diagnostics, "chart.camera.invalid_fov",
+                             "Camera FOV must be finite and in (0, 179) degrees",
+                             std::string{fovReader->fieldPath()});
+                    cameraValid = false;
+                } else {
+                    cameraValid = false;
                 }
+            } else {
+                cameraValid = false;
             }
             if (nearReader) {
                 const auto nearPlane = nearReader->readNumber();
                 if (nearPlane && std::isfinite(*nearPlane) && *nearPlane > 0.0) {
                     cameraData.nearPlane = *nearPlane;
+                } else if (nearPlane) {
+                    addError(diagnostics, "chart.camera.invalid_near",
+                             "Camera near plane must be finite and positive",
+                             std::string{nearReader->fieldPath()});
+                    cameraValid = false;
+                } else {
+                    cameraValid = false;
                 }
+            } else {
+                cameraValid = false;
             }
             if (farReader) {
                 const auto farPlane = farReader->readNumber();
                 if (farPlane && std::isfinite(*farPlane) && *farPlane > 0.0) {
                     cameraData.farPlane = *farPlane;
+                } else if (farPlane) {
+                    addError(diagnostics, "chart.camera.invalid_far",
+                             "Camera far plane must be finite and positive",
+                             std::string{farReader->fieldPath()});
+                    cameraValid = false;
+                } else {
+                    cameraValid = false;
                 }
+            } else {
+                cameraValid = false;
             }
-            components.camera = std::move(cameraData);
+            if (cameraData.nearPlane >= cameraData.farPlane) {
+                addError(diagnostics, "chart.camera.near_exceeds_far",
+                         "Camera near plane must be less than far plane",
+                         std::string{component->fieldPath()});
+                cameraValid = false;
+            }
+            if (cameraValid) {
+                components.camera = std::move(cameraData);
+            }
         }
     }
 
@@ -947,7 +1031,7 @@ struct RawTemplate final {
         }
         const auto id = readIdentifier(*idReader, limits, diagnostics, "Behavior ID");
         const auto type = typeReader->readString();
-        const bool versionValid = readVersion(*versionReader, diagnostics);
+        const bool versionValid = readSupportedComponentVersion(*versionReader, diagnostics);
         const auto* tracks = tracksReader->readArray();
         if (!id || !type || !versionValid || tracks == nullptr) {
             continue;
@@ -1377,21 +1461,34 @@ auto CanonicalChartLoader::load(std::string_view jsonText, const ChartLimits& li
     }
 
     json::Reader root{*parsed, diagnostics};
-    constexpr std::array knownFields{
+    if (root.readObject() == nullptr) {
+        diagnostics.sortDeterministically();
+        return ChartDocumentResult{std::nullopt, std::move(diagnostics)};
+    }
+    const auto versionReader = root.requiredField("version");
+    const auto formatVersion =
+        versionReader ? readVersion(*versionReader, diagnostics) : std::nullopt;
+    constexpr std::array knownFieldsV1{
         std::string_view{"format"},    std::string_view{"version"},
         std::string_view{"chartId"},   std::string_view{"metadata"},
         std::string_view{"timing"},    std::string_view{"camera"},
         std::string_view{"templates"}, std::string_view{"behaviors"},
         std::string_view{"objects"},   std::string_view{"requiredExtensions"},
         std::string_view{"extensions"}};
-    if (root.readObject() == nullptr) {
-        diagnostics.sortDeterministically();
-        return ChartDocumentResult{std::nullopt, std::move(diagnostics)};
+    constexpr std::array knownFieldsV2{
+        std::string_view{"format"},     std::string_view{"version"},
+        std::string_view{"chartId"},    std::string_view{"metadata"},
+        std::string_view{"timing"},     std::string_view{"camera"},
+        std::string_view{"templates"},  std::string_view{"behaviors"},
+        std::string_view{"objects"},    std::string_view{"requiredExtensions"},
+        std::string_view{"extensions"}, std::string_view{"audio"}};
+    if (formatVersion && *formatVersion == 2) {
+        root.rejectUnknownFields(knownFieldsV2);
+    } else {
+        root.rejectUnknownFields(knownFieldsV1);
     }
-    root.rejectUnknownFields(knownFields);
 
     const auto formatReader = root.requiredField("format");
-    const auto versionReader = root.requiredField("version");
     const auto chartIdReader = root.requiredField("chartId");
     const auto metadataReader = root.requiredField("metadata");
     const auto timingReader = root.requiredField("timing");
@@ -1401,6 +1498,8 @@ auto CanonicalChartLoader::load(std::string_view jsonText, const ChartLimits& li
     const auto objectsReader = root.requiredField("objects");
     const auto requiredExtensionsReader = root.requiredField("requiredExtensions");
     const auto extensionsReader = root.requiredField("extensions");
+    const auto audioReader =
+        formatVersion && *formatVersion == 2 ? root.optionalField("audio") : std::nullopt;
 
     std::optional<ChartId> chartId;
     if (formatReader) {
@@ -1409,9 +1508,6 @@ auto CanonicalChartLoader::load(std::string_view jsonText, const ChartLimits& li
             addError(diagnostics, "chart.format.invalid", "Expected canonical cuexis.chart format",
                      std::string{formatReader->fieldPath()});
         }
-    }
-    if (versionReader) {
-        static_cast<void>(readVersion(*versionReader, diagnostics));
     }
     if (chartIdReader) {
         const auto id = readIdentifier(*chartIdReader, limits, diagnostics, "Chart ID");
@@ -1434,6 +1530,8 @@ auto CanonicalChartLoader::load(std::string_view jsonText, const ChartLimits& li
             opaqueJson(metadataReader->value(), diagnostics, metadataReader->fieldPath());
     }
     const auto timing = timingReader ? parseTiming(*timingReader, diagnostics) : std::nullopt;
+    const auto audio = audioReader ? readChartAudio(*audioReader, limits, diagnostics)
+                                   : std::optional<ChartAudioData>{};
     const auto camera = cameraReader ? readCamera(*cameraReader, diagnostics) : CameraData{};
     auto [templates, expandedTemplates] =
         templatesReader
@@ -1515,7 +1613,7 @@ auto CanonicalChartLoader::load(std::string_view jsonText, const ChartLimits& li
         }
     }
 
-    if (!chartId || !timing || diagnostics.hasErrors()) {
+    if (!chartId || !timing || !formatVersion || diagnostics.hasErrors()) {
         diagnostics.sortDeterministically();
         return ChartDocumentResult{std::nullopt, std::move(diagnostics)};
     }
@@ -1527,7 +1625,9 @@ auto CanonicalChartLoader::load(std::string_view jsonText, const ChartLimits& li
                            std::move(templates),
                            std::move(behaviors),
                            std::move(objects),
-                           std::move(extensions)};
+                           std::move(extensions),
+                           *formatVersion,
+                           audio};
     auto semantic = ChartCompiler::compile(document, limits);
     diagnostics.append(std::move(semantic.diagnostics));
     diagnostics.sortDeterministically();

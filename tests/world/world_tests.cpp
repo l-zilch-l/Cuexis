@@ -7,6 +7,8 @@
 
 #include <algorithm>
 #include <array>
+#include <stdexcept>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -27,21 +29,32 @@ struct TransformUpdateCount final {
     }
 };
 
+template <typename WorldType, typename Callback>
+auto registryValue(WorldType& world, Callback&& callback) {
+    auto result = world.withRegistry(std::forward<Callback>(callback));
+    REQUIRE(result.has_value());
+    return std::move(*result);
+}
+
+template <typename Callback> void registryAction(cuexis::world::World& world, Callback&& callback) {
+    REQUIRE(world.withRegistry(std::forward<Callback>(callback)).has_value());
+}
+
 } // namespace
 
 TEST_CASE("World scopes entity creation and destruction through callbacks", "[world]") {
     cuexis::world::World world;
 
     const entt::entity entity =
-        world.withRegistry([](entt::registry& registry) { return registry.create(); });
+        registryValue(world, [](entt::registry& registry) { return registry.create(); });
     const auto& constWorld = world;
-    const bool validAfterCreation = constWorld.withRegistry(
-        [entity](const entt::registry& registry) { return registry.valid(entity); });
+    const bool validAfterCreation = registryValue(
+        constWorld, [entity](const entt::registry& registry) { return registry.valid(entity); });
     REQUIRE(validAfterCreation);
 
-    world.withRegistry([entity](entt::registry& registry) { registry.destroy(entity); });
-    const bool validAfterDestruction = constWorld.withRegistry(
-        [entity](const entt::registry& registry) { return registry.valid(entity); });
+    registryAction(world, [entity](entt::registry& registry) { registry.destroy(entity); });
+    const bool validAfterDestruction = registryValue(
+        constWorld, [entity](const entt::registry& registry) { return registry.valid(entity); });
     CHECK_FALSE(validAfterDestruction);
 }
 
@@ -49,7 +62,7 @@ TEST_CASE("World transforms compose parent matrices before children", "[world][t
     cuexis::world::World world;
     std::array<entt::entity, 3> entities{};
 
-    world.withRegistry([&](entt::registry& registry) {
+    registryAction(world, [&](entt::registry& registry) {
         entities[1] = registry.create();
         entities[2] = registry.create();
         entities[0] = registry.create();
@@ -70,7 +83,7 @@ TEST_CASE("World transforms compose parent matrices before children", "[world][t
     const auto updated = cuexis::world::updateWorldTransforms(world);
     REQUIRE(updated.has_value());
 
-    const auto positions = world.withRegistry([&](const entt::registry& registry) {
+    const auto positions = registryValue(world, [&](const entt::registry& registry) {
         std::array<cuexis::core::Vec3, 3> result{};
         for (std::size_t index = 0; index < entities.size(); ++index) {
             result[index] = cuexis::core::transformPoint(
@@ -91,7 +104,7 @@ TEST_CASE("World transform validation preserves the previous complete result",
     entt::entity child{entt::null};
     entt::entity staleParent{entt::null};
 
-    world.withRegistry([&](entt::registry& registry) {
+    registryAction(world, [&](entt::registry& registry) {
         root = registry.create();
         child = registry.create();
         staleParent = registry.create();
@@ -104,18 +117,18 @@ TEST_CASE("World transform validation preserves the previous complete result",
     });
 
     REQUIRE(cuexis::world::updateWorldTransforms(world).has_value());
-    const auto before = world.withRegistry([child](const entt::registry& registry) {
+    const auto before = registryValue(world, [child](const entt::registry& registry) {
         return registry.get<cuexis::world::WorldTransformComponent>(child).matrix;
     });
 
-    world.withRegistry([child, staleParent](entt::registry& registry) {
+    registryAction(world, [child, staleParent](entt::registry& registry) {
         registry.replace<cuexis::world::HierarchyComponent>(child, staleParent);
     });
     const auto failed = cuexis::world::updateWorldTransforms(world);
     REQUIRE_FALSE(failed.has_value());
     CHECK(failed.error().code() == "world.transform.invalid_parent");
 
-    const auto after = world.withRegistry([child](const entt::registry& registry) {
+    const auto after = registryValue(world, [child](const entt::registry& registry) {
         return registry.get<cuexis::world::WorldTransformComponent>(child).matrix;
     });
     CHECK(cuexis::core::nearlyEqual(before, after));
@@ -127,7 +140,7 @@ TEST_CASE("World transform cycles fail without publishing partial matrices",
     entt::entity first{entt::null};
     entt::entity second{entt::null};
 
-    world.withRegistry([&](entt::registry& registry) {
+    registryAction(world, [&](entt::registry& registry) {
         first = registry.create();
         second = registry.create();
         registry.emplace<cuexis::world::TransformComponent>(first);
@@ -140,7 +153,7 @@ TEST_CASE("World transform cycles fail without publishing partial matrices",
     REQUIRE_FALSE(failed.has_value());
     CHECK(failed.error().code() == "world.transform.hierarchy_cycle");
 
-    const bool published = world.withRegistry([&](const entt::registry& registry) {
+    const bool published = registryValue(world, [&](const entt::registry& registry) {
         return registry.any_of<cuexis::world::WorldTransformComponent>(first) ||
                registry.any_of<cuexis::world::WorldTransformComponent>(second);
     });
@@ -154,7 +167,7 @@ TEST_CASE("World transform cache publishes only a changed hierarchy subtree",
     entt::entity child{entt::null};
     entt::entity unrelated{entt::null};
     TransformUpdateCounter updates;
-    world.withRegistry([&](entt::registry& registry) {
+    registryAction(world, [&](entt::registry& registry) {
         parent = registry.create();
         child = registry.create();
         unrelated = registry.create();
@@ -170,7 +183,7 @@ TEST_CASE("World transform cache publishes only a changed hierarchy subtree",
     REQUIRE(cuexis::world::updateWorldTransforms(world).has_value());
     CHECK(updates.entities.empty());
 
-    world.withRegistry([&](entt::registry& registry) {
+    registryAction(world, [&](entt::registry& registry) {
         auto transform = registry.get<cuexis::world::TransformComponent>(parent);
         transform.position.x = 2.0F;
         registry.replace<cuexis::world::TransformComponent>(parent, transform);
@@ -193,7 +206,7 @@ TEST_CASE("World transform cache preserves sparse work through the default objec
         cuexis::world::World world;
         entt::entity root{entt::null};
         entt::entity leaf{entt::null};
-        world.withRegistry([&](entt::registry& registry) {
+        registryAction(world, [&](entt::registry& registry) {
             entt::entity parent{entt::null};
             for (std::size_t index = 0; index < objectCount; ++index) {
                 const auto entity = registry.create();
@@ -210,7 +223,7 @@ TEST_CASE("World transform cache preserves sparse work through the default objec
 
         REQUIRE(cuexis::world::updateWorldTransforms(world).has_value());
         TransformUpdateCount updates;
-        world.withRegistry([&](entt::registry& registry) {
+        registryAction(world, [&](entt::registry& registry) {
             registry.on_update<cuexis::world::WorldTransformComponent>()
                 .connect<&TransformUpdateCount::receive>(updates);
         });
@@ -218,7 +231,7 @@ TEST_CASE("World transform cache preserves sparse work through the default objec
         REQUIRE(cuexis::world::updateWorldTransforms(world).has_value());
         CHECK(updates.value == 0);
 
-        world.withRegistry([&](entt::registry& registry) {
+        registryAction(world, [&](entt::registry& registry) {
             auto transform = registry.get<cuexis::world::TransformComponent>(leaf);
             transform.position.x = 1.0F;
             registry.replace<cuexis::world::TransformComponent>(leaf, transform);
@@ -227,7 +240,7 @@ TEST_CASE("World transform cache preserves sparse work through the default objec
         CHECK(updates.value == 1);
 
         updates.value = 0;
-        world.withRegistry([&](entt::registry& registry) {
+        registryAction(world, [&](entt::registry& registry) {
             auto transform = registry.get<cuexis::world::TransformComponent>(root);
             transform.position.y = 1.0F;
             registry.replace<cuexis::world::TransformComponent>(root, transform);
@@ -235,4 +248,16 @@ TEST_CASE("World transform cache preserves sparse work through the default objec
         REQUIRE(cuexis::world::updateWorldTransforms(world).has_value());
         CHECK(updates.value == objectCount);
     }
+}
+
+TEST_CASE("World converts callback exceptions to a stable Result error", "[world][callback]") {
+    cuexis::world::World world;
+    const auto result = world.withRegistry(
+        [](entt::registry&) -> void { throw std::runtime_error{"test callback failure"}; });
+
+    REQUIRE_FALSE(result.has_value());
+    CHECK(result.error().code() == "world.callback.exception");
+    REQUIRE(result.error().context().size() == 1);
+    CHECK(result.error().context()[0].key == "exception");
+    CHECK(result.error().context()[0].value == "test callback failure");
 }

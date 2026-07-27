@@ -8,15 +8,18 @@
 
 TEST_CASE("DebugDraw emits three world-space axes per transform", "[debug][draw]") {
     cuexis::world::World world;
-    world.withRegistry([](auto& registry) {
-        const auto first = registry.create();
-        registry.template emplace<cuexis::world::WorldTransformComponent>(first);
+    REQUIRE(world
+                .withRegistry([](entt::registry& registry) {
+                    const auto first = registry.create();
+                    registry.template emplace<cuexis::world::WorldTransformComponent>(first);
 
-        const auto second = registry.create();
-        cuexis::world::WorldTransformComponent translated;
-        translated.matrix.element(0, 3) = 0.5F;
-        registry.template emplace<cuexis::world::WorldTransformComponent>(second, translated);
-    });
+                    const auto second = registry.create();
+                    cuexis::world::WorldTransformComponent translated;
+                    translated.matrix.element(0, 3) = 0.5F;
+                    registry.template emplace<cuexis::world::WorldTransformComponent>(second,
+                                                                                      translated);
+                })
+                .has_value());
 
     cuexis::render::RenderScene scene;
     REQUIRE(cuexis::debug::appendTransformAxes(world, scene));
