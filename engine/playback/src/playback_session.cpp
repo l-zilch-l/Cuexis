@@ -539,7 +539,7 @@ auto PlaybackSession::extractFrame(const FrameViewport& viewport, FrameSnapshot&
             if (!projection) {
                 return core::unexpected(core::Error{"playback.snapshot.camera_invalid",
                                                     "Active camera parameters are invalid"}
-                                            .withCause(std::move(projection.error())));
+                                            .withCause(projection.error()));
             }
 
             snapshot.camera.active = true;
