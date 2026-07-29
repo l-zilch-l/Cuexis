@@ -1,7 +1,5 @@
 #include <cuexis/playback/playback_session.hpp>
-
-#include <cuexis/assets/asset_database.hpp>
-#include <cuexis/content/content_provider.hpp>
+#include <cuexis/playback/playback_source.hpp>
 
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -261,28 +259,12 @@ TEST_CASE("PlaybackSession keeps the Stage 1B Renderable resource closure alive"
           "[playback][stage1b][resources]") {
     const auto projectRoot = std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" / "projects" /
                              "stage1b_project" / "assets";
-    auto database = cuexis::assets::AssetDatabase::create(
-        {.roots = {{.root = {.id = "main", .path = projectRoot},
-                    .index = {.assets = {
-                                  {.id = {"material.basic"},
-                                   .type = cuexis::assets::AssetType::Material,
-                                   .source = "materials/basic.material.bin",
-                                   .dependencies = {{"texture.white"}}},
-                                  {.id = {"mesh.note"},
-                                   .type = cuexis::assets::AssetType::Mesh,
-                                   .source = "meshes/note.mesh.bin"},
-                                  {.id = {"texture.white"},
-                                   .type = cuexis::assets::AssetType::Texture,
-                                   .source = "textures/white.texture.bin"},
-                              }}}}});
-    REQUIRE(database.has_value());
-    auto provider = database->defaultContentProvider();
-    REQUIRE(provider != nullptr);
-
-    cuexis::playback::PlaybackSession session{std::move(*database), std::move(provider)};
+    auto source =
+        cuexis::playback::PlaybackSource::fromFilesystemProject(projectRoot.parent_path());
+    REQUIRE(source.has_value());
+    cuexis::playback::PlaybackSession session;
     REQUIRE(
-        session.loadChart(readFile(projectRoot / "charts" / "stage1b_example.cuexis.chart.json"))
-            .has_value());
+        session.load(std::move(*source), cuexis::playback::PlaybackMode::ChartClock).has_value());
     const auto info = session.chartInfo();
     REQUIRE(info.has_value());
     CHECK(info->objectCount == 4);
@@ -301,18 +283,12 @@ TEST_CASE("PlaybackSession prepares typed main music before an atomic commit",
           "[playback][audio][prepared]") {
     const auto assetsRoot = std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" / "projects" /
                             "stage1d_project" / "assets";
-    auto database = cuexis::assets::AssetDatabase::create({
-        .roots = {{.root = {.id = "main", .path = assetsRoot},
-                   .index = {.version = 2,
-                             .assets = {{.id = {"audio.main"},
-                                         .type = cuexis::assets::AssetType::Audio,
-                                         .source = "audio/main.wav"}}}}},
-    });
-    REQUIRE(database.has_value());
     const auto chartText = readFile(assetsRoot / "charts" / "stage1d_example.cuexis.chart.json");
-
-    cuexis::playback::PlaybackSession session{std::move(*database)};
-    auto prepared = session.prepareLoad(chartText, cuexis::playback::PlaybackMode::CuexisAudio);
+    auto source = cuexis::playback::PlaybackSource::fromFilesystemProject(assetsRoot.parent_path());
+    REQUIRE(source.has_value());
+    cuexis::playback::PlaybackSession session;
+    auto prepared =
+        session.prepareLoad(std::move(*source), cuexis::playback::PlaybackMode::CuexisAudio);
     REQUIRE(prepared.has_value());
     REQUIRE(prepared->valid());
     REQUIRE(prepared->contentInfo() != nullptr);
@@ -320,11 +296,11 @@ TEST_CASE("PlaybackSession prepares typed main music before an atomic commit",
     CHECK(prepared->contentInfo()->mode == cuexis::playback::PlaybackMode::CuexisAudio);
     REQUIRE(prepared->contentInfo()->mainMusicAssetId.has_value());
     CHECK(*prepared->contentInfo()->mainMusicAssetId == "audio.main");
-    const auto source = prepared->mainMusicSource();
-    REQUIRE(source.has_value());
-    CHECK(source->assetId == "audio.main");
-    CHECK(source->contentRevision != 0);
-    CHECK(source->bytes.size() == 192044);
+    const auto mainMusic = prepared->mainMusicSource();
+    REQUIRE(mainMusic.has_value());
+    CHECK(mainMusic->assetId == "audio.main");
+    CHECK(mainMusic->contentRevision != 0);
+    CHECK(mainMusic->bytes.size() == 192044);
     REQUIRE(session.state().has_value());
     CHECK(*session.state() == cuexis::playback::SessionState::Empty);
 
@@ -339,30 +315,26 @@ TEST_CASE("PlaybackSession rejects mode mismatch and stale prepared tokens",
           "[playback][audio][prepared]") {
     const auto assetsRoot = std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" / "projects" /
                             "stage1d_project" / "assets";
-    auto makeDatabase = [&]() {
-        return cuexis::assets::AssetDatabase::create({
-            .roots = {{.root = {.id = "main", .path = assetsRoot},
-                       .index = {.version = 2,
-                                 .assets = {{.id = {"audio.main"},
-                                             .type = cuexis::assets::AssetType::Audio,
-                                             .source = "audio/main.wav"}}}}},
-        });
+    auto makeSource = [&]() {
+        return cuexis::playback::PlaybackSource::fromFilesystemProject(assetsRoot.parent_path());
     };
-    const auto chartText = readFile(assetsRoot / "charts" / "stage1d_example.cuexis.chart.json");
-
-    auto mismatchDatabase = makeDatabase();
-    REQUIRE(mismatchDatabase.has_value());
-    cuexis::playback::PlaybackSession mismatch{std::move(*mismatchDatabase)};
-    const auto rejected =
-        mismatch.prepareLoad(chartText, cuexis::playback::PlaybackMode::ChartClock);
+    auto mismatchSource = makeSource();
+    REQUIRE(mismatchSource.has_value());
+    cuexis::playback::PlaybackSession mismatch;
+    const auto rejected = mismatch.prepareLoad(std::move(*mismatchSource),
+                                               cuexis::playback::PlaybackMode::ChartClock);
     REQUIRE_FALSE(rejected.has_value());
     CHECK(rejected.error().code() == "playback.mode.content_mismatch");
 
-    auto database = makeDatabase();
-    REQUIRE(database.has_value());
-    cuexis::playback::PlaybackSession session{std::move(*database)};
-    auto stale = session.prepareLoad(chartText, cuexis::playback::PlaybackMode::HostClock);
-    auto current = session.prepareLoad(chartText, cuexis::playback::PlaybackMode::HostClock);
+    auto staleSource = makeSource();
+    auto currentSource = makeSource();
+    REQUIRE(staleSource.has_value());
+    REQUIRE(currentSource.has_value());
+    cuexis::playback::PlaybackSession session;
+    auto stale =
+        session.prepareLoad(std::move(*staleSource), cuexis::playback::PlaybackMode::HostClock);
+    auto current =
+        session.prepareLoad(std::move(*currentSource), cuexis::playback::PlaybackMode::HostClock);
     REQUIRE(stale.has_value());
     REQUIRE(current.has_value());
     REQUIRE(session.commit(std::move(*current)).has_value());

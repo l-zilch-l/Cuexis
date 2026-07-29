@@ -6,6 +6,9 @@
 
 namespace cuexis::audio {
 
+IAudioClock::~IAudioClock() = default;
+IAudioTransport::~IAudioTransport() = default;
+
 auto validateSourceClockSample(const SourceClockSample& sample) -> core::Result<void> {
     if (!std::isfinite(sample.positionMs) || sample.positionMs < 0.0) {
         return core::unexpected(

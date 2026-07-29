@@ -7,11 +7,15 @@ add_library(cuexis::filesystem ALIAS cuexis_filesystem)
 set_target_properties(cuexis_filesystem PROPERTIES EXPORT_NAME InternalFilesystem)
 
 target_sources(cuexis_filesystem
-    PUBLIC
+    PRIVATE
         FILE_SET HEADERS
         BASE_DIRS include
         FILES
             include/cuexis/filesystem/secure_file.hpp
+)
+
+target_include_directories(cuexis_filesystem PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
 target_compile_features(cuexis_filesystem PUBLIC cxx_std_20)

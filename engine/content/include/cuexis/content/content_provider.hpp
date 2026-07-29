@@ -2,6 +2,8 @@
 
 // Bounded logical content sources used by ResourceManager and external hosts.
 
+#include <cuexis/content/content_export.hpp>
+#include <cuexis/core/abi_warnings.hpp>
 #include <cuexis/core/result.hpp>
 
 #include <cstddef>
@@ -15,6 +17,8 @@
 #include <vector>
 
 namespace cuexis::content {
+
+CUEXIS_ABI_WARNING_PUSH
 
 struct ContentRequest final {
     std::string_view rootId;
@@ -32,9 +36,9 @@ struct ContentBlob final {
     }
 };
 
-class IContentProvider {
+class CUEXIS_CONTENT_API IContentProvider {
   public:
-    virtual ~IContentProvider() = default;
+    virtual ~IContentProvider();
 
     IContentProvider(const IContentProvider&) = delete;
     auto operator=(const IContentProvider&) -> IContentProvider& = delete;
@@ -55,7 +59,7 @@ struct FilesystemContentRoot final {
     std::filesystem::path path;
 };
 
-class FilesystemContentProvider final : public IContentProvider {
+class CUEXIS_CONTENT_API FilesystemContentProvider final : public IContentProvider {
   public:
     ~FilesystemContentProvider() override;
 
@@ -79,7 +83,7 @@ struct MemoryContentEntry final {
     std::uint64_t revision{1};
 };
 
-class MemoryContentProvider final : public IContentProvider {
+class CUEXIS_CONTENT_API MemoryContentProvider final : public IContentProvider {
   public:
     ~MemoryContentProvider() override;
 
@@ -98,7 +102,7 @@ class MemoryContentProvider final : public IContentProvider {
 
 using HostContentCallback = std::function<core::Result<ContentBlob>(const ContentRequest& request)>;
 
-class HostContentProvider final : public IContentProvider {
+class CUEXIS_CONTENT_API HostContentProvider final : public IContentProvider {
   public:
     [[nodiscard]] static auto create(HostContentCallback callback)
         -> core::Result<std::shared_ptr<HostContentProvider>>;
@@ -111,5 +115,7 @@ class HostContentProvider final : public IContentProvider {
 
     HostContentCallback callback_;
 };
+
+CUEXIS_ABI_WARNING_POP
 
 } // namespace cuexis::content

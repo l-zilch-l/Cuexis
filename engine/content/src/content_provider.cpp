@@ -14,6 +14,9 @@
 #include <utility>
 
 namespace cuexis::content {
+
+IContentProvider::~IContentProvider() = default;
+
 namespace {
 
 [[nodiscard]] auto invalidRequest(const ContentRequest& request) -> core::Result<void> {

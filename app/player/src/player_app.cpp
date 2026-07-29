@@ -8,21 +8,18 @@
 #include "frame_diagnostics.hpp"
 #include "player_log.hpp"
 
-#include <cuexis/assets/asset_database.hpp>
 #include <cuexis/audio/audio_clip.hpp>
 #include <cuexis/audio/audio_config.hpp>
 #include <cuexis/audio_sdl/sdl_audio.hpp>
 #include <cuexis/audio_sdl/wav_decoder.hpp>
-#include <cuexis/core/diagnostic.hpp>
 #include <cuexis/core/error.hpp>
 #include <cuexis/core/math.hpp>
 #include <cuexis/filesystem/secure_file.hpp>
 #include <cuexis/platform_sdl/sdl_runtime.hpp>
 #include <cuexis/platform_sdl/sdl_window.hpp>
 #include <cuexis/playback/playback_session.hpp>
+#include <cuexis/playback/playback_source.hpp>
 #include <cuexis/playback/runtime_timeline.hpp>
-#include <cuexis/project/asset_index_reader.hpp>
-#include <cuexis/project/project_loader.hpp>
 #include <cuexis/render/render_backend.hpp>
 #include <cuexis/render/render_scene.hpp>
 #include <cuexis/render_opengl/open_gl_backend.hpp>
@@ -35,7 +32,6 @@
 #include <filesystem>
 #include <iterator>
 #include <optional>
-#include <sstream>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -209,64 +205,6 @@ class PlayerClock final {
     return std::move(contents->text);
 }
 
-[[nodiscard]] auto describeDiagnostic(const core::Diagnostic& diagnostic) -> std::string {
-    std::ostringstream output;
-    output << diagnostic.code() << ": " << diagnostic.message();
-    if (!diagnostic.fieldPath().empty()) {
-        output << " [path=" << diagnostic.fieldPath() << ']';
-    }
-    for (const auto& item : diagnostic.context()) {
-        output << " [" << item.key << '=' << item.value << ']';
-    }
-    return output.str();
-}
-
-void logDiagnostics(PlayerLogger& logger, std::string_view category,
-                    core::Diagnostics& diagnostics) {
-    diagnostics.sortDeterministically();
-    for (const auto& diagnostic : diagnostics.items()) {
-        const auto description = describeDiagnostic(diagnostic);
-        switch (diagnostic.severity()) {
-        case core::DiagnosticSeverity::Info:
-            logger.info(category, description);
-            break;
-        case core::DiagnosticSeverity::Warning:
-            logger.warn(category, description);
-            break;
-        case core::DiagnosticSeverity::Error:
-            logger.error(category, description);
-            break;
-        }
-    }
-}
-
-[[nodiscard]] auto diagnosticsError(std::string code, std::string message,
-                                    const core::Diagnostics& diagnostics) -> core::Error {
-    core::Error error{std::move(code), std::move(message)};
-    if (!diagnostics.items().empty()) {
-        const auto& first = diagnostics.items().front();
-        error.withContext("diagnostic_code", std::string{first.code()});
-        if (!first.fieldPath().empty()) {
-            error.withContext("field_path", std::string{first.fieldPath()});
-        }
-    }
-    return error;
-}
-
-[[nodiscard]] auto toAssetType(project::AssetType type) noexcept -> assets::AssetType {
-    switch (type) {
-    case project::AssetType::Mesh:
-        return assets::AssetType::Mesh;
-    case project::AssetType::Material:
-        return assets::AssetType::Material;
-    case project::AssetType::Texture:
-        return assets::AssetType::Texture;
-    case project::AssetType::Audio:
-        return assets::AssetType::Audio;
-    }
-    return assets::AssetType::Mesh;
-}
-
 [[nodiscard]] auto prepareAudioClip(playback::PreparedPlayback& prepared,
                                     audio::AudioClipStore& store)
     -> core::Result<audio::AudioClipHandle> {
@@ -286,60 +224,6 @@ void logDiagnostics(PlayerLogger& logger, std::string_view category,
             std::move(handle.error()).withContext("asset_id", std::string{source->assetId}));
     }
     return *handle;
-}
-
-[[nodiscard]] auto buildAssetDatabase(PlayerLogger& logger,
-                                      const project::PreparedProject& preparedProject)
-    -> core::Result<assets::AssetDatabase> {
-    assets::AssetDatabaseInput input;
-    input.roots.reserve(preparedProject.assetRoots.size());
-
-    for (const auto& root : preparedProject.assetRoots) {
-        const project::AssetIndexLimits limits;
-        auto text = readBoundedFile(root.assetIndexFile, root.absolutePath, limits.maxInputBytes,
-                                    "player.asset_index", "asset index");
-        if (!text) {
-            return core::unexpected(
-                std::move(text.error()).withContext("root_id", root.declaration.id));
-        }
-
-        auto parsed = project::AssetIndexReader::read(*text, limits);
-        logDiagnostics(logger, "player.asset_index", parsed.diagnostics);
-        if (!parsed.hasValue()) {
-            return core::unexpected(diagnosticsError("player.asset_index.load_failed",
-                                                     "Asset Index loading produced errors",
-                                                     parsed.diagnostics));
-        }
-
-        assets::AssetRootIndex converted;
-        converted.root = {.id = root.declaration.id, .path = root.absolutePath};
-        converted.index.format = parsed.document->format;
-        converted.index.version = parsed.document->version;
-        converted.index.assets.reserve(parsed.document->assets.size());
-        for (const auto& record : parsed.document->assets) {
-            assets::AssetRecord asset{
-                .id = {record.id},
-                .type = toAssetType(record.type),
-                .source = record.source,
-                .dependencies = {},
-            };
-            asset.dependencies.reserve(record.dependencies.size());
-            for (const auto& dependency : record.dependencies) {
-                asset.dependencies.push_back(assets::AssetId{dependency});
-            }
-            converted.index.assets.push_back(std::move(asset));
-        }
-        input.roots.push_back(std::move(converted));
-    }
-
-    auto built = assets::AssetDatabase::build(input);
-    logDiagnostics(logger, "player.asset_database", built.diagnostics);
-    if (!built.hasValue()) {
-        return core::unexpected(diagnosticsError("player.asset_database.build_failed",
-                                                 "AssetDatabase construction produced errors",
-                                                 built.diagnostics));
-    }
-    return std::move(*built.database);
 }
 
 [[nodiscard]] auto matrixFrom(const float (&values)[16]) noexcept -> core::Mat4 {
@@ -409,62 +293,42 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
     logger.info("player.startup",
                 std::string{"Starting Cuexis Player "} + std::string{version::display});
 
-    std::optional<project::PreparedProject> preparedProject;
-    std::optional<assets::AssetDatabase> assetDatabase;
-    std::filesystem::path chartPath;
-    std::filesystem::path chartRoot;
-    if (options.projectPath.has_value()) {
-        auto loadedProject = project::ProjectLoader::load(*options.projectPath);
-        logDiagnostics(logger, "player.project", loadedProject.diagnostics);
-        if (!loadedProject.hasValue()) {
-            return core::unexpected(diagnosticsError("player.project.load_failed",
-                                                     "ProjectConfig loading produced errors",
-                                                     loadedProject.diagnostics));
+    auto makeSource = [&]() -> core::Result<playback::PlaybackSource> {
+        if (options.projectPath.has_value()) {
+            auto source = playback::PlaybackSource::fromFilesystemProject(*options.projectPath);
+            if (!source) {
+                return core::unexpected(core::Error{"player.project.load_failed",
+                                                    "Filesystem Playback source loading failed"}
+                                            .withCause(std::move(source.error())));
+            }
+            return source;
         }
-        preparedProject = std::move(*loadedProject.project);
-        logger.info("player.project", std::string{"Format: "} + preparedProject->config.format +
-                                          " v" + std::to_string(preparedProject->config.version));
-        logger.info("player.project", std::string{"Asset roots: "} +
-                                          std::to_string(preparedProject->assetRoots.size()));
-
-        auto databaseResult = buildAssetDatabase(logger, *preparedProject);
-        if (!databaseResult) {
-            return core::unexpected(std::move(databaseResult.error()));
-        }
-        logger.info("player.asset_database",
-                    std::string{"Indexed assets: "} + std::to_string(databaseResult->size()));
-        assetDatabase = std::move(*databaseResult);
-        chartPath = preparedProject->chartFile;
-        const auto* root = preparedProject->findAssetRoot(preparedProject->config.entry.chart.root);
-        if (root == nullptr) {
-            return core::unexpected(core::Error{"player.chart.root_missing",
-                                                "Prepared chart asset root is unavailable"});
-        }
-        chartRoot = root->absolutePath;
-    } else {
-        chartPath = *options.chartPath;
-        chartRoot =
+        const auto chartPath = *options.chartPath;
+        const auto chartRoot =
             chartPath.parent_path().empty() ? std::filesystem::path{"."} : chartPath.parent_path();
-    }
+        auto chartText =
+            readBoundedFile(chartPath, chartRoot, chartInputMaxBytes, "player.chart", "chart");
+        if (!chartText) {
+            return core::unexpected(std::move(chartText.error()));
+        }
+        return playback::PlaybackSource::fromChartText(std::move(*chartText));
+    };
 
-    auto chartText =
-        readBoundedFile(chartPath, chartRoot, chartInputMaxBytes, "player.chart", "chart");
-    if (!chartText) {
-        return core::unexpected(std::move(chartText.error()));
-    }
-
-    std::optional<playback::PlaybackSession> playbackSession;
-    if (assetDatabase.has_value()) {
-        playbackSession.emplace(std::move(*assetDatabase));
-    } else {
-        playbackSession.emplace();
-    }
+    playback::PlaybackSession playbackSession;
 
     auto mode = playback::PlaybackMode::ChartClock;
-    auto preparedResult = playbackSession->prepareLoad(*chartText, mode);
+    auto sourceResult = makeSource();
+    if (!sourceResult) {
+        return core::unexpected(std::move(sourceResult.error()));
+    }
+    auto preparedResult = playbackSession.prepareLoad(std::move(*sourceResult), mode);
     if (!preparedResult && preparedResult.error().code() == "playback.mode.content_mismatch") {
         mode = playback::PlaybackMode::CuexisAudio;
-        preparedResult = playbackSession->prepareLoad(*chartText, mode);
+        sourceResult = makeSource();
+        if (!sourceResult) {
+            return core::unexpected(std::move(sourceResult.error()));
+        }
+        preparedResult = playbackSession.prepareLoad(std::move(*sourceResult), mode);
     }
     if (!preparedResult) {
         return core::unexpected(std::move(preparedResult.error()));
@@ -525,10 +389,10 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                         " ms");
     }
 
-    if (auto committed = playbackSession->commit(std::move(prepared)); !committed) {
+    if (auto committed = playbackSession.commit(std::move(prepared)); !committed) {
         return core::unexpected(std::move(committed.error()));
     }
-    auto chartInfo = playbackSession->chartInfo();
+    auto chartInfo = playbackSession.chartInfo();
     if (!chartInfo) {
         return core::unexpected(std::move(chartInfo.error()));
     }
@@ -662,12 +526,12 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                 if (!runtimeFrameResult) {
                     return core::unexpected(std::move(runtimeFrameResult.error()));
                 }
-                const auto contentBeforeFailure = playbackSession->contentInfo();
+                const auto contentBeforeFailure = playbackSession.contentInfo();
                 if (!contentBeforeFailure) {
                     return core::unexpected(std::move(contentBeforeFailure.error()));
                 }
                 const auto clockBeforeFailure = audioTransport->snapshot();
-                const auto rejected = playbackSession->prepareReload(
+                const auto rejected = playbackSession.prepareReload(
                     R"json({"format":"cuexis.chart","version":2})json", *runtimeFrameResult,
                     playback::ReloadPolicy::KeepChartTime);
                 if (rejected) {
@@ -675,7 +539,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                         "player.audio_smoke_test.failed_reload_accepted",
                         "Invalid replacement chart unexpectedly prepared successfully"});
                 }
-                const auto contentAfterFailure = playbackSession->contentInfo();
+                const auto contentAfterFailure = playbackSession.contentInfo();
                 if (!contentAfterFailure) {
                     return core::unexpected(std::move(contentAfterFailure.error()));
                 }
@@ -703,8 +567,13 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                 if (!runtimeFrameResult) {
                     return core::unexpected(std::move(runtimeFrameResult.error()));
                 }
-                auto replacement = playbackSession->prepareReload(
-                    *chartText, *runtimeFrameResult, playback::ReloadPolicy::KeepChartTime);
+                auto replacementSource = makeSource();
+                if (!replacementSource) {
+                    return core::unexpected(std::move(replacementSource.error()));
+                }
+                auto replacement = playbackSession.prepareReload(
+                    std::move(*replacementSource), *runtimeFrameResult,
+                    playback::ReloadPolicy::KeepChartTime);
                 if (!replacement) {
                     return core::unexpected(std::move(replacement.error()));
                 }
@@ -728,10 +597,10 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                     }
                     return core::unexpected(std::move(activated.error()));
                 }
-                if (auto committed = playbackSession->commit(std::move(*replacement)); !committed) {
+                if (auto committed = playbackSession.commit(std::move(*replacement)); !committed) {
                     return core::unexpected(std::move(committed.error()));
                 }
-                const auto contentInfo = playbackSession->contentInfo();
+                const auto contentInfo = playbackSession.contentInfo();
                 if (!contentInfo) {
                     return core::unexpected(std::move(contentInfo.error()));
                 }
@@ -763,7 +632,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
         }
         const auto runtimeFrame = *runtimeFrameResult;
         judgeSystem.update(runtimeFrame.chartTimeMs);
-        if (auto result = playbackSession->update(runtimeFrame); !result) {
+        if (auto result = playbackSession.update(runtimeFrame); !result) {
             return core::unexpected(std::move(result.error()));
         }
 
@@ -776,7 +645,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
         const auto width = static_cast<std::uint32_t>(std::max(drawableSize.width, 1));
         const auto height = static_cast<std::uint32_t>(std::max(drawableSize.height, 1));
         if (auto result =
-                playbackSession->extractFrame({.width = width, .height = height}, snapshot);
+                playbackSession.extractFrame({.width = width, .height = height}, snapshot);
             !result) {
             return core::unexpected(std::move(result.error()));
         }
@@ -890,7 +759,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
             return core::unexpected(std::move(result.error()));
         }
     }
-    if (auto result = playbackSession->unload(); !result) {
+    if (auto result = playbackSession.unload(); !result) {
         return core::unexpected(std::move(result.error()));
     }
     return {};

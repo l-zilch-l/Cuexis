@@ -2,10 +2,15 @@
 
 // Instance-owned, exception-contained logging callback for optional adapters and hosts.
 
+#include <cuexis/core/abi_warnings.hpp>
+#include <cuexis/core/core_export.hpp>
+
 #include <functional>
 #include <string_view>
 
 namespace cuexis::core {
+
+CUEXIS_ABI_WARNING_PUSH
 
 enum class LogSeverity {
     Info,
@@ -21,7 +26,7 @@ struct LogEvent final {
 
 using LogCallback = std::function<void(const LogEvent&)>;
 
-class LogSink final {
+class CUEXIS_CORE_API LogSink final {
   public:
     explicit LogSink(LogCallback callback = {});
 
@@ -31,5 +36,7 @@ class LogSink final {
   private:
     LogCallback callback_;
 };
+
+CUEXIS_ABI_WARNING_POP
 
 } // namespace cuexis::core

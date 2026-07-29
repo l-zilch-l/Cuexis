@@ -5,6 +5,7 @@
 //  interface
 //  +X right, +Y up, +Z back; the default camera looks down -Z; world unit 1 unit = 1 meter
 
+#include <cuexis/core/core_export.hpp>
 #include <cuexis/core/result.hpp>
 
 #include <array>
@@ -48,28 +49,30 @@ struct Mat4 {
     friend bool operator==(const Mat4&, const Mat4&) = default;
 };
 
-[[nodiscard]] bool isFinite(const Vec3& value) noexcept;
-[[nodiscard]] bool isFinite(const Quat& value) noexcept;
-[[nodiscard]] bool isFinite(const Mat4& value) noexcept;
-[[nodiscard]] bool isNormalized(const Quat& value, float tolerance = 1.0e-5F) noexcept;
-[[nodiscard]] Result<Quat> normalize(const Quat& value) noexcept;
+[[nodiscard]] CUEXIS_CORE_API bool isFinite(const Vec3& value) noexcept;
+[[nodiscard]] CUEXIS_CORE_API bool isFinite(const Quat& value) noexcept;
+[[nodiscard]] CUEXIS_CORE_API bool isFinite(const Mat4& value) noexcept;
+[[nodiscard]] CUEXIS_CORE_API bool isNormalized(const Quat& value,
+                                                float tolerance = 1.0e-5F) noexcept;
+[[nodiscard]] CUEXIS_CORE_API Result<Quat> normalize(const Quat& value) noexcept;
 
-[[nodiscard]] Mat4 makeTranslation(const Vec3& translation) noexcept;
-[[nodiscard]] Mat4 makeScale(const Vec3& scale) noexcept;
-[[nodiscard]] Result<Mat4> makeRotation(const Quat& rotation) noexcept;
-[[nodiscard]] Result<Mat4> composeTransform(const Vec3& translation, const Quat& rotation,
-                                            const Vec3& scale) noexcept;
-[[nodiscard]] Mat4 multiply(const Mat4& left, const Mat4& right) noexcept;
-[[nodiscard]] Result<Mat4> inverse(const Mat4& matrix) noexcept;
-[[nodiscard]] Vec3 transformPoint(const Mat4& matrix, const Vec3& point) noexcept;
+[[nodiscard]] CUEXIS_CORE_API Mat4 makeTranslation(const Vec3& translation) noexcept;
+[[nodiscard]] CUEXIS_CORE_API Mat4 makeScale(const Vec3& scale) noexcept;
+[[nodiscard]] CUEXIS_CORE_API Result<Mat4> makeRotation(const Quat& rotation) noexcept;
+[[nodiscard]] CUEXIS_CORE_API Result<Mat4>
+composeTransform(const Vec3& translation, const Quat& rotation, const Vec3& scale) noexcept;
+[[nodiscard]] CUEXIS_CORE_API Mat4 multiply(const Mat4& left, const Mat4& right) noexcept;
+[[nodiscard]] CUEXIS_CORE_API Result<Mat4> inverse(const Mat4& matrix) noexcept;
+[[nodiscard]] CUEXIS_CORE_API Vec3 transformPoint(const Mat4& matrix, const Vec3& point) noexcept;
 
-[[nodiscard]] bool nearlyEqual(float left, float right, float tolerance = 1.0e-5F) noexcept;
-[[nodiscard]] bool nearlyEqual(const Vec3& left, const Vec3& right,
-                               float tolerance = 1.0e-5F) noexcept;
-[[nodiscard]] bool nearlyEqual(const Mat4& left, const Mat4& right,
-                               float tolerance = 1.0e-5F) noexcept;
+[[nodiscard]] CUEXIS_CORE_API bool nearlyEqual(float left, float right,
+                                               float tolerance = 1.0e-5F) noexcept;
+[[nodiscard]] CUEXIS_CORE_API bool nearlyEqual(const Vec3& left, const Vec3& right,
+                                               float tolerance = 1.0e-5F) noexcept;
+[[nodiscard]] CUEXIS_CORE_API bool nearlyEqual(const Mat4& left, const Mat4& right,
+                                               float tolerance = 1.0e-5F) noexcept;
 
-[[nodiscard]] Result<Mat4> makePerspective(double fovYRadians, double aspectRatio, double nearPlane,
-                                           double farPlane) noexcept;
+[[nodiscard]] CUEXIS_CORE_API Result<Mat4>
+makePerspective(double fovYRadians, double aspectRatio, double nearPlane, double farPlane) noexcept;
 
 } // namespace cuexis::core

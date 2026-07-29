@@ -24,6 +24,12 @@ jobs:
           - name: GCC Release
             preset: headless-release
             compiler: g++
+          - name: GCC Shared Release
+            preset: headless-shared-release
+            compiler: g++
+          - name: Clang Shared Debug
+            preset: headless-shared-debug
+            compiler: clang++
           - name: Clang ASan + UBSan
             preset: headless-sanitize
             compiler: clang++

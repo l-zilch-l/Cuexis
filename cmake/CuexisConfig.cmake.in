@@ -3,16 +3,83 @@
 include(CMakeFindDependencyMacro)
 
 find_dependency(tl-expected CONFIG)
-find_dependency(glm CONFIG)
-find_dependency(EnTT CONFIG)
-find_dependency(nlohmann_json CONFIG)
-find_dependency(nlohmann_json_schema_validator CONFIG)
+if("@CUEXIS_LIBRARY_TYPE@" STREQUAL "STATIC")
+    find_dependency(glm CONFIG)
+    find_dependency(EnTT CONFIG)
+    find_dependency(nlohmann_json CONFIG)
+    find_dependency(nlohmann_json_schema_validator CONFIG)
+endif()
 
 include("${CMAKE_CURRENT_LIST_DIR}/CuexisTargets.cmake")
 
 set(Cuexis_VERSION "@CUEXIS_SDK_API_VERSION@")
 set(Cuexis_API_VERSION "@CUEXIS_SDK_API_VERSION@")
 set(Cuexis_VERSION_DISPLAY "@CUEXIS_VERSION_DISPLAY@")
+set(Cuexis_LIBRARY_TYPE "@CUEXIS_LIBRARY_TYPE@")
+set(Cuexis_COMPILER_ID "@CMAKE_CXX_COMPILER_ID@")
+set(Cuexis_COMPILER_VERSION "@CMAKE_CXX_COMPILER_VERSION@")
+set(Cuexis_MSVC_VERSION "@MSVC_VERSION@")
+set(Cuexis_POINTER_SIZE "@CMAKE_SIZEOF_VOID_P@")
+set(Cuexis_CXX_STANDARD "20")
+set(Cuexis_BUILD_TYPE "@CMAKE_BUILD_TYPE@")
+set(Cuexis_SYSTEM_NAME "@CMAKE_SYSTEM_NAME@")
+set(Cuexis_SYSTEM_PROCESSOR "@CMAKE_SYSTEM_PROCESSOR@")
+set(Cuexis_RUNTIME_MODEL "dynamic")
+
+if(Cuexis_LIBRARY_TYPE STREQUAL "SHARED")
+    if(NOT CMAKE_CXX_COMPILER_ID STREQUAL Cuexis_COMPILER_ID)
+        set(Cuexis_FOUND FALSE)
+        set(Cuexis_NOT_FOUND_MESSAGE
+            "Cuexis shared preview requires compiler ${Cuexis_COMPILER_ID}")
+        return()
+    endif()
+    if(NOT CMAKE_CXX_COMPILER_VERSION STREQUAL Cuexis_COMPILER_VERSION)
+        set(Cuexis_FOUND FALSE)
+        set(Cuexis_NOT_FOUND_MESSAGE
+            "Cuexis shared preview requires compiler version ${Cuexis_COMPILER_VERSION}")
+        return()
+    endif()
+    if(MSVC AND NOT "${MSVC_VERSION}" STREQUAL Cuexis_MSVC_VERSION)
+        set(Cuexis_FOUND FALSE)
+        set(Cuexis_NOT_FOUND_MESSAGE
+            "Cuexis shared preview requires MSVC ${Cuexis_MSVC_VERSION}")
+        return()
+    endif()
+    if(NOT "${CMAKE_SIZEOF_VOID_P}" STREQUAL Cuexis_POINTER_SIZE)
+        set(Cuexis_FOUND FALSE)
+        set(Cuexis_NOT_FOUND_MESSAGE
+            "Cuexis shared preview requires a ${Cuexis_POINTER_SIZE}-byte pointer architecture")
+        return()
+    endif()
+    if(NOT CMAKE_SYSTEM_NAME STREQUAL Cuexis_SYSTEM_NAME)
+        set(Cuexis_FOUND FALSE)
+        set(Cuexis_NOT_FOUND_MESSAGE
+            "Cuexis shared preview requires system ${Cuexis_SYSTEM_NAME}")
+        return()
+    endif()
+    if(NOT Cuexis_SYSTEM_PROCESSOR STREQUAL "" AND
+       NOT CMAKE_SYSTEM_PROCESSOR STREQUAL Cuexis_SYSTEM_PROCESSOR)
+        set(Cuexis_FOUND FALSE)
+        set(Cuexis_NOT_FOUND_MESSAGE
+            "Cuexis shared preview requires processor ${Cuexis_SYSTEM_PROCESSOR}")
+        return()
+    endif()
+    if(NOT Cuexis_BUILD_TYPE STREQUAL "" AND NOT CMAKE_BUILD_TYPE STREQUAL "" AND
+       NOT CMAKE_BUILD_TYPE STREQUAL Cuexis_BUILD_TYPE)
+        set(Cuexis_FOUND FALSE)
+        set(Cuexis_NOT_FOUND_MESSAGE
+            "Cuexis shared preview requires configuration ${Cuexis_BUILD_TYPE}")
+        return()
+    endif()
+    if(MSVC AND DEFINED CMAKE_MSVC_RUNTIME_LIBRARY AND
+       NOT CMAKE_MSVC_RUNTIME_LIBRARY STREQUAL "" AND
+       NOT CMAKE_MSVC_RUNTIME_LIBRARY MATCHES "DLL$")
+        set(Cuexis_FOUND FALSE)
+        set(Cuexis_NOT_FOUND_MESSAGE
+            "Cuexis shared preview requires the dynamic MSVC runtime")
+        return()
+    endif()
+endif()
 set(Cuexis_Playback_FOUND TRUE)
 set(Cuexis_Content_FOUND TRUE)
 set(Cuexis_Audio_FOUND TRUE)

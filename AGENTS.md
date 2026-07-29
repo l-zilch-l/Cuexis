@@ -8,9 +8,11 @@ The current baseline includes a functioning `cuexis_playback` module (`PlaybackS
 `FrameSnapshot`, `RuntimeFrame`, `IContentProvider`). `PlaybackSession::update()` evaluates the
 phase 1C typed Behavior path. Synchronous Filesystem/Memory/Host ContentProvider support, a
 static C++20 install package, adapter-disabled presets, and add_subdirectory/find_package
-external-consumer gates are implemented. Phase 1E is still in progress: the final public API,
-complete component matrix, package compatibility policy, and shared-library scope are not
-frozen. Phase 1D is implemented: versioned main-music content, ChartClock/HostClock/CuexisAudio,
+external-consumer gates are implemented. Phase 1E implementation and the Windows/MSVC acceptance
+matrix are complete: SDK API `0.3.0` supports static and matching-toolchain C++ shared packages,
+versioned public DLLs, clean staged consumers, compatibility rejection gates, and a public
+PlaybackSource/FrameDigest boundary. Linux GCC/Clang shared jobs remain required merge gates; stable
+C ABI work remains in phase 12. Phase 1D is implemented: versioned main-music content, ChartClock/HostClock/CuexisAudio,
 RuntimeTimeline, Prepared Playback, `cuexis_audio`, and optional `cuexis_audio_sdl` are present.
 The phase 1C feature boundary and all R01-R21 findings from the 260722 review have closure
 evidence. `cuexis_judgement` remains planned for a later phase.
@@ -205,6 +207,8 @@ directories do not exist yet (planned).
 - `docs/adr/0027-playback-sdk-product-boundary.md` — accepted SDK product and host boundary
 - `docs/adr/0030-playback-preview-api-version-and-result.md` — preview Result, package-version,
   and FrameSnapshot lifetime contract
+- `docs/adr/0033-cpp-shared-library-preview-boundary.md` — phase 1E C++ shared preview topology,
+  linkage, dependency, deployment, and compatibility boundary
 - `docs/stage_plans/stage_1b_implementation_plan.md` — completed phase 1B resource lifecycle plan
 - `docs/stage_plans/cuexis_sdk_transition_plan.md` — phase 0-12 SDK migration route
 - `docs/stage_plans/stage_1c_implementation_plan.md` — PlaybackSession, RuntimeFrame and headless Playback loop

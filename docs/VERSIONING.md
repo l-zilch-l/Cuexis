@@ -2,7 +2,7 @@
 
 状态：已接受
 
-更新日期：2026-07-27
+更新日期：2026-07-29
 
 ## 格式
 
@@ -68,8 +68,8 @@ suffix 只来自允许集合或 exp.<name>
 
 ```text
 Cuexis display version     仓库/发行构建身份
-C++ SDK API version        CMake package 与源码兼容版本；1D preview 当前为 0.2.0
-C ABI version              shared library 二进制契约，阶段 12 首次冻结
+C++ SDK API version        CMake package 与源码兼容版本；当前 static/shared preview 为 0.3.0
+C ABI version              稳定 shared-library 二进制契约，阶段 12 首次冻结
 Chart/Project/Asset format 各自持久化 format + version
 ReplayData format          阶段 11 冻结的独立持久化版本
 simulationVersion          粒子等确定性算法版本
@@ -78,13 +78,22 @@ simulationVersion          粒子等确定性算法版本
 当前 `CUEXIS_SDK_API_VERSION` 是 CMake package version 的唯一来源，生成头通过
 `cuexis::version::sdkApi` 暴露，package config 同时设置 `Cuexis_VERSION` 和
 `Cuexis_API_VERSION`。`Cuexis_VERSION_DISPLAY` 继续保存完整构建身份。preview 使用
-`SameMinorVersion`：`0.2.x` 内允许满足不高于已安装版本的请求，minor 或 major 变化必须由
+`SameMinorVersion`：`0.3.x` 内允许满足不高于已安装版本的请求，minor 或 major 变化必须由
 consumer 显式接受。日期构建号变化不改变 `find_package` 兼容性。
 
 阶段 1D 的 SourceClockSample、RuntimeTimeline、Prepared Playback 和 Audio package components
-首次交付构成 preview minor 版本变化。`CUEXIS_SDK_API_VERSION`、package version、生成头和
-external consumer 已同步提升到 `0.2.0`；后续不兼容修改必须再次提升 minor，禁止只修改其中
-一个版本来源。
+曾将 preview 提升到 `0.2.0`。阶段 1E 的 PlaybackSource 构造边界、FrameDigest 与 static/shared
+package linkage 契约进一步把 `CUEXIS_SDK_API_VERSION`、package version、生成头和 external
+consumer 同步提升到 `0.3.0`；后续不兼容修改必须再次提升 minor，禁止只修改其中一个版本来源。
+
+ADR 0033 已将同工具链 C++ shared preview 纳入阶段 1E。`0.3.0` 已实现 Playback 的 source
+构造边界与 package linkage 契约；static/shared 使用同一 API minor 和公共 target 名，但不能在
+一个 install prefix 混装。`vcpkg.json` 继续只记录日期构建版本，不复制 `0.3.0`。
+
+shared `0.x` 只支持使用匹配 SDK minor、编译器工具链、标准库、运行时、架构和 Debug/Release
+配置重新构建的 consumer。CMake `SameMinorVersion` 继续表达源码/package 请求兼容，绝不表示
+可以替换一个已部署 shared binary 而不重新编译 host。C ABI version 仍不存在，直至阶段 12 在
+Judgement/Replay 和完整生命周期证据基础上冻结。
 
 升级项目显示版本不得隐式升级 SDK API、内容格式或 ABI。安装包必须提供可查询的显示版本、
 SDK API 版本和已启用组件；稳定 C ABI 在阶段 12 建立后再提供独立可查询版本。不兼容 API/ABI、

@@ -12,7 +12,6 @@ target_compile_definitions(cuexis_playback_tests
 target_link_libraries(cuexis_playback_tests
     PRIVATE
         cuexis::audio
-        cuexis::assets
         cuexis::playback
         Catch2::Catch2WithMain
 )

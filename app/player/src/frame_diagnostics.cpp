@@ -1,60 +1,20 @@
 #include "frame_diagnostics.hpp"
 
 #include <cuexis/core/error.hpp>
+#include <cuexis/playback/frame_digest.hpp>
 #include <cuexis/version.hpp>
 
 #include <algorithm>
-#include <bit>
-#include <cmath>
 #include <fstream>
 #include <iomanip>
 #include <limits>
 #include <locale>
 #include <string>
 #include <string_view>
-#include <type_traits>
 #include <utility>
 
 namespace cuexis::player {
 namespace {
-
-constexpr std::uint64_t fnvOffset = 14695981039346656037ULL;
-constexpr std::uint64_t fnvPrime = 1099511628211ULL;
-
-void hashByte(std::uint64_t& hash, std::uint8_t value) noexcept {
-    hash ^= value;
-    hash *= fnvPrime;
-}
-
-template <typename Integer> void hashInteger(std::uint64_t& hash, Integer value) noexcept {
-    using Unsigned = std::make_unsigned_t<Integer>;
-    auto bits = static_cast<Unsigned>(value);
-    for (std::size_t index = 0; index < sizeof(bits); ++index) {
-        hashByte(hash, static_cast<std::uint8_t>(bits & 0xFFU));
-        bits >>= 8U;
-    }
-}
-
-void hashFloat(std::uint64_t& hash, float value) noexcept {
-    if (value == 0.0F) {
-        value = 0.0F;
-    }
-    hashInteger(hash, std::bit_cast<std::uint32_t>(value));
-}
-
-void hashDouble(std::uint64_t& hash, double value) noexcept {
-    if (value == 0.0) {
-        value = 0.0;
-    }
-    hashInteger(hash, std::bit_cast<std::uint64_t>(value));
-}
-
-void hashString(std::uint64_t& hash, std::string_view value) noexcept {
-    hashInteger(hash, static_cast<std::uint64_t>(value.size()));
-    for (const unsigned char character : value) {
-        hashByte(hash, character);
-    }
-}
 
 [[nodiscard]] std::string_view stateName(audio::PlaybackState state) noexcept {
     switch (state) {
@@ -132,8 +92,13 @@ void FrameDiagnostics::captureFrame(std::uint64_t frameIndex, const playback::Ru
         ++droppedFrames_;
         return;
     }
+    const auto digest = playback::computeFrameDigest(frame, snapshot);
+    if (!digest) {
+        ++droppedFrames_;
+        return;
+    }
     frames_.push_back({frameIndex, frame.chartTimeMs, frame.simulationDeltaTimeMs,
-                       frame.timeDiscontinuityId, frameHash(frame, snapshot)});
+                       frame.timeDiscontinuityId, digest->value});
 }
 
 void FrameDiagnostics::captureAudio(std::uint64_t frameIndex, double wallClockMs,
@@ -241,43 +206,6 @@ std::size_t FrameDiagnostics::droppedFrameRows() const noexcept {
 
 std::size_t FrameDiagnostics::droppedAudioRows() const noexcept {
     return droppedAudio_;
-}
-
-std::uint64_t FrameDiagnostics::frameHash(const playback::RuntimeFrame& frame,
-                                          const playback::FrameSnapshot& snapshot) noexcept {
-    std::uint64_t hash = fnvOffset;
-    hashDouble(hash, frame.chartTimeMs);
-    hashDouble(hash, frame.simulationDeltaTimeMs);
-    hashInteger(hash, frame.timeDiscontinuityId);
-    hashInteger(hash, static_cast<std::uint64_t>(snapshot.objects.size()));
-    for (const auto& object : snapshot.objects) {
-        hashString(hash, object.id);
-        for (float value : object.worldMatrix) {
-            hashFloat(hash, value);
-        }
-        hashByte(hash, object.hasTransform ? 1U : 0U);
-        hashByte(hash, object.visible ? 1U : 0U);
-    }
-    hashByte(hash, snapshot.camera.active ? 1U : 0U);
-    for (float value : snapshot.camera.viewMatrix) {
-        hashFloat(hash, value);
-    }
-    for (float value : snapshot.camera.projectionMatrix) {
-        hashFloat(hash, value);
-    }
-    hashDouble(hash, snapshot.camera.fovY);
-    hashDouble(hash, snapshot.camera.nearPlane);
-    hashDouble(hash, snapshot.camera.farPlane);
-    hashDouble(hash, snapshot.camera.pitch);
-    hashDouble(hash, snapshot.camera.yaw);
-    hashDouble(hash, snapshot.camera.roll);
-    hashFloat(hash, snapshot.clearRed);
-    hashFloat(hash, snapshot.clearGreen);
-    hashFloat(hash, snapshot.clearBlue);
-    hashFloat(hash, snapshot.clearAlpha);
-    hashInteger(hash, snapshot.viewportWidth);
-    hashInteger(hash, snapshot.viewportHeight);
-    return hash;
 }
 
 } // namespace cuexis::player

@@ -5,6 +5,9 @@
 //  carries a severity, a stable code, a field path rooted at `$`, and context key/values.
 //  Diagnostics supports a bounded capacity and deterministic ordering.
 
+#include <cuexis/core/abi_warnings.hpp>
+#include <cuexis/core/core_export.hpp>
+
 #include <cstddef>
 #include <optional>
 #include <string>
@@ -12,6 +15,8 @@
 #include <vector>
 
 namespace cuexis::core {
+
+CUEXIS_ABI_WARNING_PUSH
 
 enum class DiagnosticSeverity {
     Info,
@@ -26,7 +31,7 @@ struct DiagnosticContext {
     friend bool operator==(const DiagnosticContext&, const DiagnosticContext&) = default;
 };
 
-class Diagnostic final {
+class CUEXIS_CORE_API Diagnostic final {
   public:
     Diagnostic(DiagnosticSeverity severity, std::string code, std::string message,
                std::string fieldPath = {});
@@ -48,7 +53,7 @@ class Diagnostic final {
     std::vector<DiagnosticContext> context_;
 };
 
-class Diagnostics final {
+class CUEXIS_CORE_API Diagnostics final {
   public:
     Diagnostics() = default;
     Diagnostics(std::size_t maxDiagnostics, Diagnostic limitDiagnostic);
@@ -81,5 +86,7 @@ class Diagnostics final {
     std::optional<LimitState> limit_;
     std::size_t acceptedCount_{0};
 };
+
+CUEXIS_ABI_WARNING_POP
 
 } // namespace cuexis::core

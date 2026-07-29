@@ -2,6 +2,7 @@
 
 // Audio configuration is validated before any backend initialization or device operation.
 
+#include <cuexis/audio/audio_export.hpp>
 #include <cuexis/core/result.hpp>
 
 #include <cstdint>
@@ -19,7 +20,7 @@ struct AudioConfig final {
     float gain{1.0F};
 };
 
-class ValidatedAudioConfig final {
+class CUEXIS_AUDIO_API ValidatedAudioConfig final {
   public:
     [[nodiscard]] AudioDeviceRequest deviceRequest() const noexcept;
     [[nodiscard]] std::uint32_t targetQueueMs() const noexcept;
@@ -27,7 +28,8 @@ class ValidatedAudioConfig final {
     [[nodiscard]] float gain() const noexcept;
 
   private:
-    friend auto validateAudioConfig(const AudioConfig&) -> core::Result<ValidatedAudioConfig>;
+    friend CUEXIS_AUDIO_API auto validateAudioConfig(const AudioConfig&)
+        -> core::Result<ValidatedAudioConfig>;
 
     AudioDeviceRequest deviceRequest_{AudioDeviceRequest::DefaultPlayback};
     std::uint32_t targetQueueMs_{200};
@@ -35,7 +37,7 @@ class ValidatedAudioConfig final {
     float gain_{1.0F};
 };
 
-[[nodiscard]] auto validateAudioConfig(const AudioConfig& config)
+[[nodiscard]] CUEXIS_AUDIO_API auto validateAudioConfig(const AudioConfig& config)
     -> core::Result<ValidatedAudioConfig>;
 
 } // namespace cuexis::audio

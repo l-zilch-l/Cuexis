@@ -4,13 +4,14 @@
 
 #include <cuexis/audio/audio_transport.hpp>
 #include <cuexis/core/result.hpp>
+#include <cuexis/playback/playback_export.hpp>
 #include <cuexis/playback/playback_session.hpp>
 
 #include <cstdint>
 
 namespace cuexis::playback {
 
-class RuntimeTimeline final {
+class CUEXIS_PLAYBACK_API RuntimeTimeline final {
   public:
     [[nodiscard]] static auto create(double timingOffsetMs) -> core::Result<RuntimeTimeline>;
 
@@ -30,7 +31,7 @@ class RuntimeTimeline final {
     bool pendingDiscontinuity_{};
 };
 
-class ChartClock final {
+class CUEXIS_PLAYBACK_API ChartClock final {
   public:
     explicit ChartClock(double timingOffsetMs) noexcept;
 

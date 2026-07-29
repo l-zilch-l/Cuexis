@@ -12,7 +12,7 @@ target_sources(cuexis_chart
         src/simple_chart_importer.cpp
         src/timing_map.cpp
         src/uuid.cpp
-    PUBLIC
+    PRIVATE
         FILE_SET HEADERS
         BASE_DIRS include
         FILES
@@ -25,6 +25,10 @@ target_sources(cuexis_chart
             include/cuexis/chart/simple_chart_importer.hpp
             include/cuexis/chart/timing_map.hpp
             include/cuexis/chart/uuid.hpp
+)
+
+target_include_directories(cuexis_chart PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
 target_compile_features(cuexis_chart PUBLIC cxx_std_20)

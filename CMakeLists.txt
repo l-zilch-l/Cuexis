@@ -7,6 +7,7 @@ project(Cuexis VERSION ${CUEXIS_CMAKE_VERSION} LANGUAGES CXX)
 include(CTest)
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
+include(GenerateExportHeader)
 
 if(PROJECT_IS_TOP_LEVEL)
     set(CUEXIS_TOP_LEVEL_DEFAULT ON)
@@ -78,6 +79,7 @@ configure_file(
 
 include("${PROJECT_SOURCE_DIR}/cmake/CuexisWarnings.cmake")
 include("${PROJECT_SOURCE_DIR}/cmake/VerifyArchitecture.cmake")
+include("${PROJECT_SOURCE_DIR}/cmake/CuexisLibraryType.cmake")
 
 add_subdirectory(engine)
 if(CUEXIS_BUILD_PLAYER)
@@ -223,6 +225,8 @@ if(CUEXIS_BUILD_TESTS)
                     "-DCUEXIS_BINARY_DIR=${PROJECT_BINARY_DIR}"
                     "-DCUEXIS_GENERATOR=${CMAKE_GENERATOR}"
                     "-DCUEXIS_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+                    "-DCUEXIS_LIBRARY_TYPE=${CUEXIS_LIBRARY_TYPE}"
+                    "-DCUEXIS_SDK_API_VERSION=${CUEXIS_SDK_API_VERSION}"
                     "-DCUEXIS_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
                     "-DCUEXIS_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
                     "-DCUEXIS_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}"
@@ -235,6 +239,43 @@ if(CUEXIS_BUILD_TESTS)
                 TIMEOUT 900
             )
         endforeach()
+        if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
+            if(MSVC)
+                find_program(CUEXIS_SYMBOL_TOOL NAMES dumpbin REQUIRED)
+                set(CUEXIS_SYMBOL_TOOL_KIND dumpbin)
+            else()
+                find_program(CUEXIS_SYMBOL_TOOL NAMES llvm-nm nm REQUIRED)
+                set(CUEXIS_SYMBOL_TOOL_KIND nm)
+            endif()
+            add_test(
+                NAME cuexis_shared_export_surface
+                COMMAND "${CMAKE_COMMAND}"
+                    "-DCUEXIS_SHARED_LIBRARY=$<TARGET_FILE:cuexis_playback>"
+                    "-DCUEXIS_SYMBOL_TOOL=${CUEXIS_SYMBOL_TOOL}"
+                    "-DCUEXIS_SYMBOL_TOOL_KIND=${CUEXIS_SYMBOL_TOOL_KIND}"
+                    -P "${PROJECT_SOURCE_DIR}/cmake/VerifySharedExports.cmake"
+            )
+            set_tests_properties(cuexis_shared_export_surface PROPERTIES
+                LABELS "shared;package"
+            )
+            if(MSVC)
+                add_test(
+                    NAME cuexis_shared_consumer_imports
+                    COMMAND "${CMAKE_COMMAND}"
+                        "-DCUEXIS_CONSUMER=${PROJECT_BINARY_DIR}/ec/p/build/cuexis_external_consumer.exe"
+                        "-DCUEXIS_DUMPBIN=${CUEXIS_SYMBOL_TOOL}"
+                        "-DCUEXIS_CORE_LIBRARY=$<TARGET_FILE_NAME:cuexis_core>"
+                        "-DCUEXIS_CONTENT_LIBRARY=$<TARGET_FILE_NAME:cuexis_content>"
+                        "-DCUEXIS_PLAYBACK_LIBRARY=$<TARGET_FILE_NAME:cuexis_playback>"
+                        -P "${PROJECT_SOURCE_DIR}/cmake/VerifySharedConsumerImports.cmake"
+                )
+                set_tests_properties(cuexis_shared_consumer_imports PROPERTIES
+                    DEPENDS cuexis_external_consumer_find_package
+                    LABELS "shared;external;package"
+                    RESOURCE_LOCK cuexis_external_consumer
+                )
+            endif()
+        endif()
     endif()
 endif()
 
@@ -275,12 +316,16 @@ endif()
 set(CUEXIS_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/Cuexis"
     CACHE STRING "Cuexis CMake package installation directory"
 )
-set(CUEXIS_PLAYBACK_EXPORT_TARGETS
+set(CUEXIS_PUBLIC_EXPORT_TARGETS
     cuexis_core
     cuexis_audio
-    cuexis_filesystem
     cuexis_content
+    cuexis_playback
+)
+set(CUEXIS_STATIC_IMPLEMENTATION_TARGETS
+    cuexis_filesystem
     cuexis_json_support
+    cuexis_project
     cuexis_world
     cuexis_assets
     cuexis_chart
@@ -288,16 +333,25 @@ set(CUEXIS_PLAYBACK_EXPORT_TARGETS
     cuexis_gameplay
     cuexis_render
     cuexis_runtime
-    cuexis_playback
 )
+set(CUEXIS_PLAYBACK_EXPORT_TARGETS ${CUEXIS_PUBLIC_EXPORT_TARGETS})
+if(CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
+    list(APPEND CUEXIS_PLAYBACK_EXPORT_TARGETS ${CUEXIS_STATIC_IMPLEMENTATION_TARGETS})
+endif()
 
-install(TARGETS ${CUEXIS_PLAYBACK_EXPORT_TARGETS}
+install(TARGETS ${CUEXIS_PUBLIC_EXPORT_TARGETS}
     EXPORT CuexisTargets
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
     FILE_SET HEADERS DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
+if(CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
+    install(TARGETS ${CUEXIS_STATIC_IMPLEMENTATION_TARGETS}
+        EXPORT CuexisTargets
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    )
+endif()
 if(TARGET cuexis_audio_sdl)
     install(TARGETS cuexis_audio_sdl
         EXPORT CuexisAudioSDLTargets
@@ -471,6 +525,8 @@ cuexis_verify_target_dependencies(cuexis_playback
         cuexis::core
         cuexis::assets
         cuexis::chart
+        cuexis::filesystem
+        cuexis::project
         cuexis::render
         cuexis::runtime
         cuexis::world
@@ -481,11 +537,9 @@ if(TARGET cuexis_player)
             cuexis::audio
             cuexis::audio_sdl
             cuexis::playback
-            cuexis::assets
             cuexis::core
             cuexis::filesystem
             cuexis::platform_sdl
-            cuexis::project
             cuexis::render
             cuexis::render_opengl
             spdlog::spdlog
