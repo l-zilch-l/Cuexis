@@ -8,8 +8,11 @@
 //  reserves the extension points for them
 //  This public header exposes no entt, SDL, OpenGL, JSON DOM or internal Runtime types
 
+#include <cuexis/core/abi_warnings.hpp>
 #include <cuexis/core/diagnostic.hpp>
 #include <cuexis/core/result.hpp>
+#include <cuexis/playback/playback_export.hpp>
+#include <cuexis/playback/playback_source.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -20,15 +23,9 @@
 #include <string_view>
 #include <vector>
 
-namespace cuexis::assets {
-class AssetDatabase;
-}
-
-namespace cuexis::content {
-class IContentProvider;
-}
-
 namespace cuexis::playback {
+
+CUEXIS_ABI_WARNING_PUSH
 
 struct RuntimeFrame final {
     double chartTimeMs{};
@@ -113,7 +110,7 @@ enum class SessionState {
 
 class PlaybackSession;
 
-class PreparedPlayback final {
+class CUEXIS_PLAYBACK_API PreparedPlayback final {
   public:
     PreparedPlayback() noexcept;
     ~PreparedPlayback();
@@ -135,12 +132,9 @@ class PreparedPlayback final {
     std::unique_ptr<State> state_;
 };
 
-class PlaybackSession final {
+class CUEXIS_PLAYBACK_API PlaybackSession final {
   public:
     PlaybackSession() noexcept;
-    explicit PlaybackSession(assets::AssetDatabase database);
-    PlaybackSession(assets::AssetDatabase database,
-                    std::shared_ptr<content::IContentProvider> contentProvider);
     ~PlaybackSession();
 
     PlaybackSession(const PlaybackSession&) = delete;
@@ -152,11 +146,16 @@ class PlaybackSession final {
 
     [[nodiscard]] auto prepareLoad(std::string_view jsonText, PlaybackMode mode)
         -> core::Result<PreparedPlayback>;
+    [[nodiscard]] auto prepareLoad(PlaybackSource&& source, PlaybackMode mode)
+        -> core::Result<PreparedPlayback>;
     [[nodiscard]] auto prepareReload(std::string_view replacementJson,
                                      const RuntimeFrame& targetFrame, ReloadPolicy policy)
         -> core::Result<PreparedPlayback>;
+    [[nodiscard]] auto prepareReload(PlaybackSource&& replacement, const RuntimeFrame& targetFrame,
+                                     ReloadPolicy policy) -> core::Result<PreparedPlayback>;
     [[nodiscard]] auto commit(PreparedPlayback&& prepared) -> core::Result<void>;
 
+    [[nodiscard]] auto load(PlaybackSource&& source, PlaybackMode mode) -> core::Result<void>;
     [[nodiscard]] auto loadChart(std::string_view jsonText) -> core::Result<void>;
 
     [[nodiscard]] auto update(const RuntimeFrame& frame) -> core::Result<void>;
@@ -167,6 +166,8 @@ class PlaybackSession final {
 
     [[nodiscard]] auto reload(std::string_view replacementJson, const RuntimeFrame& targetFrame,
                               ReloadPolicy policy) -> core::Result<void>;
+    [[nodiscard]] auto reload(PlaybackSource&& replacement, const RuntimeFrame& targetFrame,
+                              ReloadPolicy policy) -> core::Result<void>;
     [[nodiscard]] auto unload() -> core::Result<void>;
 
     [[nodiscard]] auto chartInfo() const -> core::Result<ChartInfo>;
@@ -175,12 +176,14 @@ class PlaybackSession final {
     [[nodiscard]] auto lastOperationDiagnostics() const -> core::Result<core::Diagnostics>;
 
   private:
-    [[nodiscard]] auto prepare(std::string_view jsonText, PlaybackMode mode,
+    [[nodiscard]] auto prepare(PlaybackSource&& source, PlaybackMode mode,
                                const RuntimeFrame* targetFrame, ReloadPolicy policy,
                                bool replacement) -> core::Result<PreparedPlayback>;
 
     struct State;
     std::unique_ptr<State> state_;
 };
+
+CUEXIS_ABI_WARNING_POP
 
 } // namespace cuexis::playback

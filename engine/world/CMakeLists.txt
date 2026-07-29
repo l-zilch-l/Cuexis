@@ -10,7 +10,7 @@ add_library(cuexis::world ALIAS cuexis_world)
 set_target_properties(cuexis_world PROPERTIES EXPORT_NAME InternalWorld)
 
 target_sources(cuexis_world
-    PUBLIC
+    PRIVATE
         FILE_SET HEADERS
         BASE_DIRS include
         FILES
@@ -18,6 +18,10 @@ target_sources(cuexis_world
             include/cuexis/world/property.hpp
             include/cuexis/world/transform_system.hpp
             include/cuexis/world/world.hpp
+)
+
+target_include_directories(cuexis_world PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
 target_compile_features(cuexis_world PUBLIC cxx_std_20)

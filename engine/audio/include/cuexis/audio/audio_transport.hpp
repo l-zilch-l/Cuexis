@@ -3,6 +3,7 @@
 // Backend-neutral source clock, transport state, diagnostics, and control interfaces.
 
 #include <cuexis/audio/audio_clip.hpp>
+#include <cuexis/audio/audio_export.hpp>
 #include <cuexis/core/result.hpp>
 
 #include <cstdint>
@@ -50,9 +51,10 @@ struct EffectiveAudioSettings final {
     bool defaultRouteMayMigrate{true};
 };
 
-[[nodiscard]] auto validateSourceClockSample(const SourceClockSample& sample) -> core::Result<void>;
+[[nodiscard]] CUEXIS_AUDIO_API auto validateSourceClockSample(const SourceClockSample& sample)
+    -> core::Result<void>;
 
-class HostClock final {
+class CUEXIS_AUDIO_API HostClock final {
   public:
     HostClock() = default;
 
@@ -64,15 +66,15 @@ class HostClock final {
     bool initialized_{};
 };
 
-class IAudioClock {
+class CUEXIS_AUDIO_API IAudioClock {
   public:
-    virtual ~IAudioClock() = default;
+    virtual ~IAudioClock();
     [[nodiscard]] virtual AudioClockSnapshot snapshot() const noexcept = 0;
 };
 
-class IAudioTransport : public IAudioClock {
+class CUEXIS_AUDIO_API IAudioTransport : public IAudioClock {
   public:
-    ~IAudioTransport() override = default;
+    ~IAudioTransport() override;
 
     [[nodiscard]] virtual auto load(AudioClipHandle handle) -> core::Result<void> = 0;
     [[nodiscard]] virtual auto play() -> core::Result<void> = 0;

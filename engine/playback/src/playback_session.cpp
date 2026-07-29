@@ -2,6 +2,8 @@
 
 #include <cuexis/playback/playback_session.hpp>
 
+#include "playback_source_state.hpp"
+
 #include <cuexis/assets/asset_database.hpp>
 #include <cuexis/assets/resource_manager.hpp>
 #include <cuexis/chart/chart_loader.hpp>
@@ -151,16 +153,12 @@ struct SnapshotLayout final {
 
 struct PlaybackSession::State final {
     State() = default;
-    explicit State(assets::AssetDatabase database)
-        : resourceManager(std::in_place, std::move(database)) {}
-    State(assets::AssetDatabase database, std::shared_ptr<content::IContentProvider> provider)
-        : contentProvider(std::move(provider)),
-          resourceManager(std::in_place, std::move(database), contentProvider) {}
 
     core::ThreadChecker ownerThread;
     // ResourceManager must outlive RuntimeSession and its ResourceScope.
     std::shared_ptr<content::IContentProvider> contentProvider;
-    std::optional<assets::ResourceManager> resourceManager;
+    std::unique_ptr<assets::ResourceManager> resourceManager;
+    std::string activeChartJson;
     std::unique_ptr<runtime::RuntimeSession> runtimeSession;
     SnapshotLayout snapshotLayout;
     std::optional<RuntimeFrame> lastFrame;
@@ -180,6 +178,9 @@ struct PreparedPlayback::State final {
     std::uint64_t expectedGeneration{};
     bool replacement{};
     core::ThreadChecker ownerThread;
+    std::shared_ptr<content::IContentProvider> contentProvider;
+    std::unique_ptr<assets::ResourceManager> resourceManager;
+    std::string chartJson;
     std::unique_ptr<runtime::RuntimeSession> runtimeSession;
     SnapshotLayout snapshotLayout;
     ChartInfo chartInfo;
@@ -238,13 +239,6 @@ std::optional<MainMusicSourceView> PreparedPlayback::mainMusicSource() const noe
 
 PlaybackSession::PlaybackSession() noexcept : state_(std::make_unique<State>()) {}
 
-PlaybackSession::PlaybackSession(assets::AssetDatabase database)
-    : state_(std::make_unique<State>(std::move(database))) {}
-
-PlaybackSession::PlaybackSession(assets::AssetDatabase database,
-                                 std::shared_ptr<content::IContentProvider> contentProvider)
-    : state_(std::make_unique<State>(std::move(database), std::move(contentProvider))) {}
-
 PlaybackSession::~PlaybackSession() {
     if (state_ && !state_->ownerThread.isCurrent()) {
         std::terminate();
@@ -260,7 +254,16 @@ auto PlaybackSession::state() const -> core::Result<SessionState> {
 
 auto PlaybackSession::prepareLoad(std::string_view jsonText, PlaybackMode mode)
     -> core::Result<PreparedPlayback> {
-    return prepare(jsonText, mode, nullptr, ReloadPolicy::KeepChartTime, false);
+    auto source = PlaybackSource::fromChartText(std::string{jsonText});
+    if (!source) {
+        return core::unexpected(std::move(source.error()));
+    }
+    return prepare(std::move(*source), mode, nullptr, ReloadPolicy::KeepChartTime, false);
+}
+
+auto PlaybackSession::prepareLoad(PlaybackSource&& source, PlaybackMode mode)
+    -> core::Result<PreparedPlayback> {
+    return prepare(std::move(source), mode, nullptr, ReloadPolicy::KeepChartTime, false);
 }
 
 auto PlaybackSession::prepareReload(std::string_view replacementJson,
@@ -273,10 +276,32 @@ auto PlaybackSession::prepareReload(std::string_view replacementJson,
         return core::unexpected(
             core::Error{"playback.session.not_ready", "PlaybackSession has no active mode"});
     }
-    return prepare(replacementJson, *state_->activeMode, &targetFrame, policy, true);
+    auto source = PlaybackSource::fromChartText(std::string{replacementJson});
+    if (!source) {
+        return core::unexpected(std::move(source.error()));
+    }
+    if (state_->resourceManager) {
+        auto sourceState = std::move(source->state_);
+        sourceState->provider = state_->contentProvider;
+        sourceState->database.emplace(state_->resourceManager->database());
+        source->state_ = std::move(sourceState);
+    }
+    return prepare(std::move(*source), *state_->activeMode, &targetFrame, policy, true);
 }
 
-auto PlaybackSession::prepare(std::string_view jsonText, PlaybackMode mode,
+auto PlaybackSession::prepareReload(PlaybackSource&& replacement, const RuntimeFrame& targetFrame,
+                                    ReloadPolicy policy) -> core::Result<PreparedPlayback> {
+    if (!state_->ownerThread.isCurrent()) {
+        return core::unexpected(ownerError("prepare_reload"));
+    }
+    if (!state_->activeMode) {
+        return core::unexpected(
+            core::Error{"playback.session.not_ready", "PlaybackSession has no active mode"});
+    }
+    return prepare(std::move(replacement), *state_->activeMode, &targetFrame, policy, true);
+}
+
+auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
                               const RuntimeFrame* targetFrame, ReloadPolicy policy,
                               bool replacement) -> core::Result<PreparedPlayback> {
     if (!state_->ownerThread.isCurrent()) {
@@ -291,7 +316,12 @@ auto PlaybackSession::prepare(std::string_view jsonText, PlaybackMode mode,
                                     : "PlaybackSession must be Empty before preparing a load"});
     }
 
+    if (!source.state_) {
+        return core::unexpected(core::Error{"playback.source.invalid", "PlaybackSource is empty"});
+    }
     core::Diagnostics diagnostics;
+    auto& sourceState = *source.state_;
+    const auto& jsonText = sourceState.chartJson;
     const chart::ChartLimits limits;
     auto documentResult = chart::ChartLoader::load(jsonText, limits);
     const bool documentValid = documentResult.hasValue();
@@ -323,29 +353,34 @@ auto PlaybackSession::prepare(std::string_view jsonText, PlaybackMode mode,
                             : "HostClock and CuexisAudio require a chart with main music"});
     }
 
+    std::unique_ptr<assets::ResourceManager> resourceManager;
+    if (sourceState.database) {
+        resourceManager = std::make_unique<assets::ResourceManager>(
+            std::move(*sourceState.database), sourceState.provider);
+    }
+
     std::optional<assets::AudioSourceLease> audioSourceLease;
     if (chartRuntime.mainMusic) {
-        if (!state_->resourceManager) {
+        if (!resourceManager) {
             return core::unexpected(core::Error{
                 "playback.content.asset_database_missing",
                 "A chart with main music requires an AssetDatabase and ContentProvider"});
         }
-        auto source = state_->resourceManager->requestAudioSource(
+        auto sourceResult = resourceManager->requestAudioSource(
             assets::AssetId{chartRuntime.mainMusic->value}, assets::ResourcePolicy::Required);
-        const bool sourceValid = source.hasValue();
-        diagnostics.append(std::move(source.diagnostics));
+        const bool sourceValid = sourceResult.hasValue();
+        diagnostics.append(std::move(sourceResult.diagnostics));
         if (!sourceValid) {
             state_->lastOperationDiagnostics = diagnostics;
             return core::unexpected(
                 operationError("playback.content.main_music_failed",
                                "Required main music source could not be prepared", diagnostics));
         }
-        audioSourceLease.emplace(std::move(*source.lease));
+        audioSourceLease.emplace(std::move(*sourceResult.lease));
     }
 
-    auto session = state_->resourceManager.has_value()
-                       ? std::make_unique<runtime::RuntimeSession>(*state_->resourceManager)
-                       : std::make_unique<runtime::RuntimeSession>();
+    auto session = resourceManager ? std::make_unique<runtime::RuntimeSession>(*resourceManager)
+                                   : std::make_unique<runtime::RuntimeSession>();
     auto runtimePrepared = session->prepare(chartRuntime);
     const bool preparedValid = runtimePrepared.hasValue();
     diagnostics.append(std::move(runtimePrepared.diagnostics));
@@ -382,6 +417,9 @@ auto PlaybackSession::prepare(std::string_view jsonText, PlaybackMode mode,
     prepared->ownerToken = state_->sessionToken;
     prepared->expectedGeneration = state_->generation;
     prepared->replacement = replacement;
+    prepared->contentProvider = std::move(sourceState.provider);
+    prepared->resourceManager = std::move(resourceManager);
+    prepared->chartJson = sourceState.chartJson;
     prepared->runtimeSession = std::move(session);
     prepared->snapshotLayout = std::move(*snapshotLayout);
     prepared->chartInfo = chartInfoFor(chartRuntime, prepared->runtimeSession->resourceCount());
@@ -420,6 +458,9 @@ auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> 
                                             "PlaybackSession lifecycle changed after preparation"});
     }
 
+    state_->contentProvider = std::move(candidate.contentProvider);
+    state_->resourceManager = std::move(candidate.resourceManager);
+    state_->activeChartJson = std::move(candidate.chartJson);
     state_->runtimeSession = std::move(candidate.runtimeSession);
     state_->snapshotLayout = std::move(candidate.snapshotLayout);
     state_->activeChartInfo = candidate.chartInfo;
@@ -439,6 +480,14 @@ auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> 
 
 auto PlaybackSession::loadChart(std::string_view jsonText) -> core::Result<void> {
     auto prepared = prepareLoad(jsonText, PlaybackMode::ChartClock);
+    if (!prepared) {
+        return core::unexpected(std::move(prepared.error()));
+    }
+    return commit(std::move(*prepared));
+}
+
+auto PlaybackSession::load(PlaybackSource&& source, PlaybackMode mode) -> core::Result<void> {
+    auto prepared = prepareLoad(std::move(source), mode);
     if (!prepared) {
         return core::unexpected(std::move(prepared.error()));
     }
@@ -581,6 +630,15 @@ auto PlaybackSession::reload(std::string_view replacementJson, const RuntimeFram
     return commit(std::move(*prepared));
 }
 
+auto PlaybackSession::reload(PlaybackSource&& replacement, const RuntimeFrame& targetFrame,
+                             ReloadPolicy policy) -> core::Result<void> {
+    auto prepared = prepareReload(std::move(replacement), targetFrame, policy);
+    if (!prepared) {
+        return core::unexpected(std::move(prepared.error()));
+    }
+    return commit(std::move(*prepared));
+}
+
 auto PlaybackSession::unload() -> core::Result<void> {
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("unload"));
@@ -594,6 +652,9 @@ auto PlaybackSession::unload() -> core::Result<void> {
         }
     }
     state_->runtimeSession.reset();
+    state_->resourceManager.reset();
+    state_->contentProvider.reset();
+    state_->activeChartJson.clear();
     state_->snapshotLayout = {};
     state_->lastFrame.reset();
     state_->diagnostics.clear();

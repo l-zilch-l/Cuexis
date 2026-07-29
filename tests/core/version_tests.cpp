@@ -50,7 +50,7 @@ TEST_CASE("Generated display version contains only an allowed suffix", "[core][v
 }
 
 TEST_CASE("Generated SDK API version is independent from the build identity", "[core][version]") {
-    REQUIRE(cuexis::version::sdkApi == "0.2.0");
+    REQUIRE(cuexis::version::sdkApi == "0.3.0");
     REQUIRE(cuexis::version::sdkApi != cuexis::version::cmakeProject);
     REQUIRE(cuexis::version::sdkApi != cuexis::version::display);
 }

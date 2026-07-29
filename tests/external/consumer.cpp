@@ -1,6 +1,7 @@
-#include <cuexis/assets/asset_database.hpp>
 #include <cuexis/content/content_provider.hpp>
+#include <cuexis/playback/frame_digest.hpp>
 #include <cuexis/playback/playback_session.hpp>
+#include <cuexis/playback/playback_source.hpp>
 
 #include <cmath>
 #include <cstddef>
@@ -63,31 +64,6 @@ constexpr std::string_view chart = R"json(
 } // namespace
 
 int main() {
-    auto
-        database =
-            cuexis::assets::AssetDatabase::create(
-                {
-                    .roots = {{.root = {.id = "memory"},
-                               .index = {.assets =
-                                             {
-                                                 {.id = {"mesh.note"},
-                                                  .type = cuexis::assets::AssetType::Mesh,
-                                                  .source = "mesh.bin",
-                                                  .dependencies = {{"texture.note"}}},
-                                                 {.id = {"material.note"},
-                                                  .type = cuexis::assets::AssetType::Material,
-                                                  .source = "material.bin",
-                                                  .dependencies = {{"texture.note"}}},
-                                                 {.id = {"texture.note"},
-                                                  .type = cuexis::assets::AssetType::Texture,
-                                                  .source = "texture.bin"},
-                                             }}}},
-                    .sourceMode = cuexis::assets::AssetSourceMode::Logical,
-                });
-    if (!database) {
-        return fail("Logical AssetDatabase creation failed");
-    }
-
     std::size_t providerReads = 0;
     auto provider = cuexis::content::HostContentProvider::create(
         [&providerReads](const cuexis::content::ContentRequest& request)
@@ -115,8 +91,30 @@ int main() {
         return fail("HostContentProvider creation failed");
     }
 
-    cuexis::playback::PlaybackSession session{std::move(*database), std::move(*provider)};
-    if (!session.loadChart(chart)) {
+    auto source = cuexis::playback::PlaybackSource::fromTypedProject(
+        {.sourceId = "external-project",
+         .chartJson = std::string{chart},
+         .assets = {{.id = "mesh.note",
+                     .type = cuexis::playback::PlaybackAssetType::Mesh,
+                     .rootId = "memory",
+                     .logicalSource = "mesh.bin",
+                     .dependencies = {"texture.note"}},
+                    {.id = "material.note",
+                     .type = cuexis::playback::PlaybackAssetType::Material,
+                     .rootId = "memory",
+                     .logicalSource = "material.bin",
+                     .dependencies = {"texture.note"}},
+                    {.id = "texture.note",
+                     .type = cuexis::playback::PlaybackAssetType::Texture,
+                     .rootId = "memory",
+                     .logicalSource = "texture.bin"}}},
+        std::move(*provider));
+    if (!source) {
+        return fail("PlaybackSource creation failed");
+    }
+
+    cuexis::playback::PlaybackSession session;
+    if (!session.load(std::move(*source), cuexis::playback::PlaybackMode::ChartClock)) {
         return fail("PlaybackSession load failed");
     }
     const auto info = session.chartInfo();
@@ -129,6 +127,11 @@ int main() {
     auto first = session.extractFrame({.width = 1280, .height = 720});
     if (!first || first->objects.size() != 1 || !near(first->objects[0].worldMatrix[12], 5.0F)) {
         return fail("PlaybackSession first snapshot differed");
+    }
+    const auto digest = cuexis::playback::computeFrameDigest({.chartTimeMs = 250.0}, *first);
+    constexpr std::uint64_t expectedDigest = 6726938620466257503ULL;
+    if (!digest || digest->algorithmVersion != 1 || digest->value != expectedDigest) {
+        return fail("Playback frame digest failed");
     }
 
     if (!session.reload(chart, {.chartTimeMs = 375.0},
@@ -155,6 +158,6 @@ int main() {
         return fail("Unload invalidated an owning FrameSnapshot");
     }
 
-    std::cout << "Cuexis external consumer passed\n";
+    std::cout << "Cuexis external consumer passed digest=" << digest->value << '\n';
     return 0;
 }

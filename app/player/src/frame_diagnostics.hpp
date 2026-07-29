@@ -33,9 +33,6 @@ class FrameDiagnostics final {
     [[nodiscard]] std::size_t droppedFrameRows() const noexcept;
     [[nodiscard]] std::size_t droppedAudioRows() const noexcept;
 
-    [[nodiscard]] static std::uint64_t frameHash(const playback::RuntimeFrame& frame,
-                                                 const playback::FrameSnapshot& snapshot) noexcept;
-
   private:
     struct FrameRow final {
         std::uint64_t frameIndex{};

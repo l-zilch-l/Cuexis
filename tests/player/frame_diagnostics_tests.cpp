@@ -1,11 +1,14 @@
 #include "frame_diagnostics.hpp"
 
+#include <cuexis/playback/frame_digest.hpp>
+
 #include <catch2/catch_test_macros.hpp>
 
 #include <array>
 #include <atomic>
 #include <filesystem>
 #include <fstream>
+#include <limits>
 #include <optional>
 #include <sstream>
 #include <string>
@@ -77,12 +80,20 @@ constexpr std::string_view traceChart = R"json(
 TEST_CASE("Frame diagnostics hash only stable deterministic fields", "[player][frame-stats]") {
     const cuexis::playback::RuntimeFrame frame{100.0, 16.0, 3};
     auto first = snapshot();
-    const auto hash = cuexis::player::FrameDiagnostics::frameHash(frame, first);
-    CHECK(cuexis::player::FrameDiagnostics::frameHash(frame, first) == hash);
+    const auto digest = cuexis::playback::computeFrameDigest(frame, first);
+    REQUIRE(digest.has_value());
+    CHECK(digest->algorithmVersion == 1);
+    const auto hash = digest->value;
+    CHECK(cuexis::playback::computeFrameDigest(frame, first)->value == hash);
 
     first.objects[0].worldMatrix[12] = 2.0F;
-    CHECK(cuexis::player::FrameDiagnostics::frameHash(frame, first) != hash);
-    CHECK(cuexis::player::FrameDiagnostics::frameHash({100.0, 16.0, 4}, snapshot()) != hash);
+    CHECK(cuexis::playback::computeFrameDigest(frame, first)->value != hash);
+    CHECK(cuexis::playback::computeFrameDigest({100.0, 16.0, 4}, snapshot())->value != hash);
+
+    first.objects[0].worldMatrix[12] = std::numeric_limits<float>::infinity();
+    const auto invalid = cuexis::playback::computeFrameDigest(frame, first);
+    REQUIRE_FALSE(invalid.has_value());
+    CHECK(invalid.error().code() == "playback.frame_digest.non_finite");
 }
 
 TEST_CASE("Frame diagnostics exports stable prefixes and truncation metadata",
@@ -117,7 +128,7 @@ TEST_CASE("Frame diagnostics exports stable prefixes and truncation metadata",
     CHECK(audio.starts_with("frameIndex,wallClockMs,sourcePositionMs,"
                             "estimatedOutputLatencyMs,queuedFrames,underrunCount,"
                             "transportState\r\n"));
-    CHECK(meta.find("\"sdkApiVersion\": \"0.2.0\"") != std::string::npos);
+    CHECK(meta.find("\"sdkApiVersion\": \"0.3.0\"") != std::string::npos);
     CHECK(meta.find("\"mode\": \"cuexis_audio\"") != std::string::npos);
     CHECK(meta.find("\"droppedRows\": 1") != std::string::npos);
     CHECK(meta.find("\"truncated\": true") != std::string::npos);
@@ -152,8 +163,9 @@ TEST_CASE("Frame diagnostics do not change the RuntimeFrame or snapshot trace",
                 diagnostics->captureFrame(index, frames[index], *frameSnapshot);
             }
             trace.frames.push_back(frames[index]);
-            trace.hashes.push_back(
-                cuexis::player::FrameDiagnostics::frameHash(frames[index], *frameSnapshot));
+            const auto digest = cuexis::playback::computeFrameDigest(frames[index], *frameSnapshot);
+            REQUIRE(digest.has_value());
+            trace.hashes.push_back(digest->value);
         }
         if (diagnostics) {
             REQUIRE(diagnostics->exportArtifacts(cuexis::playback::PlaybackMode::ChartClock)

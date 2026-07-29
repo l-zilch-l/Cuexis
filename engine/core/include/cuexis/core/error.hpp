@@ -5,6 +5,9 @@
 //  Error supports attached context key/value pairs and a causal chain (cause) to aid
 //  diagnosis
 
+#include <cuexis/core/abi_warnings.hpp>
+#include <cuexis/core/core_export.hpp>
+
 #include <memory>
 #include <string>
 #include <string_view>
@@ -12,12 +15,14 @@
 
 namespace cuexis::core {
 
+CUEXIS_ABI_WARNING_PUSH
+
 struct ErrorContext {
     std::string key;
     std::string value;
 };
 
-class Error final {
+class CUEXIS_CORE_API Error final {
   public:
     Error(std::string code, std::string message);
 
@@ -45,5 +50,7 @@ class Error final {
     std::vector<ErrorContext> context_;
     std::shared_ptr<const Error> cause_;
 };
+
+CUEXIS_ABI_WARNING_POP
 
 } // namespace cuexis::core

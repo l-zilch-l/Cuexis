@@ -13,7 +13,7 @@ target_sources(cuexis_json_support
         src/reader.cpp
         src/schema.cpp
         src/value.cpp
-    PUBLIC
+    PRIVATE
         FILE_SET HEADERS
         BASE_DIRS include
         FILES
@@ -21,6 +21,10 @@ target_sources(cuexis_json_support
             include/cuexis/json/reader.hpp
             include/cuexis/json/schema.hpp
             include/cuexis/json/value.hpp
+)
+
+target_include_directories(cuexis_json_support PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
 target_compile_features(cuexis_json_support PUBLIC cxx_std_20)

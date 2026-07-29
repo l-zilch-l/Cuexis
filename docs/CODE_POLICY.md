@@ -53,7 +53,18 @@ ResourceLease 资源强引用
 
 `cuexis_playback` 是宿主集成门面；`RuntimeSession`、World、Registry、ResourceManager 槽位和后端对象属于内部实现。安装后的公共 SDK 头不得包含 EnTT、SDL、OpenGL/GLAD、JSON DOM、spdlog/fmt 或其他实现依赖类型。
 
-第一版 C++ 门面可以在内部适配 `core::Result`，但稳定 C ABI 不得暴露 `tl::expected`、标准库容器所有权或跨模块异常。跨 shared library 的数据必须有明确创建/释放方、有效期、版本和线程规则。
+第一版 C++ 门面可以在内部适配 `core::Result`，但稳定 C ABI 不得暴露 `tl::expected`、标准库容器所有权或跨模块异常。ADR 0033 的 phase 1E shared preview 可以使用这些 C++ 类型，但只支持匹配 SDK minor、工具链、标准库、运行时、架构和配置的重编译 consumer；`SameMinorVersion` 不表示稳定 ABI。跨 shared library 的数据必须有明确创建/释放方、有效期、版本和线程规则，异常必须在 Cuexis 边界转换为稳定 Error。
+
+shared preview 的公共二进制只包括 Core、Content、Audio、Playback 和可选 AudioSDL。每个组件使用
+自己的 `CUEXIS_*_API` 导出宏；默认 visibility 为 hidden，禁止自动导出全部 Windows symbols。World、
+Runtime、Assets、Chart、Behavior、Gameplay、Render、JSON support 和 filesystem mechanics 是内部 PIC
+实现库，不能成为可由宿主直接链接的 DLL 边界。公共 Playback API 不接受 AssetDatabase、
+ResourceManager、RuntimeSession、World 或其他内部模块对象。
+
+阶段 1E installed shared consumer 不通过继承 `IContentProvider`、`IAudioClock` 或
+`IAudioTransport` 建立插件 ABI。宿主内容使用 Cuexis 创建的 `HostContentProvider` callback wrapper；
+宿主时间使用 `SourceClockSample`/`HostClock`。仓库内部和 static 测试仍可使用派生 test double，但
+不得据此宣称外部 shared vtable 兼容。
 
 宿主回调默认不得重入同一 PlaybackSession。ContentProvider、日志 Sink、帧 Sink 和输入提交接口必须记录调用线程、所有权和可阻塞性；Audio Thread 不调用宿主文件、日志、渲染回调或触发判定结果查询。阶段 1D 的 Host 主音乐回调只能在 owner thread 同步消费调用期有效的 `MainMusicSourceView`，返回后不得保留 view。
 

@@ -38,9 +38,10 @@ cuexis_audio_sdl
 
 ADR 0027 已将长期交付方向调整为 Playback SDK + 独立 Player + 独立 Studio。当前
 `cuexis_playback` 已通过正式 Runtime 路径驱动 Behavior，并提供 Prepared load/reload、
-主音乐内容视图和后端无关 RuntimeTimeline。当前 C++20 静态包导出 Playback、Content、Audio，
-可选导出 AudioSDL；四类 `add_subdirectory`/`find_package(Cuexis)` 外部 consumer 门禁验证
-基础包不会引入 SDL。共享库、稳定 C ABI、Studio 与宿主专用 adapter 仍属于后续阶段。
+主音乐内容视图和后端无关 RuntimeTimeline。当前 C++20 static/shared package 导出
+Playback、Content、Audio，可选导出 AudioSDL；四类 `add_subdirectory`/`find_package(Cuexis)`
+外部 consumer 门禁验证基础包不会引入 SDL。ADR 0033 的 matching-toolchain C++ shared preview
+构建、部署和 consumer 门禁已实现；稳定 C ABI、Studio 与宿主专用 adapter 仍属于后续阶段。
 
 ## Windows/MSVC 前置条件
 
@@ -192,15 +193,16 @@ CUEXIS_BUILD_DEVELOPER_TOOLS
 
 作为顶层项目时默认构建 Player、adapter、测试和开发工具；作为 `add_subdirectory` 子项目时
 这些选项默认关闭。`CUEXIS_BUILD_AUDIO_SDL_ADAPTER` 与平台 SDL adapter 独立；只有 Player
-同时要求 SDL platform、SDL audio 和 OpenGL 三个 adapter。当前正式安装产物是 C++20 静态包，
-基础入口目标为 `Cuexis::Playback`、`Cuexis::Content` 和 `Cuexis::Audio`：
+同时要求 SDL platform、SDL audio 和 OpenGL 三个 adapter。Cuexis C++20 preview 通过
+`CUEXIS_LIBRARY_TYPE=STATIC|SHARED` 选择 linkage，默认值为 `STATIC`。基础入口目标为
+`Cuexis::Playback`、`Cuexis::Content` 和 `Cuexis::Audio`：
 
 ```powershell
 cmake --install out/build/headless-release --prefix out/install/headless-release
 ```
 
 ```cmake
-find_package(Cuexis 0.2 CONFIG REQUIRED COMPONENTS Playback Content Audio)
+find_package(Cuexis 0.3 CONFIG REQUIRED COMPONENTS Playback Content Audio)
 target_link_libraries(my_host PRIVATE Cuexis::Playback Cuexis::Content Cuexis::Audio)
 ```
 
@@ -208,14 +210,14 @@ target_link_libraries(my_host PRIVATE Cuexis::Playback Cuexis::Content Cuexis::A
 并由 consumer 显式请求组件：
 
 ```cmake
-find_package(Cuexis 0.2 CONFIG REQUIRED COMPONENTS Audio AudioSDL)
+find_package(Cuexis 0.3 CONFIG REQUIRED COMPONENTS Audio AudioSDL)
 target_link_libraries(my_host PRIVATE Cuexis::AudioSDL)
 ```
 
 只有请求 `AudioSDL` 时 `CuexisConfig.cmake` 才查找 SDL3 并载入独立的
 `CuexisAudioSDLTargets.cmake`；基础 Playback/Content/Audio consumer 不查找 SDL3。
 
-`0.2` 是 Playback preview 的 SDK API 兼容版本，不是日期构建版本。安装后的
+`0.3` 是当前 Playback preview 的 SDK API 兼容版本，不是日期构建版本。安装后的
 `Cuexis_VERSION`/`Cuexis_API_VERSION` 返回完整 API 版本，`Cuexis_VERSION_DISPLAY` 返回
 `yy.mm.dd.hh-v[-suffix]` 构建身份。
 
@@ -228,6 +230,31 @@ AudioSDL 组件。基础 find_package 门禁显式禁用 SDL3 查找；安装包
 ```powershell
 ctest --preset headless-debug -R "^cuexis_external_consumer_" --output-on-failure
 ```
+
+### Shared preview
+
+阶段 1E 的唯一 Cuexis linkage 选择为：
+
+```text
+CUEXIS_LIBRARY_TYPE=STATIC|SHARED
+```
+
+不得把 `BUILD_SHARED_LIBS` 当作 Cuexis 支持入口。当前 static/shared preview SDK API 均为
+`0.3.0`。一个 build tree 与 install prefix 只能包含一种 Cuexis linkage，consumer 继续链接
+相同的 `Cuexis::` target 名，不得硬编码 DLL/shared object 文件名。可直接使用
+`shared-debug`、`shared-release`、`headless-shared-debug` 和 `headless-shared-release` presets。
+
+shared preview 要求 consumer 使用匹配的 Cuexis SDK minor、编译器工具链、C++ 标准库、架构、运行时
+和 Debug/Release 配置；升级 Cuexis 后必须重新编译 consumer。`SameMinorVersion` 是 package/source
+请求规则，绝不构成可替换二进制的 ABI 承诺。shared package 的基础 Playback/Content/Audio consumer
+不应安装或查找 EnTT、GLM、JSON/schema validator、SDL3、glad 或 spdlog 开发包；只有显式
+`AudioSDL` component 才能查找 SDL3。CTest 会检查完整部署、导出符号、consumer import table、
+private target/header 泄漏、配置与 MSVC runtime 不匹配，以及 clean staging 运行。具体规则见
+[ADR 0033](adr/0033-cpp-shared-library-preview-boundary.md)。
+
+阶段 1E 首批正式 shared 平台矩阵是 Windows x64/MSVC 与 Linux x64/GCC 或 Clang。Windows
+Release/Debug 分别固定动态 CRT `/MD` 与 `/MDd`，不支持与 `/MT` consumer 混用。MinGW、macOS、
+其他架构和跨编译器消费在取得同等级 build/install/deploy/runtime 证据前仅为实验组合。
 
 ## 跨平台质量入口
 
@@ -250,7 +277,8 @@ ctest --preset headless-coverage --no-tests=error -E "^cuexis_external_consumer_
 ```
 
 `.github/workflows/` 持续验证 Windows/MSVC、Windows/MinGW、Linux/GCC Release、
-Linux/Clang ASan+UBSan、clang-tidy 和不低于 40% 的 engine 行覆盖率。100k Transform 稀疏
+Linux/GCC shared Release、Linux/Clang shared Debug、Linux/Clang ASan+UBSan、clang-tidy 和
+不低于 40% 的 engine 行覆盖率。100k Transform 稀疏
 更新与 FrameSnapshot 缓冲复用是确定性结构门禁；墙钟时间只作为趋势证据，不作为跨机器
 硬阈值。
 

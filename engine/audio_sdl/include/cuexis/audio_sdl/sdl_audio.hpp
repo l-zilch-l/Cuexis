@@ -5,15 +5,19 @@
 #include <cuexis/audio/audio_clip.hpp>
 #include <cuexis/audio/audio_config.hpp>
 #include <cuexis/audio/audio_transport.hpp>
+#include <cuexis/audio_sdl/audio_sdl_export.hpp>
+#include <cuexis/core/abi_warnings.hpp>
 #include <cuexis/core/result.hpp>
 
 #include <memory>
 
 namespace cuexis::audio_sdl {
 
+CUEXIS_ABI_WARNING_PUSH
+
 class SdlAudioTransport;
 
-class SdlAudioSubsystem final {
+class CUEXIS_AUDIO_SDL_API SdlAudioSubsystem final {
   public:
     [[nodiscard]] static auto create() -> core::Result<SdlAudioSubsystem>;
     ~SdlAudioSubsystem();
@@ -31,7 +35,7 @@ class SdlAudioSubsystem final {
     std::shared_ptr<State> state_;
 };
 
-class SdlAudioTransport final : public audio::IAudioTransport {
+class CUEXIS_AUDIO_SDL_API SdlAudioTransport final : public audio::IAudioTransport {
   public:
     [[nodiscard]] static auto create(SdlAudioSubsystem& subsystem, audio::AudioClipStore& store,
                                      const audio::ValidatedAudioConfig& config)
@@ -65,5 +69,7 @@ class SdlAudioTransport final : public audio::IAudioTransport {
 
     std::unique_ptr<Impl> impl_;
 };
+
+CUEXIS_ABI_WARNING_POP
 
 } // namespace cuexis::audio_sdl

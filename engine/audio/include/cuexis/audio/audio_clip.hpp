@@ -2,6 +2,8 @@
 
 // Immutable interleaved F32 PCM and an owner-thread weak-handle store.
 
+#include <cuexis/audio/audio_export.hpp>
+#include <cuexis/core/abi_warnings.hpp>
 #include <cuexis/core/result.hpp>
 
 #include <compare>
@@ -14,9 +16,11 @@
 
 namespace cuexis::audio {
 
+CUEXIS_ABI_WARNING_PUSH
+
 inline constexpr std::size_t maxDecodedClipBytes = 256U * 1024U * 1024U;
 
-class AudioClip final {
+class CUEXIS_AUDIO_API AudioClip final {
   public:
     [[nodiscard]] static auto create(std::uint32_t sampleRate, std::uint32_t channels,
                                      std::vector<float> interleavedSamples)
@@ -39,7 +43,7 @@ class AudioClip final {
     std::vector<float> samples_;
 };
 
-struct AudioClipHandle final {
+struct CUEXIS_AUDIO_API AudioClipHandle final {
     static constexpr std::uint32_t invalidIndex = std::numeric_limits<std::uint32_t>::max();
 
     std::uint32_t index{invalidIndex};
@@ -50,7 +54,7 @@ struct AudioClipHandle final {
     auto operator<=>(const AudioClipHandle&) const = default;
 };
 
-class AudioClipLease final {
+class CUEXIS_AUDIO_API AudioClipLease final {
   public:
     AudioClipLease() = default;
     ~AudioClipLease() = default;
@@ -87,7 +91,7 @@ struct AudioClipStoreMetrics final {
     std::size_t registeredBytes{};
 };
 
-class AudioClipStore final {
+class CUEXIS_AUDIO_API AudioClipStore final {
   public:
     explicit AudioClipStore(AudioClipStoreLimits limits = {});
     ~AudioClipStore();
@@ -107,5 +111,7 @@ class AudioClipStore final {
     struct State;
     std::unique_ptr<State> state_;
 };
+
+CUEXIS_ABI_WARNING_POP
 
 } // namespace cuexis::audio

@@ -196,8 +196,10 @@ wall clock、source position、latency、queue、underrun 和 transport state。
 | P2 | 托管 CI 没有真实 GPU/音频设备 | CI 只声明 headless、dummy、build/package/format/architecture 结果 |
 | P3 | 仅支持整首 WAV 预解码和单主音乐流 | OGG/MP3/FLAC、streaming、mixing、loop/gapless 留待后续阶段 |
 
-阶段 1E 继续冻结完整 public component matrix、package compatibility policy 和 shared-library
-范围；不得把 AudioSDL 变成 Playback 核心的传递依赖。UserPreferences、AudioDeviceProfile、设备
+本报告完成时，阶段 1E 的完整 public component matrix、package compatibility policy 和
+shared-library 范围仍待冻结。2026-07-28 接受的 ADR 0033 随后将 matching-toolchain C++ shared
+preview 纳入阶段 1E；2026-07-29 已完成实现及 Windows/MSVC、Windows/MinGW、Linux GCC/Clang
+验收。不得把 AudioSDL 变成 Playback 核心的传递依赖。UserPreferences、AudioDeviceProfile、设备
 身份和持久化校准留给阶段 6；正式性能预算和 profiler 接入留给阶段 9A。
 
 ## 10. 相关文档
@@ -211,6 +213,7 @@ wall clock、source position、latency、queue、underrun 和 transport state。
 - [ADR 0030：Preview API、package version 与 Result](../adr/0030-playback-preview-api-version-and-result.md)
 - [ADR 0031：主音乐内容格式 v2](../adr/0031-main-music-content-format-v2.md)
 - [ADR 0032：Playback 时钟与 Prepared Audio 事务](../adr/0032-playback-clock-and-prepared-audio-transaction.md)
+- [ADR 0033：C++ Shared Library Preview Boundary](../adr/0033-cpp-shared-library-preview-boundary.md)
 - [构建指南](../BUILDING.md)
 - [Chart 格式](../CHART_FORMAT.md)
 - [Timing Model](../TIMING_MODEL.md)

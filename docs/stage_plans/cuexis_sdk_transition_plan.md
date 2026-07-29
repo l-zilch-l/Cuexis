@@ -1,9 +1,10 @@
 # Cuexis SDK 改造与阶段路线调整方案
 
-状态：产品方向与阶段调整已接受；阶段 1C、1D 功能边界已落地，阶段 1E Playback Core preview 部分实施，稳定 C ABI 延后到必选 Judgement/Replay 完成后的阶段 12
+状态：产品方向与阶段调整已接受；阶段 1C、1D 功能边界和阶段 1E Playback Core preview 已实现并完成跨平台验收；稳定 C ABI 延后到必选 Judgement/Replay 完成后的阶段 12
 规划日期：2026-07-20  
 当前基线：[阶段 1D 完成报告](../stage_reports/stage_1d_completion_report.md)
 相关实施计划：[阶段 1C](stage_1c_implementation_plan.md)、[阶段 1D](stage_1d_implementation_plan.md)、[阶段 1E](stage_1e_implementation_plan.md)
+shared preview 边界：[ADR 0033](../adr/0033-cpp-shared-library-preview-boundary.md)
 
 ## 0. 文档定位
 
@@ -152,12 +153,14 @@ Playback Core preview 的 C++20 公共 API 允许使用 `cuexis::core::Result<T,
 
 ## 6. API、ABI 与语言绑定策略
 
-第一步先建立可测试的 C++20 SDK 门面和源码/静态库消费方式，不在 Session 生命周期尚未稳定时承诺长期二进制 ABI。
+第一步先建立可测试的 C++20 SDK 门面和源码消费方式，并在阶段 1E 验证 static 与同工具链
+shared preview。Session 生命周期和 Judgement/Replay 尚未稳定时，不承诺长期二进制 ABI。
 
 ```text
 阶段 1E
   验证 C++ 所有权、线程和错误语义，记录 preview 源码兼容范围
-  提供 CMake package 和外部 C++ consumer
+  提供 static/shared CMake package、部署门禁和外部 C++ consumer
+  shared consumer 使用匹配工具链/运行时并在升级 SDK 后重新编译
 
 阶段 6
   稳定 C++ 使用、弃用和升级政策
@@ -167,7 +170,7 @@ Playback Core preview 的 C++20 公共 API 允许使用 `cuexis::core::Result<T,
   完成必选 Input/Judgement/Replay 公共契约、实现和外部消费验证
 
 阶段 12
-  根据完整 SDK 生命周期证据冻结 shared library 与 opaque handle C ABI
+  根据完整 SDK 生命周期证据冻结 opaque handle C ABI 与长期二进制兼容政策
   提供薄 C++ RAII wrapper，再进入 Unity、C# 或其他语言适配
 ```
 
@@ -298,7 +301,7 @@ CUEXIS_BUILD_SDL_BACKEND
 CUEXIS_BUILD_OPENGL_BACKEND
 CUEXIS_BUILD_TESTS
 CUEXIS_BUILD_EXAMPLES
-CUEXIS_BUILD_SHARED
+CUEXIS_LIBRARY_TYPE=STATIC|SHARED
 ```
 
 作为顶层项目时可以使用面向开发的默认值；通过 `add_subdirectory` 或安装包消费时，不应自动构建 Player、Studio、测试、格式 target 或复制 demo 资产。
@@ -320,11 +323,12 @@ shared library 导出宏和符号可见性规则
 
 ```text
 add_subdirectory consumer
-find_package(Cuexis 0.2 CONFIG REQUIRED) consumer
+find_package(Cuexis 0.3 CONFIG REQUIRED) consumer
 ```
 
-当前已落地基线为 `0.2`。consumer 必须显式请求该版本，并覆盖 Playback/Content/Audio 与
-可选 AudioSDL 的 component-aware 行为。
+当前 static/shared preview 为 `0.3`，consumer 必须显式请求所接受的版本。两种 linkage 均覆盖
+Playback/Content/Audio 与可选 AudioSDL 的 component-aware 行为；同一 install prefix 不得
+混装 static/shared。
 
 ## 11. 阶段 0 至 1B 调整
 
@@ -442,13 +446,14 @@ Prepared Playback 内部持有 Source Lease，只公开 MainMusicSourceView
 
 ```text
 完成 CMake install/export/package
-完成组件化构建选项和无 App 构建
+完成组件化 static/shared 构建选项和无 App 构建
 建立公开头 allowlist、符号可见性和版本查询
 建立 Filesystem、Memory 和 Host Content Provider
 建立独立 external consumer fixture，不直接访问仓库私有头
 验证 load/update/seek/reload/unload 和 FrameSnapshot
 验证无 SDL、无 OpenGL、无音频设备的完整 headless 闭环
 验证 Player 与 external consumer 的确定性一致性
+验证 shared consumer 的干净目录部署、私有依赖闭包和 static/shared parity
 记录第一版 C++ SDK 兼容性政策
 ```
 
@@ -460,6 +465,8 @@ Prepared Playback 内部持有 Source Lease，只公开 MainMusicSourceView
 公共 SDK 头不暴露 EnTT、SDL、OpenGL 和私有 JSON 类型
 销毁 SDK Session 不留下全局线程、设备、日志或缓存状态
 多个 Session 可以使用独立时钟和资源 Provider
+shared 组件只导出正式公共符号，基础 Playback closure 不引入 SDL/OpenGL
+shared consumer 升级 SDK 后重新编译，且使用匹配的工具链、运行时和配置
 ```
 
 ### 12.4 阶段 2：Cuexis Behavior 表达能力
@@ -519,7 +526,7 @@ Studio 可以编辑高级 Shader，但必须显示目标宿主兼容性
 
 ```text
 稳定 PlaybackSession C++ 使用、弃用和升级政策
-继续验证 shared-library 边界和真实宿主，但不冻结 opaque handle C ABI
+在已支持的 shared preview 基础上继续验证真实宿主和 C++ 升级/弃用政策，但不冻结 opaque handle C ABI
 提供 preview 版本查询并为后续薄 C++ RAII wrapper 保留边界
 完善安装包、许可证、符号、Debug/Release 和升级说明
 完善 Player 用户控制、UserPreferences 和 AudioDeviceProfile
@@ -644,7 +651,7 @@ ReplayData 与 Session 配置快照按版本化格式序列化。版本不支持
 前置条件：阶段 11 的 Input/Judgement/Replay 公共契约、实现、外部 consumer 和确定性回放门禁全部完成，且阶段 1E/6 已积累 C++ 所有权、线程、错误和真实宿主消费证据。
 
 ```text
-冻结 opaque handle C ABI、allocator、字符串、数组、回调和快照有效期
+冻结 opaque handle C ABI、allocator、字符串、数组、回调和快照有效期，以及长期二进制兼容政策
 定义 C ABI version、符号可见性、兼容/弃用和 capability 查询
 验证 Windows CRT、Debug/Release、static/shared 与支持平台矩阵
 提供薄 C++ RAII wrapper 和至少一个正式宿主 adapter
@@ -733,7 +740,7 @@ ReplayData 序列化/反序列化往返后，注入回放结果与原始实时�
 
 ```text
 Playback SDK + 独立 Player + 独立 Studio
-第一版使用 C++20 门面和 CMake package；1E 只交付 Playback Core preview，稳定 C ABI 延后到阶段 12
+第一版使用 C++20 门面和 static/shared CMake package；1E 只交付 Playback Core preview，稳定 C ABI 延后到阶段 12
 第一版宿主渲染以 FrameSnapshot/RenderPacket 为主
 ProjectConfig 继续服务 Player/Studio，SDK 同时接受 typed/memory source
 新增阶段 1E，并覆盖原 1D 计划中的“不创建阶段 1E”结论
@@ -742,6 +749,7 @@ ReplayData 使用版本化 Cuexis 自有格式身份，具体 Schema 在阶段 1
 阶段 1D 使用 ChartClock/HostClock/CuexisAudio 三种不可变模式和 Prepared Playback 内容边界
 cuexis_playback 可以依赖 cuexis_audio，但不得依赖 cuexis_audio_sdl/SDL
 1D 交付 Cuexis::Audio/Cuexis::AudioSDL components，并将 preview API 提升到 0.2.0
+ADR 0033 的同工具链 C++ shared preview 已以 0.3.0 实现，稳定 C ABI 仍在阶段 12
 ```
 
 以下细节仍须在对应阶段编码前确认：

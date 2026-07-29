@@ -28,8 +28,9 @@ C ABI version            阶段 12 建立，当前不存在稳定版本
 
 阶段 1D 的 `SourceClockSample`、`RuntimeTimeline`、Prepared Playback、
 `PlaybackContentInfo`/`MainMusicSourceView` 和 Audio package components 已扩展公开 preview
-契约。因此当前 `CUEXIS_SDK_API_VERSION` 为 `0.2.0`，package version、生成头、外部 consumer
-和兼容性测试均已同步更新；不得继续宣称 `0.1.x` 兼容。
+契约，因此阶段 1D 的 `CUEXIS_SDK_API_VERSION` 为 `0.2.0`。阶段 1E 后续以 `0.3.0`
+交付新的 Playback source 构造边界与 static/shared linkage 契约；package version、生成头、
+外部 consumer 和兼容性测试均已同步更新。
 
 preview C++ 公共签名允许使用 Cuexis 自有别名 `cuexis::core::Result<T, E>`，不得直接写出
 `tl::expected`。这会形成已记录的 `tl-expected` 头文件源码依赖，但不构成长期 ABI 承诺。
@@ -42,7 +43,7 @@ Registry 或 RenderScene 的存储；后续 update、reload、unload 和 Session
 
 ## 影响
 
-- 当前 external consumer 必须带最低 SDK API 版本调用 `find_package(Cuexis 0.2 ...)`。
+- 当前 external consumer 必须带最低 SDK API 版本调用 `find_package(Cuexis 0.3 ...)`。
 - SDK API 兼容变化和日期构建发布需要分别评审、更新和测试。
 - 安装包必须继续导出 `tl-expected` dependency，直到公共 C++ Result 表示发生显式迁移。
 - Snapshot 生命周期测试必须保留 reload、unload 和 Session 销毁后的读取覆盖。
@@ -62,3 +63,9 @@ Registry 或 RenderScene 的存储；后续 update、reload、unload 和 Session
 ### 在阶段 1E 冻结稳定 C ABI
 
 拒绝。Judgement/Replay 和完整生命周期尚未经过外部宿主验证，冻结会固化不完整边界。
+
+## 后续 Shared Preview 决策（2026-07-28）
+
+[ADR 0033](0033-cpp-shared-library-preview-boundary.md) 后续接受了阶段 1E matching-toolchain C++
+shared preview，但没有改变本 ADR 对稳定 C ABI 的拒绝。阶段 1E 的 `0.3.0` static/shared
+preview 已实现该边界，且 consumer 必须使用匹配工具链重新编译。

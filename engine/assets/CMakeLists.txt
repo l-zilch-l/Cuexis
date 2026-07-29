@@ -7,7 +7,7 @@ add_library(cuexis::assets ALIAS cuexis_assets)
 set_target_properties(cuexis_assets PROPERTIES EXPORT_NAME InternalAssets)
 
 target_sources(cuexis_assets
-    PUBLIC
+    PRIVATE
         FILE_SET HEADERS
         BASE_DIRS include
         FILES
@@ -15,6 +15,10 @@ target_sources(cuexis_assets
             include/cuexis/assets/asset_id.hpp
             include/cuexis/assets/resource_handle.hpp
             include/cuexis/assets/resource_manager.hpp
+)
+
+target_include_directories(cuexis_assets PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
 target_compile_features(cuexis_assets PUBLIC cxx_std_20)

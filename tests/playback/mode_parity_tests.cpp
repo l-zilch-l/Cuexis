@@ -1,29 +1,18 @@
 #include "../audio/fake_audio_transport.hpp"
 
-#include <cuexis/assets/asset_database.hpp>
 #include <cuexis/audio/audio_clip.hpp>
 #include <cuexis/audio/audio_transport.hpp>
 #include <cuexis/playback/playback_session.hpp>
+#include <cuexis/playback/playback_source.hpp>
 #include <cuexis/playback/runtime_timeline.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
 #include <cstddef>
 #include <filesystem>
-#include <fstream>
-#include <sstream>
-#include <string>
 #include <vector>
 
 namespace {
-
-[[nodiscard]] auto readFile(const std::filesystem::path& path) -> std::string {
-    std::ifstream input{path, std::ios::binary};
-    REQUIRE(input.is_open());
-    std::ostringstream contents;
-    contents << input.rdbuf();
-    return contents.str();
-}
 
 void checkFramesEqual(const cuexis::playback::RuntimeFrame& first,
                       const cuexis::playback::RuntimeFrame& second) {
@@ -72,25 +61,19 @@ TEST_CASE("HostClock and CuexisAudio produce identical RuntimeFrame and FrameSna
           "[playback][timeline][parity]") {
     const auto assetsRoot = std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" / "projects" /
                             "stage1d_project" / "assets";
-    const auto chartText = readFile(assetsRoot / "charts" / "stage1d_example.cuexis.chart.json");
-    const cuexis::assets::AssetDatabaseInput databaseConfig{
-        .roots = {{.root = {.id = "main", .path = assetsRoot},
-                   .index = {.version = 2,
-                             .assets = {{.id = {"audio.main"},
-                                         .type = cuexis::assets::AssetType::Audio,
-                                         .source = "audio/main.wav"}}}}},
-    };
-    auto hostDatabase = cuexis::assets::AssetDatabase::create(databaseConfig);
-    auto audioDatabase = cuexis::assets::AssetDatabase::create(databaseConfig);
-    REQUIRE(hostDatabase.has_value());
-    REQUIRE(audioDatabase.has_value());
+    auto hostSource =
+        cuexis::playback::PlaybackSource::fromFilesystemProject(assetsRoot.parent_path());
+    auto audioSource =
+        cuexis::playback::PlaybackSource::fromFilesystemProject(assetsRoot.parent_path());
+    REQUIRE(hostSource.has_value());
+    REQUIRE(audioSource.has_value());
 
-    cuexis::playback::PlaybackSession hostSession{std::move(*hostDatabase)};
-    cuexis::playback::PlaybackSession audioSession{std::move(*audioDatabase)};
+    cuexis::playback::PlaybackSession hostSession;
+    cuexis::playback::PlaybackSession audioSession;
     auto hostPrepared =
-        hostSession.prepareLoad(chartText, cuexis::playback::PlaybackMode::HostClock);
-    auto audioPrepared =
-        audioSession.prepareLoad(chartText, cuexis::playback::PlaybackMode::CuexisAudio);
+        hostSession.prepareLoad(std::move(*hostSource), cuexis::playback::PlaybackMode::HostClock);
+    auto audioPrepared = audioSession.prepareLoad(std::move(*audioSource),
+                                                  cuexis::playback::PlaybackMode::CuexisAudio);
     REQUIRE(hostPrepared.has_value());
     REQUIRE(audioPrepared.has_value());
     REQUIRE(hostSession.commit(std::move(*hostPrepared)).has_value());
