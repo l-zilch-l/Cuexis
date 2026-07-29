@@ -97,7 +97,7 @@ namespace {
         auto [rootIt, inserted] = rootIndexes.emplace(descriptor.rootId, input.roots.size());
         if (inserted) {
             input.roots.push_back(
-                assets::AssetRootIndex{.root = {.id = descriptor.rootId}, .index = {}});
+                assets::AssetRootIndex{.root = {.id = descriptor.rootId, .path = {}}, .index = {}});
         }
         auto& index = input.roots[rootIt->second].index;
         index.version = descriptor.type == PlaybackAssetType::Audio ? 2 : index.version;
