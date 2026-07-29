@@ -198,8 +198,8 @@ wall clock、source position、latency、queue、underrun 和 transport state。
 
 本报告完成时，阶段 1E 的完整 public component matrix、package compatibility policy 和
 shared-library 范围仍待冻结。2026-07-28 接受的 ADR 0033 随后将 matching-toolchain C++ shared
-preview 纳入阶段 1E；2026-07-29 已完成实现与 Windows/MSVC 验收，Linux shared CI 结果仍是合入
-门禁。不得把 AudioSDL 变成 Playback 核心的传递依赖。UserPreferences、AudioDeviceProfile、设备
+preview 纳入阶段 1E；2026-07-29 已完成实现及 Windows/MSVC、Windows/MinGW、Linux GCC/Clang
+验收。不得把 AudioSDL 变成 Playback 核心的传递依赖。UserPreferences、AudioDeviceProfile、设备
 身份和持久化校准留给阶段 6；正式性能预算和 profiler 接入留给阶段 9A。
 
 ## 10. 相关文档

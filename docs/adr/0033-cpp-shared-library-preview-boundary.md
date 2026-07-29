@@ -6,7 +6,8 @@ Date: 2026-07-28
 
 Implementation update: 2026-07-29. SDK API `0.3.0`, the static/shared package topology, versioned
 shared filenames, compatibility checks, symbol/import gates, and Windows/MSVC acceptance matrix are
-implemented. Linux GCC/Clang shared jobs are configured as required merge gates.
+implemented. Linux GCC/Clang shared build, install, consumer, ELF export, and clean-staging jobs have
+passed together with Windows MinGW and MSVC acceptance.
 
 ## Context
 

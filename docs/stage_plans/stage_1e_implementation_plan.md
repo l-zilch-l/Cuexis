@@ -1,6 +1,6 @@
 # 阶段 1E 实施计划：SDK 封装与外部消费闭环
 
-状态：实现完成；Windows/MSVC full/headless static/shared Debug/Release 自动化验收完成；Linux GCC/Clang shared CI 执行结果仍是合入前门禁
+状态：实现与 Windows/MSVC、Windows/MinGW、Linux GCC/Clang 自动化验收完成
 规划日期：2026-07-20  
 进展更新：2026-07-29
 最终验收前置：[阶段 1C 审查问题关闭](../stage_reports/260722-1c-review.md)、[阶段 1D 实施计划](stage_1d_implementation_plan.md)；独立的 packaging/consumer 工作允许提前实施
@@ -334,8 +334,8 @@ Studio 与完整 Player 产品化
    `6726938620466257503`。
 4. shared 文件 stem 为 `cuexis_<module>-0.3`，Debug 增加 `d` postfix；Linux 同时设置
    `SOVERSION 0.3`，consumer 只通过 CMake target 引用文件。
-5. Linux GCC shared Release 与 Clang shared Debug 已加入 CI；其远端执行结果仍是合入前证据，
-   不由 Windows 本地报告代替。
+5. Linux GCC shared Release 与 Clang shared Debug 已通过远端 CI；GCC/Clang build、install、
+   external consumer、ELF export 与 clean staging 证据已经取得。
 
 ## 14. 向阶段 2、6、11 和 12 的交接
 

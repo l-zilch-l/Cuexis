@@ -15,7 +15,7 @@
 
 随着讨论推进，待讨论内容应转化为明确决策；重大技术决策还应同步形成 ADR。
 
-当前仓库已完成阶段 0 工程闭环、阶段 1A 规范谱面与实例化闭环、阶段 1B 资源生命周期闭环、阶段 1C typed Behavior 与 headless Playback，以及阶段 1D 主音乐内容、三模式时钟、Prepared Playback、后端无关 Audio 和可选 SDL Audio adapter。阶段 1E 的 Filesystem/Memory/Host ContentProvider、PlaybackSource/FrameDigest 公共边界、adapter-disabled preset、C++20 static/shared 安装包及 add_subdirectory/find_package external consumer 已实现；Windows/MSVC 全矩阵验收完成，Linux GCC/Clang shared CI 仍是合入门禁。正式 Judgement/Replay、Studio 和稳定 C ABI 尚未完成。
+当前仓库已完成阶段 0 工程闭环、阶段 1A 规范谱面与实例化闭环、阶段 1B 资源生命周期闭环、阶段 1C typed Behavior 与 headless Playback，以及阶段 1D 主音乐内容、三模式时钟、Prepared Playback、后端无关 Audio 和可选 SDL Audio adapter。阶段 1E 的 Filesystem/Memory/Host ContentProvider、PlaybackSource/FrameDigest 公共边界、adapter-disabled preset、C++20 static/shared 安装包及 add_subdirectory/find_package external consumer 已实现，并通过 Windows/MSVC、Windows/MinGW 与 Linux GCC/Clang 验收。正式 Judgement/Replay、Studio 和稳定 C ABI 尚未完成。
 
 当前状态的权威顺序固定为：本文第 0、30、32 节记录产品与阶段状态；`docs/BUILDING.md` 记录当前可执行构建和安装入口；最新阶段审查/补充报告记录尚未关闭的问题。完成报告和早期验证报告是带日期的历史证据，若与后续审查冲突，以后续审查与本节当前状态为准，不得从历史报告反推当前验收状态。
 
@@ -2592,7 +2592,7 @@ HostClock 与 CuexisAudio 对相同 SourceClockSample/control script 产生相�
 
 #### 阶段 1E：SDK 封装与外部消费闭环
 
-状态：实现完成，Windows/MSVC 自动化验收完成；Linux GCC/Clang shared CI 是合入前门禁。实施证据见[阶段 1E 实施计划](stage_plans/stage_1e_implementation_plan.md)和[阶段 1E 完成报告](stage_reports/stage_1e_completion_report.md)。
+状态：实现与 Windows/MSVC、Windows/MinGW、Linux GCC/Clang 自动化验收完成。实施证据见[阶段 1E 实施计划](stage_plans/stage_1e_implementation_plan.md)和[阶段 1E 完成报告](stage_reports/stage_1e_completion_report.md)。
 
 ```text
 实现 cuexis_playback 的正式安装公共头边界
@@ -3072,7 +3072,7 @@ RuntimeSession 资源事务、Session/Manager owner 校验、活动 Diagnostics�
 Player 默认阶段 1B Project、--project/--chart 互斥、3 个 Renderable 和 Mesh/Material/Texture 依赖 demo
 ```
 
-阶段 1C 与阶段 1D 已完成最终验收，阶段 1E 的 `0.3.0` static/shared Playback Core preview 已实现并完成 Windows/MSVC 自动化验收；Linux shared CI 结果仍是合入门禁。后续优先级回到阶段 2 以上的 SDK 表现能力，但必须持续通过 1E external consumer 和 FrameDigest 门禁。稳定 C ABI 必须在正式 Judgement/Replay 公共契约完成后再冻结。
+阶段 1C、阶段 1D 与阶段 1E 已完成最终验收；阶段 1E 的 `0.3.0` static/shared Playback Core preview 已通过 Windows/MSVC、Windows/MinGW 和 Linux GCC/Clang 自动化矩阵。后续优先级回到阶段 2 以上的 SDK 表现能力，但必须持续通过 1E external consumer 和 FrameDigest 门禁。稳定 C ABI 必须在正式 Judgement/Replay 公共契约完成后再冻结。
 
 每次交付仍须按 `docs/BUILDING.md` 在目标环境执行 Debug 配置、构建、CTest、格式检查和 A/B 图形冒烟；Release 或后端相关改动还须验证 Release。精确结果记录在对应阶段报告，不固化在本指南中。
 

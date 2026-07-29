@@ -11,8 +11,8 @@ static C++20 install package, adapter-disabled presets, and add_subdirectory/fin
 external-consumer gates are implemented. Phase 1E implementation and the Windows/MSVC acceptance
 matrix are complete: SDK API `0.3.0` supports static and matching-toolchain C++ shared packages,
 versioned public DLLs, clean staged consumers, compatibility rejection gates, and a public
-PlaybackSource/FrameDigest boundary. Linux GCC/Clang shared jobs remain required merge gates; stable
-C ABI work remains in phase 12. Phase 1D is implemented: versioned main-music content, ChartClock/HostClock/CuexisAudio,
+PlaybackSource/FrameDigest boundary. Linux GCC/Clang shared acceptance jobs have passed; stable C ABI
+work remains in phase 12. Phase 1D is implemented: versioned main-music content, ChartClock/HostClock/CuexisAudio,
 RuntimeTimeline, Prepared Playback, `cuexis_audio`, and optional `cuexis_audio_sdl` are present.
 The phase 1C feature boundary and all R01-R21 findings from the 260722 review have closure
 evidence. `cuexis_judgement` remains planned for a later phase.

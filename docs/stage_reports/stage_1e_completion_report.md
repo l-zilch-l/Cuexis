@@ -1,6 +1,6 @@
 # Cuexis 阶段 1E 完成报告
 
-状态：实现与 Windows/MSVC 自动化验收完成；Linux GCC/Clang shared CI 结果仍是合入门禁
+状态：实现与 Windows/MSVC、Windows/MinGW、Linux GCC/Clang 自动化验收完成
 报告日期：2026-07-29
 完成版本：`26.07.18.18-1`（Debug：`26.07.18.18-1-dev`）
 SDK preview API：`0.3.0`
@@ -88,12 +88,14 @@ Windows 不支持创建符号链接的 filesystem case 按既有条件跳过。�
 vcpkg applocal 文件锁，增量重试通过；没有代码诊断被忽略。shared Release 暴露的 C4251 仅在
 明确的 matching-toolchain preview 类型周围使用局部 warning push/pop，没有全局禁用。
 
-## 6. Linux 合入门禁
+## 6. 跨平台 CI 验收
 
 `linux-quality.yml` 已增加 GCC `headless-shared-release` 与 Clang
 `headless-shared-debug`，并复用相同 build/install/external-consumer、ELF export 和 clean staging
-部署门禁。当前 Windows 环境未执行这些 Linux 作业，因此远端 CI 成功结果仍是阶段最终合入
-证据，不能由本报告中的 Windows 结果代替。
+部署门禁。GitHub Actions run `30424864440` 已通过 GCC Release、GCC shared Release、Clang
+shared Debug、Clang ASan+UBSan、clang-tidy 与 GCC coverage 全部作业。相同修复提交的 Windows
+MinGW Debug/Release run `30424864443` 与 Windows MSVC Debug/Release run `30424864492` 也已通过。
+阶段 1E 所要求的 Windows/Linux static/shared 自动化验收证据已经齐备。
 
 ## 7. 非目标与交接
 

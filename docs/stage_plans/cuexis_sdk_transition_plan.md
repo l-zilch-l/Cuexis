@@ -1,6 +1,6 @@
 # Cuexis SDK 改造与阶段路线调整方案
 
-状态：产品方向与阶段调整已接受；阶段 1C、1D 功能边界和阶段 1E Playback Core preview 已实现，Linux shared CI 仍是合入门禁；稳定 C ABI 延后到必选 Judgement/Replay 完成后的阶段 12
+状态：产品方向与阶段调整已接受；阶段 1C、1D 功能边界和阶段 1E Playback Core preview 已实现并完成跨平台验收；稳定 C ABI 延后到必选 Judgement/Replay 完成后的阶段 12
 规划日期：2026-07-20  
 当前基线：[阶段 1D 完成报告](../stage_reports/stage_1d_completion_report.md)
 相关实施计划：[阶段 1C](stage_1c_implementation_plan.md)、[阶段 1D](stage_1d_implementation_plan.md)、[阶段 1E](stage_1e_implementation_plan.md)
