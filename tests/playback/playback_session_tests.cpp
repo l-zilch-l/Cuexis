@@ -1,9 +1,11 @@
+#include <cuexis/content/content_provider.hpp>
 #include <cuexis/playback/playback_session.hpp>
 #include <cuexis/playback/playback_source.hpp>
 
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
+#include <cstddef>
 #include <filesystem>
 #include <fstream>
 #include <future>
@@ -13,6 +15,7 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <vector>
 
 namespace {
 
@@ -62,6 +65,16 @@ constexpr std::string_view chart = R"json(
     std::ostringstream contents;
     contents << input.rdbuf();
     return contents.str();
+}
+
+[[nodiscard]] auto readBytes(const std::filesystem::path& path) -> std::vector<std::byte> {
+    const auto text = readFile(path);
+    std::vector<std::byte> result;
+    result.reserve(text.size());
+    for (const unsigned char value : text) {
+        result.push_back(static_cast<std::byte>(value));
+    }
+    return result;
 }
 
 TEST_CASE("PlaybackSession drives a headless owning snapshot", "[playback][headless]") {
@@ -309,6 +322,95 @@ TEST_CASE("PlaybackSession prepares typed main music before an atomic commit",
     const auto committed = session.contentInfo();
     REQUIRE(committed.has_value());
     CHECK(committed->mode == cuexis::playback::PlaybackMode::CuexisAudio);
+}
+
+TEST_CASE("PlaybackSession rejects host provider reentry without changing the active session",
+          "[playback][content][reentry]") {
+    const auto projectRoot =
+        std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" / "projects" / "stage1d_project";
+    const auto chartText =
+        readFile(projectRoot / "assets" / "charts" / "stage1d_example.cuexis.chart.json");
+    const auto audioBytes = readBytes(projectRoot / "assets" / "audio" / "main.wav");
+
+    auto initial = cuexis::playback::PlaybackSource::fromFilesystemProject(projectRoot);
+    REQUIRE(initial.has_value());
+    cuexis::playback::PlaybackSession session;
+    REQUIRE(
+        session.load(std::move(*initial), cuexis::playback::PlaybackMode::HostClock).has_value());
+    REQUIRE(session.update({.chartTimeMs = 250.0}).has_value());
+    const auto before = session.contentInfo();
+    REQUIRE(before.has_value());
+
+    std::vector<std::string> reentryErrors;
+    auto provider = cuexis::content::HostContentProvider::create(
+        [&](const cuexis::content::ContentRequest&)
+            -> cuexis::core::Result<cuexis::content::ContentBlob> {
+            const auto record = [&reentryErrors](const auto& result) {
+                reentryErrors.emplace_back(result ? "unexpected_success"
+                                                  : std::string{result.error().code()});
+            };
+            record(session.state());
+            record(session.update({.chartTimeMs = 500.0}));
+            record(session.commit(cuexis::playback::PreparedPlayback{}));
+            record(session.unload());
+            return cuexis::content::ContentBlob{.bytes = audioBytes, .revision = 2};
+        });
+    REQUIRE(provider.has_value());
+
+    auto replacement = cuexis::playback::PlaybackSource::fromTypedProject(
+        {.sourceId = "reentry-replacement",
+         .chartJson = chartText,
+         .assets = {{.id = "audio.main",
+                     .type = cuexis::playback::PlaybackAssetType::Audio,
+                     .rootId = "main",
+                     .logicalSource = "audio/main.wav"}}},
+        std::move(*provider));
+    REQUIRE(replacement.has_value());
+
+    auto prepared = session.prepareReload(
+        std::move(*replacement),
+        {.chartTimeMs = 250.0, .simulationDeltaTimeMs = 0.0, .timeDiscontinuityId = 1},
+        cuexis::playback::ReloadPolicy::KeepChartTime);
+    REQUIRE(prepared.has_value());
+    REQUIRE(reentryErrors.size() == 4);
+    for (const auto& error : reentryErrors) {
+        CHECK(error == "playback.session.reentrant");
+    }
+
+    const auto afterState = session.state();
+    REQUIRE(afterState.has_value());
+    CHECK(*afterState == cuexis::playback::SessionState::Running);
+    const auto after = session.contentInfo();
+    REQUIRE(after.has_value());
+    CHECK(after->chartId == before->chartId);
+}
+
+TEST_CASE("Prepared commit publishes both prebuilt diagnostic snapshots",
+          "[playback][prepared][diagnostics]") {
+    constexpr std::string_view chartWithWarning = R"json(
+{
+  "format":"cuexis.chart","version":1,
+  "chartId":"019b0000-0000-7abc-8def-000000000299","metadata":{},
+  "timing":{"offsetMs":0,"defaultBpm":120,"bpmChanges":[],"stops":[]},
+  "templates":[],"behaviors":[],"objects":[],"requiredExtensions":[],
+  "extensions":{"org.example.optional":{"version":1,"data":{"x":1}}}
+}
+)json";
+
+    cuexis::playback::PlaybackSession session;
+    auto prepared =
+        session.prepareLoad(chartWithWarning, cuexis::playback::PlaybackMode::ChartClock);
+    REQUIRE(prepared.has_value());
+    REQUIRE(session.commit(std::move(*prepared)).has_value());
+
+    const auto active = session.diagnostics();
+    const auto lastOperation = session.lastOperationDiagnostics();
+    REQUIRE(active.has_value());
+    REQUIRE(lastOperation.has_value());
+    REQUIRE(active->size() == 1);
+    REQUIRE(lastOperation->size() == 1);
+    CHECK(active->items().front().code() == "chart.extension.optional_unknown");
+    CHECK(lastOperation->items().front().code() == active->items().front().code());
 }
 
 TEST_CASE("PlaybackSession rejects mode mismatch and stale prepared tokens",

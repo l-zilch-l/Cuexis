@@ -89,6 +89,12 @@ TEST_CASE("HostClock rejects source regressions within a segment", "[audio][cloc
 
 TEST_CASE("Source clock validation rejects invalid states and stopped positions",
           "[audio][clock]") {
+    REQUIRE(
+        cuexis::audio::validateSourceClockSample({-25.0, cuexis::audio::PlaybackState::Playing, 0})
+            .has_value());
+    REQUIRE(
+        cuexis::audio::validateSourceClockSample({-10.0, cuexis::audio::PlaybackState::Paused, 0})
+            .has_value());
     CHECK_FALSE(
         cuexis::audio::validateSourceClockSample({1.0, cuexis::audio::PlaybackState::Stopped, 0})
             .has_value());

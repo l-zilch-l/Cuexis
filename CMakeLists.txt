@@ -216,6 +216,7 @@ if(CUEXIS_BUILD_TESTS)
                 add_subdirectory
                 add_subdirectory_audio_sdl
                 find_package
+                find_package_core
                 find_package_audio_sdl)
             add_test(
                 NAME cuexis_external_consumer_${consumer_mode}
