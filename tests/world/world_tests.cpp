@@ -260,4 +260,27 @@ TEST_CASE("World converts callback exceptions to a stable Result error", "[world
     REQUIRE(result.error().context().size() == 1);
     CHECK(result.error().context()[0].key == "exception");
     CHECK(result.error().context()[0].value == "test callback failure");
+
+    const auto recovered = world.withRegistry([](const entt::registry&) { return true; });
+    REQUIRE(recovered.has_value());
+    CHECK(*recovered);
+}
+
+TEST_CASE("World rejects reentrant registry callbacks", "[world][callback][reentrant]") {
+    cuexis::world::World world;
+    const auto mutableReentry = world.withRegistry(
+        [&](entt::registry&) { return world.withRegistry([](entt::registry&) {}); });
+    REQUIRE_FALSE(mutableReentry.has_value());
+    CHECK(mutableReentry.error().code() == "world.callback.reentrant");
+
+    const auto& constWorld = world;
+    const auto constReentry = constWorld.withRegistry([&](const entt::registry&) {
+        return constWorld.withRegistry([](const entt::registry&) {});
+    });
+    REQUIRE_FALSE(constReentry.has_value());
+    CHECK(constReentry.error().code() == "world.callback.reentrant");
+
+    const auto recovered = world.withRegistry([](const entt::registry&) { return true; });
+    REQUIRE(recovered.has_value());
+    CHECK(*recovered);
 }

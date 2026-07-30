@@ -73,6 +73,15 @@ void copyMatrix(const core::Mat4& source, float (&destination)[16]) noexcept {
     return error;
 }
 
+void addErrorDiagnostic(core::Diagnostics& diagnostics, const core::Error& error) {
+    core::Diagnostic diagnostic{core::DiagnosticSeverity::Error, std::string{error.code()},
+                                std::string{error.message()}};
+    for (const auto& context : error.context()) {
+        diagnostic.withContext(context.key, context.value);
+    }
+    diagnostics.add(std::move(diagnostic));
+}
+
 struct SnapshotEntity final {
     chart::ChartObjectId id;
     entt::entity entity{entt::null};
@@ -456,7 +465,12 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
             committedFrame->chartTimeMs = 0.0;
         }
         if (auto updated = session->update(runtimeFrame(*committedFrame)); !updated) {
-            return core::unexpected(std::move(updated.error()));
+            addErrorDiagnostic(diagnostics, updated.error());
+            diagnostics.sortDeterministically();
+            auto error = operationError("playback.session.reload_sample_failed",
+                                        "Reload target frame sampling failed", diagnostics);
+            state_->lastOperationDiagnostics = std::move(diagnostics);
+            return core::unexpected(std::move(error));
         }
     }
 

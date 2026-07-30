@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <fstream>
 #include <future>
+#include <limits>
 #include <optional>
 #include <sstream>
 #include <stdexcept>
@@ -199,6 +200,50 @@ TEST_CASE("PlaybackSession exposes complete diagnostics for a failed reload",
     CHECK(session.lastOperationDiagnostics()->hasErrors());
     REQUIRE(session.state().has_value());
     CHECK(*session.state() == cuexis::playback::SessionState::Running);
+}
+
+TEST_CASE("PlaybackSession target-frame reload failure preserves active data and diagnostics",
+          "[playback][reload][rollback][diagnostics]") {
+    cuexis::playback::PlaybackSession session;
+    REQUIRE(session.loadChart(chart).has_value());
+    REQUIRE(session.update({.chartTimeMs = 250.0}).has_value());
+
+    const auto frameBefore = session.extractFrame({.width = 800, .height = 600});
+    const auto contentBefore = session.contentInfo();
+    const auto diagnosticsBefore = session.diagnostics();
+    REQUIRE(frameBefore.has_value());
+    REQUIRE(contentBefore.has_value());
+    REQUIRE(diagnosticsBefore.has_value());
+
+    const auto failed =
+        session.reload(chart, {.chartTimeMs = std::numeric_limits<double>::quiet_NaN()},
+                       cuexis::playback::ReloadPolicy::KeepChartTime);
+    REQUIRE_FALSE(failed.has_value());
+    CHECK(failed.error().code() == "playback.session.reload_sample_failed");
+    REQUIRE(failed.error().context().size() == 1);
+    CHECK(failed.error().context()[0].key == "diagnostic_code");
+    CHECK(failed.error().context()[0].value == "runtime.frame.chart_time_non_finite");
+
+    const auto operationDiagnostics = session.lastOperationDiagnostics();
+    REQUIRE(operationDiagnostics.has_value());
+    REQUIRE(operationDiagnostics->size() == 1);
+    CHECK(operationDiagnostics->items().front().code() == "runtime.frame.chart_time_non_finite");
+
+    const auto stateAfter = session.state();
+    const auto frameAfter = session.extractFrame({.width = 800, .height = 600});
+    const auto contentAfter = session.contentInfo();
+    const auto diagnosticsAfter = session.diagnostics();
+    REQUIRE(stateAfter.has_value());
+    CHECK(*stateAfter == cuexis::playback::SessionState::Running);
+    REQUIRE(frameAfter.has_value());
+    CHECK(frameAfter->objects[0].worldMatrix[12] ==
+          Catch::Approx(frameBefore->objects[0].worldMatrix[12]));
+    CHECK(frameAfter->camera.fovY == Catch::Approx(frameBefore->camera.fovY));
+    REQUIRE(contentAfter.has_value());
+    CHECK(contentAfter->chartId == contentBefore->chartId);
+    CHECK(contentAfter->mode == contentBefore->mode);
+    REQUIRE(diagnosticsAfter.has_value());
+    CHECK(diagnosticsAfter->size() == diagnosticsBefore->size());
 }
 
 TEST_CASE("PlaybackSession instances are independent and validate lifecycle errors",
