@@ -16,7 +16,7 @@ env:
 jobs:
   headless-build-and-test:
     name: ${{ matrix.name }}
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -45,15 +45,11 @@ jobs:
           ref: ${{ env.VCPKG_COMMIT }}
           path: .vcpkg
 
-      - name: Verify preinstalled build tools
-        run: |
-          for tool in ninja g++ clang++ clang-tidy gcovr autoconf automake libtoolize; do
-            command -v "$tool" >/dev/null || {
-              echo "Required self-hosted runner tool is unavailable: $tool" >&2
-              exit 1
-            }
-          done
-          test -f /usr/include/ltdl.h
+      - name: Install build tools
+        run: >-
+          sudo apt-get update && sudo apt-get install -y
+          ninja-build clang autoconf autoconf-archive automake libtool libltdl-dev
+          python3-venv
 
       - name: Bootstrap pinned vcpkg
         run: |
@@ -83,7 +79,7 @@ jobs:
 
   clang-tidy:
     name: clang-tidy
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
 
     steps:
       - name: Check out repository
@@ -96,14 +92,8 @@ jobs:
           ref: ${{ env.VCPKG_COMMIT }}
           path: .vcpkg
 
-      - name: Verify preinstalled build tools
-        run: |
-          for tool in ninja clang++ clang-tidy; do
-            command -v "$tool" >/dev/null || {
-              echo "Required self-hosted runner tool is unavailable: $tool" >&2
-              exit 1
-            }
-          done
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y ninja-build clang clang-tidy
 
       - name: Bootstrap pinned vcpkg
         run: |
@@ -121,7 +111,7 @@ jobs:
 
   coverage:
     name: GCC Coverage
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
 
     steps:
       - name: Check out repository
@@ -134,14 +124,8 @@ jobs:
           ref: ${{ env.VCPKG_COMMIT }}
           path: .vcpkg
 
-      - name: Verify preinstalled build tools
-        run: |
-          for tool in ninja g++ gcovr; do
-            command -v "$tool" >/dev/null || {
-              echo "Required self-hosted runner tool is unavailable: $tool" >&2
-              exit 1
-            }
-          done
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y ninja-build gcovr
 
       - name: Bootstrap pinned vcpkg
         run: |
