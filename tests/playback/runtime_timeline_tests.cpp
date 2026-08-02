@@ -60,4 +60,20 @@ TEST_CASE("ChartClock produces the shared source-time contract", "[playback][tim
     CHECK(seek->positionMs == Catch::Approx(75.0));
     CHECK(seek->state == cuexis::audio::PlaybackState::Paused);
     CHECK(seek->discontinuityId == 1);
+
+    cuexis::playback::ChartClock preRollClock{0.0};
+    const auto preRoll = preRollClock.sample(-25.0);
+    REQUIRE(preRoll.has_value());
+    CHECK(preRoll->positionMs == Catch::Approx(-25.0));
+
+    cuexis::playback::ChartClock negativeOffsetClock{-50.0};
+    const auto negativeOffset = negativeOffsetClock.sample(25.0);
+    REQUIRE(negativeOffset.has_value());
+    CHECK(negativeOffset->positionMs == Catch::Approx(-25.0));
+
+    auto negativeOffsetTimeline = cuexis::playback::RuntimeTimeline::create(-50.0);
+    REQUIRE(negativeOffsetTimeline.has_value());
+    const auto restoredChartTime = negativeOffsetTimeline->advance(*negativeOffset);
+    REQUIRE(restoredChartTime.has_value());
+    CHECK(restoredChartTime->chartTimeMs == Catch::Approx(25.0));
 }

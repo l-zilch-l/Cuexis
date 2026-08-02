@@ -73,4 +73,19 @@ TEST_CASE("Perspective matrix validates its complete public input contract", "[c
     const auto badPlanes = cuexis::core::makePerspective(1.0, 1.0, 1.0, 1.0);
     REQUIRE_FALSE(badPlanes.has_value());
     CHECK(badPlanes.error().code() == "core.math.perspective_planes_invalid");
+
+    const auto fovUnderflow =
+        cuexis::core::makePerspective(std::numeric_limits<double>::denorm_min(), 1.0, 0.1, 1000.0);
+    REQUIRE_FALSE(fovUnderflow.has_value());
+    CHECK(fovUnderflow.error().code() == "core.math.perspective_not_representable");
+
+    const auto aspectUnderflow = cuexis::core::makePerspective(
+        std::numbers::pi / 2.0, std::numeric_limits<double>::max(), 0.1, 1000.0);
+    REQUIRE_FALSE(aspectUnderflow.has_value());
+    CHECK(aspectUnderflow.error().code() == "core.math.perspective_not_representable");
+
+    const auto depthUnderflow = cuexis::core::makePerspective(
+        std::numbers::pi / 2.0, 1.0, std::numeric_limits<double>::denorm_min(), 1.0);
+    REQUIRE_FALSE(depthUnderflow.has_value());
+    CHECK(depthUnderflow.error().code() == "core.math.perspective_not_representable");
 }

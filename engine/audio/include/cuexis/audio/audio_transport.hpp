@@ -20,6 +20,8 @@ enum class PlaybackState {
 };
 
 struct SourceClockSample final {
+    // Abstract source-domain time. Finite negative values represent pre-roll; physical audio
+    // transports validate their seek and frame positions separately.
     double positionMs{};
     PlaybackState state{PlaybackState::Stopped};
     std::uint64_t discontinuityId{};

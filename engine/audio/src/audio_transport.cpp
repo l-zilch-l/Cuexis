@@ -10,10 +10,9 @@ IAudioClock::~IAudioClock() = default;
 IAudioTransport::~IAudioTransport() = default;
 
 auto validateSourceClockSample(const SourceClockSample& sample) -> core::Result<void> {
-    if (!std::isfinite(sample.positionMs) || sample.positionMs < 0.0) {
+    if (!std::isfinite(sample.positionMs)) {
         return core::unexpected(
-            core::Error{"audio.clock.position_invalid",
-                        "Source clock position must be finite and non-negative"});
+            core::Error{"audio.clock.position_invalid", "Source clock position must be finite"});
     }
     switch (sample.state) {
     case PlaybackState::Stopped:

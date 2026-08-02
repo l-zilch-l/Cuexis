@@ -30,6 +30,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -72,6 +73,15 @@ void copyMatrix(const core::Mat4& source, float (&destination)[16]) noexcept {
     return error;
 }
 
+void addErrorDiagnostic(core::Diagnostics& diagnostics, const core::Error& error) {
+    core::Diagnostic diagnostic{core::DiagnosticSeverity::Error, std::string{error.code()},
+                                std::string{error.message()}};
+    for (const auto& context : error.context()) {
+        diagnostic.withContext(context.key, context.value);
+    }
+    diagnostics.add(std::move(diagnostic));
+}
+
 struct SnapshotEntity final {
     chart::ChartObjectId id;
     entt::entity entity{entt::null};
@@ -87,6 +97,29 @@ struct SnapshotLayout final {
                        "PlaybackSession belongs to another thread"}
         .withContext("operation", std::string{operation});
 }
+
+[[nodiscard]] auto reentryError(std::string_view operation) -> core::Error {
+    return core::Error{"playback.session.reentrant",
+                       "PlaybackSession cannot be re-entered while an operation is active"}
+        .withContext("operation", std::string{operation});
+}
+
+class SessionOperation final {
+  public:
+    explicit SessionOperation(bool& active) noexcept : active_(active) {
+        active_ = true;
+    }
+
+    ~SessionOperation() noexcept {
+        active_ = false;
+    }
+
+    SessionOperation(const SessionOperation&) = delete;
+    auto operator=(const SessionOperation&) -> SessionOperation& = delete;
+
+  private:
+    bool& active_;
+};
 
 [[nodiscard]] auto chartInfoFor(const chart::ChartRuntime& chartRuntime, std::size_t resourceCount)
     -> ChartInfo {
@@ -170,6 +203,7 @@ struct PlaybackSession::State final {
     std::uint64_t sessionToken{allocatePlaybackSessionToken()};
     std::uint64_t generation{1};
     SessionState sessionState{SessionState::Empty};
+    bool operationActive{};
 };
 
 struct PreparedPlayback::State final {
@@ -187,9 +221,13 @@ struct PreparedPlayback::State final {
     PlaybackContentInfo contentInfo;
     std::optional<assets::AudioSourceLease> audioSourceLease;
     core::Diagnostics diagnostics;
+    core::Diagnostics lastOperationDiagnostics;
     std::optional<RuntimeFrame> targetFrame;
     SessionState committedState{SessionState::Ready};
 };
+
+static_assert(std::is_nothrow_move_assignable_v<core::Diagnostics>);
+static_assert(std::is_nothrow_move_assignable_v<PlaybackContentInfo>);
 
 PreparedPlayback::PreparedPlayback() noexcept = default;
 
@@ -249,11 +287,20 @@ auto PlaybackSession::state() const -> core::Result<SessionState> {
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("state"));
     }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("state"));
+    }
     return state_->sessionState;
 }
 
 auto PlaybackSession::prepareLoad(std::string_view jsonText, PlaybackMode mode)
     -> core::Result<PreparedPlayback> {
+    if (!state_->ownerThread.isCurrent()) {
+        return core::unexpected(ownerError("prepare_load"));
+    }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("prepare_load"));
+    }
     auto source = PlaybackSource::fromChartText(std::string{jsonText});
     if (!source) {
         return core::unexpected(std::move(source.error()));
@@ -263,6 +310,12 @@ auto PlaybackSession::prepareLoad(std::string_view jsonText, PlaybackMode mode)
 
 auto PlaybackSession::prepareLoad(PlaybackSource&& source, PlaybackMode mode)
     -> core::Result<PreparedPlayback> {
+    if (!state_->ownerThread.isCurrent()) {
+        return core::unexpected(ownerError("prepare_load"));
+    }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("prepare_load"));
+    }
     return prepare(std::move(source), mode, nullptr, ReloadPolicy::KeepChartTime, false);
 }
 
@@ -271,6 +324,9 @@ auto PlaybackSession::prepareReload(std::string_view replacementJson,
     -> core::Result<PreparedPlayback> {
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("prepare_reload"));
+    }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("prepare_reload"));
     }
     if (!state_->activeMode) {
         return core::unexpected(
@@ -294,6 +350,9 @@ auto PlaybackSession::prepareReload(PlaybackSource&& replacement, const RuntimeF
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("prepare_reload"));
     }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("prepare_reload"));
+    }
     if (!state_->activeMode) {
         return core::unexpected(
             core::Error{"playback.session.not_ready", "PlaybackSession has no active mode"});
@@ -307,6 +366,10 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError(replacement ? "prepare_reload" : "prepare_load"));
     }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError(replacement ? "prepare_reload" : "prepare_load"));
+    }
+    SessionOperation operation{state_->operationActive};
     if ((!replacement && state_->sessionState != SessionState::Empty) ||
         (replacement && state_->sessionState != SessionState::Ready &&
          state_->sessionState != SessionState::Running)) {
@@ -402,7 +465,12 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
             committedFrame->chartTimeMs = 0.0;
         }
         if (auto updated = session->update(runtimeFrame(*committedFrame)); !updated) {
-            return core::unexpected(std::move(updated.error()));
+            addErrorDiagnostic(diagnostics, updated.error());
+            diagnostics.sortDeterministically();
+            auto error = operationError("playback.session.reload_sample_failed",
+                                        "Reload target frame sampling failed", diagnostics);
+            state_->lastOperationDiagnostics = std::move(diagnostics);
+            return core::unexpected(std::move(error));
         }
     }
 
@@ -428,6 +496,7 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
         chartRuntime.mainMusic ? std::optional<std::string>{chartRuntime.mainMusic->value}
                                : std::nullopt};
     prepared->audioSourceLease = std::move(audioSourceLease);
+    prepared->lastOperationDiagnostics = diagnostics;
     prepared->diagnostics = std::move(diagnostics);
     prepared->targetFrame = committedFrame;
     prepared->committedState = replacement ? state_->sessionState : SessionState::Ready;
@@ -438,6 +507,10 @@ auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> 
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("commit"));
     }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("commit"));
+    }
+    SessionOperation operation{state_->operationActive};
     if (!prepared.state_ || !prepared.state_->ownerThread.isCurrent()) {
         return core::unexpected(core::Error{
             "playback.prepared.invalid", "PreparedPlayback is empty or belongs to another thread"});
@@ -468,7 +541,7 @@ auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> 
     state_->activeMode = state_->activeContentInfo->mode;
     state_->lastFrame = candidate.targetFrame;
     state_->diagnostics = std::move(candidate.diagnostics);
-    state_->lastOperationDiagnostics = state_->diagnostics;
+    state_->lastOperationDiagnostics = std::move(candidate.lastOperationDiagnostics);
     state_->sessionState = candidate.committedState;
     ++state_->generation;
     if (state_->generation == 0) {
@@ -479,6 +552,12 @@ auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> 
 }
 
 auto PlaybackSession::loadChart(std::string_view jsonText) -> core::Result<void> {
+    if (!state_->ownerThread.isCurrent()) {
+        return core::unexpected(ownerError("load_chart"));
+    }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("load_chart"));
+    }
     auto prepared = prepareLoad(jsonText, PlaybackMode::ChartClock);
     if (!prepared) {
         return core::unexpected(std::move(prepared.error()));
@@ -487,6 +566,12 @@ auto PlaybackSession::loadChart(std::string_view jsonText) -> core::Result<void>
 }
 
 auto PlaybackSession::load(PlaybackSource&& source, PlaybackMode mode) -> core::Result<void> {
+    if (!state_->ownerThread.isCurrent()) {
+        return core::unexpected(ownerError("load"));
+    }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("load"));
+    }
     auto prepared = prepareLoad(std::move(source), mode);
     if (!prepared) {
         return core::unexpected(std::move(prepared.error()));
@@ -498,6 +583,10 @@ auto PlaybackSession::update(const RuntimeFrame& frame) -> core::Result<void> {
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("update"));
     }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("update"));
+    }
+    SessionOperation operation{state_->operationActive};
     if (state_->sessionState != SessionState::Ready &&
         state_->sessionState != SessionState::Running) {
         return core::unexpected(core::Error{"playback.session.not_ready",
@@ -518,6 +607,12 @@ auto PlaybackSession::update(const RuntimeFrame& frame) -> core::Result<void> {
 
 auto PlaybackSession::extractFrame(const FrameViewport& viewport) const
     -> core::Result<FrameSnapshot> {
+    if (!state_->ownerThread.isCurrent()) {
+        return core::unexpected(ownerError("extract_frame"));
+    }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("extract_frame"));
+    }
     FrameSnapshot snapshot;
     if (auto extracted = extractFrame(viewport, snapshot); !extracted) {
         return core::unexpected(std::move(extracted.error()));
@@ -530,6 +625,10 @@ auto PlaybackSession::extractFrame(const FrameViewport& viewport, FrameSnapshot&
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("extract_frame"));
     }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("extract_frame"));
+    }
+    SessionOperation operation{state_->operationActive};
     if (state_->sessionState == SessionState::Empty || !state_->runtimeSession ||
         !state_->activeChartInfo.has_value()) {
         return core::unexpected(
@@ -623,6 +722,12 @@ auto PlaybackSession::extractFrame(const FrameViewport& viewport, FrameSnapshot&
 
 auto PlaybackSession::reload(std::string_view replacementJson, const RuntimeFrame& targetFrame,
                              ReloadPolicy policy) -> core::Result<void> {
+    if (!state_->ownerThread.isCurrent()) {
+        return core::unexpected(ownerError("reload"));
+    }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("reload"));
+    }
     auto prepared = prepareReload(replacementJson, targetFrame, policy);
     if (!prepared) {
         return core::unexpected(std::move(prepared.error()));
@@ -632,6 +737,12 @@ auto PlaybackSession::reload(std::string_view replacementJson, const RuntimeFram
 
 auto PlaybackSession::reload(PlaybackSource&& replacement, const RuntimeFrame& targetFrame,
                              ReloadPolicy policy) -> core::Result<void> {
+    if (!state_->ownerThread.isCurrent()) {
+        return core::unexpected(ownerError("reload"));
+    }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("reload"));
+    }
     auto prepared = prepareReload(std::move(replacement), targetFrame, policy);
     if (!prepared) {
         return core::unexpected(std::move(prepared.error()));
@@ -643,6 +754,10 @@ auto PlaybackSession::unload() -> core::Result<void> {
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("unload"));
     }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("unload"));
+    }
+    SessionOperation operation{state_->operationActive};
     if (state_->sessionState == SessionState::Empty) {
         return {};
     }
@@ -674,6 +789,10 @@ auto PlaybackSession::chartInfo() const -> core::Result<ChartInfo> {
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("chart_info"));
     }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("chart_info"));
+    }
+    SessionOperation operation{state_->operationActive};
     if (!state_->runtimeSession || state_->runtimeSession->empty() ||
         !state_->activeChartInfo.has_value()) {
         return core::unexpected(
@@ -688,6 +807,10 @@ auto PlaybackSession::contentInfo() const -> core::Result<PlaybackContentInfo> {
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("content_info"));
     }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("content_info"));
+    }
+    SessionOperation operation{state_->operationActive};
     if (!state_->activeContentInfo) {
         return core::unexpected(
             core::Error{"playback.session.empty", "PlaybackSession has no committed content"});
@@ -699,6 +822,10 @@ auto PlaybackSession::diagnostics() const -> core::Result<core::Diagnostics> {
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("diagnostics"));
     }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("diagnostics"));
+    }
+    SessionOperation operation{state_->operationActive};
     return state_->diagnostics;
 }
 
@@ -706,6 +833,10 @@ auto PlaybackSession::lastOperationDiagnostics() const -> core::Result<core::Dia
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("last_operation_diagnostics"));
     }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("last_operation_diagnostics"));
+    }
+    SessionOperation operation{state_->operationActive};
     return state_->lastOperationDiagnostics;
 }
 

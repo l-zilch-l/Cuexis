@@ -584,4 +584,31 @@ TEST_CASE("RuntimeSession converts World callback exceptions to a stable Result 
     REQUIRE(result.error().context().size() == 1);
     CHECK(result.error().context()[0].key == "exception");
     CHECK(result.error().context()[0].value == "test callback failure");
+
+    const auto recovered = session.withWorld([](const cuexis::world::World&) { return true; });
+    REQUIRE(recovered.has_value());
+    CHECK(*recovered);
+}
+
+TEST_CASE("RuntimeSession rejects reentrant World callbacks", "[runtime][callback][reentrant]") {
+    cuexis::runtime::RuntimeSession session;
+    auto prepared = session.prepare(singleObjectRuntime("object.callback.reentrant"));
+    REQUIRE(prepared.hasValue());
+    REQUIRE(session.commit(std::move(*prepared.prepared)).has_value());
+
+    const auto mutableReentry = session.withWorld(
+        [&](cuexis::world::World&) { return session.withWorld([](cuexis::world::World&) {}); });
+    REQUIRE_FALSE(mutableReentry.has_value());
+    CHECK(mutableReentry.error().code() == "runtime.session.callback_reentrant");
+
+    const auto& constSession = session;
+    const auto constReentry = constSession.withWorld([&](const cuexis::world::World&) {
+        return constSession.withWorld([](const cuexis::world::World&) {});
+    });
+    REQUIRE_FALSE(constReentry.has_value());
+    CHECK(constReentry.error().code() == "runtime.session.callback_reentrant");
+
+    const auto recovered = session.withWorld([](const cuexis::world::World&) { return true; });
+    REQUIRE(recovered.has_value());
+    CHECK(*recovered);
 }

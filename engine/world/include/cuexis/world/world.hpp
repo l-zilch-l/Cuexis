@@ -21,6 +21,23 @@
 namespace cuexis::world {
 
 class World final {
+  private:
+    class CallbackScope final {
+      public:
+        explicit CallbackScope(bool& active) noexcept : active_(active) {
+            active_ = true;
+        }
+        ~CallbackScope() noexcept {
+            active_ = false;
+        }
+
+        CallbackScope(const CallbackScope&) = delete;
+        CallbackScope& operator=(const CallbackScope&) = delete;
+
+      private:
+        bool& active_;
+    };
+
   public:
     World() = default;
     ~World();
@@ -43,6 +60,11 @@ class World final {
         static_assert(!std::is_pointer_v<std::remove_cv_t<ReturnType>>,
                       "World registry callbacks must not return pointers");
 
+        if (callbackActive_) {
+            return core::unexpected(core::Error{"world.callback.reentrant",
+                                                "World registry callback must not be reentrant"});
+        }
+        CallbackScope callbackScope{callbackActive_};
         return core::invokeGuarded("world.callback.exception",
                                    "World registry callback raised an exception",
                                    std::forward<Callback>(callback), registry_);
@@ -59,6 +81,11 @@ class World final {
         static_assert(!std::is_pointer_v<std::remove_cv_t<ReturnType>>,
                       "World registry callbacks must not return pointers");
 
+        if (callbackActive_) {
+            return core::unexpected(core::Error{"world.callback.reentrant",
+                                                "World registry callback must not be reentrant"});
+        }
+        CallbackScope callbackScope{callbackActive_};
         return core::invokeGuarded("world.callback.exception",
                                    "World registry callback raised an exception",
                                    std::forward<Callback>(callback), registry_);
@@ -85,6 +112,7 @@ class World final {
     std::vector<bool> transformLocalDirty_;
     std::vector<bool> transformDirty_;
     bool transformCacheValid_{false};
+    mutable bool callbackActive_{false};
     core::ThreadChecker threadChecker_{};
 };
 

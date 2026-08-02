@@ -27,6 +27,7 @@ auto runtimeChart() {
     cuexis::chart::ChartDocument document{
         .chartId = {"runtime.behavior"},
         .timing = {.offsetMs = 0.0, .defaultBpm = 120.0},
+        .camera = cuexis::chart::CameraData{},
         .behaviors = {{.id = {"move"},
                        .type = "behavior.transform.keyframe",
                        .version = 1,

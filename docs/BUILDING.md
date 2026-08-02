@@ -206,6 +206,9 @@ find_package(Cuexis 0.3 CONFIG REQUIRED COMPONENTS Playback Content Audio)
 target_link_libraries(my_host PRIVATE Cuexis::Playback Cuexis::Content Cuexis::Audio)
 ```
 
+需要直接使用 `Result`、`Error` 或 `Diagnostics` 的 consumer 可以单独请求支持组件
+`Cuexis::Core`；Playback、Content 和 Audio 会传递依赖它。
+
 需要 SDL 音频 adapter 的包必须以启用 `CUEXIS_BUILD_AUDIO_SDL_ADAPTER=ON` 的配置构建和安装，
 并由 consumer 显式请求组件：
 
@@ -223,7 +226,7 @@ target_link_libraries(my_host PRIVATE Cuexis::AudioSDL)
 
 安装树包含 `CuexisTargets.cmake`、`CuexisConfig.cmake`、同 minor 版本兼容文件、生成的
 `cuexis/version.hpp`、`LICENSE`、`NOTICE`、第三方 notices 和实际无头依赖版权文本。CTest 中的
-四个 `cuexis_external_consumer_*` 门禁分别验证 add_subdirectory/find_package 的基础包和
+五个 `cuexis_external_consumer_*` 门禁分别验证 add_subdirectory/find_package 的基础包、Core 和
 AudioSDL 组件。基础 find_package 门禁显式禁用 SDL3 查找；安装包门禁同时扫描全部已安装公共头
 是否为纯 ASCII，并校验基础许可证清单及 AudioSDL 安装的 SDL3 copyright：
 

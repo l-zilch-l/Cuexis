@@ -91,6 +91,23 @@ struct RuntimeSessionReloadResult final {
 };
 
 class RuntimeSession final {
+  private:
+    class CallbackScope final {
+      public:
+        explicit CallbackScope(bool& active) noexcept : active_(active) {
+            active_ = true;
+        }
+        ~CallbackScope() noexcept {
+            active_ = false;
+        }
+
+        CallbackScope(const CallbackScope&) = delete;
+        CallbackScope& operator=(const CallbackScope&) = delete;
+
+      private:
+        bool& active_;
+    };
+
   public:
     RuntimeSession() noexcept;
     explicit RuntimeSession(assets::ResourceManager& resourceManager) noexcept;
@@ -134,9 +151,15 @@ class RuntimeSession final {
             return core::unexpected(
                 core::Error{"runtime.session.empty", "RuntimeSession has no committed World"});
         }
+        if (callbackActive_) {
+            return core::unexpected(
+                core::Error{"runtime.session.callback_reentrant",
+                            "RuntimeSession World callback must not be reentrant"});
+        }
 
         // The callback runs synchronously on the owner thread and is never retained. It must not
         // re-enter this RuntimeSession or retain World references beyond the call.
+        CallbackScope callbackScope{callbackActive_};
         return core::invokeGuarded("runtime.session.callback_exception",
                                    "RuntimeSession World callback raised an exception",
                                    std::forward<Callback>(callback), *world_);
@@ -159,7 +182,13 @@ class RuntimeSession final {
             return core::unexpected(
                 core::Error{"runtime.session.empty", "RuntimeSession has no committed World"});
         }
+        if (callbackActive_) {
+            return core::unexpected(
+                core::Error{"runtime.session.callback_reentrant",
+                            "RuntimeSession World callback must not be reentrant"});
+        }
 
+        CallbackScope callbackScope{callbackActive_};
         return core::invokeGuarded("runtime.session.callback_exception",
                                    "RuntimeSession World callback raised an exception",
                                    std::forward<Callback>(callback), *world_);
@@ -180,6 +209,7 @@ class RuntimeSession final {
     // Declared before World so member destruction releases World first.
     std::optional<assets::ResourceScope> resourceScope_;
     std::unique_ptr<world::World> world_;
+    mutable bool callbackActive_{false};
     core::ThreadChecker threadChecker_{};
     std::optional<RuntimeFrame> lastFrame_;
 };

@@ -189,16 +189,41 @@ Result<Mat4> makePerspective(double fovYRadians, double aspectRatio, double near
                                       "Perspective planes must satisfy 0 < near < far"});
     }
 
-    const auto tanHalfFov = static_cast<float>(std::tan(fovYRadians * 0.5));
+    const double tanHalfFov = std::tan(fovYRadians * 0.5);
+    const double xScale = 1.0 / (tanHalfFov * aspectRatio);
+    const double yScale = 1.0 / tanHalfFov;
+    const double depthScale = (farPlane + nearPlane) / (nearPlane - farPlane);
+    const double depthTranslation = (2.0 * farPlane * nearPlane) / (nearPlane - farPlane);
+    const auto isFloatRepresentable = [](double value) noexcept {
+        constexpr double floatMaximum = static_cast<double>(std::numeric_limits<float>::max());
+        if (!std::isfinite(value) || std::abs(value) > floatMaximum) {
+            return false;
+        }
+        const float converted = static_cast<float>(value);
+        return value == 0.0 || converted != 0.0F;
+    };
+    if (!isFloatRepresentable(xScale) || !isFloatRepresentable(yScale) ||
+        !isFloatRepresentable(depthScale) || !isFloatRepresentable(depthTranslation)) {
+        return unexpected(
+            core::Error{"core.math.perspective_not_representable",
+                        "Perspective matrix cannot be represented with finite non-zero floats"});
+    }
+
+    const float tanHalfFovFloat = static_cast<float>(tanHalfFov);
     Mat4 result{};
     result.values.fill(0.0F);
-    result.element(0, 0) = 1.0F / (tanHalfFov * static_cast<float>(aspectRatio));
-    result.element(1, 1) = 1.0F / tanHalfFov;
-    result.element(2, 2) = static_cast<float>((farPlane + nearPlane) / (nearPlane - farPlane));
+    result.element(0, 0) = 1.0F / (tanHalfFovFloat * static_cast<float>(aspectRatio));
+    result.element(1, 1) = 1.0F / tanHalfFovFloat;
+    result.element(2, 2) = static_cast<float>(depthScale);
     result.element(2, 3) = -1.0F;
-    result.element(3, 2) =
-        static_cast<float>((2.0 * farPlane * nearPlane) / (nearPlane - farPlane));
+    result.element(3, 2) = static_cast<float>(depthTranslation);
     result.element(3, 3) = 0.0F;
+    if (result.element(0, 0) == 0.0F || result.element(1, 1) == 0.0F ||
+        result.element(2, 2) == 0.0F || result.element(3, 2) == 0.0F) {
+        return unexpected(
+            core::Error{"core.math.perspective_not_representable",
+                        "Perspective matrix cannot be represented with finite non-zero floats"});
+    }
     if (!isFinite(result)) {
         return unexpected(core::Error{"core.math.perspective_result_non_finite",
                                       "Perspective matrix is non-finite"});

@@ -17,6 +17,7 @@ set(supported_consumer_modes
     add_subdirectory
     add_subdirectory_audio_sdl
     find_package
+    find_package_core
     find_package_audio_sdl
 )
 if(NOT CUEXIS_CONSUMER_MODE IN_LIST supported_consumer_modes)
@@ -61,6 +62,8 @@ elseif(CUEXIS_CONSUMER_MODE STREQUAL "add_subdirectory_audio_sdl")
     set(consumer_work_id as)
 elseif(CUEXIS_CONSUMER_MODE STREQUAL "find_package")
     set(consumer_work_id p)
+elseif(CUEXIS_CONSUMER_MODE STREQUAL "find_package_core")
+    set(consumer_work_id pc)
 else()
     set(consumer_work_id ps)
 endif()
@@ -299,6 +302,9 @@ else()
         "${package_build_dir}/vcpkg_installed/${CUEXIS_VCPKG_TARGET_TRIPLET}")
     if(CUEXIS_CONSUMER_MODE STREQUAL "find_package")
         set(consumer_source_dir "${CUEXIS_SOURCE_DIR}/tests/external/find_package")
+        set(component_arguments -DCMAKE_DISABLE_FIND_PACKAGE_SDL3=TRUE)
+    elseif(CUEXIS_CONSUMER_MODE STREQUAL "find_package_core")
+        set(consumer_source_dir "${CUEXIS_SOURCE_DIR}/tests/external/find_package_core")
         set(component_arguments -DCMAKE_DISABLE_FIND_PACKAGE_SDL3=TRUE)
     else()
         set(consumer_source_dir

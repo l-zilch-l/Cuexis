@@ -80,14 +80,16 @@ if(Cuexis_LIBRARY_TYPE STREQUAL "SHARED")
         return()
     endif()
 endif()
+set(Cuexis_Core_FOUND TRUE)
 set(Cuexis_Playback_FOUND TRUE)
 set(Cuexis_Content_FOUND TRUE)
 set(Cuexis_Audio_FOUND TRUE)
 set(Cuexis_AudioSDL_FOUND FALSE)
 
 foreach(component IN LISTS Cuexis_FIND_COMPONENTS)
-    if(NOT component STREQUAL "Playback" AND NOT component STREQUAL "Content" AND
-       NOT component STREQUAL "Audio" AND NOT component STREQUAL "AudioSDL")
+    if(NOT component STREQUAL "Core" AND NOT component STREQUAL "Playback" AND
+       NOT component STREQUAL "Content" AND NOT component STREQUAL "Audio" AND
+       NOT component STREQUAL "AudioSDL")
         set(Cuexis_${component}_FOUND FALSE)
         set(Cuexis_NOT_FOUND_MESSAGE "Unsupported Cuexis component: ${component}")
     endif()
