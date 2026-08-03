@@ -471,7 +471,9 @@ shared consumer 升级 SDK 后重新编译，且使用匹配的工具链、运�
 
 ### 12.4 阶段 2：Cuexis Behavior 表达能力
 
-保留通用 Curve、TimingMap、BehaviorClip、Material/Visibility Track 和调试能力，但目标改为“表达 Cuexis 谱面表现”，不扩张为任意游戏脚本系统。
+采用与 Tempo Event 同构的 Behavior Event（格式决策见 `docs/adr/0034-chart-v3-tempo-and-behavior-events.md`），保留 TimingMap、BehaviorClip、Material/Visibility 表现和调试能力，但目标改为“表达 Cuexis 谱面表现”，不扩张为任意游戏脚本系统。
+
+Chart v3 的 Behavior Event 序列化语义不再以持续 Keyframe Track 为核心。每个属性由有序事件驱动：事件外保持当前基准或前一事件终值，事件开始时应用 `startValue`，事件区间内按 Beat 插值，结束后保持 `endValue`。事件使用 `startBeat`、`durationBeats`、`startValue`、`endValue`、`startSlope` 和 `endSlope`；零持续事件和负 Beat 事件遵循 TimingMap 的边界规则。运行时可以将事件预编译为内部 Segment，但不得把上一帧结果作为求值基线。
 
 新增要求：
 

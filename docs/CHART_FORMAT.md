@@ -1,8 +1,8 @@
-# Cuexis Chart Format v1/v2
+# Cuexis Chart Format v1/v2/v3
 
-状态：阶段 1C 的方案 A v1 与阶段 1D 的 v2 主音乐扩展均已实现
+状态：v1/v2 已实现；v3 的 Tempo Event 与 Behavior Event 格式已接受，代码和 Schema 待实现。格式级决策见 `docs/adr/0034-chart-v3-tempo-and-behavior-events.md`
 
-更新日期：2026-07-27
+更新日期：2026-08-03
 
 ## 1. 范围
 
@@ -72,6 +72,67 @@ Reader 必须先按显式 `version` 路由，再使用对应字段表。v1 不�
 v1；loader 不自动迁移或写回。`cuexis.chart.simple` 仍只有 v1。只有 Chart 文件、没有 Project
 和 Asset Index 的 `--chart` 入口遇到带主音乐的 v2 Chart 时必须明确失败。
 
+## 2b. v3 Tempo Event
+
+v3 保留 v2 的全部字段和主音乐语义，但将 `timing.bpmChanges` 替换为 `timing.tempoEvents`。
+v3 不接受 `bpmChanges`；Reader 必须按显式顶层版本路由，不能把旧字段自动解释为新事件。
+
+```json
+"timing": {
+  "offsetMs": 0.0,
+  "defaultBpm": 120.0,
+  "tempoEvents": [
+    {
+      "startBeat": { "numerator": 16, "denominator": 1 },
+      "durationBeats": { "numerator": 4, "denominator": 1 },
+      "startBpm": 120.0,
+      "endBpm": 180.0,
+      "startSlope": 0.0,
+      "endSlope": 0.0
+    }
+  ],
+  "stops": []
+}
+```
+
+`defaultBpm` 和所有 `startBpm`/`endBpm` 必须位于 `[1.0, 65536.0]`。BPM 在事件区间内直接插值；不对 milliseconds-per-beat 插值。归一化进度和 BPM 值为：
+
+```text
+u = (beat - startBeat) / durationBeats
+h(u) = (-2 + startSlope + endSlope) * u^3
+     + ( 3 - 2 * startSlope - endSlope) * u^2
+     + startSlope * u
+bpm(beat) = startBpm + (endBpm - startBpm) * h(u)
+```
+
+`startSlope` 和 `endSlope` 是归一化进度曲线的端点斜率，必须有限、非负，并满足 `startSlope + endSlope <= 3`。`durationBeats` 允许为零，但此时起止 BPM 必须相同且两个斜率都为零。非零事件的有效区间为 `[startBeat, startBeat + durationBeats)`；无后继事件时，结束边界及其后保持 `endBpm`，相邻事件在同一边界由后一个事件接管。同一 Beat 的多个 Tempo Event 是错误。事件输入顺序无语义，按 `startBeat` 排序。负 Beat 事件参与 Beat 0 的实际 BPM 基准。
+
+`stops` 继续使用 v2 的 `beat` 与 `durationMs` 结构。Stop 区间内 Beat 固定，Tempo Event 和 Behavior Event 的进度均不推进；Stop 结束后从该 Beat 继续使用有效 BPM。
+
+v3 的 `timing` 必须包含 `offsetMs`、`defaultBpm`、`tempoEvents` 和 `stops`，不得同时包含 `bpmChanges`。v1/v2 到 v3 必须通过显式迁移，迁移工具必须保留原始数据和诊断信息。
+
+v3 顶层最小骨架如下；`audio` 仍为可选字段，其结构沿用第 2a 节：
+
+```json
+{
+  "format": "cuexis.chart",
+  "version": 3,
+  "chartId": "019b0000-0000-7abc-8def-000000000001",
+  "metadata": {},
+  "timing": {
+    "offsetMs": 0.0,
+    "defaultBpm": 120.0,
+    "tempoEvents": [],
+    "stops": []
+  },
+  "templates": [],
+  "behaviors": [],
+  "objects": [],
+  "requiredExtensions": [],
+  "extensions": {}
+}
+```
+
 ## 3. Beat
 
 方案 A 使用规范化有理数表示拍数：
@@ -95,7 +156,7 @@ denominator 是大于 0 的整数
 
 方案 B 的十进制 beat 必须根据 JSON 原始十进制文本转换，不能先转成二进制浮点再猜测分数。
 
-## 4. Timing
+## 4. Timing（v1/v2）
 
 ```json
 {
@@ -108,7 +169,7 @@ denominator 是大于 0 的整数
 
 `defaultBpm` 必须为有限正数。阶段 1A 已实现 `offsetMs` 与 `defaultBpm`；`bpmChanges` 和 `stops` 当前必须为空，非空时产生不支持诊断并拒绝加载，不得静默忽略。
 
-BPM Change、Stop、offset 符号和逆映射的正式语义见 `docs/TIMING_MODEL.md`，计划在阶段 2 启用。
+BPM Change、Stop、offset 符号和逆映射的 v1/v2 历史语义见 `docs/TIMING_MODEL.md`。v3 启用新的 `tempoEvents`，正式字段和边界规则见第 2b 节。
 
 Timing 不包含 `speedChanges`。Entity 移动速度由 Behavior 表达，未来整曲播放倍率由 AudioTransport 与 Timeline 表达。
 
@@ -145,7 +206,7 @@ Timing 不包含 `speedChanges`。Entity 移动速度由 Behavior 表达，未�
 
 Pitch/Yaw/Roll 按 Tait–Bryan (ZYX) 顺序合成旋转：Roll → Pitch → Yaw。负 Pitch 使相机向下看，正 Yaw 向右转。`aspectRatio` 不存入谱面，由运行时根据实际视口实时计算。
 
-预留事件结构：
+v1/v2 的历史事件结构仅用于兼容迁移，不能写入 v3：
 
 ```json
 {
@@ -358,7 +419,79 @@ v1 允许的 Property 为 `transform.position.x/y/z`、`transform.rotation`、`t
 
 空 Track、重复 Beat、同一 Behavior 重复 Property、未知字段/easing、非有限值、非规范 Quaternion 和越界 FOV 都是错误。Simple v1 仍只提供标量位置/FOV Track，并在 Behavior、Track、Key 子树对未知字段严格报错；canonical 与 Simple 的其余未知字段继续按各自规范处理。
 
-默认安全预算为每 Behavior 6 条 Track、每 Track 65536 个 Key、每 Chart 262144 个 Behavior Key、每帧 600000 个 Property Write 和 1024 条诊断。通用 Curve、循环、Material/Visibility/ParentBinding Track 和新 easing 留在阶段 2，不改变 v1 采样结果。
+v1 默认安全预算为每 Behavior 6 条 Track、每 Track 65536 个 Key；v3 默认安全预算为每 Behavior 65536 个 Event、每 Chart 262144 个 Event；两者共用每帧 600000 个 Property Write 和 1024 条诊断上限。`behavior.transform.keyframe` version 1 保持兼容；阶段 2 已选择 Behavior Event 作为新 Behavior 的谱面层表达，具体字段、版本和迁移规则见 `docs/stage_plans/stage_2_implementation_plan.md`。
+
+### 8a. v3 Behavior Event
+
+v3 使用 `behavior.event` version 1。一个 Behavior 包含多个属性事件；事件按 `startBeat` 排序，数组顺序没有运行语义。v3 的 Behavior 使用 Chart 全局 Beat，不在对象绑定中重复声明时间偏移。
+
+```json
+{
+  "id": "behavior.note.intro",
+  "type": "behavior.event",
+  "version": 1,
+  "events": [
+    {
+      "property": "transform.position.x",
+      "groupId": "intro.move",
+      "startBeat": { "numerator": 16, "denominator": 1 },
+      "durationBeats": { "numerator": 4, "denominator": 1 },
+      "startValue": 0.0,
+      "endValue": 10.0,
+      "startSlope": 0.0,
+      "endSlope": 0.0
+    },
+    {
+      "property": "transform.position.y",
+      "groupId": "intro.move",
+      "startBeat": { "numerator": 16, "denominator": 1 },
+      "durationBeats": { "numerator": 4, "denominator": 1 },
+      "startValue": 2.0,
+      "endValue": 5.0,
+      "startSlope": 0.0,
+      "endSlope": 0.0
+    }
+  ]
+}
+```
+
+连续事件字段：
+
+```text
+property       属性 ID
+groupId        可选的同组 ID；同组事件必须具有相同 startBeat 和 durationBeats
+startBeat      事件开始 Beat，可以为负数
+durationBeats  非负持续拍数
+startValue     事件开始值
+endValue       事件结束值
+startSlope     归一化进度的起始斜率
+endSlope       归一化进度的结束斜率
+```
+
+事件外保持对象初始基准或前一事件终值；事件开始时应用 `startValue`，允许它与当前基准不同；非零事件的有效区间为 `[startBeat, startBeat + durationBeats)`，区间内使用上述 Hermite 进度 `h(u)` 插值；标量/Vec3 使用分量插值，Quaternion 使用 shortest-path slerp，`h(u)` 只作为 slerp 进度。无后继事件时，结束边界及其后保持 `endValue`，相邻事件在同一边界由后一个事件接管，因此允许跳变。零持续事件在精确 `startBeat` 处应用其值，并作为后续基准直到下一个事件。同一属性的事件不得重叠，事件输入顺序无语义。
+
+`durationBeats = 0` 是合法的瞬时事件，但必须满足 `startValue == endValue`、`startSlope == 0` 和 `endSlope == 0`。标量和 Vec3 按分量插值；Quaternion 使用 shortest-path slerp，Hermite 结果只作为 slerp 进度；FOV 必须位于 `(0, 179)`。所有数值必须有限，Quaternion 必须可归一化。`startSlope`/`endSlope` 必须有限、非负，并满足 `startSlope + endSlope <= 3`。
+
+`groupId` 用于声明多个属性在同一事件边界一起生效；同组事件的开始 Beat 和持续时间必须完全相同。缺少 `groupId` 的事件彼此独立。任何属性冲突、重叠、类型不匹配或同组字段不一致都是格式错误。
+
+v3 首版连续属性白名单为 `transform.position.x/y/z`、`transform.rotation`、`transform.scale` 和 `camera.fovY`。Visibility、Material 和 ParentBinding 属于离散属性，必须使用后续定义的 Step Event；在 Step Event 格式冻结前，v3 不得用连续事件或数值插值近似它们。
+
+### 8b. v3 Behavior 绑定
+
+v3 暂时沿用 v1 的对象绑定结构，事件使用 Chart 全局 Beat：
+
+```json
+"cuexis.behavior": {
+  "version": 1,
+  "behavior": { "domain": "behavior", "id": "behavior.note.intro" }
+}
+```
+
+一个对象最多绑定一个 Behavior。缺少目标属性组件、相机组件或行为引用时，Chart 在 prepare 阶段失败。局部 Beat、循环和多 Clip 混合不属于 v3 首版格式；需要这些能力时必须引入新的 Behavior binding version，不得改变 v3 的全局 Beat 语义。
+
+### 8c. v1 到 v3 迁移
+
+`behavior.transform.keyframe` version 1 不在 v3 中隐式解释为 Event。迁移工具按每个 Track 的相邻 Key 生成连续事件：前一 Key 为 `startValue`，后一 Key 为 `endValue`，Beat 差值为 `durationBeats`，原 easing 映射为等价的端点斜率或受控兼容曲线。首 Key 之前的值成为对象初始基准，末 Key 之后保持末值。无法保持等价结果的 Track 必须报告迁移错误，不得静默近似。
 
 ## 9. Extensions
 
@@ -409,7 +542,7 @@ JSON 输入大小、嵌套深度、单字符串大小、重复键与语法检查
 -> ChartRuntime 编译
 ```
 
-仓库提供 `schemas/cuexis.chart.v1.schema.json`、`cuexis_json_support` 的 JSON Schema adapter 及独立测试，但当前 `ChartLoader` / `CanonicalChartLoader` 尚未调用 adapter。loader 的现行结构权威是 typed Reader，随后由 Chart 代码完成语义校验；因此不能把一次加载描述为已执行 JSON Schema Validator。Schema artifact 必须随格式代码同步，未来接入 loader 时仍不能替代引用、层级、资源和属性冲突等 Cuexis 语义校验。
+仓库提供 `schemas/cuexis.chart.v1.schema.json` 和 `schemas/cuexis.chart.v2.schema.json`、`cuexis_json_support` 的 JSON Schema adapter 及独立测试；`schemas/cuexis.chart.v3.schema.json` 需随 v3 实现新增。当前 `ChartLoader` / `CanonicalChartLoader` 尚未调用 adapter。loader 的现行结构权威是 typed Reader，随后由 Chart 代码完成语义校验；因此不能把一次加载描述为已执行 JSON Schema Validator。Schema artifact 必须随格式代码同步，未来接入 loader 时仍不能替代引用、层级、资源和属性冲突等 Cuexis 语义校验。
 
 诊断至少包含：
 

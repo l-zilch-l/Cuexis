@@ -6,7 +6,7 @@
 
 ## 背景
 
-Cuexis 谱面需要可配置的相机视角来定义播放期间的观察方式。相机的初始姿态（位置、角度、FOV）应在谱面数据中声明，而播放期间的相机事件（位置移动、旋转、FOV 变化）应通过 Behavior Track 驱动。同时，相机数据需要在 SDK 的 FrameSnapshot 中传递，使宿主能够以独立于渲染后端的方式获取相机参数。
+Cuexis 谱面需要可配置的相机视角来定义播放期间的观察方式。相机的初始姿态（位置、角度、FOV）应在谱面数据中声明，而播放期间的相机事件（位置移动、旋转、FOV 变化）应通过 Behavior 驱动。阶段 1C 使用 Behavior Keyframe，Chart v3 使用 Behavior Event。同时，相机数据需要在 SDK 的 FrameSnapshot 中传递，使宿主能够以独立于渲染后端的方式获取相机参数。
 
 ## 决策
 
@@ -98,7 +98,7 @@ struct CameraComponent final {
 
 ### 6. Behavior 事件驱动
 
-相机对象可通过 `cuexis.behavior` 绑定 Behavior Track，驱动以下属性（阶段 1C 实现）：
+相机对象可通过 `cuexis.behavior` 绑定 Behavior。阶段 1C 使用 `behavior.transform.keyframe` v1；Chart v3 使用 `behavior.event`，两者都驱动以下属性：
 
 | 属性路径 | 说明 |
 |---|---|
@@ -116,7 +116,7 @@ struct CameraComponent final {
 
 相机仅作为顶层 `camera` 字段——不支持对象相机、多相机或 Behavior 事件驱动。
 
-拒绝理由：无法通过 Behavior Track 驱动相机事件，无法支持多相机或相机切换。
+拒绝理由：无法通过 Behavior 驱动相机事件，无法支持多相机或相机切换。
 
 ### 相机对象使用专用相机实体类型（拒绝）
 
@@ -145,5 +145,5 @@ struct CameraComponent final {
 
 - 多相机选择/切换策略尚未冻结（当前取"第一个相机对象"）
 - 正交投影未实现，保留为 `type` 枚举的扩展点
-- FOV 动画依赖阶段 1C BehaviorSystem，当前 FOV 为静态值
+- FOV 动画依赖 BehaviorSystem；v1 使用 Keyframe，v3 使用 Behavior Event
 - 相机 Shader 参数传递路径（CameraComponent → uniform）将在阶段 3/5 细化

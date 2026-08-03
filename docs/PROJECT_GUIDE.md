@@ -38,6 +38,7 @@ DEPENDENCY_POLICY.md Apache-2.0 与第三方依赖政策
 CODE_POLICY.md    编码、Result/Error、所有权与线程规则
 PROJECT_REVIEW.md 当前文档各部分的合理性与风险评估
 stage_plans/cuexis_sdk_transition_plan.md SDK 产品边界、阶段迁移与完成标准
+stage_plans/stage_2_implementation_plan.md Behavior Event、TimingMap 与阶段 2 实施门禁
 ```
 
 当专项文档建立后，本文只保留架构结论和链接，避免同一规则在多个文件中重复维护。
@@ -948,11 +949,11 @@ ChartDocument
 
 `format` 用于识别格式族，`version` 只表示该格式族自身的版本。加载器不得通过文件中出现了哪些字段来猜测格式。
 
-类型使用稳定字符串 ID，不直接绑定 C++ 类名：
+类型使用稳定字符串 ID，不直接绑定 C++ 类名。v1/v2 的旧示例仍可用于兼容格式；v3 使用 `behavior.event`：
 
 ```json
 {
-  "type": "behavior.transform.keyframe",
+  "type": "behavior.event",
   "version": 1
 }
 ```
@@ -979,10 +980,10 @@ ChartDocument
 
 `ChartDocument` 中的拍数必须通过独立的时间映射层转换为运行时毫秒。不得假设拍数与毫秒之间是固定比例，也不得把拍数直接传给只接受运行时时间的 System。
 
-首阶段不实现完整的节奏变化逻辑，但数据结构和调用边界必须为空实现预留：
+v1/v2 不实现完整的节奏变化逻辑；v3 使用已定义的 Tempo Event。数据结构和调用边界必须保持独立：
 
 ```text
-BPM 变化
+BPM/Tempo Event
 停顿
 谱面偏移
 ```
@@ -994,7 +995,7 @@ beat -> chartTimeMs
 chartTimeMs -> beat
 ```
 
-阶段 1A 支持有限 `offsetMs` 与单一有限正 `defaultBpm`，并要求 BPM Changes 和 Stops 为空；这些约束不能固化到 Behavior、Animation、Render 或 Gameplay 模块中。BPM Change 从事件 Beat 后的区间生效；Stop 在指定 Beat 冻结 Beat，结束后使用该 Beat 生效的 BPM。offset 符号、逆映射和边界规则见 `docs/TIMING_MODEL.md`。
+阶段 1A 支持有限 `offsetMs` 与单一有限正 `defaultBpm`，并要求 BPM Changes 和 Stops 为空；这些约束不能固化到 Behavior、Animation、Render 或 Gameplay 模块中。v3 Tempo Event 在其 Beat 区间内直接插值 BPM；Stop 在指定 Beat 冻结 Beat，结束后使用该 Beat 生效的 BPM。offset 符号、逆映射和边界规则见 `docs/TIMING_MODEL.md`。
 
 TimingMap 不定义 `speedChanges`。音符和其他 Entity 的移动速度属于 Behavior；如果未来支持整首音乐的播放倍率，则由 AudioTransport 与 Timeline 协作处理。二者都不能作为 TimingMap 中的隐式速度事件。
 
@@ -1179,18 +1180,18 @@ Quaternion 在文件中固定为 `[x, y, z, w]`。Transform 的 position 使用�
 
 模板 v1 只描述单个 Object 原型，不生成层级子树。解析顺序固定为父模板、当前模板 patch、实例 overrides，完成展开后再执行 Schema 和语义校验。
 
-完整字段、引用、Timing、Template、扩展注册和诊断规则见 `docs/CHART_FORMAT.md`。该文件是方案 A v1 的格式规范；对应 `schemas/cuexis.chart.v1.schema.json` 与 `schemas/cuexis.chart.simple.v1.schema.json` 已建立并由 JSON Support adapter 的独立测试覆盖。当前 loader 的结构和语义权威仍是 typed Reader 与 Chart 校验代码，Schema artifact 必须随格式变更保持同步。
+完整字段、引用、Timing、Template、扩展注册和诊断规则见 `docs/CHART_FORMAT.md`。该文件是方案 A v1/v2/v3 的格式规范；v3 的 Behavior Event 与 Tempo Event 目前已完成设计、尚待代码和 Schema 实现。对应 Schema artifact 必须随格式变更保持同步，当前 loader 的结构和语义权威仍是 typed Reader 与 Chart 校验代码。
 
 ## 14. 行为系统
 
-行为系统用于谱面时间驱动。所有公开时间参数使用毫秒，并在名称中包含 `Ms`。
+行为系统用于谱面时间驱动。谱面序列化使用 Beat；Playback Runtime 的目标时间仍使用毫秒，并在名称中包含 `Ms`。TimingMap 负责两者之间的确定性映射。
 
 核心概念：
 
 ```text
-BehaviorClip
-KeyframeTrack
-Curve
+BehaviorEvent
+BehaviorClip（后续版本）
+HermiteProgress
 Sampler
 PropertyBinding
 ```
@@ -1226,15 +1227,16 @@ class RotateBehavior;
 class ScaleBehavior;
 ```
 
-谱面文档使用 beat，编译后的 Runtime Track 使用 `chartTimeMs`：
+谱面文档使用 Beat 事件，编译后的 Runtime Segment 使用 `chartTimeMs`：
 
 ```text
-track: transform.position.x
-keys:
-  - beat: { numerator: 0, denominator: 1 }
-    value: 0.0
-  - beat: { numerator: 1, denominator: 1 }
-    value: 10.0
+event: transform.position.x
+startBeat: { numerator: 0, denominator: 1 }
+durationBeats: { numerator: 1, denominator: 1 }
+startValue: 0.0
+endValue: 10.0
+startSlope: 0.0
+endSlope: 0.0
 ```
 
 行为系统必须满足：
@@ -1247,7 +1249,7 @@ keys:
 可用于编辑器时间轴
 ```
 
-Behavior Track 对目标属性输出绝对值，作为该帧 Animation 混合前的基础状态。同一 Behavior 求值层中，对同一 Entity 的同一属性存在多个没有明确合并规则的写入时，谱面编译失败，不能依赖 Track 的数组顺序或 ECS 遍历顺序决定结果。
+Behavior Event 对目标属性输出绝对值，作为该帧 Animation 混合前的基础状态。同一 Behavior 求值层中，对同一 Entity 的同一属性存在多个没有明确合并规则的写入时，谱面编译失败，不能依赖 Event 数组顺序或 ECS 遍历顺序决定结果。
 
 ## 15. 动画系统
 
@@ -2166,8 +2168,8 @@ cuexis_external_consumer_tests
 优先测试：
 
 ```text
-Curve 采样
-KeyframeTrack 插值
+Behavior Event/Hermite 采样
+Tempo Event/BPM 积分与逆映射
 ChartDocument 解析
 统一 Object/Component Schema、Beat 有理数和引用域校验
 方案 B ID、Beat、Template 合并和确定性 UUIDv5 转换
@@ -2622,14 +2624,12 @@ static/shared consumer 在干净部署目录中运行，且不泄漏内部符号
 任务：
 
 ```text
-在阶段 1C specialized Transform Track 基础上实现通用 Curve<T>
-实现 BPM Changes、Stops 与 TimingMap 逆映射
-把阶段 1C 固定 Track 泛化为版本化 KeyframeTrack 与 BehaviorClip
-扩展 Transform 属性轨道、通用 Curve、新 easing 和循环，不改变 1C version 1 采样结果
-实现 Material 参数轨道
-实现 Visibility 轨道
-实现缓动函数
-实现循环模式
+在阶段 1C specialized Transform Track 基础上实现版本化 Behavior Event
+实现 Tempo Events、Stops 与 TimingMap 逆映射
+把阶段 1C 固定 Track 保留为 v1 兼容输入，并通过显式迁移转换为 Behavior Event 与 BehaviorClip
+扩展连续 Transform/Camera 事件、Hermite 进度插值、新 easing 和循环，不改变 1C version 1 采样结果
+定义多属性同步的事件组语义
+为 Material、Visibility 和 ParentBinding 定义受限 Step Event
 实现父子绑定行为
 Behavior 可调参数继续作为版本化 Chart/BehaviorClip 数据，不扩张 ProjectConfig
 实现行为调试面板

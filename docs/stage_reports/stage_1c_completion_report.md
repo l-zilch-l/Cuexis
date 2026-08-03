@@ -217,7 +217,7 @@ GPU smoke 不进入托管 CI。工作流文件已经落地，但本次会话未�
 ```text
 阶段 1D：HostClock/CuexisAudio 双模式、AudioTransport 和 SDL 音频 adapter
 阶段 1E：ContentProvider 注入、install/export/find_package、仓库外 consumer 门禁
-阶段 2：通用 Curve、更多 Property、循环和 BehaviorClip 组合
+阶段 2：Behavior Event、更多 Property、循环和 BehaviorClip 组合（旧完成报告中的历史简称；现行格式以 `docs/stage_plans/stage_2_implementation_plan.md` 为准）
 阶段 11：Judgement、InputEvent、ReplayData 和确定性判定契约
 ```
 

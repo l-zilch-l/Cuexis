@@ -235,7 +235,7 @@ Transform 数值必须有限。Importer 不能根据运行平台改变旋转顺�
 
 阶段 1C importer 校验 Track 的 `property`、`keys`、有限标量 `value`，并支持 `linear`、`in_cubic`、`out_cubic`、`in_out_cubic` easing；它把字符串 Beat 精确转换成方案 A 有理数 Beat。Behavior、Track、Key 子树的未知字段是错误；其他 Simple 未知字段仍产生 warning 并保留。Material Track、循环和复杂 PropertyBinding 不加入方案 B。
 
-所有 key 的 Beat 使用第 5 节的字符串语法。Importer 输出方案 A Behavior；Canonical Compiler 将 Beat 排序并编译为 `chartTimeMs`，PlaybackSession 可直接按绝对时间采样位置和相机 FOV。Simple v1 不扩展为 Quaternion/Vec3 Track，通用 Curve、循环和新 Property 留在阶段 2。
+所有 key 的 Beat 使用第 5 节的字符串语法。Importer 输出方案 A v1 Behavior；Canonical Compiler 将 Beat 排序并编译为 `chartTimeMs`，PlaybackSession 可直接按绝对时间采样位置和相机 FOV。Simple v1 不扩展为 Quaternion/Vec3 Track，也不直接提供 v3 Behavior Event；需要使用 v3 时必须经过显式的 Canonical Chart 迁移。
 
 ## 9. Template
 

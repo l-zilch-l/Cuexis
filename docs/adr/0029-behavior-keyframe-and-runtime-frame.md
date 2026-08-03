@@ -94,4 +94,4 @@ Player Clock -> PlaybackSession::update
 
 ## 影响与后续
 
-阶段 2 可以在新 Behavior version 上泛化 Curve、循环和更多 Property，但不得静默改变 v1 的采样结果。阶段 1D 只替换 RuntimeFrame 的时间来源；阶段 1E 再完成 ContentProvider 注入、安装导出和仓库外 consumer 门禁。稳定 C ABI、Judgement/Replay 和资源 Renderable 扩展不由本 ADR 提前冻结。
+阶段 2 在新 Behavior version 上采用 Behavior Event，事件使用 Chart Beat、端点值和端点斜率表达属性变化；运行时可以编译为内部 Segment。循环、离散属性和局部 BehaviorClip 组合仍由阶段 2 专项计划冻结。不得静默改变 v1 的采样结果。阶段 1D 只替换 RuntimeFrame 的时间来源；阶段 1E 再完成 ContentProvider 注入、安装导出和仓库外 consumer 门禁。稳定 C ABI、Judgement/Replay 和资源 Renderable 扩展不由本 ADR 提前冻结。

@@ -16,7 +16,7 @@ Cuexis 的底层对象统一为 Entity。如果规范谱面格式继续为 Note�
 
 Object ID 使用 UUIDv7，parent 作为 Object 结构字段，Component 编译前先建立完整 ID 和层级图。数组顺序不具有运行语义。
 
-方案 A 的 Beat 使用规范化有理数。谱面 Behavior Key 保存 Beat，Chart 编译器将其转换为 Runtime 的 `chartTimeMs`。
+方案 A v1 的 Behavior Key 使用规范化有理数；v3 的 Behavior Event 继续使用同一 Beat 表示。Chart 编译器将谱面 Beat 通过 TimingMap 转换为 Runtime 的 `chartTimeMs`。
 
 Template v1 只描述单 Object 原型，使用单继承和 JSON Patch `add`、`remove`、`replace`。v1 不支持 Template 子树。
 
