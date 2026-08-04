@@ -1,8 +1,8 @@
 # Cuexis TimingMap 规范
 
-状态：v1/v2 历史语义已实现；v3 Tempo Event 语义已接受，代码待实现
+状态：v1/v2 固定 BPM/offset 已实现且非空旧事件仍被拒绝；v3 Tempo Event/Stop 语义已接受，代码待实现
 
-更新日期：2026-08-03
+更新日期：2026-08-04
 
 ## 时间域
 
@@ -46,7 +46,7 @@ HostClock 与 CuexisAudio 模式对相同的规范化 SourceClockSample/control 
 
 ## BPM
 
-v1/v2 使用 `bpmChanges` 的历史格式；v3 使用直接描述 BPM 曲线的 `tempoEvents`：
+v1/v2 结构保留 `bpmChanges`/`stops` 字段，但当前只接受空数组，不定义非空旧事件的运行语义。v3 使用直接描述 BPM 曲线的 `tempoEvents`：
 
 ```json
 {
@@ -59,9 +59,9 @@ v1/v2 使用 `bpmChanges` 的历史格式；v3 使用直接描述 BPM 曲线的 
 }
 ```
 
-`defaultBpm`、`startBpm` 和 `endBpm` 必须位于 `[1.0, 65536.0]`。BPM 在事件区间内直接插值，不对 milliseconds-per-beat 插值。归一化进度使用端点斜率的三次 Hermite 函数：`h(u) = (-2 + m0 + m1)u^3 + (3 - 2m0 - m1)u^2 + m0u`，其中 `m0=startSlope`、`m1=endSlope`。端点斜率必须有限、非负，并满足 `m0 + m1 <= 3`。`durationBeats = 0` 合法，但起止 BPM 必须相同且两个斜率都为零。
+`defaultBpm`、`startBpm` 和 `endBpm` 必须位于 `[1.0, 65536.0]`，`durationBeats` 必须非负。BPM 在事件区间内直接插值，不对 milliseconds-per-beat 插值。归一化进度使用端点斜率的三次 Hermite 函数：`h(u) = (-2 + m0 + m1)u^3 + (3 - 2m0 - m1)u^2 + m0u`，其中 `m0=startSlope`、`m1=endSlope`。端点斜率必须有限、非负，并满足 `m0 + m1 <= 3`。`durationBeats = 0` 合法，但起止 BPM 必须相同且两个斜率都为零。
 
-非零事件的有效区间为 `[startBeat, startBeat + durationBeats)`。事件开始时应用 `startBpm`；结束后保持 `endBpm`，相邻事件在同一边界由后一个事件接管。同一 Beat 的多个事件是错误。事件输入顺序无语义，编译器按 Beat 排序并预计算分段累计时间。负 Beat 事件参与 Beat 0 的实际 BPM 基准。
+最早事件前使用 `defaultBpm`。非零事件的有效区间为 `[startBeat, startBeat + durationBeats)`；事件开始时应用 `startBpm`，允许它与此前有效 BPM 不同并产生跳变；结束后保持 `endBpm`，相邻事件在同一边界由后一个事件接管。零持续事件也可以把此前基准跳变为其相等的起止值。Tempo Event 不得重叠，同一 Beat 的多个事件也是错误。零持续事件在冲突检测中占用其 Beat，不能位于非零事件内部；前一事件结束边界允许零事件，但同 Beat 不能再开始另一事件。事件输入顺序无语义，编译器按 Beat 排序并预计算分段累计时间。负 Beat 事件参与 Beat 0 的实际 BPM 基准。
 
 ## Stop
 
@@ -83,10 +83,10 @@ Stop duration 必须为有限正数。同一 Beat 多个 Stop 是错误。
 ```text
 beat = Stop Beat
 inStop = true
-stopProgress = [0, 1]
+stopProgress = [0, 1)
 ```
 
-因此 Behavior 在 Stop 中保持相同 Beat 采样，不发生隐式移动。
+Stop 使用半开时间区间；精确结束边界返回同一 Beat、`inStop=false`，不返回 progress 1。因此 Behavior 在 Stop 中保持相同 Beat 采样，不发生隐式移动。
 
 ## 数值与确定性
 

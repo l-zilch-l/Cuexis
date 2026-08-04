@@ -155,7 +155,7 @@ Player 冒烟测试需要交互式桌面和支持 OpenGL 3.3 Core 的 GPU，因�
 非静音连续播放、Pause 静音、Resume/Seek/Stop/Reload 行为，并确认 sidecar 中
 `droppedRows = 0`、`truncated = false`；物理设备听感与时钟精度不能由 dummy CTest 代替。
 
-阶段 1A 方案 A/B 仍可通过 `--chart` 作为无资源回归入口；方案 B 示例命令为：
+当前阶段 1A 方案 A/B 仍可通过 `--chart` 作为无资源回归入口；方案 B 命令仅用于在阶段 2A 删除前识别和验证待迁移的历史输入，不会输出 canonical 文件，也不得用于新谱面：
 
 ```powershell
 .\out\build\debug\bin\cuexis_player.exe --smoke-test --chart .\out\build\debug\bin\assets\charts\stage1a_example.cuexis.chart.simple.json
@@ -165,7 +165,7 @@ Player 冒烟测试需要交互式桌面和支持 OpenGL 3.3 Core 的 GPU，因�
 `audio.mainMusic` 引用。Player 在 Window/GL/Audio device 创建前完成 Project、Index、Chart、
 Source 和 WAV preflight，再按内容选择 ChartClock 或 CuexisAudio；已选模式失败时不会静默回退。
 构建时会先清理目标 demo project 目录再复制，避免遗留已删除资产。Release 或后端相关改动还应
-完成 Release build/test、1C 三帧 GPU smoke、1D 物理音频 smoke，以及阶段 1A A/B Chart 回归；
+完成 Release build/test、1C 三帧 GPU smoke、1D 物理音频 smoke，以及当前阶段 1A A/B Chart 回归；阶段 2A 移除方案 B 后只保留 canonical Chart 回归；
 算法单元测试不得依赖窗口、GPU、物理音频设备或墙钟。
 
 ## 常见错误

@@ -26,7 +26,7 @@ PROJECT_GUIDE.md  项目目标、模块边界、已确认规则和阶段计划
 docs/adr/          已接受或拟议的重大技术决策及其背景
 BUILDING.md       Windows/MSVC 标准构建、测试和排错流程
 CHART_FORMAT.md   方案 A 规范谱面格式与最小 Schema
-SIMPLE_CHART_FORMAT.md 方案 B 手写谱面格式与导入规则
+SIMPLE_CHART_FORMAT.md 已停止演进、将在 2A 移除的历史格式说明
 VERSIONING.md     版本来源、更新和一致性校验规范
 RUNTIME_SESSION.md RuntimeSession 事务生命周期与错误恢复
 TIMING_MODEL.md   BPM、Stop、offset 与时间域语义
@@ -999,37 +999,31 @@ chartTimeMs -> beat
 
 TimingMap 不定义 `speedChanges`。音符和其他 Entity 的移动速度属于 Behavior；如果未来支持整首音乐的播放倍率，则由 AudioTransport 与 Timeline 协作处理。二者都不能作为 TimingMap 中的隐式速度事件。
 
-### 13.2 规范格式与简易导入格式
+### 13.2 唯一规范谱面格式
 
-Cuexis 维护两种用途不同的谱面文件格式：
-
-```text
-cuexis.chart         方案 A，唯一规范格式
-cuexis.chart.simple  方案 B，早期手写谱面的受限兼容导入格式
-```
-
-二者不是平级运行格式。`ChartLoader` 只根据显式 `format` 路由；引擎内存中只有方案 A 的标准 `ChartDocument` 模型，方案 B 必须先通过 `SimpleChartImporter` 确定性转换，之后才能进入相同的 typed Reader、语义校验、编译和运行流程：
+Cuexis 只继续维护一种谱面格式：
 
 ```text
-JSON -> ChartLoader
-  -> CanonicalChartLoader（cuexis.chart）
-  -> SimpleChartImporter -> CanonicalChartLoader（cuexis.chart.simple）
-  -> ChartDocument
-
-ChartDocument
-  -> validate
-  -> compile
-  -> ChartRuntime
-  -> RuntimeSession
+cuexis.chart  唯一规范、保存、迁移和运行输入格式
 ```
 
-Runtime、World、Behavior 和 Render 不得包含识别或兼容方案 B 的分支。方案 B 的全部兼容逻辑只能存在于导入器和相关诊断工具中。
+阶段 1 曾实现 `cuexis.chart.simple`（方案 B）作为早期手写导入格式。ADR 0035 已决定在阶段 2A 删除 Loader 路由、`SimpleChartImporter`、Simple Schema、测试和 Player fixture，不设计 Simple v2。阶段 2A 后的加载链固定为：
 
-阶段 1A 的 loader 使用 `cuexis_json_support` 的 Cuexis-owned JSON Value、typed `Reader` 和 Chart 语义校验；诊断携带以 `$` 为根的稳定字段路径。仓库同时提供版本化 JSON Schema artifact 和独立的 Schema adapter/test，但当前 Chart loader 尚未调用该 adapter，因此文档和测试不得把加载成功表述为“已经执行 JSON Schema Validator”。字段路径用于定位输入，不承诺严格等同于某一外部 JSON Pointer 标准的完整语法。
+```text
+cuexis.chart JSON
+-> CanonicalChartLoader
+-> typed ChartDocument
+-> validate
+-> compile
+-> ChartRuntime
+-> RuntimeSession / PlaybackSession
+```
 
-#### 13.2.1 方案 A：规范格式
+Chart loader 使用 `cuexis_json_support` 的 Cuexis-owned JSON Value、typed `Reader` 和 Chart 语义校验；诊断携带以 `$` 为根的稳定字段路径。仓库同时提供版本化 JSON Schema artifact 和独立的 Schema adapter/test，但当前 loader 尚未调用该 adapter，因此文档和测试不得把加载成功表述为“已经执行 JSON Schema Validator”。字段路径用于定位输入，不承诺严格等同于某一外部 JSON Pointer 标准的完整语法。
 
-原生创建和保存的方案 A 使用 UUIDv7 作为长期稳定的 `ChartObjectId`。ID 创建后不因对象重命名、属性修改、层级移动或类型调整而改变；复制对象时必须生成新 ID。方案 B 导入结果使用以 chartId 为命名空间的确定性 UUIDv5，Canonical loader 因此接受原生 UUIDv7 和导入 UUIDv5；二者都不编码对象类型、名称或层级路径。
+#### 13.2.1 Canonical Chart
+
+原生创建和保存的 canonical Chart 使用 UUIDv7 作为长期稳定的 `ChartObjectId`。ID 创建后不因对象重命名、属性修改、层级移动或类型调整而改变；复制对象时必须生成新 ID。阶段 1 已迁移为 canonical 的历史文件可能包含确定性 UUIDv5；它们按 canonical 版本兼容政策处理，不要求保留 Simple Parser。
 
 引用使用结构化格式，并显式声明引用域：
 
@@ -1046,7 +1040,7 @@ Runtime、World、Behavior 和 Render 不得包含识别或兼容方案 B 的分
 }
 ```
 
-方案 A v1 支持的引用域：
+canonical v1 支持的引用域：
 
 ```text
 object
@@ -1057,7 +1051,7 @@ behavior
 
 `external-chart` 作为未来保留域，v1 遇到时报告 `UnsupportedFeature`，不加载其他 Chart 中的 Object 或 Template。
 
-方案 A 的模板初版只允许单继承，通过结构化 `extends` 引用父模板，并使用 JSON Patch 风格的 `add`、`remove`、`replace` 表达覆盖。禁止模板继承环。模板在 Chart 编译阶段完全展开，ChartRuntime 不处理继承。
+canonical 模板初版只允许单继承，通过结构化 `extends` 引用父模板，并使用 JSON Patch 风格的 `add`、`remove`、`replace` 表达覆盖。禁止模板继承环。模板在 Chart 编译阶段完全展开，ChartRuntime 不处理继承。
 
 未知字段采用严格核心字段和显式扩展区的组合策略：
 
@@ -1069,65 +1063,30 @@ extensions 中未知的命名空间：原样保留并警告
 高于当前支持版本的规范文件：不得进入 Runtime
 ```
 
-Studio 保存方案 A 时必须原样保留自己不能识别的扩展数据。
+Studio 保存 canonical Chart 时必须原样保留自己不能识别的扩展数据。
 
 持久化与运行时标识必须分离：
 
 ```text
-ChartObjectId：原生方案 A 使用长期稳定 UUIDv7，方案 B 导入结果使用确定性 UUIDv5
+ChartObjectId：新建 canonical 对象使用长期稳定 UUIDv7；历史 canonical 文件可保留已迁移的 UUIDv5
 AssetId：资源系统中的稳定资源名称或资源 ID
 RuntimeEntityId：仅在一次 RuntimeSession 中有效的紧凑句柄
 ```
 
 ChartRuntime 可以把 UUID 映射为连续索引或紧凑句柄，但不得用该运行时值覆盖或替代持久化 ID。
 
-#### 13.2.2 方案 B：简易导入格式
-
-方案 B 是方案 A 的严格功能子集，目标是在 Cuexis Studio 尚未完善时方便手写谱面。其文件必须显式声明：
-
-```json
-{
-  "format": "cuexis.chart.simple",
-  "version": 1,
-  "chartId": "019b0000-0000-7abc-8def-000000000001"
-}
-```
-
-方案 B 可以使用可读字符串对象 ID 和带域前缀的简写引用，例如：
-
-```json
-{
-  "id": "note.intro.001",
-  "parent": "object:lane.main",
-  "material": "asset:material.note.standard"
-}
-```
-
-转换后的 UUID 必须确定且可重复生成，不得在每次加载时随机变化：
+#### 13.2.2 方案 B 移除与迁移
 
 ```text
-对象 UUID = UUIDv5(chartId, "object:" + readableId)
-模板 UUID = UUIDv5(chartId, "template:" + readableId)
+当前 Stage 1 代码：只在内存中导入并验证既有 cuexis.chart.simple v1，不输出 canonical JSON
+阶段 2A.1 删除前：盘点并转换仓库 fixture 和仍需保留的外部谱面
+阶段 2A.1：删除 Simple Loader/Importer/Schema/tests/assets
+阶段 2A.1 之后：cuexis.chart.simple 稳定报告不支持格式
 ```
 
-这里的 UUIDv5 只用于从谱面命名空间和可读 ID 生成确定性标识，不承担安全用途。方案 A 中新建的持久化对象仍使用 UUIDv7。
+一次性转换能力不进入阶段 2 Playback 安装包，也不构成长期公共 API。历史格式字段和转换规则仅保留在 `docs/SIMPLE_CHART_FORMAT.md` 与 ADR 0010/0015 中，移除决定以 ADR 0035 为准。
 
-方案 B 只支持早期阶段需要的基础字段、单模板引用和简单属性覆盖。不得向方案 B 添加方案 A 没有的独立语义，也不得让方案 B 的转换结果依赖加载顺序。
-
-方案 B 中不能识别的字段必须产生导入警告，并保存在方案 A 的 `extensions["cuexis.simple.unknown"]` 中；它们不参与 Runtime 行为。导入报告必须列出所有被忽略、保留或降级的内容。Studio 将方案 B 导入并保存为方案 A 后，不保证能够无损导出回方案 B。
-
-#### 13.2.3 方案 B 生命周期
-
-```text
-早期阶段：维护 B 到 A 的导入能力，覆盖手写谱面所需的基础功能
-Studio 可用后：冻结方案 B 的最高版本，不再加入新字段或新特性
-冻结之后：所有新谱面能力只进入方案 A
-项目后期：保留只读导入器或移除支持，必须另行形成 ADR
-```
-
-方案 B 无法表达某项新功能时，导入器必须报告格式不支持，不能静默生成可能改变谱面语义的默认行为。
-
-方案 B v1 使用对象映射、可读小写 ID、`kind`、字符串 Beat、欧拉角和简写引用。它不支持自定义 Component、模板继承、跨 Chart 引用、BPM Changes 或 Stops。完整字段和确定性转换规则见 `docs/SIMPLE_CHART_FORMAT.md`。
+当前仓库只有内存 `SimpleChartImporter`，没有输出 canonical JSON 的正式 CLI。2A 必须先盘点仍需保留的 Simple 文件；盘点非空时提供并验证一次性转换物，盘点为空时以记录关闭迁移任务，然后才能删除 Importer。
 
 ### 13.3 统一对象与组件 Schema
 
@@ -1176,7 +1135,7 @@ Quaternion 在文件中固定为 `[x, y, z, w]`。Transform 的 position 使用�
 }
 ```
 
-`numerator` 是有符号 64 位整数，`denominator` 是大于 0 的整数。方案 B 可以提供十进制简写，但 Importer 必须根据原始十进制文本确定性转换成有理数。
+`numerator` 是有符号 64 位整数，`denominator` 是大于 0 的整数。阶段 1 历史方案 B 的十进制简写只在阶段 2A 前的一次性迁移中使用，Importer 必须根据原始十进制文本确定性转换成有理数。
 
 模板 v1 只描述单个 Object 原型，不生成层级子树。解析顺序固定为父模板、当前模板 patch、实例 overrides，完成展开后再执行 Schema 和语义校验。
 
@@ -1227,7 +1186,7 @@ class RotateBehavior;
 class ScaleBehavior;
 ```
 
-谱面文档使用 Beat 事件，编译后的 Runtime Segment 使用 `chartTimeMs`：
+谱面文档使用 Beat 事件。v3 Runtime 可以缓存 Segment 的 `chartTimeMs` 边界用于查找，但每帧必须先由 TimingMap 得到唯一 Beat sample，并以 Beat 计算事件归一化进度；BPM 曲线下不得直接用经过毫秒数替代 Beat 进度：
 
 ```text
 event: transform.position.x
@@ -2172,7 +2131,7 @@ Behavior Event/Hermite 采样
 Tempo Event/BPM 积分与逆映射
 ChartDocument 解析
 统一 Object/Component Schema、Beat 有理数和引用域校验
-方案 B ID、Beat、Template 合并和确定性 UUIDv5 转换
+canonical Chart ID、Beat、Template 和版本迁移
 ChartRuntime 编译
 资源 Handle 生命周期
 Handle generation、Lease/Scope 生命周期和热重载 revision
@@ -2624,14 +2583,15 @@ static/shared consumer 在干净部署目录中运行，且不泄漏内部符号
 任务：
 
 ```text
+阶段 2A.1 移除方案 B Loader/Importer/Schema/tests/Player fixture，只保留 canonical Chart
 在阶段 1C specialized Transform Track 基础上实现版本化 Behavior Event
 实现 Tempo Events、Stops 与 TimingMap 逆映射
-把阶段 1C 固定 Track 保留为 v1 兼容输入，并通过显式迁移转换为 Behavior Event 与 BehaviorClip
-扩展连续 Transform/Camera 事件、Hermite 进度插值、新 easing 和循环，不改变 1C version 1 采样结果
+把阶段 1C 固定 Track 保留为 v1/v2 兼容输入，并通过显式迁移转换为 Behavior Event；BehaviorClip 是否加入由 2E 门禁决定
+扩展连续 Transform/Camera 事件和 Hermite 进度插值，不改变 1C version 1 采样结果；局部 Beat 与循环是否加入由 2E 门禁决定
 定义多属性同步的事件组语义
-为 Material、Visibility 和 ParentBinding 定义受限 Step Event
-实现父子绑定行为
-Behavior 可调参数继续作为版本化 Chart/BehaviorClip 数据，不扩张 ProjectConfig
+为 Material 数值参数实现连续 Event，为 Material 资源选择与 Visibility 冻结并实现受限 Step Event；ParentBinding 是否加入由 2E 门禁决定
+若 2E 接受 ParentBinding，则实现父子绑定行为；否则在 v3 中稳定拒绝对应字段
+Behavior 可调参数继续作为版本化 Chart 数据；只有 2E 接受 BehaviorClip 后才进入 Clip 数据，不扩张 ProjectConfig
 实现行为调试面板
 实现行为采样测试
 通过 PlaybackSession 在任意时间采样，不要求宿主访问 World/EnTT
@@ -2794,7 +2754,7 @@ UserPreferences 缺失或安全重置时可采用文档化的具名内建 AudioD
 验收标准：
 
 ```text
-Player 可以独立加载方案 A 或方案 B 基础谱面并播放、暂停、Seek 和 Reload
+Player 只加载 canonical Chart，并可播放、暂停、Seek 和 Reload
 Player、Studio 预览和宿主使用唯一的 PlaybackSession -> internal RuntimeSession 路径
 加载失败、资源降级、音频不连续和 Shader 错误可诊断
 Player 可以从 ProjectConfig 启动，并可用 UserPreferences 和受控 CLI 选项覆盖允许的表现层字段
@@ -3072,9 +3032,11 @@ RuntimeSession 资源事务、Session/Manager owner 校验、活动 Diagnostics�
 Player 默认阶段 1B Project、--project/--chart 互斥、3 个 Renderable 和 Mesh/Material/Texture 依赖 demo
 ```
 
+上述方案 A/B loader 与 canonical/simple 回归入口是阶段 1 的历史完成事实；ADR 0035 已决定在阶段 2A 删除方案 B，不能把它们继续作为阶段 2 之后的验收要求。
+
 阶段 1C、阶段 1D 与阶段 1E 已完成最终验收；阶段 1E 的 `0.3.0` static/shared Playback Core preview 已通过 Windows/MSVC、Windows/MinGW 和 Linux GCC/Clang 自动化矩阵。后续优先级回到阶段 2 以上的 SDK 表现能力，但必须持续通过 1E external consumer 和 FrameDigest 门禁。稳定 C ABI 必须在正式 Judgement/Replay 公共契约完成后再冻结。
 
-每次交付仍须按 `docs/BUILDING.md` 在目标环境执行 Debug 配置、构建、CTest、格式检查和 A/B 图形冒烟；Release 或后端相关改动还须验证 Release。精确结果记录在对应阶段报告，不固化在本指南中。
+每次交付仍须按 `docs/BUILDING.md` 在目标环境执行 Debug 配置、构建、CTest、格式检查和图形冒烟；阶段 2A 完成前涉及 Simple 移除或迁移的改动还须执行 A/B 回归，2A 完成后只执行 canonical Chart 回归。Release 或后端相关改动还须验证 Release。精确结果记录在对应阶段报告，不固化在本指南中。
 
 当前不应投入：
 

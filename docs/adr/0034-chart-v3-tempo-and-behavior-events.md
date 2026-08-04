@@ -1,12 +1,12 @@
 # ADR 0034：Chart v3 Tempo Event 与 Behavior Event
 
-日期：2026-08-03
+日期：2026-08-03；边界复核：2026-08-04
 
 状态：已接受；代码和 Schema 待实现
 
 ## 背景
 
-阶段 1 的 Chart v1/v2 使用 `bpmChanges` 和 `behavior.transform.keyframe`。这种格式适合建立最小闭环，但无法直接表达“只有事件发生时属性才改变”的谱面语义，也无法让 BPM 和 Behavior 共享同一套 Beat 事件边界。
+阶段 1 的 Chart v1/v2 结构包含 `bpmChanges`，但当前只接受空数组；Behavior 使用已实现的 `behavior.transform.keyframe`。这种格式适合建立最小闭环，但无法直接表达“只有事件发生时属性才改变”的谱面语义，也无法让 BPM 和 Behavior 共享同一套 Beat 事件边界。
 
 ## 决策
 
@@ -25,7 +25,7 @@ behavior.transform.keyframe -> behavior.event
 startBeat, durationBeats, startBpm, endBpm, startSlope, endSlope
 ```
 
-BPM 在事件区间内直接插值，不对 milliseconds-per-beat 插值。BPM 范围为 `[1, 65536]`。斜率必须非负且 `startSlope + endSlope <= 3`。零持续事件要求起止 BPM 相同且两个斜率为零；负 Beat 事件参与 Beat 0 基准；Stop 内 Beat 和事件进度均冻结。完整字段见 `docs/CHART_FORMAT.md` 第 2b 节。
+BPM 在事件区间内直接插值，不对 milliseconds-per-beat 插值。BPM 范围为 `[1, 65536]`，`durationBeats` 必须非负。最早事件前使用 `defaultBpm`；事件结束后以 `endBpm` 作为后续基准。`startBpm` 允许与事件开始前的有效 BPM 不同并产生跳变。斜率必须非负且 `startSlope + endSlope <= 3`。Tempo Event 不得重叠；零持续事件要求起止 BPM 相同且两个斜率为零，但该值仍可与此前基准不同，并在冲突检测中占用自己的 Beat；负 Beat 事件参与 Beat 0 基准；Stop 内 Beat 和事件进度均冻结。完整字段见 `docs/CHART_FORMAT.md` 第 2b 节。
 
 ### Behavior Event
 
@@ -35,7 +35,7 @@ BPM 在事件区间内直接插值，不对 milliseconds-per-beat 插值。BPM �
 property, startBeat, durationBeats, startValue, endValue, startSlope, endSlope
 ```
 
-事件外保持对象初始基准或前一事件终值，事件开始时应用 `startValue`，区间内使用与 Tempo Event 相同的 Hermite 进度，结束后保持 `endValue`。支持 Transform 和 Camera 连续属性；可选 `groupId` 用于多个属性在同一边界原子生效。Visibility、Material 和 ParentBinding 不得使用连续数值插值，必须由后续 Step Event 规则定义。
+事件外保持对象初始基准或前一事件终值，事件开始时应用 `startValue`，区间内使用与 Tempo Event 相同的 Hermite 进度，结束后保持 `endValue`。同一属性不得存在相同 `startBeat` 的多个事件，包括零持续事件。支持 Transform 和 Camera 连续属性；可选 `groupId` 用于声明同一 Behavior 内共享边界的事件组。Visibility、Material 和 ParentBinding 不得使用连续数值插值，必须由后续 Step Event 规则定义。
 
 v3 Behavior 使用 Chart 全局 Beat，暂时沿用 `cuexis.behavior` version 1 的单 Behavior 绑定。局部 Clip Beat、循环和多 Clip 混合需要新的绑定版本，不得改变 v3 语义。
 

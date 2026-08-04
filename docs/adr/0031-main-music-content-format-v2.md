@@ -63,7 +63,7 @@ Asset Index v1  只接受 Mesh、Material、Texture
 Asset Index v2  接受 Mesh、Material、Texture、Audio
 Chart v1        顶层 audio 是未知核心字段并失败
 Chart v2        接受可选 audio block
-Simple Chart    继续只有 v1，不自动升级为 canonical v2
+Simple Chart    阶段 1 继续只有 v1，不自动升级为 canonical v2；ADR 0035 后续在阶段 2A 移除
 ```
 
 Typed `ChartDocument`、`ChartRuntime`、`AssetIndexDocument` 和 AssetDatabase 输入必须保留

@@ -1,14 +1,14 @@
 # Cuexis Chart Format v1/v2/v3
 
-状态：v1/v2 已实现；v3 的 Tempo Event 与 Behavior Event 格式已接受，代码和 Schema 待实现。格式级决策见 `docs/adr/0034-chart-v3-tempo-and-behavior-events.md`
+状态：v1/v2 已实现；v3 的 Tempo Event 与 Behavior Event 格式已接受，代码和 Schema 待实现；方案 B 计划于阶段 2A 移除。格式级决策见 `docs/adr/0034-chart-v3-tempo-and-behavior-events.md` 和 `docs/adr/0035-retire-simple-chart-format.md`
 
-更新日期：2026-08-03
+更新日期：2026-08-04
 
 ## 1. 范围
 
 本文定义 `format: "cuexis.chart"` 的规范 ChartDocument 结构。它面向保存、迁移、Studio 编辑和 Playback SDK 编译，不是 ChartRuntime、World 或 FrameSnapshot 的内存布局。阶段 1C 已在阶段 1A/1B 的 format 路由、typed 结构读取、模板展开、资源事务与确定性编译基础上，激活 Behavior Track 的 typed 读取、编译和绝对时间求值。阶段 1D 按 ADR 0031 实现 v2 的可选主音乐引用、严格版本路由和 Playback 内容准备；v1 的字段和未知字段拒绝语义保持不变。
 
-`cuexis.chart.simple` 属于兼容导入格式，必须按 `docs/SIMPLE_CHART_FORMAT.md` 转换成本文结构。内部 Runtime、World 和各 System 只接收本文模型编译后的 ChartRuntime；嵌入宿主通过 PlaybackSession、FrameSnapshot、JudgementResult 和稳定查询接口交互，不接收 ChartRuntime 或 EnTT Entity。
+`cuexis.chart` 是唯一继续演进的谱面格式。阶段 1 当前代码仍能把历史 `cuexis.chart.simple` 输入转换为本文结构，但 ADR 0035 已决定在阶段 2A 删除该路由、Importer 和 Schema；v3 从不接受 Simple 输入。内部 Runtime、World 和各 System 只接收本文模型编译后的 ChartRuntime；嵌入宿主通过 PlaybackSession、FrameSnapshot、JudgementResult 和稳定查询接口交互，不接收 ChartRuntime 或 EnTT Entity。
 
 ## 2. 顶层结构
 
@@ -69,7 +69,7 @@ v2 保留全部 v1 结构，并允许一个可选 typed `audio` block：
 延迟和用户校准不得写入 `audio`。
 
 Reader 必须先按显式 `version` 路由，再使用对应字段表。v1 不接受 `audio`，v2 不得被伪装成
-v1；loader 不自动迁移或写回。`cuexis.chart.simple` 仍只有 v1。只有 Chart 文件、没有 Project
+v1；loader 不自动迁移或写回。历史 `cuexis.chart.simple` 只有 v1，并在阶段 2A 移除。只有 Chart 文件、没有 Project
 和 Asset Index 的 `--chart` 入口遇到带主音乐的 v2 Chart 时必须明确失败。
 
 ## 2b. v3 Tempo Event
@@ -105,7 +105,9 @@ h(u) = (-2 + startSlope + endSlope) * u^3
 bpm(beat) = startBpm + (endBpm - startBpm) * h(u)
 ```
 
-`startSlope` 和 `endSlope` 是归一化进度曲线的端点斜率，必须有限、非负，并满足 `startSlope + endSlope <= 3`。`durationBeats` 允许为零，但此时起止 BPM 必须相同且两个斜率都为零。非零事件的有效区间为 `[startBeat, startBeat + durationBeats)`；无后继事件时，结束边界及其后保持 `endBpm`，相邻事件在同一边界由后一个事件接管。同一 Beat 的多个 Tempo Event 是错误。事件输入顺序无语义，按 `startBeat` 排序。负 Beat 事件参与 Beat 0 的实际 BPM 基准。
+`startSlope` 和 `endSlope` 是归一化进度曲线的端点斜率，必须有限、非负，并满足 `startSlope + endSlope <= 3`。`durationBeats` 必须非负；它允许为零，但此时起止 BPM 必须相同且两个斜率都为零。最早事件前使用 `defaultBpm`。非零事件的有效区间为 `[startBeat, startBeat + durationBeats)`；事件开始时应用 `startBpm`，允许它与此前有效 BPM 不同并产生跳变；无后继事件时，结束边界及其后保持 `endBpm`，相邻事件在同一边界由后一个事件接管。零持续事件同样可以把此前基准跳变为其相等的起止 BPM。Tempo Event 不得重叠，同一 Beat 的多个 Tempo Event 也是错误。冲突检测把零持续事件视为占用其 `startBeat`：它不能落在非零事件内部，可以位于前一事件的结束边界，但该 Beat 不能再有另一事件开始。事件输入顺序无语义，按 `startBeat` 排序。负 Beat 事件参与 Beat 0 的实际 BPM 基准。
+
+零持续约束中的 BPM 相等按解析后的有限数值精确比较，不使用容差。
 
 `stops` 继续使用 v2 的 `beat` 与 `durationMs` 结构。Stop 区间内 Beat 固定，Tempo Event 和 Behavior Event 的进度均不推进；Stop 结束后从该 Beat 继续使用有效 BPM。
 
@@ -154,7 +156,7 @@ denominator 是大于 0 的整数
 等价但未约分的输入可以迁移，但规范保存必须约分
 ```
 
-方案 B 的十进制 beat 必须根据 JSON 原始十进制文本转换，不能先转成二进制浮点再猜测分数。
+阶段 1 历史方案 B 的十进制 beat 必须根据 JSON 原始十进制文本转换，不能先转成二进制浮点再猜测分数；该转换只用于移除前的一次性迁移。
 
 ## 4. Timing（v1/v2）
 
@@ -169,7 +171,7 @@ denominator 是大于 0 的整数
 
 `defaultBpm` 必须为有限正数。阶段 1A 已实现 `offsetMs` 与 `defaultBpm`；`bpmChanges` 和 `stops` 当前必须为空，非空时产生不支持诊断并拒绝加载，不得静默忽略。
 
-BPM Change、Stop、offset 符号和逆映射的 v1/v2 历史语义见 `docs/TIMING_MODEL.md`。v3 启用新的 `tempoEvents`，正式字段和边界规则见第 2b 节。
+v1/v2 只实现固定 BPM 与 offset，并拒绝非空 `bpmChanges`/`stops`；兼容行为见 `docs/TIMING_MODEL.md`。v3 启用新的 `tempoEvents`、Stop 和逆映射，正式字段和边界规则见第 2b 节。
 
 Timing 不包含 `speedChanges`。Entity 移动速度由 Behavior 表达，未来整曲播放倍率由 AudioTransport 与 Timeline 表达。
 
@@ -239,15 +241,15 @@ v1/v2 的历史事件结构仅用于兼容迁移，不能写入 v3：
 v1 支持：
 
 ```text
-object    当前 Chart 中原生 UUIDv7 或方案 B 导入 UUIDv5 的 Object
-template  当前 Chart 中原生 UUIDv7 或方案 B 导入 UUIDv5 的 Template
+object    当前 Chart 中原生 UUIDv7 或历史迁移后保留 UUIDv5 的 Object
+template  当前 Chart 中原生 UUIDv7 或历史迁移后保留 UUIDv5 的 Template
 behavior  当前 Chart 中的 Behavior ID
 asset     AssetDatabase 中的 AssetId
 ```
 
 字段必须限制允许的 domain，例如 `parent` 只接受 `object`。方案 A 不允许字符串简写引用。
 
-原生创建和保存的方案 A Object/Template ID 使用 UUIDv7；`SimpleChartImporter` 的确定性导入结果使用 UUIDv5。Canonical loader 接受这两种明确来源的版本，`chartId` 本身始终要求 UUIDv7。
+原生创建和保存的 canonical Object/Template ID 使用 UUIDv7；阶段 1 已转换为 canonical 的历史 Simple 结果可能使用 UUIDv5。Canonical loader 接受这两种明确来源的版本不等于继续支持 Simple Parser；`chartId` 本身始终要求 UUIDv7。
 
 `external-chart` 是保留域，v1 使用时返回 `UnsupportedFeature`。v1 不加载其他 Chart 中的 Object 或 Template。
 
@@ -282,7 +284,7 @@ asset     AssetDatabase 中的 AssetId
 Object 字段：
 
 ```text
-id          必需，原生 ChartObjectId UUIDv7 或方案 B 导入 UUIDv5
+id          必需，原生 ChartObjectId UUIDv7 或历史 canonical UUIDv5
 name        可选，仅编辑和诊断使用
 parent      必需，null 或 object 引用
 components  必需，Component ID 到 Component 数据的对象映射
@@ -417,13 +419,13 @@ Patch v1 只支持 JSON Patch 的 `add`、`remove` 和 `replace`。禁止继承�
 
 v1 允许的 Property 为 `transform.position.x/y/z`、`transform.rotation`、`transform.scale` 和 `camera.fovY`。标量、Vec3 使用分量线性插值；Quaternion 使用 shortest-path slerp 并重新归一化；首尾时间钳制，单 Key 为常量。目标 Key 的 easing 只控制前一 Key 到当前 Key 的区间，支持 `linear`、`in_cubic`、`out_cubic`、`in_out_cubic`。`camera.fovY` 的值必须严格位于 (0, 179)，且绑定对象必须有 `cuexis.camera`。
 
-空 Track、重复 Beat、同一 Behavior 重复 Property、未知字段/easing、非有限值、非规范 Quaternion 和越界 FOV 都是错误。Simple v1 仍只提供标量位置/FOV Track，并在 Behavior、Track、Key 子树对未知字段严格报错；canonical 与 Simple 的其余未知字段继续按各自规范处理。
+空 Track、重复 Beat、同一 Behavior 重复 Property、未知字段/easing、非有限值、非规范 Quaternion 和越界 FOV 都是错误。阶段 2A 前的历史 Simple v1 只提供标量位置/FOV Track，并在 Behavior、Track、Key 子树对未知字段严格报错；这些规则仅用于迁移旧输入，不进入 v3。
 
 v1 默认安全预算为每 Behavior 6 条 Track、每 Track 65536 个 Key；v3 默认安全预算为每 Behavior 65536 个 Event、每 Chart 262144 个 Event；两者共用每帧 600000 个 Property Write 和 1024 条诊断上限。`behavior.transform.keyframe` version 1 保持兼容；阶段 2 已选择 Behavior Event 作为新 Behavior 的谱面层表达，具体字段、版本和迁移规则见 `docs/stage_plans/stage_2_implementation_plan.md`。
 
 ### 8a. v3 Behavior Event
 
-v3 使用 `behavior.event` version 1。一个 Behavior 包含多个属性事件；事件按 `startBeat` 排序，数组顺序没有运行语义。v3 的 Behavior 使用 Chart 全局 Beat，不在对象绑定中重复声明时间偏移。
+v3 使用 `behavior.event` version 1。一个 Behavior 包含多个属性事件；编译器先按属性分组，再按 `startBeat` 排序，数组顺序没有运行语义。v3 的 Behavior 使用 Chart 全局 Beat，不在对象绑定中重复声明时间偏移。
 
 ```json
 {
@@ -468,11 +470,13 @@ startSlope     归一化进度的起始斜率
 endSlope       归一化进度的结束斜率
 ```
 
-事件外保持对象初始基准或前一事件终值；事件开始时应用 `startValue`，允许它与当前基准不同；非零事件的有效区间为 `[startBeat, startBeat + durationBeats)`，区间内使用上述 Hermite 进度 `h(u)` 插值；标量/Vec3 使用分量插值，Quaternion 使用 shortest-path slerp，`h(u)` 只作为 slerp 进度。无后继事件时，结束边界及其后保持 `endValue`，相邻事件在同一边界由后一个事件接管，因此允许跳变。零持续事件在精确 `startBeat` 处应用其值，并作为后续基准直到下一个事件。同一属性的事件不得重叠，事件输入顺序无语义。
+事件外保持对象初始基准或前一事件终值；事件开始时应用 `startValue`，允许它与当前基准不同；非零事件的有效区间为 `[startBeat, startBeat + durationBeats)`，区间内使用上述 Hermite 进度 `h(u)` 插值；标量/Vec3 使用分量插值，Quaternion 使用 shortest-path slerp，`h(u)` 只作为 slerp 进度。无后继事件时，结束边界及其后保持 `endValue`，相邻事件在同一边界由后一个事件接管，因此允许跳变。零持续事件在精确 `startBeat` 处应用其值，并作为后续基准直到下一个事件。同一属性的事件不得重叠，也不得具有相同 `startBeat`；冲突检测把零持续事件视为占用其 Beat，因此它不能位于同属性非零事件内部，可以位于前一事件的结束边界，但该 Beat 不能再有同属性事件开始。事件输入顺序无语义。
 
 `durationBeats = 0` 是合法的瞬时事件，但必须满足 `startValue == endValue`、`startSlope == 0` 和 `endSlope == 0`。标量和 Vec3 按分量插值；Quaternion 使用 shortest-path slerp，Hermite 结果只作为 slerp 进度；FOV 必须位于 `(0, 179)`。所有数值必须有限，Quaternion 必须可归一化。`startSlope`/`endSlope` 必须有限、非负，并满足 `startSlope + endSlope <= 3`。
 
-`groupId` 用于声明多个属性在同一事件边界一起生效；同组事件的开始 Beat 和持续时间必须完全相同。缺少 `groupId` 的事件彼此独立。任何属性冲突、重叠、类型不匹配或同组字段不一致都是格式错误。
+零持续约束中的值相等按解析后的 typed 值精确比较；Vec3 和 Quaternion 逐分量比较，因此符号相反但表示同一旋转的两个 Quaternion 不满足该约束。
+
+`groupId` 的作用域是单个 Behavior，必须匹配 portable ASCII 模式 `[A-Za-z0-9][A-Za-z0-9._-]{0,255}`；同一 ID 在该 Behavior 内只表示一个事件组。它声明多个属性共享事件边界并接受一致性校验；同组事件的开始 Beat 和持续时间必须完全相同。缺少 `groupId` 的事件彼此独立。整帧提交本身始终是事务式的，`groupId` 不改变未分组事件的提交原子性。任何属性冲突、重叠、同属性相同起始 Beat、类型不匹配或同组字段不一致都是格式错误。
 
 v3 首版连续属性白名单为 `transform.position.x/y/z`、`transform.rotation`、`transform.scale` 和 `camera.fovY`。Visibility、Material 和 ParentBinding 属于离散属性，必须使用后续定义的 Step Event；在 Step Event 格式冻结前，v3 不得用连续事件或数值插值近似它们。
 
@@ -491,7 +495,11 @@ v3 暂时沿用 v1 的对象绑定结构，事件使用 Chart 全局 Beat：
 
 ### 8c. v1 到 v3 迁移
 
-`behavior.transform.keyframe` version 1 不在 v3 中隐式解释为 Event。迁移工具按每个 Track 的相邻 Key 生成连续事件：前一 Key 为 `startValue`，后一 Key 为 `endValue`，Beat 差值为 `durationBeats`，原 easing 映射为等价的端点斜率或受控兼容曲线。首 Key 之前的值成为对象初始基准，末 Key 之后保持末值。无法保持等价结果的 Track 必须报告迁移错误，不得静默近似。
+`behavior.transform.keyframe` version 1 不在 v3 中隐式解释为 Event。迁移工具按每个 Track 的相邻 Key 生成连续事件：前一 Key 为 `startValue`，后一 Key 为 `endValue`，Beat 差值为 `durationBeats`。`linear`、`in_cubic` 和 `out_cubic` 可分别精确映射为一个端点斜率为 `(1,1)`、`(0,3)` 和 `(3,0)` 的 Event。
+
+v1 的分段 `in_out_cubic` 在精确 Beat 中点拆成两个语义等价的 Event：前半段使用 `(0,3)`，后半段使用 `(3,0)`，中点值为原区间 0.5 进度的值；Quaternion 使用原区间的 shortest-path slerp 中点。Beat 中点无法在有理数预算内表示，或 typed 中点值无法按迁移实现前冻结的误差预算序列化时，迁移失败，不得无界近似。v1 与迁移后 v3 的 Quaternion 浮点采样按该迁移误差预算比较，不要求 FrameDigest 位级相同。
+
+v1 Track 在首 Key 之前已经输出首 Key 值，而 v3 Event 在首事件前保持对象基准。迁移器必须把每个已绑定对象或模板的对应初始属性改写为首 Key 值；单 Key Track 只需改写基准，不生成事件。共享 Behavior、模板实例和未绑定 Behavior 必须有确定性迁移报告，无法证明等价时失败。末 Key 之后由最后事件终值自然保持。对象初值改写或模板展开必须显式列入迁移报告，不得静默执行，也不得丢弃未绑定数据。
 
 ## 9. Extensions
 
