@@ -88,6 +88,16 @@ if(DEFINED CUEXIS_MAKE_PROGRAM AND NOT CUEXIS_MAKE_PROGRAM STREQUAL "")
         "-DCMAKE_MAKE_PROGRAM=${CUEXIS_MAKE_PROGRAM}"
     )
 endif()
+if(DEFINED CUEXIS_RC_COMPILER AND NOT CUEXIS_RC_COMPILER STREQUAL "")
+    list(APPEND common_configure_arguments
+        "-DCMAKE_RC_COMPILER=${CUEXIS_RC_COMPILER}"
+    )
+endif()
+if(DEFINED CUEXIS_MT AND NOT CUEXIS_MT STREQUAL "")
+    list(APPEND common_configure_arguments
+        "-DCMAKE_MT=${CUEXIS_MT}"
+    )
+endif()
 if(DEFINED CUEXIS_TOOLCHAIN_FILE AND NOT CUEXIS_TOOLCHAIN_FILE STREQUAL "")
     list(APPEND common_configure_arguments
         "-DCMAKE_TOOLCHAIN_FILE=${CUEXIS_TOOLCHAIN_FILE}"
@@ -96,6 +106,21 @@ endif()
 if(DEFINED CUEXIS_VCPKG_TARGET_TRIPLET AND NOT CUEXIS_VCPKG_TARGET_TRIPLET STREQUAL "")
     list(APPEND common_configure_arguments
         "-DVCPKG_TARGET_TRIPLET=${CUEXIS_VCPKG_TARGET_TRIPLET}"
+    )
+endif()
+set(cuexis_external_offline_dependencies OFF)
+if(DEFINED CUEXIS_VCPKG_MANIFEST_MODE AND NOT CUEXIS_VCPKG_MANIFEST_MODE STREQUAL "")
+    list(APPEND common_configure_arguments
+        "-DVCPKG_MANIFEST_MODE=${CUEXIS_VCPKG_MANIFEST_MODE}"
+    )
+    if(NOT CUEXIS_VCPKG_MANIFEST_MODE)
+        set(cuexis_external_offline_dependencies ON)
+    endif()
+endif()
+if(cuexis_external_offline_dependencies AND DEFINED CUEXIS_VCPKG_INSTALLED_DIR
+   AND NOT CUEXIS_VCPKG_INSTALLED_DIR STREQUAL "")
+    list(APPEND common_configure_arguments
+        "-DVCPKG_INSTALLED_DIR=${CUEXIS_VCPKG_INSTALLED_DIR}"
     )
 endif()
 
@@ -298,8 +323,14 @@ else()
     endforeach()
 
     set(consumer_build_dir "${work_dir}/build")
-    set(dependency_prefix
-        "${package_build_dir}/vcpkg_installed/${CUEXIS_VCPKG_TARGET_TRIPLET}")
+    if(cuexis_external_offline_dependencies AND DEFINED CUEXIS_VCPKG_INSTALLED_DIR
+       AND NOT CUEXIS_VCPKG_INSTALLED_DIR STREQUAL "")
+        set(dependency_prefix
+            "${CUEXIS_VCPKG_INSTALLED_DIR}/${CUEXIS_VCPKG_TARGET_TRIPLET}")
+    else()
+        set(dependency_prefix
+            "${package_build_dir}/vcpkg_installed/${CUEXIS_VCPKG_TARGET_TRIPLET}")
+    endif()
     if(CUEXIS_CONSUMER_MODE STREQUAL "find_package")
         set(consumer_source_dir "${CUEXIS_SOURCE_DIR}/tests/external/find_package")
         set(component_arguments -DCMAKE_DISABLE_FIND_PACKAGE_SDL3=TRUE)

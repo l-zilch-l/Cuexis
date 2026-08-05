@@ -1,6 +1,8 @@
 # 阶段 2：Behavior Event 与 Cuexis 表现能力实施计划
 
-状态：Chart v3、Tempo Event 和 Behavior Event 方向已接受（见 `docs/adr/0034-chart-v3-tempo-and-behavior-events.md`）；方案 B 将在 2A.1 移除（见 `docs/adr/0035-retire-simple-chart-format.md`）；Step Event 和后续局部 Clip 能力仍待冻结
+状态：实现与 Windows/MSVC 非图形验收已完成；最终阶段验收待 GPU smoke 和 hosted Linux CI
+
+完成证据见[阶段 2 完成报告](../stage_reports/stage_2_completion_report.md)。
 
 ## 1. 目标与边界
 
@@ -64,6 +66,8 @@ Visibility、Material 选择、ParentBinding 等离散属性不能直接使用�
 
 ### 2A.1：Simple 格式退役门禁
 
+状态：已于 2026-08-05 完成。仓库内 Simple fixture 已有 canonical 对应物，项目所有者确认仓库外需保留的 Simple v1 资产为空，因此未创建一次性转换物。Loader、Importer、公开头、Schema、测试和 Player fixture 已删除，并保留 retired format 的稳定拒绝测试。
+
 目标：在设计和实现 v3 Reader/Schema 前物理删除方案 B，使后续格式、诊断和测试只面对 canonical Chart。
 
 任务：
@@ -81,6 +85,8 @@ Visibility、Material 选择、ParentBinding 等离散属性不能直接使用�
 - 全仓搜索仅允许历史文档和明确的 unsupported-format 测试保留 `cuexis.chart.simple`。
 
 ### 2A.2：Chart v3 格式管线
+
+状态：已完成。Chart v3 Schema、typed Reader、严格版本路由、事件预算、validator 和最小示例已交付。
 
 目标：让 v3 成为可严格读取、校验和编译前置检查的独立格式版本，但暂不要求 Behavior 产生运行时属性写入。
 
@@ -102,6 +108,8 @@ Visibility、Material 选择、ParentBinding 等离散属性不能直接使用�
 - 2A.2 不宣称尚未实现的 Timing/Behavior 迁移成功；相关 fixture 此时只能完成结构路由或产生稳定的“迁移能力尚未交付”诊断。
 
 ### 2B：Tempo Event、Stop 与 TimingMap
+
+状态：已完成。固定分段积分、固定次数逆解、Stop/负 Beat/零持续语义及 4096/4096 预算已实现并测试。
 
 目标：完成 v3 `Beat <-> chartTimeMs` 的确定性双向映射，为 Behavior 提供唯一的 `BeatSample`。
 
@@ -125,6 +133,8 @@ Visibility、Material 选择、ParentBinding 等离散属性不能直接使用�
 - 多次直接查询与不同帧率逐帧查询得到相同 Beat 结果，不通过帧增量累计时间。
 
 ### 2C：连续 Behavior Event Runtime 闭环
+
+状态：已完成。Transform/Camera Event、绝对 Beat 采样、分组校验、Seek/Reload/Stop 和 v1 兼容路径已闭环。
 
 目标：让 Transform 与 Camera 连续属性通过 Behavior Event 在任意时间绝对采样。
 
@@ -151,6 +161,8 @@ Visibility、Material 选择、ParentBinding 等离散属性不能直接使用�
 
 ### 2D：Visibility 与 Material 表现属性
 
+状态：已完成。Visibility/Material Step Event、Opacity/Tint 连续 Event、拥有型 Snapshot 输出和 FrameDigest v2 已交付。
+
 目标：补齐阶段 2 可观察的离散/材质属性，不提前建设阶段 3 的通用渲染管线。
 
 任务：
@@ -175,6 +187,8 @@ Visibility、Material 选择、ParentBinding 等离散属性不能直接使用�
 
 ### 2E：ParentBinding、局部 Clip 与循环决策门禁
 
+状态：已关闭。ParentBinding、局部 Beat、循环、多 Clip、priority/weight 和混合明确延期，Chart v3 不预留字段并稳定拒绝输入。
+
 目标：先决定高风险时间语义是否进入阶段 2，再实施；不允许以未声明行为混入 v3。
 
 任务：
@@ -196,6 +210,8 @@ Visibility、Material 选择、ParentBinding 等离散属性不能直接使用�
 
 ### 2F：Capability、诊断与调试闭环
 
+状态：已完成。四个 Stage 2 capability、preflight、稳定诊断和有界内部调试快照已交付。
+
 目标：让宿主在播放前知道 Chart v3 所需能力，并让 Studio/Player 能定位最终属性来源。
 
 任务：
@@ -216,6 +232,8 @@ Visibility、Material 选择、ParentBinding 等离散属性不能直接使用�
 - 安装后的 Playback 公共头继续不暴露 EnTT、JSON DOM、SDL 或图形后端类型。
 
 ### 2G：全链路验收与迁移交付
+
+状态：实现、迁移 CLI、Windows/MSVC static/shared Debug/Release、headless、format、architecture、external consumer 和零分配门禁已完成。当前执行环境未获准启动 GPU 窗口进程，且本任务未推送远端触发 hosted Linux CI；这两项必须在最终阶段验收时补齐，不能以 Windows 结果替代。
 
 目标：完成格式迁移、SDK 消费、性能和跨平台门禁，形成可进入阶段 3 的稳定基线。
 
@@ -260,9 +278,10 @@ Visibility、Material 选择、ParentBinding 等离散属性不能直接使用�
 - v3 对象暂时沿用 `cuexis.behavior` version `1` 的单 Behavior 绑定结构。
 - v3 及后续版本只支持 `cuexis.chart`；不存在 `cuexis.chart.simple` v2 或 v3。
 
-## 7. 待冻结事项
+## 7. 已关闭的设计门禁
 
-- 数值积分精度、误差预算和极端输入的固定分段预算。
-- v1 -> v3 迁移的 typed 中点序列化、Quaternion 等价误差和有理数中点溢出预算。
-- Step Event 的完整字段、资源引用和边界语义。
-- BehaviorClip 的局部 Beat、循环边界和对象绑定结构。
+- TimingMap 使用固定 16 点 Gauss-Legendre 积分和 64 次二分逆解；误差及事件预算见 ADR 0036。
+- v1/v2 -> v3 的 typed 中点、Quaternion 误差和有理数溢出失败合同已冻结。
+- Step Event 仅支持 `render.visible` 与 `render.material`；Material 连续属性仅支持
+  `material.opacity` 与 `material.tint`。
+- ParentBinding、局部 Beat、循环和多 Clip 明确延期；v3 不预留字段并稳定拒绝输入。

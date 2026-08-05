@@ -2,7 +2,7 @@
 
 日期：2026-08-04
 
-状态：已接受；计划于阶段 2A.1 实施
+状态：已接受并于 2026-08-05 在阶段 2A.1 实施
 
 ## 背景
 
@@ -48,3 +48,7 @@ Player 的 Simple fixture 复制、命令和回归入口
 ## 影响
 
 阶段 2A.1 是删除边界；在其完成前，当前 Stage 1 构建仍可用于识别和验证待迁移输入，但不得为方案 B 增加功能，也不得被描述为已有落盘迁移工具。阶段 2A.1 完成后，`cuexis.chart.simple` 输入必须稳定报告不支持格式，所有新文档、示例、测试和工具只面向 canonical Chart。
+
+## 实施记录
+
+2026-08-05 的仓库内盘点只发现已存在对应 canonical fixture 的 Stage 1A Simple 示例；仓库外资产盘点由项目所有者确认为空。因此未创建一次性转换物。阶段 2A.1 已删除 Loader 路由、Importer、公开头、Schema、测试和 Player fixture，并保留明确的 unsupported-format 回归测试。

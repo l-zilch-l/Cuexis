@@ -1,15 +1,15 @@
 # Building Cuexis
 
-状态：阶段 1D 现行构建、安装与质量门禁规范
+状态：阶段 2 现行构建、安装与质量门禁规范
 
-更新日期：2026-07-27
+更新日期：2026-08-06
 
 ## 当前仓库说明
 
-当前仓库提供阶段 0 工程基础、阶段 1A Chart/Runtime 闭环、阶段 1B 资源生命周期、
-阶段 1C typed Behavior/Playback 闭环，以及阶段 1D 的主音乐内容、Prepared Playback、
-ChartClock/HostClock/CuexisAudio、RuntimeTimeline、WAV 解码和可选 SDL 音频适配器。以下命令是
-受支持的标准入口；旧的 IDE 私有构建目录和手工编译产物不能作为验收依据。
+当前仓库提供阶段 0 工程基础、阶段 1A-1E Playback Core 闭环，以及阶段 2 的 Chart v3、
+Tempo/Stop TimingMap、Behavior Event、Visibility/Material 表现属性、capability preflight、调试
+快照和 v1/v2 -> v3 迁移工具。以下命令是受支持的标准入口；旧的 IDE 私有构建目录和手工
+编译产物不能作为验收依据。
 
 当前正式激活的库 target 为：
 
@@ -34,7 +34,9 @@ cuexis_playback
 cuexis_audio_sdl
 ```
 
-应用 target 为 `cuexis_player`。`app/studio/` 目录已存在但尚未接入 CMake。对应模块测试、架构扫描、Player 失败路径和 `cuexis_format_check` 由顶层 CMake 统一注册。
+应用 target 为 `cuexis_player`，开发工具 target 为 `cuexis_chart_validator` 和
+`cuexis_chart_migrator`。`app/studio/` 目录已存在但尚未接入 CMake。对应模块测试、架构扫描、
+Player 失败路径和 `cuexis_format_check` 由顶层 CMake 统一注册。
 
 ADR 0027 已将长期交付方向调整为 Playback SDK + 独立 Player + 独立 Studio。当前
 `cuexis_playback` 已通过正式 Runtime 路径驱动 Behavior，并提供 Prepared load/reload、
@@ -155,17 +157,35 @@ Player 冒烟测试需要交互式桌面和支持 OpenGL 3.3 Core 的 GPU，因�
 非静音连续播放、Pause 静音、Resume/Seek/Stop/Reload 行为，并确认 sidecar 中
 `droppedRows = 0`、`truncated = false`；物理设备听感与时钟精度不能由 dummy CTest 代替。
 
-当前阶段 1A 方案 A/B 仍可通过 `--chart` 作为无资源回归入口；方案 B 命令仅用于在阶段 2A 删除前识别和验证待迁移的历史输入，不会输出 canonical 文件，也不得用于新谱面：
+canonical Stage 1A 示例仍可通过 `--chart` 作为无资源回归入口：
 
 ```powershell
-.\out\build\debug\bin\cuexis_player.exe --smoke-test --chart .\out\build\debug\bin\assets\charts\stage1a_example.cuexis.chart.simple.json
+.\out\build\debug\bin\cuexis_player.exe --smoke-test --chart .\out\build\debug\bin\assets\charts\stage1a_example.cuexis.chart.json
 ```
+
+阶段 2A.1 已移除 `cuexis.chart.simple`；该格式稳定报告 `chart.format.unsupported`，构建产物不再复制 Simple fixture。
+
+Chart v3 示例、校验器和显式迁移器可直接运行：
+
+```powershell
+.\out\build\debug\bin\cuexis_chart_validator.exe `
+  --input .\assets\charts\stage2_example.cuexis.chart.json
+
+.\out\build\debug\bin\cuexis_chart_migrator.exe `
+  --input .\tests\fixtures\stage2_migration_v1.cuexis.chart.json `
+  --output .\out\artifacts\stage2-migrated.cuexis.chart.json `
+  --report .\out\artifacts\stage2-migration-report.json
+```
+
+迁移器要求输入、输出和报告路径互不冲突，失败不修改目标。`cuexis_chart_tool_tests` 会校验
+golden、目标回滚和 CLI 退出合同。Player 可使用 `--chart` 加载 Stage 2 示例进行 GPU smoke；
+算法、迁移和 headless Playback 验收不依赖 GPU。
 
 默认阶段 1D 项目包含 Chart v2、Asset Index v2、索引内非静音 WAV 和 typed
 `audio.mainMusic` 引用。Player 在 Window/GL/Audio device 创建前完成 Project、Index、Chart、
 Source 和 WAV preflight，再按内容选择 ChartClock 或 CuexisAudio；已选模式失败时不会静默回退。
 构建时会先清理目标 demo project 目录再复制，避免遗留已删除资产。Release 或后端相关改动还应
-完成 Release build/test、1C 三帧 GPU smoke、1D 物理音频 smoke，以及当前阶段 1A A/B Chart 回归；阶段 2A 移除方案 B 后只保留 canonical Chart 回归；
+完成 Release build/test、1C 三帧 GPU smoke、1D 物理音频 smoke，以及 canonical Chart 回归；
 算法单元测试不得依赖窗口、GPU、物理音频设备或墙钟。
 
 ## 常见错误
@@ -202,7 +222,7 @@ cmake --install out/build/headless-release --prefix out/install/headless-release
 ```
 
 ```cmake
-find_package(Cuexis 0.3 CONFIG REQUIRED COMPONENTS Playback Content Audio)
+find_package(Cuexis 0.4 CONFIG REQUIRED COMPONENTS Playback Content Audio)
 target_link_libraries(my_host PRIVATE Cuexis::Playback Cuexis::Content Cuexis::Audio)
 ```
 
@@ -213,14 +233,14 @@ target_link_libraries(my_host PRIVATE Cuexis::Playback Cuexis::Content Cuexis::A
 并由 consumer 显式请求组件：
 
 ```cmake
-find_package(Cuexis 0.3 CONFIG REQUIRED COMPONENTS Audio AudioSDL)
+find_package(Cuexis 0.4 CONFIG REQUIRED COMPONENTS Audio AudioSDL)
 target_link_libraries(my_host PRIVATE Cuexis::AudioSDL)
 ```
 
 只有请求 `AudioSDL` 时 `CuexisConfig.cmake` 才查找 SDL3 并载入独立的
 `CuexisAudioSDLTargets.cmake`；基础 Playback/Content/Audio consumer 不查找 SDL3。
 
-`0.3` 是当前 Playback preview 的 SDK API 兼容版本，不是日期构建版本。安装后的
+`0.4` 是当前 Playback preview 的 SDK API 兼容版本，不是日期构建版本。安装后的
 `Cuexis_VERSION`/`Cuexis_API_VERSION` 返回完整 API 版本，`Cuexis_VERSION_DISPLAY` 返回
 `yy.mm.dd.hh-v[-suffix]` 构建身份。
 
@@ -243,7 +263,7 @@ CUEXIS_LIBRARY_TYPE=STATIC|SHARED
 ```
 
 不得把 `BUILD_SHARED_LIBS` 当作 Cuexis 支持入口。当前 static/shared preview SDK API 均为
-`0.3.0`。一个 build tree 与 install prefix 只能包含一种 Cuexis linkage，consumer 继续链接
+`0.4.0`。一个 build tree 与 install prefix 只能包含一种 Cuexis linkage，consumer 继续链接
 相同的 `Cuexis::` target 名，不得硬编码 DLL/shared object 文件名。可直接使用
 `shared-debug`、`shared-release`、`headless-shared-debug` 和 `headless-shared-release` presets。
 

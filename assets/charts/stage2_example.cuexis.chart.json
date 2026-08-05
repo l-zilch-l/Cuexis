@@ -1,0 +1,86 @@
+{
+  "format": "cuexis.chart",
+  "version": 3,
+  "chartId": "019c0000-0000-7abc-8def-000000000003",
+  "metadata": { "title": "Stage 2 Event Example", "artist": "Cuexis" },
+  "timing": {
+    "offsetMs": 0.0,
+    "defaultBpm": 120.0,
+    "tempoEvents": [
+      {
+        "startBeat": { "numerator": -2, "denominator": 1 },
+        "durationBeats": { "numerator": 2, "denominator": 1 },
+        "startBpm": 90.0,
+        "endBpm": 120.0,
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "startBeat": { "numerator": 4, "denominator": 1 },
+        "durationBeats": { "numerator": 4, "denominator": 1 },
+        "startBpm": 120.0,
+        "endBpm": 180.0,
+        "startSlope": 0.0,
+        "endSlope": 0.0
+      }
+    ],
+    "stops": [
+      { "beat": { "numerator": 2, "denominator": 1 }, "durationMs": 250.0 }
+    ]
+  },
+  "camera": { "type": "perspective", "fovY": 60.0, "near": 0.1, "far": 1000.0 },
+  "templates": [],
+  "behaviors": [
+    {
+      "id": "stage2.motion",
+      "type": "behavior.event",
+      "version": 1,
+      "events": [
+        {
+          "property": "transform.position.x",
+          "startBeat": { "numerator": 0, "denominator": 1 },
+          "durationBeats": { "numerator": 4, "denominator": 1 },
+          "startValue": 0.0,
+          "endValue": 8.0,
+          "startSlope": 1.0,
+          "endSlope": 1.0,
+          "groupId": "entrance"
+        },
+        {
+          "property": "transform.rotation",
+          "startBeat": { "numerator": 0, "denominator": 1 },
+          "durationBeats": { "numerator": 4, "denominator": 1 },
+          "startValue": [0.0, 0.0, 0.0, 1.0],
+          "endValue": [0.0, 0.0, 1.0, 0.0],
+          "startSlope": 1.0,
+          "endSlope": 1.0,
+          "groupId": "entrance"
+        }
+      ],
+      "stepEvents": []
+    }
+  ],
+  "objects": [
+    {
+      "id": "019c0000-0000-7abc-8def-000000000010",
+      "name": "event_target",
+      "parent": null,
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [0.0, 0.0, 0.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [1.0, 1.0, 1.0]
+        },
+        "cuexis.behavior": {
+          "version": 1,
+          "behavior": { "domain": "behavior", "id": "stage2.motion" }
+        },
+        "cuexis.element": { "version": 1 }
+      },
+      "extensions": {}
+    }
+  ],
+  "requiredExtensions": [],
+  "extensions": {}
+}

@@ -7,6 +7,8 @@
 
 SDK 转型说明：本文件保留阶段 1B 的历史实施事实。ADR 0027 和[SDK 转型方案](cuexis_sdk_transition_plan.md)不修改 ProjectConfig/Asset Index/Handle/Lease/Scope/事务回滚语义；ContentProvider、PlaybackSession 与安装包迁移分别在阶段 1C-1E 完成。
 
+后续取代说明：本文涉及的 Simple Chart 路径已由 ADR 0035 在阶段 2A.1 移除；相关内容仅是阶段 1B 历史事实。
+
 ## 1. 已确认设计
 
 - ProjectConfig 固定为 `<project-root>/cuexis.project.json`，格式为 `cuexis.project`。

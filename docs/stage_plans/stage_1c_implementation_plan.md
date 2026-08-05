@@ -5,6 +5,8 @@
 前置基线：[阶段 1B 完成报告](../stage_reports/stage_1b_completion_report.md)
 后续阶段：[阶段 1D 实施计划](stage_1d_implementation_plan.md)
 
+后续取代说明：本文涉及的 Simple Chart 路径已由 ADR 0035 在阶段 2A.1 移除；相关内容仅是阶段 1C 历史事实。
+
 ## 1. 阶段目标
 
 阶段 1C 要完成以下纵向闭环：

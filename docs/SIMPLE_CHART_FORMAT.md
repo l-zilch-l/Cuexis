@@ -1,27 +1,24 @@
 # Cuexis Simple Chart Format v1
 
-状态：历史格式；ADR 0035 已决定在阶段 2A 移除
+状态：历史格式；已由 ADR 0035 在阶段 2A.1 移除
 
-更新日期：2026-08-04
+更新日期：2026-08-05
 
 ## 1. 范围
 
-> 本文仅用于迁移阶段 1 的既有 Simple v1 文件，不再定义受支持的新谱面输入。阶段 2A 将删除 `SimpleChartImporter`、Simple Schema、测试和 Player fixture。新谱面必须直接使用 `cuexis.chart`。当前仓库没有输出 canonical JSON 的正式迁移 CLI；如盘点发现仍需保留的 Simple v1 文件，必须在移除前按 ADR 0035 提供并验证一次性转换物。
+> 本文仅记录阶段 1 的历史 Simple v1 格式，不再定义受支持的输入或迁移流程。阶段 2A.1 已删除 `SimpleChartImporter`、Simple Schema、测试和 Player fixture。仓库外资产盘点为空，因此没有创建一次性转换物。新谱面必须直接使用 `cuexis.chart`。
 
 `cuexis.chart.simple` 用于 Cuexis Studio 完善前的手写谱面。它不是 Runtime 格式，也不是与方案 A 平级的规范格式。
 
 ```text
 SimpleChartDocument
-  -> SimpleChartImporter
+  -> [历史 SimpleChartImporter，已删除]
   -> cuexis.chart canonical JSON
-  -> CanonicalChartLoader typed 结构与语义校验
-  -> ChartDocument
-  -> ChartCompiler / PlaybackSession（内部使用 RuntimeSession）
 ```
 
-方案 B 是方案 A 的历史严格子集。阶段 2A 前的迁移版本可以使用 Importer；阶段 2A 及之后的 Playback/Chart 公共组件不再接受方案 B。
+方案 B 是方案 A 的历史严格子集。阶段 2A.1 及之后的 Playback/Chart 公共组件不再接受方案 B。
 
-阶段 1 仓库提供 `schemas/cuexis.chart.simple.v1.schema.json` 和独立 JSON Schema adapter/test；这些 artifact 与 `SimpleChartImporter` 一起在阶段 2A 删除。
+阶段 1 仓库曾提供 `schemas/cuexis.chart.simple.v1.schema.json` 和独立 JSON Schema adapter/test；这些 artifact 已与 `SimpleChartImporter` 一起删除。
 
 ## 2. 顶层结构
 

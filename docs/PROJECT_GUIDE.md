@@ -2,7 +2,7 @@
 
 ## 0. 文档状态
 
-本文档是项目的持续维护指南，同时记录已落地的工程状态、已确认的架构边界和后续阶段路线。阶段 0、阶段 1A、阶段 1B、阶段 1C 与阶段 1D 已完成验收；260722 全量审查的 R01-R21 已于 2026-07-26/27 全部关闭并补齐构建、CTest、架构和 external consumer 证据。ADR 0027 已将长期产品方向调整为可嵌入 Cuexis Playback SDK + 独立 Player + 独立 Studio。阶段 1D 章节记录已实现约束，后续章节描述继续演进的计划。
+本文档是项目的持续维护指南，同时记录已落地的工程状态、已确认的架构边界和后续阶段路线。阶段 0、阶段 1A、阶段 1B、阶段 1C、阶段 1D 与阶段 1E 已完成验收；阶段 2 实现和 Windows/MSVC 非图形门禁已完成，最终阶段验收待 GPU smoke 与 hosted Linux CI。260722 全量审查的 R01-R21 已于 2026-07-26/27 全部关闭并补齐构建、CTest、架构和 external consumer 证据。ADR 0027 已将长期产品方向调整为可嵌入 Cuexis Playback SDK + 独立 Player + 独立 Studio。
 
 文档中的内容按以下方式理解：
 
@@ -15,7 +15,7 @@
 
 随着讨论推进，待讨论内容应转化为明确决策；重大技术决策还应同步形成 ADR。
 
-当前仓库已完成阶段 0 工程闭环、阶段 1A 规范谱面与实例化闭环、阶段 1B 资源生命周期闭环、阶段 1C typed Behavior 与 headless Playback，以及阶段 1D 主音乐内容、三模式时钟、Prepared Playback、后端无关 Audio 和可选 SDL Audio adapter。阶段 1E 的 Filesystem/Memory/Host ContentProvider、PlaybackSource/FrameDigest 公共边界、adapter-disabled preset、C++20 static/shared 安装包及 add_subdirectory/find_package external consumer 已实现，并通过 Windows/MSVC、Windows/MinGW 与 Linux GCC/Clang 验收。正式 Judgement/Replay、Studio 和稳定 C ABI 尚未完成。
+当前仓库已完成阶段 0 工程闭环、阶段 1A 规范谱面与实例化闭环、阶段 1B 资源生命周期闭环、阶段 1C typed Behavior 与 headless Playback、阶段 1D 主音乐与 Audio，以及阶段 1E 可安装 static/shared Playback Core。阶段 2 已实现 Chart v3、Tempo/Stop TimingMap、Behavior/Step Event、Visibility/Material Snapshot、capability preflight、调试快照、FrameDigest v2 和 v1/v2 显式迁移工具；Windows/MSVC static/shared Debug/Release 与 headless 门禁已通过。阶段 2 的 GPU smoke 与 hosted Linux CI 仍待最终验收。正式 Judgement/Replay、Studio 和稳定 C ABI 尚未完成。
 
 当前状态的权威顺序固定为：本文第 0、30、32 节记录产品与阶段状态；`docs/BUILDING.md` 记录当前可执行构建和安装入口；最新阶段审查/补充报告记录尚未关闭的问题。完成报告和早期验证报告是带日期的历史证据，若与后续审查冲突，以后续审查与本节当前状态为准，不得从历史报告反推当前验收状态。
 
@@ -26,7 +26,7 @@ PROJECT_GUIDE.md  项目目标、模块边界、已确认规则和阶段计划
 docs/adr/          已接受或拟议的重大技术决策及其背景
 BUILDING.md       Windows/MSVC 标准构建、测试和排错流程
 CHART_FORMAT.md   方案 A 规范谱面格式与最小 Schema
-SIMPLE_CHART_FORMAT.md 已停止演进、将在 2A 移除的历史格式说明
+SIMPLE_CHART_FORMAT.md 已退役的 Simple Chart 历史格式说明
 VERSIONING.md     版本来源、更新和一致性校验规范
 RUNTIME_SESSION.md RuntimeSession 事务生命周期与错误恢复
 TIMING_MODEL.md   BPM、Stop、offset 与时间域语义
@@ -89,7 +89,7 @@ cuexis::            C++ 命名空间
 正式判定计分与 ReplayData 在阶段 11 由必选 cuexis_judgement 交付
 ```
 
-当前首要交付范围是阶段 1C 至 1E 的 Playback SDK 最小闭环，同时保持现有 Cuexis Player 可运行。Cuexis Studio 的独立应用边界继续预留，但不阻塞第一版 SDK 外部消费。
+当前首要交付范围是关闭阶段 2 的 GPU/hosted CI 最终验收，并在不改变已冻结 Stage 2 格式语义的前提下进入阶段 3 表现前端规划。Cuexis Studio 的独立应用边界继续预留，但不阻塞 Playback SDK 外部消费。
 
 ## 3. 非目标
 
@@ -1007,7 +1007,7 @@ Cuexis 只继续维护一种谱面格式：
 cuexis.chart  唯一规范、保存、迁移和运行输入格式
 ```
 
-阶段 1 曾实现 `cuexis.chart.simple`（方案 B）作为早期手写导入格式。ADR 0035 已决定在阶段 2A 删除 Loader 路由、`SimpleChartImporter`、Simple Schema、测试和 Player fixture，不设计 Simple v2。阶段 2A 后的加载链固定为：
+阶段 1 曾实现 `cuexis.chart.simple`（方案 B）作为早期手写导入格式。ADR 0035 已在阶段 2A.1 删除 Loader 路由、`SimpleChartImporter`、Simple Schema、测试和 Player fixture，不设计 Simple v2。当前加载链固定为：
 
 ```text
 cuexis.chart JSON
@@ -1078,15 +1078,15 @@ ChartRuntime 可以把 UUID 映射为连续索引或紧凑句柄，但不得用�
 #### 13.2.2 方案 B 移除与迁移
 
 ```text
-当前 Stage 1 代码：只在内存中导入并验证既有 cuexis.chart.simple v1，不输出 canonical JSON
-阶段 2A.1 删除前：盘点并转换仓库 fixture 和仍需保留的外部谱面
-阶段 2A.1：删除 Simple Loader/Importer/Schema/tests/assets
-阶段 2A.1 之后：cuexis.chart.simple 稳定报告不支持格式
+阶段 1 历史代码：只在内存中导入并验证 cuexis.chart.simple v1，不输出 canonical JSON
+阶段 2A.1 盘点：仓库 fixture 已有 canonical 对应物；仓库外需保留资产为空
+阶段 2A.1 已删除：Simple Loader/Importer/Schema/tests/assets
+当前行为：cuexis.chart.simple 稳定报告 chart.format.unsupported
 ```
 
 一次性转换能力不进入阶段 2 Playback 安装包，也不构成长期公共 API。历史格式字段和转换规则仅保留在 `docs/SIMPLE_CHART_FORMAT.md` 与 ADR 0010/0015 中，移除决定以 ADR 0035 为准。
 
-当前仓库只有内存 `SimpleChartImporter`，没有输出 canonical JSON 的正式 CLI。2A 必须先盘点仍需保留的 Simple 文件；盘点非空时提供并验证一次性转换物，盘点为空时以记录关闭迁移任务，然后才能删除 Importer。
+盘点结果为空，因此阶段 2A.1 未创建一次性转换物；该能力不属于当前源码、工具或安装包。
 
 ### 13.3 统一对象与组件 Schema
 
@@ -1135,7 +1135,7 @@ Quaternion 在文件中固定为 `[x, y, z, w]`。Transform 的 position 使用�
 }
 ```
 
-`numerator` 是有符号 64 位整数，`denominator` 是大于 0 的整数。阶段 1 历史方案 B 的十进制简写只在阶段 2A 前的一次性迁移中使用，Importer 必须根据原始十进制文本确定性转换成有理数。
+`numerator` 是有符号 64 位整数，`denominator` 是大于 0 的整数。阶段 1 历史方案 B 曾根据原始十进制文本确定性转换有理数；该历史转换实现已随阶段 2A.1 删除。
 
 模板 v1 只描述单个 Object 原型，不生成层级子树。解析顺序固定为父模板、当前模板 patch、实例 overrides，完成展开后再执行 Schema 和语义校验。
 
@@ -2120,7 +2120,7 @@ cuexis_judgement_tests
 cuexis_external_consumer_tests
 ```
 
-阶段 1A 已建立 `cuexis_core_tests`、`cuexis_json_support_tests`、`cuexis_platform_sdl_tests`、`cuexis_world_tests`、`cuexis_assets_tests`、`cuexis_chart_tests`、`cuexis_behavior_tests`、`cuexis_gameplay_tests`、`cuexis_render_tests`、`cuexis_debug_tests`、`cuexis_runtime_tests` 和 `cuexis_render_opengl_tests`，并在 CTest 中加入架构扫描及 Player 参数、谱面文件和 SDL 初始化失败路径检查。需要真实窗口和 GPU 的 A/B 示例三帧 OpenGL 冒烟测试按 `docs/BUILDING.md` 单独执行，不混入算法单元测试；精确测试数量和目标环境结果以[阶段 1A 完成报告](stage_reports/stage_1a_completion_report.md)为准。
+阶段 1A 已建立 `cuexis_core_tests`、`cuexis_json_support_tests`、`cuexis_platform_sdl_tests`、`cuexis_world_tests`、`cuexis_assets_tests`、`cuexis_chart_tests`、`cuexis_behavior_tests`、`cuexis_gameplay_tests`、`cuexis_render_tests`、`cuexis_debug_tests`、`cuexis_runtime_tests` 和 `cuexis_render_opengl_tests`，并在 CTest 中加入架构扫描及 Player 参数、谱面文件和 SDL 初始化失败路径检查。需要真实窗口和 GPU 的 canonical 示例三帧 OpenGL 冒烟测试按 `docs/BUILDING.md` 单独执行，不混入算法单元测试；阶段 1A 的历史 A/B 结果以[阶段 1A 完成报告](stage_reports/stage_1a_completion_report.md)为准。
 
 尚未实现的模块不需要提前创建空测试 target。测试名称应描述行为和条件，不能只重复被测函数名。
 
@@ -2576,26 +2576,24 @@ Player、headless 与 external consumer 的确定性结果一致
 static/shared consumer 在干净部署目录中运行，且不泄漏内部符号或私有开发依赖
 ```
 
-### 阶段 2：Cuexis Behavior 表达能力强化，5-8 个月
+### 阶段 2：Cuexis Behavior 表达能力强化
+
+状态：实现与 Windows/MSVC 非图形门禁已完成；GPU smoke 与 hosted Linux CI 待最终验收。精确证据见[阶段 2 完成报告](stage_reports/stage_2_completion_report.md)。
 
 目标：让 Behavior 成为 Cuexis 谱面表现的核心表达能力，不扩张为宿主任意脚本或通用游戏逻辑系统。
 
 任务：
 
 ```text
-阶段 2A.1 移除方案 B Loader/Importer/Schema/tests/Player fixture，只保留 canonical Chart
-在阶段 1C specialized Transform Track 基础上实现版本化 Behavior Event
-实现 Tempo Events、Stops 与 TimingMap 逆映射
-把阶段 1C 固定 Track 保留为 v1/v2 兼容输入，并通过显式迁移转换为 Behavior Event；BehaviorClip 是否加入由 2E 门禁决定
-扩展连续 Transform/Camera 事件和 Hermite 进度插值，不改变 1C version 1 采样结果；局部 Beat 与循环是否加入由 2E 门禁决定
-定义多属性同步的事件组语义
-为 Material 数值参数实现连续 Event，为 Material 资源选择与 Visibility 冻结并实现受限 Step Event；ParentBinding 是否加入由 2E 门禁决定
-若 2E 接受 ParentBinding，则实现父子绑定行为；否则在 v3 中稳定拒绝对应字段
-Behavior 可调参数继续作为版本化 Chart 数据；只有 2E 接受 BehaviorClip 后才进入 Clip 数据，不扩张 ProjectConfig
-实现行为调试面板
-实现行为采样测试
-通过 PlaybackSession 在任意时间采样，不要求宿主访问 World/EnTT
-Behavior 扩展声明版本和宿主表现 capability，不执行宿主任意代码或无界回调
+阶段 2A.1 已移除方案 B Loader/Importer/Schema/tests/Player fixture，只保留 canonical Chart
+Chart v3 已交付版本化 Tempo/Stop、Behavior Event 和 Step Event Schema/typed Reader
+TimingMap 已实现固定预算积分、Beat/时间逆映射、Stop 和负 Beat 语义
+阶段 1C Keyframe v1/v2 采样保持不变，并由显式 migrator 转换为 v3 Event
+Transform/Camera、Visibility、Material 资源/Opacity/Tint 已进入后端无关 Snapshot
+PlaybackSession 已提供四个版本化 capability 的资源前 preflight
+FrameDigest v2、内部有界调试快照和零分配 update/extract 门禁已交付
+ParentBinding、局部 Beat、循环、多 Clip、priority/weight 和混合明确延期
+Behavior 不执行宿主任意代码、脚本或无界回调
 ```
 
 验收标准：
@@ -3032,11 +3030,11 @@ RuntimeSession 资源事务、Session/Manager owner 校验、活动 Diagnostics�
 Player 默认阶段 1B Project、--project/--chart 互斥、3 个 Renderable 和 Mesh/Material/Texture 依赖 demo
 ```
 
-上述方案 A/B loader 与 canonical/simple 回归入口是阶段 1 的历史完成事实；ADR 0035 已决定在阶段 2A 删除方案 B，不能把它们继续作为阶段 2 之后的验收要求。
+上述方案 A/B loader 与 canonical/simple 回归入口是阶段 1 的历史完成事实；ADR 0035 已在阶段 2A.1 删除方案 B，不能把它们继续作为阶段 2 之后的验收要求。
 
-阶段 1C、阶段 1D 与阶段 1E 已完成最终验收；阶段 1E 的 `0.3.0` static/shared Playback Core preview 已通过 Windows/MSVC、Windows/MinGW 和 Linux GCC/Clang 自动化矩阵。后续优先级回到阶段 2 以上的 SDK 表现能力，但必须持续通过 1E external consumer 和 FrameDigest 门禁。稳定 C ABI 必须在正式 Judgement/Replay 公共契约完成后再冻结。
+阶段 1C、阶段 1D 与阶段 1E 已完成最终验收；阶段 1E 的 `0.3.0` static/shared Playback Core preview 已通过 Windows/MSVC、Windows/MinGW 和 Linux GCC/Clang 自动化矩阵。阶段 2 已把 preview API 提升到 `0.4.0`，实现 Chart v3、Tempo/Stop、Behavior/Step Event、Visibility/Material Snapshot、capability、FrameDigest v2 和迁移工具，并通过本地 Windows/MSVC static/shared Debug/Release、headless、format、architecture 与 external consumer 门禁。当前最高优先级是补齐 GPU smoke 和 hosted Linux CI 后关闭阶段 2 最终验收；随后进入阶段 3。稳定 C ABI 必须在正式 Judgement/Replay 公共契约完成后再冻结。
 
-每次交付仍须按 `docs/BUILDING.md` 在目标环境执行 Debug 配置、构建、CTest、格式检查和图形冒烟；阶段 2A 完成前涉及 Simple 移除或迁移的改动还须执行 A/B 回归，2A 完成后只执行 canonical Chart 回归。Release 或后端相关改动还须验证 Release。精确结果记录在对应阶段报告，不固化在本指南中。
+每次交付仍须按 `docs/BUILDING.md` 在目标环境执行 Debug 配置、构建、CTest、格式检查和图形冒烟；Chart 回归只使用 canonical 输入，并保留 retired Simple 的 unsupported-format 测试。Release 或后端相关改动还须验证 Release。精确结果记录在对应阶段报告，不固化在本指南中。
 
 当前不应投入：
 

@@ -12,7 +12,7 @@
 namespace cuexis::playback {
 namespace {
 
-constexpr std::uint32_t frameDigestVersion = 1;
+constexpr std::uint32_t frameDigestVersion = 2;
 constexpr std::uint64_t fnvOffset = 14695981039346656037ULL;
 constexpr std::uint64_t fnvPrime = 1099511628211ULL;
 
@@ -69,6 +69,14 @@ auto computeFrameDigest(const RuntimeFrame& frame, const FrameSnapshot& snapshot
         return core::unexpected(nonFiniteError());
     }
     for (const auto& object : snapshot.objects) {
+        if (!std::isfinite(object.materialOpacity)) {
+            return core::unexpected(nonFiniteError());
+        }
+        for (const float value : object.materialTint) {
+            if (!std::isfinite(value)) {
+                return core::unexpected(nonFiniteError());
+            }
+        }
         for (const float value : object.worldMatrix) {
             if (!std::isfinite(value)) {
                 return core::unexpected(nonFiniteError());
@@ -115,6 +123,11 @@ auto computeFrameDigest(const RuntimeFrame& frame, const FrameSnapshot& snapshot
         hashString(hash, object.id);
         hashByte(hash, object.hasTransform ? 1U : 0U);
         hashByte(hash, object.visible ? 1U : 0U);
+        hashString(hash, object.materialAssetId);
+        hashDouble(hash, object.materialOpacity);
+        for (const float value : object.materialTint) {
+            hashFloat(hash, value);
+        }
         for (const float value : object.worldMatrix) {
             hashFloat(hash, value);
         }

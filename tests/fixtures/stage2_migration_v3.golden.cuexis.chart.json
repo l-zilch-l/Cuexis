@@ -1,0 +1,270 @@
+{
+  "behaviors": [
+    {
+      "events": [
+        {
+          "durationBeats": {
+            "denominator": 1,
+            "numerator": 2
+          },
+          "endSlope": 1.0,
+          "endValue": 5.0,
+          "property": "transform.position.x",
+          "startBeat": {
+            "denominator": 1,
+            "numerator": 0
+          },
+          "startSlope": 1.0,
+          "startValue": 1.0
+        },
+        {
+          "durationBeats": {
+            "denominator": 1,
+            "numerator": 1
+          },
+          "endSlope": 3.0,
+          "endValue": [
+            0.0,
+            0.0,
+            0.7071067690849304,
+            0.7071067690849304
+          ],
+          "property": "transform.rotation",
+          "startBeat": {
+            "denominator": 1,
+            "numerator": 0
+          },
+          "startSlope": 0.0,
+          "startValue": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "durationBeats": {
+            "denominator": 1,
+            "numerator": 1
+          },
+          "endSlope": 0.0,
+          "endValue": [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          "property": "transform.rotation",
+          "startBeat": {
+            "denominator": 1,
+            "numerator": 1
+          },
+          "startSlope": 3.0,
+          "startValue": [
+            0.0,
+            0.0,
+            0.7071067690849304,
+            0.7071067690849304
+          ]
+        },
+        {
+          "durationBeats": {
+            "denominator": 1,
+            "numerator": 2
+          },
+          "endSlope": 3.0,
+          "endValue": [
+            3.0,
+            4.0,
+            5.0
+          ],
+          "property": "transform.scale",
+          "startBeat": {
+            "denominator": 1,
+            "numerator": 0
+          },
+          "startSlope": 0.0,
+          "startValue": [
+            1.0,
+            2.0,
+            3.0
+          ]
+        },
+        {
+          "durationBeats": {
+            "denominator": 1,
+            "numerator": 2
+          },
+          "endSlope": 0.0,
+          "endValue": 75.0,
+          "property": "camera.fovY",
+          "startBeat": {
+            "denominator": 1,
+            "numerator": 0
+          },
+          "startSlope": 3.0,
+          "startValue": 55.0
+        }
+      ],
+      "id": "shared.motion",
+      "stepEvents": [],
+      "type": "behavior.event",
+      "version": 1
+    },
+    {
+      "events": [
+        {
+          "durationBeats": {
+            "denominator": 1,
+            "numerator": 2
+          },
+          "endSlope": 0.0,
+          "endValue": 2.0,
+          "property": "transform.position.y",
+          "startBeat": {
+            "denominator": 1,
+            "numerator": -1
+          },
+          "startSlope": 3.0,
+          "startValue": -2.0
+        }
+      ],
+      "id": "unbound.motion",
+      "stepEvents": [],
+      "type": "behavior.event",
+      "version": 1
+    }
+  ],
+  "camera": {
+    "far": 1000.0,
+    "fovY": 60.0,
+    "near": 0.1,
+    "pitch": 0.0,
+    "roll": 0.0,
+    "type": "perspective",
+    "yaw": 0.0
+  },
+  "chartId": "019c0000-0000-7abc-8def-000000000201",
+  "extensions": {},
+  "format": "cuexis.chart",
+  "metadata": {
+    "title": "Stage 2 Migration Golden"
+  },
+  "objects": [
+    {
+      "components": {
+        "cuexis.behavior": {
+          "behavior": {
+            "domain": "behavior",
+            "id": "shared.motion"
+          },
+          "version": 1
+        },
+        "cuexis.camera": {
+          "far": 1000.0,
+          "fovY": 55.0,
+          "near": 0.1,
+          "type": "perspective",
+          "version": 1
+        },
+        "cuexis.transform": {
+          "position": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "rotation": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "scale": [
+            1.0,
+            2.0,
+            3.0
+          ],
+          "version": 1
+        }
+      },
+      "extensions": {},
+      "id": "019c0000-0000-7abc-8def-000000000210",
+      "parent": null
+    },
+    {
+      "components": {
+        "cuexis.behavior": {
+          "behavior": {
+            "domain": "behavior",
+            "id": "shared.motion"
+          },
+          "version": 1
+        },
+        "cuexis.camera": {
+          "far": 1000.0,
+          "fovY": 55.0,
+          "near": 0.1,
+          "type": "perspective",
+          "version": 1
+        },
+        "cuexis.transform": {
+          "position": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "rotation": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "scale": [
+            1.0,
+            2.0,
+            3.0
+          ],
+          "version": 1
+        }
+      },
+      "extensions": {},
+      "id": "019c0000-0000-7abc-8def-000000000211",
+      "parent": null
+    },
+    {
+      "components": {
+        "cuexis.transform": {
+          "position": [
+            7.0,
+            0.0,
+            0.0
+          ],
+          "rotation": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "version": 1
+        }
+      },
+      "extensions": {},
+      "id": "019c0000-0000-7abc-8def-000000000212",
+      "parent": null
+    }
+  ],
+  "requiredExtensions": [],
+  "templates": [],
+  "timing": {
+    "defaultBpm": 120.0,
+    "offsetMs": 0.0,
+    "stops": [],
+    "tempoEvents": []
+  },
+  "version": 3
+}

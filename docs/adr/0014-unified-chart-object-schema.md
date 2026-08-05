@@ -4,6 +4,8 @@
 
 状态：已接受
 
+> 2026-08-05：本文涉及的 Simple 输入路径已由 ADR 0035 在阶段 2A.1 移除；canonical Object/Component 决策继续有效。
+
 ## 背景
 
 Cuexis 的底层对象统一为 Entity。如果规范谱面格式继续为 Note、Element、装饰物和未来语义分别增加数组，Schema、迁移器和编译器会随类型数量持续膨胀，并与运行时 Component 组合模型背离。

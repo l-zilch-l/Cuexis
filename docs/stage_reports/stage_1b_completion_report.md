@@ -5,6 +5,8 @@
 完成版本：`26.07.18.18-1`  
 阶段目标：完成 ProjectConfig 到 AssetDatabase、ResourceManager、RuntimeSession 和 Player 的同步资源生命周期闭环。
 
+后续取代说明：本报告中的 Simple Chart 回归入口是阶段 1B 完成时的历史事实；ADR 0035 已在阶段 2A.1 删除该入口。
+
 ## 1. 完成结论
 
 阶段 1B 的代码范围已经完成。仓库现可从固定 `cuexis.project.json` 定位项目，通过每个资产根独立的 `cuexis.asset-index.json` 建立不可变 AssetDatabase，同步加载有界 Mesh/Material/Texture CPU blob，以 typed Handle、move-only Lease 和 ResourceScope 管理生命周期，并在 RuntimeSession 的准备事务中把资源 Handle 发布到 RenderableComponent。

@@ -1,14 +1,14 @@
 # Cuexis Chart Format v1/v2/v3
 
-状态：v1/v2 已实现；v3 的 Tempo Event 与 Behavior Event 格式已接受，代码和 Schema 待实现；方案 B 计划于阶段 2A 移除。格式级决策见 `docs/adr/0034-chart-v3-tempo-and-behavior-events.md` 和 `docs/adr/0035-retire-simple-chart-format.md`
+状态：v1/v2/v3 已实现；方案 B 已于阶段 2A.1 移除。格式级决策见 `docs/adr/0034-chart-v3-tempo-and-behavior-events.md`、`docs/adr/0035-retire-simple-chart-format.md` 和 `docs/adr/0036-stage-2-runtime-contracts.md`
 
-更新日期：2026-08-04
+更新日期：2026-08-06
 
 ## 1. 范围
 
 本文定义 `format: "cuexis.chart"` 的规范 ChartDocument 结构。它面向保存、迁移、Studio 编辑和 Playback SDK 编译，不是 ChartRuntime、World 或 FrameSnapshot 的内存布局。阶段 1C 已在阶段 1A/1B 的 format 路由、typed 结构读取、模板展开、资源事务与确定性编译基础上，激活 Behavior Track 的 typed 读取、编译和绝对时间求值。阶段 1D 按 ADR 0031 实现 v2 的可选主音乐引用、严格版本路由和 Playback 内容准备；v1 的字段和未知字段拒绝语义保持不变。
 
-`cuexis.chart` 是唯一继续演进的谱面格式。阶段 1 当前代码仍能把历史 `cuexis.chart.simple` 输入转换为本文结构，但 ADR 0035 已决定在阶段 2A 删除该路由、Importer 和 Schema；v3 从不接受 Simple 输入。内部 Runtime、World 和各 System 只接收本文模型编译后的 ChartRuntime；嵌入宿主通过 PlaybackSession、FrameSnapshot、JudgementResult 和稳定查询接口交互，不接收 ChartRuntime 或 EnTT Entity。
+`cuexis.chart` 是唯一受支持并继续演进的谱面格式。ADR 0035 已在阶段 2A.1 删除历史 `cuexis.chart.simple` 路由、Importer 和 Schema；该格式稳定报告 `chart.format.unsupported`。内部 Runtime、World 和各 System 只接收本文模型编译后的 ChartRuntime；嵌入宿主通过 PlaybackSession、FrameSnapshot、JudgementResult 和稳定查询接口交互，不接收 ChartRuntime 或 EnTT Entity。
 
 ## 2. 顶层结构
 
@@ -69,7 +69,7 @@ v2 保留全部 v1 结构，并允许一个可选 typed `audio` block：
 延迟和用户校准不得写入 `audio`。
 
 Reader 必须先按显式 `version` 路由，再使用对应字段表。v1 不接受 `audio`，v2 不得被伪装成
-v1；loader 不自动迁移或写回。历史 `cuexis.chart.simple` 只有 v1，并在阶段 2A 移除。只有 Chart 文件、没有 Project
+v1；loader 不自动迁移或写回。历史 `cuexis.chart.simple` 只有 v1，且已在阶段 2A.1 移除。只有 Chart 文件、没有 Project
 和 Asset Index 的 `--chart` 入口遇到带主音乐的 v2 Chart 时必须明确失败。
 
 ## 2b. v3 Tempo Event
@@ -453,6 +453,13 @@ v3 使用 `behavior.event` version 1。一个 Behavior 包含多个属性事件�
       "startSlope": 0.0,
       "endSlope": 0.0
     }
+  ],
+  "stepEvents": [
+    {
+      "property": "render.visible",
+      "beat": { "numerator": 20, "denominator": 1 },
+      "value": false
+    }
   ]
 }
 ```
@@ -478,7 +485,24 @@ endSlope       归一化进度的结束斜率
 
 `groupId` 的作用域是单个 Behavior，必须匹配 portable ASCII 模式 `[A-Za-z0-9][A-Za-z0-9._-]{0,255}`；同一 ID 在该 Behavior 内只表示一个事件组。它声明多个属性共享事件边界并接受一致性校验；同组事件的开始 Beat 和持续时间必须完全相同。缺少 `groupId` 的事件彼此独立。整帧提交本身始终是事务式的，`groupId` 不改变未分组事件的提交原子性。任何属性冲突、重叠、同属性相同起始 Beat、类型不匹配或同组字段不一致都是格式错误。
 
-v3 首版连续属性白名单为 `transform.position.x/y/z`、`transform.rotation`、`transform.scale` 和 `camera.fovY`。Visibility、Material 和 ParentBinding 属于离散属性，必须使用后续定义的 Step Event；在 Step Event 格式冻结前，v3 不得用连续事件或数值插值近似它们。
+v3 连续属性白名单为 `transform.position.x/y/z`、`transform.rotation`、`transform.scale`、
+`camera.fovY`、`material.opacity` 和 `material.tint`。`material.opacity` 的范围为 `[0,1]`，
+初始基准为 `1.0`；`material.tint` 是各分量位于 `[0,1]` 的 Vec3，初始基准为
+`[1,1,1]`。
+
+Step Event 使用 `property`、`beat`、typed `value` 和可选 `groupId`。事件在 `beat` 处含边界
+生效并保持到下一事件，首事件前保持对象初始基准。同一 Property 的 Step Event 不得位于
+同一 Beat；输入按 Property 和 Beat 排序。支持的离散属性仅为：
+
+```text
+render.visible   Boolean；初始基准 true
+render.material  Asset reference；初始基准 cuexis.renderable.material
+```
+
+`groupId` 与连续 Event 共享单 Behavior 作用域和字符规则；同组 Step Event 必须具有完全相同
+的 Beat。连续 Event 与 Step Event 不能共用同一 `groupId`。`behavior.event` 必须同时包含
+`events` 与 `stepEvents`；两个数组可以为空，但两者不能同时为空。ParentBinding 不属于 v3，
+不得用连续插值或未声明的 Step Property 近似。
 
 ### 8b. v3 Behavior 绑定
 
@@ -500,6 +524,18 @@ v3 暂时沿用 v1 的对象绑定结构，事件使用 Chart 全局 Beat：
 v1 的分段 `in_out_cubic` 在精确 Beat 中点拆成两个语义等价的 Event：前半段使用 `(0,3)`，后半段使用 `(3,0)`，中点值为原区间 0.5 进度的值；Quaternion 使用原区间的 shortest-path slerp 中点。Beat 中点无法在有理数预算内表示，或 typed 中点值无法按迁移实现前冻结的误差预算序列化时，迁移失败，不得无界近似。v1 与迁移后 v3 的 Quaternion 浮点采样按该迁移误差预算比较，不要求 FrameDigest 位级相同。
 
 v1 Track 在首 Key 之前已经输出首 Key 值，而 v3 Event 在首事件前保持对象基准。迁移器必须把每个已绑定对象或模板的对应初始属性改写为首 Key 值；单 Key Track 只需改写基准，不生成事件。共享 Behavior、模板实例和未绑定 Behavior 必须有确定性迁移报告，无法证明等价时失败。末 Key 之后由最后事件终值自然保持。对象初值改写或模板展开必须显式列入迁移报告，不得静默执行，也不得丢弃未绑定数据。
+
+仓库提供显式迁移和校验工具：
+
+```powershell
+cuexis_chart_migrator --input <v1-or-v2.json> --output <v3.json> --report <report.json>
+cuexis_chart_validator --input <chart.json>
+```
+
+迁移器不自动写回源文件。输入、输出和报告路径必须互不冲突；迁移先写同目录临时文件，
+只有 Chart 与报告都完成后才替换目标。失败时删除临时文件并恢复目标备份，因此不得留下半份
+Chart 或报告。报告记录源/目标版本、基准改写、模板展开、生成事件数和未绑定 Behavior。
+v2 的 `audio` block 原样迁移到 v3；v1 没有该字段。
 
 ## 9. Extensions
 
@@ -550,7 +586,12 @@ JSON 输入大小、嵌套深度、单字符串大小、重复键与语法检查
 -> ChartRuntime 编译
 ```
 
-仓库提供 `schemas/cuexis.chart.v1.schema.json` 和 `schemas/cuexis.chart.v2.schema.json`、`cuexis_json_support` 的 JSON Schema adapter 及独立测试；`schemas/cuexis.chart.v3.schema.json` 需随 v3 实现新增。当前 `ChartLoader` / `CanonicalChartLoader` 尚未调用 adapter。loader 的现行结构权威是 typed Reader，随后由 Chart 代码完成语义校验；因此不能把一次加载描述为已执行 JSON Schema Validator。Schema artifact 必须随格式代码同步，未来接入 loader 时仍不能替代引用、层级、资源和属性冲突等 Cuexis 语义校验。
+仓库提供 `schemas/cuexis.chart.v1.schema.json`、`schemas/cuexis.chart.v2.schema.json` 和
+`schemas/cuexis.chart.v3.schema.json`、`cuexis_json_support` 的 JSON Schema adapter 及独立测试。
+当前 `ChartLoader` / `CanonicalChartLoader` 尚未调用 adapter。loader 的现行结构权威是 typed
+Reader，随后由 Chart 代码完成语义校验；因此不能把一次加载描述为已执行 JSON Schema
+Validator。Schema artifact、typed Reader、validator 和迁移器通过共享合法/非法 fixture
+保持字段集合一致；Schema 仍不能替代引用、层级、资源和属性冲突等 Cuexis 语义校验。
 
 诊断至少包含：
 

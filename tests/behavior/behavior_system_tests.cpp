@@ -37,7 +37,11 @@ TEST_CASE("BehaviorSystem samples scalar tracks with target-key easing", "[behav
         BehaviorBinding{.entity = entt::entity{1}, .behavior = RuntimeBehaviorIndex{0}});
 
     cuexis::world::PropertyWriteBuffer writes;
-    REQUIRE(BehaviorSystem::evaluate(program, 50.0, writes).has_value());
+    const auto firstSample = BehaviorSystem::evaluate(program, 50.0, writes);
+    if (!firstSample) {
+        UNSCOPED_INFO(std::string{firstSample.error().code()});
+    }
+    REQUIRE(firstSample.has_value());
     REQUIRE(writes.size() == 1);
     const auto* value = std::get_if<double>(&writes.writes()[0].value);
     REQUIRE(value != nullptr);
@@ -70,7 +74,11 @@ TEST_CASE("BehaviorSystem interpolates Vec3 and quaternion shortest path", "[beh
         BehaviorBinding{.entity = entt::entity{2}, .behavior = RuntimeBehaviorIndex{0}});
 
     cuexis::world::PropertyWriteBuffer writes;
-    REQUIRE(BehaviorSystem::evaluate(program, 50.0, writes).has_value());
+    const auto midpoint = BehaviorSystem::evaluate(program, 50.0, writes);
+    if (!midpoint) {
+        UNSCOPED_INFO(std::string{midpoint.error().code()});
+    }
+    REQUIRE(midpoint.has_value());
     REQUIRE(writes.size() == 2);
     const auto* scale = std::get_if<Vec3>(&writes.writes()[0].value);
     REQUIRE(scale != nullptr);

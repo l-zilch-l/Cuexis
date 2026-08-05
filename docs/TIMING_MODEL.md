@@ -1,8 +1,8 @@
 # Cuexis TimingMap 规范
 
-状态：v1/v2 固定 BPM/offset 已实现且非空旧事件仍被拒绝；v3 Tempo Event/Stop 语义已接受，代码待实现
+状态：v1/v2 固定 BPM/offset 与 v3 Tempo Event/Stop 双向映射均已实现
 
-更新日期：2026-08-04
+更新日期：2026-08-06
 
 ## 时间域
 
@@ -92,6 +92,17 @@ Stop 使用半开时间区间；精确结束边界返回同一 Beat、`inStop=fa
 
 Beat 使用规范有理数并进行溢出检查。分段累计时间使用 double 毫秒，但不通过逐帧累加建立映射。相同 Timing 数据必须产生相同分段顺序和边界结果。
 
+每个非零 Tempo Event 按端点 BPM 比值确定性预编译为 `1..16` 个 BPM 几何分段：分段数为
+`clamp(ceil(log2(maxBpm/minBpm)), 1, 16)`，内部几何 BPM 边界用固定 64 次二分定位到
+Hermite 进度。每个分段使用固定 16 点 Gauss-Legendre 求积计算 `60000 / bpm(beat)`，并缓存
+边界累计时间。这样完整 `[1,65536]` BPM 合法范围不会由单次宽区间求积承担全部误差。
+
+`chartTimeMsToBeat` 对活动 Tempo Event 使用固定 64 次二分，不使用容差提前退出的 Newton
+迭代。常用范围（BPM `[30,360]`、单事件不超过 4096 Beat）的往返目标为 `1e-7 Beat` 和
+`1e-5 ms`；完整合法范围上限为 `1e-6 Beat` 和 `0.05 ms`。单 Chart 最多 4096 个 Tempo
+Event 和 4096 个 Stop；直接 TimingMap 创建与 Chart Reader/Compiler 都执行该预算。编译后
+查询只做有界二分、固定求积和已分配表访问，不在 Runtime 帧路径分配。
+
 负 Beat 合法，按 defaultBpm 和负区间内的 Tempo Event 向 Beat 0 积分。
 
 ## 播放倍率
@@ -100,4 +111,6 @@ TimingMap 不包含 speedChanges。Entity 运动由 Behavior 控制；未来整�
 
 ## 阶段实现
 
-阶段 1 实现 defaultBpm 与 offset，并拒绝非空 BPM Changes/Stops。阶段 2 启用 v3 Tempo Event、Stops 和 TimingMap 逆映射；正式实现前必须按本文语义补齐边界和数值测试。v3 的字段权威是 `docs/CHART_FORMAT.md` 第 2b 节。
+阶段 1 实现 defaultBpm 与 offset，并拒绝非空 BPM Changes/Stops。阶段 2 已启用 v3 Tempo
+Event、Stops、`BeatSample` 和 TimingMap 逆映射，并覆盖负 Beat、零持续、相邻事件、Stop、
+完整 BPM 范围和事件预算。v3 的字段权威是 `docs/CHART_FORMAT.md` 第 2b 节。

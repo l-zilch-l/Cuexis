@@ -1,11 +1,9 @@
-//  ChartLoader 实现 — 按显式 format 路由方案 A/B
-//  cuexis.chart → CanonicalChartLoader; cuexis.chart.simple → SimpleChartImporter
+//  ChartLoader implementation - route canonical charts by the explicit format field
 //  未知 format 返回 UnsupportedFormat 诊断，不根据字段猜测格式
 
 #include <cuexis/chart/chart_loader.hpp>
 
 #include <cuexis/chart/canonical_chart_loader.hpp>
-#include <cuexis/chart/simple_chart_importer.hpp>
 #include <cuexis/core/diagnostic.hpp>
 #include <cuexis/core/error.hpp>
 #include <cuexis/json/parse.hpp>
@@ -56,10 +54,6 @@ auto ChartLoader::load(std::string_view jsonText, const ChartLimits& limits)
     if (*format == "cuexis.chart") {
         return CanonicalChartLoader::load(jsonText, limits);
     }
-    if (*format == "cuexis.chart.simple") {
-        return SimpleChartImporter::import(jsonText, limits);
-    }
-
     diagnostics.add(core::Diagnostic{core::DiagnosticSeverity::Error, "chart.format.unsupported",
                                      "Chart format is unsupported",
                                      std::string{formatReader->fieldPath()}}

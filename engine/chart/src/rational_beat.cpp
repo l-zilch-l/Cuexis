@@ -2,11 +2,9 @@
 
 #include <cuexis/core/error.hpp>
 
-#include <charconv>
 #include <limits>
 #include <numeric>
 #include <string>
-#include <system_error>
 #include <utility>
 
 namespace cuexis::chart {
@@ -17,29 +15,6 @@ namespace {
         return static_cast<std::uint64_t>(value);
     }
     return static_cast<std::uint64_t>(-(value + 1)) + 1U;
-}
-
-[[nodiscard]] auto parseUnsigned(std::string_view text, const char* part)
-    -> core::Result<std::uint64_t> {
-    if (text.empty()) {
-        return core::unexpected(
-            core::Error{"chart.beat.invalid", "Beat contains an empty part"}.withContext("part",
-                                                                                         part));
-    }
-
-    std::uint64_t value{};
-    const auto result = std::from_chars(text.data(), text.data() + text.size(), value, 10);
-    if (result.ec == std::errc::result_out_of_range) {
-        return core::unexpected(
-            core::Error{"chart.beat.out_of_range", "Beat integer is outside the supported range"}
-                .withContext("part", part));
-    }
-    if (result.ec != std::errc{} || result.ptr != text.data() + text.size()) {
-        return core::unexpected(
-            core::Error{"chart.beat.invalid", "Beat contains non-decimal text"}.withContext("part",
-                                                                                            part));
-    }
-    return value;
 }
 
 [[nodiscard]] auto signedValue(std::uint64_t value, bool negative) -> core::Result<std::int64_t> {
@@ -55,23 +30,6 @@ namespace {
     }
     const auto result = static_cast<std::int64_t>(value);
     return negative ? -result : result;
-}
-
-[[nodiscard]] auto enforceLimits(RationalBeat beat, const ChartLimits& limits)
-    -> core::Result<RationalBeat> {
-    const auto maxMagnitude = limits.maxBeatNumeratorMagnitude;
-    if (maxMagnitude < 0 || limits.maxBeatDenominator <= 0) {
-        return core::unexpected(
-            core::Error{"chart.limits.invalid", "Beat limits must be positive"});
-    }
-    if (magnitude(beat.numerator()) > static_cast<std::uint64_t>(maxMagnitude) ||
-        beat.denominator() > limits.maxBeatDenominator) {
-        return core::unexpected(
-            core::Error{"chart.beat.limit_exceeded", "Beat exceeds the configured chart limits"}
-                .withContext("numerator", std::to_string(beat.numerator()))
-                .withContext("denominator", std::to_string(beat.denominator())));
-    }
-    return beat;
 }
 
 [[nodiscard]] auto comparePositive(std::uint64_t leftNumerator, std::uint64_t leftDenominator,
@@ -105,6 +63,37 @@ namespace {
     }
 }
 
+[[nodiscard]] auto checkedMultiply(std::int64_t left, std::int64_t right)
+    -> core::Result<std::int64_t> {
+    if (left == 0 || right == 0) {
+        return 0;
+    }
+    constexpr auto minimum = std::numeric_limits<std::int64_t>::min();
+    constexpr auto maximum = std::numeric_limits<std::int64_t>::max();
+    if ((left == -1 && right == minimum) || (right == -1 && left == minimum)) {
+        return core::unexpected(
+            core::Error{"chart.beat.out_of_range", "Beat arithmetic overflowed"});
+    }
+    if ((left > 0 && right > 0 && left > maximum / right) ||
+        (left > 0 && right < 0 && right < minimum / left) ||
+        (left < 0 && right > 0 && left < minimum / right) ||
+        (left < 0 && right < 0 && left < maximum / right)) {
+        return core::unexpected(
+            core::Error{"chart.beat.out_of_range", "Beat arithmetic overflowed"});
+    }
+    return left * right;
+}
+
+[[nodiscard]] auto checkedAdd(std::int64_t left, std::int64_t right) -> core::Result<std::int64_t> {
+    constexpr auto minimum = std::numeric_limits<std::int64_t>::min();
+    constexpr auto maximum = std::numeric_limits<std::int64_t>::max();
+    if ((right > 0 && left > maximum - right) || (right < 0 && left < minimum - right)) {
+        return core::unexpected(
+            core::Error{"chart.beat.out_of_range", "Beat arithmetic overflowed"});
+    }
+    return left + right;
+}
+
 } // namespace
 
 auto RationalBeat::create(std::int64_t numerator, std::int64_t denominator)
@@ -126,106 +115,6 @@ auto RationalBeat::create(std::int64_t numerator, std::int64_t denominator)
         return core::unexpected(std::move(reducedNumerator.error()));
     }
     return RationalBeat{*reducedNumerator, static_cast<std::int64_t>(reducedDenominator)};
-}
-
-auto RationalBeat::parseSimple(std::string_view text, const ChartLimits& limits)
-    -> core::Result<RationalBeat> {
-    if (text.empty() || text.size() > limits.maxSimpleBeatBytes) {
-        return core::unexpected(
-            core::Error{"chart.beat.invalid_length", "Simple beat text has an invalid length"}
-                .withContext("length", std::to_string(text.size())));
-    }
-
-    bool negative = false;
-    if (text.front() == '+' || text.front() == '-') {
-        negative = text.front() == '-';
-        text.remove_prefix(1);
-    }
-    if (text.empty()) {
-        return core::unexpected(core::Error{"chart.beat.invalid", "Beat has no digits"});
-    }
-
-    std::uint64_t unsignedNumerator{};
-    std::uint64_t unsignedDenominator{1};
-    const auto slash = text.find('/');
-    const auto decimal = text.find('.');
-    if (slash != std::string_view::npos && decimal != std::string_view::npos) {
-        return core::unexpected(
-            core::Error{"chart.beat.invalid", "Beat cannot contain both a fraction and decimal"});
-    }
-
-    if (slash != std::string_view::npos) {
-        if (text.find('/', slash + 1) != std::string_view::npos) {
-            return core::unexpected(
-                core::Error{"chart.beat.invalid", "Beat contains more than one fraction slash"});
-        }
-        auto numerator = parseUnsigned(text.substr(0, slash), "numerator");
-        auto denominator = parseUnsigned(text.substr(slash + 1), "denominator");
-        if (!numerator) {
-            return core::unexpected(std::move(numerator.error()));
-        }
-        if (!denominator) {
-            return core::unexpected(std::move(denominator.error()));
-        }
-        if (*denominator == 0) {
-            return core::unexpected(
-                core::Error{"chart.beat.invalid_denominator", "Beat denominator must be positive"});
-        }
-        unsignedNumerator = *numerator;
-        unsignedDenominator = *denominator;
-    } else if (decimal != std::string_view::npos) {
-        if (text.find('.', decimal + 1) != std::string_view::npos || decimal == 0 ||
-            decimal + 1 == text.size()) {
-            return core::unexpected(
-                core::Error{"chart.beat.invalid", "Beat decimal has an invalid shape"});
-        }
-        const auto wholeText = text.substr(0, decimal);
-        const auto fractionText = text.substr(decimal + 1);
-        auto whole = parseUnsigned(wholeText, "whole");
-        auto fraction = parseUnsigned(fractionText, "fraction");
-        if (!whole) {
-            return core::unexpected(std::move(whole.error()));
-        }
-        if (!fraction) {
-            return core::unexpected(std::move(fraction.error()));
-        }
-
-        for (std::size_t index = 0; index < fractionText.size(); ++index) {
-            if (unsignedDenominator >
-                static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max()) / 10U) {
-                return core::unexpected(
-                    core::Error{"chart.beat.out_of_range", "Beat decimal precision is too large"});
-            }
-            unsignedDenominator *= 10U;
-        }
-        if (*whole >
-            (std::numeric_limits<std::uint64_t>::max() - *fraction) / unsignedDenominator) {
-            return core::unexpected(
-                core::Error{"chart.beat.out_of_range", "Beat decimal is outside supported range"});
-        }
-        unsignedNumerator = (*whole * unsignedDenominator) + *fraction;
-    } else {
-        auto numerator = parseUnsigned(text, "numerator");
-        if (!numerator) {
-            return core::unexpected(std::move(numerator.error()));
-        }
-        unsignedNumerator = *numerator;
-    }
-
-    if (unsignedDenominator >
-        static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max())) {
-        return core::unexpected(core::Error{"chart.beat.out_of_range",
-                                            "Beat denominator is outside signed 64-bit range"});
-    }
-    auto numerator = signedValue(unsignedNumerator, negative);
-    if (!numerator) {
-        return core::unexpected(std::move(numerator.error()));
-    }
-    auto beat = create(*numerator, static_cast<std::int64_t>(unsignedDenominator));
-    if (!beat) {
-        return core::unexpected(std::move(beat.error()));
-    }
-    return enforceLimits(*beat, limits);
 }
 
 auto RationalBeat::toDouble() const noexcept -> double {
@@ -256,6 +145,41 @@ auto operator<=>(const RationalBeat& left, const RationalBeat& right) noexcept
         return std::strong_ordering::less;
     }
     return std::strong_ordering::equal;
+}
+
+auto addRationalBeats(const RationalBeat& left, const RationalBeat& right)
+    -> core::Result<RationalBeat> {
+    const auto divisor = std::gcd(left.denominator(), right.denominator());
+    const auto leftFactor = right.denominator() / divisor;
+    const auto rightFactor = left.denominator() / divisor;
+    auto leftNumerator = checkedMultiply(left.numerator(), leftFactor);
+    auto rightNumerator = checkedMultiply(right.numerator(), rightFactor);
+    auto denominator = checkedMultiply(left.denominator(), leftFactor);
+    if (!leftNumerator || !rightNumerator || !denominator) {
+        return core::unexpected(core::Error{"chart.beat.out_of_range", "Beat addition overflowed"});
+    }
+    auto numerator = checkedAdd(*leftNumerator, *rightNumerator);
+    if (!numerator) {
+        return core::unexpected(core::Error{"chart.beat.out_of_range", "Beat addition overflowed"});
+    }
+    return RationalBeat::create(*numerator, *denominator);
+}
+
+auto rationalBeatMidpoint(const RationalBeat& left, const RationalBeat& right)
+    -> core::Result<RationalBeat> {
+    auto sum = addRationalBeats(left, right);
+    if (!sum) {
+        return core::unexpected(std::move(sum.error()));
+    }
+    if ((sum->numerator() % 2) == 0) {
+        return RationalBeat::create(sum->numerator() / 2, sum->denominator());
+    }
+    auto denominator = checkedMultiply(sum->denominator(), 2);
+    if (!denominator) {
+        return core::unexpected(
+            core::Error{"chart.beat.midpoint_out_of_range", "Beat midpoint overflowed"});
+    }
+    return RationalBeat::create(sum->numerator(), *denominator);
 }
 
 } // namespace cuexis::chart

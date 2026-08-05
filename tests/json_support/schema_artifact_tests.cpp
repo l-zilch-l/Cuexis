@@ -113,3 +113,30 @@ TEST_CASE("Stage 1D chart and asset index schemas accept the shipped fixture",
         "extensions":{}
     })");
 }
+
+TEST_CASE("Stage 2 chart schema accepts the shipped v3 fixture and rejects legacy fields",
+          "[json][schema][artifact][stage2]") {
+    const auto source = std::filesystem::path{CUEXIS_SOURCE_DIR};
+    const auto schema = parseArtifact(source / "schemas" / "cuexis.chart.v3.schema.json");
+    requireValid(schema,
+                 parseArtifact(source / "assets" / "charts" / "stage2_example.cuexis.chart.json"));
+
+    requireInvalid(schema, R"({
+        "format":"cuexis.chart","version":3,
+        "chartId":"019c0000-0000-7abc-8def-000000000003","metadata":{},
+        "timing":{"offsetMs":0,"defaultBpm":120,"bpmChanges":[],"stops":[]},
+        "templates":[],"behaviors":[],"objects":[],
+        "requiredExtensions":[],"extensions":{}
+    })");
+    requireInvalid(schema, R"({
+        "format":"cuexis.chart","version":3,
+        "chartId":"019c0000-0000-7abc-8def-000000000003","metadata":{},
+        "timing":{"offsetMs":0,"defaultBpm":120,"tempoEvents":[],"stops":[]},
+        "templates":[],
+        "behaviors":[{"id":"bad","type":"behavior.event","version":1,
+          "events":[{"property":"render.visible","startBeat":{"numerator":0,"denominator":1},
+            "durationBeats":{"numerator":1,"denominator":1},"startValue":0,"endValue":1,
+            "startSlope":1,"endSlope":1}],"stepEvents":[]}],
+        "objects":[],"requiredExtensions":[],"extensions":{}
+    })");
+}

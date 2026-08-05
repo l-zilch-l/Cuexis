@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <span>
+#include <string>
 #include <variant>
 #include <vector>
 
@@ -27,9 +28,13 @@ enum class PropertyId : std::uint8_t {
     TransformRotation,
     TransformScale,
     CameraFovY,
+    RenderVisible,
+    RenderMaterial,
+    MaterialOpacity,
+    MaterialTint,
 };
 
-using PropertyValue = std::variant<double, core::Vec3, core::Quat>;
+using PropertyValue = std::variant<double, core::Vec3, core::Quat, bool, std::string>;
 
 struct PropertyWrite final {
     entt::entity entity{entt::null};

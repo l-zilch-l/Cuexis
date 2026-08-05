@@ -26,7 +26,10 @@ using EntityValue = std::underlying_type_t<entt::entity>;
 }
 
 [[nodiscard]] auto isTransformProperty(PropertyId property) noexcept -> bool {
-    return property != PropertyId::CameraFovY;
+    return property == PropertyId::TransformPositionX ||
+           property == PropertyId::TransformPositionY ||
+           property == PropertyId::TransformPositionZ ||
+           property == PropertyId::TransformRotation || property == PropertyId::TransformScale;
 }
 
 [[nodiscard]] auto entityError(std::string code, std::string message, entt::entity entity)
@@ -172,6 +175,10 @@ auto TransformPropertyResolver::prepare(std::span<const PropertyWrite> writes)
             break;
         }
         case PropertyId::CameraFovY:
+        case PropertyId::RenderVisible:
+        case PropertyId::RenderMaterial:
+        case PropertyId::MaterialOpacity:
+        case PropertyId::MaterialTint:
             break;
         }
     }

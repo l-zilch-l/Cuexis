@@ -111,7 +111,7 @@ void addError(core::Diagnostics& diagnostics, const core::Error& error, std::str
     if (!version) {
         return std::nullopt;
     }
-    if (*version != 1 && *version != 2) {
+    if (*version != 1 && *version != 2 && *version != 3) {
         addError(diagnostics, "chart.version.unsupported", "Chart format version is unsupported",
                  std::string{reader.fieldPath()});
         return std::nullopt;
@@ -406,9 +406,17 @@ void addError(core::Diagnostics& diagnostics, const core::Error& error, std::str
         }
         return BehaviorValue{*value};
     }
-    if (property == BehaviorProperty::TransformScale) {
+    if (property == BehaviorProperty::TransformScale ||
+        property == BehaviorProperty::MaterialTint) {
         const auto value = readVec3(reader, diagnostics);
         if (!value) {
+            return std::nullopt;
+        }
+        if (property == BehaviorProperty::MaterialTint &&
+            (value->x < 0.0F || value->x > 1.0F || value->y < 0.0F || value->y > 1.0F ||
+             value->z < 0.0F || value->z > 1.0F)) {
+            addError(diagnostics, "chart.behavior.material_tint_out_of_range",
+                     "material.tint components must be in [0, 1]", std::string{reader.fieldPath()});
             return std::nullopt;
         }
         return BehaviorValue{*value};
@@ -422,7 +430,7 @@ void addError(core::Diagnostics& diagnostics, const core::Error& error, std::str
         }
         return std::nullopt;
     }
-    if (property != BehaviorProperty::CameraFovY &&
+    if (property != BehaviorProperty::CameraFovY && property != BehaviorProperty::MaterialOpacity &&
         (*value < -static_cast<double>(std::numeric_limits<float>::max()) ||
          *value > static_cast<double>(std::numeric_limits<float>::max()))) {
         addError(diagnostics, "chart.behavior.value_out_of_range",
@@ -436,7 +444,79 @@ void addError(core::Diagnostics& diagnostics, const core::Error& error, std::str
                  std::string{reader.fieldPath()});
         return std::nullopt;
     }
+    if (property == BehaviorProperty::MaterialOpacity && (*value < 0.0 || *value > 1.0)) {
+        addError(diagnostics, "chart.behavior.material_opacity_out_of_range",
+                 "material.opacity must be in [0, 1]", std::string{reader.fieldPath()});
+        return std::nullopt;
+    }
     return BehaviorValue{*value};
+}
+
+[[nodiscard]] auto readEventProperty(const json::Reader& reader, core::Diagnostics& diagnostics)
+    -> std::optional<BehaviorProperty> {
+    const auto value = reader.readString();
+    if (!value) {
+        return std::nullopt;
+    }
+    if (*value == "transform.position.x") {
+        return BehaviorProperty::TransformPositionX;
+    }
+    if (*value == "transform.position.y") {
+        return BehaviorProperty::TransformPositionY;
+    }
+    if (*value == "transform.position.z") {
+        return BehaviorProperty::TransformPositionZ;
+    }
+    if (*value == "transform.rotation") {
+        return BehaviorProperty::TransformRotation;
+    }
+    if (*value == "transform.scale") {
+        return BehaviorProperty::TransformScale;
+    }
+    if (*value == "camera.fovY") {
+        return BehaviorProperty::CameraFovY;
+    }
+    if (*value == "material.opacity") {
+        return BehaviorProperty::MaterialOpacity;
+    }
+    if (*value == "material.tint") {
+        return BehaviorProperty::MaterialTint;
+    }
+    addError(diagnostics, "chart.behavior.property_invalid",
+             "Behavior Event property is unsupported", std::string{reader.fieldPath()});
+    return std::nullopt;
+}
+
+[[nodiscard]] auto readStepProperty(const json::Reader& reader, core::Diagnostics& diagnostics)
+    -> std::optional<BehaviorStepProperty> {
+    const auto value = reader.readString();
+    if (!value) {
+        return std::nullopt;
+    }
+    if (*value == "render.visible") {
+        return BehaviorStepProperty::RenderVisible;
+    }
+    if (*value == "render.material") {
+        return BehaviorStepProperty::RenderMaterial;
+    }
+    addError(diagnostics, "chart.behavior.step_property_invalid",
+             "Step Event property is unsupported", std::string{reader.fieldPath()});
+    return std::nullopt;
+}
+
+[[nodiscard]] auto readGroupId(const json::Reader& reader, const ChartLimits& limits,
+                               core::Diagnostics& diagnostics) -> std::optional<std::string> {
+    const auto value = readIdentifier(reader, limits, diagnostics, "Behavior group ID");
+    if (!value) {
+        return std::nullopt;
+    }
+    if (!isExtensionId(*value)) {
+        addError(diagnostics, "chart.behavior.group_id_invalid",
+                 "Behavior group ID contains unsupported characters",
+                 std::string{reader.fieldPath()});
+        return std::nullopt;
+    }
+    return value;
 }
 
 [[nodiscard]] auto readComponentVersion(const json::Reader& reader, core::Diagnostics& diagnostics)
@@ -1043,7 +1123,7 @@ struct RawTemplate final {
         }
         if (*type != "behavior.transform.keyframe") {
             addError(diagnostics, "chart.behavior.type_unsupported",
-                     "Behavior type is unsupported in stage 1A",
+                     "Behavior type is unsupported for this chart version",
                      std::string{typeReader->fieldPath()});
             continue;
         }
@@ -1154,6 +1234,211 @@ struct RawTemplate final {
                     .canonicalText;
             result.push_back(
                 ChartBehavior{BehaviorId{*id}, std::string{*type}, 1, std::move(behaviorTracks)});
+        }
+    }
+    return result;
+}
+
+[[nodiscard]] auto parseEventBehaviors(const json::Reader& reader, const ChartLimits& limits,
+                                       core::Diagnostics& diagnostics)
+    -> std::vector<ChartBehavior> {
+    std::vector<ChartBehavior> result;
+    const auto* values = reader.readArray();
+    if (values == nullptr) {
+        return result;
+    }
+    if (values->size() > limits.maxBehaviors) {
+        addError(diagnostics, "chart.limit.behaviors", "Behavior count exceeds configured limit",
+                 std::string{reader.fieldPath()});
+        return result;
+    }
+    std::set<std::string> ids;
+    std::size_t totalEvents = 0;
+    for (std::size_t index = 0; index < values->size(); ++index) {
+        if (diagnostics.limitReached()) {
+            break;
+        }
+        const auto item = reader.element(index);
+        if (!item || item->readObject() == nullptr) {
+            continue;
+        }
+        constexpr std::array knownFields{std::string_view{"id"}, std::string_view{"type"},
+                                         std::string_view{"version"}, std::string_view{"events"},
+                                         std::string_view{"stepEvents"}};
+        item->rejectUnknownFields(knownFields);
+        const auto idReader = item->requiredField("id");
+        const auto typeReader = item->requiredField("type");
+        const auto versionReader = item->requiredField("version");
+        const auto eventsReader = item->requiredField("events");
+        const auto stepEventsReader = item->requiredField("stepEvents");
+        if (!idReader || !typeReader || !versionReader || !eventsReader || !stepEventsReader) {
+            continue;
+        }
+        const auto id = readIdentifier(*idReader, limits, diagnostics, "Behavior ID");
+        const auto type = typeReader->readString();
+        const bool versionValid = readSupportedComponentVersion(*versionReader, diagnostics);
+        const auto* events = eventsReader->readArray();
+        const auto* stepEvents = stepEventsReader->readArray();
+        if (!id || !type || !versionValid || events == nullptr || stepEvents == nullptr) {
+            continue;
+        }
+        if (!ids.insert(*id).second) {
+            addError(diagnostics, "chart.behavior.id_duplicate", "Behavior ID must be unique",
+                     std::string{idReader->fieldPath()});
+            continue;
+        }
+        if (*type != "behavior.event") {
+            addError(diagnostics, "chart.behavior.type_unsupported",
+                     "Chart v3 requires behavior.event version 1",
+                     std::string{typeReader->fieldPath()});
+            continue;
+        }
+        const auto eventCount = events->size() + stepEvents->size();
+        if (eventCount == 0) {
+            addError(diagnostics, "chart.behavior.events_empty",
+                     "behavior.event must contain at least one event",
+                     std::string{item->fieldPath()});
+            continue;
+        }
+        if (eventCount > limits.maxEventsPerBehavior ||
+            eventCount > limits.maxTotalBehaviorEvents ||
+            totalEvents > limits.maxTotalBehaviorEvents - eventCount) {
+            addError(diagnostics, "chart.limit.behavior_events",
+                     "Behavior Event count exceeds configured limit",
+                     std::string{item->fieldPath()});
+            continue;
+        }
+        totalEvents += eventCount;
+
+        std::vector<BehaviorEvent> typedEvents;
+        typedEvents.reserve(events->size());
+        bool behaviorValid = true;
+        for (std::size_t eventIndex = 0; eventIndex < events->size(); ++eventIndex) {
+            const auto eventReader = eventsReader->element(eventIndex);
+            if (!eventReader || eventReader->readObject() == nullptr) {
+                behaviorValid = false;
+                continue;
+            }
+            constexpr std::array eventFields{
+                std::string_view{"property"},      std::string_view{"startBeat"},
+                std::string_view{"durationBeats"}, std::string_view{"startValue"},
+                std::string_view{"endValue"},      std::string_view{"startSlope"},
+                std::string_view{"endSlope"},      std::string_view{"groupId"}};
+            eventReader->rejectUnknownFields(eventFields);
+            const auto propertyReader = eventReader->requiredField("property");
+            const auto startBeatReader = eventReader->requiredField("startBeat");
+            const auto durationReader = eventReader->requiredField("durationBeats");
+            const auto startValueReader = eventReader->requiredField("startValue");
+            const auto endValueReader = eventReader->requiredField("endValue");
+            const auto startSlopeReader = eventReader->requiredField("startSlope");
+            const auto endSlopeReader = eventReader->requiredField("endSlope");
+            if (!propertyReader || !startBeatReader || !durationReader || !startValueReader ||
+                !endValueReader || !startSlopeReader || !endSlopeReader) {
+                behaviorValid = false;
+                continue;
+            }
+            const auto property = readEventProperty(*propertyReader, diagnostics);
+            const auto startBeat = readBeat(*startBeatReader, limits, diagnostics);
+            const auto duration = readBeat(*durationReader, limits, diagnostics);
+            const auto startSlope = startSlopeReader->readNumber();
+            const auto endSlope = endSlopeReader->readNumber();
+            const auto startValue =
+                property ? readBehaviorValue(*startValueReader, *property, diagnostics)
+                         : std::nullopt;
+            const auto endValue = property
+                                      ? readBehaviorValue(*endValueReader, *property, diagnostics)
+                                      : std::nullopt;
+            std::optional<std::string> groupId;
+            bool groupValid = true;
+            if (const auto groupReader = eventReader->optionalField("groupId")) {
+                groupId = readGroupId(*groupReader, limits, diagnostics);
+                groupValid = groupId.has_value();
+            }
+            if (!property || !startBeat || !duration || !startValue || !endValue || !startSlope ||
+                !endSlope || !groupValid) {
+                behaviorValid = false;
+                continue;
+            }
+            if (duration->numerator() < 0) {
+                addError(diagnostics, "chart.behavior.duration_negative",
+                         "Behavior Event duration must be non-negative",
+                         std::string{durationReader->fieldPath()});
+                behaviorValid = false;
+                continue;
+            }
+            if (!std::isfinite(*startSlope) || !std::isfinite(*endSlope) || *startSlope < 0.0 ||
+                *endSlope < 0.0 || *startSlope + *endSlope > 3.0) {
+                addError(diagnostics, "chart.behavior.slope_invalid",
+                         "Behavior Event slopes must be finite, non-negative, and sum to at most 3",
+                         std::string{eventReader->fieldPath()});
+                behaviorValid = false;
+                continue;
+            }
+            if (duration->numerator() == 0 &&
+                (*startValue != *endValue || *startSlope != 0.0 || *endSlope != 0.0)) {
+                addError(diagnostics, "chart.behavior.zero_duration_invalid",
+                         "Zero-duration Behavior Events require equal values and zero slopes",
+                         std::string{eventReader->fieldPath()});
+                behaviorValid = false;
+                continue;
+            }
+            typedEvents.push_back(BehaviorEvent{*property, *startBeat, *duration, *startValue,
+                                                *endValue, *startSlope, *endSlope,
+                                                std::move(groupId)});
+        }
+
+        std::vector<BehaviorStepEvent> typedStepEvents;
+        typedStepEvents.reserve(stepEvents->size());
+        for (std::size_t eventIndex = 0; eventIndex < stepEvents->size(); ++eventIndex) {
+            const auto eventReader = stepEventsReader->element(eventIndex);
+            if (!eventReader || eventReader->readObject() == nullptr) {
+                behaviorValid = false;
+                continue;
+            }
+            constexpr std::array eventFields{std::string_view{"property"}, std::string_view{"beat"},
+                                             std::string_view{"value"},
+                                             std::string_view{"groupId"}};
+            eventReader->rejectUnknownFields(eventFields);
+            const auto propertyReader = eventReader->requiredField("property");
+            const auto beatReader = eventReader->requiredField("beat");
+            const auto valueReader = eventReader->requiredField("value");
+            if (!propertyReader || !beatReader || !valueReader) {
+                behaviorValid = false;
+                continue;
+            }
+            const auto property = readStepProperty(*propertyReader, diagnostics);
+            const auto beat = readBeat(*beatReader, limits, diagnostics);
+            std::optional<BehaviorStepValue> value;
+            if (property == BehaviorStepProperty::RenderVisible) {
+                if (const auto visible = valueReader->readBoolean()) {
+                    value = BehaviorStepValue{*visible};
+                }
+            } else if (property == BehaviorStepProperty::RenderMaterial) {
+                if (const auto material =
+                        readReference(*valueReader, "asset", limits, diagnostics)) {
+                    value = BehaviorStepValue{AssetId{*material}};
+                }
+            }
+            std::optional<std::string> groupId;
+            bool groupValid = true;
+            if (const auto groupReader = eventReader->optionalField("groupId")) {
+                groupId = readGroupId(*groupReader, limits, diagnostics);
+                groupValid = groupId.has_value();
+            }
+            if (!property || !beat || !value || !groupValid) {
+                behaviorValid = false;
+                continue;
+            }
+            typedStepEvents.push_back(
+                BehaviorStepEvent{*property, *beat, std::move(*value), std::move(groupId)});
+        }
+        if (behaviorValid) {
+            result.push_back(ChartBehavior{.id = BehaviorId{*id},
+                                           .type = std::string{*type},
+                                           .version = 1,
+                                           .tracks = {},
+                                           .events = std::move(typedEvents),
+                                           .stepEvents = std::move(typedStepEvents)});
         }
     }
     return result;
@@ -1290,50 +1575,167 @@ struct RawTemplate final {
     return result;
 }
 
-[[nodiscard]] auto parseTiming(const json::Reader& reader, core::Diagnostics& diagnostics)
+[[nodiscard]] auto parseTiming(const json::Reader& reader, std::uint32_t formatVersion,
+                               const ChartLimits& limits, core::Diagnostics& diagnostics)
     -> std::optional<ChartTiming> {
-    constexpr std::array knownFields{std::string_view{"offsetMs"}, std::string_view{"defaultBpm"},
-                                     std::string_view{"bpmChanges"}, std::string_view{"stops"}};
+    constexpr std::array legacyFields{std::string_view{"offsetMs"}, std::string_view{"defaultBpm"},
+                                      std::string_view{"bpmChanges"}, std::string_view{"stops"}};
+    constexpr std::array v3Fields{std::string_view{"offsetMs"}, std::string_view{"defaultBpm"},
+                                  std::string_view{"tempoEvents"}, std::string_view{"stops"}};
     if (reader.readObject() == nullptr) {
         return std::nullopt;
     }
-    reader.rejectUnknownFields(knownFields);
+    reader.rejectUnknownFields(formatVersion == 3 ? std::span{v3Fields} : std::span{legacyFields});
     const auto offsetReader = reader.requiredField("offsetMs");
     const auto bpmReader = reader.requiredField("defaultBpm");
-    const auto changesReader = reader.requiredField("bpmChanges");
+    const auto eventsReader =
+        reader.requiredField(formatVersion == 3 ? "tempoEvents" : "bpmChanges");
     const auto stopsReader = reader.requiredField("stops");
-    if (!offsetReader || !bpmReader || !changesReader || !stopsReader) {
+    if (!offsetReader || !bpmReader || !eventsReader || !stopsReader) {
         return std::nullopt;
     }
     const auto offset = offsetReader->readNumber();
     const auto bpm = bpmReader->readNumber();
-    const auto* changes = changesReader->readArray();
+    const auto* events = eventsReader->readArray();
     const auto* stops = stopsReader->readArray();
-    if (!offset || !bpm || changes == nullptr || stops == nullptr) {
+    if (!offset || !bpm || events == nullptr || stops == nullptr) {
         return std::nullopt;
     }
     if (!std::isfinite(*offset)) {
         addError(diagnostics, "chart.timing.non_finite", "Offset must be finite",
                  std::string{offsetReader->fieldPath()});
     }
-    if (!std::isfinite(*bpm) || *bpm <= 0.0) {
-        addError(diagnostics, "chart.timing.invalid_bpm", "Default BPM must be finite and positive",
+    if (!std::isfinite(*bpm) || *bpm < 1.0 || *bpm > 65536.0) {
+        addError(diagnostics, "chart.timing.invalid_bpm", "Default BPM must be in [1, 65536]",
                  std::string{bpmReader->fieldPath()});
     }
-    if (!changes->empty()) {
+    if (formatVersion != 3 && !events->empty()) {
         addError(diagnostics, "chart.timing.bpm_changes_unsupported",
-                 "BPM changes are unsupported in stage 1A",
-                 std::string{changesReader->fieldPath()});
+                 "BPM changes are unsupported before chart v3",
+                 std::string{eventsReader->fieldPath()});
     }
-    if (!stops->empty()) {
-        addError(diagnostics, "chart.timing.stops_unsupported", "Stops are unsupported in stage 1A",
-                 std::string{stopsReader->fieldPath()});
+    if (formatVersion != 3 && !stops->empty()) {
+        addError(diagnostics, "chart.timing.stops_unsupported",
+                 "Stops are unsupported before chart v3", std::string{stopsReader->fieldPath()});
     }
-    if (!std::isfinite(*offset) || !std::isfinite(*bpm) || *bpm <= 0.0 || !changes->empty() ||
-        !stops->empty()) {
+    if (!std::isfinite(*offset) || !std::isfinite(*bpm) || *bpm < 1.0 || *bpm > 65536.0 ||
+        (formatVersion != 3 && (!events->empty() || !stops->empty()))) {
         return std::nullopt;
     }
-    return ChartTiming{*offset, *bpm};
+
+    ChartTiming timing{.offsetMs = *offset, .defaultBpm = *bpm};
+    if (formatVersion != 3) {
+        return timing;
+    }
+    if (events->size() > limits.maxTempoEvents) {
+        addError(diagnostics, "chart.limit.tempo_events",
+                 "Tempo Event count exceeds configured limit",
+                 std::string{eventsReader->fieldPath()});
+        return std::nullopt;
+    }
+    if (stops->size() > limits.maxStops) {
+        addError(diagnostics, "chart.limit.stops", "Stop count exceeds configured limit",
+                 std::string{stopsReader->fieldPath()});
+        return std::nullopt;
+    }
+    bool valid = true;
+    timing.tempoEvents.reserve(events->size());
+    for (std::size_t index = 0; index < events->size(); ++index) {
+        const auto item = eventsReader->element(index);
+        if (!item || item->readObject() == nullptr) {
+            valid = false;
+            continue;
+        }
+        constexpr std::array fields{
+            std::string_view{"startBeat"},  std::string_view{"durationBeats"},
+            std::string_view{"startBpm"},   std::string_view{"endBpm"},
+            std::string_view{"startSlope"}, std::string_view{"endSlope"}};
+        item->rejectUnknownFields(fields);
+        const auto startReader = item->requiredField("startBeat");
+        const auto durationReader = item->requiredField("durationBeats");
+        const auto startBpmReader = item->requiredField("startBpm");
+        const auto endBpmReader = item->requiredField("endBpm");
+        const auto startSlopeReader = item->requiredField("startSlope");
+        const auto endSlopeReader = item->requiredField("endSlope");
+        if (!startReader || !durationReader || !startBpmReader || !endBpmReader ||
+            !startSlopeReader || !endSlopeReader) {
+            valid = false;
+            continue;
+        }
+        const auto start = readBeat(*startReader, limits, diagnostics);
+        const auto duration = readBeat(*durationReader, limits, diagnostics);
+        const auto startBpm = startBpmReader->readNumber();
+        const auto endBpm = endBpmReader->readNumber();
+        const auto startSlope = startSlopeReader->readNumber();
+        const auto endSlope = endSlopeReader->readNumber();
+        if (!start || !duration || !startBpm || !endBpm || !startSlope || !endSlope) {
+            valid = false;
+            continue;
+        }
+        if (duration->numerator() < 0) {
+            addError(diagnostics, "chart.timing.duration_negative",
+                     "Tempo Event duration must be non-negative",
+                     std::string{durationReader->fieldPath()});
+            valid = false;
+            continue;
+        }
+        if (!std::isfinite(*startBpm) || !std::isfinite(*endBpm) || *startBpm < 1.0 ||
+            *startBpm > 65536.0 || *endBpm < 1.0 || *endBpm > 65536.0) {
+            addError(diagnostics, "chart.timing.invalid_bpm",
+                     "Tempo Event BPM must be in [1, 65536]", std::string{item->fieldPath()});
+            valid = false;
+            continue;
+        }
+        if (!std::isfinite(*startSlope) || !std::isfinite(*endSlope) || *startSlope < 0.0 ||
+            *endSlope < 0.0 || *startSlope + *endSlope > 3.0) {
+            addError(diagnostics, "chart.timing.invalid_slope",
+                     "Tempo Event slopes must be finite, non-negative, and sum to at most 3",
+                     std::string{item->fieldPath()});
+            valid = false;
+            continue;
+        }
+        if (duration->numerator() == 0 &&
+            (*startBpm != *endBpm || *startSlope != 0.0 || *endSlope != 0.0)) {
+            addError(diagnostics, "chart.timing.zero_duration_invalid",
+                     "Zero-duration Tempo Events require equal BPM and zero slopes",
+                     std::string{item->fieldPath()});
+            valid = false;
+            continue;
+        }
+        timing.tempoEvents.push_back(
+            TempoEvent{*start, *duration, *startBpm, *endBpm, *startSlope, *endSlope});
+    }
+    timing.stops.reserve(stops->size());
+    for (std::size_t index = 0; index < stops->size(); ++index) {
+        const auto item = stopsReader->element(index);
+        if (!item || item->readObject() == nullptr) {
+            valid = false;
+            continue;
+        }
+        constexpr std::array fields{std::string_view{"beat"}, std::string_view{"durationMs"}};
+        item->rejectUnknownFields(fields);
+        const auto beatReader = item->requiredField("beat");
+        const auto durationReader = item->requiredField("durationMs");
+        if (!beatReader || !durationReader) {
+            valid = false;
+            continue;
+        }
+        const auto beat = readBeat(*beatReader, limits, diagnostics);
+        const auto duration = durationReader->readNumber();
+        if (!beat || !duration) {
+            valid = false;
+            continue;
+        }
+        if (!std::isfinite(*duration) || *duration <= 0.0) {
+            addError(diagnostics, "chart.timing.stop_duration_invalid",
+                     "Stop duration must be finite and positive",
+                     std::string{durationReader->fieldPath()});
+            valid = false;
+            continue;
+        }
+        timing.stops.push_back(TimingStop{*beat, *duration});
+    }
+    return valid ? std::optional<ChartTiming>{std::move(timing)} : std::nullopt;
 }
 
 [[nodiscard]] auto readCamera(const json::Reader& reader, core::Diagnostics& diagnostics)
@@ -1482,7 +1884,7 @@ auto CanonicalChartLoader::load(std::string_view jsonText, const ChartLimits& li
         std::string_view{"templates"},  std::string_view{"behaviors"},
         std::string_view{"objects"},    std::string_view{"requiredExtensions"},
         std::string_view{"extensions"}, std::string_view{"audio"}};
-    if (formatVersion && *formatVersion == 2) {
+    if (formatVersion && (*formatVersion == 2 || *formatVersion == 3)) {
         root.rejectUnknownFields(knownFieldsV2);
     } else {
         root.rejectUnknownFields(knownFieldsV1);
@@ -1498,8 +1900,9 @@ auto CanonicalChartLoader::load(std::string_view jsonText, const ChartLimits& li
     const auto objectsReader = root.requiredField("objects");
     const auto requiredExtensionsReader = root.requiredField("requiredExtensions");
     const auto extensionsReader = root.requiredField("extensions");
-    const auto audioReader =
-        formatVersion && *formatVersion == 2 ? root.optionalField("audio") : std::nullopt;
+    const auto audioReader = formatVersion && (*formatVersion == 2 || *formatVersion == 3)
+                                 ? root.optionalField("audio")
+                                 : std::nullopt;
 
     std::optional<ChartId> chartId;
     if (formatReader) {
@@ -1529,7 +1932,9 @@ auto CanonicalChartLoader::load(std::string_view jsonText, const ChartLimits& li
         metadata.data =
             opaqueJson(metadataReader->value(), diagnostics, metadataReader->fieldPath());
     }
-    const auto timing = timingReader ? parseTiming(*timingReader, diagnostics) : std::nullopt;
+    const auto timing = timingReader && formatVersion
+                            ? parseTiming(*timingReader, *formatVersion, limits, diagnostics)
+                            : std::nullopt;
     const auto audio = audioReader ? readChartAudio(*audioReader, limits, diagnostics)
                                    : std::optional<ChartAudioData>{};
     const auto camera = cameraReader ? readCamera(*cameraReader, diagnostics) : CameraData{};
@@ -1537,8 +1942,11 @@ auto CanonicalChartLoader::load(std::string_view jsonText, const ChartLimits& li
         templatesReader
             ? parseTemplates(*templatesReader, limits, diagnostics)
             : std::pair<std::vector<ChartTemplate>, std::map<std::string, json::Value>>{};
-    auto behaviors = behaviorsReader ? parseBehaviors(*behaviorsReader, limits, diagnostics)
-                                     : std::vector<ChartBehavior>{};
+    auto behaviors =
+        behaviorsReader && formatVersion
+            ? (*formatVersion == 3 ? parseEventBehaviors(*behaviorsReader, limits, diagnostics)
+                                   : parseBehaviors(*behaviorsReader, limits, diagnostics))
+            : std::vector<ChartBehavior>{};
     auto objects = objectsReader
                        ? parseObjects(*objectsReader, expandedTemplates, limits, diagnostics)
                        : std::vector<ChartObject>{};
@@ -1587,7 +1995,7 @@ auto CanonicalChartLoader::load(std::string_view jsonText, const ChartLimits& li
                     continue;
                 }
                 addError(diagnostics, "chart.extension.required_unsupported",
-                         "Required extension has no registered stage 1A handler",
+                         "Required extension has no registered handler",
                          json::appendIndexPath(requiredExtensionsReader->fieldPath(), index));
             }
         }

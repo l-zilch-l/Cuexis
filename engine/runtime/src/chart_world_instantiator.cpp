@@ -53,7 +53,11 @@ void addObjectError(core::Diagnostics& diagnostics, std::string code, std::strin
 }
 
 [[nodiscard]] auto isTransformProperty(chart::BehaviorProperty property) noexcept -> bool {
-    return property != chart::BehaviorProperty::CameraFovY;
+    return property == chart::BehaviorProperty::TransformPositionX ||
+           property == chart::BehaviorProperty::TransformPositionY ||
+           property == chart::BehaviorProperty::TransformPositionZ ||
+           property == chart::BehaviorProperty::TransformRotation ||
+           property == chart::BehaviorProperty::TransformScale;
 }
 
 void addWorldError(core::Diagnostics& diagnostics, const core::Error& error) {
@@ -145,6 +149,63 @@ auto ChartWorldInstantiator::validate(const chart::ChartRuntime& runtime) -> cor
                 }
             }
         }
+        for (std::size_t trackIndex = 0; trackIndex < behavior.eventTracks.size(); ++trackIndex) {
+            const auto& track = behavior.eventTracks[trackIndex];
+            if (trackIndex != 0 &&
+                !(behavior.eventTracks[trackIndex - 1].property < track.property)) {
+                static_cast<void>(diagnostics.add(core::Diagnostic{
+                    core::DiagnosticSeverity::Error,
+                    "runtime.chart.event_tracks_not_strictly_sorted",
+                    "Runtime Event Tracks must be unique and sorted by Property",
+                    "/behaviors/" + std::to_string(behaviorIndexValue) + "/eventTracks"}));
+                break;
+            }
+            if (track.events.empty()) {
+                static_cast<void>(diagnostics.add(core::Diagnostic{
+                    core::DiagnosticSeverity::Error, "runtime.chart.event_track_empty",
+                    "Runtime Event Track must contain at least one event",
+                    "/behaviors/" + std::to_string(behaviorIndexValue) + "/eventTracks/" +
+                        std::to_string(trackIndex)}));
+                continue;
+            }
+            for (std::size_t eventIndex = 0; eventIndex < track.events.size(); ++eventIndex) {
+                const auto& event = track.events[eventIndex];
+                if (!std::isfinite(event.startBeat) || !std::isfinite(event.endBeat) ||
+                    event.endBeat < event.startBeat ||
+                    (eventIndex != 0 && track.events[eventIndex - 1].endBeat > event.startBeat)) {
+                    static_cast<void>(diagnostics.add(core::Diagnostic{
+                        core::DiagnosticSeverity::Error, "runtime.chart.events_invalid",
+                        "Runtime Events must be finite, sorted, and non-overlapping",
+                        "/behaviors/" + std::to_string(behaviorIndexValue) + "/eventTracks/" +
+                            std::to_string(trackIndex)}));
+                    break;
+                }
+            }
+        }
+        for (std::size_t trackIndex = 0; trackIndex < behavior.stepTracks.size(); ++trackIndex) {
+            const auto& track = behavior.stepTracks[trackIndex];
+            if (trackIndex != 0 &&
+                !(behavior.stepTracks[trackIndex - 1].property < track.property)) {
+                static_cast<void>(diagnostics.add(core::Diagnostic{
+                    core::DiagnosticSeverity::Error,
+                    "runtime.chart.step_tracks_not_strictly_sorted",
+                    "Runtime Step Tracks must be unique and sorted by Property",
+                    "/behaviors/" + std::to_string(behaviorIndexValue) + "/stepTracks"}));
+                break;
+            }
+            for (std::size_t eventIndex = 0; eventIndex < track.events.size(); ++eventIndex) {
+                if (!std::isfinite(track.events[eventIndex].beat) ||
+                    (eventIndex != 0 &&
+                     !(track.events[eventIndex - 1].beat < track.events[eventIndex].beat))) {
+                    static_cast<void>(diagnostics.add(core::Diagnostic{
+                        core::DiagnosticSeverity::Error, "runtime.chart.step_events_invalid",
+                        "Runtime Step Events must have finite strictly increasing Beats",
+                        "/behaviors/" + std::to_string(behaviorIndexValue) + "/stepTracks/" +
+                            std::to_string(trackIndex)}));
+                    break;
+                }
+            }
+        }
     }
 
     std::size_t propertyWrites = 0;
@@ -170,14 +231,16 @@ auto ChartWorldInstantiator::validate(const chart::ChartRuntime& runtime) -> cor
                 continue;
             }
             const auto& behavior = runtime.behaviors[*resolvedBehavior];
-            if (behavior.tracks.size() > world::maxPropertyWritesPerFrame ||
-                propertyWrites > world::maxPropertyWritesPerFrame - behavior.tracks.size()) {
+            const auto trackCount =
+                behavior.tracks.size() + behavior.eventTracks.size() + behavior.stepTracks.size();
+            if (trackCount > world::maxPropertyWritesPerFrame ||
+                propertyWrites > world::maxPropertyWritesPerFrame - trackCount) {
                 addObjectError(diagnostics, "runtime.chart.property_write_limit",
                                "Runtime behavior bindings exceed the per-frame write limit", index,
                                object.id);
                 continue;
             }
-            propertyWrites += behavior.tracks.size();
+            propertyWrites += trackCount;
             for (const auto& track : behavior.tracks) {
                 if (isTransformProperty(track.property) &&
                     !object.components.transform.has_value()) {
@@ -190,6 +253,35 @@ auto ChartWorldInstantiator::validate(const chart::ChartRuntime& runtime) -> cor
                     addObjectError(diagnostics, "runtime.chart.behavior_camera_missing",
                                    "camera.fovY target has no cuexis.camera component", index,
                                    object.id);
+                }
+            }
+            for (const auto& track : behavior.eventTracks) {
+                if (isTransformProperty(track.property) &&
+                    !object.components.transform.has_value()) {
+                    addObjectError(diagnostics, "runtime.chart.behavior_transform_missing",
+                                   "Transform Behavior target has no cuexis.transform component",
+                                   index, object.id);
+                }
+                if (track.property == chart::BehaviorProperty::CameraFovY &&
+                    !object.components.camera.has_value()) {
+                    addObjectError(diagnostics, "runtime.chart.behavior_camera_missing",
+                                   "camera.fovY target has no cuexis.camera component", index,
+                                   object.id);
+                }
+                if ((track.property == chart::BehaviorProperty::MaterialOpacity ||
+                     track.property == chart::BehaviorProperty::MaterialTint) &&
+                    !object.components.renderable.has_value()) {
+                    addObjectError(diagnostics, "runtime.chart.behavior_renderable_missing",
+                                   "Material Behavior target has no cuexis.renderable component",
+                                   index, object.id);
+                }
+            }
+            for (const auto& track : behavior.stepTracks) {
+                static_cast<void>(track);
+                if (!object.components.renderable.has_value()) {
+                    addObjectError(diagnostics, "runtime.chart.behavior_renderable_missing",
+                                   "Render Step Event target has no cuexis.renderable component",
+                                   index, object.id);
                 }
             }
         }
@@ -297,6 +389,9 @@ auto ChartWorldInstantiator::instantiate(
                     const auto& resources = *renderableResources[index];
                     registry.emplace<render::RenderableComponent>(entity, resources.mesh,
                                                                   resources.material);
+                    registry.emplace<render::AppearanceComponent>(
+                        entity, true, object.components.renderable->material.value, 1.0,
+                        core::Vec3{1.0F, 1.0F, 1.0F});
                 }
                 if (object.components.camera.has_value()) {
                     const auto& cam = *object.components.camera;

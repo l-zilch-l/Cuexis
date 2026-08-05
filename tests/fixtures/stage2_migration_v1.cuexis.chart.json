@@ -1,0 +1,140 @@
+{
+  "format": "cuexis.chart",
+  "version": 1,
+  "chartId": "019c0000-0000-7abc-8def-000000000201",
+  "metadata": { "title": "Stage 2 Migration Golden" },
+  "timing": { "offsetMs": 0.0, "defaultBpm": 120.0, "bpmChanges": [], "stops": [] },
+  "camera": { "type": "perspective", "fovY": 60.0, "near": 0.1, "far": 1000.0 },
+  "templates": [
+    {
+      "id": "019c0000-0000-7abc-8def-000000000220",
+      "extends": null,
+      "prototype": {
+        "components": {
+          "cuexis.transform": {
+            "version": 1,
+            "position": [0.0, 0.0, 0.0],
+            "rotation": [0.0, 0.0, 0.0, 1.0],
+            "scale": [1.0, 1.0, 1.0]
+          },
+          "cuexis.camera": {
+            "version": 1,
+            "type": "perspective",
+            "fovY": 60.0,
+            "near": 0.1,
+            "far": 1000.0
+          },
+          "cuexis.behavior": {
+            "version": 1,
+            "behavior": { "domain": "behavior", "id": "shared.motion" }
+          }
+        }
+      },
+      "extensions": {}
+    }
+  ],
+  "behaviors": [
+    {
+      "id": "shared.motion",
+      "type": "behavior.transform.keyframe",
+      "version": 1,
+      "tracks": [
+        {
+          "property": "transform.position.x",
+          "keys": [
+            { "beat": { "numerator": 0, "denominator": 1 }, "value": 1.0 },
+            { "beat": { "numerator": 2, "denominator": 1 }, "value": 5.0, "easing": "linear" }
+          ]
+        },
+        {
+          "property": "transform.scale",
+          "keys": [
+            { "beat": { "numerator": 0, "denominator": 1 }, "value": [1.0, 2.0, 3.0] },
+            { "beat": { "numerator": 2, "denominator": 1 }, "value": [3.0, 4.0, 5.0], "easing": "in_cubic" }
+          ]
+        },
+        {
+          "property": "transform.rotation",
+          "keys": [
+            { "beat": { "numerator": 0, "denominator": 1 }, "value": [0.0, 0.0, 0.0, 1.0] },
+            { "beat": { "numerator": 2, "denominator": 1 }, "value": [0.0, 0.0, 1.0, 0.0], "easing": "in_out_cubic" }
+          ]
+        },
+        {
+          "property": "camera.fovY",
+          "keys": [
+            { "beat": { "numerator": 0, "denominator": 1 }, "value": 55.0 },
+            { "beat": { "numerator": 2, "denominator": 1 }, "value": 75.0, "easing": "out_cubic" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "single.key",
+      "type": "behavior.transform.keyframe",
+      "version": 1,
+      "tracks": [
+        {
+          "property": "transform.position.x",
+          "keys": [
+            { "beat": { "numerator": 4, "denominator": 1 }, "value": 7.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unbound.motion",
+      "type": "behavior.transform.keyframe",
+      "version": 1,
+      "tracks": [
+        {
+          "property": "transform.position.y",
+          "keys": [
+            { "beat": { "numerator": -1, "denominator": 1 }, "value": -2.0 },
+            { "beat": { "numerator": 1, "denominator": 1 }, "value": 2.0, "easing": "out_cubic" }
+          ]
+        }
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "id": "019c0000-0000-7abc-8def-000000000210",
+      "parent": null,
+      "template": { "domain": "template", "id": "019c0000-0000-7abc-8def-000000000220" },
+      "overrides": [],
+      "extensions": {}
+    },
+    {
+      "id": "019c0000-0000-7abc-8def-000000000211",
+      "parent": null,
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [9.0, 0.0, 0.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [1.0, 1.0, 1.0]
+        },
+        "cuexis.camera": { "version": 1, "type": "perspective", "fovY": 65.0, "near": 0.1, "far": 1000.0 },
+        "cuexis.behavior": { "version": 1, "behavior": { "domain": "behavior", "id": "shared.motion" } }
+      },
+      "extensions": {}
+    },
+    {
+      "id": "019c0000-0000-7abc-8def-000000000212",
+      "parent": null,
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [0.0, 0.0, 0.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [1.0, 1.0, 1.0]
+        },
+        "cuexis.behavior": { "version": 1, "behavior": { "domain": "behavior", "id": "single.key" } }
+      },
+      "extensions": {}
+    }
+  ],
+  "requiredExtensions": [],
+  "extensions": {}
+}

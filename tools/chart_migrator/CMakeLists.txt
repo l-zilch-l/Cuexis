@@ -1,0 +1,4 @@
+add_executable(cuexis_chart_migrator main.cpp)
+
+target_compile_features(cuexis_chart_migrator PRIVATE cxx_std_20)
+target_link_libraries(cuexis_chart_migrator PRIVATE cuexis::chart)

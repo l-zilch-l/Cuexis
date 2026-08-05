@@ -1,5 +1,6 @@
 #include <cuexis/chart/chart_loader.hpp>
 #include <cuexis/chart/chart_runtime.hpp>
+#include <cuexis/core/math.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -64,18 +65,47 @@ void checkExample(const std::filesystem::path& path) {
     CHECK(foundTemplateNote);
 }
 
+void checkCanonicalStage1AGolden(const cuexis::chart::ChartRuntime& runtime) {
+    REQUIRE(runtime.objects.size() == 3);
+
+    const auto& lane = runtime.objects[0];
+    CHECK(lane.id.value == "019b0000-0000-7abc-8def-000000000010");
+    CHECK_FALSE(lane.parentIndex.has_value());
+    REQUIRE(lane.components.transform.has_value());
+    CHECK(lane.components.transform->position == cuexis::core::Vec3{-0.3F, 0.0F, 0.0F});
+
+    const auto& note = runtime.objects[1];
+    CHECK(note.id.value == "019b0000-0000-7abc-8def-000000000011");
+    REQUIRE(note.parentIndex.has_value());
+    CHECK(*note.parentIndex == 0);
+    REQUIRE(note.components.transform.has_value());
+    CHECK(note.components.transform->position == cuexis::core::Vec3{0.3F, 0.0F, 0.0F});
+    REQUIRE(note.components.note.has_value());
+    REQUIRE(note.components.note->beat.has_value());
+    CHECK(note.components.note->beat->toString() == "4/1");
+
+    const auto& marker = runtime.objects[2];
+    CHECK(marker.id.value == "019b0000-0000-7abc-8def-000000000012");
+    REQUIRE(marker.parentIndex.has_value());
+    CHECK(*marker.parentIndex == 1);
+    REQUIRE(marker.components.transform.has_value());
+    CHECK(marker.components.transform->position == cuexis::core::Vec3{0.0F, 0.3F, 0.0F});
+    CHECK(marker.components.transform->scale == cuexis::core::Vec3{0.25F, 0.25F, 0.25F});
+}
+
 } // namespace
 
 TEST_CASE("Canonical stage 1A example loads and compiles into a visible three-object hierarchy",
           "[chart][example]") {
-    checkExample(std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" / "charts" /
-                 "stage1a_example.cuexis.chart.json");
-}
+    const auto path = std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" / "charts" /
+                      "stage1a_example.cuexis.chart.json";
+    checkExample(path);
 
-TEST_CASE("Simple stage 1A example imports and compiles into the same demo-safe shape",
-          "[chart][example]") {
-    checkExample(std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" / "charts" /
-                 "stage1a_example.cuexis.chart.simple.json");
+    const auto loaded = cuexis::chart::ChartLoader::load(readFile(path));
+    REQUIRE(loaded.hasValue());
+    const auto compiled = cuexis::chart::ChartCompiler::compile(*loaded.document);
+    REQUIRE(compiled.hasValue());
+    checkCanonicalStage1AGolden(*compiled.runtime);
 }
 
 TEST_CASE("Stage 1B project fixture exposes three typed renderable asset references",
@@ -106,4 +136,23 @@ TEST_CASE("Stage 1B project fixture exposes three typed renderable asset referen
     }
     CHECK(renderableCount == 3);
     CHECK(cameraCount == 1);
+}
+
+TEST_CASE("Canonical Stage 2 example loads and compiles through the v3 route",
+          "[chart][example][stage2]") {
+    const auto path = std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" / "charts" /
+                      "stage2_example.cuexis.chart.json";
+    const auto loaded = cuexis::chart::ChartLoader::load(readFile(path));
+    REQUIRE(loaded.hasValue());
+    REQUIRE(loaded.document->version == 3);
+    REQUIRE(loaded.document->timing.tempoEvents.size() == 2);
+    REQUIRE(loaded.document->timing.stops.size() == 1);
+    REQUIRE(loaded.document->behaviors.size() == 1);
+    REQUIRE(loaded.document->behaviors[0].events.size() == 2);
+
+    const auto compiled = cuexis::chart::ChartCompiler::compile(*loaded.document);
+    REQUIRE(compiled.hasValue());
+    CHECK(compiled.runtime->version == 3);
+    REQUIRE(compiled.runtime->behaviors.size() == 1);
+    CHECK(compiled.runtime->behaviors[0].eventTracks.size() == 2);
 }

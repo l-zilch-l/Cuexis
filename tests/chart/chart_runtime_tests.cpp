@@ -199,3 +199,50 @@ TEST_CASE("ChartRuntime preserves v2 main music and rejects audio on v1",
     REQUIRE_FALSE(rejected.hasValue());
     CHECK(hasDiagnostic(rejected.diagnostics, "chart.audio.not_available_in_v1"));
 }
+
+TEST_CASE("ChartRuntime enforces Stage 2 Event conflicts groups and typed zero duration",
+          "[chart][runtime][behavior][stage2]") {
+    auto document = makeDocument({makeElement("019b0000-0000-7abc-8def-000000000010")});
+    document.version = 3;
+    document.behaviors = {{
+        .id = {"events"},
+        .type = "behavior.event",
+        .version = 1,
+        .events =
+            {
+                {.property = cuexis::chart::BehaviorProperty::TransformPositionX,
+                 .startBeat = *cuexis::chart::RationalBeat::create(0, 1),
+                 .durationBeats = *cuexis::chart::RationalBeat::create(2, 1),
+                 .startValue = 0.0,
+                 .endValue = 2.0,
+                 .startSlope = 1.0,
+                 .endSlope = 1.0,
+                 .groupId = "shared"},
+                {.property = cuexis::chart::BehaviorProperty::TransformPositionX,
+                 .startBeat = *cuexis::chart::RationalBeat::create(1, 1),
+                 .durationBeats = *cuexis::chart::RationalBeat::create(0, 1),
+                 .startValue = 3.0,
+                 .endValue = 4.0,
+                 .groupId = "bad group"},
+                {.property = cuexis::chart::BehaviorProperty::TransformPositionY,
+                 .startBeat = *cuexis::chart::RationalBeat::create(0, 1),
+                 .durationBeats = *cuexis::chart::RationalBeat::create(1, 1),
+                 .startValue = 0.0,
+                 .endValue = 1.0,
+                 .startSlope = 1.0,
+                 .endSlope = 1.0,
+                 .groupId = "shared"},
+            },
+        .stepEvents = {{.property = cuexis::chart::BehaviorStepProperty::RenderVisible,
+                        .beat = *cuexis::chart::RationalBeat::create(0, 1),
+                        .value = true,
+                        .groupId = "shared"}},
+    }};
+
+    const auto rejected = cuexis::chart::ChartCompiler::compile(document);
+    REQUIRE_FALSE(rejected.hasValue());
+    CHECK(hasDiagnostic(rejected.diagnostics, "chart.behavior.event_overlap"));
+    CHECK(hasDiagnostic(rejected.diagnostics, "chart.behavior.zero_duration_invalid"));
+    CHECK(hasDiagnostic(rejected.diagnostics, "chart.behavior.group_id_invalid"));
+    CHECK(hasDiagnostic(rejected.diagnostics, "chart.behavior.group_boundary_mismatch"));
+}

@@ -35,14 +35,16 @@ file(GLOB_RECURSE CUEXIS_STAGE1D_PROJECT_FILES CONFIGURE_DEPENDS
 )
 
 add_custom_target(player_stage1c_assets ALL
+    COMMAND "${CMAKE_COMMAND}" -E rm -rf
+        "$<TARGET_FILE_DIR:cuexis_player>/assets/charts"
     COMMAND "${CMAKE_COMMAND}" -E make_directory
         "$<TARGET_FILE_DIR:cuexis_player>/assets/charts"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
         "${PROJECT_SOURCE_DIR}/assets/charts/stage1a_example.cuexis.chart.json"
         "$<TARGET_FILE_DIR:cuexis_player>/assets/charts/stage1a_example.cuexis.chart.json"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-        "${PROJECT_SOURCE_DIR}/assets/charts/stage1a_example.cuexis.chart.simple.json"
-        "$<TARGET_FILE_DIR:cuexis_player>/assets/charts/stage1a_example.cuexis.chart.simple.json"
+        "${PROJECT_SOURCE_DIR}/assets/charts/stage2_example.cuexis.chart.json"
+        "$<TARGET_FILE_DIR:cuexis_player>/assets/charts/stage2_example.cuexis.chart.json"
     COMMAND "${CMAKE_COMMAND}" -E make_directory
         "$<TARGET_FILE_DIR:cuexis_player>/assets/projects"
     COMMAND "${CMAKE_COMMAND}" -E rm -rf
@@ -57,7 +59,7 @@ add_custom_target(player_stage1c_assets ALL
         "$<TARGET_FILE_DIR:cuexis_player>/assets/projects/stage1d_project"
     DEPENDS
         "${PROJECT_SOURCE_DIR}/assets/charts/stage1a_example.cuexis.chart.json"
-        "${PROJECT_SOURCE_DIR}/assets/charts/stage1a_example.cuexis.chart.simple.json"
+        "${PROJECT_SOURCE_DIR}/assets/charts/stage2_example.cuexis.chart.json"
         ${CUEXIS_STAGE1C_PROJECT_FILES}
         ${CUEXIS_STAGE1D_PROJECT_FILES}
     VERBATIM

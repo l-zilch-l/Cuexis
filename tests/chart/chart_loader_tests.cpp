@@ -15,7 +15,8 @@ bool hasCode(const cuexis::core::Diagnostics& diagnostics, std::string_view code
 
 } // namespace
 
-TEST_CASE("ChartLoader explicitly routes canonical and simple formats", "[chart][loader]") {
+TEST_CASE("ChartLoader routes canonical charts and rejects the retired Simple format",
+          "[chart][loader]") {
     constexpr std::string_view canonical = R"json(
 {"format":"cuexis.chart","version":1,
  "chartId":"019b0000-0000-7abc-8def-000000000001","metadata":{},
@@ -35,7 +36,8 @@ TEST_CASE("ChartLoader explicitly routes canonical and simple formats", "[chart]
     const auto canonicalResult = cuexis::chart::ChartLoader::load(canonical);
     const auto simpleResult = cuexis::chart::ChartLoader::load(simple);
     CHECK(canonicalResult.hasValue());
-    CHECK(simpleResult.hasValue());
+    REQUIRE_FALSE(simpleResult.hasValue());
+    CHECK(hasCode(simpleResult.diagnostics, "chart.format.unsupported"));
 }
 
 TEST_CASE("ChartLoader rejects missing typed and unknown format discriminators",

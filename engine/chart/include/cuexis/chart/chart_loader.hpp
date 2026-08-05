@@ -1,7 +1,6 @@
 #pragma once
 
-//  ChartLoader - chart loading entry point; routes to scheme A/B by explicit format field
-//  cuexis.chart -> CanonicalChartLoader; cuexis.chart.simple -> SimpleChartImporter
+//  ChartLoader - canonical chart loading entry point selected by the explicit format field
 //  An unknown format yields an UnsupportedFormat diagnostic; the format is never guessed
 //  from the present fields
 

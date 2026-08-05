@@ -85,12 +85,12 @@ TEST_CASE("Canonical loader reports deterministic paths for missing type and unk
     CHECK(hasDiagnostic(loaded.diagnostics, "json.field.unknown", "$/futureCoreField"));
 }
 
-TEST_CASE("Canonical loader rejects unsupported versions timing events and required extensions",
+TEST_CASE("Canonical loader rejects legacy timing events and required extensions",
           "[chart][canonical][unsupported]") {
     constexpr std::string_view invalid = R"json(
 {
   "format": "cuexis.chart",
-  "version": 3,
+  "version": 1,
   "chartId": "019b0000-0000-7abc-8def-000000000001",
   "metadata": {},
   "timing": {
@@ -108,12 +108,32 @@ TEST_CASE("Canonical loader rejects unsupported versions timing events and requi
 )json";
     const auto loaded = cuexis::chart::CanonicalChartLoader::load(invalid);
     REQUIRE_FALSE(loaded.hasValue());
-    CHECK(hasDiagnostic(loaded.diagnostics, "chart.version.unsupported", "$/version"));
     CHECK(hasDiagnostic(loaded.diagnostics, "chart.timing.bpm_changes_unsupported",
                         "$/timing/bpmChanges"));
     CHECK(hasDiagnostic(loaded.diagnostics, "chart.timing.stops_unsupported", "$/timing/stops"));
     CHECK(hasDiagnostic(loaded.diagnostics, "chart.extension.required_unsupported",
                         "$/requiredExtensions/0"));
+}
+
+TEST_CASE("Canonical loader rejects unsupported chart versions",
+          "[chart][canonical][unsupported]") {
+    constexpr std::string_view invalid = R"json(
+{
+  "format": "cuexis.chart",
+  "version": 4,
+  "chartId": "019b0000-0000-7abc-8def-000000000001",
+  "metadata": {},
+  "timing": {"offsetMs": 0, "defaultBpm": 120, "bpmChanges": [], "stops": []},
+  "templates": [],
+  "behaviors": [],
+  "objects": [],
+  "requiredExtensions": [],
+  "extensions": {}
+}
+)json";
+    const auto loaded = cuexis::chart::CanonicalChartLoader::load(invalid);
+    REQUIRE_FALSE(loaded.hasValue());
+    CHECK(hasDiagnostic(loaded.diagnostics, "chart.version.unsupported", "$/version"));
 }
 
 TEST_CASE("Canonical loader validates required extension entries before rejecting support",

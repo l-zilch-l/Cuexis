@@ -82,7 +82,8 @@ TEST_CASE("Frame diagnostics hash only stable deterministic fields", "[player][f
     auto first = snapshot();
     const auto digest = cuexis::playback::computeFrameDigest(frame, first);
     REQUIRE(digest.has_value());
-    CHECK(digest->algorithmVersion == 1);
+    CHECK(digest->algorithmVersion == 2);
+    CHECK(digest->value == 7850652359432829177ULL);
     const auto hash = digest->value;
     CHECK(cuexis::playback::computeFrameDigest(frame, first)->value == hash);
 
@@ -90,6 +91,20 @@ TEST_CASE("Frame diagnostics hash only stable deterministic fields", "[player][f
     CHECK(cuexis::playback::computeFrameDigest(frame, first)->value != hash);
     CHECK(cuexis::playback::computeFrameDigest({100.0, 16.0, 4}, snapshot())->value != hash);
 
+    first = snapshot();
+    first.objects[0].visible = false;
+    CHECK(cuexis::playback::computeFrameDigest(frame, first)->value != hash);
+    first = snapshot();
+    first.objects[0].materialAssetId = "material.stage2";
+    CHECK(cuexis::playback::computeFrameDigest(frame, first)->value != hash);
+    first = snapshot();
+    first.objects[0].materialOpacity = 0.5;
+    CHECK(cuexis::playback::computeFrameDigest(frame, first)->value != hash);
+    first = snapshot();
+    first.objects[0].materialTint[1] = 0.25F;
+    CHECK(cuexis::playback::computeFrameDigest(frame, first)->value != hash);
+
+    first = snapshot();
     first.objects[0].worldMatrix[12] = std::numeric_limits<float>::infinity();
     const auto invalid = cuexis::playback::computeFrameDigest(frame, first);
     REQUIRE_FALSE(invalid.has_value());
@@ -128,7 +143,7 @@ TEST_CASE("Frame diagnostics exports stable prefixes and truncation metadata",
     CHECK(audio.starts_with("frameIndex,wallClockMs,sourcePositionMs,"
                             "estimatedOutputLatencyMs,queuedFrames,underrunCount,"
                             "transportState\r\n"));
-    CHECK(meta.find("\"sdkApiVersion\": \"0.3.0\"") != std::string::npos);
+    CHECK(meta.find("\"sdkApiVersion\": \"0.4.0\"") != std::string::npos);
     CHECK(meta.find("\"mode\": \"cuexis_audio\"") != std::string::npos);
     CHECK(meta.find("\"droppedRows\": 1") != std::string::npos);
     CHECK(meta.find("\"truncated\": true") != std::string::npos);

@@ -7,9 +7,9 @@ target_sources(cuexis_chart
     PRIVATE
         src/canonical_chart_loader.cpp
         src/chart_loader.cpp
+        src/chart_migrator.cpp
         src/chart_runtime.cpp
         src/rational_beat.cpp
-        src/simple_chart_importer.cpp
         src/timing_map.cpp
         src/uuid.cpp
     PRIVATE
@@ -19,10 +19,10 @@ target_sources(cuexis_chart
             include/cuexis/chart/canonical_chart_loader.hpp
             include/cuexis/chart/chart_document.hpp
             include/cuexis/chart/chart_loader.hpp
+            include/cuexis/chart/chart_migrator.hpp
             include/cuexis/chart/chart_runtime.hpp
             include/cuexis/chart/limits.hpp
             include/cuexis/chart/rational_beat.hpp
-            include/cuexis/chart/simple_chart_importer.hpp
             include/cuexis/chart/timing_map.hpp
             include/cuexis/chart/uuid.hpp
 )

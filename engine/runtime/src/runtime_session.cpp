@@ -7,6 +7,7 @@
 #include <cuexis/core/diagnostic.hpp>
 #include <cuexis/core/error.hpp>
 #include <cuexis/render/camera_component.hpp>
+#include <cuexis/render/renderable_component.hpp>
 #include <cuexis/world/property.hpp>
 #include <cuexis/world/transform_system.hpp>
 
@@ -17,6 +18,7 @@
 #include <cmath>
 #include <exception>
 #include <memory>
+#include <new>
 #include <optional>
 #include <string>
 #include <type_traits>
@@ -37,11 +39,20 @@ class RuntimeEvaluationState final {
         bool seen{};
     };
 
+    struct AppearanceEntry final {
+        entt::entity entity{entt::null};
+        render::AppearanceComponent baseline;
+        render::AppearanceComponent candidate;
+        render::AppearanceComponent previous;
+    };
+
     behavior::BehaviorProgram program;
     world::PropertyWriteBuffer writes;
     world::TransformPropertyResolver transformResolver;
     std::vector<CameraEntry> cameras;
+    std::vector<AppearanceEntry> appearances;
     bool camerasCommitted{};
+    bool appearancesCommitted{};
 };
 
 namespace {
@@ -90,8 +101,99 @@ void addSessionError(core::Diagnostics& diagnostics, const core::Error& error) {
         return world::PropertyId::TransformScale;
     case chart::BehaviorProperty::CameraFovY:
         return world::PropertyId::CameraFovY;
+    case chart::BehaviorProperty::MaterialOpacity:
+        return world::PropertyId::MaterialOpacity;
+    case chart::BehaviorProperty::MaterialTint:
+        return world::PropertyId::MaterialTint;
     }
     return world::PropertyId::TransformPositionX;
+}
+
+[[nodiscard]] auto toPropertyId(chart::BehaviorStepProperty property) noexcept
+    -> world::PropertyId {
+    switch (property) {
+    case chart::BehaviorStepProperty::RenderVisible:
+        return world::PropertyId::RenderVisible;
+    case chart::BehaviorStepProperty::RenderMaterial:
+        return world::PropertyId::RenderMaterial;
+    }
+    return world::PropertyId::RenderVisible;
+}
+
+[[nodiscard]] auto toPropertyValue(chart::BehaviorValue value) -> world::PropertyValue {
+    return std::visit(
+        [](auto&& item) -> world::PropertyValue {
+            return world::PropertyValue{std::forward<decltype(item)>(item)};
+        },
+        std::move(value));
+}
+
+[[nodiscard]] auto toPropertyValue(chart::BehaviorStepValue value) -> world::PropertyValue {
+    return std::visit(
+        [](auto&& item) -> world::PropertyValue {
+            using Value = std::remove_cvref_t<decltype(item)>;
+            if constexpr (std::is_same_v<Value, chart::AssetId>) {
+                return world::PropertyValue{std::move(item.value)};
+            } else {
+                return world::PropertyValue{std::forward<decltype(item)>(item)};
+            }
+        },
+        std::move(value));
+}
+
+[[nodiscard]] auto baselineFor(const chart::RuntimeObject& object, world::PropertyId property)
+    -> core::Result<world::PropertyValue> {
+    switch (property) {
+    case world::PropertyId::TransformPositionX:
+    case world::PropertyId::TransformPositionY:
+    case world::PropertyId::TransformPositionZ:
+        if (object.components.transform) {
+            const auto& position = object.components.transform->position;
+            const double value =
+                property == world::PropertyId::TransformPositionX
+                    ? position.x
+                    : (property == world::PropertyId::TransformPositionY ? position.y : position.z);
+            return world::PropertyValue{value};
+        }
+        break;
+    case world::PropertyId::TransformRotation:
+        if (object.components.transform) {
+            return world::PropertyValue{object.components.transform->rotation};
+        }
+        break;
+    case world::PropertyId::TransformScale:
+        if (object.components.transform) {
+            return world::PropertyValue{object.components.transform->scale};
+        }
+        break;
+    case world::PropertyId::CameraFovY:
+        if (object.components.camera) {
+            return world::PropertyValue{object.components.camera->fovY};
+        }
+        break;
+    case world::PropertyId::RenderVisible:
+        if (object.components.renderable) {
+            return world::PropertyValue{true};
+        }
+        break;
+    case world::PropertyId::RenderMaterial:
+        if (object.components.renderable) {
+            return world::PropertyValue{object.components.renderable->material.value};
+        }
+        break;
+    case world::PropertyId::MaterialOpacity:
+        if (object.components.renderable) {
+            return world::PropertyValue{1.0};
+        }
+        break;
+    case world::PropertyId::MaterialTint:
+        if (object.components.renderable) {
+            return world::PropertyValue{core::Vec3{1.0F, 1.0F, 1.0F}};
+        }
+        break;
+    }
+    return core::unexpected(core::Error{"runtime.program.baseline_missing",
+                                        "Behavior property target has no compatible component"});
 }
 
 [[nodiscard]] auto toEasing(chart::BehaviorEasing easing) noexcept -> behavior::Easing {
@@ -126,12 +228,14 @@ void addSessionError(core::Diagnostics& diagnostics, const core::Error& error) {
             return core::unexpected(core::Error{"runtime.program.behavior_missing",
                                                 "Behavior binding was not validated"});
         }
-        if (behavior->tracks.size() > world::maxPropertyWritesPerFrame ||
-            requiredWrites > world::maxPropertyWritesPerFrame - behavior->tracks.size()) {
+        const auto trackCount =
+            behavior->tracks.size() + behavior->eventTracks.size() + behavior->stepTracks.size();
+        if (trackCount > world::maxPropertyWritesPerFrame ||
+            requiredWrites > world::maxPropertyWritesPerFrame - trackCount) {
             return core::unexpected(core::Error{"runtime.program.write_limit",
                                                 "Behavior program exceeds the write budget"});
         }
-        requiredWrites += behavior->tracks.size();
+        requiredWrites += trackCount;
     }
 
     auto state = std::make_unique<RuntimeEvaluationState>(requiredWrites);
@@ -146,11 +250,42 @@ void addSessionError(core::Diagnostics& diagnostics, const core::Error& error) {
             for (auto& runtimeKey : runtimeTrack.keys) {
                 track.keys.push_back(behavior::BehaviorKey{
                     .chartTimeMs = runtimeKey.chartTimeMs,
-                    .value = std::move(runtimeKey.value),
+                    .value = toPropertyValue(std::move(runtimeKey.value)),
                     .easing = toEasing(runtimeKey.easing),
                 });
             }
             definition.tracks.push_back(std::move(track));
+        }
+        definition.eventTracks.reserve(runtimeBehavior.eventTracks.size());
+        for (auto& runtimeTrack : runtimeBehavior.eventTracks) {
+            behavior::BehaviorEventTrack track{.property = toPropertyId(runtimeTrack.property),
+                                               .events = {}};
+            track.events.reserve(runtimeTrack.events.size());
+            for (auto& runtimeEvent : runtimeTrack.events) {
+                track.events.push_back(behavior::BehaviorEvent{
+                    .startBeat = runtimeEvent.startBeat,
+                    .endBeat = runtimeEvent.endBeat,
+                    .startValue = toPropertyValue(std::move(runtimeEvent.startValue)),
+                    .endValue = toPropertyValue(std::move(runtimeEvent.endValue)),
+                    .startSlope = runtimeEvent.startSlope,
+                    .endSlope = runtimeEvent.endSlope,
+                    .instantaneous = runtimeEvent.instantaneous,
+                });
+            }
+            definition.eventTracks.push_back(std::move(track));
+        }
+        definition.stepTracks.reserve(runtimeBehavior.stepTracks.size());
+        for (auto& runtimeTrack : runtimeBehavior.stepTracks) {
+            behavior::BehaviorStepTrack track{.property = toPropertyId(runtimeTrack.property),
+                                              .events = {}};
+            track.events.reserve(runtimeTrack.events.size());
+            for (auto& runtimeEvent : runtimeTrack.events) {
+                track.events.push_back(behavior::BehaviorStepEvent{
+                    .beat = runtimeEvent.beat,
+                    .value = toPropertyValue(std::move(runtimeEvent.value)),
+                });
+            }
+            definition.stepTracks.push_back(std::move(track));
         }
         state->program.definitions.push_back(std::move(definition));
     }
@@ -171,10 +306,30 @@ void addSessionError(core::Diagnostics& diagnostics, const core::Error& error) {
                 return candidate.id < id;
             });
         const auto behaviorIndex = static_cast<std::size_t>(behavior - runtime.behaviors.begin());
-        state->program.bindings.push_back(behavior::BehaviorBinding{
+        behavior::BehaviorBinding binding{
             .entity = objects.entries()[index].entity,
             .behavior = behavior::RuntimeBehaviorIndex{static_cast<std::uint32_t>(behaviorIndex)},
-        });
+            .baselines = {},
+        };
+        const auto& definition = state->program.definitions[behaviorIndex];
+        binding.baselines.reserve(definition.eventTracks.size() + definition.stepTracks.size());
+        for (const auto& track : definition.eventTracks) {
+            auto baseline = baselineFor(runtime.objects[index], track.property);
+            if (!baseline) {
+                return core::unexpected(std::move(baseline.error()));
+            }
+            binding.baselines.push_back(
+                behavior::PropertyBaseline{track.property, std::move(*baseline)});
+        }
+        for (const auto& track : definition.stepTracks) {
+            auto baseline = baselineFor(runtime.objects[index], track.property);
+            if (!baseline) {
+                return core::unexpected(std::move(baseline.error()));
+            }
+            binding.baselines.push_back(
+                behavior::PropertyBaseline{track.property, std::move(*baseline)});
+        }
+        state->program.bindings.push_back(std::move(binding));
     }
 
     // The behavior evaluator owns its normalized program after preparation.  Do not retain a
@@ -203,6 +358,25 @@ void addSessionError(core::Diagnostics& diagnostics, const core::Error& error) {
         return core::unexpected(std::move(cameras.error()));
     }
     std::sort(state->cameras.begin(), state->cameras.end(),
+              [](const auto& left, const auto& right) {
+                  return entt::to_integral(left.entity) < entt::to_integral(right.entity);
+              });
+    auto appearances = world.withRegistry([&](const entt::registry& registry) {
+        const auto view = registry.view<const render::AppearanceComponent>();
+        for (const entt::entity entity : view) {
+            const auto& appearance = view.get<const render::AppearanceComponent>(entity);
+            state->appearances.push_back(RuntimeEvaluationState::AppearanceEntry{
+                .entity = entity,
+                .baseline = appearance,
+                .candidate = appearance,
+                .previous = appearance,
+            });
+        }
+    });
+    if (!appearances) {
+        return core::unexpected(std::move(appearances.error()));
+    }
+    std::sort(state->appearances.begin(), state->appearances.end(),
               [](const auto& left, const auto& right) {
                   return entt::to_integral(left.entity) < entt::to_integral(right.entity);
               });
@@ -284,6 +458,117 @@ void rollbackCameras(RuntimeEvaluationState& state, world::World& world) noexcep
     state.camerasCommitted = false;
 }
 
+[[nodiscard]] auto prepareAppearances(RuntimeEvaluationState& state) -> core::Result<void> {
+    state.appearancesCommitted = false;
+    for (auto& appearance : state.appearances) {
+        appearance.candidate = appearance.baseline;
+    }
+    for (const auto& write : state.writes.writes()) {
+        if (write.property != world::PropertyId::RenderVisible &&
+            write.property != world::PropertyId::RenderMaterial &&
+            write.property != world::PropertyId::MaterialOpacity &&
+            write.property != world::PropertyId::MaterialTint) {
+            continue;
+        }
+        const auto appearance = std::lower_bound(
+            state.appearances.begin(), state.appearances.end(), write.entity,
+            [](const RuntimeEvaluationState::AppearanceEntry& candidate, entt::entity entity) {
+                return entt::to_integral(candidate.entity) < entt::to_integral(entity);
+            });
+        if (appearance == state.appearances.end() || appearance->entity != write.entity) {
+            return core::unexpected(core::Error{"runtime.appearance.binding_missing",
+                                                "Appearance target has no Renderable component"});
+        }
+        switch (write.property) {
+        case world::PropertyId::RenderVisible: {
+            const auto* value = std::get_if<bool>(&write.value);
+            if (value == nullptr) {
+                return core::unexpected(core::Error{"runtime.appearance.value_invalid",
+                                                    "render.visible requires a Boolean value"});
+            }
+            appearance->candidate.visible = *value;
+            break;
+        }
+        case world::PropertyId::RenderMaterial: {
+            const auto* value = std::get_if<std::string>(&write.value);
+            if (value == nullptr || value->empty()) {
+                return core::unexpected(
+                    core::Error{"runtime.appearance.value_invalid",
+                                "render.material requires a non-empty Material AssetId"});
+            }
+            appearance->candidate.materialAssetId = *value;
+            break;
+        }
+        case world::PropertyId::MaterialOpacity: {
+            const auto* value = std::get_if<double>(&write.value);
+            if (value == nullptr || !std::isfinite(*value) || *value < 0.0 || *value > 1.0) {
+                return core::unexpected(core::Error{"runtime.appearance.value_invalid",
+                                                    "material.opacity must be in [0, 1]"});
+            }
+            appearance->candidate.opacity = *value;
+            break;
+        }
+        case world::PropertyId::MaterialTint: {
+            const auto* value = std::get_if<core::Vec3>(&write.value);
+            if (value == nullptr || !core::isFinite(*value) || value->x < 0.0F || value->x > 1.0F ||
+                value->y < 0.0F || value->y > 1.0F || value->z < 0.0F || value->z > 1.0F) {
+                return core::unexpected(
+                    core::Error{"runtime.appearance.value_invalid",
+                                "material.tint components must be finite and in [0, 1]"});
+            }
+            appearance->candidate.tint = *value;
+            break;
+        }
+        default:
+            break;
+        }
+    }
+    return {};
+}
+
+[[nodiscard]] auto commitAppearances(RuntimeEvaluationState& state, world::World& world)
+    -> core::Result<void> {
+    auto result = world.withRegistry([&](entt::registry& registry) -> core::Result<void> {
+        for (const auto& appearance : state.appearances) {
+            if (!registry.valid(appearance.entity) ||
+                !registry.all_of<render::AppearanceComponent>(appearance.entity)) {
+                return core::unexpected(
+                    core::Error{"runtime.appearance.baseline_missing",
+                                "A captured AppearanceComponent is unavailable"});
+            }
+        }
+        for (auto& appearance : state.appearances) {
+            auto& component = registry.get<render::AppearanceComponent>(appearance.entity);
+            appearance.previous = component;
+            component = appearance.candidate;
+        }
+        return {};
+    });
+    if (result) {
+        state.appearancesCommitted = true;
+    }
+    return result;
+}
+
+void rollbackAppearances(RuntimeEvaluationState& state, world::World& world) noexcept {
+    if (!state.appearancesCommitted) {
+        return;
+    }
+    const auto rolledBack = world.withRegistry([&](entt::registry& registry) {
+        for (const auto& appearance : state.appearances) {
+            if (registry.valid(appearance.entity) &&
+                registry.all_of<render::AppearanceComponent>(appearance.entity)) {
+                registry.replace<render::AppearanceComponent>(appearance.entity,
+                                                              appearance.previous);
+            }
+        }
+    });
+    if (!rolledBack) {
+        std::terminate();
+    }
+    state.appearancesCommitted = false;
+}
+
 [[nodiscard]] auto validateFrame(const RuntimeFrame& frame,
                                  const std::optional<RuntimeFrame>& previous)
     -> core::Result<void> {
@@ -309,6 +594,23 @@ void rollbackCameras(RuntimeEvaluationState& state, world::World& world) noexcep
                                             "The first discontinuity frame must use zero delta"});
     }
     return {};
+}
+
+[[nodiscard]] auto objectIdFor(const ObjectEntityMap& objects, entt::entity entity)
+    -> chart::ChartObjectId {
+    const auto entry = std::find_if(
+        objects.entries().begin(), objects.entries().end(),
+        [entity](const ObjectEntityEntry& candidate) { return candidate.entity == entity; });
+    return entry == objects.entries().end() ? chart::ChartObjectId{} : entry->objectId;
+}
+
+[[nodiscard]] auto baselineFor(const behavior::BehaviorBinding& binding, world::PropertyId property)
+    -> world::PropertyValue {
+    const auto baseline = std::find_if(binding.baselines.begin(), binding.baselines.end(),
+                                       [property](const behavior::PropertyBaseline& candidate) {
+                                           return candidate.property == property;
+                                       });
+    return baseline == binding.baselines.end() ? world::PropertyValue{} : baseline->value;
 }
 
 } // namespace
@@ -416,6 +718,40 @@ auto RuntimeSession::prepare(chart::ChartRuntime chartRuntime) const
                     .material = *material.handle,
                 };
             }
+            const auto& behaviorReference = chartRuntime.objects[index].components.behavior;
+            if (!behaviorReference) {
+                continue;
+            }
+            const auto behavior =
+                std::lower_bound(chartRuntime.behaviors.begin(), chartRuntime.behaviors.end(),
+                                 behaviorReference->behavior,
+                                 [](const chart::RuntimeBehavior& candidate,
+                                    const chart::BehaviorId& id) { return candidate.id < id; });
+            if (behavior == chartRuntime.behaviors.end() ||
+                behavior->id != behaviorReference->behavior) {
+                continue;
+            }
+            for (const auto& track : behavior->stepTracks) {
+                if (track.property != chart::BehaviorStepProperty::RenderMaterial) {
+                    continue;
+                }
+                for (const auto& event : track.events) {
+                    const auto* materialId = std::get_if<chart::AssetId>(&event.value);
+                    if (materialId == nullptr) {
+                        continue;
+                    }
+                    auto dynamicMaterial = resourceScope->requestMaterial(
+                        assets::AssetId{materialId->value}, assets::ResourcePolicy::Required);
+                    result.diagnostics.append(std::move(dynamicMaterial.diagnostics));
+                    if (!dynamicMaterial.hasValue() || result.diagnostics.hasErrors() ||
+                        result.diagnostics.limitReached()) {
+                        break;
+                    }
+                }
+                if (result.diagnostics.hasErrors() || result.diagnostics.limitReached()) {
+                    break;
+                }
+            }
         }
         if (result.diagnostics.hasErrors()) {
             result.diagnostics.sortDeterministically();
@@ -486,10 +822,18 @@ auto RuntimeSession::commit(PreparedRuntimeSession&& prepared) -> core::Result<v
     return {};
 }
 
-auto RuntimeSession::updatePrepared(RuntimeEvaluationState& state, const RuntimeFrame& frame)
+auto RuntimeSession::updatePrepared(RuntimeEvaluationState& state,
+                                    const chart::TimingMap& timingMap, const RuntimeFrame& frame)
     -> core::Result<void> {
-    auto evaluated =
-        behavior::BehaviorSystem::evaluate(state.program, frame.chartTimeMs, state.writes);
+    auto beatSample = timingMap.sampleChartTimeMs(frame.chartTimeMs);
+    if (!beatSample) {
+        return core::unexpected(std::move(beatSample.error()));
+    }
+    auto evaluated = behavior::BehaviorSystem::evaluate(
+        state.program,
+        behavior::BehaviorSample{frame.chartTimeMs, beatSample->beat, beatSample->inStop,
+                                 beatSample->stopProgress},
+        state.writes);
     if (!evaluated) {
         return core::unexpected(std::move(evaluated.error()));
     }
@@ -501,6 +845,10 @@ auto RuntimeSession::updatePrepared(RuntimeEvaluationState& state, const Runtime
     if (!transformsPrepared) {
         return core::unexpected(std::move(transformsPrepared.error()));
     }
+    auto appearancesPrepared = prepareAppearances(state);
+    if (!appearancesPrepared) {
+        return core::unexpected(std::move(appearancesPrepared.error()));
+    }
     auto transformsCommitted = state.transformResolver.commit(*world_);
     if (!transformsCommitted) {
         return core::unexpected(std::move(transformsCommitted.error()));
@@ -510,13 +858,142 @@ auto RuntimeSession::updatePrepared(RuntimeEvaluationState& state, const Runtime
         state.transformResolver.rollback(*world_);
         return core::unexpected(std::move(camerasCommitted.error()));
     }
+    auto appearancesCommitted = commitAppearances(state, *world_);
+    if (!appearancesCommitted) {
+        rollbackCameras(state, *world_);
+        state.transformResolver.rollback(*world_);
+        return core::unexpected(std::move(appearancesCommitted.error()));
+    }
     auto transformsUpdated = world::updateWorldTransforms(*world_);
     if (!transformsUpdated) {
+        rollbackAppearances(state, *world_);
         rollbackCameras(state, *world_);
         state.transformResolver.rollback(*world_);
         return core::unexpected(std::move(transformsUpdated.error()));
     }
     return {};
+}
+
+void RuntimeSession::captureDebug(const RuntimeEvaluationState& state, double beatValue) {
+    debugRecords_.clear();
+    debugTruncated_ = false;
+    if (!debugOptions_.enabled) {
+        return;
+    }
+
+    std::size_t writeIndex = 0;
+    const auto writes = state.writes.writes();
+    const auto append = [&](const behavior::BehaviorBinding& binding, world::PropertyId property,
+                            std::optional<std::size_t> eventIndex, double progress,
+                            const world::PropertyValue& output) {
+        if (debugRecords_.size() >= debugOptions_.capacity) {
+            debugTruncated_ = true;
+            return;
+        }
+        const auto initial = baselineFor(binding, property);
+        debugRecords_.push_back(RuntimeDebugRecord{
+            .objectId = objectIdFor(objects_, binding.entity),
+            .property = property,
+            .initialValue = initial,
+            .eventIndex = eventIndex,
+            .normalizedProgress = progress,
+            .behaviorValue = output,
+            .finalValue = output,
+        });
+    };
+
+    for (const auto& binding : state.program.bindings) {
+        const auto& definition = state.program.definitions[binding.behavior.value];
+        writeIndex += definition.tracks.size();
+        for (const auto& track : definition.eventTracks) {
+            if (writeIndex >= writes.size()) {
+                debugTruncated_ = true;
+                return;
+            }
+            std::optional<std::size_t> eventIndex;
+            double progress = 0.0;
+            if (!track.events.empty() && beatValue >= track.events.front().startBeat) {
+                const auto next =
+                    std::upper_bound(track.events.begin(), track.events.end(), beatValue,
+                                     [](double value, const behavior::BehaviorEvent& event) {
+                                         return value < event.startBeat;
+                                     });
+                const auto event = next - 1;
+                eventIndex = static_cast<std::size_t>(event - track.events.begin());
+                if (event->instantaneous || beatValue >= event->endBeat) {
+                    progress = 1.0;
+                } else {
+                    progress = (beatValue - event->startBeat) / (event->endBeat - event->startBeat);
+                }
+            }
+            append(binding, track.property, eventIndex, progress, writes[writeIndex].value);
+            ++writeIndex;
+        }
+        for (const auto& track : definition.stepTracks) {
+            if (writeIndex >= writes.size()) {
+                debugTruncated_ = true;
+                return;
+            }
+            std::optional<std::size_t> eventIndex;
+            if (!track.events.empty() && beatValue >= track.events.front().beat) {
+                const auto next =
+                    std::upper_bound(track.events.begin(), track.events.end(), beatValue,
+                                     [](double value, const behavior::BehaviorStepEvent& event) {
+                                         return value < event.beat;
+                                     });
+                eventIndex = static_cast<std::size_t>((next - 1) - track.events.begin());
+            }
+            append(binding, track.property, eventIndex, eventIndex ? 1.0 : 0.0,
+                   writes[writeIndex].value);
+            ++writeIndex;
+        }
+    }
+}
+
+auto RuntimeSession::configureDebug(RuntimeDebugOptions options) -> core::Result<void> {
+    if (!threadChecker_.isCurrent()) {
+        return core::unexpected(
+            core::Error{"runtime.session.not_owner_thread",
+                        "RuntimeSession debug configuration must run on its owner thread"});
+    }
+    if (options.enabled && (options.capacity == 0 || options.capacity > maxRuntimeDebugRecords)) {
+        return core::unexpected(
+            core::Error{"runtime.debug.capacity_invalid",
+                        "Runtime debug capacity is outside the supported range"}
+                .withContext("maximum", std::to_string(maxRuntimeDebugRecords)));
+    }
+    try {
+        if (options.enabled && debugRecords_.capacity() < options.capacity) {
+            debugRecords_.reserve(options.capacity);
+        }
+    } catch (const std::bad_alloc&) {
+        return core::unexpected(core::Error{"runtime.debug.allocation_failed",
+                                            "Runtime debug storage could not be allocated"});
+    } catch (...) {
+        return core::unexpected(core::Error{"runtime.debug.configuration_failed",
+                                            "Runtime debug configuration failed"});
+    }
+    debugOptions_ = options;
+    debugRecords_.clear();
+    debugTruncated_ = false;
+    return {};
+}
+
+auto RuntimeSession::debugSnapshot() const -> core::Result<RuntimeDebugSnapshot> {
+    if (!threadChecker_.isCurrent()) {
+        return core::unexpected(
+            core::Error{"runtime.session.not_owner_thread",
+                        "RuntimeSession debug snapshot must run on its owner thread"});
+    }
+    try {
+        return RuntimeDebugSnapshot{.records = debugRecords_, .truncated = debugTruncated_};
+    } catch (const std::bad_alloc&) {
+        return core::unexpected(core::Error{"runtime.debug.snapshot_allocation_failed",
+                                            "Runtime debug snapshot could not be copied"});
+    } catch (...) {
+        return core::unexpected(
+            core::Error{"runtime.debug.snapshot_failed", "Runtime debug snapshot failed"});
+    }
 }
 
 auto RuntimeSession::update(const RuntimeFrame& frame) -> core::Result<void> {
@@ -532,9 +1009,19 @@ auto RuntimeSession::update(const RuntimeFrame& frame) -> core::Result<void> {
     if (!valid) {
         return core::unexpected(std::move(valid.error()));
     }
-    auto updated = updatePrepared(*evaluation_, frame);
+    auto updated = updatePrepared(*evaluation_, chartRuntime_->timingMap, frame);
     if (!updated) {
         return core::unexpected(std::move(updated.error()));
+    }
+    if (debugOptions_.enabled) {
+        const auto beatSample = chartRuntime_->timingMap.sampleChartTimeMs(frame.chartTimeMs);
+        if (!beatSample) {
+            return core::unexpected(std::move(beatSample.error()));
+        }
+        captureDebug(*evaluation_, beatSample->beat);
+    } else {
+        debugRecords_.clear();
+        debugTruncated_ = false;
     }
     lastFrame_ = frame;
     return {};
@@ -579,7 +1066,8 @@ auto RuntimeSession::reload(chart::ChartRuntime replacement, const RuntimeFrame&
 
     auto previousWorld = std::move(world_);
     world_ = std::move(preparedResult.prepared->world_);
-    auto sampled = updatePrepared(*preparedResult.prepared->evaluation_, reloadFrame);
+    auto sampled = updatePrepared(*preparedResult.prepared->evaluation_,
+                                  preparedResult.prepared->chartRuntime_.timingMap, reloadFrame);
     preparedResult.prepared->world_ = std::move(world_);
     world_ = std::move(previousWorld);
     if (!sampled) {
@@ -590,6 +1078,14 @@ auto RuntimeSession::reload(chart::ChartRuntime replacement, const RuntimeFrame&
 
     replaceWith(std::move(*preparedResult.prepared));
     lastFrame_ = reloadFrame;
+    if (debugOptions_.enabled) {
+        const auto beatSample = chartRuntime_->timingMap.sampleChartTimeMs(reloadFrame.chartTimeMs);
+        if (!beatSample) {
+            addSessionError(result.diagnostics, beatSample.error());
+            return result;
+        }
+        captureDebug(*evaluation_, beatSample->beat);
+    }
     result.reloaded = true;
     return result;
 }
@@ -606,6 +1102,8 @@ auto RuntimeSession::unload() -> core::Result<void> {
     activeDiagnostics_.clear();
     resourceScope_.reset();
     lastFrame_.reset();
+    debugRecords_.clear();
+    debugTruncated_ = false;
     return {};
 }
 
