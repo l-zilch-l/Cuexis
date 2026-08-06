@@ -128,17 +128,12 @@ void addSessionError(core::Diagnostics& diagnostics, const core::Error& error) {
         std::move(value));
 }
 
-[[nodiscard]] auto toPropertyValue(chart::BehaviorStepValue value) -> world::PropertyValue {
-    return std::visit(
-        [](auto&& item) -> world::PropertyValue {
-            using Value = std::remove_cvref_t<decltype(item)>;
-            if constexpr (std::is_same_v<Value, chart::AssetId>) {
-                return world::PropertyValue{std::move(item.value)};
-            } else {
-                return world::PropertyValue{std::forward<decltype(item)>(item)};
-            }
-        },
-        std::move(value));
+[[nodiscard]] auto toPropertyValue(chart::BehaviorStepValue&& value) -> world::PropertyValue {
+    if (const auto* visible = std::get_if<bool>(&value)) {
+        return world::PropertyValue{std::in_place_type<bool>, *visible};
+    }
+    auto material = std::get<chart::AssetId>(std::move(value));
+    return world::PropertyValue{std::in_place_type<std::string>, std::move(material.value)};
 }
 
 [[nodiscard]] auto baselineFor(const chart::RuntimeObject& object, world::PropertyId property)
