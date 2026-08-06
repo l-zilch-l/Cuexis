@@ -8,6 +8,7 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
+#include <algorithm>
 #include <cmath>
 
 namespace {
@@ -264,6 +265,13 @@ TEST_CASE("Stage 2 events freeze in Stops and direct seek matches playback and r
 TEST_CASE("Runtime debug snapshots are explicit, bounded, and explain Event resolution",
           "[runtime][behavior][stage2][debug]") {
     auto chart = stage2RuntimeChart();
+    auto& positionTrack = *std::find_if(
+        chart.behaviors[0].eventTracks.begin(), chart.behaviors[0].eventTracks.end(),
+        [](const cuexis::chart::RuntimeEventTrack& track) {
+            return track.property == cuexis::chart::BehaviorProperty::TransformPositionX;
+        });
+    positionTrack.events[1].startValue = 0.1;
+    positionTrack.events[1].endValue = 0.1;
     const auto atOne = chart.timingMap.beatToChartTimeMs(1.0);
     REQUIRE(atOne.has_value());
     cuexis::runtime::RuntimeSession session;
@@ -290,8 +298,11 @@ TEST_CASE("Runtime debug snapshots are explicit, bounded, and explain Event reso
     CHECK(*position.eventIndex == 1);
     CHECK(position.normalizedProgress == Catch::Approx(0.5));
     CHECK(std::get<double>(position.initialValue) == Catch::Approx(0.0));
-    CHECK(std::get<double>(position.behaviorValue) == Catch::Approx(6.0));
-    CHECK(std::get<double>(position.finalValue) == Catch::Approx(6.0));
+    const auto behaviorValue = std::get<double>(position.behaviorValue);
+    const auto finalValue = std::get<double>(position.finalValue);
+    CHECK(behaviorValue == Catch::Approx(0.1));
+    CHECK(finalValue == static_cast<double>(static_cast<float>(behaviorValue)));
+    CHECK(finalValue != behaviorValue);
 
     REQUIRE(session.configureDebug({.enabled = true, .capacity = 8}).has_value());
     REQUIRE(session.update({.chartTimeMs = *atOne}).has_value());

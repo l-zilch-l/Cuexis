@@ -478,7 +478,13 @@ auto ChartMigrator::migrateToV3(std::string_view sourceJson, const ChartLimits& 
     }
 
     ChartDocument migrated = *loaded.document;
-    ChartMigrationReport report{.sourceVersion = migrated.version};
+    ChartMigrationReport report{.sourceVersion = migrated.version,
+                                .targetVersion = 3,
+                                .convertedBehaviors = 0,
+                                .generatedEvents = 0,
+                                .rewrittenBindings = 0,
+                                .expandedTemplateObjects = 0,
+                                .unboundBehaviorIds = {}};
     migrated.version = 3;
     migrated.timing.tempoEvents.clear();
     migrated.timing.stops.clear();
@@ -519,6 +525,12 @@ auto ChartMigrator::migrateToV3(std::string_view sourceJson, const ChartLimits& 
                       [](const auto& left, const auto& right) { return left.beat < right.beat; });
             if (track.keys.empty()) {
                 continue;
+            }
+            if (bindings.empty() && track.keys.size() == 1) {
+                addError(result.diagnostics, "chart.migration.unbound_single_key_unrepresentable",
+                         "An unbound single-key Track cannot be represented in chart v3",
+                         "$/behaviors/" + std::to_string(behaviorIndex) + "/tracks/" +
+                             std::to_string(trackIndex));
             }
             for (auto* object : bindings) {
                 if (!rewriteBaseline(object->components, track.property,

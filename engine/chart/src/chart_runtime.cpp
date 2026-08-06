@@ -624,7 +624,9 @@ auto ChartCompiler::compile(const ChartDocument& document, const ChartLimits& li
             runtimeBehaviors.push_back(RuntimeBehavior{.id = behavior.id,
                                                        .type = behavior.type,
                                                        .version = behavior.version,
-                                                       .tracks = std::move(tracks)});
+                                                       .tracks = std::move(tracks),
+                                                       .eventTracks = {},
+                                                       .stepTracks = {}});
         }
     }
     std::sort(runtimeBehaviors.begin(), runtimeBehaviors.end(),

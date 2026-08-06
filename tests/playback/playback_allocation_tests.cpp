@@ -1,3 +1,4 @@
+#include <cuexis/content/content_provider.hpp>
 #include <cuexis/playback/playback_session.hpp>
 
 #include <catch2/catch_test_macros.hpp>
@@ -8,16 +9,12 @@
 #if defined(_MSC_VER) && defined(_DEBUG)
 #include <crtdbg.h>
 #endif
-#include <filesystem>
-#include <fstream>
 #include <iostream>
 #include <limits>
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 #include <malloc.h>
 #endif
 #include <new>
-#include <sstream>
-#include <stdexcept>
 #include <string>
 
 namespace {
@@ -75,7 +72,7 @@ void beginAllocationTracking() {
     if (trackingAllocations.load(std::memory_order_relaxed)) {
         allocationCount.fetch_add(1, std::memory_order_relaxed);
     }
-#if defined(_MSC_VER)
+#if defined(_WIN32)
     void* memory = _aligned_malloc(size == 0 ? 1 : size, alignment);
 #else
     const std::size_t requested = size == 0 ? alignment : size;
@@ -92,16 +89,6 @@ void beginAllocationTracking() {
     throw std::bad_alloc{};
 }
 #endif
-
-[[nodiscard]] auto readFile(const std::filesystem::path& path) -> std::string {
-    std::ifstream input{path, std::ios::binary};
-    if (!input) {
-        throw std::runtime_error{"Could not read Stage 2 fixture: " + path.string()};
-    }
-    std::ostringstream contents;
-    contents << input.rdbuf();
-    return contents.str();
-}
 
 } // namespace
 
@@ -143,7 +130,7 @@ void operator delete[](void* memory, std::size_t) noexcept {
 }
 
 void operator delete(void* memory, std::align_val_t) noexcept {
-#if defined(_MSC_VER)
+#if defined(_WIN32)
     _aligned_free(memory);
 #else
     std::free(memory);
@@ -165,10 +152,69 @@ void operator delete[](void* memory, std::size_t, std::align_val_t alignment) no
 
 TEST_CASE("Stage 2 playback update and reusable extraction allocate nothing after warmup",
           "[playback][stage2][allocation]") {
-    const auto chart = readFile(std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" / "charts" /
-                                "stage2_example.cuexis.chart.json");
+    constexpr std::string_view firstMaterial =
+        "material.stage2.long_identifier_crossing_small_string_boundary_alpha";
+    constexpr std::string_view secondMaterial =
+        "material.stage2.long_identifier_crossing_small_string_boundary_beta";
+    constexpr std::string_view chart = R"json(
+{
+  "format":"cuexis.chart","version":3,
+  "chartId":"019c0000-0000-7abc-8def-000000000301","metadata":{},
+  "timing":{"offsetMs":0,"defaultBpm":120,"tempoEvents":[],"stops":[]},
+  "camera":{"type":"perspective","fovY":60,"near":0.1,"far":1000},
+  "templates":[],
+  "behaviors":[{
+    "id":"material.steps","type":"behavior.event","version":1,"events":[],
+    "stepEvents":[
+      {"property":"render.material","beat":{"numerator":1,"denominator":2},
+       "value":{"domain":"asset","id":"material.stage2.long_identifier_crossing_small_string_boundary_alpha"}},
+      {"property":"render.material","beat":{"numerator":1,"denominator":1},
+       "value":{"domain":"asset","id":"material.stage2.long_identifier_crossing_small_string_boundary_beta"}}
+    ]
+  }],
+  "objects":[{
+    "id":"019c0000-0000-7abc-8def-000000000310","parent":null,
+    "components":{
+      "cuexis.transform":{"version":1,"position":[0,0,0],"rotation":[0,0,0,1],"scale":[1,1,1]},
+      "cuexis.renderable":{"version":1,
+        "mesh":{"domain":"asset","id":"mesh.stage2.allocation"},
+        "material":{"domain":"asset","id":"material.stage2.baseline"}},
+      "cuexis.behavior":{"version":1,"behavior":{"domain":"behavior","id":"material.steps"}}
+    },"extensions":{}
+  }],
+  "requiredExtensions":[],"extensions":{}
+}
+)json";
+    auto provider = cuexis::content::HostContentProvider::create(
+        [](const cuexis::content::ContentRequest&)
+            -> cuexis::core::Result<cuexis::content::ContentBlob> {
+            return cuexis::content::ContentBlob{.bytes = {std::byte{0x42}}, .revision = 1};
+        });
+    REQUIRE(provider.has_value());
+    auto source = cuexis::playback::PlaybackSource::fromTypedProject(
+        {.sourceId = "stage2-allocation",
+         .chartJson = std::string{chart},
+         .assets = {{.id = "mesh.stage2.allocation",
+                     .type = cuexis::playback::PlaybackAssetType::Mesh,
+                     .rootId = "memory",
+                     .logicalSource = "mesh.bin"},
+                    {.id = "material.stage2.baseline",
+                     .type = cuexis::playback::PlaybackAssetType::Material,
+                     .rootId = "memory",
+                     .logicalSource = "baseline.material.bin"},
+                    {.id = std::string{firstMaterial},
+                     .type = cuexis::playback::PlaybackAssetType::Material,
+                     .rootId = "memory",
+                     .logicalSource = "first.material.bin"},
+                    {.id = std::string{secondMaterial},
+                     .type = cuexis::playback::PlaybackAssetType::Material,
+                     .rootId = "memory",
+                     .logicalSource = "second.material.bin"}}},
+        std::move(*provider));
+    REQUIRE(source.has_value());
     cuexis::playback::PlaybackSession session;
-    REQUIRE(session.loadChart(chart).has_value());
+    REQUIRE(
+        session.load(std::move(*source), cuexis::playback::PlaybackMode::ChartClock).has_value());
     REQUIRE(session.update({.chartTimeMs = 0.0}).has_value());
     cuexis::playback::FrameSnapshot snapshot;
     REQUIRE(session.extractFrame({.width = 1280, .height = 720}, snapshot).has_value());
@@ -192,4 +238,6 @@ TEST_CASE("Stage 2 playback update and reusable extraction allocate nothing afte
               << '\n';
     CHECK(succeeded);
     CHECK(allocations == 0);
+    REQUIRE(snapshot.objects.size() == 1);
+    CHECK(snapshot.objects[0].materialAssetId == secondMaterial);
 }

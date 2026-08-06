@@ -62,6 +62,25 @@ TEST_CASE("Canonical loader produces a typed chart document", "[chart][canonical
     CHECK(loaded.document->objects[0].components.element);
 }
 
+TEST_CASE("Canonical loader preserves the legacy positive BPM range",
+          "[chart][canonical][timing][legacy]") {
+    for (const auto& bpm : {std::string{"0.5"}, std::string{"70000.0"}}) {
+        auto chart = std::string{minimalChart};
+        const auto value = chart.find("120.0");
+        REQUIRE(value != std::string::npos);
+        chart.replace(value, std::string_view{"120.0"}.size(), bpm);
+
+        const auto v1 = cuexis::chart::CanonicalChartLoader::load(chart);
+        REQUIRE(v1.hasValue());
+
+        const auto version = chart.find("\"version\": 1");
+        REQUIRE(version != std::string::npos);
+        chart.replace(version, std::string_view{"\"version\": 1"}.size(), "\"version\": 2");
+        const auto v2 = cuexis::chart::CanonicalChartLoader::load(chart);
+        REQUIRE(v2.hasValue());
+    }
+}
+
 TEST_CASE("Canonical loader reports deterministic paths for missing type and unknown fields",
           "[chart][canonical][diagnostics]") {
     constexpr std::string_view invalid = R"json(

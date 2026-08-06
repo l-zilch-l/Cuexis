@@ -243,6 +243,40 @@ void TransformPropertyResolver::rollback(World& world) noexcept {
     committed_ = false;
 }
 
+auto TransformPropertyResolver::resolvedValue(entt::entity entity,
+                                              PropertyId property) const noexcept
+    -> std::optional<PropertyValue> {
+    if (!isTransformProperty(property)) {
+        return std::nullopt;
+    }
+    const auto entry = std::lower_bound(
+        entries_.begin(), entries_.end(), entity, [](const Entry& candidate, entt::entity target) {
+            return entityValue(candidate.entity) < entityValue(target);
+        });
+    if (entry == entries_.end() || entry->entity != entity) {
+        return std::nullopt;
+    }
+    switch (property) {
+    case PropertyId::TransformPositionX:
+        return PropertyValue{static_cast<double>(entry->candidate.position.x)};
+    case PropertyId::TransformPositionY:
+        return PropertyValue{static_cast<double>(entry->candidate.position.y)};
+    case PropertyId::TransformPositionZ:
+        return PropertyValue{static_cast<double>(entry->candidate.position.z)};
+    case PropertyId::TransformRotation:
+        return PropertyValue{entry->candidate.rotation};
+    case PropertyId::TransformScale:
+        return PropertyValue{entry->candidate.scale};
+    case PropertyId::CameraFovY:
+    case PropertyId::RenderVisible:
+    case PropertyId::RenderMaterial:
+    case PropertyId::MaterialOpacity:
+    case PropertyId::MaterialTint:
+        return std::nullopt;
+    }
+    return std::nullopt;
+}
+
 auto TransformPropertyResolver::baselineCount() const noexcept -> std::size_t {
     return entries_.size();
 }

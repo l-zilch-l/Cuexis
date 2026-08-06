@@ -32,6 +32,11 @@ C ABI version            阶段 12 建立，当前不存在稳定版本
 交付新的 Playback source 构造边界与 static/shared linkage 契约；package version、生成头、
 外部 consumer 和兼容性测试均已同步更新。
 
+阶段 2 的 Chart v3、Behavior/Step Event、Visibility/Material `FrameSnapshot` 字段、
+FrameDigest v2 和 capability 查询扩展了公开 preview 契约，因此 SDK API 提升为 `0.4.0`。
+package version、生成头、static/shared consumer 和配置不匹配拒绝测试必须以 `0.4.0` 为当前合同；
+`0.3.0` 只保留为阶段 1E 的历史版本。
+
 preview C++ 公共签名允许使用 Cuexis 自有别名 `cuexis::core::Result<T, E>`，不得直接写出
 `tl::expected`。这会形成已记录的 `tl-expected` 头文件源码依赖，但不构成长期 ABI 承诺。
 其他第三方类型仍不得进入 Playback 公共签名。阶段 12 的稳定 C ABI 不得暴露
@@ -43,7 +48,7 @@ Registry 或 RenderScene 的存储；后续 update、reload、unload 和 Session
 
 ## 影响
 
-- 当前 external consumer 必须带最低 SDK API 版本调用 `find_package(Cuexis 0.3 ...)`。
+- 当前 external consumer 必须带最低 SDK API 版本调用 `find_package(Cuexis 0.4 ...)`。
 - SDK API 兼容变化和日期构建发布需要分别评审、更新和测试。
 - 安装包必须继续导出 `tl-expected` dependency，直到公共 C++ Result 表示发生显式迁移。
 - Snapshot 生命周期测试必须保留 reload、unload 和 Session 销毁后的读取覆盖。
@@ -68,4 +73,5 @@ Registry 或 RenderScene 的存储；后续 update、reload、unload 和 Session
 
 [ADR 0033](0033-cpp-shared-library-preview-boundary.md) 后续接受了阶段 1E matching-toolchain C++
 shared preview，但没有改变本 ADR 对稳定 C ABI 的拒绝。阶段 1E 的 `0.3.0` static/shared
-preview 已实现该边界，且 consumer 必须使用匹配工具链重新编译。
+preview 已实现该边界，且 consumer 必须使用匹配工具链重新编译。阶段 2 的 `0.4.0` 延续相同
+matching-toolchain C++ preview 约束，并以上述 Stage 2 公开字段和 capability 作为新增版本边界。

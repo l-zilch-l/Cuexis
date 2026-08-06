@@ -82,7 +82,18 @@ TimingMap::TimingMap(double defaultBpm, double offsetMs,
       stopDurationBeforeZero_(stopDurationBeforeZero) {}
 
 auto TimingMap::create(double defaultBpm, double offsetMs) -> core::Result<TimingMap> {
-    return create(defaultBpm, offsetMs, {}, {});
+    if (auto result = requireFinite(defaultBpm, "defaultBpm"); !result) {
+        return core::unexpected(std::move(result.error()));
+    }
+    if (defaultBpm <= 0.0) {
+        return core::unexpected(
+            core::Error{"chart.timing.invalid_bpm", "Default BPM must be positive"}.withContext(
+                "defaultBpm", std::to_string(defaultBpm)));
+    }
+    if (auto result = requireFinite(offsetMs, "offsetMs"); !result) {
+        return core::unexpected(std::move(result.error()));
+    }
+    return TimingMap{defaultBpm, offsetMs, {}, {}, 0.0, 0.0};
 }
 
 auto TimingMap::create(double defaultBpm, double offsetMs, std::span<const TempoEvent> tempoEvents,

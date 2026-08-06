@@ -87,6 +87,7 @@ void addErrorDiagnostic(core::Diagnostics& diagnostics, const core::Error& error
 struct SnapshotEntity final {
     chart::ChartObjectId id;
     entt::entity entity{entt::null};
+    std::size_t maximumMaterialAssetIdSize{};
 };
 
 struct SnapshotLayout final {
@@ -235,7 +236,33 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
                                                 "Runtime object mapping is incomplete"}
                                         .withContext("object_id", object.id.value));
         }
-        layout.entities.push_back(SnapshotEntity{.id = object.id, .entity = **entity});
+        std::size_t maximumMaterialAssetIdSize =
+            object.components.renderable ? object.components.renderable->material.value.size() : 0;
+        if (object.components.behavior) {
+            const auto behavior =
+                std::lower_bound(chartRuntime.behaviors.begin(), chartRuntime.behaviors.end(),
+                                 object.components.behavior->behavior,
+                                 [](const chart::RuntimeBehavior& candidate,
+                                    const chart::BehaviorId& id) { return candidate.id < id; });
+            if (behavior != chartRuntime.behaviors.end() &&
+                behavior->id == object.components.behavior->behavior) {
+                for (const auto& track : behavior->stepTracks) {
+                    if (track.property != chart::BehaviorStepProperty::RenderMaterial) {
+                        continue;
+                    }
+                    for (const auto& event : track.events) {
+                        if (const auto* material = std::get_if<chart::AssetId>(&event.value)) {
+                            maximumMaterialAssetIdSize =
+                                std::max(maximumMaterialAssetIdSize, material->value.size());
+                        }
+                    }
+                }
+            }
+        }
+        layout.entities.push_back(
+            SnapshotEntity{.id = object.id,
+                           .entity = **entity,
+                           .maximumMaterialAssetIdSize = maximumMaterialAssetIdSize});
     }
 
     auto camera = session.withWorld(
@@ -766,6 +793,9 @@ auto PlaybackSession::extractFrame(const FrameViewport& viewport, FrameSnapshot&
             for (std::size_t index = 0; index < state_->snapshotLayout.entities.size(); ++index) {
                 const auto& entry = state_->snapshotLayout.entities[index];
                 auto& object = snapshot.objects[index];
+                if (object.materialAssetId.capacity() < entry.maximumMaterialAssetIdSize) {
+                    object.materialAssetId.reserve(entry.maximumMaterialAssetIdSize);
+                }
                 if (object.id != entry.id.value) {
                     object.id = entry.id.value;
                 }

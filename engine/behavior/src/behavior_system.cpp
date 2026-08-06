@@ -7,6 +7,8 @@
 #include <cmath>
 #include <cstddef>
 #include <string>
+#include <string_view>
+#include <type_traits>
 #include <utility>
 
 namespace cuexis::behavior {
@@ -160,7 +162,7 @@ namespace {
 }
 
 [[nodiscard]] auto baselineFor(const BehaviorBinding& binding, world::PropertyId property)
-    -> core::Result<world::PropertyValue> {
+    -> core::Result<const world::PropertyValue*> {
     const auto baseline = std::find_if(
         binding.baselines.begin(), binding.baselines.end(),
         [property](const PropertyBaseline& candidate) { return candidate.property == property; });
@@ -168,7 +170,21 @@ namespace {
         return core::unexpected(core::Error{"behavior.program.baseline_missing",
                                             "Behavior Event property has no captured baseline"});
     }
-    return baseline->value;
+    return &baseline->value;
+}
+
+[[nodiscard]] auto writeValue(const world::PropertyValue& value) noexcept
+    -> world::PropertyWriteValue {
+    return std::visit(
+        [](const auto& item) -> world::PropertyWriteValue {
+            using Value = std::decay_t<decltype(item)>;
+            if constexpr (std::is_same_v<Value, std::string>) {
+                return std::string_view{item};
+            } else {
+                return item;
+            }
+        },
+        value);
 }
 
 [[nodiscard]] auto sampleEvent(const BehaviorEventTrack& track, double beat,
@@ -195,7 +211,7 @@ namespace {
 }
 
 [[nodiscard]] auto sampleStep(const BehaviorStepTrack& track, double beat,
-                              const world::PropertyValue& baseline) -> world::PropertyValue {
+                              const world::PropertyValue& baseline) -> const world::PropertyValue& {
     if (track.events.empty() || beat < track.events.front().beat) {
         return baseline;
     }
@@ -238,7 +254,7 @@ auto BehaviorSystem::evaluate(const BehaviorProgram& program, const BehaviorSamp
                 return core::unexpected(std::move(value.error()));
             }
             auto pushed = writes.push(world::PropertyWrite{
-                .entity = binding.entity, .property = track.property, .value = std::move(*value)});
+                .entity = binding.entity, .property = track.property, .value = writeValue(*value)});
             if (!pushed) {
                 return core::unexpected(std::move(pushed.error()));
             }
@@ -248,12 +264,12 @@ auto BehaviorSystem::evaluate(const BehaviorProgram& program, const BehaviorSamp
             if (!baseline) {
                 return core::unexpected(std::move(baseline.error()));
             }
-            auto value = sampleEvent(track, sampleValue.beat, *baseline);
+            auto value = sampleEvent(track, sampleValue.beat, **baseline);
             if (!value) {
                 return core::unexpected(std::move(value.error()));
             }
             auto pushed = writes.push(world::PropertyWrite{
-                .entity = binding.entity, .property = track.property, .value = std::move(*value)});
+                .entity = binding.entity, .property = track.property, .value = writeValue(*value)});
             if (!pushed) {
                 return core::unexpected(std::move(pushed.error()));
             }
@@ -266,7 +282,7 @@ auto BehaviorSystem::evaluate(const BehaviorProgram& program, const BehaviorSamp
             auto pushed = writes.push(world::PropertyWrite{
                 .entity = binding.entity,
                 .property = track.property,
-                .value = sampleStep(track, sampleValue.beat, *baseline),
+                .value = writeValue(sampleStep(track, sampleValue.beat, **baseline)),
             });
             if (!pushed) {
                 return core::unexpected(std::move(pushed.error()));

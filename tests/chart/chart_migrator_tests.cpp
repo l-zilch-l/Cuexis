@@ -130,3 +130,32 @@ TEST_CASE("ChartMigrator preserves the v2 main-music contract", "[chart][migrati
     CHECK(reloaded.document->audio->mainMusic.value == "audio.main");
     CHECK(cuexis::chart::ChartCompiler::compile(*reloaded.document).hasValue());
 }
+
+TEST_CASE("ChartMigrator rejects an unbound single-key Track without dropping data",
+          "[chart][migration][stage2][failure]") {
+    constexpr std::string_view source = R"json({
+  "format":"cuexis.chart",
+  "version":1,
+  "chartId":"019b0000-0000-7abc-8def-000000000001",
+  "metadata":{},
+  "timing":{"offsetMs":0,"defaultBpm":120,"bpmChanges":[],"stops":[]},
+  "templates":[],
+  "behaviors":[{
+    "id":"unbound.single",
+    "type":"behavior.transform.keyframe",
+    "version":1,
+    "tracks":[{
+      "property":"transform.position.x",
+      "keys":[{"beat":{"numerator":0,"denominator":1},"value":4.0}]
+    }]
+  }],
+  "objects":[],
+  "requiredExtensions":[],
+  "extensions":{}
+})json";
+
+    const auto migrated = cuexis::chart::ChartMigrator::migrateToV3(source);
+    REQUIRE_FALSE(migrated.hasValue());
+    CHECK_FALSE(migrated.artifact.has_value());
+    CHECK(hasCode(migrated.diagnostics, "chart.migration.unbound_single_key_unrepresentable"));
+}

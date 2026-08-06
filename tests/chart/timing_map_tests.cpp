@@ -55,6 +55,13 @@ TEST_CASE("TimingMap rejects invalid and non-finite values", "[chart][timing]") 
     CHECK_FALSE(map->chartTimeMsToBeat(std::numeric_limits<double>::infinity()).has_value());
 }
 
+TEST_CASE("Legacy TimingMap preserves the historical positive BPM range", "[chart][timing]") {
+    CHECK(cuexis::chart::TimingMap::create(0.5, 0.0).has_value());
+    CHECK(cuexis::chart::TimingMap::create(70000.0, 0.0).has_value());
+    CHECK_FALSE(cuexis::chart::TimingMap::create(0.5, 0.0, {}, {}).has_value());
+    CHECK_FALSE(cuexis::chart::TimingMap::create(70000.0, 0.0, {}, {}).has_value());
+}
+
 TEST_CASE("TimingMap integrates Tempo Events and performs fixed-budget inversion",
           "[chart][timing][v3]") {
     const std::vector events{cuexis::chart::TempoEvent{

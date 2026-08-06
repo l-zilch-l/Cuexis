@@ -211,7 +211,7 @@ void addSessionError(core::Diagnostics& diagnostics, const core::Error& error) {
 }
 
 [[nodiscard]] auto buildEvaluationState(chart::ChartRuntime& runtime,
-                                        const ObjectEntityMap& objects, const world::World& world)
+                                        const ObjectEntityMap& objects, world::World& world)
     -> core::Result<std::unique_ptr<RuntimeEvaluationState>> {
     std::size_t requiredWrites = 0;
     for (std::size_t objectIndex = 0; objectIndex < runtime.objects.size(); ++objectIndex) {
@@ -361,16 +361,42 @@ void addSessionError(core::Diagnostics& diagnostics, const core::Error& error) {
               [](const auto& left, const auto& right) {
                   return entt::to_integral(left.entity) < entt::to_integral(right.entity);
               });
-    auto appearances = world.withRegistry([&](const entt::registry& registry) {
-        const auto view = registry.view<const render::AppearanceComponent>();
+    const auto maximumMaterialSize = [&](entt::entity entity, std::size_t baselineSize) {
+        std::size_t result = baselineSize;
+        for (const auto& binding : state->program.bindings) {
+            if (binding.entity != entity) {
+                continue;
+            }
+            const auto& definition = state->program.definitions[binding.behavior.value];
+            for (const auto& track : definition.stepTracks) {
+                if (track.property != world::PropertyId::RenderMaterial) {
+                    continue;
+                }
+                for (const auto& event : track.events) {
+                    if (const auto* value = std::get_if<std::string>(&event.value)) {
+                        result = std::max(result, value->size());
+                    }
+                }
+            }
+        }
+        return result;
+    };
+    auto appearances = world.withRegistry([&](entt::registry& registry) {
+        const auto view = registry.view<render::AppearanceComponent>();
         for (const entt::entity entity : view) {
-            const auto& appearance = view.get<const render::AppearanceComponent>(entity);
-            state->appearances.push_back(RuntimeEvaluationState::AppearanceEntry{
+            auto& appearance = view.get<render::AppearanceComponent>(entity);
+            const auto materialSize =
+                maximumMaterialSize(entity, appearance.materialAssetId.size());
+            appearance.materialAssetId.reserve(materialSize);
+            RuntimeEvaluationState::AppearanceEntry entry{
                 .entity = entity,
                 .baseline = appearance,
                 .candidate = appearance,
                 .previous = appearance,
-            });
+            };
+            entry.candidate.materialAssetId.reserve(materialSize);
+            entry.previous.materialAssetId.reserve(materialSize);
+            state->appearances.push_back(std::move(entry));
         }
     });
     if (!appearances) {
@@ -461,7 +487,10 @@ void rollbackCameras(RuntimeEvaluationState& state, world::World& world) noexcep
 [[nodiscard]] auto prepareAppearances(RuntimeEvaluationState& state) -> core::Result<void> {
     state.appearancesCommitted = false;
     for (auto& appearance : state.appearances) {
-        appearance.candidate = appearance.baseline;
+        appearance.candidate.visible = appearance.baseline.visible;
+        appearance.candidate.materialAssetId = appearance.baseline.materialAssetId;
+        appearance.candidate.opacity = appearance.baseline.opacity;
+        appearance.candidate.tint = appearance.baseline.tint;
     }
     for (const auto& write : state.writes.writes()) {
         if (write.property != world::PropertyId::RenderVisible &&
@@ -490,7 +519,7 @@ void rollbackCameras(RuntimeEvaluationState& state, world::World& world) noexcep
             break;
         }
         case world::PropertyId::RenderMaterial: {
-            const auto* value = std::get_if<std::string>(&write.value);
+            const auto* value = std::get_if<std::string_view>(&write.value);
             if (value == nullptr || value->empty()) {
                 return core::unexpected(
                     core::Error{"runtime.appearance.value_invalid",
@@ -611,6 +640,64 @@ void rollbackAppearances(RuntimeEvaluationState& state, world::World& world) noe
                                            return candidate.property == property;
                                        });
     return baseline == binding.baselines.end() ? world::PropertyValue{} : baseline->value;
+}
+
+[[nodiscard]] auto owningValue(const world::PropertyWriteValue& value) -> world::PropertyValue {
+    return std::visit(
+        [](const auto& item) -> world::PropertyValue {
+            using Value = std::decay_t<decltype(item)>;
+            if constexpr (std::is_same_v<Value, std::string_view>) {
+                return std::string{item};
+            } else {
+                return item;
+            }
+        },
+        value);
+}
+
+[[nodiscard]] auto resolvedValue(const RuntimeEvaluationState& state, entt::entity entity,
+                                 world::PropertyId property)
+    -> std::optional<world::PropertyValue> {
+    if (const auto transform = state.transformResolver.resolvedValue(entity, property)) {
+        return transform;
+    }
+    if (property == world::PropertyId::CameraFovY) {
+        const auto camera = std::lower_bound(
+            state.cameras.begin(), state.cameras.end(), entity,
+            [](const RuntimeEvaluationState::CameraEntry& candidate, entt::entity target) {
+                return entt::to_integral(candidate.entity) < entt::to_integral(target);
+            });
+        if (camera != state.cameras.end() && camera->entity == entity) {
+            return world::PropertyValue{camera->candidateFovY};
+        }
+        return std::nullopt;
+    }
+    const auto appearance = std::lower_bound(
+        state.appearances.begin(), state.appearances.end(), entity,
+        [](const RuntimeEvaluationState::AppearanceEntry& candidate, entt::entity target) {
+            return entt::to_integral(candidate.entity) < entt::to_integral(target);
+        });
+    if (appearance == state.appearances.end() || appearance->entity != entity) {
+        return std::nullopt;
+    }
+    switch (property) {
+    case world::PropertyId::RenderVisible:
+        return world::PropertyValue{appearance->candidate.visible};
+    case world::PropertyId::RenderMaterial:
+        return world::PropertyValue{appearance->candidate.materialAssetId};
+    case world::PropertyId::MaterialOpacity:
+        return world::PropertyValue{appearance->candidate.opacity};
+    case world::PropertyId::MaterialTint:
+        return world::PropertyValue{appearance->candidate.tint};
+    case world::PropertyId::TransformPositionX:
+    case world::PropertyId::TransformPositionY:
+    case world::PropertyId::TransformPositionZ:
+    case world::PropertyId::TransformRotation:
+    case world::PropertyId::TransformScale:
+    case world::PropertyId::CameraFovY:
+        return std::nullopt;
+    }
+    return std::nullopt;
 }
 
 } // namespace
@@ -885,20 +972,22 @@ void RuntimeSession::captureDebug(const RuntimeEvaluationState& state, double be
     const auto writes = state.writes.writes();
     const auto append = [&](const behavior::BehaviorBinding& binding, world::PropertyId property,
                             std::optional<std::size_t> eventIndex, double progress,
-                            const world::PropertyValue& output) {
+                            const world::PropertyWriteValue& output) {
         if (debugRecords_.size() >= debugOptions_.capacity) {
             debugTruncated_ = true;
             return;
         }
         const auto initial = baselineFor(binding, property);
+        auto behaviorValue = owningValue(output);
+        auto finalValue = resolvedValue(state, binding.entity, property);
         debugRecords_.push_back(RuntimeDebugRecord{
             .objectId = objectIdFor(objects_, binding.entity),
             .property = property,
             .initialValue = initial,
             .eventIndex = eventIndex,
             .normalizedProgress = progress,
-            .behaviorValue = output,
-            .finalValue = output,
+            .behaviorValue = behaviorValue,
+            .finalValue = finalValue ? std::move(*finalValue) : std::move(behaviorValue),
         });
     };
 

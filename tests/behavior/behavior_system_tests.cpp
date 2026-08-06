@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <limits>
+#include <utility>
 
 namespace {
 
@@ -23,16 +24,17 @@ using cuexis::world::PropertyValue;
 
 TEST_CASE("BehaviorSystem samples scalar tracks with target-key easing", "[behavior][sampling]") {
     BehaviorProgram program;
-    program.definitions.push_back(
-        BehaviorDefinition{.tracks = {
-                               BehaviorTrack{.property = PropertyId::TransformPositionX,
-                                             .keys = {BehaviorKey{.chartTimeMs = 0.0,
-                                                                  .value = PropertyValue{0.0},
-                                                                  .easing = Easing::Linear},
-                                                      BehaviorKey{.chartTimeMs = 100.0,
-                                                                  .value = PropertyValue{10.0},
-                                                                  .easing = Easing::InCubic}}},
-                           }});
+    BehaviorTrack track{.property = PropertyId::TransformPositionX, .keys = {}};
+    track.keys.reserve(2);
+    BehaviorKey firstKey{.chartTimeMs = 0.0, .value = {}, .easing = Easing::Linear};
+    std::get<double>(firstKey.value) = 0.0;
+    track.keys.push_back(std::move(firstKey));
+    BehaviorKey secondKey{.chartTimeMs = 100.0, .value = {}, .easing = Easing::InCubic};
+    std::get<double>(secondKey.value) = 10.0;
+    track.keys.push_back(std::move(secondKey));
+    BehaviorDefinition definition;
+    definition.tracks.push_back(std::move(track));
+    program.definitions.push_back(std::move(definition));
     program.bindings.push_back(
         BehaviorBinding{.entity = entt::entity{1}, .behavior = RuntimeBehaviorIndex{0}});
 

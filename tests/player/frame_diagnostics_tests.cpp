@@ -1,5 +1,7 @@
 #include "frame_diagnostics.hpp"
+#include "snapshot_scene.hpp"
 
+#include <cuexis/content/content_provider.hpp>
 #include <cuexis/playback/frame_digest.hpp>
 
 #include <catch2/catch_test_macros.hpp>
@@ -70,6 +72,35 @@ constexpr std::string_view traceChart = R"json(
   "objects":[{
     "id":"019b0000-0000-7abc-8def-000000000510","parent":null,
     "components":{"cuexis.element":{"version":1}},"extensions":{}
+  }],
+  "requiredExtensions":[],"extensions":{}
+}
+)json";
+
+constexpr std::string_view visibilityChart = R"json(
+{
+  "format":"cuexis.chart","version":3,
+  "chartId":"019c0000-0000-7abc-8def-000000000401","metadata":{},
+  "timing":{"offsetMs":0,"defaultBpm":120,"tempoEvents":[],"stops":[]},
+  "camera":{"type":"perspective","fovY":60,"near":0.1,"far":1000},
+  "templates":[],
+  "behaviors":[{
+    "id":"visibility.steps","type":"behavior.event","version":1,"events":[],
+    "stepEvents":[
+      {"property":"render.visible","beat":{"numerator":0,"denominator":1},"value":false},
+      {"property":"render.visible","beat":{"numerator":1,"denominator":1},"value":true},
+      {"property":"render.visible","beat":{"numerator":2,"denominator":1},"value":false}
+    ]
+  }],
+  "objects":[{
+    "id":"019c0000-0000-7abc-8def-000000000410","parent":null,
+    "components":{
+      "cuexis.transform":{"version":1,"position":[0,0,0],"rotation":[0,0,0,1],"scale":[1,1,1]},
+      "cuexis.renderable":{"version":1,
+        "mesh":{"domain":"asset","id":"mesh.visibility"},
+        "material":{"domain":"asset","id":"material.visibility"}},
+      "cuexis.behavior":{"version":1,"behavior":{"domain":"behavior","id":"visibility.steps"}}
+    },"extensions":{}
   }],
   "requiredExtensions":[],"extensions":{}
 }
@@ -214,4 +245,44 @@ TEST_CASE("Frame diagnostics do not change the RuntimeFrame or snapshot trace",
     CHECK_FALSE(std::filesystem::exists(disabledFramesPath));
     CHECK_FALSE(std::filesystem::exists(disabledAudioPath));
     CHECK_FALSE(std::filesystem::exists(disabledMetaPath));
+}
+
+TEST_CASE("Player scene adapter accepts invisible frames, visibility changes, and seek",
+          "[player][scene][visibility][seek]") {
+    auto provider = cuexis::content::HostContentProvider::create(
+        [](const cuexis::content::ContentRequest&)
+            -> cuexis::core::Result<cuexis::content::ContentBlob> {
+            return cuexis::content::ContentBlob{.bytes = {std::byte{0x42}}, .revision = 1};
+        });
+    REQUIRE(provider.has_value());
+    auto source = cuexis::playback::PlaybackSource::fromTypedProject(
+        {.sourceId = "player-visibility",
+         .chartJson = std::string{visibilityChart},
+         .assets = {{.id = "mesh.visibility",
+                     .type = cuexis::playback::PlaybackAssetType::Mesh,
+                     .rootId = "memory",
+                     .logicalSource = "mesh.bin"},
+                    {.id = "material.visibility",
+                     .type = cuexis::playback::PlaybackAssetType::Material,
+                     .rootId = "memory",
+                     .logicalSource = "material.bin"}}},
+        std::move(*provider));
+    REQUIRE(source.has_value());
+
+    cuexis::playback::PlaybackSession session;
+    REQUIRE(
+        session.load(std::move(*source), cuexis::playback::PlaybackMode::ChartClock).has_value());
+    const auto sceneAt = [&](const cuexis::playback::RuntimeFrame& frame) {
+        REQUIRE(session.update(frame).has_value());
+        const auto frameSnapshot = session.extractFrame({.width = 1280, .height = 720});
+        REQUIRE(frameSnapshot.has_value());
+        cuexis::render::RenderScene scene;
+        REQUIRE(cuexis::player::appendSnapshotAxes(*frameSnapshot, scene).has_value());
+        return scene;
+    };
+
+    CHECK(sceneAt({.chartTimeMs = 0.0}).empty());
+    CHECK(sceneAt({.chartTimeMs = 500.0, .simulationDeltaTimeMs = 500.0}).size() == 3);
+    CHECK(sceneAt({.chartTimeMs = 1000.0, .simulationDeltaTimeMs = 500.0}).empty());
+    CHECK(sceneAt({.chartTimeMs = 500.0, .timeDiscontinuityId = 1}).size() == 3);
 }

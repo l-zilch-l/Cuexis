@@ -7,6 +7,8 @@ add_executable(
     src/player_app.hpp
     src/player_log.cpp
     src/player_log.hpp
+    src/snapshot_scene.cpp
+    src/snapshot_scene.hpp
 )
 
 find_package(spdlog CONFIG REQUIRED)

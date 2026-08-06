@@ -661,6 +661,7 @@ if(CUEXIS_BUILD_TESTS)
                 cuexis::audio
                 cuexis::core
                 cuexis::playback
+                cuexis::render
                 Catch2::Catch2WithMain
         )
     endif()

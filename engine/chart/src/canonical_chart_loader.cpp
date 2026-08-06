@@ -1232,8 +1232,12 @@ struct RawTemplate final {
             behaviorTracks.canonicalText =
                 opaqueJson(tracksReader->value(), diagnostics, tracksReader->fieldPath())
                     .canonicalText;
-            result.push_back(
-                ChartBehavior{BehaviorId{*id}, std::string{*type}, 1, std::move(behaviorTracks)});
+            result.push_back(ChartBehavior{.id = BehaviorId{*id},
+                                           .type = std::string{*type},
+                                           .version = 1,
+                                           .tracks = std::move(behaviorTracks),
+                                           .events = {},
+                                           .stepEvents = {}});
         }
     }
     return result;
@@ -1605,8 +1609,11 @@ struct RawTemplate final {
         addError(diagnostics, "chart.timing.non_finite", "Offset must be finite",
                  std::string{offsetReader->fieldPath()});
     }
-    if (!std::isfinite(*bpm) || *bpm < 1.0 || *bpm > 65536.0) {
-        addError(diagnostics, "chart.timing.invalid_bpm", "Default BPM must be in [1, 65536]",
+    const bool bpmValid = formatVersion == 3 ? *bpm >= 1.0 && *bpm <= 65536.0 : *bpm > 0.0;
+    if (!std::isfinite(*bpm) || !bpmValid) {
+        addError(diagnostics, "chart.timing.invalid_bpm",
+                 formatVersion == 3 ? "Default BPM must be in [1, 65536]"
+                                    : "Default BPM must be positive",
                  std::string{bpmReader->fieldPath()});
     }
     if (formatVersion != 3 && !events->empty()) {
@@ -1618,12 +1625,12 @@ struct RawTemplate final {
         addError(diagnostics, "chart.timing.stops_unsupported",
                  "Stops are unsupported before chart v3", std::string{stopsReader->fieldPath()});
     }
-    if (!std::isfinite(*offset) || !std::isfinite(*bpm) || *bpm < 1.0 || *bpm > 65536.0 ||
+    if (!std::isfinite(*offset) || !std::isfinite(*bpm) || !bpmValid ||
         (formatVersion != 3 && (!events->empty() || !stops->empty()))) {
         return std::nullopt;
     }
 
-    ChartTiming timing{.offsetMs = *offset, .defaultBpm = *bpm};
+    ChartTiming timing{.offsetMs = *offset, .defaultBpm = *bpm, .tempoEvents = {}, .stops = {}};
     if (formatVersion != 3) {
         return timing;
     }

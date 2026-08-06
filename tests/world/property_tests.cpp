@@ -115,7 +115,11 @@ TEST_CASE("Transform resolver rollback only restores entities written in the cur
     auto resolver = std::move(*captured);
 
     const PropertyWrite firstWrite{first, PropertyId::TransformPositionX, 3.0};
-    REQUIRE(resolver.prepare(std::span{&firstWrite, 1}).has_value());
+    const auto firstPrepared = resolver.prepare(std::span{&firstWrite, 1});
+    if (!firstPrepared) {
+        UNSCOPED_INFO(firstPrepared.error().code());
+    }
+    REQUIRE(firstPrepared.has_value());
     REQUIRE(resolver.commit(world).has_value());
 
     const PropertyWrite secondWrite{second, PropertyId::TransformPositionY, 4.0};

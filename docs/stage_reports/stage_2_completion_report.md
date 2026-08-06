@@ -1,6 +1,6 @@
 # Cuexis 阶段 2 完成报告
 
-状态：实现与 Windows/MSVC 非图形验收完成；最终阶段验收待 GPU smoke 与 hosted Linux CI
+状态：实现与 Windows 本地验收完成；最终跨平台验收待 hosted Linux CI
 报告日期：2026-08-06
 完成版本：`26.07.18.18-1`（Debug：`26.07.18.18-1-dev`）
 SDK preview API：`0.4.0`
@@ -13,8 +13,9 @@ Playback capability、内部调试快照和显式 v1/v2 -> v3 迁移闭环。阶
 `behavior.transform.keyframe` version 1 读取与采样路径保持不变；迁移不会自动写回源文件。
 
 Windows/MSVC 本地 static/shared Debug/Release、headless、external consumer、format、
-architecture、工具和零分配门禁均已通过。当前环境没有获准启动 GPU 窗口进程，本任务也没有
-推送远端触发 hosted Linux CI，因此这两项不能声明通过，阶段 2 的最终跨平台验收仍待关闭。
+architecture、工具、零分配与 GPU smoke 门禁均已通过；Windows MinGW headless Release 也已
+通过。当前工作树未提交或推送，`gh run list --commit` 没有返回 run，因此 hosted Linux CI 不能
+声明通过，阶段 2 的最终跨平台验收仍待关闭。
 
 ## 2. Chart v3 与 TimingMap
 
@@ -63,17 +64,22 @@ load 和 compile 校验。
 
 | 配置 | Linkage | CTest | 结果 |
 | --- | --- | ---: | --- |
-| full Debug | STATIC | 245 | 通过 |
-| full Release `/WX` | STATIC | 245 | 通过 |
-| headless Debug | STATIC | 213 | 通过 |
-| headless Release `/WX` | STATIC | 213 | 通过 |
-| full Debug | SHARED | 247 | 通过 |
-| full Release `/WX` | SHARED | 247 | 通过 |
+| full Debug | STATIC | 249 | 通过 |
+| full Release `/WX` | STATIC | 249 | 通过 |
+| headless Debug | STATIC | 216 | 通过 |
+| headless Release `/WX` | STATIC | 216 | 通过 |
+| full Debug | SHARED | 251 | 通过 |
+| full Release `/WX` | SHARED | 251 | 通过 |
 
 每套 CTest 均有 1 个 Windows 环境不支持的 symlink containment 用例按既有条件跳过，没有失败。
 shared 配置额外通过 export surface、consumer imports、版本化 DLL、Debug/Release 配置不匹配和
 MSVC runtime 不匹配拒绝门禁。五种 external consumer 模式覆盖 add_subdirectory、基础/核心
-find_package 与 AudioSDL，并验证安装公共头为纯 ASCII。
+find_package 与 AudioSDL，并验证安装公共头为纯 ASCII。独立 find_package consumer 使用显式
+`VCPKG_INSTALLED_DIR` 和 triplet prefix，并强制 `VCPKG_MANIFEST_MODE=OFF`；Cuexis package 构建
+本身仍保留 manifest 校验。
+
+Windows MinGW headless Release 使用 `-Werror` 构建，并在排除该配置未提供的 external package
+consumer 后通过 `211/211`；1 个 symlink containment 用例按 Windows 条件跳过。
 
 ## 6. 性能与工具证据
 
@@ -85,14 +91,16 @@ find_package 与 AudioSDL，并验证安装公共头为纯 ASCII。
 - `cuexis_chart_validator --input assets/charts/stage2_example.cuexis.chart.json`：通过。
 - v1 migration fixture 的 CLI 输出与 committed v3/report golden：一致。
 - 迁移后的 v3 与 v1 scalar/Vec3/Quaternion/FOV Runtime 采样：通过冻结误差预算。
+- 两份 Stage 2 golden 的行尾扫描分别为 `11 LF/0 CRLF` 与 `270 LF/0 CRLF`。
+- Debug/Release GPU smoke：NVIDIA GeForce RTX 4060 Laptop GPU、OpenGL 3.3，普通场景均完成 3 帧。
+- Debug/Release 全不可见 GPU smoke：`Objects: 4, debug commands: 0`，均完成 3 帧。
 
 ## 7. 待补最终验收
 
-- GPU/window smoke：当前工作区策略拒绝启动窗口进程，未执行，不能标记通过。
 - hosted Linux CI：本任务未提交或推送分支，未触发 GitHub Actions，不能用 Windows 结果替代。
 
-这两项补齐前，本文只证明 Stage 2 实现和 Windows/MSVC 非图形门禁完成，不证明最终受支持平台
-矩阵全部通过。
+hosted Linux GCC/Clang、sanitizer 和 package consumer jobs 补齐前，本文证明 Stage 2 实现与
+Windows 本地矩阵完成，不证明最终受支持平台矩阵全部通过。
 
 ## 8. 明确延期
 

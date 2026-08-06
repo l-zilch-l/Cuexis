@@ -10,8 +10,10 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <span>
 #include <string>
+#include <string_view>
 #include <variant>
 #include <vector>
 
@@ -35,11 +37,12 @@ enum class PropertyId : std::uint8_t {
 };
 
 using PropertyValue = std::variant<double, core::Vec3, core::Quat, bool, std::string>;
+using PropertyWriteValue = std::variant<double, core::Vec3, core::Quat, bool, std::string_view>;
 
 struct PropertyWrite final {
     entt::entity entity{entt::null};
     PropertyId property{};
-    PropertyValue value{};
+    PropertyWriteValue value{};
 };
 
 class PropertyWriteBuffer final {
@@ -69,6 +72,8 @@ class TransformPropertyResolver final {
     [[nodiscard]] auto commit(World& world) -> core::Result<void>;
     void rollback(World& world) noexcept;
 
+    [[nodiscard]] auto resolvedValue(entt::entity entity, PropertyId property) const noexcept
+        -> std::optional<PropertyValue>;
     [[nodiscard]] auto baselineCount() const noexcept -> std::size_t;
 
   private:

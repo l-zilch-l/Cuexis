@@ -1,6 +1,7 @@
 add_executable(cuexis_player_diagnostics_tests
     frame_diagnostics_tests.cpp
     "${PROJECT_SOURCE_DIR}/app/player/src/frame_diagnostics.cpp"
+    "${PROJECT_SOURCE_DIR}/app/player/src/snapshot_scene.cpp"
 )
 
 target_compile_features(cuexis_player_diagnostics_tests PRIVATE cxx_std_20)
@@ -12,6 +13,7 @@ target_link_libraries(cuexis_player_diagnostics_tests
         cuexis::audio
         cuexis::core
         cuexis::playback
+        cuexis::render
         Catch2::Catch2WithMain
 )
 
