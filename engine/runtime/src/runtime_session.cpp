@@ -120,20 +120,17 @@ void addSessionError(core::Diagnostics& diagnostics, const core::Error& error) {
     return world::PropertyId::RenderVisible;
 }
 
-[[nodiscard]] auto toPropertyValue(chart::BehaviorValue value) -> world::PropertyValue {
+[[nodiscard]] auto toPropertyValue(const chart::BehaviorValue& value) -> world::PropertyValue {
     return std::visit(
-        [](auto&& item) -> world::PropertyValue {
-            return world::PropertyValue{std::forward<decltype(item)>(item)};
-        },
-        std::move(value));
+        [](const auto& item) -> world::PropertyValue { return world::PropertyValue{item}; }, value);
 }
 
-[[nodiscard]] auto toPropertyValue(chart::BehaviorStepValue&& value) -> world::PropertyValue {
+[[nodiscard]] auto toPropertyValue(const chart::BehaviorStepValue& value) -> world::PropertyValue {
     if (const auto* visible = std::get_if<bool>(&value)) {
         return world::PropertyValue{std::in_place_type<bool>, *visible};
     }
-    auto material = std::get<chart::AssetId>(std::move(value));
-    return world::PropertyValue{std::in_place_type<std::string>, std::move(material.value)};
+    const auto& material = std::get<chart::AssetId>(value);
+    return world::PropertyValue{std::in_place_type<std::string>, material.value};
 }
 
 [[nodiscard]] auto baselineFor(const chart::RuntimeObject& object, world::PropertyId property)
@@ -260,8 +257,8 @@ void addSessionError(core::Diagnostics& diagnostics, const core::Error& error) {
                 track.events.push_back(behavior::BehaviorEvent{
                     .startBeat = runtimeEvent.startBeat,
                     .endBeat = runtimeEvent.endBeat,
-                    .startValue = toPropertyValue(std::move(runtimeEvent.startValue)),
-                    .endValue = toPropertyValue(std::move(runtimeEvent.endValue)),
+                    .startValue = toPropertyValue(runtimeEvent.startValue),
+                    .endValue = toPropertyValue(runtimeEvent.endValue),
                     .startSlope = runtimeEvent.startSlope,
                     .endSlope = runtimeEvent.endSlope,
                     .instantaneous = runtimeEvent.instantaneous,
@@ -277,7 +274,7 @@ void addSessionError(core::Diagnostics& diagnostics, const core::Error& error) {
             for (auto& runtimeEvent : runtimeTrack.events) {
                 track.events.push_back(behavior::BehaviorStepEvent{
                     .beat = runtimeEvent.beat,
-                    .value = toPropertyValue(std::move(runtimeEvent.value)),
+                    .value = toPropertyValue(runtimeEvent.value),
                 });
             }
             definition.stepTracks.push_back(std::move(track));
