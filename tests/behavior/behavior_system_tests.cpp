@@ -57,21 +57,29 @@ TEST_CASE("BehaviorSystem samples scalar tracks with target-key easing", "[behav
 
 TEST_CASE("BehaviorSystem interpolates Vec3 and quaternion shortest path", "[behavior][sampling]") {
     BehaviorProgram program;
-    program.definitions.push_back(BehaviorDefinition{
-        .tracks = {
-            BehaviorTrack{.property = PropertyId::TransformScale,
-                          .keys = {BehaviorKey{.chartTimeMs = 0.0,
-                                               .value = PropertyValue{Vec3{1.0F, 2.0F, 3.0F}}},
-                                   BehaviorKey{.chartTimeMs = 100.0,
-                                               .value = PropertyValue{Vec3{3.0F, 4.0F, 5.0F}},
-                                               .easing = Easing::OutCubic}}},
-            BehaviorTrack{
-                .property = PropertyId::TransformRotation,
-                .keys = {BehaviorKey{.chartTimeMs = 0.0,
-                                     .value = PropertyValue{Quat{0.0F, 0.0F, 0.0F, 1.0F}}},
-                         BehaviorKey{.chartTimeMs = 100.0,
-                                     .value = PropertyValue{Quat{0.0F, 0.0F, 0.0F, -1.0F}}}}},
-        }});
+    BehaviorTrack scaleTrack{.property = PropertyId::TransformScale, .keys = {}};
+    scaleTrack.keys.reserve(2);
+    BehaviorKey firstScaleKey{.chartTimeMs = 0.0, .value = PropertyValue{Vec3{1.0F, 2.0F, 3.0F}}};
+    scaleTrack.keys.push_back(std::move(firstScaleKey));
+    BehaviorKey secondScaleKey{.chartTimeMs = 100.0,
+                               .value = PropertyValue{Vec3{3.0F, 4.0F, 5.0F}},
+                               .easing = Easing::OutCubic};
+    scaleTrack.keys.push_back(std::move(secondScaleKey));
+
+    BehaviorTrack rotationTrack{.property = PropertyId::TransformRotation, .keys = {}};
+    rotationTrack.keys.reserve(2);
+    BehaviorKey firstRotationKey{.chartTimeMs = 0.0,
+                                 .value = PropertyValue{Quat{0.0F, 0.0F, 0.0F, 1.0F}}};
+    rotationTrack.keys.push_back(std::move(firstRotationKey));
+    BehaviorKey secondRotationKey{.chartTimeMs = 100.0,
+                                  .value = PropertyValue{Quat{0.0F, 0.0F, 0.0F, -1.0F}}};
+    rotationTrack.keys.push_back(std::move(secondRotationKey));
+
+    BehaviorDefinition definition;
+    definition.tracks.reserve(2);
+    definition.tracks.push_back(std::move(scaleTrack));
+    definition.tracks.push_back(std::move(rotationTrack));
+    program.definitions.push_back(std::move(definition));
     program.bindings.push_back(
         BehaviorBinding{.entity = entt::entity{2}, .behavior = RuntimeBehaviorIndex{0}});
 
