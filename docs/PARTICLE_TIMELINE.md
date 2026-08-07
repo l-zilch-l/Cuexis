@@ -55,7 +55,8 @@ Emitter 累积发射状态
 simulationVersion
 ```
 
-GPU Buffer 和后端对象不进入 Checkpoint。ParticleRenderData 在恢复完成后重新提取，并通过 ParticleRenderPacket 或等价只读帧快照交给宿主/内建渲染 adapter。
+GPU Buffer 和后端对象不进入 Checkpoint。粒子表现数据在恢复完成后重新提取，并作为
+`FrameSnapshot` 的版本化粒子扩展字段交给宿主/内建渲染 adapter；Stage 8 不建立第二套公共帧。
 
 ## Reload
 

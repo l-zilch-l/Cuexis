@@ -34,7 +34,7 @@ ContentProvider 与资源预算
 RuntimeFrame 与标准化 InputEvent
 RuntimeSession prepare/update/reload/unload
 extractResult()：从 Session 开始累积的判定事件、分数、连击和统计快照
-extractFrame()：后端无关的 FrameSnapshot/RenderPacket 提取
+extractFrame()：后端无关的拥有型 FrameSnapshot 提取
 startRecording()：按 chartTimeMs 记录全部 InputEvent
 stopRecording()：停止记录并返回可序列化 ReplayData
 loadReplay()：注入预记录 InputEvent 替代实时输入
@@ -43,6 +43,10 @@ loadReplay()：注入预记录 InputEvent 替代实时输入
 ```
 
 PlaybackSession 不创建宿主窗口、不拥有宿主主循环，也不要求 SDL/OpenGL。当前 C++20 门面已提供 `loadChart(string_view)`、`update(RuntimeFrame)`、`extractFrame(FrameViewport)`、显式目标帧 `reload` 和 `unload`。`FrameSnapshot` 拥有对象 ID、World Matrix、Camera View/Projection、Visibility、Material asset/opacity/tint 和视口数据；Reload/Unload 不使已返回 Snapshot 悬空。`findEntity(entt::entity)`、`withWorld`、Runtime 调试快照和 Registry 访问只能作为内部或受限调试接口，不能进入安装后的 SDK 公共头。
+
+ADR 0037 已接受 Stage 3 的后续方向：`FrameSnapshot` 继续作为唯一公共权威帧，并增加 portable
+resource 引用与拥有型 acquisition。相关精确字段、预算和 API 仍由 Stage 3 的 3A 门禁冻结，当前
+代码尚未实现这些接口；adapter 内部派生命令不能成为第二套 Playback Runtime 输出。
 
 Stage 2 的 Playback capability set version 1 使用
 `cuexis.chart.v3`、`cuexis.behavior.event.v1`、`cuexis.render.visibility.v1` 和
@@ -110,7 +114,13 @@ World 必须在 Scope 前销毁，确保 Component 清理期间资源 Handle 仍
 
 Prepared 数据同时绑定创建它的 Session token 和 ResourceManager token。跨 Session、跨 Manager、已经消费或 Session 地址复用后的提交均失败。Handle 除 index/generation 外还必须属于当前 Manager；Runtime 不接受只通过 `valid()` 但来源不同的 Handle。
 
-阶段 1B 的资源准备采用同步主线程路径。Mesh/Material 使用 Fallback 策略，Scope 对直接引用和 Material 等资源的传递依赖闭包去重；Component 只保存 Handle。准备诊断固定最多 1024 条，成功 commit 后成为 Session 的活动 Diagnostics。
+阶段 1B 的资源准备采用同步主线程路径。Mesh/Material 使用 Fallback 策略，Scope 对直接引用和
+Material 等资源的传递依赖闭包去重；Component 只保存 Handle。准备诊断固定最多 1024 条，成功
+commit 后成为 Session 的活动 Diagnostics。
+
+该 Fallback 行为是内部 opaque 资源合同。Stage 3 Portable Presentation v1 不把现有 built-in
+fallback blob 解释为 Mesh/Material/Texture2D；候选 presentation 闭包必须严格成功，并在
+Playback commit 前拒绝 fallback。通用 ResourceManager 策略与阶段 1B 回归保持不变。
 
 ## Update 与时间不连续
 

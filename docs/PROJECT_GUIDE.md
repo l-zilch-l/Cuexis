@@ -2,7 +2,7 @@
 
 ## 0. 文档状态
 
-本文档是项目的持续维护指南，同时记录已落地的工程状态、已确认的架构边界和后续阶段路线。阶段 0、阶段 1A、阶段 1B、阶段 1C、阶段 1D 与阶段 1E 已完成验收；阶段 2 实现与 Windows 本地门禁已完成，最终跨平台验收待 hosted Linux CI。260722 全量审查的 R01-R21 已于 2026-07-26/27 全部关闭并补齐构建、CTest、架构和 external consumer 证据。ADR 0027 已将长期产品方向调整为可嵌入 Cuexis Playback SDK + 独立 Player + 独立 Studio。
+本文档是项目的持续维护指南，同时记录已落地的工程状态、已确认的架构边界和后续阶段路线。阶段 0、阶段 1A、阶段 1B、阶段 1C、阶段 1D 与阶段 1E 已完成验收；阶段 2 实现与 Windows 本地门禁已完成，最终跨平台验收待 hosted Linux CI。阶段 3 的公共方向和实施范围已经由 ADR 0037 与[阶段 3 实施计划](stage_plans/stage_3_implementation_plan.md)接受，但尚未开始实现。260722 全量审查的 R01-R21 已于 2026-07-26/27 全部关闭并补齐构建、CTest、架构和 external consumer 证据。ADR 0027 已将长期产品方向调整为可嵌入 Cuexis Playback SDK + 独立 Player + 独立 Studio。
 
 文档中的内容按以下方式理解：
 
@@ -39,6 +39,7 @@ CODE_POLICY.md    编码、Result/Error、所有权与线程规则
 PROJECT_REVIEW.md 当前文档各部分的合理性与风险评估
 stage_plans/cuexis_sdk_transition_plan.md SDK 产品边界、阶段迁移与完成标准
 stage_plans/stage_2_implementation_plan.md Behavior Event、TimingMap 与阶段 2 实施门禁
+stage_plans/stage_3_implementation_plan.md Portable Presentation v1、Validation Sink 与渲染 adapter 实施门禁
 ```
 
 当专项文档建立后，本文只保留架构结论和链接，避免同一规则在多个文件中重复维护。
@@ -74,7 +75,7 @@ cuexis::            C++ 命名空间
 使用数据驱动方式描述谱面、行为、材质和动画
 支持 3D Transform、父子绑定、时间轴驱动
 支持音符、元素、轨道、判定线、装饰物的统一建模
-输出宿主可消费的 FrameSnapshot/RenderPacket，并提供可选 OpenGL 后端
+输出宿主可消费的拥有型 FrameSnapshot 和 portable resources，并提供可选 OpenGL 后端
 支持标准 InputEvent、确定性判定计分、输入记录和回放
 支持 Cuexis Player、Cuexis Studio 和外部宿主共享 Playback 核心
 支持后续扩展 Entity 动画、粒子系统、Shader 编辑器
@@ -89,7 +90,7 @@ cuexis::            C++ 命名空间
 正式判定计分与 ReplayData 在阶段 11 由必选 cuexis_judgement 交付
 ```
 
-当前首要交付范围是关闭阶段 2 的 GPU/hosted CI 最终验收，并在不改变已冻结 Stage 2 格式语义的前提下进入阶段 3 表现前端规划。Cuexis Studio 的独立应用边界继续预留，但不阻塞 Playback SDK 外部消费。
+当前首要交付范围是关闭阶段 2 的 hosted Linux CI 最终验收，并按阶段 3 实施计划完成 Portable Presentation v1 的文档与契约门禁。Cuexis Studio 的独立应用边界继续预留，但不阻塞 Playback SDK 外部消费。
 
 ## 3. 非目标
 
@@ -687,7 +688,7 @@ Host/App supplies Content + Clock + InputEvent
   -> PlaybackSession
   -> ChartRuntime
   -> RuntimeSession / World / Systems
-  -> FrameSnapshot / RenderPacket
+  -> owning FrameSnapshot + portable resource acquisition
   -> Host Render Adapter or Cuexis RenderBackend
   -> JudgementResult / Score / Statistics
   -> optional ReplayData
@@ -1356,50 +1357,41 @@ ChartTime 粒子使用版本化随机种子和 120Hz 固定步长。向后或大
 
 ## 17. 渲染架构
 
-业务层不得调用 OpenGL。
+业务层不得调用 OpenGL。Stage 3 的公共 Runtime 输出只有拥有型 `FrameSnapshot`；adapter 可以从它派生内部命令包，但不得建立第二套公共帧模型。
 
 推荐流程：
 
 ```text
 EnTT Registry
-  -> RenderSystem
-  -> RenderScene
-  -> Playback FrameSnapshot / RenderPacket
+  -> RenderSystem / Playback extraction
+  -> owning Playback FrameSnapshot
+  -> portable resource acquisition
   -> Host Render Adapter 或 Cuexis RenderBackend
   -> optional OpenGLBackend
 ```
 
-推荐渲染命令：
+推荐渲染命令职责如下；名称仅为设计示意，精确公共 C++ 类型名和字段由 Stage 3 的 3A 门禁冻结：
 
 ```cpp
 struct RenderCommand {
-    MeshHandle mesh;
-    MaterialHandle material;
+    PortableMeshRef mesh;
+    PortableMaterialRef material;
     Mat4 worldMatrix;
-    RenderLayer layer;
+    PresentationPass pass;
 };
 ```
 
 渲染前端概念：
 
 ```text
-RenderScene
-RenderCommandList
-FrameSnapshot / RenderPacket
-宿主 Camera/Viewport input
-Light
-Material
-Mesh
-Texture
-ShaderAsset
-PipelineDesc
-BufferDesc
-TextureDesc
-SamplerDesc
-BindingSet
-RenderPass
-Framebuffer
-CommandList
+FrameSnapshot（唯一公共帧）
+Portable Mesh / Texture2D / Unlit Material
+宿主 FrameViewport input
+OpaquePass / TransparentPass / DebugPass
+Host Render Adapter 或 Built-in Renderer
+
+以下概念不属于 Stage 3 公共合同：
+ShaderAsset、PipelineDesc、BufferDesc、SamplerDesc、BindingSet、Framebuffer、CommandList、Light
 ```
 
 避免 OpenGL 状态机式接口：
@@ -1412,17 +1404,15 @@ useProgram
 
 这类接口会导致未来 Vulkan 后端很难接入。
 
-推荐渲染阶段：
+Stage 3 固定渲染阶段：
 
 ```text
 OpaquePass
 TransparentPass
-ParticlePass
 DebugPass
-UIPass
 ```
 
-`UIPass` 只属于 Player/Studio 应用或特定宿主 adapter，不进入 Playback 核心帧契约。第一版 SDK 优先冻结宿主可消费的表现数据与能力声明，不为通用游戏 UI 建立 RenderGraph。
+`DebugPass` 只属于 adapter/application 诊断，可以关闭且不改变项目内容或 FrameDigest。Particle、UI、Light 和完整 RenderGraph 不进入 Stage 3；只有在真实消费者出现后才分别进入后续阶段。
 
 第一版不强制实现完整 RenderGraph。可以先用固定 Pass，后续演进：
 
@@ -1607,6 +1597,13 @@ Mesh、Texture、Material、Shader：Fallback
 ```
 
 具体资产可以显式收紧策略，但不能把 Required 静默降级为 Optional。
+
+上述 Mesh/Texture/Material Fallback 是阶段 1B 的通用 opaque 资源生命周期策略。Stage 3
+Portable Presentation v1 的真实表现闭包采用严格必需语义：现有 built-in fallback blob 不是合法
+portable payload，不能进入候选 manifest、公开 acquisition、FrameSnapshot resource ref 或 GPU
+上传。通用 `ResourceManager` Fallback API 与历史测试继续保留；Stage 3 候选若解析到 fallback，
+必须在 Playback commit 前失败。未来可视占位资源必须作为显式、有效、版本化的 portable asset
+另行定义，不能复用 opaque fallback 字符串。
 
 ### 19.3 第一版加载与线程边界
 
@@ -2611,42 +2608,17 @@ TimingMap 边界、Stop 区间和负 Beat 有单元测试
 
 ### 阶段 3：可移植表现前端与渲染适配，8-10 个月
 
-目标：冻结宿主可消费的 FrameSnapshot/RenderPacket，并把 OpenGL 与特定宿主引擎彻底隔离为 adapter。
+阶段 3 的完整范围、批次、资源合同、事务边界、测试矩阵和完成定义见[阶段 3 实施计划](stage_plans/stage_3_implementation_plan.md)。公共方向由 [ADR 0037](adr/0037-stage-3-portable-presentation-contracts.md) 冻结。
 
-任务：
-
-```text
-稳定并扩展 RenderScene / RenderCommandList
-冻结 FrameSnapshot/RenderPacket 所有权、有效期和大小预算
-定义宿主 Camera/Viewport 输入与坐标转换契约
-仅在 Cuexis 表现有真实消费者时定义 LightComponent
-定义 PipelineDesc
-定义 TextureDesc
-定义 BufferDesc
-定义 MaterialAsset
-定义后端无关的 RenderConfig，区分请求值、实际有效值以及启动期静态/运行时动态字段
-由宿主/应用 adapter 把 RenderConfig 映射为后端配置，业务与项目文件不暴露后端枚举
-定义 Portable Presentation、Built-in Renderer 和 Host-specific capability 分层
-建立不执行 GPU 绘制的验证 Sink
-实现 OpaquePass
-实现 TransparentPass
-实现 DebugPass
-实现基础排序
-实现材质参数上传
-```
-
-验收标准：
+摘要：
 
 ```text
-RenderSystem 只生成 RenderScene
-OpenGL 只存在于 cuexis_render_opengl
-材质系统不暴露 GLuint
-Playback 公共头和 FrameSnapshot 不暴露任何图形 API 类型
-透明对象有稳定绘制顺序
-可以显示基础 debug geometry
-无效 RenderConfig 在创建 Backend 前失败；有效配置可查询并诊断实际生效值
-切换有效 RenderConfig 请求只影响渲染子系统，不改变 Chart、Behavior 或 World 数据
-宿主能力不足时稳定失败或执行项目显式允许的受控降级
+FrameSnapshot 是唯一公共权威帧；RenderPacket 只能是 adapter 内部派生输入
+Portable Presentation v1 只包含 Mesh、Texture2D、固定 Unlit Material
+Playback 提供候选 manifest 和拥有型资源获取，不公开 AssetDatabase/ResourceManager/Provider
+宿主只提供 FrameViewport，不覆盖 Chart/Behavior 相机
+固定 Opaque、Transparent、Debug 三个 Pass；Light、Particle、UI、RenderGraph 和通用 Pipeline/Buffer 延后
+先完成无 GPU Validation Sink，再实现 OpenGL adapter 和 Player 真实 Mesh 绘制
 ```
 
 ### 阶段 4：Cuexis 表现动画系统，10-12 个月
@@ -2689,7 +2661,7 @@ Host Override 结束后属性恢复到下层求值结果
 #### 阶段 5A：材质资产与参数
 
 ```text
-实现 MaterialAsset、MaterialHandle、参数 Schema 和 RenderState
+在 Stage 3 Unlit Material v1 之上实现版本化 MaterialAsset、MaterialHandle、参数 Schema 和 RenderState
 实现材质参数上传、默认 Shader 引用和运行时材质预览
 定义跨宿主最低 Portable Material Schema
 ```
@@ -2811,7 +2783,7 @@ Studio 显示目标宿主 Profile 与不兼容表现能力
 #### 阶段 8A：基础发射器与渲染
 
 ```text
-定义 ParticleEmitterAsset、ParticleEmitterComponent、ParticleSystem 和 ParticleRenderPacket
+定义 ParticleEmitterAsset、ParticleEmitterComponent、ParticleSystem 和 FrameSnapshot 粒子表现扩展
 实现 CPU 粒子、Billboard 渲染、生命周期颜色/大小、速度和重力参数
 ```
 
@@ -2833,7 +2805,7 @@ Studio 显示目标宿主 Profile 与不兼容表现能力
 
 ```text
 Entity 可以挂载并编辑粒子发射器，粒子可以跟随父级 Transform
-粒子不直接依赖 OpenGL，渲染通过 FrameSnapshot 中的 ParticleRenderPacket
+粒子不直接依赖 OpenGL，渲染通过 FrameSnapshot 的版本化粒子表现扩展字段
 不同渲染帧率和 Checkpoint 布局产生相同目标粒子状态
 暂停、倒放和 Audio Seek 后粒子能恢复正确状态
 调整预算只影响重建耗时和缓存布局，不改变目标时刻的粒子结果
@@ -2918,7 +2890,7 @@ AudioDeviceProfile 校准值与输出设备身份绑定；阶段 11 已完成时
 Chart / Behavior / World 不需要修改
 形成 Vulkan ADR 文档
 切换后端只影响应用/宿主 adapter、Render 前端/后端和派生 Shader 缓存，不要求迁移项目内容
-FrameSnapshot/RenderPacket、Chart、Behavior、World 和 Judgement 不需要修改
+FrameSnapshot、Chart、Behavior、World 和 Judgement 不需要修改；adapter 只消费同一 Snapshot 合同
 请求后端不可用时产生稳定诊断；是否允许回退由显式配置决定
 ```
 
@@ -3032,7 +3004,7 @@ Player 默认阶段 1B Project、--project/--chart 互斥、3 个 Renderable 和
 
 上述方案 A/B loader 与 canonical/simple 回归入口是阶段 1 的历史完成事实；ADR 0035 已在阶段 2A.1 删除方案 B，不能把它们继续作为阶段 2 之后的验收要求。
 
-阶段 1C、阶段 1D 与阶段 1E 已完成最终验收；阶段 1E 的 `0.3.0` static/shared Playback Core preview 已通过 Windows/MSVC、Windows/MinGW 和 Linux GCC/Clang 自动化矩阵。阶段 2 已把 preview API 提升到 `0.4.0`，实现 Chart v3、Tempo/Stop、Behavior/Step Event、Visibility/Material Snapshot、capability、FrameDigest v2 和迁移工具，并通过本地 Windows/MSVC static/shared Debug/Release、headless、format、architecture 与 external consumer 门禁。当前最高优先级是补齐 GPU smoke 和 hosted Linux CI 后关闭阶段 2 最终验收；随后进入阶段 3。稳定 C ABI 必须在正式 Judgement/Replay 公共契约完成后再冻结。
+阶段 1C、阶段 1D 与阶段 1E 已完成最终验收；阶段 1E 的 `0.3.0` static/shared Playback Core preview 已通过 Windows/MSVC、Windows/MinGW 和 Linux GCC/Clang 自动化矩阵。阶段 2 已把 preview API 提升到 `0.4.0`，实现 Chart v3、Tempo/Stop、Behavior/Step Event、Visibility/Material Snapshot、capability、FrameDigest v2 和迁移工具，并通过本地 Windows/MSVC static/shared Debug/Release、headless、GPU smoke、format、architecture 与 external consumer 门禁。当前最高优先级是补齐 hosted Linux CI 后关闭阶段 2 最终跨平台验收；阶段 3 已进入文档与契约门禁，尚未开始 C++ 实现。稳定 C ABI 必须在正式 Judgement/Replay 公共契约完成后再冻结。
 
 每次交付仍须按 `docs/BUILDING.md` 在目标环境执行 Debug 配置、构建、CTest、格式检查和图形冒烟；Chart 回归只使用 canonical 输入，并保留 retired Simple 的 unsupported-format 测试。Release 或后端相关改动还须验证 Release。精确结果记录在对应阶段报告，不固化在本指南中。
 
