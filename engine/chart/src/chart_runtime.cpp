@@ -235,6 +235,15 @@ void validateDefaultCamera(const CameraData& camera, core::Diagnostics& diagnost
         const auto* fov = std::get_if<double>(&value);
         return fov != nullptr && std::isfinite(*fov) && *fov > 0.0 && *fov < 179.0;
     }
+    case BehaviorProperty::MaterialOpacity: {
+        const auto* opacity = std::get_if<double>(&value);
+        return opacity != nullptr && std::isfinite(*opacity) && *opacity >= 0.0 && *opacity <= 1.0;
+    }
+    case BehaviorProperty::MaterialTint: {
+        const auto* tint = std::get_if<core::Vec3>(&value);
+        return tint != nullptr && core::isFinite(*tint) && tint->x >= 0.0F && tint->x <= 1.0F &&
+               tint->y >= 0.0F && tint->y <= 1.0F && tint->z >= 0.0F && tint->z <= 1.0F;
+    }
     }
     return false;
 }
@@ -335,6 +344,197 @@ void validateDefaultCamera(const CameraData& camera, core::Diagnostics& diagnost
     return runtimeTracks;
 }
 
+struct GroupBoundary final {
+    bool continuous{};
+    RationalBeat startBeat;
+    RationalBeat durationBeats;
+};
+
+[[nodiscard]] bool validGroupId(std::string_view value, const ChartLimits& limits) noexcept {
+    if (value.empty() || value.size() > limits.maxIdentifierBytes || value.size() > 256) {
+        return false;
+    }
+    const auto isAlphaNumeric = [](char character) {
+        return (character >= 'A' && character <= 'Z') || (character >= 'a' && character <= 'z') ||
+               (character >= '0' && character <= '9');
+    };
+    if (!isAlphaNumeric(value.front())) {
+        return false;
+    }
+    return std::all_of(value.begin() + 1, value.end(), [&](char character) {
+        return isAlphaNumeric(character) || character == '.' || character == '_' ||
+               character == '-';
+    });
+}
+
+[[nodiscard]] auto compileEventBehavior(const ChartBehavior& behavior, const ChartLimits& limits,
+                                        std::size_t& totalEventCount,
+                                        core::Diagnostics& diagnostics) -> RuntimeBehavior {
+    RuntimeBehavior runtime{.id = behavior.id,
+                            .type = behavior.type,
+                            .version = behavior.version,
+                            .tracks = {},
+                            .eventTracks = {},
+                            .stepTracks = {}};
+    const auto eventCount = behavior.events.size() + behavior.stepEvents.size();
+    const std::string basePath = "$.behaviors[\"" + behavior.id.value + "\"]";
+    if (eventCount == 0) {
+        addError(diagnostics, "chart.behavior.events_empty",
+                 "behavior.event must contain at least one event", basePath);
+        return runtime;
+    }
+    if (eventCount > limits.maxEventsPerBehavior || eventCount > limits.maxTotalBehaviorEvents ||
+        totalEventCount > limits.maxTotalBehaviorEvents - eventCount) {
+        addError(diagnostics, "chart.limit.behavior_events",
+                 "Behavior Event count exceeds configured limit", basePath);
+        return runtime;
+    }
+    totalEventCount += eventCount;
+
+    const auto zero = *RationalBeat::create(0, 1);
+    std::map<std::string, GroupBoundary> groups;
+    std::map<BehaviorProperty, std::vector<const BehaviorEvent*>> continuous;
+    for (const auto& event : behavior.events) {
+        continuous[event.property].push_back(&event);
+        if (event.groupId) {
+            if (!validGroupId(*event.groupId, limits)) {
+                addError(diagnostics, "chart.behavior.group_id_invalid",
+                         "Behavior group ID contains unsupported characters", basePath + ".events");
+                continue;
+            }
+            const GroupBoundary boundary{true, event.startBeat, event.durationBeats};
+            const auto [iterator, inserted] = groups.emplace(*event.groupId, boundary);
+            if (!inserted &&
+                (!iterator->second.continuous || iterator->second.startBeat != event.startBeat ||
+                 iterator->second.durationBeats != event.durationBeats)) {
+                addError(diagnostics, "chart.behavior.group_boundary_mismatch",
+                         "Continuous Event group members must share start Beat and duration",
+                         basePath + ".events");
+            }
+        }
+    }
+    for (auto& [property, sourceEvents] : continuous) {
+        std::sort(
+            sourceEvents.begin(), sourceEvents.end(),
+            [](const auto* left, const auto* right) { return left->startBeat < right->startBeat; });
+        RuntimeEventTrack track{.property = property, .events = {}};
+        track.events.reserve(sourceEvents.size());
+        std::optional<RationalBeat> previousEnd;
+        std::optional<RationalBeat> previousStart;
+        for (const auto* event : sourceEvents) {
+            const std::string path = basePath + ".events";
+            auto end = addRationalBeats(event->startBeat, event->durationBeats);
+            bool valid = true;
+            if (!end) {
+                addError(diagnostics, "chart.behavior.beat_out_of_range",
+                         "Behavior Event end Beat is outside the supported range", path);
+                valid = false;
+            }
+            if (event->durationBeats < zero) {
+                addError(diagnostics, "chart.behavior.duration_negative",
+                         "Behavior Event duration must be non-negative", path);
+                valid = false;
+            }
+            if (!std::isfinite(event->startSlope) || !std::isfinite(event->endSlope) ||
+                event->startSlope < 0.0 || event->endSlope < 0.0 ||
+                event->startSlope + event->endSlope > 3.0) {
+                addError(diagnostics, "chart.behavior.slope_invalid",
+                         "Behavior Event slopes are invalid", path);
+                valid = false;
+            }
+            if (!valueMatchesProperty(property, event->startValue) ||
+                !valueMatchesProperty(property, event->endValue)) {
+                addError(diagnostics, "chart.behavior.value_invalid",
+                         "Behavior Event value does not match its Property or range", path);
+                valid = false;
+            }
+            if (event->durationBeats == zero &&
+                (event->startValue != event->endValue || event->startSlope != 0.0 ||
+                 event->endSlope != 0.0)) {
+                addError(diagnostics, "chart.behavior.zero_duration_invalid",
+                         "Zero-duration Behavior Events require equal values and zero slopes",
+                         path);
+                valid = false;
+            }
+            if (previousStart && *previousStart == event->startBeat) {
+                addError(diagnostics, "chart.behavior.event_start_duplicate",
+                         "Events for one Property must have unique start Beats", path);
+                valid = false;
+            } else if (previousEnd && event->startBeat < *previousEnd) {
+                addError(diagnostics, "chart.behavior.event_overlap",
+                         "Events for one Property must not overlap", path);
+                valid = false;
+            }
+            previousStart = event->startBeat;
+            if (end) {
+                previousEnd = *end;
+            }
+            if (valid && end) {
+                track.events.push_back(RuntimeEvent{event->startBeat.toDouble(), end->toDouble(),
+                                                    event->startValue, event->endValue,
+                                                    event->startSlope, event->endSlope,
+                                                    event->durationBeats == zero, event->groupId});
+            }
+        }
+        if (!track.events.empty()) {
+            runtime.eventTracks.push_back(std::move(track));
+        }
+    }
+
+    std::map<BehaviorStepProperty, std::vector<const BehaviorStepEvent*>> discrete;
+    for (const auto& event : behavior.stepEvents) {
+        discrete[event.property].push_back(&event);
+        if (event.groupId) {
+            if (!validGroupId(*event.groupId, limits)) {
+                addError(diagnostics, "chart.behavior.group_id_invalid",
+                         "Behavior group ID contains unsupported characters",
+                         basePath + ".stepEvents");
+                continue;
+            }
+            const GroupBoundary boundary{false, event.beat, zero};
+            const auto [iterator, inserted] = groups.emplace(*event.groupId, boundary);
+            if (!inserted &&
+                (iterator->second.continuous || iterator->second.startBeat != event.beat)) {
+                addError(diagnostics, "chart.behavior.group_boundary_mismatch",
+                         "Step Event group members must share one Beat and cannot mix with "
+                         "continuous Events",
+                         basePath + ".stepEvents");
+            }
+        }
+    }
+    for (auto& [property, sourceEvents] : discrete) {
+        std::sort(sourceEvents.begin(), sourceEvents.end(),
+                  [](const auto* left, const auto* right) { return left->beat < right->beat; });
+        RuntimeStepTrack track{.property = property, .events = {}};
+        track.events.reserve(sourceEvents.size());
+        for (std::size_t index = 0; index < sourceEvents.size(); ++index) {
+            const auto& event = *sourceEvents[index];
+            const std::string path = basePath + ".stepEvents";
+            if (index != 0 && sourceEvents[index - 1]->beat == event.beat) {
+                addError(diagnostics, "chart.behavior.step_beat_duplicate",
+                         "Step Events for one Property must have unique Beats", path);
+                continue;
+            }
+            const bool valueValid = (property == BehaviorStepProperty::RenderVisible &&
+                                     std::holds_alternative<bool>(event.value)) ||
+                                    (property == BehaviorStepProperty::RenderMaterial &&
+                                     std::get_if<AssetId>(&event.value) != nullptr &&
+                                     !std::get<AssetId>(event.value).value.empty());
+            if (!valueValid) {
+                addError(diagnostics, "chart.behavior.step_value_invalid",
+                         "Step Event value does not match its Property", path);
+                continue;
+            }
+            track.events.push_back(
+                RuntimeStepEvent{event.beat.toDouble(), event.value, event.groupId});
+        }
+        if (!track.events.empty()) {
+            runtime.stepTracks.push_back(std::move(track));
+        }
+    }
+    return runtime;
+}
+
 } // namespace
 
 auto ChartCompiler::compile(const ChartDocument& document, const ChartLimits& limits)
@@ -351,7 +551,7 @@ auto ChartCompiler::compile(const ChartDocument& document, const ChartLimits& li
         addError(diagnostics, "chart.limit.behaviors", "Chart behavior count exceeds the limit",
                  "$.behaviors");
     }
-    if (document.version != 1 && document.version != 2) {
+    if (document.version != 1 && document.version != 2 && document.version != 3) {
         addError(diagnostics, "chart.version.unsupported", "Chart format version is unsupported",
                  "$.version");
     }
@@ -371,7 +571,10 @@ auto ChartCompiler::compile(const ChartDocument& document, const ChartLimits& li
     }
     validateDefaultCamera(document.camera, diagnostics);
 
-    auto timingMap = TimingMap::create(document.timing.defaultBpm, document.timing.offsetMs);
+    auto timingMap = document.version == 3
+                         ? TimingMap::create(document.timing.defaultBpm, document.timing.offsetMs,
+                                             document.timing.tempoEvents, document.timing.stops)
+                         : TimingMap::create(document.timing.defaultBpm, document.timing.offsetMs);
     if (!timingMap) {
         auto diagnostic =
             core::Diagnostic{core::DiagnosticSeverity::Error, std::string{timingMap.error().code()},
@@ -386,6 +589,7 @@ auto ChartCompiler::compile(const ChartDocument& document, const ChartLimits& li
     runtimeBehaviors.reserve(document.behaviors.size());
     std::set<std::string> behaviorIds;
     std::size_t totalBehaviorKeys = 0;
+    std::size_t totalBehaviorEvents = 0;
     for (const auto& behavior : document.behaviors) {
         if (diagnostics.limitReached()) {
             break;
@@ -400,17 +604,30 @@ auto ChartCompiler::compile(const ChartDocument& document, const ChartLimits& li
                      "$.behaviors[\"" + behavior.id.value + "\"].id");
             continue;
         }
-        if (behavior.type != "behavior.transform.keyframe" || behavior.version != 1) {
+        const bool isV3Behavior =
+            behavior.type == "behavior.event" && behavior.version == 1 && document.version == 3;
+        const bool isLegacyBehavior = behavior.type == "behavior.transform.keyframe" &&
+                                      behavior.version == 1 && document.version != 3;
+        if (!isV3Behavior && !isLegacyBehavior) {
             addError(diagnostics, "chart.behavior.version_unsupported",
                      "Behavior type and version are unsupported",
                      "$.behaviors[\"" + behavior.id.value + "\"]");
             continue;
         }
-        auto tracks = timingMap ? compileBehaviorTracks(behavior, *timingMap, limits,
-                                                        totalBehaviorKeys, diagnostics)
-                                : std::vector<RuntimeTrack>{};
-        runtimeBehaviors.push_back(
-            RuntimeBehavior{behavior.id, behavior.type, behavior.version, std::move(tracks)});
+        if (isV3Behavior) {
+            runtimeBehaviors.push_back(
+                compileEventBehavior(behavior, limits, totalBehaviorEvents, diagnostics));
+        } else {
+            auto tracks = timingMap ? compileBehaviorTracks(behavior, *timingMap, limits,
+                                                            totalBehaviorKeys, diagnostics)
+                                    : std::vector<RuntimeTrack>{};
+            runtimeBehaviors.push_back(RuntimeBehavior{.id = behavior.id,
+                                                       .type = behavior.type,
+                                                       .version = behavior.version,
+                                                       .tracks = std::move(tracks),
+                                                       .eventTracks = {},
+                                                       .stepTracks = {}});
+        }
     }
     std::sort(runtimeBehaviors.begin(), runtimeBehaviors.end(),
               [](const RuntimeBehavior& left, const RuntimeBehavior& right) {

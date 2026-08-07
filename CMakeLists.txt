@@ -86,6 +86,10 @@ if(CUEXIS_BUILD_PLAYER)
     add_subdirectory(app)
 endif()
 
+if(CUEXIS_BUILD_DEVELOPER_TOOLS)
+    add_subdirectory(tools)
+endif()
+
 if(CUEXIS_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
@@ -120,6 +124,12 @@ endif()
 if(CUEXIS_BUILD_PLAYER)
     list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_player)
 endif()
+if(CUEXIS_BUILD_DEVELOPER_TOOLS)
+    list(APPEND CUEXIS_ACTIVE_TARGETS
+        cuexis_chart_migrator
+        cuexis_chart_validator
+    )
+endif()
 
 if(CUEXIS_BUILD_TESTS)
     list(APPEND CUEXIS_ACTIVE_TARGETS
@@ -138,6 +148,7 @@ if(CUEXIS_BUILD_TESTS)
         cuexis_runtime_tests
         cuexis_world_tests
         cuexis_playback_tests
+        cuexis_playback_allocation_tests
     )
 
     if(TARGET cuexis_platform_sdl_tests)
@@ -230,8 +241,12 @@ if(CUEXIS_BUILD_TESTS)
                     "-DCUEXIS_SDK_API_VERSION=${CUEXIS_SDK_API_VERSION}"
                     "-DCUEXIS_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
                     "-DCUEXIS_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
+                    "-DCUEXIS_RC_COMPILER=${CMAKE_RC_COMPILER}"
+                    "-DCUEXIS_MT=${CMAKE_MT}"
                     "-DCUEXIS_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}"
                     "-DCUEXIS_VCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}"
+                    "-DCUEXIS_VCPKG_MANIFEST_MODE=${VCPKG_MANIFEST_MODE}"
+                    "-DCUEXIS_VCPKG_INSTALLED_DIR=${VCPKG_INSTALLED_DIR}"
                     -P "${PROJECT_SOURCE_DIR}/cmake/VerifyExternalConsumer.cmake"
             )
             set_tests_properties(cuexis_external_consumer_${consumer_mode} PROPERTIES
@@ -293,6 +308,8 @@ if(CUEXIS_BUILD_DEVELOPER_TOOLS)
         "${PROJECT_SOURCE_DIR}/engine/*.hpp"
         "${PROJECT_SOURCE_DIR}/tests/*.cpp"
         "${PROJECT_SOURCE_DIR}/tests/*.hpp"
+        "${PROJECT_SOURCE_DIR}/tools/*.cpp"
+        "${PROJECT_SOURCE_DIR}/tools/*.hpp"
     )
 
     find_program(CUEXIS_CLANG_FORMAT_EXECUTABLE NAMES clang-format)
@@ -546,6 +563,18 @@ if(TARGET cuexis_player)
             spdlog::spdlog
     )
 endif()
+if(TARGET cuexis_chart_migrator)
+    cuexis_verify_target_dependencies(cuexis_chart_migrator
+        ALLOWED
+            cuexis::chart
+    )
+endif()
+if(TARGET cuexis_chart_validator)
+    cuexis_verify_target_dependencies(cuexis_chart_validator
+        ALLOWED
+            cuexis::chart
+    )
+endif()
 
 if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_core_tests
@@ -632,6 +661,7 @@ if(CUEXIS_BUILD_TESTS)
                 cuexis::audio
                 cuexis::core
                 cuexis::playback
+                cuexis::render
                 Catch2::Catch2WithMain
         )
     endif()
@@ -660,6 +690,11 @@ if(CUEXIS_BUILD_TESTS)
         ALLOWED
             cuexis::audio
             cuexis::assets
+            cuexis::playback
+            Catch2::Catch2WithMain
+    )
+    cuexis_verify_target_dependencies(cuexis_playback_allocation_tests
+        ALLOWED
             cuexis::playback
             Catch2::Catch2WithMain
     )

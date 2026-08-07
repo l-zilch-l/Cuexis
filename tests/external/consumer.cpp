@@ -129,9 +129,13 @@ int main() {
         return fail("PlaybackSession first snapshot differed");
     }
     const auto digest = cuexis::playback::computeFrameDigest({.chartTimeMs = 250.0}, *first);
-    constexpr std::uint64_t expectedDigest = 6726938620466257503ULL;
-    if (!digest || digest->algorithmVersion != 1 || digest->value != expectedDigest) {
-        return fail("Playback frame digest failed");
+    constexpr std::uint64_t expectedDigest = 605411979409056204ULL;
+    if (!digest) {
+        return fail(std::string{"Playback frame digest failed: "} +
+                    std::string{digest.error().code()});
+    }
+    if (digest->algorithmVersion != 2 || digest->value != expectedDigest) {
+        return fail("Playback frame digest mismatch: " + std::to_string(digest->value));
     }
 
     if (!session.reload(chart, {.chartTimeMs = 375.0},

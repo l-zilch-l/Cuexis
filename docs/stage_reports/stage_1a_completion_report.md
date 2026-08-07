@@ -5,6 +5,8 @@
 完成版本：`26.07.18.14-1`  
 阶段目标：完成规范谱面加载、确定性 Runtime 编译、World 实例化与 OpenGL DebugDraw 的最小闭环。
 
+后续取代说明：本报告中的 Simple Chart/方案 B 是阶段 1A 完成时的历史事实；ADR 0035 已在阶段 2A.1 删除该格式、Schema、Importer、测试和 fixture。
+
 ## 1. 完成结论
 
 阶段 1A 的任务和验收标准已经完成。当前仓库可以加载方案 A canonical chart 和方案 B simple chart，将两者统一为 typed `ChartDocument`，确定性编译为 `ChartRuntime`，事务式发布到新的 `World`，计算父子世界矩阵，并通过后端无关的 `RenderScene` / `RenderCommand` 生成 DebugDraw 坐标轴，最终由 OpenGL 3.3 Core 管线显示。

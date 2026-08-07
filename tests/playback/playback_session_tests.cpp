@@ -556,4 +556,81 @@ TEST_CASE("PlaybackSession rejects every stateful operation from a non-owner thr
     REQUIRE(session.loadChart(chart).has_value());
 }
 
+TEST_CASE("PlaybackSession capability preflight is explicit, deterministic, and pre-resource",
+          "[playback][capability][stage2]") {
+    const auto stage2Path = std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" / "charts" /
+                            "stage2_example.cuexis.chart.json";
+    const auto stage2Chart = readFile(stage2Path);
+
+    cuexis::playback::PlaybackSession defaultSession;
+    const auto defaultCapabilities = defaultSession.capabilities();
+    REQUIRE(defaultCapabilities.has_value());
+    CHECK(defaultCapabilities->version == 1);
+    CHECK(defaultCapabilities->ids ==
+          std::vector<std::string>{"cuexis.behavior.event.v1", "cuexis.chart.v3",
+                                   "cuexis.material.snapshot.v1", "cuexis.render.visibility.v1"});
+    REQUIRE(defaultSession.loadChart(stage2Chart).has_value());
+
+    cuexis::playback::PlaybackSession unsupported{
+        cuexis::playback::PlaybackCapabilitySet{.version = 1, .ids = {}}};
+    const auto rejected =
+        unsupported.prepareLoad(stage2Chart, cuexis::playback::PlaybackMode::ChartClock);
+    REQUIRE_FALSE(rejected.has_value());
+    CHECK(rejected.error().code() == "playback.capability.preflight_failed");
+    const auto diagnostics = unsupported.lastOperationDiagnostics();
+    REQUIRE(diagnostics.has_value());
+    REQUIRE(diagnostics->size() == 2);
+    CHECK(diagnostics->items()[0].code() == "playback.capability.unsupported");
+    CHECK(diagnostics->items()[0].fieldPath() == "$/behaviors");
+    CHECK(diagnostics->items()[0].context()[0].value == "cuexis.behavior.event.v1");
+    CHECK(diagnostics->items()[1].fieldPath() == "$/version");
+    CHECK(diagnostics->items()[1].context()[0].value == "cuexis.chart.v3");
+
+    constexpr std::string_view renderableV3 = R"json(
+{
+  "format":"cuexis.chart","version":3,
+  "chartId":"019c0000-0000-7abc-8def-000000000099","metadata":{},
+  "timing":{"offsetMs":0,"defaultBpm":120,"tempoEvents":[],"stops":[]},
+  "templates":[],"behaviors":[],
+  "objects":[{
+    "id":"019c0000-0000-7abc-8def-000000000010","parent":null,
+    "components":{
+      "cuexis.renderable":{"version":1,
+        "mesh":{"domain":"asset","id":"mesh.stage2"},
+        "material":{"domain":"asset","id":"material.stage2"}}
+    },"extensions":{}
+  }],
+  "requiredExtensions":[],"extensions":{}
+}
+)json";
+    std::size_t providerReads = 0;
+    auto provider = cuexis::content::HostContentProvider::create(
+        [&providerReads](const cuexis::content::ContentRequest&)
+            -> cuexis::core::Result<cuexis::content::ContentBlob> {
+            ++providerReads;
+            return cuexis::content::ContentBlob{};
+        });
+    REQUIRE(provider.has_value());
+    auto source = cuexis::playback::PlaybackSource::fromTypedProject(
+        {.sourceId = "capability-preflight",
+         .chartJson = std::string{renderableV3},
+         .assets = {{.id = "mesh.stage2",
+                     .type = cuexis::playback::PlaybackAssetType::Mesh,
+                     .rootId = "memory",
+                     .logicalSource = "mesh.bin"},
+                    {.id = "material.stage2",
+                     .type = cuexis::playback::PlaybackAssetType::Material,
+                     .rootId = "memory",
+                     .logicalSource = "material.bin"}}},
+        std::move(*provider));
+    REQUIRE(source.has_value());
+    cuexis::playback::PlaybackSession chartOnly{cuexis::playback::PlaybackCapabilitySet{
+        .version = 1, .ids = {std::string{cuexis::playback::capabilityChartV3}}}};
+    const auto resourceRejected =
+        chartOnly.prepareLoad(std::move(*source), cuexis::playback::PlaybackMode::ChartClock);
+    REQUIRE_FALSE(resourceRejected.has_value());
+    CHECK(providerReads == 0);
+    CHECK(resourceRejected.error().code() == "playback.capability.preflight_failed");
+}
+
 } // namespace

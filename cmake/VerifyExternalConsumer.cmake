@@ -88,6 +88,16 @@ if(DEFINED CUEXIS_MAKE_PROGRAM AND NOT CUEXIS_MAKE_PROGRAM STREQUAL "")
         "-DCMAKE_MAKE_PROGRAM=${CUEXIS_MAKE_PROGRAM}"
     )
 endif()
+if(DEFINED CUEXIS_RC_COMPILER AND NOT CUEXIS_RC_COMPILER STREQUAL "")
+    list(APPEND common_configure_arguments
+        "-DCMAKE_RC_COMPILER=${CUEXIS_RC_COMPILER}"
+    )
+endif()
+if(DEFINED CUEXIS_MT AND NOT CUEXIS_MT STREQUAL "")
+    list(APPEND common_configure_arguments
+        "-DCMAKE_MT=${CUEXIS_MT}"
+    )
+endif()
 if(DEFINED CUEXIS_TOOLCHAIN_FILE AND NOT CUEXIS_TOOLCHAIN_FILE STREQUAL "")
     list(APPEND common_configure_arguments
         "-DCMAKE_TOOLCHAIN_FILE=${CUEXIS_TOOLCHAIN_FILE}"
@@ -96,6 +106,16 @@ endif()
 if(DEFINED CUEXIS_VCPKG_TARGET_TRIPLET AND NOT CUEXIS_VCPKG_TARGET_TRIPLET STREQUAL "")
     list(APPEND common_configure_arguments
         "-DVCPKG_TARGET_TRIPLET=${CUEXIS_VCPKG_TARGET_TRIPLET}"
+    )
+endif()
+if(DEFINED CUEXIS_VCPKG_MANIFEST_MODE AND NOT CUEXIS_VCPKG_MANIFEST_MODE STREQUAL "")
+    list(APPEND common_configure_arguments
+        "-DVCPKG_MANIFEST_MODE=${CUEXIS_VCPKG_MANIFEST_MODE}"
+    )
+endif()
+if(DEFINED CUEXIS_VCPKG_INSTALLED_DIR AND NOT CUEXIS_VCPKG_INSTALLED_DIR STREQUAL "")
+    list(APPEND common_configure_arguments
+        "-DVCPKG_INSTALLED_DIR=${CUEXIS_VCPKG_INSTALLED_DIR}"
     )
 endif()
 
@@ -298,8 +318,22 @@ else()
     endforeach()
 
     set(consumer_build_dir "${work_dir}/build")
-    set(dependency_prefix
-        "${package_build_dir}/vcpkg_installed/${CUEXIS_VCPKG_TARGET_TRIPLET}")
+    if(DEFINED CUEXIS_VCPKG_INSTALLED_DIR AND NOT CUEXIS_VCPKG_INSTALLED_DIR STREQUAL "")
+        set(dependency_root "${CUEXIS_VCPKG_INSTALLED_DIR}")
+        set(dependency_prefix
+            "${dependency_root}/${CUEXIS_VCPKG_TARGET_TRIPLET}")
+    else()
+        set(dependency_root "${package_build_dir}/vcpkg_installed")
+        set(dependency_prefix
+            "${dependency_root}/${CUEXIS_VCPKG_TARGET_TRIPLET}")
+    endif()
+    set(consumer_configure_arguments ${common_configure_arguments})
+    list(FILTER consumer_configure_arguments EXCLUDE
+        REGEX "^-DVCPKG_(MANIFEST_MODE|INSTALLED_DIR)=")
+    list(APPEND consumer_configure_arguments
+        -DVCPKG_MANIFEST_MODE=OFF
+        "-DVCPKG_INSTALLED_DIR=${dependency_root}"
+    )
     if(CUEXIS_CONSUMER_MODE STREQUAL "find_package")
         set(consumer_source_dir "${CUEXIS_SOURCE_DIR}/tests/external/find_package")
         set(component_arguments -DCMAKE_DISABLE_FIND_PACKAGE_SDL3=TRUE)
@@ -322,7 +356,7 @@ else()
             "${CMAKE_COMMAND}"
             -S "${consumer_source_dir}"
             -B "${work_dir}/configuration-mismatch"
-            ${common_configure_arguments}
+            ${consumer_configure_arguments}
             "-DCMAKE_BUILD_TYPE=${mismatched_build_type}"
             "-DCuexis_DIR=${package_prefix}/lib/cmake/Cuexis"
             "-DCMAKE_PREFIX_PATH=${dependency_prefix}"
@@ -340,7 +374,7 @@ else()
                 "${CMAKE_COMMAND}"
                 -S "${consumer_source_dir}"
                 -B "${work_dir}/runtime-mismatch"
-                ${common_configure_arguments}
+                ${consumer_configure_arguments}
                 "-DCMAKE_MSVC_RUNTIME_LIBRARY=${static_runtime}"
                 "-DCuexis_DIR=${package_prefix}/lib/cmake/Cuexis"
                 "-DCMAKE_PREFIX_PATH=${dependency_prefix}"
@@ -354,7 +388,7 @@ else()
         "${CMAKE_COMMAND}"
         -S "${consumer_source_dir}"
         -B "${consumer_build_dir}"
-        ${common_configure_arguments}
+        ${consumer_configure_arguments}
         "-DCuexis_DIR=${package_prefix}/lib/cmake/Cuexis"
         "-DCMAKE_PREFIX_PATH=${dependency_prefix}"
         "-DCUEXIS_EXPECTED_LIBRARY_TYPE=${CUEXIS_LIBRARY_TYPE}"

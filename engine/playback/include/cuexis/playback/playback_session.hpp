@@ -49,6 +49,16 @@ enum class PlaybackMode {
     CuexisAudio,
 };
 
+inline constexpr std::string_view capabilityChartV3 = "cuexis.chart.v3";
+inline constexpr std::string_view capabilityBehaviorEventV1 = "cuexis.behavior.event.v1";
+inline constexpr std::string_view capabilityRenderVisibilityV1 = "cuexis.render.visibility.v1";
+inline constexpr std::string_view capabilityMaterialSnapshotV1 = "cuexis.material.snapshot.v1";
+
+struct PlaybackCapabilitySet final {
+    std::uint32_t version{1};
+    std::vector<std::string> ids;
+};
+
 struct PlaybackContentInfo final {
     std::string chartId;
     std::uint32_t chartFormatVersion{1};
@@ -70,6 +80,9 @@ struct FrameSnapshot final {
         float worldMatrix[16]{}; // column-major Mat4 flattened
         bool hasTransform{};
         bool visible{true};
+        std::string materialAssetId;
+        double materialOpacity{1.0};
+        float materialTint[3]{1.0F, 1.0F, 1.0F};
     };
 
     struct CameraSnapshot final {
@@ -135,6 +148,7 @@ class CUEXIS_PLAYBACK_API PreparedPlayback final {
 class CUEXIS_PLAYBACK_API PlaybackSession final {
   public:
     PlaybackSession() noexcept;
+    explicit PlaybackSession(PlaybackCapabilitySet capabilities) noexcept;
     ~PlaybackSession();
 
     PlaybackSession(const PlaybackSession&) = delete;
@@ -143,6 +157,7 @@ class CUEXIS_PLAYBACK_API PlaybackSession final {
     auto operator=(PlaybackSession&&) -> PlaybackSession& = delete;
 
     [[nodiscard]] auto state() const -> core::Result<SessionState>;
+    [[nodiscard]] auto capabilities() const -> core::Result<PlaybackCapabilitySet>;
 
     [[nodiscard]] auto prepareLoad(std::string_view jsonText, PlaybackMode mode)
         -> core::Result<PreparedPlayback>;

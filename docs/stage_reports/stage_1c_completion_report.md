@@ -6,6 +6,8 @@
 阶段目标：完成 typed Behavior Track、绝对时间采样、RuntimeFrame、拥有型 FrameSnapshot、
 headless Playback 与 Player 单一路径闭环。
 
+后续取代说明：本报告中的 Simple Chart 行为与回归入口是阶段 1C 完成时的历史事实；ADR 0035 已在阶段 2A.1 删除该格式路径。
+
 后续注记（2026-07-27）：本报告正文记录报告日期当时的实现与门禁。后续
 [260722 全量审查](260722-1c-review.md)确认的 5 项 P1、11 项 P2 和 5 项 P3/阶段性风险已在
 2026-07-26/27 两批跟进中全部关闭；当前最终验收状态由该审查报告和本报告第 10 节共同证明。
@@ -217,7 +219,7 @@ GPU smoke 不进入托管 CI。工作流文件已经落地，但本次会话未�
 ```text
 阶段 1D：HostClock/CuexisAudio 双模式、AudioTransport 和 SDL 音频 adapter
 阶段 1E：ContentProvider 注入、install/export/find_package、仓库外 consumer 门禁
-阶段 2：通用 Curve、更多 Property、循环和 BehaviorClip 组合
+阶段 2：Behavior Event、更多 Property、循环和 BehaviorClip 组合（旧完成报告中的历史简称；现行格式以 `docs/stage_plans/stage_2_implementation_plan.md` 为准）
 阶段 11：Judgement、InputEvent、ReplayData 和确定性判定契约
 ```
 

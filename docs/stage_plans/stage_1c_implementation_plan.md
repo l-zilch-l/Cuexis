@@ -1,9 +1,11 @@
 # 阶段 1C 实施计划：时间、基础行为与 Headless Playback 闭环
 
 状态：实现与最终验收完成；API、时间、Snapshot、采样和预算语义按 ADR 0028/0029 落地。260722 全量审查的 R01-R21 已于 2026-07-26/27 全部关闭，最终证据见审查报告与完成报告第 10 节
-规划日期：2026-07-18；SDK 调整：2026-07-20；实现完成：2026-07-22  
-前置基线：[阶段 1B 完成报告](../stage_reports/stage_1b_completion_report.md)  
+规划日期：2026-07-18；SDK 调整：2026-07-20；实现完成：2026-07-22
+前置基线：[阶段 1B 完成报告](../stage_reports/stage_1b_completion_report.md)
 后续阶段：[阶段 1D 实施计划](stage_1d_implementation_plan.md)
+
+后续取代说明：本文涉及的 Simple Chart 路径已由 ADR 0035 在阶段 2A.1 移除；相关内容仅是阶段 1C 历史事实。
 
 ## 1. 阶段目标
 
@@ -58,7 +60,7 @@ Quaternion      easing 后的 t 执行 shortest-path slerp，结果重新归一�
 
 首个 Key 的 easing 没有入段可控制，必须省略。Track 输入顺序无语义；编译器按 Beat 排序。空 Track、重复 Beat、重复 Property、未知 easing、非有限值、非规范 Quaternion、越界 `camera.fovY` 和未知字段均为错误。同一 Behavior 的 Track 不得写入同一 Property 两次。绑定 `camera.fovY` 但对象不含 `cuexis.camera` Component 是 prepare 错误，不得静默跳过。
 
-通用 `Curve<T>`、新增 easing、循环、Material、Visibility、ParentBinding 和 BehaviorClip 组合留在阶段 2。阶段 2 通过新的 Behavior version 扩展，不静默改变 version 1 的采样结果。
+通用 `Curve<T>` 不作为阶段 2 的谱面层格式；阶段 2 通过新的 Behavior Event version 扩展连续属性和 Hermite 进度，并冻结 Material/Visibility 边界。ParentBinding、BehaviorClip、局部 Beat 和循环是否进入阶段 2 由现行 2E 门禁决定，不静默改变 version 1 的采样结果。具体 v3 字段见 `docs/CHART_FORMAT.md`。
 
 ### 2.3 RuntimeFrame
 
@@ -252,7 +254,7 @@ Debug/Release、CTest、format、architecture、GPU 与 CI 门禁完成
 ```text
 AudioClock、AudioTransport、音频设备与 WAV
 BPM Changes、Stops 和 TimingMap 完整逆映射
-通用 Curve<T>、新增 easing、循环、BehaviorClip 组合
+Behavior Event、Tempo Event、循环和 BehaviorClip 组合
 Material、Visibility、ParentBinding 与事件 Track
 Animation Layer、OverrideToken 和公开 BasePropertyCommand
 正式资源格式、Mesh GPU 绘制、异步资源与 Studio

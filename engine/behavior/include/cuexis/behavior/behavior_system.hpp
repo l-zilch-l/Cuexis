@@ -9,6 +9,8 @@ class BehaviorSystem final {
   public:
     [[nodiscard]] static auto evaluate(const BehaviorProgram& program, double chartTimeMs,
                                        world::PropertyWriteBuffer& writes) -> core::Result<void>;
+    [[nodiscard]] static auto evaluate(const BehaviorProgram& program, const BehaviorSample& sample,
+                                       world::PropertyWriteBuffer& writes) -> core::Result<void>;
 };
 
 } // namespace cuexis::behavior

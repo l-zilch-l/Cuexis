@@ -1,11 +1,11 @@
 add_executable(cuexis_chart_tests
     canonical_chart_loader_tests.cpp
     chart_loader_tests.cpp
+    chart_migrator_tests.cpp
     chart_runtime_tests.cpp
     example_chart_tests.cpp
     limits_tests.cpp
     rational_beat_tests.cpp
-    simple_chart_importer_tests.cpp
     timing_map_tests.cpp
     behavior_track_tests.cpp
     uuid_tests.cpp

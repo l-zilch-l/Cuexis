@@ -1,25 +1,24 @@
 # Cuexis Simple Chart Format v1
 
-状态：阶段 1C 已实现的方案 B v1 兼容导入格式
+状态：历史格式；已由 ADR 0035 在阶段 2A.1 移除
 
-更新日期：2026-07-22
+更新日期：2026-08-05
 
 ## 1. 范围
+
+> 本文仅记录阶段 1 的历史 Simple v1 格式，不再定义受支持的输入或迁移流程。阶段 2A.1 已删除 `SimpleChartImporter`、Simple Schema、测试和 Player fixture。仓库外资产盘点为空，因此没有创建一次性转换物。新谱面必须直接使用 `cuexis.chart`。
 
 `cuexis.chart.simple` 用于 Cuexis Studio 完善前的手写谱面。它不是 Runtime 格式，也不是与方案 A 平级的规范格式。
 
 ```text
 SimpleChartDocument
-  -> SimpleChartImporter
+  -> [历史 SimpleChartImporter，已删除]
   -> cuexis.chart canonical JSON
-  -> CanonicalChartLoader typed 结构与语义校验
-  -> ChartDocument
-  -> ChartCompiler / PlaybackSession（内部使用 RuntimeSession）
 ```
 
-方案 B 是方案 A 的严格子集。Studio 成熟后冻结其最高版本，不再增加只属于方案 B 的新能力。外部宿主不需要实现方案 B Importer；它通过 Cuexis Playback/Chart 公共组件获得与 Player、Studio 相同的确定性转换结果。
+方案 B 是方案 A 的历史严格子集。阶段 2A.1 及之后的 Playback/Chart 公共组件不再接受方案 B。
 
-仓库同时提供 `schemas/cuexis.chart.simple.v1.schema.json` 和独立 JSON Schema adapter/test；阶段 1A 的 `SimpleChartImporter` 当前使用 typed Reader 并复用 CanonicalChartLoader 的语义校验，尚未在 loader 路径调用 Schema validator。
+阶段 1 仓库曾提供 `schemas/cuexis.chart.simple.v1.schema.json` 和独立 JSON Schema adapter/test；这些 artifact 已与 `SimpleChartImporter` 一起删除。
 
 ## 2. 顶层结构
 
@@ -235,7 +234,7 @@ Transform 数值必须有限。Importer 不能根据运行平台改变旋转顺�
 
 阶段 1C importer 校验 Track 的 `property`、`keys`、有限标量 `value`，并支持 `linear`、`in_cubic`、`out_cubic`、`in_out_cubic` easing；它把字符串 Beat 精确转换成方案 A 有理数 Beat。Behavior、Track、Key 子树的未知字段是错误；其他 Simple 未知字段仍产生 warning 并保留。Material Track、循环和复杂 PropertyBinding 不加入方案 B。
 
-所有 key 的 Beat 使用第 5 节的字符串语法。Importer 输出方案 A Behavior；Canonical Compiler 将 Beat 排序并编译为 `chartTimeMs`，PlaybackSession 可直接按绝对时间采样位置和相机 FOV。Simple v1 不扩展为 Quaternion/Vec3 Track，通用 Curve、循环和新 Property 留在阶段 2。
+所有 key 的 Beat 使用第 5 节的字符串语法。Importer 输出方案 A v1 Behavior；Canonical Compiler 将 Beat 排序并编译为 `chartTimeMs`，PlaybackSession 可直接按绝对时间采样位置和相机 FOV。Simple v1 不扩展为 Quaternion/Vec3 Track，也不直接提供 v3 Behavior Event；需要使用 v3 时必须经过显式的 Canonical Chart 迁移。
 
 ## 9. Template
 
@@ -321,4 +320,4 @@ Template 基础字段
 
 ## 12. 生命周期
 
-Studio 导入方案 B 后默认保存为方案 A，不保证反向导出。Studio 成熟后冻结方案 B v1，不再加入方案 A 的新 Component 或表现能力。
+一次性迁移必须把方案 B 保存为 canonical Chart，并以语义 golden 验证结果；不保证反向导出。阶段 2A 后不再提供 Simple 导入或导出。

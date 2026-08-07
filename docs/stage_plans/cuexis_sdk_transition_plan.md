@@ -1,9 +1,9 @@
 # Cuexis SDK 改造与阶段路线调整方案
 
-状态：产品方向与阶段调整已接受；阶段 1C、1D 功能边界和阶段 1E Playback Core preview 已实现并完成跨平台验收；稳定 C ABI 延后到必选 Judgement/Replay 完成后的阶段 12
-规划日期：2026-07-20  
-当前基线：[阶段 1D 完成报告](../stage_reports/stage_1d_completion_report.md)
-相关实施计划：[阶段 1C](stage_1c_implementation_plan.md)、[阶段 1D](stage_1d_implementation_plan.md)、[阶段 1E](stage_1e_implementation_plan.md)
+状态：产品方向与阶段调整已接受；阶段 1C-1E 已完成验收；阶段 2 已完成实现与 Windows/MSVC 非图形门禁，最终验收待 GPU smoke 和 hosted Linux CI；稳定 C ABI 延后到必选 Judgement/Replay 完成后的阶段 12
+规划日期：2026-07-20
+当前基线：[阶段 2 完成报告](../stage_reports/stage_2_completion_report.md)
+相关实施计划：[阶段 1C](stage_1c_implementation_plan.md)、[阶段 1D](stage_1d_implementation_plan.md)、[阶段 1E](stage_1e_implementation_plan.md)、[阶段 2](stage_2_implementation_plan.md)
 shared preview 边界：[ADR 0033](../adr/0033-cpp-shared-library-preview-boundary.md)
 
 ## 0. 文档定位
@@ -362,7 +362,7 @@ World、Render 前端和 OpenGL Backend
 阶段 1A 的主体成果保留：
 
 ```text
-Canonical/Simple Chart loader
+Canonical Chart loader（阶段 1 的 Simple loader 按 ADR 0035 在阶段 2A 移除）
 Cuexis-owned JSON Value、Reader、Schema artifact 和稳定字段路径诊断
 有理数 Beat、TimingMap 和确定性 ChartRuntime 编译
 ChartDocument -> ChartRuntime -> RuntimeSession 唯一路径
@@ -471,11 +471,14 @@ shared consumer 升级 SDK 后重新编译，且使用匹配的工具链、运�
 
 ### 12.4 阶段 2：Cuexis Behavior 表达能力
 
-保留通用 Curve、TimingMap、BehaviorClip、Material/Visibility Track 和调试能力，但目标改为“表达 Cuexis 谱面表现”，不扩张为任意游戏脚本系统。
+采用与 Tempo Event 同构的 Behavior Event（格式决策见 `docs/adr/0034-chart-v3-tempo-and-behavior-events.md`），并实现 TimingMap、Material/Visibility 表现和调试能力。2E 门禁已决定 BehaviorClip、局部 Beat、循环、ParentBinding 和多 Clip 延期，Chart v3 不预留相应字段。目标是“表达 Cuexis 谱面表现”，不扩张为任意游戏脚本系统。
+
+Chart v3 的 Behavior Event 序列化语义不再以持续 Keyframe Track 为核心。每个属性由有序事件驱动：事件外保持当前基准或前一事件终值，事件开始时应用 `startValue`，事件区间内按 Beat 插值，结束后保持 `endValue`。事件使用 `startBeat`、`durationBeats`、`startValue`、`endValue`、`startSlope` 和 `endSlope`；零持续事件和负 Beat 事件遵循 TimingMap 的边界规则。运行时可以将事件预编译为内部 Segment，但不得把上一帧结果作为求值基线。
 
 新增要求：
 
 ```text
+阶段 2A.1 已按 ADR 0035 移除 cuexis.chart.simple，不建立 Simple v2
 所有 Behavior 可以通过 PlaybackSession 任意时间采样
 宿主不需要访问 World 或 EnTT 即可获得结果
 Behavior 扩展具有版本和能力声明

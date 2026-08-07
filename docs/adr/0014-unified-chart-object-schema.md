@@ -1,8 +1,10 @@
 # ADR 0014：统一 Chart Object 与 Component Schema
 
-日期：2026-07-17
+日期：2026-07-17；v3 补充：2026-08-04
 
 状态：已接受
+
+> 2026-08-05：本文涉及的 Simple 输入路径已由 ADR 0035 在阶段 2A.1 移除；canonical Object/Component 决策继续有效。
 
 ## 背景
 
@@ -16,7 +18,7 @@ Cuexis 的底层对象统一为 Entity。如果规范谱面格式继续为 Note�
 
 Object ID 使用 UUIDv7，parent 作为 Object 结构字段，Component 编译前先建立完整 ID 和层级图。数组顺序不具有运行语义。
 
-方案 A 的 Beat 使用规范化有理数。谱面 Behavior Key 保存 Beat，Chart 编译器将其转换为 Runtime 的 `chartTimeMs`。
+方案 A v1 的 Behavior Key 使用规范化有理数，并在编译时转换为 Runtime `chartTimeMs`。v3 的 Behavior Event 继续使用同一 Beat 表示，但必须保留 Beat 区间语义：Runtime 每帧复用 TimingMap 的 Beat sample 计算进度，可以缓存毫秒边界用于查找，不能直接按经过的 `chartTimeMs` 插值。
 
 Template v1 只描述单 Object 原型，使用单继承和 JSON Patch `add`、`remove`、`replace`。v1 不支持 Template 子树。
 
@@ -30,7 +32,7 @@ Timing 不包含 speedChanges。Entity 运动速度属于 Behavior，整曲播�
 
 ### 按 Note、Element 和 Decoration 拆分数组
 
-拒绝。每增加语义类型都需要扩展顶层 Schema 和编译分支，且方案 B 已经承担手写友好格式的职责。
+拒绝。每增加语义类型都需要扩展顶层 Schema 和编译分支。阶段 1 曾由方案 B 承担手写友好格式职责；ADR 0035 已决定在阶段 2A 移除方案 B。
 
 ### 使用 Archetype 表格保存对象
 

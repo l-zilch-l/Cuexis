@@ -9,6 +9,7 @@
 //  OpaqueJson: already-normalized JSON text; it produces no runtime behavior in v1
 
 #include <cuexis/chart/rational_beat.hpp>
+#include <cuexis/chart/timing_map.hpp>
 #include <cuexis/core/diagnostic.hpp>
 #include <cuexis/core/math.hpp>
 
@@ -59,6 +60,8 @@ struct ChartMetadata final {
 struct ChartTiming final {
     double offsetMs{};
     double defaultBpm{120.0};
+    std::vector<TempoEvent> tempoEvents;
+    std::vector<TimingStop> stops;
 };
 
 struct ChartAudioData final {
@@ -111,6 +114,13 @@ enum class BehaviorProperty {
     TransformRotation,
     TransformScale,
     CameraFovY,
+    MaterialOpacity,
+    MaterialTint,
+};
+
+enum class BehaviorStepProperty {
+    RenderVisible,
+    RenderMaterial,
 };
 
 enum class BehaviorEasing {
@@ -121,6 +131,7 @@ enum class BehaviorEasing {
 };
 
 using BehaviorValue = std::variant<double, core::Vec3, core::Quat>;
+using BehaviorStepValue = std::variant<bool, AssetId>;
 
 struct BehaviorKey final {
     RationalBeat beat;
@@ -142,6 +153,24 @@ struct BehaviorTracks final {
     BehaviorTracks(std::vector<BehaviorTrack> value) : items(std::move(value)) {}
     BehaviorTracks(OpaqueJson value) : canonicalText(std::move(value.canonicalText)) {}
     BehaviorTracks(std::string value) : canonicalText(std::move(value)) {}
+};
+
+struct BehaviorEvent final {
+    BehaviorProperty property{};
+    RationalBeat startBeat;
+    RationalBeat durationBeats;
+    BehaviorValue startValue{};
+    BehaviorValue endValue{};
+    double startSlope{};
+    double endSlope{};
+    std::optional<std::string> groupId;
+};
+
+struct BehaviorStepEvent final {
+    BehaviorStepProperty property{};
+    RationalBeat beat;
+    BehaviorStepValue value{};
+    std::optional<std::string> groupId;
 };
 
 struct ObjectComponents final {
@@ -166,6 +195,8 @@ struct ChartBehavior final {
     std::string type;
     std::uint32_t version{1};
     BehaviorTracks tracks;
+    std::vector<BehaviorEvent> events;
+    std::vector<BehaviorStepEvent> stepEvents;
 };
 
 struct ChartObject final {

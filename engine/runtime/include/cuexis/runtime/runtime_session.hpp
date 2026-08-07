@@ -16,6 +16,7 @@
 #include <cuexis/core/thread_checker.hpp>
 #include <cuexis/runtime/chart_world_instantiator.hpp>
 #include <cuexis/runtime/runtime_frame.hpp>
+#include <cuexis/world/property.hpp>
 #include <cuexis/world/world.hpp>
 
 #include <entt/entity/entity.hpp>
@@ -27,8 +28,31 @@
 #include <optional>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 namespace cuexis::runtime {
+
+inline constexpr std::size_t maxRuntimeDebugRecords = 65536;
+
+struct RuntimeDebugOptions final {
+    bool enabled{};
+    std::size_t capacity{};
+};
+
+struct RuntimeDebugRecord final {
+    chart::ChartObjectId objectId;
+    world::PropertyId property{};
+    world::PropertyValue initialValue{};
+    std::optional<std::size_t> eventIndex;
+    double normalizedProgress{};
+    world::PropertyValue behaviorValue{};
+    world::PropertyValue finalValue{};
+};
+
+struct RuntimeDebugSnapshot final {
+    std::vector<RuntimeDebugRecord> records;
+    bool truncated{};
+};
 
 class RuntimeSession;
 class RuntimeEvaluationState;
@@ -126,6 +150,8 @@ class RuntimeSession final {
                               ReloadPolicy policy) -> RuntimeSessionReloadResult;
     [[nodiscard]] auto update(const RuntimeFrame& frame) -> core::Result<void>;
     [[nodiscard]] auto unload() -> core::Result<void>;
+    [[nodiscard]] auto configureDebug(RuntimeDebugOptions options) -> core::Result<void>;
+    [[nodiscard]] auto debugSnapshot() const -> core::Result<RuntimeDebugSnapshot>;
 
     [[nodiscard]] auto empty() const noexcept -> bool;
     [[nodiscard]] auto objectCount() const noexcept -> std::size_t;
@@ -196,8 +222,10 @@ class RuntimeSession final {
 
   private:
     void replaceWith(PreparedRuntimeSession&& prepared) noexcept;
-    [[nodiscard]] auto updatePrepared(RuntimeEvaluationState& state, const RuntimeFrame& frame)
+    [[nodiscard]] auto updatePrepared(RuntimeEvaluationState& state,
+                                      const chart::TimingMap& timingMap, const RuntimeFrame& frame)
         -> core::Result<void>;
+    void captureDebug(const RuntimeEvaluationState& state, double beat);
 
     std::optional<chart::ChartRuntime> chartRuntime_;
     ObjectEntityMap objects_;
@@ -212,6 +240,9 @@ class RuntimeSession final {
     mutable bool callbackActive_{false};
     core::ThreadChecker threadChecker_{};
     std::optional<RuntimeFrame> lastFrame_;
+    RuntimeDebugOptions debugOptions_;
+    std::vector<RuntimeDebugRecord> debugRecords_;
+    bool debugTruncated_{};
 };
 
 } // namespace cuexis::runtime

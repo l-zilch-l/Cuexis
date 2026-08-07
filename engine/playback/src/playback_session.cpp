@@ -13,6 +13,7 @@
 #include <cuexis/core/math.hpp>
 #include <cuexis/core/thread_checker.hpp>
 #include <cuexis/render/camera_component.hpp>
+#include <cuexis/render/renderable_component.hpp>
 #include <cuexis/runtime/runtime_frame.hpp>
 #include <cuexis/runtime/runtime_session.hpp>
 #include <cuexis/world/components.hpp>
@@ -30,6 +31,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -85,6 +87,7 @@ void addErrorDiagnostic(core::Diagnostics& diagnostics, const core::Error& error
 struct SnapshotEntity final {
     chart::ChartObjectId id;
     entt::entity entity{entt::null};
+    std::size_t maximumMaterialAssetIdSize{};
 };
 
 struct SnapshotLayout final {
@@ -121,6 +124,89 @@ class SessionOperation final {
     bool& active_;
 };
 
+struct RequiredCapability final {
+    std::string_view id;
+    std::string_view fieldPath;
+};
+
+[[nodiscard]] auto allCapabilities() -> PlaybackCapabilitySet {
+    return PlaybackCapabilitySet{
+        .version = 1,
+        .ids = {std::string{capabilityBehaviorEventV1}, std::string{capabilityChartV3},
+                std::string{capabilityMaterialSnapshotV1},
+                std::string{capabilityRenderVisibilityV1}},
+    };
+}
+
+void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
+    std::sort(capabilities.ids.begin(), capabilities.ids.end());
+    capabilities.ids.erase(std::unique(capabilities.ids.begin(), capabilities.ids.end()),
+                           capabilities.ids.end());
+}
+
+[[nodiscard]] auto requiredCapabilities(const chart::ChartDocument& document)
+    -> std::vector<RequiredCapability> {
+    std::vector<RequiredCapability> required;
+    if (document.version == 3) {
+        required.push_back({capabilityChartV3, "$/version"});
+    }
+    for (std::size_t index = 0; index < document.behaviors.size(); ++index) {
+        const auto& behavior = document.behaviors[index];
+        if (behavior.type == "behavior.event") {
+            required.push_back({capabilityBehaviorEventV1, "$/behaviors"});
+        }
+        for (const auto& event : behavior.events) {
+            if (event.property == chart::BehaviorProperty::MaterialOpacity ||
+                event.property == chart::BehaviorProperty::MaterialTint) {
+                required.push_back({capabilityMaterialSnapshotV1, "$/behaviors"});
+            }
+        }
+        for (const auto& event : behavior.stepEvents) {
+            if (event.property == chart::BehaviorStepProperty::RenderVisible) {
+                required.push_back({capabilityRenderVisibilityV1, "$/behaviors"});
+            } else if (event.property == chart::BehaviorStepProperty::RenderMaterial) {
+                required.push_back({capabilityMaterialSnapshotV1, "$/behaviors"});
+            }
+        }
+    }
+    if (std::any_of(document.objects.begin(), document.objects.end(),
+                    [](const auto& object) { return object.components.renderable.has_value(); })) {
+        required.push_back({capabilityMaterialSnapshotV1, "$/objects"});
+    }
+    std::sort(required.begin(), required.end(), [](const auto& left, const auto& right) {
+        return std::tie(left.id, left.fieldPath) < std::tie(right.id, right.fieldPath);
+    });
+    required.erase(
+        std::unique(required.begin(), required.end(),
+                    [](const auto& left, const auto& right) { return left.id == right.id; }),
+        required.end());
+    return required;
+}
+
+[[nodiscard]] auto preflightCapabilities(const chart::ChartDocument& document,
+                                         const PlaybackCapabilitySet& supported,
+                                         core::Diagnostics& diagnostics) -> bool {
+    if (supported.version != 1) {
+        diagnostics.add(core::Diagnostic{
+            core::DiagnosticSeverity::Error, "playback.capability.version_unsupported",
+            "Playback capability set version is unsupported", "$/capabilities/version"}
+                            .withContext("version", std::to_string(supported.version)));
+        return false;
+    }
+    const auto required = requiredCapabilities(document);
+    for (const auto& capability : required) {
+        if (!std::binary_search(supported.ids.begin(), supported.ids.end(), capability.id)) {
+            diagnostics.add(core::Diagnostic{core::DiagnosticSeverity::Error,
+                                             "playback.capability.unsupported",
+                                             "Chart requires an unsupported playback capability",
+                                             std::string{capability.fieldPath}}
+                                .withContext("capability", std::string{capability.id}));
+        }
+    }
+    diagnostics.sortDeterministically();
+    return !diagnostics.hasErrors();
+}
+
 [[nodiscard]] auto chartInfoFor(const chart::ChartRuntime& chartRuntime, std::size_t resourceCount)
     -> ChartInfo {
     return ChartInfo{
@@ -150,7 +236,33 @@ class SessionOperation final {
                                                 "Runtime object mapping is incomplete"}
                                         .withContext("object_id", object.id.value));
         }
-        layout.entities.push_back(SnapshotEntity{.id = object.id, .entity = **entity});
+        std::size_t maximumMaterialAssetIdSize =
+            object.components.renderable ? object.components.renderable->material.value.size() : 0;
+        if (object.components.behavior) {
+            const auto behavior =
+                std::lower_bound(chartRuntime.behaviors.begin(), chartRuntime.behaviors.end(),
+                                 object.components.behavior->behavior,
+                                 [](const chart::RuntimeBehavior& candidate,
+                                    const chart::BehaviorId& id) { return candidate.id < id; });
+            if (behavior != chartRuntime.behaviors.end() &&
+                behavior->id == object.components.behavior->behavior) {
+                for (const auto& track : behavior->stepTracks) {
+                    if (track.property != chart::BehaviorStepProperty::RenderMaterial) {
+                        continue;
+                    }
+                    for (const auto& event : track.events) {
+                        if (const auto* material = std::get_if<chart::AssetId>(&event.value)) {
+                            maximumMaterialAssetIdSize =
+                                std::max(maximumMaterialAssetIdSize, material->value.size());
+                        }
+                    }
+                }
+            }
+        }
+        layout.entities.push_back(
+            SnapshotEntity{.id = object.id,
+                           .entity = **entity,
+                           .maximumMaterialAssetIdSize = maximumMaterialAssetIdSize});
     }
 
     auto camera = session.withWorld(
@@ -204,6 +316,7 @@ struct PlaybackSession::State final {
     std::uint64_t generation{1};
     SessionState sessionState{SessionState::Empty};
     bool operationActive{};
+    PlaybackCapabilitySet capabilities;
 };
 
 struct PreparedPlayback::State final {
@@ -275,7 +388,13 @@ std::optional<MainMusicSourceView> PreparedPlayback::mainMusicSource() const noe
                                source.blob->providerRevision, source.bytes()};
 }
 
-PlaybackSession::PlaybackSession() noexcept : state_(std::make_unique<State>()) {}
+PlaybackSession::PlaybackSession() noexcept : PlaybackSession(allCapabilities()) {}
+
+PlaybackSession::PlaybackSession(PlaybackCapabilitySet capabilities) noexcept
+    : state_(std::make_unique<State>()) {
+    normalizeCapabilities(capabilities);
+    state_->capabilities = std::move(capabilities);
+}
 
 PlaybackSession::~PlaybackSession() {
     if (state_ && !state_->ownerThread.isCurrent()) {
@@ -291,6 +410,16 @@ auto PlaybackSession::state() const -> core::Result<SessionState> {
         return core::unexpected(reentryError("state"));
     }
     return state_->sessionState;
+}
+
+auto PlaybackSession::capabilities() const -> core::Result<PlaybackCapabilitySet> {
+    if (!state_->ownerThread.isCurrent()) {
+        return core::unexpected(ownerError("capabilities"));
+    }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("capabilities"));
+    }
+    return state_->capabilities;
 }
 
 auto PlaybackSession::prepareLoad(std::string_view jsonText, PlaybackMode mode)
@@ -394,6 +523,13 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
         return core::unexpected(operationError(replacement ? "playback.chart.reload_load_failed"
                                                            : "playback.chart.load_failed",
                                                "Chart loading produced errors", diagnostics));
+    }
+
+    if (!preflightCapabilities(*documentResult.document, state_->capabilities, diagnostics)) {
+        state_->lastOperationDiagnostics = diagnostics;
+        return core::unexpected(operationError("playback.capability.preflight_failed",
+                                               "Playback capability preflight failed",
+                                               diagnostics));
     }
 
     auto runtimeResult = chart::ChartCompiler::compile(*documentResult.document, limits);
@@ -657,6 +793,9 @@ auto PlaybackSession::extractFrame(const FrameViewport& viewport, FrameSnapshot&
             for (std::size_t index = 0; index < state_->snapshotLayout.entities.size(); ++index) {
                 const auto& entry = state_->snapshotLayout.entities[index];
                 auto& object = snapshot.objects[index];
+                if (object.materialAssetId.capacity() < entry.maximumMaterialAssetIdSize) {
+                    object.materialAssetId.reserve(entry.maximumMaterialAssetIdSize);
+                }
                 if (object.id != entry.id.value) {
                     object.id = entry.id.value;
                 }
@@ -667,7 +806,25 @@ auto PlaybackSession::extractFrame(const FrameViewport& viewport, FrameSnapshot&
                 } else {
                     copyMatrix(identity, object.worldMatrix);
                 }
-                object.visible = true;
+                if (registry.all_of<render::AppearanceComponent>(entry.entity)) {
+                    const auto& appearance =
+                        registry.get<render::AppearanceComponent>(entry.entity);
+                    object.visible = appearance.visible;
+                    if (object.materialAssetId != appearance.materialAssetId) {
+                        object.materialAssetId = appearance.materialAssetId;
+                    }
+                    object.materialOpacity = appearance.opacity;
+                    object.materialTint[0] = appearance.tint.x;
+                    object.materialTint[1] = appearance.tint.y;
+                    object.materialTint[2] = appearance.tint.z;
+                } else {
+                    object.visible = true;
+                    object.materialAssetId.clear();
+                    object.materialOpacity = 1.0;
+                    object.materialTint[0] = 1.0F;
+                    object.materialTint[1] = 1.0F;
+                    object.materialTint[2] = 1.0F;
+                }
             }
             snapshot.objects.resize(state_->snapshotLayout.entities.size());
 

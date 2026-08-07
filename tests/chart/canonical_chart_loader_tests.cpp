@@ -62,6 +62,25 @@ TEST_CASE("Canonical loader produces a typed chart document", "[chart][canonical
     CHECK(loaded.document->objects[0].components.element);
 }
 
+TEST_CASE("Canonical loader preserves the legacy positive BPM range",
+          "[chart][canonical][timing][legacy]") {
+    for (const auto& bpm : {std::string{"0.5"}, std::string{"70000.0"}}) {
+        auto chart = std::string{minimalChart};
+        const auto value = chart.find("120.0");
+        REQUIRE(value != std::string::npos);
+        chart.replace(value, std::string_view{"120.0"}.size(), bpm);
+
+        const auto v1 = cuexis::chart::CanonicalChartLoader::load(chart);
+        REQUIRE(v1.hasValue());
+
+        const auto version = chart.find("\"version\": 1");
+        REQUIRE(version != std::string::npos);
+        chart.replace(version, std::string_view{"\"version\": 1"}.size(), "\"version\": 2");
+        const auto v2 = cuexis::chart::CanonicalChartLoader::load(chart);
+        REQUIRE(v2.hasValue());
+    }
+}
+
 TEST_CASE("Canonical loader reports deterministic paths for missing type and unknown fields",
           "[chart][canonical][diagnostics]") {
     constexpr std::string_view invalid = R"json(
@@ -85,12 +104,12 @@ TEST_CASE("Canonical loader reports deterministic paths for missing type and unk
     CHECK(hasDiagnostic(loaded.diagnostics, "json.field.unknown", "$/futureCoreField"));
 }
 
-TEST_CASE("Canonical loader rejects unsupported versions timing events and required extensions",
+TEST_CASE("Canonical loader rejects legacy timing events and required extensions",
           "[chart][canonical][unsupported]") {
     constexpr std::string_view invalid = R"json(
 {
   "format": "cuexis.chart",
-  "version": 3,
+  "version": 1,
   "chartId": "019b0000-0000-7abc-8def-000000000001",
   "metadata": {},
   "timing": {
@@ -108,12 +127,32 @@ TEST_CASE("Canonical loader rejects unsupported versions timing events and requi
 )json";
     const auto loaded = cuexis::chart::CanonicalChartLoader::load(invalid);
     REQUIRE_FALSE(loaded.hasValue());
-    CHECK(hasDiagnostic(loaded.diagnostics, "chart.version.unsupported", "$/version"));
     CHECK(hasDiagnostic(loaded.diagnostics, "chart.timing.bpm_changes_unsupported",
                         "$/timing/bpmChanges"));
     CHECK(hasDiagnostic(loaded.diagnostics, "chart.timing.stops_unsupported", "$/timing/stops"));
     CHECK(hasDiagnostic(loaded.diagnostics, "chart.extension.required_unsupported",
                         "$/requiredExtensions/0"));
+}
+
+TEST_CASE("Canonical loader rejects unsupported chart versions",
+          "[chart][canonical][unsupported]") {
+    constexpr std::string_view invalid = R"json(
+{
+  "format": "cuexis.chart",
+  "version": 4,
+  "chartId": "019b0000-0000-7abc-8def-000000000001",
+  "metadata": {},
+  "timing": {"offsetMs": 0, "defaultBpm": 120, "bpmChanges": [], "stops": []},
+  "templates": [],
+  "behaviors": [],
+  "objects": [],
+  "requiredExtensions": [],
+  "extensions": {}
+}
+)json";
+    const auto loaded = cuexis::chart::CanonicalChartLoader::load(invalid);
+    REQUIRE_FALSE(loaded.hasValue());
+    CHECK(hasDiagnostic(loaded.diagnostics, "chart.version.unsupported", "$/version"));
 }
 
 TEST_CASE("Canonical loader validates required extension entries before rejecting support",

@@ -1,5 +1,6 @@
 add_executable(cuexis_runtime_tests
     behavior_runtime_tests.cpp
+    migration_equivalence_tests.cpp
     runtime_session_tests.cpp
 )
 

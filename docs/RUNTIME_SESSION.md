@@ -1,8 +1,8 @@
 # Cuexis RuntimeSession 规范
 
-状态：阶段 1C 的内部行为与 headless Playback 已实现；阶段 1D 的 Prepared Playback、三模式时钟和 RuntimeTimeline 已实现
+状态：阶段 1C/1D 会话合同与阶段 2 Timing、Behavior Event、表现属性和调试快照均已实现
 
-更新日期：2026-07-27
+更新日期：2026-08-06
 
 ## 职责与所有权
 
@@ -19,6 +19,7 @@ PropertyResolver 与初始属性状态
 每 Session 的 System 管线状态
 最后处理的 timeDiscontinuityId
 结构化 Diagnostics
+可选且有界的 Runtime 属性调试快照
 ```
 
 Session 不拥有 ChartDocument、EditorDocument、ResourceManager、AssetDatabase、ContentProvider、AudioTransport、Renderer、RenderBackend、窗口或输入设备。这些依赖由 PlaybackSession 组合层及其宿主/应用适配器持有，并按显式生命周期比内部 RuntimeSession 活得更久。
@@ -41,7 +42,17 @@ loadReplay()：注入预记录 InputEvent 替代实时输入
 结构化 Diagnostics
 ```
 
-PlaybackSession 不创建宿主窗口、不拥有宿主主循环，也不要求 SDL/OpenGL。当前 C++20 门面已提供 `loadChart(string_view)`、`update(RuntimeFrame)`、`extractFrame(FrameViewport)`、显式目标帧 `reload` 和 `unload`。`FrameSnapshot` 拥有对象 ID、World Matrix、Camera View/Projection 和视口数据；Reload/Unload 不使已返回 Snapshot 悬空。`findEntity(entt::entity)`、`withWorld` 和 Registry 访问只能作为内部或受限调试接口，不能进入安装后的 SDK 公共头。
+PlaybackSession 不创建宿主窗口、不拥有宿主主循环，也不要求 SDL/OpenGL。当前 C++20 门面已提供 `loadChart(string_view)`、`update(RuntimeFrame)`、`extractFrame(FrameViewport)`、显式目标帧 `reload` 和 `unload`。`FrameSnapshot` 拥有对象 ID、World Matrix、Camera View/Projection、Visibility、Material asset/opacity/tint 和视口数据；Reload/Unload 不使已返回 Snapshot 悬空。`findEntity(entt::entity)`、`withWorld`、Runtime 调试快照和 Registry 访问只能作为内部或受限调试接口，不能进入安装后的 SDK 公共头。
+
+Stage 2 的 Playback capability set version 1 使用
+`cuexis.chart.v3`、`cuexis.behavior.event.v1`、`cuexis.render.visibility.v1` 和
+`cuexis.material.snapshot.v1`。默认 Session 提供全部能力；显式 capability 集合在 prepare 的
+资源请求和 World 发布前校验。缺少能力产生确定排序的 `playback.capability.unsupported`，不在
+运行中静默跳过属性，也不复用 Chart `requiredExtensions`。
+
+FrameDigest algorithm version 2 把 Visibility、Material asset ID、opacity 和 tint 纳入
+RuntimeFrame/FrameSnapshot 的稳定 little-endian FNV-1a 64 编码。version 1 的历史算法定义不
+改变；Stage 2 consumer 必须显式检查 `algorithmVersion == 2` 后再比较 golden。
 
 阶段 1D 已增加 move-only、owner-thread 的 Prepared Playback load/reload。Prepared 对象内部持有
 候选 Runtime 与 AudioSourceLease，只公开 `PlaybackContentInfo` 和调用期有效的
@@ -119,7 +130,23 @@ CuexisAudio 都必须先归一化为 SourceClockSample，再由同一 RuntimeTim
 RuntimeFrame。`chartTimeMs` 必须有限（允许为负），delta 必须有限且非负；同一
 discontinuity ID 下的向后时间移动拒绝，ID 变化后从目标绝对时间重采样而不消费跳转前 delta。
 
-更新顺序固定为 Behavior evaluate -> PropertyWriteBuffer -> Transform/FOV resolver -> World transform update。Resolver 每帧从 prepare 时捕获的初始值重建稀疏属性；Transform 与 Camera FOV 候选必须全部校验通过后才一次提交，不发布半帧结果。
+Stage 2 的 Runtime 每帧只执行一次 `chartTimeMs -> BeatSample`，所有 Behavior 和对象复用同一
+Beat、`inStop` 与 `stopProgress`。更新顺序固定为 Behavior evaluate -> PropertyWriteBuffer ->
+Transform/FOV/Visibility/Material resolver -> World transform update。Resolver 每帧从 prepare
+时捕获的初始值重建稀疏属性；所有候选必须全部校验通过后才一次提交，不发布半帧结果。
+连续 Event、Step Event、Stop、Seek、Reload 和负 Beat 都按目标绝对时间重采样，不依赖帧率
+或 EnTT 遍历顺序。预热后的 `PlaybackSession::update()` 与复用 destination 的
+`extractFrame()` 不分配。
+
+## Stage 2 调试快照
+
+内部 `RuntimeSession::configureDebug()` 显式启用固定容量调试记录，容量上限为 65536。每条
+`RuntimeDebugRecord` 保存 ChartObjectId、Property、初始基准、命中事件索引、归一化进度、
+Behavior 输出和最终解析值。`debugSnapshot()` 返回拥有型副本；容量耗尽时设置 `truncated`。
+
+调试关闭时不记录也不产生额外帧分配。该接口属于内部 Runtime/Studio 诊断边界，不进入
+Playback `FrameSnapshot`，也不暴露内部指针。宿主只通过 capability、结构化 Diagnostics 与
+最终 FrameSnapshot 观察结果。
 
 ## Reload
 

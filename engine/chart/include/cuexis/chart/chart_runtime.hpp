@@ -35,11 +35,40 @@ struct RuntimeTrack final {
     std::vector<RuntimeKey> keys;
 };
 
+struct RuntimeEvent final {
+    double startBeat{};
+    double endBeat{};
+    BehaviorValue startValue{};
+    BehaviorValue endValue{};
+    double startSlope{};
+    double endSlope{};
+    bool instantaneous{};
+    std::optional<std::string> groupId;
+};
+
+struct RuntimeEventTrack final {
+    BehaviorProperty property{};
+    std::vector<RuntimeEvent> events;
+};
+
+struct RuntimeStepEvent final {
+    double beat{};
+    BehaviorStepValue value{};
+    std::optional<std::string> groupId;
+};
+
+struct RuntimeStepTrack final {
+    BehaviorStepProperty property{};
+    std::vector<RuntimeStepEvent> events;
+};
+
 struct RuntimeBehavior final {
     BehaviorId id;
     std::string type;
     std::uint32_t version{1};
     std::vector<RuntimeTrack> tracks;
+    std::vector<RuntimeEventTrack> eventTracks;
+    std::vector<RuntimeStepTrack> stepTracks;
 };
 
 struct ChartRuntime final {
