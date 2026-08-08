@@ -1,15 +1,15 @@
 # Building Cuexis
 
-状态：阶段 2 现行构建、安装与质量门禁规范
+状态：阶段 3G 本地验收构建、安装与质量门禁规范
 
-更新日期：2026-08-06
+更新日期：2026-08-08
 
 ## 当前仓库说明
 
-当前仓库提供阶段 0 工程基础、阶段 1A-1E Playback Core 闭环，以及阶段 2 的 Chart v3、
-Tempo/Stop TimingMap、Behavior Event、Visibility/Material 表现属性、capability preflight、调试
-快照和 v1/v2 -> v3 迁移工具。以下命令是受支持的标准入口；旧的 IDE 私有构建目录和手工
-编译产物不能作为验收依据。
+当前仓库提供阶段 0 工程基础、阶段 1A-1E Playback Core 闭环、阶段 2 的 Chart/Behavior/迁移
+能力，以及阶段 3A-3G 本地闭环的 Portable Presentation v1、Validation Sink、OpenGL Player
+adapter、外部 package consumer 与性能 probe。当前实现分支的 hosted Linux run URL 尚未补齐；
+以下命令是受支持的标准入口，旧的 IDE 私有构建目录和手工编译产物不能作为验收依据。
 
 当前正式激活的库 target 为：
 
@@ -41,8 +41,9 @@ Player 失败路径和 `cuexis_format_check` 由顶层 CMake 统一注册。
 ADR 0027 已将长期交付方向调整为 Playback SDK + 独立 Player + 独立 Studio。当前
 `cuexis_playback` 已通过正式 Runtime 路径驱动 Behavior，并提供 Prepared load/reload、
 主音乐内容视图和后端无关 RuntimeTimeline。当前 C++20 static/shared package 导出
-Playback、Content、Audio，可选导出 AudioSDL；四类 `add_subdirectory`/`find_package(Cuexis)`
-外部 consumer 门禁验证基础包不会引入 SDL。ADR 0033 的 matching-toolchain C++ shared preview
+Playback、Content、Audio，可选导出 AudioSDL；七个 `add_subdirectory`/`find_package(Cuexis)`
+外部 consumer 模式包含两个只消费 `Cuexis::Playback` 的 Stage 3 宿主，并验证基础包不会引入
+SDL/OpenGL。ADR 0033 的 matching-toolchain C++ shared preview
 构建、部署和 consumer 门禁已实现；稳定 C ABI、Studio 与宿主专用 adapter 仍属于后续阶段。
 
 ## Windows/MSVC 前置条件
@@ -138,8 +139,10 @@ ctest --preset release --no-tests=error
 ```
 
 Player 冒烟测试需要交互式桌面和支持 OpenGL 3.3 Core 的 GPU，因此与默认 CTest 分开执行。
-普通启动和 `--audio-smoke-test` 在未给出 `--project`/`--chart` 时加载阶段 1D 项目；既有
-`--smoke-test` 固定加载无音频的阶段 1C 项目并保留三帧确定性语义：
+普通启动和 `--audio-smoke-test` 在未给出 `--project`/`--chart` 时加载阶段 1D 项目；当前
+`--smoke-test` 固定加载无音频的 `stage3_project`，执行六帧真实 presentation 脚本：Opaque、
+textured Transparent、全不可见 clear、失败 Playback reload、失败 adapter prepare 和成功原子
+reload。它同时断言规范化 draw summary 与中心像素结果：
 
 ```powershell
 .\out\build\debug\bin\cuexis_player.exe --smoke-test
@@ -185,8 +188,19 @@ golden、目标回滚和 CLI 退出合同。Player 可使用 `--chart` 加载 St
 `audio.mainMusic` 引用。Player 在 Window/GL/Audio device 创建前完成 Project、Index、Chart、
 Source 和 WAV preflight，再按内容选择 ChartClock 或 CuexisAudio；已选模式失败时不会静默回退。
 构建时会先清理目标 demo project 目录再复制，避免遗留已删除资产。Release 或后端相关改动还应
-完成 Release build/test、1C 三帧 GPU smoke、1D 物理音频 smoke，以及 canonical Chart 回归；
+完成 Release build/test、Stage 3 六帧 GPU smoke、1D 物理音频 smoke，以及 canonical Chart 回归；
 算法单元测试不得依赖窗口、GPU、物理音频设备或墙钟。
+
+Stage 3 最大合法资源与热路径趋势 probe 不属于默认构建，必须显式执行：
+
+```powershell
+cmake --build --preset release --target stage3_performance_probe
+.\out\build\release\bin\stage3_performance_probe.exe
+```
+
+该 probe 生成 64 MiB 上限 Texture2D，并报告 prepare、manifest/acquisition、Validation candidate、
+warmed update/extract/validate 和 reload peak memory。数值用于同机趋势比较，不是跨机器验收阈值；
+确定性性能合同由资源硬预算和零分配测试承担。
 
 ## 常见错误
 
@@ -222,7 +236,7 @@ cmake --install out/build/headless-release --prefix out/install/headless-release
 ```
 
 ```cmake
-find_package(Cuexis 0.4 CONFIG REQUIRED COMPONENTS Playback Content Audio)
+find_package(Cuexis 0.5 CONFIG REQUIRED COMPONENTS Playback Content Audio)
 target_link_libraries(my_host PRIVATE Cuexis::Playback Cuexis::Content Cuexis::Audio)
 ```
 
@@ -233,22 +247,28 @@ target_link_libraries(my_host PRIVATE Cuexis::Playback Cuexis::Content Cuexis::A
 并由 consumer 显式请求组件：
 
 ```cmake
-find_package(Cuexis 0.4 CONFIG REQUIRED COMPONENTS Audio AudioSDL)
+find_package(Cuexis 0.5 CONFIG REQUIRED COMPONENTS Audio AudioSDL)
 target_link_libraries(my_host PRIVATE Cuexis::AudioSDL)
 ```
 
 只有请求 `AudioSDL` 时 `CuexisConfig.cmake` 才查找 SDL3 并载入独立的
 `CuexisAudioSDLTargets.cmake`；基础 Playback/Content/Audio consumer 不查找 SDL3。
 
-`0.4` 是当前 Playback preview 的 SDK API 兼容版本，不是日期构建版本。安装后的
+Stage 3 不安装 `OpenGL` component。`cuexis_render_opengl` 仍是 Player 使用的仓库内可选 target；
+安装包显式请求 `COMPONENTS OpenGL` 会失败，基础 Playback package 不查找 OpenGL 或 GLAD。
+
+`0.5` 是当前 Playback preview 的 SDK API 兼容 minor，不是日期构建版本。安装后的
 `Cuexis_VERSION`/`Cuexis_API_VERSION` 返回完整 API 版本，`Cuexis_VERSION_DISPLAY` 返回
 `yy.mm.dd.hh-v[-suffix]` 构建身份。
 
 安装树包含 `CuexisTargets.cmake`、`CuexisConfig.cmake`、同 minor 版本兼容文件、生成的
 `cuexis/version.hpp`、`LICENSE`、`NOTICE`、第三方 notices 和实际无头依赖版权文本。CTest 中的
-五个 `cuexis_external_consumer_*` 门禁分别验证 add_subdirectory/find_package 的基础包、Core 和
-AudioSDL 组件。基础 find_package 门禁显式禁用 SDL3 查找；安装包门禁同时扫描全部已安装公共头
-是否为纯 ASCII，并校验基础许可证清单及 AudioSDL 安装的 SDL3 copyright：
+七个 `cuexis_external_consumer_*` 模式验证 add_subdirectory/find_package 的基础包、Playback-only、
+Core 和 AudioSDL 组件。Playback-only consumer 从自己的 staging fixture 完成
+load/prepare/resource validation/update/extract，只链接 `Cuexis::Playback`。基础 find_package 门禁
+显式禁用 SDL3 查找，并验证不发现 OpenGL/GLAD、`0.4`/`0.6` 请求被拒绝、未支持的 `OpenGL`
+component 被拒绝；安装包门禁同时扫描全部已安装公共头是否为纯 ASCII，并精确校验基础许可证
+清单及 AudioSDL 安装额外增加的 SDL3 copyright：
 
 ```powershell
 ctest --preset headless-debug -R "^cuexis_external_consumer_" --output-on-failure
@@ -263,7 +283,7 @@ CUEXIS_LIBRARY_TYPE=STATIC|SHARED
 ```
 
 不得把 `BUILD_SHARED_LIBS` 当作 Cuexis 支持入口。当前 static/shared preview SDK API 均为
-`0.4.0`。一个 build tree 与 install prefix 只能包含一种 Cuexis linkage，consumer 继续链接
+`0.5.0`。一个 build tree 与 install prefix 只能包含一种 Cuexis linkage，consumer 继续链接
 相同的 `Cuexis::` target 名，不得硬编码 DLL/shared object 文件名。可直接使用
 `shared-debug`、`shared-release`、`headless-shared-debug` 和 `headless-shared-release` presets。
 
@@ -271,8 +291,9 @@ shared preview 要求 consumer 使用匹配的 Cuexis SDK minor、编译器工�
 和 Debug/Release 配置；升级 Cuexis 后必须重新编译 consumer。`SameMinorVersion` 是 package/source
 请求规则，绝不构成可替换二进制的 ABI 承诺。shared package 的基础 Playback/Content/Audio consumer
 不应安装或查找 EnTT、GLM、JSON/schema validator、SDL3、glad 或 spdlog 开发包；只有显式
-`AudioSDL` component 才能查找 SDL3。CTest 会检查完整部署、导出符号、consumer import table、
-private target/header 泄漏、配置与 MSVC runtime 不匹配，以及 clean staging 运行。具体规则见
+`AudioSDL` component 才能查找 SDL3。CTest 会检查完整部署、Stage 3 manifest/acquisition/preflight
+导出符号、通用与 Playback-only consumer import table、private target/header 泄漏、配置与 MSVC
+runtime 不匹配，以及 clean staging 运行。具体规则见
 [ADR 0033](adr/0033-cpp-shared-library-preview-boundary.md)。
 
 阶段 1E 首批正式 shared 平台矩阵是 Windows x64/MSVC 与 Linux x64/GCC 或 Clang。Windows
@@ -304,4 +325,8 @@ Linux/GCC shared Release、Linux/Clang shared Debug、Linux/Clang ASan+UBSan、c
 不低于 40% 的 engine 行覆盖率。100k Transform 稀疏
 更新与 FrameSnapshot 缓冲复用是确定性结构门禁；墙钟时间只作为趋势证据，不作为跨机器
 硬阈值。
+
+WSL 或本地 Linux 可以提前发现跨编译器问题，但不能替代 hosted `ubuntu-latest` 发布证据。阶段
+完成报告只能引用包含当前实现 commit 的 workflow run URL；旧分支、旧 commit 或只有文档变更的
+run 不得关闭当前阶段门禁。
 

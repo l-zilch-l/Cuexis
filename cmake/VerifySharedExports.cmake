@@ -21,7 +21,14 @@ if(NOT symbol_result EQUAL 0)
     message(FATAL_ERROR "Shared symbol inspection failed: ${symbol_error}")
 endif()
 
-foreach(required_symbol IN ITEMS PlaybackSession PlaybackSource computeFrameDigest RuntimeTimeline)
+foreach(required_symbol IN ITEMS
+        PlaybackSession
+        PlaybackSource
+        RuntimeTimeline
+        acquirePresentationResource
+        computeFrameDigest
+        presentationManifest
+        validatePresentation)
     if(NOT symbol_output MATCHES "${required_symbol}")
         message(FATAL_ERROR "Playback shared library does not export ${required_symbol}")
     endif()

@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.25)
 
 project(CuexisExternalFindPackageCore LANGUAGES CXX)
 
-find_package(Cuexis 0.4 CONFIG REQUIRED COMPONENTS Core)
+find_package(Cuexis 0.5 CONFIG REQUIRED COMPONENTS Core)
 
 if(NOT Cuexis_Core_FOUND OR NOT TARGET Cuexis::Core OR
-   NOT Cuexis_VERSION VERSION_EQUAL "0.4.0" OR
-   NOT Cuexis_API_VERSION VERSION_EQUAL "0.4.0" OR
+   NOT Cuexis_VERSION VERSION_EQUAL "0.5.0" OR
+   NOT Cuexis_API_VERSION VERSION_EQUAL "0.5.0" OR
    NOT Cuexis_LIBRARY_TYPE STREQUAL CUEXIS_EXPECTED_LIBRARY_TYPE)
     message(FATAL_ERROR "Cuexis Core package component contract is invalid")
 endif()

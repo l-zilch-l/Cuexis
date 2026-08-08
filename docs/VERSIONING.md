@@ -68,7 +68,7 @@ suffix 只来自允许集合或 exp.<name>
 
 ```text
 Cuexis display version     仓库/发行构建身份
-C++ SDK API version        CMake package 与源码兼容版本；当前 static/shared preview 为 0.4.0
+C++ SDK API version        CMake package 与源码兼容版本；当前 static/shared preview 为 0.5.0
 C ABI version              稳定 shared-library 二进制契约，阶段 12 首次冻结
 Chart/Project/Asset format 各自持久化 format + version
 ReplayData format          阶段 11 冻结的独立持久化版本
@@ -78,7 +78,7 @@ simulationVersion          粒子等确定性算法版本
 当前 `CUEXIS_SDK_API_VERSION` 是 CMake package version 的唯一来源，生成头通过
 `cuexis::version::sdkApi` 暴露，package config 同时设置 `Cuexis_VERSION` 和
 `Cuexis_API_VERSION`。`Cuexis_VERSION_DISPLAY` 继续保存完整构建身份。preview 使用
-`SameMinorVersion`：`0.4.x` 内允许满足不高于已安装版本的请求，minor 或 major 变化必须由
+`SameMinorVersion`：`0.5.x` 内允许满足不高于已安装版本的请求，minor 或 major 变化必须由
 consumer 显式接受。日期构建号变化不改变 `find_package` 兼容性。
 
 阶段 1D 的 SourceClockSample、RuntimeTimeline、Prepared Playback 和 Audio package components
@@ -94,6 +94,10 @@ ADR 0033 已将同工具链 C++ shared preview 纳入阶段 1E。`0.3.0` 已实�
 Chart v3 可观察合同是不兼容的公共结构变化，因此 ADR 0036 将 static/shared preview 提升到
 `0.4.0`。`CUEXIS_SDK_API_VERSION`、生成头、package version 与 external consumer 必须保持
 同步；`vcpkg.json` 仍不复制 SDK API 版本。
+
+阶段 3B 新增 Portable Presentation Profile v1 public values、candidate manifest/token 和 owning
+resource acquisition，因此 preview 已提升到 `0.5.0`。阶段 3C 已在同一 public minor 中补齐
+FrameSnapshot resource refs 与 FrameDigest v3，没有重复提升版本。
 
 shared `0.x` 只支持使用匹配 SDK minor、编译器工具链、标准库、运行时、架构和 Debug/Release
 配置重新构建的 consumer。CMake `SameMinorVersion` 继续表达源码/package 请求兼容，绝不表示

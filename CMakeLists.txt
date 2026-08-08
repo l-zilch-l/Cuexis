@@ -149,6 +149,7 @@ if(CUEXIS_BUILD_TESTS)
         cuexis_world_tests
         cuexis_playback_tests
         cuexis_playback_allocation_tests
+        cuexis_presentation_validation_tests
     )
 
     if(TARGET cuexis_platform_sdl_tests)
@@ -225,8 +226,10 @@ if(CUEXIS_BUILD_TESTS)
     if(PROJECT_IS_TOP_LEVEL)
         foreach(consumer_mode IN ITEMS
                 add_subdirectory
+                add_subdirectory_playback
                 add_subdirectory_audio_sdl
                 find_package
+                find_package_playback
                 find_package_core
                 find_package_audio_sdl)
             add_test(
@@ -280,13 +283,33 @@ if(CUEXIS_BUILD_TESTS)
                     COMMAND "${CMAKE_COMMAND}"
                         "-DCUEXIS_CONSUMER=${PROJECT_BINARY_DIR}/ec/p/build/cuexis_external_consumer.exe"
                         "-DCUEXIS_DUMPBIN=${CUEXIS_SYMBOL_TOOL}"
+                        "-DCUEXIS_AUDIO_LIBRARY=$<TARGET_FILE_NAME:cuexis_audio>"
                         "-DCUEXIS_CORE_LIBRARY=$<TARGET_FILE_NAME:cuexis_core>"
                         "-DCUEXIS_CONTENT_LIBRARY=$<TARGET_FILE_NAME:cuexis_content>"
                         "-DCUEXIS_PLAYBACK_LIBRARY=$<TARGET_FILE_NAME:cuexis_playback>"
+                        "-DCUEXIS_PLAYBACK_RUNTIME=$<TARGET_FILE:cuexis_playback>"
                         -P "${PROJECT_SOURCE_DIR}/cmake/VerifySharedConsumerImports.cmake"
                 )
                 set_tests_properties(cuexis_shared_consumer_imports PROPERTIES
                     DEPENDS cuexis_external_consumer_find_package
+                    LABELS "shared;external;package"
+                    RESOURCE_LOCK cuexis_external_consumer
+                )
+                add_test(
+                    NAME cuexis_shared_playback_consumer_imports
+                    COMMAND "${CMAKE_COMMAND}"
+                        "-DCUEXIS_CONSUMER=${PROJECT_BINARY_DIR}/ec/pp/build/cuexis_external_consumer.exe"
+                        "-DCUEXIS_DUMPBIN=${CUEXIS_SYMBOL_TOOL}"
+                        "-DCUEXIS_AUDIO_LIBRARY=$<TARGET_FILE_NAME:cuexis_audio>"
+                        "-DCUEXIS_CORE_LIBRARY=$<TARGET_FILE_NAME:cuexis_core>"
+                        "-DCUEXIS_CONTENT_LIBRARY=$<TARGET_FILE_NAME:cuexis_content>"
+                        "-DCUEXIS_PLAYBACK_LIBRARY=$<TARGET_FILE_NAME:cuexis_playback>"
+                        "-DCUEXIS_PLAYBACK_RUNTIME=$<TARGET_FILE:cuexis_playback>"
+                        -DCUEXIS_REQUIRE_CONTENT_IMPORT=OFF
+                        -P "${PROJECT_SOURCE_DIR}/cmake/VerifySharedConsumerImports.cmake"
+                )
+                set_tests_properties(cuexis_shared_playback_consumer_imports PROPERTIES
+                    DEPENDS cuexis_external_consumer_find_package_playback
                     LABELS "shared;external;package"
                     RESOURCE_LOCK cuexis_external_consumer
                 )
@@ -532,6 +555,7 @@ if(TARGET cuexis_render_opengl)
         ALLOWED
             cuexis::render
             cuexis::platform_sdl
+            cuexis::playback
             glad::glad
             SDL3::SDL3
     )
@@ -694,6 +718,11 @@ if(CUEXIS_BUILD_TESTS)
             Catch2::Catch2WithMain
     )
     cuexis_verify_target_dependencies(cuexis_playback_allocation_tests
+        ALLOWED
+            cuexis::playback
+            Catch2::Catch2WithMain
+    )
+    cuexis_verify_target_dependencies(cuexis_presentation_validation_tests
         ALLOWED
             cuexis::playback
             Catch2::Catch2WithMain

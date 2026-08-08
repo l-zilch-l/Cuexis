@@ -2,7 +2,7 @@
 
 ## 0. 文档状态
 
-本文档是项目的持续维护指南，同时记录已落地的工程状态、已确认的架构边界和后续阶段路线。阶段 0、阶段 1A、阶段 1B、阶段 1C、阶段 1D 与阶段 1E 已完成验收；阶段 2 实现与 Windows 本地门禁已完成，最终跨平台验收待 hosted Linux CI。阶段 3 的公共方向和实施范围已经由 ADR 0037 与[阶段 3 实施计划](stage_plans/stage_3_implementation_plan.md)接受，但尚未开始实现。260722 全量审查的 R01-R21 已于 2026-07-26/27 全部关闭并补齐构建、CTest、架构和 external consumer 证据。ADR 0027 已将长期产品方向调整为可嵌入 Cuexis Playback SDK + 独立 Player + 独立 Studio。
+本文档是项目的持续维护指南，同时记录已落地的工程状态、已确认的架构边界和后续阶段路线。阶段 0、阶段 1A、阶段 1B、阶段 1C、阶段 1D 与阶段 1E 已完成验收；阶段 2 实现与 Windows 本地门禁已完成，最终跨平台验收待 hosted Linux CI。阶段 3 的公共方向和实施范围已经由 ADR 0037 与[阶段 3 实施计划](stage_plans/stage_3_implementation_plan.md)接受，3A-3F 已关闭，3G 的 Windows/MSVC 与 WSL Linux 本地验收已完成；当前实现分支的 hosted Linux run URL 待补，因此 Stage 3 尚未最终完成。260722 全量审查的 R01-R21 已于 2026-07-26/27 全部关闭并补齐构建、CTest、架构和 external consumer 证据。ADR 0027 已将长期产品方向调整为可嵌入 Cuexis Playback SDK + 独立 Player + 独立 Studio。
 
 文档中的内容按以下方式理解：
 
@@ -15,7 +15,7 @@
 
 随着讨论推进，待讨论内容应转化为明确决策；重大技术决策还应同步形成 ADR。
 
-当前仓库已完成阶段 0 工程闭环、阶段 1A 规范谱面与实例化闭环、阶段 1B 资源生命周期闭环、阶段 1C typed Behavior 与 headless Playback、阶段 1D 主音乐与 Audio，以及阶段 1E 可安装 static/shared Playback Core。阶段 2 已实现 Chart v3、Tempo/Stop TimingMap、Behavior/Step Event、Visibility/Material Snapshot、capability preflight、调试快照、FrameDigest v2 和 v1/v2 显式迁移工具；Windows/MSVC static/shared Debug/Release、headless 与 GPU smoke 门禁已通过。阶段 2 的 hosted Linux CI 仍待最终跨平台验收。正式 Judgement/Replay、Studio 和稳定 C ABI 尚未完成。
+当前仓库已完成阶段 0 工程闭环、阶段 1A 规范谱面与实例化闭环、阶段 1B 资源生命周期闭环、阶段 1C typed Behavior 与 headless Playback、阶段 1D 主音乐与 Audio，以及阶段 1E 可安装 static/shared Playback Core。阶段 2 已实现 Chart v3、Tempo/Stop TimingMap、Behavior/Step Event、Visibility/Material Snapshot、capability preflight、调试快照、FrameDigest v2 和 v1/v2 显式迁移工具。阶段 3B/3C 已实现 Portable Mesh/Texture2D/Unlit Material、candidate/active manifest、owning acquisition、Snapshot resource refs、共同表现提取和 FrameDigest v3，SDK API 为 `0.5.0`；阶段 3D 已实现 public capability preflight 与无 GPU Validation Sink；阶段 3E 已实现 OpenGL candidate GPU cache、固定 Unlit pipeline、真实 Mesh/Texture 绘制和 Player 六帧 smoke；阶段 3F 已实现 Playback-only add_subdirectory/find_package consumer、clean package/version/component/license 门禁和 shared export/import 闭包。3G 已完成 Windows/MSVC static/shared、Debug/Release、headless、architecture、external consumer、GPU 与性能验收，以及 WSL GCC/Clang/shared/sanitizer/clang-tidy/coverage 本地矩阵；hosted Linux CI 仍待最终跨平台验收。正式 Judgement/Replay、Studio 和稳定 C ABI 尚未完成。
 
 当前状态的权威顺序固定为：本文第 0、30、32 节记录产品与阶段状态；`docs/BUILDING.md` 记录当前可执行构建和安装入口；最新阶段审查/补充报告记录尚未关闭的问题。完成报告和早期验证报告是带日期的历史证据，若与后续审查冲突，以后续审查与本节当前状态为准，不得从历史报告反推当前验收状态。
 
@@ -40,6 +40,7 @@ PROJECT_REVIEW.md 当前文档各部分的合理性与风险评估
 stage_plans/cuexis_sdk_transition_plan.md SDK 产品边界、阶段迁移与完成标准
 stage_plans/stage_2_implementation_plan.md Behavior Event、TimingMap 与阶段 2 实施门禁
 stage_plans/stage_3_implementation_plan.md Portable Presentation v1、Validation Sink 与渲染 adapter 实施门禁
+PORTABLE_PRESENTATION.md Portable Presentation v1 格式、API、预算、诊断与 3B/3C 实现状态
 ```
 
 当专项文档建立后，本文只保留架构结论和链接，避免同一规则在多个文件中重复维护。
@@ -90,7 +91,7 @@ cuexis::            C++ 命名空间
 正式判定计分与 ReplayData 在阶段 11 由必选 cuexis_judgement 交付
 ```
 
-当前首要交付范围是关闭阶段 2 的 hosted Linux CI 最终验收，并按阶段 3 实施计划完成 Portable Presentation v1 的文档与契约门禁。Cuexis Studio 的独立应用边界继续预留，但不阻塞 Playback SDK 外部消费。
+当前首要交付范围是提交并推送阶段 3 实现，关闭阶段 2/3 共用的 hosted Linux CI 最终验收。Stage 3 的 3A-3F 与 3G 本地矩阵已完成；Portable Presentation v1 公共值、资源闭包、Snapshot、digest、capability preflight、无 GPU Validation Sink、OpenGL adapter、Player 真实绘制和 Playback-only external package consumer 已实现。Cuexis Studio 的独立应用边界继续预留，但不阻塞 Playback SDK 外部消费。
 
 ## 3. 非目标
 
@@ -918,7 +919,7 @@ ChartRuntime
   面向播放、快速查询、引用已解析、等待实例化
 ```
 
-推荐流程：
+当前 3C 数据流程：
 
 ```text
 ChartDocument
@@ -1366,18 +1367,23 @@ EnTT Registry
   -> RenderSystem / Playback extraction
   -> owning Playback FrameSnapshot
   -> portable resource acquisition
-  -> Host Render Adapter 或 Cuexis RenderBackend
-  -> optional OpenGLBackend
+  -> common normalized presentation extraction
+  -> 3D Host Validation Sink（已实现，测试支持且不安装）
+  -> 3E Cuexis OpenGL adapter（已实现，仓库内可选 target）
 ```
 
-推荐渲染命令职责如下；名称仅为设计示意，精确公共 C++ 类型名和字段由 Stage 3 的 3A 门禁冻结：
+3C 已实现的 `NormalizedPresentationRecord` 是仓库内部共享提取值，不安装为第二套公共帧。它引用
+Snapshot object index，并携带 effective RGB/alpha、Opaque/Transparent pass、depth/cull/blend state、
+AABB-center camera depth 和规范化 transparent depth key。宿主公共输入仍只有 `FrameSnapshot`、
+`PresentationResourceManifest` 与 owning `PortableResourcePtr`。
 
 ```cpp
-struct RenderCommand {
-    PortableMeshRef mesh;
-    PortableMaterialRef material;
-    Mat4 worldMatrix;
-    PresentationPass pass;
+struct NormalizedPresentationRecord {
+    std::size_t objectIndex;
+    double effectiveRgb[3];
+    double effectiveAlpha;
+    NormalizedPresentationPass pass;
+    std::int64_t transparentDepthKey;
 };
 ```
 
@@ -2117,7 +2123,7 @@ cuexis_judgement_tests
 cuexis_external_consumer_tests
 ```
 
-阶段 1A 已建立 `cuexis_core_tests`、`cuexis_json_support_tests`、`cuexis_platform_sdl_tests`、`cuexis_world_tests`、`cuexis_assets_tests`、`cuexis_chart_tests`、`cuexis_behavior_tests`、`cuexis_gameplay_tests`、`cuexis_render_tests`、`cuexis_debug_tests`、`cuexis_runtime_tests` 和 `cuexis_render_opengl_tests`，并在 CTest 中加入架构扫描及 Player 参数、谱面文件和 SDL 初始化失败路径检查。需要真实窗口和 GPU 的 canonical 示例三帧 OpenGL 冒烟测试按 `docs/BUILDING.md` 单独执行，不混入算法单元测试；阶段 1A 的历史 A/B 结果以[阶段 1A 完成报告](stage_reports/stage_1a_completion_report.md)为准。
+阶段 1A 已建立 `cuexis_core_tests`、`cuexis_json_support_tests`、`cuexis_platform_sdl_tests`、`cuexis_world_tests`、`cuexis_assets_tests`、`cuexis_chart_tests`、`cuexis_behavior_tests`、`cuexis_gameplay_tests`、`cuexis_render_tests`、`cuexis_debug_tests`、`cuexis_runtime_tests` 和 `cuexis_render_opengl_tests`，并在 CTest 中加入架构扫描及 Player 参数、谱面文件和 SDL 初始化失败路径检查。需要真实窗口和 GPU 的当前 Stage 3 六帧 OpenGL presentation 冒烟测试按 `docs/BUILDING.md` 单独执行，不混入算法单元测试；阶段 1A 的历史三帧 A/B 结果以[阶段 1A 完成报告](stage_reports/stage_1a_completion_report.md)为准。
 
 尚未实现的模块不需要提前创建空测试 target。测试名称应描述行为和条件，不能只重复被测函数名。
 
@@ -2385,7 +2391,7 @@ Core 提供 Result/Error、日志封装和 ThreadChecker，不依赖 SDL/OpenGL
 Platform 以 RAII Runtime、Window 和 Window Lease 管理 SDL 主线程及生命周期
 World 以受线程检查的回调访问 EnTT Registry，禁止返回 Registry 内部指针或引用
 Render 前端只定义最小帧契约；OpenGL 3.3 Core Context 和调用封装在 cuexis_render_opengl
-Player 组合窗口、World 和 OpenGL Backend，并提供严格渲染三帧的 --smoke-test
+Player 组合窗口、World 和 OpenGL Backend；当前 --smoke-test 已升级为 Stage 3 六帧真实表现验证
 Catch2/CTest、格式检查、架构扫描和 Player 失败路径均有标准构建入口
 ```
 
@@ -2505,7 +2511,7 @@ Player 默认加载阶段 1B project fixture，--project 与 --chart 互斥，�
 以 chartTimeMs 驱动位置、旋转、缩放和 camera.fovY，并支持绝对时间重采样（已完成）
 建立第一版不暴露 RuntimeSession/World/EnTT 的 PlaybackSession 门面（已完成）
 支持宿主直接提交 RuntimeFrame，并输出不依赖 SDL/OpenGL 的 FrameSnapshot（已完成）
-Player 改为 PlaybackSession 的薄组合层；确定性 smoke 使用 stage1c_project（已完成）
+Player 改为 PlaybackSession 的薄组合层；Stage 1C 历史 smoke 使用 stage1c_project，当前 smoke 使用 stage3_project（已完成）
 ```
 
 验收标准（实现部分已完成，门禁结果见阶段报告）：
@@ -2610,6 +2616,11 @@ TimingMap 边界、Stop 区间和负 Beat 有单元测试
 
 阶段 3 的完整范围、批次、资源合同、事务边界、测试矩阵和完成定义见[阶段 3 实施计划](stage_plans/stage_3_implementation_plan.md)。公共方向由 [ADR 0037](adr/0037-stage-3-portable-presentation-contracts.md) 冻结。
 
+状态：3A 精确合同、3B portable resource/candidate acquisition、3C Snapshot/common extraction、
+3D Validation Sink、3E OpenGL adapter/Player 真实绘制与 3F external package consumer 已关闭；3G
+本地 Windows/WSL 验收已完成。当前实现分支的 hosted Linux run URL 仍是 Stage 3 最终关闭前必须
+补齐的跨平台发布门禁。
+
 摘要：
 
 ```text
@@ -2618,7 +2629,10 @@ Portable Presentation v1 只包含 Mesh、Texture2D、固定 Unlit Material
 Playback 提供候选 manifest 和拥有型资源获取，不公开 AssetDatabase/ResourceManager/Provider
 宿主只提供 FrameViewport，不覆盖 Chart/Behavior 相机
 固定 Opaque、Transparent、Debug 三个 Pass；Light、Particle、UI、RenderGraph 和通用 Pipeline/Buffer 延后
-先完成无 GPU Validation Sink，再实现 OpenGL adapter 和 Player 真实 Mesh 绘制
+3C 已提供 Snapshot portable ref、共同 normalizer 和 FrameDigest v3，并保留 digest v1/v2 historical golden
+3D Validation Sink 与 3E OpenGL adapter 使用同一规范化顺序并固定 summary golden
+Player 通过 stage3_project 六帧 smoke 验证真实 Mesh/Texture/Unlit、空帧与 reload 原子性
+3F 以只链接 Cuexis::Playback 的 clean add_subdirectory/find_package consumer 固定安装包闭包
 ```
 
 ### 阶段 4：Cuexis 表现动画系统，10-12 个月
@@ -2994,7 +3008,7 @@ Cuexis-owned JSON Value、typed Reader、字段路径诊断、解析预算和独
 方案 A/B loader、有理数 Beat、基础 TimingMap、模板展开、确定性 UUIDv5 导入和 ChartRuntime 编译
 ChartWorldInstantiator、事务式 RuntimeSession、父子 Transform 与稳定 Object/Entity 映射
 RenderScene/RenderCommand、DebugDraw XYZ 轴线和 OpenGL 3.3 Debug Line 管线
-Cuexis Player 的阶段 1A canonical/simple --chart 回归入口与严格三帧冒烟能力
+Cuexis Player 的阶段 1A canonical/simple --chart 历史回归入口与当前 Stage 3 六帧冒烟能力
 阶段 1A targets 的 Catch2/CTest、失败路径、架构扫描、格式和警告基线
 ProjectConfig/Asset Index v1、固定文件定位、portable path 与物理 containment、原子保存和独立 cuexis.asset-index.json
 AssetDatabase、同步有界 CPU blob ResourceManager、typed Handle、manager token、generation/contentRevision、Lease/Scope 和三种引用策略
@@ -3004,7 +3018,7 @@ Player 默认阶段 1B Project、--project/--chart 互斥、3 个 Renderable 和
 
 上述方案 A/B loader 与 canonical/simple 回归入口是阶段 1 的历史完成事实；ADR 0035 已在阶段 2A.1 删除方案 B，不能把它们继续作为阶段 2 之后的验收要求。
 
-阶段 1C、阶段 1D 与阶段 1E 已完成最终验收；阶段 1E 的 `0.3.0` static/shared Playback Core preview 已通过 Windows/MSVC、Windows/MinGW 和 Linux GCC/Clang 自动化矩阵。阶段 2 已把 preview API 提升到 `0.4.0`，实现 Chart v3、Tempo/Stop、Behavior/Step Event、Visibility/Material Snapshot、capability、FrameDigest v2 和迁移工具，并通过本地 Windows/MSVC static/shared Debug/Release、headless、GPU smoke、format、architecture 与 external consumer 门禁。当前最高优先级是补齐 hosted Linux CI 后关闭阶段 2 最终跨平台验收；阶段 3 已进入文档与契约门禁，尚未开始 C++ 实现。稳定 C ABI 必须在正式 Judgement/Replay 公共契约完成后再冻结。
+阶段 1C、阶段 1D 与阶段 1E 已完成最终验收；阶段 1E 的 `0.3.0` static/shared Playback Core preview 已通过 Windows/MSVC、Windows/MinGW 和 Linux GCC/Clang 自动化矩阵。阶段 2 已把 preview API 提升到 `0.4.0`，实现 Chart v3、Tempo/Stop、Behavior/Step Event、Visibility/Material Snapshot、capability、FrameDigest v2 和迁移工具，并通过本地 Windows/MSVC static/shared Debug/Release、headless、GPU smoke、format、architecture 与 external consumer 门禁。阶段 3A Portable Presentation Profile v1 精确合同已经接受，3B/3C 已实现 owning portable resource、candidate manifest/acquisition、Snapshot resource refs、共同表现提取、FrameDigest v3 和 SDK API `0.5.0`；3D 已实现 public capability preflight、public-only Validation Sink、normalized summary oracle 和 external consumer golden；3E 已实现 OpenGL candidate GPU cache、固定 Unlit pipeline、真实 Mesh/Texture 绘制和 Player 六帧 smoke；3F 已实现只链接 `Cuexis::Playback` 的 add_subdirectory/find_package consumer、clean package/version/component/license 门禁和 shared export/import 闭包。3G 已完成 Windows/MSVC 与 WSL GCC/Clang/shared/sanitizer/clang-tidy/coverage 本地验收；当前实现分支的 hosted Linux CI run URL 仍是 Stage 3 最终关闭前的开放发布门禁。稳定 C ABI 必须在正式 Judgement/Replay 公共契约完成后再冻结。
 
 每次交付仍须按 `docs/BUILDING.md` 在目标环境执行 Debug 配置、构建、CTest、格式检查和图形冒烟；Chart 回归只使用 canonical 输入，并保留 retired Simple 的 unsupported-format 测试。Release 或后端相关改动还须验证 Release。精确结果记录在对应阶段报告，不固化在本指南中。
 

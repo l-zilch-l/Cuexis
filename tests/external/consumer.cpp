@@ -3,8 +3,11 @@
 #include <cuexis/playback/playback_session.hpp>
 #include <cuexis/playback/playback_source.hpp>
 
+#include "../presentation/validation_sink.hpp"
+
 #include <cmath>
 #include <cstddef>
+#include <filesystem>
 #include <iostream>
 #include <string>
 #include <string_view>
@@ -59,6 +62,24 @@ constexpr std::string_view chart = R"json(
         result.push_back(std::byte{static_cast<unsigned char>(character)});
     }
     return result;
+}
+
+[[nodiscard]] auto presentationCapabilities() -> cuexis::playback::PresentationCapabilities {
+    return cuexis::playback::PresentationCapabilities{
+        .opaquePass = true,
+        .transparentPass = true,
+        .linearTexture = true,
+        .srgbTexture = true,
+        .straightAlphaBlend = true,
+        .backFaceCulling = true,
+        .doubleSided = true,
+        .debugPass = true,
+        .maxResourceBytes = 64ULL * 1024ULL * 1024ULL,
+        .maxTotalDecodedBytes = 512ULL * 1024ULL * 1024ULL,
+        .maxTextureDimension = 8192,
+        .maxMeshVertices = 1'048'576,
+        .maxMeshIndices = 3'145'728,
+    };
 }
 
 } // namespace
@@ -125,16 +146,17 @@ int main() {
         return fail("PlaybackSession update failed");
     }
     auto first = session.extractFrame({.width = 1280, .height = 720});
-    if (!first || first->objects.size() != 1 || !near(first->objects[0].worldMatrix[12], 5.0F)) {
+    if (!first || first->objects.size() != 1 || !near(first->objects[0].worldMatrix[12], 5.0F) ||
+        first->objects[0].mesh.has_value() || first->objects[0].material.has_value()) {
         return fail("PlaybackSession first snapshot differed");
     }
     const auto digest = cuexis::playback::computeFrameDigest({.chartTimeMs = 250.0}, *first);
-    constexpr std::uint64_t expectedDigest = 605411979409056204ULL;
+    constexpr std::uint64_t expectedDigest = 6442711505793857933ULL;
     if (!digest) {
         return fail(std::string{"Playback frame digest failed: "} +
                     std::string{digest.error().code()});
     }
-    if (digest->algorithmVersion != 2 || digest->value != expectedDigest) {
+    if (digest->algorithmVersion != 3 || digest->value != expectedDigest) {
         return fail("Playback frame digest mismatch: " + std::to_string(digest->value));
     }
 
@@ -162,6 +184,43 @@ int main() {
         return fail("Unload invalidated an owning FrameSnapshot");
     }
 
-    std::cout << "Cuexis external consumer passed digest=" << digest->value << '\n';
+    auto portableSource = cuexis::playback::PlaybackSource::fromFilesystemProject(
+        std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" / "projects" / "stage3_project");
+    if (!portableSource) {
+        return fail("Portable PlaybackSource creation failed");
+    }
+    cuexis::playback::PlaybackSession portableSession;
+    auto prepared = portableSession.prepareLoad(std::move(*portableSource),
+                                                cuexis::playback::PlaybackMode::ChartClock);
+    if (!prepared) {
+        return fail("Portable PlaybackSession prepare failed");
+    }
+    auto validationCandidate = cuexis::test_support::prepareValidationCandidate(
+        *prepared, presentationCapabilities(), {.enableDebugPass = true});
+    if (!validationCandidate.hasValue() ||
+        validationCandidate.candidate->manifest().entries.size() != 4) {
+        return fail("Portable Validation Sink candidate preparation failed");
+    }
+    if (!portableSession.commit(std::move(*prepared))) {
+        return fail("Portable PlaybackSession commit failed");
+    }
+    cuexis::test_support::ValidationSink validationSink;
+    validationSink.activate(std::move(*validationCandidate.candidate));
+    if (!portableSession.update({.chartTimeMs = 625.0})) {
+        return fail("Portable PlaybackSession update failed");
+    }
+    auto portableFrame = portableSession.extractFrame({.width = 1280, .height = 720});
+    if (!portableFrame) {
+        return fail("Portable PlaybackSession extraction failed");
+    }
+    cuexis::test_support::ValidationSummary summary;
+    if (!validationSink.validateFrame(*portableFrame, summary) || !summary.opaque.empty() ||
+        summary.transparent.size() != 1 || !summary.debugPassEnabled ||
+        summary.digest != 18316288860163381829ULL) {
+        return fail("Portable Validation Sink summary differed: " + std::to_string(summary.digest));
+    }
+
+    std::cout << "Cuexis external consumer passed digest=" << digest->value
+              << " validation=" << summary.digest << '\n';
     return 0;
 }

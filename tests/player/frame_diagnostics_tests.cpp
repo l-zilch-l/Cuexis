@@ -113,8 +113,8 @@ TEST_CASE("Frame diagnostics hash only stable deterministic fields", "[player][f
     auto first = snapshot();
     const auto digest = cuexis::playback::computeFrameDigest(frame, first);
     REQUIRE(digest.has_value());
-    CHECK(digest->algorithmVersion == 2);
-    CHECK(digest->value == 7850652359432829177ULL);
+    CHECK(digest->algorithmVersion == 3);
+    CHECK(digest->value == 9292624206614054870ULL);
     const auto hash = digest->value;
     CHECK(cuexis::playback::computeFrameDigest(frame, first)->value == hash);
 
@@ -174,7 +174,7 @@ TEST_CASE("Frame diagnostics exports stable prefixes and truncation metadata",
     CHECK(audio.starts_with("frameIndex,wallClockMs,sourcePositionMs,"
                             "estimatedOutputLatencyMs,queuedFrames,underrunCount,"
                             "transportState\r\n"));
-    CHECK(meta.find("\"sdkApiVersion\": \"0.4.0\"") != std::string::npos);
+    CHECK(meta.find("\"sdkApiVersion\": \"0.5.0\"") != std::string::npos);
     CHECK(meta.find("\"mode\": \"cuexis_audio\"") != std::string::npos);
     CHECK(meta.find("\"droppedRows\": 1") != std::string::npos);
     CHECK(meta.find("\"truncated\": true") != std::string::npos);

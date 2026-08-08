@@ -1,18 +1,23 @@
 #include <cuexis/playback/frame_digest.hpp>
 
+#include "frame_digest_internal.hpp"
+
 #include <cuexis/core/error.hpp>
 
 #include <bit>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <optional>
+#include <string>
 #include <string_view>
 #include <type_traits>
+#include <utility>
 
 namespace cuexis::playback {
 namespace {
 
-constexpr std::uint32_t frameDigestVersion = 2;
+constexpr std::uint32_t currentFrameDigestVersion = 3;
 constexpr std::uint64_t fnvOffset = 14695981039346656037ULL;
 constexpr std::uint64_t fnvPrime = 1099511628211ULL;
 
@@ -51,15 +56,32 @@ void hashString(std::uint64_t& hash, std::string_view value) noexcept {
     }
 }
 
+void hashReference(std::uint64_t& hash,
+                   const std::optional<PresentationResourceRef>& reference) noexcept {
+    hashByte(hash, reference ? 1U : 0U);
+    if (!reference) {
+        return;
+    }
+    hashInteger(hash, static_cast<std::uint32_t>(reference->type));
+    hashString(hash, reference->assetId);
+    for (const auto byte : reference->identity.sha256) {
+        hashByte(hash, byte);
+    }
+}
+
 [[nodiscard]] auto nonFiniteError() -> core::Error {
     return core::Error{"playback.frame_digest.non_finite",
                        "Frame digest input contains a non-finite numeric value"};
 }
 
-} // namespace
-
-auto computeFrameDigest(const RuntimeFrame& frame, const FrameSnapshot& snapshot)
-    -> core::Result<FrameDigest> {
+[[nodiscard]] auto validateDigestInput(std::uint32_t algorithmVersion, const RuntimeFrame& frame,
+                                       const FrameSnapshot& snapshot) -> core::Result<void> {
+    if (algorithmVersion < 1 || algorithmVersion > currentFrameDigestVersion) {
+        return core::unexpected(
+            core::Error{"playback.frame_digest.version_unsupported",
+                        "Frame digest algorithm version is unsupported"}
+                .withContext("algorithm_version", std::to_string(algorithmVersion)));
+    }
     if (!std::isfinite(frame.chartTimeMs) || !std::isfinite(frame.simulationDeltaTimeMs) ||
         !std::isfinite(snapshot.camera.fovY) || !std::isfinite(snapshot.camera.nearPlane) ||
         !std::isfinite(snapshot.camera.farPlane) || !std::isfinite(snapshot.camera.pitch) ||
@@ -69,12 +91,14 @@ auto computeFrameDigest(const RuntimeFrame& frame, const FrameSnapshot& snapshot
         return core::unexpected(nonFiniteError());
     }
     for (const auto& object : snapshot.objects) {
-        if (!std::isfinite(object.materialOpacity)) {
-            return core::unexpected(nonFiniteError());
-        }
-        for (const float value : object.materialTint) {
-            if (!std::isfinite(value)) {
+        if (algorithmVersion >= 2) {
+            if (!std::isfinite(object.materialOpacity)) {
                 return core::unexpected(nonFiniteError());
+            }
+            for (const float value : object.materialTint) {
+                if (!std::isfinite(value)) {
+                    return core::unexpected(nonFiniteError());
+                }
             }
         }
         for (const float value : object.worldMatrix) {
@@ -93,9 +117,19 @@ auto computeFrameDigest(const RuntimeFrame& frame, const FrameSnapshot& snapshot
             return core::unexpected(nonFiniteError());
         }
     }
+    return {};
+}
+
+} // namespace
+
+auto detail::computeFrameDigestVersion(std::uint32_t algorithmVersion, const RuntimeFrame& frame,
+                                       const FrameSnapshot& snapshot) -> core::Result<FrameDigest> {
+    if (auto validated = validateDigestInput(algorithmVersion, frame, snapshot); !validated) {
+        return core::unexpected(std::move(validated.error()));
+    }
 
     std::uint64_t hash = fnvOffset;
-    hashInteger(hash, frameDigestVersion);
+    hashInteger(hash, algorithmVersion);
     hashDouble(hash, frame.chartTimeMs);
     hashDouble(hash, frame.simulationDeltaTimeMs);
     hashInteger(hash, frame.timeDiscontinuityId);
@@ -123,16 +157,27 @@ auto computeFrameDigest(const RuntimeFrame& frame, const FrameSnapshot& snapshot
         hashString(hash, object.id);
         hashByte(hash, object.hasTransform ? 1U : 0U);
         hashByte(hash, object.visible ? 1U : 0U);
-        hashString(hash, object.materialAssetId);
-        hashDouble(hash, object.materialOpacity);
-        for (const float value : object.materialTint) {
-            hashFloat(hash, value);
+        if (algorithmVersion >= 2) {
+            hashString(hash, object.materialAssetId);
+            hashDouble(hash, object.materialOpacity);
+            for (const float value : object.materialTint) {
+                hashFloat(hash, value);
+            }
         }
         for (const float value : object.worldMatrix) {
             hashFloat(hash, value);
         }
+        if (algorithmVersion >= 3) {
+            hashReference(hash, object.mesh);
+            hashReference(hash, object.material);
+        }
     }
-    return FrameDigest{.algorithmVersion = frameDigestVersion, .value = hash};
+    return FrameDigest{.algorithmVersion = algorithmVersion, .value = hash};
+}
+
+auto computeFrameDigest(const RuntimeFrame& frame, const FrameSnapshot& snapshot)
+    -> core::Result<FrameDigest> {
+    return detail::computeFrameDigestVersion(currentFrameDigestVersion, frame, snapshot);
 }
 
 } // namespace cuexis::playback

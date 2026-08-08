@@ -11,7 +11,7 @@
 namespace cuexis::playback {
 
 struct FrameDigest final {
-    std::uint32_t algorithmVersion{2};
+    std::uint32_t algorithmVersion{3};
     std::uint64_t value{};
 };
 

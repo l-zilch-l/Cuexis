@@ -1,37 +1,49 @@
 # 阶段 3：可移植表现前端与渲染适配实施计划
 
-状态：公共方向与范围已接受；文档计划已建立，尚未开始实现
+状态：3A-3F 已关闭；3G 本地 Windows/WSL 验收完成，当前实现分支的 hosted Linux 门禁待关闭
 
 决策依据：[ADR 0037](../adr/0037-stage-3-portable-presentation-contracts.md)。总体阶段边界见
 [SDK 改造与阶段路线调整方案](cuexis_sdk_transition_plan.md)。
 
-阶段 2 的 Windows/MSVC、MinGW、GPU 和 external consumer 本地门禁已经完成；hosted Linux
-GCC/Clang、sanitizer 和 package consumer 尚无 run URL。Stage 3 可以完成文档和接口设计，
-但在 Stage 2 hosted Linux 结果关闭前不得把 Stage 2 描述为最终跨平台完成，也不得发布 Stage 3
-实现完成声明。
+阶段 2 的 Windows/MSVC、MinGW、GPU 和 external consumer 本地门禁已经完成；Stage 3 3G 也已完成
+本地 Windows/MSVC 与 WSL GCC/Clang、sanitizer、package consumer 验收。当前实现分支仍没有 hosted
+Linux run URL，因此不得把 Stage 2 描述为最终跨平台完成，也不得发布 Stage 3 全阶段完成声明。
 
-## 0. 下一次对话的启动状态
+## 0. 当前启动状态
 
-当前唯一可启动的 Stage 3 批次是 **3A 合同、格式与版本门禁**。本计划和 ADR 0037 已接受产品
-方向，但公共 C++ 布局、payload、预算、诊断和 package topology 尚未冻结。下一次对话不得把
-“方向已接受”误写成“3A 已完成”，也不得直接开始 3B 生产代码。
+项目所有者已于 2026-08-07 接受
+[Portable Presentation Profile v1](../PORTABLE_PRESENTATION.md) 的 S3A-01..S3A-12 精确合同。
+3A、3B、3C、3D、3E 已关闭；3F 已于 2026-08-08 完成并关闭。项目所有者随后授权进入
+3G；Windows/MSVC 与 WSL Linux 本地验收已完成。未完成的 hosted Linux run URL 仍是 Stage 3
+最终关闭前必须补齐的跨平台发布门禁。
 
 当前代码事实：
 
-- `PlaybackSession::extractFrame()` 只输出拥有型 `FrameSnapshot`；`ObjectSnapshot` 当前包含对象
-  ID、World Matrix、Visibility、Material asset ID、opacity 和 tint，没有 Mesh ref 或内容身份。
-- `PreparedPlayback` 当前只公开 `PlaybackContentInfo` 和借用的 `MainMusicSourceView`；候选
-  presentation manifest/acquisition 尚不存在。
-- `cuexis_assets` 当前只加载 Mesh/Material/Texture 的有界 opaque blob；`ResourceManager` 的
-  Handle、Lease、Scope、generation 和 provider revision 都是内部合同。
+- `PlaybackSession::extractFrame()` 输出拥有型 `FrameSnapshot`；`ObjectSnapshot` 已包含 Mesh 与
+  Material portable ref，并保留对象 ID、World Matrix、Visibility、Material asset ID、opacity 和
+  tint。ref 拥有 AssetId、resource type 和 SHA-256 semantic identity。
+- `PreparedPlayback` 与活动 `PlaybackSession` 已公开 owning candidate/active manifest 和按 ref 获取
+  owning immutable portable resource 的接口；candidate token、owner-thread、stale 与 rollback 合同已
+  实现。
+- `cuexis_assets` 继续只管理内部有界 opaque blob；Playback presentation 前端在 prepare 中把
+  `CXPRES01` v1 严格解析为 Portable Mesh/Texture2D/Unlit Material。`ResourceManager` 的 Handle、
+  Lease、Scope、generation 和 provider revision 仍是内部合同。
 - `cuexis_runtime` 当前把 Renderable 解析成内部 Mesh/Material Handle，并用 `ResourceScope`
   保持生命周期；此路径不得成为宿主 API。
-- `cuexis_render` 当前只有内部 DebugLine `RenderScene`/`RenderBackend`，不是安装后的 SDK 表现
-  合同；`cuexis_render_opengl` 当前也只绘制该 DebugLine 路径。
-- Player 当前从 `FrameSnapshot` 派生坐标轴 DebugLine；尚未上传或绘制真实 Mesh/Texture/Material。
+- `cuexis_render` 仍只有内部 DebugLine `RenderScene`/`RenderBackend`，不是安装后的 SDK 表现合同；
+  `cuexis_render_opengl` 已增加独立 Stage 3 presentation adapter，真实上传和绘制 Mesh、Texture2D
+  与 Unlit Material，同时保留 Debug Pass。
+- Player 已只从 `FrameSnapshot` 和 Playback candidate/acquisition 派生 OpenGL presentation cache，
+  不再解释应用私有资源字节；真实 Mesh/Texture/Material 绘制已在 3E 完成。
+- `tests/presentation/` 已提供只依赖安装公共 Playback/Core 头的无 GPU Validation Sink；它完成
+  candidate preflight、owning resource validation、no-fail activation 和规范化 frame summary，且不
+  安装为 SDK component。
 - 基础安装包当前只导出 Core、Audio、Content 和 Playback；OpenGL adapter 没有安装 component。
   其现有 public header 直接引用 `platform_sdl` 和内部 `render_backend.hpp`，target 也固定为 STATIC，
   因此不能只增加一条 `install(TARGETS)` 就声明为受支持组件。
+- `tests/external/playback_consumer.cpp` 已作为 Playback-only 的 add_subdirectory/find_package 宿主，
+  只链接 `Cuexis::Playback`，从独立 staging fixture 验证 manifest、owning acquisition、preflight、
+  update/extract、FrameDigest v3 和 unload 后资源所有权。
 - `stage1b_project` 的 Mesh/Material/Texture 文件只是 opaque 生命周期 fixture，不是合法 Stage 3
   portable payload，后续不得原地改写它们冒充新格式。
 
@@ -39,9 +51,9 @@ GCC/Clang、sanitizer 和 package consumer 尚无 run URL。Stage 3 可以完成
 package 拓扑。3A 期间禁止修改 public header、C++ source、CMake target、Schema、fixture 或测试。
 3A 的全部决策经用户接受后，才能进入 3B。
 
-Stage 2 hosted Linux 是开放的跨平台发布门禁，不是 3A 文档设计的代码依赖。它必须在 3G 最终
-验收前提供可引用 run URL；若 3B-3F 在它关闭前推进，所有状态与报告仍必须显式保留该开放门禁，
-不能用 Stage 3 的 Windows 结果替代。
+Stage 2 hosted Linux 是开放的跨平台发布门禁，不是 Stage 3 实现的代码依赖。它必须在 Stage 3
+最终关闭前提供可引用 run URL；所有状态与报告必须显式保留该开放门禁，不能用 Stage 3 的
+Windows 或 WSL 本地结果替代。
 
 ## 1. 目标与产品边界
 
@@ -289,7 +301,7 @@ cuexis_render_opengl
 
 ### 3A：合同、格式与版本门禁
 
-状态：公共方向已由 ADR 0037 接受；精确字段、预算和 package component 尚未冻结。
+状态：已关闭。精确合同已写入 `docs/PORTABLE_PRESENTATION.md` 并于 2026-08-07 接受。
 
 任务：
 
@@ -313,20 +325,20 @@ cuexis_render_opengl
 
 3A 必须逐项关闭以下决策，不得以“实现时再看”进入 3B：
 
-| ID | 必须冻结的内容 |
-| --- | --- |
-| S3A-01 | public header/type 分组、方法签名 sketch、Result/Diagnostics 返回和 owner/reentry 规则 |
-| S3A-02 | resource ref 仅包含 type + AssetId + semantic content identity；identity 算法、长度和碰撞处理 |
-| S3A-03 | Mesh/Texture2D/Unlit Material payload format ID、version、字节序、unknown version 和截断规则 |
-| S3A-04 | Mesh winding、index width、position/UV layout、finite、顶点/index 数量和 bounds/sort origin |
-| S3A-05 | RGBA8 channel order、texture origin、sRGB/linear、dimension、mip 0、filter 和 address mode |
-| S3A-06 | Unlit base color/texture、straight/premultiplied alpha、Opaque/Blend、depth/cull/double-sided |
-| S3A-07 | Material payload texture ref 与 AssetIndex dependencies 的唯一权威关系、闭包顺序和环处理 |
-| S3A-08 | manifest entry/order、per-resource/per-session 预算、owning acquisition 和旧 source 退役规则 |
-| S3A-09 | PreparedPlayback candidate token、adapter prepare、Playback commit、no-fail activation 和 discard |
-| S3A-10 | Transparent depth key/tie、无活动相机、非有限矩阵、空帧和全不可见帧规则 |
-| S3A-11 | PresentationCapabilities/Request/EffectiveSettings 与现有 PlaybackCapabilitySet 的职责分离 |
-| S3A-12 | 稳定 error/diagnostic code 表、SDK API 版本、FrameDigest 新版本和 package component topology |
+| ID | 必须冻结的内容 | 当前提案 |
+| --- | --- | --- |
+| S3A-01 | public header/type 分组、方法签名 sketch、Result/Diagnostics 返回和 owner/reentry 规则 | `presentation.hpp` + Playback facade；已关闭 |
+| S3A-02 | resource ref 仅包含 type + AssetId + semantic content identity；identity 算法、长度和碰撞处理 | 32-byte SHA-256 canonical semantic identity；已关闭 |
+| S3A-03 | Mesh/Texture2D/Unlit Material payload format ID、version、字节序、unknown version 和截断规则 | `CXPRES01` little-endian binary v1；已关闭 |
+| S3A-04 | Mesh winding、index width、position/UV layout、finite、顶点/index 数量和 bounds/sort origin | uint32 CCW triangle list、optional UV0、derived AABB center；已关闭 |
+| S3A-05 | RGBA8 channel order、texture origin、sRGB/linear、dimension、mip 0、filter 和 address mode | top-left RGBA8、Linear/sRGB、linear+clamp、mip0；已关闭 |
+| S3A-06 | Unlit base color/texture、straight/premultiplied alpha、Opaque/Blend、depth/cull/double-sided | linear Unlit、straight alpha、fixed depth/blend/cull；已关闭 |
+| S3A-07 | Material payload texture ref 与 AssetIndex dependencies 的唯一权威关系、闭包顺序和环处理 | payload ref 与唯一 index dependency 必须精确一致；已关闭 |
+| S3A-08 | manifest entry/order、per-resource/per-session 预算、owning acquisition 和旧 source 退役规则 | AssetId 排序、64 MiB/resource、512 MiB/session；已关闭 |
+| S3A-09 | PreparedPlayback candidate token、adapter prepare、Playback commit、no-fail activation 和 discard | opaque token + pre-commit prepare + noexcept activate；已关闭 |
+| S3A-10 | Transparent 深度 key/tie、无活动相机、非有限矩阵、空帧和全不可见帧规则 | AABB center、1/4096 m key、ObjectId tie、empty success；已关闭 |
+| S3A-11 | PresentationCapabilities/Request/EffectiveSettings 与现有 PlaybackCapabilitySet 的职责分离 | adapter facts separate from Chart/Runtime capabilities；已关闭 |
+| S3A-12 | 稳定 error/diagnostic code 表、SDK API 版本、FrameDigest 新版本和 package component topology | SDK 0.5.0、Digest v3、无 OpenGL install component；已关闭 |
 
 3A 的规范性交付物固定为：
 
@@ -347,6 +359,9 @@ docs/stage_plans/stage_3_implementation_plan.md
 API sketch 是文档代码块，不是 public header。3A 完成时应先把上述文档交给用户确认；确认前停止，
 不自动进入 3B。
 
+本轮没有修改 ADR 0037，因为提案没有替换其已接受的架构方向；精确值只有在项目所有者接受后才
+成为规范。接受后应把本文 S3A-01..S3A-12 标为已关闭，并将 3B 标为进行中。
+
 验收目标：
 
 - ADR、API sketch、格式表、预算表、错误 code 表和包拓扑不存在未决的公共语义。
@@ -356,7 +371,7 @@ API sketch 是文档代码块，不是 public header。3A 完成时应先把上�
 
 ### 3B：Portable resource 与候选 manifest
 
-状态：未开始。
+状态：已于 2026-08-07 完成并关闭。
 
 目标：把 opaque Mesh/Material/Texture blob 转换成经验证、拥有型、后端无关的 portable resource，
 并在 Playback commit 前发布候选 manifest。
@@ -383,9 +398,21 @@ API sketch 是文档代码块，不是 public header。3A 完成时应先把上�
 - 失败 reload 不改变旧 manifest、旧 FrameSnapshot 生成结果或已激活 cache。
 - 资源解析/规范化有独立 allocation 与内存预算；不在每帧 update 中重复解析。
 
+关闭证据（2026-08-07，本地 Windows/MSVC）：
+
+- Windows/MSVC static Debug 全量 260 项通过；Windows symlink containment 测试按既有平台条件
+  跳过。static/shared Playback、allocation 与 Player diagnostics 组，以及 add_subdirectory/
+  find_package external consumer 已通过。
+- Windows/MSVC static Release 完整构建通过；3C/architecture 筛选 12 项和五个 external/package
+  consumer 通过。
+- `cuexis_format_check`、直接 `clang-tidy`、公共头 ASCII 扫描和 `git diff --check` 已通过。
+  `clangd --check` 无源码诊断；仅报告其既有 tweak 重构动作自检失败。
+- 以上均为本地 Windows 证据，不关闭 Stage 2 hosted Linux GCC/Clang、sanitizer 与 package
+  consumer run URL 门禁。
+
 ### 3C：FrameSnapshot 与共同表现提取
 
-状态：未开始。
+状态：已于 2026-08-07 关闭。
 
 目标：让 Snapshot 完整引用真实绘制所需资源，并建立 Validation/OpenGL 共用的确定表现提取规则。
 
@@ -408,9 +435,25 @@ API sketch 是文档代码块，不是 public header。3A 完成时应先把上�
 - warmed-up update/extract 不增加动态分配；resource acquisition 不混入每帧热路径。
 - 公共头 ASCII、依赖 allowlist、导出符号和 shared boundary 门禁通过。
 
+关闭结果：
+
+- `ObjectSnapshot` 已增加 optional owning Mesh/Material `PresentationResourceRef`；prepare 为初始
+  Material 和全部 Material Step 候选建立 ref 表并预留 AssetId 容量。
+- 共同 normalizer 只消费 Snapshot、manifest 和 owning portable resources，严格校验 ref/type/
+  identity/manifest membership 与 Material -> Texture2D 依赖，生成 effective RGB/alpha、固定
+  raster state、Opaque/Transparent pass、AABB-center depth 和规范化排序记录。
+- Opaque 按 Object ID raw ASCII 升序；Transparent 按 1/4096 m depth key 降序、Object ID 升序；
+  全不可见/空帧无需 active Camera 并产生空记录。
+- FrameDigest 默认算法已升级为 v3，新增 Mesh/Material ref presence、type、AssetId 和 32-byte
+  identity；v1/v2 实现与 golden 保持不变。
+- Stage 3 fixture 覆盖 Material Step、opacity/tint、Visibility、Stop、Seek、Reload 与生命周期；
+  warmed update/extract/normalize 保持零分配。
+- 3C 关闭时 Validation Sink 尚属于 3D；该批次现已单独完成。OpenGL adapter 和 Player 真实绘制
+  已在 3E 作为第二个独立 consumer 完成。
+
 ### 3D：无 GPU Validation Sink
 
-状态：未开始。
+状态：已于 2026-08-08 完成并关闭。
 
 目标：建立 Stage 3 的第一个独立 consumer，在无窗口、无 SDL、无 OpenGL 环境验证完整表现合同。
 
@@ -432,9 +475,45 @@ API sketch 是文档代码块，不是 public header。3A 完成时应先把上�
 - 缺少 Opaque/Transparent 必需能力时在 commit 前失败；关闭 Debug 只改变 effective setting。
 - 规范化 summary 成为 OpenGL adapter parity 的独立 oracle，而不是复制 OpenGL 实现。
 
+关闭结果：
+
+- `PreparedPlayback::validatePresentation()` 已作为 public Playback API 实现 version/profile、Portable
+  v1 七项必需语义能力和 resource/decoded/texture/mesh limits 的 preflight。Debug 是唯一可降级
+  capability；unsupported Debug 返回 warning 和 disabled effective setting。
+- `tests/presentation/validation_sink.hpp/.cpp` 是不安装的 public-only consumer。它只包含 Cuexis
+  Core/Playback 公共头，独立重新计算 SHA-256 semantic identity，并校验 manifest/resource type、
+  ref、identity、Material -> Texture2D dependency、count/byte/dimension budget 和规范顺序。
+- Validation candidate 在 Playback commit 前获取 owning resources；commit 成功后通过 `noexcept`
+  activation 切换。stale Playback candidate 失败不会替换当前 Sink token 或发布半状态。
+- frame validation 输出 versioned、bounded `ValidationSummary`，包含 viewport/camera/clear、effective
+  color/alpha、depth/cull/blend、Opaque/Transparent canonical order 和 optional Debug setting；summary
+  使用 domain-separated FNV-1a 64-bit digest。非法帧先清空 destination，失败时不留下 partial commands。
+- `cuexis_presentation_validation_tests` 是独立 Catch2/CTest target，已注册 active target 与 dependency
+  allowlist；`playback_allocation_tests` 证明 warmup 后连续 128 次 Validation Sink frame validation 为
+  零动态分配。
+- add_subdirectory 与 find_package external consumer 已从 Stage 3 fixture 执行
+  prepare -> validation -> commit -> activate -> update/extract -> summary，并固定 ValidationSummary
+  digest golden `18316288860163381829`；FrameDigest v3 external consumer golden 为
+  `6442711505793857933`。find_package 路径只使用干净安装目录中的公共头和库。
+
+关闭证据（2026-08-08，本地 Windows/MSVC）：
+
+- static Debug 全量 CTest 270/270 通过；Windows symlink containment 测试按既有平台条件跳过。
+- shared Debug 全量 CTest 272/272 通过，包含 shared export/import、3D focused tests 与
+  add_subdirectory/find_package external consumer。
+- `headless-debug --fresh` 237/237 通过；Windows symlink containment 测试按既有平台条件跳过，且
+  配置不启用 SDL/OpenGL adapter。
+- static Release fresh/clean build 与全量 CTest 270/270 通过，包含 3D/external/architecture、static
+  add_subdirectory 与 find_package external consumer。
+- `cuexis_format_check`、公共安装头 ASCII 扫描和 `git diff --check` 通过；直接 `clang-tidy` 检查
+  `open_gl_presentation.cpp`、`player_app.cpp` 与 `math.cpp` 以 0 退出；`clangd --check` 对相同
+  文件在关闭 tweak 自测后均为 0 errors。
+- Stage 2 hosted Linux GCC/Clang、sanitizer 与 package consumer run URL 仍未关闭，因此 3D 关闭
+  不等于 Stage 3 完成；该门禁仍必须在 3G 前关闭。
+
 ### 3E：OpenGL adapter 与 Player 真实绘制
 
-状态：未开始。
+状态：已于 2026-08-08 完成并关闭。
 
 目标：把现有 Debug Line-only 路径升级为 Stage 3 的第二个 consumer，并保持图形 API 隔离。
 
@@ -459,9 +538,38 @@ API sketch 是文档代码块，不是 public header。3A 完成时应先把上�
 - GPU smoke 覆盖正常、全透明、全不可见、无活动对象、成功 reload 和失败 reload。
 - 加入可复核像素/离屏结果或规范化 draw summary golden；只统计“三帧完成”不足以证明真实材质正确。
 
+关闭结果：
+
+- `cuexis_render_opengl` 已实现 move-only candidate manifest/acquisition、Mesh VAO/VBO/IBO、RGBA8
+  linear/sRGB Texture2D、固定 GLSL 330 Unlit pipeline、Opaque/Transparent depth/blend/cull 状态、
+  canonical draw order、Debug Pass、draw summary 和中心像素 probe。
+- OpenGL adapter 的 prepare/commit/activate/discard 事务只发布完整 GPU cache；上传、shader、capability
+  或 Playback reload 失败时保留旧 cache，退休 GPU 对象延迟到 context current 时销毁。
+- Player 已只消费 `FrameSnapshot` 和 public Playback candidate/acquisition，并以
+  `assets/projects/stage3_project` 执行六帧真实 presentation smoke：Opaque、textured Transparent、
+  全不可见 clear、Playback reload 失败、adapter prepare 失败和成功原子切换。
+- Validation Sink 与 OpenGL adapter 对同一 fixture 产生相同 summary golden
+  `18316288860163381829`；FrameDigest v3 external consumer golden 为 `6442711505793857933`。
+- `core::makePerspective()` 已修正 OpenGL projection 的 perspective divide/depth translation 位置，
+  并以 near/far plane 映射到 canonical NDC `[-1,+1]` 的单元测试固定合同。
+- Debug/Release GPU smoke 均记录 OpenGL 3.3.0、NVIDIA Corporation、GeForce RTX 4060 Laptop GPU；
+  代表像素为 Opaque `{255,204,51,255}`、textured Transparent `{51,32,71,192}`，全不可见帧保持
+  clear color `{14,16,18,255}`。
+
+关闭证据（2026-08-08，本地 Windows/MSVC）：
+
+- `headless-debug --fresh` 构建和 237/237 CTest、shared Debug 构建和 272/272 CTest、Release
+  fresh/clean 构建和 270/270 CTest 均通过。
+- `cuexis_format_check`、public installed header ASCII 扫描、`git diff --check`、直接
+  `clang-tidy` 和 `clangd --check` 均通过；Windows symlink containment 测试按既有平台条件跳过。
+- Debug/Release GPU smoke 均完成 6 帧并通过像素、summary、失败保留旧 cache 和成功 reload 断言。
+
+Stage 2 hosted Linux GCC/Clang、sanitizer 与 package consumer run URL 仍是开放跨平台发布门禁；
+3F 的关闭结果见下节，3G 本地结果见 3G 小节与完成报告。
+
 ### 3F：安装包与 external consumer
 
-状态：未开始。
+状态：已于 2026-08-08 完成并关闭。
 
 目标：证明 Stage 3 不是 Player 私有功能，并保持 adapter-disabled Playback package 的最小闭包。
 
@@ -469,8 +577,8 @@ API sketch 是文档代码块，不是 public header。3A 完成时应先把上�
 
 - 更新 static/shared add_subdirectory 与 find_package consumer，读取 manifest/resource/Snapshot。
 - consumer 自己实现 Validation Sink 或最小 host adapter，不包含内部 Assets/Render headers。
-- 若 3A 接受 OpenGL component，增加独立 component install、依赖发现、干净 staging、runtime
-  closure 和许可证测试；未请求 component 时不得发现 SDL/OpenGL。
+- 按 3A 已接受的 package 拓扑保持 OpenGL component 不安装；验证基础包不发现 SDL/OpenGL，且
+  显式请求未支持的 `OpenGL` component 会被拒绝。
 - 扩展 public header ASCII、第三方泄漏、导出符号、import library 和 package version 检查。
 - 验证旧最低版本 consumer 被 package compatibility 规则正确接受或拒绝。
 
@@ -482,9 +590,39 @@ API sketch 是文档代码块，不是 public header。3A 完成时应先把上�
   parity 通过。
 - 安装的 component、generated version、licenses 和 THIRD_PARTY_NOTICES 与实际闭包一致。
 
+关闭结果：
+
+- 新增 `add_subdirectory_playback` 与 `find_package_playback` 两个最小宿主模式；二者共用只包含
+  Core/Playback public header 的 consumer，从 consumer work dir 中的独立 `stage3_project` staging
+  fixture 完成 candidate/active manifest、owning Mesh/Texture2D/Unlit Material acquisition、capability
+  preflight、commit/update/extract、FrameDigest v3 parity 和 unload 后资源存活验证；`625 ms` 的
+  digest golden 固定为 `8424169740673868033`。
+- `find_package_playback` 只链接 `Cuexis::Playback`，不显式请求 Content/Audio。基础包继续不安装
+  Platform、RenderOpenGL、内部 Runtime/World/Assets header 或 OpenGL component，也不发现 SDL3、
+  OpenGL 或 GLAD；显式 `COMPONENTS OpenGL` 配置稳定失败。
+- external package 门禁使用 clean staging，精确核对基础包的 EnTT、GLM、JSON Schema Validator、
+  nlohmann-json 与 tl-expected notices；只有 AudioSDL 安装额外包含 SDL3 notice。`0.4` 与 `0.6`
+  package 请求按当前 `0.5` same-minor preview 规则稳定拒绝。
+- shared export 门禁覆盖 `presentationManifest`、`acquirePresentationResource` 和
+  `validatePresentation`。Playback-only EXE 只直接导入 Playback/Core DLL；Playback DLL 只导入
+  Audio/Content/Core，EXE 与 DLL 均不导入 SDL、GLAD 或内部 Runtime DLL。
+
+关闭证据（2026-08-08，本地 Windows/MSVC）：
+
+- standard Debug fresh configure/build 与 272/272 CTest、headless Debug fresh configure/build 与
+  239/239 CTest、static Release 272/272 CTest、shared Debug 275/275 CTest 均通过；Windows symlink
+  containment 测试按既有平台条件跳过。
+- 七个 external/package consumer 在 static、headless 与 shared 路径通过；shared export surface、
+  通用 shared consumer imports 和 Playback-only consumer imports 全部通过。
+- `cuexis_format_check`、源码与 clean install public header ASCII 扫描、未跟踪文本尾随空白扫描和
+  `git diff --check` 通过；Playback-only consumer 的直接 `clang-tidy` 与 `clangd --check` 均为
+  0 errors。
+- Stage 2 hosted Linux GCC/Clang、sanitizer 与 package consumer run URL 仍是 3G 前的开放门禁；
+  3F 关闭不等于 Stage 3 完成，也不授权自动进入 3G。
+
 ### 3G：全链路、性能与跨平台验收
 
-状态：未开始。
+状态：本地验收完成；当前实现分支的 hosted Linux run URL 待补，Stage 3 尚未最终关闭。
 
 任务：
 
@@ -509,6 +647,24 @@ API sketch 是文档代码块，不是 public header。3A 完成时应先把上�
 - GPU 结果验证真实 Mesh/Texture/alpha，而不只是窗口和三帧循环。
 - 所有外部 package、架构、ASCII、license 和 adapter-disabled 门禁通过。
 
+本地验收结果（2026-08-08）：
+
+- Windows/MSVC standard Debug 与 Release 最终格式化后均通过 `272/272` CTest；3B-3F 已完成的
+  static/shared、headless、adapter-disabled 和七种 external consumer 矩阵保持通过。Windows
+  symlink containment 测试按既有平台条件跳过。
+- Debug/Release 六帧 GPU smoke 在 NVIDIA GeForce RTX 4060 Laptop GPU、driver 596.36、OpenGL
+  3.3.0 上通过真实 Mesh、Texture2D、alpha、empty frame、失败保留旧 cache 和成功 reload 断言。
+- 最大合法 Texture2D performance probe 覆盖 prepare、manifest/acquisition、Validation candidate、
+  warmed update/extract/validate、OpenGL cache submit 和 reload peak memory；墙钟结果只作为趋势证据。
+- WSL Ubuntu 的 GCC headless Release `237/237`、GCC shared Release `238/238`、Clang shared Debug
+  `238/238`、Clang ASan+UBSan `237/237`、Playback clang-tidy 和 GCC coverage `230/230` 通过；
+  coverage 为 lines `76.3%`、functions `91.1%`、branches `40.5%`。
+- `cuexis_format_check`、`git diff --check`、public installed header ASCII、architecture、export/import、
+  component/version rejection 和 license 门禁通过。精确证据与残余风险见
+  [阶段 3 验收报告](../stage_reports/stage_3_completion_report.md)。
+- `codex/stage-3` 当前没有 upstream，工作树尚未提交或推送，因此没有包含本次实现的 hosted Linux
+  run URL。本地 WSL 不替代 hosted `ubuntu-latest`；完成定义第 8 项保持开放。
+
 ## 6. 测试矩阵
 
 | 范围 | 必须覆盖 |
@@ -531,7 +687,7 @@ API sketch 是文档代码块，不是 public header。3A 完成时应先把上�
 ## 7. 版本、Digest 与兼容性
 
 - `FrameSnapshot`、resource acquisition 或 package component 的公共变化必须评审
-  `CUEXIS_SDK_API_VERSION`；当前 `0.4.0` 不能静默承载不兼容字段变化。
+  `CUEXIS_SDK_API_VERSION`；3B 首次加入 public acquisition 时已提升到 `0.5.0`。
 - 新 FrameDigest 使用新的 algorithm version。旧 version 1/2 定义和 golden 保留，用于历史 fixture
   与兼容测试。
 - 新 digest 必须包含影响 portable presentation 的 Object/Camera/resource semantic identity，排除
@@ -600,9 +756,13 @@ stage_3_completion_report.md（仅在全部门禁后创建）
 1. 阅读仓库 `AGENTS.md`、ADR 0037、本计划第 0、3、4、5 节，以及当前
    Playback/Assets/Runtime/Render/OpenGL/Player 落点；不要重新讨论已经接受的单一 Snapshot、
    Portable v1、无相机覆盖和固定 Pass 边界。
-2. 核对工作树和 Stage 2 hosted Linux 状态；没有 run URL 时继续明确记录为开放门禁。
-3. 只启动 3A，创建 `docs/PORTABLE_PRESENTATION.md`，逐项关闭 S3A-01..S3A-12。
-4. 用文档 API sketch 验证 owning、owner-thread、stale candidate、reload rollback、adapter no-fail
-   activation 和旧 Snapshot/resource 生命周期；不得通过编写 header 来探索接口。
-5. 把 3A 决策、仍有分歧的选项和推荐理由提交用户确认。没有确认时停止，不进入 C++ 实现。
-6. 用户接受 3A 后，才把 3B 标为进行中，并按 3B -> 3G 顺序逐批实现和验证。
+2. 提交并推送当前实现分支，等待 `.github/workflows/linux-quality.yml` 的 GCC/Clang、sanitizer、
+   clang-tidy、coverage 与 package consumer 全部结束；只记录当前实现 commit 的 run URL。
+3. 核对 3B/3C 已关闭实现：candidate/active manifest、owning acquisition、Snapshot portable refs、
+   common normalizer、FrameDigest v3、historical digest golden 和零分配门禁。
+4. 核对 3D 已关闭实现：public capability preflight、public-only Validation Sink、independent semantic
+   identity validation、transactional candidate activation、normalized summary golden 和 warmed 零分配。
+5. 核对 3E/3F 已关闭实现：OpenGL adapter 与 Player 真实绘制、Playback-only
+   add_subdirectory/find_package consumer、clean install、version/component rejection、license 和
+   shared export/import 闭包；不得把 Validation Sink、OpenGL component 或内部 normalizer header
+   安装给宿主。3G 本地证据见阶段 3 验收报告；hosted run 通过前不得宣布 Stage 3 最终完成。

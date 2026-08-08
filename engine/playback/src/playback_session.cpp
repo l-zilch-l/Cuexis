@@ -3,6 +3,7 @@
 #include <cuexis/playback/playback_session.hpp>
 
 #include "playback_source_state.hpp"
+#include "presentation_internal.hpp"
 
 #include <cuexis/assets/asset_database.hpp>
 #include <cuexis/assets/resource_manager.hpp>
@@ -27,7 +28,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <exception>
+#include <map>
 #include <memory>
+#include <new>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -87,6 +90,9 @@ void addErrorDiagnostic(core::Diagnostics& diagnostics, const core::Error& error
 struct SnapshotEntity final {
     chart::ChartObjectId id;
     entt::entity entity{entt::null};
+    std::optional<PresentationResourceRef> mesh;
+    std::map<std::string, PresentationResourceRef, std::less<>> materials;
+    std::size_t maximumMeshAssetIdSize{};
     std::size_t maximumMaterialAssetIdSize{};
 };
 
@@ -105,6 +111,91 @@ struct SnapshotLayout final {
     return core::Error{"playback.session.reentrant",
                        "PlaybackSession cannot be re-entered while an operation is active"}
         .withContext("operation", std::string{operation});
+}
+
+[[nodiscard]] auto presentationResourceTypeName(PresentationResourceType type) noexcept
+    -> std::string_view {
+    switch (type) {
+    case PresentationResourceType::Mesh:
+        return "mesh";
+    case PresentationResourceType::Texture2D:
+        return "texture2d";
+    case PresentationResourceType::UnlitMaterial:
+        return "unlit_material";
+    }
+    return "unknown";
+}
+
+constexpr std::size_t maxPresentationDiagnostics = 1024;
+
+[[nodiscard]] auto presentationDiagnostics() -> core::Diagnostics {
+    return core::Diagnostics{
+        maxPresentationDiagnostics,
+        core::Diagnostic{core::DiagnosticSeverity::Error,
+                         "playback.presentation.diagnostics.limit_exceeded",
+                         "Presentation diagnostics reached the configured limit", "$"}
+            .withContext("max_diagnostics", std::to_string(maxPresentationDiagnostics))};
+}
+
+void addPresentationDiagnostic(core::Diagnostics& diagnostics, core::DiagnosticSeverity severity,
+                               std::string code, std::string message, std::string fieldPath,
+                               std::string capability = {}, std::string actual = {},
+                               std::string limit = {}) {
+    auto diagnostic =
+        core::Diagnostic{severity, std::move(code), std::move(message), std::move(fieldPath)};
+    if (!capability.empty()) {
+        diagnostic.withContext("capability", std::move(capability));
+    }
+    if (!actual.empty()) {
+        diagnostic.withContext("actual", std::move(actual));
+    }
+    if (!limit.empty()) {
+        diagnostic.withContext("limit", std::move(limit));
+    }
+    diagnostics.add(std::move(diagnostic));
+}
+
+void addMissingPresentationCapability(core::Diagnostics& diagnostics, std::string_view capability,
+                                      std::string_view fieldPath) {
+    addPresentationDiagnostic(diagnostics, core::DiagnosticSeverity::Error,
+                              "playback.presentation.capability.required_missing",
+                              "Portable presentation requires an unsupported adapter capability",
+                              std::string{fieldPath}, std::string{capability});
+}
+
+void addInsufficientPresentationLimit(core::Diagnostics& diagnostics, std::string_view capability,
+                                      std::uint64_t limit, std::uint64_t actual,
+                                      std::string_view fieldPath) {
+    addPresentationDiagnostic(diagnostics, core::DiagnosticSeverity::Error,
+                              "playback.presentation.capability.limit_insufficient",
+                              "Adapter presentation limit is below the candidate requirement",
+                              std::string{fieldPath}, std::string{capability},
+                              std::to_string(actual), std::to_string(limit));
+}
+
+[[nodiscard]] auto snapshotResourceMismatch(std::string_view objectId, std::string_view assetId,
+                                            PresentationResourceType type) -> core::Error {
+    return core::Error{"playback.presentation.frame.resource_mismatch",
+                       "Snapshot presentation resource could not be resolved"}
+        .withContext("object_id", std::string{objectId})
+        .withContext("asset_id", std::string{assetId})
+        .withContext("resource_type", std::string{presentationResourceTypeName(type)});
+}
+
+void assignPresentationReference(std::optional<PresentationResourceRef>& destination,
+                                 const PresentationResourceRef& source,
+                                 std::size_t assetIdCapacity) {
+    if (!destination) {
+        destination.emplace();
+    }
+    if (destination->assetId.capacity() < assetIdCapacity) {
+        destination->assetId.reserve(assetIdCapacity);
+    }
+    destination->type = source.type;
+    if (destination->assetId != source.assetId) {
+        destination->assetId = source.assetId;
+    }
+    destination->identity = source.identity;
 }
 
 class SessionOperation final {
@@ -222,7 +313,8 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
 }
 
 [[nodiscard]] auto buildSnapshotLayout(runtime::RuntimeSession& session,
-                                       const chart::ChartRuntime& chartRuntime)
+                                       const chart::ChartRuntime& chartRuntime,
+                                       const detail::PreparedPresentation* presentation)
     -> core::Result<SnapshotLayout> {
     SnapshotLayout layout;
     layout.entities.reserve(chartRuntime.objects.size());
@@ -236,8 +328,47 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
                                                 "Runtime object mapping is incomplete"}
                                         .withContext("object_id", object.id.value));
         }
-        std::size_t maximumMaterialAssetIdSize =
-            object.components.renderable ? object.components.renderable->material.value.size() : 0;
+        SnapshotEntity snapshotEntity{
+            .id = object.id,
+            .entity = **entity,
+            .mesh = std::nullopt,
+            .materials = {},
+            .maximumMeshAssetIdSize = 0,
+            .maximumMaterialAssetIdSize = 0,
+        };
+        if (object.components.renderable) {
+            snapshotEntity.maximumMeshAssetIdSize = object.components.renderable->mesh.value.size();
+            snapshotEntity.maximumMaterialAssetIdSize =
+                object.components.renderable->material.value.size();
+            if (presentation != nullptr) {
+                const auto* mesh = detail::findPresentationResource(
+                    *presentation, object.components.renderable->mesh.value,
+                    PresentationResourceType::Mesh);
+                if (mesh == nullptr) {
+                    return core::unexpected(snapshotResourceMismatch(
+                        object.id.value, object.components.renderable->mesh.value,
+                        PresentationResourceType::Mesh));
+                }
+                snapshotEntity.mesh = (*mesh)->reference;
+
+                const auto addMaterial = [&](std::string_view assetId) -> core::Result<void> {
+                    const auto* material = detail::findPresentationResource(
+                        *presentation, assetId, PresentationResourceType::UnlitMaterial);
+                    if (material == nullptr) {
+                        return core::unexpected(snapshotResourceMismatch(
+                            object.id.value, assetId, PresentationResourceType::UnlitMaterial));
+                    }
+                    snapshotEntity.maximumMaterialAssetIdSize =
+                        std::max(snapshotEntity.maximumMaterialAssetIdSize, assetId.size());
+                    snapshotEntity.materials.emplace(std::string{assetId}, (*material)->reference);
+                    return {};
+                };
+                if (auto added = addMaterial(object.components.renderable->material.value);
+                    !added) {
+                    return core::unexpected(std::move(added.error()));
+                }
+            }
+        }
         if (object.components.behavior) {
             const auto behavior =
                 std::lower_bound(chartRuntime.behaviors.begin(), chartRuntime.behaviors.end(),
@@ -252,17 +383,26 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
                     }
                     for (const auto& event : track.events) {
                         if (const auto* material = std::get_if<chart::AssetId>(&event.value)) {
-                            maximumMaterialAssetIdSize =
-                                std::max(maximumMaterialAssetIdSize, material->value.size());
+                            snapshotEntity.maximumMaterialAssetIdSize = std::max(
+                                snapshotEntity.maximumMaterialAssetIdSize, material->value.size());
+                            if (presentation != nullptr && object.components.renderable) {
+                                const auto* resource = detail::findPresentationResource(
+                                    *presentation, material->value,
+                                    PresentationResourceType::UnlitMaterial);
+                                if (resource == nullptr) {
+                                    return core::unexpected(snapshotResourceMismatch(
+                                        object.id.value, material->value,
+                                        PresentationResourceType::UnlitMaterial));
+                                }
+                                snapshotEntity.materials.emplace(material->value,
+                                                                 (*resource)->reference);
+                            }
                         }
                     }
                 }
             }
         }
-        layout.entities.push_back(
-            SnapshotEntity{.id = object.id,
-                           .entity = **entity,
-                           .maximumMaterialAssetIdSize = maximumMaterialAssetIdSize});
+        layout.entities.push_back(std::move(snapshotEntity));
     }
 
     auto camera = session.withWorld(
@@ -317,6 +457,8 @@ struct PlaybackSession::State final {
     SessionState sessionState{SessionState::Empty};
     bool operationActive{};
     PlaybackCapabilitySet capabilities;
+    std::optional<detail::PreparedPresentation> presentation;
+    std::uint64_t nextCandidateGeneration{1};
 };
 
 struct PreparedPlayback::State final {
@@ -337,10 +479,13 @@ struct PreparedPlayback::State final {
     core::Diagnostics lastOperationDiagnostics;
     std::optional<RuntimeFrame> targetFrame;
     SessionState committedState{SessionState::Ready};
+    std::optional<detail::PreparedPresentation> presentation;
+    std::uint64_t candidateGeneration{};
 };
 
 static_assert(std::is_nothrow_move_assignable_v<core::Diagnostics>);
 static_assert(std::is_nothrow_move_assignable_v<PlaybackContentInfo>);
+static_assert(std::is_nothrow_move_assignable_v<detail::PreparedPresentation>);
 
 PreparedPlayback::PreparedPlayback() noexcept = default;
 
@@ -386,6 +531,220 @@ std::optional<MainMusicSourceView> PreparedPlayback::mainMusicSource() const noe
     const auto& source = state_->audioSourceLease->resource();
     return MainMusicSourceView{source.id.value, state_->contentInfo.timingOffsetMs,
                                source.blob->providerRevision, source.bytes()};
+}
+
+auto PreparedPlayback::presentationCandidateToken() const
+    -> core::Result<PresentationCandidateToken> {
+    if (!state_ || !state_->ownerThread.isCurrent()) {
+        return core::unexpected(core::Error{
+            "playback.prepared.invalid", "PreparedPlayback is empty or belongs to another thread"});
+    }
+    if (!state_->presentation) {
+        return core::unexpected(
+            core::Error{"playback.presentation.resource.missing",
+                        "PreparedPlayback has no portable presentation candidate"});
+    }
+    PresentationCandidateToken token;
+    token.sessionToken_ = state_->ownerToken;
+    token.candidateGeneration_ = state_->candidateGeneration;
+    return token;
+}
+
+const PresentationResourceManifest* PreparedPlayback::presentationManifest() const noexcept {
+    if (!valid() || !state_->presentation) {
+        return nullptr;
+    }
+    return &state_->presentation->manifest;
+}
+
+auto PreparedPlayback::validatePresentation(const PresentationCapabilities& capabilities,
+                                            const PresentationRequest& request) const
+    -> PresentationValidationResult {
+    PresentationValidationResult result;
+    try {
+        result.diagnostics = presentationDiagnostics();
+        if (!state_ || !state_->ownerThread.isCurrent() || state_->runtimeSession == nullptr) {
+            addPresentationDiagnostic(
+                result.diagnostics, core::DiagnosticSeverity::Error, "playback.prepared.invalid",
+                "PreparedPlayback is empty or belongs to another thread", "$/prepared");
+            result.diagnostics.sortDeterministically();
+            return result;
+        }
+
+        if (capabilities.version != 1) {
+            addPresentationDiagnostic(result.diagnostics, core::DiagnosticSeverity::Error,
+                                      "playback.presentation.capability.version_unsupported",
+                                      "Presentation capability set version is unsupported",
+                                      "$/capabilities/version", "capabilities.version",
+                                      std::to_string(capabilities.version), "1");
+        }
+        if (request.version != 1) {
+            addPresentationDiagnostic(result.diagnostics, core::DiagnosticSeverity::Error,
+                                      "playback.presentation.capability.version_unsupported",
+                                      "Presentation request version is unsupported",
+                                      "$/request/version", "request.version",
+                                      std::to_string(request.version), "1");
+        }
+        if (capabilities.portableProfileVersion != 1) {
+            addPresentationDiagnostic(result.diagnostics, core::DiagnosticSeverity::Error,
+                                      "playback.presentation.capability.profile_unsupported",
+                                      "Adapter portable presentation profile is unsupported",
+                                      "$/capabilities/portableProfileVersion",
+                                      "capabilities.portable_profile",
+                                      std::to_string(capabilities.portableProfileVersion), "1");
+        }
+        if (request.portableProfileVersion != 1) {
+            addPresentationDiagnostic(result.diagnostics, core::DiagnosticSeverity::Error,
+                                      "playback.presentation.capability.profile_unsupported",
+                                      "Requested portable presentation profile is unsupported",
+                                      "$/request/portableProfileVersion",
+                                      "request.portable_profile",
+                                      std::to_string(request.portableProfileVersion), "1");
+        }
+
+        if (state_->presentation) {
+            if (!capabilities.opaquePass) {
+                addMissingPresentationCapability(result.diagnostics, "opaque_pass",
+                                                 "$/capabilities/opaquePass");
+            }
+            if (!capabilities.transparentPass) {
+                addMissingPresentationCapability(result.diagnostics, "transparent_pass",
+                                                 "$/capabilities/transparentPass");
+            }
+            if (!capabilities.linearTexture) {
+                addMissingPresentationCapability(result.diagnostics, "linear_texture",
+                                                 "$/capabilities/linearTexture");
+            }
+            if (!capabilities.srgbTexture) {
+                addMissingPresentationCapability(result.diagnostics, "srgb_texture",
+                                                 "$/capabilities/srgbTexture");
+            }
+            if (!capabilities.straightAlphaBlend) {
+                addMissingPresentationCapability(result.diagnostics, "straight_alpha_blend",
+                                                 "$/capabilities/straightAlphaBlend");
+            }
+            if (!capabilities.backFaceCulling) {
+                addMissingPresentationCapability(result.diagnostics, "back_face_culling",
+                                                 "$/capabilities/backFaceCulling");
+            }
+            if (!capabilities.doubleSided) {
+                addMissingPresentationCapability(result.diagnostics, "double_sided",
+                                                 "$/capabilities/doubleSided");
+            }
+
+            std::uint64_t maxResourceBytes = 0;
+            std::uint32_t maxTextureDimension = 0;
+            std::uint32_t maxMeshVertices = 0;
+            std::uint32_t maxMeshIndices = 0;
+            for (const auto& entry : state_->presentation->manifest.entries) {
+                maxResourceBytes = std::max(
+                    maxResourceBytes, std::max(entry.encodedByteCount, entry.decodedByteCount));
+            }
+            for (const auto& resource : state_->presentation->orderedResources) {
+                if (!resource) {
+                    continue;
+                }
+                if (const auto* texture = std::get_if<PortableTexture2D>(&resource->value)) {
+                    maxTextureDimension =
+                        std::max(maxTextureDimension, std::max(texture->width, texture->height));
+                } else if (const auto* mesh = std::get_if<PortableMesh>(&resource->value)) {
+                    maxMeshVertices = std::max(
+                        maxMeshVertices, static_cast<std::uint32_t>(mesh->positions.size() / 3U));
+                    maxMeshIndices =
+                        std::max(maxMeshIndices, static_cast<std::uint32_t>(mesh->indices.size()));
+                }
+            }
+
+            if (capabilities.maxResourceBytes < maxResourceBytes) {
+                addInsufficientPresentationLimit(result.diagnostics, "max_resource_bytes",
+                                                 capabilities.maxResourceBytes, maxResourceBytes,
+                                                 "$/capabilities/maxResourceBytes");
+            }
+            if (capabilities.maxTotalDecodedBytes <
+                state_->presentation->manifest.totalDecodedBytes) {
+                addInsufficientPresentationLimit(result.diagnostics, "max_total_decoded_bytes",
+                                                 capabilities.maxTotalDecodedBytes,
+                                                 state_->presentation->manifest.totalDecodedBytes,
+                                                 "$/capabilities/maxTotalDecodedBytes");
+            }
+            if (capabilities.maxTextureDimension < maxTextureDimension) {
+                addInsufficientPresentationLimit(
+                    result.diagnostics, "max_texture_dimension", capabilities.maxTextureDimension,
+                    maxTextureDimension, "$/capabilities/maxTextureDimension");
+            }
+            if (capabilities.maxMeshVertices < maxMeshVertices) {
+                addInsufficientPresentationLimit(result.diagnostics, "max_mesh_vertices",
+                                                 capabilities.maxMeshVertices, maxMeshVertices,
+                                                 "$/capabilities/maxMeshVertices");
+            }
+            if (capabilities.maxMeshIndices < maxMeshIndices) {
+                addInsufficientPresentationLimit(result.diagnostics, "max_mesh_indices",
+                                                 capabilities.maxMeshIndices, maxMeshIndices,
+                                                 "$/capabilities/maxMeshIndices");
+            }
+        }
+
+        bool debugPassEnabled = request.enableDebugPass;
+        if (request.enableDebugPass && !capabilities.debugPass) {
+            debugPassEnabled = false;
+            addPresentationDiagnostic(result.diagnostics, core::DiagnosticSeverity::Warning,
+                                      "playback.presentation.debug_unavailable",
+                                      "Requested optional Debug presentation pass is unavailable",
+                                      "$/request/enableDebugPass", "debug_pass", "unsupported");
+        }
+
+        result.diagnostics.sortDeterministically();
+        if (!result.diagnostics.hasErrors()) {
+            result.settings = EffectivePresentationSettings{
+                .version = 1, .portableProfileVersion = 1, .debugPassEnabled = debugPassEnabled};
+        }
+        return result;
+    } catch (const std::bad_alloc&) {
+        result.settings.reset();
+        result.diagnostics.clear();
+        result.diagnostics.add(core::Diagnostic{
+            core::DiagnosticSeverity::Error, "playback.presentation.diagnostics.limit_exceeded",
+            "Presentation validation could not allocate its bounded diagnostics", "$/prepared"});
+        return result;
+    } catch (const std::exception& exception) {
+        result.settings.reset();
+        result.diagnostics.clear();
+        result.diagnostics.add(core::Diagnostic{core::DiagnosticSeverity::Error,
+                                                "playback.presentation.prepare_failed",
+                                                "Presentation validation failed", "$/prepared"}
+                                   .withContext("exception", exception.what()));
+        return result;
+    } catch (...) {
+        result.settings.reset();
+        result.diagnostics.clear();
+        result.diagnostics.add(core::Diagnostic{core::DiagnosticSeverity::Error,
+                                                "playback.presentation.prepare_failed",
+                                                "Presentation validation failed", "$/prepared"});
+        return result;
+    }
+}
+
+auto PreparedPlayback::acquirePresentationResource(const PresentationResourceRef& reference) const
+    -> core::Result<PortableResourcePtr> {
+    if (!state_ || !state_->ownerThread.isCurrent()) {
+        return core::unexpected(core::Error{
+            "playback.prepared.invalid", "PreparedPlayback is empty or belongs to another thread"});
+    }
+    if (!state_->presentation) {
+        return core::unexpected(
+            core::Error{"playback.presentation.resource.missing",
+                        "PreparedPlayback has no portable presentation candidate"});
+    }
+    const auto* resource = detail::findPresentationResource(*state_->presentation, reference);
+    if (resource == nullptr) {
+        return core::unexpected(
+            core::Error{"playback.presentation.reference.invalid",
+                        "Portable presentation resource reference is not in the candidate manifest"}
+                .withContext("asset_id", reference.assetId)
+                .withContext("resource_type",
+                             std::string{presentationResourceTypeName(reference.type)}));
+    }
+    return *resource;
 }
 
 PlaybackSession::PlaybackSession() noexcept : PlaybackSession(allCapabilities()) {}
@@ -589,6 +948,13 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
                                                "RuntimeSession preparation produced errors",
                                                diagnostics));
     }
+    auto presentation = detail::preparePresentation(chartRuntime, resourceManager.get());
+    if (!presentation) {
+        addErrorDiagnostic(diagnostics, presentation.error());
+        diagnostics.sortDeterministically();
+        state_->lastOperationDiagnostics = diagnostics;
+        return core::unexpected(std::move(presentation.error()));
+    }
     if (auto committed = session->commit(std::move(*runtimePrepared.prepared)); !committed) {
         return core::unexpected(std::move(committed.error()));
     }
@@ -610,7 +976,8 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
         }
     }
 
-    auto snapshotLayout = buildSnapshotLayout(*session, chartRuntime);
+    const auto* preparedPresentation = presentation->has_value() ? &presentation->value() : nullptr;
+    auto snapshotLayout = buildSnapshotLayout(*session, chartRuntime, preparedPresentation);
     if (!snapshotLayout) {
         return core::unexpected(std::move(snapshotLayout.error()));
     }
@@ -632,10 +999,15 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
         chartRuntime.mainMusic ? std::optional<std::string>{chartRuntime.mainMusic->value}
                                : std::nullopt};
     prepared->audioSourceLease = std::move(audioSourceLease);
-    prepared->lastOperationDiagnostics = diagnostics;
-    prepared->diagnostics = std::move(diagnostics);
     prepared->targetFrame = committedFrame;
     prepared->committedState = replacement ? state_->sessionState : SessionState::Ready;
+    prepared->presentation = std::move(*presentation);
+    prepared->candidateGeneration = state_->nextCandidateGeneration++;
+    if (prepared->candidateGeneration == 0) {
+        prepared->candidateGeneration = state_->nextCandidateGeneration++;
+    }
+    prepared->diagnostics = std::move(diagnostics);
+    prepared->lastOperationDiagnostics = prepared->diagnostics;
     return PreparedPlayback{std::move(prepared)};
 }
 
@@ -679,6 +1051,7 @@ auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> 
     state_->diagnostics = std::move(candidate.diagnostics);
     state_->lastOperationDiagnostics = std::move(candidate.lastOperationDiagnostics);
     state_->sessionState = candidate.committedState;
+    state_->presentation = std::move(candidate.presentation);
     ++state_->generation;
     if (state_->generation == 0) {
         ++state_->generation;
@@ -796,6 +1169,12 @@ auto PlaybackSession::extractFrame(const FrameViewport& viewport, FrameSnapshot&
                 if (object.materialAssetId.capacity() < entry.maximumMaterialAssetIdSize) {
                     object.materialAssetId.reserve(entry.maximumMaterialAssetIdSize);
                 }
+                if (entry.mesh) {
+                    assignPresentationReference(object.mesh, *entry.mesh,
+                                                entry.maximumMeshAssetIdSize);
+                } else {
+                    object.mesh.reset();
+                }
                 if (object.id != entry.id.value) {
                     object.id = entry.id.value;
                 }
@@ -813,13 +1192,30 @@ auto PlaybackSession::extractFrame(const FrameViewport& viewport, FrameSnapshot&
                     if (object.materialAssetId != appearance.materialAssetId) {
                         object.materialAssetId = appearance.materialAssetId;
                     }
+                    if (entry.mesh) {
+                        const auto material = entry.materials.find(appearance.materialAssetId);
+                        if (material == entry.materials.end()) {
+                            return core::unexpected(
+                                snapshotResourceMismatch(entry.id.value, appearance.materialAssetId,
+                                                         PresentationResourceType::UnlitMaterial));
+                        }
+                        assignPresentationReference(object.material, material->second,
+                                                    entry.maximumMaterialAssetIdSize);
+                    } else {
+                        object.material.reset();
+                    }
                     object.materialOpacity = appearance.opacity;
                     object.materialTint[0] = appearance.tint.x;
                     object.materialTint[1] = appearance.tint.y;
                     object.materialTint[2] = appearance.tint.z;
                 } else {
+                    if (entry.mesh) {
+                        return core::unexpected(snapshotResourceMismatch(
+                            entry.id.value, "", PresentationResourceType::UnlitMaterial));
+                    }
                     object.visible = true;
                     object.materialAssetId.clear();
+                    object.material.reset();
                     object.materialOpacity = 1.0;
                     object.materialTint[0] = 1.0F;
                     object.materialTint[1] = 1.0F;
@@ -934,6 +1330,7 @@ auto PlaybackSession::unload() -> core::Result<void> {
     state_->activeChartInfo.reset();
     state_->activeContentInfo.reset();
     state_->activeMode.reset();
+    state_->presentation.reset();
     state_->sessionState = SessionState::Empty;
     ++state_->generation;
     if (state_->generation == 0) {
@@ -958,6 +1355,57 @@ auto PlaybackSession::chartInfo() const -> core::Result<ChartInfo> {
     auto info = *state_->activeChartInfo;
     info.resourceCount = state_->runtimeSession->resourceCount();
     return info;
+}
+
+auto PlaybackSession::presentationManifest() const -> core::Result<PresentationResourceManifest> {
+    if (!state_->ownerThread.isCurrent()) {
+        return core::unexpected(ownerError("presentation_manifest"));
+    }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("presentation_manifest"));
+    }
+    SessionOperation operation{state_->operationActive};
+    if (!state_->presentation) {
+        return core::unexpected(
+            core::Error{"playback.presentation.resource.missing",
+                        "PlaybackSession has no portable presentation manifest"});
+    }
+    try {
+        return state_->presentation->manifest;
+    } catch (const std::bad_alloc&) {
+        return core::unexpected(
+            core::Error{"playback.presentation.resource.budget_exceeded",
+                        "Portable presentation manifest copy could not be allocated"});
+    } catch (...) {
+        return core::unexpected(core::Error{"playback.presentation.prepare_failed",
+                                            "Portable presentation manifest copy failed"});
+    }
+}
+
+auto PlaybackSession::acquirePresentationResource(const PresentationResourceRef& reference) const
+    -> core::Result<PortableResourcePtr> {
+    if (!state_->ownerThread.isCurrent()) {
+        return core::unexpected(ownerError("acquire_presentation_resource"));
+    }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("acquire_presentation_resource"));
+    }
+    SessionOperation operation{state_->operationActive};
+    if (!state_->presentation) {
+        return core::unexpected(
+            core::Error{"playback.presentation.resource.missing",
+                        "PlaybackSession has no portable presentation resources"});
+    }
+    const auto* resource = detail::findPresentationResource(*state_->presentation, reference);
+    if (resource == nullptr) {
+        return core::unexpected(
+            core::Error{"playback.presentation.reference.invalid",
+                        "Portable presentation resource reference is not in the active manifest"}
+                .withContext("asset_id", reference.assetId)
+                .withContext("resource_type",
+                             std::string{presentationResourceTypeName(reference.type)}));
+    }
+    return *resource;
 }
 
 auto PlaybackSession::contentInfo() const -> core::Result<PlaybackContentInfo> {

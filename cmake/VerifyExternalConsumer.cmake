@@ -15,8 +15,10 @@ endforeach()
 
 set(supported_consumer_modes
     add_subdirectory
+    add_subdirectory_playback
     add_subdirectory_audio_sdl
     find_package
+    find_package_playback
     find_package_core
     find_package_audio_sdl
 )
@@ -58,10 +60,14 @@ endfunction()
 
 if(CUEXIS_CONSUMER_MODE STREQUAL "add_subdirectory")
     set(consumer_work_id a)
+elseif(CUEXIS_CONSUMER_MODE STREQUAL "add_subdirectory_playback")
+    set(consumer_work_id ap)
 elseif(CUEXIS_CONSUMER_MODE STREQUAL "add_subdirectory_audio_sdl")
     set(consumer_work_id as)
 elseif(CUEXIS_CONSUMER_MODE STREQUAL "find_package")
     set(consumer_work_id p)
+elseif(CUEXIS_CONSUMER_MODE STREQUAL "find_package_playback")
+    set(consumer_work_id pp)
 elseif(CUEXIS_CONSUMER_MODE STREQUAL "find_package_core")
     set(consumer_work_id pc)
 else()
@@ -72,6 +78,8 @@ endif()
 set(work_dir "${CUEXIS_BINARY_DIR}/ec/${consumer_work_id}")
 file(REMOVE_RECURSE "${work_dir}")
 file(MAKE_DIRECTORY "${work_dir}")
+set(fixture_dir "${work_dir}/fixture")
+file(COPY "${CUEXIS_SOURCE_DIR}/assets/projects/stage3_project" DESTINATION "${fixture_dir}")
 
 set(common_configure_arguments
     -G "${CUEXIS_GENERATOR}"
@@ -134,6 +142,7 @@ if(CUEXIS_CONSUMER_MODE MATCHES "^add_subdirectory")
         -B "${consumer_build_dir}"
         ${common_configure_arguments}
         "-DCUEXIS_SOURCE_DIR=${CUEXIS_SOURCE_DIR}"
+        "-DCUEXIS_FIXTURE_DIR=${fixture_dir}"
         "-DVCPKG_MANIFEST_DIR=${CUEXIS_SOURCE_DIR}"
         ${manifest_arguments}
     )
@@ -186,6 +195,7 @@ else()
         include/cuexis/playback/playback_export.hpp
         include/cuexis/playback/playback_session.hpp
         include/cuexis/playback/playback_source.hpp
+        include/cuexis/playback/presentation.hpp
         lib/cmake/Cuexis/CuexisConfig.cmake
         lib/cmake/Cuexis/CuexisConfigVersion.cmake
         lib/cmake/Cuexis/CuexisTargets.cmake
@@ -216,15 +226,35 @@ else()
     endforeach()
 
     foreach(internal_header_directory IN ITEMS
-            assets behavior chart filesystem gameplay json project render runtime world)
+            assets behavior chart filesystem gameplay json project render render_opengl runtime world)
         if(EXISTS "${package_prefix}/include/cuexis/${internal_header_directory}")
             message(FATAL_ERROR
                 "Cuexis package installed internal ${internal_header_directory} headers")
         endif()
     endforeach()
+    if(EXISTS "${package_prefix}/include/cuexis/platform")
+        message(FATAL_ERROR "Cuexis package installed platform adapter headers")
+    endif()
+    if(NOT package_audio_sdl AND EXISTS "${package_prefix}/include/cuexis/audio_sdl")
+        message(FATAL_ERROR "Base Cuexis package contains AudioSDL headers")
+    endif()
+    if(EXISTS "${package_prefix}/lib/cmake/Cuexis/CuexisRenderOpenGLTargets.cmake")
+        message(FATAL_ERROR "Cuexis package contains an unsupported OpenGL component")
+    endif()
 
     set(installed_targets_file "${package_prefix}/lib/cmake/Cuexis/CuexisTargets.cmake")
     file(READ "${installed_targets_file}" installed_targets)
+    file(READ "${package_prefix}/lib/cmake/Cuexis/CuexisConfig.cmake" installed_config)
+    foreach(forbidden_dependency IN ITEMS "Cuexis::RenderOpenGL" "Cuexis::PlatformSDL"
+            "glad::" "OpenGL::" "SDL3::")
+        if(installed_targets MATCHES "${forbidden_dependency}")
+            message(FATAL_ERROR "Cuexis package leaks ${forbidden_dependency} in CuexisTargets")
+        endif()
+    endforeach()
+    if(installed_config MATCHES "Cuexis::RenderOpenGL" OR installed_config MATCHES "glad::" OR
+       installed_config MATCHES "OpenGL::")
+        message(FATAL_ERROR "Cuexis package config leaks an unavailable adapter dependency")
+    endif()
     if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
         foreach(private_target_or_dependency IN ITEMS
                 "Cuexis::Internal" "EnTT::" "glm::" "nlohmann_json::"
@@ -291,6 +321,30 @@ else()
         endif()
     endif()
 
+    set(expected_license_files
+        entt-copyright.txt
+        glm-copyright.txt
+        json-schema-validator-copyright.txt
+        nlohmann-json-copyright.txt
+        tl-expected-copyright.txt
+    )
+    if(package_audio_sdl)
+        list(APPEND expected_license_files sdl3-copyright.txt)
+    endif()
+    file(GLOB installed_license_files RELATIVE
+        "${package_prefix}/share/Cuexis/licenses"
+        "${package_prefix}/share/Cuexis/licenses/*")
+    foreach(installed_license IN LISTS installed_license_files)
+        if(NOT installed_license IN_LIST expected_license_files)
+            message(FATAL_ERROR "Cuexis package installed an unexpected license file ${installed_license}")
+        endif()
+    endforeach()
+    foreach(expected_license IN LISTS expected_license_files)
+        if(NOT expected_license IN_LIST installed_license_files)
+            message(FATAL_ERROR "Cuexis package is missing license file ${expected_license}")
+        endif()
+    endforeach()
+
     file(GLOB installed_playback_headers
         "${package_prefix}/include/cuexis/playback/*.hpp")
     foreach(header IN LISTS installed_playback_headers)
@@ -333,9 +387,14 @@ else()
     list(APPEND consumer_configure_arguments
         -DVCPKG_MANIFEST_MODE=OFF
         "-DVCPKG_INSTALLED_DIR=${dependency_root}"
+        "-DCUEXIS_SOURCE_DIR=${CUEXIS_SOURCE_DIR}"
+        "-DCUEXIS_FIXTURE_DIR=${fixture_dir}"
     )
     if(CUEXIS_CONSUMER_MODE STREQUAL "find_package")
         set(consumer_source_dir "${CUEXIS_SOURCE_DIR}/tests/external/find_package")
+        set(component_arguments -DCMAKE_DISABLE_FIND_PACKAGE_SDL3=TRUE)
+    elseif(CUEXIS_CONSUMER_MODE STREQUAL "find_package_playback")
+        set(consumer_source_dir "${CUEXIS_SOURCE_DIR}/tests/external/find_package_playback")
         set(component_arguments -DCMAKE_DISABLE_FIND_PACKAGE_SDL3=TRUE)
     elseif(CUEXIS_CONSUMER_MODE STREQUAL "find_package_core")
         set(consumer_source_dir "${CUEXIS_SOURCE_DIR}/tests/external/find_package_core")
@@ -344,6 +403,34 @@ else()
         set(consumer_source_dir
             "${CUEXIS_SOURCE_DIR}/tests/external/find_package_audio_sdl")
         set(component_arguments)
+    endif()
+    if(CUEXIS_CONSUMER_MODE STREQUAL "find_package_playback")
+        foreach(invalid_version IN ITEMS 0.4 0.6)
+            cuexis_expect_configure_failure(
+                "Cuexis package version ${invalid_version} compatibility rejection"
+                "${CMAKE_COMMAND}"
+                -S "${consumer_source_dir}"
+                -B "${work_dir}/version-${invalid_version}"
+                ${consumer_configure_arguments}
+                "-DCUEXIS_FIND_VERSION=${invalid_version}"
+                "-DCuexis_DIR=${package_prefix}/lib/cmake/Cuexis"
+                "-DCMAKE_PREFIX_PATH=${dependency_prefix}"
+                "-DCUEXIS_EXPECTED_LIBRARY_TYPE=${CUEXIS_LIBRARY_TYPE}"
+                ${component_arguments}
+            )
+        endforeach()
+        cuexis_expect_configure_failure(
+            "Cuexis package OpenGL component rejection"
+            "${CMAKE_COMMAND}"
+            -S "${consumer_source_dir}"
+            -B "${work_dir}/unsupported-opengl-component"
+            ${consumer_configure_arguments}
+            -DCUEXIS_COMPONENTS=OpenGL
+            "-DCuexis_DIR=${package_prefix}/lib/cmake/Cuexis"
+            "-DCMAKE_PREFIX_PATH=${dependency_prefix}"
+            "-DCUEXIS_EXPECTED_LIBRARY_TYPE=${CUEXIS_LIBRARY_TYPE}"
+            ${component_arguments}
+        )
     endif()
     if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
         if(CUEXIS_BUILD_TYPE STREQUAL "Debug")

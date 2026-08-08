@@ -1,5 +1,6 @@
 #include <cuexis/core/math.hpp>
 
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 #include <limits>
@@ -88,4 +89,23 @@ TEST_CASE("Perspective matrix validates its complete public input contract", "[c
         std::numbers::pi / 2.0, 1.0, std::numeric_limits<double>::denorm_min(), 1.0);
     REQUIRE_FALSE(depthUnderflow.has_value());
     CHECK(depthUnderflow.error().code() == "core.math.perspective_not_representable");
+}
+
+TEST_CASE("Perspective matrix maps the view frustum to OpenGL canonical NDC", "[core][math]") {
+    constexpr double nearPlane = 0.1;
+    constexpr double farPlane = 1000.0;
+    const auto projection =
+        cuexis::core::makePerspective(std::numbers::pi / 3.0, 16.0 / 9.0, nearPlane, farPlane);
+    REQUIRE(projection.has_value());
+
+    const auto projectedDepth = [&projection](double viewZ) {
+        const double clipZ = static_cast<double>(projection->element(2, 2)) * viewZ +
+                             static_cast<double>(projection->element(2, 3));
+        const double clipW = static_cast<double>(projection->element(3, 2)) * viewZ +
+                             static_cast<double>(projection->element(3, 3));
+        return clipZ / clipW;
+    };
+
+    CHECK(projectedDepth(-nearPlane) == Catch::Approx(-1.0).margin(1.0e-6));
+    CHECK(projectedDepth(-farPlane) == Catch::Approx(1.0).margin(1.0e-6));
 }

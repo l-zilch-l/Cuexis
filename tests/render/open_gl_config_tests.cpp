@@ -24,6 +24,12 @@ auto dummyWindowConfig() -> cuexis::platform_sdl::WindowConfig {
 static_assert(!std::is_default_constructible_v<cuexis::render_opengl::OpenGlContextConfiguration>);
 static_assert(!std::is_copy_constructible_v<cuexis::render_opengl::OpenGlContextConfiguration>);
 static_assert(std::is_move_constructible_v<cuexis::render_opengl::OpenGlContextConfiguration>);
+static_assert(!std::is_default_constructible_v<cuexis::render_opengl::OpenGlPresentationCandidate>);
+static_assert(!std::is_copy_constructible_v<cuexis::render_opengl::OpenGlPresentationCandidate>);
+static_assert(
+    std::is_nothrow_move_constructible_v<cuexis::render_opengl::OpenGlPresentationCandidate>);
+static_assert(
+    std::is_nothrow_move_assignable_v<cuexis::render_opengl::OpenGlPresentationCandidate>);
 static_assert(!std::is_invocable_v<decltype(&cuexis::render_opengl::OpenGlBackend::create),
                                    cuexis::platform_sdl::SdlWindow&,
                                    const cuexis::render_opengl::OpenGlConfig&>);
@@ -33,6 +39,10 @@ static_assert(std::is_invocable_v<decltype(&cuexis::render_opengl::OpenGlBackend
 static_assert(
     std::is_same_v<decltype(std::declval<cuexis::render_opengl::OpenGlBackend&>().close()),
                    cuexis::core::Result<void>>);
+static_assert(noexcept(std::declval<cuexis::render_opengl::OpenGlBackend&>().activatePresentation(
+    std::declval<cuexis::render_opengl::OpenGlPresentationCandidate&&>())));
+static_assert(noexcept(std::declval<cuexis::render_opengl::OpenGlBackend&>().discardPresentation(
+    std::declval<cuexis::render_opengl::OpenGlPresentationCandidate&&>())));
 
 TEST_CASE("OpenGL configuration rejects invalid version components", "[render][opengl]") {
     auto runtime = cuexis::platform_sdl::SdlRuntime::create();

@@ -5,6 +5,8 @@ add_library(
     cuexis_render_opengl
     STATIC
         src/open_gl_backend.cpp
+        src/open_gl_presentation.cpp
+        src/open_gl_presentation_internal.hpp
 )
 add_library(cuexis::render_opengl ALIAS cuexis_render_opengl)
 
@@ -21,6 +23,7 @@ target_link_libraries(
     PUBLIC
         cuexis::render
         cuexis::platform_sdl
+        cuexis::playback
     PRIVATE
         glad::glad
         SDL3::SDL3

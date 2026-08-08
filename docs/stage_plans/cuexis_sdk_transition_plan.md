@@ -1,8 +1,8 @@
 # Cuexis SDK 改造与阶段路线调整方案
 
-状态：产品方向与阶段调整已接受；阶段 1C-1E 已完成验收；阶段 2 已完成实现与 Windows/MSVC 本地门禁（包括 GPU smoke），最终跨平台验收待 hosted Linux CI；阶段 3 公共方向与计划已接受但尚未实现；稳定 C ABI 延后到必选 Judgement/Replay 完成后的阶段 12
+状态：产品方向与阶段调整已接受；阶段 1C-1E 已完成验收；阶段 2 已完成实现与 Windows/MSVC 本地门禁（包括 GPU smoke），最终跨平台验收待 hosted Linux CI；阶段 3 的 3A-3F 与 3G 本地 Windows/WSL 验收已完成，当前实现分支的 hosted Linux 门禁待关闭；稳定 C ABI 延后到必选 Judgement/Replay 完成后的阶段 12
 规划日期：2026-07-20
-当前基线：[阶段 2 完成报告](../stage_reports/stage_2_completion_report.md)
+当前基线：[阶段 3 验收报告](../stage_reports/stage_3_completion_report.md)
 相关实施计划：[阶段 1C](stage_1c_implementation_plan.md)、[阶段 1D](stage_1d_implementation_plan.md)、[阶段 1E](stage_1e_implementation_plan.md)、[阶段 2](stage_2_implementation_plan.md)、[阶段 3](stage_3_implementation_plan.md)
 shared preview 边界：[ADR 0033](../adr/0033-cpp-shared-library-preview-boundary.md)
 Stage 3 公共合同：[ADR 0037](../adr/0037-stage-3-portable-presentation-contracts.md)
@@ -504,6 +504,14 @@ PreparedPlayback 候选 manifest、拥有型资源获取和 reload 原子性
 内建 OpenGL adapter 与 Player 真实 Mesh 绘制
 Opaque、Transparent、Debug 固定 Pass 和确定排序/能力诊断
 ```
+
+当前实现状态：3A 已冻结精确合同，3B 已交付 Portable v1 resource、candidate/active manifest 与
+owning acquisition，3C 已交付 Snapshot resource refs、共同表现提取和 FrameDigest v3，3D 已交付
+public capability preflight、public-only Validation Sink、normalized summary oracle 与 external consumer
+golden，3E 已交付 OpenGL candidate GPU cache、固定 Unlit pipeline、真实 Mesh/Texture 绘制和 Player
+六帧 smoke，3F 已交付 Playback-only add_subdirectory/find_package consumer、clean package/version/
+component/license 门禁和 shared export/import 闭包。3G 已完成 Windows/MSVC 与 WSL Linux 本地
+验收；当前实现分支的 hosted Linux run URL 仍是 Stage 3 最终关闭前的开放跨平台发布门禁。
 
 Light、Particle、UI、完整 RenderGraph、通用 Buffer/Pipeline、Shader、Reflection、Variant 和
 高级 Material authoring 不属于阶段 3；只有真实消费者和单独的契约评审存在时才进入后续阶段。

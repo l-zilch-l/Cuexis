@@ -7,6 +7,8 @@
 
 #include <cuexis/render_opengl/open_gl_backend.hpp>
 
+#include "open_gl_presentation_internal.hpp"
+
 #include <cuexis/core/error.hpp>
 #include <cuexis/platform_sdl/sdl_window.hpp>
 
@@ -456,6 +458,11 @@ auto OpenGlBackend::create(platform_sdl::SdlWindow& window,
     if (!pipelineResult) {
         return core::unexpected(std::move(pipelineResult.error()));
     }
+    auto presentationState = detail::createPresentationBackendState();
+    if (!presentationState) {
+        destroyDebugPipeline(*pipelineResult);
+        return core::unexpected(std::move(presentationState.error()));
+    }
     const DebugPipeline pipeline = *pipelineResult;
 
     return OpenGlBackend{std::move(windowLease),
@@ -465,17 +472,19 @@ auto OpenGlBackend::create(platform_sdl::SdlWindow& window,
                          pipeline.vertexArray,
                          pipeline.vertexBuffer,
                          pipeline.viewProjectionLocation,
+                         std::move(*presentationState),
                          config.logSink};
 }
 
 OpenGlBackend::OpenGlBackend(platform_sdl::SdlWindowLease window, void* context, OpenGlInfo info,
                              std::uint32_t debugProgram, std::uint32_t debugVertexArray,
                              std::uint32_t debugVertexBuffer, int viewProjectionLocation,
+                             std::unique_ptr<detail::OpenGlPresentationBackendState> presentation,
                              std::shared_ptr<const core::LogSink> logSink) noexcept
     : window_(std::move(window)), context_(context), info_(std::move(info)),
       logSink_(std::move(logSink)), debugProgram_(debugProgram),
       debugVertexArray_(debugVertexArray), debugVertexBuffer_(debugVertexBuffer),
-      viewProjectionLocation_(viewProjectionLocation) {}
+      viewProjectionLocation_(viewProjectionLocation), presentation_(std::move(presentation)) {}
 
 OpenGlBackend::~OpenGlBackend() {
     if (context_ != nullptr && (!SDL_IsMainThread() || !ownerThread_.isCurrent())) {
@@ -490,7 +499,8 @@ OpenGlBackend::OpenGlBackend(OpenGlBackend&& other) noexcept
       debugProgram_(std::exchange(other.debugProgram_, 0)),
       debugVertexArray_(std::exchange(other.debugVertexArray_, 0)),
       debugVertexBuffer_(std::exchange(other.debugVertexBuffer_, 0)),
-      viewProjectionLocation_(std::exchange(other.viewProjectionLocation_, -1)) {
+      viewProjectionLocation_(std::exchange(other.viewProjectionLocation_, -1)),
+      presentation_(std::move(other.presentation_)) {
     if (!SDL_IsMainThread() || !other.ownerThread_.isCurrent()) {
         std::terminate();
     }
@@ -621,6 +631,7 @@ void OpenGlBackend::release() noexcept {
             SDL_GL_MakeCurrent(nativeWindow, static_cast<SDL_GLContext>(context_));
     }
     if (canReleaseGpuResources) {
+        presentation_.reset();
         if (debugVertexBuffer_ != 0) {
             glDeleteBuffers(1, &debugVertexBuffer_);
         }
@@ -630,8 +641,10 @@ void OpenGlBackend::release() noexcept {
         if (debugProgram_ != 0) {
             glDeleteProgram(debugProgram_);
         }
-    } else if (debugProgram_ != 0 || debugVertexArray_ != 0 || debugVertexBuffer_ != 0) {
-        logWarning(logSink_, "Could not make the context current to release debug draw resources");
+    } else if (presentation_ || debugProgram_ != 0 || debugVertexArray_ != 0 ||
+               debugVertexBuffer_ != 0) {
+        logWarning(logSink_, "Could not make the context current to release OpenGL resources");
+        presentation_.release();
     }
     if (nativeWindow != nullptr && SDL_GL_GetCurrentContext() == context_ &&
         !SDL_GL_MakeCurrent(nativeWindow, nullptr)) {

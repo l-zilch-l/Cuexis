@@ -1,7 +1,7 @@
 //  Cuexis Player 实现 — 应用组合层
 //  PlaybackSession（cuexis_playback SDK 门面）负责 Chart 加载/编译和会话生命周期
 //  宿主窗口/渲染后端由 Player 自行创建管理（SDL + OpenGL）
-//  每帧只消费 PlaybackSession 的拥有型 FrameSnapshot，再转换为 RenderScene。
+//  Each frame consumes an owning FrameSnapshot through the OpenGL presentation adapter.
 //  NullClock/NullInput/NullJudge 为阶段 1A/1B 占位
 
 #include "player_app.hpp"
@@ -14,24 +14,23 @@
 #include <cuexis/audio_sdl/sdl_audio.hpp>
 #include <cuexis/audio_sdl/wav_decoder.hpp>
 #include <cuexis/core/error.hpp>
-#include <cuexis/core/math.hpp>
 #include <cuexis/filesystem/secure_file.hpp>
 #include <cuexis/platform_sdl/sdl_runtime.hpp>
 #include <cuexis/platform_sdl/sdl_window.hpp>
 #include <cuexis/playback/playback_session.hpp>
 #include <cuexis/playback/playback_source.hpp>
 #include <cuexis/playback/runtime_timeline.hpp>
-#include <cuexis/render/render_backend.hpp>
 #include <cuexis/render/render_scene.hpp>
 #include <cuexis/render_opengl/open_gl_backend.hpp>
 #include <cuexis/version.hpp>
 
 #include <algorithm>
+#include <array>
 #include <chrono>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
-#include <iterator>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -42,12 +41,15 @@
 namespace cuexis::player {
 namespace {
 
-constexpr std::uint32_t smokeTestFrameCount = 3;
+constexpr std::uint32_t smokeTestFrameCount = 6;
 constexpr std::uint32_t audioSmokeTestFrameCount = 90;
 constexpr auto audioSmokePauseDuration = std::chrono::seconds{2};
 constexpr std::size_t chartInputMaxBytes = 16U * 1024U * 1024U;
 constexpr std::string_view defaultProjectDirectory = "stage1d_project";
-constexpr std::string_view smokeTestProjectDirectory = "stage1c_project";
+constexpr std::string_view smokeTestProjectDirectory = "stage3_project";
+constexpr std::uint64_t presentationSmokeDigest = 18316288860163381829ULL;
+constexpr std::array<double, smokeTestFrameCount> presentationSmokeTimes{0.0,    625.0,  1250.0,
+                                                                         1750.0, 1750.0, 625.0};
 
 [[nodiscard]] std::string_view audioStateName(audio::PlaybackState state) noexcept {
     switch (state) {
@@ -89,8 +91,8 @@ class PlayerClock final {
 
     [[nodiscard]] double nextChartTime(bool deterministic, std::uint32_t frameIndex) {
         if (deterministic) {
-            constexpr double frameStepMs = 500.0;
-            return frameIndex * frameStepMs;
+            return presentationSmokeTimes[std::min<std::size_t>(
+                frameIndex, presentationSmokeTimes.size() - 1U)];
         }
 
         const auto now = Clock::now();
@@ -227,19 +229,77 @@ class PlayerClock final {
     return *handle;
 }
 
-[[nodiscard]] auto matrixFrom(const float (&values)[16]) noexcept -> core::Mat4 {
-    core::Mat4 matrix;
-    std::copy(std::begin(values), std::end(values), matrix.values.begin());
-    return matrix;
-}
-
-[[nodiscard]] auto viewProjectionFrom(const playback::FrameSnapshot& snapshot) noexcept
-    -> core::Mat4 {
-    if (!snapshot.camera.active) {
-        return {};
+[[nodiscard]] auto validatePresentationSmokeFrame(std::uint32_t frameIndex,
+                                                  const playback::FrameSnapshot& snapshot,
+                                                  const render_opengl::OpenGlDrawSummary& summary,
+                                                  const render_opengl::OpenGlPixelProbe& probe)
+    -> core::Result<void> {
+    const bool expectedEmpty = frameIndex == 2;
+    const bool expectedOpaque = frameIndex == 0 || frameIndex == 4;
+    if (expectedEmpty) {
+        if (!summary.opaque.empty() || !summary.transparent.empty() || probe.presentationDrawn) {
+            return core::unexpected(
+                core::Error{"player.smoke_test.invisible_frame_drew",
+                            "Invisible smoke frame produced presentation draws"});
+        }
+    } else if (expectedOpaque) {
+        if (summary.opaque.size() != 1 || !summary.transparent.empty() ||
+            !probe.presentationDrawn) {
+            return core::unexpected(core::Error{"player.smoke_test.opaque_frame_invalid",
+                                                "Opaque smoke frame did not draw one Mesh"});
+        }
+    } else if (!summary.opaque.empty() || summary.transparent.size() != 1 ||
+               !probe.presentationDrawn) {
+        return core::unexpected(core::Error{"player.smoke_test.transparent_frame_invalid",
+                                            "Transparent smoke frame did not draw one Mesh"});
     }
-    return core::multiply(matrixFrom(snapshot.camera.projectionMatrix),
-                          matrixFrom(snapshot.camera.viewMatrix));
+
+    const auto toByte = [](float value) {
+        return static_cast<int>(std::lround(std::clamp(value, 0.0F, 1.0F) * 255.0F));
+    };
+    const std::array clearBytes{toByte(snapshot.clearRed), toByte(snapshot.clearGreen),
+                                toByte(snapshot.clearBlue), toByte(snapshot.clearAlpha)};
+    int colorDifference = 0;
+    for (std::size_t component = 0; component < 3; ++component) {
+        colorDifference +=
+            std::abs(static_cast<int>(probe.rgba[component]) - clearBytes[component]);
+    }
+    if (expectedEmpty && colorDifference > 9) {
+        return core::unexpected(
+            core::Error{"player.smoke_test.clear_pixel_invalid",
+                        "Invisible smoke frame did not preserve the clear color"});
+    }
+    if (!expectedEmpty && colorDifference < 12) {
+        return core::unexpected(core::Error{"player.smoke_test.presentation_pixel_missing",
+                                            "Visible smoke frame did not change the center pixel"});
+    }
+    const auto pixelNear = [&probe](const std::array<int, 4>& expected, int tolerance) {
+        for (std::size_t component = 0; component < expected.size(); ++component) {
+            if (std::abs(static_cast<int>(probe.rgba[component]) - expected[component]) >
+                tolerance) {
+                return false;
+            }
+        }
+        return true;
+    };
+    if (expectedOpaque && !pixelNear({255, 204, 51, 255}, 8)) {
+        return core::unexpected(
+            core::Error{"player.smoke_test.unlit_material_pixel_invalid",
+                        "Opaque smoke frame did not produce the expected Unlit Material color"});
+    }
+    if ((frameIndex == 1 || frameIndex == 5) && !pixelNear({51, 32, 71, 192}, 16)) {
+        return core::unexpected(
+            core::Error{"player.smoke_test.textured_blend_pixel_invalid",
+                        "Transparent smoke frame did not produce the expected textured blend"});
+    }
+    if ((frameIndex == 1 || frameIndex == 5) && summary.digest != presentationSmokeDigest) {
+        return core::unexpected(
+            core::Error{"player.smoke_test.presentation_digest_mismatch",
+                        "OpenGL draw summary differs from the Validation Sink golden"}
+                .withContext("expected", std::to_string(presentationSmokeDigest))
+                .withContext("actual", std::to_string(summary.digest)));
+    }
+    return {};
 }
 
 } // namespace
@@ -359,22 +419,6 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                         " ms");
     }
 
-    if (auto committed = playbackSession.commit(std::move(prepared)); !committed) {
-        return core::unexpected(std::move(committed.error()));
-    }
-    auto chartInfo = playbackSession.chartInfo();
-    if (!chartInfo) {
-        return core::unexpected(std::move(chartInfo.error()));
-    }
-    if (chartInfo->objectCount == 0) {
-        return core::unexpected(
-            core::Error{"player.chart.empty", "The committed chart contains no objects"});
-    }
-    logger.info("player.playback", std::string{"Prepared objects: "} +
-                                       std::to_string(chartInfo->objectCount) +
-                                       ", behaviors: " + std::to_string(chartInfo->behaviorCount) +
-                                       ", resources: " + std::to_string(chartInfo->resourceCount));
-
     auto runtimeResult = platform_sdl::SdlRuntime::create();
     if (!runtimeResult) {
         return core::unexpected(
@@ -422,6 +466,30 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
     logger.info("player.opengl", std::string{"Version: "} + openGlInfo.version);
     logger.info("player.opengl", std::string{"Vendor: "} + openGlInfo.vendor);
     logger.info("player.opengl", std::string{"Renderer: "} + openGlInfo.renderer);
+
+    auto presentationCandidate = backend.preparePresentation(prepared, {.enableDebugPass = true});
+    if (!presentationCandidate) {
+        return core::unexpected(std::move(presentationCandidate.error())
+                                    .withContext("operation", "prepare_presentation"));
+    }
+    if (auto committed = playbackSession.commit(std::move(prepared)); !committed) {
+        backend.discardPresentation(std::move(*presentationCandidate));
+        return core::unexpected(std::move(committed.error()));
+    }
+    backend.activatePresentation(std::move(*presentationCandidate));
+
+    auto chartInfo = playbackSession.chartInfo();
+    if (!chartInfo) {
+        return core::unexpected(std::move(chartInfo.error()));
+    }
+    if (chartInfo->objectCount == 0) {
+        return core::unexpected(
+            core::Error{"player.chart.empty", "The committed chart contains no objects"});
+    }
+    logger.info("player.playback", std::string{"Prepared objects: "} +
+                                       std::to_string(chartInfo->objectCount) +
+                                       ", behaviors: " + std::to_string(chartInfo->behaviorCount) +
+                                       ", resources: " + std::to_string(chartInfo->resourceCount));
 
     if (audioTransport) {
         if (auto played = audioTransport->play(); !played) {
@@ -547,8 +615,16 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                 if (!replacement) {
                     return core::unexpected(std::move(replacement.error()));
                 }
+                auto replacementPresentation =
+                    backend.preparePresentation(*replacement, {.enableDebugPass = true});
+                if (!replacementPresentation) {
+                    return core::unexpected(
+                        std::move(replacementPresentation.error())
+                            .withContext("operation", "prepare_reload_presentation"));
+                }
                 auto replacementHandle = prepareAudioClip(*replacement, audioStore);
                 if (!replacementHandle) {
+                    backend.discardPresentation(std::move(*replacementPresentation));
                     return core::unexpected(std::move(replacementHandle.error()));
                 }
                 if (auto replacementPrepared = audioTransport->prepareReplacement(
@@ -558,6 +634,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                     if (!removed) {
                         logger.warn("player.audio", "Replacement cleanup failed after prepare");
                     }
+                    backend.discardPresentation(std::move(*replacementPresentation));
                     return core::unexpected(std::move(replacementPrepared.error()));
                 }
                 if (auto activated = audioTransport->activateReplacement(); !activated) {
@@ -565,11 +642,14 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                     if (!removed) {
                         logger.warn("player.audio", "Replacement cleanup failed after activation");
                     }
+                    backend.discardPresentation(std::move(*replacementPresentation));
                     return core::unexpected(std::move(activated.error()));
                 }
                 if (auto committed = playbackSession.commit(std::move(*replacement)); !committed) {
+                    backend.discardPresentation(std::move(*replacementPresentation));
                     return core::unexpected(std::move(committed.error()));
                 }
+                backend.activatePresentation(std::move(*replacementPresentation));
                 const auto contentInfo = playbackSession.contentInfo();
                 if (!contentInfo) {
                     return core::unexpected(std::move(contentInfo.error()));
@@ -600,6 +680,80 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
         if (!runtimeFrameResult) {
             return core::unexpected(std::move(runtimeFrameResult.error()));
         }
+        if (options.smokeTest && renderedFrames == 3) {
+            const auto rejected = playbackSession.prepareReload(
+                R"json({"format":"cuexis.chart","version":2})json", *runtimeFrameResult,
+                playback::ReloadPolicy::KeepChartTime);
+            if (rejected || !backend.hasActivePresentation()) {
+                return core::unexpected(core::Error{
+                    "player.smoke_test.failed_reload_mutated_state",
+                    "Failed presentation reload did not preserve the active GPU cache"});
+            }
+            logger.info("player.smoke_test",
+                        "Failed reload preserved the active OpenGL presentation cache");
+
+            auto replacementSource = makeSource();
+            if (!replacementSource) {
+                return core::unexpected(std::move(replacementSource.error()));
+            }
+            auto rejectedPresentationCandidate =
+                playbackSession.prepareReload(std::move(*replacementSource), *runtimeFrameResult,
+                                              playback::ReloadPolicy::KeepChartTime);
+            if (!rejectedPresentationCandidate) {
+                return core::unexpected(std::move(rejectedPresentationCandidate.error()));
+            }
+            const auto unsupportedPresentation = backend.preparePresentation(
+                *rejectedPresentationCandidate,
+                {.version = 2, .portableProfileVersion = 1, .enableDebugPass = true});
+            if (unsupportedPresentation || !backend.hasActivePresentation()) {
+                return core::unexpected(core::Error{
+                    "player.smoke_test.failed_adapter_prepare_mutated_state",
+                    "Failed adapter preparation did not preserve the active GPU cache"});
+            }
+            logger.info(
+                "player.smoke_test",
+                "Failed adapter preparation preserved the active OpenGL presentation cache");
+        }
+        if (options.smokeTest && renderedFrames == 4) {
+            auto replacementSource = makeSource();
+            if (!replacementSource) {
+                return core::unexpected(std::move(replacementSource.error()));
+            }
+            auto replacement =
+                playbackSession.prepareReload(std::move(*replacementSource), *runtimeFrameResult,
+                                              playback::ReloadPolicy::RestartAtZero);
+            if (!replacement) {
+                return core::unexpected(std::move(replacement.error()));
+            }
+            auto replacementPresentation =
+                backend.preparePresentation(*replacement, {.enableDebugPass = true});
+            if (!replacementPresentation) {
+                return core::unexpected(std::move(replacementPresentation.error())
+                                            .withContext("operation", "prepare_smoke_reload"));
+            }
+            if (auto committed = playbackSession.commit(std::move(*replacement)); !committed) {
+                backend.discardPresentation(std::move(*replacementPresentation));
+                return core::unexpected(std::move(committed.error()));
+            }
+            backend.activatePresentation(std::move(*replacementPresentation));
+            const auto contentInfo = playbackSession.contentInfo();
+            if (!contentInfo) {
+                return core::unexpected(std::move(contentInfo.error()));
+            }
+            if (auto reset = timeline.reset(contentInfo->timingOffsetMs); !reset) {
+                return core::unexpected(std::move(reset.error()));
+            }
+            auto source = chartClock.sample(0.0);
+            if (!source) {
+                return core::unexpected(std::move(source.error()));
+            }
+            runtimeFrameResult = timeline.advance(*source);
+            if (!runtimeFrameResult) {
+                return core::unexpected(std::move(runtimeFrameResult.error()));
+            }
+            logger.info("player.smoke_test",
+                        "Successful reload activated a complete OpenGL presentation cache");
+        }
         const auto runtimeFrame = *runtimeFrameResult;
         judgeSystem.update(runtimeFrame.chartTimeMs);
         if (auto result = playbackSession.update(runtimeFrame); !result) {
@@ -624,12 +778,6 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
         if (auto result = appendSnapshotAxes(snapshot, scene); !result) {
             return core::unexpected(std::move(result.error()));
         }
-        if (renderedFrames == 0) {
-            logger.info("player.snapshot", std::string{"Objects: "} +
-                                               std::to_string(snapshot.objects.size()) +
-                                               ", debug commands: " + std::to_string(scene.size()));
-        }
-
         if (frameDiagnostics) {
             frameDiagnostics->captureFrame(renderedFrames, runtimeFrame, snapshot);
             if (audioTransport) {
@@ -642,19 +790,40 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
             }
         }
 
-        const render::RenderFrame renderOutput{
-            .extent = {.width = width, .height = height},
-            .clearColor = {.red = snapshot.clearRed,
-                           .green = snapshot.clearGreen,
-                           .blue = snapshot.clearBlue,
-                           .alpha = snapshot.clearAlpha},
-            .viewProjection = viewProjectionFrom(snapshot),
-            .scene = &scene,
-        };
-
-        if (auto result = backend.renderFrame(renderOutput); !result) {
+        render_opengl::OpenGlDrawSummary drawSummary;
+        render_opengl::OpenGlPixelProbe pixelProbe;
+        const auto renderStarted = std::chrono::steady_clock::now();
+        if (auto result = backend.renderPresentationFrame(
+                snapshot, &scene, &drawSummary, options.smokeTest ? &pixelProbe : nullptr);
+            !result) {
             return core::unexpected(
                 std::move(result.error()).withContext("frame", std::to_string(renderedFrames)));
+        }
+        const double renderMicroseconds = std::chrono::duration<double, std::micro>(
+                                              std::chrono::steady_clock::now() - renderStarted)
+                                              .count();
+        if (renderedFrames == 0) {
+            logger.info(
+                "player.snapshot",
+                std::string{"Objects: "} + std::to_string(snapshot.objects.size()) +
+                    ", opaque draws: " + std::to_string(drawSummary.opaque.size()) +
+                    ", transparent draws: " + std::to_string(drawSummary.transparent.size()) +
+                    ", debug commands: " + std::to_string(drawSummary.debugCommandCount));
+        }
+        if (options.smokeTest) {
+            if (auto validated = validatePresentationSmokeFrame(renderedFrames, snapshot,
+                                                                drawSummary, pixelProbe);
+                !validated) {
+                return core::unexpected(std::move(validated.error()));
+            }
+            logger.info("player.smoke_test",
+                        std::string{"Frame "} + std::to_string(renderedFrames) +
+                            " summary=" + std::to_string(drawSummary.digest) +
+                            " pixel=" + std::to_string(pixelProbe.rgba[0]) + "," +
+                            std::to_string(pixelProbe.rgba[1]) + "," +
+                            std::to_string(pixelProbe.rgba[2]) + "," +
+                            std::to_string(pixelProbe.rgba[3]) +
+                            " render_us=" + std::to_string(renderMicroseconds));
         }
 
         ++renderedFrames;

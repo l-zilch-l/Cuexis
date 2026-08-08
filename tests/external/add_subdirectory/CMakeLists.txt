@@ -25,7 +25,12 @@ if(NOT cuexis_playback_type STREQUAL expected_playback_type)
     message(FATAL_ERROR "Unexpected Cuexis::Playback type: ${cuexis_playback_type}")
 endif()
 
-add_executable(cuexis_external_consumer ../consumer.cpp)
+add_executable(cuexis_external_consumer
+    ../consumer.cpp
+    ../../presentation/validation_sink.cpp
+)
+target_compile_definitions(cuexis_external_consumer
+    PRIVATE CUEXIS_SOURCE_DIR="${CUEXIS_SOURCE_DIR}")
 target_link_libraries(cuexis_external_consumer
     PRIVATE Cuexis::Playback Cuexis::Content Cuexis::Audio)
 
