@@ -4,6 +4,8 @@ add_executable(cuexis_playback_tests
     playback_session_tests.cpp
     presentation_tests.cpp
     runtime_timeline_tests.cpp
+    ${PROJECT_SOURCE_DIR}/engine/playback/src/frame_digest_version.cpp
+    ${PROJECT_SOURCE_DIR}/engine/playback/src/presentation_extraction.cpp
 )
 
 target_compile_definitions(cuexis_playback_tests
@@ -29,6 +31,7 @@ catch_discover_tests(cuexis_playback_tests)
 add_executable(cuexis_playback_allocation_tests
     ../presentation/validation_sink.cpp
     playback_allocation_tests.cpp
+    ${PROJECT_SOURCE_DIR}/engine/playback/src/presentation_extraction.cpp
 )
 
 target_compile_definitions(cuexis_playback_allocation_tests

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cuexis/core/result.hpp>
-#include <cuexis/playback/playback_export.hpp>
 #include <cuexis/playback/playback_session.hpp>
 #include <cuexis/playback/presentation.hpp>
 
@@ -35,10 +34,10 @@ struct NormalizedPresentationFrame final {
     std::vector<NormalizedPresentationRecord> transparent;
 };
 
-[[nodiscard]] CUEXIS_PLAYBACK_API auto
-normalizePresentationFrame(const FrameSnapshot& snapshot,
-                           const PresentationResourceManifest& manifest,
-                           std::span<const PortableResourcePtr> resources,
-                           NormalizedPresentationFrame& destination) -> core::Result<void>;
+[[nodiscard]] auto normalizePresentationFrame(const FrameSnapshot& snapshot,
+                                              const PresentationResourceManifest& manifest,
+                                              std::span<const PortableResourcePtr> resources,
+                                              NormalizedPresentationFrame& destination)
+    -> core::Result<void>;
 
 } // namespace cuexis::playback::detail

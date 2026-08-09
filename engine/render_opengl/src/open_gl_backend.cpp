@@ -458,7 +458,7 @@ auto OpenGlBackend::create(platform_sdl::SdlWindow& window,
     if (!pipelineResult) {
         return core::unexpected(std::move(pipelineResult.error()));
     }
-    auto presentationState = detail::createPresentationBackendState();
+    auto presentationState = detail::createPresentationBackendState(generation);
     if (!presentationState) {
         destroyDebugPipeline(*pipelineResult);
         return core::unexpected(std::move(presentationState.error()));

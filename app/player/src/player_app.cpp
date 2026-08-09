@@ -46,6 +46,7 @@ constexpr std::uint32_t audioSmokeTestFrameCount = 90;
 constexpr auto audioSmokePauseDuration = std::chrono::seconds{2};
 constexpr std::size_t chartInputMaxBytes = 16U * 1024U * 1024U;
 constexpr std::string_view defaultProjectDirectory = "stage1d_project";
+constexpr std::string_view legacySmokeTestProjectDirectory = "stage1b_project";
 constexpr std::string_view smokeTestProjectDirectory = "stage3_project";
 constexpr std::uint64_t presentationSmokeDigest = 18316288860163381829ULL;
 constexpr std::array<double, smokeTestFrameCount> presentationSmokeTimes{0.0,    625.0,  1250.0,
@@ -298,6 +299,23 @@ class PlayerClock final {
                         "OpenGL draw summary differs from the Validation Sink golden"}
                 .withContext("expected", std::to_string(presentationSmokeDigest))
                 .withContext("actual", std::to_string(summary.digest)));
+    }
+    return {};
+}
+
+[[nodiscard]] auto validateDebugSummaryParity(const render_opengl::OpenGlDrawSummary& omitted,
+                                              const render_opengl::OpenGlDrawSummary& empty,
+                                              const render_opengl::OpenGlDrawSummary& populated)
+    -> core::Result<void> {
+    if (omitted.debugPassEnabled != empty.debugPassEnabled ||
+        omitted.debugPassEnabled != populated.debugPassEnabled || omitted.digest != empty.digest ||
+        omitted.digest != populated.digest) {
+        return core::unexpected(
+            core::Error{"player.smoke_test.debug_summary_mismatch",
+                        "OpenGL Debug summary differs across scene argument forms"}
+                .withContext("omitted_digest", std::to_string(omitted.digest))
+                .withContext("empty_digest", std::to_string(empty.digest))
+                .withContext("populated_digest", std::to_string(populated.digest)));
     }
     return {};
 }
@@ -713,6 +731,33 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
             logger.info(
                 "player.smoke_test",
                 "Failed adapter preparation preserved the active OpenGL presentation cache");
+
+            auto legacyProjectPath = defaultProjectPath(legacySmokeTestProjectDirectory);
+            if (!legacyProjectPath) {
+                return core::unexpected(std::move(legacyProjectPath.error()));
+            }
+            auto legacySource = playback::PlaybackSource::fromFilesystemProject(*legacyProjectPath);
+            if (!legacySource) {
+                return core::unexpected(std::move(legacySource.error()));
+            }
+            auto legacyReplacement =
+                playbackSession.prepareReload(std::move(*legacySource), *runtimeFrameResult,
+                                              playback::ReloadPolicy::KeepChartTime);
+            if (!legacyReplacement) {
+                return core::unexpected(std::move(legacyReplacement.error()));
+            }
+            const auto legacyPresentation =
+                backend.preparePresentation(*legacyReplacement, {.enableDebugPass = true});
+            if (legacyPresentation ||
+                legacyPresentation.error().code() !=
+                    "render.opengl.presentation.portable_candidate_required" ||
+                !backend.hasActivePresentation()) {
+                return core::unexpected(core::Error{
+                    "player.smoke_test.legacy_adapter_prepare_accepted",
+                    "OpenGL accepted a legacy candidate or changed the active presentation"});
+            }
+            logger.info("player.smoke_test",
+                        "Legacy presentation candidate was rejected before Playback commit");
         }
         if (options.smokeTest && renderedFrames == 4) {
             auto replacementSource = makeSource();
@@ -731,11 +776,37 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                 return core::unexpected(std::move(replacementPresentation.error())
                                             .withContext("operation", "prepare_smoke_reload"));
             }
+
+            auto competingSource = makeSource();
+            if (!competingSource) {
+                backend.discardPresentation(std::move(*replacementPresentation));
+                return core::unexpected(std::move(competingSource.error()));
+            }
+            auto competingReplacement =
+                playbackSession.prepareReload(std::move(*competingSource), *runtimeFrameResult,
+                                              playback::ReloadPolicy::RestartAtZero);
+            if (!competingReplacement) {
+                backend.discardPresentation(std::move(*replacementPresentation));
+                return core::unexpected(std::move(competingReplacement.error()));
+            }
+            const auto competingPresentation =
+                backend.preparePresentation(*competingReplacement, {.enableDebugPass = true});
+            if (competingPresentation ||
+                competingPresentation.error().code() !=
+                    "render.opengl.presentation.candidate_outstanding" ||
+                !replacementPresentation->valid() || !backend.hasActivePresentation()) {
+                backend.discardPresentation(std::move(*replacementPresentation));
+                return core::unexpected(core::Error{
+                    "player.smoke_test.outstanding_candidate_overwritten",
+                    "A second OpenGL candidate was accepted or invalidated the first candidate"});
+            }
             if (auto committed = playbackSession.commit(std::move(*replacement)); !committed) {
                 backend.discardPresentation(std::move(*replacementPresentation));
                 return core::unexpected(std::move(committed.error()));
             }
             backend.activatePresentation(std::move(*replacementPresentation));
+            logger.info("player.smoke_test",
+                        "Outstanding candidate rejection preserved the first candidate");
             const auto contentInfo = playbackSession.contentInfo();
             if (!contentInfo) {
                 return core::unexpected(std::move(contentInfo.error()));
@@ -790,6 +861,26 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
             }
         }
 
+        std::optional<render_opengl::OpenGlDrawSummary> omittedDebugSummary;
+        std::optional<render_opengl::OpenGlDrawSummary> emptyDebugSummary;
+        if (options.smokeTest && renderedFrames == 1) {
+            omittedDebugSummary.emplace();
+            if (auto result =
+                    backend.renderPresentationFrame(snapshot, nullptr, &*omittedDebugSummary);
+                !result) {
+                return core::unexpected(
+                    std::move(result.error()).withContext("operation", "debug_summary_omitted"));
+            }
+            render::RenderScene emptyScene;
+            emptyDebugSummary.emplace();
+            if (auto result =
+                    backend.renderPresentationFrame(snapshot, &emptyScene, &*emptyDebugSummary);
+                !result) {
+                return core::unexpected(
+                    std::move(result.error()).withContext("operation", "debug_summary_empty"));
+            }
+        }
+
         render_opengl::OpenGlDrawSummary drawSummary;
         render_opengl::OpenGlPixelProbe pixelProbe;
         const auto renderStarted = std::chrono::steady_clock::now();
@@ -798,6 +889,15 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
             !result) {
             return core::unexpected(
                 std::move(result.error()).withContext("frame", std::to_string(renderedFrames)));
+        }
+        if (omittedDebugSummary && emptyDebugSummary) {
+            if (auto parity = validateDebugSummaryParity(*omittedDebugSummary, *emptyDebugSummary,
+                                                         drawSummary);
+                !parity) {
+                return core::unexpected(std::move(parity.error()));
+            }
+            logger.info("player.smoke_test",
+                        "Debug summary parity held for omitted, empty, and populated scenes");
         }
         const double renderMicroseconds = std::chrono::duration<double, std::micro>(
                                               std::chrono::steady_clock::now() - renderStarted)

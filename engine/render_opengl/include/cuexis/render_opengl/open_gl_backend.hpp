@@ -107,11 +107,13 @@ class OpenGlPresentationCandidate final {
 
     OpenGlPresentationCandidate(playback::PresentationCandidateToken token,
                                 playback::EffectivePresentationSettings settings,
-                                std::uint64_t generation) noexcept
-        : token_(std::move(token)), settings_(settings), generation_(generation) {}
+                                std::uint64_t backendToken, std::uint64_t generation) noexcept
+        : token_(std::move(token)), settings_(settings), backendToken_(backendToken),
+          generation_(generation) {}
 
     playback::PresentationCandidateToken token_;
     playback::EffectivePresentationSettings settings_;
+    std::uint64_t backendToken_{};
     std::uint64_t generation_{};
 };
 
@@ -157,7 +159,8 @@ class OpenGlBackend final : public render::RenderBackend {
     auto operator=(OpenGlBackend&& other) noexcept -> OpenGlBackend& = delete;
 
     [[nodiscard]] auto info() const noexcept -> const OpenGlInfo&;
-    // Uploads a complete Portable Presentation candidate while the current cache remains active.
+    // Uploads one complete Portable Presentation candidate while the current cache remains active.
+    // The outstanding candidate must be activated or discarded before preparing another one.
     [[nodiscard]] auto preparePresentation(playback::PreparedPlayback& prepared,
                                            const playback::PresentationRequest& request = {})
         -> core::Result<OpenGlPresentationCandidate>;

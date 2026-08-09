@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <limits>
 #include <memory>
+#include <string>
 #include <string_view>
 #include <utility>
 #include <variant>
@@ -89,6 +90,42 @@ namespace {
         std::find_if(manifest.entries.begin(), manifest.entries.end(),
                      [&](const auto& entry) { return entry.reference.assetId == assetId; });
     return found == manifest.entries.end() ? nullptr : &*found;
+}
+
+struct MutablePresentationData final {
+    cuexis::playback::PresentationResourceManifest manifest;
+    std::vector<cuexis::playback::PortableResourcePtr> resources;
+};
+
+template <typename Mutator>
+[[nodiscard]] auto mutateResourceWithSynchronizedIdentity(
+    const cuexis::playback::PresentationResourceManifest& manifest,
+    const std::vector<cuexis::playback::PortableResourcePtr>& resources, std::string_view assetId,
+    Mutator&& mutator) -> MutablePresentationData {
+    MutablePresentationData changed{manifest, resources};
+    const auto resource = std::find_if(
+        changed.resources.begin(), changed.resources.end(),
+        [&](const auto& candidate) { return candidate->reference.assetId == assetId; });
+    REQUIRE(resource != changed.resources.end());
+    auto copy = std::make_shared<cuexis::playback::PortableResource>(**resource);
+    mutator(*copy);
+    copy->reference.identity = cuexis::test_support::computePresentationIdentity(copy->value);
+
+    const auto entry =
+        std::find_if(changed.manifest.entries.begin(), changed.manifest.entries.end(),
+                     [&](const auto& candidate) { return candidate.reference.assetId == assetId; });
+    REQUIRE(entry != changed.manifest.entries.end());
+    entry->reference.identity = copy->reference.identity;
+    for (auto& candidate : changed.manifest.entries) {
+        for (auto& dependency : candidate.dependencies) {
+            if (dependency.assetId == copy->reference.assetId &&
+                dependency.type == copy->reference.type) {
+                dependency.identity = copy->reference.identity;
+            }
+        }
+    }
+    *resource = std::move(copy);
+    return changed;
 }
 
 void makeIdentityMatrix(float (&matrix)[16]) {
@@ -236,8 +273,15 @@ TEST_CASE("Validation Sink independently validates resource identity, type, depe
     auto reversedResources = resources;
     std::reverse(reversedManifest.entries.begin(), reversedManifest.entries.end());
     std::reverse(reversedResources.begin(), reversedResources.end());
-    REQUIRE(cuexis::test_support::validatePresentationData(reversedManifest, reversedResources)
-                .has_value());
+    const auto nonCanonicalManifest =
+        cuexis::test_support::validatePresentationData(reversedManifest, reversedResources);
+    REQUIRE_FALSE(nonCanonicalManifest.has_value());
+    CHECK(nonCanonicalManifest.error().code() == "playback.presentation.reference.invalid");
+
+    const auto nonCanonicalResources =
+        cuexis::test_support::validatePresentationData(*manifest, reversedResources);
+    REQUIRE_FALSE(nonCanonicalResources.has_value());
+    CHECK(nonCanonicalResources.error().code() == "playback.presentation.reference.invalid");
 
     SECTION("semantic identity") {
         auto changed = resources;
@@ -287,6 +331,70 @@ TEST_CASE("Validation Sink independently validates resource identity, type, depe
         const auto result = cuexis::test_support::validatePresentationData(changed, resources);
         REQUIRE_FALSE(result.has_value());
         CHECK(result.error().code() == "playback.presentation.session.budget_exceeded");
+    }
+}
+
+TEST_CASE("Validation Sink rejects Portable v1 semantic violations with synchronized identities",
+          "[presentation][validation][resources][semantics]") {
+    cuexis::playback::PlaybackSession session;
+    auto prepared = preparePortable(session);
+    REQUIRE(prepared.has_value());
+    const auto* manifest = prepared->presentationManifest();
+    REQUIRE(manifest != nullptr);
+    const auto resources = acquireResources(*prepared, *manifest);
+
+    const auto rejects = [&](MutablePresentationData changed) {
+        const auto result =
+            cuexis::test_support::validatePresentationData(changed.manifest, changed.resources);
+        REQUIRE_FALSE(result.has_value());
+        CHECK(result.error().code() == "playback.presentation.reference.invalid");
+    };
+
+    SECTION("position range") {
+        rejects(mutateResourceWithSynchronizedIdentity(
+            *manifest, resources, "mesh.triangle", [](auto& resource) {
+                auto& mesh = std::get<cuexis::playback::PortableMesh>(resource.value);
+                mesh.positions.front() = 1'000'001.0F;
+                mesh.boundsMax[0] = mesh.positions.front();
+            }));
+    }
+    SECTION("UV range") {
+        rejects(mutateResourceWithSynchronizedIdentity(
+            *manifest, resources, "mesh.triangle", [](auto& resource) {
+                auto& mesh = std::get<cuexis::playback::PortableMesh>(resource.value);
+                REQUIRE_FALSE(mesh.uv0.empty());
+                mesh.uv0.front() = -0.01F;
+            }));
+    }
+    SECTION("repeated triangle index") {
+        rejects(mutateResourceWithSynchronizedIdentity(
+            *manifest, resources, "mesh.triangle", [](auto& resource) {
+                auto& mesh = std::get<cuexis::playback::PortableMesh>(resource.value);
+                REQUIRE(mesh.indices.size() >= 3);
+                mesh.indices[1] = mesh.indices[0];
+            }));
+    }
+    SECTION("zero-area triangle") {
+        rejects(mutateResourceWithSynchronizedIdentity(
+            *manifest, resources, "mesh.triangle", [](auto& resource) {
+                auto& mesh = std::get<cuexis::playback::PortableMesh>(resource.value);
+                REQUIRE(mesh.positions.size() == 9);
+                mesh.positions = {0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 2.0F, 0.0F, 0.0F};
+                mesh.boundsMin[0] = 0.0F;
+                mesh.boundsMin[1] = 0.0F;
+                mesh.boundsMin[2] = 0.0F;
+                mesh.boundsMax[0] = 2.0F;
+                mesh.boundsMax[1] = 0.0F;
+                mesh.boundsMax[2] = 0.0F;
+            }));
+    }
+    SECTION("Opaque alpha") {
+        rejects(mutateResourceWithSynchronizedIdentity(
+            *manifest, resources, "material.opaque", [](auto& resource) {
+                auto& material = std::get<cuexis::playback::PortableUnlitMaterial>(resource.value);
+                REQUIRE(material.alphaMode == cuexis::playback::PresentationAlphaMode::Opaque);
+                material.baseColor[3] = 0.5F;
+            }));
     }
 }
 
@@ -469,6 +577,24 @@ TEST_CASE("Validation Sink rejects invalid frames without publishing partial com
     REQUIRE_FALSE(result.has_value());
     CHECK(result.error().code() == "playback.presentation.frame.resource_mismatch");
     CHECK(summary.opaque.empty());
+
+    auto invalidOpacity = *frame;
+    invalidOpacity.objects.front().materialOpacity = 1.01;
+    result = sink.validateFrame(invalidOpacity, summary);
+    REQUIRE_FALSE(result.has_value());
+    CHECK(result.error().code() == "playback.presentation.frame.value_invalid");
+    CHECK(summary.opaque.empty());
+    CHECK(summary.transparent.empty());
+    CHECK(summary.digest == 0);
+
+    auto invalidTint = *frame;
+    invalidTint.objects.front().materialTint[1] = -0.01F;
+    result = sink.validateFrame(invalidTint, summary);
+    REQUIRE_FALSE(result.has_value());
+    CHECK(result.error().code() == "playback.presentation.frame.value_invalid");
+    CHECK(summary.opaque.empty());
+    CHECK(summary.transparent.empty());
+    CHECK(summary.digest == 0);
 
     auto invisible = missingCamera;
     invisible.objects.front().visible = false;

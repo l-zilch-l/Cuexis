@@ -601,6 +601,7 @@ Snapshot）；它由 PlaybackSession 在资源读取前执行 preflight。
 | `playback.presentation.debug_unavailable` | Optional Debug request not enabled (warning) |
 | `playback.presentation.frame.camera_required` | Visible Renderable exists without active camera |
 | `playback.presentation.frame.non_finite` | Matrix/color/depth calculation is non-finite |
+| `playback.presentation.frame.value_invalid` | Opacity or tint is outside the frozen `[0,1]` range |
 | `playback.presentation.frame.resource_mismatch` | Snapshot ref and acquired resource differ |
 | `playback.presentation.frame.command_budget_exceeded` | Normalized record limit exceeded |
 

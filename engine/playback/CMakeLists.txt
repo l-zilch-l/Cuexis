@@ -1,6 +1,7 @@
 add_library(cuexis_playback ${CUEXIS_LIBRARY_TYPE}
     src/frame_digest.cpp
     src/frame_digest_internal.hpp
+    src/frame_digest_version.cpp
     src/presentation.cpp
     src/presentation_extraction.cpp
     src/presentation_extraction.hpp

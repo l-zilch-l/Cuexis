@@ -100,11 +100,12 @@ struct OpenGlPresentationBackendState final {
     std::optional<PresentationResourceSet> active;
     std::optional<PresentationResourceSet> pending;
     std::optional<PresentationResourceSet> retired;
+    std::uint64_t backendToken{};
     std::uint64_t nextGeneration{};
     std::uint64_t pendingGeneration{};
 };
 
-[[nodiscard]] auto createPresentationBackendState()
+[[nodiscard]] auto createPresentationBackendState(std::uint64_t backendToken)
     -> core::Result<std::unique_ptr<OpenGlPresentationBackendState>>;
 
 } // namespace cuexis::render_opengl::detail

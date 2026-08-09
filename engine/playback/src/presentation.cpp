@@ -852,9 +852,20 @@ struct ParsedMaterial final {
             !result) {
             return core::unexpected(std::move(result.error()));
         }
-    }
-    for (const auto& behavior : chartRuntime.behaviors) {
-        for (const auto& track : behavior.stepTracks) {
+        const auto& behaviorReference = object.components.behavior;
+        if (!behaviorReference) {
+            continue;
+        }
+        const auto behavior =
+            std::lower_bound(chartRuntime.behaviors.begin(), chartRuntime.behaviors.end(),
+                             behaviorReference->behavior,
+                             [](const chart::RuntimeBehavior& candidate,
+                                const chart::BehaviorId& id) { return candidate.id < id; });
+        if (behavior == chartRuntime.behaviors.end() ||
+            behavior->id != behaviorReference->behavior) {
+            continue;
+        }
+        for (const auto& track : behavior->stepTracks) {
             if (track.property != chart::BehaviorStepProperty::RenderMaterial) {
                 continue;
             }

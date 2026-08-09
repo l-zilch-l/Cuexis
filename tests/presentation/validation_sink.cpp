@@ -31,6 +31,7 @@ constexpr std::uint32_t maxMeshIndices = 3'145'728;
 constexpr std::uint32_t maxTextureDimension = 8'192;
 constexpr std::uint64_t maxResourceBytes = 64ULL * 1024ULL * 1024ULL;
 constexpr std::uint64_t maxSessionBytes = 512ULL * 1024ULL * 1024ULL;
+constexpr float maxPositionMagnitude = 1'000'000.0F;
 constexpr double depthQuantization = 4096.0;
 constexpr double signedIntegerLimit = 0x1p63;
 
@@ -95,6 +96,17 @@ void addError(core::Diagnostics& destination, const core::Error& error) {
     -> core::Error {
     auto error = core::Error{"playback.presentation.frame.non_finite",
                              "Validation Sink frame calculation contains a non-finite value"}
+                     .withContext("field", std::string{field});
+    if (!objectId.empty()) {
+        error.withContext("object_id", std::string{objectId});
+    }
+    return error;
+}
+
+[[nodiscard]] auto frameValueError(std::string_view objectId, std::string_view field)
+    -> core::Error {
+    auto error = core::Error{"playback.presentation.frame.value_invalid",
+                             "Validation Sink frame value is outside the Portable v1 range"}
                      .withContext("field", std::string{field});
     if (!objectId.empty()) {
         error.withContext("object_id", std::string{objectId});
@@ -365,13 +377,46 @@ class CanonicalHash final {
         (!mesh.uv0.empty() && mesh.uv0.size() != vertexCount * 2U)) {
         return core::unexpected(referenceError("Portable Mesh counts are invalid", &reference));
     }
-    if (!std::all_of(mesh.positions.begin(), mesh.positions.end(),
-                     [](float value) { return std::isfinite(value); }) ||
-        !std::all_of(mesh.uv0.begin(), mesh.uv0.end(),
-                     [](float value) { return std::isfinite(value); }) ||
-        !std::all_of(mesh.indices.begin(), mesh.indices.end(),
+    for (const auto value : mesh.positions) {
+        if (!std::isfinite(value) || std::abs(value) > maxPositionMagnitude) {
+            return core::unexpected(
+                referenceError("Portable Mesh position is outside the v1 range", &reference));
+        }
+    }
+    for (const auto value : mesh.uv0) {
+        if (!std::isfinite(value) || value < 0.0F || value > 1.0F) {
+            return core::unexpected(
+                referenceError("Portable Mesh UV0 is outside [0, 1]", &reference));
+        }
+    }
+    if (!std::all_of(mesh.indices.begin(), mesh.indices.end(),
                      [&](std::uint32_t index) { return index < vertexCount; })) {
-        return core::unexpected(referenceError("Portable Mesh values are invalid", &reference));
+        return core::unexpected(referenceError("Portable Mesh index is out of range", &reference));
+    }
+    for (std::size_t index = 0; index < mesh.indices.size(); index += 3U) {
+        const auto index0 = mesh.indices[index];
+        const auto index1 = mesh.indices[index + 1U];
+        const auto index2 = mesh.indices[index + 2U];
+        if (index0 == index1 || index0 == index2 || index1 == index2) {
+            return core::unexpected(
+                referenceError("Portable Mesh triangle repeats a vertex index", &reference));
+        }
+        const auto coordinate = [&](std::uint32_t vertex, std::size_t axis) {
+            return static_cast<double>(mesh.positions[vertex * 3U + axis]);
+        };
+        const auto edge10 = coordinate(index1, 0) - coordinate(index0, 0);
+        const auto edge11 = coordinate(index1, 1) - coordinate(index0, 1);
+        const auto edge12 = coordinate(index1, 2) - coordinate(index0, 2);
+        const auto edge20 = coordinate(index2, 0) - coordinate(index0, 0);
+        const auto edge21 = coordinate(index2, 1) - coordinate(index0, 1);
+        const auto edge22 = coordinate(index2, 2) - coordinate(index0, 2);
+        const auto cross0 = edge11 * edge22 - edge12 * edge21;
+        const auto cross1 = edge12 * edge20 - edge10 * edge22;
+        const auto cross2 = edge10 * edge21 - edge11 * edge20;
+        if (cross0 == 0.0 && cross1 == 0.0 && cross2 == 0.0) {
+            return core::unexpected(
+                referenceError("Portable Mesh triangle has zero area", &reference));
+        }
     }
 
     std::array<float, 3> minimum{mesh.positions[0], mesh.positions[1], mesh.positions[2]};
@@ -442,6 +487,11 @@ class CanonicalHash final {
                 referenceError("Portable Material color is invalid", &reference));
         }
     }
+    if (material.alphaMode == playback::PresentationAlphaMode::Opaque &&
+        material.baseColor[3] != 1.0F) {
+        return core::unexpected(
+            referenceError("Portable Opaque Material alpha must equal 1", &reference));
+    }
     decodedBytes = 32;
     if (material.baseColorTexture) {
         if (material.baseColorTexture->type != playback::PresentationResourceType::Texture2D ||
@@ -475,45 +525,32 @@ canonicalizePresentationData(const playback::PresentationResourceManifest& manif
         return core::unexpected(referenceError("Presentation manifest/resource count is invalid"));
     }
 
-    CanonicalPresentationData canonical{manifest, {}};
-    std::sort(canonical.manifest.entries.begin(), canonical.manifest.entries.end(),
-              [](const auto& left, const auto& right) {
-                  return referenceKey(left.reference) < referenceKey(right.reference);
-              });
+    CanonicalPresentationData canonical{
+        manifest, std::vector<playback::PortableResourcePtr>(resources.begin(), resources.end())};
     for (std::size_t index = 0; index < canonical.manifest.entries.size(); ++index) {
         const auto& entry = canonical.manifest.entries[index];
         if (!isPortableAssetId(entry.reference.assetId)) {
             return core::unexpected(
                 referenceError("Presentation AssetId is not portable", &entry.reference));
         }
+        if (index != 0 && !(referenceKey(canonical.manifest.entries[index - 1].reference) <
+                            referenceKey(entry.reference))) {
+            return core::unexpected(referenceError(
+                "Presentation manifest entries are not in canonical order", &entry.reference));
+        }
         if (index != 0 &&
             canonical.manifest.entries[index - 1].reference.assetId == entry.reference.assetId) {
             return core::unexpected(referenceError(
                 "Presentation manifest contains a duplicate AssetId", &entry.reference));
         }
-    }
-
-    canonical.resources.resize(canonical.manifest.entries.size());
-    for (const auto& resource : resources) {
+        const auto& resource = canonical.resources[index];
         if (!resource) {
             return core::unexpected(referenceError("Presentation resource pointer is null"));
         }
-        const auto found =
-            std::lower_bound(canonical.manifest.entries.begin(), canonical.manifest.entries.end(),
-                             resource->reference, [](const auto& entry, const auto& reference) {
-                                 return referenceKey(entry.reference) < referenceKey(reference);
-                             });
-        if (found == canonical.manifest.entries.end() || found->reference != resource->reference) {
-            return core::unexpected(
-                referenceError("Presentation resource is not named by its manifest reference",
-                               &resource->reference));
-        }
-        const auto index = static_cast<std::size_t>(found - canonical.manifest.entries.begin());
-        if (canonical.resources[index]) {
+        if (resource->reference != entry.reference) {
             return core::unexpected(referenceError(
-                "Presentation resource array contains a duplicate", &resource->reference));
+                "Presentation resource order does not match the manifest", &resource->reference));
         }
-        canonical.resources[index] = resource;
     }
 
     std::uint64_t totalEncodedBytes{};
@@ -841,6 +878,17 @@ void assignReference(playback::PresentationResourceRef& destination,
 
 } // namespace
 
+auto computePresentationIdentity(const playback::PortableResourceValue& value) noexcept
+    -> playback::PresentationContentIdentity {
+    if (const auto* mesh = std::get_if<playback::PortableMesh>(&value)) {
+        return meshIdentity(*mesh);
+    }
+    if (const auto* texture = std::get_if<playback::PortableTexture2D>(&value)) {
+        return textureIdentity(*texture);
+    }
+    return materialIdentity(std::get<playback::PortableUnlitMaterial>(value));
+}
+
 void ValidationSummary::clear() noexcept {
     version = validationSummaryVersion;
     viewportWidth = 0;
@@ -1108,11 +1156,18 @@ auto ValidationSink::validateFrame(const playback::FrameSnapshot& snapshot,
             if (!std::isfinite(object.materialOpacity)) {
                 return fail(nonFiniteError(object.id, "material_opacity"));
             }
+            if (object.materialOpacity < 0.0 || object.materialOpacity > 1.0) {
+                return fail(frameValueError(object.id, "material_opacity"));
+            }
 
             std::array<double, 4> effectiveColor{};
             for (std::size_t component = 0; component < 3; ++component) {
                 if (!std::isfinite(object.materialTint[component])) {
-                    return fail(nonFiniteError(object.id, "effective_rgb"));
+                    return fail(nonFiniteError(object.id, "material_tint"));
+                }
+                if (object.materialTint[component] < 0.0F ||
+                    object.materialTint[component] > 1.0F) {
+                    return fail(frameValueError(object.id, "material_tint"));
                 }
                 effectiveColor[component] = static_cast<double>(material.baseColor[component]) *
                                             static_cast<double>(object.materialTint[component]);

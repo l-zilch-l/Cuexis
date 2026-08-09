@@ -29,6 +29,9 @@ target_link_libraries(
         spdlog::spdlog
 )
 
+file(GLOB_RECURSE CUEXIS_STAGE1B_PROJECT_FILES CONFIGURE_DEPENDS
+    "${PROJECT_SOURCE_DIR}/assets/projects/stage1b_project/*"
+)
 file(GLOB_RECURSE CUEXIS_STAGE1C_PROJECT_FILES CONFIGURE_DEPENDS
     "${PROJECT_SOURCE_DIR}/assets/projects/stage1c_project/*"
 )
@@ -53,6 +56,11 @@ add_custom_target(player_stage1c_assets ALL
     COMMAND "${CMAKE_COMMAND}" -E make_directory
         "$<TARGET_FILE_DIR:cuexis_player>/assets/projects"
     COMMAND "${CMAKE_COMMAND}" -E rm -rf
+        "$<TARGET_FILE_DIR:cuexis_player>/assets/projects/stage1b_project"
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory
+        "${PROJECT_SOURCE_DIR}/assets/projects/stage1b_project"
+        "$<TARGET_FILE_DIR:cuexis_player>/assets/projects/stage1b_project"
+    COMMAND "${CMAKE_COMMAND}" -E rm -rf
         "$<TARGET_FILE_DIR:cuexis_player>/assets/projects/stage1c_project"
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
         "${PROJECT_SOURCE_DIR}/assets/projects/stage1c_project"
@@ -70,6 +78,7 @@ add_custom_target(player_stage1c_assets ALL
     DEPENDS
         "${PROJECT_SOURCE_DIR}/assets/charts/stage1a_example.cuexis.chart.json"
         "${PROJECT_SOURCE_DIR}/assets/charts/stage2_example.cuexis.chart.json"
+        ${CUEXIS_STAGE1B_PROJECT_FILES}
         ${CUEXIS_STAGE1C_PROJECT_FILES}
         ${CUEXIS_STAGE1D_PROJECT_FILES}
         ${CUEXIS_STAGE3_PROJECT_FILES}

@@ -100,6 +100,10 @@ validatePresentationData(const playback::PresentationResourceManifest& manifest,
                          std::span<const playback::PortableResourcePtr> resources)
     -> core::Result<void>;
 
+[[nodiscard]] auto
+computePresentationIdentity(const playback::PortableResourceValue& value) noexcept
+    -> playback::PresentationContentIdentity;
+
 [[nodiscard]] auto prepareValidationCandidate(
     playback::PreparedPlayback& prepared, const playback::PresentationCapabilities& capabilities,
     const playback::PresentationRequest& request) -> ValidationCandidateResult;

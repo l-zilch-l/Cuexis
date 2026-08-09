@@ -86,6 +86,55 @@ struct Stage3Fixture final {
     };
 }
 
+[[nodiscard]] auto addIrrelevantMaterialBehaviors(std::string chartJson,
+                                                  bool bindCameraBehavior = false) -> std::string {
+    const auto objects = chartJson.find("\"objects\": [");
+    REQUIRE(objects != std::string::npos);
+    const auto behaviorsEnd = chartJson.rfind("],", objects);
+    REQUIRE(behaviorsEnd != std::string::npos);
+    chartJson.insert(behaviorsEnd, R"json(,
+    {
+      "id": "stage3.unbound.material",
+      "type": "behavior.event",
+      "version": 1,
+      "events": [],
+      "stepEvents": [
+        {
+          "property": "render.material",
+          "beat": { "numerator": 0, "denominator": 1 },
+          "value": { "domain": "asset", "id": "material.unbound.missing" }
+        }
+      ]
+    },
+    {
+      "id": "stage3.camera.material",
+      "type": "behavior.event",
+      "version": 1,
+      "events": [],
+      "stepEvents": [
+        {
+          "property": "render.material",
+          "beat": { "numerator": 0, "denominator": 1 },
+          "value": { "domain": "asset", "id": "material.camera.missing" }
+        }
+      ]
+    }
+)json");
+
+    if (bindCameraBehavior) {
+        const auto camera = chartJson.find("\"cuexis.camera\": {");
+        REQUIRE(camera != std::string::npos);
+        const auto cameraLine = chartJson.rfind('\n', camera);
+        REQUIRE(cameraLine != std::string::npos);
+        chartJson.insert(cameraLine + 1, R"json(        "cuexis.behavior": {
+          "version": 1,
+          "behavior": { "domain": "behavior", "id": "stage3.camera.material" }
+        },
+)json");
+    }
+    return chartJson;
+}
+
 [[nodiscard]] auto descriptors(std::vector<std::string> blendDependencies = {"texture.checker"})
     -> std::vector<PlaybackAssetDescriptor> {
     return {
@@ -464,8 +513,67 @@ TEST_CASE(
             {.sourceId = "stage3-cycle", .chartJson = base.chartJson, .assets = std::move(assets)},
             std::move(*provider));
         REQUIRE_FALSE(source.has_value());
-        CHECK(source.error().code() == "assets.database.dependency_cycle");
+        CHECK(source.error().code() == "playback.presentation.dependency.cycle");
+        CHECK(errorContextValue(source.error(), "cycle").has_value());
+        REQUIRE(source.error().cause() != nullptr);
+        CHECK(source.error().cause()->code() == "assets.database.dependency_cycle");
     }
+}
+
+TEST_CASE("Portable manifest excludes Material Steps that cannot affect a Renderable object",
+          "[playback][presentation][closure]") {
+    auto fixture = loadFixture();
+    fixture.chartJson = addIrrelevantMaterialBehaviors(std::move(fixture.chartJson));
+    auto source = typedSource(ProviderKind::Memory, fixture);
+    REQUIRE(source.has_value());
+
+    cuexis::playback::PlaybackSession session;
+    auto prepared =
+        session.prepareLoad(std::move(*source), cuexis::playback::PlaybackMode::ChartClock);
+    if (!prepared) {
+        std::ostringstream details;
+        details << prepared.error().code() << ": " << prepared.error().message();
+        const auto diagnostics = session.lastOperationDiagnostics();
+        if (diagnostics) {
+            for (const auto& item : diagnostics->items()) {
+                details << " | " << item.code() << ": " << item.message();
+            }
+        }
+        FAIL(details.str());
+    }
+    REQUIRE(prepared.has_value());
+    const auto* manifest = prepared->presentationManifest();
+    REQUIRE(manifest != nullptr);
+    CHECK(manifest->entries.size() == 4);
+    CHECK(findEntry(*manifest, "material.unbound.missing") == nullptr);
+    CHECK(findEntry(*manifest, "material.camera.missing") == nullptr);
+
+    REQUIRE(session.commit(std::move(*prepared)).has_value());
+    REQUIRE(session.update({.chartTimeMs = 0.0}).has_value());
+    const auto frame = session.extractFrame({.width = 640, .height = 480});
+    REQUIRE(frame.has_value());
+    REQUIRE(frame->objects.size() == 2);
+    CHECK(frame->objects.front().materialAssetId == "material.opaque");
+}
+
+TEST_CASE("Render Material behavior bound to a non-Renderable object fails before presentation",
+          "[playback][presentation][closure]") {
+    auto fixture = loadFixture();
+    fixture.chartJson = addIrrelevantMaterialBehaviors(std::move(fixture.chartJson), true);
+    auto source = typedSource(ProviderKind::Memory, fixture);
+    REQUIRE(source.has_value());
+
+    cuexis::playback::PlaybackSession session;
+    const auto prepared =
+        session.prepareLoad(std::move(*source), cuexis::playback::PlaybackMode::ChartClock);
+    REQUIRE_FALSE(prepared.has_value());
+    CHECK(prepared.error().code() == "playback.session.prepare_failed");
+    const auto diagnostics = session.lastOperationDiagnostics();
+    REQUIRE(diagnostics.has_value());
+    CHECK(
+        std::any_of(diagnostics->items().begin(), diagnostics->items().end(), [](const auto& item) {
+            return item.code() == "runtime.chart.behavior_renderable_missing";
+        }));
 }
 
 TEST_CASE("Portable presentation reload is atomic and propagates semantic identities",

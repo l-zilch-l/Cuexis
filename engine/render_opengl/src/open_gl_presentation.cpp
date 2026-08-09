@@ -903,7 +903,7 @@ auto UniqueProgram::operator=(UniqueProgram&& other) noexcept -> UniqueProgram& 
     return *this;
 }
 
-auto createPresentationBackendState()
+auto createPresentationBackendState(std::uint64_t backendToken)
     -> core::Result<std::unique_ptr<OpenGlPresentationBackendState>> {
     auto pipeline = createPresentationPipeline();
     if (!pipeline) {
@@ -912,6 +912,7 @@ auto createPresentationBackendState()
     try {
         auto state = std::make_unique<OpenGlPresentationBackendState>();
         state->pipeline = std::move(*pipeline);
+        state->backendToken = backendToken;
         return state;
     } catch (const std::bad_alloc&) {
         return core::unexpected(
@@ -940,6 +941,7 @@ void OpenGlDrawSummary::clear() noexcept {
 OpenGlPresentationCandidate::OpenGlPresentationCandidate(
     OpenGlPresentationCandidate&& other) noexcept
     : token_(std::move(other.token_)), settings_(other.settings_),
+      backendToken_(std::exchange(other.backendToken_, 0)),
       generation_(std::exchange(other.generation_, 0)) {}
 
 auto OpenGlPresentationCandidate::operator=(OpenGlPresentationCandidate&& other) noexcept
@@ -947,13 +949,14 @@ auto OpenGlPresentationCandidate::operator=(OpenGlPresentationCandidate&& other)
     if (this != &other) {
         token_ = std::move(other.token_);
         settings_ = other.settings_;
+        backendToken_ = std::exchange(other.backendToken_, 0);
         generation_ = std::exchange(other.generation_, 0);
     }
     return *this;
 }
 
 bool OpenGlPresentationCandidate::valid() const noexcept {
-    return generation_ != 0;
+    return backendToken_ != 0 && generation_ != 0;
 }
 
 auto OpenGlPresentationCandidate::token() const noexcept
@@ -980,6 +983,13 @@ auto OpenGlBackend::preparePresentation(playback::PreparedPlayback& prepared,
     if (!presentation_ || !window_.valid() || context_ == nullptr) {
         return core::unexpected(core::Error{"render.opengl.backend_unavailable",
                                             "The OpenGL presentation backend is unavailable"});
+    }
+    if (presentation_->pending.has_value()) {
+        return core::unexpected(
+            core::Error{"render.opengl.presentation.candidate_outstanding",
+                        "The previous OpenGL presentation candidate is still outstanding"}
+                .withContext("candidate_generation",
+                             std::to_string(presentation_->pendingGeneration)));
     }
     auto* nativeWindow = static_cast<SDL_Window*>(window_.nativeHandle());
     if (nativeWindow == nullptr ||
@@ -1011,6 +1021,12 @@ auto OpenGlBackend::preparePresentation(playback::PreparedPlayback& prepared,
     if (!validation.hasValue()) {
         return core::unexpected(validationError(validation));
     }
+    const auto* manifest = prepared.presentationManifest();
+    if (manifest == nullptr) {
+        return core::unexpected(
+            core::Error{"render.opengl.presentation.portable_candidate_required",
+                        "OpenGL presentation requires a Portable Presentation candidate"});
+    }
     if (presentation_->nextGeneration == std::numeric_limits<std::uint64_t>::max()) {
         return core::unexpected(
             core::Error{"render.opengl.presentation.generation_exhausted",
@@ -1020,56 +1036,53 @@ auto OpenGlBackend::preparePresentation(playback::PreparedPlayback& prepared,
     try {
         detail::PresentationResourceSet candidate;
         candidate.settings = *validation.settings;
-        const auto* manifest = prepared.presentationManifest();
-        if (manifest != nullptr) {
-            candidate.manifest = *manifest;
-            auto token = prepared.presentationCandidateToken();
-            if (!token) {
-                return core::unexpected(std::move(token.error()));
+        candidate.manifest = *manifest;
+        auto token = prepared.presentationCandidateToken();
+        if (!token) {
+            return core::unexpected(std::move(token.error()));
+        }
+        candidate.token = *token;
+        candidate.resources.reserve(manifest->entries.size());
+        candidate.meshes.reserve(manifest->entries.size());
+        candidate.textures.reserve(manifest->entries.size());
+        candidate.materials.reserve(manifest->entries.size());
+        for (const auto& entry : manifest->entries) {
+            auto resource = prepared.acquirePresentationResource(entry.reference);
+            if (!resource) {
+                return core::unexpected(std::move(resource.error()));
             }
-            candidate.token = *token;
-            candidate.resources.reserve(manifest->entries.size());
-            candidate.meshes.reserve(manifest->entries.size());
-            candidate.textures.reserve(manifest->entries.size());
-            candidate.materials.reserve(manifest->entries.size());
-            for (const auto& entry : manifest->entries) {
-                auto resource = prepared.acquirePresentationResource(entry.reference);
-                if (!resource) {
-                    return core::unexpected(std::move(resource.error()));
+            if ((*resource)->reference != entry.reference) {
+                return core::unexpected(
+                    resourceError("render.opengl.presentation.resource_mismatch",
+                                  "Acquired portable resource does not match its manifest entry",
+                                  &entry.reference));
+            }
+            candidate.resources.push_back(*resource);
+            switch (entry.reference.type) {
+            case playback::PresentationResourceType::Mesh: {
+                auto uploaded = uploadMesh(**resource);
+                if (!uploaded) {
+                    return core::unexpected(std::move(uploaded.error()));
                 }
-                if ((*resource)->reference != entry.reference) {
-                    return core::unexpected(resourceError(
-                        "render.opengl.presentation.resource_mismatch",
-                        "Acquired portable resource does not match its manifest entry",
-                        &entry.reference));
+                candidate.meshes.push_back(std::move(*uploaded));
+                break;
+            }
+            case playback::PresentationResourceType::Texture2D: {
+                auto uploaded = uploadTexture(**resource);
+                if (!uploaded) {
+                    return core::unexpected(std::move(uploaded.error()));
                 }
-                candidate.resources.push_back(*resource);
-                switch (entry.reference.type) {
-                case playback::PresentationResourceType::Mesh: {
-                    auto uploaded = uploadMesh(**resource);
-                    if (!uploaded) {
-                        return core::unexpected(std::move(uploaded.error()));
-                    }
-                    candidate.meshes.push_back(std::move(*uploaded));
-                    break;
+                candidate.textures.push_back(std::move(*uploaded));
+                break;
+            }
+            case playback::PresentationResourceType::UnlitMaterial: {
+                auto copied = copyMaterial(**resource);
+                if (!copied) {
+                    return core::unexpected(std::move(copied.error()));
                 }
-                case playback::PresentationResourceType::Texture2D: {
-                    auto uploaded = uploadTexture(**resource);
-                    if (!uploaded) {
-                        return core::unexpected(std::move(uploaded.error()));
-                    }
-                    candidate.textures.push_back(std::move(*uploaded));
-                    break;
-                }
-                case playback::PresentationResourceType::UnlitMaterial: {
-                    auto copied = copyMaterial(**resource);
-                    if (!copied) {
-                        return core::unexpected(std::move(copied.error()));
-                    }
-                    candidate.materials.push_back(std::move(*copied));
-                    break;
-                }
-                }
+                candidate.materials.push_back(std::move(*copied));
+                break;
+            }
             }
         }
 
@@ -1077,7 +1090,8 @@ auto OpenGlBackend::preparePresentation(playback::PreparedPlayback& prepared,
         presentation_->pending = std::move(candidate);
         presentation_->pendingGeneration = generation;
         return OpenGlPresentationCandidate{presentation_->pending->token,
-                                           presentation_->pending->settings, generation};
+                                           presentation_->pending->settings,
+                                           presentation_->backendToken, generation};
     } catch (const std::bad_alloc&) {
         return core::unexpected(
             core::Error{"render.opengl.presentation.upload_budget_exceeded",
@@ -1097,11 +1111,13 @@ void OpenGlBackend::activatePresentation(OpenGlPresentationCandidate&& candidate
     if (!SDL_IsMainThread() || !ownerThread_.isCurrent()) {
         std::terminate();
     }
-    if (!presentation_ || candidate.generation_ == 0 ||
-        presentation_->pendingGeneration != candidate.generation_ ||
-        !presentation_->pending.has_value()) {
-        candidate.generation_ = 0;
+    if (!presentation_ || !candidate.valid() ||
+        candidate.backendToken_ != presentation_->backendToken) {
         return;
+    }
+    if (presentation_->pendingGeneration != candidate.generation_ ||
+        !presentation_->pending.has_value() || presentation_->pending->token != candidate.token_) {
+        std::terminate();
     }
     if (presentation_->active.has_value()) {
         if (presentation_->retired.has_value()) {
@@ -1113,6 +1129,7 @@ void OpenGlBackend::activatePresentation(OpenGlPresentationCandidate&& candidate
     presentation_->active.emplace(std::move(*presentation_->pending));
     presentation_->pending.reset();
     presentation_->pendingGeneration = 0;
+    candidate.backendToken_ = 0;
     candidate.generation_ = 0;
 }
 
@@ -1120,15 +1137,19 @@ void OpenGlBackend::discardPresentation(OpenGlPresentationCandidate&& candidate)
     if (!SDL_IsMainThread() || !ownerThread_.isCurrent()) {
         std::terminate();
     }
-    if (presentation_ && candidate.generation_ != 0 &&
-        presentation_->pendingGeneration == candidate.generation_) {
-        if (presentation_->retired.has_value()) {
-            std::terminate();
-        }
-        presentation_->retired.emplace(std::move(*presentation_->pending));
-        presentation_->pending.reset();
-        presentation_->pendingGeneration = 0;
+    if (!presentation_ || !candidate.valid() ||
+        candidate.backendToken_ != presentation_->backendToken) {
+        return;
     }
+    if (presentation_->pendingGeneration != candidate.generation_ ||
+        !presentation_->pending.has_value() || presentation_->pending->token != candidate.token_ ||
+        presentation_->retired.has_value()) {
+        std::terminate();
+    }
+    presentation_->retired.emplace(std::move(*presentation_->pending));
+    presentation_->pending.reset();
+    presentation_->pendingGeneration = 0;
+    candidate.backendToken_ = 0;
     candidate.generation_ = 0;
 }
 
@@ -1170,9 +1191,9 @@ auto OpenGlBackend::renderPresentationFrame(const playback::FrameSnapshot& snaps
               preparedSummary.viewMatrix.begin());
     std::copy(std::begin(snapshot.camera.projectionMatrix),
               std::end(snapshot.camera.projectionMatrix), preparedSummary.projectionMatrix.begin());
-    preparedSummary.debugPassEnabled =
-        presentation_->active->settings.debugPassEnabled && debugScene != nullptr;
-    preparedSummary.debugCommandCount = preparedSummary.debugPassEnabled ? debugScene->size() : 0;
+    preparedSummary.debugPassEnabled = presentation_->active->settings.debugPassEnabled;
+    preparedSummary.debugCommandCount =
+        preparedSummary.debugPassEnabled && debugScene != nullptr ? debugScene->size() : 0;
     if (!std::all_of(
             preparedSummary.clearColor.begin(), preparedSummary.clearColor.end(),
             [](float value) { return std::isfinite(value) && value >= 0.0F && value <= 1.0F; })) {
