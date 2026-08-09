@@ -1,10 +1,11 @@
 # Cuexis SDK 改造与阶段路线调整方案
 
-状态：产品方向与阶段调整已接受；阶段 1C-1E 已完成验收；阶段 2 已完成实现与 Windows/MSVC 非图形门禁，最终验收待 GPU smoke 和 hosted Linux CI；稳定 C ABI 延后到必选 Judgement/Replay 完成后的阶段 12
+状态：产品方向与阶段调整已接受；阶段 1C-1E、阶段 2 与阶段 3 已完成本地/hosted 最终验收；稳定 C ABI 延后到必选 Judgement/Replay 完成后的阶段 12
 规划日期：2026-07-20
-当前基线：[阶段 2 完成报告](../stage_reports/stage_2_completion_report.md)
-相关实施计划：[阶段 1C](stage_1c_implementation_plan.md)、[阶段 1D](stage_1d_implementation_plan.md)、[阶段 1E](stage_1e_implementation_plan.md)、[阶段 2](stage_2_implementation_plan.md)
+当前基线：[阶段 3 验收报告](../stage_reports/stage_3_completion_report.md)
+相关实施计划：[阶段 1C](stage_1c_implementation_plan.md)、[阶段 1D](stage_1d_implementation_plan.md)、[阶段 1E](stage_1e_implementation_plan.md)、[阶段 2](stage_2_implementation_plan.md)、[阶段 3](stage_3_implementation_plan.md)
 shared preview 边界：[ADR 0033](../adr/0033-cpp-shared-library-preview-boundary.md)
+Stage 3 公共合同：[ADR 0037](../adr/0037-stage-3-portable-presentation-contracts.md)
 
 ## 0. 文档定位
 
@@ -104,7 +105,7 @@ Cuexis 可以提供后端适配器、参考实现和可选扩展，但这些模�
 | 时间 | 校验并消费 `chartTimeMs`、delta 和 discontinuity | 提供宿主时钟，或选择 Cuexis AudioClock 适配器 |
 | 内容 | 校验、编译、解析 AssetId 和资源依赖 | 提供文件系统、VFS、归档或内存中的字节 |
 | 音频 | 定义后端无关时钟/Transport 契约 | 使用宿主音频，或选择 `audio_sdl` |
-| 渲染 | 输出稳定的 FrameSnapshot/RenderPacket | 使用宿主渲染适配器，或选择 Cuexis 内建后端 |
+| 渲染 | 输出稳定的拥有型 FrameSnapshot、portable resource manifest 和 acquisition | 使用宿主渲染适配器，或选择 Cuexis 内建后端 |
 | 输入 | 接收标准化 InputEvent/InputFrame | 将宿主输入事件转换为 InputEvent，传给 SDK |
 | 判定与计分 | **计算并输出判定事件、分数、连击和统计数据** | 消费判定结果、管理游戏状态和 UI 展示 |
 | 记录与回放 | **按 chartTimeMs 记录全部 InputEvent，生成可复现的回放文件** | 决定何时开始/停止记录，保存或加载回放数据 |
@@ -261,14 +262,18 @@ CuexisAudio 模式下对相同 SourceClockSample/control script 和 InputEvent �
 ```text
 RuntimeSession
 -> Render extraction
--> immutable FrameSnapshot / RenderPacket
+-> immutable owning FrameSnapshot（唯一公共帧）
+-> portable resource manifest/acquisition
 -> Host Render Adapter 或 Cuexis RenderBackend
 ```
+
+`RenderPacket` 如果在 adapter 内部保留，只能是从同一 `FrameSnapshot` 和 portable resource
+确定派生的短生命周期输入，不是第二套 Playback Runtime 输出。
 
 第一版嵌入验收优先支持宿主消费帧数据，不直接承诺跨引擎共享 OpenGL/Vulkan Context。后续可以按真实宿主增加：
 
 ```text
-宿主 RenderPacket 转换器
+宿主 FrameSnapshot 渲染 adapter
 离屏纹理输出适配器
 Unity Native Plugin
 Unreal Module
@@ -279,10 +284,10 @@ Unreal Module
 
 ```text
 Portable Presentation Profile
-  宿主适配器应能实现的标准 Transform、Mesh、材质参数和粒子数据
+  阶段 3 冻结的标准 Transform、Mesh、Texture2D 和固定 Unlit Material 数据
 
 Built-in Renderer Profile
-  Cuexis Player/Studio 内建后端支持的高级 Shader、Pipeline 或调试效果
+  Cuexis Player/Studio 内建后端支持的阶段 5 Shader、Pipeline 或高级材质效果
 
 Host-specific Extension
   由特定宿主适配器声明，不改变基础 Chart/Runtime 语义
@@ -487,18 +492,29 @@ Behavior 扩展具有版本和能力声明
 
 ### 12.5 阶段 3：可移植表现前端与渲染适配
 
-将“通用渲染前端稳定化”调整为“Cuexis 表现输出稳定化”：
+阶段 3 的权威计划见[阶段 3 实施计划](stage_3_implementation_plan.md)，公共合同见
+[ADR 0037](../adr/0037-stage-3-portable-presentation-contracts.md)。阶段 3 只交付：
 
 ```text
-冻结 FrameSnapshot/RenderPacket 所有权和有效期
-定义 Portable Presentation Profile
-定义宿主 Camera/Viewport 输入和坐标转换契约
-实现内建 OpenGL adapter，并建立一个不渲染的验证 Sink
-明确材质、纹理、Mesh 和排序数据如何交给宿主
-验证宿主跳过不支持 Pass 时的诊断与显式降级策略
+FrameSnapshot 作为唯一公共权威帧；RenderPacket 仅为 adapter 内部派生输入
+Portable Presentation v1：Mesh、Texture2D、固定 Unlit Material
+PreparedPlayback 候选 manifest、拥有型资源获取和 reload 原子性
+宿主 FrameViewport 输入；Chart/Behavior 相机保持权威
+无 GPU Validation Sink
+内建 OpenGL adapter 与 Player 真实 Mesh 绘制
+Opaque、Transparent、Debug 固定 Pass 和确定排序/能力诊断
 ```
 
-Light、完整 RenderGraph、通用 Buffer/Pipeline API 只有在 Cuexis 表现内容存在真实消费者时才进入实现。
+当前实现状态：3A 已冻结精确合同，3B 已交付 Portable v1 resource、candidate/active manifest 与
+owning acquisition，3C 已交付 Snapshot resource refs、共同表现提取和 FrameDigest v3，3D 已交付
+public capability preflight、public-only Validation Sink、normalized summary oracle 与 external consumer
+golden，3E 已交付 OpenGL candidate GPU cache、固定 Unlit pipeline、真实 Mesh/Texture 绘制和 Player
+六帧 smoke，3F 已交付 Playback-only add_subdirectory/find_package consumer、clean package/version/
+component/license 门禁和 shared export/import 闭包。3G 已完成 Windows/MSVC、Windows/MinGW、
+WSL Linux 与 hosted Linux Quality 最终验收；阶段 3 已于 2026-08-08 关闭。
+
+Light、Particle、UI、完整 RenderGraph、通用 Buffer/Pipeline、Shader、Reflection、Variant 和
+高级 Material authoring 不属于阶段 3；只有真实消费者和单独的契约评审存在时才进入后续阶段。
 
 ### 12.6 阶段 4：Cuexis 表现动画
 
@@ -557,7 +573,7 @@ Studio 显示目标宿主 Profile 和不兼容表现能力
 
 ```text
 CPU 确定性时间轴、Checkpoint 和 Seek 语义保留
-通过 ParticleRenderPacket 或等价快照输出给宿主
+通过 FrameSnapshot 的版本化粒子表现扩展字段输出给宿主
 内建渲染器实现参考 adapter
 宿主不支持时按能力声明失败或显式使用受控降级
 ```
@@ -591,7 +607,7 @@ APK/AAB 资源或宿主 AssetManager Content Provider
 
 ### 12.13 阶段 10：可选内建 Vulkan Backend
 
-Vulkan 只验证 Cuexis 内建渲染 adapter，不影响 Playback SDK、Chart、Behavior、World 或宿主 RenderPacket 契约。没有独立 Player/Studio 或目标宿主需求时，可以继续延期。
+Vulkan 只验证 Cuexis 内建渲染 adapter，不影响 Playback SDK、Chart、Behavior、World 或宿主 FrameSnapshot 契约。没有独立 Player/Studio 或目标宿主需求时，可以继续延期。
 
 ### 12.14 阶段 11：输入、判定与计分
 
@@ -744,7 +760,7 @@ ReplayData 序列化/反序列化往返后，注入回放结果与原始实时�
 ```text
 Playback SDK + 独立 Player + 独立 Studio
 第一版使用 C++20 门面和 static/shared CMake package；1E 只交付 Playback Core preview，稳定 C ABI 延后到阶段 12
-第一版宿主渲染以 FrameSnapshot/RenderPacket 为主
+第一版宿主渲染以拥有型 FrameSnapshot 为主；RenderPacket 只允许作为 adapter 内部派生输入
 ProjectConfig 继续服务 Player/Studio，SDK 同时接受 typed/memory source
 新增阶段 1E，并覆盖原 1D 计划中的“不创建阶段 1E”结论
 cuexis_judgement 是 SDK 必选交付模块，但无 InputEvent 时保持休眠
@@ -758,9 +774,8 @@ ADR 0033 的同工具链 C++ shared preview 已以 0.3.0 实现，稳定 C ABI �
 以下细节仍须在对应阶段编码前确认：
 
 ```text
-第一版真实宿主适配目标；确认前只使用通用 external C++ consumer
-PlaybackSession 在 1D 已冻结类型之外的最终 C++ 函数集合和错误返回细节
-FrameSnapshot/RenderPacket 的内存布局与宿主上传策略
+阶段 3 精确 portable resource 字段、序列化 payload、预算和 package component 细节；见阶段 3 3A
+PlaybackSession 在已接受资源 manifest/acquisition 方向之外的最终 C++ 函数集合和错误返回细节
 C ABI 的 handle、字符串、数组、allocator 和兼容性细节
 ReplayData 的 format ID、Schema、迁移、大小预算和完整性校验
 InputProfile、CalibrationProfile 与 JudgementConfigSnapshot 的具体格式

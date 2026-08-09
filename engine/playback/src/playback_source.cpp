@@ -32,6 +32,20 @@ namespace {
     return error;
 }
 
+[[nodiscard]] auto translatePresentationAssetError(core::Error error) -> core::Error {
+    if (error.code() != "assets.database.dependency_cycle") {
+        return error;
+    }
+
+    auto translated = core::Error{"playback.presentation.dependency.cycle",
+                                  "Portable dependency closure contains a cycle"};
+    for (const auto& context : error.context()) {
+        translated.withContext(context.key, context.value);
+    }
+    translated.withCause(std::move(error));
+    return translated;
+}
+
 [[nodiscard]] auto readTextFile(const std::filesystem::path& path,
                                 const std::filesystem::path& root, std::size_t maxBytes,
                                 std::string_view prefix, std::string_view description)
@@ -166,7 +180,7 @@ auto PlaybackSource::fromTypedProject(TypedPlaybackProject project,
     if (!project.assets.empty()) {
         auto database = convertTypedProject(project);
         if (!database) {
-            return core::unexpected(std::move(database.error()));
+            return core::unexpected(translatePresentationAssetError(std::move(database.error())));
         }
         state->database.emplace(std::move(*database));
         state->provider = std::move(provider);
@@ -219,7 +233,7 @@ auto PlaybackSource::fromFilesystemProject(const std::filesystem::path& locator)
     }
     auto database = assets::AssetDatabase::create(input);
     if (!database) {
-        return core::unexpected(std::move(database.error()));
+        return core::unexpected(translatePresentationAssetError(std::move(database.error())));
     }
     const auto* chartRoot = project.findAssetRoot(project.config.entry.chart.root);
     if (chartRoot == nullptr) {

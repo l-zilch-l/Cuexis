@@ -2,7 +2,7 @@
 
 ## 0. 文档状态
 
-本文档是项目的持续维护指南，同时记录已落地的工程状态、已确认的架构边界和后续阶段路线。阶段 0、阶段 1A、阶段 1B、阶段 1C、阶段 1D 与阶段 1E 已完成验收；阶段 2 实现与 Windows 本地门禁已完成，最终跨平台验收待 hosted Linux CI。260722 全量审查的 R01-R21 已于 2026-07-26/27 全部关闭并补齐构建、CTest、架构和 external consumer 证据。ADR 0027 已将长期产品方向调整为可嵌入 Cuexis Playback SDK + 独立 Player + 独立 Studio。
+本文档是项目的持续维护指南，同时记录已落地的工程状态、已确认的架构边界和后续阶段路线。阶段 0、阶段 1A、阶段 1B、阶段 1C、阶段 1D、阶段 1E、阶段 2 与阶段 3 已完成最终验收。阶段 3 的公共方向和实施范围由 ADR 0037 与[阶段 3 实施计划](stage_plans/stage_3_implementation_plan.md)冻结；3A-3G 已全部关闭，最终 hosted Linux 证据为 commit `b71ef23b2f258d88e274a9b4b13665ef10a39845` 的 Linux Quality run `31270268057`。260722 全量审查的 R01-R21 已于 2026-07-26/27 全部关闭并补齐构建、CTest、架构和 external consumer 证据。ADR 0027 已将长期产品方向调整为可嵌入 Cuexis Playback SDK + 独立 Player + 独立 Studio。
 
 文档中的内容按以下方式理解：
 
@@ -15,7 +15,7 @@
 
 随着讨论推进，待讨论内容应转化为明确决策；重大技术决策还应同步形成 ADR。
 
-当前仓库已完成阶段 0 工程闭环、阶段 1A 规范谱面与实例化闭环、阶段 1B 资源生命周期闭环、阶段 1C typed Behavior 与 headless Playback、阶段 1D 主音乐与 Audio，以及阶段 1E 可安装 static/shared Playback Core。阶段 2 已实现 Chart v3、Tempo/Stop TimingMap、Behavior/Step Event、Visibility/Material Snapshot、capability preflight、调试快照、FrameDigest v2 和 v1/v2 显式迁移工具；Windows/MSVC static/shared Debug/Release、headless 与 GPU smoke 门禁已通过。阶段 2 的 hosted Linux CI 仍待最终跨平台验收。正式 Judgement/Replay、Studio 和稳定 C ABI 尚未完成。
+当前仓库已完成阶段 0 工程闭环、阶段 1A 规范谱面与实例化闭环、阶段 1B 资源生命周期闭环、阶段 1C typed Behavior 与 headless Playback、阶段 1D 主音乐与 Audio，以及阶段 1E 可安装 static/shared Playback Core。阶段 2 已实现 Chart v3、Tempo/Stop TimingMap、Behavior/Step Event、Visibility/Material Snapshot、capability preflight、调试快照、FrameDigest v2 和 v1/v2 显式迁移工具。阶段 3B/3C 已实现 Portable Mesh/Texture2D/Unlit Material、candidate/active manifest、owning acquisition、Snapshot resource refs、共同表现提取和 FrameDigest v3，SDK API 为 `0.5.0`；阶段 3D 已实现 public capability preflight 与无 GPU Validation Sink；阶段 3E 已实现 OpenGL candidate GPU cache、固定 Unlit pipeline、真实 Mesh/Texture 绘制和 Player 六帧 smoke；阶段 3F 已实现 Playback-only add_subdirectory/find_package consumer、clean package/version/component/license 门禁和 shared export/import 闭包。3G 的 Windows/MSVC、WSL Linux 和 hosted Linux Quality 矩阵全部通过，Stage 2/3 跨平台门禁已最终关闭。正式 Judgement/Replay、Studio 和稳定 C ABI 尚未完成。
 
 当前状态的权威顺序固定为：本文第 0、30、32 节记录产品与阶段状态；`docs/BUILDING.md` 记录当前可执行构建和安装入口；最新阶段审查/补充报告记录尚未关闭的问题。完成报告和早期验证报告是带日期的历史证据，若与后续审查冲突，以后续审查与本节当前状态为准，不得从历史报告反推当前验收状态。
 
@@ -39,6 +39,8 @@ CODE_POLICY.md    编码、Result/Error、所有权与线程规则
 PROJECT_REVIEW.md 当前文档各部分的合理性与风险评估
 stage_plans/cuexis_sdk_transition_plan.md SDK 产品边界、阶段迁移与完成标准
 stage_plans/stage_2_implementation_plan.md Behavior Event、TimingMap 与阶段 2 实施门禁
+stage_plans/stage_3_implementation_plan.md Portable Presentation v1、Validation Sink 与渲染 adapter 实施门禁
+PORTABLE_PRESENTATION.md Portable Presentation v1 格式、API、预算、诊断与 3B/3C 实现状态
 ```
 
 当专项文档建立后，本文只保留架构结论和链接，避免同一规则在多个文件中重复维护。
@@ -74,7 +76,7 @@ cuexis::            C++ 命名空间
 使用数据驱动方式描述谱面、行为、材质和动画
 支持 3D Transform、父子绑定、时间轴驱动
 支持音符、元素、轨道、判定线、装饰物的统一建模
-输出宿主可消费的 FrameSnapshot/RenderPacket，并提供可选 OpenGL 后端
+输出宿主可消费的拥有型 FrameSnapshot 和 portable resources，并提供可选 OpenGL 后端
 支持标准 InputEvent、确定性判定计分、输入记录和回放
 支持 Cuexis Player、Cuexis Studio 和外部宿主共享 Playback 核心
 支持后续扩展 Entity 动画、粒子系统、Shader 编辑器
@@ -89,7 +91,7 @@ cuexis::            C++ 命名空间
 正式判定计分与 ReplayData 在阶段 11 由必选 cuexis_judgement 交付
 ```
 
-当前首要交付范围是关闭阶段 2 的 GPU/hosted CI 最终验收，并在不改变已冻结 Stage 2 格式语义的前提下进入阶段 3 表现前端规划。Cuexis Studio 的独立应用边界继续预留，但不阻塞 Playback SDK 外部消费。
+阶段 3 已最终关闭。Portable Presentation v1 公共值、资源闭包、Snapshot、digest、capability preflight、无 GPU Validation Sink、OpenGL adapter、Player 真实绘制和 Playback-only external package consumer 已实现并通过本地/hosted 验收。下一次对话进入 Stage 3 独立 review，先报告 finding 和测试缺口，不自动修复，也不启动 Stage 4；Cuexis Studio 的独立应用边界继续预留，但不阻塞 Playback SDK 外部消费。
 
 ## 3. 非目标
 
@@ -687,7 +689,7 @@ Host/App supplies Content + Clock + InputEvent
   -> PlaybackSession
   -> ChartRuntime
   -> RuntimeSession / World / Systems
-  -> FrameSnapshot / RenderPacket
+  -> owning FrameSnapshot + portable resource acquisition
   -> Host Render Adapter or Cuexis RenderBackend
   -> JudgementResult / Score / Statistics
   -> optional ReplayData
@@ -917,7 +919,7 @@ ChartRuntime
   面向播放、快速查询、引用已解析、等待实例化
 ```
 
-推荐流程：
+当前 3C 数据流程：
 
 ```text
 ChartDocument
@@ -1356,50 +1358,46 @@ ChartTime 粒子使用版本化随机种子和 120Hz 固定步长。向后或大
 
 ## 17. 渲染架构
 
-业务层不得调用 OpenGL。
+业务层不得调用 OpenGL。Stage 3 的公共 Runtime 输出只有拥有型 `FrameSnapshot`；adapter 可以从它派生内部命令包，但不得建立第二套公共帧模型。
 
 推荐流程：
 
 ```text
 EnTT Registry
-  -> RenderSystem
-  -> RenderScene
-  -> Playback FrameSnapshot / RenderPacket
-  -> Host Render Adapter 或 Cuexis RenderBackend
-  -> optional OpenGLBackend
+  -> RenderSystem / Playback extraction
+  -> owning Playback FrameSnapshot
+  -> portable resource acquisition
+  -> common normalized presentation extraction
+  -> 3D Host Validation Sink（已实现，测试支持且不安装）
+  -> 3E Cuexis OpenGL adapter（已实现，仓库内可选 target）
 ```
 
-推荐渲染命令：
+3C 已实现的 `NormalizedPresentationRecord` 是仓库内部共享提取值，不安装为第二套公共帧。它引用
+Snapshot object index，并携带 effective RGB/alpha、Opaque/Transparent pass、depth/cull/blend state、
+AABB-center camera depth 和规范化 transparent depth key。宿主公共输入仍只有 `FrameSnapshot`、
+`PresentationResourceManifest` 与 owning `PortableResourcePtr`。
 
 ```cpp
-struct RenderCommand {
-    MeshHandle mesh;
-    MaterialHandle material;
-    Mat4 worldMatrix;
-    RenderLayer layer;
+struct NormalizedPresentationRecord {
+    std::size_t objectIndex;
+    double effectiveRgb[3];
+    double effectiveAlpha;
+    NormalizedPresentationPass pass;
+    std::int64_t transparentDepthKey;
 };
 ```
 
 渲染前端概念：
 
 ```text
-RenderScene
-RenderCommandList
-FrameSnapshot / RenderPacket
-宿主 Camera/Viewport input
-Light
-Material
-Mesh
-Texture
-ShaderAsset
-PipelineDesc
-BufferDesc
-TextureDesc
-SamplerDesc
-BindingSet
-RenderPass
-Framebuffer
-CommandList
+FrameSnapshot（唯一公共帧）
+Portable Mesh / Texture2D / Unlit Material
+宿主 FrameViewport input
+OpaquePass / TransparentPass / DebugPass
+Host Render Adapter 或 Built-in Renderer
+
+以下概念不属于 Stage 3 公共合同：
+ShaderAsset、PipelineDesc、BufferDesc、SamplerDesc、BindingSet、Framebuffer、CommandList、Light
 ```
 
 避免 OpenGL 状态机式接口：
@@ -1412,17 +1410,15 @@ useProgram
 
 这类接口会导致未来 Vulkan 后端很难接入。
 
-推荐渲染阶段：
+Stage 3 固定渲染阶段：
 
 ```text
 OpaquePass
 TransparentPass
-ParticlePass
 DebugPass
-UIPass
 ```
 
-`UIPass` 只属于 Player/Studio 应用或特定宿主 adapter，不进入 Playback 核心帧契约。第一版 SDK 优先冻结宿主可消费的表现数据与能力声明，不为通用游戏 UI 建立 RenderGraph。
+`DebugPass` 只属于 adapter/application 诊断，可以关闭且不改变项目内容或 FrameDigest。Particle、UI、Light 和完整 RenderGraph 不进入 Stage 3；只有在真实消费者出现后才分别进入后续阶段。
 
 第一版不强制实现完整 RenderGraph。可以先用固定 Pass，后续演进：
 
@@ -1607,6 +1603,13 @@ Mesh、Texture、Material、Shader：Fallback
 ```
 
 具体资产可以显式收紧策略，但不能把 Required 静默降级为 Optional。
+
+上述 Mesh/Texture/Material Fallback 是阶段 1B 的通用 opaque 资源生命周期策略。Stage 3
+Portable Presentation v1 的真实表现闭包采用严格必需语义：现有 built-in fallback blob 不是合法
+portable payload，不能进入候选 manifest、公开 acquisition、FrameSnapshot resource ref 或 GPU
+上传。通用 `ResourceManager` Fallback API 与历史测试继续保留；Stage 3 候选若解析到 fallback，
+必须在 Playback commit 前失败。未来可视占位资源必须作为显式、有效、版本化的 portable asset
+另行定义，不能复用 opaque fallback 字符串。
 
 ### 19.3 第一版加载与线程边界
 
@@ -2120,7 +2123,7 @@ cuexis_judgement_tests
 cuexis_external_consumer_tests
 ```
 
-阶段 1A 已建立 `cuexis_core_tests`、`cuexis_json_support_tests`、`cuexis_platform_sdl_tests`、`cuexis_world_tests`、`cuexis_assets_tests`、`cuexis_chart_tests`、`cuexis_behavior_tests`、`cuexis_gameplay_tests`、`cuexis_render_tests`、`cuexis_debug_tests`、`cuexis_runtime_tests` 和 `cuexis_render_opengl_tests`，并在 CTest 中加入架构扫描及 Player 参数、谱面文件和 SDL 初始化失败路径检查。需要真实窗口和 GPU 的 canonical 示例三帧 OpenGL 冒烟测试按 `docs/BUILDING.md` 单独执行，不混入算法单元测试；阶段 1A 的历史 A/B 结果以[阶段 1A 完成报告](stage_reports/stage_1a_completion_report.md)为准。
+阶段 1A 已建立 `cuexis_core_tests`、`cuexis_json_support_tests`、`cuexis_platform_sdl_tests`、`cuexis_world_tests`、`cuexis_assets_tests`、`cuexis_chart_tests`、`cuexis_behavior_tests`、`cuexis_gameplay_tests`、`cuexis_render_tests`、`cuexis_debug_tests`、`cuexis_runtime_tests` 和 `cuexis_render_opengl_tests`，并在 CTest 中加入架构扫描及 Player 参数、谱面文件和 SDL 初始化失败路径检查。需要真实窗口和 GPU 的当前 Stage 3 六帧 OpenGL presentation 冒烟测试按 `docs/BUILDING.md` 单独执行，不混入算法单元测试；阶段 1A 的历史三帧 A/B 结果以[阶段 1A 完成报告](stage_reports/stage_1a_completion_report.md)为准。
 
 尚未实现的模块不需要提前创建空测试 target。测试名称应描述行为和条件，不能只重复被测函数名。
 
@@ -2388,7 +2391,7 @@ Core 提供 Result/Error、日志封装和 ThreadChecker，不依赖 SDL/OpenGL
 Platform 以 RAII Runtime、Window 和 Window Lease 管理 SDL 主线程及生命周期
 World 以受线程检查的回调访问 EnTT Registry，禁止返回 Registry 内部指针或引用
 Render 前端只定义最小帧契约；OpenGL 3.3 Core Context 和调用封装在 cuexis_render_opengl
-Player 组合窗口、World 和 OpenGL Backend，并提供严格渲染三帧的 --smoke-test
+Player 组合窗口、World 和 OpenGL Backend；当前 --smoke-test 已升级为 Stage 3 六帧真实表现验证
 Catch2/CTest、格式检查、架构扫描和 Player 失败路径均有标准构建入口
 ```
 
@@ -2508,7 +2511,7 @@ Player 默认加载阶段 1B project fixture，--project 与 --chart 互斥，�
 以 chartTimeMs 驱动位置、旋转、缩放和 camera.fovY，并支持绝对时间重采样（已完成）
 建立第一版不暴露 RuntimeSession/World/EnTT 的 PlaybackSession 门面（已完成）
 支持宿主直接提交 RuntimeFrame，并输出不依赖 SDL/OpenGL 的 FrameSnapshot（已完成）
-Player 改为 PlaybackSession 的薄组合层；确定性 smoke 使用 stage1c_project（已完成）
+Player 改为 PlaybackSession 的薄组合层；Stage 1C 历史 smoke 使用 stage1c_project，当前 smoke 使用 stage3_project（已完成）
 ```
 
 验收标准（实现部分已完成，门禁结果见阶段报告）：
@@ -2578,7 +2581,7 @@ static/shared consumer 在干净部署目录中运行，且不泄漏内部符号
 
 ### 阶段 2：Cuexis Behavior 表达能力强化
 
-状态：实现与 Windows 本地门禁已完成；hosted Linux CI 待最终跨平台验收。精确证据见[阶段 2 完成报告](stage_reports/stage_2_completion_report.md)。
+状态：实现与本地/hosted 跨平台验收完成。精确证据见[阶段 2 完成报告](stage_reports/stage_2_completion_report.md)。
 
 目标：让 Behavior 成为 Cuexis 谱面表现的核心表达能力，不扩张为宿主任意脚本或通用游戏逻辑系统。
 
@@ -2611,42 +2614,27 @@ TimingMap 边界、Stop 区间和负 Beat 有单元测试
 
 ### 阶段 3：可移植表现前端与渲染适配，8-10 个月
 
-目标：冻结宿主可消费的 FrameSnapshot/RenderPacket，并把 OpenGL 与特定宿主引擎彻底隔离为 adapter。
+阶段 3 的完整范围、批次、资源合同、事务边界、测试矩阵和完成定义见[阶段 3 实施计划](stage_plans/stage_3_implementation_plan.md)。公共方向由 [ADR 0037](adr/0037-stage-3-portable-presentation-contracts.md) 冻结。
 
-任务：
+状态：3A 精确合同、3B portable resource/candidate acquisition、3C Snapshot/common extraction、
+3D Validation Sink、3E OpenGL adapter/Player 真实绘制、3F external package consumer 与 3G
+全链路跨平台验收均已关闭；阶段 3 已于 2026-08-08 最终完成。
 
-```text
-稳定并扩展 RenderScene / RenderCommandList
-冻结 FrameSnapshot/RenderPacket 所有权、有效期和大小预算
-定义宿主 Camera/Viewport 输入与坐标转换契约
-仅在 Cuexis 表现有真实消费者时定义 LightComponent
-定义 PipelineDesc
-定义 TextureDesc
-定义 BufferDesc
-定义 MaterialAsset
-定义后端无关的 RenderConfig，区分请求值、实际有效值以及启动期静态/运行时动态字段
-由宿主/应用 adapter 把 RenderConfig 映射为后端配置，业务与项目文件不暴露后端枚举
-定义 Portable Presentation、Built-in Renderer 和 Host-specific capability 分层
-建立不执行 GPU 绘制的验证 Sink
-实现 OpaquePass
-实现 TransparentPass
-实现 DebugPass
-实现基础排序
-实现材质参数上传
-```
+下一工作项是 Stage 3 独立 review。review 以 finding 优先，不自动进入 remediation 或 Stage 4；精确
+交接范围见[阶段 3 实施计划第 12 节](stage_plans/stage_3_implementation_plan.md)。
 
-验收标准：
+摘要：
 
 ```text
-RenderSystem 只生成 RenderScene
-OpenGL 只存在于 cuexis_render_opengl
-材质系统不暴露 GLuint
-Playback 公共头和 FrameSnapshot 不暴露任何图形 API 类型
-透明对象有稳定绘制顺序
-可以显示基础 debug geometry
-无效 RenderConfig 在创建 Backend 前失败；有效配置可查询并诊断实际生效值
-切换有效 RenderConfig 请求只影响渲染子系统，不改变 Chart、Behavior 或 World 数据
-宿主能力不足时稳定失败或执行项目显式允许的受控降级
+FrameSnapshot 是唯一公共权威帧；RenderPacket 只能是 adapter 内部派生输入
+Portable Presentation v1 只包含 Mesh、Texture2D、固定 Unlit Material
+Playback 提供候选 manifest 和拥有型资源获取，不公开 AssetDatabase/ResourceManager/Provider
+宿主只提供 FrameViewport，不覆盖 Chart/Behavior 相机
+固定 Opaque、Transparent、Debug 三个 Pass；Light、Particle、UI、RenderGraph 和通用 Pipeline/Buffer 延后
+3C 已提供 Snapshot portable ref、共同 normalizer 和 FrameDigest v3，并保留 digest v1/v2 historical golden
+3D Validation Sink 与 3E OpenGL adapter 使用同一规范化顺序并固定 summary golden
+Player 通过 stage3_project 六帧 smoke 验证真实 Mesh/Texture/Unlit、空帧与 reload 原子性
+3F 以只链接 Cuexis::Playback 的 clean add_subdirectory/find_package consumer 固定安装包闭包
 ```
 
 ### 阶段 4：Cuexis 表现动画系统，10-12 个月
@@ -2689,7 +2677,7 @@ Host Override 结束后属性恢复到下层求值结果
 #### 阶段 5A：材质资产与参数
 
 ```text
-实现 MaterialAsset、MaterialHandle、参数 Schema 和 RenderState
+在 Stage 3 Unlit Material v1 之上实现版本化 MaterialAsset、MaterialHandle、参数 Schema 和 RenderState
 实现材质参数上传、默认 Shader 引用和运行时材质预览
 定义跨宿主最低 Portable Material Schema
 ```
@@ -2811,7 +2799,7 @@ Studio 显示目标宿主 Profile 与不兼容表现能力
 #### 阶段 8A：基础发射器与渲染
 
 ```text
-定义 ParticleEmitterAsset、ParticleEmitterComponent、ParticleSystem 和 ParticleRenderPacket
+定义 ParticleEmitterAsset、ParticleEmitterComponent、ParticleSystem 和 FrameSnapshot 粒子表现扩展
 实现 CPU 粒子、Billboard 渲染、生命周期颜色/大小、速度和重力参数
 ```
 
@@ -2833,7 +2821,7 @@ Studio 显示目标宿主 Profile 与不兼容表现能力
 
 ```text
 Entity 可以挂载并编辑粒子发射器，粒子可以跟随父级 Transform
-粒子不直接依赖 OpenGL，渲染通过 FrameSnapshot 中的 ParticleRenderPacket
+粒子不直接依赖 OpenGL，渲染通过 FrameSnapshot 的版本化粒子表现扩展字段
 不同渲染帧率和 Checkpoint 布局产生相同目标粒子状态
 暂停、倒放和 Audio Seek 后粒子能恢复正确状态
 调整预算只影响重建耗时和缓存布局，不改变目标时刻的粒子结果
@@ -2918,7 +2906,7 @@ AudioDeviceProfile 校准值与输出设备身份绑定；阶段 11 已完成时
 Chart / Behavior / World 不需要修改
 形成 Vulkan ADR 文档
 切换后端只影响应用/宿主 adapter、Render 前端/后端和派生 Shader 缓存，不要求迁移项目内容
-FrameSnapshot/RenderPacket、Chart、Behavior、World 和 Judgement 不需要修改
+FrameSnapshot、Chart、Behavior、World 和 Judgement 不需要修改；adapter 只消费同一 Snapshot 合同
 请求后端不可用时产生稳定诊断；是否允许回退由显式配置决定
 ```
 
@@ -3022,7 +3010,7 @@ Cuexis-owned JSON Value、typed Reader、字段路径诊断、解析预算和独
 方案 A/B loader、有理数 Beat、基础 TimingMap、模板展开、确定性 UUIDv5 导入和 ChartRuntime 编译
 ChartWorldInstantiator、事务式 RuntimeSession、父子 Transform 与稳定 Object/Entity 映射
 RenderScene/RenderCommand、DebugDraw XYZ 轴线和 OpenGL 3.3 Debug Line 管线
-Cuexis Player 的阶段 1A canonical/simple --chart 回归入口与严格三帧冒烟能力
+Cuexis Player 的阶段 1A canonical/simple --chart 历史回归入口与当前 Stage 3 六帧冒烟能力
 阶段 1A targets 的 Catch2/CTest、失败路径、架构扫描、格式和警告基线
 ProjectConfig/Asset Index v1、固定文件定位、portable path 与物理 containment、原子保存和独立 cuexis.asset-index.json
 AssetDatabase、同步有界 CPU blob ResourceManager、typed Handle、manager token、generation/contentRevision、Lease/Scope 和三种引用策略
@@ -3032,7 +3020,7 @@ Player 默认阶段 1B Project、--project/--chart 互斥、3 个 Renderable 和
 
 上述方案 A/B loader 与 canonical/simple 回归入口是阶段 1 的历史完成事实；ADR 0035 已在阶段 2A.1 删除方案 B，不能把它们继续作为阶段 2 之后的验收要求。
 
-阶段 1C、阶段 1D 与阶段 1E 已完成最终验收；阶段 1E 的 `0.3.0` static/shared Playback Core preview 已通过 Windows/MSVC、Windows/MinGW 和 Linux GCC/Clang 自动化矩阵。阶段 2 已把 preview API 提升到 `0.4.0`，实现 Chart v3、Tempo/Stop、Behavior/Step Event、Visibility/Material Snapshot、capability、FrameDigest v2 和迁移工具，并通过本地 Windows/MSVC static/shared Debug/Release、headless、format、architecture 与 external consumer 门禁。当前最高优先级是补齐 GPU smoke 和 hosted Linux CI 后关闭阶段 2 最终验收；随后进入阶段 3。稳定 C ABI 必须在正式 Judgement/Replay 公共契约完成后再冻结。
+阶段 1C、阶段 1D 与阶段 1E 已完成最终验收；阶段 1E 的 `0.3.0` static/shared Playback Core preview 已通过 Windows/MSVC、Windows/MinGW 和 Linux GCC/Clang 自动化矩阵。阶段 2 已把 preview API 提升到 `0.4.0`，实现 Chart v3、Tempo/Stop、Behavior/Step Event、Visibility/Material Snapshot、capability、FrameDigest v2 和迁移工具，并通过本地 Windows/MSVC static/shared Debug/Release、headless、GPU smoke、format、architecture、external consumer 与 hosted Linux 门禁。阶段 3A Portable Presentation Profile v1 精确合同已经接受，3B/3C 已实现 owning portable resource、candidate manifest/acquisition、Snapshot resource refs、共同表现提取、FrameDigest v3 和 SDK API `0.5.0`；3D 已实现 public capability preflight、public-only Validation Sink、normalized summary oracle 和 external consumer golden；3E 已实现 OpenGL candidate GPU cache、固定 Unlit pipeline、真实 Mesh/Texture 绘制和 Player 六帧 smoke；3F 已实现只链接 `Cuexis::Playback` 的 add_subdirectory/find_package consumer、clean package/version/component/license 门禁和 shared export/import 闭包；3G 已完成 Windows/MSVC、Windows/MinGW、WSL GCC/Clang 与 hosted Linux Quality 最终验收。阶段 3 已于 2026-08-08 关闭；稳定 C ABI 必须在正式 Judgement/Replay 公共契约完成后再冻结。
 
 每次交付仍须按 `docs/BUILDING.md` 在目标环境执行 Debug 配置、构建、CTest、格式检查和图形冒烟；Chart 回归只使用 canonical 输入，并保留 retired Simple 的 unsupported-format 测试。Release 或后端相关改动还须验证 Release。精确结果记录在对应阶段报告，不固化在本指南中。
 

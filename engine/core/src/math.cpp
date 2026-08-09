@@ -215,8 +215,8 @@ Result<Mat4> makePerspective(double fovYRadians, double aspectRatio, double near
     result.element(0, 0) = 1.0F / (tanHalfFovFloat * static_cast<float>(aspectRatio));
     result.element(1, 1) = 1.0F / tanHalfFovFloat;
     result.element(2, 2) = static_cast<float>(depthScale);
-    result.element(2, 3) = -1.0F;
-    result.element(3, 2) = static_cast<float>(depthTranslation);
+    result.element(2, 3) = static_cast<float>(depthTranslation);
+    result.element(3, 2) = -1.0F;
     result.element(3, 3) = 0.0F;
     if (result.element(0, 0) == 0.0F || result.element(1, 1) == 0.0F ||
         result.element(2, 2) == 0.0F || result.element(3, 2) == 0.0F) {

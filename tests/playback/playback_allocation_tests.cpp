@@ -1,11 +1,16 @@
 #include <cuexis/content/content_provider.hpp>
 #include <cuexis/playback/playback_session.hpp>
+#include <cuexis/playback/playback_source.hpp>
+
+#include "../presentation/validation_sink.hpp"
+#include "presentation_extraction.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 
 #include <atomic>
 #include <cstddef>
 #include <cstdlib>
+#include <filesystem>
 #if defined(_MSC_VER) && defined(_DEBUG)
 #include <crtdbg.h>
 #endif
@@ -16,6 +21,7 @@
 #endif
 #include <new>
 #include <string>
+#include <vector>
 
 namespace {
 
@@ -240,4 +246,115 @@ TEST_CASE("Stage 2 playback update and reusable extraction allocate nothing afte
     CHECK(allocations == 0);
     REQUIRE(snapshot.objects.size() == 1);
     CHECK(snapshot.objects[0].materialAssetId == secondMaterial);
+}
+
+TEST_CASE("Stage 3 portable frame extraction and normalization allocate nothing after warmup",
+          "[playback][stage3][allocation]") {
+    const auto root =
+        std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" / "projects" / "stage3_project";
+    auto source = cuexis::playback::PlaybackSource::fromFilesystemProject(root);
+    REQUIRE(source.has_value());
+    cuexis::playback::PlaybackSession session;
+    REQUIRE(
+        session.load(std::move(*source), cuexis::playback::PlaybackMode::ChartClock).has_value());
+    auto manifest = session.presentationManifest();
+    REQUIRE(manifest.has_value());
+    std::vector<cuexis::playback::PortableResourcePtr> resources;
+    resources.reserve(manifest->entries.size());
+    for (const auto& entry : manifest->entries) {
+        auto resource = session.acquirePresentationResource(entry.reference);
+        REQUIRE(resource.has_value());
+        resources.push_back(std::move(*resource));
+    }
+
+    cuexis::playback::FrameSnapshot snapshot;
+    cuexis::playback::detail::NormalizedPresentationFrame normalized;
+    REQUIRE(session.update({.chartTimeMs = 0.0}).has_value());
+    REQUIRE(session.extractFrame({.width = 1280, .height = 720}, snapshot).has_value());
+    REQUIRE(cuexis::playback::detail::normalizePresentationFrame(snapshot, *manifest, resources,
+                                                                 normalized)
+                .has_value());
+
+    beginAllocationTracking();
+    bool succeeded = true;
+    for (std::size_t index = 1; index <= 64; ++index) {
+        const double chartTimeMs = index % 2 == 0 ? 0.0 : 500.0;
+        const auto updated = session.update({.chartTimeMs = chartTimeMs,
+                                             .simulationDeltaTimeMs = 0.0,
+                                             .timeDiscontinuityId = index});
+        const auto extracted = session.extractFrame({.width = 1280, .height = 720}, snapshot);
+        const auto presented = cuexis::playback::detail::normalizePresentationFrame(
+            snapshot, *manifest, resources, normalized);
+        if (!updated || !extracted || !presented) {
+            succeeded = false;
+            break;
+        }
+    }
+    const auto allocations = endAllocationTracking();
+
+    CHECK(succeeded);
+    CHECK(allocations == 0);
+    REQUIRE(snapshot.objects.size() == 2);
+    CHECK(snapshot.objects[0].materialAssetId == "material.opaque");
+    REQUIRE(snapshot.objects[0].mesh.has_value());
+    REQUIRE(snapshot.objects[0].material.has_value());
+    REQUIRE(normalized.opaque.size() == 1);
+    CHECK(normalized.transparent.empty());
+}
+
+TEST_CASE("Stage 3 Validation Sink repeated frame validation allocates nothing after warmup",
+          "[playback][stage3][validation][allocation]") {
+    const auto root =
+        std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" / "projects" / "stage3_project";
+    auto source = cuexis::playback::PlaybackSource::fromFilesystemProject(root);
+    REQUIRE(source.has_value());
+    cuexis::playback::PlaybackSession session;
+    auto prepared =
+        session.prepareLoad(std::move(*source), cuexis::playback::PlaybackMode::ChartClock);
+    REQUIRE(prepared.has_value());
+
+    const cuexis::playback::PresentationCapabilities capabilities{
+        .opaquePass = true,
+        .transparentPass = true,
+        .linearTexture = true,
+        .srgbTexture = true,
+        .straightAlphaBlend = true,
+        .backFaceCulling = true,
+        .doubleSided = true,
+        .debugPass = true,
+        .maxResourceBytes = 64ULL * 1024ULL * 1024ULL,
+        .maxTotalDecodedBytes = 512ULL * 1024ULL * 1024ULL,
+        .maxTextureDimension = 8192,
+        .maxMeshVertices = 1'048'576,
+        .maxMeshIndices = 3'145'728,
+    };
+    auto validationCandidate = cuexis::test_support::prepareValidationCandidate(
+        *prepared, capabilities, {.enableDebugPass = true});
+    REQUIRE(validationCandidate.hasValue());
+    REQUIRE(session.commit(std::move(*prepared)).has_value());
+    cuexis::test_support::ValidationSink sink;
+    sink.activate(std::move(*validationCandidate.candidate));
+
+    REQUIRE(session.update({.chartTimeMs = 625.0}).has_value());
+    cuexis::playback::FrameSnapshot snapshot;
+    REQUIRE(session.extractFrame({.width = 1280, .height = 720}, snapshot).has_value());
+    cuexis::test_support::ValidationSummary summary;
+    REQUIRE(sink.validateFrame(snapshot, summary).has_value());
+    REQUIRE(sink.validateFrame(snapshot, summary).has_value());
+
+    beginAllocationTracking();
+    bool succeeded = true;
+    for (std::size_t index = 0; index < 128; ++index) {
+        if (!sink.validateFrame(snapshot, summary)) {
+            succeeded = false;
+            break;
+        }
+    }
+    const auto allocations = endAllocationTracking();
+
+    CHECK(succeeded);
+    CHECK(allocations == 0);
+    CHECK(summary.opaque.empty());
+    REQUIRE(summary.transparent.size() == 1);
+    CHECK(summary.digest != 0);
 }

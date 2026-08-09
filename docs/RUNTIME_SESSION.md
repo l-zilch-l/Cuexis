@@ -1,8 +1,8 @@
 # Cuexis RuntimeSession 规范
 
-状态：阶段 1C/1D 会话合同与阶段 2 Timing、Behavior Event、表现属性和调试快照均已实现
+状态：阶段 1C/1D 会话合同、阶段 2 Timing/Behavior/表现属性和阶段 3C portable Snapshot 均已实现
 
-更新日期：2026-08-06
+更新日期：2026-08-07
 
 ## 职责与所有权
 
@@ -34,7 +34,7 @@ ContentProvider 与资源预算
 RuntimeFrame 与标准化 InputEvent
 RuntimeSession prepare/update/reload/unload
 extractResult()：从 Session 开始累积的判定事件、分数、连击和统计快照
-extractFrame()：后端无关的 FrameSnapshot/RenderPacket 提取
+extractFrame()：后端无关的拥有型 FrameSnapshot 提取
 startRecording()：按 chartTimeMs 记录全部 InputEvent
 stopRecording()：停止记录并返回可序列化 ReplayData
 loadReplay()：注入预记录 InputEvent 替代实时输入
@@ -42,7 +42,13 @@ loadReplay()：注入预记录 InputEvent 替代实时输入
 结构化 Diagnostics
 ```
 
-PlaybackSession 不创建宿主窗口、不拥有宿主主循环，也不要求 SDL/OpenGL。当前 C++20 门面已提供 `loadChart(string_view)`、`update(RuntimeFrame)`、`extractFrame(FrameViewport)`、显式目标帧 `reload` 和 `unload`。`FrameSnapshot` 拥有对象 ID、World Matrix、Camera View/Projection、Visibility、Material asset/opacity/tint 和视口数据；Reload/Unload 不使已返回 Snapshot 悬空。`findEntity(entt::entity)`、`withWorld`、Runtime 调试快照和 Registry 访问只能作为内部或受限调试接口，不能进入安装后的 SDK 公共头。
+PlaybackSession 不创建宿主窗口、不拥有宿主主循环，也不要求 SDL/OpenGL。当前 C++20 门面已提供 `loadChart(string_view)`、`update(RuntimeFrame)`、`extractFrame(FrameViewport)`、显式目标帧 `reload` 和 `unload`。`FrameSnapshot` 拥有对象 ID、World Matrix、Camera View/Projection、Visibility、Material asset/opacity/tint、Mesh/Material portable ref 和视口数据；Reload/Unload 不使已返回 Snapshot 悬空。`findEntity(entt::entity)`、`withWorld`、Runtime 调试快照和 Registry 访问只能作为内部或受限调试接口，不能进入安装后的 SDK 公共头。
+
+ADR 0037 的 Stage 3A 合同及 3B/3C 实现保持 `FrameSnapshot` 为唯一公共权威帧。
+`PreparedPlayback` 和活动 Session 提供 owning manifest 与按 ref 获取 owning immutable portable
+resource 的接口；ref 只包含 Cuexis-owned type、AssetId 和 semantic identity。共同表现提取从
+Snapshot 与 portable resources 派生 effective color/alpha、Pass、cull、depth state 和 canonical
+sort record，但这些 adapter 内部记录不能成为第二套 Playback Runtime 输出。
 
 Stage 2 的 Playback capability set version 1 使用
 `cuexis.chart.v3`、`cuexis.behavior.event.v1`、`cuexis.render.visibility.v1` 和
@@ -50,13 +56,16 @@ Stage 2 的 Playback capability set version 1 使用
 资源请求和 World 发布前校验。缺少能力产生确定排序的 `playback.capability.unsupported`，不在
 运行中静默跳过属性，也不复用 Chart `requiredExtensions`。
 
-FrameDigest algorithm version 2 把 Visibility、Material asset ID、opacity 和 tint 纳入
-RuntimeFrame/FrameSnapshot 的稳定 little-endian FNV-1a 64 编码。version 1 的历史算法定义不
-改变；Stage 2 consumer 必须显式检查 `algorithmVersion == 2` 后再比较 golden。
+当前默认 FrameDigest algorithm version 3 在 version 2 的 Visibility、Material asset ID、opacity、
+tint 等字段上，增加 Mesh/Material ref presence、type、AssetId 和 32-byte semantic identity，并继续
+使用稳定 little-endian FNV-1a 64 编码。version 1/2 是保留不变的历史算法定义；比较历史 golden
+时必须显式选择对应内部兼容路径，当前 public `computeFrameDigest()` 返回
+`algorithmVersion == 3`。
 
 阶段 1D 已增加 move-only、owner-thread 的 Prepared Playback load/reload。Prepared 对象内部持有
-候选 Runtime 与 AudioSourceLease，只公开 `PlaybackContentInfo` 和调用期有效的
-`MainMusicSourceView`；宿主和 adapter 不得看到 ResourceManager slot、Handle 或 Lease。
+候选 Runtime、AudioSourceLease 和 optional Prepared Presentation；公开 `PlaybackContentInfo`、调用期
+有效的 `MainMusicSourceView`、candidate token、owning manifest 与 owning resource acquisition。
+宿主和 adapter 不得看到 ResourceManager slot、Handle 或 Lease。
 确定性准备全部成功并完成音频激活后，Playback commit 只执行无分配、不可失败的状态交换。
 `cuexis_playback` 可以依赖后端无关的 `cuexis_audio` 以提供 RuntimeTimeline，但仍不得依赖
 `cuexis_audio_sdl` 或 SDL。
@@ -110,7 +119,13 @@ World 必须在 Scope 前销毁，确保 Component 清理期间资源 Handle 仍
 
 Prepared 数据同时绑定创建它的 Session token 和 ResourceManager token。跨 Session、跨 Manager、已经消费或 Session 地址复用后的提交均失败。Handle 除 index/generation 外还必须属于当前 Manager；Runtime 不接受只通过 `valid()` 但来源不同的 Handle。
 
-阶段 1B 的资源准备采用同步主线程路径。Mesh/Material 使用 Fallback 策略，Scope 对直接引用和 Material 等资源的传递依赖闭包去重；Component 只保存 Handle。准备诊断固定最多 1024 条，成功 commit 后成为 Session 的活动 Diagnostics。
+阶段 1B 的资源准备采用同步主线程路径。Mesh/Material 使用 Fallback 策略，Scope 对直接引用和
+Material 等资源的传递依赖闭包去重；Component 只保存 Handle。准备诊断固定最多 1024 条，成功
+commit 后成为 Session 的活动 Diagnostics。
+
+该 Fallback 行为是内部 opaque 资源合同。Stage 3 Portable Presentation v1 不把现有 built-in
+fallback blob 解释为 Mesh/Material/Texture2D；候选 presentation 闭包必须严格成功，并在
+Playback commit 前拒绝 fallback。通用 ResourceManager 策略与阶段 1B 回归保持不变。
 
 ## Update 与时间不连续
 

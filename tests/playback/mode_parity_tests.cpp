@@ -30,6 +30,13 @@ void checkSnapshotsEqual(const cuexis::playback::FrameSnapshot& first,
         CHECK(firstObject.id == secondObject.id);
         CHECK(firstObject.hasTransform == secondObject.hasTransform);
         CHECK(firstObject.visible == secondObject.visible);
+        CHECK(firstObject.materialAssetId == secondObject.materialAssetId);
+        CHECK(firstObject.mesh == secondObject.mesh);
+        CHECK(firstObject.material == secondObject.material);
+        CHECK(firstObject.materialOpacity == secondObject.materialOpacity);
+        for (std::size_t tintIndex = 0; tintIndex < 3; ++tintIndex) {
+            CHECK(firstObject.materialTint[tintIndex] == secondObject.materialTint[tintIndex]);
+        }
         for (std::size_t matrixIndex = 0; matrixIndex < 16; ++matrixIndex) {
             CHECK(firstObject.worldMatrix[matrixIndex] == secondObject.worldMatrix[matrixIndex]);
         }

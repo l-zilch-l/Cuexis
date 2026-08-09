@@ -1,5 +1,11 @@
 add_library(cuexis_playback ${CUEXIS_LIBRARY_TYPE}
     src/frame_digest.cpp
+    src/frame_digest_internal.hpp
+    src/frame_digest_version.cpp
+    src/presentation.cpp
+    src/presentation_extraction.cpp
+    src/presentation_extraction.hpp
+    src/presentation_internal.hpp
     src/playback_session.cpp
     src/playback_source.cpp
     src/playback_source_state.hpp
@@ -32,6 +38,7 @@ target_sources(cuexis_playback
             include/cuexis/playback/frame_digest.hpp
             include/cuexis/playback/playback_session.hpp
             include/cuexis/playback/playback_source.hpp
+            include/cuexis/playback/presentation.hpp
             include/cuexis/playback/runtime_timeline.hpp
 )
 

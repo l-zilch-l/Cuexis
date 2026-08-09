@@ -1,6 +1,6 @@
 # Third-Party Notices
 
-This file is the source-tree notice inventory for the current Cuexis stage 1D tree. Versions below are resolved by the pinned vcpkg baseline `40f3c709db80acf154ac4b17a1f83c564ebd022e`. Exact distributed transitive notices must be verified again before each release.
+This file is the source-tree notice inventory for the current Cuexis Stage 3 tree. Versions below are resolved by the pinned vcpkg baseline `40f3c709db80acf154ac4b17a1f83c564ebd022e`. Exact distributed transitive notices must be verified again before each release. The base Playback SDK package does not distribute SDL3, glad, or the in-tree OpenGL adapter; only an install that explicitly includes the optional AudioSDL component adds the SDL3 notice.
 
 ## Direct Dependencies
 

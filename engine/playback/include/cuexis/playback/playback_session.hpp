@@ -13,6 +13,7 @@
 #include <cuexis/core/result.hpp>
 #include <cuexis/playback/playback_export.hpp>
 #include <cuexis/playback/playback_source.hpp>
+#include <cuexis/playback/presentation.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -81,6 +82,8 @@ struct FrameSnapshot final {
         bool hasTransform{};
         bool visible{true};
         std::string materialAssetId;
+        std::optional<PresentationResourceRef> mesh;
+        std::optional<PresentationResourceRef> material;
         double materialOpacity{1.0};
         float materialTint[3]{1.0F, 1.0F, 1.0F};
     };
@@ -136,6 +139,14 @@ class CUEXIS_PLAYBACK_API PreparedPlayback final {
     [[nodiscard]] bool valid() const noexcept;
     [[nodiscard]] const PlaybackContentInfo* contentInfo() const noexcept;
     [[nodiscard]] std::optional<MainMusicSourceView> mainMusicSource() const noexcept;
+    [[nodiscard]] auto presentationCandidateToken() const
+        -> core::Result<PresentationCandidateToken>;
+    [[nodiscard]] auto presentationManifest() const noexcept -> const PresentationResourceManifest*;
+    [[nodiscard]] auto validatePresentation(const PresentationCapabilities& capabilities,
+                                            const PresentationRequest& request) const
+        -> PresentationValidationResult;
+    [[nodiscard]] auto acquirePresentationResource(const PresentationResourceRef& reference) const
+        -> core::Result<PortableResourcePtr>;
 
   private:
     friend class PlaybackSession;
@@ -158,6 +169,10 @@ class CUEXIS_PLAYBACK_API PlaybackSession final {
 
     [[nodiscard]] auto state() const -> core::Result<SessionState>;
     [[nodiscard]] auto capabilities() const -> core::Result<PlaybackCapabilitySet>;
+
+    [[nodiscard]] auto presentationManifest() const -> core::Result<PresentationResourceManifest>;
+    [[nodiscard]] auto acquirePresentationResource(const PresentationResourceRef& reference) const
+        -> core::Result<PortableResourcePtr>;
 
     [[nodiscard]] auto prepareLoad(std::string_view jsonText, PlaybackMode mode)
         -> core::Result<PreparedPlayback>;
