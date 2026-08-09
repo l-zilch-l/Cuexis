@@ -258,9 +258,11 @@ Playback API”的更强结论。当前 C++ shared package 本来就是 matching
 `VerifySharedExports.cmake` 现在显式禁止两个函数名和 Playback `detail` namespace，并对 Cuexis 自有
 导出执行公共 owner allowlist：`ChartClock`、`PlaybackSession`、`PlaybackSource`、`PreparedPlayback`、
 `RuntimeTimeline` 以及公共 free function `computeFrameDigest`。Windows `dumpbin` 对 DLL 的全部显式导出
-执行 allowlist；Linux `nm -D -C` 对顶层 owner 为 Cuexis 的动态符号执行同一约束，并忽略 GCC/libstdc++
-生成、顶层 owner 为 `std` 或 `__gnu_cxx` 的弱模板符号。MSVC 与 WSL GCC shared export gate 均通过，
-两种平台的导出表均不再包含两个 detail 函数。
+执行 allowlist；Linux 使用 `nm -D` 的原始 Itanium symbol 判断顶层 owner 和执行 allowlist，另以
+`nm -D -C` 检查必需公共名称。由 GCC/Clang/libstdc++ 生成、顶层 owner 为 `std`、`__gnu_cxx` 的弱模板
+符号即使参数提到 Cuexis 私有类型也不会误判，而真正以 Cuexis namespace 为 owner 的 symbol 仍必须
+满足 allowlist。MSVC、WSL GCC 和 WSL Clang shared export gate 均通过，导出表均不再包含两个 detail
+函数。
 
 ## 3. 未升级为 finding 的测试缺口与残余风险
 
@@ -346,8 +348,14 @@ Playback API”的更强结论。当前 C++ shared package 本来就是 matching
 - WSL Clang 21.1 ASan+UBSan build 更新成功；同组 Playback 与 allocation 测试全部通过，未报告
   sanitizer 错误。
 - WSL Ubuntu GCC 15.2 在 ext4 build dir 完成新的 shared build；shared Playback 与 allocation 测试
-  全部通过，`cuexis_shared_export_surface` 的 `nm -D -C` 路径通过，动态表不包含 Playback detail
+  全部通过，`cuexis_shared_export_surface` 的 ELF symbol 路径通过，动态表不包含 Playback detail
   symbol。
+- GitHub Linux Quality push run `31317931701` 和 pull-request run `31318187259` 的唯一失败 job 均为
+  Clang Shared Debug `cuexis_shared_export_surface`。Clang 动态表中没有顶层 Playback detail symbol；旧
+  gate 是在两个顶层为 `std::operator==`、但模板参数包含私有 `PresentationResourceKey` 的弱符号上发生
+  全文子串误判。修复后 WSL Clang 21.1 shared build 的同一 gate 通过；最小负例实际导出
+  `cuexis::playback::detail::normalizePresentationFrame` 时仍被 gate 拒绝。GitHub hosted rerun 待本次
+  修复提交后触发。
 - Debug GPU smoke 退出码为 0；证据为
   `out/build/debug/r06-r07-smoke-20260809-221150.log`。Release GPU smoke 退出码为 0；证据为
   `out/build/release/r06-r07-smoke-20260809-221151.log`。两份日志都包含
@@ -358,8 +366,8 @@ Playback API”的更强结论。当前 C++ shared package 本来就是 matching
 ## 5. Review 判定
 
 现有 CI、package consumer、格式、架构、allocation 和 GPU smoke 证据是真实且有价值。R01-R07 已按
-上述方案整改，并获得 Windows Debug/Release/shared、WSL GCC shared/static、WSL Clang sanitizer 和 GPU
-smoke 证据。当前没有开放 finding，但 R01-R07 仍需由独立复审确认关闭。
+上述方案整改，并获得 Windows Debug/Release/shared、WSL GCC shared/static、WSL Clang shared/sanitizer
+和 GPU smoke 证据。当前没有开放 finding，但 R01-R07 仍需由独立复审确认关闭。
 
 阶段 3 的独立 review 结论更新为“整改完成，等待独立复审”，不是“无条件关闭”。当前整改范围严格
 限定为 R01-R07，未授权或开始 Stage 4。
