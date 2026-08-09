@@ -1,21 +1,22 @@
 # 阶段 3：可移植表现前端与渲染适配实施计划
 
-状态：3A-3F 已关闭；3G 本地 Windows/WSL 验收完成，当前实现分支的 hosted Linux 门禁待关闭
+状态：3A-3G 已完成并关闭；阶段 3 已于 2026-08-08 最终验收完成
 
 决策依据：[ADR 0037](../adr/0037-stage-3-portable-presentation-contracts.md)。总体阶段边界见
 [SDK 改造与阶段路线调整方案](cuexis_sdk_transition_plan.md)。
 
-阶段 2 的 Windows/MSVC、MinGW、GPU 和 external consumer 本地门禁已经完成；Stage 3 3G 也已完成
-本地 Windows/MSVC 与 WSL GCC/Clang、sanitizer、package consumer 验收。当前实现分支仍没有 hosted
-Linux run URL，因此不得把 Stage 2 描述为最终跨平台完成，也不得发布 Stage 3 全阶段完成声明。
+阶段 2 的 Windows/MSVC、MinGW、GPU 和 external consumer 本地门禁，以及 Stage 3 3G 的本地
+Windows/MSVC、WSL GCC/Clang、sanitizer、package consumer 验收均已完成。Stage 3 commit
+`b71ef23b2f258d88e274a9b4b13665ef10a39845` 的 hosted Linux Quality run 已全部通过，Stage 2
+遗留跨平台前置与 Stage 3 全阶段门禁均已关闭。
 
 ## 0. 当前启动状态
 
 项目所有者已于 2026-08-07 接受
 [Portable Presentation Profile v1](../PORTABLE_PRESENTATION.md) 的 S3A-01..S3A-12 精确合同。
 3A、3B、3C、3D、3E 已关闭；3F 已于 2026-08-08 完成并关闭。项目所有者随后授权进入
-3G；Windows/MSVC 与 WSL Linux 本地验收已完成。未完成的 hosted Linux run URL 仍是 Stage 3
-最终关闭前必须补齐的跨平台发布门禁。
+3G；Windows/MSVC、WSL Linux 和 hosted Linux 最终矩阵均已完成。Stage 3 已于 2026-08-08
+最终关闭。
 
 当前代码事实：
 
@@ -51,9 +52,10 @@ Linux run URL，因此不得把 Stage 2 描述为最终跨平台完成，也不�
 package 拓扑。3A 期间禁止修改 public header、C++ source、CMake target、Schema、fixture 或测试。
 3A 的全部决策经用户接受后，才能进入 3B。
 
-Stage 2 hosted Linux 是开放的跨平台发布门禁，不是 Stage 3 实现的代码依赖。它必须在 Stage 3
-最终关闭前提供可引用 run URL；所有状态与报告必须显式保留该开放门禁，不能用 Stage 3 的
-Windows 或 WSL 本地结果替代。
+Stage 2 hosted Linux 是 Stage 3 实现之外的跨平台发布门禁。该门禁最终由 commit
+`b71ef23b2f258d88e274a9b4b13665ef10a39845` 的 Linux Quality
+[run 31270268057](https://github.com/l-zilch-l/Cuexis/actions/runs/31270268057) 关闭；没有使用
+Windows 或 WSL 本地结果替代 hosted 证据。
 
 ## 1. 目标与产品边界
 
@@ -622,7 +624,7 @@ Stage 2 hosted Linux GCC/Clang、sanitizer 与 package consumer run URL 仍是�
 
 ### 3G：全链路、性能与跨平台验收
 
-状态：本地验收完成；当前实现分支的 hosted Linux run URL 待补，Stage 3 尚未最终关闭。
+状态：已于 2026-08-08 完成并关闭。
 
 任务：
 
@@ -662,8 +664,10 @@ Stage 2 hosted Linux GCC/Clang、sanitizer 与 package consumer run URL 仍是�
 - `cuexis_format_check`、`git diff --check`、public installed header ASCII、architecture、export/import、
   component/version rejection 和 license 门禁通过。精确证据与残余风险见
   [阶段 3 验收报告](../stage_reports/stage_3_completion_report.md)。
-- `codex/stage-3` 当前没有 upstream，工作树尚未提交或推送，因此没有包含本次实现的 hosted Linux
-  run URL。本地 WSL 不替代 hosted `ubuntu-latest`；完成定义第 8 项保持开放。
+- commit `b71ef23b2f258d88e274a9b4b13665ef10a39845` 已推送到 `origin/codex/stage-3`。Hosted
+  Linux Quality [run 31270268057](https://github.com/l-zilch-l/Cuexis/actions/runs/31270268057)
+  的 GCC Release、GCC shared Release、Clang shared Debug、Clang ASan+UBSan、clang-tidy 和 GCC
+  coverage 全部成功；Windows MSVC run `31270267999` 与 Windows MinGW run `31270268010` 也全部成功。
 
 ## 6. 测试矩阵
 
@@ -749,20 +753,24 @@ stage_3_completion_report.md（仅在全部门禁后创建）
 8. Windows 本地 GPU 证据和 hosted Linux GCC/Clang/sanitizer/package run URL 齐全。
 9. Stage 3 完成报告准确区分已验证平台、GPU 驱动和残余风险。
 
-## 12. 下一次对话交接清单
+关闭结果：以上九项全部满足，阶段 3 于 2026-08-08 最终完成。
 
-下一次继续 Stage 3 时按以下顺序执行：
+## 12. 下一次对话：Stage 3 review 交接清单
 
-1. 阅读仓库 `AGENTS.md`、ADR 0037、本计划第 0、3、4、5 节，以及当前
-   Playback/Assets/Runtime/Render/OpenGL/Player 落点；不要重新讨论已经接受的单一 Snapshot、
-   Portable v1、无相机覆盖和固定 Pass 边界。
-2. 提交并推送当前实现分支，等待 `.github/workflows/linux-quality.yml` 的 GCC/Clang、sanitizer、
-   clang-tidy、coverage 与 package consumer 全部结束；只记录当前实现 commit 的 run URL。
-3. 核对 3B/3C 已关闭实现：candidate/active manifest、owning acquisition、Snapshot portable refs、
-   common normalizer、FrameDigest v3、historical digest golden 和零分配门禁。
-4. 核对 3D 已关闭实现：public capability preflight、public-only Validation Sink、independent semantic
-   identity validation、transactional candidate activation、normalized summary golden 和 warmed 零分配。
-5. 核对 3E/3F 已关闭实现：OpenGL adapter 与 Player 真实绘制、Playback-only
-   add_subdirectory/find_package consumer、clean install、version/component rejection、license 和
-   shared export/import 闭包；不得把 Validation Sink、OpenGL component 或内部 normalizer header
-   安装给宿主。3G 本地证据见阶段 3 验收报告；hosted run 通过前不得宣布 Stage 3 最终完成。
+下一次对话进入 Stage 3 独立 review，不启动 Stage 4，也不默认修改实现。按以下顺序执行：
+
+1. 阅读仓库 `AGENTS.md`、ADR 0037、`docs/PORTABLE_PRESENTATION.md`、本计划第 0、3、4、5、6、
+   11 节和阶段 3 完成报告。确认工作树状态；保留任何尚未提交的最终关闭文档，不覆盖用户改动。
+2. 以 commit `b71ef23b2f258d88e274a9b4b13665ef10a39845` 为 Stage 3 实现基线，并确认当前 review
+   HEAD 包含该 commit。Linux Quality run `31270268057`、Windows MSVC run `31270267999` 和
+   Windows MinGW run `31270268010` 是最终 CI 证据；旧计划 run 不得替代。
+3. 采用 code-review 立场，先报告问题，再给摘要。finding 按 P0-P3 严重度排序，必须包含可复现的
+   行为风险、紧凑文件/行号引用和缺失测试；没有问题时明确写出 remaining test gaps 与残余风险。
+4. 审查 3B/3C：untrusted payload/整数溢出/预算、candidate/active manifest、owning acquisition、
+   source/provider 生命周期、Snapshot portable refs、normalizer、FrameDigest v1-v3 兼容和热路径分配。
+5. 审查 3D/3E：public capability preflight、Validation Sink 独立性、prepare/commit/activate 事务顺序、
+   stale/failure rollback、OpenGL context owner、GPU cache retire、Opaque/Transparent 排序与像素 golden。
+6. 审查 3F/3G：static/shared export/import、package component/version、adapter-disabled closure、公共头
+   ASCII/第三方泄漏、license/NOTICE、target allowlist，以及本地与 hosted 证据是否支持完成声明。
+7. review 阶段默认只读代码并运行必要的定向验证，不自动修复 finding。将结论写入
+   `docs/stage_reports/260808-stage-3-review.md`；修复批次必须由项目所有者在 review 后单独授权。

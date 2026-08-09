@@ -1,15 +1,15 @@
 # Building Cuexis
 
-状态：阶段 3G 本地验收构建、安装与质量门禁规范
+状态：阶段 3 最终验收后的现行构建、安装与质量门禁规范
 
 更新日期：2026-08-08
 
 ## 当前仓库说明
 
 当前仓库提供阶段 0 工程基础、阶段 1A-1E Playback Core 闭环、阶段 2 的 Chart/Behavior/迁移
-能力，以及阶段 3A-3G 本地闭环的 Portable Presentation v1、Validation Sink、OpenGL Player
-adapter、外部 package consumer 与性能 probe。当前实现分支的 hosted Linux run URL 尚未补齐；
-以下命令是受支持的标准入口，旧的 IDE 私有构建目录和手工编译产物不能作为验收依据。
+能力，以及阶段 3A-3G 的 Portable Presentation v1、Validation Sink、OpenGL Player adapter、外部
+package consumer 与性能 probe。阶段 3 本地和 hosted 跨平台矩阵已经关闭；以下命令是受支持的
+标准入口，旧的 IDE 私有构建目录和手工编译产物不能作为验收依据。
 
 当前正式激活的库 target 为：
 

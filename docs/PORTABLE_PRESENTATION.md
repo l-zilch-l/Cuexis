@@ -1,7 +1,7 @@
 # Cuexis Portable Presentation Profile v1
 
-状态：Stage 3A 精确合同已接受；Stage 3B、3C 已于 2026-08-07 关闭；Stage 3D、3E、3F 已于
-2026-08-08 关闭；3G 本地 Windows/WSL 验收已完成，当前实现分支的 hosted Linux 门禁待关闭
+状态：Stage 3A 精确合同已接受；Stage 3B、3C 已于 2026-08-07 关闭；Stage 3D-3G 已于
+2026-08-08 关闭；阶段 3 已最终验收完成
 
 日期：2026-08-08
 
@@ -16,7 +16,7 @@ resource、candidate manifest/acquisition、identity、预算和 rollback 合同
 portable refs、共同表现提取和 FrameDigest v3；Stage 3D 已实现 public capability preflight 与无 GPU
 Validation Sink；Stage 3E 已实现 in-tree OpenGL presentation adapter 与 Player 真实绘制；Stage 3F
 已完成 Playback-only external consumer、clean install、package compatibility 和 shared import/export
-闭包。3G 代码块仍是规范 sketch，实际可用表面以对应阶段实现和测试为准。
+闭包。本文中的 API code block 是合同示例；实际可用表面以已实现公共头和测试为准。
 
 Portable Presentation Profile v1 只定义：
 
@@ -790,3 +790,15 @@ DLL。本地 Windows/MSVC standard Debug 272/272、headless Debug 239/239、stat
 shared Debug 275/275 CTest 全部通过；format、public header ASCII、diff/whitespace 与 Playback-only
 consumer 的直接 `clang-tidy`/`clangd --check` 门禁也通过。Stage 2 hosted Linux GCC/Clang、
 sanitizer 与 package consumer run URL 仍是 3G 前的开放门禁，所以 3F 关闭不等于 Stage 3 完成。
+
+## 20. 3G 与阶段 3 最终关闭状态
+
+Stage 3G 已于 2026-08-08 关闭。Windows/MSVC fresh Debug/Release、static/shared、headless、
+adapter-disabled、external package、GPU smoke 和 performance probe 均通过；WSL GCC/Clang、shared、
+ASan+UBSan、clang-tidy 与 coverage 本地矩阵也通过。
+
+最终实现 commit 为 `b71ef23b2f258d88e274a9b4b13665ef10a39845`。Hosted Linux Quality
+[run 31270268057](https://github.com/l-zilch-l/Cuexis/actions/runs/31270268057) 的 GCC Release、
+GCC shared Release、Clang shared Debug、Clang ASan+UBSan、clang-tidy 和 GCC coverage 全部成功；
+Windows MSVC run `31270267999` 与 Windows MinGW run `31270268010` 也全部成功。Stage 2 遗留
+hosted Linux 门禁与 Stage 3 完成定义全部关闭。

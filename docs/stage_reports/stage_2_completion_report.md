@@ -1,6 +1,6 @@
 # Cuexis 阶段 2 完成报告
 
-状态：实现与 Windows 本地验收完成；最终跨平台验收待 hosted Linux CI
+状态：实现与本地/hosted 跨平台验收完成；阶段 2 已最终关闭
 报告日期：2026-08-06
 完成版本：`26.07.18.18-1`（Debug：`26.07.18.18-1-dev`）
 SDK preview API：`0.4.0`
@@ -14,8 +14,8 @@ Playback capability、内部调试快照和显式 v1/v2 -> v3 迁移闭环。阶
 
 Windows/MSVC 本地 static/shared Debug/Release、headless、external consumer、format、
 architecture、工具、零分配与 GPU smoke 门禁均已通过；Windows MinGW headless Release 也已
-通过。当前工作树未提交或推送，`gh run list --commit` 没有返回 run，因此 hosted Linux CI 不能
-声明通过，阶段 2 的最终跨平台验收仍待关闭。
+通过。初版报告时尚无 hosted run；Stage 3 commit `b71ef23b2f258d88e274a9b4b13665ef10a39845`
+随后在 hosted Linux 上通过全部 Stage 2 回归，因此阶段 2 最终跨平台验收已经关闭。
 
 ## 2. Chart v3 与 TimingMap
 
@@ -95,12 +95,14 @@ consumer 后通过 `211/211`；1 个 symlink containment 用例按 Windows 条�
 - Debug/Release GPU smoke：NVIDIA GeForce RTX 4060 Laptop GPU、OpenGL 3.3，普通场景均完成 3 帧。
 - Debug/Release 全不可见 GPU smoke：`Objects: 4, debug commands: 0`，均完成 3 帧。
 
-## 7. 待补最终验收
+## 7. Hosted 最终验收
 
-- hosted Linux CI：本任务未提交或推送分支，未触发 GitHub Actions，不能用 Windows 结果替代。
+- Linux Quality：[run 31270268057](https://github.com/l-zilch-l/Cuexis/actions/runs/31270268057)，
+  `headSha` 为 `b71ef23b2f258d88e274a9b4b13665ef10a39845`。
+- GCC Release、GCC shared Release、Clang shared Debug、Clang ASan+UBSan、clang-tidy 和 GCC
+  coverage 全部成功；当前 Stage 3 测试矩阵包含并保持 Stage 2 全部回归。
 
-hosted Linux GCC/Clang、sanitizer 和 package consumer jobs 补齐前，本文证明 Stage 2 实现与
-Windows 本地矩阵完成，不证明最终受支持平台矩阵全部通过。
+该 run 关闭了本报告初版遗留的 hosted Linux GCC/Clang、sanitizer 和 package consumer 门禁。
 
 ## 8. 明确延期
 

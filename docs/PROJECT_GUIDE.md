@@ -2,7 +2,7 @@
 
 ## 0. 文档状态
 
-本文档是项目的持续维护指南，同时记录已落地的工程状态、已确认的架构边界和后续阶段路线。阶段 0、阶段 1A、阶段 1B、阶段 1C、阶段 1D 与阶段 1E 已完成验收；阶段 2 实现与 Windows 本地门禁已完成，最终跨平台验收待 hosted Linux CI。阶段 3 的公共方向和实施范围已经由 ADR 0037 与[阶段 3 实施计划](stage_plans/stage_3_implementation_plan.md)接受，3A-3F 已关闭，3G 的 Windows/MSVC 与 WSL Linux 本地验收已完成；当前实现分支的 hosted Linux run URL 待补，因此 Stage 3 尚未最终完成。260722 全量审查的 R01-R21 已于 2026-07-26/27 全部关闭并补齐构建、CTest、架构和 external consumer 证据。ADR 0027 已将长期产品方向调整为可嵌入 Cuexis Playback SDK + 独立 Player + 独立 Studio。
+本文档是项目的持续维护指南，同时记录已落地的工程状态、已确认的架构边界和后续阶段路线。阶段 0、阶段 1A、阶段 1B、阶段 1C、阶段 1D、阶段 1E、阶段 2 与阶段 3 已完成最终验收。阶段 3 的公共方向和实施范围由 ADR 0037 与[阶段 3 实施计划](stage_plans/stage_3_implementation_plan.md)冻结；3A-3G 已全部关闭，最终 hosted Linux 证据为 commit `b71ef23b2f258d88e274a9b4b13665ef10a39845` 的 Linux Quality run `31270268057`。260722 全量审查的 R01-R21 已于 2026-07-26/27 全部关闭并补齐构建、CTest、架构和 external consumer 证据。ADR 0027 已将长期产品方向调整为可嵌入 Cuexis Playback SDK + 独立 Player + 独立 Studio。
 
 文档中的内容按以下方式理解：
 
@@ -15,7 +15,7 @@
 
 随着讨论推进，待讨论内容应转化为明确决策；重大技术决策还应同步形成 ADR。
 
-当前仓库已完成阶段 0 工程闭环、阶段 1A 规范谱面与实例化闭环、阶段 1B 资源生命周期闭环、阶段 1C typed Behavior 与 headless Playback、阶段 1D 主音乐与 Audio，以及阶段 1E 可安装 static/shared Playback Core。阶段 2 已实现 Chart v3、Tempo/Stop TimingMap、Behavior/Step Event、Visibility/Material Snapshot、capability preflight、调试快照、FrameDigest v2 和 v1/v2 显式迁移工具。阶段 3B/3C 已实现 Portable Mesh/Texture2D/Unlit Material、candidate/active manifest、owning acquisition、Snapshot resource refs、共同表现提取和 FrameDigest v3，SDK API 为 `0.5.0`；阶段 3D 已实现 public capability preflight 与无 GPU Validation Sink；阶段 3E 已实现 OpenGL candidate GPU cache、固定 Unlit pipeline、真实 Mesh/Texture 绘制和 Player 六帧 smoke；阶段 3F 已实现 Playback-only add_subdirectory/find_package consumer、clean package/version/component/license 门禁和 shared export/import 闭包。3G 已完成 Windows/MSVC static/shared、Debug/Release、headless、architecture、external consumer、GPU 与性能验收，以及 WSL GCC/Clang/shared/sanitizer/clang-tidy/coverage 本地矩阵；hosted Linux CI 仍待最终跨平台验收。正式 Judgement/Replay、Studio 和稳定 C ABI 尚未完成。
+当前仓库已完成阶段 0 工程闭环、阶段 1A 规范谱面与实例化闭环、阶段 1B 资源生命周期闭环、阶段 1C typed Behavior 与 headless Playback、阶段 1D 主音乐与 Audio，以及阶段 1E 可安装 static/shared Playback Core。阶段 2 已实现 Chart v3、Tempo/Stop TimingMap、Behavior/Step Event、Visibility/Material Snapshot、capability preflight、调试快照、FrameDigest v2 和 v1/v2 显式迁移工具。阶段 3B/3C 已实现 Portable Mesh/Texture2D/Unlit Material、candidate/active manifest、owning acquisition、Snapshot resource refs、共同表现提取和 FrameDigest v3，SDK API 为 `0.5.0`；阶段 3D 已实现 public capability preflight 与无 GPU Validation Sink；阶段 3E 已实现 OpenGL candidate GPU cache、固定 Unlit pipeline、真实 Mesh/Texture 绘制和 Player 六帧 smoke；阶段 3F 已实现 Playback-only add_subdirectory/find_package consumer、clean package/version/component/license 门禁和 shared export/import 闭包。3G 的 Windows/MSVC、WSL Linux 和 hosted Linux Quality 矩阵全部通过，Stage 2/3 跨平台门禁已最终关闭。正式 Judgement/Replay、Studio 和稳定 C ABI 尚未完成。
 
 当前状态的权威顺序固定为：本文第 0、30、32 节记录产品与阶段状态；`docs/BUILDING.md` 记录当前可执行构建和安装入口；最新阶段审查/补充报告记录尚未关闭的问题。完成报告和早期验证报告是带日期的历史证据，若与后续审查冲突，以后续审查与本节当前状态为准，不得从历史报告反推当前验收状态。
 
@@ -91,7 +91,7 @@ cuexis::            C++ 命名空间
 正式判定计分与 ReplayData 在阶段 11 由必选 cuexis_judgement 交付
 ```
 
-当前首要交付范围是提交并推送阶段 3 实现，关闭阶段 2/3 共用的 hosted Linux CI 最终验收。Stage 3 的 3A-3F 与 3G 本地矩阵已完成；Portable Presentation v1 公共值、资源闭包、Snapshot、digest、capability preflight、无 GPU Validation Sink、OpenGL adapter、Player 真实绘制和 Playback-only external package consumer 已实现。Cuexis Studio 的独立应用边界继续预留，但不阻塞 Playback SDK 外部消费。
+阶段 3 已最终关闭。Portable Presentation v1 公共值、资源闭包、Snapshot、digest、capability preflight、无 GPU Validation Sink、OpenGL adapter、Player 真实绘制和 Playback-only external package consumer 已实现并通过本地/hosted 验收。下一次对话进入 Stage 3 独立 review，先报告 finding 和测试缺口，不自动修复，也不启动 Stage 4；Cuexis Studio 的独立应用边界继续预留，但不阻塞 Playback SDK 外部消费。
 
 ## 3. 非目标
 
@@ -2581,7 +2581,7 @@ static/shared consumer 在干净部署目录中运行，且不泄漏内部符号
 
 ### 阶段 2：Cuexis Behavior 表达能力强化
 
-状态：实现与 Windows 本地门禁已完成；hosted Linux CI 待最终跨平台验收。精确证据见[阶段 2 完成报告](stage_reports/stage_2_completion_report.md)。
+状态：实现与本地/hosted 跨平台验收完成。精确证据见[阶段 2 完成报告](stage_reports/stage_2_completion_report.md)。
 
 目标：让 Behavior 成为 Cuexis 谱面表现的核心表达能力，不扩张为宿主任意脚本或通用游戏逻辑系统。
 
@@ -2617,9 +2617,11 @@ TimingMap 边界、Stop 区间和负 Beat 有单元测试
 阶段 3 的完整范围、批次、资源合同、事务边界、测试矩阵和完成定义见[阶段 3 实施计划](stage_plans/stage_3_implementation_plan.md)。公共方向由 [ADR 0037](adr/0037-stage-3-portable-presentation-contracts.md) 冻结。
 
 状态：3A 精确合同、3B portable resource/candidate acquisition、3C Snapshot/common extraction、
-3D Validation Sink、3E OpenGL adapter/Player 真实绘制与 3F external package consumer 已关闭；3G
-本地 Windows/WSL 验收已完成。当前实现分支的 hosted Linux run URL 仍是 Stage 3 最终关闭前必须
-补齐的跨平台发布门禁。
+3D Validation Sink、3E OpenGL adapter/Player 真实绘制、3F external package consumer 与 3G
+全链路跨平台验收均已关闭；阶段 3 已于 2026-08-08 最终完成。
+
+下一工作项是 Stage 3 独立 review。review 以 finding 优先，不自动进入 remediation 或 Stage 4；精确
+交接范围见[阶段 3 实施计划第 12 节](stage_plans/stage_3_implementation_plan.md)。
 
 摘要：
 
@@ -3018,7 +3020,7 @@ Player 默认阶段 1B Project、--project/--chart 互斥、3 个 Renderable 和
 
 上述方案 A/B loader 与 canonical/simple 回归入口是阶段 1 的历史完成事实；ADR 0035 已在阶段 2A.1 删除方案 B，不能把它们继续作为阶段 2 之后的验收要求。
 
-阶段 1C、阶段 1D 与阶段 1E 已完成最终验收；阶段 1E 的 `0.3.0` static/shared Playback Core preview 已通过 Windows/MSVC、Windows/MinGW 和 Linux GCC/Clang 自动化矩阵。阶段 2 已把 preview API 提升到 `0.4.0`，实现 Chart v3、Tempo/Stop、Behavior/Step Event、Visibility/Material Snapshot、capability、FrameDigest v2 和迁移工具，并通过本地 Windows/MSVC static/shared Debug/Release、headless、GPU smoke、format、architecture 与 external consumer 门禁。阶段 3A Portable Presentation Profile v1 精确合同已经接受，3B/3C 已实现 owning portable resource、candidate manifest/acquisition、Snapshot resource refs、共同表现提取、FrameDigest v3 和 SDK API `0.5.0`；3D 已实现 public capability preflight、public-only Validation Sink、normalized summary oracle 和 external consumer golden；3E 已实现 OpenGL candidate GPU cache、固定 Unlit pipeline、真实 Mesh/Texture 绘制和 Player 六帧 smoke；3F 已实现只链接 `Cuexis::Playback` 的 add_subdirectory/find_package consumer、clean package/version/component/license 门禁和 shared export/import 闭包。3G 已完成 Windows/MSVC 与 WSL GCC/Clang/shared/sanitizer/clang-tidy/coverage 本地验收；当前实现分支的 hosted Linux CI run URL 仍是 Stage 3 最终关闭前的开放发布门禁。稳定 C ABI 必须在正式 Judgement/Replay 公共契约完成后再冻结。
+阶段 1C、阶段 1D 与阶段 1E 已完成最终验收；阶段 1E 的 `0.3.0` static/shared Playback Core preview 已通过 Windows/MSVC、Windows/MinGW 和 Linux GCC/Clang 自动化矩阵。阶段 2 已把 preview API 提升到 `0.4.0`，实现 Chart v3、Tempo/Stop、Behavior/Step Event、Visibility/Material Snapshot、capability、FrameDigest v2 和迁移工具，并通过本地 Windows/MSVC static/shared Debug/Release、headless、GPU smoke、format、architecture、external consumer 与 hosted Linux 门禁。阶段 3A Portable Presentation Profile v1 精确合同已经接受，3B/3C 已实现 owning portable resource、candidate manifest/acquisition、Snapshot resource refs、共同表现提取、FrameDigest v3 和 SDK API `0.5.0`；3D 已实现 public capability preflight、public-only Validation Sink、normalized summary oracle 和 external consumer golden；3E 已实现 OpenGL candidate GPU cache、固定 Unlit pipeline、真实 Mesh/Texture 绘制和 Player 六帧 smoke；3F 已实现只链接 `Cuexis::Playback` 的 add_subdirectory/find_package consumer、clean package/version/component/license 门禁和 shared export/import 闭包；3G 已完成 Windows/MSVC、Windows/MinGW、WSL GCC/Clang 与 hosted Linux Quality 最终验收。阶段 3 已于 2026-08-08 关闭；稳定 C ABI 必须在正式 Judgement/Replay 公共契约完成后再冻结。
 
 每次交付仍须按 `docs/BUILDING.md` 在目标环境执行 Debug 配置、构建、CTest、格式检查和图形冒烟；Chart 回归只使用 canonical 输入，并保留 retired Simple 的 unsupported-format 测试。Release 或后端相关改动还须验证 Release。精确结果记录在对应阶段报告，不固化在本指南中。
 

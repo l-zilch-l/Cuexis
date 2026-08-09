@@ -1,7 +1,6 @@
 # Cuexis 阶段 3 验收报告
 
-状态：3G 本地 Windows/WSL 验收完成；当前实现分支的 hosted Linux 发布门禁待关闭，阶段 3
-尚未最终完成
+状态：实现与本地/hosted 跨平台验收完成；阶段 3 已最终关闭
 报告日期：2026-08-08
 完成版本：`26.07.18.18-1`（Debug：`26.07.18.18-1-dev`）
 SDK preview API：`0.5.0`
@@ -18,9 +17,9 @@ OpenGL adapter、Player 真实 Mesh/Texture/Unlit 绘制，以及 Playback-only 
 clang-tidy、coverage 和性能矩阵。Windows 与 Linux 本地结果对相同 fixture 产生一致的 Snapshot、
 portable identity、FrameDigest 和 normalized command summary。
 
-当前 `codex/stage-3` 工作树尚未提交或推送，分支没有 upstream，因此没有包含本次实现的 hosted
-Linux run URL。旧计划分支或旧提交的 workflow 不能作为本次实现证据。本文证明 3G 本地验收完成，
-不关闭阶段 3 完成定义中的 hosted Linux 发布门禁。
+Stage 3 实现已提交为 `b71ef23b2f258d88e274a9b4b13665ef10a39845` 并推送到
+`origin/codex/stage-3`。该 commit 的 hosted Linux Quality、Windows MSVC 和 Windows MinGW push
+workflows 全部通过，因此 Stage 2 遗留 Linux 前置与 Stage 3 完成定义中的跨平台发布门禁均已关闭。
 
 ## 2. 已交付合同
 
@@ -105,6 +104,17 @@ gcovr 对 `engine/` 的结果为 lines `76.3%`、functions `91.1%`、branches `4
 冻结的 40% line baseline。GCC 首次构建发现并修复了 `ValidationCandidateResult` 缺少前置声明和
 未使用测试辅助函数两个跨编译器问题；修复后的矩阵全部通过。
 
+Hosted 最终证据：
+
+- Linux Quality：[run 31270268057](https://github.com/l-zilch-l/Cuexis/actions/runs/31270268057)。
+  GCC Release、GCC shared Release、Clang shared Debug、Clang ASan+UBSan、clang-tidy 和 GCC
+  coverage 六个 jobs 全部成功。
+- Windows MSVC：[run 31270267999](https://github.com/l-zilch-l/Cuexis/actions/runs/31270267999)。
+  Debug 与 Release jobs 全部成功。
+- Windows MinGW：[run 31270268010](https://github.com/l-zilch-l/Cuexis/actions/runs/31270268010)。
+  Debug 与 Release jobs 全部成功。
+- 三个 runs 的 `headSha` 均为 `b71ef23b2f258d88e274a9b4b13665ef10a39845`，不是旧计划提交。
+
 ## 6. 性能与内存 probe
 
 probe 使用最大合法 Texture2D：encoded `67108864` bytes、decoded `67108836` bytes、尺寸
@@ -135,19 +145,22 @@ page commitment 和测量平台差异，只用于暴露数量级与回归趋势�
 - 基础 package 与 AudioSDL 许可证/NOTICE 闭包：通过。
 - public Playback headers 未暴露 EnTT、SDL、OpenGL/GLAD、JSON DOM、RuntimeSession 或 World 类型。
 
-## 8. 开放门禁与残余风险
+## 8. 残余风险
 
-- 当前实现必须提交并推送后，由 `.github/workflows/linux-quality.yml` 在 hosted `ubuntu-latest` 上运行
-  GCC Release、GCC shared Release、Clang shared Debug、Clang ASan+UBSan、clang-tidy、coverage 和
-  package consumer。只有该 run URL 可关闭阶段 3 的跨平台发布门禁。
 - GPU 证据只覆盖 Windows/NVIDIA/driver 596.36。AMD、Intel、Linux native OpenGL、macOS、Android
   和其他驱动仍未取得同等级像素与 reload 证据。
-- 本地 Linux 是 WSL x86-64 小端环境，没有覆盖原生发行版差异、非 x86 架构或真实大端平台。
+- hosted 与本地 Linux 均为 x86-64 小端环境，没有覆盖非 x86 架构或真实大端平台。
+- Hosted Linux run 有 6 个 GitHub Actions 基础设施 warning：Node.js 20 action 被平台强制改用
+  Node.js 24。它们不是 Cuexis 编译、测试或 sanitizer 失败，但 workflow action major 需要后续升级。
 - Stage 3 仍是 matching-toolchain C++ preview，不承诺稳定 C ABI；稳定 C ABI 延后到阶段 12。
 - OpenGL adapter 仍是仓库内 Player target，不是安装 component；外部宿主以公共 Portable v1 合同
   实现自己的 adapter。
 
-## 9. 最终关闭条件
+## 9. 最终结论
 
-阶段 3A-3F 和 3G 本地工作已经完成。待当前实现分支获得可引用且全部通过的 hosted Linux run URL
-后，才能把阶段 2 的遗留 Linux 前置和阶段 3 完成定义第 8 项同时关闭，并把阶段 3 状态改为最终完成。
+阶段 3A-3G 的实现、本地 GPU/性能矩阵、Windows static/shared/package 矩阵和 hosted Linux
+GCC/Clang/sanitizer/clang-tidy/coverage/package consumer 均已通过。阶段 3 完成定义全部满足，阶段 3
+于 2026-08-08 最终关闭。
+
+下一次对话进入 Stage 3 独立 review。review 默认只读实现，按严重度报告 finding、文件/行号和测试
+缺口，并形成 `docs/stage_reports/260808-stage-3-review.md`；不自动修复 finding，也不启动 Stage 4。
