@@ -1,14 +1,17 @@
 # Cuexis Chart Format v1/v2/v3
 
-状态：v1/v2/v3 已实现；方案 B 已于阶段 2A.1 移除。格式级决策见 `docs/adr/0034-chart-v3-tempo-and-behavior-events.md`、`docs/adr/0035-retire-simple-chart-format.md` 和 `docs/adr/0036-stage-2-runtime-contracts.md`
+状态：v1/v2/v3 已实现；方案 B 已于阶段 2A.1 移除。ADR 0038 已提出 CXC v1、Chart v4 与
+CXT v1；CXT、播放前参数和 Template Binding 子决策已于 2026-08-10 接受，但整体尚未实现。
+Chart v4 候选字段见 [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md)，CXC 容器见
+[CXC_FORMAT.md](CXC_FORMAT.md)，CXT 文件语义见 [CXT_FORMAT.md](CXT_FORMAT.md)。
 
-更新日期：2026-08-06
+更新日期：2026-08-10
 
 ## 1. 范围
 
 本文定义 `format: "cuexis.chart"` 的规范 ChartDocument 结构。它面向保存、迁移、Studio 编辑和 Playback SDK 编译，不是 ChartRuntime、World 或 FrameSnapshot 的内存布局。阶段 1C 已在阶段 1A/1B 的 format 路由、typed 结构读取、模板展开、资源事务与确定性编译基础上，激活 Behavior Track 的 typed 读取、编译和绝对时间求值。阶段 1D 按 ADR 0031 实现 v2 的可选主音乐引用、严格版本路由和 Playback 内容准备；v1 的字段和未知字段拒绝语义保持不变。
 
-`cuexis.chart` 是唯一受支持并继续演进的谱面格式。ADR 0035 已在阶段 2A.1 删除历史 `cuexis.chart.simple` 路由、Importer 和 Schema；该格式稳定报告 `chart.format.unsupported`。内部 Runtime、World 和各 System 只接收本文模型编译后的 ChartRuntime；嵌入宿主通过 PlaybackSession、FrameSnapshot、JudgementResult 和稳定查询接口交互，不接收 ChartRuntime 或 EnTT Entity。
+在 Stage Chart Format Update 的新合同完成并通过迁移门禁以前，`cuexis.chart` v1/v2/v3 是唯一受支持的生产谱面格式族。ADR 0035 已在阶段 2A.1 删除历史 `cuexis.chart.simple` 路由、Importer 和 Schema；该格式稳定报告 `chart.format.unsupported`。内部 Runtime、World 和各 System 只接收本文模型编译后的 ChartRuntime；嵌入宿主通过 PlaybackSession、FrameSnapshot、JudgementResult 和稳定查询接口交互，不接收 ChartRuntime 或 EnTT Entity。
 
 ## 2. 顶层结构
 
@@ -611,7 +614,8 @@ code
 
 ## 12. v1 明确不支持
 
-以下内容不属于 v1，使用时返回 UnsupportedFeature 或 Schema Error。未来加入必须提升格式/组件版本并形成 ADR：
+以下内容不属于现行 v1/v2/v3，使用时返回 UnsupportedFeature 或 Schema Error。CXT import 和
+Template Binding 只属于尚未生产化的 Chart v4 候选；未来加入必须提升格式/组件版本并形成 ADR：
 
 ```text
 跨 Chart Object / Template 引用
@@ -619,3 +623,12 @@ Template 子树实例化
 扩展处理器动态插件 ABI
 二进制 ChartRuntime 缓存格式
 ```
+
+## 13. Future versions
+
+本文只定义已实现的 Chart v1/v2/v3。Chart v4 候选字段已移至独立的
+[CHART_V4_FORMAT.md](CHART_V4_FORMAT.md)，避免把生产格式和未实现提案混为同一规范。
+
+ADR 0038 整体接受以前，Loader 不得按字段猜测 v4、把未知 CXC 输入降级为 v3，或在 extensions
+中加入动画字段绕过版本、迁移和 capability 评审。v1/v2/v3 Reader、Schema、迁移、诊断和可观察
+结果保持不变。

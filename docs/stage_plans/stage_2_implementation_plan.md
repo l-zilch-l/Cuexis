@@ -1,8 +1,9 @@
 # 阶段 2：Behavior Event 与 Cuexis 表现能力实施计划
 
-状态：实现与 Windows 本地验收已完成；最终跨平台验收待 hosted Linux CI
+状态：completed；本地与后续 hosted 跨平台门禁均已关闭
 
-完成证据见[阶段 2 完成报告](../stage_reports/stage_2_completion_report.md)。
+完成证据见[阶段 2 完成报告](../stage_reports/stage_2_completion_report.md)。阶段 2 交接时仍缺少的
+hosted Linux 门禁后来随 [Stage 3 最终验收](../stage_reports/stage_3_completion_report.md) 一并关闭。
 
 ## 1. 目标与边界
 
@@ -233,7 +234,8 @@ Visibility、Material 选择、ParentBinding 等离散属性不能直接使用�
 
 ### 2G：全链路验收与迁移交付
 
-状态：实现、迁移 CLI、Windows/MSVC static/shared Debug/Release、headless、format、architecture、external consumer、零分配和 Debug/Release GPU 门禁已完成；Windows MinGW headless Release 也已通过。当前工作树未提交或推送，`gh run list --commit` 无结果，hosted Linux GCC/Clang、sanitizer 和 package consumer jobs 必须在最终跨平台验收时补齐，不能以 Windows 结果替代。
+状态：completed。下述本地结果是 Stage 2 交接时的验收快照；当时缺少的 hosted Linux
+GCC/Clang、sanitizer 和 package consumer 证据后来由 Stage 3 最终验收补齐。
 
 目标：完成格式迁移、SDK 消费、性能和跨平台门禁，形成可进入阶段 3 的稳定基线。
 
@@ -262,7 +264,8 @@ Visibility、Material 选择、ParentBinding 等离散属性不能直接使用�
 本地关闭证据：MSVC static `249/249`、headless `216/216`、shared `251/251`，Debug/Release
 全部通过；Release 启用 `/WX`。MinGW headless Release `211/211` 通过。普通与全不可见场景的
 Debug/Release GPU smoke 均完成 3 帧，其中全不可见场景为 `Objects: 4, debug commands: 0`。
-hosted Linux CI 尚无 run URL，因此 2G 的本地门禁已关闭，跨平台发布门禁仍保持打开。
+Stage 2 交接时 hosted Linux CI 尚无 run URL，因此当时只关闭了 2G 本地门禁。该历史缺口后来随
+[Stage 3 最终验收](../stage_reports/stage_3_completion_report.md) 关闭，不再是当前开放门禁。
 
 ## 5. 阶段 2 总体验收门禁
 

@@ -1,8 +1,12 @@
 # 260806 阶段 2 验收与实现审查
 
-状态：本地验收通过；hosted Linux CI 未验证
+状态：historical review snapshot；当时本地验收通过、hosted Linux CI 尚未验证
 
 审查日期：2026-08-06
+
+后续关闭说明：本文冻结 2026-08-06 的审查现场，不改写当时缺少 hosted 证据的结论。该缺口
+后来随 [Stage 3 最终验收](stage_3_completion_report.md) 关闭；当前阶段状态见
+[CURRENT_STATUS.md](../CURRENT_STATUS.md)。
 
 审查提交：`bc4bcb33043be971bfe00214205958e8f8ab2781`
 

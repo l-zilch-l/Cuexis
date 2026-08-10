@@ -162,5 +162,6 @@ page commitment 和测量平台差异，只用于暴露数量级与回归趋势�
 GCC/Clang/sanitizer/clang-tidy/coverage/package consumer 均已通过。阶段 3 完成定义全部满足，阶段 3
 于 2026-08-08 最终关闭。
 
-下一次对话进入 Stage 3 独立 review。review 默认只读实现，按严重度报告 finding、文件/行号和测试
-缺口，并形成 `docs/stage_reports/260808-stage-3-review.md`；不自动修复 finding，也不启动 Stage 4。
+历史交接：本报告完成时安排的下一项工作是 Stage 3 独立 review，随后形成了
+[260808 Stage 3 review](260808-stage-3-review.md)。该 review 文档保留其自身的整改与待复审状态，
+不应再被解释为当前“下一次对话”。当前工作见 [CURRENT_STATUS.md](../CURRENT_STATUS.md)。

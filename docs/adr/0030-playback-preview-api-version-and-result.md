@@ -6,8 +6,8 @@
 
 ## 背景
 
-Cuexis 的项目显示版本使用 `yy.mm.dd.hh-v`，适合标识一次源码或发行构建，但 CMake
-`project(VERSION)` 无法表达同一小时内的 `v`，也不能代表 consumer 所需的源码兼容性。
+Cuexis 的项目显示版本使用独立的日期构建身份，适合标识一次源码或发行构建，但 CMake
+`project(VERSION)` 无法表达日期内的 build 序号，也不能代表 consumer 所需的源码兼容性。
 同时，现有 Playback C++ 公共接口返回 `cuexis::core::Result<T, E>`，该别名由
 `tl::expected` 实现。若文档一面禁止所有第三方公共依赖、一面安装这些头和 package
 dependency，consumer 无法判断真实契约。
@@ -17,7 +17,7 @@ dependency，consumer 无法判断真实契约。
 Playback Core preview 采用独立的 C++ SDK API 版本，从 `0.1.0` 开始：
 
 ```text
-CUEXIS_VERSION_DISPLAY   构建身份，例如 26.07.18.18-1
+CUEXIS_VERSION_DISPLAY   构建身份，例如 26.08.01-1
 CUEXIS_SDK_API_VERSION   C++ package/source API，例如 0.1.0
 C ABI version            阶段 12 建立，当前不存在稳定版本
 ```
@@ -58,7 +58,7 @@ Registry 或 RenderScene 的存储；后续 update、reload、unload 和 Session
 
 ### 使用日期版本作为 CMake package version
 
-拒绝。它丢失同小时 build 序号，并会把每次构建身份变化误报成 SDK API 兼容性变化。
+拒绝。它丢失日期内的 build 序号，并会把每次构建身份变化误报成 SDK API 兼容性变化。
 
 ### 声称 preview 公共头没有第三方依赖
 
