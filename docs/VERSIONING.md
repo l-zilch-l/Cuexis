@@ -9,10 +9,10 @@
 规范版本：
 
 ```text
-yy.mm.dd.hh-v
+yy.mm.dd-v
 ```
 
-时间使用 UTC。`v` 是同一 UTC 小时内从 1 开始人工递增的构建号。
+日期使用 UTC。`v` 是同一 UTC 日期内从 1 开始人工递增的构建号。
 
 构建后缀：
 
@@ -26,35 +26,43 @@ yy.mm.dd.hh-v
 
 ## 单一来源
 
-正式骨架建立 `cmake/CuexisVersion.cmake` 或等价单一配置，保存年、月、日、小时和 build。其他 CMakeLists 不重复手写版本。
+`cmake/CuexisVersion.cmake` 保存年、月、日和 build。其他 CMakeLists 不重复手写版本。
+`tools/update_version.py` 是人工更新入口，负责在一次事务中同步该文件与 `vcpkg.json`。
 
-CMake `project(VERSION)` 使用无前导零的四段数字，例如 `26.7.18.18`。完整显示版本单独生成，例如 `26.07.18.18-1-dev`。
+CMake `project(VERSION)` 使用无前导零的三段数字，例如 `26.8.1`。完整显示版本单独生成，例如 `26.08.01-1-dev`。
 
-`vcpkg.json` 的 `version-string` 保存不带构建类型后缀的规范版本，例如 `26.07.18.18-1`，因为同一源码可以同时构建 Debug 和 Release。
+`vcpkg.json` 的 `version-string` 保存不带构建类型后缀的规范版本，例如 `26.08.01-1`，因为同一源码可以同时构建 Debug 和 Release。
 
 ## 更新流程
 
 ```text
-取得当前 UTC yy/mm/dd/hh
--> 若小时变化，将 build 设为 1
--> 若同一小时再次构建，人工递增 build
--> 更新单一版本配置
--> 同步 vcpkg version-string
+取得目标 UTC yy/mm/dd
+-> 若日期变化，将 build 设为 1
+-> 若同一日期再次发布构建，人工递增 build
+-> 运行 python -B tools/update_version.py yy.mm.dd-v
 -> configure 生成 version.hpp
 -> 运行版本一致性测试
 ```
 
+只检查当前文件而不写入：
+
+```powershell
+python -B tools/update_version.py --check
+```
+
 ## 生成头
 
-`${binaryDir}/generated/cuexis/version.hpp` 至少提供完整字符串、四段数字、build 和 suffix。生成头不提交源码控制。
+`${binaryDir}/generated/cuexis/version.hpp` 至少提供完整字符串、三段日期、build 和 suffix。
+旧的公开 `cuexis::version::hour` 为保持 0.5.x 源码兼容暂时保留，并固定为 `0`；它不再属于
+构建身份。生成头不提交源码控制。
 
 ## 验证
 
 测试检查：
 
 ```text
-CMake 四段版本与版本配置一致
-月份、日期、小时和 build 合法
+CMake 三段版本与版本配置一致
+月份、日期和 build 合法
 vcpkg version-string 与规范版本一致
 suffix 只来自允许集合或 exp.<name>
 窗口标题和启动日志使用完整显示版本

@@ -1,0 +1,34 @@
+{
+  "format": "cuexis.cxc",
+  "version": 1,
+  "project": "cuexis.project.json",
+  "entries": [
+    {
+      "path": "assets/charts/main.cuexis.chart.json",
+      "byteCount": 6144,
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+    },
+    {
+      "path": "assets/cuexis.asset-index.json",
+      "byteCount": 1024,
+      "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+    },
+    {
+      "path": "assets/materials/note.material.bin",
+      "byteCount": 64,
+      "sha256": "3333333333333333333333333333333333333333333333333333333333333333"
+    },
+    {
+      "path": "assets/meshes/note.mesh.bin",
+      "byteCount": 128,
+      "sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+    },
+    {
+      "path": "cuexis.project.json",
+      "byteCount": 384,
+      "sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+    }
+  ],
+  "requiredExtensions": [],
+  "extensions": {}
+}

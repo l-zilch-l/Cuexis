@@ -9,7 +9,8 @@ namespace cuexis::version {
 inline constexpr std::uint32_t year = @CUEXIS_VERSION_YEAR@;
 inline constexpr std::uint32_t month = @CUEXIS_VERSION_MONTH@;
 inline constexpr std::uint32_t day = @CUEXIS_VERSION_DAY@;
-inline constexpr std::uint32_t hour = @CUEXIS_VERSION_HOUR@;
+// Retained for source compatibility; hours are no longer part of the build identity.
+inline constexpr std::uint32_t hour = 0;
 inline constexpr std::uint32_t build = @CUEXIS_VERSION_BUILD@;
 // clang-format on
 

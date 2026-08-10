@@ -102,4 +102,9 @@ Debug 与 Release 均已通过 fresh configure、clean build、`153/153` CTest�
 
 ## 8. 后续边界
 
-阶段 1C 已完成 BehaviorSystem、Transform Keyframe、`chartTimeMs`、Seek 绝对重采样、PlaybackSession 第一版与 headless FrameSnapshot，未新增持久化配置格式。阶段 1D 已增加 ChartClock/HostClock/CuexisAudio、RuntimeTimeline 与 Prepared Playback；阶段 1E 已将物理读取拆为 ContentProvider 并建立外部消费基础，最终 API、组件和兼容性边界仍在进行。正式 Mesh/Material/Texture 内容、Importer、GPU 派生对象、异步加载、缓存预算、文件监听热重载、Judgement/Replay 与 Studio 仍属于后续阶段。
+阶段 1C 已完成 BehaviorSystem、Transform Keyframe、`chartTimeMs`、Seek 绝对重采样、PlaybackSession
+第一版与 headless FrameSnapshot。阶段 1D 已完成 ChartClock/HostClock/CuexisAudio、RuntimeTimeline
+与 Prepared Playback；阶段 1E 已完成 ContentProvider、安装包和 external consumer 边界。Stage 3
+随后交付 Portable Mesh/Texture2D/Unlit Material 与 OpenGL adapter。异步加载、文件监听热重载、
+Judgement/Replay 与 Studio 仍属于后续阶段；当前状态见
+[CURRENT_STATUS.md](../CURRENT_STATUS.md)。

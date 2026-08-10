@@ -1,8 +1,18 @@
 # Cuexis Animation Mixing 规范
 
-状态：阶段 4 设计已接受
+状态：阶段 4 混合设计已接受；CXT v1、播放前参数与 Template Binding 子决策已接受，
+其余 Chart/CXC 序列化输入等待 Stage Chart Format Update 整体冻结
 
-更新日期：2026-07-20
+更新日期：2026-08-10
+
+Stage Chart Format Update 位于 Stage 3 与阶段 4 之间。它负责冻结 CXC/Chart/CXT 的持久化边界；
+本文只定义运行时求值与混合语义。ChartParameter、Clip、Layer、Binding、Property ID、mask、时间域
+和 lowering 的字段权威是 [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md)，CXC 容器与闭包由
+[CXC_FORMAT.md](CXC_FORMAT.md) 定义，CXT 文件语义由 [CXT_FORMAT.md](CXT_FORMAT.md) 定义。
+其中 CXT/参数子决策已接受，但尚未实现。阶段 4 的 AnimationSystem 只能消费格式阶段交付的 typed
+数据，不得自行解析 JSON/CXC/CXT。
+
+运行时脚本和逐帧脚本回调无限期延后。本文不定义脚本状态、事件调度、沙箱、字节码、Seek 恢复或 Replay 合同，也不为这些能力预留扩展入口。
 
 ## 求值层
 
@@ -31,7 +41,7 @@ blendGroups   Clip Instance 分组
 
 相同 priority 的不同 Layer 不允许写入相同属性；发现重叠即验证失败。不得使用数组顺序打破平局。
 
-每个 Clip Instance 具有稳定 `instanceId`、Clip、localTimeMs、weight、Override/Additive mode 和可选 mask。
+每个 Clip Instance 具有稳定 `instanceId`、Clip、绝对 `localSampleTime`、weight、Override/Additive mode 和可选 mask。CXT Template Binding 在 prepare 时 lowering 为同一 typed Clip/Layer/Group/Instance 模型；`localSampleTime` 是带显式 domain 的 typed 值，Chart v4/AnimationClip v1 只使用局部 Beat。Runtime 负责从 Chart/Session 时间生成该值，AnimationSystem 不读取 Chart、CXT 或 TimingMap。
 
 ## Override BlendGroup
 
@@ -75,7 +85,7 @@ StudioPreviewOverride 使用相同协议但只存在于 Studio Session，不序�
 
 ## 时间跳转
 
-Clip 必须支持从 localTimeMs 绝对采样。timeDiscontinuity 后重新计算 Layer 和 Clip local time，不使用上一帧混合结果。状态机事件回调需要用区间查询单独处理，不能从 Property 混合顺序推断。
+Clip 必须支持从 `localSampleTime` 绝对采样。timeDiscontinuity 后重新计算 Layer 和 Clip local time，不使用上一帧混合结果。Chart v4 v1 不序列化状态机、运行时脚本或事件回调。
 
 ## 基线修改
 

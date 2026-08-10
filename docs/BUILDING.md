@@ -259,7 +259,9 @@ Stage 3 不安装 `OpenGL` component。`cuexis_render_opengl` 仍是 Player 使�
 
 `0.5` 是当前 Playback preview 的 SDK API 兼容 minor，不是日期构建版本。安装后的
 `Cuexis_VERSION`/`Cuexis_API_VERSION` 返回完整 API 版本，`Cuexis_VERSION_DISPLAY` 返回
-`yy.mm.dd.hh-v[-suffix]` 构建身份。
+`yy.mm.dd-v[-suffix]` 构建身份。版本更新必须通过
+`python -B tools/update_version.py yy.mm.dd-v` 同步 CMake 与 `vcpkg.json`；
+`python -B tools/update_version.py --check` 只执行一致性检查。
 
 安装树包含 `CuexisTargets.cmake`、`CuexisConfig.cmake`、同 minor 版本兼容文件、生成的
 `cuexis/version.hpp`、`LICENSE`、`NOTICE`、第三方 notices 和实际无头依赖版权文本。CTest 中的

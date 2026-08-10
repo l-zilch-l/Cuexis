@@ -1,0 +1,29 @@
+{
+  "format": "cuexis.cxc",
+  "version": 1,
+  "project": "cuexis.project.json",
+  "entries": [
+    {
+      "path": "assets/charts/main.cuexis.chart.json",
+      "byteCount": 8192,
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+    },
+    {
+      "path": "assets/cuexis.asset-index.json",
+      "byteCount": 1024,
+      "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+    },
+    {
+      "path": "cuexis.project.json",
+      "byteCount": 384,
+      "sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+    },
+    {
+      "path": "templates/move-y.valid.candidate.cxt",
+      "byteCount": 1024,
+      "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+    }
+  ],
+  "requiredExtensions": [],
+  "extensions": {}
+}

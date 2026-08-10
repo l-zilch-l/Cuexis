@@ -755,9 +755,13 @@ stage_3_completion_report.md（仅在全部门禁后创建）
 
 关闭结果：以上九项全部满足，阶段 3 于 2026-08-08 最终完成。
 
-## 12. 下一次对话：Stage 3 review 交接清单
+## 12. 历史交接：Stage 3 review 清单
 
-下一次对话进入 Stage 3 独立 review，不启动 Stage 4，也不默认修改实现。按以下顺序执行：
+状态：completed historical handoff
+
+本清单已用于启动 [260808 Stage 3 review](../stage_reports/260808-stage-3-review.md)。它保留当时的
+审查范围和操作顺序，不再代表当前下一步；该 review 的独立复审状态以其自身快照说明为准。
+当时按以下顺序执行：
 
 1. 阅读仓库 `AGENTS.md`、ADR 0037、`docs/PORTABLE_PRESENTATION.md`、本计划第 0、3、4、5、6、
    11 节和阶段 3 完成报告。确认工作树状态；保留任何尚未提交的最终关闭文档，不覆盖用户改动。

@@ -24,15 +24,14 @@ TEST_CASE("Generated version components are valid", "[core][version]") {
     REQUIRE(cuexis::version::month <= 12);
     REQUIRE(cuexis::version::day >= 1);
     REQUIRE(cuexis::version::day <= 31);
-    REQUIRE(cuexis::version::hour <= 23);
+    REQUIRE(cuexis::version::hour == 0);
     REQUIRE(cuexis::version::build >= 1);
 }
 
 TEST_CASE("Generated canonical version matches numeric components", "[core][version]") {
-    const auto expected = twoDigits(cuexis::version::year) + "." +
-                          twoDigits(cuexis::version::month) + "." +
-                          twoDigits(cuexis::version::day) + "." + twoDigits(cuexis::version::hour) +
-                          "-" + std::to_string(cuexis::version::build);
+    const auto expected =
+        twoDigits(cuexis::version::year) + "." + twoDigits(cuexis::version::month) + "." +
+        twoDigits(cuexis::version::day) + "-" + std::to_string(cuexis::version::build);
 
     REQUIRE(cuexis::version::canonical == expected);
 }
@@ -56,9 +55,9 @@ TEST_CASE("Generated SDK API version is independent from the build identity", "[
 }
 
 TEST_CASE("Generated version matches CMake project version", "[core][version]") {
-    const auto expected =
-        std::to_string(cuexis::version::year) + "." + std::to_string(cuexis::version::month) + "." +
-        std::to_string(cuexis::version::day) + "." + std::to_string(cuexis::version::hour);
+    const auto expected = std::to_string(cuexis::version::year) + "." +
+                          std::to_string(cuexis::version::month) + "." +
+                          std::to_string(cuexis::version::day);
 
     REQUIRE(cuexis::version::cmakeProject == expected);
 }
