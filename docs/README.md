@@ -47,9 +47,9 @@
 
 - [格式索引](formats/README.md)
 - [Chart v1/v2/v3 生产格式](CHART_FORMAT.md)
-- [Chart v4 候选格式](CHART_V4_FORMAT.md)
-- [CXC v1 候选交换包](CXC_FORMAT.md)
-- [CXT v1 候选模板](CXT_FORMAT.md)
+- [Chart v4 接受合同](CHART_V4_FORMAT.md)
+- [CXC v1 接受合同](CXC_FORMAT.md)
+- [CXT v1 接受合同](CXT_FORMAT.md)
 - [TimingMap](TIMING_MODEL.md)
 - [Animation Mixing](ANIMATION_MIXING.md)
 - [Portable Presentation v1](PORTABLE_PRESENTATION.md)

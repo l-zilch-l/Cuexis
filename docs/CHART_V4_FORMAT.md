@@ -1,15 +1,14 @@
-# Cuexis Chart Format v4 Candidate
+# Cuexis Chart Format v4
 
-状态：candidate；CXT v1、播放前参数、Template Binding 与运行时脚本无限期延后子决策已于
-2026-08-10 接受；ADR 0038 整体仍待接受，尚未实现
+状态：accepted contract；CFU-C 实现中，尚未接入 Playback 生产路径
 
-更新日期：2026-08-10
+更新日期：2026-08-11
 
 依据：[ADR 0038](adr/0038-cxc-v1-and-chart-v4-boundary.md)
 
 ## 1. 范围
 
-本文是 `format: "cuexis.chart"` version 4 的候选字段权威。v4 在已实现的 v3 Timing、Tempo、
+本文是 `format: "cuexis.chart"` version 4 的字段权威。v4 在已实现的 v3 Timing、Tempo、
 Stop、Behavior、Step Event、Object、Template、Audio 和 Extension 语义上增加：
 
 ```text
@@ -24,6 +23,25 @@ Layer / BlendGroup / Clip Instance
 本文不定义 CXC ZIP/manifest、CXT 文件内部结构或 AnimationSystem 混合算法。它们分别由
 [CXC_FORMAT.md](CXC_FORMAT.md)、[CXT_FORMAT.md](CXT_FORMAT.md) 和
 [ANIMATION_MIXING.md](ANIMATION_MIXING.md) 负责。
+
+### 1.1 Typed 处理层
+
+Chart v4 固定以下数据流；名称表示职责，确切 C++ 类型名可在 CFU-C 按现有命名约定确定：
+
+```text
+SourceChartDocument
+  保留 ParameterRef、CXT import、模板和规范化扩展数据，可由 Writer 重新保存
+
+ResolvedChartDocument
+  完成 template expansion、参数解析、CXT import/lowering 和冲突验证，只含 concrete typed value
+
+ChartRuntime + AnimationProgramInput
+  供 Runtime/Stage 4 使用，不含 JSON、CXC、CXT path 或未解析参数
+```
+
+处理顺序固定为：typed Reader、template expansion、concrete Object 形成、ParameterSet 冻结与解析、
+CXT import、Template Binding lowering、capability/预算/冲突验证、Runtime compile。Format handler 不
+创建 World/EnTT Entity。
 
 ## 2. 顶层
 
@@ -65,7 +83,8 @@ Layer / BlendGroup / Clip Instance
 ## 3. ChartParameter v1
 
 Chart 声明参数；宿主只在 prepare 前提供 typed `ChartParameterSet`。参数在 prepare 开始时完成
-校验、规范化和冻结，不修改 Chart/CXT bytes。
+校验、规范化和冻结，不修改 Chart/CXT bytes。ParameterSet 通过 per-prepare/reload options 提交，
+不属于 `PlaybackSource` 内容；同一 source 可以用不同参数产生不同 PreparedPlayback。
 
 ### 3.1 类型和声明
 
@@ -105,6 +124,23 @@ Chart 声明参数；宿主只在 prepare 前提供 typed `ChartParameterSet`。
 v1 参数引用不是表达式。它不支持 expression string、通用 AST、函数、字段读取、随机数、条件
 分支或运行时变化。宿主需要组合值时，必须在提交 ParameterSet 前计算最终 typed 值。
 
+Scalar 字段使用 `literal | ParameterRef` 联合。允许逐轴参数化的 vec3 仍保持三元素数组，每个元素
+独立使用该联合：
+
+```json
+{
+  "position": [
+    { "parameter": { "domain": "chart-parameter", "id": "layout.x" } },
+    0.0,
+    0.0
+  ]
+}
+```
+
+`camera.fovY`、Layer/Group/Instance weight 和 Template Binding durationScale/weight 使用同一
+ParameterRef 外形。Quaternion、Asset reference、ID、path、parent、组件集合和数组结构不得接受
+ParameterRef。
+
 首版允许参数化：
 
 ```text
@@ -120,8 +156,20 @@ blendMode 和 property mask 必须保持 literal。Quaternion、资源字段和 
 value 也保持 literal。
 
 prepare 拒绝未知 ID、重复 ID、缺失 required、类型错误、非有限值、范围错误和不允许的引用用途。
-解析结果按 ID 排序并规范化；CXC content identity 与 normalized parameter identity 共同参与
-PreparedPlayback、cache 和 reload identity。
+解析结果按 ID 排序并规范化。Parameter identity 使用以下域分隔二进制编码的 SHA-256：
+
+```text
+domain tag        "cuexis.parameter-set.v1\0"
+entry order       portable ASCII ID ascending
+ID                uint32 little-endian byte length + ASCII bytes
+type              fixed one-byte tag: number=0x01 / rational=0x02 / weight=0x03
+number / weight   IEEE-754 binary64 bits, little-endian, -0.0 normalized to +0.0
+rational          reduced signed int64 numerator + positive int64 denominator, little-endian
+```
+
+`PreparedSemanticIdentity` 使用域分隔 SHA-256 组合 canonical Chart identity、按 import ID 排序的
+CXT identity、按 AssetId 排序的资源 identity manifest 和 parameter identity。CXC 的精确 package
+hash 不参与该语义 identity，因此 filesystem、memory、host 与 CXC source 可以得到相同结果。
 
 ## 4. Animation Template import
 
@@ -141,12 +189,11 @@ Import record 只允许 `id` 和 `source`。`source` 相对于 Source Project/CX
 
 ```text
 import id 唯一
-source path 唯一并满足 CXC portable path 规则
+source path 唯一、满足 CXC portable path 规则并以小写 `.cxt` 结尾
 source 存在且是普通文件
 CXT format/version 正确
 CXT templateId 与 import id 完全相同
 requiredExtensions 可满足
-imported template ID 不与 Chart-local AnimationClip ID 冲突
 ```
 
 模板引用使用：
@@ -154,6 +201,10 @@ imported template ID 不与 Chart-local AnimationClip ID 冲突
 ```json
 { "domain": "animation-template", "id": "motion.move-y" }
 ```
+
+`animation-template` 和 `animation` 是不同 reference domain，可以复用相同文本 ID。Import ID 在
+Chart import table 内唯一，AnimationClip ID 在 Chart clip table 内唯一；任何未带正确 domain 的
+引用失败。ID、bindingId、layerId、groupId 和 instanceId 均使用 portable stable ID 规则。
 
 ## 5. AnimationClip v1
 
@@ -226,6 +277,24 @@ Segment endValue，最后 Segment 后保持到 Clip 结束。
 所有 Chart-local Clip 与 imported CXT Clip 的 Asset reference 都进入资源闭包，包括未绑定 Clip、
 weight 0 Instance/Binding 和被 mask 排除的 Track。
 
+### 5.4 规范化
+
+同一 Clip 对同一 Property ID 最多有一个 Track；重复 Property Track、重复 Segment startBeat 或重复
+Step beat 直接失败，不静默去重。Reader 不赋予输入数组顺序语义，Writer 使用：
+
+```text
+tracks / stepTracks    Property ID ascending
+segments               startBeat ascending
+steps                  beat ascending
+animationClips         clip ID ascending
+animationTemplateImports import ID ascending
+parameters             parameter ID ascending
+```
+
+Rational Beat 在比较和写出前约分；JSON object key 使用 canonical writer 顺序。数组 record 的主
+排序键相同时，以已完成 Rational/number/object-key 规范化的 compact JSON bytes 按 portable bytes
+升序决胜；Writer 输出不依赖等价主键 record 的输入顺序。
+
 ## 6. cuexis.animator component v1
 
 ```json
@@ -247,6 +316,10 @@ parent 和初始组件仍由 Chart 保存。
 
 对 Layer/Instance mask 过滤后的 effective property 执行组件校验：Transform 属性要求
 `cuexis.transform`，Material/Render 属性要求 `cuexis.renderable`。
+
+Object/Template 的 v1 patch 只允许对整个 `/components/cuexis.animator` 执行 add/remove/replace。
+不得 patch Animator 内部数组元素、priority、weight 或 mask；需要变化时替换整个 component。
+违反该边界时沿用现有 `chart.patch.path_unsupported`。
 
 ### 6.1 Template Binding
 
@@ -281,18 +354,22 @@ Generated Layer
 
 Generated BlendGroup
   mode = CXT application.blendMode
-  weight = 1
+  weight = resolved binding.weight
 
 Generated ClipInstance
   startBeat = binding.startBeat
   durationScale = resolved binding.durationScale
   iterations/fillMode = CXT application
-  weight = resolved binding.weight
+  weight = 1
 ```
 
-generated ID 从 Object ID、bindingId 和 templateId 确定派生，不写回 Chart，也不能被其他 Chart
-字段引用。诊断保留原始 Object ID、bindingId、templateId 和字段路径。Generated records 与显式
-Layer 使用完全相同的 priority/mask 冲突规则。
+Binding weight 放到 generated Group，避免单 Instance Override Group 在 weight 归一化后丢失
+Binding 的整体贡献强度。
+
+Generated identity 是内部复合键 `(objectId, bindingId, templateId, recordKind)`，按 portable bytes
+逐字段比较，不生成截断 hash 字符串，不写回 Chart，也不能被其他 Chart 字段引用。诊断保留原始
+Object ID、bindingId、templateId、recordKind 和字段路径。Generated records 与显式 Layer 使用
+完全相同的 priority/mask 冲突规则。
 
 ### 6.3 Layer
 
@@ -313,6 +390,10 @@ priority 是 signed integer，越大越晚应用。weight 是 `[0,1]` literal �
 prefix 必须以 `.` 结束并匹配至少一个已知属性。空 mask 不允许写入，不是 wildcard。同一 Animator
 中相同 priority 的不同 Layer 不能具有相交 mask；输入顺序无语义。
 
+Mask 的 `properties` 和 `prefixes` 分别按 portable bytes 升序规范化。重复项、一个 property 同时被
+多个 prefix 覆盖、或同一 mask 中互相覆盖的 prefix 都失败，不静默折叠。Instance mask 必须在
+展开 prefix 后成为 Layer mask 的真子集或相等集合。
+
 ### 6.4 BlendGroup
 
 ```json
@@ -326,6 +407,10 @@ prefix 必须以 `.` 结束并匹配至少一个已知属性。空 mask 不允�
 
 Group ID 在 Layer 内唯一。`mode` 为 `override` 或 `additive`。不同 Group 的 effective property set
 不能重叠。
+
+写入 `render.visible` 或 `render.material` 的 Group 必须是 Override，且 resolved Layer weight 与
+Group weight 必须都等于 1。Instance weight 只用于 Group 内离散 winner 选择；部分 Layer/Group
+weight 对离散值没有隐式阈值语义，违反时报告 `chart.animation.discrete_weight_unsupported`。
 
 ### 6.5 Clip Instance
 
@@ -346,6 +431,9 @@ Group ID 在 Layer 内唯一。`mode` 为 `override` 或 `additive`。不同 Gro
 
 `iterations` 是 `1..65535` 或字符串 `"infinite"`。`fillMode` 为 `none` 或 `hold`；infinite
 只允许 none。Instance mask 必须是 Layer mask 的子集；空 mask 不写入。
+
+`templateBindings`、`layers`、`blendGroups` 和 `instances` 分别按 bindingId、layerId、groupId 和
+instanceId 的 portable bytes 升序规范化。所有 ID 在其声明作用域内唯一；重复 ID 直接失败。
 
 ## 7. 时间和循环
 
@@ -369,6 +457,18 @@ localBeat = elapsed / durationScale
 Clip 结束值。Stop 固定 chartBeat；Seek/reload 从目标 Beat 重建。负 startBeat 合法，Clip 内局部 Beat
 不得为负。
 
+| 边界 | v1 结果 |
+| --- | --- |
+| `elapsed < 0` | Instance 不写入 |
+| 内部迭代精确结束 | 下一迭代 `localBeat = 0` |
+| 有限最终边界 + `none` | 不写入 |
+| 有限最终边界 + `hold` | 采样 `localBeat = durationBeats` |
+| `infinite` | 持续循环，`fillMode` 必须为 `none` |
+| Stop | chartBeat/localBeat 均保持 |
+| Seek/discontinuity | 只从目标 chartBeat 重建 |
+| negative startBeat | 合法；目标时间可能已位于后续迭代 |
+| zero-duration Segment | 精确 Beat 建立保持值，不创建零时长 Clip |
+
 ## 8. 混合和运行时边界
 
 固定求值顺序、Override/Additive、Quaternion、scale、离散属性和 tie-break 由
@@ -388,8 +488,12 @@ cuexis.animation.layers.v1
 ```
 
 空 parameters/imports/animation 的 v4 只要求 `cuexis.chart.v4`。存在 CXT import 时还要求
-`cuexis.source.cxt.v1`。存在非空 Clip、Template Binding 或显式 Instance 时还要求两个 animation
-capability。Stage 4 未实现时，这类内容必须稳定失败，不能忽略动画。
+`cuexis.source.cxt.v1`。任意非空 CXT import、AnimationClip、Template Binding、Layer 或 Instance
+还要求两个 animation capability；即使定义未绑定或 weight 为 0，也不得根据当前使用状态省略。
+Stage 4 未实现时，这类内容必须以 `playback.capability.unsupported` 稳定失败，不能忽略动画。
+
+空 `cuexis.animator` inert，不额外要求 animation capability。Chart v4 不改变 FrameSnapshot 字段；
+现有 FrameDigest v3 已包含所有会被 v1 动画修改的公开表现值，因此本阶段不升级 digest 版本。
 
 ## 10. 预算与诊断
 
@@ -404,7 +508,15 @@ TemplateBindings / Animator                256
 Layers / Animator                           64
 BlendGroups / Layer                         64
 Instances / BlendGroup                     256
+total Animation Tracks / prepared content   65,536
+total Segments + Steps / prepared content 1,048,576
+generated records / prepared content       100,000
 ```
+
+prepared-content Track/Segment/Step 总量按 prepare 峰值内容计算：每个 imported CXT 的 source Clip
+计一次，每个 Template Binding lowering 后生成的 concrete Clip 再计一次，Chart-local Clip 计一次。
+因此未绑定 import 仍进入总量，一个被多个 Object/Binding 复用的 CXT 还会按每个 concrete Clip
+分别计数。该口径覆盖 prepare 同时持有 source document 与 generated program 的内存/处理上界。
 
 现有 16 MiB Chart 输入、1024 diagnostics 和 600,000 Property Write/frame 上限继续生效。
 
@@ -423,7 +535,13 @@ chart.animation.template_binding_conflict
 chart.animation.track_conflict
 chart.animation.mask_conflict
 chart.animation.additive_unsupported
+chart.animation.discrete_weight_unsupported
+chart.animation.generated_limit
 ```
+
+现有 `playback.capability.unsupported` 用于 capability preflight，不新增意义重复的
+`playback.capability.missing`。所有总量使用 checked arithmetic，并在资源获取、Runtime prepare 和
+World 发布前失败。
 
 ## 11. 迁移
 
@@ -431,7 +549,12 @@ chart.animation.additive_unsupported
 迁移不生成 CXT、Template Binding、参数声明或运行时脚本。迁移必须显式执行、输出到独立路径并
 生成结构化报告。
 
+迁移后的静态 v4 与源 v3 必须产生相同 FrameSnapshot 和 FrameDigest v3。Chart format version 和
+capability summary 可以不同；迁移报告必须记录 source/target canonical identity，不能把 CXC pack
+误称为迁移。
+
 ## 12. 候选示例
 
-正反例见 [examples/chart_format_update](examples/chart_format_update/README.md)。ADR 0038 整体接受
-并建立 Schema 以前，它们不是生产 fixture，也不被当前 Loader 接受。
+正反例见 [examples/chart_format_update](examples/chart_format_update/README.md)。CFU-C1 已将接受副本
+提升到 `tests/fixtures/chart_format_update/`，由生产 Schema 与独立 Chart v4 typed Reader 验证；
+评审目录本身仍不作为生产测试输入。

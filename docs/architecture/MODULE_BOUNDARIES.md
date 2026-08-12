@@ -2,7 +2,7 @@
 
 状态：现行模块边界摘要
 
-更新日期：2026-08-10
+更新日期：2026-08-11
 
 本文总结稳定依赖方向。构建时的精确 allowlist 和 architecture tests 仍由根 CMake 配置拥有。
 
@@ -53,6 +53,21 @@ CXC archive library types do not enter public Playback headers
 format handlers do not create World/EnTT entities
 pack and prepare do not execute scripts
 ```
+
+ADR 0038 的 2026-08-11 收口提案把 CXC archive/manifest/closure 放入候选内部 target
+`cuexis_cxc`。该 target 仅在 ADR 整体接受后创建，并遵守：
+
+```text
+cuexis_cxc may depend on core/content/filesystem/project/chart/json support and an archive library
+cuexis_cxc does not depend on playback/runtime/world/render/audio
+playback may privately depend on cuexis_cxc
+cxc tools reuse cuexis_cxc directly
+cuexis_cxc is not an installed package component
+archive library types never enter Cuexis public headers
+```
+
+入口 Chart/CXT 属于 PlaybackSource 的 project-document table；AssetId bytes 继续通过
+`IContentProvider`。两种内容域不得通过保留 root ID 或伪 AssetId 混用。
 
 ## 线程和所有权
 

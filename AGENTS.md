@@ -16,13 +16,17 @@ candidate/active presentation transactions, Validation Sink, the OpenGL adapter,
 external package consumers, and cross-platform closure. Stable C ABI work remains in Stage 12;
 `cuexis_judgement` remains planned for Stage 11.
 
-The active planning stage is **Stage Chart Format Update**, positioned between Stage 3 and
-Stage 4; do not call it Stage 3.5. ADR 0038 proposes `.cxc` as a strict ZIP32 Stored exchange
+The active implementation stage is **Stage Chart Format Update**, positioned between Stage 3 and
+Stage 4; do not call it Stage 3.5. ADR 0038 defines `.cxc` as a strict ZIP32 Stored exchange
 package containing existing Project/Asset Index formats, `cuexis.chart` v4 data, CXT JSON, and
 required resources. The CXT v1, ChartParameter, and Template Binding subdecision was accepted on
 August 10, 2026: `.cxt` is UTF-8 JSON for one declarative local-time animation template, and host
-parameters are frozen before prepare lowering. ADR 0038 as a whole remains proposed; no CXC/CXT
-Schema, Reader, Writer, package API, or Chart v4 production support exists. Stage 4 must consume
+parameters are frozen before prepare lowering. ADR 0038 was accepted on August 11, 2026. CFU-C1
+Schema, fixtures, typed source Readers, and the internal manifest target are complete. CFU-C2
+canonical Writers, parameter resolution/identity, CXT import, deterministic lowering, resource
+closure, capability derivation, and aggregate budget gates are complete; CFU-C3 is next. This
+checkpoint must not be described as complete CXC, package API, or Playback support.
+Stage 4 must consume
 typed data produced by the format stage and must not parse JSON/CXC/CXT in `engine/animation/`.
 Runtime scripts and per-frame script callbacks are deferred indefinitely. No scheduled stage,
 Chart/CXT/CXC field, extension, capability, bytecode, ABI, or Playback execution hook is reserved
@@ -259,10 +263,10 @@ directories do not exist yet (planned).
 - `docs/stage_plans/stage_4_implementation_plan.md` through
   `docs/stage_plans/stage_12_implementation_plan.md` — independent future/deferred plans with
   goals, prerequisites, scope, acceptance criteria, and archived sources
-- `docs/adr/0038-cxc-v1-and-chart-v4-boundary.md` — proposed CXC v1 package and Chart v4 boundary
-- `docs/CXC_FORMAT.md` — proposed CXC v1 container, manifest, closure, and package contract
-- `docs/CHART_V4_FORMAT.md` — candidate Chart v4 fields, imports, animation, binding, and lowering contract
-- `docs/CXT_FORMAT.md` — accepted-subdecision CXT v1 JSON template file contract
+- `docs/adr/0038-cxc-v1-and-chart-v4-boundary.md` — accepted CXC v1, Chart v4, CXT and prepare boundary
+- `docs/CXC_FORMAT.md` — accepted CXC v1 container, manifest, closure, and package contract
+- `docs/CHART_V4_FORMAT.md` — accepted Chart v4 fields, imports, animation, binding, and lowering contract
+- `docs/CXT_FORMAT.md` — accepted CXT v1 JSON template file contract
 
 ## Documentation maintenance
 

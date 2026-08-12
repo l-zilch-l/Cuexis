@@ -46,5 +46,5 @@ ADR 是决策理由的权威来源。字段级合同和实施证据分别见 [�
 | [0035](0035-retire-simple-chart-format.md) | 退役 Simple Chart | 已接受并实现 |
 | [0036](0036-stage-2-runtime-contracts.md) | Stage 2 Runtime 合同 | 已接受 |
 | [0037](0037-stage-3-portable-presentation-contracts.md) | Stage 3 Portable Presentation | 已接受 |
-| [0038](0038-cxc-v1-and-chart-v4-boundary.md) | CXC、Chart v4、CXT 边界 | 提议，部分子决策已接受 |
+| [0038](0038-cxc-v1-and-chart-v4-boundary.md) | CXC、Chart v4、CXT 边界 | 已接受，实施中 |
 | [0039](0039-remove-hour-from-build-version.md) | 构建版本移除小时字段 | 已接受 |

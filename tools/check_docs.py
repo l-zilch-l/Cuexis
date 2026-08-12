@@ -278,6 +278,77 @@ def find_keys(value: Any) -> list[str]:
     return keys
 
 
+def find_dicts(value: Any) -> list[dict[str, Any]]:
+    result: list[dict[str, Any]] = []
+    if isinstance(value, dict):
+        result.append(value)
+        for child in value.values():
+            result.extend(find_dicts(child))
+    elif isinstance(value, list):
+        for child in value:
+            result.extend(find_dicts(child))
+    return result
+
+
+def has_animator_deep_patch(value: Any) -> bool:
+    for item in find_dicts(value):
+        path = item.get("path")
+        if isinstance(path, str) and path.startswith("/components/cuexis.animator/"):
+            return True
+    return False
+
+
+def has_parameterized_asset(value: Any) -> bool:
+    for item in find_dicts(value):
+        renderable = item.get("cuexis.renderable")
+        if not isinstance(renderable, dict):
+            continue
+        for field in ("mesh", "material"):
+            field_value = renderable.get(field)
+            if isinstance(field_value, dict) and "parameter" in field_value:
+                return True
+    return False
+
+
+def has_partial_discrete_weight(value: Any) -> bool:
+    has_discrete_track = any(
+        item.get("property") in {"render.visible", "render.material"}
+        and isinstance(item.get("steps"), list)
+        for item in find_dicts(value)
+    )
+    has_partial_layer_or_group = any(
+        isinstance(item.get("weight"), (int, float))
+        and not isinstance(item.get("weight"), bool)
+        and item.get("weight") != 1
+        and ("layerId" in item or "groupId" in item)
+        for item in find_dicts(value)
+    )
+    return has_discrete_track and has_partial_layer_or_group
+
+
+def has_mask_internal_overlap(value: Any) -> bool:
+    for item in find_dicts(value):
+        properties = item.get("properties")
+        prefixes = item.get("prefixes")
+        if not isinstance(properties, list) or not isinstance(prefixes, list):
+            continue
+        string_properties = [entry for entry in properties if isinstance(entry, str)]
+        string_prefixes = [entry for entry in prefixes if isinstance(entry, str)]
+        if len(string_properties) != len(set(string_properties)):
+            return True
+        if len(string_prefixes) != len(set(string_prefixes)):
+            return True
+        if any(prop.startswith(prefix) for prop in string_properties for prefix in string_prefixes):
+            return True
+        if any(
+            left != right and left.startswith(right)
+            for left in string_prefixes
+            for right in string_prefixes
+        ):
+            return True
+    return False
+
+
 def reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     result: dict[str, Any] = {}
     for key, value in pairs:
@@ -315,6 +386,9 @@ def check_candidate_examples(failures: list[CheckFailure]) -> int:
                 failures.append(CheckFailure(path, "CXT candidate must use cuexis.animation-template v1"))
             if not expected_invalid and any(key.casefold() in SCRIPT_KEYS for key in find_keys(value)):
                 failures.append(CheckFailure(path, "valid CXT candidate contains a runtime-script field"))
+            if expected_invalid and "runtime_script" in name:
+                if not any(key.casefold() in SCRIPT_KEYS for key in find_keys(value)):
+                    failures.append(CheckFailure(path, "runtime-script fixture has no forbidden script field"))
         elif format_id == "cuexis.cxc":
             entries = value.get("entries")
             if not isinstance(entries, list):
@@ -323,9 +397,19 @@ def check_candidate_examples(failures: list[CheckFailure]) -> int:
             paths = [entry.get("path") for entry in entries if isinstance(entry, dict)]
             if len(paths) != len(entries) or any(not isinstance(entry_path, str) for entry_path in paths):
                 failures.append(CheckFailure(path, "CXC entries must contain string paths"))
+                continue
             duplicate_paths = len(paths) != len(set(paths))
             if duplicate_paths:
                 failures.append(CheckFailure(path, "CXC entries contain duplicate paths"))
+            casefold_groups: dict[str, set[str]] = {}
+            for entry_path in paths:
+                casefold_groups.setdefault(entry_path.casefold(), set()).add(entry_path)
+            case_conflict = any(len(group) > 1 for group in casefold_groups.values())
+            if expected_invalid and "case_conflict" in name:
+                if not case_conflict:
+                    failures.append(CheckFailure(path, "case-conflict fixture has no case-folded duplicate"))
+            elif not expected_invalid and case_conflict:
+                failures.append(CheckFailure(path, "valid CXC entries contain a case-folded duplicate"))
             sorted_paths = sorted(paths)
             if expected_invalid and "unsorted" in name:
                 if paths == sorted_paths:
@@ -340,15 +424,43 @@ def check_candidate_examples(failures: list[CheckFailure]) -> int:
                 failures.append(CheckFailure(path, "animationTemplateImports must be an array"))
                 continue
             missing = []
+            mismatched_ids = []
             for item in imports:
                 source = item.get("source") if isinstance(item, dict) else None
                 if not isinstance(source, str) or not (EXAMPLES / source).is_file():
                     missing.append(source)
+                    continue
+                imported = candidates.get(EXAMPLES / source)
+                import_id = item.get("id") if isinstance(item, dict) else None
+                if not isinstance(imported, dict) or imported.get("templateId") != import_id:
+                    mismatched_ids.append(source)
             if expected_invalid and "missing_import" in name:
                 if not missing:
                     failures.append(CheckFailure(path, "missing-import fixture has no missing import"))
-            elif not expected_invalid and missing:
-                failures.append(CheckFailure(path, f"valid Chart candidate has missing imports: {missing}"))
+            elif missing:
+                failures.append(CheckFailure(path, f"candidate has unexpected missing imports: {missing}"))
+            if expected_invalid and "id_mismatch" in name:
+                if not mismatched_ids:
+                    failures.append(CheckFailure(path, "ID-mismatch fixture has matching CXT templateId"))
+            elif mismatched_ids:
+                failures.append(
+                    CheckFailure(path, f"candidate has unexpected mismatched CXT IDs: {mismatched_ids}")
+                )
+
+            if expected_invalid and "animator_deep_patch" in name:
+                if not has_animator_deep_patch(value):
+                    failures.append(CheckFailure(path, "animator deep-patch fixture has no deep patch"))
+            if expected_invalid and "parameter_asset_use" in name:
+                if not has_parameterized_asset(value):
+                    failures.append(CheckFailure(path, "parameter asset-use fixture has no asset ParameterRef"))
+            if expected_invalid and "discrete_partial_weight" in name:
+                if not has_partial_discrete_weight(value):
+                    failures.append(
+                        CheckFailure(path, "discrete-weight fixture lacks a discrete track or partial weight")
+                    )
+            if expected_invalid and "mask_overlap" in name:
+                if not has_mask_internal_overlap(value):
+                    failures.append(CheckFailure(path, "mask-overlap fixture has no internal mask overlap"))
     return len(candidates)
 
 

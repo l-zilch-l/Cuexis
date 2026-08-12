@@ -2,7 +2,7 @@
 
 状态：现行阶段报告索引
 
-更新日期：2026-08-10
+更新日期：2026-08-11
 
 报告是带日期的证据快照。报告中的“下一步”只表示报告生成时的交接，不自动代表当前任务。
 
@@ -27,4 +27,7 @@
 | [260806 Stage 2 review](260806-stage-2-review.md) | historical review snapshot |
 | [260808 Stage 3 review](260808-stage-3-review.md) | historical review snapshot |
 | [260810 Chart Format Update inventory](260810-chart-format-update-inventory.md) | CFU-A inventory |
+| [260811 Chart Format Update CFU-C0 baseline](260811-chart-format-update-c0-baseline.md) | accepted implementation baseline and dependency decision |
+| [260811 Chart Format Update CFU-C1 Reader](260811-chart-format-update-c1-reader.md) | Schema, fixture and typed source Reader checkpoint |
+| [260811 Chart Format Update CFU-C2 lowering](260811-chart-format-update-c2-lowering.md) | canonical Writer, parameter resolution, CXT import and deterministic lowering checkpoint |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |

@@ -2,7 +2,7 @@
 
 状态：现行状态页
 
-更新日期：2026-08-10
+更新日期：2026-08-11
 
 本文是当前阶段和实现状态的唯一摘要。阶段计划、完成报告和审查报告仍然保留各自的历史
 细节，但不能绕过本文重新定义当前状态。
@@ -27,7 +27,7 @@ PlaybackSession、FrameSnapshot、ContentProvider 和后续 Judgement/Replay 合
 | Stage 1E | 已完成 | [完成报告](stage_reports/stage_1e_completion_report.md) |
 | Stage 2 | 已完成 | [完成报告](stage_reports/stage_2_completion_report.md) |
 | Stage 3 | 已完成 | [完成报告](stage_reports/stage_3_completion_report.md) |
-| Stage Chart Format Update | 当前活动阶段，CFU-A 完成，CFU-B 提案 | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md) |
+| Stage Chart Format Update | 当前活动阶段；CFU-C0/C1/C2 已完成，CFU-C3 待开始 | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md) 与 [C2 报告](stage_reports/260811-chart-format-update-c2-lowering.md) |
 | Stage 4 | 未开始，等待格式阶段关闭 | [实施计划](stage_plans/stage_4_implementation_plan.md) |
 
 Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使用 Stage 3.5 作为别名。
@@ -35,10 +35,19 @@ Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使
 ## 格式状态
 
 - Chart v1/v2/v3 已实现并继续作为当前生产格式族。
-- CXC v1、Chart v4 和 CXT v1 仍是 ADR 0038 提案范围，尚未进入 Schema、Reader、Writer 或
-  公共 API 生产支持。
+- ADR 0038 已于 2026-08-11 整体接受，Stage Chart Format Update 已进入 CFU-C 实施。
+- CFU-C1 已建立 Chart v4、CXT v1、CXC manifest v1 Schema、正式 fixture、typed source model/Reader
+  和内部 `cuexis_cxc` manifest 目标。
+- CFU-C2 已建立 Chart v4/CXT v1 canonical Writer、ChartParameter 冻结与 identity、project-document
+  lookup、CXT import/identity、Template Binding deterministic lowering、资源闭包、capability 推导和
+  checked aggregate budgets。该检查点仍不包含 ZIP archive、CXC package API、Playback 接入或动画
+  求值。
+- CFU-C 至 CFU-G 的详细实现批次、模块落点、API 门禁、测试矩阵、跨平台验收和 Stage 4 交接方案
+  已写入实施计划；当前只允许按批次推进，不得越界实现 Stage 4 动画求值。
 - CXT v1、播放前参数、Template Binding 和运行时脚本无限期延后子决策已于 2026-08-10 接受。
 - `.cxt` 是 UTF-8 JSON 声明式模板，不是脚本、字节码或 SDK 隐式内置实现。
+- 已接受合同区分 CXC package identity 与跨 source Prepared semantic identity，并保持 FrameSnapshot
+  和 FrameDigest v3 不变。
 
 格式入口：[formats/README.md](formats/README.md)。
 
@@ -53,7 +62,7 @@ extension、capability、字节码、模块 ABI 或 Playback 执行入口。离�
 - 正式 `cuexis_judgement`、InputEvent、ReplayData 和确定性回放
 - Studio 独立应用实现
 - 稳定 C ABI 和语言绑定
-- Chart v4/CXC/CXT 生产实现
+- CXC ZIP32 archive/package、pack/validate/unpack 工具和 Playback 接入
 - Stage 4 AnimationSystem 运行时实现
 
 ## 状态更新规则

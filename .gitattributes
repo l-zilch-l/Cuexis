@@ -1,2 +1,5 @@
 tests/fixtures/*.golden.json text eol=lf
 tests/fixtures/*.golden.cuexis.chart.json text eol=lf
+tests/fixtures/chart_format_update/**/*.json text eol=lf
+tests/fixtures/chart_format_update/**/*.cxt text eol=lf
+tests/fixtures/chart_format_update/**/*.cxc binary

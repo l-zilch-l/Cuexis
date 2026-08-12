@@ -1,0 +1,45 @@
+{
+  "application": {
+    "blendMode": "additive",
+    "coordinateSpace": "local",
+    "fillMode": "hold",
+    "iterations": 1
+  },
+  "clip": {
+    "durationBeats": {
+      "denominator": 1,
+      "numerator": 1
+    },
+    "stepTracks": [],
+    "tracks": [
+      {
+        "property": "transform.position.y",
+        "segments": [
+          {
+            "durationBeats": {
+              "denominator": 1,
+              "numerator": 1
+            },
+            "endSlope": 1.0,
+            "endValue": 1.0,
+            "startBeat": {
+              "denominator": 1,
+              "numerator": 0
+            },
+            "startSlope": 1.0,
+            "startValue": 0.0
+          }
+        ]
+      }
+    ],
+    "version": 1
+  },
+  "extensions": {},
+  "format": "cuexis.animation-template",
+  "metadata": {
+    "name": "moveY"
+  },
+  "requiredExtensions": [],
+  "templateId": "motion.move-y",
+  "version": 1
+}

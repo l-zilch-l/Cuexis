@@ -1,0 +1,112 @@
+{
+  "format": "cuexis.chart",
+  "version": 4,
+  "chartId": "019f0000-0000-7abc-8def-000000000480",
+  "metadata": {
+    "title": "Template Animator Candidate"
+  },
+  "timing": {
+    "offsetMs": 0.0,
+    "defaultBpm": 120.0,
+    "tempoEvents": [],
+    "stops": []
+  },
+  "parameters": [],
+  "templates": [
+    {
+      "id": "019f0000-0000-7abc-8def-000000000481",
+      "name": "pulsing_note",
+      "extends": null,
+      "prototype": {
+        "components": {
+          "cuexis.transform": {
+            "version": 1,
+            "position": [0.0, 0.0, 0.0],
+            "rotation": [0.0, 0.0, 0.0, 1.0],
+            "scale": [1.0, 1.0, 1.0]
+          },
+          "cuexis.animator": {
+            "version": 1,
+            "templateBindings": [],
+            "layers": [
+              {
+                "layerId": "layer.template-pulse",
+                "priority": 20,
+                "weight": 1.0,
+                "propertyMask": {
+                  "properties": ["transform.scale"],
+                  "prefixes": []
+                },
+                "blendGroups": [
+                  {
+                    "groupId": "group.template-pulse",
+                    "mode": "override",
+                    "weight": 1.0,
+                    "instances": [
+                      {
+                        "instanceId": "instance.template-pulse",
+                        "clip": {
+                          "domain": "animation",
+                          "id": "animation.template-pulse"
+                        },
+                        "startBeat": { "numerator": 0, "denominator": 1 },
+                        "iterations": "infinite",
+                        "fillMode": "none",
+                        "weight": 1.0,
+                        "propertyMask": {
+                          "properties": ["transform.scale"],
+                          "prefixes": []
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "extensions": {}
+    }
+  ],
+  "behaviors": [],
+  "animationTemplateImports": [],
+  "animationClips": [
+    {
+      "id": "animation.template-pulse",
+      "version": 1,
+      "durationBeats": { "numerator": 2, "denominator": 1 },
+      "tracks": [
+        {
+          "property": "transform.scale",
+          "segments": [
+            {
+              "startBeat": { "numerator": 0, "denominator": 1 },
+              "durationBeats": { "numerator": 2, "denominator": 1 },
+              "startValue": [1.0, 1.0, 1.0],
+              "endValue": [1.2, 1.2, 1.2],
+              "startSlope": 0.0,
+              "endSlope": 0.0
+            }
+          ]
+        }
+      ],
+      "stepTracks": []
+    }
+  ],
+  "objects": [
+    {
+      "id": "019f0000-0000-7abc-8def-000000000482",
+      "name": "note_from_template",
+      "parent": null,
+      "template": {
+        "domain": "template",
+        "id": "019f0000-0000-7abc-8def-000000000481"
+      },
+      "overrides": [],
+      "extensions": {}
+    }
+  ],
+  "requiredExtensions": [],
+  "extensions": {}
+}

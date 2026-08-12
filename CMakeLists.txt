@@ -104,6 +104,7 @@ set(CUEXIS_ACTIVE_TARGETS
     cuexis_world
     cuexis_assets
     cuexis_chart
+    cuexis_cxc
     cuexis_behavior
     cuexis_gameplay
     cuexis_render
@@ -141,6 +142,7 @@ if(CUEXIS_BUILD_TESTS)
         cuexis_project_tests
         cuexis_assets_tests
         cuexis_chart_tests
+        cuexis_cxc_tests
         cuexis_behavior_tests
         cuexis_gameplay_tests
         cuexis_debug_tests
@@ -520,6 +522,16 @@ cuexis_verify_target_dependencies(cuexis_chart
         cuexis::core
         cuexis::json_support
 )
+cuexis_verify_target_dependencies(cuexis_cxc
+    ALLOWED
+        cuexis::core
+        cuexis::content
+        cuexis::filesystem
+        cuexis::project
+        cuexis::chart
+        cuexis::json_support
+        MINIZIP::minizip-ng
+)
 cuexis_verify_target_dependencies(cuexis_behavior
     ALLOWED
         cuexis::core
@@ -655,6 +667,11 @@ if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_chart_tests
         ALLOWED
             cuexis::chart
+            Catch2::Catch2WithMain
+    )
+    cuexis_verify_target_dependencies(cuexis_cxc_tests
+        ALLOWED
+            cuexis_cxc
             Catch2::Catch2WithMain
     )
     cuexis_verify_target_dependencies(cuexis_behavior_tests

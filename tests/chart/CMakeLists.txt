@@ -1,8 +1,13 @@
 add_executable(cuexis_chart_tests
+    animation_template_loader_tests.cpp
     canonical_chart_loader_tests.cpp
     chart_loader_tests.cpp
     chart_migrator_tests.cpp
     chart_runtime_tests.cpp
+    chart_v4_loader_tests.cpp
+    chart_v4_c2_contract_tests.cpp
+    chart_v4_resolver_tests.cpp
+    chart_writer_tests.cpp
     example_chart_tests.cpp
     limits_tests.cpp
     rational_beat_tests.cpp

@@ -2,7 +2,7 @@
 
 状态：现行路线图
 
-更新日期：2026-08-10
+更新日期：2026-08-11
 
 产品边界由 [ADR 0027](adr/0027-playback-sdk-product-boundary.md) 冻结。本文只维护阶段顺序和当前
 交接，不复制阶段实施细节或完成证据。
@@ -13,8 +13,8 @@
 
 ```text
 CFU-A inventory and use cases                       completed
-CFU-B ADR and candidate contracts                   in progress
-CFU-C Schema / typed Reader / Writer / validator    blocked by ADR acceptance
+CFU-B ADR and format contracts                      accepted
+CFU-C Schema / typed Reader / Writer / validator    in progress; C0-C2 completed, C3 next
 CFU-D migration                                     pending
 CFU-E Playback prepare and capability               pending
 CFU-F consumers and determinism                     pending

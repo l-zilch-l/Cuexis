@@ -2,6 +2,7 @@
 
 #include <cuexis/chart/chart_loader.hpp>
 #include <cuexis/chart/chart_runtime.hpp>
+#include <cuexis/chart/chart_writer.hpp>
 #include <cuexis/core/math.hpp>
 #include <cuexis/json/parse.hpp>
 #include <cuexis/json/value.hpp>
@@ -13,7 +14,6 @@
 #include <optional>
 #include <string>
 #include <string_view>
-#include <type_traits>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -28,237 +28,6 @@ void addError(core::Diagnostics& diagnostics, std::string code, std::string mess
               std::string fieldPath = {}) {
     diagnostics.add(core::Diagnostic{core::DiagnosticSeverity::Error, std::move(code),
                                      std::move(message), std::move(fieldPath)});
-}
-
-[[nodiscard]] auto beatValue(const RationalBeat& beat) -> json::Value {
-    Object result;
-    result.emplace("denominator", json::Value{beat.denominator()});
-    result.emplace("numerator", json::Value{beat.numerator()});
-    return json::Value{std::move(result)};
-}
-
-[[nodiscard]] auto vec3Value(const core::Vec3& value) -> json::Value {
-    Array result;
-    result.emplace_back(static_cast<double>(value.x));
-    result.emplace_back(static_cast<double>(value.y));
-    result.emplace_back(static_cast<double>(value.z));
-    return json::Value{std::move(result)};
-}
-
-[[nodiscard]] auto quatValue(const core::Quat& value) -> json::Value {
-    Array result;
-    result.emplace_back(static_cast<double>(value.x));
-    result.emplace_back(static_cast<double>(value.y));
-    result.emplace_back(static_cast<double>(value.z));
-    result.emplace_back(static_cast<double>(value.w));
-    return json::Value{std::move(result)};
-}
-
-[[nodiscard]] auto behaviorValue(const BehaviorValue& value) -> json::Value {
-    return std::visit(
-        [](const auto& item) -> json::Value {
-            using Value = std::remove_cvref_t<decltype(item)>;
-            if constexpr (std::is_same_v<Value, double>) {
-                return json::Value{item};
-            } else if constexpr (std::is_same_v<Value, core::Vec3>) {
-                return vec3Value(item);
-            } else {
-                return quatValue(item);
-            }
-        },
-        value);
-}
-
-[[nodiscard]] auto referenceValue(std::string_view domain, std::string value) -> json::Value {
-    Object result;
-    result.emplace("domain", json::Value{std::string{domain}});
-    result.emplace("id", json::Value{std::move(value)});
-    return json::Value{std::move(result)};
-}
-
-[[nodiscard]] auto opaqueValue(const OpaqueJson& value) -> core::Result<json::Value> {
-    return json::parse(value.canonicalText, {.maxBytes = value.canonicalText.size() + 1,
-                                             .maxDepth = 64,
-                                             .maxStringBytes = value.canonicalText.size() + 1});
-}
-
-[[nodiscard]] auto transformValue(const TransformData& transform) -> json::Value {
-    Object result;
-    result.emplace("position", vec3Value(transform.position));
-    result.emplace("rotation", quatValue(transform.rotation));
-    result.emplace("scale", vec3Value(transform.scale));
-    result.emplace("version", json::Value{std::uint64_t{1}});
-    return json::Value{std::move(result)};
-}
-
-[[nodiscard]] auto componentsValue(const ObjectComponents& components) -> json::Value {
-    Object result;
-    if (components.transform) {
-        result.emplace("cuexis.transform", transformValue(*components.transform));
-    }
-    if (components.renderable) {
-        Object renderable;
-        renderable.emplace("material",
-                           referenceValue("asset", components.renderable->material.value));
-        renderable.emplace("mesh", referenceValue("asset", components.renderable->mesh.value));
-        renderable.emplace("version", json::Value{std::uint64_t{1}});
-        result.emplace("cuexis.renderable", json::Value{std::move(renderable)});
-    }
-    if (components.behavior) {
-        Object behavior;
-        behavior.emplace("behavior",
-                         referenceValue("behavior", components.behavior->behavior.value));
-        behavior.emplace("version", json::Value{std::uint64_t{1}});
-        result.emplace("cuexis.behavior", json::Value{std::move(behavior)});
-    }
-    if (components.note) {
-        Object note;
-        if (components.note->beat) {
-            note.emplace("beat", beatValue(*components.note->beat));
-        }
-        note.emplace("version", json::Value{std::uint64_t{1}});
-        result.emplace("cuexis.note", json::Value{std::move(note)});
-    }
-    if (components.element) {
-        Object element;
-        element.emplace("version", json::Value{std::uint64_t{1}});
-        result.emplace("cuexis.element", json::Value{std::move(element)});
-    }
-    if (components.camera) {
-        Object camera;
-        camera.emplace("far", json::Value{components.camera->farPlane});
-        camera.emplace("fovY", json::Value{components.camera->fovY});
-        camera.emplace("near", json::Value{components.camera->nearPlane});
-        camera.emplace("type", json::Value{components.camera->type});
-        camera.emplace("version", json::Value{std::uint64_t{1}});
-        result.emplace("cuexis.camera", json::Value{std::move(camera)});
-    }
-    return json::Value{std::move(result)};
-}
-
-[[nodiscard]] auto propertyName(BehaviorProperty property) -> std::string_view {
-    switch (property) {
-    case BehaviorProperty::TransformPositionX:
-        return "transform.position.x";
-    case BehaviorProperty::TransformPositionY:
-        return "transform.position.y";
-    case BehaviorProperty::TransformPositionZ:
-        return "transform.position.z";
-    case BehaviorProperty::TransformRotation:
-        return "transform.rotation";
-    case BehaviorProperty::TransformScale:
-        return "transform.scale";
-    case BehaviorProperty::CameraFovY:
-        return "camera.fovY";
-    case BehaviorProperty::MaterialOpacity:
-        return "material.opacity";
-    case BehaviorProperty::MaterialTint:
-        return "material.tint";
-    }
-    return "";
-}
-
-[[nodiscard]] auto eventValue(const BehaviorEvent& event) -> json::Value {
-    Object result;
-    result.emplace("durationBeats", beatValue(event.durationBeats));
-    result.emplace("endSlope", json::Value{event.endSlope});
-    result.emplace("endValue", behaviorValue(event.endValue));
-    if (event.groupId) {
-        result.emplace("groupId", json::Value{*event.groupId});
-    }
-    result.emplace("property", json::Value{std::string{propertyName(event.property)}});
-    result.emplace("startBeat", beatValue(event.startBeat));
-    result.emplace("startSlope", json::Value{event.startSlope});
-    result.emplace("startValue", behaviorValue(event.startValue));
-    return json::Value{std::move(result)};
-}
-
-[[nodiscard]] auto serializeDocument(const ChartDocument& document) -> core::Result<std::string> {
-    Object root;
-    if (document.audio) {
-        Object audio;
-        audio.emplace("mainMusic", referenceValue("asset", document.audio->mainMusic.value));
-        audio.emplace("version", json::Value{std::uint64_t{1}});
-        root.emplace("audio", json::Value{std::move(audio)});
-    }
-
-    Array behaviors;
-    for (const auto& behavior : document.behaviors) {
-        Object item;
-        Array events;
-        for (const auto& event : behavior.events) {
-            events.push_back(eventValue(event));
-        }
-        item.emplace("events", json::Value{std::move(events)});
-        item.emplace("id", json::Value{behavior.id.value});
-        item.emplace("stepEvents", json::Value{Array{}});
-        item.emplace("type", json::Value{behavior.type});
-        item.emplace("version", json::Value{std::uint64_t{behavior.version}});
-        behaviors.emplace_back(json::Value{std::move(item)});
-    }
-    root.emplace("behaviors", json::Value{std::move(behaviors)});
-
-    Object camera;
-    if (document.camera.defaultTransform) {
-        Object transform;
-        transform.emplace("position", vec3Value(document.camera.defaultTransform->position));
-        camera.emplace("defaultTransform", json::Value{std::move(transform)});
-    }
-    camera.emplace("far", json::Value{document.camera.farPlane});
-    camera.emplace("fovY", json::Value{document.camera.fovY});
-    camera.emplace("near", json::Value{document.camera.nearPlane});
-    camera.emplace("pitch", json::Value{document.camera.pitch});
-    camera.emplace("roll", json::Value{document.camera.roll});
-    camera.emplace("type", json::Value{document.camera.type});
-    camera.emplace("yaw", json::Value{document.camera.yaw});
-    root.emplace("camera", json::Value{std::move(camera)});
-    root.emplace("chartId", json::Value{document.chartId.value});
-
-    auto extensions = opaqueValue(document.extensions);
-    auto metadata = opaqueValue(document.metadata.data);
-    if (!extensions || !metadata) {
-        return core::unexpected(
-            core::Error{"chart.migration.opaque_json_invalid",
-                        "Chart metadata or extensions could not be serialized"});
-    }
-    root.emplace("extensions", std::move(*extensions));
-    root.emplace("format", json::Value{"cuexis.chart"});
-    root.emplace("metadata", std::move(*metadata));
-
-    Array objects;
-    for (const auto& object : document.objects) {
-        Object item;
-        item.emplace("components", componentsValue(object.components));
-        auto objectExtensions = opaqueValue(object.extensions);
-        if (!objectExtensions) {
-            return core::unexpected(std::move(objectExtensions.error()));
-        }
-        item.emplace("extensions", std::move(*objectExtensions));
-        item.emplace("id", json::Value{object.id.value});
-        if (object.name) {
-            item.emplace("name", json::Value{*object.name});
-        }
-        item.emplace("parent", object.parent ? referenceValue("object", object.parent->value)
-                                             : json::Value{nullptr});
-        objects.emplace_back(json::Value{std::move(item)});
-    }
-    root.emplace("objects", json::Value{std::move(objects)});
-    root.emplace("requiredExtensions", json::Value{Array{}});
-    root.emplace("templates", json::Value{Array{}});
-
-    Object timing;
-    timing.emplace("defaultBpm", json::Value{document.timing.defaultBpm});
-    timing.emplace("offsetMs", json::Value{document.timing.offsetMs});
-    timing.emplace("stops", json::Value{Array{}});
-    timing.emplace("tempoEvents", json::Value{Array{}});
-    root.emplace("timing", json::Value{std::move(timing)});
-    root.emplace("version", json::Value{std::uint64_t{3}});
-
-    auto serialized = json::serialize(json::Value{std::move(root)}, json::SerializeStyle::Pretty);
-    if (serialized) {
-        serialized->push_back('\n');
-    }
-    return serialized;
 }
 
 [[nodiscard]] auto serializeReport(const ChartMigrationReport& report)
@@ -584,7 +353,7 @@ auto ChartMigrator::migrateToV3(std::string_view sourceJson, const ChartLimits& 
         result.diagnostics.sortDeterministically();
         return result;
     }
-    auto chartJson = serializeDocument(migrated);
+    auto chartJson = ChartWriter::write(migrated);
     auto reportJson = serializeReport(report);
     if (!chartJson || !reportJson) {
         addError(result.diagnostics, "chart.migration.serialize_failed",

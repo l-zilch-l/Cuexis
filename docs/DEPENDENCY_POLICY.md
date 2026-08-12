@@ -46,6 +46,13 @@ MIT、BSD、Apache-2.0 和 zlib 等宽松许可证通常可以接受。MPL、LGP
 baseline 时必须同步验证 `vcpkg.json`、`THIRD_PARTY_NOTICES.md`、安装许可证清单和所有 CI
 平台，不能依赖 hosted runner 恰好缓存的 port tree。
 
+Stage Chart Format Update 选择 baseline 中的 `minizip-ng` 4.1.0 作为内部 `cuexis_cxc` 的 ZIP
+读写依赖，并关闭全部默认 feature。CXC v1 只允许 Stored，因此不启用 zlib、bzip2、lzma、zstd、
+传统加密或 AES。Cuexis 自己的窄 envelope validator 在调用库前检查 local/central header、EOCD、
+ZIP64 sentinel、extra/comment、entry range、overlap 和 trailing bytes；archive 库的宽松接受行为不
+改变 CXC 合同。该依赖不进入安装公共头，也不作为 CMake component 暴露；替换路径是保持
+`cuexis_cxc` 内部接口并改用另一成熟 ZIP 库，而不是自研压缩器。
+
 ## 封装原则
 
 第三方库可以用于内部实现，但除明确基础类型外，不进入 Cuexis 公共接口。Chart、Component 和资产格式不得保存第三方运行时对象。后端库通过模块边界封装，替换依赖不应要求修改无关模块。
@@ -60,8 +67,9 @@ cuexis_playback、cuexis_audio 与 cuexis_judgement 的安装公共头使用更�
 
 当前 C++20 静态 Playback 包安装 metadata 到 `${CMAKE_INSTALL_DATADIR}/Cuexis`，并把实际基础
 链接闭包的 vcpkg copyright 文件安装到 `licenses/`。基础 Playback/Content/Audio 包配置只查找
-EnTT、GLM、nlohmann-json、JSON Schema Validator 和 tl-expected，不得查找 SDL3、glad、
-spdlog 或 Catch2。显式请求 `AudioSDL` component 时才允许查找 SDL3，并载入独立的
+EnTT、GLM、nlohmann-json、JSON Schema Validator 和 tl-expected。CXC 接入静态 Playback 后可以
+私有增加无默认 feature 的 minizip-ng 链接闭包，但不得把它宣传为公共 Cuexis component 或传播其
+头文件。基础包不得查找 SDL3、glad、spdlog 或 Catch2。显式请求 `AudioSDL` component 时才允许查找 SDL3，并载入独立的
 `CuexisAudioSDLTargets.cmake`；包含该组件的安装树必须额外分发 SDL3 copyright。Player 或其他
 可选组件形成正式分发物时，必须另行把其新增依赖许可证加入安装清单和 consumer 门禁。
 

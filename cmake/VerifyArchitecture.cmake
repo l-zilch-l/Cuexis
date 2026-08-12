@@ -22,6 +22,18 @@ function(cuexis_verify_source_architecture source_dir)
         endif()
     endforeach()
 
+    file(GLOB_RECURSE cxc_sources
+        "${source_dir}/engine/cxc/*.cpp"
+        "${source_dir}/engine/cxc/*.hpp"
+    )
+    foreach(source IN LISTS cxc_sources)
+        file(READ "${source}" contents)
+        if(contents MATCHES
+           "#[ \t]*include[ \t]*[<\"](entt/|cuexis/playback/|cuexis/runtime/|cuexis/world/|cuexis/audio/|cuexis/audio_sdl/|cuexis/platform_sdl/|cuexis/render/|cuexis/render_opengl/|SDL|glad|GL/)")
+            message(FATAL_ERROR "CXC includes a runtime, world, audio, platform or render header: ${source}")
+        endif()
+    endforeach()
+
     file(GLOB_RECURSE audio_sources
         "${source_dir}/engine/audio/*.cpp"
         "${source_dir}/engine/audio/*.hpp"
