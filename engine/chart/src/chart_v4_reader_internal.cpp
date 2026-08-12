@@ -478,20 +478,28 @@ auto readV4Rational(const json::Reader& reader, const ChartLimits& limits,
     reader.rejectUnknownFields(fields);
     const auto numeratorReader = reader.requiredField("numerator");
     const auto denominatorReader = reader.requiredField("denominator");
-    const auto numerator = numeratorReader ? numeratorReader->readInt64() : std::nullopt;
-    const auto denominator = denominatorReader ? denominatorReader->readInt64() : std::nullopt;
+    auto numerator = std::optional<std::int64_t>{};
+    auto denominator = std::optional<std::int64_t>{};
+    if (numeratorReader) {
+        numerator = numeratorReader->readInt64();
+    }
+    if (denominatorReader) {
+        denominator = denominatorReader->readInt64();
+    }
     if (!numerator || !denominator) {
         return std::nullopt;
     }
-    if ((!allowNegative && *numerator < 0) || (requirePositive && *numerator <= 0) ||
-        *denominator <= 0 || *denominator > limits.maxBeatDenominator ||
-        *numerator < -limits.maxBeatNumeratorMagnitude ||
-        *numerator > limits.maxBeatNumeratorMagnitude) {
+    const auto numeratorValue = *numerator;
+    const auto denominatorValue = *denominator;
+    if ((!allowNegative && numeratorValue < 0) || (requirePositive && numeratorValue <= 0) ||
+        denominatorValue <= 0 || denominatorValue > limits.maxBeatDenominator ||
+        numeratorValue < -limits.maxBeatNumeratorMagnitude ||
+        numeratorValue > limits.maxBeatNumeratorMagnitude) {
         addV4Error(diagnostics, "chart.beat.out_of_range", "Rational beat is outside the limit",
                    std::string{reader.fieldPath()});
         return std::nullopt;
     }
-    auto value = RationalBeat::create(*numerator, *denominator);
+    auto value = RationalBeat::create(numeratorValue, denominatorValue);
     if (!value) {
         addV4Error(diagnostics, std::string{value.error().code()},
                    std::string{value.error().message()}, std::string{reader.fieldPath()});
@@ -525,15 +533,23 @@ auto readRequiredExtensions(const json::Reader& reader, const ChartLimits& limit
         const auto id =
             idReader ? readPortableStableId(*idReader, limits, diagnostics, "Required extension ID")
                      : std::nullopt;
-        const auto version = versionReader ? versionReader->readUInt64() : std::nullopt;
-        if (!id || !version || *version == 0 ||
-            *version > std::numeric_limits<std::uint32_t>::max()) {
-            if (version &&
-                (*version == 0 || *version > std::numeric_limits<std::uint32_t>::max())) {
+        auto version = std::optional<std::uint64_t>{};
+        if (versionReader) {
+            version = versionReader->readUInt64();
+        }
+        auto versionValue = std::uint64_t{};
+        auto versionValid = false;
+        if (version) {
+            versionValue = *version;
+            versionValid =
+                versionValue > 0 && versionValue <= std::numeric_limits<std::uint32_t>::max();
+            if (!versionValid) {
                 addV4Error(diagnostics, "chart.version.unsupported",
                            "Required extension version is invalid",
                            std::string{versionReader->fieldPath()});
             }
+        }
+        if (!id || !versionValid) {
             continue;
         }
         if (!ids.emplace(*id).second) {
@@ -541,7 +557,7 @@ auto readRequiredExtensions(const json::Reader& reader, const ChartLimits& limit
                        "Required extension ID is duplicated", std::string{item->fieldPath()});
             continue;
         }
-        result.push_back(RequiredExtension{*id, static_cast<std::uint32_t>(*version)});
+        result.push_back(RequiredExtension{*id, static_cast<std::uint32_t>(versionValue)});
     }
     std::ranges::sort(result, {}, &RequiredExtension::id);
     return result;
@@ -624,7 +640,10 @@ auto readAnimationClip(const json::Reader& reader, const ChartLimits& limits,
     const auto durationReader = reader.requiredField("durationBeats");
     const auto tracksReader = reader.requiredField("tracks");
     const auto stepTracksReader = reader.requiredField("stepTracks");
-    const auto version = versionReader ? versionReader->readInt64() : std::nullopt;
+    auto version = std::optional<std::int64_t>{};
+    if (versionReader) {
+        version = versionReader->readInt64();
+    }
     const auto duration = durationReader
                               ? readV4Rational(*durationReader, limits, diagnostics, true, false)
                               : std::nullopt;
@@ -718,10 +737,14 @@ auto readAnimationClip(const json::Reader& reader, const ChartLimits& limits,
             const auto endValue = endValueReader
                                       ? readAnimationValue(*endValueReader, *property, diagnostics)
                                       : std::nullopt;
-            const auto startSlope =
-                startSlopeReader ? readFiniteNumber(*startSlopeReader, diagnostics) : std::nullopt;
-            const auto endSlope =
-                endSlopeReader ? readFiniteNumber(*endSlopeReader, diagnostics) : std::nullopt;
+            auto startSlope = std::optional<double>{};
+            auto endSlope = std::optional<double>{};
+            if (startSlopeReader) {
+                startSlope = readFiniteNumber(*startSlopeReader, diagnostics);
+            }
+            if (endSlopeReader) {
+                endSlope = readFiniteNumber(*endSlopeReader, diagnostics);
+            }
             if (startSlope && endSlope &&
                 (*startSlope < 0.0 || *endSlope < 0.0 || *startSlope + *endSlope > 3.0)) {
                 addV4Error(diagnostics, "chart.animation.clip_invalid",
@@ -865,7 +888,10 @@ auto readAnimatorComponent(const json::Reader& reader, const ChartLimits& limits
     const auto versionReader = reader.requiredField("version");
     const auto bindingsReader = reader.requiredField("templateBindings");
     const auto layersReader = reader.requiredField("layers");
-    const auto version = versionReader ? versionReader->readInt64() : std::nullopt;
+    auto version = std::optional<std::int64_t>{};
+    if (versionReader) {
+        version = versionReader->readInt64();
+    }
     if (version && *version != 1) {
         addV4Error(diagnostics, "chart.version.unsupported", "Animator version is unsupported",
                    std::string{versionReader->fieldPath()});
@@ -933,7 +959,10 @@ auto readAnimatorComponent(const json::Reader& reader, const ChartLimits& limits
         const auto weight =
             weightReader ? readWeightSource(*weightReader, limits, diagnostics, parameterUses)
                          : std::nullopt;
-        const auto priority = priorityReader ? priorityReader->readInt64() : std::nullopt;
+        auto priority = std::optional<std::int64_t>{};
+        if (priorityReader) {
+            priority = priorityReader->readInt64();
+        }
         if (!id || !templateId || !start || !duration || !weight || !priority) {
             continue;
         }
@@ -963,7 +992,10 @@ auto readAnimatorComponent(const json::Reader& reader, const ChartLimits& limits
         const auto groupsReader = layerReader->requiredField("blendGroups");
         const auto id = idReader ? readPortableStableId(*idReader, limits, diagnostics, "Layer ID")
                                  : std::nullopt;
-        const auto priority = priorityReader ? priorityReader->readInt64() : std::nullopt;
+        auto priority = std::optional<std::int64_t>{};
+        if (priorityReader) {
+            priority = priorityReader->readInt64();
+        }
         const auto weight =
             weightReader ? readWeightSource(*weightReader, limits, diagnostics, parameterUses)
                          : std::nullopt;
@@ -1003,7 +1035,10 @@ auto readAnimatorComponent(const json::Reader& reader, const ChartLimits& limits
             const auto groupId = groupIdReader ? readPortableStableId(*groupIdReader, limits,
                                                                       diagnostics, "Blend group ID")
                                                : std::nullopt;
-            const auto mode = modeReader ? readBlendMode(*modeReader, diagnostics) : std::nullopt;
+            auto mode = std::optional<AnimationBlendMode>{};
+            if (modeReader) {
+                mode = readBlendMode(*modeReader, diagnostics);
+            }
             const auto groupWeight =
                 groupWeightReader
                     ? readWeightSource(*groupWeightReader, limits, diagnostics, parameterUses)
@@ -1071,11 +1106,14 @@ auto readAnimatorComponent(const json::Reader& reader, const ChartLimits& limits
                     instanceStartReader
                         ? readV4Rational(*instanceStartReader, limits, diagnostics, false, true)
                         : std::nullopt;
-                const auto iterations = iterationsReader
-                                            ? readIterations(*iterationsReader, diagnostics)
-                                            : std::nullopt;
-                const auto fill =
-                    fillReader ? readFillMode(*fillReader, diagnostics) : std::nullopt;
+                auto iterations = std::optional<AnimationIterations>{};
+                auto fill = std::optional<AnimationFillMode>{};
+                if (iterationsReader) {
+                    iterations = readIterations(*iterationsReader, diagnostics);
+                }
+                if (fillReader) {
+                    fill = readFillMode(*fillReader, diagnostics);
+                }
                 const auto instanceWeight = instanceWeightReader
                                                 ? readWeightSource(*instanceWeightReader, limits,
                                                                    diagnostics, parameterUses)
@@ -1087,7 +1125,12 @@ auto readAnimatorComponent(const json::Reader& reader, const ChartLimits& limits
                     !instanceWeight || !instanceMask) {
                     continue;
                 }
-                if (iterations->infinite && *fill != AnimationFillMode::None) {
+                auto instance =
+                    ClipInstance{*instanceId,    *clipId,
+                                 *instanceStart, *iterations,
+                                 *fill,          *instanceWeight,
+                                 *instanceMask,  std::string{instanceReader->fieldPath()}};
+                if (instance.iterations.infinite && instance.fillMode != AnimationFillMode::None) {
                     addV4Error(diagnostics, "chart.animation.clip_invalid",
                                "Infinite clip instance must use fillMode none",
                                std::string{fillReader->fieldPath()});
@@ -1097,9 +1140,7 @@ auto readAnimatorComponent(const json::Reader& reader, const ChartLimits& limits
                                "Clip instance ID is duplicated",
                                std::string{instanceIdReader->fieldPath()});
                 }
-                parsedInstances.push_back(ClipInstance{
-                    *instanceId, *clipId, *instanceStart, *iterations, *fill, *instanceWeight,
-                    *instanceMask, std::string{instanceReader->fieldPath()}});
+                parsedInstances.push_back(std::move(instance));
             }
             std::ranges::sort(parsedInstances, {}, &ClipInstance::instanceId);
             parsedGroups.push_back(BlendGroup{*groupId, *mode, *groupWeight,

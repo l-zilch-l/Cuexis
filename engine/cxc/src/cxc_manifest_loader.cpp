@@ -135,8 +135,14 @@ void addParseError(core::Diagnostics& diagnostics, const core::Error& error) {
         item->rejectUnknownFields(fields);
         const auto idReader = item->requiredField("id");
         const auto versionReader = item->requiredField("version");
-        const auto id = idReader ? idReader->readString() : std::nullopt;
-        const auto version = versionReader ? versionReader->readUInt64() : std::nullopt;
+        auto id = std::optional<std::string_view>{};
+        auto version = std::optional<std::uint64_t>{};
+        if (idReader) {
+            id = idReader->readString();
+        }
+        if (versionReader) {
+            version = versionReader->readUInt64();
+        }
         if (id && !isPortableStableId(*id)) {
             addError(diagnostics, "cxc.project.invalid", "CXC extension ID is invalid",
                      std::string{idReader->fieldPath()});
@@ -149,13 +155,15 @@ void addParseError(core::Diagnostics& diagnostics, const core::Error& error) {
             *version > std::numeric_limits<std::uint32_t>::max()) {
             continue;
         }
-        if (!ids.emplace(*id).second) {
+        const auto idValue = *id;
+        const auto versionValue = *version;
+        if (!ids.emplace(idValue).second) {
             addError(diagnostics, "cxc.entry.duplicate", "CXC extension ID is duplicated",
                      std::string{idReader->fieldPath()});
             continue;
         }
         result.push_back(
-            CxcRequiredExtension{std::string{*id}, static_cast<std::uint32_t>(*version)});
+            CxcRequiredExtension{std::string{idValue}, static_cast<std::uint32_t>(versionValue)});
     }
     std::ranges::sort(result, {}, &CxcRequiredExtension::id);
     return result;
@@ -193,28 +201,41 @@ void addParseError(core::Diagnostics& diagnostics, const core::Error& error) {
         const auto pathReader = item->requiredField("path");
         const auto byteCountReader = item->requiredField("byteCount");
         const auto shaReader = item->requiredField("sha256");
-        const auto path = pathReader ? pathReader->readString() : std::nullopt;
-        const auto byteCount = byteCountReader ? byteCountReader->readUInt64() : std::nullopt;
-        const auto sha = shaReader ? shaReader->readString() : std::nullopt;
-        if (path && (!isPortablePath(*path) || *path == "cuexis.cxc.json")) {
+        auto path = std::optional<std::string_view>{};
+        auto byteCount = std::optional<std::uint64_t>{};
+        auto sha = std::optional<std::string_view>{};
+        if (pathReader) {
+            path = pathReader->readString();
+        }
+        if (byteCountReader) {
+            byteCount = byteCountReader->readUInt64();
+        }
+        if (shaReader) {
+            sha = shaReader->readString();
+        }
+        const auto pathValid = path && isPortablePath(*path) && *path != "cuexis.cxc.json";
+        const auto byteCountValid = byteCount && *byteCount <= limits.maxEntryBytes;
+        const auto shaValid = sha && isSha256(*sha);
+        if (path && !pathValid) {
             addError(diagnostics, "cxc.entry.path_invalid", "CXC entry path is not portable",
                      std::string{pathReader->fieldPath()});
         }
-        if (byteCount && *byteCount > limits.maxEntryBytes) {
+        if (byteCount && !byteCountValid) {
             addError(diagnostics, "cxc.budget.exceeded", "CXC entry byteCount exceeds the limit",
                      std::string{byteCountReader->fieldPath()});
         }
-        if (sha && !isSha256(*sha)) {
+        if (sha && !shaValid) {
             addError(diagnostics, "cxc.entry.hash_mismatch",
                      "CXC entry SHA-256 must be lowercase hexadecimal",
                      std::string{shaReader->fieldPath()});
         }
-        if (!path || !isPortablePath(*path) || *path == "cuexis.cxc.json" || !byteCount ||
-            *byteCount > limits.maxEntryBytes || !sha || !isSha256(*sha)) {
+        if (!pathValid || !byteCountValid || !shaValid) {
             continue;
         }
 
         const auto pathText = std::string{*path};
+        const auto byteCountValue = *byteCount;
+        const auto shaText = std::string{*sha};
         const auto foldedPath = foldAscii(*path);
         if (!exactPaths.emplace(pathText).second || !foldedPaths.emplace(foldedPath).second) {
             addError(diagnostics, "cxc.entry.duplicate",
@@ -229,14 +250,14 @@ void addParseError(core::Diagnostics& diagnostics, const core::Error& error) {
         previousPath = pathText;
         hasProject = hasProject || pathText == "cuexis.project.json";
         if (listedBytes > limits.maxListedBytes ||
-            *byteCount > limits.maxListedBytes - listedBytes) {
+            byteCountValue > limits.maxListedBytes - listedBytes) {
             addError(diagnostics, "cxc.budget.exceeded", "CXC listed byte total exceeds the limit",
                      std::string{byteCountReader->fieldPath()});
         } else {
-            listedBytes += *byteCount;
+            listedBytes += byteCountValue;
         }
-        result.push_back(CxcManifestEntry{pathText, *byteCount, std::string{*sha},
-                                          std::string{item->fieldPath()}});
+        result.push_back(
+            CxcManifestEntry{pathText, byteCountValue, shaText, std::string{item->fieldPath()}});
     }
     if (!hasProject) {
         addError(diagnostics, "cxc.entry.missing", "CXC manifest does not list cuexis.project.json",
@@ -285,8 +306,11 @@ auto CxcManifestLoader::load(std::string_view jsonText, const CxcManifestLimits&
     const auto requiredExtensionsReader = root.requiredField("requiredExtensions");
     const auto extensionsReader = root.requiredField("extensions");
     const auto format = formatReader ? formatReader->readString() : std::nullopt;
-    const auto version = versionReader ? versionReader->readInt64() : std::nullopt;
+    auto version = std::optional<std::int64_t>{};
     const auto project = projectReader ? projectReader->readString() : std::nullopt;
+    if (versionReader) {
+        version = versionReader->readInt64();
+    }
     if (format && *format != "cuexis.cxc") {
         addError(diagnostics, "cxc.format.unsupported", "CXC manifest format is unsupported",
                  std::string{formatReader->fieldPath()});

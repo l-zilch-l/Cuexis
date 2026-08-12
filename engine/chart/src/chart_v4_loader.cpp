@@ -730,7 +730,10 @@ auto ChartV4Loader::load(std::string_view jsonText, const ChartLimits& limits)
     static_cast<void>(root.requiredField("objects"));
 
     const auto format = formatReader ? formatReader->readString() : std::nullopt;
-    const auto version = versionReader ? versionReader->readInt64() : std::nullopt;
+    auto version = std::optional<std::int64_t>{};
+    if (versionReader) {
+        version = versionReader->readInt64();
+    }
     const auto chartId = chartIdReader ? chartIdReader->readString() : std::nullopt;
     if (format && *format != "cuexis.chart") {
         detail::addV4Error(diagnostics, "chart.format.unsupported", "Chart format is unsupported",
