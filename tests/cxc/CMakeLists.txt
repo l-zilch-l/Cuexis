@@ -1,10 +1,20 @@
 add_executable(cuexis_cxc_tests
+    cxc_binary_fixture_tests.cpp
+    cxc_package_tests.cpp
     cxc_manifest_loader_tests.cpp
+    cxc_test_support.cpp
+    cxc_test_support.hpp
+    zip32_envelope_tests.cpp
 )
 
 target_compile_definitions(cuexis_cxc_tests
     PRIVATE
         CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+)
+
+target_include_directories(cuexis_cxc_tests
+    PRIVATE
+        "${PROJECT_SOURCE_DIR}/engine/cxc/src"
 )
 
 target_link_libraries(cuexis_cxc_tests

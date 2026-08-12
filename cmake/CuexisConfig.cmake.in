@@ -8,6 +8,7 @@ if("@CUEXIS_LIBRARY_TYPE@" STREQUAL "STATIC")
     find_dependency(EnTT CONFIG)
     find_dependency(nlohmann_json CONFIG)
     find_dependency(nlohmann_json_schema_validator CONFIG)
+    find_dependency(minizip-ng CONFIG)
 endif()
 
 include("${CMAKE_CURRENT_LIST_DIR}/CuexisTargets.cmake")

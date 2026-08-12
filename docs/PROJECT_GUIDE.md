@@ -55,13 +55,14 @@ time discontinuities rebuild from absolute time
 
 ## 5. 内容和格式
 
-当前生产 Chart 格式是 `cuexis.chart` v1/v2/v3。Stage Chart Format Update 正在讨论 CXC v1、
-Chart v4 和 CXT v1；它们尚未进入生产实现。
+当前 Playback 生产 Chart 格式是 `cuexis.chart` v1/v2/v3。Stage Chart Format Update 已接受 CXC v1、
+Chart v4 和 CXT v1 合同，并完成 CFU-C0/C1/C2/C3 内部格式实现检查点；C4 工具、Playback 接入和
+最终跨平台门禁仍未完成。
 
 格式权威入口：[formats/README.md](formats/README.md)。
 
 ```text
-Source Project -> explicit validate/pack -> CXC candidate
+Source Project -> explicit validate/pack -> CXC exchange package
 Chart/CXT/resources -> prepare -> typed runtime data
 typed runtime data -> Runtime/Animation -> FrameSnapshot
 ```

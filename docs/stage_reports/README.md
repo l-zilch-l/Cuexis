@@ -2,7 +2,7 @@
 
 状态：现行阶段报告索引
 
-更新日期：2026-08-11
+更新日期：2026-08-12
 
 报告是带日期的证据快照。报告中的“下一步”只表示报告生成时的交接，不自动代表当前任务。
 
@@ -30,4 +30,5 @@
 | [260811 Chart Format Update CFU-C0 baseline](260811-chart-format-update-c0-baseline.md) | accepted implementation baseline and dependency decision |
 | [260811 Chart Format Update CFU-C1 Reader](260811-chart-format-update-c1-reader.md) | Schema, fixture and typed source Reader checkpoint |
 | [260811 Chart Format Update CFU-C2 lowering](260811-chart-format-update-c2-lowering.md) | canonical Writer, parameter resolution, CXT import and deterministic lowering checkpoint |
+| [260812 Chart Format Update CFU-C3 CXC](260812-chart-format-update-c3-cxc.md) | strict ZIP32 envelope, package closure, owning loaders and package-backed content domains |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |

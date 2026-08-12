@@ -372,6 +372,7 @@ set(CUEXIS_STATIC_IMPLEMENTATION_TARGETS
     cuexis_world
     cuexis_assets
     cuexis_chart
+    cuexis_cxc
     cuexis_behavior
     cuexis_gameplay
     cuexis_render
@@ -449,6 +450,9 @@ set(CUEXIS_DISTRIBUTED_VCPKG_PORTS
     nlohmann-json
     tl-expected
 )
+if(CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
+    list(APPEND CUEXIS_DISTRIBUTED_VCPKG_PORTS minizip-ng)
+endif()
 if(TARGET cuexis_audio_sdl)
     list(APPEND CUEXIS_DISTRIBUTED_VCPKG_PORTS sdl3)
 endif()

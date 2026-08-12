@@ -61,6 +61,25 @@ TEST_CASE("CXC manifest Reader rejects ASCII case path conflicts", "[cxc][manife
     CHECK(hasDiagnostic(result, "cxc.entry.duplicate"));
 }
 
+TEST_CASE("CXC manifest Reader rejects archive path-prefix conflicts",
+          "[cxc][manifest][paths][cfu-c3]") {
+    constexpr std::string_view manifest = R"({
+      "format":"cuexis.cxc","version":1,"project":"cuexis.project.json",
+      "entries":[
+        {"path":"assets","byteCount":1,
+         "sha256":"1111111111111111111111111111111111111111111111111111111111111111"},
+        {"path":"assets/item.bin","byteCount":1,
+         "sha256":"2222222222222222222222222222222222222222222222222222222222222222"},
+        {"path":"cuexis.project.json","byteCount":1,
+         "sha256":"3333333333333333333333333333333333333333333333333333333333333333"}
+      ],
+      "requiredExtensions":[],"extensions":{}
+    })";
+    const auto result = cuexis::cxc::CxcManifestLoader::load(manifest);
+    CHECK_FALSE(result.hasValue());
+    CHECK(hasDiagnostic(result, "cxc.entry.duplicate"));
+}
+
 TEST_CASE("CXC manifest Reader rejects nonportable Windows paths", "[cxc][manifest][cfu-c1]") {
     constexpr std::string_view manifest = R"({
       "format":"cuexis.cxc","version":1,"project":"cuexis.project.json",

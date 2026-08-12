@@ -106,8 +106,10 @@ jobs:
           -DCMAKE_CXX_COMPILER=clang++
           -DVCPKG_TARGET_TRIPLET=x64-linux
 
-      - name: Analyze Playback closure
-        run: cmake --build --preset headless-clang-tidy --target cuexis_playback
+      - name: Analyze CXC and Playback closures
+        run: >-
+          cmake --build --preset headless-clang-tidy
+          --target cuexis_cxc cuexis_playback
 
   coverage:
     name: GCC Coverage

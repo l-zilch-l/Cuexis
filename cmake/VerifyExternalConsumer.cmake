@@ -208,6 +208,10 @@ else()
         share/Cuexis/licenses/nlohmann-json-copyright.txt
         share/Cuexis/licenses/tl-expected-copyright.txt
     )
+    if(CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
+        list(APPEND required_package_files
+            share/Cuexis/licenses/minizip-ng-copyright.txt)
+    endif()
     if(package_audio_sdl)
         list(APPEND required_package_files
             include/cuexis/audio_sdl/audio_sdl_export.hpp
@@ -226,7 +230,7 @@ else()
     endforeach()
 
     foreach(internal_header_directory IN ITEMS
-            assets behavior chart filesystem gameplay json project render render_opengl runtime world)
+            assets behavior chart cxc filesystem gameplay json project render render_opengl runtime world)
         if(EXISTS "${package_prefix}/include/cuexis/${internal_header_directory}")
             message(FATAL_ERROR
                 "Cuexis package installed internal ${internal_header_directory} headers")
@@ -258,15 +262,18 @@ else()
     if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
         foreach(private_target_or_dependency IN ITEMS
                 "Cuexis::Internal" "EnTT::" "glm::" "nlohmann_json::"
-                "SDL3::" "glad::" "spdlog::")
+                "MINIZIP::" "minizip-ng" "SDL3::" "glad::" "spdlog::")
             if(installed_targets MATCHES "${private_target_or_dependency}")
                 message(FATAL_ERROR
                     "Shared Cuexis package leaks ${private_target_or_dependency}")
             endif()
         endforeach()
+        if(installed_config MATCHES "MINIZIP::" OR installed_config MATCHES "minizip-ng")
+            message(FATAL_ERROR "Shared Cuexis package config leaks minizip-ng")
+        endif()
     else()
         foreach(required_internal_target IN ITEMS
-                InternalAssets InternalChart InternalRuntime InternalWorld)
+                InternalAssets InternalChart InternalCxc InternalRuntime InternalWorld)
             if(NOT installed_targets MATCHES "Cuexis::${required_internal_target}")
                 message(FATAL_ERROR
                     "Static Cuexis package is missing ${required_internal_target}")
@@ -328,6 +335,9 @@ else()
         nlohmann-json-copyright.txt
         tl-expected-copyright.txt
     )
+    if(CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
+        list(APPEND expected_license_files minizip-ng-copyright.txt)
+    endif()
     if(package_audio_sdl)
         list(APPEND expected_license_files sdl3-copyright.txt)
     endif()

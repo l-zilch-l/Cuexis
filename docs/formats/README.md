@@ -2,7 +2,7 @@
 
 状态：现行格式索引
 
-更新日期：2026-08-11
+更新日期：2026-08-12
 
 ## Artifact 分层
 
@@ -37,8 +37,9 @@ ChartParameter、Template Binding 或 Animator；Animation Mixing 不重新定�
 
 当前 Playback Loader 只支持 `cuexis.chart` v1/v2/v3。CFU-C1/C2 已提供 CXC manifest、Chart v4 和
 CXT 的生产 Schema、内部 typed source Reader、Chart/CXT canonical Writer、参数解析/identity、CXT
-import 与 deterministic lowering。严格 ZIP32 archive、CXC package API、工具和 Playback 门禁仍未
-关闭。评审示例位于
+import 与 deterministic lowering。CFU-C3 已提供内部 strict ZIP32 archive/package、owning
+file/memory loader、package-backed Asset ContentProvider 和独立 project-document table。C4 工具、公共
+Playback 输入和最终跨平台门禁仍未关闭；该检查点不是完整 CXC 产品支持或公共 package API。评审示例位于
 [examples/chart_format_update](../examples/chart_format_update/README.md)。
 
 运行时脚本和逐帧脚本回调无限期延后，不是任何 Cuexis 格式的隐藏扩展点。

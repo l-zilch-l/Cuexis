@@ -1,8 +1,8 @@
 # Stage Chart Format Update：谱面格式更新实施计划
 
-状态：CFU-A/CFU-B、CFU-C0/C1/C2 已完成；ADR 0038 已于 2026-08-11 整体接受；CFU-C3 待开始
+状态：CFU-A/CFU-B、CFU-C0/C1/C2/C3 已完成；ADR 0038 已于 2026-08-11 整体接受；CFU-C4 下一步
 
-更新日期：2026-08-11
+更新日期：2026-08-12
 
 本阶段的稳定名称是 **Stage Chart Format Update**，位置为 Stage 3 与 Stage 4 之间。它使用独立名称，不建立数字别名。
 
@@ -433,6 +433,12 @@ source。该 target 不成为公共 SDK component。
 
 退出门禁：CXC Reader/Writer 的 raw metadata 和 binary golden 必须通过独立安全审查；只验证
 “archive 库能打开文件”不算关闭 C3。
+
+实施状态：CFU-C3 已于 2026-08-12 关闭。内部 `cuexis_cxc`、strict ZIP32 Stored Reader/Writer、
+manifest/project closure、owning file/memory package、Asset ContentProvider、独立 project-document
+table、package identity、binary fixtures 和安装泄漏门禁已完成。证据见
+[CFU-C3 报告](../stage_reports/260812-chart-format-update-c3-cxc.md)。该检查点不得描述为完整 CXC、
+公共 package API、Playback 支持或 Stage Chart Format Update 完成。
 
 ### 5.5 CFU-C4：CXC 工具、原子输出与 binary golden
 

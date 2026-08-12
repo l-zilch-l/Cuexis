@@ -2,7 +2,7 @@
 
 状态：现行模块边界摘要
 
-更新日期：2026-08-11
+更新日期：2026-08-12
 
 本文总结稳定依赖方向。构建时的精确 allowlist 和 architecture tests 仍由根 CMake 配置拥有。
 
@@ -54,8 +54,8 @@ format handlers do not create World/EnTT entities
 pack and prepare do not execute scripts
 ```
 
-ADR 0038 的 2026-08-11 收口提案把 CXC archive/manifest/closure 放入候选内部 target
-`cuexis_cxc`。该 target 仅在 ADR 整体接受后创建，并遵守：
+ADR 0038 已把 CXC archive/manifest/closure 放入内部 target `cuexis_cxc`；CFU-C3 已创建该 target
+和 owning package/content-domain 基线，并遵守：
 
 ```text
 cuexis_cxc may depend on core/content/filesystem/project/chart/json support and an archive library

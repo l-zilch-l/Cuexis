@@ -1,8 +1,8 @@
 # Cuexis CXC v1
 
-状态：accepted contract；CFU-C 实现中，尚未形成可加载或可打包的生产能力
+状态：accepted contract；CFU-C3 内部 archive/package 基线已实现，C4 工具与 Playback 支持未完成
 
-更新日期：2026-08-11
+更新日期：2026-08-12
 
 依据：[ADR 0038](adr/0038-cxc-v1-and-chart-v4-boundary.md)
 
@@ -15,7 +15,8 @@ Chart v4 和 CXT 的字段分别由 [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md) 与
 [CXT_FORMAT.md](CXT_FORMAT.md) 定义。CXC 不重新定义这些内容格式，也不是 Runtime、World、
 AnimationProgram、FrameSnapshot 或 ZIP library API。
 
-CFU-C、CFU-E 和验收门禁关闭前，`.cxc`、manifest 和 capability 都不能作为已支持能力对外承诺。
+内部 `cuexis_cxc` 已能读写和验证 CXC bytes；CFU-C4、CFU-E 和最终验收门禁关闭前，`.cxc` 仍不能
+作为 Playback 或完整产品工具能力对外承诺，也不形成公共 CXC package component。
 
 ## 2. Artifact 模型
 
@@ -157,7 +158,9 @@ Manifest 自身不列入 `entries`。Archive 除 manifest 外必须恰好包含 
 ### 4.3 路径
 
 路径必须使用 portable ASCII 和 `/`，是非空相对路径；segment 不得为空、`.` 或 `..`。拒绝
-反斜杠、冒号、NUL/control、绝对路径、尾随点/空格、Windows 保留名称和大小写折叠冲突。
+反斜杠、冒号、NUL/control、绝对路径、尾随点/空格、Windows 保留名称和大小写折叠冲突。同一
+archive/manifest 路径集合不得同时包含一个 regular file 路径及其 descendant，例如 `file` 与
+`file/child`；该集合冲突以 `cxc.entry.duplicate` 失败。
 
 Archive entry、manifest path、ProjectConfig root/path 和 Asset Index source 使用同一规范。Loader
 不得“清理后继续”；任何非规范输入直接失败。

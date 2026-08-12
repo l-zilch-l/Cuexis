@@ -4,11 +4,15 @@
 #include <cuexis/json/parse.hpp>
 #include <cuexis/json/reader.hpp>
 
+#include "cxc_path_internal.hpp"
+
 #include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <exception>
 #include <limits>
+#include <new>
 #include <optional>
 #include <set>
 #include <string>
@@ -45,64 +49,18 @@ void addParseError(core::Diagnostics& diagnostics, const core::Error& error) {
     diagnostics.add(std::move(diagnostic));
 }
 
-[[nodiscard]] auto isAsciiAlphaNumeric(char character) noexcept -> bool {
-    return (character >= 'A' && character <= 'Z') || (character >= 'a' && character <= 'z') ||
-           (character >= '0' && character <= '9');
-}
-
 [[nodiscard]] auto isPortableStableId(std::string_view value) noexcept -> bool {
+    const auto isAsciiAlphaNumeric = [](char character) {
+        return (character >= 'A' && character <= 'Z') || (character >= 'a' && character <= 'z') ||
+               (character >= '0' && character <= '9');
+    };
     return !value.empty() && value.size() <= 256 && isAsciiAlphaNumeric(value.front()) &&
            std::ranges::all_of(value.substr(1), [](char character) {
-               return isAsciiAlphaNumeric(character) || character == '.' || character == '_' ||
-                      character == '-';
+               return (character >= 'A' && character <= 'Z') ||
+                      (character >= 'a' && character <= 'z') ||
+                      (character >= '0' && character <= '9') || character == '.' ||
+                      character == '_' || character == '-';
            });
-}
-
-[[nodiscard]] auto foldAscii(std::string_view value) -> std::string {
-    std::string result;
-    result.reserve(value.size());
-    for (const char character : value) {
-        result.push_back(character >= 'A' && character <= 'Z'
-                             ? static_cast<char>(character - 'A' + 'a')
-                             : character);
-    }
-    return result;
-}
-
-[[nodiscard]] auto isWindowsReservedSegment(std::string_view segment) -> bool {
-    const auto dot = segment.find('.');
-    const auto stem = foldAscii(segment.substr(0, dot));
-    if (stem == "con" || stem == "prn" || stem == "aux" || stem == "nul") {
-        return true;
-    }
-    if (stem.size() == 4 && stem[3] >= '1' && stem[3] <= '9') {
-        return stem.starts_with("com") || stem.starts_with("lpt");
-    }
-    return false;
-}
-
-[[nodiscard]] auto isPortablePath(std::string_view path) -> bool {
-    if (path.empty() || path.size() > 4096 || path.front() == '/' || path.back() == '/' ||
-        path.find("//") != std::string_view::npos) {
-        return false;
-    }
-    std::size_t segmentStart = 0;
-    while (segmentStart < path.size()) {
-        const auto separator = path.find('/', segmentStart);
-        const auto segment = path.substr(segmentStart, separator - segmentStart);
-        if (segment.empty() || segment == "." || segment == ".." || segment.back() == '.' ||
-            isWindowsReservedSegment(segment) || !std::ranges::all_of(segment, [](char character) {
-                return isAsciiAlphaNumeric(character) || character == '.' || character == '_' ||
-                       character == '-';
-            })) {
-            return false;
-        }
-        if (separator == std::string_view::npos) {
-            break;
-        }
-        segmentStart = separator + 1;
-    }
-    return true;
 }
 
 [[nodiscard]] auto isSha256(std::string_view value) noexcept -> bool {
@@ -185,8 +143,7 @@ void addParseError(core::Diagnostics& diagnostics, const core::Error& error) {
                  std::string{reader.fieldPath()});
     }
 
-    std::set<std::string, std::less<>> exactPaths;
-    std::set<std::string, std::less<>> foldedPaths;
+    std::set<std::string, std::less<>> foldedPaths{"cuexis.cxc.json"};
     std::optional<std::string> previousPath;
     std::uint64_t listedBytes = 0;
     bool hasProject = false;
@@ -213,7 +170,7 @@ void addParseError(core::Diagnostics& diagnostics, const core::Error& error) {
         if (shaReader) {
             sha = shaReader->readString();
         }
-        const auto pathValid = path && isPortablePath(*path) && *path != "cuexis.cxc.json";
+        const auto pathValid = path && detail::isPortablePath(*path) && *path != "cuexis.cxc.json";
         const auto byteCountValid = byteCount && *byteCount <= limits.maxEntryBytes;
         const auto shaValid = sha && isSha256(*sha);
         if (path && !pathValid) {
@@ -236,10 +193,10 @@ void addParseError(core::Diagnostics& diagnostics, const core::Error& error) {
         const auto pathText = std::string{*path};
         const auto byteCountValue = *byteCount;
         const auto shaText = std::string{*sha};
-        const auto foldedPath = foldAscii(*path);
-        if (!exactPaths.emplace(pathText).second || !foldedPaths.emplace(foldedPath).second) {
+        if (!detail::insertUniqueArchivePath(foldedPaths, pathText)) {
             addError(diagnostics, "cxc.entry.duplicate",
-                     "CXC entry path is duplicated or has an ASCII case conflict",
+                     "CXC entry path is duplicated, conflicts by ASCII case, or overlaps a path "
+                     "prefix",
                      std::string{pathReader->fieldPath()});
         }
         if (previousPath && pathText <= *previousPath) {
@@ -268,7 +225,7 @@ void addParseError(core::Diagnostics& diagnostics, const core::Error& error) {
 
 } // namespace
 
-auto CxcManifestLoader::load(std::string_view jsonText, const CxcManifestLimits& limits)
+[[nodiscard]] auto loadImpl(std::string_view jsonText, const CxcManifestLimits& limits)
     -> CxcManifestResult {
     auto diagnostics = makeDiagnostics(limits);
     if (limits.maxDiagnostics == 0) {
@@ -363,6 +320,26 @@ auto CxcManifestLoader::load(std::string_view jsonText, const CxcManifestLimits&
                                                  std::move(extensionsJson),
                                                  std::move(canonicalSource)},
                              std::move(diagnostics)};
+}
+
+auto CxcManifestLoader::load(std::string_view jsonText, const CxcManifestLimits& limits)
+    -> CxcManifestResult {
+    try {
+        return loadImpl(jsonText, limits);
+    } catch (const std::bad_alloc&) {
+        throw;
+    } catch (const std::exception& exception) {
+        auto diagnostics = makeDiagnostics(limits);
+        auto diagnostic = core::Diagnostic{core::DiagnosticSeverity::Error, "cxc.internal.failure",
+                                           "CXC manifest Reader failed", "$"};
+        diagnostic.withContext("exception", exception.what());
+        static_cast<void>(diagnostics.add(std::move(diagnostic)));
+        return {std::nullopt, std::move(diagnostics)};
+    } catch (...) {
+        auto diagnostics = makeDiagnostics(limits);
+        addError(diagnostics, "cxc.internal.failure", "CXC manifest Reader failed", "$");
+        return {std::nullopt, std::move(diagnostics)};
+    }
 }
 
 } // namespace cuexis::cxc

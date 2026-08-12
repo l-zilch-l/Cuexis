@@ -2,7 +2,7 @@
 
 状态：现行状态页
 
-更新日期：2026-08-11
+更新日期：2026-08-12
 
 本文是当前阶段和实现状态的唯一摘要。阶段计划、完成报告和审查报告仍然保留各自的历史
 细节，但不能绕过本文重新定义当前状态。
@@ -27,7 +27,7 @@ PlaybackSession、FrameSnapshot、ContentProvider 和后续 Judgement/Replay 合
 | Stage 1E | 已完成 | [完成报告](stage_reports/stage_1e_completion_report.md) |
 | Stage 2 | 已完成 | [完成报告](stage_reports/stage_2_completion_report.md) |
 | Stage 3 | 已完成 | [完成报告](stage_reports/stage_3_completion_report.md) |
-| Stage Chart Format Update | 当前活动阶段；CFU-C0/C1/C2 已完成，CFU-C3 待开始 | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md) 与 [C2 报告](stage_reports/260811-chart-format-update-c2-lowering.md) |
+| Stage Chart Format Update | 当前活动阶段；CFU-C0/C1/C2/C3 已完成，CFU-C4 下一步 | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md) 与 [C3 报告](stage_reports/260812-chart-format-update-c3-cxc.md) |
 | Stage 4 | 未开始，等待格式阶段关闭 | [实施计划](stage_plans/stage_4_implementation_plan.md) |
 
 Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使用 Stage 3.5 作为别名。
@@ -40,8 +40,11 @@ Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使
   和内部 `cuexis_cxc` manifest 目标。
 - CFU-C2 已建立 Chart v4/CXT v1 canonical Writer、ChartParameter 冻结与 identity、project-document
   lookup、CXT import/identity、Template Binding deterministic lowering、资源闭包、capability 推导和
-  checked aggregate budgets。该检查点仍不包含 ZIP archive、CXC package API、Playback 接入或动画
-  求值。
+  checked aggregate budgets。
+- CFU-C3 已建立内部 `cuexis_cxc` strict ZIP32 Stored Reader/Writer、manifest/project closure、owning
+  file/memory package、精确 package identity、package-backed Asset ContentProvider、独立 Chart/CXT
+  project-document table、committed binary fixtures 和 static/shared package leakage gates。该内部检查点
+  仍不是完整 CXC 产品支持，不是公共 package API，也不包含 C4 工具、Playback 接入或动画求值。
 - CFU-C 至 CFU-G 的详细实现批次、模块落点、API 门禁、测试矩阵、跨平台验收和 Stage 4 交接方案
   已写入实施计划；当前只允许按批次推进，不得越界实现 Stage 4 动画求值。
 - CXT v1、播放前参数、Template Binding 和运行时脚本无限期延后子决策已于 2026-08-10 接受。
@@ -62,7 +65,7 @@ extension、capability、字节码、模块 ABI 或 Playback 执行入口。离�
 - 正式 `cuexis_judgement`、InputEvent、ReplayData 和确定性回放
 - Studio 独立应用实现
 - 稳定 C ABI 和语言绑定
-- CXC ZIP32 archive/package、pack/validate/unpack 工具和 Playback 接入
+- CXC pack/validate/unpack 工具、Playback 接入和最终跨平台产品门禁
 - Stage 4 AnimationSystem 运行时实现
 
 ## 状态更新规则
