@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -87,12 +88,22 @@ void rejectUnknownTopLevelFields(const json::Reader& reader, core::Diagnostics& 
     const auto blendReader = reader.requiredField("blendMode");
     const auto iterationsReader = reader.requiredField("iterations");
     const auto fillReader = reader.requiredField("fillMode");
-    const auto coordinate = coordinateReader ? coordinateReader->readString() : std::nullopt;
-    const auto blend =
-        blendReader ? detail::readBlendMode(*blendReader, diagnostics) : std::nullopt;
-    const auto iterations =
-        iterationsReader ? detail::readIterations(*iterationsReader, diagnostics) : std::nullopt;
-    const auto fill = fillReader ? detail::readFillMode(*fillReader, diagnostics) : std::nullopt;
+    auto coordinate = std::optional<std::string_view>{};
+    auto blend = std::optional<AnimationBlendMode>{};
+    auto iterations = std::optional<AnimationIterations>{};
+    auto fill = std::optional<AnimationFillMode>{};
+    if (coordinateReader) {
+        coordinate = coordinateReader->readString();
+    }
+    if (blendReader) {
+        blend = detail::readBlendMode(*blendReader, diagnostics);
+    }
+    if (iterationsReader) {
+        iterations = detail::readIterations(*iterationsReader, diagnostics);
+    }
+    if (fillReader) {
+        fill = detail::readFillMode(*fillReader, diagnostics);
+    }
     if (coordinate && *coordinate != "local") {
         detail::addV4Error(diagnostics, "cxt.template.invalid",
                            "Animation template coordinateSpace must be local",
@@ -101,12 +112,13 @@ void rejectUnknownTopLevelFields(const json::Reader& reader, core::Diagnostics& 
     if (!coordinate || *coordinate != "local" || !blend || !iterations || !fill) {
         return std::nullopt;
     }
-    if (iterations->infinite && *fill != AnimationFillMode::None) {
+    const auto application = AnimationTemplateApplication{*blend, *iterations, *fill};
+    if (application.iterations.infinite && application.fillMode != AnimationFillMode::None) {
         detail::addV4Error(diagnostics, "cxt.template.invalid",
                            "Infinite animation template must use fillMode none",
                            std::string{fillReader->fieldPath()});
     }
-    return AnimationTemplateApplication{*blend, *iterations, *fill};
+    return application;
 }
 
 void validateApplicationClip(const AnimationTemplateApplication& application,
@@ -175,7 +187,10 @@ auto AnimationTemplateLoader::load(std::string_view jsonText, const ChartLimits&
     const auto extensionsReader = root.requiredField("extensions");
 
     const auto format = formatReader ? formatReader->readString() : std::nullopt;
-    const auto version = versionReader ? versionReader->readInt64() : std::nullopt;
+    auto version = std::optional<std::int64_t>{};
+    if (versionReader) {
+        version = versionReader->readInt64();
+    }
     const auto templateId =
         templateIdReader
             ? detail::readPortableStableId(*templateIdReader, limits, diagnostics, "Template ID")
