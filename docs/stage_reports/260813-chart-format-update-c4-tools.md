@@ -4,7 +4,7 @@
 
 快照日期：2026-08-13
 
-实现提交：`4581289 Add CXC pack validate unpack tools`；该 SHA 是本轮 hosted workflow 的验证基线。
+实现提交：`629a6df Fix MinGW unused test helper`；该 SHA 是本轮 hosted workflow 的验证基线。
 
 权威计划：[Stage Chart Format Update 实施计划](../stage_plans/stage_chart_format_update_implementation_plan.md)
 
@@ -80,11 +80,11 @@ complete。
 | --- | --- | --- |
 | Debug fresh configure | passed | `cmake --preset debug --fresh` |
 | Debug complete build | passed | Visual Studio Developer environment |
-| Debug full CTest | passed | `342` passed；1 个既有 Windows symlink 能力测试跳过 |
-| Debug CXC/C4 filter | passed | `cuexis_cxc_tools` 与 19 个 CXC cases |
+| Debug full CTest | passed | `341` passed；1 个既有 Windows symlink 能力测试跳过 |
+| Debug CXC/C4 filter | passed | `1` 个 `cuexis_cxc_tools` 测试 + `18` 个 CXC cases（共 19 个测试） |
 | Release fresh configure | passed | `cmake --preset release --fresh` |
 | Release clean build | passed | `cmake --build --preset release --clean-first` |
-| Release CXC/C4 filter | passed | `cuexis_cxc_tools` 与 19 个 CXC cases |
+| Release CXC/C4 filter | passed | `1` 个 `cuexis_cxc_tools` 测试 + `18` 个 CXC cases（共 19 个测试） |
 | Debug/Release format check | passed | `cuexis_format_check` |
 | Documentation check | passed | 117 Markdown、20 candidate JSON/CXT |
 | Version check | passed | `26.08.01-1` |
