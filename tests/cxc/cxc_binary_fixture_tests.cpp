@@ -27,7 +27,7 @@ struct BinaryFixture final {
 };
 
 [[nodiscard]] auto shouldUpdateFixtures() -> bool {
-#if defined(_WIN32)
+#if defined(_MSC_VER)
     char* value = nullptr;
     std::size_t length = 0;
     const auto status = _dupenv_s(&value, &length, "CUEXIS_UPDATE_CXC_FIXTURES");

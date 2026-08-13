@@ -261,7 +261,7 @@ void removeTree(const std::filesystem::path& path) noexcept {
 
 bool testFailureEnabled(std::string_view name) noexcept {
 #if defined(CUEXIS_CXC_TOOL_TESTING)
-#if defined(_WIN32)
+#if defined(_MSC_VER)
     char* value = nullptr;
     std::size_t length = 0;
     const auto status = _dupenv_s(&value, &length, std::string{name}.c_str());

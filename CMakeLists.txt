@@ -426,6 +426,18 @@ install(FILES "${PROJECT_BINARY_DIR}/generated/cuexis/version.hpp"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/cuexis"
 )
 
+if(CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
+    set(CUEXIS_STATIC_DEPENDENCY_BLOCK [=[
+find_dependency(glm CONFIG)
+find_dependency(EnTT CONFIG)
+find_dependency(nlohmann_json CONFIG)
+find_dependency(nlohmann_json_schema_validator CONFIG)
+find_dependency(minizip-ng CONFIG)
+]=])
+else()
+    set(CUEXIS_STATIC_DEPENDENCY_BLOCK "")
+endif()
+
 configure_package_config_file(
     "${PROJECT_SOURCE_DIR}/cmake/CuexisConfig.cmake.in"
     "${PROJECT_BINARY_DIR}/CuexisConfig.cmake"
