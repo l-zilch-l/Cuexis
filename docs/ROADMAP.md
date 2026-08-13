@@ -14,8 +14,8 @@
 ```text
 CFU-A inventory and use cases                       completed
 CFU-B ADR and format contracts                      accepted
-CFU-C Schema / typed Reader / Writer / validator    in progress; C0-C3 completed, C4 local tools/gates complete, hosted closure pending
-CFU-D migration                                     pending
+CFU-C Schema / typed Reader / Writer / validator    completed; C0-C4 complete
+CFU-D migration                                     next
 CFU-E Playback prepare and capability               pending
 CFU-F consumers and determinism                     pending
 CFU-G cross-platform closure and Stage 4 handoff    pending

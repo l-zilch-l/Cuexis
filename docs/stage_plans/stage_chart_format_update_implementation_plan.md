@@ -1,6 +1,6 @@
 # Stage Chart Format Update：谱面格式更新实施计划
 
-状态：CFU-A/CFU-B、CFU-C0/C1/C2/C3 已完成；CFU-C4 工具与本地门禁完成，hosted 跨平台收口待验证；ADR 0038 已于 2026-08-11 整体接受
+状态：CFU-A/CFU-B、CFU-C0/C1/C2/C3/C4 已完成；下一批次为 CFU-D；ADR 0038 已于 2026-08-11 整体接受
 
 更新日期：2026-08-13
 
@@ -475,10 +475,11 @@ CLI 规则：
   canonical bytes。
 - 工具关闭后才允许进入迁移和 Playback 接入。
 
-实施快照（2026-08-12）：三个 developer-only CLI、bounded source snapshot、sibling staging、
+实施快照（2026-08-13）：三个 developer-only CLI、bounded source snapshot、sibling staging、
 atomic commit、no-overwrite、exit `0/1/2`、canonical/noncanonical round-trip 和失败清理已在
-MSVC Debug/Release 本地门禁中验证。当前工作树尚未形成包含本轮改动的 hosted Linux/Windows/MinGW/
-sanitizer/coverage 证据；因此 CFU-C4 仍保持实现完成、跨平台收口待验证，不进入 CFU-D/E 或 Stage 4。
+MSVC Debug/Release、MinGW Debug/Release、hosted GCC Release 与 Clang Shared Debug 门禁中验证。
+最终 SHA `41ddb6a980b816b2c0b3b1e25df9268603bcc883` 的 Linux Quality、Windows MSVC 和 Windows
+MinGW workflow 全部成功；CFU-C4 已关闭，下一批次为 CFU-D，不进入 CFU-E 或 Stage 4。
 
 ### 5.6 CFU-D：显式迁移与审计报告
 

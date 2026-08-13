@@ -1,10 +1,10 @@
 # Stage Chart Format Update CFU-C4 Tools Report
 
-状态：CFU-C4 本地实现与门禁完成；hosted 跨平台收口待验证
+状态：CFU-C4 complete；developer-only 工具、本地门禁与 hosted 跨平台验证均完成
 
 快照日期：2026-08-13
 
-实现提交：`629a6df Fix MinGW unused test helper`；该 SHA 是本轮 hosted workflow 的验证基线。
+实现提交：`41ddb6a980b816b2c0b3b1e25df9268603bcc883`（`Run CXC tools in Linux quality`）；该 SHA 是最终 hosted 验证基线。
 
 权威计划：[Stage Chart Format Update 实施计划](../stage_plans/stage_chart_format_update_implementation_plan.md)
 
@@ -20,8 +20,8 @@ cuexis_cxc_unpack
 
 工具复用现有内部 `cuexis_cxc` Reader/Writer 和 closure 验证，不创建公共 `Cuexis::Cxc`
 component，不接入 Playback/Runtime，不解析 `engine/animation/`，也不执行 migration、authoring
-generator 或运行时脚本。当前 hosted workflow 尚未完成，本报告不把 CFU-C4 写成最终跨平台
-complete。
+generator 或运行时脚本。CFU-C4 的实现、本地门禁和 hosted 跨平台证据均已完成；下一批次为
+CFU-D，但本报告不声称 CXC 公共产品支持、Playback 接入或 Stage 4 完成。
 
 ## 2. 交付范围
 
@@ -80,7 +80,7 @@ complete。
 | --- | --- | --- |
 | Debug fresh configure | passed | `cmake --preset debug --fresh` |
 | Debug complete build | passed | Visual Studio Developer environment |
-| Debug full CTest | passed | `341` passed；1 个既有 Windows symlink 能力测试跳过 |
+| Debug full CTest | passed | `342` tests；`341` passed，1 个既有 Windows symlink 能力测试跳过 |
 | Debug CXC/C4 filter | passed | `1` 个 `cuexis_cxc_tools` 测试 + `18` 个 CXC cases（共 19 个测试） |
 | Release fresh configure | passed | `cmake --preset release --fresh` |
 | Release clean build | passed | `cmake --build --preset release --clean-first` |
@@ -90,15 +90,21 @@ complete。
 | Version check | passed | `26.08.01-1` |
 | Diff check | passed | 仅既有 LF/CRLF 转换警告 |
 
-### 3.3 Hosted 尚未形成的证据
+### 3.3 Hosted 验证
 
-截至报告生成时，`4581289` 的 hosted workflow 尚未完成，因此以下仍未形成有效证据：
+最终 SHA `41ddb6a980b816b2c0b3b1e25df9268603bcc883` 的三套 workflow 全部成功：
 
-- hosted Linux Quality、GCC/Clang、ASan/UBSan、coverage；
-- MinGW 和 hosted Windows C4 tool build/test；
-- 当前实现 SHA 对应的跨平台 canonical CXC SHA-256 比较。
+| Workflow | Run | Jobs / evidence |
+| --- | --- | --- |
+| Linux Quality | [31714177413](https://github.com/l-zilch-l/Cuexis/actions/runs/31714177413) | GCC Release、GCC Shared Release、Clang Shared Debug、Clang ASan + UBSan、GCC Coverage、clang-tidy 全部成功；GCC Release 与 Clang Shared Debug 的 `Verify CXC tools` 均成功 |
+| Windows MSVC | [31714177398](https://github.com/l-zilch-l/Cuexis/actions/runs/31714177398) | Debug、Release 全部成功 |
+| Windows MinGW | [31714177396](https://github.com/l-zilch-l/Cuexis/actions/runs/31714177396) | Debug、Release 全部成功 |
 
-这些未验证项阻止将 CFU-C4 标记为最终跨平台 complete，但不否定本地实现和门禁结果。
+Hosted Linux C4 tool gate 执行完整 `VerifyCxcTools.cmake`，覆盖三个 CLI、exit `0/1/2`、atomic
+staging/rollback、no-overwrite、canonical/noncanonical round-trip 和 host-path diagnostics。
+Committed canonical package 为 `7312` bytes，SHA-256 为
+`95736452da4de84da2cbbb7ea77ff72450ebd34a3ab8069b411e720f1f4bab54`；MSVC、MinGW、GCC 和 Clang
+均通过对应的 committed golden / round-trip gates。
 
 ## 4. 兼容边界
 
@@ -112,5 +118,4 @@ complete。
 无 runtime scripts、per-frame callbacks 或 bytecode
 ```
 
-下一步是推送本轮提交并在对应 hosted Linux/Windows workflow 上跟踪 C4 门禁；在这些
-证据形成前，不进入 CFU-D、CFU-E 或 Stage 4。
+下一步是 CFU-D 显式迁移与审计；不进入 CFU-E 或 Stage 4，直到 CFU-D 的前置评审与门禁关闭。
