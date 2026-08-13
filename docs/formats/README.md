@@ -2,7 +2,7 @@
 
 状态：现行格式索引
 
-更新日期：2026-08-12
+更新日期：2026-08-13
 
 ## Artifact 分层
 
@@ -25,7 +25,7 @@ Compiled Runtime
 | Asset Index v1/v2 | [ADR 0026](../adr/0026-asset-index-and-source-resolution.md) 与 ADR 0031 | implemented |
 | Chart v1/v2/v3 | [CHART_FORMAT.md](../CHART_FORMAT.md) | implemented |
 | Chart v4 | [CHART_V4_FORMAT.md](../CHART_V4_FORMAT.md) | accepted contract, implementation in progress |
-| CXC v1 | [CXC_FORMAT.md](../CXC_FORMAT.md) | accepted contract, implementation in progress |
+| CXC v1 | [CXC_FORMAT.md](../CXC_FORMAT.md) | accepted contract, internal C3/C4 implementation locally verified; hosted/public closure pending |
 | CXT v1 | [CXT_FORMAT.md](../CXT_FORMAT.md) | accepted contract, implementation in progress |
 | Animation Mixing | [ANIMATION_MIXING.md](../ANIMATION_MIXING.md) | accepted contract; runtime deferred to Stage 4 |
 | Portable Presentation v1 | [PORTABLE_PRESENTATION.md](../PORTABLE_PRESENTATION.md) | implemented |
@@ -38,8 +38,9 @@ ChartParameter、Template Binding 或 Animator；Animation Mixing 不重新定�
 当前 Playback Loader 只支持 `cuexis.chart` v1/v2/v3。CFU-C1/C2 已提供 CXC manifest、Chart v4 和
 CXT 的生产 Schema、内部 typed source Reader、Chart/CXT canonical Writer、参数解析/identity、CXT
 import 与 deterministic lowering。CFU-C3 已提供内部 strict ZIP32 archive/package、owning
-file/memory loader、package-backed Asset ContentProvider 和独立 project-document table。C4 工具、公共
-Playback 输入和最终跨平台门禁仍未关闭；该检查点不是完整 CXC 产品支持或公共 package API。评审示例位于
+file/memory loader、package-backed Asset ContentProvider 和独立 project-document table；CFU-C4 已在
+本地提供 developer pack/validate/unpack tools 和 round-trip gates。公共 Playback 输入和最终 hosted
+跨平台门禁仍未关闭；该检查点不是完整 CXC 产品支持或公共 package API。评审示例位于
 [examples/chart_format_update](../examples/chart_format_update/README.md)。
 
 运行时脚本和逐帧脚本回调无限期延后，不是任何 Cuexis 格式的隐藏扩展点。

@@ -228,13 +228,17 @@ auto makeV3Request() -> CxcWriteRequest {
 
 auto makeV4CxtRequest() -> CxcWriteRequest {
     const auto fixtureRoot = sourceRoot() / "tests" / "fixtures" / "chart_format_update" / "valid";
+    const auto sourceRootPath =
+        sourceRoot() / "tests" / "fixtures" / "chart_format_update" / "source_project";
     CxcWriteRequest request;
     request.entries = {
-        textEntry("cuexis.project.json", rootProject("charts/main.cuexis.chart.json")),
-        textEntry("assets/cuexis.asset-index.json", unusedAssetIndex()),
+        textEntry("cuexis.project.json", readText(sourceRootPath / "cuexis.project.json")),
+        textEntry("assets/cuexis.asset-index.json",
+                  readText(sourceRootPath / "assets" / "cuexis.asset-index.json")),
         textEntry("assets/charts/main.cuexis.chart.json",
                   readText(fixtureRoot / "chart_v4_cxt_template_binding.json")),
-        binaryEntry("assets/textures/unused.bin", "unused-resource"),
+        CxcWriteEntry{"assets/textures/unused.bin",
+                      readBytes(sourceRootPath / "assets" / "textures" / "unused.bin")},
         textEntry("templates/move-y.cxt", readText(fixtureRoot / "templates" / "move-y.cxt")),
     };
     return request;

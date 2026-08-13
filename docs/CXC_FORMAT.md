@@ -1,8 +1,8 @@
 # Cuexis CXC v1
 
-状态：accepted contract；CFU-C3 内部 archive/package 基线已实现，C4 工具与 Playback 支持未完成
+状态：accepted contract；CFU-C3 内部 archive/package 与 CFU-C4 developer tools 本地基线已实现，hosted closure 与 Playback 支持未完成
 
-更新日期：2026-08-12
+更新日期：2026-08-13
 
 依据：[ADR 0038](adr/0038-cxc-v1-and-chart-v4-boundary.md)
 
@@ -15,7 +15,8 @@ Chart v4 和 CXT 的字段分别由 [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md) 与
 [CXT_FORMAT.md](CXT_FORMAT.md) 定义。CXC 不重新定义这些内容格式，也不是 Runtime、World、
 AnimationProgram、FrameSnapshot 或 ZIP library API。
 
-内部 `cuexis_cxc` 已能读写和验证 CXC bytes；CFU-C4、CFU-E 和最终验收门禁关闭前，`.cxc` 仍不能
+内部 `cuexis_cxc` 已能读写和验证 CXC bytes，CFU-C4 developer tools 已在本地门禁中验证；CFU-E、
+hosted closure 和最终验收门禁关闭前，`.cxc` 仍不能
 作为 Playback 或完整产品工具能力对外承诺，也不形成公共 CXC package component。
 
 ## 2. Artifact 模型
@@ -293,4 +294,6 @@ Chart migration 是独立操作，见 [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md)�
 
 正反例见 [examples/chart_format_update](examples/chart_format_update/README.md)。CFU-C1 已将 manifest
 副本提升到 `tests/fixtures/chart_format_update/`，由生产 Schema 与内部 typed manifest Reader 验证；
-ZIP32 archive、闭包和可加载 CXC package 仍未实现。
+CFU-C3 已实现 strict ZIP32 archive、闭包和 owning CXC package，CFU-C4 developer tools 的本地证据
+见 [C4 报告](stage_reports/260813-chart-format-update-c4-tools.md)。公共 Playback 输入和 hosted
+跨平台收口仍未关闭。

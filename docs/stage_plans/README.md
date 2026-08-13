@@ -2,7 +2,7 @@
 
 状态：现行阶段计划索引
 
-更新日期：2026-08-12
+更新日期：2026-08-13
 
 阶段计划描述目标、实施批次、门禁和交接。当前阶段以 [CURRENT_STATUS.md](../CURRENT_STATUS.md)
 为准；完成后的实际证据以 [阶段报告](../stage_reports/README.md) 为准。
@@ -16,7 +16,7 @@
 | [Stage 1E](stage_1e_implementation_plan.md) | completed | SDK 安装与 external consumer |
 | [Stage 2](stage_2_implementation_plan.md) | completed | Chart v3、TimingMap、Behavior Event |
 | [Stage 3](stage_3_implementation_plan.md) | completed | Portable Presentation 与渲染 adapter |
-| [Stage Chart Format Update](stage_chart_format_update_implementation_plan.md) | active | ADR 0038 已接受；CFU-C0/C1/C2/C3 complete，CFU-C4 next |
+| [Stage Chart Format Update](stage_chart_format_update_implementation_plan.md) | active | ADR 0038 已接受；CFU-C0/C1/C2/C3 complete，CFU-C4 本地工具与门禁完成，hosted closure pending |
 | [Stage 4](stage_4_implementation_plan.md) | future, blocked | Cuexis 表现动画；等待格式阶段关闭 |
 | [Stage 5](stage_5_implementation_plan.md) | future | Material、Shader 与能力 Profile |
 | [Stage 6](stage_6_implementation_plan.md) | future | Playback C++ API 与独立 Player 产品化 |

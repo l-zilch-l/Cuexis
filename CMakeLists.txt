@@ -129,6 +129,10 @@ if(CUEXIS_BUILD_DEVELOPER_TOOLS)
     list(APPEND CUEXIS_ACTIVE_TARGETS
         cuexis_chart_migrator
         cuexis_chart_validator
+        cuexis_cxc_pack
+        cuexis_cxc_tool_common
+        cuexis_cxc_unpack
+        cuexis_cxc_validate
     )
 endif()
 
@@ -173,6 +177,19 @@ if(CUEXIS_BUILD_TESTS)
             "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
             -P "${PROJECT_SOURCE_DIR}/cmake/VerifyArchitecture.cmake"
     )
+    if(CUEXIS_BUILD_DEVELOPER_TOOLS)
+        add_test(
+            NAME cuexis_cxc_tools
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_CXC_PACK=$<TARGET_FILE:cuexis_cxc_pack>"
+                "-DCUEXIS_CXC_VALIDATE=$<TARGET_FILE:cuexis_cxc_validate>"
+                "-DCUEXIS_CXC_UNPACK=$<TARGET_FILE:cuexis_cxc_unpack>"
+                "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                "-DCUEXIS_BINARY_DIR=${PROJECT_BINARY_DIR}"
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyCxcTools.cmake"
+        )
+        set_tests_properties(cuexis_cxc_tools PROPERTIES LABELS "cxc;tools" TIMEOUT 120)
+    endif()
     if(CUEXIS_BUILD_PLAYER)
         add_test(
             NAME cuexis_player_rejects_unknown_argument
@@ -613,6 +630,33 @@ if(TARGET cuexis_chart_validator)
     cuexis_verify_target_dependencies(cuexis_chart_validator
         ALLOWED
             cuexis::chart
+    )
+endif()
+if(TARGET cuexis_cxc_tool_common)
+    cuexis_verify_target_dependencies(cuexis_cxc_tool_common
+        ALLOWED
+            cuexis_cxc
+            cuexis::filesystem
+            cuexis::project
+            cuexis::chart
+    )
+endif()
+if(TARGET cuexis_cxc_pack)
+    cuexis_verify_target_dependencies(cuexis_cxc_pack
+        ALLOWED
+            cuexis::cxc_tool_common
+    )
+endif()
+if(TARGET cuexis_cxc_validate)
+    cuexis_verify_target_dependencies(cuexis_cxc_validate
+        ALLOWED
+            cuexis::cxc_tool_common
+    )
+endif()
+if(TARGET cuexis_cxc_unpack)
+    cuexis_verify_target_dependencies(cuexis_cxc_unpack
+        ALLOWED
+            cuexis::cxc_tool_common
     )
 endif()
 

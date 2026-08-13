@@ -262,11 +262,17 @@ void addParseError(core::Diagnostics& diagnostics, const core::Error& error) {
     const auto entriesReader = root.requiredField("entries");
     const auto requiredExtensionsReader = root.requiredField("requiredExtensions");
     const auto extensionsReader = root.requiredField("extensions");
-    const auto format = formatReader ? formatReader->readString() : std::nullopt;
+    auto format = std::optional<std::string_view>{};
     auto version = std::optional<std::int64_t>{};
-    const auto project = projectReader ? projectReader->readString() : std::nullopt;
+    auto project = std::optional<std::string_view>{};
+    if (formatReader) {
+        format = formatReader->readString();
+    }
     if (versionReader) {
         version = versionReader->readInt64();
+    }
+    if (projectReader) {
+        project = projectReader->readString();
     }
     if (format && *format != "cuexis.cxc") {
         addError(diagnostics, "cxc.format.unsupported", "CXC manifest format is unsupported",

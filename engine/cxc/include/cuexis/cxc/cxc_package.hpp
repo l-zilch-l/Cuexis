@@ -17,6 +17,7 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace cuexis::cxc {
@@ -90,6 +91,8 @@ class CxcPackage final {
     [[nodiscard]] auto assetIndexes() const noexcept -> std::span<const CxcAssetIndex>;
     [[nodiscard]] auto projectDocuments() const noexcept -> std::span<const chart::ProjectDocument>;
     [[nodiscard]] auto entries() const noexcept -> std::span<const CxcArchiveEntry>;
+    [[nodiscard]] auto entryBytes(std::string_view path) const noexcept
+        -> std::optional<std::span<const std::byte>>;
     [[nodiscard]] auto bytes() const noexcept -> std::span<const std::byte>;
     [[nodiscard]] auto contentProvider() const -> std::shared_ptr<CxcContentProvider>;
 

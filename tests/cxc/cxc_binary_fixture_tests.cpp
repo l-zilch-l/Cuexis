@@ -204,8 +204,20 @@ struct BinaryFixture final {
     }
     {
         auto bytes = std::vector<std::byte>{canonical.begin(), canonical.end()};
-        support::replaceEntryText(bytes, "cuexis.cxc.json", "\"byteCount\": 15",
-                                  "\"byteCount\": 14");
+        const auto loaded = CxcPackageLoader::loadMemory(canonical);
+        if (!loaded.hasValue()) {
+            throw std::runtime_error{"Could not load canonical CXC fixture source"};
+        }
+        const auto found =
+            std::ranges::find(loaded.package->manifest().entries, "assets/textures/unused.bin",
+                              &cuexis::cxc::CxcManifestEntry::path);
+        if (found == loaded.package->manifest().entries.end()) {
+            throw std::runtime_error{"Could not locate canonical CXC fixture manifest entry"};
+        }
+        const auto oldValue = std::string{"\"byteCount\": "} + std::to_string(found->byteCount);
+        const auto newValue =
+            std::string{"\"byteCount\": "} + std::to_string(found->byteCount - 1U);
+        support::replaceEntryText(bytes, "cuexis.cxc.json", oldValue, newValue);
         fixtures.push_back(
             {"invalid_manifest_size.cxc", std::move(bytes), "cxc.entry.size_mismatch"});
     }

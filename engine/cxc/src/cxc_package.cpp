@@ -769,6 +769,15 @@ auto CxcPackage::entries() const noexcept -> std::span<const CxcArchiveEntry> {
     return {data_->entries.data(), data_->entries.size()};
 }
 
+auto CxcPackage::entryBytes(std::string_view path) const noexcept
+    -> std::optional<std::span<const std::byte>> {
+    const auto* entry = findZipEntry(*data_, path);
+    if (entry == nullptr) {
+        return std::nullopt;
+    }
+    return archiveEntryBytes(*data_, *entry);
+}
+
 auto CxcPackage::bytes() const noexcept -> std::span<const std::byte> {
     return {data_->archiveBytes.data(), data_->archiveBytes.size()};
 }

@@ -1,0 +1,3 @@
+add_executable(cuexis_cxc_validate main.cpp)
+target_compile_features(cuexis_cxc_validate PRIVATE cxx_std_20)
+target_link_libraries(cuexis_cxc_validate PRIVATE cuexis::cxc_tool_common)

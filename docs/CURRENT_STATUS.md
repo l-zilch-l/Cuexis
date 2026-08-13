@@ -2,7 +2,7 @@
 
 状态：现行状态页
 
-更新日期：2026-08-12
+更新日期：2026-08-13
 
 本文是当前阶段和实现状态的唯一摘要。阶段计划、完成报告和审查报告仍然保留各自的历史
 细节，但不能绕过本文重新定义当前状态。
@@ -27,7 +27,7 @@ PlaybackSession、FrameSnapshot、ContentProvider 和后续 Judgement/Replay 合
 | Stage 1E | 已完成 | [完成报告](stage_reports/stage_1e_completion_report.md) |
 | Stage 2 | 已完成 | [完成报告](stage_reports/stage_2_completion_report.md) |
 | Stage 3 | 已完成 | [完成报告](stage_reports/stage_3_completion_report.md) |
-| Stage Chart Format Update | 当前活动阶段；CFU-C0/C1/C2/C3 已完成，CFU-C4 下一步 | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md) 与 [C3 报告](stage_reports/260812-chart-format-update-c3-cxc.md) |
+| Stage Chart Format Update | 当前活动阶段；CFU-C0/C1/C2/C3 已完成，CFU-C4 工具与本地门禁完成，hosted 跨平台收口待验证 | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md)、[C3 报告](stage_reports/260812-chart-format-update-c3-cxc.md) 与 [C4 报告](stage_reports/260813-chart-format-update-c4-tools.md) |
 | Stage 4 | 未开始，等待格式阶段关闭 | [实施计划](stage_plans/stage_4_implementation_plan.md) |
 
 Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使用 Stage 3.5 作为别名。
@@ -44,7 +44,10 @@ Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使
 - CFU-C3 已建立内部 `cuexis_cxc` strict ZIP32 Stored Reader/Writer、manifest/project closure、owning
   file/memory package、精确 package identity、package-backed Asset ContentProvider、独立 Chart/CXT
   project-document table、committed binary fixtures 和 static/shared package leakage gates。该内部检查点
-  仍不是完整 CXC 产品支持，不是公共 package API，也不包含 C4 工具、Playback 接入或动画求值。
+  仍不是完整 CXC 产品支持，不是公共 package API，也不包含 Playback 接入或动画求值。
+- CFU-C4 已在本地实现 `cuexis_cxc_pack`、`cuexis_cxc_validate`、`cuexis_cxc_unpack`、source snapshot、
+  sibling staging/atomic commit、no-overwrite、exit `0/1/2` 和 binary round-trip CMake 门禁。当前
+  尚未有包含本轮改动的 hosted Linux/Windows run，因此不能把 CFU-C4 写成最终跨平台 complete。
 - CFU-C 至 CFU-G 的详细实现批次、模块落点、API 门禁、测试矩阵、跨平台验收和 Stage 4 交接方案
   已写入实施计划；当前只允许按批次推进，不得越界实现 Stage 4 动画求值。
 - CXT v1、播放前参数、Template Binding 和运行时脚本无限期延后子决策已于 2026-08-10 接受。
@@ -65,7 +68,7 @@ extension、capability、字节码、模块 ABI 或 Playback 执行入口。离�
 - 正式 `cuexis_judgement`、InputEvent、ReplayData 和确定性回放
 - Studio 独立应用实现
 - 稳定 C ABI 和语言绑定
-- CXC pack/validate/unpack 工具、Playback 接入和最终跨平台产品门禁
+- 本轮改动对应的 hosted Linux/Windows/MinGW/ASan/coverage 收口、Playback 接入和最终跨平台产品门禁
 - Stage 4 AnimationSystem 运行时实现
 
 ## 状态更新规则

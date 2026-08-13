@@ -212,7 +212,7 @@ TEST_CASE("CXC file and memory packages own equivalent bytes and keep content do
     const auto provider = memory.package->contentProvider();
     const auto asset = provider->readBlob(contentRequest("main", "textures/unused.bin"));
     REQUIRE(asset.has_value());
-    CHECK(support::textFromBytes(asset->span()) == "unused-resource");
+    CHECK(support::textFromBytes(asset->span()) == "unused-resource\n");
     CHECK(asset->revision != 0);
 
     const auto chart =
@@ -456,8 +456,16 @@ TEST_CASE("CXC detects CRC manifest hash size and package budget mismatches",
 
     SECTION("manifest size mismatch") {
         auto corrupted = valid;
-        support::replaceEntryText(corrupted, "cuexis.cxc.json", "\"byteCount\": 15",
-                                  "\"byteCount\": 14");
+        const auto loaded = CxcPackageLoader::loadMemory(valid);
+        REQUIRE(loaded.hasValue());
+        const auto found =
+            std::ranges::find(loaded.package->manifest().entries, "assets/textures/unused.bin",
+                              &cuexis::cxc::CxcManifestEntry::path);
+        REQUIRE(found != loaded.package->manifest().entries.end());
+        const auto oldValue = std::string{"\"byteCount\": "} + std::to_string(found->byteCount);
+        const auto newValue =
+            std::string{"\"byteCount\": "} + std::to_string(found->byteCount - 1U);
+        support::replaceEntryText(corrupted, "cuexis.cxc.json", oldValue, newValue);
         const auto result = CxcPackageLoader::loadMemory(corrupted);
         CHECK_FALSE(result.hasValue());
         CHECK(support::hasDiagnostic(result.diagnostics, "cxc.entry.size_mismatch"));
