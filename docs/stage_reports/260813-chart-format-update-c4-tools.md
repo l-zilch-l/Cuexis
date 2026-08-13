@@ -4,7 +4,7 @@
 
 快照日期：2026-08-13
 
-实现提交：`ccc8857 Add CXC pack validate unpack tools`；该 SHA 是本轮 hosted workflow 的验证基线。
+实现提交：`4581289 Add CXC pack validate unpack tools`；该 SHA 是本轮 hosted workflow 的验证基线。
 
 权威计划：[Stage Chart Format Update 实施计划](../stage_plans/stage_chart_format_update_implementation_plan.md)
 
@@ -92,7 +92,7 @@ complete。
 
 ### 3.3 Hosted 尚未形成的证据
 
-截至报告生成时，`ccc8857` 的 hosted workflow 尚未完成，因此以下仍未形成有效证据：
+截至报告生成时，`4581289` 的 hosted workflow 尚未完成，因此以下仍未形成有效证据：
 
 - hosted Linux Quality、GCC/Clang、ASan/UBSan、coverage；
 - MinGW 和 hosted Windows C4 tool build/test；
