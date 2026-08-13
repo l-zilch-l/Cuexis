@@ -55,23 +55,6 @@ constexpr std::size_t eocdBytes = 22;
 )";
 }
 
-[[nodiscard]] auto unusedAssetIndex() -> std::string {
-    return R"({
-  "format": "cuexis.asset-index",
-  "version": 1,
-  "assets": [
-    {
-      "id": "texture.unused",
-      "type": "texture",
-      "source": "textures/unused.bin",
-      "dependencies": []
-    }
-  ],
-  "extensions": {}
-}
-)";
-}
-
 [[nodiscard]] auto manifestText(const std::vector<CxcWriteEntry>& entries) -> std::string {
     std::ostringstream output;
     output << "{\n  \"entries\": [\n";
