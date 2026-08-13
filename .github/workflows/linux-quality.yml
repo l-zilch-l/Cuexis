@@ -24,15 +24,19 @@ jobs:
           - name: GCC Release
             preset: headless-release
             compiler: g++
+            developer_tools: "ON"
           - name: GCC Shared Release
             preset: headless-shared-release
             compiler: g++
+            developer_tools: "OFF"
           - name: Clang Shared Debug
             preset: headless-shared-debug
             compiler: clang++
+            developer_tools: "ON"
           - name: Clang ASan + UBSan
             preset: headless-sanitize
             compiler: clang++
+            developer_tools: "OFF"
 
     steps:
       - name: Check out repository
@@ -60,6 +64,7 @@ jobs:
         run: >-
           cmake --preset ${{ matrix.preset }} --fresh
           -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
+          -DCUEXIS_BUILD_DEVELOPER_TOOLS=${{ matrix.developer_tools }}
           -DVCPKG_TARGET_TRIPLET=x64-linux
 
       - name: Build
@@ -70,6 +75,12 @@ jobs:
           ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
           UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
         run: ctest --preset ${{ matrix.preset }} --no-tests=error
+
+      - name: Verify CXC tools
+        if: matrix.developer_tools == 'ON'
+        run: >-
+          ctest --preset ${{ matrix.preset }} --no-tests=error
+          -R "^cuexis_cxc_tools$"
 
       - name: Verify deterministic performance invariants
         if: matrix.preset == 'headless-release'
