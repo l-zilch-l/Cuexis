@@ -4,6 +4,8 @@
 
 快照日期：2026-08-13；验证补记：2026-08-13 同日稍后取得本地 Debug 证据
 
+后续关闭：[CFU-E 关闭报告](260814-chart-format-update-e-close.md) 已关闭整包 CFU-E；CFU-D3 现在可以开始。整包 CFU-D 仍未关。
+
 权威计划：[Stage Chart Format Update 实施计划](../stage_plans/stage_chart_format_update_implementation_plan.md)
 
 ## 1. 结论

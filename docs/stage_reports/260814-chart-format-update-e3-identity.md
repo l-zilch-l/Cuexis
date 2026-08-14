@@ -4,7 +4,7 @@
 
 快照日期：2026-08-14
 
-后续关闭：[CFU-E4 报告](260814-chart-format-update-e4-gates.md) 已取得本地全量门禁数字。
+后续关闭：[CFU-E4 报告](260814-chart-format-update-e4-gates.md) 已取得本地全量门禁数字。[CFU-E 关闭报告](260814-chart-format-update-e-close.md) 已由项目所有者接受整包 CFU-E。
 
 实施基线：`stage-ChartFormatUpdate` worktree on commit
 `1af1606faf301ac5f534ff5ce6bd98403046ebb6`

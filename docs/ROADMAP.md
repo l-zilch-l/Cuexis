@@ -15,8 +15,8 @@
 CFU-A inventory and use cases                       completed
 CFU-B ADR and format contracts                      accepted
 CFU-C Schema / typed Reader / Writer / validator    completed; C0-C4 complete
-CFU-D migration                                     D1/D2 closed locally; D3 blocked on CFU-E; CFU-D not closed
-CFU-E Playback prepare and capability               E0–E4 locally closed; D3 next
+CFU-D migration                                     D1/D2 closed locally; D3 next; CFU-D not closed
+CFU-E Playback prepare and capability               closed; owner-accepted on 2026-08-14
 CFU-F consumers and determinism                     pending
 CFU-G cross-platform closure and Stage 4 handoff    pending
 ```

@@ -27,7 +27,7 @@ PlaybackSession、FrameSnapshot、ContentProvider 和后续 Judgement/Replay 合
 | Stage 1E | 已完成 | [完成报告](stage_reports/stage_1e_completion_report.md) |
 | Stage 2 | 已完成 | [完成报告](stage_reports/stage_2_completion_report.md) |
 | Stage 3 | 已完成 | [完成报告](stage_reports/stage_3_completion_report.md) |
-| Stage Chart Format Update | 当前活动阶段；CFU-C0–C4 已完成；CFU-D1/D2 已关闭；CFU-E0–E4 已本地关闭；CFU-D3 为下一批次；整包 CFU-D 未关 | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md)、[D1/D2 报告](stage_reports/260813-chart-format-update-d-migration.md)、[E0 报告](stage_reports/260814-chart-format-update-e0-api.md)、[E1 报告](stage_reports/260814-chart-format-update-e1-source.md)、[E2 报告](stage_reports/260814-chart-format-update-e2-prepare.md)、[E3 报告](stage_reports/260814-chart-format-update-e3-identity.md) 与 [E4 报告](stage_reports/260814-chart-format-update-e4-gates.md) |
+| Stage Chart Format Update | 当前活动阶段；CFU-C0–C4 已完成；CFU-D1/D2 已关闭；CFU-E 已关闭；CFU-D3 为下一批次；整包 CFU-D 未关 | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md)、[D1/D2 报告](stage_reports/260813-chart-format-update-d-migration.md)、[E0 报告](stage_reports/260814-chart-format-update-e0-api.md)、[E1 报告](stage_reports/260814-chart-format-update-e1-source.md)、[E2 报告](stage_reports/260814-chart-format-update-e2-prepare.md)、[E3 报告](stage_reports/260814-chart-format-update-e3-identity.md)、[E4 报告](stage_reports/260814-chart-format-update-e4-gates.md) 与 [E 关闭报告](stage_reports/260814-chart-format-update-e-close.md) |
 | Stage 4 | 未开始，等待格式阶段关闭 | [实施计划](stage_plans/stage_4_implementation_plan.md) |
 
 Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使用 Stage 3.5 作为别名。
@@ -77,8 +77,12 @@ Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使
 - CFU-E4 已于 2026-08-14 关闭本地门禁：Debug/Release `362/362`、shared-debug
   package/export/import `10/10`、format/docs/version/whitespace 与 Playback-only
   consumer identity 观察均通过。证据见
-  [E4 报告](stage_reports/260814-chart-format-update-e4-gates.md)。这不是 hosted
-  跨平台关闭、完整 v4 动画 Playback、公共 CXC package API 或 CFU-G 产品关闭。
+  [E4 报告](stage_reports/260814-chart-format-update-e4-gates.md)。
+- CFU-E 已于 2026-08-14 经项目所有者接受并关闭：最终 SHA
+  `2dc5f6cc1f413132502896705fd46163fec760b2` 的 Linux Quality、Windows MSVC 与
+  Windows MinGW 全部成功。证据见
+  [E 关闭报告](stage_reports/260814-chart-format-update-e-close.md)。该关闭不是完整
+  CXC 公共产品支持、公共 package API、完整 v4 动画 Playback、整包 CFU-D 或 CFU-G。
 - CFU-C 至 CFU-G 的详细实现批次、模块落点、API 门禁、测试矩阵、跨平台验收和 Stage 4 交接方案
   已写入实施计划；当前只允许按批次推进，不得越界实现 Stage 4 动画求值。
 - CXT v1、播放前参数、Template Binding 和运行时脚本无限期延后子决策已于 2026-08-10 接受。

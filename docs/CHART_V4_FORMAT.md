@@ -1,7 +1,7 @@
 # Cuexis Chart Format v4
 
 状态：accepted contract；CFU-C Reader/Writer/lowering/CXC 已实现；CFU-D1/D2 已关闭显式
-JSON lift 迁移；CFU-E2 已接入静态/参数化 prepare；CFU-E3 已冻结并组装 PreparedSemanticIdentity
+JSON lift 迁移；CFU-E 已接入静态/参数化 prepare 并冻结、组装 PreparedSemanticIdentity
 
 更新日期：2026-08-14
 
@@ -591,7 +591,7 @@ v4 报告记录 source/target canonical identity（Writer canonical bytes 的 SH
 生成计数和稳定 diagnostics；不能把 CXC pack 误称为迁移。
 
 迁移后的静态 v4 与源 v3 必须产生相同 FrameSnapshot 和 FrameDigest v3。Chart format version 和
-capability summary 可以不同。该运行时等价证据属于 CFU-D3；CFU-E 本地关闭后 Playback 已能加载
+capability summary 可以不同。该运行时等价证据属于 CFU-D3；CFU-E 关闭后 Playback 已能加载
 静态/参数化 v4，D3 可以开始。D1/D2 的关闭条件是结构/Writer golden 与 CLI 合同通过本地 Debug 验证；
 该验证已在本 worktree 取得，D1/D2 已关闭。整包 CFU-D 仍等待 D3。
 

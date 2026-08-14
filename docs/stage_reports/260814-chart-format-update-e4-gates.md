@@ -4,6 +4,9 @@
 
 快照日期：2026-08-14
 
+后续关闭：[CFU-E 关闭报告](260814-chart-format-update-e-close.md) 已在最终 SHA
+`2dc5f6cc1f413132502896705fd46163fec760b2` 取得 hosted Linux/Windows/MinGW 证据，并由项目所有者接受整包 CFU-E。
+
 实施基线：`stage-ChartFormatUpdate` worktree on commit
 `1af1606faf301ac5f534ff5ce6bd98403046ebb6` plus the uncommitted CFU-E3/E4 surface
 closed by this report

@@ -1,8 +1,8 @@
 # Cuexis Animation Template (CXT) v1
 
-状态：accepted contract；CFU-C 实现中，尚未接入 Playback 生产路径
+状态：accepted contract；CFU-C Reader/Writer 已实现；CFU-E 已接入 prepare import/lookup，非空动画在 Stage 4 前稳定拒绝
 
-更新日期：2026-08-11
+更新日期：2026-08-14
 
 依据：[ADR 0038](adr/0038-cxc-v1-and-chart-v4-boundary.md)
 

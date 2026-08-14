@@ -1,6 +1,6 @@
 # Stage Chart Format Update：谱面格式更新实施计划
 
-状态：CFU-A/CFU-B、CFU-C0/C1/C2/C3/C4 已完成；CFU-D1/D2 已关闭；CFU-E0–E4 已本地关闭；CFU-D3 为下一批次；ADR 0038 已于 2026-08-11 整体接受
+状态：CFU-A/CFU-B、CFU-C0/C1/C2/C3/C4 已完成；CFU-D1/D2 已关闭；CFU-E 已关闭；CFU-D3 为下一批次；ADR 0038 已于 2026-08-11 整体接受
 
 更新日期：2026-08-14
 
@@ -253,7 +253,7 @@ CFU-C1-C2 不得把动画求值放入 Chart compiler；含动画数据只形成 
 
 实施快照（2026-08-13）：D1/D2 代码、库测试、CLI `--target` 和 `VerifyChartTools` 扩展已写入工作树；
 默认仍输出 v3。同日稍后取得本 worktree Debug 证据并关闭 D1/D2；下一批次为 CFU-E。
-D3 在 CFU-E 本地关闭后开始。
+D3 在 CFU-E 关闭后开始。
 
 ### CFU-E：Runtime/Playback 接入
 
@@ -261,6 +261,11 @@ D3 在 CFU-E 本地关闭后开始。
 capability 和 diagnostics 路径。空动画 v4 可以使用现有 Runtime；任意非空 Clip/CXT/Binding/Layer 在
 Stage 4 前复用 `playback.capability.unsupported` 稳定拒绝。不得在 Chart compiler 内实现第二套动画
 求值器。
+
+实施快照（2026-08-14）：CFU-E0–E4 已由项目所有者接受并关闭。最终 SHA
+`2dc5f6cc1f413132502896705fd46163fec760b2` 的 Linux Quality、Windows MSVC 与 Windows MinGW
+全部成功。证据见 [CFU-E 关闭报告](../stage_reports/260814-chart-format-update-e-close.md)。
+下一批次为 CFU-D3。
 
 ### CFU-F：消费者与确定性
 
@@ -618,8 +623,12 @@ Debug/Release/shared consumer 门禁；该边界由 CFU-E4 负责。
 
 实施状态：CFU-E4 已于 2026-08-14 关闭本地门禁。Debug/Release `362/362`、shared-debug
 package/export/import `10/10`、format/docs/version/whitespace 与 Playback-only consumer identity
-观察均通过。证据见 [CFU-E4 报告](../stage_reports/260814-chart-format-update-e4-gates.md)。E4
-没有 hosted Linux/Windows/MinGW、sanitizer 或 CFU-D3 运行时等价；下一批次为 CFU-D3。
+观察均通过。证据见 [CFU-E4 报告](../stage_reports/260814-chart-format-update-e4-gates.md)。
+
+整包 CFU-E 已于 2026-08-14 经项目所有者接受并关闭。最终 SHA
+`2dc5f6cc1f413132502896705fd46163fec760b2` 的 Linux Quality、Windows MSVC 与 Windows MinGW
+全部成功。证据见 [CFU-E 关闭报告](../stage_reports/260814-chart-format-update-e-close.md)。
+该关闭不是 CFU-D3、完整 CXC 公共产品支持、公共 package API 或 Stage 4；下一批次为 CFU-D3。
 
 ### 5.8 CFU-F：消费者、确定性、安全与性能
 
@@ -769,8 +778,9 @@ date-based build version      updated only through tools/update_version.py at re
 ```
 
 E0 已采用 `0.6.0`。CFU-E1 已同步版本、生成头输入、package config、consumer 期望，并通过旧
-`0.5`/未来 `0.7` 请求拒绝、static/shared clean consumer 和 shared symbol/import review。CFU-E4
-仍须在最终交付 SHA 重跑这些门禁，不能用 E1 的本地证据替代最终跨平台关闭。
+`0.5`/未来 `0.7` 请求拒绝、static/shared clean consumer 和 shared symbol/import review。CFU-E
+已在最终交付 SHA `2dc5f6cc1f413132502896705fd46163fec760b2` 重跑这些门禁并关闭；CFU-F/CFU-G
+仍拥有后续跨平台确定性与最终产品关闭。
 
 ### 7.3 Capability 计划
 
