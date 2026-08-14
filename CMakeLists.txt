@@ -792,6 +792,7 @@ if(CUEXIS_BUILD_TESTS)
         ALLOWED
             cuexis::audio
             cuexis::assets
+            cuexis::chart
             cuexis::playback
             Catch2::Catch2WithMain
     )

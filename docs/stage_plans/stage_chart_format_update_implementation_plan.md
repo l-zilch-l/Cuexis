@@ -1,6 +1,6 @@
 # Stage Chart Format Update：谱面格式更新实施计划
 
-状态：CFU-A/CFU-B、CFU-C0/C1/C2/C3/C4 已完成；CFU-D1/D2 已关闭；CFU-E 已关闭；CFU-D3 为下一批次；ADR 0038 已于 2026-08-11 整体接受
+状态：CFU-A/CFU-B、CFU-C0/C1/C2/C3/C4 已完成；CFU-D 已关闭；CFU-E 已关闭；CFU-F 为下一批次；ADR 0038 已于 2026-08-11 整体接受
 
 更新日期：2026-08-14
 
@@ -201,8 +201,9 @@ CFU-A 现有格式/资产盘点与用例 fixture
 超过每个预算的拒绝 fixture
 ```
 
-CFU-A 已完成仓库内盘点。仓库外旧 Chart 是否存在仍是 CFU-D 迁移发布门禁；在项目所有者明确
-确认前，不得删除 v3 入口、缩短兼容窗口或声称全部外部资产已经迁移。
+CFU-A 已完成仓库内盘点。项目所有者已于 2026-08-14 记录“未提供外部资产”；整包 CFU-D 已关闭。
+兼容窗口不缩短：不得删除 v3 入口，也不得声称全部外部资产已经迁移。证据见
+[CFU-D 关闭报告](../stage_reports/260814-chart-format-update-d-close.md)。
 
 ### CFU-B：合同与 ADR
 
@@ -255,6 +256,12 @@ CFU-C1-C2 不得把动画求值放入 Chart compiler；含动画数据只形成 
 默认仍输出 v3。同日稍后取得本 worktree Debug 证据并关闭 D1/D2；下一批次为 CFU-E。
 D3 在 CFU-E 关闭后开始。
 
+实施快照（2026-08-14）：Playback FrameSnapshot / FrameDigest v3 / seek-stop 等价已由
+[CFU-D3 报告](../stage_reports/260814-chart-format-update-d3-equivalence.md) 关闭。同日稍后
+项目所有者记录“未提供外部资产”，整包 CFU-D 已由
+[CFU-D 关闭报告](../stage_reports/260814-chart-format-update-d-close.md) 关闭。兼容窗口不缩短；
+下一批次为 CFU-F。
+
 ### CFU-E：Runtime/Playback 接入
 
 只接入格式所需的 project-document table、per-prepare ParameterSet、prepare、compile、identity、
@@ -265,7 +272,7 @@ Stage 4 前复用 `playback.capability.unsupported` 稳定拒绝。不得在 Cha
 实施快照（2026-08-14）：CFU-E0–E4 已由项目所有者接受并关闭。最终 SHA
 `2dc5f6cc1f413132502896705fd46163fec760b2` 的 Linux Quality、Windows MSVC 与 Windows MinGW
 全部成功。证据见 [CFU-E 关闭报告](../stage_reports/260814-chart-format-update-e-close.md)。
-下一批次为 CFU-D3。
+CFU-D3 已随后关闭；下一批次为 CFU-F。
 
 ### CFU-F：消费者与确定性
 
@@ -518,8 +525,14 @@ CFU-E 接入后由 D3 关闭。
 
 实施快照（2026-08-13）：`ChartMigrator::migrateToV4`、CLI `--target 3|4`、v3 报告 golden 保持、
 v4 chart golden 与结构性 report 检查已落地。本 worktree Debug 证据见
-[CFU-D1/D2 报告](../stage_reports/260813-chart-format-update-d-migration.md)。D1/D2 已关闭；
-整包 CFU-D 未关。仓库外旧 Chart 资产仍未确认，全部 v1/v2/v3 Reader 与迁移入口保留。
+[CFU-D1/D2 报告](../stage_reports/260813-chart-format-update-d-migration.md)。D1/D2 已关闭。
+仓库外旧 Chart 资产当时仍未确认，全部 v1/v2/v3 Reader 与迁移入口保留。
+
+实施快照（2026-08-14）：Playback FrameSnapshot / FrameDigest v3 / seek-stop 等价已由
+[CFU-D3 报告](../stage_reports/260814-chart-format-update-d3-equivalence.md) 关闭。同日稍后
+项目所有者记录“未提供外部资产”，整包 CFU-D 已由
+[CFU-D 关闭报告](../stage_reports/260814-chart-format-update-d-close.md) 关闭。兼容窗口不缩短；
+下一批次为 CFU-F。
 
 ### 5.7 CFU-E：PlaybackSource、prepare options 与事务接入
 
@@ -628,7 +641,7 @@ package/export/import `10/10`、format/docs/version/whitespace 与 Playback-only
 整包 CFU-E 已于 2026-08-14 经项目所有者接受并关闭。最终 SHA
 `2dc5f6cc1f413132502896705fd46163fec760b2` 的 Linux Quality、Windows MSVC 与 Windows MinGW
 全部成功。证据见 [CFU-E 关闭报告](../stage_reports/260814-chart-format-update-e-close.md)。
-该关闭不是 CFU-D3、完整 CXC 公共产品支持、公共 package API 或 Stage 4；下一批次为 CFU-D3。
+该关闭不是完整 CXC 公共产品支持、公共 package API 或 Stage 4。CFU-D 已关闭；下一批次为 CFU-F。
 
 ### 5.8 CFU-F：消费者、确定性、安全与性能
 

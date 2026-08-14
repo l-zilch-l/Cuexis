@@ -45,8 +45,8 @@ pack/validate/unpack tools. CFU-E0 froze the public API and version direction; C
 PlaybackSource state, added owning typed project-document and CXC file/memory factories, and moved
 the preview SDK to `0.6.0`. CFU-E2 added prepare options, Chart v4 resolution and format capability
 preflight, with static v4 projected into the existing Runtime and nonempty animation rejected.
-**CFU-C0/C1/C2/C3/C4 complete; CFU-D1/D2 closed; CFU-E owner-accepted and closed. CFU-D3
-is next; CFU-D is not closed.** This checkpoint must not be described as
+**CFU-C0/C1/C2/C3/C4 complete; CFU-D owner-accepted and closed after “no external assets”;
+CFU-E owner-accepted and closed. CFU-F is next.** This checkpoint must not be described as
 complete CXC, a public package API, complete v4 animation Playback, or CFU-G complete.
 Stage 4 must consume
 typed data produced by the format stage and must not parse JSON/CXC/CXT in `engine/animation/`.

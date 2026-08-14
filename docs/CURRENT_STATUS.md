@@ -27,7 +27,7 @@ PlaybackSession、FrameSnapshot、ContentProvider 和后续 Judgement/Replay 合
 | Stage 1E | 已完成 | [完成报告](stage_reports/stage_1e_completion_report.md) |
 | Stage 2 | 已完成 | [完成报告](stage_reports/stage_2_completion_report.md) |
 | Stage 3 | 已完成 | [完成报告](stage_reports/stage_3_completion_report.md) |
-| Stage Chart Format Update | 当前活动阶段；CFU-C0–C4 已完成；CFU-D1/D2 已关闭；CFU-E 已关闭；CFU-D3 为下一批次；整包 CFU-D 未关 | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md)、[D1/D2 报告](stage_reports/260813-chart-format-update-d-migration.md)、[E0 报告](stage_reports/260814-chart-format-update-e0-api.md)、[E1 报告](stage_reports/260814-chart-format-update-e1-source.md)、[E2 报告](stage_reports/260814-chart-format-update-e2-prepare.md)、[E3 报告](stage_reports/260814-chart-format-update-e3-identity.md)、[E4 报告](stage_reports/260814-chart-format-update-e4-gates.md) 与 [E 关闭报告](stage_reports/260814-chart-format-update-e-close.md) |
+| Stage Chart Format Update | 当前活动阶段；CFU-C0–C4 已完成；CFU-D 已关闭；CFU-E 已关闭；CFU-F 为下一批次 | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md)、[D1/D2 报告](stage_reports/260813-chart-format-update-d-migration.md)、[D3 报告](stage_reports/260814-chart-format-update-d3-equivalence.md)、[D 关闭报告](stage_reports/260814-chart-format-update-d-close.md)、[E0 报告](stage_reports/260814-chart-format-update-e0-api.md)、[E1 报告](stage_reports/260814-chart-format-update-e1-source.md)、[E2 报告](stage_reports/260814-chart-format-update-e2-prepare.md)、[E3 报告](stage_reports/260814-chart-format-update-e3-identity.md)、[E4 报告](stage_reports/260814-chart-format-update-e4-gates.md) 与 [E 关闭报告](stage_reports/260814-chart-format-update-e-close.md) |
 | Stage 4 | 未开始，等待格式阶段关闭 | [实施计划](stage_plans/stage_4_implementation_plan.md) |
 
 Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使用 Stage 3.5 作为别名。
@@ -54,8 +54,15 @@ Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使
 - CFU-D1/D2 已关闭：`cuexis_chart` 与 `cuexis_chart_migrator` 提供显式 JSON lift；保留
   `migrateToV3` 与默认 CLI v3 输出；新增 `migrateToV4` / `--target 4`；v1/v2 → v4 复用 v3 路径；
   v4 报告增加 canonical identity 与字段计数。本 worktree Debug 证据见
-  [D1/D2 报告](stage_reports/260813-chart-format-update-d-migration.md)。整包 CFU-D 未关；
-  CFU-D3 现在可以开始，仓库外旧 Chart 资产确认仍未开始。
+  [D1/D2 报告](stage_reports/260813-chart-format-update-d-migration.md)。
+- CFU-D3 已于 2026-08-14 关闭：lift 后的空动画 v4 与源 v1/v2/v3 在 Playback FrameSnapshot、
+  FrameDigest v3 与 seek/stop 上对齐。v3↔v4 与 v3-hop↔v4 位级相同；v1/v2 源 hop 继续使用
+  `1e-6` 误差预算，不要求 v1 FrameDigest 位级相同。证据见
+  [D3 报告](stage_reports/260814-chart-format-update-d3-equivalence.md)。
+- CFU-D 已于 2026-08-14 经项目所有者记录“未提供外部资产”并关闭。兼容窗口不缩短：全部
+  v1/v2/v3 Reader 与迁移入口保留，默认 CLI 仍输出 v3。本关闭不编造仓库外资产清单。证据见
+  [D 关闭报告](stage_reports/260814-chart-format-update-d-close.md)。该关闭不是完整 CXC
+  产品支持、公共 package API 或 Stage 4。
 - CFU-E0 已于 2026-08-14 经项目所有者接受并关闭：冻结 `ChartParameterSet`、
   `PlaybackPrepareOptions`、`PreparedSemanticIdentity`、owning typed project-document source、CXC
   file/memory factory、options overload、semantic identity observation 和 SDK API `0.6.0` 实施目标。
@@ -82,7 +89,7 @@ Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使
   `2dc5f6cc1f413132502896705fd46163fec760b2` 的 Linux Quality、Windows MSVC 与
   Windows MinGW 全部成功。证据见
   [E 关闭报告](stage_reports/260814-chart-format-update-e-close.md)。该关闭不是完整
-  CXC 公共产品支持、公共 package API、完整 v4 动画 Playback、整包 CFU-D 或 CFU-G。
+  CXC 公共产品支持、公共 package API、完整 v4 动画 Playback 或 CFU-G。
 - CFU-C 至 CFU-G 的详细实现批次、模块落点、API 门禁、测试矩阵、跨平台验收和 Stage 4 交接方案
   已写入实施计划；当前只允许按批次推进，不得越界实现 Stage 4 动画求值。
 - CXT v1、播放前参数、Template Binding 和运行时脚本无限期延后子决策已于 2026-08-10 接受。
@@ -103,7 +110,7 @@ extension、capability、字节码、模块 ABI 或 Playback 执行入口。离�
 - 正式 `cuexis_judgement`、InputEvent、ReplayData 和确定性回放
 - Studio 独立应用实现
 - 稳定 C ABI 和语言绑定
-- CFU-D3 运行时等价、外部旧 Chart 资产确认、CFU-F hosted 确定性/安全门禁和最终跨平台产品门禁
+- CFU-F hosted 确定性/安全门禁和最终跨平台产品门禁
 - Stage 4 AnimationSystem 运行时实现
 
 ## 状态更新规则

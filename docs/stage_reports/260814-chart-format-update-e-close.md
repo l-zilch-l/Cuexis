@@ -6,6 +6,8 @@
 
 实现提交：`2dc5f6cc1f413132502896705fd46163fec760b2`（`Close CFU-E3/E4 prepared semantic identity locally.`）；该 SHA 是最终 hosted 验证基线。
 
+后续关闭：[CFU-D3 报告](260814-chart-format-update-d3-equivalence.md) 已关闭运行时等价。[CFU-D 关闭报告](260814-chart-format-update-d-close.md) 已按所有者“未提供外部资产”决策关闭整包 CFU-D。本文件仍是 CFU-E 快照。
+
 权威计划：[Stage Chart Format Update 实施计划](../stage_plans/stage_chart_format_update_implementation_plan.md) §5.7
 
 批次证据：[E0](260814-chart-format-update-e0-api.md)、[E1](260814-chart-format-update-e1-source.md)、[E2](260814-chart-format-update-e2-prepare.md)、[E3](260814-chart-format-update-e3-identity.md)、[E4](260814-chart-format-update-e4-gates.md)

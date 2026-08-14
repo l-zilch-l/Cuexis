@@ -2,6 +2,7 @@ add_executable(cuexis_playback_tests
     frame_digest_tests.cpp
     mode_parity_tests.cpp
     playback_identity_tests.cpp
+    playback_migration_equivalence_tests.cpp
     playback_session_tests.cpp
     playback_source_tests.cpp
     playback_v4_prepare_tests.cpp
@@ -24,6 +25,7 @@ target_include_directories(cuexis_playback_tests
 target_link_libraries(cuexis_playback_tests
     PRIVATE
         cuexis::audio
+        cuexis::chart
         cuexis::playback
         Catch2::Catch2WithMain
 )

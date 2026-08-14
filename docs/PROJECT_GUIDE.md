@@ -59,7 +59,9 @@ Playback 保留 `cuexis.chart` v1/v2/v3 的全部生产路径。Stage Chart Form
 Chart v4 和 CXT v1 合同，并完成 CFU-C0–C4。CFU-D1/D2 已关闭显式 JSON lift 迁移与 CLI
 `--target 4`；CFU-E 已关闭公共 API、统一 PlaybackSource、typed/CXC factory、SDK `0.6.0`、
 Chart v4 prepare、capability 接入与 `PreparedSemanticIdentity`。静态和参数化 v4 可使用现有
-Runtime，非空动画仍稳定拒绝。CFU-D3 和最终跨平台产品门禁仍未完成。
+Runtime，非空动画仍稳定拒绝。CFU-D3 已关闭 Playback FrameSnapshot / FrameDigest v3 /
+seek-stop 等价；整包 CFU-D 已由项目所有者记录“未提供外部资产”并关闭，兼容窗口不缩短。
+最终跨平台产品门禁仍未完成。
 
 格式权威入口：[formats/README.md](formats/README.md)。
 

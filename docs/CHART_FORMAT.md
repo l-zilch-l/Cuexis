@@ -5,7 +5,7 @@
 v1/v2/v3 提升为静态空动画 v4。Chart v4 字段见 [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md)，
 CXC 容器见 [CXC_FORMAT.md](CXC_FORMAT.md)，CXT 文件语义见 [CXT_FORMAT.md](CXT_FORMAT.md)。
 
-更新日期：2026-08-13
+更新日期：2026-08-14
 
 ## 1. 范围
 
@@ -548,7 +548,10 @@ Chart 或报告。v3 报告字段与既有 Stage 2 golden 保持一致：源/目
 生成事件数和未绑定 Behavior。v4 报告在这些计数之外增加 source/target canonical identity、
 `discardedFields`、生成的 Clip/Binding/参数计数、字段计数以及稳定 diagnostics/warnings。
 v2 的 `audio` block 原样迁移到 v3 再 lift 到 v4；v1 没有该字段。
-FrameSnapshot / FrameDigest 等价属于 CFU-D3，必须等 Playback 能加载 v4 后再关闭。
+FrameSnapshot / FrameDigest 等价属于 CFU-D3，已由 Playback 层测试关闭；v1 Quaternion 采样继续按
+迁移误差预算比较，不要求与源 v1 的 FrameDigest 位级相同。整包 CFU-D 已由项目所有者记录
+“未提供外部资产”并关闭；兼容窗口不缩短。证据见
+[CFU-D 关闭报告](stage_reports/260814-chart-format-update-d-close.md)。
 
 ## 9. Extensions
 
