@@ -128,10 +128,9 @@ void addError(core::Diagnostics& diagnostics, std::string code, std::string mess
 
 [[nodiscard]] auto makeDiagnosticRecord(const core::Diagnostic& diagnostic)
     -> ChartMigrationDiagnosticRecord {
-    return ChartMigrationDiagnosticRecord{std::string{diagnostic.code()},
-                                          std::string{diagnostic.fieldPath()},
-                                          diagnosticSeverityName(diagnostic.severity()),
-                                          std::string{diagnostic.message()}};
+    return ChartMigrationDiagnosticRecord{
+        std::string{diagnostic.code()}, std::string{diagnostic.fieldPath()},
+        diagnosticSeverityName(diagnostic.severity()), std::string{diagnostic.message()}};
 }
 
 void populateV4ReportRecords(ChartMigrationReport& report, const core::Diagnostics& diagnostics) {
@@ -156,8 +155,8 @@ void populateV4ReportRecords(ChartMigrationReport& report, const core::Diagnosti
     }
     auto* root = parsed->object();
     if (root == nullptr) {
-        return core::unexpected(
-            core::Error{"chart.migration.serialize_failed", "Migrated Chart JSON must be an object"});
+        return core::unexpected(core::Error{"chart.migration.serialize_failed",
+                                            "Migrated Chart JSON must be an object"});
     }
     root->insert_or_assign("version", json::Value{std::uint64_t{4}});
     root->insert_or_assign("parameters", json::Value{Array{}});
@@ -165,10 +164,9 @@ void populateV4ReportRecords(ChartMigrationReport& report, const core::Diagnosti
     root->insert_or_assign("animationClips", json::Value{Array{}});
     auto serialized = json::serialize(*parsed);
     if (!serialized) {
-        return core::unexpected(
-            core::Error{"chart.migration.serialize_failed",
-                        "Lifted Chart v4 JSON could not be serialized"}
-                .withCause(std::move(serialized.error())));
+        return core::unexpected(core::Error{"chart.migration.serialize_failed",
+                                            "Lifted Chart v4 JSON could not be serialized"}
+                                    .withCause(std::move(serialized.error())));
     }
     return serialized;
 }
@@ -437,13 +435,9 @@ auto ChartMigrator::migrateToV3(std::string_view sourceJson, const ChartLimits& 
     }
 
     ChartDocument migrated = *loaded.document;
-    ChartMigrationReport report{.sourceVersion = migrated.version,
-                                .targetVersion = 3,
-                                .convertedBehaviors = 0,
-                                .generatedEvents = 0,
-                                .rewrittenBindings = 0,
-                                .expandedTemplateObjects = 0,
-                                .unboundBehaviorIds = {}};
+    ChartMigrationReport report;
+    report.sourceVersion = migrated.version;
+    report.targetVersion = 3;
     migrated.version = 3;
     migrated.timing.tempoEvents.clear();
     migrated.timing.stops.clear();
@@ -553,7 +547,8 @@ auto ChartMigrator::migrateToV3(std::string_view sourceJson, const ChartLimits& 
     result.artifact.emplace(ChartMigrationArtifact{.document = std::move(migrated),
                                                    .report = std::move(report),
                                                    .chartJson = std::move(*chartJson),
-                                                   .reportJson = std::move(*reportJson)});
+                                                   .reportJson = std::move(*reportJson),
+                                                   .v4Document = std::nullopt});
     result.diagnostics.sortDeterministically();
     return result;
 }
@@ -577,14 +572,14 @@ auto ChartMigrator::migrateToV4(std::string_view sourceJson, const ChartLimits& 
         } else if (const auto* unsignedVersion = versionValue->unsignedInteger();
                    unsignedVersion != nullptr && *unsignedVersion <= 4) {
             sourceVersion = static_cast<std::uint32_t>(*unsignedVersion);
-        } else if (const auto* number = versionValue->number();
-                   number != nullptr && *number >= 0.0 && *number <= 4.0 &&
-                   *number == std::floor(*number)) {
+        } else if (const auto* number = versionValue->number(); number != nullptr &&
+                                                                *number >= 0.0 && *number <= 4.0 &&
+                                                                *number == std::floor(*number)) {
             sourceVersion = static_cast<std::uint32_t>(*number);
         }
     }
-    if (sourceVersion == 4 || (sourceVersion && *sourceVersion != 1 && *sourceVersion != 2 &&
-                               *sourceVersion != 3)) {
+    if (sourceVersion == 4 ||
+        (sourceVersion && *sourceVersion != 1 && *sourceVersion != 2 && *sourceVersion != 3)) {
         addError(result.diagnostics, "chart.migration.source_version_unsupported",
                  "Only canonical Chart v1, v2, and v3 can be migrated to v4", "$/version");
         result.diagnostics.sortDeterministically();
@@ -597,13 +592,9 @@ auto ChartMigrator::migrateToV4(std::string_view sourceJson, const ChartLimits& 
             result.diagnostics.sortDeterministically();
             return result;
         }
-        ChartMigrationReport report{.sourceVersion = 3,
-                                    .targetVersion = 4,
-                                    .convertedBehaviors = 0,
-                                    .generatedEvents = 0,
-                                    .rewrittenBindings = 0,
-                                    .expandedTemplateObjects = 0,
-                                    .unboundBehaviorIds = {}};
+        ChartMigrationReport report;
+        report.sourceVersion = 3;
+        report.targetVersion = 4;
         return finishV4Migration(sourceJson, sourceJson, std::move(report), limits,
                                  std::move(result.diagnostics));
     }

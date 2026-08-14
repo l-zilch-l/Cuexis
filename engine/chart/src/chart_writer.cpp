@@ -687,8 +687,8 @@ auto ChartWriter::write(const ChartDocument& document) -> core::Result<std::stri
 
 auto ChartWriter::writeCanonicalJson(std::string_view jsonText, const ChartLimits& limits)
     -> core::Result<std::string> {
-    auto parsed =
-        json::parse(jsonText, {limits.maxInputBytes, limits.maxNestingDepth, limits.maxStringBytes});
+    auto parsed = json::parse(
+        jsonText, {limits.maxInputBytes, limits.maxNestingDepth, limits.maxStringBytes});
     if (!parsed) {
         return core::unexpected(
             core::Error{"chart.writer.source_invalid", "Chart source JSON is invalid"}.withCause(

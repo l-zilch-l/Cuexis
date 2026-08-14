@@ -163,7 +163,8 @@ TEST_CASE("ChartMigrator rejects an unbound single-key Track without dropping da
 
 TEST_CASE("ChartMigrator lifts a static v3 Chart to canonical empty-animation v4",
           "[chart][migration][cfu-d][v4]") {
-    const auto source = readFile(fixture("chart_format_update/valid/chart_v3_static_migration.json"));
+    const auto source =
+        readFile(fixture("chart_format_update/valid/chart_v3_static_migration.json"));
     const auto first = cuexis::chart::ChartMigrator::migrateToV4(source);
     const auto second = cuexis::chart::ChartMigrator::migrateToV4(source);
     REQUIRE(first.hasValue());
