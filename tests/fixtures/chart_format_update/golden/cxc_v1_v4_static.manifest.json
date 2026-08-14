@@ -1,0 +1,24 @@
+{
+  "entries": [
+    {
+      "byteCount": 904,
+      "path": "assets/charts/main.cuexis.chart.json",
+      "sha256": "aec61d9ec074b424e5801020bb83905d6a1dcc1e9f4ada8bfed2a5e9531066a1"
+    },
+    {
+      "byteCount": 89,
+      "path": "assets/cuexis.asset-index.json",
+      "sha256": "741b0acda3638a1ae5dc707bdc081120220152ad04a257091df45c1a744d6d7f"
+    },
+    {
+      "byteCount": 309,
+      "path": "cuexis.project.json",
+      "sha256": "bf2eed0fa680c8b7221bca2b78b193be2ce3919625c1b45904fea6eb9acc99f5"
+    }
+  ],
+  "extensions": {},
+  "format": "cuexis.cxc",
+  "project": "cuexis.project.json",
+  "requiredExtensions": [],
+  "version": 1
+}

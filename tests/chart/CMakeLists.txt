@@ -10,6 +10,7 @@ add_executable(cuexis_chart_tests
     chart_writer_tests.cpp
     example_chart_tests.cpp
     limits_tests.cpp
+    prepared_semantic_identity_tests.cpp
     rational_beat_tests.cpp
     timing_map_tests.cpp
     behavior_track_tests.cpp

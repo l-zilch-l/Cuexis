@@ -96,8 +96,9 @@ manifest 自身不出现在 `entries`。Archive 必须恰好包含 `cuexis.cxc.j
 
 `.cxc` 精确 bytes 的 SHA-256 是 `CxcPackageIdentity`，只用于完整性、传输缓存和 package equality。
 Playback 的 prepare/reload 使用独立 `PreparedSemanticIdentity`，由规范 Chart、CXT、资源 manifest
-和 parameter identity 以域分隔方式组合。Filesystem、memory、host 和 CXC source 的相同规范内容
-必须得到相同 semantic identity；archive offset、CRC、时间戳、Provider revision 或 source path
+和 parameter identity 以域分隔方式组合。确切 combiner 与 MainMusic/presentation 资源编码见
+[CHART_V4_FORMAT.md](../CHART_V4_FORMAT.md)。Filesystem、memory、host 和 CXC source 的相同规范
+内容必须得到相同 semantic identity；archive offset、CRC、时间戳、Provider revision 或 source path
 不能替代它。
 
 ### CXC 路径与闭包

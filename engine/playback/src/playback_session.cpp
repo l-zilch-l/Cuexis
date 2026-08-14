@@ -11,6 +11,8 @@
 #include <cuexis/chart/chart_runtime.hpp>
 #include <cuexis/chart/chart_v4_loader.hpp>
 #include <cuexis/chart/chart_v4_resolver.hpp>
+#include <cuexis/chart/chart_writer.hpp>
+#include <cuexis/chart/prepared_semantic_identity.hpp>
 #include <cuexis/chart/rational_beat.hpp>
 #include <cuexis/content/content_provider.hpp>
 #include <cuexis/core/error.hpp>
@@ -35,6 +37,7 @@
 #include <memory>
 #include <new>
 #include <optional>
+#include <ranges>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -394,6 +397,85 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
     return documents;
 }
 
+[[nodiscard]] auto toPublicIdentity(const chart::CanonicalContentIdentity& identity) noexcept
+    -> PreparedSemanticIdentity {
+    return PreparedSemanticIdentity{identity.sha256};
+}
+
+[[nodiscard]] auto
+assembleResourceIdentities(std::span<const chart::ChartResourceRequirement> requirements,
+                           const std::optional<assets::AudioSourceLease>& audioSourceLease,
+                           const std::optional<detail::PreparedPresentation>& presentation,
+                           core::Diagnostics& diagnostics)
+    -> std::optional<std::vector<chart::PreparedResourceIdentityComponent>> {
+    std::vector<chart::PreparedResourceIdentityComponent> identities;
+    identities.reserve(requirements.size());
+    for (const auto& requirement : requirements) {
+        std::optional<chart::CanonicalContentIdentity> identity;
+        const bool wantsAudio =
+            std::ranges::any_of(requirement.uses, [](chart::ChartResourceUse use) {
+                return use == chart::ChartResourceUse::MainMusic;
+            });
+        const bool wantsPresentation =
+            std::ranges::any_of(requirement.uses, [](chart::ChartResourceUse use) {
+                return use != chart::ChartResourceUse::MainMusic;
+            });
+        if (wantsAudio) {
+            if (!audioSourceLease || !audioSourceLease->valid() ||
+                audioSourceLease->resource().id.value != requirement.assetId.value) {
+                diagnostics.add(core::Diagnostic{
+                    core::DiagnosticSeverity::Error, "playback.identity.resource_missing",
+                    "Prepared semantic identity is missing a fetched main music resource",
+                    "$/resources/" + requirement.assetId.value});
+                continue;
+            }
+            identity = chart::audioContentIdentity(audioSourceLease->resource().bytes());
+        }
+        if (wantsPresentation) {
+            if (!presentation) {
+                diagnostics.add(core::Diagnostic{
+                    core::DiagnosticSeverity::Error, "playback.identity.resource_missing",
+                    "Prepared semantic identity is missing a fetched presentation resource",
+                    "$/resources/" + requirement.assetId.value});
+                continue;
+            }
+            const auto found = std::ranges::find_if(
+                presentation->manifest.entries, [&](const PresentationManifestEntry& entry) {
+                    return entry.reference.assetId == requirement.assetId.value;
+                });
+            if (found == presentation->manifest.entries.end()) {
+                diagnostics.add(core::Diagnostic{
+                    core::DiagnosticSeverity::Error, "playback.identity.resource_missing",
+                    "Prepared semantic identity is missing a fetched presentation resource",
+                    "$/resources/" + requirement.assetId.value});
+                continue;
+            }
+            chart::CanonicalContentIdentity presentationIdentity{found->reference.identity.sha256};
+            if (identity && *identity != presentationIdentity) {
+                diagnostics.add(core::Diagnostic{
+                    core::DiagnosticSeverity::Error, "playback.identity.resource_collision",
+                    "The same AssetId produced different prepared resource identities",
+                    "$/resources/" + requirement.assetId.value});
+                continue;
+            }
+            identity = presentationIdentity;
+        }
+        if (!identity) {
+            diagnostics.add(core::Diagnostic{
+                core::DiagnosticSeverity::Error, "playback.identity.resource_missing",
+                "Prepared semantic identity could not resolve a required resource",
+                "$/resources/" + requirement.assetId.value});
+            continue;
+        }
+        identities.push_back({requirement.assetId, *identity});
+    }
+    if (diagnostics.hasErrors()) {
+        diagnostics.sortDeterministically();
+        return std::nullopt;
+    }
+    return identities;
+}
+
 [[nodiscard]] auto chartInfoFor(const chart::ChartRuntime& chartRuntime, std::size_t resourceCount)
     -> ChartInfo {
     return ChartInfo{
@@ -548,6 +630,8 @@ struct PlaybackSession::State final {
     std::optional<ChartInfo> activeChartInfo;
     std::optional<PlaybackContentInfo> activeContentInfo;
     std::optional<PlaybackMode> activeMode;
+    std::optional<PreparedSemanticIdentity> semanticIdentity;
+    ChartParameterSet parameters;
     std::uint64_t sessionToken{allocatePlaybackSessionToken()};
     std::uint64_t generation{1};
     SessionState sessionState{SessionState::Empty};
@@ -571,6 +655,8 @@ struct PreparedPlayback::State final {
     SnapshotLayout snapshotLayout;
     ChartInfo chartInfo;
     PlaybackContentInfo contentInfo;
+    ChartParameterSet parameters;
+    PreparedSemanticIdentity semanticIdentity;
     std::optional<assets::AudioSourceLease> audioSourceLease;
     core::Diagnostics diagnostics;
     core::Diagnostics lastOperationDiagnostics;
@@ -619,6 +705,13 @@ bool PreparedPlayback::valid() const noexcept {
 
 const PlaybackContentInfo* PreparedPlayback::contentInfo() const noexcept {
     return valid() ? &state_->contentInfo : nullptr;
+}
+
+std::optional<PreparedSemanticIdentity> PreparedPlayback::semanticIdentity() const noexcept {
+    if (!valid()) {
+        return std::nullopt;
+    }
+    return state_->semanticIdentity;
 }
 
 std::optional<MainMusicSourceView> PreparedPlayback::mainMusicSource() const noexcept {
@@ -1025,6 +1118,11 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
         const chart::ChartLimits limits;
         std::optional<chart::ChartDocument> document;
         std::optional<chart::AnimationProgramInput> animationProgram;
+        std::optional<chart::ChartV4ResolvedArtifact> v4Artifact;
+        std::optional<chart::CanonicalContentIdentity> chartIdentity;
+        std::optional<chart::CanonicalContentIdentity> parameterIdentity;
+        std::vector<chart::CxtIdentityComponent> cxtIdentities;
+        std::vector<chart::ChartResourceRequirement> resourceRequirements;
         std::vector<std::string> additionalCapabilities;
         if (sourceState.cxcPackageIdentity) {
             additionalCapabilities.emplace_back(capabilitySourceCxcV1);
@@ -1066,8 +1164,13 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
             additionalCapabilities.insert(additionalCapabilities.end(),
                                           artifact.capabilityRequirements.begin(),
                                           artifact.capabilityRequirements.end());
-            document.emplace(std::move(artifact.document.chart));
-            animationProgram.emplace(std::move(artifact.animationProgram));
+            document.emplace(artifact.document.chart);
+            animationProgram.emplace(artifact.animationProgram);
+            chartIdentity = artifact.chartIdentity;
+            parameterIdentity = artifact.parameterIdentity;
+            cxtIdentities = artifact.cxtIdentities;
+            resourceRequirements = artifact.resourceRequirements;
+            v4Artifact = std::move(artifact);
         } else {
             auto loaded = chart::ChartLoader::load(jsonText, limits);
             const bool loadedValid = loaded.hasValue();
@@ -1094,6 +1197,12 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
                                    "Chart parameter resolution produced errors", diagnostics));
             }
             document.emplace(std::move(*loaded.document));
+            auto canonical = chart::ChartWriter::write(*document);
+            if (!canonical) {
+                return core::unexpected(std::move(canonical.error()));
+            }
+            chartIdentity = chart::canonicalBytesIdentity(*canonical);
+            parameterIdentity = chart::emptyParameterIdentity();
         }
 
         if (!preflightCapabilities(*document, additionalCapabilities, state_->capabilities,
@@ -1197,6 +1306,41 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
             return core::unexpected(std::move(snapshotLayout.error()));
         }
 
+        if (!v4Artifact) {
+            if (audioSourceLease && audioSourceLease->valid()) {
+                resourceRequirements.push_back(chart::ChartResourceRequirement{
+                    .assetId = chart::AssetId{std::string{audioSourceLease->resource().id.value}},
+                    .uses = {chart::ChartResourceUse::MainMusic}});
+            }
+            if (presentation->has_value()) {
+                for (const auto& entry : presentation->value().manifest.entries) {
+                    const auto existing = std::ranges::find_if(
+                        resourceRequirements, [&](const chart::ChartResourceRequirement& item) {
+                            return item.assetId.value == entry.reference.assetId;
+                        });
+                    auto use = entry.reference.type == PresentationResourceType::Mesh
+                                   ? chart::ChartResourceUse::RenderableMesh
+                                   : chart::ChartResourceUse::RenderableMaterial;
+                    if (existing == resourceRequirements.end()) {
+                        resourceRequirements.push_back(chart::ChartResourceRequirement{
+                            .assetId = chart::AssetId{entry.reference.assetId}, .uses = {use}});
+                    } else if (std::ranges::find(existing->uses, use) == existing->uses.end()) {
+                        existing->uses.push_back(use);
+                    }
+                }
+            }
+        }
+        auto resourceIdentities = assembleResourceIdentities(resourceRequirements, audioSourceLease,
+                                                             *presentation, diagnostics);
+        if (!resourceIdentities) {
+            state_->lastOperationDiagnostics = diagnostics;
+            return core::unexpected(
+                operationError("playback.identity.assemble_failed",
+                               "Prepared semantic identity could not be assembled", diagnostics));
+        }
+        const auto assembledIdentity = chart::assemblePreparedSemanticIdentity(
+            *chartIdentity, cxtIdentities, *resourceIdentities, *parameterIdentity);
+
         diagnostics.sortDeterministically();
         auto prepared = std::make_unique<PreparedPlayback::State>();
         prepared->owner = this;
@@ -1215,6 +1359,8 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
             mode,
             chartRuntime.mainMusic ? std::optional<std::string>{chartRuntime.mainMusic->value}
                                    : std::nullopt};
+        prepared->parameters = options.parameters;
+        prepared->semanticIdentity = toPublicIdentity(assembledIdentity);
         prepared->audioSourceLease = std::move(audioSourceLease);
         prepared->targetFrame = committedFrame;
         prepared->committedState = replacement ? state_->sessionState : SessionState::Ready;
@@ -1274,6 +1420,8 @@ auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> 
     state_->activeChartInfo = candidate.chartInfo;
     state_->activeContentInfo = std::move(candidate.contentInfo);
     state_->activeMode = state_->activeContentInfo->mode;
+    state_->semanticIdentity = candidate.semanticIdentity;
+    state_->parameters = std::move(candidate.parameters);
     state_->lastFrame = candidate.targetFrame;
     state_->diagnostics = std::move(candidate.diagnostics);
     state_->lastOperationDiagnostics = std::move(candidate.lastOperationDiagnostics);
@@ -1574,6 +1722,8 @@ auto PlaybackSession::unload() -> core::Result<void> {
     state_->activeChartInfo.reset();
     state_->activeContentInfo.reset();
     state_->activeMode.reset();
+    state_->semanticIdentity.reset();
+    state_->parameters = {};
     state_->presentation.reset();
     state_->sessionState = SessionState::Empty;
     ++state_->generation;
@@ -1665,6 +1815,21 @@ auto PlaybackSession::contentInfo() const -> core::Result<PlaybackContentInfo> {
             core::Error{"playback.session.empty", "PlaybackSession has no committed content"});
     }
     return *state_->activeContentInfo;
+}
+
+auto PlaybackSession::semanticIdentity() const -> core::Result<PreparedSemanticIdentity> {
+    if (!state_->ownerThread.isCurrent()) {
+        return core::unexpected(ownerError("semantic_identity"));
+    }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("semantic_identity"));
+    }
+    SessionOperation operation{state_->operationActive};
+    if (!state_->semanticIdentity) {
+        return core::unexpected(
+            core::Error{"playback.session.empty", "PlaybackSession has no committed content"});
+    }
+    return *state_->semanticIdentity;
 }
 
 auto PlaybackSession::diagnostics() const -> core::Result<core::Diagnostics> {

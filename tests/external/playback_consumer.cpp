@@ -141,8 +141,16 @@ int main() {
         }
     }
 
+    const auto candidateIdentity = prepared->semanticIdentity();
+    if (!candidateIdentity) {
+        return fail("Playback-only consumer candidate identity is missing");
+    }
     if (!session.commit(std::move(*prepared))) {
         return fail("Playback-only consumer commit failed");
+    }
+    const auto activeIdentity = session.semanticIdentity();
+    if (!activeIdentity || *activeIdentity != *candidateIdentity) {
+        return fail("Playback-only consumer active identity is missing");
     }
     const auto activeManifest = session.presentationManifest();
     if (!activeManifest || activeManifest->entries.size() != 4U) {
@@ -168,6 +176,19 @@ int main() {
         digest->algorithmVersion != repeatDigest->algorithmVersion ||
         digest->value != expectedDigest || digest->value != repeatDigest->value) {
         return fail("Playback-only consumer digest parity failed");
+    }
+
+    auto failedReload = cuexis::playback::PlaybackSource::fromCxcMemory(readBytes(cxcPath));
+    if (!failedReload) {
+        return fail("Playback-only consumer could not create the failed-reload CXC source");
+    }
+    if (session.reload(std::move(*failedReload), {.chartTimeMs = 625.0},
+                       cuexis::playback::ReloadPolicy::KeepChartTime)) {
+        return fail("Playback-only consumer accepted an animated CXC reload");
+    }
+    const auto identityAfterFailure = session.semanticIdentity();
+    if (!identityAfterFailure || *identityAfterFailure != *activeIdentity) {
+        return fail("Playback-only consumer failed reload changed the active identity");
     }
 
     if (!session.unload() || !validResource(**retained)) {

@@ -44,6 +44,10 @@ struct BinaryFixture final {
     return support::writePackage(support::makeV4CxtRequest());
 }
 
+[[nodiscard]] auto canonicalStaticPackage() -> std::vector<std::byte> {
+    return support::writePackage(support::makeV4StaticRequest());
+}
+
 [[nodiscard]] auto noncanonicalMetadata(std::span<const std::byte> canonical)
     -> std::vector<std::byte> {
     auto bytes = std::vector<std::byte>{canonical.begin(), canonical.end()};
@@ -242,12 +246,19 @@ struct BinaryFixture final {
 }
 
 void updateFixtures(std::span<const std::byte> canonical,
+                    std::span<const std::byte> staticCanonical,
                     const std::vector<BinaryFixture>& fixtures) {
     support::writeBytes(support::goldenFixtureRoot() / "cxc_v1_v4_cxt.cxc", canonical);
     const auto layout = support::parseZip(canonical);
     const auto& manifest = support::findEntry(layout, "cuexis.cxc.json");
     support::writeBytes(support::goldenFixtureRoot() / "cxc_v1_v4_cxt.manifest.json",
                         canonical.subspan(manifest.dataOffset, manifest.byteCount));
+    support::writeBytes(support::goldenFixtureRoot() / "cxc_v1_v4_static.cxc", staticCanonical);
+    const auto staticLayout = support::parseZip(staticCanonical);
+    const auto& staticManifest = support::findEntry(staticLayout, "cuexis.cxc.json");
+    support::writeBytes(
+        support::goldenFixtureRoot() / "cxc_v1_v4_static.manifest.json",
+        staticCanonical.subspan(staticManifest.dataOffset, staticManifest.byteCount));
     const auto noncanonical = noncanonicalMetadata(canonical);
     support::writeBytes(support::binaryFixtureRoot() / "valid_noncanonical_metadata.cxc",
                         noncanonical);
@@ -261,9 +272,10 @@ void updateFixtures(std::span<const std::byte> canonical,
 TEST_CASE("Committed CXC binary fixtures match production Writer bytes and stable rejection gates",
           "[cxc][fixtures][zip32][cfu-c3]") {
     const auto canonical = canonicalPackage();
+    const auto staticCanonical = canonicalStaticPackage();
     const auto fixtures = generatedFixtures(canonical);
     if (shouldUpdateFixtures()) {
-        updateFixtures(canonical, fixtures);
+        updateFixtures(canonical, staticCanonical, fixtures);
     }
 
     const auto golden = support::readBytes(support::goldenFixtureRoot() / "cxc_v1_v4_cxt.cxc");
@@ -286,6 +298,19 @@ TEST_CASE("Committed CXC binary fixtures match production Writer bytes and stabl
     INFO(support::diagnosticsText(loadedNoncanonical.diagnostics));
     REQUIRE(loadedNoncanonical.hasValue());
     CHECK(loadedNoncanonical.package->identity() != loadedGolden.package->identity());
+
+    const auto staticGolden =
+        support::readBytes(support::goldenFixtureRoot() / "cxc_v1_v4_static.cxc");
+    REQUIRE(staticGolden == staticCanonical);
+    auto loadedStatic = CxcPackageLoader::loadMemory(staticGolden);
+    INFO(support::diagnosticsText(loadedStatic.diagnostics));
+    REQUIRE(loadedStatic.hasValue());
+    const auto staticLayout = support::parseZip(staticGolden);
+    const auto& staticManifest = support::findEntry(staticLayout, "cuexis.cxc.json");
+    const auto staticManifestText = support::textFromBytes(std::span<const std::byte>{
+        staticGolden.data() + staticManifest.dataOffset, staticManifest.byteCount});
+    CHECK(staticManifestText ==
+          support::readText(support::goldenFixtureRoot() / "cxc_v1_v4_static.manifest.json"));
 
     for (const auto& fixture : fixtures) {
         const auto committed = support::readBytes(support::binaryFixtureRoot() / fixture.name);

@@ -36,4 +36,6 @@
 | [260814 Chart Format Update CFU-E0 API](260814-chart-format-update-e0-api.md) | accepted Playback public API and SDK `0.6.0` implementation target; E0 closed, E1 next; no installed-header or version implementation yet |
 | [260814 Chart Format Update CFU-E1 source](260814-chart-format-update-e1-source.md) | closed unified PlaybackSource state, typed/CXC factories, SDK `0.6.0`, static/shared consumers and local Debug/Release gates; E2 next |
 | [260814 Chart Format Update CFU-E2 prepare](260814-chart-format-update-e2-prepare.md) | closed Chart v4 prepare, public parameter conversion, format capability preflight, static Runtime projection and pre-Stage-4 animation rejection; E3 next |
+| [260814 Chart Format Update CFU-E3 identity](260814-chart-format-update-e3-identity.md) | closed PreparedSemanticIdentity combiner, cross-source identity parity and transactional reload observation; E4 next |
+| [260814 Chart Format Update CFU-E4 gates](260814-chart-format-update-e4-gates.md) | closed local Debug/Release/shared E-batch gates, consumer identity observation and shared export/import; D3 next |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |

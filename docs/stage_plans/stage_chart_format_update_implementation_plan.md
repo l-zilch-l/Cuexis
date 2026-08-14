@@ -1,6 +1,6 @@
 # Stage Chart Format Update：谱面格式更新实施计划
 
-状态：CFU-A/CFU-B、CFU-C0/C1/C2/C3/C4 已完成；CFU-D1/D2 已关闭；CFU-E0/E1/E2 已关闭，E3 为下一批次；CFU-D3 等待 CFU-E；ADR 0038 已于 2026-08-11 整体接受
+状态：CFU-A/CFU-B、CFU-C0/C1/C2/C3/C4 已完成；CFU-D1/D2 已关闭；CFU-E0–E4 已本地关闭；CFU-D3 为下一批次；ADR 0038 已于 2026-08-11 整体接受
 
 更新日期：2026-08-14
 
@@ -253,7 +253,7 @@ CFU-C1-C2 不得把动画求值放入 Chart compiler；含动画数据只形成 
 
 实施快照（2026-08-13）：D1/D2 代码、库测试、CLI `--target` 和 `VerifyChartTools` 扩展已写入工作树；
 默认仍输出 v3。同日稍后取得本 worktree Debug 证据并关闭 D1/D2；下一批次为 CFU-E。
-D3 仍等待 Playback 能加载 v4。
+D3 在 CFU-E 本地关闭后开始。
 
 ### CFU-E：Runtime/Playback 接入
 
@@ -585,7 +585,7 @@ CXT lookup、格式 capability preflight、静态/参数化 v4 到既有 Runtime
 失败 reload 回归已完成。非空动画继续在 Runtime/World 发布前稳定拒绝；candidate 只保存 typed
 `AnimationProgramInput`，没有动画采样或混合。证据见
 [CFU-E2 报告](../stage_reports/260814-chart-format-update-e2-prepare.md)。E2 没有实现 prepared semantic
-identity；下一批次为 CFU-E3。
+identity；该边界由 CFU-E3 负责。
 
 #### CFU-E3：identity、reload 与失败原子性
 
@@ -602,6 +602,11 @@ identity；下一批次为 CFU-E3。
 5. active Session 的 `FrameSnapshot` 和 FrameDigest v3 结构不变；属性 provenance 只进入独立诊断或
    Debug snapshot。
 
+实施状态：CFU-E3 已于 2026-08-14 关闭。`cuexis_chart` combiner、Playback candidate/active identity
+observation、跨 source 同一规范内容/参数的 identity 等价，以及失败 reload 保持旧 identity 已完成。
+证据见 [CFU-E3 报告](../stage_reports/260814-chart-format-update-e3-identity.md)。E3 没有关闭全量
+Debug/Release/shared consumer 门禁；该边界由 CFU-E4 负责。
+
 #### CFU-E4：E 批次门禁
 
 - 旧 `loadChart`、v1/v2/v3、filesystem/typed project、static/shared consumer 全部回归。
@@ -610,6 +615,11 @@ identity；下一批次为 CFU-E3。
 - 参数化 static v4 的默认/override/reload identity 和 FrameDigest 结果稳定。
 - 安装公共头无内部 Chart/CXC/JSON/archive 类型；shared export surface 只增加 E0 已批准的 API symbol，
   其 SDK compatibility version 按 E0 最终结论处理。
+
+实施状态：CFU-E4 已于 2026-08-14 关闭本地门禁。Debug/Release `362/362`、shared-debug
+package/export/import `10/10`、format/docs/version/whitespace 与 Playback-only consumer identity
+观察均通过。证据见 [CFU-E4 报告](../stage_reports/260814-chart-format-update-e4-gates.md)。E4
+没有 hosted Linux/Windows/MinGW、sanitizer 或 CFU-D3 运行时等价；下一批次为 CFU-D3。
 
 ### 5.8 CFU-F：消费者、确定性、安全与性能
 

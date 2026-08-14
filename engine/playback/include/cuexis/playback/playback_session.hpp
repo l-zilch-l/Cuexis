@@ -15,6 +15,7 @@
 #include <cuexis/playback/playback_source.hpp>
 #include <cuexis/playback/presentation.hpp>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -86,6 +87,13 @@ struct ChartParameterSet final {
 
 struct PlaybackPrepareOptions final {
     ChartParameterSet parameters;
+};
+
+struct PreparedSemanticIdentity final {
+    std::array<std::uint8_t, 32> sha256{};
+
+    friend bool operator==(const PreparedSemanticIdentity&,
+                           const PreparedSemanticIdentity&) = default;
 };
 
 struct PlaybackCapabilitySet final {
@@ -172,6 +180,7 @@ class CUEXIS_PLAYBACK_API PreparedPlayback final {
     [[nodiscard]] bool valid() const noexcept;
     [[nodiscard]] const PlaybackContentInfo* contentInfo() const noexcept;
     [[nodiscard]] std::optional<MainMusicSourceView> mainMusicSource() const noexcept;
+    [[nodiscard]] auto semanticIdentity() const noexcept -> std::optional<PreparedSemanticIdentity>;
     [[nodiscard]] auto presentationCandidateToken() const
         -> core::Result<PresentationCandidateToken>;
     [[nodiscard]] auto presentationManifest() const noexcept -> const PresentationResourceManifest*;
@@ -256,6 +265,7 @@ class CUEXIS_PLAYBACK_API PlaybackSession final {
 
     [[nodiscard]] auto chartInfo() const -> core::Result<ChartInfo>;
     [[nodiscard]] auto contentInfo() const -> core::Result<PlaybackContentInfo>;
+    [[nodiscard]] auto semanticIdentity() const -> core::Result<PreparedSemanticIdentity>;
     [[nodiscard]] auto diagnostics() const -> core::Result<core::Diagnostics>;
     [[nodiscard]] auto lastOperationDiagnostics() const -> core::Result<core::Diagnostics>;
 

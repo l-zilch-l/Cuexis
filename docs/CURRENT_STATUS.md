@@ -27,7 +27,7 @@ PlaybackSession、FrameSnapshot、ContentProvider 和后续 Judgement/Replay 合
 | Stage 1E | 已完成 | [完成报告](stage_reports/stage_1e_completion_report.md) |
 | Stage 2 | 已完成 | [完成报告](stage_reports/stage_2_completion_report.md) |
 | Stage 3 | 已完成 | [完成报告](stage_reports/stage_3_completion_report.md) |
-| Stage Chart Format Update | 当前活动阶段；CFU-C0–C4 已完成；CFU-D1/D2 已关闭；CFU-E0/E1/E2 已关闭，E3 为下一批次；CFU-D3 等待 CFU-E；整包 CFU-D 未关 | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md)、[D1/D2 报告](stage_reports/260813-chart-format-update-d-migration.md)、[E0 报告](stage_reports/260814-chart-format-update-e0-api.md)、[E1 报告](stage_reports/260814-chart-format-update-e1-source.md) 与 [E2 报告](stage_reports/260814-chart-format-update-e2-prepare.md) |
+| Stage Chart Format Update | 当前活动阶段；CFU-C0–C4 已完成；CFU-D1/D2 已关闭；CFU-E0–E4 已本地关闭；CFU-D3 为下一批次；整包 CFU-D 未关 | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md)、[D1/D2 报告](stage_reports/260813-chart-format-update-d-migration.md)、[E0 报告](stage_reports/260814-chart-format-update-e0-api.md)、[E1 报告](stage_reports/260814-chart-format-update-e1-source.md)、[E2 报告](stage_reports/260814-chart-format-update-e2-prepare.md)、[E3 报告](stage_reports/260814-chart-format-update-e3-identity.md) 与 [E4 报告](stage_reports/260814-chart-format-update-e4-gates.md) |
 | Stage 4 | 未开始，等待格式阶段关闭 | [实施计划](stage_plans/stage_4_implementation_plan.md) |
 
 Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使用 Stage 3.5 作为别名。
@@ -55,7 +55,7 @@ Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使
   `migrateToV3` 与默认 CLI v3 输出；新增 `migrateToV4` / `--target 4`；v1/v2 → v4 复用 v3 路径；
   v4 报告增加 canonical identity 与字段计数。本 worktree Debug 证据见
   [D1/D2 报告](stage_reports/260813-chart-format-update-d-migration.md)。整包 CFU-D 未关；
-  CFU-D3 继续等待 CFU-E 完成，仓库外旧 Chart 资产确认仍未开始。
+  CFU-D3 现在可以开始，仓库外旧 Chart 资产确认仍未开始。
 - CFU-E0 已于 2026-08-14 经项目所有者接受并关闭：冻结 `ChartParameterSet`、
   `PlaybackPrepareOptions`、`PreparedSemanticIdentity`、owning typed project-document source、CXC
   file/memory factory、options overload、semantic identity observation 和 SDK API `0.6.0` 实施目标。
@@ -69,8 +69,16 @@ Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使
   转换为 Chart typed input；Playback 按 parse/semantic/import/parameter/budget、capability、compile 的
   顺序接入 Chart v4。静态和参数化 v4 可进入现有 Runtime；CXC/CXT/v4 格式能力已声明，任意非空
   Clip/CXT/Binding/Layer/Instance 在 Stage 4 前仍以 `playback.capability.unsupported` 失败。证据见
-  [E2 报告](stage_reports/260814-chart-format-update-e2-prepare.md)。E3 identity 与 E4 门禁尚未实现；
-  这不是完整 v4 动画 Playback、公共 CXC package API 或完整 CFU-E。
+  [E2 报告](stage_reports/260814-chart-format-update-e2-prepare.md)。
+- CFU-E3 已于 2026-08-14 关闭：成功 prepare 在资源获取与 typed 校验之后组装
+  `PreparedSemanticIdentity`；同一规范内容加同一冻结参数跨 chart-text / typed / memory /
+  filesystem / CXC 得到同一值；失败 reload 不改 active identity。证据见
+  [E3 报告](stage_reports/260814-chart-format-update-e3-identity.md)。
+- CFU-E4 已于 2026-08-14 关闭本地门禁：Debug/Release `362/362`、shared-debug
+  package/export/import `10/10`、format/docs/version/whitespace 与 Playback-only
+  consumer identity 观察均通过。证据见
+  [E4 报告](stage_reports/260814-chart-format-update-e4-gates.md)。这不是 hosted
+  跨平台关闭、完整 v4 动画 Playback、公共 CXC package API 或 CFU-G 产品关闭。
 - CFU-C 至 CFU-G 的详细实现批次、模块落点、API 门禁、测试矩阵、跨平台验收和 Stage 4 交接方案
   已写入实施计划；当前只允许按批次推进，不得越界实现 Stage 4 动画求值。
 - CXT v1、播放前参数、Template Binding 和运行时脚本无限期延后子决策已于 2026-08-10 接受。
@@ -91,7 +99,7 @@ extension、capability、字节码、模块 ABI 或 Playback 执行入口。离�
 - 正式 `cuexis_judgement`、InputEvent、ReplayData 和确定性回放
 - Studio 独立应用实现
 - 稳定 C ABI 和语言绑定
-- CFU-E3–E4 identity/Playback 门禁、CFU-D3 运行时等价、外部旧 Chart 资产确认和最终跨平台产品门禁
+- CFU-D3 运行时等价、外部旧 Chart 资产确认、CFU-F hosted 确定性/安全门禁和最终跨平台产品门禁
 - Stage 4 AnimationSystem 运行时实现
 
 ## 状态更新规则

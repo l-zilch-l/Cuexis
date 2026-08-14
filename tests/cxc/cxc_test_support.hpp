@@ -45,6 +45,7 @@ void writeBytes(const std::filesystem::path& path, std::span<const std::byte> by
 [[nodiscard]] auto makeV2Request() -> CxcWriteRequest;
 [[nodiscard]] auto makeV3Request() -> CxcWriteRequest;
 [[nodiscard]] auto makeV4CxtRequest() -> CxcWriteRequest;
+[[nodiscard]] auto makeV4StaticRequest() -> CxcWriteRequest;
 [[nodiscard]] auto staticV4Chart() -> std::string;
 
 [[nodiscard]] auto writePackage(CxcWriteRequest request, const CxcPackageLimits& limits = {})

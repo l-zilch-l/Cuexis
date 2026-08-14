@@ -227,6 +227,20 @@ auto makeV4CxtRequest() -> CxcWriteRequest {
     return request;
 }
 
+auto makeV4StaticRequest() -> CxcWriteRequest {
+    const auto sourceRootPath =
+        sourceRoot() / "tests" / "fixtures" / "chart_format_update" / "static_project";
+    CxcWriteRequest request;
+    request.entries = {
+        textEntry("cuexis.project.json", readText(sourceRootPath / "cuexis.project.json")),
+        textEntry("assets/cuexis.asset-index.json",
+                  readText(sourceRootPath / "assets" / "cuexis.asset-index.json")),
+        textEntry("assets/charts/main.cuexis.chart.json",
+                  readText(sourceRootPath / "assets" / "charts" / "main.cuexis.chart.json")),
+    };
+    return request;
+}
+
 auto staticV4Chart() -> std::string {
     return readText(sourceRoot() / "tests" / "fixtures" / "chart_format_update" / "valid" /
                     "chart_v4_static_migration.json");

@@ -24,7 +24,7 @@ Compiled Runtime
 | ProjectConfig v1 | [ADR 0025](../adr/0025-project-config-v1-and-path-security.md) | implemented |
 | Asset Index v1/v2 | [ADR 0026](../adr/0026-asset-index-and-source-resolution.md) 与 ADR 0031 | implemented |
 | Chart v1/v2/v3 | [CHART_FORMAT.md](../CHART_FORMAT.md) | implemented |
-| Chart v4 | [CHART_V4_FORMAT.md](../CHART_V4_FORMAT.md) | accepted contract; C1–C4 implemented; D1/D2 lift landed, not Playback-ready |
+| Chart v4 | [CHART_V4_FORMAT.md](../CHART_V4_FORMAT.md) | accepted contract; C1–C4 implemented; D1/D2 lift landed; E2/E3 static/parameterized prepare and identity locally closed |
 | CXC v1 | [CXC_FORMAT.md](../CXC_FORMAT.md) | accepted contract, internal C3/C4 implementation locally verified; hosted/public closure pending |
 | CXT v1 | [CXT_FORMAT.md](../CXT_FORMAT.md) | accepted contract, implementation in progress |
 | Animation Mixing | [ANIMATION_MIXING.md](../ANIMATION_MIXING.md) | accepted contract; runtime deferred to Stage 4 |
@@ -35,13 +35,16 @@ ChartParameter、Template Binding 或 Animator；Animation Mixing 不重新定�
 
 ## 生产与实施边界
 
-当前 Playback Loader 只支持 `cuexis.chart` v1/v2/v3。CFU-C1/C2 已提供 CXC manifest、Chart v4 和
-CXT 的生产 Schema、内部 typed source Reader、Chart/CXT canonical Writer、参数解析/identity、CXT
-import 与 deterministic lowering。CFU-C3 已提供内部 strict ZIP32 archive/package、owning
-file/memory loader、package-backed Asset ContentProvider 和独立 project-document table；CFU-C4 已在
-本地提供 developer pack/validate/unpack tools 和 round-trip gates。CFU-D1/D2 已关闭：显式
-`migrateToV4` / `--target 4` JSON lift，默认 CLI 仍输出 v3。公共 Playback 输入、CFU-D3 和最终
-hosted 跨平台门禁仍未关闭；该检查点不是完整 CXC 产品支持或公共 package API。评审示例位于
+Playback 继续保留 `cuexis.chart` v1/v2/v3 生产路径，并已能 prepare 静态/参数化 v4；非空动画仍在
+Stage 4 前稳定拒绝。CFU-C1/C2 已提供 CXC manifest、Chart v4 和 CXT 的生产 Schema、内部 typed
+source Reader、Chart/CXT canonical Writer、参数解析/identity、CXT import 与 deterministic
+lowering。CFU-C3 已提供内部 strict ZIP32 archive/package、owning file/memory loader、
+package-backed Asset ContentProvider 和独立 project-document table；CFU-C4 已在本地提供
+developer pack/validate/unpack tools 和 round-trip gates。CFU-D1/D2 已关闭：显式
+`migrateToV4` / `--target 4` JSON lift，默认 CLI 仍输出 v3。CFU-E0–E3 已关闭公共 API、source
+factory、prepare/capability 与 `PreparedSemanticIdentity`。CFU-E4 已关闭本地 Debug/Release/shared
+门禁。CFU-D3 和最终 hosted 跨平台门禁仍未关闭；该检查点不是完整 CXC 产品支持或公共 package
+API。评审示例位于
 [examples/chart_format_update](../examples/chart_format_update/README.md)。
 
 运行时脚本和逐帧脚本回调无限期延后，不是任何 Cuexis 格式的隐藏扩展点。

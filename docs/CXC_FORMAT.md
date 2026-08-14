@@ -1,8 +1,8 @@
 # Cuexis CXC v1
 
-状态：accepted contract；CFU-C3 内部 archive/package 与 CFU-C4 developer tools 本地基线已实现，hosted closure 与 Playback 支持未完成
+状态：accepted contract；CFU-C3/C4 内部 archive/tools 与 CFU-E1–E4 Playback source/prepare/identity 本地门禁已实现，hosted/public closure 未完成
 
-更新日期：2026-08-13
+更新日期：2026-08-14
 
 依据：[ADR 0038](adr/0038-cxc-v1-and-chart-v4-boundary.md)
 
@@ -15,9 +15,10 @@ Chart v4 和 CXT 的字段分别由 [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md) 与
 [CXT_FORMAT.md](CXT_FORMAT.md) 定义。CXC 不重新定义这些内容格式，也不是 Runtime、World、
 AnimationProgram、FrameSnapshot 或 ZIP library API。
 
-内部 `cuexis_cxc` 已能读写和验证 CXC bytes，CFU-C4 developer tools 已在本地门禁中验证；CFU-E、
-hosted closure 和最终验收门禁关闭前，`.cxc` 仍不能
-作为 Playback 或完整产品工具能力对外承诺，也不形成公共 CXC package component。
+内部 `cuexis_cxc` 已能读写和验证 CXC bytes，CFU-C4 developer tools 已在本地门禁中验证；CFU-E1–E4
+已把 CXC file/memory source 接入 Playback prepare、semantic identity 与本地 consumer/export 门禁。
+hosted closure、CFU-F/CFU-G 和公共 package API 关闭前，`.cxc` 仍不能作为完整产品工具能力对外
+承诺，也不形成公共 CXC package component。
 
 ## 2. Artifact 模型
 
@@ -228,6 +229,7 @@ CxcPackageIdentity
 PreparedSemanticIdentity
   SHA-256(domain-separated canonical Chart/CXT/resource/parameter identities)
   用于 prepare、reload、determinism 和语义缓存
+  字节布局见 CHART_V4_FORMAT.md
 ```
 
 Filesystem、memory、host 和 CXC source 对相同规范内容与参数必须得到相同

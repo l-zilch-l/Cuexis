@@ -1,6 +1,7 @@
 add_executable(cuexis_playback_tests
     frame_digest_tests.cpp
     mode_parity_tests.cpp
+    playback_identity_tests.cpp
     playback_session_tests.cpp
     playback_source_tests.cpp
     playback_v4_prepare_tests.cpp

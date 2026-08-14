@@ -1,9 +1,9 @@
 # Cuexis Chart Format v4
 
 状态：accepted contract；CFU-C Reader/Writer/lowering/CXC 已实现；CFU-D1/D2 已关闭显式
-JSON lift 迁移；尚未接入 Playback 生产路径
+JSON lift 迁移；CFU-E2 已接入静态/参数化 prepare；CFU-E3 已冻结并组装 PreparedSemanticIdentity
 
-更新日期：2026-08-13
+更新日期：2026-08-14
 
 依据：[ADR 0038](adr/0038-cxc-v1-and-chart-v4-boundary.md)
 
@@ -169,8 +169,41 @@ rational          reduced signed int64 numerator + positive int64 denominator, l
 ```
 
 `PreparedSemanticIdentity` 使用域分隔 SHA-256 组合 canonical Chart identity、按 import ID 排序的
-CXT identity、按 AssetId 排序的资源 identity manifest 和 parameter identity。CXC 的精确 package
-hash 不参与该语义 identity，因此 filesystem、memory、host 与 CXC source 可以得到相同结果。
+CXT identity、按 AssetId 排序的实际 resource identity manifest 和 parameter identity。CXC 的精确
+package hash、archive metadata、Provider revision 和 source path 不参与该值，因此 filesystem、
+memory、host 与 CXC source 对相同规范内容和参数必须得到相同结果。
+
+最终 digest 是下列规范二进制的 SHA-256：
+
+```text
+domain            "cuexis.prepared-semantic.v1\0"
+chart             32-byte canonical Chart identity
+cxtCount          uint32 little-endian
+each CXT          uint32 little-endian importId byte length + ASCII bytes + 32-byte CXT identity
+                  (importId portable ASCII ascending)
+resourceCount     uint32 little-endian
+each resource     uint32 little-endian AssetId byte length + ASCII bytes + 32-byte content identity
+                  (AssetId portable ASCII ascending)
+parameter         32-byte parameter identity
+```
+
+资源条目使用 prepare 期间实际获取并 typed 校验后的内容 identity，不是 C2 的
+`resourceRequirements` 需求表。同一 AssetId 即使有多种用途也只写一条。缺资源或同一 AssetId
+对应不同内容 identity 时，prepare 失败且不发布 candidate。
+
+资源内容 identity：
+
+```text
+Mesh / Texture2D / UnlitMaterial
+  PresentationContentIdentity（见 PORTABLE_PRESENTATION.md）
+
+MainMusic
+  SHA-256("cuexis.prepared-audio.v1\0" + exact fetched bytes)
+  不使用 contentRevision、Provider revision、path 或 lease token
+```
+
+空 CXT 列表与空资源 manifest 仍写入 count `0`。v1/v2/v3 成功 prepare 使用 canonical Writer
+bytes 的 Chart identity、空 CXT 列表、空 parameter identity 和同样的实际资源 manifest。
 
 ## 4. Animation Template import
 
@@ -558,8 +591,8 @@ v4 报告记录 source/target canonical identity（Writer canonical bytes 的 SH
 生成计数和稳定 diagnostics；不能把 CXC pack 误称为迁移。
 
 迁移后的静态 v4 与源 v3 必须产生相同 FrameSnapshot 和 FrameDigest v3。Chart format version 和
-capability summary 可以不同。该运行时等价证据属于 CFU-D3，必须在 CFU-E 让 Playback 能加载
-v4 之后关闭。D1/D2 的关闭条件是结构/Writer golden 与 CLI 合同通过本地 Debug 验证；
+capability summary 可以不同。该运行时等价证据属于 CFU-D3；CFU-E 本地关闭后 Playback 已能加载
+静态/参数化 v4，D3 可以开始。D1/D2 的关闭条件是结构/Writer golden 与 CLI 合同通过本地 Debug 验证；
 该验证已在本 worktree 取得，D1/D2 已关闭。整包 CFU-D 仍等待 D3。
 
 ## 12. 候选示例

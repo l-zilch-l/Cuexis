@@ -57,9 +57,9 @@ time discontinuities rebuild from absolute time
 
 Playback 保留 `cuexis.chart` v1/v2/v3 的全部生产路径。Stage Chart Format Update 已接受 CXC v1、
 Chart v4 和 CXT v1 合同，并完成 CFU-C0–C4。CFU-D1/D2 已关闭显式 JSON lift 迁移与 CLI
-`--target 4`；CFU-E0/E1/E2 已关闭公共 API、统一 PlaybackSource、typed/CXC factory、SDK `0.6.0`、
-Chart v4 prepare 与 capability 接入。静态和参数化 v4 可使用现有 Runtime，非空动画仍稳定拒绝。
-CFU-E3/E4、CFU-D3 和最终跨平台门禁仍未完成。
+`--target 4`；CFU-E0–E3 已关闭公共 API、统一 PlaybackSource、typed/CXC factory、SDK `0.6.0`、
+Chart v4 prepare、capability 接入与 `PreparedSemanticIdentity`。静态和参数化 v4 可使用现有
+Runtime，非空动画仍稳定拒绝。CFU-E4 已关闭本地门禁；CFU-D3 和最终跨平台门禁仍未完成。
 
 格式权威入口：[formats/README.md](formats/README.md)。
 

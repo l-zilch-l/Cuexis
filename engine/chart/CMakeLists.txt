@@ -14,6 +14,7 @@ target_sources(cuexis_chart
         src/chart_v4_loader.cpp
         src/chart_v4_resolver.cpp
         src/chart_writer.cpp
+        src/prepared_semantic_identity.cpp
         src/chart_v4_reader_internal.cpp
         src/rational_beat.cpp
         src/sha256_internal.cpp
@@ -35,6 +36,7 @@ target_sources(cuexis_chart
             include/cuexis/chart/chart_v4_resolver.hpp
             include/cuexis/chart/chart_writer.hpp
             include/cuexis/chart/limits.hpp
+            include/cuexis/chart/prepared_semantic_identity.hpp
             include/cuexis/chart/rational_beat.hpp
             include/cuexis/chart/timing_map.hpp
             include/cuexis/chart/uuid.hpp
