@@ -8,6 +8,7 @@
 #include <cuexis/core/result.hpp>
 #include <cuexis/playback/playback_export.hpp>
 
+#include <cstddef>
 #include <filesystem>
 #include <memory>
 #include <string>
@@ -38,6 +39,18 @@ struct TypedPlaybackProject final {
     std::vector<PlaybackAssetDescriptor> assets;
 };
 
+struct PlaybackProjectDocument final {
+    std::string path;
+    std::string utf8Text;
+};
+
+struct TypedPlaybackProjectSource final {
+    std::string sourceId;
+    std::string entryChartPath;
+    std::vector<PlaybackProjectDocument> projectDocuments;
+    std::vector<PlaybackAssetDescriptor> assets;
+};
+
 class CUEXIS_PLAYBACK_API PlaybackSource final {
   public:
     PlaybackSource() noexcept;
@@ -52,7 +65,15 @@ class CUEXIS_PLAYBACK_API PlaybackSource final {
     [[nodiscard]] static auto fromTypedProject(TypedPlaybackProject project,
                                                std::shared_ptr<content::IContentProvider> provider)
         -> core::Result<PlaybackSource>;
+    [[nodiscard]] static auto
+    fromTypedProjectSource(TypedPlaybackProjectSource project,
+                           std::shared_ptr<content::IContentProvider> provider)
+        -> core::Result<PlaybackSource>;
     [[nodiscard]] static auto fromFilesystemProject(const std::filesystem::path& locator)
+        -> core::Result<PlaybackSource>;
+    [[nodiscard]] static auto fromCxcFile(const std::filesystem::path& locator)
+        -> core::Result<PlaybackSource>;
+    [[nodiscard]] static auto fromCxcMemory(std::vector<std::byte> packageBytes)
         -> core::Result<PlaybackSource>;
 
   private:

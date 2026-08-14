@@ -567,8 +567,9 @@ TEST_CASE("PlaybackSession capability preflight is explicit, deterministic, and 
     REQUIRE(defaultCapabilities.has_value());
     CHECK(defaultCapabilities->version == 1);
     CHECK(defaultCapabilities->ids ==
-          std::vector<std::string>{"cuexis.behavior.event.v1", "cuexis.chart.v3",
-                                   "cuexis.material.snapshot.v1", "cuexis.render.visibility.v1"});
+          std::vector<std::string>{"cuexis.behavior.event.v1", "cuexis.chart.v3", "cuexis.chart.v4",
+                                   "cuexis.material.snapshot.v1", "cuexis.render.visibility.v1",
+                                   "cuexis.source.cxc.v1", "cuexis.source.cxt.v1"});
     REQUIRE(defaultSession.loadChart(stage2Chart).has_value());
 
     cuexis::playback::PlaybackSession unsupported{

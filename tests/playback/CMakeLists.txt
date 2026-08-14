@@ -2,6 +2,8 @@ add_executable(cuexis_playback_tests
     frame_digest_tests.cpp
     mode_parity_tests.cpp
     playback_session_tests.cpp
+    playback_source_tests.cpp
+    playback_v4_prepare_tests.cpp
     presentation_tests.cpp
     runtime_timeline_tests.cpp
     ${PROJECT_SOURCE_DIR}/engine/playback/src/frame_digest_version.cpp

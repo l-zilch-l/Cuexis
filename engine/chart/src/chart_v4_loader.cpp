@@ -679,6 +679,26 @@ void validateAnimationReferences(const std::vector<AnimationTemplateImport>& imp
 
 } // namespace
 
+auto ChartV4Loader::isV4(std::string_view jsonText, const ChartLimits& limits) -> bool {
+    auto parsed =
+        json::parse(jsonText, json::ParseLimits{limits.maxInputBytes, limits.maxNestingDepth,
+                                                limits.maxStringBytes});
+    if (!parsed) {
+        return false;
+    }
+    const auto* version = parsed->find("version");
+    if (version == nullptr) {
+        return false;
+    }
+    if (const auto* signedValue = version->signedInteger()) {
+        return *signedValue == 4;
+    }
+    if (const auto* unsignedValue = version->unsignedInteger()) {
+        return *unsignedValue == 4;
+    }
+    return false;
+}
+
 auto ChartV4Loader::load(std::string_view jsonText, const ChartLimits& limits)
     -> ChartV4SourceResult {
     auto diagnostics = detail::makeDiagnostics(limits);

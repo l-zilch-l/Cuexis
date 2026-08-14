@@ -3,16 +3,32 @@
 #include <cuexis/playback/playback_source.hpp>
 #include <cuexis/playback/presentation.hpp>
 
+#include <cstddef>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
+#include <iterator>
 #include <string_view>
 #include <variant>
+#include <vector>
 
 namespace {
 
 [[nodiscard]] auto fail(std::string_view message) -> int {
     std::cerr << message << '\n';
     return 1;
+}
+
+[[nodiscard]] auto readBytes(const std::filesystem::path& path) -> std::vector<std::byte> {
+    std::ifstream stream{path, std::ios::binary};
+    const std::vector<char> raw{std::istreambuf_iterator<char>{stream},
+                                std::istreambuf_iterator<char>{}};
+    std::vector<std::byte> bytes;
+    bytes.reserve(raw.size());
+    for (const unsigned char value : raw) {
+        bytes.push_back(static_cast<std::byte>(value));
+    }
+    return bytes;
 }
 
 [[nodiscard]] auto capabilities() -> cuexis::playback::PresentationCapabilities {
@@ -59,6 +75,25 @@ namespace {
 } // namespace
 
 int main() {
+    const auto cxcPath = std::filesystem::path{CUEXIS_FIXTURE_DIR} / "cxc_v1_v4_cxt.cxc";
+    auto cxcFileSource = cuexis::playback::PlaybackSource::fromCxcFile(cxcPath);
+    if (!cxcFileSource) {
+        return fail("Playback-only consumer could not create the CXC file source");
+    }
+    auto cxcMemorySource = cuexis::playback::PlaybackSource::fromCxcMemory(readBytes(cxcPath));
+    if (!cxcMemorySource) {
+        return fail("Playback-only consumer could not create the CXC memory source");
+    }
+    auto typedSource = cuexis::playback::PlaybackSource::fromTypedProjectSource(
+        {.sourceId = "external-typed-source",
+         .entryChartPath = "charts/main.cuexis.chart.json",
+         .projectDocuments = {{.path = "charts/main.cuexis.chart.json", .utf8Text = "{}"}},
+         .assets = {}},
+        {});
+    if (typedSource || typedSource.error().code() != "playback.source.provider_missing") {
+        return fail("Playback-only consumer typed source contract is invalid");
+    }
+
     const auto project = std::filesystem::path{CUEXIS_FIXTURE_DIR} / "stage3_project";
     auto source = cuexis::playback::PlaybackSource::fromFilesystemProject(project);
     if (!source) {
@@ -66,8 +101,24 @@ int main() {
     }
 
     cuexis::playback::PlaybackSession session;
-    auto prepared =
-        session.prepareLoad(std::move(*source), cuexis::playback::PlaybackMode::ChartClock);
+    cuexis::playback::PlaybackPrepareOptions prepareOptions{
+        .parameters = {
+            .values = {
+                {.id = "external.number", .value = cuexis::playback::ChartParameterNumber{1.0}},
+                {.id = "external.rational",
+                 .value = cuexis::playback::ChartParameterRational{1, 2}},
+                {.id = "external.weight", .value = cuexis::playback::ChartParameterWeight{0.5}}}}};
+    if (!std::holds_alternative<cuexis::playback::ChartParameterNumber>(
+            prepareOptions.parameters.values[0].value) ||
+        !std::holds_alternative<cuexis::playback::ChartParameterRational>(
+            prepareOptions.parameters.values[1].value) ||
+        !std::holds_alternative<cuexis::playback::ChartParameterWeight>(
+            prepareOptions.parameters.values[2].value)) {
+        return fail("Playback-only consumer parameter tags are invalid");
+    }
+    prepareOptions.parameters.values.clear();
+    auto prepared = session.prepareLoad(std::move(*source),
+                                        cuexis::playback::PlaybackMode::ChartClock, prepareOptions);
     if (!prepared) {
         return fail("Playback-only consumer prepare failed");
     }

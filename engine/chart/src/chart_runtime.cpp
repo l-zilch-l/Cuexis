@@ -551,7 +551,8 @@ auto ChartCompiler::compile(const ChartDocument& document, const ChartLimits& li
         addError(diagnostics, "chart.limit.behaviors", "Chart behavior count exceeds the limit",
                  "$.behaviors");
     }
-    if (document.version != 1 && document.version != 2 && document.version != 3) {
+    if (document.version != 1 && document.version != 2 && document.version != 3 &&
+        document.version != 4) {
         addError(diagnostics, "chart.version.unsupported", "Chart format version is unsupported",
                  "$.version");
     }
@@ -571,7 +572,8 @@ auto ChartCompiler::compile(const ChartDocument& document, const ChartLimits& li
     }
     validateDefaultCamera(document.camera, diagnostics);
 
-    auto timingMap = document.version == 3
+    const bool usesTempoMap = document.version == 3 || document.version == 4;
+    auto timingMap = usesTempoMap
                          ? TimingMap::create(document.timing.defaultBpm, document.timing.offsetMs,
                                              document.timing.tempoEvents, document.timing.stops)
                          : TimingMap::create(document.timing.defaultBpm, document.timing.offsetMs);
@@ -604,10 +606,11 @@ auto ChartCompiler::compile(const ChartDocument& document, const ChartLimits& li
                      "$.behaviors[\"" + behavior.id.value + "\"].id");
             continue;
         }
-        const bool isV3Behavior =
-            behavior.type == "behavior.event" && behavior.version == 1 && document.version == 3;
+        const bool isV3Behavior = behavior.type == "behavior.event" && behavior.version == 1 &&
+                                  (document.version == 3 || document.version == 4);
         const bool isLegacyBehavior = behavior.type == "behavior.transform.keyframe" &&
-                                      behavior.version == 1 && document.version != 3;
+                                      behavior.version == 1 && document.version != 3 &&
+                                      document.version != 4;
         if (!isV3Behavior && !isLegacyBehavior) {
             addError(diagnostics, "chart.behavior.version_unsupported",
                      "Behavior type and version are unsupported",

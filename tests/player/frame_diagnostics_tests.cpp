@@ -174,7 +174,7 @@ TEST_CASE("Frame diagnostics exports stable prefixes and truncation metadata",
     CHECK(audio.starts_with("frameIndex,wallClockMs,sourcePositionMs,"
                             "estimatedOutputLatencyMs,queuedFrames,underrunCount,"
                             "transportState\r\n"));
-    CHECK(meta.find("\"sdkApiVersion\": \"0.5.0\"") != std::string::npos);
+    CHECK(meta.find("\"sdkApiVersion\": \"0.6.0\"") != std::string::npos);
     CHECK(meta.find("\"mode\": \"cuexis_audio\"") != std::string::npos);
     CHECK(meta.find("\"droppedRows\": 1") != std::string::npos);
     CHECK(meta.find("\"truncated\": true") != std::string::npos);

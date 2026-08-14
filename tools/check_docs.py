@@ -240,7 +240,7 @@ def check_agents_guide(failures: list[CheckFailure]) -> None:
 
     text = AGENTS.read_text(encoding="utf-8")
     required_fragments = (
-        "SDK API `0.5.0`",
+        "SDK API `0.6.0`",
         "Stage Chart Format Update",
         "python -B tools/check_docs.py",
         "python -B tools/update_version.py",

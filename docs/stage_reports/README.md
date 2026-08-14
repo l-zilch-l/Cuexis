@@ -2,7 +2,7 @@
 
 状态：现行阶段报告索引
 
-更新日期：2026-08-13
+更新日期：2026-08-14
 
 报告是带日期的证据快照。报告中的“下一步”只表示报告生成时的交接，不自动代表当前任务。
 
@@ -33,4 +33,7 @@
 | [260812 Chart Format Update CFU-C3 CXC](260812-chart-format-update-c3-cxc.md) | strict ZIP32 envelope, package closure, owning loaders and package-backed content domains |
 | [260813 Chart Format Update CFU-C4 tools](260813-chart-format-update-c4-tools.md) | completed developer pack/validate/unpack tools, atomic staging, exit-code, round-trip and hosted cross-platform gates |
 | [260813 Chart Format Update CFU-D1/D2 migration](260813-chart-format-update-d-migration.md) | closed D1/D2 explicit v1/v2/v3 → v4 JSON lift and CLI `--target` after local Debug verify; CFU-D not closed (D3 waits for CFU-E) |
+| [260814 Chart Format Update CFU-E0 API](260814-chart-format-update-e0-api.md) | accepted Playback public API and SDK `0.6.0` implementation target; E0 closed, E1 next; no installed-header or version implementation yet |
+| [260814 Chart Format Update CFU-E1 source](260814-chart-format-update-e1-source.md) | closed unified PlaybackSource state, typed/CXC factories, SDK `0.6.0`, static/shared consumers and local Debug/Release gates; E2 next |
+| [260814 Chart Format Update CFU-E2 prepare](260814-chart-format-update-e2-prepare.md) | closed Chart v4 prepare, public parameter conversion, format capability preflight, static Runtime projection and pre-Stage-4 animation rejection; E3 next |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |

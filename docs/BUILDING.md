@@ -190,7 +190,8 @@ v4：
 迁移器要求输入、输出和报告路径互不冲突，失败不修改目标。无 `--target` 的旧调用继续拒绝
 v3 输入。`cuexis_chart_tool_tests` 会校验 v3 golden、v4 chart golden、报告字段、目标回滚和
 CLI 退出合同。Player 可使用 `--chart` 加载 Stage 2 示例进行 GPU smoke；算法、迁移和
-headless Playback 验收不依赖 GPU。v4 目前不能作为 Playback 生产输入。
+headless Playback 验收不依赖 GPU。Playback 已可 prepare/load 静态或参数化 v4；任意非空
+Clip/CXT/Binding/Layer/Instance 在 Stage 4 前仍以 capability 错误拒绝。
 
 默认阶段 1D 项目包含 Chart v2、Asset Index v2、索引内非静音 WAV 和 typed
 `audio.mainMusic` 引用。Player 在 Window/GL/Audio device 创建前完成 Project、Index、Chart、
@@ -244,7 +245,7 @@ cmake --install out/build/headless-release --prefix out/install/headless-release
 ```
 
 ```cmake
-find_package(Cuexis 0.5 CONFIG REQUIRED COMPONENTS Playback Content Audio)
+find_package(Cuexis 0.6 CONFIG REQUIRED COMPONENTS Playback Content Audio)
 target_link_libraries(my_host PRIVATE Cuexis::Playback Cuexis::Content Cuexis::Audio)
 ```
 
@@ -255,7 +256,7 @@ target_link_libraries(my_host PRIVATE Cuexis::Playback Cuexis::Content Cuexis::A
 并由 consumer 显式请求组件：
 
 ```cmake
-find_package(Cuexis 0.5 CONFIG REQUIRED COMPONENTS Audio AudioSDL)
+find_package(Cuexis 0.6 CONFIG REQUIRED COMPONENTS Audio AudioSDL)
 target_link_libraries(my_host PRIVATE Cuexis::AudioSDL)
 ```
 
@@ -265,7 +266,7 @@ target_link_libraries(my_host PRIVATE Cuexis::AudioSDL)
 Stage 3 不安装 `OpenGL` component。`cuexis_render_opengl` 仍是 Player 使用的仓库内可选 target；
 安装包显式请求 `COMPONENTS OpenGL` 会失败，基础 Playback package 不查找 OpenGL 或 GLAD。
 
-`0.5` 是当前 Playback preview 的 SDK API 兼容 minor，不是日期构建版本。安装后的
+`0.6` 是当前 Playback preview 的 SDK API 兼容 minor，不是日期构建版本。安装后的
 `Cuexis_VERSION`/`Cuexis_API_VERSION` 返回完整 API 版本，`Cuexis_VERSION_DISPLAY` 返回
 `yy.mm.dd-v[-suffix]` 构建身份。版本更新必须通过
 `python -B tools/update_version.py yy.mm.dd-v` 同步 CMake 与 `vcpkg.json`；
@@ -276,7 +277,7 @@ Stage 3 不安装 `OpenGL` component。`cuexis_render_opengl` 仍是 Player 使�
 七个 `cuexis_external_consumer_*` 模式验证 add_subdirectory/find_package 的基础包、Playback-only、
 Core 和 AudioSDL 组件。Playback-only consumer 从自己的 staging fixture 完成
 load/prepare/resource validation/update/extract，只链接 `Cuexis::Playback`。基础 find_package 门禁
-显式禁用 SDL3 查找，并验证不发现 OpenGL/GLAD、`0.4`/`0.6` 请求被拒绝、未支持的 `OpenGL`
+显式禁用 SDL3 查找，并验证不发现 OpenGL/GLAD、`0.5`/`0.7` 请求被拒绝、未支持的 `OpenGL`
 component 被拒绝；安装包门禁同时扫描全部已安装公共头是否为纯 ASCII，并精确校验基础许可证
 清单及 AudioSDL 安装额外增加的 SDL3 copyright：
 
@@ -293,7 +294,7 @@ CUEXIS_LIBRARY_TYPE=STATIC|SHARED
 ```
 
 不得把 `BUILD_SHARED_LIBS` 当作 Cuexis 支持入口。当前 static/shared preview SDK API 均为
-`0.5.0`。一个 build tree 与 install prefix 只能包含一种 Cuexis linkage，consumer 继续链接
+`0.6.0`。一个 build tree 与 install prefix 只能包含一种 Cuexis linkage，consumer 继续链接
 相同的 `Cuexis::` target 名，不得硬编码 DLL/shared object 文件名。可直接使用
 `shared-debug`、`shared-release`、`headless-shared-debug` 和 `headless-shared-release` presets。
 

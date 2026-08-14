@@ -9,6 +9,9 @@
 #include <cuexis/assets/resource_manager.hpp>
 #include <cuexis/chart/chart_loader.hpp>
 #include <cuexis/chart/chart_runtime.hpp>
+#include <cuexis/chart/chart_v4_loader.hpp>
+#include <cuexis/chart/chart_v4_resolver.hpp>
+#include <cuexis/chart/rational_beat.hpp>
 #include <cuexis/content/content_provider.hpp>
 #include <cuexis/core/error.hpp>
 #include <cuexis/core/math.hpp>
@@ -37,6 +40,7 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
+#include <variant>
 #include <vector>
 
 namespace cuexis::playback {
@@ -111,6 +115,19 @@ struct SnapshotLayout final {
     return core::Error{"playback.session.reentrant",
                        "PlaybackSession cannot be re-entered while an operation is active"}
         .withContext("operation", std::string{operation});
+}
+
+[[nodiscard]] auto prepareExceptionError(std::string_view operation, bool allocationFailure,
+                                         const std::exception* exception = nullptr) -> core::Error {
+    auto error = core::Error{allocationFailure ? "playback.prepare.budget_exceeded"
+                                               : "playback.prepare.failed",
+                             allocationFailure ? "Playback preparation could not allocate memory"
+                                               : "Playback preparation failed"};
+    error.withContext("operation", std::string{operation});
+    if (exception != nullptr) {
+        error.withContext("exception", exception->what());
+    }
+    return error;
 }
 
 [[nodiscard]] auto presentationResourceTypeName(PresentationResourceType type) noexcept
@@ -224,8 +241,9 @@ struct RequiredCapability final {
     return PlaybackCapabilitySet{
         .version = 1,
         .ids = {std::string{capabilityBehaviorEventV1}, std::string{capabilityChartV3},
-                std::string{capabilityMaterialSnapshotV1},
-                std::string{capabilityRenderVisibilityV1}},
+                std::string{capabilityChartV4}, std::string{capabilityMaterialSnapshotV1},
+                std::string{capabilityRenderVisibilityV1}, std::string{capabilitySourceCxcV1},
+                std::string{capabilitySourceCxtV1}},
     };
 }
 
@@ -274,7 +292,27 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
     return required;
 }
 
+[[nodiscard]] auto capabilityFieldPath(std::string_view capability) noexcept -> std::string_view {
+    if (capability == capabilityChartV4) {
+        return "$/version";
+    }
+    if (capability == capabilitySourceCxcV1) {
+        return "$/source";
+    }
+    if (capability == capabilitySourceCxtV1) {
+        return "$/animationTemplateImports";
+    }
+    if (capability == "cuexis.animation.clip.v1") {
+        return "$/animationClips";
+    }
+    if (capability == "cuexis.animation.layers.v1") {
+        return "$/objects";
+    }
+    return "$";
+}
+
 [[nodiscard]] auto preflightCapabilities(const chart::ChartDocument& document,
+                                         std::span<const std::string> additionalRequirements,
                                          const PlaybackCapabilitySet& supported,
                                          core::Diagnostics& diagnostics) -> bool {
     if (supported.version != 1) {
@@ -284,7 +322,18 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
                             .withContext("version", std::to_string(supported.version)));
         return false;
     }
-    const auto required = requiredCapabilities(document);
+    auto required = requiredCapabilities(document);
+    required.reserve(required.size() + additionalRequirements.size());
+    for (const auto& capability : additionalRequirements) {
+        required.push_back({capability, capabilityFieldPath(capability)});
+    }
+    std::sort(required.begin(), required.end(), [](const auto& left, const auto& right) {
+        return std::tie(left.id, left.fieldPath) < std::tie(right.id, right.fieldPath);
+    });
+    required.erase(
+        std::unique(required.begin(), required.end(),
+                    [](const auto& left, const auto& right) { return left.id == right.id; }),
+        required.end());
     for (const auto& capability : required) {
         if (!std::binary_search(supported.ids.begin(), supported.ids.end(), capability.id)) {
             diagnostics.add(core::Diagnostic{core::DiagnosticSeverity::Error,
@@ -296,6 +345,53 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
     }
     diagnostics.sortDeterministically();
     return !diagnostics.hasErrors();
+}
+
+[[nodiscard]] auto chartParameterInputs(const PlaybackPrepareOptions& options,
+                                        core::Diagnostics& diagnostics)
+    -> std::optional<std::vector<chart::ChartParameterInput>> {
+    std::vector<chart::ChartParameterInput> inputs;
+    inputs.reserve(options.parameters.values.size());
+    for (std::size_t index = 0; index < options.parameters.values.size(); ++index) {
+        const auto& parameter = options.parameters.values[index];
+        chart::ChartParameterInput input;
+        input.id = parameter.id;
+        if (const auto* number = std::get_if<ChartParameterNumber>(&parameter.value)) {
+            input.type = chart::ChartParameterType::Number;
+            input.value = number->value;
+        } else if (const auto* rational = std::get_if<ChartParameterRational>(&parameter.value)) {
+            auto value = chart::RationalBeat::create(rational->numerator, rational->denominator);
+            if (!value) {
+                diagnostics.add(core::Diagnostic{
+                    core::DiagnosticSeverity::Error, "chart.parameter.out_of_range",
+                    "Rational parameter input is outside the supported range",
+                    "$/parameterInputs/" + std::to_string(index) + "/value"});
+                continue;
+            }
+            input.type = chart::ChartParameterType::Rational;
+            input.value = *value;
+        } else {
+            const auto& weight = std::get<ChartParameterWeight>(parameter.value);
+            input.type = chart::ChartParameterType::Weight;
+            input.value = weight.value;
+        }
+        inputs.push_back(std::move(input));
+    }
+    if (diagnostics.hasErrors()) {
+        diagnostics.sortDeterministically();
+        return std::nullopt;
+    }
+    return inputs;
+}
+
+[[nodiscard]] auto projectDocuments(std::span<const PlaybackProjectDocument> sourceDocuments)
+    -> std::vector<chart::ProjectDocument> {
+    std::vector<chart::ProjectDocument> documents;
+    documents.reserve(sourceDocuments.size());
+    for (const auto& document : sourceDocuments) {
+        documents.push_back({document.path, document.utf8Text});
+    }
+    return documents;
 }
 
 [[nodiscard]] auto chartInfoFor(const chart::ChartRuntime& chartRuntime, std::size_t resourceCount)
@@ -470,6 +566,7 @@ struct PreparedPlayback::State final {
     std::shared_ptr<content::IContentProvider> contentProvider;
     std::unique_ptr<assets::ResourceManager> resourceManager;
     std::string chartJson;
+    std::optional<chart::AnimationProgramInput> animationProgram;
     std::unique_ptr<runtime::RuntimeSession> runtimeSession;
     SnapshotLayout snapshotLayout;
     ChartInfo chartInfo;
@@ -783,20 +880,11 @@ auto PlaybackSession::capabilities() const -> core::Result<PlaybackCapabilitySet
 
 auto PlaybackSession::prepareLoad(std::string_view jsonText, PlaybackMode mode)
     -> core::Result<PreparedPlayback> {
-    if (!state_->ownerThread.isCurrent()) {
-        return core::unexpected(ownerError("prepare_load"));
-    }
-    if (state_->operationActive) {
-        return core::unexpected(reentryError("prepare_load"));
-    }
-    auto source = PlaybackSource::fromChartText(std::string{jsonText});
-    if (!source) {
-        return core::unexpected(std::move(source.error()));
-    }
-    return prepare(std::move(*source), mode, nullptr, ReloadPolicy::KeepChartTime, false);
+    return prepareLoad(jsonText, mode, PlaybackPrepareOptions{});
 }
 
-auto PlaybackSession::prepareLoad(PlaybackSource&& source, PlaybackMode mode)
+auto PlaybackSession::prepareLoad(std::string_view jsonText, PlaybackMode mode,
+                                  const PlaybackPrepareOptions& options)
     -> core::Result<PreparedPlayback> {
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("prepare_load"));
@@ -804,12 +892,49 @@ auto PlaybackSession::prepareLoad(PlaybackSource&& source, PlaybackMode mode)
     if (state_->operationActive) {
         return core::unexpected(reentryError("prepare_load"));
     }
-    return prepare(std::move(source), mode, nullptr, ReloadPolicy::KeepChartTime, false);
+    try {
+        auto source = PlaybackSource::fromChartText(std::string{jsonText});
+        if (!source) {
+            return core::unexpected(std::move(source.error()));
+        }
+        return prepare(std::move(*source), mode, nullptr, ReloadPolicy::KeepChartTime, false,
+                       options);
+    } catch (const std::bad_alloc&) {
+        return core::unexpected(prepareExceptionError("prepare_load", true));
+    } catch (const std::exception& exception) {
+        return core::unexpected(prepareExceptionError("prepare_load", false, &exception));
+    } catch (...) {
+        return core::unexpected(prepareExceptionError("prepare_load", false));
+    }
+}
+
+auto PlaybackSession::prepareLoad(PlaybackSource&& source, PlaybackMode mode)
+    -> core::Result<PreparedPlayback> {
+    return prepareLoad(std::move(source), mode, PlaybackPrepareOptions{});
+}
+
+auto PlaybackSession::prepareLoad(PlaybackSource&& source, PlaybackMode mode,
+                                  const PlaybackPrepareOptions& options)
+    -> core::Result<PreparedPlayback> {
+    if (!state_->ownerThread.isCurrent()) {
+        return core::unexpected(ownerError("prepare_load"));
+    }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("prepare_load"));
+    }
+    return prepare(std::move(source), mode, nullptr, ReloadPolicy::KeepChartTime, false, options);
 }
 
 auto PlaybackSession::prepareReload(std::string_view replacementJson,
                                     const RuntimeFrame& targetFrame, ReloadPolicy policy)
     -> core::Result<PreparedPlayback> {
+    return prepareReload(replacementJson, targetFrame, policy, PlaybackPrepareOptions{});
+}
+
+auto PlaybackSession::prepareReload(std::string_view replacementJson,
+                                    const RuntimeFrame& targetFrame, ReloadPolicy policy,
+                                    const PlaybackPrepareOptions& options)
+    -> core::Result<PreparedPlayback> {
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("prepare_reload"));
     }
@@ -820,21 +945,36 @@ auto PlaybackSession::prepareReload(std::string_view replacementJson,
         return core::unexpected(
             core::Error{"playback.session.not_ready", "PlaybackSession has no active mode"});
     }
-    auto source = PlaybackSource::fromChartText(std::string{replacementJson});
-    if (!source) {
-        return core::unexpected(std::move(source.error()));
+    try {
+        auto source = PlaybackSource::fromChartText(std::string{replacementJson});
+        if (!source) {
+            return core::unexpected(std::move(source.error()));
+        }
+        if (state_->resourceManager) {
+            auto sourceState = std::move(source->state_);
+            sourceState->provider = state_->contentProvider;
+            sourceState->database.emplace(state_->resourceManager->database());
+            source->state_ = std::move(sourceState);
+        }
+        return prepare(std::move(*source), *state_->activeMode, &targetFrame, policy, true,
+                       options);
+    } catch (const std::bad_alloc&) {
+        return core::unexpected(prepareExceptionError("prepare_reload", true));
+    } catch (const std::exception& exception) {
+        return core::unexpected(prepareExceptionError("prepare_reload", false, &exception));
+    } catch (...) {
+        return core::unexpected(prepareExceptionError("prepare_reload", false));
     }
-    if (state_->resourceManager) {
-        auto sourceState = std::move(source->state_);
-        sourceState->provider = state_->contentProvider;
-        sourceState->database.emplace(state_->resourceManager->database());
-        source->state_ = std::move(sourceState);
-    }
-    return prepare(std::move(*source), *state_->activeMode, &targetFrame, policy, true);
 }
 
 auto PlaybackSession::prepareReload(PlaybackSource&& replacement, const RuntimeFrame& targetFrame,
                                     ReloadPolicy policy) -> core::Result<PreparedPlayback> {
+    return prepareReload(std::move(replacement), targetFrame, policy, PlaybackPrepareOptions{});
+}
+
+auto PlaybackSession::prepareReload(PlaybackSource&& replacement, const RuntimeFrame& targetFrame,
+                                    ReloadPolicy policy, const PlaybackPrepareOptions& options)
+    -> core::Result<PreparedPlayback> {
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("prepare_reload"));
     }
@@ -845,170 +985,257 @@ auto PlaybackSession::prepareReload(PlaybackSource&& replacement, const RuntimeF
         return core::unexpected(
             core::Error{"playback.session.not_ready", "PlaybackSession has no active mode"});
     }
-    return prepare(std::move(replacement), *state_->activeMode, &targetFrame, policy, true);
+    return prepare(std::move(replacement), *state_->activeMode, &targetFrame, policy, true,
+                   options);
 }
 
 auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
                               const RuntimeFrame* targetFrame, ReloadPolicy policy,
-                              bool replacement) -> core::Result<PreparedPlayback> {
-    if (!state_->ownerThread.isCurrent()) {
-        return core::unexpected(ownerError(replacement ? "prepare_reload" : "prepare_load"));
-    }
-    if (state_->operationActive) {
-        return core::unexpected(reentryError(replacement ? "prepare_reload" : "prepare_load"));
-    }
-    SessionOperation operation{state_->operationActive};
-    if ((!replacement && state_->sessionState != SessionState::Empty) ||
-        (replacement && state_->sessionState != SessionState::Ready &&
-         state_->sessionState != SessionState::Running)) {
-        return core::unexpected(
-            core::Error{replacement ? "playback.session.not_ready" : "playback.session.not_empty",
-                        replacement ? "PlaybackSession must be active before preparing a reload"
-                                    : "PlaybackSession must be Empty before preparing a load"});
-    }
-
-    if (!source.state_) {
-        return core::unexpected(core::Error{"playback.source.invalid", "PlaybackSource is empty"});
-    }
-    core::Diagnostics diagnostics;
-    auto& sourceState = *source.state_;
-    const auto& jsonText = sourceState.chartJson;
-    const chart::ChartLimits limits;
-    auto documentResult = chart::ChartLoader::load(jsonText, limits);
-    const bool documentValid = documentResult.hasValue();
-    diagnostics.append(std::move(documentResult.diagnostics));
-    if (!documentValid) {
-        state_->lastOperationDiagnostics = diagnostics;
-        return core::unexpected(operationError(replacement ? "playback.chart.reload_load_failed"
-                                                           : "playback.chart.load_failed",
-                                               "Chart loading produced errors", diagnostics));
-    }
-
-    if (!preflightCapabilities(*documentResult.document, state_->capabilities, diagnostics)) {
-        state_->lastOperationDiagnostics = diagnostics;
-        return core::unexpected(operationError("playback.capability.preflight_failed",
-                                               "Playback capability preflight failed",
-                                               diagnostics));
-    }
-
-    auto runtimeResult = chart::ChartCompiler::compile(*documentResult.document, limits);
-    const bool runtimeValid = runtimeResult.hasValue();
-    diagnostics.append(std::move(runtimeResult.diagnostics));
-    if (!runtimeValid) {
-        state_->lastOperationDiagnostics = diagnostics;
-        return core::unexpected(operationError(replacement ? "playback.chart.reload_compile_failed"
-                                                           : "playback.chart.compile_failed",
-                                               "Chart compilation produced errors", diagnostics));
-    }
-    auto& chartRuntime = *runtimeResult.runtime;
-    const bool hasMainMusic = chartRuntime.mainMusic.has_value();
-    if ((mode == PlaybackMode::ChartClock && hasMainMusic) ||
-        (mode != PlaybackMode::ChartClock && !hasMainMusic)) {
-        return core::unexpected(
-            core::Error{"playback.mode.content_mismatch",
-                        mode == PlaybackMode::ChartClock
-                            ? "ChartClock requires a chart without main music"
-                            : "HostClock and CuexisAudio require a chart with main music"});
-    }
-
-    std::unique_ptr<assets::ResourceManager> resourceManager;
-    if (sourceState.database) {
-        resourceManager = std::make_unique<assets::ResourceManager>(
-            std::move(*sourceState.database), sourceState.provider);
-    }
-
-    std::optional<assets::AudioSourceLease> audioSourceLease;
-    if (chartRuntime.mainMusic) {
-        if (!resourceManager) {
-            return core::unexpected(core::Error{
-                "playback.content.asset_database_missing",
-                "A chart with main music requires an AssetDatabase and ContentProvider"});
+                              bool replacement, const PlaybackPrepareOptions& options)
+    -> core::Result<PreparedPlayback> {
+    try {
+        if (!state_->ownerThread.isCurrent()) {
+            return core::unexpected(ownerError(replacement ? "prepare_reload" : "prepare_load"));
         }
-        auto sourceResult = resourceManager->requestAudioSource(
-            assets::AssetId{chartRuntime.mainMusic->value}, assets::ResourcePolicy::Required);
-        const bool sourceValid = sourceResult.hasValue();
-        diagnostics.append(std::move(sourceResult.diagnostics));
-        if (!sourceValid) {
+        if (state_->operationActive) {
+            return core::unexpected(reentryError(replacement ? "prepare_reload" : "prepare_load"));
+        }
+        SessionOperation operation{state_->operationActive};
+        if ((!replacement && state_->sessionState != SessionState::Empty) ||
+            (replacement && state_->sessionState != SessionState::Ready &&
+             state_->sessionState != SessionState::Running)) {
+            return core::unexpected(core::Error{
+                replacement ? "playback.session.not_ready" : "playback.session.not_empty",
+                replacement ? "PlaybackSession must be active before preparing a reload"
+                            : "PlaybackSession must be Empty before preparing a load"});
+        }
+
+        if (!source.state_) {
+            return core::unexpected(
+                core::Error{"playback.source.invalid", "PlaybackSource is empty"});
+        }
+        core::Diagnostics diagnostics;
+        auto& sourceState = *source.state_;
+        const auto* entryChart = sourceState.entryChart();
+        if (entryChart == nullptr) {
+            return core::unexpected(core::Error{"playback.source.invalid",
+                                                "PlaybackSource entry Chart is unavailable"});
+        }
+        const auto& jsonText = entryChart->utf8Text;
+        const chart::ChartLimits limits;
+        std::optional<chart::ChartDocument> document;
+        std::optional<chart::AnimationProgramInput> animationProgram;
+        std::vector<std::string> additionalCapabilities;
+        if (sourceState.cxcPackageIdentity) {
+            additionalCapabilities.emplace_back(capabilitySourceCxcV1);
+        }
+
+        if (chart::ChartV4Loader::isV4(jsonText, limits)) {
+            auto loaded = chart::ChartV4Loader::load(jsonText, limits);
+            const bool loadedValid = loaded.hasValue();
+            diagnostics.append(std::move(loaded.diagnostics));
+            if (!loadedValid) {
+                state_->lastOperationDiagnostics = diagnostics;
+                return core::unexpected(
+                    operationError(replacement ? "playback.chart.reload_load_failed"
+                                               : "playback.chart.load_failed",
+                                   "Chart v4 loading produced errors", diagnostics));
+            }
+
+            auto inputs = chartParameterInputs(options, diagnostics);
+            if (!inputs) {
+                state_->lastOperationDiagnostics = diagnostics;
+                return core::unexpected(
+                    operationError(replacement ? "playback.chart.reload_load_failed"
+                                               : "playback.chart.load_failed",
+                                   "Chart parameter conversion produced errors", diagnostics));
+            }
+            auto documents = projectDocuments(sourceState.projectDocuments);
+            auto resolved =
+                chart::ChartV4Resolver::resolve(*loaded.document, *inputs, documents, {}, limits);
+            const bool resolvedValid = resolved.hasValue();
+            diagnostics.append(std::move(resolved.diagnostics));
+            if (!resolvedValid) {
+                state_->lastOperationDiagnostics = diagnostics;
+                return core::unexpected(
+                    operationError(replacement ? "playback.chart.reload_load_failed"
+                                               : "playback.chart.load_failed",
+                                   "Chart v4 resolution produced errors", diagnostics));
+            }
+            auto artifact = std::move(*resolved.artifact);
+            additionalCapabilities.insert(additionalCapabilities.end(),
+                                          artifact.capabilityRequirements.begin(),
+                                          artifact.capabilityRequirements.end());
+            document.emplace(std::move(artifact.document.chart));
+            animationProgram.emplace(std::move(artifact.animationProgram));
+        } else {
+            auto loaded = chart::ChartLoader::load(jsonText, limits);
+            const bool loadedValid = loaded.hasValue();
+            diagnostics.append(std::move(loaded.diagnostics));
+            if (!loadedValid) {
+                state_->lastOperationDiagnostics = diagnostics;
+                return core::unexpected(
+                    operationError(replacement ? "playback.chart.reload_load_failed"
+                                               : "playback.chart.load_failed",
+                                   "Chart loading produced errors", diagnostics));
+            }
+            for (std::size_t index = 0; index < options.parameters.values.size(); ++index) {
+                diagnostics.add(
+                    core::Diagnostic{core::DiagnosticSeverity::Error, "chart.parameter.unknown",
+                                     "Host parameter input is not supported by this Chart version",
+                                     "$/parameterInputs/" + std::to_string(index) + "/id"});
+            }
+            if (diagnostics.hasErrors()) {
+                diagnostics.sortDeterministically();
+                state_->lastOperationDiagnostics = diagnostics;
+                return core::unexpected(
+                    operationError(replacement ? "playback.chart.reload_load_failed"
+                                               : "playback.chart.load_failed",
+                                   "Chart parameter resolution produced errors", diagnostics));
+            }
+            document.emplace(std::move(*loaded.document));
+        }
+
+        if (!preflightCapabilities(*document, additionalCapabilities, state_->capabilities,
+                                   diagnostics)) {
+            state_->lastOperationDiagnostics = diagnostics;
+            return core::unexpected(operationError("playback.capability.preflight_failed",
+                                                   "Playback capability preflight failed",
+                                                   diagnostics));
+        }
+
+        auto runtimeResult = chart::ChartCompiler::compile(*document, limits);
+        const bool runtimeValid = runtimeResult.hasValue();
+        diagnostics.append(std::move(runtimeResult.diagnostics));
+        if (!runtimeValid) {
             state_->lastOperationDiagnostics = diagnostics;
             return core::unexpected(
-                operationError("playback.content.main_music_failed",
-                               "Required main music source could not be prepared", diagnostics));
+                operationError(replacement ? "playback.chart.reload_compile_failed"
+                                           : "playback.chart.compile_failed",
+                               "Chart compilation produced errors", diagnostics));
         }
-        audioSourceLease.emplace(std::move(*sourceResult.lease));
-    }
-
-    auto session = resourceManager ? std::make_unique<runtime::RuntimeSession>(*resourceManager)
-                                   : std::make_unique<runtime::RuntimeSession>();
-    auto runtimePrepared = session->prepare(chartRuntime);
-    const bool preparedValid = runtimePrepared.hasValue();
-    diagnostics.append(std::move(runtimePrepared.diagnostics));
-    if (!preparedValid) {
-        state_->lastOperationDiagnostics = diagnostics;
-        return core::unexpected(operationError("playback.session.prepare_failed",
-                                               "RuntimeSession preparation produced errors",
-                                               diagnostics));
-    }
-    auto presentation = detail::preparePresentation(chartRuntime, resourceManager.get());
-    if (!presentation) {
-        addErrorDiagnostic(diagnostics, presentation.error());
-        diagnostics.sortDeterministically();
-        state_->lastOperationDiagnostics = diagnostics;
-        return core::unexpected(std::move(presentation.error()));
-    }
-    if (auto committed = session->commit(std::move(*runtimePrepared.prepared)); !committed) {
-        return core::unexpected(std::move(committed.error()));
-    }
-
-    std::optional<RuntimeFrame> committedFrame;
-    if (replacement && targetFrame != nullptr) {
-        committedFrame = *targetFrame;
-        committedFrame->simulationDeltaTimeMs = 0.0;
-        if (policy == ReloadPolicy::RestartAtZero) {
-            committedFrame->chartTimeMs = 0.0;
+        auto& chartRuntime = *runtimeResult.runtime;
+        const bool hasMainMusic = chartRuntime.mainMusic.has_value();
+        if ((mode == PlaybackMode::ChartClock && hasMainMusic) ||
+            (mode != PlaybackMode::ChartClock && !hasMainMusic)) {
+            return core::unexpected(
+                core::Error{"playback.mode.content_mismatch",
+                            mode == PlaybackMode::ChartClock
+                                ? "ChartClock requires a chart without main music"
+                                : "HostClock and CuexisAudio require a chart with main music"});
         }
-        if (auto updated = session->update(runtimeFrame(*committedFrame)); !updated) {
-            addErrorDiagnostic(diagnostics, updated.error());
+
+        std::unique_ptr<assets::ResourceManager> resourceManager;
+        if (sourceState.database) {
+            resourceManager = std::make_unique<assets::ResourceManager>(
+                std::move(*sourceState.database), sourceState.provider);
+        }
+
+        std::optional<assets::AudioSourceLease> audioSourceLease;
+        if (chartRuntime.mainMusic) {
+            if (!resourceManager) {
+                return core::unexpected(core::Error{
+                    "playback.content.asset_database_missing",
+                    "A chart with main music requires an AssetDatabase and ContentProvider"});
+            }
+            auto sourceResult = resourceManager->requestAudioSource(
+                assets::AssetId{chartRuntime.mainMusic->value}, assets::ResourcePolicy::Required);
+            const bool sourceValid = sourceResult.hasValue();
+            diagnostics.append(std::move(sourceResult.diagnostics));
+            if (!sourceValid) {
+                state_->lastOperationDiagnostics = diagnostics;
+                return core::unexpected(operationError(
+                    "playback.content.main_music_failed",
+                    "Required main music source could not be prepared", diagnostics));
+            }
+            audioSourceLease.emplace(std::move(*sourceResult.lease));
+        }
+
+        auto session = resourceManager ? std::make_unique<runtime::RuntimeSession>(*resourceManager)
+                                       : std::make_unique<runtime::RuntimeSession>();
+        auto runtimePrepared = session->prepare(chartRuntime);
+        const bool preparedValid = runtimePrepared.hasValue();
+        diagnostics.append(std::move(runtimePrepared.diagnostics));
+        if (!preparedValid) {
+            state_->lastOperationDiagnostics = diagnostics;
+            return core::unexpected(operationError("playback.session.prepare_failed",
+                                                   "RuntimeSession preparation produced errors",
+                                                   diagnostics));
+        }
+        auto presentation = detail::preparePresentation(chartRuntime, resourceManager.get());
+        if (!presentation) {
+            addErrorDiagnostic(diagnostics, presentation.error());
             diagnostics.sortDeterministically();
-            auto error = operationError("playback.session.reload_sample_failed",
-                                        "Reload target frame sampling failed", diagnostics);
-            state_->lastOperationDiagnostics = std::move(diagnostics);
-            return core::unexpected(std::move(error));
+            state_->lastOperationDiagnostics = diagnostics;
+            return core::unexpected(std::move(presentation.error()));
         }
-    }
+        if (auto committed = session->commit(std::move(*runtimePrepared.prepared)); !committed) {
+            return core::unexpected(std::move(committed.error()));
+        }
 
-    const auto* preparedPresentation = presentation->has_value() ? &presentation->value() : nullptr;
-    auto snapshotLayout = buildSnapshotLayout(*session, chartRuntime, preparedPresentation);
-    if (!snapshotLayout) {
-        return core::unexpected(std::move(snapshotLayout.error()));
-    }
+        std::optional<RuntimeFrame> committedFrame;
+        if (replacement && targetFrame != nullptr) {
+            committedFrame = *targetFrame;
+            committedFrame->simulationDeltaTimeMs = 0.0;
+            if (policy == ReloadPolicy::RestartAtZero) {
+                committedFrame->chartTimeMs = 0.0;
+            }
+            if (auto updated = session->update(runtimeFrame(*committedFrame)); !updated) {
+                addErrorDiagnostic(diagnostics, updated.error());
+                diagnostics.sortDeterministically();
+                auto error = operationError("playback.session.reload_sample_failed",
+                                            "Reload target frame sampling failed", diagnostics);
+                state_->lastOperationDiagnostics = std::move(diagnostics);
+                return core::unexpected(std::move(error));
+            }
+        }
 
-    diagnostics.sortDeterministically();
-    auto prepared = std::make_unique<PreparedPlayback::State>();
-    prepared->owner = this;
-    prepared->ownerToken = state_->sessionToken;
-    prepared->expectedGeneration = state_->generation;
-    prepared->replacement = replacement;
-    prepared->contentProvider = std::move(sourceState.provider);
-    prepared->resourceManager = std::move(resourceManager);
-    prepared->chartJson = sourceState.chartJson;
-    prepared->runtimeSession = std::move(session);
-    prepared->snapshotLayout = std::move(*snapshotLayout);
-    prepared->chartInfo = chartInfoFor(chartRuntime, prepared->runtimeSession->resourceCount());
-    prepared->contentInfo = PlaybackContentInfo{
-        chartRuntime.chartId.value, chartRuntime.version, chartRuntime.timingMap.offsetMs(), mode,
-        chartRuntime.mainMusic ? std::optional<std::string>{chartRuntime.mainMusic->value}
-                               : std::nullopt};
-    prepared->audioSourceLease = std::move(audioSourceLease);
-    prepared->targetFrame = committedFrame;
-    prepared->committedState = replacement ? state_->sessionState : SessionState::Ready;
-    prepared->presentation = std::move(*presentation);
-    prepared->candidateGeneration = state_->nextCandidateGeneration++;
-    if (prepared->candidateGeneration == 0) {
+        const auto* preparedPresentation =
+            presentation->has_value() ? &presentation->value() : nullptr;
+        auto snapshotLayout = buildSnapshotLayout(*session, chartRuntime, preparedPresentation);
+        if (!snapshotLayout) {
+            return core::unexpected(std::move(snapshotLayout.error()));
+        }
+
+        diagnostics.sortDeterministically();
+        auto prepared = std::make_unique<PreparedPlayback::State>();
+        prepared->owner = this;
+        prepared->ownerToken = state_->sessionToken;
+        prepared->expectedGeneration = state_->generation;
+        prepared->replacement = replacement;
+        prepared->contentProvider = std::move(sourceState.provider);
+        prepared->resourceManager = std::move(resourceManager);
+        prepared->chartJson = jsonText;
+        prepared->animationProgram = std::move(animationProgram);
+        prepared->runtimeSession = std::move(session);
+        prepared->snapshotLayout = std::move(*snapshotLayout);
+        prepared->chartInfo = chartInfoFor(chartRuntime, prepared->runtimeSession->resourceCount());
+        prepared->contentInfo = PlaybackContentInfo{
+            chartRuntime.chartId.value, chartRuntime.version, chartRuntime.timingMap.offsetMs(),
+            mode,
+            chartRuntime.mainMusic ? std::optional<std::string>{chartRuntime.mainMusic->value}
+                                   : std::nullopt};
+        prepared->audioSourceLease = std::move(audioSourceLease);
+        prepared->targetFrame = committedFrame;
+        prepared->committedState = replacement ? state_->sessionState : SessionState::Ready;
+        prepared->presentation = std::move(*presentation);
         prepared->candidateGeneration = state_->nextCandidateGeneration++;
+        if (prepared->candidateGeneration == 0) {
+            prepared->candidateGeneration = state_->nextCandidateGeneration++;
+        }
+        prepared->diagnostics = std::move(diagnostics);
+        prepared->lastOperationDiagnostics = prepared->diagnostics;
+        return PreparedPlayback{std::move(prepared)};
+    } catch (const std::bad_alloc&) {
+        return core::unexpected(
+            prepareExceptionError(replacement ? "prepare_reload" : "prepare_load", true));
+    } catch (const std::exception& exception) {
+        return core::unexpected(prepareExceptionError(
+            replacement ? "prepare_reload" : "prepare_load", false, &exception));
+    } catch (...) {
+        return core::unexpected(
+            prepareExceptionError(replacement ? "prepare_reload" : "prepare_load", false));
     }
-    prepared->diagnostics = std::move(diagnostics);
-    prepared->lastOperationDiagnostics = prepared->diagnostics;
-    return PreparedPlayback{std::move(prepared)};
 }
 
 auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> {
@@ -1075,13 +1302,18 @@ auto PlaybackSession::loadChart(std::string_view jsonText) -> core::Result<void>
 }
 
 auto PlaybackSession::load(PlaybackSource&& source, PlaybackMode mode) -> core::Result<void> {
+    return load(std::move(source), mode, PlaybackPrepareOptions{});
+}
+
+auto PlaybackSession::load(PlaybackSource&& source, PlaybackMode mode,
+                           const PlaybackPrepareOptions& options) -> core::Result<void> {
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("load"));
     }
     if (state_->operationActive) {
         return core::unexpected(reentryError("load"));
     }
-    auto prepared = prepareLoad(std::move(source), mode);
+    auto prepared = prepareLoad(std::move(source), mode, options);
     if (!prepared) {
         return core::unexpected(std::move(prepared.error()));
     }
@@ -1275,13 +1507,19 @@ auto PlaybackSession::extractFrame(const FrameViewport& viewport, FrameSnapshot&
 
 auto PlaybackSession::reload(std::string_view replacementJson, const RuntimeFrame& targetFrame,
                              ReloadPolicy policy) -> core::Result<void> {
+    return reload(replacementJson, targetFrame, policy, PlaybackPrepareOptions{});
+}
+
+auto PlaybackSession::reload(std::string_view replacementJson, const RuntimeFrame& targetFrame,
+                             ReloadPolicy policy, const PlaybackPrepareOptions& options)
+    -> core::Result<void> {
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("reload"));
     }
     if (state_->operationActive) {
         return core::unexpected(reentryError("reload"));
     }
-    auto prepared = prepareReload(replacementJson, targetFrame, policy);
+    auto prepared = prepareReload(replacementJson, targetFrame, policy, options);
     if (!prepared) {
         return core::unexpected(std::move(prepared.error()));
     }
@@ -1290,13 +1528,19 @@ auto PlaybackSession::reload(std::string_view replacementJson, const RuntimeFram
 
 auto PlaybackSession::reload(PlaybackSource&& replacement, const RuntimeFrame& targetFrame,
                              ReloadPolicy policy) -> core::Result<void> {
+    return reload(std::move(replacement), targetFrame, policy, PlaybackPrepareOptions{});
+}
+
+auto PlaybackSession::reload(PlaybackSource&& replacement, const RuntimeFrame& targetFrame,
+                             ReloadPolicy policy, const PlaybackPrepareOptions& options)
+    -> core::Result<void> {
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("reload"));
     }
     if (state_->operationActive) {
         return core::unexpected(reentryError("reload"));
     }
-    auto prepared = prepareReload(std::move(replacement), targetFrame, policy);
+    auto prepared = prepareReload(std::move(replacement), targetFrame, policy, options);
     if (!prepared) {
         return core::unexpected(std::move(prepared.error()));
     }

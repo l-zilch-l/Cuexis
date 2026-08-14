@@ -612,6 +612,7 @@ cuexis_verify_target_dependencies(cuexis_playback
         cuexis::core
         cuexis::assets
         cuexis::chart
+        cuexis::cxc
         cuexis::filesystem
         cuexis::project
         cuexis::render

@@ -80,6 +80,9 @@ file(REMOVE_RECURSE "${work_dir}")
 file(MAKE_DIRECTORY "${work_dir}")
 set(fixture_dir "${work_dir}/fixture")
 file(COPY "${CUEXIS_SOURCE_DIR}/assets/projects/stage3_project" DESTINATION "${fixture_dir}")
+file(COPY
+    "${CUEXIS_SOURCE_DIR}/tests/fixtures/chart_format_update/golden/cxc_v1_v4_cxt.cxc"
+    DESTINATION "${fixture_dir}")
 
 set(common_configure_arguments
     -G "${CUEXIS_GENERATOR}"
@@ -415,7 +418,7 @@ else()
         set(component_arguments)
     endif()
     if(CUEXIS_CONSUMER_MODE STREQUAL "find_package_playback")
-        foreach(invalid_version IN ITEMS 0.4 0.6)
+        foreach(invalid_version IN ITEMS 0.5 0.7)
             cuexis_expect_configure_failure(
                 "Cuexis package version ${invalid_version} compatibility rejection"
                 "${CMAKE_COMMAND}"

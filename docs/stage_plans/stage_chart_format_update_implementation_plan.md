@@ -1,8 +1,8 @@
 # Stage Chart Format Update：谱面格式更新实施计划
 
-状态：CFU-A/CFU-B、CFU-C0/C1/C2/C3/C4 已完成；CFU-D1/D2 已关闭；下一批次为 CFU-E；CFU-D3 等待 CFU-E；ADR 0038 已于 2026-08-11 整体接受
+状态：CFU-A/CFU-B、CFU-C0/C1/C2/C3/C4 已完成；CFU-D1/D2 已关闭；CFU-E0/E1/E2 已关闭，E3 为下一批次；CFU-D3 等待 CFU-E；ADR 0038 已于 2026-08-11 整体接受
 
-更新日期：2026-08-13
+更新日期：2026-08-14
 
 本阶段的稳定名称是 **Stage Chart Format Update**，位置为 Stage 3 与 Stage 4 之间。它使用独立名称，不建立数字别名。
 
@@ -520,7 +520,12 @@ v4 chart golden 与结构性 report 检查已落地。本 worktree Debug 证据�
 
 #### CFU-E0：公共 API 与版本门禁
 
-在修改安装头以前，先提交 API sketch 并单独评审。候选职责名称如下，确切拼写和签名由 E0 冻结：
+状态：已于 2026-08-14 经项目所有者接受并关闭。冻结的签名、兼容结论和版本目标见
+[CFU-E0 API 评审报告](../stage_reports/260814-chart-format-update-e0-api.md)。CFU-E1 实施前仓库仍保持
+SDK API `0.5.0`，安装头和生成头尚未修改。
+
+在修改安装头以前，先提交 API sketch 并单独评审。E0 的评审输入职责如下，确切拼写和签名已由
+E0 评审报告冻结：
 
 ```text
 ChartParameterSet / PlaybackPrepareOptions
@@ -540,8 +545,8 @@ API 约束：
   JSON DOM、archive handle 或内部 resolver 类型。
 - 新 public types 使用 owning ASCII string/固定宽度整数/`std::array` 等稳定 C++20 类型，安装头纯
   ASCII，异常不跨边界。
-- 这是候选 additive SDK surface，`0.6.0` 只是 E0 的候选 `CUEXIS_SDK_API_VERSION`；确切版本由
-  项目所有者在 E0 冻结，在此之前不得修改版本或生成头。
+- 这是已接受的 additive SDK surface；`CUEXIS_SDK_API_VERSION` 的 E1 实施目标已冻结为 `0.6.0`。
+  E1 开始前不得修改版本或生成头。
 
 #### CFU-E1：统一 PlaybackSource 内部形状
 
@@ -558,6 +563,12 @@ optional CxcPackageIdentity metadata
 `fromChartText` 建立单 document source；现有 typed/filesystem factory 适配该形状；新增 CXC
 file/memory factory 使用 `cuexis_cxc`。ParameterSet 不进入 source state。
 
+实施状态：CFU-E1 已于 2026-08-14 关闭。公共 owning document/source type、typed/CXC factory、统一
+entry/document/provider/database/package-metadata state、旧 factory 适配、SDK API `0.6.0`、static/shared
+consumer 和 export/import 门禁已完成。证据见
+[CFU-E1 报告](../stage_reports/260814-chart-format-update-e1-source.md)。E1 没有实现 v4 prepare、参数
+resolution、capability 或 prepared semantic identity；这些边界分别由后续 E2/E3 批次负责。
+
 #### CFU-E2：prepare、capability 与 resolved content
 
 1. Playback 把 public ParameterSet 转换为 `cuexis_chart` 内部 typed input，再调用 C2 resolver。
@@ -568,6 +579,13 @@ file/memory factory 使用 `cuexis_cxc`。ParameterSet 不进入 source state。
 4. 空动画 v4 和静态/参数化 Transform/Camera 可以编译到现有 ChartRuntime；任意非空 CXT import、
    Clip、Binding、Layer 或 Instance 在 Stage 4 前以 `playback.capability.unsupported` 失败。
 5. `AnimationProgramInput` 只保存在 candidate typed state，不能由 Chart compiler 自行采样或写 World。
+
+实施状态：CFU-E2 已于 2026-08-14 关闭。public ParameterSet 转换、v4 load/resolve、project-document
+CXT lookup、格式 capability preflight、静态/参数化 v4 到既有 Runtime 的投影、options overload 委托和
+失败 reload 回归已完成。非空动画继续在 Runtime/World 发布前稳定拒绝；candidate 只保存 typed
+`AnimationProgramInput`，没有动画采样或混合。证据见
+[CFU-E2 报告](../stage_reports/260814-chart-format-update-e2-prepare.md)。E2 没有实现 prepared semantic
+identity；下一批次为 CFU-E3。
 
 #### CFU-E3：identity、reload 与失败原子性
 
@@ -736,13 +754,13 @@ CXT format version            1
 CXC format version            1
 FrameDigest                   remains 3
 stable C ABI                  unchanged, still deferred to Stage 12
-candidate SDK API target      0.6.0, subject to E0/project-owner approval
+approved SDK API target       0.6.0, implementation begins in CFU-E1
 date-based build version      updated only through tools/update_version.py at release/merge gate
 ```
 
-若 E0 采用 0.6.0，必须增加 package compatibility rejection tests、static/shared symbol/export review
-和 clean consumer evidence；若 E0 最终证明无需安装头变化，项目所有者可以保留 0.5.x，但该结论
-必须在 ADR/plan 中显式记录，不能由实现者默认为 patch-compatible。
+E0 已采用 `0.6.0`。CFU-E1 已同步版本、生成头输入、package config、consumer 期望，并通过旧
+`0.5`/未来 `0.7` 请求拒绝、static/shared clean consumer 和 shared symbol/import review。CFU-E4
+仍须在最终交付 SHA 重跑这些门禁，不能用 E1 的本地证据替代最终跨平台关闭。
 
 ### 7.3 Capability 计划
 
