@@ -40,9 +40,10 @@ closure, capability derivation, and aggregate budget gates are complete. CFU-C3 
 internal `cuexis_cxc` strict ZIP32 Stored
 Reader/Writer, manifest and project closure validation, owning file/memory packages,
 package-backed Asset ContentProvider, separate Chart/CXT project-document table, exact package
-identity, binary fixtures, and static/shared package leakage gates. **CFU-C0/C1/C2/C3 complete;
-CFU-C4 next.** This checkpoint must not be described as complete CXC, a public package API, or
-Playback support.
+identity, binary fixtures, and static/shared package leakage gates. CFU-C4 delivered developer
+pack/validate/unpack tools. **CFU-C0/C1/C2/C3/C4 complete; CFU-D1/D2 closed after local Debug
+verification. CFU-D3 waits for CFU-E; CFU-D is not closed.** This checkpoint must not be
+described as complete CXC, a public package API, or Playback support.
 Stage 4 must consume
 typed data produced by the format stage and must not parse JSON/CXC/CXT in `engine/animation/`.
 Runtime scripts and per-frame script callbacks are deferred indefinitely. No scheduled stage,

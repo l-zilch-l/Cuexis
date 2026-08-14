@@ -14,6 +14,10 @@ class ChartWriter final {
   public:
     [[nodiscard]] static auto write(const ChartDocument& document) -> core::Result<std::string>;
 
+    [[nodiscard]] static auto writeCanonicalJson(std::string_view jsonText,
+                                                 const ChartLimits& limits = {})
+        -> core::Result<std::string>;
+
     [[nodiscard]] static auto writeV4(const ChartV4SourceDocument& document,
                                       const ChartLimits& limits = {}) -> core::Result<std::string>;
 

@@ -2,7 +2,7 @@
 
 状态：阶段 3 最终验收后的现行构建、安装与质量门禁规范
 
-更新日期：2026-08-08
+更新日期：2026-08-13
 
 ## 当前仓库说明
 
@@ -168,7 +168,8 @@ canonical Stage 1A 示例仍可通过 `--chart` 作为无资源回归入口：
 
 阶段 2A.1 已移除 `cuexis.chart.simple`；该格式稳定报告 `chart.format.unsupported`，构建产物不再复制 Simple fixture。
 
-Chart v3 示例、校验器和显式迁移器可直接运行：
+Chart v3 示例、校验器和显式迁移器可直接运行。默认目标仍是 v3；`--target 4` 才输出静态空动画
+v4：
 
 ```powershell
 .\out\build\debug\bin\cuexis_chart_validator.exe `
@@ -178,11 +179,18 @@ Chart v3 示例、校验器和显式迁移器可直接运行：
   --input .\tests\fixtures\stage2_migration_v1.cuexis.chart.json `
   --output .\out\artifacts\stage2-migrated.cuexis.chart.json `
   --report .\out\artifacts\stage2-migration-report.json
+
+.\out\build\debug\bin\cuexis_chart_migrator.exe `
+  --input .\tests\fixtures\chart_format_update\valid\chart_v3_static_migration.json `
+  --output .\out\artifacts\stage-cfu-d-migrated-v4.cuexis.chart.json `
+  --report .\out\artifacts\stage-cfu-d-migration-v4-report.json `
+  --target 4
 ```
 
-迁移器要求输入、输出和报告路径互不冲突，失败不修改目标。`cuexis_chart_tool_tests` 会校验
-golden、目标回滚和 CLI 退出合同。Player 可使用 `--chart` 加载 Stage 2 示例进行 GPU smoke；
-算法、迁移和 headless Playback 验收不依赖 GPU。
+迁移器要求输入、输出和报告路径互不冲突，失败不修改目标。无 `--target` 的旧调用继续拒绝
+v3 输入。`cuexis_chart_tool_tests` 会校验 v3 golden、v4 chart golden、报告字段、目标回滚和
+CLI 退出合同。Player 可使用 `--chart` 加载 Stage 2 示例进行 GPU smoke；算法、迁移和
+headless Playback 验收不依赖 GPU。v4 目前不能作为 Playback 生产输入。
 
 默认阶段 1D 项目包含 Chart v2、Asset Index v2、索引内非静音 WAV 和 typed
 `audio.mainMusic` 引用。Player 在 Window/GL/Audio device 创建前完成 Project、Index、Chart、

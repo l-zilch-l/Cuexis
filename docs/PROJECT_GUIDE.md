@@ -2,7 +2,7 @@
 
 状态：现行项目指南
 
-更新日期：2026-08-10
+更新日期：2026-08-13
 
 本文是项目入口，不再保存完整路线、格式字段或阶段测试日志。整理前的完整长版快照见
 [archive/PROJECT_GUIDE_LEGACY_2026-08-10.md](archive/PROJECT_GUIDE_LEGACY_2026-08-10.md)。
@@ -56,8 +56,8 @@ time discontinuities rebuild from absolute time
 ## 5. 内容和格式
 
 当前 Playback 生产 Chart 格式是 `cuexis.chart` v1/v2/v3。Stage Chart Format Update 已接受 CXC v1、
-Chart v4 和 CXT v1 合同，并完成 CFU-C0/C1/C2/C3 内部格式实现检查点；C4 工具、Playback 接入和
-最终跨平台门禁仍未完成。
+Chart v4 和 CXT v1 合同，并完成 CFU-C0–C4。CFU-D1/D2 已关闭显式 JSON lift 迁移与 CLI
+`--target 4`。Playback 接入、CFU-D3 和最终跨平台门禁仍未完成。
 
 格式权威入口：[formats/README.md](formats/README.md)。
 

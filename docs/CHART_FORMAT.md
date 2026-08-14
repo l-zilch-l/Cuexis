@@ -1,11 +1,11 @@
 # Cuexis Chart Format v1/v2/v3
 
-状态：v1/v2/v3 已实现；方案 B 已于阶段 2A.1 移除。ADR 0038 已提出 CXC v1、Chart v4 与
-CXT v1；CXT、播放前参数和 Template Binding 子决策已于 2026-08-10 接受，但整体尚未实现。
-Chart v4 候选字段见 [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md)，CXC 容器见
-[CXC_FORMAT.md](CXC_FORMAT.md)，CXT 文件语义见 [CXT_FORMAT.md](CXT_FORMAT.md)。
+状态：v1/v2/v3 已实现并继续作为 Playback 生产格式族。方案 B 已于阶段 2A.1 移除。ADR 0038
+已接受 CXC v1、Chart v4 与 CXT v1。显式迁移默认仍输出 v3；`--target 4` 可将合法
+v1/v2/v3 提升为静态空动画 v4。Chart v4 字段见 [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md)，
+CXC 容器见 [CXC_FORMAT.md](CXC_FORMAT.md)，CXT 文件语义见 [CXT_FORMAT.md](CXT_FORMAT.md)。
 
-更新日期：2026-08-10
+更新日期：2026-08-13
 
 ## 1. 范围
 
@@ -528,17 +528,27 @@ v1 的分段 `in_out_cubic` 在精确 Beat 中点拆成两个语义等价的 Eve
 
 v1 Track 在首 Key 之前已经输出首 Key 值，而 v3 Event 在首事件前保持对象基准。迁移器必须把每个已绑定对象或模板的对应初始属性改写为首 Key 值；单 Key Track 只需改写基准，不生成事件。共享 Behavior、模板实例和未绑定 Behavior 必须有确定性迁移报告，无法证明等价时失败。末 Key 之后由最后事件终值自然保持。对象初值改写或模板展开必须显式列入迁移报告，不得静默执行，也不得丢弃未绑定数据。
 
-仓库提供显式迁移和校验工具：
+仓库提供显式迁移和校验工具。默认目标仍是 v3；旧调用组合继续只走 `migrateToV3`：
 
 ```powershell
 cuexis_chart_migrator --input <v1-or-v2.json> --output <v3.json> --report <report.json>
+cuexis_chart_migrator --input <v1-or-v2-or-v3.json> --output <v4.json> --report <report.json> --target 4
 cuexis_chart_validator --input <chart.json>
 ```
 
+`--target` 只接受 `3` 或 `4`。缺省或 `--target 3` 拒绝已经是 v3 的输入。`--target 4`
+接受合法 v1/v2/v3：v1/v2 先复用现有 v3 迁移，再对规范化 v3 JSON 做 lift；v3 直接 lift。
+v4 或其他 version 稳定失败，不写 artifact。v3 → v4 只插入空 `parameters`、
+`animationTemplateImports`、`animationClips` 并提升 `version`，不生成 CXT、参数、Animator、
+Clip、Binding 或脚本。
+
 迁移器不自动写回源文件。输入、输出和报告路径必须互不冲突；迁移先写同目录临时文件，
 只有 Chart 与报告都完成后才替换目标。失败时删除临时文件并恢复目标备份，因此不得留下半份
-Chart 或报告。报告记录源/目标版本、基准改写、模板展开、生成事件数和未绑定 Behavior。
-v2 的 `audio` block 原样迁移到 v3；v1 没有该字段。
+Chart 或报告。v3 报告字段与既有 Stage 2 golden 保持一致：源/目标版本、基准改写、模板展开、
+生成事件数和未绑定 Behavior。v4 报告在这些计数之外增加 source/target canonical identity、
+`discardedFields`、生成的 Clip/Binding/参数计数、字段计数以及稳定 diagnostics/warnings。
+v2 的 `audio` block 原样迁移到 v3 再 lift 到 v4；v1 没有该字段。
+FrameSnapshot / FrameDigest 等价属于 CFU-D3，必须等 Playback 能加载 v4 后再关闭。
 
 ## 9. Extensions
 

@@ -16,7 +16,7 @@
 | [Stage 1E](stage_1e_implementation_plan.md) | completed | SDK 安装与 external consumer |
 | [Stage 2](stage_2_implementation_plan.md) | completed | Chart v3、TimingMap、Behavior Event |
 | [Stage 3](stage_3_implementation_plan.md) | completed | Portable Presentation 与渲染 adapter |
-| [Stage Chart Format Update](stage_chart_format_update_implementation_plan.md) | active | ADR 0038 已接受；CFU-C0/C1/C2/C3/C4 complete，下一批次为 CFU-D |
+| [Stage Chart Format Update](stage_chart_format_update_implementation_plan.md) | active | ADR 0038 已接受；C0–C4 complete；D1/D2 已关闭；下一批次为 CFU-E；D3 等待 CFU-E |
 | [Stage 4](stage_4_implementation_plan.md) | future, blocked | Cuexis 表现动画；等待格式阶段关闭 |
 | [Stage 5](stage_5_implementation_plan.md) | future | Material、Shader 与能力 Profile |
 | [Stage 6](stage_6_implementation_plan.md) | future | Playback C++ API 与独立 Player 产品化 |

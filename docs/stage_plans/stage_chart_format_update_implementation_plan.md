@@ -1,6 +1,6 @@
 # Stage Chart Format Update：谱面格式更新实施计划
 
-状态：CFU-A/CFU-B、CFU-C0/C1/C2/C3/C4 已完成；下一批次为 CFU-D；ADR 0038 已于 2026-08-11 整体接受
+状态：CFU-A/CFU-B、CFU-C0/C1/C2/C3/C4 已完成；CFU-D1/D2 已关闭；下一批次为 CFU-E；CFU-D3 等待 CFU-E；ADR 0038 已于 2026-08-11 整体接受
 
 更新日期：2026-08-13
 
@@ -250,6 +250,10 @@ CFU-C1-C2 不得把动画求值放入 Chart compiler；含动画数据只形成 
 ### CFU-D：迁移
 
 新增显式迁移 CLI/API，保留 v1/v2/v3 读取回归。迁移结果必须是规范化输出，报告必须可机器读取；无法证明旧语义与新语义等价时失败。迁移不得把运行期状态、上一帧值或宿主 override 写入 Chart 基线。
+
+实施快照（2026-08-13）：D1/D2 代码、库测试、CLI `--target` 和 `VerifyChartTools` 扩展已写入工作树；
+默认仍输出 v3。同日稍后取得本 worktree Debug 证据并关闭 D1/D2；下一批次为 CFU-E。
+D3 仍等待 Playback 能加载 v4。
 
 ### CFU-E：Runtime/Playback 接入
 
@@ -506,6 +510,11 @@ CFU-D3  runtime equivalence evidence after CFU-E
 
 门禁：结构/Writer golden 在 D1-D2 关闭；FrameSnapshot、FrameDigest v3 和 seek/stop 等价证据在
 CFU-E 接入后由 D3 关闭。
+
+实施快照（2026-08-13）：`ChartMigrator::migrateToV4`、CLI `--target 3|4`、v3 报告 golden 保持、
+v4 chart golden 与结构性 report 检查已落地。本 worktree Debug 证据见
+[CFU-D1/D2 报告](../stage_reports/260813-chart-format-update-d-migration.md)。D1/D2 已关闭；
+整包 CFU-D 未关。仓库外旧 Chart 资产仍未确认，全部 v1/v2/v3 Reader 与迁移入口保留。
 
 ### 5.7 CFU-E：PlaybackSource、prepare options 与事务接入
 

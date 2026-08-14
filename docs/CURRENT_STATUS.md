@@ -27,7 +27,7 @@ PlaybackSession、FrameSnapshot、ContentProvider 和后续 Judgement/Replay 合
 | Stage 1E | 已完成 | [完成报告](stage_reports/stage_1e_completion_report.md) |
 | Stage 2 | 已完成 | [完成报告](stage_reports/stage_2_completion_report.md) |
 | Stage 3 | 已完成 | [完成报告](stage_reports/stage_3_completion_report.md) |
-| Stage Chart Format Update | 当前活动阶段；CFU-C0/C1/C2/C3/C4 已完成，下一批次为 CFU-D | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md)、[C3 报告](stage_reports/260812-chart-format-update-c3-cxc.md) 与 [C4 报告](stage_reports/260813-chart-format-update-c4-tools.md) |
+| Stage Chart Format Update | 当前活动阶段；CFU-C0–C4 已完成；CFU-D1/D2 已关闭；CFU-D3 等待 CFU-E；整包 CFU-D 未关 | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md)、[C4 报告](stage_reports/260813-chart-format-update-c4-tools.md) 与 [D1/D2 报告](stage_reports/260813-chart-format-update-d-migration.md) |
 | Stage 4 | 未开始，等待格式阶段关闭 | [实施计划](stage_plans/stage_4_implementation_plan.md) |
 
 Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使用 Stage 3.5 作为别名。
@@ -49,7 +49,12 @@ Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使
   sibling staging/atomic commit、no-overwrite、exit `0/1/2` 和 binary round-trip CMake 门禁。当前
   hosted Linux/Windows/MinGW、sanitizer、coverage 和 Linux developer-tool gates 已在最终 SHA
   `41ddb6a980b816b2c0b3b1e25df9268603bcc883` 通过；CFU-C4 已关闭。该关闭仍不是完整 CXC 公共产品
-  支持，不包含 Playback 接入、Chart migration 或 Stage 4 动画求值。
+  支持，不包含 Playback 接入或 Stage 4 动画求值。
+- CFU-D1/D2 已关闭：`cuexis_chart` 与 `cuexis_chart_migrator` 提供显式 JSON lift；保留
+  `migrateToV3` 与默认 CLI v3 输出；新增 `migrateToV4` / `--target 4`；v1/v2 → v4 复用 v3 路径；
+  v4 报告增加 canonical identity 与字段计数。本 worktree Debug 证据见
+  [D1/D2 报告](stage_reports/260813-chart-format-update-d-migration.md)。整包 CFU-D 未关；
+  CFU-D3、仓库外旧 Chart 资产确认和 Playback 接入仍未开始。
 - CFU-C 至 CFU-G 的详细实现批次、模块落点、API 门禁、测试矩阵、跨平台验收和 Stage 4 交接方案
   已写入实施计划；当前只允许按批次推进，不得越界实现 Stage 4 动画求值。
 - CXT v1、播放前参数、Template Binding 和运行时脚本无限期延后子决策已于 2026-08-10 接受。
@@ -70,7 +75,7 @@ extension、capability、字节码、模块 ABI 或 Playback 执行入口。离�
 - 正式 `cuexis_judgement`、InputEvent、ReplayData 和确定性回放
 - Studio 独立应用实现
 - 稳定 C ABI 和语言绑定
-- CFU-D 显式 migration 与审计报告、Playback 接入和最终跨平台产品门禁
+- CFU-E Playback 接入、CFU-D3 运行时等价、外部旧 Chart 资产确认和最终跨平台产品门禁
 - Stage 4 AnimationSystem 运行时实现
 
 ## 状态更新规则

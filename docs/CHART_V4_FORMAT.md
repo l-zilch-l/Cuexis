@@ -1,8 +1,9 @@
 # Cuexis Chart Format v4
 
-状态：accepted contract；CFU-C 实现中，尚未接入 Playback 生产路径
+状态：accepted contract；CFU-C Reader/Writer/lowering/CXC 已实现；CFU-D1/D2 已关闭显式
+JSON lift 迁移；尚未接入 Playback 生产路径
 
-更新日期：2026-08-11
+更新日期：2026-08-13
 
 依据：[ADR 0038](adr/0038-cxc-v1-and-chart-v4-boundary.md)
 
@@ -546,12 +547,20 @@ World 发布前失败。
 ## 11. 迁移
 
 `v3 -> v4` 只增加空 `parameters`、`animationTemplateImports`、`animationClips` 并提升 version。
-迁移不生成 CXT、Template Binding、参数声明或运行时脚本。迁移必须显式执行、输出到独立路径并
-生成结构化报告。
+该空字段合同不因实现批次而改变。迁移不生成 CXT、Template Binding、参数声明、Animator、Clip、
+Binding、capability workaround 或运行时脚本。迁移必须显式执行、输出到独立路径并生成结构化报告。
+
+实现入口是内部 `ChartMigrator::migrateToV4` 与 `cuexis_chart_migrator --target 4`。默认 CLI
+仍输出 v3。v1/v2 → v4 必须先复用现有 `migrateToV3`，再对规范化 v3 JSON 做 lift；不得把
+`ChartWriter::write` 的 v3 投影当作 v3 → v4 输入，也不得从 typed `ChartDocument` 手填
+`ChartV4SourceDocument`。已是 v4 的输入报告 `chart.migration.source_version_unsupported`。
+v4 报告记录 source/target canonical identity（Writer canonical bytes 的 SHA-256）、字段计数、
+生成计数和稳定 diagnostics；不能把 CXC pack 误称为迁移。
 
 迁移后的静态 v4 与源 v3 必须产生相同 FrameSnapshot 和 FrameDigest v3。Chart format version 和
-capability summary 可以不同；迁移报告必须记录 source/target canonical identity，不能把 CXC pack
-误称为迁移。
+capability summary 可以不同。该运行时等价证据属于 CFU-D3，必须在 CFU-E 让 Playback 能加载
+v4 之后关闭。D1/D2 的关闭条件是结构/Writer golden 与 CLI 合同通过本地 Debug 验证；
+该验证已在本 worktree 取得，D1/D2 已关闭。整包 CFU-D 仍等待 D3。
 
 ## 12. 候选示例
 

@@ -685,6 +685,18 @@ auto ChartWriter::write(const ChartDocument& document) -> core::Result<std::stri
     return serializeCanonical(std::move(*value));
 }
 
+auto ChartWriter::writeCanonicalJson(std::string_view jsonText, const ChartLimits& limits)
+    -> core::Result<std::string> {
+    auto parsed =
+        json::parse(jsonText, {limits.maxInputBytes, limits.maxNestingDepth, limits.maxStringBytes});
+    if (!parsed) {
+        return core::unexpected(
+            core::Error{"chart.writer.source_invalid", "Chart source JSON is invalid"}.withCause(
+                std::move(parsed.error())));
+    }
+    return serializeCanonical(std::move(*parsed));
+}
+
 auto ChartWriter::writeV4(const ChartV4SourceDocument& document, const ChartLimits& limits)
     -> core::Result<std::string> {
     auto parsed =

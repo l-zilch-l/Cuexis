@@ -32,4 +32,5 @@
 | [260811 Chart Format Update CFU-C2 lowering](260811-chart-format-update-c2-lowering.md) | canonical Writer, parameter resolution, CXT import and deterministic lowering checkpoint |
 | [260812 Chart Format Update CFU-C3 CXC](260812-chart-format-update-c3-cxc.md) | strict ZIP32 envelope, package closure, owning loaders and package-backed content domains |
 | [260813 Chart Format Update CFU-C4 tools](260813-chart-format-update-c4-tools.md) | completed developer pack/validate/unpack tools, atomic staging, exit-code, round-trip and hosted cross-platform gates |
+| [260813 Chart Format Update CFU-D1/D2 migration](260813-chart-format-update-d-migration.md) | closed D1/D2 explicit v1/v2/v3 → v4 JSON lift and CLI `--target` after local Debug verify; CFU-D not closed (D3 waits for CFU-E) |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |
