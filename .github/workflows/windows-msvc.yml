@@ -45,7 +45,9 @@ jobs:
           "VCPKG_ROOT=$env:GITHUB_WORKSPACE\.vcpkg" >> $env:GITHUB_ENV
 
       - name: Configure
-        run: cmake --preset ${{ matrix.preset }} --fresh
+        run: >-
+          cmake --preset ${{ matrix.preset }} --fresh
+          -DCUEXIS_IMPLEMENTATION_SHA=${{ github.sha }}
 
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }} --clean-first
@@ -57,6 +59,19 @@ jobs:
         run: >-
           ctest --preset ${{ matrix.preset }} --no-tests=error
           -R "^cuexis_architecture_tests$"
+
+      - name: Verify CFU-F3 deterministic parity
+        run: >-
+          ctest --preset ${{ matrix.preset }} --no-tests=error
+          -R "^cuexis_cfu_f3_determinism$"
+
+      - name: Upload CFU-F3 deterministic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cuexis-cfu-f3-msvc-${{ matrix.preset }}-${{ github.sha }}
+          path: out/build/${{ matrix.preset }}/cfu-f3/
+          if-no-files-found: warn
 
       - name: Check formatting
         if: matrix.preset == 'debug'

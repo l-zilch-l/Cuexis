@@ -1,4 +1,5 @@
 add_executable(cuexis_cxc_tests
+    cfu_f4_safety_tests.cpp
     cxc_binary_fixture_tests.cpp
     cxc_package_tests.cpp
     cxc_manifest_loader_tests.cpp

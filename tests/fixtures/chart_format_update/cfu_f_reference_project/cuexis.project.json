@@ -1,0 +1,18 @@
+{
+  "format": "cuexis.project",
+  "version": 1,
+  "projectId": "01a00000-0000-7abc-8def-000000000f10",
+  "assetRoots": [
+    {
+      "id": "main",
+      "path": "assets"
+    }
+  ],
+  "entry": {
+    "chart": {
+      "root": "main",
+      "path": "charts/main.cuexis.chart.json"
+    }
+  },
+  "extensions": {}
+}

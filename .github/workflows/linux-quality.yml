@@ -65,6 +65,7 @@ jobs:
           cmake --preset ${{ matrix.preset }} --fresh
           -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
           -DCUEXIS_BUILD_DEVELOPER_TOOLS=${{ matrix.developer_tools }}
+          -DCUEXIS_IMPLEMENTATION_SHA=${{ github.sha }}
           -DVCPKG_TARGET_TRIPLET=x64-linux
 
       - name: Build
@@ -76,11 +77,56 @@ jobs:
           UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
         run: ctest --preset ${{ matrix.preset }} --no-tests=error
 
+      - name: Capture CFU-F4 sanitizer evidence
+        if: matrix.preset == 'headless-sanitize'
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+        run: |
+          mkdir -p out/build/${{ matrix.preset }}/cfu-f4
+          printf 'implementation_sha=%s\n' '${{ github.sha }}' \
+            > out/build/${{ matrix.preset }}/cfu-f4/sanitizer.txt
+          ctest --preset ${{ matrix.preset }} --no-tests=error \
+            -R '^CFU-F4' \
+            --output-log out/build/${{ matrix.preset }}/cfu-f4/sanitizer-tests.log
+
       - name: Verify CXC tools
         if: matrix.developer_tools == 'ON'
         run: >-
           ctest --preset ${{ matrix.preset }} --no-tests=error
           -R "^cuexis_cxc_tools$"
+
+      - name: Verify CFU-F3 deterministic parity
+        if: matrix.developer_tools == 'ON'
+        run: >-
+          ctest --preset ${{ matrix.preset }} --no-tests=error
+          -R "^cuexis_cfu_f3_determinism$"
+
+      - name: Upload CFU-F3 deterministic evidence
+        if: always() && matrix.developer_tools == 'ON'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cuexis-cfu-f3-${{ matrix.preset }}-${{ github.sha }}
+          path: out/build/${{ matrix.preset }}/cfu-f3/
+          if-no-files-found: warn
+
+      - name: Capture CFU-F4 maximum-content performance evidence
+        if: matrix.preset == 'headless-release'
+        env:
+          CUEXIS_RUN_PERFORMANCE_PROBE: 1
+        run: >-
+          ctest --preset headless-release --no-tests=error -V
+          -R '^cuexis_cfu_f4_performance$'
+
+      - name: Upload CFU-F4 safety and performance evidence
+        if: >-
+          always() &&
+          (matrix.preset == 'headless-release' || matrix.preset == 'headless-sanitize')
+        uses: actions/upload-artifact@v4
+        with:
+          name: cuexis-cfu-f4-${{ matrix.preset }}-${{ github.sha }}
+          path: out/build/${{ matrix.preset }}/cfu-f4/
+          if-no-files-found: warn
 
       - name: Verify deterministic performance invariants
         if: matrix.preset == 'headless-release'
@@ -115,12 +161,25 @@ jobs:
         run: >-
           cmake --preset headless-clang-tidy --fresh
           -DCMAKE_CXX_COMPILER=clang++
+          -DCUEXIS_IMPLEMENTATION_SHA=${{ github.sha }}
           -DVCPKG_TARGET_TRIPLET=x64-linux
 
-      - name: Analyze CXC and Playback closures
-        run: >-
-          cmake --build --preset headless-clang-tidy
-          --target cuexis_cxc cuexis_playback
+      - name: Analyze Chart CXC and Playback closures
+        run: |
+          mkdir -p out/build/headless-clang-tidy/cfu-f4
+          printf 'implementation_sha=%s\n' '${{ github.sha }}' \
+            > out/build/headless-clang-tidy/cfu-f4/clang-tidy.txt
+          cmake --build --preset headless-clang-tidy \
+            --target cuexis_chart cuexis_cxc cuexis_playback 2>&1 \
+            | tee -a out/build/headless-clang-tidy/cfu-f4/clang-tidy.txt
+
+      - name: Upload CFU-F4 clang-tidy evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cuexis-cfu-f4-clang-tidy-${{ github.sha }}
+          path: out/build/headless-clang-tidy/cfu-f4/
+          if-no-files-found: warn
 
   coverage:
     name: GCC Coverage
@@ -149,6 +208,7 @@ jobs:
         run: >-
           cmake --preset headless-coverage --fresh
           -DCMAKE_CXX_COMPILER=g++
+          -DCUEXIS_IMPLEMENTATION_SHA=${{ github.sha }}
           -DVCPKG_TARGET_TRIPLET=x64-linux
 
       - name: Build
@@ -169,8 +229,38 @@ jobs:
           --xml coverage.xml
           --fail-under-line 40
 
+      - name: Report CFU-F4 CXC and Chart v4 branch coverage
+        run: |
+          mkdir -p out/build/headless-coverage/cfu-f4
+          printf 'implementation_sha=%s\n' '${{ github.sha }}' \
+            > out/build/headless-coverage/cfu-f4/coverage.txt
+          gcovr out/build/headless-coverage \
+            --root . \
+            --filter 'engine/cxc/' \
+            --exclude-unreachable-branches \
+            --txt-metric branch \
+            --print-summary \
+            --txt out/build/headless-coverage/cfu-f4/cxc-branches.txt \
+            >> out/build/headless-coverage/cfu-f4/coverage.txt
+          gcovr out/build/headless-coverage \
+            --root . \
+            --filter 'engine/chart/src/(animation_lowering|animation_template_loader|chart_parameter_resolver|chart_v4_loader|chart_v4_reader_internal|chart_v4_resolver|prepared_semantic_identity)' \
+            --exclude-unreachable-branches \
+            --txt-metric branch \
+            --print-summary \
+            --txt out/build/headless-coverage/cfu-f4/chart-v4-branches.txt \
+            >> out/build/headless-coverage/cfu-f4/coverage.txt
+
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: cuexis-coverage
           path: coverage.xml
+
+      - name: Upload CFU-F4 coverage evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cuexis-cfu-f4-coverage-${{ github.sha }}
+          path: out/build/headless-coverage/cfu-f4/
+          if-no-files-found: warn

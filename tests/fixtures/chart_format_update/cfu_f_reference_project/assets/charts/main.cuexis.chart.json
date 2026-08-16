@@ -1,0 +1,125 @@
+{
+  "format": "cuexis.chart",
+  "version": 4,
+  "chartId": "01a00000-0000-7abc-8def-000000000f11",
+  "metadata": {
+    "title": "CFU-F1 Headless Reference",
+    "artist": "Cuexis"
+  },
+  "timing": {
+    "offsetMs": 0.0,
+    "defaultBpm": 120.0,
+    "tempoEvents": [],
+    "stops": [
+      {
+        "beat": { "numerator": 1, "denominator": 1 },
+        "durationMs": 250.0
+      }
+    ]
+  },
+  "camera": {
+    "type": "perspective",
+    "fovY": 60.0,
+    "near": 0.1,
+    "far": 1000.0,
+    "defaultTransform": {
+      "position": [0.0, 0.0, 5.0]
+    }
+  },
+  "parameters": [],
+  "templates": [],
+  "behaviors": [
+    {
+      "id": "cfu-f1.material",
+      "type": "behavior.event",
+      "version": 1,
+      "events": [
+        {
+          "property": "material.opacity",
+          "startBeat": { "numerator": 0, "denominator": 1 },
+          "durationBeats": { "numerator": 2, "denominator": 1 },
+          "startValue": 1.0,
+          "endValue": 0.5,
+          "startSlope": 1.0,
+          "endSlope": 1.0
+        },
+        {
+          "property": "material.tint",
+          "startBeat": { "numerator": 0, "denominator": 1 },
+          "durationBeats": { "numerator": 2, "denominator": 1 },
+          "startValue": [1.0, 1.0, 1.0],
+          "endValue": [0.5, 0.25, 1.0],
+          "startSlope": 1.0,
+          "endSlope": 1.0
+        }
+      ],
+      "stepEvents": [
+        {
+          "property": "render.material",
+          "beat": { "numerator": 1, "denominator": 1 },
+          "value": { "domain": "asset", "id": "material.blend" }
+        },
+        {
+          "property": "render.visible",
+          "beat": { "numerator": 2, "denominator": 1 },
+          "value": false
+        },
+        {
+          "property": "render.visible",
+          "beat": { "numerator": 3, "denominator": 1 },
+          "value": true
+        }
+      ]
+    }
+  ],
+  "animationTemplateImports": [],
+  "animationClips": [],
+  "objects": [
+    {
+      "id": "01a00000-0000-7abc-8def-000000000f12",
+      "name": "portable_triangle",
+      "parent": null,
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [0.0, 0.0, 0.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [1.0, 1.0, 1.0]
+        },
+        "cuexis.renderable": {
+          "version": 1,
+          "mesh": { "domain": "asset", "id": "mesh.triangle" },
+          "material": { "domain": "asset", "id": "material.opaque" }
+        },
+        "cuexis.behavior": {
+          "version": 1,
+          "behavior": { "domain": "behavior", "id": "cfu-f1.material" }
+        }
+      },
+      "extensions": {}
+    },
+    {
+      "id": "01a00000-0000-7abc-8def-000000000f13",
+      "name": "camera_main",
+      "parent": null,
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [0.0, 0.0, 5.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [1.0, 1.0, 1.0]
+        },
+        "cuexis.camera": {
+          "version": 1,
+          "type": "perspective",
+          "fovY": 60.0,
+          "near": 0.1,
+          "far": 1000.0
+        }
+      },
+      "extensions": {}
+    }
+  ],
+  "requiredExtensions": [],
+  "extensions": {}
+}

@@ -1,34 +1,113 @@
+#include <cuexis/playback/content_provider.hpp>
 #include <cuexis/playback/frame_digest.hpp>
 #include <cuexis/playback/playback_session.hpp>
 #include <cuexis/playback/playback_source.hpp>
 #include <cuexis/playback/presentation.hpp>
 
+#include <algorithm>
+#include <array>
 #include <cstddef>
+#include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <iterator>
+#include <memory>
+#include <optional>
+#include <sstream>
+#include <string>
 #include <string_view>
+#include <utility>
 #include <variant>
 #include <vector>
 
 namespace {
+
+using cuexis::playback::FrameDigest;
+using cuexis::playback::PlaybackContentInfo;
+using cuexis::playback::PlaybackMode;
+using cuexis::playback::PlaybackSession;
+using cuexis::playback::PlaybackSource;
+using cuexis::playback::PreparedSemanticIdentity;
+using cuexis::playback::RuntimeFrame;
+
+constexpr std::array<RuntimeFrame, 4> sampleFrames{
+    RuntimeFrame{.chartTimeMs = 0.0, .simulationDeltaTimeMs = 0.0, .timeDiscontinuityId = 0},
+    RuntimeFrame{.chartTimeMs = 625.0, .simulationDeltaTimeMs = 0.0, .timeDiscontinuityId = 1},
+    RuntimeFrame{.chartTimeMs = 250.0, .simulationDeltaTimeMs = 0.0, .timeDiscontinuityId = 2},
+    RuntimeFrame{.chartTimeMs = 1250.0, .simulationDeltaTimeMs = 0.0, .timeDiscontinuityId = 3},
+};
+
+constexpr std::uint64_t expectedStopDigest = 11596562486377158370ULL;
+constexpr std::string_view expectedSemanticIdentity =
+    "6d01494c126f3ae8fc9420259dc92873233022dec9dd6bf9caf04b217f100cc5";
+
+struct Observation final {
+    PreparedSemanticIdentity identity;
+    std::array<std::uint64_t, sampleFrames.size()> digests{};
+};
+
+[[nodiscard]] auto fixtureRoot() -> std::filesystem::path {
+    return std::filesystem::path{CUEXIS_FIXTURE_DIR};
+}
+
+[[nodiscard]] auto referenceProject() -> std::filesystem::path {
+    return fixtureRoot() / "cfu_f_reference_project";
+}
+
+[[nodiscard]] auto referencePackage() -> std::filesystem::path {
+    return fixtureRoot() / "cfu_f_v4_reference.cxc";
+}
+
+[[nodiscard]] auto animatedPackage() -> std::filesystem::path {
+    return fixtureRoot() / "cxc_v1_v4_cxt.cxc";
+}
+
+[[nodiscard]] auto parameterizedProject() -> std::filesystem::path {
+    return fixtureRoot() / "parameterized_project";
+}
 
 [[nodiscard]] auto fail(std::string_view message) -> int {
     std::cerr << message << '\n';
     return 1;
 }
 
-[[nodiscard]] auto readBytes(const std::filesystem::path& path) -> std::vector<std::byte> {
+[[nodiscard]] auto fail(std::string_view operation, const cuexis::core::Error& error) -> int {
+    std::cerr << operation << " failed: " << error.code() << ": " << error.message() << '\n';
+    return 1;
+}
+
+[[nodiscard]] auto readText(const std::filesystem::path& path) -> std::optional<std::string> {
     std::ifstream stream{path, std::ios::binary};
-    const std::vector<char> raw{std::istreambuf_iterator<char>{stream},
-                                std::istreambuf_iterator<char>{}};
+    if (!stream) {
+        std::cerr << "Could not open fixture: " << path << '\n';
+        return std::nullopt;
+    }
+    return std::string{std::istreambuf_iterator<char>{stream}, std::istreambuf_iterator<char>{}};
+}
+
+[[nodiscard]] auto readBytes(const std::filesystem::path& path)
+    -> std::optional<std::vector<std::byte>> {
+    const auto raw = readText(path);
+    if (!raw) {
+        return std::nullopt;
+    }
     std::vector<std::byte> bytes;
-    bytes.reserve(raw.size());
-    for (const unsigned char value : raw) {
+    bytes.reserve(raw->size());
+    for (const unsigned char value : *raw) {
         bytes.push_back(static_cast<std::byte>(value));
     }
     return bytes;
+}
+
+[[nodiscard]] auto identityHex(const PreparedSemanticIdentity& identity) -> std::string {
+    std::ostringstream output;
+    output << std::hex << std::setfill('0');
+    for (const auto byte : identity.sha256) {
+        output << std::setw(2) << static_cast<unsigned int>(byte);
+    }
+    return output.str();
 }
 
 [[nodiscard]] auto capabilities() -> cuexis::playback::PresentationCapabilities {
@@ -65,136 +144,391 @@ namespace {
     case PresentationResourceType::UnlitMaterial: {
         const auto* material =
             std::get_if<cuexis::playback::PortableUnlitMaterial>(&resource.value);
-        return material != nullptr && (!material->baseColorTexture.has_value() ||
-                                       !material->baseColorTexture->assetId.empty());
+        return material != nullptr &&
+               (!material->baseColorTexture || !material->baseColorTexture->assetId.empty());
     }
     }
     return false;
 }
 
-} // namespace
+[[nodiscard]] auto referenceAssets() -> std::vector<cuexis::playback::PlaybackAssetDescriptor> {
+    using cuexis::playback::PlaybackAssetDescriptor;
+    using cuexis::playback::PlaybackAssetType;
+    return {
+        PlaybackAssetDescriptor{.id = "texture.checker",
+                                .type = PlaybackAssetType::Texture,
+                                .rootId = "main",
+                                .logicalSource = "textures/checker.texture.bin",
+                                .dependencies = {}},
+        PlaybackAssetDescriptor{.id = "material.blend",
+                                .type = PlaybackAssetType::Material,
+                                .rootId = "main",
+                                .logicalSource = "materials/blend.material.bin",
+                                .dependencies = {"texture.checker"}},
+        PlaybackAssetDescriptor{.id = "mesh.triangle",
+                                .type = PlaybackAssetType::Mesh,
+                                .rootId = "main",
+                                .logicalSource = "meshes/triangle.mesh.bin",
+                                .dependencies = {}},
+        PlaybackAssetDescriptor{.id = "material.opaque",
+                                .type = PlaybackAssetType::Material,
+                                .rootId = "main",
+                                .logicalSource = "materials/opaque.material.bin",
+                                .dependencies = {}},
+    };
+}
 
-int main() {
-    const auto cxcPath = std::filesystem::path{CUEXIS_FIXTURE_DIR} / "cxc_v1_v4_cxt.cxc";
-    auto cxcFileSource = cuexis::playback::PlaybackSource::fromCxcFile(cxcPath);
-    if (!cxcFileSource) {
-        return fail("Playback-only consumer could not create the CXC file source");
+[[nodiscard]] auto typedReferenceSource() -> std::optional<PlaybackSource> {
+    const auto chart = readText(referenceProject() / "assets/charts/main.cuexis.chart.json");
+    if (!chart) {
+        return std::nullopt;
     }
-    auto cxcMemorySource = cuexis::playback::PlaybackSource::fromCxcMemory(readBytes(cxcPath));
-    if (!cxcMemorySource) {
-        return fail("Playback-only consumer could not create the CXC memory source");
+    auto provider = cuexis::playback::FilesystemContentProvider::create(
+        {{.id = "main", .path = referenceProject() / "assets"}});
+    if (!provider) {
+        static_cast<void>(fail("typed reference provider", provider.error()));
+        return std::nullopt;
     }
-    auto typedSource = cuexis::playback::PlaybackSource::fromTypedProjectSource(
-        {.sourceId = "external-typed-source",
+    auto source = PlaybackSource::fromTypedProjectSource(
+        {.sourceId = "external-cfu-f2-typed-reference",
          .entryChartPath = "charts/main.cuexis.chart.json",
-         .projectDocuments = {{.path = "charts/main.cuexis.chart.json", .utf8Text = "{}"}},
-         .assets = {}},
-        {});
-    if (typedSource || typedSource.error().code() != "playback.source.provider_missing") {
-        return fail("Playback-only consumer typed source contract is invalid");
-    }
-
-    const auto project = std::filesystem::path{CUEXIS_FIXTURE_DIR} / "stage3_project";
-    auto source = cuexis::playback::PlaybackSource::fromFilesystemProject(project);
+         .projectDocuments = {{.path = "charts/main.cuexis.chart.json", .utf8Text = *chart}},
+         .assets = referenceAssets()},
+        std::move(*provider));
     if (!source) {
-        return fail("Playback-only consumer could not create the stage3 source");
+        static_cast<void>(fail("typed reference source", source.error()));
+        return std::nullopt;
     }
+    return std::move(*source);
+}
 
-    cuexis::playback::PlaybackSession session;
-    cuexis::playback::PlaybackPrepareOptions prepareOptions{
-        .parameters = {
-            .values = {
-                {.id = "external.number", .value = cuexis::playback::ChartParameterNumber{1.0}},
-                {.id = "external.rational",
-                 .value = cuexis::playback::ChartParameterRational{1, 2}},
-                {.id = "external.weight", .value = cuexis::playback::ChartParameterWeight{0.5}}}}};
-    if (!std::holds_alternative<cuexis::playback::ChartParameterNumber>(
-            prepareOptions.parameters.values[0].value) ||
-        !std::holds_alternative<cuexis::playback::ChartParameterRational>(
-            prepareOptions.parameters.values[1].value) ||
-        !std::holds_alternative<cuexis::playback::ChartParameterWeight>(
-            prepareOptions.parameters.values[2].value)) {
-        return fail("Playback-only consumer parameter tags are invalid");
-    }
-    prepareOptions.parameters.values.clear();
-    auto prepared = session.prepareLoad(std::move(*source),
-                                        cuexis::playback::PlaybackMode::ChartClock, prepareOptions);
+[[nodiscard]] auto observe(PlaybackSource&& source, std::string_view sourceName)
+    -> std::optional<Observation> {
+    PlaybackSession session;
+    auto prepared = session.prepareLoad(std::move(source), PlaybackMode::ChartClock);
     if (!prepared) {
-        return fail("Playback-only consumer prepare failed");
+        static_cast<void>(fail(std::string{sourceName} + " prepare", prepared.error()));
+        return std::nullopt;
     }
+    const auto candidateIdentity = prepared->semanticIdentity();
     const auto* manifest = prepared->presentationManifest();
-    if (manifest == nullptr || manifest->entries.size() != 4U) {
-        return fail("Playback-only consumer did not receive the portable manifest");
+    if (!candidateIdentity || manifest == nullptr || manifest->entries.size() != 4U) {
+        static_cast<void>(fail(std::string{sourceName} + " candidate is incomplete"));
+        return std::nullopt;
     }
-
     const auto validation = prepared->validatePresentation(
         capabilities(), cuexis::playback::PresentationRequest{.enableDebugPass = true});
     if (!validation.hasValue() || !validation.settings || !validation.settings->debugPassEnabled) {
-        return fail("Playback-only consumer presentation preflight failed");
+        static_cast<void>(fail(std::string{sourceName} + " presentation preflight failed"));
+        return std::nullopt;
     }
 
+    cuexis::playback::PortableResourcePtr retained;
     for (const auto& entry : manifest->entries) {
         auto resource = prepared->acquirePresentationResource(entry.reference);
         if (!resource || !*resource || (*resource)->reference != entry.reference ||
             !validResource(**resource)) {
-            return fail("Playback-only consumer resource acquisition failed");
+            static_cast<void>(fail(std::string{sourceName} + " resource acquisition failed"));
+            return std::nullopt;
+        }
+        if (!retained) {
+            retained = *resource;
         }
     }
-
-    const auto candidateIdentity = prepared->semanticIdentity();
-    if (!candidateIdentity) {
-        return fail("Playback-only consumer candidate identity is missing");
-    }
-    if (!session.commit(std::move(*prepared))) {
-        return fail("Playback-only consumer commit failed");
+    auto committed = session.commit(std::move(*prepared));
+    if (!committed) {
+        static_cast<void>(fail(std::string{sourceName} + " commit", committed.error()));
+        return std::nullopt;
     }
     const auto activeIdentity = session.semanticIdentity();
     if (!activeIdentity || *activeIdentity != *candidateIdentity) {
-        return fail("Playback-only consumer active identity is missing");
-    }
-    const auto activeManifest = session.presentationManifest();
-    if (!activeManifest || activeManifest->entries.size() != 4U) {
-        return fail("Playback-only consumer active manifest failed");
+        static_cast<void>(fail(std::string{sourceName} + " active identity mismatch"));
+        return std::nullopt;
     }
 
-    auto retained = session.acquirePresentationResource(activeManifest->entries.front().reference);
-    if (!retained || !*retained || !validResource(**retained)) {
-        return fail("Playback-only consumer active resource acquisition failed");
+    Observation observation{.identity = *activeIdentity};
+    for (std::size_t index = 0; index < sampleFrames.size(); ++index) {
+        auto updated = session.update(sampleFrames[index]);
+        if (!updated) {
+            static_cast<void>(fail(std::string{sourceName} + " update", updated.error()));
+            return std::nullopt;
+        }
+        auto snapshot = session.extractFrame({.width = 1280, .height = 720});
+        if (!snapshot || snapshot->objects.size() != 2U) {
+            static_cast<void>(fail(std::string{sourceName} + " frame extraction failed"));
+            return std::nullopt;
+        }
+        auto digest = cuexis::playback::computeFrameDigest(sampleFrames[index], *snapshot);
+        if (!digest || digest->algorithmVersion != 3U) {
+            static_cast<void>(fail(std::string{sourceName} + " FrameDigest failed"));
+            return std::nullopt;
+        }
+        observation.digests[index] = digest->value;
+    }
+    if (!session.unload() || !retained || !validResource(*retained)) {
+        static_cast<void>(fail(std::string{sourceName} + " owning resource lifetime failed"));
+        return std::nullopt;
+    }
+    return observation;
+}
+
+[[nodiscard]] auto numberOptions(double x, double scaleY, double fov)
+    -> cuexis::playback::PlaybackPrepareOptions {
+    return {
+        .parameters = {
+            .values = {
+                {.id = "layout.x", .value = cuexis::playback::ChartParameterNumber{x}},
+                {.id = "layout.scale-y", .value = cuexis::playback::ChartParameterNumber{scaleY}},
+                {.id = "camera.fov", .value = cuexis::playback::ChartParameterNumber{fov}}}}};
+}
+
+[[nodiscard]] auto verifyNumberOptions() -> bool {
+    auto source = PlaybackSource::fromFilesystemProject(parameterizedProject());
+    if (!source) {
+        static_cast<void>(fail("parameterized filesystem source", source.error()));
+        return false;
+    }
+    auto options = numberOptions(-4.0, 2.0, 75.0);
+    PlaybackSession session;
+    auto prepared = session.prepareLoad(std::move(*source), PlaybackMode::ChartClock, options);
+    if (!prepared) {
+        static_cast<void>(fail("parameterized prepare", prepared.error()));
+        return false;
+    }
+    const auto candidateIdentity = prepared->semanticIdentity();
+    std::get<cuexis::playback::ChartParameterNumber>(options.parameters.values[0].value).value =
+        99.0;
+    if (!candidateIdentity || !session.commit(std::move(*prepared)) ||
+        !session.update({.chartTimeMs = 0.0})) {
+        static_cast<void>(fail("parameterized commit or update failed"));
+        return false;
+    }
+    const auto activeIdentity = session.semanticIdentity();
+    const auto frame = session.extractFrame({.width = 640, .height = 480});
+    if (!activeIdentity || *activeIdentity != *candidateIdentity || !frame ||
+        frame->objects.size() != 1U || frame->objects[0].worldMatrix[12] != -4.0F ||
+        frame->objects[0].worldMatrix[5] != 2.0F || frame->camera.fovY != 75.0) {
+        static_cast<void>(fail("prepare options were not frozen into the prepared candidate"));
+        return false;
+    }
+    return true;
+}
+
+[[nodiscard]] auto taggedSource() -> std::optional<PlaybackSource> {
+    const auto chart = readText(fixtureRoot() / "chart_v4_parameterized_rational.json");
+    if (!chart) {
+        return std::nullopt;
+    }
+    auto provider = cuexis::playback::MemoryContentProvider::create({});
+    if (!provider) {
+        static_cast<void>(fail("tagged memory provider", provider.error()));
+        return std::nullopt;
+    }
+    auto source = PlaybackSource::fromTypedProjectSource(
+        {.sourceId = "external-cfu-f2-tagged-options",
+         .entryChartPath = "charts/main.cuexis.chart.json",
+         .projectDocuments = {{.path = "charts/main.cuexis.chart.json", .utf8Text = *chart}},
+         .assets = {}},
+        std::move(*provider));
+    if (!source) {
+        static_cast<void>(fail("tagged typed source", source.error()));
+        return std::nullopt;
+    }
+    return std::move(*source);
+}
+
+[[nodiscard]] auto taggedIdentity(std::int64_t numerator, std::int64_t denominator)
+    -> std::optional<PreparedSemanticIdentity> {
+    auto source = taggedSource();
+    if (!source) {
+        return std::nullopt;
+    }
+    const cuexis::playback::PlaybackPrepareOptions options{
+        .parameters = {
+            .values = {
+                {.id = "motion.duration-scale",
+                 .value = cuexis::playback::ChartParameterRational{numerator, denominator}},
+                {.id = "motion.weight", .value = cuexis::playback::ChartParameterWeight{0.5}}}}};
+    PlaybackSession session;
+    auto prepared = session.prepareLoad(std::move(*source), PlaybackMode::ChartClock, options);
+    if (!prepared) {
+        static_cast<void>(fail("tagged parameter prepare", prepared.error()));
+        return std::nullopt;
+    }
+    const auto candidateIdentity = prepared->semanticIdentity();
+    if (!candidateIdentity || !session.commit(std::move(*prepared))) {
+        static_cast<void>(fail("tagged parameter commit failed"));
+        return std::nullopt;
+    }
+    const auto activeIdentity = session.semanticIdentity();
+    if (!activeIdentity || *activeIdentity != *candidateIdentity) {
+        static_cast<void>(fail("tagged parameter active identity mismatch"));
+        return std::nullopt;
+    }
+    return *activeIdentity;
+}
+
+[[nodiscard]] auto contextValue(const cuexis::core::Diagnostic& diagnostic, std::string_view key)
+    -> std::string_view {
+    const auto found =
+        std::ranges::find(diagnostic.context(), key, &cuexis::core::DiagnosticContext::key);
+    return found == diagnostic.context().end() ? std::string_view{} : found->value;
+}
+
+[[nodiscard]] auto diagnosticSignature(const cuexis::core::Diagnostics& diagnostics)
+    -> std::string {
+    std::ostringstream output;
+    bool first = true;
+    for (const auto& diagnostic : diagnostics.items()) {
+        if (!first) {
+            output << '|';
+        }
+        first = false;
+        output << diagnostic.code() << '@' << diagnostic.fieldPath();
+        const auto capability = contextValue(diagnostic, "capability");
+        if (!capability.empty()) {
+            output << '#' << capability;
+        }
+    }
+    return output.str();
+}
+
+[[nodiscard]] auto diagnosticFingerprint(const cuexis::core::Diagnostics& diagnostics)
+    -> std::string {
+    std::ostringstream output;
+    output << diagnostics.size() << ':' << diagnostics.hasErrors() << ':'
+           << diagnostics.hasWarnings() << ':' << diagnostics.limitReached();
+    for (const auto& diagnostic : diagnostics.items()) {
+        output << '|' << static_cast<int>(diagnostic.severity()) << ':' << diagnostic.code() << ':'
+               << diagnostic.message() << ':' << diagnostic.fieldPath();
+        for (const auto& context : diagnostic.context()) {
+            output << ':' << context.key << '=' << context.value;
+        }
+    }
+    return output.str();
+}
+
+[[nodiscard]] auto sameContent(const PlaybackContentInfo& left, const PlaybackContentInfo& right)
+    -> bool {
+    return left.chartId == right.chartId && left.chartFormatVersion == right.chartFormatVersion &&
+           left.timingOffsetMs == right.timingOffsetMs && left.mode == right.mode &&
+           left.mainMusicAssetId == right.mainMusicAssetId;
+}
+
+[[nodiscard]] auto frameDigest(PlaybackSession& session, const RuntimeFrame& frame)
+    -> std::optional<FrameDigest> {
+    auto snapshot = session.extractFrame({.width = 1280, .height = 720});
+    if (!snapshot) {
+        static_cast<void>(fail("failure-path frame extraction", snapshot.error()));
+        return std::nullopt;
+    }
+    auto digest = cuexis::playback::computeFrameDigest(frame, *snapshot);
+    if (!digest) {
+        static_cast<void>(fail("failure-path FrameDigest", digest.error()));
+        return std::nullopt;
+    }
+    return *digest;
+}
+
+[[nodiscard]] auto verifyFailedReload() -> bool {
+    auto source = PlaybackSource::fromCxcFile(referencePackage());
+    if (!source) {
+        static_cast<void>(fail("failure-path reference source", source.error()));
+        return false;
+    }
+    PlaybackSession session;
+    if (!session.load(std::move(*source), PlaybackMode::ChartClock) ||
+        !session.update(sampleFrames[1])) {
+        static_cast<void>(fail("failure-path reference load failed"));
+        return false;
+    }
+    const auto identityBefore = session.semanticIdentity();
+    const auto contentBefore = session.contentInfo();
+    const auto diagnosticsBefore = session.diagnostics();
+    const auto digestBefore = frameDigest(session, sampleFrames[1]);
+    if (!identityBefore || !contentBefore || !diagnosticsBefore || !digestBefore) {
+        static_cast<void>(fail("failure-path active state is incomplete"));
+        return false;
     }
 
-    if (!session.update({.chartTimeMs = 625.0})) {
-        return fail("Playback-only consumer update failed");
+    const auto bytes = readBytes(animatedPackage());
+    if (!bytes) {
+        return false;
     }
-    const auto frame = session.extractFrame({.width = 1280, .height = 720});
-    if (!frame || frame->objects.size() != 2U) {
-        return fail("Playback-only consumer frame extraction failed");
+    auto replacement = PlaybackSource::fromCxcMemory(*bytes);
+    if (!replacement) {
+        static_cast<void>(fail("animated replacement source", replacement.error()));
+        return false;
     }
-    const auto digest = cuexis::playback::computeFrameDigest({.chartTimeMs = 625.0}, *frame);
-    const auto repeatDigest = cuexis::playback::computeFrameDigest({.chartTimeMs = 625.0}, *frame);
-    constexpr std::uint64_t expectedDigest = 8424169740673868033ULL;
-    if (!digest || !repeatDigest || digest->algorithmVersion != 3U ||
-        digest->algorithmVersion != repeatDigest->algorithmVersion ||
-        digest->value != expectedDigest || digest->value != repeatDigest->value) {
-        return fail("Playback-only consumer digest parity failed");
+    const auto rejected = session.reload(std::move(*replacement), sampleFrames[1],
+                                         cuexis::playback::ReloadPolicy::KeepChartTime);
+    if (rejected || rejected.error().code() != "playback.capability.preflight_failed") {
+        static_cast<void>(fail("animated CXC reload was not rejected"));
+        return false;
     }
-
-    auto failedReload = cuexis::playback::PlaybackSource::fromCxcMemory(readBytes(cxcPath));
-    if (!failedReload) {
-        return fail("Playback-only consumer could not create the failed-reload CXC source");
-    }
-    if (session.reload(std::move(*failedReload), {.chartTimeMs = 625.0},
-                       cuexis::playback::ReloadPolicy::KeepChartTime)) {
-        return fail("Playback-only consumer accepted an animated CXC reload");
-    }
-    const auto identityAfterFailure = session.semanticIdentity();
-    if (!identityAfterFailure || *identityAfterFailure != *activeIdentity) {
-        return fail("Playback-only consumer failed reload changed the active identity");
+    const auto operationDiagnostics = session.lastOperationDiagnostics();
+    constexpr std::string_view expectedSignature =
+        "playback.capability.unsupported@$/animationClips#cuexis.animation.clip.v1|"
+        "playback.capability.unsupported@$/objects#cuexis.animation.layers.v1";
+    if (!operationDiagnostics || diagnosticSignature(*operationDiagnostics) != expectedSignature) {
+        static_cast<void>(fail("animated CXC diagnostic signature mismatch"));
+        return false;
     }
 
-    if (!session.unload() || !validResource(**retained)) {
-        return fail("Playback-only consumer owning resource lifetime failed");
+    const auto identityAfter = session.semanticIdentity();
+    const auto contentAfter = session.contentInfo();
+    const auto diagnosticsAfter = session.diagnostics();
+    const auto digestAfter = frameDigest(session, sampleFrames[1]);
+    return identityAfter && *identityAfter == *identityBefore && contentAfter &&
+           sameContent(*contentAfter, *contentBefore) && diagnosticsAfter &&
+           diagnosticFingerprint(*diagnosticsAfter) == diagnosticFingerprint(*diagnosticsBefore) &&
+           digestAfter && digestAfter->algorithmVersion == digestBefore->algorithmVersion &&
+           digestAfter->value == digestBefore->value;
+}
+
+} // namespace
+
+int main() {
+    const auto packageBytes = readBytes(referencePackage());
+    if (!packageBytes) {
+        return 1;
+    }
+    auto filesystemSource = PlaybackSource::fromFilesystemProject(referenceProject());
+    auto fileSource = PlaybackSource::fromCxcFile(referencePackage());
+    auto memorySource = PlaybackSource::fromCxcMemory(*packageBytes);
+    auto typedSource = typedReferenceSource();
+    if (!filesystemSource || !fileSource || !memorySource || !typedSource) {
+        return fail("Playback-only consumer could not construct all reference sources");
     }
 
-    std::cout << "Cuexis Playback-only consumer passed digest=" << digest->value << '\n';
+    const auto filesystem = observe(std::move(*filesystemSource), "filesystem");
+    const auto file = observe(std::move(*fileSource), "CXC file");
+    const auto memory = observe(std::move(*memorySource), "CXC memory");
+    const auto typed = observe(std::move(*typedSource), "typed project");
+    if (!filesystem || !file || !memory || !typed) {
+        return 1;
+    }
+    if (filesystem->identity != file->identity || filesystem->identity != memory->identity ||
+        filesystem->identity != typed->identity || filesystem->digests != file->digests ||
+        filesystem->digests != memory->digests || filesystem->digests != typed->digests) {
+        return fail("Playback-only reference sources produced different semantic observations");
+    }
+    if (identityHex(file->identity) != expectedSemanticIdentity ||
+        file->digests[1] != expectedStopDigest) {
+        return fail("Playback-only reference golden mismatch");
+    }
+
+    const auto rationalTwoHalves = taggedIdentity(2, 2);
+    const auto rationalOneWhole = taggedIdentity(1, 1);
+    if (!verifyNumberOptions() || !rationalTwoHalves || !rationalOneWhole ||
+        *rationalTwoHalves != *rationalOneWhole) {
+        return fail("Playback-only prepare options contract failed");
+    }
+    if (!verifyFailedReload()) {
+        return fail("Playback-only failed reload changed active state");
+    }
+
+    std::cout << "Cuexis Playback-only CFU-F2 consumer passed identity="
+              << identityHex(file->identity) << " stop_digest=" << file->digests[1] << '\n';
     return 0;
 }

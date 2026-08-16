@@ -20,7 +20,9 @@
 #include <malloc.h>
 #endif
 #include <new>
+#include <sstream>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace {
@@ -95,6 +97,24 @@ void beginAllocationTracking() {
     throw std::bad_alloc{};
 }
 #endif
+
+[[nodiscard]] auto emptyChart(std::uint32_t version) -> std::string {
+    std::ostringstream output;
+    output << R"({"format":"cuexis.chart","version":)" << version
+           << R"(,"chartId":"01a00000-0000-7abc-8def-000000000f4)" << version
+           << R"(","metadata":{},"timing":{"offsetMs":0,"defaultBpm":120,)"
+           << (version <= 2 ? "\"bpmChanges\":[]" : "\"tempoEvents\":[]")
+           << R"(,"stops":[]},"camera":{"type":"perspective","fovY":60,"near":0.1,"far":1000},)";
+    if (version == 4) {
+        output << R"("parameters":[],)";
+    }
+    output << R"("templates":[],"behaviors":[],)";
+    if (version == 4) {
+        output << R"("animationTemplateImports":[],"animationClips":[],)";
+    }
+    output << R"("objects":[],"requiredExtensions":[],"extensions":{}})";
+    return output.str();
+}
 
 } // namespace
 
@@ -357,4 +377,39 @@ TEST_CASE("Stage 3 Validation Sink repeated frame validation allocates nothing a
     CHECK(summary.opaque.empty());
     REQUIRE(summary.transparent.size() == 1);
     CHECK(summary.digest != 0);
+}
+
+TEST_CASE("CFU-F4 warmed empty Chart v1 through v4 update and extraction allocate nothing",
+          "[playback][cfu-f4][allocation][v4]") {
+    for (std::uint32_t version = 1; version <= 4; ++version) {
+        INFO("Chart version " << version);
+        auto source = cuexis::playback::PlaybackSource::fromChartText(emptyChart(version));
+        REQUIRE(source.has_value());
+        cuexis::playback::PlaybackSession session;
+        REQUIRE(session.load(std::move(*source), cuexis::playback::PlaybackMode::ChartClock)
+                    .has_value());
+
+        cuexis::playback::FrameSnapshot snapshot;
+        REQUIRE(session.update({.chartTimeMs = 0.0}).has_value());
+        REQUIRE(session.extractFrame({.width = 640, .height = 480}, snapshot).has_value());
+        REQUIRE(snapshot.objects.empty());
+
+        beginAllocationTracking();
+        bool succeeded = true;
+        for (std::size_t index = 1; index <= 128; ++index) {
+            const auto updated = session.update({.chartTimeMs = static_cast<double>(index),
+                                                 .simulationDeltaTimeMs = 0.0,
+                                                 .timeDiscontinuityId = index});
+            const auto extracted = session.extractFrame({.width = 640, .height = 480}, snapshot);
+            if (!updated || !extracted) {
+                succeeded = false;
+                break;
+            }
+        }
+        const auto allocations = endAllocationTracking();
+
+        CHECK(succeeded);
+        CHECK(allocations == 0);
+        CHECK(snapshot.objects.empty());
+    }
 }

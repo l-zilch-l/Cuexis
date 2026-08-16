@@ -2,7 +2,7 @@
 
 状态：现行阶段报告索引
 
-更新日期：2026-08-14
+更新日期：2026-08-15
 
 报告是带日期的证据快照。报告中的“下一步”只表示报告生成时的交接，不自动代表当前任务。
 
@@ -41,4 +41,8 @@
 | [260814 Chart Format Update CFU-E close](260814-chart-format-update-e-close.md) | owner-accepted CFU-E close after hosted Linux/Windows/MinGW success on `2dc5f6c` |
 | [260814 Chart Format Update CFU-D3 equivalence](260814-chart-format-update-d3-equivalence.md) | closed Playback FrameSnapshot / FrameDigest v3 / seek-stop equivalence for lifted empty-animation v4 |
 | [260814 Chart Format Update CFU-D close](260814-chart-format-update-d-close.md) | owner-accepted CFU-D close after “no external assets”; compatibility window retained |
+| [260815 Chart Format Update CFU-F1 headless](260815-chart-format-update-f1-headless.md) | locally completed public-Playback headless reference, cross-source identity/frame parity and atomic failure paths; F2 next |
+| [260815 Chart Format Update CFU-F2 package consumers](260815-chart-format-update-f2-package-consumers.md) | locally completed static/shared Playback-only external consumers, installed-header isolation and InternalCxc link closure; F3 next |
+| [260815 Chart Format Update CFU-F3 determinism](260815-chart-format-update-f3-determinism.md) | locally completed canonical CXC/migration/identity/diagnostic fingerprint and final-SHA hosted evidence wiring; F4 next |
+| [260815 Chart Format Update CFU-F4 safety and performance](260815-chart-format-update-f4-safety-performance.md) | locally completed limits/overflow/diagnostic/allocation gates plus SHA-bound sanitizer, analysis, coverage and maximum-content performance evidence wiring; CFU-F hosted closure pending |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |

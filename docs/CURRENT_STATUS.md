@@ -2,7 +2,7 @@
 
 状态：现行状态页
 
-更新日期：2026-08-14
+更新日期：2026-08-15
 
 本文是当前阶段和实现状态的唯一摘要。阶段计划、完成报告和审查报告仍然保留各自的历史
 细节，但不能绕过本文重新定义当前状态。
@@ -27,7 +27,7 @@ PlaybackSession、FrameSnapshot、ContentProvider 和后续 Judgement/Replay 合
 | Stage 1E | 已完成 | [完成报告](stage_reports/stage_1e_completion_report.md) |
 | Stage 2 | 已完成 | [完成报告](stage_reports/stage_2_completion_report.md) |
 | Stage 3 | 已完成 | [完成报告](stage_reports/stage_3_completion_report.md) |
-| Stage Chart Format Update | 当前活动阶段；CFU-C0–C4 已完成；CFU-D 已关闭；CFU-E 已关闭；CFU-F 为下一批次 | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md)、[D1/D2 报告](stage_reports/260813-chart-format-update-d-migration.md)、[D3 报告](stage_reports/260814-chart-format-update-d3-equivalence.md)、[D 关闭报告](stage_reports/260814-chart-format-update-d-close.md)、[E0 报告](stage_reports/260814-chart-format-update-e0-api.md)、[E1 报告](stage_reports/260814-chart-format-update-e1-source.md)、[E2 报告](stage_reports/260814-chart-format-update-e2-prepare.md)、[E3 报告](stage_reports/260814-chart-format-update-e3-identity.md)、[E4 报告](stage_reports/260814-chart-format-update-e4-gates.md) 与 [E 关闭报告](stage_reports/260814-chart-format-update-e-close.md) |
+| Stage Chart Format Update | 当前活动阶段；CFU-C0–C4 已完成；CFU-D/CFU-E 已关闭；CFU-F1–F4 已本地完成；CFU-F 等待最终 SHA hosted 证据 | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md)、[D 关闭报告](stage_reports/260814-chart-format-update-d-close.md)、[E 关闭报告](stage_reports/260814-chart-format-update-e-close.md)、[F1 报告](stage_reports/260815-chart-format-update-f1-headless.md)、[F2 报告](stage_reports/260815-chart-format-update-f2-package-consumers.md)、[F3 报告](stage_reports/260815-chart-format-update-f3-determinism.md) 与 [F4 报告](stage_reports/260815-chart-format-update-f4-safety-performance.md) |
 | Stage 4 | 未开始，等待格式阶段关闭 | [实施计划](stage_plans/stage_4_implementation_plan.md) |
 
 Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使用 Stage 3.5 作为别名。
@@ -90,6 +90,37 @@ Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使
   Windows MinGW 全部成功。证据见
   [E 关闭报告](stage_reports/260814-chart-format-update-e-close.md)。该关闭不是完整
   CXC 公共产品支持、公共 package API、完整 v4 动画 Playback 或 CFU-G。
+- CFU-F1 已于 2026-08-15 本地完成：新增只链接 public `cuexis::playback` 的无 GPU reference
+  consumer，以及保留 Behavior/Step/Stop 语义、空动画数组的 static Chart v4 reference project
+  和 CXC。filesystem、CXC file、CXC memory 的 Prepared semantic identity 与四个时间点的
+  FrameDigest v3 一致；动画 capability 与非法 target reload 均保持完整 active state。Debug、
+  Release 与 adapter-disabled headless 全量 CTest 分别通过 `368/368`、`368/368`、`334/334`。
+  证据见 [F1 报告](stage_reports/260815-chart-format-update-f1-headless.md)。
+- CFU-F2 已于 2026-08-15 本地完成：Playback-only external consumer 现在只 include 安装后的
+  `cuexis/playback/*.hpp`，并真实 prepare/commit filesystem、CXC file、CXC memory 与 typed
+  project-document source。四种 source 的 semantic identity 和四点 FrameDigest v3 trace 一致；
+  number/rational/weight prepare options 进入实际解析与冻结路径；动画 CXC 失败 reload 保持 active
+  identity、content、diagnostics 与 frame。static/shared、`add_subdirectory`/`find_package`、安装头泄漏
+  和 static `Cuexis::InternalCxc` 链接闭包门禁通过。Debug、Release、Shared Debug 与 adapter-disabled
+  Headless Debug 全量 CTest 分别通过 `368/368`、`368/368`、`371/371`、`334/334`。证据见
+  [F2 报告](stage_reports/260815-chart-format-update-f2-package-consumers.md)。
+- CFU-F3 已于 2026-08-15 本地完成：新增 production pack、v3 → v4 migrator 与 public Playback
+  headless consumer 的统一确定性指纹门禁。门禁 byte-compare committed CXC 和 migration golden，固定
+  package/report SHA-256、Prepared semantic identity、FrameDigest v3 与 capability diagnostics 顺序，
+  并生成 LF-only evidence。MSVC Debug/Release 全量均通过 `369/369`，shared Debug 与
+  adapter-disabled headless Release F3 聚焦门禁通过；Release 首轮曾有一次既有 CXC unpack 目录
+  提交瞬时失败，独立复跑与最终全量复跑均通过。CI 已为 MSVC、MinGW、hosted GCC/Clang 注入
+  最终 GitHub SHA 并上传证据，但本地结果不替代尚未运行的 hosted parity。证据见
+  [F3 报告](stage_reports/260815-chart-format-update-f3-determinism.md)。
+- CFU-F4 已于 2026-08-15 本地完成：新增 CXC manifest/package/closure 与 Chart v4 import/resolved
+  animation 的精确上限和边界 +1 门禁，并以小型 JSON 构造器和伪 ZIP32 header 覆盖整数、offset、
+  data range 溢出及稳定 diagnostics 截断，不为非法输入分配超大 fixture。warmed empty Chart v1–v4
+  的 `update()` 与复用 `FrameSnapshot` 的 `extractFrame()` 均为零新增分配。显式启用的 64 MiB 最大
+  合法资源探针记录 CXC writer/hash-load、prepare/reload、热帧时间与进程内存趋势，不设置机器相关
+  硬阈值。Linux Quality 已接入 SHA-bound sanitizer、Chart/CXC/Playback clang-tidy、CXC/Chart v4
+  branch coverage 和 Release 性能 artifact，但尚无最终实现 SHA 的 hosted 结果。证据见
+  [F4 报告](stage_reports/260815-chart-format-update-f4-safety-performance.md)。CFU-F1–F4 均已本地
+  完成；CFU-F 整体仍未关闭。
 - CFU-C 至 CFU-G 的详细实现批次、模块落点、API 门禁、测试矩阵、跨平台验收和 Stage 4 交接方案
   已写入实施计划；当前只允许按批次推进，不得越界实现 Stage 4 动画求值。
 - CXT v1、播放前参数、Template Binding 和运行时脚本无限期延后子决策已于 2026-08-10 接受。
@@ -110,7 +141,8 @@ extension、capability、字节码、模块 ABI 或 Playback 执行入口。离�
 - 正式 `cuexis_judgement`、InputEvent、ReplayData 和确定性回放
 - Studio 独立应用实现
 - 稳定 C ABI 和语言绑定
-- CFU-F hosted 确定性/安全门禁和最终跨平台产品门禁
+- CFU-F 最终 SHA hosted Linux/MSVC/MinGW、sanitizer、clang-tidy、coverage、performance 与
+  deterministic parity 证据
 - Stage 4 AnimationSystem 运行时实现
 
 ## 状态更新规则

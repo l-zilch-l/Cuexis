@@ -81,8 +81,41 @@ file(MAKE_DIRECTORY "${work_dir}")
 set(fixture_dir "${work_dir}/fixture")
 file(COPY "${CUEXIS_SOURCE_DIR}/assets/projects/stage3_project" DESTINATION "${fixture_dir}")
 file(COPY
-    "${CUEXIS_SOURCE_DIR}/tests/fixtures/chart_format_update/golden/cxc_v1_v4_cxt.cxc"
+    "${CUEXIS_SOURCE_DIR}/tests/fixtures/chart_format_update/cfu_f_reference_project"
+    "${CUEXIS_SOURCE_DIR}/tests/fixtures/chart_format_update/parameterized_project"
     DESTINATION "${fixture_dir}")
+file(COPY
+    "${CUEXIS_SOURCE_DIR}/tests/fixtures/chart_format_update/golden/cfu_f_v4_reference.cxc"
+    "${CUEXIS_SOURCE_DIR}/tests/fixtures/chart_format_update/golden/cxc_v1_v4_cxt.cxc"
+    "${CUEXIS_SOURCE_DIR}/tests/fixtures/chart_format_update/valid/chart_v4_parameterized_rational.json"
+    DESTINATION "${fixture_dir}")
+
+set(playback_consumer_source "${CUEXIS_SOURCE_DIR}/tests/external/playback_consumer.cpp")
+file(READ "${playback_consumer_source}" playback_consumer_contents)
+string(REGEX MATCHALL
+    "#[ \t]*include[ \t]*[<\"]cuexis/[^>\"]+[>\"]"
+    playback_consumer_cuexis_includes
+    "${playback_consumer_contents}")
+if(NOT playback_consumer_cuexis_includes)
+    message(FATAL_ERROR "Playback-only consumer does not include the installed Playback API")
+endif()
+foreach(include_line IN LISTS playback_consumer_cuexis_includes)
+    if(NOT include_line MATCHES "cuexis/playback/")
+        message(FATAL_ERROR
+            "Playback-only consumer includes a non-Playback Cuexis header: ${include_line}")
+    endif()
+endforeach()
+foreach(playback_consumer_cmake IN ITEMS
+        "${CUEXIS_SOURCE_DIR}/tests/external/add_subdirectory_playback/CMakeLists.txt"
+        "${CUEXIS_SOURCE_DIR}/tests/external/find_package_playback/CMakeLists.txt")
+    file(READ "${playback_consumer_cmake}" playback_consumer_cmake_contents)
+    if(playback_consumer_cmake_contents MATCHES
+       "Cuexis::(Internal|Core|Content|Audio)" OR
+       playback_consumer_cmake_contents MATCHES "cuexis_cxc")
+        message(FATAL_ERROR
+            "Playback-only consumer directly references a non-Playback Cuexis target")
+    endif()
+endforeach()
 
 set(common_configure_arguments
     -G "${CUEXIS_GENERATOR}"
@@ -282,6 +315,15 @@ else()
                     "Static Cuexis package is missing ${required_internal_target}")
             endif()
         endforeach()
+        string(REGEX MATCH
+            "set_target_properties\\(Cuexis::Playback PROPERTIES[^)]*\\)"
+            installed_playback_target_block
+            "${installed_targets}")
+        if(NOT installed_playback_target_block MATCHES
+           "LINK_ONLY:Cuexis::InternalCxc")
+            message(FATAL_ERROR
+                "Static Cuexis::Playback does not carry the InternalCxc link closure")
+        endif()
     endif()
 
     if(NOT CUEXIS_SDK_API_VERSION MATCHES "^([0-9]+)[.]([0-9]+)[.][0-9]+$")
@@ -366,6 +408,10 @@ else()
            "#[ \t]*include[ \t]*[<\"](entt/|SDL|glad/|GL/|nlohmann/|spdlog/)")
             message(FATAL_ERROR
                 "Installed Playback header leaked an implementation dependency: ${header}")
+        endif()
+        if(header_contents MATCHES "cuexis/cxc/|Cuexis::InternalCxc|cuexis_cxc")
+            message(FATAL_ERROR
+                "Installed Playback header leaked the internal CXC implementation: ${header}")
         endif()
     endforeach()
 

@@ -1,8 +1,8 @@
 # Stage Chart Format Update：谱面格式更新实施计划
 
-状态：CFU-A/CFU-B、CFU-C0/C1/C2/C3/C4 已完成；CFU-D 已关闭；CFU-E 已关闭；CFU-F 为下一批次；ADR 0038 已于 2026-08-11 整体接受
+状态：CFU-A/CFU-B、CFU-C0/C1/C2/C3/C4 已完成；CFU-D/CFU-E 已关闭；CFU-F1–F4 已本地完成；CFU-F 等待最终 SHA hosted 证据；ADR 0038 已于 2026-08-11 整体接受
 
-更新日期：2026-08-14
+更新日期：2026-08-15
 
 本阶段的稳定名称是 **Stage Chart Format Update**，位置为 Stage 3 与 Stage 4 之间。它使用独立名称，不建立数字别名。
 
@@ -645,6 +645,9 @@ package/export/import `10/10`、format/docs/version/whitespace 与 Playback-only
 
 ### 5.8 CFU-F：消费者、确定性、安全与性能
 
+状态：CFU-F1–F4 已于 2026-08-15 本地完成。CFU-F 整体保持未关闭，等待最终实现 SHA 的 hosted
+Linux/MSVC/MinGW、sanitizer、clang-tidy、coverage、performance 与 deterministic parity 证据。
+
 CFU-F 分为：
 
 ```text
@@ -670,6 +673,41 @@ CFU-F4  limits, sanitizer, allocation and performance evidence
   路径，不进入每帧更新。
 - 最大合法总量、边界+1、整数溢出和诊断截断使用小型构造器/伪 header 测试，避免 CI 为每个错误
   fixture 实际分配 512 MiB。
+
+实施快照（2026-08-15）：CFU-F1 已建立只链接 public `cuexis::playback` 的无 GPU reference
+consumer、保留 Behavior/Step/Stop 且空动画的 static Chart v4 reference project，以及对应 CXC。
+filesystem/CXC file/CXC memory 的 semantic identity 和 FrameDigest v3 trace 一致；capability 与非法
+target reload 均保持完整 active state。Debug、Release 与 adapter-disabled headless 全量门禁通过。
+证据见 [CFU-F1 报告](../stage_reports/260815-chart-format-update-f1-headless.md)。下一批次为 CFU-F2。
+
+实施快照（2026-08-15）：CFU-F2 将 Playback-only external consumer 升级为只 include 安装后的
+`cuexis/playback/*.hpp`，并真实覆盖 filesystem、CXC file、CXC memory、typed project-document、
+prepare options、semantic identity 和失败 reload。static/shared、`add_subdirectory`/`find_package`、
+adapter-disabled headless、公开头泄漏以及 static `Cuexis::InternalCxc` 传递链接闭包门禁均通过。
+Debug、Release、Shared Debug 与 Headless Debug 全量 CTest 分别通过 `368/368`、`368/368`、
+`371/371`、`334/334`。证据见
+[CFU-F2 报告](../stage_reports/260815-chart-format-update-f2-package-consumers.md)。下一批次为 CFU-F3。
+
+实施快照（2026-08-15）：CFU-F3 新增 LF-only deterministic fingerprint，将 production
+`cuexis_cxc_pack` 输出与 committed CXC byte-compare，将 `cuexis_chart_migrator --target 4` 输出与
+committed chart golden byte-compare，并固定 package/report SHA-256、Prepared semantic identity、
+FrameDigest v3 和 capability diagnostics 顺序。CTest 证据记录实现 SHA；hosted MSVC、MinGW、GCC
+Release 与 Clang Shared Debug 配置显式注入 `${{ github.sha }}` 并上传各自 `cfu-f3/` 目录。本地
+MSVC Debug/Release 全量均通过 `369/369`，shared Debug 与 adapter-disabled headless Release 聚焦
+门禁通过；Release 首轮的一次既有 CXC unpack 目录提交瞬时失败，在独立复跑与最终全量复跑中均
+通过。证据见
+[CFU-F3 报告](../stage_reports/260815-chart-format-update-f3-determinism.md)。本地结果不替代最终 SHA 的
+hosted parity。
+
+实施快照（2026-08-15）：CFU-F4 以小型 JSON 构造器和伪 ZIP32 header 覆盖 manifest/package/
+closure、Chart v4 import/resolved animation 的精确上限、边界 +1、整数与 offset/data-range 溢出、
+稳定 diagnostics 截断；warmed empty Chart v1–v4 的 update 与复用 snapshot extract 为零新增分配。
+独立最大内容探针使用 64 MiB 合法 Texture 记录 writer/hash-load、prepare/reload、热帧与进程内存趋势，
+默认 CTest 跳过，显式启用时运行且不设置机器相关硬阈值。Linux Quality 已接入最终 SHA 绑定的
+sanitizer 日志、Chart/CXC/Playback clang-tidy、CXC/Chart v4 branch coverage 与 Release 性能 artifact。
+本地 MSVC Debug/Release 全量均通过 `379/379`，F4 聚焦门禁通过 `10/10`，Debug 与 Release 性能
+探针均通过。证据见
+[CFU-F4 报告](../stage_reports/260815-chart-format-update-f4-safety-performance.md)。
 
 退出门禁：本地结果不能替代 hosted CI；跨平台 golden 必须绑定最终实现 SHA，任何 pending/failed
 job 都使 CFU-F 保持未关闭。
