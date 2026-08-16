@@ -1,8 +1,8 @@
 # Stage Chart Format Update：谱面格式更新实施计划
 
-状态：CFU-A/CFU-B、CFU-C0/C1/C2/C3/C4 已完成；CFU-D/CFU-E 已关闭；CFU-F1–F4 已本地完成；CFU-F 等待最终 SHA hosted 证据；ADR 0038 已于 2026-08-11 整体接受
+状态：CFU-A/CFU-B、CFU-C0/C1/C2/C3/C4 已完成；CFU-D/CFU-E/CFU-F 已关闭；CFU-G 为下一批次；ADR 0038 已于 2026-08-11 整体接受
 
-更新日期：2026-08-15
+更新日期：2026-08-16
 
 本阶段的稳定名称是 **Stage Chart Format Update**，位置为 Stage 3 与 Stage 4 之间。它使用独立名称，不建立数字别名。
 
@@ -645,8 +645,8 @@ package/export/import `10/10`、format/docs/version/whitespace 与 Playback-only
 
 ### 5.8 CFU-F：消费者、确定性、安全与性能
 
-状态：CFU-F1–F4 已于 2026-08-15 本地完成。CFU-F 整体保持未关闭，等待最终实现 SHA 的 hosted
-Linux/MSVC/MinGW、sanitizer、clang-tidy、coverage、performance 与 deterministic parity 证据。
+状态：CFU-F1–F4 已完成；CFU-F 已于 2026-08-16 在最终实现 SHA
+`8fcac15d2ec053750abdcb7b984d92354bc304a0` 的 hosted Linux/MSVC/MinGW 全部成功后关闭。
 
 CFU-F 分为：
 
@@ -709,8 +709,13 @@ sanitizer 日志、Chart/CXC/Playback clang-tidy、CXC/Chart v4 branch coverage 
 探针均通过。证据见
 [CFU-F4 报告](../stage_reports/260815-chart-format-update-f4-safety-performance.md)。
 
-退出门禁：本地结果不能替代 hosted CI；跨平台 golden 必须绑定最终实现 SHA，任何 pending/failed
-job 都使 CFU-F 保持未关闭。
+关闭快照（2026-08-16）：六份 GCC/Clang/MSVC/MinGW F3 artifact 的 canonical CXC、migration、
+semantic identity、FrameDigest v3 与 diagnostics fingerprint 完全一致；Linux ASan/UBSan 全量与 F4
+聚焦门禁、Chart/CXC/Playback clang-tidy、CXC/Chart v4 branch coverage、64 MiB Release 性能 evidence
+全部绑定上述实现 SHA。Linux 首次 attempt 因 vcpkg 下载 util-linux/libmount 时发生外部 TLS error 35
+失败，同一 SHA 的 failed-job rerun 成功，无代码变更。Windows MSVC/MinGW Debug/Release 首轮成功。
+完整证据见 [CFU-F 关闭报告](../stage_reports/260816-chart-format-update-f-close.md)。退出门禁已满足，
+下一批次为 CFU-G。
 
 ### 5.9 CFU-G：验收、封存与 Stage 4 交接
 

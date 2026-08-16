@@ -4,6 +4,9 @@
 
 快照日期：2026-08-15
 
+后续关闭：CFU-F4 与整包 CFU-F 已于 2026-08-16 在最终实现 SHA 的 hosted Linux/MSVC/MinGW
+全部成功后关闭，见 [CFU-F 关闭报告](260816-chart-format-update-f-close.md)。本文件保留本地实施快照。
+
 实施基线：`codex/cfu-f` on commit `819064556e7f6eb0fe32a075cbcf7b13e141d8a4`
 plus the uncommitted CFU-F1/CFU-F2/CFU-F3/CFU-F4 surface closed by this report
 
