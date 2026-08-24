@@ -174,7 +174,8 @@ def check_cfu_status(failures: list[CheckFailure]) -> None:
             "G3 local candidate gates passed on August 19, 2026",
             "passed same-SHA hosted Linux Quality, Windows MSVC",
             "G3 hosted validation and G4 are complete",
-            "G5 completion report and G6 owner acceptance remain pending",
+            "G5 completion report candidate has been created",
+            "awaits report-SHA hosted revalidation plus G6 owner acceptance",
             "Stage 4 stays blocked / not started",
         ),
         DOCS / "CURRENT_STATUS.md": (
@@ -185,10 +186,12 @@ def check_cfu_status(failures: list[CheckFailure]) -> None:
             "同一 SHA 的 hosted Linux Quality、Windows MSVC 和 Windows MinGW 已于 2026-08-24 全部成功",
             "CFU-G4 hosted 验证已完成",
             "不创建 completion report、不记录 owner acceptance",
+            "CFU-G5 completion report candidate 已于 2026-08-24 创建",
+            "等待 report-SHA hosted revalidation 与项目所有者接受",
         ),
         DOCS / "ROADMAP.md": (
             "CFU-F consumers and determinism closed; final-SHA hosted gates passed 2026-08-16",
-            "CFU-G final closure                                 active; G3 hosted and G4 complete, G5/G6 pending",
+            "CFU-G final closure                                 active; G5 report candidate created, report-SHA hosted/G6 pending",
         ),
         DOCS / "PROJECT_GUIDE.md": (
             "CFU-F 已在最终实现 SHA 上关闭跨平台 consumer、确定性、安全与性能门禁",
@@ -197,6 +200,7 @@ def check_cfu_status(failures: list[CheckFailure]) -> None:
             "hosted Linux/MSVC/MinGW 验证已于 2026-08-24",
             "G3 hosted 与 G4 已完成",
             "CFU-G 仍 active",
+            "G5 completion report candidate 已于 2026-08-24 创建",
         ),
         DOCS / "formats" / "README.md": (
             "CFU-G4 hosted 验证已完成",
@@ -211,7 +215,7 @@ def check_cfu_status(failures: list[CheckFailure]) -> None:
             "CFU-F hosted consumer/determinism/safety gates 已关闭；G3 hosted 与 CFU-G4 已完成",
         ),
         DOCS / "stage_plans" / "README.md": (
-            "CFU-D/CFU-E/CFU-F 已关闭；G3 hosted 与 G4 complete；G5/G6 pending",
+            "CFU-D/CFU-E/CFU-F 已关闭；G5 report candidate 已创建，report-SHA hosted/G6 pending",
         ),
         DOCS / "stage_plans" / "stage_chart_format_update_implementation_plan.md": (
             "CFU-D/CFU-E/CFU-F 已关闭；CFU-G 正在执行最终验收、封存与 Stage 4 交接",
@@ -221,6 +225,7 @@ def check_cfu_status(failures: list[CheckFailure]) -> None:
             "最终候选 SHA",
             "CFU-G4 hosted 验证报告",
             "G3 hosted 与 G4 已完成",
+            "G5 completion report candidate",
         ),
         DOCS / "stage_plans" / "stage_4_implementation_plan.md": (
             "CFU-G2 Stage 4 typed handoff",
@@ -234,6 +239,15 @@ def check_cfu_status(failures: list[CheckFailure]) -> None:
             "260819 Chart Format Update CFU-G3 validation",
             "260820 Chart Format Update CFU-G4 closure readiness",
             "260824 Chart Format Update CFU-G4 hosted verification",
+            "Stage Chart Format Update completion report",
+        ),
+        DOCS / "stage_reports" / "stage_chart_format_update_completion_report.md": (
+            "G5 report candidate",
+            "项目所有者接受记录：**待记录**",
+            "report-SHA hosted revalidation",
+            "17 PASS / 1 PENDING",
+            "Stage 4 to `unblocked but not started`",
+            "`.codex/` is intentionally excluded",
         ),
     }
     stale_fragments = (

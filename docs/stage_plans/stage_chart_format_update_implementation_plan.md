@@ -742,7 +742,8 @@ handoff，冻结 `AnimationProgramInput`、capability、fixture、预算、diagn
 `4371fdcf04f4f89bfddf070cbb15e4c903810a53` 的 hosted Linux/MSVC/MinGW 于 2026-08-24 全部成功。
 证据见 [CFU-G3 验证报告](../stage_reports/260819-chart-format-update-g3-validation.md) 与
 [CFU-G4 hosted 验证报告](../stage_reports/260824-chart-format-update-g4-hosted.md)。G3 hosted 与
-G4 已完成；completion report 和项目所有者接受仍未完成，Stage 4 继续保持 blocked / not started。
+G4 已完成；[G5 completion report candidate](../stage_reports/stage_chart_format_update_completion_report.md)
+已创建，等待 report-SHA hosted revalidation 与项目所有者接受。Stage 4 继续保持 blocked / not started。
 
 ## 6. 模块、target 与文件落点
 

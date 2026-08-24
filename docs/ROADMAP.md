@@ -18,7 +18,7 @@ CFU-C Schema / typed Reader / Writer / validator    completed; C0-C4 complete
 CFU-D migration                                     closed; owner recorded no external assets on 2026-08-14
 CFU-E Playback prepare and capability               closed; owner-accepted on 2026-08-14
 CFU-F consumers and determinism                     closed; final-SHA hosted gates passed 2026-08-16
-CFU-G final closure                                 active; G3 hosted and G4 complete, G5/G6 pending
+CFU-G final closure                                 active; G5 report candidate created, report-SHA hosted/G6 pending
 ```
 
 权威计划：[stage_chart_format_update_implementation_plan.md](stage_plans/stage_chart_format_update_implementation_plan.md)。

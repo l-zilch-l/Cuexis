@@ -65,7 +65,8 @@ CFU-F 已在最终实现 SHA 上关闭跨平台 consumer、确定性、安全与
 G1 退出审计和 G2 Stage 4 typed handoff 已完成；G3 本地候选门禁已于 2026-08-19 通过。最终候选
 SHA `4371fdcf04f4f89bfddf070cbb15e4c903810a53` 的 hosted Linux/MSVC/MinGW 验证已于 2026-08-24
 全部通过，G3 hosted 与 G4 已完成。之后仍需 completion report 和项目所有者接受；CFU-G 仍 active，
-Stage 4 仍 blocked / not started。
+Stage 4 仍 blocked / not started。G5 completion report candidate 已于 2026-08-24 创建，当前等待
+report-SHA hosted revalidation 与 G6 项目所有者接受。
 
 格式权威入口：[formats/README.md](formats/README.md)。
 

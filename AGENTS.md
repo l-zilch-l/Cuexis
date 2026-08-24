@@ -51,8 +51,8 @@ active. G0 status calibration, G1 exit audit, and G2 Stage 4 typed handoff are c
 candidate gates passed on August 19, 2026. The final candidate SHA
 `4371fdcf04f4f89bfddf070cbb15e4c903810a53` passed same-SHA hosted Linux Quality, Windows MSVC,
 and Windows MinGW validation on August 24, 2026; G3 hosted validation and G4 are complete.
-G5 completion report and G6 owner acceptance remain pending, and Stage 4 stays blocked / not
-started.**
+The G5 completion report candidate has been created and awaits report-SHA hosted revalidation plus
+G6 owner acceptance. Stage 4 stays blocked / not started.**
 This checkpoint must not be described as complete CXC, a public package API, complete v4 animation
 Playback, or CFU-G complete.
 Stage 4 must consume

@@ -51,4 +51,5 @@
 | [260819 Chart Format Update CFU-G3 validation](260819-chart-format-update-g3-validation.md) | local candidate gates passed; candidate publication and same-SHA hosted Linux/MSVC/MinGW evidence blocked by the execution environment; CFU-G remains active |
 | [260820 Chart Format Update CFU-G4 closure readiness](260820-chart-format-update-g4-closure-readiness.md) | historical offline readiness snapshot; superseded for hosted status by the 2026-08-24 verification report |
 | [260824 Chart Format Update CFU-G4 hosted verification](260824-chart-format-update-g4-hosted.md) | same-SHA Linux Quality, Windows MSVC and Windows MinGW validation passed; six-way F3 deterministic parity and F4 safety/analysis/coverage/trend evidence recorded; G5/G6 remain pending |
+| [Stage Chart Format Update completion report](stage_chart_format_update_completion_report.md) | G5 report candidate; actual C0-G evidence consolidated; report-SHA hosted revalidation and project-owner acceptance pending |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |
