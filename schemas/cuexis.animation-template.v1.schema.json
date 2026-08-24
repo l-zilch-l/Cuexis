@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cuexis.dev/schemas/cuexis.animation-template.v1.schema.json",
+  "title": "Cuexis Animation Template v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "version",
+    "templateId",
+    "metadata",
+    "application",
+    "clip",
+    "requiredExtensions",
+    "extensions"
+  ],
+  "properties": {
+    "format": { "const": "cuexis.animation-template" },
+    "version": { "const": 1 },
+    "templateId": { "$ref": "#/$defs/portableStableId" },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "maxLength": 256 }
+      }
+    },
+    "application": { "$ref": "#/$defs/application" },
+    "clip": { "$ref": "#/$defs/clip" },
+    "requiredExtensions": {
+      "type": "array",
+      "maxItems": 256,
+      "items": { "$ref": "#/$defs/requiredExtension" }
+    },
+    "extensions": { "type": "object", "maxProperties": 256 }
+  },
+  "$defs": {
+    "portableStableId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,255}$"
+    },
+    "beat": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["numerator", "denominator"],
+      "properties": {
+        "numerator": { "type": "integer" },
+        "denominator": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "vec3": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": { "type": "number" }
+    },
+    "unitVec3": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": { "type": "number", "minimum": 0, "maximum": 1 }
+    },
+    "quat": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": { "type": "number" }
+    },
+    "assetReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["domain", "id"],
+      "properties": {
+        "domain": { "const": "asset" },
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,255}$" }
+      }
+    },
+    "iterations": {
+      "oneOf": [
+        { "type": "integer", "minimum": 1, "maximum": 65535 },
+        { "const": "infinite" }
+      ]
+    },
+    "application": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["coordinateSpace", "blendMode", "iterations", "fillMode"],
+      "properties": {
+        "coordinateSpace": { "const": "local" },
+        "blendMode": { "enum": ["override", "additive"] },
+        "iterations": { "$ref": "#/$defs/iterations" },
+        "fillMode": { "enum": ["none", "hold"] }
+      }
+    },
+    "segment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["startBeat", "durationBeats", "startValue", "endValue", "startSlope", "endSlope"],
+      "properties": {
+        "startBeat": { "$ref": "#/$defs/beat" },
+        "durationBeats": { "$ref": "#/$defs/beat" },
+        "startValue": {},
+        "endValue": {},
+        "startSlope": { "type": "number", "minimum": 0, "maximum": 3 },
+        "endSlope": { "type": "number", "minimum": 0, "maximum": 3 }
+      }
+    },
+    "track": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["property", "segments"],
+      "properties": {
+        "property": {
+          "enum": [
+            "transform.position.x",
+            "transform.position.y",
+            "transform.position.z",
+            "transform.rotation",
+            "transform.scale",
+            "material.opacity",
+            "material.tint"
+          ]
+        },
+        "segments": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 65536,
+          "items": { "$ref": "#/$defs/segment" }
+        }
+      }
+    },
+    "step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["beat", "value"],
+      "properties": {
+        "beat": { "$ref": "#/$defs/beat" },
+        "value": {}
+      }
+    },
+    "stepTrack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["property", "steps"],
+      "properties": {
+        "property": { "enum": ["render.visible", "render.material"] },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 65536,
+          "items": { "$ref": "#/$defs/step" }
+        }
+      }
+    },
+    "clip": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "durationBeats", "tracks", "stepTracks"],
+      "properties": {
+        "version": { "const": 1 },
+        "durationBeats": { "$ref": "#/$defs/beat" },
+        "tracks": {
+          "type": "array",
+          "maxItems": 256,
+          "items": { "$ref": "#/$defs/track" }
+        },
+        "stepTracks": {
+          "type": "array",
+          "maxItems": 256,
+          "items": { "$ref": "#/$defs/stepTrack" }
+        }
+      },
+      "anyOf": [
+        { "properties": { "tracks": { "minItems": 1 } } },
+        { "properties": { "stepTracks": { "minItems": 1 } } }
+      ]
+    },
+    "requiredExtension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": { "$ref": "#/$defs/portableStableId" },
+        "version": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

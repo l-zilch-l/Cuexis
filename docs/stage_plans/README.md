@@ -2,7 +2,7 @@
 
 状态：现行阶段计划索引
 
-更新日期：2026-08-10
+更新日期：2026-08-24
 
 阶段计划描述目标、实施批次、门禁和交接。当前阶段以 [CURRENT_STATUS.md](../CURRENT_STATUS.md)
 为准；完成后的实际证据以 [阶段报告](../stage_reports/README.md) 为准。
@@ -16,8 +16,8 @@
 | [Stage 1E](stage_1e_implementation_plan.md) | completed | SDK 安装与 external consumer |
 | [Stage 2](stage_2_implementation_plan.md) | completed | Chart v3、TimingMap、Behavior Event |
 | [Stage 3](stage_3_implementation_plan.md) | completed | Portable Presentation 与渲染 adapter |
-| [Stage Chart Format Update](stage_chart_format_update_implementation_plan.md) | active | CXC、Chart v4、CXT 决策与格式管线 |
-| [Stage 4](stage_4_implementation_plan.md) | future, blocked | Cuexis 表现动画；等待格式阶段关闭 |
+| [Stage Chart Format Update](stage_chart_format_update_implementation_plan.md) | completed | C0–C4 complete；CFU-D/CFU-E/CFU-F/G 已关闭；G6 owner acceptance recorded 2026-08-24 |
+| [Stage 4](stage_4_implementation_plan.md) | future, unblocked | Cuexis 表现动画；已解锁但尚未开始 |
 | [Stage 5](stage_5_implementation_plan.md) | future | Material、Shader 与能力 Profile |
 | [Stage 6](stage_6_implementation_plan.md) | future | Playback C++ API 与独立 Player 产品化 |
 | [Stage 7](stage_7_implementation_plan.md) | future | Cuexis Studio 核心 |

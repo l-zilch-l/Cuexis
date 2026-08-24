@@ -3,12 +3,7 @@
 include(CMakeFindDependencyMacro)
 
 find_dependency(tl-expected CONFIG)
-if("@CUEXIS_LIBRARY_TYPE@" STREQUAL "STATIC")
-    find_dependency(glm CONFIG)
-    find_dependency(EnTT CONFIG)
-    find_dependency(nlohmann_json CONFIG)
-    find_dependency(nlohmann_json_schema_validator CONFIG)
-endif()
+@CUEXIS_STATIC_DEPENDENCY_BLOCK@
 
 include("${CMAKE_CURRENT_LIST_DIR}/CuexisTargets.cmake")
 

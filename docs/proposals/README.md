@@ -10,9 +10,9 @@
 ## 当前候选格式提案
 
 - [ADR 0038](../adr/0038-cxc-v1-and-chart-v4-boundary.md)：CXC v1、Chart v4 和 CXT v1 边界。
-- [Chart v4 candidate](../CHART_V4_FORMAT.md)：Chart v4 字段和 lowering。
-- [CXC v1 candidate](../CXC_FORMAT.md)：容器、manifest 和闭包。
-- [CXT v1 candidate](../CXT_FORMAT.md)：声明式模板 JSON 文件。
+- [Chart v4 candidate](../formats/CHART_V4_FORMAT.md)：Chart v4 字段和 lowering。
+- [CXC v1 candidate](../formats/CXC_FORMAT.md)：容器、manifest 和闭包。
+- [CXT v1 candidate](../formats/CXT_FORMAT.md)：声明式模板 JSON 文件。
 
 ## 延期设计输入
 

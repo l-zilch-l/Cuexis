@@ -40,7 +40,14 @@ foreach(required_symbol IN ITEMS
         RuntimeTimeline
         acquirePresentationResource
         computeFrameDigest
+        fromCxcFile
+        fromCxcMemory
+        fromTypedProjectSource
+        prepareLoad
+        prepareReload
         presentationManifest
+        reload
+        semanticIdentity
         validatePresentation)
     if(NOT required_symbol_output MATCHES "${required_symbol}")
         message(FATAL_ERROR "Playback shared library does not export ${required_symbol}")

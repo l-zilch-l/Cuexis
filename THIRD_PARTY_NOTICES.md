@@ -14,6 +14,7 @@ This file is the source-tree notice inventory for the current Cuexis Stage 3 tre
 | glad | 0.1.36 | https://github.com/Dav1dde/glad | OpenGL function loader / `cuexis_render_opengl` | MIT; generated Khronos specification content is Apache-2.0 and other registry licenses | Linked into the OpenGL backend | Replace inside `cuexis_render_opengl` with another maintained loader |
 | nlohmann-json | 3.12.0#2 | https://github.com/nlohmann/json | Internal JSON DOM and parsing / `cuexis_json_support` | MIT | Header code is compiled into engine binaries | Replace inside the JSON support boundary; public APIs expose only Cuexis types |
 | JSON Schema Validator | 2.4.0 | https://github.com/pboettch/json-schema-validator | Structural validation of versioned JSON documents / `cuexis_json_support` | MIT | Linked runtime code | Replace behind the JSON support validation adapter |
+| minizip-ng | 4.1.0 | https://github.com/zlib-ng/minizip-ng | Private ZIP Stored reader/writer behind the internal `cuexis_cxc` target; all optional compression and encryption features disabled | zlib | Linked only through CXC-capable internal/package paths; never exposed in public headers | Replace behind `cuexis_cxc` with another mature ZIP implementation while retaining Cuexis envelope validation |
 | Catch2 | 3.15.2#1 | https://github.com/catchorg/Catch2 | Unit tests / test targets only | BSL-1.0 | Not linked into Player | Re-evaluate only through an ADR if Catch2 and small Fakes become insufficient |
 | tl-expected | 1.3.1 | https://github.com/TartanLlama/expected | C++20 `cuexis::core::Result` foundation / `cuexis_core` | CC0-1.0 | Header code is compiled into engine binaries | Replace with `std::expected` after a future C++ standard migration |
 
@@ -22,7 +23,8 @@ This file is the source-tree notice inventory for the current Cuexis Stage 3 tre
 The glad package is generated from Khronos OpenGL/EGL registry inputs. The installed registry files carry per-file MIT, Apache-2.0 or Khronos notices. Packaging must preserve the notices required by the generated glad sources.
 
 The static base Playback/Content/Audio install copies the exact vcpkg copyright files for EnTT,
-GLM, JSON Schema Validator, nlohmann-json and tl-expected into `share/Cuexis/licenses`. An install
+GLM, JSON Schema Validator, nlohmann-json and tl-expected into `share/Cuexis/licenses`. A static
+install that includes the internal CXC implementation must additionally copy the minizip-ng copyright. An install
 that includes the optional AudioSDL component additionally copies the SDL3 copyright. This
 inventory does not replace those full texts. Player packaging must additionally preserve the
 SDL3, glad, spdlog and applicable fmt notices required by the artifacts it redistributes.

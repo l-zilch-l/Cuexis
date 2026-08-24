@@ -1,0 +1,56 @@
+{
+  "animationClips": [],
+  "animationTemplateImports": [],
+  "behaviors": [],
+  "camera": {
+    "far": 1000.0,
+    "fovY": 60.0,
+    "near": 0.1,
+    "type": "perspective"
+  },
+  "chartId": "019f0000-0000-7abc-8def-000000000401",
+  "extensions": {},
+  "format": "cuexis.chart",
+  "metadata": {
+    "title": "Static v4 Migration Example"
+  },
+  "objects": [
+    {
+      "components": {
+        "cuexis.transform": {
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "version": 1
+        }
+      },
+      "extensions": {},
+      "id": "019f0000-0000-7abc-8def-000000000411",
+      "name": "static_object",
+      "parent": null
+    }
+  ],
+  "parameters": [],
+  "requiredExtensions": [],
+  "templates": [],
+  "timing": {
+    "defaultBpm": 120.0,
+    "offsetMs": 0.0,
+    "stops": [],
+    "tempoEvents": []
+  },
+  "version": 4
+}

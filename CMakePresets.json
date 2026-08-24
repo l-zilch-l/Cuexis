@@ -12,7 +12,6 @@
         "CMAKE_CXX_EXTENSIONS": "OFF",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-        "CUEXIS_LIBRARY_TYPE": "STATIC",
         "CUEXIS_WARNINGS_AS_ERRORS": "OFF",
         "VCPKG_TARGET_TRIPLET": "x64-windows"
       }

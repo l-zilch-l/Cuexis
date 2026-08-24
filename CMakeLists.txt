@@ -27,6 +27,8 @@ option(CUEXIS_BUILD_TESTS "Build the Cuexis test suite" ${CUEXIS_TESTS_DEFAULT})
 option(CUEXIS_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
 option(CUEXIS_ENABLE_CLANG_TIDY "Run clang-tidy while compiling Cuexis targets" OFF)
 option(CUEXIS_ENABLE_COVERAGE "Enable compiler coverage instrumentation" OFF)
+set(CUEXIS_IMPLEMENTATION_SHA "" CACHE STRING
+    "Git commit SHA recorded by deterministic implementation evidence")
 
 if(CUEXIS_BUILD_TESTS AND NOT BUILD_TESTING)
     enable_testing()
@@ -104,6 +106,7 @@ set(CUEXIS_ACTIVE_TARGETS
     cuexis_world
     cuexis_assets
     cuexis_chart
+    cuexis_cxc
     cuexis_behavior
     cuexis_gameplay
     cuexis_render
@@ -128,6 +131,10 @@ if(CUEXIS_BUILD_DEVELOPER_TOOLS)
     list(APPEND CUEXIS_ACTIVE_TARGETS
         cuexis_chart_migrator
         cuexis_chart_validator
+        cuexis_cxc_pack
+        cuexis_cxc_tool_common
+        cuexis_cxc_unpack
+        cuexis_cxc_validate
     )
 endif()
 
@@ -141,6 +148,7 @@ if(CUEXIS_BUILD_TESTS)
         cuexis_project_tests
         cuexis_assets_tests
         cuexis_chart_tests
+        cuexis_cxc_tests
         cuexis_behavior_tests
         cuexis_gameplay_tests
         cuexis_debug_tests
@@ -150,6 +158,8 @@ if(CUEXIS_BUILD_TESTS)
         cuexis_playback_tests
         cuexis_playback_allocation_tests
         cuexis_presentation_validation_tests
+        cuexis_cfu_f_headless_consumer
+        cuexis_cfu_f4_performance_probe
     )
 
     if(TARGET cuexis_platform_sdl_tests)
@@ -171,6 +181,60 @@ if(CUEXIS_BUILD_TESTS)
             "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
             -P "${PROJECT_SOURCE_DIR}/cmake/VerifyArchitecture.cmake"
     )
+    if(CUEXIS_BUILD_DEVELOPER_TOOLS)
+        add_test(
+            NAME cuexis_cxc_tools
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_CXC_PACK=$<TARGET_FILE:cuexis_cxc_pack>"
+                "-DCUEXIS_CXC_VALIDATE=$<TARGET_FILE:cuexis_cxc_validate>"
+                "-DCUEXIS_CXC_UNPACK=$<TARGET_FILE:cuexis_cxc_unpack>"
+                "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                "-DCUEXIS_BINARY_DIR=${PROJECT_BINARY_DIR}"
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyCxcTools.cmake"
+        )
+        set_tests_properties(cuexis_cxc_tools PROPERTIES LABELS "cxc;tools" TIMEOUT 120)
+
+        set(cuexis_implementation_sha "${CUEXIS_IMPLEMENTATION_SHA}")
+        if(cuexis_implementation_sha STREQUAL "")
+            find_package(Git QUIET)
+            if(Git_FOUND)
+                execute_process(
+                    COMMAND "${GIT_EXECUTABLE}" -C "${PROJECT_SOURCE_DIR}" rev-parse HEAD
+                    RESULT_VARIABLE cuexis_git_sha_result
+                    OUTPUT_VARIABLE cuexis_implementation_sha
+                    OUTPUT_STRIP_TRAILING_WHITESPACE
+                    ERROR_QUIET
+                )
+            endif()
+            if(NOT Git_FOUND OR NOT cuexis_git_sha_result EQUAL 0)
+                message(FATAL_ERROR
+                    "CFU-F3 requires CUEXIS_IMPLEMENTATION_SHA or a Git worktree")
+            endif()
+        endif()
+        string(TOLOWER "${cuexis_implementation_sha}" cuexis_implementation_sha)
+        string(LENGTH "${cuexis_implementation_sha}" cuexis_implementation_sha_length)
+        if(NOT cuexis_implementation_sha_length EQUAL 40 OR
+           NOT cuexis_implementation_sha MATCHES "^[0-9a-f]+$")
+            message(FATAL_ERROR
+                "CUEXIS_IMPLEMENTATION_SHA must be a full 40-character hexadecimal SHA")
+        endif()
+
+        add_test(
+            NAME cuexis_cfu_f3_determinism
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_CXC_PACK=$<TARGET_FILE:cuexis_cxc_pack>"
+                "-DCUEXIS_CHART_MIGRATOR=$<TARGET_FILE:cuexis_chart_migrator>"
+                "-DCUEXIS_HEADLESS_CONSUMER=$<TARGET_FILE:cuexis_cfu_f_headless_consumer>"
+                "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                "-DCUEXIS_BINARY_DIR=${PROJECT_BINARY_DIR}"
+                "-DCUEXIS_IMPLEMENTATION_SHA=${cuexis_implementation_sha}"
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyCfuF3Determinism.cmake"
+        )
+        set_tests_properties(cuexis_cfu_f3_determinism PROPERTIES
+            LABELS "cfu-f;cfu-f3;determinism;cxc;chart;playback"
+            TIMEOUT 120
+        )
+    endif()
     if(CUEXIS_BUILD_PLAYER)
         add_test(
             NAME cuexis_player_rejects_unknown_argument
@@ -252,8 +316,13 @@ if(CUEXIS_BUILD_TESTS)
                     "-DCUEXIS_VCPKG_INSTALLED_DIR=${VCPKG_INSTALLED_DIR}"
                     -P "${PROJECT_SOURCE_DIR}/cmake/VerifyExternalConsumer.cmake"
             )
+            set(external_consumer_labels "external;package")
+            if(consumer_mode STREQUAL "add_subdirectory_playback" OR
+               consumer_mode STREQUAL "find_package_playback")
+                list(APPEND external_consumer_labels cfu-f cfu-f2 playback cxc headless)
+            endif()
             set_tests_properties(cuexis_external_consumer_${consumer_mode} PROPERTIES
-                LABELS "external;package"
+                LABELS "${external_consumer_labels}"
                 RESOURCE_LOCK cuexis_external_consumer
                 TIMEOUT 900
             )
@@ -370,6 +439,7 @@ set(CUEXIS_STATIC_IMPLEMENTATION_TARGETS
     cuexis_world
     cuexis_assets
     cuexis_chart
+    cuexis_cxc
     cuexis_behavior
     cuexis_gameplay
     cuexis_render
@@ -405,6 +475,18 @@ endif()
 install(FILES "${PROJECT_BINARY_DIR}/generated/cuexis/version.hpp"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/cuexis"
 )
+
+if(CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
+    set(CUEXIS_STATIC_DEPENDENCY_BLOCK [=[
+find_dependency(glm CONFIG)
+find_dependency(EnTT CONFIG)
+find_dependency(nlohmann_json CONFIG)
+find_dependency(nlohmann_json_schema_validator CONFIG)
+find_dependency(minizip-ng CONFIG)
+]=])
+else()
+    set(CUEXIS_STATIC_DEPENDENCY_BLOCK "")
+endif()
 
 configure_package_config_file(
     "${PROJECT_SOURCE_DIR}/cmake/CuexisConfig.cmake.in"
@@ -447,6 +529,9 @@ set(CUEXIS_DISTRIBUTED_VCPKG_PORTS
     nlohmann-json
     tl-expected
 )
+if(CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
+    list(APPEND CUEXIS_DISTRIBUTED_VCPKG_PORTS minizip-ng)
+endif()
 if(TARGET cuexis_audio_sdl)
     list(APPEND CUEXIS_DISTRIBUTED_VCPKG_PORTS sdl3)
 endif()
@@ -520,6 +605,16 @@ cuexis_verify_target_dependencies(cuexis_chart
         cuexis::core
         cuexis::json_support
 )
+cuexis_verify_target_dependencies(cuexis_cxc
+    ALLOWED
+        cuexis::core
+        cuexis::content
+        cuexis::filesystem
+        cuexis::project
+        cuexis::chart
+        cuexis::json_support
+        MINIZIP::minizip-ng
+)
 cuexis_verify_target_dependencies(cuexis_behavior
     ALLOWED
         cuexis::core
@@ -567,6 +662,7 @@ cuexis_verify_target_dependencies(cuexis_playback
         cuexis::core
         cuexis::assets
         cuexis::chart
+        cuexis::cxc
         cuexis::filesystem
         cuexis::project
         cuexis::render
@@ -597,6 +693,33 @@ if(TARGET cuexis_chart_validator)
     cuexis_verify_target_dependencies(cuexis_chart_validator
         ALLOWED
             cuexis::chart
+    )
+endif()
+if(TARGET cuexis_cxc_tool_common)
+    cuexis_verify_target_dependencies(cuexis_cxc_tool_common
+        ALLOWED
+            cuexis_cxc
+            cuexis::filesystem
+            cuexis::project
+            cuexis::chart
+    )
+endif()
+if(TARGET cuexis_cxc_pack)
+    cuexis_verify_target_dependencies(cuexis_cxc_pack
+        ALLOWED
+            cuexis::cxc_tool_common
+    )
+endif()
+if(TARGET cuexis_cxc_validate)
+    cuexis_verify_target_dependencies(cuexis_cxc_validate
+        ALLOWED
+            cuexis::cxc_tool_common
+    )
+endif()
+if(TARGET cuexis_cxc_unpack)
+    cuexis_verify_target_dependencies(cuexis_cxc_unpack
+        ALLOWED
+            cuexis::cxc_tool_common
     )
 endif()
 
@@ -657,6 +780,11 @@ if(CUEXIS_BUILD_TESTS)
             cuexis::chart
             Catch2::Catch2WithMain
     )
+    cuexis_verify_target_dependencies(cuexis_cxc_tests
+        ALLOWED
+            cuexis_cxc
+            Catch2::Catch2WithMain
+    )
     cuexis_verify_target_dependencies(cuexis_behavior_tests
         ALLOWED
             cuexis::behavior
@@ -714,6 +842,7 @@ if(CUEXIS_BUILD_TESTS)
         ALLOWED
             cuexis::audio
             cuexis::assets
+            cuexis::chart
             cuexis::playback
             Catch2::Catch2WithMain
     )
@@ -726,6 +855,16 @@ if(CUEXIS_BUILD_TESTS)
         ALLOWED
             cuexis::playback
             Catch2::Catch2WithMain
+    )
+    cuexis_verify_target_dependencies(cuexis_cfu_f_headless_consumer
+        ALLOWED
+            cuexis::playback
+    )
+    cuexis_verify_target_dependencies(cuexis_cfu_f4_performance_probe
+        ALLOWED
+            cuexis_cxc
+            cuexis::playback
+            Psapi
     )
 endif()
 

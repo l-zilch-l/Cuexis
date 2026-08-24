@@ -1,0 +1,105 @@
+# Stage Chart Format Update CFU-E1 Source Integration
+
+状态：completed
+
+快照日期：2026-08-14
+
+实施基线：`stage-ChartFormatUpdate` commit `6fa742ca6233993e5811f46ba932da8cfa553191`
+
+权威计划：[Stage Chart Format Update 实施计划](../stage_plans/stage_chart_format_update_implementation_plan.md)
+
+API 冻结：[CFU-E0 API 评审](260814-chart-format-update-e0-api.md)
+
+## 1. 结论
+
+CFU-E1 已关闭。PlaybackSource 的 file/text/typed/CXC factory 现在建立同一个 owning state；SDK API
+已从 `0.5.0` 同步到 E0 批准的 `0.6.0`，并取得本地 MSVC Debug、Release、static/shared consumer
+与 shared export/import 证据。下一批次是 CFU-E2。
+
+该关闭只覆盖 source ownership 和 package 接入形状。它不是 Chart v4 Playback、parameter prepare、
+capability、prepared semantic identity、CFU-D3、完整 CFU-E、公共 CXC package API 或 Stage 4 证据。
+
+## 2. Public source surface
+
+安装头新增 E0 冻结的 E1 source subset：
+
+```text
+PlaybackProjectDocument
+TypedPlaybackProjectSource
+PlaybackSource::fromTypedProjectSource
+PlaybackSource::fromCxcFile
+PlaybackSource::fromCxcMemory
+```
+
+`TypedPlaybackProject` 继续保持原三字段 aggregate layout。`fromChartText`、`fromTypedProject` 和
+`fromFilesystemProject` 保留；旧 v1/v2/v3 prepare/load 行为继续使用相同入口。E0 冻结的
+`PlaybackPrepareOptions` overload 和 semantic identity observation 分别留给 E2/E3，不在 E1
+放置无行为占位实现。
+
+## 3. Unified source state
+
+每个成功 factory 都建立以下内部形状：
+
+```text
+sourceId
+entryChartPath
+sorted owning project-document table
+optional AssetDatabase
+owning IContentProvider
+optional internal CXC package SHA-256 metadata
+```
+
+typed document table 使用 exact entry lookup，并拒绝非 portable path、大小写折叠冲突、文件/目录
+prefix 冲突、非法 UTF-8 和预算超限。默认边界为 10001 个文档、单文档 16 MiB、总文档 bytes
+512 MiB、path 4096 bytes/64 segments。ParameterSet 没有进入 source state。
+
+`fromCxcFile` / `fromCxcMemory` 复用内部 `cuexis_cxc` loader，把已验证的 ProjectConfig entry、
+Chart/CXT project documents、Asset Index、package-backed provider 和 package identity 映射到同一
+state。公共头不暴露 CXC、Chart、JSON DOM、archive handle、resolver 或 package identity 类型。
+
+`cuexis_playback` 仅以 private dependency 依赖 `cuexis::cxc`。static package 保留既有内部闭包；
+shared package 不安装或导出 InternalCxc/minizip surface。
+
+## 4. Compatibility and version
+
+```text
+CUEXIS_SDK_API_VERSION       0.6.0
+date-based build identity    unchanged
+FrameSnapshot                unchanged
+FrameDigest                  remains version 3
+stable C ABI                 still deferred to Stage 12
+```
+
+external consumer 现在实际构造 CXC file/memory source，并引用 typed project-document factory。
+package compatibility gate 接受 `0.6`，拒绝旧 `0.5` 和未来 `0.7` 请求。shared symbol gate 要求三个
+新 factory，并继续拒绝 RuntimeSession、AssetDatabase、World、EnTT 和 Playback detail exports。
+
+## 5. Local verification
+
+工具链：Visual Studio 2026 Community 18.7.3 / MSVC 19.51.36248.0，CMake 4.2.1，Windows x64。
+
+```text
+Debug fresh configure + full build                         passed
+ctest --preset debug --no-tests=error                      349/349 passed
+Release fresh configure + clean-first full build           passed
+ctest --preset release --no-tests=error                    349/349 passed
+headless-shared-debug Playback build                       passed
+shared source/package/export/import focused gates          4/4 passed
+CFU-E1 focused Playback tests                              27 assertions / 3 cases passed
+cuexis_format_check                                        passed
+tools/check_docs.py                                        120 Markdown / 20 JSON-CXT passed
+tools/update_version.py --check                            passed (26.08.01-1)
+git diff --check                                           passed
+```
+
+完整 Debug/Release suite 均包含 architecture、CXC tools 和七个 external consumer tests。shared
+focused gates包含 add_subdirectory Playback-only、find_package Playback-only、shared export surface
+和 Playback-only consumer import table。
+
+本报告没有 hosted Linux/Windows/MinGW CI 结果；最终跨平台关闭仍属于后续批次和 CFU-G/E4 门禁。
+
+## 6. Handoff
+
+CFU-E2 可以实现 v4 parse/resolve、public ParameterSet 转换、capability preflight 和空动画 v4 到现有
+Runtime 的接入。CFU-E3 仍拥有 prepared semantic identity 与 reload identity 事务。CFU-D3 必须继续
+等待 Playback 能成功加载 v4；不得从 E1 的 source factory 成功推断运行时等价。

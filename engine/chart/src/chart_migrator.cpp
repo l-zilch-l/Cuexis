@@ -2,9 +2,13 @@
 
 #include <cuexis/chart/chart_loader.hpp>
 #include <cuexis/chart/chart_runtime.hpp>
+#include <cuexis/chart/chart_v4_loader.hpp>
+#include <cuexis/chart/chart_writer.hpp>
 #include <cuexis/core/math.hpp>
 #include <cuexis/json/parse.hpp>
 #include <cuexis/json/value.hpp>
+
+#include "sha256_internal.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -13,7 +17,6 @@
 #include <optional>
 #include <string>
 #include <string_view>
-#include <type_traits>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -30,235 +33,26 @@ void addError(core::Diagnostics& diagnostics, std::string code, std::string mess
                                      std::move(message), std::move(fieldPath)});
 }
 
-[[nodiscard]] auto beatValue(const RationalBeat& beat) -> json::Value {
-    Object result;
-    result.emplace("denominator", json::Value{beat.denominator()});
-    result.emplace("numerator", json::Value{beat.numerator()});
-    return json::Value{std::move(result)};
+[[nodiscard]] auto diagnosticSeverityName(core::DiagnosticSeverity severity) -> const char* {
+    switch (severity) {
+    case core::DiagnosticSeverity::Info:
+        return "info";
+    case core::DiagnosticSeverity::Warning:
+        return "warning";
+    case core::DiagnosticSeverity::Error:
+        return "error";
+    }
+    return "error";
 }
 
-[[nodiscard]] auto vec3Value(const core::Vec3& value) -> json::Value {
-    Array result;
-    result.emplace_back(static_cast<double>(value.x));
-    result.emplace_back(static_cast<double>(value.y));
-    result.emplace_back(static_cast<double>(value.z));
-    return json::Value{std::move(result)};
-}
-
-[[nodiscard]] auto quatValue(const core::Quat& value) -> json::Value {
-    Array result;
-    result.emplace_back(static_cast<double>(value.x));
-    result.emplace_back(static_cast<double>(value.y));
-    result.emplace_back(static_cast<double>(value.z));
-    result.emplace_back(static_cast<double>(value.w));
-    return json::Value{std::move(result)};
-}
-
-[[nodiscard]] auto behaviorValue(const BehaviorValue& value) -> json::Value {
-    return std::visit(
-        [](const auto& item) -> json::Value {
-            using Value = std::remove_cvref_t<decltype(item)>;
-            if constexpr (std::is_same_v<Value, double>) {
-                return json::Value{item};
-            } else if constexpr (std::is_same_v<Value, core::Vec3>) {
-                return vec3Value(item);
-            } else {
-                return quatValue(item);
-            }
-        },
-        value);
-}
-
-[[nodiscard]] auto referenceValue(std::string_view domain, std::string value) -> json::Value {
-    Object result;
-    result.emplace("domain", json::Value{std::string{domain}});
-    result.emplace("id", json::Value{std::move(value)});
-    return json::Value{std::move(result)};
-}
-
-[[nodiscard]] auto opaqueValue(const OpaqueJson& value) -> core::Result<json::Value> {
-    return json::parse(value.canonicalText, {.maxBytes = value.canonicalText.size() + 1,
-                                             .maxDepth = 64,
-                                             .maxStringBytes = value.canonicalText.size() + 1});
-}
-
-[[nodiscard]] auto transformValue(const TransformData& transform) -> json::Value {
-    Object result;
-    result.emplace("position", vec3Value(transform.position));
-    result.emplace("rotation", quatValue(transform.rotation));
-    result.emplace("scale", vec3Value(transform.scale));
-    result.emplace("version", json::Value{std::uint64_t{1}});
-    return json::Value{std::move(result)};
-}
-
-[[nodiscard]] auto componentsValue(const ObjectComponents& components) -> json::Value {
-    Object result;
-    if (components.transform) {
-        result.emplace("cuexis.transform", transformValue(*components.transform));
-    }
-    if (components.renderable) {
-        Object renderable;
-        renderable.emplace("material",
-                           referenceValue("asset", components.renderable->material.value));
-        renderable.emplace("mesh", referenceValue("asset", components.renderable->mesh.value));
-        renderable.emplace("version", json::Value{std::uint64_t{1}});
-        result.emplace("cuexis.renderable", json::Value{std::move(renderable)});
-    }
-    if (components.behavior) {
-        Object behavior;
-        behavior.emplace("behavior",
-                         referenceValue("behavior", components.behavior->behavior.value));
-        behavior.emplace("version", json::Value{std::uint64_t{1}});
-        result.emplace("cuexis.behavior", json::Value{std::move(behavior)});
-    }
-    if (components.note) {
-        Object note;
-        if (components.note->beat) {
-            note.emplace("beat", beatValue(*components.note->beat));
-        }
-        note.emplace("version", json::Value{std::uint64_t{1}});
-        result.emplace("cuexis.note", json::Value{std::move(note)});
-    }
-    if (components.element) {
-        Object element;
-        element.emplace("version", json::Value{std::uint64_t{1}});
-        result.emplace("cuexis.element", json::Value{std::move(element)});
-    }
-    if (components.camera) {
-        Object camera;
-        camera.emplace("far", json::Value{components.camera->farPlane});
-        camera.emplace("fovY", json::Value{components.camera->fovY});
-        camera.emplace("near", json::Value{components.camera->nearPlane});
-        camera.emplace("type", json::Value{components.camera->type});
-        camera.emplace("version", json::Value{std::uint64_t{1}});
-        result.emplace("cuexis.camera", json::Value{std::move(camera)});
-    }
-    return json::Value{std::move(result)};
-}
-
-[[nodiscard]] auto propertyName(BehaviorProperty property) -> std::string_view {
-    switch (property) {
-    case BehaviorProperty::TransformPositionX:
-        return "transform.position.x";
-    case BehaviorProperty::TransformPositionY:
-        return "transform.position.y";
-    case BehaviorProperty::TransformPositionZ:
-        return "transform.position.z";
-    case BehaviorProperty::TransformRotation:
-        return "transform.rotation";
-    case BehaviorProperty::TransformScale:
-        return "transform.scale";
-    case BehaviorProperty::CameraFovY:
-        return "camera.fovY";
-    case BehaviorProperty::MaterialOpacity:
-        return "material.opacity";
-    case BehaviorProperty::MaterialTint:
-        return "material.tint";
-    }
-    return "";
-}
-
-[[nodiscard]] auto eventValue(const BehaviorEvent& event) -> json::Value {
-    Object result;
-    result.emplace("durationBeats", beatValue(event.durationBeats));
-    result.emplace("endSlope", json::Value{event.endSlope});
-    result.emplace("endValue", behaviorValue(event.endValue));
-    if (event.groupId) {
-        result.emplace("groupId", json::Value{*event.groupId});
-    }
-    result.emplace("property", json::Value{std::string{propertyName(event.property)}});
-    result.emplace("startBeat", beatValue(event.startBeat));
-    result.emplace("startSlope", json::Value{event.startSlope});
-    result.emplace("startValue", behaviorValue(event.startValue));
-    return json::Value{std::move(result)};
-}
-
-[[nodiscard]] auto serializeDocument(const ChartDocument& document) -> core::Result<std::string> {
-    Object root;
-    if (document.audio) {
-        Object audio;
-        audio.emplace("mainMusic", referenceValue("asset", document.audio->mainMusic.value));
-        audio.emplace("version", json::Value{std::uint64_t{1}});
-        root.emplace("audio", json::Value{std::move(audio)});
-    }
-
-    Array behaviors;
-    for (const auto& behavior : document.behaviors) {
-        Object item;
-        Array events;
-        for (const auto& event : behavior.events) {
-            events.push_back(eventValue(event));
-        }
-        item.emplace("events", json::Value{std::move(events)});
-        item.emplace("id", json::Value{behavior.id.value});
-        item.emplace("stepEvents", json::Value{Array{}});
-        item.emplace("type", json::Value{behavior.type});
-        item.emplace("version", json::Value{std::uint64_t{behavior.version}});
-        behaviors.emplace_back(json::Value{std::move(item)});
-    }
-    root.emplace("behaviors", json::Value{std::move(behaviors)});
-
-    Object camera;
-    if (document.camera.defaultTransform) {
-        Object transform;
-        transform.emplace("position", vec3Value(document.camera.defaultTransform->position));
-        camera.emplace("defaultTransform", json::Value{std::move(transform)});
-    }
-    camera.emplace("far", json::Value{document.camera.farPlane});
-    camera.emplace("fovY", json::Value{document.camera.fovY});
-    camera.emplace("near", json::Value{document.camera.nearPlane});
-    camera.emplace("pitch", json::Value{document.camera.pitch});
-    camera.emplace("roll", json::Value{document.camera.roll});
-    camera.emplace("type", json::Value{document.camera.type});
-    camera.emplace("yaw", json::Value{document.camera.yaw});
-    root.emplace("camera", json::Value{std::move(camera)});
-    root.emplace("chartId", json::Value{document.chartId.value});
-
-    auto extensions = opaqueValue(document.extensions);
-    auto metadata = opaqueValue(document.metadata.data);
-    if (!extensions || !metadata) {
-        return core::unexpected(
-            core::Error{"chart.migration.opaque_json_invalid",
-                        "Chart metadata or extensions could not be serialized"});
-    }
-    root.emplace("extensions", std::move(*extensions));
-    root.emplace("format", json::Value{"cuexis.chart"});
-    root.emplace("metadata", std::move(*metadata));
-
-    Array objects;
-    for (const auto& object : document.objects) {
-        Object item;
-        item.emplace("components", componentsValue(object.components));
-        auto objectExtensions = opaqueValue(object.extensions);
-        if (!objectExtensions) {
-            return core::unexpected(std::move(objectExtensions.error()));
-        }
-        item.emplace("extensions", std::move(*objectExtensions));
-        item.emplace("id", json::Value{object.id.value});
-        if (object.name) {
-            item.emplace("name", json::Value{*object.name});
-        }
-        item.emplace("parent", object.parent ? referenceValue("object", object.parent->value)
-                                             : json::Value{nullptr});
-        objects.emplace_back(json::Value{std::move(item)});
-    }
-    root.emplace("objects", json::Value{std::move(objects)});
-    root.emplace("requiredExtensions", json::Value{Array{}});
-    root.emplace("templates", json::Value{Array{}});
-
-    Object timing;
-    timing.emplace("defaultBpm", json::Value{document.timing.defaultBpm});
-    timing.emplace("offsetMs", json::Value{document.timing.offsetMs});
-    timing.emplace("stops", json::Value{Array{}});
-    timing.emplace("tempoEvents", json::Value{Array{}});
-    root.emplace("timing", json::Value{std::move(timing)});
-    root.emplace("version", json::Value{std::uint64_t{3}});
-
-    auto serialized = json::serialize(json::Value{std::move(root)}, json::SerializeStyle::Pretty);
-    if (serialized) {
-        serialized->push_back('\n');
-    }
-    return serialized;
+[[nodiscard]] auto diagnosticRecordValue(const ChartMigrationDiagnosticRecord& record)
+    -> json::Value {
+    Object item;
+    item.emplace("code", json::Value{record.code});
+    item.emplace("fieldPath", json::Value{record.fieldPath});
+    item.emplace("message", json::Value{record.message});
+    item.emplace("severity", json::Value{record.severity});
+    return json::Value{std::move(item)};
 }
 
 [[nodiscard]] auto serializeReport(const ChartMigrationReport& report)
@@ -276,11 +70,174 @@ void addError(core::Diagnostics& diagnostics, std::string code, std::string mess
         unbound.emplace_back(id);
     }
     root.emplace("unboundBehaviorIds", json::Value{std::move(unbound)});
+    if (report.targetVersion == 4) {
+        Array discarded;
+        for (const auto& field : report.discardedFields) {
+            discarded.emplace_back(field);
+        }
+        Array warnings;
+        for (const auto& warning : report.warnings) {
+            warnings.push_back(diagnosticRecordValue(warning));
+        }
+        Array diagnostics;
+        for (const auto& diagnostic : report.diagnostics) {
+            diagnostics.push_back(diagnosticRecordValue(diagnostic));
+        }
+        Object fieldCounts;
+        const auto counts = report.fieldCounts.value_or(ChartMigrationFieldCounts{});
+        fieldCounts.emplace("animationClips", json::Value{std::uint64_t{counts.animationClips}});
+        fieldCounts.emplace("animationTemplateImports",
+                            json::Value{std::uint64_t{counts.animationTemplateImports}});
+        fieldCounts.emplace("behaviors", json::Value{std::uint64_t{counts.behaviors}});
+        fieldCounts.emplace("objects", json::Value{std::uint64_t{counts.objects}});
+        fieldCounts.emplace("parameters", json::Value{std::uint64_t{counts.parameters}});
+        root.emplace("discardedFields", json::Value{std::move(discarded)});
+        root.emplace("diagnostics", json::Value{std::move(diagnostics)});
+        root.emplace("fieldCounts", json::Value{std::move(fieldCounts)});
+        root.emplace("generatedBindings", json::Value{std::uint64_t{report.generatedBindings}});
+        root.emplace("generatedClips", json::Value{std::uint64_t{report.generatedClips}});
+        root.emplace("generatedParameters", json::Value{std::uint64_t{report.generatedParameters}});
+        root.emplace("sourceCanonicalIdentity",
+                     json::Value{report.sourceCanonicalIdentity.value_or(std::string{})});
+        root.emplace("targetCanonicalIdentity",
+                     json::Value{report.targetCanonicalIdentity.value_or(std::string{})});
+        root.emplace("warnings", json::Value{std::move(warnings)});
+    }
     auto serialized = json::serialize(json::Value{std::move(root)}, json::SerializeStyle::Pretty);
     if (serialized) {
         serialized->push_back('\n');
     }
     return serialized;
+}
+
+[[nodiscard]] auto parseLimits(const ChartLimits& limits) -> json::ParseLimits {
+    return {limits.maxInputBytes, limits.maxNestingDepth, limits.maxStringBytes};
+}
+
+[[nodiscard]] auto canonicalIdentity(std::string_view bytes) -> std::string {
+    return detail::sha256Hex(detail::sha256(bytes));
+}
+
+[[nodiscard]] auto arraySize(const json::Value& root, std::string_view key) -> std::size_t {
+    const auto* field = root.find(key);
+    if (field == nullptr || field->array() == nullptr) {
+        return 0;
+    }
+    return field->array()->size();
+}
+
+[[nodiscard]] auto makeDiagnosticRecord(const core::Diagnostic& diagnostic)
+    -> ChartMigrationDiagnosticRecord {
+    return ChartMigrationDiagnosticRecord{
+        std::string{diagnostic.code()}, std::string{diagnostic.fieldPath()},
+        diagnosticSeverityName(diagnostic.severity()), std::string{diagnostic.message()}};
+}
+
+void populateV4ReportRecords(ChartMigrationReport& report, const core::Diagnostics& diagnostics) {
+    report.warnings.clear();
+    report.diagnostics.clear();
+    for (const auto& diagnostic : diagnostics.items()) {
+        auto record = makeDiagnosticRecord(diagnostic);
+        if (diagnostic.severity() == core::DiagnosticSeverity::Warning) {
+            report.warnings.push_back(record);
+        }
+        report.diagnostics.push_back(std::move(record));
+    }
+}
+
+[[nodiscard]] auto liftV3JsonToV4(std::string_view v3Json, const ChartLimits& limits)
+    -> core::Result<std::string> {
+    auto parsed = json::parse(v3Json, parseLimits(limits));
+    if (!parsed) {
+        return core::unexpected(
+            core::Error{"chart.migration.serialize_failed", "Migrated Chart JSON is invalid"}
+                .withCause(std::move(parsed.error())));
+    }
+    auto* root = parsed->object();
+    if (root == nullptr) {
+        return core::unexpected(core::Error{"chart.migration.serialize_failed",
+                                            "Migrated Chart JSON must be an object"});
+    }
+    root->insert_or_assign("version", json::Value{std::uint64_t{4}});
+    root->insert_or_assign("parameters", json::Value{Array{}});
+    root->insert_or_assign("animationTemplateImports", json::Value{Array{}});
+    root->insert_or_assign("animationClips", json::Value{Array{}});
+    auto serialized = json::serialize(*parsed);
+    if (!serialized) {
+        return core::unexpected(core::Error{"chart.migration.serialize_failed",
+                                            "Lifted Chart v4 JSON could not be serialized"}
+                                    .withCause(std::move(serialized.error())));
+    }
+    return serialized;
+}
+
+[[nodiscard]] auto finishV4Migration(std::string_view sourceJson, std::string_view v3Json,
+                                     ChartMigrationReport report, const ChartLimits& limits,
+                                     core::Diagnostics incoming = {}) -> ChartMigrationResult {
+    ChartMigrationResult result;
+    result.diagnostics = std::move(incoming);
+    auto sourceCanonical = ChartWriter::writeCanonicalJson(sourceJson, limits);
+    if (!sourceCanonical) {
+        addError(result.diagnostics, "chart.migration.serialize_failed",
+                 "Source Chart canonicalization failed");
+        return result;
+    }
+    report.sourceCanonicalIdentity = canonicalIdentity(*sourceCanonical);
+
+    auto lifted = liftV3JsonToV4(v3Json, limits);
+    if (!lifted) {
+        addError(result.diagnostics, std::string{lifted.error().code()},
+                 std::string{lifted.error().message()});
+        return result;
+    }
+    auto loaded = ChartV4Loader::load(*lifted, limits);
+    result.diagnostics.append(std::move(loaded.diagnostics));
+    if (!loaded.hasValue()) {
+        populateV4ReportRecords(report, result.diagnostics);
+        result.diagnostics.sortDeterministically();
+        return result;
+    }
+
+    auto chartJson = ChartWriter::writeV4(*loaded.document, limits);
+    if (!chartJson) {
+        addError(result.diagnostics, "chart.migration.serialize_failed",
+                 "Migrated Chart or report serialization failed");
+        return result;
+    }
+
+    auto parsed = json::parse(*chartJson, parseLimits(limits));
+    if (!parsed) {
+        addError(result.diagnostics, "chart.migration.serialize_failed",
+                 "Migrated Chart or report serialization failed");
+        return result;
+    }
+    report.targetVersion = 4;
+    report.targetCanonicalIdentity = canonicalIdentity(*chartJson);
+    report.discardedFields = {};
+    report.generatedClips = 0;
+    report.generatedBindings = 0;
+    report.generatedParameters = 0;
+    report.fieldCounts = ChartMigrationFieldCounts{
+        .animationClips = arraySize(*parsed, "animationClips"),
+        .animationTemplateImports = arraySize(*parsed, "animationTemplateImports"),
+        .behaviors = arraySize(*parsed, "behaviors"),
+        .objects = arraySize(*parsed, "objects"),
+        .parameters = arraySize(*parsed, "parameters"),
+    };
+    populateV4ReportRecords(report, result.diagnostics);
+    auto reportJson = serializeReport(report);
+    if (!reportJson) {
+        addError(result.diagnostics, "chart.migration.serialize_failed",
+                 "Migrated Chart or report serialization failed");
+        return result;
+    }
+    result.artifact.emplace(ChartMigrationArtifact{.document = loaded.document->legacyProjection,
+                                                   .report = std::move(report),
+                                                   .chartJson = std::move(*chartJson),
+                                                   .reportJson = std::move(*reportJson),
+                                                   .v4Document = std::move(*loaded.document)});
+    result.diagnostics.sortDeterministically();
+    return result;
 }
 
 [[nodiscard]] auto negateBeat(const RationalBeat& value) -> core::Result<RationalBeat> {
@@ -478,13 +435,9 @@ auto ChartMigrator::migrateToV3(std::string_view sourceJson, const ChartLimits& 
     }
 
     ChartDocument migrated = *loaded.document;
-    ChartMigrationReport report{.sourceVersion = migrated.version,
-                                .targetVersion = 3,
-                                .convertedBehaviors = 0,
-                                .generatedEvents = 0,
-                                .rewrittenBindings = 0,
-                                .expandedTemplateObjects = 0,
-                                .unboundBehaviorIds = {}};
+    ChartMigrationReport report;
+    report.sourceVersion = migrated.version;
+    report.targetVersion = 3;
     migrated.version = 3;
     migrated.timing.tempoEvents.clear();
     migrated.timing.stops.clear();
@@ -584,7 +537,7 @@ auto ChartMigrator::migrateToV3(std::string_view sourceJson, const ChartLimits& 
         result.diagnostics.sortDeterministically();
         return result;
     }
-    auto chartJson = serializeDocument(migrated);
+    auto chartJson = ChartWriter::write(migrated);
     auto reportJson = serializeReport(report);
     if (!chartJson || !reportJson) {
         addError(result.diagnostics, "chart.migration.serialize_failed",
@@ -594,9 +547,68 @@ auto ChartMigrator::migrateToV3(std::string_view sourceJson, const ChartLimits& 
     result.artifact.emplace(ChartMigrationArtifact{.document = std::move(migrated),
                                                    .report = std::move(report),
                                                    .chartJson = std::move(*chartJson),
-                                                   .reportJson = std::move(*reportJson)});
+                                                   .reportJson = std::move(*reportJson),
+                                                   .v4Document = std::nullopt});
     result.diagnostics.sortDeterministically();
     return result;
+}
+
+auto ChartMigrator::migrateToV4(std::string_view sourceJson, const ChartLimits& limits)
+    -> ChartMigrationResult {
+    ChartMigrationResult result;
+    auto parsed = json::parse(sourceJson, parseLimits(limits));
+    if (!parsed) {
+        addError(result.diagnostics, std::string{parsed.error().code()},
+                 std::string{parsed.error().message()}, "$");
+        result.diagnostics.sortDeterministically();
+        return result;
+    }
+    const auto* versionValue = parsed->find("version");
+    std::optional<std::uint32_t> sourceVersion;
+    if (versionValue != nullptr) {
+        if (const auto* signedVersion = versionValue->signedInteger();
+            signedVersion != nullptr && *signedVersion >= 0) {
+            sourceVersion = static_cast<std::uint32_t>(*signedVersion);
+        } else if (const auto* unsignedVersion = versionValue->unsignedInteger();
+                   unsignedVersion != nullptr && *unsignedVersion <= 4) {
+            sourceVersion = static_cast<std::uint32_t>(*unsignedVersion);
+        } else if (const auto* number = versionValue->number(); number != nullptr &&
+                                                                *number >= 0.0 && *number <= 4.0 &&
+                                                                *number == std::floor(*number)) {
+            sourceVersion = static_cast<std::uint32_t>(*number);
+        }
+    }
+    if (sourceVersion == 4 ||
+        (sourceVersion && *sourceVersion != 1 && *sourceVersion != 2 && *sourceVersion != 3)) {
+        addError(result.diagnostics, "chart.migration.source_version_unsupported",
+                 "Only canonical Chart v1, v2, and v3 can be migrated to v4", "$/version");
+        result.diagnostics.sortDeterministically();
+        return result;
+    }
+    if (sourceVersion == 3) {
+        auto loaded = ChartLoader::load(sourceJson, limits);
+        result.diagnostics.append(std::move(loaded.diagnostics));
+        if (!loaded.hasValue()) {
+            result.diagnostics.sortDeterministically();
+            return result;
+        }
+        ChartMigrationReport report;
+        report.sourceVersion = 3;
+        report.targetVersion = 4;
+        return finishV4Migration(sourceJson, sourceJson, std::move(report), limits,
+                                 std::move(result.diagnostics));
+    }
+
+    auto migrated = migrateToV3(sourceJson, limits);
+    result.diagnostics.append(std::move(migrated.diagnostics));
+    if (!migrated.hasValue()) {
+        result.diagnostics.sortDeterministically();
+        return result;
+    }
+    auto report = migrated.artifact->report;
+    report.targetVersion = 4;
+    return finishV4Migration(sourceJson, migrated.artifact->chartJson, std::move(report), limits,
+                             std::move(result.diagnostics));
 }
 
 } // namespace cuexis::chart

@@ -1,0 +1,836 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cuexis.dev/schemas/cuexis.chart.v4.schema.json",
+  "title": "Cuexis Canonical Chart v4",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "version",
+    "chartId",
+    "metadata",
+    "timing",
+    "parameters",
+    "templates",
+    "behaviors",
+    "animationTemplateImports",
+    "animationClips",
+    "objects",
+    "requiredExtensions",
+    "extensions"
+  ],
+  "properties": {
+    "format": { "const": "cuexis.chart" },
+    "version": { "const": 4 },
+    "chartId": { "$ref": "#/$defs/uuidV7" },
+    "metadata": { "type": "object" },
+    "timing": { "$ref": "#/$defs/timing" },
+    "camera": { "$ref": "#/$defs/camera" },
+    "audio": { "$ref": "#/$defs/audio" },
+    "parameters": {
+      "type": "array",
+      "maxItems": 256,
+      "items": { "$ref": "#/$defs/parameter" }
+    },
+    "templates": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": { "$ref": "#/$defs/template" }
+    },
+    "behaviors": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": { "$ref": "#/$defs/behavior" }
+    },
+    "animationTemplateImports": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": { "$ref": "#/$defs/animationTemplateImport" }
+    },
+    "animationClips": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": { "$ref": "#/$defs/animationClip" }
+    },
+    "objects": {
+      "type": "array",
+      "maxItems": 100000,
+      "items": { "$ref": "#/$defs/object" }
+    },
+    "requiredExtensions": {
+      "type": "array",
+      "maxItems": 256,
+      "items": { "$ref": "#/$defs/requiredExtension" }
+    },
+    "extensions": { "type": "object" }
+  },
+  "$defs": {
+    "uuidV7": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "chartEntityUuid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[57][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "finiteNumber": { "type": "number" },
+    "portableStableId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,255}$"
+    },
+    "portablePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096,
+      "pattern": "^[A-Za-z0-9._/-]+$"
+    },
+    "parameterReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["parameter"],
+      "properties": {
+        "parameter": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["domain", "id"],
+          "properties": {
+            "domain": { "const": "chart-parameter" },
+            "id": { "$ref": "#/$defs/portableStableId" }
+          }
+        }
+      }
+    },
+    "numberSource": {
+      "oneOf": [
+        { "$ref": "#/$defs/finiteNumber" },
+        { "$ref": "#/$defs/parameterReference" }
+      ]
+    },
+    "rationalSource": {
+      "oneOf": [
+        { "$ref": "#/$defs/beat" },
+        { "$ref": "#/$defs/parameterReference" }
+      ]
+    },
+    "weightSource": {
+      "oneOf": [
+        { "type": "number", "minimum": 0, "maximum": 1 },
+        { "$ref": "#/$defs/parameterReference" }
+      ]
+    },
+    "vec3": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": { "$ref": "#/$defs/finiteNumber" }
+    },
+    "vec3Source": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": { "$ref": "#/$defs/numberSource" }
+    },
+    "unitVec3": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": { "type": "number", "minimum": 0, "maximum": 1 }
+    },
+    "quat": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": { "$ref": "#/$defs/finiteNumber" }
+    },
+    "beat": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["numerator", "denominator"],
+      "properties": {
+        "numerator": { "type": "integer" },
+        "denominator": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "timing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["offsetMs", "defaultBpm", "tempoEvents", "stops"],
+      "properties": {
+        "offsetMs": { "$ref": "#/$defs/finiteNumber" },
+        "defaultBpm": { "type": "number", "minimum": 1, "maximum": 65536 },
+        "tempoEvents": {
+          "type": "array",
+          "maxItems": 4096,
+          "items": { "$ref": "#/$defs/tempoEvent" }
+        },
+        "stops": {
+          "type": "array",
+          "maxItems": 4096,
+          "items": { "$ref": "#/$defs/stop" }
+        }
+      }
+    },
+    "tempoEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["startBeat", "durationBeats", "startBpm", "endBpm", "startSlope", "endSlope"],
+      "properties": {
+        "startBeat": { "$ref": "#/$defs/beat" },
+        "durationBeats": { "$ref": "#/$defs/beat" },
+        "startBpm": { "type": "number", "minimum": 1, "maximum": 65536 },
+        "endBpm": { "type": "number", "minimum": 1, "maximum": 65536 },
+        "startSlope": { "type": "number", "minimum": 0, "maximum": 3 },
+        "endSlope": { "type": "number", "minimum": 0, "maximum": 3 }
+      }
+    },
+    "stop": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["beat", "durationMs"],
+      "properties": {
+        "beat": { "$ref": "#/$defs/beat" },
+        "durationMs": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "camera": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "fovY", "near", "far"],
+      "properties": {
+        "type": { "enum": ["perspective"] },
+        "fovY": { "$ref": "#/$defs/numberSource" },
+        "near": { "type": "number", "exclusiveMinimum": 0 },
+        "far": { "type": "number", "exclusiveMinimum": 0 },
+        "pitch": { "type": "number" },
+        "yaw": { "type": "number" },
+        "roll": { "type": "number" },
+        "defaultTransform": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["position"],
+          "properties": {
+            "position": { "$ref": "#/$defs/vec3" }
+          }
+        }
+      }
+    },
+    "objectReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["domain", "id"],
+      "properties": {
+        "domain": { "const": "object" },
+        "id": { "$ref": "#/$defs/chartEntityUuid" }
+      }
+    },
+    "templateReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["domain", "id"],
+      "properties": {
+        "domain": { "const": "template" },
+        "id": { "$ref": "#/$defs/chartEntityUuid" }
+      }
+    },
+    "behaviorReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["domain", "id"],
+      "properties": {
+        "domain": { "const": "behavior" },
+        "id": { "type": "string", "minLength": 1, "maxLength": 256 }
+      }
+    },
+    "animationReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["domain", "id"],
+      "properties": {
+        "domain": { "const": "animation" },
+        "id": { "$ref": "#/$defs/portableStableId" }
+      }
+    },
+    "animationTemplateReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["domain", "id"],
+      "properties": {
+        "domain": { "const": "animation-template" },
+        "id": { "$ref": "#/$defs/portableStableId" }
+      }
+    },
+    "assetReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["domain", "id"],
+      "properties": {
+        "domain": { "const": "asset" },
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,255}$" }
+      }
+    },
+    "audio": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "mainMusic"],
+      "properties": {
+        "version": { "const": 1 },
+        "mainMusic": { "$ref": "#/$defs/assetReference" }
+      }
+    },
+    "transformComponent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "position", "rotation", "scale"],
+      "properties": {
+        "version": { "const": 1 },
+        "position": { "$ref": "#/$defs/vec3Source" },
+        "rotation": { "$ref": "#/$defs/quat" },
+        "scale": { "$ref": "#/$defs/vec3Source" }
+      }
+    },
+    "renderableComponent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "mesh", "material"],
+      "properties": {
+        "version": { "const": 1 },
+        "mesh": { "$ref": "#/$defs/assetReference" },
+        "material": { "$ref": "#/$defs/assetReference" }
+      }
+    },
+    "behaviorComponent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "behavior"],
+      "properties": {
+        "version": { "const": 1 },
+        "behavior": { "$ref": "#/$defs/behaviorReference" }
+      }
+    },
+    "noteComponent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version"],
+      "properties": {
+        "version": { "const": 1 },
+        "beat": { "$ref": "#/$defs/beat" }
+      }
+    },
+    "elementComponent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version"],
+      "properties": { "version": { "const": 1 } }
+    },
+    "cameraComponent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "type", "fovY", "near", "far"],
+      "properties": {
+        "version": { "const": 1 },
+        "type": { "enum": ["perspective"] },
+        "fovY": { "$ref": "#/$defs/numberSource" },
+        "near": { "type": "number", "exclusiveMinimum": 0 },
+        "far": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "components": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "cuexis.transform": { "$ref": "#/$defs/transformComponent" },
+        "cuexis.renderable": { "$ref": "#/$defs/renderableComponent" },
+        "cuexis.behavior": { "$ref": "#/$defs/behaviorComponent" },
+        "cuexis.note": { "$ref": "#/$defs/noteComponent" },
+        "cuexis.element": { "$ref": "#/$defs/elementComponent" },
+        "cuexis.camera": { "$ref": "#/$defs/cameraComponent" },
+        "cuexis.animator": { "$ref": "#/$defs/animatorComponent" }
+      }
+    },
+    "patch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op", "path"],
+      "properties": {
+        "op": { "enum": ["add", "remove", "replace"] },
+        "path": {
+          "type": "string",
+          "pattern": "^/components/(cuexis\\.(transform|renderable|behavior|note|element|camera))(/(position|rotation|scale|mesh|material|behavior|beat|fovY|near|far|type))?$|^/components/cuexis\\.animator$"
+        },
+        "value": {}
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "op": { "const": "remove" } } },
+          "then": { "not": { "required": ["value"] } },
+          "else": { "required": ["value"] }
+        }
+      ]
+    },
+    "template": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "extends", "extensions"],
+      "properties": {
+        "id": { "$ref": "#/$defs/chartEntityUuid" },
+        "name": { "type": ["string", "null"], "maxLength": 256 },
+        "extends": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/templateReference" }
+          ]
+        },
+        "prototype": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["components"],
+          "properties": { "components": { "$ref": "#/$defs/components" } }
+        },
+        "patch": {
+          "type": "array",
+          "maxItems": 256,
+          "items": { "$ref": "#/$defs/patch" }
+        },
+        "extensions": { "type": "object" }
+      },
+      "oneOf": [
+        {
+          "properties": { "extends": { "type": "null" } },
+          "required": ["prototype"],
+          "not": { "required": ["patch"] }
+        },
+        {
+          "properties": { "extends": { "$ref": "#/$defs/templateReference" } },
+          "required": ["patch"],
+          "not": { "required": ["prototype"] }
+        }
+      ]
+    },
+    "object": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "parent", "extensions"],
+      "properties": {
+        "id": { "$ref": "#/$defs/chartEntityUuid" },
+        "name": { "type": ["string", "null"], "maxLength": 256 },
+        "parent": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/objectReference" }
+          ]
+        },
+        "components": { "$ref": "#/$defs/components" },
+        "template": { "$ref": "#/$defs/templateReference" },
+        "overrides": {
+          "type": "array",
+          "maxItems": 256,
+          "items": { "$ref": "#/$defs/patch" }
+        },
+        "extensions": { "type": "object" }
+      },
+      "oneOf": [
+        {
+          "required": ["components"],
+          "not": { "anyOf": [{ "required": ["template"] }, { "required": ["overrides"] }] }
+        },
+        {
+          "required": ["template", "overrides"],
+          "not": { "required": ["components"] }
+        }
+      ]
+    },
+    "numberParameter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "constraints"],
+      "properties": {
+        "id": { "$ref": "#/$defs/portableStableId" },
+        "type": { "const": "number" },
+        "default": { "$ref": "#/$defs/finiteNumber" },
+        "constraints": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "minimum": { "$ref": "#/$defs/finiteNumber" },
+            "exclusiveMinimum": { "$ref": "#/$defs/finiteNumber" },
+            "maximum": { "$ref": "#/$defs/finiteNumber" },
+            "exclusiveMaximum": { "$ref": "#/$defs/finiteNumber" }
+          }
+        }
+      }
+    },
+    "rationalParameter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "constraints"],
+      "properties": {
+        "id": { "$ref": "#/$defs/portableStableId" },
+        "type": { "const": "rational" },
+        "default": { "$ref": "#/$defs/beat" },
+        "constraints": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "minimum": { "$ref": "#/$defs/beat" },
+            "exclusiveMinimum": { "$ref": "#/$defs/beat" },
+            "maximum": { "$ref": "#/$defs/beat" },
+            "exclusiveMaximum": { "$ref": "#/$defs/beat" }
+          }
+        }
+      }
+    },
+    "weightParameter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "constraints"],
+      "properties": {
+        "id": { "$ref": "#/$defs/portableStableId" },
+        "type": { "const": "weight" },
+        "default": { "type": "number", "minimum": 0, "maximum": 1 },
+        "constraints": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "minimum": { "type": "number", "minimum": 0, "maximum": 1 },
+            "exclusiveMinimum": { "type": "number", "minimum": 0, "maximum": 1 },
+            "maximum": { "type": "number", "minimum": 0, "maximum": 1 },
+            "exclusiveMaximum": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        }
+      }
+    },
+    "parameter": {
+      "oneOf": [
+        { "$ref": "#/$defs/numberParameter" },
+        { "$ref": "#/$defs/rationalParameter" },
+        { "$ref": "#/$defs/weightParameter" }
+      ]
+    },
+    "animationTemplateImport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "source"],
+      "properties": {
+        "id": { "$ref": "#/$defs/portableStableId" },
+        "source": {
+          "allOf": [
+            { "$ref": "#/$defs/portablePath" },
+            { "pattern": "\\.cxt$" }
+          ]
+        }
+      }
+    },
+    "animationSegment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["startBeat", "durationBeats", "startValue", "endValue", "startSlope", "endSlope"],
+      "properties": {
+        "startBeat": { "$ref": "#/$defs/beat" },
+        "durationBeats": { "$ref": "#/$defs/beat" },
+        "startValue": {},
+        "endValue": {},
+        "startSlope": { "type": "number", "minimum": 0, "maximum": 3 },
+        "endSlope": { "type": "number", "minimum": 0, "maximum": 3 }
+      }
+    },
+    "animationTrack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["property", "segments"],
+      "properties": {
+        "property": {
+          "enum": [
+            "transform.position.x",
+            "transform.position.y",
+            "transform.position.z",
+            "transform.rotation",
+            "transform.scale",
+            "material.opacity",
+            "material.tint"
+          ]
+        },
+        "segments": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 65536,
+          "items": { "$ref": "#/$defs/animationSegment" }
+        }
+      }
+    },
+    "animationStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["beat", "value"],
+      "properties": {
+        "beat": { "$ref": "#/$defs/beat" },
+        "value": {}
+      }
+    },
+    "animationStepTrack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["property", "steps"],
+      "properties": {
+        "property": { "enum": ["render.visible", "render.material"] },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 65536,
+          "items": { "$ref": "#/$defs/animationStep" }
+        }
+      }
+    },
+    "animationClip": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "durationBeats", "tracks", "stepTracks"],
+      "properties": {
+        "id": { "$ref": "#/$defs/portableStableId" },
+        "version": { "const": 1 },
+        "durationBeats": { "$ref": "#/$defs/beat" },
+        "tracks": {
+          "type": "array",
+          "maxItems": 256,
+          "items": { "$ref": "#/$defs/animationTrack" }
+        },
+        "stepTracks": {
+          "type": "array",
+          "maxItems": 256,
+          "items": { "$ref": "#/$defs/animationStepTrack" }
+        }
+      },
+      "anyOf": [
+        { "properties": { "tracks": { "minItems": 1 } } },
+        { "properties": { "stepTracks": { "minItems": 1 } } }
+      ]
+    },
+    "propertyMask": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["properties", "prefixes"],
+      "properties": {
+        "properties": {
+          "type": "array",
+          "maxItems": 256,
+          "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+        },
+        "prefixes": {
+          "type": "array",
+          "maxItems": 256,
+          "items": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*\\.$" }
+        }
+      }
+    },
+    "iterations": {
+      "oneOf": [
+        { "type": "integer", "minimum": 1, "maximum": 65535 },
+        { "const": "infinite" }
+      ]
+    },
+    "templateBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bindingId", "template", "startBeat", "durationScale", "weight", "priority"],
+      "properties": {
+        "bindingId": { "$ref": "#/$defs/portableStableId" },
+        "template": { "$ref": "#/$defs/animationTemplateReference" },
+        "startBeat": { "$ref": "#/$defs/beat" },
+        "durationScale": { "$ref": "#/$defs/rationalSource" },
+        "weight": { "$ref": "#/$defs/weightSource" },
+        "priority": { "type": "integer" }
+      }
+    },
+    "clipInstance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["instanceId", "clip", "startBeat", "iterations", "fillMode", "weight", "propertyMask"],
+      "properties": {
+        "instanceId": { "$ref": "#/$defs/portableStableId" },
+        "clip": { "$ref": "#/$defs/animationReference" },
+        "startBeat": { "$ref": "#/$defs/beat" },
+        "iterations": { "$ref": "#/$defs/iterations" },
+        "fillMode": { "enum": ["none", "hold"] },
+        "weight": { "$ref": "#/$defs/weightSource" },
+        "propertyMask": { "$ref": "#/$defs/propertyMask" }
+      }
+    },
+    "blendGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["groupId", "mode", "weight", "instances"],
+      "properties": {
+        "groupId": { "$ref": "#/$defs/portableStableId" },
+        "mode": { "enum": ["override", "additive"] },
+        "weight": { "$ref": "#/$defs/weightSource" },
+        "instances": {
+          "type": "array",
+          "maxItems": 256,
+          "items": { "$ref": "#/$defs/clipInstance" }
+        }
+      }
+    },
+    "animationLayer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["layerId", "priority", "weight", "propertyMask", "blendGroups"],
+      "properties": {
+        "layerId": { "$ref": "#/$defs/portableStableId" },
+        "priority": { "type": "integer" },
+        "weight": { "$ref": "#/$defs/weightSource" },
+        "propertyMask": { "$ref": "#/$defs/propertyMask" },
+        "blendGroups": {
+          "type": "array",
+          "maxItems": 64,
+          "items": { "$ref": "#/$defs/blendGroup" }
+        }
+      }
+    },
+    "animatorComponent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "templateBindings", "layers"],
+      "properties": {
+        "version": { "const": 1 },
+        "templateBindings": {
+          "type": "array",
+          "maxItems": 256,
+          "items": { "$ref": "#/$defs/templateBinding" }
+        },
+        "layers": {
+          "type": "array",
+          "maxItems": 64,
+          "items": { "$ref": "#/$defs/animationLayer" }
+        }
+      }
+    },
+    "behavior": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "version", "events", "stepEvents"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "type": { "const": "behavior.event" },
+        "version": { "const": 1 },
+        "events": {
+          "type": "array",
+          "maxItems": 65536,
+          "items": { "$ref": "#/$defs/behaviorEvent" }
+        },
+        "stepEvents": {
+          "type": "array",
+          "maxItems": 65536,
+          "items": { "$ref": "#/$defs/behaviorStepEvent" }
+        }
+      },
+      "anyOf": [
+        { "properties": { "events": { "minItems": 1 } } },
+        { "properties": { "stepEvents": { "minItems": 1 } } }
+      ]
+    },
+    "groupId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,255}$"
+    },
+    "continuousEventBase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["property", "startBeat", "durationBeats", "startValue", "endValue", "startSlope", "endSlope"],
+      "properties": {
+        "property": { "type": "string" },
+        "startBeat": { "$ref": "#/$defs/beat" },
+        "durationBeats": { "$ref": "#/$defs/beat" },
+        "startValue": {},
+        "endValue": {},
+        "startSlope": { "type": "number", "minimum": 0, "maximum": 3 },
+        "endSlope": { "type": "number", "minimum": 0, "maximum": 3 },
+        "groupId": { "$ref": "#/$defs/groupId" }
+      }
+    },
+    "behaviorEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/continuousEventBase" },
+        {
+          "oneOf": [
+            {
+              "properties": {
+                "property": { "enum": ["transform.position.x", "transform.position.y", "transform.position.z"] },
+                "startValue": { "$ref": "#/$defs/finiteNumber" },
+                "endValue": { "$ref": "#/$defs/finiteNumber" }
+              }
+            },
+            {
+              "properties": {
+                "property": { "const": "transform.rotation" },
+                "startValue": { "$ref": "#/$defs/quat" },
+                "endValue": { "$ref": "#/$defs/quat" }
+              }
+            },
+            {
+              "properties": {
+                "property": { "const": "transform.scale" },
+                "startValue": { "$ref": "#/$defs/vec3" },
+                "endValue": { "$ref": "#/$defs/vec3" }
+              }
+            },
+            {
+              "properties": {
+                "property": { "const": "camera.fovY" },
+                "startValue": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 179 },
+                "endValue": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 179 }
+              }
+            },
+            {
+              "properties": {
+                "property": { "const": "material.opacity" },
+                "startValue": { "type": "number", "minimum": 0, "maximum": 1 },
+                "endValue": { "type": "number", "minimum": 0, "maximum": 1 }
+              }
+            },
+            {
+              "properties": {
+                "property": { "const": "material.tint" },
+                "startValue": { "$ref": "#/$defs/unitVec3" },
+                "endValue": { "$ref": "#/$defs/unitVec3" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "behaviorStepEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["property", "beat", "value"],
+      "properties": {
+        "property": { "type": "string" },
+        "beat": { "$ref": "#/$defs/beat" },
+        "value": {},
+        "groupId": { "$ref": "#/$defs/groupId" }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "property": { "const": "render.visible" },
+            "value": { "type": "boolean" }
+          }
+        },
+        {
+          "properties": {
+            "property": { "const": "render.material" },
+            "value": { "$ref": "#/$defs/assetReference" }
+          }
+        }
+      ]
+    },
+    "requiredExtension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,255}$" },
+        "version": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

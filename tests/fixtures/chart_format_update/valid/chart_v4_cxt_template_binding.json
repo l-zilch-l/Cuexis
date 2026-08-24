@@ -1,0 +1,166 @@
+{
+  "format": "cuexis.chart",
+  "version": 4,
+  "chartId": "019f0000-0000-7abc-8def-000000000450",
+  "metadata": {
+    "title": "CXT Template Binding Candidate"
+  },
+  "timing": {
+    "offsetMs": 0.0,
+    "defaultBpm": 120.0,
+    "tempoEvents": [],
+    "stops": []
+  },
+  "camera": {
+    "type": "perspective",
+    "fovY": 60.0,
+    "near": 0.1,
+    "far": 1000.0
+  },
+  "parameters": [
+    {
+      "id": "motion.duration-scale",
+      "type": "rational",
+      "default": { "numerator": 1, "denominator": 1 },
+      "constraints": {
+        "exclusiveMinimum": { "numerator": 0, "denominator": 1 },
+        "maximum": { "numerator": 1, "denominator": 1 }
+      }
+    },
+    {
+      "id": "motion.weight",
+      "type": "weight",
+      "default": 1.0,
+      "constraints": {}
+    }
+  ],
+  "templates": [],
+  "behaviors": [],
+  "animationTemplateImports": [
+    {
+      "id": "motion.move-y",
+      "source": "templates/move-y.cxt"
+    }
+  ],
+  "animationClips": [],
+  "objects": [
+    {
+      "id": "019f0000-0000-7abc-8def-000000000451",
+      "name": "lane_left",
+      "parent": null,
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [0.0, 0.0, 0.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [1.0, 1.0, 1.0]
+        }
+      },
+      "extensions": {}
+    },
+    {
+      "id": "019f0000-0000-7abc-8def-000000000452",
+      "name": "lane_right",
+      "parent": null,
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [0.0, 0.0, 0.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [1.0, 1.0, 1.0]
+        }
+      },
+      "extensions": {}
+    },
+    {
+      "id": "019f0000-0000-7abc-8def-000000000453",
+      "name": "note_left",
+      "parent": {
+        "domain": "object",
+        "id": "019f0000-0000-7abc-8def-000000000451"
+      },
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [-2.0, 0.0, 0.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [1.0, 1.0, 1.0]
+        },
+        "cuexis.animator": {
+          "version": 1,
+          "templateBindings": [
+            {
+              "bindingId": "move-y-left",
+              "template": {
+                "domain": "animation-template",
+                "id": "motion.move-y"
+              },
+              "startBeat": { "numerator": 8, "denominator": 1 },
+              "durationScale": {
+                "parameter": {
+                  "domain": "chart-parameter",
+                  "id": "motion.duration-scale"
+                }
+              },
+              "weight": {
+                "parameter": {
+                  "domain": "chart-parameter",
+                  "id": "motion.weight"
+                }
+              },
+              "priority": 10
+            }
+          ],
+          "layers": []
+        }
+      },
+      "extensions": {}
+    },
+    {
+      "id": "019f0000-0000-7abc-8def-000000000454",
+      "name": "note_right",
+      "parent": {
+        "domain": "object",
+        "id": "019f0000-0000-7abc-8def-000000000452"
+      },
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [3.0, 0.0, 0.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [1.0, 1.0, 1.0]
+        },
+        "cuexis.animator": {
+          "version": 1,
+          "templateBindings": [
+            {
+              "bindingId": "move-y-right",
+              "template": {
+                "domain": "animation-template",
+                "id": "motion.move-y"
+              },
+              "startBeat": { "numerator": 12, "denominator": 1 },
+              "durationScale": {
+                "parameter": {
+                  "domain": "chart-parameter",
+                  "id": "motion.duration-scale"
+                }
+              },
+              "weight": {
+                "parameter": {
+                  "domain": "chart-parameter",
+                  "id": "motion.weight"
+                }
+              },
+              "priority": 10
+            }
+          ],
+          "layers": []
+        }
+      },
+      "extensions": {}
+    }
+  ],
+  "requiredExtensions": [],
+  "extensions": {}
+}

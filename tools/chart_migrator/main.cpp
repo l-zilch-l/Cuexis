@@ -17,11 +17,12 @@ struct Arguments final {
     std::filesystem::path input;
     std::filesystem::path output;
     std::filesystem::path report;
+    std::uint32_t targetVersion{3};
 };
 
 void printUsage() {
-    std::cerr << "Usage: cuexis_chart_migrator --input <v1-or-v2-chart> "
-                 "--output <v3-chart> --report <report-json>\n";
+    std::cerr << "Usage: cuexis_chart_migrator --input <chart> "
+                 "--output <chart> --report <report-json> [--target 3|4]\n";
 }
 
 void printDiagnostics(const cuexis::core::Diagnostics& diagnostics) {
@@ -39,6 +40,7 @@ void printDiagnostics(const cuexis::core::Diagnostics& diagnostics) {
     bool hasInput = false;
     bool hasOutput = false;
     bool hasReport = false;
+    bool hasTarget = false;
     for (int index = 1; index < argc; index += 2) {
         if (index + 1 >= argc || std::string_view{argv[index + 1]}.empty()) {
             return std::nullopt;
@@ -53,6 +55,16 @@ void printDiagnostics(const cuexis::core::Diagnostics& diagnostics) {
         } else if (option == "--report" && !hasReport) {
             result.report = argv[index + 1];
             hasReport = true;
+        } else if (option == "--target" && !hasTarget) {
+            const std::string_view target{argv[index + 1]};
+            if (target == "3") {
+                result.targetVersion = 3;
+            } else if (target == "4") {
+                result.targetVersion = 4;
+            } else {
+                return std::nullopt;
+            }
+            hasTarget = true;
         } else {
             return std::nullopt;
         }
@@ -232,7 +244,9 @@ int main(int argc, char** argv) {
         return 2;
     }
 
-    auto migrated = cuexis::chart::ChartMigrator::migrateToV3(*source, limits);
+    auto migrated = arguments->targetVersion == 4
+                        ? cuexis::chart::ChartMigrator::migrateToV4(*source, limits)
+                        : cuexis::chart::ChartMigrator::migrateToV3(*source, limits);
     printDiagnostics(migrated.diagnostics);
     if (!migrated.hasValue()) {
         return 1;
@@ -244,6 +258,7 @@ int main(int argc, char** argv) {
         return 2;
     }
 
-    std::cout << "Migrated Cuexis Chart v" << migrated.artifact->report.sourceVersion << " to v3\n";
+    std::cout << "Migrated Cuexis Chart v" << migrated.artifact->report.sourceVersion << " to v"
+              << migrated.artifact->report.targetVersion << '\n';
     return 0;
 }

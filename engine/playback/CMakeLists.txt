@@ -52,6 +52,7 @@ target_link_libraries(cuexis_playback
     PRIVATE
         cuexis::assets
         cuexis::chart
+        cuexis::cxc
         cuexis::filesystem
         cuexis::project
         cuexis::runtime

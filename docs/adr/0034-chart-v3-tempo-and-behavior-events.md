@@ -25,7 +25,7 @@ behavior.transform.keyframe -> behavior.event
 startBeat, durationBeats, startBpm, endBpm, startSlope, endSlope
 ```
 
-BPM 在事件区间内直接插值，不对 milliseconds-per-beat 插值。BPM 范围为 `[1, 65536]`，`durationBeats` 必须非负。最早事件前使用 `defaultBpm`；事件结束后以 `endBpm` 作为后续基准。`startBpm` 允许与事件开始前的有效 BPM 不同并产生跳变。斜率必须非负且 `startSlope + endSlope <= 3`。Tempo Event 不得重叠；零持续事件要求起止 BPM 相同且两个斜率为零，但该值仍可与此前基准不同，并在冲突检测中占用自己的 Beat；负 Beat 事件参与 Beat 0 基准；Stop 内 Beat 和事件进度均冻结。完整字段见 `docs/CHART_FORMAT.md` 第 2b 节。
+BPM 在事件区间内直接插值，不对 milliseconds-per-beat 插值。BPM 范围为 `[1, 65536]`，`durationBeats` 必须非负。最早事件前使用 `defaultBpm`；事件结束后以 `endBpm` 作为后续基准。`startBpm` 允许与事件开始前的有效 BPM 不同并产生跳变。斜率必须非负且 `startSlope + endSlope <= 3`。Tempo Event 不得重叠；零持续事件要求起止 BPM 相同且两个斜率为零，但该值仍可与此前基准不同，并在冲突检测中占用自己的 Beat；负 Beat 事件参与 Beat 0 基准；Stop 内 Beat 和事件进度均冻结。完整字段见 `docs/formats/CHART_FORMAT.md` 第 2b 节。
 
 ### Behavior Event
 

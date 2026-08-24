@@ -15,6 +15,7 @@
 #include <cuexis/playback/playback_source.hpp>
 #include <cuexis/playback/presentation.hpp>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -22,6 +23,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <variant>
 #include <vector>
 
 namespace cuexis::playback {
@@ -51,9 +53,48 @@ enum class PlaybackMode {
 };
 
 inline constexpr std::string_view capabilityChartV3 = "cuexis.chart.v3";
+inline constexpr std::string_view capabilityChartV4 = "cuexis.chart.v4";
+inline constexpr std::string_view capabilitySourceCxcV1 = "cuexis.source.cxc.v1";
+inline constexpr std::string_view capabilitySourceCxtV1 = "cuexis.source.cxt.v1";
 inline constexpr std::string_view capabilityBehaviorEventV1 = "cuexis.behavior.event.v1";
 inline constexpr std::string_view capabilityRenderVisibilityV1 = "cuexis.render.visibility.v1";
 inline constexpr std::string_view capabilityMaterialSnapshotV1 = "cuexis.material.snapshot.v1";
+
+struct ChartParameterNumber final {
+    double value{};
+};
+
+struct ChartParameterRational final {
+    std::int64_t numerator{};
+    std::int64_t denominator{1};
+};
+
+struct ChartParameterWeight final {
+    double value{};
+};
+
+using ChartParameterValue =
+    std::variant<ChartParameterNumber, ChartParameterRational, ChartParameterWeight>;
+
+struct ChartParameter final {
+    std::string id;
+    ChartParameterValue value;
+};
+
+struct ChartParameterSet final {
+    std::vector<ChartParameter> values;
+};
+
+struct PlaybackPrepareOptions final {
+    ChartParameterSet parameters;
+};
+
+struct PreparedSemanticIdentity final {
+    std::array<std::uint8_t, 32> sha256{};
+
+    friend bool operator==(const PreparedSemanticIdentity&,
+                           const PreparedSemanticIdentity&) = default;
+};
 
 struct PlaybackCapabilitySet final {
     std::uint32_t version{1};
@@ -139,6 +180,7 @@ class CUEXIS_PLAYBACK_API PreparedPlayback final {
     [[nodiscard]] bool valid() const noexcept;
     [[nodiscard]] const PlaybackContentInfo* contentInfo() const noexcept;
     [[nodiscard]] std::optional<MainMusicSourceView> mainMusicSource() const noexcept;
+    [[nodiscard]] auto semanticIdentity() const noexcept -> std::optional<PreparedSemanticIdentity>;
     [[nodiscard]] auto presentationCandidateToken() const
         -> core::Result<PresentationCandidateToken>;
     [[nodiscard]] auto presentationManifest() const noexcept -> const PresentationResourceManifest*;
@@ -176,16 +218,31 @@ class CUEXIS_PLAYBACK_API PlaybackSession final {
 
     [[nodiscard]] auto prepareLoad(std::string_view jsonText, PlaybackMode mode)
         -> core::Result<PreparedPlayback>;
+    [[nodiscard]] auto prepareLoad(std::string_view jsonText, PlaybackMode mode,
+                                   const PlaybackPrepareOptions& options)
+        -> core::Result<PreparedPlayback>;
     [[nodiscard]] auto prepareLoad(PlaybackSource&& source, PlaybackMode mode)
+        -> core::Result<PreparedPlayback>;
+    [[nodiscard]] auto prepareLoad(PlaybackSource&& source, PlaybackMode mode,
+                                   const PlaybackPrepareOptions& options)
         -> core::Result<PreparedPlayback>;
     [[nodiscard]] auto prepareReload(std::string_view replacementJson,
                                      const RuntimeFrame& targetFrame, ReloadPolicy policy)
         -> core::Result<PreparedPlayback>;
+    [[nodiscard]] auto prepareReload(std::string_view replacementJson,
+                                     const RuntimeFrame& targetFrame, ReloadPolicy policy,
+                                     const PlaybackPrepareOptions& options)
+        -> core::Result<PreparedPlayback>;
     [[nodiscard]] auto prepareReload(PlaybackSource&& replacement, const RuntimeFrame& targetFrame,
                                      ReloadPolicy policy) -> core::Result<PreparedPlayback>;
+    [[nodiscard]] auto prepareReload(PlaybackSource&& replacement, const RuntimeFrame& targetFrame,
+                                     ReloadPolicy policy, const PlaybackPrepareOptions& options)
+        -> core::Result<PreparedPlayback>;
     [[nodiscard]] auto commit(PreparedPlayback&& prepared) -> core::Result<void>;
 
     [[nodiscard]] auto load(PlaybackSource&& source, PlaybackMode mode) -> core::Result<void>;
+    [[nodiscard]] auto load(PlaybackSource&& source, PlaybackMode mode,
+                            const PlaybackPrepareOptions& options) -> core::Result<void>;
     [[nodiscard]] auto loadChart(std::string_view jsonText) -> core::Result<void>;
 
     [[nodiscard]] auto update(const RuntimeFrame& frame) -> core::Result<void>;
@@ -196,19 +253,27 @@ class CUEXIS_PLAYBACK_API PlaybackSession final {
 
     [[nodiscard]] auto reload(std::string_view replacementJson, const RuntimeFrame& targetFrame,
                               ReloadPolicy policy) -> core::Result<void>;
+    [[nodiscard]] auto reload(std::string_view replacementJson, const RuntimeFrame& targetFrame,
+                              ReloadPolicy policy, const PlaybackPrepareOptions& options)
+        -> core::Result<void>;
     [[nodiscard]] auto reload(PlaybackSource&& replacement, const RuntimeFrame& targetFrame,
                               ReloadPolicy policy) -> core::Result<void>;
+    [[nodiscard]] auto reload(PlaybackSource&& replacement, const RuntimeFrame& targetFrame,
+                              ReloadPolicy policy, const PlaybackPrepareOptions& options)
+        -> core::Result<void>;
     [[nodiscard]] auto unload() -> core::Result<void>;
 
     [[nodiscard]] auto chartInfo() const -> core::Result<ChartInfo>;
     [[nodiscard]] auto contentInfo() const -> core::Result<PlaybackContentInfo>;
+    [[nodiscard]] auto semanticIdentity() const -> core::Result<PreparedSemanticIdentity>;
     [[nodiscard]] auto diagnostics() const -> core::Result<core::Diagnostics>;
     [[nodiscard]] auto lastOperationDiagnostics() const -> core::Result<core::Diagnostics>;
 
   private:
     [[nodiscard]] auto prepare(PlaybackSource&& source, PlaybackMode mode,
                                const RuntimeFrame* targetFrame, ReloadPolicy policy,
-                               bool replacement) -> core::Result<PreparedPlayback>;
+                               bool replacement, const PlaybackPrepareOptions& options)
+        -> core::Result<PreparedPlayback>;
 
     struct State;
     std::unique_ptr<State> state_;

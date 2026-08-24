@@ -13,7 +13,7 @@ Windows/MSVC、WSL GCC/Clang、sanitizer、package consumer 验收均已完成�
 ## 0. 当前启动状态
 
 项目所有者已于 2026-08-07 接受
-[Portable Presentation Profile v1](../PORTABLE_PRESENTATION.md) 的 S3A-01..S3A-12 精确合同。
+[Portable Presentation Profile v1](../formats/PORTABLE_PRESENTATION.md) 的 S3A-01..S3A-12 精确合同。
 3A、3B、3C、3D、3E 已关闭；3F 已于 2026-08-08 完成并关闭。项目所有者随后授权进入
 3G；Windows/MSVC、WSL Linux 和 hosted Linux 最终矩阵均已完成。Stage 3 已于 2026-08-08
 最终关闭。
@@ -303,7 +303,7 @@ cuexis_render_opengl
 
 ### 3A：合同、格式与版本门禁
 
-状态：已关闭。精确合同已写入 `docs/PORTABLE_PRESENTATION.md` 并于 2026-08-07 接受。
+状态：已关闭。精确合同已写入 `docs/formats/PORTABLE_PRESENTATION.md` 并于 2026-08-07 接受。
 
 任务：
 
@@ -345,7 +345,7 @@ cuexis_render_opengl
 3A 的规范性交付物固定为：
 
 ```text
-docs/PORTABLE_PRESENTATION.md
+docs/formats/PORTABLE_PRESENTATION.md
   resource format/field/normalization tables
   public API sketch and lifetime examples
   budget and diagnostic code tables
@@ -731,7 +731,7 @@ docs/adr/0037-stage-3-portable-presentation-contracts.md
 docs/stage_plans/stage_3_implementation_plan.md
 docs/PROJECT_GUIDE.md
 docs/stage_plans/cuexis_sdk_transition_plan.md
-docs/PORTABLE_PRESENTATION.md（3A 创建并冻结格式、API sketch、预算和诊断）
+docs/formats/PORTABLE_PRESENTATION.md（3A 创建并冻结格式、API sketch、预算和诊断）
 BUILDING/package component/consumer 文档
 stage_3_completion_report.md（仅在全部门禁后创建）
 ```
@@ -763,7 +763,7 @@ stage_3_completion_report.md（仅在全部门禁后创建）
 审查范围和操作顺序，不再代表当前下一步；该 review 的独立复审状态以其自身快照说明为准。
 当时按以下顺序执行：
 
-1. 阅读仓库 `AGENTS.md`、ADR 0037、`docs/PORTABLE_PRESENTATION.md`、本计划第 0、3、4、5、6、
+1. 阅读仓库 `AGENTS.md`、ADR 0037、`docs/formats/PORTABLE_PRESENTATION.md`、本计划第 0、3、4、5、6、
    11 节和阶段 3 完成报告。确认工作树状态；保留任何尚未提交的最终关闭文档，不覆盖用户改动。
 2. 以 commit `b71ef23b2f258d88e274a9b4b13665ef10a39845` 为 Stage 3 实现基线，并确认当前 review
    HEAD 包含该 commit。Linux Quality run `31270268057`、Windows MSVC run `31270267999` 和

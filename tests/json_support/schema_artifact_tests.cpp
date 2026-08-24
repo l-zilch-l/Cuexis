@@ -140,3 +140,72 @@ TEST_CASE("Stage 2 chart schema accepts the shipped v3 fixture and rejects legac
         "objects":[],"requiredExtensions":[],"extensions":{}
     })");
 }
+
+TEST_CASE("Stage Chart Format Update schemas accept promoted production fixtures",
+          "[json][schema][artifact][chart-format-update]") {
+    const auto source = std::filesystem::path{CUEXIS_SOURCE_DIR};
+    const auto fixture = source / "tests" / "fixtures" / "chart_format_update" / "valid";
+    const auto chartSchema = parseArtifact(source / "schemas" / "cuexis.chart.v4.schema.json");
+    const auto templateSchema =
+        parseArtifact(source / "schemas" / "cuexis.animation-template.v1.schema.json");
+    const auto manifestSchema = parseArtifact(source / "schemas" / "cuexis.cxc.v1.schema.json");
+
+    for (const auto* name : {"chart_v4_animation.json", "chart_v4_cxt_template_binding.json",
+                             "chart_v4_parameterized_transform.json",
+                             "chart_v4_static_migration.json", "chart_v4_template_animator.json"}) {
+        INFO(name);
+        requireValid(chartSchema, parseArtifact(fixture / name));
+    }
+    requireValid(templateSchema, parseArtifact(fixture / "templates" / "move-y.cxt"));
+    requireValid(manifestSchema, parseArtifact(fixture / "cxc_manifest_v1.json"));
+    requireValid(manifestSchema, parseArtifact(fixture / "cxc_manifest_cxt.json"));
+}
+
+TEST_CASE("Stage Chart Format Update schemas reject structural contract violations",
+          "[json][schema][artifact][chart-format-update]") {
+    const auto source = std::filesystem::path{CUEXIS_SOURCE_DIR};
+    const auto fixture = source / "tests" / "fixtures" / "chart_format_update";
+    const auto chartSchema = parseArtifact(source / "schemas" / "cuexis.chart.v4.schema.json");
+    const auto templateSchema =
+        parseArtifact(source / "schemas" / "cuexis.animation-template.v1.schema.json");
+    const auto manifestSchema = parseArtifact(source / "schemas" / "cuexis.cxc.v1.schema.json");
+
+    requireInvalid(chartSchema, R"({"format":"cuexis.chart","version":3})");
+    requireInvalid(templateSchema, readFile(source / "tests" / "fixtures" / "chart_format_update" /
+                                            "invalid" / "move_y_runtime_script.cxt"));
+    requireInvalid(chartSchema, readFile(source / "tests" / "fixtures" / "chart_format_update" /
+                                         "invalid" / "chart_v4_animator_deep_patch.json"));
+    requireInvalid(chartSchema, readFile(source / "tests" / "fixtures" / "chart_format_update" /
+                                         "invalid" / "chart_v4_parameter_asset_use.json"));
+    auto wrongCxtExtension = readFile(fixture / "valid" / "chart_v4_cxt_template_binding.json");
+    const auto cxtPath = wrongCxtExtension.find("templates/move-y.cxt");
+    REQUIRE(cxtPath != std::string::npos);
+    wrongCxtExtension.replace(cxtPath, std::string_view{"templates/move-y.cxt"}.size(),
+                              "templates/move-y.CXT");
+    requireInvalid(chartSchema, wrongCxtExtension);
+    requireInvalid(manifestSchema, R"({
+        "format":"cuexis.cxc","version":1,"project":"cuexis.project.json",
+        "entries":[],"requiredExtensions":[],"extensions":{}
+    })");
+}
+
+TEST_CASE("Stage Chart Format Update semantic negatives remain schema-shaped fixtures",
+          "[json][schema][artifact][chart-format-update]") {
+    const auto source = std::filesystem::path{CUEXIS_SOURCE_DIR};
+    const auto fixture = source / "tests" / "fixtures" / "chart_format_update" / "invalid";
+    const auto chartSchema = parseArtifact(source / "schemas" / "cuexis.chart.v4.schema.json");
+    const auto templateSchema =
+        parseArtifact(source / "schemas" / "cuexis.animation-template.v1.schema.json");
+    const auto manifestSchema = parseArtifact(source / "schemas" / "cuexis.cxc.v1.schema.json");
+
+    for (const auto* name : {"chart_v4_additive_material.json", "chart_v4_cxt_id_mismatch.json",
+                             "chart_v4_cxt_missing_import.json", "chart_v4_cxt_parameter_type.json",
+                             "chart_v4_discrete_partial_weight.json", "chart_v4_mask_conflict.json",
+                             "chart_v4_mask_overlap.json"}) {
+        INFO(name);
+        requireValid(chartSchema, parseArtifact(fixture / name));
+    }
+    requireValid(templateSchema, parseArtifact(fixture / "templates" / "move-y.cxt"));
+    requireValid(manifestSchema, parseArtifact(fixture / "cxc_manifest_case_conflict.json"));
+    requireValid(manifestSchema, parseArtifact(fixture / "cxc_manifest_unsorted.json"));
+}

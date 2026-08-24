@@ -1,2 +1,6 @@
+add_subdirectory(cxc_common)
+add_subdirectory(cxc_pack)
+add_subdirectory(cxc_validate)
+add_subdirectory(cxc_unpack)
 add_subdirectory(chart_validator)
 add_subdirectory(chart_migrator)

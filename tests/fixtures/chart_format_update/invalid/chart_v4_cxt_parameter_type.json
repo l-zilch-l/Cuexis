@@ -1,0 +1,63 @@
+{
+  "format": "cuexis.chart",
+  "version": 4,
+  "chartId": "019f0000-0000-7abc-8def-000000000461",
+  "metadata": {},
+  "timing": {
+    "offsetMs": 0.0,
+    "defaultBpm": 120.0,
+    "tempoEvents": [],
+    "stops": []
+  },
+  "parameters": [
+    {
+      "id": "motion.duration-scale",
+      "type": "number",
+      "default": 1.0,
+      "constraints": { "exclusiveMinimum": 0.0, "maximum": 1.0 }
+    }
+  ],
+  "templates": [],
+  "behaviors": [],
+  "animationTemplateImports": [
+    {
+      "id": "motion.move-y",
+      "source": "templates/move-y.cxt"
+    }
+  ],
+  "animationClips": [],
+  "objects": [
+    {
+      "id": "019f0000-0000-7abc-8def-000000000462",
+      "name": "invalid_duration_binding",
+      "parent": null,
+      "components": {
+        "cuexis.animator": {
+          "version": 1,
+          "templateBindings": [
+            {
+              "bindingId": "move-y",
+              "template": {
+                "domain": "animation-template",
+                "id": "motion.move-y"
+              },
+              "startBeat": { "numerator": 0, "denominator": 1 },
+              "durationScale": {
+                "parameter": {
+                  "domain": "chart-parameter",
+                  "id": "motion.duration-scale"
+                }
+              },
+              "weight": 1.0,
+              "priority": 0
+            }
+          ],
+          "layers": []
+        }
+      },
+      "extensions": {}
+    }
+  ],
+  "requiredExtensions": [],
+  "extensions": {}
+}

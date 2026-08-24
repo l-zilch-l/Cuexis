@@ -1,0 +1,13 @@
+{
+  "format": "cuexis.asset-index",
+  "version": 1,
+  "assets": [
+    {
+      "id": "texture.unused",
+      "type": "texture",
+      "source": "textures/unused.bin",
+      "dependencies": []
+    }
+  ],
+  "extensions": {}
+}

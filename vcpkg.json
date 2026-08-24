@@ -9,6 +9,10 @@
     "entt",
     "glm",
     "json-schema-validator",
+    {
+      "name": "minizip-ng",
+      "default-features": false
+    },
     "nlohmann-json",
     "tl-expected"
   ],

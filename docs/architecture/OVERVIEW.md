@@ -95,8 +95,8 @@ pack、prepare 或 Playback 隐式执行。
 ## 深入阅读
 
 - [模块边界](MODULE_BOUNDARIES.md)
-- [RuntimeSession](../RUNTIME_SESSION.md)
+- [RuntimeSession](RUNTIME_SESSION.md)
 - [配置所有权 ADR](../adr/0024-configuration-ownership-and-staged-formats.md)
 - [Chart/Runtime/World ADR](../adr/0007-chart-runtime-world-boundary.md)
 - [属性求值 ADR](../adr/0009-property-evaluation-and-conflicts.md)
-- [Portable Presentation](../PORTABLE_PRESENTATION.md)
+- [Portable Presentation](../formats/PORTABLE_PRESENTATION.md)

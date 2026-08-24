@@ -2,7 +2,7 @@
 
 状态：现行项目指南
 
-更新日期：2026-08-10
+更新日期：2026-08-24
 
 本文是项目入口，不再保存完整路线、格式字段或阶段测试日志。整理前的完整长版快照见
 [archive/PROJECT_GUIDE_LEGACY_2026-08-10.md](archive/PROJECT_GUIDE_LEGACY_2026-08-10.md)。
@@ -55,13 +55,23 @@ time discontinuities rebuild from absolute time
 
 ## 5. 内容和格式
 
-当前生产 Chart 格式是 `cuexis.chart` v1/v2/v3。Stage Chart Format Update 正在讨论 CXC v1、
-Chart v4 和 CXT v1；它们尚未进入生产实现。
+Playback 保留 `cuexis.chart` v1/v2/v3 的全部生产路径。Stage Chart Format Update 已接受 CXC v1、
+Chart v4 和 CXT v1 合同，并完成 CFU-C0–C4。CFU-D1/D2 已关闭显式 JSON lift 迁移与 CLI
+`--target 4`；CFU-E 已关闭公共 API、统一 PlaybackSource、typed/CXC factory、SDK `0.6.0`、
+Chart v4 prepare、capability 接入与 `PreparedSemanticIdentity`。静态和参数化 v4 可使用现有
+Runtime，非空动画仍稳定拒绝。CFU-D3 已关闭 Playback FrameSnapshot / FrameDigest v3 /
+seek-stop 等价；整包 CFU-D 已由项目所有者记录“未提供外部资产”并关闭，兼容窗口不缩短。
+CFU-F 已在最终实现 SHA 上关闭跨平台 consumer、确定性、安全与性能门禁。CFU-G 的 G0 状态校准、
+G1 退出审计和 G2 Stage 4 typed handoff 已完成；G3 本地候选门禁已于 2026-08-19 通过。最终候选
+SHA `4371fdcf04f4f89bfddf070cbb15e4c903810a53` 的 hosted Linux/MSVC/MinGW 验证已于 2026-08-24
+全部通过，G3 hosted 与 G4 已完成。G5 completion report SHA
+`6e52677be2f27f83d0b709619be7ffcc141d6f95` 的 hosted revalidation 也已全部通过；项目所有者已于
+2026-08-24 明确接受报告，CFU-G 与 Stage Chart Format Update 已关闭。Stage 4 已解锁但尚未开始。
 
 格式权威入口：[formats/README.md](formats/README.md)。
 
 ```text
-Source Project -> explicit validate/pack -> CXC candidate
+Source Project -> explicit validate/pack -> CXC exchange package
 Chart/CXT/resources -> prepare -> typed runtime data
 typed runtime data -> Runtime/Animation -> FrameSnapshot
 ```
@@ -77,7 +87,8 @@ Chart 保存 Beat，TimingMap 映射到 chartTimeMs。Behavior 和 Animation 均
 Initial -> Behavior -> Animation -> HostOverride -> StudioPreviewOverride -> commit
 ```
 
-精确语义见 [TIMING_MODEL.md](TIMING_MODEL.md) 和 [ANIMATION_MIXING.md](ANIMATION_MIXING.md)。
+精确语义见 [TIMING_MODEL.md](formats/TIMING_MODEL.md) 和
+[ANIMATION_MIXING.md](formats/ANIMATION_MIXING.md)。
 
 ## 7. 工程结构
 
@@ -96,9 +107,10 @@ docs/         architecture, formats, plans, reports and guides
 
 ## 8. 开发工作流
 
-标准构建、测试、格式、package 和 GPU smoke 命令见 [BUILDING.md](BUILDING.md)。编码、异常、Result、
-线程和公共头规则见 [CODE_POLICY.md](CODE_POLICY.md)。版本和依赖分别见
-[VERSIONING.md](VERSIONING.md) 与 [DEPENDENCY_POLICY.md](DEPENDENCY_POLICY.md)。
+标准构建、测试、格式、package 和 GPU smoke 命令见
+[BUILDING.md](guides/BUILDING.md)。编码、异常、Result、线程和公共头规则见
+[CODE_POLICY.md](guides/CODE_POLICY.md)。版本和依赖分别见
+[VERSIONING.md](guides/VERSIONING.md) 与 [DEPENDENCY_POLICY.md](guides/DEPENDENCY_POLICY.md)。
 
 实现顺序：
 

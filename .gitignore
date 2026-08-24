@@ -1,5 +1,6 @@
 /.idea/
 /.vs/
+/.codex/
 /cmake-build-*/
 /out/
 /vcpkg_installed/

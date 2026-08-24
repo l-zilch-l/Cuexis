@@ -1,0 +1,34 @@
+{
+  "entries": [
+    {
+      "byteCount": 4211,
+      "path": "assets/charts/main.cuexis.chart.json",
+      "sha256": "92f9d56e16b2cb5de3c65006c4086fda57d16d93880e0a19d42c10659618f1c2"
+    },
+    {
+      "byteCount": 223,
+      "path": "assets/cuexis.asset-index.json",
+      "sha256": "d35c054c335da01d827aea57be9b93ea6374d4bef975847a3ad180388ab5f5e2"
+    },
+    {
+      "byteCount": 16,
+      "path": "assets/textures/unused.bin",
+      "sha256": "ed7ae4a267e256c2219066a814bf5668b1dfda6b865beaf0d319862c73948a20"
+    },
+    {
+      "byteCount": 309,
+      "path": "cuexis.project.json",
+      "sha256": "f207ae7edde7d540be0d32b8df8970b58a3db2a6e8adf2173787144be78961c4"
+    },
+    {
+      "byteCount": 814,
+      "path": "templates/move-y.cxt",
+      "sha256": "f34c429cbf4182e506a479cdc6ca7cce80d2cd9520b725caaf1c77a7e8951c71"
+    }
+  ],
+  "extensions": {},
+  "format": "cuexis.cxc",
+  "project": "cuexis.project.json",
+  "requiredExtensions": [],
+  "version": 1
+}

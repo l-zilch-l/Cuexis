@@ -1,28 +1,60 @@
-# Cuexis Agent Guide
+#Cuexis Agent Guide
 
-## Product direction
+##Product direction
 
-ADR 0027 defines Cuexis as an embeddable **Cuexis Playback SDK** with two independent applications: Cuexis Player and Cuexis Studio. RuntimeSession, World, EnTT, SDL and OpenGL are internal/optional implementation details; external hosts use PlaybackSession, ContentProvider, RuntimeFrame, FrameSnapshot and later Judgement/Replay contracts.
+    ADR 0027 defines Cuexis as an embeddable** Cuexis Playback SDK** with two independent
+        applications : Cuexis Player and Cuexis Studio.RuntimeSession,
+    World, EnTT, SDL and OpenGL are internal / optional implementation details;
+external hosts use PlaybackSession, ContentProvider, RuntimeFrame,
+    FrameSnapshot and later Judgement /
+            Replay contracts
+                .
 
-The current baseline includes a functioning `cuexis_playback` module (`PlaybackSession`,
-`FrameSnapshot`, `RuntimeFrame`, `IContentProvider`). SDK API `0.5.0` supports static and
-matching-toolchain C++ shared packages, versioned public libraries, clean staged consumers,
-compatibility rejection gates, PlaybackSource, FrameDigest v1-v3, and Portable Presentation v1.
-Filesystem/Memory/Host ContentProvider support, ChartClock/HostClock/CuexisAudio,
-RuntimeTimeline, Prepared Playback, `cuexis_audio`, and optional `cuexis_audio_sdl` are active.
-Stage 1C review findings R01-R21 are closed. Stage 2 delivered Chart v3, TimingMap,
-Behavior/Step Event, migration, and FrameDigest v2. Stage 3 delivered portable resources,
-candidate/active presentation transactions, Validation Sink, the OpenGL adapter, Player rendering,
-external package consumers, and cross-platform closure. Stable C ABI work remains in Stage 12;
+            The current baseline includes a functioning `cuexis_playback` module(`PlaybackSession`,
+`FrameSnapshot`, `RuntimeFrame`, `IContentProvider`)
+                .SDK API `0.6.0` supports static and matching
+        - toolchain C++ shared packages,
+    versioned public libraries, clean staged consumers, compatibility rejection gates,
+    PlaybackSource, FrameDigest v1 - v3,
+    and Portable Presentation v1.Filesystem / Memory / Host ContentProvider support,
+    ChartClock / HostClock / CuexisAudio, RuntimeTimeline, Prepared Playback, `cuexis_audio`,
+    and optional `cuexis_audio_sdl` are active.Stage 1C review findings R01 - R21 are closed.Stage
+                                                                              2 delivered Chart v3,
+    TimingMap, Behavior / Step Event, migration,
+    and FrameDigest v2.Stage 3 delivered portable resources,
+    candidate / active presentation transactions,
+    Validation Sink, the OpenGL adapter, Player rendering, external package consumers,
+    and cross - platform closure.Stable C ABI work remains in Stage 12;
 `cuexis_judgement` remains planned for Stage 11.
 
-The active planning stage is **Stage Chart Format Update**, positioned between Stage 3 and
-Stage 4; do not call it Stage 3.5. ADR 0038 proposes `.cxc` as a strict ZIP32 Stored exchange
+The next implementation stage is **Stage 4**, following the completed Stage Chart Format Update;
+Stage 4 is unblocked but not started. Do not call the format stage Stage 3.5. ADR 0038 defines `.cxc` as a strict ZIP32 Stored exchange
 package containing existing Project/Asset Index formats, `cuexis.chart` v4 data, CXT JSON, and
 required resources. The CXT v1, ChartParameter, and Template Binding subdecision was accepted on
 August 10, 2026: `.cxt` is UTF-8 JSON for one declarative local-time animation template, and host
-parameters are frozen before prepare lowering. ADR 0038 as a whole remains proposed; no CXC/CXT
-Schema, Reader, Writer, package API, or Chart v4 production support exists. Stage 4 must consume
+parameters are frozen before prepare lowering. ADR 0038 was accepted on August 11, 2026. CFU-C1
+Schema, fixtures, typed source Readers, and the internal manifest target are complete. CFU-C2
+canonical Writers, parameter resolution/identity, CXT import, deterministic lowering, resource
+closure, capability derivation, and aggregate budget gates are complete. CFU-C3 delivered the
+internal `cuexis_cxc` strict ZIP32 Stored
+Reader/Writer, manifest and project closure validation, owning file/memory packages,
+package-backed Asset ContentProvider, separate Chart/CXT project-document table, exact package
+identity, binary fixtures, and static/shared package leakage gates. CFU-C4 delivered developer
+pack/validate/unpack tools. CFU-E0 froze the public API and version direction; CFU-E1 unified
+PlaybackSource state, added owning typed project-document and CXC file/memory factories, and moved
+the preview SDK to `0.6.0`. CFU-E2 added prepare options, Chart v4 resolution and format capability
+preflight, with static v4 projected into the existing Runtime and nonempty animation rejected.
+**CFU-C0/C1/C2/C3/C4 complete; CFU-D owner-accepted and closed after “no external assets”;
+CFU-E owner-accepted and closed; CFU-F closed after final-SHA hosted verification; CFU-G closed
+after explicit owner acceptance on August 24, 2026. G0 status calibration, G1 exit audit, and G2
+Stage 4 typed handoff are complete. G3 local candidate gates passed on August 19, 2026. The final candidate SHA
+`4371fdcf04f4f89bfddf070cbb15e4c903810a53` passed same-SHA hosted Linux Quality, Windows MSVC,
+and Windows MinGW validation on August 24, 2026; G3 hosted validation and G4 are complete.
+G5 report-SHA hosted revalidation passed and G6 owner acceptance is recorded. Stage Chart Format
+Update is complete; Stage 4 is unblocked / not started.**
+This checkpoint must not be described as complete CXC, a public package API, complete v4 animation
+Playback, or complete v4 animation execution. Stage 4 implementation has not started.
+Stage 4 must consume
 typed data produced by the format stage and must not parse JSON/CXC/CXT in `engine/animation/`.
 Runtime scripts and per-frame script callbacks are deferred indefinitely. No scheduled stage,
 Chart/CXT/CXC field, extension, capability, bytecode, ABI, or Playback execution hook is reserved
@@ -32,12 +64,12 @@ implicitly executed by pack, prepare, or Playback.
 ## Build
 
 ```powershell
-# Debug (standard daily workflow)
+#Debug(standard daily workflow)
 cmake --preset debug --fresh
 cmake --build --preset debug
 ctest --preset debug --no-tests=error
 
-# Release (before merging / versioning)
+#Release(before merging / versioning)
 cmake --preset release --fresh
 cmake --build --preset release --clean-first
 ctest --preset release --no-tests=error
@@ -169,7 +201,7 @@ When adding/removing a dependency, update **all** of:
 
 1. `vcpkg.json` — dependency entry
 2. (if baseline changes) `vcpkg-configuration.json`
-3. `docs/DEPENDENCY_POLICY.md` — dependency record
+3. `docs/guides/DEPENDENCY_POLICY.md` — dependency record
 4. `THIRD_PARTY_NOTICES.md` — license/NOTICE tracking
 
 ## C++ conventions
@@ -202,11 +234,12 @@ When adding/removing a dependency, update **all** of:
 
 ## Versioning
 
-- Version components live in `cmake/CuexisVersion.cmake` (year/month/day/build); update them and
-  `vcpkg.json` together through `tools/update_version.py`.
-- `vcpkg.json` `version-string` must match the canonical version from CuexisVersion.cmake **exactly** (mismatch = fatal configure error).
-- `CUEXIS_SDK_API_VERSION` is independent from the date-based build identity and controls the
-  installed CMake package compatibility version; stable C ABI versioning starts in Stage 12.
+- Version components live in `cmake/CuexisVersion.cmake` (year/month/day/build);
+update them and
+  `vcpkg.json` together through `tools / update_version.py`.- `vcpkg.json` `version -
+    string` must match the canonical version from CuexisVersion.cmake* * exactly *
+        *(mismatch = fatal configure error).- `CUEXIS_SDK_API_VERSION` is independent from the date
+    - based build identity and controls the installed CMake package compatibility version; stable C ABI versioning starts in Stage 12.
 - Generated header: `${CMAKE_BINARY_DIR}/generated/cuexis/version.hpp` — never committed.
 - Format: `yy.mm.dd-v[-suffix]` (UTC-based). The public legacy `cuexis::version::hour` remains `0`
   for SDK 0.5.x source compatibility and is not part of the build identity.
@@ -239,16 +272,17 @@ directories do not exist yet (planned).
 - `docs/DOCUMENTATION_POLICY.md` — document roles, status vocabulary, archive and link rules
 - `docs/architecture/README.md` — architecture navigation
 - `docs/formats/README.md` — production/candidate format authority matrix
+- `docs/guides/README.md` — build, coding, dependency and version guide index
 - `docs/adr/README.md` — complete ADR index
 - `docs/stage_plans/README.md` — Stage 0-12 and Stage Chart Format Update plan index
 - `docs/stage_reports/README.md` — completion, review, and inventory evidence index
 - `docs/proposals/README.md` — candidate and deferred design index
 - `docs/examples/README.md` — candidate/validation example index
 - `docs/archive/README.md` — superseded and historical source index
-- `docs/BUILDING.md` — full build instructions and prerequisites
-- `docs/CODE_POLICY.md` — coding, error handling, threading, and ownership conventions
-- `docs/DEPENDENCY_POLICY.md` — dependency selection, recording, and licensing
-- `docs/VERSIONING.md` — version format and update process
+- `docs/guides/BUILDING.md` — full build instructions and prerequisites
+- `docs/guides/CODE_POLICY.md` — coding, error handling, threading, and ownership conventions
+- `docs/guides/DEPENDENCY_POLICY.md` — dependency selection, recording, and licensing
+- `docs/guides/VERSIONING.md` — version format and update process
 - `docs/adr/0027-playback-sdk-product-boundary.md` — accepted SDK product and host boundary
 - `docs/adr/0030-playback-preview-api-version-and-result.md` — preview Result, package-version,
   and FrameSnapshot lifetime contract
@@ -259,10 +293,10 @@ directories do not exist yet (planned).
 - `docs/stage_plans/stage_4_implementation_plan.md` through
   `docs/stage_plans/stage_12_implementation_plan.md` — independent future/deferred plans with
   goals, prerequisites, scope, acceptance criteria, and archived sources
-- `docs/adr/0038-cxc-v1-and-chart-v4-boundary.md` — proposed CXC v1 package and Chart v4 boundary
-- `docs/CXC_FORMAT.md` — proposed CXC v1 container, manifest, closure, and package contract
-- `docs/CHART_V4_FORMAT.md` — candidate Chart v4 fields, imports, animation, binding, and lowering contract
-- `docs/CXT_FORMAT.md` — accepted-subdecision CXT v1 JSON template file contract
+- `docs/adr/0038-cxc-v1-and-chart-v4-boundary.md` — accepted CXC v1, Chart v4, CXT and prepare boundary
+- `docs/formats/CXC_FORMAT.md` — accepted CXC v1 container, manifest, closure, and package contract
+- `docs/formats/CHART_V4_FORMAT.md` — accepted Chart v4 fields, imports, animation, binding, and lowering contract
+- `docs/formats/CXT_FORMAT.md` — accepted CXT v1 JSON template file contract
 
 ## Documentation maintenance
 
@@ -274,10 +308,11 @@ directories do not exist yet (planned).
 - New top-level documentation areas require a `README.md` index and a link from the main index.
 - When moving a document, preserve an old-path compatibility entry for at least one reorganization
   cycle and archive the full historical text when it remains useful.
-- Stage 0 and Stage 1A have completion reports but no separate current plan files; their original
-  planning text is preserved in the archived PROJECT_GUIDE snapshot.
-- Stage 4-12 plans are future/deferred contracts, not implementation claims. Each must retain a
-  stage goal, prerequisites or recovery conditions, scope, acceptance criteria, exclusions, and
-  archived source references.
-- Candidate examples remain review inputs until the relevant ADR and production Schema/Reader/
-  Writer gates close. Do not move them into production fixtures prematurely.
+- Stage 0 and Stage 1A have completion reports but no separate current plan files;
+their original planning text is preserved in the archived PROJECT_GUIDE snapshot.- Stage 4 -
+    12 plans are future / deferred contracts,
+    not implementation claims.Each must retain a stage goal, prerequisites or recovery conditions,
+    scope, acceptance criteria, exclusions,
+    and archived source references.-
+        Candidate examples remain review inputs until the relevant ADR and production Schema /
+            Reader / Writer gates close.Do not move them into production fixtures prematurely.

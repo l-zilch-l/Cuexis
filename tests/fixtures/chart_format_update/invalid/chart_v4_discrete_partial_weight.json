@@ -1,0 +1,96 @@
+{
+  "format": "cuexis.chart",
+  "version": 4,
+  "chartId": "019f0000-0000-7abc-8def-000000000495",
+  "metadata": {},
+  "timing": {
+    "offsetMs": 0.0,
+    "defaultBpm": 120.0,
+    "tempoEvents": [],
+    "stops": []
+  },
+  "parameters": [],
+  "templates": [],
+  "behaviors": [],
+  "animationTemplateImports": [],
+  "animationClips": [
+    {
+      "id": "animation.visibility",
+      "version": 1,
+      "durationBeats": { "numerator": 1, "denominator": 1 },
+      "tracks": [],
+      "stepTracks": [
+        {
+          "property": "render.visible",
+          "steps": [
+            {
+              "beat": { "numerator": 0, "denominator": 1 },
+              "value": false
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "objects": [
+    {
+      "id": "019f0000-0000-7abc-8def-000000000496",
+      "parent": null,
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [0.0, 0.0, 0.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [1.0, 1.0, 1.0]
+        },
+        "cuexis.renderable": {
+          "version": 1,
+          "mesh": { "domain": "asset", "id": "mesh.note" },
+          "material": { "domain": "asset", "id": "material.note" }
+        },
+        "cuexis.animator": {
+          "version": 1,
+          "templateBindings": [],
+          "layers": [
+            {
+              "layerId": "layer.visibility",
+              "priority": 0,
+              "weight": 0.5,
+              "propertyMask": {
+                "properties": ["render.visible"],
+                "prefixes": []
+              },
+              "blendGroups": [
+                {
+                  "groupId": "group.visibility",
+                  "mode": "override",
+                  "weight": 1.0,
+                  "instances": [
+                    {
+                      "instanceId": "instance.visibility",
+                      "clip": {
+                        "domain": "animation",
+                        "id": "animation.visibility"
+                      },
+                      "startBeat": { "numerator": 0, "denominator": 1 },
+                      "iterations": 1,
+                      "fillMode": "hold",
+                      "weight": 1.0,
+                      "propertyMask": {
+                        "properties": ["render.visible"],
+                        "prefixes": []
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "extensions": {}
+    }
+  ],
+  "requiredExtensions": [],
+  "extensions": {}
+}

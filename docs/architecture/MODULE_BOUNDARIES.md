@@ -2,7 +2,7 @@
 
 状态：现行模块边界摘要
 
-更新日期：2026-08-10
+更新日期：2026-08-12
 
 本文总结稳定依赖方向。构建时的精确 allowlist 和 architecture tests 仍由根 CMake 配置拥有。
 
@@ -54,6 +54,21 @@ format handlers do not create World/EnTT entities
 pack and prepare do not execute scripts
 ```
 
+ADR 0038 已把 CXC archive/manifest/closure 放入内部 target `cuexis_cxc`；CFU-C3 已创建该 target
+和 owning package/content-domain 基线，并遵守：
+
+```text
+cuexis_cxc may depend on core/content/filesystem/project/chart/json support and an archive library
+cuexis_cxc does not depend on playback/runtime/world/render/audio
+playback may privately depend on cuexis_cxc
+cxc tools reuse cuexis_cxc directly
+cuexis_cxc is not an installed package component
+archive library types never enter Cuexis public headers
+```
+
+入口 Chart/CXT 属于 PlaybackSource 的 project-document table；AssetId bytes 继续通过
+`IContentProvider`。两种内容域不得通过保留 root ID 或伪 AssetId 混用。
+
 ## 线程和所有权
 
 - PlaybackSession 由 owner thread 控制。
@@ -61,4 +76,4 @@ pack and prepare do not execute scripts
 - Worker 只生成 CPU/Prepared 数据，不访问 EnTT、图形 Context、SDL Window 或实时音频流。
 - Render/Audio 实时路径不读取可变 ChartDocument，也不执行文件 I/O 或格式化日志。
 
-精确编码和线程规则见 [CODE_POLICY.md](../CODE_POLICY.md)。
+精确编码和线程规则见 [CODE_POLICY.md](../guides/CODE_POLICY.md)。
