@@ -733,18 +733,16 @@ semantic identity、FrameDigest v3 与 diagnostics fingerprint 完全一致；Li
    未实现运行时职责和残余风险。
 6. Stage 4 只在项目所有者接受完成报告后开始；格式阶段不得自动创建 AnimationSystem 实现提交。
 
-执行状态（2026-08-16）：G0 已完成现行状态校准和文档防回退门禁；G1 已完成 §11 退出条件审计，
+执行状态（2026-08-24）：G0 已完成现行状态校准和文档防回退门禁；G1 已完成 §11 退出条件审计，
 结果为 `15 PASS / 1 RERUN / 2 DOC / 0 BLOCKED`，未发现新的产品代码阻断；G2 已完成 Stage 4 typed
 handoff，冻结 `AnimationProgramInput`、capability、fixture、预算、diagnostics、所有权、验收入口和
 残余风险。证据见 [CFU-G1 审计报告](../stage_reports/260816-chart-format-update-g1-exit-audit.md)
 与 [CFU-G2 交接报告](../stage_reports/260816-chart-format-update-g2-stage4-handoff.md)。G3 已于
-2026-08-19 完成本地候选门禁，但主 worktree Git metadata 和 GitHub 网络受当前执行环境限制，候选
-无法写回/推送，同 SHA hosted Linux/MSVC/MinGW 尚未运行。证据见
-[CFU-G3 验证报告](../stage_reports/260819-chart-format-update-g3-validation.md)。G3、completion report
-和项目所有者接受仍未完成。G4 已于 2026-08-20 完成离线关闭准备，冻结 18 项退出条件台账、
-hosted 记录合同、completion report 实证输入、owner acceptance 入口和 Stage 4 状态切换清单；它不
-豁免 G3 或改变阶段状态。证据见
-[CFU-G4 关闭准备报告](../stage_reports/260820-chart-format-update-g4-closure-readiness.md)。
+2026-08-19 完成本地候选门禁，最终候选 SHA
+`4371fdcf04f4f89bfddf070cbb15e4c903810a53` 的 hosted Linux/MSVC/MinGW 于 2026-08-24 全部成功。
+证据见 [CFU-G3 验证报告](../stage_reports/260819-chart-format-update-g3-validation.md) 与
+[CFU-G4 hosted 验证报告](../stage_reports/260824-chart-format-update-g4-hosted.md)。G3 hosted 与
+G4 已完成；completion report 和项目所有者接受仍未完成，Stage 4 继续保持 blocked / not started。
 
 ## 6. 模块、target 与文件落点
 

@@ -1,8 +1,8 @@
 # Cuexis Chart Format v4
 
 状态：accepted contract；CFU-C Reader/Writer/lowering、CFU-D migration/equivalence 与 CFU-E
-prepare/identity 已实现或关闭；CFU-F consumer/determinism/safety gates 已关闭；CFU-G active，
-已推进至 G4 closure readiness，G3 hosted pending；非空动画执行仍属于 Stage 4
+prepare/identity 已实现或关闭；CFU-F consumer/determinism/safety gates 已关闭；G3 hosted 与
+CFU-G4 已完成，G5/G6 pending；非空动画执行仍属于 Stage 4
 
 更新日期：2026-08-24
 

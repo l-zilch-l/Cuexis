@@ -62,10 +62,10 @@ Chart v4 prepare、capability 接入与 `PreparedSemanticIdentity`。静态和�
 Runtime，非空动画仍稳定拒绝。CFU-D3 已关闭 Playback FrameSnapshot / FrameDigest v3 /
 seek-stop 等价；整包 CFU-D 已由项目所有者记录“未提供外部资产”并关闭，兼容窗口不缩短。
 CFU-F 已在最终实现 SHA 上关闭跨平台 consumer、确定性、安全与性能门禁。CFU-G 的 G0 状态校准、
-G1 退出审计和 G2 Stage 4 typed handoff 已完成；G3 本地候选门禁已于 2026-08-19 通过，但候选发布
-与同 SHA hosted Linux/MSVC/MinGW 验证受当前执行环境阻断。之后仍需 completion report 和项目
-所有者接受。截至 2026-08-24，项目已完成至 CFU-G4：G4 离线关闭准备和状态切换清单已冻结；
-这不豁免 G3、不关闭 CFU-G，也不解锁 Stage 4。
+G1 退出审计和 G2 Stage 4 typed handoff 已完成；G3 本地候选门禁已于 2026-08-19 通过。最终候选
+SHA `4371fdcf04f4f89bfddf070cbb15e4c903810a53` 的 hosted Linux/MSVC/MinGW 验证已于 2026-08-24
+全部通过，G3 hosted 与 G4 已完成。之后仍需 completion report 和项目所有者接受；CFU-G 仍 active，
+Stage 4 仍 blocked / not started。
 
 格式权威入口：[formats/README.md](formats/README.md)。
 

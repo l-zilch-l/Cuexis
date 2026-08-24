@@ -21,8 +21,8 @@
 - [CFU-G2 Stage 4 typed handoff](../stage_reports/260816-chart-format-update-g2-stage4-handoff.md)
   已冻结 `AnimationProgramInput`、capability、fixture、预算、diagnostics、所有权和验收入口；Stage 4
   仍等待格式阶段 completion report 经项目所有者接受后解锁。
-- [CFU-G4 closure readiness](../stage_reports/260820-chart-format-update-g4-closure-readiness.md)
-  已冻结接受入口和状态切换清单；G3 hosted、completion report 与 owner acceptance 未完成，因此
+- [CFU-G4 hosted verification](../stage_reports/260824-chart-format-update-g4-hosted.md)
+  已记录同 SHA Linux/MSVC/MinGW 全部成功；completion report 与 owner acceptance 未完成，因此
   本计划状态仍为 future, blocked。
 
 ## 3. 实施范围

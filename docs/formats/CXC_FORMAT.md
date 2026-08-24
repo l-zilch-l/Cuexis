@@ -1,8 +1,8 @@
 # Cuexis CXC v1
 
 状态：accepted contract；CFU-C3/C4 内部 archive/tools 与 CFU-E Playback source/prepare/identity
-已实现；CFU-F hosted consumer/determinism/safety gates 已关闭；CFU-G active，已推进至 G4 closure
-readiness，G3 hosted pending；最终产品封存仍待完成
+已实现；CFU-F hosted consumer/determinism/safety gates 已关闭；G3 hosted 与 CFU-G4 已完成；最终产品
+封存仍待 completion report 与 owner acceptance
 
 更新日期：2026-08-24
 

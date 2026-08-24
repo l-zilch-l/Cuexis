@@ -48,10 +48,11 @@ preflight, with static v4 projected into the existing Runtime and nonempty anima
 **CFU-C0/C1/C2/C3/C4 complete; CFU-D owner-accepted and closed after “no external assets”;
 CFU-E owner-accepted and closed; CFU-F closed after final-SHA hosted verification; CFU-G is
 active. G0 status calibration, G1 exit audit, and G2 Stage 4 typed handoff are complete. G3 local
-candidate gates passed on August 19, 2026, but candidate publication and same-SHA hosted
-Linux/MSVC/MinGW evidence are blocked; G3 is not complete. G4 offline closure readiness was
-completed on August 20, 2026 without waiving G3, creating a completion report, or unblocking
-Stage 4.**
+candidate gates passed on August 19, 2026. The final candidate SHA
+`4371fdcf04f4f89bfddf070cbb15e4c903810a53` passed same-SHA hosted Linux Quality, Windows MSVC,
+and Windows MinGW validation on August 24, 2026; G3 hosted validation and G4 are complete.
+G5 completion report and G6 owner acceptance remain pending, and Stage 4 stays blocked / not
+started.**
 This checkpoint must not be described as complete CXC, a public package API, complete v4 animation
 Playback, or CFU-G complete.
 Stage 4 must consume
