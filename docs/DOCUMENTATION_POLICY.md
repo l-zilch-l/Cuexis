@@ -2,7 +2,7 @@
 
 状态：已接受的文档整理政策
 
-更新日期：2026-08-10
+更新日期：2026-08-24
 
 ## 文档角色
 
@@ -47,6 +47,26 @@ ADR 还要写决策状态；Spec 还要写实现状态；Report 还要写快照�
 - 一个字段合同只能有一个权威 Spec。
 - 摘要不得复制完整表格、完整诊断矩阵或当前阶段结论。
 - 历史文档不得删除；应标记 `historical` 或 `superseded`，并链接替代文件。
+
+## 首轮目录整理
+
+现行入口保持在 `docs/` 根目录：`README.md`、`CURRENT_STATUS.md`、`PROJECT_GUIDE.md`、
+`ROADMAP.md` 和本文。其余现行文档按角色归档到以下目录：
+
+```text
+docs/architecture/  Runtime、模块和宿主边界
+docs/formats/       Chart、CXC、CXT、动画和表现格式
+docs/guides/        构建、编码、依赖和版本指南
+docs/adr/           架构决策记录
+docs/stage_plans/   阶段计划
+docs/stage_reports/ 阶段证据
+docs/proposals/     候选与延期设计
+docs/examples/      评审和验证样例
+docs/archive/       历史材料
+```
+
+首轮移动保留根目录兼容短页。兼容页只链接 canonical 文档，不复制正文；至少保留一个整理
+周期后再评估删除。新目录必须有 `README.md`，且从 [docs/README.md](README.md) 可达。
 
 ## 脚本边界
 

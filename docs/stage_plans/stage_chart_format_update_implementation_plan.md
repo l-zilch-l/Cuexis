@@ -1,8 +1,8 @@
 # Stage Chart Format Update：谱面格式更新实施计划
 
-状态：CFU-A/CFU-B、CFU-C0/C1/C2/C3/C4 已完成；CFU-D/CFU-E/CFU-F 已关闭；CFU-G 为下一批次；ADR 0038 已于 2026-08-11 整体接受
+状态：CFU-A/CFU-B、CFU-C0/C1/C2/C3/C4 已完成；CFU-D/CFU-E/CFU-F 已关闭；CFU-G 正在执行最终验收、封存与 Stage 4 交接；ADR 0038 已于 2026-08-11 整体接受
 
-更新日期：2026-08-16
+更新日期：2026-08-24
 
 本阶段的稳定名称是 **Stage Chart Format Update**，位置为 Stage 3 与 Stage 4 之间。它使用独立名称，不建立数字别名。
 
@@ -95,7 +95,7 @@ generated composite identity、canonical array order 和 Template animator patch
 ```
 
 字段形状不在计划中重复定义。CFU-B 的规范性候选字段见
-[CHART_V4_FORMAT.md](../CHART_V4_FORMAT.md)、[CXT_FORMAT.md](../CXT_FORMAT.md) 和
+[CHART_V4_FORMAT.md](../formats/CHART_V4_FORMAT.md)、[CXT_FORMAT.md](../formats/CXT_FORMAT.md) 和
 [候选正反例](../examples/chart_format_update/README.md)。计划只维护实施顺序和门禁。
 
 ### CFU-2：时间、采样与跳转
@@ -207,8 +207,8 @@ CFU-A 已完成仓库内盘点。项目所有者已于 2026-08-14 记录“未�
 
 ### CFU-B：合同与 ADR
 
-状态：ADR 0038、`docs/CXC_FORMAT.md`、`docs/CHART_V4_FORMAT.md`、`docs/CXT_FORMAT.md`、
-`docs/ANIMATION_MIXING.md` 和候选正反例已于 2026-08-11 按收口方案修订；CXT v1、播放前参数与
+状态：ADR 0038、`docs/formats/CXC_FORMAT.md`、`docs/formats/CHART_V4_FORMAT.md`、`docs/formats/CXT_FORMAT.md`、
+`docs/formats/ANIMATION_MIXING.md` 和候选正反例已于 2026-08-11 按收口方案修订；CXT v1、播放前参数与
 Template Binding 子决策已接受，ADR 0038 整体已于 2026-08-11 接受。
 
 修订并接受现有 ADR 0038 及其字段级规范，并在整体接受前完成：
@@ -306,7 +306,7 @@ CFU-C0 是零功能启动门禁，不产生可加载的新格式。入口条件�
    CXC，哪些继续只作为文档评审输入。
 3. 用最小技术验证检查候选 archive 库是否能读取 local/central header、EOCD、ZIP64 sentinel、
    entry range、overlap 和 trailing bytes；不能证明这些能力时不得选定依赖。
-4. 若引入直接依赖，同步规划 `vcpkg.json`、`docs/DEPENDENCY_POLICY.md`、
+4. 若引入直接依赖，同步规划 `vcpkg.json`、`docs/guides/DEPENDENCY_POLICY.md`、
    `THIRD_PARTY_NOTICES.md`、安装许可证清单和 static/shared package 闭包。
 5. 冻结 `cuexis_cxc` target 的依赖 allowlist、安装策略和测试 target 名称。
 6. 为 CFU-E0 准备公共 API sketch，但不在 C0 修改安装头。
@@ -732,6 +732,19 @@ semantic identity、FrameDigest v3 与 diagnostics fingerprint 完全一致；Li
 5. 生成 Stage 4 handoff：typed `AnimationProgramInput`、capability names、fixture、预算、diagnostics、
    未实现运行时职责和残余风险。
 6. Stage 4 只在项目所有者接受完成报告后开始；格式阶段不得自动创建 AnimationSystem 实现提交。
+
+执行状态（2026-08-16）：G0 已完成现行状态校准和文档防回退门禁；G1 已完成 §11 退出条件审计，
+结果为 `15 PASS / 1 RERUN / 2 DOC / 0 BLOCKED`，未发现新的产品代码阻断；G2 已完成 Stage 4 typed
+handoff，冻结 `AnimationProgramInput`、capability、fixture、预算、diagnostics、所有权、验收入口和
+残余风险。证据见 [CFU-G1 审计报告](../stage_reports/260816-chart-format-update-g1-exit-audit.md)
+与 [CFU-G2 交接报告](../stage_reports/260816-chart-format-update-g2-stage4-handoff.md)。G3 已于
+2026-08-19 完成本地候选门禁，但主 worktree Git metadata 和 GitHub 网络受当前执行环境限制，候选
+无法写回/推送，同 SHA hosted Linux/MSVC/MinGW 尚未运行。证据见
+[CFU-G3 验证报告](../stage_reports/260819-chart-format-update-g3-validation.md)。G3、completion report
+和项目所有者接受仍未完成。G4 已于 2026-08-20 完成离线关闭准备，冻结 18 项退出条件台账、
+hosted 记录合同、completion report 实证输入、owner acceptance 入口和 Stage 4 状态切换清单；它不
+豁免 G3 或改变阶段状态。证据见
+[CFU-G4 关闭准备报告](../stage_reports/260820-chart-format-update-g4-closure-readiness.md)。
 
 ## 6. 模块、target 与文件落点
 

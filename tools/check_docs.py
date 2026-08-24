@@ -38,6 +38,7 @@ DIRECTORY_INDEXES = (
     "archive/README.md",
     "examples/README.md",
     "formats/README.md",
+    "guides/README.md",
     "proposals/README.md",
     "proposals/deferred/README.md",
     "stage_plans/README.md",
@@ -164,12 +165,123 @@ def check_stage_name(files: list[Path], failures: list[CheckFailure]) -> None:
         failures.append(CheckFailure(DOCS_INDEX, "canonical Stage Chart Format Update name is missing"))
 
 
+def check_cfu_status(failures: list[CheckFailure]) -> None:
+    status_contracts = {
+        AGENTS: (
+            "CFU-F closed after final-SHA hosted verification",
+            "CFU-G is active",
+            "G0 status calibration, G1 exit audit, and G2 Stage 4 typed handoff are complete",
+            "G3 local candidate gates passed on August 19, 2026",
+            "candidate publication and same-SHA hosted Linux/MSVC/MinGW evidence are blocked",
+            "G3 is not complete",
+            "G4 offline closure readiness was completed on August 20, 2026",
+            "without waiving G3, creating a completion report, or unblocking Stage 4",
+        ),
+        DOCS / "CURRENT_STATUS.md": (
+            "G3 hosted 验证待网络恢复，G4 离线关闭准备已完成",
+            "15 PASS / 1 RERUN / 2 DOC / 0 BLOCKED",
+            "CFU-G2 已于同日完成 Stage 4 typed handoff",
+            "CFU-G3 已于 2026-08-19",
+            "同 SHA hosted Linux/MSVC/MinGW 尚未运行",
+            "G3、completion report 和项目所有者接受仍未完成",
+            "CFU-G4 已于 2026-08-20 完成离线关闭准备",
+            "16 PASS / 2 PENDING / 0 PRODUCT BLOCKER",
+        ),
+        DOCS / "ROADMAP.md": (
+            "CFU-F consumers and determinism closed; final-SHA hosted gates passed 2026-08-16",
+            "CFU-G final closure                                 active; progressed through G4 readiness, G3 hosted pending",
+        ),
+        DOCS / "PROJECT_GUIDE.md": (
+            "CFU-F 已在最终实现 SHA 上关闭跨平台 consumer、确定性、安全与性能门禁",
+            "G1 退出审计和 G2 Stage 4 typed handoff 已完成",
+            "G3 本地候选门禁已于 2026-08-19 通过",
+            "同 SHA hosted Linux/MSVC/MinGW 验证受当前执行环境阻断",
+            "截至 2026-08-24，项目已完成至 CFU-G4",
+            "G4 离线关闭准备和状态切换清单已冻结",
+        ),
+        DOCS / "formats" / "README.md": (
+            "CFU-G active through G4 readiness",
+        ),
+        DOCS / "formats" / "CHART_V4_FORMAT.md": (
+            "CFU-F consumer/determinism/safety gates 已关闭；CFU-G active，已推进至 G4 closure readiness，G3 hosted pending",
+        ),
+        DOCS / "formats" / "CXT_FORMAT.md": (
+            "CFU-F consumer/determinism/safety gates 已关闭；CFU-G active，已推进至 G4 closure readiness，G3 hosted pending",
+        ),
+        DOCS / "formats" / "CXC_FORMAT.md": (
+            "CFU-F hosted consumer/determinism/safety gates 已关闭；CFU-G active，已推进至 G4 closure readiness，G3 hosted pending",
+        ),
+        DOCS / "stage_plans" / "README.md": (
+            "CFU-D/CFU-E/CFU-F 已关闭；已推进至 G4 readiness，G3 hosted pending",
+        ),
+        DOCS / "stage_plans" / "stage_chart_format_update_implementation_plan.md": (
+            "CFU-D/CFU-E/CFU-F 已关闭；CFU-G 正在执行最终验收、封存与 Stage 4 交接",
+            "CFU-G1 审计报告",
+            "CFU-G2 交接报告",
+            "CFU-G3 验证报告",
+            "同 SHA hosted Linux/MSVC/MinGW 尚未运行",
+            "CFU-G4 关闭准备报告",
+        ),
+        DOCS / "stage_plans" / "stage_4_implementation_plan.md": (
+            "CFU-G2 Stage 4 typed handoff",
+            "Stage 4 仍等待格式阶段 completion report 经项目所有者接受后解锁",
+            "CFU-G4 closure readiness",
+            "本计划状态仍为 future, blocked",
+        ),
+        DOCS / "stage_reports" / "README.md": (
+            "260816 Chart Format Update CFU-G1 exit audit",
+            "260816 Chart Format Update CFU-G2 Stage 4 handoff",
+            "260819 Chart Format Update CFU-G3 validation",
+            "260820 Chart Format Update CFU-G4 closure readiness",
+        ),
+    }
+    stale_fragments = (
+        "CFU-F is next",
+        "CFU-F consumers and determinism next",
+        "CFU-G cross-platform closure and Stage 4 handoff pending",
+        "F next",
+        "CFU-G 为下一批次",
+        "最终 hosted 产品门禁仍未关闭",
+        "G2 Stage 4 typed handoff is next",
+        "下一检查点为 G2 handoff",
+        "G3 final candidate validation is next",
+        "G3 validation next",
+        "G3 next",
+    )
+    for path, required_fragments in status_contracts.items():
+        text = re.sub(r"\s+", " ", path.read_text(encoding="utf-8")).strip()
+        compact_text = re.sub(r"\s+", "", text)
+        for fragment in required_fragments:
+            if fragment not in text and re.sub(r"\s+", "", fragment) not in compact_text:
+                failures.append(CheckFailure(path, f"missing current CFU status: {fragment}"))
+        for fragment in stale_fragments:
+            if fragment in text or re.sub(r"\s+", "", fragment) in compact_text:
+                failures.append(CheckFailure(path, f"contains stale CFU status: {fragment}"))
+
+    dated_status_files = (
+        DOCS / "CURRENT_STATUS.md",
+        DOCS / "ROADMAP.md",
+        DOCS / "PROJECT_GUIDE.md",
+        DOCS / "formats" / "CHART_V4_FORMAT.md",
+        DOCS / "formats" / "CXT_FORMAT.md",
+        DOCS / "formats" / "CXC_FORMAT.md",
+        DOCS / "formats" / "README.md",
+        DOCS / "stage_plans" / "README.md",
+        DOCS / "stage_reports" / "README.md",
+    )
+    for path in dated_status_files:
+        text = path.read_text(encoding="utf-8")
+        match = re.search(r"^更新日期：(\d{4}-\d{2}-\d{2})$", text, re.MULTILINE)
+        if match is None or match.group(1) < "2026-08-24":
+            failures.append(CheckFailure(path, "current CFU status predates the CFU-G4 documentation checkpoint"))
+
+
 def check_script_policy(failures: list[CheckFailure]) -> None:
     required = {
         DOCS / "CURRENT_STATUS.md",
         DOCS / "DOCUMENTATION_POLICY.md",
         DOCS / "adr" / "0038-cxc-v1-and-chart-v4-boundary.md",
-        DOCS / "CXT_FORMAT.md",
+        DOCS / "formats" / "CXT_FORMAT.md",
     }
     phrase = "\u65e0\u9650\u671f\u5ef6\u540e"
     for path in required:
@@ -226,6 +338,7 @@ def check_navigation_indexes(failures: list[CheckFailure]) -> None:
         for target in (
             "PROJECT_GUIDE.md",
             "architecture/README.md",
+            "guides/README.md",
             "proposals/README.md",
             "examples/README.md",
         ):
@@ -247,6 +360,7 @@ def check_agents_guide(failures: list[CheckFailure]) -> None:
         "Format: `yy.mm.dd-v[-suffix]`",
         "`docs/README.md`",
         "`docs/CURRENT_STATUS.md`",
+        "`docs/guides/README.md`",
         "`docs/stage_plans/stage_4_implementation_plan.md`",
         "`docs/stage_plans/stage_12_implementation_plan.md`",
     )
@@ -470,6 +584,7 @@ def main() -> int:
     graph = check_h1_and_links(files, failures)
     check_reachability(graph, failures)
     check_stage_name(files, failures)
+    check_cfu_status(failures)
     check_script_policy(failures)
     check_future_stage_plans(failures)
     check_navigation_indexes(failures)

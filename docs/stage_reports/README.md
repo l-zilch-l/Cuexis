@@ -2,7 +2,7 @@
 
 状态：现行阶段报告索引
 
-更新日期：2026-08-15
+更新日期：2026-08-24
 
 报告是带日期的证据快照。报告中的“下一步”只表示报告生成时的交接，不自动代表当前任务。
 
@@ -46,4 +46,8 @@
 | [260815 Chart Format Update CFU-F3 determinism](260815-chart-format-update-f3-determinism.md) | locally completed canonical CXC/migration/identity/diagnostic fingerprint and final-SHA hosted evidence wiring; F4 next |
 | [260815 Chart Format Update CFU-F4 safety and performance](260815-chart-format-update-f4-safety-performance.md) | locally completed limits/overflow/diagnostic/allocation gates plus SHA-bound sanitizer, analysis, coverage and maximum-content performance evidence wiring; closed by the CFU-F close report |
 | [260816 Chart Format Update CFU-F close](260816-chart-format-update-f-close.md) | owner-directed CFU-F close after final-SHA Linux/MSVC/MinGW success, six-way deterministic parity and F4 sanitizer/analysis/coverage/performance evidence |
+| [260816 Chart Format Update CFU-G1 exit audit](260816-chart-format-update-g1-exit-audit.md) | completed §11 evidence audit: 15 PASS, 1 final-SHA RERUN, 2 documentation/owner gates, no product-code blocker; G2 is recorded by the following handoff report |
+| [260816 Chart Format Update CFU-G2 Stage 4 handoff](260816-chart-format-update-g2-stage4-handoff.md) | completed typed AnimationProgramInput/capability/fixture/budget/diagnostic/ownership/risk handoff; followed by the G3 validation report below |
+| [260819 Chart Format Update CFU-G3 validation](260819-chart-format-update-g3-validation.md) | local candidate gates passed; candidate publication and same-SHA hosted Linux/MSVC/MinGW evidence blocked by the execution environment; CFU-G remains active |
+| [260820 Chart Format Update CFU-G4 closure readiness](260820-chart-format-update-g4-closure-readiness.md) | completed offline exit ledger, hosted evidence contract, completion-report inputs, owner-acceptance entry and Stage 4 state-transition checklist; current checkpoint through G4, G3 hosted remains pending |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |

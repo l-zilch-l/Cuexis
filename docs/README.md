@@ -2,7 +2,7 @@
 
 状态：现行文档入口
 
-更新日期：2026-08-10
+更新日期：2026-08-24
 
 本文档是 Cuexis 文档的导航页，不复制产品合同、阶段证据或完整字段定义。当前项目状态只
 以 [CURRENT_STATUS.md](CURRENT_STATUS.md) 为准。
@@ -15,7 +15,8 @@
 4. [ADR 索引](adr/README.md)，先读 ADR 0027、0024、0025、0026、0037 和 0038
 5. [格式索引](formats/README.md)
 6. [Stage Chart Format Update 计划](stage_plans/stage_chart_format_update_implementation_plan.md)
-7. [构建与验证](BUILDING.md)
+7. [指南索引](guides/README.md)
+8. [构建与验证](guides/BUILDING.md)
 
 ## 文档权威关系
 
@@ -27,7 +28,7 @@
 | Stage Report | 保存带日期的实施、审查和验证证据 | [stage_reports/README.md](stage_reports/README.md) |
 | Proposal | 记录候选合同和延期设计输入 | [proposals/README.md](proposals/README.md) |
 | Example | 提供评审和验证样例，不代表生产支持 | [examples/README.md](examples/README.md) |
-| Guide/Policy | 说明构建、编码、依赖和版本操作规则 | 本页下方的 Guides |
+| Guide/Policy | 说明构建、编码、依赖和版本操作规则 | [guides/README.md](guides/README.md) |
 | Current Status | 唯一的当前阶段和实现状态摘要 | [CURRENT_STATUS.md](CURRENT_STATUS.md) |
 | Archive | 历史格式、历史计划和过期审视材料 | [archive/README.md](archive/README.md) |
 
@@ -39,27 +40,28 @@
 - [项目指南](PROJECT_GUIDE.md)
 - [架构总览](architecture/README.md)
 - [模块边界](architecture/MODULE_BOUNDARIES.md)
-- [RuntimeSession](RUNTIME_SESSION.md)
+- [RuntimeSession](architecture/RUNTIME_SESSION.md)
 - [项目路线图](ROADMAP.md)
 - [文档整理政策](DOCUMENTATION_POLICY.md)
 
 ## 格式和运行语义
 
 - [格式索引](formats/README.md)
-- [Chart v1/v2/v3 生产格式](CHART_FORMAT.md)
-- [Chart v4 接受合同](CHART_V4_FORMAT.md)
-- [CXC v1 接受合同](CXC_FORMAT.md)
-- [CXT v1 接受合同](CXT_FORMAT.md)
-- [TimingMap](TIMING_MODEL.md)
-- [Animation Mixing](ANIMATION_MIXING.md)
-- [Portable Presentation v1](PORTABLE_PRESENTATION.md)
+- [Chart v1/v2/v3 生产格式](formats/CHART_FORMAT.md)
+- [Chart v4 接受合同](formats/CHART_V4_FORMAT.md)
+- [CXC v1 接受合同](formats/CXC_FORMAT.md)
+- [CXT v1 接受合同](formats/CXT_FORMAT.md)
+- [TimingMap](formats/TIMING_MODEL.md)
+- [Animation Mixing](formats/ANIMATION_MIXING.md)
+- [Portable Presentation v1](formats/PORTABLE_PRESENTATION.md)
 
 ## 工程指南和政策
 
-- [构建、安装和质量门禁](BUILDING.md)
-- [编码、错误和线程政策](CODE_POLICY.md)
-- [依赖政策](DEPENDENCY_POLICY.md)
-- [版本政策](VERSIONING.md)
+- [指南索引](guides/README.md)
+- [构建、安装和质量门禁](guides/BUILDING.md)
+- [编码、错误和线程政策](guides/CODE_POLICY.md)
+- [依赖政策](guides/DEPENDENCY_POLICY.md)
+- [版本政策](guides/VERSIONING.md)
 
 ## 延期设计输入
 
@@ -71,7 +73,19 @@
 - [Shader 管线](proposals/deferred/SHADER_PIPELINE.md)
 
 运行时脚本和逐帧脚本回调已无限期延后，不属于当前或已排期阶段。该决定及其格式影响见
-[ADR 0038](adr/0038-cxc-v1-and-chart-v4-boundary.md) 和 [CXT_FORMAT.md](CXT_FORMAT.md)。
+[ADR 0038](adr/0038-cxc-v1-and-chart-v4-boundary.md) 和
+[CXT_FORMAT.md](formats/CXT_FORMAT.md)。
+
+## 旧路径兼容入口
+
+首轮整理保留以下根目录短页，旧链接会继续指向新的权威位置：
+
+- [CHART_FORMAT.md](CHART_FORMAT.md)、[CHART_V4_FORMAT.md](CHART_V4_FORMAT.md)
+- [CXC_FORMAT.md](CXC_FORMAT.md)、[CXT_FORMAT.md](CXT_FORMAT.md)
+- [ANIMATION_MIXING.md](ANIMATION_MIXING.md)、[PORTABLE_PRESENTATION.md](PORTABLE_PRESENTATION.md)
+- [TIMING_MODEL.md](TIMING_MODEL.md)、[RUNTIME_SESSION.md](RUNTIME_SESSION.md)
+- [BUILDING.md](BUILDING.md)、[CODE_POLICY.md](CODE_POLICY.md)
+- [DEPENDENCY_POLICY.md](DEPENDENCY_POLICY.md)、[VERSIONING.md](VERSIONING.md)
 
 ## 阶段、证据和示例
 

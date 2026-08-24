@@ -12,7 +12,7 @@ Cuexis 是免费开源项目，需要明确使用、修改、分发、专利和�
 
 Cuexis 采用 Apache License 2.0。正式公开发布前加入官方完整 LICENSE 文本，并按需要维护 NOTICE 和 THIRD_PARTY_NOTICES。
 
-第三方依赖按 `docs/DEPENDENCY_POLICY.md` 审查。传播性许可证未经明确兼容分析和 ADR 不进入正式发布依赖。
+第三方依赖按 `docs/guides/DEPENDENCY_POLICY.md` 审查。传播性许可证未经明确兼容分析和 ADR 不进入正式发布依赖。
 
 ## 备选方案
 

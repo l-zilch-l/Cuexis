@@ -46,8 +46,14 @@ PlaybackSource state, added owning typed project-document and CXC file/memory fa
 the preview SDK to `0.6.0`. CFU-E2 added prepare options, Chart v4 resolution and format capability
 preflight, with static v4 projected into the existing Runtime and nonempty animation rejected.
 **CFU-C0/C1/C2/C3/C4 complete; CFU-D owner-accepted and closed after “no external assets”;
-CFU-E owner-accepted and closed. CFU-F is next.** This checkpoint must not be described as
-complete CXC, a public package API, complete v4 animation Playback, or CFU-G complete.
+CFU-E owner-accepted and closed; CFU-F closed after final-SHA hosted verification; CFU-G is
+active. G0 status calibration, G1 exit audit, and G2 Stage 4 typed handoff are complete. G3 local
+candidate gates passed on August 19, 2026, but candidate publication and same-SHA hosted
+Linux/MSVC/MinGW evidence are blocked; G3 is not complete. G4 offline closure readiness was
+completed on August 20, 2026 without waiving G3, creating a completion report, or unblocking
+Stage 4.**
+This checkpoint must not be described as complete CXC, a public package API, complete v4 animation
+Playback, or CFU-G complete.
 Stage 4 must consume
 typed data produced by the format stage and must not parse JSON/CXC/CXT in `engine/animation/`.
 Runtime scripts and per-frame script callbacks are deferred indefinitely. No scheduled stage,
@@ -195,7 +201,7 @@ When adding/removing a dependency, update **all** of:
 
 1. `vcpkg.json` — dependency entry
 2. (if baseline changes) `vcpkg-configuration.json`
-3. `docs/DEPENDENCY_POLICY.md` — dependency record
+3. `docs/guides/DEPENDENCY_POLICY.md` — dependency record
 4. `THIRD_PARTY_NOTICES.md` — license/NOTICE tracking
 
 ## C++ conventions
@@ -266,16 +272,17 @@ directories do not exist yet (planned).
 - `docs/DOCUMENTATION_POLICY.md` — document roles, status vocabulary, archive and link rules
 - `docs/architecture/README.md` — architecture navigation
 - `docs/formats/README.md` — production/candidate format authority matrix
+- `docs/guides/README.md` — build, coding, dependency and version guide index
 - `docs/adr/README.md` — complete ADR index
 - `docs/stage_plans/README.md` — Stage 0-12 and Stage Chart Format Update plan index
 - `docs/stage_reports/README.md` — completion, review, and inventory evidence index
 - `docs/proposals/README.md` — candidate and deferred design index
 - `docs/examples/README.md` — candidate/validation example index
 - `docs/archive/README.md` — superseded and historical source index
-- `docs/BUILDING.md` — full build instructions and prerequisites
-- `docs/CODE_POLICY.md` — coding, error handling, threading, and ownership conventions
-- `docs/DEPENDENCY_POLICY.md` — dependency selection, recording, and licensing
-- `docs/VERSIONING.md` — version format and update process
+- `docs/guides/BUILDING.md` — full build instructions and prerequisites
+- `docs/guides/CODE_POLICY.md` — coding, error handling, threading, and ownership conventions
+- `docs/guides/DEPENDENCY_POLICY.md` — dependency selection, recording, and licensing
+- `docs/guides/VERSIONING.md` — version format and update process
 - `docs/adr/0027-playback-sdk-product-boundary.md` — accepted SDK product and host boundary
 - `docs/adr/0030-playback-preview-api-version-and-result.md` — preview Result, package-version,
   and FrameSnapshot lifetime contract
@@ -287,9 +294,9 @@ directories do not exist yet (planned).
   `docs/stage_plans/stage_12_implementation_plan.md` — independent future/deferred plans with
   goals, prerequisites, scope, acceptance criteria, and archived sources
 - `docs/adr/0038-cxc-v1-and-chart-v4-boundary.md` — accepted CXC v1, Chart v4, CXT and prepare boundary
-- `docs/CXC_FORMAT.md` — accepted CXC v1 container, manifest, closure, and package contract
-- `docs/CHART_V4_FORMAT.md` — accepted Chart v4 fields, imports, animation, binding, and lowering contract
-- `docs/CXT_FORMAT.md` — accepted CXT v1 JSON template file contract
+- `docs/formats/CXC_FORMAT.md` — accepted CXC v1 container, manifest, closure, and package contract
+- `docs/formats/CHART_V4_FORMAT.md` — accepted Chart v4 fields, imports, animation, binding, and lowering contract
+- `docs/formats/CXT_FORMAT.md` — accepted CXT v1 JSON template file contract
 
 ## Documentation maintenance
 

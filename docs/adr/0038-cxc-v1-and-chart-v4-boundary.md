@@ -8,9 +8,9 @@
 开始生产实现
 
 关系：细化 ADR 0024、0025、0026、0034、0036、0037 和 0019。CXC 容器与闭包权威见
-[CXC_FORMAT.md](../CXC_FORMAT.md)，Chart v4 字段与 lowering 权威见
-[CHART_V4_FORMAT.md](../CHART_V4_FORMAT.md)，CXT 文件语义权威见
-[CXT_FORMAT.md](../CXT_FORMAT.md)。本决策不改变 Playback SDK、ProjectConfig、AssetDatabase、
+[CXC_FORMAT.md](../formats/CXC_FORMAT.md)，Chart v4 字段与 lowering 权威见
+[CHART_V4_FORMAT.md](../formats/CHART_V4_FORMAT.md)，CXT 文件语义权威见
+[CXT_FORMAT.md](../formats/CXT_FORMAT.md)。本决策不改变 Playback SDK、ProjectConfig、AssetDatabase、
 ChartRuntime、World 或 FrameSnapshot 的既有所有权边界。
 
 ## 背景
@@ -69,7 +69,7 @@ field 均稳定失败。
 extra/comment/attribute 和单 disk。Manifest 使用 UTF-8、无 BOM、两个空格缩进、LF、ASCII key
 顺序和一个结尾换行。Reader 可以接受语义等价的 manifest 空白，但必须拒绝重复 key；writer
 只能输出规范布局。Reader 可以使用任意内部库，但第三方类型不得进入 Cuexis 公共 API。具体依赖
-选择仍须遵守 `docs/DEPENDENCY_POLICY.md`。
+选择仍须遵守 `docs/guides/DEPENDENCY_POLICY.md`。
 
 ### CXC manifest
 
@@ -97,7 +97,7 @@ manifest 自身不出现在 `entries`。Archive 必须恰好包含 `cuexis.cxc.j
 `.cxc` 精确 bytes 的 SHA-256 是 `CxcPackageIdentity`，只用于完整性、传输缓存和 package equality。
 Playback 的 prepare/reload 使用独立 `PreparedSemanticIdentity`，由规范 Chart、CXT、资源 manifest
 和 parameter identity 以域分隔方式组合。确切 combiner 与 MainMusic/presentation 资源编码见
-[CHART_V4_FORMAT.md](../CHART_V4_FORMAT.md)。Filesystem、memory、host 和 CXC source 的相同规范
+[CHART_V4_FORMAT.md](../formats/CHART_V4_FORMAT.md)。Filesystem、memory、host 和 CXC source 的相同规范
 内容必须得到相同 semantic identity；archive offset、CRC、时间戳、Provider revision 或 source path
 不能替代它。
 
@@ -289,7 +289,7 @@ localBeat = (chartBeat - startBeat) / durationScale
 Template Binding 与显式 Layer 进入同一 priority/mask 冲突检查。相同 priority 的相交 mask 失败，
 不得使用 `templateBindings`、`layers` 或 Object 输入顺序打破冲突。
 
-Layer、BlendGroup 和 Instance 的输入数组顺序无语义，分别按稳定 ID 规范化。相同 Layer priority 的 mask 不能重叠；同一 Layer 的不同 BlendGroup 不能写入同一属性。Override/Additive、Quaternion、离散值和 tie-break 规则继续由 `docs/ANIMATION_MIXING.md` 定义。
+Layer、BlendGroup 和 Instance 的输入数组顺序无语义，分别按稳定 ID 规范化。相同 Layer priority 的 mask 不能重叠；同一 Layer 的不同 BlendGroup 不能写入同一属性。Override/Additive、Quaternion、离散值和 tie-break 规则继续由 `docs/formats/ANIMATION_MIXING.md` 定义。
 
 Object/Template 可以保存 `cuexis.animator`。v1 template patch 只允许对整个
 `/components/cuexis.animator` 执行 add/remove/replace，不允许对 Layer、Group、Instance 或 mask

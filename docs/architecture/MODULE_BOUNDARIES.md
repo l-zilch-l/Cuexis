@@ -76,4 +76,4 @@ archive library types never enter Cuexis public headers
 - Worker 只生成 CPU/Prepared 数据，不访问 EnTT、图形 Context、SDL Window 或实时音频流。
 - Render/Audio 实时路径不读取可变 ChartDocument，也不执行文件 I/O 或格式化日志。
 
-精确编码和线程规则见 [CODE_POLICY.md](../CODE_POLICY.md)。
+精确编码和线程规则见 [CODE_POLICY.md](../guides/CODE_POLICY.md)。
