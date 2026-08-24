@@ -27,15 +27,16 @@ PlaybackSession、FrameSnapshot、ContentProvider 和后续 Judgement/Replay 合
 | Stage 1E | 已完成 | [完成报告](stage_reports/stage_1e_completion_report.md) |
 | Stage 2 | 已完成 | [完成报告](stage_reports/stage_2_completion_report.md) |
 | Stage 3 | 已完成 | [完成报告](stage_reports/stage_3_completion_report.md) |
-| Stage Chart Format Update | 当前活动阶段；CFU-C0–C4、CFU-D、CFU-E、CFU-F 已关闭；G3 hosted 验证与 G4 已完成；G5 completion report candidate 已创建，等待 report-SHA hosted revalidation；G6 owner acceptance 待完成 | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md)、[G4 hosted 验证](stage_reports/260824-chart-format-update-g4-hosted.md)、[G5 completion report](stage_reports/stage_chart_format_update_completion_report.md) |
-| Stage 4 | 未开始，等待格式阶段关闭 | [实施计划](stage_plans/stage_4_implementation_plan.md) |
+| Stage Chart Format Update | 已完成；CFU-C0–C4、CFU-D、CFU-E、CFU-F、CFU-G 已关闭；G6 owner acceptance 已于 2026-08-24 记录 | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md)、[G5/G6 completion report](stage_reports/stage_chart_format_update_completion_report.md) |
+| Stage 4 | 未开始，已解锁，等待实施 | [实施计划](stage_plans/stage_4_implementation_plan.md) |
 
 Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使用 Stage 3.5 作为别名。
 
 截至 2026-08-24，最终候选 SHA 的 Linux Quality、Windows MSVC 和 Windows MinGW hosted 验证均已
 通过，G3 hosted 门禁与 G4 已完成。G4 hosted 证据记录在 [G4 hosted 验证报告](stage_reports/260824-chart-format-update-g4-hosted.md)。
-G5 completion report candidate 已创建，但报告提交会形成新 SHA，仍需对该 SHA 完成同一 hosted 矩阵。
-这不等同于项目所有者接受或 CFU-G 关闭；Stage 4 仍 blocked / not started。
+G5 completion report SHA `6e52677be2f27f83d0b709619be7ffcc141d6f95` 的 Linux Quality、Windows MSVC 和
+Windows MinGW hosted revalidation 均已通过；项目所有者已明确接受报告，CFU-G 与 Stage Chart Format
+Update 已关闭。Stage 4 已解锁但尚未开始。
 
 ## 格式状态
 
@@ -146,11 +147,14 @@ G5 completion report candidate 已创建，但报告提交会形成新 SHA，仍
 - CFU-G4 hosted 验证已完成：三套 workflow 共 10 个 job 全部 success、attempt 1；退出台账为
   `17 PASS / 1 PENDING / 0 PRODUCT BLOCKER`；F3 CXC、迁移、
   identity、FrameDigest v3 与 diagnostics fingerprint 在 Linux/MSVC/MinGW 六个构建产物中一致，
-  F4 sanitizer、clang-tidy、coverage 和性能趋势证据也已收集。G4 不创建 completion report、不记录
-  owner acceptance、不改变 CFU-G active 或 Stage 4 blocked / not started。
-- CFU-G5 completion report candidate 已于 2026-08-24 创建，汇总 C0-G 的实际实现、§11 台账、本地
+  F4 sanitizer、clang-tidy、coverage 和性能趋势证据也已收集。G4 当时不创建 completion report、不记录
+  owner acceptance；后续 G5/G6 负责最终报告和阶段切换。
+- CFU-G5 completion report 已于 2026-08-24 创建，汇总 C0-G 的实际实现、§11 台账、本地
   门禁、hosted jobs、deterministic artifact、F4 evidence、Stage 4 handoff、残余风险和明确延期。
-  报告状态为“门禁通过，等待 report-SHA hosted revalidation 与项目所有者接受”；尚未执行 G6。
+  report-SHA hosted revalidation 已通过，证据和失败记录已写入报告。
+- CFU-G6 已于 2026-08-24 完成：项目所有者明确接受 completion report，§11 台账为
+  `18 PASS / 0 PENDING / 0 PRODUCT BLOCKER`；CFU-G 与 Stage Chart Format Update 已关闭，Stage 4
+  状态切换为 `unblocked but not started`。本次关闭没有实现 AnimationSystem 或放开非空动画 Playback。
 - CFU-C 至 CFU-G 的详细实现批次、模块落点、API 门禁、测试矩阵、跨平台验收和 Stage 4 交接方案
   已写入实施计划；当前只允许按批次推进，不得越界实现 Stage 4 动画求值。
 - CXT v1、播放前参数、Template Binding 和运行时脚本无限期延后子决策已于 2026-08-10 接受。
@@ -171,7 +175,6 @@ extension、capability、字节码、模块 ABI 或 Playback 执行入口。离�
 - 正式 `cuexis_judgement`、InputEvent、ReplayData 和确定性回放
 - Studio 独立应用实现
 - 稳定 C ABI 和语言绑定
-- CFU-G5 report-SHA hosted revalidation、项目所有者接受与格式阶段封存
 - Stage 4 AnimationSystem 运行时实现
 
 ## 状态更新规则

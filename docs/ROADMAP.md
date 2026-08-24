@@ -9,7 +9,7 @@
 
 ## 当前阶段
 
-当前活动阶段是 **Stage Chart Format Update**，位于 Stage 3 与 Stage 4 之间，不使用数字别名。
+Stage Chart Format Update 已完成；当前下一阶段是 **Stage 4**，已解锁但尚未开始，不使用数字别名。
 
 ```text
 CFU-A inventory and use cases                       completed
@@ -18,7 +18,7 @@ CFU-C Schema / typed Reader / Writer / validator    completed; C0-C4 complete
 CFU-D migration                                     closed; owner recorded no external assets on 2026-08-14
 CFU-E Playback prepare and capability               closed; owner-accepted on 2026-08-14
 CFU-F consumers and determinism                     closed; final-SHA hosted gates passed 2026-08-16
-CFU-G final closure                                 active; G5 report candidate created, report-SHA hosted/G6 pending
+CFU-G final closure                                 completed; G6 owner acceptance recorded 2026-08-24
 ```
 
 权威计划：[stage_chart_format_update_implementation_plan.md](stage_plans/stage_chart_format_update_implementation_plan.md)。
@@ -40,7 +40,7 @@ CFU-G final closure                                 active; G5 report candidate 
 
 | 阶段 | 目标 | 前置条件 |
 | --- | --- | --- |
-| [Stage 4](stage_plans/stage_4_implementation_plan.md) | Cuexis 表现动画运行时 | Chart Format Update 全部门禁关闭 |
+| [Stage 4](stage_plans/stage_4_implementation_plan.md) | Cuexis 表现动画运行时 | Chart Format Update 全部门禁关闭；当前已解锁但未开始 |
 | [Stage 5](stage_plans/stage_5_implementation_plan.md) | Material/Shader 管线和能力 Profile | Stage 4 稳定表现输入 |
 | [Stage 6](stage_plans/stage_6_implementation_plan.md) | Playback C++ API 与 Player 产品化 | 真实 consumer 和配置组合证据 |
 | [Stage 7](stage_plans/stage_7_implementation_plan.md) | Cuexis Studio 核心 | 稳定 Playback/格式/预览路径 |

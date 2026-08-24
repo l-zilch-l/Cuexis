@@ -1,6 +1,6 @@
 # Stage 4 Implementation Plan: Cuexis Presentation Animation
 
-状态：future；未开始，等待 Stage Chart Format Update 关闭
+状态：future；未开始，Stage Chart Format Update 已关闭并已解锁
 
 更新日期：2026-08-16
 
@@ -19,11 +19,11 @@
 - Stage 4 只消费格式阶段交付的 typed 数据，不读取 JSON、CXC 或 CXT。
 - [ANIMATION_MIXING.md](../formats/ANIMATION_MIXING.md) 与 ADR 0019 的混合和覆盖语义保持权威。
 - [CFU-G2 Stage 4 typed handoff](../stage_reports/260816-chart-format-update-g2-stage4-handoff.md)
-  已冻结 `AnimationProgramInput`、capability、fixture、预算、diagnostics、所有权和验收入口；Stage 4
-  仍等待格式阶段 completion report 经项目所有者接受后解锁。
+  已冻结 `AnimationProgramInput`、capability、fixture、预算、diagnostics、所有权和验收入口；项目所有者
+  已接受 completion report，Stage 4 已解锁但尚未开始。
 - [CFU-G4 hosted verification](../stage_reports/260824-chart-format-update-g4-hosted.md)
-  已记录同 SHA Linux/MSVC/MinGW 全部成功；completion report 与 owner acceptance 未完成，因此
-  本计划状态仍为 future, blocked。
+  已记录同 SHA Linux/MSVC/MinGW 全部成功；G5 report-SHA hosted revalidation 与 G6 owner acceptance
+  已完成，本计划保持 future 但状态为 unblocked / not started。
 
 ## 3. 实施范围
 

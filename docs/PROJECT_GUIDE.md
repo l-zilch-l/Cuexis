@@ -64,9 +64,9 @@ seek-stop 等价；整包 CFU-D 已由项目所有者记录“未提供外部资
 CFU-F 已在最终实现 SHA 上关闭跨平台 consumer、确定性、安全与性能门禁。CFU-G 的 G0 状态校准、
 G1 退出审计和 G2 Stage 4 typed handoff 已完成；G3 本地候选门禁已于 2026-08-19 通过。最终候选
 SHA `4371fdcf04f4f89bfddf070cbb15e4c903810a53` 的 hosted Linux/MSVC/MinGW 验证已于 2026-08-24
-全部通过，G3 hosted 与 G4 已完成。之后仍需 completion report 和项目所有者接受；CFU-G 仍 active，
-Stage 4 仍 blocked / not started。G5 completion report candidate 已于 2026-08-24 创建，当前等待
-report-SHA hosted revalidation 与 G6 项目所有者接受。
+全部通过，G3 hosted 与 G4 已完成。G5 completion report SHA
+`6e52677be2f27f83d0b709619be7ffcc141d6f95` 的 hosted revalidation 也已全部通过；项目所有者已于
+2026-08-24 明确接受报告，CFU-G 与 Stage Chart Format Update 已关闭。Stage 4 已解锁但尚未开始。
 
 格式权威入口：[formats/README.md](formats/README.md)。
 

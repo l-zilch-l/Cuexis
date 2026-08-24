@@ -1,6 +1,6 @@
 # Stage Chart Format Update Completion Report
 
-状态：G5 report candidate；门禁证据已通过，等待报告提交后的 report-SHA hosted revalidation 与项目所有者接受
+状态：G6 complete；G5 report-SHA hosted revalidation 已通过，项目所有者已接受，CFU-G 已关闭
 
 报告日期：2026-08-24
 
@@ -9,14 +9,14 @@
 ## 1. 结论与接受状态
 
 CFU-A 至 CFU-F 的格式、迁移、Playback prepare、CXC 工具、消费者、确定性、安全和性能交付均已有
-实际实现证据。CFU-G0 至 G4 已完成；G4 的最终候选 hosted 验证在 Linux、Windows MSVC 和 Windows
-MinGW 上全部通过。
+实际实现证据。CFU-G0 至 G5 已完成；G4 的最终候选 hosted 验证以及 G5 report-SHA revalidation 在
+Linux、Windows MSVC 和 Windows MinGW 上全部通过。
 
-本报告创建于项目所有者接受之前，不能单独关闭 CFU-G，也不能解锁 Stage 4。根据 G4 合同，本报告
-本身是文档变更；报告提交后必须对新的报告 SHA 重新执行三套 hosted workflow。报告当前记录的
-hosted 输入是最后一个已验证的文档 SHA；该 revalidation 完成后才能把本报告标记为最终接受输入。
+本报告的 G5 提交 SHA 为 `6e52677be2f27f83d0b709619be7ffcc141d6f95`，其 report-SHA hosted
+revalidation 已完成。项目所有者随后明确接受本报告，G6 记录了阶段封存和 Stage 4 解锁；Stage 4
+仍未开始，且本阶段没有实现 AnimationSystem 或放开非空动画 Playback。
 
-项目所有者接受记录：**待记录**。
+项目所有者接受记录：**已接受（2026-08-24；明确回复“接受 G5 completion report”）**。
 
 ## 2. SHA、版本与公共边界
 
@@ -24,7 +24,8 @@ hosted 输入是最后一个已验证的文档 SHA；该 revalidation 完成后�
 | --- | --- |
 | 最终代码/格式候选 SHA | `4371fdcf04f4f89bfddf070cbb15e4c903810a53` |
 | G4 文档与 hosted 验证 SHA | `12f9ef7605b501cbb602338b21bd8eac4c26617b` |
-| 本报告提交 SHA | 由包含本文件的 Git commit 标识；G6 接受记录引用该 commit，避免自引用哈希 |
+| G5 completion report 提交 SHA | `6e52677be2f27f83d0b709619be7ffcc141d6f95` |
+| G6 状态提交 SHA | 由包含本次 G6 更新的 Git commit 标识，避免自引用哈希 |
 | Build version | `26.08.01-1` |
 | SDK API version | `0.6.0` |
 | Chart format | v4 |
@@ -50,11 +51,12 @@ hosted 输入是最后一个已验证的文档 SHA；该 revalidation 完成后�
 | CFU-F | Playback-only consumers、跨平台 deterministic fingerprint、limits/overflow、sanitizer、clang-tidy、coverage 和最大内容趋势。 |
 | CFU-G0/G1 | 当前状态校准、文档防回退门禁和 §11 退出条件审计。 |
 | CFU-G2 | `AnimationProgramInput` typed handoff、capability、fixtures、budget、diagnostics、ownership 和残余风险。 |
-| CFU-G3/G4 | 最终候选本地门禁、同 SHA hosted Linux/MSVC/MinGW 验证和六路 artifact parity。 |
+| CFU-G3/G4/G5 | 最终候选本地门禁、同 SHA hosted Linux/MSVC/MinGW 验证、report-SHA revalidation 和六路 artifact parity。 |
+| CFU-G6 | 项目所有者接受、格式阶段封存、Stage 4 `unblocked but not started` 状态切换和残余风险保留。 |
 
 ## 4. §11 退出条件对照
 
-| # | 条件 | G5 状态 | 证据 |
+| # | 条件 | G6 状态 | 证据 |
 | ---: | --- | --- | --- |
 | 1 | ADR 已接受格式身份、载体、版本、时间域、引用和扩展合同 | PASS | [ADR 0038](../adr/0038-cxc-v1-and-chart-v4-boundary.md) |
 | 2 | 规范、Schema、typed Reader、Writer 和 validator 一致 | PASS | CFU-C1/C2 reports、`schemas/`、Chart tests |
@@ -70,17 +72,16 @@ hosted 输入是最后一个已验证的文档 SHA；该 revalidation 完成后�
 | 12 | E0 API、SDK compatibility、symbol/export、consumer | PASS | CFU-E close、SDK `0.6.0` gates |
 | 13 | pack/validate/unpack exit code、atomicity、no-overwrite、cleanup | PASS | CFU-C4 tools gates |
 | 14 | 外部旧资产清单或“未提供外部资产”决策 | PASS | CFU-D close，兼容窗口保留 |
-| 15 | 最终 SHA hosted Linux/Windows 结果和失败记录 | PASS for `12f9ef76...`; report-SHA revalidation pending | G4 hosted runs below；报告提交后按 G4 规则重跑 |
-| 16 | completion report 已创建并由项目所有者接受 | PENDING | 本报告已创建；owner acceptance 尚未记录 |
+| 15 | 最终 SHA hosted Linux/Windows 结果和失败记录 | PASS for report SHA `6e52677...` | G5 report-SHA revalidation runs below；Linux 首次失败为 vcpkg 下载瞬态，failed-job rerun 通过 |
+| 16 | completion report 已创建并由项目所有者接受 | PASS | 本报告已创建；项目所有者于 2026-08-24 明确接受 |
 | 17 | Stage 4 字段、延期职责与风险已交接 | PASS | [G2 handoff](260816-chart-format-update-g2-stage4-handoff.md) |
 | 18 | 权威状态与链接一致 | PASS | `tools/check_docs.py`、各级 docs index |
 
-当前顺序门禁为：`17 PASS / 1 PENDING`；第 15 项在报告提交后需要新的报告 SHA hosted revalidation，
-在该 revalidation 完成前不执行 G6 状态切换。
+当前顺序门禁为：`18 PASS / 0 PENDING / 0 PRODUCT BLOCKER`；G6 状态切换已完成。
 
 ## 5. 本地验证
 
-G3 本地候选报告记录了以下实际结果；G4/G5 文档检查在本工作树重新执行：
+G3 本地候选报告记录了以下实际结果；G4/G5/G6 文档检查在本工作树重新执行：
 
 | 门禁 | 结果 |
 | --- | --- |
@@ -102,17 +103,16 @@ G3 本地候选报告记录了以下实际结果；G4/G5 文档检查在本工�
 
 ## 6. Hosted workflow 证据
 
-G4 文档 SHA `12f9ef7605b501cbb602338b21bd8eac4c26617b` 的三套 workflow 全部成功，均为 attempt 1，
-无失败 job、无 rerun：
+G5 report SHA `6e52677be2f27f83d0b709619be7ffcc141d6f95` 的三套 workflow 均已完成并成功：
 
 | Workflow | Run | Jobs |
 | --- | --- | --- |
-| Linux Quality | [32705851560](https://github.com/l-zilch-l/Cuexis/actions/runs/32705851560) | GCC Coverage; GCC Shared Release; GCC Release; Clang Shared Debug; Clang ASan + UBSan; clang-tidy |
-| Windows MSVC | [32705851544](https://github.com/l-zilch-l/Cuexis/actions/runs/32705851544) | debug; release |
-| Windows MinGW | [32705851575](https://github.com/l-zilch-l/Cuexis/actions/runs/32705851575) | debug; release |
+| Linux Quality | [32710728943](https://github.com/l-zilch-l/Cuexis/actions/runs/32710728943) | GCC Coverage; GCC Shared Release; GCC Release; Clang Shared Debug; Clang ASan + UBSan; clang-tidy |
+| Windows MSVC | [32710729026](https://github.com/l-zilch-l/Cuexis/actions/runs/32710729026) | debug; release |
+| Windows MinGW | [32710728985](https://github.com/l-zilch-l/Cuexis/actions/runs/32710728985) | debug; release |
 
-每个列出的 job conclusion 均为 `success`，first failure 为 `none`。这些 run 是本报告的实际 hosted
-输入；本报告提交后必须再生成一组对应报告 SHA 的 run，并在最终报告补充其 URL/结论。
+每个列出的 job conclusion 均为 `success`。Linux 首次失败的 GCC Release external consumer 配置
+阶段是 vcpkg `libmount` 下载瞬态，failed-job rerun 通过，未修改源码或构建逻辑。
 
 ## 7. Deterministic artifact 与 F4 evidence
 
@@ -145,7 +145,7 @@ Stage 4 consumes owning typed `AnimationProgramInput` data, including Clip, Obje
 ClipInstance, mask, priority, weight, fill and iterations. It must not parse JSON, CXC or CXT in
 `engine/animation/`.
 
-The following remain outside G5 and G6:
+The following remain outside CFU-G and the completed format-stage scope:
 
 - `AnimationSystem`, sampling, blending, `PropertyResolver`, OverrideToken and World write-back;
 - non-empty Chart v4 animation Playback;
@@ -165,15 +165,12 @@ The following remain outside G5 and G6:
 
 ## 10. Acceptance and next action
 
-G5 report status is **门禁通过，等待 report-SHA hosted revalidation 与项目所有者接受**。After the report
-commit, the three workflows must run on that exact SHA. Per the project workflow rule, they will be queried
-once at the twentieth minute after trigger; no continuous polling is performed.
+G6 status is **complete**. The report-SHA hosted revalidation results are recorded above, and the project
+owner explicitly accepted this report on 2026-08-24. The G6 state transaction:
 
-Only after those results are recorded and the project owner explicitly accepts this report may G6:
+1. marked Stage Chart Format Update completed and CFU-G closed;
+2. changed Stage 4 to `unblocked but not started`;
+3. updated the authoritative status/index documents and acceptance record; and
+4. will be finalized by merging the branch into `stage-ChartFormatUpdate` after the G6 workflow gate.
 
-1. mark Stage Chart Format Update completed and CFU-G closed;
-2. change Stage 4 to `unblocked but not started`;
-3. update the authoritative status/index documents and acceptance record; and
-4. merge the branch into `stage-ChartFormatUpdate`.
-
-`.codex/` is intentionally excluded from the G5 submission and must not be reintroduced in later commits.
+`.codex/` is intentionally excluded from the G5/G6 submissions and must not be reintroduced in later commits.

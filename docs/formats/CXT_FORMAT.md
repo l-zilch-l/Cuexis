@@ -1,7 +1,8 @@
 # Cuexis Animation Template (CXT) v1
 
 状态：accepted contract；CFU-C Reader/Writer/lowering 与 CFU-E prepare import/lookup 已实现；
-CFU-F consumer/determinism/safety gates 已关闭；G3 hosted 与 CFU-G4 已完成，G5/G6 pending；非空动画在 Stage 4
+CFU-F consumer/determinism/safety gates 已关闭；G3 hosted、G4、G5 report-SHA hosted revalidation 与
+G6 owner acceptance 已完成；非空动画在 Stage 4
 前稳定拒绝
 
 更新日期：2026-08-24

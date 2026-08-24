@@ -1,6 +1,6 @@
 # Stage Chart Format Update：谱面格式更新实施计划
 
-状态：CFU-A/CFU-B、CFU-C0/C1/C2/C3/C4 已完成；CFU-D/CFU-E/CFU-F 已关闭；CFU-G 正在执行最终验收、封存与 Stage 4 交接；ADR 0038 已于 2026-08-11 整体接受
+状态：CFU-A/CFU-B、CFU-C0/C1/C2/C3/C4、CFU-D、CFU-E、CFU-F、CFU-G 已完成并封存；Stage 4 已解锁但尚未开始；ADR 0038 已于 2026-08-11 整体接受
 
 更新日期：2026-08-24
 
@@ -742,8 +742,9 @@ handoff，冻结 `AnimationProgramInput`、capability、fixture、预算、diagn
 `4371fdcf04f4f89bfddf070cbb15e4c903810a53` 的 hosted Linux/MSVC/MinGW 于 2026-08-24 全部成功。
 证据见 [CFU-G3 验证报告](../stage_reports/260819-chart-format-update-g3-validation.md) 与
 [CFU-G4 hosted 验证报告](../stage_reports/260824-chart-format-update-g4-hosted.md)。G3 hosted 与
-G4 已完成；[G5 completion report candidate](../stage_reports/stage_chart_format_update_completion_report.md)
-已创建，等待 report-SHA hosted revalidation 与项目所有者接受。Stage 4 继续保持 blocked / not started。
+G4 已完成；[G5/G6 completion report](../stage_reports/stage_chart_format_update_completion_report.md)
+已完成 report-SHA hosted revalidation，项目所有者已于 2026-08-24 明确接受。CFU-G 与 Stage Chart
+Format Update 已关闭，Stage 4 已切换为 unblocked / not started。
 
 ## 6. 模块、target 与文件落点
 

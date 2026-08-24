@@ -1,8 +1,8 @@
 # Cuexis CXC v1
 
 状态：accepted contract；CFU-C3/C4 内部 archive/tools 与 CFU-E Playback source/prepare/identity
-已实现；CFU-F hosted consumer/determinism/safety gates 已关闭；G3 hosted 与 CFU-G4 已完成；最终产品
-封存仍待 completion report 与 owner acceptance
+已实现；CFU-F hosted consumer/determinism/safety gates 已关闭；G3 hosted、G4、G5 report-SHA
+revalidation 与 G6 owner acceptance 已完成；最终产品封存已记录
 
 更新日期：2026-08-24
 
@@ -20,7 +20,7 @@ AnimationProgram、FrameSnapshot 或 ZIP library API。
 内部 `cuexis_cxc` 已能读写和验证 CXC bytes，CFU-C4 developer tools 已在本地与 hosted 门禁中验证；
 CFU-E 已把 CXC file/memory source 接入 Playback prepare、semantic identity 与 consumer/export 门禁。
 CFU-F 已关闭最终实现 SHA 的 hosted consumer、确定性、安全与性能门禁。CFU-G 经项目所有者接受
-前，`.cxc` 仍不能作为完整产品工具能力对外承诺；本阶段不交付公共 CXC package API，也不形成
+后，`.cxc` 的内部工具与 Playback source/prepare 闭包已封存；本阶段不交付公共 CXC package API，也不形成
 公共 CXC package component。
 
 ## 2. Artifact 模型

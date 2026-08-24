@@ -27,9 +27,8 @@ external hosts use PlaybackSession, ContentProvider, RuntimeFrame,
     and cross - platform closure.Stable C ABI work remains in Stage 12;
 `cuexis_judgement` remains planned for Stage 11.
 
-The active implementation stage is **Stage Chart Format Update**, positioned between Stage 3 and
-Stage 4;
-do not call it Stage 3.5. ADR 0038 defines `.cxc` as a strict ZIP32 Stored exchange
+The next implementation stage is **Stage 4**, following the completed Stage Chart Format Update;
+Stage 4 is unblocked but not started. Do not call the format stage Stage 3.5. ADR 0038 defines `.cxc` as a strict ZIP32 Stored exchange
 package containing existing Project/Asset Index formats, `cuexis.chart` v4 data, CXT JSON, and
 required resources. The CXT v1, ChartParameter, and Template Binding subdecision was accepted on
 August 10, 2026: `.cxt` is UTF-8 JSON for one declarative local-time animation template, and host
@@ -46,15 +45,15 @@ PlaybackSource state, added owning typed project-document and CXC file/memory fa
 the preview SDK to `0.6.0`. CFU-E2 added prepare options, Chart v4 resolution and format capability
 preflight, with static v4 projected into the existing Runtime and nonempty animation rejected.
 **CFU-C0/C1/C2/C3/C4 complete; CFU-D owner-accepted and closed after “no external assets”;
-CFU-E owner-accepted and closed; CFU-F closed after final-SHA hosted verification; CFU-G is
-active. G0 status calibration, G1 exit audit, and G2 Stage 4 typed handoff are complete. G3 local
-candidate gates passed on August 19, 2026. The final candidate SHA
+CFU-E owner-accepted and closed; CFU-F closed after final-SHA hosted verification; CFU-G closed
+after explicit owner acceptance on August 24, 2026. G0 status calibration, G1 exit audit, and G2
+Stage 4 typed handoff are complete. G3 local candidate gates passed on August 19, 2026. The final candidate SHA
 `4371fdcf04f4f89bfddf070cbb15e4c903810a53` passed same-SHA hosted Linux Quality, Windows MSVC,
 and Windows MinGW validation on August 24, 2026; G3 hosted validation and G4 are complete.
-The G5 completion report candidate has been created and awaits report-SHA hosted revalidation plus
-G6 owner acceptance. Stage 4 stays blocked / not started.**
+G5 report-SHA hosted revalidation passed and G6 owner acceptance is recorded. Stage Chart Format
+Update is complete; Stage 4 is unblocked / not started.**
 This checkpoint must not be described as complete CXC, a public package API, complete v4 animation
-Playback, or CFU-G complete.
+Playback, or complete v4 animation execution. Stage 4 implementation has not started.
 Stage 4 must consume
 typed data produced by the format stage and must not parse JSON/CXC/CXT in `engine/animation/`.
 Runtime scripts and per-frame script callbacks are deferred indefinitely. No scheduled stage,
