@@ -24,6 +24,7 @@ target_sources(cuexis_chart
         FILE_SET HEADERS
         BASE_DIRS include
         FILES
+            include/cuexis/chart/animation_program_input.hpp
             include/cuexis/chart/animation_template_document.hpp
             include/cuexis/chart/animation_template_loader.hpp
             include/cuexis/chart/canonical_chart_loader.hpp

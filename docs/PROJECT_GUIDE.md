@@ -2,7 +2,7 @@
 
 状态：现行项目指南
 
-更新日期：2026-08-24
+更新日期：2026-08-27
 
 本文是项目入口，不再保存完整路线、格式字段或阶段测试日志。整理前的完整长版快照见
 [archive/PROJECT_GUIDE_LEGACY_2026-08-10.md](archive/PROJECT_GUIDE_LEGACY_2026-08-10.md)。
@@ -67,6 +67,7 @@ SHA `4371fdcf04f4f89bfddf070cbb15e4c903810a53` 的 hosted Linux/MSVC/MinGW 验�
 全部通过，G3 hosted 与 G4 已完成。G5 completion report SHA
 `6e52677be2f27f83d0b709619be7ffcc141d6f95` 的 hosted revalidation 也已全部通过；项目所有者已于
 2026-08-24 明确接受报告，CFU-G 与 Stage Chart Format Update 已关闭。Stage 4 已解锁但尚未开始。
+S4-A、S4-B、S4-C 与 S4-D 本地门禁已通过。
 
 格式权威入口：[formats/README.md](formats/README.md)。
 

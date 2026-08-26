@@ -29,6 +29,7 @@ target_link_libraries(cuexis_runtime
         cuexis::chart
         cuexis::world
     PRIVATE
+        cuexis::animation
         cuexis::behavior
         cuexis::gameplay
         cuexis::render

@@ -2,14 +2,15 @@
 
 状态：现行路线图
 
-更新日期：2026-08-24
+更新日期：2026-08-27
 
 产品边界由 [ADR 0027](adr/0027-playback-sdk-product-boundary.md) 冻结。本文只维护阶段顺序和当前
 交接，不复制阶段实施细节或完成证据。
 
 ## 当前阶段
 
-Stage Chart Format Update 已完成；当前下一阶段是 **Stage 4**，已解锁但尚未开始，不使用数字别名。
+Stage Chart Format Update 已完成；当前下一阶段是 **Stage 4**，已解锁但尚未开始。S4-A、S4-B、S4-C 与 S4-D 本地门禁已通过，
+不使用数字别名。
 
 ```text
 CFU-A inventory and use cases                       completed

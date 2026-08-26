@@ -6,6 +6,11 @@
 
 #include <entt/entity/registry.hpp>
 
+#include <array>
+#include <limits>
+#include <span>
+#include <string>
+#include <string_view>
 #include <utility>
 
 namespace {
@@ -133,6 +138,216 @@ TEST_CASE("Transform resolver rollback only restores entities written in the cur
     });
     CHECK(positions.first.x == Catch::Approx(3.0F));
     CHECK(positions.second == Vec3{});
+}
+
+TEST_CASE("Property resolver applies layers in Initial Behavior Animation Override order",
+          "[world][property][s4-d]") {
+    World world;
+    entt::entity entity{entt::null};
+    registryAction(world, [&](entt::registry& registry) {
+        entity = registry.create();
+        registry.emplace<TransformComponent>(entity, Vec3{1.0F, 0.0F, 0.0F},
+                                             Quat{0.0F, 0.0F, 0.0F, 1.0F}, Vec3{1.0F, 1.0F, 1.0F});
+    });
+    auto captured = cuexis::world::PropertyResolver::capture(world);
+    REQUIRE(captured.has_value());
+    auto resolver = std::move(*captured);
+
+    const PropertyWrite behavior{entity, PropertyId::TransformPositionX, 2.0};
+    const PropertyWrite animation{entity, PropertyId::TransformPositionX, 3.0};
+    cuexis::world::OverrideToken host{
+        .id = {.value = 1},
+        .kind = cuexis::world::OverrideKind::Host,
+        .ownerId = "host",
+        .priority = 1,
+        .propertyMask = cuexis::world::propertyBit(PropertyId::TransformPositionX),
+        .lifetime = {},
+        .writes = {{.entity = entity, .property = PropertyId::TransformPositionX, .value = 4.0}},
+    };
+    cuexis::world::OverrideToken preview{
+        .id = {.value = 2},
+        .kind = cuexis::world::OverrideKind::StudioPreview,
+        .ownerId = "studio",
+        .priority = 1,
+        .propertyMask = cuexis::world::propertyBit(PropertyId::TransformPositionX),
+        .lifetime = {},
+        .writes = {{.entity = entity, .property = PropertyId::TransformPositionX, .value = 5.0}},
+    };
+
+    resolver.beginFrame();
+    REQUIRE(
+        resolver.applyLayer(std::span{&behavior, 1}, cuexis::world::PropertyLayer::Behavior, true)
+            .has_value());
+    REQUIRE(
+        resolver.applyLayer(std::span{&animation, 1}, cuexis::world::PropertyLayer::Animation, true)
+            .has_value());
+    REQUIRE(resolver.applyOverrides(std::span{&host, 1}, cuexis::world::PropertyLayer::HostOverride)
+                .has_value());
+    REQUIRE(resolver
+                .applyOverrides(std::span{&preview, 1},
+                                cuexis::world::PropertyLayer::StudioPreviewOverride)
+                .has_value());
+    REQUIRE(resolver.finalize().has_value());
+    REQUIRE(resolver.commit(world).has_value());
+
+    CHECK(std::get<double>(*resolver.baselineValue(entity, PropertyId::TransformPositionX)) ==
+          Catch::Approx(1.0));
+    CHECK(std::get<double>(*resolver.layerValue(entity, PropertyId::TransformPositionX,
+                                                cuexis::world::PropertyLayer::Behavior)) ==
+          Catch::Approx(2.0));
+    CHECK(std::get<double>(*resolver.layerValue(entity, PropertyId::TransformPositionX,
+                                                cuexis::world::PropertyLayer::Animation)) ==
+          Catch::Approx(3.0));
+    CHECK(std::get<double>(*resolver.layerValue(entity, PropertyId::TransformPositionX,
+                                                cuexis::world::PropertyLayer::HostOverride)) ==
+          Catch::Approx(4.0));
+    CHECK(std::get<double>(*resolver.resolvedValue(entity, PropertyId::TransformPositionX)) ==
+          Catch::Approx(5.0));
+    CHECK(resolver.sourceLayer(entity, PropertyId::TransformPositionX) ==
+          cuexis::world::PropertyLayer::StudioPreviewOverride);
+}
+
+TEST_CASE("Same-priority override writes discard the property and keep the lower layer",
+          "[world][property][override][s4-d]") {
+    World world;
+    entt::entity entity{entt::null};
+    registryAction(world, [&](entt::registry& registry) {
+        entity = registry.create();
+        registry.emplace<TransformComponent>(entity, Vec3{1.0F, 0.0F, 0.0F});
+    });
+    auto captured = cuexis::world::PropertyResolver::capture(world);
+    REQUIRE(captured.has_value());
+    auto resolver = std::move(*captured);
+
+    const PropertyWrite behavior{entity, PropertyId::TransformPositionX, 2.0};
+    cuexis::world::OverrideToken left{
+        .id = {.value = 2},
+        .kind = cuexis::world::OverrideKind::Host,
+        .ownerId = "left",
+        .priority = 7,
+        .propertyMask = cuexis::world::propertyBit(PropertyId::TransformPositionX),
+        .lifetime = {},
+        .writes = {{.entity = entity, .property = PropertyId::TransformPositionX, .value = 8.0}},
+    };
+    cuexis::world::OverrideToken right{
+        .id = {.value = 1},
+        .kind = cuexis::world::OverrideKind::Host,
+        .ownerId = "right",
+        .priority = 7,
+        .propertyMask = cuexis::world::propertyBit(PropertyId::TransformPositionX),
+        .lifetime = {},
+        .writes = {{.entity = entity, .property = PropertyId::TransformPositionX, .value = 9.0}},
+    };
+
+    resolver.beginFrame();
+    REQUIRE(
+        resolver.applyLayer(std::span{&behavior, 1}, cuexis::world::PropertyLayer::Behavior, true)
+            .has_value());
+    REQUIRE(
+        resolver.applyOverrides(std::array{left, right}, cuexis::world::PropertyLayer::HostOverride)
+            .has_value());
+    REQUIRE(resolver.finalize().has_value());
+    CHECK(resolver.hadConflict(entity, PropertyId::TransformPositionX));
+    REQUIRE(resolver.conflicts().size() == 1);
+    CHECK(std::get<double>(*resolver.resolvedValue(entity, PropertyId::TransformPositionX)) ==
+          Catch::Approx(2.0));
+    CHECK(resolver.sourceLayer(entity, PropertyId::TransformPositionX) ==
+          cuexis::world::PropertyLayer::Behavior);
+}
+
+TEST_CASE("Property resolver registers camera and appearance baselines without render headers",
+          "[world][property][appearance][s4-d]") {
+    World world;
+    entt::entity entity{entt::null};
+    registryAction(world, [&](entt::registry& registry) { entity = registry.create(); });
+    cuexis::world::PropertyResolver resolver;
+    REQUIRE(resolver.registerBaseline(entity, PropertyId::CameraFovY, 60.0).has_value());
+    REQUIRE(resolver.registerBaseline(entity, PropertyId::RenderVisible, true).has_value());
+    REQUIRE(resolver.registerBaseline(entity, PropertyId::RenderMaterial, std::string{"mat.a"})
+                .has_value());
+    REQUIRE(resolver.registerBaseline(entity, PropertyId::MaterialOpacity, 1.0).has_value());
+    REQUIRE(resolver.registerBaseline(entity, PropertyId::MaterialTint, Vec3{1.0F, 1.0F, 1.0F})
+                .has_value());
+
+    const PropertyWrite fov{entity, PropertyId::CameraFovY, 75.0};
+    const PropertyWrite visible{entity, PropertyId::RenderVisible, false};
+    resolver.beginFrame();
+    REQUIRE(
+        resolver.applyLayer(std::array{fov, visible}, cuexis::world::PropertyLayer::Behavior, true)
+            .has_value());
+    REQUIRE(resolver.finalize().has_value());
+    CHECK(std::get<double>(*resolver.resolvedValue(entity, PropertyId::CameraFovY)) ==
+          Catch::Approx(75.0));
+    CHECK(std::get<bool>(*resolver.resolvedValue(entity, PropertyId::RenderVisible)) == false);
+    CHECK(std::get<std::string>(*resolver.resolvedValue(entity, PropertyId::RenderMaterial)) ==
+          "mat.a");
+}
+
+TEST_CASE("Base property command replaces the captured baseline and increments revision",
+          "[world][property][base][s4-d]") {
+    World world;
+    entt::entity entity{entt::null};
+    registryAction(world, [&](entt::registry& registry) {
+        entity = registry.create();
+        registry.emplace<TransformComponent>(entity, Vec3{1.0F, 2.0F, 3.0F});
+    });
+    auto captured = cuexis::world::PropertyResolver::capture(world);
+    REQUIRE(captured.has_value());
+    auto resolver = std::move(*captured);
+    CHECK(resolver.baseRevision() == 0);
+    REQUIRE(resolver.applyBaseProperty(entity, PropertyId::TransformPositionX, 4.0).has_value());
+    CHECK(resolver.baseRevision() == 1);
+    CHECK(std::get<double>(*resolver.baselineValue(entity, PropertyId::TransformPositionX)) ==
+          Catch::Approx(4.0));
+
+    resolver.beginFrame();
+    REQUIRE(resolver.finalize().has_value());
+    REQUIRE(resolver.commit(world).has_value());
+    const auto position = registryValue(world, [&](const entt::registry& registry) {
+        return registry.get<TransformComponent>(entity).position;
+    });
+    CHECK(position.x == Catch::Approx(4.0F));
+    CHECK(position.y == Catch::Approx(2.0F));
+}
+
+TEST_CASE("Base property command rejects invalid values without changing revision",
+          "[world][property][base][s4-d]") {
+    World world;
+    entt::entity entity{entt::null};
+    registryAction(world, [&](entt::registry& registry) {
+        entity = registry.create();
+        registry.emplace<TransformComponent>(entity, Vec3{1.0F, 2.0F, 3.0F});
+    });
+    auto captured = cuexis::world::PropertyResolver::capture(world);
+    REQUIRE(captured.has_value());
+    auto resolver = std::move(*captured);
+    const auto failed = resolver.applyBaseProperty(entity, PropertyId::TransformPositionX,
+                                                   std::numeric_limits<double>::quiet_NaN());
+    REQUIRE_FALSE(failed.has_value());
+    CHECK(failed.error().code() == "world.property.value_invalid");
+    CHECK(resolver.baseRevision() == 0);
+    CHECK(std::get<double>(*resolver.baselineValue(entity, PropertyId::TransformPositionX)) ==
+          Catch::Approx(1.0));
+
+    const auto missing = resolver.applyBaseProperty(entity, PropertyId::CameraFovY, 75.0);
+    REQUIRE_FALSE(missing.has_value());
+    CHECK(missing.error().code() == "world.property.baseline_missing");
+    CHECK(resolver.baseRevision() == 0);
+}
+
+TEST_CASE("PropertyWriteBuffer owns material string views after the source is destroyed",
+          "[world][property][strings][s4-d]") {
+    cuexis::world::PropertyWriteBuffer writes;
+    {
+        const std::string material{"mat.owned"};
+        REQUIRE(writes
+                    .push(PropertyWrite{entt::entity{1}, PropertyId::RenderMaterial,
+                                        std::string_view{material}})
+                    .has_value());
+    }
+    const auto* view = std::get_if<std::string_view>(&writes.writes().front().value);
+    REQUIRE(view != nullptr);
+    CHECK(*view == "mat.owned");
 }
 
 } // namespace

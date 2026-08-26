@@ -1,4 +1,5 @@
 add_executable(cuexis_runtime_tests
+    animation_runtime_tests.cpp
     behavior_runtime_tests.cpp
     migration_equivalence_tests.cpp
     runtime_session_tests.cpp
@@ -6,6 +7,7 @@ add_executable(cuexis_runtime_tests
 
 target_link_libraries(cuexis_runtime_tests
     PRIVATE
+        cuexis::animation
         cuexis::assets
         cuexis::behavior
         cuexis::chart

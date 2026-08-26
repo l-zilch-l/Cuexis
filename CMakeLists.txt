@@ -106,6 +106,7 @@ set(CUEXIS_ACTIVE_TARGETS
     cuexis_world
     cuexis_assets
     cuexis_chart
+    cuexis_animation
     cuexis_cxc
     cuexis_behavior
     cuexis_gameplay
@@ -148,6 +149,7 @@ if(CUEXIS_BUILD_TESTS)
         cuexis_project_tests
         cuexis_assets_tests
         cuexis_chart_tests
+        cuexis_animation_tests
         cuexis_cxc_tests
         cuexis_behavior_tests
         cuexis_gameplay_tests
@@ -439,6 +441,7 @@ set(CUEXIS_STATIC_IMPLEMENTATION_TARGETS
     cuexis_world
     cuexis_assets
     cuexis_chart
+    cuexis_animation
     cuexis_cxc
     cuexis_behavior
     cuexis_gameplay
@@ -605,6 +608,12 @@ cuexis_verify_target_dependencies(cuexis_chart
         cuexis::core
         cuexis::json_support
 )
+cuexis_verify_target_dependencies(cuexis_animation
+    ALLOWED
+        cuexis::core
+        cuexis::chart
+        cuexis::world
+)
 cuexis_verify_target_dependencies(cuexis_cxc
     ALLOWED
         cuexis::core
@@ -637,6 +646,7 @@ cuexis_verify_target_dependencies(cuexis_debug
 )
 cuexis_verify_target_dependencies(cuexis_runtime
     ALLOWED
+        cuexis::animation
         cuexis::assets
         cuexis::behavior
         cuexis::chart
@@ -780,6 +790,11 @@ if(CUEXIS_BUILD_TESTS)
             cuexis::chart
             Catch2::Catch2WithMain
     )
+    cuexis_verify_target_dependencies(cuexis_animation_tests
+        ALLOWED
+            cuexis::animation
+            Catch2::Catch2WithMain
+    )
     cuexis_verify_target_dependencies(cuexis_cxc_tests
         ALLOWED
             cuexis_cxc
@@ -824,6 +839,7 @@ if(CUEXIS_BUILD_TESTS)
     )
     cuexis_verify_target_dependencies(cuexis_runtime_tests
         ALLOWED
+            cuexis::animation
             cuexis::assets
             cuexis::behavior
             cuexis::chart

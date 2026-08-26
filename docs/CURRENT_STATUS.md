@@ -2,7 +2,7 @@
 
 状态：现行状态页
 
-更新日期：2026-08-24
+更新日期：2026-08-27
 
 本文是当前阶段和实现状态的唯一摘要。阶段计划、完成报告和审查报告仍然保留各自的历史
 细节，但不能绕过本文重新定义当前状态。
@@ -28,7 +28,7 @@ PlaybackSession、FrameSnapshot、ContentProvider 和后续 Judgement/Replay 合
 | Stage 2 | 已完成 | [完成报告](stage_reports/stage_2_completion_report.md) |
 | Stage 3 | 已完成 | [完成报告](stage_reports/stage_3_completion_report.md) |
 | Stage Chart Format Update | 已完成；CFU-C0–C4、CFU-D、CFU-E、CFU-F、CFU-G 已关闭；G6 owner acceptance 已于 2026-08-24 记录 | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md)、[G5/G6 completion report](stage_reports/stage_chart_format_update_completion_report.md) |
-| Stage 4 | 未开始，已解锁，等待实施 | [实施计划](stage_plans/stage_4_implementation_plan.md) |
+| Stage 4 | 已解锁但尚未开始；S4-A/S4-B/S4-C/S4-D 本地门禁已通过 | [实施计划](stage_plans/stage_4_implementation_plan.md)、[S4-A 报告](stage_reports/260824-stage-4-s4-a-module-wiring.md)、[S4-B 报告](stage_reports/260825-stage-4-s4-b-absolute-sampling.md)、[S4-C 报告](stage_reports/260826-stage-4-s4-c-layer-mixing.md)、[S4-D 报告](stage_reports/260827-stage-4-s4-d-property-resolver.md) |
 
 Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使用 Stage 3.5 作为别名。
 
@@ -175,7 +175,7 @@ extension、capability、字节码、模块 ABI 或 Playback 执行入口。离�
 - 正式 `cuexis_judgement`、InputEvent、ReplayData 和确定性回放
 - Studio 独立应用实现
 - 稳定 C ABI 和语言绑定
-- Stage 4 AnimationSystem 运行时实现
+- Stage 4 S4-E 起的 Playback 事务、公开 capability 与完整 v4 动画 Playback
 
 ## 状态更新规则
 
