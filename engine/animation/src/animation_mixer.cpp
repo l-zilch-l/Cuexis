@@ -673,15 +673,14 @@ auto AnimationMixer::evaluate(const AnimationProgram& program, chart::RationalBe
                         continue;
                     }
                     if (captureLayerContributions) {
-                        result.layerContributions.push_back(AnimationLayerContribution{
-                            .objectId = object.objectId,
-                            .layerIdentity = layer.identity,
-                            .priority = layer.priority,
-                            .weight = layer.weight,
-                            .property = property,
-                            .propertyMask = layer.propertyMask,
-                            .value = value.value,
-                        });
+                        auto& contribution = result.layerContributions.emplace_back();
+                        contribution.objectId = object.objectId;
+                        contribution.layerIdentity = layer.identity;
+                        contribution.priority = layer.priority;
+                        contribution.weight = layer.weight;
+                        contribution.property = property;
+                        contribution.propertyMask = layer.propertyMask;
+                        contribution.value = value.value;
                     }
                     if (owners.contains(property) && owners[property] != layer.identity) {
                         conflicts[property] = true;

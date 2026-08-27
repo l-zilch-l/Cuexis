@@ -16,11 +16,10 @@ auto AnimationSystem::sample(const AnimationProgram& program, chart::RationalBea
                     if (!clip) {
                         return core::unexpected(std::move(clip.error()));
                     }
-                    samples.push_back(AnimationInstanceSample{
-                        .objectId = object.objectId,
-                        .instanceIdentity = instance.identity,
-                        .clip = std::move(*clip),
-                    });
+                    auto& sample = samples.emplace_back();
+                    sample.objectId = object.objectId;
+                    sample.instanceIdentity = instance.identity;
+                    sample.clip = std::move(*clip);
                 }
             }
         }

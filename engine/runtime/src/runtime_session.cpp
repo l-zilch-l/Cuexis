@@ -251,7 +251,7 @@ void tickOverrideLifetimes(std::vector<world::OverrideToken>& tokens) {
     state.animationBaselines.clear();
     state.animationBaselines.reserve(state.animationBindings.size());
     for (const auto& binding : state.animationBindings) {
-        animation::AnimationObjectBaseline baseline{.objectId = binding.objectId};
+        animation::AnimationObjectBaseline baseline{.objectId = binding.objectId, .properties = {}};
         for (const auto property : allPropertyIds) {
             auto value = state.resolver.resolvedValue(binding.entity, property);
             if (!value) {
@@ -1147,6 +1147,7 @@ void RuntimeSession::captureDebug(const RuntimeEvaluationState& state, double be
             .finalValue = finalValue ? std::move(*finalValue) : std::move(behaviorValue),
             .sourceLayer = state.resolver.sourceLayer(binding.entity, property),
             .conflict = state.resolver.hadConflict(binding.entity, property),
+            .animationLayers = {},
         });
         auto& record = debugRecords_.back();
         for (const auto& contribution : state.animationLayerContributions) {

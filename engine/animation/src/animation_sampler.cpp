@@ -282,7 +282,7 @@ auto AnimationSampler::sampleClip(const chart::AnimationClip& clip, chart::Ratio
                                             "Animation local Beat is outside the clip duration"});
     }
 
-    AnimationClipSample sample{.localBeat = localBeat};
+    AnimationClipSample sample{.localBeat = localBeat, .tracks = {}, .steps = {}};
     sample.tracks.reserve(clip.tracks.size());
     sample.steps.reserve(clip.stepTracks.size());
 
