@@ -258,6 +258,47 @@ TEST_CASE("Override lerp uses group and layer weights against the layer input",
     CHECK(scalarWrite(writes, cuexis::world::PropertyId::TransformPositionX) == Catch::Approx(2.5));
 }
 
+TEST_CASE("Layer contribution capture does not change mixed writes",
+          "[animation][mix][semantics][s4-g]") {
+    cuexis::chart::AnimationProgramInput input;
+    input.clips.push_back(makeProgramClip(
+        "clip", "clip-id",
+        constantScalarClip(cuexis::chart::AnimationProperty::TransformPositionX, 10.0)));
+    cuexis::chart::ResolvedBlendGroup group;
+    group.identity = "group";
+    group.weight = 0.5;
+    group.instances.push_back(
+        makeInstance("instance", "clip", 1.0, mask({"transform.position.x"})));
+    cuexis::chart::ResolvedAnimationLayer layer;
+    layer.identity = "layer";
+    layer.priority = 0;
+    layer.weight = 0.5;
+    layer.propertyMask = mask({"transform.position.x"});
+    layer.blendGroups.push_back(std::move(group));
+    cuexis::chart::ObjectAnimationProgram object;
+    object.objectId = objectId();
+    object.layers.push_back(std::move(layer));
+    input.objects.push_back(std::move(object));
+
+    const auto program = compile(std::move(input));
+    const auto bindings = std::array{binding()};
+    const auto baselines = std::array{baseline(cuexis::world::PropertyId::TransformPositionX, 0.0)};
+    cuexis::world::PropertyWriteBuffer silent;
+    cuexis::world::PropertyWriteBuffer captured;
+    const auto withoutContributions = evaluate(program, bindings, baselines, silent);
+    const auto withContributions = cuexis::animation::AnimationSystem::evaluate(
+        program, beat(0), bindings, baselines, captured, true);
+    REQUIRE(withoutContributions.has_value());
+    REQUIRE(withContributions.has_value());
+    CHECK_FALSE(withoutContributions->hasErrors());
+    CHECK_FALSE(withContributions->hasErrors());
+    CHECK(withContributions->layerContributions.size() == 1);
+    REQUIRE(silent.size() == 1);
+    REQUIRE(captured.size() == 1);
+    CHECK(scalarWrite(silent, cuexis::world::PropertyId::TransformPositionX) ==
+          scalarWrite(captured, cuexis::world::PropertyId::TransformPositionX));
+}
+
 TEST_CASE("Zero layer or group weight does not write", "[animation][mix][weight][s4-c]") {
     auto makeProgram = [](double layerWeight, double groupWeight) {
         cuexis::chart::AnimationProgramInput input;
@@ -720,4 +761,57 @@ TEST_CASE("Empty mask does not write and missing entity binding is a hard error"
         cuexis::animation::AnimationMixer::evaluate(program, beat(0), {}, baselines, writes);
     REQUIRE_FALSE(unbound.has_value());
     CHECK(unbound.error().code() == cuexis::animation::mixBindingMissing);
+}
+
+TEST_CASE("Bounded mix diagnostics replace the last accepted item with the sentinel",
+          "[animation][mix][truncation][s4-g]") {
+    constexpr std::size_t overflowCount = cuexis::animation::maxDiagnostics + 1;
+    cuexis::chart::AnimationProgramInput input;
+    input.clips.push_back(makeProgramClip(
+        "clip", "clip-id",
+        constantScalarClip(cuexis::chart::AnimationProperty::TransformPositionX, 4.0)));
+    auto makeLayer = [](std::string identity) {
+        cuexis::chart::ResolvedBlendGroup group;
+        group.identity = identity + "-group";
+        group.instances.push_back(
+            makeInstance(identity + "-instance", "clip", 1.0, mask({"transform.position.x"})));
+        cuexis::chart::ResolvedAnimationLayer layer;
+        layer.identity = std::move(identity);
+        layer.priority = 0;
+        layer.propertyMask = mask({"transform.position.x"});
+        layer.blendGroups.push_back(std::move(group));
+        return layer;
+    };
+    std::vector<cuexis::animation::AnimationObjectBinding> bindings;
+    std::vector<cuexis::animation::AnimationObjectBaseline> baselines;
+    bindings.reserve(overflowCount);
+    baselines.reserve(overflowCount);
+    input.objects.reserve(overflowCount);
+    for (std::size_t index = 0; index < overflowCount; ++index) {
+        const auto id = "note-" + std::to_string(index);
+        cuexis::chart::ObjectAnimationProgram object;
+        object.objectId = cuexis::chart::ChartObjectId{id};
+        object.layers.push_back(makeLayer("layer-a-" + std::to_string(index)));
+        object.layers.push_back(makeLayer("layer-b-" + std::to_string(index)));
+        bindings.push_back(
+            {.objectId = object.objectId, .entity = entity(static_cast<std::uint32_t>(index + 1))});
+        baselines.push_back(
+            {.objectId = object.objectId,
+             .properties = {
+                 {.property = cuexis::world::PropertyId::TransformPositionX, .value = 0.0}}});
+        input.objects.push_back(std::move(object));
+    }
+
+    const auto program = compile(std::move(input));
+    cuexis::world::PropertyWriteBuffer writes;
+    const auto mixed = evaluate(program, bindings, baselines, writes);
+    REQUIRE(mixed.has_value());
+    CHECK(mixed->diagnostics.limitReached());
+    REQUIRE(mixed->diagnostics.size() == cuexis::animation::maxDiagnostics);
+    CHECK(hasCode(mixed->diagnostics, cuexis::animation::diagnosticLimitExceeded));
+    CHECK(hasCode(mixed->diagnostics, cuexis::animation::mixPriorityOverlap));
+    for (const auto& item : mixed->diagnostics.items()) {
+        CHECK(item.fieldPath() == cuexis::animation::fallbackFieldPath);
+        CHECK(item.fieldPath().find("animationClips") == std::string_view::npos);
+    }
 }

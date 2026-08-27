@@ -5,8 +5,10 @@
 
 #include <cuexis/animation/animation_program.hpp>
 #include <cuexis/chart/animation_program_input.hpp>
+#include <cuexis/chart/limits.hpp>
 #include <cuexis/core/diagnostic.hpp>
 
+#include <cstddef>
 #include <optional>
 
 namespace cuexis::animation {
@@ -25,6 +27,11 @@ struct AnimationCompileResult final {
 class AnimationCompiler final {
   public:
     [[nodiscard]] static auto compile(chart::AnimationProgramInput input) -> AnimationCompileResult;
+    [[nodiscard]] static auto compile(chart::AnimationProgramInput input,
+                                      const chart::ChartLimits& limits) -> AnimationCompileResult;
+    [[nodiscard]] static auto compile(chart::AnimationProgramInput input,
+                                      const chart::ChartLimits& limits,
+                                      std::size_t maxWritesPerFrame) -> AnimationCompileResult;
 };
 
 } // namespace cuexis::animation

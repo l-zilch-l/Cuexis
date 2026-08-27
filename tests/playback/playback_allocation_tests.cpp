@@ -413,3 +413,48 @@ TEST_CASE("CFU-F4 warmed empty Chart v1 through v4 update and extraction allocat
         CHECK(snapshot.objects.empty());
     }
 }
+
+TEST_CASE("S4-G warmed nonempty CXT update and extract stay within the bounded allocation contract",
+          "[playback][s4-g][allocation][animation]") {
+    const auto root = std::filesystem::path{CUEXIS_SOURCE_DIR} / "tests" / "fixtures" /
+                      "chart_format_update" / "source_project";
+    auto source = cuexis::playback::PlaybackSource::fromFilesystemProject(root);
+    REQUIRE(source.has_value());
+    cuexis::playback::PlaybackSession session;
+    REQUIRE(
+        session.load(std::move(*source), cuexis::playback::PlaybackMode::ChartClock).has_value());
+    cuexis::playback::FrameSnapshot snapshot;
+    REQUIRE(session.update({.chartTimeMs = 0.0}).has_value());
+    REQUIRE(session.extractFrame({.width = 1280, .height = 720}, snapshot).has_value());
+    for (std::size_t index = 1; index <= 32; ++index) {
+        REQUIRE(session
+                    .update({.chartTimeMs = static_cast<double>(index) * 10.0,
+                             .simulationDeltaTimeMs = 10.0})
+                    .has_value());
+        REQUIRE(session.extractFrame({.width = 1280, .height = 720}, snapshot).has_value());
+    }
+
+    auto runWindow = [&](std::size_t start, std::size_t count) -> std::size_t {
+        beginAllocationTracking();
+        bool succeeded = true;
+        for (std::size_t index = 0; index < count; ++index) {
+            const double chartTimeMs = static_cast<double>(start + index) * 10.0;
+            const auto updated =
+                session.update({.chartTimeMs = chartTimeMs, .simulationDeltaTimeMs = 10.0});
+            const auto extracted = session.extractFrame({.width = 1280, .height = 720}, snapshot);
+            if (!updated || !extracted) {
+                succeeded = false;
+                break;
+            }
+        }
+        const auto allocations = endAllocationTracking();
+        CHECK(succeeded);
+        return allocations;
+    };
+
+    const auto first = runWindow(33, 64);
+    const auto second = runWindow(97, 64);
+    std::cout << "S4-G nonempty CXT first=" << first << " second=" << second << '\n';
+    CHECK(second <= first);
+    CHECK_FALSE(snapshot.objects.empty());
+}

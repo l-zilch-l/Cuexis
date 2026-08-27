@@ -281,28 +281,31 @@ void tickOverrideLifetimes(std::vector<world::OverrideToken>& tokens) {
         camera.candidateFovY = *fov;
     }
     for (auto& appearance : state.appearances) {
-        appearance.candidate = appearance.baseline;
-        if (const auto visible =
-                state.resolver.resolvedValue(appearance.entity, world::PropertyId::RenderVisible)) {
-            if (const auto* value = std::get_if<bool>(&*visible)) {
+        appearance.candidate.visible = appearance.baseline.visible;
+        appearance.candidate.opacity = appearance.baseline.opacity;
+        appearance.candidate.tint = appearance.baseline.tint;
+        appearance.candidate.materialAssetId.assign(appearance.baseline.materialAssetId);
+        if (const auto* visible = state.resolver.resolvedValuePtr(
+                appearance.entity, world::PropertyId::RenderVisible)) {
+            if (const auto* value = std::get_if<bool>(visible)) {
                 appearance.candidate.visible = *value;
             }
         }
-        if (const auto material = state.resolver.resolvedValue(appearance.entity,
-                                                               world::PropertyId::RenderMaterial)) {
-            if (const auto* value = std::get_if<std::string>(&*material)) {
-                appearance.candidate.materialAssetId = *value;
+        if (const auto* material = state.resolver.resolvedValuePtr(
+                appearance.entity, world::PropertyId::RenderMaterial)) {
+            if (const auto* value = std::get_if<std::string>(material)) {
+                appearance.candidate.materialAssetId.assign(value->data(), value->size());
             }
         }
-        if (const auto opacity = state.resolver.resolvedValue(appearance.entity,
-                                                              world::PropertyId::MaterialOpacity)) {
-            if (const auto* value = std::get_if<double>(&*opacity)) {
+        if (const auto* opacity = state.resolver.resolvedValuePtr(
+                appearance.entity, world::PropertyId::MaterialOpacity)) {
+            if (const auto* value = std::get_if<double>(opacity)) {
                 appearance.candidate.opacity = *value;
             }
         }
-        if (const auto tint =
-                state.resolver.resolvedValue(appearance.entity, world::PropertyId::MaterialTint)) {
-            if (const auto* value = std::get_if<core::Vec3>(&*tint)) {
+        if (const auto* tint = state.resolver.resolvedValuePtr(appearance.entity,
+                                                               world::PropertyId::MaterialTint)) {
+            if (const auto* value = std::get_if<core::Vec3>(tint)) {
                 appearance.candidate.tint = *value;
             }
         }
@@ -400,12 +403,12 @@ void tickOverrideLifetimes(std::vector<world::OverrideToken>& tokens) {
 
     std::size_t animationWriteBudget = 0;
     if (!animation.empty()) {
-        const auto requiredAnimationWrites = animation.objectCount() * world::propertyCount;
-        if (requiredAnimationWrites > world::maxPropertyWritesPerFrame) {
+        if (!world::animationWriteBudgetFits(animation.objectCount(),
+                                             world::maxPropertyWritesPerFrame)) {
             return core::unexpected(core::Error{"runtime.animation.write_limit",
                                                 "Animation program exceeds the write budget"});
         }
-        animationWriteBudget = requiredAnimationWrites;
+        animationWriteBudget = *world::requiredAnimationWrites(animation.objectCount());
     }
 
     auto state = std::make_unique<RuntimeEvaluationState>(requiredWrites, animationWriteBudget);
@@ -580,10 +583,23 @@ void tickOverrideLifetimes(std::vector<world::OverrideToken>& tokens) {
     if (!registered) {
         return core::unexpected(std::move(registered.error()));
     }
+    std::size_t maxMaterialBytes = 0;
+    for (const auto& appearance : state->appearances) {
+        maxMaterialBytes =
+            std::max({maxMaterialBytes, appearance.baseline.materialAssetId.capacity(),
+                      appearance.candidate.materialAssetId.capacity(),
+                      appearance.previous.materialAssetId.capacity()});
+        state->resolver.reserveStringCapacity(appearance.entity, world::PropertyId::RenderMaterial,
+                                              appearance.candidate.materialAssetId.capacity());
+    }
     auto attached = attachAnimation(*state, objects, std::move(animation));
     if (!attached) {
         return core::unexpected(std::move(attached.error()));
     }
+    const auto ownedStringSlots =
+        std::max({state->appearances.size(), state->animationBindings.size(), std::size_t{1}});
+    state->writes.reserveOwnedStrings(ownedStringSlots, maxMaterialBytes);
+    state->animationWrites.reserveOwnedStrings(ownedStringSlots, maxMaterialBytes);
     return state;
 }
 
@@ -641,8 +657,14 @@ void rollbackCameras(RuntimeEvaluationState& state, world::World& world) noexcep
         }
         for (auto& appearance : state.appearances) {
             auto& component = registry.get<render::AppearanceComponent>(appearance.entity);
-            appearance.previous = component;
-            component = appearance.candidate;
+            appearance.previous.visible = component.visible;
+            appearance.previous.opacity = component.opacity;
+            appearance.previous.tint = component.tint;
+            appearance.previous.materialAssetId.assign(component.materialAssetId);
+            component.visible = appearance.candidate.visible;
+            component.opacity = appearance.candidate.opacity;
+            component.tint = appearance.candidate.tint;
+            component.materialAssetId.assign(appearance.candidate.materialAssetId);
         }
         return {};
     });
@@ -1014,29 +1036,33 @@ auto RuntimeSession::updatePrepared(RuntimeEvaluationState& state,
         }
     }
 
-    std::vector<world::OverrideToken> activeHost;
-    activeHost.reserve(state.hostOverrides.size());
-    for (const auto& token : state.hostOverrides) {
-        if (overrideIsActive(token, frame)) {
-            activeHost.push_back(token);
+    if (!state.hostOverrides.empty()) {
+        std::vector<world::OverrideToken> activeHost;
+        activeHost.reserve(state.hostOverrides.size());
+        for (const auto& token : state.hostOverrides) {
+            if (overrideIsActive(token, frame)) {
+                activeHost.push_back(token);
+            }
+        }
+        auto hostApplied =
+            state.resolver.applyOverrides(activeHost, world::PropertyLayer::HostOverride);
+        if (!hostApplied) {
+            return core::unexpected(std::move(hostApplied.error()));
         }
     }
-    std::vector<world::OverrideToken> activePreview;
-    activePreview.reserve(state.previewOverrides.size());
-    for (const auto& token : state.previewOverrides) {
-        if (overrideIsActive(token, frame)) {
-            activePreview.push_back(token);
+    if (!state.previewOverrides.empty()) {
+        std::vector<world::OverrideToken> activePreview;
+        activePreview.reserve(state.previewOverrides.size());
+        for (const auto& token : state.previewOverrides) {
+            if (overrideIsActive(token, frame)) {
+                activePreview.push_back(token);
+            }
         }
-    }
-    auto hostApplied =
-        state.resolver.applyOverrides(activeHost, world::PropertyLayer::HostOverride);
-    if (!hostApplied) {
-        return core::unexpected(std::move(hostApplied.error()));
-    }
-    auto previewApplied =
-        state.resolver.applyOverrides(activePreview, world::PropertyLayer::StudioPreviewOverride);
-    if (!previewApplied) {
-        return core::unexpected(std::move(previewApplied.error()));
+        auto previewApplied = state.resolver.applyOverrides(
+            activePreview, world::PropertyLayer::StudioPreviewOverride);
+        if (!previewApplied) {
+            return core::unexpected(std::move(previewApplied.error()));
+        }
     }
     tickOverrideLifetimes(state.hostOverrides);
     tickOverrideLifetimes(state.previewOverrides);

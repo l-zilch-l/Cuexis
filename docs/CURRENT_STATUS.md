@@ -28,7 +28,7 @@ PlaybackSession、FrameSnapshot、ContentProvider 和后续 Judgement/Replay 合
 | Stage 2 | 已完成 | [完成报告](stage_reports/stage_2_completion_report.md) |
 | Stage 3 | 已完成 | [完成报告](stage_reports/stage_3_completion_report.md) |
 | Stage Chart Format Update | 已完成；CFU-C0–C4、CFU-D、CFU-E、CFU-F、CFU-G 已关闭；G6 owner acceptance 已于 2026-08-24 记录 | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md)、[G5/G6 completion report](stage_reports/stage_chart_format_update_completion_report.md) |
-| Stage 4 | 已解锁但尚未开始；S4-A/S4-B/S4-C/S4-D 本地门禁已通过 | [实施计划](stage_plans/stage_4_implementation_plan.md)、[S4-A 报告](stage_reports/260824-stage-4-s4-a-module-wiring.md)、[S4-B 报告](stage_reports/260825-stage-4-s4-b-absolute-sampling.md)、[S4-C 报告](stage_reports/260826-stage-4-s4-c-layer-mixing.md)、[S4-D 报告](stage_reports/260827-stage-4-s4-d-property-resolver.md) |
+| Stage 4 | 已解锁但尚未开始；S4-A/S4-B/S4-C/S4-D/S4-E/S4-F/S4-G 本地门禁已通过 | [实施计划](stage_plans/stage_4_implementation_plan.md)、[S4-A 报告](stage_reports/260824-stage-4-s4-a-module-wiring.md)、[S4-B 报告](stage_reports/260825-stage-4-s4-b-absolute-sampling.md)、[S4-C 报告](stage_reports/260826-stage-4-s4-c-layer-mixing.md)、[S4-D 报告](stage_reports/260827-stage-4-s4-d-property-resolver.md)、[S4-E 报告](stage_reports/260827-stage-4-s4-e-playback-ownership.md)、[S4-F 报告](stage_reports/260827-stage-4-s4-f-consumer-capability.md)、[S4-G 报告](stage_reports/260827-stage-4-s4-g-safety-allocation.md) |
 
 Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使用 Stage 3.5 作为别名。
 
@@ -41,7 +41,10 @@ Update 已关闭。Stage 4 已解锁但尚未开始。
 ## 格式状态
 
 - Chart v1/v2/v3 已实现并继续保留全部 Reader、迁移和 Playback 路径。Chart v4 的静态与参数化
-  内容已可由 Playback prepare；非空动画仍在 Stage 4 前稳定拒绝。
+  内容已可由 Playback prepare。S4-F 已把 `cuexis.animation.clip.v1` 与
+  `cuexis.animation.layers.v1` 加入默认 Playback 集合；缺少这两项的显式裁剪 Session 仍稳定拒绝。
+  S4-G 已关闭本地限额、warmed 分配合同与趋势探针；sanitizer 与 hosted 验收仍在 S4-H。
+  该检查点仍不是完整 v4 动画 Playback。
 - ADR 0038 已于 2026-08-11 整体接受，Stage Chart Format Update 已进入 CFU-C 实施。
 - CFU-C1 已建立 Chart v4、CXT v1、CXC manifest v1 Schema、正式 fixture、typed source model/Reader
   和内部 `cuexis_cxc` manifest 目标。
@@ -175,7 +178,7 @@ extension、capability、字节码、模块 ABI 或 Playback 执行入口。离�
 - 正式 `cuexis_judgement`、InputEvent、ReplayData 和确定性回放
 - Studio 独立应用实现
 - 稳定 C ABI 和语言绑定
-- Stage 4 S4-E 起的 Playback 事务、公开 capability 与完整 v4 动画 Playback
+- Stage 4 S4-H hosted 验收、阶段关闭与完整 v4 动画 Playback
 
 ## 状态更新规则
 

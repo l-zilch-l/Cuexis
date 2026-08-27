@@ -39,9 +39,21 @@ constexpr std::array<RuntimeFrame, 4> sampleFrames{
     RuntimeFrame{.chartTimeMs = 1250.0, .simulationDeltaTimeMs = 0.0, .timeDiscontinuityId = 3},
 };
 
+constexpr std::array<RuntimeFrame, 4> animationFrames{
+    RuntimeFrame{.chartTimeMs = 4000.0, .simulationDeltaTimeMs = 0.0, .timeDiscontinuityId = 0},
+    RuntimeFrame{.chartTimeMs = 4250.0, .simulationDeltaTimeMs = 0.0, .timeDiscontinuityId = 1},
+    RuntimeFrame{.chartTimeMs = 5000.0, .simulationDeltaTimeMs = 0.0, .timeDiscontinuityId = 2},
+    RuntimeFrame{.chartTimeMs = 6250.0, .simulationDeltaTimeMs = 0.0, .timeDiscontinuityId = 3},
+};
+
 constexpr std::uint64_t expectedStopDigest = 11596562486377158370ULL;
 constexpr std::string_view expectedSemanticIdentity =
     "6d01494c126f3ae8fc9420259dc92873233022dec9dd6bf9caf04b217f100cc5";
+constexpr std::string_view expectedAnimationIdentity =
+    "fb662e259e2146cf68d6ebc763514b3bc2b460f2a865ece6805bda844586e9b4";
+constexpr std::array<std::uint64_t, 4> expectedAnimationDigests{
+    105060921077611920ULL, 10690198800679353609ULL, 18438846932740715847ULL,
+    18147874964077530090ULL};
 
 struct Observation final {
     PreparedSemanticIdentity identity;
@@ -66,6 +78,23 @@ struct Observation final {
 
 [[nodiscard]] auto parameterizedProject() -> std::filesystem::path {
     return fixtureRoot() / "parameterized_project";
+}
+
+[[nodiscard]] auto animatedProject() -> std::filesystem::path {
+    return fixtureRoot() / "source_project";
+}
+
+[[nodiscard]] auto trimmedCapabilities() -> cuexis::playback::PlaybackCapabilitySet {
+    return {
+        .version = 1,
+        .ids = {std::string{cuexis::playback::capabilityBehaviorEventV1},
+                std::string{cuexis::playback::capabilityChartV3},
+                std::string{cuexis::playback::capabilityChartV4},
+                std::string{cuexis::playback::capabilityMaterialSnapshotV1},
+                std::string{cuexis::playback::capabilityRenderVisibilityV1},
+                std::string{cuexis::playback::capabilitySourceCxcV1},
+                std::string{cuexis::playback::capabilitySourceCxtV1}},
+    };
 }
 
 [[nodiscard]] auto fail(std::string_view message) -> int {
@@ -202,6 +231,31 @@ struct Observation final {
     return std::move(*source);
 }
 
+[[nodiscard]] auto typedAnimatedSource() -> std::optional<PlaybackSource> {
+    const auto chart = readText(animatedProject() / "assets/charts/main.cuexis.chart.json");
+    const auto cxt = readText(animatedProject() / "templates/move-y.cxt");
+    if (!chart || !cxt) {
+        return std::nullopt;
+    }
+    auto provider = cuexis::playback::MemoryContentProvider::create({});
+    if (!provider) {
+        static_cast<void>(fail("typed animation provider", provider.error()));
+        return std::nullopt;
+    }
+    auto source = PlaybackSource::fromTypedProjectSource(
+        {.sourceId = "s4-f-typed-source-project",
+         .entryChartPath = "charts/main.cuexis.chart.json",
+         .projectDocuments = {{.path = "charts/main.cuexis.chart.json", .utf8Text = *chart},
+                              {.path = "templates/move-y.cxt", .utf8Text = *cxt}},
+         .assets = {}},
+        std::move(*provider));
+    if (!source) {
+        static_cast<void>(fail("typed animation source", source.error()));
+        return std::nullopt;
+    }
+    return std::move(*source);
+}
+
 [[nodiscard]] auto observe(PlaybackSource&& source, std::string_view sourceName)
     -> std::optional<Observation> {
     PlaybackSession session;
@@ -267,6 +321,70 @@ struct Observation final {
     }
     if (!session.unload() || !retained || !validResource(*retained)) {
         static_cast<void>(fail(std::string{sourceName} + " owning resource lifetime failed"));
+        return std::nullopt;
+    }
+    return observation;
+}
+
+[[nodiscard]] auto observeAnimation(PlaybackSource&& source, std::string_view sourceName)
+    -> std::optional<Observation> {
+    PlaybackSession session;
+    auto prepared = session.prepareLoad(std::move(source), PlaybackMode::ChartClock);
+    if (!prepared) {
+        static_cast<void>(fail(std::string{sourceName} + " prepare", prepared.error()));
+        return std::nullopt;
+    }
+    const auto candidateIdentity = prepared->semanticIdentity();
+    if (!candidateIdentity) {
+        static_cast<void>(fail(std::string{sourceName} + " candidate identity is missing"));
+        return std::nullopt;
+    }
+    auto committed = session.commit(std::move(*prepared));
+    if (!committed) {
+        static_cast<void>(fail(std::string{sourceName} + " commit", committed.error()));
+        return std::nullopt;
+    }
+    const auto activeIdentity = session.semanticIdentity();
+    if (!activeIdentity || *activeIdentity != *candidateIdentity) {
+        static_cast<void>(fail(std::string{sourceName} + " active identity mismatch"));
+        return std::nullopt;
+    }
+
+    Observation observation{.identity = *activeIdentity};
+    std::vector<std::string> objectIds;
+    for (std::size_t index = 0; index < animationFrames.size(); ++index) {
+        auto updated = session.update(animationFrames[index]);
+        if (!updated) {
+            static_cast<void>(fail(std::string{sourceName} + " update", updated.error()));
+            return std::nullopt;
+        }
+        auto snapshot = session.extractFrame({.width = 1280, .height = 720});
+        if (!snapshot || snapshot->objects.empty()) {
+            static_cast<void>(fail(std::string{sourceName} + " frame extraction failed"));
+            return std::nullopt;
+        }
+        if (index == 0) {
+            objectIds.reserve(snapshot->objects.size());
+            for (const auto& object : snapshot->objects) {
+                objectIds.push_back(object.id);
+            }
+            if (!std::is_sorted(objectIds.begin(), objectIds.end())) {
+                static_cast<void>(fail(std::string{sourceName} + " object order is not sorted"));
+                return std::nullopt;
+            }
+        } else if (objectIds.size() != snapshot->objects.size()) {
+            static_cast<void>(fail(std::string{sourceName} + " object permutation changed"));
+            return std::nullopt;
+        }
+        auto digest = cuexis::playback::computeFrameDigest(animationFrames[index], *snapshot);
+        if (!digest || digest->algorithmVersion != 3U) {
+            static_cast<void>(fail(std::string{sourceName} + " FrameDigest failed"));
+            return std::nullopt;
+        }
+        observation.digests[index] = digest->value;
+    }
+    if (observation.digests[0] == observation.digests[1]) {
+        static_cast<void>(fail(std::string{sourceName} + " animation FrameDigest did not change"));
         return std::nullopt;
     }
     return observation;
@@ -436,7 +554,7 @@ struct Observation final {
         static_cast<void>(fail("failure-path reference source", source.error()));
         return false;
     }
-    PlaybackSession session;
+    PlaybackSession session{trimmedCapabilities()};
     if (!session.load(std::move(*source), PlaybackMode::ChartClock) ||
         !session.update(sampleFrames[1])) {
         static_cast<void>(fail("failure-path reference load failed"));
@@ -528,7 +646,45 @@ int main() {
         return fail("Playback-only failed reload changed active state");
     }
 
+    auto animatedFilesystemSource = PlaybackSource::fromFilesystemProject(animatedProject());
+    auto animatedFileSource = PlaybackSource::fromCxcFile(animatedPackage());
+    const auto animatedBytes = readBytes(animatedPackage());
+    auto animatedTyped = typedAnimatedSource();
+    if (!animatedFilesystemSource || !animatedFileSource || !animatedBytes || !animatedTyped) {
+        return fail("Playback-only consumer could not construct animated sources");
+    }
+    auto animatedMemorySource = PlaybackSource::fromCxcMemory(*animatedBytes);
+    if (!animatedMemorySource) {
+        return fail("animated CXC memory source", animatedMemorySource.error());
+    }
+    const auto animatedFilesystem =
+        observeAnimation(std::move(*animatedFilesystemSource), "animated filesystem");
+    const auto animatedFile = observeAnimation(std::move(*animatedFileSource), "animated CXC file");
+    const auto animatedMemory =
+        observeAnimation(std::move(*animatedMemorySource), "animated CXC memory");
+    const auto animatedTypedObs =
+        observeAnimation(std::move(*animatedTyped), "animated typed project");
+    if (!animatedFilesystem || !animatedFile || !animatedMemory || !animatedTypedObs) {
+        return 1;
+    }
+    if (animatedFilesystem->identity != animatedFile->identity ||
+        animatedFilesystem->identity != animatedMemory->identity ||
+        animatedFilesystem->identity != animatedTypedObs->identity ||
+        animatedFilesystem->digests != animatedFile->digests ||
+        animatedFilesystem->digests != animatedMemory->digests ||
+        animatedFilesystem->digests != animatedTypedObs->digests) {
+        return fail("Playback-only animated sources produced different semantic observations");
+    }
+    if (identityHex(animatedFile->identity) != expectedAnimationIdentity ||
+        animatedFile->digests != expectedAnimationDigests) {
+        return fail("Playback-only animated golden mismatch");
+    }
+
     std::cout << "Cuexis Playback-only CFU-F2 consumer passed identity="
               << identityHex(file->identity) << " stop_digest=" << file->digests[1] << '\n';
+    std::cout << "S4-F animation_identity=" << identityHex(animatedFile->identity)
+              << " animation_digests=" << animatedFile->digests[0] << ','
+              << animatedFile->digests[1] << ',' << animatedFile->digests[2] << ','
+              << animatedFile->digests[3] << '\n';
     return 0;
 }

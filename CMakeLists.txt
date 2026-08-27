@@ -162,6 +162,7 @@ if(CUEXIS_BUILD_TESTS)
         cuexis_presentation_validation_tests
         cuexis_cfu_f_headless_consumer
         cuexis_cfu_f4_performance_probe
+        cuexis_s4g_performance_probe
     )
 
     if(TARGET cuexis_platform_sdl_tests)
@@ -670,6 +671,7 @@ cuexis_verify_target_dependencies(cuexis_playback
         cuexis::audio
         cuexis::content
         cuexis::core
+        cuexis::animation
         cuexis::assets
         cuexis::chart
         cuexis::cxc
@@ -794,6 +796,11 @@ if(CUEXIS_BUILD_TESTS)
         ALLOWED
             cuexis::animation
             Catch2::Catch2WithMain
+    )
+    cuexis_verify_target_dependencies(cuexis_s4g_performance_probe
+        ALLOWED
+            cuexis::animation
+            Psapi
     )
     cuexis_verify_target_dependencies(cuexis_cxc_tests
         ALLOWED

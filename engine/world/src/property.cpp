@@ -71,6 +71,57 @@ using EntityValue = std::underlying_type_t<entt::entity>;
     }
 }
 
+void resetStoredValue(PropertyValue& value) noexcept {
+    if (auto* text = std::get_if<std::string>(&value)) {
+        text->clear();
+        return;
+    }
+    value = {};
+}
+
+void copyStoredValue(PropertyValue& dest, const PropertyValue& src) {
+    if (auto* destText = std::get_if<std::string>(&dest)) {
+        if (const auto* srcText = std::get_if<std::string>(&src)) {
+            destText->assign(srcText->data(), srcText->size());
+            return;
+        }
+    }
+    dest = src;
+}
+
+[[nodiscard]] auto parsedPropertyValue(entt::entity entity, bool hasTransform, bool present,
+                                       PropertyId property, const PropertyWriteValue& value)
+    -> core::Result<PropertyValue>;
+
+[[nodiscard]] auto storeParsedPropertyValue(PropertyValue& dest, entt::entity entity,
+                                            bool hasTransform, bool present, PropertyId property,
+                                            const PropertyWriteValue& value) -> core::Result<void> {
+    if (property == PropertyId::RenderMaterial) {
+        const auto* material = std::get_if<std::string_view>(&value);
+        if (material == nullptr || material->empty()) {
+            return core::unexpected(
+                core::Error{"runtime.appearance.value_invalid",
+                            "render.material requires a non-empty Material AssetId"});
+        }
+        if (!present) {
+            return core::unexpected(core::Error{"runtime.appearance.binding_missing",
+                                                "Appearance target has no Renderable component"});
+        }
+        if (auto* text = std::get_if<std::string>(&dest)) {
+            text->assign(material->data(), material->size());
+        } else {
+            dest = std::string{*material};
+        }
+        return {};
+    }
+    auto parsed = parsedPropertyValue(entity, hasTransform, present, property, value);
+    if (!parsed) {
+        return core::unexpected(std::move(parsed.error()));
+    }
+    dest = std::move(*parsed);
+    return {};
+}
+
 [[nodiscard]] auto parsedPropertyValue(entt::entity entity, bool hasTransform, bool present,
                                        PropertyId property, const PropertyWriteValue& value)
     -> core::Result<PropertyValue> {
@@ -255,8 +306,13 @@ auto PropertyWriteBuffer::push(PropertyWrite write) -> core::Result<void> {
                                     .withContext("limit", std::to_string(maxWrites_)));
     }
     if (const auto* view = std::get_if<std::string_view>(&write.value)) {
-        ownedStrings_.emplace_back(*view);
-        write.value = std::string_view{ownedStrings_.back()};
+        if (ownedStringCount_ < ownedStrings_.size()) {
+            ownedStrings_[ownedStringCount_] = *view;
+        } else {
+            ownedStrings_.emplace_back(*view);
+        }
+        write.value = std::string_view{ownedStrings_[ownedStringCount_]};
+        ++ownedStringCount_;
     }
     writes_.push_back(std::move(write));
     return {};
@@ -264,7 +320,18 @@ auto PropertyWriteBuffer::push(PropertyWrite write) -> core::Result<void> {
 
 void PropertyWriteBuffer::clear() noexcept {
     writes_.clear();
-    ownedStrings_.clear();
+    ownedStringCount_ = 0;
+}
+
+void PropertyWriteBuffer::reserveOwnedStrings(std::size_t count, std::size_t bytes) {
+    while (ownedStrings_.size() < count) {
+        ownedStrings_.emplace_back();
+    }
+    for (auto& text : ownedStrings_) {
+        if (text.capacity() < bytes) {
+            text.reserve(bytes);
+        }
+    }
 }
 
 auto PropertyWriteBuffer::writes() const noexcept -> std::span<const PropertyWrite> {
@@ -312,7 +379,11 @@ auto PropertyResolver::ensureEntry(entt::entity entity) -> Entry& {
         entries_.begin(), entries_.end(), entity, [](const Entry& candidate, entt::entity target) {
             return entityValue(candidate.entity) < entityValue(target);
         });
-    return *entries_.insert(insert, std::move(entry));
+    auto& inserted = *entries_.insert(insert, std::move(entry));
+    touchedEntries_.reserve(entries_.size());
+    committedEntries_.reserve(entries_.size());
+    thisCommit_.reserve(entries_.size());
+    return inserted;
 }
 
 auto PropertyResolver::capture(const World& world) -> core::Result<PropertyResolver> {
@@ -343,6 +414,9 @@ auto PropertyResolver::capture(const World& world) -> core::Result<PropertyResol
                   [](const Entry& left, const Entry& right) {
                       return entityValue(left.entity) < entityValue(right.entity);
                   });
+        resolver.touchedEntries_.reserve(resolver.entries_.size());
+        resolver.committedEntries_.reserve(resolver.entries_.size());
+        resolver.thisCommit_.reserve(resolver.entries_.size());
         return resolver;
     });
 }
@@ -401,6 +475,32 @@ auto PropertyResolver::applyBaseProperty(entt::entity entity, PropertyId propert
     return {};
 }
 
+void PropertyResolver::reserveStringCapacity(entt::entity entity, PropertyId property,
+                                             std::size_t bytes) {
+    auto* entry = findEntry(entity);
+    if (entry == nullptr) {
+        return;
+    }
+    auto ensureReserved = [bytes](PropertyValue& value) {
+        if (auto* text = std::get_if<std::string>(&value)) {
+            if (text->capacity() < bytes) {
+                text->reserve(bytes);
+            }
+            return;
+        }
+        std::string text;
+        text.reserve(bytes);
+        value = std::move(text);
+    };
+    auto& state = entry->properties[propertyIndex(property)];
+    ensureReserved(state.baseline);
+    ensureReserved(state.candidate);
+    ensureReserved(state.behavior);
+    ensureReserved(state.animation);
+    ensureReserved(state.host);
+    ensureReserved(state.preview);
+}
+
 void PropertyResolver::resetEntry(Entry& entry) noexcept {
     entry.transformCandidate = entry.transformBaseline;
     entry.transformSeenMask = 0;
@@ -408,11 +508,11 @@ void PropertyResolver::resetEntry(Entry& entry) noexcept {
         if (!state.present) {
             continue;
         }
-        state.candidate = state.baseline;
-        state.behavior = {};
-        state.animation = {};
-        state.host = {};
-        state.preview = {};
+        copyStoredValue(state.candidate, state.baseline);
+        resetStoredValue(state.behavior);
+        resetStoredValue(state.animation);
+        resetStoredValue(state.host);
+        resetStoredValue(state.preview);
         state.source = PropertyLayer::Initial;
         state.seenLayers = 0;
         state.conflict = false;
@@ -436,29 +536,28 @@ auto PropertyResolver::validateAndStore(Entry& entry, PropertyId property,
                                         const PropertyWriteValue& value, PropertyLayer layer)
     -> core::Result<void> {
     auto& state = entry.properties[propertyIndex(property)];
-    auto parsed =
-        parsedPropertyValue(entry.entity, entry.hasTransform, state.present, property, value);
-    if (!parsed) {
-        return core::unexpected(std::move(parsed.error()));
+    auto stored = storeParsedPropertyValue(state.candidate, entry.entity, entry.hasTransform,
+                                           state.present, property, value);
+    if (!stored) {
+        return core::unexpected(std::move(stored.error()));
     }
     if (isTransformProperty(property) && entry.hasTransform) {
-        assignTransform(entry.transformCandidate, property, *parsed);
+        assignTransform(entry.transformCandidate, property, state.candidate);
     }
-    state.candidate = std::move(*parsed);
     state.present = true;
     state.source = layer;
     switch (layer) {
     case PropertyLayer::Behavior:
-        state.behavior = state.candidate;
+        copyStoredValue(state.behavior, state.candidate);
         break;
     case PropertyLayer::Animation:
-        state.animation = state.candidate;
+        copyStoredValue(state.animation, state.candidate);
         break;
     case PropertyLayer::HostOverride:
-        state.host = state.candidate;
+        copyStoredValue(state.host, state.candidate);
         break;
     case PropertyLayer::StudioPreviewOverride:
-        state.preview = state.candidate;
+        copyStoredValue(state.preview, state.candidate);
         break;
     case PropertyLayer::Initial:
         break;
@@ -526,7 +625,7 @@ void PropertyResolver::markTouched(std::size_t entryIndex) {
 
 void PropertyResolver::collectCommitEntries() {
     thisCommit_.clear();
-    thisCommit_.reserve(committedEntries_.size() + touchedEntries_.size());
+    thisCommit_.reserve(entries_.size());
     thisCommit_.insert(thisCommit_.end(), committedEntries_.begin(), committedEntries_.end());
     thisCommit_.insert(thisCommit_.end(), touchedEntries_.begin(), touchedEntries_.end());
     std::sort(thisCommit_.begin(), thisCommit_.end());
@@ -714,6 +813,19 @@ void PropertyResolver::rollback(World& world) noexcept {
     committed_ = false;
 }
 
+auto PropertyResolver::resolvedValuePtr(entt::entity entity, PropertyId property) const noexcept
+    -> const PropertyValue* {
+    const auto* entry = findEntry(entity);
+    if (entry == nullptr) {
+        return nullptr;
+    }
+    const auto& state = entry->properties[propertyIndex(property)];
+    if (!state.present) {
+        return nullptr;
+    }
+    return &state.candidate;
+}
+
 auto PropertyResolver::resolvedValue(entt::entity entity, PropertyId property) const noexcept
     -> std::optional<PropertyValue> {
     const auto* entry = findEntry(entity);
@@ -736,11 +848,11 @@ auto PropertyResolver::resolvedValue(entt::entity entity, PropertyId property) c
             break;
         }
     }
-    const auto& state = entry->properties[propertyIndex(property)];
-    if (!state.present) {
+    const auto* value = resolvedValuePtr(entity, property);
+    if (value == nullptr) {
         return std::nullopt;
     }
-    return state.candidate;
+    return *value;
 }
 
 auto PropertyResolver::baselineValue(entt::entity entity, PropertyId property) const noexcept

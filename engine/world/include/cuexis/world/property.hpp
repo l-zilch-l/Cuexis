@@ -14,6 +14,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <deque>
+#include <limits>
 #include <optional>
 #include <span>
 #include <string>
@@ -27,6 +28,21 @@ class World;
 
 inline constexpr std::size_t maxPropertyWritesPerFrame = 600000;
 inline constexpr std::size_t propertyCount = 10;
+
+[[nodiscard]] constexpr auto requiredAnimationWrites(std::size_t objectCount) noexcept
+    -> std::optional<std::size_t> {
+    if (propertyCount != 0 &&
+        objectCount > (std::numeric_limits<std::size_t>::max() / propertyCount)) {
+        return std::nullopt;
+    }
+    return objectCount * propertyCount;
+}
+
+[[nodiscard]] constexpr auto animationWriteBudgetFits(std::size_t objectCount,
+                                                      std::size_t maxWrites) noexcept -> bool {
+    const auto required = requiredAnimationWrites(objectCount);
+    return required.has_value() && *required <= maxWrites;
+}
 
 enum class PropertyId : std::uint8_t {
     TransformPositionX,
@@ -121,6 +137,7 @@ class PropertyWriteBuffer final {
 
     [[nodiscard]] auto push(PropertyWrite write) -> core::Result<void>;
     void clear() noexcept;
+    void reserveOwnedStrings(std::size_t count, std::size_t bytes);
 
     [[nodiscard]] auto writes() const noexcept -> std::span<const PropertyWrite>;
     [[nodiscard]] auto size() const noexcept -> std::size_t;
@@ -128,6 +145,7 @@ class PropertyWriteBuffer final {
 
   private:
     std::size_t maxWrites_{};
+    std::size_t ownedStringCount_{};
     std::deque<std::string> ownedStrings_;
     std::vector<PropertyWrite> writes_;
 };
@@ -144,6 +162,7 @@ class PropertyResolver final {
     // to re-evaluate from that new baseline. The property must already have a baseline.
     [[nodiscard]] auto applyBaseProperty(entt::entity entity, PropertyId property,
                                          PropertyValue value) -> core::Result<void>;
+    void reserveStringCapacity(entt::entity entity, PropertyId property, std::size_t bytes);
 
     void beginFrame();
     [[nodiscard]] auto applyLayer(std::span<const PropertyWrite> writes, PropertyLayer layer,
@@ -157,6 +176,8 @@ class PropertyResolver final {
 
     [[nodiscard]] auto resolvedValue(entt::entity entity, PropertyId property) const noexcept
         -> std::optional<PropertyValue>;
+    [[nodiscard]] auto resolvedValuePtr(entt::entity entity, PropertyId property) const noexcept
+        -> const PropertyValue*;
     [[nodiscard]] auto baselineValue(entt::entity entity, PropertyId property) const noexcept
         -> std::optional<PropertyValue>;
     [[nodiscard]] auto layerValue(entt::entity entity, PropertyId property,

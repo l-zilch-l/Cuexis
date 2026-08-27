@@ -9,7 +9,7 @@
 
 ## 当前阶段
 
-Stage Chart Format Update 已完成；当前下一阶段是 **Stage 4**，已解锁但尚未开始。S4-A、S4-B、S4-C 与 S4-D 本地门禁已通过，
+Stage Chart Format Update 已完成；当前下一阶段是 **Stage 4**，已解锁但尚未开始。S4-A、S4-B、S4-C、S4-D、S4-E、S4-F 与 S4-G 本地门禁已通过，
 不使用数字别名。
 
 ```text

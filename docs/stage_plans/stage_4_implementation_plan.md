@@ -1,6 +1,6 @@
 # Stage 4 Implementation Plan: Cuexis Presentation Animation
 
-状态：future；S4-A、S4-B、S4-C 与 S4-D 本地门禁已通过，Stage Chart Format Update 已关闭并已解锁；整体仍为 unblocked / not started
+状态：future；S4-A、S4-B、S4-C、S4-D、S4-E、S4-F 与 S4-G 本地门禁已通过，Stage Chart Format Update 已关闭并已解锁；整体仍为 unblocked / not started
 
 更新日期：2026-08-27
 
@@ -224,6 +224,12 @@ Playback capability 与非空动画拒绝路径未改。证据见
 退出门禁：opt-in capability 下，`chart_v4_animation.json`、CXT Binding 和 template animator 可
 prepare/commit/update/extract；失败 reload 保持 active 状态。默认 Session 仍拒绝非空动画。
 
+实施快照（2026-08-27）：Playback prepare 在 capability preflight 之后编译 owning
+`AnimationProgram`，并把它交给 candidate RuntimeSession。commit 原子替换 active Runtime；失败
+prepare/reload 不改变 identity、frame 或 animation state。空 program 继续静态 v4 路径。默认
+`allCapabilities()` 仍不含 animation capability。证据见
+[S4-E 报告](../stage_reports/260827-stage-4-s4-e-playback-ownership.md)。
+
 ### 7.6 S4-F：consumer、确定性与公开 capability
 
 只有 S4-B 到 S4-E 的求值、事务和 FrameSnapshot 观察通过后，才能把下列常量加入默认支持集合：
@@ -247,6 +253,14 @@ cuexis.animation.layers.v1
 
 退出门禁：默认 Session 接受非空合法动画；缺少 animation capability 的显式裁剪 Session 仍稳定拒绝。
 
+实施快照（2026-08-27）：公开头增加 `capabilityAnimationClipV1` / `capabilityAnimationLayersV1`，
+并写入默认 `allCapabilities()`。默认 Session 接受合法非空动画；显式裁剪 Session 仍以
+`playback.capability.unsupported` 拒绝。filesystem / CXC file / CXC memory / typed
+project-document 对同一 CXT 输入输出相同 `PreparedSemanticIdentity` 与 FrameDigest v3。
+CFU-F1/F2 失败 reload 改用裁剪 capability，以保持 CFU-F3 diagnostic golden。FrameDigest 保持
+v3，SDK API 保持 `0.6.0`。证据见
+[S4-F 报告](../stage_reports/260827-stage-4-s4-f-consumer-capability.md)。
+
 ### 7.7 S4-G：安全、分配与性能
 
 任务：
@@ -260,6 +274,13 @@ cuexis.animation.layers.v1
 4. 诊断到达容量后停止接收，并用 sentinel 替换最后一项；运行期错误不得伪造 JSON field path。
 
 退出门禁：allocation/limit 测试、sanitizer 和既有 architecture/package 门禁通过。
+
+实施快照（2026-08-27）：compiler 按 ChartLimits 与每帧 600,000 write 上限拒绝越界 program；诊断满容量后
+以 `animation.diagnostics.limit_exceeded` sentinel 截断，field path 使用 clip 路径或
+`$/animationProgram`。空 Chart v1–v4 与 Stage 2/3 warmed 热路径保持零新增分配；非空 CXT 冻结为
+连续两窗口 `second <= first` 的有界合同。F4 风格探针默认跳过，`CUEXIS_RUN_PERFORMANCE_PROBE=1`
+记录趋势、不设机器硬阈值。Linux sanitizer 留在 S4-H。证据见
+[S4-G 报告](../stage_reports/260827-stage-4-s4-g-safety-allocation.md)。
 
 ### 7.8 S4-H：hosted 验收与关闭
 

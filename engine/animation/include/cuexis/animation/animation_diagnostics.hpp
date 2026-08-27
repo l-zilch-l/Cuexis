@@ -14,6 +14,8 @@ inline constexpr std::string_view diagnosticIdentityDuplicate =
 inline constexpr std::string_view diagnosticClipMissing = "animation.compile.clip_missing";
 inline constexpr std::string_view diagnosticClipIdLookupForbidden =
     "animation.compile.clip_id_lookup_forbidden";
+inline constexpr std::string_view diagnosticGeneratedLimit = "animation.compile.generated_limit";
+inline constexpr std::string_view diagnosticWriteLimit = "animation.compile.write_limit";
 inline constexpr std::string_view diagnosticLimitExceeded = "animation.diagnostics.limit_exceeded";
 
 inline constexpr std::string_view sampleClipMissing = "animation.sample.clip_missing";

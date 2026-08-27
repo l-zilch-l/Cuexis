@@ -67,7 +67,7 @@ SHA `4371fdcf04f4f89bfddf070cbb15e4c903810a53` 的 hosted Linux/MSVC/MinGW 验�
 全部通过，G3 hosted 与 G4 已完成。G5 completion report SHA
 `6e52677be2f27f83d0b709619be7ffcc141d6f95` 的 hosted revalidation 也已全部通过；项目所有者已于
 2026-08-24 明确接受报告，CFU-G 与 Stage Chart Format Update 已关闭。Stage 4 已解锁但尚未开始。
-S4-A、S4-B、S4-C 与 S4-D 本地门禁已通过。
+S4-A、S4-B、S4-C、S4-D、S4-E、S4-F 与 S4-G 本地门禁已通过。
 
 格式权威入口：[formats/README.md](formats/README.md)。
 

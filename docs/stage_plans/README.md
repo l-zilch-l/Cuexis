@@ -17,7 +17,7 @@
 | [Stage 2](stage_2_implementation_plan.md) | completed | Chart v3、TimingMap、Behavior Event |
 | [Stage 3](stage_3_implementation_plan.md) | completed | Portable Presentation 与渲染 adapter |
 | [Stage Chart Format Update](stage_chart_format_update_implementation_plan.md) | completed | C0–C4 complete；CFU-D/CFU-E/CFU-F/G 已关闭；G6 owner acceptance recorded 2026-08-24 |
-| [Stage 4](stage_4_implementation_plan.md) | future, unblocked | Cuexis 表现动画；S4-A/S4-B/S4-C/S4-D 本地门禁已通过，S4-E 至 S4-H 未开始 |
+| [Stage 4](stage_4_implementation_plan.md) | future, unblocked | Cuexis 表现动画；S4-A/S4-B/S4-C/S4-D/S4-E/S4-F/S4-G 本地门禁已通过，S4-H 未开始 |
 | [Stage 5](stage_5_implementation_plan.md) | future | Material、Shader 与能力 Profile |
 | [Stage 6](stage_6_implementation_plan.md) | future | Playback C++ API 与独立 Player 产品化 |
 | [Stage 7](stage_7_implementation_plan.md) | future | Cuexis Studio 核心 |

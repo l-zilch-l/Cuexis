@@ -35,8 +35,8 @@ ChartParameter、Template Binding 或 Animator；Animation Mixing 不重新定�
 
 ## 生产与实施边界
 
-Playback 继续保留 `cuexis.chart` v1/v2/v3 生产路径，并已能 prepare 静态/参数化 v4；非空动画仍在
-Stage 4 前稳定拒绝。CFU-C1/C2 已提供 CXC manifest、Chart v4 和 CXT 的生产 Schema、内部 typed
+Playback 继续保留 `cuexis.chart` v1/v2/v3 生产路径，并已能 prepare 静态/参数化 v4。S4-F 已把
+animation capability 加入默认 Playback 集合；S4-G 已关闭本地安全、分配与性能门禁。Stage 4 整体仍为 unblocked / not started。CFU-C1/C2 已提供 CXC manifest、Chart v4 和 CXT 的生产 Schema、内部 typed
 source Reader、Chart/CXT canonical Writer、参数解析/identity、CXT import 与 deterministic
 lowering。CFU-C3 已提供内部 strict ZIP32 archive/package、owning file/memory loader、
 package-backed Asset ContentProvider 和独立 project-document table；CFU-C4 已提供

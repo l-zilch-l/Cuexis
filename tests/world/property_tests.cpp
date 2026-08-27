@@ -94,6 +94,21 @@ TEST_CASE("Transform resolver validates all writes before commit", "[world][prop
     CHECK(transform.rotation == Quat{});
 }
 
+TEST_CASE("Animation write budget multiply is overflow-safe", "[world][property][limits][s4-g]") {
+    CHECK(cuexis::world::requiredAnimationWrites(0) == 0);
+    CHECK(cuexis::world::requiredAnimationWrites(1) == cuexis::world::propertyCount);
+    CHECK(cuexis::world::requiredAnimationWrites(60000) ==
+          cuexis::world::maxPropertyWritesPerFrame);
+    CHECK(cuexis::world::animationWriteBudgetFits(60000, cuexis::world::maxPropertyWritesPerFrame));
+    CHECK_FALSE(
+        cuexis::world::animationWriteBudgetFits(60001, cuexis::world::maxPropertyWritesPerFrame));
+    const auto overflowCount =
+        (std::numeric_limits<std::size_t>::max() / cuexis::world::propertyCount) + 1;
+    CHECK_FALSE(cuexis::world::requiredAnimationWrites(overflowCount).has_value());
+    CHECK_FALSE(cuexis::world::animationWriteBudgetFits(overflowCount,
+                                                        cuexis::world::maxPropertyWritesPerFrame));
+}
+
 TEST_CASE("PropertyWriteBuffer enforces its configured budget", "[world][property][limits]") {
     cuexis::world::PropertyWriteBuffer writes{1};
     REQUIRE(writes.push(PropertyWrite{entt::entity{1}, PropertyId::TransformPositionX, 1.0})

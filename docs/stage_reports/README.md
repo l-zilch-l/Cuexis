@@ -56,4 +56,7 @@
 | [260825 Stage 4 S4-B absolute sampling](260825-stage-4-s4-b-absolute-sampling.md) | S4-B local checkpoint: seekable local Beat sampling, fill/iterations, continuous/step tracks; nonempty animation Playback still rejected |
 | [260826 Stage 4 S4-C layer mixing](260826-stage-4-s4-c-layer-mixing.md) | S4-C local checkpoint: Override/Additive Layer mixing into PropertyWriteBuffer; nonempty animation Playback still rejected |
 | [260827 Stage 4 S4-D PropertyResolver](260827-stage-4-s4-d-property-resolver.md) | S4-D local checkpoint: unified PropertyResolver, OverrideToken, BasePropertyCommand and Runtime orchestration; nonempty animation Playback still rejected |
+| [260827 Stage 4 S4-E Playback ownership](260827-stage-4-s4-e-playback-ownership.md) | S4-E local checkpoint: Playback compile/own/commit of animation state under opt-in capability; default Session still rejects nonempty animation |
+| [260827 Stage 4 S4-F consumer capability](260827-stage-4-s4-f-consumer-capability.md) | S4-F local checkpoint: public animation capability constants in default `allCapabilities()`; consumer/FrameDigest v3 parity; trimmed Session still rejects |
+| [260827 Stage 4 S4-G safety allocation](260827-stage-4-s4-g-safety-allocation.md) | S4-G local checkpoint: ChartLimits/write budget, warmed zero or bounded allocation, F4-style performance probe; Stage 4 still unblocked / not started |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |

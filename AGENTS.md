@@ -51,9 +51,9 @@ Stage 4 typed handoff are complete. G3 local candidate gates passed on August 19
 `4371fdcf04f4f89bfddf070cbb15e4c903810a53` passed same-SHA hosted Linux Quality, Windows MSVC,
 and Windows MinGW validation on August 24, 2026; G3 hosted validation and G4 are complete.
 G5 report-SHA hosted revalidation passed and G6 owner acceptance is recorded. Stage Chart Format
-Update is complete; Stage 4 is unblocked / not started. S4-A, S4-B, S4-C and S4-D local gates have passed.**
+Update is complete; Stage 4 is unblocked / not started. S4-A, S4-B, S4-C, S4-D, S4-E, S4-F and S4-G local gates have passed.**
 This checkpoint must not be described as complete CXC, a public package API, complete v4 animation
-Playback, or complete v4 animation execution. Stage 4 implementation has started at S4-A, S4-B, S4-C and S4-D only.
+Playback, or complete v4 animation execution. Stage 4 implementation has started at S4-A, S4-B, S4-C, S4-D, S4-E, S4-F and S4-G only.
 Stage 4 must consume
 typed data produced by the format stage and must not parse JSON/CXC/CXT in `engine/animation/`.
 Runtime scripts and per-frame script callbacks are deferred indefinitely. No scheduled stage,
