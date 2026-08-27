@@ -50,6 +50,7 @@ target_link_libraries(cuexis_playback
         cuexis::content
         cuexis::core
     PRIVATE
+        cuexis::animation
         cuexis::assets
         cuexis::chart
         cuexis::cxc

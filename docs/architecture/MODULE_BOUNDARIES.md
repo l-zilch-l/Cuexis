@@ -2,7 +2,7 @@
 
 状态：现行模块边界摘要
 
-更新日期：2026-08-12
+更新日期：2026-08-27
 
 本文总结稳定依赖方向。构建时的精确 allowlist 和 architecture tests 仍由根 CMake 配置拥有。
 
@@ -15,9 +15,10 @@
 | `cuexis_project` | ProjectConfig、路径和项目准备 | World、Render、Audio backend |
 | `cuexis_assets` | AssetDatabase、ResourceManager、Handle/Lease/Scope | OpenGL、Chart JSON |
 | `cuexis_chart` | Chart/CXT typed model、校验、迁移和编译 | EnTT、World、SDL、OpenGL |
+| `cuexis_animation` | typed `AnimationProgramInput` compile、绝对局部 Beat 采样与 Layer 混合 | JSON、CXC、CXT 解析、SDL、OpenGL、Playback 公共头 |
 | `cuexis_behavior` | Behavior 数据和采样 | SDL、OpenGL、JSON |
-| `cuexis_world` | EnTT World、Entity 和空间组件 | Chart 文档、SDL、OpenGL |
-| `cuexis_runtime` | RuntimeSession、实例化和系统编排 | SDL、OpenGL、Audio backend |
+| `cuexis_world` | EnTT World、Entity、统一 PropertyResolver 与 OverrideToken | Chart 文档、SDL、OpenGL |
+| `cuexis_runtime` | RuntimeSession、Behavior/Animation 编排、Override 与 BasePropertyCommand | SDL、OpenGL、Audio backend |
 | `cuexis_render` | 后端无关表现值和提取 | OpenGL calls |
 | `cuexis_render_opengl` | OpenGL adapter | Playback 公共门面反向依赖 |
 | `cuexis_audio` | 后端无关 Transport/Clock | SDL |
@@ -29,6 +30,7 @@
 ```text
 Chart -> typed data only
 World -> runtime entity state only
+Animation -> consumes AnimationProgramInput after Chart resolve
 Runtime -> composes Chart + World + front-end systems
 Playback -> public facade over internal Runtime and resources
 Adapters -> consume public/portable values
@@ -49,6 +51,7 @@ Stage Chart Format Update 可以在 Chart/Playback prepare 边界解析和 lower
 
 ```text
 engine/animation does not parse JSON/CXC/CXT
+engine/animation consumes AnimationProgramInput, not ChartV4SourceDocument
 CXC archive library types do not enter public Playback headers
 format handlers do not create World/EnTT entities
 pack and prepare do not execute scripts

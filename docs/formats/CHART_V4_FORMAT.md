@@ -2,9 +2,9 @@
 
 状态：accepted contract；CFU-C Reader/Writer/lowering、CFU-D migration/equivalence 与 CFU-E
 prepare/identity 已实现或关闭；CFU-F consumer/determinism/safety gates 已关闭；G3 hosted、G4、
-G5 report-SHA hosted revalidation 与 G6 owner acceptance 已完成；非空动画执行仍属于 Stage 4
+G5 report-SHA hosted revalidation 与 G6 owner acceptance 已完成；非空动画执行已由 Stage 4 关闭
 
-更新日期：2026-08-24
+更新日期：2026-08-27
 
 依据：[ADR 0038](../adr/0038-cxc-v1-and-chart-v4-boundary.md)
 
@@ -525,7 +525,8 @@ cuexis.animation.layers.v1
 空 parameters/imports/animation 的 v4 只要求 `cuexis.chart.v4`。存在 CXT import 时还要求
 `cuexis.source.cxt.v1`。任意非空 CXT import、AnimationClip、Template Binding、Layer 或 Instance
 还要求两个 animation capability；即使定义未绑定或 weight 为 0，也不得根据当前使用状态省略。
-Stage 4 未实现时，这类内容必须以 `playback.capability.unsupported` 稳定失败，不能忽略动画。
+默认 Playback Session 在 Stage 4 关闭后求值这类内容。缺少 animation capability 的显式裁剪
+Session 仍必须以 `playback.capability.unsupported` 稳定失败，不能忽略动画。
 
 空 `cuexis.animator` inert，不额外要求 animation capability。Chart v4 不改变 FrameSnapshot 字段；
 现有 FrameDigest v3 已包含所有会被 v1 动画修改的公开表现值，因此本阶段不升级 digest 版本。

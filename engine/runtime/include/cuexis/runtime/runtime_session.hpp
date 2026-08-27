@@ -26,9 +26,15 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <span>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+namespace cuexis::animation {
+class AnimationProgram;
+}
 
 namespace cuexis::runtime {
 
@@ -39,6 +45,14 @@ struct RuntimeDebugOptions final {
     std::size_t capacity{};
 };
 
+struct RuntimeDebugAnimationLayer final {
+    std::string identity;
+    std::int64_t priority{};
+    double weight{};
+    std::vector<std::string> mask;
+    world::PropertyValue value{};
+};
+
 struct RuntimeDebugRecord final {
     chart::ChartObjectId objectId;
     world::PropertyId property{};
@@ -46,7 +60,25 @@ struct RuntimeDebugRecord final {
     std::optional<std::size_t> eventIndex;
     double normalizedProgress{};
     world::PropertyValue behaviorValue{};
+    world::PropertyValue animationValue{};
+    world::PropertyValue hostOverrideValue{};
+    world::PropertyValue previewOverrideValue{};
     world::PropertyValue finalValue{};
+    std::optional<world::PropertyLayer> sourceLayer{};
+    bool conflict{};
+    std::vector<RuntimeDebugAnimationLayer> animationLayers;
+};
+
+struct PropertyOverrideWrite final {
+    chart::ChartObjectId objectId;
+    world::PropertyId property{};
+    world::PropertyValue value{};
+};
+
+struct BasePropertyCommand final {
+    chart::ChartObjectId objectId;
+    world::PropertyId property{};
+    world::PropertyValue value{};
 };
 
 struct RuntimeDebugSnapshot final {
@@ -144,6 +176,9 @@ class RuntimeSession final {
 
     [[nodiscard]] auto prepare(chart::ChartRuntime chartRuntime) const
         -> PreparedRuntimeSessionResult;
+    [[nodiscard]] auto prepare(chart::ChartRuntime chartRuntime,
+                               animation::AnimationProgram&& animation) const
+        -> PreparedRuntimeSessionResult;
     [[nodiscard]] auto commit(PreparedRuntimeSession&& prepared) -> core::Result<void>;
     [[nodiscard]] auto reload(chart::ChartRuntime replacement) -> RuntimeSessionReloadResult;
     [[nodiscard]] auto reload(chart::ChartRuntime replacement, const RuntimeFrame& targetFrame,
@@ -152,6 +187,17 @@ class RuntimeSession final {
     [[nodiscard]] auto unload() -> core::Result<void>;
     [[nodiscard]] auto configureDebug(RuntimeDebugOptions options) -> core::Result<void>;
     [[nodiscard]] auto debugSnapshot() const -> core::Result<RuntimeDebugSnapshot>;
+    [[nodiscard]] auto acquireOverride(world::OverrideKind kind, std::string ownerId,
+                                       std::int64_t priority, std::uint16_t propertyMask,
+                                       world::OverrideLifetime lifetime,
+                                       std::span<const PropertyOverrideWrite> writes)
+        -> core::Result<world::OverrideTokenId>;
+    [[nodiscard]] auto releaseOverride(world::OverrideTokenId id) -> core::Result<void>;
+    [[nodiscard]] auto applyBaseProperty(const chart::ChartObjectId& objectId,
+                                         world::PropertyId property, world::PropertyValue value)
+        -> core::Result<void>;
+    [[nodiscard]] auto applyBaseProperty(const BasePropertyCommand& command) -> core::Result<void>;
+    [[nodiscard]] auto baseRevision() const noexcept -> std::uint64_t;
 
     [[nodiscard]] auto empty() const noexcept -> bool;
     [[nodiscard]] auto objectCount() const noexcept -> std::size_t;

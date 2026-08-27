@@ -2,14 +2,15 @@
 
 状态：现行路线图
 
-更新日期：2026-08-24
+更新日期：2026-08-27
 
 产品边界由 [ADR 0027](adr/0027-playback-sdk-product-boundary.md) 冻结。本文只维护阶段顺序和当前
 交接，不复制阶段实施细节或完成证据。
 
 ## 当前阶段
 
-Stage Chart Format Update 已完成；当前下一阶段是 **Stage 4**，已解锁但尚未开始，不使用数字别名。
+Stage 4 已完成；当前下一阶段是 **Stage 5**，已解锁但尚未开始。Stage Chart Format Update
+已完成，不使用数字别名。
 
 ```text
 CFU-A inventory and use cases                       completed
@@ -35,13 +36,13 @@ CFU-G final closure                                 completed; G6 owner acceptan
 | Stage 1E | C++ static/shared preview、安装与 consumer | [报告](stage_reports/stage_1e_completion_report.md) |
 | Stage 2 | Chart v3、TimingMap、Behavior/Step Event | [报告](stage_reports/stage_2_completion_report.md) |
 | Stage 3 | Portable Presentation、Validation、OpenGL adapter | [报告](stage_reports/stage_3_completion_report.md) |
+| Stage 4 | Cuexis 表现动画运行时 | [报告](stage_reports/stage_4_completion_report.md) |
 
 ## 后续阶段
 
 | 阶段 | 目标 | 前置条件 |
 | --- | --- | --- |
-| [Stage 4](stage_plans/stage_4_implementation_plan.md) | Cuexis 表现动画运行时 | Chart Format Update 全部门禁关闭；当前已解锁但未开始 |
-| [Stage 5](stage_plans/stage_5_implementation_plan.md) | Material/Shader 管线和能力 Profile | Stage 4 稳定表现输入 |
+| [Stage 5](stage_plans/stage_5_implementation_plan.md) | Material/Shader 管线和能力 Profile | Stage 4 已关闭；当前已解锁但未开始 |
 | [Stage 6](stage_plans/stage_6_implementation_plan.md) | Playback C++ API 与 Player 产品化 | 真实 consumer 和配置组合证据 |
 | [Stage 7](stage_plans/stage_7_implementation_plan.md) | Cuexis Studio 核心 | 稳定 Playback/格式/预览路径 |
 | [Stage 8](stage_plans/stage_8_implementation_plan.md) | 可选确定性粒子表现 | Studio、Material/Shader 基础 |

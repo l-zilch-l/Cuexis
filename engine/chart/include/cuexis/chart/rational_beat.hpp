@@ -41,7 +41,22 @@ class RationalBeat final {
 
 [[nodiscard]] auto addRationalBeats(const RationalBeat& left, const RationalBeat& right)
     -> core::Result<RationalBeat>;
+[[nodiscard]] auto subtractRationalBeats(const RationalBeat& left, const RationalBeat& right)
+    -> core::Result<RationalBeat>;
+[[nodiscard]] auto multiplyRationalBeats(const RationalBeat& left, const RationalBeat& right)
+    -> core::Result<RationalBeat>;
+[[nodiscard]] auto divideRationalBeats(const RationalBeat& left, const RationalBeat& right)
+    -> core::Result<RationalBeat>;
+[[nodiscard]] auto floorRationalBeats(const RationalBeat& value) -> core::Result<std::int64_t>;
 [[nodiscard]] auto rationalBeatMidpoint(const RationalBeat& left, const RationalBeat& right)
+    -> core::Result<RationalBeat>;
+
+// Approximate a TimingMap double Beat as a reduced RationalBeat. Runtime uses this so
+// AnimationSystem can sample from an explicit rational local time without reading TimingMap.
+inline constexpr std::int64_t defaultBeatApproximationDenominator = 1000000;
+[[nodiscard]] auto
+approximateRationalBeat(double beat,
+                        std::int64_t maxDenominator = defaultBeatApproximationDenominator)
     -> core::Result<RationalBeat>;
 
 } // namespace cuexis::chart

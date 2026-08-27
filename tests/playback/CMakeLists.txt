@@ -5,6 +5,7 @@ add_executable(cuexis_playback_tests
     playback_migration_equivalence_tests.cpp
     playback_session_tests.cpp
     playback_source_tests.cpp
+    playback_v4_animation_tests.cpp
     playback_v4_prepare_tests.cpp
     presentation_tests.cpp
     runtime_timeline_tests.cpp

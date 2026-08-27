@@ -57,6 +57,19 @@ function(cuexis_verify_source_architecture source_dir)
         endif()
     endforeach()
 
+    file(GLOB_RECURSE animation_sources
+        "${source_dir}/engine/animation/*.cpp"
+        "${source_dir}/engine/animation/*.hpp"
+    )
+    foreach(source IN LISTS animation_sources)
+        file(READ "${source}" contents)
+        if(contents MATCHES
+           "#[ \t]*include[ \t]*[<\"](nlohmann/|minizip|SDL|glad|GL/|cuexis/cxc/|cuexis/playback/|cuexis/audio_sdl/|cuexis/platform_sdl/|cuexis/render_opengl/|cuexis/json_support/|cuexis/chart/animation_template_document.hpp|cuexis/chart/chart_v4_loader.hpp|cuexis/chart/chart_v4_resolver.hpp)")
+            message(FATAL_ERROR
+                "Animation includes JSON, CXC, CXT source, Playback, adapter or resolver headers: ${source}")
+        endif()
+    endforeach()
+
     file(GLOB_RECURSE runtime_sources
         "${source_dir}/engine/runtime/*.cpp"
         "${source_dir}/engine/runtime/*.hpp"

@@ -92,6 +92,19 @@ static_assert(std::variant_size_v<cuexis::playback::ChartParameterValue> == 3);
     });
 }
 
+[[nodiscard]] auto trimmedCapabilities() -> cuexis::playback::PlaybackCapabilitySet {
+    return {
+        .version = 1,
+        .ids = {std::string{cuexis::playback::capabilityBehaviorEventV1},
+                std::string{cuexis::playback::capabilityChartV3},
+                std::string{cuexis::playback::capabilityChartV4},
+                std::string{cuexis::playback::capabilityMaterialSnapshotV1},
+                std::string{cuexis::playback::capabilityRenderVisibilityV1},
+                std::string{cuexis::playback::capabilitySourceCxcV1},
+                std::string{cuexis::playback::capabilitySourceCxtV1}},
+    };
+}
+
 [[nodiscard]] auto overrideOptions(double x, double scaleY, double fov)
     -> cuexis::playback::PlaybackPrepareOptions {
     return {
@@ -242,7 +255,7 @@ TEST_CASE("Playback preserves parameter tags and reports resolver failures befor
 
 TEST_CASE("Playback converts rational and weight parameters without collapsing their tags",
           "[playback][v4][parameters][cxt][cfu-e2]") {
-    SECTION("valid tagged inputs reach animation capability preflight") {
+    SECTION("valid tagged inputs prepare after public animation capability") {
         auto source = typedCxtSource();
         REQUIRE(source.has_value());
         cuexis::playback::PlaybackSession session;
@@ -251,15 +264,15 @@ TEST_CASE("Playback converts rational and weight parameters without collapsing t
                                        .value = cuexis::playback::ChartParameterRational{2, 2}},
                                       {.id = "motion.weight",
                                        .value = cuexis::playback::ChartParameterWeight{0.5}}}}};
-        const auto result = session.prepareLoad(
-            std::move(*source), cuexis::playback::PlaybackMode::ChartClock, options);
-        REQUIRE_FALSE(result.has_value());
-        CHECK(result.error().code() == "playback.capability.preflight_failed");
-        REQUIRE(session.lastOperationDiagnostics().has_value());
-        CHECK_FALSE(
-            hasDiagnostic(*session.lastOperationDiagnostics(), "chart.parameter.type_mismatch"));
-        CHECK(
-            diagnosticCapability(*session.lastOperationDiagnostics(), "cuexis.animation.clip.v1"));
+        auto prepared = session.prepareLoad(std::move(*source),
+                                            cuexis::playback::PlaybackMode::ChartClock, options);
+        REQUIRE(prepared.has_value());
+        REQUIRE(prepared->semanticIdentity().has_value());
+        REQUIRE(session.commit(std::move(*prepared)).has_value());
+        REQUIRE(session.update({.chartTimeMs = 4250.0}).has_value());
+        auto frame = session.extractFrame({.width = 640, .height = 480});
+        REQUIRE(frame.has_value());
+        REQUIRE_FALSE(frame->objects.empty());
     }
 
     SECTION("rational denominator") {
@@ -305,16 +318,16 @@ TEST_CASE("Playback validates Chart v4 before stable Stage 4 capability rejectio
     CHECK(diagnosticCapability(*noCapabilities.lastOperationDiagnostics(), "cuexis.chart.v4"));
 
     const auto animation = readText(fixture("valid/chart_v4_animation.json"));
-    cuexis::playback::PlaybackSession animationSession;
+    cuexis::playback::PlaybackSession animationSession{trimmedCapabilities()};
     auto animationRejected =
         animationSession.prepareLoad(animation, cuexis::playback::PlaybackMode::ChartClock);
     REQUIRE_FALSE(animationRejected.has_value());
     CHECK(animationRejected.error().code() == "playback.capability.preflight_failed");
     REQUIRE(animationSession.lastOperationDiagnostics().has_value());
     CHECK(diagnosticCapability(*animationSession.lastOperationDiagnostics(),
-                               "cuexis.animation.clip.v1"));
+                               cuexis::playback::capabilityAnimationClipV1));
     CHECK(diagnosticCapability(*animationSession.lastOperationDiagnostics(),
-                               "cuexis.animation.layers.v1"));
+                               cuexis::playback::capabilityAnimationLayersV1));
 
     auto malformed = animation;
     const auto nearPlane = malformed.find("\"near\": 0.1");
@@ -336,13 +349,11 @@ TEST_CASE("Playback resolves owning CXT sources before capability preflight",
         auto source = typedCxtSource();
         REQUIRE(source.has_value());
         cuexis::playback::PlaybackSession session;
-        CHECK_FALSE(
-            session.prepareLoad(std::move(*source), cuexis::playback::PlaybackMode::ChartClock)
-                .has_value());
-        REQUIRE(session.lastOperationDiagnostics().has_value());
-        CHECK_FALSE(hasDiagnostic(*session.lastOperationDiagnostics(), "cxt.import.missing"));
-        CHECK(diagnosticCapability(*session.lastOperationDiagnostics(),
-                                   "cuexis.animation.layers.v1"));
+        auto prepared =
+            session.prepareLoad(std::move(*source), cuexis::playback::PlaybackMode::ChartClock);
+        REQUIRE(prepared.has_value());
+        REQUIRE(prepared->semanticIdentity().has_value());
+        REQUIRE(session.commit(std::move(*prepared)).has_value());
     }
 
     SECTION("filesystem") {
@@ -350,13 +361,24 @@ TEST_CASE("Playback resolves owning CXT sources before capability preflight",
             cuexis::playback::PlaybackSource::fromFilesystemProject(fixture("source_project"));
         REQUIRE(source.has_value());
         cuexis::playback::PlaybackSession session;
+        auto prepared =
+            session.prepareLoad(std::move(*source), cuexis::playback::PlaybackMode::ChartClock);
+        REQUIRE(prepared.has_value());
+        REQUIRE(prepared->semanticIdentity().has_value());
+        REQUIRE(session.commit(std::move(*prepared)).has_value());
+    }
+
+    SECTION("trimmed session still rejects after CXT resolve") {
+        auto source = typedCxtSource();
+        REQUIRE(source.has_value());
+        cuexis::playback::PlaybackSession session{trimmedCapabilities()};
         CHECK_FALSE(
             session.prepareLoad(std::move(*source), cuexis::playback::PlaybackMode::ChartClock)
                 .has_value());
         REQUIRE(session.lastOperationDiagnostics().has_value());
         CHECK_FALSE(hasDiagnostic(*session.lastOperationDiagnostics(), "cxt.import.missing"));
-        CHECK(
-            diagnosticCapability(*session.lastOperationDiagnostics(), "cuexis.animation.clip.v1"));
+        CHECK(diagnosticCapability(*session.lastOperationDiagnostics(),
+                                   cuexis::playback::capabilityAnimationLayersV1));
     }
 
     SECTION("CXC source capability") {

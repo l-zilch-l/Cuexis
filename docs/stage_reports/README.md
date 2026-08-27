@@ -2,7 +2,7 @@
 
 状态：现行阶段报告索引
 
-更新日期：2026-08-24
+更新日期：2026-08-27
 
 报告是带日期的证据快照。报告中的“下一步”只表示报告生成时的交接，不自动代表当前任务。
 
@@ -18,6 +18,7 @@
 | [Stage 1E](stage_1e_completion_report.md) | completed |
 | [Stage 2](stage_2_completion_report.md) | completed |
 | [Stage 3](stage_3_completion_report.md) | completed |
+| [Stage 4](stage_4_completion_report.md) | completed |
 
 ## Review、盘点和历史验证
 
@@ -52,4 +53,13 @@
 | [260820 Chart Format Update CFU-G4 closure readiness](260820-chart-format-update-g4-closure-readiness.md) | historical offline readiness snapshot; superseded for hosted status by the 2026-08-24 verification report |
 | [260824 Chart Format Update CFU-G4 hosted verification](260824-chart-format-update-g4-hosted.md) | historical G4 same-SHA Linux Quality, Windows MSVC and Windows MinGW validation; superseded for final status by the completion report |
 | [Stage Chart Format Update completion report](stage_chart_format_update_completion_report.md) | G5 report-SHA hosted revalidation passed; G6 owner acceptance recorded 2026-08-24; CFU-G closed and Stage 4 unblocked but not started |
+| [260824 Stage 4 S4-A module wiring](260824-stage-4-s4-a-module-wiring.md) | S4-A local checkpoint: STATIC `cuexis_animation`, typed input header, compile contract and diagnostic freeze; nonempty animation Playback still rejected |
+| [260825 Stage 4 S4-B absolute sampling](260825-stage-4-s4-b-absolute-sampling.md) | S4-B local checkpoint: seekable local Beat sampling, fill/iterations, continuous/step tracks; nonempty animation Playback still rejected |
+| [260826 Stage 4 S4-C layer mixing](260826-stage-4-s4-c-layer-mixing.md) | S4-C local checkpoint: Override/Additive Layer mixing into PropertyWriteBuffer; nonempty animation Playback still rejected |
+| [260827 Stage 4 S4-D PropertyResolver](260827-stage-4-s4-d-property-resolver.md) | S4-D local checkpoint: unified PropertyResolver, OverrideToken, BasePropertyCommand and Runtime orchestration; nonempty animation Playback still rejected |
+| [260827 Stage 4 S4-E Playback ownership](260827-stage-4-s4-e-playback-ownership.md) | S4-E local checkpoint: Playback compile/own/commit of animation state under opt-in capability; default Session still rejects nonempty animation |
+| [260827 Stage 4 S4-F consumer capability](260827-stage-4-s4-f-consumer-capability.md) | S4-F local checkpoint: public animation capability constants in default `allCapabilities()`; consumer/FrameDigest v3 parity; trimmed Session still rejects |
+| [260827 Stage 4 S4-G safety allocation](260827-stage-4-s4-g-safety-allocation.md) | S4-G local checkpoint: ChartLimits/write budget, warmed zero or bounded allocation, F4-style performance probe |
+| [260827 Stage 4 S4-H local validation](260827-stage-4-s4-h-local-validation.md) | historical S4-H local Debug/Release snapshot before final SHA publication |
+| [Stage 4 completion report](stage_4_completion_report.md) | S4-H hosted Linux/MSVC/MinGW success on `3df9274`; owner acceptance recorded 2026-08-27; Stage 4 closed and Stage 5 unblocked but not started |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |

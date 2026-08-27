@@ -1,8 +1,8 @@
 # Cuexis Animation Mixing 规范
 
-状态：accepted contract；格式 lowering 由 Stage Chart Format Update 实现，运行时求值仍属于 Stage 4
+状态：accepted contract；格式 lowering 由 Stage Chart Format Update 实现，运行时求值已由 Stage 4 关闭
 
-更新日期：2026-08-11
+更新日期：2026-08-27
 
 Stage Chart Format Update 位于 Stage 3 与阶段 4 之间。它负责冻结 CXC/Chart/CXT 的持久化边界；
 本文只定义运行时求值与混合语义。ChartParameter、Clip、Layer、Binding、Property ID、mask、时间域

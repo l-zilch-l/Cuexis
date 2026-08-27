@@ -83,6 +83,7 @@ file(COPY "${CUEXIS_SOURCE_DIR}/assets/projects/stage3_project" DESTINATION "${f
 file(COPY
     "${CUEXIS_SOURCE_DIR}/tests/fixtures/chart_format_update/cfu_f_reference_project"
     "${CUEXIS_SOURCE_DIR}/tests/fixtures/chart_format_update/parameterized_project"
+    "${CUEXIS_SOURCE_DIR}/tests/fixtures/chart_format_update/source_project"
     DESTINATION "${fixture_dir}")
 file(COPY
     "${CUEXIS_SOURCE_DIR}/tests/fixtures/chart_format_update/golden/cfu_f_v4_reference.cxc"

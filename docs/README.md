@@ -2,7 +2,7 @@
 
 状态：现行文档入口
 
-更新日期：2026-08-24
+更新日期：2026-08-27
 
 本文档是 Cuexis 文档的导航页，不复制产品合同、阶段证据或完整字段定义。当前项目状态只
 以 [CURRENT_STATUS.md](CURRENT_STATUS.md) 为准。
@@ -14,7 +14,7 @@
 3. [产品与模块边界](architecture/README.md)
 4. [ADR 索引](adr/README.md)，先读 ADR 0027、0024、0025、0026、0037 和 0038
 5. [格式索引](formats/README.md)
-6. [Stage Chart Format Update 计划](stage_plans/stage_chart_format_update_implementation_plan.md)
+6. [Stage 5 计划](stage_plans/stage_5_implementation_plan.md)
 7. [指南索引](guides/README.md)
 8. [构建与验证](guides/BUILDING.md)
 
@@ -90,6 +90,8 @@
 ## 阶段、证据和示例
 
 - [阶段计划索引](stage_plans/README.md)
+- [Stage Chart Format Update 计划](stage_plans/stage_chart_format_update_implementation_plan.md)
+- [Stage 4 计划](stage_plans/stage_4_implementation_plan.md)
 - [阶段报告索引](stage_reports/README.md)
 - [候选示例索引](examples/README.md)
 - [历史文档归档](archive/README.md)

@@ -2,7 +2,7 @@
 
 状态：现行格式索引
 
-更新日期：2026-08-24
+更新日期：2026-08-27
 
 ## Artifact 分层
 
@@ -24,10 +24,10 @@ Compiled Runtime
 | ProjectConfig v1 | [ADR 0025](../adr/0025-project-config-v1-and-path-security.md) | implemented |
 | Asset Index v1/v2 | [ADR 0026](../adr/0026-asset-index-and-source-resolution.md) 与 ADR 0031 | implemented |
 | Chart v1/v2/v3 | [CHART_FORMAT.md](CHART_FORMAT.md) | implemented |
-| Chart v4 | [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md) | accepted and implemented; C1–C4, CFU-D/E/F/G gates closed; non-empty animation deferred to Stage 4 |
+| Chart v4 | [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md) | accepted and implemented; C1–C4, CFU-D/E/F/G gates closed; Stage 4 animation runtime closed |
 | CXC v1 | [CXC_FORMAT.md](CXC_FORMAT.md) | accepted and implemented internally; archive/tools and Playback source/prepare/identity gates closed; no public CXC package API |
-| CXT v1 | [CXT_FORMAT.md](CXT_FORMAT.md) | accepted contract; Reader/Writer/lowering and prepare import/lookup implemented; CFU-F and G4 hosted gates closed; animation execution deferred to Stage 4 |
-| Animation Mixing | [ANIMATION_MIXING.md](ANIMATION_MIXING.md) | accepted contract; format-stage gates closed; runtime deferred to Stage 4 |
+| CXT v1 | [CXT_FORMAT.md](CXT_FORMAT.md) | accepted contract; Reader/Writer/lowering and prepare import/lookup implemented; CFU-F and G4 hosted gates closed; Stage 4 animation execution closed |
+| Animation Mixing | [ANIMATION_MIXING.md](ANIMATION_MIXING.md) | accepted contract; format-stage gates closed; Stage 4 runtime closed |
 | Portable Presentation v1 | [PORTABLE_PRESENTATION.md](PORTABLE_PRESENTATION.md) | implemented |
 
 ADR 记录选择理由，格式文档记录字段和语义。CXC 不重新定义 Chart/CXT；CXT 不重新定义
@@ -35,8 +35,9 @@ ChartParameter、Template Binding 或 Animator；Animation Mixing 不重新定�
 
 ## 生产与实施边界
 
-Playback 继续保留 `cuexis.chart` v1/v2/v3 生产路径，并已能 prepare 静态/参数化 v4；非空动画仍在
-Stage 4 前稳定拒绝。CFU-C1/C2 已提供 CXC manifest、Chart v4 和 CXT 的生产 Schema、内部 typed
+Playback 继续保留 `cuexis.chart` v1/v2/v3 生产路径，并已能 prepare 静态/参数化 v4 与求值非空合法
+动画。S4-F 已把 animation capability 加入默认 Playback 集合；S4-G 已关闭本地安全、分配与性能门禁；
+S4-H 已关闭 hosted 验收，Stage 4 已完成。CFU-C1/C2 已提供 CXC manifest、Chart v4 和 CXT 的生产 Schema、内部 typed
 source Reader、Chart/CXT canonical Writer、参数解析/identity、CXT import 与 deterministic
 lowering。CFU-C3 已提供内部 strict ZIP32 archive/package、owning file/memory loader、
 package-backed Asset ContentProvider 和独立 project-document table；CFU-C4 已提供

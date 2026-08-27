@@ -20,7 +20,6 @@ DOCS = ROOT / "docs"
 DOCS_INDEX = DOCS / "README.md"
 EXAMPLES = DOCS / "examples" / "chart_format_update"
 FUTURE_STAGE_PLANS = (
-    "stage_4_implementation_plan.md",
     "stage_5_implementation_plan.md",
     "stage_6_implementation_plan.md",
     "stage_7_implementation_plan.md",
@@ -177,7 +176,8 @@ def check_cfu_status(failures: list[CheckFailure]) -> None:
             "G5 report-SHA hosted revalidation passed",
             "G6 owner acceptance is recorded",
             "Stage Chart Format Update is complete",
-            "Stage 4 is unblocked / not started",
+            "Stage 4 is complete",
+            "Stage 5 is unblocked / not started",
         ),
         DOCS / "CURRENT_STATUS.md": (
             "G3 hosted 门禁与 G4 已完成",
@@ -188,11 +188,12 @@ def check_cfu_status(failures: list[CheckFailure]) -> None:
             "hosted revalidation 均已通过",
             "CFU-G 与 Stage Chart Format Update 已关闭",
             "CFU-G6 已于 2026-08-24 完成",
-            "Stage 4 已解锁但尚未开始",
+            "Stage 4 已完成",
+            "Stage 5 已解锁但尚未开始",
         ),
         DOCS / "ROADMAP.md": (
             "CFU-F consumers and determinism closed; final-SHA hosted gates passed 2026-08-16",
-            "Stage Chart Format Update 已完成；当前下一阶段是 **Stage 4**",
+            "Stage 4 已完成；当前下一阶段是 **Stage 5**",
             "CFU-G final closure                                 completed; G6 owner acceptance recorded 2026-08-24",
         ),
         DOCS / "PROJECT_GUIDE.md": (
@@ -203,7 +204,8 @@ def check_cfu_status(failures: list[CheckFailure]) -> None:
             "G3 hosted 与 G4 已完成",
             "G5 completion report SHA",
             "CFU-G 与 Stage Chart Format Update 已关闭",
-            "Stage 4 已解锁但尚未开始",
+            "Stage 4 已完成",
+            "Stage 5 已解锁但尚未开始",
         ),
         DOCS / "formats" / "README.md": (
             "CFU-G hosted 验证、completion report 和 owner acceptance 已完成",
@@ -247,6 +249,7 @@ def check_cfu_status(failures: list[CheckFailure]) -> None:
             "260824 Chart Format Update CFU-G4 hosted verification",
             "Stage Chart Format Update completion report",
             "G6 owner acceptance recorded 2026-08-24",
+            "Stage 4 completion report",
         ),
         DOCS / "stage_reports" / "stage_chart_format_update_completion_report.md": (
             "G6 complete",

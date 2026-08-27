@@ -27,8 +27,8 @@ external hosts use PlaybackSession, ContentProvider, RuntimeFrame,
     and cross - platform closure.Stable C ABI work remains in Stage 12;
 `cuexis_judgement` remains planned for Stage 11.
 
-The next implementation stage is **Stage 4**, following the completed Stage Chart Format Update;
-Stage 4 is unblocked but not started. Do not call the format stage Stage 3.5. ADR 0038 defines `.cxc` as a strict ZIP32 Stored exchange
+The next implementation stage is **Stage 5**, following the completed Stage 4 animation runtime.
+Stage 4 is complete. Do not call the format stage Stage 3.5. ADR 0038 defines `.cxc` as a strict ZIP32 Stored exchange
 package containing existing Project/Asset Index formats, `cuexis.chart` v4 data, CXT JSON, and
 required resources. The CXT v1, ChartParameter, and Template Binding subdecision was accepted on
 August 10, 2026: `.cxt` is UTF-8 JSON for one declarative local-time animation template, and host
@@ -51,11 +51,9 @@ Stage 4 typed handoff are complete. G3 local candidate gates passed on August 19
 `4371fdcf04f4f89bfddf070cbb15e4c903810a53` passed same-SHA hosted Linux Quality, Windows MSVC,
 and Windows MinGW validation on August 24, 2026; G3 hosted validation and G4 are complete.
 G5 report-SHA hosted revalidation passed and G6 owner acceptance is recorded. Stage Chart Format
-Update is complete; Stage 4 is unblocked / not started.**
-This checkpoint must not be described as complete CXC, a public package API, complete v4 animation
-Playback, or complete v4 animation execution. Stage 4 implementation has not started.
-Stage 4 must consume
-typed data produced by the format stage and must not parse JSON/CXC/CXT in `engine/animation/`.
+Update is complete; Stage 4 is complete. Stage 5 is unblocked / not started.**
+Stage 4 close is not a public CXC package API, Shader pipeline, Studio, or Judgement.
+Stage 4 consumed typed data produced by the format stage and must not parse JSON/CXC/CXT in `engine/animation/`.
 Runtime scripts and per-frame script callbacks are deferred indefinitely. No scheduled stage,
 Chart/CXT/CXC field, extension, capability, bytecode, ABI, or Playback execution hook is reserved
 for them. Offline authoring generators are a separate future tooling discussion and are never

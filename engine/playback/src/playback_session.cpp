@@ -5,6 +5,7 @@
 #include "playback_source_state.hpp"
 #include "presentation_internal.hpp"
 
+#include <cuexis/animation/animation_compiler.hpp>
 #include <cuexis/assets/asset_database.hpp>
 #include <cuexis/assets/resource_manager.hpp>
 #include <cuexis/chart/chart_loader.hpp>
@@ -243,7 +244,8 @@ struct RequiredCapability final {
 [[nodiscard]] auto allCapabilities() -> PlaybackCapabilitySet {
     return PlaybackCapabilitySet{
         .version = 1,
-        .ids = {std::string{capabilityBehaviorEventV1}, std::string{capabilityChartV3},
+        .ids = {std::string{capabilityAnimationClipV1}, std::string{capabilityAnimationLayersV1},
+                std::string{capabilityBehaviorEventV1}, std::string{capabilityChartV3},
                 std::string{capabilityChartV4}, std::string{capabilityMaterialSnapshotV1},
                 std::string{capabilityRenderVisibilityV1}, std::string{capabilitySourceCxcV1},
                 std::string{capabilitySourceCxtV1}},
@@ -305,10 +307,10 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
     if (capability == capabilitySourceCxtV1) {
         return "$/animationTemplateImports";
     }
-    if (capability == "cuexis.animation.clip.v1") {
+    if (capability == capabilityAnimationClipV1) {
         return "$/animationClips";
     }
-    if (capability == "cuexis.animation.layers.v1") {
+    if (capability == capabilityAnimationLayersV1) {
         return "$/objects";
     }
     return "$";
@@ -348,6 +350,22 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
     }
     diagnostics.sortDeterministically();
     return !diagnostics.hasErrors();
+}
+
+[[nodiscard]] auto compileAnimationProgram(std::optional<chart::AnimationProgramInput> input,
+                                           const chart::ChartLimits& limits,
+                                           core::Diagnostics& diagnostics)
+    -> std::optional<animation::AnimationProgram> {
+    if (!input.has_value()) {
+        return animation::AnimationProgram{};
+    }
+    auto compiled = animation::AnimationCompiler::compile(std::move(*input), limits);
+    diagnostics.append(std::move(compiled.diagnostics));
+    if (!compiled.hasValue()) {
+        diagnostics.sortDeterministically();
+        return std::nullopt;
+    }
+    return std::move(*compiled.program);
 }
 
 [[nodiscard]] auto chartParameterInputs(const PlaybackPrepareOptions& options,
@@ -650,7 +668,6 @@ struct PreparedPlayback::State final {
     std::shared_ptr<content::IContentProvider> contentProvider;
     std::unique_ptr<assets::ResourceManager> resourceManager;
     std::string chartJson;
-    std::optional<chart::AnimationProgramInput> animationProgram;
     std::unique_ptr<runtime::RuntimeSession> runtimeSession;
     SnapshotLayout snapshotLayout;
     ChartInfo chartInfo;
@@ -1165,7 +1182,7 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
                                           artifact.capabilityRequirements.begin(),
                                           artifact.capabilityRequirements.end());
             document.emplace(artifact.document.chart);
-            animationProgram.emplace(artifact.animationProgram);
+            animationProgram = std::move(artifact.animationProgram);
             chartIdentity = artifact.chartIdentity;
             parameterIdentity = artifact.parameterIdentity;
             cxtIdentities = artifact.cxtIdentities;
@@ -1211,6 +1228,16 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
             return core::unexpected(operationError("playback.capability.preflight_failed",
                                                    "Playback capability preflight failed",
                                                    diagnostics));
+        }
+
+        auto compiledAnimation =
+            compileAnimationProgram(std::move(animationProgram), limits, diagnostics);
+        if (!compiledAnimation) {
+            state_->lastOperationDiagnostics = diagnostics;
+            return core::unexpected(
+                operationError(replacement ? "playback.animation.reload_compile_failed"
+                                           : "playback.animation.compile_failed",
+                               "Animation program compilation produced errors", diagnostics));
         }
 
         auto runtimeResult = chart::ChartCompiler::compile(*document, limits);
@@ -1262,7 +1289,7 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
 
         auto session = resourceManager ? std::make_unique<runtime::RuntimeSession>(*resourceManager)
                                        : std::make_unique<runtime::RuntimeSession>();
-        auto runtimePrepared = session->prepare(chartRuntime);
+        auto runtimePrepared = session->prepare(chartRuntime, std::move(*compiledAnimation));
         const bool preparedValid = runtimePrepared.hasValue();
         diagnostics.append(std::move(runtimePrepared.diagnostics));
         if (!preparedValid) {
@@ -1350,7 +1377,6 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
         prepared->contentProvider = std::move(sourceState.provider);
         prepared->resourceManager = std::move(resourceManager);
         prepared->chartJson = jsonText;
-        prepared->animationProgram = std::move(animationProgram);
         prepared->runtimeSession = std::move(session);
         prepared->snapshotLayout = std::move(*snapshotLayout);
         prepared->chartInfo = chartInfoFor(chartRuntime, prepared->runtimeSession->resourceCount());
@@ -1569,9 +1595,7 @@ auto PlaybackSession::extractFrame(const FrameViewport& viewport, FrameSnapshot&
                     const auto& appearance =
                         registry.get<render::AppearanceComponent>(entry.entity);
                     object.visible = appearance.visible;
-                    if (object.materialAssetId != appearance.materialAssetId) {
-                        object.materialAssetId = appearance.materialAssetId;
-                    }
+                    object.materialAssetId.assign(appearance.materialAssetId);
                     if (entry.mesh) {
                         const auto material = entry.materials.find(appearance.materialAssetId);
                         if (material == entry.materials.end()) {

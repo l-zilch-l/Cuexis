@@ -2,10 +2,9 @@
 
 状态：accepted contract；CFU-C Reader/Writer/lowering 与 CFU-E prepare import/lookup 已实现；
 CFU-F consumer/determinism/safety gates 已关闭；G3 hosted、G4、G5 report-SHA hosted revalidation 与
-G6 owner acceptance 已完成；非空动画在 Stage 4
-前稳定拒绝
+G6 owner acceptance 已完成；非空动画执行已由 Stage 4 关闭
 
-更新日期：2026-08-24
+更新日期：2026-08-27
 
 依据：[ADR 0038](../adr/0038-cxc-v1-and-chart-v4-boundary.md)
 
@@ -156,8 +155,9 @@ SDK/Studio 可以分发模板库，但 pack 必须复制被引用模板的确切
 `emerge` 等名称回退到安装目录、网络或宿主隐式文件。
 
 存在 CXT import 即要求 `cuexis.source.cxt.v1`、`cuexis.animation.clip.v1` 和
-`cuexis.animation.layers.v1`，即使 import 尚未绑定或最终 weight 为 0。Stage 4 前 Playback 可以
-读取和验证 CXT，但必须在 capability preflight 稳定失败，不能忽略模板继续播放。
+`cuexis.animation.layers.v1`，即使 import 尚未绑定或最终 weight 为 0。默认 Session 在 Stage 4
+关闭后求值这些模板。缺少 animation capability 的显式裁剪 Session 仍必须在 capability preflight
+稳定失败，不能忽略模板继续播放。
 
 ## 6. 预算与诊断
 

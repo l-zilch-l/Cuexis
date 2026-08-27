@@ -48,6 +48,19 @@ constexpr std::string_view v1Chart = R"json(
            relative;
 }
 
+[[nodiscard]] auto trimmedCapabilities() -> cuexis::playback::PlaybackCapabilitySet {
+    return {
+        .version = 1,
+        .ids = {std::string{cuexis::playback::capabilityBehaviorEventV1},
+                std::string{cuexis::playback::capabilityChartV3},
+                std::string{cuexis::playback::capabilityChartV4},
+                std::string{cuexis::playback::capabilityMaterialSnapshotV1},
+                std::string{cuexis::playback::capabilityRenderVisibilityV1},
+                std::string{cuexis::playback::capabilitySourceCxcV1},
+                std::string{cuexis::playback::capabilitySourceCxtV1}},
+    };
+}
+
 [[nodiscard]] auto readText(const std::filesystem::path& path) -> std::string {
     std::ifstream stream{path, std::ios::binary};
     if (!stream) {
@@ -352,11 +365,11 @@ TEST_CASE("Successful v1, v2 and v3 prepare each expose a semantic identity",
 }
 
 TEST_CASE("Animation CXC reload is rejected before World publish and keeps the active identity",
-          "[playback][identity][capability][cxc][cfu-e4]") {
+          "[playback][identity][capability][cxc][cfu-e4][s4-f]") {
     auto initial =
         cuexis::playback::PlaybackSource::fromFilesystemProject(fixture("static_project"));
     REQUIRE(initial.has_value());
-    cuexis::playback::PlaybackSession session;
+    cuexis::playback::PlaybackSession session{trimmedCapabilities()};
     REQUIRE(
         session.load(std::move(*initial), cuexis::playback::PlaybackMode::ChartClock).has_value());
     REQUIRE(session.update({.chartTimeMs = 0.0}).has_value());
