@@ -81,6 +81,7 @@ auto isRootId(std::string_view value) -> bool {
     });
 }
 
+#if defined(_WIN32)
 auto uppercase(std::string_view value) -> std::string {
     std::string result{value};
     std::transform(result.begin(), result.end(), result.begin(), [](unsigned char character) {
@@ -88,6 +89,7 @@ auto uppercase(std::string_view value) -> std::string {
     });
     return result;
 }
+#endif
 
 auto isWindowsReservedSegment(std::string_view segment) -> bool {
     return core::detail::isWindowsReservedSegment(segment);
