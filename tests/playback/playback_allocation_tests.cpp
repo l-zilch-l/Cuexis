@@ -135,6 +135,38 @@ void* operator new[](std::size_t size, std::align_val_t alignment) {
     return allocateAligned(size, static_cast<std::size_t>(alignment));
 }
 
+void* operator new(std::size_t size, const std::nothrow_t&) noexcept {
+    try {
+        return allocate(size);
+    } catch (...) {
+        return nullptr;
+    }
+}
+
+void* operator new[](std::size_t size, const std::nothrow_t&) noexcept {
+    try {
+        return allocate(size);
+    } catch (...) {
+        return nullptr;
+    }
+}
+
+void* operator new(std::size_t size, std::align_val_t alignment, const std::nothrow_t&) noexcept {
+    try {
+        return allocateAligned(size, static_cast<std::size_t>(alignment));
+    } catch (...) {
+        return nullptr;
+    }
+}
+
+void* operator new[](std::size_t size, std::align_val_t alignment, const std::nothrow_t&) noexcept {
+    try {
+        return allocateAligned(size, static_cast<std::size_t>(alignment));
+    } catch (...) {
+        return nullptr;
+    }
+}
+
 void deallocate(void* memory) noexcept {
     std::free(memory);
 }
@@ -172,6 +204,40 @@ void operator delete(void* memory, std::size_t, std::align_val_t alignment) noex
 }
 
 void operator delete[](void* memory, std::size_t, std::align_val_t alignment) noexcept {
+    operator delete(memory, alignment);
+}
+
+void operator delete(void* memory, const std::nothrow_t&) noexcept {
+    deallocate(memory);
+}
+
+void operator delete[](void* memory, const std::nothrow_t&) noexcept {
+    deallocate(memory);
+}
+
+void operator delete(void* memory, std::align_val_t alignment, const std::nothrow_t&) noexcept {
+    operator delete(memory, alignment);
+}
+
+void operator delete[](void* memory, std::align_val_t alignment, const std::nothrow_t&) noexcept {
+    operator delete(memory, alignment);
+}
+
+void operator delete(void* memory, std::size_t, const std::nothrow_t&) noexcept {
+    deallocate(memory);
+}
+
+void operator delete[](void* memory, std::size_t, const std::nothrow_t&) noexcept {
+    deallocate(memory);
+}
+
+void operator delete(void* memory, std::size_t, std::align_val_t alignment,
+                     const std::nothrow_t&) noexcept {
+    operator delete(memory, alignment);
+}
+
+void operator delete[](void* memory, std::size_t, std::align_val_t alignment,
+                       const std::nothrow_t&) noexcept {
     operator delete(memory, alignment);
 }
 #endif

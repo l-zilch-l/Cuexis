@@ -240,10 +240,9 @@ void addMixDiagnostic(core::Diagnostics& diagnostics, std::string_view code, std
 
 [[nodiscard]] auto weightedOverride(std::vector<MixContribution> contributions,
                                     world::PropertyId property) -> core::Result<MixValue> {
-    std::ranges::stable_sort(contributions,
-                             [](const MixContribution& left, const MixContribution& right) {
-                                 return left.instance->identity < right.instance->identity;
-                             });
+    std::ranges::sort(contributions, [](const MixContribution& left, const MixContribution& right) {
+        return left.instance->identity < right.instance->identity;
+    });
     if (isDiscrete(property)) {
         const auto winner =
             std::min_element(contributions.begin(), contributions.end(),
@@ -513,7 +512,7 @@ auto AnimationMixer::evaluate(const AnimationProgram& program, chart::RationalBe
         for (std::size_t index = 0; index < layerOrder.size(); ++index) {
             layerOrder[index] = index;
         }
-        std::ranges::stable_sort(layerOrder, [&](std::size_t left, std::size_t right) {
+        std::ranges::sort(layerOrder, [&](std::size_t left, std::size_t right) {
             const auto& leftLayer = object.layers[left];
             const auto& rightLayer = object.layers[right];
             if (leftLayer.priority != rightLayer.priority) {
