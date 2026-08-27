@@ -23,6 +23,20 @@ TEST_CASE("RationalBeat normalizes signs, factors, and zero", "[chart][beat]") {
     CHECK(zero->denominator() == 1);
 }
 
+TEST_CASE("RationalBeat zero and one are canonical 0/1 and 1/1", "[chart][beat]") {
+    STATIC_CHECK(cuexis::chart::RationalBeat::zero().numerator() == 0);
+    STATIC_CHECK(cuexis::chart::RationalBeat::zero().denominator() == 1);
+    STATIC_CHECK(cuexis::chart::RationalBeat::one().numerator() == 1);
+    STATIC_CHECK(cuexis::chart::RationalBeat::one().denominator() == 1);
+
+    const auto createdZero = cuexis::chart::RationalBeat::create(0, 1);
+    const auto createdOne = cuexis::chart::RationalBeat::create(1, 1);
+    REQUIRE(createdZero.has_value());
+    REQUIRE(createdOne.has_value());
+    CHECK(cuexis::chart::RationalBeat::zero() == *createdZero);
+    CHECK(cuexis::chart::RationalBeat::one() == *createdOne);
+}
+
 TEST_CASE("RationalBeat rejects non-positive denominators", "[chart][beat]") {
     const auto zero = cuexis::chart::RationalBeat::create(1, 0);
     REQUIRE_FALSE(zero.has_value());

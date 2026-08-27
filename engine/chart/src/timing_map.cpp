@@ -372,6 +372,19 @@ auto TimingMap::tempoBeat(double chartTimeMs) const noexcept -> double {
     return event.endBeat + (absoluteTime - event.endTimeMs) * event.endBpm / 60000.0;
 }
 
+namespace {
+
+[[nodiscard]] auto makeBeatSample(double beat, bool inStop, double stopProgress)
+    -> core::Result<BeatSample> {
+    auto rational = approximateRationalBeat(beat);
+    if (!rational) {
+        return core::unexpected(std::move(rational.error()));
+    }
+    return BeatSample{beat, inStop, stopProgress, *rational};
+}
+
+} // namespace
+
 auto TimingMap::sampleChartTimeMs(double chartTimeMs) const -> core::Result<BeatSample> {
     if (auto result = requireFinite(chartTimeMs, "chartTimeMs"); !result) {
         return core::unexpected(std::move(result.error()));
@@ -382,9 +395,9 @@ auto TimingMap::sampleChartTimeMs(double chartTimeMs) const -> core::Result<Beat
     if (stop != stops_.begin()) {
         const auto& candidate = *(stop - 1);
         if (chartTimeMs >= candidate.startTimeMs && chartTimeMs < candidate.endTimeMs) {
-            return BeatSample{candidate.beat, true,
-                              (chartTimeMs - candidate.startTimeMs) /
-                                  (candidate.endTimeMs - candidate.startTimeMs)};
+            return makeBeatSample(candidate.beat, true,
+                                  (chartTimeMs - candidate.startTimeMs) /
+                                      (candidate.endTimeMs - candidate.startTimeMs));
         }
     }
     const auto completed = std::upper_bound(
@@ -398,7 +411,7 @@ auto TimingMap::sampleChartTimeMs(double chartTimeMs) const -> core::Result<Beat
         return core::unexpected(
             core::Error{"chart.timing.out_of_range", "Chart time conversion overflowed"});
     }
-    return BeatSample{beat, false, 0.0};
+    return makeBeatSample(beat, false, 0.0);
 }
 
 auto TimingMap::chartTimeMsToBeat(double chartTimeMs) const -> core::Result<double> {

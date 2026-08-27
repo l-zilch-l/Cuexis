@@ -283,9 +283,31 @@ TEST_CASE("BasePropertyCommand updates Event baselines before the first event",
     CHECK(position->y == Catch::Approx(3.0F));
 }
 
+TEST_CASE("Playback RuntimeSession rejects StudioPreviewOverride", "[runtime][override][s4-d]") {
+    cuexis::runtime::RuntimeSession session;
+    auto prepared = session.prepare(runtimeChart(), compilePositionProgram(10.0, 0.5));
+    REQUIRE(prepared.hasValue());
+    REQUIRE(session.commit(std::move(*prepared.prepared)).has_value());
+    REQUIRE(session.update({.chartTimeMs = 250.0}).has_value());
+    CHECK(session.kind() == cuexis::runtime::RuntimeSessionKind::Playback);
+
+    const auto token = session.acquireOverride(
+        cuexis::world::OverrideKind::StudioPreview, "studio", 1,
+        cuexis::world::propertyBit(cuexis::world::PropertyId::TransformPositionX), {},
+        std::array{cuexis::runtime::PropertyOverrideWrite{
+            .objectId = {"object"},
+            .property = cuexis::world::PropertyId::TransformPositionX,
+            .value = 1.0,
+        }});
+    REQUIRE_FALSE(token.has_value());
+    CHECK(token.error().code() == "runtime.override.preview_session_required");
+    REQUIRE(session.update({.chartTimeMs = 250.0}).has_value());
+    CHECK(objectPosition(session) == Catch::Approx(7.5F));
+}
+
 TEST_CASE("StudioPreviewOverride restores the lower-layer result after release",
           "[runtime][override][s4-d]") {
-    cuexis::runtime::RuntimeSession session;
+    cuexis::runtime::RuntimeSession session{cuexis::runtime::RuntimeSessionKind::StudioPreview};
     auto prepared = session.prepare(runtimeChart(), compilePositionProgram(10.0, 0.5));
     REQUIRE(prepared.hasValue());
     REQUIRE(session.commit(std::move(*prepared.prepared)).has_value());

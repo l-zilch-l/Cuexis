@@ -17,6 +17,12 @@ class RationalBeat final {
   public:
     [[nodiscard]] static auto create(std::int64_t numerator, std::int64_t denominator)
         -> core::Result<RationalBeat>;
+    [[nodiscard]] static constexpr auto zero() noexcept -> RationalBeat {
+        return RationalBeat{0, 1};
+    }
+    [[nodiscard]] static constexpr auto one() noexcept -> RationalBeat {
+        return RationalBeat{1, 1};
+    }
     [[nodiscard]] constexpr auto numerator() const noexcept -> std::int64_t {
         return numerator_;
     }
@@ -51,8 +57,8 @@ class RationalBeat final {
 [[nodiscard]] auto rationalBeatMidpoint(const RationalBeat& left, const RationalBeat& right)
     -> core::Result<RationalBeat>;
 
-// Approximate a TimingMap double Beat as a reduced RationalBeat. Runtime uses this so
-// AnimationSystem can sample from an explicit rational local time without reading TimingMap.
+// Approximate a TimingMap double Beat as a reduced RationalBeat. TimingMap::sampleChartTimeMs
+// applies this once; AnimationSystem consumes BeatSample::rationalBeat.
 inline constexpr std::int64_t defaultBeatApproximationDenominator = 1000000;
 [[nodiscard]] auto
 approximateRationalBeat(double beat,

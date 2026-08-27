@@ -599,3 +599,164 @@ TEST_CASE("Invalid Chart v4 format still fails before AnimationSystem",
                    item.code() == "playback.animation.compile_failed";
         }));
 }
+
+TEST_CASE("Playback HostOverride restores the lower-layer result after release",
+          "[playback][override][s4-d]") {
+    auto source = animationChartSource();
+    REQUIRE(source.has_value());
+    cuexis::playback::PlaybackSession session;
+    REQUIRE(load(session, std::move(source)).has_value());
+    auto baseline = snapshotAt(session, 0.0);
+    REQUIRE(baseline.has_value());
+    const auto* before = findObject(*baseline, animationNoteId);
+    REQUIRE(before != nullptr);
+    const auto baselineX = before->worldMatrix[12];
+
+    const auto mask =
+        cuexis::playback::hostPropertyBit(cuexis::playback::HostPropertyId::TransformPositionX);
+    const auto token = session.acquireHostOverride(
+        "host", 1, mask, {},
+        std::array{cuexis::playback::HostOverrideWrite{
+            .objectId = std::string{animationNoteId},
+            .property = cuexis::playback::HostPropertyId::TransformPositionX,
+            .value = 9.0,
+        }});
+    REQUIRE(token.has_value());
+    auto overridden = snapshotAt(session, 0.0);
+    REQUIRE(overridden.has_value());
+    CHECK(findObject(*overridden, animationNoteId)->worldMatrix[12] == Catch::Approx(9.0F));
+
+    REQUIRE(session.releaseHostOverride(*token).has_value());
+    auto restored = snapshotAt(session, 0.0);
+    REQUIRE(restored.has_value());
+    CHECK(findObject(*restored, animationNoteId)->worldMatrix[12] == Catch::Approx(baselineX));
+}
+
+TEST_CASE("Playback same-priority HostOverride discards the conflict write",
+          "[playback][override][s4-d]") {
+    auto source = animationChartSource();
+    REQUIRE(source.has_value());
+    cuexis::playback::PlaybackSession session;
+    REQUIRE(load(session, std::move(source)).has_value());
+    auto baseline = snapshotAt(session, 0.0);
+    REQUIRE(baseline.has_value());
+    const auto baselineX = findObject(*baseline, animationNoteId)->worldMatrix[12];
+    const auto mask =
+        cuexis::playback::hostPropertyBit(cuexis::playback::HostPropertyId::TransformPositionX);
+    const auto write = [&](double value) {
+        return cuexis::playback::HostOverrideWrite{
+            .objectId = std::string{animationNoteId},
+            .property = cuexis::playback::HostPropertyId::TransformPositionX,
+            .value = value,
+        };
+    };
+    REQUIRE(session.acquireHostOverride("left", 4, mask, {}, std::array{write(8.0)}).has_value());
+    REQUIRE(session.acquireHostOverride("right", 4, mask, {}, std::array{write(9.0)}).has_value());
+    auto conflicted = snapshotAt(session, 0.0);
+    REQUIRE(conflicted.has_value());
+    CHECK(findObject(*conflicted, animationNoteId)->worldMatrix[12] == Catch::Approx(baselineX));
+}
+
+TEST_CASE("Playback RemainingFrames HostOverride expires on the next frame",
+          "[playback][override][s4-d]") {
+    auto source = animationChartSource();
+    REQUIRE(source.has_value());
+    cuexis::playback::PlaybackSession session;
+    REQUIRE(load(session, std::move(source)).has_value());
+    REQUIRE(session.update({.chartTimeMs = 0.0}).has_value());
+    const auto mask =
+        cuexis::playback::hostPropertyBit(cuexis::playback::HostPropertyId::TransformPositionX);
+    REQUIRE(session
+                .acquireHostOverride(
+                    "host", 1, mask,
+                    {.kind = cuexis::playback::HostOverrideLifetimeKind::RemainingFrames,
+                     .remainingFrames = 1},
+                    std::array{cuexis::playback::HostOverrideWrite{
+                        .objectId = std::string{animationNoteId},
+                        .property = cuexis::playback::HostPropertyId::TransformPositionX,
+                        .value = 4.0,
+                    }})
+                .has_value());
+    auto active = snapshotAt(session, 0.0);
+    REQUIRE(active.has_value());
+    CHECK(findObject(*active, animationNoteId)->worldMatrix[12] == Catch::Approx(4.0F));
+    auto expired = snapshotAt(session, 0.0);
+    REQUIRE(expired.has_value());
+    CHECK(findObject(*expired, animationNoteId)->worldMatrix[12] == Catch::Approx(0.0F));
+}
+
+TEST_CASE("Playback HostOverride missing object does not change the active frame",
+          "[playback][override][s4-d]") {
+    auto source = animationChartSource();
+    REQUIRE(source.has_value());
+    cuexis::playback::PlaybackSession session;
+    REQUIRE(load(session, std::move(source)).has_value());
+    auto baseline = snapshotAt(session, 0.0);
+    REQUIRE(baseline.has_value());
+    const auto mask =
+        cuexis::playback::hostPropertyBit(cuexis::playback::HostPropertyId::TransformPositionX);
+    const auto token = session.acquireHostOverride(
+        "host", 1, mask, {},
+        std::array{cuexis::playback::HostOverrideWrite{
+            .objectId = "missing.object",
+            .property = cuexis::playback::HostPropertyId::TransformPositionX,
+            .value = 9.0,
+        }});
+    REQUIRE_FALSE(token.has_value());
+    CHECK(token.error().code() == "playback.override.object_missing");
+    auto after = session.extractFrame({.width = 640, .height = 480});
+    REQUIRE(after.has_value());
+    CHECK(framesEquivalent(*after, *baseline));
+}
+
+TEST_CASE("Trimmed Playback Session still accepts HostOverride",
+          "[playback][override][capability][s4-d]") {
+    constexpr std::string_view staticNoteId = "019f0000-0000-7abc-8def-000000000411";
+    cuexis::playback::PlaybackSession session{trimmedCapabilities()};
+    auto prepared = session.prepareLoad(readText(fixture("valid/chart_v4_static_migration.json")),
+                                        cuexis::playback::PlaybackMode::ChartClock);
+    REQUIRE(prepared.has_value());
+    REQUIRE(session.commit(std::move(*prepared)).has_value());
+    const auto mask =
+        cuexis::playback::hostPropertyBit(cuexis::playback::HostPropertyId::TransformPositionX);
+    REQUIRE(session
+                .acquireHostOverride(
+                    "host", 1, mask, {},
+                    std::array{cuexis::playback::HostOverrideWrite{
+                        .objectId = std::string{staticNoteId},
+                        .property = cuexis::playback::HostPropertyId::TransformPositionX,
+                        .value = 3.0,
+                    }})
+                .has_value());
+    auto overridden = snapshotAt(session, 0.0);
+    REQUIRE(overridden.has_value());
+    CHECK(findObject(*overridden, staticNoteId)->worldMatrix[12] == Catch::Approx(3.0F));
+}
+
+TEST_CASE("Playback HostOverride requires at least one write", "[playback][override][s4-d]") {
+    auto source = animationChartSource();
+    REQUIRE(source.has_value());
+    cuexis::playback::PlaybackSession session;
+    REQUIRE(load(session, std::move(source)).has_value());
+    const auto mask =
+        cuexis::playback::hostPropertyBit(cuexis::playback::HostPropertyId::TransformPositionX);
+    const auto token = session.acquireHostOverride(
+        "host", 1, mask, {}, std::array<cuexis::playback::HostOverrideWrite, 0>{});
+    REQUIRE_FALSE(token.has_value());
+    CHECK(token.error().code() == "playback.override.empty");
+}
+
+TEST_CASE("Empty Playback Session rejects HostOverride", "[playback][override][s4-d]") {
+    cuexis::playback::PlaybackSession session;
+    const auto mask =
+        cuexis::playback::hostPropertyBit(cuexis::playback::HostPropertyId::TransformPositionX);
+    const auto token = session.acquireHostOverride(
+        "host", 1, mask, {},
+        std::array{cuexis::playback::HostOverrideWrite{
+            .objectId = "object",
+            .property = cuexis::playback::HostPropertyId::TransformPositionX,
+            .value = 1.0,
+        }});
+    REQUIRE_FALSE(token.has_value());
+    CHECK(token.error().code() == "playback.session.not_ready");
+}

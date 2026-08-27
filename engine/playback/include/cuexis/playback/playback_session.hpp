@@ -10,6 +10,7 @@
 
 #include <cuexis/core/abi_warnings.hpp>
 #include <cuexis/core/diagnostic.hpp>
+#include <cuexis/core/math.hpp>
 #include <cuexis/core/result.hpp>
 #include <cuexis/playback/playback_export.hpp>
 #include <cuexis/playback/playback_source.hpp>
@@ -167,6 +168,49 @@ enum class SessionState {
     Failed,
 };
 
+enum class HostPropertyId : std::uint8_t {
+    TransformPositionX,
+    TransformPositionY,
+    TransformPositionZ,
+    TransformRotation,
+    TransformScale,
+    CameraFovY,
+    RenderVisible,
+    RenderMaterial,
+    MaterialOpacity,
+    MaterialTint,
+};
+
+enum class HostOverrideLifetimeKind : std::uint8_t {
+    UntilReleased,
+    RemainingFrames,
+    UntilChartTimeMs,
+};
+
+struct HostOverrideToken final {
+    std::uint64_t value{};
+
+    auto operator<=>(const HostOverrideToken&) const = default;
+};
+
+struct HostOverrideLifetime final {
+    HostOverrideLifetimeKind kind{HostOverrideLifetimeKind::UntilReleased};
+    std::uint32_t remainingFrames{};
+    double untilChartTimeMs{};
+};
+
+using HostOverrideValue = std::variant<double, core::Vec3, core::Quat, bool, std::string>;
+
+struct HostOverrideWrite final {
+    std::string objectId;
+    HostPropertyId property{};
+    HostOverrideValue value;
+};
+
+[[nodiscard]] constexpr auto hostPropertyBit(HostPropertyId property) noexcept -> std::uint16_t {
+    return static_cast<std::uint16_t>(1U << static_cast<std::uint8_t>(property));
+}
+
 class PlaybackSession;
 
 class CUEXIS_PLAYBACK_API PreparedPlayback final {
@@ -270,6 +314,13 @@ class CUEXIS_PLAYBACK_API PlaybackSession final {
     [[nodiscard]] auto semanticIdentity() const -> core::Result<PreparedSemanticIdentity>;
     [[nodiscard]] auto diagnostics() const -> core::Result<core::Diagnostics>;
     [[nodiscard]] auto lastOperationDiagnostics() const -> core::Result<core::Diagnostics>;
+
+    [[nodiscard]] auto acquireHostOverride(std::string_view ownerId, std::int64_t priority,
+                                           std::uint16_t propertyMask,
+                                           const HostOverrideLifetime& lifetime,
+                                           std::span<const HostOverrideWrite> writes)
+        -> core::Result<HostOverrideToken>;
+    [[nodiscard]] auto releaseHostOverride(HostOverrideToken token) -> core::Result<void>;
 
   private:
     [[nodiscard]] auto prepare(PlaybackSource&& source, PlaybackMode mode,

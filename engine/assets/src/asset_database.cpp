@@ -6,6 +6,7 @@
 
 #include <cuexis/content/content_provider.hpp>
 #include <cuexis/core/error.hpp>
+#include <cuexis_internal/portable_path.hpp>
 
 #include <algorithm>
 #include <cctype>
@@ -89,16 +90,7 @@ auto uppercase(std::string_view value) -> std::string {
 }
 
 auto isWindowsReservedSegment(std::string_view segment) -> bool {
-    const auto dot = segment.find('.');
-    const auto base = uppercase(segment.substr(0, dot));
-    if (base == "CON" || base == "PRN" || base == "AUX" || base == "NUL") {
-        return true;
-    }
-    if (base.size() == 4 && (base.starts_with("COM") || base.starts_with("LPT")) &&
-        base.back() >= '1' && base.back() <= '9') {
-        return true;
-    }
-    return false;
+    return core::detail::isWindowsReservedSegment(segment);
 }
 
 auto isPortableRelativePath(std::string_view value, std::size_t maxBytes) -> bool {

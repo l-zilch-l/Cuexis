@@ -38,6 +38,11 @@ class AnimationProgram;
 
 namespace cuexis::runtime {
 
+enum class RuntimeSessionKind : std::uint8_t {
+    Playback,
+    StudioPreview,
+};
+
 inline constexpr std::size_t maxRuntimeDebugRecords = 65536;
 
 struct RuntimeDebugOptions final {
@@ -166,7 +171,9 @@ class RuntimeSession final {
 
   public:
     RuntimeSession() noexcept;
+    explicit RuntimeSession(RuntimeSessionKind kind) noexcept;
     explicit RuntimeSession(assets::ResourceManager& resourceManager) noexcept;
+    RuntimeSession(RuntimeSessionKind kind, assets::ResourceManager& resourceManager) noexcept;
     ~RuntimeSession();
 
     RuntimeSession(const RuntimeSession&) = delete;
@@ -199,6 +206,9 @@ class RuntimeSession final {
     [[nodiscard]] auto applyBaseProperty(const BasePropertyCommand& command) -> core::Result<void>;
     [[nodiscard]] auto baseRevision() const noexcept -> std::uint64_t;
 
+    [[nodiscard]] auto kind() const noexcept -> RuntimeSessionKind {
+        return sessionKind_;
+    }
     [[nodiscard]] auto empty() const noexcept -> bool;
     [[nodiscard]] auto objectCount() const noexcept -> std::size_t;
     [[nodiscard]] auto resourceCount() const noexcept -> std::size_t;
@@ -273,6 +283,7 @@ class RuntimeSession final {
         -> core::Result<void>;
     void captureDebug(const RuntimeEvaluationState& state, double beat);
 
+    RuntimeSessionKind sessionKind_{RuntimeSessionKind::Playback};
     std::optional<chart::ChartRuntime> chartRuntime_;
     ObjectEntityMap objects_;
     assets::ResourceManager* resourceManager_{};

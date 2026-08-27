@@ -106,6 +106,25 @@ TEST_CASE("TimingMap exposes Stop half-open boundaries", "[chart][timing][v3]") 
     CHECK_FALSE(end->inStop);
 }
 
+TEST_CASE("TimingMap BeatSample carries one rational approximation", "[chart][timing][s4-d]") {
+    const auto map = cuexis::chart::TimingMap::create(120.0, 0.0);
+    REQUIRE(map.has_value());
+
+    const auto two = map->sampleChartTimeMs(1000.0);
+    REQUIRE(two.has_value());
+    CHECK(two->beat == Catch::Approx(2.0));
+    CHECK_FALSE(two->inStop);
+    CHECK(two->rationalBeat == beat(2));
+
+    const auto half = map->sampleChartTimeMs(250.0);
+    REQUIRE(half.has_value());
+    CHECK(half->beat == Catch::Approx(0.5));
+    const auto approximated = cuexis::chart::approximateRationalBeat(half->beat);
+    REQUIRE(approximated.has_value());
+    CHECK(half->rationalBeat == *approximated);
+    CHECK(half->rationalBeat == beat(1, 2));
+}
+
 TEST_CASE("Negative Stops retain Beat zero as chart time zero", "[chart][timing][v3]") {
     const std::vector stops{cuexis::chart::TimingStop{.beat = beat(-1), .durationMs = 250.0}};
     const auto map = cuexis::chart::TimingMap::create(60.0, 0.0, {}, stops);

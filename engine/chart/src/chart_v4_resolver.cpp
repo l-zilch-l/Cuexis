@@ -899,7 +899,7 @@ buildProgram(const ChartV4SourceDocument& source,
         result.paths.clips.emplace(AnimationRecordIdentity{clip.id},
                                    ProgramDiagnosticScope{clip.fieldPath, std::nullopt});
     }
-    const auto one = *RationalBeat::create(1, 1);
+    const auto one = RationalBeat::one();
 
     for (const auto& [objectId, animator] : animators) {
         ObjectAnimationProgram object{ChartObjectId{objectId}, {}};

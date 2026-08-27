@@ -2,7 +2,7 @@
 
 状态：现行阶段报告索引
 
-更新日期：2026-08-27
+更新日期：2026-08-28
 
 报告是带日期的证据快照。报告中的“下一步”只表示报告生成时的交接，不自动代表当前任务。
 
@@ -62,4 +62,5 @@
 | [260827 Stage 4 S4-G safety allocation](260827-stage-4-s4-g-safety-allocation.md) | S4-G local checkpoint: ChartLimits/write budget, warmed zero or bounded allocation, F4-style performance probe |
 | [260827 Stage 4 S4-H local validation](260827-stage-4-s4-h-local-validation.md) | historical S4-H local Debug/Release snapshot before final SHA publication |
 | [Stage 4 completion report](stage_4_completion_report.md) | S4-H hosted Linux/MSVC/MinGW success on `3df9274`; owner acceptance recorded 2026-08-27; Stage 4 closed and Stage 5 unblocked but not started |
+| [260828 CFU and Stage 4 review](260828-stage-CFU-4-review.md) | open two-axis review snapshot of CFU through Stage 4 close; does not redefine CURRENT_STATUS |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |

@@ -10,6 +10,7 @@
 #include <cuexis/filesystem/secure_file.hpp>
 #include <cuexis/project/asset_index_reader.hpp>
 #include <cuexis/project/project_loader.hpp>
+#include <cuexis_internal/portable_path.hpp>
 
 #include <algorithm>
 #include <array>
@@ -115,29 +116,8 @@ struct CxcSourceData final {
            (character >= '0' && character <= '9');
 }
 
-[[nodiscard]] auto foldAscii(std::string_view value) -> std::string {
-    std::string result;
-    result.reserve(value.size());
-    for (const char character : value) {
-        result.push_back(character >= 'A' && character <= 'Z'
-                             ? static_cast<char>(character - 'A' + 'a')
-                             : character);
-    }
-    return result;
-}
-
-[[nodiscard]] auto isWindowsReservedSegment(std::string_view segment) -> bool {
-    const auto dot = segment.find('.');
-    const auto stem = foldAscii(segment.substr(0, dot));
-    if (stem == "con" || stem == "prn" || stem == "aux" || stem == "nul" || stem == "clock$" ||
-        stem == "conin$" || stem == "conout$") {
-        return true;
-    }
-    if (stem.size() == 4 && stem[3] >= '1' && stem[3] <= '9') {
-        return stem.starts_with("com") || stem.starts_with("lpt");
-    }
-    return false;
-}
+using cuexis::core::detail::foldAscii;
+using cuexis::core::detail::isWindowsReservedSegment;
 
 [[nodiscard]] auto isPortableProjectPath(std::string_view path) -> bool {
     if (path.empty() || path.size() > maxProjectPathBytes || path.front() == '/' ||
