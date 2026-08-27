@@ -60,9 +60,10 @@ struct CxcAssetIndex final {
 
 namespace detail {
 struct CxcPackageData;
-}
+struct CxcPackageAccess;
+} // namespace detail
 
-class CxcContentProvider final : public content::IContentProvider {
+class CxcContentProvider : public content::IContentProvider {
   public:
     ~CxcContentProvider() override;
 
@@ -71,6 +72,7 @@ class CxcContentProvider final : public content::IContentProvider {
 
   private:
     friend class CxcPackage;
+    struct MakeShared;
     explicit CxcContentProvider(std::shared_ptr<const detail::CxcPackageData> data) noexcept;
 
     std::shared_ptr<const detail::CxcPackageData> data_;
@@ -78,7 +80,6 @@ class CxcContentProvider final : public content::IContentProvider {
 
 class CxcPackage final {
   public:
-    explicit CxcPackage(std::shared_ptr<const detail::CxcPackageData> data) noexcept;
     CxcPackage(const CxcPackage&) noexcept = default;
     CxcPackage(CxcPackage&&) noexcept = default;
     auto operator=(const CxcPackage&) noexcept -> CxcPackage& = default;
@@ -97,8 +98,18 @@ class CxcPackage final {
     [[nodiscard]] auto contentProvider() const -> std::shared_ptr<CxcContentProvider>;
 
   private:
+    friend class CxcPackageLoader;
+    friend struct detail::CxcPackageAccess;
+    explicit CxcPackage(std::shared_ptr<const detail::CxcPackageData> data) noexcept;
+
     std::shared_ptr<const detail::CxcPackageData> data_;
 };
+
+namespace detail {
+struct CxcPackageAccess final {
+    static auto make(std::shared_ptr<const CxcPackageData> data) noexcept -> CxcPackage;
+};
+} // namespace detail
 
 struct CxcPackageResult final {
     std::optional<CxcPackage> package;

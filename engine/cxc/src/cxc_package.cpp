@@ -654,7 +654,7 @@ validateDependencyGraph(core::Diagnostics& diagnostics,
     if (diagnostics.hasErrors()) {
         return {std::nullopt, std::move(diagnostics)};
     }
-    return {CxcPackage{std::move(data)}, std::move(diagnostics)};
+    return {detail::CxcPackageAccess::make(std::move(data)), std::move(diagnostics)};
 }
 
 [[nodiscard]] auto revisionFromSha256(std::string_view value) noexcept -> std::uint64_t {
@@ -687,6 +687,12 @@ validateDependencyGraph(core::Diagnostics& diagnostics,
 auto CxcPackageIdentity::hex() const -> std::string {
     return detail::sha256Hex(sha256);
 }
+
+namespace detail {
+auto CxcPackageAccess::make(std::shared_ptr<const CxcPackageData> data) noexcept -> CxcPackage {
+    return CxcPackage{std::move(data)};
+}
+} // namespace detail
 
 CxcContentProvider::CxcContentProvider(std::shared_ptr<const detail::CxcPackageData> data) noexcept
     : data_(std::move(data)) {}
@@ -782,8 +788,13 @@ auto CxcPackage::bytes() const noexcept -> std::span<const std::byte> {
     return {data_->archiveBytes.data(), data_->archiveBytes.size()};
 }
 
+struct CxcContentProvider::MakeShared final : CxcContentProvider {
+    explicit MakeShared(std::shared_ptr<const detail::CxcPackageData> data)
+        : CxcContentProvider(std::move(data)) {}
+};
+
 auto CxcPackage::contentProvider() const -> std::shared_ptr<CxcContentProvider> {
-    return std::shared_ptr<CxcContentProvider>{new CxcContentProvider{data_}};
+    return std::make_shared<CxcContentProvider::MakeShared>(data_);
 }
 
 auto CxcPackageLoader::loadMemory(std::span<const std::byte> bytes, const CxcPackageLimits& limits)

@@ -1,5 +1,7 @@
 #include <cuexis/animation/animation_sample.hpp>
 
+#include "animation_math.hpp"
+
 #include <cuexis/animation/animation_diagnostics.hpp>
 #include <cuexis/core/error.hpp>
 #include <cuexis/core/math.hpp>
@@ -37,40 +39,13 @@ namespace {
 
 [[nodiscard]] auto slerp(const core::Quat& left, const core::Quat& right, double t)
     -> core::Result<core::Quat> {
-    core::Quat target = right;
-    double dot = static_cast<double>(left.x) * right.x + static_cast<double>(left.y) * right.y +
-                 static_cast<double>(left.z) * right.z + static_cast<double>(left.w) * right.w;
-    if (dot < 0.0) {
-        dot = -dot;
-        target = core::Quat{-right.x, -right.y, -right.z, -right.w};
-    }
-    dot = std::clamp(dot, -1.0, 1.0);
-
-    core::Quat result;
-    if (dot > 0.9995) {
-        const auto blend = static_cast<float>(t);
-        result =
-            core::Quat{left.x + (target.x - left.x) * blend, left.y + (target.y - left.y) * blend,
-                       left.z + (target.z - left.z) * blend, left.w + (target.w - left.w) * blend};
-    } else {
-        const double theta = std::acos(dot);
-        const double sinTheta = std::sin(theta);
-        const double leftWeight = std::sin((1.0 - t) * theta) / sinTheta;
-        const double rightWeight = std::sin(t * theta) / sinTheta;
-        result = core::Quat{
-            static_cast<float>(left.x * leftWeight + target.x * rightWeight),
-            static_cast<float>(left.y * leftWeight + target.y * rightWeight),
-            static_cast<float>(left.z * leftWeight + target.z * rightWeight),
-            static_cast<float>(left.w * leftWeight + target.w * rightWeight),
-        };
-    }
-    auto normalized = core::normalize(result);
-    if (!normalized) {
+    auto value = shortestPathSlerp(left, right, t);
+    if (!value) {
         return core::unexpected(core::Error{std::string{sampleQuaternionInvalid},
                                             "Quaternion interpolation produced an invalid value"}
-                                    .withCause(normalized.error()));
+                                    .withCause(std::move(value.error())));
     }
-    return *normalized;
+    return *value;
 }
 
 [[nodiscard]] auto interpolate(const chart::AnimationValue& left,
@@ -218,7 +193,7 @@ auto AnimationSampler::resolveLocalBeat(const chart::ResolvedClipInstance& insta
         return core::unexpected(beatOverflow("Animation instance elapsed Beat overflowed")
                                     .withCause(std::move(elapsed.error())));
     }
-    const auto zero = *chart::RationalBeat::create(0, 1);
+    const auto zero = chart::RationalBeat::zero();
     if (*elapsed < zero) {
         return std::optional<chart::RationalBeat>{};
     }

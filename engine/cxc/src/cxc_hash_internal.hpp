@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cuexis_internal/sha256.hpp>
+
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -8,10 +10,9 @@
 
 namespace cuexis::cxc::detail {
 
+using cuexis::core::detail::sha256;
+using cuexis::core::detail::sha256Hex;
+
 [[nodiscard]] auto crc32(std::span<const std::byte> bytes) noexcept -> std::uint32_t;
-[[nodiscard]] auto sha256(std::span<const std::byte> bytes) noexcept
-    -> std::array<std::uint8_t, 32>;
-[[nodiscard]] auto sha256Hex(std::span<const std::byte> bytes) -> std::string;
-[[nodiscard]] auto sha256Hex(const std::array<std::uint8_t, 32>& digest) -> std::string;
 
 } // namespace cuexis::cxc::detail

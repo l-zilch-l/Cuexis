@@ -115,6 +115,57 @@ struct SnapshotLayout final {
         .withContext("operation", std::string{operation});
 }
 
+[[nodiscard]] auto copyError(std::string_view code, const core::Error& source) -> core::Error {
+    auto error = core::Error{std::string{code}, std::string{source.message()}};
+    for (const auto& context : source.context()) {
+        error.withContext(context.key, context.value);
+    }
+    return error;
+}
+
+[[nodiscard]] auto mapHostOverrideError(const core::Error& error) -> core::Error {
+    const auto code = error.code();
+    if (code == "runtime.override.empty") {
+        return copyError("playback.override.empty", error);
+    }
+    if (code == "runtime.override.object_missing") {
+        return copyError("playback.override.object_missing", error);
+    }
+    if (code == "runtime.override.token_missing") {
+        return copyError("playback.override.token_missing", error);
+    }
+    if (code == "world.property.override_mask") {
+        return copyError("playback.override.mask", error);
+    }
+    if (code == "runtime.session.empty") {
+        return copyError("playback.session.empty", error);
+    }
+    if (code == "runtime.session.not_owner_thread") {
+        return copyError("playback.session.not_owner_thread", error);
+    }
+    if (code == "runtime.session.callback_reentrant") {
+        return copyError("playback.session.reentrant", error);
+    }
+    return error;
+}
+
+[[nodiscard]] auto toWorldProperty(HostPropertyId property) noexcept -> world::PropertyId {
+    return static_cast<world::PropertyId>(static_cast<std::uint8_t>(property));
+}
+
+[[nodiscard]] auto toWorldLifetime(const HostOverrideLifetime& lifetime) noexcept
+    -> world::OverrideLifetime {
+    return world::OverrideLifetime{
+        .kind = static_cast<world::OverrideLifetimeKind>(static_cast<std::uint8_t>(lifetime.kind)),
+        .remainingFrames = lifetime.remainingFrames,
+        .untilChartTimeMs = lifetime.untilChartTimeMs,
+    };
+}
+
+[[nodiscard]] auto toWorldValue(const HostOverrideValue& value) -> world::PropertyValue {
+    return std::visit([](const auto& item) -> world::PropertyValue { return item; }, value);
+}
+
 [[nodiscard]] auto reentryError(std::string_view operation) -> core::Error {
     return core::Error{"playback.session.reentrant",
                        "PlaybackSession cannot be re-entered while an operation is active"}
@@ -686,6 +737,14 @@ struct PreparedPlayback::State final {
 static_assert(std::is_nothrow_move_assignable_v<core::Diagnostics>);
 static_assert(std::is_nothrow_move_assignable_v<PlaybackContentInfo>);
 static_assert(std::is_nothrow_move_assignable_v<detail::PreparedPresentation>);
+static_assert(static_cast<std::uint8_t>(HostPropertyId::TransformPositionX) ==
+              static_cast<std::uint8_t>(world::PropertyId::TransformPositionX));
+static_assert(static_cast<std::uint8_t>(HostPropertyId::MaterialTint) ==
+              static_cast<std::uint8_t>(world::PropertyId::MaterialTint));
+static_assert(static_cast<std::uint8_t>(HostOverrideLifetimeKind::UntilReleased) ==
+              static_cast<std::uint8_t>(world::OverrideLifetimeKind::UntilReleased));
+static_assert(static_cast<std::uint8_t>(HostOverrideLifetimeKind::UntilChartTimeMs) ==
+              static_cast<std::uint8_t>(world::OverrideLifetimeKind::UntilChartTimeMs));
 
 PreparedPlayback::PreparedPlayback() noexcept = default;
 
@@ -1876,6 +1935,77 @@ auto PlaybackSession::lastOperationDiagnostics() const -> core::Result<core::Dia
     }
     SessionOperation operation{state_->operationActive};
     return state_->lastOperationDiagnostics;
+}
+
+auto PlaybackSession::acquireHostOverride(std::string_view ownerId, std::int64_t priority,
+                                          std::uint16_t propertyMask,
+                                          const HostOverrideLifetime& lifetime,
+                                          std::span<const HostOverrideWrite> writes)
+    -> core::Result<HostOverrideToken> {
+    if (!state_->ownerThread.isCurrent()) {
+        return core::unexpected(ownerError("acquire_host_override"));
+    }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("acquire_host_override"));
+    }
+    SessionOperation operation{state_->operationActive};
+    if (state_->sessionState != SessionState::Ready &&
+        state_->sessionState != SessionState::Running) {
+        return core::unexpected(
+            core::Error{"playback.session.not_ready",
+                        "PlaybackSession must be active to acquire a host override"});
+    }
+    if (!state_->runtimeSession) {
+        return core::unexpected(
+            core::Error{"playback.session.empty", "PlaybackSession has no committed World"});
+    }
+    if (writes.empty()) {
+        return core::unexpected(core::Error{"playback.override.empty",
+                                            "Override tokens require at least one property write"});
+    }
+
+    std::vector<runtime::PropertyOverrideWrite> mapped;
+    mapped.reserve(writes.size());
+    for (const auto& write : writes) {
+        mapped.push_back(runtime::PropertyOverrideWrite{
+            .objectId = chart::ChartObjectId{write.objectId},
+            .property = toWorldProperty(write.property),
+            .value = toWorldValue(write.value),
+        });
+    }
+    auto token = state_->runtimeSession->acquireOverride(
+        world::OverrideKind::Host, std::string{ownerId}, priority, propertyMask,
+        toWorldLifetime(lifetime), mapped);
+    if (!token) {
+        return core::unexpected(mapHostOverrideError(token.error()));
+    }
+    return HostOverrideToken{.value = token->value};
+}
+
+auto PlaybackSession::releaseHostOverride(HostOverrideToken token) -> core::Result<void> {
+    if (!state_->ownerThread.isCurrent()) {
+        return core::unexpected(ownerError("release_host_override"));
+    }
+    if (state_->operationActive) {
+        return core::unexpected(reentryError("release_host_override"));
+    }
+    SessionOperation operation{state_->operationActive};
+    if (state_->sessionState != SessionState::Ready &&
+        state_->sessionState != SessionState::Running) {
+        return core::unexpected(
+            core::Error{"playback.session.not_ready",
+                        "PlaybackSession must be active to release a host override"});
+    }
+    if (!state_->runtimeSession) {
+        return core::unexpected(
+            core::Error{"playback.session.empty", "PlaybackSession has no committed World"});
+    }
+    auto released =
+        state_->runtimeSession->releaseOverride(world::OverrideTokenId{.value = token.value});
+    if (!released) {
+        return core::unexpected(mapHostOverrideError(released.error()));
+    }
+    return {};
 }
 
 } // namespace cuexis::playback

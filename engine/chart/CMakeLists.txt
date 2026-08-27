@@ -17,7 +17,6 @@ target_sources(cuexis_chart
         src/prepared_semantic_identity.cpp
         src/chart_v4_reader_internal.cpp
         src/rational_beat.cpp
-        src/sha256_internal.cpp
         src/timing_map.cpp
         src/uuid.cpp
     PRIVATE

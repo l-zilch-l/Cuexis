@@ -1,10 +1,11 @@
-#include "sha256_internal.hpp"
+#include <cuexis_internal/sha256.hpp>
 
 #include <algorithm>
 #include <bit>
 #include <cstddef>
+#include <span>
 
-namespace cuexis::chart::detail {
+namespace cuexis::core::detail {
 
 void Sha256::update(std::span<const std::byte> bytes) noexcept {
     totalBytes_ += bytes.size();
@@ -107,21 +108,28 @@ void Sha256::transform(const std::array<std::uint8_t, 64>& block) noexcept {
     state_[7] += h;
 }
 
-auto sha256(std::string_view bytes) noexcept -> std::array<std::uint8_t, 32> {
+auto sha256(std::span<const std::byte> bytes) noexcept -> std::array<std::uint8_t, 32> {
     Sha256 hash;
-    hash.update(std::as_bytes(std::span{bytes.data(), bytes.size()}));
+    hash.update(bytes);
     return hash.finish();
+}
+
+auto sha256(std::string_view bytes) noexcept -> std::array<std::uint8_t, 32> {
+    return sha256(std::as_bytes(std::span{bytes.data(), bytes.size()}));
 }
 
 auto sha256Hex(const std::array<std::uint8_t, 32>& digest) -> std::string {
     static constexpr char digits[] = "0123456789abcdef";
-    std::string result;
-    result.resize(digest.size() * 2);
+    std::string result(digest.size() * 2U, '0');
     for (std::size_t index = 0; index < digest.size(); ++index) {
-        result[index * 2] = digits[digest[index] >> 4U];
-        result[index * 2 + 1] = digits[digest[index] & 0x0FU];
+        result[index * 2U] = digits[digest[index] >> 4U];
+        result[index * 2U + 1U] = digits[digest[index] & 0x0FU];
     }
     return result;
 }
 
-} // namespace cuexis::chart::detail
+auto sha256Hex(std::span<const std::byte> bytes) -> std::string {
+    return sha256Hex(sha256(bytes));
+}
+
+} // namespace cuexis::core::detail

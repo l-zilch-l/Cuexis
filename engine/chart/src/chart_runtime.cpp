@@ -391,7 +391,7 @@ struct GroupBoundary final {
     }
     totalEventCount += eventCount;
 
-    const auto zero = *RationalBeat::create(0, 1);
+    const auto zero = RationalBeat::zero();
     std::map<std::string, GroupBoundary> groups;
     std::map<BehaviorProperty, std::vector<const BehaviorEvent*>> continuous;
     for (const auto& event : behavior.events) {

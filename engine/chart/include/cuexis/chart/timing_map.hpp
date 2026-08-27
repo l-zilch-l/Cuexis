@@ -32,6 +32,7 @@ struct BeatSample final {
     double beat{};
     bool inStop{};
     double stopProgress{};
+    RationalBeat rationalBeat{RationalBeat::zero()};
 };
 
 class TimingMap final {

@@ -822,10 +822,17 @@ auto PreparedRuntimeSession::operator=(PreparedRuntimeSession&& other) noexcept
     return *this;
 }
 
-RuntimeSession::RuntimeSession() noexcept : sessionToken_(allocateSessionToken()) {}
+RuntimeSession::RuntimeSession() noexcept : RuntimeSession(RuntimeSessionKind::Playback) {}
+
+RuntimeSession::RuntimeSession(RuntimeSessionKind kind) noexcept
+    : sessionKind_(kind), sessionToken_(allocateSessionToken()) {}
 
 RuntimeSession::RuntimeSession(assets::ResourceManager& resourceManager) noexcept
-    : RuntimeSession() {
+    : RuntimeSession(RuntimeSessionKind::Playback, resourceManager) {}
+
+RuntimeSession::RuntimeSession(RuntimeSessionKind kind,
+                               assets::ResourceManager& resourceManager) noexcept
+    : RuntimeSession(kind) {
     resourceManager_ = &resourceManager;
     managerToken_ = resourceManager.managerToken();
 }
@@ -1012,17 +1019,13 @@ auto RuntimeSession::updatePrepared(RuntimeEvaluationState& state,
     }
 
     if (state.animation.has_value()) {
-        auto chartBeat = chart::approximateRationalBeat(beatSample->beat);
-        if (!chartBeat) {
-            return core::unexpected(std::move(chartBeat.error()));
-        }
         auto baselines = rebuildAnimationBaselines(state);
         if (!baselines) {
             return core::unexpected(std::move(baselines.error()));
         }
         auto mixed = animation::AnimationSystem::evaluate(
-            *state.animation, *chartBeat, state.animationBindings, state.animationBaselines,
-            state.animationWrites, debugOptions_.enabled);
+            *state.animation, beatSample->rationalBeat, state.animationBindings,
+            state.animationBaselines, state.animationWrites, debugOptions_.enabled);
         if (!mixed) {
             return core::unexpected(std::move(mixed.error()));
         }
@@ -1315,6 +1318,12 @@ auto RuntimeSession::acquireOverride(world::OverrideKind kind, std::string owner
     if (!world_ || !evaluation_) {
         return core::unexpected(
             core::Error{"runtime.session.empty", "RuntimeSession has no committed World"});
+    }
+    if (kind == world::OverrideKind::StudioPreview &&
+        sessionKind_ != RuntimeSessionKind::StudioPreview) {
+        return core::unexpected(
+            core::Error{"runtime.override.preview_session_required",
+                        "StudioPreviewOverride is only valid on a Studio preview RuntimeSession"});
     }
     if (writes.empty()) {
         return core::unexpected(core::Error{"runtime.override.empty",

@@ -11,6 +11,7 @@
 #include <cuexis/filesystem/secure_file.hpp>
 #include <cuexis/json/parse.hpp>
 #include <cuexis/json/reader.hpp>
+#include <cuexis_internal/portable_path.hpp>
 
 #include "project_validation.hpp"
 
@@ -106,31 +107,8 @@ void addWarning(core::Diagnostics& diagnostics, std::string code, std::string me
     });
 }
 
-[[nodiscard]] std::string asciiUpper(std::string_view text) {
-    std::string result{text};
-    std::transform(result.begin(), result.end(), result.begin(), [](char character) {
-        if (character >= 'a' && character <= 'z') {
-            return static_cast<char>(character - 'a' + 'A');
-        }
-        return character;
-    });
-    return result;
-}
-
 [[nodiscard]] bool isWindowsReservedSegment(std::string_view segment) {
-    const auto dot = segment.find('.');
-    const std::string stem = asciiUpper(segment.substr(0, dot));
-    constexpr std::array reserved{std::string_view{"CON"},    std::string_view{"PRN"},
-                                  std::string_view{"AUX"},    std::string_view{"NUL"},
-                                  std::string_view{"CLOCK$"}, std::string_view{"CONIN$"},
-                                  std::string_view{"CONOUT$"}};
-    if (std::find(reserved.begin(), reserved.end(), stem) != reserved.end()) {
-        return true;
-    }
-    if (stem.size() == 4 && stem[3] >= '1' && stem[3] <= '9') {
-        return stem.starts_with("COM") || stem.starts_with("LPT");
-    }
-    return false;
+    return core::detail::isWindowsReservedSegment(segment);
 }
 
 [[nodiscard]] bool validatePortablePathInternal(std::string_view value, std::size_t maxBytes,

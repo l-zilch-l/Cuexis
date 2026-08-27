@@ -25,6 +25,8 @@ target_sources(cuexis_core
         src/diagnostic.cpp
         src/log_sink.cpp
         src/math.cpp
+        src/portable_path.cpp
+        src/sha256.cpp
         src/thread_checker.cpp
         src/uuid.cpp
     PUBLIC
@@ -47,6 +49,8 @@ target_compile_features(cuexis_core PUBLIC cxx_std_20)
 target_include_directories(cuexis_core
     PUBLIC
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/generated>
+        # In-tree only. Do not add internal/ to FILE_SET HEADERS.
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/internal>
         $<INSTALL_INTERFACE:include>
 )
 

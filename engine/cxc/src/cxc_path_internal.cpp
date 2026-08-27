@@ -1,6 +1,9 @@
 #include "cxc_path_internal.hpp"
 
+#include <cuexis_internal/portable_path.hpp>
+
 #include <algorithm>
+#include <ranges>
 #include <utility>
 
 namespace cuexis::cxc::detail {
@@ -11,30 +14,10 @@ namespace {
            (character >= '0' && character <= '9');
 }
 
-[[nodiscard]] auto isWindowsReservedSegment(std::string_view segment) -> bool {
-    const auto dot = segment.find('.');
-    const auto stem = foldAscii(segment.substr(0, dot));
-    if (stem == "con" || stem == "prn" || stem == "aux" || stem == "nul" || stem == "clock$" ||
-        stem == "conin$" || stem == "conout$") {
-        return true;
-    }
-    if (stem.size() == 4 && stem[3] >= '1' && stem[3] <= '9') {
-        return stem.starts_with("com") || stem.starts_with("lpt");
-    }
-    return false;
-}
-
 } // namespace
 
 auto foldAscii(std::string_view value) -> std::string {
-    std::string result;
-    result.reserve(value.size());
-    for (const char character : value) {
-        result.push_back(character >= 'A' && character <= 'Z'
-                             ? static_cast<char>(character - 'A' + 'a')
-                             : character);
-    }
-    return result;
+    return core::detail::foldAscii(value);
 }
 
 auto insertUniqueArchivePath(std::set<std::string, std::less<>>& foldedPaths, std::string_view path)
@@ -77,7 +60,8 @@ auto isPortablePath(std::string_view path, std::size_t maxBytes, std::size_t max
                                                            : separator - segmentStart);
         ++depth;
         if (depth > maxDepth || segment.empty() || segment == "." || segment == ".." ||
-            segment.back() == '.' || segment.back() == ' ' || isWindowsReservedSegment(segment) ||
+            segment.back() == '.' || segment.back() == ' ' ||
+            core::detail::isWindowsReservedSegment(segment) ||
             !std::ranges::all_of(segment, [](char character) {
                 return isAsciiAlphaNumeric(character) || character == '.' || character == '_' ||
                        character == '-';
