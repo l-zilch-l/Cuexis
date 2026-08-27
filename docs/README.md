@@ -14,7 +14,7 @@
 3. [产品与模块边界](architecture/README.md)
 4. [ADR 索引](adr/README.md)，先读 ADR 0027、0024、0025、0026、0037 和 0038
 5. [格式索引](formats/README.md)
-6. [Stage 4 计划](stage_plans/stage_4_implementation_plan.md)
+6. [Stage 5 计划](stage_plans/stage_5_implementation_plan.md)
 7. [指南索引](guides/README.md)
 8. [构建与验证](guides/BUILDING.md)
 

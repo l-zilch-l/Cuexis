@@ -1,8 +1,8 @@
 # Stage 5 Implementation Plan: Material and Shader Pipeline
 
-状态：future；未开始，等待 Stage 4 稳定表现输入
+状态：future；unblocked / not started；Stage 4 已于 2026-08-27 关闭
 
-更新日期：2026-08-10
+更新日期：2026-08-27
 
 归档来源：[旧版 PROJECT_GUIDE](../archive/PROJECT_GUIDE_LEGACY_2026-08-10.md) 与
 [SDK transition plan 快照](../archive/CUEXIS_SDK_TRANSITION_PLAN_2026-08-10.md)。设计输入见

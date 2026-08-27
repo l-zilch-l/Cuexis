@@ -2,6 +2,8 @@
 
 状态：S4-G local checkpoint；Stage 4 仍为 unblocked / not started 的整体阶段
 
+后续关闭证据：[Cuexis 阶段 4 验收报告](stage_4_completion_report.md)。
+
 快照日期：2026-08-27
 
 权威范围：[Stage 4 实施计划](../stage_plans/stage_4_implementation_plan.md) 与

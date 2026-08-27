@@ -59,15 +59,16 @@ Playback 保留 `cuexis.chart` v1/v2/v3 的全部生产路径。Stage Chart Form
 Chart v4 和 CXT v1 合同，并完成 CFU-C0–C4。CFU-D1/D2 已关闭显式 JSON lift 迁移与 CLI
 `--target 4`；CFU-E 已关闭公共 API、统一 PlaybackSource、typed/CXC factory、SDK `0.6.0`、
 Chart v4 prepare、capability 接入与 `PreparedSemanticIdentity`。静态和参数化 v4 可使用现有
-Runtime，非空动画仍稳定拒绝。CFU-D3 已关闭 Playback FrameSnapshot / FrameDigest v3 /
+Runtime。CFU-D3 已关闭 Playback FrameSnapshot / FrameDigest v3 /
 seek-stop 等价；整包 CFU-D 已由项目所有者记录“未提供外部资产”并关闭，兼容窗口不缩短。
 CFU-F 已在最终实现 SHA 上关闭跨平台 consumer、确定性、安全与性能门禁。CFU-G 的 G0 状态校准、
 G1 退出审计和 G2 Stage 4 typed handoff 已完成；G3 本地候选门禁已于 2026-08-19 通过。最终候选
 SHA `4371fdcf04f4f89bfddf070cbb15e4c903810a53` 的 hosted Linux/MSVC/MinGW 验证已于 2026-08-24
 全部通过，G3 hosted 与 G4 已完成。G5 completion report SHA
 `6e52677be2f27f83d0b709619be7ffcc141d6f95` 的 hosted revalidation 也已全部通过；项目所有者已于
-2026-08-24 明确接受报告，CFU-G 与 Stage Chart Format Update 已关闭。Stage 4 已解锁但尚未开始。
-S4-A、S4-B、S4-C、S4-D、S4-E、S4-F 与 S4-G 本地门禁已通过。
+2026-08-24 明确接受报告，CFU-G 与 Stage Chart Format Update 已关闭。Stage 4 已完成；
+最终 SHA `3df92747e575e97b3606aa4a2030a04643c46473` 的 hosted Linux/MSVC/MinGW 已于
+2026-08-27 全部通过，项目所有者已接受完成报告。Stage 5 已解锁但尚未开始。
 
 格式权威入口：[formats/README.md](formats/README.md)。
 

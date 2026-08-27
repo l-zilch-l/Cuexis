@@ -18,6 +18,7 @@
 | [Stage 1E](stage_1e_completion_report.md) | completed |
 | [Stage 2](stage_2_completion_report.md) | completed |
 | [Stage 3](stage_3_completion_report.md) | completed |
+| [Stage 4](stage_4_completion_report.md) | completed |
 
 ## Review、盘点和历史验证
 
@@ -58,5 +59,7 @@
 | [260827 Stage 4 S4-D PropertyResolver](260827-stage-4-s4-d-property-resolver.md) | S4-D local checkpoint: unified PropertyResolver, OverrideToken, BasePropertyCommand and Runtime orchestration; nonempty animation Playback still rejected |
 | [260827 Stage 4 S4-E Playback ownership](260827-stage-4-s4-e-playback-ownership.md) | S4-E local checkpoint: Playback compile/own/commit of animation state under opt-in capability; default Session still rejects nonempty animation |
 | [260827 Stage 4 S4-F consumer capability](260827-stage-4-s4-f-consumer-capability.md) | S4-F local checkpoint: public animation capability constants in default `allCapabilities()`; consumer/FrameDigest v3 parity; trimmed Session still rejects |
-| [260827 Stage 4 S4-G safety allocation](260827-stage-4-s4-g-safety-allocation.md) | S4-G local checkpoint: ChartLimits/write budget, warmed zero or bounded allocation, F4-style performance probe; Stage 4 still unblocked / not started |
+| [260827 Stage 4 S4-G safety allocation](260827-stage-4-s4-g-safety-allocation.md) | S4-G local checkpoint: ChartLimits/write budget, warmed zero or bounded allocation, F4-style performance probe |
+| [260827 Stage 4 S4-H local validation](260827-stage-4-s4-h-local-validation.md) | historical S4-H local Debug/Release snapshot before final SHA publication |
+| [Stage 4 completion report](stage_4_completion_report.md) | S4-H hosted Linux/MSVC/MinGW success on `3df9274`; owner acceptance recorded 2026-08-27; Stage 4 closed and Stage 5 unblocked but not started |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |

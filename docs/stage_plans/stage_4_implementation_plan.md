@@ -1,6 +1,6 @@
 # Stage 4 Implementation Plan: Cuexis Presentation Animation
 
-状态：future；S4-A、S4-B、S4-C、S4-D、S4-E、S4-F 与 S4-G 本地门禁已通过，Stage Chart Format Update 已关闭并已解锁；整体仍为 unblocked / not started
+状态：completed；S4-A 至 S4-H 已关闭，项目所有者已于 2026-08-27 接受；Stage 5 已解锁但尚未开始
 
 更新日期：2026-08-27
 
@@ -30,7 +30,8 @@ runtime program，按绝对时间采样，并写入既有 FrameSnapshot 观察�
   已记录同 SHA Linux/MSVC/MinGW 全部成功；G5 report-SHA hosted revalidation 与 G6 owner acceptance
   已完成。
 
-上述前置条件在 2026-08-24 均已满足。本计划保持 `future`，状态为 unblocked / not started。
+上述前置条件在 2026-08-24 均已满足。G6 当时将本阶段标为 unblocked / not started。S4-H 与阶段关闭已于
+2026-08-27 完成。
 
 ## 3. 当前基线
 
@@ -296,6 +297,10 @@ v3，SDK API 保持 `0.6.0`。证据见
 退出门禁：三平台 hosted 成功，owner acceptance 已记录。关闭本阶段不表示 Shader 管线、Studio 或
 Judgement 已开始。
 
+实施快照（2026-08-27）：最终 SHA `3df92747e575e97b3606aa4a2030a04643c46473` 的 Linux Quality、
+Windows MSVC 与 Windows MinGW 全部 success（attempt 1）。项目所有者已接受完成报告。证据见
+[Stage 4 完成报告](../stage_reports/stage_4_completion_report.md)。
+
 ## 8. 模块、target 与文件落点
 
 依赖方向：
@@ -399,5 +404,4 @@ Stage 4 只有在下列全部成立后才能标为 completed：
 4. hosted Linux Quality、Windows MSVC 和 Windows MinGW 在同一最终 SHA 成功。
 5. completion report 经项目所有者接受。
 
-关闭后的下一阶段是 [Stage 5](stage_5_implementation_plan.md)。Stage 5 在本阶段完成前保持
-blocked。
+关闭后的下一阶段是 [Stage 5](stage_5_implementation_plan.md)。Stage 5 已解锁但尚未开始。
