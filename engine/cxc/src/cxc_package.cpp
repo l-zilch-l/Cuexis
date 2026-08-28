@@ -253,6 +253,14 @@ validateDependencyGraph(core::Diagnostics& diagnostics,
             static_cast<void>(diagnostics.add(std::move(diagnostic)));
             valid = false;
         }
+        if (declaration.type == project::AssetType::Shader && !declaration.dependencies.empty()) {
+            auto diagnostic =
+                core::Diagnostic{core::DiagnosticSeverity::Error, "cxc.project.invalid",
+                                 "Shader assets must be dependency leaves", "$/project/assets"};
+            diagnostic.withContext("assetId", id);
+            static_cast<void>(diagnostics.add(std::move(diagnostic)));
+            valid = false;
+        }
         for (const auto& dependency : declaration.dependencies) {
             const auto found = assets.find(dependency);
             if (found == assets.end()) {
@@ -268,6 +276,14 @@ validateDependencyGraph(core::Diagnostics& diagnostics,
                 auto diagnostic = core::Diagnostic{
                     core::DiagnosticSeverity::Error, "cxc.project.invalid",
                     "Non-audio assets must not depend on Audio assets", "$/project/assets"};
+                diagnostic.withContext("assetId", id).withContext("dependency", dependency);
+                static_cast<void>(diagnostics.add(std::move(diagnostic)));
+                valid = false;
+            } else if (declaration.type != project::AssetType::Material &&
+                       found->second.type == project::AssetType::Shader) {
+                auto diagnostic = core::Diagnostic{
+                    core::DiagnosticSeverity::Error, "cxc.project.invalid",
+                    "Only Material assets may depend on Shader assets", "$/project/assets"};
                 diagnostic.withContext("assetId", id).withContext("dependency", dependency);
                 static_cast<void>(diagnostics.add(std::move(diagnostic)));
                 valid = false;

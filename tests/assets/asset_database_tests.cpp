@@ -176,6 +176,47 @@ TEST_CASE("AssetDatabase routes v2 Audio and enforces the audio dependency bound
     CHECK(hasDiagnostic(invalid.diagnostics, "assets.database.audio_dependency_forbidden"));
 }
 
+TEST_CASE("AssetDatabase routes v3 Shader and enforces the shader dependency boundary",
+          "[assets][database][shader][s5-c]") {
+    TemporaryAssetRoot root;
+    root.write("shaders/sprite.shader.bin", "shader");
+    root.write("mesh.bin", "mesh");
+
+    auto acceptedInput = inputFor(root, {{.id = {"shader.sprite"},
+                                          .type = cuexis::assets::AssetType::Shader,
+                                          .source = "shaders/sprite.shader.bin"}});
+    acceptedInput.roots[0].index.version = 3;
+    const auto accepted = cuexis::assets::AssetDatabase::build(acceptedInput);
+    REQUIRE(accepted.hasValue());
+    CHECK(accepted.database->typeOf({"shader.sprite"}) == cuexis::assets::AssetType::Shader);
+
+    auto v1Input = acceptedInput;
+    v1Input.roots[0].index.version = 1;
+    const auto v1 = cuexis::assets::AssetDatabase::build(v1Input);
+    REQUIRE_FALSE(v1.hasValue());
+    CHECK(hasDiagnostic(v1.diagnostics, "assets.database.asset_type_invalid"));
+
+    auto v2Input = acceptedInput;
+    v2Input.roots[0].index.version = 2;
+    const auto v2 = cuexis::assets::AssetDatabase::build(v2Input);
+    REQUIRE_FALSE(v2.hasValue());
+    CHECK(hasDiagnostic(v2.diagnostics, "assets.database.asset_type_invalid"));
+
+    auto invalidInput = inputFor(root, {{.id = {"shader.sprite"},
+                                         .type = cuexis::assets::AssetType::Shader,
+                                         .source = "shaders/sprite.shader.bin",
+                                         .dependencies = {{"mesh.note"}}},
+                                        {.id = {"mesh.note"},
+                                         .type = cuexis::assets::AssetType::Mesh,
+                                         .source = "mesh.bin",
+                                         .dependencies = {{"shader.sprite"}}}});
+    invalidInput.roots[0].index.version = 3;
+    const auto invalid = cuexis::assets::AssetDatabase::build(invalidInput);
+    REQUIRE_FALSE(invalid.hasValue());
+    CHECK(hasDiagnostic(invalid.diagnostics, "assets.database.shader_dependencies_not_empty"));
+    CHECK(hasDiagnostic(invalid.diagnostics, "assets.database.shader_dependency_forbidden"));
+}
+
 TEST_CASE("AssetDatabase rejects unsafe sources and overlapping roots",
           "[assets][database][security]") {
     TemporaryAssetRoot root;

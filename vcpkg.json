@@ -36,6 +36,14 @@
       "dependencies": [
         "catch2"
       ]
+    },
+    "shader-tools": {
+      "description": "Optional shaderc, SPIRV-Tools, and SPIRV-Cross for cuexis_shader",
+      "dependencies": [
+        "shaderc",
+        "spirv-cross",
+        "spirv-tools"
+      ]
     }
   }
 }

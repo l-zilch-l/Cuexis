@@ -76,7 +76,7 @@ suffix 只来自允许集合或 exp.<name>
 
 ```text
 Cuexis display version     仓库/发行构建身份
-C++ SDK API version        CMake package 与源码兼容版本；当前 static/shared preview 为 0.6.0
+C++ SDK API version        CMake package 与源码兼容版本；当前 static/shared preview 为 0.7.0
 C ABI version              稳定 shared-library 二进制契约，阶段 12 首次冻结
 Chart/Project/Asset format 各自持久化 format + version
 ReplayData format          阶段 11 冻结的独立持久化版本
@@ -86,7 +86,7 @@ simulationVersion          粒子等确定性算法版本
 当前 `CUEXIS_SDK_API_VERSION` 是 CMake package version 的唯一来源，生成头通过
 `cuexis::version::sdkApi` 暴露，package config 同时设置 `Cuexis_VERSION` 和
 `Cuexis_API_VERSION`。`Cuexis_VERSION_DISPLAY` 继续保存完整构建身份。preview 使用
-`SameMinorVersion`：`0.6.x` 内允许满足不高于已安装版本的请求，minor 或 major 变化必须由
+`SameMinorVersion`：`0.7.x` 内允许满足不高于已安装版本的请求，minor 或 major 变化必须由
 consumer 显式接受。日期构建号变化不改变 `find_package` 兼容性。
 
 阶段 1D 的 SourceClockSample、RuntimeTimeline、Prepared Playback 和 Audio package components
@@ -110,7 +110,8 @@ FrameSnapshot resource refs 与 FrameDigest v3，没有重复提升版本。
 Stage Chart Format Update 的 CFU-E0 接受了 owning project-document source、CXC file/memory factory、
 prepare options 和 semantic identity observation 的 additive API 方向。CFU-E1 首次落下 public source
 type/factory 并将 preview、生成头、package config、version rejection 与 static/shared consumer 同步
-提升到 `0.6.0`；E2/E3 将在同一已批准 minor 中完成其余冻结 surface。
+提升到 `0.6.0`；E2/E3 将在同一已批准 minor 中完成其余冻结 surface。Stage 5 S5-C 新增公开
+Presentation 类型 `Shader` / `ParameterizedMaterial`，因此 preview 提升到 `0.7.0`。
 
 shared `0.x` 只支持使用匹配 SDK minor、编译器工具链、标准库、运行时、架构和 Debug/Release
 配置重新构建的 consumer。CMake `SameMinorVersion` 继续表达源码/package 请求兼容，绝不表示

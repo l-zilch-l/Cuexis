@@ -23,6 +23,7 @@ enum class PlaybackAssetType {
     Material,
     Texture,
     Audio,
+    Shader,
 };
 
 struct PlaybackAssetDescriptor final {

@@ -7,8 +7,10 @@ add_executable(cuexis_playback_tests
     playback_source_tests.cpp
     playback_v4_animation_tests.cpp
     playback_v4_prepare_tests.cpp
+    presentation_shader_tests.cpp
     presentation_tests.cpp
     runtime_timeline_tests.cpp
+    ../presentation/validation_sink.cpp
     ${PROJECT_SOURCE_DIR}/engine/playback/src/frame_digest_version.cpp
     ${PROJECT_SOURCE_DIR}/engine/playback/src/presentation_extraction.cpp
 )
@@ -21,6 +23,7 @@ target_compile_definitions(cuexis_playback_tests
 target_include_directories(cuexis_playback_tests
     PRIVATE
         ${PROJECT_SOURCE_DIR}/engine/playback/src
+        ${PROJECT_SOURCE_DIR}/tests/presentation
 )
 
 target_link_libraries(cuexis_playback_tests

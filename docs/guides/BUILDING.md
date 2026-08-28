@@ -2,7 +2,7 @@
 
 状态：阶段 3 最终验收后的现行构建、安装与质量门禁规范
 
-更新日期：2026-08-13
+更新日期：2026-08-28
 
 ## 当前仓库说明
 
@@ -111,8 +111,22 @@ THIRD_PARTY_NOTICES.md
 
 当前 Windows/MSVC 验收固定 `x64-windows` triplet。无头基础依赖为 EnTT、GLM、
 nlohmann-json、json-schema-validator 和 tl-expected；`audio-sdl` feature 增加 SDL3，`player`
-feature 增加 SDL3、glad 与 spdlog，`tests` feature 增加 Catch2。准确版本和许可证记录见根目录
+feature 增加 SDL3、glad 与 spdlog，`tests` feature 增加 Catch2。可选 feature `shader-tools`
+增加 shaderc、SPIRV-Tools 与 SPIRV-Cross，仅在 `CUEXIS_BUILD_SHADER_TOOLS=ON` 时由内部
+`cuexis_shader` 使用；默认 Debug 与 headless 预设不得下载这些 port。准确版本和许可证记录见根目录
 `vcpkg.json` 与 `THIRD_PARTY_NOTICES.md`。
+
+可选 Shader 编译器（S5-B 接线，默认关闭）：
+
+```powershell
+cmake --preset debug-shader-tools --fresh
+cmake --build --preset debug-shader-tools
+ctest --preset debug-shader-tools --no-tests=error
+```
+
+`debug-shader-tools` 在默认 Debug feature 之上追加 `shader-tools`，并打开
+`CUEXIS_BUILD_SHADER_TOOLS`。它构建内部静态库 `cuexis_shader`、`cuexis_shader_tests` 和
+developer-tools 下的 `cuexis_asset_importer`，不把编译器链入 `cuexis_playback`。
 
 ## 生成文件
 
@@ -294,7 +308,7 @@ CUEXIS_LIBRARY_TYPE=STATIC|SHARED
 ```
 
 不得把 `BUILD_SHARED_LIBS` 当作 Cuexis 支持入口。当前 static/shared preview SDK API 均为
-`0.6.0`。一个 build tree 与 install prefix 只能包含一种 Cuexis linkage，consumer 继续链接
+`0.7.0`。一个 build tree 与 install prefix 只能包含一种 Cuexis linkage，consumer 继续链接
 相同的 `Cuexis::` target 名，不得硬编码 DLL/shared object 文件名。可直接使用
 `shared-debug`、`shared-release`、`headless-shared-debug` 和 `headless-shared-release` presets。
 

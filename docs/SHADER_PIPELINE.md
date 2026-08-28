@@ -2,9 +2,10 @@
 
 状态：relocated compatibility entry
 
-更新日期：2026-08-10
+更新日期：2026-08-28
 
-完整设计输入已迁移到
+历史设计输入见
 [proposals/deferred/SHADER_PIPELINE.md](proposals/deferred/SHADER_PIPELINE.md)。
 
-该设计方向尚未进入当前实施阶段。本页只用于兼容旧链接，不是当前生产 API 或格式合同。
+生产字段合同见 [formats/MATERIAL_SHADER.md](formats/MATERIAL_SHADER.md)。本页只用于兼容旧
+链接。

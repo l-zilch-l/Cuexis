@@ -1,7 +1,7 @@
 #pragma once
 
-// Asset Index v1/v2 uses one cuexis.asset-index.json per asset root.
-// It declares Mesh, Material, Texture, and Audio types with source paths and dependencies.
+// Asset Index v1/v2/v3 uses one cuexis.asset-index.json per asset root.
+// v1 types: mesh, material, texture. v2 adds audio. v3 adds shader.
 // Directory enumeration does not discover AssetIds; AssetDatabase reads only this index.
 
 #include <cuexis/core/diagnostic.hpp>
@@ -20,12 +20,14 @@ namespace cuexis::project {
 inline constexpr std::string_view assetIndexFormat = "cuexis.asset-index";
 inline constexpr std::uint32_t assetIndexFormatVersion = 1;
 inline constexpr std::uint32_t assetIndexFormatVersion2 = 2;
+inline constexpr std::uint32_t assetIndexFormatVersion3 = 3;
 
 enum class AssetType {
     Mesh,
     Material,
     Texture,
     Audio,
+    Shader,
 };
 
 [[nodiscard]] std::string_view assetTypeName(AssetType type) noexcept;

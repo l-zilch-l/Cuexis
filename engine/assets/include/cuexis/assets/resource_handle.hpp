@@ -37,10 +37,12 @@ struct MeshTag final {};
 struct MaterialTag final {};
 struct TextureTag final {};
 struct AudioSourceTag final {};
+struct ShaderTag final {};
 
 using MeshHandle = ResourceHandle<MeshTag>;
 using MaterialHandle = ResourceHandle<MaterialTag>;
 using TextureHandle = ResourceHandle<TextureTag>;
 using AudioSourceHandle = ResourceHandle<AudioSourceTag>;
+using ShaderHandle = ResourceHandle<ShaderTag>;
 
 } // namespace cuexis::assets

@@ -62,6 +62,9 @@ inline constexpr std::string_view capabilityRenderVisibilityV1 = "cuexis.render.
 inline constexpr std::string_view capabilityMaterialSnapshotV1 = "cuexis.material.snapshot.v1";
 inline constexpr std::string_view capabilityAnimationClipV1 = "cuexis.animation.clip.v1";
 inline constexpr std::string_view capabilityAnimationLayersV1 = "cuexis.animation.layers.v1";
+inline constexpr std::string_view capabilityShaderAssetV1 = "cuexis.shader.asset.v1";
+inline constexpr std::string_view capabilityMaterialParameterizedV1 =
+    "cuexis.material.parameterized.v1";
 
 struct ChartParameterNumber final {
     double value{};

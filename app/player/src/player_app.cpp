@@ -76,6 +76,7 @@ struct PlayerOptions final {
     std::optional<std::filesystem::path> chartPath;
     std::optional<std::filesystem::path> projectPath;
     std::optional<std::filesystem::path> frameStatsPrefix;
+    std::optional<std::filesystem::path> shaderCacheDirectory;
 };
 
 struct NullInputSource final {
@@ -143,6 +144,21 @@ class PlayerClock final {
                     "The project option requires a directory or cuexis.project.json path"});
             }
             options.projectPath = std::filesystem::path{arguments[index]};
+            continue;
+        }
+        if (argument == "--shader-cache-dir") {
+            if (options.shaderCacheDirectory.has_value()) {
+                return core::unexpected(
+                    core::Error{"player.arguments.duplicate_shader_cache_dir",
+                                "The shader cache directory option may only be provided once"});
+            }
+            if (++index >= argumentCount || std::string_view{arguments[index]}.empty() ||
+                std::string_view{arguments[index]}.starts_with("--")) {
+                return core::unexpected(
+                    core::Error{"player.arguments.shader_cache_dir_missing",
+                                "The shader cache directory option requires a path"});
+            }
+            options.shaderCacheDirectory = std::filesystem::path{arguments[index]};
             continue;
         }
         if (argument == "--frame-stats") {
@@ -479,6 +495,9 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
             std::move(backendResult.error()).withContext("operation", "create_opengl_backend"));
     }
     auto backend = std::move(backendResult).value();
+    if (options.shaderCacheDirectory.has_value()) {
+        backend.setShaderCacheDirectory(*options.shaderCacheDirectory);
+    }
 
     const auto& openGlInfo = backend.info();
     logger.info("player.opengl", std::string{"Version: "} + openGlInfo.version);

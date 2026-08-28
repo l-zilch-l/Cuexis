@@ -2,15 +2,15 @@
 
 状态：现行路线图
 
-更新日期：2026-08-27
+更新日期：2026-08-28
 
 产品边界由 [ADR 0027](adr/0027-playback-sdk-product-boundary.md) 冻结。本文只维护阶段顺序和当前
 交接，不复制阶段实施细节或完成证据。
 
 ## 当前阶段
 
-Stage 4 已完成；当前下一阶段是 **Stage 5**，已解锁但尚未开始。Stage Chart Format Update
-已完成，不使用数字别名。
+Stage 4 已完成；当前下一阶段是 **Stage 5**。S5-A 合同已冻结；S5-B 已接线；S5-C 已完成；S5-D 已完成；S5-E 已完成；S5-F 已完成；S5-G 已完成；S5-H 尚未开始。
+Stage Chart Format Update 已完成，不使用数字别名。
 
 ```text
 CFU-A inventory and use cases                       completed
@@ -42,7 +42,7 @@ CFU-G final closure                                 completed; G6 owner acceptan
 
 | 阶段 | 目标 | 前置条件 |
 | --- | --- | --- |
-| [Stage 5](stage_plans/stage_5_implementation_plan.md) | Material/Shader 管线和能力 Profile | Stage 4 已关闭；当前已解锁但未开始 |
+| [Stage 5](stage_plans/stage_5_implementation_plan.md) | Material/Shader 管线和能力 Profile | S5-A 已冻结；S5-B 已接线；S5-C 已完成；S5-D 已完成；S5-E 已完成；S5-F 已完成；S5-G 已完成；S5-H 未开始 |
 | [Stage 6](stage_plans/stage_6_implementation_plan.md) | Playback C++ API 与 Player 产品化 | 真实 consumer 和配置组合证据 |
 | [Stage 7](stage_plans/stage_7_implementation_plan.md) | Cuexis Studio 核心 | 稳定 Playback/格式/预览路径 |
 | [Stage 8](stage_plans/stage_8_implementation_plan.md) | 可选确定性粒子表现 | Studio、Material/Shader 基础 |

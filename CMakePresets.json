@@ -26,6 +26,15 @@
       }
     },
     {
+      "name": "debug-shader-tools",
+      "displayName": "Debug with optional shader tools",
+      "inherits": "debug",
+      "cacheVariables": {
+        "CUEXIS_BUILD_SHADER_TOOLS": "ON",
+        "VCPKG_MANIFEST_FEATURES": "shader-tools"
+      }
+    },
+    {
       "name": "release",
       "displayName": "Release",
       "inherits": "base",
@@ -126,6 +135,10 @@
       "configurePreset": "debug"
     },
     {
+      "name": "debug-shader-tools",
+      "configurePreset": "debug-shader-tools"
+    },
+    {
       "name": "release",
       "configurePreset": "release"
     },
@@ -170,6 +183,16 @@
     {
       "name": "debug",
       "configurePreset": "debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "debug-shader-tools",
+      "configurePreset": "debug-shader-tools",
       "output": {
         "outputOnFailure": true
       },

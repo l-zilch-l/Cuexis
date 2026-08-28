@@ -1,6 +1,6 @@
 //  AssetIndexReader 实现 — 资产索引加载
 //  每个资产根独立一份 cuexis.asset-index.json，format: "cuexis.asset-index"
-//  v1 types: mesh, material, texture. v2 additionally supports leaf audio sources.
+//  v1 types: mesh, material, texture. v2 adds leaf audio. v3 adds leaf shader.
 //  目录枚举不参与 AssetId 发现，所有资产必须显式列入索引
 
 #include <cuexis/project/asset_index_reader.hpp>
@@ -110,11 +110,17 @@ void addWarning(core::Diagnostics& diagnostics, std::string code, std::string me
     if (*value == "texture") {
         return AssetType::Texture;
     }
-    if (*value == "audio" && formatVersion == assetIndexFormatVersion2) {
+    if (*value == "audio" &&
+        (formatVersion == assetIndexFormatVersion2 || formatVersion == assetIndexFormatVersion3)) {
         return AssetType::Audio;
     }
+    if (*value == "shader" && formatVersion == assetIndexFormatVersion3) {
+        return AssetType::Shader;
+    }
     addError(diagnostics, "asset_index.type.unsupported",
-             formatVersion == assetIndexFormatVersion2
+             formatVersion == assetIndexFormatVersion3
+                 ? "Asset type must be mesh, material, texture, audio, or shader"
+             : formatVersion == assetIndexFormatVersion2
                  ? "Asset type must be mesh, material, texture, or audio"
                  : "Asset type must be mesh, material, or texture",
              std::string{reader.fieldPath()});
@@ -158,6 +164,8 @@ std::string_view assetTypeName(AssetType type) noexcept {
         return "texture";
     case AssetType::Audio:
         return "audio";
+    case AssetType::Shader:
+        return "shader";
     }
     return "unknown";
 }
@@ -206,7 +214,8 @@ AssetIndexResult AssetIndexReader::read(std::string_view jsonText, const AssetIn
     }
     if (versionReader) {
         const auto value = versionReader->readInt64();
-        if (value && *value != assetIndexFormatVersion && *value != assetIndexFormatVersion2) {
+        if (value && *value != assetIndexFormatVersion && *value != assetIndexFormatVersion2 &&
+            *value != assetIndexFormatVersion3) {
             addError(diagnostics, "asset_index.version.unsupported",
                      "Asset Index format version is unsupported",
                      std::string{versionReader->fieldPath()});
@@ -350,14 +359,24 @@ AssetIndexResult AssetIndexReader::read(std::string_view jsonText, const AssetIn
         }
     }
 
-    if (document.version == assetIndexFormatVersion2) {
+    if (document.version == assetIndexFormatVersion2 ||
+        document.version == assetIndexFormatVersion3) {
         std::set<std::string, std::less<>> audioIds;
+        std::set<std::string, std::less<>> shaderIds;
         for (const auto& record : document.assets) {
             if (record.type == AssetType::Audio) {
                 audioIds.insert(record.id);
                 if (!record.dependencies.empty()) {
                     addError(diagnostics, "asset_index.audio.dependencies_not_empty",
                              "Audio records must be dependency leaves",
+                             "$/assets/" + record.id + "/dependencies");
+                }
+            }
+            if (record.type == AssetType::Shader) {
+                shaderIds.insert(record.id);
+                if (!record.dependencies.empty()) {
+                    addError(diagnostics, "asset_index.shader.dependencies_not_empty",
+                             "Shader records must be dependency leaves",
                              "$/assets/" + record.id + "/dependencies");
                 }
             }
@@ -370,6 +389,11 @@ AssetIndexResult AssetIndexReader::read(std::string_view jsonText, const AssetIn
                 if (audioIds.contains(dependency)) {
                     addError(diagnostics, "asset_index.audio.dependency_forbidden",
                              "Non-audio records must not depend on Audio records",
+                             "$/assets/" + record.id + "/dependencies");
+                }
+                if (shaderIds.contains(dependency) && record.type != AssetType::Material) {
+                    addError(diagnostics, "asset_index.shader.dependency_forbidden",
+                             "Only material records may depend on Shader records",
                              "$/assets/" + record.id + "/dependencies");
                 }
             }

@@ -39,6 +39,7 @@
 #include <new>
 #include <optional>
 #include <ranges>
+#include <set>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -194,6 +195,10 @@ struct SnapshotLayout final {
         return "texture2d";
     case PresentationResourceType::UnlitMaterial:
         return "unlit_material";
+    case PresentationResourceType::Shader:
+        return "shader";
+    case PresentationResourceType::ParameterizedMaterial:
+        return "parameterized_material";
     }
     return "unknown";
 }
@@ -299,7 +304,8 @@ struct RequiredCapability final {
                 std::string{capabilityBehaviorEventV1}, std::string{capabilityChartV3},
                 std::string{capabilityChartV4}, std::string{capabilityMaterialSnapshotV1},
                 std::string{capabilityRenderVisibilityV1}, std::string{capabilitySourceCxcV1},
-                std::string{capabilitySourceCxtV1}},
+                std::string{capabilitySourceCxtV1}, std::string{capabilityShaderAssetV1},
+                std::string{capabilityMaterialParameterizedV1}},
     };
 }
 
@@ -362,6 +368,9 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
         return "$/animationClips";
     }
     if (capability == capabilityAnimationLayersV1) {
+        return "$/objects";
+    }
+    if (capability == capabilityShaderAssetV1 || capability == capabilityMaterialParameterizedV1) {
         return "$/objects";
     }
     return "$";
@@ -599,11 +608,18 @@ assembleResourceIdentities(std::span<const chart::ChartResourceRequirement> requ
                 snapshotEntity.mesh = (*mesh)->reference;
 
                 const auto addMaterial = [&](std::string_view assetId) -> core::Result<void> {
-                    const auto* material = detail::findPresentationResource(
+                    const auto* unlit = detail::findPresentationResource(
                         *presentation, assetId, PresentationResourceType::UnlitMaterial);
+                    const auto* parameterized = detail::findPresentationResource(
+                        *presentation, assetId, PresentationResourceType::ParameterizedMaterial);
+                    const auto* material = unlit != nullptr ? unlit : parameterized;
                     if (material == nullptr) {
                         return core::unexpected(snapshotResourceMismatch(
                             object.id.value, assetId, PresentationResourceType::UnlitMaterial));
+                    }
+                    if ((*material)->reference.type == PresentationResourceType::Shader) {
+                        return core::unexpected(snapshotResourceMismatch(
+                            object.id.value, assetId, PresentationResourceType::Shader));
                     }
                     snapshotEntity.maximumMaterialAssetIdSize =
                         std::max(snapshotEntity.maximumMaterialAssetIdSize, assetId.size());
@@ -633,9 +649,13 @@ assembleResourceIdentities(std::span<const chart::ChartResourceRequirement> requ
                             snapshotEntity.maximumMaterialAssetIdSize = std::max(
                                 snapshotEntity.maximumMaterialAssetIdSize, material->value.size());
                             if (presentation != nullptr && object.components.renderable) {
-                                const auto* resource = detail::findPresentationResource(
+                                const auto* unlit = detail::findPresentationResource(
                                     *presentation, material->value,
                                     PresentationResourceType::UnlitMaterial);
+                                const auto* parameterized = detail::findPresentationResource(
+                                    *presentation, material->value,
+                                    PresentationResourceType::ParameterizedMaterial);
+                                const auto* resource = unlit != nullptr ? unlit : parameterized;
                                 if (resource == nullptr) {
                                     return core::unexpected(snapshotResourceMismatch(
                                         object.id.value, material->value,
@@ -837,19 +857,19 @@ auto PreparedPlayback::validatePresentation(const PresentationCapabilities& capa
             return result;
         }
 
-        if (capabilities.version != 1) {
+        if (capabilities.version != 1 && capabilities.version != 2) {
             addPresentationDiagnostic(result.diagnostics, core::DiagnosticSeverity::Error,
                                       "playback.presentation.capability.version_unsupported",
                                       "Presentation capability set version is unsupported",
                                       "$/capabilities/version", "capabilities.version",
-                                      std::to_string(capabilities.version), "1");
+                                      std::to_string(capabilities.version), "1 or 2");
         }
-        if (request.version != 1) {
+        if (request.version != 1 && request.version != 2) {
             addPresentationDiagnostic(result.diagnostics, core::DiagnosticSeverity::Error,
                                       "playback.presentation.capability.version_unsupported",
                                       "Presentation request version is unsupported",
                                       "$/request/version", "request.version",
-                                      std::to_string(request.version), "1");
+                                      std::to_string(request.version), "1 or 2");
         }
         if (capabilities.portableProfileVersion != 1) {
             addPresentationDiagnostic(result.diagnostics, core::DiagnosticSeverity::Error,
@@ -948,6 +968,86 @@ auto PreparedPlayback::validatePresentation(const PresentationCapabilities& capa
                                                  capabilities.maxMeshIndices, maxMeshIndices,
                                                  "$/capabilities/maxMeshIndices");
             }
+
+            bool hasParameterizedMaterial = false;
+            bool hasShader = false;
+            bool hasDeclaredVariants = false;
+            std::set<std::string> requiredHostExtensions;
+            for (const auto& resource : state_->presentation->orderedResources) {
+                if (!resource) {
+                    continue;
+                }
+                if (const auto* shader = std::get_if<PortableShader>(&resource->value)) {
+                    hasShader = true;
+                    if (!shader->variantKeywords.empty()) {
+                        hasDeclaredVariants = true;
+                    }
+                    for (const auto& extension : shader->requiredHostExtensions) {
+                        requiredHostExtensions.insert(extension);
+                    }
+                } else if (std::holds_alternative<PortableParameterizedMaterial>(resource->value)) {
+                    hasParameterizedMaterial = true;
+                }
+            }
+
+            if (hasParameterizedMaterial &&
+                (capabilities.version < 2 || !capabilities.parameterizedMaterial)) {
+                addMissingPresentationCapability(result.diagnostics, "parameterized_material",
+                                                 "$/capabilities/parameterizedMaterial");
+            }
+
+            if (capabilities.version == 2) {
+                for (const auto& extension : requiredHostExtensions) {
+                    if (std::find(capabilities.hostExtensionIds.begin(),
+                                  capabilities.hostExtensionIds.end(),
+                                  extension) == capabilities.hostExtensionIds.end()) {
+                        addMissingPresentationCapability(result.diagnostics, extension,
+                                                         "$/capabilities/hostExtensionIds");
+                    }
+                }
+                if (hasDeclaredVariants && capabilities.parameterizedMaterial &&
+                    !capabilities.declaredVariants) {
+                    addMissingPresentationCapability(result.diagnostics, "declared_variants",
+                                                     "$/capabilities/declaredVariants");
+                }
+                if (capabilities.parameterizedMaterial && (hasShader || hasParameterizedMaterial)) {
+                    if (capabilities.maxShaderSourceBytes < presentationMaxShaderSourceBytes) {
+                        addInsufficientPresentationLimit(
+                            result.diagnostics, "max_shader_source_bytes",
+                            capabilities.maxShaderSourceBytes, presentationMaxShaderSourceBytes,
+                            "$/capabilities/maxShaderSourceBytes");
+                    }
+                    if (capabilities.maxSpirvBytes < presentationMaxSpirvBytes) {
+                        addInsufficientPresentationLimit(
+                            result.diagnostics, "max_spirv_bytes", capabilities.maxSpirvBytes,
+                            presentationMaxSpirvBytes, "$/capabilities/maxSpirvBytes");
+                    }
+                    if (capabilities.maxVariantKeywords < presentationMaxVariantKeywords) {
+                        addInsufficientPresentationLimit(result.diagnostics, "max_variant_keywords",
+                                                         capabilities.maxVariantKeywords,
+                                                         presentationMaxVariantKeywords,
+                                                         "$/capabilities/maxVariantKeywords");
+                    }
+                    if (capabilities.maxVariantsPerShader < presentationMaxVariantsPerShader) {
+                        addInsufficientPresentationLimit(
+                            result.diagnostics, "max_variants_per_shader",
+                            capabilities.maxVariantsPerShader, presentationMaxVariantsPerShader,
+                            "$/capabilities/maxVariantsPerShader");
+                    }
+                    if (capabilities.maxMaterialParameters < presentationMaxMaterialParameters) {
+                        addInsufficientPresentationLimit(
+                            result.diagnostics, "max_material_parameters",
+                            capabilities.maxMaterialParameters, presentationMaxMaterialParameters,
+                            "$/capabilities/maxMaterialParameters");
+                    }
+                    if (capabilities.maxTextureBindings < presentationMaxTextureBindings) {
+                        addInsufficientPresentationLimit(result.diagnostics, "max_texture_bindings",
+                                                         capabilities.maxTextureBindings,
+                                                         presentationMaxTextureBindings,
+                                                         "$/capabilities/maxTextureBindings");
+                    }
+                }
+            }
         }
 
         bool debugPassEnabled = request.enableDebugPass;
@@ -959,10 +1059,50 @@ auto PreparedPlayback::validatePresentation(const PresentationCapabilities& capa
                                       "$/request/enableDebugPass", "debug_pass", "unsupported");
         }
 
+        bool shaderCompileEnabled = false;
+        bool shaderHotReloadEnabled = false;
+        if (request.version == 2) {
+            const bool compileSupported = capabilities.version == 2 &&
+                                          capabilities.shaderGlsl450Source &&
+                                          capabilities.shaderSpirv && capabilities.shaderGlsl330;
+            if (request.enableShaderCompile) {
+                if (!compileSupported) {
+                    addMissingPresentationCapability(result.diagnostics, "shader_compile",
+                                                     "$/request/enableShaderCompile");
+                } else {
+                    shaderCompileEnabled = true;
+                }
+            }
+            if (request.enableShaderHotReload) {
+                if (!compileSupported) {
+                    addPresentationDiagnostic(result.diagnostics, core::DiagnosticSeverity::Warning,
+                                              "playback.presentation.shader_hot_reload_unavailable",
+                                              "Requested shader hot reload is unavailable",
+                                              "$/request/enableShaderHotReload",
+                                              "shader_hot_reload", "unsupported");
+                } else {
+                    shaderHotReloadEnabled = true;
+                }
+            }
+        }
+
         result.diagnostics.sortDeterministically();
         if (!result.diagnostics.hasErrors()) {
-            result.settings = EffectivePresentationSettings{
-                .version = 1, .portableProfileVersion = 1, .debugPassEnabled = debugPassEnabled};
+            if (request.version == 2) {
+                result.settings = EffectivePresentationSettings{
+                    .version = 2,
+                    .portableProfileVersion = 1,
+                    .debugPassEnabled = debugPassEnabled,
+                    .shaderCompileEnabled = shaderCompileEnabled,
+                    .shaderHotReloadEnabled = shaderHotReloadEnabled,
+                };
+            } else {
+                result.settings = EffectivePresentationSettings{
+                    .version = 1,
+                    .portableProfileVersion = 1,
+                    .debugPassEnabled = debugPassEnabled,
+                };
+            }
         }
         return result;
     } catch (const std::bad_alloc&) {
@@ -1363,6 +1503,34 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
             diagnostics.sortDeterministically();
             state_->lastOperationDiagnostics = diagnostics;
             return core::unexpected(std::move(presentation.error()));
+        }
+        if (presentation->has_value()) {
+            std::vector<std::string> presentationCapabilities;
+            bool requiresShader = false;
+            bool requiresParameterized = false;
+            for (const auto& entry : presentation->value().manifest.entries) {
+                if (entry.reference.type == PresentationResourceType::Shader) {
+                    requiresShader = true;
+                } else if (entry.reference.type ==
+                           PresentationResourceType::ParameterizedMaterial) {
+                    requiresParameterized = true;
+                    requiresShader = true;
+                }
+            }
+            if (requiresShader) {
+                presentationCapabilities.emplace_back(capabilityShaderAssetV1);
+            }
+            if (requiresParameterized) {
+                presentationCapabilities.emplace_back(capabilityMaterialParameterizedV1);
+            }
+            if (!presentationCapabilities.empty() &&
+                !preflightCapabilities(*document, presentationCapabilities, state_->capabilities,
+                                       diagnostics)) {
+                state_->lastOperationDiagnostics = diagnostics;
+                return core::unexpected(operationError("playback.capability.preflight_failed",
+                                                       "Playback capability preflight failed",
+                                                       diagnostics));
+            }
         }
         if (auto committed = session->commit(std::move(*runtimePrepared.prepared)); !committed) {
             return core::unexpected(std::move(committed.error()));

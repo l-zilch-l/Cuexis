@@ -182,6 +182,29 @@ TEST_CASE("ResourceManager loads AudioSource through its distinct typed handle",
     CHECK(scope.contains(*requested.handle));
 }
 
+TEST_CASE("ResourceManager loads Shader through its distinct typed handle",
+          "[assets][resource][shader][s5-c]") {
+    ResourceFixture fixture;
+    fixture.write("sprite.shader.bin", "glsl-source");
+    auto database = fixture.database({{.id = {"shader.sprite"},
+                                       .type = cuexis::assets::AssetType::Shader,
+                                       .source = "sprite.shader.bin"}},
+                                     3);
+    cuexis::assets::ResourceManager manager{std::move(database)};
+
+    auto lease = manager.loadShader({"shader.sprite"});
+    REQUIRE(lease.has_value());
+    CHECK(lease->get()->id.value == "shader.sprite");
+    CHECK(lease->get()->bytes().size() == 11);
+    CHECK(manager.get(lease->handle()).has_value());
+
+    auto scope = manager.createScope();
+    const auto requested = scope.requestShader({"shader.sprite"});
+    REQUIRE(requested.hasValue());
+    CHECK(scope.contains(cuexis::assets::AssetType::Shader, {"shader.sprite"}));
+    CHECK(scope.contains(*requested.handle));
+}
+
 TEST_CASE("Lease release invalidates old handles and advances generation on reuse",
           "[assets][resource][lifetime]") {
     ResourceFixture fixture;

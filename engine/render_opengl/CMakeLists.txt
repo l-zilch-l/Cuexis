@@ -25,6 +25,12 @@ target_link_libraries(
         cuexis::platform_sdl
         cuexis::playback
     PRIVATE
+        cuexis::shader_cache
         glad::glad
         SDL3::SDL3
 )
+
+if(TARGET cuexis_shader)
+    target_link_libraries(cuexis_render_opengl PRIVATE cuexis::shader)
+    target_compile_definitions(cuexis_render_opengl PUBLIC CUEXIS_HAS_SHADER_TOOLS)
+endif()

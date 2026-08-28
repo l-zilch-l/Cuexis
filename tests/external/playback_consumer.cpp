@@ -176,6 +176,16 @@ struct Observation final {
         return material != nullptr &&
                (!material->baseColorTexture || !material->baseColorTexture->assetId.empty());
     }
+    case PresentationResourceType::Shader: {
+        const auto* shader = std::get_if<cuexis::playback::PortableShader>(&resource.value);
+        return shader != nullptr && !shader->vertexSource.empty() &&
+               !shader->fragmentSource.empty();
+    }
+    case PresentationResourceType::ParameterizedMaterial: {
+        const auto* material =
+            std::get_if<cuexis::playback::PortableParameterizedMaterial>(&resource.value);
+        return material != nullptr && !material->shader.assetId.empty();
+    }
     }
     return false;
 }

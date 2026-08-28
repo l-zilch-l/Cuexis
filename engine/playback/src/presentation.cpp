@@ -18,6 +18,7 @@
 #include <memory>
 #include <new>
 #include <optional>
+#include <set>
 #include <span>
 #include <string>
 #include <string_view>
@@ -36,6 +37,16 @@ constexpr std::size_t maxManifestEntries = 65'536;
 constexpr std::uint32_t maxMeshVertices = 1'048'576;
 constexpr std::uint32_t maxMeshIndices = 3'145'728;
 constexpr std::uint32_t maxTextureDimension = 8'192;
+constexpr std::uint32_t maxShaderSourceBytes = 262'144;
+constexpr std::uint32_t maxShaderSourceTotalBytes = 524'288;
+constexpr std::uint32_t maxShaderKeywords = 4;
+constexpr std::uint32_t maxShaderParameters = 32;
+constexpr std::uint32_t maxShaderBindings = 16;
+constexpr std::uint32_t maxShaderHostExtensions = 8;
+constexpr std::uint32_t maxMaterialTextureParameters = 8;
+constexpr std::uint32_t maxIdentifierBytes = 32;
+constexpr std::uint32_t maxEntryBytes = 64;
+constexpr std::string_view builtinRendererProfile = rendererProfileBuiltInV1;
 constexpr std::array<std::byte, 8> payloadMagic{
     std::byte{'C'}, std::byte{'X'}, std::byte{'P'}, std::byte{'R'},
     std::byte{'E'}, std::byte{'S'}, std::byte{'0'}, std::byte{'1'},
@@ -49,6 +60,10 @@ constexpr std::array<std::byte, 8> payloadMagic{
         return "texture2d";
     case PresentationResourceType::UnlitMaterial:
         return "unlit_material";
+    case PresentationResourceType::Shader:
+        return "shader";
+    case PresentationResourceType::ParameterizedMaterial:
+        return "parameterized_material";
     }
     return "unknown";
 }
@@ -60,6 +75,10 @@ constexpr std::array<std::byte, 8> payloadMagic{
     case PresentationResourceType::Texture2D:
         return assets::AssetType::Texture;
     case PresentationResourceType::UnlitMaterial:
+        return assets::AssetType::Material;
+    case PresentationResourceType::Shader:
+        return assets::AssetType::Shader;
+    case PresentationResourceType::ParameterizedMaterial:
         return assets::AssetType::Material;
     }
     return assets::AssetType::Mesh;
@@ -151,6 +170,14 @@ class ByteReader final {
         const auto result = bytes_.subspan(offset_, count);
         offset_ += count;
         return result;
+    }
+
+    [[nodiscard]] auto remaining() const noexcept -> std::size_t {
+        return offset_ <= bytes_.size() ? bytes_.size() - offset_ : 0;
+    }
+
+    [[nodiscard]] auto readI32() noexcept -> std::int32_t {
+        return std::bit_cast<std::int32_t>(readU32());
     }
 
   private:
@@ -371,6 +398,10 @@ class CanonicalHash final {
         sha_.update(std::as_bytes(std::span{value.data(), value.size()}));
     }
 
+    void writeI32(std::int32_t value) noexcept {
+        writeU32(std::bit_cast<std::uint32_t>(value));
+    }
+
     void writeIdentity(const PresentationContentIdentity& identity) noexcept {
         sha_.update(std::as_bytes(std::span{identity.sha256}));
     }
@@ -402,6 +433,23 @@ struct ParsedTexture final {
 struct ParsedMaterial final {
     PortableUnlitMaterial value;
     std::optional<std::string> textureAssetId;
+    std::uint64_t encodedByteCount{};
+    std::uint64_t decodedByteCount{};
+};
+
+struct ParsedShader final {
+    PortableShader value;
+    std::uint64_t encodedByteCount{};
+    std::uint64_t decodedByteCount{};
+};
+
+struct ParsedParameterizedMaterial final {
+    PortableParameterizedMaterial value;
+    std::string shaderAssetId;
+    std::vector<std::string> textureAssetIds;
+    std::vector<std::string> selectedKeywords;
+    std::uint32_t parameterCount{};
+    std::vector<std::byte> parameterBytes;
     std::uint64_t encodedByteCount{};
     std::uint64_t decodedByteCount{};
 };
@@ -640,6 +688,188 @@ struct ParsedMaterial final {
     });
 }
 
+[[nodiscard]] auto bytesToString(std::span<const std::byte> bytes) -> std::string {
+    std::string text;
+    text.resize(bytes.size());
+    for (std::size_t index = 0; index < bytes.size(); ++index) {
+        text[index] = static_cast<char>(std::to_integer<unsigned char>(bytes[index]));
+    }
+    return text;
+}
+
+[[nodiscard]] auto startsWithIgnoreCase(std::string_view value, std::string_view prefix) noexcept
+    -> bool {
+    if (value.size() < prefix.size()) {
+        return false;
+    }
+    for (std::size_t index = 0; index < prefix.size(); ++index) {
+        const auto left = static_cast<unsigned char>(value[index]);
+        const auto right = static_cast<unsigned char>(prefix[index]);
+        const auto lowerLeft = left >= 'A' && left <= 'Z' ? static_cast<char>(left - 'A' + 'a')
+                                                          : static_cast<char>(left);
+        const auto lowerRight = right >= 'A' && right <= 'Z' ? static_cast<char>(right - 'A' + 'a')
+                                                             : static_cast<char>(right);
+        if (lowerLeft != lowerRight) {
+            return false;
+        }
+    }
+    return true;
+}
+
+[[nodiscard]] auto isShaderIdentifier(std::string_view value) noexcept -> bool {
+    if (value.empty() || value.size() > maxIdentifierBytes) {
+        return false;
+    }
+    const auto first = static_cast<unsigned char>(value.front());
+    if (!((first >= 'A' && first <= 'Z') || (first >= 'a' && first <= 'z'))) {
+        return false;
+    }
+    return std::all_of(value.begin() + 1, value.end(), [](unsigned char character) {
+        return (character >= 'A' && character <= 'Z') || (character >= 'a' && character <= 'z') ||
+               (character >= '0' && character <= '9') || character == '_';
+    });
+}
+
+[[nodiscard]] auto isUserIdentifier(std::string_view value) noexcept -> bool {
+    return isShaderIdentifier(value) && !startsWithIgnoreCase(value, "cuexis");
+}
+
+[[nodiscard]] auto isWellFormedUtf8(std::span<const std::byte> bytes) noexcept -> bool {
+    std::size_t index = 0;
+    while (index < bytes.size()) {
+        const auto lead = std::to_integer<std::uint8_t>(bytes[index]);
+        std::size_t extra = 0;
+        std::uint32_t codepoint = 0;
+        std::uint32_t minimum = 0;
+        if (lead <= 0x7FU) {
+            ++index;
+            continue;
+        }
+        if ((lead & 0xE0U) == 0xC0U) {
+            extra = 1;
+            codepoint = lead & 0x1FU;
+            minimum = 0x80U;
+        } else if ((lead & 0xF0U) == 0xE0U) {
+            extra = 2;
+            codepoint = lead & 0x0FU;
+            minimum = 0x800U;
+        } else if ((lead & 0xF8U) == 0xF0U) {
+            extra = 3;
+            codepoint = lead & 0x07U;
+            minimum = 0x10000U;
+        } else {
+            return false;
+        }
+        if (index + extra >= bytes.size()) {
+            return false;
+        }
+        for (std::size_t follow = 1; follow <= extra; ++follow) {
+            const auto next = std::to_integer<std::uint8_t>(bytes[index + follow]);
+            if ((next & 0xC0U) != 0x80U) {
+                return false;
+            }
+            codepoint = (codepoint << 6U) | (next & 0x3FU);
+        }
+        if (codepoint < minimum || codepoint > 0x10FFFFU ||
+            (codepoint >= 0xD800U && codepoint <= 0xDFFFU)) {
+            return false;
+        }
+        index += 1 + extra;
+    }
+    return true;
+}
+
+[[nodiscard]] auto peekPayloadKind(std::span<const std::byte> bytes) noexcept
+    -> std::optional<std::uint32_t> {
+    if (bytes.size() < envelopeByteCount ||
+        !std::equal(payloadMagic.begin(), payloadMagic.end(), bytes.begin())) {
+        return std::nullopt;
+    }
+    ByteReader reader{bytes};
+    reader.seek(8);
+    return reader.readU32();
+}
+
+[[nodiscard]] auto readCountedBytes(ByteReader& reader, std::uint32_t byteCount,
+                                    std::string_view assetId, PresentationResourceType type)
+    -> core::Result<std::span<const std::byte>> {
+    if (reader.remaining() < byteCount) {
+        return core::unexpected(payloadError("playback.presentation.payload.truncated",
+                                             "Portable payload body is truncated", assetId, type,
+                                             reader.offset()));
+    }
+    return reader.readBytes(byteCount);
+}
+
+[[nodiscard]] auto validateShaderSource(std::string_view source, std::string_view assetId,
+                                        PresentationResourceType type, std::size_t byteOffset)
+    -> core::Result<void> {
+    const auto bytes = std::as_bytes(std::span{source.data(), source.size()});
+    if (source.size() >= 3 && static_cast<unsigned char>(source[0]) == 0xEF &&
+        static_cast<unsigned char>(source[1]) == 0xBB &&
+        static_cast<unsigned char>(source[2]) == 0xBF) {
+        return core::unexpected(payloadError("playback.presentation.shader.source_encoding_invalid",
+                                             "Shader source must be UTF-8 without a BOM", assetId,
+                                             type, byteOffset));
+    }
+    if (source.find('\r') != std::string_view::npos) {
+        return core::unexpected(payloadError("playback.presentation.shader.source_encoding_invalid",
+                                             "Shader source line endings must be LF", assetId, type,
+                                             byteOffset));
+    }
+    if (!isWellFormedUtf8(bytes)) {
+        return core::unexpected(payloadError("playback.presentation.shader.source_encoding_invalid",
+                                             "Shader source must be well-formed UTF-8", assetId,
+                                             type, byteOffset));
+    }
+    const auto newline = source.find('\n');
+    const auto firstLine = newline == std::string_view::npos ? source : source.substr(0, newline);
+    if (firstLine != "#version 450") {
+        return core::unexpected(payloadError("playback.presentation.shader.subset_invalid",
+                                             "Shader source must start with #version 450", assetId,
+                                             type, byteOffset));
+    }
+    std::size_t lineStart = 0;
+    while (lineStart < source.size()) {
+        const auto lineEnd = source.find('\n', lineStart);
+        const auto line = source.substr(
+            lineStart, (lineEnd == std::string_view::npos ? source.size() : lineEnd) - lineStart);
+        std::size_t cursor = 0;
+        while (cursor < line.size() && (line[cursor] == ' ' || line[cursor] == '\t')) {
+            ++cursor;
+        }
+        if (line.substr(cursor).starts_with("#include")) {
+            return core::unexpected(payloadError("playback.presentation.shader.subset_invalid",
+                                                 "Shader source must not use #include", assetId,
+                                                 type, byteOffset + lineStart));
+        }
+        if (lineEnd == std::string_view::npos) {
+            break;
+        }
+        lineStart = lineEnd + 1;
+    }
+    return {};
+}
+
+[[nodiscard]] auto unusedNumericLanesZero(ShaderParameterType type,
+                                          const std::array<float, 4>& numeric) noexcept -> bool {
+    switch (type) {
+    case ShaderParameterType::Float:
+        return numeric[1] == 0.0F && numeric[2] == 0.0F && numeric[3] == 0.0F;
+    case ShaderParameterType::Vec2:
+        return numeric[2] == 0.0F && numeric[3] == 0.0F;
+    case ShaderParameterType::Vec3:
+        return numeric[3] == 0.0F;
+    case ShaderParameterType::Vec4:
+        return true;
+    case ShaderParameterType::Int:
+    case ShaderParameterType::Bool:
+    case ShaderParameterType::Texture2D:
+        return numeric[0] == 0.0F && numeric[1] == 0.0F && numeric[2] == 0.0F && numeric[3] == 0.0F;
+    }
+    return false;
+}
+
 [[nodiscard]] auto parseMaterial(std::string_view assetId, std::span<const std::byte> bytes)
     -> core::Result<ParsedMaterial> {
     const auto type = PresentationResourceType::UnlitMaterial;
@@ -732,6 +962,602 @@ struct ParsedMaterial final {
     return parsed;
 }
 
+[[nodiscard]] auto parseShader(std::string_view assetId, std::span<const std::byte> bytes)
+    -> core::Result<ParsedShader> {
+    const auto type = PresentationResourceType::Shader;
+    auto readerResult = validateEnvelope(bytes, assetId, type);
+    if (!readerResult) {
+        return core::unexpected(std::move(readerResult.error()));
+    }
+    if (bytes.size() < 72) {
+        return core::unexpected(payloadError("playback.presentation.payload.truncated",
+                                             "Portable Shader fixed body is truncated", assetId,
+                                             type, bytes.size()));
+    }
+    auto reader = *readerResult;
+    const auto flags = reader.readU32();
+    const auto vertexEntryByteCount = reader.readU32();
+    const auto fragmentEntryByteCount = reader.readU32();
+    const auto keywordCount = reader.readU32();
+    const auto parameterCount = reader.readU32();
+    const auto bindingCount = reader.readU32();
+    const auto hostExtensionCount = reader.readU32();
+    const auto defaultAlphaMode = reader.readU32();
+    const auto defaultDoubleSided = reader.readU32();
+    const auto profileByteCount = reader.readU32();
+    const auto vertexSourceByteCount = reader.readU32();
+    const auto fragmentSourceByteCount = reader.readU32();
+    if (flags != 0) {
+        return core::unexpected(payloadError("playback.presentation.payload.reserved_nonzero",
+                                             "Portable Shader reserved flags are non-zero", assetId,
+                                             type, 24));
+    }
+    if (vertexEntryByteCount < 1 || vertexEntryByteCount > maxEntryBytes) {
+        return core::unexpected(payloadError("playback.presentation.shader.entry_invalid",
+                                             "Shader vertex entry length is outside the v1 range",
+                                             assetId, type, 28));
+    }
+    if (fragmentEntryByteCount < 1 || fragmentEntryByteCount > maxEntryBytes) {
+        return core::unexpected(payloadError("playback.presentation.shader.entry_invalid",
+                                             "Shader fragment entry length is outside the v1 range",
+                                             assetId, type, 32));
+    }
+    if (keywordCount > maxShaderKeywords) {
+        return core::unexpected(payloadError("playback.presentation.shader.keyword_invalid",
+                                             "Shader keyword count exceeds the v1 limit", assetId,
+                                             type, 36));
+    }
+    if (parameterCount > maxShaderParameters) {
+        return core::unexpected(payloadError("playback.presentation.shader.schema_invalid",
+                                             "Shader parameter count exceeds the v1 limit", assetId,
+                                             type, 40));
+    }
+    if (bindingCount > maxShaderBindings) {
+        return core::unexpected(payloadError("playback.presentation.shader.schema_invalid",
+                                             "Shader binding count exceeds the v1 limit", assetId,
+                                             type, 44));
+    }
+    if (hostExtensionCount > maxShaderHostExtensions) {
+        return core::unexpected(payloadError("playback.presentation.shader.schema_invalid",
+                                             "Shader host extension count exceeds the v1 limit",
+                                             assetId, type, 48));
+    }
+    if ((defaultAlphaMode != static_cast<std::uint32_t>(PresentationAlphaMode::Opaque) &&
+         defaultAlphaMode != static_cast<std::uint32_t>(PresentationAlphaMode::Blend)) ||
+        defaultDoubleSided > 1) {
+        return core::unexpected(
+            payloadError("playback.presentation.shader.schema_invalid",
+                         "Shader default alpha mode or double-sided value is invalid", assetId,
+                         type, defaultAlphaMode > 2 ? 52 : 56));
+    }
+    if (profileByteCount < 1 || profileByteCount > maxEntryBytes) {
+        return core::unexpected(payloadError("playback.presentation.shader.profile_unsupported",
+                                             "Shader profile length is outside the v1 range",
+                                             assetId, type, 60));
+    }
+    if (vertexSourceByteCount < 1 || vertexSourceByteCount > maxShaderSourceBytes) {
+        return core::unexpected(payloadError("playback.presentation.shader.subset_invalid",
+                                             "Shader vertex source length is outside the v1 range",
+                                             assetId, type, 64));
+    }
+    if (fragmentSourceByteCount < 1 || fragmentSourceByteCount > maxShaderSourceBytes) {
+        return core::unexpected(payloadError(
+            "playback.presentation.shader.subset_invalid",
+            "Shader fragment source length is outside the v1 range", assetId, type, 68));
+    }
+    if (vertexSourceByteCount > maxShaderSourceTotalBytes - fragmentSourceByteCount) {
+        return core::unexpected(budgetError(assetId, type, maxShaderSourceTotalBytes,
+                                            static_cast<std::uint64_t>(vertexSourceByteCount) +
+                                                fragmentSourceByteCount));
+    }
+
+    auto readName = [&](std::uint32_t byteCount) -> core::Result<std::string> {
+        auto encoded = readCountedBytes(reader, byteCount, assetId, type);
+        if (!encoded) {
+            return core::unexpected(std::move(encoded.error()));
+        }
+        return bytesToString(*encoded);
+    };
+    auto vertexEntry = readName(vertexEntryByteCount);
+    if (!vertexEntry) {
+        return core::unexpected(std::move(vertexEntry.error()));
+    }
+    auto fragmentEntry = readName(fragmentEntryByteCount);
+    if (!fragmentEntry) {
+        return core::unexpected(std::move(fragmentEntry.error()));
+    }
+    auto profile = readName(profileByteCount);
+    if (!profile) {
+        return core::unexpected(std::move(profile.error()));
+    }
+    if (!isUserIdentifier(*vertexEntry) || !isUserIdentifier(*fragmentEntry)) {
+        return core::unexpected(payloadError("playback.presentation.shader.entry_invalid",
+                                             "Shader entry name is not a portable identifier",
+                                             assetId, type, 72));
+    }
+    if (*profile != builtinRendererProfile && !isUserIdentifier(*profile)) {
+        return core::unexpected(payloadError("playback.presentation.shader.profile_unsupported",
+                                             "Shader required renderer profile is unsupported",
+                                             assetId, type, 72));
+    }
+
+    ParsedShader parsed;
+    parsed.value.vertexEntry = std::move(*vertexEntry);
+    parsed.value.fragmentEntry = std::move(*fragmentEntry);
+    parsed.value.requiredRendererProfile = std::move(*profile);
+    parsed.value.defaultAlphaMode = static_cast<PresentationAlphaMode>(defaultAlphaMode);
+    parsed.value.defaultDoubleSided = defaultDoubleSided != 0;
+    parsed.value.variantKeywords.reserve(keywordCount);
+    std::set<std::string, std::less<>> uniqueKeywords;
+    for (std::uint32_t index = 0; index < keywordCount; ++index) {
+        if (reader.remaining() < 4) {
+            return core::unexpected(payloadError("playback.presentation.payload.truncated",
+                                                 "Portable Shader keyword list is truncated",
+                                                 assetId, type, reader.offset()));
+        }
+        const auto nameBytes = reader.readU32();
+        auto encoded = readCountedBytes(reader, nameBytes, assetId, type);
+        if (!encoded) {
+            return core::unexpected(std::move(encoded.error()));
+        }
+        auto name = bytesToString(*encoded);
+        if (!isUserIdentifier(name)) {
+            return core::unexpected(payloadError("playback.presentation.shader.keyword_invalid",
+                                                 "Shader keyword is not a portable identifier",
+                                                 assetId, type, reader.offset() - nameBytes));
+        }
+        if (!uniqueKeywords.insert(name).second) {
+            return core::unexpected(payloadError("playback.presentation.shader.keyword_invalid",
+                                                 "Shader keywords must be unique", assetId, type,
+                                                 reader.offset() - nameBytes));
+        }
+        parsed.value.variantKeywords.push_back(std::move(name));
+    }
+
+    parsed.value.parameters.reserve(parameterCount);
+    std::set<std::string, std::less<>> uniqueParameterNames;
+    for (std::uint32_t index = 0; index < parameterCount; ++index) {
+        if (reader.remaining() < 4) {
+            return core::unexpected(payloadError("playback.presentation.payload.truncated",
+                                                 "Portable Shader parameter list is truncated",
+                                                 assetId, type, reader.offset()));
+        }
+        const auto nameBytes = reader.readU32();
+        auto encoded = readCountedBytes(reader, nameBytes, assetId, type);
+        if (!encoded) {
+            return core::unexpected(std::move(encoded.error()));
+        }
+        ShaderParameterSchemaEntry entry;
+        entry.name = bytesToString(*encoded);
+        if (reader.remaining() < 36) {
+            return core::unexpected(payloadError("playback.presentation.payload.truncated",
+                                                 "Portable Shader parameter record is truncated",
+                                                 assetId, type, reader.offset()));
+        }
+        entry.type = static_cast<ShaderParameterType>(reader.readU32());
+        entry.set = reader.readU32();
+        entry.binding = reader.readU32();
+        for (auto& lane : entry.defaultNumeric) {
+            lane = reader.readFloat();
+        }
+        entry.defaultInt = reader.readI32();
+        const auto defaultBool = reader.readU32();
+        if (!isUserIdentifier(entry.name) || !uniqueParameterNames.insert(entry.name).second) {
+            return core::unexpected(payloadError("playback.presentation.shader.schema_invalid",
+                                                 "Shader parameter name is invalid or duplicated",
+                                                 assetId, type, reader.offset()));
+        }
+        if (static_cast<std::uint32_t>(entry.type) < 1 ||
+            static_cast<std::uint32_t>(entry.type) > 7) {
+            return core::unexpected(payloadError("playback.presentation.shader.schema_invalid",
+                                                 "Shader parameter type is unsupported", assetId,
+                                                 type, reader.offset() - 32));
+        }
+        if (entry.set != 0 || entry.binding < 1 || entry.binding > maxShaderBindings) {
+            return core::unexpected(
+                payloadError(entry.set == 0 && entry.binding == 0
+                                 ? "playback.presentation.shader.reserved_binding"
+                                 : "playback.presentation.shader.schema_invalid",
+                             "Shader parameter set or binding is outside the v1 range", assetId,
+                             type, reader.offset() - 28));
+        }
+        if (!std::isfinite(entry.defaultNumeric[0]) || !std::isfinite(entry.defaultNumeric[1]) ||
+            !std::isfinite(entry.defaultNumeric[2]) || !std::isfinite(entry.defaultNumeric[3]) ||
+            !unusedNumericLanesZero(entry.type, entry.defaultNumeric) ||
+            (entry.type != ShaderParameterType::Int && entry.defaultInt != 0) || defaultBool > 1 ||
+            (entry.type != ShaderParameterType::Bool && defaultBool != 0) ||
+            (entry.type == ShaderParameterType::Texture2D && entry.defaultInt != 0)) {
+            return core::unexpected(payloadError("playback.presentation.shader.schema_invalid",
+                                                 "Shader parameter default values are invalid",
+                                                 assetId, type, reader.offset() - 20));
+        }
+        entry.defaultBool = defaultBool != 0;
+        parsed.value.parameters.push_back(std::move(entry));
+    }
+
+    parsed.value.bindings.reserve(bindingCount);
+    std::set<std::string, std::less<>> uniqueBindingNames;
+    std::set<std::pair<std::uint32_t, std::uint32_t>> uniqueSlots;
+    for (std::uint32_t index = 0; index < bindingCount; ++index) {
+        if (reader.remaining() < 16) {
+            return core::unexpected(payloadError("playback.presentation.payload.truncated",
+                                                 "Portable Shader binding list is truncated",
+                                                 assetId, type, reader.offset()));
+        }
+        ShaderBinding binding;
+        binding.set = reader.readU32();
+        binding.binding = reader.readU32();
+        binding.type = static_cast<ShaderParameterType>(reader.readU32());
+        const auto nameBytes = reader.readU32();
+        auto encoded = readCountedBytes(reader, nameBytes, assetId, type);
+        if (!encoded) {
+            return core::unexpected(std::move(encoded.error()));
+        }
+        binding.name = bytesToString(*encoded);
+        if (!isUserIdentifier(binding.name) || !uniqueBindingNames.insert(binding.name).second) {
+            return core::unexpected(payloadError("playback.presentation.shader.schema_invalid",
+                                                 "Shader binding name is invalid or duplicated",
+                                                 assetId, type, reader.offset() - nameBytes));
+        }
+        if (static_cast<std::uint32_t>(binding.type) < 1 ||
+            static_cast<std::uint32_t>(binding.type) > 7) {
+            return core::unexpected(payloadError("playback.presentation.shader.schema_invalid",
+                                                 "Shader binding type is unsupported", assetId,
+                                                 type, reader.offset() - nameBytes - 12));
+        }
+        if (binding.set == 0 && binding.binding == 0) {
+            return core::unexpected(
+                payloadError("playback.presentation.shader.reserved_binding",
+                             "User shader bindings must not occupy set 0 binding 0", assetId, type,
+                             reader.offset() - nameBytes - 12));
+        }
+        if (binding.set != 0 || binding.binding < 1 || binding.binding > maxShaderBindings ||
+            !uniqueSlots.insert({binding.set, binding.binding}).second) {
+            return core::unexpected(payloadError("playback.presentation.shader.schema_invalid",
+                                                 "Shader binding slot is invalid or duplicated",
+                                                 assetId, type, reader.offset() - nameBytes - 12));
+        }
+        parsed.value.bindings.push_back(std::move(binding));
+    }
+
+    parsed.value.requiredHostExtensions.reserve(hostExtensionCount);
+    std::set<std::string, std::less<>> uniqueExtensions;
+    for (std::uint32_t index = 0; index < hostExtensionCount; ++index) {
+        if (reader.remaining() < 4) {
+            return core::unexpected(payloadError("playback.presentation.payload.truncated",
+                                                 "Portable Shader host extension list is truncated",
+                                                 assetId, type, reader.offset()));
+        }
+        const auto nameBytes = reader.readU32();
+        auto encoded = readCountedBytes(reader, nameBytes, assetId, type);
+        if (!encoded) {
+            return core::unexpected(std::move(encoded.error()));
+        }
+        auto name = bytesToString(*encoded);
+        if (!isUserIdentifier(name) || !uniqueExtensions.insert(name).second) {
+            return core::unexpected(
+                payloadError("playback.presentation.shader.schema_invalid",
+                             "Shader host extension ID is invalid or duplicated", assetId, type,
+                             reader.offset() - nameBytes));
+        }
+        parsed.value.requiredHostExtensions.push_back(std::move(name));
+    }
+    if (parsed.value.requiredRendererProfile != builtinRendererProfile) {
+        const auto found = std::find(parsed.value.requiredHostExtensions.begin(),
+                                     parsed.value.requiredHostExtensions.end(),
+                                     parsed.value.requiredRendererProfile);
+        if (found == parsed.value.requiredHostExtensions.end()) {
+            return core::unexpected(payloadError(
+                "playback.presentation.shader.profile_unsupported",
+                "Host-extension renderer profile must be listed in requiredHostExtensions", assetId,
+                type, 60));
+        }
+    }
+
+    auto vertexSourceBytes = readCountedBytes(reader, vertexSourceByteCount, assetId, type);
+    if (!vertexSourceBytes) {
+        return core::unexpected(std::move(vertexSourceBytes.error()));
+    }
+    auto fragmentSourceBytes = readCountedBytes(reader, fragmentSourceByteCount, assetId, type);
+    if (!fragmentSourceBytes) {
+        return core::unexpected(std::move(fragmentSourceBytes.error()));
+    }
+    parsed.value.vertexSource = bytesToString(*vertexSourceBytes);
+    parsed.value.fragmentSource = bytesToString(*fragmentSourceBytes);
+    if (auto validated =
+            validateShaderSource(parsed.value.vertexSource, assetId, type,
+                                 reader.offset() - vertexSourceByteCount - fragmentSourceByteCount);
+        !validated) {
+        return core::unexpected(std::move(validated.error()));
+    }
+    if (auto validated = validateShaderSource(parsed.value.fragmentSource, assetId, type,
+                                              reader.offset() - fragmentSourceByteCount);
+        !validated) {
+        return core::unexpected(std::move(validated.error()));
+    }
+    if (reader.remaining() != 0) {
+        return core::unexpected(payloadError("playback.presentation.payload.size_mismatch",
+                                             "Portable payload contains trailing bytes", assetId,
+                                             type, reader.offset()));
+    }
+
+    for (const auto& parameter : parsed.value.parameters) {
+        const auto binding = std::find_if(
+            parsed.value.bindings.begin(), parsed.value.bindings.end(),
+            [&](const ShaderBinding& candidate) {
+                return candidate.set == parameter.set && candidate.binding == parameter.binding;
+            });
+        if (binding == parsed.value.bindings.end() || binding->type != parameter.type) {
+            return core::unexpected(payloadError(
+                "playback.presentation.shader.schema_invalid",
+                "Shader parameter set/binding must match the binding table", assetId, type, 40));
+        }
+    }
+
+    parsed.encodedByteCount = bytes.size();
+    parsed.decodedByteCount = 48;
+    const auto addString = [&](std::string_view value) {
+        parsed.decodedByteCount += 4ULL + value.size();
+    };
+    addString(parsed.value.vertexEntry);
+    addString(parsed.value.fragmentEntry);
+    addString(parsed.value.requiredRendererProfile);
+    for (const auto& keyword : parsed.value.variantKeywords) {
+        addString(keyword);
+    }
+    for (const auto& parameter : parsed.value.parameters) {
+        addString(parameter.name);
+    }
+    for (const auto& binding : parsed.value.bindings) {
+        addString(binding.name);
+    }
+    for (const auto& extension : parsed.value.requiredHostExtensions) {
+        addString(extension);
+    }
+    parsed.decodedByteCount +=
+        parsed.value.vertexSource.size() + parsed.value.fragmentSource.size();
+    if (parsed.decodedByteCount > maxResourceBytes) {
+        return core::unexpected(
+            budgetError(assetId, type, maxResourceBytes, parsed.decodedByteCount));
+    }
+    return parsed;
+}
+
+[[nodiscard]] auto parseParameterizedMaterial(std::string_view assetId,
+                                              std::span<const std::byte> bytes)
+    -> core::Result<ParsedParameterizedMaterial> {
+    const auto type = PresentationResourceType::ParameterizedMaterial;
+    auto readerResult = validateEnvelope(bytes, assetId, type);
+    if (!readerResult) {
+        return core::unexpected(std::move(readerResult.error()));
+    }
+    if (bytes.size() < 48) {
+        return core::unexpected(
+            payloadError("playback.presentation.payload.truncated",
+                         "Portable Parameterized Material fixed body is truncated", assetId, type,
+                         bytes.size()));
+    }
+    auto reader = *readerResult;
+    const auto alphaMode = reader.readU32();
+    const auto doubleSided = reader.readU32();
+    const auto keywordCount = reader.readU32();
+    const auto parameterCount = reader.readU32();
+    const auto shaderAssetIdByteCount = reader.readU32();
+    const auto reserved = reader.readU32();
+    if ((alphaMode != static_cast<std::uint32_t>(PresentationAlphaMode::Opaque) &&
+         alphaMode != static_cast<std::uint32_t>(PresentationAlphaMode::Blend)) ||
+        doubleSided > 1) {
+        return core::unexpected(payloadError(
+            "playback.presentation.material.value_invalid",
+            "Portable Parameterized Material alpha mode or double-sided value is invalid", assetId,
+            type, alphaMode > 2 ? 24 : 28));
+    }
+    if (keywordCount > maxShaderKeywords) {
+        return core::unexpected(payloadError(
+            "playback.presentation.material.keyword_undeclared",
+            "Parameterized Material keyword count exceeds the v1 limit", assetId, type, 32));
+    }
+    if (parameterCount > maxShaderParameters) {
+        return core::unexpected(payloadError(
+            "playback.presentation.material.parameter_mismatch",
+            "Parameterized Material parameter count exceeds the v1 limit", assetId, type, 36));
+    }
+    if (shaderAssetIdByteCount < 1 || shaderAssetIdByteCount > 256) {
+        return core::unexpected(
+            payloadError("playback.presentation.material.shader_reference_invalid",
+                         "Parameterized Material shader AssetId length is outside the v1 range",
+                         assetId, type, 40));
+    }
+    if (reserved != 0) {
+        return core::unexpected(payloadError(
+            "playback.presentation.payload.reserved_nonzero",
+            "Portable Parameterized Material reserved field is non-zero", assetId, type, 44));
+    }
+
+    auto shaderIdBytes = readCountedBytes(reader, shaderAssetIdByteCount, assetId, type);
+    if (!shaderIdBytes) {
+        return core::unexpected(std::move(shaderIdBytes.error()));
+    }
+    auto shaderAssetId = bytesToString(*shaderIdBytes);
+    if (!isPortableAssetId(shaderAssetId)) {
+        return core::unexpected(payloadError(
+            "playback.presentation.material.shader_reference_invalid",
+            "Parameterized Material shader AssetId is not portable", assetId, type, 48));
+    }
+
+    ParsedParameterizedMaterial parsed;
+    parsed.value.alphaMode = static_cast<PresentationAlphaMode>(alphaMode);
+    parsed.value.doubleSided = doubleSided != 0;
+    parsed.shaderAssetId = std::move(shaderAssetId);
+    parsed.parameterCount = parameterCount;
+    parsed.selectedKeywords.reserve(keywordCount);
+    std::set<std::string, std::less<>> uniqueKeywords;
+    for (std::uint32_t index = 0; index < keywordCount; ++index) {
+        if (reader.remaining() < 4) {
+            return core::unexpected(payloadError("playback.presentation.payload.truncated",
+                                                 "Parameterized Material keyword list is truncated",
+                                                 assetId, type, reader.offset()));
+        }
+        const auto nameBytes = reader.readU32();
+        auto encoded = readCountedBytes(reader, nameBytes, assetId, type);
+        if (!encoded) {
+            return core::unexpected(std::move(encoded.error()));
+        }
+        auto name = bytesToString(*encoded);
+        if (!isUserIdentifier(name) || !uniqueKeywords.insert(name).second) {
+            return core::unexpected(
+                payloadError("playback.presentation.material.keyword_undeclared",
+                             "Parameterized Material keyword is invalid or duplicated", assetId,
+                             type, reader.offset() - nameBytes));
+        }
+        parsed.selectedKeywords.push_back(std::move(name));
+    }
+    parsed.parameterBytes.assign(bytes.begin() + static_cast<std::ptrdiff_t>(reader.offset()),
+                                 bytes.end());
+    parsed.encodedByteCount = bytes.size();
+    return parsed;
+}
+
+[[nodiscard]] auto completeParameterizedMaterial(std::string_view assetId,
+                                                 ParsedParameterizedMaterial& parsed,
+                                                 const PortableShader& shader)
+    -> core::Result<void> {
+    const auto type = PresentationResourceType::ParameterizedMaterial;
+    if (parsed.parameterCount != shader.parameters.size()) {
+        return core::unexpected(
+            resourceError("playback.presentation.material.parameter_mismatch",
+                          "Parameterized Material parameter count does not match the shader schema",
+                          assetId, type));
+    }
+    for (const auto& keyword : parsed.selectedKeywords) {
+        if (std::find(shader.variantKeywords.begin(), shader.variantKeywords.end(), keyword) ==
+            shader.variantKeywords.end()) {
+            return core::unexpected(
+                resourceError("playback.presentation.material.keyword_undeclared",
+                              "Selected keyword is not declared by the shader", assetId, type)
+                    .withContext("keyword", keyword));
+        }
+    }
+    ByteReader reader{parsed.parameterBytes};
+    parsed.value.selectedKeywords = parsed.selectedKeywords;
+    parsed.value.parameters.reserve(shader.parameters.size());
+    std::uint32_t textureParameters = 0;
+    for (const auto& schema : shader.parameters) {
+        ShaderParameterValue value;
+        value.name = schema.name;
+        value.type = schema.type;
+        if (schema.type == ShaderParameterType::Texture2D) {
+            if (reader.remaining() < 4) {
+                return core::unexpected(payloadError(
+                    "playback.presentation.payload.truncated",
+                    "Parameterized Material texture parameter is truncated", assetId, type,
+                    envelopeByteCount + 24 + parsed.shaderAssetId.size() +
+                        (parsed.parameterBytes.size() - reader.remaining())));
+            }
+            const auto textureBytes = reader.readU32();
+            if (textureBytes < 1 || textureBytes > 256 || reader.remaining() < textureBytes) {
+                return core::unexpected(payloadError(
+                    "playback.presentation.material.shader_reference_invalid",
+                    "Parameterized Material texture AssetId length is outside the v1 range",
+                    assetId, type, reader.offset()));
+            }
+            auto encoded = reader.readBytes(textureBytes);
+            auto textureAssetId = bytesToString(encoded);
+            if (!isPortableAssetId(textureAssetId)) {
+                return core::unexpected(
+                    payloadError("playback.presentation.material.shader_reference_invalid",
+                                 "Parameterized Material texture AssetId is not portable", assetId,
+                                 type, reader.offset() - textureBytes));
+            }
+            ++textureParameters;
+            if (textureParameters > maxMaterialTextureParameters) {
+                return core::unexpected(
+                    budgetError(assetId, type, maxMaterialTextureParameters, textureParameters));
+            }
+            parsed.textureAssetIds.push_back(textureAssetId);
+            value.texture = PresentationResourceRef{
+                PresentationResourceType::Texture2D, std::move(textureAssetId), {}};
+        } else if (schema.type == ShaderParameterType::Int) {
+            if (reader.remaining() < 16) {
+                return core::unexpected(
+                    payloadError("playback.presentation.payload.truncated",
+                                 "Parameterized Material int parameter is truncated", assetId, type,
+                                 reader.offset()));
+            }
+            value.integer = reader.readI32();
+            const auto padding0 = reader.readU32();
+            const auto padding1 = reader.readU32();
+            const auto padding2 = reader.readU32();
+            if (padding0 != 0 || padding1 != 0 || padding2 != 0) {
+                return core::unexpected(
+                    payloadError("playback.presentation.payload.reserved_nonzero",
+                                 "Parameterized Material int parameter padding must be zero",
+                                 assetId, type, reader.offset() - 12));
+            }
+        } else if (schema.type == ShaderParameterType::Bool) {
+            if (reader.remaining() < 16) {
+                return core::unexpected(
+                    payloadError("playback.presentation.payload.truncated",
+                                 "Parameterized Material bool parameter is truncated", assetId,
+                                 type, reader.offset()));
+            }
+            const auto boolean = reader.readU32();
+            const auto padding0 = reader.readU32();
+            const auto padding1 = reader.readU32();
+            const auto padding2 = reader.readU32();
+            if (boolean > 1 || padding0 != 0 || padding1 != 0 || padding2 != 0) {
+                return core::unexpected(
+                    payloadError("playback.presentation.material.parameter_mismatch",
+                                 "Parameterized Material bool parameter is invalid", assetId, type,
+                                 reader.offset() - 16));
+            }
+            value.boolean = boolean != 0;
+        } else {
+            if (reader.remaining() < 16) {
+                return core::unexpected(
+                    payloadError("playback.presentation.payload.truncated",
+                                 "Parameterized Material numeric parameter is truncated", assetId,
+                                 type, reader.offset()));
+            }
+            for (auto& lane : value.numeric) {
+                lane = reader.readFloat();
+            }
+            if (!std::isfinite(value.numeric[0]) || !std::isfinite(value.numeric[1]) ||
+                !std::isfinite(value.numeric[2]) || !std::isfinite(value.numeric[3]) ||
+                !unusedNumericLanesZero(schema.type, value.numeric)) {
+                return core::unexpected(
+                    payloadError("playback.presentation.material.parameter_mismatch",
+                                 "Parameterized Material numeric parameter is invalid", assetId,
+                                 type, reader.offset() - 16));
+            }
+        }
+        parsed.value.parameters.push_back(std::move(value));
+    }
+    if (reader.remaining() != 0) {
+        return core::unexpected(payloadError("playback.presentation.payload.size_mismatch",
+                                             "Portable payload contains trailing bytes", assetId,
+                                             type, reader.offset()));
+    }
+
+    parsed.decodedByteCount = 24 + 37 + parsed.shaderAssetId.size();
+    for (const auto& keyword : parsed.selectedKeywords) {
+        parsed.decodedByteCount += 4ULL + keyword.size();
+    }
+    for (const auto& parameter : parsed.value.parameters) {
+        if (parameter.type == ShaderParameterType::Texture2D && parameter.texture) {
+            parsed.decodedByteCount +=
+                8ULL + parameter.name.size() + 37ULL + parameter.texture->assetId.size();
+        } else {
+            parsed.decodedByteCount += 20ULL + parameter.name.size();
+        }
+    }
+    if (parsed.decodedByteCount > maxResourceBytes) {
+        return core::unexpected(
+            budgetError(assetId, type, maxResourceBytes, parsed.decodedByteCount));
+    }
+    return {};
+}
+
 [[nodiscard]] auto meshIdentity(const PortableMesh& mesh) noexcept -> PresentationContentIdentity {
     CanonicalHash hash{PresentationResourceType::Mesh};
     hash.writeU32(static_cast<std::uint32_t>(mesh.positions.size() / 3));
@@ -775,6 +1601,87 @@ struct ParsedMaterial final {
     return hash.finish();
 }
 
+[[nodiscard]] auto shaderIdentity(const PortableShader& shader) noexcept
+    -> PresentationContentIdentity {
+    CanonicalHash hash{PresentationResourceType::Shader};
+    hash.writeString(shader.vertexEntry);
+    hash.writeString(shader.fragmentEntry);
+    auto keywords = shader.variantKeywords;
+    std::sort(keywords.begin(), keywords.end());
+    hash.writeU32(static_cast<std::uint32_t>(keywords.size()));
+    for (const auto& keyword : keywords) {
+        hash.writeString(keyword);
+    }
+    hash.writeU32(static_cast<std::uint32_t>(shader.parameters.size()));
+    for (const auto& parameter : shader.parameters) {
+        hash.writeString(parameter.name);
+        hash.writeU32(static_cast<std::uint32_t>(parameter.type));
+        hash.writeU32(parameter.set);
+        hash.writeU32(parameter.binding);
+        for (const auto lane : parameter.defaultNumeric) {
+            hash.writeFloat(lane);
+        }
+        hash.writeI32(parameter.defaultInt);
+        hash.writeU32(parameter.defaultBool ? 1U : 0U);
+    }
+    hash.writeU32(static_cast<std::uint32_t>(shader.bindings.size()));
+    for (const auto& binding : shader.bindings) {
+        hash.writeU32(binding.set);
+        hash.writeU32(binding.binding);
+        hash.writeU32(static_cast<std::uint32_t>(binding.type));
+        hash.writeString(binding.name);
+    }
+    hash.writeU32(static_cast<std::uint32_t>(shader.defaultAlphaMode));
+    hash.writeU32(shader.defaultDoubleSided ? 1U : 0U);
+    hash.writeString(shader.requiredRendererProfile);
+    auto extensions = shader.requiredHostExtensions;
+    std::sort(extensions.begin(), extensions.end());
+    hash.writeU32(static_cast<std::uint32_t>(extensions.size()));
+    for (const auto& extension : extensions) {
+        hash.writeString(extension);
+    }
+    hash.writeString(shader.vertexSource);
+    hash.writeString(shader.fragmentSource);
+    return hash.finish();
+}
+
+[[nodiscard]] auto
+parameterizedMaterialIdentity(const PortableParameterizedMaterial& material) noexcept
+    -> PresentationContentIdentity {
+    CanonicalHash hash{PresentationResourceType::ParameterizedMaterial};
+    hash.writeU32(static_cast<std::uint32_t>(material.alphaMode));
+    hash.writeU32(material.doubleSided ? 1U : 0U);
+    hash.writeString(material.shader.assetId);
+    hash.writeIdentity(material.shader.identity);
+    auto keywords = material.selectedKeywords;
+    std::sort(keywords.begin(), keywords.end());
+    hash.writeU32(static_cast<std::uint32_t>(keywords.size()));
+    for (const auto& keyword : keywords) {
+        hash.writeString(keyword);
+    }
+    hash.writeU32(static_cast<std::uint32_t>(material.parameters.size()));
+    for (const auto& parameter : material.parameters) {
+        hash.writeString(parameter.name);
+        hash.writeU32(static_cast<std::uint32_t>(parameter.type));
+        if (parameter.type == ShaderParameterType::Texture2D) {
+            hash.writeU32(parameter.texture ? 1U : 0U);
+            if (parameter.texture) {
+                hash.writeString(parameter.texture->assetId);
+                hash.writeIdentity(parameter.texture->identity);
+            }
+        } else if (parameter.type == ShaderParameterType::Int) {
+            hash.writeI32(parameter.integer);
+        } else if (parameter.type == ShaderParameterType::Bool) {
+            hash.writeU32(parameter.boolean ? 1U : 0U);
+        } else {
+            for (const auto lane : parameter.numeric) {
+                hash.writeFloat(lane);
+            }
+        }
+    }
+    return hash.finish();
+}
+
 [[nodiscard]] auto resourceValuesEqual(const PortableResourceValue& left,
                                        const PortableResourceValue& right) noexcept -> bool {
     if (left.index() != right.index()) {
@@ -792,13 +1699,35 @@ struct ParsedMaterial final {
                leftTexture->colorSpace == rightTexture.colorSpace &&
                leftTexture->pixelsRgba8 == rightTexture.pixelsRgba8;
     }
-    const auto& leftMaterial = std::get<PortableUnlitMaterial>(left);
-    const auto& rightMaterial = std::get<PortableUnlitMaterial>(right);
-    return std::equal(std::begin(leftMaterial.baseColor), std::end(leftMaterial.baseColor),
-                      std::begin(rightMaterial.baseColor)) &&
+    if (const auto* leftUnlit = std::get_if<PortableUnlitMaterial>(&left)) {
+        const auto& rightUnlit = std::get<PortableUnlitMaterial>(right);
+        return std::equal(std::begin(leftUnlit->baseColor), std::end(leftUnlit->baseColor),
+                          std::begin(rightUnlit.baseColor)) &&
+               leftUnlit->alphaMode == rightUnlit.alphaMode &&
+               leftUnlit->doubleSided == rightUnlit.doubleSided &&
+               leftUnlit->baseColorTexture == rightUnlit.baseColorTexture;
+    }
+    if (const auto* leftShader = std::get_if<PortableShader>(&left)) {
+        const auto& rightShader = std::get<PortableShader>(right);
+        return leftShader->vertexSource == rightShader.vertexSource &&
+               leftShader->fragmentSource == rightShader.fragmentSource &&
+               leftShader->vertexEntry == rightShader.vertexEntry &&
+               leftShader->fragmentEntry == rightShader.fragmentEntry &&
+               leftShader->variantKeywords == rightShader.variantKeywords &&
+               leftShader->defaultAlphaMode == rightShader.defaultAlphaMode &&
+               leftShader->defaultDoubleSided == rightShader.defaultDoubleSided &&
+               leftShader->requiredRendererProfile == rightShader.requiredRendererProfile &&
+               leftShader->requiredHostExtensions == rightShader.requiredHostExtensions &&
+               leftShader->bindings.size() == rightShader.bindings.size() &&
+               leftShader->parameters.size() == rightShader.parameters.size();
+    }
+    const auto& leftMaterial = std::get<PortableParameterizedMaterial>(left);
+    const auto& rightMaterial = std::get<PortableParameterizedMaterial>(right);
+    return leftMaterial.shader == rightMaterial.shader &&
            leftMaterial.alphaMode == rightMaterial.alphaMode &&
            leftMaterial.doubleSided == rightMaterial.doubleSided &&
-           leftMaterial.baseColorTexture == rightMaterial.baseColorTexture;
+           leftMaterial.selectedKeywords == rightMaterial.selectedKeywords &&
+           leftMaterial.parameters.size() == rightMaterial.parameters.size();
 }
 
 [[nodiscard]] auto looksPortable(std::span<const std::byte> bytes) noexcept -> bool {
@@ -821,7 +1750,7 @@ struct ParsedMaterial final {
     const auto kind = reader.readU32();
     const auto version = reader.readU32();
     const auto byteCount = reader.readU64();
-    return kind >= 1 && kind <= 3 && version == 1 && byteCount == bytes.size();
+    return kind >= 1 && kind <= 5 && version == 1 && byteCount == bytes.size();
 }
 
 [[nodiscard]] auto collectRequiredResources(const chart::ChartRuntime& chartRuntime)
@@ -983,7 +1912,9 @@ auto preparePresentation(const chart::ChartRuntime& chartRuntime,
 
         std::map<std::string, ParsedMesh, std::less<>> parsedMeshes;
         std::map<std::string, ParsedMaterial, std::less<>> parsedMaterials;
+        std::map<std::string, ParsedParameterizedMaterial, std::less<>> parsedParameterized;
         std::map<std::string, PresentationResourceType, std::less<>> requiredTextures;
+        std::map<std::string, PresentationResourceType, std::less<>> requiredShaders;
         for (auto& [assetId, lease] : meshLeases) {
             const auto* record = resourceManager->database().find(assetId);
             if (record == nullptr || !record->dependencies.empty()) {
@@ -998,45 +1929,143 @@ auto preparePresentation(const chart::ChartRuntime& chartRuntime,
             parsedMeshes.emplace(assetId, std::move(*parsed));
         }
         for (auto& [assetId, lease] : materialLeases) {
-            auto parsed = parseMaterial(assetId, lease.resource().bytes());
+            const auto kind = peekPayloadKind(lease.resource().bytes());
+            if (!kind || (*kind != payloadKind(PresentationResourceType::UnlitMaterial) &&
+                          *kind != payloadKind(PresentationResourceType::ParameterizedMaterial))) {
+                return core::unexpected(
+                    payloadError("playback.presentation.payload.type_mismatch",
+                                 "Portable payload kind does not match the Asset Index", assetId,
+                                 PresentationResourceType::UnlitMaterial, 8));
+            }
+            if (*kind == payloadKind(PresentationResourceType::UnlitMaterial)) {
+                auto parsed = parseMaterial(assetId, lease.resource().bytes());
+                if (!parsed) {
+                    return core::unexpected(std::move(parsed.error()));
+                }
+                const auto* record = resourceManager->database().find(assetId);
+                const bool matchesNoTexture =
+                    !parsed->textureAssetId && record != nullptr && record->dependencies.empty();
+                const bool matchesTexture =
+                    parsed->textureAssetId && record != nullptr &&
+                    record->dependencies.size() == 1 &&
+                    record->dependencies.front().value == *parsed->textureAssetId;
+                if (!matchesNoTexture && !matchesTexture) {
+                    return core::unexpected(resourceError(
+                        "playback.presentation.dependency.mismatch",
+                        "Portable Material payload and Asset Index dependencies differ", assetId,
+                        PresentationResourceType::UnlitMaterial));
+                }
+                if (parsed->textureAssetId) {
+                    const auto* textureRecord =
+                        resourceManager->database().find(*parsed->textureAssetId);
+                    if (textureRecord == nullptr ||
+                        textureRecord->type != assets::AssetType::Texture) {
+                        return core::unexpected(
+                            resourceError("playback.presentation.dependency.mismatch",
+                                          "Portable Material dependency is not a Texture2D AssetId",
+                                          assetId, PresentationResourceType::UnlitMaterial)
+                                .withContext("dependency", *parsed->textureAssetId));
+                    }
+                    requiredTextures.emplace(*parsed->textureAssetId,
+                                             PresentationResourceType::Texture2D);
+                }
+                parsedMaterials.emplace(assetId, std::move(*parsed));
+                continue;
+            }
+
+            auto parsed = parseParameterizedMaterial(assetId, lease.resource().bytes());
             if (!parsed) {
                 return core::unexpected(std::move(parsed.error()));
             }
+            required[assetId] = PresentationResourceType::ParameterizedMaterial;
+            requiredShaders.emplace(parsed->shaderAssetId, PresentationResourceType::Shader);
+            parsedParameterized.emplace(assetId, std::move(*parsed));
+        }
+
+        std::map<std::string, ParsedShader, std::less<>> parsedShaders;
+        for (const auto& [assetId, type] : requiredShaders) {
             const auto* record = resourceManager->database().find(assetId);
-            const bool matchesNoTexture =
-                !parsed->textureAssetId && record != nullptr && record->dependencies.empty();
-            const bool matchesTexture =
-                parsed->textureAssetId && record != nullptr && record->dependencies.size() == 1 &&
-                record->dependencies.front().value == *parsed->textureAssetId;
-            if (!matchesNoTexture && !matchesTexture) {
+            if (record == nullptr || record->type != assets::AssetType::Shader) {
+                auto error = resourceError(
+                    "playback.presentation.material.shader_reference_invalid",
+                    "Parameterized Material shader AssetId is missing or not a Shader", assetId,
+                    type);
+                if (record != nullptr) {
+                    error.withContext("actual", std::string{assets::assetTypeName(record->type)});
+                }
+                return core::unexpected(std::move(error));
+            }
+            if (!record->dependencies.empty()) {
+                return core::unexpected(
+                    resourceError("playback.presentation.dependency.mismatch",
+                                  "Portable Shader dependency list must be empty", assetId, type));
+            }
+            auto loaded = resourceManager->loadShader(assets::AssetId{assetId});
+            if (!loaded) {
+                return core::unexpected(
+                    unavailableResource(assetId, type, std::move(loaded.error())));
+            }
+            auto parsed = parseShader(assetId, loaded->resource().bytes());
+            if (!parsed) {
+                return core::unexpected(std::move(parsed.error()));
+            }
+            parsedShaders.emplace(assetId, std::move(*parsed));
+        }
+
+        for (auto& [assetId, parsed] : parsedParameterized) {
+            const auto shader = parsedShaders.find(parsed.shaderAssetId);
+            if (shader == parsedShaders.end()) {
+                return core::unexpected(
+                    resourceError("playback.presentation.material.shader_reference_invalid",
+                                  "Parameterized Material shader was not prepared", assetId,
+                                  PresentationResourceType::ParameterizedMaterial)
+                        .withContext("dependency", parsed.shaderAssetId));
+            }
+            if (auto completed =
+                    completeParameterizedMaterial(assetId, parsed, shader->second.value);
+                !completed) {
+                return core::unexpected(std::move(completed.error()));
+            }
+            const auto* record = resourceManager->database().find(assetId);
+            std::vector<std::string> expected{parsed.shaderAssetId};
+            expected.insert(expected.end(), parsed.textureAssetIds.begin(),
+                            parsed.textureAssetIds.end());
+            std::sort(expected.begin(), expected.end());
+            expected.erase(std::unique(expected.begin(), expected.end()), expected.end());
+            std::vector<std::string> actual;
+            if (record != nullptr) {
+                actual.reserve(record->dependencies.size());
+                for (const auto& dependency : record->dependencies) {
+                    actual.push_back(dependency.value);
+                }
+            }
+            if (record == nullptr || actual != expected) {
                 return core::unexpected(
                     resourceError("playback.presentation.dependency.mismatch",
                                   "Portable Material payload and Asset Index dependencies differ",
-                                  assetId, PresentationResourceType::UnlitMaterial));
+                                  assetId, PresentationResourceType::ParameterizedMaterial));
             }
-            if (parsed->textureAssetId) {
-                const auto* textureRecord =
-                    resourceManager->database().find(*parsed->textureAssetId);
+            for (const auto& textureAssetId : parsed.textureAssetIds) {
+                const auto* textureRecord = resourceManager->database().find(textureAssetId);
                 if (textureRecord == nullptr || textureRecord->type != assets::AssetType::Texture) {
                     return core::unexpected(
                         resourceError("playback.presentation.dependency.mismatch",
                                       "Portable Material dependency is not a Texture2D AssetId",
-                                      assetId, PresentationResourceType::UnlitMaterial)
-                            .withContext("dependency", *parsed->textureAssetId));
+                                      assetId, PresentationResourceType::ParameterizedMaterial)
+                            .withContext("dependency", textureAssetId));
                 }
-                requiredTextures.emplace(*parsed->textureAssetId,
-                                         PresentationResourceType::Texture2D);
+                requiredTextures.emplace(textureAssetId, PresentationResourceType::Texture2D);
             }
-            parsedMaterials.emplace(assetId, std::move(*parsed));
         }
 
-        if (required.size() + requiredTextures.size() > maxManifestEntries) {
+        const auto totalEntries =
+            required.size() + requiredTextures.size() + requiredShaders.size();
+        if (totalEntries > maxManifestEntries) {
             return core::unexpected(
                 core::Error{"playback.presentation.session.budget_exceeded",
                             "Portable presentation manifest entry limit was exceeded"}
                     .withContext("limit", std::to_string(maxManifestEntries))
-                    .withContext("actual",
-                                 std::to_string(required.size() + requiredTextures.size())));
+                    .withContext("actual", std::to_string(totalEntries)));
         }
 
         std::map<std::string, ParsedTexture, std::less<>> parsedTextures;
@@ -1111,6 +2140,17 @@ auto preparePresentation(const chart::ChartRuntime& chartRuntime,
                 return core::unexpected(std::move(added.error()));
             }
         }
+        for (auto& [assetId, parsed] : parsedShaders) {
+            PresentationResourceRef reference{PresentationResourceType::Shader, assetId,
+                                              shaderIdentity(parsed.value)};
+            auto resource = std::make_shared<const PortableResource>(
+                PortableResource{reference, std::move(parsed.value)});
+            if (auto added = addResource(std::move(resource), parsed.encodedByteCount,
+                                         parsed.decodedByteCount, {});
+                !added) {
+                return core::unexpected(std::move(added.error()));
+            }
+        }
         for (auto& [assetId, parsed] : parsedMaterials) {
             std::vector<PresentationResourceRef> dependencies;
             if (parsed.textureAssetId) {
@@ -1127,6 +2167,43 @@ auto preparePresentation(const chart::ChartRuntime& chartRuntime,
             }
             PresentationResourceRef reference{PresentationResourceType::UnlitMaterial, assetId,
                                               materialIdentity(parsed.value)};
+            auto resource = std::make_shared<const PortableResource>(
+                PortableResource{reference, std::move(parsed.value)});
+            if (auto added = addResource(std::move(resource), parsed.encodedByteCount,
+                                         parsed.decodedByteCount, std::move(dependencies));
+                !added) {
+                return core::unexpected(std::move(added.error()));
+            }
+        }
+        for (auto& [assetId, parsed] : parsedParameterized) {
+            std::vector<PresentationResourceRef> dependencies;
+            const auto shader = built.find(
+                PresentationResourceKey{parsed.shaderAssetId, PresentationResourceType::Shader});
+            if (shader == built.end()) {
+                return core::unexpected(
+                    resourceError("playback.presentation.material.shader_reference_invalid",
+                                  "Parameterized Material shader dependency was not prepared",
+                                  assetId, PresentationResourceType::ParameterizedMaterial));
+            }
+            parsed.value.shader = shader->second.resource->reference;
+            dependencies.push_back(shader->second.resource->reference);
+            for (auto& parameter : parsed.value.parameters) {
+                if (!parameter.texture) {
+                    continue;
+                }
+                const auto found = built.find(PresentationResourceKey{
+                    parameter.texture->assetId, PresentationResourceType::Texture2D});
+                if (found == built.end()) {
+                    return core::unexpected(
+                        resourceError("playback.presentation.resource.missing",
+                                      "Portable Material texture dependency was not prepared",
+                                      assetId, PresentationResourceType::ParameterizedMaterial));
+                }
+                parameter.texture = found->second.resource->reference;
+                dependencies.push_back(found->second.resource->reference);
+            }
+            PresentationResourceRef reference{PresentationResourceType::ParameterizedMaterial,
+                                              assetId, parameterizedMaterialIdentity(parsed.value)};
             auto resource = std::make_shared<const PortableResource>(
                 PortableResource{reference, std::move(parsed.value)});
             if (auto added = addResource(std::move(resource), parsed.encodedByteCount,

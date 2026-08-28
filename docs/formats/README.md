@@ -2,7 +2,7 @@
 
 状态：现行格式索引
 
-更新日期：2026-08-27
+更新日期：2026-08-28
 
 ## Artifact 分层
 
@@ -22,13 +22,14 @@ Compiled Runtime
 | 内容 | 权威文档 | 状态 |
 | --- | --- | --- |
 | ProjectConfig v1 | [ADR 0025](../adr/0025-project-config-v1-and-path-security.md) | implemented |
-| Asset Index v1/v2 | [ADR 0026](../adr/0026-asset-index-and-source-resolution.md) 与 ADR 0031 | implemented |
+| Asset Index v1/v2/v3 | [ADR 0026](../adr/0026-asset-index-and-source-resolution.md)、ADR 0031 与 [MATERIAL_SHADER.md](MATERIAL_SHADER.md) | implemented; v3 adds `shader` |
 | Chart v1/v2/v3 | [CHART_FORMAT.md](CHART_FORMAT.md) | implemented |
 | Chart v4 | [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md) | accepted and implemented; C1–C4, CFU-D/E/F/G gates closed; Stage 4 animation runtime closed |
 | CXC v1 | [CXC_FORMAT.md](CXC_FORMAT.md) | accepted and implemented internally; archive/tools and Playback source/prepare/identity gates closed; no public CXC package API |
 | CXT v1 | [CXT_FORMAT.md](CXT_FORMAT.md) | accepted contract; Reader/Writer/lowering and prepare import/lookup implemented; CFU-F and G4 hosted gates closed; Stage 4 animation execution closed |
 | Animation Mixing | [ANIMATION_MIXING.md](ANIMATION_MIXING.md) | accepted contract; format-stage gates closed; Stage 4 runtime closed |
 | Portable Presentation v1 | [PORTABLE_PRESENTATION.md](PORTABLE_PRESENTATION.md) | implemented |
+| Material/Shader v1 | [MATERIAL_SHADER.md](MATERIAL_SHADER.md) | accepted contract; S5-A frozen; S5-B optional tools wired; S5-C kind 4/5 parse/identity implemented; S5-D compile/reflect implemented behind shader-tools; S5-E profile/capability preflight implemented; S5-F CXSCCH01 cache implemented; S5-G OpenGL/Player/Validation Sink consumption implemented |
 
 ADR 记录选择理由，格式文档记录字段和语义。CXC 不重新定义 Chart/CXT；CXT 不重新定义
 ChartParameter、Template Binding 或 Animator；Animation Mixing 不重新定义序列化字段。

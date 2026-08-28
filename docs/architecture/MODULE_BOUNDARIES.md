@@ -2,7 +2,7 @@
 
 状态：现行模块边界摘要
 
-更新日期：2026-08-27
+更新日期：2026-08-28
 
 本文总结稳定依赖方向。构建时的精确 allowlist 和 architecture tests 仍由根 CMake 配置拥有。
 
@@ -23,7 +23,8 @@
 | `cuexis_render_opengl` | OpenGL adapter | Playback 公共门面反向依赖 |
 | `cuexis_audio` | 后端无关 Transport/Clock | SDL |
 | `cuexis_audio_sdl` | SDL Audio adapter | Runtime/Chart 反向依赖 |
-| `cuexis_playback` | 宿主公共门面和 Prepared transaction | 暴露 World、RuntimeSession、EnTT |
+| `cuexis_playback` | 宿主公共门面和 Prepared transaction | 暴露 World、RuntimeSession、EnTT、shaderc、SPIRV-Cross |
+| `cuexis_shader` | 可选 GLSL 450 → SPIR-V 编译、反射与目标代码生成 | Playback 公共头、SDL、OpenGL、JSON DOM、minizip；不是安装 component |
 
 ## 依赖原则
 
@@ -38,7 +39,9 @@ Player and Studio -> compose Playback and optional adapters
 ```
 
 Platform、AudioSDL 和 OpenGL adapter 都是可选叶子模块。Headless Playback 不要求 SDL、OpenGL、
-窗口或物理音频设备。
+窗口、物理音频设备或 Shader 编译器。`cuexis_shader` 仅在 `CUEXIS_BUILD_SHADER_TOOLS` 与 vcpkg
+feature `shader-tools` 同时打开时构建；Playback 链接闭包不得包含 shaderc、glslang、SPIRV-Tools
+或 SPIRV-Cross。
 
 ## JSON 和第三方类型
 

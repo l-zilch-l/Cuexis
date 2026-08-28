@@ -2,7 +2,7 @@
 
 状态：active index
 
-更新日期：2026-08-10
+更新日期：2026-08-28
 
 本目录保存已讨论或已接受方向、但尚未进入当前实施阶段的设计输入。它们不是生产 API、
 格式合同或当前阶段承诺；实际排期以 [ROADMAP.md](../../ROADMAP.md) 和
@@ -10,7 +10,9 @@
 
 ## Design Inputs
 
-- [Shader Pipeline](SHADER_PIPELINE.md): [Stage 5 plan](../../stage_plans/stage_5_implementation_plan.md)
+- [Shader Pipeline](SHADER_PIPELINE.md): historical design input; production contract is
+  [MATERIAL_SHADER.md](../../formats/MATERIAL_SHADER.md) and
+  [Stage 5 plan](../../stage_plans/stage_5_implementation_plan.md)
 - [Particle Timeline](PARTICLE_TIMELINE.md): [Stage 8 plan](../../stage_plans/stage_8_implementation_plan.md)
 - [Android and Mobile Strategy](MOBILE_STRATEGY.md): [Stage 9B plan](../../stage_plans/stage_9b_implementation_plan.md)
 

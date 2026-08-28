@@ -23,6 +23,7 @@ option(CUEXIS_BUILD_AUDIO_SDL_ADAPTER "Build the SDL audio adapter" ${CUEXIS_BUI
 option(CUEXIS_BUILD_OPENGL_ADAPTER "Build the OpenGL render adapter" ${CUEXIS_BUILD_PLAYER})
 option(CUEXIS_BUILD_DEVELOPER_TOOLS "Build repository developer-only targets"
        ${CUEXIS_TOP_LEVEL_DEFAULT})
+option(CUEXIS_BUILD_SHADER_TOOLS "Build the optional shader compiler module" OFF)
 option(CUEXIS_BUILD_TESTS "Build the Cuexis test suite" ${CUEXIS_TESTS_DEFAULT})
 option(CUEXIS_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
 option(CUEXIS_ENABLE_CLANG_TIDY "Run clang-tidy while compiling Cuexis targets" OFF)
@@ -125,6 +126,12 @@ endif()
 if(CUEXIS_BUILD_OPENGL_ADAPTER)
     list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_render_opengl)
 endif()
+if(TARGET cuexis_shader_cache)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_shader_cache)
+endif()
+if(TARGET cuexis_shader)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_shader)
+endif()
 if(CUEXIS_BUILD_PLAYER)
     list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_player)
 endif()
@@ -137,6 +144,9 @@ if(CUEXIS_BUILD_DEVELOPER_TOOLS)
         cuexis_cxc_unpack
         cuexis_cxc_validate
     )
+    if(TARGET cuexis_asset_importer)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_asset_importer)
+    endif()
 endif()
 
 if(CUEXIS_BUILD_TESTS)
@@ -176,6 +186,9 @@ if(CUEXIS_BUILD_TESTS)
     endif()
     if(TARGET cuexis_player_diagnostics_tests)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_player_diagnostics_tests)
+    endif()
+    if(TARGET cuexis_shader_tests)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_shader_tests)
     endif()
 
     add_test(
@@ -615,6 +628,26 @@ cuexis_verify_target_dependencies(cuexis_animation
         cuexis::chart
         cuexis::world
 )
+if(TARGET cuexis_shader_cache)
+    cuexis_verify_target_dependencies(cuexis_shader_cache
+        ALLOWED
+            cuexis::core
+    )
+endif()
+if(TARGET cuexis_shader)
+    # Imported names are owned by vcpkg ports shaderc / spirv-cross / spirv-tools.
+    # They must not appear in installed CuexisConfig.cmake or the Playback link closure.
+    cuexis_verify_target_dependencies(cuexis_shader
+        ALLOWED
+            cuexis::core
+            cuexis::shader_cache
+            unofficial::shaderc::shaderc
+            spirv-cross-core
+            spirv-cross-glsl
+            spirv-cross-reflect
+            SPIRV-Tools-static
+    )
+endif()
 cuexis_verify_target_dependencies(cuexis_cxc
     ALLOWED
         cuexis::core
@@ -657,13 +690,19 @@ cuexis_verify_target_dependencies(cuexis_runtime
         cuexis::world
 )
 if(TARGET cuexis_render_opengl)
+    set(cuexis_render_opengl_allowed
+        cuexis::render
+        cuexis::platform_sdl
+        cuexis::playback
+        cuexis::shader_cache
+        glad::glad
+        SDL3::SDL3
+    )
+    if(TARGET cuexis_shader)
+        list(APPEND cuexis_render_opengl_allowed cuexis::shader)
+    endif()
     cuexis_verify_target_dependencies(cuexis_render_opengl
-        ALLOWED
-            cuexis::render
-            cuexis::platform_sdl
-            cuexis::playback
-            glad::glad
-            SDL3::SDL3
+        ALLOWED ${cuexis_render_opengl_allowed}
     )
 endif()
 cuexis_verify_target_dependencies(cuexis_playback
@@ -734,6 +773,12 @@ if(TARGET cuexis_cxc_unpack)
             cuexis::cxc_tool_common
     )
 endif()
+if(TARGET cuexis_asset_importer)
+    cuexis_verify_target_dependencies(cuexis_asset_importer
+        ALLOWED
+            cuexis::shader
+    )
+endif()
 
 if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_core_tests
@@ -797,6 +842,13 @@ if(CUEXIS_BUILD_TESTS)
             cuexis::animation
             Catch2::Catch2WithMain
     )
+    if(TARGET cuexis_shader_tests)
+        cuexis_verify_target_dependencies(cuexis_shader_tests
+            ALLOWED
+                cuexis::shader
+                Catch2::Catch2WithMain
+        )
+    endif()
     cuexis_verify_target_dependencies(cuexis_s4g_performance_probe
         ALLOWED
             cuexis::animation
