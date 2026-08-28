@@ -33,7 +33,7 @@ The next implementation stage is **Stage 5**, following the completed Stage 4 an
 S5-A froze Material/Shader contracts in ADR 0040 and `docs/formats/MATERIAL_SHADER.md`. S5-B
 wired optional `cuexis_shader` and vcpkg feature `shader-tools`. S5-C added `CXPRES01` kind 4/5
 parse/identity, Asset Index v3 `shader`, SDK API `0.7.0`, and public capability constants that
-are not in default `allCapabilities()`. S5-D through S5-H are not started.
+are in default `allCapabilities()` after S5-G. S5-H is a local checkpoint; hosted pending.
 Stage 4 is complete. Do not call the format stage Stage 3.5. ADR 0038 defines `.cxc` as a strict ZIP32 Stored exchange
 package containing existing Project/Asset Index formats, `cuexis.chart` v4 data, CXT JSON, and
 required resources. The CXT v1, ChartParameter, and Template Binding subdecision was accepted on
@@ -57,7 +57,7 @@ Stage 4 typed handoff are complete. G3 local candidate gates passed on August 19
 `4371fdcf04f4f89bfddf070cbb15e4c903810a53` passed same-SHA hosted Linux Quality, Windows MSVC,
 and Windows MinGW validation on August 24, 2026; G3 hosted validation and G4 are complete.
 G5 report-SHA hosted revalidation passed and G6 owner acceptance is recorded. Stage Chart Format
-Update is complete; Stage 4 is complete. Stage 5 S5-A, S5-B, S5-C, S5-D, S5-E, S5-F, and S5-G are complete; S5-H is not started.**
+Update is complete; Stage 4 is complete. Stage 5 S5-A, S5-B, S5-C, S5-D, S5-E, S5-F, and S5-G are complete; S5-H local checkpoint; hosted pending.**
 Stage 4 close is not a public CXC package API, Shader pipeline, Studio, or Judgement.
 Stage 4 consumed typed data produced by the format stage and must not parse JSON/CXC/CXT in `engine/animation/`.
 Runtime scripts and per-frame script callbacks are deferred indefinitely. No scheduled stage,
@@ -140,13 +140,14 @@ orphaned `cuexis_player.exe` holds the GPU context or the log files.
 
 ### Static analysis, sanitizers and coverage
 
-`CMakePresets.json` defines `headless-sanitize`, `headless-clang-tidy` and
-`headless-coverage`. **All three are Linux/Clang/GCC-only** and are exercised by
-`.github/workflows/linux-quality.yml`, not locally on MSVC:
+`CMakePresets.json` defines `headless-sanitize`, `headless-sanitize-shader-tools`,
+`headless-clang-tidy` and `headless-coverage`. **These are Linux/Clang/GCC-only** and are
+exercised by `.github/workflows/linux-quality.yml`, not locally on MSVC:
 
 | Preset | Requires | Status on Windows/MSVC |
 |---|---|---|
 | `headless-sanitize` | Clang or GCC | Fatal configure error |
+| `headless-sanitize-shader-tools` | Clang or GCC + vcpkg `shader-tools` | Fatal configure error |
 | `headless-coverage` | Clang or GCC + `gcovr` | Fatal configure error |
 | `headless-clang-tidy` | `clang-tidy` | Configures, but the build fails |
 

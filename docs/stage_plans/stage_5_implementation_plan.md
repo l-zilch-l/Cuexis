@@ -1,6 +1,6 @@
 # Stage 5 Implementation Plan: Material and Shader Pipeline
 
-状态：future；S5-A/S5-B/S5-C/S5-D/S5-E/S5-F/S5-G 已完成；S5-H 尚未开始；Stage 4 已于 2026-08-27 关闭
+状态：future；S5-A/S5-B/S5-C/S5-D/S5-E/S5-F/S5-G 已完成；S5-H 本地检查点已写入，hosted 与 owner acceptance 待完成；Stage 4 已于 2026-08-27 关闭
 
 更新日期：2026-08-28
 
@@ -112,9 +112,10 @@ World、EnTT、RuntimeSession、GLuint、VkHandle 或 JSON DOM。
 
 ## 7. 批次顺序
 
-只允许按批次推进。S5-A、S5-B、S5-C、S5-D、S5-E、S5-F 与 S5-G 已关闭。S5-H 开始前禁止把
-局部 Shader 编译描述为完整 Stage 5。OpenGL 内联 Unlit GLSL 330 保持不变。默认 Session 已包含
-`cuexis.shader.asset.v1` 与 `cuexis.material.parameterized.v1`；显式裁剪 Session 仍拒绝。
+只允许按批次推进。S5-A、S5-B、S5-C、S5-D、S5-E、S5-F 与 S5-G 已关闭。S5-H 本地检查点已写入；
+hosted 三平台与 owner acceptance 完成前禁止把 Stage 5 标为 completed。OpenGL 内联 Unlit
+GLSL 330 保持不变。默认 Session 已包含 `cuexis.shader.asset.v1` 与
+`cuexis.material.parameterized.v1`；显式裁剪 Session 仍拒绝。
 
 ```text
 S5-A  合同冻结（无生产代码）
@@ -366,6 +367,13 @@ cuexis.material.parameterized.v1
 
 退出门禁：三平台 hosted 成功，owner acceptance 已记录。关闭不表示 Studio、Judgement、公共
 CXC API、Vulkan 或 Shader Graph 已开始。
+
+实施快照（2026-08-28）：预算 +1 测试用 claimed size / `content.provider.too_large`，不分配巨型
+fixture。Shader 与 Parameterized `decodedByteCount` 使用 `checkedAddU64`。warmed Parameterized
+热帧零新增且不 refetch。`cuexis_s5h_performance_probe` 默认跳过，
+`CUEXIS_RUN_PERFORMANCE_PROBE=1` 记录趋势。Linux Quality 增加
+`headless-sanitize-shader-tools`。证据见
+[S5-H 报告](../stage_reports/260828-stage-5-s5-h-safety.md)。hosted 与 owner acceptance 仍待完成。
 
 ## 8. 模块、target 与文件落点
 

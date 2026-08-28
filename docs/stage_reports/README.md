@@ -69,5 +69,6 @@
 | [260828 Stage 5 S5-E profile/capability](260828-stage-5-s5-e-profile-capability.md) | S5-E local checkpoint: toolchain profile IDs, PresentationCapabilities version 2, parse → playback → presentation preflight; no CXSCCH01 |
 | [260828 Stage 5 S5-F cache](260828-stage-5-s5-f-cache.md) | S5-F local checkpoint: CXSCCH01 Writer/Reader, canonical cache key, importer write, failed hot-reload keeps active; OpenGL consumption not started |
 | [260828 Stage 5 S5-G consume](260828-stage-5-s5-g-consume.md) | S5-G local checkpoint: OpenGL/Player/Validation Sink consume CXSCCH01; default allCapabilities includes shader/parameterized; trimmed Session still rejects; Unlit golden unchanged |
+| [260828 Stage 5 S5-H safety](260828-stage-5-s5-h-safety.md) | S5-H local checkpoint: spec budgets, warmed allocation contract, performance probe, Linux sanitizer shader-tools; hosted and owner acceptance pending; Stage 5 not completed |
 | [260828 CFU and Stage 4 review](260828-stage-CFU-4-review.md) | open two-axis review snapshot of CFU through Stage 4 close; does not redefine CURRENT_STATUS |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |

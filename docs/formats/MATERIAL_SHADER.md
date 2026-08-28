@@ -1,6 +1,6 @@
 # Cuexis Material and Shader Profile v1
 
-状态：accepted contract；S5-C payload parse implemented；S5-D compile/reflect implemented behind shader-tools；S5-E profile/capability preflight implemented；S5-F CXSCCH01 cache implemented；S5-G OpenGL/Player/Validation Sink consumption implemented；S5-A 已于 2026-08-28 冻结
+状态：accepted contract；S5-C payload parse implemented；S5-D compile/reflect implemented behind shader-tools；S5-E profile/capability preflight implemented；S5-F CXSCCH01 cache implemented；S5-G OpenGL/Player/Validation Sink consumption implemented；S5-H local checkpoint；S5-A 已于 2026-08-28 冻结
 
 日期：2026-08-28
 
@@ -636,5 +636,7 @@ v3 `shader`、公开 capability 常量和 SDK API `0.7.0`。S5-D 已实现 `cuex
 `cuexis.material.parameterized.v1` 写入默认 `allCapabilities()`；OpenGL 消费 `CXSCCH01`
 GLSL 330、`CuexisObject` UBO 与 set/binding → texture unit；Unlit 内联 GLSL 330 未改；
 Validation Sink 校验 kind 4/5 identity/schema 且 Portable-only 拒绝 Parameterized；裁剪
-Session 仍拒绝且不破坏 active Unlit。S5-H 尚未开始。完成证据只写入阶段报告。当前产品状态以
+Session 仍拒绝且不破坏 active Unlit。S5-H local checkpoint 已写入预算、分配合同、趋势探针与
+Linux sanitizer shader-tools 覆盖；hosted 与 owner acceptance 完成前 Stage 5 不得标为
+completed。完成证据只写入阶段报告。当前产品状态以
 [CURRENT_STATUS.md](../CURRENT_STATUS.md) 为准。

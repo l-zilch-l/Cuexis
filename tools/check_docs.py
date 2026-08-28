@@ -177,7 +177,7 @@ def check_cfu_status(failures: list[CheckFailure]) -> None:
             "G6 owner acceptance is recorded",
             "Stage Chart Format Update is complete",
             "Stage 4 is complete",
-            "Stage 5 S5-A, S5-B, S5-C, S5-D, S5-E, S5-F, and S5-G are complete; S5-H is not started",
+            "Stage 5 S5-A, S5-B, S5-C, S5-D, S5-E, S5-F, and S5-G are complete; S5-H local checkpoint; hosted pending",
         ),
         DOCS / "CURRENT_STATUS.md": (
             "G3 hosted 门禁与 G4 已完成",
@@ -196,6 +196,7 @@ def check_cfu_status(failures: list[CheckFailure]) -> None:
             "S5-E 已完成",
             "S5-F 已完成",
             "S5-G 已完成",
+            "S5-H local checkpoint",
         ),
         DOCS / "ROADMAP.md": (
             "CFU-F consumers and determinism closed; final-SHA hosted gates passed 2026-08-16",
@@ -218,6 +219,7 @@ def check_cfu_status(failures: list[CheckFailure]) -> None:
             "S5-E 已完成",
             "S5-F 已完成",
             "S5-G 已完成",
+            "S5-H local checkpoint",
         ),
         DOCS / "formats" / "README.md": (
             "CFU-G hosted 验证、completion report 和 owner acceptance 已完成",
@@ -262,6 +264,7 @@ def check_cfu_status(failures: list[CheckFailure]) -> None:
             "Stage Chart Format Update completion report",
             "G6 owner acceptance recorded 2026-08-24",
             "Stage 4 completion report",
+            "260828 Stage 5 S5-H safety",
         ),
         DOCS / "stage_reports" / "stage_chart_format_update_completion_report.md": (
             "G6 complete",

@@ -7,6 +7,7 @@ add_executable(cuexis_playback_tests
     playback_source_tests.cpp
     playback_v4_animation_tests.cpp
     playback_v4_prepare_tests.cpp
+    presentation_shader_budget_tests.cpp
     presentation_shader_tests.cpp
     presentation_tests.cpp
     runtime_timeline_tests.cpp
@@ -79,3 +80,36 @@ target_link_libraries(stage3_performance_probe
 if(WIN32)
     target_link_libraries(stage3_performance_probe PRIVATE Psapi)
 endif()
+
+add_executable(cuexis_s5h_performance_probe
+    s5h_performance_probe.cpp
+)
+
+target_compile_definitions(cuexis_s5h_performance_probe
+    PRIVATE
+        CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+)
+
+target_link_libraries(cuexis_s5h_performance_probe
+    PRIVATE
+        cuexis::playback
+)
+
+if(WIN32)
+    target_link_libraries(cuexis_s5h_performance_probe PRIVATE Psapi)
+endif()
+
+add_test(
+    NAME cuexis_s5h_performance
+    COMMAND "${CMAKE_COMMAND}"
+        "-DCUEXIS_S5H_PERFORMANCE_PROBE=$<TARGET_FILE:cuexis_s5h_performance_probe>"
+        "-DCUEXIS_S5H_OUTPUT=${CMAKE_BINARY_DIR}/s5-h/performance.txt"
+        "-DCUEXIS_IMPLEMENTATION_SHA=${CUEXIS_IMPLEMENTATION_SHA}"
+        "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+        -P "${PROJECT_SOURCE_DIR}/cmake/VerifyS5HPerformance.cmake"
+)
+
+set_tests_properties(cuexis_s5h_performance PROPERTIES
+    LABELS "s5-h;playback;performance"
+    TIMEOUT 300
+)

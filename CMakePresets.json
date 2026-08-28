@@ -112,6 +112,15 @@
       }
     },
     {
+      "name": "headless-sanitize-shader-tools",
+      "displayName": "Headless ASan + UBSan with shader tools",
+      "inherits": "headless-sanitize",
+      "cacheVariables": {
+        "CUEXIS_BUILD_SHADER_TOOLS": "ON",
+        "VCPKG_MANIFEST_FEATURES": "tests;shader-tools"
+      }
+    },
+    {
       "name": "headless-clang-tidy",
       "displayName": "Headless clang-tidy",
       "inherits": "headless-debug",
@@ -169,6 +178,10 @@
     {
       "name": "headless-sanitize",
       "configurePreset": "headless-sanitize"
+    },
+    {
+      "name": "headless-sanitize-shader-tools",
+      "configurePreset": "headless-sanitize-shader-tools"
     },
     {
       "name": "headless-clang-tidy",
@@ -273,6 +286,16 @@
     {
       "name": "headless-sanitize",
       "configurePreset": "headless-sanitize",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "headless-sanitize-shader-tools",
+      "configurePreset": "headless-sanitize-shader-tools",
       "output": {
         "outputOnFailure": true
       },

@@ -1,3 +1,4 @@
+#include <cuexis/core/error.hpp>
 #include <cuexis/shader/shader_compiler.hpp>
 #include <cuexis/shader/shader_diagnostics.hpp>
 
@@ -271,4 +272,42 @@ TEST_CASE("S5-D reports shaderc failures with the frozen compile code", "[shader
     REQUIRE_FALSE(compiled.has_value());
     CHECK(compiled.error().code() == cuexis::shader::diagnosticCompileFailed);
     CHECK(compiled.error().message().find("S5-D") == std::string_view::npos);
+}
+
+TEST_CASE("S5-H freezes shader compiler byte and keyword budgets", "[shader][s5-h][limits]") {
+    CHECK(cuexis::shader::maxSourceBytesPerStage == 262144);
+    CHECK(cuexis::shader::maxSpirvBytesPerStage == 1048576);
+    CHECK(cuexis::shader::maxVariantKeywords == 4);
+}
+
+TEST_CASE("S5-H rejects more than four declared keywords before shaderc",
+          "[shader][s5-h][limits]") {
+    const std::string_view declared[] = {"Kw00", "Kw01", "Kw02", "Kw03", "Kw04"};
+    const auto compiled = cuexis::shader::ShaderCompiler::compile({
+        .vertexSource = kPassthroughVertex,
+        .fragmentSource = kPassthroughFragment,
+        .declaredKeywords = declared,
+    });
+    REQUIRE_FALSE(compiled.has_value());
+    CHECK(compiled.error().code() == cuexis::shader::diagnosticKeywordInvalid);
+}
+
+TEST_CASE("S5-H rejects per-stage source over the 262144-byte budget before shaderc",
+          "[shader][s5-h][limits]") {
+    auto vertex = std::string{"#version 450\n"};
+    vertex.resize(cuexis::shader::maxSourceBytesPerStage + 1, ' ');
+    const auto compiled = cuexis::shader::ShaderCompiler::compile({
+        .vertexSource = vertex,
+        .fragmentSource = kPassthroughFragment,
+    });
+    REQUIRE_FALSE(compiled.has_value());
+    CHECK(compiled.error().code() == cuexis::shader::diagnosticCompileFailed);
+    bool hasLimit = false;
+    for (const auto& context : compiled.error().context()) {
+        if (context.key == "limit") {
+            hasLimit = true;
+            CHECK(context.value == "262144");
+        }
+    }
+    CHECK(hasLimit);
 }

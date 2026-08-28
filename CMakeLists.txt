@@ -173,6 +173,7 @@ if(CUEXIS_BUILD_TESTS)
         cuexis_cfu_f_headless_consumer
         cuexis_cfu_f4_performance_probe
         cuexis_s4g_performance_probe
+        cuexis_s5h_performance_probe
     )
 
     if(TARGET cuexis_platform_sdl_tests)
@@ -852,6 +853,11 @@ if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_s4g_performance_probe
         ALLOWED
             cuexis::animation
+            Psapi
+    )
+    cuexis_verify_target_dependencies(cuexis_s5h_performance_probe
+        ALLOWED
+            cuexis::playback
             Psapi
     )
     cuexis_verify_target_dependencies(cuexis_cxc_tests

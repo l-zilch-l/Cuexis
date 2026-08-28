@@ -37,6 +37,10 @@ jobs:
             preset: headless-sanitize
             compiler: clang++
             developer_tools: "OFF"
+          - name: Clang ASan + UBSan shader-tools
+            preset: headless-sanitize-shader-tools
+            compiler: clang++
+            developer_tools: "OFF"
 
     steps:
       - name: Check out repository
@@ -90,6 +94,19 @@ jobs:
             -R '^CFU-F4' \
             --output-log out/build/${{ matrix.preset }}/cfu-f4/sanitizer-tests.log
 
+      - name: Capture S5-H shader-tools sanitizer evidence
+        if: matrix.preset == 'headless-sanitize-shader-tools'
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+        run: |
+          mkdir -p out/build/${{ matrix.preset }}/s5-h
+          printf 'implementation_sha=%s\n' '${{ github.sha }}' \
+            > out/build/${{ matrix.preset }}/s5-h/sanitizer.txt
+          ctest --preset ${{ matrix.preset }} --no-tests=error \
+            -R 'cuexis_shader|S5-H|s5-h' \
+            --output-log out/build/${{ matrix.preset }}/s5-h/sanitizer-tests.log
+
       - name: Verify CXC tools
         if: matrix.developer_tools == 'ON'
         run: >-
@@ -118,6 +135,14 @@ jobs:
           ctest --preset headless-release --no-tests=error -V
           -R '^cuexis_cfu_f4_performance$'
 
+      - name: Capture S5-H max-legal shader performance evidence
+        if: matrix.preset == 'headless-release'
+        env:
+          CUEXIS_RUN_PERFORMANCE_PROBE: 1
+        run: >-
+          ctest --preset headless-release --no-tests=error -V
+          -R '^cuexis_s5h_performance$'
+
       - name: Upload CFU-F4 safety and performance evidence
         if: >-
           always() &&
@@ -126,6 +151,17 @@ jobs:
         with:
           name: cuexis-cfu-f4-${{ matrix.preset }}-${{ github.sha }}
           path: out/build/${{ matrix.preset }}/cfu-f4/
+          if-no-files-found: warn
+
+      - name: Upload S5-H safety and performance evidence
+        if: >-
+          always() &&
+          (matrix.preset == 'headless-release' ||
+           matrix.preset == 'headless-sanitize-shader-tools')
+        uses: actions/upload-artifact@v4
+        with:
+          name: cuexis-s5-h-${{ matrix.preset }}-${{ github.sha }}
+          path: out/build/${{ matrix.preset }}/s5-h/
           if-no-files-found: warn
 
       - name: Verify deterministic performance invariants

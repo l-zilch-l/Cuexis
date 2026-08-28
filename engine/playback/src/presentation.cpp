@@ -119,6 +119,15 @@ constexpr std::array<std::byte, 8> payloadMagic{
     return true;
 }
 
+[[nodiscard]] auto checkedAddU64(std::uint64_t left, std::uint64_t right,
+                                 std::uint64_t& result) noexcept -> bool {
+    if (right > std::numeric_limits<std::uint64_t>::max() - left) {
+        return false;
+    }
+    result = left + right;
+    return true;
+}
+
 [[nodiscard]] auto checkedMultiply(std::size_t left, std::size_t right,
                                    std::size_t& result) noexcept -> bool {
     if (left != 0 && right > std::numeric_limits<std::size_t>::max() / left) {
@@ -1296,27 +1305,44 @@ struct ParsedParameterizedMaterial final {
 
     parsed.encodedByteCount = bytes.size();
     parsed.decodedByteCount = 48;
-    const auto addString = [&](std::string_view value) {
-        parsed.decodedByteCount += 4ULL + value.size();
+    const auto addString = [&](std::string_view value) -> bool {
+        const auto extra = 4ULL + static_cast<std::uint64_t>(value.size());
+        return checkedAddU64(parsed.decodedByteCount, extra, parsed.decodedByteCount);
     };
-    addString(parsed.value.vertexEntry);
-    addString(parsed.value.fragmentEntry);
-    addString(parsed.value.requiredRendererProfile);
+    if (!addString(parsed.value.vertexEntry) || !addString(parsed.value.fragmentEntry) ||
+        !addString(parsed.value.requiredRendererProfile)) {
+        return core::unexpected(
+            budgetError(assetId, type, maxResourceBytes, parsed.decodedByteCount));
+    }
     for (const auto& keyword : parsed.value.variantKeywords) {
-        addString(keyword);
+        if (!addString(keyword)) {
+            return core::unexpected(
+                budgetError(assetId, type, maxResourceBytes, parsed.decodedByteCount));
+        }
     }
     for (const auto& parameter : parsed.value.parameters) {
-        addString(parameter.name);
+        if (!addString(parameter.name)) {
+            return core::unexpected(
+                budgetError(assetId, type, maxResourceBytes, parsed.decodedByteCount));
+        }
     }
     for (const auto& binding : parsed.value.bindings) {
-        addString(binding.name);
+        if (!addString(binding.name)) {
+            return core::unexpected(
+                budgetError(assetId, type, maxResourceBytes, parsed.decodedByteCount));
+        }
     }
     for (const auto& extension : parsed.value.requiredHostExtensions) {
-        addString(extension);
+        if (!addString(extension)) {
+            return core::unexpected(
+                budgetError(assetId, type, maxResourceBytes, parsed.decodedByteCount));
+        }
     }
-    parsed.decodedByteCount +=
-        parsed.value.vertexSource.size() + parsed.value.fragmentSource.size();
-    if (parsed.decodedByteCount > maxResourceBytes) {
+    if (!checkedAddU64(parsed.decodedByteCount, parsed.value.vertexSource.size(),
+                       parsed.decodedByteCount) ||
+        !checkedAddU64(parsed.decodedByteCount, parsed.value.fragmentSource.size(),
+                       parsed.decodedByteCount) ||
+        parsed.decodedByteCount > maxResourceBytes) {
         return core::unexpected(
             budgetError(assetId, type, maxResourceBytes, parsed.decodedByteCount));
     }
@@ -1539,16 +1565,27 @@ struct ParsedParameterizedMaterial final {
                                              type, reader.offset()));
     }
 
-    parsed.decodedByteCount = 24 + 37 + parsed.shaderAssetId.size();
+    parsed.decodedByteCount = 24;
+    if (!checkedAddU64(parsed.decodedByteCount, 37ULL + parsed.shaderAssetId.size(),
+                       parsed.decodedByteCount)) {
+        return core::unexpected(
+            budgetError(assetId, type, maxResourceBytes, parsed.decodedByteCount));
+    }
     for (const auto& keyword : parsed.selectedKeywords) {
-        parsed.decodedByteCount += 4ULL + keyword.size();
+        if (!checkedAddU64(parsed.decodedByteCount, 4ULL + keyword.size(),
+                           parsed.decodedByteCount)) {
+            return core::unexpected(
+                budgetError(assetId, type, maxResourceBytes, parsed.decodedByteCount));
+        }
     }
     for (const auto& parameter : parsed.value.parameters) {
+        std::uint64_t extra = 20ULL + parameter.name.size();
         if (parameter.type == ShaderParameterType::Texture2D && parameter.texture) {
-            parsed.decodedByteCount +=
-                8ULL + parameter.name.size() + 37ULL + parameter.texture->assetId.size();
-        } else {
-            parsed.decodedByteCount += 20ULL + parameter.name.size();
+            extra = 8ULL + parameter.name.size() + 37ULL + parameter.texture->assetId.size();
+        }
+        if (!checkedAddU64(parsed.decodedByteCount, extra, parsed.decodedByteCount)) {
+            return core::unexpected(
+                budgetError(assetId, type, maxResourceBytes, parsed.decodedByteCount));
         }
     }
     if (parsed.decodedByteCount > maxResourceBytes) {

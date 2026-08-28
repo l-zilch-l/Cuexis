@@ -29,7 +29,7 @@ PlaybackSession、FrameSnapshot、ContentProvider 和后续 Judgement/Replay 合
 | Stage 3 | 已完成 | [完成报告](stage_reports/stage_3_completion_report.md) |
 | Stage Chart Format Update | 已完成；CFU-C0–C4、CFU-D、CFU-E、CFU-F、CFU-G 已关闭；G6 owner acceptance 已于 2026-08-24 记录 | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md)、[G5/G6 completion report](stage_reports/stage_chart_format_update_completion_report.md) |
 | Stage 4 | 已完成；S4-H hosted 与 owner acceptance 已于 2026-08-27 记录 | [实施计划](stage_plans/stage_4_implementation_plan.md)、[完成报告](stage_reports/stage_4_completion_report.md) |
-| Stage 5 | S5-A 合同已冻结；S5-B 已接线；S5-C 已完成；S5-D 已完成；S5-E 已完成；S5-F 已完成；S5-G 已完成；S5-H 尚未开始 | [实施计划](stage_plans/stage_5_implementation_plan.md)、[ADR 0040](adr/0040-stage-5-material-shader-contracts.md)、[Material/Shader spec](formats/MATERIAL_SHADER.md)、[S5-A 报告](stage_reports/260828-stage-5-s5-a-contracts.md)、[S5-B 报告](stage_reports/260828-stage-5-s5-b-shader-tools.md)、[S5-C 报告](stage_reports/260828-stage-5-s5-c-material-unlit.md)、[S5-D 报告](stage_reports/260828-stage-5-s5-d-shader-compile.md)、[S5-E 报告](stage_reports/260828-stage-5-s5-e-profile-capability.md)、[S5-F 报告](stage_reports/260828-stage-5-s5-f-cache.md)、[S5-G 报告](stage_reports/260828-stage-5-s5-g-consume.md) |
+| Stage 5 | S5-A 合同已冻结；S5-B 已接线；S5-C 已完成；S5-D 已完成；S5-E 已完成；S5-F 已完成；S5-G 已完成；S5-H local checkpoint；hosted 与 owner acceptance 待完成 | [实施计划](stage_plans/stage_5_implementation_plan.md)、[ADR 0040](adr/0040-stage-5-material-shader-contracts.md)、[Material/Shader spec](formats/MATERIAL_SHADER.md)、[S5-A 报告](stage_reports/260828-stage-5-s5-a-contracts.md)、[S5-B 报告](stage_reports/260828-stage-5-s5-b-shader-tools.md)、[S5-C 报告](stage_reports/260828-stage-5-s5-c-material-unlit.md)、[S5-D 报告](stage_reports/260828-stage-5-s5-d-shader-compile.md)、[S5-E 报告](stage_reports/260828-stage-5-s5-e-profile-capability.md)、[S5-F 报告](stage_reports/260828-stage-5-s5-f-cache.md)、[S5-G 报告](stage_reports/260828-stage-5-s5-g-consume.md)、[S5-H 报告](stage_reports/260828-stage-5-s5-h-safety.md) |
 
 Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使用 Stage 3.5 作为别名。
 
@@ -44,7 +44,9 @@ SDK API `0.7.0`。S5-D 已完成可选 `cuexis.importer.shader.v1` 编译/反射
 Pipeline；S5-G 已完成 OpenGL/Player/Validation Sink 消费与默认 `allCapabilities()` 写入
 `cuexis.shader.asset.v1` / `cuexis.material.parameterized.v1`。裁剪 Session 仍拒绝 Parameterized
 且不破坏 active Unlit。OpenGL Unlit 内联 GLSL 330 未改。headless 不要求 Built-in Renderer
-Profile。Playback 热路径仍不调用编译器。S5-H 尚未开始。
+Profile。Playback 热路径仍不调用编译器。S5-H local checkpoint 已写入预算、warmed 分配合同、
+趋势探针与 Linux sanitizer shader-tools 覆盖；hosted 三平台与 owner acceptance 完成前 Stage 5
+不得标为 completed。
 
 ## 格式状态
 
@@ -61,7 +63,8 @@ Profile。Playback 热路径仍不调用编译器。S5-H 尚未开始。
   reflection；默认构建仍不编译这些测试，Playback 热路径仍不链接编译器。S5-G 已把 shader 与
   parameterized 写入默认 Playback 集合；默认 Session 接受合法 Built-in Shader 内容，显式裁剪
   Session 仍拒绝。OpenGL adapter 消费 `CXSCCH01` GLSL 330 与 `CuexisObject` UBO；缺少缓存且未
-  opt-in compile 时返回 `shader.cache.missing`。Unlit 回归保持。S5-H 尚未开始。
+  opt-in compile 时返回 `shader.cache.missing`。Unlit 回归保持。S5-H local checkpoint 已写入；
+  Stage 5 尚未 completed。
 - ADR 0038 已于 2026-08-11 整体接受，Stage Chart Format Update 已进入 CFU-C 实施。
 - CFU-C1 已建立 Chart v4、CXT v1、CXC manifest v1 Schema、正式 fixture、typed source model/Reader
   和内部 `cuexis_cxc` manifest 目标。

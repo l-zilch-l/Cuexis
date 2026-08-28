@@ -128,6 +128,11 @@ ctest --preset debug-shader-tools --no-tests=error
 `CUEXIS_BUILD_SHADER_TOOLS`。它构建内部静态库 `cuexis_shader`、`cuexis_shader_tests` 和
 developer-tools 下的 `cuexis_asset_importer`，不把编译器链入 `cuexis_playback`。
 
+Linux sanitizer 覆盖 shader-tools 时使用 `headless-sanitize-shader-tools`（`tests;shader-tools`
+feature，`CUEXIS_BUILD_SHADER_TOOLS=ON`）。默认 `headless-sanitize` 仍不下载 shader 编译器。
+S5-H 最大合法 shader/material 趋势探针默认跳过；设置 `CUEXIS_RUN_PERFORMANCE_PROBE=1` 才记录
+内存趋势，不设跨机器硬阈值。
+
 ## 生成文件
 
 版本头生成到 `${binaryDir}/generated/cuexis/version.hpp`，不写回源码树。Shader、资源缓存和测试发现文件也属于构建产物。
@@ -335,6 +340,11 @@ cmake --preset headless-sanitize --fresh -DCMAKE_CXX_COMPILER=clang++ \
 cmake --build --preset headless-sanitize --clean-first
 ctest --preset headless-sanitize --no-tests=error
 
+cmake --preset headless-sanitize-shader-tools --fresh -DCMAKE_CXX_COMPILER=clang++ \
+  -DVCPKG_TARGET_TRIPLET=x64-linux
+cmake --build --preset headless-sanitize-shader-tools --clean-first
+ctest --preset headless-sanitize-shader-tools --no-tests=error
+
 cmake --preset headless-clang-tidy --fresh -DCMAKE_CXX_COMPILER=clang++ \
   -DVCPKG_TARGET_TRIPLET=x64-linux
 cmake --build --preset headless-clang-tidy --target cuexis_playback
@@ -346,7 +356,8 @@ ctest --preset headless-coverage --no-tests=error -E "^cuexis_external_consumer_
 ```
 
 `.github/workflows/` 持续验证 Windows/MSVC、Windows/MinGW、Linux/GCC Release、
-Linux/GCC shared Release、Linux/Clang shared Debug、Linux/Clang ASan+UBSan、clang-tidy 和
+Linux/GCC shared Release、Linux/Clang shared Debug、Linux/Clang ASan+UBSan、
+Linux/Clang ASan+UBSan with optional `shader-tools`、clang-tidy 和
 不低于 40% 的 engine 行覆盖率。100k Transform 稀疏
 更新与 FrameSnapshot 缓冲复用是确定性结构门禁；墙钟时间只作为趋势证据，不作为跨机器
 硬阈值。
