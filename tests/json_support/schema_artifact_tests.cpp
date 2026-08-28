@@ -114,6 +114,40 @@ TEST_CASE("Stage 1D chart and asset index schemas accept the shipped fixture",
     })");
 }
 
+TEST_CASE("Asset Index v3 schema accepts shader leaves and rejects shader dependencies",
+          "[json][schema][artifact][s5-c]") {
+    const auto source = std::filesystem::path{CUEXIS_SOURCE_DIR};
+    const auto v3 = parseArtifact(source / "schemas" / "cuexis.asset-index.v3.schema.json");
+    const auto v2 = parseArtifact(source / "schemas" / "cuexis.asset-index.v2.schema.json");
+    constexpr auto limits = cuexis::json::ParseLimits{1024U * 1024U, 32, 16384};
+
+    auto accepted = cuexis::json::parse(R"({
+        "format":"cuexis.asset-index","version":3,
+        "assets":[
+            {"id":"shader.sprite","type":"shader","source":"shaders/sprite.shader.bin",
+             "dependencies":[]},
+            {"id":"material.sprite","type":"material","source":"materials/sprite.material.bin",
+             "dependencies":["shader.sprite"]}
+        ],
+        "extensions":{}
+    })",
+                                        limits);
+    REQUIRE(accepted.has_value());
+    requireValid(v3, *accepted);
+    requireInvalid(v3, R"({
+        "format":"cuexis.asset-index","version":3,
+        "assets":[{"id":"shader.sprite","type":"shader","source":"shaders/sprite.shader.bin",
+                   "dependencies":["mesh.note"]}],
+        "extensions":{}
+    })");
+    requireInvalid(v2, R"({
+        "format":"cuexis.asset-index","version":2,
+        "assets":[{"id":"shader.sprite","type":"shader","source":"shaders/sprite.shader.bin",
+                   "dependencies":[]}],
+        "extensions":{}
+    })");
+}
+
 TEST_CASE("Stage 2 chart schema accepts the shipped v3 fixture and rejects legacy fields",
           "[json][schema][artifact][stage2]") {
     const auto source = std::filesystem::path{CUEXIS_SOURCE_DIR};

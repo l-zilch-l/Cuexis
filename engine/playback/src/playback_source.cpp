@@ -356,6 +356,8 @@ using cuexis::core::detail::isWindowsReservedSegment;
         return assets::AssetType::Texture;
     case PlaybackAssetType::Audio:
         return assets::AssetType::Audio;
+    case PlaybackAssetType::Shader:
+        return assets::AssetType::Shader;
     }
     return assets::AssetType::Mesh;
 }
@@ -370,6 +372,8 @@ using cuexis::core::detail::isWindowsReservedSegment;
         return assets::AssetType::Texture;
     case project::AssetType::Audio:
         return assets::AssetType::Audio;
+    case project::AssetType::Shader:
+        return assets::AssetType::Shader;
     }
     return assets::AssetType::Mesh;
 }
@@ -379,7 +383,7 @@ using cuexis::core::detail::isWindowsReservedSegment;
     assets::AssetDatabaseInput input;
     input.sourceMode = assets::AssetSourceMode::Logical;
     std::map<std::string, std::size_t, std::less<>> rootIndexes;
-    bool hasAudio = false;
+    std::uint32_t requiredVersion = 1;
     for (const auto& descriptor : descriptors) {
         if (descriptor.rootId.empty()) {
             return core::unexpected(core::Error{"playback.source.root_missing",
@@ -391,8 +395,11 @@ using cuexis::core::detail::isWindowsReservedSegment;
                 assets::AssetRootIndex{.root = {.id = descriptor.rootId, .path = {}}, .index = {}});
         }
         auto& index = input.roots[rootIt->second].index;
-        index.version = descriptor.type == PlaybackAssetType::Audio ? 2 : index.version;
-        hasAudio = hasAudio || descriptor.type == PlaybackAssetType::Audio;
+        if (descriptor.type == PlaybackAssetType::Audio) {
+            requiredVersion = std::max(requiredVersion, 2U);
+        } else if (descriptor.type == PlaybackAssetType::Shader) {
+            requiredVersion = 3;
+        }
         assets::AssetRecord record{.id = assets::AssetId{descriptor.id},
                                    .type = toAssetType(descriptor.type),
                                    .source = descriptor.logicalSource,
@@ -403,9 +410,9 @@ using cuexis::core::detail::isWindowsReservedSegment;
         }
         index.assets.push_back(std::move(record));
     }
-    if (hasAudio) {
+    if (requiredVersion > 1) {
         for (auto& root : input.roots) {
-            root.index.version = 2;
+            root.index.version = requiredVersion;
         }
     }
     return assets::AssetDatabase::create(input);

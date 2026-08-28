@@ -4,6 +4,7 @@
 
 #include "../presentation/validation_sink.hpp"
 #include "presentation_extraction.hpp"
+#include "s5h_shader_fixtures.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -11,6 +12,7 @@
 #include <cstddef>
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
 #if defined(_MSC_VER) && defined(_DEBUG)
 #include <crtdbg.h>
 #endif
@@ -523,4 +525,106 @@ TEST_CASE("S4-G warmed nonempty CXT update and extract stay within the bounded a
     std::cout << "S4-G nonempty CXT first=" << first << " second=" << second << '\n';
     CHECK(second <= first);
     CHECK_FALSE(snapshot.objects.empty());
+}
+
+TEST_CASE("S5-H warmed parameterized update and extract do not allocate or refetch",
+          "[playback][s5-h][allocation]") {
+    std::ifstream input{std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" / "projects" /
+                            "stage3_project" / "assets" / "meshes" / "triangle.mesh.bin",
+                        std::ios::binary};
+    REQUIRE(input);
+    std::ostringstream contents;
+    contents << input.rdbuf();
+    const auto text = contents.str();
+    std::vector<std::byte> meshBytes;
+    meshBytes.reserve(text.size());
+    for (const unsigned char value : text) {
+        meshBytes.push_back(static_cast<std::byte>(value));
+    }
+
+    const auto shaderBytes = cuexis::test_support::s5h::makeShaderPayload(
+        cuexis::test_support::s5h::kVertex, cuexis::test_support::s5h::kFragment, {});
+    const auto materialBytes = cuexis::test_support::s5h::makeParameterizedPayload("shader.sprite");
+
+    std::atomic_size_t fetches{0};
+    auto provider = cuexis::content::HostContentProvider::create(
+        [shaderBytes, materialBytes, meshBytes,
+         &fetches](const cuexis::content::ContentRequest& request)
+            -> cuexis::core::Result<cuexis::content::ContentBlob> {
+            fetches.fetch_add(1, std::memory_order_relaxed);
+            if (request.source == "shaders/sprite.shader.bin") {
+                return cuexis::content::ContentBlob{.bytes = shaderBytes, .revision = 1};
+            }
+            if (request.source == "materials/sprite.material.bin") {
+                return cuexis::content::ContentBlob{.bytes = materialBytes, .revision = 1};
+            }
+            if (request.source == "meshes/triangle.mesh.bin") {
+                return cuexis::content::ContentBlob{.bytes = meshBytes, .revision = 1};
+            }
+            return cuexis::core::unexpected(
+                cuexis::core::Error{"test.content.source_missing", "unexpected source"});
+        });
+    REQUIRE(provider.has_value());
+    auto source = cuexis::playback::PlaybackSource::fromTypedProject(
+        {.sourceId = "s5h-parameterized-hot",
+         .chartJson = std::string{cuexis::test_support::s5h::kChart},
+         .assets = {{.id = "shader.sprite",
+                     .type = cuexis::playback::PlaybackAssetType::Shader,
+                     .rootId = "main",
+                     .logicalSource = "shaders/sprite.shader.bin"},
+                    {.id = "material.sprite",
+                     .type = cuexis::playback::PlaybackAssetType::Material,
+                     .rootId = "main",
+                     .logicalSource = "materials/sprite.material.bin",
+                     .dependencies = {"shader.sprite"}},
+                    {.id = "mesh.triangle",
+                     .type = cuexis::playback::PlaybackAssetType::Mesh,
+                     .rootId = "main",
+                     .logicalSource = "meshes/triangle.mesh.bin"}}},
+        std::move(*provider));
+    REQUIRE(source.has_value());
+    cuexis::playback::PlaybackSession session;
+    REQUIRE(
+        session.load(std::move(*source), cuexis::playback::PlaybackMode::ChartClock).has_value());
+    cuexis::playback::FrameSnapshot snapshot;
+    REQUIRE(session.update({.chartTimeMs = 0.0}).has_value());
+    REQUIRE(session.extractFrame({.width = 1280, .height = 720}, snapshot).has_value());
+    for (std::size_t index = 1; index <= 32; ++index) {
+        REQUIRE(session
+                    .update({.chartTimeMs = static_cast<double>(index) * 10.0,
+                             .simulationDeltaTimeMs = 10.0})
+                    .has_value());
+        REQUIRE(session.extractFrame({.width = 1280, .height = 720}, snapshot).has_value());
+    }
+    const auto fetchesAfterWarmup = fetches.load(std::memory_order_relaxed);
+
+    auto runWindow = [&](std::size_t start, std::size_t count) -> std::size_t {
+        beginAllocationTracking();
+        bool succeeded = true;
+        for (std::size_t index = 0; index < count; ++index) {
+            const double chartTimeMs = static_cast<double>(start + index) * 10.0;
+            const auto updated =
+                session.update({.chartTimeMs = chartTimeMs, .simulationDeltaTimeMs = 10.0});
+            const auto extracted = session.extractFrame({.width = 1280, .height = 720}, snapshot);
+            if (!updated || !extracted) {
+                succeeded = false;
+                break;
+            }
+        }
+        const auto allocations = endAllocationTracking();
+        CHECK(succeeded);
+        return allocations;
+    };
+
+    const auto first = runWindow(33, 64);
+    const auto second = runWindow(97, 64);
+    const auto fetchesAfterHot = fetches.load(std::memory_order_relaxed);
+    std::cout << "S5-H parameterized first=" << first << " second=" << second
+              << " fetches_warmup=" << fetchesAfterWarmup << " fetches_hot=" << fetchesAfterHot
+              << '\n';
+    CHECK(first == 0);
+    CHECK(second == 0);
+    CHECK(fetchesAfterHot == fetchesAfterWarmup);
+    REQUIRE(snapshot.objects.size() == 2);
+    CHECK(snapshot.objects[0].materialAssetId == "material.sprite");
 }

@@ -70,14 +70,27 @@ function(cuexis_verify_source_architecture source_dir)
         endif()
     endforeach()
 
+    file(GLOB_RECURSE shader_sources
+        "${source_dir}/engine/shader/*.cpp"
+        "${source_dir}/engine/shader/*.hpp"
+    )
+    foreach(source IN LISTS shader_sources)
+        file(READ "${source}" contents)
+        if(contents MATCHES
+           "#[ \t]*include[ \t]*[<\"](SDL|glad|GL/|nlohmann/|minizip|cuexis/playback/|cuexis/render_opengl/)")
+            message(FATAL_ERROR
+                "Shader includes SDL, OpenGL, JSON, archive, Playback or OpenGL adapter headers: ${source}")
+        endif()
+    endforeach()
+
     file(GLOB_RECURSE runtime_sources
         "${source_dir}/engine/runtime/*.cpp"
         "${source_dir}/engine/runtime/*.hpp"
     )
     foreach(source IN LISTS runtime_sources)
         file(READ "${source}" contents)
-        if(contents MATCHES "#[ \t]*include[ \t]*[<\"](SDL|glad|GL/|cuexis/audio/|cuexis/audio_sdl/|cuexis/platform_sdl/|cuexis/render_opengl/)")
-            message(FATAL_ERROR "Runtime includes a platform or backend header: ${source}")
+        if(contents MATCHES "#[ \t]*include[ \t]*[<\"](SDL|glad|GL/|cuexis/audio/|cuexis/audio_sdl/|cuexis/platform_sdl/|cuexis/render_opengl/|cuexis/shader/|shaderc/|spirv-tools/|spirv_cross/|glslang/)")
+            message(FATAL_ERROR "Runtime includes a platform, backend or shader-compiler header: ${source}")
         endif()
     endforeach()
 
@@ -88,8 +101,8 @@ function(cuexis_verify_source_architecture source_dir)
     foreach(source IN LISTS playback_sources)
         file(READ "${source}" contents)
         if(contents MATCHES
-           "#[ \t]*include[ \t]*[<\"](SDL|cuexis/audio_sdl/|cuexis/platform_sdl/|cuexis/render_opengl/)")
-            message(FATAL_ERROR "Playback includes an adapter header: ${source}")
+           "#[ \t]*include[ \t]*[<\"](SDL|cuexis/audio_sdl/|cuexis/platform_sdl/|cuexis/render_opengl/|cuexis/shader/|shaderc/|spirv-tools/|spirv_cross/|glslang/)")
+            message(FATAL_ERROR "Playback includes an adapter or shader-compiler header: ${source}")
         endif()
     endforeach()
 
@@ -138,7 +151,7 @@ function(cuexis_verify_source_architecture source_dir)
         "${source_dir}/engine/playback/include/*.hpp")
     foreach(source IN LISTS playback_public_headers)
         file(READ "${source}" contents)
-        if(contents MATCHES "#[ \t]*include[ \t]*[<\"](entt/|SDL|glad/|GL/|nlohmann/|spdlog/)")
+        if(contents MATCHES "#[ \t]*include[ \t]*[<\"](entt/|SDL|glad/|GL/|nlohmann/|spdlog/|shaderc/|spirv-tools/|spirv_cross/|glslang/|cuexis/shader/)")
             message(FATAL_ERROR
                 "PlaybackSession public header leaked backend or implementation header: ${source}")
         endif()

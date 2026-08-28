@@ -12,6 +12,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <variant>
 #include <vector>
 
@@ -23,6 +24,8 @@ enum class PresentationResourceType : std::uint8_t {
     Mesh = 1,
     Texture2D = 2,
     UnlitMaterial = 3,
+    Shader = 4,
+    ParameterizedMaterial = 5,
 };
 
 enum class PresentationColorSpace : std::uint8_t {
@@ -34,6 +37,41 @@ enum class PresentationAlphaMode : std::uint8_t {
     Opaque = 1,
     Blend = 2,
 };
+
+enum class ShaderStage : std::uint8_t {
+    Vertex = 1,
+    Fragment = 2,
+};
+
+enum class ShaderParameterType : std::uint8_t {
+    Float = 1,
+    Vec2 = 2,
+    Vec3 = 3,
+    Vec4 = 4,
+    Int = 5,
+    Bool = 6,
+    Texture2D = 7,
+};
+
+enum class RendererProfileKind : std::uint8_t {
+    Portable = 1,
+    BuiltIn = 2,
+    HostExtension = 3,
+};
+
+inline constexpr std::string_view importerProfileShaderV1 = "cuexis.importer.shader.v1";
+inline constexpr std::string_view targetProfileSpirvV1 = "cuexis.target.spirv.v1";
+inline constexpr std::string_view targetProfileGlsl330V1 = "cuexis.target.glsl330.v1";
+inline constexpr std::string_view targetProfileGlslEs300V1 = "cuexis.target.glsles300.v1";
+inline constexpr std::string_view rendererProfilePortableV1 = "cuexis.renderer.portable.v1";
+inline constexpr std::string_view rendererProfileBuiltInV1 = "cuexis.renderer.builtin.v1";
+
+inline constexpr std::uint64_t presentationMaxShaderSourceBytes = 262144;
+inline constexpr std::uint64_t presentationMaxSpirvBytes = 1048576;
+inline constexpr std::uint32_t presentationMaxVariantKeywords = 4;
+inline constexpr std::uint32_t presentationMaxVariantsPerShader = 16;
+inline constexpr std::uint32_t presentationMaxMaterialParameters = 32;
+inline constexpr std::uint32_t presentationMaxTextureBindings = 8;
 
 struct PresentationContentIdentity final {
     std::array<std::uint8_t, 32> sha256{};
@@ -73,7 +111,56 @@ struct PortableUnlitMaterial final {
     std::optional<PresentationResourceRef> baseColorTexture;
 };
 
-using PortableResourceValue = std::variant<PortableMesh, PortableTexture2D, PortableUnlitMaterial>;
+struct ShaderBinding final {
+    std::uint32_t set{};
+    std::uint32_t binding{};
+    ShaderParameterType type{ShaderParameterType::Float};
+    std::string name;
+};
+
+struct ShaderParameterSchemaEntry final {
+    std::string name;
+    ShaderParameterType type{ShaderParameterType::Float};
+    std::uint32_t set{};
+    std::uint32_t binding{};
+    std::array<float, 4> defaultNumeric{};
+    std::int32_t defaultInt{};
+    bool defaultBool{};
+};
+
+struct PortableShader final {
+    std::string vertexSource;
+    std::string fragmentSource;
+    std::string vertexEntry{"main"};
+    std::string fragmentEntry{"main"};
+    std::vector<std::string> variantKeywords;
+    std::vector<ShaderParameterSchemaEntry> parameters;
+    std::vector<ShaderBinding> bindings;
+    PresentationAlphaMode defaultAlphaMode{PresentationAlphaMode::Opaque};
+    bool defaultDoubleSided{};
+    std::string requiredRendererProfile;
+    std::vector<std::string> requiredHostExtensions;
+};
+
+struct ShaderParameterValue final {
+    std::string name;
+    ShaderParameterType type{ShaderParameterType::Float};
+    std::array<float, 4> numeric{};
+    std::int32_t integer{};
+    bool boolean{};
+    std::optional<PresentationResourceRef> texture;
+};
+
+struct PortableParameterizedMaterial final {
+    PresentationResourceRef shader;
+    PresentationAlphaMode alphaMode{PresentationAlphaMode::Opaque};
+    bool doubleSided{};
+    std::vector<std::string> selectedKeywords;
+    std::vector<ShaderParameterValue> parameters;
+};
+
+using PortableResourceValue = std::variant<PortableMesh, PortableTexture2D, PortableUnlitMaterial,
+                                           PortableShader, PortableParameterizedMaterial>;
 
 struct PortableResource final {
     PresentationResourceRef reference;
@@ -112,18 +199,39 @@ struct PresentationCapabilities final {
     std::uint32_t maxTextureDimension{};
     std::uint32_t maxMeshVertices{};
     std::uint32_t maxMeshIndices{};
+    // Version 2 additive Built-in Renderer fields. Version 1 adapters leave these default.
+    std::uint32_t builtInRendererProfileVersion{};
+    bool parameterizedMaterial{};
+    bool shaderGlsl450Source{};
+    bool shaderSpirv{};
+    bool shaderGlsl330{};
+    bool shaderGlslEs300{};
+    bool declaredVariants{};
+    std::uint64_t maxShaderSourceBytes{};
+    std::uint64_t maxSpirvBytes{};
+    std::uint32_t maxVariantKeywords{};
+    std::uint32_t maxVariantsPerShader{};
+    std::uint32_t maxMaterialParameters{};
+    std::uint32_t maxTextureBindings{};
+    std::vector<std::string> hostExtensionIds{};
 };
 
 struct PresentationRequest final {
     std::uint32_t version{1};
     std::uint32_t portableProfileVersion{1};
     bool enableDebugPass{};
+    // Version 2 additive fields. Version 1 requests ignore these values.
+    bool enableShaderCompile{};
+    bool enableShaderHotReload{};
 };
 
 struct EffectivePresentationSettings final {
     std::uint32_t version{1};
     std::uint32_t portableProfileVersion{1};
     bool debugPassEnabled{};
+    // Version 2 additive fields. Present when request.version == 2.
+    bool shaderCompileEnabled{};
+    bool shaderHotReloadEnabled{};
 };
 
 struct PresentationValidationResult final {

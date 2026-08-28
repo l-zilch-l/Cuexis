@@ -32,6 +32,10 @@ constexpr double signedIntegerLimit = 0x1p63;
         return "texture2d";
     case PresentationResourceType::UnlitMaterial:
         return "unlit_material";
+    case PresentationResourceType::Shader:
+        return "shader";
+    case PresentationResourceType::ParameterizedMaterial:
+        return "parameterized_material";
     }
     return "unknown";
 }
@@ -97,6 +101,10 @@ struct LocatedResource final {
         return std::holds_alternative<PortableTexture2D>(resource.value);
     case PresentationResourceType::UnlitMaterial:
         return std::holds_alternative<PortableUnlitMaterial>(resource.value);
+    case PresentationResourceType::Shader:
+        return std::holds_alternative<PortableShader>(resource.value);
+    case PresentationResourceType::ParameterizedMaterial:
+        return std::holds_alternative<PortableParameterizedMaterial>(resource.value);
     }
     return false;
 }
@@ -197,7 +205,8 @@ auto normalizePresentationFrame(const FrameSnapshot& snapshot,
                 continue;
             }
             if (object.mesh->type != PresentationResourceType::Mesh ||
-                object.material->type != PresentationResourceType::UnlitMaterial ||
+                (object.material->type != PresentationResourceType::UnlitMaterial &&
+                 object.material->type != PresentationResourceType::ParameterizedMaterial) ||
                 object.materialAssetId != object.material->assetId) {
                 return fail(
                     resourceMismatch("Snapshot portable refs have incompatible types or IDs",
@@ -208,31 +217,66 @@ auto normalizePresentationFrame(const FrameSnapshot& snapshot,
             const auto materialResource = locateResource(manifest, resources, *object.material);
             if (!meshResource || !materialResource ||
                 !std::holds_alternative<PortableMesh>(meshResource->resource->value) ||
-                !std::holds_alternative<PortableUnlitMaterial>(materialResource->resource->value)) {
+                !resourceValueMatchesType(*materialResource->resource)) {
                 return fail(resourceMismatch("Snapshot ref is not backed by its declared resource",
                                              object.id,
                                              !meshResource ? &*object.mesh : &*object.material));
             }
 
             const auto& mesh = std::get<PortableMesh>(meshResource->resource->value);
-            const auto& material =
-                std::get<PortableUnlitMaterial>(materialResource->resource->value);
-            if (material.baseColorTexture) {
-                const auto textureResource =
-                    locateResource(manifest, resources, *material.baseColorTexture);
-                if (material.baseColorTexture->type != PresentationResourceType::Texture2D ||
-                    !textureResource ||
-                    !std::holds_alternative<PortableTexture2D>(textureResource->resource->value) ||
-                    materialResource->manifestEntry->dependencies.size() != 1 ||
-                    materialResource->manifestEntry->dependencies.front() !=
-                        *material.baseColorTexture) {
-                    return fail(
-                        resourceMismatch("Portable Material texture dependency is inconsistent",
-                                         object.id, &*material.baseColorTexture));
+            PresentationAlphaMode alphaMode = PresentationAlphaMode::Opaque;
+            bool doubleSided = false;
+            float baseColor[4]{1.0F, 1.0F, 1.0F, 1.0F};
+            if (const auto* unlit =
+                    std::get_if<PortableUnlitMaterial>(&materialResource->resource->value)) {
+                alphaMode = unlit->alphaMode;
+                doubleSided = unlit->doubleSided;
+                std::copy(std::begin(unlit->baseColor), std::end(unlit->baseColor),
+                          std::begin(baseColor));
+                if (unlit->baseColorTexture) {
+                    const auto textureResource =
+                        locateResource(manifest, resources, *unlit->baseColorTexture);
+                    if (unlit->baseColorTexture->type != PresentationResourceType::Texture2D ||
+                        !textureResource ||
+                        !std::holds_alternative<PortableTexture2D>(
+                            textureResource->resource->value) ||
+                        materialResource->manifestEntry->dependencies.size() != 1 ||
+                        materialResource->manifestEntry->dependencies.front() !=
+                            *unlit->baseColorTexture) {
+                        return fail(
+                            resourceMismatch("Portable Material texture dependency is inconsistent",
+                                             object.id, &*unlit->baseColorTexture));
+                    }
+                } else if (!materialResource->manifestEntry->dependencies.empty()) {
+                    return fail(resourceMismatch("Portable Material has unexpected dependencies",
+                                                 object.id, &*object.material));
                 }
-            } else if (!materialResource->manifestEntry->dependencies.empty()) {
-                return fail(resourceMismatch("Portable Material has unexpected dependencies",
-                                             object.id, &*object.material));
+            } else {
+                const auto& parameterized =
+                    std::get<PortableParameterizedMaterial>(materialResource->resource->value);
+                alphaMode = parameterized.alphaMode;
+                doubleSided = parameterized.doubleSided;
+                if (parameterized.shader.type != PresentationResourceType::Shader ||
+                    !locateResource(manifest, resources, parameterized.shader)) {
+                    return fail(
+                        resourceMismatch("Parameterized Material shader dependency is inconsistent",
+                                         object.id, &parameterized.shader));
+                }
+                for (const auto& parameter : parameterized.parameters) {
+                    if (!parameter.texture) {
+                        continue;
+                    }
+                    const auto textureResource =
+                        locateResource(manifest, resources, *parameter.texture);
+                    if (parameter.texture->type != PresentationResourceType::Texture2D ||
+                        !textureResource ||
+                        !std::holds_alternative<PortableTexture2D>(
+                            textureResource->resource->value)) {
+                        return fail(
+                            resourceMismatch("Portable Material texture dependency is inconsistent",
+                                             object.id, &*parameter.texture));
+                    }
+                }
             }
 
             if (!object.visible) {
@@ -266,22 +310,21 @@ auto normalizePresentationFrame(const FrameSnapshot& snapshot,
             NormalizedPresentationRecord record;
             record.objectIndex = objectIndex;
             for (std::size_t component = 0; component < 3; ++component) {
-                if (!std::isfinite(material.baseColor[component]) ||
+                if (!std::isfinite(baseColor[component]) ||
                     !std::isfinite(object.materialTint[component])) {
                     return fail(nonFinite(object.id, "effective_rgb"));
                 }
                 record.effectiveRgb[component] =
-                    static_cast<double>(material.baseColor[component]) *
+                    static_cast<double>(baseColor[component]) *
                     static_cast<double>(object.materialTint[component]);
                 if (!std::isfinite(record.effectiveRgb[component])) {
                     return fail(nonFinite(object.id, "effective_rgb"));
                 }
             }
-            if (!std::isfinite(material.baseColor[3])) {
+            if (!std::isfinite(baseColor[3])) {
                 return fail(nonFinite(object.id, "effective_alpha"));
             }
-            record.effectiveAlpha =
-                static_cast<double>(material.baseColor[3]) * object.materialOpacity;
+            record.effectiveAlpha = static_cast<double>(baseColor[3]) * object.materialOpacity;
             if (!std::isfinite(record.effectiveAlpha)) {
                 return fail(nonFinite(object.id, "effective_alpha"));
             }
@@ -310,11 +353,10 @@ auto normalizePresentationFrame(const FrameSnapshot& snapshot,
                 return fail(nonFinite(object.id, "depth"));
             }
             record.transparentDepthKey = static_cast<std::int64_t>(roundedDepth);
-            record.backFaceCulling = !material.doubleSided;
-            record.pass =
-                material.alphaMode == PresentationAlphaMode::Blend || record.effectiveAlpha < 1.0
-                    ? NormalizedPresentationPass::Transparent
-                    : NormalizedPresentationPass::Opaque;
+            record.backFaceCulling = !doubleSided;
+            record.pass = alphaMode == PresentationAlphaMode::Blend || record.effectiveAlpha < 1.0
+                              ? NormalizedPresentationPass::Transparent
+                              : NormalizedPresentationPass::Opaque;
             record.depthWrite = record.pass == NormalizedPresentationPass::Opaque;
             record.sourceOverBlend = record.pass == NormalizedPresentationPass::Transparent;
             if (record.pass == NormalizedPresentationPass::Opaque) {

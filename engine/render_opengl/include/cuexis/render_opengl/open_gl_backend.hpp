@@ -17,6 +17,7 @@
 
 #include <array>
 #include <cstdint>
+#include <filesystem>
 #include <memory>
 #include <optional>
 #include <string>
@@ -138,6 +139,12 @@ class OpenGlContextConfiguration final {
     std::uint64_t generation_{};
 };
 
+// Built-in Renderer Profile v1 capabilities. GPU-free: does not query GL.
+// shaderGlsl450Source / shaderSpirv are true only when CUEXIS_HAS_SHADER_TOOLS is defined.
+[[nodiscard]] auto builtInPresentationCapabilities(std::uint32_t maxTextureDimension,
+                                                   bool debugPass) noexcept
+    -> playback::PresentationCapabilities;
+
 // Prepares SDL's process-wide GL attributes on the SDL main thread and returns a one-shot token.
 [[nodiscard]] auto configureOpenGlContext(platform_sdl::SdlRuntime& runtime,
                                           const OpenGlConfig& config = {})
@@ -169,6 +176,9 @@ class OpenGlBackend final : public render::RenderBackend {
     // Discards a candidate after Playback commit failure without touching the active cache.
     void discardPresentation(OpenGlPresentationCandidate&& candidate) noexcept;
     [[nodiscard]] bool hasActivePresentation() const noexcept;
+    // Adapter-private CXSCCH01 directory. Empty means parameterized prepare requires
+    // opt-in compile (shader-tools) or fails with shader.cache.missing.
+    void setShaderCacheDirectory(std::filesystem::path directory);
     // Draws the portable snapshot and optional Debug pass, then presents the SDL window.
     [[nodiscard]] auto renderPresentationFrame(const playback::FrameSnapshot& snapshot,
                                                const render::RenderScene* debugScene = nullptr,

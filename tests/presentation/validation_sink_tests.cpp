@@ -162,8 +162,19 @@ TEST_CASE("Prepared presentation preflight reports capabilities, limits, and Deb
     auto valid = prepared->validatePresentation(fullCapabilities(), {});
     REQUIRE(valid.hasValue());
     REQUIRE(valid.settings.has_value());
+    CHECK(valid.settings->version == 1);
     CHECK_FALSE(valid.settings->debugPassEnabled);
     CHECK(valid.diagnostics.empty());
+
+    auto additive = fullCapabilities();
+    additive.version = 2;
+    auto additiveValid = prepared->validatePresentation(additive, {.version = 2});
+    REQUIRE(additiveValid.hasValue());
+    REQUIRE(additiveValid.settings.has_value());
+    CHECK(additiveValid.settings->version == 2);
+    CHECK_FALSE(additiveValid.settings->shaderCompileEnabled);
+    CHECK_FALSE(additiveValid.settings->shaderHotReloadEnabled);
+    CHECK(additiveValid.diagnostics.empty());
 
     auto debugCapabilities = fullCapabilities();
     debugCapabilities.debugPass = false;
@@ -197,7 +208,7 @@ TEST_CASE("Prepared presentation preflight reports capabilities, limits, and Deb
     const auto versioned =
         prepared->validatePresentation(versions, {.version = 3, .portableProfileVersion = 3});
     CHECK_FALSE(versioned.hasValue());
-    CHECK(versioned.diagnostics.count(cuexis::core::DiagnosticSeverity::Error) == 4);
+    CHECK(versioned.diagnostics.count(cuexis::core::DiagnosticSeverity::Error) == 3);
     CHECK(hasDiagnostic(versioned.diagnostics,
                         "playback.presentation.capability.version_unsupported"));
     CHECK(hasDiagnostic(versioned.diagnostics,

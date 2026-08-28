@@ -126,3 +126,56 @@ TEST_CASE("Asset Index v2 enforces audio leaf boundaries", "[project][asset-inde
     CHECK(hasDiagnostic(result.diagnostics, "asset_index.audio.dependencies_not_empty"));
     CHECK(hasDiagnostic(result.diagnostics, "asset_index.audio.dependency_forbidden"));
 }
+
+TEST_CASE("Asset Index Reader routes v3 shader and keeps v1/v2 rejection",
+          "[project][asset-index][v3]") {
+    constexpr std::string_view v3 = R"json(
+{
+  "format":"cuexis.asset-index",
+  "version":3,
+  "assets":[
+    {"id":"shader.sprite","type":"shader","source":"shaders/sprite.shader.bin","dependencies":[]},
+    {"id":"material.sprite","type":"material","source":"materials/sprite.material.bin","dependencies":["shader.sprite"]},
+    {"id":"mesh.note","type":"mesh","source":"mesh.bin","dependencies":[]}
+  ],
+  "extensions":{}
+}
+)json";
+    const auto accepted = cuexis::project::AssetIndexReader::read(v3);
+    REQUIRE(accepted.hasValue());
+    REQUIRE(accepted.document->version == 3);
+    REQUIRE(accepted.document->assets.size() == 3);
+    CHECK(accepted.document->assets[0].type == cuexis::project::AssetType::Shader);
+
+    auto v1 = std::string{v3};
+    const auto version = v1.find("\"version\":3");
+    REQUIRE(version != std::string::npos);
+    v1.replace(version, std::string_view{"\"version\":3"}.size(), "\"version\":1");
+    const auto rejectedV1 = cuexis::project::AssetIndexReader::read(v1);
+    REQUIRE_FALSE(rejectedV1.hasValue());
+    CHECK(hasDiagnostic(rejectedV1.diagnostics, "asset_index.type.unsupported", "$/assets/0/type"));
+
+    auto v2 = std::string{v3};
+    v2.replace(v2.find("\"version\":3"), std::string_view{"\"version\":3"}.size(), "\"version\":2");
+    const auto rejectedV2 = cuexis::project::AssetIndexReader::read(v2);
+    REQUIRE_FALSE(rejectedV2.hasValue());
+    CHECK(hasDiagnostic(rejectedV2.diagnostics, "asset_index.type.unsupported", "$/assets/0/type"));
+}
+
+TEST_CASE("Asset Index v3 enforces shader leaf boundaries", "[project][asset-index][v3]") {
+    constexpr std::string_view invalid = R"json(
+{
+  "format":"cuexis.asset-index",
+  "version":3,
+  "assets":[
+    {"id":"shader.sprite","type":"shader","source":"shaders/sprite.shader.bin","dependencies":["mesh.note"]},
+    {"id":"mesh.note","type":"mesh","source":"mesh.bin","dependencies":["shader.sprite"]}
+  ],
+  "extensions":{}
+}
+)json";
+    const auto result = cuexis::project::AssetIndexReader::read(invalid);
+    REQUIRE_FALSE(result.hasValue());
+    CHECK(hasDiagnostic(result.diagnostics, "asset_index.shader.dependencies_not_empty"));
+    CHECK(hasDiagnostic(result.diagnostics, "asset_index.shader.dependency_forbidden"));
+}

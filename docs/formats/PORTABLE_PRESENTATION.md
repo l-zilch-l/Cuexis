@@ -31,7 +31,9 @@ headless validation and in-tree OpenGL consumption
 ```
 
 它不定义 Shader、通用 Pipeline/Buffer、RenderPacket、Light、Particle、UI、RenderGraph、宿主相机
-覆盖、异步加载、稳定 C ABI 或跨工具链 binary compatibility。
+覆盖、异步加载、稳定 C ABI 或跨工具链 binary compatibility。Stage 5 在不修改 Unlit v1 字段的
+前提下把 `CXPRES01` 扩展为 Shader=4 与 ParameterizedMaterial=5；权威见
+[MATERIAL_SHADER.md](MATERIAL_SHADER.md)。
 
 ## 1. 公共头和类型分组（S3A-01）
 
@@ -558,11 +560,16 @@ Snapshot）；它由 PlaybackSession 在资源读取前执行 preflight。
   source-over、back-face culling 和 double-sided disable-cull。
 - adapter 的 count/byte/dimension limits 必须大于等于 candidate manifest 的实际要求。
 - 缺少任何必需能力时 candidate presentation validation 失败，不产生降级后的有效设置。
-- Debug 是唯一可选能力。Request 关闭 Debug 时 effective 为 false；Request 开启但 adapter 不支持
-  时 validation 成功、effective 为 false，并产生 `playback.presentation.debug_unavailable` warning。
+- Debug 是 Portable v1 唯一可选能力。Request 关闭 Debug 时 effective 为 false；Request 开启但
+  adapter 不支持时 validation 成功、effective 为 false，并产生
+  `playback.presentation.debug_unavailable` warning。
 - capability/request/effective values 不持久化，不进入 Chart、ProjectConfig、UserPreferences、
   ResolvedSessionConfig、semantic identity 或 FrameDigest。
 - backend、window、swap interval、MSAA 和 context attributes 不进入这些 Playback types。
+- `PresentationCapabilities` / request / effective version 2 在 version 1 布局之后增加 Built-in
+  Renderer 字段，不得插入 version 1 成员中间。字段、profile ID 与 Parameterized 预检以
+  [MATERIAL_SHADER.md](MATERIAL_SHADER.md) §9 为准。Portable Unlit 继续可用 version 1 request
+  验证；headless Validation Sink 保持 version 1。
 
 ## 12. Diagnostics（S3A-12）
 
@@ -665,3 +672,6 @@ Stage 3A-3G 已于 2026-08-08 全部关闭，Portable Presentation Profile v1 �
 - 实施批次与完成定义：[Stage 3 implementation plan](../stage_plans/stage_3_implementation_plan.md)
 - 最终验证证据：[Stage 3 completion report](../stage_reports/stage_3_completion_report.md)
 - 当前产品状态：[CURRENT_STATUS.md](../CURRENT_STATUS.md)
+
+Stage 5 的 Shader 与 Parameterized Material 不修改本文字段。权威见
+[MATERIAL_SHADER.md](MATERIAL_SHADER.md)。

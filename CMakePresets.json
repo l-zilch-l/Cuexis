@@ -26,6 +26,15 @@
       }
     },
     {
+      "name": "debug-shader-tools",
+      "displayName": "Debug with optional shader tools",
+      "inherits": "debug",
+      "cacheVariables": {
+        "CUEXIS_BUILD_SHADER_TOOLS": "ON",
+        "VCPKG_MANIFEST_FEATURES": "shader-tools"
+      }
+    },
+    {
       "name": "release",
       "displayName": "Release",
       "inherits": "base",
@@ -103,6 +112,15 @@
       }
     },
     {
+      "name": "headless-sanitize-shader-tools",
+      "displayName": "Headless ASan + UBSan with shader tools",
+      "inherits": "headless-sanitize",
+      "cacheVariables": {
+        "CUEXIS_BUILD_SHADER_TOOLS": "ON",
+        "VCPKG_MANIFEST_FEATURES": "tests;shader-tools"
+      }
+    },
+    {
       "name": "headless-clang-tidy",
       "displayName": "Headless clang-tidy",
       "inherits": "headless-debug",
@@ -124,6 +142,10 @@
     {
       "name": "debug",
       "configurePreset": "debug"
+    },
+    {
+      "name": "debug-shader-tools",
+      "configurePreset": "debug-shader-tools"
     },
     {
       "name": "release",
@@ -158,6 +180,10 @@
       "configurePreset": "headless-sanitize"
     },
     {
+      "name": "headless-sanitize-shader-tools",
+      "configurePreset": "headless-sanitize-shader-tools"
+    },
+    {
       "name": "headless-clang-tidy",
       "configurePreset": "headless-clang-tidy"
     },
@@ -170,6 +196,16 @@
     {
       "name": "debug",
       "configurePreset": "debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "debug-shader-tools",
+      "configurePreset": "debug-shader-tools",
       "output": {
         "outputOnFailure": true
       },
@@ -250,6 +286,16 @@
     {
       "name": "headless-sanitize",
       "configurePreset": "headless-sanitize",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "headless-sanitize-shader-tools",
+      "configurePreset": "headless-sanitize-shader-tools",
       "output": {
         "outputOnFailure": true
       },

@@ -22,6 +22,7 @@ namespace {
 constexpr std::string_view assetIndexFormat = "cuexis.asset-index";
 constexpr std::uint32_t assetIndexVersion1 = 1;
 constexpr std::uint32_t assetIndexVersion2 = 2;
+constexpr std::uint32_t assetIndexVersion3 = 3;
 
 struct PendingRecord final {
     AssetRecord record;
@@ -68,7 +69,10 @@ auto isKnownAssetType(AssetType type, std::uint32_t version) noexcept -> bool {
     if (type == AssetType::Mesh || type == AssetType::Material || type == AssetType::Texture) {
         return true;
     }
-    return version == assetIndexVersion2 && type == AssetType::Audio;
+    if (type == AssetType::Audio) {
+        return version == assetIndexVersion2 || version == assetIndexVersion3;
+    }
+    return version == assetIndexVersion3 && type == AssetType::Shader;
 }
 
 auto isRootId(std::string_view value) -> bool {
@@ -199,6 +203,8 @@ std::string_view assetTypeName(AssetType type) noexcept {
         return "texture";
     case AssetType::Audio:
         return "audio";
+    case AssetType::Shader:
+        return "shader";
     }
     return "unknown";
 }
@@ -252,7 +258,8 @@ auto AssetDatabase::build(const AssetDatabaseInput& input, const AssetDatabaseLi
             valid = false;
         }
         if (rootInput.index.version != assetIndexVersion1 &&
-            rootInput.index.version != assetIndexVersion2) {
+            rootInput.index.version != assetIndexVersion2 &&
+            rootInput.index.version != assetIndexVersion3) {
             addError(diagnostics, "assets.database.index_version",
                      "Asset index version is unsupported", fieldPath + ".index.version");
             valid = false;
@@ -424,6 +431,13 @@ auto AssetDatabase::build(const AssetDatabaseInput& input, const AssetDatabaseLi
             diagnostic.withContext("assetId", record.id.value);
             diagnostics.add(std::move(diagnostic));
         }
+        if (record.type == AssetType::Shader && !record.dependencies.empty()) {
+            auto diagnostic = core::Diagnostic{
+                core::DiagnosticSeverity::Error, "assets.database.shader_dependencies_not_empty",
+                "Shader assets must be dependency leaves", "$.dependencies"};
+            diagnostic.withContext("assetId", record.id.value);
+            diagnostics.add(std::move(diagnostic));
+        }
         for (const auto& dependency : record.dependencies) {
             const auto dependencyRecord = byId.find(dependency.value);
             if (dependencyRecord == byId.end()) {
@@ -438,6 +452,14 @@ auto AssetDatabase::build(const AssetDatabaseInput& input, const AssetDatabaseLi
                 auto diagnostic = core::Diagnostic{
                     core::DiagnosticSeverity::Error, "assets.database.audio_dependency_forbidden",
                     "Non-audio assets must not depend on Audio assets", "$.dependencies"};
+                diagnostic.withContext("assetId", record.id.value)
+                    .withContext("dependency", dependency.value);
+                diagnostics.add(std::move(diagnostic));
+            } else if (record.type != AssetType::Material &&
+                       pending[dependencyRecord->second].record.type == AssetType::Shader) {
+                auto diagnostic = core::Diagnostic{
+                    core::DiagnosticSeverity::Error, "assets.database.shader_dependency_forbidden",
+                    "Only Material assets may depend on Shader assets", "$.dependencies"};
                 diagnostic.withContext("assetId", record.id.value)
                     .withContext("dependency", dependency.value);
                 diagnostics.add(std::move(diagnostic));

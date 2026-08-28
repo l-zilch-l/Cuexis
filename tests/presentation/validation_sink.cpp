@@ -44,6 +44,10 @@ constexpr double signedIntegerLimit = 0x1p63;
         return "texture2d";
     case playback::PresentationResourceType::UnlitMaterial:
         return "unlit_material";
+    case playback::PresentationResourceType::Shader:
+        return "shader";
+    case playback::PresentationResourceType::ParameterizedMaterial:
+        return "parameterized_material";
     }
     return "unknown";
 }
@@ -508,6 +512,107 @@ class CanonicalHash final {
     return {};
 }
 
+[[nodiscard]] auto validateShader(const playback::PresentationResourceRef& reference,
+                                  const playback::PortableShader& shader,
+                                  std::uint64_t& decodedBytes) -> core::Result<void> {
+    decodedBytes = 48;
+    const auto addString = [&](std::string_view value) -> bool {
+        return checkedAdd(decodedBytes, 4ULL + value.size(), decodedBytes);
+    };
+    if (!addString(shader.vertexEntry) || !addString(shader.fragmentEntry) ||
+        !addString(shader.requiredRendererProfile)) {
+        return core::unexpected(
+            referenceError("Portable Shader byte count overflowed", &reference));
+    }
+    for (const auto& keyword : shader.variantKeywords) {
+        if (!addString(keyword)) {
+            return core::unexpected(
+                referenceError("Portable Shader byte count overflowed", &reference));
+        }
+    }
+    for (const auto& parameter : shader.parameters) {
+        if (!addString(parameter.name)) {
+            return core::unexpected(
+                referenceError("Portable Shader byte count overflowed", &reference));
+        }
+    }
+    for (const auto& binding : shader.bindings) {
+        if (!addString(binding.name)) {
+            return core::unexpected(
+                referenceError("Portable Shader byte count overflowed", &reference));
+        }
+    }
+    for (const auto& extension : shader.requiredHostExtensions) {
+        if (!addString(extension)) {
+            return core::unexpected(
+                referenceError("Portable Shader byte count overflowed", &reference));
+        }
+    }
+    if (!checkedAdd(decodedBytes, shader.vertexSource.size() + shader.fragmentSource.size(),
+                    decodedBytes)) {
+        return core::unexpected(
+            referenceError("Portable Shader byte count overflowed", &reference));
+    }
+    return {};
+}
+
+[[nodiscard]] auto
+validateParameterizedMaterial(const playback::PresentationResourceRef& reference,
+                              const playback::PortableParameterizedMaterial& material,
+                              std::uint64_t& decodedBytes) -> core::Result<void> {
+    if (material.alphaMode != playback::PresentationAlphaMode::Opaque &&
+        material.alphaMode != playback::PresentationAlphaMode::Blend) {
+        return core::unexpected(
+            referenceError("Portable Material alpha mode is invalid", &reference));
+    }
+    if (material.shader.type != playback::PresentationResourceType::Shader ||
+        !isPortableAssetId(material.shader.assetId)) {
+        return core::unexpected(
+            referenceError("Parameterized Material shader reference is invalid", &reference));
+    }
+    decodedBytes = 24ULL + 37ULL + material.shader.assetId.size();
+    for (const auto& keyword : material.selectedKeywords) {
+        if (!checkedAdd(decodedBytes, 4ULL + keyword.size(), decodedBytes)) {
+            return core::unexpected(
+                referenceError("Parameterized Material byte count overflowed", &reference));
+        }
+    }
+    for (const auto& parameter : material.parameters) {
+        if (parameter.type == playback::ShaderParameterType::Texture2D) {
+            if (!parameter.texture ||
+                parameter.texture->type != playback::PresentationResourceType::Texture2D ||
+                !isPortableAssetId(parameter.texture->assetId)) {
+                return core::unexpected(referenceError(
+                    "Parameterized Material texture parameter is invalid", &reference));
+            }
+            if (!checkedAdd(decodedBytes,
+                            8ULL + parameter.name.size() + 37ULL +
+                                parameter.texture->assetId.size(),
+                            decodedBytes)) {
+                return core::unexpected(
+                    referenceError("Parameterized Material byte count overflowed", &reference));
+            }
+        } else if (!checkedAdd(decodedBytes, 20ULL + parameter.name.size(), decodedBytes)) {
+            return core::unexpected(
+                referenceError("Parameterized Material byte count overflowed", &reference));
+        }
+    }
+    return {};
+}
+
+[[nodiscard]] auto
+expectedParameterizedDependencies(const playback::PortableParameterizedMaterial& material)
+    -> std::vector<playback::PresentationResourceRef> {
+    std::vector<playback::PresentationResourceRef> dependencies;
+    dependencies.push_back(material.shader);
+    for (const auto& parameter : material.parameters) {
+        if (parameter.type == playback::ShaderParameterType::Texture2D && parameter.texture) {
+            dependencies.push_back(*parameter.texture);
+        }
+    }
+    return dependencies;
+}
+
 struct CanonicalPresentationData final {
     playback::PresentationResourceManifest manifest;
     std::vector<playback::PortableResourcePtr> resources;
@@ -631,9 +736,54 @@ canonicalizePresentationData(const playback::PresentationResourceManifest& manif
             }
             break;
         }
-        default:
-            return core::unexpected(
-                referenceError("Presentation resource type is unsupported", &entry.reference));
+        case playback::PresentationResourceType::Shader: {
+            const auto* value = std::get_if<playback::PortableShader>(&resource->value);
+            if (value == nullptr) {
+                return core::unexpected(referenceError(
+                    "Presentation Shader ref has an incompatible value", &entry.reference));
+            }
+            if (auto valid = validateShader(entry.reference, *value, decodedBytes); !valid) {
+                return core::unexpected(std::move(valid.error()));
+            }
+            computedIdentity = computePresentationIdentity(resource->value);
+            if (!entry.dependencies.empty()) {
+                return core::unexpected(referenceError(
+                    "Portable Shader has unexpected dependencies", &entry.reference));
+            }
+            break;
+        }
+        case playback::PresentationResourceType::ParameterizedMaterial: {
+            const auto* value =
+                std::get_if<playback::PortableParameterizedMaterial>(&resource->value);
+            if (value == nullptr) {
+                return core::unexpected(referenceError(
+                    "Presentation Parameterized Material ref has an incompatible value",
+                    &entry.reference));
+            }
+            if (auto valid = validateParameterizedMaterial(entry.reference, *value, decodedBytes);
+                !valid) {
+                return core::unexpected(std::move(valid.error()));
+            }
+            computedIdentity = computePresentationIdentity(resource->value);
+            const auto expected = expectedParameterizedDependencies(*value);
+            if (entry.dependencies != expected) {
+                return core::unexpected(
+                    referenceError("Parameterized Material dependency does not match its value",
+                                   &entry.reference));
+            }
+            for (const auto& dependency : expected) {
+                const auto found = std::lower_bound(
+                    canonical.manifest.entries.begin(), canonical.manifest.entries.end(),
+                    dependency, [](const auto& candidate, const auto& reference) {
+                        return referenceKey(candidate.reference) < referenceKey(reference);
+                    });
+                if (found == canonical.manifest.entries.end() || found->reference != dependency) {
+                    return core::unexpected(referenceError(
+                        "Parameterized Material dependency is missing", &entry.reference));
+                }
+            }
+            break;
+        }
         }
 
         if (computedIdentity != entry.reference.identity ||
@@ -886,7 +1036,84 @@ auto computePresentationIdentity(const playback::PortableResourceValue& value) n
     if (const auto* texture = std::get_if<playback::PortableTexture2D>(&value)) {
         return textureIdentity(*texture);
     }
-    return materialIdentity(std::get<playback::PortableUnlitMaterial>(value));
+    if (const auto* unlit = std::get_if<playback::PortableUnlitMaterial>(&value)) {
+        return materialIdentity(*unlit);
+    }
+    if (const auto* shader = std::get_if<playback::PortableShader>(&value)) {
+        CanonicalHash hash{playback::PresentationResourceType::Shader};
+        hash.writeString(shader->vertexEntry);
+        hash.writeString(shader->fragmentEntry);
+        auto keywords = shader->variantKeywords;
+        std::sort(keywords.begin(), keywords.end());
+        hash.writeU32(static_cast<std::uint32_t>(keywords.size()));
+        for (const auto& keyword : keywords) {
+            hash.writeString(keyword);
+        }
+        hash.writeU32(static_cast<std::uint32_t>(shader->parameters.size()));
+        for (const auto& parameter : shader->parameters) {
+            hash.writeString(parameter.name);
+            hash.writeU32(static_cast<std::uint32_t>(parameter.type));
+            hash.writeU32(parameter.set);
+            hash.writeU32(parameter.binding);
+            for (const auto lane : parameter.defaultNumeric) {
+                hash.writeFloat(lane);
+            }
+            hash.writeU32(std::bit_cast<std::uint32_t>(parameter.defaultInt));
+            hash.writeU32(parameter.defaultBool ? 1U : 0U);
+        }
+        hash.writeU32(static_cast<std::uint32_t>(shader->bindings.size()));
+        for (const auto& binding : shader->bindings) {
+            hash.writeU32(binding.set);
+            hash.writeU32(binding.binding);
+            hash.writeU32(static_cast<std::uint32_t>(binding.type));
+            hash.writeString(binding.name);
+        }
+        hash.writeU32(static_cast<std::uint32_t>(shader->defaultAlphaMode));
+        hash.writeU32(shader->defaultDoubleSided ? 1U : 0U);
+        hash.writeString(shader->requiredRendererProfile);
+        auto extensions = shader->requiredHostExtensions;
+        std::sort(extensions.begin(), extensions.end());
+        hash.writeU32(static_cast<std::uint32_t>(extensions.size()));
+        for (const auto& extension : extensions) {
+            hash.writeString(extension);
+        }
+        hash.writeString(shader->vertexSource);
+        hash.writeString(shader->fragmentSource);
+        return hash.finish();
+    }
+    const auto& material = std::get<playback::PortableParameterizedMaterial>(value);
+    CanonicalHash hash{playback::PresentationResourceType::ParameterizedMaterial};
+    hash.writeU32(static_cast<std::uint32_t>(material.alphaMode));
+    hash.writeU32(material.doubleSided ? 1U : 0U);
+    hash.writeString(material.shader.assetId);
+    hash.writeIdentity(material.shader.identity);
+    auto keywords = material.selectedKeywords;
+    std::sort(keywords.begin(), keywords.end());
+    hash.writeU32(static_cast<std::uint32_t>(keywords.size()));
+    for (const auto& keyword : keywords) {
+        hash.writeString(keyword);
+    }
+    hash.writeU32(static_cast<std::uint32_t>(material.parameters.size()));
+    for (const auto& parameter : material.parameters) {
+        hash.writeString(parameter.name);
+        hash.writeU32(static_cast<std::uint32_t>(parameter.type));
+        if (parameter.type == playback::ShaderParameterType::Texture2D) {
+            hash.writeU32(parameter.texture ? 1U : 0U);
+            if (parameter.texture) {
+                hash.writeString(parameter.texture->assetId);
+                hash.writeIdentity(parameter.texture->identity);
+            }
+        } else if (parameter.type == playback::ShaderParameterType::Int) {
+            hash.writeU32(std::bit_cast<std::uint32_t>(parameter.integer));
+        } else if (parameter.type == playback::ShaderParameterType::Bool) {
+            hash.writeU32(parameter.boolean ? 1U : 0U);
+        } else {
+            for (const auto lane : parameter.numeric) {
+                hash.writeFloat(lane);
+            }
+        }
+    }
+    return hash.finish();
 }
 
 void ValidationSummary::clear() noexcept {
@@ -1099,7 +1326,9 @@ auto ValidationSink::validateFrame(const playback::FrameSnapshot& snapshot,
                 continue;
             }
             if (object.mesh->type != playback::PresentationResourceType::Mesh ||
-                object.material->type != playback::PresentationResourceType::UnlitMaterial ||
+                (object.material->type != playback::PresentationResourceType::UnlitMaterial &&
+                 object.material->type !=
+                     playback::PresentationResourceType::ParameterizedMaterial) ||
                 object.materialAssetId != object.material->assetId) {
                 return fail(
                     frameResourceError("Snapshot portable refs have incompatible types or AssetIds",
@@ -1109,30 +1338,52 @@ auto ValidationSink::validateFrame(const playback::FrameSnapshot& snapshot,
             const auto meshResource = locateResource(*active_, *object.mesh);
             const auto materialResource = locateResource(*active_, *object.material);
             if (!meshResource || !materialResource ||
-                !std::holds_alternative<playback::PortableMesh>(meshResource->resource->value) ||
-                !std::holds_alternative<playback::PortableUnlitMaterial>(
-                    materialResource->resource->value)) {
+                !std::holds_alternative<playback::PortableMesh>(meshResource->resource->value)) {
                 return fail(frameResourceError(
                     "Snapshot ref is not backed by its active portable resource", object.id,
                     !meshResource ? &*object.mesh : &*object.material));
             }
             const auto& mesh = std::get<playback::PortableMesh>(meshResource->resource->value);
-            const auto& material =
-                std::get<playback::PortableUnlitMaterial>(materialResource->resource->value);
-            if (material.baseColorTexture) {
-                const auto texture = locateResource(*active_, *material.baseColorTexture);
-                if (!texture ||
-                    !std::holds_alternative<playback::PortableTexture2D>(
-                        texture->resource->value) ||
-                    materialResource->entry->dependencies.size() != 1 ||
-                    materialResource->entry->dependencies.front() != *material.baseColorTexture) {
-                    return fail(
-                        frameResourceError("Portable Material texture dependency is inconsistent",
-                                           object.id, &*material.baseColorTexture));
+            const auto* unlit =
+                std::get_if<playback::PortableUnlitMaterial>(&materialResource->resource->value);
+            const auto* parameterized = std::get_if<playback::PortableParameterizedMaterial>(
+                &materialResource->resource->value);
+            if (unlit == nullptr && parameterized == nullptr) {
+                return fail(
+                    frameResourceError("Snapshot ref is not backed by its active portable resource",
+                                       object.id, &*object.material));
+            }
+            if (unlit != nullptr) {
+                if (unlit->baseColorTexture) {
+                    const auto texture = locateResource(*active_, *unlit->baseColorTexture);
+                    if (!texture ||
+                        !std::holds_alternative<playback::PortableTexture2D>(
+                            texture->resource->value) ||
+                        materialResource->entry->dependencies.size() != 1 ||
+                        materialResource->entry->dependencies.front() != *unlit->baseColorTexture) {
+                        return fail(frameResourceError(
+                            "Portable Material texture dependency is inconsistent", object.id,
+                            &*unlit->baseColorTexture));
+                    }
+                } else if (!materialResource->entry->dependencies.empty()) {
+                    return fail(frameResourceError("Portable Material has unexpected dependencies",
+                                                   object.id, &*object.material));
                 }
-            } else if (!materialResource->entry->dependencies.empty()) {
-                return fail(frameResourceError("Portable Material has unexpected dependencies",
-                                               object.id, &*object.material));
+            } else {
+                const auto expected = expectedParameterizedDependencies(*parameterized);
+                if (materialResource->entry->dependencies != expected) {
+                    return fail(
+                        frameResourceError("Parameterized Material dependency is inconsistent",
+                                           object.id, &*object.material));
+                }
+                for (const auto& dependency : expected) {
+                    const auto located = locateResource(*active_, dependency);
+                    if (!located) {
+                        return fail(frameResourceError(
+                            "Parameterized Material dependency is missing from the active cache",
+                            object.id, &dependency));
+                    }
+                }
             }
 
             if (!object.visible) {
@@ -1160,6 +1411,15 @@ auto ValidationSink::validateFrame(const playback::FrameSnapshot& snapshot,
                 return fail(frameValueError(object.id, "material_opacity"));
             }
 
+            const float* baseColor = unlit != nullptr ? unlit->baseColor : nullptr;
+            const float parameterizedBase[4]{1.0F, 1.0F, 1.0F, 1.0F};
+            if (baseColor == nullptr) {
+                baseColor = parameterizedBase;
+            }
+            const auto alphaMode = unlit != nullptr ? unlit->alphaMode : parameterized->alphaMode;
+            const bool doubleSided =
+                unlit != nullptr ? unlit->doubleSided : parameterized->doubleSided;
+
             std::array<double, 4> effectiveColor{};
             for (std::size_t component = 0; component < 3; ++component) {
                 if (!std::isfinite(object.materialTint[component])) {
@@ -1169,13 +1429,13 @@ auto ValidationSink::validateFrame(const playback::FrameSnapshot& snapshot,
                     object.materialTint[component] > 1.0F) {
                     return fail(frameValueError(object.id, "material_tint"));
                 }
-                effectiveColor[component] = static_cast<double>(material.baseColor[component]) *
+                effectiveColor[component] = static_cast<double>(baseColor[component]) *
                                             static_cast<double>(object.materialTint[component]);
                 if (!std::isfinite(effectiveColor[component])) {
                     return fail(nonFiniteError(object.id, "effective_rgb"));
                 }
             }
-            effectiveColor[3] = static_cast<double>(material.baseColor[3]) * object.materialOpacity;
+            effectiveColor[3] = static_cast<double>(baseColor[3]) * object.materialOpacity;
             if (!std::isfinite(effectiveColor[3])) {
                 return fail(nonFiniteError(object.id, "effective_alpha"));
             }
@@ -1202,10 +1462,10 @@ auto ValidationSink::validateFrame(const playback::FrameSnapshot& snapshot,
                 return fail(nonFiniteError(object.id, "depth"));
             }
             const auto depthKey = static_cast<std::int64_t>(roundedDepth);
-            const auto pass = material.alphaMode == playback::PresentationAlphaMode::Blend ||
-                                      effectiveColor[3] < 1.0
-                                  ? ValidationPass::Transparent
-                                  : ValidationPass::Opaque;
+            const auto pass =
+                alphaMode == playback::PresentationAlphaMode::Blend || effectiveColor[3] < 1.0
+                    ? ValidationPass::Transparent
+                    : ValidationPass::Opaque;
             auto& command = pass == ValidationPass::Opaque
                                 ? nextCommand(destination.opaque, opaqueCount)
                                 : nextCommand(destination.transparent, transparentCount);
@@ -1217,7 +1477,7 @@ auto ValidationSink::validateFrame(const playback::FrameSnapshot& snapshot,
             assignReference(command.material, *object.material);
             command.effectiveColor = effectiveColor;
             command.pass = pass;
-            command.backFaceCulling = !material.doubleSided;
+            command.backFaceCulling = !doubleSided;
             command.depthTest = true;
             command.depthWrite = pass == ValidationPass::Opaque;
             command.sourceOverBlend = pass == ValidationPass::Transparent;

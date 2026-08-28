@@ -165,6 +165,22 @@ TEST_CASE("A newer OpenGL configuration makes an older token stale", "[render][o
     CHECK(stale.error().code() == "render.opengl.configuration_stale");
 }
 
+TEST_CASE("Built-in OpenGL presentation capabilities advertise parameterized GLSL 330",
+          "[render][opengl][s5-g]") {
+    const auto capabilities = cuexis::render_opengl::builtInPresentationCapabilities(8192, true);
+    CHECK(capabilities.version == 2);
+    CHECK(capabilities.builtInRendererProfileVersion == 1);
+    CHECK(capabilities.parameterizedMaterial);
+    CHECK(capabilities.shaderGlsl330);
+    CHECK(capabilities.declaredVariants);
+    CHECK(capabilities.maxShaderSourceBytes == cuexis::playback::presentationMaxShaderSourceBytes);
+    CHECK(capabilities.maxTextureBindings == cuexis::playback::presentationMaxTextureBindings);
+#ifndef CUEXIS_HAS_SHADER_TOOLS
+    CHECK_FALSE(capabilities.shaderGlsl450Source);
+    CHECK_FALSE(capabilities.shaderSpirv);
+#endif
+}
+
 TEST_CASE("A failed OpenGL configuration invalidates an older token", "[render][opengl]") {
     auto runtime = cuexis::platform_sdl::SdlRuntime::create();
     REQUIRE(runtime.has_value());

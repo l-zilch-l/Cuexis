@@ -62,5 +62,13 @@
 | [260827 Stage 4 S4-G safety allocation](260827-stage-4-s4-g-safety-allocation.md) | S4-G local checkpoint: ChartLimits/write budget, warmed zero or bounded allocation, F4-style performance probe |
 | [260827 Stage 4 S4-H local validation](260827-stage-4-s4-h-local-validation.md) | historical S4-H local Debug/Release snapshot before final SHA publication |
 | [Stage 4 completion report](stage_4_completion_report.md) | S4-H hosted Linux/MSVC/MinGW success on `3df9274`; owner acceptance recorded 2026-08-27; Stage 4 closed and Stage 5 unblocked but not started |
+| [260828 Stage 5 S5-A contracts](260828-stage-5-s5-a-contracts.md) | S5-A contract freeze: ADR 0040, Material/Shader spec, refined S5-B..H; no production code |
+| [260828 Stage 5 S5-B shader tools](260828-stage-5-s5-b-shader-tools.md) | S5-B local checkpoint: optional cuexis_shader, vcpkg shader-tools, importer --help; no kind 4/5 parse |
+| [260828 Stage 5 S5-C material/unlit](260828-stage-5-s5-c-material-unlit.md) | S5-C local checkpoint: kind 4/5 parse/identity, Asset Index v3 shader, SDK 0.7.0; default Session still Unlit-only |
+| [260828 Stage 5 S5-D shader compile](260828-stage-5-s5-d-shader-compile.md) | S5-D local checkpoint: GLSL 450 → SPIR-V → GLSL 330/ES 300 and reflection behind shader-tools; no CXSCCH01 |
+| [260828 Stage 5 S5-E profile/capability](260828-stage-5-s5-e-profile-capability.md) | S5-E local checkpoint: toolchain profile IDs, PresentationCapabilities version 2, parse → playback → presentation preflight; no CXSCCH01 |
+| [260828 Stage 5 S5-F cache](260828-stage-5-s5-f-cache.md) | S5-F local checkpoint: CXSCCH01 Writer/Reader, canonical cache key, importer write, failed hot-reload keeps active; OpenGL consumption not started |
+| [260828 Stage 5 S5-G consume](260828-stage-5-s5-g-consume.md) | S5-G local checkpoint: OpenGL/Player/Validation Sink consume CXSCCH01; default allCapabilities includes shader/parameterized; trimmed Session still rejects; Unlit golden unchanged |
+| [260828 Stage 5 S5-H safety](260828-stage-5-s5-h-safety.md) | S5-H local checkpoint: spec budgets, warmed allocation contract, performance probe, Linux sanitizer shader-tools; hosted and owner acceptance pending; Stage 5 not completed |
 | [260828 CFU and Stage 4 review](260828-stage-CFU-4-review.md) | open two-axis review snapshot of CFU through Stage 4 close; does not redefine CURRENT_STATUS |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |

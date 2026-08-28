@@ -1,11 +1,12 @@
 # Cuexis Shader Pipeline 规范
 
-状态：deferred proposal；Stage 5 设计方向已接受，尚未进入实施
+状态：superseded as field contract；retained as design-input history
 
-更新日期：2026-08-10
+更新日期：2026-08-28
 
-阅读入口：[Deferred Design Proposals](README.md)。当前排期以
-[ROADMAP.md](../../ROADMAP.md) 和 [Stage 5 plan](../../stage_plans/stage_5_implementation_plan.md)
+字段、预算和诊断码以 [MATERIAL_SHADER.md](../../formats/MATERIAL_SHADER.md) 与
+[ADR 0040](../../adr/0040-stage-5-material-shader-contracts.md) 为准。本文保留 SPIR-V 中心管线
+的历史讨论，不再作为生产 spec。排期以 [Stage 5 plan](../../stage_plans/stage_5_implementation_plan.md)
 为准。
 
 ## 规范输入与中间表示

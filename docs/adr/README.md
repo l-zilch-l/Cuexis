@@ -2,7 +2,7 @@
 
 状态：现行 ADR 索引
 
-更新日期：2026-08-10
+更新日期：2026-08-28
 
 ADR 是决策理由的权威来源。字段级合同和实施证据分别见 [格式索引](../formats/README.md)
 与 [阶段报告索引](../stage_reports/README.md)。
@@ -29,7 +29,7 @@ ADR 是决策理由的权威来源。字段级合同和实施证据分别见 [�
 | [0018](0018-timing-map-semantics.md) | TimingMap 语义 | 已接受 |
 | [0019](0019-animation-layers-and-runtime-overrides.md) | Animation Layer 和 Override | 已接受 |
 | [0020](0020-deterministic-particle-timeline.md) | 确定性粒子时间轴 | 已接受，阶段 8 |
-| [0021](0021-spirv-centered-shader-pipeline.md) | SPIR-V Shader 管线 | 已接受，阶段 5 |
+| [0021](0021-spirv-centered-shader-pipeline.md) | SPIR-V Shader 管线 | 已接受，阶段 5；字段合同见 ADR 0040 |
 | [0022](0022-android-resource-and-input-strategy.md) | Android 资源与输入 | 已接受，阶段 9B |
 | [0023](0023-code-error-and-thread-policy.md) | 编码、错误、线程政策 | 已接受 |
 | [0024](0024-configuration-ownership-and-staged-formats.md) | 配置所有权和分阶段格式 | 已接受 |
@@ -48,3 +48,4 @@ ADR 是决策理由的权威来源。字段级合同和实施证据分别见 [�
 | [0037](0037-stage-3-portable-presentation-contracts.md) | Stage 3 Portable Presentation | 已接受 |
 | [0038](0038-cxc-v1-and-chart-v4-boundary.md) | CXC、Chart v4、CXT 边界 | 已接受，实施中 |
 | [0039](0039-remove-hour-from-build-version.md) | 构建版本移除小时字段 | 已接受 |
+| [0040](0040-stage-5-material-shader-contracts.md) | Stage 5 Material/Shader 合同 | 已接受，阶段 5；S5-A 已冻结 |

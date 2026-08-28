@@ -2,7 +2,7 @@
 
 状态：现行提案索引
 
-更新日期：2026-08-10
+更新日期：2026-08-28
 
 提案文档描述候选合同、已接受但未实施的方向或延期研究输入。它们不等同于生产 API；
 生产与候选边界以 [格式索引](../formats/README.md) 和 [当前状态](../CURRENT_STATUS.md) 为准。
@@ -16,4 +16,5 @@
 
 ## 延期设计输入
 
-- [Deferred proposals](deferred/README.md)：Shader、粒子和 Android/移动端方向。
+- [Deferred proposals](deferred/README.md)：粒子和 Android/移动端方向。Shader 字段合同已由
+  [MATERIAL_SHADER.md](../formats/MATERIAL_SHADER.md) 取代。

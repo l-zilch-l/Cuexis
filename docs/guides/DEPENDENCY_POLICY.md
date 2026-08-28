@@ -2,7 +2,7 @@
 
 状态：已接受
 
-更新日期：2026-07-27
+更新日期：2026-08-28
 
 ## 项目许可
 
@@ -53,6 +53,17 @@ ZIP64 sentinel、extra/comment、entry range、overlap 和 trailing bytes；arch
 改变 CXC 合同。该依赖不进入安装公共头，也不作为 CMake component 暴露；替换路径是保持
 `cuexis_cxc` 内部接口并改用另一成熟 ZIP 库，而不是自研压缩器。
 
+Stage 5 把 shaderc、SPIRV-Tools 和 SPIRV-Cross 放在可选 vcpkg feature `shader-tools` 中，并由
+CMake 选项 `CUEXIS_BUILD_SHADER_TOOLS`（默认 `OFF`）接入内部静态库 `cuexis_shader`。当前
+baseline 解析版本为 shaderc 2026.2、SPIRV-Tools 1.4.350.1、SPIRV-Cross 1.4.350.1；shaderc
+传递 glslang 16.4.0 与 SPIRV-Headers。默认 feature 仍只有 `player` 与 `tests`，因此日常
+Debug 与 adapter-disabled headless 不会下载这些 port。真实 CMake imported target 为
+`unofficial::shaderc::shaderc`、`spirv-cross-core`、`spirv-cross-glsl`、`spirv-cross-reflect`
+和 `SPIRV-Tools-static`。这些名称只允许出现在 `cuexis_shader` 的 allowlist 中，不得写入安装的
+`CuexisConfig.cmake`，也不得进入 `cuexis_playback` / `cuexis_runtime` / `cuexis_chart` /
+`cuexis_animation` 链接闭包。该依赖不进入安装公共头；替换路径是保持 `cuexis_shader` 内部接口
+并改用另一套 SPIR-V 工具链，而不是让 Playback 直接调用编译器。
+
 ## 封装原则
 
 第三方库可以用于内部实现，但除明确基础类型外，不进入 Cuexis 公共接口。Chart、Component 和资产格式不得保存第三方运行时对象。后端库通过模块边界封装，替换依赖不应要求修改无关模块。
@@ -69,7 +80,7 @@ cuexis_playback、cuexis_audio 与 cuexis_judgement 的安装公共头使用更�
 链接闭包的 vcpkg copyright 文件安装到 `licenses/`。基础 Playback/Content/Audio 包配置只查找
 EnTT、GLM、nlohmann-json、JSON Schema Validator 和 tl-expected。CXC 接入静态 Playback 后可以
 私有增加无默认 feature 的 minizip-ng 链接闭包，但不得把它宣传为公共 Cuexis component 或传播其
-头文件。基础包不得查找 SDL3、glad、spdlog 或 Catch2。显式请求 `AudioSDL` component 时才允许查找 SDL3，并载入独立的
+头文件。基础包不得查找 SDL3、glad、spdlog、Catch2、shaderc、SPIRV-Tools 或 SPIRV-Cross。显式请求 `AudioSDL` component 时才允许查找 SDL3，并载入独立的
 `CuexisAudioSDLTargets.cmake`；包含该组件的安装树必须额外分发 SDL3 copyright。Player 或其他
 可选组件形成正式分发物时，必须另行把其新增依赖许可证加入安装清单和 consumer 门禁。
 

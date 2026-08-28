@@ -4,7 +4,13 @@
 
 #include <glad/glad.h>
 
+#include <cuexis/shader/shader_cache.hpp>
+
+#include <cstddef>
+#include <filesystem>
+#include <limits>
 #include <optional>
+#include <string>
 #include <vector>
 
 namespace cuexis::render_opengl::detail {
@@ -80,9 +86,29 @@ struct GpuTexture final {
     UniqueTexture texture;
 };
 
+struct GpuTextureBinding final {
+    std::uint32_t set{};
+    std::uint32_t binding{};
+    std::string name;
+    GLint location{-1};
+    GLint textureUnit{};
+};
+
+struct GpuParameterizedProgram final {
+    playback::PresentationResourceRef shaderReference;
+    std::vector<std::string> selectedKeywords;
+    UniqueProgram program;
+    UniqueBuffer cuexisObject;
+    std::vector<GpuTextureBinding> textures;
+    shader::ShaderReflection reflection;
+};
+
 struct GpuMaterial final {
     playback::PresentationResourceRef reference;
     playback::PortableUnlitMaterial material;
+    bool parameterized{};
+    playback::PortableParameterizedMaterial parameterizedMaterial{};
+    std::size_t programIndex{std::numeric_limits<std::size_t>::max()};
 };
 
 struct PresentationResourceSet final {
@@ -93,6 +119,7 @@ struct PresentationResourceSet final {
     std::vector<GpuMesh> meshes;
     std::vector<GpuTexture> textures;
     std::vector<GpuMaterial> materials;
+    std::vector<GpuParameterizedProgram> programs;
 };
 
 struct OpenGlPresentationBackendState final {
@@ -100,6 +127,7 @@ struct OpenGlPresentationBackendState final {
     std::optional<PresentationResourceSet> active;
     std::optional<PresentationResourceSet> pending;
     std::optional<PresentationResourceSet> retired;
+    std::filesystem::path shaderCacheDirectory;
     std::uint64_t backendToken{};
     std::uint64_t nextGeneration{};
     std::uint64_t pendingGeneration{};

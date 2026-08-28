@@ -2,7 +2,7 @@
 
 状态：现行状态页
 
-更新日期：2026-08-27
+更新日期：2026-08-28
 
 本文是当前阶段和实现状态的唯一摘要。阶段计划、完成报告和审查报告仍然保留各自的历史
 细节，但不能绕过本文重新定义当前状态。
@@ -29,7 +29,7 @@ PlaybackSession、FrameSnapshot、ContentProvider 和后续 Judgement/Replay 合
 | Stage 3 | 已完成 | [完成报告](stage_reports/stage_3_completion_report.md) |
 | Stage Chart Format Update | 已完成；CFU-C0–C4、CFU-D、CFU-E、CFU-F、CFU-G 已关闭；G6 owner acceptance 已于 2026-08-24 记录 | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md)、[G5/G6 completion report](stage_reports/stage_chart_format_update_completion_report.md) |
 | Stage 4 | 已完成；S4-H hosted 与 owner acceptance 已于 2026-08-27 记录 | [实施计划](stage_plans/stage_4_implementation_plan.md)、[完成报告](stage_reports/stage_4_completion_report.md) |
-| Stage 5 | 已解锁但尚未开始 | [实施计划](stage_plans/stage_5_implementation_plan.md) |
+| Stage 5 | S5-A 合同已冻结；S5-B 已接线；S5-C 已完成；S5-D 已完成；S5-E 已完成；S5-F 已完成；S5-G 已完成；S5-H local checkpoint；hosted 与 owner acceptance 待完成 | [实施计划](stage_plans/stage_5_implementation_plan.md)、[ADR 0040](adr/0040-stage-5-material-shader-contracts.md)、[Material/Shader spec](formats/MATERIAL_SHADER.md)、[S5-A 报告](stage_reports/260828-stage-5-s5-a-contracts.md)、[S5-B 报告](stage_reports/260828-stage-5-s5-b-shader-tools.md)、[S5-C 报告](stage_reports/260828-stage-5-s5-c-material-unlit.md)、[S5-D 报告](stage_reports/260828-stage-5-s5-d-shader-compile.md)、[S5-E 报告](stage_reports/260828-stage-5-s5-e-profile-capability.md)、[S5-F 报告](stage_reports/260828-stage-5-s5-f-cache.md)、[S5-G 报告](stage_reports/260828-stage-5-s5-g-consume.md)、[S5-H 报告](stage_reports/260828-stage-5-s5-h-safety.md) |
 
 Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使用 Stage 3.5 作为别名。
 
@@ -37,7 +37,16 @@ Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使
 通过，G3 hosted 门禁与 G4 已完成。G4 hosted 证据记录在 [G4 hosted 验证报告](stage_reports/260824-chart-format-update-g4-hosted.md)。
 G5 completion report SHA `6e52677be2f27f83d0b709619be7ffcc141d6f95` 的 Linux Quality、Windows MSVC 和
 Windows MinGW hosted revalidation 均已通过；项目所有者已明确接受报告，CFU-G 与 Stage Chart Format
-Update 已关闭。Stage 4 已完成；Stage 5 已解锁但尚未开始。
+Update 已关闭。Stage 4 已完成；Stage 5 的 S5-A 合同已冻结，S5-B 已接线可选 `cuexis_shader` 与
+vcpkg feature `shader-tools`，S5-C 已完成 kind 4/5 解析/identity、Asset Index v3 `shader` 与
+SDK API `0.7.0`。S5-D 已完成可选 `cuexis.importer.shader.v1` 编译/反射；S5-E 已完成 profile ID
+与 `PresentationCapabilities` version 2 预检；S5-F 已完成 `CXSCCH01` 缓存键/读写与失败保留上一
+Pipeline；S5-G 已完成 OpenGL/Player/Validation Sink 消费与默认 `allCapabilities()` 写入
+`cuexis.shader.asset.v1` / `cuexis.material.parameterized.v1`。裁剪 Session 仍拒绝 Parameterized
+且不破坏 active Unlit。OpenGL Unlit 内联 GLSL 330 未改。headless 不要求 Built-in Renderer
+Profile。Playback 热路径仍不调用编译器。S5-H local checkpoint 已写入预算、warmed 分配合同、
+趋势探针与 Linux sanitizer shader-tools 覆盖；hosted 三平台与 owner acceptance 完成前 Stage 5
+不得标为 completed。
 
 ## 格式状态
 
@@ -46,6 +55,16 @@ Update 已关闭。Stage 4 已完成；Stage 5 已解锁但尚未开始。
   `cuexis.animation.layers.v1` 加入默认 Playback 集合；缺少这两项的显式裁剪 Session 仍稳定拒绝。
   S4-G 已关闭本地限额、warmed 分配合同与趋势探针；S4-H 已关闭 hosted sanitizer 与三平台验收。
   该关闭不是公共 CXC package API、Shader、Studio 或 Judgement。
+- Stage 5 S5-A 已冻结 Material/Shader v1（`CXPRES01` kind 4/5、Asset Index v3 `shader`、禁止
+  Unlit 投影、Playback 不链接编译器）。S5-B 已接线可选内部 `cuexis_shader`、vcpkg feature
+  `shader-tools` 与 `cuexis_asset_importer --help`。S5-C 已完成公开
+  Presentation 类型、kind 4/5 Reader、Asset Index v3 与 SDK API `0.7.0`。S5-D 已在
+  `CUEXIS_BUILD_SHADER_TOOLS=ON` 下实现 GLSL 450 → SPIR-V 1.3 → GLSL 330 / ES 300 与规范化
+  reflection；默认构建仍不编译这些测试，Playback 热路径仍不链接编译器。S5-G 已把 shader 与
+  parameterized 写入默认 Playback 集合；默认 Session 接受合法 Built-in Shader 内容，显式裁剪
+  Session 仍拒绝。OpenGL adapter 消费 `CXSCCH01` GLSL 330 与 `CuexisObject` UBO；缺少缓存且未
+  opt-in compile 时返回 `shader.cache.missing`。Unlit 回归保持。S5-H local checkpoint 已写入；
+  Stage 5 尚未 completed。
 - ADR 0038 已于 2026-08-11 整体接受，Stage Chart Format Update 已进入 CFU-C 实施。
 - CFU-C1 已建立 Chart v4、CXT v1、CXC manifest v1 Schema、正式 fixture、typed source model/Reader
   和内部 `cuexis_cxc` manifest 目标。
@@ -179,7 +198,7 @@ extension、capability、字节码、模块 ABI 或 Playback 执行入口。离�
 - 正式 `cuexis_judgement`、InputEvent、ReplayData 和确定性回放
 - Studio 独立应用实现
 - 稳定 C ABI 和语言绑定
-- Stage 5 Material、Shader 与能力 Profile
+- Stage 5 Material、Shader 与能力 Profile（S5-A/S5-B/S5-C 已完成；S5-D 起 compile）
 
 ## 状态更新规则
 

@@ -5,6 +5,7 @@
 //  Maps AssetId to type/source/dependencies; directory enumeration is not used to
 //  discover AssetIds
 //  v1 types cover CPU blobs for Mesh, Material and Texture. v2 adds Audio source blobs.
+//  v3 adds Shader source blobs.
 
 #include <cuexis/assets/asset_id.hpp>
 #include <cuexis/content/content_provider.hpp>
@@ -31,6 +32,7 @@ enum class AssetType {
     Material,
     Texture,
     Audio,
+    Shader,
 };
 
 using AssetKind = AssetType;

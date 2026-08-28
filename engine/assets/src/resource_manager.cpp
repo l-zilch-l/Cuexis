@@ -51,6 +51,12 @@ template <> struct ResourceTraits<AudioSourceTag> final {
     static constexpr std::string_view fallbackPayload = "CUEXIS_FALLBACK_AUDIO_SOURCE_V1";
 };
 
+template <> struct ResourceTraits<ShaderTag> final {
+    static constexpr AssetType type = AssetType::Shader;
+    static constexpr std::string_view fallbackId = "cuexis.builtin.fallback.shader";
+    static constexpr std::string_view fallbackPayload = "CUEXIS_FALLBACK_SHADER_V1";
+};
+
 template <typename Tag> struct Slot final {
     AssetId id;
     ResourceState state{ResourceState::Unloaded};
@@ -109,6 +115,7 @@ struct ResourceManagerState final : std::enable_shared_from_this<ResourceManager
         initializeFallback<MaterialTag>();
         initializeFallback<TextureTag>();
         initializeFallback<AudioSourceTag>();
+        initializeFallback<ShaderTag>();
     }
 
     static auto allocateToken() noexcept -> std::uint64_t {
@@ -130,6 +137,8 @@ struct ResourceManagerState final : std::enable_shared_from_this<ResourceManager
             return materials;
         } else if constexpr (std::is_same_v<Tag, TextureTag>) {
             return textures;
+        } else if constexpr (std::is_same_v<Tag, ShaderTag>) {
+            return shaders;
         } else {
             static_assert(std::is_same_v<Tag, AudioSourceTag>);
             return audioSources;
@@ -143,6 +152,8 @@ struct ResourceManagerState final : std::enable_shared_from_this<ResourceManager
             return materials;
         } else if constexpr (std::is_same_v<Tag, TextureTag>) {
             return textures;
+        } else if constexpr (std::is_same_v<Tag, ShaderTag>) {
+            return shaders;
         } else {
             static_assert(std::is_same_v<Tag, AudioSourceTag>);
             return audioSources;
@@ -447,6 +458,9 @@ struct ResourceManagerState final : std::enable_shared_from_this<ResourceManager
         case AssetType::Audio:
             releaseLease<AudioSourceTag>(index, generation);
             break;
+        case AssetType::Shader:
+            releaseLease<ShaderTag>(index, generation);
+            break;
         }
     }
 
@@ -471,6 +485,7 @@ struct ResourceManagerState final : std::enable_shared_from_this<ResourceManager
     Pool<MaterialTag> materials;
     Pool<TextureTag> textures;
     Pool<AudioSourceTag> audioSources;
+    Pool<ShaderTag> shaders;
 };
 
 ResourceLeaseControl::~ResourceLeaseControl() {
@@ -533,16 +548,14 @@ auto requestDirect(const std::shared_ptr<detail::ResourceManagerState>& state, c
 }
 
 template <typename Tag>
-auto handleFromEntry(
-    const std::variant<MeshLease, MaterialLease, TextureLease, AudioSourceLease>& lease)
-    -> ResourceHandle<Tag> {
+auto handleFromEntry(const std::variant<MeshLease, MaterialLease, TextureLease, AudioSourceLease,
+                                        ShaderLease>& lease) -> ResourceHandle<Tag> {
     return std::get<ResourceLease<Tag>>(lease).handle();
 }
 
-auto handleFromEntry(
-    AssetType type,
-    const std::variant<MeshLease, MaterialLease, TextureLease, AudioSourceLease>& lease)
-    -> std::variant<MeshHandle, MaterialHandle, TextureHandle, AudioSourceHandle> {
+auto handleFromEntry(AssetType type, const std::variant<MeshLease, MaterialLease, TextureLease,
+                                                        AudioSourceLease, ShaderLease>& lease)
+    -> std::variant<MeshHandle, MaterialHandle, TextureHandle, AudioSourceHandle, ShaderHandle> {
     switch (type) {
     case AssetType::Mesh:
         return handleFromEntry<MeshTag>(lease);
@@ -552,6 +565,8 @@ auto handleFromEntry(
         return handleFromEntry<TextureTag>(lease);
     case AssetType::Audio:
         return handleFromEntry<AudioSourceTag>(lease);
+    case AssetType::Shader:
+        return handleFromEntry<ShaderTag>(lease);
     }
     return MeshHandle{};
 }
@@ -585,6 +600,10 @@ auto ResourceManager::loadAudioSource(const AssetId& id) -> core::Result<AudioSo
     return state_->load<AudioSourceTag>(id);
 }
 
+auto ResourceManager::loadShader(const AssetId& id) -> core::Result<ShaderLease> {
+    return state_->load<ShaderTag>(id);
+}
+
 auto ResourceManager::requestMesh(const AssetId& id, ResourcePolicy policy)
     -> ResourceLoadResult<MeshLease> {
     return requestDirect<MeshTag>(state_, id, policy);
@@ -605,6 +624,11 @@ auto ResourceManager::requestAudioSource(const AssetId& id, ResourcePolicy polic
     return requestDirect<AudioSourceTag>(state_, id, policy);
 }
 
+auto ResourceManager::requestShader(const AssetId& id, ResourcePolicy policy)
+    -> ResourceLoadResult<ShaderLease> {
+    return requestDirect<ShaderTag>(state_, id, policy);
+}
+
 auto ResourceManager::get(MeshHandle handle) const -> core::Result<const MeshResource*> {
     return state_->get<MeshTag>(handle);
 }
@@ -620,6 +644,10 @@ auto ResourceManager::get(TextureHandle handle) const -> core::Result<const Text
 auto ResourceManager::get(AudioSourceHandle handle) const
     -> core::Result<const AudioSourceResource*> {
     return state_->get<AudioSourceTag>(handle);
+}
+
+auto ResourceManager::get(ShaderHandle handle) const -> core::Result<const ShaderResource*> {
+    return state_->get<ShaderTag>(handle);
 }
 
 auto ResourceManager::state(MeshHandle handle) const -> core::Result<ResourceState> {
@@ -638,6 +666,10 @@ auto ResourceManager::state(AudioSourceHandle handle) const -> core::Result<Reso
     return state_->stateOf<AudioSourceTag>(handle);
 }
 
+auto ResourceManager::state(ShaderHandle handle) const -> core::Result<ResourceState> {
+    return state_->stateOf<ShaderTag>(handle);
+}
+
 auto ResourceManager::contentRevision(MeshHandle handle) const -> core::Result<std::uint64_t> {
     return state_->revisionOf<MeshTag>(handle);
 }
@@ -653,6 +685,10 @@ auto ResourceManager::contentRevision(TextureHandle handle) const -> core::Resul
 auto ResourceManager::contentRevision(AudioSourceHandle handle) const
     -> core::Result<std::uint64_t> {
     return state_->revisionOf<AudioSourceTag>(handle);
+}
+
+auto ResourceManager::contentRevision(ShaderHandle handle) const -> core::Result<std::uint64_t> {
+    return state_->revisionOf<ShaderTag>(handle);
 }
 
 std::uint64_t ResourceManager::managerToken() const noexcept {
@@ -684,6 +720,7 @@ ResourceManagerMetrics ResourceManager::metrics() const noexcept {
     accumulate(state_->materials);
     accumulate(state_->textures);
     accumulate(state_->audioSources);
+    accumulate(state_->shaders);
     return result;
 }
 
@@ -708,6 +745,10 @@ auto ResourceManager::unload(AudioSourceHandle handle) -> core::Result<void> {
     return state_->unload<AudioSourceTag>(handle);
 }
 
+auto ResourceManager::unload(ShaderHandle handle) -> core::Result<void> {
+    return state_->unload<ShaderTag>(handle);
+}
+
 void ResourceManager::unloadUnused() noexcept {
     if (!state_) {
         return;
@@ -717,6 +758,7 @@ void ResourceManager::unloadUnused() noexcept {
     state_->unloadUnused<MaterialTag>();
     state_->unloadUnused<TextureTag>();
     state_->unloadUnused<AudioSourceTag>();
+    state_->unloadUnused<ShaderTag>();
 }
 
 ResourceScope ResourceManager::createScope() {
@@ -835,8 +877,8 @@ auto ResourceScope::request(AssetType type, const AssetId& id, ResourcePolicy po
     std::vector<std::pair<AssetType, AssetId>> visiting;
     const auto acquire = [&](auto&& self, AssetType requestedType, const AssetId& requestedId,
                              std::size_t depth)
-        -> core::Result<
-            std::variant<MeshHandle, MaterialHandle, TextureHandle, AudioSourceHandle>> {
+        -> core::Result<std::variant<MeshHandle, MaterialHandle, TextureHandle, AudioSourceHandle,
+                                     ShaderHandle>> {
         const auto held = entryIndex_.find(EntryKeyView{requestedType, requestedId.value});
         if (held != entryIndex_.end()) {
             const auto& entry = entries_[held->second];
@@ -966,6 +1008,24 @@ auto ResourceScope::request(AssetType type, const AssetId& id, ResourcePolicy po
         }
         case AssetType::Audio: {
             auto lease = state->load<AudioSourceTag>(requestedId);
+            if (!lease) {
+                return core::unexpected(std::move(lease.error()));
+            }
+            const auto handle = lease->handle();
+            if (!addEntry(Entry{.type = requestedType,
+                                .requestedId = requestedId,
+                                .resolution = EntryResolution::Loaded,
+                                .acquisitionPolicy = ResourcePolicy::Required,
+                                .failureCause = std::nullopt,
+                                .lease = std::move(*lease)})) {
+                return core::unexpected(
+                    core::Error{"assets.resource.scope_index_conflict",
+                                "ResourceScope already contains the requested resource key"});
+            }
+            return handle;
+        }
+        case AssetType::Shader: {
+            auto lease = state->load<ShaderTag>(requestedId);
             if (!lease) {
                 return core::unexpected(std::move(lease.error()));
             }
@@ -1114,6 +1174,33 @@ auto ResourceScope::request(AssetType type, const AssetId& id, ResourcePolicy po
                                   "Built-in fallback resource could not be acquired", id);
             break;
         }
+        case AssetType::Shader: {
+            auto fallback = state->fallback<ShaderTag>();
+            if (fallback) {
+                const auto handle = fallback->handle();
+                if (!addEntry(Entry{.type = type,
+                                    .requestedId = id,
+                                    .resolution = EntryResolution::Fallback,
+                                    .acquisitionPolicy = ResourcePolicy::Fallback,
+                                    .failureCause = loaded.error(),
+                                    .lease = std::move(*fallback)})) {
+                    appendErrorDiagnostic(diagnostics, loaded.error(),
+                                          core::DiagnosticSeverity::Error,
+                                          "assets.resource.scope_index_conflict",
+                                          "ResourceScope fallback key conflicts with an entry", id);
+                    break;
+                }
+                appendErrorDiagnostic(
+                    diagnostics, loaded.error(), core::DiagnosticSeverity::Warning,
+                    "assets.resource.fallback_used", "Built-in fallback resource was used", id);
+                diagnostics.sortDeterministically();
+                return {handle, std::move(diagnostics)};
+            }
+            appendErrorDiagnostic(diagnostics, fallback.error(), core::DiagnosticSeverity::Error,
+                                  "assets.resource.fallback_failed",
+                                  "Built-in fallback resource could not be acquired", id);
+            break;
+        }
         }
         break;
     }
@@ -1157,6 +1244,16 @@ auto ResourceScope::requestAudioSource(const AssetId& id, ResourcePolicy policy)
     std::optional<AudioSourceHandle> handle;
     if (result.handle && std::holds_alternative<AudioSourceHandle>(*result.handle)) {
         handle = std::get<AudioSourceHandle>(*result.handle);
+    }
+    return {std::move(handle), std::move(result.diagnostics)};
+}
+
+auto ResourceScope::requestShader(const AssetId& id, ResourcePolicy policy)
+    -> ResourceRequestResult<ShaderHandle> {
+    auto result = request(AssetType::Shader, id, policy);
+    std::optional<ShaderHandle> handle;
+    if (result.handle && std::holds_alternative<ShaderHandle>(*result.handle)) {
+        handle = std::get<ShaderHandle>(*result.handle);
     }
     return {std::move(handle), std::move(result.diagnostics)};
 }
@@ -1212,6 +1309,13 @@ bool ResourceScope::contains(AudioSourceHandle handle) const noexcept {
     return std::any_of(entries_.begin(), entries_.end(), [&](const Entry& entry) {
         return std::holds_alternative<AudioSourceLease>(entry.lease) &&
                std::get<AudioSourceLease>(entry.lease).handle() == handle;
+    });
+}
+
+bool ResourceScope::contains(ShaderHandle handle) const noexcept {
+    return std::any_of(entries_.begin(), entries_.end(), [&](const Entry& entry) {
+        return std::holds_alternative<ShaderLease>(entry.lease) &&
+               std::get<ShaderLease>(entry.lease).handle() == handle;
     });
 }
 

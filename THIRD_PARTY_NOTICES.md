@@ -17,6 +17,9 @@ This file is the source-tree notice inventory for the current Cuexis Stage 3 tre
 | minizip-ng | 4.1.0 | https://github.com/zlib-ng/minizip-ng | Private ZIP Stored reader/writer behind the internal `cuexis_cxc` target; all optional compression and encryption features disabled | zlib | Linked only through CXC-capable internal/package paths; never exposed in public headers | Replace behind `cuexis_cxc` with another mature ZIP implementation while retaining Cuexis envelope validation |
 | Catch2 | 3.15.2#1 | https://github.com/catchorg/Catch2 | Unit tests / test targets only | BSL-1.0 | Not linked into Player | Re-evaluate only through an ADR if Catch2 and small Fakes become insufficient |
 | tl-expected | 1.3.1 | https://github.com/TartanLlama/expected | C++20 `cuexis::core::Result` foundation / `cuexis_core` | CC0-1.0 | Header code is compiled into engine binaries | Replace with `std::expected` after a future C++ standard migration |
+| shaderc | 2026.2 | https://github.com/google/shaderc | Optional GLSL 450 to SPIR-V compile facade / internal `cuexis_shader` only when feature `shader-tools` is enabled | Apache-2.0 | Not linked into Playback, Player, or the base SDK package | Replace behind `cuexis_shader`; never link from `cuexis_playback` |
+| SPIRV-Tools | 1.4.350.1 | https://github.com/KhronosGroup/SPIRV-Tools | Optional SPIR-V validation / internal `cuexis_shader` only when feature `shader-tools` is enabled | Apache-2.0 | Not linked into Playback, Player, or the base SDK package | Replace behind `cuexis_shader` |
+| SPIRV-Cross | 1.4.350.1 | https://github.com/KhronosGroup/SPIRV-Cross | Optional SPIR-V reflection and GLSL 330 / ES 300 lowering / internal `cuexis_shader` only when feature `shader-tools` is enabled | Apache-2.0 | Not linked into Playback, Player, or the base SDK package | Replace behind `cuexis_shader` |
 
 ## Generated Registry Inputs
 
@@ -28,3 +31,9 @@ install that includes the internal CXC implementation must additionally copy the
 that includes the optional AudioSDL component additionally copies the SDL3 copyright. This
 inventory does not replace those full texts. Player packaging must additionally preserve the
 SDL3, glad, spdlog and applicable fmt notices required by the artifacts it redistributes.
+
+Optional vcpkg feature `shader-tools` additionally resolves shaderc 2026.2, SPIRV-Tools
+1.4.350.1 and SPIRV-Cross 1.4.350.1, plus transitive glslang 16.4.0 (BSD-3-Clause with Apache-2.0
+Google components) and SPIRV-Headers. Those ports are developer-only compile-time tools for
+`cuexis_shader` / `cuexis_asset_importer`. They are not part of the installed Playback package,
+are not copied into `share/Cuexis/licenses`, and must not appear in `CuexisConfig.cmake`.

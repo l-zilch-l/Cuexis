@@ -2,7 +2,7 @@
 
 状态：现行文档入口
 
-更新日期：2026-08-27
+更新日期：2026-08-28
 
 本文档是 Cuexis 文档的导航页，不复制产品合同、阶段证据或完整字段定义。当前项目状态只
 以 [CURRENT_STATUS.md](CURRENT_STATUS.md) 为准。
@@ -12,7 +12,7 @@
 1. [当前状态](CURRENT_STATUS.md)
 2. [项目指南](PROJECT_GUIDE.md)
 3. [产品与模块边界](architecture/README.md)
-4. [ADR 索引](adr/README.md)，先读 ADR 0027、0024、0025、0026、0037 和 0038
+4. [ADR 索引](adr/README.md)，先读 ADR 0027、0024、0025、0026、0037、0038 和 0040
 5. [格式索引](formats/README.md)
 6. [Stage 5 计划](stage_plans/stage_5_implementation_plan.md)
 7. [指南索引](guides/README.md)
@@ -54,6 +54,7 @@
 - [TimingMap](formats/TIMING_MODEL.md)
 - [Animation Mixing](formats/ANIMATION_MIXING.md)
 - [Portable Presentation v1](formats/PORTABLE_PRESENTATION.md)
+- [Material/Shader v1](formats/MATERIAL_SHADER.md)
 
 ## 工程指南和政策
 
@@ -70,7 +71,8 @@
 - [延期设计索引](proposals/deferred/README.md)
 - [移动端策略](proposals/deferred/MOBILE_STRATEGY.md)
 - [粒子时间轴](proposals/deferred/PARTICLE_TIMELINE.md)
-- [Shader 管线](proposals/deferred/SHADER_PIPELINE.md)
+- [Shader 管线历史输入](proposals/deferred/SHADER_PIPELINE.md)（字段合同见
+  [MATERIAL_SHADER.md](formats/MATERIAL_SHADER.md)）
 
 运行时脚本和逐帧脚本回调已无限期延后，不属于当前或已排期阶段。该决定及其格式影响见
 [ADR 0038](adr/0038-cxc-v1-and-chart-v4-boundary.md) 和
