@@ -2,7 +2,7 @@
 
 状态：现行阶段报告索引
 
-更新日期：2026-08-28
+更新日期：2026-08-29
 
 报告是带日期的证据快照。报告中的“下一步”只表示报告生成时的交接，不自动代表当前任务。
 
@@ -71,4 +71,5 @@
 | [260828 Stage 5 S5-G consume](260828-stage-5-s5-g-consume.md) | S5-G local checkpoint: OpenGL/Player/Validation Sink consume CXSCCH01; default allCapabilities includes shader/parameterized; trimmed Session still rejects; Unlit golden unchanged |
 | [260828 Stage 5 S5-H safety](260828-stage-5-s5-h-safety.md) | S5-H local checkpoint: spec budgets, warmed allocation contract, performance probe, Linux sanitizer shader-tools; hosted and owner acceptance pending; Stage 5 not completed |
 | [260828 CFU and Stage 4 review](260828-stage-CFU-4-review.md) | open two-axis review snapshot of CFU through Stage 4 close; does not redefine CURRENT_STATUS |
+| [260808 full review](260808-full-review.md) | open full-repository review snapshot (engine, app, tools, build, docs alignment); 144 findings with per-finding index (1 P0 / 15 P1 / 56 P2 / 72 P3), 11 prioritized improvement directions with implementation assessment and full finding-to-batch remediation mapping; does not redefine CURRENT_STATUS |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |
