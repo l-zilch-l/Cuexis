@@ -1,4 +1,4 @@
-# 260808 全项目代码审查（Full Review）
+# 260829 全项目代码审查（Full Review）
 
 状态：historical review snapshot；findings open，未整改；2026-08-29 完成全量事实核验（144/144 实质成立，勘误已并入本文，见第 9 节核验记录）
 
