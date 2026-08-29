@@ -158,7 +158,10 @@ destination 的 `extractFrame()` 不分配；包含 Animation 的会话遵循 St
 
 内部 `RuntimeSession::configureDebug()` 显式启用固定容量调试记录，容量上限为 65536。每条
 `RuntimeDebugRecord` 保存 ChartObjectId、Property、初始基准、命中事件索引、归一化进度、
-Behavior 输出和最终解析值。`debugSnapshot()` 返回拥有型副本；容量耗尽时设置 `truncated`。
+Behavior 输出、Animation 输出、Host/Preview Override、最终解析值、来源层、冲突标记以及各
+Animation Layer 的 identity、priority、weight、mask 和 value。Layer 字段与
+[ANIMATION_MIXING.md](../formats/ANIMATION_MIXING.md) 的 Stage 4 求值合同保持一致。`debugSnapshot()`
+返回拥有型副本；容量耗尽时设置 `truncated`。
 
 调试关闭时不记录也不产生额外帧分配。该接口属于内部 Runtime/Studio 诊断边界，不进入
 Playback `FrameSnapshot`，也不暴露内部指针。宿主只通过 capability、结构化 Diagnostics 与

@@ -42,6 +42,8 @@ constexpr std::uint64_t maxSessionBytes = 512ULL * 1024ULL * 1024ULL;
 constexpr std::uint32_t maxMeshVertices = 1'048'576;
 constexpr std::uint32_t maxMeshIndices = 3'145'728;
 constexpr std::uint32_t portableMaxTextureDimension = 8'192;
+// Adapter-local transparent sort quantization: 4096 depth bins per meter. Changing this constant
+// changes transparentDepthKey values and can change draw order for objects at nearby depths.
 constexpr double depthQuantization = 4096.0;
 constexpr double signedIntegerLimit = 0x1p63;
 
@@ -1582,6 +1584,8 @@ auto OpenGlBackend::preparePresentation(playback::PreparedPlayback& prepared,
     }
 }
 
+// Activation and discard are owner-thread, single-pending-candidate operations. Contract violations
+// terminate so a stale or foreign GPU resource set cannot corrupt the active cache.
 void OpenGlBackend::activatePresentation(OpenGlPresentationCandidate&& candidate) noexcept {
     if (!SDL_IsMainThread() || !ownerThread_.isCurrent()) {
         std::terminate();

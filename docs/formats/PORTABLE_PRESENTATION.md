@@ -517,6 +517,10 @@ prepareLoad / prepareReload
 - token 在 PreparedPlayback move 后随 candidate 移动；moved-from candidate 无效。
 - adapter prepare 不允许 callback 进入 PlaybackSession，也不允许激活 active cache。
 - Playback commit 仍执行现有 owner、reentry、session token、generation 和 lifecycle 检查。
+- `PlaybackSession::update()` 成功后会递增 session generation；因此，任何在该次 update
+  之前取得且尚未提交的 `PreparedPlayback` 都会在后续 commit 时因 generation 不匹配而失败，
+  返回 `playback.prepared.stale`。宿主若在 prepare 后推进一帧，必须重新 prepare；
+  `prepare -> update -> commit` 不是受支持的提交顺序。
 - commit 失败时宿主销毁 adapter candidate；旧 Playback/cache 保持不变。
 - commit 成功后的 adapter activation 必须只做不可失败的 owner-thread move/swap；资源上传、Shader
   编译、容量增长和 capability 检查都必须提前完成。

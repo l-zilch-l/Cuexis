@@ -150,7 +150,9 @@ class OpenGlContextConfiguration final {
                                           const OpenGlConfig& config = {})
     -> core::Result<OpenGlContextConfiguration>;
 
-// Owns an SDL GL context and must be used and destroyed on its SDL main thread.
+// Owns an SDL GL context and must be used, moved, and destroyed on its SDL main thread.
+// Move, destruction, or candidate sequencing violations terminate.
+// Result-returning operations report thread errors.
 class OpenGlBackend final : public render::RenderBackend {
   public:
     // Consumes the configuration on the SDL main thread after the OpenGL window has been created.
@@ -171,9 +173,11 @@ class OpenGlBackend final : public render::RenderBackend {
     [[nodiscard]] auto preparePresentation(playback::PreparedPlayback& prepared,
                                            const playback::PresentationRequest& request = {})
         -> core::Result<OpenGlPresentationCandidate>;
-    // Activates a candidate prepared by this backend. Valid candidates cannot fail activation.
+    // Activates a candidate prepared by this backend. Valid candidates cannot fail activation. The
+    // call must run on the owner thread; an invalid or out-of-sequence candidate terminates.
     void activatePresentation(OpenGlPresentationCandidate&& candidate) noexcept;
-    // Discards a candidate after Playback commit failure without touching the active cache.
+    // Discards a candidate after Playback commit failure without touching the active cache. The
+    // call must run on the owner thread; an invalid or out-of-sequence candidate terminates.
     void discardPresentation(OpenGlPresentationCandidate&& candidate) noexcept;
     [[nodiscard]] bool hasActivePresentation() const noexcept;
     // Adapter-private CXSCCH01 directory. Empty means parameterized prepare requires
