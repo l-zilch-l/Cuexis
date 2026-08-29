@@ -80,4 +80,5 @@
 | [260829 Full Review 整改 W11](260829-full-review-remediation-w11.md) | partial W11 math API verification; Lane A identity migration remains blocked by unresolved D6 |
 | [260829 Full Review 整改 W12/W13](260829-full-review-remediation-w12-w13.md) | completed Lane B math/core remediation and Lane D Runtime reload transaction fix; Lane A remains blocked by unresolved D6 |
 | [260829 Full Review 整改 C2/C3](260829-full-review-remediation-c2-c3.md) | completed target-fact and SDK-minor documentation contracts plus Linux Quality workflow wiring; hosted Linux evidence remains pending |
+| [260829 Full Review 整改 W14](260829-full-review-remediation-w14.md) | completed A3 pipeline characterization review and revalidated the C1 status-contract checker; A3 production integration remains deferred to W15 |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |
