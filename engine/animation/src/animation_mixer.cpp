@@ -116,7 +116,7 @@ void addMixDiagnostic(core::Diagnostics& diagnostics, std::string_view code, std
     return mix;
 }
 
-[[nodiscard]] auto slerp(const core::Quat& left, const core::Quat& right, double t)
+[[nodiscard]] auto mixSlerp(const core::Quat& left, const core::Quat& right, double t)
     -> core::Result<core::Quat> {
     auto value = shortestPathSlerp(left, right, t);
     if (!value) {
@@ -210,7 +210,7 @@ void addMixDiagnostic(core::Diagnostics& diagnostics, std::string_view code, std
             return core::unexpected(
                 mixError(mixValueTypeMismatch, "Animation mix value types differ", property));
         }
-        auto value = slerp(*leftRotation, *rightRotation, t);
+        auto value = mixSlerp(*leftRotation, *rightRotation, t);
         if (!value) {
             return core::unexpected(std::move(value.error()));
         }

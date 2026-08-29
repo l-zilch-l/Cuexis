@@ -21,7 +21,7 @@ namespace {
     return core::Error{std::string{sampleBeatOverflow}, std::string{message}};
 }
 
-[[nodiscard]] auto hermiteProgress(double value, double startSlope, double endSlope) noexcept
+[[nodiscard]] auto sampleHermiteProgress(double value, double startSlope, double endSlope) noexcept
     -> double {
     const double t = std::clamp(value, 0.0, 1.0);
     const double squared = t * t;
@@ -30,14 +30,14 @@ namespace {
            startSlope * t;
 }
 
-[[nodiscard]] auto lerp(const core::Vec3& left, const core::Vec3& right, double t) noexcept
+[[nodiscard]] auto sampleLerp(const core::Vec3& left, const core::Vec3& right, double t) noexcept
     -> core::Vec3 {
     const auto blend = static_cast<float>(t);
     return core::Vec3{left.x + (right.x - left.x) * blend, left.y + (right.y - left.y) * blend,
                       left.z + (right.z - left.z) * blend};
 }
 
-[[nodiscard]] auto slerp(const core::Quat& left, const core::Quat& right, double t)
+[[nodiscard]] auto sampleSlerp(const core::Quat& left, const core::Quat& right, double t)
     -> core::Result<core::Quat> {
     auto value = shortestPathSlerp(left, right, t);
     if (!value) {
@@ -70,7 +70,7 @@ namespace {
             return core::unexpected(core::Error{std::string{sampleValueTypeMismatch},
                                                 "Animation segment value types differ"});
         }
-        const auto value = lerp(*leftVector, *rightVector, t);
+        const auto value = sampleLerp(*leftVector, *rightVector, t);
         if (!core::isFinite(value)) {
             return core::unexpected(core::Error{std::string{sampleNonFinite},
                                                 "Animation vector interpolation overflowed"});
@@ -83,7 +83,7 @@ namespace {
         return core::unexpected(core::Error{std::string{sampleValueTypeMismatch},
                                             "Animation segment value types differ"});
     }
-    auto value = slerp(*leftRotation, *rightRotation, t);
+    auto value = sampleSlerp(*leftRotation, *rightRotation, t);
     if (!value) {
         return core::unexpected(std::move(value.error()));
     }
@@ -129,7 +129,7 @@ namespace {
     }
     return interpolate(
         segment.startValue, segment.endValue,
-        hermiteProgress(normalized->toDouble(), segment.startSlope, segment.endSlope));
+        sampleHermiteProgress(normalized->toDouble(), segment.startSlope, segment.endSlope));
 }
 
 [[nodiscard]] auto sampleTrack(const chart::AnimationTrack& track, chart::RationalBeat localBeat)

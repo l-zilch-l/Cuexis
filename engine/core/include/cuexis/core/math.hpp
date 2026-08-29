@@ -55,6 +55,15 @@ struct Mat4 {
 [[nodiscard]] CUEXIS_CORE_API bool isNormalized(const Quat& value,
                                                 float tolerance = 1.0e-5F) noexcept;
 [[nodiscard]] CUEXIS_CORE_API Result<Quat> normalize(const Quat& value) noexcept;
+// Cubic Hermite progress clamps value to [0, 1] and uses endpoint slopes in normalized time.
+[[nodiscard]] CUEXIS_CORE_API double hermiteProgress(double value, double startSlope,
+                                                     double endSlope) noexcept;
+// Linear interpolation uses the same float blend conversion as the animation samplers.
+[[nodiscard]] CUEXIS_CORE_API Vec3 lerp(const Vec3& left, const Vec3& right, double t) noexcept;
+// Shortest-path quaternion interpolation aligns hemispheres, clamps the dot product, and
+// normalizes the result. The normalize error is returned unchanged.
+[[nodiscard]] CUEXIS_CORE_API Result<Quat> slerp(const Quat& left, const Quat& right,
+                                                 double t) noexcept;
 
 [[nodiscard]] CUEXIS_CORE_API Mat4 makeTranslation(const Vec3& translation) noexcept;
 [[nodiscard]] CUEXIS_CORE_API Mat4 makeScale(const Vec3& scale) noexcept;

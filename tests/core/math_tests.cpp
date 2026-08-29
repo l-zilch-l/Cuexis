@@ -3,6 +3,7 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
+#include <cmath>
 #include <limits>
 #include <numbers>
 
@@ -30,6 +31,59 @@ TEST_CASE("Quaternion normalization rejects invalid values", "[core][math]") {
     REQUIRE(normalized.has_value());
     REQUIRE(cuexis::core::isNormalized(*normalized));
     REQUIRE(normalized->w == 1.0F);
+}
+
+TEST_CASE("Quaternion normalization rejects finite input with non-finite squared length",
+          "[core][math][characterization][cm-04]") {
+    constexpr auto large = std::numeric_limits<float>::max();
+    const cuexis::core::Quat value{large, large, large, large};
+    const auto lengthSquared =
+        value.x * value.x + value.y * value.y + value.z * value.z + value.w * value.w;
+    REQUIRE(cuexis::core::isFinite(value));
+    REQUIRE_FALSE(std::isfinite(lengthSquared));
+
+    const auto normalized = cuexis::core::normalize(value);
+    REQUIRE_FALSE(normalized.has_value());
+}
+
+// ZYX-to-Quat remains outside core until its axis and composition contract is frozen.
+
+TEST_CASE("Hermite progress clamps input and preserves endpoint slopes", "[core][math][api]") {
+    CHECK(cuexis::core::hermiteProgress(-1.0, 0.2, 0.4) == Catch::Approx(0.0));
+    CHECK(cuexis::core::hermiteProgress(2.0, 0.2, 0.4) == Catch::Approx(1.0));
+    CHECK(cuexis::core::hermiteProgress(0.5, 0.2, 0.4) == Catch::Approx(0.475));
+}
+
+TEST_CASE("Vec3 lerp preserves endpoints and midpoint", "[core][math][api]") {
+    const cuexis::core::Vec3 left{1.0F, 2.0F, 3.0F};
+    const cuexis::core::Vec3 right{5.0F, 6.0F, 7.0F};
+    CHECK(cuexis::core::lerp(left, right, 0.0) == left);
+    CHECK(cuexis::core::lerp(left, right, 1.0) == right);
+    CHECK(cuexis::core::nearlyEqual(cuexis::core::lerp(left, right, 0.5),
+                                    cuexis::core::Vec3{3.0F, 4.0F, 5.0F}));
+}
+
+TEST_CASE("Quaternion slerp follows shortest path and returns normalized results",
+          "[core][math][api]") {
+    const cuexis::core::Quat identity{0.0F, 0.0F, 0.0F, 1.0F};
+    const cuexis::core::Quat opposite{0.0F, 0.0F, 0.0F, -1.0F};
+    const auto same = cuexis::core::slerp(identity, identity, 0.5);
+    const auto oppositeHemisphere = cuexis::core::slerp(identity, opposite, 0.5);
+
+    REQUIRE(same.has_value());
+    REQUIRE(oppositeHemisphere.has_value());
+    CHECK(*same == identity);
+    CHECK(*oppositeHemisphere == identity);
+    CHECK(cuexis::core::isNormalized(*same));
+    CHECK(cuexis::core::isNormalized(*oppositeHemisphere));
+
+    constexpr float halfTurn = 0.7071067811865475F;
+    const cuexis::core::Quat quarterTurn{0.0F, 0.0F, halfTurn, halfTurn};
+    const auto midpoint = cuexis::core::slerp(identity, quarterTurn, 0.5);
+    REQUIRE(midpoint.has_value());
+    CHECK(cuexis::core::isNormalized(*midpoint));
+    CHECK(midpoint->z > 0.0F);
+    CHECK(midpoint->w > 0.0F);
 }
 
 TEST_CASE("Transform composition follows translation rotation scale order", "[core][math]") {
