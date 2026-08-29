@@ -2125,7 +2125,7 @@ auto preparePresentation(const chart::ChartRuntime& chartRuntime,
             parsedTextures.emplace(assetId, std::move(*parsed));
         }
 
-        std::map<PresentationResourceKey, BuiltResource> built;
+        std::map<PresentationResourceKey, BuiltResource, PresentationResourceKeyLess> built;
         std::map<std::array<std::uint8_t, 32>, PortableResourcePtr> identities;
         const auto addResource =
             [&](PortableResourcePtr resource, std::uint64_t encodedByteCount,
@@ -2191,7 +2191,7 @@ auto preparePresentation(const chart::ChartRuntime& chartRuntime,
         for (auto& [assetId, parsed] : parsedMaterials) {
             std::vector<PresentationResourceRef> dependencies;
             if (parsed.textureAssetId) {
-                const auto found = built.find(PresentationResourceKey{
+                const auto found = built.find(PresentationResourceKeyView{
                     *parsed.textureAssetId, PresentationResourceType::Texture2D});
                 if (found == built.end()) {
                     return core::unexpected(
@@ -2214,8 +2214,8 @@ auto preparePresentation(const chart::ChartRuntime& chartRuntime,
         }
         for (auto& [assetId, parsed] : parsedParameterized) {
             std::vector<PresentationResourceRef> dependencies;
-            const auto shader = built.find(
-                PresentationResourceKey{parsed.shaderAssetId, PresentationResourceType::Shader});
+            const auto shader = built.find(PresentationResourceKeyView{
+                parsed.shaderAssetId, PresentationResourceType::Shader});
             if (shader == built.end()) {
                 return core::unexpected(
                     resourceError("playback.presentation.material.shader_reference_invalid",
@@ -2228,7 +2228,7 @@ auto preparePresentation(const chart::ChartRuntime& chartRuntime,
                 if (!parameter.texture) {
                     continue;
                 }
-                const auto found = built.find(PresentationResourceKey{
+                const auto found = built.find(PresentationResourceKeyView{
                     parameter.texture->assetId, PresentationResourceType::Texture2D});
                 if (found == built.end()) {
                     return core::unexpected(
@@ -2315,7 +2315,7 @@ auto findPresentationResource(const PreparedPresentation& presentation,
                               const PresentationResourceRef& reference) noexcept
     -> const PortableResourcePtr* {
     const auto found =
-        presentation.resources.find(PresentationResourceKey{reference.assetId, reference.type});
+        presentation.resources.find(PresentationResourceKeyView{reference.assetId, reference.type});
     if (found == presentation.resources.end() || found->second->reference != reference) {
         return nullptr;
     }
@@ -2325,10 +2325,7 @@ auto findPresentationResource(const PreparedPresentation& presentation,
 auto findPresentationResource(const PreparedPresentation& presentation, std::string_view assetId,
                               PresentationResourceType type) noexcept
     -> const PortableResourcePtr* {
-    const auto found = std::find_if(
-        presentation.resources.begin(), presentation.resources.end(), [&](const auto& entry) {
-            return entry.first.assetId == assetId && entry.first.type == type;
-        });
+    const auto found = presentation.resources.find(PresentationResourceKeyView{assetId, type});
     if (found == presentation.resources.end()) {
         return nullptr;
     }

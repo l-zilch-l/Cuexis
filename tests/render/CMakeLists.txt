@@ -1,12 +1,24 @@
 if(TARGET cuexis_render_opengl)
     add_executable(cuexis_render_opengl_tests
         open_gl_config_tests.cpp
+        open_gl_presentation_tests.cpp
     )
 
     target_link_libraries(cuexis_render_opengl_tests
         PRIVATE
             cuexis::render_opengl
             Catch2::Catch2WithMain
+    )
+
+    target_compile_definitions(cuexis_render_opengl_tests
+        PRIVATE
+            CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+    )
+
+    target_include_directories(cuexis_render_opengl_tests
+        PRIVATE
+            ${PROJECT_SOURCE_DIR}/engine/render_opengl/src
+            ${PROJECT_SOURCE_DIR}/engine/shader/include
     )
 
     include(Catch)

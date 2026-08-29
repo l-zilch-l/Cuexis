@@ -5,6 +5,7 @@
 #include <cuexis/json/parse.hpp>
 #include <cuexis/json/reader.hpp>
 
+#include "canonical_chart_loader_internal.hpp"
 #include "chart_project_path_internal.hpp"
 #include "chart_v4_animation_reader_internal.hpp"
 #include "chart_v4_common_reader_internal.hpp"
@@ -488,12 +489,7 @@ void sanitizeOwners(json::Value& root, std::string_view arrayName, const ChartLi
     }
     sanitizeOwners(source, "templates", limits, diagnostics, parameterUses);
     sanitizeOwners(source, "objects", limits, diagnostics, parameterUses);
-    auto serialized = json::serialize(source);
-    if (!serialized) {
-        addParseError(diagnostics, serialized.error());
-        return std::nullopt;
-    }
-    auto projection = CanonicalChartLoader::load(*serialized, limits);
+    auto projection = detail::loadCanonicalValue(std::move(source), limits);
     diagnostics.append(std::move(projection.diagnostics));
     if (!projection.document) {
         return std::nullopt;

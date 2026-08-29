@@ -63,6 +63,9 @@ int allocationHook(int allocationType, void* data, std::size_t size, int blockTy
     if (allocationType == _HOOK_ALLOC && trackingAllocations.load(std::memory_order_relaxed)) {
         allocationCount.fetch_add(1, std::memory_order_relaxed);
     }
+    if (allocationType == _HOOK_ALLOC && shouldFailAllocation()) {
+        return 0;
+    }
     return 1;
 }
 #endif
@@ -335,6 +338,11 @@ void operator delete[](void* memory, std::size_t, std::align_val_t alignment,
 
 TEST_CASE("PB-08 owning-copy queries contain allocation failures at the Playback boundary",
           "[playback][allocation][pb08][characterization]") {
+#if defined(CUEXIS_PLAYBACK_ALLOCATION_TEST_SHARED)
+    SKIP("PB-08 fault injection replaces the test executable allocator; shared Playback DLL "
+         "allocations are outside that boundary. Static builds provide the real injection "
+         "coverage.");
+#else
     auto verifyBoundary = [](auto&& callback) {
         beginAllocationTracking();
         const auto successful = callback();
@@ -383,6 +391,7 @@ TEST_CASE("PB-08 owning-copy queries contain allocation failures at the Playback
         REQUIRE(session->state().has_value());
         CHECK(*session->state() == cuexis::playback::SessionState::Running);
     }
+#endif
 }
 
 TEST_CASE("Stage 2 playback update and reusable extraction allocate nothing after warmup",

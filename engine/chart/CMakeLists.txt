@@ -7,6 +7,7 @@ target_sources(cuexis_chart
     PRIVATE
         src/animation_template_loader.cpp
         src/canonical_chart_loader.cpp
+        src/canonical_chart_template_internal.cpp
         src/chart_loader.cpp
         src/chart_migrator.cpp
         src/chart_parameter_resolver.cpp

@@ -545,6 +545,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
     std::uint32_t renderedFrames = 0;
     bool quitRequested = false;
     playback::FrameSnapshot snapshot;
+    render::RenderScene scene;
     while (!quitRequested) {
         quitRequested = window.pollEvents().quitRequested;
         if (quitRequested) {
@@ -864,7 +865,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
             return core::unexpected(std::move(result.error()));
         }
 
-        render::RenderScene scene;
+        scene.clear();
         if (auto result = appendSnapshotAxes(snapshot, scene); !result) {
             return core::unexpected(std::move(result.error()));
         }

@@ -6,6 +6,7 @@
 #include <cuexis/audio/audio_export.hpp>
 #include <cuexis/core/result.hpp>
 
+#include <atomic>
 #include <cstdint>
 
 namespace cuexis::audio {
@@ -58,10 +59,9 @@ struct EffectiveAudioSettings final {
 [[nodiscard]] CUEXIS_AUDIO_API auto validateSourceClockSample(const SourceClockSample& sample)
     -> core::Result<void>;
 
-// HostClock is a single-owner, non-thread-safe source clock.
-// The owner thread must call submit(). snapshot() is a plain value read and must not overlap
-// submit(); callers that publish samples or read them from another thread must provide external
-// synchronization. This type does not provide atomic or seqlock publication.
+// HostClock is a single-owner source clock with seqlock publication.
+// The owner thread must call submit(). snapshot() may run concurrently and returns a complete
+// sample without allocating or throwing. Concurrent submit() calls remain unsupported.
 class CUEXIS_AUDIO_API HostClock final {
   public:
     HostClock() = default;
@@ -69,11 +69,14 @@ class CUEXIS_AUDIO_API HostClock final {
     // Submit a sample from the HostClock owner thread only.
     [[nodiscard]] auto submit(const SourceClockSample& sample) -> core::Result<void>;
 
-    // Read the last submitted sample when no submit() call is concurrent.
+    // Read a complete published sample, even while submit() is running.
     [[nodiscard]] SourceClockSample snapshot() const noexcept;
 
   private:
-    SourceClockSample sample_{};
+    std::atomic<std::uint64_t> sequence_{};
+    std::atomic<double> positionMs_{};
+    std::atomic<int> state_{static_cast<int>(PlaybackState::Stopped)};
+    std::atomic<std::uint64_t> discontinuityId_{};
     bool initialized_{};
 };
 

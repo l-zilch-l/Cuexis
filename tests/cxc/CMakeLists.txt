@@ -5,6 +5,7 @@ add_executable(cuexis_cxc_tests
     cxc_manifest_loader_tests.cpp
     cxc_test_support.cpp
     cxc_test_support.hpp
+    parse_characterization_tests.cpp
     zip32_envelope_tests.cpp
 )
 

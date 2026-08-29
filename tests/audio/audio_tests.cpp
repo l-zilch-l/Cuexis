@@ -5,8 +5,10 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
+#include <atomic>
 #include <cmath>
 #include <limits>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -108,4 +110,93 @@ TEST_CASE("Source clock validation rejects invalid states and stopped positions"
     cuexis::audio::HostClock clock;
     REQUIRE(clock.submit({100.0, cuexis::audio::PlaybackState::Playing, 0}).has_value());
     CHECK_FALSE(clock.submit({99.0, cuexis::audio::PlaybackState::Paused, 0}).has_value());
+}
+
+TEST_CASE("HostClock concurrent snapshots are self-consistent", "[audio][clock][concurrency]") {
+    cuexis::audio::HostClock clock;
+
+    constexpr std::uint64_t iterationCount = 200'000;
+    constexpr double positionBaseMs = 100'000'000.0;
+    const auto stateFor = [](const std::uint64_t sequence) {
+        switch (sequence % 4) {
+        case 0:
+            return cuexis::audio::PlaybackState::Playing;
+        case 1:
+            return cuexis::audio::PlaybackState::Paused;
+        case 2:
+            return cuexis::audio::PlaybackState::Ended;
+        default:
+            return cuexis::audio::PlaybackState::Error;
+        }
+    };
+
+    std::atomic<bool> start{false};
+    std::atomic<bool> writerDone{false};
+    std::atomic<bool> writerFailed{false};
+    std::atomic<std::uint64_t> snapshotCount{0};
+    std::atomic<std::uint64_t> incoherentCount{0};
+
+    std::thread writer([&] {
+        while (!start.load(std::memory_order_acquire)) {
+            std::this_thread::yield();
+        }
+
+        for (std::uint64_t sequence = 1; sequence <= iterationCount; ++sequence) {
+            const cuexis::audio::SourceClockSample sample{
+                positionBaseMs + static_cast<double>(sequence), stateFor(sequence), sequence};
+            if (!clock.submit(sample).has_value()) {
+                writerFailed.store(true, std::memory_order_release);
+                break;
+            }
+            if ((sequence & 0x3ffU) == 0) {
+                std::this_thread::yield();
+            }
+        }
+        writerDone.store(true, std::memory_order_release);
+    });
+
+    std::thread reader([&] {
+        while (!start.load(std::memory_order_acquire)) {
+            std::this_thread::yield();
+        }
+
+        std::uint32_t drainReads = 0;
+        for (;;) {
+            const auto sample = clock.snapshot();
+            snapshotCount.fetch_add(1, std::memory_order_relaxed);
+
+            if (sample.discontinuityId == 0) {
+                if (sample.positionMs != 0.0 ||
+                    sample.state != cuexis::audio::PlaybackState::Stopped) {
+                    incoherentCount.fetch_add(1, std::memory_order_relaxed);
+                }
+            } else {
+                const auto expectedPosition =
+                    positionBaseMs + static_cast<double>(sample.discontinuityId);
+                if (sample.positionMs != expectedPosition ||
+                    sample.state != stateFor(sample.discontinuityId)) {
+                    incoherentCount.fetch_add(1, std::memory_order_relaxed);
+                }
+            }
+
+            if (writerDone.load(std::memory_order_acquire)) {
+                if (++drainReads >= 10'000) {
+                    break;
+                }
+            }
+            if ((snapshotCount.load(std::memory_order_relaxed) & 0x3ffU) == 0) {
+                std::this_thread::yield();
+            }
+        }
+    });
+
+    start.store(true, std::memory_order_release);
+    writer.join();
+    reader.join();
+
+    INFO("snapshots=" << snapshotCount.load(std::memory_order_relaxed)
+                      << ", incoherent=" << incoherentCount.load(std::memory_order_relaxed));
+    CHECK_FALSE(writerFailed.load(std::memory_order_acquire));
+    CHECK(snapshotCount.load(std::memory_order_relaxed) > 0);
+    CHECK(incoherentCount.load(std::memory_order_relaxed) == 0);
 }

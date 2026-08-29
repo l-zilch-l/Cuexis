@@ -5,6 +5,7 @@ add_executable(cuexis_playback_tests
     playback_migration_equivalence_tests.cpp
     playback_session_tests.cpp
     playback_source_tests.cpp
+    preparation_characterization_tests.cpp
     playback_v4_animation_tests.cpp
     playback_v4_prepare_tests.cpp
     presentation_shader_budget_tests.cpp
@@ -23,6 +24,7 @@ target_compile_definitions(cuexis_playback_tests
 
 target_include_directories(cuexis_playback_tests
     PRIVATE
+        ${PROJECT_SOURCE_DIR}/engine/assets/include
         ${PROJECT_SOURCE_DIR}/engine/playback/src
         ${PROJECT_SOURCE_DIR}/tests/presentation
 )
@@ -48,6 +50,13 @@ target_compile_definitions(cuexis_playback_allocation_tests
     PRIVATE
         CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
 )
+
+if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
+    target_compile_definitions(cuexis_playback_allocation_tests
+        PRIVATE
+            CUEXIS_PLAYBACK_ALLOCATION_TEST_SHARED=1
+    )
+endif()
 
 target_link_libraries(cuexis_playback_allocation_tests
     PRIVATE
