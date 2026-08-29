@@ -7,6 +7,7 @@ pretend that candidate Chart/CXC/CXT files are production schemas.
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 from collections import deque
@@ -21,6 +22,12 @@ DOCS = ROOT / "docs"
 DOCS_INDEX = DOCS / "README.md"
 EXAMPLES = DOCS / "examples" / "chart_format_update"
 STATUS_CONTRACT = DOCS / "status_contract.json"
+BUILDING_GUIDE = DOCS / "guides" / "BUILDING.md"
+VERSION_CMAKE = ROOT / "cmake" / "CuexisVersion.cmake"
+DEFAULT_TARGET_FACTS = ROOT / "out" / "build" / "debug" / "generated" / "cuexis-targets.txt"
+TARGET_FACTS_ENV = "CUEXIS_TARGETS_FILE"
+TARGET_BLOCK_BEGIN = "<!-- CUEXIS_ACTIVE_TARGETS_BEGIN -->"
+TARGET_BLOCK_END = "<!-- CUEXIS_ACTIVE_TARGETS_END -->"
 FUTURE_STAGE_PLANS = (
     "stage_5_implementation_plan.md",
     "stage_6_implementation_plan.md",
@@ -316,6 +323,101 @@ def check_cfu_status(
                 CheckFailure(
                     path,
                     f"status contract datedFiles: expected 更新日期 on or after {snapshot_date}",
+                )
+            )
+
+
+def target_block(path: Path, failures: list[CheckFailure]) -> list[str] | None:
+    lines = path.read_text(encoding="utf-8").splitlines()
+    begin_lines = [index for index, line in enumerate(lines) if line == TARGET_BLOCK_BEGIN]
+    end_lines = [index for index, line in enumerate(lines) if line == TARGET_BLOCK_END]
+    if len(begin_lines) != 1 or len(end_lines) != 1 or begin_lines[0] >= end_lines[0]:
+        failures.append(CheckFailure(path, "target contract: expected one ordered begin/end marker pair"))
+        return None
+    begin = begin_lines[0]
+    end = end_lines[0]
+    if end - begin < 3 or lines[begin + 1] != "```text" or lines[end - 1] != "```":
+        failures.append(CheckFailure(path, "target contract: expected a text code block between markers"))
+        return None
+    targets = lines[begin + 2 : end - 1]
+    if not targets or any(not re.fullmatch(r"cuexis_[a-z0-9_]+", target) for target in targets):
+        failures.append(CheckFailure(path, "target contract: expected nonempty cuexis_* target names"))
+        return None
+    if len(targets) != len(set(targets)):
+        failures.append(CheckFailure(path, "target contract: target block contains duplicates"))
+        return None
+    return targets
+
+
+def generated_target_facts(failures: list[CheckFailure]) -> Path | None:
+    configured = os.environ.get(TARGET_FACTS_ENV)
+    if configured is None:
+        return DEFAULT_TARGET_FACTS if DEFAULT_TARGET_FACTS.is_file() else None
+    path = Path(configured)
+    candidate = path.resolve() if path.is_absolute() else (ROOT / path).resolve()
+    if not is_within(candidate, ROOT.resolve()):
+        failures.append(CheckFailure(BUILDING_GUIDE, f"target contract: {TARGET_FACTS_ENV} escapes repository"))
+        return None
+    if not candidate.is_file():
+        failures.append(
+            CheckFailure(BUILDING_GUIDE, f"target contract: {TARGET_FACTS_ENV} does not name a generated file")
+        )
+        return None
+    return candidate
+
+
+def check_target_contract(
+    failures: list[CheckFailure], building: Path = BUILDING_GUIDE, facts: Path | None = None
+) -> None:
+    documented = target_block(building, failures)
+    if documented is None:
+        return
+    target_facts = facts if facts is not None else generated_target_facts(failures)
+    if target_facts is None:
+        return
+    generated = [line.strip() for line in target_facts.read_text(encoding="utf-8").splitlines() if line.strip()]
+    if not generated or any(not re.fullmatch(r"cuexis_[a-z0-9_]+", target) for target in generated):
+        failures.append(CheckFailure(target_facts, "target contract: generated target facts are invalid"))
+        return
+    if len(generated) != len(set(generated)):
+        failures.append(CheckFailure(target_facts, "target contract: generated target facts contain duplicates"))
+        return
+    if documented == generated:
+        return
+    mismatch = next(
+        (index for index, (left, right) in enumerate(zip(documented, generated), start=1) if left != right),
+        min(len(documented), len(generated)) + 1,
+    )
+    expected = generated[mismatch - 1] if mismatch <= len(generated) else "<end>"
+    actual = documented[mismatch - 1] if mismatch <= len(documented) else "<end>"
+    failures.append(
+        CheckFailure(
+            building,
+            f"target contract: generated target facts differ at line {mismatch}: expected {expected}, found {actual}",
+        )
+    )
+
+
+def check_sdk_api_contract(
+    failures: list[CheckFailure], building: Path = BUILDING_GUIDE, version_file: Path = VERSION_CMAKE
+) -> None:
+    version_text = version_file.read_text(encoding="utf-8")
+    match = re.search(r'^set\(CUEXIS_SDK_API_VERSION "(\d+\.\d+\.\d+)"\)$', version_text, re.MULTILINE)
+    if match is None:
+        failures.append(CheckFailure(version_file, "SDK API contract: CUEXIS_SDK_API_VERSION is missing"))
+        return
+    sdk_version = match.group(1)
+    sdk_minor = ".".join(sdk_version.split(".")[:2])
+    documented_versions = re.findall(r"find_package\(Cuexis\s+(\d+\.\d+)\s+CONFIG", building.read_text(encoding="utf-8"))
+    if not documented_versions:
+        failures.append(CheckFailure(building, "SDK API contract: find_package(Cuexis <major.minor> ...) is missing"))
+        return
+    for documented_version in documented_versions:
+        if documented_version != sdk_minor:
+            failures.append(
+                CheckFailure(
+                    building,
+                    f"SDK API contract: find_package requests {documented_version}, expected {sdk_minor} from {sdk_version}",
                 )
             )
 
@@ -629,6 +731,8 @@ def main() -> int:
     check_reachability(graph, failures)
     check_stage_name(files, failures)
     check_cfu_status(failures)
+    check_target_contract(failures)
+    check_sdk_api_contract(failures)
     check_script_policy(failures)
     check_future_stage_plans(failures)
     check_navigation_indexes(failures)

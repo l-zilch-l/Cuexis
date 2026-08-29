@@ -440,6 +440,12 @@ if(CUEXIS_BUILD_DEVELOPER_TOOLS)
     list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_format_check)
 endif()
 
+string(REPLACE ";" "\n" CUEXIS_ACTIVE_TARGETS_TEXT "${CUEXIS_ACTIVE_TARGETS}")
+file(GENERATE
+    OUTPUT "${PROJECT_BINARY_DIR}/generated/cuexis-targets.txt"
+    CONTENT "${CUEXIS_ACTIVE_TARGETS_TEXT}\n"
+)
+
 set(CUEXIS_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/Cuexis"
     CACHE STRING "Cuexis CMake package installation directory"
 )

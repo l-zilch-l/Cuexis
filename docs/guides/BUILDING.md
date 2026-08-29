@@ -11,8 +11,11 @@
 package consumer 与性能 probe。阶段 3 本地和 hosted 跨平台矩阵已经关闭；以下命令是受支持的
 标准入口，旧的 IDE 私有构建目录和手工编译产物不能作为验收依据。
 
-当前正式激活的库 target 为：
+默认 `debug` 预设的正式 active target 如下。顶层 CMake 在 configure 时从
+`CUEXIS_ACTIVE_TARGETS` 生成 `generated/cuexis-targets.txt`；本标记块由文档检查器与该产物逐项
+比较，不能单独手工维护。
 
+<!-- CUEXIS_ACTIVE_TARGETS_BEGIN -->
 ```text
 cuexis_core
 cuexis_audio
@@ -20,7 +23,6 @@ cuexis_filesystem
 cuexis_content
 cuexis_json_support
 cuexis_project
-cuexis_platform_sdl
 cuexis_world
 cuexis_assets
 cuexis_chart
@@ -31,16 +33,52 @@ cuexis_gameplay
 cuexis_render
 cuexis_debug
 cuexis_runtime
-cuexis_render_opengl
 cuexis_playback
+cuexis_platform_sdl
 cuexis_audio_sdl
+cuexis_render_opengl
+cuexis_shader_cache
+cuexis_player
+cuexis_chart_migrator
+cuexis_chart_validator
+cuexis_cxc_pack
+cuexis_cxc_tool_common
+cuexis_cxc_unpack
+cuexis_cxc_validate
+cuexis_core_tests
+cuexis_audio_tests
+cuexis_filesystem_tests
+cuexis_content_tests
+cuexis_json_support_tests
+cuexis_project_tests
+cuexis_assets_tests
+cuexis_chart_tests
+cuexis_animation_tests
+cuexis_cxc_tests
+cuexis_behavior_tests
+cuexis_gameplay_tests
+cuexis_debug_tests
+cuexis_render_tests
+cuexis_runtime_tests
+cuexis_world_tests
+cuexis_playback_tests
+cuexis_playback_allocation_tests
+cuexis_presentation_validation_tests
+cuexis_cfu_f_headless_consumer
+cuexis_cfu_f4_performance_probe
+cuexis_s4g_performance_probe
+cuexis_s5h_performance_probe
+cuexis_platform_sdl_tests
+cuexis_audio_sdl_tests
+cuexis_render_opengl_tests
+cuexis_player_diagnostics_tests
+cuexis_format_check
 ```
+<!-- CUEXIS_ACTIVE_TARGETS_END -->
 
-应用 target 为 `cuexis_player`。启用 `CUEXIS_BUILD_DEVELOPER_TOOLS` 时，开发工具 target
-包括 `cuexis_chart_validator`、`cuexis_chart_migrator`、`cuexis_cxc_pack`、
-`cuexis_cxc_validate` 和 `cuexis_cxc_unpack`；启用 `CUEXIS_BUILD_SHADER_TOOLS` 后还会
-增加依赖 shader 编译器的 `cuexis_asset_importer`。`app/studio/` 目录已存在但尚未接入 CMake。
-对应模块测试、架构扫描、Player 失败路径和 `cuexis_format_check` 由顶层 CMake 统一注册。
+启用 `CUEXIS_BUILD_SHADER_TOOLS` 后还会增加依赖 shader 编译器的 `cuexis_shader`、
+`cuexis_shader_tests` 和 `cuexis_asset_importer`。`app/studio/` 目录已存在但尚未接入 CMake。
+对应模块测试、架构扫描和 Player 失败路径由顶层 CMake 统一注册。
 
 ADR 0027 已将长期交付方向调整为 Playback SDK + 独立 Player + 独立 Studio。当前
 `cuexis_playback` 已通过正式 Runtime 路径驱动 Behavior，并提供 Prepared load/reload、
