@@ -73,4 +73,5 @@
 | [260828 CFU and Stage 4 review](260828-stage-CFU-4-review.md) | open two-axis review snapshot of CFU through Stage 4 close; does not redefine CURRENT_STATUS |
 | [260829 full review](260829-full-review.md) | open full-repository review snapshot (engine, app, tools, build, docs alignment); 144 findings with per-finding index (1 P0 / 15 P1 / 56 P2 / 72 P3), 11 prioritized improvement directions with implementation assessment and full finding-to-batch remediation mapping; does not redefine CURRENT_STATUS |
 | [260829 Full Review 整改第 0 批](260829-full-review-remediation-b0.md) | completed local B0 remediation: CH-01, PB-08, CM-03, AP-01/02/06/19, CM-01, and RT-02 documentation correction |
+| [260829 Full Review 整改第 0.5 批](260829-full-review-remediation-b05.md) | completed local B05 documentation and contract-comment remediation: CM core/audio/platform, CX-03/04/06/16/26, and AP-03/04/05; decision-gated findings remain unresolved |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |
