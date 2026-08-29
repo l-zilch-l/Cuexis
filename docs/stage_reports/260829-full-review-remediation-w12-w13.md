@@ -31,8 +31,9 @@
 
 - Debug fresh configure、clean build：通过（MSVC x64 Developer environment）。
 - Debug 全量 CTest：首次普通 PowerShell 运行有 7 个 external consumer 因未加载 VS 环境而找不到
-  `kernel32.lib`；在同一 VS Developer 环境下重跑失败项 7/7 通过。其余 488 项首次通过，含
-  architecture、core/behavior/animation/runtime、Playback、CXC、headless 和 performance gates。
+  `kernel32.lib`；在同一 VS Developer 环境下重跑失败项 7/7 通过。其余 487 项首次通过，另有
+  1 项 Windows symlink 条件测试跳过，含 architecture、core/behavior/animation/runtime、Playback、
+  CXC、headless 和 performance gates。
 - Release fresh configure、clean build、全量 CTest：495/495 通过；Windows symlink 条件测试按
   平台条件跳过。
 - shared-debug fresh configure、clean build：通过；architecture、7 个 external consumers、
