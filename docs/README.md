@@ -94,6 +94,7 @@
 - [阶段计划索引](stage_plans/README.md)
 - [Stage Chart Format Update 计划](stage_plans/stage_chart_format_update_implementation_plan.md)
 - [Stage 4 计划](stage_plans/stage_4_implementation_plan.md)
+- [260829 Full Review 整改计划](stage_plans/260829-full-review-remediation-plan.md)
 - [阶段报告索引](stage_reports/README.md)
 - [候选示例索引](examples/README.md)
 - [历史文档归档](archive/README.md)
