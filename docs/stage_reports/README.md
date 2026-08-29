@@ -75,4 +75,5 @@
 | [260829 Full Review 整改第 0 批](260829-full-review-remediation-b0.md) | completed local B0 remediation: CH-01, PB-08, CM-03, AP-01/02/06/19, CM-01, and RT-02 documentation correction |
 | [260829 Full Review 整改第 0.5 批](260829-full-review-remediation-b05.md) | completed local B05 documentation and contract-comment remediation: CM core/audio/platform, CX-03/04/06/16/26, and AP-03/04/05; decision-gated findings remain unresolved |
 | [260829 Full Review 整改 W06/W07](260829-full-review-remediation-w06-w07.md) | completed Playback and Runtime/OpenGL contract documentation; PB-04 and RT-25 remain decision-gated and unresolved |
+| [260829 Full Review 整改 W08/W09](260829-full-review-remediation-w08-w09.md) | completed Chart reader characterization and controlled internal responsibility split; decision-gated findings remain unresolved |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |
