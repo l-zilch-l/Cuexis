@@ -553,50 +553,92 @@ uploadParameterizedProgram(const playback::PortableResource& shaderResource,
         .fragmentEntry = shader->fragmentEntry,
     };
 
-    std::optional<shader::ShaderCacheRecord> record;
-    if (!cacheDirectory.empty()) {
-        shader::ShaderCacheStore store{cacheDirectory};
-        auto loaded = store.load(keyInput);
-        if (loaded) {
-            record = std::move(*loaded);
-        } else if (!compileEnabled || loaded.error().code() != shader::diagnosticCacheMissing) {
-            return core::unexpected(std::move(loaded.error()));
-        }
-    }
-
-    if (!record) {
 #ifdef CUEXIS_HAS_SHADER_TOOLS
-        if (!compileEnabled) {
-            return core::unexpected(
-                resourceError(std::string{shader::diagnosticCacheMissing},
-                              "Parameterized OpenGL prepare requires a CXSCCH01 cache or "
-                              "opt-in compile",
-                              &shaderResource.reference));
+    std::optional<shader::ShaderPipelineCache> pipeline;
+    std::optional<shader::ShaderCacheRecord> ownedRecord;
+    const shader::ShaderCacheRecord* record = nullptr;
+    if (!cacheDirectory.empty()) {
+        std::vector<std::string_view> declaredKeywords;
+        declaredKeywords.reserve(shader->variantKeywords.size());
+        for (const auto& keyword : shader->variantKeywords) {
+            declaredKeywords.emplace_back(keyword);
         }
+        std::vector<shader::ShaderDeclaredBinding> declaredBindings;
+        declaredBindings.reserve(shader->bindings.size());
+        for (const auto& binding : shader->bindings) {
+            declaredBindings.push_back(shader::ShaderDeclaredBinding{
+                .set = binding.set,
+                .binding = binding.binding,
+                .type = static_cast<shader::ShaderParameterType>(binding.type),
+                .name = binding.name,
+            });
+        }
+        std::vector<shader::ShaderDeclaredParameter> parameters;
+        parameters.reserve(shader->parameters.size());
+        for (const auto& parameter : shader->parameters) {
+            parameters.push_back(shader::ShaderDeclaredParameter{
+                .name = parameter.name,
+                .type = static_cast<shader::ShaderParameterType>(parameter.type),
+                .set = parameter.set,
+                .binding = parameter.binding,
+            });
+        }
+        const shader::ShaderCompileRequest compileRequest{
+            .vertexSource = shader->vertexSource,
+            .fragmentSource = shader->fragmentSource,
+            .vertexEntry = shader->vertexEntry,
+            .fragmentEntry = shader->fragmentEntry,
+            .declaredKeywords = declaredKeywords,
+            .selectedKeywords = selectedViews,
+            .declaredBindings = declaredBindings,
+            .declaredParameters = parameters,
+        };
+        pipeline.emplace(cacheDirectory);
+        auto prepared = pipeline->prepareCandidate(compileRequest, keyInput, compileEnabled);
+        if (!prepared) {
+            auto error = std::move(prepared.error());
+            error.withContext("asset_id", shaderResource.reference.assetId)
+                .withContext("resource_type", "shader");
+            return core::unexpected(std::move(error));
+        }
+        record = pipeline->candidate();
+    } else if (compileEnabled) {
         auto compiled = compileParameterizedArtifact(*shader, material.selectedKeywords);
         if (!compiled) {
             return core::unexpected(std::move(compiled.error()));
         }
-        shader::ShaderCacheRecord compiledRecord;
-        compiledRecord.sourceIdentity = shaderResource.reference.identity.sha256;
-        compiledRecord.vertexEntry = shader->vertexEntry;
-        compiledRecord.fragmentEntry = shader->fragmentEntry;
-        compiledRecord.selectedKeywords = material.selectedKeywords;
-        compiledRecord.artifact = std::move(*compiled);
-        if (!cacheDirectory.empty()) {
-            shader::ShaderCacheStore store{cacheDirectory};
-            if (auto stored = store.store(compiledRecord); !stored) {
-                return core::unexpected(std::move(stored.error()));
-            }
-        }
-        record = std::move(compiledRecord);
+        ownedRecord.emplace();
+        ownedRecord->sourceIdentity = shaderResource.reference.identity.sha256;
+        ownedRecord->vertexEntry = shader->vertexEntry;
+        ownedRecord->fragmentEntry = shader->fragmentEntry;
+        ownedRecord->selectedKeywords = material.selectedKeywords;
+        ownedRecord->artifact = std::move(*compiled);
+        record = &*ownedRecord;
+    }
+    if (record == nullptr) {
+        return core::unexpected(resourceError(
+            std::string{shader::diagnosticCacheMissing},
+            "Parameterized OpenGL prepare requires a CXSCCH01 cache or opt-in compile",
+            &shaderResource.reference));
+    }
 #else
+    std::optional<shader::ShaderCacheRecord> ownedRecord;
+    if (!cacheDirectory.empty()) {
+        shader::ShaderCacheStore store{cacheDirectory};
+        auto loaded = store.load(keyInput);
+        if (!loaded) {
+            return core::unexpected(std::move(loaded.error()));
+        }
+        ownedRecord = std::move(*loaded);
+    }
+    if (!ownedRecord) {
         (void)compileEnabled;
         return core::unexpected(resourceError(
             std::string{shader::diagnosticCacheMissing},
             "Parameterized OpenGL prepare requires a CXSCCH01 cache", &shaderResource.reference));
-#endif
     }
+    const auto* record = &*ownedRecord;
+#endif
 
     auto linked =
         linkGlsl330Program(record->artifact.vertexGlsl330.c_str(),
@@ -632,15 +674,16 @@ uploadParameterizedProgram(const playback::PortableResource& shaderResource,
                  GL_DYNAMIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-    auto bindings = record->artifact.reflection.bindings;
-    std::sort(bindings.begin(), bindings.end(), [](const auto& left, const auto& right) {
-        return std::tie(left.set, left.binding, left.name) <
-               std::tie(right.set, right.binding, right.name);
-    });
+    auto reflectionBindings = record->artifact.reflection.bindings;
+    std::sort(reflectionBindings.begin(), reflectionBindings.end(),
+              [](const auto& left, const auto& right) {
+                  return std::tie(left.set, left.binding, left.name) <
+                         std::tie(right.set, right.binding, right.name);
+              });
     GLint textureUnit = 0;
-    uploaded.textures.reserve(bindings.size());
+    uploaded.textures.reserve(reflectionBindings.size());
     glUseProgram(*linked);
-    for (const auto& binding : bindings) {
+    for (const auto& binding : reflectionBindings) {
         if (binding.set == 0 && binding.binding == 0) {
             continue;
         }

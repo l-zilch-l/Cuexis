@@ -741,7 +741,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
             }
             const auto unsupportedPresentation = backend.preparePresentation(
                 *rejectedPresentationCandidate,
-                {.version = 2, .portableProfileVersion = 1, .enableDebugPass = true});
+                {.version = 2, .portableProfileVersion = 2, .enableDebugPass = true});
             if (unsupportedPresentation || !backend.hasActivePresentation()) {
                 return core::unexpected(core::Error{
                     "player.smoke_test.failed_adapter_prepare_mutated_state",
