@@ -116,14 +116,23 @@ Result<Quat> normalize(const Quat& value) noexcept {
 
     const auto lengthSquared =
         value.x * value.x + value.y * value.y + value.z * value.z + value.w * value.w;
+    if (!std::isfinite(lengthSquared)) {
+        return unexpected(Error{"core.math.quaternion_not_representable",
+                                "Quaternion squared length is not representable"});
+    }
     if (lengthSquared <= std::numeric_limits<float>::epsilon()) {
         return unexpected(
             Error{"core.math.quaternion_zero_length", "Quaternion length must be non-zero"});
     }
 
     const auto inverseLength = 1.0F / std::sqrt(lengthSquared);
-    return Quat{value.x * inverseLength, value.y * inverseLength, value.z * inverseLength,
-                value.w * inverseLength};
+    const auto result = Quat{value.x * inverseLength, value.y * inverseLength,
+                             value.z * inverseLength, value.w * inverseLength};
+    if (!std::isfinite(inverseLength) || !isFinite(result)) {
+        return unexpected(Error{"core.math.quaternion_not_representable",
+                                "Quaternion normalization result is not representable"});
+    }
+    return result;
 }
 
 Mat4 makeTranslation(const Vec3& translation) noexcept {

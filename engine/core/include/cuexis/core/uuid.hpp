@@ -15,6 +15,8 @@ namespace cuexis::core {
 [[nodiscard]] CUEXIS_CORE_API auto isUuidV7(std::string_view text) noexcept -> bool;
 [[nodiscard]] CUEXIS_CORE_API auto isUuidV5(std::string_view text) noexcept -> bool;
 
+// UUID validators accept only the canonical lowercase hexadecimal representation.
+
 // RFC 4122 UUIDv5. SHA-1 is used only for standardized name-based identifiers, never for
 // security purposes
 [[nodiscard]] CUEXIS_CORE_API auto uuidV5(std::string_view namespaceUuid, std::string_view name)

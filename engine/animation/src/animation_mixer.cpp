@@ -1,7 +1,5 @@
 #include <cuexis/animation/animation_mixer.hpp>
 
-#include "animation_math.hpp"
-
 #include <cuexis/animation/animation_diagnostics.hpp>
 #include <cuexis/animation/animation_sample.hpp>
 #include <cuexis/core/error.hpp>
@@ -42,13 +40,6 @@ struct MixWriteKey final {
 
 [[nodiscard]] auto lerpScalar(double left, double right, double t) noexcept -> double {
     return left + (right - left) * t;
-}
-
-[[nodiscard]] auto lerpVec3(const core::Vec3& left, const core::Vec3& right, double t) noexcept
-    -> core::Vec3 {
-    const auto blend = static_cast<float>(t);
-    return core::Vec3{left.x + (right.x - left.x) * blend, left.y + (right.y - left.y) * blend,
-                      left.z + (right.z - left.z) * blend};
 }
 
 [[nodiscard]] auto quaternionDot(const core::Quat& left, const core::Quat& right) noexcept
@@ -114,17 +105,6 @@ void addMixDiagnostic(core::Diagnostics& diagnostics, std::string_view code, std
         },
         value);
     return mix;
-}
-
-[[nodiscard]] auto mixSlerp(const core::Quat& left, const core::Quat& right, double t)
-    -> core::Result<core::Quat> {
-    auto value = shortestPathSlerp(left, right, t);
-    if (!value) {
-        return core::unexpected(core::Error{std::string{mixQuaternionInvalid},
-                                            "Quaternion mix produced an invalid value"}
-                                    .withCause(std::move(value.error())));
-    }
-    return *value;
 }
 
 [[nodiscard]] auto quatLog(const core::Quat& value) -> core::Result<core::Vec3> {
@@ -198,7 +178,7 @@ void addMixDiagnostic(core::Diagnostics& diagnostics, std::string_view code, std
             return core::unexpected(
                 mixError(mixValueTypeMismatch, "Animation mix value types differ", property));
         }
-        const auto value = lerpVec3(*leftVector, *rightVector, t);
+        const auto value = core::lerp(*leftVector, *rightVector, t);
         if (!core::isFinite(value)) {
             return core::unexpected(mixError(mixNonFinite, "Animation mix overflowed", property));
         }
@@ -210,9 +190,11 @@ void addMixDiagnostic(core::Diagnostics& diagnostics, std::string_view code, std
             return core::unexpected(
                 mixError(mixValueTypeMismatch, "Animation mix value types differ", property));
         }
-        auto value = mixSlerp(*leftRotation, *rightRotation, t);
+        auto value = core::slerp(*leftRotation, *rightRotation, t);
         if (!value) {
-            return core::unexpected(std::move(value.error()));
+            return core::unexpected(core::Error{std::string{mixQuaternionInvalid},
+                                                "Quaternion mix produced an invalid value"}
+                                        .withCause(std::move(value.error())));
         }
         return MixValue{.value = *value};
     }
@@ -320,7 +302,7 @@ void addMixDiagnostic(core::Diagnostics& diagnostics, std::string_view code, std
                              "Additive scale factors must be finite and positive", property));
             }
             const auto weight = contribution.weight * groupWeight * layerWeight;
-            const auto blended = lerpVec3(core::Vec3{1.0F, 1.0F, 1.0F}, *factor, weight);
+            const auto blended = core::lerp(core::Vec3{1.0F, 1.0F, 1.0F}, *factor, weight);
             if (!(blended.x > 0.0F) || !(blended.y > 0.0F) || !(blended.z > 0.0F) ||
                 !core::isFinite(blended)) {
                 return core::unexpected(

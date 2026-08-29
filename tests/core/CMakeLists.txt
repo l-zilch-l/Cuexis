@@ -4,6 +4,7 @@ add_executable(cuexis_core_tests
     log_sink_tests.cpp
     math_tests.cpp
     result_tests.cpp
+    sha256_tests.cpp
     thread_checker_tests.cpp
     uuid_tests.cpp
     version_tests.cpp

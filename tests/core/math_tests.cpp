@@ -34,7 +34,7 @@ TEST_CASE("Quaternion normalization rejects invalid values", "[core][math]") {
 }
 
 TEST_CASE("Quaternion normalization rejects finite input with non-finite squared length",
-          "[core][math][characterization][cm-04]") {
+          "[core][math][cm-04]") {
     constexpr auto large = std::numeric_limits<float>::max();
     const cuexis::core::Quat value{large, large, large, large};
     const auto lengthSquared =
@@ -44,6 +44,7 @@ TEST_CASE("Quaternion normalization rejects finite input with non-finite squared
 
     const auto normalized = cuexis::core::normalize(value);
     REQUIRE_FALSE(normalized.has_value());
+    CHECK(normalized.error().code() == "core.math.quaternion_not_representable");
 }
 
 // ZYX-to-Quat remains outside core until its axis and composition contract is frozen.
@@ -84,6 +85,21 @@ TEST_CASE("Quaternion slerp follows shortest path and returns normalized results
     CHECK(cuexis::core::isNormalized(*midpoint));
     CHECK(midpoint->z > 0.0F);
     CHECK(midpoint->w > 0.0F);
+}
+
+TEST_CASE("Matrix inverse and nearlyEqual use absolute tolerances", "[core][math][contract]") {
+    const auto invertible =
+        cuexis::core::inverse(cuexis::core::makeScale(cuexis::core::Vec3{1.0e-4F, 1.0F, 1.0F}));
+    REQUIRE(invertible.has_value());
+    CHECK(cuexis::core::nearlyEqual(invertible->element(0, 0), 1.0e4F, 1.0F));
+
+    const auto belowThreshold =
+        cuexis::core::inverse(cuexis::core::makeScale(cuexis::core::Vec3{1.0e-8F, 1.0F, 1.0F}));
+    REQUIRE_FALSE(belowThreshold.has_value());
+    CHECK(belowThreshold.error().code() == "core.math.matrix_not_invertible");
+
+    CHECK(cuexis::core::nearlyEqual(1.0e6F, 1.0e6F + 0.5F, 0.5F));
+    CHECK_FALSE(cuexis::core::nearlyEqual(1.0e6F, 1.0e6F + 1.0F, 0.5F));
 }
 
 TEST_CASE("Transform composition follows translation rotation scale order", "[core][math]") {
