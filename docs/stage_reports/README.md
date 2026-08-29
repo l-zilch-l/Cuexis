@@ -78,5 +78,6 @@
 | [260829 Full Review 整改 W08/W09](260829-full-review-remediation-w08-w09.md) | completed Chart reader characterization and controlled internal responsibility split; decision-gated findings remain unresolved |
 | [260829 Full Review 整改 W10](260829-full-review-remediation-w10.md) | completed AP-16 machine-readable status contract and checker regressions; AP-17 Linux Quality CI wiring remains pending C3 |
 | [260829 Full Review 整改 W11](260829-full-review-remediation-w11.md) | partial W11 math API verification; Lane A identity migration remains blocked by unresolved D6 |
+| [260829 Full Review 整改 W12/W13](260829-full-review-remediation-w12-w13.md) | completed Lane B math/core remediation and Lane D Runtime reload transaction fix; Lane A remains blocked by unresolved D6 |
 | [260829 Full Review 整改 C2/C3](260829-full-review-remediation-c2-c3.md) | completed target-fact and SDK-minor documentation contracts plus Linux Quality workflow wiring; hosted Linux evidence remains pending |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |
