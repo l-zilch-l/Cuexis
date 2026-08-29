@@ -82,4 +82,6 @@
 | [260829 Full Review 整改 C2/C3](260829-full-review-remediation-c2-c3.md) | completed target-fact and SDK-minor documentation contracts plus Linux Quality workflow wiring; hosted Linux evidence remains pending |
 | [260829 Full Review 整改 W14](260829-full-review-remediation-w14.md) | completed A3 pipeline characterization review and revalidated the C1 status-contract checker; A3 production integration remains deferred to W15 |
 | [260829 Full Review 整改 W15/W16](260829-full-review-remediation-w15-w16.md) | completed A3 ShaderPipelineCache integration, corrected Player adapter-failure smoke coverage, and revalidated C2 target export plus D1/D2 reload gates |
+| [260829 Full Review 整改 W20-W26](260829-full-review-remediation-w20-w26.md) | local completed render hot-path, HostClock/SDL publication, Player scratch reuse, and transparent Presentation resource lookup remediation |
+| [260829 Full Review 整改 W30-W37](260829-full-review-remediation-w30-w37.md) | local completed Playback prepare staging, PB-03 diagnostics, taxonomy, ownership, and final Debug/Shared/Release gates; full Chart/CXC parse-once remains separately bounded |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |
