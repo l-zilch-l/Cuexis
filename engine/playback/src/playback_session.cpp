@@ -40,6 +40,7 @@
 #include <optional>
 #include <ranges>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -1184,7 +1185,17 @@ auto PlaybackSession::capabilities() const -> core::Result<PlaybackCapabilitySet
     if (state_->operationActive) {
         return core::unexpected(reentryError("capabilities"));
     }
-    return state_->capabilities;
+    try {
+        return state_->capabilities;
+    } catch (const std::bad_alloc&) {
+        return core::unexpected(prepareExceptionError("capabilities", true));
+    } catch (const std::length_error&) {
+        return core::unexpected(prepareExceptionError("capabilities", true));
+    } catch (const std::exception& exception) {
+        return core::unexpected(prepareExceptionError("capabilities", false, &exception));
+    } catch (...) {
+        return core::unexpected(prepareExceptionError("capabilities", false));
+    }
 }
 
 auto PlaybackSession::prepareLoad(std::string_view jsonText, PlaybackMode mode)
@@ -2065,7 +2076,17 @@ auto PlaybackSession::contentInfo() const -> core::Result<PlaybackContentInfo> {
         return core::unexpected(
             core::Error{"playback.session.empty", "PlaybackSession has no committed content"});
     }
-    return *state_->activeContentInfo;
+    try {
+        return *state_->activeContentInfo;
+    } catch (const std::bad_alloc&) {
+        return core::unexpected(prepareExceptionError("content_info", true));
+    } catch (const std::length_error&) {
+        return core::unexpected(prepareExceptionError("content_info", true));
+    } catch (const std::exception& exception) {
+        return core::unexpected(prepareExceptionError("content_info", false, &exception));
+    } catch (...) {
+        return core::unexpected(prepareExceptionError("content_info", false));
+    }
 }
 
 auto PlaybackSession::semanticIdentity() const -> core::Result<PreparedSemanticIdentity> {
@@ -2091,7 +2112,17 @@ auto PlaybackSession::diagnostics() const -> core::Result<core::Diagnostics> {
         return core::unexpected(reentryError("diagnostics"));
     }
     SessionOperation operation{state_->operationActive};
-    return state_->diagnostics;
+    try {
+        return state_->diagnostics;
+    } catch (const std::bad_alloc&) {
+        return core::unexpected(prepareExceptionError("diagnostics", true));
+    } catch (const std::length_error&) {
+        return core::unexpected(prepareExceptionError("diagnostics", true));
+    } catch (const std::exception& exception) {
+        return core::unexpected(prepareExceptionError("diagnostics", false, &exception));
+    } catch (...) {
+        return core::unexpected(prepareExceptionError("diagnostics", false));
+    }
 }
 
 auto PlaybackSession::lastOperationDiagnostics() const -> core::Result<core::Diagnostics> {
@@ -2102,7 +2133,18 @@ auto PlaybackSession::lastOperationDiagnostics() const -> core::Result<core::Dia
         return core::unexpected(reentryError("last_operation_diagnostics"));
     }
     SessionOperation operation{state_->operationActive};
-    return state_->lastOperationDiagnostics;
+    try {
+        return state_->lastOperationDiagnostics;
+    } catch (const std::bad_alloc&) {
+        return core::unexpected(prepareExceptionError("last_operation_diagnostics", true));
+    } catch (const std::length_error&) {
+        return core::unexpected(prepareExceptionError("last_operation_diagnostics", true));
+    } catch (const std::exception& exception) {
+        return core::unexpected(
+            prepareExceptionError("last_operation_diagnostics", false, &exception));
+    } catch (...) {
+        return core::unexpected(prepareExceptionError("last_operation_diagnostics", false));
+    }
 }
 
 auto PlaybackSession::acquireHostOverride(std::string_view ownerId, std::int64_t priority,
@@ -2132,22 +2174,32 @@ auto PlaybackSession::acquireHostOverride(std::string_view ownerId, std::int64_t
                                             "Override tokens require at least one property write"});
     }
 
-    std::vector<runtime::PropertyOverrideWrite> mapped;
-    mapped.reserve(writes.size());
-    for (const auto& write : writes) {
-        mapped.push_back(runtime::PropertyOverrideWrite{
-            .objectId = chart::ChartObjectId{write.objectId},
-            .property = toWorldProperty(write.property),
-            .value = toWorldValue(write.value),
-        });
+    try {
+        std::vector<runtime::PropertyOverrideWrite> mapped;
+        mapped.reserve(writes.size());
+        for (const auto& write : writes) {
+            mapped.push_back(runtime::PropertyOverrideWrite{
+                .objectId = chart::ChartObjectId{write.objectId},
+                .property = toWorldProperty(write.property),
+                .value = toWorldValue(write.value),
+            });
+        }
+        auto token = state_->runtimeSession->acquireOverride(
+            world::OverrideKind::Host, std::string{ownerId}, priority, propertyMask,
+            toWorldLifetime(lifetime), mapped);
+        if (!token) {
+            return core::unexpected(mapHostOverrideError(token.error()));
+        }
+        return HostOverrideToken{.value = token->value};
+    } catch (const std::bad_alloc&) {
+        return core::unexpected(prepareExceptionError("acquire_host_override", true));
+    } catch (const std::length_error&) {
+        return core::unexpected(prepareExceptionError("acquire_host_override", true));
+    } catch (const std::exception& exception) {
+        return core::unexpected(prepareExceptionError("acquire_host_override", false, &exception));
+    } catch (...) {
+        return core::unexpected(prepareExceptionError("acquire_host_override", false));
     }
-    auto token = state_->runtimeSession->acquireOverride(
-        world::OverrideKind::Host, std::string{ownerId}, priority, propertyMask,
-        toWorldLifetime(lifetime), mapped);
-    if (!token) {
-        return core::unexpected(mapHostOverrideError(token.error()));
-    }
-    return HostOverrideToken{.value = token->value};
 }
 
 auto PlaybackSession::releaseHostOverride(HostOverrideToken token) -> core::Result<void> {

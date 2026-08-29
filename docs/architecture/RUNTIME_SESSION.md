@@ -150,8 +150,9 @@ Beat、`inStop` 与 `stopProgress`。更新顺序固定为 Behavior evaluate -> 
 Transform/FOV/Visibility/Material resolver -> World transform update。Resolver 每帧从 prepare
 时捕获的初始值重建稀疏属性；所有候选必须全部校验通过后才一次提交，不发布半帧结果。
 连续 Event、Step Event、Stop、Seek、Reload 和负 Beat 都按目标绝对时间重采样，不依赖帧率
-或 EnTT 遍历顺序。预热后的 `PlaybackSession::update()` 与复用 destination 的
-`extractFrame()` 不分配。
+或 EnTT 遍历顺序。对于不包含 Animation 的会话，预热后的 `PlaybackSession::update()` 与复用
+destination 的 `extractFrame()` 不分配；包含 Animation 的会话遵循 Stage 4 已定义的有界分配
+合同，本节不作全路径零分配承诺。
 
 ## Stage 2 调试快照
 

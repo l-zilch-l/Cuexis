@@ -264,7 +264,7 @@ cmake --install out/build/headless-release --prefix out/install/headless-release
 ```
 
 ```cmake
-find_package(Cuexis 0.6 CONFIG REQUIRED COMPONENTS Playback Content Audio)
+find_package(Cuexis 0.7 CONFIG REQUIRED COMPONENTS Playback Content Audio)
 target_link_libraries(my_host PRIVATE Cuexis::Playback Cuexis::Content Cuexis::Audio)
 ```
 
@@ -275,7 +275,7 @@ target_link_libraries(my_host PRIVATE Cuexis::Playback Cuexis::Content Cuexis::A
 并由 consumer 显式请求组件：
 
 ```cmake
-find_package(Cuexis 0.6 CONFIG REQUIRED COMPONENTS Audio AudioSDL)
+find_package(Cuexis 0.7 CONFIG REQUIRED COMPONENTS Audio AudioSDL)
 target_link_libraries(my_host PRIVATE Cuexis::AudioSDL)
 ```
 
@@ -285,7 +285,7 @@ target_link_libraries(my_host PRIVATE Cuexis::AudioSDL)
 Stage 3 不安装 `OpenGL` component。`cuexis_render_opengl` 仍是 Player 使用的仓库内可选 target；
 安装包显式请求 `COMPONENTS OpenGL` 会失败，基础 Playback package 不查找 OpenGL 或 GLAD。
 
-`0.6` 是当前 Playback preview 的 SDK API 兼容 minor，不是日期构建版本。安装后的
+`0.7` 是当前 Playback preview 的 SDK API 兼容 minor，不是日期构建版本。安装后的
 `Cuexis_VERSION`/`Cuexis_API_VERSION` 返回完整 API 版本，`Cuexis_VERSION_DISPLAY` 返回
 `yy.mm.dd-v[-suffix]` 构建身份。版本更新必须通过
 `python -B tools/update_version.py yy.mm.dd-v` 同步 CMake 与 `vcpkg.json`；
@@ -296,7 +296,7 @@ Stage 3 不安装 `OpenGL` component。`cuexis_render_opengl` 仍是 Player 使�
 七个 `cuexis_external_consumer_*` 模式验证 add_subdirectory/find_package 的基础包、Playback-only、
 Core 和 AudioSDL 组件。Playback-only consumer 从自己的 staging fixture 完成
 load/prepare/resource validation/update/extract，只链接 `Cuexis::Playback`。基础 find_package 门禁
-显式禁用 SDL3 查找，并验证不发现 OpenGL/GLAD、`0.5`/`0.7` 请求被拒绝、未支持的 `OpenGL`
+显式禁用 SDL3 查找，并验证不发现 OpenGL/GLAD、`0.6`/`0.8` 请求被拒绝、未支持的 `OpenGL`
 component 被拒绝；安装包门禁同时扫描全部已安装公共头是否为纯 ASCII，并精确校验基础许可证
 清单及 AudioSDL 安装额外增加的 SDL3 copyright：
 

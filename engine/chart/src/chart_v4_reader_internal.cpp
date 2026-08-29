@@ -323,6 +323,10 @@ using cuexis::core::detail::isWindowsReservedSegment;
         const auto element = propertiesReader->element(index);
         const auto value = element ? element->readString() : std::nullopt;
         if (!value || value->empty() || value->size() > limits.maxIdentifierBytes) {
+            addV4Error(diagnostics, "chart.animation.mask_conflict",
+                       "Property mask property must be a bounded non-empty value",
+                       element ? std::string{element->fieldPath()}
+                               : std::string{propertiesReader->fieldPath()});
             valid = false;
             continue;
         }
