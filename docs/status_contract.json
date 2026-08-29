@@ -1,0 +1,142 @@
+{
+  "snapshotDate": "2026-08-24",
+  "requiredFragments": {
+    "AGENTS.md": [
+      "CFU-F closed after final-SHA hosted verification",
+      "CFU-G closed after explicit owner acceptance on August 24, 2026",
+      "G0 status calibration, G1 exit audit, and G2 Stage 4 typed handoff are complete",
+      "G3 local candidate gates passed on August 19, 2026",
+      "passed same-SHA hosted Linux Quality, Windows MSVC",
+      "G3 hosted validation and G4 are complete",
+      "G5 report-SHA hosted revalidation passed",
+      "G6 owner acceptance is recorded",
+      "Stage Chart Format Update is complete",
+      "Stage 4 is complete",
+      "Stage 5 S5-A, S5-B, S5-C, S5-D, S5-E, S5-F, and S5-G are complete; S5-H local checkpoint; hosted pending"
+    ],
+    "docs/CURRENT_STATUS.md": [
+      "G3 hosted 门禁与 G4 已完成",
+      "18 PASS / 0 PENDING / 0 PRODUCT BLOCKER",
+      "CFU-G2 已于同日完成 Stage 4 typed handoff",
+      "CFU-G3 已于 2026-08-19",
+      "G5 completion report SHA",
+      "hosted revalidation 均已通过",
+      "CFU-G 与 Stage Chart Format Update 已关闭",
+      "CFU-G6 已于 2026-08-24 完成",
+      "Stage 4 已完成",
+      "S5-A 合同已冻结",
+      "S5-B 已接线",
+      "S5-C 已完成",
+      "S5-D 已完成",
+      "S5-E 已完成",
+      "S5-F 已完成",
+      "S5-G 已完成",
+      "S5-H local checkpoint"
+    ],
+    "docs/ROADMAP.md": [
+      "CFU-F consumers and determinism closed; final-SHA hosted gates passed 2026-08-16",
+      "Stage 4 已完成；当前下一阶段是 **Stage 5**",
+      "CFU-G final closure                                 completed; G6 owner acceptance recorded 2026-08-24"
+    ],
+    "docs/PROJECT_GUIDE.md": [
+      "CFU-F 已在最终实现 SHA 上关闭跨平台 consumer、确定性、安全与性能门禁",
+      "G1 退出审计和 G2 Stage 4 typed handoff 已完成",
+      "G3 本地候选门禁已于 2026-08-19 通过",
+      "hosted Linux/MSVC/MinGW 验证已于 2026-08-24",
+      "G3 hosted 与 G4 已完成",
+      "G5 completion report SHA",
+      "CFU-G 与 Stage Chart Format Update 已关闭",
+      "Stage 4 已完成",
+      "S5-A 合同已冻结",
+      "S5-B 已接线",
+      "S5-C 已完成",
+      "S5-D 已完成",
+      "S5-E 已完成",
+      "S5-F 已完成",
+      "S5-G 已完成",
+      "S5-H local checkpoint"
+    ],
+    "docs/formats/README.md": [
+      "CFU-G hosted 验证、completion report 和 owner acceptance 已完成"
+    ],
+    "docs/formats/CHART_V4_FORMAT.md": [
+      "G5 report-SHA hosted revalidation 与 G6 owner acceptance 已完成"
+    ],
+    "docs/formats/CXT_FORMAT.md": [
+      "G5 report-SHA hosted revalidation 与 G6 owner acceptance 已完成"
+    ],
+    "docs/formats/CXC_FORMAT.md": [
+      "CFU-G 经项目所有者接受"
+    ],
+    "docs/stage_plans/README.md": [
+      "CFU-D/CFU-E/CFU-F/G 已关闭；G6 owner acceptance recorded 2026-08-24"
+    ],
+    "docs/stage_plans/stage_chart_format_update_implementation_plan.md": [
+      "CFU-A/CFU-B、CFU-C0/C1/C2/C3/C4、CFU-D、CFU-E、CFU-F、CFU-G 已完成并封存",
+      "CFU-G1 审计报告",
+      "CFU-G2 交接报告",
+      "CFU-G3 验证报告",
+      "最终候选 SHA",
+      "CFU-G4 hosted 验证报告",
+      "G3 hosted 与 G4 已完成",
+      "G5/G6 completion report",
+      "CFU-G 与 Stage Chart Format Update 已关闭",
+      "Stage 4 已切换为 unblocked / not started"
+    ],
+    "docs/stage_plans/stage_4_implementation_plan.md": [
+      "CFU-G2 Stage 4 typed handoff",
+      "项目所有者已接受 completion report",
+      "CFU-G4 hosted verification",
+      "G5 report-SHA hosted revalidation 与 G6 owner acceptance",
+      "unblocked / not started"
+    ],
+    "docs/stage_reports/README.md": [
+      "260816 Chart Format Update CFU-G1 exit audit",
+      "260816 Chart Format Update CFU-G2 Stage 4 handoff",
+      "260819 Chart Format Update CFU-G3 validation",
+      "260820 Chart Format Update CFU-G4 closure readiness",
+      "260824 Chart Format Update CFU-G4 hosted verification",
+      "Stage Chart Format Update completion report",
+      "G6 owner acceptance recorded 2026-08-24",
+      "Stage 4 completion report",
+      "260828 Stage 5 S5-H safety"
+    ],
+    "docs/stage_reports/stage_chart_format_update_completion_report.md": [
+      "G6 complete",
+      "项目所有者接受记录：**已接受",
+      "G5 report-SHA hosted revalidation",
+      "18 PASS / 0 PENDING",
+      "Stage 4 `unblocked but not started`",
+      "`.codex/` is intentionally excluded"
+    ]
+  },
+  "staleFragments": [
+    { "fragment": "CFU-G is active", "minLength": 12 },
+    { "fragment": "G5 completion report candidate", "minLength": 12 },
+    { "fragment": "G5/G6 pending", "minLength": 12 },
+    { "fragment": "G6 owner acceptance pending", "minLength": 12 },
+    { "fragment": "report-SHA hosted/G6 pending", "minLength": 12 },
+    { "fragment": "等待 report-SHA hosted revalidation", "minLength": 12 },
+    { "fragment": "Stage 4 stays blocked / not started", "minLength": 12 },
+    { "fragment": "CFU-F is next", "minLength": 12 },
+    { "fragment": "CFU-F consumers and determinism next", "minLength": 12 },
+    { "fragment": "CFU-G cross-platform closure and Stage 4 handoff pending", "minLength": 12 },
+    { "fragment": "CFU-G 为下一批次", "minLength": 8 },
+    { "fragment": "最终 hosted 产品门禁仍未关闭", "minLength": 12 },
+    { "fragment": "G2 Stage 4 typed handoff is next", "minLength": 12 },
+    { "fragment": "下一检查点为 G2 handoff", "minLength": 12 },
+    { "fragment": "G3 final candidate validation is next", "minLength": 12 },
+    { "fragment": "G3 validation next", "minLength": 12 }
+  ],
+  "datedFiles": [
+    "docs/CURRENT_STATUS.md",
+    "docs/ROADMAP.md",
+    "docs/PROJECT_GUIDE.md",
+    "docs/formats/CHART_V4_FORMAT.md",
+    "docs/formats/CXT_FORMAT.md",
+    "docs/formats/CXC_FORMAT.md",
+    "docs/formats/README.md",
+    "docs/stage_plans/README.md",
+    "docs/stage_reports/README.md"
+  ]
+}
