@@ -61,6 +61,8 @@ class CUEXIS_CORE_API Diagnostics final {
     // The bounded capacity includes one caller-supplied limit diagnostic; a capacity of 0 is
     // normalized to 1 so that the limit diagnostic is preserved
     bool add(Diagnostic diagnostic);
+    // Moves every stored source item, including a reached source limit diagnostic, through add().
+    // A bounded destination therefore applies its own capacity and limit diagnostic.
     bool append(Diagnostics diagnostics);
     void clear() noexcept;
 

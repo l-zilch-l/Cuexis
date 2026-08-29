@@ -24,6 +24,8 @@ cuexis_platform_sdl
 cuexis_world
 cuexis_assets
 cuexis_chart
+cuexis_animation
+cuexis_cxc
 cuexis_behavior
 cuexis_gameplay
 cuexis_render
@@ -34,9 +36,11 @@ cuexis_playback
 cuexis_audio_sdl
 ```
 
-应用 target 为 `cuexis_player`，开发工具 target 为 `cuexis_chart_validator` 和
-`cuexis_chart_migrator`。`app/studio/` 目录已存在但尚未接入 CMake。对应模块测试、架构扫描、
-Player 失败路径和 `cuexis_format_check` 由顶层 CMake 统一注册。
+应用 target 为 `cuexis_player`。启用 `CUEXIS_BUILD_DEVELOPER_TOOLS` 时，开发工具 target
+包括 `cuexis_chart_validator`、`cuexis_chart_migrator`、`cuexis_cxc_pack`、
+`cuexis_cxc_validate` 和 `cuexis_cxc_unpack`；启用 `CUEXIS_BUILD_SHADER_TOOLS` 后还会
+增加依赖 shader 编译器的 `cuexis_asset_importer`。`app/studio/` 目录已存在但尚未接入 CMake。
+对应模块测试、架构扫描、Player 失败路径和 `cuexis_format_check` 由顶层 CMake 统一注册。
 
 ADR 0027 已将长期交付方向调整为 Playback SDK + 独立 Player + 独立 Studio。当前
 `cuexis_playback` 已通过正式 Runtime 路径驱动 Behavior，并提供 Prepared load/reload、

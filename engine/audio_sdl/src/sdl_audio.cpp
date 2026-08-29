@@ -450,6 +450,8 @@ auto SdlAudioTransport::stop() -> core::Result<void> {
     impl_->segmentStartFrame = 0;
     impl_->submittedFrame = 0;
     impl_->presentedFrame = 0;
+    // A postmix callback already in flight may race this relaxed reset. That can only reduce the
+    // precision of the presented-position estimate; it is not cross-thread synchronization.
     impl_->callback.mixedDeviceFrames.store(0, std::memory_order_relaxed);
     impl_->mixedDeviceFrameBaseline = 0;
     impl_->queuedFrames.store(0, std::memory_order_relaxed);
@@ -490,6 +492,8 @@ auto SdlAudioTransport::seekMs(double positionMs) -> core::Result<void> {
     impl_->segmentStartFrame = frame;
     impl_->submittedFrame = frame;
     impl_->presentedFrame = frame;
+    // A postmix callback already in flight may race this relaxed reset. That can only reduce the
+    // precision of the presented-position estimate; it is not cross-thread synchronization.
     impl_->callback.mixedDeviceFrames.store(0, std::memory_order_relaxed);
     impl_->mixedDeviceFrameBaseline = 0;
     impl_->queuedFrames.store(0, std::memory_order_relaxed);

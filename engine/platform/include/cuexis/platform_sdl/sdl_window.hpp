@@ -42,8 +42,10 @@ struct DrawableSize final {
 // copy/move assignment, queries, and destruction, must run on the associated runtime owner
 // thread (the SDL main thread). Releasing the final lease can destroy both the native window and
 // its SDL runtime, so the final release has the same requirement. A default or moved-from lease
-// is empty and has no thread affinity until assigned a live lease. Debug builds assert this
-// contract.
+// is empty and has no thread affinity until assigned a live lease. Debug builds assert
+// owner-thread operations. Independently, releasing the final window-state reference from a
+// non-owner thread calls std::terminate in every build, including Release. Destruction and
+// copy/move assignment can perform that final release and must remain on the owner thread.
 class SdlWindowLease final {
   public:
     SdlWindowLease() noexcept = default;
@@ -70,7 +72,10 @@ class SdlWindowLease final {
 // Thread contract: create() and every operation on a non-empty window, including move
 // construction, move assignment, and destruction, must run on the associated runtime owner
 // thread (the SDL main thread). A moved-from window is empty and has no thread affinity until it
-// receives another window. Debug builds assert this contract.
+// receives another window. Debug builds assert owner-thread operations. Independently, releasing
+// the final window-state reference from a non-owner thread calls std::terminate in every build,
+// including Release. Destruction and move assignment can perform that final release and must
+// remain on the owner thread.
 class SdlWindow final {
   public:
     [[nodiscard]] static core::Result<SdlWindow> create(SdlRuntime& runtime,

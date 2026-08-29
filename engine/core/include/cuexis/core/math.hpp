@@ -62,9 +62,13 @@ struct Mat4 {
 [[nodiscard]] CUEXIS_CORE_API Result<Mat4>
 composeTransform(const Vec3& translation, const Quat& rotation, const Vec3& scale) noexcept;
 [[nodiscard]] CUEXIS_CORE_API Mat4 multiply(const Mat4& left, const Mat4& right) noexcept;
+// Rejects matrices whose absolute determinant is no greater than float epsilon.
 [[nodiscard]] CUEXIS_CORE_API Result<Mat4> inverse(const Mat4& matrix) noexcept;
+// Treats point as an affine homogeneous point with w = 1 and returns xyz without a perspective
+// divide.
 [[nodiscard]] CUEXIS_CORE_API Vec3 transformPoint(const Mat4& matrix, const Vec3& point) noexcept;
 
+// Uses an absolute tolerance. Vec3 and Mat4 comparisons apply it independently to each element.
 [[nodiscard]] CUEXIS_CORE_API bool nearlyEqual(float left, float right,
                                                float tolerance = 1.0e-5F) noexcept;
 [[nodiscard]] CUEXIS_CORE_API bool nearlyEqual(const Vec3& left, const Vec3& right,
