@@ -1,6 +1,8 @@
 #include <cuexis/chart/chart_v4_loader.hpp>
 #include <cuexis/chart/chart_v4_resolver.hpp>
 #include <cuexis/chart/chart_writer.hpp>
+#include <cuexis/chart/canonical_chart_loader.hpp>
+#include <cuexis/chart/chart_loader.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -88,6 +90,14 @@ struct ChartParts final {
                                  std::string_view code) -> bool {
     return std::ranges::any_of(result.diagnostics.items(),
                                [code](const auto& item) { return item.code() == code; });
+}
+
+[[nodiscard]] auto findDiagnostic(const cuexis::chart::ChartV4SourceResult& result,
+                                  std::string_view code) -> const cuexis::core::Diagnostic* {
+    const auto item =
+        std::ranges::find_if(result.diagnostics.items(),
+                             [code](const auto& diagnostic) { return diagnostic.code() == code; });
+    return item != result.diagnostics.items().end() ? &*item : nullptr;
 }
 
 [[nodiscard]] auto findDiagnostic(const cuexis::chart::ChartV4ResolveResult& result,
@@ -863,4 +873,140 @@ TEST_CASE("Canonical Writer breaks equal primary keys by normalized compact JSON
     REQUIRE(firstBytes.has_value());
     REQUIRE(secondBytes.has_value());
     CHECK(*firstBytes == *secondBytes);
+}
+
+TEST_CASE("Chart reader entry points keep empty and minimal input boundaries stable",
+          "[chart][cohesion][characterization][empty-minimal]") {
+    const auto chartLoaderEmpty = cuexis::chart::ChartLoader::load("");
+    const auto canonicalLoaderEmpty = cuexis::chart::CanonicalChartLoader::load("");
+    for (const auto* result : {&chartLoaderEmpty, &canonicalLoaderEmpty}) {
+        REQUIRE_FALSE(result->hasValue());
+        REQUIRE(result->diagnostics.size() == 1);
+        CHECK(result->diagnostics.items().front().code() == "json.parse.syntax_error");
+        CHECK(result->diagnostics.items().front().fieldPath() == "$");
+    }
+    const auto v4Empty = cuexis::chart::ChartV4Loader::load("");
+    REQUIRE_FALSE(v4Empty.hasValue());
+    REQUIRE(v4Empty.diagnostics.size() == 1);
+    CHECK(v4Empty.diagnostics.items().front().code() == "json.parse.syntax_error");
+    CHECK(v4Empty.diagnostics.items().front().fieldPath() == "$");
+
+    const auto v4 = cuexis::chart::ChartV4Loader::load(makeChart(ChartParts{}));
+    REQUIRE(v4.hasValue());
+    REQUIRE(v4.document.has_value());
+    CHECK(v4.document->legacyProjection.version == 4);
+    CHECK(v4.document->legacyProjection.objects.empty());
+    const auto secondV4 = cuexis::chart::ChartV4Loader::load(makeChart(ChartParts{}));
+    REQUIRE(secondV4.hasValue());
+    CHECK(v4.document->canonicalSource.canonicalText ==
+          secondV4.document->canonicalSource.canonicalText);
+}
+
+TEST_CASE("ChartLoader routing preserves canonical document and diagnostics parity",
+          "[chart][cohesion][characterization][routing]") {
+    constexpr std::string_view canonical = R"json({
+      "format":"cuexis.chart","version":1,
+      "chartId":"019b0000-0000-7abc-8def-000000000001","metadata":{},
+      "timing":{"offsetMs":0,"defaultBpm":120,"bpmChanges":[],"stops":[]},
+      "templates":[],"behaviors":[],"objects":[],
+      "requiredExtensions":[],"extensions":{}
+    })json";
+
+    const auto routed = cuexis::chart::ChartLoader::load(canonical);
+    const auto direct = cuexis::chart::CanonicalChartLoader::load(canonical);
+    REQUIRE(routed.hasValue());
+    REQUIRE(direct.hasValue());
+    REQUIRE(routed.document.has_value());
+    REQUIRE(direct.document.has_value());
+    CHECK(routed.diagnostics.size() == direct.diagnostics.size());
+    CHECK(routed.document->chartId == direct.document->chartId);
+    CHECK(routed.document->version == direct.document->version);
+    CHECK(routed.document->objects.size() == direct.document->objects.size());
+}
+
+TEST_CASE("Chart v4 reader sorts imports while retaining source paths",
+          "[chart][cohesion][characterization][diagnostics][order]") {
+    ChartParts parts;
+    parts.imports = R"([
+      {"id":"motion.z","source":"templates/z.cxt"},
+      {"id":"motion.a","source":"templates/a.cxt"}
+    ])";
+    const auto result = cuexis::chart::ChartV4Loader::load(makeChart(parts));
+    REQUIRE(result.hasValue());
+    REQUIRE(result.document->animationTemplateImports.size() == 2);
+    CHECK(result.document->animationTemplateImports[0].id == "motion.a");
+    CHECK(result.document->animationTemplateImports[0].source == "templates/a.cxt");
+    CHECK(result.document->animationTemplateImports[0].fieldPath == "$/animationTemplateImports/1");
+    CHECK(result.document->animationTemplateImports[1].id == "motion.z");
+    CHECK(result.document->animationTemplateImports[1].fieldPath == "$/animationTemplateImports/0");
+}
+
+TEST_CASE("Chart v4 reader reports portable project path violations at source paths",
+          "[chart][cohesion][characterization][cxt][path]") {
+    ChartParts parts;
+    parts.imports = R"([{"id":"motion.path","source":"templates/../motion.cxt"}])";
+    const auto result = cuexis::chart::ChartV4Loader::load(makeChart(parts));
+    REQUIRE_FALSE(result.hasValue());
+    const auto* diagnostic = findDiagnostic(result, "cxt.template.invalid");
+    REQUIRE(diagnostic != nullptr);
+    CHECK(diagnostic->fieldPath() == "$/animationTemplateImports/0/source");
+}
+
+TEST_CASE("Chart v4 resolver reports invalid project document paths before lookup",
+          "[chart][cohesion][characterization][cxt][project-path]") {
+    ChartParts parts;
+    parts.imports = R"([{"id":"motion.path","source":"templates/path.cxt"}])";
+    const auto source = loadSource(makeChart(parts));
+    const auto cxt = makeCxt("motion.path", cxtContinuousClip("transform.position.x", "0", "1"));
+    const std::array documents{cuexis::chart::ProjectDocument{"templates/../path.cxt", cxt}};
+
+    const auto result = cuexis::chart::ChartV4Resolver::resolve(source, {}, documents);
+    REQUIRE_FALSE(result.hasValue());
+    const auto* diagnostic = findDiagnostic(result, "cxt.template.invalid");
+    REQUIRE(diagnostic != nullptr);
+    CHECK(diagnostic->fieldPath() == "$/projectDocuments/0/path");
+}
+
+TEST_CASE("Chart v4 diagnostics retain deterministic path ordering",
+          "[chart][cohesion][characterization][diagnostics][order]") {
+    auto text = makeChart(ChartParts{});
+    const auto format = text.find("\"format\":\"cuexis.chart\"");
+    REQUIRE(format != std::string::npos);
+    text.replace(format, std::string_view{"\"format\":\"cuexis.chart\""}.size(),
+                 "\"format\":\"cuexis.chart.future\"");
+    const auto version = text.find("\"version\":4");
+    REQUIRE(version != std::string::npos);
+    text.replace(version, std::string_view{"\"version\":4"}.size(), "\"version\":3");
+    const auto chartId = text.find("019f0000-0000-7abc-8def-0000000004c2");
+    REQUIRE(chartId != std::string::npos);
+    text.replace(chartId, std::string_view{"019f0000-0000-7abc-8def-0000000004c2"}.size(),
+                 "not-a-uuid");
+
+    const auto result = cuexis::chart::ChartV4Loader::load(text);
+    REQUIRE_FALSE(result.hasValue());
+    REQUIRE(result.diagnostics.size() >= 3);
+    CHECK(result.diagnostics.items()[0].fieldPath() == "$/chartId");
+    CHECK(result.diagnostics.items()[1].fieldPath() == "$/format");
+    CHECK(result.diagnostics.items()[2].fieldPath() == "$/version");
+}
+
+TEST_CASE("Chart v4 canonical source and resolved identity are whitespace invariant",
+          "[chart][cohesion][characterization][identity]") {
+    const auto firstText = makeChart(ChartParts{});
+    auto secondText = firstText;
+    secondText.insert(0, "  \n");
+    secondText.append("\n");
+
+    const auto first = cuexis::chart::ChartV4Loader::load(firstText);
+    const auto second = cuexis::chart::ChartV4Loader::load(secondText);
+    REQUIRE(first.hasValue());
+    REQUIRE(second.hasValue());
+    CHECK(first.document->canonicalSource.canonicalText ==
+          second.document->canonicalSource.canonicalText);
+
+    const auto firstResolved = cuexis::chart::ChartV4Resolver::resolve(*first.document);
+    const auto secondResolved = cuexis::chart::ChartV4Resolver::resolve(*second.document);
+    REQUIRE(firstResolved.hasValue());
+    REQUIRE(secondResolved.hasValue());
+    CHECK(firstResolved.artifact->chartIdentity == secondResolved.artifact->chartIdentity);
 }
