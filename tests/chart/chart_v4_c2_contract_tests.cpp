@@ -1,8 +1,8 @@
+#include <cuexis/chart/canonical_chart_loader.hpp>
+#include <cuexis/chart/chart_loader.hpp>
 #include <cuexis/chart/chart_v4_loader.hpp>
 #include <cuexis/chart/chart_v4_resolver.hpp>
 #include <cuexis/chart/chart_writer.hpp>
-#include <cuexis/chart/canonical_chart_loader.hpp>
-#include <cuexis/chart/chart_loader.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -984,10 +984,17 @@ TEST_CASE("Chart v4 diagnostics retain deterministic path ordering",
 
     const auto result = cuexis::chart::ChartV4Loader::load(text);
     REQUIRE_FALSE(result.hasValue());
-    REQUIRE(result.diagnostics.size() >= 3);
+    REQUIRE(result.diagnostics.size() == 5);
     CHECK(result.diagnostics.items()[0].fieldPath() == "$/chartId");
-    CHECK(result.diagnostics.items()[1].fieldPath() == "$/format");
-    CHECK(result.diagnostics.items()[2].fieldPath() == "$/version");
+    CHECK(result.diagnostics.items()[0].code() == "chart.chart_id.invalid");
+    CHECK(result.diagnostics.items()[1].fieldPath() == "$/chartId");
+    CHECK(result.diagnostics.items()[1].code() == "chart.uuid.invalid_v7");
+    CHECK(result.diagnostics.items()[2].fieldPath() == "$/format");
+    CHECK(result.diagnostics.items()[2].code() == "chart.format.invalid");
+    CHECK(result.diagnostics.items()[3].fieldPath() == "$/format");
+    CHECK(result.diagnostics.items()[3].code() == "chart.format.unsupported");
+    CHECK(result.diagnostics.items()[4].fieldPath() == "$/version");
+    CHECK(result.diagnostics.items()[4].code() == "chart.version.unsupported");
 }
 
 TEST_CASE("Chart v4 canonical source and resolved identity are whitespace invariant",

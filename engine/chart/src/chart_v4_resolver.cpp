@@ -9,7 +9,9 @@
 #include <cuexis/json/value.hpp>
 
 #include "chart_parameter_resolver_internal.hpp"
-#include "chart_v4_reader_internal.hpp"
+#include "chart_project_path_internal.hpp"
+#include "chart_v4_animation_reader_internal.hpp"
+#include "chart_v4_common_reader_internal.hpp"
 #include "diagnostic_limit.hpp"
 #include "sha256_internal.hpp"
 

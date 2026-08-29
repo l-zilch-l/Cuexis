@@ -15,7 +15,9 @@ target_sources(cuexis_chart
         src/chart_v4_resolver.cpp
         src/chart_writer.cpp
         src/prepared_semantic_identity.cpp
-        src/chart_v4_reader_internal.cpp
+        src/chart_v4_common_reader_internal.cpp
+        src/chart_v4_animation_reader_internal.cpp
+        src/chart_project_path_internal.cpp
         src/rational_beat.cpp
         src/timing_map.cpp
         src/uuid.cpp
