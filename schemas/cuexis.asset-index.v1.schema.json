@@ -50,10 +50,6 @@
           "maxItems": 256,
           "items": { "$ref": "#/definitions/assetId" },
           "uniqueItems": true
-        },
-        "extensions": {
-          "type": "object",
-          "maxProperties": 256
         }
       }
     }

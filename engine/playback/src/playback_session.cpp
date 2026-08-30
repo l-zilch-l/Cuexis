@@ -90,8 +90,15 @@ void copyMatrix(const core::Mat4& source, float (&destination)[16]) noexcept {
 }
 
 void addErrorDiagnostic(core::Diagnostics& diagnostics, const core::Error& error) {
+    std::string fieldPath;
+    for (const auto& context : error.context()) {
+        if (context.key == "field_path") {
+            fieldPath = context.value;
+            break;
+        }
+    }
     core::Diagnostic diagnostic{core::DiagnosticSeverity::Error, std::string{error.code()},
-                                std::string{error.message()}};
+                                std::string{error.message()}, std::move(fieldPath)};
     for (const auto& context : error.context()) {
         diagnostic.withContext(context.key, context.value);
     }
@@ -997,8 +1004,8 @@ assembleResourceIdentities(std::span<const chart::ChartResourceRequirement> requ
                                             PrepareArtifact& artifact,
                                             const chart::ChartRuntime& chartRuntime,
                                             core::Diagnostics& diagnostics) -> core::Result<void> {
-    auto preparedPresentation =
-        detail::preparePresentation(chartRuntime, artifact.resourceManager.get());
+    auto preparedPresentation = detail::preparePresentation(
+        chartRuntime, artifact.resourceManager.get(), artifact.v4Artifact.has_value());
     if (!preparedPresentation) {
         addErrorDiagnostic(diagnostics, preparedPresentation.error());
         diagnostics.sortDeterministically();

@@ -68,7 +68,8 @@ struct PreparedPresentation final {
 };
 
 [[nodiscard]] auto preparePresentation(const chart::ChartRuntime& chartRuntime,
-                                       assets::ResourceManager* resourceManager)
+                                       assets::ResourceManager* resourceManager,
+                                       bool rejectLegacy = false)
     -> core::Result<std::optional<PreparedPresentation>>;
 
 [[nodiscard]] auto findPresentationResource(const PreparedPresentation& presentation,

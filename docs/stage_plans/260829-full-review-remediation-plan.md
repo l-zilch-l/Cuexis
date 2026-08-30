@@ -165,6 +165,20 @@ Sink 仍会发出该码，规范与生产发射点看似不一致。
 stops、tempoEvents、templates、keyframe tracks 等影响运行表现的字段必须改变 identity。一次性
 重生成受影响 golden 和 cache，不保留双轨猜测逻辑。
 
+### 4.7 兼容退出政策（ADR 0041）
+
+2026-08-30 已接受 [ADR 0041](../adr/0041-legacy-format-exit-policy.md)。后续整改统一遵循：
+
+- 新版 Writer、pack、prepare 不产生旧格式或 legacy presentation。
+- Reader/prepare 遇到旧 payload、未定义 record-level extension 或不兼容组合时稳定拒绝，
+  不进行隐式 fallback 或猜测式转换。
+- Chart v1/v2/v3 Reader、显式迁移、document-level opaque extensions 和 SDK 0.7.0 已公开
+  的旧 API 继续按原 ADR 保留；删除或收紧必须进入新的 SDK/API 版本门禁。
+- identity 采用一次性 canonical 全量迁移，旧 cache 失效，不保留双轨算法。
+
+本节是已接受的实施合同；它不改变 `docs/CURRENT_STATUS.md` 的 Stage 5 状态，也不授权删除
+Chart v1/v2/v3 Reader、`RenderFrame` 或两参 `TimingMap::create`。
+
 ## 5. 批次总览和依赖
 
  ~~~text

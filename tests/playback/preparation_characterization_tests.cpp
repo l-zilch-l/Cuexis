@@ -62,6 +62,30 @@ constexpr std::string_view simpleChart = R"json(
 }
 )json";
 
+constexpr std::string_view v4LegacyRenderableChart = R"json(
+{
+  "format":"cuexis.chart","version":4,
+  "chartId":"019f0000-0000-7abc-8def-000000000451","metadata":{},
+  "timing":{"offsetMs":0,"defaultBpm":120,"tempoEvents":[],"stops":[]},
+  "camera":{"type":"perspective","fovY":60,"near":0.1,"far":1000},
+  "parameters":[],"templates":[],"behaviors":[],
+  "animationTemplateImports":[],"animationClips":[],
+  "objects":[{
+    "id":"019f0000-0000-7abc-8def-000000000461","name":"legacy_renderable",
+    "parent":null,
+    "components":{
+      "cuexis.transform":{"version":1,"position":[0,0,0],
+                           "rotation":[0,0,0,1],"scale":[1,1,1]},
+      "cuexis.renderable":{"version":1,
+                            "mesh":{"domain":"asset","id":"mesh.legacy"},
+                            "material":{"domain":"asset","id":"material.legacy"}}
+    },
+    "extensions":{}
+  }],
+  "requiredExtensions":[],"extensions":{}
+}
+)json";
+
 struct ActiveBaseline final {
     SessionState state{};
     PlaybackContentInfo content;
@@ -225,26 +249,29 @@ stage3SourceWithProvider(std::shared_ptr<cuexis::content::IContentProvider> prov
         std::move(provider));
 }
 
-[[nodiscard]] auto v4NonPortableSource() -> cuexis::core::Result<PlaybackSource> {
-    const auto chart = readFile(sourceRoot() / "tests" / "fixtures" / "chart_format_update" /
-                                "valid" / "chart_v4_animation.json");
+[[nodiscard]] auto v4LegacyPresentationSource() -> cuexis::core::Result<PlaybackSource> {
+    const auto root = sourceRoot() / "tests" / "fixtures" / "stage1b_project" / "assets";
     auto provider = cuexis::content::MemoryContentProvider::create(
-        {{.rootId = "main", .source = "meshes/note.mesh.bin", .bytes = {std::byte{'m'}}},
-         {.rootId = "main", .source = "materials/note.material.bin", .bytes = {std::byte{'m'}}}});
+        {{.rootId = "main",
+          .source = "meshes/note.mesh.bin",
+          .bytes = readBytes(root / "meshes" / "note.mesh.bin")},
+         {.rootId = "main",
+          .source = "materials/basic.material.bin",
+          .bytes = readBytes(root / "materials" / "basic.material.bin")}});
     if (!provider) {
         return cuexis::core::unexpected(std::move(provider.error()));
     }
     return PlaybackSource::fromTypedProject(
-        {.sourceId = "pb03-identity-failure",
-         .chartJson = chart,
-         .assets = {{.id = "mesh.note",
+        {.sourceId = "pb01-legacy-presentation",
+         .chartJson = std::string{v4LegacyRenderableChart},
+         .assets = {{.id = "mesh.legacy",
                      .type = PlaybackAssetType::Mesh,
                      .rootId = "main",
                      .logicalSource = "meshes/note.mesh.bin"},
-                    {.id = "material.note",
+                    {.id = "material.legacy",
                      .type = PlaybackAssetType::Material,
                      .rootId = "main",
-                     .logicalSource = "materials/note.material.bin"}}},
+                     .logicalSource = "materials/basic.material.bin"}}},
         std::move(*provider));
 }
 
@@ -502,25 +529,58 @@ TEST_CASE("PB-03 capability preflight and identity failures are deterministic",
         checkDiagnosticOrder(*diagnostics);
         checkRollback(session, baseline);
     }
+}
 
-    SECTION("identity assembly failure does not publish candidate") {
-        PlaybackSession session;
-        REQUIRE(session.loadChart(simpleChart).has_value());
-        REQUIRE(session.update({.chartTimeMs = 0.0}).has_value());
-        const auto baseline = captureBaseline(session);
-        auto source = v4NonPortableSource();
-        REQUIRE(source.has_value());
+TEST_CASE("PB-01 Chart v4 legacy renderables are rejected before identity assembly",
+          "[playback][prepare][pb-01]") {
+    PlaybackSession session;
+    REQUIRE(session.loadChart(simpleChart).has_value());
+    REQUIRE(session.update({.chartTimeMs = 125.0}).has_value());
+    const auto baseline = captureBaseline(session);
+    const auto activeDiagnostics = session.diagnostics();
+    REQUIRE(activeDiagnostics.has_value());
+    CHECK(activeDiagnostics->empty());
 
-        const auto failed = session.prepareReload(std::move(*source), {.chartTimeMs = 0.0},
-                                                  ReloadPolicy::KeepChartTime);
-        REQUIRE_FALSE(failed.has_value());
-        CHECK(failed.error().code() == "playback.identity.assemble_failed");
-        const auto diagnostics = session.lastOperationDiagnostics();
-        REQUIRE(diagnostics.has_value());
-        REQUIRE(hasDiagnostic(*diagnostics, "playback.identity.resource_missing"));
-        checkDiagnosticOrder(*diagnostics);
-        checkRollback(session, baseline);
-    }
+    auto source = v4LegacyPresentationSource();
+    REQUIRE(source.has_value());
+    const auto failed = session.prepareReload(std::move(*source), {.chartTimeMs = 125.0},
+                                              ReloadPolicy::KeepChartTime);
+    REQUIRE_FALSE(failed.has_value());
+    CHECK(failed.error().code() == "playback.chart.v4.requires_portable_presentation");
+    CHECK(failed.error().message() ==
+          "Chart v4 renderable requires a portable CXPRES01 presentation payload");
+    REQUIRE(failed.error().context().size() == 4);
+    CHECK(failed.error().context()[0].key == "asset_id");
+    CHECK(failed.error().context()[0].value == "material.legacy");
+    CHECK(failed.error().context()[1].key == "resource_type");
+    CHECK(failed.error().context()[1].value == "unlit_material");
+    CHECK(failed.error().context()[2].key == "field_path");
+    CHECK(failed.error().context()[2].value == "$/resources/material.legacy");
+    CHECK(failed.error().context()[3].key == "object_id");
+    CHECK(failed.error().context()[3].value == "019f0000-0000-7abc-8def-000000000461");
+
+    const auto diagnostics = session.lastOperationDiagnostics();
+    REQUIRE(diagnostics.has_value());
+    REQUIRE(diagnostics->size() == 1);
+    CHECK(diagnostics->items()[0].code() == "playback.chart.v4.requires_portable_presentation");
+    CHECK(diagnostics->items()[0].message() ==
+          "Chart v4 renderable requires a portable CXPRES01 presentation payload");
+    CHECK(diagnostics->items()[0].fieldPath() == "$/resources/material.legacy");
+    REQUIRE(diagnostics->items()[0].context().size() == 4);
+    CHECK(diagnostics->items()[0].context()[0].key == "asset_id");
+    CHECK(diagnostics->items()[0].context()[0].value == "material.legacy");
+    CHECK(diagnostics->items()[0].context()[1].key == "resource_type");
+    CHECK(diagnostics->items()[0].context()[1].value == "unlit_material");
+    CHECK(diagnostics->items()[0].context()[2].key == "field_path");
+    CHECK(diagnostics->items()[0].context()[2].value == "$/resources/material.legacy");
+    CHECK(diagnostics->items()[0].context()[3].key == "object_id");
+    CHECK(diagnostics->items()[0].context()[3].value == "019f0000-0000-7abc-8def-000000000461");
+    checkDiagnosticOrder(*diagnostics);
+
+    const auto activeAfterFailure = session.diagnostics();
+    REQUIRE(activeAfterFailure.has_value());
+    CHECK(activeAfterFailure->empty());
+    checkRollback(session, baseline);
 }
 
 TEST_CASE("PB-03 stale commit failure records operation diagnostics and keeps active frame",

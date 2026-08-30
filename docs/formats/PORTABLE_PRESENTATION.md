@@ -319,12 +319,14 @@ Stage 3 v1 的资产输入只支持一种 versioned binary payload。Filesystem�
 - 实现先校验 envelope、计数和全部乘加溢出，再分配或读取 body。
 - v1 不允许扩展尾部字段；新增字段必须使用新 payloadVersion。
 
-Stage 1B opaque fixture 保持兼容但不伪装成 portable resource：若一个候选的全部必需
-Mesh/Material blob 都不声明或尝试 `CXPRES` envelope，则候选继续使用历史内部资源路径，
-`presentationManifest()` 返回空指针且 acquisition 不可用。一旦闭包中任何必需 blob 声明、尝试
-`CXPRES` magic/prefix，或具有结构上可识别的 v1 envelope，其全部表现闭包都必须通过本节严格
-校验；不能把损坏或混合 blob 回退为 Stage 1B opaque 内容。无 Renderable 的空闭包发布 version 1
-空 manifest。
+Stage 1B opaque fixture 保持兼容但不伪装成 portable resource：v1/v2/v3 的候选若全部必需
+Mesh/Material blob 都不声明或尝试 `CXPRES` envelope，则继续使用历史内部资源路径，
+`presentationManifest()` 返回空指针且 acquisition 不可用。Chart v4 的实际 Renderable 不
+适用这条兼容路径；只要其必需 blob 不是 `CXPRES01`，prepare 必须以
+`playback.chart.v4.requires_portable_presentation` 稳定拒绝，并保留 active rollback。一旦
+兼容路径中任何必需 blob 声明、尝试 `CXPRES` magic/prefix，或具有结构上可识别的 v1 envelope，
+其全部表现闭包都必须通过本节严格校验；不能把损坏或混合 blob 回退为 Stage 1B opaque 内容。
+无 Renderable 的空闭包发布 version 1 空 manifest。
 
 ## 5. Mesh v1（S3A-04）
 
@@ -603,6 +605,7 @@ Snapshot）；它由 PlaybackSession 在资源读取前执行 preflight。
 | `playback.presentation.dependency.mismatch` | Payload reference and Asset Index dependencies differ |
 | `playback.presentation.dependency.cycle` | Portable dependency closure contains a cycle |
 | `playback.presentation.resource.missing` | Required indexed resource is unavailable |
+| `playback.chart.v4.requires_portable_presentation` | Chart v4 Renderable references a legacy opaque payload instead of `CXPRES01` |
 | `playback.presentation.identity_collision` | Different canonical values produced one identity |
 | `playback.presentation.reference.invalid` | Ref type/AssetId/identity is not in candidate/active manifest |
 | `playback.presentation.capability.version_unsupported` | Capability/request version unsupported |

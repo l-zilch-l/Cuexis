@@ -240,15 +240,14 @@ AssetIndexResult AssetIndexReader::read(std::string_view jsonText, const AssetIn
                 if (!item || item->readObject() == nullptr) {
                     continue;
                 }
-                constexpr std::array fields{
-                    std::string_view{"id"}, std::string_view{"type"}, std::string_view{"source"},
-                    std::string_view{"dependencies"}, std::string_view{"extensions"}};
+                constexpr std::array fields{std::string_view{"id"}, std::string_view{"type"},
+                                            std::string_view{"source"},
+                                            std::string_view{"dependencies"}};
                 item->rejectUnknownFields(fields);
                 const auto idReader = item->requiredField("id");
                 const auto typeReader = item->requiredField("type");
                 const auto sourceReader = item->requiredField("source");
                 const auto dependenciesReader = item->requiredField("dependencies");
-                const auto recordExtensionsReader = item->optionalField("extensions");
 
                 AssetIndexRecord record;
                 bool complete = true;
@@ -338,12 +337,6 @@ AssetIndexResult AssetIndexReader::read(std::string_view jsonText, const AssetIn
                     }
                 } else {
                     complete = false;
-                }
-                if (recordExtensionsReader) {
-                    const auto value = readExtensions(*recordExtensionsReader, limits, diagnostics);
-                    if (value) {
-                        record.extensions = *value;
-                    }
                 }
                 if (complete) {
                     document.assets.push_back(std::move(record));

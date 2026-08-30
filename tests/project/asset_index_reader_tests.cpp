@@ -24,6 +24,21 @@ bool hasDiagnostic(const cuexis::core::Diagnostics& diagnostics, std::string_vie
     return false;
 }
 
+std::string recordExtensionsInput(int version, std::string_view type) {
+    return "{\"format\":\"cuexis.asset-index\",\"version\":" + std::to_string(version) +
+           ",\"assets\":[{\"id\":\"asset.main\",\"type\":\"" + std::string{type} +
+           "\",\"source\":\"assets/main.bin\",\"dependencies\":[],"
+           "\"extensions\":{\"org.record\":{\"flag\":true,\"a\":\"value\"}}}],"
+           "\"extensions\":{\"org.document\":{\"z\":1,\"a\":true}}}";
+}
+
+std::string documentExtensionsInput(int version, std::string_view type) {
+    return "{\"format\":\"cuexis.asset-index\",\"version\":" + std::to_string(version) +
+           ",\"assets\":[{\"id\":\"asset.main\",\"type\":\"" + std::string{type} +
+           "\",\"source\":\"assets/main.bin\",\"dependencies\":[]}],"
+           "\"extensions\":{\"org.document\":{\"z\":1,\"a\":true}}}";
+}
+
 } // namespace
 
 TEST_CASE("Asset Index Reader returns typed records without exposing a JSON DOM",
@@ -160,6 +175,99 @@ TEST_CASE("Asset Index Reader routes v3 shader and keeps v1/v2 rejection",
     const auto rejectedV2 = cuexis::project::AssetIndexReader::read(v2);
     REQUIRE_FALSE(rejectedV2.hasValue());
     CHECK(hasDiagnostic(rejectedV2.diagnostics, "asset_index.type.unsupported", "$/assets/0/type"));
+}
+
+TEST_CASE("Asset Index Reader preserves document extensions across versions",
+          "[project][asset-index][extensions][characterization]") {
+    SECTION("v1 mesh record") {
+        const auto result =
+            cuexis::project::AssetIndexReader::read(documentExtensionsInput(1, "mesh"));
+        REQUIRE(result.hasValue());
+        REQUIRE(result.document->assets.size() == 1U);
+        CHECK(result.document->assets[0].extensions.canonicalText == "{}");
+        CHECK(result.document->extensions.canonicalText == R"({"org.document":{"a":true,"z":1}})");
+        REQUIRE(result.diagnostics.items().size() == 1U);
+        CHECK(result.diagnostics.items()[0].code() == "asset_index.extensions.opaque");
+        CHECK(result.diagnostics.items()[0].message() ==
+              "Asset Index extensions are preserved without v1 runtime behavior");
+        CHECK(result.diagnostics.items()[0].fieldPath() == "$/extensions");
+    }
+
+    SECTION("v2 audio record") {
+        const auto result =
+            cuexis::project::AssetIndexReader::read(documentExtensionsInput(2, "audio"));
+        REQUIRE(result.hasValue());
+        REQUIRE(result.document->assets.size() == 1U);
+        CHECK(result.document->version == 2U);
+        CHECK(result.document->assets[0].type == cuexis::project::AssetType::Audio);
+        CHECK(result.document->assets[0].extensions.canonicalText == "{}");
+        CHECK(result.document->extensions.canonicalText == R"({"org.document":{"a":true,"z":1}})");
+        REQUIRE(result.diagnostics.items().size() == 1U);
+        CHECK(result.diagnostics.items()[0].fieldPath() == "$/extensions");
+    }
+
+    SECTION("v3 shader record") {
+        const auto result =
+            cuexis::project::AssetIndexReader::read(documentExtensionsInput(3, "shader"));
+        REQUIRE(result.hasValue());
+        REQUIRE(result.document->assets.size() == 1U);
+        CHECK(result.document->version == 3U);
+        CHECK(result.document->assets[0].type == cuexis::project::AssetType::Shader);
+        CHECK(result.document->assets[0].extensions.canonicalText == "{}");
+        CHECK(result.document->extensions.canonicalText == R"({"org.document":{"a":true,"z":1}})");
+        REQUIRE(result.diagnostics.items().size() == 1U);
+        CHECK(result.diagnostics.items()[0].fieldPath() == "$/extensions");
+    }
+}
+
+TEST_CASE("Asset Index Reader rejects undefined record extensions and keeps document extensions",
+          "[project][asset-index][extensions][d2]") {
+    SECTION("v1 record extension is rejected") {
+        const auto result =
+            cuexis::project::AssetIndexReader::read(recordExtensionsInput(1, "mesh"));
+        REQUIRE_FALSE(result.hasValue());
+        REQUIRE(result.diagnostics.items().size() == 2U);
+        CHECK(result.diagnostics.items()[0].code() == "json.field.unknown");
+        CHECK(result.diagnostics.items()[0].message() == "JSON field is not recognized");
+        CHECK(result.diagnostics.items()[0].fieldPath() == "$/assets/0/extensions");
+        CHECK(result.diagnostics.items()[1].code() == "asset_index.extensions.opaque");
+        CHECK(result.diagnostics.items()[1].fieldPath() == "$/extensions");
+    }
+
+    SECTION("v2 record extension is rejected") {
+        const auto result =
+            cuexis::project::AssetIndexReader::read(recordExtensionsInput(2, "audio"));
+        REQUIRE_FALSE(result.hasValue());
+        REQUIRE(result.diagnostics.items().size() == 2U);
+        CHECK(result.diagnostics.items()[0].code() == "json.field.unknown");
+        CHECK(result.diagnostics.items()[0].fieldPath() == "$/assets/0/extensions");
+        CHECK(result.diagnostics.items()[1].code() == "asset_index.extensions.opaque");
+        CHECK(result.diagnostics.items()[1].fieldPath() == "$/extensions");
+    }
+
+    SECTION("v3 record extension is rejected") {
+        const auto result =
+            cuexis::project::AssetIndexReader::read(recordExtensionsInput(3, "shader"));
+        REQUIRE_FALSE(result.hasValue());
+        REQUIRE(result.diagnostics.items().size() == 2U);
+        CHECK(result.diagnostics.items()[0].code() == "json.field.unknown");
+        CHECK(result.diagnostics.items()[0].fieldPath() == "$/assets/0/extensions");
+        CHECK(result.diagnostics.items()[1].code() == "asset_index.extensions.opaque");
+        CHECK(result.diagnostics.items()[1].fieldPath() == "$/extensions");
+    }
+
+    SECTION("document extension remains accepted") {
+        const auto result =
+            cuexis::project::AssetIndexReader::read(documentExtensionsInput(3, "shader"));
+        REQUIRE(result.hasValue());
+        REQUIRE(result.document->assets.size() == 1U);
+        CHECK(result.document->extensions.canonicalText == R"({"org.document":{"a":true,"z":1}})");
+        REQUIRE(result.diagnostics.items().size() == 1U);
+        CHECK(result.diagnostics.items()[0].code() == "asset_index.extensions.opaque");
+        CHECK(result.diagnostics.items()[0].message() ==
+              "Asset Index extensions are preserved without v1 runtime behavior");
+        CHECK(result.diagnostics.items()[0].fieldPath() == "$/extensions");
+    }
 }
 
 TEST_CASE("Asset Index v3 enforces shader leaf boundaries", "[project][asset-index][v3]") {

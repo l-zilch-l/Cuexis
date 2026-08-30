@@ -1882,7 +1882,7 @@ struct BuiltResource final {
 } // namespace
 
 auto preparePresentation(const chart::ChartRuntime& chartRuntime,
-                         assets::ResourceManager* resourceManager)
+                         assets::ResourceManager* resourceManager, bool rejectLegacy)
     -> core::Result<std::optional<PreparedPresentation>> {
     try {
         auto requiredResult = collectRequiredResources(chartRuntime);
@@ -1913,6 +1913,21 @@ auto preparePresentation(const chart::ChartRuntime& chartRuntime,
         std::map<std::string, assets::MeshLease, std::less<>> meshLeases;
         std::map<std::string, assets::MaterialLease, std::less<>> materialLeases;
         bool portableCandidate = false;
+        const auto objectIdFor = [&](std::string_view assetId,
+                                     PresentationResourceType type) -> std::string_view {
+            for (const auto& object : chartRuntime.objects) {
+                if (!object.components.renderable) {
+                    continue;
+                }
+                const auto& renderable = *object.components.renderable;
+                const auto& referencedAsset =
+                    type == PresentationResourceType::Mesh ? renderable.mesh : renderable.material;
+                if (referencedAsset.value == assetId) {
+                    return object.id.value;
+                }
+            }
+            return {};
+        };
         for (const auto& [assetId, type] : required) {
             const auto* record = resourceManager->database().find(assetId);
             if (record == nullptr || record->type != indexedType(type)) {
@@ -1931,6 +1946,17 @@ auto preparePresentation(const chart::ChartRuntime& chartRuntime,
                     return core::unexpected(
                         unavailableResource(assetId, type, std::move(loaded.error())));
                 }
+                if (rejectLegacy && !looksPortable(loaded->resource().bytes())) {
+                    auto error = resourceError(
+                        "playback.chart.v4.requires_portable_presentation",
+                        "Chart v4 renderable requires a portable CXPRES01 presentation payload",
+                        assetId, type);
+                    error.withContext("field_path", std::string{"$/resources/"} + assetId);
+                    if (const auto objectId = objectIdFor(assetId, type); !objectId.empty()) {
+                        error.withContext("object_id", std::string{objectId});
+                    }
+                    return core::unexpected(std::move(error));
+                }
                 portableCandidate = portableCandidate || looksPortable(loaded->resource().bytes());
                 meshLeases.emplace(assetId, std::move(*loaded));
             } else {
@@ -1938,6 +1964,17 @@ auto preparePresentation(const chart::ChartRuntime& chartRuntime,
                 if (!loaded) {
                     return core::unexpected(
                         unavailableResource(assetId, type, std::move(loaded.error())));
+                }
+                if (rejectLegacy && !looksPortable(loaded->resource().bytes())) {
+                    auto error = resourceError(
+                        "playback.chart.v4.requires_portable_presentation",
+                        "Chart v4 renderable requires a portable CXPRES01 presentation payload",
+                        assetId, type);
+                    error.withContext("field_path", std::string{"$/resources/"} + assetId);
+                    if (const auto objectId = objectIdFor(assetId, type); !objectId.empty()) {
+                        error.withContext("object_id", std::string{objectId});
+                    }
+                    return core::unexpected(std::move(error));
                 }
                 portableCandidate = portableCandidate || looksPortable(loaded->resource().bytes());
                 materialLeases.emplace(assetId, std::move(*loaded));

@@ -206,6 +206,15 @@ MainMusic
 空 CXT 列表与空资源 manifest 仍写入 count `0`。v1/v2/v3 成功 prepare 使用 canonical Writer
 bytes 的 Chart identity、空 CXT 列表、空 parameter identity 和同样的实际资源 manifest。
 
+### 3.1 Renderable presentation boundary
+
+Chart v4 中实际带有 `cuexis.renderable` 的 Object/Template 必须通过
+`CXPRES01` portable Mesh/Material payload 提供其 presentation 资源。v4 prepare 在读取到
+legacy opaque payload 时稳定失败，返回
+`playback.chart.v4.requires_portable_presentation`，并携带 `asset_id`、`resource_type`、
+`object_id` 和 `field_path` 上下文；不得把 legacy bytes 静默转换为 Unlit，也不得继续到
+identity assembly 或发布 candidate。v1/v2/v3 的既有 opaque 兼容路径不受此条款改变。
+
 ## 4. Animation Template import
 
 ```json
