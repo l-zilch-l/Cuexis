@@ -619,6 +619,10 @@ Snapshot）；它由 PlaybackSession 在资源读取前执行 preflight。
 | `playback.presentation.frame.resource_mismatch` | Snapshot ref and acquired resource differ |
 | `playback.presentation.frame.command_budget_exceeded` | Normalized record limit exceeded |
 
+`playback.presentation.frame.value_invalid` is a boundary-only code. The World/Chart validation
+boundary rejects opacity and tint values outside `[0,1]`; production frame extraction only emits
+`playback.presentation.frame.non_finite` for non-finite matrix, color, or depth calculations.
+
 通用 lifecycle 失败继续复用现有 `playback.session.not_owner_thread`、
 `playback.session.reentrant`、`playback.prepared.invalid` 和 candidate/session mismatch code，不建立同义
 presentation code。

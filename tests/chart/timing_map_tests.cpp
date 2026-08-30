@@ -56,10 +56,21 @@ TEST_CASE("TimingMap rejects invalid and non-finite values", "[chart][timing]") 
 }
 
 TEST_CASE("Legacy TimingMap preserves the historical positive BPM range", "[chart][timing]") {
-    CHECK(cuexis::chart::TimingMap::create(0.5, 0.0).has_value());
-    CHECK(cuexis::chart::TimingMap::create(70000.0, 0.0).has_value());
-    CHECK_FALSE(cuexis::chart::TimingMap::create(0.5, 0.0, {}, {}).has_value());
-    CHECK_FALSE(cuexis::chart::TimingMap::create(70000.0, 0.0, {}, {}).has_value());
+    const auto legacyLow = cuexis::chart::TimingMap::create(0.5, 0.0);
+    const auto legacyHigh = cuexis::chart::TimingMap::create(70000.0, 0.0);
+    REQUIRE(legacyLow.has_value());
+    REQUIRE(legacyHigh.has_value());
+    CHECK(legacyLow->defaultBpm() == 0.5);
+    CHECK(legacyHigh->defaultBpm() == 70000.0);
+
+    const auto strictLow = cuexis::chart::TimingMap::create(0.5, 0.0, {}, {});
+    const auto strictHigh = cuexis::chart::TimingMap::create(70000.0, 0.0, {}, {});
+    REQUIRE_FALSE(strictLow.has_value());
+    REQUIRE_FALSE(strictHigh.has_value());
+    CHECK(strictLow.error().code() == "chart.timing.invalid_bpm");
+    CHECK(strictHigh.error().code() == "chart.timing.invalid_bpm");
+    CHECK(strictLow.error().message() == "Default BPM must be in [1, 65536]");
+    CHECK(strictHigh.error().message() == "Default BPM must be in [1, 65536]");
 }
 
 TEST_CASE("TimingMap integrates Tempo Events and performs fixed-budget inversion",

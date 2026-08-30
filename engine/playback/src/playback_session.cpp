@@ -660,7 +660,9 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
                                             "Chart loading produced errors"});
     }
     artifact.document.emplace(std::move(*loaded.document));
-    auto canonical = chart::ChartWriter::write(*artifact.document);
+    // Legacy ChartDocument is a runtime-facing projection. Identity must use the complete
+    // canonical source bytes so legacy timing, template, and keyframe fields are not erased.
+    auto canonical = chart::ChartWriter::writeCanonicalJson(context.chartJson, context.limits);
     if (!canonical) {
         addErrorDiagnostic(diagnostics, canonical.error());
         return core::unexpected(std::move(canonical.error()));
