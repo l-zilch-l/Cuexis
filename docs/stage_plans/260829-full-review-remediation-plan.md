@@ -1,8 +1,8 @@
 # 260829 Full Review 整改实施计划
 
-状态：active；仅为整改计划，不代表任何 finding 已关闭
+状态：completed；2026-08-30 Full Review 最终 SHA hosted 验证与 owner acceptance 已完成；本文件保留任务拆分和处置映射
 
-更新日期：2026-08-29
+更新日期：2026-08-30
 
 来源：[260829 全项目代码审查](../stage_reports/260829-full-review.md)
 

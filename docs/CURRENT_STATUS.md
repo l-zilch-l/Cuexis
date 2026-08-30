@@ -2,7 +2,7 @@
 
 状态：现行状态页
 
-更新日期：2026-08-28
+更新日期：2026-08-30
 
 本文是当前阶段和实现状态的唯一摘要。阶段计划、完成报告和审查报告仍然保留各自的历史
 细节，但不能绕过本文重新定义当前状态。
@@ -30,6 +30,25 @@ PlaybackSession、FrameSnapshot、ContentProvider 和后续 Judgement/Replay 合
 | Stage Chart Format Update | 已完成；CFU-C0–C4、CFU-D、CFU-E、CFU-F、CFU-G 已关闭；G6 owner acceptance 已于 2026-08-24 记录 | [实施计划](stage_plans/stage_chart_format_update_implementation_plan.md)、[G5/G6 completion report](stage_reports/stage_chart_format_update_completion_report.md) |
 | Stage 4 | 已完成；S4-H hosted 与 owner acceptance 已于 2026-08-27 记录 | [实施计划](stage_plans/stage_4_implementation_plan.md)、[完成报告](stage_reports/stage_4_completion_report.md) |
 | Stage 5 | S5-A 合同已冻结；S5-B 已接线；S5-C 已完成；S5-D 已完成；S5-E 已完成；S5-F 已完成；S5-G 已完成；S5-H local checkpoint；hosted 与 owner acceptance 待完成 | [实施计划](stage_plans/stage_5_implementation_plan.md)、[ADR 0040](adr/0040-stage-5-material-shader-contracts.md)、[Material/Shader spec](formats/MATERIAL_SHADER.md)、[S5-A 报告](stage_reports/260828-stage-5-s5-a-contracts.md)、[S5-B 报告](stage_reports/260828-stage-5-s5-b-shader-tools.md)、[S5-C 报告](stage_reports/260828-stage-5-s5-c-material-unlit.md)、[S5-D 报告](stage_reports/260828-stage-5-s5-d-shader-compile.md)、[S5-E 报告](stage_reports/260828-stage-5-s5-e-profile-capability.md)、[S5-F 报告](stage_reports/260828-stage-5-s5-f-cache.md)、[S5-G 报告](stage_reports/260828-stage-5-s5-g-consume.md)、[S5-H 报告](stage_reports/260828-stage-5-s5-h-safety.md) |
+
+## 260829 Full Review 整改
+
+Full Review 已于 2026-08-30 关闭。最终实现 SHA 为
+`fbe118bb310fffa1446584e0a30fd46bc743413b`，分支为 `260829-full-review`；144 项 finding
+（P0: 1、P1: 15、P2: 56、P3: 72）均已完成处置记录。P0/P1 正确性与公共边界修复、D1-D6
+决策门、Lane A/B/C/D、第 2 批和第 3 批已通过本地与 hosted 门禁；最终关闭证据见
+[Full Review 最终关闭报告](stage_reports/260830-full-review-final.md)。
+
+最终 SHA 的 [Linux Quality](https://github.com/l-zilch-l/Cuexis/actions/runs/33316147601)、
+[Windows MSVC](https://github.com/l-zilch-l/Cuexis/actions/runs/33316147625) 和
+[Windows MinGW](https://github.com/l-zilch-l/Cuexis/actions/runs/33316147662) 均成功。
+项目所有者已于 2026-08-30 接受本轮关闭。首次 hosted 失败仅为 GCC Shared Release 的未使用
+helper 警告和 MinGW release 的 missing-field-initializers 警告，均已在最终 SHA 修复并重验。
+
+按已接受范围，完整 Chart/CXC parse-once、RT-29 万级 render-state 排序、T1 World/Animation
+大规模优化、T2 大包解析降本和 T4 Stage 6/API/Player 任务继续 deferred；它们不是本轮关闭阻断项。
+Stage 5 仍保持 `S5-H local checkpoint; hosted 与 owner acceptance 待完成`，与 Full Review 关闭
+相互独立。运行时脚本和逐帧脚本回调继续无限期延后。
 
 Stage Chart Format Update 是 Stage 3 与 Stage 4 之间的正式名称，不使用 Stage 3.5 作为别名。
 

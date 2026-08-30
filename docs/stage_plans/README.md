@@ -19,7 +19,7 @@
 | [Stage Chart Format Update](stage_chart_format_update_implementation_plan.md) | completed | C0–C4 complete；CFU-D/CFU-E/CFU-F/G 已关闭；G6 owner acceptance recorded 2026-08-24 |
 | [Stage 4](stage_4_implementation_plan.md) | completed | Cuexis 表现动画；S4-H hosted 与 owner acceptance 已于 2026-08-27 记录 |
 | [Stage 5](stage_5_implementation_plan.md) | future; S5-A frozen; S5-B wired; S5-C/S5-D/S5-E/S5-F/S5-G complete; S5-H local checkpoint | Material、Shader 与能力 Profile；S5-A 合同已冻结；S5-B 已接线；S5-C 已完成；S5-D 已完成；S5-E 已完成；S5-F 已完成；S5-G 已完成；S5-H local checkpoint；hosted 与 owner acceptance 待完成 |
-| [260829 Full Review 整改计划](260829-full-review-remediation-plan.md) | active; implementation plan | 144 项全仓 review finding 的批次拆分、决策门、实现引导和验证矩阵；不代表 finding 已关闭 |
+| [260829 Full Review 整改计划](260829-full-review-remediation-plan.md) | completed; implementation and closure record | 144 项全仓 review finding 的批次拆分、决策门、实现引导和验证矩阵；最终关闭报告已记录 hosted 证据与 deferred 边界 |
 | [Stage 6](stage_6_implementation_plan.md) | future | Playback C++ API 与独立 Player 产品化 |
 | [Stage 7](stage_7_implementation_plan.md) | future | Cuexis Studio 核心 |
 | [Stage 8](stage_8_implementation_plan.md) | future optional | 确定性粒子表现扩展 |

@@ -2,7 +2,7 @@
 
 状态：现行阶段报告索引
 
-更新日期：2026-08-29
+更新日期：2026-08-30
 
 报告是带日期的证据快照。报告中的“下一步”只表示报告生成时的交接，不自动代表当前任务。
 
@@ -88,4 +88,5 @@
 | [260830 Full Review 整改 D3-D6](260830-full-review-remediation-d3-d6.md) | completed accepted boundary contracts, legacy TimingMap/render compatibility, and one-time full-fidelity legacy identity migration; hosted revalidation remains pending |
 | [260830 Full Review 整改 A2](260830-full-review-remediation-a2.md) | completed Lane A importer semantic-identity cache policy and normalized shader cache-key validation; hosted revalidation remains pending |
 | [260830 Full Review 整改 shared ABI gate](260830-full-review-remediation-shared-abi.md) | completed MSVC shared-DLL HostClock export correction; behavior and public contracts unchanged; hosted revalidation remains pending |
+| [260830 Full Review 最终关闭](260830-full-review-final.md) | Full Review 144 项 finding disposition closed after final-SHA Linux Quality, Windows MSVC and Windows MinGW success; deferred scope recorded |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |
