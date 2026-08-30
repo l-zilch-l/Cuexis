@@ -87,4 +87,5 @@
 | [260829 Full Review 整改 D1/D2](260829-full-review-remediation-d1-d2.md) | completed accepted legacy-format exit for Chart v4 presentation and Asset Index record-level extensions; hosted revalidation remains pending |
 | [260830 Full Review 整改 D3-D6](260830-full-review-remediation-d3-d6.md) | completed accepted boundary contracts, legacy TimingMap/render compatibility, and one-time full-fidelity legacy identity migration; hosted revalidation remains pending |
 | [260830 Full Review 整改 A2](260830-full-review-remediation-a2.md) | completed Lane A importer semantic-identity cache policy and normalized shader cache-key validation; hosted revalidation remains pending |
+| [260830 Full Review 整改 shared ABI gate](260830-full-review-remediation-shared-abi.md) | completed MSVC shared-DLL HostClock export correction; behavior and public contracts unchanged; hosted revalidation remains pending |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |
