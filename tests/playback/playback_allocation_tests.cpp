@@ -8,6 +8,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <array>
 #include <atomic>
 #include <cstddef>
 #include <cstdlib>
@@ -18,11 +19,13 @@
 #endif
 #include <iostream>
 #include <limits>
+#include <memory>
 #if defined(_WIN32)
 #include <malloc.h>
 #endif
 #include <new>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -31,6 +34,21 @@ namespace {
 
 std::atomic_size_t allocationCount{};
 std::atomic_bool trackingAllocations{};
+std::atomic_bool failingAllocation{};
+std::atomic_size_t failureAllocationIndex{};
+std::atomic_size_t allocationAttempt{};
+
+[[nodiscard]] bool shouldFailAllocation() noexcept {
+    if (!failingAllocation.load(std::memory_order_relaxed)) {
+        return false;
+    }
+    const auto attempt = allocationAttempt.fetch_add(1, std::memory_order_relaxed) + 1;
+    if (attempt != failureAllocationIndex.load(std::memory_order_relaxed)) {
+        return false;
+    }
+    failingAllocation.store(false, std::memory_order_relaxed);
+    return true;
+}
 
 #if defined(_MSC_VER) && defined(_DEBUG)
 _CRT_ALLOC_HOOK previousAllocationHook{};
@@ -44,6 +62,9 @@ int allocationHook(int allocationType, void* data, std::size_t size, int blockTy
     }
     if (allocationType == _HOOK_ALLOC && trackingAllocations.load(std::memory_order_relaxed)) {
         allocationCount.fetch_add(1, std::memory_order_relaxed);
+    }
+    if (allocationType == _HOOK_ALLOC && shouldFailAllocation()) {
+        return 0;
     }
     return 1;
 }
@@ -66,10 +87,24 @@ void beginAllocationTracking() {
     return allocationCount.load(std::memory_order_relaxed);
 }
 
-#if !defined(_MSC_VER) || !defined(_DEBUG)
+void beginAllocationFailure(std::size_t allocationIndex) {
+    allocationAttempt.store(0, std::memory_order_relaxed);
+    failureAllocationIndex.store(allocationIndex, std::memory_order_relaxed);
+    failingAllocation.store(true, std::memory_order_relaxed);
+}
+
+void endAllocationFailure() noexcept {
+    failingAllocation.store(false, std::memory_order_relaxed);
+}
+
 [[nodiscard]] auto allocate(std::size_t size) -> void* {
+#if !defined(_MSC_VER) || !defined(_DEBUG)
     if (trackingAllocations.load(std::memory_order_relaxed)) {
         allocationCount.fetch_add(1, std::memory_order_relaxed);
+    }
+#endif
+    if (shouldFailAllocation()) {
+        throw std::bad_alloc{};
     }
     void* memory = std::malloc(size == 0 ? 1 : size);
     if (memory != nullptr) {
@@ -79,8 +114,13 @@ void beginAllocationTracking() {
 }
 
 [[nodiscard]] auto allocateAligned(std::size_t size, std::size_t alignment) -> void* {
+#if !defined(_MSC_VER) || !defined(_DEBUG)
     if (trackingAllocations.load(std::memory_order_relaxed)) {
         allocationCount.fetch_add(1, std::memory_order_relaxed);
+    }
+#endif
+    if (shouldFailAllocation()) {
+        throw std::bad_alloc{};
     }
 #if defined(_WIN32)
     void* memory = _aligned_malloc(size == 0 ? 1 : size, alignment);
@@ -98,7 +138,6 @@ void beginAllocationTracking() {
     }
     throw std::bad_alloc{};
 }
-#endif
 
 [[nodiscard]] auto emptyChart(std::uint32_t version) -> std::string {
     std::ostringstream output;
@@ -118,9 +157,65 @@ void beginAllocationTracking() {
     return output.str();
 }
 
+struct AllocationBoundaryOutcome final {
+    bool returnedValue{};
+    bool badAllocEscaped{};
+    bool lengthErrorEscaped{};
+};
+
+template <typename Callback>
+[[nodiscard]] auto invokeWithAllocationFailure(std::size_t allocationIndex, Callback&& callback)
+    -> AllocationBoundaryOutcome {
+    AllocationBoundaryOutcome outcome;
+    beginAllocationFailure(allocationIndex);
+    try {
+        const auto result = callback();
+        outcome.returnedValue = result.has_value();
+    } catch (const std::bad_alloc&) {
+        outcome.badAllocEscaped = true;
+    } catch (const std::length_error&) {
+        outcome.lengthErrorEscaped = true;
+    } catch (...) {
+        endAllocationFailure();
+        throw;
+    }
+    endAllocationFailure();
+    return outcome;
+}
+
+#if !defined(CUEXIS_PLAYBACK_ALLOCATION_TEST_SHARED)
+constexpr std::string_view allocationBoundaryChart = R"json(
+{
+  "format":"cuexis.chart","version":1,
+  "chartId":"019b0000-0000-7abc-8def-000000000899","metadata":{},
+  "timing":{"offsetMs":0,"defaultBpm":120,"bpmChanges":[],"stops":[]},
+  "camera":{"type":"perspective","fovY":60,"near":0.1,"far":1000},
+  "templates":[],"behaviors":[],
+  "objects":[{
+    "id":"019b0000-0000-7abc-8def-000000000898","parent":null,
+    "components":{"cuexis.transform":{"version":1,"position":[0,0,0],
+                  "rotation":[0,0,0,1],"scale":[1,1,1]}},"extensions":{}
+  }],
+  "requiredExtensions":[],
+  "extensions":{"org.example.allocation_warning":{"version":1,"data":{"x":1}}}
+}
+)json";
+
+[[nodiscard]] auto makeAllocationBoundarySession()
+    -> std::unique_ptr<cuexis::playback::PlaybackSession> {
+    auto session = std::make_unique<cuexis::playback::PlaybackSession>();
+    if (!session->loadChart(allocationBoundaryChart)) {
+        return {};
+    }
+    if (!session->update({.chartTimeMs = 0.0})) {
+        return {};
+    }
+    return session;
+}
+#endif
+
 } // namespace
 
-#if !defined(_MSC_VER) || !defined(_DEBUG)
 void* operator new(std::size_t size) {
     return allocate(size);
 }
@@ -242,7 +337,64 @@ void operator delete[](void* memory, std::size_t, std::align_val_t alignment,
                        const std::nothrow_t&) noexcept {
     operator delete(memory, alignment);
 }
+
+TEST_CASE("PB-08 owning-copy queries contain allocation failures at the Playback boundary",
+          "[playback][allocation][pb08][characterization]") {
+#if defined(CUEXIS_PLAYBACK_ALLOCATION_TEST_SHARED)
+    SKIP("PB-08 fault injection replaces the test executable allocator; shared Playback DLL "
+         "allocations are outside that boundary. Static builds provide the real injection "
+         "coverage.");
+#else
+    auto verifyBoundary = [](auto&& callback) {
+        beginAllocationTracking();
+        const auto successful = callback();
+        const auto allocations = endAllocationTracking();
+        REQUIRE(successful.has_value());
+        REQUIRE(allocations > 0);
+
+        const auto outcome = invokeWithAllocationFailure(1, callback);
+        CHECK_FALSE(outcome.badAllocEscaped);
+        CHECK_FALSE(outcome.lengthErrorEscaped);
+        CHECK_FALSE(outcome.returnedValue);
+    };
+
+    SECTION("capabilities") {
+        auto session = makeAllocationBoundarySession();
+        REQUIRE(session != nullptr);
+        verifyBoundary([&] { return session->capabilities(); });
+        REQUIRE(session->state().has_value());
+        CHECK(*session->state() == cuexis::playback::SessionState::Running);
+    }
+
+    SECTION("contentInfo") {
+        auto session = makeAllocationBoundarySession();
+        REQUIRE(session != nullptr);
+        verifyBoundary([&] { return session->contentInfo(); });
+        REQUIRE(session->state().has_value());
+        CHECK(*session->state() == cuexis::playback::SessionState::Running);
+    }
+
+    SECTION("diagnostics") {
+        auto session = makeAllocationBoundarySession();
+        REQUIRE(session != nullptr);
+        REQUIRE(session->diagnostics().has_value());
+        REQUIRE(session->diagnostics()->size() == 1);
+        verifyBoundary([&] { return session->diagnostics(); });
+        REQUIRE(session->state().has_value());
+        CHECK(*session->state() == cuexis::playback::SessionState::Running);
+    }
+
+    SECTION("lastOperationDiagnostics") {
+        auto session = makeAllocationBoundarySession();
+        REQUIRE(session != nullptr);
+        REQUIRE(session->lastOperationDiagnostics().has_value());
+        REQUIRE(session->lastOperationDiagnostics()->size() == 1);
+        verifyBoundary([&] { return session->lastOperationDiagnostics(); });
+        REQUIRE(session->state().has_value());
+        CHECK(*session->state() == cuexis::playback::SessionState::Running);
+    }
 #endif
+}
 
 TEST_CASE("Stage 2 playback update and reusable extraction allocate nothing after warmup",
           "[playback][stage2][allocation]") {

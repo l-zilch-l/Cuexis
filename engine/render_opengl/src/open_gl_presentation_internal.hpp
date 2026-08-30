@@ -6,10 +6,12 @@
 
 #include <cuexis/shader/shader_cache.hpp>
 
+#include <array>
 #include <cstddef>
 #include <filesystem>
 #include <limits>
 #include <optional>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -79,6 +81,9 @@ struct GpuMesh final {
     UniqueBuffer vertexBuffer;
     UniqueBuffer indexBuffer;
     GLsizei indexCount{};
+    std::array<float, 3> boundsMin{};
+    std::array<float, 3> boundsMax{};
+    std::array<double, 3> boundsCenter{};
 };
 
 struct GpuTexture final {
@@ -94,11 +99,17 @@ struct GpuTextureBinding final {
     GLint textureUnit{};
 };
 
+struct GpuNumericUniformBinding final {
+    std::string name;
+    GLint location{-1};
+};
+
 struct GpuParameterizedProgram final {
     playback::PresentationResourceRef shaderReference;
     std::vector<std::string> selectedKeywords;
     UniqueProgram program;
     UniqueBuffer cuexisObject;
+    std::vector<GpuNumericUniformBinding> numericUniforms;
     std::vector<GpuTextureBinding> textures;
     shader::ShaderReflection reflection;
 };
@@ -108,7 +119,28 @@ struct GpuMaterial final {
     playback::PortableUnlitMaterial material;
     bool parameterized{};
     playback::PortableParameterizedMaterial parameterizedMaterial{};
+    std::vector<GLint> numericUniformLocations;
     std::size_t programIndex{std::numeric_limits<std::size_t>::max()};
+};
+
+struct DebugVertex final {
+    float x{};
+    float y{};
+    float z{};
+    float red{};
+    float green{};
+    float blue{};
+    float alpha{};
+};
+
+struct PreparedDraw final {
+    std::size_t objectIndex{};
+    OpenGlDrawCommand command;
+    const GpuMesh* mesh{};
+    const GpuMaterial* material{};
+    const GpuTexture* texture{};
+    const GpuParameterizedProgram* program{};
+    std::array<const GpuTexture*, playback::presentationMaxTextureBindings> parameterizedTextures{};
 };
 
 struct PresentationResourceSet final {
@@ -131,7 +163,23 @@ struct OpenGlPresentationBackendState final {
     std::uint64_t backendToken{};
     std::uint64_t nextGeneration{};
     std::uint64_t pendingGeneration{};
+    std::vector<PreparedDraw> opaqueScratch;
+    std::vector<PreparedDraw> transparentScratch;
+    std::vector<DebugVertex> debugVerticesScratch;
 };
+
+// Internal characterization seam for the Portable Presentation draw builder. This is not part of
+// the installed SDK surface; it constructs a CPU-only resource set and invokes the real builder.
+struct BoundsProbeStats final {
+    std::size_t meshResourceLookupComparisons{};
+    std::size_t meshBoundsParses{};
+};
+
+[[nodiscard]] auto probeBuildDraws(const playback::FrameSnapshot& snapshot,
+                                   const playback::PresentationResourceManifest& manifest,
+                                   std::span<const playback::PortableResourcePtr> resources,
+                                   BoundsProbeStats* stats = nullptr)
+    -> core::Result<OpenGlDrawSummary>;
 
 [[nodiscard]] auto createPresentationBackendState(std::uint64_t backendToken)
     -> core::Result<std::unique_ptr<OpenGlPresentationBackendState>>;

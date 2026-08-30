@@ -1,7 +1,9 @@
 #pragma once
 
-// SDL3 platform adapter for the main-thread video runtime.
-// Creation, operations, moves, and destruction must run on the SDL main thread.
+// SDL3 platform adapter for the process-wide, shared main-thread video runtime.
+// Creation and access are serialized by the SDL main-thread and runtime-owner checks; the
+// adapter does not provide synchronization for concurrent runtime access.
+// Operations, moves, and destruction must run on the SDL main thread.
 // Application code does not depend on SDL types; this module owns platform objects.
 // executableBasePath() resolves the executable directory without argv[0] or the working directory.
 
@@ -22,12 +24,15 @@ class SdlWindow;
 // Resolves the executable directory without relying on argv[0] or the working directory.
 [[nodiscard]] auto executableBasePath() -> core::Result<std::filesystem::path>;
 
-// Owns the shared SDL video runtime created on the SDL main thread.
+// Owns a reference to the process-wide shared SDL video runtime created on the SDL main thread.
 //
 // Thread contract: create(), every operation on a non-empty instance, move construction,
 // move assignment, and destruction must run on the runtime owner thread. The owner thread is
 // the SDL main thread that first created the shared runtime. A moved-from instance is empty and
-// has no thread affinity until it receives another runtime. Debug builds assert this contract.
+// has no thread affinity until it receives another runtime. Debug builds assert owner-thread
+// operations. Independently, releasing the final runtime-state reference from a non-owner thread
+// calls std::terminate in every build, including Release. Destruction and move assignment can
+// perform that final release and must remain on the owner thread.
 class SdlRuntime final {
   public:
     [[nodiscard]] static core::Result<SdlRuntime> create();

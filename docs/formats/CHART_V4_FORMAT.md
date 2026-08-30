@@ -206,6 +206,26 @@ MainMusic
 空 CXT 列表与空资源 manifest 仍写入 count `0`。v1/v2/v3 成功 prepare 使用 canonical Writer
 bytes 的 Chart identity、空 CXT 列表、空 parameter identity 和同样的实际资源 manifest。
 
+### 3.1 Renderable presentation boundary
+
+Chart v4 中实际带有 `cuexis.renderable` 的 Object/Template 必须通过
+`CXPRES01` portable Mesh/Material payload 提供其 presentation 资源。v4 prepare 在读取到
+legacy opaque payload 时稳定失败，返回
+`playback.chart.v4.requires_portable_presentation`，并携带 `asset_id`、`resource_type`、
+`object_id` 和 `field_path` 上下文；不得把 legacy bytes 静默转换为 Unlit，也不得继续到
+identity assembly 或发布 candidate。v1/v2/v3 的既有 opaque 兼容路径不受此条款改变。
+
+### 3.2 TimingMap compatibility boundary
+
+`TimingMap::create(defaultBpm, offsetMs)` 是 SDK 0.7.0 legacy overload。它接受任意有限正
+BPM，且 `offsetMs` 必须有限；该 overload 不执行新版 Chart v3/v4 timing 输入的严格 BPM
+域或 Tempo Event/Stop 数量限制。
+
+带显式 `tempoEvents` 和 `stops` 的四参 overload 执行严格 `[1, 65536]` BPM 域，并限制
+Tempo Event 和 Stop 各不超过 4096 项；其 offset 同样必须有限。Chart v3/v4 的 typed timing
+路径必须使用此严格 overload。两条 overload 的区分是兼容性合同，不改变 Beat/chart-time
+转换、Stop 边界或 identity/digest 规则。
+
 ## 4. Animation Template import
 
 ```json

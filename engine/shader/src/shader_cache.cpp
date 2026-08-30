@@ -1,3 +1,4 @@
+#include "shader_cache_internal.hpp"
 #include <cuexis/shader/shader_cache.hpp>
 
 #include <cuexis/core/error.hpp>
@@ -47,6 +48,31 @@ constexpr std::uint32_t maxCacheTools = 8;
         error.withContext("byte_offset", std::string{field});
     }
     return error;
+}
+
+[[nodiscard]] auto isZeroIdentity(const std::array<std::uint8_t, identityByteCount>& identity)
+    -> bool {
+    return std::all_of(identity.begin(), identity.end(),
+                       [](const std::uint8_t byte) { return byte == 0; });
+}
+
+[[nodiscard]] auto hasKeyMetadata(const ShaderCacheKeyInput& input) -> bool {
+    return !input.targetProfiles.empty() || !input.selectedKeywords.empty() ||
+           !input.tools.empty() ||
+           (!input.importerProfile.empty() && input.importerProfile != importerProfileShaderV1) ||
+           (!input.vertexEntry.empty() && input.vertexEntry != "main") ||
+           (!input.fragmentEntry.empty() && input.fragmentEntry != "main");
+}
+
+[[nodiscard]] auto hasRequestMetadata(const ShaderCacheKeyInput& key,
+                                      const ShaderCompileRequest& request) -> bool {
+    const auto vertexEntry = key.vertexEntry.empty() ? request.vertexEntry : key.vertexEntry;
+    const auto fragmentEntry =
+        key.fragmentEntry.empty() ? request.fragmentEntry : key.fragmentEntry;
+    return hasKeyMetadata(key) || !request.declaredKeywords.empty() ||
+           !request.selectedKeywords.empty() || !request.declaredBindings.empty() ||
+           !request.declaredParameters.empty() || (!vertexEntry.empty() && vertexEntry != "main") ||
+           (!fragmentEntry.empty() && fragmentEntry != "main");
 }
 
 void appendU32(std::vector<std::byte>& out, std::uint32_t value) {
@@ -131,6 +157,51 @@ void hashPrefixed(core::detail::Sha256& hash, std::string_view text) noexcept {
     return items;
 }
 
+[[nodiscard]] auto hasRecordMetadata(const ShaderCacheRecord& record) -> bool {
+    bool hasGlsl330 = false;
+    bool hasGlslEs300 = false;
+    bool hasSpirv = false;
+    bool customTargets = false;
+    for (const auto& target : record.targetProfiles) {
+        if (target == targetProfileGlsl330V1) {
+            hasGlsl330 = true;
+        } else if (target == targetProfileGlslEs300V1) {
+            hasGlslEs300 = true;
+        } else if (target == targetProfileSpirvV1) {
+            hasSpirv = true;
+        } else {
+            customTargets = true;
+        }
+    }
+    customTargets = customTargets || (hasGlsl330 != hasGlslEs300) || (hasGlsl330 != hasSpirv);
+
+    bool hasGlslang = false;
+    bool hasShaderc = false;
+    bool hasSpirvCross = false;
+    bool hasSpirvTools = false;
+    bool customTools = record.tools.size() != 0 && record.tools.size() != 4;
+    for (const auto& tool : record.tools) {
+        if (tool.name == toolGlslang && tool.version == CUEXIS_GLSLANG_VERSION) {
+            hasGlslang = true;
+        } else if (tool.name == toolShaderc && tool.version == CUEXIS_SHADERC_VERSION) {
+            hasShaderc = true;
+        } else if (tool.name == toolSpirvCross && tool.version == CUEXIS_SPIRV_CROSS_VERSION) {
+            hasSpirvCross = true;
+        } else if (tool.name == toolSpirvTools && tool.version == CUEXIS_SPIRV_TOOLS_VERSION) {
+            hasSpirvTools = true;
+        } else {
+            customTools = true;
+        }
+    }
+    customTools = customTools || (hasGlslang != hasShaderc) || (hasGlslang != hasSpirvCross) ||
+                  (hasGlslang != hasSpirvTools);
+
+    return customTargets || !record.selectedKeywords.empty() || customTools ||
+           (!record.importerProfile.empty() && record.importerProfile != importerProfileShaderV1) ||
+           (!record.vertexEntry.empty() && record.vertexEntry != "main") ||
+           (!record.fragmentEntry.empty() && record.fragmentEntry != "main");
+}
+
 struct ByteReader final {
     std::span<const std::byte> bytes;
     std::size_t offset{};
@@ -213,6 +284,34 @@ struct ByteReader final {
 
 } // namespace
 
+auto detail::validateCacheKeyInput(const ShaderCacheKeyInput& input) -> core::Result<void> {
+    if (isZeroIdentity(input.sourceIdentity) && hasKeyMetadata(input)) {
+        return core::unexpected(cacheError(
+            diagnosticCacheKeyInvalid,
+            "Shader cache key requires a semantic source identity when metadata is present"));
+    }
+    return {};
+}
+
+auto detail::validateCacheRecord(const ShaderCacheRecord& record) -> core::Result<void> {
+    if (isZeroIdentity(record.sourceIdentity) && hasRecordMetadata(record)) {
+        return core::unexpected(cacheError(
+            diagnosticCacheKeyInvalid,
+            "Shader cache record requires a semantic source identity when metadata is present"));
+    }
+    return {};
+}
+
+auto detail::validateCacheRequest(const ShaderCacheKeyInput& key,
+                                  const ShaderCompileRequest& request) -> core::Result<void> {
+    if (isZeroIdentity(key.sourceIdentity) && hasRequestMetadata(key, request)) {
+        return core::unexpected(cacheError(
+            diagnosticCacheKeyInvalid,
+            "Shader cache request requires a semantic source identity when metadata is present"));
+    }
+    return {};
+}
+
 auto defaultTargetProfiles() -> std::array<std::string_view, 3> {
     return {targetProfileGlsl330V1, targetProfileGlslEs300V1, targetProfileSpirvV1};
 }
@@ -286,6 +385,10 @@ auto hashStandaloneSourceIdentity(std::string_view vertexSource, std::string_vie
 
 auto encodeCache(const ShaderCacheRecord& record) -> core::Result<std::vector<std::byte>> {
     try {
+        auto validation = detail::validateCacheRecord(record);
+        if (!validation) {
+            return core::unexpected(std::move(validation.error()));
+        }
         auto tools = record.tools.empty() ? currentToolVersions() : sortedTools(record.tools);
         auto targets = record.targetProfiles;
         if (targets.empty()) {
@@ -515,6 +618,11 @@ auto decodeCache(std::span<const std::byte> bytes) -> core::Result<ShaderCacheRe
         record.artifact.reflection = std::move(*reflection);
         record.key = *key;
 
+        auto validation = detail::validateCacheRecord(record);
+        if (!validation) {
+            return core::unexpected(std::move(validation.error()));
+        }
+
         std::vector<std::string_view> targetViews;
         targetViews.reserve(record.targetProfiles.size());
         for (const auto& target : record.targetProfiles) {
@@ -546,6 +654,10 @@ auto decodeCache(std::span<const std::byte> bytes) -> core::Result<ShaderCacheRe
 }
 
 auto adoptCacheRecord(const ShaderCacheRecord& record) -> core::Result<ShaderCacheRecord> {
+    auto validation = detail::validateCacheRecord(record);
+    if (!validation) {
+        return core::unexpected(std::move(validation.error()));
+    }
     if (record.tools != currentToolVersions()) {
         return core::unexpected(
             cacheError(diagnosticCacheToolMismatch,
@@ -576,6 +688,10 @@ auto ShaderCacheStore::pathForKey(const std::array<std::uint8_t, 32>& key) const
 
 auto ShaderCacheStore::load(const ShaderCacheKeyInput& input) const
     -> core::Result<ShaderCacheRecord> {
+    auto validation = detail::validateCacheKeyInput(input);
+    if (!validation) {
+        return core::unexpected(std::move(validation.error()));
+    }
     const auto key = encodeCacheKey(input);
     const auto path = pathForKey(key);
     std::error_code status;
@@ -615,16 +731,16 @@ auto ShaderCacheStore::load(const ShaderCacheKeyInput& input) const
 
 auto ShaderCacheStore::store(ShaderCacheRecord record) const
     -> core::Result<std::filesystem::path> {
+    auto encoded = encodeCache(record);
+    if (!encoded) {
+        return core::unexpected(std::move(encoded.error()));
+    }
     std::error_code status;
     std::filesystem::create_directories(directory_, status);
     if (status) {
         return core::unexpected(
             cacheError(diagnosticCacheKeyInvalid, "Shader cache directory could not be created")
                 .withContext("path", directory_.generic_string()));
-    }
-    auto encoded = encodeCache(record);
-    if (!encoded) {
-        return core::unexpected(std::move(encoded.error()));
     }
     const auto decoded = decodeCache(*encoded);
     if (!decoded) {

@@ -49,3 +49,4 @@ ADR 是决策理由的权威来源。字段级合同和实施证据分别见 [�
 | [0038](0038-cxc-v1-and-chart-v4-boundary.md) | CXC、Chart v4、CXT 边界 | 已接受，实施中 |
 | [0039](0039-remove-hour-from-build-version.md) | 构建版本移除小时字段 | 已接受 |
 | [0040](0040-stage-5-material-shader-contracts.md) | Stage 5 Material/Shader 合同 | 已接受，阶段 5；S5-A 已冻结 |
+| [0041](0041-legacy-format-exit-policy.md) | Legacy 格式和兼容路径退出政策 | 已接受；Full Review 整改 |

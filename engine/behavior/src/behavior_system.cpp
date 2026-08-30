@@ -34,60 +34,6 @@ namespace {
     return t;
 }
 
-[[nodiscard]] auto hermiteProgress(double value, double startSlope, double endSlope) noexcept
-    -> double {
-    const double t = std::clamp(value, 0.0, 1.0);
-    const double squared = t * t;
-    const double cubed = squared * t;
-    return (-2.0 + startSlope + endSlope) * cubed + (3.0 - 2.0 * startSlope - endSlope) * squared +
-           startSlope * t;
-}
-
-[[nodiscard]] auto lerp(const core::Vec3& left, const core::Vec3& right, double t) noexcept
-    -> core::Vec3 {
-    const auto blend = static_cast<float>(t);
-    return core::Vec3{left.x + (right.x - left.x) * blend, left.y + (right.y - left.y) * blend,
-                      left.z + (right.z - left.z) * blend};
-}
-
-[[nodiscard]] auto slerp(const core::Quat& left, const core::Quat& right, double t)
-    -> core::Result<core::Quat> {
-    core::Quat target = right;
-    double dot = static_cast<double>(left.x) * right.x + static_cast<double>(left.y) * right.y +
-                 static_cast<double>(left.z) * right.z + static_cast<double>(left.w) * right.w;
-    if (dot < 0.0) {
-        dot = -dot;
-        target = core::Quat{-right.x, -right.y, -right.z, -right.w};
-    }
-    dot = std::clamp(dot, -1.0, 1.0);
-
-    core::Quat result;
-    if (dot > 0.9995) {
-        const auto blend = static_cast<float>(t);
-        result =
-            core::Quat{left.x + (target.x - left.x) * blend, left.y + (target.y - left.y) * blend,
-                       left.z + (target.z - left.z) * blend, left.w + (target.w - left.w) * blend};
-    } else {
-        const double theta = std::acos(dot);
-        const double sinTheta = std::sin(theta);
-        const double leftWeight = std::sin((1.0 - t) * theta) / sinTheta;
-        const double rightWeight = std::sin(t * theta) / sinTheta;
-        result = core::Quat{
-            static_cast<float>(left.x * leftWeight + target.x * rightWeight),
-            static_cast<float>(left.y * leftWeight + target.y * rightWeight),
-            static_cast<float>(left.z * leftWeight + target.z * rightWeight),
-            static_cast<float>(left.w * leftWeight + target.w * rightWeight),
-        };
-    }
-    auto normalized = core::normalize(result);
-    if (!normalized) {
-        return core::unexpected(core::Error{"behavior.sample.quaternion_invalid",
-                                            "Quaternion interpolation produced an invalid value"}
-                                    .withCause(normalized.error()));
-    }
-    return *normalized;
-}
-
 [[nodiscard]] auto interpolate(const world::PropertyValue& left, const world::PropertyValue& right,
                                double t) -> core::Result<world::PropertyValue> {
     if (const auto* leftScalar = std::get_if<double>(&left)) {
@@ -109,7 +55,7 @@ namespace {
             return core::unexpected(core::Error{"behavior.sample.value_type_mismatch",
                                                 "Behavior Track key value types differ"});
         }
-        const auto value = lerp(*leftVector, *rightVector, t);
+        const auto value = core::lerp(*leftVector, *rightVector, t);
         if (!core::isFinite(value)) {
             return core::unexpected(core::Error{"behavior.sample.non_finite",
                                                 "Behavior vector interpolation overflowed"});
@@ -122,9 +68,11 @@ namespace {
         return core::unexpected(core::Error{"behavior.sample.value_type_mismatch",
                                             "Behavior Track key value types differ"});
     }
-    auto value = slerp(*leftRotation, *rightRotation, t);
+    auto value = core::slerp(*leftRotation, *rightRotation, t);
     if (!value) {
-        return core::unexpected(std::move(value.error()));
+        return core::unexpected(core::Error{"behavior.sample.quaternion_invalid",
+                                            "Quaternion interpolation produced an invalid value"}
+                                    .withCause(std::move(value.error())));
     }
     return world::PropertyValue{*value};
 }
@@ -207,7 +155,7 @@ namespace {
     }
     const double normalized = (beat - event.startBeat) / duration;
     return interpolate(event.startValue, event.endValue,
-                       hermiteProgress(normalized, event.startSlope, event.endSlope));
+                       core::hermiteProgress(normalized, event.startSlope, event.endSlope));
 }
 
 [[nodiscard]] auto sampleStep(const BehaviorStepTrack& track, double beat,

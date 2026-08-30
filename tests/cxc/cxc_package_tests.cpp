@@ -297,6 +297,23 @@ TEST_CASE("CXC Writer rejects hidden payload and incomplete project closure",
         CHECK(support::hasDiagnostic(result.diagnostics, "cxc.project.invalid"));
     }
 
+    SECTION("record-level Asset Index extensions are rejected") {
+        auto request = support::makeV1Request();
+        auto& index = findRequestEntry(request, "assets/cuexis.asset-index.json");
+        auto indexText = support::textFromBytes(index.bytes);
+        const auto marker = std::string_view{"\"dependencies\": []"};
+        const auto markerPosition = indexText.find(marker);
+        REQUIRE(markerPosition != std::string::npos);
+        indexText.replace(markerPosition, marker.size(),
+                          R"("dependencies": [],"extensions":{"org.record":{"enabled":true}})");
+        index = support::textEntry(index.path, std::move(indexText));
+
+        const auto result = CxcWriter::write(std::move(request));
+        CHECK_FALSE(result.hasValue());
+        CHECK(support::hasDiagnostic(result.diagnostics, "json.field.unknown"));
+        CHECK(support::hasDiagnostic(result.diagnostics, "cxc.project.invalid"));
+    }
+
     SECTION("missing CXT") {
         auto request = support::makeV4CxtRequest();
         eraseRequestEntry(request, "templates/move-y.cxt");

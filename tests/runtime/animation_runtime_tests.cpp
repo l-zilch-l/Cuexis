@@ -393,6 +393,34 @@ TEST_CASE("Runtime debug snapshots record animation and override sources",
     CHECK(std::get<double>(record.animationLayers.front().value) == Catch::Approx(10.0));
 }
 
+TEST_CASE("Runtime reload publishes the candidate debug snapshot atomically",
+          "[runtime][debug][reload]") {
+    cuexis::runtime::RuntimeSession session;
+    auto prepared = session.prepare(runtimeChart(), compilePositionProgram(10.0));
+    REQUIRE(prepared.hasValue());
+    REQUIRE(session.commit(std::move(*prepared.prepared)).has_value());
+    REQUIRE(session.configureDebug({.enabled = true, .capacity = 8}).has_value());
+    REQUIRE(session.update({.chartTimeMs = 250.0}).has_value());
+
+    const auto before = session.debugSnapshot();
+    REQUIRE(before.has_value());
+    REQUIRE_FALSE(before->records.empty());
+    CHECK(before->records.front().objectId.value == "object");
+
+    const auto reload = session.reload(runtimeChart(), {.chartTimeMs = 500.0},
+                                       cuexis::runtime::ReloadPolicy::KeepChartTime);
+    REQUIRE(reload.reloaded);
+    CHECK_FALSE(reload.diagnostics.hasErrors());
+    CHECK(objectPosition(session) == Catch::Approx(10.0F));
+
+    const auto after = session.debugSnapshot();
+    REQUIRE(after.has_value());
+    REQUIRE_FALSE(after->records.empty());
+    CHECK_FALSE(after->truncated);
+    CHECK(after->records.front().objectId.value == "object");
+    CHECK(std::get<double>(after->records.front().finalValue) == Catch::Approx(10.0));
+}
+
 TEST_CASE("BasePropertyCommand refreshes a bounded debug snapshot",
           "[runtime][debug][base][s4-d]") {
     cuexis::runtime::RuntimeSession session;

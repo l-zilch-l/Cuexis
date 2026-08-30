@@ -1112,116 +1112,133 @@ auto RuntimeSession::updatePrepared(RuntimeEvaluationState& state,
     return {};
 }
 
-void RuntimeSession::captureDebug(const RuntimeEvaluationState& state, double beatValue) {
-    debugRecords_.clear();
-    debugTruncated_ = false;
+auto RuntimeSession::captureDebug(const RuntimeEvaluationState& state,
+                                  const ObjectEntityMap& objects, double beatValue,
+                                  std::vector<RuntimeDebugRecord>& records, bool& truncated) const
+    -> core::Result<void> {
+    records.clear();
+    truncated = false;
     if (!debugOptions_.enabled) {
-        return;
+        return {};
     }
 
-    std::size_t writeIndex = 0;
-    const auto writes = state.writes.writes();
-    const auto append = [&](const behavior::BehaviorBinding& binding, world::PropertyId property,
-                            std::optional<std::size_t> eventIndex, double progress,
-                            const world::PropertyWriteValue& output) {
-        if (debugRecords_.size() >= debugOptions_.capacity) {
-            debugTruncated_ = true;
-            return;
-        }
-        const auto initial = baselineFor(binding, property);
-        auto behaviorValue = owningValue(output);
-        auto animationValue =
-            state.resolver.layerValue(binding.entity, property, world::PropertyLayer::Animation);
-        auto hostValue =
-            state.resolver.layerValue(binding.entity, property, world::PropertyLayer::HostOverride);
-        auto previewValue = state.resolver.layerValue(binding.entity, property,
-                                                      world::PropertyLayer::StudioPreviewOverride);
-        auto finalValue = resolvedValue(state, binding.entity, property);
-        debugRecords_.push_back(RuntimeDebugRecord{
-            .objectId = objectIdFor(objects_, binding.entity),
-            .property = property,
-            .initialValue = initial,
-            .eventIndex = eventIndex,
-            .normalizedProgress = progress,
-            .behaviorValue = behaviorValue,
-            .animationValue = animationValue.value_or(world::PropertyValue{}),
-            .hostOverrideValue = hostValue.value_or(world::PropertyValue{}),
-            .previewOverrideValue = previewValue.value_or(world::PropertyValue{}),
-            .finalValue = finalValue ? std::move(*finalValue) : std::move(behaviorValue),
-            .sourceLayer = state.resolver.sourceLayer(binding.entity, property),
-            .conflict = state.resolver.hadConflict(binding.entity, property),
-            .animationLayers = {},
-        });
-        auto& record = debugRecords_.back();
-        for (const auto& contribution : state.animationLayerContributions) {
-            if (contribution.objectId.value != record.objectId.value ||
-                contribution.property != record.property) {
-                continue;
-            }
-            RuntimeDebugAnimationLayer layer;
-            layer.identity = identityLabel(contribution.layerIdentity);
-            layer.priority = contribution.priority;
-            layer.weight = contribution.weight;
-            layer.mask = contribution.propertyMask.properties;
-            layer.mask.insert(layer.mask.end(), contribution.propertyMask.prefixes.begin(),
-                              contribution.propertyMask.prefixes.end());
-            layer.value = contribution.value;
-            record.animationLayers.push_back(std::move(layer));
-        }
-    };
-
-    for (const auto& binding : state.program.bindings) {
-        const auto& definition = state.program.definitions[binding.behavior.value];
-        for (const auto& track : definition.tracks) {
-            if (writeIndex >= writes.size()) {
-                debugTruncated_ = true;
+    try {
+        std::size_t writeIndex = 0;
+        const auto writes = state.writes.writes();
+        const auto append = [&](const behavior::BehaviorBinding& binding,
+                                world::PropertyId property, std::optional<std::size_t> eventIndex,
+                                double progress, const world::PropertyWriteValue& output) {
+            if (records.size() >= debugOptions_.capacity) {
+                truncated = true;
                 return;
             }
-            append(binding, track.property, std::nullopt, 0.0, writes[writeIndex].value);
-            ++writeIndex;
-        }
-        for (const auto& track : definition.eventTracks) {
-            if (writeIndex >= writes.size()) {
-                debugTruncated_ = true;
-                return;
-            }
-            std::optional<std::size_t> eventIndex;
-            double progress = 0.0;
-            if (!track.events.empty() && beatValue >= track.events.front().startBeat) {
-                const auto next =
-                    std::upper_bound(track.events.begin(), track.events.end(), beatValue,
-                                     [](double value, const behavior::BehaviorEvent& event) {
-                                         return value < event.startBeat;
-                                     });
-                const auto event = next - 1;
-                eventIndex = static_cast<std::size_t>(event - track.events.begin());
-                if (event->instantaneous || beatValue >= event->endBeat) {
-                    progress = 1.0;
-                } else {
-                    progress = (beatValue - event->startBeat) / (event->endBeat - event->startBeat);
+            const auto initial = baselineFor(binding, property);
+            auto behaviorValue = owningValue(output);
+            auto animationValue = state.resolver.layerValue(binding.entity, property,
+                                                            world::PropertyLayer::Animation);
+            auto hostValue = state.resolver.layerValue(binding.entity, property,
+                                                       world::PropertyLayer::HostOverride);
+            auto previewValue = state.resolver.layerValue(
+                binding.entity, property, world::PropertyLayer::StudioPreviewOverride);
+            auto finalValue = resolvedValue(state, binding.entity, property);
+            records.push_back(RuntimeDebugRecord{
+                .objectId = objectIdFor(objects, binding.entity),
+                .property = property,
+                .initialValue = initial,
+                .eventIndex = eventIndex,
+                .normalizedProgress = progress,
+                .behaviorValue = behaviorValue,
+                .animationValue = animationValue.value_or(world::PropertyValue{}),
+                .hostOverrideValue = hostValue.value_or(world::PropertyValue{}),
+                .previewOverrideValue = previewValue.value_or(world::PropertyValue{}),
+                .finalValue = finalValue ? std::move(*finalValue) : std::move(behaviorValue),
+                .sourceLayer = state.resolver.sourceLayer(binding.entity, property),
+                .conflict = state.resolver.hadConflict(binding.entity, property),
+                .animationLayers = {},
+            });
+            auto& record = records.back();
+            for (const auto& contribution : state.animationLayerContributions) {
+                if (contribution.objectId.value != record.objectId.value ||
+                    contribution.property != record.property) {
+                    continue;
                 }
+                RuntimeDebugAnimationLayer layer;
+                layer.identity = identityLabel(contribution.layerIdentity);
+                layer.priority = contribution.priority;
+                layer.weight = contribution.weight;
+                layer.mask = contribution.propertyMask.properties;
+                layer.mask.insert(layer.mask.end(), contribution.propertyMask.prefixes.begin(),
+                                  contribution.propertyMask.prefixes.end());
+                layer.value = contribution.value;
+                record.animationLayers.push_back(std::move(layer));
             }
-            append(binding, track.property, eventIndex, progress, writes[writeIndex].value);
-            ++writeIndex;
+        };
+
+        for (const auto& binding : state.program.bindings) {
+            const auto& definition = state.program.definitions[binding.behavior.value];
+            for (const auto& track : definition.tracks) {
+                if (writeIndex >= writes.size()) {
+                    truncated = true;
+                    return {};
+                }
+                append(binding, track.property, std::nullopt, 0.0, writes[writeIndex].value);
+                ++writeIndex;
+            }
+            for (const auto& track : definition.eventTracks) {
+                if (writeIndex >= writes.size()) {
+                    truncated = true;
+                    return {};
+                }
+                std::optional<std::size_t> eventIndex;
+                double progress = 0.0;
+                if (!track.events.empty() && beatValue >= track.events.front().startBeat) {
+                    const auto next =
+                        std::upper_bound(track.events.begin(), track.events.end(), beatValue,
+                                         [](double value, const behavior::BehaviorEvent& event) {
+                                             return value < event.startBeat;
+                                         });
+                    const auto event = next - 1;
+                    eventIndex = static_cast<std::size_t>(event - track.events.begin());
+                    if (event->instantaneous || beatValue >= event->endBeat) {
+                        progress = 1.0;
+                    } else {
+                        progress =
+                            (beatValue - event->startBeat) / (event->endBeat - event->startBeat);
+                    }
+                }
+                append(binding, track.property, eventIndex, progress, writes[writeIndex].value);
+                ++writeIndex;
+            }
+            for (const auto& track : definition.stepTracks) {
+                if (writeIndex >= writes.size()) {
+                    truncated = true;
+                    return {};
+                }
+                std::optional<std::size_t> eventIndex;
+                if (!track.events.empty() && beatValue >= track.events.front().beat) {
+                    const auto next = std::upper_bound(
+                        track.events.begin(), track.events.end(), beatValue,
+                        [](double value, const behavior::BehaviorStepEvent& event) {
+                            return value < event.beat;
+                        });
+                    eventIndex = static_cast<std::size_t>((next - 1) - track.events.begin());
+                }
+                append(binding, track.property, eventIndex, eventIndex ? 1.0 : 0.0,
+                       writes[writeIndex].value);
+                ++writeIndex;
+            }
         }
-        for (const auto& track : definition.stepTracks) {
-            if (writeIndex >= writes.size()) {
-                debugTruncated_ = true;
-                return;
-            }
-            std::optional<std::size_t> eventIndex;
-            if (!track.events.empty() && beatValue >= track.events.front().beat) {
-                const auto next =
-                    std::upper_bound(track.events.begin(), track.events.end(), beatValue,
-                                     [](double value, const behavior::BehaviorStepEvent& event) {
-                                         return value < event.beat;
-                                     });
-                eventIndex = static_cast<std::size_t>((next - 1) - track.events.begin());
-            }
-            append(binding, track.property, eventIndex, eventIndex ? 1.0 : 0.0,
-                   writes[writeIndex].value);
-            ++writeIndex;
-        }
+        return {};
+    } catch (const std::bad_alloc&) {
+        records.clear();
+        truncated = false;
+        return core::unexpected(core::Error{"runtime.debug.capture_allocation_failed",
+                                            "Runtime debug capture could not be allocated"});
+    } catch (...) {
+        records.clear();
+        truncated = false;
+        return core::unexpected(
+            core::Error{"runtime.debug.capture_failed", "Runtime debug capture failed"});
     }
 }
 
@@ -1293,7 +1310,11 @@ auto RuntimeSession::update(const RuntimeFrame& frame) -> core::Result<void> {
         if (!beatSample) {
             return core::unexpected(std::move(beatSample.error()));
         }
-        captureDebug(*evaluation_, beatSample->beat);
+        auto captured =
+            captureDebug(*evaluation_, objects_, beatSample->beat, debugRecords_, debugTruncated_);
+        if (!captured) {
+            return core::unexpected(std::move(captured.error()));
+        }
     } else {
         debugRecords_.clear();
         debugTruncated_ = false;
@@ -1477,7 +1498,11 @@ auto RuntimeSession::applyBaseProperty(const chart::ChartObjectId& objectId,
         if (!beatSample) {
             return core::unexpected(std::move(beatSample.error()));
         }
-        captureDebug(*evaluation_, beatSample->beat);
+        auto captured =
+            captureDebug(*evaluation_, objects_, beatSample->beat, debugRecords_, debugTruncated_);
+        if (!captured) {
+            return core::unexpected(std::move(captured.error()));
+        }
     }
     return {};
 }
@@ -1543,15 +1568,33 @@ auto RuntimeSession::reload(chart::ChartRuntime replacement, const RuntimeFrame&
         return result;
     }
 
+    std::vector<RuntimeDebugRecord> candidateDebugRecords;
+    bool candidateDebugTruncated = false;
+    if (debugOptions_.enabled) {
+        const auto beatSample = preparedResult.prepared->chartRuntime_.timingMap.sampleChartTimeMs(
+            reloadFrame.chartTimeMs);
+        if (!beatSample) {
+            addSessionError(result.diagnostics, beatSample.error());
+            result.diagnostics.sortDeterministically();
+            return result;
+        }
+        auto captured =
+            captureDebug(*preparedResult.prepared->evaluation_, preparedResult.prepared->objects_,
+                         beatSample->beat, candidateDebugRecords, candidateDebugTruncated);
+        if (!captured) {
+            addSessionError(result.diagnostics, captured.error());
+            result.diagnostics.sortDeterministically();
+            return result;
+        }
+    }
     replaceWith(std::move(*preparedResult.prepared));
     lastFrame_ = reloadFrame;
     if (debugOptions_.enabled) {
-        const auto beatSample = chartRuntime_->timingMap.sampleChartTimeMs(reloadFrame.chartTimeMs);
-        if (!beatSample) {
-            addSessionError(result.diagnostics, beatSample.error());
-            return result;
-        }
-        captureDebug(*evaluation_, beatSample->beat);
+        debugRecords_ = std::move(candidateDebugRecords);
+        debugTruncated_ = candidateDebugTruncated;
+    } else {
+        debugRecords_.clear();
+        debugTruncated_ = false;
     }
     result.reloaded = true;
     return result;

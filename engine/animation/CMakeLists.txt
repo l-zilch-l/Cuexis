@@ -1,6 +1,5 @@
 add_library(cuexis_animation STATIC
     src/animation_compiler.cpp
-    src/animation_math.cpp
     src/animation_mixer.cpp
     src/animation_program.cpp
     src/animation_sampler.cpp

@@ -7,6 +7,10 @@
 //  Judgement and replay interfaces arrive in phase 11 via cuexis_judgement; PlaybackSession
 //  reserves the extension points for them
 //  This public header exposes no entt, SDL, OpenGL, JSON DOM or internal Runtime types
+//  PlaybackSession and non-empty PreparedPlayback state are bound to their creating owner thread.
+//  Call public methods and destroy these owner-bound objects on that thread.
+//  Moving a non-empty PreparedPlayback across threads, or destroying either object off-thread,
+//  invokes std::terminate in every build configuration. PlaybackSession is non-movable.
 
 #include <cuexis/core/abi_warnings.hpp>
 #include <cuexis/core/diagnostic.hpp>

@@ -4,7 +4,8 @@
 #include <cuexis/json/parse.hpp>
 #include <cuexis/json/reader.hpp>
 
-#include "chart_v4_reader_internal.hpp"
+#include "chart_v4_animation_reader_internal.hpp"
+#include "chart_v4_common_reader_internal.hpp"
 #include "diagnostic_limit.hpp"
 
 #include <algorithm>

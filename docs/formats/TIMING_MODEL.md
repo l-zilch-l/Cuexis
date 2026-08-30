@@ -46,6 +46,11 @@ HostClock 与 CuexisAudio 模式对相同的规范化 SourceClockSample/control 
 
 ## BPM
 
+`TimingMap::create(defaultBpm, offsetMs)` 是 SDK 0.7.0 保留的 legacy 两参入口：它要求
+`defaultBpm` 为有限正数，但不执行 v3 的 `[1.0, 65536.0]` 域限制。带显式
+`tempoEvents`/`stops` 的四参入口执行该严格 BPM 域和固定数量预算；Chart v3/v4 的格式输入
+使用严格路径。
+
 v1/v2 结构保留 `bpmChanges`/`stops` 字段，但当前只接受空数组，不定义非空旧事件的运行语义。v3 使用直接描述 BPM 曲线的 `tempoEvents`：
 
 ```json

@@ -24,6 +24,10 @@ if(NOT help_text MATCHES "compile")
     message(FATAL_ERROR
         "cuexis_asset_importer --help did not mention --compile:\n${help_text}")
 endif()
+if(NOT help_text MATCHES "standalone-cache")
+    message(FATAL_ERROR
+        "cuexis_asset_importer --help did not mention --standalone-cache:\n${help_text}")
+endif()
 
 execute_process(
     COMMAND "${CUEXIS_ASSET_IMPORTER}"
@@ -122,75 +126,138 @@ if(compile_output MATCHES "cache_written=1" OR compile_error MATCHES "cache_writ
     message(FATAL_ERROR "importer --compile without --cache-dir wrote a cache file")
 endif()
 
-set(cache_dir "${CUEXIS_ASSET_IMPORTER_WORK}/cache")
+set(a2_characterization_failures)
+set(identity_hex "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff")
+
+# A cache written without a Playback/CXPRES identity must be rejected and must not touch disk.
+set(no_identity_cache_dir "${CUEXIS_ASSET_IMPORTER_WORK}/cache-no-identity")
+file(REMOVE_RECURSE "${no_identity_cache_dir}")
+execute_process(
+    COMMAND "${CUEXIS_ASSET_IMPORTER}" --compile
+        --vertex "${vertex_glsl}" --fragment "${fragment_glsl}"
+        --cache-dir "${no_identity_cache_dir}"
+    RESULT_VARIABLE no_identity_status
+    OUTPUT_VARIABLE no_identity_output
+    ERROR_VARIABLE no_identity_error
+)
+set(no_identity_text "${no_identity_output}${no_identity_error}")
+file(GLOB no_identity_files "${no_identity_cache_dir}/*.cxscch01")
+list(LENGTH no_identity_files no_identity_count)
+if(no_identity_status EQUAL 0 OR no_identity_count GREATER 0 OR
+   NOT no_identity_text MATCHES "shader.cache.key_invalid")
+    list(APPEND a2_characterization_failures
+        "no identity: expected shader.cache.key_invalid, nonzero exit, and no cache file;"
+        " got status=${no_identity_status}, files=${no_identity_count}, output=${no_identity_text}")
+endif()
+
+# Standalone source hashing remains available only through an explicit development opt-in.
+set(standalone_cache_dir "${CUEXIS_ASSET_IMPORTER_WORK}/cache-standalone")
+file(REMOVE_RECURSE "${standalone_cache_dir}")
+execute_process(
+    COMMAND "${CUEXIS_ASSET_IMPORTER}" --compile
+        --vertex "${vertex_glsl}" --fragment "${fragment_glsl}"
+        --cache-dir "${standalone_cache_dir}" --standalone-cache
+    RESULT_VARIABLE standalone_status
+    OUTPUT_VARIABLE standalone_output
+    ERROR_VARIABLE standalone_error
+)
+set(standalone_text "${standalone_output}${standalone_error}")
+file(GLOB standalone_files "${standalone_cache_dir}/*.cxscch01")
+list(LENGTH standalone_files standalone_count)
+if(NOT standalone_status EQUAL 0 OR standalone_count GREATER 1 OR
+   NOT standalone_text MATCHES "cache_written=1")
+    list(APPEND a2_characterization_failures
+        "standalone opt-in: expected one cache file and cache_written=1;"
+        " got status=${standalone_status}, files=${standalone_count}, output=${standalone_text}")
+endif()
+
+# An explicit semantic identity is the production cache-writing path.
+set(cache_dir "${CUEXIS_ASSET_IMPORTER_WORK}/cache-explicit-identity")
 file(REMOVE_RECURSE "${cache_dir}")
 execute_process(
     COMMAND "${CUEXIS_ASSET_IMPORTER}" --compile
         --vertex "${vertex_glsl}" --fragment "${fragment_glsl}"
-        --cache-dir "${cache_dir}"
+        --cache-dir "${cache_dir}" --identity "${identity_hex}"
     RESULT_VARIABLE cache_status
     OUTPUT_VARIABLE cache_output
     ERROR_VARIABLE cache_error
 )
-if(NOT cache_status EQUAL 0)
-    message(FATAL_ERROR
-        "cuexis_asset_importer --compile --cache-dir failed (${cache_status})\n"
-        "${cache_output}\n${cache_error}")
-endif()
-if(NOT cache_output MATCHES "cache_written=1")
-    message(FATAL_ERROR
-        "cuexis_asset_importer --cache-dir did not report cache_written=1:\n${cache_output}")
-endif()
-
+set(cache_text "${cache_output}${cache_error}")
 file(GLOB cache_files "${cache_dir}/*.cxscch01")
 list(LENGTH cache_files cache_count)
-if(NOT cache_count EQUAL 1)
-    message(FATAL_ERROR
-        "expected one CXSCCH01 file in ${cache_dir}, found ${cache_count}")
-endif()
-list(GET cache_files 0 cache_file)
-file(READ "${cache_file}" cache_bytes HEX)
-string(SUBSTRING "${cache_bytes}" 0 16 cache_magic_hex)
-if(NOT cache_magic_hex STREQUAL "4358534343483031")
-    message(FATAL_ERROR "cache file magic is not CXSCCH01: ${cache_magic_hex}")
-endif()
-file(READ "${cache_file}" first_cache HEX)
+if(NOT cache_status EQUAL 0 OR NOT cache_text MATCHES "cache_written=1" OR
+   NOT cache_count EQUAL 1)
+    list(APPEND a2_characterization_failures
+        "explicit identity: expected one CXSCCH01 cache and cache_written=1;"
+        " got status=${cache_status}, files=${cache_count}, output=${cache_text}")
+else()
+    list(GET cache_files 0 cache_file)
+    file(READ "${cache_file}" cache_bytes HEX)
+    string(SUBSTRING "${cache_bytes}" 0 16 cache_magic_hex)
+    if(NOT cache_magic_hex STREQUAL "4358534343483031")
+        list(APPEND a2_characterization_failures
+            "explicit identity: cache magic is not CXSCCH01 (${cache_magic_hex})")
+    endif()
+    file(READ "${cache_file}" first_cache HEX)
 
+    execute_process(
+        COMMAND "${CUEXIS_ASSET_IMPORTER}" --compile
+            --vertex "${vertex_glsl}" --fragment "${fragment_glsl}"
+            --cache-dir "${cache_dir}" --identity "${identity_hex}"
+        RESULT_VARIABLE cache_again_status
+        OUTPUT_VARIABLE cache_again_output
+        ERROR_VARIABLE cache_again_error
+    )
+    file(READ "${cache_file}" second_cache HEX)
+    if(NOT cache_again_status EQUAL 0 OR NOT first_cache STREQUAL second_cache)
+        list(APPEND a2_characterization_failures
+            "explicit identity repeat: expected identical cache bytes;"
+            " got status=${cache_again_status}, output=${cache_again_output}${cache_again_error}")
+    endif()
+
+    file(REMOVE "${cache_file}")
+    execute_process(
+        COMMAND "${CUEXIS_ASSET_IMPORTER}" --compile
+            --vertex "${vertex_glsl}" --fragment "${fragment_glsl}"
+            --cache-dir "${cache_dir}" --identity "${identity_hex}"
+        RESULT_VARIABLE cache_rebuild_status
+        OUTPUT_VARIABLE cache_rebuild_output
+        ERROR_VARIABLE cache_rebuild_error
+    )
+    file(READ "${cache_file}" rebuilt_cache HEX)
+    if(NOT cache_rebuild_status EQUAL 0 OR NOT first_cache STREQUAL rebuilt_cache)
+        list(APPEND a2_characterization_failures
+            "explicit identity rebuild: expected identical cache bytes;"
+            " got status=${cache_rebuild_status}, output=${cache_rebuild_output}${cache_rebuild_error}")
+    endif()
+endif()
+
+# Explicit semantic identity and standalone hashing are mutually exclusive.
+set(conflict_cache_dir "${CUEXIS_ASSET_IMPORTER_WORK}/cache-conflict")
+file(REMOVE_RECURSE "${conflict_cache_dir}")
 execute_process(
     COMMAND "${CUEXIS_ASSET_IMPORTER}" --compile
         --vertex "${vertex_glsl}" --fragment "${fragment_glsl}"
-        --cache-dir "${cache_dir}"
-    RESULT_VARIABLE cache_again_status
-    OUTPUT_VARIABLE cache_again_output
-    ERROR_VARIABLE cache_again_error
+        --cache-dir "${conflict_cache_dir}" --identity "${identity_hex}" --standalone-cache
+    RESULT_VARIABLE conflict_status
+    OUTPUT_VARIABLE conflict_output
+    ERROR_VARIABLE conflict_error
 )
-if(NOT cache_again_status EQUAL 0)
-    message(FATAL_ERROR
-        "second --cache-dir compile failed (${cache_again_status})\n"
-        "${cache_again_output}\n${cache_again_error}")
-endif()
-file(READ "${cache_file}" second_cache HEX)
-if(NOT first_cache STREQUAL second_cache)
-    message(FATAL_ERROR "second CXSCCH01 write did not reproduce the first cache bytes")
+set(conflict_text "${conflict_output}${conflict_error}")
+file(GLOB conflict_files "${conflict_cache_dir}/*.cxscch01")
+list(LENGTH conflict_files conflict_count)
+if(conflict_status EQUAL 0 OR conflict_count GREATER 0 OR
+   NOT conflict_text MATCHES "shader.cache.key_invalid")
+    list(APPEND a2_characterization_failures
+        "identity + standalone-cache: expected shader.cache.key_invalid, nonzero exit, and no cache file;"
+        " got status=${conflict_status}, files=${conflict_count}, output=${conflict_text}")
 endif()
 
-file(REMOVE "${cache_file}")
-execute_process(
-    COMMAND "${CUEXIS_ASSET_IMPORTER}" --compile
-        --vertex "${vertex_glsl}" --fragment "${fragment_glsl}"
-        --cache-dir "${cache_dir}"
-    RESULT_VARIABLE cache_rebuild_status
-    OUTPUT_VARIABLE cache_rebuild_output
-    ERROR_VARIABLE cache_rebuild_error
-)
-if(NOT cache_rebuild_status EQUAL 0)
+if(a2_characterization_failures)
+    string(REPLACE ";" "\n" a2_failure_text "${a2_characterization_failures}")
     message(FATAL_ERROR
-        "rebuild --cache-dir compile failed (${cache_rebuild_status})\n"
-        "${cache_rebuild_output}\n${cache_rebuild_error}")
-endif()
-file(READ "${cache_file}" rebuilt_cache HEX)
-if(NOT first_cache STREQUAL rebuilt_cache)
-    message(FATAL_ERROR "deleted CXSCCH01 rebuild did not match the original bytes")
+        "A2 importer characterization RED (expected until AG-A2-IMPORTER-I):\n"
+        "${a2_failure_text}")
 endif()
 
 execute_process(

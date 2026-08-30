@@ -187,6 +187,10 @@ cuexis.asset-index version 3
 Reader 必须先读显式 `version`，再使用对应类型表。v1/v2 遇到 `type: "shader"` 仍是未知类型
 错误。v3 项目可以不含 shader 记录。
 
+v3 `assets[]` record 的合同字段仍只有 `id`、`type`、`source` 和 `dependencies`。record-level
+`extensions` 或其他自定义成员尚未由 owner/spec 决定，不属于当前格式合同；实现或内容不得
+依赖此类私自扩展。document-level `extensions` 的保留规则仍以对应 Asset Index ADR 为准。
+
 ```json
 {
   "format": "cuexis.asset-index",
@@ -548,9 +552,13 @@ failure keeps the previous Pipeline and reports full diagnostics
 ## 11. 模块与 package 拓扑（S5A-12 的模块部分）
 
 ```text
-cuexis_shader          optional STATIC; vcpkg feature shader-tools
+cuexis_shader_cache   STATIC; always built when the shader module is enabled
   -> cuexis_core
-  optional -> cuexis_assets / cuexis_project as needed for paths
+  owns CXSCCH01 cache envelope, key encoding and cache-store primitives
+
+cuexis_shader          optional STATIC; vcpkg feature shader-tools
+  -> cuexis_shader_cache
+  -> shaderc / SPIRV-Cross / SPIRV-Tools (private, shader-tools feature only)
   -X-> cuexis_playback public headers, SDL, OpenGL, JSON DOM
 
 cuexis_playback
@@ -562,10 +570,20 @@ cuexis_render_opengl
   maps set/binding to texture units / UBO
   -X-> writes GLuint back to Material/Chart/Playback
 
-cuexis_asset_importer  developer tool; uses cuexis_shader; not a Playback hot path
+cuexis_asset_importer  developer tool; built with cuexis_shader; not a Playback hot path
 ```
 
-`cuexis_shader` 不是安装 package component。基础 `Cuexis::Playback` 继续不查找 SDL、OpenGL、
+`cuexis_asset_importer --compile` may compile and print artifacts without a cache directory. When
+`--cache-dir` is supplied, the CLI requires the Playback/CXPRES semantic source identity through
+`--identity HEX64`; the value accepts upper- or lower-case hexadecimal and is stored as 32 binary
+bytes before key derivation. The explicit `--standalone-cache` flag is a development/debugging
+exception that opts into hashing the supplied shader sources instead. It is never selected by
+default, and it cannot be combined with `--identity`.
+
+`cuexis_shader_cache` 是非可选的内部静态实现库，供 `cuexis_render_opengl`（以及启用时的
+`cuexis_shader`）私有链接；它不安装公共头，也不是 `Cuexis::Shader` package component。
+`cuexis_shader` 仅在 `shader-tools` feature 下构建，同样不安装公共 component。基础
+`Cuexis::Playback` 继续不查找 SDL、OpenGL、
 GLAD 或 shaderc。CMake 选项建议名 `CUEXIS_BUILD_SHADER_TOOLS`，默认随 headless/Playback-only
 为 OFF。S5-B 记录 baseline 上真实的 imported target 名称。
 

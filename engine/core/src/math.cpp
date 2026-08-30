@@ -66,6 +66,48 @@ bool isNormalized(const Quat& value, float tolerance) noexcept {
     return nearlyEqual(lengthSquared, 1.0F, tolerance);
 }
 
+double hermiteProgress(double value, double startSlope, double endSlope) noexcept {
+    const double t = std::clamp(value, 0.0, 1.0);
+    const double squared = t * t;
+    const double cubed = squared * t;
+    return (-2.0 + startSlope + endSlope) * cubed + (3.0 - 2.0 * startSlope - endSlope) * squared +
+           startSlope * t;
+}
+
+Vec3 lerp(const Vec3& left, const Vec3& right, double t) noexcept {
+    const auto blend = static_cast<float>(t);
+    return Vec3{left.x + (right.x - left.x) * blend, left.y + (right.y - left.y) * blend,
+                left.z + (right.z - left.z) * blend};
+}
+
+Result<Quat> slerp(const Quat& left, const Quat& right, double t) noexcept {
+    Quat target = right;
+    double dot = static_cast<double>(left.x) * right.x + static_cast<double>(left.y) * right.y +
+                 static_cast<double>(left.z) * right.z + static_cast<double>(left.w) * right.w;
+    if (dot < 0.0) {
+        dot = -dot;
+        target = Quat{-right.x, -right.y, -right.z, -right.w};
+    }
+    dot = std::clamp(dot, -1.0, 1.0);
+
+    Quat result;
+    if (dot > 0.9995) {
+        const auto blend = static_cast<float>(t);
+        result = Quat{left.x + (target.x - left.x) * blend, left.y + (target.y - left.y) * blend,
+                      left.z + (target.z - left.z) * blend, left.w + (target.w - left.w) * blend};
+    } else {
+        const double theta = std::acos(dot);
+        const double sinTheta = std::sin(theta);
+        const double leftWeight = std::sin((1.0 - t) * theta) / sinTheta;
+        const double rightWeight = std::sin(t * theta) / sinTheta;
+        result = Quat{static_cast<float>(left.x * leftWeight + target.x * rightWeight),
+                      static_cast<float>(left.y * leftWeight + target.y * rightWeight),
+                      static_cast<float>(left.z * leftWeight + target.z * rightWeight),
+                      static_cast<float>(left.w * leftWeight + target.w * rightWeight)};
+    }
+    return normalize(result);
+}
+
 Result<Quat> normalize(const Quat& value) noexcept {
     if (!isFinite(value)) {
         return unexpected(
@@ -74,14 +116,23 @@ Result<Quat> normalize(const Quat& value) noexcept {
 
     const auto lengthSquared =
         value.x * value.x + value.y * value.y + value.z * value.z + value.w * value.w;
+    if (!std::isfinite(lengthSquared)) {
+        return unexpected(Error{"core.math.quaternion_not_representable",
+                                "Quaternion squared length is not representable"});
+    }
     if (lengthSquared <= std::numeric_limits<float>::epsilon()) {
         return unexpected(
             Error{"core.math.quaternion_zero_length", "Quaternion length must be non-zero"});
     }
 
     const auto inverseLength = 1.0F / std::sqrt(lengthSquared);
-    return Quat{value.x * inverseLength, value.y * inverseLength, value.z * inverseLength,
-                value.w * inverseLength};
+    const auto result = Quat{value.x * inverseLength, value.y * inverseLength,
+                             value.z * inverseLength, value.w * inverseLength};
+    if (!std::isfinite(inverseLength) || !isFinite(result)) {
+        return unexpected(Error{"core.math.quaternion_not_representable",
+                                "Quaternion normalization result is not representable"});
+    }
+    return result;
 }
 
 Mat4 makeTranslation(const Vec3& translation) noexcept {

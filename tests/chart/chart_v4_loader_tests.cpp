@@ -32,6 +32,17 @@ namespace {
     return false;
 }
 
+[[nodiscard]] auto findDiagnostic(const cuexis::chart::ChartV4SourceResult& result,
+                                  std::string_view code, std::string_view fieldPath)
+    -> const cuexis::core::Diagnostic* {
+    for (const auto& diagnostic : result.diagnostics.items()) {
+        if (diagnostic.code() == code && diagnostic.fieldPath() == fieldPath) {
+            return &diagnostic;
+        }
+    }
+    return nullptr;
+}
+
 [[nodiscard]] auto repeatedEmptyObjects(std::size_t count) -> std::string {
     std::string result{"["};
     for (std::size_t index = 0; index < count; ++index) {
@@ -67,6 +78,40 @@ namespace {
       "requiredExtensions":[],"extensions":{}
     })";
     return result;
+}
+
+[[nodiscard]] auto makeLayerMaskPropertyDocument(std::string_view property) -> std::string {
+    const auto groups = std::string{R"([{
+      "groupId":"group.mask","mode":"override","weight":1,"instances":[]}])"};
+    auto document = makeAnimatorBudgetDocument(groups);
+    const auto original = std::string{R"("properties":["transform.scale"])"};
+    const auto replacement = std::string{R"("properties":[")"} + std::string{property} + R"("])";
+    const auto position = document.find(original);
+    REQUIRE(position != std::string::npos);
+    document.replace(position, original.size(), replacement);
+    return document;
+}
+
+[[nodiscard]] auto makeInstanceMaskPropertyDocument(std::string_view property) -> std::string {
+    auto groups = std::string{R"([{
+      "groupId":"group.mask","mode":"override","weight":1,"instances":[{
+        "instanceId":"instance.mask",
+        "clip":{"domain":"animation","id":"animation.mask"},
+        "startBeat":{"numerator":0,"denominator":1},"iterations":1,
+        "fillMode":"none","weight":1,
+        "propertyMask":{"properties":[")"};
+    groups += property;
+    groups += R"("],"prefixes":[]}}]}])";
+    return makeAnimatorBudgetDocument(groups);
+}
+
+void requireInvalidMaskProperty(const cuexis::chart::ChartV4SourceResult& result,
+                                std::string_view fieldPath) {
+    CHECK_FALSE(result.hasValue());
+    const auto* diagnostic = findDiagnostic(result, "chart.animation.mask_conflict", fieldPath);
+    REQUIRE(diagnostic != nullptr);
+    CHECK(diagnostic->message().find("Property mask property") != std::string_view::npos);
+    CHECK(diagnostic->message().find("bounded") != std::string_view::npos);
 }
 
 } // namespace
@@ -212,5 +257,37 @@ TEST_CASE("Chart v4 Reader rejects masks without known effective properties",
         INFO(mask);
         CHECK_FALSE(result.hasValue());
         CHECK(hasDiagnostic(result, "chart.animation.mask_conflict"));
+    }
+}
+
+TEST_CASE("Chart v4 Reader diagnoses empty and overlong mask properties",
+          "[chart][v4][mask-property][ch-01]") {
+    constexpr std::string_view layerPath =
+        "$/objects/0/components/cuexis.animator/layers/0/propertyMask/properties/0";
+    constexpr std::string_view instancePath =
+        "$/objects/0/components/cuexis.animator/layers/0/blendGroups/0/instances/0/"
+        "propertyMask/properties/0";
+    const auto overlongProperty = std::string(257, 'x');
+
+    SECTION("empty Layer property") {
+        requireInvalidMaskProperty(
+            cuexis::chart::ChartV4Loader::load(makeLayerMaskPropertyDocument("")), layerPath);
+    }
+
+    SECTION("overlong Layer property") {
+        requireInvalidMaskProperty(
+            cuexis::chart::ChartV4Loader::load(makeLayerMaskPropertyDocument(overlongProperty)),
+            layerPath);
+    }
+
+    SECTION("empty Instance property") {
+        requireInvalidMaskProperty(
+            cuexis::chart::ChartV4Loader::load(makeInstanceMaskPropertyDocument("")), instancePath);
+    }
+
+    SECTION("overlong Instance property") {
+        requireInvalidMaskProperty(
+            cuexis::chart::ChartV4Loader::load(makeInstanceMaskPropertyDocument(overlongProperty)),
+            instancePath);
     }
 }

@@ -37,7 +37,9 @@ struct BeatSample final {
 
 class TimingMap final {
   public:
+    // Legacy overload accepts any finite positive BPM for SDK 0.7.0 compatibility.
     [[nodiscard]] static auto create(double defaultBpm, double offsetMs) -> core::Result<TimingMap>;
+    // Explicit tempo/stop overload enforces [1, 65536] BPM and fixed event/stop limits.
     [[nodiscard]] static auto create(double defaultBpm, double offsetMs,
                                      std::span<const TempoEvent> tempoEvents,
                                      std::span<const TimingStop> stops) -> core::Result<TimingMap>;

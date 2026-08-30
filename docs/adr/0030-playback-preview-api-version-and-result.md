@@ -4,6 +4,18 @@
 
 日期：2026-07-27
 
+## 实现快照（2026-08-29）
+
+当前仓库的 `CUEXIS_SDK_API_VERSION` 为 `0.7.0`。当前 Playback external consumer 示例使用：
+
+```cmake
+find_package(Cuexis 0.7 CONFIG REQUIRED COMPONENTS Playback Content Audio)
+```
+
+下文关于 `0.1.0`、`0.2.0`、`0.3.0` 和 `0.4.0` 的段落保留为本 ADR 的历史决策背景；
+它们不是当前 SDK API 版本声明。当前版本和安装示例以本快照、`VERSIONING.md` 与
+`BUILDING.md` 的现行合同为准。
+
 ## 背景
 
 Cuexis 的项目显示版本使用独立的日期构建身份，适合标识一次源码或发行构建，但 CMake
@@ -48,7 +60,8 @@ Registry 或 RenderScene 的存储；后续 update、reload、unload 和 Session
 
 ## 影响
 
-- 当前 external consumer 必须带最低 SDK API 版本调用 `find_package(Cuexis 0.4 ...)`。
+- 在阶段 2（SDK API `0.4.0`）时期，external consumer 必须带最低 SDK API 版本调用
+  `find_package(Cuexis 0.4 ...)`；该示例保留为历史影响记录。
 - SDK API 兼容变化和日期构建发布需要分别评审、更新和测试。
 - 安装包必须继续导出 `tl-expected` dependency，直到公共 C++ Result 表示发生显式迁移。
 - Snapshot 生命周期测试必须保留 reload、unload 和 Session 销毁后的读取覆盖。

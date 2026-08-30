@@ -40,19 +40,52 @@ auto HostClock::submit(const SourceClockSample& sample) -> core::Result<void> {
     if (auto valid = validateSourceClockSample(sample); !valid) {
         return valid;
     }
-    if (initialized_ && sample.discontinuityId == sample_.discontinuityId &&
-        sample.positionMs < sample_.positionMs) {
+    if (initialized_ && sample.discontinuityId == discontinuityId_.load() &&
+        sample.positionMs < positionMs_.load()) {
         return core::unexpected(core::Error{
             "audio.clock.segment_regressed",
             "Playing source position must not regress within one discontinuity segment"});
     }
-    sample_ = sample;
+
+    sequence_.fetch_add(1);
+    positionMs_.store(sample.positionMs);
+    state_.store(static_cast<int>(sample.state));
+    discontinuityId_.store(sample.discontinuityId);
+    sequence_.fetch_add(1);
     initialized_ = true;
     return {};
 }
 
 SourceClockSample HostClock::snapshot() const noexcept {
-    return sample_;
+    struct SnapshotCache final {
+        const HostClock* owner{};
+        SourceClockSample sample{};
+    };
+    thread_local SnapshotCache cache;
+    if (cache.owner != this) {
+        cache.owner = this;
+        cache.sample = {};
+    }
+
+    constexpr std::uint32_t maxAttempts = 8;
+    for (std::uint32_t attempt = 0; attempt < maxAttempts; ++attempt) {
+        const auto before = sequence_.load();
+        if ((before & 1U) != 0) {
+            continue;
+        }
+
+        SourceClockSample result;
+        result.positionMs = positionMs_.load();
+        result.state = static_cast<PlaybackState>(state_.load());
+        result.discontinuityId = discontinuityId_.load();
+
+        const auto after = sequence_.load();
+        if (before == after && (after & 1U) == 0) {
+            cache.sample = result;
+            return result;
+        }
+    }
+    return cache.sample;
 }
 
 } // namespace cuexis::audio

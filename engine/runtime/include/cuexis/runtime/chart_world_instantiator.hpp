@@ -79,11 +79,15 @@ class ChartWorldInstantiator final {
     // Performs side-effect-free Runtime structure validation before resource I/O.
     [[nodiscard]] static auto validate(const chart::ChartRuntime& runtime) -> core::Diagnostics;
 
-    // The calling thread becomes the owner of the returned World.
+    // The calling thread becomes the owner of the returned World. Allocation failure is
+    // intentionally allowed to propagate as std::bad_alloc; other exceptions are converted to
+    // diagnostics.
     [[nodiscard]] static auto instantiate(const chart::ChartRuntime& runtime)
         -> ChartWorldInstantiationResult;
 
-    // A non-empty binding span must contain exactly one entry per Runtime object.
+    // A non-empty binding span must contain exactly one entry per Runtime object. Allocation
+    // failure is intentionally allowed to propagate as std::bad_alloc; other exceptions become
+    // diagnostics.
     [[nodiscard]] static auto
     instantiate(const chart::ChartRuntime& runtime,
                 std::span<const std::optional<ResolvedRenderableResources>> renderableResources,

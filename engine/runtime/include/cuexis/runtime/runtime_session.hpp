@@ -281,7 +281,10 @@ class RuntimeSession final {
     [[nodiscard]] auto updatePrepared(RuntimeEvaluationState& state,
                                       const chart::TimingMap& timingMap, const RuntimeFrame& frame)
         -> core::Result<void>;
-    void captureDebug(const RuntimeEvaluationState& state, double beat);
+    [[nodiscard]] auto captureDebug(const RuntimeEvaluationState& state,
+                                    const ObjectEntityMap& objects, double beat,
+                                    std::vector<RuntimeDebugRecord>& records, bool& truncated) const
+        -> core::Result<void>;
 
     RuntimeSessionKind sessionKind_{RuntimeSessionKind::Playback};
     std::optional<chart::ChartRuntime> chartRuntime_;

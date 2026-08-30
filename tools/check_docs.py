@@ -7,9 +7,11 @@ pretend that candidate Chart/CXC/CXT files are production schemas.
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 from collections import deque
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -19,6 +21,13 @@ AGENTS = ROOT / "AGENTS.md"
 DOCS = ROOT / "docs"
 DOCS_INDEX = DOCS / "README.md"
 EXAMPLES = DOCS / "examples" / "chart_format_update"
+STATUS_CONTRACT = DOCS / "status_contract.json"
+BUILDING_GUIDE = DOCS / "guides" / "BUILDING.md"
+VERSION_CMAKE = ROOT / "cmake" / "CuexisVersion.cmake"
+DEFAULT_TARGET_FACTS = ROOT / "out" / "build" / "debug" / "generated" / "cuexis-targets.txt"
+TARGET_FACTS_ENV = "CUEXIS_TARGETS_FILE"
+TARGET_BLOCK_BEGIN = "<!-- CUEXIS_ACTIVE_TARGETS_BEGIN -->"
+TARGET_BLOCK_END = "<!-- CUEXIS_ACTIVE_TARGETS_END -->"
 FUTURE_STAGE_PLANS = (
     "stage_5_implementation_plan.md",
     "stage_6_implementation_plan.md",
@@ -164,163 +173,253 @@ def check_stage_name(files: list[Path], failures: list[CheckFailure]) -> None:
         failures.append(CheckFailure(DOCS_INDEX, "canonical Stage Chart Format Update name is missing"))
 
 
-def check_cfu_status(failures: list[CheckFailure]) -> None:
-    status_contracts = {
-        AGENTS: (
-            "CFU-F closed after final-SHA hosted verification",
-            "CFU-G closed after explicit owner acceptance on August 24, 2026",
-            "G0 status calibration, G1 exit audit, and G2 Stage 4 typed handoff are complete",
-            "G3 local candidate gates passed on August 19, 2026",
-            "passed same-SHA hosted Linux Quality, Windows MSVC",
-            "G3 hosted validation and G4 are complete",
-            "G5 report-SHA hosted revalidation passed",
-            "G6 owner acceptance is recorded",
-            "Stage Chart Format Update is complete",
-            "Stage 4 is complete",
-            "Stage 5 S5-A, S5-B, S5-C, S5-D, S5-E, S5-F, and S5-G are complete; S5-H local checkpoint; hosted pending",
-        ),
-        DOCS / "CURRENT_STATUS.md": (
-            "G3 hosted 门禁与 G4 已完成",
-            "18 PASS / 0 PENDING / 0 PRODUCT BLOCKER",
-            "CFU-G2 已于同日完成 Stage 4 typed handoff",
-            "CFU-G3 已于 2026-08-19",
-            "G5 completion report SHA",
-            "hosted revalidation 均已通过",
-            "CFU-G 与 Stage Chart Format Update 已关闭",
-            "CFU-G6 已于 2026-08-24 完成",
-            "Stage 4 已完成",
-            "S5-A 合同已冻结",
-            "S5-B 已接线",
-            "S5-C 已完成",
-            "S5-D 已完成",
-            "S5-E 已完成",
-            "S5-F 已完成",
-            "S5-G 已完成",
-            "S5-H local checkpoint",
-        ),
-        DOCS / "ROADMAP.md": (
-            "CFU-F consumers and determinism closed; final-SHA hosted gates passed 2026-08-16",
-            "Stage 4 已完成；当前下一阶段是 **Stage 5**",
-            "CFU-G final closure                                 completed; G6 owner acceptance recorded 2026-08-24",
-        ),
-        DOCS / "PROJECT_GUIDE.md": (
-            "CFU-F 已在最终实现 SHA 上关闭跨平台 consumer、确定性、安全与性能门禁",
-            "G1 退出审计和 G2 Stage 4 typed handoff 已完成",
-            "G3 本地候选门禁已于 2026-08-19 通过",
-            "hosted Linux/MSVC/MinGW 验证已于 2026-08-24",
-            "G3 hosted 与 G4 已完成",
-            "G5 completion report SHA",
-            "CFU-G 与 Stage Chart Format Update 已关闭",
-            "Stage 4 已完成",
-            "S5-A 合同已冻结",
-            "S5-B 已接线",
-            "S5-C 已完成",
-            "S5-D 已完成",
-            "S5-E 已完成",
-            "S5-F 已完成",
-            "S5-G 已完成",
-            "S5-H local checkpoint",
-        ),
-        DOCS / "formats" / "README.md": (
-            "CFU-G hosted 验证、completion report 和 owner acceptance 已完成",
-        ),
-        DOCS / "formats" / "CHART_V4_FORMAT.md": (
-            "G5 report-SHA hosted revalidation 与 G6 owner acceptance 已完成",
-        ),
-        DOCS / "formats" / "CXT_FORMAT.md": (
-            "G5 report-SHA hosted revalidation 与 G6 owner acceptance 已完成",
-        ),
-        DOCS / "formats" / "CXC_FORMAT.md": (
-            "CFU-G 经项目所有者接受",
-        ),
-        DOCS / "stage_plans" / "README.md": (
-            "CFU-D/CFU-E/CFU-F/G 已关闭；G6 owner acceptance recorded 2026-08-24",
-        ),
-        DOCS / "stage_plans" / "stage_chart_format_update_implementation_plan.md": (
-            "CFU-A/CFU-B、CFU-C0/C1/C2/C3/C4、CFU-D、CFU-E、CFU-F、CFU-G 已完成并封存",
-            "CFU-G1 审计报告",
-            "CFU-G2 交接报告",
-            "CFU-G3 验证报告",
-            "最终候选 SHA",
-            "CFU-G4 hosted 验证报告",
-            "G3 hosted 与 G4 已完成",
-            "G5/G6 completion report",
-            "CFU-G 与 Stage Chart Format Update 已关闭",
-            "Stage 4 已切换为 unblocked / not started",
-        ),
-        DOCS / "stage_plans" / "stage_4_implementation_plan.md": (
-            "CFU-G2 Stage 4 typed handoff",
-            "项目所有者已接受 completion report",
-            "CFU-G4 hosted verification",
-            "G5 report-SHA hosted revalidation 与 G6 owner acceptance",
-            "unblocked / not started",
-        ),
-        DOCS / "stage_reports" / "README.md": (
-            "260816 Chart Format Update CFU-G1 exit audit",
-            "260816 Chart Format Update CFU-G2 Stage 4 handoff",
-            "260819 Chart Format Update CFU-G3 validation",
-            "260820 Chart Format Update CFU-G4 closure readiness",
-            "260824 Chart Format Update CFU-G4 hosted verification",
-            "Stage Chart Format Update completion report",
-            "G6 owner acceptance recorded 2026-08-24",
-            "Stage 4 completion report",
-            "260828 Stage 5 S5-H safety",
-        ),
-        DOCS / "stage_reports" / "stage_chart_format_update_completion_report.md": (
-            "G6 complete",
-            "项目所有者接受记录：**已接受",
-            "G5 report-SHA hosted revalidation",
-            "18 PASS / 0 PENDING",
-            "Stage 4 `unblocked but not started`",
-            "`.codex/` is intentionally excluded",
-        ),
-    }
-    stale_fragments = (
-        "CFU-G is active",
-        "G5 completion report candidate",
-        "G5/G6 pending",
-        "G6 owner acceptance pending",
-        "report-SHA hosted/G6 pending",
-        "等待 report-SHA hosted revalidation",
-        "Stage 4 stays blocked / not started",
-        "CFU-F is next",
-        "CFU-F consumers and determinism next",
-        "CFU-G cross-platform closure and Stage 4 handoff pending",
-        "F next",
-        "CFU-G 为下一批次",
-        "最终 hosted 产品门禁仍未关闭",
-        "G2 Stage 4 typed handoff is next",
-        "下一检查点为 G2 handoff",
-        "G3 final candidate validation is next",
-        "G3 validation next",
-        "G3 next",
-    )
-    for path, required_fragments in status_contracts.items():
-        text = re.sub(r"\s+", " ", path.read_text(encoding="utf-8")).strip()
+def normalize_whitespace(text: str) -> str:
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def status_contract_path(root: Path, value: str, label: str, failures: list[CheckFailure], contract: Path) -> Path | None:
+    relative = Path(value)
+    candidate = (root / relative).resolve()
+    if relative.is_absolute() or not is_within(candidate, root.resolve()):
+        failures.append(CheckFailure(contract, f"invalid status contract {label}: path escapes repository: {value}"))
+        return None
+    if not candidate.is_file():
+        failures.append(CheckFailure(contract, f"invalid status contract {label}: referenced file is missing: {value}"))
+        return None
+    return candidate
+
+
+def load_status_contract(
+    contract: Path, root: Path, failures: list[CheckFailure]
+) -> tuple[dict[Path, tuple[str, ...]], tuple[str, ...], tuple[Path, ...], str] | None:
+    failure_count = len(failures)
+    try:
+        value = json.loads(contract.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        failures.append(CheckFailure(contract, f"invalid status contract: cannot read JSON: {error}"))
+        return None
+    if not isinstance(value, dict):
+        failures.append(CheckFailure(contract, "invalid status contract: root must be a JSON object"))
+        return None
+
+    snapshot_date = value.get("snapshotDate")
+    if not isinstance(snapshot_date, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", snapshot_date):
+        failures.append(CheckFailure(contract, "invalid status contract snapshotDate: expected YYYY-MM-DD"))
+        return None
+    try:
+        date.fromisoformat(snapshot_date)
+    except ValueError:
+        failures.append(CheckFailure(contract, "invalid status contract snapshotDate: expected a calendar date"))
+        return None
+
+    raw_required = value.get("requiredFragments")
+    if not isinstance(raw_required, dict):
+        failures.append(CheckFailure(contract, "invalid status contract requiredFragments: expected an object"))
+        return None
+    required: dict[Path, tuple[str, ...]] = {}
+    for relative, fragments in raw_required.items():
+        if not isinstance(relative, str):
+            failures.append(CheckFailure(contract, "invalid status contract requiredFragments: path must be a string"))
+            continue
+        path = status_contract_path(root, relative, "requiredFragments", failures, contract)
+        if path is None:
+            continue
+        if not isinstance(fragments, list) or not fragments or any(
+            not isinstance(fragment, str) or not fragment.strip() for fragment in fragments
+        ):
+            failures.append(
+                CheckFailure(
+                    contract,
+                    f"invalid status contract requiredFragments for {relative}: expected nonempty strings",
+                )
+            )
+            continue
+        required[path] = tuple(fragments)
+
+    raw_stale = value.get("staleFragments")
+    if not isinstance(raw_stale, list) or not raw_stale:
+        failures.append(CheckFailure(contract, "invalid status contract staleFragments: expected a nonempty array"))
+        return None
+    stale: list[str] = []
+    for index, entry in enumerate(raw_stale):
+        if not isinstance(entry, dict):
+            failures.append(CheckFailure(contract, f"invalid status contract staleFragments[{index}]: expected an object"))
+            continue
+        fragment = entry.get("fragment")
+        minimum_length = entry.get("minLength")
+        if not isinstance(fragment, str) or not fragment.strip():
+            failures.append(
+                CheckFailure(contract, f"invalid status contract staleFragments[{index}].fragment: expected text")
+            )
+            continue
+        if isinstance(minimum_length, bool) or not isinstance(minimum_length, int) or minimum_length < 8:
+            failures.append(
+                CheckFailure(
+                    contract,
+                    f"invalid status contract staleFragments[{index}].minLength: expected integer >= 8",
+                )
+            )
+            continue
+        if len(normalize_whitespace(fragment)) < minimum_length:
+            failures.append(
+                CheckFailure(
+                    contract,
+                    f"invalid status contract staleFragments[{index}]: fragment is shorter than minLength",
+                )
+            )
+            continue
+        stale.append(fragment)
+
+    raw_dated = value.get("datedFiles")
+    if not isinstance(raw_dated, list) or not raw_dated:
+        failures.append(CheckFailure(contract, "invalid status contract datedFiles: expected a nonempty array"))
+        return None
+    dated: list[Path] = []
+    for relative in raw_dated:
+        if not isinstance(relative, str):
+            failures.append(CheckFailure(contract, "invalid status contract datedFiles: path must be a string"))
+            continue
+        path = status_contract_path(root, relative, "datedFiles", failures, contract)
+        if path is not None:
+            dated.append(path)
+
+    if len(failures) != failure_count:
+        return None
+    return required, tuple(stale), tuple(dated), snapshot_date
+
+
+def check_cfu_status(
+    failures: list[CheckFailure], contract: Path = STATUS_CONTRACT, root: Path = ROOT
+) -> None:
+    status_contract = load_status_contract(contract, root, failures)
+    if status_contract is None:
+        return
+    required_fragments, stale_fragments, dated_status_files, snapshot_date = status_contract
+    for path, required in required_fragments.items():
+        text = normalize_whitespace(path.read_text(encoding="utf-8"))
         compact_text = re.sub(r"\s+", "", text)
-        for fragment in required_fragments:
+        for fragment in required:
             if fragment not in text and re.sub(r"\s+", "", fragment) not in compact_text:
-                failures.append(CheckFailure(path, f"missing current CFU status: {fragment}"))
+                failures.append(
+                    CheckFailure(
+                        path,
+                        f"status contract requiredFragments: missing current CFU status: {fragment}",
+                    )
+                )
         for fragment in stale_fragments:
             if fragment in text or re.sub(r"\s+", "", fragment) in compact_text:
-                failures.append(CheckFailure(path, f"contains stale CFU status: {fragment}"))
+                failures.append(
+                    CheckFailure(
+                        path,
+                        f"status contract staleFragments: contains stale CFU status: {fragment}",
+                    )
+                )
 
-    dated_status_files = (
-        DOCS / "CURRENT_STATUS.md",
-        DOCS / "ROADMAP.md",
-        DOCS / "PROJECT_GUIDE.md",
-        DOCS / "formats" / "CHART_V4_FORMAT.md",
-        DOCS / "formats" / "CXT_FORMAT.md",
-        DOCS / "formats" / "CXC_FORMAT.md",
-        DOCS / "formats" / "README.md",
-        DOCS / "stage_plans" / "README.md",
-        DOCS / "stage_reports" / "README.md",
-    )
     for path in dated_status_files:
         text = path.read_text(encoding="utf-8")
         match = re.search(r"^更新日期：(\d{4}-\d{2}-\d{2})$", text, re.MULTILINE)
-        if match is None or match.group(1) < "2026-08-24":
-            failures.append(CheckFailure(path, "current CFU status predates the CFU-G4 documentation checkpoint"))
+        if match is None or match.group(1) < snapshot_date:
+            failures.append(
+                CheckFailure(
+                    path,
+                    f"status contract datedFiles: expected 更新日期 on or after {snapshot_date}",
+                )
+            )
+
+
+def target_block(path: Path, failures: list[CheckFailure]) -> list[str] | None:
+    lines = path.read_text(encoding="utf-8").splitlines()
+    begin_lines = [index for index, line in enumerate(lines) if line == TARGET_BLOCK_BEGIN]
+    end_lines = [index for index, line in enumerate(lines) if line == TARGET_BLOCK_END]
+    if len(begin_lines) != 1 or len(end_lines) != 1 or begin_lines[0] >= end_lines[0]:
+        failures.append(CheckFailure(path, "target contract: expected one ordered begin/end marker pair"))
+        return None
+    begin = begin_lines[0]
+    end = end_lines[0]
+    if end - begin < 3 or lines[begin + 1] != "```text" or lines[end - 1] != "```":
+        failures.append(CheckFailure(path, "target contract: expected a text code block between markers"))
+        return None
+    targets = lines[begin + 2 : end - 1]
+    if not targets or any(not re.fullmatch(r"cuexis_[a-z0-9_]+", target) for target in targets):
+        failures.append(CheckFailure(path, "target contract: expected nonempty cuexis_* target names"))
+        return None
+    if len(targets) != len(set(targets)):
+        failures.append(CheckFailure(path, "target contract: target block contains duplicates"))
+        return None
+    return targets
+
+
+def generated_target_facts(failures: list[CheckFailure]) -> Path | None:
+    configured = os.environ.get(TARGET_FACTS_ENV)
+    if configured is None:
+        return DEFAULT_TARGET_FACTS if DEFAULT_TARGET_FACTS.is_file() else None
+    path = Path(configured)
+    candidate = path.resolve() if path.is_absolute() else (ROOT / path).resolve()
+    if not is_within(candidate, ROOT.resolve()):
+        failures.append(CheckFailure(BUILDING_GUIDE, f"target contract: {TARGET_FACTS_ENV} escapes repository"))
+        return None
+    if not candidate.is_file():
+        failures.append(
+            CheckFailure(BUILDING_GUIDE, f"target contract: {TARGET_FACTS_ENV} does not name a generated file")
+        )
+        return None
+    return candidate
+
+
+def check_target_contract(
+    failures: list[CheckFailure], building: Path = BUILDING_GUIDE, facts: Path | None = None
+) -> None:
+    documented = target_block(building, failures)
+    if documented is None:
+        return
+    target_facts = facts if facts is not None else generated_target_facts(failures)
+    if target_facts is None:
+        return
+    generated = [line.strip() for line in target_facts.read_text(encoding="utf-8").splitlines() if line.strip()]
+    if not generated or any(not re.fullmatch(r"cuexis_[a-z0-9_]+", target) for target in generated):
+        failures.append(CheckFailure(target_facts, "target contract: generated target facts are invalid"))
+        return
+    if len(generated) != len(set(generated)):
+        failures.append(CheckFailure(target_facts, "target contract: generated target facts contain duplicates"))
+        return
+    if documented == generated:
+        return
+    mismatch = next(
+        (index for index, (left, right) in enumerate(zip(documented, generated), start=1) if left != right),
+        min(len(documented), len(generated)) + 1,
+    )
+    expected = generated[mismatch - 1] if mismatch <= len(generated) else "<end>"
+    actual = documented[mismatch - 1] if mismatch <= len(documented) else "<end>"
+    failures.append(
+        CheckFailure(
+            building,
+            f"target contract: generated target facts differ at line {mismatch}: expected {expected}, found {actual}",
+        )
+    )
+
+
+def check_sdk_api_contract(
+    failures: list[CheckFailure], building: Path = BUILDING_GUIDE, version_file: Path = VERSION_CMAKE
+) -> None:
+    version_text = version_file.read_text(encoding="utf-8")
+    match = re.search(r'^set\(CUEXIS_SDK_API_VERSION "(\d+\.\d+\.\d+)"\)$', version_text, re.MULTILINE)
+    if match is None:
+        failures.append(CheckFailure(version_file, "SDK API contract: CUEXIS_SDK_API_VERSION is missing"))
+        return
+    sdk_version = match.group(1)
+    sdk_minor = ".".join(sdk_version.split(".")[:2])
+    documented_versions = re.findall(r"find_package\(Cuexis\s+(\d+\.\d+)\s+CONFIG", building.read_text(encoding="utf-8"))
+    if not documented_versions:
+        failures.append(CheckFailure(building, "SDK API contract: find_package(Cuexis <major.minor> ...) is missing"))
+        return
+    for documented_version in documented_versions:
+        if documented_version != sdk_minor:
+            failures.append(
+                CheckFailure(
+                    building,
+                    f"SDK API contract: find_package requests {documented_version}, expected {sdk_minor} from {sdk_version}",
+                )
+            )
 
 
 def check_script_policy(failures: list[CheckFailure]) -> None:
@@ -632,6 +731,8 @@ def main() -> int:
     check_reachability(graph, failures)
     check_stage_name(files, failures)
     check_cfu_status(failures)
+    check_target_contract(failures)
+    check_sdk_api_contract(failures)
     check_script_policy(failures)
     check_future_stage_plans(failures)
     check_navigation_indexes(failures)

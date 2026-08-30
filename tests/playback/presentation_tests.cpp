@@ -4,6 +4,7 @@
 #include <cuexis/playback/presentation.hpp>
 
 #include "presentation_extraction.hpp"
+#include "presentation_internal.hpp"
 
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -254,6 +255,56 @@ struct Stage3Fixture final {
         std::find_if(manifest.entries.begin(), manifest.entries.end(),
                      [&](const auto& entry) { return entry.reference.assetId == assetId; });
     return found == manifest.entries.end() ? nullptr : &*found;
+}
+
+[[nodiscard]] auto syntheticAssetId(std::size_t index) -> std::string {
+    std::ostringstream stream;
+    stream << "synthetic." << std::setfill('0') << std::setw(5) << index;
+    return stream.str();
+}
+
+[[nodiscard]] auto syntheticPresentation(std::size_t resourceCount)
+    -> cuexis::playback::detail::PreparedPresentation {
+    cuexis::playback::detail::PreparedPresentation presentation;
+    presentation.manifest.entries.reserve(resourceCount);
+    presentation.orderedResources.reserve(resourceCount);
+    for (std::size_t index = 0; index < resourceCount; ++index) {
+        auto assetId = syntheticAssetId(index);
+        PresentationResourceRef reference{PresentationResourceType::Mesh, assetId, {}};
+        reference.identity.sha256[0] = static_cast<std::uint8_t>(index & 0xFFU);
+        reference.identity.sha256[1] = static_cast<std::uint8_t>((index >> 8U) & 0xFFU);
+        auto resource = std::make_shared<const cuexis::playback::PortableResource>(
+            cuexis::playback::PortableResource{reference, cuexis::playback::PortableMesh{}});
+        const cuexis::playback::detail::PresentationResourceKey key{assetId, reference.type};
+        presentation.resources.emplace(key, resource);
+        presentation.manifest.entries.push_back(
+            cuexis::playback::PresentationManifestEntry{reference, 1, 1, {}});
+        presentation.orderedResources.push_back(std::move(resource));
+    }
+    presentation.manifest.totalEncodedBytes = resourceCount;
+    presentation.manifest.totalDecodedBytes = resourceCount;
+    return presentation;
+}
+
+[[nodiscard]] auto reorderedMemorySource(const Stage3Fixture& fixture)
+    -> cuexis::core::Result<PlaybackSource> {
+    std::vector<cuexis::content::MemoryContentEntry> entries;
+    entries.reserve(fixture.blobs.size());
+    for (const auto& [source, bytes] : fixture.blobs) {
+        entries.push_back({.rootId = "main", .source = source, .bytes = bytes, .revision = 7});
+    }
+    auto provider = cuexis::content::MemoryContentProvider::create(std::move(entries));
+    if (!provider) {
+        return cuexis::core::unexpected(std::move(provider.error()));
+    }
+    auto assets = descriptors();
+    std::reverse(assets.begin(), assets.end());
+    cuexis::playback::TypedPlaybackProject project{
+        .sourceId = "stage3-portable-test",
+        .chartJson = fixture.chartJson,
+        .assets = std::move(assets),
+    };
+    return PlaybackSource::fromTypedProject(std::move(project), std::move(*provider));
 }
 
 [[nodiscard]] auto errorContextValue(const cuexis::core::Error& error, std::string_view key)
@@ -946,4 +997,147 @@ TEST_CASE("Normalized presentation extraction rejects camera, numeric, and resou
                 .has_value());
     CHECK(normalized.opaque.empty());
     CHECK(normalized.transparent.empty());
+}
+
+TEST_CASE("Presentation resource lookup remains exact across manifest sizes and resource types",
+          "[playback][presentation][lookup][pb12]") {
+    const auto lookup =
+        [](const cuexis::playback::detail::PreparedPresentation& presentation,
+           std::string_view assetId,
+           PresentationResourceType type) -> const cuexis::playback::PortableResourcePtr* {
+        const auto found = presentation.resources.find(
+            cuexis::playback::detail::PresentationResourceKeyView{assetId, type});
+        return found == presentation.resources.end() ? nullptr : &found->second;
+    };
+    for (const auto resourceCount : {std::size_t{1}, std::size_t{2}, std::size_t{65'536}}) {
+        auto presentation = syntheticPresentation(resourceCount);
+        const auto firstId = syntheticAssetId(0);
+        const auto lastId = syntheticAssetId(resourceCount - 1U);
+        const auto first = lookup(presentation, firstId, PresentationResourceType::Mesh);
+        REQUIRE(first != nullptr);
+        CHECK((*first)->reference.assetId == firstId);
+        const auto last =
+            lookup(presentation, std::string_view{lastId}, PresentationResourceType::Mesh);
+        REQUIRE(last != nullptr);
+        CHECK((*last)->reference.assetId == lastId);
+        const auto direct =
+            presentation.resources.find(cuexis::playback::detail::PresentationResourceKeyView{
+                lastId, PresentationResourceType::Mesh});
+        REQUIRE(direct != presentation.resources.end());
+        CHECK(direct->second->reference.assetId == lastId);
+
+        const auto missing = lookup(presentation, std::string_view{"synthetic.missing"},
+                                    PresentationResourceType::Mesh);
+        CHECK(missing == nullptr);
+
+        auto wrongType = (*first)->reference;
+        wrongType.type = PresentationResourceType::Texture2D;
+        const auto wrongTypeFound =
+            presentation.resources.find(cuexis::playback::detail::PresentationResourceKeyView{
+                wrongType.assetId, wrongType.type});
+        CHECK(wrongTypeFound == presentation.resources.end());
+        auto wrongIdentity = (*first)->reference;
+        wrongIdentity.identity.sha256[0] ^= 0xFFU;
+        const auto wrongIdentityFound =
+            presentation.resources.find(cuexis::playback::detail::PresentationResourceKeyView{
+                wrongIdentity.assetId, wrongIdentity.type});
+        CHECK(wrongIdentityFound != presentation.resources.end());
+        CHECK(wrongIdentityFound->second->reference != wrongIdentity);
+    }
+}
+
+TEST_CASE("Presentation lookup distinguishes same AssetId across resource types",
+          "[playback][presentation][lookup][pb12]") {
+    cuexis::playback::detail::PreparedPresentation presentation;
+    const std::string assetId = "shared.asset";
+    PresentationResourceRef meshReference{PresentationResourceType::Mesh, assetId, {}};
+    PresentationResourceRef textureReference{PresentationResourceType::Texture2D, assetId, {}};
+    auto mesh = std::make_shared<const cuexis::playback::PortableResource>(
+        cuexis::playback::PortableResource{meshReference, cuexis::playback::PortableMesh{}});
+    auto texture = std::make_shared<const cuexis::playback::PortableResource>(
+        cuexis::playback::PortableResource{textureReference,
+                                           cuexis::playback::PortableTexture2D{}});
+    presentation.resources.emplace(
+        cuexis::playback::detail::PresentationResourceKey{assetId, meshReference.type}, mesh);
+    presentation.resources.emplace(
+        cuexis::playback::detail::PresentationResourceKey{assetId, textureReference.type}, texture);
+
+    const auto foundMesh =
+        presentation.resources.find(cuexis::playback::detail::PresentationResourceKeyView{
+            assetId, PresentationResourceType::Mesh});
+    const auto foundTexture =
+        presentation.resources.find(cuexis::playback::detail::PresentationResourceKeyView{
+            assetId, PresentationResourceType::Texture2D});
+    REQUIRE(foundMesh != presentation.resources.end());
+    REQUIRE(foundTexture != presentation.resources.end());
+    CHECK(foundMesh->second->reference.type == PresentationResourceType::Mesh);
+    CHECK(foundTexture->second->reference.type == PresentationResourceType::Texture2D);
+}
+
+TEST_CASE("Duplicate presentation manifest keys are rejected by table validation",
+          "[playback][presentation][lookup][pb12]") {
+    const auto fixture = loadFixture();
+    cuexis::playback::PlaybackSession session;
+    auto source = typedSource(ProviderKind::Memory, fixture);
+    REQUIRE(source.has_value());
+    REQUIRE(
+        session.load(std::move(*source), cuexis::playback::PlaybackMode::ChartClock).has_value());
+    const auto manifest = session.presentationManifest();
+    REQUIRE(manifest.has_value());
+    auto duplicate = *manifest;
+    REQUIRE(duplicate.entries.size() >= 2);
+    duplicate.entries.insert(duplicate.entries.begin() + 1, duplicate.entries.front());
+    auto resources = acquireResources(session, *manifest);
+    resources.insert(resources.begin() + 1, resources.front());
+    cuexis::playback::FrameSnapshot empty;
+    cuexis::playback::detail::NormalizedPresentationFrame normalized;
+    const auto result = cuexis::playback::detail::normalizePresentationFrame(empty, duplicate,
+                                                                             resources, normalized);
+    REQUIRE_FALSE(result.has_value());
+    CHECK(result.error().code() == "playback.presentation.frame.resource_mismatch");
+}
+
+TEST_CASE("Presentation extraction rejects an AssetId reused with a different resource type",
+          "[playback][presentation][lookup][pb12]") {
+    auto fixture = loadFixture();
+    constexpr std::string_view original =
+        R"json("material": { "domain": "asset", "id": "material.opaque" })json";
+    constexpr std::string_view replacement =
+        R"json("material": { "domain": "asset", "id": "mesh.triangle" })json";
+    const auto position = fixture.chartJson.find(original);
+    REQUIRE(position != std::string::npos);
+    fixture.chartJson.replace(position, original.size(), replacement);
+
+    auto source = typedSource(ProviderKind::Memory, fixture);
+    REQUIRE(source.has_value());
+    cuexis::playback::PlaybackSession session;
+    const auto prepared =
+        session.prepareLoad(std::move(*source), cuexis::playback::PlaybackMode::ChartClock);
+    REQUIRE_FALSE(prepared.has_value());
+    CHECK(prepared.error().code() == "playback.presentation.reference.invalid");
+}
+
+TEST_CASE("Presentation manifest order and semantic identity are stable under asset input reorder",
+          "[playback][presentation][determinism][pb12]") {
+    const auto fixture = loadFixture();
+    auto firstSource = typedSource(ProviderKind::Memory, fixture);
+    auto secondSource = reorderedMemorySource(fixture);
+    REQUIRE(firstSource.has_value());
+    REQUIRE(secondSource.has_value());
+
+    cuexis::playback::PlaybackSession firstSession;
+    cuexis::playback::PlaybackSession secondSession;
+    auto firstPrepared = firstSession.prepareLoad(std::move(*firstSource),
+                                                  cuexis::playback::PlaybackMode::ChartClock);
+    auto secondPrepared = secondSession.prepareLoad(std::move(*secondSource),
+                                                    cuexis::playback::PlaybackMode::ChartClock);
+    REQUIRE(firstPrepared.has_value());
+    REQUIRE(secondPrepared.has_value());
+    REQUIRE(firstPrepared->presentationManifest() != nullptr);
+    REQUIRE(secondPrepared->presentationManifest() != nullptr);
+    CHECK(manifestsEqual(*firstPrepared->presentationManifest(),
+                         *secondPrepared->presentationManifest()));
+    REQUIRE(firstPrepared->semanticIdentity().has_value());
+    REQUIRE(secondPrepared->semanticIdentity().has_value());
+    CHECK(*firstPrepared->semanticIdentity() == *secondPrepared->semanticIdentity());
 }

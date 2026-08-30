@@ -29,6 +29,7 @@
 #include <entt/entity/registry.hpp>
 
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <cmath>
 #include <cstddef>
@@ -40,6 +41,7 @@
 #include <optional>
 #include <ranges>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -88,12 +90,55 @@ void copyMatrix(const core::Mat4& source, float (&destination)[16]) noexcept {
 }
 
 void addErrorDiagnostic(core::Diagnostics& diagnostics, const core::Error& error) {
+    std::string fieldPath;
+    for (const auto& context : error.context()) {
+        if (context.key == "field_path") {
+            fieldPath = context.value;
+            break;
+        }
+    }
     core::Diagnostic diagnostic{core::DiagnosticSeverity::Error, std::string{error.code()},
-                                std::string{error.message()}};
+                                std::string{error.message()}, std::move(fieldPath)};
     for (const auto& context : error.context()) {
         diagnostic.withContext(context.key, context.value);
     }
     diagnostics.add(std::move(diagnostic));
+}
+
+// Publishes exactly one operation's diagnostics, including early returns and exceptions.
+class PrepareDiagnosticsRecorder final {
+  public:
+    PrepareDiagnosticsRecorder(core::Diagnostics& destination,
+                               core::Diagnostics& diagnostics) noexcept
+        : destination_(destination), diagnostics_(diagnostics) {}
+
+    PrepareDiagnosticsRecorder(const PrepareDiagnosticsRecorder&) = delete;
+    auto operator=(const PrepareDiagnosticsRecorder&) -> PrepareDiagnosticsRecorder& = delete;
+
+    ~PrepareDiagnosticsRecorder() noexcept {
+        try {
+            diagnostics_.sortDeterministically();
+            destination_ = std::move(diagnostics_);
+        } catch (...) {
+            destination_.clear();
+        }
+    }
+
+  private:
+    core::Diagnostics& destination_;
+    core::Diagnostics& diagnostics_;
+};
+
+void publishPrepareBoundaryDiagnostic(core::Diagnostics& destination,
+                                      const core::Error& error) noexcept {
+    try {
+        core::Diagnostics diagnostics;
+        addErrorDiagnostic(diagnostics, error);
+        diagnostics.sortDeterministically();
+        destination = std::move(diagnostics);
+    } catch (...) {
+        destination.clear();
+    }
 }
 
 struct SnapshotEntity final {
@@ -108,6 +153,40 @@ struct SnapshotEntity final {
 struct SnapshotLayout final {
     std::vector<SnapshotEntity> entities;
     std::optional<entt::entity> activeCamera;
+};
+
+// Prepare data stays internal and is moved into PreparedPlayback only after all stages succeed.
+struct PrepareContext final {
+    PlaybackSession& owner;
+    PlaybackSource& source;
+    std::string_view chartJson;
+    PlaybackMode mode;
+    const RuntimeFrame* targetFrame{};
+    ReloadPolicy policy{ReloadPolicy::KeepChartTime};
+    bool replacement{};
+    const PlaybackPrepareOptions& options;
+    const chart::ChartLimits& limits;
+    const PlaybackCapabilitySet& capabilities;
+};
+
+struct PrepareArtifact final {
+    bool isV4{};
+    std::optional<chart::ChartDocument> document;
+    std::optional<chart::ChartV4SourceDocument> v4Source;
+    std::optional<chart::AnimationProgramInput> animationProgram;
+    std::optional<chart::ChartV4ResolvedArtifact> v4Artifact;
+    std::optional<chart::CanonicalContentIdentity> chartIdentity;
+    std::optional<chart::CanonicalContentIdentity> parameterIdentity;
+    std::vector<chart::CxtIdentityComponent> cxtIdentities;
+    std::vector<chart::ChartResourceRequirement> resourceRequirements;
+    std::vector<std::string> additionalCapabilities;
+    std::unique_ptr<assets::ResourceManager> resourceManager;
+    std::optional<assets::AudioSourceLease> audioSourceLease;
+    std::unique_ptr<runtime::RuntimeSession> runtimeSession;
+    std::optional<runtime::PreparedRuntimeSession> preparedRuntime;
+    std::optional<detail::PreparedPresentation> presentation;
+    std::optional<RuntimeFrame> committedFrame;
+    std::optional<SnapshotLayout> snapshotLayout;
 };
 
 [[nodiscard]] auto ownerError(std::string_view operation) -> core::Error {
@@ -297,6 +376,102 @@ struct RequiredCapability final {
     std::string_view fieldPath;
 };
 
+struct CapabilityFieldRule final {
+    std::string_view id;
+    std::string_view fieldPath;
+};
+
+constexpr std::array capabilityFieldRules{
+    CapabilityFieldRule{capabilityChartV4, "$/version"},
+    CapabilityFieldRule{capabilitySourceCxcV1, "$/source"},
+    CapabilityFieldRule{capabilitySourceCxtV1, "$/animationTemplateImports"},
+    CapabilityFieldRule{capabilityAnimationClipV1, "$/animationClips"},
+    CapabilityFieldRule{capabilityAnimationLayersV1, "$/objects"},
+    CapabilityFieldRule{capabilityShaderAssetV1, "$/objects"},
+    CapabilityFieldRule{capabilityMaterialParameterizedV1, "$/objects"},
+};
+
+struct PresentationCapabilityRule final {
+    bool PresentationCapabilities::* supported;
+    std::string_view id;
+    std::string_view fieldPath;
+};
+
+constexpr std::array presentationCapabilityRules{
+    PresentationCapabilityRule{&PresentationCapabilities::opaquePass, "opaque_pass",
+                               "$/capabilities/opaquePass"},
+    PresentationCapabilityRule{&PresentationCapabilities::transparentPass, "transparent_pass",
+                               "$/capabilities/transparentPass"},
+    PresentationCapabilityRule{&PresentationCapabilities::linearTexture, "linear_texture",
+                               "$/capabilities/linearTexture"},
+    PresentationCapabilityRule{&PresentationCapabilities::srgbTexture, "srgb_texture",
+                               "$/capabilities/srgbTexture"},
+    PresentationCapabilityRule{&PresentationCapabilities::straightAlphaBlend,
+                               "straight_alpha_blend", "$/capabilities/straightAlphaBlend"},
+    PresentationCapabilityRule{&PresentationCapabilities::backFaceCulling, "back_face_culling",
+                               "$/capabilities/backFaceCulling"},
+    PresentationCapabilityRule{&PresentationCapabilities::doubleSided, "double_sided",
+                               "$/capabilities/doubleSided"},
+};
+
+using PresentationLimitAccessor = std::variant<std::uint64_t PresentationCapabilities::*,
+                                               std::uint32_t PresentationCapabilities::*>;
+
+struct PresentationLimitRule final {
+    std::string_view id;
+    std::string_view fieldPath;
+    PresentationLimitAccessor value;
+};
+
+constexpr std::array basePresentationLimitRules{
+    PresentationLimitRule{"max_resource_bytes", "$/capabilities/maxResourceBytes",
+                          &PresentationCapabilities::maxResourceBytes},
+    PresentationLimitRule{"max_total_decoded_bytes", "$/capabilities/maxTotalDecodedBytes",
+                          &PresentationCapabilities::maxTotalDecodedBytes},
+    PresentationLimitRule{"max_texture_dimension", "$/capabilities/maxTextureDimension",
+                          &PresentationCapabilities::maxTextureDimension},
+    PresentationLimitRule{"max_mesh_vertices", "$/capabilities/maxMeshVertices",
+                          &PresentationCapabilities::maxMeshVertices},
+    PresentationLimitRule{"max_mesh_indices", "$/capabilities/maxMeshIndices",
+                          &PresentationCapabilities::maxMeshIndices},
+};
+
+struct RequiredPresentationLimitRule final {
+    std::string_view id;
+    std::uint64_t required;
+    std::string_view fieldPath;
+    PresentationLimitAccessor value;
+};
+
+constexpr std::array parameterizedPresentationLimitRules{
+    RequiredPresentationLimitRule{"max_shader_source_bytes", presentationMaxShaderSourceBytes,
+                                  "$/capabilities/maxShaderSourceBytes",
+                                  &PresentationCapabilities::maxShaderSourceBytes},
+    RequiredPresentationLimitRule{"max_spirv_bytes", presentationMaxSpirvBytes,
+                                  "$/capabilities/maxSpirvBytes",
+                                  &PresentationCapabilities::maxSpirvBytes},
+    RequiredPresentationLimitRule{"max_variant_keywords", presentationMaxVariantKeywords,
+                                  "$/capabilities/maxVariantKeywords",
+                                  &PresentationCapabilities::maxVariantKeywords},
+    RequiredPresentationLimitRule{"max_variants_per_shader", presentationMaxVariantsPerShader,
+                                  "$/capabilities/maxVariantsPerShader",
+                                  &PresentationCapabilities::maxVariantsPerShader},
+    RequiredPresentationLimitRule{"max_material_parameters", presentationMaxMaterialParameters,
+                                  "$/capabilities/maxMaterialParameters",
+                                  &PresentationCapabilities::maxMaterialParameters},
+    RequiredPresentationLimitRule{"max_texture_bindings", presentationMaxTextureBindings,
+                                  "$/capabilities/maxTextureBindings",
+                                  &PresentationCapabilities::maxTextureBindings},
+};
+
+[[nodiscard]] auto presentationLimitValue(const PresentationCapabilities& capabilities,
+                                          const PresentationLimitAccessor& accessor) noexcept
+    -> std::uint64_t {
+    return std::visit(
+        [&capabilities](auto member) { return static_cast<std::uint64_t>(capabilities.*member); },
+        accessor);
+}
+
 [[nodiscard]] auto allCapabilities() -> PlaybackCapabilitySet {
     return PlaybackCapabilitySet{
         .version = 1,
@@ -355,23 +530,10 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
 }
 
 [[nodiscard]] auto capabilityFieldPath(std::string_view capability) noexcept -> std::string_view {
-    if (capability == capabilityChartV4) {
-        return "$/version";
-    }
-    if (capability == capabilitySourceCxcV1) {
-        return "$/source";
-    }
-    if (capability == capabilitySourceCxtV1) {
-        return "$/animationTemplateImports";
-    }
-    if (capability == capabilityAnimationClipV1) {
-        return "$/animationClips";
-    }
-    if (capability == capabilityAnimationLayersV1) {
-        return "$/objects";
-    }
-    if (capability == capabilityShaderAssetV1 || capability == capabilityMaterialParameterizedV1) {
-        return "$/objects";
+    for (const auto& rule : capabilityFieldRules) {
+        if (rule.id == capability) {
+            return rule.fieldPath;
+        }
     }
     return "$";
 }
@@ -473,6 +635,87 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
         documents.push_back({document.path, document.utf8Text});
     }
     return documents;
+}
+
+[[nodiscard]] auto loadDocumentStage(const PrepareContext& context, PrepareArtifact& artifact,
+                                     core::Diagnostics& diagnostics) -> core::Result<void> {
+    artifact.isV4 = chart::ChartV4Loader::isV4(context.chartJson, context.limits);
+    if (artifact.isV4) {
+        auto loaded = chart::ChartV4Loader::load(context.chartJson, context.limits);
+        const bool valid = loaded.hasValue();
+        diagnostics.append(std::move(loaded.diagnostics));
+        if (!valid) {
+            return core::unexpected(core::Error{"playback.prepare.stage.load_document_failed",
+                                                "Chart v4 loading produced errors"});
+        }
+        artifact.v4Source = std::move(*loaded.document);
+        return {};
+    }
+
+    auto loaded = chart::ChartLoader::load(context.chartJson, context.limits);
+    const bool valid = loaded.hasValue();
+    diagnostics.append(std::move(loaded.diagnostics));
+    if (!valid) {
+        return core::unexpected(core::Error{"playback.prepare.stage.load_document_failed",
+                                            "Chart loading produced errors"});
+    }
+    artifact.document.emplace(std::move(*loaded.document));
+    // Legacy ChartDocument is a runtime-facing projection. Identity must use the complete
+    // canonical source bytes so legacy timing, template, and keyframe fields are not erased.
+    auto canonical = chart::ChartWriter::writeCanonicalJson(context.chartJson, context.limits);
+    if (!canonical) {
+        addErrorDiagnostic(diagnostics, canonical.error());
+        return core::unexpected(std::move(canonical.error()));
+    }
+    artifact.chartIdentity = chart::canonicalBytesIdentity(*canonical);
+    artifact.parameterIdentity = chart::emptyParameterIdentity();
+    return {};
+}
+
+[[nodiscard]] auto resolveParametersStage(const PrepareContext& context, PrepareArtifact& artifact,
+                                          std::span<const PlaybackProjectDocument> sourceDocuments,
+                                          core::Diagnostics& diagnostics) -> core::Result<void> {
+    if (!artifact.v4Source) {
+        for (std::size_t index = 0; index < context.options.parameters.values.size(); ++index) {
+            diagnostics.add(
+                core::Diagnostic{core::DiagnosticSeverity::Error, "chart.parameter.unknown",
+                                 "Host parameter input is not supported by this Chart version",
+                                 "$/parameterInputs/" + std::to_string(index) + "/id"});
+        }
+        if (diagnostics.hasErrors()) {
+            diagnostics.sortDeterministically();
+            return core::unexpected(core::Error{"playback.prepare.stage.resolve_parameters_failed",
+                                                "Chart parameter resolution produced errors"});
+        }
+        return {};
+    }
+
+    auto inputs = chartParameterInputs(context.options, diagnostics);
+    if (!inputs) {
+        return core::unexpected(core::Error{"playback.prepare.stage.resolve_parameters_failed",
+                                            "Chart parameter conversion produced errors"});
+    }
+    auto documents = projectDocuments(sourceDocuments);
+    auto resolved =
+        chart::ChartV4Resolver::resolve(*artifact.v4Source, *inputs, documents, {}, context.limits);
+    const bool valid = resolved.hasValue();
+    diagnostics.append(std::move(resolved.diagnostics));
+    if (!valid) {
+        return core::unexpected(core::Error{"playback.prepare.stage.resolve_parameters_failed",
+                                            "Chart v4 resolution produced errors"});
+    }
+    auto resolvedArtifact = std::move(*resolved.artifact);
+    artifact.additionalCapabilities.insert(artifact.additionalCapabilities.end(),
+                                           resolvedArtifact.capabilityRequirements.begin(),
+                                           resolvedArtifact.capabilityRequirements.end());
+    artifact.document.emplace(resolvedArtifact.document.chart);
+    artifact.animationProgram = std::move(resolvedArtifact.animationProgram);
+    artifact.chartIdentity = resolvedArtifact.chartIdentity;
+    artifact.parameterIdentity = resolvedArtifact.parameterIdentity;
+    artifact.cxtIdentities = resolvedArtifact.cxtIdentities;
+    artifact.resourceRequirements = resolvedArtifact.resourceRequirements;
+    artifact.v4Artifact = std::move(resolvedArtifact);
+    return {};
 }
 
 [[nodiscard]] auto toPublicIdentity(const chart::CanonicalContentIdentity& identity) noexcept
@@ -701,6 +944,166 @@ assembleResourceIdentities(std::span<const chart::ChartResourceRequirement> requ
     return layout;
 }
 
+[[nodiscard]] auto acquireAudioStage(PrepareArtifact& artifact,
+                                     const chart::ChartRuntime& chartRuntime,
+                                     core::Diagnostics& diagnostics) -> core::Result<void> {
+    if (!chartRuntime.mainMusic) {
+        return {};
+    }
+    if (!artifact.resourceManager) {
+        return core::unexpected(
+            core::Error{"playback.content.asset_database_missing",
+                        "A chart with main music requires an AssetDatabase and ContentProvider"});
+    }
+    auto sourceResult = artifact.resourceManager->requestAudioSource(
+        assets::AssetId{chartRuntime.mainMusic->value}, assets::ResourcePolicy::Required);
+    const bool sourceValid = sourceResult.hasValue();
+    diagnostics.append(std::move(sourceResult.diagnostics));
+    if (!sourceValid) {
+        return core::unexpected(operationError("playback.content.main_music_failed",
+                                               "Required main music source could not be prepared",
+                                               diagnostics));
+    }
+    artifact.audioSourceLease.emplace(std::move(*sourceResult.lease));
+    return {};
+}
+
+[[nodiscard]] auto prepareRuntimeStage(PrepareArtifact& artifact,
+                                       const chart::ChartRuntime& chartRuntime,
+                                       animation::AnimationProgram animationProgram,
+                                       core::Diagnostics& diagnostics) -> core::Result<void> {
+    artifact.runtimeSession =
+        artifact.resourceManager
+            ? std::make_unique<runtime::RuntimeSession>(*artifact.resourceManager)
+            : std::make_unique<runtime::RuntimeSession>();
+    auto runtimePrepared =
+        artifact.runtimeSession->prepare(chartRuntime, std::move(animationProgram));
+    const bool preparedValid = runtimePrepared.hasValue();
+    diagnostics.append(std::move(runtimePrepared.diagnostics));
+    if (!preparedValid) {
+        return core::unexpected(operationError("playback.session.prepare_failed",
+                                               "RuntimeSession preparation produced errors",
+                                               diagnostics));
+    }
+    artifact.preparedRuntime = std::move(*runtimePrepared.prepared);
+    return {};
+}
+
+[[nodiscard]] auto commitRuntimeStage(PrepareArtifact& artifact) -> core::Result<void> {
+    if (!artifact.runtimeSession || !artifact.preparedRuntime) {
+        return core::unexpected(core::Error{"playback.prepare.stage.commit_runtime_missing",
+                                            "Runtime preparation artifact is unavailable"});
+    }
+    if (auto committed = artifact.runtimeSession->commit(std::move(*artifact.preparedRuntime));
+        !committed) {
+        return core::unexpected(std::move(committed.error()));
+    }
+    artifact.preparedRuntime.reset();
+    return {};
+}
+
+[[nodiscard]] auto preparePresentationStage(const PrepareContext& context,
+                                            PrepareArtifact& artifact,
+                                            const chart::ChartRuntime& chartRuntime,
+                                            core::Diagnostics& diagnostics) -> core::Result<void> {
+    auto preparedPresentation = detail::preparePresentation(
+        chartRuntime, artifact.resourceManager.get(), artifact.v4Artifact.has_value());
+    if (!preparedPresentation) {
+        addErrorDiagnostic(diagnostics, preparedPresentation.error());
+        diagnostics.sortDeterministically();
+        return core::unexpected(std::move(preparedPresentation.error()));
+    }
+    if (preparedPresentation->has_value()) {
+        std::vector<std::string> presentationCapabilities;
+        bool requiresShader = false;
+        bool requiresParameterized = false;
+        for (const auto& entry : preparedPresentation->value().manifest.entries) {
+            if (entry.reference.type == PresentationResourceType::Shader) {
+                requiresShader = true;
+            } else if (entry.reference.type == PresentationResourceType::ParameterizedMaterial) {
+                requiresParameterized = true;
+                requiresShader = true;
+            }
+        }
+        if (requiresShader) {
+            presentationCapabilities.emplace_back(capabilityShaderAssetV1);
+        }
+        if (requiresParameterized) {
+            presentationCapabilities.emplace_back(capabilityMaterialParameterizedV1);
+        }
+        if (!presentationCapabilities.empty() &&
+            !preflightCapabilities(*artifact.document, presentationCapabilities,
+                                   context.capabilities, diagnostics)) {
+            return core::unexpected(operationError("playback.capability.preflight_failed",
+                                                   "Playback capability preflight failed",
+                                                   diagnostics));
+        }
+    }
+    artifact.presentation = std::move(*preparedPresentation);
+    return {};
+}
+
+[[nodiscard]] auto commitFrameStage(const PrepareContext& context, PrepareArtifact& artifact,
+                                    core::Diagnostics& diagnostics) -> core::Result<void> {
+    if (!context.replacement || context.targetFrame == nullptr) {
+        return {};
+    }
+    artifact.committedFrame = *context.targetFrame;
+    artifact.committedFrame->simulationDeltaTimeMs = 0.0;
+    if (context.policy == ReloadPolicy::RestartAtZero) {
+        artifact.committedFrame->chartTimeMs = 0.0;
+    }
+    if (auto updated = artifact.runtimeSession->update(runtimeFrame(*artifact.committedFrame));
+        !updated) {
+        addErrorDiagnostic(diagnostics, updated.error());
+        diagnostics.sortDeterministically();
+        return core::unexpected(operationError("playback.session.reload_sample_failed",
+                                               "Reload target frame sampling failed", diagnostics));
+    }
+    return {};
+}
+
+[[nodiscard]] auto assembleIdentityStage(PrepareArtifact& artifact, core::Diagnostics& diagnostics)
+    -> core::Result<chart::CanonicalContentIdentity> {
+    if (!artifact.v4Artifact) {
+        if (artifact.audioSourceLease && artifact.audioSourceLease->valid()) {
+            artifact.resourceRequirements.push_back(chart::ChartResourceRequirement{
+                .assetId =
+                    chart::AssetId{std::string{artifact.audioSourceLease->resource().id.value}},
+                .uses = {chart::ChartResourceUse::MainMusic}});
+        }
+        if (artifact.presentation.has_value()) {
+            for (const auto& entry : artifact.presentation->manifest.entries) {
+                const auto existing =
+                    std::ranges::find_if(artifact.resourceRequirements,
+                                         [&](const chart::ChartResourceRequirement& item) {
+                                             return item.assetId.value == entry.reference.assetId;
+                                         });
+                auto use = entry.reference.type == PresentationResourceType::Mesh
+                               ? chart::ChartResourceUse::RenderableMesh
+                               : chart::ChartResourceUse::RenderableMaterial;
+                if (existing == artifact.resourceRequirements.end()) {
+                    artifact.resourceRequirements.push_back(chart::ChartResourceRequirement{
+                        .assetId = chart::AssetId{entry.reference.assetId}, .uses = {use}});
+                } else if (std::ranges::find(existing->uses, use) == existing->uses.end()) {
+                    existing->uses.push_back(use);
+                }
+            }
+        }
+    }
+    auto resourceIdentities =
+        assembleResourceIdentities(artifact.resourceRequirements, artifact.audioSourceLease,
+                                   artifact.presentation, diagnostics);
+    if (!resourceIdentities) {
+        return core::unexpected(operationError("playback.identity.assemble_failed",
+                                               "Prepared semantic identity could not be assembled",
+                                               diagnostics));
+    }
+    return chart::assemblePreparedSemanticIdentity(*artifact.chartIdentity, artifact.cxtIdentities,
+                                                   *resourceIdentities,
+                                                   *artifact.parameterIdentity);
+}
+
 } // namespace
 
 struct PlaybackSession::State final {
@@ -889,33 +1292,10 @@ auto PreparedPlayback::validatePresentation(const PresentationCapabilities& capa
         }
 
         if (state_->presentation) {
-            if (!capabilities.opaquePass) {
-                addMissingPresentationCapability(result.diagnostics, "opaque_pass",
-                                                 "$/capabilities/opaquePass");
-            }
-            if (!capabilities.transparentPass) {
-                addMissingPresentationCapability(result.diagnostics, "transparent_pass",
-                                                 "$/capabilities/transparentPass");
-            }
-            if (!capabilities.linearTexture) {
-                addMissingPresentationCapability(result.diagnostics, "linear_texture",
-                                                 "$/capabilities/linearTexture");
-            }
-            if (!capabilities.srgbTexture) {
-                addMissingPresentationCapability(result.diagnostics, "srgb_texture",
-                                                 "$/capabilities/srgbTexture");
-            }
-            if (!capabilities.straightAlphaBlend) {
-                addMissingPresentationCapability(result.diagnostics, "straight_alpha_blend",
-                                                 "$/capabilities/straightAlphaBlend");
-            }
-            if (!capabilities.backFaceCulling) {
-                addMissingPresentationCapability(result.diagnostics, "back_face_culling",
-                                                 "$/capabilities/backFaceCulling");
-            }
-            if (!capabilities.doubleSided) {
-                addMissingPresentationCapability(result.diagnostics, "double_sided",
-                                                 "$/capabilities/doubleSided");
+            for (const auto& rule : presentationCapabilityRules) {
+                if (!(capabilities.*rule.supported)) {
+                    addMissingPresentationCapability(result.diagnostics, rule.id, rule.fieldPath);
+                }
             }
 
             std::uint64_t maxResourceBytes = 0;
@@ -941,32 +1321,16 @@ auto PreparedPlayback::validatePresentation(const PresentationCapabilities& capa
                 }
             }
 
-            if (capabilities.maxResourceBytes < maxResourceBytes) {
-                addInsufficientPresentationLimit(result.diagnostics, "max_resource_bytes",
-                                                 capabilities.maxResourceBytes, maxResourceBytes,
-                                                 "$/capabilities/maxResourceBytes");
-            }
-            if (capabilities.maxTotalDecodedBytes <
-                state_->presentation->manifest.totalDecodedBytes) {
-                addInsufficientPresentationLimit(result.diagnostics, "max_total_decoded_bytes",
-                                                 capabilities.maxTotalDecodedBytes,
-                                                 state_->presentation->manifest.totalDecodedBytes,
-                                                 "$/capabilities/maxTotalDecodedBytes");
-            }
-            if (capabilities.maxTextureDimension < maxTextureDimension) {
-                addInsufficientPresentationLimit(
-                    result.diagnostics, "max_texture_dimension", capabilities.maxTextureDimension,
-                    maxTextureDimension, "$/capabilities/maxTextureDimension");
-            }
-            if (capabilities.maxMeshVertices < maxMeshVertices) {
-                addInsufficientPresentationLimit(result.diagnostics, "max_mesh_vertices",
-                                                 capabilities.maxMeshVertices, maxMeshVertices,
-                                                 "$/capabilities/maxMeshVertices");
-            }
-            if (capabilities.maxMeshIndices < maxMeshIndices) {
-                addInsufficientPresentationLimit(result.diagnostics, "max_mesh_indices",
-                                                 capabilities.maxMeshIndices, maxMeshIndices,
-                                                 "$/capabilities/maxMeshIndices");
+            const std::array<std::uint64_t, basePresentationLimitRules.size()> baseRequirements{
+                maxResourceBytes, state_->presentation->manifest.totalDecodedBytes,
+                maxTextureDimension, maxMeshVertices, maxMeshIndices};
+            for (std::size_t index = 0; index < basePresentationLimitRules.size(); ++index) {
+                const auto& rule = basePresentationLimitRules[index];
+                const auto actual = presentationLimitValue(capabilities, rule.value);
+                if (actual < baseRequirements[index]) {
+                    addInsufficientPresentationLimit(result.diagnostics, rule.id, actual,
+                                                     baseRequirements[index], rule.fieldPath);
+                }
             }
 
             bool hasParameterizedMaterial = false;
@@ -1011,40 +1375,12 @@ auto PreparedPlayback::validatePresentation(const PresentationCapabilities& capa
                                                      "$/capabilities/declaredVariants");
                 }
                 if (capabilities.parameterizedMaterial && (hasShader || hasParameterizedMaterial)) {
-                    if (capabilities.maxShaderSourceBytes < presentationMaxShaderSourceBytes) {
-                        addInsufficientPresentationLimit(
-                            result.diagnostics, "max_shader_source_bytes",
-                            capabilities.maxShaderSourceBytes, presentationMaxShaderSourceBytes,
-                            "$/capabilities/maxShaderSourceBytes");
-                    }
-                    if (capabilities.maxSpirvBytes < presentationMaxSpirvBytes) {
-                        addInsufficientPresentationLimit(
-                            result.diagnostics, "max_spirv_bytes", capabilities.maxSpirvBytes,
-                            presentationMaxSpirvBytes, "$/capabilities/maxSpirvBytes");
-                    }
-                    if (capabilities.maxVariantKeywords < presentationMaxVariantKeywords) {
-                        addInsufficientPresentationLimit(result.diagnostics, "max_variant_keywords",
-                                                         capabilities.maxVariantKeywords,
-                                                         presentationMaxVariantKeywords,
-                                                         "$/capabilities/maxVariantKeywords");
-                    }
-                    if (capabilities.maxVariantsPerShader < presentationMaxVariantsPerShader) {
-                        addInsufficientPresentationLimit(
-                            result.diagnostics, "max_variants_per_shader",
-                            capabilities.maxVariantsPerShader, presentationMaxVariantsPerShader,
-                            "$/capabilities/maxVariantsPerShader");
-                    }
-                    if (capabilities.maxMaterialParameters < presentationMaxMaterialParameters) {
-                        addInsufficientPresentationLimit(
-                            result.diagnostics, "max_material_parameters",
-                            capabilities.maxMaterialParameters, presentationMaxMaterialParameters,
-                            "$/capabilities/maxMaterialParameters");
-                    }
-                    if (capabilities.maxTextureBindings < presentationMaxTextureBindings) {
-                        addInsufficientPresentationLimit(result.diagnostics, "max_texture_bindings",
-                                                         capabilities.maxTextureBindings,
-                                                         presentationMaxTextureBindings,
-                                                         "$/capabilities/maxTextureBindings");
+                    for (const auto& rule : parameterizedPresentationLimitRules) {
+                        const auto actual = presentationLimitValue(capabilities, rule.value);
+                        if (actual < rule.required) {
+                            addInsufficientPresentationLimit(result.diagnostics, rule.id, actual,
+                                                             rule.required, rule.fieldPath);
+                        }
                     }
                 }
             }
@@ -1184,7 +1520,17 @@ auto PlaybackSession::capabilities() const -> core::Result<PlaybackCapabilitySet
     if (state_->operationActive) {
         return core::unexpected(reentryError("capabilities"));
     }
-    return state_->capabilities;
+    try {
+        return state_->capabilities;
+    } catch (const std::bad_alloc&) {
+        return core::unexpected(prepareExceptionError("capabilities", true));
+    } catch (const std::length_error&) {
+        return core::unexpected(prepareExceptionError("capabilities", true));
+    } catch (const std::exception& exception) {
+        return core::unexpected(prepareExceptionError("capabilities", false, &exception));
+    } catch (...) {
+        return core::unexpected(prepareExceptionError("capabilities", false));
+    }
 }
 
 auto PlaybackSession::prepareLoad(std::string_view jsonText, PlaybackMode mode)
@@ -1199,21 +1545,30 @@ auto PlaybackSession::prepareLoad(std::string_view jsonText, PlaybackMode mode,
         return core::unexpected(ownerError("prepare_load"));
     }
     if (state_->operationActive) {
-        return core::unexpected(reentryError("prepare_load"));
+        auto error = reentryError("prepare_load");
+        publishPrepareBoundaryDiagnostic(state_->lastOperationDiagnostics, error);
+        return core::unexpected(std::move(error));
     }
     try {
         auto source = PlaybackSource::fromChartText(std::string{jsonText});
         if (!source) {
+            publishPrepareBoundaryDiagnostic(state_->lastOperationDiagnostics, source.error());
             return core::unexpected(std::move(source.error()));
         }
         return prepare(std::move(*source), mode, nullptr, ReloadPolicy::KeepChartTime, false,
                        options);
     } catch (const std::bad_alloc&) {
-        return core::unexpected(prepareExceptionError("prepare_load", true));
+        auto error = prepareExceptionError("prepare_load", true);
+        publishPrepareBoundaryDiagnostic(state_->lastOperationDiagnostics, error);
+        return core::unexpected(std::move(error));
     } catch (const std::exception& exception) {
-        return core::unexpected(prepareExceptionError("prepare_load", false, &exception));
+        auto error = prepareExceptionError("prepare_load", false, &exception);
+        publishPrepareBoundaryDiagnostic(state_->lastOperationDiagnostics, error);
+        return core::unexpected(std::move(error));
     } catch (...) {
-        return core::unexpected(prepareExceptionError("prepare_load", false));
+        auto error = prepareExceptionError("prepare_load", false);
+        publishPrepareBoundaryDiagnostic(state_->lastOperationDiagnostics, error);
+        return core::unexpected(std::move(error));
     }
 }
 
@@ -1229,7 +1584,9 @@ auto PlaybackSession::prepareLoad(PlaybackSource&& source, PlaybackMode mode,
         return core::unexpected(ownerError("prepare_load"));
     }
     if (state_->operationActive) {
-        return core::unexpected(reentryError("prepare_load"));
+        auto error = reentryError("prepare_load");
+        publishPrepareBoundaryDiagnostic(state_->lastOperationDiagnostics, error);
+        return core::unexpected(std::move(error));
     }
     return prepare(std::move(source), mode, nullptr, ReloadPolicy::KeepChartTime, false, options);
 }
@@ -1248,15 +1605,20 @@ auto PlaybackSession::prepareReload(std::string_view replacementJson,
         return core::unexpected(ownerError("prepare_reload"));
     }
     if (state_->operationActive) {
-        return core::unexpected(reentryError("prepare_reload"));
+        auto error = reentryError("prepare_reload");
+        publishPrepareBoundaryDiagnostic(state_->lastOperationDiagnostics, error);
+        return core::unexpected(std::move(error));
     }
     if (!state_->activeMode) {
-        return core::unexpected(
-            core::Error{"playback.session.not_ready", "PlaybackSession has no active mode"});
+        auto error =
+            core::Error{"playback.session.not_ready", "PlaybackSession has no active mode"};
+        publishPrepareBoundaryDiagnostic(state_->lastOperationDiagnostics, error);
+        return core::unexpected(std::move(error));
     }
     try {
         auto source = PlaybackSource::fromChartText(std::string{replacementJson});
         if (!source) {
+            publishPrepareBoundaryDiagnostic(state_->lastOperationDiagnostics, source.error());
             return core::unexpected(std::move(source.error()));
         }
         if (state_->resourceManager) {
@@ -1268,11 +1630,17 @@ auto PlaybackSession::prepareReload(std::string_view replacementJson,
         return prepare(std::move(*source), *state_->activeMode, &targetFrame, policy, true,
                        options);
     } catch (const std::bad_alloc&) {
-        return core::unexpected(prepareExceptionError("prepare_reload", true));
+        auto error = prepareExceptionError("prepare_reload", true);
+        publishPrepareBoundaryDiagnostic(state_->lastOperationDiagnostics, error);
+        return core::unexpected(std::move(error));
     } catch (const std::exception& exception) {
-        return core::unexpected(prepareExceptionError("prepare_reload", false, &exception));
+        auto error = prepareExceptionError("prepare_reload", false, &exception);
+        publishPrepareBoundaryDiagnostic(state_->lastOperationDiagnostics, error);
+        return core::unexpected(std::move(error));
     } catch (...) {
-        return core::unexpected(prepareExceptionError("prepare_reload", false));
+        auto error = prepareExceptionError("prepare_reload", false);
+        publishPrepareBoundaryDiagnostic(state_->lastOperationDiagnostics, error);
+        return core::unexpected(std::move(error));
     }
 }
 
@@ -1288,11 +1656,15 @@ auto PlaybackSession::prepareReload(PlaybackSource&& replacement, const RuntimeF
         return core::unexpected(ownerError("prepare_reload"));
     }
     if (state_->operationActive) {
-        return core::unexpected(reentryError("prepare_reload"));
+        auto error = reentryError("prepare_reload");
+        publishPrepareBoundaryDiagnostic(state_->lastOperationDiagnostics, error);
+        return core::unexpected(std::move(error));
     }
     if (!state_->activeMode) {
-        return core::unexpected(
-            core::Error{"playback.session.not_ready", "PlaybackSession has no active mode"});
+        auto error =
+            core::Error{"playback.session.not_ready", "PlaybackSession has no active mode"};
+        publishPrepareBoundaryDiagnostic(state_->lastOperationDiagnostics, error);
+        return core::unexpected(std::move(error));
     }
     return prepare(std::move(replacement), *state_->activeMode, &targetFrame, policy, true,
                    options);
@@ -1302,128 +1674,79 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
                               const RuntimeFrame* targetFrame, ReloadPolicy policy,
                               bool replacement, const PlaybackPrepareOptions& options)
     -> core::Result<PreparedPlayback> {
+    core::Diagnostics diagnostics;
+    std::optional<PrepareDiagnosticsRecorder> diagnosticsRecorder;
     try {
         if (!state_->ownerThread.isCurrent()) {
             return core::unexpected(ownerError(replacement ? "prepare_reload" : "prepare_load"));
         }
+        diagnosticsRecorder.emplace(state_->lastOperationDiagnostics, diagnostics);
         if (state_->operationActive) {
-            return core::unexpected(reentryError(replacement ? "prepare_reload" : "prepare_load"));
+            auto error = reentryError(replacement ? "prepare_reload" : "prepare_load");
+            addErrorDiagnostic(diagnostics, error);
+            return core::unexpected(std::move(error));
         }
         SessionOperation operation{state_->operationActive};
         if ((!replacement && state_->sessionState != SessionState::Empty) ||
             (replacement && state_->sessionState != SessionState::Ready &&
              state_->sessionState != SessionState::Running)) {
-            return core::unexpected(core::Error{
+            auto error = core::Error{
                 replacement ? "playback.session.not_ready" : "playback.session.not_empty",
                 replacement ? "PlaybackSession must be active before preparing a reload"
-                            : "PlaybackSession must be Empty before preparing a load"});
+                            : "PlaybackSession must be Empty before preparing a load"};
+            addErrorDiagnostic(diagnostics, error);
+            return core::unexpected(std::move(error));
         }
 
         if (!source.state_) {
-            return core::unexpected(
-                core::Error{"playback.source.invalid", "PlaybackSource is empty"});
+            auto error = core::Error{"playback.source.invalid", "PlaybackSource is empty"};
+            addErrorDiagnostic(diagnostics, error);
+            return core::unexpected(std::move(error));
         }
-        core::Diagnostics diagnostics;
         auto& sourceState = *source.state_;
         const auto* entryChart = sourceState.entryChart();
         if (entryChart == nullptr) {
-            return core::unexpected(core::Error{"playback.source.invalid",
-                                                "PlaybackSource entry Chart is unavailable"});
+            auto error =
+                core::Error{"playback.source.invalid", "PlaybackSource entry Chart is unavailable"};
+            addErrorDiagnostic(diagnostics, error);
+            return core::unexpected(std::move(error));
         }
         const auto& jsonText = entryChart->utf8Text;
         const chart::ChartLimits limits;
-        std::optional<chart::ChartDocument> document;
-        std::optional<chart::AnimationProgramInput> animationProgram;
-        std::optional<chart::ChartV4ResolvedArtifact> v4Artifact;
-        std::optional<chart::CanonicalContentIdentity> chartIdentity;
-        std::optional<chart::CanonicalContentIdentity> parameterIdentity;
-        std::vector<chart::CxtIdentityComponent> cxtIdentities;
-        std::vector<chart::ChartResourceRequirement> resourceRequirements;
-        std::vector<std::string> additionalCapabilities;
+        PrepareContext context{*this,  source,      jsonText, mode,   targetFrame,
+                               policy, replacement, options,  limits, state_->capabilities};
+        PrepareArtifact artifact;
+        auto& document = artifact.document;
+        auto& animationProgram = artifact.animationProgram;
+        auto& additionalCapabilities = artifact.additionalCapabilities;
+        auto& resourceManager = artifact.resourceManager;
+        auto& audioSourceLease = artifact.audioSourceLease;
+        auto& committedFrame = artifact.committedFrame;
         if (sourceState.cxcPackageIdentity) {
             additionalCapabilities.emplace_back(capabilitySourceCxcV1);
         }
 
-        if (chart::ChartV4Loader::isV4(jsonText, limits)) {
-            auto loaded = chart::ChartV4Loader::load(jsonText, limits);
-            const bool loadedValid = loaded.hasValue();
-            diagnostics.append(std::move(loaded.diagnostics));
-            if (!loadedValid) {
-                state_->lastOperationDiagnostics = diagnostics;
-                return core::unexpected(
-                    operationError(replacement ? "playback.chart.reload_load_failed"
-                                               : "playback.chart.load_failed",
-                                   "Chart v4 loading produced errors", diagnostics));
-            }
-
-            auto inputs = chartParameterInputs(options, diagnostics);
-            if (!inputs) {
-                state_->lastOperationDiagnostics = diagnostics;
-                return core::unexpected(
-                    operationError(replacement ? "playback.chart.reload_load_failed"
-                                               : "playback.chart.load_failed",
-                                   "Chart parameter conversion produced errors", diagnostics));
-            }
-            auto documents = projectDocuments(sourceState.projectDocuments);
-            auto resolved =
-                chart::ChartV4Resolver::resolve(*loaded.document, *inputs, documents, {}, limits);
-            const bool resolvedValid = resolved.hasValue();
-            diagnostics.append(std::move(resolved.diagnostics));
-            if (!resolvedValid) {
-                state_->lastOperationDiagnostics = diagnostics;
-                return core::unexpected(
-                    operationError(replacement ? "playback.chart.reload_load_failed"
-                                               : "playback.chart.load_failed",
-                                   "Chart v4 resolution produced errors", diagnostics));
-            }
-            auto artifact = std::move(*resolved.artifact);
-            additionalCapabilities.insert(additionalCapabilities.end(),
-                                          artifact.capabilityRequirements.begin(),
-                                          artifact.capabilityRequirements.end());
-            document.emplace(artifact.document.chart);
-            animationProgram = std::move(artifact.animationProgram);
-            chartIdentity = artifact.chartIdentity;
-            parameterIdentity = artifact.parameterIdentity;
-            cxtIdentities = artifact.cxtIdentities;
-            resourceRequirements = artifact.resourceRequirements;
-            v4Artifact = std::move(artifact);
-        } else {
-            auto loaded = chart::ChartLoader::load(jsonText, limits);
-            const bool loadedValid = loaded.hasValue();
-            diagnostics.append(std::move(loaded.diagnostics));
-            if (!loadedValid) {
-                state_->lastOperationDiagnostics = diagnostics;
-                return core::unexpected(
-                    operationError(replacement ? "playback.chart.reload_load_failed"
-                                               : "playback.chart.load_failed",
-                                   "Chart loading produced errors", diagnostics));
-            }
-            for (std::size_t index = 0; index < options.parameters.values.size(); ++index) {
-                diagnostics.add(
-                    core::Diagnostic{core::DiagnosticSeverity::Error, "chart.parameter.unknown",
-                                     "Host parameter input is not supported by this Chart version",
-                                     "$/parameterInputs/" + std::to_string(index) + "/id"});
-            }
-            if (diagnostics.hasErrors()) {
-                diagnostics.sortDeterministically();
-                state_->lastOperationDiagnostics = diagnostics;
-                return core::unexpected(
-                    operationError(replacement ? "playback.chart.reload_load_failed"
-                                               : "playback.chart.load_failed",
-                                   "Chart parameter resolution produced errors", diagnostics));
-            }
-            document.emplace(std::move(*loaded.document));
-            auto canonical = chart::ChartWriter::write(*document);
-            if (!canonical) {
-                return core::unexpected(std::move(canonical.error()));
-            }
-            chartIdentity = chart::canonicalBytesIdentity(*canonical);
-            parameterIdentity = chart::emptyParameterIdentity();
+        if (auto loaded = loadDocumentStage(context, artifact, diagnostics); !loaded) {
+            const auto message = artifact.isV4 ? "Chart v4 loading produced errors"
+                                               : "Chart loading produced errors";
+            return core::unexpected(operationError(context.replacement
+                                                       ? "playback.chart.reload_load_failed"
+                                                       : "playback.chart.load_failed",
+                                                   message, diagnostics));
+        }
+        if (auto resolved = resolveParametersStage(context, artifact, sourceState.projectDocuments,
+                                                   diagnostics);
+            !resolved) {
+            return core::unexpected(
+                operationError(context.replacement ? "playback.chart.reload_load_failed"
+                                                   : "playback.chart.load_failed",
+                               artifact.v4Source ? "Chart v4 resolution produced errors"
+                                                 : "Chart parameter resolution produced errors",
+                               diagnostics));
         }
 
-        if (!preflightCapabilities(*document, additionalCapabilities, state_->capabilities,
+        if (!preflightCapabilities(*document, additionalCapabilities, context.capabilities,
                                    diagnostics)) {
-            state_->lastOperationDiagnostics = diagnostics;
             return core::unexpected(operationError("playback.capability.preflight_failed",
                                                    "Playback capability preflight failed",
                                                    diagnostics));
@@ -1432,7 +1755,6 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
         auto compiledAnimation =
             compileAnimationProgram(std::move(animationProgram), limits, diagnostics);
         if (!compiledAnimation) {
-            state_->lastOperationDiagnostics = diagnostics;
             return core::unexpected(
                 operationError(replacement ? "playback.animation.reload_compile_failed"
                                            : "playback.animation.compile_failed",
@@ -1443,7 +1765,6 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
         const bool runtimeValid = runtimeResult.hasValue();
         diagnostics.append(std::move(runtimeResult.diagnostics));
         if (!runtimeValid) {
-            state_->lastOperationDiagnostics = diagnostics;
             return core::unexpected(
                 operationError(replacement ? "playback.chart.reload_compile_failed"
                                            : "playback.chart.compile_failed",
@@ -1451,189 +1772,118 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
         }
         auto& chartRuntime = *runtimeResult.runtime;
         const bool hasMainMusic = chartRuntime.mainMusic.has_value();
-        if ((mode == PlaybackMode::ChartClock && hasMainMusic) ||
-            (mode != PlaybackMode::ChartClock && !hasMainMusic)) {
-            return core::unexpected(
+        if ((context.mode == PlaybackMode::ChartClock && hasMainMusic) ||
+            (context.mode != PlaybackMode::ChartClock && !hasMainMusic)) {
+            auto error =
                 core::Error{"playback.mode.content_mismatch",
-                            mode == PlaybackMode::ChartClock
+                            context.mode == PlaybackMode::ChartClock
                                 ? "ChartClock requires a chart without main music"
-                                : "HostClock and CuexisAudio require a chart with main music"});
+                                : "HostClock and CuexisAudio require a chart with main music"};
+            addErrorDiagnostic(diagnostics, error);
+            return core::unexpected(std::move(error));
         }
 
-        std::unique_ptr<assets::ResourceManager> resourceManager;
         if (sourceState.database) {
             resourceManager = std::make_unique<assets::ResourceManager>(
                 std::move(*sourceState.database), sourceState.provider);
         }
 
-        std::optional<assets::AudioSourceLease> audioSourceLease;
-        if (chartRuntime.mainMusic) {
-            if (!resourceManager) {
-                return core::unexpected(core::Error{
-                    "playback.content.asset_database_missing",
-                    "A chart with main music requires an AssetDatabase and ContentProvider"});
+        if (auto acquired = acquireAudioStage(artifact, chartRuntime, diagnostics); !acquired) {
+            if (diagnostics.empty()) {
+                addErrorDiagnostic(diagnostics, acquired.error());
             }
-            auto sourceResult = resourceManager->requestAudioSource(
-                assets::AssetId{chartRuntime.mainMusic->value}, assets::ResourcePolicy::Required);
-            const bool sourceValid = sourceResult.hasValue();
-            diagnostics.append(std::move(sourceResult.diagnostics));
-            if (!sourceValid) {
-                state_->lastOperationDiagnostics = diagnostics;
-                return core::unexpected(operationError(
-                    "playback.content.main_music_failed",
-                    "Required main music source could not be prepared", diagnostics));
-            }
-            audioSourceLease.emplace(std::move(*sourceResult.lease));
+            return core::unexpected(std::move(acquired.error()));
         }
-
-        auto session = resourceManager ? std::make_unique<runtime::RuntimeSession>(*resourceManager)
-                                       : std::make_unique<runtime::RuntimeSession>();
-        auto runtimePrepared = session->prepare(chartRuntime, std::move(*compiledAnimation));
-        const bool preparedValid = runtimePrepared.hasValue();
-        diagnostics.append(std::move(runtimePrepared.diagnostics));
-        if (!preparedValid) {
-            state_->lastOperationDiagnostics = diagnostics;
-            return core::unexpected(operationError("playback.session.prepare_failed",
-                                                   "RuntimeSession preparation produced errors",
-                                                   diagnostics));
+        if (auto runtime = prepareRuntimeStage(artifact, chartRuntime,
+                                               std::move(*compiledAnimation), diagnostics);
+            !runtime) {
+            return core::unexpected(std::move(runtime.error()));
         }
-        auto presentation = detail::preparePresentation(chartRuntime, resourceManager.get());
-        if (!presentation) {
-            addErrorDiagnostic(diagnostics, presentation.error());
-            diagnostics.sortDeterministically();
-            state_->lastOperationDiagnostics = diagnostics;
+        if (auto presentation =
+                preparePresentationStage(context, artifact, chartRuntime, diagnostics);
+            !presentation) {
             return core::unexpected(std::move(presentation.error()));
         }
-        if (presentation->has_value()) {
-            std::vector<std::string> presentationCapabilities;
-            bool requiresShader = false;
-            bool requiresParameterized = false;
-            for (const auto& entry : presentation->value().manifest.entries) {
-                if (entry.reference.type == PresentationResourceType::Shader) {
-                    requiresShader = true;
-                } else if (entry.reference.type ==
-                           PresentationResourceType::ParameterizedMaterial) {
-                    requiresParameterized = true;
-                    requiresShader = true;
-                }
-            }
-            if (requiresShader) {
-                presentationCapabilities.emplace_back(capabilityShaderAssetV1);
-            }
-            if (requiresParameterized) {
-                presentationCapabilities.emplace_back(capabilityMaterialParameterizedV1);
-            }
-            if (!presentationCapabilities.empty() &&
-                !preflightCapabilities(*document, presentationCapabilities, state_->capabilities,
-                                       diagnostics)) {
-                state_->lastOperationDiagnostics = diagnostics;
-                return core::unexpected(operationError("playback.capability.preflight_failed",
-                                                       "Playback capability preflight failed",
-                                                       diagnostics));
-            }
-        }
-        if (auto committed = session->commit(std::move(*runtimePrepared.prepared)); !committed) {
+        if (auto committed = commitRuntimeStage(artifact); !committed) {
+            addErrorDiagnostic(diagnostics, committed.error());
             return core::unexpected(std::move(committed.error()));
         }
-
-        std::optional<RuntimeFrame> committedFrame;
-        if (replacement && targetFrame != nullptr) {
-            committedFrame = *targetFrame;
-            committedFrame->simulationDeltaTimeMs = 0.0;
-            if (policy == ReloadPolicy::RestartAtZero) {
-                committedFrame->chartTimeMs = 0.0;
-            }
-            if (auto updated = session->update(runtimeFrame(*committedFrame)); !updated) {
-                addErrorDiagnostic(diagnostics, updated.error());
-                diagnostics.sortDeterministically();
-                auto error = operationError("playback.session.reload_sample_failed",
-                                            "Reload target frame sampling failed", diagnostics);
-                state_->lastOperationDiagnostics = std::move(diagnostics);
-                return core::unexpected(std::move(error));
-            }
+        if (auto sampled = commitFrameStage(context, artifact, diagnostics); !sampled) {
+            return core::unexpected(std::move(sampled.error()));
         }
 
-        const auto* preparedPresentation =
-            presentation->has_value() ? &presentation->value() : nullptr;
-        auto snapshotLayout = buildSnapshotLayout(*session, chartRuntime, preparedPresentation);
-        if (!snapshotLayout) {
-            return core::unexpected(std::move(snapshotLayout.error()));
+        const auto* presentationCandidate =
+            artifact.presentation ? &*artifact.presentation : nullptr;
+        auto layout =
+            buildSnapshotLayout(*artifact.runtimeSession, chartRuntime, presentationCandidate);
+        if (!layout) {
+            addErrorDiagnostic(diagnostics, layout.error());
+            return core::unexpected(std::move(layout.error()));
         }
+        artifact.snapshotLayout = std::move(*layout);
 
-        if (!v4Artifact) {
-            if (audioSourceLease && audioSourceLease->valid()) {
-                resourceRequirements.push_back(chart::ChartResourceRequirement{
-                    .assetId = chart::AssetId{std::string{audioSourceLease->resource().id.value}},
-                    .uses = {chart::ChartResourceUse::MainMusic}});
-            }
-            if (presentation->has_value()) {
-                for (const auto& entry : presentation->value().manifest.entries) {
-                    const auto existing = std::ranges::find_if(
-                        resourceRequirements, [&](const chart::ChartResourceRequirement& item) {
-                            return item.assetId.value == entry.reference.assetId;
-                        });
-                    auto use = entry.reference.type == PresentationResourceType::Mesh
-                                   ? chart::ChartResourceUse::RenderableMesh
-                                   : chart::ChartResourceUse::RenderableMaterial;
-                    if (existing == resourceRequirements.end()) {
-                        resourceRequirements.push_back(chart::ChartResourceRequirement{
-                            .assetId = chart::AssetId{entry.reference.assetId}, .uses = {use}});
-                    } else if (std::ranges::find(existing->uses, use) == existing->uses.end()) {
-                        existing->uses.push_back(use);
-                    }
-                }
-            }
+        auto assembledIdentity = assembleIdentityStage(artifact, diagnostics);
+        if (!assembledIdentity) {
+            return core::unexpected(std::move(assembledIdentity.error()));
         }
-        auto resourceIdentities = assembleResourceIdentities(resourceRequirements, audioSourceLease,
-                                                             *presentation, diagnostics);
-        if (!resourceIdentities) {
-            state_->lastOperationDiagnostics = diagnostics;
-            return core::unexpected(
-                operationError("playback.identity.assemble_failed",
-                               "Prepared semantic identity could not be assembled", diagnostics));
-        }
-        const auto assembledIdentity = chart::assemblePreparedSemanticIdentity(
-            *chartIdentity, cxtIdentities, *resourceIdentities, *parameterIdentity);
 
         diagnostics.sortDeterministically();
         auto prepared = std::make_unique<PreparedPlayback::State>();
-        prepared->owner = this;
+        prepared->owner = &context.owner;
         prepared->ownerToken = state_->sessionToken;
         prepared->expectedGeneration = state_->generation;
-        prepared->replacement = replacement;
+        prepared->replacement = context.replacement;
         prepared->contentProvider = std::move(sourceState.provider);
         prepared->resourceManager = std::move(resourceManager);
         prepared->chartJson = jsonText;
-        prepared->runtimeSession = std::move(session);
-        prepared->snapshotLayout = std::move(*snapshotLayout);
+        prepared->runtimeSession = std::move(artifact.runtimeSession);
+        prepared->snapshotLayout = std::move(*artifact.snapshotLayout);
         prepared->chartInfo = chartInfoFor(chartRuntime, prepared->runtimeSession->resourceCount());
         prepared->contentInfo = PlaybackContentInfo{
             chartRuntime.chartId.value, chartRuntime.version, chartRuntime.timingMap.offsetMs(),
-            mode,
+            context.mode,
             chartRuntime.mainMusic ? std::optional<std::string>{chartRuntime.mainMusic->value}
                                    : std::nullopt};
-        prepared->parameters = options.parameters;
-        prepared->semanticIdentity = toPublicIdentity(assembledIdentity);
+        prepared->parameters = context.options.parameters;
+        prepared->semanticIdentity = toPublicIdentity(*assembledIdentity);
         prepared->audioSourceLease = std::move(audioSourceLease);
         prepared->targetFrame = committedFrame;
         prepared->committedState = replacement ? state_->sessionState : SessionState::Ready;
-        prepared->presentation = std::move(*presentation);
+        prepared->presentation = std::move(artifact.presentation);
         prepared->candidateGeneration = state_->nextCandidateGeneration++;
         if (prepared->candidateGeneration == 0) {
             prepared->candidateGeneration = state_->nextCandidateGeneration++;
         }
-        prepared->diagnostics = std::move(diagnostics);
+        // Keep the candidate snapshot independent; the operation recorder still publishes the
+        // same warnings (or an empty set) to lastOperationDiagnostics on scope exit.
+        prepared->diagnostics = diagnostics;
         prepared->lastOperationDiagnostics = prepared->diagnostics;
         return PreparedPlayback{std::move(prepared)};
     } catch (const std::bad_alloc&) {
-        return core::unexpected(
-            prepareExceptionError(replacement ? "prepare_reload" : "prepare_load", true));
+        auto error = prepareExceptionError(replacement ? "prepare_reload" : "prepare_load", true);
+        try {
+            addErrorDiagnostic(diagnostics, error);
+        } catch (...) {
+            diagnostics.clear();
+        }
+        return core::unexpected(std::move(error));
     } catch (const std::exception& exception) {
-        return core::unexpected(prepareExceptionError(
-            replacement ? "prepare_reload" : "prepare_load", false, &exception));
+        auto error = prepareExceptionError(replacement ? "prepare_reload" : "prepare_load", false,
+                                           &exception);
+        try {
+            addErrorDiagnostic(diagnostics, error);
+        } catch (...) {
+            diagnostics.clear();
+        }
+        return core::unexpected(std::move(error));
     } catch (...) {
-        return core::unexpected(
-            prepareExceptionError(replacement ? "prepare_reload" : "prepare_load", false));
+        auto error = prepareExceptionError(replacement ? "prepare_reload" : "prepare_load", false);
+        try {
+            addErrorDiagnostic(diagnostics, error);
+        } catch (...) {
+            diagnostics.clear();
+        }
+        return core::unexpected(std::move(error));
     }
 }
 
@@ -1651,18 +1901,24 @@ auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> 
     }
     auto& candidate = *prepared.state_;
     if (candidate.owner != this || candidate.ownerToken != state_->sessionToken) {
-        return core::unexpected(core::Error{"playback.prepared.wrong_session",
-                                            "PreparedPlayback belongs to another PlaybackSession"});
+        auto error = core::Error{"playback.prepared.wrong_session",
+                                 "PreparedPlayback belongs to another PlaybackSession"};
+        publishPrepareBoundaryDiagnostic(state_->lastOperationDiagnostics, error);
+        return core::unexpected(std::move(error));
     }
     if (candidate.expectedGeneration != state_->generation) {
-        return core::unexpected(
-            core::Error{"playback.prepared.stale", "PlaybackSession changed after preparation"});
+        auto error =
+            core::Error{"playback.prepared.stale", "PlaybackSession changed after preparation"};
+        publishPrepareBoundaryDiagnostic(state_->lastOperationDiagnostics, error);
+        return core::unexpected(std::move(error));
     }
     if ((!candidate.replacement && state_->sessionState != SessionState::Empty) ||
         (candidate.replacement && state_->sessionState != SessionState::Ready &&
          state_->sessionState != SessionState::Running)) {
-        return core::unexpected(core::Error{"playback.prepared.lifecycle_changed",
-                                            "PlaybackSession lifecycle changed after preparation"});
+        auto error = core::Error{"playback.prepared.lifecycle_changed",
+                                 "PlaybackSession lifecycle changed after preparation"};
+        publishPrepareBoundaryDiagnostic(state_->lastOperationDiagnostics, error);
+        return core::unexpected(std::move(error));
     }
 
     state_->contentProvider = std::move(candidate.contentProvider);
@@ -2065,7 +2321,17 @@ auto PlaybackSession::contentInfo() const -> core::Result<PlaybackContentInfo> {
         return core::unexpected(
             core::Error{"playback.session.empty", "PlaybackSession has no committed content"});
     }
-    return *state_->activeContentInfo;
+    try {
+        return *state_->activeContentInfo;
+    } catch (const std::bad_alloc&) {
+        return core::unexpected(prepareExceptionError("content_info", true));
+    } catch (const std::length_error&) {
+        return core::unexpected(prepareExceptionError("content_info", true));
+    } catch (const std::exception& exception) {
+        return core::unexpected(prepareExceptionError("content_info", false, &exception));
+    } catch (...) {
+        return core::unexpected(prepareExceptionError("content_info", false));
+    }
 }
 
 auto PlaybackSession::semanticIdentity() const -> core::Result<PreparedSemanticIdentity> {
@@ -2091,7 +2357,17 @@ auto PlaybackSession::diagnostics() const -> core::Result<core::Diagnostics> {
         return core::unexpected(reentryError("diagnostics"));
     }
     SessionOperation operation{state_->operationActive};
-    return state_->diagnostics;
+    try {
+        return state_->diagnostics;
+    } catch (const std::bad_alloc&) {
+        return core::unexpected(prepareExceptionError("diagnostics", true));
+    } catch (const std::length_error&) {
+        return core::unexpected(prepareExceptionError("diagnostics", true));
+    } catch (const std::exception& exception) {
+        return core::unexpected(prepareExceptionError("diagnostics", false, &exception));
+    } catch (...) {
+        return core::unexpected(prepareExceptionError("diagnostics", false));
+    }
 }
 
 auto PlaybackSession::lastOperationDiagnostics() const -> core::Result<core::Diagnostics> {
@@ -2102,7 +2378,18 @@ auto PlaybackSession::lastOperationDiagnostics() const -> core::Result<core::Dia
         return core::unexpected(reentryError("last_operation_diagnostics"));
     }
     SessionOperation operation{state_->operationActive};
-    return state_->lastOperationDiagnostics;
+    try {
+        return state_->lastOperationDiagnostics;
+    } catch (const std::bad_alloc&) {
+        return core::unexpected(prepareExceptionError("last_operation_diagnostics", true));
+    } catch (const std::length_error&) {
+        return core::unexpected(prepareExceptionError("last_operation_diagnostics", true));
+    } catch (const std::exception& exception) {
+        return core::unexpected(
+            prepareExceptionError("last_operation_diagnostics", false, &exception));
+    } catch (...) {
+        return core::unexpected(prepareExceptionError("last_operation_diagnostics", false));
+    }
 }
 
 auto PlaybackSession::acquireHostOverride(std::string_view ownerId, std::int64_t priority,
@@ -2132,22 +2419,32 @@ auto PlaybackSession::acquireHostOverride(std::string_view ownerId, std::int64_t
                                             "Override tokens require at least one property write"});
     }
 
-    std::vector<runtime::PropertyOverrideWrite> mapped;
-    mapped.reserve(writes.size());
-    for (const auto& write : writes) {
-        mapped.push_back(runtime::PropertyOverrideWrite{
-            .objectId = chart::ChartObjectId{write.objectId},
-            .property = toWorldProperty(write.property),
-            .value = toWorldValue(write.value),
-        });
+    try {
+        std::vector<runtime::PropertyOverrideWrite> mapped;
+        mapped.reserve(writes.size());
+        for (const auto& write : writes) {
+            mapped.push_back(runtime::PropertyOverrideWrite{
+                .objectId = chart::ChartObjectId{write.objectId},
+                .property = toWorldProperty(write.property),
+                .value = toWorldValue(write.value),
+            });
+        }
+        auto token = state_->runtimeSession->acquireOverride(
+            world::OverrideKind::Host, std::string{ownerId}, priority, propertyMask,
+            toWorldLifetime(lifetime), mapped);
+        if (!token) {
+            return core::unexpected(mapHostOverrideError(token.error()));
+        }
+        return HostOverrideToken{.value = token->value};
+    } catch (const std::bad_alloc&) {
+        return core::unexpected(prepareExceptionError("acquire_host_override", true));
+    } catch (const std::length_error&) {
+        return core::unexpected(prepareExceptionError("acquire_host_override", true));
+    } catch (const std::exception& exception) {
+        return core::unexpected(prepareExceptionError("acquire_host_override", false, &exception));
+    } catch (...) {
+        return core::unexpected(prepareExceptionError("acquire_host_override", false));
     }
-    auto token = state_->runtimeSession->acquireOverride(
-        world::OverrideKind::Host, std::string{ownerId}, priority, propertyMask,
-        toWorldLifetime(lifetime), mapped);
-    if (!token) {
-        return core::unexpected(mapHostOverrideError(token.error()));
-    }
-    return HostOverrideToken{.value = token->value};
 }
 
 auto PlaybackSession::releaseHostOverride(HostOverrideToken token) -> core::Result<void> {

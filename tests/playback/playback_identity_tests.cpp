@@ -1,3 +1,5 @@
+#include <cuexis/chart/chart_writer.hpp>
+#include <cuexis/chart/prepared_semantic_identity.hpp>
 #include <cuexis/content/content_provider.hpp>
 #include <cuexis/core/error.hpp>
 #include <cuexis/playback/frame_digest.hpp>
@@ -185,6 +187,32 @@ struct PreparedView final {
     return {.identity = *identity, .frame = std::move(*frame)};
 }
 
+[[nodiscard]] auto replaceOnce(std::string source, std::string_view from, std::string_view to)
+    -> std::string {
+    const auto position = source.find(from);
+    REQUIRE(position != std::string::npos);
+    source.replace(position, from.size(), to);
+    return source;
+}
+
+struct LegacyIdentityView final {
+    std::string canonical;
+    cuexis::chart::CanonicalContentIdentity chartIdentity;
+    cuexis::playback::PreparedSemanticIdentity semanticIdentity;
+};
+
+[[nodiscard]] auto legacyIdentityView(std::string chart) -> LegacyIdentityView {
+    auto canonical = cuexis::chart::ChartWriter::writeCanonicalJson(chart);
+    REQUIRE(canonical.has_value());
+    const auto chartIdentity = cuexis::chart::canonicalBytesIdentity(*canonical);
+    auto source = cuexis::playback::PlaybackSource::fromChartText(std::move(chart));
+    REQUIRE(source.has_value());
+    const auto semanticIdentity = loadIdentity(std::move(*source));
+    return {.canonical = std::move(*canonical),
+            .chartIdentity = chartIdentity,
+            .semanticIdentity = semanticIdentity};
+}
+
 } // namespace
 
 TEST_CASE("Empty and moved-from prepared playback have no semantic identity",
@@ -362,6 +390,65 @@ TEST_CASE("Successful v1, v2 and v3 prepare each expose a semantic identity",
         readText(fixture("valid/chart_v4_static_migration.json")));
     REQUIRE(v4Source.has_value());
     CHECK(loadIdentity(std::move(*v3Source)) != loadIdentity(std::move(*v4Source)));
+}
+
+TEST_CASE("Legacy semantic identity uses full-fidelity canonical Chart source bytes",
+          "[playback][identity][legacy][d6]") {
+    const auto legacyV1 =
+        readText(std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" / "projects" /
+                 "stage1c_project" / "assets" / "charts" / "stage1c_example.cuexis.chart.json");
+
+    SECTION("v1 keyframe tracks") {
+        const auto changed = replaceOnce(legacyV1, "\"value\": -1.5", "\"value\": -1.25");
+        const auto before = legacyIdentityView(legacyV1);
+        const auto after = legacyIdentityView(changed);
+        CHECK(before.canonical != after.canonical);
+        CHECK(before.chartIdentity != after.chartIdentity);
+        CHECK(before.semanticIdentity != after.semanticIdentity);
+    }
+
+    SECTION("v2 keyframe tracks") {
+        const auto v2 = replaceOnce(legacyV1, "\"version\": 1,", "\"version\": 2,");
+        const auto changed = replaceOnce(v2, "\"value\": -1.5", "\"value\": -1.25");
+        const auto before = legacyIdentityView(v2);
+        const auto after = legacyIdentityView(changed);
+        CHECK(before.canonical != after.canonical);
+        CHECK(before.chartIdentity != after.chartIdentity);
+        CHECK(before.semanticIdentity != after.semanticIdentity);
+    }
+
+    SECTION("v1 templates") {
+        constexpr std::string_view templateBlock = R"json("templates": [{
+    "id": "019b0000-0000-7abc-8def-000000000220",
+    "name": "identity_template",
+    "extends": null,
+    "prototype": {"components": {"cuexis.element": {"version": 1}}},
+    "extensions": {}
+  }],)json";
+        const auto changed = replaceOnce(legacyV1, "\"templates\": [],", templateBlock);
+        const auto before = legacyIdentityView(legacyV1);
+        const auto after = legacyIdentityView(changed);
+        CHECK(before.canonical != after.canonical);
+        CHECK(before.chartIdentity != after.chartIdentity);
+        CHECK(before.semanticIdentity != after.semanticIdentity);
+    }
+
+    SECTION("v3 tempo events and stops") {
+        const auto legacyV3 = readText(std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" /
+                                       "charts" / "stage2_example.cuexis.chart.json");
+        const auto changedTempo = replaceOnce(legacyV3, "\"startBpm\": 90.0", "\"startBpm\": 91.0");
+        const auto changedStop =
+            replaceOnce(legacyV3, "\"durationMs\": 250.0", "\"durationMs\": 251.0");
+        const auto before = legacyIdentityView(legacyV3);
+        const auto tempo = legacyIdentityView(changedTempo);
+        const auto stop = legacyIdentityView(changedStop);
+        CHECK(before.canonical != tempo.canonical);
+        CHECK(before.chartIdentity != tempo.chartIdentity);
+        CHECK(before.semanticIdentity != tempo.semanticIdentity);
+        CHECK(before.canonical != stop.canonical);
+        CHECK(before.chartIdentity != stop.chartIdentity);
+        CHECK(before.semanticIdentity != stop.semanticIdentity);
+    }
 }
 
 TEST_CASE("Animation CXC reload is rejected before World publish and keeps the active identity",

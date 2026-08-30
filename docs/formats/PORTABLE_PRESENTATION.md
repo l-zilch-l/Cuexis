@@ -319,12 +319,14 @@ Stage 3 v1 的资产输入只支持一种 versioned binary payload。Filesystem�
 - 实现先校验 envelope、计数和全部乘加溢出，再分配或读取 body。
 - v1 不允许扩展尾部字段；新增字段必须使用新 payloadVersion。
 
-Stage 1B opaque fixture 保持兼容但不伪装成 portable resource：若一个候选的全部必需
-Mesh/Material blob 都不声明或尝试 `CXPRES` envelope，则候选继续使用历史内部资源路径，
-`presentationManifest()` 返回空指针且 acquisition 不可用。一旦闭包中任何必需 blob 声明、尝试
-`CXPRES` magic/prefix，或具有结构上可识别的 v1 envelope，其全部表现闭包都必须通过本节严格
-校验；不能把损坏或混合 blob 回退为 Stage 1B opaque 内容。无 Renderable 的空闭包发布 version 1
-空 manifest。
+Stage 1B opaque fixture 保持兼容但不伪装成 portable resource：v1/v2/v3 的候选若全部必需
+Mesh/Material blob 都不声明或尝试 `CXPRES` envelope，则继续使用历史内部资源路径，
+`presentationManifest()` 返回空指针且 acquisition 不可用。Chart v4 的实际 Renderable 不
+适用这条兼容路径；只要其必需 blob 不是 `CXPRES01`，prepare 必须以
+`playback.chart.v4.requires_portable_presentation` 稳定拒绝，并保留 active rollback。一旦
+兼容路径中任何必需 blob 声明、尝试 `CXPRES` magic/prefix，或具有结构上可识别的 v1 envelope，
+其全部表现闭包都必须通过本节严格校验；不能把损坏或混合 blob 回退为 Stage 1B opaque 内容。
+无 Renderable 的空闭包发布 version 1 空 manifest。
 
 ## 5. Mesh v1（S3A-04）
 
@@ -517,6 +519,10 @@ prepareLoad / prepareReload
 - token 在 PreparedPlayback move 后随 candidate 移动；moved-from candidate 无效。
 - adapter prepare 不允许 callback 进入 PlaybackSession，也不允许激活 active cache。
 - Playback commit 仍执行现有 owner、reentry、session token、generation 和 lifecycle 检查。
+- `PlaybackSession::update()` 成功后会递增 session generation；因此，任何在该次 update
+  之前取得且尚未提交的 `PreparedPlayback` 都会在后续 commit 时因 generation 不匹配而失败，
+  返回 `playback.prepared.stale`。宿主若在 prepare 后推进一帧，必须重新 prepare；
+  `prepare -> update -> commit` 不是受支持的提交顺序。
 - commit 失败时宿主销毁 adapter candidate；旧 Playback/cache 保持不变。
 - commit 成功后的 adapter activation 必须只做不可失败的 owner-thread move/swap；资源上传、Shader
   编译、容量增长和 capability 检查都必须提前完成。
@@ -599,6 +605,7 @@ Snapshot）；它由 PlaybackSession 在资源读取前执行 preflight。
 | `playback.presentation.dependency.mismatch` | Payload reference and Asset Index dependencies differ |
 | `playback.presentation.dependency.cycle` | Portable dependency closure contains a cycle |
 | `playback.presentation.resource.missing` | Required indexed resource is unavailable |
+| `playback.chart.v4.requires_portable_presentation` | Chart v4 Renderable references a legacy opaque payload instead of `CXPRES01` |
 | `playback.presentation.identity_collision` | Different canonical values produced one identity |
 | `playback.presentation.reference.invalid` | Ref type/AssetId/identity is not in candidate/active manifest |
 | `playback.presentation.capability.version_unsupported` | Capability/request version unsupported |
@@ -611,6 +618,10 @@ Snapshot）；它由 PlaybackSession 在资源读取前执行 preflight。
 | `playback.presentation.frame.value_invalid` | Opacity or tint is outside the frozen `[0,1]` range |
 | `playback.presentation.frame.resource_mismatch` | Snapshot ref and acquired resource differ |
 | `playback.presentation.frame.command_budget_exceeded` | Normalized record limit exceeded |
+
+`playback.presentation.frame.value_invalid` is a boundary-only code. The World/Chart validation
+boundary rejects opacity and tint values outside `[0,1]`; production frame extraction only emits
+`playback.presentation.frame.non_finite` for non-finite matrix, color, or depth calculations.
 
 通用 lifecycle 失败继续复用现有 `playback.session.not_owner_thread`、
 `playback.session.reentrant`、`playback.prepared.invalid` 和 candidate/session mismatch code，不建立同义

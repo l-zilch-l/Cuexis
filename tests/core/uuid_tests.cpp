@@ -12,6 +12,7 @@ TEST_CASE("Core UUID validation enforces canonical version and RFC variant", "[c
     REQUIRE(generated.has_value());
     CHECK(*generated == "21f7f8de-8051-5b89-8680-0195ef798b6a");
     CHECK(cuexis::core::isUuidV5(*generated));
+    CHECK_FALSE(cuexis::core::isUuidV5("21F7F8DE-8051-5B89-8680-0195EF798B6A"));
 
     const auto invalid = cuexis::core::uuidV5("not-a-uuid", "name");
     REQUIRE_FALSE(invalid.has_value());

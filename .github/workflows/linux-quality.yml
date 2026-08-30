@@ -170,6 +170,46 @@ jobs:
           ctest --preset headless-release --no-tests=error
           -R "World transform cache preserves sparse work through the default object budget|PlaybackSession drives a headless owning snapshot"
 
+  documentation-contracts:
+    name: Documentation contracts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Check out pinned vcpkg
+        uses: actions/checkout@v4
+        with:
+          repository: microsoft/vcpkg
+          ref: ${{ env.VCPKG_COMMIT }}
+          path: .vcpkg
+
+      - name: Install build tools
+        run: >-
+          sudo apt-get update && sudo apt-get install -y
+          ninja-build clang autoconf autoconf-archive automake libtool libltdl-dev
+          python3-venv
+
+      - name: Bootstrap pinned vcpkg
+        run: |
+          ./.vcpkg/bootstrap-vcpkg.sh -disableMetrics
+          printf 'VCPKG_ROOT=%s/.vcpkg\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+
+      - name: Configure documentation target facts
+        run: >-
+          cmake --preset debug --fresh
+          -DCMAKE_CXX_COMPILER=g++
+          -DCUEXIS_IMPLEMENTATION_SHA=${{ github.sha }}
+          -DVCPKG_TARGET_TRIPLET=x64-linux
+
+      - name: Check documentation and version contracts
+        env:
+          CUEXIS_TARGETS_FILE: out/build/debug/generated/cuexis-targets.txt
+        run: |
+          python3 -B tools/check_docs.py
+          python3 -B tools/update_version.py --check
+
   clang-tidy:
     name: clang-tidy
     runs-on: ubuntu-latest

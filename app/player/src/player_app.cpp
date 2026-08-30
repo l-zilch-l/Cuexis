@@ -545,6 +545,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
     std::uint32_t renderedFrames = 0;
     bool quitRequested = false;
     playback::FrameSnapshot snapshot;
+    render::RenderScene scene;
     while (!quitRequested) {
         quitRequested = window.pollEvents().quitRequested;
         if (quitRequested) {
@@ -741,7 +742,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
             }
             const auto unsupportedPresentation = backend.preparePresentation(
                 *rejectedPresentationCandidate,
-                {.version = 2, .portableProfileVersion = 1, .enableDebugPass = true});
+                {.version = 2, .portableProfileVersion = 2, .enableDebugPass = true});
             if (unsupportedPresentation || !backend.hasActivePresentation()) {
                 return core::unexpected(core::Error{
                     "player.smoke_test.failed_adapter_prepare_mutated_state",
@@ -864,7 +865,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
             return core::unexpected(std::move(result.error()));
         }
 
-        render::RenderScene scene;
+        scene.clear();
         if (auto result = appendSnapshotAxes(snapshot, scene); !result) {
             return core::unexpected(std::move(result.error()));
         }

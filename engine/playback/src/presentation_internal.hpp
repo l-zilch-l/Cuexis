@@ -6,6 +6,7 @@
 #include <cuexis/playback/presentation.hpp>
 
 #include <compare>
+#include <cstdint>
 #include <map>
 #include <optional>
 #include <string>
@@ -22,14 +23,53 @@ struct PresentationResourceKey final {
                             const PresentationResourceKey&) = default;
 };
 
+struct PresentationResourceKeyView final {
+    std::string_view assetId;
+    PresentationResourceType type{PresentationResourceType::Mesh};
+};
+
+struct PresentationResourceKeyLess final {
+    using is_transparent = void;
+
+    [[nodiscard]] static auto less(std::string_view leftAssetId, PresentationResourceType leftType,
+                                   std::string_view rightAssetId,
+                                   PresentationResourceType rightType) noexcept -> bool {
+        if (leftAssetId != rightAssetId) {
+            return leftAssetId < rightAssetId;
+        }
+        return static_cast<std::uint8_t>(leftType) < static_cast<std::uint8_t>(rightType);
+    }
+
+    [[nodiscard]] auto operator()(const PresentationResourceKey& left,
+                                  const PresentationResourceKey& right) const noexcept -> bool {
+        return less(left.assetId, left.type, right.assetId, right.type);
+    }
+
+    [[nodiscard]] auto operator()(const PresentationResourceKey& left,
+                                  const PresentationResourceKeyView& right) const noexcept -> bool {
+        return less(left.assetId, left.type, right.assetId, right.type);
+    }
+
+    [[nodiscard]] auto operator()(const PresentationResourceKeyView& left,
+                                  const PresentationResourceKey& right) const noexcept -> bool {
+        return less(left.assetId, left.type, right.assetId, right.type);
+    }
+
+    [[nodiscard]] auto operator()(const PresentationResourceKeyView& left,
+                                  const PresentationResourceKeyView& right) const noexcept -> bool {
+        return less(left.assetId, left.type, right.assetId, right.type);
+    }
+};
+
 struct PreparedPresentation final {
     PresentationResourceManifest manifest;
-    std::map<PresentationResourceKey, PortableResourcePtr> resources;
+    std::map<PresentationResourceKey, PortableResourcePtr, PresentationResourceKeyLess> resources;
     std::vector<PortableResourcePtr> orderedResources;
 };
 
 [[nodiscard]] auto preparePresentation(const chart::ChartRuntime& chartRuntime,
-                                       assets::ResourceManager* resourceManager)
+                                       assets::ResourceManager* resourceManager,
+                                       bool rejectLegacy = false)
     -> core::Result<std::optional<PreparedPresentation>>;
 
 [[nodiscard]] auto findPresentationResource(const PreparedPresentation& presentation,

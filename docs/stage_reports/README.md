@@ -2,7 +2,7 @@
 
 状态：现行阶段报告索引
 
-更新日期：2026-08-28
+更新日期：2026-08-30
 
 报告是带日期的证据快照。报告中的“下一步”只表示报告生成时的交接，不自动代表当前任务。
 
@@ -71,4 +71,22 @@
 | [260828 Stage 5 S5-G consume](260828-stage-5-s5-g-consume.md) | S5-G local checkpoint: OpenGL/Player/Validation Sink consume CXSCCH01; default allCapabilities includes shader/parameterized; trimmed Session still rejects; Unlit golden unchanged |
 | [260828 Stage 5 S5-H safety](260828-stage-5-s5-h-safety.md) | S5-H local checkpoint: spec budgets, warmed allocation contract, performance probe, Linux sanitizer shader-tools; hosted and owner acceptance pending; Stage 5 not completed |
 | [260828 CFU and Stage 4 review](260828-stage-CFU-4-review.md) | open two-axis review snapshot of CFU through Stage 4 close; does not redefine CURRENT_STATUS |
+| [260829 full review](260829-full-review.md) | open full-repository review snapshot (engine, app, tools, build, docs alignment); 144 findings with per-finding index (1 P0 / 15 P1 / 56 P2 / 72 P3), 11 prioritized improvement directions with implementation assessment and full finding-to-batch remediation mapping; does not redefine CURRENT_STATUS |
+| [260829 Full Review 整改第 0 批](260829-full-review-remediation-b0.md) | completed local B0 remediation: CH-01, PB-08, CM-03, AP-01/02/06/19, CM-01, and RT-02 documentation correction |
+| [260829 Full Review 整改第 0.5 批](260829-full-review-remediation-b05.md) | completed local B05 documentation and contract-comment remediation: CM core/audio/platform, CX-03/04/06/16/26, and AP-03/04/05; decision-gated findings remain unresolved |
+| [260829 Full Review 整改 W06/W07](260829-full-review-remediation-w06-w07.md) | completed Playback and Runtime/OpenGL contract documentation; PB-04 and RT-25 remain decision-gated and unresolved |
+| [260829 Full Review 整改 W08/W09](260829-full-review-remediation-w08-w09.md) | completed Chart reader characterization and controlled internal responsibility split; decision-gated findings remain unresolved |
+| [260829 Full Review 整改 W10](260829-full-review-remediation-w10.md) | completed AP-16 machine-readable status contract and checker regressions; AP-17 Linux Quality CI wiring remains pending C3 |
+| [260829 Full Review 整改 W11](260829-full-review-remediation-w11.md) | partial W11 math API verification; Lane A identity migration remains blocked by unresolved D6 |
+| [260829 Full Review 整改 W12/W13](260829-full-review-remediation-w12-w13.md) | completed Lane B math/core remediation and Lane D Runtime reload transaction fix; Lane A remains blocked by unresolved D6 |
+| [260829 Full Review 整改 C2/C3](260829-full-review-remediation-c2-c3.md) | completed target-fact and SDK-minor documentation contracts plus Linux Quality workflow wiring; hosted Linux evidence remains pending |
+| [260829 Full Review 整改 W14](260829-full-review-remediation-w14.md) | completed A3 pipeline characterization review and revalidated the C1 status-contract checker; A3 production integration remains deferred to W15 |
+| [260829 Full Review 整改 W15/W16](260829-full-review-remediation-w15-w16.md) | completed A3 ShaderPipelineCache integration, corrected Player adapter-failure smoke coverage, and revalidated C2 target export plus D1/D2 reload gates |
+| [260829 Full Review 整改 W20-W26](260829-full-review-remediation-w20-w26.md) | local completed render hot-path, HostClock/SDL publication, Player scratch reuse, and transparent Presentation resource lookup remediation |
+| [260829 Full Review 整改 W30-W37](260829-full-review-remediation-w30-w37.md) | local completed Playback prepare staging, PB-03 diagnostics, taxonomy, ownership, and final Debug/Shared/Release gates; full Chart/CXC parse-once remains separately bounded |
+| [260829 Full Review 整改 D1/D2](260829-full-review-remediation-d1-d2.md) | completed accepted legacy-format exit for Chart v4 presentation and Asset Index record-level extensions; hosted revalidation remains pending |
+| [260830 Full Review 整改 D3-D6](260830-full-review-remediation-d3-d6.md) | completed accepted boundary contracts, legacy TimingMap/render compatibility, and one-time full-fidelity legacy identity migration; hosted revalidation remains pending |
+| [260830 Full Review 整改 A2](260830-full-review-remediation-a2.md) | completed Lane A importer semantic-identity cache policy and normalized shader cache-key validation; hosted revalidation remains pending |
+| [260830 Full Review 整改 shared ABI gate](260830-full-review-remediation-shared-abi.md) | completed MSVC shared-DLL HostClock export correction; behavior and public contracts unchanged; hosted revalidation remains pending |
+| [260830 Full Review 最终关闭](260830-full-review-final.md) | Full Review 144 项 finding disposition closed after final-SHA Linux Quality, Windows MSVC and Windows MinGW success; deferred scope recorded |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |

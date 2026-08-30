@@ -2,6 +2,9 @@
 
 // PlaybackSource owns chart text, the logical asset index, and its content provider.
 // It is the only public input boundary for indexed Playback content.
+// PlaybackSource is an independent owning input value. Its move and destruction operations do not
+// enforce the PlaybackSession owner-thread contract. After prepare or load consumes a source,
+// the resulting PlaybackSession and PreparedPlayback follow the rules in playback_session.hpp.
 
 #include <cuexis/content/content_provider.hpp>
 #include <cuexis/core/abi_warnings.hpp>

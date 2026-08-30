@@ -264,9 +264,9 @@ cmake/       -> custom cmake modules (warnings, arch verification, version)
 docs/        -> indexed architecture, formats, plans, reports, proposals, examples and archive
 ```
 
-`engine/animation/` and `engine/particles/` contain stub CMakeLists.txt but are not wired into the
-build. `engine/audio/` and `engine/audio_sdl/` are active Stage 1D modules. `sdk/` and `adapters/`
-directories do not exist yet (planned).
+`engine/animation/` is an active Stage 4 module wired into the build. `engine/particles/` remains an
+INTERFACE stub and is not wired into the build. `engine/audio/` and `engine/audio_sdl/` are active
+Stage 1D modules. `sdk/` and `adapters/` directories do not exist yet (planned).
 
 ## Key reference docs
 

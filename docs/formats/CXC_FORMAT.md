@@ -110,6 +110,10 @@ ZIP32 v1 的 archive entry 总数上限是 `65,534`，包含固定 manifest，�
 | version needed | `10`（ZIP 1.0） |
 | version made by | `0x000A`（MS-DOS/FAT host、ZIP 1.0） |
 
+规范 writer 固定写 `version needed = 10`。Reader 为兼容已生成的 ZIP32 Stored 输入，接受
+`version needed` 在 `[0,20]` 范围内的值；大于 `20` 表示未支持的 ZIP 特性并以
+`cxc.archive.feature_unsupported` 拒绝。该 reader 宽容不改变 writer 的规范输出。
+
 Local header 与对应 central header 的 flag、method、CRC、compressed/uncompressed size 和 filename
 必须完全一致。Central directory 的 count、span 和 offset 必须与 EOCD 完全一致并恰好覆盖全部
 entry。Writer 不写目录 entry、padding 或尾随字节。
@@ -272,9 +276,11 @@ cxc.project.invalid
 
 ## 9. 工具边界
 
-CXC 的 archive/manifest/closure 实现由候选内部 target `cuexis_cxc` 拥有。该 target 不作为安装
-component 暴露，不依赖 Playback，也不向公共头传播 ZIP library、JSON DOM、archive offset 或
-文件句柄。Playback 可以私有依赖它；pack/validate/unpack 工具直接复用同一实现。
+CXC 的 archive/manifest/closure 实现由内部静态 target `cuexis_cxc` 拥有。它不作为公共
+`Cuexis::CXC` component 暴露，也不安装 CXC 公共头；在静态库分发中，该实现 target 会随
+`CuexisTargets.cmake` 导出并由包配置声明其 `minizip-ng` 等静态依赖，以满足链接闭包。
+它不向 Playback 公共头传播 ZIP library、JSON DOM、archive offset 或文件句柄。Playback
+可以私有依赖它；pack/validate/unpack 工具直接复用同一实现。
 
 第三方 archive 依赖必须允许检查 local/central header、ZIP64 sentinel、extra field、entry range、
 overlap 和 trailing bytes。若库不暴露全部信息，Cuexis 可以增加窄的 envelope validator，但不得
@@ -289,7 +295,8 @@ cuexis_cxc_validate
   validate archive, manifest, Project, Asset Index, Chart, CXT and resource closure
 
 cuexis_cxc_unpack
-  validate and write into a new empty directory; never overwrite, migrate or rebuild authoring data
+  validate and write into an empty (new or existing) directory; never overwrite existing content,
+  migrate or rebuild authoring data
 ```
 
 Chart migration 是独立操作，见 [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md)。Pack/unpack 输入输出路径
@@ -300,5 +307,6 @@ Chart migration 是独立操作，见 [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md)�
 正反例见 [examples/chart_format_update](../examples/chart_format_update/README.md)。CFU-C1 已将 manifest
 副本提升到 `tests/fixtures/chart_format_update/`，由生产 Schema 与内部 typed manifest Reader 验证；
 CFU-C3 已实现 strict ZIP32 archive、闭包和 owning CXC package，CFU-C4 developer tools 的本地证据
-见 [C4 报告](../stage_reports/260813-chart-format-update-c4-tools.md)。公共 Playback 输入和 hosted
-跨平台收口仍未关闭。
+见 [C4 报告](../stage_reports/260813-chart-format-update-c4-tools.md)。公共 Playback 输入、
+hosted 跨平台 consumer/determinism/safety gates 与 owner acceptance 已关闭；本节只记录已
+封存的内部实现证据，不宣称交付公共 CXC package API。

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <bit>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -28,6 +29,13 @@ namespace {
 
 [[nodiscard]] auto sdlError(std::string code, std::string message) -> core::Error {
     return core::Error{std::move(code), std::move(message)}.withContext("sdl", SDL_GetError());
+}
+
+[[nodiscard]] auto emptyEffectiveSettings() noexcept -> audio::EffectiveAudioSettings {
+    audio::EffectiveAudioSettings result{};
+    // The default-route flag describes an opened SDL device, not an Empty transport.
+    result.defaultRouteMayMigrate = false;
+    return result;
 }
 
 } // namespace
@@ -105,6 +113,16 @@ struct SdlAudioTransport::Impl final {
         std::atomic<std::uint32_t> sampleRate{};
         std::atomic<std::uint64_t> discontinuityId{};
         std::atomic<int> state{static_cast<int>(audio::PlaybackState::Empty)};
+        std::atomic<std::uint32_t> effectiveSourceSampleRate{};
+        std::atomic<std::uint32_t> effectiveSourceChannels{};
+        std::atomic<std::uint32_t> effectiveDeviceSampleRate{};
+        std::atomic<std::uint32_t> effectiveDeviceChannels{};
+        std::atomic<std::uint32_t> effectiveDeviceBufferFrames{};
+        std::atomic<std::uint32_t> effectiveTargetQueueMs{};
+        std::atomic<std::uint32_t> effectiveRefillLowWaterMs{};
+        std::atomic<std::uint64_t> effectiveEstimatedOutputLatencyBits{};
+        std::atomic<std::uint32_t> effectiveFormatConverted{};
+        std::atomic<std::uint32_t> effectiveDefaultRouteMayMigrate{};
     };
 
     Impl(std::shared_ptr<SdlAudioSubsystem::State> subsystemState, audio::AudioClipStore& clipStore,
@@ -166,6 +184,26 @@ struct SdlAudioTransport::Impl final {
         published.sampleRate.store(sampleRate, std::memory_order_relaxed);
         published.discontinuityId.store(discontinuityId, std::memory_order_relaxed);
         published.state.store(static_cast<int>(state), std::memory_order_relaxed);
+        published.effectiveSourceSampleRate.store(effective.sourceSampleRate,
+                                                  std::memory_order_relaxed);
+        published.effectiveSourceChannels.store(effective.sourceChannels,
+                                                std::memory_order_relaxed);
+        published.effectiveDeviceSampleRate.store(effective.deviceSampleRate,
+                                                  std::memory_order_relaxed);
+        published.effectiveDeviceChannels.store(effective.deviceChannels,
+                                                std::memory_order_relaxed);
+        published.effectiveDeviceBufferFrames.store(effective.deviceBufferFrames,
+                                                    std::memory_order_relaxed);
+        published.effectiveTargetQueueMs.store(effective.targetQueueMs, std::memory_order_relaxed);
+        published.effectiveRefillLowWaterMs.store(effective.refillLowWaterMs,
+                                                  std::memory_order_relaxed);
+        published.effectiveEstimatedOutputLatencyBits.store(
+            std::bit_cast<std::uint64_t>(effective.estimatedOutputLatencyMs),
+            std::memory_order_relaxed);
+        published.effectiveFormatConverted.store(effective.formatConverted ? 1U : 0U,
+                                                 std::memory_order_relaxed);
+        published.effectiveDefaultRouteMayMigrate.store(effective.defaultRouteMayMigrate ? 1U : 0U,
+                                                        std::memory_order_relaxed);
         published.sequence.fetch_add(1, std::memory_order_release);
     }
 
@@ -276,8 +314,14 @@ struct SdlAudioTransport::Impl final {
             converted > static_cast<long double>(std::numeric_limits<std::int64_t>::max())
                 ? std::numeric_limits<std::int64_t>::max()
                 : static_cast<std::int64_t>(converted);
-        const auto candidate = std::clamp(segmentStartFrame + advanced, presentedFrame,
-                                          std::min(submittedFrame, clip->frameCount()));
+        const auto upperBound = std::max<std::int64_t>(
+            0, std::min(submittedFrame, static_cast<std::int64_t>(clip->frameCount())));
+        const auto monotonicFloor = std::min(std::max<std::int64_t>(presentedFrame, 0), upperBound);
+        const auto rawCandidate =
+            advanced > 0 && segmentStartFrame > std::numeric_limits<std::int64_t>::max() - advanced
+                ? std::numeric_limits<std::int64_t>::max()
+                : segmentStartFrame + advanced;
+        const auto candidate = std::min(std::max(rawCandidate, monotonicFloor), upperBound);
         presentedFrame = candidate;
         if (presentedFrame >= clip->frameCount()) {
             presentedFrame = clip->frameCount();
@@ -323,7 +367,7 @@ struct SdlAudioTransport::Impl final {
     std::atomic<std::uint64_t> underrunCount{};
     std::atomic<std::uint64_t> serviceCount{};
     bool underrunEpisode{};
-    audio::EffectiveAudioSettings effective{};
+    audio::EffectiveAudioSettings effective = emptyEffectiveSettings();
 };
 
 auto SdlAudioTransport::create(SdlAudioSubsystem& subsystem, audio::AudioClipStore& store,
@@ -450,6 +494,8 @@ auto SdlAudioTransport::stop() -> core::Result<void> {
     impl_->segmentStartFrame = 0;
     impl_->submittedFrame = 0;
     impl_->presentedFrame = 0;
+    // A postmix callback already in flight may race this relaxed reset. That can only reduce the
+    // precision of the presented-position estimate; it is not cross-thread synchronization.
     impl_->callback.mixedDeviceFrames.store(0, std::memory_order_relaxed);
     impl_->mixedDeviceFrameBaseline = 0;
     impl_->queuedFrames.store(0, std::memory_order_relaxed);
@@ -490,6 +536,8 @@ auto SdlAudioTransport::seekMs(double positionMs) -> core::Result<void> {
     impl_->segmentStartFrame = frame;
     impl_->submittedFrame = frame;
     impl_->presentedFrame = frame;
+    // A postmix callback already in flight may race this relaxed reset. That can only reduce the
+    // precision of the presented-position estimate; it is not cross-thread synchronization.
     impl_->callback.mixedDeviceFrames.store(0, std::memory_order_relaxed);
     impl_->mixedDeviceFrameBaseline = 0;
     impl_->queuedFrames.store(0, std::memory_order_relaxed);
@@ -523,7 +571,7 @@ auto SdlAudioTransport::unload() -> core::Result<void> {
     impl_->segmentStartFrame = 0;
     impl_->submittedFrame = 0;
     impl_->presentedFrame = 0;
-    impl_->effective = {};
+    impl_->effective = emptyEffectiveSettings();
     impl_->advanceDiscontinuity();
     impl_->publish();
     return {};
@@ -639,7 +687,56 @@ audio::AudioMetricsSnapshot SdlAudioTransport::metrics() const noexcept {
 }
 
 audio::EffectiveAudioSettings SdlAudioTransport::effectiveSettings() const noexcept {
-    return impl_ ? impl_->effective : audio::EffectiveAudioSettings{};
+    if (!impl_) {
+        return emptyEffectiveSettings();
+    }
+
+    struct SnapshotCache final {
+        const Impl* owner{};
+        audio::EffectiveAudioSettings settings = emptyEffectiveSettings();
+    };
+    thread_local SnapshotCache cache;
+    if (cache.owner != impl_.get()) {
+        cache.owner = impl_.get();
+        cache.settings = emptyEffectiveSettings();
+    }
+
+    constexpr std::uint32_t maxAttempts = 8;
+    for (std::uint32_t attempt = 0; attempt < maxAttempts; ++attempt) {
+        const auto before = impl_->published.sequence.load(std::memory_order_acquire);
+        if ((before & 1U) != 0) {
+            continue;
+        }
+
+        audio::EffectiveAudioSettings result;
+        result.sourceSampleRate =
+            impl_->published.effectiveSourceSampleRate.load(std::memory_order_relaxed);
+        result.sourceChannels =
+            impl_->published.effectiveSourceChannels.load(std::memory_order_relaxed);
+        result.deviceSampleRate =
+            impl_->published.effectiveDeviceSampleRate.load(std::memory_order_relaxed);
+        result.deviceChannels =
+            impl_->published.effectiveDeviceChannels.load(std::memory_order_relaxed);
+        result.deviceBufferFrames =
+            impl_->published.effectiveDeviceBufferFrames.load(std::memory_order_relaxed);
+        result.targetQueueMs =
+            impl_->published.effectiveTargetQueueMs.load(std::memory_order_relaxed);
+        result.refillLowWaterMs =
+            impl_->published.effectiveRefillLowWaterMs.load(std::memory_order_relaxed);
+        result.estimatedOutputLatencyMs = std::bit_cast<double>(
+            impl_->published.effectiveEstimatedOutputLatencyBits.load(std::memory_order_relaxed));
+        result.formatConverted =
+            impl_->published.effectiveFormatConverted.load(std::memory_order_relaxed) != 0;
+        result.defaultRouteMayMigrate =
+            impl_->published.effectiveDefaultRouteMayMigrate.load(std::memory_order_relaxed) != 0;
+
+        const auto after = impl_->published.sequence.load(std::memory_order_acquire);
+        if (before == after && (after & 1U) == 0) {
+            cache.settings = result;
+            return result;
+        }
+    }
+    return cache.settings;
 }
 
 auto SdlAudioTransport::prepareReplacement(audio::AudioClipHandle handle, double positionMs)
@@ -678,21 +775,11 @@ auto SdlAudioTransport::activateReplacement() -> core::Result<void> {
                                             "No replacement clip has been prepared"});
     }
     const bool wasPlaying = impl_->state == audio::PlaybackState::Playing;
-    const auto previousState = impl_->state;
-    const auto previousFrame = impl_->presentedFrame;
-    const auto previousSegmentStart = impl_->segmentStartFrame;
-    const auto previousSubmittedFrame = impl_->submittedFrame;
-    auto previousClip = std::move(impl_->clip);
     auto replacement = std::move(*impl_->replacementClip);
     impl_->replacementClip.reset();
     impl_->closeStream();
     auto opened = impl_->openLease(std::move(replacement), impl_->replacementFrame);
     if (!opened) {
-        impl_->clip = std::move(previousClip);
-        impl_->state = previousState;
-        impl_->presentedFrame = previousFrame;
-        impl_->segmentStartFrame = previousSegmentStart;
-        impl_->submittedFrame = previousSubmittedFrame;
         return impl_->enterError(std::move(opened.error()));
     }
     impl_->state = wasPlaying ? audio::PlaybackState::Playing : audio::PlaybackState::Paused;

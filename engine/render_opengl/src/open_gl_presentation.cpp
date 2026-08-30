@@ -42,6 +42,8 @@ constexpr std::uint64_t maxSessionBytes = 512ULL * 1024ULL * 1024ULL;
 constexpr std::uint32_t maxMeshVertices = 1'048'576;
 constexpr std::uint32_t maxMeshIndices = 3'145'728;
 constexpr std::uint32_t portableMaxTextureDimension = 8'192;
+// Adapter-local transparent sort quantization: 4096 depth bins per meter. Changing this constant
+// changes transparentDepthKey values and can change draw order for objects at nearby depths.
 constexpr double depthQuantization = 4096.0;
 constexpr double signedIntegerLimit = 0x1p63;
 
@@ -53,26 +55,8 @@ struct PresentationVertex final {
     float v;
 };
 
-struct DebugVertex final {
-    float x;
-    float y;
-    float z;
-    float red;
-    float green;
-    float blue;
-    float alpha;
-};
-
-struct PreparedDraw final {
-    std::size_t objectIndex{};
-    OpenGlDrawCommand command;
-    const detail::GpuMesh* mesh{};
-    const detail::GpuMaterial* material{};
-    const detail::GpuTexture* texture{};
-    const detail::GpuParameterizedProgram* program{};
-    std::array<const detail::GpuTexture*, playback::presentationMaxTextureBindings>
-        parameterizedTextures{};
-};
+using detail::DebugVertex;
+using detail::PreparedDraw;
 
 struct CuexisObjectStd140 final {
     float world[16]{};
@@ -167,6 +151,10 @@ void clearGlErrors() noexcept {
     return core::unexpected(resourceError(std::move(code), std::move(message), reference)
                                 .withContext("gl_error", std::to_string(errorCode)));
 }
+
+[[nodiscard]] auto cacheMeshBounds(const playback::PortableResource& resource,
+                                   const playback::PortableMesh& mesh, detail::GpuMesh& uploaded,
+                                   detail::BoundsProbeStats* stats) -> core::Result<void>;
 
 [[nodiscard]] auto shaderLog(GLuint shader) -> std::string {
     GLint length = 0;
@@ -326,6 +314,12 @@ void main() {
             mesh->uv0.empty() ? 0.0F : mesh->uv0[uvOffset + 1U]});
     }
 
+    detail::GpuMesh uploaded;
+    uploaded.reference = resource.reference;
+    if (auto cached = cacheMeshBounds(resource, *mesh, uploaded, nullptr); !cached) {
+        return core::unexpected(std::move(cached.error()));
+    }
+
     GLuint vertexArray = 0;
     GLuint vertexBuffer = 0;
     GLuint indexBuffer = 0;
@@ -333,8 +327,6 @@ void main() {
     glGenVertexArrays(1, &vertexArray);
     glGenBuffers(1, &vertexBuffer);
     glGenBuffers(1, &indexBuffer);
-    detail::GpuMesh uploaded;
-    uploaded.reference = resource.reference;
     uploaded.vertexArray = detail::UniqueVertexArray{vertexArray};
     uploaded.vertexBuffer = detail::UniqueBuffer{vertexBuffer};
     uploaded.indexBuffer = detail::UniqueBuffer{indexBuffer};
@@ -417,7 +409,10 @@ void main() {
             "render.opengl.presentation.resource_type_invalid",
             "Unlit Material resource has an incompatible portable value", &resource.reference));
     }
-    return detail::GpuMaterial{resource.reference, *material};
+    detail::GpuMaterial uploaded;
+    uploaded.reference = resource.reference;
+    uploaded.material = *material;
+    return uploaded;
 }
 
 [[nodiscard]] auto copyParameterizedMaterial(const playback::PortableResource& resource)
@@ -551,50 +546,92 @@ uploadParameterizedProgram(const playback::PortableResource& shaderResource,
         .fragmentEntry = shader->fragmentEntry,
     };
 
-    std::optional<shader::ShaderCacheRecord> record;
-    if (!cacheDirectory.empty()) {
-        shader::ShaderCacheStore store{cacheDirectory};
-        auto loaded = store.load(keyInput);
-        if (loaded) {
-            record = std::move(*loaded);
-        } else if (!compileEnabled || loaded.error().code() != shader::diagnosticCacheMissing) {
-            return core::unexpected(std::move(loaded.error()));
-        }
-    }
-
-    if (!record) {
 #ifdef CUEXIS_HAS_SHADER_TOOLS
-        if (!compileEnabled) {
-            return core::unexpected(
-                resourceError(std::string{shader::diagnosticCacheMissing},
-                              "Parameterized OpenGL prepare requires a CXSCCH01 cache or "
-                              "opt-in compile",
-                              &shaderResource.reference));
+    std::optional<shader::ShaderPipelineCache> pipeline;
+    std::optional<shader::ShaderCacheRecord> ownedRecord;
+    const shader::ShaderCacheRecord* record = nullptr;
+    if (!cacheDirectory.empty()) {
+        std::vector<std::string_view> declaredKeywords;
+        declaredKeywords.reserve(shader->variantKeywords.size());
+        for (const auto& keyword : shader->variantKeywords) {
+            declaredKeywords.emplace_back(keyword);
         }
+        std::vector<shader::ShaderDeclaredBinding> declaredBindings;
+        declaredBindings.reserve(shader->bindings.size());
+        for (const auto& binding : shader->bindings) {
+            declaredBindings.push_back(shader::ShaderDeclaredBinding{
+                .set = binding.set,
+                .binding = binding.binding,
+                .type = static_cast<shader::ShaderParameterType>(binding.type),
+                .name = binding.name,
+            });
+        }
+        std::vector<shader::ShaderDeclaredParameter> parameters;
+        parameters.reserve(shader->parameters.size());
+        for (const auto& parameter : shader->parameters) {
+            parameters.push_back(shader::ShaderDeclaredParameter{
+                .name = parameter.name,
+                .type = static_cast<shader::ShaderParameterType>(parameter.type),
+                .set = parameter.set,
+                .binding = parameter.binding,
+            });
+        }
+        const shader::ShaderCompileRequest compileRequest{
+            .vertexSource = shader->vertexSource,
+            .fragmentSource = shader->fragmentSource,
+            .vertexEntry = shader->vertexEntry,
+            .fragmentEntry = shader->fragmentEntry,
+            .declaredKeywords = declaredKeywords,
+            .selectedKeywords = selectedViews,
+            .declaredBindings = declaredBindings,
+            .declaredParameters = parameters,
+        };
+        pipeline.emplace(cacheDirectory);
+        auto prepared = pipeline->prepareCandidate(compileRequest, keyInput, compileEnabled);
+        if (!prepared) {
+            auto error = std::move(prepared.error());
+            error.withContext("asset_id", shaderResource.reference.assetId)
+                .withContext("resource_type", "shader");
+            return core::unexpected(std::move(error));
+        }
+        record = pipeline->candidate();
+    } else if (compileEnabled) {
         auto compiled = compileParameterizedArtifact(*shader, material.selectedKeywords);
         if (!compiled) {
             return core::unexpected(std::move(compiled.error()));
         }
-        shader::ShaderCacheRecord compiledRecord;
-        compiledRecord.sourceIdentity = shaderResource.reference.identity.sha256;
-        compiledRecord.vertexEntry = shader->vertexEntry;
-        compiledRecord.fragmentEntry = shader->fragmentEntry;
-        compiledRecord.selectedKeywords = material.selectedKeywords;
-        compiledRecord.artifact = std::move(*compiled);
-        if (!cacheDirectory.empty()) {
-            shader::ShaderCacheStore store{cacheDirectory};
-            if (auto stored = store.store(compiledRecord); !stored) {
-                return core::unexpected(std::move(stored.error()));
-            }
-        }
-        record = std::move(compiledRecord);
+        ownedRecord.emplace();
+        ownedRecord->sourceIdentity = shaderResource.reference.identity.sha256;
+        ownedRecord->vertexEntry = shader->vertexEntry;
+        ownedRecord->fragmentEntry = shader->fragmentEntry;
+        ownedRecord->selectedKeywords = material.selectedKeywords;
+        ownedRecord->artifact = std::move(*compiled);
+        record = &*ownedRecord;
+    }
+    if (record == nullptr) {
+        return core::unexpected(resourceError(
+            std::string{shader::diagnosticCacheMissing},
+            "Parameterized OpenGL prepare requires a CXSCCH01 cache or opt-in compile",
+            &shaderResource.reference));
+    }
 #else
+    std::optional<shader::ShaderCacheRecord> ownedRecord;
+    if (!cacheDirectory.empty()) {
+        shader::ShaderCacheStore store{cacheDirectory};
+        auto loaded = store.load(keyInput);
+        if (!loaded) {
+            return core::unexpected(std::move(loaded.error()));
+        }
+        ownedRecord = std::move(*loaded);
+    }
+    if (!ownedRecord) {
         (void)compileEnabled;
         return core::unexpected(resourceError(
             std::string{shader::diagnosticCacheMissing},
             "Parameterized OpenGL prepare requires a CXSCCH01 cache", &shaderResource.reference));
-#endif
     }
+    const auto* record = &*ownedRecord;
+#endif
 
     auto linked =
         linkGlsl330Program(record->artifact.vertexGlsl330.c_str(),
@@ -630,15 +667,27 @@ uploadParameterizedProgram(const playback::PortableResource& shaderResource,
                  GL_DYNAMIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-    auto bindings = record->artifact.reflection.bindings;
-    std::sort(bindings.begin(), bindings.end(), [](const auto& left, const auto& right) {
-        return std::tie(left.set, left.binding, left.name) <
-               std::tie(right.set, right.binding, right.name);
-    });
+    uploaded.numericUniforms.reserve(uploaded.reflection.parameters.size());
+    for (const auto& parameter : uploaded.reflection.parameters) {
+        if (parameter.type == shader::ShaderParameterType::Texture2D) {
+            continue;
+        }
+        detail::GpuNumericUniformBinding mapped;
+        mapped.name = parameter.name;
+        mapped.location = glGetUniformLocation(*linked, parameter.name.c_str());
+        uploaded.numericUniforms.push_back(std::move(mapped));
+    }
+
+    auto reflectionBindings = record->artifact.reflection.bindings;
+    std::sort(reflectionBindings.begin(), reflectionBindings.end(),
+              [](const auto& left, const auto& right) {
+                  return std::tie(left.set, left.binding, left.name) <
+                         std::tie(right.set, right.binding, right.name);
+              });
     GLint textureUnit = 0;
-    uploaded.textures.reserve(bindings.size());
+    uploaded.textures.reserve(reflectionBindings.size());
     glUseProgram(*linked);
-    for (const auto& binding : bindings) {
+    for (const auto& binding : reflectionBindings) {
         if (binding.set == 0 && binding.binding == 0) {
             continue;
         }
@@ -684,6 +733,35 @@ template <typename Resource>
             return referenceKey(resource.reference) < referenceKey(candidate);
         });
     return found != resources.end() && found->reference == reference ? &*found : nullptr;
+}
+
+[[nodiscard]] auto cacheMeshBounds(const playback::PortableResource& resource,
+                                   const playback::PortableMesh& mesh, detail::GpuMesh& uploaded,
+                                   detail::BoundsProbeStats* stats) -> core::Result<void> {
+    if (stats != nullptr) {
+        ++stats->meshBoundsParses;
+    }
+    for (std::size_t component = 0; component < 3; ++component) {
+        if (!std::isfinite(mesh.boundsMin[component]) ||
+            !std::isfinite(mesh.boundsMax[component])) {
+            return core::unexpected(nonFiniteError({}, "mesh_bounds")
+                                        .withContext("asset_id", resource.reference.assetId));
+        }
+        uploaded.boundsMin[component] = mesh.boundsMin[component];
+        uploaded.boundsMax[component] = mesh.boundsMax[component];
+    }
+    uploaded.boundsCenter[0] =
+        (static_cast<double>(mesh.boundsMin[0]) + static_cast<double>(mesh.boundsMax[0])) / 2.0;
+    uploaded.boundsCenter[1] =
+        (static_cast<double>(mesh.boundsMin[1]) + static_cast<double>(mesh.boundsMax[1])) / 2.0;
+    uploaded.boundsCenter[2] =
+        (static_cast<double>(mesh.boundsMin[2]) + static_cast<double>(mesh.boundsMax[2])) / 2.0;
+    if (!std::all_of(uploaded.boundsCenter.begin(), uploaded.boundsCenter.end(),
+                     [](double value) { return std::isfinite(value); })) {
+        return core::unexpected(
+            nonFiniteError({}, "mesh_bounds").withContext("asset_id", resource.reference.assetId));
+    }
+    return {};
 }
 
 [[nodiscard]] auto finiteMatrix(const float (&matrix)[16]) noexcept -> bool {
@@ -845,7 +923,8 @@ void hashCommand(SummaryHash& hash, const OpenGlDrawCommand& command) noexcept {
 [[nodiscard]] auto buildDraws(const playback::FrameSnapshot& snapshot,
                               const detail::PresentationResourceSet& resources,
                               OpenGlDrawSummary& summary, std::vector<PreparedDraw>& opaque,
-                              std::vector<PreparedDraw>& transparent) -> core::Result<void> {
+                              std::vector<PreparedDraw>& transparent, bool needSummary)
+    -> core::Result<void> {
     if (snapshot.objects.size() > maxNormalizedRecords) {
         return core::unexpected(
             core::Error{"playback.presentation.frame.command_budget_exceeded",
@@ -985,35 +1064,10 @@ void hashCommand(SummaryHash& hash, const OpenGlDrawCommand& command) noexcept {
             return core::unexpected(nonFiniteError(object.id, "effective_alpha"));
         }
 
-        const auto meshResource = std::find_if(
-            resources.resources.begin(), resources.resources.end(), [&](const auto& candidate) {
-                return candidate != nullptr && candidate->reference == *object.mesh;
-            });
-        if (meshResource == resources.resources.end()) {
-            return core::unexpected(
-                frameError("Mesh bounds are unavailable", object.id, &*object.mesh));
-        }
-        const auto* portableMesh = std::get_if<playback::PortableMesh>(&(*meshResource)->value);
-        if (portableMesh == nullptr) {
-            return core::unexpected(
-                frameError("Mesh resource value is incompatible", object.id, &*object.mesh));
-        }
         Point3 localCenter;
-        for (std::size_t component = 0; component < 3; ++component) {
-            if (!std::isfinite(portableMesh->boundsMin[component]) ||
-                !std::isfinite(portableMesh->boundsMax[component])) {
-                return core::unexpected(nonFiniteError(object.id, "mesh_bounds"));
-            }
-        }
-        localCenter.x = (static_cast<double>(portableMesh->boundsMin[0]) +
-                         static_cast<double>(portableMesh->boundsMax[0])) /
-                        2.0;
-        localCenter.y = (static_cast<double>(portableMesh->boundsMin[1]) +
-                         static_cast<double>(portableMesh->boundsMax[1])) /
-                        2.0;
-        localCenter.z = (static_cast<double>(portableMesh->boundsMin[2]) +
-                         static_cast<double>(portableMesh->boundsMax[2])) /
-                        2.0;
+        localCenter.x = mesh->boundsCenter[0];
+        localCenter.y = mesh->boundsCenter[1];
+        localCenter.z = mesh->boundsCenter[2];
         const auto worldCenter = transformPoint(object.worldMatrix, localCenter);
         const auto viewCenter = transformPoint(snapshot.camera.viewMatrix, worldCenter);
         if (!finitePoint(localCenter) || !finitePoint(worldCenter) || !finitePoint(viewCenter)) {
@@ -1055,13 +1109,15 @@ void hashCommand(SummaryHash& hash, const OpenGlDrawCommand& command) noexcept {
                std::tie(right.command.objectId, right.objectIndex);
     });
 
-    summary.opaque.reserve(opaque.size());
-    summary.transparent.reserve(transparent.size());
-    for (const auto& draw : opaque) {
-        summary.opaque.push_back(draw.command);
-    }
-    for (const auto& draw : transparent) {
-        summary.transparent.push_back(draw.command);
+    if (needSummary) {
+        summary.opaque.reserve(opaque.size());
+        summary.transparent.reserve(transparent.size());
+        for (const auto& draw : opaque) {
+            summary.opaque.push_back(draw.command);
+        }
+        for (const auto& draw : transparent) {
+            summary.transparent.push_back(draw.command);
+        }
     }
     return {};
 }
@@ -1112,8 +1168,7 @@ void drawUnlitCommands(const detail::PresentationPipeline& pipeline,
     }
 }
 
-void setNumericUniform(GLuint program, const playback::ShaderParameterValue& parameter) noexcept {
-    const GLint location = glGetUniformLocation(program, parameter.name.c_str());
+void setNumericUniform(GLint location, const playback::ShaderParameterValue& parameter) noexcept {
     if (location < 0) {
         return;
     }
@@ -1164,8 +1219,17 @@ void drawParameterizedCommands(const std::array<float, 16>& viewProjection,
         glBindBuffer(GL_UNIFORM_BUFFER, draw.program->cuexisObject.value);
         glBufferSubData(GL_UNIFORM_BUFFER, 0, static_cast<GLsizeiptr>(sizeof(object)), &object);
         glBindBufferBase(GL_UNIFORM_BUFFER, 0, draw.program->cuexisObject.value);
-        for (const auto& parameter : draw.material->parameterizedMaterial.parameters) {
-            setNumericUniform(draw.program->program.value, parameter);
+        for (std::size_t parameterIndex = 0;
+             parameterIndex < draw.material->parameterizedMaterial.parameters.size();
+             ++parameterIndex) {
+            const auto& parameter = draw.material->parameterizedMaterial.parameters[parameterIndex];
+            if (parameter.type == playback::ShaderParameterType::Texture2D) {
+                continue;
+            }
+            if (parameterIndex < draw.material->numericUniformLocations.size()) {
+                setNumericUniform(draw.material->numericUniformLocations[parameterIndex],
+                                  parameter);
+            }
         }
         for (std::size_t index = 0; index < draw.program->textures.size(); ++index) {
             const auto& binding = draw.program->textures[index];
@@ -1227,6 +1291,54 @@ void drawPresentationCommands(const detail::PresentationPipeline& pipeline,
 }
 
 } // namespace
+
+auto detail::probeBuildDraws(const playback::FrameSnapshot& snapshot,
+                             const playback::PresentationResourceManifest& manifest,
+                             std::span<const playback::PortableResourcePtr> resources,
+                             detail::BoundsProbeStats* stats) -> core::Result<OpenGlDrawSummary> {
+    detail::PresentationResourceSet set;
+    set.manifest = manifest;
+    set.resources.assign(resources.begin(), resources.end());
+    set.meshes.reserve(resources.size());
+    set.materials.reserve(resources.size());
+
+    for (const auto& resource : resources) {
+        if (!resource) {
+            continue;
+        }
+        if (std::holds_alternative<playback::PortableMesh>(resource->value)) {
+            detail::GpuMesh mesh;
+            mesh.reference = resource->reference;
+            const auto& portableMesh = std::get<playback::PortableMesh>(resource->value);
+            mesh.indexCount = static_cast<GLsizei>(portableMesh.indices.size());
+            if (auto cached = cacheMeshBounds(*resource, portableMesh, mesh, stats); !cached) {
+                return core::unexpected(std::move(cached.error()));
+            }
+            set.meshes.push_back(std::move(mesh));
+        }
+        if (const auto* material = std::get_if<playback::PortableUnlitMaterial>(&resource->value);
+            material != nullptr) {
+            detail::GpuMaterial materialCopy;
+            materialCopy.reference = resource->reference;
+            materialCopy.material = *material;
+            set.materials.push_back(std::move(materialCopy));
+        }
+    }
+
+    const auto byReference = [](const auto& left, const auto& right) {
+        return referenceKey(left.reference) < referenceKey(right.reference);
+    };
+    std::sort(set.meshes.begin(), set.meshes.end(), byReference);
+    std::sort(set.materials.begin(), set.materials.end(), byReference);
+
+    OpenGlDrawSummary summary;
+    std::vector<PreparedDraw> opaque;
+    std::vector<PreparedDraw> transparent;
+    if (auto result = buildDraws(snapshot, set, summary, opaque, transparent, true); !result) {
+        return core::unexpected(std::move(result.error()));
+    }
+    return summary;
+}
 
 auto builtInPresentationCapabilities(std::uint32_t maxTextureDimension, bool debugPass) noexcept
     -> playback::PresentationCapabilities {
@@ -1537,6 +1649,22 @@ auto OpenGlBackend::preparePresentation(playback::PreparedPlayback& prepared,
             const auto existing = programIndexByKey.find(key);
             if (existing != programIndexByKey.end()) {
                 material.programIndex = existing->second;
+                const auto& cachedProgram = candidate.programs[material.programIndex];
+                material.numericUniformLocations.reserve(
+                    material.parameterizedMaterial.parameters.size());
+                for (const auto& parameter : material.parameterizedMaterial.parameters) {
+                    if (parameter.type == playback::ShaderParameterType::Texture2D) {
+                        material.numericUniformLocations.push_back(-1);
+                        continue;
+                    }
+                    const auto binding = std::find_if(
+                        cachedProgram.numericUniforms.begin(), cachedProgram.numericUniforms.end(),
+                        [&](const detail::GpuNumericUniformBinding& candidateBinding) {
+                            return candidateBinding.name == parameter.name;
+                        });
+                    material.numericUniformLocations.push_back(
+                        binding == cachedProgram.numericUniforms.end() ? -1 : binding->location);
+                }
                 continue;
             }
             const auto shaderResource = std::find_if(
@@ -1559,6 +1687,22 @@ auto OpenGlBackend::preparePresentation(playback::PreparedPlayback& prepared,
             material.programIndex = candidate.programs.size();
             programIndexByKey.emplace(std::move(key), material.programIndex);
             candidate.programs.push_back(std::move(*program));
+            const auto& cachedProgram = candidate.programs[material.programIndex];
+            material.numericUniformLocations.reserve(
+                material.parameterizedMaterial.parameters.size());
+            for (const auto& parameter : material.parameterizedMaterial.parameters) {
+                if (parameter.type == playback::ShaderParameterType::Texture2D) {
+                    material.numericUniformLocations.push_back(-1);
+                    continue;
+                }
+                const auto binding = std::find_if(
+                    cachedProgram.numericUniforms.begin(), cachedProgram.numericUniforms.end(),
+                    [&](const detail::GpuNumericUniformBinding& candidateBinding) {
+                        return candidateBinding.name == parameter.name;
+                    });
+                material.numericUniformLocations.push_back(
+                    binding == cachedProgram.numericUniforms.end() ? -1 : binding->location);
+            }
         }
 
         const std::uint64_t generation = ++presentation_->nextGeneration;
@@ -1582,6 +1726,8 @@ auto OpenGlBackend::preparePresentation(playback::PreparedPlayback& prepared,
     }
 }
 
+// Activation and discard are owner-thread, single-pending-candidate operations. Contract violations
+// terminate so a stale or foreign GPU resource set cannot corrupt the active cache.
 void OpenGlBackend::activatePresentation(OpenGlPresentationCandidate&& candidate) noexcept {
     if (!SDL_IsMainThread() || !ownerThread_.isCurrent()) {
         std::terminate();
@@ -1661,6 +1807,10 @@ auto OpenGlBackend::renderPresentationFrame(const playback::FrameSnapshot& snaps
         !SDL_GL_MakeCurrent(nativeWindow, static_cast<SDL_GLContext>(context_))) {
         return core::unexpected(core::Error{"render.opengl.context_current_failed", sdlError()});
     }
+    auto& state = *presentation_;
+    state.opaqueScratch.clear();
+    state.transparentScratch.clear();
+    state.debugVerticesScratch.clear();
     presentation_->retired.reset();
 
     OpenGlDrawSummary preparedSummary;
@@ -1684,18 +1834,26 @@ auto OpenGlBackend::renderPresentationFrame(const playback::FrameSnapshot& snaps
     }
 
     try {
-        std::vector<PreparedDraw> opaque;
-        std::vector<PreparedDraw> transparent;
-        if (auto built =
-                buildDraws(snapshot, *presentation_->active, preparedSummary, opaque, transparent);
+        const auto reserveCount = std::min(snapshot.objects.size(), maxNormalizedRecords);
+        state.opaqueScratch.reserve(reserveCount);
+        state.transparentScratch.reserve(reserveCount);
+        if (preparedSummary.debugPassEnabled && debugScene != nullptr) {
+            state.debugVerticesScratch.reserve(
+                std::min(debugScene->size(), render::RenderScene::maxCommandCount) * 2U);
+        }
+        const bool needSummary = summary != nullptr;
+        if (auto built = buildDraws(snapshot, *presentation_->active, preparedSummary,
+                                    state.opaqueScratch, state.transparentScratch, needSummary);
             !built) {
             return core::unexpected(std::move(built.error()));
         }
-        preparedSummary.digest = summaryDigest(preparedSummary);
+        if (needSummary) {
+            preparedSummary.digest = summaryDigest(preparedSummary);
+        }
 
-        std::vector<DebugVertex> debugVertices;
         if (preparedSummary.debugPassEnabled) {
-            if (auto collected = collectDebugVertices(debugScene, debugVertices); !collected) {
+            if (auto collected = collectDebugVertices(debugScene, state.debugVerticesScratch);
+                !collected) {
                 return core::unexpected(std::move(collected.error()));
             }
         }
@@ -1716,8 +1874,10 @@ auto OpenGlBackend::renderPresentationFrame(const playback::FrameSnapshot& snaps
 
         const auto viewProjection =
             multiplyMatrices(preparedSummary.projectionMatrix, preparedSummary.viewMatrix);
-        drawPresentationCommands(presentation_->pipeline, viewProjection, opaque, false);
-        drawPresentationCommands(presentation_->pipeline, viewProjection, transparent, true);
+        drawPresentationCommands(presentation_->pipeline, viewProjection, state.opaqueScratch,
+                                 false);
+        drawPresentationCommands(presentation_->pipeline, viewProjection, state.transparentScratch,
+                                 true);
         if (auto checked = checkGl("render.opengl.presentation.draw_failed",
                                    "OpenGL rejected Portable Presentation drawing");
             !checked) {
@@ -1725,7 +1885,8 @@ auto OpenGlBackend::renderPresentationFrame(const playback::FrameSnapshot& snaps
         }
 
         OpenGlPixelProbe preparedProbe;
-        preparedProbe.presentationDrawn = !opaque.empty() || !transparent.empty();
+        preparedProbe.presentationDrawn =
+            !state.opaqueScratch.empty() || !state.transparentScratch.empty();
         if (pixelProbe != nullptr && width > 0 && height > 0) {
             glReadPixels(width / 2, height / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE,
                          preparedProbe.rgba.data());
@@ -1736,7 +1897,7 @@ auto OpenGlBackend::renderPresentationFrame(const playback::FrameSnapshot& snaps
             }
         }
 
-        if (!debugVertices.empty()) {
+        if (!state.debugVerticesScratch.empty()) {
             glDisable(GL_BLEND);
             glDepthMask(GL_TRUE);
             glEnable(GL_DEPTH_TEST);
@@ -1744,10 +1905,11 @@ auto OpenGlBackend::renderPresentationFrame(const playback::FrameSnapshot& snaps
             glUniformMatrix4fv(viewProjectionLocation_, 1, GL_FALSE, viewProjection.data());
             glBindVertexArray(debugVertexArray_);
             glBindBuffer(GL_ARRAY_BUFFER, debugVertexBuffer_);
-            glBufferData(GL_ARRAY_BUFFER,
-                         static_cast<GLsizeiptr>(debugVertices.size() * sizeof(DebugVertex)),
-                         debugVertices.data(), GL_DYNAMIC_DRAW);
-            glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(debugVertices.size()));
+            glBufferData(
+                GL_ARRAY_BUFFER,
+                static_cast<GLsizeiptr>(state.debugVerticesScratch.size() * sizeof(DebugVertex)),
+                state.debugVerticesScratch.data(), GL_DYNAMIC_DRAW);
+            glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(state.debugVerticesScratch.size()));
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glBindVertexArray(0);
             glUseProgram(0);

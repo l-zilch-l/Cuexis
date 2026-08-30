@@ -33,6 +33,9 @@ struct ConfigurationState final {
     std::uint64_t activeGeneration{};
 };
 
+// SDL process-wide GL attributes and their generation token are mutable global state. All reads and
+// writes are serialized by the SDL main-thread contract; this state is not thread-safe by itself.
+// The context created from this state is made current and used on that same owner thread.
 ConfigurationState configurationState;
 
 [[nodiscard]] auto sdlError() -> std::string {

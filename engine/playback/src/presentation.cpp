@@ -1882,7 +1882,7 @@ struct BuiltResource final {
 } // namespace
 
 auto preparePresentation(const chart::ChartRuntime& chartRuntime,
-                         assets::ResourceManager* resourceManager)
+                         assets::ResourceManager* resourceManager, bool rejectLegacy)
     -> core::Result<std::optional<PreparedPresentation>> {
     try {
         auto requiredResult = collectRequiredResources(chartRuntime);
@@ -1913,6 +1913,21 @@ auto preparePresentation(const chart::ChartRuntime& chartRuntime,
         std::map<std::string, assets::MeshLease, std::less<>> meshLeases;
         std::map<std::string, assets::MaterialLease, std::less<>> materialLeases;
         bool portableCandidate = false;
+        const auto objectIdFor = [&](std::string_view assetId,
+                                     PresentationResourceType type) -> std::string_view {
+            for (const auto& object : chartRuntime.objects) {
+                if (!object.components.renderable) {
+                    continue;
+                }
+                const auto& renderable = *object.components.renderable;
+                const auto& referencedAsset =
+                    type == PresentationResourceType::Mesh ? renderable.mesh : renderable.material;
+                if (referencedAsset.value == assetId) {
+                    return object.id.value;
+                }
+            }
+            return {};
+        };
         for (const auto& [assetId, type] : required) {
             const auto* record = resourceManager->database().find(assetId);
             if (record == nullptr || record->type != indexedType(type)) {
@@ -1931,6 +1946,17 @@ auto preparePresentation(const chart::ChartRuntime& chartRuntime,
                     return core::unexpected(
                         unavailableResource(assetId, type, std::move(loaded.error())));
                 }
+                if (rejectLegacy && !looksPortable(loaded->resource().bytes())) {
+                    auto error = resourceError(
+                        "playback.chart.v4.requires_portable_presentation",
+                        "Chart v4 renderable requires a portable CXPRES01 presentation payload",
+                        assetId, type);
+                    error.withContext("field_path", std::string{"$/resources/"} + assetId);
+                    if (const auto objectId = objectIdFor(assetId, type); !objectId.empty()) {
+                        error.withContext("object_id", std::string{objectId});
+                    }
+                    return core::unexpected(std::move(error));
+                }
                 portableCandidate = portableCandidate || looksPortable(loaded->resource().bytes());
                 meshLeases.emplace(assetId, std::move(*loaded));
             } else {
@@ -1938,6 +1964,17 @@ auto preparePresentation(const chart::ChartRuntime& chartRuntime,
                 if (!loaded) {
                     return core::unexpected(
                         unavailableResource(assetId, type, std::move(loaded.error())));
+                }
+                if (rejectLegacy && !looksPortable(loaded->resource().bytes())) {
+                    auto error = resourceError(
+                        "playback.chart.v4.requires_portable_presentation",
+                        "Chart v4 renderable requires a portable CXPRES01 presentation payload",
+                        assetId, type);
+                    error.withContext("field_path", std::string{"$/resources/"} + assetId);
+                    if (const auto objectId = objectIdFor(assetId, type); !objectId.empty()) {
+                        error.withContext("object_id", std::string{objectId});
+                    }
+                    return core::unexpected(std::move(error));
                 }
                 portableCandidate = portableCandidate || looksPortable(loaded->resource().bytes());
                 materialLeases.emplace(assetId, std::move(*loaded));
@@ -2125,7 +2162,7 @@ auto preparePresentation(const chart::ChartRuntime& chartRuntime,
             parsedTextures.emplace(assetId, std::move(*parsed));
         }
 
-        std::map<PresentationResourceKey, BuiltResource> built;
+        std::map<PresentationResourceKey, BuiltResource, PresentationResourceKeyLess> built;
         std::map<std::array<std::uint8_t, 32>, PortableResourcePtr> identities;
         const auto addResource =
             [&](PortableResourcePtr resource, std::uint64_t encodedByteCount,
@@ -2191,7 +2228,7 @@ auto preparePresentation(const chart::ChartRuntime& chartRuntime,
         for (auto& [assetId, parsed] : parsedMaterials) {
             std::vector<PresentationResourceRef> dependencies;
             if (parsed.textureAssetId) {
-                const auto found = built.find(PresentationResourceKey{
+                const auto found = built.find(PresentationResourceKeyView{
                     *parsed.textureAssetId, PresentationResourceType::Texture2D});
                 if (found == built.end()) {
                     return core::unexpected(
@@ -2214,8 +2251,8 @@ auto preparePresentation(const chart::ChartRuntime& chartRuntime,
         }
         for (auto& [assetId, parsed] : parsedParameterized) {
             std::vector<PresentationResourceRef> dependencies;
-            const auto shader = built.find(
-                PresentationResourceKey{parsed.shaderAssetId, PresentationResourceType::Shader});
+            const auto shader = built.find(PresentationResourceKeyView{
+                parsed.shaderAssetId, PresentationResourceType::Shader});
             if (shader == built.end()) {
                 return core::unexpected(
                     resourceError("playback.presentation.material.shader_reference_invalid",
@@ -2228,7 +2265,7 @@ auto preparePresentation(const chart::ChartRuntime& chartRuntime,
                 if (!parameter.texture) {
                     continue;
                 }
-                const auto found = built.find(PresentationResourceKey{
+                const auto found = built.find(PresentationResourceKeyView{
                     parameter.texture->assetId, PresentationResourceType::Texture2D});
                 if (found == built.end()) {
                     return core::unexpected(
@@ -2315,7 +2352,7 @@ auto findPresentationResource(const PreparedPresentation& presentation,
                               const PresentationResourceRef& reference) noexcept
     -> const PortableResourcePtr* {
     const auto found =
-        presentation.resources.find(PresentationResourceKey{reference.assetId, reference.type});
+        presentation.resources.find(PresentationResourceKeyView{reference.assetId, reference.type});
     if (found == presentation.resources.end() || found->second->reference != reference) {
         return nullptr;
     }
@@ -2325,10 +2362,7 @@ auto findPresentationResource(const PreparedPresentation& presentation,
 auto findPresentationResource(const PreparedPresentation& presentation, std::string_view assetId,
                               PresentationResourceType type) noexcept
     -> const PortableResourcePtr* {
-    const auto found = std::find_if(
-        presentation.resources.begin(), presentation.resources.end(), [&](const auto& entry) {
-            return entry.first.assetId == assetId && entry.first.type == type;
-        });
+    const auto found = presentation.resources.find(PresentationResourceKeyView{assetId, type});
     if (found == presentation.resources.end()) {
         return nullptr;
     }

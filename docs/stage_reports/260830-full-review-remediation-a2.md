@@ -1,0 +1,65 @@
+# 260829 Full Review 整改 A2
+
+状态：completed；2026-08-30 本地实现与门禁完成
+
+本报告记录 Full Review 第 1 批 Lane A A2 的 importer/cache-key 收敛证据。原始审查报告
+`260829-full-review.md` 与 `docs/CURRENT_STATUS.md` 未修改；本报告不改变 Stage 4/5 状态。
+
+## 基线与范围
+
+- 基线 SHA：`8d834c117eb9856f32f5f6a8b5f3bd577616d6e9`
+- 实现 SHA：`4cba79de25a2986b5c1c2a9662752f4bcd8cb2f1`
+- 实现分支：`260829-full-review`
+- 任务：`AG-A2-IMPORTER`、`AG-A2-CACHE-KEY`
+- Finding：CH-02、CX-02、CX-05、CX-23
+- 决策依据：[260829 Full Review 整改计划](../stage_plans/260829-full-review-remediation-plan.md)
+  §9.1 A2，及已接受的 [ADR 0041](../adr/0041-legacy-format-exit-policy.md)
+
+## 实现与合同
+
+- `cuexis_asset_importer --compile` 在没有 `--cache-dir` 时保持只编译 artifact 的行为。
+- 传入 `--cache-dir` 时默认必须提供 `--identity HEX64`；缺少 identity 返回
+  `shader.cache.key_invalid`，并且在任何 cache 目录或 `CXSCCH01` 文件被创建前失败。
+- `--standalone-cache` 是唯一允许 standalone source hash 的显式开发/调试 opt-in；它不能与
+  `--identity` 组合。大小写 hex 仍接受，并在派生 key 前解析为相同的 32-byte binary identity。
+- Shader cache 在 record、lookup 和 pipeline prepare 边界拒绝“零 semantic source identity 加
+  非空 profile/keyword/entry/tool metadata”的半空组合，使用稳定
+  `shader.cache.key_invalid`。store 在创建目录前完成验证，prepare 在 load/compile 前完成验证，
+  因此失败不会落盘或发布 candidate。
+- `CXSCCH01` v1 envelope、有效 cache key 的 canonical 编码、排序/去重、lowercase SHA-256
+  filename、FrameDigest v1-v3、Playback identity/canonical bytes、candidate/active rollback 和
+  Playback-only consumer 边界均保持不变。
+
+## 修改文件
+
+- `cmake/VerifyAssetImporter.cmake`
+- `docs/formats/MATERIAL_SHADER.md`
+- `engine/shader/src/shader_cache.cpp`
+- `engine/shader/src/shader_cache_internal.hpp`
+- `engine/shader/src/shader_pipeline_cache.cpp`
+- `tests/shader/shader_cache_tests.cpp`
+- `tools/asset_importer/main.cpp`
+
+## 验证
+
+- VS 2026 x64 Developer Prompt：`cmake --preset debug-shader-tools --fresh` 和
+  `cmake --build --preset debug-shader-tools --clean-first` 通过，243 个目标完成。
+- shader-tools 聚焦 CTest（A2 importer、A2 cache-key、S5-F/S5-H、render/Player diagnostics、
+  CFU-F3 与 external consumer regex）：31/31 通过；7 个 external/package consumer 全部通过。
+- `ctest --test-dir out/build/debug-shader-tools -R "A2|cuexis_asset_importer_tool_tests"`：5/5 通过。
+- VS 2026 x64 Developer Prompt：`cmake --preset debug --fresh` 和
+  `cmake --build --preset debug --clean-first` 通过，235 个目标完成。
+- Debug architecture 与 7 个 external/package consumer：8/8 通过；Chart、Playback、Audio
+  可执行测试分别为 896 assertions / 121 cases、9925 / 102、86 / 10，全部通过。
+- `cuexis_format_check`、`python -B tools/check_docs.py`、
+  `python -B tools/update_version.py --check` 和 `git diff --check` 全部通过。
+
+普通 PowerShell 没有加载 MSVC `INCLUDE`/`LIB` 环境时，构建会在标准库头文件前失败；所有本批
+C++/consumer 验证均在同一 VS Developer Prompt 下重跑并通过。
+
+## 残余风险与后续
+
+本批不实现 Chart/CXC parse-once、RT-29、大规模 World/Animation 优化或大包解析优化。A3 的
+Player cache consumption 已有既有本地 checkpoint，本报告只关闭 A2 的 importer/key-domain
+收敛；Linux、MinGW、MSVC 和 shader-tools hosted revalidation 仍需在最终实现 SHA 上执行。未执行
+push，也尚未更新 `docs/CURRENT_STATUS.md`。

@@ -1,7 +1,5 @@
 #include <cuexis/animation/animation_sample.hpp>
 
-#include "animation_math.hpp"
-
 #include <cuexis/animation/animation_diagnostics.hpp>
 #include <cuexis/core/error.hpp>
 #include <cuexis/core/math.hpp>
@@ -19,33 +17,6 @@ namespace {
 
 [[nodiscard]] auto beatOverflow(std::string_view message) -> core::Error {
     return core::Error{std::string{sampleBeatOverflow}, std::string{message}};
-}
-
-[[nodiscard]] auto hermiteProgress(double value, double startSlope, double endSlope) noexcept
-    -> double {
-    const double t = std::clamp(value, 0.0, 1.0);
-    const double squared = t * t;
-    const double cubed = squared * t;
-    return (-2.0 + startSlope + endSlope) * cubed + (3.0 - 2.0 * startSlope - endSlope) * squared +
-           startSlope * t;
-}
-
-[[nodiscard]] auto lerp(const core::Vec3& left, const core::Vec3& right, double t) noexcept
-    -> core::Vec3 {
-    const auto blend = static_cast<float>(t);
-    return core::Vec3{left.x + (right.x - left.x) * blend, left.y + (right.y - left.y) * blend,
-                      left.z + (right.z - left.z) * blend};
-}
-
-[[nodiscard]] auto slerp(const core::Quat& left, const core::Quat& right, double t)
-    -> core::Result<core::Quat> {
-    auto value = shortestPathSlerp(left, right, t);
-    if (!value) {
-        return core::unexpected(core::Error{std::string{sampleQuaternionInvalid},
-                                            "Quaternion interpolation produced an invalid value"}
-                                    .withCause(std::move(value.error())));
-    }
-    return *value;
 }
 
 [[nodiscard]] auto interpolate(const chart::AnimationValue& left,
@@ -70,7 +41,7 @@ namespace {
             return core::unexpected(core::Error{std::string{sampleValueTypeMismatch},
                                                 "Animation segment value types differ"});
         }
-        const auto value = lerp(*leftVector, *rightVector, t);
+        const auto value = core::lerp(*leftVector, *rightVector, t);
         if (!core::isFinite(value)) {
             return core::unexpected(core::Error{std::string{sampleNonFinite},
                                                 "Animation vector interpolation overflowed"});
@@ -83,9 +54,11 @@ namespace {
         return core::unexpected(core::Error{std::string{sampleValueTypeMismatch},
                                             "Animation segment value types differ"});
     }
-    auto value = slerp(*leftRotation, *rightRotation, t);
+    auto value = core::slerp(*leftRotation, *rightRotation, t);
     if (!value) {
-        return core::unexpected(std::move(value.error()));
+        return core::unexpected(core::Error{std::string{sampleQuaternionInvalid},
+                                            "Quaternion interpolation produced an invalid value"}
+                                    .withCause(std::move(value.error())));
     }
     return chart::AnimationValue{*value};
 }
@@ -129,7 +102,7 @@ namespace {
     }
     return interpolate(
         segment.startValue, segment.endValue,
-        hermiteProgress(normalized->toDouble(), segment.startSlope, segment.endSlope));
+        core::hermiteProgress(normalized->toDouble(), segment.startSlope, segment.endSlope));
 }
 
 [[nodiscard]] auto sampleTrack(const chart::AnimationTrack& track, chart::RationalBeat localBeat)

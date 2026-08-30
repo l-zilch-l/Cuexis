@@ -150,14 +150,18 @@ Beat、`inStop` 与 `stopProgress`。更新顺序固定为 Behavior evaluate -> 
 Transform/FOV/Visibility/Material resolver -> World transform update。Resolver 每帧从 prepare
 时捕获的初始值重建稀疏属性；所有候选必须全部校验通过后才一次提交，不发布半帧结果。
 连续 Event、Step Event、Stop、Seek、Reload 和负 Beat 都按目标绝对时间重采样，不依赖帧率
-或 EnTT 遍历顺序。预热后的 `PlaybackSession::update()` 与复用 destination 的
-`extractFrame()` 不分配。
+或 EnTT 遍历顺序。对于不包含 Animation 的会话，预热后的 `PlaybackSession::update()` 与复用
+destination 的 `extractFrame()` 不分配；包含 Animation 的会话遵循 Stage 4 已定义的有界分配
+合同，本节不作全路径零分配承诺。
 
 ## Stage 2 调试快照
 
 内部 `RuntimeSession::configureDebug()` 显式启用固定容量调试记录，容量上限为 65536。每条
 `RuntimeDebugRecord` 保存 ChartObjectId、Property、初始基准、命中事件索引、归一化进度、
-Behavior 输出和最终解析值。`debugSnapshot()` 返回拥有型副本；容量耗尽时设置 `truncated`。
+Behavior 输出、Animation 输出、Host/Preview Override、最终解析值、来源层、冲突标记以及各
+Animation Layer 的 identity、priority、weight、mask 和 value。Layer 字段与
+[ANIMATION_MIXING.md](../formats/ANIMATION_MIXING.md) 的 Stage 4 求值合同保持一致。`debugSnapshot()`
+返回拥有型副本；容量耗尽时设置 `truncated`。
 
 调试关闭时不记录也不产生额外帧分配。该接口属于内部 Runtime/Studio 诊断边界，不进入
 Playback `FrameSnapshot`，也不暴露内部指针。宿主只通过 capability、结构化 Diagnostics 与

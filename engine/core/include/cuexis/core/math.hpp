@@ -55,6 +55,15 @@ struct Mat4 {
 [[nodiscard]] CUEXIS_CORE_API bool isNormalized(const Quat& value,
                                                 float tolerance = 1.0e-5F) noexcept;
 [[nodiscard]] CUEXIS_CORE_API Result<Quat> normalize(const Quat& value) noexcept;
+// Cubic Hermite progress clamps value to [0, 1] and uses endpoint slopes in normalized time.
+[[nodiscard]] CUEXIS_CORE_API double hermiteProgress(double value, double startSlope,
+                                                     double endSlope) noexcept;
+// Linear interpolation uses the same float blend conversion as the animation samplers.
+[[nodiscard]] CUEXIS_CORE_API Vec3 lerp(const Vec3& left, const Vec3& right, double t) noexcept;
+// Shortest-path quaternion interpolation aligns hemispheres, clamps the dot product, and
+// normalizes the result. The normalize error is returned unchanged.
+[[nodiscard]] CUEXIS_CORE_API Result<Quat> slerp(const Quat& left, const Quat& right,
+                                                 double t) noexcept;
 
 [[nodiscard]] CUEXIS_CORE_API Mat4 makeTranslation(const Vec3& translation) noexcept;
 [[nodiscard]] CUEXIS_CORE_API Mat4 makeScale(const Vec3& scale) noexcept;
@@ -62,9 +71,13 @@ struct Mat4 {
 [[nodiscard]] CUEXIS_CORE_API Result<Mat4>
 composeTransform(const Vec3& translation, const Quat& rotation, const Vec3& scale) noexcept;
 [[nodiscard]] CUEXIS_CORE_API Mat4 multiply(const Mat4& left, const Mat4& right) noexcept;
+// Rejects matrices whose absolute determinant is no greater than float epsilon.
 [[nodiscard]] CUEXIS_CORE_API Result<Mat4> inverse(const Mat4& matrix) noexcept;
+// Treats point as an affine homogeneous point with w = 1 and returns xyz without a perspective
+// divide.
 [[nodiscard]] CUEXIS_CORE_API Vec3 transformPoint(const Mat4& matrix, const Vec3& point) noexcept;
 
+// Uses an absolute tolerance. Vec3 and Mat4 comparisons apply it independently to each element.
 [[nodiscard]] CUEXIS_CORE_API bool nearlyEqual(float left, float right,
                                                float tolerance = 1.0e-5F) noexcept;
 [[nodiscard]] CUEXIS_CORE_API bool nearlyEqual(const Vec3& left, const Vec3& right,
