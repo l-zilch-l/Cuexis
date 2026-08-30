@@ -84,4 +84,5 @@
 | [260829 Full Review 整改 W15/W16](260829-full-review-remediation-w15-w16.md) | completed A3 ShaderPipelineCache integration, corrected Player adapter-failure smoke coverage, and revalidated C2 target export plus D1/D2 reload gates |
 | [260829 Full Review 整改 W20-W26](260829-full-review-remediation-w20-w26.md) | local completed render hot-path, HostClock/SDL publication, Player scratch reuse, and transparent Presentation resource lookup remediation |
 | [260829 Full Review 整改 W30-W37](260829-full-review-remediation-w30-w37.md) | local completed Playback prepare staging, PB-03 diagnostics, taxonomy, ownership, and final Debug/Shared/Release gates; full Chart/CXC parse-once remains separately bounded |
+| [260829 Full Review 整改 D1/D2](260829-full-review-remediation-d1-d2.md) | completed accepted legacy-format exit for Chart v4 presentation and Asset Index record-level extensions; hosted revalidation remains pending |
 | [SDK transition verification](sdk_transition_verification.md) | historical verification snapshot |

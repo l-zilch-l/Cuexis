@@ -1,0 +1,67 @@
+# 260829 Full Review 整改 D1/D2
+
+状态：completed；2026-08-30 本地实现与门禁完成
+
+本报告记录 Full Review 决策门 D1/PB-01 与 D2/CX-01 的实现证据。原始审查报告
+`260829-full-review.md` 与 `CURRENT_STATUS.md` 未修改；本报告不改变 Stage 4/5 状态。
+
+## 基线与范围
+
+- 基线 SHA：`44ee7ddc37b023bb8899c29cdf77d353884934e8`
+- 实现 SHA：`c82cad85324846173c98c1015c314c91110283c9`
+- 实现分支：`260829-full-review`
+- 任务：`AG-D1-LEGACY-PRESENTATION-I`、`AG-D2-ASSET-EXTENSIONS-I`
+- Finding：PB-01、CX-01
+- 决策依据：[ADR 0041](../adr/0041-legacy-format-exit-policy.md)，已接受 D1/D2 结论
+
+## 实现
+
+- Chart v4 的 Mesh/Material Renderable 在 prepare 阶段必须提供 `CXPRES01` portable
+  payload。legacy opaque payload 稳定返回
+  `playback.chart.v4.requires_portable_presentation`，带有 `asset_id`、`resource_type`、
+  `object_id` 与 `field_path`；失败发生在 identity assembly 前，不发布 candidate，也不
+  形成 inert Animator。
+- Asset Index v1/v2/v3 record-level `extensions` 已从 Reader 白名单和三份 schema 移除，
+  统一以 `json.field.unknown` 拒绝；document-level opaque `extensions` 继续保留并按原
+  诊断合同传播。
+- Playback 错误上下文中的 `field_path` 现在同步填入公共 Diagnostic 的 `fieldPath`，使
+  稳定拒绝可被宿主定位。
+
+## 修改文件
+
+- `docs/adr/0041-legacy-format-exit-policy.md`
+- `docs/adr/README.md`
+- `docs/formats/CHART_V4_FORMAT.md`
+- `docs/formats/PORTABLE_PRESENTATION.md`
+- `docs/stage_plans/260829-full-review-remediation-plan.md`
+- `engine/playback/src/playback_session.cpp`
+- `engine/playback/src/presentation.cpp`
+- `engine/playback/src/presentation_internal.hpp`
+- `engine/project/src/asset_index_reader.cpp`
+- `schemas/cuexis.asset-index.v1.schema.json`
+- `schemas/cuexis.asset-index.v2.schema.json`
+- `schemas/cuexis.asset-index.v3.schema.json`
+- `tests/playback/preparation_characterization_tests.cpp`
+- `tests/project/asset_index_reader_tests.cpp`
+- `tests/cxc/cxc_package_tests.cpp`
+
+## 验证
+
+- Debug fresh configure/build：通过。
+- 完整 Debug CTest：535/535 通过，0 失败；仅测试 66 因符号链接环境条件跳过。
+- 聚焦 Chart、Playback、Audio、Project、CXC 测试：通过。
+- `cuexis_architecture_tests`：通过。
+- Debug static external Playback consumers：2/2 通过。
+- Debug shared external/package consumers：7/7 通过。
+- `cuexis_format_check`：通过。
+- `python -B tools/check_docs.py`：通过。
+- `python -B tools/update_version.py --check`：通过。
+- `git diff --check`：通过。
+
+## 保留合同与残余风险
+
+FrameDigest v1-v3、canonical bytes/order、合法输入 identity、golden、Playback 公共观察面、
+candidate/active rollback、owner-thread 合同、公共头 ASCII、runtime-script 无限期延后边界
+和 Stage 4/5 状态均保持不变。v1/v2/v3 的 legacy opaque 兼容 Reader 仍保留；SDK 0.7.0
+既有 legacy API 仍按 ADR 0041 保留。D3-D6 及 identity 一次性迁移之外的后续任务不在本批
+范围内；hosted Linux/MinGW 需在对应环境按最终实现 SHA 重验。本批未执行 push。
