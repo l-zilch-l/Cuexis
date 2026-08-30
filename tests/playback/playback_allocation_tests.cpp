@@ -183,6 +183,7 @@ template <typename Callback>
     return outcome;
 }
 
+#if !defined(CUEXIS_PLAYBACK_ALLOCATION_TEST_SHARED)
 constexpr std::string_view allocationBoundaryChart = R"json(
 {
   "format":"cuexis.chart","version":1,
@@ -211,6 +212,7 @@ constexpr std::string_view allocationBoundaryChart = R"json(
     }
     return session;
 }
+#endif
 
 } // namespace
 

@@ -409,7 +409,10 @@ void main() {
             "render.opengl.presentation.resource_type_invalid",
             "Unlit Material resource has an incompatible portable value", &resource.reference));
     }
-    return detail::GpuMaterial{resource.reference, *material};
+    detail::GpuMaterial uploaded;
+    uploaded.reference = resource.reference;
+    uploaded.material = *material;
+    return uploaded;
 }
 
 [[nodiscard]] auto copyParameterizedMaterial(const playback::PortableResource& resource)
@@ -1315,7 +1318,10 @@ auto detail::probeBuildDraws(const playback::FrameSnapshot& snapshot,
         }
         if (const auto* material = std::get_if<playback::PortableUnlitMaterial>(&resource->value);
             material != nullptr) {
-            set.materials.push_back(detail::GpuMaterial{resource->reference, *material});
+            detail::GpuMaterial materialCopy;
+            materialCopy.reference = resource->reference;
+            materialCopy.material = *material;
+            set.materials.push_back(std::move(materialCopy));
         }
     }
 
