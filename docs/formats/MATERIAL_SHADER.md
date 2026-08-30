@@ -573,6 +573,13 @@ cuexis_render_opengl
 cuexis_asset_importer  developer tool; built with cuexis_shader; not a Playback hot path
 ```
 
+`cuexis_asset_importer --compile` may compile and print artifacts without a cache directory. When
+`--cache-dir` is supplied, the CLI requires the Playback/CXPRES semantic source identity through
+`--identity HEX64`; the value accepts upper- or lower-case hexadecimal and is stored as 32 binary
+bytes before key derivation. The explicit `--standalone-cache` flag is a development/debugging
+exception that opts into hashing the supplied shader sources instead. It is never selected by
+default, and it cannot be combined with `--identity`.
+
 `cuexis_shader_cache` 是非可选的内部静态实现库，供 `cuexis_render_opengl`（以及启用时的
 `cuexis_shader`）私有链接；它不安装公共头，也不是 `Cuexis::Shader` package component。
 `cuexis_shader` 仅在 `shader-tools` feature 下构建，同样不安装公共 component。基础

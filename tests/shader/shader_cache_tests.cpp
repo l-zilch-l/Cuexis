@@ -4,6 +4,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <algorithm>
 #include <array>
 #include <filesystem>
 #include <fstream>
@@ -105,6 +106,117 @@ TEST_CASE("S5-F cache key changes with identity, profile, keyword, entry, and to
     tools[1].version = "0.0.0";
     CHECK(cuexis::shader::encodeCacheKey({.sourceIdentity = identity, .tools = tools}) != base);
     CHECK(cuexis::shader::encodeCacheKey({.sourceIdentity = identity}) == base);
+}
+
+TEST_CASE("A2 cache key normalizes profiles, keywords, entries, and tools",
+          "[shader][a2][key][normalization]") {
+    const auto identity = makeIdentity();
+    const std::string_view targetsUnordered[] = {
+        cuexis::shader::targetProfileSpirvV1,
+        cuexis::shader::targetProfileGlsl330V1,
+        cuexis::shader::targetProfileSpirvV1,
+    };
+    const std::string_view targetsSorted[] = {
+        cuexis::shader::targetProfileGlsl330V1,
+        cuexis::shader::targetProfileSpirvV1,
+    };
+    CHECK(cuexis::shader::encodeCacheKey(
+              {.sourceIdentity = identity, .targetProfiles = targetsUnordered}) ==
+          cuexis::shader::encodeCacheKey(
+              {.sourceIdentity = identity, .targetProfiles = targetsSorted}));
+    const std::string_view alternateTarget[] = {cuexis::shader::targetProfileSpirvV1};
+    CHECK(cuexis::shader::encodeCacheKey(
+              {.sourceIdentity = identity, .targetProfiles = alternateTarget}) !=
+          cuexis::shader::encodeCacheKey(
+              {.sourceIdentity = identity, .targetProfiles = targetsSorted}));
+
+    const std::string_view keywordsUnordered[] = {"ZETA", "ALPHA", "ZETA"};
+    const std::string_view keywordsSorted[] = {"ALPHA", "ZETA"};
+    const std::string_view keywordsCaseChanged[] = {"alpha", "ZETA"};
+    CHECK(cuexis::shader::encodeCacheKey(
+              {.sourceIdentity = identity, .selectedKeywords = keywordsUnordered}) ==
+          cuexis::shader::encodeCacheKey(
+              {.sourceIdentity = identity, .selectedKeywords = keywordsSorted}));
+    CHECK(cuexis::shader::encodeCacheKey(
+              {.sourceIdentity = identity, .selectedKeywords = keywordsSorted}) !=
+          cuexis::shader::encodeCacheKey(
+              {.sourceIdentity = identity, .selectedKeywords = keywordsCaseChanged}));
+
+    auto tools = cuexis::shader::currentToolVersions();
+    auto reversedTools = tools;
+    std::reverse(reversedTools.begin(), reversedTools.end());
+    CHECK(cuexis::shader::encodeCacheKey({.sourceIdentity = identity, .tools = tools}) ==
+          cuexis::shader::encodeCacheKey({.sourceIdentity = identity, .tools = reversedTools}));
+
+    auto changedTool = tools;
+    REQUIRE_FALSE(changedTool.empty());
+    changedTool.front().version += ".changed";
+    CHECK(cuexis::shader::encodeCacheKey({.sourceIdentity = identity, .tools = changedTool}) !=
+          cuexis::shader::encodeCacheKey({.sourceIdentity = identity, .tools = tools}));
+
+    CHECK(
+        cuexis::shader::encodeCacheKey({.sourceIdentity = identity, .fragmentEntry = "fragMain"}) !=
+        cuexis::shader::encodeCacheKey({.sourceIdentity = identity}));
+
+    CHECK(cuexis::shader::encodeCacheKey({.sourceIdentity = identity,
+                                          .importerProfile = "",
+                                          .vertexEntry = "",
+                                          .fragmentEntry = ""}) ==
+          cuexis::shader::encodeCacheKey({.sourceIdentity = identity}));
+}
+
+TEST_CASE("A2 cache key filename uses lowercase hexadecimal", "[shader][a2][key][filename]") {
+    std::array<std::uint8_t, 32> bytes{};
+    bytes[0] = 0xAB;
+    bytes[1] = 0xCD;
+    const auto filename = cuexis::shader::cacheFileName(bytes);
+    REQUIRE(filename.size() == 64U + cuexis::shader::cacheFileExtension.size());
+    CHECK(filename.ends_with(cuexis::shader::cacheFileExtension));
+    for (const auto character : filename.substr(0, 64)) {
+        CHECK(((character >= '0' && character <= '9') || (character >= 'a' && character <= 'f')));
+    }
+}
+
+TEST_CASE("A2 cache rejects a nonempty keyword set without semantic source identity",
+          "[shader][a2][key][red]") {
+    cuexis::shader::ShaderCacheRecord record;
+    record.selectedKeywords.emplace_back("FEATURE");
+
+    const auto encoded = cuexis::shader::encodeCache(record);
+    REQUIRE_FALSE(encoded.has_value());
+    CHECK(encoded.error().code() == cuexis::shader::diagnosticCacheKeyInvalid);
+}
+
+TEST_CASE("A2 cache store rejects an invalid record without creating its directory",
+          "[shader][a2][key][store][red]") {
+    const auto root = workRoot("invalid-store");
+    std::filesystem::remove_all(root);
+
+    cuexis::shader::ShaderCacheRecord record;
+    record.selectedKeywords.emplace_back("FEATURE");
+    cuexis::shader::ShaderCacheStore store{root};
+    const auto stored = store.store(record);
+    REQUIRE_FALSE(stored.has_value());
+    CHECK(stored.error().code() == cuexis::shader::diagnosticCacheKeyInvalid);
+    CHECK_FALSE(std::filesystem::exists(root));
+}
+
+TEST_CASE("A2 pipeline rejects request keywords when the key omits semantic identity",
+          "[shader][a2][key][pipeline][red]") {
+    const auto root = workRoot("half-empty-key");
+    const std::string_view declaredKeywords[] = {"FEATURE"};
+    const std::string_view selectedKeywords[] = {"FEATURE"};
+    auto request = passthroughRequest();
+    request.declaredKeywords = declaredKeywords;
+    request.selectedKeywords = selectedKeywords;
+
+    cuexis::shader::ShaderPipelineCache cache{root};
+    const auto prepared = cache.prepareCandidate(request, {}, true);
+    REQUIRE_FALSE(prepared.has_value());
+    CHECK(prepared.error().code() == cuexis::shader::diagnosticCacheKeyInvalid);
+    CHECK(cache.active() == nullptr);
+    CHECK(cache.candidate() == nullptr);
+    CHECK(std::filesystem::is_empty(root));
 }
 
 TEST_CASE("S5-F encodes and decodes CXSCCH01 with identical bytes", "[shader][s5-f][roundtrip]") {

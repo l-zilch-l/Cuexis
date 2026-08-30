@@ -21,9 +21,11 @@ void printUsage() {
               << "       cuexis_asset_importer --compile --vertex <file> --fragment <file>\n"
               << "           [--keyword NAME]... [--declare-keyword NAME]...\n"
               << "           [--binding NAME:TYPE:SET:BINDING]...\n"
-              << "           [--cache-dir DIR] [--identity HEX64]\n"
+              << "           [--cache-dir DIR] [--identity HEX64 | --standalone-cache]\n"
               << "Compiles ShaderAsset GLSL 450 sources through cuexis.importer.shader.v1.\n"
-              << "With --cache-dir, writes CXSCCH01 (SPIR-V, GLSL 330, GLSL ES 300, reflection).\n";
+              << "With --cache-dir, writes CXSCCH01 (SPIR-V, GLSL 330, GLSL ES 300, reflection).\n"
+              << "--identity is required for cache writes unless "
+              << "--standalone-cache is explicitly set.\n";
 }
 
 [[nodiscard]] auto readTextFile(const std::filesystem::path& path) -> std::optional<std::string> {
@@ -96,6 +98,7 @@ struct CompileArgs final {
     std::vector<std::string> bindingNames;
     std::filesystem::path cacheDir;
     std::string identityHex;
+    bool standaloneCache{false};
 };
 
 [[nodiscard]] auto parseBinding(std::string_view spec, std::string& ownedName)
@@ -197,6 +200,8 @@ struct CompileArgs final {
                 return std::nullopt;
             }
             args.identityHex = std::string{*value};
+        } else if (flag == "--standalone-cache") {
+            args.standaloneCache = true;
         } else {
             return std::nullopt;
         }
@@ -246,6 +251,19 @@ void printError(const cuexis::core::Error& error) {
 }
 
 int compileSources(const CompileArgs& args) {
+    if (!args.identityHex.empty() && args.standaloneCache) {
+        std::cerr << "error.code=" << cuexis::shader::diagnosticCacheKeyInvalid << '\n';
+        std::cerr << "error.message=--identity and --standalone-cache "
+                  << "cannot be used together\n";
+        return 1;
+    }
+    if (!args.cacheDir.empty() && args.identityHex.empty() && !args.standaloneCache) {
+        std::cerr << "error.code=" << cuexis::shader::diagnosticCacheKeyInvalid << '\n';
+        std::cerr << "error.message=--cache-dir requires --identity HEX64 or "
+                  << "--standalone-cache\n";
+        return 1;
+    }
+
     const auto vertex = readTextFile(args.vertex);
     const auto fragment = readTextFile(args.fragment);
     if (!vertex || !fragment) {

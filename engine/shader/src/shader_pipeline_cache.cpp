@@ -1,3 +1,4 @@
+#include "shader_cache_internal.hpp"
 #include <cuexis/shader/shader_cache.hpp>
 #include <cuexis/shader/shader_compiler.hpp>
 
@@ -48,6 +49,11 @@ auto ShaderPipelineCache::prepareCandidate(const ShaderCompileRequest& request,
                                            const ShaderCacheKeyInput& key, bool compileEnabled)
     -> core::Result<void> {
     diagnostics_ = makeShaderDiagnostics();
+    auto validation = detail::validateCacheRequest(key, request);
+    if (!validation) {
+        addErrorDiagnostic(diagnostics_, validation.error());
+        return core::unexpected(std::move(validation.error()));
+    }
     auto loaded = store_.load(key);
     if (loaded) {
         candidate_ = std::make_unique<ShaderCacheRecord>(std::move(*loaded));
