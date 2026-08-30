@@ -62,15 +62,16 @@ struct EffectiveAudioSettings final {
 // HostClock is a single-owner source clock with seqlock publication.
 // The owner thread must call submit(). snapshot() may run concurrently and returns a complete
 // sample without allocating or throwing. Concurrent submit() calls remain unsupported.
-class CUEXIS_AUDIO_API HostClock final {
+class HostClock final {
   public:
     HostClock() = default;
 
     // Submit a sample from the HostClock owner thread only.
-    [[nodiscard]] auto submit(const SourceClockSample& sample) -> core::Result<void>;
+    [[nodiscard]] CUEXIS_AUDIO_API auto submit(const SourceClockSample& sample)
+        -> core::Result<void>;
 
     // Read a complete published sample, even while submit() is running.
-    [[nodiscard]] SourceClockSample snapshot() const noexcept;
+    [[nodiscard]] CUEXIS_AUDIO_API SourceClockSample snapshot() const noexcept;
 
   private:
     std::atomic<std::uint64_t> sequence_{};
