@@ -344,7 +344,7 @@ TEST_CASE("CXC ZIP32 envelope enforces exact count size path and field budgets",
             {"safe/file", {}}, {"safe/file/child", {}}};
         const auto rejected = detail::writeCanonicalZip32(entries, CxcPackageLimits{});
         REQUIRE_FALSE(rejected.has_value());
-    CHECK(rejected.error().code() == "cxc.entry.duplicate");
+        CHECK(rejected.error().code() == "cxc.entry.duplicate");
     }
 }
 

@@ -377,15 +377,14 @@ TEST_CASE("SDL audio move construction transfers the live transport",
     auto subsystem = std::move(subsystemResult).value();
     auto replacementSubsystem = std::move(subsystem);
 
-    auto transportResult = cuexis::audio_sdl::SdlAudioTransport::create(
-        replacementSubsystem, store, *config);
+    auto transportResult =
+        cuexis::audio_sdl::SdlAudioTransport::create(replacementSubsystem, store, *config);
     REQUIRE(transportResult.has_value());
     auto transport = std::move(transportResult).value();
     auto replacementTransport = std::move(transport);
 
     REQUIRE(replacementTransport.load(handle).has_value());
-    CHECK(replacementTransport.snapshot().source.state ==
-          cuexis::audio::PlaybackState::Stopped);
+    CHECK(replacementTransport.snapshot().source.state == cuexis::audio::PlaybackState::Stopped);
 }
 
 TEST_CASE("SDL effective settings remain a coherent published tuple across owner transitions",

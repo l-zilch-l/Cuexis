@@ -481,12 +481,13 @@ TEST_CASE("Prepared replacement publishes the candidate content and target frame
     REQUIRE(chartId == std::string::npos);
     const auto originalChartId = replacement.find("019b0000-0000-7abc-8def-000000000201");
     REQUIRE(originalChartId != std::string::npos);
-    replacement.replace(originalChartId, std::string_view{"019b0000-0000-7abc-8def-000000000201"}.size(),
+    replacement.replace(originalChartId,
+                        std::string_view{"019b0000-0000-7abc-8def-000000000201"}.size(),
                         "019b0000-0000-7abc-8def-000000000301");
 
     auto prepared = session.prepareReload(
-        replacement, {.chartTimeMs = 375.0, .simulationDeltaTimeMs = 12.0,
-                      .timeDiscontinuityId = 7},
+        replacement,
+        {.chartTimeMs = 375.0, .simulationDeltaTimeMs = 12.0, .timeDiscontinuityId = 7},
         cuexis::playback::ReloadPolicy::KeepChartTime);
     REQUIRE(prepared.has_value());
     REQUIRE(prepared->contentInfo() != nullptr);
