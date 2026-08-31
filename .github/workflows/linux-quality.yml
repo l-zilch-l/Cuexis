@@ -340,7 +340,7 @@ jobs:
             --txt "$evidence/cxc-branches.txt"
           gcovr out/build/headless-coverage \
             --root . \
-            --filter 'engine/chart/src/(chart_v4_loader|chart_v4_resolver|chart_v4_common_reader_internal|chart_v4_animation_reader_internal|chart_parameter_resolver|prepared_semantic_identity)\\.cpp' \
+            --filter 'engine/chart/src/(chart_v4_loader|chart_v4_resolver|chart_v4_common_reader_internal|chart_v4_animation_reader_internal|chart_parameter_resolver|prepared_semantic_identity)\.cpp' \
             --exclude-unreachable-branches \
             --txt-metric branch \
             --print-summary \
@@ -354,14 +354,14 @@ jobs:
             --txt "$evidence/playback-branches.txt"
           gcovr out/build/headless-coverage \
             --root . \
-            --filter 'engine/chart/src/prepared_semantic_identity\\.cpp' \
+            --filter 'engine/chart/src/prepared_semantic_identity\.cpp' \
             --exclude-unreachable-branches \
             --txt-metric branch \
             --print-summary \
             --txt "$evidence/prepared-identity-branches.txt"
           gcovr out/build/headless-coverage \
             --root . \
-            --filter 'engine/audio/src/audio_transport\\.cpp' \
+            --filter 'engine/audio/src/audio_transport\.cpp' \
             --exclude-unreachable-branches \
             --txt-metric branch \
             --print-summary \
@@ -528,14 +528,14 @@ jobs:
           ctest --preset shader-tools-coverage -N > "$evidence/discovered-tests.txt"
           gcovr out/build/shader-tools-coverage \
             --root . \
-            --filter 'engine/shader/src/shader_cache\\.cpp' \
+            --filter 'engine/shader/src/shader_cache\.cpp' \
             --exclude-unreachable-branches \
             --txt-metric branch \
             --print-summary \
             --txt "$evidence/shader-cache-branches.txt"
           gcovr out/build/shader-tools-coverage \
             --root . \
-            --filter 'engine/shader/src/shader_pipeline_cache\\.cpp' \
+            --filter 'engine/shader/src/shader_pipeline_cache\.cpp' \
             --exclude-unreachable-branches \
             --txt-metric branch \
             --print-summary \
