@@ -2,7 +2,7 @@
 
 状态：active；承接已关闭的 260829 Full Review，不启动 Stage 6
 
-更新日期：2026-08-30
+更新日期：2026-08-31
 
 归档来源：[Full Review 最终关闭报告](../../../stage_reports/reviews/full-review-2026-08/2026-08-30-final.md)
 与 [Full Review 整改计划](../../reviews/full-review-2026-08/remediation-plan.md)。
@@ -60,6 +60,8 @@
 现有迁移入口继续保留。
 
 ### 任务 3：关键模块分支覆盖率
+
+状态：completed；实施与同 SHA hosted 验证见[任务 3 完成报告](../../../stage_reports/reviews/260830-followup/2026-08-31-task-3-hosted-verification.md)。
 
 详细实施方案见 [任务 3 计划](task-3-critical-branch-coverage.md)。
 

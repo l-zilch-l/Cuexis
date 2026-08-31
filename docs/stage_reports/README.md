@@ -24,7 +24,8 @@
   [root consolidation](reviews/documentation-reorganization-2026-08/2026-08-30-root-consolidation.md)、
   [README consolidation](reviews/documentation-reorganization-2026-08/2026-08-30-readme-consolidation.md)
 - 260830-followup：[任务 2 Chart/CXC parse-once 完成报告](reviews/260830-followup/2026-08-31-task-2-chart-cxc-parse-once.md)、
-  [任务 3 关键分支覆盖率报告](reviews/260830-followup/2026-08-31-task-3-critical-branch-coverage.md)
+  [任务 3 hosted 完成报告](reviews/260830-followup/2026-08-31-task-3-hosted-verification.md) 和
+  [任务 3 本地快照](reviews/260830-followup/2026-08-31-task-3-critical-branch-coverage.md)
 - [Full Review 2026-08](reviews/full-review-2026-08/README.md)
 - [Full Review final closure](reviews/full-review-2026-08/2026-08-30-final.md)
 - [SDK transition verification](sdk-transition/verification.md)

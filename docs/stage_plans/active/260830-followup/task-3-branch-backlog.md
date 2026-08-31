@@ -1,34 +1,36 @@
 # 任务 3 分支 backlog
 
-状态：active
+状态：completed
 
 更新日期：2026-08-31
 
 所属计划：[任务 3 关键模块分支覆盖率](task-3-critical-branch-coverage.md)
 
-本清单是 B0 在任务 2 当前实现上的覆盖率基线和函数级测试 backlog。`current hit` 使用
-各 lane 的 gcovr 分支 covered/total 汇总；具体条件以同目录的 coverage artifact 和下面的
-行为条目为准。测试关闭条目时必须补充可观察断言，不以源码命中作为完成依据。
+本清单记录任务 2 当前实现上的函数级测试 backlog 和最终 hosted 覆盖率。`current hit` 使用各 lane
+的 gcovr 分支 covered/total 汇总；具体条件以同目录的 coverage artifact 和下面的行为条目为准。
+测试关闭条目时必须补充可观察断言，不以源码命中作为完成依据。
 
-## 基线
+## 最终 Hosted 覆盖率
 
 | lane | preset | covered / total branches | coverage | evidence |
 | --- | --- | ---: | ---: | --- |
-| Chart v4 | `headless-coverage` | 2500 / 5412 | 46.2% | `out/build/headless-coverage/task-3-coverage/chart-v4-branches.txt` |
-| CXC | `headless-coverage` | 1428 / 3446 | 41.4% | `out/build/headless-coverage/task-3-coverage/cxc-branches.txt` |
-| Playback | `headless-coverage` | 2758 / 7520 | 36.7% | `out/build/headless-coverage/task-3-coverage/playback-branches.txt` |
-| Prepared identity | `headless-coverage` | 10 / 14 | 71.4% | `out/build/headless-coverage/task-3-coverage/prepared-identity-branches.txt` |
-| HostClock | `headless-coverage` | 47 / 68 | 69.1% | `out/build/headless-coverage/task-3-coverage/audio-host-clock-branches.txt` |
-| Platform SDL | `adapter-coverage` | 93 / 250 | 37.2% | `out/build/adapter-coverage/task-3-coverage/platform-sdl-branches.txt` |
-| AudioSDL | `adapter-coverage` | 336 / 912 | 36.8% | `out/build/adapter-coverage/task-3-coverage/audio-sdl-branches.txt` |
-| OpenGL | `adapter-coverage` | 216 / 2712 | 8.0% | `out/build/adapter-coverage/task-3-coverage/render-opengl-branches.txt` |
-| Shader cache | `shader-tools-coverage` | 387 / 1088 | 35.6% | `out/build/shader-tools-coverage/task-3-coverage/shader-cache-branches.txt` |
-| Shader pipeline cache | `shader-tools-coverage` | 93 / 238 | 39.1% | `out/build/shader-tools-coverage/task-3-coverage/shader-pipeline-cache-branches.txt` |
+| Chart v4 | `headless-coverage` | 2392 / 5174 | 46.2% | `cuexis-task-3-core-coverage-299596c533a8c66a78b5c4ada341b1163528fb25/chart-v4-branches.txt` |
+| CXC | `headless-coverage` | 1410 / 3400 | 41.5% | `cuexis-task-3-core-coverage-299596c533a8c66a78b5c4ada341b1163528fb25/cxc-branches.txt` |
+| Playback | `headless-coverage` | 2728 / 7460 | 36.6% | `cuexis-task-3-core-coverage-299596c533a8c66a78b5c4ada341b1163528fb25/playback-branches.txt` |
+| Prepared identity | `headless-coverage` | 10 / 14 | 71.4% | `cuexis-task-3-core-coverage-299596c533a8c66a78b5c4ada341b1163528fb25/prepared-identity-branches.txt` |
+| HostClock | `headless-coverage` | 49 / 72 | 68.1% | `cuexis-task-3-core-coverage-299596c533a8c66a78b5c4ada341b1163528fb25/audio-host-clock-branches.txt` |
+| Platform SDL | `adapter-coverage` | 93 / 250 | 37.2% | `cuexis-task-3-adapter-coverage-299596c533a8c66a78b5c4ada341b1163528fb25/platform-sdl-branches.txt` |
+| AudioSDL | `adapter-coverage` | 337 / 930 | 36.2% | `cuexis-task-3-adapter-coverage-299596c533a8c66a78b5c4ada341b1163528fb25/audio-sdl-branches.txt` |
+| OpenGL | `adapter-coverage` | 216 / 2708 | 8.0% | `cuexis-task-3-adapter-coverage-299596c533a8c66a78b5c4ada341b1163528fb25/render-opengl-branches.txt` |
+| Shader cache | `shader-tools-coverage` | 386 / 1086 | 35.5% | `cuexis-task-3-shader-tools-coverage-299596c533a8c66a78b5c4ada341b1163528fb25/shader-cache-branches.txt` |
+| Shader pipeline cache | `shader-tools-coverage` | 93 / 238 | 39.1% | `cuexis-task-3-shader-tools-coverage-299596c533a8c66a78b5c4ada341b1163528fb25/shader-pipeline-cache-branches.txt` |
 
-本轮已通过的完整门禁为：headless `481/481`、adapter `523/523`、shader-tools `509/509`。
-当前实现 SHA 为 `c1b65cae820090bf828e096a63648980c8ad767c`；coverage 构建使用 pinned vcpkg
-`40f3c709db80acf154ac4b17a1f83c564ebd022e`。本地构建目录中的 artifact 是可重复运行证据，
-不是发布文档的一部分。
+本轮同 SHA hosted 门禁为：Linux Quality [33387378354](https://github.com/l-zilch-l/Cuexis/actions/runs/33387378354)、
+Windows MSVC [33387378378](https://github.com/l-zilch-l/Cuexis/actions/runs/33387378378) 和 Windows MinGW
+[33387378418](https://github.com/l-zilch-l/Cuexis/actions/runs/33387378418)，均为 `success`。当前实现 SHA 为
+`299596c533a8c66a78b5c4ada341b1163528fb25`；coverage 构建使用 pinned vcpkg
+`40f3c709db80acf154ac4b17a1f83c564ebd022e`、GCC 13.3 和 gcovr 7.0。每个 artifact 的 metadata
+记录实现 SHA、编译器、filter、测试命令和环境残余；不在发布树中保存 artifact 本体。
 
 ## 初始 backlog
 

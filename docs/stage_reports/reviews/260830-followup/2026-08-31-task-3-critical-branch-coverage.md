@@ -1,10 +1,12 @@
-# 260830 Follow-up 任务 3 关键分支覆盖率报告
+# 260830 Follow-up Task 3 Critical Branch Coverage Local Snapshot
 
-状态：active
+状态：historical
 
 更新日期：2026-08-31
 
 快照日期：2026-08-31
+
+后续关闭证据：[任务 3 hosted 完成报告](2026-08-31-task-3-hosted-verification.md)
 
 所属计划：[任务 3 关键模块分支覆盖率](../../../stage_plans/active/260830-followup/task-3-critical-branch-coverage.md)
 
