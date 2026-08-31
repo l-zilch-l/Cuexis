@@ -29,6 +29,26 @@ using cuexis::test_support::s5h::makeSource;
 using cuexis::test_support::s5h::MaterialLayout;
 using cuexis::test_support::s5h::ShaderLayout;
 
+void writeU32(std::vector<std::byte>& bytes, std::size_t offset, std::uint32_t value) {
+    REQUIRE(offset + 4 <= bytes.size());
+    for (std::size_t index = 0; index < 4; ++index) {
+        bytes[offset + index] = static_cast<std::byte>((value >> (index * 8U)) & 0xFFU);
+    }
+}
+
+void writeU64(std::vector<std::byte>& bytes, std::size_t offset, std::uint64_t value) {
+    REQUIRE(offset + 8 <= bytes.size());
+    for (std::size_t index = 0; index < 8; ++index) {
+        bytes[offset + index] = static_cast<std::byte>((value >> (index * 8U)) & 0xFFU);
+    }
+}
+
+void updateEnvelopeSize(std::vector<std::byte>& bytes) {
+    writeU64(bytes, 16, bytes.size());
+}
+
+constexpr std::size_t shaderVariableOffset = 80 + cuexis::playback::rendererProfileBuiltInV1.size();
+
 [[nodiscard]] auto readBytes(const std::filesystem::path& path) -> std::vector<std::byte> {
     std::ifstream input{path, std::ios::binary};
     if (!input) {
@@ -275,4 +295,149 @@ TEST_CASE("S5-H truncated envelope with a huge declared size does not allocate t
     }
     CHECK(bytes.size() < 4096);
     CHECK(prepareCode(std::move(bytes)) == "playback.presentation.payload.truncated");
+}
+
+TEST_CASE("Shader payload rejects source encoding and subset violations",
+          "[playback][presentation][shader][branch-coverage]") {
+    CHECK(prepareCode(
+              makeShaderPayload("\xEF\xBB\xBF#version 450\nvoid main() {}\n", kFragment, {})) ==
+          "playback.presentation.shader.source_encoding_invalid");
+    CHECK(prepareCode(makeShaderPayload("#version 450\n\xC3", kFragment, {})) ==
+          "playback.presentation.shader.source_encoding_invalid");
+    CHECK(prepareCode(makeShaderPayload("#version 460\nvoid main() {}\n", kFragment, {})) ==
+          "playback.presentation.shader.subset_invalid");
+    CHECK(prepareCode(makeShaderPayload("#version 450\n#include \"local.glsl\"\n", kFragment,
+                                        {})) == "playback.presentation.shader.subset_invalid");
+}
+
+TEST_CASE("Shader payload rejects structural and schema-invalid records",
+          "[playback][presentation][shader][branch-coverage]") {
+    SECTION("fixed fields and trailing content") {
+        auto flags = makeShaderPayload(kVertex, kFragment, {});
+        writeU32(flags, 24, 1);
+        CHECK(prepareCode(std::move(flags)) == "playback.presentation.payload.reserved_nonzero");
+
+        auto entry = makeShaderPayload(kVertex, kFragment, {});
+        entry[72] = std::byte{'1'};
+        CHECK(prepareCode(std::move(entry)) == "playback.presentation.shader.entry_invalid");
+
+        auto alpha = makeShaderPayload(kVertex, kFragment, {});
+        writeU32(alpha, 52, 3);
+        CHECK(prepareCode(std::move(alpha)) == "playback.presentation.shader.schema_invalid");
+
+        auto trailing = makeShaderPayload(kVertex, kFragment, {});
+        trailing.push_back(std::byte{0});
+        updateEnvelopeSize(trailing);
+        CHECK(prepareCode(std::move(trailing)) == "playback.presentation.payload.size_mismatch");
+    }
+
+    SECTION("keywords must remain unique portable identifiers") {
+        ShaderLayout layout;
+        layout.keywordCount = 2;
+        auto duplicate = makeShaderPayload(kVertex, kFragment, layout);
+        const auto secondKeyword = shaderVariableOffset + 8;
+        duplicate[secondKeyword + 7] = std::byte{'0'};
+        CHECK(prepareCode(std::move(duplicate)) == "playback.presentation.shader.keyword_invalid");
+    }
+
+    SECTION("parameter and binding schema records reject unsupported and reserved slots") {
+        ShaderLayout layout;
+        layout.parameterCount = 1;
+        layout.bindingCount = 1;
+
+        auto unsupportedType = makeShaderPayload(kVertex, kFragment, layout);
+        writeU32(unsupportedType, shaderVariableOffset + 7, 0);
+        CHECK(prepareCode(std::move(unsupportedType)) ==
+              "playback.presentation.shader.schema_invalid");
+
+        auto reservedParameter = makeShaderPayload(kVertex, kFragment, layout);
+        writeU32(reservedParameter, shaderVariableOffset + 15, 0);
+        CHECK(prepareCode(std::move(reservedParameter)) ==
+              "playback.presentation.shader.reserved_binding");
+
+        auto reservedBinding = makeShaderPayload(kVertex, kFragment, layout);
+        const auto bindingOffset = shaderVariableOffset + 43;
+        writeU32(reservedBinding, bindingOffset + 4, 0);
+        CHECK(prepareCode(std::move(reservedBinding)) ==
+              "playback.presentation.shader.reserved_binding");
+    }
+}
+
+TEST_CASE("Parameterized material completes every parameter representation defensively",
+          "[playback][presentation][material][branch-coverage]") {
+    SECTION("material header and keyword paths reject invalid references") {
+        auto invalidShader = makeParameterizedPayload("shader.sprite");
+        invalidShader[48] = std::byte{'/'};
+        CHECK(prepareCode(makeShaderPayload(kVertex, kFragment, {}), std::move(invalidShader)) ==
+              "playback.presentation.material.shader_reference_invalid");
+
+        ShaderLayout shaderLayout;
+        shaderLayout.keywordCount = 1;
+        MaterialLayout materialLayout;
+        materialLayout.keywordCount = 1;
+        auto undeclaredKeyword = makeParameterizedPayload("shader.sprite", materialLayout);
+        undeclaredKeyword[65] = std::byte{'X'};
+        CHECK(prepareCode(makeShaderPayload(kVertex, kFragment, shaderLayout),
+                          std::move(undeclaredKeyword)) ==
+              "playback.presentation.material.keyword_undeclared");
+    }
+
+    SECTION("numeric parameter values reject non-finite lanes") {
+        ShaderLayout shaderLayout;
+        shaderLayout.parameterCount = 1;
+        shaderLayout.bindingCount = 1;
+        MaterialLayout materialLayout;
+        materialLayout.parameterCount = 1;
+        auto material = makeParameterizedPayload("shader.sprite", materialLayout);
+        writeU32(material, 61, 0x7FC00000U);
+        CHECK(
+            prepareCode(makeShaderPayload(kVertex, kFragment, shaderLayout), std::move(material)) ==
+            "playback.presentation.material.parameter_mismatch");
+    }
+
+    SECTION("int and bool parameter padding and values are checked") {
+        MaterialLayout materialLayout;
+        materialLayout.parameterCount = 1;
+
+        ShaderLayout intLayout;
+        intLayout.parameterCount = 1;
+        intLayout.bindingCount = 1;
+        intLayout.parameterType = 5;
+        auto intMaterial = makeParameterizedPayload("shader.sprite", materialLayout);
+        writeU32(intMaterial, 65, 1);
+        CHECK(
+            prepareCode(makeShaderPayload(kVertex, kFragment, intLayout), std::move(intMaterial)) ==
+            "playback.presentation.payload.reserved_nonzero");
+
+        ShaderLayout boolLayout;
+        boolLayout.parameterCount = 1;
+        boolLayout.bindingCount = 1;
+        boolLayout.parameterType = 6;
+        auto boolMaterial = makeParameterizedPayload("shader.sprite", materialLayout);
+        writeU32(boolMaterial, 61, 2);
+        CHECK(prepareCode(makeShaderPayload(kVertex, kFragment, boolLayout),
+                          std::move(boolMaterial)) ==
+              "playback.presentation.material.parameter_mismatch");
+    }
+
+    SECTION("texture parameters and unconsumed payload bytes are rejected") {
+        ShaderLayout shaderLayout;
+        shaderLayout.parameterCount = 1;
+        shaderLayout.bindingCount = 1;
+        shaderLayout.parameterType = 7;
+        MaterialLayout materialLayout;
+        materialLayout.parameterCount = 1;
+        materialLayout.textureCount = 1;
+        auto invalidTexture = makeParameterizedPayload("shader.sprite", materialLayout);
+        writeU32(invalidTexture, 61, 0);
+        CHECK(prepareCode(makeShaderPayload(kVertex, kFragment, shaderLayout),
+                          std::move(invalidTexture)) ==
+              "playback.presentation.material.shader_reference_invalid");
+
+        auto trailing = makeParameterizedPayload("shader.sprite");
+        trailing.push_back(std::byte{0});
+        updateEnvelopeSize(trailing);
+        CHECK(prepareCode(makeShaderPayload(kVertex, kFragment, {}), std::move(trailing)) ==
+              "playback.presentation.payload.size_mismatch");
+    }
 }

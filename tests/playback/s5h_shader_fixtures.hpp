@@ -128,6 +128,7 @@ struct ShaderLayout final {
     bool writeHostExtensions{true};
     bool writeSources{true};
     bool textureParameters{false};
+    std::uint32_t parameterType{};
 };
 
 struct MaterialLayout final {
@@ -197,7 +198,8 @@ inline auto makeShaderPayload(std::string_view vertexSource, std::string_view fr
     appendRaw(body, "main");
     appendRaw(body, "main");
     appendRaw(body, profile);
-    const auto parameterType = layout.textureParameters ? 7U : 1U;
+    const auto parameterType =
+        layout.parameterType != 0 ? layout.parameterType : (layout.textureParameters ? 7U : 1U);
     if (layout.writeKeywords) {
         for (std::uint32_t index = 0; index < layout.keywordCount; ++index) {
             const auto name = indexedName("Kw", index);
