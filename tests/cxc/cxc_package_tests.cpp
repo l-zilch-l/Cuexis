@@ -504,9 +504,9 @@ TEST_CASE("CXC failed package loads do not publish partial package state",
     auto corrupted = valid;
     const auto loaded = CxcPackageLoader::loadMemory(valid);
     REQUIRE(loaded.hasValue());
-    const auto found = std::ranges::find(
-        loaded.package->manifest().entries, "assets/charts/main.cuexis.chart.json",
-        &cuexis::cxc::CxcManifestEntry::path);
+    const auto found = std::ranges::find(loaded.package->manifest().entries,
+                                         "assets/charts/main.cuexis.chart.json",
+                                         &cuexis::cxc::CxcManifestEntry::path);
     REQUIRE(found != loaded.package->manifest().entries.end());
     auto changedHash = found->sha256;
     changedHash[0] = changedHash[0] == '0' ? '1' : '0';

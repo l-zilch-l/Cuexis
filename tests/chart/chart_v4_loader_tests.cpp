@@ -106,8 +106,8 @@ namespace {
     return makeAnimatorBudgetDocument(groups);
 }
 
-[[nodiscard]] auto makeMinimalV4Document(std::string_view parameters,
-                                         std::string_view imports) -> std::string {
+[[nodiscard]] auto makeMinimalV4Document(std::string_view parameters, std::string_view imports)
+    -> std::string {
     std::string result = R"({
       "format":"cuexis.chart","version":4,
       "chartId":"019f0000-0000-7abc-8def-0000000004c0","metadata":{},
@@ -318,9 +318,9 @@ TEST_CASE("Chart v4 Reader fixes routing, import, and parameter failure diagnost
         CHECK(root.diagnostics.items().front().code() == "json.type.mismatch");
 
         const auto version = cuexis::chart::ChartV4Loader::load(
-            makeMinimalV4Document("[]", "[]").replace(
-                makeMinimalV4Document("[]", "[]").find("\"version\":4"), 11,
-                "\"version\":3"));
+            makeMinimalV4Document("[]", "[]")
+                .replace(makeMinimalV4Document("[]", "[]").find("\"version\":4"), 11,
+                         "\"version\":3"));
         REQUIRE_FALSE(version.hasValue());
         CHECK(hasDiagnostic(version, "chart.version.unsupported"));
     }
@@ -328,8 +328,8 @@ TEST_CASE("Chart v4 Reader fixes routing, import, and parameter failure diagnost
     SECTION("parameter exact limit, duplicate, and malformed type") {
         constexpr std::string_view parameter =
             R"({"id":"value.x","type":"number","default":0,"constraints":{}})";
-        const auto document = makeMinimalV4Document(
-            std::string{"["} + std::string{parameter} + "]", "[]");
+        const auto document =
+            makeMinimalV4Document(std::string{"["} + std::string{parameter} + "]", "[]");
         auto limits = cuexis::chart::ChartLimits{};
         limits.maxChartParameters = 1;
         const auto exact = cuexis::chart::ChartV4Loader::load(document, limits);
@@ -344,20 +344,20 @@ TEST_CASE("Chart v4 Reader fixes routing, import, and parameter failure diagnost
         CHECK(hasDiagnostic(over, "chart.parameter.out_of_range"));
         CHECK(hasDiagnostic(over, "chart.parameter.duplicate"));
 
-        const auto malformed = cuexis::chart::ChartV4Loader::load(makeMinimalV4Document(
-            R"([{"id":"value.x","type":"future","constraints":{}}])", "[]"));
+        const auto malformed = cuexis::chart::ChartV4Loader::load(
+            makeMinimalV4Document(R"([{"id":"value.x","type":"future","constraints":{}}])", "[]"));
         REQUIRE_FALSE(malformed.hasValue());
         CHECK(hasDiagnostic(malformed, "chart.parameter.type_mismatch"));
     }
 
     SECTION("imports require portable lowercase CXT paths and unique records") {
-        const auto invalidPath = cuexis::chart::ChartV4Loader::load(makeMinimalV4Document(
-            "[]", R"([{"id":"motion.x","source":"Templates/MOVE.CXT"}])"));
+        const auto invalidPath = cuexis::chart::ChartV4Loader::load(
+            makeMinimalV4Document("[]", R"([{"id":"motion.x","source":"Templates/MOVE.CXT"}])"));
         REQUIRE_FALSE(invalidPath.hasValue());
         CHECK(hasDiagnostic(invalidPath, "cxt.template.invalid"));
 
-        const auto duplicate = cuexis::chart::ChartV4Loader::load(makeMinimalV4Document(
-            "[]", R"([{"id":"motion.x","source":"templates/move.cxt"},
+        const auto duplicate = cuexis::chart::ChartV4Loader::load(
+            makeMinimalV4Document("[]", R"([{"id":"motion.x","source":"templates/move.cxt"},
                          {"id":"motion.x","source":"templates/other.cxt"}])"));
         REQUIRE_FALSE(duplicate.hasValue());
         CHECK(hasDiagnostic(duplicate, "cxt.import.duplicate"));

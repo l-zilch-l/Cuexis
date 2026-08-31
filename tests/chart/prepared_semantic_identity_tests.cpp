@@ -78,8 +78,8 @@ TEST_CASE("Prepared semantic identity matches the frozen combiner encoding",
     CHECK(cuexis::chart::assemblePreparedSemanticIdentity(chart, cxt, changedResource,
                                                           filledIdentity(0x55U)) != assembled);
 
-    CHECK(cuexis::chart::assemblePreparedSemanticIdentity(
-              filledIdentity(0x88U), cxt, resources, filledIdentity(0x55U)) != assembled);
+    CHECK(cuexis::chart::assemblePreparedSemanticIdentity(filledIdentity(0x88U), cxt, resources,
+                                                          filledIdentity(0x55U)) != assembled);
 
     const auto emptyLists = cuexis::chart::assemblePreparedSemanticIdentity(
         chart, {}, {}, cuexis::chart::emptyParameterIdentity());

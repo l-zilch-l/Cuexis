@@ -53,6 +53,11 @@ target_compile_definitions(cuexis_playback_allocation_tests
 )
 
 if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
+    target_compile_definitions(cuexis_playback_tests
+        PRIVATE
+            CUEXIS_PLAYBACK_PARSE_COUNT_PROBE_UNAVAILABLE=1
+    )
+
     target_compile_definitions(cuexis_playback_allocation_tests
         PRIVATE
             CUEXIS_PLAYBACK_ALLOCATION_TEST_SHARED=1

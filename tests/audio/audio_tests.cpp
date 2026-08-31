@@ -89,7 +89,8 @@ TEST_CASE("HostClock rejects source regressions within a segment", "[audio][cloc
     CHECK(clock.snapshot().positionMs == Catch::Approx(50.0));
 }
 
-TEST_CASE("HostClock keeps its last published sample after rejected input", "[audio][clock][rollback]") {
+TEST_CASE("HostClock keeps its last published sample after rejected input",
+          "[audio][clock][rollback]") {
     cuexis::audio::HostClock clock;
     REQUIRE(clock.submit({75.0, cuexis::audio::PlaybackState::Playing, 3}).has_value());
     const auto published = clock.snapshot();
@@ -99,8 +100,7 @@ TEST_CASE("HostClock keeps its last published sample after rejected input", "[au
     REQUIRE_FALSE(nonFinite.has_value());
     CHECK(nonFinite.error().code() == "audio.clock.position_invalid");
 
-    const auto stoppedAtPosition =
-        clock.submit({1.0, cuexis::audio::PlaybackState::Stopped, 4});
+    const auto stoppedAtPosition = clock.submit({1.0, cuexis::audio::PlaybackState::Stopped, 4});
     REQUIRE_FALSE(stoppedAtPosition.has_value());
     CHECK(stoppedAtPosition.error().code() == "audio.clock.stopped_position_invalid");
 

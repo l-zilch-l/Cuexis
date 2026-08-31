@@ -96,12 +96,12 @@ TEST_CASE("Moved-from SDL wrappers reject operations without invalidating their 
     auto runtime = std::move(runtimeResult).value();
     auto replacementRuntime = std::move(runtime);
 
-    const auto missingRuntime = cuexis::platform_sdl::SdlWindow::create(runtime, dummyWindowConfig());
+    const auto missingRuntime =
+        cuexis::platform_sdl::SdlWindow::create(runtime, dummyWindowConfig());
     REQUIRE_FALSE(missingRuntime.has_value());
     CHECK(missingRuntime.error().code() == "platform.sdl.runtime_unavailable");
 
-    auto created =
-        cuexis::platform_sdl::SdlWindow::create(replacementRuntime, dummyWindowConfig());
+    auto created = cuexis::platform_sdl::SdlWindow::create(replacementRuntime, dummyWindowConfig());
     REQUIRE(created.has_value());
     auto window = std::move(created).value();
     auto replacementWindow = std::move(window);

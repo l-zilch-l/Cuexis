@@ -67,9 +67,7 @@ TEST_CASE("HostContentProvider contains callback failures exceptions and reentry
 
     auto unknown = cuexis::content::HostContentProvider::create(
         [](const cuexis::content::ContentRequest&)
-            -> cuexis::core::Result<cuexis::content::ContentBlob> {
-            throw 7;
-        });
+            -> cuexis::core::Result<cuexis::content::ContentBlob> { throw 7; });
     REQUIRE(unknown.has_value());
     const auto unknownException = (*unknown)->readBlob({.rootId = "base", .source = "a.bin"});
     REQUIRE_FALSE(unknownException.has_value());
