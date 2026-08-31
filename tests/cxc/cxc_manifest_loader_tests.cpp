@@ -112,3 +112,18 @@ TEST_CASE("CXC manifest Reader enforces listed byte budgets", "[cxc][manifest][c
     CHECK_FALSE(result.hasValue());
     CHECK(hasDiagnostic(result, "cxc.budget.exceeded"));
 }
+
+TEST_CASE("CXC manifest Reader rejects a non-object root and zero diagnostic budget",
+          "[cxc][manifest][boundary]") {
+    const auto nonObject = cuexis::cxc::CxcManifestLoader::load("[]");
+    CHECK_FALSE(nonObject.hasValue());
+    CHECK_FALSE(nonObject.diagnostics.empty());
+    CHECK(nonObject.diagnostics.items().front().code() == "json.type.mismatch");
+
+    auto limits = cuexis::cxc::CxcManifestLimits{};
+    limits.maxDiagnostics = 0;
+    const auto zeroBudget = cuexis::cxc::CxcManifestLoader::load("{}", limits);
+    CHECK_FALSE(zeroBudget.hasValue());
+    REQUIRE_FALSE(zeroBudget.diagnostics.empty());
+    CHECK(zeroBudget.diagnostics.items().front().code() == "cxc.budget.exceeded");
+}

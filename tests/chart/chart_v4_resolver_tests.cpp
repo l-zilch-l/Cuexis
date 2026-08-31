@@ -236,3 +236,15 @@ TEST_CASE("Resolver validates effective animation properties after parameter res
         CHECK(hasDiagnostic(result, "chart.animation.discrete_weight_unsupported"));
     }
 }
+
+TEST_CASE("Chart v4 resolver rejects a zero diagnostic budget before resolution",
+          "[chart][v4][resolver][limits][branch-coverage]") {
+    const auto source = loadSource("valid/chart_v4_parameterized_transform.json");
+    auto limits = cuexis::chart::ChartLimits{};
+    limits.maxDiagnostics = 0;
+
+    const auto result = cuexis::chart::ChartV4Resolver::resolve(source, {}, {}, {}, limits);
+    CHECK_FALSE(result.hasValue());
+    REQUIRE_FALSE(result.diagnostics.empty());
+    CHECK(result.diagnostics.items().front().code() == "chart.limits.invalid");
+}

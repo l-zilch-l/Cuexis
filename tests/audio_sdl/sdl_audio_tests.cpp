@@ -364,6 +364,30 @@ TEST_CASE("SDL empty-state errors and unload are stable", "[audio][sdl][state][u
     CHECK(isEmptyEffectiveSettings(transport->effectiveSettings()));
 }
 
+TEST_CASE("SDL audio move construction transfers the live transport",
+          "[audio][sdl][move][branch-coverage]") {
+    const auto config = cuexis::audio::validateAudioConfig(
+        {.targetQueueMs = 40, .refillLowWaterMs = 10, .gain = 1.0F});
+    REQUIRE(config.has_value());
+    cuexis::audio::AudioClipStore store;
+    const auto handle = registerClip(store, 9600);
+
+    auto subsystemResult = cuexis::audio_sdl::SdlAudioSubsystem::create();
+    REQUIRE(subsystemResult.has_value());
+    auto subsystem = std::move(subsystemResult).value();
+    auto replacementSubsystem = std::move(subsystem);
+
+    auto transportResult = cuexis::audio_sdl::SdlAudioTransport::create(
+        replacementSubsystem, store, *config);
+    REQUIRE(transportResult.has_value());
+    auto transport = std::move(transportResult).value();
+    auto replacementTransport = std::move(transport);
+
+    REQUIRE(replacementTransport.load(handle).has_value());
+    CHECK(replacementTransport.snapshot().source.state ==
+          cuexis::audio::PlaybackState::Stopped);
+}
+
 TEST_CASE("SDL effective settings remain a coherent published tuple across owner transitions",
           "[audio][sdl][effective][concurrency]") {
     const auto config = cuexis::audio::validateAudioConfig(

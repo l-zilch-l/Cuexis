@@ -344,6 +344,21 @@ TEST_CASE("CXC ZIP32 envelope enforces exact count size path and field budgets",
             {"safe/file", {}}, {"safe/file/child", {}}};
         const auto rejected = detail::writeCanonicalZip32(entries, CxcPackageLimits{});
         REQUIRE_FALSE(rejected.has_value());
-        CHECK(rejected.error().code() == "cxc.entry.duplicate");
+    CHECK(rejected.error().code() == "cxc.entry.duplicate");
     }
+}
+
+TEST_CASE("CXC ZIP32 writer rejects empty archives and invalid zero limits",
+          "[cxc][zip32][boundary]") {
+    const std::vector<std::pair<std::string, std::vector<std::byte>>> empty;
+    const auto emptyArchive = detail::writeCanonicalZip32(empty, CxcPackageLimits{});
+    REQUIRE_FALSE(emptyArchive.has_value());
+    CHECK(emptyArchive.error().code() == "cxc.budget.exceeded");
+
+    auto limits = CxcPackageLimits{};
+    limits.maxPackageBytes = 0;
+    const auto invalidLimits = detail::validateZip32Envelope({}, limits);
+    CHECK_FALSE(invalidLimits.hasValue());
+    REQUIRE_FALSE(invalidLimits.diagnostics.empty());
+    CHECK(invalidLimits.diagnostics.items().front().code() == "cxc.budget.exceeded");
 }

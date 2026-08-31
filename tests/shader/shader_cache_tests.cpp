@@ -341,6 +341,50 @@ TEST_CASE("S5-F rejects truncated cache envelopes without publishing a candidate
     CHECK(cache.candidate() == nullptr);
 }
 
+TEST_CASE("S5-F rejects unsupported envelope metadata before decoding the cache body",
+          "[shader][s5-f][cache][envelope][branch-coverage]") {
+    const auto compiled = cuexis::shader::ShaderCompiler::compile(passthroughRequest());
+    REQUIRE(compiled.has_value());
+    cuexis::shader::ShaderCacheRecord record;
+    record.sourceIdentity = makeIdentity();
+    record.artifact = *compiled;
+    const auto encoded = cuexis::shader::encodeCache(record);
+    REQUIRE(encoded.has_value());
+
+    const auto writeU32 = [](std::vector<std::byte>& bytes, std::size_t offset,
+                             std::uint32_t value) {
+        REQUIRE(offset + 4U <= bytes.size());
+        for (std::size_t index = 0; index < 4U; ++index) {
+            bytes[offset + index] =
+                static_cast<std::byte>((value >> static_cast<unsigned>(index * 8U)) & 0xFFU);
+        }
+    };
+
+    SECTION("unsupported version") {
+        auto bytes = *encoded;
+        writeU32(bytes, 8U, cuexis::shader::cacheVersionV1 + 1U);
+        const auto rejected = cuexis::shader::decodeCache(bytes);
+        REQUIRE_FALSE(rejected.has_value());
+        CHECK(rejected.error().code() == cuexis::shader::diagnosticCacheKeyInvalid);
+    }
+
+    SECTION("reserved field") {
+        auto bytes = *encoded;
+        writeU32(bytes, 12U, 1U);
+        const auto rejected = cuexis::shader::decodeCache(bytes);
+        REQUIRE_FALSE(rejected.has_value());
+        CHECK(rejected.error().code() == cuexis::shader::diagnosticCacheKeyInvalid);
+    }
+
+    SECTION("total length") {
+        auto bytes = *encoded;
+        writeU32(bytes, 16U, static_cast<std::uint32_t>(bytes.size() - 1U));
+        const auto rejected = cuexis::shader::decodeCache(bytes);
+        REQUIRE_FALSE(rejected.has_value());
+        CHECK(rejected.error().code() == cuexis::shader::diagnosticCacheKeyInvalid);
+    }
+}
+
 TEST_CASE("S5-F deleting a cache file rebuilds identical bytes", "[shader][s5-f][rebuild]") {
     const auto root = workRoot("rebuild");
     const auto compiled = cuexis::shader::ShaderCompiler::compile(passthroughRequest());

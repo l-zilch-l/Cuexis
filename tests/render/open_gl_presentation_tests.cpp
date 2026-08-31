@@ -235,6 +235,25 @@ TEST_CASE("OpenGL draw bounds tolerate an empty mesh and preserve its zero cente
     CHECK(summary->opaque.front().depthMeters == Catch::Approx(0.0));
 }
 
+TEST_CASE("OpenGL draw preparation separates transparent commands and orders them by depth",
+          "[render][opengl][draws][branch-coverage]") {
+    auto fixture = makeFixture();
+    auto transparent = fixture.snapshot.objects.front();
+    transparent.id = "transparent-object";
+    transparent.materialOpacity = 0.5;
+    transparent.worldMatrix[14] = -2.0F;
+    fixture.snapshot.objects.push_back(std::move(transparent));
+
+    const auto summary = cuexis::render_opengl::detail::probeBuildDraws(
+        fixture.snapshot, fixture.manifest, fixture.resources);
+    REQUIRE(summary.has_value());
+    REQUIRE(summary->opaque.size() == 1);
+    REQUIRE(summary->transparent.size() == 1);
+    CHECK(summary->opaque.front().objectId == "bounds-object");
+    CHECK(summary->transparent.front().objectId == "transparent-object");
+    CHECK(summary->transparent.front().depthMeters == Catch::Approx(2.0));
+}
+
 TEST_CASE("Parameterized OpenGL numeric uniforms are queried during prepare, not hot draw",
           "[render][opengl][uniform][characterization]") {
     const auto source = renderImplementationSource();
