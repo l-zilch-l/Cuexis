@@ -2,15 +2,16 @@
 
 状态：现行路线图
 
-更新日期：2026-08-28
+更新日期：2026-08-30
 
 产品边界由 [ADR 0027](adr/0027-playback-sdk-product-boundary.md) 冻结。本文只维护阶段顺序和当前
 交接，不复制阶段实施细节或完成证据。
 
 ## 当前阶段
 
-Stage 4 已完成；当前下一阶段是 **Stage 5**。S5-A 合同已冻结；S5-B 已接线；S5-C 已完成；S5-D 已完成；S5-E 已完成；S5-F 已完成；S5-G 已完成；S5-H local checkpoint；hosted 与 owner acceptance 待完成。
-Stage Chart Format Update 已完成，不使用数字别名。
+Stage 5 已于 2026-08-28 关闭并经 PR #20 合并至 `master`。`260829-full-review` 随后于
+2026-08-30 关闭；当前 [260830-followup](stage_plans/active/260830-followup/plan.md) 包含文档整理、
+Chart/CXC parse-once 和关键模块分支覆盖率三个任务。Stage 6 仍是 future，尚未启动。
 
 ```text
 CFU-A inventory and use cases                       completed
@@ -22,35 +23,35 @@ CFU-F consumers and determinism                     closed; final-SHA hosted gat
 CFU-G final closure                                 completed; G6 owner acceptance recorded 2026-08-24
 ```
 
-权威计划：[stage_chart_format_update_implementation_plan.md](stage_plans/stage_chart_format_update_implementation_plan.md)。
+权威计划：[stage_chart_format_update_implementation_plan.md](stage_plans/completed/chart-format-update/plan.md)。
 
 ## 已完成阶段
 
 | 阶段 | 交付 | 证据 |
 | --- | --- | --- |
-| Stage 0 | 工程骨架、Core、Platform、World、OpenGL Player | [报告](stage_reports/stage_0_completion_report.md) |
-| Stage 1A | Canonical Chart、ChartRuntime、事务实例化 | [报告](stage_reports/stage_1a_completion_report.md) |
-| Stage 1B | Project、Asset Index、资源生命周期 | [报告](stage_reports/stage_1b_completion_report.md) |
-| Stage 1C | Behavior、RuntimeFrame、Headless Playback | [报告](stage_reports/stage_1c_completion_report.md) |
-| Stage 1D | 主音乐、Clock、Audio、Prepared Playback | [报告](stage_reports/stage_1d_completion_report.md) |
-| Stage 1E | C++ static/shared preview、安装与 consumer | [报告](stage_reports/stage_1e_completion_report.md) |
-| Stage 2 | Chart v3、TimingMap、Behavior/Step Event | [报告](stage_reports/stage_2_completion_report.md) |
-| Stage 3 | Portable Presentation、Validation、OpenGL adapter | [报告](stage_reports/stage_3_completion_report.md) |
-| Stage 4 | Cuexis 表现动画运行时 | [报告](stage_reports/stage_4_completion_report.md) |
+| Stage 0 | 工程骨架、Core、Platform、World、OpenGL Player | [报告](stage_reports/stages/stage-00/completion.md) |
+| Stage 1A | Canonical Chart、ChartRuntime、事务实例化 | [报告](stage_reports/stages/stage-01/stage-1a-completion.md) |
+| Stage 1B | Project、Asset Index、资源生命周期 | [报告](stage_reports/stages/stage-01/stage-1b-completion.md) |
+| Stage 1C | Behavior、RuntimeFrame、Headless Playback | [报告](stage_reports/stages/stage-01/stage-1c-completion.md) |
+| Stage 1D | 主音乐、Clock、Audio、Prepared Playback | [报告](stage_reports/stages/stage-01/stage-1d-completion.md) |
+| Stage 1E | C++ static/shared preview、安装与 consumer | [报告](stage_reports/stages/stage-01/stage-1e-completion.md) |
+| Stage 2 | Chart v3、TimingMap、Behavior/Step Event | [报告](stage_reports/stages/stage-02/completion.md) |
+| Stage 3 | Portable Presentation、Validation、OpenGL adapter | [报告](stage_reports/stages/stage-03/completion.md) |
+| Stage 4 | Cuexis 表现动画运行时 | [报告](stage_reports/stages/stage-04/completion.md) |
+| Stage 5 | Material/Shader 管线和能力 Profile | [报告](stage_reports/stages/stage-05/completion.md) |
 
 ## 后续阶段
 
 | 阶段 | 目标 | 前置条件 |
 | --- | --- | --- |
-| [Stage 5](stage_plans/stage_5_implementation_plan.md) | Material/Shader 管线和能力 Profile | S5-A 已冻结；S5-B 已接线；S5-C 已完成；S5-D 已完成；S5-E 已完成；S5-F 已完成；S5-G 已完成；S5-H local checkpoint；hosted 待完成 |
-| [Stage 6](stage_plans/stage_6_implementation_plan.md) | Playback C++ API 与 Player 产品化 | 真实 consumer 和配置组合证据 |
-| [Stage 7](stage_plans/stage_7_implementation_plan.md) | Cuexis Studio 核心 | 稳定 Playback/格式/预览路径 |
-| [Stage 8](stage_plans/stage_8_implementation_plan.md) | 可选确定性粒子表现 | Studio、Material/Shader 基础 |
-| [Stage 9A](stage_plans/stage_9a_implementation_plan.md) | SDK 与宿主性能验证 | 主要桌面闭环可测量 |
-| [Stage 9B](stage_plans/stage_9b_implementation_plan.md) | Android SDK 与宿主适配验证 | 9A profile 和移动目标恢复决策 |
-| [Stage 10](stage_plans/stage_10_implementation_plan.md) | 可选 Vulkan adapter 验证 | 存在真实产品需求 |
-| [Stage 11](stage_plans/stage_11_implementation_plan.md) | Input、Judgement、Score、Replay | Studio 与性能基础 |
-| [Stage 12](stage_plans/stage_12_implementation_plan.md) | 稳定 ABI 与 Playback SDK v1 | Judgement/Replay 公共生命周期完成 |
+| [Stage 6](stage_plans/future/stage-06/plan.md) | Playback C++ API 与 Player 产品化 | 真实 consumer 和配置组合证据 |
+| [Stage 7](stage_plans/future/stage-07/plan.md) | Cuexis Studio 核心 | 稳定 Playback/格式/预览路径 |
+| [Stage 8](stage_plans/future/stage-08/plan.md) | 可选确定性粒子表现 | Studio、Material/Shader 基础 |
+| [Stage 9A](stage_plans/future/stage-09a/plan.md) | SDK 与宿主性能验证 | 主要桌面闭环可测量 |
+| [Stage 9B](stage_plans/deferred/stage-09b/plan.md) | Android SDK 与宿主适配验证 | 9A profile 和移动目标恢复决策 |
+| [Stage 10](stage_plans/deferred/stage-10/plan.md) | 可选 Vulkan adapter 验证 | 存在真实产品需求 |
+| [Stage 11](stage_plans/future/stage-11/plan.md) | Input、Judgement、Score、Replay | Studio 与性能基础 |
+| [Stage 12](stage_plans/future/stage-12/plan.md) | 稳定 ABI 与 Playback SDK v1 | Judgement/Replay 公共生命周期完成 |
 
 ## 无限期延后
 

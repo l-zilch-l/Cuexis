@@ -305,27 +305,67 @@ jobs:
           --xml coverage.xml
           --fail-under-line 40
 
-      - name: Report CFU-F4 CXC and Chart v4 branch coverage
+      - name: Capture Task 3 core coverage evidence
         run: |
-          mkdir -p out/build/headless-coverage/cfu-f4
-          printf 'implementation_sha=%s\n' '${{ github.sha }}' \
-            > out/build/headless-coverage/cfu-f4/coverage.txt
+          evidence=out/build/headless-coverage/task-3-coverage
+          mkdir -p "$evidence"
+          {
+            printf 'implementation_sha=%s\n' '${{ github.sha }}'
+            printf 'preset=headless-coverage\n'
+            printf 'compiler='
+            g++ --version | head -n 1
+            printf 'gcovr='
+            gcovr --version | head -n 1
+            printf 'root=.\n'
+            printf 'filter=engine/\n'
+            printf 'exclude_unreachable_branches=true\n'
+            printf 'test_command=ctest --preset headless-coverage --no-tests=error -E ^cuexis_external_consumer_\n'
+          } > "$evidence/metadata.txt"
+          ctest --preset headless-coverage -N \
+            > "$evidence/discovered-tests.txt"
+          gcovr out/build/headless-coverage \
+            --root . \
+            --filter 'engine/' \
+            --exclude-unreachable-branches \
+            --txt-metric branch \
+            --print-summary \
+            --txt "$evidence/engine-summary.txt"
+          cp coverage.xml "$evidence/coverage.xml"
           gcovr out/build/headless-coverage \
             --root . \
             --filter 'engine/cxc/' \
             --exclude-unreachable-branches \
             --txt-metric branch \
             --print-summary \
-            --txt out/build/headless-coverage/cfu-f4/cxc-branches.txt \
-            >> out/build/headless-coverage/cfu-f4/coverage.txt
+            --txt "$evidence/cxc-branches.txt"
           gcovr out/build/headless-coverage \
             --root . \
-            --filter 'engine/chart/src/(animation_lowering|animation_template_loader|chart_parameter_resolver|chart_v4_loader|chart_v4_reader_internal|chart_v4_resolver|prepared_semantic_identity)' \
+            --filter 'engine/chart/src/(chart_v4_loader|chart_v4_resolver|chart_v4_common_reader_internal|chart_v4_animation_reader_internal|chart_parameter_resolver|prepared_semantic_identity)\\.cpp' \
             --exclude-unreachable-branches \
             --txt-metric branch \
             --print-summary \
-            --txt out/build/headless-coverage/cfu-f4/chart-v4-branches.txt \
-            >> out/build/headless-coverage/cfu-f4/coverage.txt
+            --txt "$evidence/chart-v4-branches.txt"
+          gcovr out/build/headless-coverage \
+            --root . \
+            --filter 'engine/playback/' \
+            --exclude-unreachable-branches \
+            --txt-metric branch \
+            --print-summary \
+            --txt "$evidence/playback-branches.txt"
+          gcovr out/build/headless-coverage \
+            --root . \
+            --filter 'engine/chart/src/prepared_semantic_identity\\.cpp' \
+            --exclude-unreachable-branches \
+            --txt-metric branch \
+            --print-summary \
+            --txt "$evidence/prepared-identity-branches.txt"
+          gcovr out/build/headless-coverage \
+            --root . \
+            --filter 'engine/audio/src/audio_transport\\.cpp' \
+            --exclude-unreachable-branches \
+            --txt-metric branch \
+            --print-summary \
+            --txt "$evidence/audio-host-clock-branches.txt"
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
@@ -333,10 +373,176 @@ jobs:
           name: cuexis-coverage
           path: coverage.xml
 
-      - name: Upload CFU-F4 coverage evidence
+      - name: Upload Task 3 core coverage evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cuexis-cfu-f4-coverage-${{ github.sha }}
-          path: out/build/headless-coverage/cfu-f4/
+          name: cuexis-task-3-core-coverage-${{ github.sha }}
+          path: out/build/headless-coverage/task-3-coverage/
+          if-no-files-found: warn
+
+  adapter-coverage:
+    name: GCC Adapter Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Check out pinned vcpkg
+        uses: actions/checkout@v4
+        with:
+          repository: microsoft/vcpkg
+          ref: ${{ env.VCPKG_COMMIT }}
+          path: .vcpkg
+
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y ninja-build gcovr
+
+      - name: Bootstrap pinned vcpkg
+        run: |
+          ./.vcpkg/bootstrap-vcpkg.sh -disableMetrics
+          printf 'VCPKG_ROOT=%s/.vcpkg\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+
+      - name: Configure
+        run: >-
+          cmake --preset adapter-coverage --fresh
+          -DCMAKE_CXX_COMPILER=g++
+          -DCUEXIS_IMPLEMENTATION_SHA=${{ github.sha }}
+          -DVCPKG_TARGET_TRIPLET=x64-linux
+
+      - name: Build
+        run: cmake --build --preset adapter-coverage --clean-first
+
+      - name: Test instrumented adapter targets
+        env:
+          SDL_AUDIODRIVER: dummy
+          SDL_VIDEODRIVER: dummy
+        run: >-
+          ctest --preset adapter-coverage --no-tests=error
+          -E "^cuexis_external_consumer_"
+
+      - name: Capture Task 3 adapter coverage evidence
+        run: |
+          evidence=out/build/adapter-coverage/task-3-coverage
+          mkdir -p "$evidence"
+          {
+            printf 'implementation_sha=%s\n' '${{ github.sha }}'
+            printf 'preset=adapter-coverage\n'
+            printf 'compiler='
+            g++ --version | head -n 1
+            printf 'gcovr='
+            gcovr --version | head -n 1
+            printf 'root=.\n'
+            printf 'filter=engine/platform/src/|engine/audio_sdl/src/|engine/render_opengl/src/\n'
+            printf 'exclude_unreachable_branches=true\n'
+            printf 'test_command=SDL_AUDIODRIVER=dummy SDL_VIDEODRIVER=dummy ctest --preset adapter-coverage --no-tests=error -E ^cuexis_external_consumer_\n'
+          } > "$evidence/metadata.txt"
+          ctest --preset adapter-coverage -N > "$evidence/discovered-tests.txt"
+          gcovr out/build/adapter-coverage \
+            --root . \
+            --filter 'engine/platform/src/' \
+            --exclude-unreachable-branches \
+            --txt-metric branch \
+            --print-summary \
+            --txt "$evidence/platform-sdl-branches.txt"
+          gcovr out/build/adapter-coverage \
+            --root . \
+            --filter 'engine/audio_sdl/src/' \
+            --exclude-unreachable-branches \
+            --txt-metric branch \
+            --print-summary \
+            --txt "$evidence/audio-sdl-branches.txt"
+          gcovr out/build/adapter-coverage \
+            --root . \
+            --filter 'engine/render_opengl/src/' \
+            --exclude-unreachable-branches \
+            --txt-metric branch \
+            --print-summary \
+            --txt "$evidence/render-opengl-branches.txt"
+
+      - name: Upload Task 3 adapter coverage evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cuexis-task-3-adapter-coverage-${{ github.sha }}
+          path: out/build/adapter-coverage/task-3-coverage/
+          if-no-files-found: warn
+
+  shader-tools-coverage:
+    name: GCC Shader Tools Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Check out pinned vcpkg
+        uses: actions/checkout@v4
+        with:
+          repository: microsoft/vcpkg
+          ref: ${{ env.VCPKG_COMMIT }}
+          path: .vcpkg
+
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y ninja-build gcovr
+
+      - name: Bootstrap pinned vcpkg
+        run: |
+          ./.vcpkg/bootstrap-vcpkg.sh -disableMetrics
+          printf 'VCPKG_ROOT=%s/.vcpkg\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+
+      - name: Configure
+        run: >-
+          cmake --preset shader-tools-coverage --fresh
+          -DCMAKE_CXX_COMPILER=g++
+          -DCUEXIS_IMPLEMENTATION_SHA=${{ github.sha }}
+          -DVCPKG_TARGET_TRIPLET=x64-linux
+
+      - name: Build
+        run: cmake --build --preset shader-tools-coverage --clean-first
+
+      - name: Test instrumented shader-tools targets
+        run: >-
+          ctest --preset shader-tools-coverage --no-tests=error
+          -E "^cuexis_external_consumer_"
+
+      - name: Capture Task 3 shader-tools coverage evidence
+        run: |
+          evidence=out/build/shader-tools-coverage/task-3-coverage
+          mkdir -p "$evidence"
+          {
+            printf 'implementation_sha=%s\n' '${{ github.sha }}'
+            printf 'preset=shader-tools-coverage\n'
+            printf 'compiler='
+            g++ --version | head -n 1
+            printf 'gcovr='
+            gcovr --version | head -n 1
+            printf 'root=.\n'
+            printf 'filter=engine/shader/src/shader_cache.cpp|engine/shader/src/shader_pipeline_cache.cpp\n'
+            printf 'exclude_unreachable_branches=true\n'
+            printf 'test_command=ctest --preset shader-tools-coverage --no-tests=error -E ^cuexis_external_consumer_\n'
+          } > "$evidence/metadata.txt"
+          ctest --preset shader-tools-coverage -N > "$evidence/discovered-tests.txt"
+          gcovr out/build/shader-tools-coverage \
+            --root . \
+            --filter 'engine/shader/src/shader_cache\\.cpp' \
+            --exclude-unreachable-branches \
+            --txt-metric branch \
+            --print-summary \
+            --txt "$evidence/shader-cache-branches.txt"
+          gcovr out/build/shader-tools-coverage \
+            --root . \
+            --filter 'engine/shader/src/shader_pipeline_cache\\.cpp' \
+            --exclude-unreachable-branches \
+            --txt-metric branch \
+            --print-summary \
+            --txt "$evidence/shader-pipeline-cache-branches.txt"
+
+      - name: Upload Task 3 shader-tools coverage evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cuexis-task-3-shader-tools-coverage-${{ github.sha }}
+          path: out/build/shader-tools-coverage/task-3-coverage/
           if-no-files-found: warn

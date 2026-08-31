@@ -9,6 +9,7 @@
 #include <cuexis/json/parse.hpp>
 #include <cuexis/json/reader.hpp>
 
+#include "canonical_chart_loader_internal.hpp"
 #include "diagnostic_limit.hpp"
 
 #include <optional>
@@ -52,7 +53,7 @@ auto ChartLoader::load(std::string_view jsonText, const ChartLimits& limits)
         return ChartDocumentResult{std::nullopt, std::move(diagnostics)};
     }
     if (*format == "cuexis.chart") {
-        return CanonicalChartLoader::load(jsonText, limits);
+        return detail::loadCanonicalValue(std::move(*parsed), limits);
     }
     diagnostics.add(core::Diagnostic{core::DiagnosticSeverity::Error, "chart.format.unsupported",
                                      "Chart format is unsupported",

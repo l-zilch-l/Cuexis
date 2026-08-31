@@ -191,6 +191,30 @@ TEST_CASE("OpenGL draw bounds reject non-finite Portable Mesh bounds", "[render]
     CHECK(hasContext(result.error(), "field", "mesh_bounds"));
 }
 
+TEST_CASE("OpenGL draw preparation rejects late frame errors without a partial summary",
+          "[render][opengl][frame][rollback]") {
+    auto fixture = makeFixture();
+    const auto baseline = cuexis::render_opengl::detail::probeBuildDraws(
+        fixture.snapshot, fixture.manifest, fixture.resources);
+    REQUIRE(baseline.has_value());
+    REQUIRE(baseline->opaque.size() == 1);
+
+    auto lateObject = fixture.snapshot.objects.front();
+    lateObject.id = "late-invalid-object";
+    lateObject.worldMatrix[0] = std::numeric_limits<float>::infinity();
+    fixture.snapshot.objects.push_back(std::move(lateObject));
+
+    const auto rejected = cuexis::render_opengl::detail::probeBuildDraws(
+        fixture.snapshot, fixture.manifest, fixture.resources);
+    REQUIRE_FALSE(rejected.has_value());
+    CHECK(rejected.error().code() == "playback.presentation.frame.non_finite");
+    CHECK(hasContext(rejected.error(), "object_id", "late-invalid-object"));
+
+    // The successful summary is a caller-owned value; a later failed build cannot mutate it.
+    CHECK(baseline->opaque.size() == 1);
+    CHECK(baseline->opaque.front().objectId == "bounds-object");
+}
+
 TEST_CASE("OpenGL draw bounds tolerate an empty mesh and preserve its zero center",
           "[render][opengl][bounds]") {
     auto fixture = makeFixture();

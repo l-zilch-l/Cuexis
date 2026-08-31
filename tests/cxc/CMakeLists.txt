@@ -17,6 +17,7 @@ target_compile_definitions(cuexis_cxc_tests
 target_include_directories(cuexis_cxc_tests
     PRIVATE
         "${PROJECT_SOURCE_DIR}/engine/cxc/src"
+        "${PROJECT_SOURCE_DIR}/engine/json_support/src"
 )
 
 target_link_libraries(cuexis_cxc_tests

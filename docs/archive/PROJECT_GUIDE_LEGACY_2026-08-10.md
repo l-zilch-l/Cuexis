@@ -9,7 +9,7 @@
 
 ## 0. 文档状态
 
-本文档是项目的持续维护指南，同时记录已落地的工程状态、已确认的架构边界和后续阶段路线。阶段 0、阶段 1A、阶段 1B、阶段 1C、阶段 1D、阶段 1E、阶段 2 与阶段 3 已完成最终验收。阶段 3 的公共方向和实施范围由 ADR 0037 与[阶段 3 实施计划](../stage_plans/stage_3_implementation_plan.md)冻结；3A-3G 已全部关闭，最终 hosted Linux 证据为 commit `b71ef23b2f258d88e274a9b4b13665ef10a39845` 的 Linux Quality run `31270268057`。260722 全量审查的 R01-R21 已于 2026-07-26/27 全部关闭并补齐构建、CTest、架构和 external consumer 证据。当前活动阶段是 [Stage Chart Format Update](../stage_plans/stage_chart_format_update_implementation_plan.md)，其完成后才进入阶段 4。ADR 0027 已将长期产品方向调整为可嵌入 Cuexis Playback SDK + 独立 Player + 独立 Studio。
+本文档是项目的持续维护指南，同时记录已落地的工程状态、已确认的架构边界和后续阶段路线。阶段 0、阶段 1A、阶段 1B、阶段 1C、阶段 1D、阶段 1E、阶段 2 与阶段 3 已完成最终验收。阶段 3 的公共方向和实施范围由 ADR 0037 与[阶段 3 实施计划](../stage_plans/completed/stage-03/plan.md)冻结；3A-3G 已全部关闭，最终 hosted Linux 证据为 commit `b71ef23b2f258d88e274a9b4b13665ef10a39845` 的 Linux Quality run `31270268057`。260722 全量审查的 R01-R21 已于 2026-07-26/27 全部关闭并补齐构建、CTest、架构和 external consumer 证据。当前活动阶段是 [Stage Chart Format Update](../stage_plans/completed/chart-format-update/plan.md)，其完成后才进入阶段 4。ADR 0027 已将长期产品方向调整为可嵌入 Cuexis Playback SDK + 独立 Player + 独立 Studio。
 
 文档中的内容按以下方式理解：
 
@@ -2134,7 +2134,7 @@ cuexis_judgement_tests
 cuexis_external_consumer_tests
 ```
 
-阶段 1A 已建立 `cuexis_core_tests`、`cuexis_json_support_tests`、`cuexis_platform_sdl_tests`、`cuexis_world_tests`、`cuexis_assets_tests`、`cuexis_chart_tests`、`cuexis_behavior_tests`、`cuexis_gameplay_tests`、`cuexis_render_tests`、`cuexis_debug_tests`、`cuexis_runtime_tests` 和 `cuexis_render_opengl_tests`，并在 CTest 中加入架构扫描及 Player 参数、谱面文件和 SDL 初始化失败路径检查。需要真实窗口和 GPU 的当前 Stage 3 六帧 OpenGL presentation 冒烟测试按 `docs/BUILDING.md` 单独执行，不混入算法单元测试；阶段 1A 的历史三帧 A/B 结果以[阶段 1A 完成报告](../stage_reports/stage_1a_completion_report.md)为准。
+阶段 1A 已建立 `cuexis_core_tests`、`cuexis_json_support_tests`、`cuexis_platform_sdl_tests`、`cuexis_world_tests`、`cuexis_assets_tests`、`cuexis_chart_tests`、`cuexis_behavior_tests`、`cuexis_gameplay_tests`、`cuexis_render_tests`、`cuexis_debug_tests`、`cuexis_runtime_tests` 和 `cuexis_render_opengl_tests`，并在 CTest 中加入架构扫描及 Player 参数、谱面文件和 SDL 初始化失败路径检查。需要真实窗口和 GPU 的当前 Stage 3 六帧 OpenGL presentation 冒烟测试按 `docs/BUILDING.md` 单独执行，不混入算法单元测试；阶段 1A 的历史三帧 A/B 结果以[阶段 1A 完成报告](../stage_reports/stages/stage-01/stage-1a-completion.md)为准。
 
 尚未实现的模块不需要提前创建空测试 target。测试名称应描述行为和条件，不能只重复被测函数名。
 
@@ -2442,7 +2442,7 @@ vcpkg manifest 与 baseline 配置完整
 
 #### 阶段 1A：规范谱面与实例化闭环
 
-状态：实现完成。实际 Debug/Release、格式、架构和 GPU 验证结果以[阶段 1A 完成报告](../stage_reports/stage_1a_completion_report.md)为准。
+状态：实现完成。实际 Debug/Release、格式、架构和 GPU 验证结果以[阶段 1A 完成报告](../stage_reports/stages/stage-01/stage-1a-completion.md)为准。
 
 ```text
 在编码前完成配置 ADR，确认跨阶段配置分类、所有权、覆盖/约束关系、失败与诊断原则、按消费阶段冻结格式的规则，以及阶段 1B ProjectConfig 的文件定位和格式身份
@@ -2481,7 +2481,7 @@ Behavior track 在阶段 1A 只作为 opaque 数据保留；采样和 Transform 
 
 #### 阶段 1B：资源生命周期闭环
 
-状态：实现与验收完成。详细交付、Debug/Release 验证、6 组 GPU smoke 和残余风险见[阶段 1B 完成报告](../stage_reports/stage_1b_completion_report.md)；原实施批次与边界保留在[阶段 1B 实施计划](../stage_plans/stage_1b_implementation_plan.md)。ProjectConfig v1 与路径安全遵循 ADR 0025，AssetId 来源与 `entry.chart` bootstrap locator 遵循 ADR 0026。
+状态：实现与验收完成。详细交付、Debug/Release 验证、6 组 GPU smoke 和残余风险见[阶段 1B 完成报告](../stage_reports/stages/stage-01/stage-1b-completion.md)；原实施批次与边界保留在[阶段 1B 实施计划](../stage_plans/completed/stage-01/stage-1b-plan.md)。ProjectConfig v1 与路径安全遵循 ADR 0025，AssetId 来源与 `entry.chart` bootstrap locator 遵循 ADR 0026。
 
 ```text
 实现最小 ProjectConfig v1 及其加载器，具体文件名和 format ID 遵循已接受的配置 ADR
@@ -2515,7 +2515,7 @@ Player 默认加载阶段 1B project fixture，--project 与 --chart 互斥，�
 
 #### 阶段 1C：时间、基础行为与 Headless Playback 闭环
 
-状态：实现与最终验收完成。`behavior.transform.keyframe` v1、RuntimeFrame、PlaybackSession 和 Player 迁移按[阶段 1C 实施计划](../stage_plans/stage_1c_implementation_plan.md)与 ADR 0028/0029 落地；[260722 全量审查](../stage_reports/260722-1c-review.md)的 R01-R21 已全部关闭。原完成报告正文保留 2026-07-22 执行数据，第 10 节记录 2026-07-27 最终关闭证据。
+状态：实现与最终验收完成。`behavior.transform.keyframe` v1、RuntimeFrame、PlaybackSession 和 Player 迁移按[阶段 1C 实施计划](../stage_plans/completed/stage-01/stage-1c-plan.md)与 ADR 0028/0029 落地；[260722 全量审查](../stage_reports/stages/stage-01/2026-07-22-stage-1c-review.md)的 R01-R21 已全部关闭。原完成报告正文保留 2026-07-22 执行数据，第 10 节记录 2026-07-27 最终关闭证据。
 
 ```text
 实现基础 BehaviorSystem 与 Transform Keyframe（已完成）
@@ -2540,8 +2540,8 @@ Player 与 headless consumer 对相同 Chart/RuntimeFrame 产生相同帧结果
 状态：1D-0 至 1D-6 已实现并完成本地自动化、GPU 与物理默认音频设备脚本门禁。Chart/Asset
 Index v2、三种时钟模式、Prepared Playback、音频所有权与 reload 错误边界由 ADR 0031/0032
 冻结并落地，继续以 1C 的 RuntimeFrame/绝对重采样为基础。详见
-[阶段 1D 实施计划](../stage_plans/stage_1d_implementation_plan.md)和
-[阶段 1D 完成报告](../stage_reports/stage_1d_completion_report.md)。
+[阶段 1D 实施计划](../stage_plans/completed/stage-01/stage-1d-plan.md)和
+[阶段 1D 完成报告](../stage_reports/stages/stage-01/stage-1d-completion.md)。
 
 ```text
 建立 cuexis_audio 和 cuexis_audio_sdl
@@ -2567,7 +2567,7 @@ HostClock 与 CuexisAudio 对相同 SourceClockSample/control script 产生相�
 
 #### 阶段 1E：SDK 封装与外部消费闭环
 
-状态：实现与 Windows/MSVC、Windows/MinGW、Linux GCC/Clang 自动化验收完成。实施证据见[阶段 1E 实施计划](../stage_plans/stage_1e_implementation_plan.md)和[阶段 1E 完成报告](../stage_reports/stage_1e_completion_report.md)。
+状态：实现与 Windows/MSVC、Windows/MinGW、Linux GCC/Clang 自动化验收完成。实施证据见[阶段 1E 实施计划](../stage_plans/completed/stage-01/stage-1e-plan.md)和[阶段 1E 完成报告](../stage_reports/stages/stage-01/stage-1e-completion.md)。
 
 ```text
 实现 cuexis_playback 的正式安装公共头边界
@@ -2592,7 +2592,7 @@ static/shared consumer 在干净部署目录中运行，且不泄漏内部符号
 
 ### 阶段 2：Cuexis Behavior 表达能力强化
 
-状态：实现与本地/hosted 跨平台验收完成。精确证据见[阶段 2 完成报告](../stage_reports/stage_2_completion_report.md)。
+状态：实现与本地/hosted 跨平台验收完成。精确证据见[阶段 2 完成报告](../stage_reports/stages/stage-02/completion.md)。
 
 目标：让 Behavior 成为 Cuexis 谱面表现的核心表达能力，不扩张为宿主任意脚本或通用游戏逻辑系统。
 
@@ -2625,14 +2625,14 @@ TimingMap 边界、Stop 区间和负 Beat 有单元测试
 
 ### 阶段 3：可移植表现前端与渲染适配，8-10 个月
 
-阶段 3 的完整范围、批次、资源合同、事务边界、测试矩阵和完成定义见[阶段 3 实施计划](../stage_plans/stage_3_implementation_plan.md)。公共方向由 [ADR 0037](../adr/0037-stage-3-portable-presentation-contracts.md) 冻结。
+阶段 3 的完整范围、批次、资源合同、事务边界、测试矩阵和完成定义见[阶段 3 实施计划](../stage_plans/completed/stage-03/plan.md)。公共方向由 [ADR 0037](../adr/0037-stage-3-portable-presentation-contracts.md) 冻结。
 
 状态：3A 精确合同、3B portable resource/candidate acquisition、3C Snapshot/common extraction、
 3D Validation Sink、3E OpenGL adapter/Player 真实绘制、3F external package consumer 与 3G
 全链路跨平台验收均已关闭；阶段 3 已于 2026-08-08 最终完成。
 
 当前工作项是 Stage Chart Format Update。阶段 3 的历史 review 与验收报告保持只读；格式更新的
-范围、批次和退出条件见[Stage Chart Format Update 实施计划](../stage_plans/stage_chart_format_update_implementation_plan.md)。
+范围、批次和退出条件见[Stage Chart Format Update 实施计划](../stage_plans/completed/chart-format-update/plan.md)。
 
 摘要：
 
@@ -2650,11 +2650,9 @@ Player 通过 stage3_project 六帧 smoke 验证真实 Mesh/Texture/Unlit、空�
 
 ### Stage Chart Format Update：谱面格式更新
 
-位置：Stage 3 完成后、阶段 4 开始前。该阶段使用独立名称，不建立数字别名。
-
 目标：为下一阶段表现动画和后续 Studio 工作冻结可迁移、可验证、可被外部宿主消费的 Chart/CXC/CXT 格式合同。
 
-状态：CFU-A 已完成。CFU-B 已起草 [ADR 0038](../adr/0038-cxc-v1-and-chart-v4-boundary.md)、[CXC 候选规范](../CXC_FORMAT.md)、[CXT 候选规范](../CXT_FORMAT.md)和候选正反例。CXT v1、播放前参数与 Template Binding 子决策已于 2026-08-10 接受；ADR 0038 整体接受前不得进入生产 Schema、Reader、Writer 或公共 API。
+状态：CFU-A 已完成。CFU-B 已起草 [ADR 0038](../adr/0038-cxc-v1-and-chart-v4-boundary.md)、[CXC 候选规范](../formats/CXC_FORMAT.md)、[CXT 候选规范](../formats/CXT_FORMAT.md)和候选正反例。CXT v1、播放前参数与 Template Binding 子决策已于 2026-08-10 接受；ADR 0038 整体接受前不得进入生产 Schema、Reader、Writer 或公共 API。
 
 实施计划：
 
@@ -2669,7 +2667,7 @@ CFU-F headless/external consumer、round-trip 和确定性 golden
 CFU-G 跨平台验收与阶段 4 交接
 ```
 
-本阶段不实现 AnimationSystem，也不在运行时解析 JSON/CXC/CXT 或执行脚本；Stage 4 只能消费本阶段冻结的 typed 数据。完整范围和退出条件见[独立实施计划](../stage_plans/stage_chart_format_update_implementation_plan.md)。
+本阶段不实现 AnimationSystem，也不在运行时解析 JSON/CXC/CXT 或执行脚本；Stage 4 只能消费本阶段冻结的 typed 数据。完整范围和退出条件见[独立实施计划](../stage_plans/completed/chart-format-update/plan.md)。
 
 运行时脚本和逐帧脚本回调无限期延后，不属于 Stage 4 或其他已排期阶段，也不预留格式字段、capability、字节码或 Playback 执行入口。离线创作生成器是独立议题，不进入 CXC，也不由 Playback 执行。
 

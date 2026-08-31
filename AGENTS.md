@@ -29,12 +29,14 @@ external hosts use PlaybackSession, ContentProvider, RuntimeFrame,
     and cross - platform closure.Stable C ABI work remains in Stage 12;
 `cuexis_judgement` remains planned for Stage 11.
 
-The next implementation stage is **Stage 5**, following the completed Stage 4 animation runtime.
-S5-A froze Material/Shader contracts in ADR 0040 and `docs/formats/MATERIAL_SHADER.md`. S5-B
-wired optional `cuexis_shader` and vcpkg feature `shader-tools`. S5-C added `CXPRES01` kind 4/5
-parse/identity, Asset Index v3 `shader`, SDK API `0.7.0`, and public capability constants that
-are in default `allCapabilities()` after S5-G. S5-H is a local checkpoint; hosted pending.
-Stage 4 is complete. Do not call the format stage Stage 3.5. ADR 0038 defines `.cxc` as a strict ZIP32 Stored exchange
+Stage 5 closed and merged into `master` on August 28, 2026 through PR #20 (`d380fc9`). S5-A froze
+Material/Shader contracts in ADR 0040 and `docs/formats/MATERIAL_SHADER.md`; S5-B through S5-H
+delivered the optional shader toolchain, public presentation support, cache, consumption, and
+safety gates. `260829-full-review` followed as a separate branch and closed on August 30, 2026.
+The current `260830-followup` branch has three tasks: documentation reorganization, Chart/CXC
+parse-once, and targeted branch coverage for critical modules. Stage 6 remains future and has not
+started.
+Stage 4 is complete. ADR 0038 defines `.cxc` as a strict ZIP32 Stored exchange
 package containing existing Project/Asset Index formats, `cuexis.chart` v4 data, CXT JSON, and
 required resources. The CXT v1, ChartParameter, and Template Binding subdecision was accepted on
 August 10, 2026: `.cxt` is UTF-8 JSON for one declarative local-time animation template, and host
@@ -57,7 +59,9 @@ Stage 4 typed handoff are complete. G3 local candidate gates passed on August 19
 `4371fdcf04f4f89bfddf070cbb15e4c903810a53` passed same-SHA hosted Linux Quality, Windows MSVC,
 and Windows MinGW validation on August 24, 2026; G3 hosted validation and G4 are complete.
 G5 report-SHA hosted revalidation passed and G6 owner acceptance is recorded. Stage Chart Format
-Update is complete; Stage 4 is complete. Stage 5 S5-A, S5-B, S5-C, S5-D, S5-E, S5-F, and S5-G are complete; S5-H local checkpoint; hosted pending.**
+Update is complete; Stage 4 is complete. Stage 5 S5-A through S5-H closed and merged into `master`
+on August 28, 2026. `260829-full-review` then closed on August 30, 2026; `260830-followup` is the
+current follow-up branch.**
 Stage 4 close is not a public CXC package API, Shader pipeline, Studio, or Judgement.
 Stage 4 consumed typed data produced by the format stage and must not parse JSON/CXC/CXT in `engine/animation/`.
 Runtime scripts and per-frame script callbacks are deferred indefinitely. No scheduled stage,
@@ -293,11 +297,15 @@ Stage 1D modules. `sdk/` and `adapters/` directories do not exist yet (planned).
   and FrameSnapshot lifetime contract
 - `docs/adr/0033-cpp-shared-library-preview-boundary.md` — Stage 1E C++ shared preview topology,
   linkage, dependency, deployment, and compatibility boundary
-- `docs/stage_plans/stage_chart_format_update_implementation_plan.md` — active CXC/Chart format
+- `docs/stage_plans/completed/chart-format-update/plan.md` — accepted CXC/Chart format
   decision, migration, and acceptance gates
-- `docs/stage_plans/stage_4_implementation_plan.md` through
-  `docs/stage_plans/stage_12_implementation_plan.md` — independent future/deferred plans with
+- `docs/stage_plans/active/260830-followup/plan.md` — current documentation, Chart/CXC parse-once,
+  and critical branch-coverage plan; Stage 6 has not started
+- `docs/stage_plans/completed/stage-04/plan.md` through
+  `docs/stage_plans/future/stage-12/plan.md` — independent active/future/deferred plans with
   goals, prerequisites, scope, acceptance criteria, and archived sources
+- `docs/api/README.md` — public Playback SDK lifecycle, source, frame, presentation, diagnostic and
+  compatibility reference
 - `docs/adr/0038-cxc-v1-and-chart-v4-boundary.md` — accepted CXC v1, Chart v4, CXT and prepare boundary
 - `docs/formats/CXC_FORMAT.md` — accepted CXC v1 container, manifest, closure, and package contract
 - `docs/formats/CHART_V4_FORMAT.md` — accepted Chart v4 fields, imports, animation, binding, and lowering contract

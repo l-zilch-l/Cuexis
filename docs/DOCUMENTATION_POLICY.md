@@ -2,7 +2,7 @@
 
 状态：已接受的文档整理政策
 
-更新日期：2026-08-24
+更新日期：2026-08-30
 
 ## 文档角色
 
@@ -16,6 +16,7 @@
 | Report | 某个时间点的实施、审查和证据 | 把历史快照冒充当前状态 |
 | Guide/Policy | 操作步骤、编码规则、依赖和版本维护规则 | 维护产品路线图的第二份副本 |
 | Index/Status | 导航和当前摘要 | 复制完整技术合同 |
+| API Reference | 已发布 SDK 的入口、生命周期、可观察结果、错误与兼容约定 | 把内部实现类型描述为宿主 API，或复制完整头文件声明 |
 
 ## 权威顺序
 
@@ -48,10 +49,11 @@ ADR 还要写决策状态；Spec 还要写实现状态；Report 还要写快照�
 - 摘要不得复制完整表格、完整诊断矩阵或当前阶段结论。
 - 历史文档不得删除；应标记 `historical` 或 `superseded`，并链接替代文件。
 
-## 首轮目录整理
+## 目录和命名
 
-现行入口保持在 `docs/` 根目录：`README.md`、`CURRENT_STATUS.md`、`PROJECT_GUIDE.md`、
-`ROADMAP.md` 和本文。其余现行文档按角色归档到以下目录：
+稳定入口保持在 `docs/` 根目录：`README.md`、`CURRENT_STATUS.md`、`PROJECT_GUIDE.md`、
+`ROADMAP.md` 和本文。根目录不承载格式、阶段计划、阶段报告或 API 正文。其余现行文档按角色归档到
+以下目录：
 
 ```text
 docs/architecture/  Runtime、模块和宿主边界
@@ -63,10 +65,58 @@ docs/stage_reports/ 阶段证据
 docs/proposals/     候选与延期设计
 docs/examples/      评审和验证样例
 docs/archive/       历史材料
+docs/api/           已发布 SDK 与内部技术参考
 ```
 
-首轮移动保留根目录兼容短页。兼容页只链接 canonical 文档，不复制正文；至少保留一个整理
-周期后再评估删除。新目录必须有 `README.md`，且从 [docs/README.md](README.md) 可达。
+阶段计划和阶段报告按阶段或跨阶段专题归档，而不是按生成日期平铺：
+
+```text
+docs/stage_plans/active/<stage>/
+docs/stage_plans/completed/<stage>/
+docs/stage_plans/future/<stage>/
+docs/stage_plans/deferred/<stage>/
+docs/stage_plans/reviews/<topic>/
+docs/stage_plans/historical/<topic>/
+
+docs/stage_reports/stages/<stage>/
+docs/stage_reports/chart-format-update/
+docs/stage_reports/reviews/<topic>/
+docs/stage_reports/sdk-transition/
+```
+
+新的 canonical Markdown 文件名使用小写 kebab-case。阶段目录中的主计划文件命名为 `plan.md`；
+带日期的报告使用 `YYYY-MM-DD-topic.md`；ADR 继续使用 `NNNN-short-title.md`。根目录稳定入口和
+旧路径兼容页是明确例外，不要求改名。
+
+单个文档移动可以保留旧路径兼容短页至少一个整理周期。兼容页只链接 canonical 文档，不复制正文，并标记
+`状态：compatibility entry`。但是，批量 stage plan/report 重组不得用大量单页 stub 重新制造平铺目录；
+应在相应目录的 `legacy-paths.md` 中把旧逻辑路径以代码文字映射到 canonical 文档。该映射不承诺旧的
+逐文件 URL 继续存在。`docs/` 根目录不保留单文件 compatibility entry；其历史路径统一写入
+[legacy-paths.md](legacy-paths.md)。
+
+README 只用于稳定入口、顶层文档角色或包含多份需要独立导航的正文集合。单文件目录和由上级索引即可
+清楚列出的叶目录不创建 README；上级索引直接链接 canonical 文档。所有 Markdown 仍必须从
+[docs/README.md](README.md) 可达。
+
+`docs/api/` 以发布的 Playback SDK 为首要对象，说明入口、生命周期、线程、资源、帧观察、诊断、
+capability 和兼容边界。内部模块资料必须显式标为 internal，不能把 Runtime、World、EnTT、SDL、
+OpenGL 或 JSON DOM 写成宿主可依赖的 API。
+
+API 文档使用中文标题、章节和解释性文字；类型名、函数名、枚举值、capability ID 和其他代码标识保持
+源码拼写并使用反引号。专题页依次给出元数据、权威头文件、“快速结论”、速查表或标准流程、失败与边界；
+索引页先给核心规则，再按任务导航。不得使用完整英文自然语言标题或在各页发明不同的章节结构。
+
+## 元数据约定
+
+现行 Spec、Guide、Index、Status、Plan 和 API Reference 使用：
+
+```text
+状态：<stable English value>
+更新日期：YYYY-MM-DD
+```
+
+ADR 使用其决策日期和决策状态；历史 Report 使用其证据日期或快照日期及后续关闭证据。整理不得把
+历史日期改写为当前日期，也不得以统一字段名掩盖原始证据时点。
 
 ## 脚本边界
 

@@ -2,6 +2,8 @@
 #include <cuexis/playback/playback_session.hpp>
 #include <cuexis/playback/playback_source.hpp>
 
+#include "parse_probe_internal.hpp"
+
 #include <catch2/catch_test_macros.hpp>
 
 #include <algorithm>
@@ -12,6 +14,7 @@
 #include <iterator>
 #include <memory>
 #include <ranges>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -489,6 +492,27 @@ TEST_CASE("PB-03 provider and presentation failures roll back without stale acti
         checkRollback(session, baseline);
     }
 
+    SECTION("provider exception preserves active session") {
+        auto provider = cuexis::content::HostContentProvider::create(
+            [](const cuexis::content::ContentRequest&)
+                -> cuexis::core::Result<cuexis::content::ContentBlob> {
+                throw std::runtime_error{"Characterization provider exception"};
+            });
+        REQUIRE(provider.has_value());
+        auto source = stage3SourceWithProvider(std::move(*provider));
+        REQUIRE(source.has_value());
+
+        const auto failed = session.prepareReload(std::move(*source), {.chartTimeMs = 125.0},
+                                                  ReloadPolicy::KeepChartTime);
+        REQUIRE_FALSE(failed.has_value());
+        CHECK(failed.error().code() == "playback.session.prepare_failed");
+        const auto diagnostics = session.lastOperationDiagnostics();
+        REQUIRE(diagnostics.has_value());
+        REQUIRE(hasDiagnostic(*diagnostics, "assets.resource.required_failed"));
+        checkDiagnosticOrder(*diagnostics);
+        checkRollback(session, baseline);
+    }
+
     SECTION("portable presentation parse failure preserves active session") {
         const auto root = sourceRoot() / "assets" / "projects" / "stage3_project" / "assets";
         auto bytes = readBytes(root / "meshes" / "triangle.mesh.bin");
@@ -621,4 +645,15 @@ TEST_CASE("PB-03 wrong-session commit failure records operation diagnostics",
     CHECK(diagnostics->items().front().code() == "playback.prepared.wrong_session");
     REQUIRE(targetSession.state().has_value());
     CHECK(*targetSession.state() == SessionState::Empty);
+}
+
+TEST_CASE("Playback v4 prepare reuses the initial Chart parse",
+          "[playback][prepare][parse][characterization][count]") {
+    const auto chart = readFile(sourceRoot() / "tests" / "fixtures" / "chart_format_update" /
+                                "valid" / "chart_v4_static_migration.json");
+    cuexis::json::detail::ScopedParseCounter counter;
+    PlaybackSession session;
+    const auto prepared = session.prepareLoad(chart, PlaybackMode::ChartClock);
+    REQUIRE(prepared.has_value());
+    CHECK(counter.count() == 1U);
 }

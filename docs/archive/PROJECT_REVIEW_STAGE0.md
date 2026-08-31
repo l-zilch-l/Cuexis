@@ -1,7 +1,7 @@
 # Cuexis 项目文档审视报告（阶段 0 历史快照）
 
 状态：historical review；产品方向由 [ADR 0027](../adr/0027-playback-sdk-product-boundary.md) 与
-[SDK 转型方案](../stage_plans/cuexis_sdk_transition_plan.md) 更新
+[SDK 转型方案](../stage_plans/historical/sdk-transition/plan.md) 更新
 
 审视日期：2026-07-18。SDK 转型复核日期：2026-07-20。2026-07-21 复核扩展至 ADR 0024-0028。本报告保留阶段 0 实现与原始设计的审计事实，不再作为现行产品定位或阶段 1C 之后路线的权威来源。表中关于长期保留 A/B 双格式或 Simple Importer 的评价已被 ADR 0035 取代；方案 B 已于阶段 2A.1 移除。
 

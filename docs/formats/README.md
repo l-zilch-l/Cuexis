@@ -2,7 +2,7 @@
 
 状态：现行格式索引
 
-更新日期：2026-08-28
+更新日期：2026-08-30
 
 ## Artifact 分层
 
@@ -29,7 +29,7 @@ Compiled Runtime
 | CXT v1 | [CXT_FORMAT.md](CXT_FORMAT.md) | accepted contract; Reader/Writer/lowering and prepare import/lookup implemented; CFU-F and G4 hosted gates closed; Stage 4 animation execution closed |
 | Animation Mixing | [ANIMATION_MIXING.md](ANIMATION_MIXING.md) | accepted contract; format-stage gates closed; Stage 4 runtime closed |
 | Portable Presentation v1 | [PORTABLE_PRESENTATION.md](PORTABLE_PRESENTATION.md) | implemented |
-| Material/Shader v1 | [MATERIAL_SHADER.md](MATERIAL_SHADER.md) | accepted contract; S5-A frozen; S5-B optional tools wired; S5-C kind 4/5 parse/identity implemented; S5-D compile/reflect implemented behind shader-tools; S5-E profile/capability preflight implemented; S5-F CXSCCH01 cache implemented; S5-G OpenGL/Player/Validation Sink consumption implemented; S5-H local checkpoint |
+| Material/Shader v1 | [MATERIAL_SHADER.md](MATERIAL_SHADER.md) | accepted contract; S5-A through S5-H completed; Stage 5 closed and merged into `master` 2026-08-28 |
 
 ADR 记录选择理由，格式文档记录字段和语义。CXC 不重新定义 Chart/CXT；CXT 不重新定义
 ChartParameter、Template Binding 或 Animator；Animation Mixing 不重新定义序列化字段。

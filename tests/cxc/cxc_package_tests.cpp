@@ -497,3 +497,23 @@ TEST_CASE("CXC detects CRC manifest hash size and package budget mismatches",
         CHECK(support::hasDiagnostic(result.diagnostics, "cxc.budget.exceeded"));
     }
 }
+
+TEST_CASE("CXC failed package loads do not publish partial package state",
+          "[cxc][integrity][rollback][branch-coverage]") {
+    const auto valid = support::writePackage(support::makeV4StaticRequest());
+    auto corrupted = valid;
+    const auto loaded = CxcPackageLoader::loadMemory(valid);
+    REQUIRE(loaded.hasValue());
+    const auto found = std::ranges::find(
+        loaded.package->manifest().entries, "assets/charts/main.cuexis.chart.json",
+        &cuexis::cxc::CxcManifestEntry::path);
+    REQUIRE(found != loaded.package->manifest().entries.end());
+    auto changedHash = found->sha256;
+    changedHash[0] = changedHash[0] == '0' ? '1' : '0';
+    support::replaceEntryText(corrupted, "cuexis.cxc.json", found->sha256, changedHash);
+
+    const auto rejected = CxcPackageLoader::loadMemory(std::move(corrupted));
+    REQUIRE_FALSE(rejected.hasValue());
+    CHECK_FALSE(rejected.package.has_value());
+    CHECK(support::hasDiagnostic(rejected.diagnostics, "cxc.entry.hash_mismatch"));
+}

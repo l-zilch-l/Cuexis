@@ -3,6 +3,7 @@
 #include <cuexis/cxc/cxc_package.hpp>
 
 #include "cxc_test_support.hpp"
+#include "parse_probe_internal.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -98,4 +99,15 @@ TEST_CASE("CXC invalid Chart diagnostics retain stable code path and ordering",
     CHECK(first.diagnostics.items()[2].fieldPath() == "$/project/entry/chart");
     CHECK(first.diagnostics.items()[3].code() == "json.type.mismatch");
     CHECK(first.diagnostics.items()[3].fieldPath() == "$/version");
+}
+
+TEST_CASE("CXC static v4 package parses its entry Chart once",
+          "[cxc][chart][parse][characterization][count]") {
+    const auto bytes = cuexis::cxc::test::writePackage(cuexis::cxc::test::makeV4StaticRequest());
+    cuexis::json::detail::ScopedParseCounter counter;
+    const auto loaded = cuexis::cxc::CxcPackageLoader::loadMemory(bytes);
+    INFO(cuexis::cxc::test::diagnosticsText(loaded.diagnostics));
+    REQUIRE(loaded.hasValue());
+    // Manifest, ProjectConfig, Asset Index, and the entry Chart each parse once.
+    CHECK(counter.count() == 4U);
 }

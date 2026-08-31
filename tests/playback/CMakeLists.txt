@@ -25,6 +25,7 @@ target_compile_definitions(cuexis_playback_tests
 target_include_directories(cuexis_playback_tests
     PRIVATE
         ${PROJECT_SOURCE_DIR}/engine/assets/include
+        ${PROJECT_SOURCE_DIR}/engine/json_support/src
         ${PROJECT_SOURCE_DIR}/engine/playback/src
         ${PROJECT_SOURCE_DIR}/tests/presentation
 )

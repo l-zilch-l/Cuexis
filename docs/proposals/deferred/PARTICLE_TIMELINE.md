@@ -5,7 +5,7 @@
 更新日期：2026-08-10
 
 阅读入口：[Deferred Design Proposals](README.md)。当前排期以
-[ROADMAP.md](../../ROADMAP.md) 和 [Stage 8 plan](../../stage_plans/stage_8_implementation_plan.md)
+[ROADMAP.md](../../ROADMAP.md) 和 [Stage 8 plan](../../stage_plans/future/stage-08/plan.md)
 为准。
 
 ## 时间域

@@ -4,7 +4,7 @@
 prepare/identity 已实现或关闭；CFU-F consumer/determinism/safety gates 已关闭；G3 hosted、G4、
 G5 report-SHA hosted revalidation 与 G6 owner acceptance 已完成；非空动画执行已由 Stage 4 关闭
 
-更新日期：2026-08-27
+更新日期：2026-08-30
 
 依据：[ADR 0038](../adr/0038-cxc-v1-and-chart-v4-boundary.md)
 
@@ -614,11 +614,11 @@ v4 报告记录 source/target canonical identity（Writer canonical bytes 的 SH
 
 迁移后的静态 v4 与源 v3 必须产生相同 FrameSnapshot 和 FrameDigest v3。Chart format version 和
 capability summary 可以不同。该运行时等价证据属于 CFU-D3，已由
-[CFU-D3 报告](../stage_reports/260814-chart-format-update-d3-equivalence.md) 关闭。D1/D2 的关闭条件是
+[CFU-D3 报告](../stage_reports/chart-format-update/2026-08-14-d3-equivalence.md) 关闭。D1/D2 的关闭条件是
 结构/Writer golden 与 CLI 合同通过本地 Debug 验证；该验证已在本 worktree 取得，D1/D2 已关闭。
 整包 CFU-D 已由项目所有者于 2026-08-14 记录“未提供外部资产”并关闭；兼容窗口不缩短，
 全部 v1/v2/v3 Reader 与迁移入口保留。证据见
-[CFU-D 关闭报告](../stage_reports/260814-chart-format-update-d-close.md)。
+[CFU-D 关闭报告](../stage_reports/chart-format-update/2026-08-14-d-close.md)。
 
 ## 12. 候选示例
 

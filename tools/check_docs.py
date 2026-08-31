@@ -28,22 +28,24 @@ DEFAULT_TARGET_FACTS = ROOT / "out" / "build" / "debug" / "generated" / "cuexis-
 TARGET_FACTS_ENV = "CUEXIS_TARGETS_FILE"
 TARGET_BLOCK_BEGIN = "<!-- CUEXIS_ACTIVE_TARGETS_BEGIN -->"
 TARGET_BLOCK_END = "<!-- CUEXIS_ACTIVE_TARGETS_END -->"
-FUTURE_STAGE_PLANS = (
-    "stage_5_implementation_plan.md",
-    "stage_6_implementation_plan.md",
-    "stage_7_implementation_plan.md",
-    "stage_8_implementation_plan.md",
-    "stage_9a_implementation_plan.md",
-    "stage_9b_implementation_plan.md",
-    "stage_10_implementation_plan.md",
-    "stage_11_implementation_plan.md",
-    "stage_12_implementation_plan.md",
+STAGE_PLAN_REQUIREMENTS = (
+    ("stage_plans/active/260830-followup/plan.md", ("active",)),
+    ("stage_plans/completed/stage-05/plan.md", ("completed",)),
+    ("stage_plans/future/stage-06/plan.md", ("future",)),
+    ("stage_plans/future/stage-07/plan.md", ("future",)),
+    ("stage_plans/future/stage-08/plan.md", ("future",)),
+    ("stage_plans/future/stage-09a/plan.md", ("future",)),
+    ("stage_plans/deferred/stage-09b/plan.md", ("deferred",)),
+    ("stage_plans/deferred/stage-10/plan.md", ("deferred",)),
+    ("stage_plans/future/stage-11/plan.md", ("future",)),
+    ("stage_plans/future/stage-12/plan.md", ("future",)),
 )
 DIRECTORY_INDEXES = (
     "README.md",
     "adr/README.md",
     "architecture/README.md",
     "archive/README.md",
+    "api/README.md",
     "examples/README.md",
     "formats/README.md",
     "guides/README.md",
@@ -51,6 +53,37 @@ DIRECTORY_INDEXES = (
     "proposals/deferred/README.md",
     "stage_plans/README.md",
     "stage_reports/README.md",
+    "stage_reports/chart-format-update/README.md",
+    "stage_reports/reviews/full-review-2026-08/README.md",
+    "stage_reports/stages/stage-01/README.md",
+    "stage_reports/stages/stage-04/README.md",
+    "stage_reports/stages/stage-05/README.md",
+)
+STAGE_NAVIGATION_INDEXES = {
+    "stage_plans/README.md",
+    "stage_reports/README.md",
+    "stage_reports/chart-format-update/README.md",
+    "stage_reports/reviews/full-review-2026-08/README.md",
+    "stage_reports/stages/stage-01/README.md",
+    "stage_reports/stages/stage-04/README.md",
+    "stage_reports/stages/stage-05/README.md",
+}
+ROOT_DOCUMENTATION_FILES = {
+    "README.md",
+    "CURRENT_STATUS.md",
+    "PROJECT_GUIDE.md",
+    "ROADMAP.md",
+    "DOCUMENTATION_POLICY.md",
+    "legacy-paths.md",
+}
+API_REFERENCE_FILES = (
+    "README.md",
+    "playback-session.md",
+    "sources-and-content.md",
+    "frames-digests-and-timelines.md",
+    "presentation-and-capabilities.md",
+    "diagnostics-identity-and-compatibility.md",
+    "internal-module-catalog.md",
 )
 REQUIRED_STAGE_LABELS = (
     "Stage 0",
@@ -157,20 +190,6 @@ def check_reachability(graph: dict[Path, set[Path]], failures: list[CheckFailure
     for path in graph:
         if path not in visited:
             failures.append(CheckFailure(path, "not reachable from docs/README.md"))
-
-
-def check_stage_name(files: list[Path], failures: list[CheckFailure]) -> None:
-    for path in files:
-        if "archive" in path.relative_to(DOCS).parts:
-            continue
-        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-            if re.search(r"Stage\s*3\.5|stage[_ -]?3[_ -]?5", line, re.IGNORECASE):
-                if "不使用" not in line and "not use" not in line.lower():
-                    failures.append(CheckFailure(path, f"legacy Stage 3.5 name at line {number}"))
-    current = (DOCS / "CURRENT_STATUS.md").read_text(encoding="utf-8")
-    roadmap = (DOCS / "ROADMAP.md").read_text(encoding="utf-8")
-    if "Stage Chart Format Update" not in current or "Stage Chart Format Update" not in roadmap:
-        failures.append(CheckFailure(DOCS_INDEX, "canonical Stage Chart Format Update name is missing"))
 
 
 def normalize_whitespace(text: str) -> str:
@@ -448,11 +467,10 @@ def check_script_policy(failures: list[CheckFailure]) -> None:
 
 
 def check_future_stage_plans(failures: list[CheckFailure]) -> None:
-    plans = DOCS / "stage_plans"
-    for name in FUTURE_STAGE_PLANS:
-        path = plans / name
+    for relative, allowed_statuses in STAGE_PLAN_REQUIREMENTS:
+        path = DOCS / relative
         if not path.is_file():
-            failures.append(CheckFailure(path, "required future/deferred stage plan is missing"))
+            failures.append(CheckFailure(path, "required stage plan is missing"))
             continue
         text = path.read_text(encoding="utf-8")
         for heading in ("阶段目标", "验收标准"):
@@ -461,8 +479,63 @@ def check_future_stage_plans(failures: list[CheckFailure]) -> None:
                 failures.append(CheckFailure(path, f"missing required section: {heading}"))
         if "归档来源：" not in text:
             failures.append(CheckFailure(path, "missing archived source reference"))
-        if not re.search(r"^状态：(future|deferred)；", text, re.MULTILINE):
-            failures.append(CheckFailure(path, "status must be future or deferred"))
+        expected = "|".join(re.escape(status) for status in allowed_statuses)
+        if not re.search(rf"^状态：(?:{expected})；", text, re.MULTILINE):
+            failures.append(
+                CheckFailure(path, f"status must be one of: {', '.join(allowed_statuses)}")
+            )
+
+
+def check_stage_directory_layout(failures: list[CheckFailure]) -> None:
+    for root in (DOCS / "stage_plans", DOCS / "stage_reports"):
+        for path in root.glob("*.md"):
+            if path.name in {"README.md", "legacy-paths.md"}:
+                continue
+            failures.append(CheckFailure(path, "stage root may contain only README.md and legacy-paths.md"))
+        for path in root.rglob("README.md"):
+            relative = path.relative_to(DOCS).as_posix()
+            if relative not in STAGE_NAVIGATION_INDEXES:
+                failures.append(CheckFailure(path, "leaf stage directory must be indexed by its nearest navigation hub"))
+
+
+def check_root_document_layout(failures: list[CheckFailure]) -> None:
+    for path in DOCS.glob("*.md"):
+        if path.name not in ROOT_DOCUMENTATION_FILES:
+            failures.append(CheckFailure(path, "docs root contains a non-entry document"))
+    if not STATUS_CONTRACT.is_file():
+        failures.append(CheckFailure(STATUS_CONTRACT, "documentation status contract is missing"))
+
+
+def check_api_reference_style(failures: list[CheckFailure]) -> None:
+    version_text = VERSION_CMAKE.read_text(encoding="utf-8")
+    version_match = re.search(
+        r'^set\(CUEXIS_SDK_API_VERSION "(\d+\.\d+\.\d+)"\)$', version_text, re.MULTILINE
+    )
+    if version_match is None:
+        failures.append(CheckFailure(VERSION_CMAKE, "API reference style: SDK API version is missing"))
+        return
+    expected_version = f"适用版本：SDK API `{version_match.group(1)}`"
+    metadata_pattern = re.compile(
+        rf"^#\s+\S.*\n\n状态：active\n\n更新日期：\d{{4}}-\d{{2}}-\d{{2}}"
+        rf"\n\n{re.escape(expected_version)}\n\n文档角色：\S",
+        re.MULTILINE,
+    )
+    for name in API_REFERENCE_FILES:
+        path = DOCS / "api" / name
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        if metadata_pattern.search(text) is None:
+            failures.append(CheckFailure(path, "API reference style: metadata block is inconsistent"))
+        headings = re.findall(r"^##\s+(.+)$", text, re.MULTILINE)
+        expected_first = "先记住这五条" if name == "README.md" else "快速结论"
+        if not headings or headings[0] != expected_first:
+            failures.append(CheckFailure(path, f"API reference style: first section must be {expected_first}"))
+        for number, line in enumerate(text.splitlines(), start=1):
+            if re.fullmatch(r"#{1,2}\s+[A-Za-z][A-Za-z ]+", line):
+                failures.append(
+                    CheckFailure(path, f"API reference style: natural-language heading must be Chinese at line {number}")
+                )
 
 
 def check_navigation_indexes(failures: list[CheckFailure]) -> None:
@@ -485,11 +558,17 @@ def check_navigation_indexes(failures: list[CheckFailure]) -> None:
             "PROJECT_GUIDE.md",
             "architecture/README.md",
             "guides/README.md",
+            "api/README.md",
             "proposals/README.md",
             "examples/README.md",
         ):
             if f"]({target})" not in text:
                 failures.append(CheckFailure(docs_index, f"main index does not link {target}"))
+
+    for name in API_REFERENCE_FILES:
+        path = DOCS / "api" / name
+        if not path.is_file():
+            failures.append(CheckFailure(path, "required API reference is missing"))
 
 
 def check_agents_guide(failures: list[CheckFailure]) -> None:
@@ -507,8 +586,8 @@ def check_agents_guide(failures: list[CheckFailure]) -> None:
         "`docs/README.md`",
         "`docs/CURRENT_STATUS.md`",
         "`docs/guides/README.md`",
-        "`docs/stage_plans/stage_4_implementation_plan.md`",
-        "`docs/stage_plans/stage_12_implementation_plan.md`",
+        "`docs/stage_plans/completed/stage-04/plan.md`",
+        "`docs/stage_plans/future/stage-12/plan.md`",
     )
     for fragment in required_fragments:
         if fragment not in text:
@@ -729,12 +808,14 @@ def main() -> int:
     files = markdown_files()
     graph = check_h1_and_links(files, failures)
     check_reachability(graph, failures)
-    check_stage_name(files, failures)
     check_cfu_status(failures)
     check_target_contract(failures)
     check_sdk_api_contract(failures)
     check_script_policy(failures)
     check_future_stage_plans(failures)
+    check_stage_directory_layout(failures)
+    check_root_document_layout(failures)
+    check_api_reference_style(failures)
     check_navigation_indexes(failures)
     check_agents_guide(failures)
     candidate_count = check_candidate_examples(failures)

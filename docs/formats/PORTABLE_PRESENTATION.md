@@ -6,7 +6,7 @@
 日期：2026-08-08
 
 依据：[ADR 0037](../adr/0037-stage-3-portable-presentation-contracts.md) 与
-[Stage 3 实施计划](../stage_plans/stage_3_implementation_plan.md)。
+[Stage 3 实施计划](../stage_plans/completed/stage-03/plan.md)。
 
 ## 0. 文档定位
 
@@ -680,8 +680,8 @@ Stage 3A-3G 已于 2026-08-08 全部关闭，Portable Presentation Profile v1 �
 本文只维护格式、API、预算、排序和诊断合同；实施批次、测试矩阵、平台证据与历史交接不再
 在本规范中重复。
 
-- 实施批次与完成定义：[Stage 3 implementation plan](../stage_plans/stage_3_implementation_plan.md)
-- 最终验证证据：[Stage 3 completion report](../stage_reports/stage_3_completion_report.md)
+- 实施批次与完成定义：[Stage 3 implementation plan](../stage_plans/completed/stage-03/plan.md)
+- 最终验证证据：[Stage 3 completion report](../stage_reports/stages/stage-03/completion.md)
 - 当前产品状态：[CURRENT_STATUS.md](../CURRENT_STATUS.md)
 
 Stage 5 的 Shader 与 Parameterized Material 不修改本文字段。权威见

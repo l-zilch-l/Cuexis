@@ -26,6 +26,6 @@
 
 ## 旧路径兼容页
 
-- [Simple Chart 旧路径](../SIMPLE_CHART_FORMAT.md)
-- [Stage 0 项目审视旧路径](../PROJECT_REVIEW.md)
-- [SDK transition verification 旧路径](../stage_reports/sdk_transition_verification.md)
+- [Simple Chart 旧路径](SIMPLE_CHART_FORMAT.md)
+- [Stage 0 项目审视旧路径](PROJECT_REVIEW_STAGE0.md)
+- [SDK transition verification 旧路径](../stage_reports/sdk-transition/verification.md)

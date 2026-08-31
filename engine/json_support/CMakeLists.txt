@@ -29,6 +29,10 @@ target_include_directories(cuexis_json_support PUBLIC
 
 target_compile_features(cuexis_json_support PUBLIC cxx_std_20)
 
+if(CUEXIS_BUILD_TESTS)
+    target_compile_definitions(cuexis_json_support PRIVATE CUEXIS_JSON_PARSE_TEST_PROBE=1)
+endif()
+
 target_link_libraries(cuexis_json_support
     PUBLIC
         cuexis::core

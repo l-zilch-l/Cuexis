@@ -1,11 +1,11 @@
 # Cuexis Material and Shader Profile v1
 
-状态：accepted contract；S5-C payload parse implemented；S5-D compile/reflect implemented behind shader-tools；S5-E profile/capability preflight implemented；S5-F CXSCCH01 cache implemented；S5-G OpenGL/Player/Validation Sink consumption implemented；S5-H local checkpoint；S5-A 已于 2026-08-28 冻结
+状态：accepted contract；S5-A 至 S5-H 已完成；Stage 5 已于 2026-08-28 关闭并合并至 `master`
 
 日期：2026-08-28
 
 依据：[ADR 0040](../adr/0040-stage-5-material-shader-contracts.md)、[ADR 0021](../adr/0021-spirv-centered-shader-pipeline.md)
-与 [Stage 5 实施计划](../stage_plans/stage_5_implementation_plan.md)。Portable Unlit v1 仍以
+与 [Stage 5 实施计划](../stage_plans/completed/stage-05/plan.md)。Portable Unlit v1 仍以
 [PORTABLE_PRESENTATION.md](PORTABLE_PRESENTATION.md) 为唯一权威；本文不修改其字段。
 
 归档设计输入：[SHADER_PIPELINE.md](../proposals/deferred/SHADER_PIPELINE.md)。字段、预算和
@@ -654,7 +654,7 @@ v3 `shader`、公开 capability 常量和 SDK API `0.7.0`。S5-D 已实现 `cuex
 `cuexis.material.parameterized.v1` 写入默认 `allCapabilities()`；OpenGL 消费 `CXSCCH01`
 GLSL 330、`CuexisObject` UBO 与 set/binding → texture unit；Unlit 内联 GLSL 330 未改；
 Validation Sink 校验 kind 4/5 identity/schema 且 Portable-only 拒绝 Parameterized；裁剪
-Session 仍拒绝且不破坏 active Unlit。S5-H local checkpoint 已写入预算、分配合同、趋势探针与
-Linux sanitizer shader-tools 覆盖；hosted 与 owner acceptance 完成前 Stage 5 不得标为
-completed。完成证据只写入阶段报告。当前产品状态以
+Session 仍拒绝且不破坏 active Unlit。S5-H 已写入预算、分配合同、趋势探针与 Linux sanitizer
+shader-tools 覆盖；Stage 5 已于 2026-08-28 关闭并合并至 `master`。关闭证据见
+[Stage 5 completion](../stage_reports/stages/stage-05/completion.md)；当前产品状态以
 [CURRENT_STATUS.md](../CURRENT_STATUS.md) 为准。

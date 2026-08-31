@@ -4,6 +4,7 @@
 
 #include <cuexis/assets/asset_database.hpp>
 #include <cuexis/chart/chart_v4_loader.hpp>
+#include <cuexis/chart/detail/chart_dispatch_internal.hpp>
 #include <cuexis/content/content_provider.hpp>
 #include <cuexis/core/error.hpp>
 #include <cuexis/cxc/cxc_package.hpp>
@@ -683,17 +684,14 @@ auto PlaybackSource::fromFilesystemProject(const std::filesystem::path& locator)
             return core::unexpected(std::move(chartText.error()));
         }
         std::vector<PlaybackProjectDocument> documents;
-        if (chart::ChartV4Loader::isV4(*chartText)) {
-            auto loadedChart = chart::ChartV4Loader::load(*chartText);
-            if (loadedChart.hasValue()) {
-                documents.reserve(loadedChart.document->animationTemplateImports.size() + 1U);
-                for (const auto& import : loadedChart.document->animationTemplateImports) {
-                    auto cxtText =
-                        readTextFile(project.projectRoot / import.source, project.projectRoot,
-                                     maxProjectDocumentBytes, "playback.cxt", "animation template");
-                    if (cxtText) {
-                        documents.push_back({import.source, std::move(*cxtText)});
-                    }
+        if (auto loadedChart = chart::detail::loadV4IfPresent(*chartText)) {
+            documents.reserve(loadedChart->animationTemplateImports.size() + 1U);
+            for (const auto& import : loadedChart->animationTemplateImports) {
+                auto cxtText =
+                    readTextFile(project.projectRoot / import.source, project.projectRoot,
+                                 maxProjectDocumentBytes, "playback.cxt", "animation template");
+                if (cxtText) {
+                    documents.push_back({import.source, std::move(*cxtText)});
                 }
             }
         }

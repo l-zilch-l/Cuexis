@@ -5,6 +5,7 @@
 #include <cuexis/json/parse.hpp>
 
 #include "json_conversion.hpp"
+#include "parse_probe_internal.hpp"
 
 #include <nlohmann/json.hpp>
 
@@ -19,6 +20,18 @@
 
 namespace cuexis::json {
 namespace {
+
+#if defined(CUEXIS_JSON_PARSE_TEST_PROBE)
+thread_local std::size_t* activeParseCounter{};
+
+void recordParseCall() noexcept {
+    if (activeParseCounter != nullptr) {
+        ++*activeParseCounter;
+    }
+}
+#else
+void recordParseCall() noexcept {}
+#endif
 
 class ParseLimitExceeded final : public std::runtime_error {
   public:
@@ -194,7 +207,30 @@ nlohmann::json toNlohmann(const Value& value) {
 
 } // namespace detail
 
+#if defined(CUEXIS_JSON_PARSE_TEST_PROBE)
+detail::ScopedParseCounter::ScopedParseCounter() noexcept : previous_(activeParseCounter) {
+    activeParseCounter = &count_;
+}
+
+detail::ScopedParseCounter::~ScopedParseCounter() {
+    activeParseCounter = previous_;
+}
+#else
+detail::ScopedParseCounter::ScopedParseCounter() noexcept = default;
+
+detail::ScopedParseCounter::~ScopedParseCounter() = default;
+#endif
+
+void detail::ScopedParseCounter::reset() noexcept {
+    count_ = 0;
+}
+
+auto detail::ScopedParseCounter::count() const noexcept -> std::size_t {
+    return count_;
+}
+
 core::Result<Value> parse(std::string_view text, ParseLimits limits) {
+    recordParseCall();
     if (limits.maxBytes == 0 || limits.maxDepth == 0 || limits.maxStringBytes == 0) {
         return core::unexpected(core::Error{"json.parse.invalid_limits",
                                             "JSON parse limits must be greater than zero"});

@@ -9,12 +9,12 @@
 状态：产品方向与阶段调整已接受；阶段 1C-1E、阶段 2 与阶段 3 已完成本地/hosted 最终验收；稳定 C ABI 延后到必选 Judgement/Replay 完成后的阶段 12
 规划日期：2026-07-20
 更新日期：2026-08-10
-当前基线：[阶段 3 验收报告](../stage_reports/stage_3_completion_report.md)
-相关实施计划：[阶段 1C](../stage_plans/stage_1c_implementation_plan.md)、[阶段 1D](../stage_plans/stage_1d_implementation_plan.md)、[阶段 1E](../stage_plans/stage_1e_implementation_plan.md)、[阶段 2](../stage_plans/stage_2_implementation_plan.md)、[阶段 3](../stage_plans/stage_3_implementation_plan.md)
-当前活动计划：[Stage Chart Format Update](../stage_plans/stage_chart_format_update_implementation_plan.md)
+当前基线：[阶段 3 验收报告](../stage_reports/stages/stage-03/completion.md)
+相关实施计划：[阶段 1C](../stage_plans/completed/stage-01/stage-1c-plan.md)、[阶段 1D](../stage_plans/completed/stage-01/stage-1d-plan.md)、[阶段 1E](../stage_plans/completed/stage-01/stage-1e-plan.md)、[阶段 2](../stage_plans/completed/stage-02/plan.md)、[阶段 3](../stage_plans/completed/stage-03/plan.md)
+当前活动计划：[Stage Chart Format Update](../stage_plans/completed/chart-format-update/plan.md)
 shared preview 边界：[ADR 0033](../adr/0033-cpp-shared-library-preview-boundary.md)
 Stage 3 公共合同：[ADR 0037](../adr/0037-stage-3-portable-presentation-contracts.md)
-CFU-B 提案：[ADR 0038](../adr/0038-cxc-v1-and-chart-v4-boundary.md)、[CXC v1 / Chart v4 候选规范](../CXC_FORMAT.md)、[CXT v1 候选规范](../CXT_FORMAT.md)。CXT v1、播放前参数和 Template Binding 子决策已于 2026-08-10 接受；ADR 0038 整体仍待接受。
+CFU-B 提案：[ADR 0038](../adr/0038-cxc-v1-and-chart-v4-boundary.md)、[CXC v1 / Chart v4 候选规范](../formats/CXC_FORMAT.md)、[CXT v1 候选规范](../formats/CXT_FORMAT.md)。CXT v1、播放前参数和 Template Binding 子决策已于 2026-08-10 接受；ADR 0038 整体仍待接受。
 
 ## 0. 文档定位
 
@@ -502,7 +502,7 @@ Behavior 扩展具有版本和能力声明
 
 ### 12.5 阶段 3：可移植表现前端与渲染适配
 
-阶段 3 的权威计划见[阶段 3 实施计划](../stage_plans/stage_3_implementation_plan.md)，公共合同见
+阶段 3 的权威计划见[阶段 3 实施计划](../stage_plans/completed/stage-03/plan.md)，公共合同见
 [ADR 0037](../adr/0037-stage-3-portable-presentation-contracts.md)。阶段 3 只交付：
 
 ```text
@@ -528,8 +528,6 @@ Light、Particle、UI、完整 RenderGraph、通用 Buffer/Pipeline、Shader、R
 
 ### 12.6 Stage Chart Format Update：谱面格式更新
 
-Stage Chart Format Update 是 Stage 3 与阶段 4 之间的独立格式前置阶段，后续文档使用该名称，不建立数字别名。
-
 该阶段负责冻结 CXC 候选格式的身份、载体、版本、时间轴、Clip/CXT/Template Binding、ChartParameter、资源引用、扩展、预算、迁移和 Playback prepare 合同，并交付 Schema、typed Reader/Writer、validator、迁移工具和 external consumer 证据。ADR 0038 当前提议 `.cxc` 严格 ZIP32 Stored 交换包与 `cuexis.chart` v4；CXT v1 是 UTF-8 JSON 声明式模板，宿主参数在 prepare 前冻结。该方案在项目所有者接受 ADR 0038 整体前仍不是生产合同。
 
 该阶段不实现 AnimationSystem、AnimatorComponent、PropertyResolver、Shader、Particle 或 Studio 编辑器。Stage 4 只能消费本阶段冻结的 typed 格式数据，不能在运行时重新解析 JSON/CXC/CXT。运行时脚本和逐帧脚本回调无限期延后，不预留格式字段、capability、字节码或执行入口。
@@ -546,7 +544,7 @@ CFU-F headless/external consumer、round-trip 和确定性 golden
 CFU-G 跨平台验收与阶段 4 交接
 ```
 
-权威实施计划见[Stage Chart Format Update 实施计划](../stage_plans/stage_chart_format_update_implementation_plan.md)。CFU-B 提案见 [ADR 0038](../adr/0038-cxc-v1-and-chart-v4-boundary.md)、[CXC 候选规范](../CXC_FORMAT.md)和 [CXT 候选规范](../CXT_FORMAT.md)。
+权威实施计划见[Stage Chart Format Update 实施计划](../stage_plans/completed/chart-format-update/plan.md)。CFU-B 提案见 [ADR 0038](../adr/0038-cxc-v1-and-chart-v4-boundary.md)、[CXC 候选规范](../formats/CXC_FORMAT.md)和 [CXT 候选规范](../formats/CXT_FORMAT.md)。
 
 ### 12.7 阶段 4：Cuexis 表现动画
 
