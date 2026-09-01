@@ -2,7 +2,7 @@
 
 状态：现行路线图
 
-更新日期：2026-08-30
+更新日期：2026-09-01
 
 产品边界由 [ADR 0027](adr/0027-playback-sdk-product-boundary.md) 冻结。本文只维护阶段顺序和当前
 交接，不复制阶段实施细节或完成证据。
@@ -10,8 +10,9 @@
 ## 当前阶段
 
 Stage 5 已于 2026-08-28 关闭并经 PR #20 合并至 `master`。`260829-full-review` 随后于
-2026-08-30 关闭；当前 [260830-followup](stage_plans/active/260830-followup/plan.md) 包含文档整理、
-Chart/CXC parse-once 和关键模块分支覆盖率三个任务。Stage 6 仍是 future，尚未启动。
+2026-08-30 关闭；[260830-followup](stage_plans/completed/260830-followup/plan.md) 的文档整理、
+Chart/CXC parse-once 和关键模块分支覆盖率三个任务已完成，并于 2026-09-01 经 PR #22 合并至
+`master`。当前没有已启动的后续产品阶段；Stage 6 仍是 future，尚未启动。
 
 ```text
 CFU-A inventory and use cases                       completed

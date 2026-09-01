@@ -2,7 +2,7 @@
 
 状态：current index
 
-更新日期：2026-08-30
+更新日期：2026-09-01
 
 报告保存带日期的实施、审查和验证证据。报告中的“下一步”只代表其快照日期，不能重新定义
 [CURRENT_STATUS.md](../CURRENT_STATUS.md)。
@@ -23,7 +23,7 @@
 - Documentation reorganization：[initial report](reviews/documentation-reorganization-2026-08/2026-08-30-reorganization.md)、
   [root consolidation](reviews/documentation-reorganization-2026-08/2026-08-30-root-consolidation.md)、
   [README consolidation](reviews/documentation-reorganization-2026-08/2026-08-30-readme-consolidation.md)
-- 260830-followup：[任务 2 Chart/CXC parse-once 完成报告](reviews/260830-followup/2026-08-31-task-2-chart-cxc-parse-once.md)、
+- 260830-followup：[最终关闭报告](reviews/260830-followup/2026-09-01-final.md)、[任务 2 Chart/CXC parse-once 完成报告](reviews/260830-followup/2026-08-31-task-2-chart-cxc-parse-once.md)、
   [任务 3 hosted 完成报告](reviews/260830-followup/2026-08-31-task-3-hosted-verification.md) 和
   [任务 3 本地快照](reviews/260830-followup/2026-08-31-task-3-critical-branch-coverage.md)
 - [Full Review 2026-08](reviews/full-review-2026-08/README.md)

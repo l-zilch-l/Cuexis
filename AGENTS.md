@@ -33,9 +33,9 @@ Stage 5 closed and merged into `master` on August 28, 2026 through PR #20 (`d380
 Material/Shader contracts in ADR 0040 and `docs/formats/MATERIAL_SHADER.md`; S5-B through S5-H
 delivered the optional shader toolchain, public presentation support, cache, consumption, and
 safety gates. `260829-full-review` followed as a separate branch and closed on August 30, 2026.
-The current `260830-followup` branch has three tasks: documentation reorganization, Chart/CXC
-parse-once, and targeted branch coverage for critical modules. Stage 6 remains future and has not
-started.
+The `260830-followup` branch had three tasks: documentation reorganization, Chart/CXC parse-once,
+and targeted branch coverage for critical modules. All three tasks are complete; PR #22 merged the
+branch into `master` on September 1, 2026. Stage 6 remains future and has not started.
 Stage 4 is complete. ADR 0038 defines `.cxc` as a strict ZIP32 Stored exchange
 package containing existing Project/Asset Index formats, `cuexis.chart` v4 data, CXT JSON, and
 required resources. The CXT v1, ChartParameter, and Template Binding subdecision was accepted on
@@ -60,8 +60,8 @@ Stage 4 typed handoff are complete. G3 local candidate gates passed on August 19
 and Windows MinGW validation on August 24, 2026; G3 hosted validation and G4 are complete.
 G5 report-SHA hosted revalidation passed and G6 owner acceptance is recorded. Stage Chart Format
 Update is complete; Stage 4 is complete. Stage 5 S5-A through S5-H closed and merged into `master`
-on August 28, 2026. `260829-full-review` then closed on August 30, 2026; `260830-followup` is the
-current follow-up branch.**
+on August 28, 2026. `260829-full-review` then closed on August 30, 2026; `260830-followup` closed
+after PR #22 merged into `master` on September 1, 2026.**
 Stage 4 close is not a public CXC package API, Shader pipeline, Studio, or Judgement.
 Stage 4 consumed typed data produced by the format stage and must not parse JSON/CXC/CXT in `engine/animation/`.
 Runtime scripts and per-frame script callbacks are deferred indefinitely. No scheduled stage,
@@ -299,7 +299,7 @@ Stage 1D modules. `sdk/` and `adapters/` directories do not exist yet (planned).
   linkage, dependency, deployment, and compatibility boundary
 - `docs/stage_plans/completed/chart-format-update/plan.md` — accepted CXC/Chart format
   decision, migration, and acceptance gates
-- `docs/stage_plans/active/260830-followup/plan.md` — current documentation, Chart/CXC parse-once,
+- `docs/stage_plans/completed/260830-followup/plan.md` — completed documentation, Chart/CXC parse-once,
   and critical branch-coverage plan; Stage 6 has not started
 - `docs/stage_plans/completed/stage-04/plan.md` through
   `docs/stage_plans/future/stage-12/plan.md` — independent active/future/deferred plans with

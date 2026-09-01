@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-08-31
+更新日期：2026-09-01
 
 本文是 Cuexis 当前产品和阶段状态的唯一摘要。ADR 定义决策，Spec 定义字段和语义，阶段计划定义未来
 范围，阶段报告保存带日期的实施证据；它们不得绕过本文重新定义当前状态。
@@ -59,12 +59,14 @@ Chart/CXC parse-once、RT-29、World/Animation 大规模优化、大包解析降
 运行时脚本和逐帧 script callback 无限期延后；不为它们预留 Chart/CXT/CXC 字段、extension、
 capability、bytecode、ABI 或 Playback hook。离线 authoring generator 只能作为未来独立工具讨论。
 
-当前 [260830-followup 维护计划](stage_plans/active/260830-followup/plan.md) 的文档整理、
+已关闭的 [260830-followup 维护计划](stage_plans/completed/260830-followup/plan.md) 的文档整理、
 Chart/CXC parse-once 和关键模块分支覆盖率三个任务均已完成。任务 3 的最终 SHA
 `299596c533a8c66a78b5c4ada341b1163528fb25` 已通过 Linux Quality、Windows MSVC 和 Windows
 MinGW；分模块覆盖率和环境残余见其[完成报告](stage_reports/reviews/260830-followup/2026-08-31-task-3-hosted-verification.md)。
-该 follow-up 计划仍保持 active，等待汇总报告和项目所有者接受；RT-29、T1 World/Animation 大规模优化、
-T2 大包解析降本和 T4 Stage 6/API/Player 工作仍需另外的触发证据和明确授权。
+PR #22 已于 2026-09-01 合并至 `master`，关闭总结见
+[260830-followup 最终关闭报告](stage_reports/reviews/260830-followup/2026-09-01-final.md)。
+RT-29、T1 World/Animation 大规模优化、T2 大包解析降本和 T4 Stage 6/API/Player 工作仍需另外的
+触发证据和明确授权；Stage 6 仍为 future，尚未启动。
 
 ## 更新规则
 

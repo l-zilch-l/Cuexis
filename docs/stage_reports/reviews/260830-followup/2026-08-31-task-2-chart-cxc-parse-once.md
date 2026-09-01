@@ -4,9 +4,9 @@
 
 更新日期：2026-08-31
 
-所属计划：[260830-followup 维护计划](../../../stage_plans/active/260830-followup/plan.md)
+所属计划：[260830-followup 维护计划](../../../stage_plans/completed/260830-followup/plan.md)
 
-实施方案：[任务 2 实施计划](../../../stage_plans/active/260830-followup/task-2-chart-cxc-parse-once.md)
+实施方案：[任务 2 实施计划](../../../stage_plans/completed/260830-followup/task-2-chart-cxc-parse-once.md)
 
 ## 1. 结论
 
@@ -82,6 +82,5 @@ parse 一次。该边界是有意保留的：source factory 需要完成项目�
 - `python -B tools/check_docs.py`：通过。
 - `git diff --check`：通过。
 
-本报告只记录本地验证，不宣称新的 hosted 或 owner-acceptance 证据。`260830-followup` 总计划仍
-保持 `active`，等待任务 1 和任务 3 完成。
-
+本报告只记录本地验证，不宣称新的 hosted 或 owner-acceptance 证据。报告撰写时，`260830-followup`
+仍在等待任务 1 和任务 3 完成；该维护计划已于 2026-09-01 通过 PR #22 合并后关闭。
