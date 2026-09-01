@@ -24,6 +24,11 @@ target_compile_definitions(cuexis_chart_tests
         CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
 )
 
+target_include_directories(cuexis_chart_tests
+    PRIVATE
+        ${PROJECT_SOURCE_DIR}/engine/json_support/src
+)
+
 target_link_libraries(cuexis_chart_tests
     PRIVATE
         cuexis::chart

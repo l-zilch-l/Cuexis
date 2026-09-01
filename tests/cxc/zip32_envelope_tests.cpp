@@ -347,3 +347,113 @@ TEST_CASE("CXC ZIP32 envelope enforces exact count size path and field budgets",
         CHECK(rejected.error().code() == "cxc.entry.duplicate");
     }
 }
+
+TEST_CASE("CXC ZIP32 writer rejects empty archives and invalid zero limits",
+          "[cxc][zip32][boundary]") {
+    const std::vector<std::pair<std::string, std::vector<std::byte>>> empty;
+    const auto emptyArchive = detail::writeCanonicalZip32(empty, CxcPackageLimits{});
+    REQUIRE_FALSE(emptyArchive.has_value());
+    CHECK(emptyArchive.error().code() == "cxc.budget.exceeded");
+
+    auto limits = CxcPackageLimits{};
+    limits.maxPackageBytes = 0;
+    const auto invalidLimits = detail::validateZip32Envelope({}, limits);
+    CHECK_FALSE(invalidLimits.hasValue());
+    REQUIRE_FALSE(invalidLimits.diagnostics.empty());
+    CHECK(invalidLimits.diagnostics.items().front().code() == "cxc.budget.exceeded");
+}
+
+TEST_CASE("CXC ZIP32 validator rejects malformed end records and unrepresentable writer input",
+          "[cxc][zip32][branch-coverage]") {
+    SECTION("truncated and malformed end records") {
+        const auto truncated = detail::validateZip32Envelope({}, CxcPackageLimits{});
+        CHECK_FALSE(truncated.hasValue());
+        CHECK(support::hasDiagnostic(truncated.diagnostics, "cxc.archive.invalid"));
+
+        std::vector<std::byte> malformed(22U);
+        const auto malformedResult = detail::validateZip32Envelope(malformed, CxcPackageLimits{});
+        CHECK_FALSE(malformedResult.hasValue());
+        CHECK(support::hasDiagnostic(malformedResult.diagnostics, "cxc.archive.invalid"));
+    }
+
+    SECTION("zero archive entries and damaged central headers") {
+        const auto canonical = support::writePackage(support::makeV4StaticRequest());
+        const auto layout = support::parseZip(canonical);
+
+        auto zeroEntries = canonical;
+        support::writeU16(zeroEntries, layout.eocdOffset + 8U, 0U);
+        support::writeU16(zeroEntries, layout.eocdOffset + 10U, 0U);
+        const auto zeroResult = detail::validateZip32Envelope(zeroEntries, CxcPackageLimits{});
+        CHECK_FALSE(zeroResult.hasValue());
+        CHECK(support::hasDiagnostic(zeroResult.diagnostics, "cxc.budget.exceeded"));
+
+        auto centralHeader = canonical;
+        support::writeU32(centralHeader, layout.centralOffset, 0U);
+        const auto centralResult = detail::validateZip32Envelope(centralHeader, CxcPackageLimits{});
+        CHECK_FALSE(centralResult.hasValue());
+        CHECK(support::hasDiagnostic(centralResult.diagnostics, "cxc.archive.invalid"));
+    }
+
+    SECTION("writer refuses directory entries and payloads beyond its configured limit") {
+        const std::vector<std::pair<std::string, std::vector<std::byte>>> directory{
+            {"assets/", {}}};
+        const auto directoryResult = detail::writeCanonicalZip32(directory, CxcPackageLimits{});
+        REQUIRE_FALSE(directoryResult.has_value());
+        CHECK(directoryResult.error().code() == "cxc.entry.path_invalid");
+
+        auto limits = CxcPackageLimits{};
+        limits.maxEntryBytes = 1;
+        const std::vector<std::pair<std::string, std::vector<std::byte>>> oversized{
+            {"assets/data.bin", {std::byte{0}, std::byte{1}}}};
+        const auto oversizedResult = detail::writeCanonicalZip32(oversized, limits);
+        REQUIRE_FALSE(oversizedResult.has_value());
+        CHECK(oversizedResult.error().code() == "cxc.budget.exceeded");
+
+        limits = CxcPackageLimits{};
+        limits.maxPackageBytes = 22U;
+        const std::vector<std::pair<std::string, std::vector<std::byte>>> packageLimit{
+            {"assets/data.bin", {}}};
+        const auto packageResult = detail::writeCanonicalZip32(packageLimit, limits);
+        REQUIRE_FALSE(packageResult.has_value());
+        CHECK(packageResult.error().code() == "cxc.budget.exceeded");
+    }
+}
+
+TEST_CASE("CXC ZIP32 validator checks local metadata against central records",
+          "[cxc][zip32][branch-coverage]") {
+    const auto canonical = support::writePackage(support::makeV4StaticRequest());
+    const auto layout = support::parseZip(canonical);
+    REQUIRE_FALSE(layout.entries.empty());
+    const auto& first = layout.entries.front();
+
+    SECTION("UNIX regular-file metadata remains accepted") {
+        auto bytes = canonical;
+        support::writeU16(bytes, first.centralHeaderOffset + 4U, 0x0314U);
+        support::writeU32(bytes, first.centralHeaderOffset + 38U, 0100000U << 16U);
+        const auto result = CxcPackageLoader::loadMemory(std::move(bytes));
+        INFO(support::diagnosticsText(result.diagnostics));
+        REQUIRE(result.hasValue());
+        CHECK_FALSE(result.package->entries().empty());
+    }
+
+    SECTION("central size mismatch is rejected before project parsing") {
+        auto bytes = canonical;
+        support::writeU32(bytes, first.centralHeaderOffset + 20U,
+                          static_cast<std::uint32_t>(first.byteCount + 1U));
+        const auto result = CxcPackageLoader::loadMemory(std::move(bytes));
+        CHECK_FALSE(result.hasValue());
+        CHECK(support::hasDiagnostic(result.diagnostics, "cxc.archive.invalid"));
+        CHECK_FALSE(result.package.has_value());
+    }
+
+    SECTION("local filename must match its central directory entry") {
+        auto bytes = canonical;
+        const auto replacement = support::bytesFromText(std::string{"x"} + first.path.substr(1));
+        std::copy(replacement.begin(), replacement.end(),
+                  bytes.begin() + static_cast<std::ptrdiff_t>(first.localHeaderOffset + 30U));
+        const auto result = CxcPackageLoader::loadMemory(std::move(bytes));
+        CHECK_FALSE(result.hasValue());
+        CHECK(support::hasDiagnostic(result.diagnostics, "cxc.archive.invalid"));
+        CHECK_FALSE(result.package.has_value());
+    }
+}

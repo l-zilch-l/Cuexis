@@ -5,8 +5,8 @@
 更新日期：2026-08-11
 
 这些 `.json` 和 `.cxt` 文件用于评审 [ADR 0038](../../adr/0038-cxc-v1-and-chart-v4-boundary.md)、
-[CXC_FORMAT.md](../../CXC_FORMAT.md)、[CHART_V4_FORMAT.md](../../CHART_V4_FORMAT.md) 和
-[CXT_FORMAT.md](../../CXT_FORMAT.md)。`.cxt` 本身是 UTF-8 JSON。文件名中的
+[CXC_FORMAT.md](../../formats/CXC_FORMAT.md)、[CHART_V4_FORMAT.md](../../formats/CHART_V4_FORMAT.md) 和
+[CXT_FORMAT.md](../../formats/CXT_FORMAT.md)。`.cxt` 本身是 UTF-8 JSON。文件名中的
 `valid` / `invalid` 表示相对于候选合同的期望，不表示当前 v1/v2/v3 实现已经支持它们。
 
 | 文件 | 期望 | 目的 |

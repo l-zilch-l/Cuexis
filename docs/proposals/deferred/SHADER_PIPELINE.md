@@ -6,7 +6,7 @@
 
 字段、预算和诊断码以 [MATERIAL_SHADER.md](../../formats/MATERIAL_SHADER.md) 与
 [ADR 0040](../../adr/0040-stage-5-material-shader-contracts.md) 为准。本文保留 SPIR-V 中心管线
-的历史讨论，不再作为生产 spec。排期以 [Stage 5 plan](../../stage_plans/stage_5_implementation_plan.md)
+的历史讨论，不再作为生产 spec。已完成范围以 [Stage 5 plan](../../stage_plans/completed/stage-05/plan.md)
 为准。
 
 ## 规范输入与中间表示

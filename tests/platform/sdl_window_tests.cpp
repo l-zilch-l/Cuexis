@@ -89,6 +89,34 @@ TEST_CASE("Runtime creation rejects a worker thread", "[platform][runtime]") {
     CHECK(result.error().code() == "platform.sdl.not_main_thread");
 }
 
+TEST_CASE("Moved-from SDL wrappers reject operations without invalidating their replacements",
+          "[platform][runtime][window][move]") {
+    auto runtimeResult = cuexis::platform_sdl::SdlRuntime::create();
+    REQUIRE(runtimeResult.has_value());
+    auto runtime = std::move(runtimeResult).value();
+    auto replacementRuntime = std::move(runtime);
+
+    const auto missingRuntime =
+        cuexis::platform_sdl::SdlWindow::create(runtime, dummyWindowConfig());
+    REQUIRE_FALSE(missingRuntime.has_value());
+    CHECK(missingRuntime.error().code() == "platform.sdl.runtime_unavailable");
+
+    auto created = cuexis::platform_sdl::SdlWindow::create(replacementRuntime, dummyWindowConfig());
+    REQUIRE(created.has_value());
+    auto window = std::move(created).value();
+    auto replacementWindow = std::move(window);
+
+    const auto missingWindow = window.drawableSize();
+    REQUIRE_FALSE(missingWindow.has_value());
+    CHECK(missingWindow.error().code() == "platform.sdl.window_size_failed");
+    CHECK_FALSE(window.pollEvents().quitRequested);
+
+    const auto replacementSize = replacementWindow.drawableSize();
+    REQUIRE(replacementSize.has_value());
+    CHECK(replacementSize->width > 0);
+    CHECK(replacementSize->height > 0);
+}
+
 TEST_CASE("Stage 0 rejects a second active window", "[platform][window]") {
     auto runtime = cuexis::platform_sdl::SdlRuntime::create();
     REQUIRE(runtime.has_value());

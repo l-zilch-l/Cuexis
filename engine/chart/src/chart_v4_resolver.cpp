@@ -3,15 +3,19 @@
 #include <cuexis/chart/animation_template_loader.hpp>
 #include <cuexis/chart/canonical_chart_loader.hpp>
 #include <cuexis/chart/chart_writer.hpp>
+#include <cuexis/chart/detail/chart_v4_resolver_internal.hpp>
 #include <cuexis/core/error.hpp>
 #include <cuexis/json/parse.hpp>
 #include <cuexis/json/reader.hpp>
 #include <cuexis/json/value.hpp>
 
+#include "canonical_chart_loader_internal.hpp"
 #include "chart_parameter_resolver_internal.hpp"
 #include "chart_project_path_internal.hpp"
 #include "chart_v4_animation_reader_internal.hpp"
 #include "chart_v4_common_reader_internal.hpp"
+#include "chart_v4_loader_internal.hpp"
+#include "chart_writer_internal.hpp"
 #include "diagnostic_limit.hpp"
 #include "sha256_internal.hpp"
 
@@ -256,12 +260,7 @@ void normalizeResolvedChart(ChartDocument& chart) {
     root->insert_or_assign("requiredExtensions", json::Value{json::Value::Array{}});
     eraseAnimators(source, "templates");
     eraseAnimators(source, "objects");
-    auto serialized = json::serialize(source);
-    if (!serialized) {
-        addError(diagnostics, serialized.error(), "$");
-        return std::nullopt;
-    }
-    auto loaded = CanonicalChartLoader::load(*serialized, limits);
+    auto loaded = detail::loadCanonicalValue(std::move(source), limits);
     diagnostics.append(std::move(loaded.diagnostics));
     if (!loaded.document) {
         return std::nullopt;
@@ -1334,33 +1333,23 @@ auto CanonicalContentIdentity::hex() const -> std::string {
     return detail::sha256Hex(sha256);
 }
 
-auto ChartV4Resolver::resolve(const ChartV4SourceDocument& source,
-                              std::span<const ChartParameterInput> parameters,
-                              std::span<const ProjectDocument> projectDocuments,
-                              std::span<const RequiredExtension> supportedExtensions,
-                              const ChartLimits& limits) -> ChartV4ResolveResult {
-    auto diagnostics = detail::makeDiagnostics(limits);
-    if (detail::rejectInvalidDiagnosticLimit(diagnostics, limits)) {
-        return ChartV4ResolveResult{std::nullopt, std::move(diagnostics)};
-    }
+namespace {
 
-    auto resolvedParameters = detail::resolveChartParameters(
-        source.parameters, source.parameterUses, parameters, limits, diagnostics);
-    auto parsed =
-        json::parse(source.canonicalSource.canonicalText,
-                    {limits.maxInputBytes, limits.maxNestingDepth, limits.maxStringBytes});
-    if (!parsed) {
-        addError(diagnostics, parsed.error(), "$");
-    }
-    if (!resolvedParameters || !parsed) {
-        diagnostics.sortDeterministically();
-        return ChartV4ResolveResult{std::nullopt, std::move(diagnostics)};
+[[nodiscard]] auto resolveParsedV4Source(const ChartV4SourceDocument& source, json::Value parsed,
+                                         detail::ResolvedParameterSet resolvedParameters,
+                                         std::span<const ProjectDocument> projectDocuments,
+                                         std::span<const RequiredExtension> supportedExtensions,
+                                         const ChartLimits& limits, core::Diagnostics diagnostics)
+    -> ChartV4ResolveResult {
+    auto canonicalChart = detail::writeV4Value(parsed, limits);
+    if (!canonicalChart) {
+        addError(diagnostics, canonicalChart.error(), "$");
     }
 
     for (const auto& use : source.parameterUses) {
-        const auto value = resolvedParameters->byId.find(use.id);
-        if (value == resolvedParameters->byId.end() ||
-            !replaceAtFieldPath(*parsed, use.fieldPath, parameterJsonValue(value->second))) {
+        const auto value = resolvedParameters.byId.find(use.id);
+        if (value == resolvedParameters.byId.end() ||
+            !replaceAtFieldPath(parsed, use.fieldPath, parameterJsonValue(value->second))) {
             addError(diagnostics, "chart.parameter.use_not_allowed",
                      "Chart parameter use could not be resolved at its source path", use.fieldPath);
         }
@@ -1376,18 +1365,14 @@ auto ChartV4Resolver::resolve(const ChartV4SourceDocument& source,
     validateRequiredExtensions(source.requiredExtensions, supported, diagnostics,
                                "$/requiredExtensions");
     auto imports = loadImports(source, projectDocuments, supported, limits, diagnostics);
-    auto chart = makeConcreteChart(*parsed, limits, diagnostics);
-    auto animators = concreteAnimators(*parsed, limits, diagnostics);
+    auto chart = makeConcreteChart(parsed, limits, diagnostics);
+    auto animators = concreteAnimators(parsed, limits, diagnostics);
     auto program =
-        buildProgram(source, animators, imports, resolvedParameters->byId, limits, diagnostics);
+        buildProgram(source, animators, imports, resolvedParameters.byId, limits, diagnostics);
     if (chart) {
         validateProgram(program.program, *chart, program.paths, imports, limits, diagnostics);
     }
 
-    auto canonicalChart = ChartWriter::writeV4(source, limits);
-    if (!canonicalChart) {
-        addError(diagnostics, canonicalChart.error(), "$");
-    }
     std::vector<CxtIdentityComponent> cxtIdentities;
     cxtIdentities.reserve(imports.size());
     for (const auto& [id, imported] : imports) {
@@ -1403,11 +1388,60 @@ auto ChartV4Resolver::resolve(const ChartV4SourceDocument& source,
     auto capabilities = capabilityRequirements(source, animators);
     return ChartV4ResolveResult{
         ChartV4ResolvedArtifact{
-            ResolvedChartDocument{std::move(*chart), std::move(resolvedParameters->values)},
+            ResolvedChartDocument{std::move(*chart), std::move(resolvedParameters.values)},
             std::move(program.program), CanonicalContentIdentity{detail::sha256(*canonicalChart)},
-            std::move(cxtIdentities), resolvedParameters->identity, std::move(resources),
+            std::move(cxtIdentities), resolvedParameters.identity, std::move(resources),
             std::move(capabilities)},
         std::move(diagnostics)};
+}
+
+} // namespace
+
+auto ChartV4Resolver::resolve(const ChartV4SourceDocument& source,
+                              std::span<const ChartParameterInput> parameters,
+                              std::span<const ProjectDocument> projectDocuments,
+                              std::span<const RequiredExtension> supportedExtensions,
+                              const ChartLimits& limits) -> ChartV4ResolveResult {
+    auto diagnostics = detail::makeDiagnostics(limits);
+    if (detail::rejectInvalidDiagnosticLimit(diagnostics, limits)) {
+        return ChartV4ResolveResult{std::nullopt, std::move(diagnostics)};
+    }
+    auto resolvedParameters = detail::resolveChartParameters(
+        source.parameters, source.parameterUses, parameters, limits, diagnostics);
+    auto parsed =
+        json::parse(source.canonicalSource.canonicalText,
+                    {limits.maxInputBytes, limits.maxNestingDepth, limits.maxStringBytes});
+    if (!parsed) {
+        addError(diagnostics, parsed.error(), "$");
+    }
+    if (!resolvedParameters || !parsed) {
+        diagnostics.sortDeterministically();
+        return ChartV4ResolveResult{std::nullopt, std::move(diagnostics)};
+    }
+    return resolveParsedV4Source(source, std::move(*parsed), std::move(*resolvedParameters),
+                                 projectDocuments, supportedExtensions, limits,
+                                 std::move(diagnostics));
+}
+
+auto detail::resolveV4Parsed(const ChartV4SourceDocument& source,
+                             const ParsedChartInput& parsedInput,
+                             std::span<const ChartParameterInput> parameters,
+                             std::span<const ProjectDocument> projectDocuments,
+                             std::span<const RequiredExtension> supportedExtensions,
+                             const ChartLimits& limits) -> ChartV4ResolveResult {
+    auto diagnostics = detail::makeDiagnostics(limits);
+    if (detail::rejectInvalidDiagnosticLimit(diagnostics, limits)) {
+        return ChartV4ResolveResult{std::nullopt, std::move(diagnostics)};
+    }
+    auto resolvedParameters = detail::resolveChartParameters(
+        source.parameters, source.parameterUses, parameters, limits, diagnostics);
+    if (!resolvedParameters) {
+        diagnostics.sortDeterministically();
+        return ChartV4ResolveResult{std::nullopt, std::move(diagnostics)};
+    }
+    return resolveParsedV4Source(source, parsedInput.value, std::move(*resolvedParameters),
+                                 projectDocuments, supportedExtensions, limits,
+                                 std::move(diagnostics));
 }
 
 } // namespace cuexis::chart

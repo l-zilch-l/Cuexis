@@ -551,7 +551,7 @@ v2 的 `audio` block 原样迁移到 v3 再 lift 到 v4；v1 没有该字段。
 FrameSnapshot / FrameDigest 等价属于 CFU-D3，已由 Playback 层测试关闭；v1 Quaternion 采样继续按
 迁移误差预算比较，不要求与源 v1 的 FrameDigest 位级相同。整包 CFU-D 已由项目所有者记录
 “未提供外部资产”并关闭；兼容窗口不缩短。证据见
-[CFU-D 关闭报告](../stage_reports/260814-chart-format-update-d-close.md)。
+[CFU-D 关闭报告](../stage_reports/chart-format-update/2026-08-14-d-close.md)。
 
 ## 9. Extensions
 

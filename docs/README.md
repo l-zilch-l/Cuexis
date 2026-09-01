@@ -2,7 +2,7 @@
 
 状态：现行文档入口
 
-更新日期：2026-08-28
+更新日期：2026-08-30
 
 本文档是 Cuexis 文档的导航页，不复制产品合同、阶段证据或完整字段定义。当前项目状态只
 以 [CURRENT_STATUS.md](CURRENT_STATUS.md) 为准。
@@ -14,9 +14,10 @@
 3. [产品与模块边界](architecture/README.md)
 4. [ADR 索引](adr/README.md)，先读 ADR 0027、0024、0025、0026、0037、0038 和 0040
 5. [格式索引](formats/README.md)
-6. [Stage 5 计划](stage_plans/stage_5_implementation_plan.md)
+6. [260830-followup 当前计划](stage_plans/active/260830-followup/plan.md)
 7. [指南索引](guides/README.md)
-8. [构建与验证](guides/BUILDING.md)
+8. [API 参考](api/README.md)
+9. [构建与验证](guides/BUILDING.md)
 
 ## 文档权威关系
 
@@ -29,6 +30,7 @@
 | Proposal | 记录候选合同和延期设计输入 | [proposals/README.md](proposals/README.md) |
 | Example | 提供评审和验证样例，不代表生产支持 | [examples/README.md](examples/README.md) |
 | Guide/Policy | 说明构建、编码、依赖和版本操作规则 | [guides/README.md](guides/README.md) |
+| API Reference | 说明已发布 SDK 的入口、生命周期、诊断和兼容边界 | [api/README.md](api/README.md) |
 | Current Status | 唯一的当前阶段和实现状态摘要 | [CURRENT_STATUS.md](CURRENT_STATUS.md) |
 | Archive | 历史格式、历史计划和过期审视材料 | [archive/README.md](archive/README.md) |
 
@@ -43,6 +45,7 @@
 - [RuntimeSession](architecture/RUNTIME_SESSION.md)
 - [项目路线图](ROADMAP.md)
 - [文档整理政策](DOCUMENTATION_POLICY.md)
+- [Playback SDK API 参考](api/README.md)
 
 ## 格式和运行语义
 
@@ -80,21 +83,18 @@
 
 ## 旧路径兼容入口
 
-首轮整理保留以下根目录短页，旧链接会继续指向新的权威位置：
-
-- [CHART_FORMAT.md](CHART_FORMAT.md)、[CHART_V4_FORMAT.md](CHART_V4_FORMAT.md)
-- [CXC_FORMAT.md](CXC_FORMAT.md)、[CXT_FORMAT.md](CXT_FORMAT.md)
-- [ANIMATION_MIXING.md](ANIMATION_MIXING.md)、[PORTABLE_PRESENTATION.md](PORTABLE_PRESENTATION.md)
-- [TIMING_MODEL.md](TIMING_MODEL.md)、[RUNTIME_SESSION.md](RUNTIME_SESSION.md)
-- [BUILDING.md](BUILDING.md)、[CODE_POLICY.md](CODE_POLICY.md)
-- [DEPENDENCY_POLICY.md](DEPENDENCY_POLICY.md)、[VERSIONING.md](VERSIONING.md)
+根目录只保留稳定入口、状态合同和集中迁移清单；格式、指南、架构和延期设计的旧逻辑路径见
+[legacy-paths.md](legacy-paths.md)。该清单映射旧名称到 canonical 文档，但不承诺旧的逐文件 URL。
 
 ## 阶段、证据和示例
 
 - [阶段计划索引](stage_plans/README.md)
-- [Stage Chart Format Update 计划](stage_plans/stage_chart_format_update_implementation_plan.md)
-- [Stage 4 计划](stage_plans/stage_4_implementation_plan.md)
-- [260829 Full Review 整改计划](stage_plans/260829-full-review-remediation-plan.md)
+- [260830-followup 当前计划](stage_plans/active/260830-followup/plan.md)
+- [Stage Chart Format Update 计划](stage_plans/completed/chart-format-update/plan.md)
+- [Stage 4 计划](stage_plans/completed/stage-04/plan.md)
+- [Stage 5 计划](stage_plans/completed/stage-05/plan.md)
+- [260829 Full Review 整改计划](stage_plans/reviews/full-review-2026-08/remediation-plan.md)
 - [阶段报告索引](stage_reports/README.md)
+- [Full Review 最终关闭](stage_reports/reviews/full-review-2026-08/2026-08-30-final.md)
 - [候选示例索引](examples/README.md)
 - [历史文档归档](archive/README.md)

@@ -191,6 +191,30 @@ TEST_CASE("OpenGL draw bounds reject non-finite Portable Mesh bounds", "[render]
     CHECK(hasContext(result.error(), "field", "mesh_bounds"));
 }
 
+TEST_CASE("OpenGL draw preparation rejects late frame errors without a partial summary",
+          "[render][opengl][frame][rollback]") {
+    auto fixture = makeFixture();
+    const auto baseline = cuexis::render_opengl::detail::probeBuildDraws(
+        fixture.snapshot, fixture.manifest, fixture.resources);
+    REQUIRE(baseline.has_value());
+    REQUIRE(baseline->opaque.size() == 1);
+
+    auto lateObject = fixture.snapshot.objects.front();
+    lateObject.id = "late-invalid-object";
+    lateObject.worldMatrix[0] = std::numeric_limits<float>::infinity();
+    fixture.snapshot.objects.push_back(std::move(lateObject));
+
+    const auto rejected = cuexis::render_opengl::detail::probeBuildDraws(
+        fixture.snapshot, fixture.manifest, fixture.resources);
+    REQUIRE_FALSE(rejected.has_value());
+    CHECK(rejected.error().code() == "playback.presentation.frame.non_finite");
+    CHECK(hasContext(rejected.error(), "object_id", "late-invalid-object"));
+
+    // The successful summary is a caller-owned value; a later failed build cannot mutate it.
+    CHECK(baseline->opaque.size() == 1);
+    CHECK(baseline->opaque.front().objectId == "bounds-object");
+}
+
 TEST_CASE("OpenGL draw bounds tolerate an empty mesh and preserve its zero center",
           "[render][opengl][bounds]") {
     auto fixture = makeFixture();
@@ -209,6 +233,25 @@ TEST_CASE("OpenGL draw bounds tolerate an empty mesh and preserve its zero cente
     REQUIRE(summary.has_value());
     REQUIRE(summary->opaque.size() == 1);
     CHECK(summary->opaque.front().depthMeters == Catch::Approx(0.0));
+}
+
+TEST_CASE("OpenGL draw preparation separates transparent commands and orders them by depth",
+          "[render][opengl][draws][branch-coverage]") {
+    auto fixture = makeFixture();
+    auto transparent = fixture.snapshot.objects.front();
+    transparent.id = "transparent-object";
+    transparent.materialOpacity = 0.5;
+    transparent.worldMatrix[14] = -2.0F;
+    fixture.snapshot.objects.push_back(std::move(transparent));
+
+    const auto summary = cuexis::render_opengl::detail::probeBuildDraws(
+        fixture.snapshot, fixture.manifest, fixture.resources);
+    REQUIRE(summary.has_value());
+    REQUIRE(summary->opaque.size() == 1);
+    REQUIRE(summary->transparent.size() == 1);
+    CHECK(summary->opaque.front().objectId == "bounds-object");
+    CHECK(summary->transparent.front().objectId == "transparent-object");
+    CHECK(summary->transparent.front().depthMeters == Catch::Approx(2.0));
 }
 
 TEST_CASE("Parameterized OpenGL numeric uniforms are queried during prepare, not hot draw",

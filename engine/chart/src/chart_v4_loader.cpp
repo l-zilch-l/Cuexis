@@ -1,6 +1,7 @@
 #include <cuexis/chart/chart_v4_loader.hpp>
 
 #include <cuexis/chart/canonical_chart_loader.hpp>
+#include <cuexis/chart/detail/chart_dispatch_internal.hpp>
 #include <cuexis/chart/uuid.hpp>
 #include <cuexis/json/parse.hpp>
 #include <cuexis/json/reader.hpp>
@@ -9,6 +10,7 @@
 #include "chart_project_path_internal.hpp"
 #include "chart_v4_animation_reader_internal.hpp"
 #include "chart_v4_common_reader_internal.hpp"
+#include "chart_v4_loader_internal.hpp"
 #include "diagnostic_limit.hpp"
 
 #include <algorithm>
@@ -18,6 +20,7 @@
 #include <cstdint>
 #include <limits>
 #include <map>
+#include <memory>
 #include <optional>
 #include <set>
 #include <string>
@@ -697,22 +700,14 @@ auto ChartV4Loader::isV4(std::string_view jsonText, const ChartLimits& limits) -
     return false;
 }
 
-auto ChartV4Loader::load(std::string_view jsonText, const ChartLimits& limits)
+auto detail::loadV4Value(const json::Value& parsed, const ChartLimits& limits)
     -> ChartV4SourceResult {
     auto diagnostics = detail::makeDiagnostics(limits);
     if (detail::rejectInvalidDiagnosticLimit(diagnostics, limits)) {
         return ChartV4SourceResult{std::nullopt, std::move(diagnostics)};
     }
-    auto parsed =
-        json::parse(jsonText, json::ParseLimits{limits.maxInputBytes, limits.maxNestingDepth,
-                                                limits.maxStringBytes});
-    if (!parsed) {
-        addParseError(diagnostics, parsed.error());
-        diagnostics.sortDeterministically();
-        return ChartV4SourceResult{std::nullopt, std::move(diagnostics)};
-    }
 
-    json::Reader root{*parsed, diagnostics};
+    json::Reader root{parsed, diagnostics};
     constexpr std::array fields{std::string_view{"format"},
                                 std::string_view{"version"},
                                 std::string_view{"chartId"},
@@ -801,7 +796,7 @@ auto ChartV4Loader::load(std::string_view jsonText, const ChartLimits& limits)
 
     std::vector<ParameterUse> parameterUses;
     auto animators = readAnimators(root, limits, diagnostics, parameterUses);
-    const auto projection = makeLegacyProjection(*parsed, limits, diagnostics, parameterUses);
+    const auto projection = makeLegacyProjection(parsed, limits, diagnostics, parameterUses);
     validateParameterUses(parameters, parameterUses, diagnostics);
     validateAnimationReferences(imports, clips, animators, diagnostics);
 
@@ -818,7 +813,7 @@ auto ChartV4Loader::load(std::string_view jsonText, const ChartLimits& limits)
         }
     }
     OpaqueJson canonicalSource;
-    if (auto serialized = json::serialize(*parsed)) {
+    if (auto serialized = json::serialize(parsed)) {
         canonicalSource.canonicalText = std::move(*serialized);
     } else {
         addParseError(diagnostics, serialized.error());
@@ -835,6 +830,80 @@ auto ChartV4Loader::load(std::string_view jsonText, const ChartLimits& limits)
             std::move(parameters), std::move(parameterUses), std::move(imports), std::move(clips),
             std::move(animators), std::move(requiredExtensions), std::move(extensions)},
         std::move(diagnostics)};
+}
+
+auto ChartV4Loader::load(std::string_view jsonText, const ChartLimits& limits)
+    -> ChartV4SourceResult {
+    auto diagnostics = detail::makeDiagnostics(limits);
+    if (detail::rejectInvalidDiagnosticLimit(diagnostics, limits)) {
+        return ChartV4SourceResult{std::nullopt, std::move(diagnostics)};
+    }
+    auto parsed =
+        json::parse(jsonText, json::ParseLimits{limits.maxInputBytes, limits.maxNestingDepth,
+                                                limits.maxStringBytes});
+    if (!parsed) {
+        addParseError(diagnostics, parsed.error());
+        diagnostics.sortDeterministically();
+        return ChartV4SourceResult{std::nullopt, std::move(diagnostics)};
+    }
+    return detail::loadV4Value(*parsed, limits);
+}
+
+auto detail::loadChartForPlayback(std::string_view jsonText, const ChartLimits& limits)
+    -> ChartDispatchResult {
+    auto diagnostics = detail::makeDiagnostics(limits);
+    if (detail::rejectInvalidDiagnosticLimit(diagnostics, limits)) {
+        return ChartDispatchResult{false, std::nullopt, std::nullopt, {}, std::move(diagnostics)};
+    }
+    auto parsed =
+        json::parse(jsonText, json::ParseLimits{limits.maxInputBytes, limits.maxNestingDepth,
+                                                limits.maxStringBytes});
+    if (!parsed) {
+        addParseError(diagnostics, parsed.error());
+        diagnostics.sortDeterministically();
+        return ChartDispatchResult{false, std::nullopt, std::nullopt, {}, std::move(diagnostics)};
+    }
+
+    bool isV4 = false;
+    if (const auto* version = parsed->find("version"); version != nullptr) {
+        if (const auto* signedValue = version->signedInteger()) {
+            isV4 = *signedValue == 4;
+        } else if (const auto* unsignedValue = version->unsignedInteger()) {
+            isV4 = *unsignedValue == 4;
+        }
+    }
+    if (isV4) {
+        auto input = std::make_shared<ParsedChartInput>(ParsedChartInput{std::move(*parsed)});
+        auto loaded = detail::loadV4Value(input->value, limits);
+        return ChartDispatchResult{true, std::nullopt, std::move(loaded.document), std::move(input),
+                                   std::move(loaded.diagnostics)};
+    }
+
+    auto loaded = detail::loadCanonicalValue(std::move(*parsed), limits);
+    return ChartDispatchResult{
+        false, std::move(loaded.document), std::nullopt, {}, std::move(loaded.diagnostics)};
+}
+
+auto detail::loadV4IfPresent(std::string_view jsonText, const ChartLimits& limits)
+    -> std::optional<ChartV4SourceDocument> {
+    auto parsed =
+        json::parse(jsonText, json::ParseLimits{limits.maxInputBytes, limits.maxNestingDepth,
+                                                limits.maxStringBytes});
+    if (!parsed) {
+        return std::nullopt;
+    }
+    const auto* version = parsed->find("version");
+    const auto isV4 = version != nullptr &&
+                      ((version->signedInteger() != nullptr && *version->signedInteger() == 4) ||
+                       (version->unsignedInteger() != nullptr && *version->unsignedInteger() == 4));
+    if (!isV4) {
+        return std::nullopt;
+    }
+    auto loaded = detail::loadV4Value(*parsed, limits);
+    if (!loaded.hasValue()) {
+        return std::nullopt;
+    }
+    return std::move(loaded.document);
 }
 
 } // namespace cuexis::chart

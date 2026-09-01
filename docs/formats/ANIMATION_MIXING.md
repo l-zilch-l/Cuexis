@@ -4,8 +4,8 @@
 
 更新日期：2026-08-27
 
-Stage Chart Format Update 位于 Stage 3 与阶段 4 之间。它负责冻结 CXC/Chart/CXT 的持久化边界；
-本文只定义运行时求值与混合语义。ChartParameter、Clip、Layer、Binding、Property ID、mask、时间域
+CXC/Chart/CXT 文档负责持久化边界；本文只定义运行时求值与混合语义。ChartParameter、Clip、
+Layer、Binding、Property ID、mask、时间域
 和 lowering 的字段权威是 [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md)，CXC 容器与闭包由
 [CXC_FORMAT.md](CXC_FORMAT.md) 定义，CXT 文件语义由 [CXT_FORMAT.md](CXT_FORMAT.md) 定义。
 其中格式合同已接受并开始实现。阶段 4 的 AnimationSystem 只能消费格式阶段交付的 typed

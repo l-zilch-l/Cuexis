@@ -458,6 +458,55 @@ TEST_CASE("Prepared commit publishes both prebuilt diagnostic snapshots",
     CHECK(lastOperation->items().front().code() == active->items().front().code());
 }
 
+TEST_CASE("PlaybackSession rejects an empty prepared token without changing state",
+          "[playback][prepared][boundary]") {
+    cuexis::playback::PlaybackSession session;
+    cuexis::playback::PreparedPlayback empty;
+
+    const auto failed = session.commit(std::move(empty));
+    REQUIRE_FALSE(failed.has_value());
+    CHECK(failed.error().code() == "playback.prepared.invalid");
+    REQUIRE(session.state().has_value());
+    CHECK(*session.state() == cuexis::playback::SessionState::Empty);
+}
+
+TEST_CASE("Prepared replacement publishes the candidate content and target frame",
+          "[playback][prepared][replacement]") {
+    cuexis::playback::PlaybackSession session;
+    REQUIRE(session.loadChart(chart).has_value());
+    REQUIRE(session.update({.chartTimeMs = 100.0}).has_value());
+
+    auto replacement = std::string{chart};
+    const auto chartId = replacement.find("019b0000-0000-7abc-8def-000000000301");
+    REQUIRE(chartId == std::string::npos);
+    const auto originalChartId = replacement.find("019b0000-0000-7abc-8def-000000000201");
+    REQUIRE(originalChartId != std::string::npos);
+    replacement.replace(originalChartId,
+                        std::string_view{"019b0000-0000-7abc-8def-000000000201"}.size(),
+                        "019b0000-0000-7abc-8def-000000000301");
+
+    auto prepared = session.prepareReload(
+        replacement,
+        {.chartTimeMs = 375.0, .simulationDeltaTimeMs = 12.0, .timeDiscontinuityId = 7},
+        cuexis::playback::ReloadPolicy::KeepChartTime);
+    REQUIRE(prepared.has_value());
+    REQUIRE(prepared->contentInfo() != nullptr);
+    CHECK(prepared->contentInfo()->chartId == "019b0000-0000-7abc-8def-000000000301");
+
+    REQUIRE(session.commit(std::move(*prepared)).has_value());
+    REQUIRE_FALSE(prepared->valid());
+    const auto content = session.contentInfo();
+    REQUIRE(content.has_value());
+    CHECK(content->chartId == "019b0000-0000-7abc-8def-000000000301");
+    REQUIRE(session.state().has_value());
+    CHECK(*session.state() == cuexis::playback::SessionState::Running);
+
+    const auto frame = session.extractFrame({.width = 800, .height = 600});
+    REQUIRE(frame.has_value());
+    CHECK(frame->objects[0].worldMatrix[12] == Catch::Approx(7.5F));
+    CHECK(frame->camera.fovY == Catch::Approx(82.5));
+}
+
 TEST_CASE("PlaybackSession rejects mode mismatch and stale prepared tokens",
           "[playback][audio][prepared]") {
     const auto assetsRoot = std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" / "projects" /

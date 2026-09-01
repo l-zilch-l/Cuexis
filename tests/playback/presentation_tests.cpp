@@ -220,6 +220,24 @@ struct Stage3Fixture final {
     return PlaybackSource::fromTypedProject(std::move(project), std::move(provider));
 }
 
+[[nodiscard]] auto memorySourceWithAssets(const Stage3Fixture& fixture,
+                                          std::vector<PlaybackAssetDescriptor> assets)
+    -> cuexis::core::Result<PlaybackSource> {
+    std::vector<cuexis::content::MemoryContentEntry> entries;
+    entries.reserve(fixture.blobs.size());
+    for (const auto& [source, bytes] : fixture.blobs) {
+        entries.push_back({.rootId = "main", .source = source, .bytes = bytes, .revision = 7});
+    }
+    auto provider = cuexis::content::MemoryContentProvider::create(std::move(entries));
+    if (!provider) {
+        return cuexis::core::unexpected(std::move(provider.error()));
+    }
+    return PlaybackSource::fromTypedProject({.sourceId = "stage3-presentation-closure",
+                                             .chartJson = fixture.chartJson,
+                                             .assets = std::move(assets)},
+                                            std::move(*provider));
+}
+
 [[nodiscard]] auto manifestsEqual(const PresentationResourceManifest& left,
                                   const PresentationResourceManifest& right) -> bool {
     if (left.version != right.version || left.totalEncodedBytes != right.totalEncodedBytes ||
@@ -315,9 +333,27 @@ struct Stage3Fixture final {
                                           : std::optional<std::string_view>{found->value};
 }
 
+[[nodiscard]] auto diagnosticCodes(const cuexis::core::Diagnostics& diagnostics) -> std::string {
+    std::string result;
+    for (const auto& item : diagnostics.items()) {
+        if (!result.empty()) {
+            result += ", ";
+        }
+        result += std::string{item.code()};
+    }
+    return result;
+}
+
 void writeU32(std::vector<std::byte>& bytes, std::size_t offset, std::uint32_t value) {
     REQUIRE(offset + 4 <= bytes.size());
     for (std::size_t index = 0; index < 4; ++index) {
+        bytes[offset + index] = static_cast<std::byte>((value >> (index * 8U)) & 0xFFU);
+    }
+}
+
+void writeU64(std::vector<std::byte>& bytes, std::size_t offset, std::uint64_t value) {
+    REQUIRE(offset + 8 <= bytes.size());
+    for (std::size_t index = 0; index < 8; ++index) {
         bytes[offset + index] = static_cast<std::byte>((value >> (index * 8U)) & 0xFFU);
     }
 }
@@ -568,6 +604,215 @@ TEST_CASE(
         CHECK(errorContextValue(source.error(), "cycle").has_value());
         REQUIRE(source.error().cause() != nullptr);
         CHECK(source.error().cause()->code() == "assets.database.dependency_cycle");
+    }
+}
+
+TEST_CASE("Portable presentation validates envelope, mesh, and texture structural boundaries",
+          "[playback][presentation][payload][branch-coverage]") {
+    const auto base = loadFixture();
+
+    const auto meshCode = [&](auto mutate) {
+        auto fixture = base;
+        mutate(fixture.blobs.at("meshes/triangle.mesh.bin"));
+        return rejectionCode(std::move(fixture));
+    };
+    const auto textureCode = [&](auto mutate) {
+        auto fixture = base;
+        mutate(fixture.blobs.at("textures/checker.texture.bin"));
+        return rejectionCode(std::move(fixture));
+    };
+
+    SECTION("envelope distinguishes a short body, a short declaration, and trailing bytes") {
+        CHECK(meshCode([](auto& bytes) { bytes.resize(23); }) ==
+              "playback.presentation.payload.truncated");
+        CHECK(meshCode([](auto& bytes) { writeU64(bytes, 16, bytes.size() + 1U); }) ==
+              "playback.presentation.payload.truncated");
+        CHECK(meshCode([](auto& bytes) { writeU64(bytes, 16, bytes.size() - 1U); }) ==
+              "playback.presentation.payload.size_mismatch");
+        CHECK(meshCode([](auto& bytes) {
+                  bytes.push_back(std::byte{0});
+                  writeU64(bytes, 16, bytes.size());
+              }) == "playback.presentation.payload.size_mismatch");
+    }
+
+    SECTION("mesh fixed fields reject invalid counts and reserved bits") {
+        CHECK(meshCode([](auto& bytes) { writeU32(bytes, 24, 0); }) ==
+              "playback.presentation.mesh.vertex_count_invalid");
+        CHECK(meshCode([](auto& bytes) { writeU32(bytes, 28, 2); }) ==
+              "playback.presentation.mesh.index_count_invalid");
+        CHECK(meshCode([](auto& bytes) { writeU32(bytes, 32, 2); }) ==
+              "playback.presentation.payload.reserved_nonzero");
+        CHECK(meshCode([](auto& bytes) { writeU32(bytes, 36, 1); }) ==
+              "playback.presentation.payload.reserved_nonzero");
+    }
+
+    SECTION("mesh rejects repeated and zero-area triangles") {
+        CHECK(meshCode([](auto& bytes) { writeU32(bytes, 100, 1); }) ==
+              "playback.presentation.mesh.degenerate_triangle");
+        CHECK(meshCode([](auto& bytes) {
+                  writeU32(bytes, 40, 0);
+                  writeU32(bytes, 44, 0);
+                  writeU32(bytes, 48, 0);
+                  writeU32(bytes, 52, 0);
+                  writeU32(bytes, 56, 0);
+                  writeU32(bytes, 60, 0);
+              }) == "playback.presentation.mesh.degenerate_triangle");
+    }
+
+    SECTION("texture fixed fields reject invalid metadata and encoded size") {
+        CHECK(textureCode([](auto& bytes) { writeU32(bytes, 24, 0); }) ==
+              "playback.presentation.texture.dimension_invalid");
+        CHECK(textureCode([](auto& bytes) { writeU32(bytes, 32, 3); }) ==
+              "playback.presentation.texture.color_space_unsupported");
+        CHECK(textureCode([](auto& bytes) { writeU32(bytes, 36, 1); }) ==
+              "playback.presentation.payload.reserved_nonzero");
+        CHECK(textureCode([](auto& bytes) {
+                  bytes.push_back(std::byte{0});
+                  writeU64(bytes, 16, bytes.size());
+              }) == "playback.presentation.texture.pixel_size_invalid");
+    }
+}
+
+TEST_CASE("Portable presentation resource closure failures retain the active manifest and frame",
+          "[playback][presentation][closure][rollback][branch-coverage]") {
+    const auto base = loadFixture();
+
+    const auto failedReload = [&](Stage3Fixture replacement,
+                                  std::vector<PlaybackAssetDescriptor> replacementAssets,
+                                  std::string_view expectedOuter,
+                                  std::string_view expectedDiagnostic) {
+        cuexis::playback::PlaybackSession session;
+        auto initial = typedSource(ProviderKind::Memory, base);
+        REQUIRE(initial.has_value());
+        REQUIRE(session.load(std::move(*initial), cuexis::playback::PlaybackMode::ChartClock)
+                    .has_value());
+        REQUIRE(session.update({.chartTimeMs = 0.0}).has_value());
+        const auto manifestBefore = session.presentationManifest();
+        const auto frameBefore = session.extractFrame({.width = 640, .height = 480});
+        REQUIRE(manifestBefore.has_value());
+        REQUIRE(frameBefore.has_value());
+
+        auto source = memorySourceWithAssets(replacement, std::move(replacementAssets));
+        REQUIRE(source.has_value());
+        const auto prepared = session.prepareReload(std::move(*source), {.chartTimeMs = 0.0},
+                                                    cuexis::playback::ReloadPolicy::KeepChartTime);
+        REQUIRE_FALSE(prepared.has_value());
+        const auto operationDiagnostics = session.lastOperationDiagnostics();
+        REQUIRE(operationDiagnostics.has_value());
+        const auto diagnosticCode = errorContextValue(prepared.error(), "diagnostic_code");
+        INFO("outer=" << prepared.error().code()
+                      << "; diagnostic_code=" << (diagnosticCode ? *diagnosticCode : "<none>")
+                      << "; diagnostics=" << diagnosticCodes(*operationDiagnostics));
+        CHECK(prepared.error().code() == expectedOuter);
+        CHECK(std::any_of(operationDiagnostics->items().begin(),
+                          operationDiagnostics->items().end(),
+                          [&](const auto& item) { return item.code() == expectedDiagnostic; }));
+
+        const auto manifestAfter = session.presentationManifest();
+        const auto frameAfter = session.extractFrame({.width = 640, .height = 480});
+        REQUIRE(manifestAfter.has_value());
+        REQUIRE(frameAfter.has_value());
+        CHECK(manifestsEqual(*manifestBefore, *manifestAfter));
+        REQUIRE(frameAfter->objects.size() == frameBefore->objects.size());
+        CHECK(frameAfter->objects[0].materialAssetId == frameBefore->objects[0].materialAssetId);
+    };
+
+    SECTION(
+        "missing and incompatible indexed resources fail Runtime preparation before publication") {
+        auto missing = descriptors();
+        missing.erase(
+            std::remove_if(missing.begin(), missing.end(),
+                           [](const auto& asset) { return asset.id == "material.blend"; }),
+            missing.end());
+        auto missingSource = memorySourceWithAssets(base, std::move(missing));
+        REQUIRE(missingSource.has_value());
+        cuexis::playback::PlaybackSession missingSession;
+        const auto missingPrepared = missingSession.prepareLoad(
+            std::move(*missingSource), cuexis::playback::PlaybackMode::ChartClock);
+        REQUIRE_FALSE(missingPrepared.has_value());
+        const auto missingDiagnostics = missingSession.lastOperationDiagnostics();
+        REQUIRE(missingDiagnostics.has_value());
+        const auto missingDiagnosticCode =
+            errorContextValue(missingPrepared.error(), "diagnostic_code");
+        INFO("outer=" << missingPrepared.error().code() << "; diagnostic_code="
+                      << (missingDiagnosticCode ? *missingDiagnosticCode : "<none>")
+                      << "; diagnostics=" << diagnosticCodes(*missingDiagnostics));
+        CHECK(missingPrepared.error().code() == "playback.session.prepare_failed");
+        CHECK(std::any_of(
+            missingDiagnostics->items().begin(), missingDiagnostics->items().end(),
+            [](const auto& item) { return item.code() == "assets.resource.required_failed"; }));
+
+        auto incompatible = descriptors();
+        const auto material =
+            std::find_if(incompatible.begin(), incompatible.end(),
+                         [](const auto& asset) { return asset.id == "material.blend"; });
+        REQUIRE(material != incompatible.end());
+        material->type = PlaybackAssetType::Mesh;
+        auto incompatibleSource = memorySourceWithAssets(base, std::move(incompatible));
+        REQUIRE(incompatibleSource.has_value());
+        cuexis::playback::PlaybackSession incompatibleSession;
+        const auto incompatiblePrepared = incompatibleSession.prepareLoad(
+            std::move(*incompatibleSource), cuexis::playback::PlaybackMode::ChartClock);
+        REQUIRE_FALSE(incompatiblePrepared.has_value());
+        const auto incompatibleDiagnostics = incompatibleSession.lastOperationDiagnostics();
+        REQUIRE(incompatibleDiagnostics.has_value());
+        const auto incompatibleDiagnosticCode =
+            errorContextValue(incompatiblePrepared.error(), "diagnostic_code");
+        INFO("outer=" << incompatiblePrepared.error().code() << "; diagnostic_code="
+                      << (incompatibleDiagnosticCode ? *incompatibleDiagnosticCode : "<none>")
+                      << "; diagnostics=" << diagnosticCodes(*incompatibleDiagnostics));
+        CHECK(incompatiblePrepared.error().code() == "playback.session.prepare_failed");
+        CHECK(std::any_of(
+            incompatibleDiagnostics->items().begin(), incompatibleDiagnostics->items().end(),
+            [](const auto& item) { return item.code() == "assets.resource.required_failed"; }));
+    }
+
+    SECTION("a missing content blob and non-leaf Mesh are both stable preparation failures") {
+        auto missingBlob = base;
+        missingBlob.blobs.erase("meshes/triangle.mesh.bin");
+        failedReload(std::move(missingBlob), descriptors(),
+                     "playback.presentation.resource.missing",
+                     "playback.presentation.resource.missing");
+
+        auto meshDependency = descriptors();
+        const auto mesh =
+            std::find_if(meshDependency.begin(), meshDependency.end(),
+                         [](const auto& asset) { return asset.id == "mesh.triangle"; });
+        REQUIRE(mesh != meshDependency.end());
+        mesh->dependencies = {"texture.checker"};
+        failedReload(base, std::move(meshDependency), "playback.presentation.dependency.mismatch",
+                     "playback.presentation.dependency.mismatch");
+    }
+
+    SECTION("material texture routing verifies the Asset Index type and Texture leaf contract") {
+        auto wrongTextureType = descriptors();
+        const auto texture =
+            std::find_if(wrongTextureType.begin(), wrongTextureType.end(),
+                         [](const auto& asset) { return asset.id == "texture.checker"; });
+        REQUIRE(texture != wrongTextureType.end());
+        texture->type = PlaybackAssetType::Mesh;
+        auto wrongTypeSource = memorySourceWithAssets(base, std::move(wrongTextureType));
+        REQUIRE(wrongTypeSource.has_value());
+        cuexis::playback::PlaybackSession wrongTypeSession;
+        const auto wrongTypePrepared = wrongTypeSession.prepareLoad(
+            std::move(*wrongTypeSource), cuexis::playback::PlaybackMode::ChartClock);
+        REQUIRE_FALSE(wrongTypePrepared.has_value());
+        CHECK(wrongTypePrepared.error().code() == "playback.presentation.dependency.mismatch");
+
+        auto textureDependency = descriptors();
+        const auto textureWithDependency =
+            std::find_if(textureDependency.begin(), textureDependency.end(),
+                         [](const auto& asset) { return asset.id == "texture.checker"; });
+        REQUIRE(textureWithDependency != textureDependency.end());
+        textureWithDependency->dependencies = {"mesh.triangle"};
+        auto textureDependencySource = memorySourceWithAssets(base, std::move(textureDependency));
+        REQUIRE(textureDependencySource.has_value());
+        cuexis::playback::PlaybackSession textureDependencySession;
+        const auto textureDependencyPrepared = textureDependencySession.prepareLoad(
+            std::move(*textureDependencySource), cuexis::playback::PlaybackMode::ChartClock);
+        REQUIRE_FALSE(textureDependencyPrepared.has_value());
+        CHECK(textureDependencyPrepared.error().code() ==
+              "playback.presentation.dependency.mismatch");
     }
 }
 
@@ -999,6 +1244,278 @@ TEST_CASE("Normalized presentation extraction rejects camera, numeric, and resou
     CHECK(normalized.transparent.empty());
 }
 
+TEST_CASE("Normalized presentation extraction rejects malformed tables and renderable contracts",
+          "[playback][presentation][frame-errors][branch-coverage]") {
+    const auto fixture = loadFixture();
+    cuexis::playback::PlaybackSession session;
+    auto source = typedSource(ProviderKind::Memory, fixture);
+    REQUIRE(source.has_value());
+    REQUIRE(
+        session.load(std::move(*source), cuexis::playback::PlaybackMode::ChartClock).has_value());
+    const auto manifest = session.presentationManifest();
+    REQUIRE(manifest.has_value());
+    const auto resources = acquireResources(session, *manifest);
+    REQUIRE(session.update({.chartTimeMs = 0.0}).has_value());
+    const auto snapshot = session.extractFrame({.width = 640, .height = 480});
+    REQUIRE(snapshot.has_value());
+    constexpr std::string_view objectId = "019f0000-0000-7abc-8def-000000000310";
+
+    const auto expectMismatch = [&](const cuexis::playback::FrameSnapshot& candidate,
+                                    const PresentationResourceManifest& candidateManifest,
+                                    const std::vector<PortableResourcePtr>& candidateResources) {
+        cuexis::playback::detail::NormalizedPresentationFrame normalized;
+        normalized.opaque.push_back({});
+        normalized.transparent.push_back({});
+        const auto result = cuexis::playback::detail::normalizePresentationFrame(
+            candidate, candidateManifest, candidateResources, normalized);
+        REQUIRE_FALSE(result.has_value());
+        CHECK(result.error().code() == "playback.presentation.frame.resource_mismatch");
+        CHECK(normalized.opaque.empty());
+        CHECK(normalized.transparent.empty());
+    };
+
+    SECTION("manifest and resource tables must stay aligned and typed") {
+        auto shortResources = resources;
+        shortResources.pop_back();
+        expectMismatch(*snapshot, *manifest, shortResources);
+
+        auto nullResource = resources;
+        nullResource.front().reset();
+        expectMismatch(*snapshot, *manifest, nullResource);
+
+        auto wrongValue = resources;
+        auto meshAsTexture = std::make_shared<cuexis::playback::PortableResource>(*wrongValue[0]);
+        meshAsTexture->value = cuexis::playback::PortableTexture2D{};
+        wrongValue[0] = std::move(meshAsTexture);
+        expectMismatch(*snapshot, *manifest, wrongValue);
+    }
+
+    SECTION("snapshot renderable references must remain paired, compatible, and resolvable") {
+        auto missingMaterial = *snapshot;
+        auto* missingMaterialObject = findObject(missingMaterial, objectId);
+        REQUIRE(missingMaterialObject != nullptr);
+        missingMaterialObject->material.reset();
+        expectMismatch(missingMaterial, *manifest, resources);
+
+        auto incompatibleMaterial = *snapshot;
+        auto* incompatibleMaterialObject = findObject(incompatibleMaterial, objectId);
+        REQUIRE(incompatibleMaterialObject != nullptr);
+        REQUIRE(incompatibleMaterialObject->material.has_value());
+        incompatibleMaterialObject->material->type = PresentationResourceType::Texture2D;
+        expectMismatch(incompatibleMaterial, *manifest, resources);
+
+        auto missingMesh = *snapshot;
+        auto* missingMeshObject = findObject(missingMesh, objectId);
+        REQUIRE(missingMeshObject != nullptr);
+        REQUIRE(missingMeshObject->mesh.has_value());
+        missingMeshObject->mesh->assetId = "mesh.missing";
+        expectMismatch(missingMesh, *manifest, resources);
+
+        auto unexpectedDependencies = *manifest;
+        const auto opaque = findEntry(unexpectedDependencies, "material.opaque");
+        REQUIRE(opaque != nullptr);
+        const auto opaqueIndex =
+            static_cast<std::size_t>(opaque - unexpectedDependencies.entries.data());
+        unexpectedDependencies.entries[opaqueIndex].dependencies.push_back(
+            unexpectedDependencies.entries.front().reference);
+        expectMismatch(*snapshot, unexpectedDependencies, resources);
+    }
+}
+
+TEST_CASE(
+    "Normalized presentation extraction clears output on numeric failures throughout the frame",
+    "[playback][presentation][frame-errors][branch-coverage]") {
+    const auto fixture = loadFixture();
+    cuexis::playback::PlaybackSession session;
+    auto source = typedSource(ProviderKind::Memory, fixture);
+    REQUIRE(source.has_value());
+    REQUIRE(
+        session.load(std::move(*source), cuexis::playback::PlaybackMode::ChartClock).has_value());
+    const auto manifest = session.presentationManifest();
+    REQUIRE(manifest.has_value());
+    const auto resources = acquireResources(session, *manifest);
+    REQUIRE(session.update({.chartTimeMs = 0.0}).has_value());
+    const auto snapshot = session.extractFrame({.width = 640, .height = 480});
+    REQUIRE(snapshot.has_value());
+    constexpr std::string_view objectId = "019f0000-0000-7abc-8def-000000000310";
+
+    const auto expectNonFinite = [&](const cuexis::playback::FrameSnapshot& candidate,
+                                     const std::vector<PortableResourcePtr>& candidateResources,
+                                     std::string_view field) {
+        cuexis::playback::detail::NormalizedPresentationFrame normalized;
+        normalized.opaque.push_back({});
+        const auto result = cuexis::playback::detail::normalizePresentationFrame(
+            candidate, *manifest, candidateResources, normalized);
+        REQUIRE_FALSE(result.has_value());
+        CHECK(result.error().code() == "playback.presentation.frame.non_finite");
+        CHECK(errorContextValue(result.error(), "field") == field);
+        CHECK(normalized.opaque.empty());
+        CHECK(normalized.transparent.empty());
+    };
+
+    auto invalidCamera = *snapshot;
+    invalidCamera.camera.viewMatrix[0] = std::numeric_limits<float>::infinity();
+    expectNonFinite(invalidCamera, resources, "camera_matrix");
+
+    auto invalidOpacity = *snapshot;
+    auto* opacityObject = findObject(invalidOpacity, objectId);
+    REQUIRE(opacityObject != nullptr);
+    opacityObject->materialOpacity = std::numeric_limits<float>::quiet_NaN();
+    expectNonFinite(invalidOpacity, resources, "material_opacity");
+
+    auto invalidTint = *snapshot;
+    auto* tintObject = findObject(invalidTint, objectId);
+    REQUIRE(tintObject != nullptr);
+    tintObject->materialTint[1] = std::numeric_limits<float>::infinity();
+    expectNonFinite(invalidTint, resources, "effective_rgb");
+
+    const auto mesh = findEntry(*manifest, "mesh.triangle");
+    REQUIRE(mesh != nullptr);
+    const auto meshIndex = static_cast<std::size_t>(mesh - manifest->entries.data());
+    auto invalidBounds = resources;
+    auto meshCopy = std::make_shared<cuexis::playback::PortableResource>(*invalidBounds[meshIndex]);
+    std::get<cuexis::playback::PortableMesh>(meshCopy->value).boundsMin[0] =
+        std::numeric_limits<float>::infinity();
+    invalidBounds[meshIndex] = std::move(meshCopy);
+    expectNonFinite(*snapshot, invalidBounds, "mesh_bounds");
+
+    const auto opaque = findEntry(*manifest, "material.opaque");
+    REQUIRE(opaque != nullptr);
+    const auto opaqueIndex = static_cast<std::size_t>(opaque - manifest->entries.data());
+    auto invalidBaseColor = resources;
+    auto materialCopy =
+        std::make_shared<cuexis::playback::PortableResource>(*invalidBaseColor[opaqueIndex]);
+    std::get<cuexis::playback::PortableUnlitMaterial>(materialCopy->value).baseColor[3] =
+        std::numeric_limits<float>::quiet_NaN();
+    invalidBaseColor[opaqueIndex] = std::move(materialCopy);
+    expectNonFinite(*snapshot, invalidBaseColor, "effective_alpha");
+
+    auto invalidDepth = *snapshot;
+    auto* depthObject = findObject(invalidDepth, objectId);
+    REQUIRE(depthObject != nullptr);
+    depthObject->worldMatrix[14] = std::numeric_limits<float>::max();
+    expectNonFinite(invalidDepth, resources, "depth");
+}
+
+TEST_CASE(
+    "Normalized presentation extraction checks every renderable reference and dependency shape",
+    "[playback][presentation][frame-errors][branch-coverage]") {
+    const auto fixture = loadFixture();
+    cuexis::playback::PlaybackSession session;
+    auto source = typedSource(ProviderKind::Memory, fixture);
+    REQUIRE(source.has_value());
+    REQUIRE(
+        session.load(std::move(*source), cuexis::playback::PlaybackMode::ChartClock).has_value());
+    const auto manifest = session.presentationManifest();
+    REQUIRE(manifest.has_value());
+    const auto resources = acquireResources(session, *manifest);
+    REQUIRE(session.update({.chartTimeMs = 0.0}).has_value());
+    const auto snapshot = session.extractFrame({.width = 640, .height = 480});
+    REQUIRE(snapshot.has_value());
+    constexpr std::string_view objectId = "019f0000-0000-7abc-8def-000000000310";
+
+    const auto expectMismatch = [&](const cuexis::playback::FrameSnapshot& candidate,
+                                    const PresentationResourceManifest& candidateManifest,
+                                    const std::vector<PortableResourcePtr>& candidateResources) {
+        cuexis::playback::detail::NormalizedPresentationFrame normalized;
+        const auto result = cuexis::playback::detail::normalizePresentationFrame(
+            candidate, candidateManifest, candidateResources, normalized);
+        REQUIRE_FALSE(result.has_value());
+        CHECK(result.error().code() == "playback.presentation.frame.resource_mismatch");
+        CHECK(normalized.opaque.empty());
+        CHECK(normalized.transparent.empty());
+    };
+
+    SECTION("paired refs and AssetIds are mandatory") {
+        auto materialOnly = *snapshot;
+        auto* materialOnlyObject = findObject(materialOnly, objectId);
+        REQUIRE(materialOnlyObject != nullptr);
+        materialOnlyObject->mesh.reset();
+        expectMismatch(materialOnly, *manifest, resources);
+
+        auto wrongAssetId = *snapshot;
+        auto* wrongAssetIdObject = findObject(wrongAssetId, objectId);
+        REQUIRE(wrongAssetIdObject != nullptr);
+        wrongAssetIdObject->materialAssetId = "material.other";
+        expectMismatch(wrongAssetId, *manifest, resources);
+
+        auto missingMaterial = *snapshot;
+        auto* missingMaterialObject = findObject(missingMaterial, objectId);
+        REQUIRE(missingMaterialObject != nullptr);
+        REQUIRE(missingMaterialObject->material.has_value());
+        missingMaterialObject->material->assetId = "material.missing";
+        missingMaterialObject->materialAssetId = "material.missing";
+        expectMismatch(missingMaterial, *manifest, resources);
+    }
+
+    SECTION("unlit texture dependency must agree with both manifest and resource table") {
+        auto candidate = *snapshot;
+        auto* candidateObject = findObject(candidate, objectId);
+        REQUIRE(candidateObject != nullptr);
+        const auto* blend = findEntry(*manifest, "material.blend");
+        REQUIRE(blend != nullptr);
+        candidateObject->material = blend->reference;
+        candidateObject->materialAssetId = blend->reference.assetId;
+
+        auto wrongDependencyManifest = *manifest;
+        const auto blendIndex = static_cast<std::size_t>(blend - manifest->entries.data());
+        wrongDependencyManifest.entries[blendIndex].dependencies.clear();
+        expectMismatch(candidate, wrongDependencyManifest, resources);
+
+        auto wrongTextureTypeManifest = *manifest;
+        auto& dependency = wrongTextureTypeManifest.entries[blendIndex].dependencies.front();
+        dependency.type = PresentationResourceType::Mesh;
+        expectMismatch(candidate, wrongTextureTypeManifest, resources);
+
+        auto wrongTextureValue = resources;
+        const auto* texture = findEntry(*manifest, "texture.checker");
+        REQUIRE(texture != nullptr);
+        const auto textureIndex = static_cast<std::size_t>(texture - manifest->entries.data());
+        auto textureCopy =
+            std::make_shared<cuexis::playback::PortableResource>(*wrongTextureValue[textureIndex]);
+        textureCopy->value = cuexis::playback::PortableMesh{};
+        wrongTextureValue[textureIndex] = std::move(textureCopy);
+        expectMismatch(candidate, *manifest, wrongTextureValue);
+    }
+}
+
+TEST_CASE("Presentation resource table accepts all portable value variants when aligned",
+          "[playback][presentation][frame-errors][branch-coverage]") {
+    cuexis::playback::detail::PreparedPresentation presentation;
+    const auto addResource = [&](PresentationResourceType type, std::string assetId,
+                                 cuexis::playback::PortableResourceValue value) {
+        PresentationResourceRef reference{type, std::move(assetId), {}};
+        auto resource = std::make_shared<const cuexis::playback::PortableResource>(
+            cuexis::playback::PortableResource{reference, std::move(value)});
+        presentation.manifest.entries.push_back(
+            cuexis::playback::PresentationManifestEntry{reference, 1, 1, {}});
+        presentation.orderedResources.push_back(resource);
+    };
+    addResource(PresentationResourceType::Mesh, "a.mesh", cuexis::playback::PortableMesh{});
+    addResource(PresentationResourceType::Texture2D, "b.texture",
+                cuexis::playback::PortableTexture2D{});
+    addResource(PresentationResourceType::UnlitMaterial, "c.material",
+                cuexis::playback::PortableUnlitMaterial{});
+    addResource(PresentationResourceType::Shader, "d.shader", cuexis::playback::PortableShader{});
+    addResource(PresentationResourceType::ParameterizedMaterial, "e.parameterized",
+                cuexis::playback::PortableParameterizedMaterial{});
+    std::sort(presentation.manifest.entries.begin(), presentation.manifest.entries.end(),
+              [](const auto& left, const auto& right) {
+                  return std::tie(left.reference.assetId, left.reference.type) <
+                         std::tie(right.reference.assetId, right.reference.type);
+              });
+    std::vector<PortableResourcePtr> resources;
+    resources.reserve(presentation.orderedResources.size());
+    for (const auto& resource : presentation.orderedResources) {
+        resources.push_back(resource);
+    }
+    cuexis::playback::FrameSnapshot empty;
+    cuexis::playback::detail::NormalizedPresentationFrame normalized;
+    CHECK(cuexis::playback::detail::normalizePresentationFrame(empty, presentation.manifest,
+                                                               resources, normalized)
+              .has_value());
+}
+
 TEST_CASE("Presentation resource lookup remains exact across manifest sizes and resource types",
           "[playback][presentation][lookup][pb12]") {
     const auto lookup =
@@ -1086,9 +1603,26 @@ TEST_CASE("Duplicate presentation manifest keys are rejected by table validation
     REQUIRE(manifest.has_value());
     auto duplicate = *manifest;
     REQUIRE(duplicate.entries.size() >= 2);
-    duplicate.entries.insert(duplicate.entries.begin() + 1, duplicate.entries.front());
+    const auto duplicateEntry = duplicate.entries.front();
+    const auto originalEntries = duplicate.entries;
+    duplicate.entries.clear();
+    duplicate.entries.reserve(originalEntries.size() + 1);
+    duplicate.entries.push_back(duplicateEntry);
+    duplicate.entries.push_back(duplicateEntry);
+    for (std::size_t index = 1; index < originalEntries.size(); ++index) {
+        duplicate.entries.push_back(originalEntries[index]);
+    }
     auto resources = acquireResources(session, *manifest);
-    resources.insert(resources.begin() + 1, resources.front());
+    REQUIRE(resources.size() >= 2);
+    const auto originalResources = resources;
+    const auto duplicateResource = resources.front();
+    resources.clear();
+    resources.reserve(originalResources.size() + 1);
+    resources.push_back(duplicateResource);
+    resources.push_back(duplicateResource);
+    for (std::size_t index = 1; index < originalResources.size(); ++index) {
+        resources.push_back(originalResources[index]);
+    }
     cuexis::playback::FrameSnapshot empty;
     cuexis::playback::detail::NormalizedPresentationFrame normalized;
     const auto result = cuexis::playback::detail::normalizePresentationFrame(empty, duplicate,

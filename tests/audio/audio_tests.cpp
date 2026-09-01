@@ -89,6 +89,37 @@ TEST_CASE("HostClock rejects source regressions within a segment", "[audio][cloc
     CHECK(clock.snapshot().positionMs == Catch::Approx(50.0));
 }
 
+TEST_CASE("HostClock keeps its last published sample after rejected input",
+          "[audio][clock][rollback]") {
+    cuexis::audio::HostClock clock;
+    REQUIRE(clock.submit({75.0, cuexis::audio::PlaybackState::Playing, 3}).has_value());
+    const auto published = clock.snapshot();
+
+    const auto nonFinite = clock.submit(
+        {std::numeric_limits<double>::quiet_NaN(), cuexis::audio::PlaybackState::Playing, 3});
+    REQUIRE_FALSE(nonFinite.has_value());
+    CHECK(nonFinite.error().code() == "audio.clock.position_invalid");
+
+    const auto stoppedAtPosition = clock.submit({1.0, cuexis::audio::PlaybackState::Stopped, 4});
+    REQUIRE_FALSE(stoppedAtPosition.has_value());
+    CHECK(stoppedAtPosition.error().code() == "audio.clock.stopped_position_invalid");
+
+    const auto regressed = clock.submit({74.0, cuexis::audio::PlaybackState::Playing, 3});
+    REQUIRE_FALSE(regressed.has_value());
+    CHECK(regressed.error().code() == "audio.clock.segment_regressed");
+
+    const auto afterFailures = clock.snapshot();
+    CHECK(afterFailures.positionMs == published.positionMs);
+    CHECK(afterFailures.state == published.state);
+    CHECK(afterFailures.discontinuityId == published.discontinuityId);
+
+    REQUIRE(clock.submit({0.0, cuexis::audio::PlaybackState::Stopped, 4}).has_value());
+    const auto nextSegment = clock.snapshot();
+    CHECK(nextSegment.positionMs == 0.0);
+    CHECK(nextSegment.state == cuexis::audio::PlaybackState::Stopped);
+    CHECK(nextSegment.discontinuityId == 4);
+}
+
 TEST_CASE("Source clock validation rejects invalid states and stopped positions",
           "[audio][clock]") {
     REQUIRE(

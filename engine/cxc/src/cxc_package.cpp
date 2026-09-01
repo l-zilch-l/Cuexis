@@ -5,6 +5,7 @@
 #include <cuexis/chart/animation_template_loader.hpp>
 #include <cuexis/chart/chart_loader.hpp>
 #include <cuexis/chart/chart_v4_loader.hpp>
+#include <cuexis/chart/detail/chart_dispatch_internal.hpp>
 #include <cuexis/core/error.hpp>
 #include <cuexis/filesystem/secure_file.hpp>
 #include <cuexis/json/parse.hpp>
@@ -108,25 +109,6 @@ void appendDiagnostics(core::Diagnostics& diagnostics, core::Diagnostics source)
 [[nodiscard]] auto isPathPrefix(std::string_view prefix, std::string_view path) noexcept -> bool {
     return path == prefix ||
            (path.size() > prefix.size() && path.starts_with(prefix) && path[prefix.size()] == '/');
-}
-
-[[nodiscard]] auto isV4Chart(std::string_view text, const chart::ChartLimits& limits) -> bool {
-    auto parsed =
-        json::parse(text, {limits.maxInputBytes, limits.maxNestingDepth, limits.maxStringBytes});
-    if (!parsed) {
-        return false;
-    }
-    const auto* version = parsed->find("version");
-    if (version == nullptr) {
-        return false;
-    }
-    if (const auto* signedValue = version->signedInteger()) {
-        return *signedValue == 4;
-    }
-    if (const auto* unsignedValue = version->unsignedInteger()) {
-        return *unsignedValue == 4;
-    }
-    return false;
 }
 
 [[nodiscard]] auto findZipEntry(const detail::CxcPackageData& data, std::string_view path) noexcept
@@ -590,18 +572,18 @@ validateDependencyGraph(core::Diagnostics& diagnostics,
     auto chartLimits = limits.chart;
     chartLimits.maxInputBytes = std::min(chartLimits.maxInputBytes, limits.maxEntryBytes);
     chartLimits.maxDiagnostics = std::min(chartLimits.maxDiagnostics, limits.maxDiagnostics);
-    if (isV4Chart(chartText, chartLimits)) {
-        auto chartResult = chart::ChartV4Loader::load(chartText, chartLimits);
-        const auto chartInvalid = !chartResult.hasValue();
-        appendDiagnostics(diagnostics, std::move(chartResult.diagnostics));
-        if (!chartInvalid && chartResult.document) {
-            validateLegacyResources(diagnostics, assets, chartResult.document->legacyProjection,
+    auto chartResult = chart::detail::loadChartForPlayback(chartText, chartLimits);
+    const auto chartInvalid = !chartResult.hasValue();
+    appendDiagnostics(diagnostics, std::move(chartResult.diagnostics));
+    if (chartResult.isV4) {
+        if (!chartInvalid && chartResult.v4Document) {
+            validateLegacyResources(diagnostics, assets, chartResult.v4Document->legacyProjection,
                                     *chartPath);
-            for (const auto& clip : chartResult.document->animationClips) {
+            for (const auto& clip : chartResult.v4Document->animationClips) {
                 validateClipResources(diagnostics, assets, clip, *chartPath);
             }
             std::set<std::string, std::less<>> documentPaths;
-            for (const auto& import : chartResult.document->animationTemplateImports) {
+            for (const auto& import : chartResult.v4Document->animationTemplateImports) {
                 if (!documentPaths.emplace(import.source).second) {
                     addError(diagnostics, "cxc.project.invalid",
                              "CXC Chart imports the same project document more than once",
@@ -648,11 +630,8 @@ validateDependencyGraph(core::Diagnostics& diagnostics,
                      "$/project/entry/chart", *chartPath);
         }
     } else {
-        auto chartResult = chart::ChartLoader::load(chartText, chartLimits);
-        const auto chartInvalid = !chartResult.hasValue();
-        appendDiagnostics(diagnostics, std::move(chartResult.diagnostics));
-        if (!chartInvalid && chartResult.document) {
-            validateLegacyResources(diagnostics, assets, *chartResult.document, *chartPath);
+        if (!chartInvalid && chartResult.legacyDocument) {
+            validateLegacyResources(diagnostics, assets, *chartResult.legacyDocument, *chartPath);
         } else {
             addError(diagnostics, "cxc.project.invalid", "CXC entry Chart is invalid",
                      "$/project/entry/chart", *chartPath);

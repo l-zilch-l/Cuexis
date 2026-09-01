@@ -13,6 +13,8 @@
 #include <cuexis/chart/chart_v4_loader.hpp>
 #include <cuexis/chart/chart_v4_resolver.hpp>
 #include <cuexis/chart/chart_writer.hpp>
+#include <cuexis/chart/detail/chart_dispatch_internal.hpp>
+#include <cuexis/chart/detail/chart_v4_resolver_internal.hpp>
 #include <cuexis/chart/prepared_semantic_identity.hpp>
 #include <cuexis/chart/rational_beat.hpp>
 #include <cuexis/content/content_provider.hpp>
@@ -173,6 +175,7 @@ struct PrepareArtifact final {
     bool isV4{};
     std::optional<chart::ChartDocument> document;
     std::optional<chart::ChartV4SourceDocument> v4Source;
+    std::shared_ptr<const chart::detail::ParsedChartInput> v4Input;
     std::optional<chart::AnimationProgramInput> animationProgram;
     std::optional<chart::ChartV4ResolvedArtifact> v4Artifact;
     std::optional<chart::CanonicalContentIdentity> chartIdentity;
@@ -639,27 +642,21 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
 
 [[nodiscard]] auto loadDocumentStage(const PrepareContext& context, PrepareArtifact& artifact,
                                      core::Diagnostics& diagnostics) -> core::Result<void> {
-    artifact.isV4 = chart::ChartV4Loader::isV4(context.chartJson, context.limits);
-    if (artifact.isV4) {
-        auto loaded = chart::ChartV4Loader::load(context.chartJson, context.limits);
-        const bool valid = loaded.hasValue();
-        diagnostics.append(std::move(loaded.diagnostics));
-        if (!valid) {
-            return core::unexpected(core::Error{"playback.prepare.stage.load_document_failed",
-                                                "Chart v4 loading produced errors"});
-        }
-        artifact.v4Source = std::move(*loaded.document);
-        return {};
-    }
-
-    auto loaded = chart::ChartLoader::load(context.chartJson, context.limits);
+    auto loaded = chart::detail::loadChartForPlayback(context.chartJson, context.limits);
+    artifact.isV4 = loaded.isV4;
     const bool valid = loaded.hasValue();
     diagnostics.append(std::move(loaded.diagnostics));
     if (!valid) {
         return core::unexpected(core::Error{"playback.prepare.stage.load_document_failed",
-                                            "Chart loading produced errors"});
+                                            artifact.isV4 ? "Chart v4 loading produced errors"
+                                                          : "Chart loading produced errors"});
     }
-    artifact.document.emplace(std::move(*loaded.document));
+    if (artifact.isV4) {
+        artifact.v4Source = std::move(*loaded.v4Document);
+        artifact.v4Input = std::move(loaded.v4Input);
+        return {};
+    }
+    artifact.document.emplace(std::move(*loaded.legacyDocument));
     // Legacy ChartDocument is a runtime-facing projection. Identity must use the complete
     // canonical source bytes so legacy timing, template, and keyframe fields are not erased.
     auto canonical = chart::ChartWriter::writeCanonicalJson(context.chartJson, context.limits);
@@ -696,8 +693,12 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
                                             "Chart parameter conversion produced errors"});
     }
     auto documents = projectDocuments(sourceDocuments);
-    auto resolved =
-        chart::ChartV4Resolver::resolve(*artifact.v4Source, *inputs, documents, {}, context.limits);
+    auto resolved = artifact.v4Input
+                        ? chart::detail::resolveV4Parsed(*artifact.v4Source, *artifact.v4Input,
+                                                         *inputs, documents, {}, context.limits)
+                        : chart::ChartV4Resolver::resolve(*artifact.v4Source, *inputs, documents,
+                                                          {}, context.limits);
+    artifact.v4Input.reset();
     const bool valid = resolved.hasValue();
     diagnostics.append(std::move(resolved.diagnostics));
     if (!valid) {

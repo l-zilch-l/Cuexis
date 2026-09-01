@@ -5,6 +5,8 @@
 #include <cuexis/json/parse.hpp>
 #include <cuexis/json/value.hpp>
 
+#include "chart_writer_internal.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -677,6 +679,12 @@ template <typename ComparePrimary>
 
 } // namespace
 
+auto detail::writeV4Value(json::Value value, const ChartLimits& limits)
+    -> core::Result<std::string> {
+    static_cast<void>(limits);
+    return serializeCanonical(std::move(value), true);
+}
+
 auto ChartWriter::write(const ChartDocument& document) -> core::Result<std::string> {
     auto value = chartDocumentValue(document);
     if (!value) {
@@ -707,7 +715,7 @@ auto ChartWriter::writeV4(const ChartV4SourceDocument& document, const ChartLimi
             core::Error{"chart.writer.source_invalid", "Chart v4 source JSON is invalid"}.withCause(
                 std::move(parsed.error())));
     }
-    return serializeCanonical(std::move(*parsed), true);
+    return detail::writeV4Value(std::move(*parsed), limits);
 }
 
 auto ChartWriter::writeAnimationTemplate(const AnimationTemplateDocument& document,

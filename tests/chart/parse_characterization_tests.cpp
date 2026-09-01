@@ -3,6 +3,10 @@
 #include <cuexis/chart/chart_loader.hpp>
 #include <cuexis/chart/chart_v4_loader.hpp>
 #include <cuexis/chart/chart_writer.hpp>
+#include <cuexis/chart/detail/chart_dispatch_internal.hpp>
+#include <cuexis/chart/detail/chart_v4_resolver_internal.hpp>
+
+#include "parse_probe_internal.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -85,18 +89,20 @@ constexpr std::string_view invalidCanonicalChart = R"json({
 
 } // namespace
 
-TEST_CASE("ChartLoader routing keeps the current two-phase parse baseline",
+TEST_CASE("ChartLoader routing parses canonical charts once",
           "[chart][parse][characterization][count]") {
     const auto source = readSource("engine/chart/src/chart_loader.cpp");
     const auto body = functionBody(source, "ChartLoader::load");
     REQUIRE_FALSE(body.empty());
 
-    // The first parse peeks at format; canonical routing reparses the original text today.
+    // Canonical routing consumes the already-parsed value.
     CHECK(countOccurrences(body, "json::parse(") == 1U);
-    CHECK(body.find("CanonicalChartLoader::load(jsonText, limits)") != std::string_view::npos);
+    CHECK(body.find("detail::loadCanonicalValue(std::move(*parsed), limits)") !=
+          std::string_view::npos);
+    CHECK(body.find("CanonicalChartLoader::load(jsonText, limits)") == std::string_view::npos);
 }
 
-TEST_CASE("Chart v4 and CXC preparation retain the current parse layering baseline",
+TEST_CASE("Chart v4 and CXC preparation use the shared parse layering",
           "[chart][cxc][parse][characterization][count]") {
     const auto loaderSource = readSource("engine/chart/src/chart_v4_loader.cpp");
     const auto loaderBody = functionBody(loaderSource, "ChartV4Loader::load");
@@ -119,8 +125,9 @@ TEST_CASE("Chart v4 and CXC preparation retain the current parse layering baseli
     REQUIRE_FALSE(resolverBody.empty());
     REQUIRE_FALSE(concreteBody.empty());
     CHECK(countOccurrences(resolverBody, "json::parse(") == 1U);
-    CHECK(concreteBody.find("CanonicalChartLoader::load(*serialized, limits)") !=
+    CHECK(concreteBody.find("detail::loadCanonicalValue(std::move(source), limits)") !=
           std::string_view::npos);
+    CHECK(concreteBody.find("json::serialize(source)") == std::string_view::npos);
 
     const auto writerSource = readSource("engine/chart/src/chart_writer.cpp");
     const auto writerBody = functionBody(writerSource, "ChartWriter::writeV4");
@@ -128,11 +135,9 @@ TEST_CASE("Chart v4 and CXC preparation retain the current parse layering baseli
     CHECK(countOccurrences(writerBody, "json::parse(") == 1U);
 
     const auto cxcSource = readSource("engine/cxc/src/cxc_package.cpp");
-    const auto peekBody = functionBody(cxcSource, "isV4Chart");
-    REQUIRE_FALSE(peekBody.empty());
-    CHECK(countOccurrences(peekBody, "json::parse(") == 1U);
-    CHECK(cxcSource.find("isV4Chart(chartText, chartLimits)") != std::string::npos);
-    CHECK(cxcSource.find("ChartV4Loader::load(chartText, chartLimits)") != std::string::npos);
+    CHECK(cxcSource.find("isV4Chart") == std::string::npos);
+    CHECK(cxcSource.find("loadChartForPlayback(chartText, chartLimits)") != std::string::npos);
+    CHECK(cxcSource.find("ChartV4Loader::load(chartText, chartLimits)") == std::string::npos);
 }
 
 TEST_CASE("ChartLoader diagnostics are stable across routed and direct entry points",
@@ -184,4 +189,52 @@ TEST_CASE("Chart v4 and CXT canonical source bytes remain writer-parity baseline
         cuexis::chart::ChartWriter::writeCanonicalJson(cxt.document->canonicalSource.canonicalText);
     REQUIRE(cxtCanonicalized.has_value());
     CHECK(*cxtBytes == *cxtCanonicalized);
+}
+
+TEST_CASE("Shared Chart dispatch preserves legacy and v4 routing",
+          "[chart][parse][characterization][dispatch]") {
+    const auto v4Text =
+        readSource("tests/fixtures/chart_format_update/valid/chart_v4_static_migration.json");
+    const auto v4 = cuexis::chart::detail::loadChartForPlayback(v4Text);
+    REQUIRE(v4.hasValue());
+    CHECK(v4.isV4);
+    CHECK_FALSE(v4.legacyDocument.has_value());
+    REQUIRE(v4.v4Document.has_value());
+    CHECK(v4.v4Document->legacyProjection.version == 4U);
+
+    const auto legacyText =
+        readSource("tests/fixtures/chart_format_update/valid/chart_v3_static_migration.json");
+    const auto legacy = cuexis::chart::detail::loadChartForPlayback(legacyText);
+    REQUIRE(legacy.hasValue());
+    CHECK_FALSE(legacy.isV4);
+    REQUIRE(legacy.legacyDocument.has_value());
+    CHECK_FALSE(legacy.v4Document.has_value());
+    CHECK(legacy.legacyDocument->version == 3U);
+    CHECK_FALSE(cuexis::chart::detail::loadV4IfPresent(legacyText).has_value());
+}
+
+TEST_CASE("Chart parse probe records one parse per reused v4 prepare chain",
+          "[chart][parse][characterization][count]") {
+    const auto legacyText =
+        readSource("tests/fixtures/chart_format_update/valid/chart_v3_static_migration.json");
+    const auto v4Text =
+        readSource("tests/fixtures/chart_format_update/valid/chart_v4_static_migration.json");
+
+    cuexis::json::detail::ScopedParseCounter counter;
+    CHECK(cuexis::chart::ChartLoader::load(legacyText).hasValue());
+    CHECK(counter.count() == 1U);
+
+    counter.reset();
+    CHECK(cuexis::chart::ChartV4Loader::load(v4Text).hasValue());
+    CHECK(counter.count() == 1U);
+
+    counter.reset();
+    auto dispatched = cuexis::chart::detail::loadChartForPlayback(v4Text);
+    REQUIRE(dispatched.hasValue());
+    REQUIRE(dispatched.v4Document.has_value());
+    REQUIRE(dispatched.v4Input);
+    const auto resolved =
+        cuexis::chart::detail::resolveV4Parsed(*dispatched.v4Document, *dispatched.v4Input);
+    REQUIRE(resolved.hasValue());
+    CHECK(counter.count() == 1U);
 }

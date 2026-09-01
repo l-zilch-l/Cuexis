@@ -294,6 +294,44 @@ TEST_CASE("SDL replacement cancellation leaves no activatable candidate",
     checkEffectiveSettingsEqual(transport->effectiveSettings(), effectiveBefore);
 }
 
+TEST_CASE("SDL replacement activation publishes the prepared paused clip atomically",
+          "[audio][sdl][replacement][commit]") {
+    const auto config = cuexis::audio::validateAudioConfig(
+        {.targetQueueMs = 40, .refillLowWaterMs = 10, .gain = 1.0F});
+    REQUIRE(config.has_value());
+
+    cuexis::audio::AudioClipStore store;
+    const auto active = registerClip(store, 9600, 0.1F);
+    const auto replacement = registerClip(store, 19200, 0.2F);
+    auto subsystem = cuexis::audio_sdl::SdlAudioSubsystem::create();
+    REQUIRE(subsystem.has_value());
+    auto transport = cuexis::audio_sdl::SdlAudioTransport::create(*subsystem, store, *config);
+    REQUIRE(transport.has_value());
+    REQUIRE(transport->load(active).has_value());
+    REQUIRE(transport->play().has_value());
+    REQUIRE(transport->pause().has_value());
+    const auto before = transport->snapshot();
+    const auto effectiveBefore = transport->effectiveSettings();
+
+    REQUIRE(transport->prepareReplacement(replacement, 125.0).has_value());
+    REQUIRE(transport->activateReplacement().has_value());
+
+    const auto after = transport->snapshot();
+    CHECK(after.source.state == cuexis::audio::PlaybackState::Paused);
+    CHECK(after.source.positionMs == 125.0);
+    CHECK(after.source.discontinuityId != before.source.discontinuityId);
+    CHECK(after.sampleRate == 48000);
+    checkEffectiveSettingsEqual(transport->effectiveSettings(), effectiveBefore);
+
+    const auto noCandidate = transport->activateReplacement();
+    REQUIRE_FALSE(noCandidate.has_value());
+    CHECK(noCandidate.error().code() == "audio.transport.replacement_missing");
+    const auto afterMissing = transport->snapshot();
+    CHECK(afterMissing.source.state == after.source.state);
+    CHECK(afterMissing.source.positionMs == after.source.positionMs);
+    CHECK(afterMissing.source.discontinuityId == after.source.discontinuityId);
+}
+
 TEST_CASE("SDL empty-state errors and unload are stable", "[audio][sdl][state][unload]") {
     const auto config = cuexis::audio::validateAudioConfig(
         {.targetQueueMs = 40, .refillLowWaterMs = 10, .gain = 1.0F});
@@ -324,6 +362,29 @@ TEST_CASE("SDL empty-state errors and unload are stable", "[audio][sdl][state][u
     CHECK(after.source.state == cuexis::audio::PlaybackState::Empty);
     CHECK(after.source.discontinuityId == before.source.discontinuityId);
     CHECK(isEmptyEffectiveSettings(transport->effectiveSettings()));
+}
+
+TEST_CASE("SDL audio move construction transfers the live transport",
+          "[audio][sdl][move][branch-coverage]") {
+    const auto config = cuexis::audio::validateAudioConfig(
+        {.targetQueueMs = 40, .refillLowWaterMs = 10, .gain = 1.0F});
+    REQUIRE(config.has_value());
+    cuexis::audio::AudioClipStore store;
+    const auto handle = registerClip(store, 9600);
+
+    auto subsystemResult = cuexis::audio_sdl::SdlAudioSubsystem::create();
+    REQUIRE(subsystemResult.has_value());
+    auto subsystem = std::move(subsystemResult).value();
+    auto replacementSubsystem = std::move(subsystem);
+
+    auto transportResult =
+        cuexis::audio_sdl::SdlAudioTransport::create(replacementSubsystem, store, *config);
+    REQUIRE(transportResult.has_value());
+    auto transport = std::move(transportResult).value();
+    auto replacementTransport = std::move(transport);
+
+    REQUIRE(replacementTransport.load(handle).has_value());
+    CHECK(replacementTransport.snapshot().source.state == cuexis::audio::PlaybackState::Stopped);
 }
 
 TEST_CASE("SDL effective settings remain a coherent published tuple across owner transitions",

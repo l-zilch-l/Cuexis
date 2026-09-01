@@ -136,6 +136,26 @@
       "cacheVariables": {
         "CUEXIS_ENABLE_COVERAGE": "ON"
       }
+    },
+    {
+      "name": "adapter-coverage",
+      "displayName": "SDL and OpenGL Adapter Coverage",
+      "inherits": "headless-coverage",
+      "cacheVariables": {
+        "CUEXIS_BUILD_SDL_ADAPTER": "ON",
+        "CUEXIS_BUILD_AUDIO_SDL_ADAPTER": "ON",
+        "CUEXIS_BUILD_OPENGL_ADAPTER": "ON",
+        "VCPKG_MANIFEST_FEATURES": "tests;audio-sdl;player"
+      }
+    },
+    {
+      "name": "shader-tools-coverage",
+      "displayName": "Shader Tools Coverage",
+      "inherits": "headless-coverage",
+      "cacheVariables": {
+        "CUEXIS_BUILD_SHADER_TOOLS": "ON",
+        "VCPKG_MANIFEST_FEATURES": "tests;shader-tools"
+      }
     }
   ],
   "buildPresets": [
@@ -190,6 +210,14 @@
     {
       "name": "headless-coverage",
       "configurePreset": "headless-coverage"
+    },
+    {
+      "name": "adapter-coverage",
+      "configurePreset": "adapter-coverage"
+    },
+    {
+      "name": "shader-tools-coverage",
+      "configurePreset": "shader-tools-coverage"
     }
   ],
   "testPresets": [
@@ -306,6 +334,26 @@
     {
       "name": "headless-coverage",
       "configurePreset": "headless-coverage",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "adapter-coverage",
+      "configurePreset": "adapter-coverage",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "shader-tools-coverage",
+      "configurePreset": "shader-tools-coverage",
       "output": {
         "outputOnFailure": true
       },

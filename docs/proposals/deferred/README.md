@@ -12,14 +12,14 @@
 
 - [Shader Pipeline](SHADER_PIPELINE.md): historical design input; production contract is
   [MATERIAL_SHADER.md](../../formats/MATERIAL_SHADER.md) and
-  [Stage 5 plan](../../stage_plans/stage_5_implementation_plan.md)
-- [Particle Timeline](PARTICLE_TIMELINE.md): [Stage 8 plan](../../stage_plans/stage_8_implementation_plan.md)
-- [Android and Mobile Strategy](MOBILE_STRATEGY.md): [Stage 9B plan](../../stage_plans/stage_9b_implementation_plan.md)
+  [Stage 5 plan](../../stage_plans/completed/stage-05/plan.md)
+- [Particle Timeline](PARTICLE_TIMELINE.md): [Stage 8 plan](../../stage_plans/future/stage-08/plan.md)
+- [Android and Mobile Strategy](MOBILE_STRATEGY.md): [Stage 9B plan](../../stage_plans/deferred/stage-09b/plan.md)
 
 ## Compatibility Entries
 
 旧路径会至少保留一个文档整理周期，只负责把历史链接导向本目录：
 
-- [docs/SHADER_PIPELINE.md](../../SHADER_PIPELINE.md)
-- [docs/PARTICLE_TIMELINE.md](../../PARTICLE_TIMELINE.md)
-- [docs/MOBILE_STRATEGY.md](../../MOBILE_STRATEGY.md)
+- [docs/SHADER_PIPELINE.md](SHADER_PIPELINE.md)
+- [docs/PARTICLE_TIMELINE.md](PARTICLE_TIMELINE.md)
+- [docs/MOBILE_STRATEGY.md](MOBILE_STRATEGY.md)
