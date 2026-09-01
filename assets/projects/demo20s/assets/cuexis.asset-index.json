@@ -1,0 +1,25 @@
+{
+  "format": "cuexis.asset-index",
+  "version": 1,
+  "assets": [
+    {
+      "id": "texture.test",
+      "type": "texture",
+      "source": "textures/test.texture.bin",
+      "dependencies": []
+    },
+    {
+      "id": "mesh.quad",
+      "type": "mesh",
+      "source": "meshes/quad.mesh.bin",
+      "dependencies": []
+    },
+    {
+      "id": "material.test",
+      "type": "material",
+      "source": "materials/test.material.bin",
+      "dependencies": ["texture.test"]
+    }
+  ],
+  "extensions": {}
+}

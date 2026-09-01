@@ -1,0 +1,452 @@
+{
+  "format": "cuexis.chart",
+  "version": 3,
+  "chartId": "019f0000-0000-7abc-8def-000000000900",
+  "metadata": {
+    "title": "20-Second Spin and Approach Demo",
+    "artist": "Cuexis"
+  },
+  "timing": {
+    "offsetMs": 0.0,
+    "defaultBpm": 120.0,
+    "tempoEvents": [],
+    "stops": []
+  },
+  "camera": {
+    "type": "perspective",
+    "fovY": 60.0,
+    "near": 0.1,
+    "far": 1000.0,
+    "defaultTransform": {
+      "position": [0.0, 0.0, 5.0]
+    }
+  },
+  "templates": [],
+  "behaviors": [
+    {
+      "id": "demo20s.spin",
+      "type": "behavior.event",
+      "version": 1,
+      "events": [
+      {
+        "property": "transform.position.z",
+        "startBeat": { "numerator": 0, "denominator": 1 },
+        "durationBeats": { "numerator": 40, "denominator": 1 },
+        "startValue": 0.0,
+        "endValue": 4.0,
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 0, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 0.0, 0.0, 1.0],
+        "endValue": [0.0, 1.0, 0.0, 0.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 1, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 1.0, 0.0, 0.0],
+        "endValue": [0.0, 0.0, 0.0, -1.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 2, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 0.0, 0.0, -1.0],
+        "endValue": [0.0, -1.0, 0.0, 0.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 3, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, -1.0, 0.0, 0.0],
+        "endValue": [0.0, 0.0, 0.0, 1.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 4, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 0.0, 0.0, 1.0],
+        "endValue": [0.0, 1.0, 0.0, 0.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 5, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 1.0, 0.0, 0.0],
+        "endValue": [0.0, 0.0, 0.0, -1.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 6, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 0.0, 0.0, -1.0],
+        "endValue": [0.0, -1.0, 0.0, 0.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 7, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, -1.0, 0.0, 0.0],
+        "endValue": [0.0, 0.0, 0.0, 1.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 8, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 0.0, 0.0, 1.0],
+        "endValue": [0.0, 1.0, 0.0, 0.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 9, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 1.0, 0.0, 0.0],
+        "endValue": [0.0, 0.0, 0.0, -1.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 10, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 0.0, 0.0, -1.0],
+        "endValue": [0.0, -1.0, 0.0, 0.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 11, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, -1.0, 0.0, 0.0],
+        "endValue": [0.0, 0.0, 0.0, 1.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 12, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 0.0, 0.0, 1.0],
+        "endValue": [0.0, 1.0, 0.0, 0.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 13, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 1.0, 0.0, 0.0],
+        "endValue": [0.0, 0.0, 0.0, -1.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 14, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 0.0, 0.0, -1.0],
+        "endValue": [0.0, -1.0, 0.0, 0.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 15, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, -1.0, 0.0, 0.0],
+        "endValue": [0.0, 0.0, 0.0, 1.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 16, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 0.0, 0.0, 1.0],
+        "endValue": [0.0, 1.0, 0.0, 0.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 17, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 1.0, 0.0, 0.0],
+        "endValue": [0.0, 0.0, 0.0, -1.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 18, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 0.0, 0.0, -1.0],
+        "endValue": [0.0, -1.0, 0.0, 0.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 19, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, -1.0, 0.0, 0.0],
+        "endValue": [0.0, 0.0, 0.0, 1.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 20, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 0.0, 0.0, 1.0],
+        "endValue": [0.0, 1.0, 0.0, 0.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 21, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 1.0, 0.0, 0.0],
+        "endValue": [0.0, 0.0, 0.0, -1.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 22, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 0.0, 0.0, -1.0],
+        "endValue": [0.0, -1.0, 0.0, 0.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 23, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, -1.0, 0.0, 0.0],
+        "endValue": [0.0, 0.0, 0.0, 1.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 24, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 0.0, 0.0, 1.0],
+        "endValue": [0.0, 1.0, 0.0, 0.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 25, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 1.0, 0.0, 0.0],
+        "endValue": [0.0, 0.0, 0.0, -1.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 26, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 0.0, 0.0, -1.0],
+        "endValue": [0.0, -1.0, 0.0, 0.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 27, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, -1.0, 0.0, 0.0],
+        "endValue": [0.0, 0.0, 0.0, 1.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 28, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 0.0, 0.0, 1.0],
+        "endValue": [0.0, 1.0, 0.0, 0.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 29, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 1.0, 0.0, 0.0],
+        "endValue": [0.0, 0.0, 0.0, -1.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 30, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 0.0, 0.0, -1.0],
+        "endValue": [0.0, -1.0, 0.0, 0.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 31, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, -1.0, 0.0, 0.0],
+        "endValue": [0.0, 0.0, 0.0, 1.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 32, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 0.0, 0.0, 1.0],
+        "endValue": [0.0, 1.0, 0.0, 0.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 33, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 1.0, 0.0, 0.0],
+        "endValue": [0.0, 0.0, 0.0, -1.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 34, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 0.0, 0.0, -1.0],
+        "endValue": [0.0, -1.0, 0.0, 0.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 35, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, -1.0, 0.0, 0.0],
+        "endValue": [0.0, 0.0, 0.0, 1.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 36, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 0.0, 0.0, 1.0],
+        "endValue": [0.0, 1.0, 0.0, 0.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 37, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 1.0, 0.0, 0.0],
+        "endValue": [0.0, 0.0, 0.0, -1.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 38, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, 0.0, 0.0, -1.0],
+        "endValue": [0.0, -1.0, 0.0, 0.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      },
+      {
+        "property": "transform.rotation",
+        "startBeat": { "numerator": 39, "denominator": 1 },
+        "durationBeats": { "numerator": 1, "denominator": 1 },
+        "startValue": [0.0, -1.0, 0.0, 0.0],
+        "endValue": [0.0, 0.0, 0.0, 1.0],
+        "startSlope": 1.0,
+        "endSlope": 1.0
+      }
+      ],
+      "stepEvents": []
+    }
+  ],
+  "objects": [
+    {
+      "id": "019f0000-0000-7abc-8def-000000000910",
+      "name": "textured_quad",
+      "parent": null,
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [0.0, 0.0, 0.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [1.0, 1.0, 1.0]
+        },
+        "cuexis.renderable": {
+          "version": 1,
+          "mesh": { "domain": "asset", "id": "mesh.quad" },
+          "material": { "domain": "asset", "id": "material.test" }
+        },
+        "cuexis.behavior": {
+          "version": 1,
+          "behavior": { "domain": "behavior", "id": "demo20s.spin" }
+        }
+      },
+      "extensions": {}
+    },
+    {
+      "id": "019f0000-0000-7abc-8def-000000000920",
+      "name": "camera_main",
+      "parent": null,
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [0.0, 0.0, 5.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [1.0, 1.0, 1.0]
+        },
+        "cuexis.camera": {
+          "version": 1,
+          "type": "perspective",
+          "fovY": 60.0,
+          "near": 0.1,
+          "far": 1000.0
+        }
+      },
+      "extensions": {}
+    }
+  ],
+  "requiredExtensions": [],
+  "extensions": {}
+}
