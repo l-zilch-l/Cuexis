@@ -199,6 +199,33 @@ cmake --build --preset release --clean-first
 ctest --preset release --no-tests=error
 ```
 
+### Pre-push 检查
+
+`tools/check_pre_push.ps1` 将格式、文档、版本和跨工具链检查统一为一个入口。日常修改可先运行
+快速检查；推送前运行完整检查：
+
+```powershell
+pwsh -NoProfile -File tools/check_pre_push.ps1 -Mode Quick
+pwsh -NoProfile -File tools/check_pre_push.ps1 -Mode Full
+```
+
+`Quick` 执行版本一致性、文档契约、暂存区与工作区 whitespace 检查，并对 CMake 格式目标覆盖的
+全部 C++ 文件执行 `clang-format --dry-run --Werror`。`Full` 还会自动初始化 MSVC x64 环境，执行
+Windows Debug/Release 构建与完整 CTest，并通过 WSL 使用 GCC 13 执行 Linux static/shared Release
+构建与完整 CTest。只需复现 Linux lane 时可运行：
+
+```powershell
+pwsh -NoProfile -File tools/check_pre_push.ps1 -Mode Linux
+```
+
+脚本要求 Windows 与 WSL vcpkg 均固定在 CI 使用的 commit，并将构建隔离到
+`out/build/pre-push/`，避免 MSVC 与 Linux 缓存或 triplet 相互污染。默认从
+`VCPKG_ROOT` 读取 Windows vcpkg，并在 WSL 中依次查找 `~/vcpkg-cuexis`、
+`~/cuexis-vcpkg` 和 `/opt/vcpkg`；非默认位置可通过 `-WindowsVcpkgRoot` 或
+`-WslVcpkgRoot` 指定。`-DryRun` 可用于检查将要执行的命令。该脚本覆盖日常快速门禁、
+MSVC 和最容易暴露 GCC Release 警告差异的 Linux static/shared lane；Hosted MinGW、
+sanitizer、clang-tidy 与 coverage lane 仍由远端 CI 负责最终验证。
+
 Player 冒烟测试需要交互式桌面和支持 OpenGL 3.3 Core 的 GPU，因此与默认 CTest 分开执行。
 普通启动和 `--audio-smoke-test` 在未给出 `--project`/`--chart` 时加载阶段 1D 项目；当前
 `--smoke-test` 固定加载无音频的 `stage3_project`，执行六帧真实 presentation 脚本：Opaque、

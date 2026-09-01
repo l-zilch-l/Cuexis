@@ -1604,9 +1604,25 @@ TEST_CASE("Duplicate presentation manifest keys are rejected by table validation
     auto duplicate = *manifest;
     REQUIRE(duplicate.entries.size() >= 2);
     const auto duplicateEntry = duplicate.entries.front();
-    duplicate.entries.insert(duplicate.entries.begin() + 1, duplicateEntry);
+    const auto originalEntries = duplicate.entries;
+    duplicate.entries.clear();
+    duplicate.entries.reserve(originalEntries.size() + 1);
+    duplicate.entries.push_back(duplicateEntry);
+    duplicate.entries.push_back(duplicateEntry);
+    for (std::size_t index = 1; index < originalEntries.size(); ++index) {
+        duplicate.entries.push_back(originalEntries[index]);
+    }
     auto resources = acquireResources(session, *manifest);
-    resources.insert(resources.begin() + 1, resources.front());
+    REQUIRE(resources.size() >= 2);
+    const auto originalResources = resources;
+    const auto duplicateResource = resources.front();
+    resources.clear();
+    resources.reserve(originalResources.size() + 1);
+    resources.push_back(duplicateResource);
+    resources.push_back(duplicateResource);
+    for (std::size_t index = 1; index < originalResources.size(); ++index) {
+        resources.push_back(originalResources[index]);
+    }
     cuexis::playback::FrameSnapshot empty;
     cuexis::playback::detail::NormalizedPresentationFrame normalized;
     const auto result = cuexis::playback::detail::normalizePresentationFrame(empty, duplicate,
