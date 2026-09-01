@@ -8,7 +8,7 @@
 
 后续关闭证据：[任务 3 hosted 完成报告](2026-08-31-task-3-hosted-verification.md)
 
-所属计划：[任务 3 关键模块分支覆盖率](../../../stage_plans/active/260830-followup/task-3-critical-branch-coverage.md)
+所属计划：[任务 3 关键模块分支覆盖率](../../../stage_plans/completed/260830-followup/task-3-critical-branch-coverage.md)
 
 ## 结论
 
@@ -66,4 +66,4 @@ gcovr、filter、测试命令及环境残余；它们是本地验证输出，不
 - Linux sanitizer、shader-tools sanitizer、Windows MSVC/MinGW、Debug/Release 与 external consumer：必须在同一实现 SHA 的 CI matrix 中复核。
 - 当前普通 Windows shell 缺少 Developer Prompt 环境，链接会报 `LNK1104 kernel32.lib`；这不是源码失败，不能当作通过证据。
 
-详细 ID 关闭映射见 [任务 3 分支 backlog](../../../stage_plans/active/260830-followup/task-3-branch-backlog.md)。
+详细 ID 关闭映射见 [任务 3 分支 backlog](../../../stage_plans/completed/260830-followup/task-3-branch-backlog.md)。

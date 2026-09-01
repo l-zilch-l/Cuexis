@@ -4,7 +4,7 @@
 已实现；CFU-F hosted consumer/determinism/safety gates 已关闭；G3 hosted、G4、G5 report-SHA
 revalidation 与 G6 owner acceptance 已完成；最终产品封存已记录
 
-更新日期：2026-08-30
+更新日期：2026-09-01
 
 依据：[ADR 0038](../adr/0038-cxc-v1-and-chart-v4-boundary.md)
 

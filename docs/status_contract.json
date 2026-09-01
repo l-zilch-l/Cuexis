@@ -1,5 +1,5 @@
 {
-  "snapshotDate": "2026-08-30",
+  "snapshotDate": "2026-09-01",
   "requiredFragments": {
     "AGENTS.md": [
       "CFU-F closed after final-SHA hosted verification",
@@ -20,14 +20,15 @@
       "S4-H hosted",
       "S5-A through S5-H closed",
       "merged into `master` 2026-08-28",
-      "stage_plans/active/260830-followup/plan.md",
+      "stage_plans/completed/260830-followup/plan.md",
+      "PR #22 已于 2026-09-01 合并至 `master`",
       "Chart/CXC parse-once",
       "关键模块分支覆盖率"
     ],
     "docs/ROADMAP.md": [
       "CFU-F consumers and determinism closed; final-SHA hosted gates passed 2026-08-16",
       "Stage 5 已于 2026-08-28 关闭",
-      "stage_plans/active/260830-followup/plan.md",
+      "stage_plans/completed/260830-followup/plan.md",
       "Chart/CXC parse-once",
       "关键模块分支覆盖率",
       "CFU-G final closure                                 completed; G6 owner acceptance recorded 2026-08-24"
@@ -49,7 +50,7 @@
       "S5-F 已完成",
       "S5-G 已完成",
       "Stage 5 已于 2026-08-28",
-      "stage_plans/active/260830-followup/plan.md",
+      "stage_plans/completed/260830-followup/plan.md",
       "Chart/CXC",
       "关键模块分支覆盖率"
     ],
@@ -68,11 +69,12 @@
     "docs/stage_plans/README.md": [
       "Stage Chart Format Update",
       "Stage 5",
-      "active/260830-followup/plan.md",
+      "completed/260830-followup/plan.md",
       "Chart/CXC parse-once",
       "关键模块"
     ],
-    "docs/stage_plans/active/260830-followup/plan.md": [
+    "docs/stage_plans/completed/260830-followup/plan.md": [
+      "状态：completed",
       "任务 1：文档整理",
       "任务 2：Chart/CXC parse-once",
       "任务 3：关键模块分支覆盖率",

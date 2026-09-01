@@ -29,7 +29,7 @@ TARGET_FACTS_ENV = "CUEXIS_TARGETS_FILE"
 TARGET_BLOCK_BEGIN = "<!-- CUEXIS_ACTIVE_TARGETS_BEGIN -->"
 TARGET_BLOCK_END = "<!-- CUEXIS_ACTIVE_TARGETS_END -->"
 STAGE_PLAN_REQUIREMENTS = (
-    ("stage_plans/active/260830-followup/plan.md", ("active",)),
+    ("stage_plans/completed/260830-followup/plan.md", ("completed",)),
     ("stage_plans/completed/stage-05/plan.md", ("completed",)),
     ("stage_plans/future/stage-06/plan.md", ("future",)),
     ("stage_plans/future/stage-07/plan.md", ("future",)),

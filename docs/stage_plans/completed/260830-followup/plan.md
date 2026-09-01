@@ -1,11 +1,14 @@
 # 260830-followup 维护计划
 
-状态：active；承接已关闭的 260829 Full Review，不启动 Stage 6
+状态：completed；承接已关闭的 260829 Full Review，不启动 Stage 6
 
-更新日期：2026-08-31
+更新日期：2026-09-01
 
 归档来源：[Full Review 最终关闭报告](../../../stage_reports/reviews/full-review-2026-08/2026-08-30-final.md)
 与 [Full Review 整改计划](../../reviews/full-review-2026-08/remediation-plan.md)。
+
+关闭记录：三个任务均已完成，PR #22 已于 2026-09-01 合并至 `master`。最终关闭证据见
+[260830-followup 最终关闭报告](../../../stage_reports/reviews/260830-followup/2026-09-01-final.md)。
 
 ## 阶段目标
 
@@ -88,7 +91,8 @@
 ## 验收标准
 
 - `docs/README.md` 可达全部 Markdown，且根目录和叶级 README 数量符合文档政策。
-- `docs/stage_plans/active/` 只包含 `260830-followup` 当前计划，不残留已关闭阶段目录。
+- `docs/stage_plans/active/` 不包含已关闭的 `260830-followup`；canonical 计划位于
+  `docs/stage_plans/completed/260830-followup/`。
 - `CURRENT_STATUS.md`、`ROADMAP.md`、`PROJECT_GUIDE.md` 与 Git 合并顺序一致。
 - API 文档格式统一、中文优先，代码标识保持原始英文。
 - 历史计划和报告正文没有不可追溯的丢失；迁移路径可由集中映射审计。
@@ -109,5 +113,5 @@
 
 ## 关闭条件
 
-三个任务均完成各自报告和所需验证后，新增 follow-up 总结报告；项目所有者接受后把本计划迁入
-`completed/`。
+三个任务均完成各自报告和所需验证，且 PR #22 已于 2026-09-01 合并至 `master`；本计划与最终
+关闭报告一并归档到 `completed/`。

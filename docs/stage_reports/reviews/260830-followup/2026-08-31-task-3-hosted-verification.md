@@ -6,7 +6,7 @@
 
 快照日期：2026-08-31
 
-所属计划：[任务 3 关键模块分支覆盖率](../../../stage_plans/active/260830-followup/task-3-critical-branch-coverage.md)
+所属计划：[任务 3 关键模块分支覆盖率](../../../stage_plans/completed/260830-followup/task-3-critical-branch-coverage.md)
 
 前置本地快照：[任务 3 本地快照](2026-08-31-task-3-critical-branch-coverage.md)
 

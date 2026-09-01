@@ -2,7 +2,7 @@
 
 状态：现行文档入口
 
-更新日期：2026-08-30
+更新日期：2026-09-01
 
 本文档是 Cuexis 文档的导航页，不复制产品合同、阶段证据或完整字段定义。当前项目状态只
 以 [CURRENT_STATUS.md](CURRENT_STATUS.md) 为准。
@@ -14,7 +14,7 @@
 3. [产品与模块边界](architecture/README.md)
 4. [ADR 索引](adr/README.md)，先读 ADR 0027、0024、0025、0026、0037、0038 和 0040
 5. [格式索引](formats/README.md)
-6. [260830-followup 当前计划](stage_plans/active/260830-followup/plan.md)
+6. [260830-followup 已完成计划](stage_plans/completed/260830-followup/plan.md)
 7. [指南索引](guides/README.md)
 8. [API 参考](api/README.md)
 9. [构建与验证](guides/BUILDING.md)
@@ -89,12 +89,13 @@
 ## 阶段、证据和示例
 
 - [阶段计划索引](stage_plans/README.md)
-- [260830-followup 当前计划](stage_plans/active/260830-followup/plan.md)
+- [260830-followup 已完成计划](stage_plans/completed/260830-followup/plan.md)
 - [Stage Chart Format Update 计划](stage_plans/completed/chart-format-update/plan.md)
 - [Stage 4 计划](stage_plans/completed/stage-04/plan.md)
 - [Stage 5 计划](stage_plans/completed/stage-05/plan.md)
 - [260829 Full Review 整改计划](stage_plans/reviews/full-review-2026-08/remediation-plan.md)
 - [阶段报告索引](stage_reports/README.md)
+- [260830-followup 最终关闭报告](stage_reports/reviews/260830-followup/2026-09-01-final.md)
 - [Full Review 最终关闭](stage_reports/reviews/full-review-2026-08/2026-08-30-final.md)
 - [候选示例索引](examples/README.md)
 - [历史文档归档](archive/README.md)

@@ -2,16 +2,16 @@
 
 状态：current
 
-更新日期：2026-08-30
+更新日期：2026-09-01
 
 阶段计划定义目标、范围、批次、门禁和交接。当前实现状态只以
 [CURRENT_STATUS.md](../CURRENT_STATUS.md) 为准；完成后的证据只以
 [stage_reports/README.md](../stage_reports/README.md) 为准。
 
-## 当前计划
+## 已完成维护计划
 
-- [260830-followup](active/260830-followup/plan.md)：文档整理、Chart/CXC parse-once 和关键模块
-  分支覆盖率；不启动 Stage 6。任务 3 的 [branch backlog](active/260830-followup/task-3-branch-backlog.md)
+- [260830-followup](completed/260830-followup/plan.md)：文档整理、Chart/CXC parse-once 和关键模块
+  分支覆盖率；已于 2026-09-01 经 PR #22 合并至 `master`。任务 3 的 [branch backlog](completed/260830-followup/task-3-branch-backlog.md)
   记录函数级覆盖缺口和关闭状态。
 
 ## 已完成计划
