@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <initializer_list>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -439,5 +440,151 @@ TEST_CASE("Parameterized material completes every parameter representation defen
         updateEnvelopeSize(trailing);
         CHECK(prepareCode(makeShaderPayload(kVertex, kFragment, {}), std::move(trailing)) ==
               "playback.presentation.payload.size_mismatch");
+    }
+}
+
+TEST_CASE("Shader and parameterized Material schema rejects malformed records at the public prepare boundary",
+          "[playback][presentation][shader][material][branch-coverage]") {
+    SECTION("fixed fields distinguish empty entry, profile, and source declarations") {
+        auto vertexEntry = makeShaderPayload(kVertex, kFragment, {});
+        writeU32(vertexEntry, 28, 0);
+        CHECK(prepareCode(std::move(vertexEntry)) == "playback.presentation.shader.entry_invalid");
+
+        auto fragmentEntry = makeShaderPayload(kVertex, kFragment, {});
+        writeU32(fragmentEntry, 32, 0);
+        CHECK(prepareCode(std::move(fragmentEntry)) == "playback.presentation.shader.entry_invalid");
+
+        auto profile = makeShaderPayload(kVertex, kFragment, {});
+        writeU32(profile, 60, 0);
+        CHECK(prepareCode(std::move(profile)) == "playback.presentation.shader.profile_unsupported");
+
+        auto vertexSource = makeShaderPayload(kVertex, kFragment, {});
+        writeU32(vertexSource, 64, 0);
+        CHECK(prepareCode(std::move(vertexSource)) == "playback.presentation.shader.subset_invalid");
+
+        auto fragmentSource = makeShaderPayload(kVertex, kFragment, {});
+        writeU32(fragmentSource, 68, 0);
+        CHECK(prepareCode(std::move(fragmentSource)) == "playback.presentation.shader.subset_invalid");
+
+        auto blendAndDoubleSided = makeShaderPayload(kVertex, kFragment, {});
+        writeU32(blendAndDoubleSided, 52, 1);
+        writeU32(blendAndDoubleSided, 56, 1);
+        CHECK(prepareCode(std::move(blendAndDoubleSided)).empty());
+    }
+
+    SECTION("UTF-8 decoder rejects malformed continuation, overlong, surrogate, and out-of-range code points") {
+        const auto malformedSource = [](std::initializer_list<unsigned char> suffix) {
+            auto source = std::string{"#version 450\n"};
+            for (const auto byte : suffix) {
+                source.push_back(static_cast<char>(byte));
+            }
+            return source;
+        };
+
+        CHECK(prepareCode(makeShaderPayload(malformedSource({0xC2U, 0x20U}), kFragment, {})) ==
+              "playback.presentation.shader.source_encoding_invalid");
+        CHECK(prepareCode(makeShaderPayload(malformedSource({0xC0U, 0x80U}), kFragment, {})) ==
+              "playback.presentation.shader.source_encoding_invalid");
+        CHECK(prepareCode(makeShaderPayload(malformedSource({0xEDU, 0xA0U, 0x80U}), kFragment,
+                                            {})) ==
+              "playback.presentation.shader.source_encoding_invalid");
+        CHECK(prepareCode(makeShaderPayload(malformedSource({0xF4U, 0x90U, 0x80U, 0x80U}),
+                                            kFragment, {})) ==
+              "playback.presentation.shader.source_encoding_invalid");
+    }
+
+    SECTION("parameter, binding, and host-extension tables preserve their independent schema rules") {
+        ShaderLayout parameterLayout;
+        parameterLayout.parameterCount = 1;
+        parameterLayout.bindingCount = 1;
+
+        auto nonZeroSet = makeShaderPayload(kVertex, kFragment, parameterLayout);
+        writeU32(nonZeroSet, shaderVariableOffset + 11, 1);
+        CHECK(prepareCode(std::move(nonZeroSet)) == "playback.presentation.shader.schema_invalid");
+
+        auto invalidFloatDefault = makeShaderPayload(kVertex, kFragment, parameterLayout);
+        writeU32(invalidFloatDefault, shaderVariableOffset + 23, 0x3F800000U);
+        CHECK(prepareCode(std::move(invalidFloatDefault)) ==
+              "playback.presentation.shader.schema_invalid");
+
+        auto invalidBoolDefault = makeShaderPayload(kVertex, kFragment, parameterLayout);
+        writeU32(invalidBoolDefault, shaderVariableOffset + 39, 1);
+        CHECK(prepareCode(std::move(invalidBoolDefault)) ==
+              "playback.presentation.shader.schema_invalid");
+
+        auto bindingTypeMismatch = makeShaderPayload(kVertex, kFragment, parameterLayout);
+        const auto firstBindingOffset = shaderVariableOffset + 43;
+        writeU32(bindingTypeMismatch, firstBindingOffset + 8, 2);
+        CHECK(prepareCode(std::move(bindingTypeMismatch)) ==
+              "playback.presentation.shader.schema_invalid");
+
+        ShaderLayout duplicateBindingLayout;
+        duplicateBindingLayout.parameterCount = 1;
+        duplicateBindingLayout.bindingCount = 2;
+        auto duplicateBindingSlot = makeShaderPayload(kVertex, kFragment, duplicateBindingLayout);
+        const auto secondBindingOffset = shaderVariableOffset + 43 + 19;
+        writeU32(duplicateBindingSlot, secondBindingOffset + 4, 1);
+        CHECK(prepareCode(std::move(duplicateBindingSlot)) ==
+              "playback.presentation.shader.schema_invalid");
+
+        ShaderLayout duplicateExtensionLayout;
+        duplicateExtensionLayout.hostExtensionCount = 2;
+        auto duplicateExtension = makeShaderPayload(kVertex, kFragment, duplicateExtensionLayout);
+        duplicateExtension[shaderVariableOffset + 17] = std::byte{'0'};
+        CHECK(prepareCode(std::move(duplicateExtension)) ==
+              "playback.presentation.shader.schema_invalid");
+    }
+
+    SECTION("parameterized Material uses the shader schema for value decoding and keyword selection") {
+        for (const auto type : {1U, 2U, 3U, 4U, 5U}) {
+            ShaderLayout shaderLayout;
+            shaderLayout.parameterCount = 1;
+            shaderLayout.bindingCount = 1;
+            shaderLayout.parameterType = type;
+            MaterialLayout materialLayout;
+            materialLayout.parameterCount = 1;
+            CHECK(prepareCode(makeShaderPayload(kVertex, kFragment, shaderLayout),
+                              makeParameterizedPayload("shader.sprite", materialLayout))
+                      .empty());
+        }
+
+        ShaderLayout boolLayout;
+        boolLayout.parameterCount = 1;
+        boolLayout.bindingCount = 1;
+        boolLayout.parameterType = 6;
+        MaterialLayout boolMaterialLayout;
+        boolMaterialLayout.parameterCount = 1;
+        auto boolMaterial = makeParameterizedPayload("shader.sprite", boolMaterialLayout);
+        writeU32(boolMaterial, 61, 1);
+        CHECK(prepareCode(makeShaderPayload(kVertex, kFragment, boolLayout),
+                          std::move(boolMaterial))
+                  .empty());
+
+        ShaderLayout keywordShader;
+        keywordShader.keywordCount = 1;
+        MaterialLayout keywordMaterial;
+        keywordMaterial.keywordCount = 1;
+        CHECK(prepareCode(makeShaderPayload(kVertex, kFragment, keywordShader),
+                          makeParameterizedPayload("shader.sprite", keywordMaterial))
+                  .empty());
+
+        ShaderLayout oneParameter;
+        oneParameter.parameterCount = 1;
+        oneParameter.bindingCount = 1;
+        CHECK(prepareCode(makeShaderPayload(kVertex, kFragment, oneParameter),
+                          makeParameterizedPayload("shader.sprite")) ==
+              "playback.presentation.material.parameter_mismatch");
+
+        auto invalidMaterialShaderIdLength = makeParameterizedPayload("shader.sprite");
+        writeU32(invalidMaterialShaderIdLength, 40, 0);
+        CHECK(prepareCode(makeShaderPayload(kVertex, kFragment, {}),
+                          std::move(invalidMaterialShaderIdLength)) ==
+              "playback.presentation.material.shader_reference_invalid");
+
+        auto truncatedMaterial = makeParameterizedPayload("shader.sprite");
+        truncatedMaterial.resize(30);
+        updateEnvelopeSize(truncatedMaterial);
+        CHECK(prepareCode(makeShaderPayload(kVertex, kFragment, {}), std::move(truncatedMaterial)) ==
+              "playback.presentation.payload.truncated");
     }
 }

@@ -352,10 +352,13 @@ TEST_CASE("PB-08 owning-copy queries contain allocation failures at the Playback
         REQUIRE(successful.has_value());
         REQUIRE(allocations > 0);
 
-        const auto outcome = invokeWithAllocationFailure(1, callback);
-        CHECK_FALSE(outcome.badAllocEscaped);
-        CHECK_FALSE(outcome.lengthErrorEscaped);
-        CHECK_FALSE(outcome.returnedValue);
+        for (std::size_t allocationIndex = 1U; allocationIndex <= allocations; ++allocationIndex) {
+            const auto outcome = invokeWithAllocationFailure(allocationIndex, callback);
+            INFO("allocationIndex=" << allocationIndex << ", allocations=" << allocations);
+            CHECK_FALSE(outcome.badAllocEscaped);
+            CHECK_FALSE(outcome.lengthErrorEscaped);
+            CHECK_FALSE(outcome.returnedValue);
+        }
     };
 
     SECTION("capabilities") {

@@ -207,6 +207,121 @@ TEST_CASE("Parameter identity matches the frozen binary encoding vector",
     CHECK(result.artifact->document.parameters[2].id == "omega.weight");
 }
 
+TEST_CASE("Chart v4 animation clips parse each continuous value type and reject invalid values",
+          "[chart][v4][reader][animation][value][branch-coverage]") {
+    ChartParts parts;
+    parts.clips = R"([{
+      "id":"animation.values","version":1,
+      "durationBeats":{"numerator":1,"denominator":1},
+      "tracks":[
+        {"property":"transform.rotation","segments":[{
+          "startBeat":{"numerator":0,"denominator":1},
+          "durationBeats":{"numerator":1,"denominator":1},
+          "startValue":[0,0,0,1],"endValue":[0,0,0,1],"startSlope":0,"endSlope":0
+        }]},
+        {"property":"transform.scale","segments":[{
+          "startBeat":{"numerator":0,"denominator":1},
+          "durationBeats":{"numerator":1,"denominator":1},
+          "startValue":[1,1,1],"endValue":[1.5,1.5,1.5],"startSlope":0,"endSlope":0
+        }]},
+        {"property":"material.opacity","segments":[{
+          "startBeat":{"numerator":0,"denominator":1},
+          "durationBeats":{"numerator":1,"denominator":1},
+          "startValue":1,"endValue":0.5,"startSlope":0,"endSlope":0
+        }]},
+        {"property":"material.tint","segments":[{
+          "startBeat":{"numerator":0,"denominator":1},
+          "durationBeats":{"numerator":1,"denominator":1},
+          "startValue":[1,1,1],"endValue":[0.5,0.25,0.75],"startSlope":0,"endSlope":0
+        }]}
+      ],"stepTracks":[]
+    }])";
+
+    const auto accepted = cuexis::chart::ChartV4Loader::load(makeChart(parts));
+    REQUIRE(accepted.hasValue());
+    REQUIRE(accepted.document.has_value());
+    const auto& tracks = accepted.document->animationClips.front().tracks;
+    REQUIRE(tracks.size() == 4U);
+    const auto hasProperty = [&](cuexis::chart::AnimationProperty property) {
+        return std::ranges::any_of(tracks, [property](const auto& track) {
+            return track.property == property;
+        });
+    };
+    CHECK(hasProperty(cuexis::chart::AnimationProperty::TransformRotation));
+    CHECK(hasProperty(cuexis::chart::AnimationProperty::TransformScale));
+    CHECK(hasProperty(cuexis::chart::AnimationProperty::MaterialOpacity));
+    CHECK(hasProperty(cuexis::chart::AnimationProperty::MaterialTint));
+
+    auto invalid = makeChart(parts);
+    const auto rotation = invalid.find("\"endValue\":[0,0,0,1]");
+    REQUIRE(rotation != std::string::npos);
+    invalid.replace(rotation, std::string_view{"\"endValue\":[0,0,0,1]"}.size(),
+                    "\"endValue\":[0,0,0,2]");
+    const auto slopes = invalid.find("\"startSlope\":0,\"endSlope\":0");
+    REQUIRE(slopes != std::string::npos);
+    invalid.replace(slopes, std::string_view{"\"startSlope\":0,\"endSlope\":0"}.size(),
+                    "\"startSlope\":2,\"endSlope\":2");
+    const auto opacity = invalid.find("\"endValue\":0.5");
+    REQUIRE(opacity != std::string::npos);
+    invalid.replace(opacity, std::string_view{"\"endValue\":0.5"}.size(),
+                    "\"endValue\":1.5");
+
+    const auto rejected = cuexis::chart::ChartV4Loader::load(invalid);
+    CHECK_FALSE(rejected.hasValue());
+    CHECK(hasDiagnostic(rejected, "chart.transform.rotation_not_normalized"));
+    CHECK(hasDiagnostic(rejected, "chart.animation.clip_invalid"));
+    CHECK_FALSE(rejected.document.has_value());
+}
+
+TEST_CASE("Chart v4 animator records preserve blend fill iteration and mask boundaries",
+          "[chart][v4][reader][animation][options][branch-coverage]") {
+    const auto loadAnimator = [](std::string_view mode, std::string_view fillMode,
+                                 std::string_view iterations, std::string_view mask) {
+        ChartParts parts;
+        parts.clips = "[" + continuousClip("animation.position", "transform.position.x", "0", "1") +
+                      "]";
+        parts.objects = std::string{R"([{
+          "id":"019f0000-0000-7abc-8def-0000000004f9","parent":null,"components":{
+            )"} + std::string{transformComponent()} +
+                        R"(,
+            "cuexis.animator":{"version":1,"templateBindings":[],"layers":[{
+              "layerId":"layer.options","priority":0,"weight":1,"propertyMask":)" +
+                        std::string{mask} + R"(,"blendGroups":[{
+                "groupId":"group.options","mode":")" + std::string{mode} +
+                        R"(","weight":1,"instances":[{
+                  "instanceId":"instance.options",
+                  "clip":{"domain":"animation","id":"animation.position"},
+                  "startBeat":{"numerator":0,"denominator":1},"iterations":)" +
+                        std::string{iterations} + R"(,"fillMode":")" + std::string{fillMode} +
+                        R"(","weight":1,"propertyMask":)" + std::string{mask} +
+                        R"(}]}]}]}
+          },"extensions":{}}
+        ])";
+        return cuexis::chart::ChartV4Loader::load(makeChart(parts));
+    };
+
+    constexpr std::string_view positionMask =
+        R"({"properties":["transform.position.x"],"prefixes":[]})";
+    CHECK(loadAnimator("additive", "hold", "1", positionMask).hasValue());
+    CHECK(loadAnimator("override", "none", R"("infinite")", positionMask).hasValue());
+
+    const auto duplicateProperty = loadAnimator(
+        "override", "none", "1",
+        R"({"properties":["transform.position.x","transform.position.x"],"prefixes":[]})");
+    CHECK_FALSE(duplicateProperty.hasValue());
+    CHECK(hasDiagnostic(duplicateProperty, "chart.animation.mask_conflict"));
+
+    const auto overlappingPrefix = loadAnimator(
+        "override", "none", "1",
+        R"({"properties":[],"prefixes":["transform.","transform.position."]})");
+    CHECK_FALSE(overlappingPrefix.hasValue());
+    CHECK(hasDiagnostic(overlappingPrefix, "chart.animation.mask_conflict"));
+
+    const auto invalidIterations = loadAnimator("override", "none", "0", positionMask);
+    CHECK_FALSE(invalidIterations.hasValue());
+    CHECK(hasDiagnostic(invalidIterations, "chart.animation.clip_invalid"));
+}
+
 TEST_CASE("Resolved discrete Layer weight is validated after parameter freezing",
           "[chart][v4][resolver][animation][parameters][cfu-c2]") {
     ChartParts parts;
@@ -995,6 +1110,90 @@ TEST_CASE("Chart v4 diagnostics retain deterministic path ordering",
     CHECK(result.diagnostics.items()[3].code() == "chart.format.unsupported");
     CHECK(result.diagnostics.items()[4].fieldPath() == "$/version");
     CHECK(result.diagnostics.items()[4].code() == "chart.version.unsupported");
+}
+
+TEST_CASE("Resolver canonicalizes V4 behavior records and retains their resource closure",
+          "[chart][v4][resolver][behavior][determinism][branch-coverage]") {
+    ChartParts parts;
+    parts.behaviors = R"([
+      {
+        "id":"behavior.z","type":"behavior.event","version":1,
+        "events":[
+          {"property":"material.tint","startBeat":{"numerator":2,"denominator":1},
+           "durationBeats":{"numerator":1,"denominator":1},
+           "startValue":[1,1,1],"endValue":[0,0,0],"startSlope":1,"endSlope":1},
+          {"property":"material.opacity","startBeat":{"numerator":0,"denominator":1},
+           "durationBeats":{"numerator":1,"denominator":1},
+           "startValue":1,"endValue":0.5,"startSlope":1,"endSlope":1}
+        ],
+        "stepEvents":[
+          {"property":"render.visible","beat":{"numerator":2,"denominator":1},
+           "value":true},
+          {"property":"render.material","beat":{"numerator":1,"denominator":1},
+           "value":{"domain":"asset","id":"asset.behavior"}}
+        ]
+      },
+      {
+        "id":"behavior.a","type":"behavior.event","version":1,
+        "events":[
+          {"property":"material.opacity","startBeat":{"numerator":3,"denominator":1},
+           "durationBeats":{"numerator":1,"denominator":1},
+           "startValue":1,"endValue":1,"startSlope":0,"endSlope":0}
+        ],"stepEvents":[]
+      }
+    ])";
+
+    const auto result = cuexis::chart::ChartV4Resolver::resolve(loadSource(makeChart(parts)));
+    REQUIRE(result.hasValue());
+    const auto& chart = result.artifact->document.chart;
+    REQUIRE(chart.behaviors.size() == 2U);
+    CHECK(chart.behaviors[0].id.value == "behavior.a");
+    const auto& behavior = chart.behaviors[1];
+    REQUIRE(behavior.events.size() == 2U);
+    CHECK(behavior.events[0].property == cuexis::chart::BehaviorProperty::MaterialOpacity);
+    CHECK(behavior.events[1].property == cuexis::chart::BehaviorProperty::MaterialTint);
+    REQUIRE(behavior.stepEvents.size() == 2U);
+    CHECK(behavior.stepEvents[0].property == cuexis::chart::BehaviorStepProperty::RenderVisible);
+    CHECK(behavior.stepEvents[1].property == cuexis::chart::BehaviorStepProperty::RenderMaterial);
+
+    const auto* resource = findResource(*result.artifact, "asset.behavior");
+    REQUIRE(resource != nullptr);
+    CHECK(resource->uses == std::vector<cuexis::chart::ChartResourceUse>{
+                                cuexis::chart::ChartResourceUse::BehaviorMaterial});
+}
+
+TEST_CASE("Resolver expands prefix property masks for concrete animation validation",
+          "[chart][v4][resolver][animation][mask][branch-coverage]") {
+    ChartParts parts;
+    parts.clips = "[" + continuousClip("animation.prefix", "transform.position.x", "0", "1") + "]";
+    parts.objects = std::string{R"([
+      {"id":"019f0000-0000-7abc-8def-0000000004f8","parent":null,"components":{
+        )"} + std::string{transformComponent()} +
+                    R"(,
+        "cuexis.animator":{"version":1,"templateBindings":[],"layers":[{
+          "layerId":"layer.prefix","priority":0,"weight":1,
+          "propertyMask":{"properties":[],"prefixes":["transform."]},
+          "blendGroups":[{
+            "groupId":"group.prefix","mode":"override","weight":1,"instances":[{
+              "instanceId":"instance.prefix",
+              "clip":{"domain":"animation","id":"animation.prefix"},
+              "startBeat":{"numerator":0,"denominator":1},"iterations":1,
+              "fillMode":"none","weight":1,
+              "propertyMask":{"properties":[],"prefixes":["transform."]}
+            }]
+          }]
+        }]}
+      },"extensions":{}}
+    ])";
+
+    const auto result = cuexis::chart::ChartV4Resolver::resolve(loadSource(makeChart(parts)));
+    REQUIRE(result.hasValue());
+    REQUIRE(result.artifact->animationProgram.objects.size() == 1U);
+    const auto& layer = result.artifact->animationProgram.objects.front().layers.front();
+    CHECK(layer.propertyMask.prefixes == std::vector<std::string>{"transform."});
+    CHECK(result.artifact->capabilityRequirements ==
+          std::vector<std::string>{"cuexis.animation.clip.v1", "cuexis.animation.layers.v1",
+                                   "cuexis.chart.v4"});
 }
 
 TEST_CASE("Chart v4 canonical source and resolved identity are whitespace invariant",
