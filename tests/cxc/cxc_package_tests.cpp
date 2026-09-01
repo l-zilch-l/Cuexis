@@ -935,8 +935,8 @@ TEST_CASE("CXC validates shader and audio dependency constraints and duplicate c
 
         const auto result = CxcWriter::write(std::move(audioLeaf));
         CHECK_FALSE(result.hasValue());
-        CHECK(support::hasDiagnostic(result.diagnostics,
-                                     "asset_index.audio.dependencies_not_empty"));
+        CHECK(
+            support::hasDiagnostic(result.diagnostics, "asset_index.audio.dependencies_not_empty"));
         CHECK(support::hasDiagnostic(result.diagnostics, "cxc.project.invalid"));
         CHECK_FALSE(result.bytes.has_value());
     }

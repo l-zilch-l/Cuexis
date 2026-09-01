@@ -243,9 +243,8 @@ TEST_CASE("Chart v4 animation clips parse each continuous value type and reject 
     const auto& tracks = accepted.document->animationClips.front().tracks;
     REQUIRE(tracks.size() == 4U);
     const auto hasProperty = [&](cuexis::chart::AnimationProperty property) {
-        return std::ranges::any_of(tracks, [property](const auto& track) {
-            return track.property == property;
-        });
+        return std::ranges::any_of(
+            tracks, [property](const auto& track) { return track.property == property; });
     };
     CHECK(hasProperty(cuexis::chart::AnimationProperty::TransformRotation));
     CHECK(hasProperty(cuexis::chart::AnimationProperty::TransformScale));
@@ -263,8 +262,7 @@ TEST_CASE("Chart v4 animation clips parse each continuous value type and reject 
                     "\"startSlope\":2,\"endSlope\":2");
     const auto opacity = invalid.find("\"endValue\":0.5");
     REQUIRE(opacity != std::string::npos);
-    invalid.replace(opacity, std::string_view{"\"endValue\":0.5"}.size(),
-                    "\"endValue\":1.5");
+    invalid.replace(opacity, std::string_view{"\"endValue\":0.5"}.size(), "\"endValue\":1.5");
 
     const auto rejected = cuexis::chart::ChartV4Loader::load(invalid);
     CHECK_FALSE(rejected.hasValue());
@@ -278,8 +276,8 @@ TEST_CASE("Chart v4 animator records preserve blend fill iteration and mask boun
     const auto loadAnimator = [](std::string_view mode, std::string_view fillMode,
                                  std::string_view iterations, std::string_view mask) {
         ChartParts parts;
-        parts.clips = "[" + continuousClip("animation.position", "transform.position.x", "0", "1") +
-                      "]";
+        parts.clips =
+            "[" + continuousClip("animation.position", "transform.position.x", "0", "1") + "]";
         parts.objects = std::string{R"([{
           "id":"019f0000-0000-7abc-8def-0000000004f9","parent":null,"components":{
             )"} + std::string{transformComponent()} +
@@ -287,7 +285,8 @@ TEST_CASE("Chart v4 animator records preserve blend fill iteration and mask boun
             "cuexis.animator":{"version":1,"templateBindings":[],"layers":[{
               "layerId":"layer.options","priority":0,"weight":1,"propertyMask":)" +
                         std::string{mask} + R"(,"blendGroups":[{
-                "groupId":"group.options","mode":")" + std::string{mode} +
+                "groupId":"group.options","mode":")" +
+                        std::string{mode} +
                         R"(","weight":1,"instances":[{
                   "instanceId":"instance.options",
                   "clip":{"domain":"animation","id":"animation.position"},
@@ -311,9 +310,9 @@ TEST_CASE("Chart v4 animator records preserve blend fill iteration and mask boun
     CHECK_FALSE(duplicateProperty.hasValue());
     CHECK(hasDiagnostic(duplicateProperty, "chart.animation.mask_conflict"));
 
-    const auto overlappingPrefix = loadAnimator(
-        "override", "none", "1",
-        R"({"properties":[],"prefixes":["transform.","transform.position."]})");
+    const auto overlappingPrefix =
+        loadAnimator("override", "none", "1",
+                     R"({"properties":[],"prefixes":["transform.","transform.position."]})");
     CHECK_FALSE(overlappingPrefix.hasValue());
     CHECK(hasDiagnostic(overlappingPrefix, "chart.animation.mask_conflict"));
 

@@ -443,7 +443,8 @@ TEST_CASE("Parameterized material completes every parameter representation defen
     }
 }
 
-TEST_CASE("Shader and parameterized Material schema rejects malformed records at the public prepare boundary",
+TEST_CASE("Shader and parameterized Material schema rejects malformed records at the public "
+          "prepare boundary",
           "[playback][presentation][shader][material][branch-coverage]") {
     SECTION("fixed fields distinguish empty entry, profile, and source declarations") {
         auto vertexEntry = makeShaderPayload(kVertex, kFragment, {});
@@ -452,19 +453,23 @@ TEST_CASE("Shader and parameterized Material schema rejects malformed records at
 
         auto fragmentEntry = makeShaderPayload(kVertex, kFragment, {});
         writeU32(fragmentEntry, 32, 0);
-        CHECK(prepareCode(std::move(fragmentEntry)) == "playback.presentation.shader.entry_invalid");
+        CHECK(prepareCode(std::move(fragmentEntry)) ==
+              "playback.presentation.shader.entry_invalid");
 
         auto profile = makeShaderPayload(kVertex, kFragment, {});
         writeU32(profile, 60, 0);
-        CHECK(prepareCode(std::move(profile)) == "playback.presentation.shader.profile_unsupported");
+        CHECK(prepareCode(std::move(profile)) ==
+              "playback.presentation.shader.profile_unsupported");
 
         auto vertexSource = makeShaderPayload(kVertex, kFragment, {});
         writeU32(vertexSource, 64, 0);
-        CHECK(prepareCode(std::move(vertexSource)) == "playback.presentation.shader.subset_invalid");
+        CHECK(prepareCode(std::move(vertexSource)) ==
+              "playback.presentation.shader.subset_invalid");
 
         auto fragmentSource = makeShaderPayload(kVertex, kFragment, {});
         writeU32(fragmentSource, 68, 0);
-        CHECK(prepareCode(std::move(fragmentSource)) == "playback.presentation.shader.subset_invalid");
+        CHECK(prepareCode(std::move(fragmentSource)) ==
+              "playback.presentation.shader.subset_invalid");
 
         auto blendAndDoubleSided = makeShaderPayload(kVertex, kFragment, {});
         writeU32(blendAndDoubleSided, 52, 1);
@@ -472,7 +477,8 @@ TEST_CASE("Shader and parameterized Material schema rejects malformed records at
         CHECK(prepareCode(std::move(blendAndDoubleSided)).empty());
     }
 
-    SECTION("UTF-8 decoder rejects malformed continuation, overlong, surrogate, and out-of-range code points") {
+    SECTION("UTF-8 decoder rejects malformed continuation, overlong, surrogate, and out-of-range "
+            "code points") {
         const auto malformedSource = [](std::initializer_list<unsigned char> suffix) {
             auto source = std::string{"#version 450\n"};
             for (const auto byte : suffix) {
@@ -485,15 +491,16 @@ TEST_CASE("Shader and parameterized Material schema rejects malformed records at
               "playback.presentation.shader.source_encoding_invalid");
         CHECK(prepareCode(makeShaderPayload(malformedSource({0xC0U, 0x80U}), kFragment, {})) ==
               "playback.presentation.shader.source_encoding_invalid");
-        CHECK(prepareCode(makeShaderPayload(malformedSource({0xEDU, 0xA0U, 0x80U}), kFragment,
-                                            {})) ==
-              "playback.presentation.shader.source_encoding_invalid");
+        CHECK(
+            prepareCode(makeShaderPayload(malformedSource({0xEDU, 0xA0U, 0x80U}), kFragment, {})) ==
+            "playback.presentation.shader.source_encoding_invalid");
         CHECK(prepareCode(makeShaderPayload(malformedSource({0xF4U, 0x90U, 0x80U, 0x80U}),
                                             kFragment, {})) ==
               "playback.presentation.shader.source_encoding_invalid");
     }
 
-    SECTION("parameter, binding, and host-extension tables preserve their independent schema rules") {
+    SECTION(
+        "parameter, binding, and host-extension tables preserve their independent schema rules") {
         ShaderLayout parameterLayout;
         parameterLayout.parameterCount = 1;
         parameterLayout.bindingCount = 1;
@@ -535,7 +542,8 @@ TEST_CASE("Shader and parameterized Material schema rejects malformed records at
               "playback.presentation.shader.schema_invalid");
     }
 
-    SECTION("parameterized Material uses the shader schema for value decoding and keyword selection") {
+    SECTION(
+        "parameterized Material uses the shader schema for value decoding and keyword selection") {
         for (const auto type : {1U, 2U, 3U, 4U, 5U}) {
             ShaderLayout shaderLayout;
             shaderLayout.parameterCount = 1;
@@ -556,9 +564,9 @@ TEST_CASE("Shader and parameterized Material schema rejects malformed records at
         boolMaterialLayout.parameterCount = 1;
         auto boolMaterial = makeParameterizedPayload("shader.sprite", boolMaterialLayout);
         writeU32(boolMaterial, 61, 1);
-        CHECK(prepareCode(makeShaderPayload(kVertex, kFragment, boolLayout),
-                          std::move(boolMaterial))
-                  .empty());
+        CHECK(
+            prepareCode(makeShaderPayload(kVertex, kFragment, boolLayout), std::move(boolMaterial))
+                .empty());
 
         ShaderLayout keywordShader;
         keywordShader.keywordCount = 1;
@@ -584,7 +592,8 @@ TEST_CASE("Shader and parameterized Material schema rejects malformed records at
         auto truncatedMaterial = makeParameterizedPayload("shader.sprite");
         truncatedMaterial.resize(30);
         updateEnvelopeSize(truncatedMaterial);
-        CHECK(prepareCode(makeShaderPayload(kVertex, kFragment, {}), std::move(truncatedMaterial)) ==
-              "playback.presentation.payload.truncated");
+        CHECK(
+            prepareCode(makeShaderPayload(kVertex, kFragment, {}), std::move(truncatedMaterial)) ==
+            "playback.presentation.payload.truncated");
     }
 }

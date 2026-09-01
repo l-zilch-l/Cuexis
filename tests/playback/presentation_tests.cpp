@@ -232,10 +232,10 @@ struct Stage3Fixture final {
     if (!provider) {
         return cuexis::core::unexpected(std::move(provider.error()));
     }
-    return PlaybackSource::fromTypedProject(
-        {.sourceId = "stage3-presentation-closure", .chartJson = fixture.chartJson,
-         .assets = std::move(assets)},
-        std::move(*provider));
+    return PlaybackSource::fromTypedProject({.sourceId = "stage3-presentation-closure",
+                                             .chartJson = fixture.chartJson,
+                                             .assets = std::move(assets)},
+                                            std::move(*provider));
 }
 
 [[nodiscard]] auto manifestsEqual(const PresentationResourceManifest& left,
@@ -330,7 +330,7 @@ struct Stage3Fixture final {
     const auto found = std::find_if(error.context().begin(), error.context().end(),
                                     [&](const auto& context) { return context.key == key; });
     return found == error.context().end() ? std::nullopt
-                                           : std::optional<std::string_view>{found->value};
+                                          : std::optional<std::string_view>{found->value};
 }
 
 [[nodiscard]] auto diagnosticCodes(const cuexis::core::Diagnostics& diagnostics) -> std::string {
@@ -701,11 +701,11 @@ TEST_CASE("Portable presentation resource closure failures retain the active man
         REQUIRE(operationDiagnostics.has_value());
         const auto diagnosticCode = errorContextValue(prepared.error(), "diagnostic_code");
         INFO("outer=" << prepared.error().code()
-                      << "; diagnostic_code="
-                      << (diagnosticCode ? *diagnosticCode : "<none>")
+                      << "; diagnostic_code=" << (diagnosticCode ? *diagnosticCode : "<none>")
                       << "; diagnostics=" << diagnosticCodes(*operationDiagnostics));
         CHECK(prepared.error().code() == expectedOuter);
-        CHECK(std::any_of(operationDiagnostics->items().begin(), operationDiagnostics->items().end(),
+        CHECK(std::any_of(operationDiagnostics->items().begin(),
+                          operationDiagnostics->items().end(),
                           [&](const auto& item) { return item.code() == expectedDiagnostic; }));
 
         const auto manifestAfter = session.presentationManifest();
@@ -717,12 +717,13 @@ TEST_CASE("Portable presentation resource closure failures retain the active man
         CHECK(frameAfter->objects[0].materialAssetId == frameBefore->objects[0].materialAssetId);
     };
 
-    SECTION("missing and incompatible indexed resources fail Runtime preparation before publication") {
+    SECTION(
+        "missing and incompatible indexed resources fail Runtime preparation before publication") {
         auto missing = descriptors();
-        missing.erase(std::remove_if(missing.begin(), missing.end(), [](const auto& asset) {
-                          return asset.id == "material.blend";
-                      }),
-                      missing.end());
+        missing.erase(
+            std::remove_if(missing.begin(), missing.end(),
+                           [](const auto& asset) { return asset.id == "material.blend"; }),
+            missing.end());
         auto missingSource = memorySourceWithAssets(base, std::move(missing));
         REQUIRE(missingSource.has_value());
         cuexis::playback::PlaybackSession missingSession;
@@ -733,21 +734,18 @@ TEST_CASE("Portable presentation resource closure failures retain the active man
         REQUIRE(missingDiagnostics.has_value());
         const auto missingDiagnosticCode =
             errorContextValue(missingPrepared.error(), "diagnostic_code");
-        INFO("outer=" << missingPrepared.error().code()
-                      << "; diagnostic_code="
+        INFO("outer=" << missingPrepared.error().code() << "; diagnostic_code="
                       << (missingDiagnosticCode ? *missingDiagnosticCode : "<none>")
                       << "; diagnostics=" << diagnosticCodes(*missingDiagnostics));
         CHECK(missingPrepared.error().code() == "playback.session.prepare_failed");
-        CHECK(std::any_of(missingDiagnostics->items().begin(), missingDiagnostics->items().end(),
-                          [](const auto& item) {
-                              return item.code() == "assets.resource.required_failed";
-                          }));
+        CHECK(std::any_of(
+            missingDiagnostics->items().begin(), missingDiagnostics->items().end(),
+            [](const auto& item) { return item.code() == "assets.resource.required_failed"; }));
 
         auto incompatible = descriptors();
         const auto material =
-            std::find_if(incompatible.begin(), incompatible.end(), [](const auto& asset) {
-                return asset.id == "material.blend";
-            });
+            std::find_if(incompatible.begin(), incompatible.end(),
+                         [](const auto& asset) { return asset.id == "material.blend"; });
         REQUIRE(material != incompatible.end());
         material->type = PlaybackAssetType::Mesh;
         auto incompatibleSource = memorySourceWithAssets(base, std::move(incompatible));
@@ -760,15 +758,13 @@ TEST_CASE("Portable presentation resource closure failures retain the active man
         REQUIRE(incompatibleDiagnostics.has_value());
         const auto incompatibleDiagnosticCode =
             errorContextValue(incompatiblePrepared.error(), "diagnostic_code");
-        INFO("outer=" << incompatiblePrepared.error().code()
-                      << "; diagnostic_code="
+        INFO("outer=" << incompatiblePrepared.error().code() << "; diagnostic_code="
                       << (incompatibleDiagnosticCode ? *incompatibleDiagnosticCode : "<none>")
                       << "; diagnostics=" << diagnosticCodes(*incompatibleDiagnostics));
         CHECK(incompatiblePrepared.error().code() == "playback.session.prepare_failed");
-        CHECK(std::any_of(incompatibleDiagnostics->items().begin(),
-                          incompatibleDiagnostics->items().end(), [](const auto& item) {
-                              return item.code() == "assets.resource.required_failed";
-                          }));
+        CHECK(std::any_of(
+            incompatibleDiagnostics->items().begin(), incompatibleDiagnostics->items().end(),
+            [](const auto& item) { return item.code() == "assets.resource.required_failed"; }));
     }
 
     SECTION("a missing content blob and non-leaf Mesh are both stable preparation failures") {
@@ -779,22 +775,20 @@ TEST_CASE("Portable presentation resource closure failures retain the active man
                      "playback.presentation.resource.missing");
 
         auto meshDependency = descriptors();
-        const auto mesh = std::find_if(meshDependency.begin(), meshDependency.end(), [](const auto& asset) {
-            return asset.id == "mesh.triangle";
-        });
+        const auto mesh =
+            std::find_if(meshDependency.begin(), meshDependency.end(),
+                         [](const auto& asset) { return asset.id == "mesh.triangle"; });
         REQUIRE(mesh != meshDependency.end());
         mesh->dependencies = {"texture.checker"};
-        failedReload(base, std::move(meshDependency),
-                     "playback.presentation.dependency.mismatch",
+        failedReload(base, std::move(meshDependency), "playback.presentation.dependency.mismatch",
                      "playback.presentation.dependency.mismatch");
     }
 
     SECTION("material texture routing verifies the Asset Index type and Texture leaf contract") {
         auto wrongTextureType = descriptors();
-        const auto texture = std::find_if(wrongTextureType.begin(), wrongTextureType.end(),
-                                          [](const auto& asset) {
-                                              return asset.id == "texture.checker";
-                                          });
+        const auto texture =
+            std::find_if(wrongTextureType.begin(), wrongTextureType.end(),
+                         [](const auto& asset) { return asset.id == "texture.checker"; });
         REQUIRE(texture != wrongTextureType.end());
         texture->type = PlaybackAssetType::Mesh;
         auto wrongTypeSource = memorySourceWithAssets(base, std::move(wrongTextureType));
@@ -807,9 +801,8 @@ TEST_CASE("Portable presentation resource closure failures retain the active man
 
         auto textureDependency = descriptors();
         const auto textureWithDependency =
-            std::find_if(textureDependency.begin(), textureDependency.end(), [](const auto& asset) {
-                return asset.id == "texture.checker";
-            });
+            std::find_if(textureDependency.begin(), textureDependency.end(),
+                         [](const auto& asset) { return asset.id == "texture.checker"; });
         REQUIRE(textureWithDependency != textureDependency.end());
         textureWithDependency->dependencies = {"mesh.triangle"};
         auto textureDependencySource = memorySourceWithAssets(base, std::move(textureDependency));
@@ -1610,7 +1603,8 @@ TEST_CASE("Duplicate presentation manifest keys are rejected by table validation
     REQUIRE(manifest.has_value());
     auto duplicate = *manifest;
     REQUIRE(duplicate.entries.size() >= 2);
-    duplicate.entries.insert(duplicate.entries.begin() + 1, duplicate.entries.front());
+    const auto duplicateEntry = duplicate.entries.front();
+    duplicate.entries.insert(duplicate.entries.begin() + 1, duplicateEntry);
     auto resources = acquireResources(session, *manifest);
     resources.insert(resources.begin() + 1, resources.front());
     cuexis::playback::FrameSnapshot empty;
