@@ -2,7 +2,7 @@
 
 状态：historical
 
-更新日期：2026-09-01
+更新日期：2026-09-02
 
 以下旧逻辑路径已迁入 canonical 目录。映射供历史引用迁移使用，不保留逐文件 compatibility stub。
 

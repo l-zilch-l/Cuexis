@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-09-01
+更新日期：2026-09-02
 
 本文是 Cuexis 当前产品和阶段状态的唯一摘要。ADR 定义决策，Spec 定义字段和语义，阶段计划定义未来
 范围，阶段报告保存带日期的实施证据；它们不得绕过本文重新定义当前状态。
@@ -27,7 +27,9 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Stage Chart Format Update | completed; CFU-C0-C4, D, E, F and G closed; G6 owner acceptance recorded 2026-08-24 | [plan](stage_plans/completed/chart-format-update/plan.md) |
 | Stage 4 | completed; S4-H hosted and owner acceptance recorded 2026-08-27 | [plan](stage_plans/completed/stage-04/plan.md) |
 | Stage 5 | completed; S5-A through S5-H closed and merged into `master` 2026-08-28 | [plan](stage_plans/completed/stage-05/plan.md)、[completion](stage_reports/stages/stage-05/completion.md) |
-| Stage 6-12 | future or deferred as individually marked | [plan index](stage_plans/README.md) |
+| Chart Format Update for v5 | active；2026-09-02 启动 | [plan](stage_plans/active/chart-format-update-for-v5/plan.md) |
+| Stage 6 | future；等待 Chart v5 格式阶段完成后启动 | [plan](stage_plans/future/stage-06/plan.md) |
+| Stage 7-12 | future or deferred as individually marked | [plan index](stage_plans/README.md) |
 
 ## 已关闭的 Full Review
 
@@ -49,6 +51,8 @@ Chart/CXC parse-once、RT-29、World/Animation 大规模优化、大包解析降
 - FrameDigest v1-v3、canonical bytes/order、合法输入 identity 与默认 capability 维持兼容。
 - CXC v1、CXT v1、Chart v4 的格式语义以 [formats index](formats/README.md) 为准；内部 CXC 不是独立
   公共 package SDK。
+- Chart v5 格式阶段已启动，负责下一代作者层旋转、数值、相机和 alpha 合同；在 v5 完成前，Chart v4
+  继续作为生产 Playback 基线。
 - SDK API 为 `0.7.0`。安装后的 Playback headers 不泄露 EnTT、SDL、OpenGL/GLAD、JSON DOM、
   RuntimeSession 或 World。
 - Stage 5 的 default `allCapabilities()` 包含 shader asset 和 parameterized material capability；
@@ -65,8 +69,11 @@ Chart/CXC parse-once 和关键模块分支覆盖率三个任务均已完成。�
 MinGW；分模块覆盖率和环境残余见其[完成报告](stage_reports/reviews/260830-followup/2026-08-31-task-3-hosted-verification.md)。
 PR #22 已于 2026-09-01 合并至 `master`，关闭总结见
 [260830-followup 最终关闭报告](stage_reports/reviews/260830-followup/2026-09-01-final.md)。
-RT-29、T1 World/Animation 大规模优化、T2 大包解析降本和 T4 Stage 6/API/Player 工作仍需另外的
-触发证据和明确授权；Stage 6 仍为 future，尚未启动。
+RT-29、T1 World/Animation 大规模优化和 T2 大包解析降本仍需另外的触发证据和明确授权。项目
+所有者已于 2026-09-02 启动 [Chart v5 format plan](stage_plans/active/chart-format-update-for-v5/plan.md)；
+Stage 6 保持 future，待 v5 格式阶段完成后再启动。2026-09-01 阶段核验记录中的版本门禁、后端中立
+表现渲染边界和常用媒体支持三个 open 问题仍归属于 [Stage 6 plan](stage_plans/future/stage-06/plan.md)，
+尚未因列入计划而视为解决。Chart v1-v3 退出仍是独立 candidate 提案。
 
 ## 更新规则
 

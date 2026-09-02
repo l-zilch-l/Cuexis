@@ -31,6 +31,7 @@ TARGET_BLOCK_END = "<!-- CUEXIS_ACTIVE_TARGETS_END -->"
 STAGE_PLAN_REQUIREMENTS = (
     ("stage_plans/completed/260830-followup/plan.md", ("completed",)),
     ("stage_plans/completed/stage-05/plan.md", ("completed",)),
+    ("stage_plans/active/chart-format-update-for-v5/plan.md", ("active",)),
     ("stage_plans/future/stage-06/plan.md", ("future",)),
     ("stage_plans/future/stage-07/plan.md", ("future",)),
     ("stage_plans/future/stage-08/plan.md", ("future",)),

@@ -2,7 +2,7 @@
 
 状态：现行项目指南
 
-更新日期：2026-09-01
+更新日期：2026-09-02
 
 本文是项目入口，不再保存完整路线、格式字段或阶段测试日志。整理前的完整长版快照见
 [archive/PROJECT_GUIDE_LEGACY_2026-08-10.md](archive/PROJECT_GUIDE_LEGACY_2026-08-10.md)。
@@ -75,7 +75,10 @@ shader 工具；S5-C 已完成公开 Presentation 类型、kind 4/5 解析与 SD
 capability；S5-H 已完成关闭门禁。Stage 5 已于 2026-08-28 通过 PR #20 合并至 `master`；其后
 `260829-full-review` 已关闭。[260830-followup 维护计划](stage_plans/completed/260830-followup/plan.md)
 的文档整理、Chart/CXC parse-once 和关键模块分支覆盖率三个任务已完成，并于 2026-09-01 通过
-PR #22 合并至 `master`；Stage 6 仍未开始。
+PR #22 合并至 `master`。项目所有者已于 2026-09-02 启动
+[Chart v5 format plan](stage_plans/active/chart-format-update-for-v5/plan.md)；Stage 6
+[计划](stage_plans/future/stage-06/plan.md) 排在其后，继续处理版本门禁、后端中立表现渲染边界和常用媒体
+支持三个核验问题。
 
 格式权威入口：[formats/README.md](formats/README.md)。
 

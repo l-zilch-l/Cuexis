@@ -2,7 +2,7 @@
 
 状态：现行路线图
 
-更新日期：2026-09-01
+更新日期：2026-09-02
 
 产品边界由 [ADR 0027](adr/0027-playback-sdk-product-boundary.md) 冻结。本文只维护阶段顺序和当前
 交接，不复制阶段实施细节或完成证据。
@@ -12,7 +12,10 @@
 Stage 5 已于 2026-08-28 关闭并经 PR #20 合并至 `master`。`260829-full-review` 随后于
 2026-08-30 关闭；[260830-followup](stage_plans/completed/260830-followup/plan.md) 的文档整理、
 Chart/CXC parse-once 和关键模块分支覆盖率三个任务已完成，并于 2026-09-01 经 PR #22 合并至
-`master`。当前没有已启动的后续产品阶段；Stage 6 仍是 future，尚未启动。
+`master`。项目所有者已于 2026-09-02 启动 [Chart v5 format plan](stage_plans/active/chart-format-update-for-v5/plan.md)，
+当前工作聚焦旋转、数值、相机、alpha、迁移和旧格式退出合同。Stage 6
+[计划](stage_plans/future/stage-06/plan.md) 排在 v5 格式阶段之后，继续处理 Playback C++ API、Player
+产品化，以及阶段核验提出的版本门禁、后端中立表现渲染边界和常用媒体支持。
 
 ```text
 CFU-A inventory and use cases                       completed
@@ -41,11 +44,17 @@ CFU-G final closure                                 completed; G6 owner acceptan
 | Stage 4 | Cuexis 表现动画运行时 | [报告](stage_reports/stages/stage-04/completion.md) |
 | Stage 5 | Material/Shader 管线和能力 Profile | [报告](stage_reports/stages/stage-05/completion.md) |
 
+## 当前阶段
+
+| 阶段 | 目标 | 当前入口 |
+| --- | --- | --- |
+| [chart-format-update-for-v5](stage_plans/active/chart-format-update-for-v5/plan.md) | Chart v5 谱面格式与旧版本退出 | active；先完成 ADR、Schema 和作者模型合同 |
+
 ## 后续阶段
 
 | 阶段 | 目标 | 前置条件 |
 | --- | --- | --- |
-| [Stage 6](stage_plans/future/stage-06/plan.md) | Playback C++ API 与 Player 产品化 | 真实 consumer 和配置组合证据 |
+| [Stage 6](stage_plans/future/stage-06/plan.md) | Playback C++ API 与 Player 产品化 | Chart v5 格式阶段完成并交接 |
 | [Stage 7](stage_plans/future/stage-07/plan.md) | Cuexis Studio 核心 | 稳定 Playback/格式/预览路径 |
 | [Stage 8](stage_plans/future/stage-08/plan.md) | 可选确定性粒子表现 | Studio、Material/Shader 基础 |
 | [Stage 9A](stage_plans/future/stage-09a/plan.md) | SDK 与宿主性能验证 | 主要桌面闭环可测量 |

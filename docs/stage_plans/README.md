@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-09-01
+更新日期：2026-09-02
 
 阶段计划定义目标、范围、批次、门禁和交接。当前实现状态只以
 [CURRENT_STATUS.md](../CURRENT_STATUS.md) 为准；完成后的证据只以
@@ -27,6 +27,11 @@
 - [Stage Chart Format Update](completed/chart-format-update/plan.md)
 - [Stage 4](completed/stage-04/plan.md)
 - [Stage 5](completed/stage-05/plan.md)
+
+## 当前计划
+
+- [chart-format-update-for-v5](active/chart-format-update-for-v5/plan.md)：当前推进的 Chart v5
+  旋转、数值、相机、alpha 与旧格式退出计划；格式阶段独立于 Stage 6。
 
 ## 未来和延期计划
 
