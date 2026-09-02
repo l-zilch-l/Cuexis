@@ -209,6 +209,21 @@ pwsh -NoProfile -File tools/check_pre_push.ps1 -Mode Quick
 pwsh -NoProfile -File tools/check_pre_push.ps1 -Mode Full
 ```
 
+#### Pull Request 前版本门禁
+
+每次提交或更新 Pull Request 前都必须递增仓库显示版本号；该规则同样适用于代码、测试、构建配置和
+文档变更，不得按变更类型跳过。使用 UTC 日期执行版本更新：日期变化时将 build 设为 `1`，同一 UTC
+日期再次提交时递增 build，并把版本源文件的改动包含在同一个 Pull Request 中：
+
+```powershell
+python -B tools/update_version.py yy.mm.dd-v
+python -B tools/update_version.py --check
+```
+
+未完成版本递增、`cmake/CuexisVersion.cmake` 与 `vcpkg.json` 不一致，或版本改动未包含在 Pull Request
+中时，不得提交或合并该 Pull Request。该门禁只更新日期构建身份，不隐式升级 SDK API、内容格式或 ABI；
+完整规则见 [VERSIONING.md](VERSIONING.md)。
+
 `Quick` 执行版本一致性、文档契约、暂存区与工作区 whitespace 检查，并对 CMake 格式目标覆盖的
 全部 C++ 文件执行 `clang-format --dry-run --Werror`。`Full` 还会自动初始化 MSVC x64 环境，执行
 Windows Debug/Release 构建与完整 CTest，并通过 WSL 使用 GCC 13 执行 Linux static/shared Release
