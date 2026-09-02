@@ -31,7 +31,8 @@ Compiled Runtime
 | Portable Presentation v1 | [PORTABLE_PRESENTATION.md](PORTABLE_PRESENTATION.md) | implemented |
 | Material/Shader v1 | [MATERIAL_SHADER.md](MATERIAL_SHADER.md) | accepted contract; S5-A through S5-H completed; Stage 5 closed and merged into `master` 2026-08-28 |
 
-ADR 记录选择理由，格式文档记录字段和语义。CXC 不重新定义 Chart/CXT；CXT 不重新定义
+ADR 记录选择理由，格式文档记录字段和语义。手写 v4 谱面可先阅读
+[Chart v4 谱面编写指南](../guides/CHART_V4_AUTHORING.md)。CXC 不重新定义 Chart/CXT；CXT 不重新定义
 ChartParameter、Template Binding 或 Animator；Animation Mixing 不重新定义序列化字段。
 
 ## 生产与实施边界

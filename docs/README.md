@@ -52,6 +52,7 @@
 - [格式索引](formats/README.md)
 - [Chart v1/v2/v3 生产格式](formats/CHART_FORMAT.md)
 - [Chart v4 接受合同](formats/CHART_V4_FORMAT.md)
+- [Chart v4 谱面编写指南](guides/CHART_V4_AUTHORING.md)
 - [CXC v1 接受合同](formats/CXC_FORMAT.md)
 - [CXT v1 接受合同](formats/CXT_FORMAT.md)
 - [TimingMap](formats/TIMING_MODEL.md)
