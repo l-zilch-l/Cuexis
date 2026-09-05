@@ -87,7 +87,7 @@ PR #22 合并至 `master`。项目所有者已于 2026-09-02 启动
 Chart Format Foundation -> Stage 6 v5-first candidate path -> Stage 7A Gameplay Foundation -> Stage 8
 Chart v5/CXT v2/Packed Chart formal release -> Stage 9 Presentation -> Stage 10 Studio -> Stage 11 平台与性能
 -> Stage 12 稳定 ABI；Stage 7B+ 高级 Input/Judgement 能力在 Stage 7A 后持续演进，可跨越 Stage 8。
-Chart Format Foundation [计划](stage_plans/future/chart-format-foundation/plan.md) 排在当前路线的下一实施位置；
+Chart Format Foundation [计划](stage_plans/active/chart-format-foundation/plan.md) 排在当前路线的下一实施位置；
 Foundation 完成后，Stage 6 [计划](stage_plans/future/stage-06/plan.md) 继续处理版本门禁、后端中立
 表现渲染边界、常用媒体和 CXC v1 基础发行合同。
 

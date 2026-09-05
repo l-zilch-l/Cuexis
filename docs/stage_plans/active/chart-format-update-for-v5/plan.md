@@ -5,14 +5,37 @@ Chart v5 只改变要求描述的字段合同和 Packed Chart 物理编码，不
 Note 表现或渲染后端提升为核心玩法语义。判定域、动作、有限行为和表现环境应保持
 可分离，以便未来接入不同输入设备与 Presentation。
 
-状态：active；Stage 8 详细格式工作包；生产实施门禁为 Foundation accepted、Stage 6 v5-first
-candidate path accepted、Stage 7A core contract frozen；正式发行门禁归 Stage 8
+状态：active；跨阶段 Chart v5 总工作包；不是当前下一实施阶段。Foundation、Stage 6、
+Stage 7A 和 Stage 8 分别按各自计划执行；正式发行门禁归 Stage 8
 
-更新日期：2026-09-03
+更新日期：2026-09-05
 
 归档来源：[Stage Chart Format Update 完成计划](../../completed/chart-format-update/plan.md)、
 [Chart v4 格式合同](../../../formats/CHART_V4_FORMAT.md)、[谱面格式审计记录](../../../stage_reports/reviews/stage-verification-2026-09/2026-09-01-findings.md)
 与前置 [Stage 6 计划](../../future/stage-06/plan.md)。
+
+## 计划定位
+
+本文是 Chart v5 的跨阶段总工作包和详细设计汇总，用于维护 v5 的目标、格式方向、
+容量门禁、迁移要求和跨阶段交接。它不直接决定当前应启动的阶段。
+
+当前实施顺序是：
+
+```text
+当前下一实施计划
+  -> ../chart-format-foundation/plan.md
+  -> ../../future/stage-06/plan.md
+  -> ../../future/stage-07/plan.md（Stage 7A）
+  -> ../../future/stage-08/plan.md
+```
+
+其中，`chart-format-foundation` 负责先完成 v5 Core/Packed 的基础、容量验证和 CXC
+entry 设计；本文中的 v5 正式发行内容要到 Stage 8 才按阶段计划实施。
+
+字段与物理布局的候选权威分别是
+[CXT v2](../../../formats/CXT_V2_FORMAT.md) 和
+[Packed Chart](../../../formats/PACKED_CHART_FORMAT.md)。本文维护阶段交接与门禁，
+不重复定义两份 Spec 的完整 wire 字段。
 
 本阶段负责 Chart v5 的格式合同、对象层整数 alpha、扩展后的 CXT v2、在沿用 v4 旋转与相机姿态语义
 前提下的作者可表达性、高密度谱面表达、迁移、默认 Writer 切换，以及旧格式的 Playback 兼容与弃用
@@ -152,11 +175,11 @@ Writer：先 --target 5，再切默认；允许从默认 v3 直接切到 v5（�
 | CXT v2 顶层 | `format: "cuexis.animation-template"`，`version: 2`；Clip 白名单与 Chart v5 相同 |
 | AnimationClip 版本 | Chart v5 / CXT v2 的 `clip.version` 为 `2`；Chart v4 / CXT v1 仍为 `1` |
 | Behavior Event 版本 | Chart v5 只接受 `behavior.event` version `2`；v3/v4 仍为 `1` |
-| canonical identity 输入 | v5 Chart canonical bytes 与 CXT v2 canonical bytes 按既有 SHA 规则；`alpha` / `render.alpha` 进入 canonical key 序 |
+| canonical identity 输入 | source/build 与 expanded semantic / artifact 分层；Header hash 依 Packed 规范，`alpha` 等具体值进入语义；v4 既有身份规则不改 |
 | 诊断 code | 既有 v4 code 语义不变。v5 至少：`chart.v5.alpha_invalid`、`chart.behavior.version.unsupported`、`cxt.version.unsupported`（Chart v5 import CXT v1 时标在 import `source`）；capability 仍用 `playback.capability.unsupported` |
 | `allCapabilities()` | 在 0.7 集合上增加 `cuexis.chart.v5`、`cuexis.source.cxt.v2`、`cuexis.animation.clip.v2`、`cuexis.behavior.event.v2`；裁剪 Session 仍可拒绝 |
 | 公共观察面 | 见第 3.7 节 |
-| 安全预算 | 引用 [CHART_V4_FORMAT.md](../../../formats/CHART_V4_FORMAT.md) 第 10 节与 [CXT_FORMAT.md](../../../formats/CXT_FORMAT.md) 第 6 节原表；CXT v2 不放宽；checked arithmetic 沿用 |
+| 安全预算 | 沿用字段依 v4/CXT v1 原表；CXT Core 展开与 Packed decoded/峰值预算由 Foundation 独立冻结，不隐式放宽旧路径 |
 | 默认 Writer | 先显式 `--target 5`，再切默认；从当前默认 v3 直接切到 v5。窗口内 `--target 4` 不得接受 v5 输入。去掉 `--target 3` |
 | 弃用窗口 | SDK `0.8.0` 起默认写出 v5。Playback 继续直接求值未迁移的 v1–v4。窗口用 SDK 版本表达，本阶段不写日历删除日 |
 | 迁移 | 旋转/相机/`fovY` 恒等复制。opacity/`render.alpha` 有损舍入。`--target 5` 一条链。Chart 迁移遇 CXT v1 import 则失败。迁 Chart 不改写 CXT bytes |
@@ -177,8 +200,8 @@ V5-0A 必须在生产 Packed Reader/Writer、CXC 打包支持或 Playback Packed
 ```text
 作者层 JSON 与 Packed Chart 的语义等价关系
 Packed Chart 的 magic、version、section table 和 checksum
-StringTable、Asset/Behavior/Template table 与局部索引规则
-Object/component mask、prototype/instance 和 columnar component 布局
+STR0、REF0、IDN0、ARCH、ENT0 与 typed component stream 的局部索引规则
+Object/component mask、实体差异字段和 columnar component 布局
 Beat grid、delta/varint 编码与 RationalBeat 的无损还原合同
 16 MiB packed-file、decoded-size、section-size 和展开计数预算
 JSON/Packed identity、迁移链与 deterministic round-trip
@@ -186,9 +209,10 @@ CXC 中 source Chart 与 Packed Chart 的 entry kind/encoding 标识
 ```
 
 Packed Chart 的目标是改变物理编码，不改变 v5 的 alpha、旋转、动画白名单、判定语义或 Runtime
-PropertyId。持久化 Object ID 可以保留在独立调试/迁移表中；Packed 内部关系默认使用局部索引，
-不得在每条记录中重复 UUID、AssetId 或 Component 字段名。压缩算法只能作为物理编码的附加层，
-不能替代 section 预算和 decoded-size 安全检查。
+PropertyId。IDN0 必须保留实体的稳定语义 identity；DBG0 才能保存可删除的 source/build
+provenance。Packed 内部关系默认使用局部索引，不得在每条记录中重复 UUID、AssetId 或
+Component 字段名。压缩算法只能作为物理编码的附加层，不能替代 section 预算和 decoded-size
+安全检查。
 
 天空盒不进入普通 Object 数组；其候选方向是独立的 Presentation Environment 合同。复杂形变不在
 v5 预留自由表达式、脚本或未版本化顶点回调，后续按 Geometry Deformation / Model Animation
@@ -203,7 +227,8 @@ Animation Extension
   AnimationClip / Track / Segment / Step / Animator
 
 Chart Template Core
-  Prototype / Instance / Parameter / Pattern / Repeat / Bind / Override
+  Prototype slots / Instance bindings / Parameter freeze
+  ValueSource / Pattern / finite Repeat
 ```
 
 CXT v2 的有限生成必须在 prepare/compile 阶段完成。展开顺序为：
@@ -212,8 +237,8 @@ CXT v2 的有限生成必须在 prepare/compile 阶段完成。展开顺序为�
 typed read
   -> module validation
   -> parameter freeze
-  -> finite Pattern expansion
-  -> Prototype/Instance expansion
+  -> finite Pattern/Repeat expansion
+  -> Prototype slot binding / Instance expansion
   -> concrete semantic requirements
   -> conflict/count/size validation
   -> canonical semantic identity
@@ -223,6 +248,13 @@ typed read
 Playback 不读取 CXT AST，不执行未展开 Pattern，也不允许 CXT 访问 Judgement 内部状态、
 上一帧状态、输入流、随机数或宿主 API。递归、任意表达式、任意循环、脚本、字节码和
 逐帧对象生成均拒绝。
+
+Core 使用 Slot/Binding/ValueSource 的白名单：Beat、lane、position/scale 和受限
+Repeat count；不提供 reference 参数。固定 AST/Component 结构不能被参数改写，
+Repeat 的实体数量变化另做 checked 计数；rotation、alpha 与 CXT Animation Track
+值仍为 literal。旧 ChartParameter 白名单不因此扩大。
+CXT 在编译时冻结参数，改变参数必须重新编译 Packed；v5 发行 Playback 不隐式
+调用 source entry 重跑模板，v4 参数 prepare 兼容合同不变。
 
 V5-0B 必须关闭后才能实现 CXT v2 formal-release Schema/Reader/Writer，并至少产生
 [CXT v2 Spec](../../../formats/CXT_V2_FORMAT.md)、正反例、展开 golden 和安全预算报告。
@@ -240,7 +272,8 @@ expanded event/write count  有独立上限
 ```
 
 40,000 按展开后的语义实体计数，不能以 Packed record、CXT module 或 source entry
-数量规避。必须分别记录 Authoring Budget、Packed Entry Budget、Chart Closure Budget
+数量规避。它必须按声明的容量 profile 验收，而不是对任意复杂谱面作无条件保证。
+必须分别记录 Authoring Budget、Packed Entry Budget、Chart Closure Budget
 和 Expanded Runtime Budget。测试至少覆盖高重复 Pattern、低重复率输入、复杂动画、大量
 资源、超展开数量、超 decoded bytes、超 Packed bytes、递归和 checked arithmetic 溢出。
 
@@ -443,11 +476,14 @@ Seek、循环、零持续、相邻边界和 timeDiscontinuity 沿用既有绝对
   AnimationClip v1。
 - Chart v5 只接受 `behavior.event` version 2（即使事件不含 alpha）；v3/v4 仍为 version 1。
 - Chart v5 只 import CXT v2；Chart v4 只 import CXT v1。
-- 参数化白名单沿用 v4（position、scale、`camera.fovY`、Layer/Group/Instance weight、Binding
+- 传统 ChartParameter 白名单沿用 v4（position、scale、`camera.fovY`、Layer/Group/Instance weight、Binding
   durationScale/weight）。对象 alpha 本阶段保持 literal，与 v4 未参数化 `material.opacity` 一致。
-  Quaternion、rotation、startBeat、priority、parent、AssetId、拓扑和 CXT 内部值仍禁止 ParameterRef。
+  Quaternion、rotation、Chart binding startBeat、priority、parent、AssetId、拓扑和 CXT Animation
+  Clip 内部值仍禁止 ParameterRef。CXT Core 的局部 Beat/Slot/Repeat 依第 2.5 节独立合同，
+  不与既有 ChartParameterRef 混淆。
 - `camera.fovY` 保持 v4 `(0,179)`。`material.tint` 保持 v4 每分量 `[0,1]` normalized linear RGB。
-- 未知核心字段失败；安全预算引用 v4/CXT v1 原表，CXT v2 不放宽，不因 alpha 提高上限。
+- 未知核心字段失败；沿用字段的安全预算依 v4/CXT v1 原表，不因 alpha 提高上限；
+  Core 新增展开量、IDN0、decoded 与峰值预算须在 Foundation 单独冻结。
 - 作者层与 Runtime 各自使用第 3.2 节的范围，越界稳定失败。
 
 ### 4.2 沿用 v4，写入作者指南和失败示例
@@ -483,8 +519,9 @@ Seek、循环、零持续、相邻边界和 timeDiscontinuity 沿用既有绝对
 ### V5-A：基线和作者用例
 
 - 盘点第 2.1 节基线：格式、Runtime、默认 Writer（v3）、SDK `0.7.0`、Studio 预期和迁移输入。
-- 建立 40,000 语义实体及高密度动画表征用例，分别记录 JSON source bytes、Packed candidate bytes、
-  decoded bytes、对象/事件数量和 prepare 峰值，作为 V5-0A 的容量基线。
+- 建立高复用、低复用、动画密集、身份密集和资源闭包密集的容量 profile，至少包含
+  40,000 个展开语义实体；分别记录 JSON source bytes、Packed candidate bytes、IDN0
+  bytes、decoded bytes、对象/事件数量和 prepare 峰值，作为 V5-0A 的容量基线。
 - 建立 v4 旋转、相机姿态、v4 opacity 和 FrameDigest v3 表征用例，证明后续改动不改变未迁移 v4
   结果；另建立对象 alpha 用例（含默认 `255`、`0`/`255` 端点、半数远离零、`255.0` 拒绝、斜率不缩放、
   Chart v5 拒绝 CXT v1、`render.alpha` 映射到 `MaterialOpacity`）。
@@ -496,8 +533,10 @@ Seek、循环、零持续、相邻边界和 timeDiscontinuity 沿用既有绝对
 - 在正式发行 Schema/Reader/Writer 之前完成 Packed Chart 的 ADR/Spec 草案和 V5-0A 门禁；
   Foundation/Stage 6 可以在此基础上实现受限 candidate lowering。
 - 冻结 authoring JSON、canonical semantic model 与 Packed Chart 的职责、等价性和 identity 关系。
-- 设计 section table、字符串/资源表、局部索引、prototype/instance、component mask、Beat grid、
-  delta/varint 和 checked decoded-size 预算。
+- 设计 96-byte Header、32-byte Section Directory、STR0/REF0/IDN0/ARCH/ENT0、
+  typed component streams、component mask、Beat GridDelta/Rational atoms、CRC 和
+  checked decoded-size 预算。IDN0 保留具体实体 semantic identity；DBG0 只保存可删除
+  source/build provenance。
 - 明确 16 MiB 是 Packed file budget；JSON source、decoded chart、CXC package 和 runtime memory
   分别使用独立预算，不以压缩比替代安全限制。
 - 规定 `v4 JSON -> v5 JSON -> Packed v5` 的迁移/编译链；Packed bytes 不反向作为作者层输入。
@@ -539,6 +578,9 @@ Seek、循环、零持续、相邻边界和 timeDiscontinuity 沿用既有绝对
   Packed Chart，作者层 JSON 只作为 Source Project 输入或显式 source entry 保留。
 - 若 V5-0A 已关闭，增加 Packed Chart 编译/验证路径；Packed 输入必须先完成 header、section、
   count、decoded-size、identity 和 capability 校验，再进入既有 typed prepare。
+- Foundation 只保证其已验收静态候选 profile；Stage 6 需要的 BEH0/BHD0/ANM0 或生成
+  实体动画目标绑定，必须先补候选 revision、字段枚举和 golden。未支持 section/引用
+  不得通过 opaque JSON、CXT AST 或隐式命名约定继续播放。
 - 统一作者层 `[0,255]` 整数与 Runtime `[0,1]` 的范围及溢出诊断；转换只发生在文档边界。
 - 确保对象 alpha 经 `/ 255` 进入 Portable Presentation `[0,1]` 后不改变 alphaMode、资源 identity 和
   FrameDigest v3 对既有 snapshot opacity 字段的参与规则。
@@ -607,8 +649,8 @@ Seek、循环、零持续、相邻边界和 timeDiscontinuity 沿用既有绝对
   `cuexis.chart.v5`、`cuexis.source.cxt.v2`、`cuexis.animation.clip.v2` 与
   `cuexis.behavior.event.v2`。
 - `FrameSnapshot` 布局未增字段；不新增 `HostPropertyId`；对象 alpha 进入既有
-  `materialOpacity [0,1]`；`0.7` consumer 不能把 v5 prepare 当成已支持契约。安全预算与 v4/CXT v1
-  原表相同。`propertyCount` 仍为 10。
+  `materialOpacity [0,1]`；`0.7` consumer 不能把 v5 prepare 当成已支持契约。沿用字段预算与
+  v4/CXT v1 原表相同，Core/Packed 新增预算独立验收。`propertyCount` 仍为 10。
 
 ## 7. 明确不包含
 

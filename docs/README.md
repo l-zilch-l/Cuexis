@@ -2,7 +2,7 @@
 
 状态：现行文档入口
 
-更新日期：2026-09-01
+更新日期：2026-09-05
 
 本文档是 Cuexis 文档的导航页，不复制产品合同、阶段证据或完整字段定义。当前项目状态只
 以 [CURRENT_STATUS.md](CURRENT_STATUS.md) 为准。
@@ -58,6 +58,7 @@
 - [CXC v1 接受合同](formats/CXC_FORMAT.md)
 - [CXT v1 接受合同](formats/CXT_FORMAT.md)
 - [CXT v2 候选合同](formats/CXT_V2_FORMAT.md)
+- [Packed Chart v1 物理存储候选合同](formats/PACKED_CHART_FORMAT.md)
 - [TimingMap](formats/TIMING_MODEL.md)
 - [Animation Mixing](formats/ANIMATION_MIXING.md)
 - [Portable Presentation v1](formats/PORTABLE_PRESENTATION.md)
@@ -93,6 +94,8 @@
 ## 阶段、证据和示例
 
 - [阶段计划索引](stage_plans/README.md)
+- [Chart Format Foundation 当前下一实施计划](stage_plans/active/chart-format-foundation/plan.md)
+- [Stage 8 Chart v5 正式发行计划](stage_plans/future/stage-08/plan.md)
 - [260830-followup 已完成计划](stage_plans/completed/260830-followup/plan.md)
 - [Stage Chart Format Update 计划](stage_plans/completed/chart-format-update/plan.md)
 - [Stage 4 计划](stage_plans/completed/stage-04/plan.md)

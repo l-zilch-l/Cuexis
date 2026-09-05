@@ -27,7 +27,7 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Stage Chart Format Update | completed; CFU-C0-C4, D, E, F and G closed; G6 owner acceptance recorded 2026-08-24 | [plan](stage_plans/completed/chart-format-update/plan.md) |
 | Stage 4 | completed; S4-H hosted and owner acceptance recorded 2026-08-27 | [plan](stage_plans/completed/stage-04/plan.md) |
 | Stage 5 | completed; S5-A through S5-H closed and merged into `master` 2026-08-28 | [plan](stage_plans/completed/stage-05/plan.md)、[completion](stage_reports/stages/stage-05/completion.md) |
-| Chart Format Foundation | future；Stage 5 与 Stage 6 之间的下一实施门禁；40k/16 MiB 尚未关闭 | [plan](stage_plans/future/chart-format-foundation/plan.md) |
+| Chart Format Foundation | active；当前下一实施计划；Stage 5 与 Stage 6 之间的实施门禁；40k/16 MiB 尚未关闭 | [plan](stage_plans/active/chart-format-foundation/plan.md) |
 | Stage 6 | future；Foundation 完成后的 v5-first Playback/Player/CXC candidate path；v4 保留为兼容回退 | [plan](stage_plans/future/stage-06/plan.md) |
 | Stage 7A | future；最小 Input / Judgement / Score / Replay Kernel，作为 Stage 8 硬前置 | [plan](stage_plans/future/stage-07/plan.md) |
 | Stage 7B+ | future；Slide、Flick、多指、校准和高级 Judgement 能力持续演进 | [plan](stage_plans/future/stage-07/plan.md) |
@@ -67,7 +67,10 @@ Chart/CXC parse-once、RT-29、World/Animation 大规模优化、大包解析降
   [Stage 8](stage_plans/future/stage-08/plan.md) 和
   [Chart v5 format plan](stage_plans/active/chart-format-update-for-v5/plan.md)。
 - CXT v2 候选合同见 [CXT_V2_FORMAT.md](formats/CXT_V2_FORMAT.md)：模板、Prototype/Instance、
-  Pattern、有限确定性展开和动画扩展；不包含任意脚本。
+  Slot/Binding/ValueSource、Pattern、有限确定性展开和动画扩展；不包含任意脚本。
+- Packed 候选物理合同见 [PACKED_CHART_FORMAT.md](formats/PACKED_CHART_FORMAT.md)：
+  身份/字典、Archetype/实体差异流、无损 Beat 和容量 profile。它不是已实现的生产
+  Reader；40k/16 MiB 仍需实测验收，更改被冻结的 CXT 参数需要显式重新编译。
 - CXC v1 仍为容器版本。Foundation 负责 entry 映射和 Packed 验证原型，Stage 6 验证 v5
   candidate playback path 并保留 v4 entry，Stage 8 负责在 CXC v1 内正式发行已验证的
   Chart v5 Packed playback entry。
@@ -92,7 +95,7 @@ PR #22 已于 2026-09-01 合并至 `master`，关闭总结见
 RT-29、T1 World/Animation 大规模优化和 T2 大包解析降本仍需另外的触发证据和明确授权。项目
 所有者已于 2026-09-02 建立 [Chart v5 format plan](stage_plans/active/chart-format-update-for-v5/plan.md)；
 该计划现作为 Stage 8 的详细格式工作包，其 Foundation 前置工作见
-[Chart Format Foundation](stage_plans/future/chart-format-foundation/plan.md)。当前下一实施门禁
+[Chart Format Foundation](stage_plans/active/chart-format-foundation/plan.md)。当前下一实施门禁
 是 Foundation；Foundation 完成后进入 Stage 6 v5-first candidate path，Stage 6 完成后进入
 Stage 7A，再进入 Stage 8。Stage 7B+ 可以与 Stage 8 前后并行持续；Stage 8 关闭后交出
 SDK `0.8.0` / Chart v5 / CXT v2 正式接手基线。

@@ -8,6 +8,29 @@
 [CURRENT_STATUS.md](../CURRENT_STATUS.md) 为准；完成证据只以
 [stage_reports/README.md](../stage_reports/README.md) 为准。
 
+目录约定：
+
+```text
+active
+  当前正在执行或已确定即将执行的计划
+
+future
+  已规划但尚未进入近期实施队列的阶段计划
+
+deferred
+  暂不排期、等待触发条件或需要重新立项的设计输入
+```
+
+当前 `active` 目录中的两个 Chart v5 文件职责不同：
+
+```text
+chart-format-foundation
+  当前下一实施计划，负责 Foundation 实施门禁
+
+chart-format-update-for-v5
+  Chart v5 跨阶段总工作包，负责维护 Foundation、Stage 6、Stage 7A 和 Stage 8 的总体设计与交接
+```
+
 ## 已完成计划
 
 - Stage 0：[completion report](../stage_reports/stages/stage-00/completion.md)
@@ -28,7 +51,7 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
 
 ## 当前主路线
 
-- [Chart Format Foundation](future/chart-format-foundation/plan.md)：Stage 6 前的 CXT v2 Core、
+- [Chart Format Foundation](active/chart-format-foundation/plan.md)：当前下一实施计划，负责 Stage 6 前的 CXT v2 Core、
   Packed Chart 原型和 40,000/16 MiB 容量门禁。
 - [Stage 6](future/stage-06/plan.md)：以 Chart v5 Core/Packed 为主要开发基线的 Playback/Player/CXC
   candidate path；Chart v4 保留为兼容回退。

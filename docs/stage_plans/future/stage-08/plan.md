@@ -88,7 +88,8 @@ Stage 8 而伪装成已支持能力。
 ### S8-B：CXT v2 Core
 
 CXT v2 保留 `cuexis.animation-template` 顶层 format，但不再限制为动画模板。
-一个 CXT 文件仍然是一个明确的 module，module 必须声明 export kind：
+一个 CXT 文件仍然是一个明确的 module，module 必须声明 export kind。字段合同见
+[CXT_V2_FORMAT.md](../../../formats/CXT_V2_FORMAT.md)：
 
 ```text
 animation
@@ -99,15 +100,12 @@ pattern
 Core 最小构造：
 
 ```text
-Template
-Prototype
-Instance
-Parameter
+Prototype slots
+Instance bindings
+Parameter freeze
+ValueSource
 Pattern
-Repeat
-Transform
-Bind
-Override
+Finite Repeat
 Finite Expansion
 ```
 
@@ -117,14 +115,17 @@ Finite Expansion
 integer
 number
 rational
+beat
 boolean
 enum
 vector
-reference
 ```
 
 参数不得改变对象类型、Component 集合、父子层级、AssetId、引用目标、资源闭包
-或数组结构。Pattern 只能生成有限、已注册的 Chart 语义记录。
+或固定 AST/Component 数组结构。Repeat count 可以改变展开数量，但须独立 checked
+计数；不提供 reference 参数。Core 的 Beat/lane/position/scale 来源按 Spec 白名单，
+rotation、alpha 和 Animation Track 值保持 literal。Pattern 只能生成有限、已注册的
+Chart 语义记录。
 
 ### S8-C：CXT v2 Animation Extension
 
@@ -160,8 +161,9 @@ Chart/CXT typed read
   -> Runtime compile
 ```
 
-展开发生在 prepare/compile 阶段。Playback 不读取 CXT AST，也不在运行时执行
+展开发生在作者源 prepare/显式 compile 阶段。发行 Playback 不读取 CXT AST，也不在运行时执行
 未展开 Pattern。CXT 不访问 Judgement 内部状态，不能读取上一帧结果或生成运行时对象。
+参数改变需要重新编译 Packed，不通过 source entry 隐式恢复运行时模板求值。
 
 ### S8-E：Packed Chart
 
@@ -171,20 +173,26 @@ Chart/CXT typed read
 magic / version
 section table
 checksum
-StringTable
-AssetTable
-PrototypeTable
-Template/Behavior table
-local index
-Component mask
-prototype / instance layout
-Beat delta / varint
+96-byte candidate/formal Header
+32-byte Section Directory Entry
+STR0 / REF0 / IDN0
+ARCH Packed Archetype defaults
+ENT0 concrete entity index
+typed component streams and sparse field masks
+Beat GridDelta / Rational atoms
 RationalBeat 无损还原
 decoded-size 和展开计数预算
 ```
 
-每实体不得重复写入完整 UUID、字符串 Component 名、AssetId 或原型字段。
+IDN0 必须保存每个具体实体的 semantic identity；DBG0 只能保存可删除的 source/build
+provenance。ARCH 是已展开 Component 的物理默认值表，不是 CXT Prototype；ENT0 是
+具体实体索引，不是 CXT Instance。每实体不得重复写入完整 UUID、字符串 Component 名、
+AssetId 或原型字段。详细物理布局见 [PACKED_CHART_FORMAT.md](../../../formats/PACKED_CHART_FORMAT.md)。
 Packed Chart 是 v5 的物理编码，不是 Chart v6。
+
+BEH0/BHD0/ANM0/FXS0 与 generated-target animation binding 必须先有完整字段/
+枚举、capability 和 golden；候选修改按 revision 区分，正式发行才解除 candidate
+标识。未支持内容稳定拒绝，不以 opaque JSON 或 CXT AST 替代编码。
 
 ### S8-F：CXC v1 Packed Entry
 
@@ -240,6 +248,13 @@ Expanded Runtime Budget
 ```
 
 40,000 个实体必须按语义实体计数，不能用 Packed record 数或隐藏 Pattern 事件规避。
+每个必验 capacity profile 均需达到 40k/16 MiB，其实体内动画、要求、身份长度与
+引用复杂度须预先声明并经 owner acceptance。不能事后缩小测试输入以宣称关闭，也
+不能把“40k 实体”解释为允许附带无限事件/资源。分项报告包括 IDN0、动画和引用成本。
+
+source/build provenance、expanded semantic、Packed artifact 和 prepared/replay
+identity 分开验证。最后一层结合实际资源内容和 Stage 7A Input/Judgement profile，
+不得直接用 v4 source JSON hash 代表 Packed 语义；完整组合算法须独立版本化。
 
 ## 5. 安全和确定性门禁
 

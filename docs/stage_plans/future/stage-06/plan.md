@@ -2,7 +2,7 @@
 
 状态：future；未开始
 
-更新日期：2026-09-02
+更新日期：2026-09-05
 
 归档来源：[旧版 PROJECT_GUIDE](../../../archive/PROJECT_GUIDE_LEGACY_2026-08-10.md) 与
 [SDK transition plan 快照](../../../archive/CUEXIS_SDK_TRANSITION_PLAN_2026-08-10.md)。2026-09-01
@@ -33,8 +33,14 @@ Chart v1-v3 退出仍是待项目所有者决策的 candidate 提案，不因本
   static/shared consumer 和 Player 行为建立 Stage 6 基线。
 - Stage 6 的主要 Playback/Player 新增路径必须能够消费 Foundation 已接受的 v5 candidate
   subset；同时保留 v4 canonical/typed/portable 输入和稳定回退路径。
-- v5 candidate subset 只承诺已冻结的 Core requirement、时间区间、判定域引用、有限效果和
-  Packed 读取能力；未支持的 `RequirementKind` 必须稳定拒绝，不能静默降级为 Tap 或 v4。
+- v5 candidate subset 只承诺 [Foundation](../../active/chart-format-foundation/plan.md)
+  已接受的 Core/Packed profile；最初仅静态 Component 与候选 Tap point/lane 数据。
+  字段见 [Packed Spec](../../../formats/PACKED_CHART_FORMAT.md)，range 形状不代表
+  已有 Hold 判定。未支持的 `RequirementKind` 必须稳定拒绝，不能降级为 Tap 或 v4。
+- 本阶段若要消费 Behavior/Animation/Effect 或给 generated entity 绑定动画，须先补
+  对应 candidate revision、typed 字段、capability 和 golden；不能使用 opaque JSON、
+  CXT AST 或隐式对象命名回退。参数改变需要显式重编译新的 Packed，发行 Playback
+  不隐式重跑 CXT；v4 旧参数 prepare 路径不变。
 - Stage 6 不冻结完整 Chart v5 发行语义。正式默认 Writer、完整 CXT v2 合同、CXC Packed
   playback entry 和迁移窗口由 Stage 8 收敛。
 - 为 Playback C++ 弃用/升级政策、Player 配置、表现渲染抽象和常用媒体支持冻结明确合同；会改变

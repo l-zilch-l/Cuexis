@@ -15,9 +15,11 @@
 Source Project
   cuexis.project.json + Asset Index + Chart/CXT JSON + source/imported assets
 
-Packed Chart / CXT
-  Packed Chart 是 Chart 的紧凑、确定性物理编码；CXT 是作者层模板/Pattern 模块；
-  二者都不是新的 Chart/CXT 语义版本
+CXT source
+  作者层 Prototype/Slot/Binding/Pattern，经有限展开得到 Canonical Semantic Chart
+
+Packed Chart
+  对具体语义做字典、实体索引和字段差异编码；物理版本独立于 Chart 语义版本
 
 CXC Exchange Package
   自包含、只读、可验证的交换和部署包；合同与实现已通过 CFU-F，CFU-G hosted 验证与 G6 封存已完成
@@ -34,10 +36,11 @@ Compiled Runtime
 | Asset Index v1/v2/v3 | [ADR 0026](../adr/0026-asset-index-and-source-resolution.md)、ADR 0031 与 [MATERIAL_SHADER.md](MATERIAL_SHADER.md) | implemented; v3 adds `shader` |
 | Chart v1/v2/v3 | [CHART_FORMAT.md](CHART_FORMAT.md) | implemented |
 | Chart v4 | [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md) | accepted and implemented; C1–C4, CFU-D/E/F/G gates closed; Stage 4 animation runtime closed |
-| Chart v5 | [Stage 8 / chart-format-update-for-v5](../stage_plans/future/stage-08/plan.md) | candidate；Stage 8 实施；40,000 实体与 Packed 16 MiB 为关闭门禁 |
+| Chart v5 | [Chart v5 工作包](../stage_plans/active/chart-format-update-for-v5/plan.md) | candidate；Foundation 先交 Core，Stage 6 candidate 消费，Stage 8 正式发行；40k/16 MiB 为关闭门禁 |
+| Packed Chart v1 | [PACKED_CHART_FORMAT.md](PACKED_CHART_FORMAT.md) | candidate；Header/目录、字典/身份、Archetype 与实体差异流、无损 Beat；未实现 |
 | CXC v1 | [CXC_FORMAT.md](CXC_FORMAT.md) | accepted and implemented internally; archive/tools and Playback source/prepare/identity gates closed; no public CXC package API |
 | CXT v1 | [CXT_FORMAT.md](CXT_FORMAT.md) | accepted contract; Reader/Writer/lowering and prepare import/lookup implemented; CFU-F and G4 hosted gates closed; Stage 4 animation execution closed |
-| CXT v2 | [CXT_V2_FORMAT.md](CXT_V2_FORMAT.md) 与 [Stage 8](../stage_plans/future/stage-08/plan.md) | candidate；模板、Prototype/Instance、Pattern、有限确定性展开和动画扩展；无生产 Reader |
+| CXT v2 | [CXT_V2_FORMAT.md](CXT_V2_FORMAT.md) | candidate；Foundation 的 Slot/Binding/ValueSource/有限 Repeat；Animation Extension 在 Stage 8 收敛；无生产 Reader |
 | Chart v6 / Model v1 | [chart-format-update-for-v6 plan](../stage_plans/deferred/chart-format-update-for-v6/plan.md) | deferred；静态 glTF 2.0、内置网格、默认扁平片、submesh 槽；无生产 Spec |
 | Chart v7 | [chart-format-update-for-v7 plan](../stage_plans/deferred/chart-format-update-for-v7/plan.md) | deferred；曲线形变（最多两轴；仅贝塞尔）、line、`shader.json` 接口；后处理不实现；无生产 Spec |
 | Chart v8 | [chart-format-update-for-v8 plan](../stage_plans/deferred/chart-format-update-for-v8/plan.md) | deferred；双轴贝塞尔、模型基本动画、内置后处理；无生产 Spec |
@@ -72,8 +75,10 @@ Chart v5 与 CXT v2 仍是候选，正式发行归入 Stage 8。Foundation accep
 acceptance 前，默认发行基线仍是 Chart v4、CXT v1 和 CXC v1，默认 Writer 与正式 Playback
 entry 不切换到 v5。
 Chart v5 的发行入口必须是经过验证的 Packed Chart；Packed Chart 不是独立语义版本。
-Chart v5 的 CXT v2 合同见 [CXT_V2_FORMAT.md](CXT_V2_FORMAT.md)，40,000 个语义实体和
-16 MiB Packed entry 是关闭门禁。
+Chart v5 的 CXT v2 合同见 [CXT_V2_FORMAT.md](CXT_V2_FORMAT.md)，物理与容量细节见
+[PACKED_CHART_FORMAT.md](PACKED_CHART_FORMAT.md)。40,000 个展开语义实体和 16 MiB
+Packed entry 按明确的复杂度 profile 验收，decoded/峰值内存和资源闭包另有预算。
+CXT 参数在编译时冻结，更换参数需要新的 Packed artifact，不在发行 Playback 重跑模板。
 天空盒、模型和形变归入 Stage 9 Presentation 扩展，不作为普通 Chart Object。
 Chart v6 / Model v1 见 [延期计划](../stage_plans/deferred/chart-format-update-for-v6/plan.md)，
 作为 Stage 9 设计输入；Chart v7 作为 Stage 9 形变设计输入；Chart v8 作为 Stage 11

@@ -4,7 +4,7 @@
 已实现；CFU-F hosted consumer/determinism/safety gates 已关闭；G3 hosted、G4、G5 report-SHA
 revalidation 与 G6 owner acceptance 已完成；最终产品封存已记录
 
-更新日期：2026-09-01
+更新日期：2026-09-05
 
 依据：[ADR 0038](../adr/0038-cxc-v1-and-chart-v4-boundary.md)
 
@@ -14,9 +14,13 @@ CXC v1 是自包含、只读、可验证的单文件 Project 交换和部署包�
 manifest、路径、闭包、identity、预算、诊断和 pack/unpack 边界。
 
 Chart v4 和 CXT 的字段，以及 Chart v5 Packed encoding 的语义来源，分别由
-[CHART_V4_FORMAT.md](CHART_V4_FORMAT.md)、[CXT_FORMAT.md](CXT_FORMAT.md) 和 v5 存储模型合同定义。
+[CHART_V4_FORMAT.md](CHART_V4_FORMAT.md)、[CXT_FORMAT.md](CXT_FORMAT.md) 和
+[PACKED_CHART_FORMAT.md](PACKED_CHART_FORMAT.md) 定义。
 CXC 不重新定义这些内容格式，也不是 Runtime、World、
 AnimationProgram、FrameSnapshot 或 ZIP library API。
+
+本文关于 Chart v5 Packed entry 的条款为 candidate extension 设计，不属于顶部所述
+已经实现的 v4/CXT v1 合同；Foundation/Stage 6 只验证显式候选入口，Stage 8 才正式发行。
 
 内部 `cuexis_cxc` 已能读写和验证 CXC bytes，CFU-C4 developer tools 已在本地与 hosted 门禁中验证；
 CFU-E 已把 CXC file/memory source 接入 Playback prepare、semantic identity 与 consumer/export 门禁。
@@ -189,6 +193,10 @@ expanded entity/event count checks
 resource closure validation
 ```
 
+CXT 参数在编译 Packed 时已经冻结。另一组参数需要显式重新编译的 artifact，
+不能通过包内 source entry 或 host 参数覆盖要求 Playback 重跑模板。展开后的稳定
+实体身份必须保存在 Packed 的 IDN0 中，不能依赖可删除的 source/inspection entry。
+
 现有 v1 manifest entry 的三个基础字段保持不变，不能直接向 entry record 添加未知字段。
 Chart v5 的发行工具和内部 typed manifest model 必须通过已注册的
 `extensions["cuexis.chart-entry.v1"]` 元数据，或通过同一版本明确冻结的路径/entry
@@ -206,8 +214,9 @@ expanded entity/event counts（若为 Packed Chart）
 
 这些字段属于 CXC v1 的 Chart v5 manifest extension，不改变 ZIP32 载体版本，也不改变
 基础 entry record 的三字段合同。未知
-必需 extension 必须稳定拒绝；未知可选 inspection metadata 不得影响 package identity
-或 Playback 语义。
+必需 extension 必须稳定拒绝；未知可选 inspection metadata 不得影响展开后的
+semantic identity 或 Playback 语义。它的 bytes 仍参与精确 package/artifact identity，
+不能一边改变包内 bytes，一边声称整包 hash 不变。
 
 Chart v5 的大小预算分为：
 

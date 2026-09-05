@@ -67,7 +67,7 @@ Chart v5                  candidate；Stage 8 后成为默认发行格式
 
 | 阶段 | 目标 | 生产基线 | 主要交付 |
 | --- | --- | --- | --- |
-| [Chart Format Foundation](stage_plans/future/chart-format-foundation/plan.md) | Stage 6 前解决高密度谱面存储风险 | Chart v4 subset / v5 candidate tools | CXT v2 Core、Packed 原型、40k/16 MiB 门禁、CXC entry 设计 |
+| [Chart Format Foundation](stage_plans/active/chart-format-foundation/plan.md) | Stage 6 前解决高密度谱面存储风险 | Chart v4 subset / v5 candidate tools | CXT v2 Core、Packed 原型、40k/16 MiB 门禁、CXC entry 设计 |
 | [Stage 6](stage_plans/future/stage-06/plan.md) | 以 v5 为主线完成 Playback/Player/CXC candidate path | Chart v5 Core/Packed candidate；v4 fallback | v5 subset 播放验证、Player、CXC v1、媒体、后端中立渲染 |
 | [Stage 7A](stage_plans/future/stage-07/plan.md) | 冻结最小可玩闭环和 Judgement Kernel | Chart v5 Core/Packed + v4 compatibility | Input、Judgement、Score、Replay、Tap/Hold/Release |
 | [Stage 7B+](stage_plans/future/stage-07/plan.md) | 持续扩展高级输入与判定能力 | Stage 7A contracts + selected v5 capabilities | Slide、Flick、方向、连续轨迹、多指、校准 |
