@@ -14,7 +14,10 @@
 
 ## 2. 前置条件
 
-- Stage 11 的 Input/Judgement/Replay 合同、实现、external consumer 和确定性回放门禁全部完成。
+- Stage 7A 的 Input/Judgement/Replay 核心公共生命周期、实现、external consumer 和确定性回放
+  门禁全部完成；Stage 8 已确定 SDK v1 发行范围内纳入的 Stage 7B+ capability，并为这些能力
+  提供兼容证据。Stage 12 不等待所有未来 Judgement 扩展完成。
+- Stage 11 已完成目标平台和规模化运行证据。
 - Stage 1E 与 Stage 6 已积累 C++ 所有权、线程、错误、部署、升级和真实宿主证据。
 - 公共 FrameSnapshot、JudgementResult、ReplayData 和 ContentProvider 生命周期无开放语义问题。
 

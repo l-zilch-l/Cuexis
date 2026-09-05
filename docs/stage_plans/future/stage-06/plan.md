@@ -9,9 +9,11 @@
 [阶段核验记录](../../../stage_reports/reviews/stage-verification-2026-09/2026-09-01-findings.md)
 中的三个 open 问题已纳入本计划；在本阶段启动、实现、验证和处置证据完成前，它们保持 open。
 
-本阶段排在 [chart-format-update-for-v5](../../active/chart-format-update-for-v5/plan.md) 完成之后，以已接受的
-Chart v5 typed/portable 谱面作为 Playback 和 Player 的新增能力基线。Chart v4 仅作为只读兼容和显式迁移
-输入保留，不再作为 Stage 6 新功能的作者层基线。
+本阶段位于 Chart Format Foundation 之后，采用 Chart v5 Core/Packed candidate 作为主要开发
+和验证基线，同时保留 Chart v4、CXT v1、CXC v1 和 SDK `0.7.0` 作为兼容与回退基线。Stage 6
+负责证明 v5 candidate path 可以被 Player/Playback 消费，但不要求一次实现完整 Slide、多指、
+Flick 或全部未来 Judgement 能力。Chart v5 的正式默认 Writer、正式发行入口和完整语义收敛
+留在 Stage 8；Chart v4 在本阶段继续作为可靠回退输入。
 
 ## 1. 阶段目标
 
@@ -27,14 +29,21 @@ Chart v1-v3 退出仍是待项目所有者决策的 candidate 提案，不因本
 
 ### S6-A：合同、基线和依赖决策
 
-- 以已接受的 Chart v5 合同、当前 `master`、SDK API `0.7.0`、static/shared consumer 和 Player 行为建立
-  Stage 6 基线；v5 的 Schema、typed Reader/Writer、迁移报告和 deterministic golden 必须先通过交接门禁。
-- Stage 6 的 Playback 和 Player 新增路径只消费 v5 canonical/typed/portable 数据；v4 只通过明确的只读兼容
-  或迁移入口进入，不在 Stage 6 中重新定义 v4 作者语义。
+- 以 Chart v5 Core/Packed candidate、Chart v4 compatibility、当前 `master`、SDK API `0.7.0`、
+  static/shared consumer 和 Player 行为建立 Stage 6 基线。
+- Stage 6 的主要 Playback/Player 新增路径必须能够消费 Foundation 已接受的 v5 candidate
+  subset；同时保留 v4 canonical/typed/portable 输入和稳定回退路径。
+- v5 candidate subset 只承诺已冻结的 Core requirement、时间区间、判定域引用、有限效果和
+  Packed 读取能力；未支持的 `RequirementKind` 必须稳定拒绝，不能静默降级为 Tap 或 v4。
+- Stage 6 不冻结完整 Chart v5 发行语义。正式默认 Writer、完整 CXT v2 合同、CXC Packed
+  playback entry 和迁移窗口由 Stage 8 收敛。
 - 为 Playback C++ 弃用/升级政策、Player 配置、表现渲染抽象和常用媒体支持冻结明确合同；会改变
   已接受架构或公共 API 的部分先形成 ADR，不能只由实现细节决定。
 - 对媒体支持记录格式范围、解码器选型、许可证、预算、安全限制和落点（离线导入/打包或运行时）；
   默认优先保持 Playback 只消费 canonical typed/portable data，运行时直解码必须有单独证据。
+- 将 CXC v1 的容器、manifest、entry kind/encoding、source/compiled/playback 分层、
+  resource closure、package identity 和失败回滚写成当前发行基线；在该合同中验证 v5
+  candidate Packed entry 的映射和读取路径，同时保留 v4 entry。
 - 盘点渲染状态中真正后端中立的值、窗口表面与渲染器所有权、设备丢失/重建、present 失败和
   Player 生命周期，避免把 OpenGL 名称或 SDL 类型提升到公共 Playback API。
 
@@ -63,6 +72,8 @@ Chart v1-v3 退出仍是待项目所有者决策的 candidate 提案，不因本
 - 子系统创建后收集 EffectiveSettings，并明确记录请求值、有效值和受控回退。
 - 动态设置只通过显式 apply 生效；静态设置只通过明确重建 Session/backend 生效。
 - Player 只通过 PlaybackSession 访问 Timeline、Renderer、材质/Shader 和调试信息。
+- Player/Playback 对 v5 candidate 与 v4 compatibility 使用同一套生命周期、诊断和事务式
+  reload 规则；格式选择必须来自显式 source/entry metadata，不得按失败后猜测格式。
 
 ### S6-D：后端中立表现渲染边界
 
@@ -106,8 +117,10 @@ Chart v1-v3 退出仍是待项目所有者决策的 candidate 提案，不因本
 
 ## 3. 验收标准
 
-- Player 可从 ProjectConfig 启动，只加载 canonical Chart v5，并支持播放、暂停、Seek 和 Reload；v4 输入仅
-  通过明确的只读兼容或迁移路径处理。
+- Player 可从 ProjectConfig 启动，加载受支持的 Chart v5 Core/Packed candidate 并支持播放、暂停、
+  Seek 和 Reload；同一流程可以显式回退到 canonical Chart v4，且两条路径共享生命周期和诊断合同。
+- v5 candidate 的未支持 RequirementKind、损坏 Packed bytes、超预算展开和 identity 不匹配均
+  稳定失败，不得静默读取为 v4 或简化要求。
 - Player、Studio Preview 和宿主使用唯一 PlaybackSession 到内部 RuntimeSession 路径。
 - 加载失败、资源降级、音频 discontinuity 和 Shader 错误具有稳定诊断和回滚。
 - 损坏或未来版本的用户设置不修改项目文件，并回退到单一来源的安全默认值。
@@ -134,3 +147,7 @@ Chart v1-v3 退出仍是待项目所有者决策的 candidate 提案，不因本
 - Vulkan adapter 实现、Vulkan API 类型或为未来 Vulkan 建立未验证的公共占位接口。
 - 未经合同和预算门禁的任意媒体格式探测、无限制解压或第三方类型进入公共 Playback API。
 - Chart v1-v3 Reader/Writer/迁移的退出；该项仍按 ADR 0041 和独立 owner 决策处理。
+- 完整 Chart v5/CXT v2 正式发行、默认 Writer 切换、v4 -> v5 迁移和 CXC v1 Packed playback
+  entry 的最终发布门禁；这些属于 Stage 8。
+- Stage 7B+ 的完整 Slide、Flick、多指、校准和高级 Judgement 能力；Stage 6 只需为已支持的
+  v5 Core subset 提供稳定的消费边界。

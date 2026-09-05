@@ -21,6 +21,11 @@ Cuexis Studio
 
 RuntimeSession、World、EnTT、SDL 和 OpenGL 是内部实现或可选 adapter，不是宿主集成接口。
 
+Cuexis 对狭义音乐游戏的统一玩法模型见
+[音乐游戏玩法抽象模型](GAMEPLAY_ABSTRACTION_MODEL.md)。该模型将核心要求归纳为：
+在正确的时间区间内，针对正确的判定位置或输入域，执行正确的动作；画面表现、
+输入设备和有限行为效果可以独立组合。
+
 ## 公共宿主边界
 
 宿主通过以下概念工作：
@@ -92,6 +97,10 @@ Initial
 模块 ABI 或 Playback 执行入口。离线 authoring generator 是独立工具议题，不进入 CXC，也不被
 pack、prepare 或 Playback 隐式执行。
 
+这不排除 Chart 层的声明式 Behavior、Animation、Step Track 或判定结果到有限
+表现效果的绑定。它们必须具有明确的触发条件、目标、时间范围和预算，并且不能
+退化为任意运行时代码。
+
 ## 深入阅读
 
 - [模块边界](MODULE_BOUNDARIES.md)
@@ -100,3 +109,4 @@ pack、prepare 或 Playback 隐式执行。
 - [Chart/Runtime/World ADR](../adr/0007-chart-runtime-world-boundary.md)
 - [属性求值 ADR](../adr/0009-property-evaluation-and-conflicts.md)
 - [Portable Presentation](../formats/PORTABLE_PRESENTATION.md)
+- [音乐游戏玩法抽象模型](GAMEPLAY_ABSTRACTION_MODEL.md)

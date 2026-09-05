@@ -2,7 +2,7 @@
 
 状态：现行项目指南
 
-更新日期：2026-09-02
+更新日期：2026-09-05
 
 本文是项目入口，不再保存完整路线、格式字段或阶段测试日志。整理前的完整长版快照见
 [archive/PROJECT_GUIDE_LEGACY_2026-08-10.md](archive/PROJECT_GUIDE_LEGACY_2026-08-10.md)。
@@ -22,7 +22,8 @@ PlaybackSession、ContentProvider、RuntimeFrame 和 FrameSnapshot，不访问 R
 或后端对象。
 
 当前状态见 [CURRENT_STATUS.md](CURRENT_STATUS.md)，架构见
-[architecture/OVERVIEW.md](architecture/OVERVIEW.md)。
+[architecture/OVERVIEW.md](architecture/OVERVIEW.md)，音游玩法抽象见
+[architecture/GAMEPLAY_ABSTRACTION_MODEL.md](architecture/GAMEPLAY_ABSTRACTION_MODEL.md)。
 
 ## 2. 核心目标
 
@@ -32,6 +33,12 @@ PlaybackSession、ContentProvider、RuntimeFrame 和 FrameSnapshot，不访问 R
 - 支持 filesystem、memory 和 host ContentProvider。
 - 提供 headless、static/shared package 和 external consumer 路径。
 - 最终交付 SDK 内的 Input/Judgement/Replay，同时让宿主持有主循环、平台生命周期和游戏 UI。
+
+音游玩法的共同抽象是“在正确的时间区间内，针对正确的判定位置或输入域，
+执行正确的动作”。Chart 描述要求，Input 负责设备到输入域的映射，Judgement
+负责比较要求与输入，Presentation 负责呈现；有限的 Behavior/Effect Schedule
+可以连接判定结果与表现，但不等于任意运行时脚本。完整模型见
+[GAMEPLAY_ABSTRACTION_MODEL.md](architecture/GAMEPLAY_ABSTRACTION_MODEL.md)。
 
 ## 3. 非目标
 
@@ -76,9 +83,13 @@ capability；S5-H 已完成关闭门禁。Stage 5 已于 2026-08-28 通过 PR #2
 `260829-full-review` 已关闭。[260830-followup 维护计划](stage_plans/completed/260830-followup/plan.md)
 的文档整理、Chart/CXC parse-once 和关键模块分支覆盖率三个任务已完成，并于 2026-09-01 通过
 PR #22 合并至 `master`。项目所有者已于 2026-09-02 启动
-[Chart v5 format plan](stage_plans/active/chart-format-update-for-v5/plan.md)；Stage 6
-[计划](stage_plans/future/stage-06/plan.md) 排在其后，继续处理版本门禁、后端中立表现渲染边界和常用媒体
-支持三个核验问题。
+  [Chart v5 format plan](stage_plans/active/chart-format-update-for-v5/plan.md)；当前主路线已明确为
+Chart Format Foundation -> Stage 6 v5-first candidate path -> Stage 7A Gameplay Foundation -> Stage 8
+Chart v5/CXT v2/Packed Chart formal release -> Stage 9 Presentation -> Stage 10 Studio -> Stage 11 平台与性能
+-> Stage 12 稳定 ABI；Stage 7B+ 高级 Input/Judgement 能力在 Stage 7A 后持续演进，可跨越 Stage 8。
+Chart Format Foundation [计划](stage_plans/future/chart-format-foundation/plan.md) 排在当前路线的下一实施位置；
+Foundation 完成后，Stage 6 [计划](stage_plans/future/stage-06/plan.md) 继续处理版本门禁、后端中立
+表现渲染边界、常用媒体和 CXC v1 基础发行合同。
 
 格式权威入口：[formats/README.md](formats/README.md)。
 
@@ -89,6 +100,13 @@ typed runtime data -> Runtime/Animation -> FrameSnapshot
 ```
 
 Pack、prepare 和 Playback 不执行脚本。
+
+阶段顺序、依赖和交接见 [ROADMAP.md](ROADMAP.md)。Chart Format Foundation 先在 Stage 6
+之前解决 CXT v2 Core、Packed 原型和容量风险；Stage 6 以 v5 Core/Packed candidate 为主要
+开发和验证基线，并保留 v4 兼容回退；Stage 7A 冻结最小判定合同；Chart v5 的 40,000 语义
+实体和 16 MiB Packed entry、正式默认 Writer 与 CXC playback entry 是 Stage 8 的发行门禁。
+CXT v2 负责模板、Prototype/Instance、Pattern 和有限确定性展开，Packed Chart 负责物理编码，
+CXC v1 负责发行闭包。
 
 ## 6. 时间和属性
 

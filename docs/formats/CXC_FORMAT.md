@@ -13,8 +13,9 @@ revalidation 与 G6 owner acceptance 已完成；最终产品封存已记录
 CXC v1 是自包含、只读、可验证的单文件 Project 交换和部署包。本文只定义 CXC 的物理载体、
 manifest、路径、闭包、identity、预算、诊断和 pack/unpack 边界。
 
-Chart v4 和 CXT 的字段分别由 [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md) 与
-[CXT_FORMAT.md](CXT_FORMAT.md) 定义。CXC 不重新定义这些内容格式，也不是 Runtime、World、
+Chart v4 和 CXT 的字段，以及 Chart v5 Packed encoding 的语义来源，分别由
+[CHART_V4_FORMAT.md](CHART_V4_FORMAT.md)、[CXT_FORMAT.md](CXT_FORMAT.md) 和 v5 存储模型合同定义。
+CXC 不重新定义这些内容格式，也不是 Runtime、World、
 AnimationProgram、FrameSnapshot 或 ZIP library API。
 
 内部 `cuexis_cxc` 已能读写和验证 CXC bytes，CFU-C4 developer tools 已在本地与 hosted 门禁中验证；
@@ -31,7 +32,7 @@ Source Project directory
   asset roots / cuexis.asset-index.json
   charts / .cxt templates / source and imported resources
         |
-        | explicit validate + pack
+        | explicit validate + compile Packed Chart + pack
         v
 CXC exchange package (.cxc)
         |
@@ -40,10 +41,13 @@ CXC exchange package (.cxc)
 PlaybackSource -> PreparedPlayback -> active PlaybackSession
 ```
 
-CXC 不是编辑器文档，也不是编译缓存。Pack、unpack、Chart migration 和 Session prepare 是四个
-不同操作，不得互相隐式触发。Pack 保留已校验 ProjectConfig、Asset Index、Chart、CXT 和资源的
-精确 source bytes，不规范化、不迁移、不裁剪 Asset Index。Unpack 只恢复包内播放闭包，不能重建
-未打包的原始创作资产、Importer 中间数据、脚本或 Studio 历史。
+CXC 不是编辑器文档，也不是运行时编译缓存。Pack、Packed Chart 编译、unpack、Chart migration
+和 Session prepare 是不同操作，不得互相隐式触发。对于 Chart v4 及更旧格式，CXC 可以继续保存
+已校验的 source bytes；对于 Chart v5 及后续发行格式，CXC 的播放入口必须是显式编译并验证后的
+Packed Chart。Source Project 仍可保留作者层 JSON/CXT，必要时可作为独立 source entry 进入包，
+但 Playback 不得把作者层 JSON 作为 v5 的发行入口。Packed Chart 与 source 的语义 identity、
+编译 profile 和版本必须可验证关联。Pack 不迁移、不裁剪 Asset Index。Unpack 只恢复包内播放闭包，
+不能重建未打包的原始创作资产、Importer 中间数据、脚本或 Studio 历史。
 
 ## 3. 物理载体
 
@@ -156,6 +160,65 @@ entry。Writer 不写目录 entry、padding 或尾随字节。
 
 三个字段均必需且不允许未知字段。`byteCount` 是 entry bytes；Stored 模式下等于 compressed size。
 `sha256` 是精确 entry bytes 的 SHA-256，以 64 个小写十六进制字符表示。
+
+## 5a. Chart v5 entry 分层
+
+CXC v1 的容器版本不因 Chart v5 升级。Chart v5 及后续格式使用 manifest entry 的
+扩展语义区分作者源和 Playback 编译产物：
+
+```text
+source entry
+  作者层 Chart/CXT/Project bytes，仅用于审查、迁移或复现
+
+compiled entry
+  已验证的 Packed Chart 或其他 typed portable payload
+
+playback entry
+  manifest 明确指定、可被 Playback 读取的 compiled entry
+```
+
+Chart v5 的 Playback entry 必须是 Packed Chart。Playback 不读取作者层 JSON 或
+CXT source，也不在包内隐式执行 CXT Pattern。Packed entry 必须在 pack 前完成：
+
+```text
+Chart/CXT typed validation
+finite expansion
+semantic identity
+Packed size and decoded-size checks
+expanded entity/event count checks
+resource closure validation
+```
+
+现有 v1 manifest entry 的三个基础字段保持不变，不能直接向 entry record 添加未知字段。
+Chart v5 的发行工具和内部 typed manifest model 必须通过已注册的
+`extensions["cuexis.chart-entry.v1"]` 元数据，或通过同一版本明确冻结的路径/entry
+映射，记录或可确定地推导：
+
+```text
+entry kind: chart | cxt | asset | project | manifest
+entry encoding: source-json | source-cxt | packed-chart | portable-payload
+playback: boolean
+source semantic identity（若为 compiled entry）
+compiled semantic identity（若为 playback entry）
+compiler profile（若为 Packed Chart）
+expanded entity/event counts（若为 Packed Chart）
+```
+
+这些字段属于 CXC v1 的 Chart v5 manifest extension，不改变 ZIP32 载体版本，也不改变
+基础 entry record 的三字段合同。未知
+必需 extension 必须稳定拒绝；未知可选 inspection metadata 不得影响 package identity
+或 Playback 语义。
+
+Chart v5 的大小预算分为：
+
+```text
+Packed Chart entry <= 16 * 1024 * 1024 bytes
+Chart Closure      CXC 中 Chart/CXT source 与关联资源的独立预算
+expanded runtime   prepare/Runtime 的 decoded bytes、实体、事件和峰值内存预算
+```
+
+Chart Closure 不能被 Packed entry 预算替代；反之，CXC 总包预算也不能替代 Packed
+entry 的 16 MiB 硬限制。
 
 Manifest 自身不列入 `entries`。Archive 除 manifest 外必须恰好包含 entries 列出的文件。
 

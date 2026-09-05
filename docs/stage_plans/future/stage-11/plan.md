@@ -1,62 +1,146 @@
-# Stage 11 Implementation Plan: Input, Judgement, Score, and Replay
+# Stage 11 Implementation Plan: Scale, Platforms and Advanced Presentation
 
 状态：future；未开始
 
-更新日期：2026-08-10
+更新日期：2026-09-05
 
-归档来源：[旧版 PROJECT_GUIDE](../../../archive/PROJECT_GUIDE_LEGACY_2026-08-10.md) 与
-[SDK transition plan 快照](../../../archive/CUEXIS_SDK_TRANSITION_PLAN_2026-08-10.md)。
+归档来源：[旧 Stage 9A 性能计划](../stage-09a/plan.md)、
+[Android 设计输入](../../deferred/stage-09b/plan.md)、
+[Vulkan 设计输入](../../deferred/stage-10/plan.md) 和
+[粒子时间轴提案](../../../proposals/deferred/PARTICLE_TIMELINE.md)。
+
+前置：
+
+```text
+Stage 7A Gameplay Foundation
+Stage 7B+ capabilities selected for scale/platform validation
+Stage 8 Chart v5 / CXT v2 / Packed Chart
+Stage 9 Presentation extensions
+Stage 10 Studio workflows
+```
+
+本阶段不重新定义 Chart、Input、Judgement 或 Presentation 语义，而是验证它们在
+大规模内容和更多运行环境中的可用性。
 
 ## 1. 阶段目标
 
-交付 Playback SDK 必选的 cuexis_judgement 模块。宿主提交标准化输入，SDK 计算并返回判定、
-分数、连击和统计，同时提供确定性记录与回放。完整玩法状态机、UI 和游戏流程仍由宿主拥有。
+```text
+40,000 实体可测量运行
+Packed Chart / CXT 展开性能
+完整 Input -> Judgement 链路性能
+桌面设备预算
+Android SDK / host validation
+可选 Vulkan adapter
+高级粒子和后处理
+```
 
-## 2. 前置条件
+## 2. 子批次
 
-- Stage 7 Studio 核心使用稳定 PlaybackSession 预览路径。
-- Stage 9A 已测量输入时间戳、音频延迟、Session 和快照成本。
-- Chart/Playback 已提供稳定 Note/Event 时间流、ObjectId 和确定性 Session 配置 identity。
+### S11-A：桌面性能基线
 
-## 3. 输入与校准合同
+测量：
 
-- 定义带单调 event time、source、arrival time 和 sequence 的 InputEvent/InputFrame。
-- 定义事件时间到 Timeline 的映射。
-- 分离输出延迟、输入延迟、主观校准和 Chart offset。
-- 定义版本化 InputProfile、CalibrationProfile 和 JudgementConfigSnapshot。
-- arrivalTime 和 frameIndex 只用于审计，不参与判定语义。
+```text
+Packed Chart load/decode
+CXT finite expansion
+prepare peak memory
+ChartRuntime memory
+Judgement query
+Input timestamp mapping
+FrameSnapshot extraction
+Seek / Reload
+CXC package load
+audio clock stability
+CPU/GPU frame time
+```
 
-## 4. Judgement 与结果
+必须区分硬预算、软目标和用户偏好，并形成版本化 DesktopDeviceProfile。
 
-- 实现 Tap/Miss、JudgementEvent、Score、Combo 和 Statistics。
-- PlaybackSession 接收 RuntimeFrame 与 InputEvent，并发布累积 JudgementResult 快照。
-- 定义宿主可查询的 Note/Event 时间流和稳定 ObjectId。
-- 为 Hold、Slide、多指和宿主扩展保留版本化、受预算约束的扩展点。
-- JudgementResult 必须拥有明确生命周期，且 extract 不复制无界历史。
+### S11-B：大谱面压力
 
-## 5. Recording 与 Replay
+至少覆盖：
 
-- startRecording 记录 Session 收到的完整规范化 InputEvent、chartTimeMs 和 frameIndex。
-- stopRecording 返回版本化 ReplayData 和确定性 Session 配置快照。
-- loadReplay 使用记录事件替代实时输入。
-- Replay 模式拒绝混合提交实时 InputEvent，并保持原 Session 状态原子性。
-- ReplayData 具有事件数、字节数和解码预算。
+```text
+40,000 semantic entities
+high repetition Pattern
+low repetition Chart
+large resource closure
+many animation events
+many Judgement requirements
+worst-case Packed sections
+```
 
-## 6. 验收标准
+性能测试不能只测渲染，也必须测从输入到判定结果的完整链路。
 
-- 相同 Chart、InputEvent、校准和配置产生一致的判定、分数、连击和统计。
-- Judgement/Replay 不暴露 World、EnTT、SDL、音频/渲染后端或宿主引擎类型。
-- 无 InputEvent 的纯播放和 Studio Preview 中 Judgement 休眠且不改变 FrameSnapshot。
-- 宿主在运行或停止后可以取得有明确有效期的完整结果快照。
-- 记录事件与宿主提交的原始规范化 InputEvent 完全一致。
-- 实时模式与 Replay 模式的 JudgementResult 和 FrameSnapshot 确定一致。
-- ReplayData 序列化/反序列化往返保持结果。
-- Replay 版本不支持、内容损坏或配置 identity 不一致时稳定失败。
-- Replay 模式提交实时输入时返回明确错误且不部分应用。
-- public external consumer、static/shared package 和支持平台矩阵覆盖完整生命周期。
+### S11-C：Android
 
-## 7. 明确不包含
+Android 只能消费已有公共合同：
 
-- 宿主 UI、完整游戏状态机、在线服务和宿主持久化策略。
-- 把判定结果写回 Chart、Behavior 或 World 持久化数据。
-- 运行时脚本或宿主任意回调作为判定规则。
+```text
+PlaybackSession
+FrameSnapshot
+InputEvent
+JudgementResult
+Presentation capability
+```
+
+需要验证：
+
+```text
+音频时钟
+触摸输入
+资源派生
+内存预算
+Packed Chart 解码
+CXC closure
+安装包和宿主
+```
+
+### S11-D：Vulkan
+
+Vulkan 是可选 Presentation Adapter。不得建立第二套 Chart、Judgement 或
+FrameSnapshot 求值路径，也不得向公共 SDK 暴露 Vulkan 类型。
+
+### S11-E：高级表现
+
+在性能合同稳定后，可实现：
+
+```text
+确定性粒子
+后处理实现
+模型动画
+更复杂的 Presentation Environment
+```
+
+粒子必须使用绝对时间、版本化随机种子和有界 Checkpoint/重建，不得引入任意
+脚本化发射逻辑。
+
+## 3. 交接
+
+本阶段向 Stage 12 交付：
+
+```text
+设备与宿主能力矩阵
+性能预算和降级规则
+Input/Judgement/Replay 性能证据
+Packed/CXC 大内容证据
+Android/Vulkan capability 合同
+稳定的 FrameSnapshot / JudgementResult 使用证据
+```
+
+## 4. 验收标准
+
+- 目标设备矩阵有可复现的真实测量。
+- 40,000 实体下，加载、解码、展开、判定、采样和渲染均在约定预算内。
+- 超预算时稳定失败或执行明确、可诊断的确定性降级。
+- Android 和 Vulkan 不复制第二套语义。
+- 粒子和后处理不会改变 Judgement、Score、Replay 或既有 Chart identity。
+- 性能采集关闭后不改变 FrameSnapshot、JudgementResult 或 Replay。
+- static/shared、external consumer 和目标平台门禁通过。
+
+## 5. 明确不包含
+
+- 修改 Chart v5/CXT v2 的核心语义。
+- 修改 Judgement 判定规则以适配单一设备。
+- 任意运行时脚本。
+- 宿主 UI、在线服务和编辑器 ABI。

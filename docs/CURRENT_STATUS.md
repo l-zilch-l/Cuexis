@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-09-02
+更新日期：2026-09-05
 
 本文是 Cuexis 当前产品和阶段状态的唯一摘要。ADR 定义决策，Spec 定义字段和语义，阶段计划定义未来
 范围，阶段报告保存带日期的实施证据；它们不得绕过本文重新定义当前状态。
@@ -27,9 +27,15 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Stage Chart Format Update | completed; CFU-C0-C4, D, E, F and G closed; G6 owner acceptance recorded 2026-08-24 | [plan](stage_plans/completed/chart-format-update/plan.md) |
 | Stage 4 | completed; S4-H hosted and owner acceptance recorded 2026-08-27 | [plan](stage_plans/completed/stage-04/plan.md) |
 | Stage 5 | completed; S5-A through S5-H closed and merged into `master` 2026-08-28 | [plan](stage_plans/completed/stage-05/plan.md)、[completion](stage_reports/stages/stage-05/completion.md) |
-| Chart Format Update for v5 | active；2026-09-02 启动 | [plan](stage_plans/active/chart-format-update-for-v5/plan.md) |
-| Stage 6 | future；等待 Chart v5 格式阶段完成后启动 | [plan](stage_plans/future/stage-06/plan.md) |
-| Stage 7-12 | future or deferred as individually marked | [plan index](stage_plans/README.md) |
+| Chart Format Foundation | future；Stage 5 与 Stage 6 之间的下一实施门禁；40k/16 MiB 尚未关闭 | [plan](stage_plans/future/chart-format-foundation/plan.md) |
+| Stage 6 | future；Foundation 完成后的 v5-first Playback/Player/CXC candidate path；v4 保留为兼容回退 | [plan](stage_plans/future/stage-06/plan.md) |
+| Stage 7A | future；最小 Input / Judgement / Score / Replay Kernel，作为 Stage 8 硬前置 | [plan](stage_plans/future/stage-07/plan.md) |
+| Stage 7B+ | future；Slide、Flick、多指、校准和高级 Judgement 能力持续演进 | [plan](stage_plans/future/stage-07/plan.md) |
+| Stage 8 | future；Chart v5 / CXT v2 / Packed Chart 正式发行与语义收敛 | [plan](stage_plans/future/stage-08/plan.md) |
+| Stage 9 | future；Presentation Environment、天空盒、模型和有限形变 | [plan](stage_plans/future/stage-09/plan.md) |
+| Stage 10 | future；Chart v5 Studio 和发行工作流 | [plan](stage_plans/future/stage-10/plan.md) |
+| Stage 11 | future；性能、Android、Vulkan、粒子和高级表现 | [plan](stage_plans/future/stage-11/plan.md) |
+| Stage 12 | future；稳定 ABI 与 Playback SDK v1 | [plan](stage_plans/future/stage-12/plan.md) |
 
 ## 已关闭的 Full Review
 
@@ -51,8 +57,22 @@ Chart/CXC parse-once、RT-29、World/Animation 大规模优化、大包解析降
 - FrameDigest v1-v3、canonical bytes/order、合法输入 identity 与默认 capability 维持兼容。
 - CXC v1、CXT v1、Chart v4 的格式语义以 [formats index](formats/README.md) 为准；内部 CXC 不是独立
   公共 package SDK。
-- Chart v5 格式阶段已启动，负责下一代作者层旋转、数值、相机和 alpha 合同；在 v5 完成前，Chart v4
-  继续作为生产 Playback 基线。
+- Chart v5 分三步：Chart Format Foundation 在 Stage 6 之前交付 CXT v2 Core、Packed 原型、
+  CXC entry 设计和容量门禁；Stage 6 以 v5 Core/Packed candidate 为主要开发和验证路径，
+  同时保留 v4 回退；Stage 7A 冻结最小 Judgement/Input/Replay 合同；Stage 8 再完成正式
+  Chart v5、CXT v2、Packed Chart 和 CXC playback entry 的发行收敛。Stage 7B+ 高级判定
+  能力不阻塞 Stage 8，改以版本化 capability 持续交付。正式默认 Writer、40,000 语义实体
+  和 16 MiB Packed entry 发行门禁关闭前，Chart v5 只能通过显式 candidate path 使用，不能
+  作为默认发行格式。详细计划见
+  [Stage 8](stage_plans/future/stage-08/plan.md) 和
+  [Chart v5 format plan](stage_plans/active/chart-format-update-for-v5/plan.md)。
+- CXT v2 候选合同见 [CXT_V2_FORMAT.md](formats/CXT_V2_FORMAT.md)：模板、Prototype/Instance、
+  Pattern、有限确定性展开和动画扩展；不包含任意脚本。
+- CXC v1 仍为容器版本。Foundation 负责 entry 映射和 Packed 验证原型，Stage 6 验证 v5
+  candidate playback path 并保留 v4 entry，Stage 8 负责在 CXC v1 内正式发行已验证的
+  Chart v5 Packed playback entry。
+- Chart v6 / Model v1、Chart v7 和 Chart v8 仍不可加载，分别作为 Stage 9/11 的表现设计输入；
+  不再作为 Judgement 的隐性前置。
 - SDK API 为 `0.7.0`。安装后的 Playback headers 不泄露 EnTT、SDL、OpenGL/GLAD、JSON DOM、
   RuntimeSession 或 World。
 - Stage 5 的 default `allCapabilities()` 包含 shader asset 和 parameterized material capability；
@@ -70,10 +90,15 @@ MinGW；分模块覆盖率和环境残余见其[完成报告](stage_reports/revi
 PR #22 已于 2026-09-01 合并至 `master`，关闭总结见
 [260830-followup 最终关闭报告](stage_reports/reviews/260830-followup/2026-09-01-final.md)。
 RT-29、T1 World/Animation 大规模优化和 T2 大包解析降本仍需另外的触发证据和明确授权。项目
-所有者已于 2026-09-02 启动 [Chart v5 format plan](stage_plans/active/chart-format-update-for-v5/plan.md)；
-Stage 6 保持 future，待 v5 格式阶段完成后再启动。2026-09-01 阶段核验记录中的版本门禁、后端中立
-表现渲染边界和常用媒体支持三个 open 问题仍归属于 [Stage 6 plan](stage_plans/future/stage-06/plan.md)，
-尚未因列入计划而视为解决。Chart v1-v3 退出仍是独立 candidate 提案。
+所有者已于 2026-09-02 建立 [Chart v5 format plan](stage_plans/active/chart-format-update-for-v5/plan.md)；
+该计划现作为 Stage 8 的详细格式工作包，其 Foundation 前置工作见
+[Chart Format Foundation](stage_plans/future/chart-format-foundation/plan.md)。当前下一实施门禁
+是 Foundation；Foundation 完成后进入 Stage 6 v5-first candidate path，Stage 6 完成后进入
+Stage 7A，再进入 Stage 8。Stage 7B+ 可以与 Stage 8 前后并行持续；Stage 8 关闭后交出
+SDK `0.8.0` / Chart v5 / CXT v2 正式接手基线。
+2026-09-01 阶段核验记录中的版本门禁、后端中立表现渲染边界和常用媒体支持三个 open 问题仍归属于
+[Stage 6 plan](stage_plans/future/stage-06/plan.md)，尚未因列入计划而视为解决。删除旧 Reader 仍按
+ADR 0041，不因 v5 弃用窗口或 Stage 6 启动而实施。
 
 ## 更新规则
 

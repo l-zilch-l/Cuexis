@@ -12,6 +12,7 @@
 1. [当前状态](CURRENT_STATUS.md)
 2. [项目指南](PROJECT_GUIDE.md)
 3. [产品与模块边界](architecture/README.md)
+   - [音乐游戏玩法抽象模型](architecture/GAMEPLAY_ABSTRACTION_MODEL.md)
 4. [ADR 索引](adr/README.md)，先读 ADR 0027、0024、0025、0026、0037、0038 和 0040
 5. [格式索引](formats/README.md)
 6. [260830-followup 已完成计划](stage_plans/completed/260830-followup/plan.md)
@@ -41,6 +42,7 @@
 
 - [项目指南](PROJECT_GUIDE.md)
 - [架构总览](architecture/README.md)
+- [音乐游戏玩法抽象模型](architecture/GAMEPLAY_ABSTRACTION_MODEL.md)
 - [模块边界](architecture/MODULE_BOUNDARIES.md)
 - [RuntimeSession](architecture/RUNTIME_SESSION.md)
 - [项目路线图](ROADMAP.md)
@@ -55,6 +57,7 @@
 - [Chart v4 谱面编写指南](guides/CHART_V4_AUTHORING.md)
 - [CXC v1 接受合同](formats/CXC_FORMAT.md)
 - [CXT v1 接受合同](formats/CXT_FORMAT.md)
+- [CXT v2 候选合同](formats/CXT_V2_FORMAT.md)
 - [TimingMap](formats/TIMING_MODEL.md)
 - [Animation Mixing](formats/ANIMATION_MIXING.md)
 - [Portable Presentation v1](formats/PORTABLE_PRESENTATION.md)

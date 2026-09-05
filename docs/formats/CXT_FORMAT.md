@@ -8,6 +8,10 @@ G6 owner acceptance 已完成；非空动画执行已由 Stage 4 关闭
 
 依据：[ADR 0038](../adr/0038-cxc-v1-and-chart-v4-boundary.md)
 
+CXT v1 在 Chart v4 范围内保持冻结。Chart v5 的模板、Pattern、有限生成和动画扩展
+见候选规范 [CXT_V2_FORMAT.md](CXT_V2_FORMAT.md)；CXT v1 不接受 v2 字段，也不承担
+Chart v5 的高密度生成职责。
+
 ## 1. 范围
 
 CXT v1 是可被 Chart v4 引用的声明式动画模板 JSON：
