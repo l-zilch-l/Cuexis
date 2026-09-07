@@ -189,9 +189,14 @@ auto validateCandidateChartExtension(const cxc::CxcPackage& package) -> core::Di
         }
         const auto entityReader = item->requiredField("expandedEntityCount");
         const auto requirementReader = item->requiredField("expandedRequirementCount");
-        const auto entityCount = entityReader ? entityReader->readUInt64() : std::nullopt;
-        const auto requirementCount =
-            requirementReader ? requirementReader->readUInt64() : std::nullopt;
+        std::optional<std::uint64_t> entityCount;
+        if (entityReader) {
+            entityCount = entityReader->readUInt64();
+        }
+        std::optional<std::uint64_t> requirementCount;
+        if (requirementReader) {
+            requirementCount = requirementReader->readUInt64();
+        }
         if (!entityCount || *entityCount == 0 || *entityCount > 40000U) {
             addError(diagnostics, "cxc.candidate.count_invalid",
                      "expandedEntityCount must be in the Foundation range 1..40000",

@@ -80,8 +80,9 @@ using packed::ByteReader;
         return core::unexpected(
             error("packed.io.header_mismatch", "Packed header values mismatch"));
     }
-    if (*directoryCount > (std::numeric_limits<std::size_t>::max() / 32U) ||
-        *directoryBytes != *directoryCount * 32U ||
+    const auto directoryBytesExpected = static_cast<std::uint64_t>(*directoryCount) * 32U;
+    if (directoryBytesExpected > std::numeric_limits<std::uint32_t>::max() ||
+        *directoryBytes != static_cast<std::uint32_t>(directoryBytesExpected) ||
         !checkedRange(*directoryOffset, *directoryBytes, bytes.size())) {
         return core::unexpected(error("packed.io.directory_bounds", "Packed directory is invalid"));
     }
