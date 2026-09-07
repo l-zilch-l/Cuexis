@@ -1,0 +1,123 @@
+{
+  "format": "cuexis.chart-format-foundation.f0-fixtures",
+  "manifestVersion": 1,
+  "recordedDate": "2026-09-05",
+  "status": "baseline-only",
+  "baseline": {
+    "sdkApiVersion": "0.7.0",
+    "chartFallback": "v4",
+    "cxtFallback": "v1",
+    "cxcContainer": "v1",
+    "frameDigestVersions": [1, 2, 3],
+    "defaultWriterTarget": 3,
+    "explicitWriterTargets": [3, 4]
+  },
+  "candidate": {
+    "profileId": "candidate.static-tap-lanes4-v1",
+    "packedVersion": 1,
+    "headerBytes": 96,
+    "directoryEntryBytes": 32,
+    "flags": 1,
+    "candidateRevision": 1,
+    "supportedRequirement": {
+      "kind": "tap",
+      "interval": "point",
+      "domain": "candidate.lanes4",
+      "action": "press",
+      "constraint": "lane",
+      "laneRange": [0, 3]
+    },
+    "requiredSections": [
+      "META",
+      "TIME",
+      "STR0",
+      "REF0",
+      "IDN0",
+      "ARCH",
+      "ENT0",
+      "REQ0",
+      "CNS0"
+    ],
+    "conditionalSections": ["TRN0", "REN0", "CAM0"],
+    "rejectedSections": ["BEH0", "BHD0", "ANM0", "FXS0"]
+  },
+  "capacityProfiles": [
+    {
+      "id": "high-reuse-v1",
+      "semanticEntityCount": 40000,
+      "packedFileLimitBytes": 16777216,
+      "generatorShape": "one prototype; 10000 repeat groups; four lane emits per group; one point tap requirement per entity; fixed component set"
+    },
+    {
+      "id": "low-reuse-v1",
+      "semanticEntityCount": 40000,
+      "packedFileLimitBytes": 16777216,
+      "generatorShape": "40000 explicit instances with distinct identity, beat, lane, and position; one point tap requirement per entity"
+    },
+    {
+      "id": "bounded-mixed-v1",
+      "semanticEntityCount": 40000,
+      "packedFileLimitBytes": 16777216,
+      "generatorShape": "20000 repeat-generated entities plus 20000 explicit entities; four lane domain; one requirement per entity; bounded complete resource closure"
+    }
+  ],
+  "v4Characterization": {
+    "tests": [
+      "tests/chart/chart_v4_loader_tests.cpp",
+      "tests/chart/chart_v4_c2_contract_tests.cpp",
+      "tests/chart/chart_v4_resolver_tests.cpp",
+      "tests/chart/chart_writer_tests.cpp",
+      "tests/chart/parse_characterization_tests.cpp",
+      "tests/chart/cfu_f4_limits_tests.cpp",
+      "tests/chart/prepared_semantic_identity_tests.cpp",
+      "tests/cxc/cxc_manifest_loader_tests.cpp",
+      "tests/cxc/cxc_package_tests.cpp",
+      "tests/cxc/parse_characterization_tests.cpp"
+    ],
+    "fixtures": [
+      "tests/fixtures/chart_format_update/valid/chart_v4_static_migration.json",
+      "tests/fixtures/chart_format_update/valid/chart_v4_animation.json",
+      "tests/fixtures/chart_format_update/valid/chart_v4_cxt_template_binding.json",
+      "tests/fixtures/chart_format_update/valid/chart_v4_parameterized_rational.json",
+      "tests/fixtures/chart_format_update/valid/chart_v4_parameterized_transform.json",
+      "tests/fixtures/chart_format_update/valid/chart_v4_template_animator.json",
+      "tests/fixtures/chart_format_update/valid/templates/move-y.cxt",
+      "tests/fixtures/chart_format_update/golden/chart_v4_static_migration.canonical.json",
+      "tests/fixtures/chart_format_update/golden/move-y.canonical.cxt",
+      "tests/fixtures/chart_format_update/golden/cxc_v1_v4_static.manifest.json",
+      "tests/fixtures/chart_format_update/golden/cxc_v1_v4_cxt.manifest.json"
+    ],
+    "invariants": [
+      "v4 input remains on the v4 reader and material.opacity [0,1] path",
+      "FrameDigest v1-v3 contracts remain unchanged",
+      "canonical source and prepared semantic identities remain deterministic",
+      "failed parse/resolve/package operations publish no partial state"
+    ]
+  },
+  "negativeFixtures": [
+    "tests/fixtures/chart_format_update/invalid/chart_v4_cxt_id_mismatch.json",
+    "tests/fixtures/chart_format_update/invalid/chart_v4_cxt_missing_import.json",
+    "tests/fixtures/chart_format_update/invalid/chart_v4_parameter_asset_use.json",
+    "tests/fixtures/chart_format_update/invalid/chart_v4_animator_deep_patch.json",
+    "tests/fixtures/chart_format_update/invalid/chart_v4_mask_overlap.json",
+    "tests/fixtures/chart_format_update/invalid/chart_v4_mask_conflict.json",
+    "tests/fixtures/chart_format_update/invalid/cxc_manifest_case_conflict.json",
+    "tests/fixtures/chart_format_update/invalid/cxc_manifest_unsorted.json",
+    "tests/fixtures/chart_format_update/invalid/move_y_runtime_script.cxt"
+  ],
+  "f0Handoff": {
+    "nextTasks": ["F1", "F3"],
+    "blockedUntilF0": [
+      "v5 default writer",
+      "Packed Playback integration",
+      "CXT v2 formal-release routing",
+      "removal of v4 readers"
+    ],
+    "remainingEvidence": [
+      "generated positive/golden candidate bytes",
+      "stable candidate rejection diagnostics",
+      "40k/16 MiB measurements",
+      "cross-platform and release/headless parity"
+    ]
+  }
+}

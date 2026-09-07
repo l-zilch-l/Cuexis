@@ -16,6 +16,7 @@
 - [Stage Chart Format Update](chart-format-update/README.md)
 - [Stage 4](stages/stage-04/README.md)
 - [Stage 5](stages/stage-05/README.md)
+- [Chart Format Foundation](stages/chart-format-foundation/README.md)
 
 ## 跨阶段专题
 

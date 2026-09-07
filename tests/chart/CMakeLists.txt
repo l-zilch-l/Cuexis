@@ -1,6 +1,8 @@
 add_executable(cuexis_chart_tests
     animation_template_loader_tests.cpp
     canonical_chart_loader_tests.cpp
+    canonical_semantic_chart_tests.cpp
+    cxt_v2_loader_tests.cpp
     cfu_f4_limits_tests.cpp
     chart_loader_tests.cpp
     chart_migrator_tests.cpp
@@ -12,6 +14,7 @@ add_executable(cuexis_chart_tests
     example_chart_tests.cpp
     limits_tests.cpp
     parse_characterization_tests.cpp
+    packed_chart_primitives_tests.cpp
     prepared_semantic_identity_tests.cpp
     rational_beat_tests.cpp
     timing_map_tests.cpp

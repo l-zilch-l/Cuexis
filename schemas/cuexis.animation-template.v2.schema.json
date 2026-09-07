@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cuexis.dev/schemas/cuexis.animation-template.v2.schema.json",
+  "title": "Cuexis Animation Template v2 Foundation candidate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "version", "moduleId", "moduleKind", "metadata", "parameters", "prototypes", "patterns", "animations", "exports", "requiredExtensions", "extensions"],
+  "properties": {
+    "format": {"const": "cuexis.animation-template"},
+    "version": {"const": 2},
+    "moduleId": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,255}$"},
+    "moduleKind": {"enum": ["prototype", "pattern"]},
+    "metadata": {"type": "object"},
+    "parameters": {"type": "array", "maxItems": 256, "items": {"type": "object", "additionalProperties": false, "required": ["id", "type", "default", "minimum", "maximum"], "properties": {"id": {"$ref": "#/$defs/id"}, "type": {"const": "integer"}, "default": {"type": "integer"}, "minimum": {"type": "integer"}, "maximum": {"type": "integer"}}}},
+    "prototypes": {"type": "array", "items": {"$ref": "#/$defs/prototype"}},
+    "patterns": {"type": "array", "items": {"$ref": "#/$defs/pattern"}},
+    "animations": {"type": "array", "maxItems": 0},
+    "exports": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["kind", "id"], "properties": {"kind": {"enum": ["prototype", "pattern"]}, "id": {"$ref": "#/$defs/id"}}}, "minItems": 1, "maxItems": 1},
+    "requiredExtensions": {"type": "array"}, "extensions": {"type": "object"}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,255}$"},
+    "prototype": {"type": "object", "additionalProperties": false, "required": ["id", "slots", "components", "requirements", "extensions"], "properties": {"id": {"$ref": "#/$defs/id"}, "slots": {"type": "array"}, "components": {"type": "array"}, "requirements": {"type": "array"}, "extensions": {"type": "object"}}},
+    "pattern": {"type": "object", "additionalProperties": false, "required": ["id", "nodes", "extensions"], "properties": {"id": {"$ref": "#/$defs/id"}, "nodes": {"type": "array", "minItems": 1}, "extensions": {"type": "object"}}}
+  }
+}

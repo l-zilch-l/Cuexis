@@ -108,6 +108,11 @@ Slot 声明：
 | enum | 非空唯一字符串 values，default 必须属于 values |
 | vector | 固定 length=2/3/4 的有限 number 数组 |
 
+上述表格是长期候选合同的类型全集，不是当前 Foundation 实现承诺。Foundation F2
+只实现 `integer` 与 `beat`；`number`、`rational`、`boolean`、`enum`、`vector` 在
+candidate schema/reader 中稳定拒绝，直到后续 candidate revision 提供独立 typed
+model、值域、算术、golden 和 hosted 验证。
+
 rational/beat 可声明相同类型的 minimum/maximum。vector 必须声明 length。
 Parameter 必须有 default；Slot 的 `required:false` 必须有 default，`required:true`
 禁止 default。范围、类型和字段白名单在声明与每次实际绑定时都要验证。

@@ -6,6 +6,7 @@ set_target_properties(cuexis_chart PROPERTIES EXPORT_NAME InternalChart)
 target_sources(cuexis_chart
     PRIVATE
         src/animation_template_loader.cpp
+        src/cxt_v2_loader.cpp
         src/canonical_chart_loader.cpp
         src/canonical_chart_template_internal.cpp
         src/chart_loader.cpp
@@ -19,6 +20,7 @@ target_sources(cuexis_chart
         src/chart_v4_common_reader_internal.cpp
         src/chart_v4_animation_reader_internal.cpp
         src/chart_project_path_internal.cpp
+        src/packed_chart_primitives.cpp
         src/rational_beat.cpp
         src/timing_map.cpp
         src/uuid.cpp
@@ -30,6 +32,8 @@ target_sources(cuexis_chart
             include/cuexis/chart/animation_template_document.hpp
             include/cuexis/chart/animation_template_loader.hpp
             include/cuexis/chart/canonical_chart_loader.hpp
+            include/cuexis/chart/canonical_semantic_chart.hpp
+            include/cuexis/chart/cxt_v2_loader.hpp
             include/cuexis/chart/chart_document.hpp
             include/cuexis/chart/chart_loader.hpp
             include/cuexis/chart/chart_migrator.hpp
@@ -40,6 +44,7 @@ target_sources(cuexis_chart
             include/cuexis/chart/chart_writer.hpp
             include/cuexis/chart/limits.hpp
             include/cuexis/chart/prepared_semantic_identity.hpp
+            include/cuexis/chart/packed_chart_primitives.hpp
             include/cuexis/chart/rational_beat.hpp
             include/cuexis/chart/timing_map.hpp
             include/cuexis/chart/uuid.hpp

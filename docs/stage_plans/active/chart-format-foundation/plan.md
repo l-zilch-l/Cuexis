@@ -102,7 +102,7 @@ Finite Repeat
 Finite Expansion
 ```
 
-参数类型只允许：
+候选合同列出的参数类型为：
 
 ```text
 integer
@@ -113,6 +113,11 @@ boolean
 enum
 vector
 ```
+
+Foundation F2 冻结并实现的类型子集只有 `integer` 与 `beat`。`number`、`rational`、
+`boolean`、`enum`、`vector` 在 F2 schema/reader 中必须稳定拒绝，不得通过通用 JSON 或
+opaque extension 绕过；这些类型需要后续 candidate revision 单独冻结 typed model、
+值域、算术、golden 和 hosted 验证后才能开放。
 
 参数不得改变 Component 集合、对象类型、父子关系、AssetId、引用目标或资源闭包。
 Core 首批开放 Beat、lane、position/scale 和受限 Repeat count；不提供 reference 参数。
@@ -155,7 +160,7 @@ golden 前稳定拒绝，不能退化为 opaque JSON。
 冻结 CXC v1 内部的 Chart v5 发行映射：
 
 ```text
-source entry
+source entry (optional)
 compiled entry
 playback entry
 source semantic identity
@@ -171,6 +176,11 @@ CXC 容器版本保持 v1。Foundation 不要求 Stage 6 立即发行 v5，但�
 Header 语义 hash 不直接沿用 v4 source JSON hash。source/build 的分帧算法须另附
 golden；Stage 7A/8 再冻结结合资源内容与 Input/Judgement profile 的 prepared/replay
 identity，不修改现有 v4 组合算法。
+
+Foundation CXC candidate 要求 Packed compiled/playback entry 必须存在并可独立验证，
+source entry 可以保留但不是 v5 Playback 入口。`cxc_pack` 与 `cxc_validate` 只封装或
+验证已生成的 Packed artifact，不执行 CXT 读取、参数冻结或展开；需要展开时必须由
+显式 compile/prepare 步骤先产生 Canonical Semantic Chart 和 Packed bytes。
 
 ### CFF-D：容量和安全门禁
 
@@ -197,7 +207,7 @@ Foundation 覆盖高重复 Pattern、低重复率显式实体、受控混合 pro
 | --- | --- | --- | --- | --- |
 | F0 | 基线与合同冻结 | 无 | Spec/ADR 对照表、fixture 清单、candidate profile | v4 回归基线、revision、术语和支持边界无冲突 |
 | F1 | Canonical semantic model | F0 | typed entity/Requirement/identity model | 能表达 entity、parent、Requirement、资源闭包 |
-| F2 | CXT v2 Core | F1 | v2 schema、reader、finite expander | 16 entity golden、40000 preflight、负例稳定 |
+| F2 | CXT v2 Core | F1 | v2 schema、reader、finite expander | integer/beat 子集、16 entity golden、40000 preflight、负例稳定 |
 | F3 | Packed codec primitive | F0 | byte/varint/CRC/Beat codec | golden、截断/溢出/非最短编码拒绝 |
 | F4 | Packed tables/streams | F1,F3 | STR0/REF0/IDN0/ARCH/ENT0/TRN0/REN0/CNS0/REQ0 | empty/tap/stair round-trip |
 | F5 | Writer sizing | F2,F4 | sizing report、atomic writer | 超 16 MiB 不产生有效部分文件 |
@@ -297,9 +307,12 @@ maxPackedEvents
 maxPreparePeakBytes
 ```
 
-每个必验 profile 都必须达到 40k/16 MiB；同时记录 source bytes、expanded counts、
-Packed bytes、decoded bytes、IDN0 bytes、资源闭包、prepare peak 和耗时。不能把高复用
-fixture 结果解释为任意复杂谱面的保证。
+低复用 profile 冻结为 40,000 个独立实体和独立 identity，不依赖 Pattern/Archetype
+重复来满足实体数。每个必验 profile 都必须达到 40k/16 MiB；同时记录 source bytes、
+expanded counts、Packed bytes、decoded bytes、IDN0 bytes、资源闭包、prepare peak 和耗时。
+decoded bytes、section bytes、prepare peak 和编译耗时等额外预算在当前 Foundation 计划
+中暂不冻结，先作为观测指标记录；不得据此放宽已冻结的输入、实体数或 Packed 文件上限。
+不能把高复用 fixture 结果解释为任意复杂谱面的保证。
 
 ## 3.6 代码开始门槛
 
@@ -377,6 +390,9 @@ semantic/artifact identity、round-trip 和 CXC entry 校验结果
 ```
 
 没有原始容量数据、失败证据和 handoff 清单，不能将计划从 `active` 移入完成目录。
+
+Foundation 关闭必须等待同一 candidate revision 在 hosted MSVC、MinGW、Linux 三平台
+完成构建、测试和拒绝矩阵验证；单一本地工具链通过不能替代跨平台证据。
 
 ## 6. 交接
 

@@ -1,6 +1,5 @@
 # chart-format-update-for-v5：Chart v5 谱面格式与采样合同
 
-本计划遵守[音乐游戏玩法抽象模型](../../../architecture/GAMEPLAY_ABSTRACTION_MODEL.md)：
 Chart v5 只改变要求描述的字段合同和 Packed Chart 物理编码，不把某一种视觉轨道、
 Note 表现或渲染后端提升为核心玩法语义。判定域、动作、有限行为和表现环境应保持
 可分离，以便未来接入不同输入设备与 Presentation。

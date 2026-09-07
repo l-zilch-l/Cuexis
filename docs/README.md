@@ -102,6 +102,8 @@
 - [Stage 5 计划](stage_plans/completed/stage-05/plan.md)
 - [260829 Full Review 整改计划](stage_plans/reviews/full-review-2026-08/remediation-plan.md)
 - [阶段报告索引](stage_reports/README.md)
+- [Chart Format Foundation F0 基线报告](stage_reports/stages/chart-format-foundation/2026-09-05-f0-baseline.md)
+- [Chart Format Foundation F1/F3 实现报告](stage_reports/stages/chart-format-foundation/2026-09-05-f1-f3-semantic-model-and-codecs.md)
 - [260830-followup 最终关闭报告](stage_reports/reviews/260830-followup/2026-09-01-final.md)
 - [Full Review 最终关闭](stage_reports/reviews/full-review-2026-08/2026-08-30-final.md)
 - [候选示例索引](examples/README.md)

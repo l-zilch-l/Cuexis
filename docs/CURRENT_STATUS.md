@@ -27,7 +27,7 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Stage Chart Format Update | completed; CFU-C0-C4, D, E, F and G closed; G6 owner acceptance recorded 2026-08-24 | [plan](stage_plans/completed/chart-format-update/plan.md) |
 | Stage 4 | completed; S4-H hosted and owner acceptance recorded 2026-08-27 | [plan](stage_plans/completed/stage-04/plan.md) |
 | Stage 5 | completed; S5-A through S5-H closed and merged into `master` 2026-08-28 | [plan](stage_plans/completed/stage-05/plan.md)、[completion](stage_reports/stages/stage-05/completion.md) |
-| Chart Format Foundation | active；当前下一实施计划；Stage 5 与 Stage 6 之间的实施门禁；40k/16 MiB 尚未关闭 | [plan](stage_plans/active/chart-format-foundation/plan.md) |
+| Chart Format Foundation | active；F0 基线、F1 typed semantic model、F2 CXT v2 Core 和 F3 Packed codec primitives 已记录 2026-09-05；Stage 5 与 Stage 6 之间的实施门禁；40k/16 MiB 尚未关闭 | [plan](stage_plans/active/chart-format-foundation/plan.md)、[reports](stage_reports/stages/chart-format-foundation/README.md) |
 | Stage 6 | future；Foundation 完成后的 v5-first Playback/Player/CXC candidate path；v4 保留为兼容回退 | [plan](stage_plans/future/stage-06/plan.md) |
 | Stage 7A | future；最小 Input / Judgement / Score / Replay Kernel，作为 Stage 8 硬前置 | [plan](stage_plans/future/stage-07/plan.md) |
 | Stage 7B+ | future；Slide、Flick、多指、校准和高级 Judgement 能力持续演进 | [plan](stage_plans/future/stage-07/plan.md) |

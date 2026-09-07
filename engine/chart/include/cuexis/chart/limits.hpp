@@ -44,6 +44,17 @@ struct ChartLimits final {
     std::size_t maxAnimationSegmentsAndSteps{1048576};
     std::size_t maxGeneratedAnimationRecords{100000};
     std::size_t maxAnimationTemplateBytes{4U * 1024U * 1024U};
+    // Candidate CXT v2 expansion budgets. These are intentionally separate from
+    // the legacy CXT v1 animation limits.
+    std::size_t maxCxtV2Modules{10000};
+    std::size_t maxCxtV2Parameters{256};
+    std::size_t maxCxtV2SlotsPerPrototype{256};
+    std::size_t maxCxtV2Prototypes{10000};
+    std::size_t maxCxtV2Patterns{10000};
+    std::size_t maxCxtV2RepeatDepth{16};
+    std::size_t maxCxtV2Nodes{100000};
+    std::size_t maxCxtV2ExpansionEntities{40000};
+    std::size_t maxCxtV2ExpansionRequirements{40000};
     std::int64_t maxBeatNumeratorMagnitude{1000000000000LL};
     std::int64_t maxBeatDenominator{1000000000LL};
 };

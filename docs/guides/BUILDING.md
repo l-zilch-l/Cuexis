@@ -76,6 +76,43 @@ cuexis_format_check
 ```
 <!-- CUEXIS_ACTIVE_TARGETS_END -->
 
+## C++ toolchain and Catch2 ABI
+
+All C++ dependencies, including Catch2, must be built by the same toolchain as Cuexis. The
+standard `debug` and `release` presets use the MSVC-compatible `x64-windows` vcpkg triplet and
+must be configured from a Visual Studio Developer PowerShell with `cl.exe` available:
+
+```powershell
+cmake --preset debug --fresh
+cmake --build --preset debug
+ctest --preset debug --no-tests=error
+```
+
+For the repository MinGW environment, use the matching preset and triplet instead. A fresh
+build directory is required when changing compiler or triplet:
+
+```powershell
+$env:HTTP_PROXY = "http://127.0.0.1:7890"
+$env:HTTPS_PROXY = "http://127.0.0.1:7890"
+cmake --preset mingw-debug --fresh
+cmake --build --preset mingw-debug
+ctest --preset mingw-debug --no-tests=error
+```
+
+For a complete headless test run (without SDL/OpenGL/Player targets), use:
+
+```powershell
+$env:HTTP_PROXY = "http://127.0.0.1:7890"
+$env:HTTPS_PROXY = "http://127.0.0.1:7890"
+cmake --preset mingw-headless-debug --fresh
+cmake --build --preset mingw-headless-debug
+ctest --preset mingw-headless-debug --no-tests=error
+```
+
+Configure rejects GNU/MinGW with `x64-windows` and MSVC with a `*-mingw-*` triplet. This
+prevents late linker failures caused by mixing MinGW objects with MSVC-built Catch2 libraries,
+including `__CxxFrameHandler4`, MSVC STL symbols, and unresolved Catch2 C++ ABI symbols.
+
 启用 `CUEXIS_BUILD_SHADER_TOOLS` 后还会增加依赖 shader 编译器的 `cuexis_shader`、
 `cuexis_shader_tests` 和 `cuexis_asset_importer`。`app/studio/` 目录已存在但尚未接入 CMake。
 对应模块测试、架构扫描和 Player 失败路径由顶层 CMake 统一注册。
