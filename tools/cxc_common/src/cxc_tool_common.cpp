@@ -1,3 +1,4 @@
+#include <cuexis/tools/cxc_candidate.hpp>
 #include <cuexis/tools/cxc_tool.hpp>
 
 #include "cxc_tool_internal.hpp"
@@ -288,6 +289,10 @@ auto validateCxc(const std::filesystem::path& inputPath) -> CxcToolResult {
         return std::move(*loaded.failure);
     }
     const auto& package = *loaded.package;
+    auto candidateDiagnostics = validateCandidateChartExtension(package);
+    if (candidateDiagnostics.hasErrors()) {
+        return detail::invalid(candidateDiagnostics);
+    }
     return detail::success(
         "Valid CXC: entries=" + std::to_string(package.manifest().entries.size()) + " bytes=" +
         std::to_string(package.bytes().size()) + " identity=" + package.identity().hex());

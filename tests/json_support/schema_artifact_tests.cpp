@@ -114,6 +114,31 @@ TEST_CASE("Stage 1D chart and asset index schemas accept the shipped fixture",
     })");
 }
 
+TEST_CASE("CXT v2 Foundation schema accepts the stair fixture and rejects unsupported types",
+          "[json][schema][artifact][foundation][f2]") {
+    const auto source = std::filesystem::path{CUEXIS_SOURCE_DIR};
+    const auto schema =
+        parseArtifact(source / "schemas" / "cuexis.animation-template.v2.schema.json");
+    requireValid(schema, parseArtifact(source / "tests" / "fixtures" / "chart_format_foundation" /
+                                       "valid" / "pattern_stair.cxt"));
+    requireInvalid(schema, R"({
+        "format":"cuexis.animation-template","version":2,"moduleId":"pattern.case",
+        "moduleKind":"pattern","metadata":{},
+        "parameters":[{"id":"n","type":"number","default":1.0,"minimum":0.0,"maximum":1.0}],
+        "prototypes":[],"patterns":[{"id":"main","nodes":[{"op":"emit","nodeId":"n0",
+          "prototype":"tap","bindings":[],"parent":{"kind":"root"}}],"extensions":{}}],
+        "animations":[],"exports":[{"kind":"pattern","id":"main"}],
+        "requiredExtensions":[],"extensions":{}
+    })");
+    requireInvalid(schema, R"({
+        "format":"cuexis.animation-template","version":2,"moduleId":"pattern.case",
+        "moduleKind":"pattern","metadata":{},"parameters":[],
+        "prototypes":[],"patterns":[],"animations":[{"id":"clip"}],
+        "exports":[{"kind":"pattern","id":"main"}],
+        "requiredExtensions":[],"extensions":{}
+    })");
+}
+
 TEST_CASE("Asset Index v3 schema accepts shader leaves and rejects shader dependencies",
           "[json][schema][artifact][s5-c]") {
     const auto source = std::filesystem::path{CUEXIS_SOURCE_DIR};

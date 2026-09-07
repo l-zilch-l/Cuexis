@@ -184,22 +184,22 @@ source entry 可以保留但不是 v5 Playback 入口。`cxc_pack` 与 `cxc_vali
 
 ### CFF-D：容量和安全门禁
 
-建立：
+建立并冻结绑定门禁：
 
 ```text
-high-reuse / low-reuse / bounded-mixed profiles with 40,000 semantic entities
-each required profile: Packed Chart <= 16 * 1024 * 1024 bytes
+low-reuse profile with 40,000 semantic entities and independent identities
+binding profile: Packed Chart <= 16 * 1024 * 1024 bytes
+high-reuse / bounded-mixed shapes as non-binding design references
 expanded decoded bytes budget
 expanded event count budget
 peak prepare memory budget
 IDN0 size and resource-closure accounting
 ```
 
-Foundation 覆盖高重复 Pattern、低重复率显式实体、受控混合 profile，同时覆盖身份/
-资源引用密集、递归、整数与 Beat 溢出、超展开数量和超 Packed bytes。Stage 8 再
-加入动画/完整判定/效果 profile，不用静态高复用结果替代发行验收。每个必验 profile
-均须达到 40k/16 MiB；profile 的复杂度定义须经 owner acceptance，不能事后只挑
-容易通过的 fixture，也不能承诺实体附带无限数据仍可装下。
+Foundation 以低复用显式实体 profile 作为绑定容量上界，覆盖身份/资源引用密集、递归、
+整数与 Beat 溢出、超展开数量和超 Packed bytes。高复用 Pattern 与受控混合 shape
+保留为设计参考，不作为独立关闭门槛；其编码占用预期不高于低复用 profile，但不据此
+承诺任意复杂谱面。Stage 8 再加入动画/完整判定/效果 profile。
 
 ## 3.1 任务看板与依赖
 
@@ -213,7 +213,7 @@ Foundation 覆盖高重复 Pattern、低重复率显式实体、受控混合 pro
 | F5 | Writer sizing | F2,F4 | sizing report、atomic writer | 超 16 MiB 不产生有效部分文件 |
 | F6 | Reader bridge | F4,F5 | candidate decode/semantic validation | 仅接受登记 subset，未知内容拒绝 |
 | F7 | CXC candidate entry | F5,F6 | pack/validate manifest mapping | semantic/artifact/count/profile 全匹配 |
-| F8 | Capacity/security/parity | F2,F6,F7 | 40k reports、拒绝矩阵、回滚证据 | 三个 profile 和 v4 parity 通过 |
+| F8 | Capacity/security/parity | F2,F6,F7 | 40k low-reuse report、拒绝矩阵、回滚证据 | low-reuse profile 和 v4 parity 通过；高复用/混合仅作参考 |
 | F9 | 交接与关闭 | F8 | dated completion report、Stage 6 handoff | owner acceptance、状态和索引同步 |
 
 ## 3.2 CFF-A：CXT v2 Core 细化任务
@@ -285,7 +285,7 @@ source/build provenance 没有独立排序算法和 golden 前，只能按分项
 
 ```text
 CFF-D1 拆分 source/expansion/decoded/Packed/prepare 五类预算
-CFF-D2 建立高复用、低复用、受控混合三组 40000 entity fixture
+CFF-D2 冻结低复用 40000 entity fixture；高复用/受控混合仅保留可选参考 shape
 CFF-D3 建立截断、溢出、重叠、未知 section、identity mismatch fixture
 CFF-D4 输出 section bytes、IDN0、default hit、field contributor report
 CFF-D5 在 Debug/Release/headless 下重复容量和拒绝测试
@@ -308,8 +308,9 @@ maxPreparePeakBytes
 ```
 
 低复用 profile 冻结为 40,000 个独立实体和独立 identity，不依赖 Pattern/Archetype
-重复来满足实体数。每个必验 profile 都必须达到 40k/16 MiB；同时记录 source bytes、
-expanded counts、Packed bytes、decoded bytes、IDN0 bytes、资源闭包、prepare peak 和耗时。
+重复来满足实体数。该 profile 必须达到 40k/16 MiB；同时记录 source bytes、expanded
+counts、Packed bytes、decoded bytes、IDN0 bytes、资源闭包、prepare peak 和耗时。高复用
+与受控混合只作为后续优化或诊断输入，不构成 Foundation 关闭条件。
 decoded bytes、section bytes、prepare peak 和编译耗时等额外预算在当前 Foundation 计划
 中暂不冻结，先作为观测指标记录；不得据此放宽已冻结的输入、实体数或 Packed 文件上限。
 不能把高复用 fixture 结果解释为任意复杂谱面的保证。
@@ -353,8 +354,8 @@ Known gaps and next-task handoff
 - CXT v2 Core 的候选 Spec、正反例和展开顺序完成。
 - 输入顺序、参数顺序和引用顺序不影响 semantic identity。
 - Packed 原型能够无损还原合法 semantic subset。
-- 高复用、低复用和受控混合三个必验 profile 均在 40,000 个展开语义实体下满足
-  Packed artifact <=16 MiB；超预算输入有稳定拒绝和分项容量报告。
+- 低复用 profile 在 40,000 个展开语义实体下满足 Packed artifact <=16 MiB；高复用和
+  受控混合不作为独立关闭条件。超预算输入有稳定拒绝和分项容量报告。
 - decoded bytes、展开数量、峰值内存和编译时间均有独立预算。
 - 递归、随机、任意表达式、checked arithmetic 溢出和超预算输入稳定失败。
 - CXC v1 的 source/compiled/playback 分层可以被工具验证。
@@ -369,7 +370,7 @@ Known gaps and next-task handoff
 | 语义 | JSON/CXT/Packed 的 entity、parent、Requirement、Beat、引用和 identity 等价 | 不进入 CXC candidate |
 | 物理 | Header、目录、section、CRC、varint 和 Beat 可跨平台还原 | 拒绝 Packed candidate |
 | 安全 | count、offset、UTF-8、CRC、Beat 和预算检查先于分配 | 修复 Reader，不放宽上限 |
-| 容量 | 三个声明 profile 均达到 40k/16 MiB，并有分项报告 | 报告 profile 失败，不降低实体数 |
+| 容量 | 低复用声明 profile 达到 40k/16 MiB，并有分项报告 | 报告绑定 profile 失败，不降低实体数 |
 | 兼容 | v4/CXT v1/CXC v1、FrameDigest 和默认路径回归不变 | 不切换默认路径 |
 | 事务 | expand/decode/write 失败无部分发布，旧 active 状态保留 | 不允许 Stage 6 消费 |
 | CXC | source/compiled/playback、semantic/artifact/count/profile 一致 | package validation 失败 |

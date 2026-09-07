@@ -61,6 +61,24 @@
       "generatorShape": "20000 repeat-generated entities plus 20000 explicit entities; four lane domain; one requirement per entity; bounded complete resource closure"
     }
   ],
+  "capacityHarness": {
+    "test": "tests/chart/chart_foundation_capacity_tests.cpp",
+    "lowReuseGenerator": "40000 explicit instances with distinct identity, beat, lane, and position",
+    "frozenEntityLimit": 40000,
+    "frozenPackedFileLimitBytes": 16777216,
+    "observedOnly": [
+      "sourceBytes",
+      "decodedBytes",
+      "sectionBytes",
+      "preparePeakBytes",
+      "compileMilliseconds"
+    ],
+    "closureRequires": [
+      "hosted-msvc",
+      "hosted-mingw",
+      "hosted-linux"
+    ]
+  },
   "v4Characterization": {
     "tests": [
       "tests/chart/chart_v4_loader_tests.cpp",

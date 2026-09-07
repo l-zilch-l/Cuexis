@@ -218,6 +218,43 @@ expanded entity/event counts（若为 Packed Chart）
 semantic identity 或 Playback 语义。它的 bytes 仍参与精确 package/artifact identity，
 不能一边改变包内 bytes，一边声称整包 hash 不变。
 
+Foundation revision 1 使用已登记的 `extensions["cuexis.chart-entry.v1"]` 结构：
+
+```json
+{
+  "cuexis.chart-entry.v1": {
+    "entries": [
+      {
+        "path": "compiled/chart.packed",
+        "kind": "chart",
+        "encoding": "packed-chart",
+        "playback": true,
+        "sourcePath": "source/chart.v2.cxt",
+        "sourceSemanticIdentity": "<lowercase sha256>",
+        "compiledSemanticIdentity": "<lowercase sha256>",
+        "artifactIdentity": "<lowercase sha256 of exact entry bytes>",
+        "compilerProfile": "candidate.static-tap-lanes4-v1",
+        "expandedEntityCount": 40000,
+        "expandedRequirementCount": 40000
+      }
+    ]
+  }
+}
+```
+
+`sourcePath` 与 `sourceSemanticIdentity` 可省略；其余字段对每个 candidate entry 必需。
+`playback=true` 的 entry 必须是 `packed-chart`，其 `path` 必须存在于同一个 CXC，且
+`artifactIdentity` 必须等于 manifest 基础 entry 的精确 SHA-256。Foundation validator
+还会在 16 MiB entry 门禁内检查 Packed Header/目录和 declared entity/requirement counts。
+`compiledSemanticIdentity` 是展开语义的 typed identity；它不能由 source path、CXT
+参数文本或包 identity 代替。`source` entry 可以保留供审查和复现，但永远不是
+Foundation Playback 入口。
+
+`cxc_pack` 与 `cxc_validate` 不读取、冻结或展开 CXT v2。需要从 CXT 生成 Packed bytes
+时，必须先运行显式 compile/prepare 步骤，再把已生成的 Packed entry 交给 CXC tooling。
+候选 extension 中的未知必需字段、非 `packed-chart` playback、缺失 playback entry、
+artifact hash、count 或 profile 不匹配均 fail closed。
+
 Chart v5 的大小预算分为：
 
 ```text

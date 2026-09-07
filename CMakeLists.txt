@@ -767,6 +767,7 @@ if(TARGET cuexis_cxc_tool_common)
         ALLOWED
             cuexis_cxc
             cuexis::filesystem
+            cuexis::json_support
             cuexis::project
             cuexis::chart
     )

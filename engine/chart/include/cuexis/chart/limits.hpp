@@ -59,4 +59,14 @@ struct ChartLimits final {
     std::int64_t maxBeatDenominator{1000000000LL};
 };
 
+struct PackedChartLimits final {
+    std::size_t maxPackedFileBytes{16U * 1024U * 1024U};
+    std::size_t maxPackedDecodedBytes{16U * 1024U * 1024U};
+    std::size_t maxPackedSectionBytes{16U * 1024U * 1024U};
+    std::size_t maxPackedStrings{100000};
+    std::size_t maxPackedReferences{100000};
+    std::size_t maxPackedEntities{40000};
+    std::size_t maxPackedRequirements{40000};
+};
+
 } // namespace cuexis::chart

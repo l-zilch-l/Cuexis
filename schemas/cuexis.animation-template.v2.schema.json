@@ -4,23 +4,370 @@
   "title": "Cuexis Animation Template v2 Foundation candidate",
   "type": "object",
   "additionalProperties": false,
-  "required": ["format", "version", "moduleId", "moduleKind", "metadata", "parameters", "prototypes", "patterns", "animations", "exports", "requiredExtensions", "extensions"],
+  "required": [
+    "format",
+    "version",
+    "moduleId",
+    "moduleKind",
+    "metadata",
+    "parameters",
+    "prototypes",
+    "patterns",
+    "animations",
+    "exports",
+    "requiredExtensions",
+    "extensions"
+  ],
   "properties": {
-    "format": {"const": "cuexis.animation-template"},
-    "version": {"const": 2},
-    "moduleId": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,255}$"},
-    "moduleKind": {"enum": ["prototype", "pattern"]},
-    "metadata": {"type": "object"},
-    "parameters": {"type": "array", "maxItems": 256, "items": {"type": "object", "additionalProperties": false, "required": ["id", "type", "default", "minimum", "maximum"], "properties": {"id": {"$ref": "#/$defs/id"}, "type": {"const": "integer"}, "default": {"type": "integer"}, "minimum": {"type": "integer"}, "maximum": {"type": "integer"}}}},
-    "prototypes": {"type": "array", "items": {"$ref": "#/$defs/prototype"}},
-    "patterns": {"type": "array", "items": {"$ref": "#/$defs/pattern"}},
-    "animations": {"type": "array", "maxItems": 0},
-    "exports": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["kind", "id"], "properties": {"kind": {"enum": ["prototype", "pattern"]}, "id": {"$ref": "#/$defs/id"}}}, "minItems": 1, "maxItems": 1},
-    "requiredExtensions": {"type": "array"}, "extensions": {"type": "object"}
+    "format": { "const": "cuexis.animation-template" },
+    "version": { "const": 2 },
+    "moduleId": { "$ref": "#/$defs/id" },
+    "moduleKind": { "enum": ["prototype", "pattern"] },
+    "metadata": { "type": "object" },
+    "parameters": {
+      "type": "array",
+      "maxItems": 256,
+      "items": { "$ref": "#/$defs/parameter" }
+    },
+    "prototypes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/prototype" }
+    },
+    "patterns": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/pattern" }
+    },
+    "animations": { "type": "array", "maxItems": 0 },
+    "exports": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "id"],
+        "properties": {
+          "kind": { "enum": ["prototype", "pattern"] },
+          "id": { "$ref": "#/$defs/id" }
+        }
+      }
+    },
+    "requiredExtensions": { "type": "array", "maxItems": 0 },
+    "extensions": { "type": "object", "maxProperties": 0 }
   },
   "$defs": {
-    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,255}$"},
-    "prototype": {"type": "object", "additionalProperties": false, "required": ["id", "slots", "components", "requirements", "extensions"], "properties": {"id": {"$ref": "#/$defs/id"}, "slots": {"type": "array"}, "components": {"type": "array"}, "requirements": {"type": "array"}, "extensions": {"type": "object"}}},
-    "pattern": {"type": "object", "additionalProperties": false, "required": ["id", "nodes", "extensions"], "properties": {"id": {"$ref": "#/$defs/id"}, "nodes": {"type": "array", "minItems": 1}, "extensions": {"type": "object"}}}
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,255}$"
+    },
+    "beat": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["numerator", "denominator"],
+      "properties": {
+        "numerator": { "type": "integer" },
+        "denominator": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "emptyObject": { "type": "object", "maxProperties": 0 },
+    "parameter": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "type", "default", "minimum", "maximum"],
+          "properties": {
+            "id": { "$ref": "#/$defs/id" },
+            "type": { "const": "integer" },
+            "default": { "type": "integer" },
+            "minimum": { "type": "integer" },
+            "maximum": { "type": "integer" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "type", "default"],
+          "properties": {
+            "id": { "$ref": "#/$defs/id" },
+            "type": { "const": "beat" },
+            "default": { "$ref": "#/$defs/beat" },
+            "minimum": { "$ref": "#/$defs/beat" },
+            "maximum": { "$ref": "#/$defs/beat" }
+          }
+        }
+      ]
+    },
+    "slot": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "type", "required"],
+          "properties": {
+            "id": { "$ref": "#/$defs/id" },
+            "type": { "const": "integer" },
+            "required": { "type": "boolean" },
+            "default": { "type": "integer" },
+            "minimum": { "type": "integer" },
+            "maximum": { "type": "integer" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "type", "required"],
+          "properties": {
+            "id": { "$ref": "#/$defs/id" },
+            "type": { "const": "beat" },
+            "required": { "type": "boolean" },
+            "default": { "$ref": "#/$defs/beat" },
+            "minimum": { "$ref": "#/$defs/beat" },
+            "maximum": { "$ref": "#/$defs/beat" }
+          }
+        }
+      ]
+    },
+    "atomSource": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "value"],
+          "properties": {
+            "kind": { "const": "literal" },
+            "value": {
+              "oneOf": [
+                { "type": "integer" },
+                { "$ref": "#/$defs/beat" }
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "id"],
+          "properties": {
+            "kind": { "enum": ["parameter", "slot", "index"] },
+            "id": { "$ref": "#/$defs/id" }
+          }
+        }
+      ]
+    },
+    "valueSource": {
+      "oneOf": [
+        { "$ref": "#/$defs/atomSource" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "input", "scale", "offset"],
+          "properties": {
+            "kind": { "const": "affine" },
+            "input": { "$ref": "#/$defs/atomSource" },
+            "scale": { "$ref": "#/$defs/atomSource" },
+            "offset": { "$ref": "#/$defs/atomSource" }
+          }
+        }
+      ]
+    },
+    "repeatCount": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "value"],
+          "properties": {
+            "kind": { "const": "literal" },
+            "value": { "type": "integer", "minimum": 0 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "id"],
+          "properties": {
+            "kind": { "const": "parameter" },
+            "id": { "$ref": "#/$defs/id" }
+          }
+        }
+      ]
+    },
+    "typedReferenceLiteral": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "value"],
+      "properties": {
+        "kind": { "const": "literal" },
+        "value": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["domain", "id"],
+          "properties": {
+            "domain": { "type": "string" },
+            "id": { "type": "string" }
+          }
+        }
+      }
+    },
+    "parent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": { "enum": ["root", "invocation-parent", "emission"] },
+        "nodeId": { "$ref": "#/$defs/id" }
+      }
+    },
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slot", "source"],
+      "properties": {
+        "slot": { "$ref": "#/$defs/id" },
+        "source": { "$ref": "#/$defs/valueSource" }
+      }
+    },
+    "componentField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "source"],
+      "properties": {
+        "path": { "const": "position[0]" },
+        "source": { "$ref": "#/$defs/valueSource" }
+      }
+    },
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "version", "fields", "extensions"],
+      "properties": {
+        "type": { "const": "cuexis.transform" },
+        "version": { "const": 1 },
+        "fields": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/componentField" }
+        },
+        "extensions": { "$ref": "#/$defs/emptyObject" }
+      }
+    },
+    "requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "interval",
+        "judgementDomain",
+        "requiredAction",
+        "constraints",
+        "effects",
+        "extensions"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "kind": { "const": "tap" },
+        "interval": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "startBeat"],
+          "properties": {
+            "kind": { "const": "point" },
+            "startBeat": { "$ref": "#/$defs/valueSource" }
+          }
+        },
+        "judgementDomain": { "$ref": "#/$defs/typedReferenceLiteral" },
+        "requiredAction": { "$ref": "#/$defs/typedReferenceLiteral" },
+        "constraints": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "value"],
+            "properties": {
+              "kind": { "const": "lane" },
+              "value": { "$ref": "#/$defs/valueSource" }
+            }
+          }
+        },
+        "effects": { "type": "array", "maxItems": 0 },
+        "extensions": { "$ref": "#/$defs/emptyObject" }
+      }
+    },
+    "emitNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op", "nodeId", "prototype", "bindings", "parent"],
+      "properties": {
+        "op": { "const": "emit" },
+        "nodeId": { "$ref": "#/$defs/id" },
+        "prototype": { "$ref": "#/$defs/id" },
+        "bindings": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/binding" }
+        },
+        "parent": { "$ref": "#/$defs/parent" }
+      }
+    },
+    "repeatNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op", "nodeId", "count", "index", "body"],
+      "properties": {
+        "op": { "const": "repeat" },
+        "nodeId": { "$ref": "#/$defs/id" },
+        "count": { "$ref": "#/$defs/repeatCount" },
+        "index": { "$ref": "#/$defs/id" },
+        "body": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/node" }
+        }
+      }
+    },
+    "node": {
+      "oneOf": [
+        { "$ref": "#/$defs/emitNode" },
+        { "$ref": "#/$defs/repeatNode" }
+      ]
+    },
+    "prototype": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "slots", "components", "requirements", "extensions"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "slots": {
+          "type": "array",
+          "maxItems": 256,
+          "items": { "$ref": "#/$defs/slot" }
+        },
+        "components": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/component" }
+        },
+        "requirements": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/requirement" }
+        },
+        "extensions": { "$ref": "#/$defs/emptyObject" }
+      }
+    },
+    "pattern": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "nodes", "extensions"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "nodes": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/node" }
+        },
+        "extensions": { "$ref": "#/$defs/emptyObject" }
+      }
+    }
   }
 }

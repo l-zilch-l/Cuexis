@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-09-05
+更新日期：2026-09-07
 
 本文是 Cuexis 当前产品和阶段状态的唯一摘要。ADR 定义决策，Spec 定义字段和语义，阶段计划定义未来
 范围，阶段报告保存带日期的实施证据；它们不得绕过本文重新定义当前状态。
@@ -27,7 +27,7 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Stage Chart Format Update | completed; CFU-C0-C4, D, E, F and G closed; G6 owner acceptance recorded 2026-08-24 | [plan](stage_plans/completed/chart-format-update/plan.md) |
 | Stage 4 | completed; S4-H hosted and owner acceptance recorded 2026-08-27 | [plan](stage_plans/completed/stage-04/plan.md) |
 | Stage 5 | completed; S5-A through S5-H closed and merged into `master` 2026-08-28 | [plan](stage_plans/completed/stage-05/plan.md)、[completion](stage_reports/stages/stage-05/completion.md) |
-| Chart Format Foundation | active；F0 基线、F1 typed semantic model、F2 CXT v2 Core 和 F3 Packed codec primitives 已记录 2026-09-05；Stage 5 与 Stage 6 之间的实施门禁；40k/16 MiB 尚未关闭 | [plan](stage_plans/active/chart-format-foundation/plan.md)、[reports](stage_reports/stages/chart-format-foundation/README.md) |
+| Chart Format Foundation | active；F0-F8 candidate 实现与本地 MinGW headless 证据已记录 2026-09-07（CXT integer/beat、Packed tables/IO/semantic bridge、CXC mapping、40k low-reuse harness）；高复用/混合仅为可选观测，hosted MSVC/MinGW/Linux 和 owner acceptance 待完成 | [plan](stage_plans/active/chart-format-foundation/plan.md)、[reports](stage_reports/stages/chart-format-foundation/README.md) |
 | Stage 6 | future；Foundation 完成后的 v5-first Playback/Player/CXC candidate path；v4 保留为兼容回退 | [plan](stage_plans/future/stage-06/plan.md) |
 | Stage 7A | future；最小 Input / Judgement / Score / Replay Kernel，作为 Stage 8 硬前置 | [plan](stage_plans/future/stage-07/plan.md) |
 | Stage 7B+ | future；Slide、Flick、多指、校准和高级 Judgement 能力持续演进 | [plan](stage_plans/future/stage-07/plan.md) |

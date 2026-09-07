@@ -2,7 +2,7 @@
 
 状态：现行格式索引
 
-更新日期：2026-09-05
+更新日期：2026-09-07
 
 ## Artifact 分层
 
@@ -40,7 +40,7 @@ Compiled Runtime
 | Packed Chart v1 | [PACKED_CHART_FORMAT.md](PACKED_CHART_FORMAT.md) | candidate；Header/目录、字典/身份、Archetype 与实体差异流、无损 Beat；未实现 |
 | CXC v1 | [CXC_FORMAT.md](CXC_FORMAT.md) | accepted and implemented internally; archive/tools and Playback source/prepare/identity gates closed; no public CXC package API |
 | CXT v1 | [CXT_FORMAT.md](CXT_FORMAT.md) | accepted contract; Reader/Writer/lowering and prepare import/lookup implemented; CFU-F and G4 hosted gates closed; Stage 4 animation execution closed |
-| CXT v2 | [CXT_V2_FORMAT.md](CXT_V2_FORMAT.md) | candidate；Foundation 的 Slot/Binding/ValueSource/有限 Repeat；Animation Extension 在 Stage 8 收敛；无生产 Reader |
+| CXT v2 | [CXT_V2_FORMAT.md](CXT_V2_FORMAT.md) | candidate；Foundation F2 integer/beat reader/expander 已实现；Animation Extension 在 Stage 8 收敛；非生产 Schema，未接入默认 Playback |
 | Chart v6 / Model v1 | [chart-format-update-for-v6 plan](../stage_plans/deferred/chart-format-update-for-v6/plan.md) | deferred；静态 glTF 2.0、内置网格、默认扁平片、submesh 槽；无生产 Spec |
 | Chart v7 | [chart-format-update-for-v7 plan](../stage_plans/deferred/chart-format-update-for-v7/plan.md) | deferred；曲线形变（最多两轴；仅贝塞尔）、line、`shader.json` 接口；后处理不实现；无生产 Spec |
 | Chart v8 | [chart-format-update-for-v8 plan](../stage_plans/deferred/chart-format-update-for-v8/plan.md) | deferred；双轴贝塞尔、模型基本动画、内置后处理；无生产 Spec |

@@ -1,8 +1,8 @@
 # Cuexis Chart Template (CXT) v2
 
-状态：candidate；Foundation 作者层模板提案；未实现，非生产 Schema
+状态：candidate；Foundation 作者层模板提案；F2 integer/beat reader 已实现；非生产 Schema
 
-更新日期：2026-09-05
+更新日期：2026-09-07
 
 依据：[玩法抽象模型](../architecture/GAMEPLAY_ABSTRACTION_MODEL.md)、
 [Chart v5 计划](../stage_plans/active/chart-format-update-for-v5/plan.md)、
@@ -394,9 +394,10 @@ prepared/replay identity   semantic + 实际资源内容 + 输入/判定配置
 
 ## 8. 完整示例：四车道阶梯
 
-本例是语法完整的候选 CXT 模块，但**不是现有 Reader 可加载的生产 fixture**。
-默认 groups=4，每组四个 tap，lane 固定 0..3；每组一拍，组内间隔四分之一拍。
-Transform 只是可移除的表现位置，lane constraint 才描述要求。
+本例是 Foundation F2 candidate reader 的 16-entity 阶梯 golden。它仍不是生产 Schema，
+也不能作为默认 Playback 输入。默认 groups=4，每组四个 tap，lane 固定 0..3；每组一拍，
+组内间隔四分之一拍。Transform 只是可移除的表现位置，lane constraint 才描述要求。
+Foundation 子集用 integer 字面量写 position affine；`number` 字面量保持拒绝。
 
 ```json
 {
@@ -425,8 +426,8 @@ Transform 只是可移除的表现位置，lane constraint 才描述要求。
               "source": {
                 "kind": "affine",
                 "input": { "kind": "slot", "id": "lane" },
-                "scale": { "kind": "literal", "value": 1.0 },
-                "offset": { "kind": "literal", "value": 0.0 }
+                "scale": { "kind": "literal", "value": 1 },
+                "offset": { "kind": "literal", "value": 0 }
               }
             }
           ]

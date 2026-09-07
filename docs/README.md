@@ -104,6 +104,8 @@
 - [阶段报告索引](stage_reports/README.md)
 - [Chart Format Foundation F0 基线报告](stage_reports/stages/chart-format-foundation/2026-09-05-f0-baseline.md)
 - [Chart Format Foundation F1/F3 实现报告](stage_reports/stages/chart-format-foundation/2026-09-05-f1-f3-semantic-model-and-codecs.md)
+- [Chart Format Foundation F2 缺口闭合报告](stage_reports/stages/chart-format-foundation/2026-09-07-f2-core-gap-closure.md)
+- [Chart Format Foundation F4-F6 Packed tables/IO 报告](stage_reports/stages/chart-format-foundation/2026-09-07-f4-f6-packed-tables-io.md)
 - [260830-followup 最终关闭报告](stage_reports/reviews/260830-followup/2026-09-01-final.md)
 - [Full Review 最终关闭](stage_reports/reviews/full-review-2026-08/2026-08-30-final.md)
 - [候选示例索引](examples/README.md)

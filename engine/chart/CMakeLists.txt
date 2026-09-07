@@ -21,6 +21,8 @@ target_sources(cuexis_chart
         src/chart_v4_animation_reader_internal.cpp
         src/chart_project_path_internal.cpp
         src/packed_chart_primitives.cpp
+        src/packed_chart_tables.cpp
+        src/packed_chart_io.cpp
         src/rational_beat.cpp
         src/timing_map.cpp
         src/uuid.cpp
@@ -45,6 +47,8 @@ target_sources(cuexis_chart
             include/cuexis/chart/limits.hpp
             include/cuexis/chart/prepared_semantic_identity.hpp
             include/cuexis/chart/packed_chart_primitives.hpp
+            include/cuexis/chart/packed_chart_tables.hpp
+            include/cuexis/chart/packed_chart_io.hpp
             include/cuexis/chart/rational_beat.hpp
             include/cuexis/chart/timing_map.hpp
             include/cuexis/chart/uuid.hpp
