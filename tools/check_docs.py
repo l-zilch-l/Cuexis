@@ -31,6 +31,7 @@ TARGET_BLOCK_END = "<!-- CUEXIS_ACTIVE_TARGETS_END -->"
 STAGE_PLAN_REQUIREMENTS = (
     ("stage_plans/completed/260830-followup/plan.md", ("completed",)),
     ("stage_plans/completed/stage-05/plan.md", ("completed",)),
+    ("stage_plans/active/chart-format-update-for-v5/plan.md", ("active",)),
     ("stage_plans/future/stage-06/plan.md", ("future",)),
     ("stage_plans/future/stage-07/plan.md", ("future",)),
     ("stage_plans/future/stage-08/plan.md", ("future",)),
@@ -58,6 +59,7 @@ DIRECTORY_INDEXES = (
     "stage_reports/stages/stage-01/README.md",
     "stage_reports/stages/stage-04/README.md",
     "stage_reports/stages/stage-05/README.md",
+    "stage_reports/stages/chart-format-foundation/README.md",
 )
 STAGE_NAVIGATION_INDEXES = {
     "stage_plans/README.md",
@@ -67,6 +69,7 @@ STAGE_NAVIGATION_INDEXES = {
     "stage_reports/stages/stage-01/README.md",
     "stage_reports/stages/stage-04/README.md",
     "stage_reports/stages/stage-05/README.md",
+    "stage_reports/stages/chart-format-foundation/README.md",
 }
 ROOT_DOCUMENTATION_FILES = {
     "README.md",

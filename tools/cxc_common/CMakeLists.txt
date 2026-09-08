@@ -3,6 +3,7 @@ add_library(cuexis::cxc_tool_common ALIAS cuexis_cxc_tool_common)
 
 target_sources(cuexis_cxc_tool_common
     PRIVATE
+        src/cxc_candidate.cpp
         src/cxc_pack.cpp
         src/cxc_tool_common.cpp
         src/cxc_tool_internal.hpp
@@ -11,6 +12,7 @@ target_sources(cuexis_cxc_tool_common
         FILE_SET HEADERS
         BASE_DIRS include
         FILES
+        include/cuexis/tools/cxc_candidate.hpp
         include/cuexis/tools/cxc_tool.hpp
 )
 
@@ -20,6 +22,7 @@ target_link_libraries(cuexis_cxc_tool_common
         cuexis_cxc
     PRIVATE
         cuexis::filesystem
+        cuexis::json_support
         cuexis::project
         cuexis::chart
 )

@@ -2,7 +2,7 @@
 
 状态：historical
 
-更新日期：2026-09-01
+更新日期：2026-09-05
 
 以下旧逻辑路径已迁入 canonical 目录。映射供历史引用迁移使用，不保留逐文件 compatibility stub。
 
@@ -26,3 +26,4 @@
 - `stage_9b_implementation_plan.md` -> [canonical](deferred/stage-09b/plan.md)
 - `stage_chart_format_update_implementation_plan.md` -> [canonical](completed/chart-format-update/plan.md)
 - `active/260830-followup/` -> [canonical](completed/260830-followup/)
+- `future/chart-format-foundation/plan.md` -> [canonical](active/chart-format-foundation/plan.md)

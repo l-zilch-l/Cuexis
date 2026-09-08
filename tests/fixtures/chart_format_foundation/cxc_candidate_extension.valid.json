@@ -1,0 +1,19 @@
+{
+  "cuexis.chart-entry.v1": {
+    "entries": [
+      {
+        "path": "compiled/chart.packed",
+        "kind": "chart",
+        "encoding": "packed-chart",
+        "playback": true,
+        "sourcePath": "source/chart.v2.cxt",
+        "sourceSemanticIdentity": "1111111111111111111111111111111111111111111111111111111111111111",
+        "compiledSemanticIdentity": "2222222222222222222222222222222222222222222222222222222222222222",
+        "artifactIdentity": "3333333333333333333333333333333333333333333333333333333333333333",
+        "compilerProfile": "candidate.static-tap-lanes4-v1",
+        "expandedEntityCount": 40000,
+        "expandedRequirementCount": 40000
+      }
+    ]
+  }
+}

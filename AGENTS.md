@@ -35,7 +35,10 @@ delivered the optional shader toolchain, public presentation support, cache, con
 safety gates. `260829-full-review` followed as a separate branch and closed on August 30, 2026.
 The `260830-followup` branch had three tasks: documentation reorganization, Chart/CXC parse-once,
 and targeted branch coverage for critical modules. All three tasks are complete; PR #22 merged the
-branch into `master` on September 1, 2026. Stage 6 remains future and has not started.
+branch into `master` on September 1, 2026. Stage 6 started on September 2, 2026. Its active plan
+was superseded as the current stage by `chart-format-update-for-v5`; Stage 6 is future and its plan
+retains the three open issues from the September stage-verification report: release version
+enforcement, a backend-neutral presentation renderer boundary, and common media support.
 Stage 4 is complete. ADR 0038 defines `.cxc` as a strict ZIP32 Stored exchange
 package containing existing Project/Asset Index formats, `cuexis.chart` v4 data, CXT JSON, and
 required resources. The CXT v1, ChartParameter, and Template Binding subdecision was accepted on

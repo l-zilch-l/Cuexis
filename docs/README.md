@@ -2,7 +2,7 @@
 
 状态：现行文档入口
 
-更新日期：2026-09-01
+更新日期：2026-09-05
 
 本文档是 Cuexis 文档的导航页，不复制产品合同、阶段证据或完整字段定义。当前项目状态只
 以 [CURRENT_STATUS.md](CURRENT_STATUS.md) 为准。
@@ -12,6 +12,7 @@
 1. [当前状态](CURRENT_STATUS.md)
 2. [项目指南](PROJECT_GUIDE.md)
 3. [产品与模块边界](architecture/README.md)
+   - [音乐游戏玩法抽象模型](architecture/GAMEPLAY_ABSTRACTION_MODEL.md)
 4. [ADR 索引](adr/README.md)，先读 ADR 0027、0024、0025、0026、0037、0038 和 0040
 5. [格式索引](formats/README.md)
 6. [260830-followup 已完成计划](stage_plans/completed/260830-followup/plan.md)
@@ -41,6 +42,7 @@
 
 - [项目指南](PROJECT_GUIDE.md)
 - [架构总览](architecture/README.md)
+- [音乐游戏玩法抽象模型](architecture/GAMEPLAY_ABSTRACTION_MODEL.md)
 - [模块边界](architecture/MODULE_BOUNDARIES.md)
 - [RuntimeSession](architecture/RUNTIME_SESSION.md)
 - [项目路线图](ROADMAP.md)
@@ -52,8 +54,11 @@
 - [格式索引](formats/README.md)
 - [Chart v1/v2/v3 生产格式](formats/CHART_FORMAT.md)
 - [Chart v4 接受合同](formats/CHART_V4_FORMAT.md)
+- [Chart v4 谱面编写指南](guides/CHART_V4_AUTHORING.md)
 - [CXC v1 接受合同](formats/CXC_FORMAT.md)
 - [CXT v1 接受合同](formats/CXT_FORMAT.md)
+- [CXT v2 候选合同](formats/CXT_V2_FORMAT.md)
+- [Packed Chart v1 物理存储候选合同](formats/PACKED_CHART_FORMAT.md)
 - [TimingMap](formats/TIMING_MODEL.md)
 - [Animation Mixing](formats/ANIMATION_MIXING.md)
 - [Portable Presentation v1](formats/PORTABLE_PRESENTATION.md)
@@ -89,12 +94,18 @@
 ## 阶段、证据和示例
 
 - [阶段计划索引](stage_plans/README.md)
+- [Chart Format Foundation 当前下一实施计划](stage_plans/active/chart-format-foundation/plan.md)
+- [Stage 8 Chart v5 正式发行计划](stage_plans/future/stage-08/plan.md)
 - [260830-followup 已完成计划](stage_plans/completed/260830-followup/plan.md)
 - [Stage Chart Format Update 计划](stage_plans/completed/chart-format-update/plan.md)
 - [Stage 4 计划](stage_plans/completed/stage-04/plan.md)
 - [Stage 5 计划](stage_plans/completed/stage-05/plan.md)
 - [260829 Full Review 整改计划](stage_plans/reviews/full-review-2026-08/remediation-plan.md)
 - [阶段报告索引](stage_reports/README.md)
+- [Chart Format Foundation F0 基线报告](stage_reports/stages/chart-format-foundation/2026-09-05-f0-baseline.md)
+- [Chart Format Foundation F1/F3 实现报告](stage_reports/stages/chart-format-foundation/2026-09-05-f1-f3-semantic-model-and-codecs.md)
+- [Chart Format Foundation F2 缺口闭合报告](stage_reports/stages/chart-format-foundation/2026-09-07-f2-core-gap-closure.md)
+- [Chart Format Foundation F4-F6 Packed tables/IO 报告](stage_reports/stages/chart-format-foundation/2026-09-07-f4-f6-packed-tables-io.md)
 - [260830-followup 最终关闭报告](stage_reports/reviews/260830-followup/2026-09-01-final.md)
 - [Full Review 最终关闭](stage_reports/reviews/full-review-2026-08/2026-08-30-final.md)
 - [候选示例索引](examples/README.md)

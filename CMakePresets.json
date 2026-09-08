@@ -26,6 +26,24 @@
       }
     },
     {
+      "name": "mingw-debug",
+      "displayName": "MinGW Debug",
+      "inherits": "debug",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x64-mingw-static"
+      }
+    },
+    {
+      "name": "mingw-headless-debug",
+      "displayName": "MinGW Headless Debug",
+      "inherits": "headless-debug",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x64-mingw-static"
+      }
+    },
+    {
       "name": "debug-shader-tools",
       "displayName": "Debug with optional shader tools",
       "inherits": "debug",
@@ -164,6 +182,14 @@
       "configurePreset": "debug"
     },
     {
+      "name": "mingw-debug",
+      "configurePreset": "mingw-debug"
+    },
+    {
+      "name": "mingw-headless-debug",
+      "configurePreset": "mingw-headless-debug"
+    },
+    {
       "name": "debug-shader-tools",
       "configurePreset": "debug-shader-tools"
     },
@@ -224,6 +250,26 @@
     {
       "name": "debug",
       "configurePreset": "debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "mingw-debug",
+      "configurePreset": "mingw-debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "mingw-headless-debug",
+      "configurePreset": "mingw-headless-debug",
       "output": {
         "outputOnFailure": true
       },

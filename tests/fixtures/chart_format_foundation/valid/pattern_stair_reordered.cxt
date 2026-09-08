@@ -1,0 +1,153 @@
+{
+  "format": "cuexis.animation-template",
+  "version": 2,
+  "moduleId": "pattern.stair",
+  "moduleKind": "pattern",
+  "metadata": { "title": "reordered" },
+  "parameters": [
+    { "id": "groups", "type": "integer", "default": 4, "minimum": 1, "maximum": 10000 }
+  ],
+  "prototypes": [
+    {
+      "id": "tap",
+      "slots": [
+        { "id": "lane", "type": "integer", "required": true, "minimum": 0, "maximum": 3 },
+        { "id": "beat", "type": "beat", "required": true }
+      ],
+      "components": [
+        {
+          "type": "cuexis.transform",
+          "version": 1,
+          "fields": [
+            {
+              "path": "position[0]",
+              "source": {
+                "kind": "affine",
+                "input": { "kind": "slot", "id": "lane" },
+                "scale": { "kind": "literal", "value": 1 },
+                "offset": { "kind": "literal", "value": 0 }
+              }
+            }
+          ],
+          "extensions": {}
+        }
+      ],
+      "requirements": [
+        {
+          "id": "hit",
+          "kind": "tap",
+          "interval": {
+            "kind": "point",
+            "startBeat": { "kind": "slot", "id": "beat" }
+          },
+          "judgementDomain": {
+            "kind": "literal",
+            "value": { "domain": "judgement-domain", "id": "candidate.lanes4" }
+          },
+          "requiredAction": {
+            "kind": "literal",
+            "value": { "domain": "action", "id": "press" }
+          },
+          "constraints": [
+            { "kind": "lane", "value": { "kind": "slot", "id": "lane" } }
+          ],
+          "effects": [],
+          "extensions": {}
+        }
+      ],
+      "extensions": {}
+    }
+  ],
+  "patterns": [
+    {
+      "id": "stair",
+      "nodes": [
+        {
+          "op": "repeat",
+          "nodeId": "groups",
+          "count": { "kind": "parameter", "id": "groups" },
+          "index": "g",
+          "body": [
+            {
+              "op": "emit",
+              "nodeId": "n3",
+              "prototype": "tap",
+              "bindings": [
+                { "slot": "lane", "source": { "kind": "literal", "value": 3 } },
+                {
+                  "slot": "beat",
+                  "source": {
+                    "kind": "affine",
+                    "input": { "kind": "index", "id": "g" },
+                    "scale": { "kind": "literal", "value": { "numerator": 1, "denominator": 1 } },
+                    "offset": { "kind": "literal", "value": { "numerator": 3, "denominator": 4 } }
+                  }
+                }
+              ],
+              "parent": { "kind": "invocation-parent" }
+            },
+            {
+              "op": "emit",
+              "nodeId": "n2",
+              "prototype": "tap",
+              "bindings": [
+                { "slot": "lane", "source": { "kind": "literal", "value": 2 } },
+                {
+                  "slot": "beat",
+                  "source": {
+                    "kind": "affine",
+                    "input": { "kind": "index", "id": "g" },
+                    "scale": { "kind": "literal", "value": { "numerator": 1, "denominator": 1 } },
+                    "offset": { "kind": "literal", "value": { "numerator": 1, "denominator": 2 } }
+                  }
+                }
+              ],
+              "parent": { "kind": "invocation-parent" }
+            },
+            {
+              "op": "emit",
+              "nodeId": "n1",
+              "prototype": "tap",
+              "bindings": [
+                { "slot": "lane", "source": { "kind": "literal", "value": 1 } },
+                {
+                  "slot": "beat",
+                  "source": {
+                    "kind": "affine",
+                    "input": { "kind": "index", "id": "g" },
+                    "scale": { "kind": "literal", "value": { "numerator": 1, "denominator": 1 } },
+                    "offset": { "kind": "literal", "value": { "numerator": 1, "denominator": 4 } }
+                  }
+                }
+              ],
+              "parent": { "kind": "invocation-parent" }
+            },
+            {
+              "op": "emit",
+              "nodeId": "n0",
+              "prototype": "tap",
+              "bindings": [
+                { "slot": "lane", "source": { "kind": "literal", "value": 0 } },
+                {
+                  "slot": "beat",
+                  "source": {
+                    "kind": "affine",
+                    "input": { "kind": "index", "id": "g" },
+                    "scale": { "kind": "literal", "value": { "numerator": 1, "denominator": 1 } },
+                    "offset": { "kind": "literal", "value": { "numerator": 0, "denominator": 1 } }
+                  }
+                }
+              ],
+              "parent": { "kind": "invocation-parent" }
+            }
+          ]
+        }
+      ],
+      "extensions": {}
+    }
+  ],
+  "animations": [],
+  "exports": [{ "kind": "pattern", "id": "stair" }],
+  "requiredExtensions": [],
+  "extensions": {}
+}

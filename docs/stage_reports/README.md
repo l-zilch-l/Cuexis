@@ -16,6 +16,7 @@
 - [Stage Chart Format Update](chart-format-update/README.md)
 - [Stage 4](stages/stage-04/README.md)
 - [Stage 5](stages/stage-05/README.md)
+- [Chart Format Foundation](stages/chart-format-foundation/README.md)
 
 ## 跨阶段专题
 
@@ -29,6 +30,7 @@
 - [Full Review 2026-08](reviews/full-review-2026-08/README.md)
 - [Full Review final closure](reviews/full-review-2026-08/2026-08-30-final.md)
 - [SDK transition verification](sdk-transition/verification.md)
+- [Stage Verification 2026-09 核验记录](reviews/stage-verification-2026-09/2026-09-01-findings.md)（active）
 
 ## 历史路径
 

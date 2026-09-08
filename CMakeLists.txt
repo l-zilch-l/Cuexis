@@ -4,6 +4,20 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CuexisVersion.cmake")
 
 project(Cuexis VERSION ${CUEXIS_CMAKE_VERSION} LANGUAGES CXX)
 
+# Catch2 and all C++ dependencies must use the same ABI as the active compiler.
+# Fail during configure instead of deferring a toolchain mismatch to the linker.
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND
+   VCPKG_TARGET_TRIPLET MATCHES "windows" AND
+   NOT VCPKG_TARGET_TRIPLET MATCHES "mingw")
+    message(FATAL_ERROR
+        "GNU/MinGW requires a *-mingw-* vcpkg triplet; got ${VCPKG_TARGET_TRIPLET}. "
+        "Use the mingw-debug preset or configure with a matching triplet.")
+endif()
+if(MSVC AND VCPKG_TARGET_TRIPLET MATCHES "mingw")
+    message(FATAL_ERROR
+        "MSVC requires an MSVC vcpkg triplet; got ${VCPKG_TARGET_TRIPLET}.")
+endif()
+
 include(CTest)
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
@@ -753,6 +767,7 @@ if(TARGET cuexis_cxc_tool_common)
         ALLOWED
             cuexis_cxc
             cuexis::filesystem
+            cuexis::json_support
             cuexis::project
             cuexis::chart
     )

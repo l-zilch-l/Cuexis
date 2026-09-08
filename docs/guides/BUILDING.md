@@ -76,6 +76,43 @@ cuexis_format_check
 ```
 <!-- CUEXIS_ACTIVE_TARGETS_END -->
 
+## C++ toolchain and Catch2 ABI
+
+All C++ dependencies, including Catch2, must be built by the same toolchain as Cuexis. The
+standard `debug` and `release` presets use the MSVC-compatible `x64-windows` vcpkg triplet and
+must be configured from a Visual Studio Developer PowerShell with `cl.exe` available:
+
+```powershell
+cmake --preset debug --fresh
+cmake --build --preset debug
+ctest --preset debug --no-tests=error
+```
+
+For the repository MinGW environment, use the matching preset and triplet instead. A fresh
+build directory is required when changing compiler or triplet:
+
+```powershell
+$env:HTTP_PROXY = "http://127.0.0.1:7890"
+$env:HTTPS_PROXY = "http://127.0.0.1:7890"
+cmake --preset mingw-debug --fresh
+cmake --build --preset mingw-debug
+ctest --preset mingw-debug --no-tests=error
+```
+
+For a complete headless test run (without SDL/OpenGL/Player targets), use:
+
+```powershell
+$env:HTTP_PROXY = "http://127.0.0.1:7890"
+$env:HTTPS_PROXY = "http://127.0.0.1:7890"
+cmake --preset mingw-headless-debug --fresh
+cmake --build --preset mingw-headless-debug
+ctest --preset mingw-headless-debug --no-tests=error
+```
+
+Configure rejects GNU/MinGW with `x64-windows` and MSVC with a `*-mingw-*` triplet. This
+prevents late linker failures caused by mixing MinGW objects with MSVC-built Catch2 libraries,
+including `__CxxFrameHandler4`, MSVC STL symbols, and unresolved Catch2 C++ ABI symbols.
+
 启用 `CUEXIS_BUILD_SHADER_TOOLS` 后还会增加依赖 shader 编译器的 `cuexis_shader`、
 `cuexis_shader_tests` 和 `cuexis_asset_importer`。`app/studio/` 目录已存在但尚未接入 CMake。
 对应模块测试、架构扫描和 Player 失败路径由顶层 CMake 统一注册。
@@ -208,6 +245,21 @@ ctest --preset release --no-tests=error
 pwsh -NoProfile -File tools/check_pre_push.ps1 -Mode Quick
 pwsh -NoProfile -File tools/check_pre_push.ps1 -Mode Full
 ```
+
+#### Pull Request 前版本门禁
+
+每次提交或更新 Pull Request 前都必须递增仓库显示版本号；该规则同样适用于代码、测试、构建配置和
+文档变更，不得按变更类型跳过。使用 UTC 日期执行版本更新：日期变化时将 build 设为 `1`，同一 UTC
+日期再次提交时递增 build，并把版本源文件的改动包含在同一个 Pull Request 中：
+
+```powershell
+python -B tools/update_version.py yy.mm.dd-v
+python -B tools/update_version.py --check
+```
+
+未完成版本递增、`cmake/CuexisVersion.cmake` 与 `vcpkg.json` 不一致，或版本改动未包含在 Pull Request
+中时，不得提交或合并该 Pull Request。该门禁只更新日期构建身份，不隐式升级 SDK API、内容格式或 ABI；
+完整规则见 [VERSIONING.md](VERSIONING.md)。
 
 `Quick` 执行版本一致性、文档契约、暂存区与工作区 whitespace 检查，并对 CMake 格式目标覆盖的
 全部 C++ 文件执行 `clang-format --dry-run --Werror`。`Full` 还会自动初始化 MSVC x64 环境，执行
