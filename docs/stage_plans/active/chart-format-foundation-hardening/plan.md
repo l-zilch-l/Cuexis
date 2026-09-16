@@ -1,6 +1,6 @@
 # Chart Format Foundation Hardening：交接加固实施计划
 
-状态：active；当前实施阶段；R0 基线与复现完成（决策 D1-D3 待 owner 确认），R1-R5 未开始，
+状态：active；当前实施阶段；R0 完成（D1-D3 已由 owner 裁定），R1-R5 未开始，
 Stage 6 保持 future
 
 更新日期：2026-09-16
@@ -74,7 +74,7 @@ R0 基线、复现和合同决策
 
 | 批次 | 当前状态 | 必要输出 | 退出条件 |
 | --- | --- | --- | --- |
-| R0 | 基线与复现完成；决策 D1-D3 待 owner 确认 | [R0 报告](../../../stage_reports/stages/chart-format-foundation/2026-09-16-r0-baseline-and-reproduction.md)、验收矩阵、表征测试 | 实际缺口与证据来源明确（已达成）；决策确认后 R1 前置齐备 |
+| R0 | 完成；D1-D3 已由 owner 裁定 | [R0 报告](../../../stage_reports/stages/chart-format-foundation/2026-09-16-r0-baseline-and-reproduction.md)、验收矩阵、11 个表征测试、决策 D1-D3 | 实际缺口与证据来源明确（已达成）；R1 前置齐备 |
 | R1 | pending | 语义 hash、Header/CXC 比对、golden | 身份伪造和不匹配均被拒绝 |
 | R2 | pending | profile 验证与独立负例 | 所有入口仅接受登记 subset |
 | R3 | pending | 预算表、检查实现、边界测试 | 硬限制生效，观测项不冒充硬门禁 |

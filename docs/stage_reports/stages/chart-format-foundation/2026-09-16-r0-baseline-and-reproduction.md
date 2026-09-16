@@ -174,27 +174,34 @@ Spec 5.3 对 Foundation revision 1 的完整清单与实现一致，**没有发�
   `PackedChartReader::decode`/`packed::decode` 是唯一语义消费入口，R1 在 decode 内完成重算比对。
   该职责需要在公共头注释与调用点写明，但不需要新公共类型。
 
-### 待 owner 决定（会改变已接受 wire 或需要 CXC core 行为变更）
+### 已决（owner 于 2026-09-16 确认，三选一均已裁定）
 
-- **D1 IDN0 布局（A02）。** 两条路互斥，必须由 owner 选择：
-  (a) 实现 Spec 6.5 的 scopes/paths 表与索引式 tag 1——符合已接受的 Spec，但改变当前产物字节；
-  (b) 修订 Spec 6.5 为「内联 tuple」并说明理由——保留当前产物，但会改写已接受格式合同。
-  影响面：`packed_chart_tables.cpp` 的 IDN0 写入/读取、Spec 6.5、语义预映像的 identity bytes
-  定义（两者在 canonical identity bytes 上目前一致，只有 IDN0 record 布局不同）、revision 策略。
-- **D2 DBG0 是否被 Foundation Reader 接受（A01）。** Spec 5.3 已登记 DBG0 为可选 inspection 段且
-  「未知 inspection 段可在校验长度与 CRC 后忽略」，IO 桥也已把它列为已知；建议 R2 让
-  `packed::inspect/decode` 接受并忽略 DBG0（不读取其中任何数据），但这会改变当前拒绝行为，
-  需要 owner 确认；另一选择是修订 Spec 取消 DBG0 的 revision 1 登记。
-- **D3 CXC 闭包是否容纳候选 playback entry（A03）。** 建议在 `cxc_package.cpp` 的 `reachable`
-  计算中，把已登记候选扩展 `cuexis.chart-entry.v1` 声明的播放 entry 路径纳入闭包（仅该登记
-  扩展、仅 playback 条目），否则 Spec 12 的候选包永远无法被打开与验证。这是 CXC core 的行为
-  变更，需要 owner 接受后再由 R1/R4 实施。
+- **D1 IDN0 布局（A02）：按 Spec 6.5 修实现。** 选择方案 (a)：`writeIdentitySection`/decode 改为写读
+  Spec 6.5 的 scopes/paths 表，并以 scopeIndex/pathIndex（加 indexed step 的
+  iterationIndex）表达 tag 1。权威 Spec 不变、candidate revision 不变、已发布的 v4 identity 与
+  FrameDigest 不受影响；canonical identity bytes（6.5 末段）与语义预映像保持同一形式，因此
+  R1 的 hash golden 不受此次布局对齐影响。R1 负责实现并补 G 系列负例（非法 scopeIndex/
+  pathIndex、未排序或重复 scopes/paths）。
+- **D2 DBG0（A01）：让 `inspect`/`decode` 接受并忽略。** 选择方案 (a)：注册表承认 DBG0
+  （flags 必须为 1），只校验长度与 CRC，不读取其中任何数据、不供 Runtime 使用；发行 Writer
+  继续默认省略 inspection 段。属于使实现回到 Spec 5.3 已登记行为，不改 wire、不改 revision。
+  实施批次 R2，并用 R0-A01 用例翻转验证。
+- **D3 CXC 闭包（A03）：扩展闭包，容纳登记扩展声明的 playback entry。** 选择方案 (a)：在
+  `cxc_package.cpp` 的 `reachable` 计算中，把已登记扩展 `cuexis.chart-entry.v1` 中
+  `playback=true` 的 entry 路径纳入闭包（仅该登记扩展、仅 playback 条目，其余 entry 仍受
+  原有项目闭包约束）。依据：CXC Spec 4 已要求 `playback=true` 的 entry「必须存在于同一个
+  CXC」，而 Spec 5 的闭包枚举漏列该路径，属实现与 Spec 意图不一致；因此这是由真实集成缺口
+  驱动的 CXC core 最小修正 + Spec 5 澄清句，不新增公共 API、不改 ZIP32/manifest 三字段合同、
+  不需要 ADR。实施批次 R1（它同时解阻 R1.5 的 CXC 比对端到端证据），并在 CXC Spec 5 补一句
+  闭包包含关系，R4 用真实候选包复核。
 
-### 决策未定前的推进规则
+### 决策后的推进规则
 
-D1 未定：R1 可以完成与 IDN0 布局无关的部分（预映像、SHA-256、Header 写入与重算比对、golden），
-但**不得**在 IDN0 上同时改 wire 与 hash 合同。D3 未定：R1 的 CXC 比对用例继续使用本轮
-Asset-Index 绕过路径，R4 之前必须解决，否则候选包证据不成立。
+- D1 已定：R1 可以同时完成预映像/hash 闭环与 IDN0 布局对齐，两者都不改变 revision。
+- D2 已定：R1 不改 DBG0 行为；R2 实施并翻转 R0-A01。
+- D3 已定：R1 实施闭包修正后，`compiled/chart.packed` 这一 Spec 形状路径必须能真实打包与
+  校验成功；R0 的 Asset-Index 绕过路径（见 3.2/A03 与新建 CXC 用例）在 R1 落地后应改为
+  使用 Spec 形状路径，把绕过降级为兼容性对照。
 
 ## 7. 本轮改动文件
 
@@ -208,7 +215,7 @@ Asset-Index 绕过路径，R4 之前必须解决，否则候选包证据不成�
 
 ## 8. 未决项与 R1 前置
 
-1. 取得 D1/D2/D3 决策（见第 6 节）；D1 与 D3 会分别影响 R1 的 IDN0 与 CXC 比对实现。
+1. D1/D2/D3 已于 2026-09-16 由 owner 裁定（见第 6 节），R1 前置齐备，无未决合同阻塞。
 2. R1 实现顺序建议：typed 预映像 + SHA-256 → encode 写入 Header → decode 重算比对 →
    CXC compiled identity 比对 → 独立 golden（empty 165 B / one-tap-lane2 312 B）与负例。
 3. R1 必须验证的计划要求：允许重排不改变 identity、语义变化改变 identity、改 bytes 并重算段/头
