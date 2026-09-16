@@ -8,8 +8,8 @@
 [SDK transition plan 快照](../../../archive/CUEXIS_SDK_TRANSITION_PLAN_2026-08-10.md) 和
 原 Stage 11 Judgement 计划。
 
-前置：[Chart Format Foundation](../../active/chart-format-foundation/plan.md) 和
-[Stage 6](../stage-06/plan.md)。主要输入为 Chart v5 Core/Packed candidate；Chart v4 /
+前置：[Chart Format Foundation](../../completed/chart-format-foundation/plan.md) 和
+[Stage 6](../../future/stage-06/plan.md)。主要输入为 Chart v5 Core/Packed candidate；Chart v4 /
 CXT v1 / CXC v1 保留为兼容和回退输入。共同玩法模型见
 [音乐游戏玩法抽象模型](../../../architecture/GAMEPLAY_ABSTRACTION_MODEL.md)。
 

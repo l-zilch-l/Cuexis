@@ -27,7 +27,7 @@ external hosts use PlaybackSession, ContentProvider, RuntimeFrame,
     candidate / active presentation transactions,
     Validation Sink, the OpenGL adapter, Player rendering, external package consumers,
     and cross - platform closure.Stable C ABI work remains in Stage 12;
-`cuexis_judgement` remains planned for Stage 11.
+the minimum Input/Judgement/Score/Replay kernel is planned for Stage 7A.
 
 Stage 5 closed and merged into `master` on August 28, 2026 through PR #20 (`d380fc9`). S5-A froze
 Material/Shader contracts in ADR 0040 and `docs/formats/MATERIAL_SHADER.md`; S5-B through S5-H
@@ -35,9 +35,15 @@ delivered the optional shader toolchain, public presentation support, cache, con
 safety gates. `260829-full-review` followed as a separate branch and closed on August 30, 2026.
 The `260830-followup` branch had three tasks: documentation reorganization, Chart/CXC parse-once,
 and targeted branch coverage for critical modules. All three tasks are complete; PR #22 merged the
-branch into `master` on September 1, 2026. Stage 6 started on September 2, 2026. Its active plan
-was superseded as the current stage by `chart-format-update-for-v5`; Stage 6 is future and its plan
-retains the three open issues from the September stage-verification report: release version
+branch into `master` on September 1, 2026. Chart Format Foundation merged through PR #24
+on September 8, 2026 (`13dab93`); the owner confirmed completion on September 16, 2026.
+Its plan is under `docs/stage_plans/completed/chart-format-foundation/`.
+The subsequent handoff review established the current active stage under
+`docs/stage_plans/active/chart-format-foundation-hardening/` (R0-R5).
+Stage 6 is future under `docs/stage_plans/future/stage-06/` until hardening gates and owner
+acceptance close. Original Foundation completion does not certify the new technical gates.
+`chart-format-update-for-v5` remains active as a cross-stage work package, not the current stage.
+Stage 6 retains the three open issues from the September stage-verification report: release version
 enforcement, a backend-neutral presentation renderer boundary, and common media support.
 Stage 4 is complete. ADR 0038 defines `.cxc` as a strict ZIP32 Stored exchange
 package containing existing Project/Asset Index formats, `cuexis.chart` v4 data, CXT JSON, and
@@ -303,7 +309,10 @@ Stage 1D modules. `sdk/` and `adapters/` directories do not exist yet (planned).
 - `docs/stage_plans/completed/chart-format-update/plan.md` — accepted CXC/Chart format
   decision, migration, and acceptance gates
 - `docs/stage_plans/completed/260830-followup/plan.md` — completed documentation, Chart/CXC parse-once,
-  and critical branch-coverage plan; Stage 6 has not started
+  and critical branch-coverage plan
+- `docs/stage_plans/completed/chart-format-foundation/plan.md` — completed Foundation plan
+- `docs/stage_plans/active/chart-format-foundation-hardening/plan.md` — current R0-R5 hardening plan
+- `docs/stage_plans/future/stage-06/plan.md` — Stage 6, pending hardening acceptance
 - `docs/stage_plans/completed/stage-04/plan.md` through
   `docs/stage_plans/future/stage-12/plan.md` — independent active/future/deferred plans with
   goals, prerequisites, scope, acceptance criteria, and archived sources

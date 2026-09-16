@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-09-07
+更新日期：2026-09-16
 
 本文是 Cuexis 当前产品和阶段状态的唯一摘要。ADR 定义决策，Spec 定义字段和语义，阶段计划定义未来
 范围，阶段报告保存带日期的实施证据；它们不得绕过本文重新定义当前状态。
@@ -27,8 +27,9 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Stage Chart Format Update | completed; CFU-C0-C4, D, E, F and G closed; G6 owner acceptance recorded 2026-08-24 | [plan](stage_plans/completed/chart-format-update/plan.md) |
 | Stage 4 | completed; S4-H hosted and owner acceptance recorded 2026-08-27 | [plan](stage_plans/completed/stage-04/plan.md) |
 | Stage 5 | completed; S5-A through S5-H closed and merged into `master` 2026-08-28 | [plan](stage_plans/completed/stage-05/plan.md)、[completion](stage_reports/stages/stage-05/completion.md) |
-| Chart Format Foundation | active；F0-F8 candidate 实现与本地 MinGW headless 证据已记录 2026-09-07（CXT integer/beat、Packed tables/IO/semantic bridge、CXC mapping、40k low-reuse harness）；高复用/混合仅为可选观测，hosted MSVC/MinGW/Linux 和 owner acceptance 待完成 | [plan](stage_plans/active/chart-format-foundation/plan.md)、[reports](stage_reports/stages/chart-format-foundation/README.md) |
-| Stage 6 | future；Foundation 完成后的 v5-first Playback/Player/CXC candidate path；v4 保留为兼容回退 | [plan](stage_plans/future/stage-06/plan.md) |
+| Chart Format Foundation | completed；保留 PR #24 与 2026-09-16 owner 完成确认；后续交接缺口由独立加固阶段处理，不代表技术门禁全部通过 | [plan](stage_plans/completed/chart-format-foundation/plan.md)、[关闭记录](stage_reports/stages/chart-format-foundation/2026-09-16-closure-and-handoff.md) |
+| Chart Format Foundation Hardening | active；当前实施阶段，R0-R5 待执行；补齐 semantic identity、profile 拒绝、预算和交接证据 | [plan](stage_plans/active/chart-format-foundation-hardening/plan.md)、[复核记录](stage_reports/stages/chart-format-foundation/2026-09-16-handoff-review.md) |
+| Stage 6 | future；等待交接加固关闭及 owner acceptance；之后实施 v5-first candidate path，保留 v4 回退 | [plan](stage_plans/future/stage-06/plan.md) |
 | Stage 7A | future；最小 Input / Judgement / Score / Replay Kernel，作为 Stage 8 硬前置 | [plan](stage_plans/future/stage-07/plan.md) |
 | Stage 7B+ | future；Slide、Flick、多指、校准和高级 Judgement 能力持续演进 | [plan](stage_plans/future/stage-07/plan.md) |
 | Stage 8 | future；Chart v5 / CXT v2 / Packed Chart 正式发行与语义收敛 | [plan](stage_plans/future/stage-08/plan.md) |
@@ -95,8 +96,10 @@ PR #22 已于 2026-09-01 合并至 `master`，关闭总结见
 RT-29、T1 World/Animation 大规模优化和 T2 大包解析降本仍需另外的触发证据和明确授权。项目
 所有者已于 2026-09-02 建立 [Chart v5 format plan](stage_plans/active/chart-format-update-for-v5/plan.md)；
 该计划现作为 Stage 8 的详细格式工作包，其 Foundation 前置工作见
-[Chart Format Foundation](stage_plans/active/chart-format-foundation/plan.md)。当前下一实施门禁
-是 Foundation；Foundation 完成后进入 Stage 6 v5-first candidate path，Stage 6 完成后进入
+[Chart Format Foundation](stage_plans/completed/chart-format-foundation/plan.md)。原完成确认保留；
+当前实施阶段是 [Foundation 交接加固](stage_plans/active/chart-format-foundation-hardening/plan.md)，
+用于关闭复核发现的技术缺口。Stage 6 已移回 future，加固关闭并经 owner 接受后才恢复
+v5-first candidate path 实施；Stage 6 完成后进入
 Stage 7A，再进入 Stage 8。Stage 7B+ 可以与 Stage 8 前后并行持续；Stage 8 关闭后交出
 SDK `0.8.0` / Chart v5 / CXT v2 正式接手基线。
 2026-09-01 阶段核验记录中的版本门禁、后端中立表现渲染边界和常用媒体支持三个 open 问题仍归属于

@@ -1,12 +1,16 @@
 # Chart Format Foundation：Chart v5 前置基础
 
-状态：active；当前下一实施计划；Stage 5 与 Stage 6 之间的实施门禁
+状态：completed；项目所有者确认完成，交接 Stage 6
 
-更新日期：2026-09-05
+更新日期：2026-09-16
 
-归档来源：[Chart v5 格式计划](../chart-format-update-for-v5/plan.md)、
+归档来源：[Chart v5 格式计划](../../active/chart-format-update-for-v5/plan.md)、
 [Stage 5 计划](../../completed/stage-05/plan.md)、[CXT v1 格式合同](../../../formats/CXT_FORMAT.md)、
 [CXC v1 格式合同](../../../formats/CXC_FORMAT.md)。
+
+2026-09-16 按项目所有者确认归档；合并记录与证据边界见
+[关闭与交接记录](../../../stage_reports/stages/chart-format-foundation/2026-09-16-closure-and-handoff.md)。
+下文保留阶段执行范围与门禁，不代表仍需从 F0 启动。
 
 本计划的字段与 wire 细节以候选
 [CXT v2](../../../formats/CXT_V2_FORMAT.md) 和
@@ -84,7 +88,7 @@ count、offset、byte length、Beat 运算全部使用 checked arithmetic
 每项新能力必须同时有正例、反例、deterministic golden 和 handoff 说明
 ```
 
-当前启动任务是 `F0`：完成基线、术语、candidate revision/profile、v4 回归
+本阶段最初启动任务是 `F0`：完成基线、术语、candidate revision/profile、v4 回归
 characterization 和 fixture 清单。`F0` 未关闭前，不开始 v5 默认路径、Packed
 Playback 接入或 CXT v2 formal-release 接线。
 

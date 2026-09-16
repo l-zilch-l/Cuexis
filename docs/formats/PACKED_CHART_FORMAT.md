@@ -6,7 +6,7 @@
 
 依据：[玩法抽象模型](../architecture/GAMEPLAY_ABSTRACTION_MODEL.md)、
 [CXT v2](CXT_V2_FORMAT.md)、
-[Chart Format Foundation](../stage_plans/active/chart-format-foundation/plan.md)、
+[Chart Format Foundation](../stage_plans/completed/chart-format-foundation/plan.md)、
 [Chart v5 总工作包](../stage_plans/active/chart-format-update-for-v5/plan.md) 和
 [CXC v1](CXC_FORMAT.md)。
 
