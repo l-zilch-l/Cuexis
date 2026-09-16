@@ -1,6 +1,7 @@
 add_executable(cuexis_cxc_tests
     cfu_f4_safety_tests.cpp
     cxc_binary_fixture_tests.cpp
+    cxc_candidate_extension_tests.cpp
     cxc_package_tests.cpp
     cxc_manifest_loader_tests.cpp
     cxc_test_support.cpp
@@ -23,6 +24,8 @@ target_include_directories(cuexis_cxc_tests
 target_link_libraries(cuexis_cxc_tests
     PRIVATE
         cuexis_cxc
+        cuexis::cxc_tool_common
+        cuexis::chart
         Catch2::Catch2WithMain
 )
 

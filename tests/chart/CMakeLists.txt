@@ -4,6 +4,7 @@ add_executable(cuexis_chart_tests
     canonical_semantic_chart_tests.cpp
     cxt_v2_loader_tests.cpp
     chart_foundation_capacity_tests.cpp
+    chart_foundation_hardening_characterization_tests.cpp
     cfu_f4_limits_tests.cpp
     chart_loader_tests.cpp
     chart_migrator_tests.cpp

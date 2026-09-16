@@ -879,6 +879,8 @@ if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_cxc_tests
         ALLOWED
             cuexis_cxc
+            cuexis::cxc_tool_common
+            cuexis::chart
             Catch2::Catch2WithMain
     )
     cuexis_verify_target_dependencies(cuexis_behavior_tests

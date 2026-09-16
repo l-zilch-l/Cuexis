@@ -6,11 +6,14 @@
 确认完成，随后技术复核决定新增独立交接加固阶段，并将 Stage 6 移回 future。
 原 Foundation 关闭记录保留；加固范围与门禁见
 [当前计划](../../../stage_plans/active/chart-format-foundation-hardening/plan.md)。
+加固阶段的 R0-R5 批次报告也保存在本目录，文件名以批次前缀区分，且不覆盖 F0-F9 报告。
 9 月 5 日与 7 日报告保留历史快照，
 不以本次状态更新改写 hosted 或容量验证结果。高复用/混合仅为可选观测；
 Foundation 关闭不等于 Chart v5 或 Packed Playback 正式发行。
 
 ## 报告
+
+- [2026-09-16 R0 基线与复现](2026-09-16-r0-baseline-and-reproduction.md)
 
 - [2026-09-16 交接复核与加固决定](2026-09-16-handoff-review.md)
 
