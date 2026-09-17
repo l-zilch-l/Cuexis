@@ -62,7 +62,9 @@ TEST_CASE("Packed reader rejects an input larger than the configured file budget
     limits.maxPackedFileBytes = 1U;
     const auto loaded = cuexis::chart::PackedChartReader::read(target, limits);
     REQUIRE_FALSE(loaded);
-    CHECK(loaded.error().code() == "packed.io.file_limit");
+    // R3 unified the file byte gate on one diagnostic across the reader, the writer and the byte
+    // level validators, replacing the packed.io.file_limit alias.
+    CHECK(loaded.error().code() == "packed.budget.file_bytes");
     std::error_code ignored;
     std::filesystem::remove(target, ignored);
 }

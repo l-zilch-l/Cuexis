@@ -132,6 +132,35 @@ Reader 必须在分配前检查 counts、UTF-8 bytes、数组乘积、偏移加�
 引用数。Header 中的声明只用于预检，解码后必须重新计数比对。除 Packed 文件 16 MiB
 外，其他新增数值上限由 CFF-D 的实测报告和 capacity profile 在 Foundation 接受前
 冻结；没有明确 limits 的 Reader 配置不允许进入 Stage 6。已有 v4/v1 限制不隐式放宽。
+R3 已按 §3.3 冻结并逐项实现下表上限；historical 的「暂不冻结」只覆盖 §3.3 列为观测项的
+峰值与耗时，不再适用于这些 hard budget。
+
+### 3.3 冻结预算表
+
+Foundation revision 1 的可执行硬预算如下。单位是 wire 语义单位，不是 C++ 堆占用：
+
+| 预算 | 单位 | 冻结默认值 | 检查入口 | 诊断 |
+| --- | --- | --- | --- | --- |
+| `maxPackedFileBytes` | bytes（Header + directory + 全部 section） | 16,777,216 | Writer envelope、Reader size、file bridge | `packed.budget.file_bytes` |
+| `maxPackedDecodedBytes` | bytes（section codec 之后的总和） | 16,777,216 | Header 声明预检、Writer envelope | `packed.budget.decoded_bytes` |
+| `maxPackedSectionBytes` | bytes（单个 section 的 encoded/decoded） | 16,777,216 | directory 逐项，所有 role 含 inspection | `packed.budget.section_bytes` |
+| `maxPackedEntities` | count（ENT0/IDN0 具体实体） | 40,000 | Header 预检、Writer 实体计数 | `packed.budget.entities` |
+| `maxPackedRequirements` | count（REQ0 行） | 40,000 | Header 预检、Writer 要求计数 | `packed.budget.requirements` |
+| `maxPackedStrings` | count（STR0 行） | 100,000 | Header 预检、Writer 字典计数、STR0 行数 vs payload | `packed.budget.strings`、`packed.strings.count` |
+| `maxPackedReferences` | count（REF0 行） | 100,000 | Header 预检、Writer 引用计数、REF0 行数 vs payload | `packed.budget.references`、`packed.references.invalid` |
+
+`PackedChartLimits` 的每个字段都是上限而不是目标：入口按 `min(请求值, 冻结默认值)` 求有效值，
+调用方只能收紧，不能放宽 16 MiB 文件门禁和 40,000 实体门禁。`0` 是字面上限（拒绝任何非零
+值），永远不表示「不限制」，也不存在「零值即跳过」的后门。
+
+检查位置：count 与 section/文件 envelope 必须在大 reserve/resize、section 串联和文件组装
+之前完成；目录项数先用 u64 乘积校验再预留；STR0/REF0 行数与 IDN0 scope/path/step 数以剩余
+payload 为上界；IDN0 iteration 与 CNS0 lane 是 u32 字段，超宽值拒绝而不截断。Header 计数
+只作预检，解码后按 STR0/REF0/IDN0/REQ0/ENT0/ARCH 实际行数重新计数比对。
+
+只作观测、未接受阈值的项目：prepare 峰值内存（`preparePeakBytes`）、展开/编译耗时、
+decoded section bytes 解释成堆占用，以及 IDN0 scope/path 表解码后的对象内存。本阶段不为
+尚未实现的 Playback prepare 承诺预算，也不得用这些观测值放宽上表硬门禁。
 
 ## 4. 基础编码
 
@@ -201,7 +230,7 @@ ARCH 按 mask 升序、REQ0 按 `(entity ordinal, localId)`、CNS0 按 set paylo
 | 72 | `eventCount` | u32 | 第 3.2 节定义 |
 | 76 | `decodedBytes` | u32 | 所有 section decodedBytes 的 checked sum |
 | 80 | `stringCount` | u32 | STR0 字符串数 |
-| 84 | `resourceReferenceCount` | u32 | REF0 中 asset 类引用数 |
+| 84 | `referenceCount` | u32 | REF0 行总数（全部 typed reference kind） |
 | 88 | `candidateRevision` | u32 | 本草案为 `1`；正式发行时为 `0` |
 | 92 | `headerCrc32` | u32 | 对 96 bytes Header 计算，本字段临时填零 |
 
@@ -214,6 +243,12 @@ CRC 使用 CRC-32/ISO-HDLC：reflected polynomial `0xEDB88320`、init 和 xorout
 `0xffffffff`，对 bytes 顺序计算，结果 u32 little-endian；`123456789` 的检查值为
 `0xcbf43926`。CRC 用于损坏检测，不是认证。整文件 SHA-256 属于外部 artifact identity，
 不能把它直接写进被自身覆盖的 Header。
+
+`referenceCount` 是 REF0 的**全部行数**，也就是 Reader 逐行读取并校验
+`maxPackedReferences` 的那个计数（R3 裁定 A13：旧文字「asset 类引用数」与 Writer/Reader
+实际口径不一致）。asset 类引用不是独立 Header 计数，而是由 typed reference kind 与资源
+闭包在 typed 模型层派生；Kind 的具体分配见第 6.2 节。此裁定只改字段命名与文字，不改
+offset、宽度、wire 值或 revision。
 
 ### 5.2 Section Directory：每项 32 bytes
 
@@ -588,8 +623,17 @@ DBG0 可保存 source mapping、名称、字段路径和作者提示。本草案
 semanticIdentity 比对，使一个 hash 自洽但超出登记 subset 的产物报告 profile 原因。失败不发布半份新 Chart；会话切换时旧的已提交 active chart 按原事务
 合同保留，但不能被冒充为本次成功结果。诊断至少含 section、record、字段和错误类别。
 
+预算诊断优先于 payload 解析：Header 计数预算在 size/CRC 之后、directory 读取之前报告；
+逐项次序为目录项结构 -> 注册表决策 -> section 预算 -> section CRC -> 布局与 decoded 总和。
+因此 section 预算先于 CRC（不触碰超预算 payload），注册表决策先于 section 预算，count 预算
+先于 STR0/REF0/IDN0 的行解析。所有入口的 Packed 文件 byte 门禁使用同一个
+`packed.budget.file_bytes`，取代旧的 `packed.io.file_limit` 别名。
+
 Writer 只接受已展开且引用完整的 canonical model。在写盘前通过无副作用 sizing pass
 计算确切 bytes、count 和 checked arithmetic，超过 16 MiB 不产出部分有效文件。
+次序为 revision/flags -> profile -> 计数预算 -> semanticIdentity -> 字典预算 ->
+section 预算 -> decoded/文件 envelope -> 组装，因此任何超预算模型都不会产生部分产物，
+也不会把计数器截断进固定宽度字段（R3）。
 输出使用临时文件和原子替换，文件操作错误也必须保留上一次有效产物。
 
 安全失败例至少覆盖：截断 Header/varint、超长字典、UTF-8 错误、偏移溢出、目录重叠、

@@ -59,6 +59,12 @@ struct ChartLimits final {
     std::int64_t maxBeatDenominator{1000000000LL};
 };
 
+// Candidate Packed Chart budgets (Spec 3.3).
+// Each field is a ceiling, not a target: every entry point resolves the effective budget as
+// min(requested, frozen default), so a caller may tighten a budget but can never relax the frozen
+// Foundation gates (16 MiB packed file, 40,000 entities). Zero is a literal ceiling and never
+// means "unlimited". decodedSectionBytes counts section bytes after the section codec, not C++
+// heap usage, and no field promises a runtime or prepare peak.
 struct PackedChartLimits final {
     std::size_t maxPackedFileBytes{16U * 1024U * 1024U};
     std::size_t maxPackedDecodedBytes{16U * 1024U * 1024U};

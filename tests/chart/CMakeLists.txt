@@ -16,6 +16,7 @@ add_executable(cuexis_chart_tests
     example_chart_tests.cpp
     limits_tests.cpp
     parse_characterization_tests.cpp
+    packed_budget_tests.cpp
     packed_chart_primitives_tests.cpp
     packed_chart_io_tests.cpp
     packed_fixture_support.cpp

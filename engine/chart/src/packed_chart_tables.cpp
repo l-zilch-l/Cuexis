@@ -4,6 +4,7 @@
 #include <cuexis/core/error.hpp>
 
 #include "packed_identity_internal.hpp"
+#include "packed_limits_internal.hpp"
 #include "packed_profile_internal.hpp"
 
 #include <algorithm>
@@ -24,6 +25,16 @@ namespace {
 
 auto fail(std::string code, std::string message) -> core::Error {
     return core::Error{std::move(code), std::move(message)};
+}
+
+// Checked narrowing for the fixed-width wire fields of the artifact. Every call site is preceded
+// by a budget gate that makes the value fit; the check keeps that provable instead of implicit.
+[[nodiscard]] auto narrowU32(std::uint64_t value) -> core::Result<std::uint32_t> {
+    if (value > std::numeric_limits<std::uint32_t>::max()) {
+        return core::unexpected(
+            fail("packed.budget.section_bytes", "Packed field exceeds the uint32 wire range"));
+    }
+    return static_cast<std::uint32_t>(value);
 }
 
 // Spec 5.3 section registry. inspect() and decode() share this decision so the two entry points
@@ -261,35 +272,46 @@ auto writeRenderable(ByteWriter& writer, const CanonicalRenderable& value, const
     return {};
 }
 
-auto writeStringSection(const Dictionaries& dict) -> Section {
-    ByteWriter writer;
-    writer.writeU32(static_cast<std::uint32_t>(dict.strings.size()));
-    std::uint32_t dataBytes = 0;
+auto writeStringSection(const Dictionaries& dict) -> core::Result<Section> {
+    std::uint64_t dataBytes = 0;
     for (const auto& value : dict.strings)
-        dataBytes += static_cast<std::uint32_t>(value.size());
-    writer.writeU32(dataBytes);
-    std::uint32_t offset = 0;
+        dataBytes += value.size();
+    const auto count = narrowU32(dict.strings.size());
+    if (!count)
+        return core::unexpected(std::move(count.error()));
+    const auto dataSize = narrowU32(dataBytes);
+    if (!dataSize)
+        return core::unexpected(std::move(dataSize.error()));
+    ByteWriter writer;
+    writer.writeU32(*count);
+    writer.writeU32(*dataSize);
+    std::uint64_t offset = 0;
     writer.writeU32(0);
     for (const auto& value : dict.strings) {
-        offset += static_cast<std::uint32_t>(value.size());
-        writer.writeU32(offset);
+        offset += value.size();
+        auto next = narrowU32(offset);
+        if (!next)
+            return core::unexpected(std::move(next.error()));
+        writer.writeU32(*next);
     }
     for (const auto& value : dict.strings)
         writer.writeBytes(std::as_bytes(std::span{value.data(), value.size()}));
-    return {{'S', 'T', 'R', '0'},
-            std::move(writer).takeBytes(),
-            static_cast<std::uint32_t>(dict.strings.size())};
+    return Section{{'S', 'T', 'R', '0'}, std::move(writer).takeBytes(), *count};
 }
 
-auto writeReferenceSection(const Dictionaries& dict) -> Section {
+auto writeReferenceSection(const Dictionaries& dict) -> core::Result<Section> {
+    const auto count = narrowU32(dict.refIndex.size());
+    if (!count)
+        return core::unexpected(std::move(count.error()));
     ByteWriter writer;
     for (const auto& [key, index] : dict.refIndex) {
         writer.writeU8(key.first);
-        writer.writeUnsignedLeb128(*stringRef(dict, key.second));
+        auto ref = stringRef(dict, key.second);
+        if (!ref)
+            return core::unexpected(std::move(ref.error()));
+        writer.writeUnsignedLeb128(*ref);
     }
-    return {{'R', 'E', 'F', '0'},
-            std::move(writer).takeBytes(),
-            static_cast<std::uint32_t>(dict.refIndex.size())};
+    return Section{{'R', 'E', 'F', '0'}, std::move(writer).takeBytes(), *count};
 }
 
 auto writeMetaSection(const CanonicalSemanticChart& chart, const Dictionaries& dict)
@@ -318,7 +340,10 @@ auto writeMetaSection(const CanonicalSemanticChart& chart, const Dictionaries& d
     writeF32(writer, position.x);
     writeF32(writer, position.y);
     writeF32(writer, position.z);
-    writer.writeU32(static_cast<std::uint32_t>(chart.features.size()));
+    const auto featureCount = narrowU32(chart.features.size());
+    if (!featureCount)
+        return core::unexpected(std::move(featureCount.error()));
+    writer.writeU32(*featureCount);
     for (const auto& feature : chart.features) {
         auto r = typedRef(dict, 7, feature.id);
         if (!r)
@@ -329,12 +354,18 @@ auto writeMetaSection(const CanonicalSemanticChart& chart, const Dictionaries& d
     return Section{{'M', 'E', 'T', 'A'}, std::move(writer).takeBytes(), 1};
 }
 
-auto writeTimeSection(const ChartTiming& timing) -> Section {
+auto writeTimeSection(const ChartTiming& timing) -> core::Result<Section> {
+    const auto tempoCount = narrowU32(timing.tempoEvents.size());
+    if (!tempoCount)
+        return core::unexpected(std::move(tempoCount.error()));
+    const auto stopCount = narrowU32(timing.stops.size());
+    if (!stopCount)
+        return core::unexpected(std::move(stopCount.error()));
     ByteWriter writer;
     writeF64(writer, timing.offsetMs);
     writeF64(writer, timing.defaultBpm);
-    writer.writeU32(static_cast<std::uint32_t>(timing.tempoEvents.size()));
-    writer.writeU32(static_cast<std::uint32_t>(timing.stops.size()));
+    writer.writeU32(*tempoCount);
+    writer.writeU32(*stopCount);
     writer.writeU8(0);
     writer.writeU8(0);
     writer.writeU8(0);
@@ -350,7 +381,7 @@ auto writeTimeSection(const ChartTiming& timing) -> Section {
         (void)writeRationalBeatAtom(writer, stop.beat);
         writeF64(writer, stop.durationMs);
     }
-    return {{'T', 'I', 'M', 'E'}, std::move(writer).takeBytes(), 1};
+    return Section{{'T', 'I', 'M', 'E'}, std::move(writer).takeBytes(), 1};
 }
 
 struct EntityOrder final {
@@ -743,8 +774,8 @@ auto writeConstraintAndRequirementSections(const EntityOrder& order, const Dicti
 
 } // namespace
 
-auto encode(const CanonicalSemanticChart& chart, PackedChartProfile profile)
-    -> core::Result<std::vector<std::byte>> {
+auto encode(const CanonicalSemanticChart& chart, PackedChartProfile profile,
+            PackedChartLimits limits) -> core::Result<std::vector<std::byte>> {
     if (profile.flags != 1 || profile.candidateRevision != 1)
         return core::unexpected(
             fail("packed.header.unsupported_revision", "Only candidate revision 1 is supported"));
@@ -752,23 +783,31 @@ auto encode(const CanonicalSemanticChart& chart, PackedChartProfile profile)
     // computing an identity or emitting bytes, so an out-of-profile artifact is never published.
     if (auto registered = profile_detail::validateFoundationProfile(chart); !registered)
         return core::unexpected(std::move(registered.error()));
+    const auto budget = limits_detail::effectiveLimits(limits);
+    // Spec 3.2: counts are checked before the identity preimage and before any allocation sized
+    // by them. The requirement total is accumulated in 64 bits so the sum itself cannot wrap.
+    if (chart.entities.size() > budget.maxPackedEntities)
+        return core::unexpected(
+            fail("packed.budget.entities", "Packed chart exceeds the entity budget"));
+    std::uint64_t requirementCount = 0;
+    for (const auto& entity : chart.entities)
+        requirementCount += entity.requirements.size();
+    if (requirementCount > budget.maxPackedRequirements)
+        return core::unexpected(
+            fail("packed.budget.requirements", "Packed chart exceeds the requirement budget"));
     // Validate the hash preconditions and compute the semantic identity before any artifact
     // bytes exist, so an inconsistent chart is never published (Spec 9 and 10.1).
     auto identity = semanticIdentity(chart);
     if (!identity)
         return core::unexpected(std::move(identity.error()));
-    if (chart.entities.size() > 40000U)
-        return core::unexpected(
-            fail("packed.budget.entities", "Packed chart exceeds the 40000 entity limit"));
-    std::size_t requirementCount = 0;
-    for (const auto& entity : chart.entities) {
-        if (entity.requirements.size() > 40000U - requirementCount)
-            return core::unexpected(fail("packed.budget.requirements",
-                                         "Packed chart exceeds the 40000 requirement limit"));
-        requirementCount += entity.requirements.size();
-    }
     Dictionaries dict;
     collectStrings(dict, chart);
+    if (dict.strings.size() > budget.maxPackedStrings)
+        return core::unexpected(
+            fail("packed.budget.strings", "Packed chart exceeds the string budget"));
+    if (dict.refIndex.size() > budget.maxPackedReferences)
+        return core::unexpected(
+            fail("packed.budget.references", "Packed chart exceeds the typed reference budget"));
     auto ordered = orderEntities(chart);
     if (!ordered)
         return core::unexpected(std::move(ordered.error()));
@@ -776,13 +815,22 @@ auto encode(const CanonicalSemanticChart& chart, PackedChartProfile profile)
     std::map<std::uint64_t, std::uint32_t> archIndices;
     auto arches = makeArchetypes(order, archIndices);
     std::vector<Section> sections;
-    sections.push_back(writeStringSection(dict));
-    sections.push_back(writeReferenceSection(dict));
+    auto strings = writeStringSection(dict);
+    if (!strings)
+        return core::unexpected(std::move(strings.error()));
+    sections.push_back(std::move(*strings));
+    auto refs = writeReferenceSection(dict);
+    if (!refs)
+        return core::unexpected(std::move(refs.error()));
+    sections.push_back(std::move(*refs));
     auto meta = writeMetaSection(chart, dict);
     if (!meta)
         return core::unexpected(std::move(meta.error()));
     sections.push_back(std::move(*meta));
-    sections.push_back(writeTimeSection(chart.timing));
+    auto time = writeTimeSection(chart.timing);
+    if (!time)
+        return core::unexpected(std::move(time.error()));
+    sections.push_back(std::move(*time));
     auto idn = writeIdentitySection(order, chart, dict);
     if (!idn)
         return core::unexpected(std::move(idn.error()));
@@ -809,6 +857,31 @@ auto encode(const CanonicalSemanticChart& chart, PackedChartProfile profile)
     sections.push_back(std::move(reqs->second));
     std::sort(sections.begin(), sections.end(),
               [](const auto& a, const auto& b) { return a.code < b.code; });
+    // Spec 3.1 and 3.2: the exact artifact envelope is computed and checked before the file is
+    // assembled and before any size is narrowed to a fixed-width header field, so an over-budget
+    // model produces no partial artifact and no wrapped counter.
+    std::uint64_t decodedBytes = 0;
+    for (const auto& section : sections) {
+        if (section.bytes.size() > budget.maxPackedSectionBytes)
+            return core::unexpected(
+                fail("packed.budget.section_bytes", "Packed section exceeds the section budget"));
+        decodedBytes += section.bytes.size();
+    }
+    if (decodedBytes > budget.maxPackedDecodedBytes)
+        return core::unexpected(
+            fail("packed.budget.decoded_bytes", "Packed chart exceeds the decoded byte budget"));
+    const std::uint64_t directoryBytes = static_cast<std::uint64_t>(sections.size()) * 32U;
+    const std::uint64_t totalBytes = 96U + directoryBytes + decodedBytes;
+    if (totalBytes > budget.maxPackedFileBytes)
+        return core::unexpected(
+            fail("packed.budget.file_bytes", "Packed chart exceeds the file byte budget"));
+    const auto sectionCount = narrowU32(sections.size());
+    const auto directorySize = narrowU32(directoryBytes);
+    const auto total = narrowU32(totalBytes);
+    const auto decoded = narrowU32(decodedBytes);
+    if (!sectionCount || !directorySize || !total || !decoded)
+        return core::unexpected(
+            fail("packed.budget.section_bytes", "Packed directory exceeds the uint32 wire range"));
     ByteWriter file;
     static constexpr std::array<std::byte, 8> magic{std::byte{'C'}, std::byte{'X'}, std::byte{'P'},
                                                     std::byte{'K'}, std::byte{'5'}, std::byte{0},
@@ -817,49 +890,52 @@ auto encode(const CanonicalSemanticChart& chart, PackedChartProfile profile)
     file.writeU16(1);
     file.writeU16(96);
     file.writeU32(1);
-    const auto directoryBytes = static_cast<std::uint32_t>(sections.size() * 32U);
-    std::uint32_t total = 96U + directoryBytes;
-    for (const auto& section : sections)
-        total += static_cast<std::uint32_t>(section.bytes.size());
-    file.writeU32(total);
+    file.writeU32(*total);
     file.writeU32(96);
-    file.writeU32(static_cast<std::uint32_t>(sections.size()));
-    file.writeU32(directoryBytes);
+    file.writeU32(*sectionCount);
+    file.writeU32(*directorySize);
     for (const auto value : *identity)
         file.writeU8(value);
-    file.writeU32(static_cast<std::uint32_t>(order.entities.size()));
-    std::size_t requirements = 0;
-    for (const auto* e : order.entities)
-        requirements += e->requirements.size();
-    file.writeU32(static_cast<std::uint32_t>(requirements));
+    // These four counters are already bounded by the entity, requirement, string and reference
+    // budgets checked above; narrowU32() keeps the wire narrowing explicit anyway.
+    const auto entityTotal = narrowU32(order.entities.size());
+    const auto requirementTotal = narrowU32(requirementCount);
+    const auto stringTotal = narrowU32(dict.strings.size());
+    const auto referenceTotal = narrowU32(dict.refIndex.size());
+    if (!entityTotal || !requirementTotal || !stringTotal || !referenceTotal)
+        return core::unexpected(
+            fail("packed.budget.section_bytes", "Packed counters exceed the uint32 wire range"));
+    file.writeU32(*entityTotal);
+    file.writeU32(*requirementTotal);
     file.writeU32(0);
-    std::uint32_t decoded = 0;
-    for (const auto& s : sections)
-        decoded += static_cast<std::uint32_t>(s.bytes.size());
-    file.writeU32(decoded);
-    file.writeU32(static_cast<std::uint32_t>(dict.strings.size()));
-    file.writeU32(static_cast<std::uint32_t>(dict.refIndex.size()));
+    file.writeU32(*decoded);
+    file.writeU32(*stringTotal);
+    file.writeU32(*referenceTotal);
     file.writeU32(1);
     file.writeU32(0);
-    std::uint32_t offset = total - decoded;
+    std::uint64_t offset = totalBytes - decodedBytes;
     for (const auto& section : sections) {
+        const auto sectionOffset = narrowU32(offset);
+        if (!sectionOffset)
+            return core::unexpected(std::move(sectionOffset.error()));
+        const auto sectionBytes = narrowU32(section.bytes.size());
+        if (!sectionBytes)
+            return core::unexpected(std::move(sectionBytes.error()));
         file.writeBytes(std::as_bytes(std::span{section.code.data(), section.code.size()}));
         file.writeU8(0);
         file.writeU8(0);
         file.writeU16(0);
-        file.writeU32(offset);
-        file.writeU32(static_cast<std::uint32_t>(section.bytes.size()));
-        file.writeU32(static_cast<std::uint32_t>(section.bytes.size()));
+        file.writeU32(*sectionOffset);
+        file.writeU32(*sectionBytes);
+        file.writeU32(*sectionBytes);
         file.writeU32(section.records);
         file.writeU32(crc32(section.bytes));
         file.writeU32(0);
-        offset += static_cast<std::uint32_t>(section.bytes.size());
+        offset += section.bytes.size();
     }
     for (const auto& section : sections)
         file.writeBytes(section.bytes);
     auto result = std::move(file).takeBytes();
-    if (result.size() > 16U * 1024U * 1024U)
-        return core::unexpected(fail("packed.budget.file_bytes", "Packed chart exceeds 16 MiB"));
     const auto headerCrc = crc32(std::span<const std::byte>{result}.first(92));
     result[92] = static_cast<std::byte>(headerCrc & 0xffU);
     result[93] = static_cast<std::byte>((headerCrc >> 8U) & 0xffU);
@@ -870,9 +946,13 @@ auto encode(const CanonicalSemanticChart& chart, PackedChartProfile profile)
 
 auto inspect(std::span<const std::byte> bytes, PackedChartLimits limits)
     -> core::Result<PackedChartStatistics> {
-    if (bytes.size() < 96 || bytes.size() > limits.maxPackedFileBytes)
+    const auto budget = limits_detail::effectiveLimits(limits);
+    if (bytes.size() < 96)
         return core::unexpected(
-            fail("packed.header.invalid_size", "Packed chart size is outside limits"));
+            fail("packed.header.invalid_size", "Packed chart is smaller than the fixed header"));
+    if (bytes.size() > budget.maxPackedFileBytes)
+        return core::unexpected(
+            fail("packed.budget.file_bytes", "Packed chart exceeds the file byte budget"));
     ByteReader reader(bytes);
     auto magic = reader.readBytes(8);
     if (!magic || std::memcmp(magic->data(), "CXPK5\0\0\0", 8) != 0)
@@ -887,8 +967,13 @@ auto inspect(std::span<const std::byte> bytes, PackedChartLimits limits)
     auto dirBytes = reader.readU32();
     if (!version || !header || !flags || !total || !dirOff || !count || !dirBytes)
         return core::unexpected(fail("packed.header.truncated", "Packed header is truncated"));
+    // Spec 3.2 and 5.1: the directory size is a checked uint64 product before any reservation and
+    // before the directory is read, so a wrapped count cannot size an allocation.
+    const auto directoryBytesExpected = static_cast<std::uint64_t>(*count) * 32U;
     if (*version != 1 || *header != 96 || *flags != 1 || *dirOff != 96 || *total != bytes.size() ||
-        *dirBytes != *count * 32U)
+        directoryBytesExpected > std::numeric_limits<std::uint32_t>::max() ||
+        *dirBytes != static_cast<std::uint32_t>(directoryBytesExpected) ||
+        static_cast<std::uint64_t>(*dirOff) + *dirBytes > bytes.size())
         return core::unexpected(fail("packed.header.invalid", "Packed header fields are invalid"));
     auto semanticHash = reader.readBytes(32);
     if (!semanticHash)
@@ -915,16 +1000,29 @@ auto inspect(std::span<const std::byte> bytes, PackedChartLimits limits)
     if (*events != 0U)
         return core::unexpected(
             fail("packed.header.events", "Foundation revision 1 declares no schedule events"));
-    if (*entities > limits.maxPackedEntities || *requirements > limits.maxPackedRequirements ||
-        *strings > limits.maxPackedStrings || *refs > limits.maxPackedReferences ||
-        *decoded > limits.maxPackedDecodedBytes)
+    // Spec 3.2: the declared counters are pre-checked per field, so a rejection names the budget
+    // that was exceeded instead of a single aggregate counter diagnostic. The counters are only
+    // a pre-check; decode() re-counts the actual tables and compares them below.
+    if (*entities > budget.maxPackedEntities)
         return core::unexpected(
-            fail("packed.budget.header", "Packed chart counters exceed limits"));
+            fail("packed.budget.entities", "Packed chart exceeds the entity budget"));
+    if (*requirements > budget.maxPackedRequirements)
+        return core::unexpected(
+            fail("packed.budget.requirements", "Packed chart exceeds the requirement budget"));
+    if (*strings > budget.maxPackedStrings)
+        return core::unexpected(
+            fail("packed.budget.strings", "Packed chart exceeds the string budget"));
+    if (*refs > budget.maxPackedReferences)
+        return core::unexpected(
+            fail("packed.budget.references", "Packed chart exceeds the typed reference budget"));
+    if (*decoded > budget.maxPackedDecodedBytes)
+        return core::unexpected(
+            fail("packed.budget.decoded_bytes", "Packed chart exceeds the decoded byte budget"));
     PackedChartStatistics stats{bytes.size(), *decoded, *strings, *refs, *entities, *requirements};
     std::vector<std::pair<std::uint32_t, std::uint32_t>> ranges;
     ranges.reserve(*count);
     std::set<std::string> sectionNames;
-    std::size_t decodedSum = 0;
+    std::uint64_t decodedSum = 0;
     for (std::uint32_t i = 0; i < *count; ++i) {
         auto code = reader.readBytes(4);
         auto codec = reader.readU8();
@@ -949,13 +1047,20 @@ auto inspect(std::span<const std::byte> bytes, PackedChartLimits limits)
                 fail("packed.directory.duplicate", "Packed section is duplicated"));
         if (auto role = classifySection(name, *fl); !role)
             return core::unexpected(std::move(role.error()));
+        // Spec 3.3: the per-section ceiling applies to every directory entry, including the
+        // optional inspection sections whose payload a reader still has to read and CRC-check.
+        // It precedes the section CRC so an over-budget section is refused before its payload is
+        // touched.
+        if (*dec > budget.maxPackedSectionBytes)
+            return core::unexpected(
+                fail("packed.budget.section_bytes", "Packed section exceeds the section budget"));
         if (crc32(bytes.subspan(*off, *enc)) != *crc)
             return core::unexpected(fail("packed.section.crc", "Packed section CRC mismatch"));
         ranges.emplace_back(*off, *enc);
         decodedSum += *dec;
     }
     std::sort(ranges.begin(), ranges.end());
-    std::uint32_t expectedOffset = 96U + *dirBytes;
+    std::uint64_t expectedOffset = 96U + static_cast<std::uint64_t>(*dirBytes);
     for (const auto& range : ranges) {
         if (range.first != expectedOffset)
             return core::unexpected(
@@ -1060,9 +1165,17 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
     auto dataBytes = strReader.readU32();
     if (!strCount || !dataBytes || *strCount != *stringCount)
         return core::unexpected(fail("packed.strings.count", "STR0 count mismatch"));
+    // Spec 3.2: the declared row count is bounded by the bytes that can actually carry the rows
+    // (one u32 offset per row plus the two header words) before the offset table is reserved.
+    if (strSection->data.size() < 8U ||
+        static_cast<std::uint64_t>(*strCount) + 1U >
+            (static_cast<std::uint64_t>(strSection->data.size()) - 8U) / 4U)
+        return core::unexpected(
+            fail("packed.strings.count", "STR0 row count exceeds the section payload"));
+    const std::size_t offsetCount = static_cast<std::size_t>(*strCount) + 1U;
     std::vector<std::uint32_t> offsets;
-    offsets.reserve(*strCount + 1U);
-    for (std::uint32_t i = 0; i < *strCount + 1U; ++i) {
+    offsets.reserve(offsetCount);
+    for (std::size_t i = 0; i < offsetCount; ++i) {
         auto value = strReader.readU32();
         if (!value)
             return core::unexpected(std::move(value.error()));
@@ -1093,6 +1206,11 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
     };
     const auto* refSection = section("REF0");
     ByteReader refReader(refSection->data);
+    // Spec 3.2: every REF0 row occupies at least a kind byte and a one-byte string index, so the
+    // declared count is bounded by the payload before the row vector is reserved.
+    if (static_cast<std::uint64_t>(*refCount) > refSection->data.size() / 2U)
+        return core::unexpected(
+            fail("packed.references.invalid", "REF0 row count exceeds the section payload"));
     std::vector<std::pair<std::uint8_t, std::string>> refs;
     refs.reserve(*refCount);
     for (std::uint32_t i = 0; i < *refCount; ++i) {
@@ -1236,7 +1354,13 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
         return left.exportId < right.exportId;
     };
     std::vector<DecodedScope> scopes;
-    scopes.reserve(*scopeCount);
+    // Spec 3.2: one scope row occupies 16 chartId bytes plus three one-byte string indices at a
+    // minimum, and the reservation is capped so a legal but large table grows with the rows it
+    // actually contains instead of with the declared count.
+    if (static_cast<std::uint64_t>(*scopeCount) > idn.remaining() / 19U)
+        return core::unexpected(
+            fail("packed.identity.invalid", "IDN0 scope count exceeds the section payload"));
+    scopes.reserve(std::min<std::size_t>(*scopeCount, 4096U));
     for (std::uint32_t i = 0; i < *scopeCount; ++i) {
         auto uuid = idn.readBytes(16);
         auto bind = idn.readUnsignedLeb128(*stringCount);
@@ -1267,13 +1391,21 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
     if (!pathCount)
         return core::unexpected(fail("packed.identity.invalid", "IDN0 path count is invalid"));
     std::vector<std::vector<std::pair<std::string, bool>>> paths;
-    paths.reserve(*pathCount);
+    if (static_cast<std::uint64_t>(*pathCount) > idn.remaining())
+        return core::unexpected(
+            fail("packed.identity.invalid", "IDN0 path count exceeds the section payload"));
+    paths.reserve(std::min<std::size_t>(*pathCount, 1024U));
     for (std::uint32_t i = 0; i < *pathCount; ++i) {
         auto steps = idn.readUnsignedLeb128();
         if (!steps)
             return core::unexpected(fail("packed.identity.invalid", "IDN0 path is invalid"));
+        // Spec 3.2: one path step occupies a string index and an indexed flag, so the declared
+        // step count is bounded by the remaining payload before the step vector is reserved.
+        if (*steps > idn.remaining() / 2U)
+            return core::unexpected(
+                fail("packed.identity.invalid", "IDN0 step count exceeds the section payload"));
         auto path = std::vector<std::pair<std::string, bool>>{};
-        path.reserve(static_cast<std::size_t>(*steps));
+        path.reserve(std::min<std::size_t>(*steps, 256U));
         for (std::uint64_t step = 0; step < *steps; ++step) {
             auto node = idn.readUnsignedLeb128(*stringCount);
             auto indexed = idn.readU8();
@@ -1324,6 +1456,12 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
             if (!iteration || *iteration == 0U)
                 return core::unexpected(
                     fail("packed.identity.path", "Generated identity iteration is invalid"));
+            // Spec 6.5: the repeat index is a uint32 field, so a larger wire value is refused
+            // instead of being narrowed onto a different generated identity.
+            if (*iteration > std::numeric_limits<std::uint32_t>::max())
+                return core::unexpected(fail("packed.identity.path",
+                                             "Generated identity iteration exceeds the uint32 "
+                                             "range"));
             generated.path.push_back(
                 SemanticIdentityStep{nodeId, static_cast<std::uint32_t>(*iteration)});
         }
@@ -1437,7 +1575,7 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
     const auto* entSection = section("ENT0");
     ByteReader ent(entSection->data);
     for (std::uint32_t i = 0; i < *entityCount; ++i) {
-        auto parent = ent.readUnsignedLeb128(*entityCount + 1U);
+        auto parent = ent.readUnsignedLeb128(static_cast<std::uint64_t>(*entityCount) + 1U);
         auto arch = ent.readUnsignedLeb128(arches.size());
         if (!parent || !arch || *arch >= arches.size() || *parent > *entityCount ||
             (*parent != 0 && *parent - 1U == i))
@@ -1615,6 +1753,11 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
             return core::unexpected(
                 fail("packed.profile.constraints",
                      "Only the registered lane constraint kind is supported by Foundation"));
+        // Spec 3.2: the wire lane is a uint32 field. A larger value must not be narrowed to a
+        // registered lane, which would turn an illegal artifact into a legal model.
+        if (*lane > std::numeric_limits<std::uint32_t>::max())
+            return core::unexpected(
+                fail("packed.constraints.invalid", "CNS0 lane value exceeds the uint32 range"));
         lanes.push_back(static_cast<std::uint32_t>(*lane));
     }
     if (!cns.empty())

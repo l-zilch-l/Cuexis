@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-09-16
+更新日期：2026-09-17
 
 本文是 Cuexis 当前产品和阶段状态的唯一摘要。ADR 定义决策，Spec 定义字段和语义，阶段计划定义未来
 范围，阶段报告保存带日期的实施证据；它们不得绕过本文重新定义当前状态。
@@ -28,7 +28,7 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Stage 4 | completed; S4-H hosted and owner acceptance recorded 2026-08-27 | [plan](stage_plans/completed/stage-04/plan.md) |
 | Stage 5 | completed; S5-A through S5-H closed and merged into `master` 2026-08-28 | [plan](stage_plans/completed/stage-05/plan.md)、[completion](stage_reports/stages/stage-05/completion.md) |
 | Chart Format Foundation | completed；保留 PR #24 与 2026-09-16 owner 完成确认；后续交接缺口由独立加固阶段处理，不代表技术门禁全部通过 | [plan](stage_plans/completed/chart-format-foundation/plan.md)、[关闭记录](stage_reports/stages/chart-format-foundation/2026-09-16-closure-and-handoff.md) |
-| Chart Format Foundation Hardening | active；当前实施阶段，R0 基线与复现、R1 语义身份闭环、R2 前置（负例基础设施）与 R2 本体（profile/注册表/次序严格拒绝）完成（含 D1-D5 决策），R3-R5 待执行；补齐预算和交接证据 | [plan](stage_plans/active/chart-format-foundation-hardening/plan.md)、[R2 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r2-profile-rejection.md)、[R2 前置](stage_reports/stages/chart-format-foundation/2026-09-17-r2-prerequisites.md)、[R1 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r1-semantic-identity.md)、[R0 报告](stage_reports/stages/chart-format-foundation/2026-09-16-r0-baseline-and-reproduction.md)、[复核记录](stage_reports/stages/chart-format-foundation/2026-09-16-handoff-review.md) |
+| Chart Format Foundation Hardening | active；当前实施阶段，R0 基线与复现、R1 语义身份闭环、R2 前置（负例基础设施）与 R2 本体（profile/注册表/次序严格拒绝）、R3 预算与 checked arithmetic 完成（含 D1-D8 决策），R4-R5 待执行；补齐端到端、容量、回滚与平台证据 | [plan](stage_plans/active/chart-format-foundation-hardening/plan.md)、[R3 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r3-budgets-and-arithmetic.md)、[R2 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r2-profile-rejection.md)、[R2 前置](stage_reports/stages/chart-format-foundation/2026-09-17-r2-prerequisites.md)、[R1 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r1-semantic-identity.md)、[R0 报告](stage_reports/stages/chart-format-foundation/2026-09-16-r0-baseline-and-reproduction.md)、[复核记录](stage_reports/stages/chart-format-foundation/2026-09-16-handoff-review.md) |
 | Stage 6 | future；等待交接加固关闭及 owner acceptance；之后实施 v5-first candidate path，保留 v4 回退 | [plan](stage_plans/future/stage-06/plan.md) |
 | Stage 7A | future；最小 Input / Judgement / Score / Replay Kernel，作为 Stage 8 硬前置 | [plan](stage_plans/future/stage-07/plan.md) |
 | Stage 7B+ | future；Slide、Flick、多指、校准和高级 Judgement 能力持续演进 | [plan](stage_plans/future/stage-07/plan.md) |
@@ -101,7 +101,9 @@ RT-29、T1 World/Animation 大规模优化和 T2 大包解析降本仍需另外�
 用于关闭复核发现的技术缺口；其中 R0 基线/复现与决策 D1-D3 于 2026-09-16 完成，R1 语义身份
 闭环于 2026-09-17 完成，R2 前置（两组独立负例、失败顺序策略、调用关系与未知值盘点）与 R2
 本体（统一 profile validator、section 注册表与 flags 策略、A09 内部次序校验、Writer 规范化）
-同日完成，R3-R5 尚未实施。Stage 6 已移回 future，加固关闭并经 owner 接受后才恢复
+同日完成，R3 预算与 checked arithmetic（Spec §3.3 冻结预算表、`maxPackedSectionBytes` 与逐字段
+诊断、目录乘积与 u32 窄化、payload 计数驱动的预留、limits 只收紧不放宽、A13 计数口径裁定）
+亦于同日完成，R4-R5 尚未实施。Stage 6 已移回 future，加固关闭并经 owner 接受后才恢复
 v5-first candidate path 实施；Stage 6 完成后进入
 Stage 7A，再进入 Stage 8。Stage 7B+ 可以与 Stage 8 前后并行持续；Stage 8 关闭后交出
 SDK `0.8.0` / Chart v5 / CXT v2 正式接手基线。

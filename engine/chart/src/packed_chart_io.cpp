@@ -3,6 +3,8 @@
 #include <cuexis/chart/packed_chart_primitives.hpp>
 #include <cuexis/core/error.hpp>
 
+#include "packed_limits_internal.hpp"
+
 #include <algorithm>
 #include <array>
 #include <atomic>
@@ -218,13 +220,11 @@ using packed::ByteReader;
 auto PackedChartWriter::size(const CanonicalSemanticChart& chart,
                              packed::PackedChartProfile profile, PackedChartLimits limits)
     -> core::Result<PackedChartSizing> {
-    auto bytes = packed::encode(chart, profile);
+    // packed::encode owns the profile, budget and file-envelope gates, so the bridge never
+    // produces bytes that already violate a budget it was given.
+    auto bytes = packed::encode(chart, profile, limits);
     if (!bytes) {
         return core::unexpected(std::move(bytes.error()));
-    }
-    if (bytes->size() > limits.maxPackedFileBytes) {
-        return core::unexpected(
-            error("packed.io.file_limit", "Packed chart exceeds file byte limit"));
     }
     auto statistics = packed::inspect(*bytes, limits);
     if (!statistics) {
@@ -236,13 +236,9 @@ auto PackedChartWriter::size(const CanonicalSemanticChart& chart,
 auto PackedChartWriter::writeAtomic(const CanonicalSemanticChart& chart, const fs::path& target,
                                     PackedChartWriteOptions options)
     -> core::Result<PackedChartSizing> {
-    auto bytes = packed::encode(chart, options.profile);
+    auto bytes = packed::encode(chart, options.profile, options.limits);
     if (!bytes) {
         return core::unexpected(std::move(bytes.error()));
-    }
-    if (bytes->size() > options.limits.maxPackedFileBytes) {
-        return core::unexpected(
-            error("packed.io.file_limit", "Packed chart exceeds file byte limit"));
     }
     auto statistics = packed::inspect(*bytes, options.limits);
     if (!statistics) {
@@ -288,9 +284,11 @@ auto PackedChartWriter::writeAtomic(const CanonicalSemanticChart& chart, const f
 
 auto PackedChartReader::decode(std::span<const std::byte> bytes, PackedChartLimits limits)
     -> core::Result<CanonicalSemanticChart> {
-    if (bytes.size() > limits.maxPackedFileBytes) {
+    // The file budget is resolved with the frozen Foundation ceilings, so a caller cannot read an
+    // artifact past 16 MiB by passing a larger limit.
+    if (bytes.size() > packed::limits_detail::effectiveLimits(limits).maxPackedFileBytes) {
         return core::unexpected(
-            error("packed.io.file_limit", "Packed chart exceeds file byte limit"));
+            error("packed.budget.file_bytes", "Packed chart exceeds the file byte budget"));
     }
     // The file bridge deliberately owns no second section registry or structural decoder: it
     // delegates to packed::decode so inspect(), packed::decode and PackedChartReader::decode
@@ -306,9 +304,9 @@ auto PackedChartReader::read(const fs::path& source, PackedChartLimits limits)
         return core::unexpected(
             error("packed.io.open_failed", "Packed input file could not be stat'ed"));
     }
-    if (size > limits.maxPackedFileBytes) {
+    if (size > packed::limits_detail::effectiveLimits(limits).maxPackedFileBytes) {
         return core::unexpected(
-            error("packed.io.file_limit", "Packed chart exceeds file byte limit"));
+            error("packed.budget.file_bytes", "Packed chart exceeds the file byte budget"));
     }
     std::ifstream input(source, std::ios::binary);
     if (!input) {

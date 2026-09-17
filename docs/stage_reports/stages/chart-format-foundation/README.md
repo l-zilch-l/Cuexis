@@ -13,6 +13,8 @@ Foundation 关闭不等于 Chart v5 或 Packed Playback 正式发行。
 
 ## 报告
 
+- [2026-09-17 R3 预算表与 checked arithmetic](2026-09-17-r3-budgets-and-arithmetic.md)
+
 - [2026-09-17 R2 profile、section 注册表与内部次序严格拒绝](2026-09-17-r2-profile-rejection.md)
 
 - [2026-09-17 R2 前置：负例基础设施与拒绝行为盘点](2026-09-17-r2-prerequisites.md)

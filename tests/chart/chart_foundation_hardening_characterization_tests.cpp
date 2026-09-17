@@ -6,7 +6,8 @@
 //
 // These cases deliberately assert the defect, not the contract. The fix batches flip each CHECK
 // into the behaviour required by docs/formats/PACKED_CHART_FORMAT.md, so a flipped case that
-// fails afterwards is the regression signal.
+// fails afterwards is the regression signal. R1 flipped R0-H01/A02, R2 flipped R0-H02/A01, and
+// R3 flipped R0-H04.
 
 #include <cuexis/chart/packed_chart_io.hpp>
 #include <cuexis/chart/packed_chart_tables.hpp>
@@ -228,19 +229,25 @@ TEST_CASE("R2-H02 Requirements outside the registered feature declaration are re
     }
 }
 
-TEST_CASE("R0-H04 A custom maxPackedSectionBytes does not constrain any entry point",
-          "[chart][packed][hardening][r0]") {
+// R0-H04 was flipped by R3: maxPackedSectionBytes is enforced by every entry point.
+TEST_CASE("R3-H04 A custom maxPackedSectionBytes constrains every entry point",
+          "[chart][packed][budget][r3]") {
     const auto chart = tapChart();
     const auto encoded = cuexis::chart::packed::encode(chart);
     REQUIRE(encoded);
     auto limits = PackedChartLimits{};
     limits.maxPackedSectionBytes = 1U; // Far below every emitted section.
 
-    // The declared per-section ceiling is never read, so a limit that is orders of magnitude
-    // smaller than the artifact is silently ignored by inspect, decode and the writer bridge.
-    CHECK(cuexis::chart::packed::inspect(*encoded, limits));
-    CHECK(cuexis::chart::packed::decode(*encoded, limits));
-    CHECK(cuexis::chart::PackedChartWriter::size(chart, {}, limits));
+    // The declared per-section ceiling is read before any section CRC is computed, so inspect,
+    // decode and the writer bridge all report the section budget diagnostic.
+    const auto refused = [](const auto& result) {
+        REQUIRE_FALSE(result);
+        CHECK(std::string{result.error().code()} == "packed.budget.section_bytes");
+    };
+    refused(cuexis::chart::packed::inspect(*encoded, limits));
+    refused(cuexis::chart::packed::decode(*encoded, limits));
+    refused(cuexis::chart::PackedChartReader::decode(*encoded, limits));
+    refused(cuexis::chart::PackedChartWriter::size(chart, {}, limits));
 }
 
 // R0-A01 was flipped by R2: DBG0 is the registered optional inspection section of Spec 5.3.
