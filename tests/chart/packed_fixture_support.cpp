@@ -49,6 +49,14 @@ auto readU32(std::span<const std::byte> bytes, std::size_t offset) -> std::uint3
     return value;
 }
 
+auto readU64(std::span<const std::byte> bytes, std::size_t offset) -> std::uint64_t {
+    std::uint64_t value = 0;
+    for (std::size_t index = 0; index < 8U; ++index) {
+        value |= static_cast<std::uint64_t>(readU8(bytes, offset + index)) << (8U * index);
+    }
+    return value;
+}
+
 void writeU8(std::vector<std::byte>& bytes, std::size_t offset, std::uint8_t value) {
     bytes[offset] = static_cast<std::byte>(value);
 }
@@ -61,6 +69,12 @@ void writeU16(std::vector<std::byte>& bytes, std::size_t offset, std::uint16_t v
 
 void writeU32(std::vector<std::byte>& bytes, std::size_t offset, std::uint32_t value) {
     for (std::size_t index = 0; index < 4U; ++index) {
+        writeU8(bytes, offset + index, static_cast<std::uint8_t>((value >> (8U * index)) & 0xffU));
+    }
+}
+
+void writeU64(std::vector<std::byte>& bytes, std::size_t offset, std::uint64_t value) {
+    for (std::size_t index = 0; index < 8U; ++index) {
         writeU8(bytes, offset + index, static_cast<std::uint8_t>((value >> (8U * index)) & 0xffU));
     }
 }
@@ -239,6 +253,242 @@ void renameSection(std::vector<std::byte>& bytes, const SectionRef& section,
     for (std::size_t index = 0; index < 4U; ++index) {
         writeU8(bytes, base + index, static_cast<std::uint8_t>(code[index]));
     }
+}
+
+auto replaceSection(std::span<const std::byte> input, std::size_t sectionIndex,
+                    std::span<const std::byte> payload) -> std::vector<std::byte> {
+    const auto directoryCount = readU32(input, directoryCountField);
+    const auto directoryBytes = readU32(input, directoryBytesField);
+    const auto totalBytes = readU32(input, totalBytesField);
+    const auto decodedBytes = readU32(input, decodedBytesField);
+    const auto base = directoryOffset + directoryEntrySize * sectionIndex;
+    if (sectionIndex >= directoryCount) {
+        return {};
+    }
+    const auto previousSize = readU32(input, base + 12U);
+    const auto payloadSize = static_cast<std::uint32_t>(payload.size());
+    const auto newTotal = totalBytes - previousSize + payloadSize;
+    const auto newDecoded = decodedBytes - previousSize + payloadSize;
+
+    std::vector<std::byte> output;
+    output.reserve(newTotal);
+    output.insert(output.end(), input.begin(),
+                  input.begin() + static_cast<std::ptrdiff_t>(headerSize));
+    std::uint32_t offset = static_cast<std::uint32_t>(headerSize + directoryBytes);
+    for (std::uint32_t index = 0; index < directoryCount; ++index) {
+        const auto source = directoryOffset + directoryEntrySize * static_cast<std::size_t>(index);
+        const auto target = headerSize + directoryEntrySize * static_cast<std::size_t>(index);
+        output.insert(output.end(), input.begin() + static_cast<std::ptrdiff_t>(source),
+                      input.begin() + static_cast<std::ptrdiff_t>(source + directoryEntrySize));
+        writeU32(output, target + 8U, offset);
+        if (index == sectionIndex) {
+            writeU32(output, target + 12U, payloadSize);
+            writeU32(output, target + 16U, payloadSize);
+            writeU32(output, target + 24U, crc32(payload));
+        }
+        offset += readU32(output, target + 12U);
+    }
+    for (std::uint32_t index = 0; index < directoryCount; ++index) {
+        const auto source = directoryOffset + directoryEntrySize * static_cast<std::size_t>(index);
+        const auto sourceOffset = readU32(input, source + 8U);
+        const auto sourceSize = readU32(input, source + 12U);
+        if (index == sectionIndex) {
+            output.insert(output.end(), payload.begin(), payload.end());
+            continue;
+        }
+        output.insert(output.end(), input.begin() + static_cast<std::ptrdiff_t>(sourceOffset),
+                      input.begin() + static_cast<std::ptrdiff_t>(sourceOffset + sourceSize));
+    }
+    writeU32(output, totalBytesField, newTotal);
+    writeU32(output, decodedBytesField, newDecoded);
+    refreshHeaderCrc(output);
+    return output;
+}
+
+auto readStrings(std::span<const std::byte> payload) -> std::vector<std::string> {
+    ByteReader reader{payload};
+    auto count = reader.readU32();
+    auto dataBytes = reader.readU32();
+    if (!count || !dataBytes) {
+        return {};
+    }
+    std::vector<std::uint32_t> offsets;
+    offsets.reserve(*count + 1U);
+    for (std::uint32_t index = 0; index < *count + 1U; ++index) {
+        auto value = reader.readU32();
+        if (!value) {
+            return {};
+        }
+        offsets.push_back(*value);
+    }
+    auto data = reader.readBytes(*dataBytes);
+    if (!data) {
+        return {};
+    }
+    std::vector<std::string> values;
+    values.reserve(*count);
+    for (std::uint32_t index = 0; index < *count; ++index) {
+        values.emplace_back(reinterpret_cast<const char*>(data->data() + offsets[index]),
+                            offsets[index + 1U] - offsets[index]);
+    }
+    return values;
+}
+
+auto buildStrings(const std::vector<std::string>& values) -> std::vector<std::byte> {
+    std::vector<std::byte> output;
+    appendU32(output, static_cast<std::uint32_t>(values.size()));
+    std::uint32_t dataBytes = 0;
+    for (const auto& value : values) {
+        dataBytes += static_cast<std::uint32_t>(value.size());
+    }
+    appendU32(output, dataBytes);
+    std::uint32_t offset = 0;
+    appendU32(output, offset);
+    for (const auto& value : values) {
+        offset += static_cast<std::uint32_t>(value.size());
+        appendU32(output, offset);
+    }
+    for (const auto& value : values) {
+        for (const auto character : value) {
+            output.push_back(static_cast<std::byte>(character));
+        }
+    }
+    return output;
+}
+
+auto readReferences(std::span<const std::byte> payload) -> std::vector<ReferenceRow> {
+    ByteReader reader{payload};
+    std::vector<ReferenceRow> rows;
+    while (!reader.empty()) {
+        auto kind = reader.readU8();
+        auto index = reader.readUnsignedLeb128();
+        if (!kind || !index) {
+            return {};
+        }
+        rows.push_back(ReferenceRow{*kind, static_cast<std::uint32_t>(*index)});
+    }
+    return rows;
+}
+
+auto buildReferences(const std::vector<ReferenceRow>& rows) -> std::vector<std::byte> {
+    ByteWriter writer;
+    for (const auto& row : rows) {
+        writer.writeU8(row.kind);
+        writer.writeUnsignedLeb128(row.stringIndex);
+    }
+    return std::move(writer).takeBytes();
+}
+
+auto requirementRowRanges(std::span<const std::byte> payload)
+    -> std::vector<std::pair<std::size_t, std::size_t>> {
+    ByteReader reader{payload};
+    if (!reader.readU8() || !reader.readU8()) {
+        return {};
+    }
+    std::vector<std::pair<std::size_t, std::size_t>> ranges;
+    while (!reader.empty()) {
+        const auto begin = reader.position();
+        if (!reader.readUnsignedLeb128() || !reader.readUnsignedLeb128()) {
+            return {};
+        }
+        if (!reader.readU8()) {
+            return {};
+        }
+        auto interval = reader.readU8();
+        if (!interval) {
+            return {};
+        }
+        if (!readRationalBeatAtom(reader)) {
+            return {};
+        }
+        if (*interval == 1U && !readRationalBeatAtom(reader)) {
+            return {};
+        }
+        if (!reader.readUnsignedLeb128() || !reader.readUnsignedLeb128() ||
+            !reader.readUnsignedLeb128() || !reader.readUnsignedLeb128()) {
+            return {};
+        }
+        ranges.emplace_back(begin, reader.position());
+    }
+    return ranges;
+}
+
+auto constraintRowRanges(std::span<const std::byte> payload)
+    -> std::vector<std::pair<std::size_t, std::size_t>> {
+    ByteReader reader{payload};
+    std::vector<std::pair<std::size_t, std::size_t>> ranges;
+    while (!reader.empty()) {
+        const auto begin = reader.position();
+        if (!reader.readU8() || !reader.readUnsignedLeb128()) {
+            return {};
+        }
+        ranges.emplace_back(begin, reader.position());
+    }
+    return ranges;
+}
+
+auto archetypeRowRanges(std::span<const std::byte> payload)
+    -> std::vector<std::pair<std::size_t, std::size_t>> {
+    ByteReader reader{payload};
+    std::vector<std::pair<std::size_t, std::size_t>> ranges;
+    while (!reader.empty()) {
+        const auto begin = reader.position();
+        if (!reader.readU64()) {
+            return {};
+        }
+        auto payloadBytes = reader.readU32();
+        if (!payloadBytes || !reader.readBytes(*payloadBytes)) {
+            return {};
+        }
+        ranges.emplace_back(begin, reader.position());
+    }
+    return ranges;
+}
+
+auto explicitIdentityRecordRanges(std::span<const std::byte> payload)
+    -> std::vector<std::pair<std::size_t, std::size_t>> {
+    ByteReader reader{payload};
+    auto scopeCount = reader.readU32();
+    auto pathCount = reader.readU32();
+    auto identityCount = reader.readU32();
+    if (!scopeCount || !pathCount || !identityCount || *scopeCount != 0U || *pathCount != 0U) {
+        return {};
+    }
+    std::vector<std::pair<std::size_t, std::size_t>> ranges;
+    ranges.reserve(*identityCount);
+    for (std::uint32_t index = 0; index < *identityCount; ++index) {
+        const auto begin = reader.position();
+        auto tag = reader.readU8();
+        if (!tag || *tag != 0U || !reader.readBytes(16)) {
+            return {};
+        }
+        ranges.emplace_back(begin, reader.position());
+    }
+    if (!reader.empty()) {
+        return {};
+    }
+    return ranges;
+}
+
+auto reorderRows(std::span<const std::byte> payload,
+                 const std::vector<std::pair<std::size_t, std::size_t>>& rows,
+                 const std::vector<std::size_t>& order, std::size_t prefixBytes)
+    -> std::vector<std::byte> {
+    std::vector<std::byte> output;
+    if (prefixBytes > payload.size()) {
+        return output;
+    }
+    output.insert(output.end(), payload.begin(),
+                  payload.begin() + static_cast<std::ptrdiff_t>(prefixBytes));
+    for (const auto index : order) {
+        if (index >= rows.size() || rows[index].second > payload.size()) {
+            return {};
+        }
+        output.insert(output.end(),
+                      payload.begin() + static_cast<std::ptrdiff_t>(rows[index].first),
+                      payload.begin() + static_cast<std::ptrdiff_t>(rows[index].second));
+    }
+    return output;
 }
 
 } // namespace cuexis::chart::packed::test

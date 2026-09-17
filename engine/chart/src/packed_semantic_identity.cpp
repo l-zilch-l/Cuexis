@@ -163,6 +163,9 @@ void writeRenderable(Preimage& out, const CanonicalRenderable& value) {
 
 auto writeRequirement(Preimage& out, const CanonicalRequirement& requirement)
     -> core::Result<void> {
+    // The wire stores exactly one constraint set and an empty effect set, so these three branches
+    // are the preimage half of the Spec 7.6 profile rules. They reuse the same packed.profile.*
+    // diagnostics as packed::encode/packed::decode so one rule has exactly one code.
     writeText(out, requirement.localId);
     writeU8(out, static_cast<std::uint8_t>(requirement.kind));
     writeU8(out, static_cast<std::uint8_t>(requirement.interval.kind));
@@ -172,7 +175,7 @@ auto writeRequirement(Preimage& out, const CanonicalRequirement& requirement)
     if (requirement.interval.kind == CanonicalIntervalKind::HalfOpenRange) {
         if (!requirement.interval.endBeat) {
             return core::unexpected(
-                fail("packed.identity.interval", "Range requirements require an end beat"));
+                fail("packed.profile.interval", "Range requirements require an end beat"));
         }
         if (auto result = writeBeat(out, *requirement.interval.endBeat); !result) {
             return result;
@@ -181,14 +184,14 @@ auto writeRequirement(Preimage& out, const CanonicalRequirement& requirement)
         // The wire carries an end atom only for ranges, so accepting it here would silently
         // drop semantic data from the preimage.
         return core::unexpected(
-            fail("packed.identity.interval", "Point requirements must not carry an end beat"));
+            fail("packed.profile.interval", "Point requirements must not carry an end beat"));
     }
     writeReference(out, 4, requirement.judgementDomain.id);
     writeReference(out, 5, requirement.requiredAction.id);
     // Foundation revision 1 stores exactly one lane constraint set. The wire has room for one,
     // so hashing more would promise data the artifact cannot carry.
     if (requirement.constraints.size() != 1U) {
-        return core::unexpected(fail("packed.identity.constraints",
+        return core::unexpected(fail("packed.profile.constraints",
                                      "Foundation requirements carry exactly one constraint"));
     }
     writeU32(out, 1);
@@ -197,7 +200,7 @@ auto writeRequirement(Preimage& out, const CanonicalRequirement& requirement)
     writeU32(out, constraint.lane);
     if (!requirement.effects.empty()) {
         return core::unexpected(
-            fail("packed.identity.effects", "Foundation revision 1 requires empty effect sets"));
+            fail("packed.profile.effects", "Foundation revision 1 requires empty effect sets"));
     }
     writeU32(out, 0);
     return {};

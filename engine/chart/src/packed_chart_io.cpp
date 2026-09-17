@@ -133,65 +133,6 @@ using packed::ByteReader;
     return sizing;
 }
 
-struct RawSection final {
-    std::span<const std::byte> bytes;
-    std::uint8_t flags{};
-    std::uint32_t records{};
-};
-
-[[nodiscard]] auto sections(std::span<const std::byte> bytes)
-    -> core::Result<std::map<std::string, RawSection>> {
-    ByteReader reader{bytes};
-    if (!reader.readBytes(8) || !reader.readU16() || !reader.readU16() || !reader.readU32() ||
-        !reader.readU32() || !reader.readU32()) {
-        return core::unexpected(error("packed.io.truncated_header", "Packed header is truncated"));
-    }
-    auto count = reader.readU32();
-    auto directoryBytes = reader.readU32();
-    if (!count || !directoryBytes || *directoryBytes != *count * 32U ||
-        !checkedRange(96U, *directoryBytes, bytes.size())) {
-        return core::unexpected(error("packed.io.directory_bounds", "Packed directory is invalid"));
-    }
-    static_cast<void>(reader.readBytes(32));
-    for (int index = 0; index < 8; ++index)
-        static_cast<void>(reader.readU32());
-    std::map<std::string, RawSection> result;
-    ByteReader directory{bytes.subspan(96U, *directoryBytes)};
-    std::size_t expectedOffset = 96U + *directoryBytes;
-    for (std::uint32_t index = 0; index < *count; ++index) {
-        auto type = directory.readBytes(4);
-        auto codec = directory.readU8();
-        auto flags = directory.readU8();
-        auto reserved = directory.readU16();
-        auto offset = directory.readU32();
-        auto encoded = directory.readU32();
-        auto decoded = directory.readU32();
-        auto records = directory.readU32();
-        auto crc = directory.readU32();
-        auto reserved2 = directory.readU32();
-        if (!type || !codec || !flags || !reserved || !offset || !encoded || !decoded || !records ||
-            !crc || !reserved2 || *codec != 0U || *flags > 1U || *reserved != 0U ||
-            *reserved2 != 0U || *decoded != *encoded || *offset != expectedOffset ||
-            !checkedRange(*offset, *encoded, bytes.size()) ||
-            packed::crc32(bytes.subspan(*offset, *encoded)) != *crc) {
-            return core::unexpected(
-                error("packed.io.directory_invalid", "Packed directory entry is invalid"));
-        }
-        const std::string key{reinterpret_cast<const char*>(type->data()), 4};
-        if (!result.emplace(key, RawSection{bytes.subspan(*offset, *encoded), *flags, *records})
-                 .second) {
-            return core::unexpected(
-                error("packed.io.duplicate_section", "Packed section is duplicated"));
-        }
-        expectedOffset = static_cast<std::size_t>(*offset) + *encoded;
-    }
-    if (expectedOffset != bytes.size()) {
-        return core::unexpected(
-            error("packed.io.trailing_bytes", "Packed file has trailing bytes"));
-    }
-    return result;
-}
-
 [[nodiscard]] auto writeTemporary(const fs::path& path, std::span<const std::byte> bytes)
     -> core::Result<void> {
 #if defined(_WIN32)
@@ -351,20 +292,9 @@ auto PackedChartReader::decode(std::span<const std::byte> bytes, PackedChartLimi
         return core::unexpected(
             error("packed.io.file_limit", "Packed chart exceeds file byte limit"));
     }
-    auto table = sections(bytes);
-    if (!table) {
-        return core::unexpected(std::move(table.error()));
-    }
-    static constexpr std::array<std::string_view, 14> known{"META", "TIME", "STR0", "REF0", "IDN0",
-                                                            "ARCH", "ENT0", "TRN0", "REN0", "REQ0",
-                                                            "CNS0", "CAM0", "DBG0", ""};
-    for (const auto& [name, section] : *table) {
-        if (std::find(known.begin(), known.end(), name) == known.end() ||
-            (name != "DBG0" && section.flags != 0U)) {
-            return core::unexpected(
-                error("packed.io.unknown_section", "Packed section is not registered"));
-        }
-    }
+    // The file bridge deliberately owns no second section registry or structural decoder: it
+    // delegates to packed::decode so inspect(), packed::decode and PackedChartReader::decode
+    // cannot disagree about the registered subset or report a misleading diagnostic.
     return packed::decode(bytes, limits);
 }
 

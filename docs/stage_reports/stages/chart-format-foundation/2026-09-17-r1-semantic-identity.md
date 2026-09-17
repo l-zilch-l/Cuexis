@@ -96,6 +96,11 @@ identity bytes；浮点写原始 bits 并把 `-0` 规范为 `+0`；不使用 var
 `packed.identity.invalid_uuid` 在编码与解码路径都存在；其余为编码（Writer 前置）或解码
 （Reader 结构）侧，两侧对同一规则的命名保持一致。
 
+后续更新（R2，2026-09-17）：上表中属于 Spec 7.6 profile 规则的三项已统一到
+`packed.profile.*` 诊断族，现名分别为 `packed.profile.constraints`、`packed.profile.effects`、
+`packed.profile.interval`；判定条件与拒绝位置未变。当前代码名以
+[R2 报告](2026-09-17-r2-profile-rejection.md) 为准。
+
 ## 4. 本轮新发现
 
 | ID | 内容 | 处置 |

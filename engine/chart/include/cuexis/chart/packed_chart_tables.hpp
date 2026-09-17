@@ -47,17 +47,22 @@ using PackedSemanticIdentity = std::array<std::uint8_t, 32>;
 // Lowercase hexadecimal form of a semantic identity digest.
 [[nodiscard]] auto semanticIdentityHex(const PackedSemanticIdentity& identity) -> std::string;
 
+// Encodes a chart after validating the Spec 7.6 Foundation profile. A model outside the
+// registered subset is refused before any identity or artifact bytes are produced.
 [[nodiscard]] auto encode(const CanonicalSemanticChart& chart, PackedChartProfile profile = {})
     -> core::Result<std::vector<std::byte>>;
 
-// Verifies Header.semanticIdentity against the recomputed digest after structural, budget and
-// semantic validation. A mismatch is rejected before any semantic chart is published.
+// Verifies the registered section registry, the Foundation profile of Spec 7.6 and
+// Header.semanticIdentity against the recomputed digest. Structural, profile and semantic
+// rejections all precede the identity comparison, so an illegal artifact never reports
+// packed.identity.mismatch. A mismatch is rejected before any semantic chart is published.
 [[nodiscard]] auto decode(std::span<const std::byte> bytes, PackedChartLimits limits = {})
     -> core::Result<CanonicalSemanticChart>;
 
 // Structural inspection only: header, directory, section CRCs and declared counters. It does
-// NOT verify the semantic identity or any semantic precondition, so callers that consume
-// semantics must use decode().
+// NOT verify the semantic identity, the Foundation profile or any semantic precondition, so
+// callers that consume semantics must use decode(). It shares the decode() section registry
+// decision (Spec 5.2/5.3) so both entry points agree on which sections an artifact may carry.
 [[nodiscard]] auto inspect(std::span<const std::byte> bytes, PackedChartLimits limits = {})
     -> core::Result<PackedChartStatistics>;
 

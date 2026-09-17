@@ -125,7 +125,8 @@ DBG0 若存在也计入 16 MiB。CXC ZIP header、manifest、独立 source entry
 | `preparePeakBytes` | source、展开记录、Packed、Runtime 等同时存活的峰值 |
 
 重复使用同一 Clip 的事件定义只计一次，但其绑定数量、prepare 展开量和运行时每帧
-写入量另外计数；不得以定义去重掩盖执行成本。Foundation profile 的 `eventCount=0`。
+写入量另外计数；不得以定义去重掩盖执行成本。Foundation profile 的 `eventCount=0`；
+Reader 必须拒绝非零 `eventCount` 声明，不能当作「没有事件可读」而忽略。
 
 Reader 必须在分配前检查 counts、UTF-8 bytes、数组乘积、偏移加法、解码占用和资源
 引用数。Header 中的声明只用于预检，解码后必须重新计数比对。除 Packed 文件 16 MiB
@@ -175,6 +176,10 @@ Rational mode，长度相等也选 Rational。空流使用 mode 0。不能为适
 Reader 可以接受不同的 section 物理次序，但字典、实体和记录的内部排序必须符合
 合同。Writer 的唯一结果以相同 wire revision、相同 semantic model 和相同
 inspection 保留策略为前提，不能对不同 compiler profile 笼统承诺字节相同。
+
+Reader 必须实际校验这些内部次序，不能只依赖规范 Writer，也不能排序后静默接受乱序或
+重复项：STR0 严格升序、REF0 按 `(kind, text)`、IDN0 的 scope/path/identity 子表、
+ARCH 按 mask 升序、REQ0 按 `(entity ordinal, localId)`、CNS0 按 set payload。
 
 ## 5. 文件布局
 
@@ -232,6 +237,11 @@ CRC，须逐字段验证；CXC 的整 entry SHA-256 覆盖目录。无 CXC 时�
 未知 semantic section 必须拒绝；未知 inspection section 可在检查长度和 CRC 后忽略，
 但不能提供任何运行时必需数据。新 codec 不属于 Foundation；必须有新的明确 wire 合同。
 
+Foundation revision 1 的 Reader 行为固定为：登记 semantic section 携带 `flags=1` 时以
+flags 诊断拒绝（不得冒充「未知 section」）；未登记的 `flags=1` section 在长度与 CRC 校验后
+忽略；未登记的 `flags=0` section 一律拒绝；未完成后续字段合同的登记 section 使用独立的
+「拒绝」诊断。Writer、结构检查和语义解码必须使用同一注册表判定，不得各自维护清单。
+
 ### 5.3 Section 注册表
 
 | Code | 内容 / recordCount | Foundation revision 1 |
@@ -256,6 +266,8 @@ CRC，须逐字段验证；CXC 的整 entry SHA-256 覆盖目录。无 CXC 时�
 
 除 DBG0 外本表 flags 必须为 0。未完成后续字段合同的 section 不是任意 payload 的
 扩展口；即使为空也不能被 Foundation Reader 当作支持。空必需表仍保存其明示的表头。
+`BEH0`/`BHD0`/`ANM0`/`FXS0` 属于此类，Foundation revision 1 必须显式拒绝；`DBG0` 是唯一
+登记的 inspection section，Reader 接受并忽略其 payload，不从中读取判定、身份或资源信息。
 下述无内部 count 的表由目录 recordCount 定界，必须恰好消费全部 section bytes。
 
 ## 6. 字典和全局记录
@@ -397,7 +409,8 @@ archetype index 是行号。candidate component mask：
 | 6 | Animator / 后续合同 |
 | 7 | Effect binding / 后续合同 |
 
-bits 8..63 未定义；Foundation 还拒绝 bit 3/6/7。每行的 defaultsByteCount 必须和实际
+bits 8..63 未定义。Foundation Reader 只接受 bit 0/1/2/4：bit 3/6/7 与 bits 8..63 一律
+拒绝，不能静默丢弃未实现 Component 的声明。每行的 defaultsByteCount 必须和实际
 payload 长度一致。Archetype 不保存实体 ID、parent、requirement identity 或 CXT。
 
 candidate canonical Writer 为每个不同 componentMask 建立**恰好一个** Archetype，
@@ -475,7 +488,8 @@ effectSetIndexPlusOne        uv32
 ```
 
 首 ordinalDelta 为绝对值；后续允许 0，因为同一实体可以有多个 localId。完整
-RequirementIdentity 为 `(EntityIdentity, localId)`。重复 identity 失败。
+RequirementIdentity 为 `(EntityIdentity, localId)`。重复 identity 失败；Reader 必须校验
+`(entity ordinal, localId bytes)` 严格升序，乱序或重复都以稳定诊断拒绝。
 拥有 bit 2 的实体必须有至少一条 REQ0，其他实体不能拥有 REQ0。
 
 intervalKind 的编码为 `0=point, 1=half-open-range`；range 必须满足 end>start。
@@ -501,7 +515,8 @@ constraints[] {
 ```
 
 Foundation 只登记候选离散 `lane` constraint。每 set 至少一项、kind 唯一并按 kind
-升序；sets 按完整规范 payload bytes 去重排序。none 使用 REQ0 的 0，不保存空 set。
+升序；sets 按完整规范 payload bytes 去重排序，Reader 必须校验该次序（本 revision 即
+按 lane 严格升序）而不是沿用首次出现次序。none 使用 REQ0 的 0，不保存空 set。
 lane 的有效范围必须由引用的候选 judgement domain 校验；它不是屏幕 x 值。
 新的约束必须先有 typed schema 和独立 capability，不允许任意 JSON 进入 CNS0。
 
@@ -518,6 +533,10 @@ lane 的有效范围必须由引用的候选 judgement domain 校验；它不是
 
 存在 REQ0 时须声明该 feature，所有要求都必须满足本表。没有 REQ0 时可以不声明。
 Foundation revision 1 不接受其他 gameplay profile 或 domain/action 组合。
+Writer 与 Reader 必须用同一组条件判定本表，并使用同一稳定的 profile 诊断族：未声明或
+未登记的 feature ID/version、requirement kind 非 `tap`、interval 非 `point`、domain/action
+不匹配、约束不是恰好一个 `lane`、lane 超出 `[0,3]`、非空 effect set。profile 判定必须在
+semanticIdentity 比对之前完成，诊断不得伪装成身份不符。
 该 profile 只证明时刻、域、动作和约束能被无损存储，不定义键位映射、容差窗口、
 计分或 Hit/Miss 算法，不能用它冒充 Stage 7A 的可玩判定。
 
@@ -565,7 +584,8 @@ DBG0 可保存 source mapping、名称、字段路径和作者提示。本草案
 ```
 
 物理次序不决定依赖次序。区间、循环、type 错误和 hash 不匹配都须在 Runtime/World
-发布前失败。失败不发布半份新 Chart；会话切换时旧的已提交 active chart 按原事务
+发布前失败。profile 校验属于「complete semantic validation」，其拒绝必须先于
+semanticIdentity 比对，使一个 hash 自洽但超出登记 subset 的产物报告 profile 原因。失败不发布半份新 Chart；会话切换时旧的已提交 active chart 按原事务
 合同保留，但不能被冒充为本次成功结果。诊断至少含 section、record、字段和错误类别。
 
 Writer 只接受已展开且引用完整的 canonical model。在写盘前通过无副作用 sizing pass

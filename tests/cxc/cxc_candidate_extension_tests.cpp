@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <span>
 #include <sstream>
 #include <stdexcept>
@@ -78,12 +79,51 @@ struct PackedFixture final {
     return output.str();
 }
 
+[[nodiscard]] auto readU32(const std::vector<std::byte>& bytes, std::size_t offset)
+    -> std::uint32_t {
+    std::uint32_t value = 0;
+    for (std::size_t index = 0; index < 4U; ++index) {
+        value |= static_cast<std::uint32_t>(std::to_integer<std::uint8_t>(bytes[offset + index]))
+                 << (8U * index);
+    }
+    return value;
+}
+
+void writeU32(std::vector<std::byte>& bytes, std::size_t offset, std::uint32_t value) {
+    for (std::size_t index = 0; index < 4U; ++index) {
+        bytes[offset + index] = static_cast<std::byte>((value >> (8U * index)) & 0xffU);
+    }
+}
+
+// Patches the single CNS0 lane byte and keeps the section and header CRCs consistent, so the
+// artifact stays structurally valid and only the Foundation profile is violated.
+void patchCnsLane(std::vector<std::byte>& bytes, std::uint8_t lane) {
+    const auto count = readU32(bytes, 24U);
+    for (std::uint32_t index = 0; index < count; ++index) {
+        const auto base = 96U + 32U * static_cast<std::size_t>(index);
+        const std::string_view name{reinterpret_cast<const char*>(bytes.data() + base), 4U};
+        if (name != "CNS0") {
+            continue;
+        }
+        const auto offset = readU32(bytes, base + 8U);
+        const auto size = readU32(bytes, base + 12U);
+        // CNS0 row: constraintCount(1) then lane(uv32). The fixture lane is below 128.
+        bytes[offset + 1U] = static_cast<std::byte>(lane);
+        writeU32(
+            bytes, base + 24U,
+            cuexis::chart::packed::crc32(std::span<const std::byte>{bytes.data() + offset, size}));
+        writeU32(bytes, 92U,
+                 cuexis::chart::packed::crc32(std::span<const std::byte>{bytes.data(), 92U}));
+        return;
+    }
+}
+
 // Builds the Spec-shaped candidate package: the Packed playback entry is declared by the
 // registered extension and is not part of the project asset closure.
-[[nodiscard]] auto makeCandidateRequest(bool playback, std::string_view compiledIdentity,
-                                        bool useRealArtifactIdentity)
+[[nodiscard]] auto makeCandidateRequestFrom(PackedFixture fixture, bool playback,
+                                            std::string_view compiledIdentity,
+                                            bool useRealArtifactIdentity)
     -> cuexis::cxc::CxcWriteRequest {
-    const auto fixture = tapPackedFixture();
     const auto artifactIdentity = useRealArtifactIdentity
                                       ? cuexis::cxc::detail::sha256Hex(fixture.bytes)
                                       : std::string(64, 'f');
@@ -95,6 +135,13 @@ struct PackedFixture final {
     request.extensionsJson =
         candidateExtensionJson(packedEntryPath, playback, artifactIdentity, compiledIdentity);
     return request;
+}
+
+[[nodiscard]] auto makeCandidateRequest(bool playback, std::string_view compiledIdentity,
+                                        bool useRealArtifactIdentity)
+    -> cuexis::cxc::CxcWriteRequest {
+    return makeCandidateRequestFrom(tapPackedFixture(), playback, compiledIdentity,
+                                    useRealArtifactIdentity);
 }
 
 [[nodiscard]] auto loadCandidatePackage(const std::vector<std::byte>& bytes)
@@ -172,4 +219,22 @@ TEST_CASE("R1-A03 only extension-declared playback entries join the CXC closure"
         REQUIRE_FALSE(written.hasValue());
         CHECK(cuexis::cxc::test::hasDiagnostic(written.diagnostics, "cxc.entry.unlisted"));
     }
+}
+
+TEST_CASE("R2 CXC validation refuses an out-of-profile playback artifact", "[cxc][hardening][r2]") {
+    // R2 makes the Writer refuse lanes outside [0,3], so the artifact is crafted by patching a
+    // valid one. Both declared identities stay self-consistent: the only defect is the profile.
+    auto fixture = tapPackedFixture();
+    patchCnsLane(fixture.bytes, 7U);
+    const auto compiledIdentity = fixture.semanticIdentity;
+    const auto bytes = cuexis::cxc::test::writePackage(
+        makeCandidateRequestFrom(std::move(fixture), true, compiledIdentity, true));
+    const auto package = loadCandidatePackage(bytes);
+
+    const auto diagnostics = cuexis::tools::validateCandidateChartExtension(package);
+    CHECK(cuexis::cxc::test::hasDiagnostic(diagnostics, "cxc.candidate.packed_invalid"));
+    // The profile rejection must not be reported as an identity mismatch: decode fails before it
+    // ever recomputes a semantic identity.
+    CHECK_FALSE(
+        cuexis::cxc::test::hasDiagnostic(diagnostics, "cxc.candidate.compiled_identity_mismatch"));
 }

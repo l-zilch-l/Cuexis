@@ -14,7 +14,9 @@
 #include <cstdint>
 #include <optional>
 #include <span>
+#include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace cuexis::chart::packed::test {
@@ -24,14 +26,17 @@ inline constexpr std::size_t headerSize = 96U;
 inline constexpr std::size_t packedVersionOffset = 8U;
 inline constexpr std::size_t headerFlagsOffset = 12U;
 inline constexpr std::size_t semanticIdentityOffset = 32U;
+inline constexpr std::size_t eventCountOffset = 72U;
 inline constexpr std::size_t candidateRevisionOffset = 88U;
 
 [[nodiscard]] auto readU8(std::span<const std::byte> bytes, std::size_t offset) -> std::uint8_t;
 [[nodiscard]] auto readU16(std::span<const std::byte> bytes, std::size_t offset) -> std::uint16_t;
 [[nodiscard]] auto readU32(std::span<const std::byte> bytes, std::size_t offset) -> std::uint32_t;
+[[nodiscard]] auto readU64(std::span<const std::byte> bytes, std::size_t offset) -> std::uint64_t;
 void writeU8(std::vector<std::byte>& bytes, std::size_t offset, std::uint8_t value);
 void writeU16(std::vector<std::byte>& bytes, std::size_t offset, std::uint16_t value);
 void writeU32(std::vector<std::byte>& bytes, std::size_t offset, std::uint32_t value);
+void writeU64(std::vector<std::byte>& bytes, std::size_t offset, std::uint64_t value);
 
 struct SectionRef final {
     std::size_t index{};  // directory entry index
@@ -82,5 +87,41 @@ struct ConstraintRow final {
 
 // Renames one directory entry in place; the payload and its CRC are unchanged.
 void renameSection(std::vector<std::byte>& bytes, const SectionRef& section, std::string_view code);
+
+// Replaces one existing section payload, keeping the directory order and every other payload
+// intact. Section offsets, totalBytes, decodedBytes, the replaced section CRC and the header CRC
+// are recomputed, so the result stays structurally valid and isolates the rule under test.
+[[nodiscard]] auto replaceSection(std::span<const std::byte> input, std::size_t sectionIndex,
+                                  std::span<const std::byte> payload) -> std::vector<std::byte>;
+
+// STR0 payload accessors for crafting non-canonical dictionaries.
+[[nodiscard]] auto readStrings(std::span<const std::byte> payload) -> std::vector<std::string>;
+[[nodiscard]] auto buildStrings(const std::vector<std::string>& values) -> std::vector<std::byte>;
+
+struct ReferenceRow final {
+    std::uint8_t kind{};
+    std::uint32_t stringIndex{};
+};
+[[nodiscard]] auto readReferences(std::span<const std::byte> payload) -> std::vector<ReferenceRow>;
+[[nodiscard]] auto buildReferences(const std::vector<ReferenceRow>& rows) -> std::vector<std::byte>;
+
+// Byte ranges (begin, end) of the rows of one table payload. `requirementRowRanges` skips the
+// two Beat codec bytes of REQ0; the identity ranges only apply to charts whose entities are all
+// explicit, where the IDN0 header is scopeCount, pathCount and identityCount.
+[[nodiscard]] auto requirementRowRanges(std::span<const std::byte> payload)
+    -> std::vector<std::pair<std::size_t, std::size_t>>;
+[[nodiscard]] auto constraintRowRanges(std::span<const std::byte> payload)
+    -> std::vector<std::pair<std::size_t, std::size_t>>;
+[[nodiscard]] auto archetypeRowRanges(std::span<const std::byte> payload)
+    -> std::vector<std::pair<std::size_t, std::size_t>>;
+[[nodiscard]] auto explicitIdentityRecordRanges(std::span<const std::byte> payload)
+    -> std::vector<std::pair<std::size_t, std::size_t>>;
+
+// Rebuilds a table payload by concatenating the given row ranges in `order`, prefixed by the
+// first `prefixBytes` bytes of the original payload (REQ0's codec header, IDN0's counters, ...).
+[[nodiscard]] auto reorderRows(std::span<const std::byte> payload,
+                               const std::vector<std::pair<std::size_t, std::size_t>>& rows,
+                               const std::vector<std::size_t>& order, std::size_t prefixBytes)
+    -> std::vector<std::byte>;
 
 } // namespace cuexis::chart::packed::test

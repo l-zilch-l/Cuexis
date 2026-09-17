@@ -322,7 +322,9 @@ TEST_CASE("R1 hash preconditions fail with stable errors instead of throwing",
         chart.entities.front().requirements.front().constraints.clear();
         const auto identity = cuexis::chart::packed::semanticIdentity(chart);
         REQUIRE_FALSE(identity);
-        CHECK(identity.error().code() == "packed.identity.constraints");
+        // R2 unified the profile diagnostics: the preimage half of a Spec 7.6 rule reports the
+        // same packed.profile.* code as packed::encode and packed::decode.
+        CHECK(identity.error().code() == "packed.profile.constraints");
     }
     SECTION("non-empty effect set") {
         auto chart = oneTapChart();
@@ -330,7 +332,7 @@ TEST_CASE("R1 hash preconditions fail with stable errors instead of throwing",
             cuexis::chart::TypedReference{"effect", "flash"});
         const auto identity = cuexis::chart::packed::semanticIdentity(chart);
         REQUIRE_FALSE(identity);
-        CHECK(identity.error().code() == "packed.identity.effects");
+        CHECK(identity.error().code() == "packed.profile.effects");
     }
     SECTION("non-finite float") {
         auto chart = oneTapChart();

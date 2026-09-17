@@ -4,6 +4,7 @@
 #include <cuexis/core/error.hpp>
 
 #include "packed_identity_internal.hpp"
+#include "packed_profile_internal.hpp"
 
 #include <algorithm>
 #include <array>
@@ -16,12 +17,60 @@
 #include <string>
 #include <string_view>
 #include <utility>
+#include <variant>
 
 namespace cuexis::chart::packed {
 namespace {
 
 auto fail(std::string code, std::string message) -> core::Error {
     return core::Error{std::move(code), std::move(message)};
+}
+
+// Spec 5.3 section registry. inspect() and decode() share this decision so the two entry points
+// cannot disagree about which sections an artifact may carry.
+enum class SectionRole : std::uint8_t { semantic, inspection };
+
+[[nodiscard]] auto classifySection(std::string_view name, std::uint8_t flags)
+    -> core::Result<SectionRole> {
+    static constexpr std::array<std::string_view, 12> semantic{"META", "TIME", "STR0", "REF0",
+                                                               "IDN0", "ARCH", "ENT0", "TRN0",
+                                                               "REN0", "CAM0", "CNS0", "REQ0"};
+    static constexpr std::array<std::string_view, 4> refused{"ANM0", "BEH0", "BHD0", "FXS0"};
+    if (flags > 1U) {
+        return core::unexpected(
+            fail("packed.directory.flags", "Packed section flags must be 0 or 1"));
+    }
+    if (std::find(semantic.begin(), semantic.end(), name) != semantic.end()) {
+        if (flags != 0U) {
+            return core::unexpected(
+                fail("packed.directory.flags", "Foundation semantic sections require flags=0"));
+        }
+        return SectionRole::semantic;
+    }
+    if (name == "DBG0") {
+        if (flags != 1U) {
+            return core::unexpected(
+                fail("packed.directory.flags",
+                     "The registered inspection section DBG0 requires flags=1"));
+        }
+        return SectionRole::inspection;
+    }
+    if (std::find(refused.begin(), refused.end(), name) != refused.end()) {
+        if (flags != 0U) {
+            return core::unexpected(
+                fail("packed.directory.flags", "Foundation semantic sections require flags=0"));
+        }
+        return core::unexpected(
+            fail("packed.directory.refused",
+                 "Packed section belongs to a later field contract and is refused by Foundation"));
+    }
+    // Spec 5.2: unknown inspection sections may be ignored after length and CRC checks, but they
+    // never provide runtime data. Unknown semantic sections are always refused.
+    if (flags == 1U) {
+        return SectionRole::inspection;
+    }
+    return core::unexpected(
+        fail("packed.directory.invalid", "Packed section code is not registered"));
 }
 
 auto hexValue(char c) -> int {
@@ -624,27 +673,32 @@ auto writeComponentStream(const EntityOrder& order, const std::vector<Archetype>
 
 auto writeConstraintAndRequirementSections(const EntityOrder& order, const Dictionaries& dict)
     -> core::Result<std::pair<Section, Section>> {
-    std::map<std::uint32_t, std::uint32_t> laneSets;
-    std::vector<std::uint32_t> lanes;
-    for (const auto* entity : order.entities)
+    // Spec 7.5: constraint sets are deduplicated and ordered by their canonical payload bytes,
+    // which for the single registered lane constraint means ascending lane.
+    std::set<std::uint32_t> laneValues;
+    for (const auto* entity : order.entities) {
         for (const auto& req : entity->requirements) {
-            if (req.constraints.size() != 1 ||
-                !std::holds_alternative<LaneConstraint>(req.constraints[0]))
-                return core::unexpected(fail("packed.requirement.unsupported",
-                                             "Only one lane constraint is supported"));
-            const auto lane = std::get<LaneConstraint>(req.constraints[0]).lane;
-            if (!laneSets.contains(lane)) {
-                laneSets.emplace(lane, static_cast<std::uint32_t>(lanes.size() + 1U));
-                lanes.push_back(lane);
+            if (req.constraints.size() != 1U ||
+                !std::holds_alternative<LaneConstraint>(req.constraints[0])) {
+                return core::unexpected(fail("packed.profile.constraints",
+                                             "Foundation requirements carry exactly one lane "
+                                             "constraint"));
             }
+            laneValues.insert(std::get<LaneConstraint>(req.constraints[0]).lane);
         }
+    }
+    std::map<std::uint32_t, std::uint32_t> laneSets;
+    for (const auto lane : laneValues) {
+        laneSets.emplace(lane, static_cast<std::uint32_t>(laneSets.size() + 1U));
+    }
     ByteWriter cns;
-    for (auto lane : lanes) {
+    for (const auto lane : laneValues) {
         cns.writeU8(1);
         cns.writeUnsignedLeb128(lane);
     }
-    Section cnsSection{
-        {'C', 'N', 'S', '0'}, std::move(cns).takeBytes(), static_cast<std::uint32_t>(lanes.size())};
+    Section cnsSection{{'C', 'N', 'S', '0'},
+                       std::move(cns).takeBytes(),
+                       static_cast<std::uint32_t>(laneValues.size())};
     ByteWriter req;
     req.writeU8(0);
     req.writeU8(0);
@@ -653,21 +707,31 @@ auto writeConstraintAndRequirementSections(const EntityOrder& order, const Dicti
     bool first = true;
     for (std::size_t ordinal = 0; ordinal < order.entities.size(); ++ordinal) {
         const auto* entity = order.entities[ordinal];
+        // Spec 7.4: REQ0 rows are stored in strictly ascending (entity ordinal, localId bytes)
+        // order, so the Writer emits each entity's requirements sorted by localId.
+        std::vector<const CanonicalRequirement*> requirements;
+        requirements.reserve(entity->requirements.size());
         for (const auto& requirement : entity->requirements) {
+            requirements.push_back(&requirement);
+        }
+        std::sort(
+            requirements.begin(), requirements.end(),
+            [](const auto* left, const auto* right) { return left->localId < right->localId; });
+        for (const auto* requirement : requirements) {
             const auto delta = first ? static_cast<std::uint32_t>(ordinal)
                                      : static_cast<std::uint32_t>(ordinal - previous);
             first = false;
             previous = static_cast<std::uint32_t>(ordinal);
             req.writeUnsignedLeb128(delta);
-            req.writeUnsignedLeb128(*stringRef(dict, requirement.localId));
-            req.writeU8(static_cast<std::uint8_t>(requirement.kind));
-            req.writeU8(static_cast<std::uint8_t>(requirement.interval.kind));
-            (void)writeRationalBeatAtom(req, requirement.interval.startBeat);
-            if (requirement.interval.endBeat)
-                (void)writeRationalBeatAtom(req, *requirement.interval.endBeat);
-            req.writeUnsignedLeb128(*typedRef(dict, 4, requirement.judgementDomain.id));
-            req.writeUnsignedLeb128(*typedRef(dict, 5, requirement.requiredAction.id));
-            const auto lane = std::get<LaneConstraint>(requirement.constraints[0]).lane;
+            req.writeUnsignedLeb128(*stringRef(dict, requirement->localId));
+            req.writeU8(static_cast<std::uint8_t>(requirement->kind));
+            req.writeU8(static_cast<std::uint8_t>(requirement->interval.kind));
+            (void)writeRationalBeatAtom(req, requirement->interval.startBeat);
+            if (requirement->interval.endBeat)
+                (void)writeRationalBeatAtom(req, *requirement->interval.endBeat);
+            req.writeUnsignedLeb128(*typedRef(dict, 4, requirement->judgementDomain.id));
+            req.writeUnsignedLeb128(*typedRef(dict, 5, requirement->requiredAction.id));
+            const auto lane = std::get<LaneConstraint>(requirement->constraints[0]).lane;
             req.writeUnsignedLeb128(laneSets.at(lane));
             req.writeU8(0);
             ++count;
@@ -684,6 +748,10 @@ auto encode(const CanonicalSemanticChart& chart, PackedChartProfile profile)
     if (profile.flags != 1 || profile.candidateRevision != 1)
         return core::unexpected(
             fail("packed.header.unsupported_revision", "Only candidate revision 1 is supported"));
+    // Spec 7.6: the Writer refuses any model outside the registered Foundation subset before
+    // computing an identity or emitting bytes, so an out-of-profile artifact is never published.
+    if (auto registered = profile_detail::validateFoundationProfile(chart); !registered)
+        return core::unexpected(std::move(registered.error()));
     // Validate the hash preconditions and compute the semantic identity before any artifact
     // bytes exist, so an inconsistent chart is never published (Spec 9 and 10.1).
     auto identity = semanticIdentity(chart);
@@ -839,6 +907,14 @@ auto inspect(std::span<const std::byte> bytes, PackedChartLimits limits)
             fail("packed.header.truncated", "Packed header counters are truncated"));
     if (*headerCrc != crc32(bytes.first(92)))
         return core::unexpected(fail("packed.header.crc", "Packed header CRC mismatch"));
+    // Spec 5.1: only the implemented candidate revision may be read, and the Foundation profile
+    // declares no schedule events. Neither declaration may be ignored as "nothing to do".
+    if (*revision != 1)
+        return core::unexpected(
+            fail("packed.header.unsupported_revision", "Only candidate revision 1 is supported"));
+    if (*events != 0U)
+        return core::unexpected(
+            fail("packed.header.events", "Foundation revision 1 declares no schedule events"));
     if (*entities > limits.maxPackedEntities || *requirements > limits.maxPackedRequirements ||
         *strings > limits.maxPackedStrings || *refs > limits.maxPackedReferences ||
         *decoded > limits.maxPackedDecodedBytes)
@@ -864,14 +940,17 @@ auto inspect(std::span<const std::byte> bytes, PackedChartLimits limits)
             return core::unexpected(
                 fail("packed.directory.invalid", "Packed directory entry is truncated"));
         std::string name(reinterpret_cast<const char*>(code->data()), 4);
-        const bool known = name == "META" || name == "TIME" || name == "STR0" || name == "REF0" ||
-                           name == "IDN0" || name == "ARCH" || name == "ENT0" || name == "TRN0" ||
-                           name == "REN0" || name == "CAM0" || name == "CNS0" || name == "REQ0";
-        if (!known || !sectionNames.insert(name).second || *codec != 0 || *fl > 1 || *res != 0 ||
-            *res2 != 0 || *enc != *dec || *off > bytes.size() || *enc > bytes.size() - *off ||
-            crc32(bytes.subspan(*off, *enc)) != *crc)
+        if (*codec != 0 || *res != 0 || *res2 != 0 || *enc != *dec || *off > bytes.size() ||
+            *enc > bytes.size() - *off)
             return core::unexpected(
                 fail("packed.directory.invalid", "Packed directory entry is invalid"));
+        if (!sectionNames.insert(name).second)
+            return core::unexpected(
+                fail("packed.directory.duplicate", "Packed section is duplicated"));
+        if (auto role = classifySection(name, *fl); !role)
+            return core::unexpected(std::move(role.error()));
+        if (crc32(bytes.subspan(*off, *enc)) != *crc)
+            return core::unexpected(fail("packed.section.crc", "Packed section CRC mismatch"));
         ranges.emplace_back(*off, *enc);
         decodedSum += *dec;
     }
@@ -898,6 +977,7 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
         std::string code;
         std::span<const std::byte> data;
         std::uint32_t records{};
+        SectionRole role{SectionRole::semantic};
     };
     ByteReader header(bytes);
     (void)header.readBytes(8);
@@ -948,21 +1028,24 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
         if (!seen.insert(code).second)
             return core::unexpected(
                 fail("packed.directory.duplicate", "Packed section is duplicated"));
-        const bool known = code == "META" || code == "TIME" || code == "STR0" || code == "REF0" ||
-                           code == "IDN0" || code == "ARCH" || code == "ENT0" || code == "TRN0" ||
-                           code == "REN0" || code == "CAM0" || code == "CNS0" || code == "REQ0";
-        if (!known || *codec != 0 || *flags > 1 || *reserved != 0 || *reserved2 != 0 ||
-            *encoded != *decoded || *offset > bytes.size() || *encoded > bytes.size() - *offset)
+        if (*codec != 0 || *reserved != 0 || *reserved2 != 0 || *encoded != *decoded ||
+            *offset > bytes.size() || *encoded > bytes.size() - *offset)
             return core::unexpected(
-                fail("packed.directory.unsupported", "Packed section is unknown or invalid"));
+                fail("packed.directory.invalid", "Packed directory entry is invalid"));
+        // Spec 5.3: the same registry decision as inspect(). Foundation semantic sections are
+        // parsed, the registered inspection section and unknown inspection sections are ignored,
+        // and later-contract sections are refused.
+        auto role = classifySection(code, *flags);
+        if (!role)
+            return core::unexpected(std::move(role.error()));
         auto data = bytes.subspan(*offset, *encoded);
         if (crc32(data) != *sectionCrc)
             return core::unexpected(fail("packed.section.crc", "Packed section CRC mismatch"));
-        directories.push_back(Directory{std::move(code), data, *records});
+        directories.push_back(Directory{std::move(code), data, *records, *role});
     }
     const auto section = [&](std::string_view code) -> const Directory* {
         for (const auto& value : directories)
-            if (value.code == code)
+            if (value.code == code && value.role == SectionRole::semantic)
                 return &value;
         return nullptr;
     };
@@ -996,6 +1079,13 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
         strings.emplace_back(reinterpret_cast<const char*>(stringData->data() + offsets[i]),
                              offsets[i + 1U] - offsets[i]);
     }
+    // Spec 6.1: STR0 strings are deduplicated and strictly ascending by bytes. The repository
+    // Writer already emits that order; a non-canonical artifact is refused instead of resolved.
+    for (std::size_t i = 1; i < strings.size(); ++i) {
+        if (!(strings[i - 1U] < strings[i]))
+            return core::unexpected(
+                fail("packed.strings.order", "STR0 strings must be unique and strictly ascending"));
+    }
     auto getString = [&](std::uint64_t index) -> core::Result<std::string> {
         if (index >= strings.size())
             return core::unexpected(fail("packed.strings.index", "String index is out of range"));
@@ -1017,6 +1107,13 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
     }
     if (!refReader.empty())
         return core::unexpected(fail("packed.references.trailing", "REF0 has trailing bytes"));
+    // Spec 6.2: REF0 rows are deduplicated and strictly ascending by (kind, string bytes).
+    for (std::size_t i = 1; i < refs.size(); ++i) {
+        if (!(refs[i - 1U] < refs[i]))
+            return core::unexpected(
+                fail("packed.references.order",
+                     "REF0 rows must be unique and strictly ascending by (kind, string)"));
+    }
     auto refValue = [&](std::uint64_t index, std::uint8_t kind) -> core::Result<std::string> {
         if (index >= refs.size() || refs[index].first != kind)
             return core::unexpected(
@@ -1122,10 +1219,21 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
     if (!scopeCount)
         return core::unexpected(fail("packed.identity.invalid", "IDN0 scope count is invalid"));
     struct DecodedScope final {
+        std::array<std::uint8_t, 16> chartIdBytes{};
         std::string chartId;
         std::string bindingId;
         std::string moduleId;
         std::string exportId;
+    };
+    // Spec 6.5: scope tables are deduplicated and ordered by their decoded tuple.
+    const auto scopeLess = [](const DecodedScope& left, const DecodedScope& right) {
+        if (left.chartIdBytes != right.chartIdBytes)
+            return left.chartIdBytes < right.chartIdBytes;
+        if (left.bindingId != right.bindingId)
+            return left.bindingId < right.bindingId;
+        if (left.moduleId != right.moduleId)
+            return left.moduleId < right.moduleId;
+        return left.exportId < right.exportId;
     };
     std::vector<DecodedScope> scopes;
     scopes.reserve(*scopeCount);
@@ -1141,8 +1249,15 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
         auto exportValue = getString(*exportId);
         if (!bindValue || !moduleValue || !exportValue)
             return core::unexpected(fail("packed.identity.string", "IDN0 scope string is invalid"));
-        scopes.push_back(DecodedScope{identityText(*uuid), std::move(*bindValue),
+        auto scopeChartIdBytes = std::array<std::uint8_t, 16>{};
+        for (std::size_t byteIndex = 0; byteIndex < scopeChartIdBytes.size(); ++byteIndex)
+            scopeChartIdBytes[byteIndex] = std::to_integer<std::uint8_t>((*uuid)[byteIndex]);
+        scopes.push_back(DecodedScope{scopeChartIdBytes, identityText(*uuid), std::move(*bindValue),
                                       std::move(*moduleValue), std::move(*exportValue)});
+        if (scopes.size() > 1U && !scopeLess(scopes[scopes.size() - 2U], scopes.back()))
+            return core::unexpected(
+                fail("packed.identity.order",
+                     "IDN0 scopes must be unique and strictly ascending by decoded tuple"));
         // Spec 6.5: every generated identity scope must use the META chartId.
         if (scopes.back().chartId != chart.chartId.value)
             return core::unexpected(
@@ -1170,6 +1285,10 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
             path.emplace_back(std::move(*nodeValue), *indexed == 1U);
         }
         paths.push_back(std::move(path));
+        if (paths.size() > 1U && !(paths[paths.size() - 2U] < paths.back()))
+            return core::unexpected(
+                fail("packed.identity.order",
+                     "IDN0 paths must be unique and strictly ascending by (nodeId, indexed)"));
     }
     auto identityCount = idn.readU32();
     if (!identityCount || *identityCount != *entityCount)
@@ -1215,6 +1334,19 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
                      "Generated identity paths must end with a non-indexed step"));
         entities[i].identity = std::move(generated);
     }
+    // Spec 6.5: canonical identity bytes define the entity ordinal, so the IDN0 identity records
+    // must be strictly ascending and duplicate-free.
+    std::vector<std::byte> previousIdentityBytes;
+    for (std::uint32_t i = 0; i < *identityCount; ++i) {
+        auto identityBytes = identity_detail::canonicalIdentityBytes(entities[i].identity);
+        if (!identityBytes)
+            return core::unexpected(std::move(identityBytes.error()));
+        if (i != 0U && !(previousIdentityBytes < *identityBytes))
+            return core::unexpected(
+                fail("packed.identity.order",
+                     "IDN0 identities must be unique and strictly ascending by canonical bytes"));
+        previousIdentityBytes = std::move(*identityBytes);
+    }
     if (!idn.empty())
         return core::unexpected(fail("packed.identity.trailing", "IDN0 has trailing bytes"));
     const auto* archSection = section("ARCH");
@@ -1231,6 +1363,12 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
         auto payloadBytes = archReader.readU32();
         if (!mask || !payloadBytes)
             return core::unexpected(fail("packed.arch.invalid", "ARCH row is invalid"));
+        // Spec 7.1: Foundation registers component bits 0, 1, 2 and 4 only. Bits 3, 6, 7 and
+        // 8..63 belong to later contracts and must be refused instead of silently dropped.
+        if ((*mask & ~std::uint64_t{0x17U}) != 0U)
+            return core::unexpected(
+                fail("packed.arch.mask",
+                     "ARCH component mask uses bits outside the Foundation registry"));
         auto payload = archReader.readBytes(*payloadBytes);
         if (!payload)
             return core::unexpected(std::move(payload.error()));
@@ -1287,6 +1425,14 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
                 fail("packed.arch.trailing", "ARCH payload has trailing bytes"));
         arches.push_back(std::move(value));
     }
+    // Spec 7.1: the canonical Writer emits exactly one archetype per distinct mask in ascending
+    // mask order, so a Reader that resolves archetype indices by position must verify it.
+    for (std::size_t i = 1; i < arches.size(); ++i) {
+        if (!(arches[i - 1U].mask < arches[i].mask))
+            return core::unexpected(
+                fail("packed.arch.order",
+                     "ARCH archetypes must be unique and strictly ascending by component mask"));
+    }
     std::vector<std::uint32_t> parents(*entityCount), archetypes(*entityCount);
     const auto* entSection = section("ENT0");
     ByteReader ent(entSection->data);
@@ -1332,6 +1478,15 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
             if (!ordinal || !mask || *ordinal >= *entityCount || (row != 0 && *ordinal <= previous))
                 return core::unexpected(
                     fail("packed.stream.ordinal", "Component stream ordinal is invalid"));
+            // Spec 7.3: a difference row may only set the field atoms the stream actually
+            // consumes; every other bit is undefined and must not be ignored.
+            const auto allowedMask = kind == 0   ? std::uint64_t{0x79U}
+                                     : kind == 1 ? std::uint64_t{0x07U}
+                                                 : std::uint64_t{0x01U};
+            if ((*mask & ~allowedMask) != 0U)
+                return core::unexpected(
+                    fail("packed.stream.mask",
+                         "Component stream change mask uses undefined field bits"));
             previous = static_cast<std::uint32_t>(*ordinal);
             auto& components = entities[*ordinal].components;
             auto archIndex = archetypes[*ordinal];
@@ -1454,12 +1609,24 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
     for (std::uint32_t i = 0; i < cnsSection->records; ++i) {
         auto kind = cns.readU8();
         auto lane = cns.readUnsignedLeb128();
-        if (!kind || !lane || *kind != 1 || *lane > 3U)
+        if (!kind || !lane)
             return core::unexpected(fail("packed.constraints.invalid", "CNS0 lane set is invalid"));
+        if (*kind != 1U)
+            return core::unexpected(
+                fail("packed.profile.constraints",
+                     "Only the registered lane constraint kind is supported by Foundation"));
         lanes.push_back(static_cast<std::uint32_t>(*lane));
     }
     if (!cns.empty())
         return core::unexpected(fail("packed.constraints.trailing", "CNS0 has trailing bytes"));
+    // Spec 7.5: sets are deduplicated and ordered by their canonical payload bytes. The lane
+    // value itself is validated on the typed model by the profile gate below.
+    for (std::size_t i = 1; i < lanes.size(); ++i) {
+        if (!(lanes[i - 1U] < lanes[i]))
+            return core::unexpected(
+                fail("packed.constraints.order",
+                     "CNS0 sets must be unique and strictly ascending by lane"));
+    }
     const auto* reqSection = section("REQ0");
     ByteReader req(reqSection->data);
     auto startMode = req.readU8();
@@ -1468,6 +1635,9 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
         return core::unexpected(
             fail("packed.requirements.codec", "REQ0 Beat codec is unsupported"));
     std::uint32_t ordinal = 0;
+    std::uint32_t previousOrdinal = 0;
+    std::string previousLocalId;
+    bool hasPrevious = false;
     for (std::uint32_t i = 0; i < *requirementCount; ++i) {
         auto delta = req.readUnsignedLeb128(*entityCount);
         auto local = req.readUnsignedLeb128(*stringCount);
@@ -1487,12 +1657,30 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
                     fail("packed.requirements.invalid", "REQ0 ordinal delta overflows"));
             ordinal += static_cast<std::uint32_t>(*delta);
         }
-        if (ordinal >= *entityCount || *kind != 1 || *interval > 1)
+        if (ordinal >= *entityCount)
             return core::unexpected(
-                fail("packed.requirements.profile", "Requirement is outside Foundation profile"));
+                fail("packed.requirements.invalid", "REQ0 ordinal is out of range"));
+        if (*kind != 1U)
+            return core::unexpected(
+                fail("packed.profile.requirement",
+                     "Foundation revision 1 registers the tap requirement kind only"));
+        if (*interval > 1U)
+            return core::unexpected(
+                fail("packed.profile.interval",
+                     "Foundation revision 1 registers the point interval only"));
         auto localValue = getString(*local);
         if (!localValue)
             return core::unexpected(std::move(localValue.error()));
+        // Spec 7.4: (entity ordinal, localId bytes) is strictly ascending. Duplicated localIds on
+        // one entity are therefore refused here rather than silently carried into the model.
+        if (hasPrevious && (ordinal < previousOrdinal ||
+                            (ordinal == previousOrdinal && !(previousLocalId < *localValue))))
+            return core::unexpected(
+                fail("packed.requirements.order",
+                     "REQ0 rows must be unique and strictly ascending by (ordinal, localId)"));
+        previousOrdinal = ordinal;
+        previousLocalId = *localValue;
+        hasPrevious = true;
         CanonicalRequirement requirement;
         requirement.localId = *localValue;
         requirement.kind = CanonicalRequirementKind::Tap;
@@ -1508,16 +1696,24 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
         auto action = req.readUnsignedLeb128(*refCount);
         auto constraint = req.readUnsignedLeb128();
         auto effect = req.readUnsignedLeb128();
-        if (!domain || !action || !constraint || !effect || *effect != 0 || *constraint == 0 ||
-            *constraint > lanes.size())
+        if (!domain || !action || !constraint || !effect)
             return core::unexpected(
-                fail("packed.requirements.profile", "Requirement references unsupported profile"));
+                fail("packed.requirements.invalid", "REQ0 references are invalid"));
+        // A nonzero effect set index must never be dropped silently, and the constraint index
+        // must resolve inside CNS0 before the lane value can be read.
+        if (*effect != 0U)
+            return core::unexpected(
+                fail("packed.profile.effects", "Foundation revision 1 requires empty effect sets"));
+        if (*constraint == 0U || *constraint > lanes.size())
+            return core::unexpected(
+                fail("packed.profile.constraints",
+                     "Requirement constraint index is outside the Foundation profile"));
         auto domainValue = refValue(*domain, 4);
+        if (!domainValue)
+            return core::unexpected(std::move(domainValue.error()));
         auto actionValue = refValue(*action, 5);
-        if (!domainValue || !actionValue || *domainValue != "candidate.lanes4" ||
-            *actionValue != "press")
-            return core::unexpected(
-                fail("packed.requirements.profile", "Requirement domain/action is unsupported"));
+        if (!actionValue)
+            return core::unexpected(std::move(actionValue.error()));
         requirement.judgementDomain = {"candidate.lanes4", *domainValue};
         requirement.requiredAction = {"action", *actionValue};
         requirement.constraints.push_back(LaneConstraint{lanes[*constraint - 1U]});
@@ -1533,6 +1729,11 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
                 fail("packed.requirements.component", "Requirement presence bit is missing"));
     }
     chart.entities = std::move(entities);
+    // Spec 7.6: the profile gate runs on the rebuilt typed model, so a wire artifact and a typed
+    // model are judged by exactly the same rules, and a profile rejection always precedes the
+    // semantic identity comparison below.
+    if (auto registered = profile_detail::validateFoundationProfile(chart); !registered)
+        return core::unexpected(std::move(registered.error()));
     // Spec 9: the semantic identity is verified after structural, budget and semantic
     // validation and before any chart is published. A mismatch never yields a partial chart.
     auto recomputed = semanticIdentity(chart);

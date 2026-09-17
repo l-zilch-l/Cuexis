@@ -185,8 +185,9 @@ TEST_CASE("R1-H01 Packed reader rejects a tampered semanticIdentity even with a 
     REQUIRE_FALSE(bridged);
 }
 
-TEST_CASE("R0-H02 Range requirements outside the registered profile are encoded and decoded",
-          "[chart][packed][hardening][r0]") {
+// R0-H02 was flipped by R2: the range interval is outside the registered profile on both sides.
+TEST_CASE("R2-H02 Range requirements outside the registered profile are refused by the Writer",
+          "[chart][packed][hardening][r2]") {
     auto chart = tapChart();
     auto& requirement = chart.entities.front().requirements.front();
     const auto endBeat = RationalBeat::create(1, 1);
@@ -194,43 +195,36 @@ TEST_CASE("R0-H02 Range requirements outside the registered profile are encoded 
     requirement.interval.kind = CanonicalIntervalKind::HalfOpenRange;
     requirement.interval.endBeat = *endBeat;
 
-    // Spec 7.6 registers kind=tap with interval=point (wire 0) only. The writer publishes the
-    // out-of-profile range row instead of refusing it, and the reader accepts any interval <= 1.
+    // Spec 7.6 registers kind=tap with interval=point (wire 0) only, so the Writer refuses the
+    // out-of-profile range row instead of publishing it.
     const auto encoded = cuexis::chart::packed::encode(chart);
-    CHECK(encoded);
-    if (encoded) {
-        CHECK(cuexis::chart::packed::decode(*encoded));
-    }
+    REQUIRE_FALSE(encoded);
+    CHECK(encoded.error().code() == "packed.profile.interval");
 }
 
-TEST_CASE("R0-H02 Requirements are accepted without the registered feature declaration",
-          "[chart][packed][hardening][r0]") {
+// R0-H02 was flipped by R2: requirements must be covered by the registered feature declaration.
+TEST_CASE("R2-H02 Requirements outside the registered feature declaration are refused",
+          "[chart][packed][hardening][r2]") {
     SECTION("feature table is empty while REQ0 is present") {
         auto chart = tapChart();
         chart.features.clear();
         const auto encoded = cuexis::chart::packed::encode(chart);
-        CHECK(encoded);
-        if (encoded) {
-            CHECK(cuexis::chart::packed::decode(*encoded));
-        }
+        REQUIRE_FALSE(encoded);
+        CHECK(encoded.error().code() == "packed.profile.feature");
     }
     SECTION("feature version is not the registered version") {
         auto chart = tapChart();
         chart.features = {CanonicalFeature{"cuexis.gameplay.candidate.lanes4", 2}};
         const auto encoded = cuexis::chart::packed::encode(chart);
-        CHECK(encoded);
-        if (encoded) {
-            CHECK(cuexis::chart::packed::decode(*encoded));
-        }
+        REQUIRE_FALSE(encoded);
+        CHECK(encoded.error().code() == "packed.profile.feature");
     }
     SECTION("feature id is not the registered id") {
         auto chart = tapChart();
         chart.features = {CanonicalFeature{"cuexis.gameplay.candidate.other", 1}};
         const auto encoded = cuexis::chart::packed::encode(chart);
-        CHECK(encoded);
-        if (encoded) {
-            CHECK(cuexis::chart::packed::decode(*encoded));
-        }
+        REQUIRE_FALSE(encoded);
+        CHECK(encoded.error().code() == "packed.profile.feature");
     }
 }
 
@@ -249,20 +243,28 @@ TEST_CASE("R0-H04 A custom maxPackedSectionBytes does not constrain any entry po
     CHECK(cuexis::chart::PackedChartWriter::size(chart, {}, limits));
 }
 
-TEST_CASE("R0-A01 A registered DBG0 inspection section is rejected by the table reader",
-          "[chart][packed][hardening][r0]") {
+// R0-A01 was flipped by R2: DBG0 is the registered optional inspection section of Spec 5.3.
+TEST_CASE("R2-A01 A registered DBG0 inspection section is accepted and ignored",
+          "[chart][packed][hardening][r2]") {
     const auto encoded = cuexis::chart::packed::encode(tapChart());
     REQUIRE(encoded);
     const std::array<std::byte, 4> payload{std::byte{'d'}, std::byte{'b'}, std::byte{'g'},
                                            std::byte{'0'}};
     const auto withDebug = appendInspectionSection(*encoded, "DBG0", payload);
 
-    // Spec 5.3 registers DBG0 as an optional inspection section with flags=1, and the IO bridge
-    // lists DBG0 as known before delegating. The table reader's registry omits DBG0, so a
-    // Spec-registered artifact is refused as an unknown semantic section.
-    CHECK_FALSE(cuexis::chart::packed::inspect(withDebug));
-    CHECK_FALSE(cuexis::chart::packed::decode(withDebug));
-    CHECK_FALSE(cuexis::chart::PackedChartReader::decode(withDebug));
+    // Spec 5.3 registers DBG0 as an optional inspection section with flags=1. Every entry point
+    // accepts it, validates length and CRC, and ignores its payload.
+    CHECK(cuexis::chart::packed::inspect(withDebug));
+    const auto decoded = cuexis::chart::packed::decode(withDebug);
+    REQUIRE(decoded);
+    CHECK(cuexis::chart::PackedChartReader::decode(withDebug));
+    const auto without = cuexis::chart::packed::decode(*encoded);
+    REQUIRE(without);
+    const auto decodedIdentity = cuexis::chart::packed::semanticIdentity(*decoded);
+    const auto plainIdentity = cuexis::chart::packed::semanticIdentity(*without);
+    REQUIRE(decodedIdentity);
+    REQUIRE(plainIdentity);
+    CHECK(*decodedIdentity == *plainIdentity);
 }
 
 // R0-A02 was flipped by R1: IDN0 now stores the Spec 6.5 scope/path tables.

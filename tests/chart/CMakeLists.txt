@@ -20,7 +20,7 @@ add_executable(cuexis_chart_tests
     packed_chart_io_tests.cpp
     packed_fixture_support.cpp
     packed_fixture_support.hpp
-    packed_profile_rejection_preparation_tests.cpp
+    packed_profile_rejection_tests.cpp
     packed_semantic_identity_tests.cpp
     prepared_semantic_identity_tests.cpp
     rational_beat_tests.cpp
