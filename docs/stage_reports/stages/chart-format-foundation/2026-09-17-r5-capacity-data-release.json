@@ -1,0 +1,103 @@
+{
+  "provenance": {
+    "probe": "cuexis_chart_capacity_probe",
+    "implementationSha": "25e546d0a6f50d8865e8f5ba9c43cba98a43d194",
+    "sdkVersion": "26.08.01-1",
+    "buildType": "Release",
+    "compiler": "MSVC 1951",
+    "platform": "Windows x64",
+    "packedProfile": {"candidateRevision": 1, "flags": 1},
+    "budgets": {"maxPackedFileBytes": 16777216, "maxPackedEntities": 40000, "maxPackedSectionBytes": 16777216, "maxPackedDecodedBytes": 16777216, "maxPackedStrings": 100000, "maxPackedReferences": 100000, "maxPackedRequirements": 40000},
+    "fixture": "D:/Cuexis-worktree/chart-format-foundation-hardening\\tests\\fixtures\\chart_format_foundation\\valid\\pattern_stair.cxt"
+  },
+  "memoryMethod": "Windows: GetProcessMemoryInfo PeakWorkingSetSize; POSIX: getrusage ru_maxrss. Process-wide, observation only.",
+  "timeMethod": "std::chrono::steady_clock, one operation per profile",
+  "profiles": [
+    {
+      "id": "low-reuse-v1",
+      "inputKind": "typed-model",
+      "status": "ok",
+      "sourceBytes": null,
+      "expansion": null,
+      "counts": {"entities": 40000, "requirements": 40000, "strings": 5, "references": 3},
+      "packedBytes": 1232408,
+      "decodedBytes": 1232024,
+      "headerBytes": 96,
+      "directoryBytes": 288,
+      "closure": {"assetIds": 0, "uses": 0},
+      "elapsedUs": {"size": 183824, "encode": 173597, "decode": 178634, "reencode": 175719},
+      "memoryBytes": {"residentBefore": 37924864, "peakAfterEncode": 58097664, "peakDelta": 20172800},
+      "sections": [
+        {"type": "ARCH", "encodedBytes": 12, "decodedBytes": 12, "recordCount": 1},
+        {"type": "CNS0", "encodedBytes": 8, "decodedBytes": 8, "recordCount": 4},
+        {"type": "ENT0", "encodedBytes": 80000, "decodedBytes": 80000, "recordCount": 40000},
+        {"type": "IDN0", "encodedBytes": 680012, "decodedBytes": 680012, "recordCount": 40000},
+        {"type": "META", "encodedBytes": 89, "decodedBytes": 89, "recordCount": 1},
+        {"type": "REF0", "encodedBytes": 6, "decodedBytes": 6, "recordCount": 3},
+        {"type": "REQ0", "encodedBytes": 471746, "decodedBytes": 471746, "recordCount": 40000},
+        {"type": "STR0", "encodedBytes": 124, "decodedBytes": 124, "recordCount": 5},
+        {"type": "TIME", "encodedBytes": 27, "decodedBytes": 27, "recordCount": 1}
+      ]
+    },
+    {
+      "id": "cxt-stair-ladder",
+      "inputKind": "cxt-v2-source",
+      "status": "ok",
+      "sourceBytes": 5122,
+      "expansion": {"entities": 16, "requirements": 16, "events": 0},
+      "counts": {"entities": 16, "requirements": 16, "strings": 13, "references": 3},
+      "packedBytes": 1290,
+      "decodedBytes": 874,
+      "headerBytes": 96,
+      "directoryBytes": 320,
+      "closure": {"assetIds": 0, "uses": 0},
+      "elapsedUs": {"size": 174.1, "encode": 118.6, "decode": 103.3, "reencode": 112.9},
+      "memoryBytes": {"residentBefore": 6070272, "peakAfterEncode": 92819456, "peakDelta": 0},
+      "sections": [
+        {"type": "ARCH", "encodedBytes": 52, "decodedBytes": 52, "recordCount": 1},
+        {"type": "CNS0", "encodedBytes": 8, "decodedBytes": 8, "recordCount": 4},
+        {"type": "ENT0", "encodedBytes": 32, "decodedBytes": 32, "recordCount": 16},
+        {"type": "IDN0", "encodedBytes": 115, "decodedBytes": 115, "recordCount": 16},
+        {"type": "META", "encodedBytes": 89, "decodedBytes": 89, "recordCount": 1},
+        {"type": "REF0", "encodedBytes": 6, "decodedBytes": 6, "recordCount": 3},
+        {"type": "REQ0", "encodedBytes": 170, "decodedBytes": 170, "recordCount": 16},
+        {"type": "STR0", "encodedBytes": 199, "decodedBytes": 199, "recordCount": 13},
+        {"type": "TIME", "encodedBytes": 27, "decodedBytes": 27, "recordCount": 1},
+        {"type": "TRN0", "encodedBytes": 176, "decodedBytes": 176, "recordCount": 16}
+      ]
+    },
+    {
+      "id": "high-reuse-v1",
+      "inputKind": "cxt-v2-source",
+      "status": "ok",
+      "sourceBytes": 5122,
+      "expansion": {"entities": 40000, "requirements": 40000, "events": 0},
+      "counts": {"entities": 40000, "requirements": 40000, "strings": 13, "references": 3},
+      "packedBytes": 1247446,
+      "decodedBytes": 1247030,
+      "headerBytes": 96,
+      "directoryBytes": 320,
+      "closure": {"assetIds": 0, "uses": 0},
+      "elapsedUs": {"size": 362841, "encode": 354203, "decode": 264123, "reencode": 317994},
+      "memoryBytes": {"residentBefore": 87339008, "peakAfterEncode": 129290240, "peakDelta": 36470784},
+      "sections": [
+        {"type": "ARCH", "encodedBytes": 52, "decodedBytes": 52, "recordCount": 1},
+        {"type": "CNS0", "encodedBytes": 8, "decodedBytes": 8, "recordCount": 4},
+        {"type": "ENT0", "encodedBytes": 80000, "decodedBytes": 80000, "recordCount": 40000},
+        {"type": "IDN0", "encodedBytes": 199543, "decodedBytes": 199543, "recordCount": 40000},
+        {"type": "META", "encodedBytes": 89, "decodedBytes": 89, "recordCount": 1},
+        {"type": "REF0", "encodedBytes": 6, "decodedBytes": 6, "recordCount": 3},
+        {"type": "REQ0", "encodedBytes": 463618, "decodedBytes": 463618, "recordCount": 40000},
+        {"type": "STR0", "encodedBytes": 199, "decodedBytes": 199, "recordCount": 13},
+        {"type": "TIME", "encodedBytes": 27, "decodedBytes": 27, "recordCount": 1},
+        {"type": "TRN0", "encodedBytes": 503488, "decodedBytes": 503488, "recordCount": 40000}
+      ]
+    }
+  ],
+  "notMeasured": [
+    {"field": "preparePeakBytes", "reason": "no prepare implementation in this stage"},
+    {"field": "sourceBytes (typed-model profile)", "reason": "the typed model is constructed directly; no source bytes apply"},
+    {"field": "decodedSemanticHeapBytes", "reason": "decoded section bytes are not interpreted as C++ heap usage"},
+    {"field": "idn0DecodedObjectBytes", "reason": "scope/path tables have no frozen object-memory budget"}
+  ]
+}

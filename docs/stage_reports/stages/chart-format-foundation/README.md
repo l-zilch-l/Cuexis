@@ -13,6 +13,12 @@ Foundation 关闭不等于 Chart v5 或 Packed Playback 正式发行。
 
 ## 报告
 
+- [2026-09-17 R5 回归、Hosted 与交接](2026-09-17-r5-regression-and-handoff.md)
+  （本地回归矩阵、A19 headless 生成阻断修复、最终 SHA 容量复跑与交接内容；
+  机器可读容量数据：[Debug](2026-09-17-r5-capacity-data.json)、
+  [Release](2026-09-17-r5-capacity-data-release.json)）
+  同 SHA hosted 验证与 owner acceptance 尚未记录，R5 未声明关闭。
+
 - [2026-09-17 R4 端到端、容量与回滚](2026-09-17-r4-roundtrip-capacity-rollback.md)
   （机器可读容量数据：[2026-09-17-r4-capacity-data.json](2026-09-17-r4-capacity-data.json)）
 

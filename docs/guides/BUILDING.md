@@ -174,6 +174,12 @@ ctest --preset headless-release --no-tests=error
 Release 与 `headless-release` 预设强制 `CUEXIS_WARNINGS_AS_ERRORS=ON`。基础 Debug 预设保留
 `OFF`，便于日常开发先观察新工具链诊断。
 
+`headless-*` 预设同时设置 `CUEXIS_BUILD_DEVELOPER_TOOLS=OFF`，因此不添加 `tools/` 子目录
+（含 `cuexis::cxc_tool_common`）。依赖该工具层的 CXC candidate 扩展与往返用例在这些配置中
+不注册，configure 会输出
+`cuexis_cxc_tests: developer tool layer absent; candidate CXC cases excluded`。需要这些用例
+时使用非 headless 预设，或显式设置 `CUEXIS_BUILD_DEVELOPER_TOOLS=ON`。
+
 构建目录固定在 `out/build/<preset>`，安装或打包目录不得与源码混合。
 
 ## vcpkg
