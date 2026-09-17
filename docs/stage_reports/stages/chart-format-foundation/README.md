@@ -13,6 +13,8 @@ Foundation 关闭不等于 Chart v5 或 Packed Playback 正式发行。
 
 ## 报告
 
+- [2026-09-17 R2 前置：负例基础设施与拒绝行为盘点](2026-09-17-r2-prerequisites.md)
+
 - [2026-09-17 R1 语义身份闭环](2026-09-17-r1-semantic-identity.md)
 
 - [2026-09-16 R0 基线与复现](2026-09-16-r0-baseline-and-reproduction.md)

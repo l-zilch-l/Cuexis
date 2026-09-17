@@ -1,7 +1,7 @@
 # Chart Format Foundation Hardening：交接加固实施计划
 
-状态：active；当前实施阶段；R0-R1 完成（D1-D3 已由 owner 裁定），R2-R5 未开始，
-Stage 6 保持 future
+状态：active；当前实施阶段；R0-R1 完成、R2 前置完成（D1-D3 已由 owner 裁定），
+R2 本体与 R3-R5 未实施，Stage 6 保持 future
 
 更新日期：2026-09-16
 
@@ -76,7 +76,7 @@ R0 基线、复现和合同决策
 | --- | --- | --- | --- |
 | R0 | 完成；D1-D3 已由 owner 裁定 | [R0 报告](../../../stage_reports/stages/chart-format-foundation/2026-09-16-r0-baseline-and-reproduction.md)、验收矩阵、11 个表征测试、决策 D1-D3 | 实际缺口与证据来源明确（已达成）；R1 前置齐备 |
 | R1 | 完成；身份伪造与不匹配均被拒绝 | [R1 报告](../../../stage_reports/stages/chart-format-foundation/2026-09-17-r1-semantic-identity.md)、Spec 10.2 golden、17 个 R1 用例、D1/D3 落地 | 已达成；A05/A06 顺带修复，A07-A09 记为后续输入 |
-| R2 | pending | profile 验证与独立负例 | 所有入口仅接受登记 subset |
+| R2 | 前置完成；本体未实施（本轮不改拒绝行为） | [R2 前置报告](../../../stage_reports/stages/chart-format-foundation/2026-09-17-r2-prerequisites.md)、两组独立负例（8 例）、失败顺序策略、调用关系与未知值盘点 | 所有入口仅接受登记 subset（待 R2 实施并翻转 R2P/R0-H02/R0-A01 用例） |
 | R3 | pending | 预算表、检查实现、边界测试 | 硬限制生效，观测项不冒充硬门禁 |
 | R4 | pending | 端到端测试、容量原始数据、回滚证据 | 完整语义、身份与失败事务一致 |
 | R5 | pending | 回归矩阵、同 SHA hosted 记录、关闭报告 | owner 接受后才授权 Stage 6 |
