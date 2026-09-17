@@ -149,33 +149,40 @@ void refreshHeaderCrc(std::vector<std::byte>& bytes) {
 
 } // namespace
 
-TEST_CASE("R0-H01 Packed writer emits an all-zero semanticIdentity header field",
-          "[chart][packed][hardening][r0]") {
+// R0-H01 was flipped by R1: the writer now publishes the Spec 10.2 digest instead of zeros.
+TEST_CASE("R1-H01 Packed writer publishes the recomputed semantic identity in the header",
+          "[chart][packed][hardening][r1]") {
     const auto encoded = cuexis::chart::packed::encode(tapChart());
     REQUIRE(encoded);
     REQUIRE(encoded->size() > 96U);
-    const auto zeros = std::all_of(encoded->begin() + 32, encoded->begin() + 64,
-                                   [](std::byte value) { return value == std::byte{0}; });
-    // Spec 10.1 freezes the semantic preimage and 10.2 publishes the golden digests for the
-    // `empty` and `one-tap-lane2` inputs. The writer publishes 32 zero bytes instead, so no
-    // consumer can distinguish two different semantic charts by their header identity. R1
-    // replaces this with the digest of the frozen preimage.
-    CHECK(zeros);
+    const auto allZero = std::all_of(encoded->begin() + 32, encoded->begin() + 64,
+                                     [](std::byte value) { return value == std::byte{0}; });
+    CHECK_FALSE(allZero);
+
+    const auto identity = cuexis::chart::packed::semanticIdentity(tapChart());
+    REQUIRE(identity);
+    CHECK(std::equal(identity->begin(), identity->end(), encoded->begin() + 32,
+                     [](std::uint8_t left, std::byte right) {
+                         return left == std::to_integer<std::uint8_t>(right);
+                     }));
 }
 
-TEST_CASE("R0-H01 Packed reader accepts a tampered semanticIdentity once the header CRC is fixed",
-          "[chart][packed][hardening][r0]") {
+// R0-H01 was flipped by R1: a body that contradicts the declared digest is rejected.
+TEST_CASE("R1-H01 Packed reader rejects a tampered semanticIdentity even with a valid header CRC",
+          "[chart][packed][hardening][r1]") {
     const auto encoded = cuexis::chart::packed::encode(tapChart());
     REQUIRE(encoded);
     auto tampered = *encoded;
     std::fill(tampered.begin() + 32, tampered.begin() + 64, std::byte{0xff});
     refreshHeaderCrc(tampered);
 
-    // The header CRC gate passes, so the file is structurally valid; the semantic identity is
-    // still never recomputed, so a body that does not match the declared digest is published.
+    // The artifact is structurally valid, so only the semantic identity comparison can fail.
     CHECK(cuexis::chart::packed::inspect(tampered));
-    CHECK(cuexis::chart::packed::decode(tampered));
-    CHECK(cuexis::chart::PackedChartReader::decode(tampered));
+    const auto decoded = cuexis::chart::packed::decode(tampered);
+    REQUIRE_FALSE(decoded);
+    CHECK(decoded.error().code() == "packed.identity.mismatch");
+    const auto bridged = cuexis::chart::PackedChartReader::decode(tampered);
+    REQUIRE_FALSE(bridged);
 }
 
 TEST_CASE("R0-H02 Range requirements outside the registered profile are encoded and decoded",
@@ -258,8 +265,9 @@ TEST_CASE("R0-A01 A registered DBG0 inspection section is rejected by the table 
     CHECK_FALSE(cuexis::chart::PackedChartReader::decode(withDebug));
 }
 
-TEST_CASE("R0-A02 IDN0 inlines generated identities instead of the specified tables",
-          "[chart][packed][hardening][r0]") {
+// R0-A02 was flipped by R1: IDN0 now stores the Spec 6.5 scope/path tables.
+TEST_CASE("R1-A02 IDN0 stores the Spec 6.5 scope and path tables",
+          "[chart][packed][hardening][r1]") {
     auto chart = tapChart();
     GeneratedEntityIdentity identity;
     identity.chartId = ChartId{"019b0000-0000-7abc-8def-000000000001"};
@@ -274,12 +282,13 @@ TEST_CASE("R0-A02 IDN0 inlines generated identities instead of the specified tab
     const auto encoded = cuexis::chart::packed::encode(chart);
     REQUIRE(encoded);
     const auto section = findSection(*encoded, "IDN0");
-    REQUIRE(section.size > 12U);
-    // Spec 6.5 defines u32 scopeCount + scopes[] + u32 pathCount + paths[] before identityCount.
-    // The writer emits 0/0 and inlines the full generated tuple per identity instead, so a
-    // reader that implements the specified tables cannot consume this section.
-    CHECK(readU32(*encoded, section.offset) == 0U);
-    CHECK(readU32(*encoded, section.offset + 4U) == 0U);
-    CHECK(readU32(*encoded, section.offset + 8U) == 2U);
+    REQUIRE(section.size > 30U);
+    // Spec 6.5: u32 scopeCount, scopes[], u32 pathCount, paths[], u32 identityCount.
+    // This chart has nine strings, so every string index is a one-byte LEB128: scopeCount at 0,
+    // one scope of 16 + 3 bytes, pathCount at 23, one path of 1 + (1 + 1) bytes, identityCount
+    // at 30.
+    CHECK(readU32(*encoded, section.offset) == 1U);
+    CHECK(readU32(*encoded, section.offset + 23U) == 1U);
+    CHECK(readU32(*encoded, section.offset + 30U) == 2U);
     CHECK(cuexis::chart::packed::decode(*encoded));
 }

@@ -18,6 +18,7 @@ add_executable(cuexis_chart_tests
     parse_characterization_tests.cpp
     packed_chart_primitives_tests.cpp
     packed_chart_io_tests.cpp
+    packed_semantic_identity_tests.cpp
     prepared_semantic_identity_tests.cpp
     rational_beat_tests.cpp
     timing_map_tests.cpp

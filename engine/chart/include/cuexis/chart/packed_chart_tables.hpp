@@ -7,9 +7,11 @@
 #include <cuexis/chart/packed_chart_primitives.hpp>
 #include <cuexis/core/result.hpp>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <span>
+#include <string>
 #include <vector>
 
 namespace cuexis::chart::packed {
@@ -28,12 +30,34 @@ struct PackedChartStatistics final {
     std::size_t requirementCount{};
 };
 
+// Packed Spec 10.1 semantic identity digest.
+using PackedSemanticIdentity = std::array<std::uint8_t, 32>;
+
+// Computes the Spec 10.1 typed semantic preimage bytes. The preimage covers the canonical
+// semantic model only: no dictionary indices, no section layout, no file bytes.
+// It fails with a stable error when a hash precondition is violated (duplicate or missing
+// identities, dangling parents, non-finite floats, unsupported constraints, ...).
+[[nodiscard]] auto semanticPreimage(const CanonicalSemanticChart& chart)
+    -> core::Result<std::vector<std::byte>>;
+
+// SHA-256 over the Spec 10.1 preimage.
+[[nodiscard]] auto semanticIdentity(const CanonicalSemanticChart& chart)
+    -> core::Result<PackedSemanticIdentity>;
+
+// Lowercase hexadecimal form of a semantic identity digest.
+[[nodiscard]] auto semanticIdentityHex(const PackedSemanticIdentity& identity) -> std::string;
+
 [[nodiscard]] auto encode(const CanonicalSemanticChart& chart, PackedChartProfile profile = {})
     -> core::Result<std::vector<std::byte>>;
 
+// Verifies Header.semanticIdentity against the recomputed digest after structural, budget and
+// semantic validation. A mismatch is rejected before any semantic chart is published.
 [[nodiscard]] auto decode(std::span<const std::byte> bytes, PackedChartLimits limits = {})
     -> core::Result<CanonicalSemanticChart>;
 
+// Structural inspection only: header, directory, section CRCs and declared counters. It does
+// NOT verify the semantic identity or any semantic precondition, so callers that consume
+// semantics must use decode().
 [[nodiscard]] auto inspect(std::span<const std::byte> bytes, PackedChartLimits limits = {})
     -> core::Result<PackedChartStatistics>;
 

@@ -3,6 +3,8 @@
 #include <cuexis/chart/uuid.hpp>
 #include <cuexis/core/error.hpp>
 
+#include "packed_identity_internal.hpp"
+
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -30,6 +32,20 @@ auto hexValue(char c) -> int {
     if (c >= 'A' && c <= 'F')
         return c - 'A' + 10;
     return -1;
+}
+
+auto identityText(std::span<const std::byte> bytes) -> std::string {
+    static constexpr char digits[] = "0123456789abcdef";
+    std::string value;
+    value.reserve(36);
+    for (std::size_t index = 0; index < bytes.size(); ++index) {
+        if (index == 4U || index == 6U || index == 8U || index == 10U)
+            value.push_back('-');
+        const auto byteValue = std::to_integer<std::uint8_t>(bytes[index]);
+        value.push_back(digits[byteValue >> 4]);
+        value.push_back(digits[byteValue & 15]);
+    }
+    return value;
 }
 
 auto writeUuid(ByteWriter& writer, std::string_view value) -> core::Result<void> {
@@ -75,17 +91,8 @@ struct Section final {
     std::uint32_t records{};
 };
 
-auto identityKey(const CanonicalEntityIdentity& identity) -> std::string {
-    if (const auto* explicitIdentity = std::get_if<ExplicitEntityIdentity>(&identity)) {
-        return "0:" + explicitIdentity->objectId.value;
-    }
-    const auto& generated = std::get<GeneratedEntityIdentity>(identity);
-    std::string key = "1:" + generated.chartId.value + ":" + generated.bindingId + ":" +
-                      generated.moduleId + ":" + generated.exportId;
-    for (const auto& step : generated.path) {
-        key += ":" + step.nodeId + ":" + std::to_string(step.iterationIndexPlusOne);
-    }
-    return key;
+auto identityKey(const CanonicalEntityIdentity& identity) -> core::Result<std::vector<std::byte>> {
+    return identity_detail::canonicalIdentityBytes(identity);
 }
 
 struct Dictionaries final {
@@ -299,26 +306,110 @@ auto writeTimeSection(const ChartTiming& timing) -> Section {
 
 struct EntityOrder final {
     std::vector<const CanonicalEntity*> entities;
-    std::map<std::string, std::uint32_t> ordinals;
+    std::map<std::vector<std::byte>, std::uint32_t> ordinals;
 };
-auto orderEntities(const CanonicalSemanticChart& chart) -> EntityOrder {
+// Spec 6.5: canonical identity bytes define both the entity ordinal and the ENT0 order.
+auto orderEntities(const CanonicalSemanticChart& chart) -> core::Result<EntityOrder> {
     EntityOrder order;
+    order.entities.reserve(chart.entities.size());
     for (const auto& entity : chart.entities)
         order.entities.push_back(&entity);
-    std::sort(order.entities.begin(), order.entities.end(), [](const auto* a, const auto* b) {
-        return identityKey(a->identity) < identityKey(b->identity);
-    });
-    for (std::size_t i = 0; i < order.entities.size(); ++i)
-        order.ordinals.emplace(identityKey(order.entities[i]->identity),
-                               static_cast<std::uint32_t>(i));
+    std::vector<std::pair<std::vector<std::byte>, const CanonicalEntity*>> keyed;
+    keyed.reserve(order.entities.size());
+    for (const auto* entity : order.entities) {
+        auto bytes = identityKey(entity->identity);
+        if (!bytes)
+            return core::unexpected(std::move(bytes.error()));
+        keyed.emplace_back(std::move(*bytes), entity);
+    }
+    std::sort(keyed.begin(), keyed.end(),
+              [](const auto& left, const auto& right) { return left.first < right.first; });
+    order.entities.clear();
+    for (std::size_t i = 0; i < keyed.size(); ++i) {
+        order.entities.push_back(keyed[i].second);
+        if (!order.ordinals.emplace(keyed[i].first, static_cast<std::uint32_t>(i)).second) {
+            return core::unexpected(fail("packed.identity.duplicate_identity",
+                                         "Entity identities must be unique in a candidate chart"));
+        }
+    }
     return order;
+}
+
+struct IdentityScope final {
+    std::array<std::uint8_t, 16> chartId{};
+    std::string bindingId;
+    std::string moduleId;
+    std::string exportId;
+};
+struct IdentityPath final {
+    std::vector<std::pair<std::string, bool>> steps;
+};
+
+auto scopeLess(const IdentityScope& left, const IdentityScope& right) -> bool {
+    if (left.chartId != right.chartId)
+        return left.chartId < right.chartId;
+    if (left.bindingId != right.bindingId)
+        return left.bindingId < right.bindingId;
+    if (left.moduleId != right.moduleId)
+        return left.moduleId < right.moduleId;
+    return left.exportId < right.exportId;
+}
+auto scopeEqual(const IdentityScope& left, const IdentityScope& right) -> bool {
+    return left.chartId == right.chartId && left.bindingId == right.bindingId &&
+           left.moduleId == right.moduleId && left.exportId == right.exportId;
+}
+auto pathLess(const IdentityPath& left, const IdentityPath& right) -> bool {
+    return left.steps < right.steps;
+}
+auto pathEqual(const IdentityPath& left, const IdentityPath& right) -> bool {
+    return left.steps == right.steps;
 }
 
 auto writeIdentitySection(const EntityOrder& order, const CanonicalSemanticChart&,
                           const Dictionaries& dict) -> core::Result<Section> {
+    std::vector<IdentityScope> scopes;
+    std::vector<IdentityPath> paths;
+    for (const auto* entity : order.entities) {
+        const auto* generated = std::get_if<GeneratedEntityIdentity>(&entity->identity);
+        if (generated == nullptr)
+            continue;
+        auto chartId = identity_detail::uuidBytes(generated->chartId.value);
+        if (!chartId)
+            return core::unexpected(std::move(chartId.error()));
+        scopes.push_back(IdentityScope{*chartId, generated->bindingId, generated->moduleId,
+                                       generated->exportId});
+        IdentityPath path;
+        for (const auto& step : generated->path)
+            path.steps.emplace_back(step.nodeId, step.iterationIndexPlusOne != 0U);
+        paths.push_back(std::move(path));
+    }
+    std::sort(scopes.begin(), scopes.end(), scopeLess);
+    scopes.erase(std::unique(scopes.begin(), scopes.end(), scopeEqual), scopes.end());
+    std::sort(paths.begin(), paths.end(), pathLess);
+    paths.erase(std::unique(paths.begin(), paths.end(), pathEqual), paths.end());
+
     ByteWriter writer;
-    writer.writeU32(0);
-    writer.writeU32(0); // scopes/paths are emitted inline for deterministic bridge
+    writer.writeU32(static_cast<std::uint32_t>(scopes.size()));
+    for (const auto& scope : scopes) {
+        writer.writeBytes(std::as_bytes(std::span{scope.chartId}));
+        for (const auto& value : {scope.bindingId, scope.moduleId, scope.exportId}) {
+            auto index = stringRef(dict, value);
+            if (!index)
+                return core::unexpected(std::move(index.error()));
+            writer.writeUnsignedLeb128(*index);
+        }
+    }
+    writer.writeU32(static_cast<std::uint32_t>(paths.size()));
+    for (const auto& path : paths) {
+        writer.writeUnsignedLeb128(path.steps.size());
+        for (const auto& [nodeId, indexed] : path.steps) {
+            auto index = stringRef(dict, nodeId);
+            if (!index)
+                return core::unexpected(std::move(index.error()));
+            writer.writeUnsignedLeb128(*index);
+            writer.writeU8(indexed ? 1U : 0U);
+        }
+    }
     writer.writeU32(static_cast<std::uint32_t>(order.entities.size()));
     for (const auto* entity : order.entities) {
         if (const auto* explicitIdentity = std::get_if<ExplicitEntityIdentity>(&entity->identity)) {
@@ -326,26 +417,27 @@ auto writeIdentitySection(const EntityOrder& order, const CanonicalSemanticChart
             auto r = writeUuid(writer, explicitIdentity->objectId.value);
             if (!r)
                 return core::unexpected(std::move(r.error()));
-        } else {
-            const auto& generated = std::get<GeneratedEntityIdentity>(entity->identity);
-            writer.writeU8(1);
-            if (auto r = writeUuid(writer, generated.chartId.value); !r)
-                return core::unexpected(std::move(r.error()));
-            for (const auto& value :
-                 {generated.bindingId, generated.moduleId, generated.exportId}) {
-                auto r = stringRef(dict, value);
-                if (!r)
-                    return core::unexpected(std::move(r.error()));
-                writer.writeUnsignedLeb128(*r);
-            }
-            writer.writeUnsignedLeb128(generated.path.size());
-            for (const auto& step : generated.path) {
-                auto r = stringRef(dict, step.nodeId);
-                if (!r)
-                    return core::unexpected(std::move(r.error()));
-                writer.writeUnsignedLeb128(*r);
+            continue;
+        }
+        const auto& generated = std::get<GeneratedEntityIdentity>(entity->identity);
+        auto chartId = identity_detail::uuidBytes(generated.chartId.value);
+        if (!chartId)
+            return core::unexpected(std::move(chartId.error()));
+        const IdentityScope scope{*chartId, generated.bindingId, generated.moduleId,
+                                  generated.exportId};
+        IdentityPath path;
+        for (const auto& step : generated.path)
+            path.steps.emplace_back(step.nodeId, step.iterationIndexPlusOne != 0U);
+        const auto scopeIt = std::lower_bound(scopes.begin(), scopes.end(), scope, scopeLess);
+        const auto pathIt = std::lower_bound(paths.begin(), paths.end(), path, pathLess);
+        writer.writeU8(1);
+        writer.writeUnsignedLeb128(
+            static_cast<std::uint32_t>(std::distance(scopes.begin(), scopeIt)));
+        writer.writeUnsignedLeb128(
+            static_cast<std::uint32_t>(std::distance(paths.begin(), pathIt)));
+        for (const auto& step : generated.path) {
+            if (step.iterationIndexPlusOne != 0U)
                 writer.writeUnsignedLeb128(step.iterationIndexPlusOne);
-            }
         }
     }
     return Section{{'I', 'D', 'N', '0'},
@@ -410,12 +502,22 @@ auto writeArchetypeSection(const std::vector<Archetype>& arches, const Dictionar
 }
 
 auto writeEntitySection(const EntityOrder& order,
-                        const std::map<std::uint64_t, std::uint32_t>& arches) -> Section {
+                        const std::map<std::uint64_t, std::uint32_t>& arches)
+    -> core::Result<Section> {
     ByteWriter writer;
     for (const auto* entity : order.entities) {
         std::uint32_t parent = 0;
-        if (entity->parent)
-            parent = order.ordinals.at(identityKey(*entity->parent)) + 1U;
+        if (entity->parent) {
+            auto parentBytes = identityKey(*entity->parent);
+            if (!parentBytes)
+                return core::unexpected(std::move(parentBytes.error()));
+            const auto it = order.ordinals.find(*parentBytes);
+            if (it == order.ordinals.end()) {
+                return core::unexpected(fail("packed.identity.parent_missing",
+                                             "Entity parent is not part of the chart"));
+            }
+            parent = it->second + 1U;
+        }
         writer.writeUnsignedLeb128(parent);
         writer.writeUnsignedLeb128(arches.at(entity->componentMask()));
     }
@@ -582,6 +684,11 @@ auto encode(const CanonicalSemanticChart& chart, PackedChartProfile profile)
     if (profile.flags != 1 || profile.candidateRevision != 1)
         return core::unexpected(
             fail("packed.header.unsupported_revision", "Only candidate revision 1 is supported"));
+    // Validate the hash preconditions and compute the semantic identity before any artifact
+    // bytes exist, so an inconsistent chart is never published (Spec 9 and 10.1).
+    auto identity = semanticIdentity(chart);
+    if (!identity)
+        return core::unexpected(std::move(identity.error()));
     if (chart.entities.size() > 40000U)
         return core::unexpected(
             fail("packed.budget.entities", "Packed chart exceeds the 40000 entity limit"));
@@ -594,7 +701,10 @@ auto encode(const CanonicalSemanticChart& chart, PackedChartProfile profile)
     }
     Dictionaries dict;
     collectStrings(dict, chart);
-    auto order = orderEntities(chart);
+    auto ordered = orderEntities(chart);
+    if (!ordered)
+        return core::unexpected(std::move(ordered.error()));
+    const auto& order = *ordered;
     std::map<std::uint64_t, std::uint32_t> archIndices;
     auto arches = makeArchetypes(order, archIndices);
     std::vector<Section> sections;
@@ -613,7 +723,10 @@ auto encode(const CanonicalSemanticChart& chart, PackedChartProfile profile)
     if (!arch)
         return core::unexpected(std::move(arch.error()));
     sections.push_back(std::move(*arch));
-    sections.push_back(writeEntitySection(order, archIndices));
+    auto entities = writeEntitySection(order, archIndices);
+    if (!entities)
+        return core::unexpected(std::move(entities.error()));
+    sections.push_back(std::move(*entities));
     for (int kind = 0; kind < 3; ++kind) {
         auto stream = writeComponentStream(order, arches, archIndices, dict, kind);
         if (!stream)
@@ -644,8 +757,8 @@ auto encode(const CanonicalSemanticChart& chart, PackedChartProfile profile)
     file.writeU32(96);
     file.writeU32(static_cast<std::uint32_t>(sections.size()));
     file.writeU32(directoryBytes);
-    for (int i = 0; i < 32; ++i)
-        file.writeU8(0);
+    for (const auto value : *identity)
+        file.writeU8(value);
     file.writeU32(static_cast<std::uint32_t>(order.entities.size()));
     std::size_t requirements = 0;
     for (const auto* e : order.entities)
@@ -1006,75 +1119,101 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
     const auto* idnSection = section("IDN0");
     ByteReader idn(idnSection->data);
     auto scopeCount = idn.readU32();
+    if (!scopeCount)
+        return core::unexpected(fail("packed.identity.invalid", "IDN0 scope count is invalid"));
+    struct DecodedScope final {
+        std::string chartId;
+        std::string bindingId;
+        std::string moduleId;
+        std::string exportId;
+    };
+    std::vector<DecodedScope> scopes;
+    scopes.reserve(*scopeCount);
+    for (std::uint32_t i = 0; i < *scopeCount; ++i) {
+        auto uuid = idn.readBytes(16);
+        auto bind = idn.readUnsignedLeb128(*stringCount);
+        auto module = idn.readUnsignedLeb128(*stringCount);
+        auto exportId = idn.readUnsignedLeb128(*stringCount);
+        if (!uuid || !bind || !module || !exportId)
+            return core::unexpected(fail("packed.identity.invalid", "IDN0 scope is invalid"));
+        auto bindValue = getString(*bind);
+        auto moduleValue = getString(*module);
+        auto exportValue = getString(*exportId);
+        if (!bindValue || !moduleValue || !exportValue)
+            return core::unexpected(fail("packed.identity.string", "IDN0 scope string is invalid"));
+        scopes.push_back(DecodedScope{identityText(*uuid), std::move(*bindValue),
+                                      std::move(*moduleValue), std::move(*exportValue)});
+        // Spec 6.5: every generated identity scope must use the META chartId.
+        if (scopes.back().chartId != chart.chartId.value)
+            return core::unexpected(
+                fail("packed.identity.scope_chart", "IDN0 scope chartId must match META"));
+    }
     auto pathCount = idn.readU32();
+    if (!pathCount)
+        return core::unexpected(fail("packed.identity.invalid", "IDN0 path count is invalid"));
+    std::vector<std::vector<std::pair<std::string, bool>>> paths;
+    paths.reserve(*pathCount);
+    for (std::uint32_t i = 0; i < *pathCount; ++i) {
+        auto steps = idn.readUnsignedLeb128();
+        if (!steps)
+            return core::unexpected(fail("packed.identity.invalid", "IDN0 path is invalid"));
+        auto path = std::vector<std::pair<std::string, bool>>{};
+        path.reserve(static_cast<std::size_t>(*steps));
+        for (std::uint64_t step = 0; step < *steps; ++step) {
+            auto node = idn.readUnsignedLeb128(*stringCount);
+            auto indexed = idn.readU8();
+            if (!node || !indexed || *indexed > 1U)
+                return core::unexpected(fail("packed.identity.path", "IDN0 path step is invalid"));
+            auto nodeValue = getString(*node);
+            if (!nodeValue)
+                return core::unexpected(std::move(nodeValue.error()));
+            path.emplace_back(std::move(*nodeValue), *indexed == 1U);
+        }
+        paths.push_back(std::move(path));
+    }
     auto identityCount = idn.readU32();
-    if (!scopeCount || !pathCount || !identityCount || *scopeCount != 0 || *pathCount != 0 ||
-        *identityCount != *entityCount)
-        return core::unexpected(fail("packed.identity.invalid", "IDN0 header is invalid"));
+    if (!identityCount || *identityCount != *entityCount)
+        return core::unexpected(fail("packed.identity.invalid", "IDN0 identity count is invalid"));
     for (std::uint32_t i = 0; i < *identityCount; ++i) {
         auto tag = idn.readU8();
         if (!tag)
             return core::unexpected(std::move(tag.error()));
-        if (*tag == 0) {
+        if (*tag == 0U) {
             auto uuid = idn.readBytes(16);
             if (!uuid)
                 return core::unexpected(std::move(uuid.error()));
-            std::string value;
-            static constexpr char hex[] = "0123456789abcdef";
-            for (std::size_t j = 0; j < 16; ++j) {
-                if (j == 4 || j == 6 || j == 8 || j == 10)
-                    value.push_back('-');
-                auto v = std::to_integer<std::uint8_t>((*uuid)[j]);
-                value.push_back(hex[v >> 4]);
-                value.push_back(hex[v & 15]);
-            }
-            entities[i].identity = ExplicitEntityIdentity{ChartObjectId{std::move(value)}};
-        } else if (*tag == 1) {
-            auto generatedChart = idn.readBytes(16);
-            if (!generatedChart)
-                return core::unexpected(std::move(generatedChart.error()));
-            std::string value;
-            static constexpr char hex[] = "0123456789abcdef";
-            for (std::size_t j = 0; j < 16; ++j) {
-                if (j == 4 || j == 6 || j == 8 || j == 10)
-                    value.push_back('-');
-                auto v = std::to_integer<std::uint8_t>((*generatedChart)[j]);
-                value.push_back(hex[v >> 4]);
-                value.push_back(hex[v & 15]);
-            }
-            GeneratedEntityIdentity generated;
-            generated.chartId = ChartId{std::move(value)};
-            auto bind = idn.readUnsignedLeb128(*stringCount);
-            auto module = idn.readUnsignedLeb128(*stringCount);
-            auto exportId = idn.readUnsignedLeb128(*stringCount);
-            auto steps = idn.readUnsignedLeb128();
-            if (!bind || !module || !exportId || !steps)
-                return core::unexpected(
-                    fail("packed.identity.invalid", "Generated identity is invalid"));
-            auto bindValue = getString(*bind);
-            auto moduleValue = getString(*module);
-            auto exportValue = getString(*exportId);
-            if (!bindValue || !moduleValue || !exportValue)
-                return core::unexpected(
-                    fail("packed.identity.string", "Generated identity string is invalid"));
-            generated.bindingId = *bindValue;
-            generated.moduleId = *moduleValue;
-            generated.exportId = *exportValue;
-            for (std::uint64_t s = 0; s < *steps; ++s) {
-                auto node = idn.readUnsignedLeb128(*stringCount);
-                auto iteration = idn.readUnsignedLeb128();
-                if (!node || !iteration)
-                    return core::unexpected(
-                        fail("packed.identity.path", "Generated identity path is invalid"));
-                auto nodeValue = getString(*node);
-                if (!nodeValue)
-                    return core::unexpected(std::move(nodeValue.error()));
-                generated.path.push_back(
-                    SemanticIdentityStep{*nodeValue, static_cast<std::uint32_t>(*iteration)});
-            }
-            entities[i].identity = std::move(generated);
-        } else
+            entities[i].identity = ExplicitEntityIdentity{ChartObjectId{identityText(*uuid)}};
+            continue;
+        }
+        if (*tag != 1U)
             return core::unexpected(fail("packed.identity.tag", "Identity tag is unsupported"));
+        auto scopeIndex = idn.readUnsignedLeb128(scopes.size());
+        auto pathIndex = idn.readUnsignedLeb128(paths.size());
+        if (!scopeIndex || !pathIndex || *scopeIndex >= scopes.size() || *pathIndex >= paths.size())
+            return core::unexpected(fail("packed.identity.path", "Generated identity is invalid"));
+        GeneratedEntityIdentity generated;
+        generated.chartId = ChartId{scopes[*scopeIndex].chartId};
+        generated.bindingId = scopes[*scopeIndex].bindingId;
+        generated.moduleId = scopes[*scopeIndex].moduleId;
+        generated.exportId = scopes[*scopeIndex].exportId;
+        for (const auto& [nodeId, indexed] : paths[*pathIndex]) {
+            if (!indexed) {
+                generated.path.push_back(SemanticIdentityStep{nodeId, 0});
+                continue;
+            }
+            auto iteration = idn.readUnsignedLeb128();
+            if (!iteration || *iteration == 0U)
+                return core::unexpected(
+                    fail("packed.identity.path", "Generated identity iteration is invalid"));
+            generated.path.push_back(
+                SemanticIdentityStep{nodeId, static_cast<std::uint32_t>(*iteration)});
+        }
+        // Spec 6.5: the last path step must be a non-indexed emit label.
+        if (generated.path.empty() || generated.path.back().iterationIndexPlusOne != 0U)
+            return core::unexpected(
+                fail("packed.identity.generated_path",
+                     "Generated identity paths must end with a non-indexed step"));
+        entities[i].identity = std::move(generated);
     }
     if (!idn.empty())
         return core::unexpected(fail("packed.identity.trailing", "IDN0 has trailing bytes"));
@@ -1394,6 +1533,15 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
                 fail("packed.requirements.component", "Requirement presence bit is missing"));
     }
     chart.entities = std::move(entities);
+    // Spec 9: the semantic identity is verified after structural, budget and semantic
+    // validation and before any chart is published. A mismatch never yields a partial chart.
+    auto recomputed = semanticIdentity(chart);
+    if (!recomputed)
+        return core::unexpected(std::move(recomputed.error()));
+    if (std::memcmp(semanticHash->data(), recomputed->data(), recomputed->size()) != 0)
+        return core::unexpected(
+            fail("packed.identity.mismatch",
+                 "Packed semantic identity does not match the recomputed digest"));
     return chart;
 }
 

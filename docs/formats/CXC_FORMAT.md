@@ -307,6 +307,8 @@ Archive entry 必须能由以下至少一条关系到达：固定 ProjectConfig�
 CXT、资源或其他 entry 是隐藏 payload，并以 `cxc.entry.unlisted` 失败。Source Project 目录中未被
 声明的 authoring 文件不会被 pack，也不构成错误。
 
+登记扩展 `cuexis.chart-entry.v1` 中 `playback=true` 条目声明的 `path` 也进入闭包：第 4 节要求该 entry 存在于同一个 CXC，因此它的路径必须可达；该关系不适用于非 playback 条目、未登记扩展或其他 entry。
+
 CXC v1 不支持外部 URL、绝对路径、宿主隐式文件、另一个 CXC、运行时下载、未索引资源自动发现、
 运行时脚本，或按模板名称从 SDK/网络补全内容。
 

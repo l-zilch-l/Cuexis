@@ -1,20 +1,10 @@
-// R0 characterization tests for the CXC candidate chart-entry mapping.
+// R1 contract tests for the CXC candidate chart-entry mapping.
 //
-// Before this file, `validateCandidateChartExtension` had no test and no executable caller: the
-// `cxc_candidate_extension.valid.json` / `.invalid.json` fixtures were documentation-only, and
-// their placeholder identities can never satisfy the real validator. These cases build a real
-// CXC package that carries real Packed playback bytes, so the mapping is exercised through the
-// same implementation entry point the `cxc_validate` tool uses.
-//
-// Two structural findings shape this file:
-//   * R0-A03: the CXC v1 project-declared closure admits no compiled Packed entry, so the
-//     Spec-shaped `compiled/chart.packed` manifest entry is refused by CxcWriter/CxcPackageLoader
-//     (`cxc.entry.unlisted`). To reach the validator at all, the reachable fixtures below declare
-//     the Packed artifact through the Asset Index. That workaround is R0 evidence only; R1/R4 must
-//     admit the registered candidate playback entry in the closure itself.
-//   * R0-H01: the validator only checks the SHA-256 *shape* of compiledSemanticIdentity.
-//
-// Cases named R0-H01 record the pre-hardening defect and are flipped by R1.
+// R0 recorded that `validateCandidateChartExtension` had no executable caller and that the CXC
+// v1 project-declared closure refused the Spec-shaped `compiled/chart.packed` playback entry.
+// R1 admits the entry declared by the registered `cuexis.chart-entry.v1` extension, so these
+// cases build the Spec-shaped package directly and verify the compiled semantic identity against
+// the identity recomputed from the decoded Packed artifact.
 
 #include "cxc_test_support.hpp"
 
@@ -24,8 +14,11 @@
 #include <cuexis/cxc/cxc_writer.hpp>
 #include <cuexis/tools/cxc_candidate.hpp>
 
+#include "cxc_hash_internal.hpp"
+
 #include <catch2/catch_test_macros.hpp>
 
+#include <algorithm>
 #include <cstddef>
 #include <span>
 #include <sstream>
@@ -37,12 +30,15 @@
 
 namespace {
 
-// The path the Packed artifact must use to stay inside the Asset Index closure (R0-A03).
-constexpr std::string_view reachablePackedPath{"assets/compiled/chart.packed"};
-// The path the Foundation mapping specifies for a compiled playback entry.
-constexpr std::string_view specifiedPackedPath{"compiled/chart.packed"};
+constexpr std::string_view packedEntryPath{"compiled/chart.packed"};
 
-[[nodiscard]] auto tapPackedBytes() -> std::vector<std::byte> {
+struct PackedFixture final {
+    std::vector<std::byte> bytes;
+    std::string semanticIdentity;
+};
+
+// The Spec 10.2 one-tap-lane2 chart, encoded as the candidate playback artifact.
+[[nodiscard]] auto tapPackedFixture() -> PackedFixture {
     cuexis::chart::CanonicalSemanticChart chart;
     chart.chartId = cuexis::chart::ChartId{"019b0000-0000-7abc-8def-000000000001"};
     chart.features.push_back(
@@ -57,157 +53,123 @@ constexpr std::string_view specifiedPackedPath{"compiled/chart.packed"};
         cuexis::chart::ChartObjectId{"019b0000-0000-7abc-8def-000000000010"}};
     entity.requirements.push_back(std::move(requirement));
     chart.entities.push_back(std::move(entity));
+
     const auto encoded = cuexis::chart::packed::encode(chart);
     if (!encoded) {
-        throw std::runtime_error{"Candidate Packed encode failed for the R0 CXC fixture"};
+        throw std::runtime_error{"Candidate Packed encode failed for the R1 CXC fixture"};
     }
-    return *encoded;
+    const auto identity = cuexis::chart::packed::semanticIdentity(chart);
+    if (!identity) {
+        throw std::runtime_error{"Candidate semantic identity failed for the R1 CXC fixture"};
+    }
+    return PackedFixture{*encoded, cuexis::chart::packed::semanticIdentityHex(*identity)};
 }
 
-// Declares the Packed artifact as an Asset Index source so that the CXC closure admits it.
-[[nodiscard]] auto assetIndexWithPackedAsset() -> std::string {
-    return R"({
-  "format": "cuexis.asset-index",
-  "version": 1,
-  "assets": [
-    {
-      "id": "candidate.packed",
-      "type": "mesh",
-      "source": "compiled/chart.packed",
-      "dependencies": []
-    }
-  ],
-  "extensions": {}
-}
-)";
-}
-
-[[nodiscard]] auto candidateExtensionJson(std::string_view entryPath,
+[[nodiscard]] auto candidateExtensionJson(std::string_view entryPath, bool playback,
                                           std::string_view artifactIdentity,
                                           std::string_view compiledIdentity) -> std::string {
     std::ostringstream output;
     output << R"({"cuexis.chart-entry.v1":{"entries":[{"path":")" << entryPath
-           << R"(","kind":"chart","encoding":"packed-chart","playback":true,)"
-           << R"("compiledSemanticIdentity":")" << compiledIdentity << R"(","artifactIdentity":")"
-           << artifactIdentity << R"(","compilerProfile":"candidate.static-tap-lanes4-v1",)"
+           << R"(","kind":"chart","encoding":"packed-chart","playback":)"
+           << (playback ? "true" : "false") << R"(,"compiledSemanticIdentity":")"
+           << compiledIdentity << R"(","artifactIdentity":")" << artifactIdentity
+           << R"(","compilerProfile":"candidate.static-tap-lanes4-v1",)"
            << R"("expandedEntityCount":1,"expandedRequirementCount":1}]}})";
     return output.str();
 }
 
-struct CandidateRequest final {
-    cuexis::cxc::CxcWriteRequest request;
-    std::string entryPath;
-};
-
-[[nodiscard]] auto makeCandidateRequest(std::string_view entryPath, bool insideAssetClosure,
-                                        std::string_view artifactIdentity,
-                                        std::string_view compiledIdentity) -> CandidateRequest {
-    const auto packed = tapPackedBytes();
+// Builds the Spec-shaped candidate package: the Packed playback entry is declared by the
+// registered extension and is not part of the project asset closure.
+[[nodiscard]] auto makeCandidateRequest(bool playback, std::string_view compiledIdentity,
+                                        bool useRealArtifactIdentity)
+    -> cuexis::cxc::CxcWriteRequest {
+    const auto fixture = tapPackedFixture();
+    const auto artifactIdentity = useRealArtifactIdentity
+                                      ? cuexis::cxc::detail::sha256Hex(fixture.bytes)
+                                      : std::string(64, 'f');
     auto request = cuexis::cxc::test::makeV4StaticRequest();
-    if (insideAssetClosure) {
-        for (auto& entry : request.entries) {
-            if (entry.path == "assets/cuexis.asset-index.json") {
-                entry.bytes = cuexis::cxc::test::bytesFromText(assetIndexWithPackedAsset());
-            }
-        }
-    }
     request.entries.push_back(cuexis::cxc::test::binaryEntry(
-        std::string{entryPath},
-        std::string_view{reinterpret_cast<const char*>(packed.data()), packed.size()}));
-    request.extensionsJson = candidateExtensionJson(entryPath, artifactIdentity, compiledIdentity);
-    return CandidateRequest{std::move(request), std::string{entryPath}};
+        std::string{packedEntryPath},
+        std::string_view{reinterpret_cast<const char*>(fixture.bytes.data()),
+                         fixture.bytes.size()}));
+    request.extensionsJson =
+        candidateExtensionJson(packedEntryPath, playback, artifactIdentity, compiledIdentity);
+    return request;
 }
 
-[[nodiscard]] auto writeCandidatePackage(std::string_view entryPath, bool insideAssetClosure,
-                                         std::string_view artifactIdentity,
-                                         std::string_view compiledIdentity)
-    -> std::vector<std::byte> {
-    return cuexis::cxc::test::writePackage(
-        makeCandidateRequest(entryPath, insideAssetClosure, artifactIdentity, compiledIdentity)
-            .request);
-}
-
-[[nodiscard]] auto loadCandidatePackage(std::span<const std::byte> bytes,
-                                        std::string_view entryPath) -> cuexis::cxc::CxcPackage {
+[[nodiscard]] auto loadCandidatePackage(const std::vector<std::byte>& bytes)
+    -> cuexis::cxc::CxcPackage {
     const auto loaded = cuexis::cxc::CxcPackageLoader::loadMemory(bytes);
     if (!loaded.hasValue()) {
-        throw std::runtime_error{"R0 CXC fixture package did not load:\n" +
+        throw std::runtime_error{"R1 CXC fixture package did not load:\n" +
                                  cuexis::cxc::test::diagnosticsText(loaded.diagnostics)};
     }
     return *loaded.package;
 }
 
-[[nodiscard]] auto entryIdentity(const cuexis::cxc::CxcPackage& package, std::string_view path)
-    -> std::string {
-    for (const auto& entry : package.entries()) {
-        if (entry.path == path) {
-            return entry.sha256;
-        }
-    }
-    return {};
-}
-
 } // namespace
 
-TEST_CASE("R0-A03 A compiled playback entry outside the asset closure is refused at pack time",
-          "[cxc][hardening][r0]") {
-    const auto placeholder = std::string(64, '0');
-    const auto candidate =
-        makeCandidateRequest(specifiedPackedPath, false, placeholder, placeholder);
-    const auto written = cuexis::cxc::CxcWriter::write(candidate.request);
+TEST_CASE("R1-A03 the Spec-shaped compiled playback entry is admitted by the CXC closure",
+          "[cxc][hardening][r1]") {
+    const auto fixture = tapPackedFixture();
+    const auto bytes =
+        cuexis::cxc::test::writePackage(makeCandidateRequest(true, fixture.semanticIdentity, true));
+    const auto package = loadCandidatePackage(bytes);
 
-    // The Foundation mapping in docs/formats/CXC_FORMAT.md places the compiled artifact at
-    // `compiled/chart.packed`, but the CXC v1 project-declared closure only admits the project
-    // document, Asset Index documents, asset sources and the entry Chart. A real candidate
-    // package therefore cannot be produced, let alone validated, without a closure decision.
-    REQUIRE_FALSE(written.hasValue());
-    CHECK(cuexis::cxc::test::hasDiagnostic(written.diagnostics, "cxc.entry.unlisted"));
+    const auto entry = package.entryBytes(packedEntryPath);
+    REQUIRE(entry);
+    CHECK(std::equal(entry->begin(), entry->end(), fixture.bytes.begin(), fixture.bytes.end()));
+    // The extension declares the entry, so it is reachable without an Asset Index workaround.
+    CHECK(cuexis::chart::packed::decode(*entry));
 }
 
-TEST_CASE("R0 CXC candidate fixture carries real Packed playback bytes", "[cxc][hardening][r0]") {
-    const auto placeholder = std::string(64, '0');
-    const auto package = loadCandidatePackage(
-        writeCandidatePackage(reachablePackedPath, true, placeholder, placeholder),
-        reachablePackedPath);
-    const auto bytes = package.entryBytes(reachablePackedPath);
-    REQUIRE(bytes);
-    // The entry is a real Foundation Packed artifact, not a JSON example, and the archive
-    // identity is computed from the exact entry bytes.
-    CHECK(cuexis::chart::packed::decode(*bytes));
-    CHECK(entryIdentity(package, reachablePackedPath).size() == 64U);
-    CHECK(entryIdentity(package, reachablePackedPath) != placeholder);
-}
+TEST_CASE("R1-H01 CXC validation rejects a compiledSemanticIdentity that does not match",
+          "[cxc][hardening][r1]") {
+    const auto bytes =
+        cuexis::cxc::test::writePackage(makeCandidateRequest(true, std::string(64, '0'), true));
+    const auto package = loadCandidatePackage(bytes);
 
-TEST_CASE("R0-H01 CXC validation accepts a compiledSemanticIdentity that does not match",
-          "[cxc][hardening][r0]") {
-    const auto placeholder = std::string(64, '0');
-    const auto provisional = loadCandidatePackage(
-        writeCandidatePackage(reachablePackedPath, true, placeholder, placeholder),
-        reachablePackedPath);
-    const auto artifactIdentity = entryIdentity(provisional, reachablePackedPath);
-    REQUIRE(artifactIdentity.size() == 64U);
-
-    // artifactIdentity matches the exact entry bytes; compiledSemanticIdentity is well-formed
-    // but unrelated to the Packed artifact.
-    const auto package = loadCandidatePackage(
-        writeCandidatePackage(reachablePackedPath, true, artifactIdentity, placeholder),
-        reachablePackedPath);
     const auto diagnostics = cuexis::tools::validateCandidateChartExtension(package);
-
-    // cxc_candidate.cpp only checks the SHA-256 shape of compiledSemanticIdentity. Because the
-    // Packed header identity is itself always zero (H01), no comparison is even possible today.
-    // R1 flips this to an explicit compiled-identity comparison against the decoded header.
-    CHECK_FALSE(diagnostics.hasErrors());
-    CHECK_FALSE(cuexis::cxc::test::hasDiagnostic(diagnostics, "cxc.candidate.identity_invalid"));
+    CHECK(
+        cuexis::cxc::test::hasDiagnostic(diagnostics, "cxc.candidate.compiled_identity_mismatch"));
 }
 
-TEST_CASE("R0 CXC validation rejects an artifactIdentity that does not match the entry bytes",
-          "[cxc][hardening][r0]") {
-    const auto package =
-        loadCandidatePackage(writeCandidatePackage(reachablePackedPath, true, std::string(64, 'f'),
-                                                   std::string(64, '0')),
-                             reachablePackedPath);
+TEST_CASE("R1 CXC validation accepts the identity recomputed from the decoded artifact",
+          "[cxc][hardening][r1]") {
+    const auto fixture = tapPackedFixture();
+    const auto bytes =
+        cuexis::cxc::test::writePackage(makeCandidateRequest(true, fixture.semanticIdentity, true));
+    const auto package = loadCandidatePackage(bytes);
+
+    const auto diagnostics = cuexis::tools::validateCandidateChartExtension(package);
+    CHECK_FALSE(diagnostics.hasErrors());
+}
+
+TEST_CASE("R1 CXC validation rejects an artifactIdentity that does not match the entry bytes",
+          "[cxc][hardening][r1]") {
+    const auto bytes =
+        cuexis::cxc::test::writePackage(makeCandidateRequest(true, std::string(64, '0'), false));
+    const auto package = loadCandidatePackage(bytes);
+
     const auto diagnostics = cuexis::tools::validateCandidateChartExtension(package);
     CHECK(
         cuexis::cxc::test::hasDiagnostic(diagnostics, "cxc.candidate.artifact_identity_mismatch"));
+}
+
+TEST_CASE("R1-A03 only extension-declared playback entries join the CXC closure",
+          "[cxc][hardening][r1]") {
+    SECTION("an extension entry without playback is still outside the closure") {
+        const auto fixture = tapPackedFixture();
+        const auto written = cuexis::cxc::CxcWriter::write(
+            makeCandidateRequest(false, fixture.semanticIdentity, true));
+        REQUIRE_FALSE(written.hasValue());
+        CHECK(cuexis::cxc::test::hasDiagnostic(written.diagnostics, "cxc.entry.unlisted"));
+    }
+    SECTION("an undeclared extra entry stays outside the closure") {
+        auto request = cuexis::cxc::test::makeV4StaticRequest();
+        request.entries.push_back(cuexis::cxc::test::binaryEntry("compiled/extra.bin", "extra"));
+        const auto written = cuexis::cxc::CxcWriter::write(std::move(request));
+        REQUIRE_FALSE(written.hasValue());
+        CHECK(cuexis::cxc::test::hasDiagnostic(written.diagnostics, "cxc.entry.unlisted"));
+    }
 }
