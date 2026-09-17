@@ -46,7 +46,7 @@ struct PackedFixture final {
         cuexis::chart::CanonicalFeature{"cuexis.gameplay.candidate.lanes4", 1});
     cuexis::chart::CanonicalRequirement requirement;
     requirement.localId = "hit";
-    requirement.judgementDomain = {"candidate.lanes4", "candidate.lanes4"};
+    requirement.judgementDomain = {"judgement-domain", "candidate.lanes4"};
     requirement.requiredAction = {"action", "press"};
     requirement.constraints.emplace_back(cuexis::chart::LaneConstraint{2});
     cuexis::chart::CanonicalEntity entity;

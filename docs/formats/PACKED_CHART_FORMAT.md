@@ -335,6 +335,10 @@ ID 规则。高频记录只存字符串索引，不重复写字段名和 AssetId
 | 7 | extension/capability |
 
 按 `(kind, string bytes)` 去重排序。kind 不匹配、未知 kind 或越界引用均失败。
+R4 明确 typed reference 的两个字段：`domain` 是上表的引用类别文本（judgement-domain /
+action），`id` 是被引用的值（candidate.lanes4 / press）。wire 只保存 `id`，因此声明了其他
+类别文本的模型报 `packed.identity.reference_domain`，Decoder 还原类别文本而不是把 id 写进
+`domain`。
 实体 parent 和 target 使用 entity ordinal，不把 object identity 伪装成字符串引用。
 行为/动画引用还必须有对应定义；判定域/动作必须由显式声明的 gameplay profile 解析，
 不能回退到宿主碰巧存在的同名函数。Foundation 只接受其登记的演示 profile，
@@ -356,6 +360,16 @@ pitch/yaw/roll 或 defaultTransform。mainMusic 必须是 asset reference 并通
 features 按引用文本 ID 排序且唯一，包含会改变求值/解码要求的显式能力及 gameplay profile。
 资源需求从完整 REF0 和 typed definition 验证，不包含 source path 或实际资源 bytes。
 
+R4 明确两条 canonical 口径：
+
+- typed 模型的 `resourceClosure` 是从 asset 引用派生出的 **set**：mainMusic 一条
+  `MainMusic`，每个 Renderable 的 mesh/material 各一条 `RenderableMesh`/`RenderableMaterial`，
+  相同 (assetId, use) 只保留一条。Writer 拒绝与该派生集合不一致的声明
+  （`packed.identity.closure`），Decoder 用同一派生集合补全模型，因此
+  `decode(encode(model))` 的闭包与模型一致，而不是被静默丢弃。
+- 默认相机只承载 position；`defaultTransform` 的 rotation 必须是单位四元数、scale 必须是
+  `(1,1,1)`，否则 Writer 报 `packed.identity.camera_transform`，不静默压平。
+
 ### 6.4 TIME
 
 ```text
@@ -371,6 +385,9 @@ stops[stopCount]             beat atom, durationMs: f64
 
 Tempo 和 Stop 分别按 Beat 排序。值域、Stop 边界、Hermite 与重叠检测沿用
 [TIMING_MODEL.md](TIMING_MODEL.md)，Packed 不改变时间算法。
+R4 明确：canonical Writer 必须按 `startBeat` / `beat` 升序写出两张表，Reader 必须校验
+严格升序与唯一性（共享 Beat 由 10.1 预映像拒绝），非规范次序的 artifact 报
+`packed.time.order`。模型次序不再影响产物 bytes。
 
 ### 6.5 IDN0：不可删除的实体身份
 
@@ -454,6 +471,11 @@ candidate canonical Writer 为每个不同 componentMask 建立**恰好一个** 
 不能分量各选众数后拼出非法旋转。所有实体拥有相同 mask 时无需重复四万个原型。
 其他优化分组策略必须属于明确的新 writer profile，不以任意启发式破坏可复现写出。
 
+R4 明确该规则的可执行口径：默认值取自该 mask 下出现次数最多的完整 Component 值；同频时
+比较该 Component 的规范字段 bytes（字段索引顺序；text 用 length-prefixed bytes，浮点用
+LE bit pattern），因此并列时的胜者与模型次序无关。差异行也必须只与同一 Archetype 的默认值
+比较，并且实体在 components 数组中的位置不得改变写出的 mask 或 atoms。
+
 ### 7.2 ENT0
 
 每行：`parentOrdinalPlusOne: uv32, archetypeIndex: uv32`。
@@ -491,6 +513,11 @@ Archetype default；未知 mask bit、重复行和缺失行都失败。
 每个 set bit 必须携带完整 field atom，unset bit 不占 bytes；Quaternion 不能只写一部分。
 规范 Writer 只把与默认值不同的字段设为 changed。Decoder 先复制该实体的 Archetype
 默认值，再应用差异，最后验证具体 Component。不从前一个实体继承字段。
+
+每个 stream 的合法 change bit 恰好是该 Component 的 field index 集合：TRN0 = bits
+0/3/4/5/6（position、rotation、scale），REN0 = bits 0/1/2（mesh、material、alpha），
+CAM0 = bits 0/1/2/3（type、fovY、near、far）。R4 明确 CAM0 必须逐字段比较与写出：
+只比较 type/fovY 会把 near/far 静默退回 Archetype 默认值。
 
 示例：共享 Transform 默认位置 `(0,0,0)`、单位旋转/缩放的第一个实体，仅 x=2：
 
@@ -635,6 +662,16 @@ Writer 只接受已展开且引用完整的 canonical model。在写盘前通过
 section 预算 -> decoded/文件 envelope -> 组装，因此任何超预算模型都不会产生部分产物，
 也不会把计数器截断进固定宽度字段（R3）。
 输出使用临时文件和原子替换，文件操作错误也必须保留上一次有效产物。
+
+R4 补充的 canonical 口径（全部在 `semanticIdentity` 预映像中拒绝，因此先于身份比对）：
+
+- Component 差异行只与同一 Archetype 默认值比较，且 entity 的 components 数组位置不影响
+  写出的 mask/atoms（`packed.identity.*` 不接受"最后一个同类型组件才被比较"的写法）。
+- TIME tempo/stop 升序（`packed.time.order`）。
+- 声明的 resourceClosure 必须等于派生集合（`packed.identity.closure`）。
+- 默认相机 transform 只允许 position（`packed.identity.camera_transform`）。
+- TypedReference 的类别文本必须是 judgement-domain / action
+  （`packed.identity.reference_domain`）。
 
 安全失败例至少覆盖：截断 Header/varint、超长字典、UTF-8 错误、偏移溢出、目录重叠、
 CRC 错误、重复身份、父循环、mask 不匹配、缺行、多个 Requirement 的重复 localId、

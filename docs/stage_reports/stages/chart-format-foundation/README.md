@@ -13,6 +13,9 @@ Foundation 关闭不等于 Chart v5 或 Packed Playback 正式发行。
 
 ## 报告
 
+- [2026-09-17 R4 端到端、容量与回滚](2026-09-17-r4-roundtrip-capacity-rollback.md)
+  （机器可读容量数据：[2026-09-17-r4-capacity-data.json](2026-09-17-r4-capacity-data.json)）
+
 - [2026-09-17 R3 预算表与 checked arithmetic](2026-09-17-r3-budgets-and-arithmetic.md)
 
 - [2026-09-17 R2 profile、section 注册表与内部次序严格拒绝](2026-09-17-r2-profile-rejection.md)

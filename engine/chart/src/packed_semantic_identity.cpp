@@ -186,6 +186,16 @@ auto writeRequirement(Preimage& out, const CanonicalRequirement& requirement)
         return core::unexpected(
             fail("packed.profile.interval", "Point requirements must not carry an end beat"));
     }
+    // R4/A17: the wire stores the reference kinds as REF0 rows, so the typed reference category
+    // text is implied. A model that declares a different category would be silently rewritten by
+    // decode, so it is refused instead.
+    if (requirement.judgementDomain.domain != "judgement-domain" ||
+        requirement.requiredAction.domain != "action") {
+        return core::unexpected(
+            fail("packed.identity.reference_domain",
+                 "Typed requirement references must use the judgement-domain and action "
+                 "categories"));
+    }
     writeReference(out, 4, requirement.judgementDomain.id);
     writeReference(out, 5, requirement.requiredAction.id);
     // Foundation revision 1 stores exactly one lane constraint set. The wire has room for one,
@@ -340,6 +350,18 @@ auto semanticPreimage(const CanonicalSemanticChart& chart) -> core::Result<std::
     const auto position = chart.defaultCamera.defaultTransform
                               ? chart.defaultCamera.defaultTransform->position
                               : core::Vec3{};
+    if (chart.defaultCamera.defaultTransform) {
+        // R4/A16: META carries the default camera position only. A rotation or scale other than
+        // the identity would be dropped by the wire, so it is refused instead of lost.
+        const TransformData identity{};
+        const auto& transform = *chart.defaultCamera.defaultTransform;
+        if (transform.rotation != identity.rotation || transform.scale != identity.scale) {
+            return core::unexpected(
+                fail("packed.identity.camera_transform",
+                     "The candidate default camera carries a position only; rotation and scale "
+                     "must be the identity"));
+        }
+    }
     for (const auto component : {position.x, position.y, position.z}) {
         if (auto result = writeF32(out, component); !result) {
             return core::unexpected(std::move(result.error()));
@@ -424,7 +446,34 @@ auto semanticPreimage(const CanonicalSemanticChart& chart) -> core::Result<std::
     }
 
     // The canonical resource-requirement closure is derived from the chart's asset references.
-    // CanonicalResourceClosure itself is not part of the Packed wire format.
+    // CanonicalResourceClosure itself is not part of the Packed wire format. R4/D9: a declared
+    // closure that differs from the derived one is refused instead of being silently dropped by
+    // encode and by the identity.
+    // The resource closure is a set of (asset, use) pairs: the same asset used twice contributes
+    // one entry, and the canonical order is the ascending pair order.
+    auto derivedClosure = std::set<CanonicalResourceUse>{};
+    if (chart.mainMusic) {
+        derivedClosure.insert(
+            CanonicalResourceUse{*chart.mainMusic, CanonicalResourceUseKind::MainMusic});
+    }
+    for (const auto& entity : chart.entities) {
+        for (const auto& component : entity.components) {
+            if (const auto* renderable = std::get_if<CanonicalRenderable>(&component)) {
+                derivedClosure.insert(CanonicalResourceUse{
+                    renderable->mesh, CanonicalResourceUseKind::RenderableMesh});
+                derivedClosure.insert(CanonicalResourceUse{
+                    renderable->material, CanonicalResourceUseKind::RenderableMaterial});
+            }
+        }
+    }
+    const auto declaredClosure = std::set<CanonicalResourceUse>{
+        chart.resourceClosure.resources.begin(), chart.resourceClosure.resources.end()};
+    if (declaredClosure != derivedClosure) {
+        return core::unexpected(
+            fail("packed.identity.closure",
+                 "The declared resource closure must equal the closure derived from the chart's "
+                 "asset references"));
+    }
     const auto assets = collectAssets(chart);
     writeU32(out, static_cast<std::uint32_t>(assets.size()));
     for (const auto& asset : assets) {

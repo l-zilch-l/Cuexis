@@ -361,6 +361,22 @@ auto writeTimeSection(const ChartTiming& timing) -> core::Result<Section> {
     const auto stopCount = narrowU32(timing.stops.size());
     if (!stopCount)
         return core::unexpected(std::move(stopCount.error()));
+    // Spec 6.4: tempo events and stops are written in ascending Beat order. The semantic preimage
+    // already refuses shared beats, so the canonical order is unambiguous and independent of the
+    // model order (A12).
+    auto tempos = std::vector<const TempoEvent*>{};
+    tempos.reserve(timing.tempoEvents.size());
+    for (const auto& tempo : timing.tempoEvents)
+        tempos.push_back(&tempo);
+    std::sort(tempos.begin(), tempos.end(), [](const auto* left, const auto* right) {
+        return left->startBeat < right->startBeat;
+    });
+    auto stops = std::vector<const TimingStop*>{};
+    stops.reserve(timing.stops.size());
+    for (const auto& stop : timing.stops)
+        stops.push_back(&stop);
+    std::sort(stops.begin(), stops.end(),
+              [](const auto* left, const auto* right) { return left->beat < right->beat; });
     ByteWriter writer;
     writeF64(writer, timing.offsetMs);
     writeF64(writer, timing.defaultBpm);
@@ -369,17 +385,17 @@ auto writeTimeSection(const ChartTiming& timing) -> core::Result<Section> {
     writer.writeU8(0);
     writer.writeU8(0);
     writer.writeU8(0);
-    for (const auto& tempo : timing.tempoEvents) {
-        (void)writeRationalBeatAtom(writer, tempo.startBeat);
-        (void)writeRationalBeatAtom(writer, tempo.durationBeats);
-        writeF64(writer, tempo.startBpm);
-        writeF64(writer, tempo.endBpm);
-        writeF64(writer, tempo.startSlope);
-        writeF64(writer, tempo.endSlope);
+    for (const auto* tempo : tempos) {
+        (void)writeRationalBeatAtom(writer, tempo->startBeat);
+        (void)writeRationalBeatAtom(writer, tempo->durationBeats);
+        writeF64(writer, tempo->startBpm);
+        writeF64(writer, tempo->endBpm);
+        writeF64(writer, tempo->startSlope);
+        writeF64(writer, tempo->endSlope);
     }
-    for (const auto& stop : timing.stops) {
-        (void)writeRationalBeatAtom(writer, stop.beat);
-        writeF64(writer, stop.durationMs);
+    for (const auto* stop : stops) {
+        (void)writeRationalBeatAtom(writer, stop->beat);
+        writeF64(writer, stop->durationMs);
     }
     return Section{{'T', 'I', 'M', 'E'}, std::move(writer).takeBytes(), 1};
 }
@@ -531,23 +547,94 @@ struct Archetype final {
     std::optional<CanonicalRenderable> renderable;
     std::optional<CanonicalCamera> camera;
 };
+
+// Spec 7.1 tie-break material: the canonical field bytes of one complete component value, in
+// field-index order and without dictionary indices, so the default selection cannot depend on
+// the model order or on the physical dictionary.
+[[nodiscard]] auto defaultKey(const CanonicalTransform& value) -> std::vector<std::byte> {
+    ByteWriter writer;
+    writeTransform(writer, value);
+    return std::move(writer).takeBytes();
+}
+
+[[nodiscard]] auto defaultKey(const CanonicalRenderable& value) -> std::vector<std::byte> {
+    ByteWriter writer;
+    for (const auto* text : {&value.mesh.value, &value.material.value}) {
+        const auto length = narrowU32(text->size());
+        writer.writeUnsignedLeb128(length ? *length : 0U);
+        writer.writeBytes(std::as_bytes(std::span{text->data(), text->size()}));
+    }
+    writer.writeU8(value.alpha);
+    return std::move(writer).takeBytes();
+}
+
+[[nodiscard]] auto defaultKey(const CanonicalCamera& value) -> std::vector<std::byte> {
+    ByteWriter writer;
+    const auto length = narrowU32(value.type.size());
+    writer.writeUnsignedLeb128(length ? *length : 0U);
+    writer.writeBytes(std::as_bytes(std::span{value.type.data(), value.type.size()}));
+    writeF64(writer, value.fovY);
+    writeF64(writer, value.nearPlane);
+    writeF64(writer, value.farPlane);
+    return std::move(writer).takeBytes();
+}
+
+// Spec 7.1: one Archetype per distinct component mask, and the default of each defaultable
+// component is the most frequent complete value; ties are broken by ascending canonical field
+// bytes, i.e. by the first key in the ordered map. A last-value-wins rule would make the
+// canonical bytes depend on the model order (A11).
+template <typename T> struct DefaultPicker final {
+    std::map<std::vector<std::byte>, std::pair<T, std::size_t>> counts;
+    std::optional<T> value;
+
+    void add(const T& candidate) {
+        auto key = defaultKey(candidate);
+        auto [it, inserted] =
+            counts.try_emplace(std::move(key), std::pair<T, std::size_t>{candidate, 0U});
+        ++it->second.second;
+    }
+
+    void finish() {
+        std::size_t best = 0U;
+        for (const auto& [key, entry] : counts) {
+            if (!value || entry.second > best) {
+                value = entry.first;
+                best = entry.second;
+            }
+        }
+    }
+};
+
 auto makeArchetypes(const EntityOrder& order, std::map<std::uint64_t, std::uint32_t>& indices)
     -> std::vector<Archetype> {
-    std::map<std::uint64_t, Archetype> byMask;
+    struct Group final {
+        std::uint64_t mask{};
+        DefaultPicker<CanonicalTransform> transform;
+        DefaultPicker<CanonicalRenderable> renderable;
+        DefaultPicker<CanonicalCamera> camera;
+    };
+    std::map<std::uint64_t, Group> byMask;
     for (const auto* entity : order.entities) {
-        auto& arch = byMask[entity->componentMask()];
-        arch.mask = entity->componentMask();
+        auto& group = byMask[entity->componentMask()];
+        group.mask = entity->componentMask();
         for (const auto& component : entity->components) {
             if (const auto* v = std::get_if<CanonicalTransform>(&component))
-                arch.transform = *v;
+                group.transform.add(*v);
             if (const auto* v = std::get_if<CanonicalRenderable>(&component))
-                arch.renderable = *v;
+                group.renderable.add(*v);
             if (const auto* v = std::get_if<CanonicalCamera>(&component))
-                arch.camera = *v;
+                group.camera.add(*v);
         }
     }
     std::vector<Archetype> result;
-    for (auto& [mask, arch] : byMask) {
+    for (auto& [mask, group] : byMask) {
+        group.transform.finish();
+        group.renderable.finish();
+        group.camera.finish();
+        Archetype arch{.mask = mask,
+                       .transform = group.transform.value,
+                       .renderable = group.renderable.value,
+                       .camera = group.camera.value};
         indices.emplace(mask, static_cast<std::uint32_t>(result.size()));
         result.push_back(std::move(arch));
     }
@@ -622,13 +709,16 @@ auto writeComponentStream(const EntityOrder& order, const std::vector<Archetype>
         const CanonicalTransform* transform = nullptr;
         const CanonicalRenderable* renderable = nullptr;
         const CanonicalCamera* camera = nullptr;
+        // R4/A18: each lookup must keep its own pointer. Testing only the requested kind per
+        // iteration would reset the pointer for every other component, so a delta was silently
+        // dropped whenever the component was not the entity's last one.
         for (const auto& component : entity->components) {
-            if (kind == 0)
-                transform = std::get_if<CanonicalTransform>(&component);
-            if (kind == 1)
-                renderable = std::get_if<CanonicalRenderable>(&component);
-            if (kind == 2)
-                camera = std::get_if<CanonicalCamera>(&component);
+            if (const auto* value = std::get_if<CanonicalTransform>(&component))
+                transform = value;
+            if (const auto* value = std::get_if<CanonicalRenderable>(&component))
+                renderable = value;
+            if (const auto* value = std::get_if<CanonicalCamera>(&component))
+                camera = value;
         }
         if (kind == 0 && transform &&
             (!arch.transform || transform->position != arch.transform->position))
@@ -648,10 +738,19 @@ auto writeComponentStream(const EntityOrder& order, const std::vector<Archetype>
         if (kind == 1 && renderable &&
             (!arch.renderable || renderable->alpha != arch.renderable->alpha))
             changed |= 4U;
-        if (kind == 2 && camera &&
-            (!arch.camera || camera->type != arch.camera->type ||
-             camera->fovY != arch.camera->fovY))
-            changed |= 1U;
+        // Spec 7.3: the change mask uses the Camera field indices 0 type, 1 fovY, 2 near, 3 far.
+        // Comparing only a subset of the fields would silently drop the others back to the
+        // archetype default (A10).
+        if (kind == 2 && camera) {
+            if (!arch.camera || camera->type != arch.camera->type)
+                changed |= 1U;
+            if (!arch.camera || camera->fovY != arch.camera->fovY)
+                changed |= 2U;
+            if (!arch.camera || camera->nearPlane != arch.camera->nearPlane)
+                changed |= 4U;
+            if (!arch.camera || camera->farPlane != arch.camera->farPlane)
+                changed |= 8U;
+        }
         writer.writeUnsignedLeb128(ordinal);
         writer.writeUnsignedLeb128(changed);
         if (kind == 0 && transform) {
@@ -688,11 +787,15 @@ auto writeComponentStream(const EntityOrder& order, const std::vector<Archetype>
             if (changed & 4U)
                 writer.writeU8(renderable->alpha);
         }
-        if (kind == 2 && camera && (changed & 1U)) {
-            writer.writeU8(1);
-            writeF64(writer, camera->fovY);
-            writeF64(writer, camera->nearPlane);
-            writeF64(writer, camera->farPlane);
+        if (kind == 2 && camera) {
+            if (changed & 1U)
+                writer.writeU8(1); // registered perspective type atom
+            if (changed & 2U)
+                writeF64(writer, camera->fovY);
+            if (changed & 4U)
+                writeF64(writer, camera->nearPlane);
+            if (changed & 8U)
+                writeF64(writer, camera->farPlane);
         }
         ++rows;
     }
@@ -1328,6 +1431,18 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
             return core::unexpected(fail("packed.time.stop", "Stop row is invalid"));
         chart.timing.stops.push_back(TimingStop{*beat, *duration});
     }
+    // Spec 6.4: tempo events and stops are ordered by Beat. The preimage sorts them, so a
+    // non-canonical order would otherwise be accepted as if it were canonical (A12).
+    for (std::size_t i = 1; i < chart.timing.tempoEvents.size(); ++i) {
+        if (!(chart.timing.tempoEvents[i - 1U].startBeat < chart.timing.tempoEvents[i].startBeat))
+            return core::unexpected(fail(
+                "packed.time.order", "Tempo events must be unique and ascending by start beat"));
+    }
+    for (std::size_t i = 1; i < chart.timing.stops.size(); ++i) {
+        if (!(chart.timing.stops[i - 1U].beat < chart.timing.stops[i].beat))
+            return core::unexpected(
+                fail("packed.time.order", "Timing stops must be unique and ascending by beat"));
+    }
     if (!time.empty())
         return core::unexpected(fail("packed.time.trailing", "TIME has trailing bytes"));
     std::vector<CanonicalEntity> entities(*entityCount);
@@ -1620,7 +1735,7 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
             // consumes; every other bit is undefined and must not be ignored.
             const auto allowedMask = kind == 0   ? std::uint64_t{0x79U}
                                      : kind == 1 ? std::uint64_t{0x07U}
-                                                 : std::uint64_t{0x01U};
+                                                 : std::uint64_t{0x0fU};
             if ((*mask & ~allowedMask) != 0U)
                 return core::unexpected(
                     fail("packed.stream.mask",
@@ -1710,16 +1825,33 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
                 components.push_back(value);
             } else {
                 auto value = *a.camera;
+                // Spec 7.3: the Camera field indices are 0 type, 1 fovY, 2 near, 3 far, and each
+                // set bit carries exactly that field atom.
                 if (*mask & 1U) {
                     auto type = rows.readU8();
-                    auto f = readF64(rows);
-                    auto n = readF64(rows);
-                    auto farValue = readF64(rows);
-                    if (!type || !f || !n || !farValue || *type != 1)
+                    if (!type || *type != 1)
                         return core::unexpected(
-                            fail("packed.stream.camera", "Camera row is invalid"));
+                            fail("packed.stream.camera", "Camera type atom is invalid"));
+                }
+                if (*mask & 2U) {
+                    auto f = readF64(rows);
+                    if (!f)
+                        return core::unexpected(
+                            fail("packed.stream.camera", "Camera fovY atom is invalid"));
                     value.fovY = *f;
+                }
+                if (*mask & 4U) {
+                    auto n = readF64(rows);
+                    if (!n)
+                        return core::unexpected(
+                            fail("packed.stream.camera", "Camera near atom is invalid"));
                     value.nearPlane = *n;
+                }
+                if (*mask & 8U) {
+                    auto farValue = readF64(rows);
+                    if (!farValue)
+                        return core::unexpected(
+                            fail("packed.stream.camera", "Camera far atom is invalid"));
                     value.farPlane = *farValue;
                 }
                 components.erase(
@@ -1857,7 +1989,7 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
         auto actionValue = refValue(*action, 5);
         if (!actionValue)
             return core::unexpected(std::move(actionValue.error()));
-        requirement.judgementDomain = {"candidate.lanes4", *domainValue};
+        requirement.judgementDomain = {"judgement-domain", *domainValue};
         requirement.requiredAction = {"action", *actionValue};
         requirement.constraints.push_back(LaneConstraint{lanes[*constraint - 1U]});
         entities[ordinal].requirements.push_back(std::move(requirement));
@@ -1872,6 +2004,25 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
                 fail("packed.requirements.component", "Requirement presence bit is missing"));
     }
     chart.entities = std::move(entities);
+    // R4/D9: the wire stores no explicit resource closure, so a decoded model is completed with
+    // the closure derived from its asset references. The closure is a set of (asset, use) pairs,
+    // so duplicates collapse and the result is in canonical ascending order.
+    auto derivedClosure = std::set<CanonicalResourceUse>{};
+    if (chart.mainMusic) {
+        derivedClosure.insert(
+            CanonicalResourceUse{*chart.mainMusic, CanonicalResourceUseKind::MainMusic});
+    }
+    for (const auto& entity : chart.entities) {
+        for (const auto& component : entity.components) {
+            if (const auto* renderable = std::get_if<CanonicalRenderable>(&component)) {
+                derivedClosure.insert(CanonicalResourceUse{
+                    renderable->mesh, CanonicalResourceUseKind::RenderableMesh});
+                derivedClosure.insert(CanonicalResourceUse{
+                    renderable->material, CanonicalResourceUseKind::RenderableMaterial});
+            }
+        }
+    }
+    chart.resourceClosure.resources.assign(derivedClosure.begin(), derivedClosure.end());
     // Spec 7.6: the profile gate runs on the rebuilt typed model, so a wire artifact and a typed
     // model are judged by exactly the same rules, and a profile rejection always precedes the
     // semantic identity comparison below.

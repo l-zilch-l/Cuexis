@@ -253,6 +253,9 @@ TEST_CASE("R1 semantic identity changes when semantic content changes",
     SECTION("main music") {
         auto chart = oneTapChart();
         chart.mainMusic = cuexis::chart::AssetId{"audio.main"};
+        // R4/D9: the declared closure must be the closure derived from the asset references.
+        chart.resourceClosure.resources.push_back(cuexis::chart::CanonicalResourceUse{
+            *chart.mainMusic, cuexis::chart::CanonicalResourceUseKind::MainMusic});
         CHECK(digestHex(chart) != baseline);
     }
     SECTION("requirement action") {
