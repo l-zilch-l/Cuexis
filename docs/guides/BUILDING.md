@@ -172,7 +172,10 @@ ctest --preset headless-release --no-tests=error
 ```
 
 Release 与 `headless-release` 预设强制 `CUEXIS_WARNINGS_AS_ERRORS=ON`。基础 Debug 预设保留
-`OFF`，便于日常开发先观察新工具链诊断。
+`OFF`，便于日常开发先观察新工具链诊断。GCC 构建另有两处记录在案的例外，均在
+`cmake/CuexisWarnings.cmake`：规范字节键比较不使用 `std::vector<std::byte>` 的三向比较
+（GCC 会给出伪 `-Wstringop-overread`），测试与探针目标对 `-Wmaybe-uninitialized` 只降级
+不静默（libstdc++ `std::string` 拷贝路径的伪阳性），其余诊断仍按 `-Werror` 处理。
 
 `headless-*` 预设同时设置 `CUEXIS_BUILD_DEVELOPER_TOOLS=OFF`，因此不添加 `tools/` 子目录
 （含 `cuexis::cxc_tool_common`）。依赖该工具层的 CXC candidate 扩展与往返用例在这些配置中

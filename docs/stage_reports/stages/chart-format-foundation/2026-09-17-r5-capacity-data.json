@@ -1,7 +1,7 @@
 {
   "provenance": {
     "probe": "cuexis_chart_capacity_probe",
-    "implementationSha": "25e546d0a6f50d8865e8f5ba9c43cba98a43d194",
+    "implementationSha": "0e501a5d1807f0109cbdd39ba9755ab8a34c185e",
     "sdkVersion": "26.08.01-1",
     "buildType": "Debug",
     "compiler": "MSVC 1951",
@@ -25,8 +25,8 @@
       "headerBytes": 96,
       "directoryBytes": 288,
       "closure": {"assetIds": 0, "uses": 0},
-      "elapsedUs": {"size": 2.92234e+06, "encode": 4.06966e+06, "decode": 3.44642e+06, "reencode": 3.93365e+06},
-      "memoryBytes": {"residentBefore": 86777856, "peakAfterEncode": 137416704, "peakDelta": 50638848},
+      "elapsedUs": {"size": 2.79984e+06, "encode": 3.36568e+06, "decode": 3.03977e+06, "reencode": 3.37332e+06},
+      "memoryBytes": {"residentBefore": 86790144, "peakAfterEncode": 137396224, "peakDelta": 50606080},
       "sections": [
         {"type": "ARCH", "encodedBytes": 12, "decodedBytes": 12, "recordCount": 1},
         {"type": "CNS0", "encodedBytes": 8, "decodedBytes": 8, "recordCount": 4},
@@ -51,8 +51,8 @@
       "headerBytes": 96,
       "directoryBytes": 320,
       "closure": {"assetIds": 0, "uses": 0},
-      "elapsedUs": {"size": 2368.7, "encode": 2372.9, "decode": 1742.7, "reencode": 2348.9},
-      "memoryBytes": {"residentBefore": 7921664, "peakAfterEncode": 221552640, "peakDelta": 0},
+      "elapsedUs": {"size": 2747.8, "encode": 2651.7, "decode": 1795.6, "reencode": 2514.4},
+      "memoryBytes": {"residentBefore": 7872512, "peakAfterEncode": 221429760, "peakDelta": 0},
       "sections": [
         {"type": "ARCH", "encodedBytes": 52, "decodedBytes": 52, "recordCount": 1},
         {"type": "CNS0", "encodedBytes": 8, "decodedBytes": 8, "recordCount": 4},
@@ -78,8 +78,8 @@
       "headerBytes": 96,
       "directoryBytes": 320,
       "closure": {"assetIds": 0, "uses": 0},
-      "elapsedUs": {"size": 7.42767e+06, "encode": 6.29946e+06, "decode": 4.44377e+06, "reencode": 6.26667e+06},
-      "memoryBytes": {"residentBefore": 236113920, "peakAfterEncode": 333230080, "peakDelta": 97116160},
+      "elapsedUs": {"size": 1.31011e+07, "encode": 1.16108e+07, "decode": 7.82319e+06, "reencode": 1.14931e+07},
+      "memoryBytes": {"residentBefore": 236212224, "peakAfterEncode": 332980224, "peakDelta": 96768000},
       "sections": [
         {"type": "ARCH", "encodedBytes": 52, "decodedBytes": 52, "recordCount": 1},
         {"type": "CNS0", "encodedBytes": 8, "decodedBytes": 8, "recordCount": 4},
