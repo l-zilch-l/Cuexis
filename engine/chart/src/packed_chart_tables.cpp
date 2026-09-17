@@ -402,7 +402,7 @@ auto writeTimeSection(const ChartTiming& timing) -> core::Result<Section> {
 
 struct EntityOrder final {
     std::vector<const CanonicalEntity*> entities;
-    std::map<std::vector<std::byte>, std::uint32_t> ordinals;
+    std::map<std::vector<std::byte>, std::uint32_t, identity_detail::ByteKeyLess> ordinals;
 };
 // Spec 6.5: canonical identity bytes define both the entity ordinal and the ENT0 order.
 auto orderEntities(const CanonicalSemanticChart& chart) -> core::Result<EntityOrder> {
@@ -418,8 +418,9 @@ auto orderEntities(const CanonicalSemanticChart& chart) -> core::Result<EntityOr
             return core::unexpected(std::move(bytes.error()));
         keyed.emplace_back(std::move(*bytes), entity);
     }
-    std::sort(keyed.begin(), keyed.end(),
-              [](const auto& left, const auto& right) { return left.first < right.first; });
+    std::sort(keyed.begin(), keyed.end(), [](const auto& left, const auto& right) {
+        return identity_detail::ByteKeyLess{}(left.first, right.first);
+    });
     order.entities.clear();
     for (std::size_t i = 0; i < keyed.size(); ++i) {
         order.entities.push_back(keyed[i].second);
@@ -584,7 +585,8 @@ struct Archetype final {
 // bytes, i.e. by the first key in the ordered map. A last-value-wins rule would make the
 // canonical bytes depend on the model order (A11).
 template <typename T> struct DefaultPicker final {
-    std::map<std::vector<std::byte>, std::pair<T, std::size_t>> counts;
+    std::map<std::vector<std::byte>, std::pair<T, std::size_t>, identity_detail::ByteKeyLess>
+        counts;
     std::optional<T> value;
 
     void add(const T& candidate) {

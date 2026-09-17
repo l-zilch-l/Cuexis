@@ -217,7 +217,8 @@ auto writeRequirement(Preimage& out, const CanonicalRequirement& requirement)
 }
 
 auto writeEntity(Preimage& out, const CanonicalEntity& entity,
-                 const std::set<std::vector<std::byte>>& identities) -> core::Result<void> {
+                 const std::set<std::vector<std::byte>, identity_detail::ByteKeyLess>& identities)
+    -> core::Result<void> {
     // The wire stores at most one component per kind, so hashing more would describe an
     // artifact the format cannot carry.
     std::size_t transforms = 0;
@@ -484,7 +485,7 @@ auto semanticPreimage(const CanonicalSemanticChart& chart) -> core::Result<std::
     // than silently collapsed by the sort.
     auto entities = std::vector<std::pair<std::vector<std::byte>, const CanonicalEntity*>>{};
     entities.reserve(chart.entities.size());
-    auto identities = std::set<std::vector<std::byte>>{};
+    auto identities = std::set<std::vector<std::byte>, identity_detail::ByteKeyLess>{};
     for (const auto& entity : chart.entities) {
         if (const auto* generated = std::get_if<GeneratedEntityIdentity>(&entity.identity)) {
             if (generated->chartId.value != chart.chartId.value) {
@@ -507,16 +508,18 @@ auto semanticPreimage(const CanonicalSemanticChart& chart) -> core::Result<std::
         }
         entities.emplace_back(std::move(*bytes), &entity);
     }
-    std::sort(entities.begin(), entities.end(),
-              [](const auto& left, const auto& right) { return left.first < right.first; });
+    std::sort(entities.begin(), entities.end(), [](const auto& left, const auto& right) {
+        return identity_detail::ByteKeyLess{}(left.first, right.first);
+    });
 
     // The wire stores parents as entity ordinals and rejects self-parents and cycles, so the
     // writer must refuse those graphs before publishing rather than emit an undecodable file.
-    auto parentOf = std::map<std::vector<std::byte>, const CanonicalEntity*>{};
+    auto parentOf =
+        std::map<std::vector<std::byte>, const CanonicalEntity*, identity_detail::ByteKeyLess>{};
     for (const auto& [bytes, entity] : entities) {
         parentOf.emplace(bytes, entity);
     }
-    auto visited = std::map<std::vector<std::byte>, std::size_t>{};
+    auto visited = std::map<std::vector<std::byte>, std::size_t, identity_detail::ByteKeyLess>{};
     std::size_t generation = 0;
     for (const auto& [bytes, entity] : entities) {
         ++generation;

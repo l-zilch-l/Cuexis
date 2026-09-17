@@ -22,8 +22,13 @@ function(cuexis_enable_warnings target)
         endif()
     else()
         target_compile_options(${target} ${scope} -Wall -Wextra -Wpedantic)
-        if(target MATCHES "_tests$" OR target MATCHES "_performance_probe$")
+        if(target MATCHES "_tests$" OR target MATCHES "_probe$")
             target_compile_options(${target} ${scope} -Wno-missing-field-initializers)
+            # GCC 16 at -O3 reports a false -Wmaybe-uninitialized inside the libstdc++ std::string
+            # copy path when test fixtures copy a graph of CanonicalEntity values; the diagnostic
+            # points at basic_string.h, not at project code. Downgrade only that diagnostic so the
+            # -Werror release gate still fails on real findings.
+            target_compile_options(${target} ${scope} -Wno-error=maybe-uninitialized)
         endif()
         if(CUEXIS_WARNINGS_AS_ERRORS)
             target_compile_options(${target} ${scope} -Werror)
