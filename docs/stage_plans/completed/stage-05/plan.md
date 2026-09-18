@@ -491,6 +491,6 @@ Stage 5 只有在下列全部成立后才能标为 completed：
 关闭记录：项目所有者已确认阶段关闭；PR #20 于 2026-08-28 合并 Stage 5 至 `master`。
 
 后续阶段导航：[Foundation 已完成计划](../chart-format-foundation/plan.md)、
-[Foundation 交接加固](../../active/chart-format-foundation-hardening/plan.md)、
-[Stage 6 后续计划](../../future/stage-06/plan.md)；
+[Foundation 交接加固](../../completed/chart-format-foundation-hardening/plan.md)、
+[Stage 6 后续计划](../../active/stage-06/plan.md)；
 [Chart v5 格式计划](../../active/chart-format-update-for-v5/plan.md) 是跨阶段工作包。

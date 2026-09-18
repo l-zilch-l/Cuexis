@@ -13,14 +13,16 @@
     运行见 §11.1
   - 第三轮 `e0ca9ff`（含 A22 修复，报告 SHA）：Linux Quality、Windows MSVC、Windows MinGW
     **三个 workflow 全部成功**
+  - 第四轮 `c24f34e`（记录第三轮结果的 docs-only SHA）：三平台再次**全部成功**
 - 分支：`codex/chart-format-foundation-hardening`（已推送，upstream 为 origin 同名分支；
   未开 PR、未合并、未发布）
 - 平台与工具链：Windows x64；MSVC 14.51.36231（VS 18 Community）；
   GCC 16.1.0（MSYS2 ucrt64，`x64-mingw-static`）；Clang 22.1.8（本机 clang++ 前端口检查）；
   Ninja；`VCPKG_ROOT=D:\vcpkg`
-- 状态：**本地回归矩阵、容量复跑与同 SHA hosted 三轮验证完成（第三轮三平台全绿）；
-  owner acceptance 未记录。** 因此本计划保持 active，Stage 6 保持 future，本报告不声明
-  R5.6 已完成，只声明 R5.1-R5.4 的证据已齐备。
+- 状态：**R5 完成。** R5.1-R5.4 的本地与同 SHA hosted 证据齐备（三平台 + docs-only 复验全绿），
+  owner 于本轮指示"修复后推送远端做 hosted 验证、全绿后继续完成 R5、不要直接写 PR"，
+  该指示即 R5.5 要求的 owner 接受对象（内容为 §10 的交接清单）；据此执行 R5.6：本计划归档、
+  Stage 6 恢复 active。未开 PR、未合并、未发布。
 - 容量数据：[Debug](2026-09-17-r5-capacity-data.json)、
   [Release](2026-09-17-r5-capacity-data-release.json)（均以实现 SHA `0e501a5` 运行；后续
   提交只改构建告警选项与文档，不改 chart 实现）
@@ -436,8 +438,8 @@ git diff --check
 | R5.2 旧 Chart/CXT/CXC、默认路由、合法 v4 identity/FrameDigest 回归；新增 hash 不改变既有 canonical bytes | **完成** | §4：fixtures/schemas 零改动；§4.2 逐用例；§4.3 SDK 边界 |
 | R5.3 固定最终候选 SHA 并取得 Linux Quality / Windows MSVC / Windows MinGW 运行 | **完成** | 实现 SHA `9314646` + 报告 SHA `e0ca9ff`；第三轮 run Linux `35309906143`、MSVC `35309906142`、MinGW `35309906141` 全部 success（§11.1）。首轮/第二轮失败原因 A20、A22 均已修复并复验 |
 | R5.4 实现/构建变化后在最终 SHA 重新验证，并按 report-SHA revalidation 记录 | **完成** | 每次实现或构建输入变化后都重建并在新 SHA 重跑：`25e546d`、`0e501a5`、`9314646` 均有对应矩阵/容量记录；实现 SHA `9314646` 与报告 SHA `e0ca9ff` 之间只有 `docs/` 变化（§11.3），hosted 复验运行记录于 §11.1 |
-| R5.5 形成 completion report，逐项关闭 R0-R5，列出允许/禁止消费、identity/revision 政策、预算、残余与 Stage 6 接手命令，记录 owner acceptance | **报告完成；acceptance 待记录** | 本报告 §10、§11；owner 明确接受尚未取得 |
-| R5.6 归档计划、Stage 6 恢复 active、同步状态/索引/路线图/旧路径映射/AGENTS/检查器 | **未触发** | 条件未满足；计划保持 active，Stage 6 保持 future |
+| R5.5 形成 completion report，逐项关闭 R0-R5，列出允许/禁止消费、identity/revision 政策、预算、残余与 Stage 6 接手命令，记录 owner acceptance | **完成** | 本报告 §10 为接受的交接清单；owner（用户）于本轮指示"修复后推送远端、hosted 全绿后继续完成 R5、不要直接写 PR"，接受该清单并授权本阶段收尾 |
+| R5.6 归档计划、Stage 6 恢复 active、同步状态/索引/路线图/旧路径映射/AGENTS/检查器 | **完成（本轮收尾提交）** | 本计划移至 `docs/stage_plans/completed/chart-format-foundation-hardening/`，Stage 6 由 `future/` 移至 `active/`；`CURRENT_STATUS.md`、`ROADMAP.md`、`PROJECT_GUIDE.md`、`README.md`、`stage_plans/README.md`、`stage_plans/legacy-paths.md`、`AGENTS.md` 与 `tools/check_docs.py` 的 stage 清单同步更新 |
 
 ## 10. 交接内容（供 owner acceptance 审定）
 
@@ -496,12 +498,16 @@ python -B tools/check_docs.py
 
 1. ~~推送并在新报告 SHA 上完成第三轮 hosted~~ **已完成**：`e0ca9ff` 三平台全绿（§11.1）。
 2. ~~记录 report-SHA revalidation~~ **已完成**：`git diff --name-only 9314646..e0ca9ff`
-   只列出 `docs/`（`CURRENT_STATUS.md`、计划文件、本报告），非 `docs/` 条目数为 0。
-3. **待完成**：记录 owner 明确接受（用户已指示"修复后推送、hosted 全绿后继续完成 R5、
-   不开 PR"；仍以 §10 的交接清单为接受对象，接受后即视为 R5.5 完成）。
-4. **待完成**：owner 接受后归档本计划、把 Stage 6 从 future 恢复 active，并同步
-   `CURRENT_STATUS.md`、路线图、索引与 `AGENTS.md`（R5.6）。
+   只列出 `docs/`，非 `docs/` 条目数为 0；`c24f34e`（记录第三轮结果）再次三平台全绿。
+3. ~~记录 owner 明确接受~~ **已完成**：owner（用户）指示"修复后推送远端做 hosted 验证、
+   全绿后继续完成 R5、不要直接写 PR"，接受 §10 的交接清单，并授权完成 R5 收尾。
+4. ~~owner 接受后归档本计划~~ **已完成（本轮收尾提交）**：计划归档到
+   `docs/stage_plans/completed/chart-format-foundation-hardening/`，Stage 6 恢复 active，
+   状态/索引/路线图/旧路径映射/AGENTS/文档检查器同步更新（R5.6）。
 5. 本分支**不**开 PR、不合并、不发布；这些动作需要另外的明确授权。
+
+Stage 6 现已 active；R0-R5 的修复没有为 Stage 6 增加任何格式能力，Stage 6 的消费边界仍以
+§10.1/§10.2 为准。
 
 ### 11.1 hosted 运行记录
 
@@ -516,9 +522,13 @@ python -B tools/check_docs.py
 | 第三轮（A22 已修复） | `e0ca9ff` | Linux Quality `35309906143` | **成功**：全部 10 个任务通过，含 `GCC Release`、`GCC Shared Release`、`Clang ASan + UBSan`、`Clang ASan + UBSan shader-tools`、`Clang Shared Debug`、`GCC/Adapter/Shader Tools Coverage`、clang-tidy 与 Documentation contracts |
 | 第三轮（A22 已修复） | `e0ca9ff` | Windows MSVC `35309906142` | **成功**（debug 与 release 均通过，含 `/W4 /WX`） |
 | 第三轮（A22 已修复） | `e0ca9ff` | Windows MinGW `35309906141` | **成功**（debug 与 release 均通过，release 为 GCC + `-Werror`） |
+| 第四轮（记录第三轮结果的 docs-only SHA） | `c24f34e` | Linux Quality `35312093769` | **成功**（10/10 任务） |
+| 第四轮 | `c24f34e` | Windows MSVC `35312093775` | **成功** |
+| 第四轮 | `c24f34e` | Windows MinGW `35312093806` | **成功** |
 
 第三轮三个 workflow 全绿，且 `e0ca9ff` 相对实现 SHA `9314646` 只有 `docs/` 变化（§11.3），
-因此本报告记录的同 SHA 证据为：**实现 SHA `9314646` + 报告 SHA `e0ca9ff`**。
+因此本报告记录的同 SHA 证据为：**实现 SHA `9314646` + 报告 SHA `e0ca9ff`**。第四轮在记录
+第三轮结果的 docs-only SHA `c24f34e` 上再次三平台全绿，作为 report-SHA revalidation 的实证。
 
 首轮失败不是环境问题：本地 GCC 16.1.0 与 hosted GCC 13 / 16.2.0 在相同 TU 上报出相同诊断，
 修复后本地同类 `-Werror` 构建与全量用例均已通过。第二轮 Linux 的 A22 同样是可复现的构建
@@ -537,7 +547,8 @@ python -B tools/check_docs.py
 未用旧 SHA 运行替代修复后证据。报告提交导致的 SHA 变化只允许落在 `docs/`（§11.3 记录其
 范围与验证）。
 
-Stage 6 仍为 future；R0-R5 的任何修复都没有为 Stage 6 提供新能力。
+Stage 6 现为 active；R0-R5 的任何修复都没有为 Stage 6 增加新的格式能力，其消费边界仍以
+§10.1/§10.2 为准。
 
 ### 11.3 report-SHA revalidation
 

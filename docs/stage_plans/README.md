@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-09-16
+更新日期：2026-09-17
 
 阶段计划定义目标、范围、批次、门禁和交接。当前实现状态只以
 [CURRENT_STATUS.md](../CURRENT_STATUS.md) 为准；完成证据只以
@@ -24,8 +24,9 @@ deferred
 当前 `active` 目录中的两个计划职责不同：
 
 ```text
-chart-format-foundation-hardening
-  当前实施计划，补齐 Foundation 交接技术门禁；关闭后才恢复 Stage 6
+stage-06
+  当前实施计划：Playback C++ API 与 Player 产品化。Foundation 交接加固已于 2026-09-17
+  关闭并经 owner 接受，本计划自此恢复实施
 
 chart-format-update-for-v5
   Chart v5 跨阶段总工作包，负责维护 Foundation、Stage 6、Stage 7A 和 Stage 8 的总体设计与交接
@@ -45,6 +46,8 @@ chart-format-update-for-v5
 - Stage 4：[plan](completed/stage-04/plan.md)
 - Stage 5：[plan](completed/stage-05/plan.md)
 - Chart Format Foundation：[plan](completed/chart-format-foundation/plan.md)
+- Foundation 交接加固（R0-R5）：[plan](completed/chart-format-foundation-hardening/plan.md)，
+  完成证据见 [R5 报告](../stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)
 - 260830 follow-up：[plan](completed/260830-followup/plan.md)
 
 CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块分支覆盖率已完成，
@@ -52,10 +55,11 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
 
 ## 当前主路线
 
-- [Foundation 交接加固](active/chart-format-foundation-hardening/plan.md)：当前阶段，按 R0-R5
-  修复 identity/profile/预算并补齐验证；原 Foundation completed 归档保留。
-- [Stage 6](future/stage-06/plan.md)：等待加固关闭，以 Chart v5 Core/Packed 为主要开发基线的 Playback/Player/CXC
-  candidate path；Chart v4 保留为兼容回退。
+- [Stage 6](active/stage-06/plan.md)：**当前阶段**，以 Chart v5 Core/Packed 为主要开发基线的
+  Playback/Player/CXC candidate path；Chart v4 保留为兼容回退。前置的
+  [Foundation 交接加固](completed/chart-format-foundation-hardening/plan.md) 已于 2026-09-17
+  关闭并经 owner 接受，允许/禁止消费边界见其
+  [R5 报告](../stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)。
 - [Stage 7A / 7B+](future/stage-07/plan.md)：7A 冻结最小 Input/Judgement/Score/Replay 内核，
   7B+ 持续扩展 Slide、Flick、多指、校准和高级判定能力。
 - [Stage 8](future/stage-08/plan.md)：Chart v5 正式语义、CXT v2、Packed Chart 和 CXC 发行收敛；

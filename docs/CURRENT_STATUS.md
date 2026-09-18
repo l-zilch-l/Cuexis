@@ -28,8 +28,8 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Stage 4 | completed; S4-H hosted and owner acceptance recorded 2026-08-27 | [plan](stage_plans/completed/stage-04/plan.md) |
 | Stage 5 | completed; S5-A through S5-H closed and merged into `master` 2026-08-28 | [plan](stage_plans/completed/stage-05/plan.md)、[completion](stage_reports/stages/stage-05/completion.md) |
 | Chart Format Foundation | completed；保留 PR #24 与 2026-09-16 owner 完成确认；后续交接缺口由独立加固阶段处理，不代表技术门禁全部通过 | [plan](stage_plans/completed/chart-format-foundation/plan.md)、[关闭记录](stage_reports/stages/chart-format-foundation/2026-09-16-closure-and-handoff.md) |
-| Chart Format Foundation Hardening | active；当前实施阶段，R0 基线与复现、R1 语义身份闭环、R2 前置（负例基础设施）与 R2 本体（profile/注册表/次序严格拒绝）、R3 预算与 checked arithmetic、R4 端到端/容量/回滚完成（含 D1-D10 决策），R5 本地回归矩阵（六个配置全绿）、A19/A20/A21/A22 修复、容量复跑、关闭报告与同 SHA hosted 三轮验证（Linux/MSVC/MinGW 全绿）完成；仅剩 owner acceptance 与归档 | [plan](stage_plans/active/chart-format-foundation-hardening/plan.md)、[R5 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)、[R5 容量数据 Debug](stage_reports/stages/chart-format-foundation/2026-09-17-r5-capacity-data.json)、[Release](stage_reports/stages/chart-format-foundation/2026-09-17-r5-capacity-data-release.json)、[R4 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r4-roundtrip-capacity-rollback.md)、[R4 容量数据](stage_reports/stages/chart-format-foundation/2026-09-17-r4-capacity-data.json)、[R3 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r3-budgets-and-arithmetic.md)、[R2 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r2-profile-rejection.md)、[R1 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r1-semantic-identity.md)、[R0 报告](stage_reports/stages/chart-format-foundation/2026-09-16-r0-baseline-and-reproduction.md) |
-| Stage 6 | future；等待交接加固关闭及 owner acceptance；之后实施 v5-first candidate path，保留 v4 回退 | [plan](stage_plans/future/stage-06/plan.md) |
+| Chart Format Foundation Hardening | completed；R0-R5 全部完成（D1-D10 已裁定，A19/A20/A21/A22 已修复），本地六配置全量回归、最终 SHA 容量复跑与同 SHA hosted 三平台验证（`e0ca9ff`，docs-only 复验 `c24f34e`）全绿，owner 于 2026-09-17 接受 R5 交接清单 | [plan](stage_plans/completed/chart-format-foundation-hardening/plan.md)、[R5 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)、[R5 容量数据 Debug](stage_reports/stages/chart-format-foundation/2026-09-17-r5-capacity-data.json)、[Release](stage_reports/stages/chart-format-foundation/2026-09-17-r5-capacity-data-release.json)、[R4 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r4-roundtrip-capacity-rollback.md)、[R4 容量数据](stage_reports/stages/chart-format-foundation/2026-09-17-r4-capacity-data.json)、[R3 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r3-budgets-and-arithmetic.md)、[R2 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r2-profile-rejection.md)、[R1 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r1-semantic-identity.md)、[R0 报告](stage_reports/stages/chart-format-foundation/2026-09-16-r0-baseline-and-reproduction.md) |
+| Stage 6 | active；当前实施阶段。交接加固于 2026-09-17 关闭并经 owner 接受，本阶段自此实施 v5-first candidate path，保留 v4 回退；消费边界见 [R5 报告 §10](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md) | [plan](stage_plans/active/stage-06/plan.md) |
 | Stage 7A | future；最小 Input / Judgement / Score / Replay Kernel，作为 Stage 8 硬前置 | [plan](stage_plans/future/stage-07/plan.md) |
 | Stage 7B+ | future；Slide、Flick、多指、校准和高级 Judgement 能力持续演进 | [plan](stage_plans/future/stage-07/plan.md) |
 | Stage 8 | future；Chart v5 / CXT v2 / Packed Chart 正式发行与语义收敛 | [plan](stage_plans/future/stage-08/plan.md) |
@@ -97,30 +97,29 @@ RT-29、T1 World/Animation 大规模优化和 T2 大包解析降本仍需另外�
 所有者已于 2026-09-02 建立 [Chart v5 format plan](stage_plans/active/chart-format-update-for-v5/plan.md)；
 该计划现作为 Stage 8 的详细格式工作包，其 Foundation 前置工作见
 [Chart Format Foundation](stage_plans/completed/chart-format-foundation/plan.md)。原完成确认保留；
-当前实施阶段是 [Foundation 交接加固](stage_plans/active/chart-format-foundation-hardening/plan.md)，
-用于关闭复核发现的技术缺口；其中 R0 基线/复现与决策 D1-D3 于 2026-09-16 完成，R1 语义身份
-闭环于 2026-09-17 完成，R2 前置（两组独立负例、失败顺序策略、调用关系与未知值盘点）与 R2
-本体（统一 profile validator、section 注册表与 flags 策略、A09 内部次序校验、Writer 规范化）
-同日完成，R3 预算与 checked arithmetic（Spec §3.3 冻结预算表、`maxPackedSectionBytes` 与逐字段
-诊断、目录乘积与 u32 窄化、payload 计数驱动的预留、limits 只收紧不放宽、A13 计数口径裁定）
-亦于同日完成，R4 端到端/容量/回滚（完整语义往返与 re-encode 规范性、CXT 阶梯、真实 CXC
-candidate 包七场景、原子写回滚四场景、机器可读容量数据与峰值口径、A10/A11/A12/A17/A18 修复、
-D9/D10 裁定）同日完成，R5 回归与交接的本地部分亦于同日完成：修复会阻塞 hosted CI 的 A19
-（headless 配置无法生成）、A20/A21（GCC `-Werror` release 构建的两个伪诊断）与 A22（该
-GCC 专用告警降级被误用于 Clang 的 sanitizer 构建），
-Debug/Release/shared-debug/headless-debug/MinGW headless/GCC Release `-Werror` 六个配置全量
-CTest 全绿，实现 SHA `0e501a5` 的 Debug/Release 容量复跑与 R4 逐字节一致，回归矩阵、
-允许/禁止消费清单与 Stage 6 接手命令已写入 R5 报告。hosted 已迭代两轮：首轮（`524db9f`）
-Windows MSVC 通过、MinGW `release` 与 Linux `GCC Release`/`GCC Shared Release` 因 A20 失败；
-第二轮的 GCC 任务转为通过、Clang sanitizer 两项因 A22 失败；A22 已在 `9314646` 修复，
-第三轮报告 SHA `e0ca9ff` 的 Linux Quality、Windows MSVC、Windows MinGW **三个 workflow
-全部成功**，实现 SHA `9314646` 与该报告 SHA 之间只有 `docs/` 变化。owner acceptance 尚未
-记录，因此 R5 未声明关闭。Stage 6 已移回 future，加固关闭并经 owner 接受后才恢复
-v5-first candidate path 实施；Stage 6 完成后进入
+后继的 [Foundation 交接加固](stage_plans/completed/chart-format-foundation-hardening/plan.md)
+（R0-R5）已于 2026-09-17 完成并归档：R0 基线/复现与决策 D1-D3 于 2026-09-16 完成，R1 语义
+身份闭环、R2 前置（两组独立负例、失败顺序策略、调用关系与未知值盘点）与 R2 本体（统一
+profile validator、section 注册表与 flags 策略、A09 内部次序校验、Writer 规范化）、R3 预算与
+checked arithmetic（Spec §3.3 冻结预算表、`maxPackedSectionBytes` 与逐字段诊断、目录乘积与
+u32 窄化、payload 计数驱动的预留、limits 只收紧不放宽、A13 计数口径裁定）、R4 端到端/容量/
+回滚（完整语义往返与 re-encode 规范性、CXT 阶梯、真实 CXC candidate 包七场景、原子写回滚
+四场景、机器可读容量数据与峰值口径、A10/A11/A12/A17/A18 修复、D9/D10 裁定）均于 2026-09-17
+完成，R5 回归与交接收尾同日完成：修复会阻塞 hosted CI 的 A19（headless 配置无法生成）、
+A20/A21（GCC `-Werror` release 构建的两个伪诊断）与 A22（该 GCC 专用告警降级被误用于 Clang
+的 sanitizer 构建），Debug/Release/shared-debug/headless-debug/MinGW headless/GCC Release
+`-Werror` 六个配置全量 CTest 全绿，实现 SHA `0e501a5` 的 Debug/Release 容量复跑与 R4 逐字节
+一致，回归矩阵、允许/禁止消费清单与 Stage 6 接手命令写入 [R5 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)。
+hosted 迭代四轮：首轮（`524db9f`）MSVC 通过、MinGW `release` 与 Linux 的 GCC release 任务因
+A20 失败；第二轮（`2cc478e`）GCC 任务转为通过、Clang sanitizer 两项因 A22 失败；A22 修复后
+第三轮（`e0ca9ff`）Linux Quality、Windows MSVC、Windows MinGW **三个 workflow 全部成功**，
+第四轮（`c24f34e`，仅记录文档）再次全绿；实现 SHA `9314646` 与报告 SHA 之间只有 `docs/` 变化。
+owner 于同日接受 R5 交接清单，Stage 6 因此从 future 恢复 **active**，作为当前实施阶段接手
+v5-first candidate path；Stage 6 完成后进入
 Stage 7A，再进入 Stage 8。Stage 7B+ 可以与 Stage 8 前后并行持续；Stage 8 关闭后交出
 SDK `0.8.0` / Chart v5 / CXT v2 正式接手基线。
 2026-09-01 阶段核验记录中的版本门禁、后端中立表现渲染边界和常用媒体支持三个 open 问题仍归属于
-[Stage 6 plan](stage_plans/future/stage-06/plan.md)，尚未因列入计划而视为解决。删除旧 Reader 仍按
+[Stage 6 plan](stage_plans/active/stage-06/plan.md)，尚未因列入计划而视为解决。删除旧 Reader 仍按
 ADR 0041，不因 v5 弃用窗口或 Stage 6 启动而实施。
 
 ## 更新规则

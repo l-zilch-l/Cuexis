@@ -7,7 +7,7 @@
 起始 SHA：`508584064379961bb2bedc95802f2a8e9ada0dc5`（`codex/chart-format-foundation-hardening`，
 起始工作区干净）
 
-上游依据：[加固计划](../../../stage_plans/active/chart-format-foundation-hardening/plan.md)、
+上游依据：[加固计划](../../../stage_plans/completed/chart-format-foundation-hardening/plan.md)、
 [交接复核记录](2026-09-16-handoff-review.md)、
 [Packed Chart Spec](../../../formats/PACKED_CHART_FORMAT.md)、
 [CXC Spec](../../../formats/CXC_FORMAT.md)。

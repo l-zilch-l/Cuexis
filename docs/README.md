@@ -15,7 +15,7 @@
    - [音乐游戏玩法抽象模型](architecture/GAMEPLAY_ABSTRACTION_MODEL.md)
 4. [ADR 索引](adr/README.md)，先读 ADR 0027、0024、0025、0026、0037、0038 和 0040
 5. [格式索引](formats/README.md)
-6. [Foundation 交接加固当前实施计划](stage_plans/active/chart-format-foundation-hardening/plan.md)
+6. [Stage 6 当前实施计划](stage_plans/active/stage-06/plan.md)
 7. [指南索引](guides/README.md)
 8. [API 参考](api/README.md)
 9. [构建与验证](guides/BUILDING.md)
@@ -94,8 +94,9 @@
 ## 阶段、证据和示例
 
 - [阶段计划索引](stage_plans/README.md)
-- [Foundation 交接加固当前实施计划](stage_plans/active/chart-format-foundation-hardening/plan.md)
-- [Stage 6 后续实施计划](stage_plans/future/stage-06/plan.md)
+- [Stage 6 当前实施计划](stage_plans/active/stage-06/plan.md)
+- [Foundation 交接加固已完成计划](stage_plans/completed/chart-format-foundation-hardening/plan.md)
+- [Foundation 交接加固 R5 回归与交接报告](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)
 - [Chart Format Foundation 已完成计划](stage_plans/completed/chart-format-foundation/plan.md)
 - [Chart Format Foundation 关闭与交接记录](stage_reports/stages/chart-format-foundation/2026-09-16-closure-and-handoff.md)
 - [Chart Format Foundation 交接复核与加固决定](stage_reports/stages/chart-format-foundation/2026-09-16-handoff-review.md)

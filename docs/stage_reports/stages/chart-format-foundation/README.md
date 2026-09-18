@@ -3,9 +3,10 @@
 状态：completed
 
 本目录保存 Chart Format Foundation 的带日期实施证据。项目所有者于 2026-09-16
-确认完成，随后技术复核决定新增独立交接加固阶段，并将 Stage 6 移回 future。
+确认完成，随后技术复核决定新增独立交接加固阶段，并将 Stage 6 移回 future；该加固阶段
+（R0-R5）已于 2026-09-17 完成并经 owner 接受，Stage 6 因此恢复 active。
 原 Foundation 关闭记录保留；加固范围与门禁见
-[当前计划](../../../stage_plans/active/chart-format-foundation-hardening/plan.md)。
+[已完成的加固计划](../../../stage_plans/completed/chart-format-foundation-hardening/plan.md)。
 加固阶段的 R0-R5 批次报告也保存在本目录，文件名以批次前缀区分，且不覆盖 F0-F9 报告。
 9 月 5 日与 7 日报告保留历史快照，
 不以本次状态更新改写 hosted 或容量验证结果。高复用/混合仅为可选观测；
@@ -14,10 +15,10 @@ Foundation 关闭不等于 Chart v5 或 Packed Playback 正式发行。
 ## 报告
 
 - [2026-09-17 R5 回归、Hosted 与交接](2026-09-17-r5-regression-and-handoff.md)
-  （本地回归矩阵、A19 headless 生成阻断修复、最终 SHA 容量复跑与交接内容；
-  机器可读容量数据：[Debug](2026-09-17-r5-capacity-data.json)、
+  （本地六配置回归矩阵、A19/A20/A21/A22 构建阻断修复、最终 SHA 容量复跑、同 SHA hosted
+  三平台验证与 R5 交接清单；机器可读容量数据：[Debug](2026-09-17-r5-capacity-data.json)、
   [Release](2026-09-17-r5-capacity-data-release.json)）
-  同 SHA hosted 验证与 owner acceptance 尚未记录，R5 未声明关闭。
+  R5 已完成并经 owner 接受，Stage 6 恢复 active。
 
 - [2026-09-17 R4 端到端、容量与回滚](2026-09-17-r4-roundtrip-capacity-rollback.md)
   （机器可读容量数据：[2026-09-17-r4-capacity-data.json](2026-09-17-r4-capacity-data.json)）

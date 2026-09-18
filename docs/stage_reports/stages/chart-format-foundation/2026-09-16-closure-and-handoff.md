@@ -33,7 +33,7 @@ Slide/Flick、多指、未定义 Behavior/Animation/Effect sections 或运行时
 ## 文档交接
 
 - [Foundation 计划](../../../stage_plans/completed/chart-format-foundation/plan.md) 归档到 completed。
-- [Stage 6 计划](../../../stage_plans/future/stage-06/plan.md) 激活，从 S6-A 合同与基线准备开始；
+- [Stage 6 计划](../../../stage_plans/active/stage-06/plan.md) 激活，从 S6-A 合同与基线准备开始；
   S6-A 至 S6-F 不因本次目录迁移而标记完成。
 - [Chart v5 跨阶段总工作包](../../../stage_plans/active/chart-format-update-for-v5/plan.md)
   保留 active，正式发行门禁仍归 Stage 8。

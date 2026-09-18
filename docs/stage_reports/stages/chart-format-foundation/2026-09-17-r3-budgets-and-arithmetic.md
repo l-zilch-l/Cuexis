@@ -6,7 +6,7 @@
 
 起始 SHA：`bc3b5d4`（R2 本体提交，`codex/chart-format-foundation-hardening`，起始工作区干净）
 
-上游依据：[加固计划](../../../stage_plans/active/chart-format-foundation-hardening/plan.md) 第 4 节 R3、
+上游依据：[加固计划](../../../stage_plans/completed/chart-format-foundation-hardening/plan.md) 第 4 节 R3、
 [R2 报告](2026-09-17-r2-profile-rejection.md)、[R1 报告](2026-09-17-r1-semantic-identity.md)、
 [R0 报告](2026-09-16-r0-baseline-and-reproduction.md)、
 [Packed Chart Spec](../../../formats/PACKED_CHART_FORMAT.md) 第 3、5、9 节、

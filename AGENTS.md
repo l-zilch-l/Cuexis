@@ -38,10 +38,12 @@ and targeted branch coverage for critical modules. All three tasks are complete;
 branch into `master` on September 1, 2026. Chart Format Foundation merged through PR #24
 on September 8, 2026 (`13dab93`); the owner confirmed completion on September 16, 2026.
 Its plan is under `docs/stage_plans/completed/chart-format-foundation/`.
-The subsequent handoff review established the current active stage under
-`docs/stage_plans/active/chart-format-foundation-hardening/` (R0-R5).
-Stage 6 is future under `docs/stage_plans/future/stage-06/` until hardening gates and owner
-acceptance close. Original Foundation completion does not certify the new technical gates.
+The subsequent handoff review established the Foundation hardening stage under
+`docs/stage_plans/completed/chart-format-foundation-hardening/` (R0-R5); it closed on
+September 17, 2026 after green local matrices, a final-SHA capacity rerun and same-SHA hosted
+Linux Quality, Windows MSVC and Windows MinGW validation, and the owner accepted its handoff
+list. Stage 6 is active under `docs/stage_plans/active/stage-06/`. Original Foundation
+completion does not certify the new technical gates.
 `chart-format-update-for-v5` remains active as a cross-stage work package, not the current stage.
 Stage 6 retains the three open issues from the September stage-verification report: release version
 enforcement, a backend-neutral presentation renderer boundary, and common media support.
@@ -311,8 +313,11 @@ Stage 1D modules. `sdk/` and `adapters/` directories do not exist yet (planned).
 - `docs/stage_plans/completed/260830-followup/plan.md` — completed documentation, Chart/CXC parse-once,
   and critical branch-coverage plan
 - `docs/stage_plans/completed/chart-format-foundation/plan.md` — completed Foundation plan
-- `docs/stage_plans/active/chart-format-foundation-hardening/plan.md` — current R0-R5 hardening plan
-- `docs/stage_plans/future/stage-06/plan.md` — Stage 6, pending hardening acceptance
+- `docs/stage_plans/completed/chart-format-foundation-hardening/plan.md` — completed R0-R5
+  hardening plan (closed 2026-09-17)
+- `docs/stage_plans/active/stage-06/plan.md` — current Stage 6 plan
+- `docs/stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md` —
+  R5 regression, hosted and handoff evidence, including the allowed/forbidden consumption list
 - `docs/stage_plans/completed/stage-04/plan.md` through
   `docs/stage_plans/future/stage-12/plan.md` — independent active/future/deferred plans with
   goals, prerequisites, scope, acceptance criteria, and archived sources

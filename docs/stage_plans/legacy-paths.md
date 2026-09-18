@@ -19,7 +19,7 @@
 - `stage_3_implementation_plan.md` -> [canonical](completed/stage-03/plan.md)
 - `stage_4_implementation_plan.md` -> [canonical](completed/stage-04/plan.md)
 - `stage_5_implementation_plan.md` -> [canonical](completed/stage-05/plan.md)
-- `stage_6_implementation_plan.md` -> [canonical](future/stage-06/plan.md)
+- `stage_6_implementation_plan.md` -> [canonical](active/stage-06/plan.md)
 - `stage_7_implementation_plan.md` -> [canonical](future/stage-07/plan.md)
 - `stage_8_implementation_plan.md` -> [canonical](future/stage-08/plan.md)
 - `stage_9a_implementation_plan.md` -> [canonical](future/stage-09a/plan.md)
@@ -28,4 +28,5 @@
 - `active/260830-followup/` -> [canonical](completed/260830-followup/)
 - `future/chart-format-foundation/plan.md` -> [canonical](completed/chart-format-foundation/plan.md)
 - `active/chart-format-foundation/plan.md` -> [canonical](completed/chart-format-foundation/plan.md)
-- `active/stage-06/plan.md` -> [canonical](future/stage-06/plan.md)（2026-09-16 交接复核后恢复 future）
+- `future/stage-06/plan.md` -> [canonical](active/stage-06/plan.md)（2026-09-17 交接加固关闭并经 owner 接受后恢复 active）
+- `active/chart-format-foundation-hardening/plan.md` -> [canonical](completed/chart-format-foundation-hardening/plan.md)（2026-09-17 R0-R5 完成并归档）

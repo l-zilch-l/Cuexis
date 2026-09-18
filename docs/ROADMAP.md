@@ -2,7 +2,7 @@
 
 状态：现行路线图
 
-更新日期：2026-09-16
+更新日期：2026-09-17
 
 产品边界由 [ADR 0027](adr/0027-playback-sdk-product-boundary.md) 冻结。本文维护
 阶段顺序、依赖关系和交接，不复制阶段内部的完整字段合同或完成证据。
@@ -30,8 +30,10 @@ Chart 格式不能脱离 Judgement 语义单独演进。CXC 是发行容器，�
 ## 当前状态
 
 Stage 5 已于 2026-08-28 关闭并合并至 `master`；260830 follow-up 已于 2026-09-01
-完成。Chart Format Foundation 保留原完成确认；当前实施阶段为 Foundation 交接加固，
-修复身份、profile、预算及验证证据缺口。Stage 6 移回 future，等待加固关闭后恢复。
+完成。Chart Format Foundation 保留原完成确认；其后继的 Foundation 交接加固（R0-R5）已于
+2026-09-17 关闭并经 owner 接受，本地六配置回归、最终 SHA 容量复跑与同 SHA hosted 三平台
+验证全部通过。Stage 6 自此从 future 恢复 active，以 Chart v5 Core/Packed candidate 为主要
+开发基线。
 完整 Chart v5 尚未正式发行；Input/Judgement 和 Studio 也均未进入生产实施。
 
 历史交接状态保持如下：CFU-F consumers and determinism closed; final-SHA hosted gates passed
@@ -41,8 +43,8 @@ Stage 5 已于 2026-08-28 关闭并合并至 `master`；260830 follow-up 已于 
 
 ```text
 生产 Playback 兼容基线   Chart v4 / CXT v1 / CXC v1 / SDK 0.7.0
-当前实施阶段              Chart Format Foundation Hardening
-Stage 6 状态              future；等待交接加固关闭及 owner acceptance
+当前实施阶段              Stage 6（Playback C++ API 与 Player 产品化）
+前一阶段                  Chart Format Foundation Hardening（2026-09-17 完成并经 owner 接受）
 Stage 6 主要开发基线      Chart v5 Core / Packed candidate
 Stage 6 兼容回退基线      Chart v4 / CXT v1 / CXC v1
 Stage 7A                   最小 Input / Judgement / Score / Replay Kernel
@@ -70,8 +72,8 @@ Chart v5                  candidate；Stage 8 后成为默认发行格式
 | 阶段 | 目标 | 生产基线 | 主要交付 |
 | --- | --- | --- | --- |
 | [Chart Format Foundation（已完成）](stage_plans/completed/chart-format-foundation/plan.md) | Stage 6 前解决高密度谱面存储风险 | Chart v4 subset / v5 candidate tools | CXT v2 Core、Packed 原型、40k/16 MiB 门禁、CXC entry 设计 |
-| [Foundation Hardening（当前）](stage_plans/active/chart-format-foundation-hardening/plan.md) | 补齐交接技术门禁 | Foundation candidate / v4 compatibility | identity、profile、预算、端到端与跨平台证据 |
-| [Stage 6](stage_plans/future/stage-06/plan.md) | 以 v5 为主线完成 Playback/Player/CXC candidate path | Chart v5 Core/Packed candidate；v4 fallback | v5 subset 播放验证、Player、CXC v1、媒体、后端中立渲染 |
+| [Foundation Hardening（已完成）](stage_plans/completed/chart-format-foundation-hardening/plan.md) | 补齐交接技术门禁 | Foundation candidate / v4 compatibility | identity、profile、预算、端到端、容量与跨平台证据（2026-09-17 关闭并经 owner 接受） |
+| [Stage 6（当前）](stage_plans/active/stage-06/plan.md) | 以 v5 为主线完成 Playback/Player/CXC candidate path | Chart v5 Core/Packed candidate；v4 fallback | v5 subset 播放验证、Player、CXC v1、媒体、后端中立渲染 |
 | [Stage 7A](stage_plans/future/stage-07/plan.md) | 冻结最小可玩闭环和 Judgement Kernel | Chart v5 Core/Packed + v4 compatibility | Input、Judgement、Score、Replay、Tap/Hold/Release |
 | [Stage 7B+](stage_plans/future/stage-07/plan.md) | 持续扩展高级输入与判定能力 | Stage 7A contracts + selected v5 capabilities | Slide、Flick、方向、连续轨迹、多指、校准 |
 | [Stage 8](stage_plans/future/stage-08/plan.md) | Chart v5 正式发行和语义收敛 | v5 candidate + Stage 7A | v5 Spec、CXT v2、Packed、CXC playback entry、迁移、默认 Writer |
@@ -102,14 +104,14 @@ Stage 7A
 允许的并行工作：
 
 ```text
-Foundation Hardening 的当前 R0-R5 实施
+Stage 6 的 v5-first candidate path 实施（交接加固已关闭并经 owner 接受）
 Stage 6 的合同研究（不启动 candidate 接线或 S6 功能实施）
 Stage 7A 的最小 Judgement 合同研究
 Stage 7B+ 的高级判定设计研究
 ```
 
 但生产实现交接必须遵守主链：Foundation 只交付候选 Core/Packed 和验证工具，
-交接加固关闭后才恢复 Stage 6；Stage 6
+交接加固已于 2026-09-17 关闭并经 owner 接受，Stage 6 自此恢复实施；Stage 6
 可以加载、验证和消费受支持的 v5 candidate subset，同时保留 v4 回退；Stage 7A 冻结
 Chart v5 所需的最小 Input/Judgement/Replay 合同；Stage 8 只依赖 Stage 7A，不等待
 全部高级判定能力；Stage 7B+ 必须通过版本化 capability 持续增加，不能破坏 7A 合同；

@@ -1,8 +1,9 @@
 # Stage 6 Implementation Plan: Playback C++ API and Player Productization
 
-状态：future；等待 Foundation 交接加固关闭后恢复实施
+状态：active；当前实施阶段；Foundation 交接加固（R0-R5）已于 2026-09-17 关闭并经 owner
+接受，本阶段自此恢复实施
 
-更新日期：2026-09-16
+更新日期：2026-09-17
 
 归档来源：[旧版 PROJECT_GUIDE](../../../archive/PROJECT_GUIDE_LEGACY_2026-08-10.md) 与
 [SDK transition plan 快照](../../../archive/CUEXIS_SDK_TRANSITION_PLAN_2026-08-10.md)。2026-09-01
@@ -13,9 +14,13 @@ Chart Format Foundation 的原 owner 完成确认保留，但后续技术复核�
 预算与验证证据缺口，见
 [复核记录](../../../stage_reports/stages/chart-format-foundation/2026-09-16-handoff-review.md)。
 本阶段于 2026-09-16 移回 future；恢复前必须完成
-[Foundation 交接加固](../../active/chart-format-foundation-hardening/plan.md) 的 R0-R5，
-取得最终候选 SHA 的要求验证及 owner acceptance。S6-A 至 S6-F 不因此标记完成，
-三个工程问题仍保持 open。
+[Foundation 交接加固](../../completed/chart-format-foundation-hardening/plan.md) 的 R0-R5，
+取得最终候选 SHA 的要求验证及 owner acceptance。这三项已于 2026-09-17 完成：本地六个配置
+全量回归、最终 SHA `0e501a5` 容量复跑与同 SHA hosted 三平台验证（报告 SHA `e0ca9ff`，
+docs-only 复验 `c24f34e`）全部通过，owner 接受其
+[R5 交接清单](../../../stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)
+（允许/禁止消费、identity/revision 政策、预算与残余见该报告 §10）。S6-A 至 S6-F 不因此
+标记完成，三个工程问题仍保持 open。
 
 本阶段位于 Chart Format Foundation 之后，采用 Chart v5 Core/Packed candidate 作为主要开发
 和验证基线，同时保留 Chart v4、CXT v1、CXC v1 和 SDK `0.7.0` 作为兼容与回退基线。Stage 6

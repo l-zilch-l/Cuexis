@@ -11,7 +11,7 @@ Stage 7A 和 Stage 8 分别按各自计划执行；正式发行门禁归 Stage 8
 
 归档来源：[Stage Chart Format Update 完成计划](../../completed/chart-format-update/plan.md)、
 [Chart v4 格式合同](../../../formats/CHART_V4_FORMAT.md)、[谱面格式审计记录](../../../stage_reports/reviews/stage-verification-2026-09/2026-09-01-findings.md)
-与前置 [Stage 6 计划](../../future/stage-06/plan.md)。
+与前置 [Stage 6 计划](../../active/stage-06/plan.md)。
 
 ## 计划定位
 
@@ -26,7 +26,7 @@ Stage 7A 和 Stage 8 分别按各自计划执行；正式发行门禁归 Stage 8
 当前实施计划
   -> ../chart-format-foundation-hardening/plan.md
 后续阶段（加固关闭后）
-  -> ../../future/stage-06/plan.md
+  -> ../../active/stage-06/plan.md
   -> ../../future/stage-07/plan.md（Stage 7A）
   -> ../../future/stage-08/plan.md
 ```
