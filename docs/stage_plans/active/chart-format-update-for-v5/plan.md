@@ -7,11 +7,11 @@ Note 表现或渲染后端提升为核心玩法语义。判定域、动作、有
 状态：active；跨阶段 Chart v5 总工作包；不是当前下一实施阶段。Foundation、Stage 6、
 Stage 7A 和 Stage 8 分别按各自计划执行；正式发行门禁归 Stage 8
 
-更新日期：2026-09-05
+更新日期：2026-09-16
 
 归档来源：[Stage Chart Format Update 完成计划](../../completed/chart-format-update/plan.md)、
 [Chart v4 格式合同](../../../formats/CHART_V4_FORMAT.md)、[谱面格式审计记录](../../../stage_reports/reviews/stage-verification-2026-09/2026-09-01-findings.md)
-与前置 [Stage 6 计划](../../future/stage-06/plan.md)。
+与前置 [Stage 6 计划](../../active/stage-06/plan.md)。
 
 ## 计划定位
 
@@ -21,15 +21,19 @@ Stage 7A 和 Stage 8 分别按各自计划执行；正式发行门禁归 Stage 8
 当前实施顺序是：
 
 ```text
-当前下一实施计划
-  -> ../chart-format-foundation/plan.md
-  -> ../../future/stage-06/plan.md
+已完成前置
+  -> ../../completed/chart-format-foundation/plan.md
+当前实施计划
+  -> ../chart-format-foundation-hardening/plan.md
+后续阶段（加固关闭后）
+  -> ../../active/stage-06/plan.md
   -> ../../future/stage-07/plan.md（Stage 7A）
   -> ../../future/stage-08/plan.md
 ```
 
 其中，`chart-format-foundation` 负责先完成 v5 Core/Packed 的基础、容量验证和 CXC
-entry 设计；本文中的 v5 正式发行内容要到 Stage 8 才按阶段计划实施。
+entry 设计；当前由 `chart-format-foundation-hardening` 补齐交接技术门禁后才进入 Stage 6。
+本文继续保留 active；其中的 v5 正式发行内容要到 Stage 8 才按阶段计划实施。
 
 字段与物理布局的候选权威分别是
 [CXT v2](../../../formats/CXT_V2_FORMAT.md) 和
@@ -103,8 +107,12 @@ Additive opacity        已拒绝
 
 ### 2.2 前置与交接约束
 
-- Foundation 必须先关闭 V5-0A 的物理模型、容量和 CXC entry 设计门禁。之后，Stage 6 可以启动
-  v5 Core/Packed candidate path；Stage 6 同时保留 Chart v4、CXT v1 和 CXC v1 的兼容回退。
+- Foundation 侧的 V5-0A 物理模型、容量和 CXC entry 设计门禁已随
+  [Foundation 交接加固](../../completed/chart-format-foundation-hardening/plan.md) 的 R0-R5 于
+  2026-09-17 关闭（允许/禁止消费边界见
+  [R5 报告](../../../stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)
+  §10），[Stage 6](../stage-06/plan.md) 已自此启动 v5 Core/Packed candidate path；Stage 6
+  同时保留 Chart v4、CXT v1 和 CXC v1 的兼容回退。
 - Stage 7A 必须冻结 Chart v5 所需的 JudgementRequirement、InputEvent、JudgementResult 和
   Replay identity。Stage 7B+ 的高级判定能力不是本阶段或 Stage 8 的整体前置。
 - Stage 8 关闭并经 owner acceptance 后，后续新增能力以 v5 typed/portable/Packed 谱面作为基线。
@@ -712,8 +720,9 @@ Writer 默认 v5；--target 4 保留且拒绝 v5 输入；已去掉 --target 3
 纹理 pixel alpha 不得改写 Chart 对象 alpha 合同
 ```
 
-Stage 6 的 v5-first candidate path 启动前必须按该清单核对；不得把主要开发基线改回 v4，
-也不得把 SDK 改回 `0.7.0`。正式默认 Writer 和发行入口仍要等 Stage 8 关闭。
+上述 SDK `0.8.0` 清单是 Stage 8 关闭后的交接目标，不是 Stage 6 启动基线。
+Stage 6 的 v5-first candidate path 使用 Foundation 已接受的 subset，保留 SDK `0.7.0`
+兼容基线；不得把主要开发基线改回 v4。正式默认 Writer 和发行入口仍要等 Stage 8 关闭。
 
 Stage 10 Studio 必须以 v5 typed authoring model 为编辑对象，通过 PlaybackSession 预览。旋转与默认相机
 姿态必须与 v4/Playback 同一套求值，不得另造欧拉曲线或从 Quaternion 反推未展开角度，也不得维护第二套

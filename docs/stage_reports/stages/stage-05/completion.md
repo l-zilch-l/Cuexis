@@ -25,4 +25,4 @@ Stage 5 已于 2026-08-28 关闭，并通过 PR #20 合并至 `master`。合并�
 
 Stage 5 关闭不启动 Studio、Judgement/Replay、公共 CXC package API、Vulkan、Shader Graph、稳定 C ABI
 或运行时脚本。Stage 6 仍为 future；其范围和前置条件见
-[Stage 6 plan](../../../stage_plans/future/stage-06/plan.md)。
+[Stage 6 plan](../../../stage_plans/active/stage-06/plan.md)。

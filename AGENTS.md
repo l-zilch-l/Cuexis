@@ -1,33 +1,25 @@
-#Cuexis Agent Guide
+# Cuexis Agent Guide
 
-##Product direction
+## Product direction
 
-    ADR 0027 defines Cuexis as an embeddable** Cuexis Playback SDK** with two independent
-        applications : Cuexis Player and Cuexis Studio.RuntimeSession,
-    World, EnTT, SDL and OpenGL are internal / optional implementation details;
-external hosts use PlaybackSession, ContentProvider, RuntimeFrame,
-    FrameSnapshot and later Judgement /
-            Replay contracts
-                .
+ADR 0027 defines Cuexis as an embeddable **Cuexis Playback SDK** with two independent
+applications: Cuexis Player and Cuexis Studio. RuntimeSession, World, EnTT, SDL and OpenGL are
+internal / optional implementation details; external hosts use PlaybackSession, ContentProvider,
+RuntimeFrame, FrameSnapshot and later Judgement / Replay contracts.
 
-            The current baseline includes a functioning `cuexis_playback` module(`PlaybackSession`,
-`FrameSnapshot`, `RuntimeFrame`, `IContentProvider`)
-                .SDK API `0.7.0` is the current Playback preview after S5-C public
-        Presentation types. SDK API `0.6.0` remains the CFU-E historical package minor.
-        The preview supports static and matching
-        - toolchain C++ shared packages,
-    versioned public libraries, clean staged consumers, compatibility rejection gates,
-    PlaybackSource, FrameDigest v1 - v3,
-    and Portable Presentation v1.Filesystem / Memory / Host ContentProvider support,
-    ChartClock / HostClock / CuexisAudio, RuntimeTimeline, Prepared Playback, `cuexis_audio`,
-    and optional `cuexis_audio_sdl` are active.Stage 1C review findings R01 - R21 are closed.Stage
-                                                                              2 delivered Chart v3,
-    TimingMap, Behavior / Step Event, migration,
-    and FrameDigest v2.Stage 3 delivered portable resources,
-    candidate / active presentation transactions,
-    Validation Sink, the OpenGL adapter, Player rendering, external package consumers,
-    and cross - platform closure.Stable C ABI work remains in Stage 12;
-`cuexis_judgement` remains planned for Stage 11.
+The current baseline includes a functioning `cuexis_playback` module (`PlaybackSession`,
+`FrameSnapshot`, `RuntimeFrame`, `IContentProvider`). SDK API `0.7.0` is the current Playback
+preview after S5-C public Presentation types. SDK API `0.6.0` remains the CFU-E historical
+package minor. The preview supports static and matching-toolchain C++ shared packages,
+versioned public libraries, clean staged consumers, compatibility rejection gates,
+PlaybackSource, FrameDigest v1-v3, and Portable Presentation v1. Filesystem / Memory / Host
+ContentProvider support, ChartClock / HostClock / CuexisAudio, RuntimeTimeline, Prepared
+Playback, `cuexis_audio`, and optional `cuexis_audio_sdl` are active. Stage 1C review findings
+R01-R21 are closed. Stage 2 delivered Chart v3, TimingMap, Behavior / Step Event, migration, and
+FrameDigest v2. Stage 3 delivered portable resources, candidate / active presentation
+transactions, Validation Sink, the OpenGL adapter, Player rendering, external package consumers,
+and cross-platform closure. Stable C ABI work remains in Stage 12; the minimum
+Input/Judgement/Score/Replay kernel is planned for Stage 7A.
 
 Stage 5 closed and merged into `master` on August 28, 2026 through PR #20 (`d380fc9`). S5-A froze
 Material/Shader contracts in ADR 0040 and `docs/formats/MATERIAL_SHADER.md`; S5-B through S5-H
@@ -35,9 +27,17 @@ delivered the optional shader toolchain, public presentation support, cache, con
 safety gates. `260829-full-review` followed as a separate branch and closed on August 30, 2026.
 The `260830-followup` branch had three tasks: documentation reorganization, Chart/CXC parse-once,
 and targeted branch coverage for critical modules. All three tasks are complete; PR #22 merged the
-branch into `master` on September 1, 2026. Stage 6 started on September 2, 2026. Its active plan
-was superseded as the current stage by `chart-format-update-for-v5`; Stage 6 is future and its plan
-retains the three open issues from the September stage-verification report: release version
+branch into `master` on September 1, 2026. Chart Format Foundation merged through PR #24
+on September 8, 2026 (`13dab93`); the owner confirmed completion on September 16, 2026.
+Its plan is under `docs/stage_plans/completed/chart-format-foundation/`.
+The subsequent handoff review established the Foundation hardening stage under
+`docs/stage_plans/completed/chart-format-foundation-hardening/` (R0-R5); it closed on
+September 17, 2026 after green local matrices, a final-SHA capacity rerun and same-SHA hosted
+Linux Quality, Windows MSVC and Windows MinGW validation, and the owner accepted its handoff
+list. Stage 6 is active under `docs/stage_plans/active/stage-06/`. Original Foundation
+completion does not certify the new technical gates.
+`chart-format-update-for-v5` remains active as a cross-stage work package, not the current stage.
+Stage 6 retains the three open issues from the September stage-verification report: release version
 enforcement, a backend-neutral presentation renderer boundary, and common media support.
 Stage 4 is complete. ADR 0038 defines `.cxc` as a strict ZIP32 Stored exchange
 package containing existing Project/Asset Index formats, `cuexis.chart` v4 data, CXT JSON, and
@@ -246,12 +246,12 @@ When adding/removing a dependency, update **all** of:
 
 ## Versioning
 
-- Version components live in `cmake/CuexisVersion.cmake` (year/month/day/build);
-update them and
-  `vcpkg.json` together through `tools / update_version.py`.- `vcpkg.json` `version -
-    string` must match the canonical version from CuexisVersion.cmake* * exactly *
-        *(mismatch = fatal configure error).- `CUEXIS_SDK_API_VERSION` is independent from the date
-    - based build identity and controls the installed CMake package compatibility version; stable C ABI versioning starts in Stage 12.
+- Version components live in `cmake/CuexisVersion.cmake` (year/month/day/build); update them and
+  `vcpkg.json` together through `tools/update_version.py`.
+- `vcpkg.json` `version-string` must match the canonical version from CuexisVersion.cmake exactly
+  (mismatch = fatal configure error).
+- `CUEXIS_SDK_API_VERSION` is independent from the date-based build identity and controls the
+  installed CMake package compatibility version; stable C ABI versioning starts in Stage 12.
 - Generated header: `${CMAKE_BINARY_DIR}/generated/cuexis/version.hpp` — never committed.
 - Format: `yy.mm.dd-v[-suffix]` (UTC-based). The public legacy `cuexis::version::hour` remains `0`
   for SDK 0.5.x source compatibility and is not part of the build identity.
@@ -303,7 +303,13 @@ Stage 1D modules. `sdk/` and `adapters/` directories do not exist yet (planned).
 - `docs/stage_plans/completed/chart-format-update/plan.md` — accepted CXC/Chart format
   decision, migration, and acceptance gates
 - `docs/stage_plans/completed/260830-followup/plan.md` — completed documentation, Chart/CXC parse-once,
-  and critical branch-coverage plan; Stage 6 has not started
+  and critical branch-coverage plan
+- `docs/stage_plans/completed/chart-format-foundation/plan.md` — completed Foundation plan
+- `docs/stage_plans/completed/chart-format-foundation-hardening/plan.md` — completed R0-R5
+  hardening plan (closed 2026-09-17)
+- `docs/stage_plans/active/stage-06/plan.md` — current Stage 6 plan
+- `docs/stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md` —
+  R5 regression, hosted and handoff evidence, including the allowed/forbidden consumption list
 - `docs/stage_plans/completed/stage-04/plan.md` through
   `docs/stage_plans/future/stage-12/plan.md` — independent active/future/deferred plans with
   goals, prerequisites, scope, acceptance criteria, and archived sources
@@ -324,11 +330,10 @@ Stage 1D modules. `sdk/` and `adapters/` directories do not exist yet (planned).
 - New top-level documentation areas require a `README.md` index and a link from the main index.
 - When moving a document, preserve an old-path compatibility entry for at least one reorganization
   cycle and archive the full historical text when it remains useful.
-- Stage 0 and Stage 1A have completion reports but no separate current plan files;
-their original planning text is preserved in the archived PROJECT_GUIDE snapshot.- Stage 4 -
-    12 plans are future / deferred contracts,
-    not implementation claims.Each must retain a stage goal, prerequisites or recovery conditions,
-    scope, acceptance criteria, exclusions,
-    and archived source references.-
-        Candidate examples remain review inputs until the relevant ADR and production Schema /
-            Reader / Writer gates close.Do not move them into production fixtures prematurely.
+- Stage 0 and Stage 1A have completion reports but no separate current plan files; their original
+  planning text is preserved in the archived PROJECT_GUIDE snapshot.
+- Stage 4-12 plans are future / deferred contracts, not implementation claims. Each must retain a
+  stage goal, prerequisites or recovery conditions, scope, acceptance criteria, exclusions, and
+  archived source references.
+- Candidate examples remain review inputs until the relevant ADR and production Schema / Reader /
+  Writer gates close. Do not move them into production fixtures prematurely.

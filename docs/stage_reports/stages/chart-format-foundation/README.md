@@ -1,13 +1,41 @@
 # Chart Format Foundation Reports
 
-状态：active
+状态：completed
 
-本目录保存 Chart Format Foundation 的带日期实施证据。F0、F1、F3 已记录 2026-09-05；
-F2-F8 的 candidate 实现、负例和本地 headless 证据已于 2026-09-07 记录。高复用/混合
-容量原始数据、三平台 hosted 验证和 owner acceptance 仍未完成，不能把本目录的 candidate
-证据当作 Chart v5 或 Packed Playback 已正式发行。
+本目录保存 Chart Format Foundation 的带日期实施证据。项目所有者于 2026-09-16
+确认完成，随后技术复核决定新增独立交接加固阶段，并将 Stage 6 移回 future；该加固阶段
+（R0-R5）已于 2026-09-17 完成并经 owner 接受，Stage 6 因此恢复 active。
+原 Foundation 关闭记录保留；加固范围与门禁见
+[已完成的加固计划](../../../stage_plans/completed/chart-format-foundation-hardening/plan.md)。
+加固阶段的 R0-R5 批次报告也保存在本目录，文件名以批次前缀区分，且不覆盖 F0-F9 报告。
+9 月 5 日与 7 日报告保留历史快照，
+不以本次状态更新改写 hosted 或容量验证结果。高复用/混合仅为可选观测；
+Foundation 关闭不等于 Chart v5 或 Packed Playback 正式发行。
 
 ## 报告
+
+- [2026-09-17 R5 回归、Hosted 与交接](2026-09-17-r5-regression-and-handoff.md)
+  （本地六配置回归矩阵、A19/A20/A21/A22 构建阻断修复、最终 SHA 容量复跑、同 SHA hosted
+  三平台验证与 R5 交接清单；机器可读容量数据：[Debug](2026-09-17-r5-capacity-data.json)、
+  [Release](2026-09-17-r5-capacity-data-release.json)）
+  R5 已完成并经 owner 接受，Stage 6 恢复 active。
+
+- [2026-09-17 R4 端到端、容量与回滚](2026-09-17-r4-roundtrip-capacity-rollback.md)
+  （机器可读容量数据：[2026-09-17-r4-capacity-data.json](2026-09-17-r4-capacity-data.json)）
+
+- [2026-09-17 R3 预算表与 checked arithmetic](2026-09-17-r3-budgets-and-arithmetic.md)
+
+- [2026-09-17 R2 profile、section 注册表与内部次序严格拒绝](2026-09-17-r2-profile-rejection.md)
+
+- [2026-09-17 R2 前置：负例基础设施与拒绝行为盘点](2026-09-17-r2-prerequisites.md)
+
+- [2026-09-17 R1 语义身份闭环](2026-09-17-r1-semantic-identity.md)
+
+- [2026-09-16 R0 基线与复现](2026-09-16-r0-baseline-and-reproduction.md)
+
+- [2026-09-16 交接复核与加固决定](2026-09-16-handoff-review.md)
+
+- [2026-09-16 关闭与 Stage 6 交接记录](2026-09-16-closure-and-handoff.md)
 
 - [2026-09-05 F0 baseline and contract lock](2026-09-05-f0-baseline.md)
 - [2026-09-05 F1/F3 semantic model and codecs](2026-09-05-f1-f3-semantic-model-and-codecs.md)

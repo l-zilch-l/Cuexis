@@ -9,6 +9,7 @@
 #include <cuexis/core/error.hpp>
 #include <cuexis/filesystem/secure_file.hpp>
 #include <cuexis/json/parse.hpp>
+#include <cuexis/json/reader.hpp>
 #include <cuexis/project/project_loader.hpp>
 
 #include "cxc_hash_internal.hpp"
@@ -635,6 +636,44 @@ validateDependencyGraph(core::Diagnostics& diagnostics,
         } else {
             addError(diagnostics, "cxc.project.invalid", "CXC entry Chart is invalid",
                      "$/project/entry/chart", *chartPath);
+        }
+    }
+
+    // The registered candidate chart-entry extension declares the compiled playback entries it
+    // needs. CXC Spec 4 requires such an entry to exist in the same package, so those declared
+    // playback paths join the project-declared closure. Malformed or incomplete extension data
+    // contributes nothing here; the candidate validator owns its diagnostics.
+    if (!data->manifest.canonicalExtensionsJson.empty() &&
+        data->manifest.canonicalExtensionsJson != "{}") {
+        const auto parsed = json::parse(data->manifest.canonicalExtensionsJson,
+                                        json::ParseLimits{1024U * 1024U, 32U, 1024U * 1024U});
+        if (parsed) {
+            core::Diagnostics extensionDiagnostics;
+            json::Reader extensionRoot{*parsed, extensionDiagnostics, "$/extensions"};
+            if (extensionRoot.readObject() != nullptr) {
+                if (const auto candidate = extensionRoot.optionalField("cuexis.chart-entry.v1");
+                    candidate && candidate->readObject() != nullptr) {
+                    if (const auto entries = candidate->requiredField("entries"); entries) {
+                        if (const auto* items = entries->readArray(); items != nullptr) {
+                            for (std::size_t index = 0; index < items->size(); ++index) {
+                                const auto item = entries->element(index);
+                                if (!item || item->readObject() == nullptr) {
+                                    continue;
+                                }
+                                const auto playbackField = item->requiredField("playback");
+                                const auto playback =
+                                    playbackField ? playbackField->readBoolean() : std::nullopt;
+                                const auto pathField = item->requiredField("path");
+                                const auto path =
+                                    pathField ? pathField->readString() : std::nullopt;
+                                if (playback && *playback && path) {
+                                    reachable.insert(std::string{*path});
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 

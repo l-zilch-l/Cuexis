@@ -1,12 +1,16 @@
 # Chart Format Foundation：Chart v5 前置基础
 
-状态：active；当前下一实施计划；Stage 5 与 Stage 6 之间的实施门禁
+状态：completed；项目所有者确认完成，交接 Stage 6
 
-更新日期：2026-09-05
+更新日期：2026-09-16
 
-归档来源：[Chart v5 格式计划](../chart-format-update-for-v5/plan.md)、
+归档来源：[Chart v5 格式计划](../../active/chart-format-update-for-v5/plan.md)、
 [Stage 5 计划](../../completed/stage-05/plan.md)、[CXT v1 格式合同](../../../formats/CXT_FORMAT.md)、
 [CXC v1 格式合同](../../../formats/CXC_FORMAT.md)。
+
+2026-09-16 按项目所有者确认归档；合并记录与证据边界见
+[关闭与交接记录](../../../stage_reports/stages/chart-format-foundation/2026-09-16-closure-and-handoff.md)。
+下文保留阶段执行范围与门禁，不代表仍需从 F0 启动。
 
 本计划的字段与 wire 细节以候选
 [CXT v2](../../../formats/CXT_V2_FORMAT.md) 和
@@ -84,7 +88,7 @@ count、offset、byte length、Beat 运算全部使用 checked arithmetic
 每项新能力必须同时有正例、反例、deterministic golden 和 handoff 说明
 ```
 
-当前启动任务是 `F0`：完成基线、术语、candidate revision/profile、v4 回归
+本阶段最初启动任务是 `F0`：完成基线、术语、candidate revision/profile、v4 回归
 characterization 和 fixture 清单。`F0` 未关闭前，不开始 v5 默认路径、Packed
 Playback 接入或 CXT v2 formal-release 接线。
 
@@ -315,6 +319,12 @@ decoded bytes、section bytes、prepare peak 和编译耗时等额外预算在�
 中暂不冻结，先作为观测指标记录；不得据此放宽已冻结的输入、实体数或 Packed 文件上限。
 不能把高复用 fixture 结果解释为任意复杂谱面的保证。
 
+> 澄清（2026-09-17，Chart Format Foundation Hardening R3）：本段的「暂不冻结」只适用于
+> prepare 峰值、编译耗时和把 decoded bytes 解释成堆占用这三类观测项。decoded bytes 与
+> section bytes 已在 hardening R3 按 `docs/formats/PACKED_CHART_FORMAT.md` §3.3 冻结为可
+> 执行 hard budget 并实现；本段不据此声称 Foundation 阶段已经实现过这些预算，Foundation
+> 交付的硬门禁仍然只有 16 MiB Packed 文件与 40,000 实体。
+
 ## 3.6 代码开始门槛
 
 | 门槛 | 允许开始 | 禁止 |
@@ -357,6 +367,8 @@ Known gaps and next-task handoff
 - 低复用 profile 在 40,000 个展开语义实体下满足 Packed artifact <=16 MiB；高复用和
   受控混合不作为独立关闭条件。超预算输入有稳定拒绝和分项容量报告。
 - decoded bytes、展开数量、峰值内存和编译时间均有独立预算。
+  （R3 澄清：decoded/section bytes 与展开数量已是可执行 hard budget；峰值内存与编译时间
+  仍只作观测，本阶段不作承诺。）
 - 递归、随机、任意表达式、checked arithmetic 溢出和超预算输入稳定失败。
 - CXC v1 的 source/compiled/playback 分层可以被工具验证。
 - Stage 6 的默认发行和兼容回退仍可保持 Chart v4/CXT v1/CXC v1；其主要开发路径切换为

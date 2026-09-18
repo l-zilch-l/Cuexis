@@ -223,6 +223,20 @@ auto validateCandidateChartExtension(const cxc::CxcPackage& package) -> core::Di
                     addError(diagnostics, "cxc.candidate.packed_invalid",
                              "Playback candidate bytes fail Foundation semantic validation",
                              field + "/path");
+                } else if (const auto identity = chart::packed::semanticIdentity(*decoded)) {
+                    // The declared compiled semantic identity must equal the identity recomputed
+                    // from the decoded Packed chart, not merely look like a SHA-256.
+                    if (compiledIdentity &&
+                        *compiledIdentity != chart::packed::semanticIdentityHex(*identity)) {
+                        addError(diagnostics, "cxc.candidate.compiled_identity_mismatch",
+                                 "compiledSemanticIdentity does not match the decoded Packed "
+                                 "semantic identity",
+                                 field + "/compiledSemanticIdentity");
+                    }
+                } else {
+                    addError(diagnostics, "cxc.candidate.packed_invalid",
+                             "Playback candidate bytes do not yield a canonical semantic identity",
+                             field + "/path");
                 }
                 if (entityCount && inspection->entityCount != *entityCount) {
                     addError(diagnostics, "cxc.candidate.count_mismatch",

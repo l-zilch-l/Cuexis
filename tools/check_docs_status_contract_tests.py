@@ -17,6 +17,27 @@ SPEC.loader.exec_module(check_docs)
 
 
 class StatusContractTests(unittest.TestCase):
+    def test_foundation_hardening_close_promotes_stage_six(self) -> None:
+        requirements = dict(check_docs.STAGE_PLAN_REQUIREMENTS)
+        self.assertEqual(
+            ("completed",),
+            requirements["stage_plans/completed/chart-format-foundation/plan.md"],
+        )
+        self.assertEqual(
+            ("completed",),
+            requirements["stage_plans/completed/chart-format-foundation-hardening/plan.md"],
+        )
+        self.assertEqual(("active",), requirements["stage_plans/active/stage-06/plan.md"])
+        self.assertEqual(
+            ("active",),
+            requirements["stage_plans/active/chart-format-update-for-v5/plan.md"],
+        )
+        self.assertNotIn("stage_plans/active/chart-format-foundation/plan.md", requirements)
+        self.assertNotIn(
+            "stage_plans/active/chart-format-foundation-hardening/plan.md", requirements
+        )
+        self.assertNotIn("stage_plans/future/stage-06/plan.md", requirements)
+
     def write_contract(self, root: Path, stale_fragment: str = "obsolete CFU state") -> Path:
         contract = {
             "snapshotDate": "2026-08-24",

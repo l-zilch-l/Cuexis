@@ -186,6 +186,7 @@ if(CUEXIS_BUILD_TESTS)
         cuexis_presentation_validation_tests
         cuexis_cfu_f_headless_consumer
         cuexis_cfu_f4_performance_probe
+        cuexis_chart_capacity_probe
         cuexis_s4g_performance_probe
         cuexis_s5h_performance_probe
     )
@@ -879,6 +880,8 @@ if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_cxc_tests
         ALLOWED
             cuexis_cxc
+            cuexis::cxc_tool_common
+            cuexis::chart
             Catch2::Catch2WithMain
     )
     cuexis_verify_target_dependencies(cuexis_behavior_tests
@@ -961,6 +964,11 @@ if(CUEXIS_BUILD_TESTS)
         ALLOWED
             cuexis_cxc
             cuexis::playback
+            Psapi
+    )
+    cuexis_verify_target_dependencies(cuexis_chart_capacity_probe
+        ALLOWED
+            cuexis::chart
             Psapi
     )
 endif()

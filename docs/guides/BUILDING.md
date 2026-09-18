@@ -66,6 +66,7 @@ cuexis_playback_allocation_tests
 cuexis_presentation_validation_tests
 cuexis_cfu_f_headless_consumer
 cuexis_cfu_f4_performance_probe
+cuexis_chart_capacity_probe
 cuexis_s4g_performance_probe
 cuexis_s5h_performance_probe
 cuexis_platform_sdl_tests
@@ -171,7 +172,16 @@ ctest --preset headless-release --no-tests=error
 ```
 
 Release 与 `headless-release` 预设强制 `CUEXIS_WARNINGS_AS_ERRORS=ON`。基础 Debug 预设保留
-`OFF`，便于日常开发先观察新工具链诊断。
+`OFF`，便于日常开发先观察新工具链诊断。GCC 构建另有两处记录在案的例外，均在
+`cmake/CuexisWarnings.cmake`：规范字节键比较不使用 `std::vector<std::byte>` 的三向比较
+（GCC 会给出伪 `-Wstringop-overread`），测试与探针目标对 `-Wmaybe-uninitialized` 只降级
+不静默（libstdc++ `std::string` 拷贝路径的伪阳性），其余诊断仍按 `-Werror` 处理。
+
+`headless-*` 预设同时设置 `CUEXIS_BUILD_DEVELOPER_TOOLS=OFF`，因此不添加 `tools/` 子目录
+（含 `cuexis::cxc_tool_common`）。依赖该工具层的 CXC candidate 扩展与往返用例在这些配置中
+不注册，configure 会输出
+`cuexis_cxc_tests: developer tool layer absent; candidate CXC cases excluded`。需要这些用例
+时使用非 headless 预设，或显式设置 `CUEXIS_BUILD_DEVELOPER_TOOLS=ON`。
 
 构建目录固定在 `out/build/<preset>`，安装或打包目录不得与源码混合。
 

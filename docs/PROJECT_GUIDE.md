@@ -2,7 +2,7 @@
 
 状态：现行项目指南
 
-更新日期：2026-09-05
+更新日期：2026-09-16
 
 本文是项目入口，不再保存完整路线、格式字段或阶段测试日志。整理前的完整长版快照见
 [archive/PROJECT_GUIDE_LEGACY_2026-08-10.md](archive/PROJECT_GUIDE_LEGACY_2026-08-10.md)。
@@ -84,12 +84,16 @@ capability；S5-H 已完成关闭门禁。Stage 5 已于 2026-08-28 通过 PR #2
 的文档整理、Chart/CXC parse-once 和关键模块分支覆盖率三个任务已完成，并于 2026-09-01 通过
 PR #22 合并至 `master`。项目所有者已于 2026-09-02 启动
   [Chart v5 format plan](stage_plans/active/chart-format-update-for-v5/plan.md)；当前主路线已明确为
-Chart Format Foundation -> Stage 6 v5-first candidate path -> Stage 7A Gameplay Foundation -> Stage 8
+Chart Format Foundation -> Foundation Hardening -> Stage 6 v5-first candidate path -> Stage 7A Gameplay Foundation -> Stage 8
 Chart v5/CXT v2/Packed Chart formal release -> Stage 9 Presentation -> Stage 10 Studio -> Stage 11 平台与性能
 -> Stage 12 稳定 ABI；Stage 7B+ 高级 Input/Judgement 能力在 Stage 7A 后持续演进，可跨越 Stage 8。
-Chart Format Foundation [计划](stage_plans/active/chart-format-foundation/plan.md) 排在当前路线的下一实施位置；
-Foundation 完成后，Stage 6 [计划](stage_plans/future/stage-06/plan.md) 继续处理版本门禁、后端中立
-表现渲染边界、常用媒体和 CXC v1 基础发行合同。
+Chart Format Foundation [计划](stage_plans/completed/chart-format-foundation/plan.md) 已完成并归档；
+其后的 [Foundation 交接加固](stage_plans/completed/chart-format-foundation-hardening/plan.md)
+（R0-R5）也已于 2026-09-17 完成并经 owner 接受，补齐了身份、profile、预算、端到端、容量与
+跨平台证据（允许/禁止消费边界见
+[R5 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)）。
+Stage 6 [计划](stage_plans/active/stage-06/plan.md) 已恢复 active 并于 2026-09-17 启动（首批
+S6-A），作为当前实施阶段处理版本门禁、后端中立表现渲染、常用媒体和 CXC v1 合同。
 
 格式权威入口：[formats/README.md](formats/README.md)。
 

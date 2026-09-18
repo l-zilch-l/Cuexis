@@ -6,7 +6,7 @@
 
 依据：[玩法抽象模型](../architecture/GAMEPLAY_ABSTRACTION_MODEL.md)、
 [CXT v2](CXT_V2_FORMAT.md)、
-[Chart Format Foundation](../stage_plans/active/chart-format-foundation/plan.md)、
+[Chart Format Foundation](../stage_plans/completed/chart-format-foundation/plan.md)、
 [Chart v5 总工作包](../stage_plans/active/chart-format-update-for-v5/plan.md) 和
 [CXC v1](CXC_FORMAT.md)。
 
@@ -125,12 +125,42 @@ DBG0 若存在也计入 16 MiB。CXC ZIP header、manifest、独立 source entry
 | `preparePeakBytes` | source、展开记录、Packed、Runtime 等同时存活的峰值 |
 
 重复使用同一 Clip 的事件定义只计一次，但其绑定数量、prepare 展开量和运行时每帧
-写入量另外计数；不得以定义去重掩盖执行成本。Foundation profile 的 `eventCount=0`。
+写入量另外计数；不得以定义去重掩盖执行成本。Foundation profile 的 `eventCount=0`；
+Reader 必须拒绝非零 `eventCount` 声明，不能当作「没有事件可读」而忽略。
 
 Reader 必须在分配前检查 counts、UTF-8 bytes、数组乘积、偏移加法、解码占用和资源
 引用数。Header 中的声明只用于预检，解码后必须重新计数比对。除 Packed 文件 16 MiB
 外，其他新增数值上限由 CFF-D 的实测报告和 capacity profile 在 Foundation 接受前
 冻结；没有明确 limits 的 Reader 配置不允许进入 Stage 6。已有 v4/v1 限制不隐式放宽。
+R3 已按 §3.3 冻结并逐项实现下表上限；historical 的「暂不冻结」只覆盖 §3.3 列为观测项的
+峰值与耗时，不再适用于这些 hard budget。
+
+### 3.3 冻结预算表
+
+Foundation revision 1 的可执行硬预算如下。单位是 wire 语义单位，不是 C++ 堆占用：
+
+| 预算 | 单位 | 冻结默认值 | 检查入口 | 诊断 |
+| --- | --- | --- | --- | --- |
+| `maxPackedFileBytes` | bytes（Header + directory + 全部 section） | 16,777,216 | Writer envelope、Reader size、file bridge | `packed.budget.file_bytes` |
+| `maxPackedDecodedBytes` | bytes（section codec 之后的总和） | 16,777,216 | Header 声明预检、Writer envelope | `packed.budget.decoded_bytes` |
+| `maxPackedSectionBytes` | bytes（单个 section 的 encoded/decoded） | 16,777,216 | directory 逐项，所有 role 含 inspection | `packed.budget.section_bytes` |
+| `maxPackedEntities` | count（ENT0/IDN0 具体实体） | 40,000 | Header 预检、Writer 实体计数 | `packed.budget.entities` |
+| `maxPackedRequirements` | count（REQ0 行） | 40,000 | Header 预检、Writer 要求计数 | `packed.budget.requirements` |
+| `maxPackedStrings` | count（STR0 行） | 100,000 | Header 预检、Writer 字典计数、STR0 行数 vs payload | `packed.budget.strings`、`packed.strings.count` |
+| `maxPackedReferences` | count（REF0 行） | 100,000 | Header 预检、Writer 引用计数、REF0 行数 vs payload | `packed.budget.references`、`packed.references.invalid` |
+
+`PackedChartLimits` 的每个字段都是上限而不是目标：入口按 `min(请求值, 冻结默认值)` 求有效值，
+调用方只能收紧，不能放宽 16 MiB 文件门禁和 40,000 实体门禁。`0` 是字面上限（拒绝任何非零
+值），永远不表示「不限制」，也不存在「零值即跳过」的后门。
+
+检查位置：count 与 section/文件 envelope 必须在大 reserve/resize、section 串联和文件组装
+之前完成；目录项数先用 u64 乘积校验再预留；STR0/REF0 行数与 IDN0 scope/path/step 数以剩余
+payload 为上界；IDN0 iteration 与 CNS0 lane 是 u32 字段，超宽值拒绝而不截断。Header 计数
+只作预检，解码后按 STR0/REF0/IDN0/REQ0/ENT0/ARCH 实际行数重新计数比对。
+
+只作观测、未接受阈值的项目：prepare 峰值内存（`preparePeakBytes`）、展开/编译耗时、
+decoded section bytes 解释成堆占用，以及 IDN0 scope/path 表解码后的对象内存。本阶段不为
+尚未实现的 Playback prepare 承诺预算，也不得用这些观测值放宽上表硬门禁。
 
 ## 4. 基础编码
 
@@ -176,6 +206,10 @@ Reader 可以接受不同的 section 物理次序，但字典、实体和记录�
 合同。Writer 的唯一结果以相同 wire revision、相同 semantic model 和相同
 inspection 保留策略为前提，不能对不同 compiler profile 笼统承诺字节相同。
 
+Reader 必须实际校验这些内部次序，不能只依赖规范 Writer，也不能排序后静默接受乱序或
+重复项：STR0 严格升序、REF0 按 `(kind, text)`、IDN0 的 scope/path/identity 子表、
+ARCH 按 mask 升序、REQ0 按 `(entity ordinal, localId)`、CNS0 按 set payload。
+
 ## 5. 文件布局
 
 ### 5.1 Fixed Header：96 bytes
@@ -196,7 +230,7 @@ inspection 保留策略为前提，不能对不同 compiler profile 笼统承诺
 | 72 | `eventCount` | u32 | 第 3.2 节定义 |
 | 76 | `decodedBytes` | u32 | 所有 section decodedBytes 的 checked sum |
 | 80 | `stringCount` | u32 | STR0 字符串数 |
-| 84 | `resourceReferenceCount` | u32 | REF0 中 asset 类引用数 |
+| 84 | `referenceCount` | u32 | REF0 行总数（全部 typed reference kind） |
 | 88 | `candidateRevision` | u32 | 本草案为 `1`；正式发行时为 `0` |
 | 92 | `headerCrc32` | u32 | 对 96 bytes Header 计算，本字段临时填零 |
 
@@ -209,6 +243,12 @@ CRC 使用 CRC-32/ISO-HDLC：reflected polynomial `0xEDB88320`、init 和 xorout
 `0xffffffff`，对 bytes 顺序计算，结果 u32 little-endian；`123456789` 的检查值为
 `0xcbf43926`。CRC 用于损坏检测，不是认证。整文件 SHA-256 属于外部 artifact identity，
 不能把它直接写进被自身覆盖的 Header。
+
+`referenceCount` 是 REF0 的**全部行数**，也就是 Reader 逐行读取并校验
+`maxPackedReferences` 的那个计数（R3 裁定 A13：旧文字「asset 类引用数」与 Writer/Reader
+实际口径不一致）。asset 类引用不是独立 Header 计数，而是由 typed reference kind 与资源
+闭包在 typed 模型层派生；Kind 的具体分配见第 6.2 节。此裁定只改字段命名与文字，不改
+offset、宽度、wire 值或 revision。
 
 ### 5.2 Section Directory：每项 32 bytes
 
@@ -231,6 +271,11 @@ CRC，须逐字段验证；CXC 的整 entry SHA-256 覆盖目录。无 CXC 时�
 
 未知 semantic section 必须拒绝；未知 inspection section 可在检查长度和 CRC 后忽略，
 但不能提供任何运行时必需数据。新 codec 不属于 Foundation；必须有新的明确 wire 合同。
+
+Foundation revision 1 的 Reader 行为固定为：登记 semantic section 携带 `flags=1` 时以
+flags 诊断拒绝（不得冒充「未知 section」）；未登记的 `flags=1` section 在长度与 CRC 校验后
+忽略；未登记的 `flags=0` section 一律拒绝；未完成后续字段合同的登记 section 使用独立的
+「拒绝」诊断。Writer、结构检查和语义解码必须使用同一注册表判定，不得各自维护清单。
 
 ### 5.3 Section 注册表
 
@@ -256,6 +301,8 @@ CRC，须逐字段验证；CXC 的整 entry SHA-256 覆盖目录。无 CXC 时�
 
 除 DBG0 外本表 flags 必须为 0。未完成后续字段合同的 section 不是任意 payload 的
 扩展口；即使为空也不能被 Foundation Reader 当作支持。空必需表仍保存其明示的表头。
+`BEH0`/`BHD0`/`ANM0`/`FXS0` 属于此类，Foundation revision 1 必须显式拒绝；`DBG0` 是唯一
+登记的 inspection section，Reader 接受并忽略其 payload，不从中读取判定、身份或资源信息。
 下述无内部 count 的表由目录 recordCount 定界，必须恰好消费全部 section bytes。
 
 ## 6. 字典和全局记录
@@ -288,6 +335,10 @@ ID 规则。高频记录只存字符串索引，不重复写字段名和 AssetId
 | 7 | extension/capability |
 
 按 `(kind, string bytes)` 去重排序。kind 不匹配、未知 kind 或越界引用均失败。
+R4 明确 typed reference 的两个字段：`domain` 是上表的引用类别文本（judgement-domain /
+action），`id` 是被引用的值（candidate.lanes4 / press）。wire 只保存 `id`，因此声明了其他
+类别文本的模型报 `packed.identity.reference_domain`，Decoder 还原类别文本而不是把 id 写进
+`domain`。
 实体 parent 和 target 使用 entity ordinal，不把 object identity 伪装成字符串引用。
 行为/动画引用还必须有对应定义；判定域/动作必须由显式声明的 gameplay profile 解析，
 不能回退到宿主碰巧存在的同名函数。Foundation 只接受其登记的演示 profile，
@@ -309,6 +360,16 @@ pitch/yaw/roll 或 defaultTransform。mainMusic 必须是 asset reference 并通
 features 按引用文本 ID 排序且唯一，包含会改变求值/解码要求的显式能力及 gameplay profile。
 资源需求从完整 REF0 和 typed definition 验证，不包含 source path 或实际资源 bytes。
 
+R4 明确两条 canonical 口径：
+
+- typed 模型的 `resourceClosure` 是从 asset 引用派生出的 **set**：mainMusic 一条
+  `MainMusic`，每个 Renderable 的 mesh/material 各一条 `RenderableMesh`/`RenderableMaterial`，
+  相同 (assetId, use) 只保留一条。Writer 拒绝与该派生集合不一致的声明
+  （`packed.identity.closure`），Decoder 用同一派生集合补全模型，因此
+  `decode(encode(model))` 的闭包与模型一致，而不是被静默丢弃。
+- 默认相机只承载 position；`defaultTransform` 的 rotation 必须是单位四元数、scale 必须是
+  `(1,1,1)`，否则 Writer 报 `packed.identity.camera_transform`，不静默压平。
+
 ### 6.4 TIME
 
 ```text
@@ -324,6 +385,9 @@ stops[stopCount]             beat atom, durationMs: f64
 
 Tempo 和 Stop 分别按 Beat 排序。值域、Stop 边界、Hermite 与重叠检测沿用
 [TIMING_MODEL.md](TIMING_MODEL.md)，Packed 不改变时间算法。
+R4 明确：canonical Writer 必须按 `startBeat` / `beat` 升序写出两张表，Reader 必须校验
+严格升序与唯一性（共享 Beat 由 10.1 预映像拒绝），非规范次序的 artifact 报
+`packed.time.order`。模型次序不再影响产物 bytes。
 
 ### 6.5 IDN0：不可删除的实体身份
 
@@ -397,7 +461,8 @@ archetype index 是行号。candidate component mask：
 | 6 | Animator / 后续合同 |
 | 7 | Effect binding / 后续合同 |
 
-bits 8..63 未定义；Foundation 还拒绝 bit 3/6/7。每行的 defaultsByteCount 必须和实际
+bits 8..63 未定义。Foundation Reader 只接受 bit 0/1/2/4：bit 3/6/7 与 bits 8..63 一律
+拒绝，不能静默丢弃未实现 Component 的声明。每行的 defaultsByteCount 必须和实际
 payload 长度一致。Archetype 不保存实体 ID、parent、requirement identity 或 CXT。
 
 candidate canonical Writer 为每个不同 componentMask 建立**恰好一个** Archetype，
@@ -405,6 +470,11 @@ candidate canonical Writer 为每个不同 componentMask 建立**恰好一个** 
 默认值，同频时按该 Component 规范字段 bytes 升序决胜。Quaternion 是完整原子值，
 不能分量各选众数后拼出非法旋转。所有实体拥有相同 mask 时无需重复四万个原型。
 其他优化分组策略必须属于明确的新 writer profile，不以任意启发式破坏可复现写出。
+
+R4 明确该规则的可执行口径：默认值取自该 mask 下出现次数最多的完整 Component 值；同频时
+比较该 Component 的规范字段 bytes（字段索引顺序；text 用 length-prefixed bytes，浮点用
+LE bit pattern），因此并列时的胜者与模型次序无关。差异行也必须只与同一 Archetype 的默认值
+比较，并且实体在 components 数组中的位置不得改变写出的 mask 或 atoms。
 
 ### 7.2 ENT0
 
@@ -444,6 +514,11 @@ Archetype default；未知 mask bit、重复行和缺失行都失败。
 规范 Writer 只把与默认值不同的字段设为 changed。Decoder 先复制该实体的 Archetype
 默认值，再应用差异，最后验证具体 Component。不从前一个实体继承字段。
 
+每个 stream 的合法 change bit 恰好是该 Component 的 field index 集合：TRN0 = bits
+0/3/4/5/6（position、rotation、scale），REN0 = bits 0/1/2（mesh、material、alpha），
+CAM0 = bits 0/1/2/3（type、fovY、near、far）。R4 明确 CAM0 必须逐字段比较与写出：
+只比较 type/fovY 会把 near/far 静默退回 Archetype 默认值。
+
 示例：共享 Transform 默认位置 `(0,0,0)`、单位旋转/缩放的第一个实体，仅 x=2：
 
 ```text
@@ -475,7 +550,8 @@ effectSetIndexPlusOne        uv32
 ```
 
 首 ordinalDelta 为绝对值；后续允许 0，因为同一实体可以有多个 localId。完整
-RequirementIdentity 为 `(EntityIdentity, localId)`。重复 identity 失败。
+RequirementIdentity 为 `(EntityIdentity, localId)`。重复 identity 失败；Reader 必须校验
+`(entity ordinal, localId bytes)` 严格升序，乱序或重复都以稳定诊断拒绝。
 拥有 bit 2 的实体必须有至少一条 REQ0，其他实体不能拥有 REQ0。
 
 intervalKind 的编码为 `0=point, 1=half-open-range`；range 必须满足 end>start。
@@ -501,7 +577,8 @@ constraints[] {
 ```
 
 Foundation 只登记候选离散 `lane` constraint。每 set 至少一项、kind 唯一并按 kind
-升序；sets 按完整规范 payload bytes 去重排序。none 使用 REQ0 的 0，不保存空 set。
+升序；sets 按完整规范 payload bytes 去重排序，Reader 必须校验该次序（本 revision 即
+按 lane 严格升序）而不是沿用首次出现次序。none 使用 REQ0 的 0，不保存空 set。
 lane 的有效范围必须由引用的候选 judgement domain 校验；它不是屏幕 x 值。
 新的约束必须先有 typed schema 和独立 capability，不允许任意 JSON 进入 CNS0。
 
@@ -518,6 +595,10 @@ lane 的有效范围必须由引用的候选 judgement domain 校验；它不是
 
 存在 REQ0 时须声明该 feature，所有要求都必须满足本表。没有 REQ0 时可以不声明。
 Foundation revision 1 不接受其他 gameplay profile 或 domain/action 组合。
+Writer 与 Reader 必须用同一组条件判定本表，并使用同一稳定的 profile 诊断族：未声明或
+未登记的 feature ID/version、requirement kind 非 `tap`、interval 非 `point`、domain/action
+不匹配、约束不是恰好一个 `lane`、lane 超出 `[0,3]`、非空 effect set。profile 判定必须在
+semanticIdentity 比对之前完成，诊断不得伪装成身份不符。
 该 profile 只证明时刻、域、动作和约束能被无损存储，不定义键位映射、容差窗口、
 计分或 Hit/Miss 算法，不能用它冒充 Stage 7A 的可玩判定。
 
@@ -565,12 +646,32 @@ DBG0 可保存 source mapping、名称、字段路径和作者提示。本草案
 ```
 
 物理次序不决定依赖次序。区间、循环、type 错误和 hash 不匹配都须在 Runtime/World
-发布前失败。失败不发布半份新 Chart；会话切换时旧的已提交 active chart 按原事务
+发布前失败。profile 校验属于「complete semantic validation」，其拒绝必须先于
+semanticIdentity 比对，使一个 hash 自洽但超出登记 subset 的产物报告 profile 原因。失败不发布半份新 Chart；会话切换时旧的已提交 active chart 按原事务
 合同保留，但不能被冒充为本次成功结果。诊断至少含 section、record、字段和错误类别。
+
+预算诊断优先于 payload 解析：Header 计数预算在 size/CRC 之后、directory 读取之前报告；
+逐项次序为目录项结构 -> 注册表决策 -> section 预算 -> section CRC -> 布局与 decoded 总和。
+因此 section 预算先于 CRC（不触碰超预算 payload），注册表决策先于 section 预算，count 预算
+先于 STR0/REF0/IDN0 的行解析。所有入口的 Packed 文件 byte 门禁使用同一个
+`packed.budget.file_bytes`，取代旧的 `packed.io.file_limit` 别名。
 
 Writer 只接受已展开且引用完整的 canonical model。在写盘前通过无副作用 sizing pass
 计算确切 bytes、count 和 checked arithmetic，超过 16 MiB 不产出部分有效文件。
+次序为 revision/flags -> profile -> 计数预算 -> semanticIdentity -> 字典预算 ->
+section 预算 -> decoded/文件 envelope -> 组装，因此任何超预算模型都不会产生部分产物，
+也不会把计数器截断进固定宽度字段（R3）。
 输出使用临时文件和原子替换，文件操作错误也必须保留上一次有效产物。
+
+R4 补充的 canonical 口径（全部在 `semanticIdentity` 预映像中拒绝，因此先于身份比对）：
+
+- Component 差异行只与同一 Archetype 默认值比较，且 entity 的 components 数组位置不影响
+  写出的 mask/atoms（`packed.identity.*` 不接受"最后一个同类型组件才被比较"的写法）。
+- TIME tempo/stop 升序（`packed.time.order`）。
+- 声明的 resourceClosure 必须等于派生集合（`packed.identity.closure`）。
+- 默认相机 transform 只允许 position（`packed.identity.camera_transform`）。
+- TypedReference 的类别文本必须是 judgement-domain / action
+  （`packed.identity.reference_domain`）。
 
 安全失败例至少覆盖：截断 Header/varint、超长字典、UTF-8 错误、偏移溢出、目录重叠、
 CRC 错误、重复身份、父循环、mask 不匹配、缺行、多个 Requirement 的重复 localId、
@@ -642,6 +743,10 @@ i64 为二进制补码。按以下顺序直接串接，之后计算 SHA-256：
 实体表的 5..7 步对每项 Requirement 连续执行，不拆成三列。浮点保持完整 f32/f64
 bits，所有 zero 已规范为 +0；不散列 Runtime 指针、字典索引、Archetype 编号或
 压缩选择。新语义/调度 payload 启用时须更新 revision 和对应的 hash 字段合同。
+
+revision 1 的 Header 必须携带按本节预映像计算出的摘要。Reader 在结构、预算和语义校验
+之后重算并比对，任何不一致（包括全零摘要）都必须稳定拒绝，不允许为兼容而「零值即跳过」。
+在本合同实现之前生成的零 hash 候选产物必须显式重新生成，不能继续作为有效 artifact 消费。
 
 ### 10.2 候选 hash golden
 
