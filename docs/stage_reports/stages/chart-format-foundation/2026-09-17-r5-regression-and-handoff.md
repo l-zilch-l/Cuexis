@@ -9,14 +9,18 @@
     `GCC Release`/`GCC Shared Release` 因 A20 失败
   - 第二轮 `2cc478e`：Windows MSVC、Windows MinGW **成功**（A20 已闭合）；Linux Quality 的
     `GCC Release`/`GCC Shared Release` 转为**成功**，但两个 Clang sanitizer 任务因 A22 失败
-  - 第三轮：含 A22 修复的 SHA 待推送复验
-- 分支：`codex/chart-format-foundation-hardening`（已推送，upstream 为 origin 同名分支）
+  - 第三轮 `e0ca9ff`：三个平台 **全部成功**，A20/A22 均闭合，hosted 门禁通过；三平台
+    运行见 §11.1
+  - 第三轮 `e0ca9ff`（含 A22 修复，报告 SHA）：Linux Quality、Windows MSVC、Windows MinGW
+    **三个 workflow 全部成功**
+- 分支：`codex/chart-format-foundation-hardening`（已推送，upstream 为 origin 同名分支；
+  未开 PR、未合并、未发布）
 - 平台与工具链：Windows x64；MSVC 14.51.36231（VS 18 Community）；
   GCC 16.1.0（MSYS2 ucrt64，`x64-mingw-static`）；Clang 22.1.8（本机 clang++ 前端口检查）；
   Ninja；`VCPKG_ROOT=D:\vcpkg`
-- 状态：**本地回归矩阵与容量复跑完成；hosted 验证进行中（A19/A20/A21/A22 已修复，待第三轮
-  复验）；owner acceptance 未记录。** 因此本计划保持 active，Stage 6 保持 future，
-  本报告不声明 R5 关闭。
+- 状态：**本地回归矩阵、容量复跑与同 SHA hosted 三轮验证完成（第三轮三平台全绿）；
+  owner acceptance 未记录。** 因此本计划保持 active，Stage 6 保持 future，本报告不声明
+  R5.6 已完成，只声明 R5.1-R5.4 的证据已齐备。
 - 容量数据：[Debug](2026-09-17-r5-capacity-data.json)、
   [Release](2026-09-17-r5-capacity-data-release.json)（均以实现 SHA `0e501a5` 运行；后续
   提交只改构建告警选项与文档，不改 chart 实现）
@@ -42,8 +46,11 @@
 4. 最终 SHA 容量复跑完成，且与 R4（`4ebf244`）及修复前（`25e546d`）的 wire 字节**完全一致**：
    low-reuse 40k = 1,232,408 bytes / decoded 1,232,024；CXT 阶梯 = 1,290 bytes；
    high-reuse 40k = 1,247,446 bytes，说明 A20/A21 的比较器改写对语义与 wire 完全中性。
-5. 未闭合项：hosted 第三轮复验、owner acceptance、A16（CXT capability 声明来源，留给
-   Stage 6）、父图环路 O(n²) 观测项。
+5. hosted 门禁达成：第三轮 `e0ca9ff` 的 Linux Quality、Windows MSVC、Windows MinGW 三个
+   workflow 全部成功（Linux 含 GCC Release/GCC Shared Release/两个 Clang sanitizer/coverage/
+   clang-tidy，Windows 含 release 的 `/W4 /WX` 与 GCC `-Werror`）。
+6. 唯一未闭合项：owner acceptance（R5.5 末句）与随后的归档/Stage 6 恢复（R5.6）；技术残余为
+   A16（CXT capability 声明来源，留给 Stage 6）与父图环路 O(n²) 观测项。
 
 ## 2. 新发现并修复的缺陷 A19：headless 配置无法生成
 
@@ -331,7 +338,7 @@ FrameDigest v1-v3 的冻结定义（相关用例源码在本阶段未被修改�
 
 | 项 | 状态 | 说明 |
 | --- | --- | --- |
-| 同 SHA hosted：Linux Quality、Windows MSVC、Windows MinGW（计划 R5.3） | **已尝试、未通过；修复待重推复验** | 首轮 run `35253027313`/`35253027357`/`35253027366`（SHA `524db9f`）：MSVC 成功，MinGW `release` 与 Linux `GCC Release`/`GCC Shared Release` 因 A20 在 Build 失败；修复见 §2.5，SHA `0e501a5` 待推送复验 |
+| 同 SHA hosted：Linux Quality、Windows MSVC、Windows MinGW（计划 R5.3） | **完成** | 三轮迭代后 `e0ca9ff` 三平台全绿（§11.1）：Linux `35309906143`、MSVC `35309906142`、MinGW `35309906141`；实现 SHA `9314646` 与报告 SHA `e0ca9ff` 之间只有 `docs/` 变化（§11.3） |
 | owner acceptance（计划 R5.5） | **未记录** | 需要 owner 明确接受后才能归档计划并恢复 Stage 6 |
 | Linux POSIX 容量分支、sanitize/coverage/clang-tidy | 未在本机执行（平台） | 只能在 Linux/hosted 上运行；首轮 hosted 中 Clang ASan+UBSan、Clang Shared Debug、coverage、clang-tidy 任务均通过 |
 | A16：CXT v2 展开不声明 capability `features`、不派生闭包 | 未闭合（Stage 6 决策） | 见 R4 报告 §1.1；E2E 显式注入 `CanonicalFeature{"cuexis.gameplay.candidate.lanes4", 1}` |
@@ -427,8 +434,8 @@ git diff --check
 | --- | --- | --- |
 | R5.1 Debug/Release、headless、架构、static/shared package 与安装头 external consumer | **完成（本地）** | §3.1：6 个配置全量绿色；架构与 7 个 consumer 用例在全部配置通过 |
 | R5.2 旧 Chart/CXT/CXC、默认路由、合法 v4 identity/FrameDigest 回归；新增 hash 不改变既有 canonical bytes | **完成** | §4：fixtures/schemas 零改动；§4.2 逐用例；§4.3 SDK 边界 |
-| R5.3 固定最终候选 SHA 并取得 Linux Quality / Windows MSVC / Windows MinGW 运行 | **进行中；两个平台已绿、Linux 待第三轮** | 首轮 `524db9f`：MSVC `35253027357` 成功；Linux `35253027313` 与 MinGW `35253027366` 因 A20 失败。第二轮 `2cc478e`：MSVC `35258433530`、MinGW `35258433516` 成功（A20 闭合）；Linux `35258433569` 的 GCC Release/GCC Shared Release 转为成功，Clang sanitizer 两项因 A22 失败。A22 已在 `9314646` 修复，第三轮运行见 §11.1 |
-| R5.4 实现/构建变化后在最终 SHA 重新验证，并按 report-SHA revalidation 记录 | **进行中** | 每次实现变化后都重建并在新 SHA 重跑：`25e546d` 与 `0e501a5` 各有完整矩阵与容量复跑；报告提交 SHA 与实现 SHA 的差异只允许落在 `docs/`，并在 §11 记录复验运行 |
+| R5.3 固定最终候选 SHA 并取得 Linux Quality / Windows MSVC / Windows MinGW 运行 | **完成** | 实现 SHA `9314646` + 报告 SHA `e0ca9ff`；第三轮 run Linux `35309906143`、MSVC `35309906142`、MinGW `35309906141` 全部 success（§11.1）。首轮/第二轮失败原因 A20、A22 均已修复并复验 |
+| R5.4 实现/构建变化后在最终 SHA 重新验证，并按 report-SHA revalidation 记录 | **完成** | 每次实现或构建输入变化后都重建并在新 SHA 重跑：`25e546d`、`0e501a5`、`9314646` 均有对应矩阵/容量记录；实现 SHA `9314646` 与报告 SHA `e0ca9ff` 之间只有 `docs/` 变化（§11.3），hosted 复验运行记录于 §11.1 |
 | R5.5 形成 completion report，逐项关闭 R0-R5，列出允许/禁止消费、identity/revision 政策、预算、残余与 Stage 6 接手命令，记录 owner acceptance | **报告完成；acceptance 待记录** | 本报告 §10、§11；owner 明确接受尚未取得 |
 | R5.6 归档计划、Stage 6 恢复 active、同步状态/索引/路线图/旧路径映射/AGENTS/检查器 | **未触发** | 条件未满足；计划保持 active，Stage 6 保持 future |
 
@@ -473,8 +480,8 @@ git diff --check
 ### 10.4 已知残余与接手命令
 
 - 残余：A16（CXT capability 声明来源与闭包派生）需 Stage 6 决策；父图环路检测 O(n²)
-  观测项；candidate CXC 用例的覆盖依赖 `CUEXIS_BUILD_DEVELOPER_TOOLS=ON`；hosted 三平台的
-  最终同 SHA 复验仍在进行（§11.1），Linux 的 sanitizer/coverage/clang-tidy 只在 hosted 执行。
+  观测项；candidate CXC 用例的覆盖依赖 `CUEXIS_BUILD_DEVELOPER_TOOLS=ON`。hosted 三平台已
+  在 `e0ca9ff` 全绿（§11.1），Linux 的 sanitizer/coverage/clang-tidy 只在 hosted 执行。
 - 接手命令：
 
 ```powershell
@@ -487,15 +494,14 @@ python -B tools/check_docs.py
 
 ## 11. 后续动作
 
-1. 推送含 A22 修复（`9314646`）与本次报告更新的分支，在**新的报告 SHA** 上完成第三轮
-   Linux Quality、Windows MSVC、Windows MinGW，并把 run、SHA、工具链与关键命令补记到
-   §11.1。
-2. 记录 report-SHA revalidation：实现 SHA 与记录用报告 SHA 之间只允许 `docs/` 变化
-   （§11.3），不把早期 SHA 的结果当作修复后证据。
-3. 记录 owner 明确接受（用户于本轮指示"修复后推送、hosted 全绿后继续完成 R5，不开 PR"，
-   仍以 §10 的交接清单为准取得最终 acceptance）。
-4. 只有第 1-3 步完成，才归档本计划、把 Stage 6 从 future 恢复 active，并同步
-   `CURRENT_STATUS.md`、路线图、索引与 `AGENTS.md`。
+1. ~~推送并在新报告 SHA 上完成第三轮 hosted~~ **已完成**：`e0ca9ff` 三平台全绿（§11.1）。
+2. ~~记录 report-SHA revalidation~~ **已完成**：`git diff --name-only 9314646..e0ca9ff`
+   只列出 `docs/`（`CURRENT_STATUS.md`、计划文件、本报告），非 `docs/` 条目数为 0。
+3. **待完成**：记录 owner 明确接受（用户已指示"修复后推送、hosted 全绿后继续完成 R5、
+   不开 PR"；仍以 §10 的交接清单为接受对象，接受后即视为 R5.5 完成）。
+4. **待完成**：owner 接受后归档本计划、把 Stage 6 从 future 恢复 active，并同步
+   `CURRENT_STATUS.md`、路线图、索引与 `AGENTS.md`（R5.6）。
+5. 本分支**不**开 PR、不合并、不发布；这些动作需要另外的明确授权。
 
 ### 11.1 hosted 运行记录
 
@@ -507,7 +513,12 @@ python -B tools/check_docs.py
 | 第二轮（A20/A21 已修复，A22 未修复） | `2cc478e` | Windows MSVC `35258433530` | **成功** |
 | 第二轮 | `2cc478e` | Windows MinGW `35258433516` | **成功**：`release` 与 `debug` 均通过，A20 闭合 |
 | 第二轮 | `2cc478e` | Linux Quality `35258433569` | **失败**：`GCC Release`、`GCC Shared Release` 转为**成功**（A20 闭合），但 `Clang ASan + UBSan` 与 `Clang ASan + UBSan shader-tools` 在 Build 步骤因 A22（`unknown warning option '-Werror=maybe-uninitialized'`）失败；其余任务通过 |
-| 第三轮（A22 已修复） | 本轮报告 SHA | 待运行 | 待填写 |
+| 第三轮（A22 已修复） | `e0ca9ff` | Linux Quality `35309906143` | **成功**：全部 10 个任务通过，含 `GCC Release`、`GCC Shared Release`、`Clang ASan + UBSan`、`Clang ASan + UBSan shader-tools`、`Clang Shared Debug`、`GCC/Adapter/Shader Tools Coverage`、clang-tidy 与 Documentation contracts |
+| 第三轮（A22 已修复） | `e0ca9ff` | Windows MSVC `35309906142` | **成功**（debug 与 release 均通过，含 `/W4 /WX`） |
+| 第三轮（A22 已修复） | `e0ca9ff` | Windows MinGW `35309906141` | **成功**（debug 与 release 均通过，release 为 GCC + `-Werror`） |
+
+第三轮三个 workflow 全绿，且 `e0ca9ff` 相对实现 SHA `9314646` 只有 `docs/` 变化（§11.3），
+因此本报告记录的同 SHA 证据为：**实现 SHA `9314646` + 报告 SHA `e0ca9ff`**。
 
 首轮失败不是环境问题：本地 GCC 16.1.0 与 hosted GCC 13 / 16.2.0 在相同 TU 上报出相同诊断，
 修复后本地同类 `-Werror` 构建与全量用例均已通过。第二轮 Linux 的 A22 同样是可复现的构建
@@ -533,8 +544,11 @@ Stage 6 仍为 future；R0-R5 的任何修复都没有为 Stage 6 提供新能�
 - hosted 运行总是针对被推送的分支头 SHA。记录证据本身会产生新的提交，因此仓库惯例是
   记录实现 SHA 与报告 SHA，并证明两者之间只有 `docs/` 变化（`git diff --name-only
   <实现 SHA>..<报告 SHA>` 中非 `docs/` 条目数为 0）。
-- 本轮每一轮 hosted 使用的 SHA 都已用该检查确认：`2cc478e` 相对实现 SHA `0e501a5` 只改
-  `docs/`（6 个文件）；第三轮的报告 SHA 相对实现 SHA `9314646` 同样只改 `docs/`，其
-  非 `docs/` 条目数在提交后记录为本节数据。
+- 本轮每一轮 hosted 使用的 SHA 都已用该检查确认：
+  | hosted SHA | 实现 SHA | `git diff --name-only <实现>..<hosted>` 非 `docs/` 条目 |
+  | --- | --- | --- |
+  | `524db9f` | `25e546d` | 0（7 个 `docs/` 文件） |
+  | `2cc478e` | `0e501a5` | 0（6 个 `docs/` 文件） |
+  | `e0ca9ff` | `9314646` | 0（3 个 `docs/` 文件） |
 - 因此报告的结论是"实现 SHA X 的代码 + 仅文档差异"，而不是把更早 SHA 的运行当作修复后
   证据；每次实现改动后都在新 SHA 重跑本地全量与容量探针（§11.2）。

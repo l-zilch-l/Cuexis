@@ -1,9 +1,8 @@
 # Chart Format Foundation Hardening：交接加固实施计划
 
-状态：active；当前实施阶段；R0-R4 完成（D1-D10 已裁定），R5 本地回归矩阵与最终 SHA 容量
-复跑完成，并修复 A19（headless 生成阻断）、A20/A21（GCC `-Werror` release 构建阻断）与
-A22（GCC 专用告警降级误用于 Clang 的 sanitizer 构建）；hosted 已两轮迭代（MSVC 绿、MinGW
-已绿，Linux 仅剩第三轮复验），owner acceptance 未闭合，Stage 6 保持 future
+状态：active；当前实施阶段；R0-R4 完成（D1-D10 已裁定），R5 本地回归矩阵、容量复跑与同 SHA
+hosted 三轮验证完成（`e0ca9ff` 的 Linux Quality / Windows MSVC / Windows MinGW 全绿），
+修复了 A19、A20/A21、A22；仅剩 owner acceptance（R5.5）与归档/Stage 6 恢复（R5.6）
 
 更新日期：2026-09-17
 
@@ -81,7 +80,7 @@ R0 基线、复现和合同决策
 | R2 | 完成；profile、section 注册表与内部次序在所有入口一致拒绝 | [R2 报告](../../../stage_reports/stages/chart-format-foundation/2026-09-17-r2-profile-rejection.md)、统一 `packed.profile.*` 诊断、12 个 R2 用例、A09 次序校验 | 登记 subset 由同一 validator 双侧拒绝；R2P 与 R0-H02/R0-A01 用例已翻转（已达成） |
 | R3 | 完成；预算表冻结，`maxPackedSectionBytes` 与逐字段预算在所有入口生效 | [R3 报告](../../../stage_reports/stages/chart-format-foundation/2026-09-17-r3-budgets-and-arithmetic.md)、Spec §3.3 预算表、11 个 R3 用例、A13 裁定（header `referenceCount`） | 每个硬限制有边界成功/越界拒绝/自定义值用例，零值策略与错误优先级已记录（已达成） |
 | R4 | 完成；端到端往返、CXT 阶梯、真实 CXC 包、原子写回滚与机器可读容量数据齐备 | [R4 报告](../../../stage_reports/stages/chart-format-foundation/2026-09-17-r4-roundtrip-capacity-rollback.md)、[容量数据](../../../stage_reports/stages/chart-format-foundation/2026-09-17-r4-capacity-data.json)、19 个 R4 用例、容量探针 | A10/A11/A12/A17/A18 修复、D9/D10 冻结；完整语义比较通过（已达成） |
-| R5 | 进行中；本地回归矩阵（Debug/Release/shared/headless/MinGW headless/GCC Release `-Werror` 全绿）、A19/A20/A21/A22 修复（实现 SHA `9314646`）、最终 SHA 容量复跑与关闭报告完成；hosted 首轮暴露 A20、第二轮暴露 A22 并已修复，MSVC 与 MinGW 已绿，Linux 待第三轮复验，owner acceptance 未闭合 | [R5 报告](../../../stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)、[容量数据 Debug](../../../stage_reports/stages/chart-format-foundation/2026-09-17-r5-capacity-data.json)、[容量数据 Release](../../../stage_reports/stages/chart-format-foundation/2026-09-17-r5-capacity-data-release.json)、6 个配置的全量 CTest 记录、hosted run `35253027313`/`35253027357`/`35253027366`/`35258433569`/`35258433530`/`35258433516` | 同 SHA hosted 三轮全绿与 owner 接受齐备后才授权 Stage 6 |
+| R5 | 进行中（仅剩 acceptance 与归档）；本地回归矩阵（六个配置全绿）、A19/A20/A21/A22 修复（实现 SHA `9314646`）、容量复跑、关闭报告与同 SHA hosted 三轮验证（报告 SHA `e0ca9ff`：Linux Quality `35309906143`、Windows MSVC `35309906142`、Windows MinGW `35309906141` 全部成功）均已完成 | [R5 报告](../../../stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)、[容量数据 Debug](../../../stage_reports/stages/chart-format-foundation/2026-09-17-r5-capacity-data.json)、[容量数据 Release](../../../stage_reports/stages/chart-format-foundation/2026-09-17-r5-capacity-data-release.json)、6 个配置的全量 CTest 记录、hosted run `35253027313`/`35253027357`/`35253027366`/`35258433569`/`35258433530`/`35258433516`/`35309906143`/`35309906142`/`35309906141` | owner 接受后归档并把 Stage 6 恢复 active |
 
 批次状态在取得证据时逐项更新，不在阶段末一次性补勾。后续对话默认一次执行一个批次；
 若发现前置批次未关闭，先补齐前置，不跳到 Stage 6。
