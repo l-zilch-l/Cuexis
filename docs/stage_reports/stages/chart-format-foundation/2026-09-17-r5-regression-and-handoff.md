@@ -2,29 +2,37 @@
 
 - 批次：R5（回归矩阵、同 SHA hosted 记录、关闭报告）
 - 起始 SHA：`eeda4e4`（R4 提交；开工前工作区干净、无未提交修改）
-- 本轮实现 SHA：`0e501a5d1807f0109cbdd39ba9755ab8a34c185e`（两个修复提交：`25e546d`
-  headless 生成阻断 A19；`0e501a5` GCC `-Werror` 构建阻断 A20/A21）
-- 首轮 hosted（报告 SHA `524db9f`，run 见 §9）：Windows MSVC **成功**；Windows MinGW 与
-  Linux Quality 的 `release` 构建**失败**于 A20，已在 `0e501a5` 修复，需按 §11 重新推送验证
+- 本轮实现 SHA：`9314646`（三个修复提交：`25e546d` headless 生成阻断 A19；
+  `0e501a5` GCC `-Werror` 构建阻断 A20/A21；`9314646` A21 选项误用于 Clang 的 A22）
+- hosted 运行（详见 §11.1）：
+  - 首轮 `524db9f`：Windows MSVC 成功；Windows MinGW `release` 与 Linux Quality 的
+    `GCC Release`/`GCC Shared Release` 因 A20 失败
+  - 第二轮 `2cc478e`：Windows MSVC、Windows MinGW **成功**（A20 已闭合）；Linux Quality 的
+    `GCC Release`/`GCC Shared Release` 转为**成功**，但两个 Clang sanitizer 任务因 A22 失败
+  - 第三轮：含 A22 修复的 SHA 待推送复验
 - 分支：`codex/chart-format-foundation-hardening`（已推送，upstream 为 origin 同名分支）
 - 平台与工具链：Windows x64；MSVC 14.51.36231（VS 18 Community）；
-  GCC 16.1.0（MSYS2 ucrt64，`x64-mingw-static`）；Ninja；`VCPKG_ROOT=D:\vcpkg`
-- 状态：**本地回归矩阵与最终 SHA 容量复跑完成；同 SHA hosted 验证已尝试但未通过（A20，
-  修复待重推）；owner acceptance 未记录。** 因此本计划保持 active，Stage 6 保持 future，
+  GCC 16.1.0（MSYS2 ucrt64，`x64-mingw-static`）；Clang 22.1.8（本机 clang++ 前端口检查）；
+  Ninja；`VCPKG_ROOT=D:\vcpkg`
+- 状态：**本地回归矩阵与容量复跑完成；hosted 验证进行中（A19/A20/A21/A22 已修复，待第三轮
+  复验）；owner acceptance 未记录。** 因此本计划保持 active，Stage 6 保持 future，
   本报告不声明 R5 关闭。
 - 容量数据：[Debug](2026-09-17-r5-capacity-data.json)、
-  [Release](2026-09-17-r5-capacity-data-release.json)（均以实现 SHA `25e546d` 运行）
+  [Release](2026-09-17-r5-capacity-data-release.json)（均以实现 SHA `0e501a5` 运行；后续
+  提交只改构建告警选项与文档，不改 chart 实现）
 
 ## 1. 结论摘要
 
-1. 本轮发现并修复两个会**阻塞 hosted CI 的构建缺陷**：
+1. 本轮发现并修复三个会**阻塞 hosted CI 的构建缺陷**：
    - **A19**（`tests/cxc` 无条件链接 developer tool 层）使所有 headless preset 在 generate
      阶段失败，即 Linux Quality 的 5 个 headless 配置全部无法配置；修复见 §2。
    - **A20/A21**（GCC 在 `-Werror` release 构建下被 `std::vector<std::byte>` 三向比较的
      伪 `-Wstringop-overread`、以及 libstdc++ `std::string` 拷贝路径的伪
      `-Wmaybe-uninitialized` 阻断）使 hosted Windows MinGW `release` 与 Linux Quality 的
-     `GCC Release`/`GCC Shared Release` 构建失败；修复见 §2.5。首轮 hosted 运行已实测复现
-     该失败（§9）。
+     `GCC Release`/`GCC Shared Release` 构建失败；修复见 §2.5。首轮 hosted 已实测复现该失败。
+   - **A22**（A21 的 GCC 专用降级选项被无条件传给 Clang，而 `headless-sanitize` 系列用
+     `-Werror` 构建，Clang 以 unknown warning option 报错）使第二轮 hosted 的
+     `Clang ASan + UBSan` 与 `Clang ASan + UBSan shader-tools` 失败；修复见 §2.6。
 2. 本地回归矩阵 6 个配置全部绿色：Debug 683/683、Release 683/683、shared-debug
    686/686、headless-debug 612/612、mingw-headless-debug 612/612、
    GCC Release + `-Werror`（含 developer tools）628/628。
@@ -33,9 +41,9 @@
    全部通过；公共头保持纯 ASCII，`engine/chart` 未新增目标依赖。
 4. 最终 SHA 容量复跑完成，且与 R4（`4ebf244`）及修复前（`25e546d`）的 wire 字节**完全一致**：
    low-reuse 40k = 1,232,408 bytes / decoded 1,232,024；CXT 阶梯 = 1,290 bytes；
-   high-reuse 40k = 1,247,446 bytes，说明 A20/A21 的修复对语义与 wire 完全中性。
-5. 未闭合项：hosted 同 SHA 复验（A20/A21 修复需重推）、owner acceptance、A16（CXT
-   capability 声明来源，留给 Stage 6）、父图环路 O(n²) 观测项。
+   high-reuse 40k = 1,247,446 bytes，说明 A20/A21 的比较器改写对语义与 wire 完全中性。
+5. 未闭合项：hosted 第三轮复验、owner acceptance、A16（CXT capability 声明来源，留给
+   Stage 6）、父图环路 O(n²) 观测项。
 
 ## 2. 新发现并修复的缺陷 A19：headless 配置无法生成
 
@@ -160,6 +168,34 @@ MinGW `release` 与 Linux Quality 的 `GCC Release`、`GCC Shared Release` 在 B
 | 容量 wire 字节 | 与修复前逐字节一致（§5），证明排序语义未变 |
 | `-Wno-error` 生效性验证 | `g++ -Wall -Wno-error=unused-variable -Werror` 下该诊断仍为 warning，确认按诊断降级与选项顺序无关 |
 
+### 2.6 A22：GCC 专用告警降级被误用于 Clang
+
+- 复现：第二轮 hosted（report SHA `2cc478e`）的 Linux Quality 中，`Clang ASan + UBSan` 与
+  `Clang ASan + UBSan shader-tools` 在 Build 步骤失败：
+  ```text
+  error: unknown warning option '-Werror=maybe-uninitialized'; did you mean
+  '-Werror=uninitialized'? [-Werror,-Wunknown-warning-option]
+  ```
+  触发者是 `/usr/bin/clang++` 编译命令（例如 `engine/core` 与 chart 测试目标）。第一轮
+  hosted（无该选项）中两个任务是通过的，因此这是 A21 修复自身引入的回归。
+- 根因：A21 的 `-Wno-error=maybe-uninitialized` 放在非 MSVC 分支里，没有区分 GCC 与 Clang；
+  Clang 没有 `-Wmaybe-uninitialized`，把未知告警选项视为诊断，而 `headless-sanitize` 与
+  `headless-sanitize-shader-tools` 预设设置了 `CUEXIS_WARNINGS_AS_ERRORS=ON`，于是该诊断
+  升级为构建失败。
+- 修复：把该选项放进 `if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")`；Clang 不获得任何 GCC
+  专用选项，`-Wno-missing-field-initializers` 保持不变（Clang 支持）。
+- 验证：
+  | 检查 | 结果 |
+  | --- | --- |
+  | 最小 CMake 探针（同一 `cuexis_enable_warnings`，两个编译器各配置一次） | GCC：`-Werror` + `-Wno-error=maybe-uninitialized` + `-Wno-missing-field-initializers`；Clang：`-Werror` + `-Wno-missing-field-initializers`，**无** `maybe-uninitialized` |
+  | Clang 编译最小探针目标（`-Werror`） | 成功（若选项仍传入会直接报 unknown warning option） |
+  | `clang++ -std=c++20 -Wall -Wextra -Wpedantic -Werror` 编译 `packed_chart_tables.cpp`、`packed_semantic_identity.cpp`、`chart_capacity_probe.cpp` | 三个 TU 全部 0 warning 通过（Clang 22.1.8） |
+  | GCC 16.1.0 Release + `-Werror` 全量重建 | 成功（GCC 仍获得该降级选项） |
+  | MSVC `debug` 重新配置 + 重建 | 成功（`if(MSVC)` 分支未改动，行为不变） |
+  | GCC 全量 CTest（`mingw-headless-debug`、`mingw-werror`） | 见 §3.1（A22 修复后重跑） |
+- 说明：A22 只改构建告警选项，不改 chart 实现，因此 `0e501a5` 上的容量数据与语义结论继续
+  成立；第三轮 hosted 用于确认 Clang 任务恢复绿色。
+
 ## 3. 本地回归矩阵
 
 所有结果均为实现 SHA `0e501a5` 上的产物；A19/A20/A21 修复后构建输入已变化，因此 `25e546d`
@@ -178,6 +214,12 @@ MinGW `release` 与 Linux Quality 的 `GCC Release`、`GCC Shared Release` 在 B
 | `mingw-werror`（自建：GCC Release + `-Werror`，player/SDL/GL OFF） | GCC 16.1.0 / **ON** | 628 | **628/628 通过** | 1127.63 s | 1（symlink） |
 
 - `shared-debug` 比 static 多 3 个 `shared` 标签用例（共享库拓扑专项）。
+- A22 修复只改非 MSVC 目标的告警选项（GCC 侧选项不变、Clang 侧移除该选项），因此 GCC 两行
+  在 `9314646` 上重跑确认：`mingw-headless-debug` **612/612**（602.41 s）、
+  `mingw-werror` **628/628**（528.05 s）；MSVC 重新配置与重建通过、`if(MSVC)` 分支未改动。
+- Clang 侧以本机 `clang++` 22.1.8 直接编译 `packed_chart_tables.cpp`、
+  `packed_semantic_identity.cpp`、`chart_capacity_probe.cpp`，`-Wall -Wextra -Wpedantic
+  -Werror` 零告警；并以最小 CMake 探针确认 GCC 收到而 Clang 不收到 GCC 专用选项（§2.6）。
 - 所有配置中 `cuexis_architecture_tests` 均为第 1 个用例并通过（私有候选实现未进入公共
   头/安装集，未新增 adapter 传递依赖）。
 - 所有配置中 7 个 `cuexis_external_consumer_*`（`find_package`、`add_subdirectory`、
@@ -385,7 +427,7 @@ git diff --check
 | --- | --- | --- |
 | R5.1 Debug/Release、headless、架构、static/shared package 与安装头 external consumer | **完成（本地）** | §3.1：6 个配置全量绿色；架构与 7 个 consumer 用例在全部配置通过 |
 | R5.2 旧 Chart/CXT/CXC、默认路由、合法 v4 identity/FrameDigest 回归；新增 hash 不改变既有 canonical bytes | **完成** | §4：fixtures/schemas 零改动；§4.2 逐用例；§4.3 SDK 边界 |
-| R5.3 固定最终候选 SHA 并取得 Linux Quality / Windows MSVC / Windows MinGW 运行 | **已尝试、未通过** | 首轮（SHA `524db9f`）run `35253027313` Linux Quality（GCC Release、GCC Shared Release 失败）、`35253027357` Windows MSVC（成功）、`35253027366` Windows MinGW（release 失败）；失败原因 A20 已在 `0e501a5` 修复，待重推复验 |
+| R5.3 固定最终候选 SHA 并取得 Linux Quality / Windows MSVC / Windows MinGW 运行 | **进行中；两个平台已绿、Linux 待第三轮** | 首轮 `524db9f`：MSVC `35253027357` 成功；Linux `35253027313` 与 MinGW `35253027366` 因 A20 失败。第二轮 `2cc478e`：MSVC `35258433530`、MinGW `35258433516` 成功（A20 闭合）；Linux `35258433569` 的 GCC Release/GCC Shared Release 转为成功，Clang sanitizer 两项因 A22 失败。A22 已在 `9314646` 修复，第三轮运行见 §11.1 |
 | R5.4 实现/构建变化后在最终 SHA 重新验证，并按 report-SHA revalidation 记录 | **进行中** | 每次实现变化后都重建并在新 SHA 重跑：`25e546d` 与 `0e501a5` 各有完整矩阵与容量复跑；报告提交 SHA 与实现 SHA 的差异只允许落在 `docs/`，并在 §11 记录复验运行 |
 | R5.5 形成 completion report，逐项关闭 R0-R5，列出允许/禁止消费、identity/revision 政策、预算、残余与 Stage 6 接手命令，记录 owner acceptance | **报告完成；acceptance 待记录** | 本报告 §10、§11；owner 明确接受尚未取得 |
 | R5.6 归档计划、Stage 6 恢复 active、同步状态/索引/路线图/旧路径映射/AGENTS/检查器 | **未触发** | 条件未满足；计划保持 active，Stage 6 保持 future |
@@ -431,8 +473,8 @@ git diff --check
 ### 10.4 已知残余与接手命令
 
 - 残余：A16（CXT capability 声明来源与闭包派生）需 Stage 6 决策；父图环路检测 O(n²)
-  观测项；candidate CXC 用例的覆盖依赖 `CUEXIS_BUILD_DEVELOPER_TOOLS=ON`；hosted 三平台
-  与 Linux 专项 gate 尚未在本分支运行。
+  观测项；candidate CXC 用例的覆盖依赖 `CUEXIS_BUILD_DEVELOPER_TOOLS=ON`；hosted 三平台的
+  最终同 SHA 复验仍在进行（§11.1），Linux 的 sanitizer/coverage/clang-tidy 只在 hosted 执行。
 - 接手命令：
 
 ```powershell
@@ -445,13 +487,13 @@ python -B tools/check_docs.py
 
 ## 11. 后续动作
 
-1. 推送含 A20/A21 修复（`0e501a5`）与本次报告更新的分支，在**新的报告 SHA** 上重跑
-   Linux Quality、Windows MSVC、Windows MinGW，并把 workflow/run、SHA、工具链、关键命令
-   与产物补记到本节。
-2. 记录 report-SHA revalidation：实现 SHA `0e501a5` 与报告 SHA 之间只允许 `docs/` 变化，
-   并以此说明报告 SHA 的 hosted 运行同样覆盖该实现（不把旧 SHA `524db9f` 的结果当作
-   修复后证据）。
-3. 记录 owner 明确接受。
+1. 推送含 A22 修复（`9314646`）与本次报告更新的分支，在**新的报告 SHA** 上完成第三轮
+   Linux Quality、Windows MSVC、Windows MinGW，并把 run、SHA、工具链与关键命令补记到
+   §11.1。
+2. 记录 report-SHA revalidation：实现 SHA 与记录用报告 SHA 之间只允许 `docs/` 变化
+   （§11.3），不把早期 SHA 的结果当作修复后证据。
+3. 记录 owner 明确接受（用户于本轮指示"修复后推送、hosted 全绿后继续完成 R5，不开 PR"，
+   仍以 §10 的交接清单为准取得最终 acceptance）。
 4. 只有第 1-3 步完成，才归档本计划、把 Stage 6 从 future 恢复 active，并同步
    `CURRENT_STATUS.md`、路线图、索引与 `AGENTS.md`。
 
@@ -462,10 +504,14 @@ python -B tools/check_docs.py
 | 首轮（A20 修复前） | `524db9f` | Linux Quality `35253027313` | **失败**：`GCC Release`、`GCC Shared Release` 在 Build 步骤因 `-Werror=stringop-overread` 失败（GCC 13）；其余任务（clang-tidy、Documentation contracts、GCC Coverage、Clang ASan+UBSan、Clang Shared Debug、Adapter/Shader Tools Coverage）通过 |
 | 首轮（A20 修复前） | `524db9f` | Windows MSVC `35253027357` | **成功**（矩阵全部通过） |
 | 首轮（A20 修复前） | `524db9f` | Windows MinGW `35253027366` | **失败**：`release` 在 Build 步骤因同一诊断失败（MSYS2 GCC 16.2.0），`debug` 通过 |
-| 复验（待推送） | 本次报告 SHA | — | 待运行 |
+| 第二轮（A20/A21 已修复，A22 未修复） | `2cc478e` | Windows MSVC `35258433530` | **成功** |
+| 第二轮 | `2cc478e` | Windows MinGW `35258433516` | **成功**：`release` 与 `debug` 均通过，A20 闭合 |
+| 第二轮 | `2cc478e` | Linux Quality `35258433569` | **失败**：`GCC Release`、`GCC Shared Release` 转为**成功**（A20 闭合），但 `Clang ASan + UBSan` 与 `Clang ASan + UBSan shader-tools` 在 Build 步骤因 A22（`unknown warning option '-Werror=maybe-uninitialized'`）失败；其余任务通过 |
+| 第三轮（A22 已修复） | 本轮报告 SHA | 待运行 | 待填写 |
 
 首轮失败不是环境问题：本地 GCC 16.1.0 与 hosted GCC 13 / 16.2.0 在相同 TU 上报出相同诊断，
-修复后本地同类 `-Werror` 构建与全量用例均已通过。
+修复后本地同类 `-Werror` 构建与全量用例均已通过。第二轮 Linux 的 A22 同样是可复现的构建
+配置缺陷，已在本地以 Clang 22.1.8 复现同类选项拒绝并验证修复（§2.6）。
 
 ### 11.2 本轮内的 SHA 变化与重验证
 
@@ -474,8 +520,21 @@ python -B tools/check_docs.py
 | A19 修复 | `25e546d` | headless 生成阻断 | 五个配置全量 CTest + 容量复跑 |
 | A20/A21 修复 | `ea71bd0` | GCC `-Werror` release 构建阻断 | 六个配置全量 CTest + 容量复跑 |
 | 同一修复的 clang-format 规范化（仅 `packed_chart_tables.cpp` 一处换行） | `0e501a5`（amend） | `cuexis_format_check` 要求 | 六个配置重建并重跑全量 CTest，容量探针在 `0e501a5` 重跑且 wire 字节不变（本报告所有数据均取自该 SHA） |
+| A22 修复（GCC 专用选项只给 GNU） | `9314646` | 第二轮 hosted 的 Clang sanitizer 任务失败 | 按编译器分别验证选项分派；GCC Release + `-Werror` 全量重建、MSVC 重新配置与重建、Clang 22.1.8 编译三个受影响 TU（含容量探针）全部通过；GCC 两套全量 CTest 重跑见 §3.1 |
 
 即：每次实现或构建输入变化都在同一轮内于新 SHA 重新构建、重跑全量用例并重跑容量探针，
-未用旧 SHA 运行替代修复后证据。
+未用旧 SHA 运行替代修复后证据。报告提交导致的 SHA 变化只允许落在 `docs/`（§11.3 记录其
+范围与验证）。
 
 Stage 6 仍为 future；R0-R5 的任何修复都没有为 Stage 6 提供新能力。
+
+### 11.3 report-SHA revalidation
+
+- hosted 运行总是针对被推送的分支头 SHA。记录证据本身会产生新的提交，因此仓库惯例是
+  记录实现 SHA 与报告 SHA，并证明两者之间只有 `docs/` 变化（`git diff --name-only
+  <实现 SHA>..<报告 SHA>` 中非 `docs/` 条目数为 0）。
+- 本轮每一轮 hosted 使用的 SHA 都已用该检查确认：`2cc478e` 相对实现 SHA `0e501a5` 只改
+  `docs/`（6 个文件）；第三轮的报告 SHA 相对实现 SHA `9314646` 同样只改 `docs/`，其
+  非 `docs/` 条目数在提交后记录为本节数据。
+- 因此报告的结论是"实现 SHA X 的代码 + 仅文档差异"，而不是把更早 SHA 的运行当作修复后
+  证据；每次实现改动后都在新 SHA 重跑本地全量与容量探针（§11.2）。
