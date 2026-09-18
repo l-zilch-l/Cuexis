@@ -1,33 +1,25 @@
-#Cuexis Agent Guide
+# Cuexis Agent Guide
 
-##Product direction
+## Product direction
 
-    ADR 0027 defines Cuexis as an embeddable** Cuexis Playback SDK** with two independent
-        applications : Cuexis Player and Cuexis Studio.RuntimeSession,
-    World, EnTT, SDL and OpenGL are internal / optional implementation details;
-external hosts use PlaybackSession, ContentProvider, RuntimeFrame,
-    FrameSnapshot and later Judgement /
-            Replay contracts
-                .
+ADR 0027 defines Cuexis as an embeddable **Cuexis Playback SDK** with two independent
+applications: Cuexis Player and Cuexis Studio. RuntimeSession, World, EnTT, SDL and OpenGL are
+internal / optional implementation details; external hosts use PlaybackSession, ContentProvider,
+RuntimeFrame, FrameSnapshot and later Judgement / Replay contracts.
 
-            The current baseline includes a functioning `cuexis_playback` module(`PlaybackSession`,
-`FrameSnapshot`, `RuntimeFrame`, `IContentProvider`)
-                .SDK API `0.7.0` is the current Playback preview after S5-C public
-        Presentation types. SDK API `0.6.0` remains the CFU-E historical package minor.
-        The preview supports static and matching
-        - toolchain C++ shared packages,
-    versioned public libraries, clean staged consumers, compatibility rejection gates,
-    PlaybackSource, FrameDigest v1 - v3,
-    and Portable Presentation v1.Filesystem / Memory / Host ContentProvider support,
-    ChartClock / HostClock / CuexisAudio, RuntimeTimeline, Prepared Playback, `cuexis_audio`,
-    and optional `cuexis_audio_sdl` are active.Stage 1C review findings R01 - R21 are closed.Stage
-                                                                              2 delivered Chart v3,
-    TimingMap, Behavior / Step Event, migration,
-    and FrameDigest v2.Stage 3 delivered portable resources,
-    candidate / active presentation transactions,
-    Validation Sink, the OpenGL adapter, Player rendering, external package consumers,
-    and cross - platform closure.Stable C ABI work remains in Stage 12;
-the minimum Input/Judgement/Score/Replay kernel is planned for Stage 7A.
+The current baseline includes a functioning `cuexis_playback` module (`PlaybackSession`,
+`FrameSnapshot`, `RuntimeFrame`, `IContentProvider`). SDK API `0.7.0` is the current Playback
+preview after S5-C public Presentation types. SDK API `0.6.0` remains the CFU-E historical
+package minor. The preview supports static and matching-toolchain C++ shared packages,
+versioned public libraries, clean staged consumers, compatibility rejection gates,
+PlaybackSource, FrameDigest v1-v3, and Portable Presentation v1. Filesystem / Memory / Host
+ContentProvider support, ChartClock / HostClock / CuexisAudio, RuntimeTimeline, Prepared
+Playback, `cuexis_audio`, and optional `cuexis_audio_sdl` are active. Stage 1C review findings
+R01-R21 are closed. Stage 2 delivered Chart v3, TimingMap, Behavior / Step Event, migration, and
+FrameDigest v2. Stage 3 delivered portable resources, candidate / active presentation
+transactions, Validation Sink, the OpenGL adapter, Player rendering, external package consumers,
+and cross-platform closure. Stable C ABI work remains in Stage 12; the minimum
+Input/Judgement/Score/Replay kernel is planned for Stage 7A.
 
 Stage 5 closed and merged into `master` on August 28, 2026 through PR #20 (`d380fc9`). S5-A froze
 Material/Shader contracts in ADR 0040 and `docs/formats/MATERIAL_SHADER.md`; S5-B through S5-H
@@ -254,12 +246,12 @@ When adding/removing a dependency, update **all** of:
 
 ## Versioning
 
-- Version components live in `cmake/CuexisVersion.cmake` (year/month/day/build);
-update them and
-  `vcpkg.json` together through `tools / update_version.py`.- `vcpkg.json` `version -
-    string` must match the canonical version from CuexisVersion.cmake* * exactly *
-        *(mismatch = fatal configure error).- `CUEXIS_SDK_API_VERSION` is independent from the date
-    - based build identity and controls the installed CMake package compatibility version; stable C ABI versioning starts in Stage 12.
+- Version components live in `cmake/CuexisVersion.cmake` (year/month/day/build); update them and
+  `vcpkg.json` together through `tools/update_version.py`.
+- `vcpkg.json` `version-string` must match the canonical version from CuexisVersion.cmake exactly
+  (mismatch = fatal configure error).
+- `CUEXIS_SDK_API_VERSION` is independent from the date-based build identity and controls the
+  installed CMake package compatibility version; stable C ABI versioning starts in Stage 12.
 - Generated header: `${CMAKE_BINARY_DIR}/generated/cuexis/version.hpp` — never committed.
 - Format: `yy.mm.dd-v[-suffix]` (UTC-based). The public legacy `cuexis::version::hour` remains `0`
   for SDK 0.5.x source compatibility and is not part of the build identity.
@@ -338,11 +330,10 @@ Stage 1D modules. `sdk/` and `adapters/` directories do not exist yet (planned).
 - New top-level documentation areas require a `README.md` index and a link from the main index.
 - When moving a document, preserve an old-path compatibility entry for at least one reorganization
   cycle and archive the full historical text when it remains useful.
-- Stage 0 and Stage 1A have completion reports but no separate current plan files;
-their original planning text is preserved in the archived PROJECT_GUIDE snapshot.- Stage 4 -
-    12 plans are future / deferred contracts,
-    not implementation claims.Each must retain a stage goal, prerequisites or recovery conditions,
-    scope, acceptance criteria, exclusions,
-    and archived source references.-
-        Candidate examples remain review inputs until the relevant ADR and production Schema /
-            Reader / Writer gates close.Do not move them into production fixtures prematurely.
+- Stage 0 and Stage 1A have completion reports but no separate current plan files; their original
+  planning text is preserved in the archived PROJECT_GUIDE snapshot.
+- Stage 4-12 plans are future / deferred contracts, not implementation claims. Each must retain a
+  stage goal, prerequisites or recovery conditions, scope, acceptance criteria, exclusions, and
+  archived source references.
+- Candidate examples remain review inputs until the relevant ADR and production Schema / Reader /
+  Writer gates close. Do not move them into production fixtures prematurely.
