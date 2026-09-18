@@ -55,8 +55,9 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
 
 ## 当前主路线
 
-- [Stage 6](active/stage-06/plan.md)：**当前阶段**，以 Chart v5 Core/Packed 为主要开发基线的
-  Playback/Player/CXC candidate path；Chart v4 保留为兼容回退。前置的
+- [Stage 6](active/stage-06/plan.md)：**当前阶段，2026-09-17 启动（首批 S6-A）**，以 Chart v5
+  Core/Packed 为主要开发基线的 Playback/Player/CXC candidate path；Chart v4 保留为兼容回退。
+  前置的
   [Foundation 交接加固](completed/chart-format-foundation-hardening/plan.md) 已于 2026-09-17
   关闭并经 owner 接受，允许/禁止消费边界见其
   [R5 报告](../stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)。

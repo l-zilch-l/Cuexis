@@ -107,8 +107,12 @@ Additive opacity        已拒绝
 
 ### 2.2 前置与交接约束
 
-- Foundation 必须先关闭 V5-0A 的物理模型、容量和 CXC entry 设计门禁。之后，Stage 6 可以启动
-  v5 Core/Packed candidate path；Stage 6 同时保留 Chart v4、CXT v1 和 CXC v1 的兼容回退。
+- Foundation 侧的 V5-0A 物理模型、容量和 CXC entry 设计门禁已随
+  [Foundation 交接加固](../../completed/chart-format-foundation-hardening/plan.md) 的 R0-R5 于
+  2026-09-17 关闭（允许/禁止消费边界见
+  [R5 报告](../../../stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)
+  §10），[Stage 6](../stage-06/plan.md) 已自此启动 v5 Core/Packed candidate path；Stage 6
+  同时保留 Chart v4、CXT v1 和 CXC v1 的兼容回退。
 - Stage 7A 必须冻结 Chart v5 所需的 JudgementRequirement、InputEvent、JudgementResult 和
   Replay identity。Stage 7B+ 的高级判定能力不是本阶段或 Stage 8 的整体前置。
 - Stage 8 关闭并经 owner acceptance 后，后续新增能力以 v5 typed/portable/Packed 谱面作为基线。

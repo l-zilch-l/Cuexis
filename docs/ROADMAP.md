@@ -104,8 +104,7 @@ Stage 7A
 允许的并行工作：
 
 ```text
-Stage 6 的 v5-first candidate path 实施（交接加固已关闭并经 owner 接受）
-Stage 6 的合同研究（不启动 candidate 接线或 S6 功能实施）
+Stage 6 的 v5-first candidate path 实施（自 2026-09-17 启动，首批 S6-A）
 Stage 7A 的最小 Judgement 合同研究
 Stage 7B+ 的高级判定设计研究
 ```

@@ -22,6 +22,11 @@ docs-only 复验 `c24f34e`）全部通过，owner 接受其
 （允许/禁止消费、identity/revision 政策、预算与残余见该报告 §10）。S6-A 至 S6-F 不因此
 标记完成，三个工程问题仍保持 open。
 
+**本阶段于 2026-09-17 启动**，从 §2 的第一个批次 S6-A（合同、基线和依赖决策）开始；S6-A 至
+S6-F 的前置、范围和门禁以本计划各批次为准，当前实现对 v5 candidate 的消费不得超出
+[R5 报告](../../../stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)
+§10.1 的允许清单。
+
 本阶段位于 Chart Format Foundation 之后，采用 Chart v5 Core/Packed candidate 作为主要开发
 和验证基线，同时保留 Chart v4、CXT v1、CXC v1 和 SDK `0.7.0` 作为兼容与回退基线。Stage 6
 负责证明 v5 candidate path 可以被 Player/Playback 消费，但不要求一次实现完整 Slide、多指、
