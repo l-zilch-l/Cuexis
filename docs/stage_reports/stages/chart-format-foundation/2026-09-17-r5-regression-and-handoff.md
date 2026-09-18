@@ -14,6 +14,8 @@
   - 第三轮 `e0ca9ff`（含 A22 修复，报告 SHA）：Linux Quality、Windows MSVC、Windows MinGW
     **三个 workflow 全部成功**
   - 第四轮 `c24f34e`（记录第三轮结果的 docs-only SHA）：三平台再次**全部成功**
+  - 第五轮 `ca0b0e9`（R5 收尾：归档计划、Stage 6 恢复 active、同步状态/索引/AGENTS/检查器）：
+    三平台**全部成功**
 - 分支：`codex/chart-format-foundation-hardening`（已推送，upstream 为 origin 同名分支；
   未开 PR、未合并、未发布）
 - 平台与工具链：Windows x64；MSVC 14.51.36231（VS 18 Community）；
@@ -525,10 +527,16 @@ Stage 6 现已 active；R0-R5 的修复没有为 Stage 6 增加任何格式能�
 | 第四轮（记录第三轮结果的 docs-only SHA） | `c24f34e` | Linux Quality `35312093769` | **成功**（10/10 任务） |
 | 第四轮 | `c24f34e` | Windows MSVC `35312093775` | **成功** |
 | 第四轮 | `c24f34e` | Windows MinGW `35312093806` | **成功** |
+| 第五轮（R5 收尾：归档计划、Stage 6 恢复 active、同步状态/索引/检查器） | `ca0b0e9` | Linux Quality `35314586582` | **成功**（含 Documentation contracts，验证更新后的 `tools/check_docs.py` 与 stage 索引） |
+| 第五轮 | `ca0b0e9` | Windows MSVC `35314586694` | **成功** |
+| 第五轮 | `ca0b0e9` | Windows MinGW `35314586697` | **成功** |
 
 第三轮三个 workflow 全绿，且 `e0ca9ff` 相对实现 SHA `9314646` 只有 `docs/` 变化（§11.3），
 因此本报告记录的同 SHA 证据为：**实现 SHA `9314646` + 报告 SHA `e0ca9ff`**。第四轮在记录
-第三轮结果的 docs-only SHA `c24f34e` 上再次三平台全绿，作为 report-SHA revalidation 的实证。
+第三轮结果的 docs-only SHA `c24f34e` 上再次三平台全绿；第五轮在包含 R5 归档与 Stage 6
+恢复 active 的收尾 SHA `ca0b0e9` 上同样三平台全绿（Linux 的 Documentation contracts 任务
+同时校验了更新后的 stage 索引与 `tools/check_docs.py`），共同构成 report-SHA revalidation
+的实证。
 
 首轮失败不是环境问题：本地 GCC 16.1.0 与 hosted GCC 13 / 16.2.0 在相同 TU 上报出相同诊断，
 修复后本地同类 `-Werror` 构建与全量用例均已通过。第二轮 Linux 的 A22 同样是可复现的构建
@@ -553,13 +561,16 @@ Stage 6 现为 active；R0-R5 的任何修复都没有为 Stage 6 增加新的�
 ### 11.3 report-SHA revalidation
 
 - hosted 运行总是针对被推送的分支头 SHA。记录证据本身会产生新的提交，因此仓库惯例是
-  记录实现 SHA 与报告 SHA，并证明两者之间只有 `docs/` 变化（`git diff --name-only
-  <实现 SHA>..<报告 SHA>` 中非 `docs/` 条目数为 0）。
+  记录实现 SHA 与报告 SHA，并证明两者之间的差异不包含 chart 实现：检查
+  `git diff --name-only <实现 SHA>..<报告 SHA>`，要求 `engine/`、`tests/`、`CMakeLists.txt`、
+  `cmake/`、`vcpkg.json` 与 `schemas/` 中没有任何条目。
 - 本轮每一轮 hosted 使用的 SHA 都已用该检查确认：
-  | hosted SHA | 实现 SHA | `git diff --name-only <实现>..<hosted>` 非 `docs/` 条目 |
-  | --- | --- | --- |
-  | `524db9f` | `25e546d` | 0（7 个 `docs/` 文件） |
-  | `2cc478e` | `0e501a5` | 0（6 个 `docs/` 文件） |
-  | `e0ca9ff` | `9314646` | 0（3 个 `docs/` 文件） |
-- 因此报告的结论是"实现 SHA X 的代码 + 仅文档差异"，而不是把更早 SHA 的运行当作修复后
+  | hosted SHA | 实现 SHA | 实现目录内的条目 | 其余差异 |
+  | --- | --- | --- | --- |
+  | `524db9f` | `25e546d` | 0 | 7 个 `docs/` 文件 |
+  | `2cc478e` | `0e501a5` | 0 | 6 个 `docs/` 文件 |
+  | `e0ca9ff` | `9314646` | 0 | 3 个 `docs/` 文件 |
+  | `c24f34e` | `9314646` | 0 | `docs/` |
+  | `ca0b0e9`（R5 收尾） | `9314646` | 0 | `docs/`、`AGENTS.md` 与文档检查器 `tools/check_docs.py`、`tools/check_docs_status_contract_tests.py`（stage 清单随归档/恢复更新）；这些工具文件不是 chart 实现，且第五轮 hosted 的 Documentation contracts 任务已用它们校验通过 |
+- 因此报告的结论是"实现 SHA X 的代码 + 非实现差异"，而不是把更早 SHA 的运行当作修复后
   证据；每次实现改动后都在新 SHA 重跑本地全量与容量探针（§11.2）。
