@@ -2,7 +2,7 @@
 
 状态：deferred；未排入当前实施序列
 
-更新日期：2026-09-03
+更新日期：2026-09-20
 
 归档来源：[Chart v5 格式计划](../../active/chart-format-update-for-v5/plan.md)、
 [CXC v1](../../../formats/CXC_FORMAT.md)、
@@ -32,7 +32,8 @@ Behavior 属性、采样和混合规则与当时生产基线共用。
 本计划保持 deferred，直到项目所有者同时接受下列条件：
 
 - [Chart v5 格式计划](../../active/chart-format-update-for-v5/plan.md) 已关闭并经 owner
-  acceptance；接手基线为 Chart v5 / CXT v2 / SDK `0.8.0`。
+  acceptance；接手基线为 Chart v5 / CXT v2 / Stage 8 关闭报告记录的实际 SDK 发行版本，
+  不预留固定 minor；版本选择遵循 [版本规范](../../../guides/VERSIONING.md)。
 - 项目所有者把本计划改为 active，并指定 Stage 9 的具体实施批次。当前没有生产排期，也不得因
   写入本文而视为 Chart v6 已可加载。
 - Stage 7 Judgement 不依赖本阶段；模型只改变 Presentation，不改变 Note/Requirement 的判定语义。

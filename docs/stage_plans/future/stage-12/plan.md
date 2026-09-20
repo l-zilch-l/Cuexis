@@ -2,7 +2,7 @@
 
 状态：future；未开始
 
-更新日期：2026-08-10
+更新日期：2026-09-20
 
 归档来源：[旧版 PROJECT_GUIDE](../../../archive/PROJECT_GUIDE_LEGACY_2026-08-10.md) 与
 [SDK transition plan 快照](../../../archive/CUEXIS_SDK_TRANSITION_PLAN_2026-08-10.md)。
@@ -40,6 +40,13 @@
 - C ABI version。
 - Chart、Project、Asset Index、CXC/CXT 和 ReplayData 内容格式版本。
 
+遵循 [SDK 版本规范](../../../guides/VERSIONING.md)：此前的 preview minor 不设一位数字上限，
+`0.10.0`、`0.11.0` 均合法，不与阶段号绑定。本阶段目标为 SDK `1.0.0`，但只有稳定公共合同、
+C ABI、兼容矩阵及下述验收全部完成并经 owner 接受后才可正式发行；未完成时继续使用 `0.x`，
+不得因到达 Stage 12 或 minor 达到 9 而自动提升 major。
+本阶段须以 ADR 冻结 `1.x` 的 API/ABI 版本递增、兼容和弃用政策，并确定安装包兼容规则；
+不得直接沿用 preview 的 additive patch 政策或将源码兼容解释为二进制兼容。
+
 ## 5. 验收标准
 
 - 纯 C consumer 不包含 C++ 标准库、异常、RTTI 或第三方实现类型。
@@ -51,6 +58,8 @@
 - package、符号、license/NOTICE、部署和升级文档完整。
 - C++ RAII wrapper 与 C ABI consumer 对相同输入产生相同 FrameSnapshot/Judgement/Replay 结果。
 - SDK v1 发布不改变既有内容格式 identity 或迁移语义。
+- `1.x` 版本与兼容政策已有接受的 ADR 和正反例测试；实际 `1.0.0` 发行版本、独立 C ABI
+  版本、同 SHA 验收证据和 owner 接受记录完整，不能仅凭版本常量宣称稳定。
 
 ## 6. 明确不包含
 

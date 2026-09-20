@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-09-17
+更新日期：2026-09-20
 
 本文是 Cuexis 当前产品和阶段状态的唯一摘要。ADR 定义决策，Spec 定义字段和语义，阶段计划定义未来
 范围，阶段报告保存带日期的实施证据；它们不得绕过本文重新定义当前状态。
@@ -37,6 +37,16 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Stage 10 | future；Chart v5 Studio 和发行工作流 | [plan](stage_plans/future/stage-10/plan.md) |
 | Stage 11 | future；性能、Android、Vulkan、粒子和高级表现 | [plan](stage_plans/future/stage-11/plan.md) |
 | Stage 12 | future；稳定 ABI 与 Playback SDK v1 | [plan](stage_plans/future/stage-12/plan.md) |
+
+Stage 6 计划已于 2026-09-20 按可实施性评审细分为基线/决策、candidate 消费、配置与控制、
+中立渲染、离线媒体导入、宿主安装及最终验证子批次，依赖顺序和验收矩阵见
+[Stage 6 plan](stage_plans/active/stage-06/plan.md)。本次仅完成规划细化；当前仍在 S6-A，
+owner 随后授权冻结关键实施决策，结论见
+[ADR 0042](adr/0042-stage-6-productization-boundaries.md)：显式 experimental entry、typed
+身份/lowering、高层内部 renderer、配置与提交顺序、离线媒体栈、版本门禁和具名参考宿主。
+Stage 6 的条件性源兼容 SDK 目标为 `0.7.1`，当前实现仍为 `0.7.0`；Stage 8 正式 v5
+不预留版本号，按届时基线与公共合同差异遵循 [版本规范](guides/VERSIONING.md) 裁定。
+A2 尚需 Spec/Schema、API 草案与表征，实施批次未完成，三个工程问题继续 open。
 
 ## 已关闭的 Full Review
 
@@ -118,7 +128,7 @@ owner 于同日接受 R5 交接清单，Stage 6 因此从 future 恢复 **active
 （首批 S6-A：合同、基线和依赖决策），作为当前实施阶段接手
 v5-first candidate path；Stage 6 完成后进入
 Stage 7A，再进入 Stage 8。Stage 7B+ 可以与 Stage 8 前后并行持续；Stage 8 关闭后交出
-SDK `0.8.0` / Chart v5 / CXT v2 正式接手基线。
+经批准的实际 SDK 发行版本 / Chart v5 / CXT v2 正式接手基线。
 2026-09-01 阶段核验记录中的版本门禁、后端中立表现渲染边界和常用媒体支持三个 open 问题仍归属于
 [Stage 6 plan](stage_plans/active/stage-06/plan.md)，尚未因列入计划而视为解决。删除旧 Reader 仍按
 ADR 0041，不因 v5 弃用窗口或 Stage 6 启动而实施。
