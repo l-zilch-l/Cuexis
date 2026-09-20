@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-09-20
+更新日期：2026-09-21
 
 本文是 Cuexis 当前产品和阶段状态的唯一摘要。ADR 定义决策，Spec 定义字段和语义，阶段计划定义未来
 范围，阶段报告保存带日期的实施证据；它们不得绕过本文重新定义当前状态。
@@ -40,13 +40,26 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 
 Stage 6 计划已于 2026-09-20 按可实施性评审细分为基线/决策、candidate 消费、配置与控制、
 中立渲染、离线媒体导入、宿主安装及最终验证子批次，依赖顺序和验收矩阵见
-[Stage 6 plan](stage_plans/active/stage-06/plan.md)。本次仅完成规划细化；当前仍在 S6-A，
+[Stage 6 plan](stage_plans/active/stage-06/plan.md)。S6-A1 基线、入口和证据矩阵已于
+2026-09-20 完成，实际证据见 [S6-A1 报告](stage_reports/stages/stage-06/2026-09-20-s6-a1-baseline.md)。
 owner 随后授权冻结关键实施决策，结论见
 [ADR 0042](adr/0042-stage-6-productization-boundaries.md)：显式 experimental entry、typed
 身份/lowering、高层内部 renderer、配置与提交顺序、离线媒体栈、版本门禁和具名参考宿主。
 Stage 6 的条件性源兼容 SDK 目标为 `0.7.1`，当前实现仍为 `0.7.0`；Stage 8 正式 v5
 不预留版本号，按届时基线与公共合同差异遵循 [版本规范](guides/VERSIONING.md) 裁定。
-A2 尚需 Spec/Schema、API 草案与表征，实施批次未完成，三个工程问题继续 open。
+S6-A2 已于 2026-09-21 完成合同落盘与表征，形成 entry/config/media Spec、三份 Schema、
+API/安装草案、依赖图及独立 identity/media/config golden；实际证据见 [S6-A2 报告](stage_reports/stages/stage-06/2026-09-21-s6-a2-contracts-and-characterization.md)。
+A2 只证明冻结决策可以被明确描述和表征，不代表 v5 Playback、Player、renderer、media importer、
+版本门禁或 Reference Host 已实现；SDK 仍为 `0.7.0`，三个工程问题继续 open。下游 B1、C1、D1、
+C2、E1/E2 及其后续批次仍按计划依赖图保持未完成。
+S6-B1 已落下版本比较器、独立负例测试、trusted-baseline workflow 和发行 checklist；当前显示版本
+已按可信 UTC 日期 `2026-09-20` 修正为 `26.09.20-1`，SDK API 仍为 `0.7.0`。本地 checker、
+当前一致性、文档和版本源验证已通过，版本变更后的 fresh configure/clean build 与 CTest 证据见
+[S6-B1 报告](stage_reports/stages/stage-06/2026-09-20-s6-b1-version-gate.md)。
+但当前 `origin/master` 的 trusted baseline `e3c4589c62af36f29ae5e8ebda62fe37fadbf7e7` 尚无
+checker，首次 workflow 会按合同明确失败；远端 `master` 当前也未启用 branch protection。因此
+B1 目前是 blocked：脚本已实现并可本地验证，hosted required check、bootstrap 例外和保护配置尚未
+生效；不得把本地通过或 post-merge audit 报告为合并前门禁或 owner acceptance。
 
 ## 已关闭的 Full Review
 

@@ -13,6 +13,7 @@
 - [Chart v4 candidate](../formats/CHART_V4_FORMAT.md)：Chart v4 字段和 lowering。
 - [CXC v1 candidate](../formats/CXC_FORMAT.md)：容器、manifest 和闭包。
 - [CXT v1 candidate](../formats/CXT_FORMAT.md)：声明式模板 JSON 文件。
+- [Stage 6 candidate API and install draft](STAGE6_API_AND_INSTALL_DRAFT.md)：显式 candidate entry、experimental 安装和 Reference Host 的未实现草案。
 
 ## 延期设计输入
 

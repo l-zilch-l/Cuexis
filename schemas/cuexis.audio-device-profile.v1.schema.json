@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cuexis.dev/schemas/cuexis.audio-device-profile.v1.schema.json",
+  "title": "Cuexis AudioDeviceProfile v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "version", "id", "selector", "outputCorrectionUs"],
+  "properties": {
+    "format": { "const": "cuexis.audio-device-profile" },
+    "version": { "const": 1 },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9._-]{0,63}$"
+    },
+    "selector": {
+      "type": "object",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "system-default" } }
+        },
+        {
+          "additionalProperties": false,
+          "required": ["kind", "driver", "deviceName"],
+          "properties": {
+            "kind": { "const": "exact" },
+            "driver": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[^\\u0000-\\u001F\\u007F]{1,128}$"
+            },
+            "deviceName": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024,
+              "pattern": "^[^\\u0000-\\u001F\\u007F]{1,1024}$"
+            }
+          }
+        }
+      ]
+    },
+    "outputCorrectionUs": {
+      "type": "integer",
+      "minimum": -500000,
+      "maximum": 500000
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "selector": {
+            "required": ["kind"],
+            "properties": { "kind": { "const": "system-default" } }
+          }
+        }
+      },
+      "then": { "properties": { "outputCorrectionUs": { "const": 0 } } }
+    }
+  ]
+}

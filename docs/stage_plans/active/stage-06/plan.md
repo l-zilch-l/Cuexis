@@ -3,7 +3,7 @@
 状态：active；当前实施阶段；Foundation 交接加固（R0-R5）已于 2026-09-17 关闭并经 owner
 接受，本阶段自此恢复实施
 
-更新日期：2026-09-20
+更新日期：2026-09-21
 
 归档来源：[旧版 PROJECT_GUIDE](../../../archive/PROJECT_GUIDE_LEGACY_2026-08-10.md) 与
 [SDK transition plan 快照](../../../archive/CUEXIS_SDK_TRANSITION_PLAN_2026-08-10.md)。2026-09-01
@@ -79,15 +79,16 @@ S6-A1 基线、入口和证据矩阵
 - D1/D2 首先用 v4 和既有 portable fixture 验证，不等待 v5 接线；E1/E2 先输出既有
   portable texture / WAV，不等待 Player 新控制层。E3 再接入 candidate 与 v4 包。
 - C3 可以先用测试 renderer/device 开发，但不得在 C1、C2、D2 未退出时标记完成。
-- B1 生效后的每次合并都执行版本门禁，不等到 F 才更新版本；本次文档细化不提前修改版本。
+- B1 生效后的每次合并都执行版本门禁，不等到 F 才更新版本；B1 按本节第 6 项使用 trusted UTC
+  日期修正当前显示版本，并在版本源变化后执行 fresh configure 和 clean-first build。
 - 后续执行默认按一个子批次推进；允许依据依赖图并行，不允许因下游测试通过而跳过上游
   合同、失败路径或外部消费验收。
 
 | 子批次 | 前置 | 必要输出 | 实施状态 |
 | --- | --- | --- | --- |
-| A1 | R5 交接已接受 | 固定基线、代码入口盘点、测试与支持矩阵 | planned |
-| A2 | A1、ADR 0042 已冻结 | Spec/Schema、API 草案、依赖图与接口表征 | planned |
-| B1 | A2 | 版本比较器、受保护门禁、发行 checklist | planned |
+| A1 | R5 交接已接受 | 固定基线、代码入口盘点、测试与支持矩阵 | completed ([报告](../../../stage_reports/stages/stage-06/2026-09-20-s6-a1-baseline.md)) |
+| A2 | A1、ADR 0042 已冻结 | Spec/Schema、API 草案、依赖图与接口表征 | completed ([报告](../../../stage_reports/stages/stage-06/2026-09-21-s6-a2-contracts-and-characterization.md)) |
+| B1 | A2 | 版本比较器、受保护门禁、发行 checklist | blocked（本地实现与验证完成；受保护 master/bootstrap 待 owner 启用，见报告） |
 | C1 | A2 | candidate 消费链、身份和要求数据保留 | planned |
 | D1 | A2 | 无环渲染合同、事务 token、测试 renderer | planned |
 | D2 | D1 | OpenGL adapter 迁移、统一帧与诊断路径 | planned |

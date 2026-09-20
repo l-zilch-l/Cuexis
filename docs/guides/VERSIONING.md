@@ -187,4 +187,28 @@ experimental candidate 是独立构建/安装标识，不是 SDK minor 或正式
 生产与实验安装树不能混用；具体 opt-in 和 consumer 配置规则见 ADR 0042。
 同一 ADR 固定 Stage 6 的显示版本门禁方向：受保护 `master` 最新 SHA、UTC 日期、
 同日 build 精确加一、跨日归一、docs-only 不豁免和历史 SHA 复验分离。
-这些门禁尚待 S6-B1 实施，现有 `update_version.py --check` 仍只验证文件一致性。
+S6-B1 已落下 `tools/check_version_gate.py`、独立 focused tests 和
+`.github/workflows/version-gate.yml`。比较器负责规范四元组、trusted UTC、祖先关系、
+manifest/CMake 一致性和 SDK API 不变性；workflow 在 PR、merge queue、合并后 push 与历史复验
+中从 trusted baseline materialize checker，不从候选树回退使用 checker。首次装配若基线缺少
+checker/test/workflow 文件会明确失败并记录 `version.bootstrap.required`，必须由 owner 审查
+bootstrap 例外及保护规则后才能建立受保护基线。
+
+### S6-B1 合并与发行 checklist
+
+本地只证明脚本合同和当前文件一致，不能替代 hosted 保护证据：
+
+```powershell
+python -B tools/check_version_gate_tests.py
+python -B tools/check_version_gate.py --check-current
+python -B tools/update_version.py --check
+```
+
+受保护 `master` 的 PR/merge queue 检查使用事件提供的目标分支基线和 `github.sha` 候选最终树，
+要求完整历史、trusted baseline checker 和同日精确递增；合并后 push 只作防漏审计。docs-only
+也必须更新日期版本。历史复验必须传入已记录的 baseline、candidate 和 UTC 日期，只证明历史门禁，
+不产生新的发行版本。
+
+发布前还必须记录对应 SHA、显示版本、SDK API 版本、静态/共享安装 consumer 和 fresh
+configure/clean build 证据；版本变化不隐式升级 SDK API、内容格式或 ABI。仓库保护未启用时，
+只能报告“脚本完成、门禁未启用”，不能把本地通过写成 B1 退出证据。

@@ -265,11 +265,15 @@ pwsh -NoProfile -File tools/check_pre_push.ps1 -Mode Full
 ```powershell
 python -B tools/update_version.py yy.mm.dd-v
 python -B tools/update_version.py --check
+python -B tools/check_version_gate_tests.py
+python -B tools/check_version_gate.py --check-current
 ```
 
 未完成版本递增、`cmake/CuexisVersion.cmake` 与 `vcpkg.json` 不一致，或版本改动未包含在 Pull Request
 中时，不得提交或合并该 Pull Request。该门禁只更新日期构建身份，不隐式升级 SDK API、内容格式或 ABI；
-完整规则见 [VERSIONING.md](VERSIONING.md)。
+完整规则见 [VERSIONING.md](VERSIONING.md)。这两个新增命令只验证本地 checker 合同和当前工作树；
+GitHub workflow 仍必须从 trusted baseline 运行，首次基线缺少 checker 时会明确失败，不会回退到候选
+checker。仓库保护规则未启用时，本地通过不能替代 required status check、最新基线和串行合并证据。
 
 `Quick` 执行版本一致性、文档契约、暂存区与工作区 whitespace 检查，并对 CMake 格式目标覆盖的
 全部 C++ 文件执行 `clang-format --dry-run --Werror`。`Full` 还会自动初始化 MSVC x64 环境，执行

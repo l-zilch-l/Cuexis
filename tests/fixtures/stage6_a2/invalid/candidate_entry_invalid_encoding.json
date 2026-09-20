@@ -1,0 +1,15 @@
+{
+  "entries": [
+    {
+      "path": "compiled/chart.packed",
+      "kind": "chart",
+      "encoding": "packed-chart-v2",
+      "playback": true,
+      "compiledSemanticIdentity": "9b1714dc3087fddd2a73ad2d947c1f9854e17f5964135085a232edb31003a091",
+      "artifactIdentity": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "compilerProfile": "candidate.static-tap-lanes4-v1",
+      "expandedEntityCount": 1,
+      "expandedRequirementCount": 1
+    }
+  ]
+}

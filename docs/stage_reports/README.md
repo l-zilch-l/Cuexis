@@ -2,7 +2,7 @@
 
 状态：current index
 
-更新日期：2026-09-01
+更新日期：2026-09-21
 
 报告保存带日期的实施、审查和验证证据。报告中的“下一步”只代表其快照日期，不能重新定义
 [CURRENT_STATUS.md](../CURRENT_STATUS.md)。
@@ -17,6 +17,7 @@
 - [Stage 4](stages/stage-04/README.md)
 - [Stage 5](stages/stage-05/README.md)
 - [Chart Format Foundation](stages/chart-format-foundation/README.md)
+- [Stage 6](stages/stage-06/README.md)
 
 ## 跨阶段专题
 

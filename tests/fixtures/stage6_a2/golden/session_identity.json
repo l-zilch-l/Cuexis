@@ -1,0 +1,19 @@
+{
+  "config": {
+    "domain": "cuexis.execution-config.v5.candidate.1",
+    "encodingVersion": 1,
+    "clockMode": 3,
+    "clockModeName": "CuexisAudio",
+    "outputCorrectionUs": -12500,
+    "preimageHex": "6375657869732e657865637574696f6e2d636f6e6669672e76352e63616e6469646174652e310001000000032ccfffffffffffff",
+    "sha256": "4983d9c831c892c210853c9889b780b2ffc1b36d34c71b0c388995187dcee2e3"
+  },
+  "session": {
+    "domain": "cuexis.session.execution.v5.candidate.1",
+    "encodingVersion": 1,
+    "preparedSemanticIdentity": "63451a64d86865dca648c88c12addf1762160e23e8e678ce65447d039f556999",
+    "resolvedSessionConfigIdentity": "4983d9c831c892c210853c9889b780b2ffc1b36d34c71b0c388995187dcee2e3",
+    "preimageHex": "6375657869732e73657373696f6e2e657865637574696f6e2e76352e63616e6469646174652e31000100000063451a64d86865dca648c88c12addf1762160e23e8e678ce65447d039f5569994983d9c831c892c210853c9889b780b2ffc1b36d34c71b0c388995187dcee2e3",
+    "sha256": "8a3060c5554d2de4d614e5346ca6697b9a1c2bc09eaad30d4e08b1e7ae43a833"
+  }
+}
