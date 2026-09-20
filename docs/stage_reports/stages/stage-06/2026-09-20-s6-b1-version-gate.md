@@ -112,7 +112,7 @@ FrameDigest v1-v3、portable presentation、prepare/reload 及既有 v4 回退�
 
 ## 6. Hosted / 保护阻塞
 
-本地实现和本地验证不能关闭 B1。当前分支和保护查询的只读结果为：
+本地实现和本地验证不能关闭 B1。实现提交首次推送后的分支和保护查询只读快照为：
 
 | 项 | 结果 |
 | --- | --- |
