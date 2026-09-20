@@ -14,6 +14,7 @@ workflow 和发行 checklist 落盘，并完成当前工作区的本地验证；
 | --- | --- |
 | 工作区 | `C:/Users/Zilch/.codex/worktrees/7596/Cuexis` |
 | 起始 HEAD | `e7d6c1ea3ff950226b7a3582eb128cb2d01800fb` |
+| B1 实现提交 | `4fd46adf2eff454bc6e43fee78db36e3310254aa` |
 | 起始状态 | detached HEAD；B1 报告创建前未创建 PR、未合并、未发布 |
 | 可信 UTC 日期 | `2026-09-20` |
 | 日期版本变化 | `26.08.01-1` -> `26.09.20-1` |
@@ -111,7 +112,15 @@ FrameDigest v1-v3、portable presentation、prepare/reload 及既有 v4 回退�
 
 ## 6. Hosted / 保护阻塞
 
-本地实现和本地验证不能关闭 B1。当前剩余阻塞为：
+本地实现和本地验证不能关闭 B1。当前分支和保护查询的只读结果为：
+
+| 项 | 结果 |
+| --- | --- |
+| `origin/master` | `e3c4589c62af36f29ae5e8ebda62fe37fadbf7e7` |
+| `origin/codex/stage-06-b1-version-gate` | `4fd46adf2eff454bc6e43fee78db36e3310254aa` |
+| `gh api repos/l-zilch-l/Cuexis/branches/master/protection` | `404 Branch not protected` |
+
+当前剩余阻塞为：
 
 1. `origin/master` 的可信基线尚未包含 B1 checker、focused tests 和 workflow，首次 bootstrap
    需要 owner 审查并启用，而不是绕过 trusted-baseline 逻辑。
