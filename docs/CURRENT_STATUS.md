@@ -53,13 +53,14 @@ A2 只证明冻结决策可以被明确描述和表征，不代表 v5 Playback�
 版本门禁或 Reference Host 已实现；SDK 仍为 `0.7.0`，三个工程问题继续 open。下游 B1、C1、D1、
 C2、E1/E2 及其后续批次仍按计划依赖图保持未完成。
 S6-B1 已落下版本比较器、独立负例测试、trusted-baseline workflow 和发行 checklist；当前显示版本
-已按可信 UTC 日期 `2026-09-20` 修正为 `26.09.20-1`，SDK API 仍为 `0.7.0`。本地 checker、
-当前一致性、文档和版本源验证已通过，版本变更后的 fresh configure/clean build 与 CTest 证据见
-[S6-B1 报告](stage_reports/stages/stage-06/2026-09-20-s6-b1-version-gate.md)。
-但当前 `origin/master` 的 trusted baseline `e3c4589c62af36f29ae5e8ebda62fe37fadbf7e7` 尚无
-checker，首次 workflow 会按合同明确失败；远端 `master` 当前也未启用 branch protection。因此
-B1 目前是 blocked：脚本已实现并可本地验证，hosted required check、bootstrap 例外和保护配置尚未
-生效；不得把本地通过或 post-merge audit 报告为合并前门禁或 owner acceptance。
+为 `26.09.21-1`，SDK API 仍为 `0.7.0`。bootstrap PR #26 已将门禁纳入 `master`，并启用
+`Version advancement (pre-merge)` required check、strict latest-base 和 admin enforcement。
+候选 PR #27 的 `d4697549a50e9c517ac393c27786826aa43ce9cc` 以 trusted baseline
+`4545742ed63ae2d8f11ad07e80930ce5b88fa0ce` 通过 protected Version Gate run `35586930775`，
+并在同一 SHA 通过 Linux Quality、Windows MSVC、Windows MinGW；随后合并为 `master`
+`46b65d1f2345f543b98e7e87fe5ec9ed735f10bf`。本地 focused tests、docs、fresh configure、
+clean-first build 与 `683/683` CTest 证据见 [S6-B1 报告](stage_reports/stages/stage-06/2026-09-20-s6-b1-version-gate.md)。
+B1 与 S6-G02 已满足其计划门禁；Stage 6 其他批次仍按依赖图推进。
 
 ## 已关闭的 Full Review
 
