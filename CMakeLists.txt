@@ -38,6 +38,8 @@ option(CUEXIS_BUILD_OPENGL_ADAPTER "Build the OpenGL render adapter" ${CUEXIS_BU
 option(CUEXIS_BUILD_DEVELOPER_TOOLS "Build repository developer-only targets"
        ${CUEXIS_TOP_LEVEL_DEFAULT})
 option(CUEXIS_BUILD_SHADER_TOOLS "Build the optional shader compiler module" OFF)
+option(CUEXIS_ENABLE_CHART_V5_CANDIDATE
+       "Enable the experimental Chart v5 candidate Playback source path" OFF)
 option(CUEXIS_BUILD_TESTS "Build the Cuexis test suite" ${CUEXIS_TESTS_DEFAULT})
 option(CUEXIS_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
 option(CUEXIS_ENABLE_CLANG_TIDY "Run clang-tidy while compiling Cuexis targets" OFF)
@@ -943,6 +945,7 @@ if(CUEXIS_BUILD_TESTS)
             cuexis::audio
             cuexis::assets
             cuexis::chart
+            cuexis::cxc
             cuexis::playback
             Catch2::Catch2WithMain
     )

@@ -89,7 +89,7 @@ S6-A1 基线、入口和证据矩阵
 | A1 | R5 交接已接受 | 固定基线、代码入口盘点、测试与支持矩阵 | completed ([报告](../../../stage_reports/stages/stage-06/2026-09-20-s6-a1-baseline.md)) |
 | A2 | A1、ADR 0042 已冻结 | Spec/Schema、API 草案、依赖图与接口表征 | completed ([报告](../../../stage_reports/stages/stage-06/2026-09-21-s6-a2-contracts-and-characterization.md)) |
 | B1 | A2 | 版本比较器、受保护门禁、发行 checklist | completed（trusted baseline、required Version Gate、同 SHA hosted 验证与合并后审计均已记录，见报告） |
-| C1 | A2 | candidate 消费链、身份和要求数据保留 | planned |
+| C1 | A2 | candidate 消费链、身份和要求数据保留 | in_progress（本地 MSVC 证据见 [报告](../../../stage_reports/stages/stage-06/2026-09-22-s6-c1-candidate-source.md)；尚未退出） |
 | D1 | A2 | 无环渲染合同、事务 token、测试 renderer | planned |
 | D2 | D1 | OpenGL adapter 迁移、统一帧与诊断路径 | planned |
 | C2 | A2 | 配置解析、快照、设备 profile 与受控应用 | planned |

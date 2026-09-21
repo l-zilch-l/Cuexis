@@ -10,6 +10,7 @@
 #include <cuexis/render/renderable_component.hpp>
 #include <cuexis/world/components.hpp>
 
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 #include <filesystem>
@@ -279,6 +280,31 @@ TEST_CASE("RuntimeSession commits renderables with a deduplicated dependency Sco
     REQUIRE(session.unload().has_value());
     CHECK(session.resourceCount() == 0);
     CHECK(resources.metrics().strongReferences == 0);
+}
+
+TEST_CASE("Runtime instantiation uses ChartRuntime renderable opacity",
+          "[runtime][chart][candidate]") {
+    auto runtime = supportedRenderableRuntime();
+    runtime.objects[0].renderableOpacity = 128.0 / 255.0;
+    cuexis::assets::ResourceManager resources{resourceDatabase()};
+    cuexis::runtime::RuntimeSession session{resources};
+
+    auto prepared = session.prepare(std::move(runtime));
+    REQUIRE(prepared.hasValue());
+    REQUIRE(session.commit(std::move(*prepared.prepared)).has_value());
+
+    const auto entityResult = session.findEntity({"object.renderable"});
+    REQUIRE(entityResult.has_value());
+    REQUIRE(entityResult->has_value());
+    const auto appearance = session.withWorld([&](const cuexis::world::World& world) {
+        return world.withRegistry([&](const entt::registry& registry) {
+            return registry.get<cuexis::render::AppearanceComponent>(**entityResult);
+        });
+    });
+    REQUIRE(appearance.has_value());
+    CHECK(appearance->opacity == Catch::Approx(128.0 / 255.0));
+
+    REQUIRE(session.unload().has_value());
 }
 
 TEST_CASE("RuntimeSession retains active fallback diagnostics across a failed reload",

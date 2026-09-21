@@ -60,7 +60,11 @@ S6-B1 已落下版本比较器、独立负例测试、trusted-baseline workflow 
 并在同一 SHA 通过 Linux Quality、Windows MSVC、Windows MinGW；随后合并为 `master`
 `46b65d1f2345f543b98e7e87fe5ec9ed735f10bf`。本地 focused tests、docs、fresh configure、
 clean-first build 与 `683/683` CTest 证据见 [S6-B1 报告](stage_reports/stages/stage-06/2026-09-20-s6-b1-version-gate.md)。
-B1 与 S6-G02 已满足其计划门禁；Stage 6 其他批次仍按依赖图推进。
+B1 与 S6-G02 已满足其计划门禁。S6-C1 已在 PR #28 工作区接入默认关闭的显式 candidate
+工厂、生产 CXC bridge、typed lowering、Runtime opacity 和 candidate prepared identity；本地
+MSVC 证据见 [S6-C1 报告](stage_reports/stages/stage-06/2026-09-22-s6-c1-candidate-source.md)。
+该报告不构成 C1 退出：MinGW fresh、Linux sanitizer/coverage、同 SHA hosted 与
+external-consumer 证据仍缺。SDK API 仍为 `0.7.0`。Stage 6 其他批次仍按依赖图推进。
 
 ## 已关闭的 Full Review
 

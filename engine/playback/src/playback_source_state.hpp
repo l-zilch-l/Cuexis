@@ -2,6 +2,7 @@
 
 #include <cuexis/assets/asset_database.hpp>
 #include <cuexis/content/content_provider.hpp>
+#include <cuexis/cxc/cxc_candidate.hpp>
 #include <cuexis/playback/playback_source.hpp>
 
 #include <array>
@@ -23,6 +24,7 @@ struct PlaybackSource::State final {
     std::optional<assets::AssetDatabase> database;
     std::shared_ptr<content::IContentProvider> provider;
     std::optional<std::array<std::uint8_t, 32>> cxcPackageIdentity;
+    std::optional<cxc::CandidateChart> candidate;
 };
 
 } // namespace cuexis::playback

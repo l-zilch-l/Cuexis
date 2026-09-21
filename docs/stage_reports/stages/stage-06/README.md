@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-09-21
+更新日期：2026-09-22
 
 本目录保存 Stage 6 各子批次的带日期实施和验证证据。当前阶段仍为 active；报告只记录实际
 执行结果，不把 ADR 冻结、历史 hosted 结果或后续计划当作本批次实现证据。
@@ -15,6 +15,8 @@
   （Spec/Schema、API/安装草案、依赖边界、identity/media/config golden 和 focused checker）
 - [2026-09-20 S6-B1 版本比较与发行门禁](2026-09-20-s6-b1-version-gate.md)
   （trusted baseline checker、UTC 递增规则、bootstrap 例外、workflow 合同和本地/hosted 证据边界）
+- [2026-09-22 S6-C1 candidate source、CXC 与 typed lowering](2026-09-22-s6-c1-candidate-source.md)
+  （显式工厂、生产 bridge、lowering、prepared identity 和本地 MSVC 证据；批次尚未退出）
 
 权威范围见 [Stage 6 计划](../../../stage_plans/active/stage-06/plan.md)、
 [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md) 和
