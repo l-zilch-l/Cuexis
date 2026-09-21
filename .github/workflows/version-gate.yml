@@ -1,0 +1,163 @@
+name: Version Gate
+
+on:
+  pull_request:
+    branches:
+      - master
+    types: [opened, synchronize, reopened, ready_for_review]
+  merge_group:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+    inputs:
+      base_sha:
+        description: Full trusted baseline commit SHA for historical revalidation
+        required: true
+        type: string
+      candidate_sha:
+        description: Full candidate commit SHA for historical revalidation
+        required: true
+        type: string
+      recorded_utc_date:
+        description: Recorded UTC release date for the historical event (YYYY-MM-DD)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  pre-merge:
+    name: Version advancement (pre-merge)
+    if: github.event_name == 'pull_request' || github.event_name == 'merge_group'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Run trusted version-gate tests and checker
+        env:
+          CUEXIS_BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          CUEXIS_CANDIDATE_SHA: ${{ github.sha }}
+          CUEXIS_EVENT: ${{ github.event_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CUEXIS_BASE_SHA}"
+          test -n "${CUEXIS_CANDIDATE_SHA}"
+          TRUSTED_ROOT="${RUNNER_TEMP}/cuexis-version-gate"
+          mkdir -p "${TRUSTED_ROOT}/tools" "${TRUSTED_ROOT}/.github/workflows"
+           for path in \
+             tools/check_version_gate.py \
+             tools/check_version_gate_tests.py \
+             tools/update_version.py \
+             .github/workflows/version-gate.yml; do
+            if ! git cat-file -e "${CUEXIS_BASE_SHA}:${path}" 2>/dev/null; then
+              echo "::error title=Version gate bootstrap required::version.bootstrap.required: trusted baseline ${CUEXIS_BASE_SHA} lacks ${path}; owner must review the checker and protection rules before the first bootstrap merge. The workflow intentionally fails and never falls back to candidate code."
+              exit 1
+            fi
+            mkdir -p "${TRUSTED_ROOT}/$(dirname "${path}")"
+             git show "${CUEXIS_BASE_SHA}:${path}" > "${TRUSTED_ROOT}/${path}"
+           done
+          export CUEXIS_TRUSTED_ROOT="${TRUSTED_ROOT}"
+           python3 -B "${TRUSTED_ROOT}/tools/check_version_gate_tests.py"
+          python3 -B "${TRUSTED_ROOT}/tools/check_version_gate.py" \
+            --repo-root "${GITHUB_WORKSPACE}" \
+            --check-current
+          python3 -B "${TRUSTED_ROOT}/tools/check_version_gate.py" \
+            --repo-root "${GITHUB_WORKSPACE}" \
+            --base-ref "${CUEXIS_BASE_SHA}" \
+            --candidate-ref "${CUEXIS_CANDIDATE_SHA}" \
+            --trusted-utc-date "$(date -u +%F)" \
+            --context live \
+            --event "${CUEXIS_EVENT}"
+
+  post-merge-audit:
+    name: Version advancement (post-merge audit)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Run post-merge audit from trusted previous master
+        env:
+          CUEXIS_BASE_SHA: ${{ github.event.before }}
+          CUEXIS_CANDIDATE_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${CUEXIS_BASE_SHA}" != "0000000000000000000000000000000000000000"
+          TRUSTED_ROOT="${RUNNER_TEMP}/cuexis-version-gate"
+          mkdir -p "${TRUSTED_ROOT}/tools" "${TRUSTED_ROOT}/.github/workflows"
+           for path in \
+             tools/check_version_gate.py \
+             tools/check_version_gate_tests.py \
+             tools/update_version.py \
+             .github/workflows/version-gate.yml; do
+            if ! git cat-file -e "${CUEXIS_BASE_SHA}:${path}" 2>/dev/null; then
+              echo "::error title=Version gate bootstrap required::version.bootstrap.required: trusted baseline ${CUEXIS_BASE_SHA} lacks ${path}; owner must review the checker and protection rules before the first bootstrap merge. The workflow intentionally fails and never falls back to candidate code."
+              exit 1
+            fi
+            mkdir -p "${TRUSTED_ROOT}/$(dirname "${path}")"
+             git show "${CUEXIS_BASE_SHA}:${path}" > "${TRUSTED_ROOT}/${path}"
+           done
+          export CUEXIS_TRUSTED_ROOT="${TRUSTED_ROOT}"
+           python3 -B "${TRUSTED_ROOT}/tools/check_version_gate_tests.py"
+          python3 -B "${TRUSTED_ROOT}/tools/check_version_gate.py" \
+            --repo-root "${GITHUB_WORKSPACE}" \
+            --base-ref "${CUEXIS_BASE_SHA}" \
+            --candidate-ref "${CUEXIS_CANDIDATE_SHA}" \
+            --trusted-utc-date "$(date -u +%F)" \
+            --context live \
+            --event push
+
+  historical-revalidation:
+    name: Version advancement (historical revalidation)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Run recorded historical context
+        env:
+          CUEXIS_BASE_SHA: ${{ inputs.base_sha }}
+          CUEXIS_CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+          CUEXIS_RECORDED_UTC_DATE: ${{ inputs.recorded_utc_date }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TRUSTED_ROOT="${RUNNER_TEMP}/cuexis-version-gate"
+          mkdir -p "${TRUSTED_ROOT}/tools" "${TRUSTED_ROOT}/.github/workflows"
+           for path in \
+             tools/check_version_gate.py \
+             tools/check_version_gate_tests.py \
+             tools/update_version.py \
+             .github/workflows/version-gate.yml; do
+            if ! git cat-file -e "${CUEXIS_BASE_SHA}:${path}" 2>/dev/null; then
+              echo "::error title=Version gate bootstrap required::version.bootstrap.required: trusted baseline ${CUEXIS_BASE_SHA} lacks ${path}; owner must review the checker and protection rules before the first bootstrap merge. The workflow intentionally fails and never falls back to candidate code."
+              exit 1
+            fi
+            mkdir -p "${TRUSTED_ROOT}/$(dirname "${path}")"
+             git show "${CUEXIS_BASE_SHA}:${path}" > "${TRUSTED_ROOT}/${path}"
+           done
+          export CUEXIS_TRUSTED_ROOT="${TRUSTED_ROOT}"
+           python3 -B "${TRUSTED_ROOT}/tools/check_version_gate_tests.py"
+          python3 -B "${TRUSTED_ROOT}/tools/check_version_gate.py" \
+            --repo-root "${GITHUB_WORKSPACE}" \
+            --base-ref "${CUEXIS_BASE_SHA}" \
+            --candidate-ref "${CUEXIS_CANDIDATE_SHA}" \
+            --trusted-utc-date "${CUEXIS_RECORDED_UTC_DATE}" \
+            --context historical \
+            --event workflow_dispatch

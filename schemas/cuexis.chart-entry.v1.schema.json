@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cuexis.dev/schemas/cuexis.chart-entry.v1.schema.json",
+  "title": "Cuexis Chart Entry Extension v1",
+  "description": "The value stored under extensions[cuexis.chart-entry.v1].",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["entries"],
+  "properties": {
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 256,
+      "items": { "$ref": "#/$defs/entry" }
+    }
+  },
+  "$defs": {
+    "portablePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096,
+      "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9_-])?(?:/[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9_-])?)*$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "kind", "encoding", "playback"],
+      "properties": {
+        "path": { "$ref": "#/$defs/portablePath" },
+        "kind": { "const": "chart" },
+        "encoding": {
+          "enum": ["source-json", "source-cxt", "packed-chart"]
+        },
+        "playback": { "type": "boolean" },
+        "sourcePath": { "$ref": "#/$defs/portablePath" },
+        "sourceSemanticIdentity": { "$ref": "#/$defs/sha256" },
+        "compiledSemanticIdentity": { "$ref": "#/$defs/sha256" },
+        "artifactIdentity": { "$ref": "#/$defs/sha256" },
+        "compilerProfile": { "const": "candidate.static-tap-lanes4-v1" },
+        "expandedEntityCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 40000
+        },
+        "expandedRequirementCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 40000
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["playback"],
+            "properties": { "playback": { "const": true } }
+          },
+          "then": {
+            "required": [
+              "compiledSemanticIdentity",
+              "artifactIdentity",
+              "compilerProfile",
+              "expandedEntityCount",
+              "expandedRequirementCount"
+            ],
+            "properties": { "encoding": { "const": "packed-chart" } }
+          }
+        },
+        {
+          "if": {
+            "required": ["encoding"],
+            "properties": { "encoding": { "const": "packed-chart" } }
+          },
+          "then": {
+            "properties": {
+              "artifactIdentity": { "$ref": "#/$defs/sha256" }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

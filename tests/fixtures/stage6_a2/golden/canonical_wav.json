@@ -1,0 +1,10 @@
+{
+  "encoding": "Canonical RIFF/WAVE PCM S16LE",
+  "sampleFormat": "S16LE",
+  "channels": 1,
+  "sampleRate": 8000,
+  "samples": [-32768, 0, 32767],
+  "bytesHex": "524946462a00000057415645666d74201000000001000100401f0000803e000002001000646174610600000000800000ff7f",
+  "byteCount": 50,
+  "sha256": "cad856a7a36258893d7a7f4c9bf7e55dbd6d58e0ffb8f247157c7cfe393113fb"
+}

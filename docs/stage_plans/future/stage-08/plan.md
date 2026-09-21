@@ -2,7 +2,7 @@
 
 状态：future；未开始
 
-更新日期：2026-09-05
+更新日期：2026-09-20
 
 归档来源：[Chart v5 格式计划](../../active/chart-format-update-for-v5/plan.md)、
 [Stage Chart Format Update 完成计划](../../completed/chart-format-update/plan.md)、
@@ -349,10 +349,14 @@ Stage 8 关闭后：
 Chart v5 / CXT v2 成为生产格式
 Packed Chart 成为 Chart v5 CXC Playback entry
 CXC 仍为 v1
-SDK 进入 0.8.0
+SDK 使用基于实际集成基线和公共合同差异批准的 v5 发行版本
 Stage 9 可以消费稳定的 v5 Presentation/Requirement 边界
 Stage 10 可以开始正式 Studio authoring
 ```
+
+SDK 版本遵循 [版本规范](../../../guides/VERSIONING.md)，不与 Stage 编号绑定，也不预留
+`0.8.0`。发行前必须纳入 Stage 7A 等前序 SDK 变更，批准具体版本与兼容/迁移决策，
+将该版本落实到安装包、consumer 最低要求、版本拒绝测试及关闭报告；未落实不得关闭。
 
 Stage 8 关闭前，Chart v5 只能称为 candidate，不能被 Player 默认作为发行格式加载。
 Stage 8 关闭不代表 Stage 7B+ 全部完成；后续高级 Judgement 能力继续沿 Stage 7B+ 能力线

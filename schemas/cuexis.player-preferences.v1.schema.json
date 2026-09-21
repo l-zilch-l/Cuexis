@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cuexis.dev/schemas/cuexis.player-preferences.v1.schema.json",
+  "title": "Cuexis Player UserPreferences v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "version",
+    "windowWidth",
+    "windowHeight",
+    "fullscreen",
+    "vsync",
+    "gain",
+    "audioDeviceProfileId"
+  ],
+  "properties": {
+    "format": { "const": "cuexis.player-preferences" },
+    "version": { "const": 1 },
+    "windowWidth": { "type": "integer", "minimum": 320, "maximum": 16384 },
+    "windowHeight": { "type": "integer", "minimum": 200, "maximum": 16384 },
+    "fullscreen": { "type": "boolean" },
+    "vsync": { "type": "boolean" },
+    "gain": { "type": "number", "minimum": 0, "maximum": 1 },
+    "audioDeviceProfileId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9._-]{0,63}$"
+    }
+  }
+}

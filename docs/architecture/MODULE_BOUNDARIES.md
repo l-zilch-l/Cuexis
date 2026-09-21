@@ -2,7 +2,7 @@
 
 状态：现行模块边界摘要
 
-更新日期：2026-08-28
+更新日期：2026-09-20
 
 本文总结稳定依赖方向。构建时的精确 allowlist 和 architecture tests 仍由根 CMake 配置拥有。
 
@@ -42,6 +42,13 @@ Platform、AudioSDL 和 OpenGL adapter 都是可选叶子模块。Headless Playb
 窗口、物理音频设备或 Shader 编译器。`cuexis_shader` 仅在 `CUEXIS_BUILD_SHADER_TOOLS` 与 vcpkg
 feature `shader-tools` 同时打开时构建；Playback 链接闭包不得包含 shaderc、glslang、SPIRV-Tools
 或 SPIRV-Cross。
+
+Stage 6 的新增依赖方向已在
+[ADR 0042](../adr/0042-stage-6-productization-boundaries.md) 冻结，尚未实现：
+内部 `cuexis_presentation_renderer` 位于 Playback/render 之上，供 OpenGL adapter 与应用
+消费；Playback、Runtime 和底层 render 不反向依赖它，也不安装其头文件为公共 SDK。
+内部 `cuexis_player_support` 拥有应用配置/控制，离线 `cuexis_media_import` 拥有解码器；
+二者均不得成为 Playback 核心依赖。原表继续描述当前实现，不把这些规划 target 当作已存在。
 
 ## JSON 和第三方类型
 

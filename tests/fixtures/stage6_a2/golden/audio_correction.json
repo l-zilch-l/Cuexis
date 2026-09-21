@@ -1,0 +1,25 @@
+{
+  "encoding": "Stage 6 audio correction arithmetic characterization",
+  "unit": "microseconds",
+  "cases": [
+    {
+      "name": "zero_saturation",
+      "rawAudioPositionUs": 1000,
+      "correctionUs": 2500,
+      "correctedAudioPositionUs": 0
+    },
+    {
+      "name": "negative_correction",
+      "rawAudioPositionUs": 1000000,
+      "correctionUs": -12500,
+      "correctedAudioPositionUs": 1012500
+    },
+    {
+      "name": "reverse_seek",
+      "targetChartTimeUs": 500000,
+      "timingOffsetUs": 10000,
+      "correctionUs": -12500,
+      "sourcePositionUs": 497500
+    }
+  ]
+}

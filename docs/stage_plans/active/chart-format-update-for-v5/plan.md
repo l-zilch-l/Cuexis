@@ -7,7 +7,12 @@ Note 表现或渲染后端提升为核心玩法语义。判定域、动作、有
 状态：active；跨阶段 Chart v5 总工作包；不是当前下一实施阶段。Foundation、Stage 6、
 Stage 7A 和 Stage 8 分别按各自计划执行；正式发行门禁归 Stage 8
 
-更新日期：2026-09-16
+更新日期：2026-09-20
+
+SDK 版本遵循 [版本规范](../../../guides/VERSIONING.md)。本文“v5 发行 SDK 版本”指 Stage 8
+按实际集成基线（包含 Stage 7A 等前序交付）和公共合同差异批准的具体版本，不预留 `0.8.0`，
+不与阶段号绑定。发行前必须在版本决策、代码、consumer 测试和关闭报告中落实实际数值；
+此称谓不是可直接用于 CMake 的版本字符串。
 
 归档来源：[Stage Chart Format Update 完成计划](../../completed/chart-format-update/plan.md)、
 [Chart v4 格式合同](../../../formats/CHART_V4_FORMAT.md)、[谱面格式审计记录](../../../stage_reports/reviews/stage-verification-2026-09/2026-09-01-findings.md)
@@ -157,7 +162,7 @@ Chart v5 拒绝 CXT v1，不在 prepare 做 v1 lowering；CXC v1 不升版
 AnimationClip：Chart v5 / CXT v2 为 clip.version 2；Chart v4 / CXT v1 仍为 clip v1
 behavior.event：Chart v5 只接受 version 2（即使不含 alpha）；Chart v4 / v3 仍为 version 1
 FrameDigest v1–v3 对合法 v4 输入不变
-SDK API 0.8.0
+SDK API：经批准的 v5 发行 SDK 版本
 capability：cuexis.chart.v5；CXT v2 import 时 cuexis.source.cxt.v2
   非空 v5 动画：cuexis.animation.clip.v2 + cuexis.animation.layers.v1
   非空 v5 Behavior：cuexis.behavior.event.v2
@@ -188,7 +193,7 @@ Writer：先 --target 5，再切默认；允许从默认 v3 直接切到 v5（�
 | 公共观察面 | 见第 3.7 节 |
 | 安全预算 | 沿用字段依 v4/CXT v1 原表；CXT Core 展开与 Packed decoded/峰值预算由 Foundation 独立冻结，不隐式放宽旧路径 |
 | 默认 Writer | 先显式 `--target 5`，再切默认；从当前默认 v3 直接切到 v5。窗口内 `--target 4` 不得接受 v5 输入。去掉 `--target 3` |
-| 弃用窗口 | SDK `0.8.0` 起默认写出 v5。Playback 继续直接求值未迁移的 v1–v4。窗口用 SDK 版本表达，本阶段不写日历删除日 |
+| 弃用窗口 | 从 v5 发行 SDK 版本起默认写出 v5。Playback 继续直接求值未迁移的 v1–v4。窗口用实际 SDK 版本表达，本阶段不写日历删除日 |
 | 迁移 | 旋转/相机/`fovY` 恒等复制。opacity/`render.alpha` 有损舍入。`--target 5` 一条链。Chart 迁移遇 CXT v1 import 则失败。迁 Chart 不改写 CXT bytes |
 
 未关闭 V5-0 时，文档和代码只能称 Chart v5 / CXT v2 为候选，不能声称已获得正式发行支持。
@@ -436,7 +441,9 @@ CXT 的 Track/Segment 字段权威就是外层 Chart / CXT 文件版本所绑定
   `allCapabilities()` 包含这些新 ID。只声明 `cuexis.chart.v4`、`cuexis.animation.clip.v1` 或缺少
   对应 CXT capability 的裁剪 Session 稳定拒绝，不得把 v5 白名单当成 clip v1。
 - **SDK API**：当 Playback prepare 接受 Chart v5 / CXT v2、安装契约出现对应 capability，以及默认
-  Writer 切到 v5 时，将 `CUEXIS_SDK_API_VERSION` 从 `0.7.0` 提升到 `0.8.0`。日期构建版本门禁仍归
+  Writer 切到 v5 时，将 `CUEXIS_SDK_API_VERSION` 更新为经批准的 v5 发行 SDK 版本。
+  以届时实际基线评估公共 API、capability 和默认行为变化；不兼容变更必须提升 minor，
+  不得从历史 `0.7.0` 基线硬编码目标或仅以 patch 掩盖合同变化。日期构建版本门禁仍归
   Stage 6，本阶段不纠正 `26.08.01-1` 滞后。删除旧 Reader 不在本阶段，故不为删除再升一次 SDK。
 
 只懂 v4 的已安装宿主必须在 Reader 或 prepare 最早可判定点稳定拒绝 v5，带版本与 capability 诊断，
@@ -607,9 +614,9 @@ Seek、循环、零持续、相邻边界和 timeDiscontinuity 沿用既有绝对
 - 先将 v5 Writer 作为显式 `--target 5`，再切换为默认 Writer；从当前默认 v3 直接切到 v5（拒绝核验
   提案 1 的「先切默认 v4」）。窗口内保留 `--target 4`，仅接受写出 v4 的输入；v5 输入加 `--target 4`
   稳定失败。去掉 `--target 3`（v1–v3 不再写出）。
-- SDK `0.8.0` 起默认写出 v5。Playback **继续直接求值** 未迁移的 v1–v4：v4 走 `material.opacity
+- 从 v5 发行 SDK 版本起默认写出 v5。Playback **继续直接求值** 未迁移的 v1–v4：v4 走 `material.opacity
   [0,1]`；v1–v3 结果与历史一致，文档标明不再承接新字段并推荐迁 v5，打开不拒绝。
-- 盘点外部资产、提交迁移报告，并在 SDK `0.8.0` 合同中记录弃用窗口；删除时间点另立退出，不在本阶段关闭。
+- 盘点外部资产、提交迁移报告，并在 v5 发行 SDK 合同中用实际版本记录弃用窗口；删除时间点另立退出，不在本阶段关闭。
 
 ### V5-F：作者指南和工具链
 
@@ -626,8 +633,10 @@ Seek、循环、零持续、相邻边界和 timeDiscontinuity 沿用既有绝对
   double 往返、半数远离零端点、斜率不缩放、默认 `255` 与 v4 默认 opacity 等价、合法 v4 输入的
   FrameDigest v3 不变。不再收集已撤销的大角度 `[-10000,10000]` 预算证据。
 - 完成 v5 completion report，更新格式索引、状态页、路线图、API 兼容说明和旧路径映射。
-- 验证 `CUEXIS_SDK_API_VERSION` 为 `0.8.0`，且 external consumer 以 `find_package(Cuexis 0.8 ...)`
-  消费 v5；`0.7` SameMinorVersion 不得把 v5 prepare 当成已支持契约。
+- 验证 `CUEXIS_SDK_API_VERSION` 等于批准的 v5 发行 SDK 版本，且 external consumer 的
+  `find_package` 请求使用具备该合同的具体最低版本；验证过高 patch、跨 minor/major 请求拒绝。
+  同 minor 的 package 匹配不自动证明正式 v5 能力存在；旧版及 candidate-only consumer
+  仍须遵循格式/capability 拒绝合同，不得把 experimental 支持冒充正式支持。
 - 旧格式删除不作为本批次或本阶段关闭门禁；只记录弃用窗口与后续退出所需的盘点/报告入口。
 
 ## 6. 验收标准
@@ -652,7 +661,7 @@ Seek、循环、零持续、相邻边界和 timeDiscontinuity 沿用既有绝对
   16 MiB 只对 Packed file 作为发行输入门禁，并另有 Chart Closure/Expanded Runtime 预算。
 - CXT v2 包含 Chart Template/Pattern Core 与 Animation Extension；Chart v5 只 import CXT v2，拒绝 CXT v1。
   Chart v5 只接受 `behavior.event` v2。Chart v4 拒绝 CXT v2。CXC v1 可包含 Chart v5 与 CXT v2。
-  FrameDigest v1-v3 对合法 v4 输入不变。Playback 安装契约为 SDK API `0.8.0`，默认 capability 含
+  FrameDigest v1-v3 对合法 v4 输入不变。Playback 安装契约使用批准的 v5 发行 SDK 版本，默认 capability 含
   `cuexis.chart.v5`、`cuexis.source.cxt.v2`、`cuexis.animation.clip.v2` 与
   `cuexis.behavior.event.v2`。
 - `FrameSnapshot` 布局未增字段；不新增 `HostPropertyId`；对象 alpha 进入既有
@@ -699,7 +708,7 @@ Seek、循环、零持续、相邻边界和 timeDiscontinuity 沿用既有绝对
 交接给 Stage 8 之后的开发阶段的接手清单：
 
 ```text
-SDK API 0.8.0；默认写出 Chart v5；新模板 CXT v2；CXC 仍为 v1，发行入口为 Packed Chart
+SDK API 使用批准的 v5 发行版本；默认写出 Chart v5；新模板 CXT v2；CXC 仍为 v1，发行入口为 Packed Chart
 AnimationClip v2（随 Chart v5 / CXT v2）；v4 / CXT v1 仍为 clip v1
 behavior.event v2（随 Chart v5）；v3 / v4 仍为 v1
 cuexis.chart.v5 / cuexis.source.cxt.v2 / cuexis.animation.clip.v2 / cuexis.behavior.event.v2
@@ -720,7 +729,7 @@ Writer 默认 v5；--target 4 保留且拒绝 v5 输入；已去掉 --target 3
 纹理 pixel alpha 不得改写 Chart 对象 alpha 合同
 ```
 
-上述 SDK `0.8.0` 清单是 Stage 8 关闭后的交接目标，不是 Stage 6 启动基线。
+上述 v5 发行 SDK 清单是 Stage 8 关闭后的交接目标，不是 Stage 6 启动基线。
 Stage 6 的 v5-first candidate path 使用 Foundation 已接受的 subset，保留 SDK `0.7.0`
 兼容基线；不得把主要开发基线改回 v4。正式默认 Writer 和发行入口仍要等 Stage 8 关闭。
 

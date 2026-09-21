@@ -1,0 +1,13 @@
+{
+  "encoding": "Portable Presentation Texture2D v1",
+  "magic": "CXPRES01",
+  "resourceKind": 2,
+  "payloadVersion": 1,
+  "totalByteCount": 48,
+  "width": 2,
+  "height": 1,
+  "colorSpace": "sRGB",
+  "pixelsRgba8Hex": "ff0000ff00ff0080",
+  "bytesHex": "43585052455330310200000001000000300000000000000002000000010000000200000000000000ff0000ff00ff0080",
+  "sha256": "bd79151023e167aa03f9bed988f34041ada556fee6f0cffae3567d46284634f6"
+}
