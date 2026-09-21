@@ -15,9 +15,10 @@ workflow 和发行 checklist 落盘，并完成当前工作区的本地验证；
 | 工作区 | `C:/Users/Zilch/.codex/worktrees/7596/Cuexis` |
 | 起始 HEAD | `e7d6c1ea3ff950226b7a3582eb128cb2d01800fb` |
 | B1 实现提交 | `4fd46adf2eff454bc6e43fee78db36e3310254aa` |
+| B1 收尾候选提交 | `b1a59d1457f8b300091a5d657fdf989af3ef31af` |
 | 起始状态 | detached HEAD；B1 报告创建前未创建 PR、未合并、未发布 |
-| 可信 UTC 日期 | `2026-09-20` |
-| 日期版本变化 | `26.08.01-1` -> `26.09.20-1` |
+| 可信 UTC 日期 | 初始 B1：`2026-09-20`；收尾候选：`2026-09-21` |
+| 日期版本变化 | `26.08.01-1` -> `26.09.20-1`（初始 B1）-> `26.09.21-2`（收尾候选） |
 | SDK API | `0.7.0`，未提前升级到 `0.7.1` |
 | 可信合并基线 | `e3c4589c62af36f29ae5e8ebda62fe37fadbf7e7` |
 | 环境 | Windows x64、MSVC 19.51.36256、CMake 4.3.3、Ninja 1.13.2、`VCPKG_ROOT=D:/vcpkg` |
@@ -33,6 +34,7 @@ workflow 和发行 checklist 落盘，并完成当前工作区的本地验证；
 | CI workflow | `.github/workflows/version-gate.yml` | PR、merge queue、合并后 push 审计和显式 historical revalidation |
 | 发行 checklist | `docs/guides/VERSIONING.md` | 本地命令、hosted 边界、SDK 与日期版本分离 |
 | 初始 B1 版本源 | `cmake/CuexisVersion.cmake`、`vcpkg.json` | 两处规范版本同步为 `26.09.20-1` |
+| 收尾候选版本源 | `cmake/CuexisVersion.cmake`、`vcpkg.json` | 两处规范版本同步为 `26.09.21-2` |
 
 比较器按规范化 `(year, month, day, build)` 比较，不比较显示字符串或 Debug suffix。它拒绝
 无效或缺失的完整 SHA、非祖先基线、CMake/manifest 漂移、基线未来日期、候选过期或未来日期、
@@ -49,16 +51,17 @@ focused 测试在 trusted 临时目录执行时通过 `GITHUB_WORKSPACE` 使用�
 
 ## 3. 版本与兼容结果
 
-本次按可信 UTC 日期 `2026-09-20` 将显示版本从 A1 基线的 `26.08.01-1` 修正为
-`26.09.20-1`。日期版本的变化没有隐式改变 SDK API、内容格式或 ABI；生成头和安装 package
-继续报告 SDK API `0.7.0`。`0.7.1` 仍只是满足 ADR 0042 兼容条件后的目标，Stage 8 不预留
+初始 B1 按可信 UTC 日期 `2026-09-20` 将显示版本从 A1 基线的 `26.08.01-1` 修正为
+`26.09.20-1`；本次收尾候选按 `2026-09-21` 前进为 `26.09.21-2`。日期版本的变化没有
+隐式改变 SDK API、内容格式或 ABI；生成头和安装 package 继续报告 SDK API `0.7.0`。
+`0.7.1` 仍只是满足 ADR 0042 兼容条件后的目标，Stage 8 不预留
 `0.8.0`。
 
 Release 安装树已核对：
 
 | 元数据 | 实际值 |
 | --- | --- |
-| display/canonical version | `26.09.20-1` |
+| display/canonical version | `26.09.21-2` |
 | SDK/package version | `0.7.0` |
 
 ## 4. Focused 验证矩阵
@@ -81,7 +84,7 @@ Release 安装树已核对：
 | 命令 | 结果 |
 | --- | --- |
 | `python -B tools/check_version_gate_tests.py` | 通过，11 tests，退出码 0 |
-| `python -B tools/check_version_gate.py --check-current --json` | 通过，`26.09.20-1` / SDK `0.7.0` |
+| `python -B tools/check_version_gate.py --check-current --json` | 通过，`26.09.21-2` / SDK `0.7.0` |
 | `python -B tools/update_version.py --check` | 通过，CMake 与 manifest 一致 |
 | `python -B tools/check_stage6_a2.py` | 通过；A2 schemas、fixtures、goldens 和边界未回归 |
 | `git diff --check` | 通过；仅有 Git 的 LF/CRLF 转换提示 |
@@ -106,7 +109,8 @@ passed Version Gate post-merge audit run `35590201888`.
 
 ## 5. 构建、安装和 CTest 结果
 
-版本源变化后执行了 Release fresh configure 和 clean-first build；随后在修正 workflow trusted
+初始 B1 版本源变化后执行了 Release fresh configure 和 clean-first build；收尾候选版本源变化后
+重新执行了 fresh configure 和 clean-first build；随后在修正 workflow trusted
 路径后重新执行了 Debug fresh configure 和 clean-first build：
 
 ```powershell
