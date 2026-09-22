@@ -132,6 +132,7 @@ set(CUEXIS_ACTIVE_TARGETS
     cuexis_runtime
     cuexis_playback
     cuexis_presentation_renderer
+    cuexis_player_support
 )
 
 if(CUEXIS_BUILD_SDL_ADAPTER)
@@ -183,6 +184,7 @@ if(CUEXIS_BUILD_TESTS)
         cuexis_debug_tests
         cuexis_render_tests
         cuexis_presentation_renderer_tests
+        cuexis_player_support_tests
         cuexis_runtime_tests
         cuexis_world_tests
         cuexis_playback_tests
@@ -748,6 +750,11 @@ cuexis_verify_target_dependencies(cuexis_presentation_renderer
         cuexis::playback
         cuexis::render
 )
+cuexis_verify_target_dependencies(cuexis_player_support
+    ALLOWED
+        cuexis::core
+        cuexis::json_support
+)
 if(TARGET cuexis_player)
     cuexis_verify_target_dependencies(cuexis_player
         ALLOWED
@@ -935,6 +942,11 @@ if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_presentation_renderer_tests
         ALLOWED
             cuexis::presentation_renderer
+            Catch2::Catch2WithMain
+    )
+    cuexis_verify_target_dependencies(cuexis_player_support_tests
+        ALLOWED
+            cuexis::player_support
             Catch2::Catch2WithMain
     )
     cuexis_verify_target_dependencies(cuexis_runtime_tests

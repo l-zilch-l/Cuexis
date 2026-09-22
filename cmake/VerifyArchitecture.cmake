@@ -118,6 +118,18 @@ function(cuexis_verify_source_architecture source_dir)
         endif()
     endforeach()
 
+    file(GLOB_RECURSE player_support_sources
+        "${source_dir}/engine/player_support/*.cpp"
+        "${source_dir}/engine/player_support/*.hpp"
+    )
+    foreach(source IN LISTS player_support_sources)
+        file(READ "${source}" contents)
+        if(contents MATCHES
+           "#[ \t]*include[ \t]*[<\"](SDL|glad|GL/|cuexis/playback/|cuexis/render_opengl/|cuexis/audio_sdl/|nlohmann/)")
+            message(FATAL_ERROR "Player support includes Playback, SDL, OpenGL, or JSON DOM: ${source}")
+        endif()
+    endforeach()
+
     file(GLOB_RECURSE presentation_renderer_sources
         "${source_dir}/engine/presentation_renderer/*.cpp"
         "${source_dir}/engine/presentation_renderer/*.hpp"
@@ -191,9 +203,9 @@ function(cuexis_verify_source_architecture source_dir)
         if(NOT install_block)
             message(FATAL_ERROR "Missing install target list ${install_list}")
         endif()
-        if(install_block MATCHES "cuexis_presentation_renderer")
+        if(install_block MATCHES "cuexis_presentation_renderer|cuexis_player_support")
             message(FATAL_ERROR
-                "cuexis_presentation_renderer must not be an installed SDK target")
+                "An internal Stage 6 target must not be installed: ${install_list}")
         endif()
     endforeach()
 endfunction()

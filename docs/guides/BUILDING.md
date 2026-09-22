@@ -35,6 +35,7 @@ cuexis_debug
 cuexis_runtime
 cuexis_playback
 cuexis_presentation_renderer
+cuexis_player_support
 cuexis_platform_sdl
 cuexis_audio_sdl
 cuexis_render_opengl
@@ -61,6 +62,7 @@ cuexis_gameplay_tests
 cuexis_debug_tests
 cuexis_render_tests
 cuexis_presentation_renderer_tests
+cuexis_player_support_tests
 cuexis_runtime_tests
 cuexis_world_tests
 cuexis_playback_tests

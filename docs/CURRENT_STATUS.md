@@ -51,7 +51,7 @@ S6-A2 已于 2026-09-21 完成合同落盘与表征，形成 entry/config/media 
 API/安装草案、依赖图及独立 identity/media/config golden；实际证据见 [S6-A2 报告](stage_reports/stages/stage-06/2026-09-21-s6-a2-contracts-and-characterization.md)。
 A2 只证明冻结决策可以被明确描述和表征，不代表 v5 Playback、Player、renderer、media importer、
 版本门禁或 Reference Host 已实现；SDK 仍为 `0.7.0`，三个工程问题继续 open。A2 之后 B1、C1 与 D1
-已分别取得退出证据。C2、E1/E2 及其后续批次仍按计划依赖图保持未完成。
+已分别取得退出证据。C2 正在实现且尚未退出；E1/E2 及其后续批次仍按计划依赖图保持未完成。
 S6-B1 已落下版本比较器、独立负例测试、trusted-baseline workflow 和发行 checklist；当前显示版本
 为 `26.09.23-1`，SDK API 仍为 `0.7.0`。`26.09.21-2` 在 UTC `2026-09-22` 已过期，PR #28 因此前进到当天 build 1；UTC `2026-09-23` 再前进到 `26.09.23-1`。bootstrap PR #26 已将门禁纳入 `master`，并启用
 `Version advancement (pre-merge)` required check、strict latest-base 和 admin enforcement。
@@ -75,7 +75,9 @@ Stage 6 完成、PR 合并或 owner acceptance。SDK API 仍为 `0.7.0`。S6-D1 
 S6-D2 已开始把 OpenGL adapter 接到该合同，Player 正式帧使用
 `submit`/`present`；本地 GPU smoke 见
 [D2 报告](stage_reports/stages/stage-06/2026-09-22-s6-d2-opengl-migration.md)。
-该报告不是 D2 退出。C2、E1/E2 及后续批次仍按依赖图未完成。
+该报告不是 D2 退出。S6-C2 已开始：内部 `cuexis_player_support` 能加载 v1 偏好、拒绝覆盖未来版本、用注入设备列表匹配 AudioDeviceProfile，并计算 session config identity。见
+[C2 报告](stage_reports/stages/stage-06/2026-09-23-s6-c2-player-support.md)。
+AudioSDL 设备 API、真实设备 smoke、E1/E2 及后续批次仍未完成。
 
 ## 已关闭的 Full Review
 

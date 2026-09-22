@@ -47,8 +47,8 @@ Stage 6 的新增依赖方向已在
 [ADR 0042](../adr/0042-stage-6-productization-boundaries.md) 冻结。内部
 `cuexis_presentation_renderer` 已位于 Playback/render 之上。测试 renderer 与
 OpenGL adapter 都实现 `IPresentationRenderer`；Player 正式帧调用 `submit`/`present`。Playback、Runtime 和底层 render 不反向依赖它，也不安装其
-头文件为公共 SDK。内部 `cuexis_player_support` 与离线 `cuexis_media_import` 仍未实现，
-二者均不得成为 Playback 核心依赖。
+头文件为公共 SDK。内部 `cuexis_player_support` 已提供偏好、音频 profile 匹配和 session config identity，
+仍不进入 Playback 依赖。离线 `cuexis_media_import` 仍未实现。
 
 ## JSON 和第三方类型
 
