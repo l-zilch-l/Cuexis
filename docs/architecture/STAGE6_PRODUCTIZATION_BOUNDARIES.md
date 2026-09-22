@@ -95,11 +95,11 @@ files. A candidate package cannot be accepted by a production consumer accidenta
 | Boundary | Current state | Required verification |
 | --- | --- | --- |
 | Existing Playback isolation | Implemented and covered by A1 baseline | Preserve in C1/F1 |
-| New renderer direction | D1 library, command builder, and test renderer exist; OpenGL still uses its own path | D2 migrates the adapter |
+| New renderer direction | D1 exited locally on `c2861c3`; OpenGL still uses its own path | D2 migrates the adapter |
 | Player support separation | Contract only; target does not exist | C2/C3 architecture tests |
 | Media importer isolation | Contract only; target does not exist | E1/E2 target and package tests |
 | Production/experimental staging | Contract only; no package flavor gate yet | B1/C4 clean staging |
 | Reference Host | Contract only; example not yet present | C4 external consumer/interactive host |
 
-This document is evidence that the dependency and installation boundaries are specified, not evidence
-that the future targets or hosted consumers have been built.
+This document records the dependency contract. The presentation renderer target now exists;
+player support, media import, and the OpenGL dependency edge remain unimplemented.

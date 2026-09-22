@@ -20,7 +20,9 @@
 - [2026-09-22 S6-C1 退出](2026-09-22-s6-c1-exit.md)
   （同 SHA hosted 默认 OFF 矩阵与批次退出边界；不是 Stage 6 关闭或 owner acceptance）
 - [2026-09-22 S6-D1 渲染合同与测试 renderer](2026-09-22-s6-d1-renderer-contract.md)
-  （内部 presentation renderer、事务 token 和本地无 GPU 证据；批次尚未退出）
+  （实现当时的本地 MSVC 快照；该页不改写成退出证据）
+- [2026-09-22 S6-D1 退出](2026-09-22-s6-d1-exit.md)
+  （同 SHA hosted 默认矩阵与批次退出边界；不是 D2 或 Stage 6 关闭）
 
 权威范围见 [Stage 6 计划](../../../stage_plans/active/stage-06/plan.md)、
 [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md) 和
