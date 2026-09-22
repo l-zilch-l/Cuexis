@@ -17,7 +17,7 @@ coverage 或 hosted 检查写成通过，也没有宣称 Stage 6、SDK `0.7.1` �
 | PR | #28，`OPEN`，未合并 |
 | 目标基线 | `master` `46b65d1f2345f543b98e7e87fe5ec9ed735f10bf` |
 | SDK API | `0.7.0`，未升级 |
-| 日期版本 | `26.09.21-2`，本批次未改版本源 |
+| 日期版本 | 先保持 `26.09.21-2`；UTC `2026-09-22` 的 pre-merge 报 `version.release_date.stale` 后前进为 `26.09.22-1` |
 | 本地编译器 | MSVC 19.51.36256，CMake Ninja，`VCPKG_ROOT` 指向本机 vcpkg |
 
 构建和测试都使用本工作区的 `out/build/debug` 与 `out/build/debug-candidate`。没有改

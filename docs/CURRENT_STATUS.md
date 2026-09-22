@@ -53,7 +53,7 @@ A2 只证明冻结决策可以被明确描述和表征，不代表 v5 Playback�
 版本门禁或 Reference Host 已实现；SDK 仍为 `0.7.0`，三个工程问题继续 open。下游 B1、C1、D1、
 C2、E1/E2 及其后续批次仍按计划依赖图保持未完成。
 S6-B1 已落下版本比较器、独立负例测试、trusted-baseline workflow 和发行 checklist；当前显示版本
-为 `26.09.21-2`，SDK API 仍为 `0.7.0`。bootstrap PR #26 已将门禁纳入 `master`，并启用
+为 `26.09.22-1`，SDK API 仍为 `0.7.0`。`26.09.21-2` 在 UTC `2026-09-22` 已过期，PR #28 因此前进到当天 build 1。bootstrap PR #26 已将门禁纳入 `master`，并启用
 `Version advancement (pre-merge)` required check、strict latest-base 和 admin enforcement。
 候选 PR #27 的 `d4697549a50e9c517ac393c27786826aa43ce9cc` 以 trusted baseline
 `4545742ed63ae2d8f11ad07e80930ce5b88fa0ce` 通过 protected Version Gate run `35586930775`，
