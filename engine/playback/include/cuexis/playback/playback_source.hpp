@@ -80,8 +80,8 @@ class CUEXIS_PLAYBACK_API PlaybackSource final {
     [[nodiscard]] static auto fromCxcMemory(std::vector<std::byte> packageBytes)
         -> core::Result<PlaybackSource>;
 
-    [[nodiscard]] static auto fromFilesystemProjectEntry(
-        const std::filesystem::path& locator, std::string entryPath)
+    [[nodiscard]] static auto fromFilesystemProjectEntry(const std::filesystem::path& locator,
+                                                         std::string entryPath)
         -> core::Result<PlaybackSource>;
     [[nodiscard]] static auto fromCxcFileEntry(const std::filesystem::path& locator,
                                                std::string entryPath)

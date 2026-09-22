@@ -35,7 +35,9 @@ constexpr std::size_t maxProjectDocumentTotalBytes = 512U * 1024U * 1024U;
 constexpr std::size_t maxProjectPathBytes = 4096;
 constexpr std::size_t maxProjectPathDepth = 64;
 constexpr std::size_t maxSourceIdBytes = 256;
+#if defined(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
 constexpr std::size_t maxCandidateEntryBytes = 16U * 1024U * 1024U;
+#endif
 
 struct CxcSourceData final {
     std::string sourceId;

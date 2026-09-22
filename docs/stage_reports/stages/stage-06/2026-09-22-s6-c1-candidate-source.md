@@ -59,6 +59,12 @@ ON 配置覆盖了 CXC file/memory 与 filesystem project 的同一 Packed 内�
 candidate、错误 artifact identity、host parameter 失败不改变 active identity，以及 metadata
 在 prepare 和 commit 之后仍可读取。
 
+`2eb90bd` 推到 PR #28 后，GCC Release / ASan 因 `-Werror` 失败，MinGW debug 因
+`playback_source.hpp` 未通过 clang-format 失败。原因是关闭构建里的未使用常量、GCC 对
+`std::optional` 的 maybe-uninitialized，以及只在 candidate ON 测试里使用的辅助函数。这些是
+编译门禁，不是测试逻辑已经在 Linux 上跑通。后续提交专门修这几项；在新的 hosted 运行变绿之前，
+仍不能把 C1 写成退出。
+
 ## 4. 尚未验证
 
 以下各项不能用上面的 Windows MSVC 结果代替：

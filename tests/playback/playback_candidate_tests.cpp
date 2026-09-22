@@ -20,6 +20,8 @@
 
 namespace {
 
+#ifdef CUEXIS_ENABLE_CHART_V5_CANDIDATE
+
 [[nodiscard]] auto readText(const std::filesystem::path& path) -> std::string {
     std::ifstream stream{path, std::ios::binary};
     REQUIRE(stream.good());
@@ -35,7 +37,7 @@ namespace {
     return bytes;
 }
 
-[[nodiscard]] auto writeText(const std::filesystem::path& path, std::string_view text) -> void {
+auto writeText(const std::filesystem::path& path, std::string_view text) -> void {
     std::filesystem::create_directories(path.parent_path());
     std::ofstream stream{path, std::ios::binary};
     REQUIRE(stream.good());
@@ -137,6 +139,8 @@ class TemporaryDirectory final {
   private:
     std::filesystem::path path_;
 };
+
+#endif
 
 } // namespace
 

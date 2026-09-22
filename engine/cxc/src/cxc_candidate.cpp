@@ -212,7 +212,9 @@ auto parseCandidateChartEntryExtension(std::string_view extensionsJson,
         const auto encoding = readRequiredString(*item, "encoding", readerDiagnostics);
         const auto playbackReader = item->requiredField("playback");
         const auto playback = playbackReader ? playbackReader->readBoolean() : std::nullopt;
-        if (!path || !kind || !encoding || !playback) {
+        // value_or avoids a libstdc++ optional false positive under -Wmaybe-uninitialized.
+        const bool playbackEnabled = playback.value_or(false);
+        if (!path || !kind || !encoding || !playbackEnabled) {
             continue;
         }
 
@@ -272,7 +274,7 @@ auto parseCandidateChartEntryExtension(std::string_view extensionsJson,
                      "artifactIdentity must be lowercase SHA-256", fieldPath + "/artifactIdentity");
         }
         const auto compilerProfile = readString(*item, "compilerProfile");
-        if (*playback && (!compiledIdentity || !artifactIdentity || !compilerProfile)) {
+        if (playbackEnabled && (!compiledIdentity || !artifactIdentity || !compilerProfile)) {
             addError(result.diagnostics, "cxc.chart_entry.extension_invalid",
                      "Playback chart entries require candidate identity and profile metadata",
                      fieldPath);
@@ -282,18 +284,21 @@ auto parseCandidateChartEntryExtension(std::string_view extensionsJson,
         const auto entityCount = entityReader ? entityReader->readUInt64() : std::nullopt;
         const auto requirementCount =
             requirementReader ? requirementReader->readUInt64() : std::nullopt;
-        if (*playback && (!entityCount || !requirementCount || *entityCount > maxCandidateCount ||
-                          *requirementCount > maxCandidateCount)) {
+        const auto entityCountValue = entityCount.value_or(0);
+        const auto requirementCountValue = requirementCount.value_or(0);
+        if (playbackEnabled &&
+            (!entityCount.has_value() || !requirementCount.has_value() ||
+             entityCountValue > maxCandidateCount || requirementCountValue > maxCandidateCount)) {
             addError(result.diagnostics, "cxc.chart_entry.extension_invalid",
                      "Playback chart entry counts are outside the candidate range", fieldPath);
         }
 
         if (*path == requestedPath) {
             selectedPathWasDeclared = true;
-            if (*playback) {
+            if (playbackEnabled) {
                 if (!selected) {
                     selected = CandidateChartEntry{
-                        *path,           *kind,          *encoding,        *playback,
+                        *path,           *kind,          *encoding,        true,
                         sourcePath,      sourceIdentity, compiledIdentity, artifactIdentity,
                         compilerProfile, entityCount,    requirementCount};
                 }
@@ -497,7 +502,8 @@ auto validateCandidateChartExtension(const CxcPackage& package) -> core::Diagnos
         const auto encoding = readRequiredString(*item, "encoding", diagnostics);
         const auto playbackReader = item->requiredField("playback");
         const auto playback = playbackReader ? playbackReader->readBoolean() : std::nullopt;
-        if (!path || !kind || !encoding || !playback) {
+        const bool playbackEnabled = playback.value_or(false);
+        if (!path || !kind || !encoding || !playbackEnabled) {
             continue;
         }
         const auto field = std::string{item->fieldPath()};
@@ -528,17 +534,19 @@ auto validateCandidateChartExtension(const CxcPackage& package) -> core::Diagnos
                      "Packed Chart candidate exceeds the 16 MiB entry limit", field + "/path");
         }
         const auto artifactIdentity = readRequiredString(*item, "artifactIdentity", diagnostics);
-        if (!artifactIdentity || !isSha256(*artifactIdentity)) {
+        const auto artifactText = artifactIdentity.value_or(std::string{});
+        if (!isSha256(artifactText)) {
             addError(diagnostics, "cxc.candidate.identity_invalid",
                      "artifactIdentity must be lowercase SHA-256", field + "/artifactIdentity");
-        } else if (*artifactIdentity != archiveEntry->sha256) {
+        } else if (artifactText != archiveEntry->sha256) {
             addError(diagnostics, "cxc.candidate.artifact_identity_mismatch",
                      "artifactIdentity does not match exact archive entry bytes",
                      field + "/artifactIdentity");
         }
         const auto compiledIdentity =
             readRequiredString(*item, "compiledSemanticIdentity", diagnostics);
-        if (!compiledIdentity || !isSha256(*compiledIdentity)) {
+        const auto compiledText = compiledIdentity.value_or(std::string{});
+        if (!isSha256(compiledText)) {
             addError(diagnostics, "cxc.candidate.identity_invalid",
                      "compiledSemanticIdentity must be lowercase SHA-256",
                      field + "/compiledSemanticIdentity");
@@ -555,7 +563,7 @@ auto validateCandidateChartExtension(const CxcPackage& package) -> core::Diagnos
             }
             if (const auto sourceIdentity = item->optionalField("sourceSemanticIdentity")) {
                 const auto identity = sourceIdentity->readString();
-                if (!identity || !isSha256(*identity)) {
+                if (!isSha256(identity.value_or(std::string{}))) {
                     addError(diagnostics, "cxc.candidate.identity_invalid",
                              "sourceSemanticIdentity must be lowercase SHA-256",
                              field + "/sourceSemanticIdentity");
@@ -563,7 +571,8 @@ auto validateCandidateChartExtension(const CxcPackage& package) -> core::Diagnos
             }
         }
         const auto profile = readRequiredString(*item, "compilerProfile", diagnostics);
-        if (!profile || *profile != candidateProfile) {
+        const auto profileText = profile.value_or(std::string{});
+        if (profileText != candidateProfile) {
             addError(diagnostics, "cxc.candidate.profile_unsupported",
                      "Candidate compilerProfile is not registered for Foundation revision 1",
                      field + "/compilerProfile");
@@ -573,18 +582,21 @@ auto validateCandidateChartExtension(const CxcPackage& package) -> core::Diagnos
         const auto entityCount = entityReader ? entityReader->readUInt64() : std::nullopt;
         const auto requirementCount =
             requirementReader ? requirementReader->readUInt64() : std::nullopt;
-        if (!entityCount || *entityCount == 0 || *entityCount > maxCandidateCount) {
+        const auto entityCountValue = entityCount.value_or(0);
+        const auto requirementCountValue = requirementCount.value_or(0);
+        if (!entityCount.has_value() || entityCountValue == 0 ||
+            entityCountValue > maxCandidateCount) {
             addError(diagnostics, "cxc.candidate.count_invalid",
                      "expandedEntityCount must be in the Foundation range 1..40000",
                      field + "/expandedEntityCount");
         }
-        if (!requirementCount || *requirementCount > maxCandidateCount) {
+        if (!requirementCount.has_value() || requirementCountValue > maxCandidateCount) {
             addError(diagnostics, "cxc.candidate.count_invalid",
                      "expandedRequirementCount must be in the Foundation range 0..40000",
                      field + "/expandedRequirementCount");
         }
 
-        if (*playback) {
+        if (playbackEnabled) {
             hasPlayback = true;
             const auto decoded = chart::packed::decode(
                 *bytes, chart::PackedChartLimits{.maxPackedFileBytes = maxPackedBytes});
@@ -593,19 +605,20 @@ auto validateCandidateChartExtension(const CxcPackage& package) -> core::Diagnos
                          "Playback candidate bytes fail Foundation semantic validation",
                          field + "/path");
             } else if (const auto identity = chart::packed::semanticIdentity(*decoded)) {
-                if (compiledIdentity &&
-                    *compiledIdentity != chart::packed::semanticIdentityHex(*identity)) {
+                if (compiledIdentity.has_value() &&
+                    compiledText != chart::packed::semanticIdentityHex(*identity)) {
                     addError(diagnostics, "cxc.candidate.compiled_identity_mismatch",
                              "compiledSemanticIdentity does not match the decoded Packed semantic "
                              "identity",
                              field + "/compiledSemanticIdentity");
                 }
-                if (entityCount && decoded->entities.size() != *entityCount) {
+                if (entityCount.has_value() && decoded->entities.size() != entityCountValue) {
                     addError(diagnostics, "cxc.candidate.count_mismatch",
                              "Packed entity count does not match candidate metadata",
                              field + "/expandedEntityCount");
                 }
-                if (requirementCount && countRequirements(*decoded) != *requirementCount) {
+                if (requirementCount.has_value() &&
+                    countRequirements(*decoded) != requirementCountValue) {
                     addError(diagnostics, "cxc.candidate.count_mismatch",
                              "Packed requirement count does not match candidate metadata",
                              field + "/expandedRequirementCount");
