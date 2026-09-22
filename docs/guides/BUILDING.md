@@ -2,7 +2,7 @@
 
 状态：阶段 3 最终验收后的现行构建、安装与质量门禁规范
 
-更新日期：2026-08-28
+更新日期：2026-09-22
 
 ## 当前仓库说明
 
@@ -34,6 +34,7 @@ cuexis_render
 cuexis_debug
 cuexis_runtime
 cuexis_playback
+cuexis_presentation_renderer
 cuexis_platform_sdl
 cuexis_audio_sdl
 cuexis_render_opengl
@@ -59,6 +60,7 @@ cuexis_behavior_tests
 cuexis_gameplay_tests
 cuexis_debug_tests
 cuexis_render_tests
+cuexis_presentation_renderer_tests
 cuexis_runtime_tests
 cuexis_world_tests
 cuexis_playback_tests

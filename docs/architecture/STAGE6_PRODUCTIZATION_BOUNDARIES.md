@@ -1,7 +1,7 @@
 # Stage 6 Productization Boundaries
 
-Status: S6-A2 dependency and installation contract. The new targets shown here are planned
-boundaries; only the existing targets are currently implemented.
+Status: S6-A2 dependency and installation contract. `cuexis_presentation_renderer` now exists
+as an internal static library. `cuexis_player_support` and `cuexis_media_import` remain planned.
 
 ## 1. Direct Dependency Graph
 
@@ -95,7 +95,7 @@ files. A candidate package cannot be accepted by a production consumer accidenta
 | Boundary | Current state | Required verification |
 | --- | --- | --- |
 | Existing Playback isolation | Implemented and covered by A1 baseline | Preserve in C1/F1 |
-| New renderer direction | Contract only; target does not exist | D1 architecture/allowlist tests |
+| New renderer direction | D1 library, command builder, and test renderer exist; OpenGL still uses its own path | D2 migrates the adapter |
 | Player support separation | Contract only; target does not exist | C2/C3 architecture tests |
 | Media importer isolation | Contract only; target does not exist | E1/E2 target and package tests |
 | Production/experimental staging | Contract only; no package flavor gate yet | B1/C4 clean staging |

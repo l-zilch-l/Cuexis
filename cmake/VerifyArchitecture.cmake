@@ -89,8 +89,8 @@ function(cuexis_verify_source_architecture source_dir)
     )
     foreach(source IN LISTS runtime_sources)
         file(READ "${source}" contents)
-        if(contents MATCHES "#[ \t]*include[ \t]*[<\"](SDL|glad|GL/|cuexis/audio/|cuexis/audio_sdl/|cuexis/platform_sdl/|cuexis/render_opengl/|cuexis/shader/|shaderc/|spirv-tools/|spirv_cross/|glslang/)")
-            message(FATAL_ERROR "Runtime includes a platform, backend or shader-compiler header: ${source}")
+        if(contents MATCHES "#[ \t]*include[ \t]*[<\"](SDL|glad|GL/|cuexis/audio/|cuexis/audio_sdl/|cuexis/platform_sdl/|cuexis/render_opengl/|cuexis/presentation_renderer/|cuexis/shader/|shaderc/|spirv-tools/|spirv_cross/|glslang/)")
+            message(FATAL_ERROR "Runtime includes a platform, backend, renderer or shader-compiler header: ${source}")
         endif()
     endforeach()
 
@@ -101,8 +101,32 @@ function(cuexis_verify_source_architecture source_dir)
     foreach(source IN LISTS playback_sources)
         file(READ "${source}" contents)
         if(contents MATCHES
-           "#[ \t]*include[ \t]*[<\"](SDL|cuexis/audio_sdl/|cuexis/platform_sdl/|cuexis/render_opengl/|cuexis/shader/|shaderc/|spirv-tools/|spirv_cross/|glslang/)")
-            message(FATAL_ERROR "Playback includes an adapter or shader-compiler header: ${source}")
+           "#[ \t]*include[ \t]*[<\"](SDL|cuexis/audio_sdl/|cuexis/platform_sdl/|cuexis/render_opengl/|cuexis/presentation_renderer/|cuexis/shader/|shaderc/|spirv-tools/|spirv_cross/|glslang/)")
+            message(FATAL_ERROR "Playback includes an adapter, renderer or shader-compiler header: ${source}")
+        endif()
+    endforeach()
+
+    file(GLOB_RECURSE render_sources
+        "${source_dir}/engine/render/*.cpp"
+        "${source_dir}/engine/render/*.hpp"
+    )
+    foreach(source IN LISTS render_sources)
+        file(READ "${source}" contents)
+        if(contents MATCHES
+           "#[ \t]*include[ \t]*[<\"](SDL|glad|GL/|cuexis/playback/|cuexis/presentation_renderer/|cuexis/render_opengl/|cuexis/platform_sdl/)")
+            message(FATAL_ERROR "Render includes Playback, the presentation renderer, or a backend header: ${source}")
+        endif()
+    endforeach()
+
+    file(GLOB_RECURSE presentation_renderer_sources
+        "${source_dir}/engine/presentation_renderer/*.cpp"
+        "${source_dir}/engine/presentation_renderer/*.hpp"
+    )
+    foreach(source IN LISTS presentation_renderer_sources)
+        file(READ "${source}" contents)
+        if(contents MATCHES
+           "#[ \t]*include[ \t]*[<\"](SDL|glad|GL/|cuexis/render_opengl/|cuexis/platform_sdl/|cuexis/audio_sdl/)")
+            message(FATAL_ERROR "Presentation renderer includes SDL or OpenGL: ${source}")
         endif()
     endforeach()
 
@@ -158,6 +182,18 @@ function(cuexis_verify_source_architecture source_dir)
         if(contents MATCHES "cuexis::runtime::RuntimeSession|cuexis::world::World[^T]")
             message(FATAL_ERROR
                 "PlaybackSession public header leaked internal Runtime/World type: ${source}")
+        endif()
+    endforeach()
+
+    file(READ "${source_dir}/CMakeLists.txt" root_lists)
+    foreach(install_list IN ITEMS CUEXIS_PUBLIC_EXPORT_TARGETS CUEXIS_STATIC_IMPLEMENTATION_TARGETS)
+        string(REGEX MATCH "set\\(${install_list}[^)]*\\)" install_block "${root_lists}")
+        if(NOT install_block)
+            message(FATAL_ERROR "Missing install target list ${install_list}")
+        endif()
+        if(install_block MATCHES "cuexis_presentation_renderer")
+            message(FATAL_ERROR
+                "cuexis_presentation_renderer must not be an installed SDK target")
         endif()
     endforeach()
 endfunction()

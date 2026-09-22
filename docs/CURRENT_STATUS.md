@@ -51,7 +51,7 @@ S6-A2 已于 2026-09-21 完成合同落盘与表征，形成 entry/config/media 
 API/安装草案、依赖图及独立 identity/media/config golden；实际证据见 [S6-A2 报告](stage_reports/stages/stage-06/2026-09-21-s6-a2-contracts-and-characterization.md)。
 A2 只证明冻结决策可以被明确描述和表征，不代表 v5 Playback、Player、renderer、media importer、
 版本门禁或 Reference Host 已实现；SDK 仍为 `0.7.0`，三个工程问题继续 open。A2 之后 B1 与 C1
-已分别取得退出证据。D1、C2、E1/E2 及其后续批次仍按计划依赖图保持未完成。
+已分别取得退出证据。D1 正在实现且尚未退出；C2、E1/E2 及其后续批次仍按计划依赖图保持未完成。
 S6-B1 已落下版本比较器、独立负例测试、trusted-baseline workflow 和发行 checklist；当前显示版本
 为 `26.09.22-1`，SDK API 仍为 `0.7.0`。`26.09.21-2` 在 UTC `2026-09-22` 已过期，PR #28 因此前进到当天 build 1。bootstrap PR #26 已将门禁纳入 `master`，并启用
 `Version advancement (pre-merge)` required check、strict latest-base 和 admin enforcement。
@@ -66,8 +66,10 @@ identity 已接入。本地 MSVC 快照见
 [实现报告](stage_reports/stages/stage-06/2026-09-22-s6-c1-candidate-source.md)；
 退出 SHA `3e11b167f8fccae47b0bd8b0a94080e649ba544f` 的 hosted 默认 OFF 矩阵见
 [C1 退出报告](stage_reports/stages/stage-06/2026-09-22-s6-c1-exit.md)。该退出不是
-Stage 6 完成、PR 合并或 owner acceptance。SDK API 仍为 `0.7.0`。D1、C2、E1/E2 及后续
-批次仍按依赖图未完成。
+Stage 6 完成、PR 合并或 owner acceptance。SDK API 仍为 `0.7.0`。S6-D1 已开始：内部
+`cuexis_presentation_renderer` 与无 GPU 测试 renderer 有本地证据，见
+[D1 报告](stage_reports/stages/stage-06/2026-09-22-s6-d1-renderer-contract.md)。
+OpenGL 迁移仍属 D2。C2、E1/E2 及后续批次仍按依赖图未完成。
 
 ## 已关闭的 Full Review
 

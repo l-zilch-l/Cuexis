@@ -44,11 +44,11 @@ feature `shader-tools` 同时打开时构建；Playback 链接闭包不得包含
 或 SPIRV-Cross。
 
 Stage 6 的新增依赖方向已在
-[ADR 0042](../adr/0042-stage-6-productization-boundaries.md) 冻结，尚未实现：
-内部 `cuexis_presentation_renderer` 位于 Playback/render 之上，供 OpenGL adapter 与应用
-消费；Playback、Runtime 和底层 render 不反向依赖它，也不安装其头文件为公共 SDK。
-内部 `cuexis_player_support` 拥有应用配置/控制，离线 `cuexis_media_import` 拥有解码器；
-二者均不得成为 Playback 核心依赖。原表继续描述当前实现，不把这些规划 target 当作已存在。
+[ADR 0042](../adr/0042-stage-6-productization-boundaries.md) 冻结。内部
+`cuexis_presentation_renderer` 已位于 Playback/render 之上，供测试 renderer 消费；
+OpenGL adapter 尚未改接到该层。Playback、Runtime 和底层 render 不反向依赖它，也不安装其
+头文件为公共 SDK。内部 `cuexis_player_support` 与离线 `cuexis_media_import` 仍未实现，
+二者均不得成为 Playback 核心依赖。
 
 ## JSON 和第三方类型
 

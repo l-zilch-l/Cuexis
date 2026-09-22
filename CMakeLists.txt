@@ -131,6 +131,7 @@ set(CUEXIS_ACTIVE_TARGETS
     cuexis_debug
     cuexis_runtime
     cuexis_playback
+    cuexis_presentation_renderer
 )
 
 if(CUEXIS_BUILD_SDL_ADAPTER)
@@ -181,6 +182,7 @@ if(CUEXIS_BUILD_TESTS)
         cuexis_gameplay_tests
         cuexis_debug_tests
         cuexis_render_tests
+        cuexis_presentation_renderer_tests
         cuexis_runtime_tests
         cuexis_world_tests
         cuexis_playback_tests
@@ -739,6 +741,12 @@ cuexis_verify_target_dependencies(cuexis_playback
         cuexis::runtime
         cuexis::world
 )
+cuexis_verify_target_dependencies(cuexis_presentation_renderer
+    ALLOWED
+        cuexis::core
+        cuexis::playback
+        cuexis::render
+)
 if(TARGET cuexis_player)
     cuexis_verify_target_dependencies(cuexis_player
         ALLOWED
@@ -921,6 +929,11 @@ if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_render_tests
         ALLOWED
             cuexis::render
+            Catch2::Catch2WithMain
+    )
+    cuexis_verify_target_dependencies(cuexis_presentation_renderer_tests
+        ALLOWED
+            cuexis::presentation_renderer
             Catch2::Catch2WithMain
     )
     cuexis_verify_target_dependencies(cuexis_runtime_tests
