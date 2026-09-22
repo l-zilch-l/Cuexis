@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-09-22
+更新日期：2026-09-23
 
 本目录保存 Stage 6 各子批次的带日期实施和验证证据。当前阶段仍为 active；报告只记录实际
 执行结果，不把 ADR 冻结、历史 hosted 结果或后续计划当作本批次实现证据。
@@ -24,7 +24,9 @@
 - [2026-09-22 S6-D1 退出](2026-09-22-s6-d1-exit.md)
   （同 SHA hosted 默认矩阵与批次退出边界；不是 D2 或 Stage 6 关闭）
 - [2026-09-22 S6-D2 OpenGL 迁移](2026-09-22-s6-d2-opengl-migration.md)
-  （Player 正式帧改走中立接口，本地 GPU smoke；批次尚未退出）
+  （实现当时的本地 GPU smoke；该页不改写成退出证据）
+- [2026-09-23 S6-D2 退出](2026-09-23-s6-d2-exit.md)
+  （OpenGL 接线与 Player 正式帧的本地退出；Linux/MSVC hosted 成功，MinGW 成员顺序修正尚未复验）
 - [2026-09-23 S6-C2 Player support](2026-09-23-s6-c2-player-support.md)
   （偏好、音频 profile 匹配和 session identity 的本地测试；批次尚未退出）
 

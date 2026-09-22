@@ -46,7 +46,7 @@ Chart v1-v3 退出仍是待项目所有者决策的 candidate 提案，不因本
 2026-09-20 的可实施性评审以本地 `master` 的 `e3c4589` 为阅读基线。owner 已接受将评审
 建议落实为详细计划，并授权冻结关键实施决策；其权威结论见
 [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md)。设计已冻结不表示字段级
-Schema、表征或实施批次已经通过。A1、A2、B1、C1 和 D1 已有各自退出证据；其余批次尚未完成。
+Schema、表征或实施批次已经通过。A1、A2、B1、C1、D1 和 D2 已有各自退出证据；其余批次尚未完成。
 本计划不替代
 [ADR 0024](../../../adr/0024-configuration-ownership-and-staged-formats.md)、
 [ADR 0033](../../../adr/0033-cpp-shared-library-preview-boundary.md)、
@@ -92,7 +92,7 @@ S6-A1 基线、入口和证据矩阵
 | B1 | A2 | 版本比较器、受保护门禁、发行 checklist | completed（trusted baseline、required Version Gate、同 SHA hosted 验证与合并后审计均已记录，见报告） |
 | C1 | A2 | candidate 消费链、身份和要求数据保留 | completed（本地 MSVC 快照与同 SHA hosted 默认 OFF 矩阵见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-22-s6-c1-exit.md)；不是 Stage 6 关闭或 owner acceptance） |
 | D1 | A2 | 无环渲染合同、事务 token、测试 renderer | completed（本地 MSVC 快照与同 SHA hosted 默认矩阵见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-22-s6-d1-exit.md)；OpenGL 迁移仍属 D2） |
-| D2 | D1 | OpenGL adapter 迁移、统一帧与诊断路径 | in_progress（本地接线与 GPU smoke 见 [报告](../../../stage_reports/stages/stage-06/2026-09-22-s6-d2-opengl-migration.md)；尚未退出） |
+| D2 | D1 | OpenGL adapter 迁移、统一帧与诊断路径 | completed（本地 GPU smoke 与 Linux/MSVC hosted 见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-23-s6-d2-exit.md)；MinGW 成员顺序修正尚未 hosted 复验，最小化/恢复未执行） |
 | C2 | A2 | 配置解析、快照、设备 profile 与受控应用 | in_progress（无 SDL 的偏好、profile 匹配和 session identity 见 [报告](../../../stage_reports/stages/stage-06/2026-09-23-s6-c2-player-support.md)；AudioSDL 设备 API 与真实设备 smoke 仍未做） |
 | C3 | C1、C2、D2 | Player 用户入口、状态机、跨子系统事务 | planned |
 | E1 / E2 | A2 | 图片 / 音频离线导入及各自 golden | planned |

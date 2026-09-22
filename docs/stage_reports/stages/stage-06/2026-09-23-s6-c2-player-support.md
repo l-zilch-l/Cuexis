@@ -27,4 +27,5 @@
 - AudioSDL 的独立枚举、匹配结果和 `createForDevice` 还没有加。旧 `create` 仍是默认路由。
 - 没有真实音频设备 smoke，也没有第二个进程同时抢锁的测试。当前锁测试是同一进程内的排他创建。
 - Player 还没有改用这个库发布 ResolvedAppConfig。那一部分仍属于 C2 的后续，不是本页退出。
-- C2 退出、D2 退出和 Stage 6 关闭都还没有完成。
+- C2 退出和 Stage 6 关闭都还没有完成。D2 的本地退出见
+  [D2 退出报告](2026-09-23-s6-d2-exit.md)。
