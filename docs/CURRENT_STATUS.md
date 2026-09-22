@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-09-21
+更新日期：2026-09-22
 
 本文是 Cuexis 当前产品和阶段状态的唯一摘要。ADR 定义决策，Spec 定义字段和语义，阶段计划定义未来
 范围，阶段报告保存带日期的实施证据；它们不得绕过本文重新定义当前状态。
@@ -50,8 +50,8 @@ Stage 6 的条件性源兼容 SDK 目标为 `0.7.1`，当前实现仍为 `0.7.0`
 S6-A2 已于 2026-09-21 完成合同落盘与表征，形成 entry/config/media Spec、三份 Schema、
 API/安装草案、依赖图及独立 identity/media/config golden；实际证据见 [S6-A2 报告](stage_reports/stages/stage-06/2026-09-21-s6-a2-contracts-and-characterization.md)。
 A2 只证明冻结决策可以被明确描述和表征，不代表 v5 Playback、Player、renderer、media importer、
-版本门禁或 Reference Host 已实现；SDK 仍为 `0.7.0`，三个工程问题继续 open。下游 B1、C1、D1、
-C2、E1/E2 及其后续批次仍按计划依赖图保持未完成。
+版本门禁或 Reference Host 已实现；SDK 仍为 `0.7.0`，三个工程问题继续 open。A2 之后 B1 与 C1
+已分别取得退出证据。D1、C2、E1/E2 及其后续批次仍按计划依赖图保持未完成。
 S6-B1 已落下版本比较器、独立负例测试、trusted-baseline workflow 和发行 checklist；当前显示版本
 为 `26.09.22-1`，SDK API 仍为 `0.7.0`。`26.09.21-2` 在 UTC `2026-09-22` 已过期，PR #28 因此前进到当天 build 1。bootstrap PR #26 已将门禁纳入 `master`，并启用
 `Version advancement (pre-merge)` required check、strict latest-base 和 admin enforcement。
@@ -60,11 +60,14 @@ S6-B1 已落下版本比较器、独立负例测试、trusted-baseline workflow 
 并在同一 SHA 通过 Linux Quality、Windows MSVC、Windows MinGW；随后合并为 `master`
 `46b65d1f2345f543b98e7e87fe5ec9ed735f10bf`。本地 focused tests、docs、fresh configure、
 clean-first build 与 `683/683` CTest 证据见 [S6-B1 报告](stage_reports/stages/stage-06/2026-09-20-s6-b1-version-gate.md)。
-B1 与 S6-G02 已满足其计划门禁。S6-C1 已在 PR #28 工作区接入默认关闭的显式 candidate
-工厂、生产 CXC bridge、typed lowering、Runtime opacity 和 candidate prepared identity；本地
-MSVC 证据见 [S6-C1 报告](stage_reports/stages/stage-06/2026-09-22-s6-c1-candidate-source.md)。
-该报告不构成 C1 退出：MinGW fresh、Linux sanitizer/coverage、同 SHA hosted 与
-external-consumer 证据仍缺。SDK API 仍为 `0.7.0`。Stage 6 其他批次仍按依赖图推进。
+B1 与 S6-G02 已满足其计划门禁。S6-C1 已于 2026-09-22 在本地退出：默认关闭的显式
+candidate 工厂、生产 CXC bridge、typed lowering、Runtime opacity 和 candidate prepared
+identity 已接入。本地 MSVC 快照见
+[实现报告](stage_reports/stages/stage-06/2026-09-22-s6-c1-candidate-source.md)；
+退出 SHA `3e11b167f8fccae47b0bd8b0a94080e649ba544f` 的 hosted 默认 OFF 矩阵见
+[C1 退出报告](stage_reports/stages/stage-06/2026-09-22-s6-c1-exit.md)。该退出不是
+Stage 6 完成、PR 合并或 owner acceptance。SDK API 仍为 `0.7.0`。D1、C2、E1/E2 及后续
+批次仍按依赖图未完成。
 
 ## 已关闭的 Full Review
 
