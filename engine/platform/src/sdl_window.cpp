@@ -74,6 +74,9 @@ core::Result<SdlWindow> SdlWindow::create(SdlRuntime& runtime, const WindowConfi
     if (config.openGl) {
         flags |= SDL_WINDOW_OPENGL;
     }
+    if (config.fullscreen) {
+        flags |= SDL_WINDOW_FULLSCREEN;
+    }
 
     std::unique_ptr<SDL_Window, WindowDeleter> window{
         SDL_CreateWindow(config.title.c_str(), config.width, config.height, flags)};

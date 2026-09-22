@@ -20,6 +20,9 @@
 #include <cuexis/playback/playback_session.hpp>
 #include <cuexis/playback/playback_source.hpp>
 #include <cuexis/playback/runtime_timeline.hpp>
+#include <cuexis/player_support/audio_device_profile.hpp>
+#include <cuexis/player_support/config_location.hpp>
+#include <cuexis/player_support/resolved_config.hpp>
 #include <cuexis/render/render_scene.hpp>
 #include <cuexis/render_opengl/open_gl_backend.hpp>
 #include <cuexis/version.hpp>
@@ -30,6 +33,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <filesystem>
 #include <optional>
 #include <string>
@@ -191,6 +195,39 @@ class PlayerClock final {
                                             "Smoke test modes are mutually exclusive"});
     }
     return options;
+}
+
+[[nodiscard]] auto clockModeFor(playback::PlaybackMode mode) -> player_support::PlaybackClockMode {
+    switch (mode) {
+    case playback::PlaybackMode::CuexisAudio:
+        return player_support::PlaybackClockMode::CuexisAudio;
+    case playback::PlaybackMode::HostClock:
+        return player_support::PlaybackClockMode::HostClock;
+    case playback::PlaybackMode::ChartClock:
+        return player_support::PlaybackClockMode::ChartClock;
+    }
+    return player_support::PlaybackClockMode::ChartClock;
+}
+
+[[nodiscard]] auto freezeSessionConfig(playback::PlaybackMode mode,
+                                       std::int64_t profileCorrectionUs)
+    -> player_support::ResolvedSessionConfig {
+    player_support::ResolvedSessionConfig config;
+    config.clockMode = clockModeFor(mode);
+    config.outputCorrectionUs =
+        player_support::consumedOutputCorrectionUs(config.clockMode, profileCorrectionUs);
+    return config;
+}
+
+[[nodiscard]] auto identityText(const std::array<std::uint8_t, 32>& identity) -> std::string {
+    std::string text(identity.size() * 2, '0');
+    for (std::size_t index = 0; index < identity.size(); ++index) {
+        char pair[3] = {};
+        std::snprintf(pair, sizeof(pair), "%02x", identity[index]);
+        text[index * 2] = pair[0];
+        text[index * 2 + 1] = pair[1];
+    }
+    return text;
 }
 
 [[nodiscard]] auto defaultProjectPath(std::string_view directory)
@@ -357,6 +394,44 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
     logger.info("player.startup",
                 std::string{"Starting Cuexis Player "} + std::string{version::display});
 
+    auto executableBase = platform_sdl::executableBasePath();
+    if (!executableBase) {
+        return core::unexpected(std::move(executableBase.error()));
+    }
+    const auto preferencesSchema =
+        *executableBase / "assets" / "schemas" / "cuexis.player-preferences.v1.schema.json";
+    const auto profileSchema =
+        *executableBase / "assets" / "schemas" / "cuexis.audio-device-profile.v1.schema.json";
+    std::filesystem::path configDirectory;
+    if (options.smokeTest || options.audioSmokeTest) {
+        configDirectory = std::filesystem::temp_directory_path() / "cuexis-player-smoke-config";
+        std::error_code createError;
+        std::filesystem::create_directories(configDirectory, createError);
+        if (createError) {
+            return core::unexpected(core::Error{"player.preferences.directory_unavailable",
+                                                "The smoke config directory could not be created"});
+        }
+        std::filesystem::remove(player_support::preferencesFilePath(configDirectory), createError);
+        auto profilePath = player_support::audioProfileFilePath(configDirectory, "system-default");
+        if (profilePath) {
+            std::filesystem::remove(*profilePath, createError);
+        }
+    } else {
+        auto userDirectory = player_support::userConfigDirectory(
+            player_support::captureConfigDirectoryEnvironment());
+        if (!userDirectory) {
+            return core::unexpected(std::move(userDirectory.error()));
+        }
+        configDirectory = std::move(*userDirectory);
+    }
+    auto appConfig =
+        player_support::loadAppConfig(configDirectory, preferencesSchema, profileSchema);
+    if (!appConfig) {
+        return core::unexpected(std::move(appConfig.error()));
+    }
+    logger.info("player.config", std::string{"Profile "} + appConfig->profile.id + ", gain " +
+                                     std::to_string(appConfig->app.requested.gain));
+
     auto makeSource = [&]() -> core::Result<playback::PlaybackSource> {
         if (options.projectPath.has_value()) {
             auto source = playback::PlaybackSource::fromFilesystemProject(*options.projectPath);
@@ -381,6 +456,8 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
     playback::PlaybackSession playbackSession;
 
     auto mode = playback::PlaybackMode::ChartClock;
+    auto sessionConfig = freezeSessionConfig(mode, appConfig->profile.outputCorrectionUs);
+    auto sessionIdentity = player_support::resolvedSessionConfigIdentity(sessionConfig);
     auto sourceResult = makeSource();
     if (!sourceResult) {
         return core::unexpected(std::move(sourceResult.error()));
@@ -388,12 +465,15 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
     auto preparedResult = playbackSession.prepareLoad(std::move(*sourceResult), mode);
     if (!preparedResult && preparedResult.error().code() == "playback.mode.content_mismatch") {
         mode = playback::PlaybackMode::CuexisAudio;
+        sessionConfig = freezeSessionConfig(mode, appConfig->profile.outputCorrectionUs);
+        sessionIdentity = player_support::resolvedSessionConfigIdentity(sessionConfig);
         sourceResult = makeSource();
         if (!sourceResult) {
             return core::unexpected(std::move(sourceResult.error()));
         }
         preparedResult = playbackSession.prepareLoad(std::move(*sourceResult), mode);
     }
+    logger.info("player.config", std::string{"Session identity "} + identityText(sessionIdentity));
     if (!preparedResult) {
         return core::unexpected(std::move(preparedResult.error()));
     }
@@ -434,11 +514,56 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
             return core::unexpected(std::move(subsystem.error()));
         }
         audioSubsystem.emplace(std::move(*subsystem));
-        auto transport = audio_sdl::SdlAudioTransport::create(*audioSubsystem, audioStore, *config);
+        core::Result<audio_sdl::SdlAudioTransport> transport = core::unexpected(
+            core::Error{"player.audio.unopened", "Audio transport was not created"});
+        if (appConfig->profile.selector == player_support::AudioSelectorKind::SystemDefault) {
+            transport = audio_sdl::SdlAudioTransport::create(*audioSubsystem, audioStore, *config);
+        } else {
+            auto devices = audioSubsystem->enumeratePlaybackDevices();
+            if (!devices) {
+                return core::unexpected(std::move(devices.error()));
+            }
+            std::vector<player_support::AudioOutputDevice> listed;
+            listed.reserve(devices->size());
+            for (const auto& device : *devices) {
+                listed.push_back(player_support::AudioOutputDevice{
+                    .driver = device.driver, .deviceName = device.deviceName});
+            }
+            auto matched = player_support::matchAudioDevice(appConfig->profile, listed);
+            if (!matched) {
+                return core::unexpected(std::move(matched.error()));
+            }
+            const audio_sdl::PlaybackDeviceRecord* selected = nullptr;
+            for (const auto& device : *devices) {
+                if (device.driver == matched->driver && device.deviceName == matched->deviceName) {
+                    if (selected != nullptr) {
+                        return core::unexpected(
+                            core::Error{"player.audio_profile.ambiguous",
+                                        "More than one output device matches the profile"});
+                    }
+                    selected = &device;
+                }
+            }
+            if (selected == nullptr) {
+                return core::unexpected(
+                    core::Error{"player.audio_profile.unmatched",
+                                "No output device matches the explicit profile"});
+            }
+            transport = audio_sdl::SdlAudioTransport::createForDevice(
+                *audioSubsystem, audioStore, *config,
+                audio_sdl::PlaybackDeviceTarget{.instanceId = selected->instanceId,
+                                                .driver = selected->driver,
+                                                .deviceName = selected->deviceName});
+        }
         if (!transport) {
             return core::unexpected(std::move(transport.error()));
         }
         audioTransport.emplace(std::move(*transport));
+        if (auto gained =
+                audioTransport->applyGain(static_cast<float>(appConfig->app.requested.gain));
+            !gained) {
+            return core::unexpected(std::move(gained.error()));
+        }
         if (auto loaded = audioTransport->load(*activeAudioHandle); !loaded) {
             return core::unexpected(std::move(loaded.error()));
         }
@@ -467,6 +592,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
 
     auto openGlConfig = render_opengl::OpenGlConfig{};
     openGlConfig.logSink = logger.sink();
+    openGlConfig.vsync = appConfig->app.requested.vsync;
     auto configureResult = render_opengl::configureOpenGlContext(sdlRuntime, openGlConfig);
     if (!configureResult) {
         return core::unexpected(
@@ -475,8 +601,9 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
 
     platform_sdl::WindowConfig windowConfig{};
     windowConfig.title = std::string{"Cuexis Player "} + std::string{version::display};
-    windowConfig.width = 1280;
-    windowConfig.height = 720;
+    windowConfig.width = appConfig->app.requested.windowWidth;
+    windowConfig.height = appConfig->app.requested.windowHeight;
+    windowConfig.fullscreen = appConfig->app.requested.fullscreen;
     windowConfig.resizable = true;
     windowConfig.highDpi = true;
     windowConfig.openGl = true;
@@ -504,6 +631,23 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
     logger.info("player.opengl", std::string{"Version: "} + openGlInfo.version);
     logger.info("player.opengl", std::string{"Vendor: "} + openGlInfo.vendor);
     logger.info("player.opengl", std::string{"Renderer: "} + openGlInfo.renderer);
+    const auto drawable = window.drawableSize();
+    if (!drawable) {
+        return core::unexpected(std::move(drawable.error()));
+    }
+    player_support::EffectiveSettings effective;
+    effective.requested = appConfig->app.requested;
+    effective.appliedWindowWidth = drawable->width;
+    effective.appliedWindowHeight = drawable->height;
+    effective.appliedFullscreen = appConfig->app.requested.fullscreen;
+    effective.appliedVsync = openGlConfig.vsync;
+    effective.appliedGain = appConfig->app.requested.gain;
+    effective.appliedProfileId = appConfig->profile.id;
+    effective.audioDeviceOpen = audioTransport.has_value();
+    logger.info("player.config", std::string{"Effective window "} +
+                                     std::to_string(effective.appliedWindowWidth) + "x" +
+                                     std::to_string(effective.appliedWindowHeight) + ", audio " +
+                                     (effective.audioDeviceOpen ? "open" : "closed"));
 
     auto presentationCandidate = renderer.prepare(prepared, {.enableDebugPass = true});
     if (!presentationCandidate) {
@@ -596,8 +740,20 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
             if (auto serviced = audioTransport->service(); !serviced) {
                 return core::unexpected(std::move(serviced.error()));
             }
+            if (auto rebound = audioTransport->recheckBoundDevice(); !rebound) {
+                return core::unexpected(std::move(rebound.error()));
+            }
             audioClockSnapshot = audioTransport->snapshot();
-            runtimeFrameResult = timeline.advance(audioClockSnapshot.source);
+            auto consumedSource = audioClockSnapshot.source;
+            if (sessionConfig.outputCorrectionUs != 0) {
+                auto corrected = player_support::correctConsumedAudioPositionMs(
+                    consumedSource.positionMs, sessionConfig.outputCorrectionUs);
+                if (!corrected) {
+                    return core::unexpected(std::move(corrected.error()));
+                }
+                consumedSource.positionMs = *corrected;
+            }
+            runtimeFrameResult = timeline.advance(consumedSource);
 
             if (options.audioSmokeTest && renderedFrames == 55) {
                 if (!runtimeFrameResult) {

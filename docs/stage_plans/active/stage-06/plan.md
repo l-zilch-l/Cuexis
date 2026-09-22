@@ -93,7 +93,7 @@ S6-A1 基线、入口和证据矩阵
 | C1 | A2 | candidate 消费链、身份和要求数据保留 | completed（本地 MSVC 快照与同 SHA hosted 默认 OFF 矩阵见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-22-s6-c1-exit.md)；不是 Stage 6 关闭或 owner acceptance） |
 | D1 | A2 | 无环渲染合同、事务 token、测试 renderer | completed（本地 MSVC 快照与同 SHA hosted 默认矩阵见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-22-s6-d1-exit.md)；OpenGL 迁移仍属 D2） |
 | D2 | D1 | OpenGL adapter 迁移、统一帧与诊断路径 | completed（本地 GPU smoke 与 Linux/MSVC hosted 见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-23-s6-d2-exit.md)；MinGW 成员顺序修正尚未 hosted 复验，最小化/恢复未执行） |
-| C2 | A2 | 配置解析、快照、设备 profile 与受控应用 | in_progress（无 SDL 的偏好、profile 匹配和 session identity 见 [报告](../../../stage_reports/stages/stage-06/2026-09-23-s6-c2-player-support.md)；AudioSDL 设备 API 与真实设备 smoke 仍未做） |
+| C2 | A2 | 配置解析、快照、设备 profile 与受控应用 | in_progress（配置发布、枚举和 `createForDevice` 见 [报告](../../../stage_reports/stages/stage-06/2026-09-23-s6-c2-player-support.md)；命名设备 smoke 与退出仍未做） |
 | C3 | C1、C2、D2 | Player 用户入口、状态机、跨子系统事务 | planned |
 | E1 / E2 | A2 | 图片 / 音频离线导入及各自 golden | planned |
 | E3 | E1、E2、C1 | 资源身份、缓存、索引与 CXC 原子发布 | planned |

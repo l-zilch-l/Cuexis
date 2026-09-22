@@ -77,9 +77,11 @@ S6-D2 已于 2026-09-23 在本地退出：OpenGL adapter 实现同一渲染接�
 [实现报告](stage_reports/stages/stage-06/2026-09-22-s6-d2-opengl-migration.md)；
 Linux 与 Windows MSVC 的 hosted 结果，以及尚未复验的 MinGW 成员顺序修正，见
 [D2 退出报告](stage_reports/stages/stage-06/2026-09-23-s6-d2-exit.md)。
-该退出不是 Stage 6 完成。S6-C2 已开始：内部 `cuexis_player_support` 能加载 v1 偏好、拒绝覆盖未来版本、用注入设备列表匹配 AudioDeviceProfile，并计算 session config identity。见
+该退出不是 Stage 6 完成。S6-C2 仍在进行：Player 会在 prepare 前发布
+`ResolvedAppConfig` 和 `ResolvedSessionConfig`，AudioSDL 有独立的枚举、`createForDevice` 和
+`applyGain`。本地默认路由音频 smoke 已通过；命名设备 smoke 和 C2 退出还没有。见
 [C2 报告](stage_reports/stages/stage-06/2026-09-23-s6-c2-player-support.md)。
-AudioSDL 设备 API、真实设备 smoke、E1/E2 及后续批次仍未完成。
+E1/E2 及后续批次仍未完成。
 
 ## 已关闭的 Full Review
 

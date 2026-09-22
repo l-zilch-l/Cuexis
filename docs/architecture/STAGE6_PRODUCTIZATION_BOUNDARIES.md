@@ -96,7 +96,7 @@ files. A candidate package cannot be accepted by a production consumer accidenta
 | --- | --- | --- |
 | Existing Playback isolation | Implemented and covered by A1 baseline | Preserve in C1/F1 |
 | New renderer direction | D2 local exit: OpenGL implements the interface and Player submits through it | MinGW rerun of the member-order fix is still open |
-| Player support separation | C2 library exists and is not installed; AudioSDL device API is still absent | C2 exit still open |
+| Player support separation | C2 library loads config and AudioSDL can open an enumerated device; neither is installed | C2 exit still open |
 | Media importer isolation | Contract only; target does not exist | E1/E2 target and package tests |
 | Production/experimental staging | Contract only; no package flavor gate yet | B1/C4 clean staging |
 | Reference Host | Contract only; example not yet present | C4 external consumer/interactive host |

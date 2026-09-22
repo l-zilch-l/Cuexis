@@ -1,7 +1,9 @@
 #include <cuexis/player_support/resolved_config.hpp>
 
+#include <cuexis/player_support/config_location.hpp>
 #include <cuexis_internal/sha256.hpp>
 
+#include <cmath>
 #include <cstddef>
 #include <vector>
 
@@ -51,6 +53,65 @@ auto resolveAppConfig(const UserPreferencesLoad& loaded) noexcept -> ResolvedApp
     resolved.preferencesSource =
         loaded.usedDefaults ? ConfigValueSource::CodeDefault : ConfigValueSource::PreferencesFile;
     return resolved;
+}
+
+auto loadAppConfig(const std::filesystem::path& configDirectory,
+                   const std::filesystem::path& preferencesSchema,
+                   const std::filesystem::path& profileSchema) -> core::Result<AppConfigLoad> {
+    auto preferences = loadUserPreferences(preferencesFilePath(configDirectory), preferencesSchema);
+    if (!preferences) {
+        return core::unexpected(std::move(preferences.error()));
+    }
+    AppConfigLoad loaded;
+    loaded.app = resolveAppConfig(*preferences);
+    loaded.diagnostics = std::move(preferences->diagnostics);
+
+    auto profilePath =
+        audioProfileFilePath(configDirectory, loaded.app.requested.audioDeviceProfileId);
+    if (!profilePath) {
+        return core::unexpected(std::move(profilePath.error()));
+    }
+    std::error_code existsError;
+    const bool profileExists = std::filesystem::exists(*profilePath, existsError) && !existsError;
+    if (!profileExists) {
+        if (loaded.app.requested.audioDeviceProfileId != "system-default") {
+            return core::unexpected(
+                core::Error{"player.audio_profile.missing",
+                            "The selected audio device profile file is missing"}
+                    .withContext("profile_id", loaded.app.requested.audioDeviceProfileId));
+        }
+        loaded.profile = {};
+        loaded.diagnostics.add(core::Diagnostic{
+            core::DiagnosticSeverity::Warning, std::string{"player.audio_profile.default"},
+            std::string{"The system-default profile file is missing; the code profile is in use"},
+            std::string{"$"}});
+        return loaded;
+    }
+    auto profile = loadAudioDeviceProfile(*profilePath, profileSchema);
+    if (!profile) {
+        return core::unexpected(std::move(profile.error()));
+    }
+    if (profile->id != loaded.app.requested.audioDeviceProfileId) {
+        return core::unexpected(core::Error{"player.audio_profile.identity_mismatch",
+                                            "The profile file id does not match the requested id"}
+                                    .withContext("profile_id", profile->id));
+    }
+    loaded.profile = std::move(*profile);
+    return loaded;
+}
+
+auto correctConsumedAudioPositionMs(double rawPositionMs, std::int64_t consumedCorrectionUs)
+    -> core::Result<double> {
+    if (!std::isfinite(rawPositionMs)) {
+        return core::unexpected(core::Error{"player.audio_profile.correction_invalid",
+                                            "The raw audio position must be finite"});
+    }
+    const auto rawUs = std::llround(rawPositionMs * 1000.0);
+    auto corrected = correctedAudioPositionUs(rawUs, consumedCorrectionUs);
+    if (!corrected) {
+        return core::unexpected(std::move(corrected.error()));
+    }
+    return static_cast<double>(*corrected) / 1000.0;
 }
 
 } // namespace cuexis::player_support

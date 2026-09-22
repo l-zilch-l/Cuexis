@@ -15,6 +15,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <thread>
 #include <utility>
 
@@ -36,6 +37,54 @@ namespace {
     // The default-route flag describes an opened SDL device, not an Empty transport.
     result.defaultRouteMayMigrate = false;
     return result;
+}
+
+[[nodiscard]] auto enumeratePlaybackDevicesUnlocked()
+    -> core::Result<std::vector<PlaybackDeviceRecord>> {
+    int count = 0;
+    SDL_AudioDeviceID* identifiers = SDL_GetAudioPlaybackDevices(&count);
+    if (identifiers == nullptr) {
+        if (count > 0) {
+            return core::unexpected(
+                sdlError("audio.sdl.enumerate_failed", "SDL playback devices could not be listed"));
+        }
+        return std::vector<PlaybackDeviceRecord>{};
+    }
+    const char* driver = SDL_GetCurrentAudioDriver();
+    const std::string driverName = driver == nullptr ? std::string{} : std::string{driver};
+    std::vector<PlaybackDeviceRecord> devices;
+    devices.reserve(static_cast<std::size_t>(count));
+    for (int index = 0; index < count; ++index) {
+        const char* name = SDL_GetAudioDeviceName(identifiers[index]);
+        devices.push_back(PlaybackDeviceRecord{
+            .instanceId = static_cast<std::uint32_t>(identifiers[index]),
+            .driver = driverName,
+            .deviceName = name == nullptr ? std::string{} : std::string{name},
+        });
+    }
+    SDL_free(identifiers);
+    return devices;
+}
+
+[[nodiscard]] auto findUniqueDevice(const std::vector<PlaybackDeviceRecord>& devices,
+                                    std::string_view driver, std::string_view deviceName)
+    -> core::Result<const PlaybackDeviceRecord*> {
+    const PlaybackDeviceRecord* matched = nullptr;
+    for (const auto& device : devices) {
+        if (device.driver == driver && device.deviceName == deviceName) {
+            if (matched != nullptr) {
+                return core::unexpected(core::Error{"player.audio_profile.ambiguous",
+                                                    "More than one output device matches the "
+                                                    "requested name"});
+            }
+            matched = &device;
+        }
+    }
+    if (matched == nullptr) {
+        return core::unexpected(core::Error{"player.audio_profile.unmatched",
+                                            "No output device matches the requested name"});
+    }
+    return matched;
 }
 
 } // namespace
@@ -69,6 +118,19 @@ auto SdlAudioSubsystem::create() -> core::Result<SdlAudioSubsystem> {
     }
     state->initialized = true;
     return SdlAudioSubsystem{std::move(state)};
+}
+
+auto SdlAudioSubsystem::enumeratePlaybackDevices() const
+    -> core::Result<std::vector<PlaybackDeviceRecord>> {
+    if (!state_ || !state_->initialized) {
+        return core::unexpected(
+            core::Error{"audio.sdl.subsystem_unavailable", "SDL audio subsystem is unavailable"});
+    }
+    if (state_->owner != std::this_thread::get_id()) {
+        return core::unexpected(core::Error{"audio.sdl.not_owner_thread",
+                                            "SDL audio subsystem belongs to another thread"});
+    }
+    return enumeratePlaybackDevicesUnlocked();
 }
 
 SdlAudioSubsystem::SdlAudioSubsystem(std::shared_ptr<State> state) noexcept
@@ -238,8 +300,25 @@ struct SdlAudioTransport::Impl final {
         SDL_AudioSpec sourceSpec{.format = SDL_AUDIO_F32,
                                  .channels = static_cast<int>(channels),
                                  .freq = static_cast<int>(sampleRate)};
-        SDL_AudioStream* opened = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK,
-                                                            &sourceSpec, nullptr, nullptr);
+        SDL_AudioDeviceID playbackDevice = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
+        if (exactDevice) {
+            auto listed = enumeratePlaybackDevicesUnlocked();
+            if (!listed) {
+                return core::unexpected(std::move(listed.error()));
+            }
+            auto matched = findUniqueDevice(*listed, boundDriver, boundDeviceName);
+            if (!matched) {
+                return core::unexpected(std::move(matched.error()));
+            }
+            if ((*matched)->instanceId != boundInstanceId) {
+                return core::unexpected(
+                    core::Error{"audio.sdl.device.stale",
+                                "The output device changed between enumeration and open"});
+            }
+            playbackDevice = static_cast<SDL_AudioDeviceID>((*matched)->instanceId);
+        }
+        SDL_AudioStream* opened =
+            SDL_OpenAudioDeviceStream(playbackDevice, &sourceSpec, nullptr, nullptr);
         if (opened == nullptr) {
             return core::unexpected(sdlError("audio.sdl.device_open_failed",
                                              "SDL playback device could not be opened"));
@@ -285,7 +364,7 @@ struct SdlAudioTransport::Impl final {
             static_cast<double>(deviceFrames) * 1000.0 / static_cast<double>(deviceSpec.freq),
             deviceSpec.freq != static_cast<int>(sampleRate) ||
                 deviceSpec.channels != static_cast<int>(channels),
-            true};
+            !exactDevice};
         state = audio::PlaybackState::Stopped;
         advanceDiscontinuity();
         publish();
@@ -367,6 +446,10 @@ struct SdlAudioTransport::Impl final {
     std::atomic<std::uint64_t> underrunCount{};
     std::atomic<std::uint64_t> serviceCount{};
     bool underrunEpisode{};
+    bool exactDevice{};
+    std::uint32_t boundInstanceId{};
+    std::string boundDriver{};
+    std::string boundDeviceName{};
     audio::EffectiveAudioSettings effective = emptyEffectiveSettings();
 };
 
@@ -382,6 +465,38 @@ auto SdlAudioTransport::create(SdlAudioSubsystem& subsystem, audio::AudioClipSto
                                             "SDL audio subsystem belongs to another thread"});
     }
     return SdlAudioTransport{std::make_unique<Impl>(subsystem.state_, store, config)};
+}
+
+auto SdlAudioTransport::createForDevice(SdlAudioSubsystem& subsystem, audio::AudioClipStore& store,
+                                        const audio::ValidatedAudioConfig& config,
+                                        const PlaybackDeviceTarget& target)
+    -> core::Result<SdlAudioTransport> {
+    if (!subsystem.state_ || !subsystem.state_->initialized) {
+        return core::unexpected(
+            core::Error{"audio.sdl.subsystem_unavailable", "SDL audio subsystem is unavailable"});
+    }
+    if (subsystem.state_->owner != std::this_thread::get_id()) {
+        return core::unexpected(core::Error{"audio.sdl.not_owner_thread",
+                                            "SDL audio subsystem belongs to another thread"});
+    }
+    auto listed = subsystem.enumeratePlaybackDevices();
+    if (!listed) {
+        return core::unexpected(std::move(listed.error()));
+    }
+    auto matched = findUniqueDevice(*listed, target.driver, target.deviceName);
+    if (!matched) {
+        return core::unexpected(std::move(matched.error()));
+    }
+    if ((*matched)->instanceId != target.instanceId) {
+        return core::unexpected(core::Error{
+            "audio.sdl.device.stale", "The output device changed between enumeration and open"});
+    }
+    auto impl = std::make_unique<Impl>(subsystem.state_, store, config);
+    impl->exactDevice = true;
+    impl->boundInstanceId = target.instanceId;
+    impl->boundDriver = target.driver;
+    impl->boundDeviceName = target.deviceName;
+    return SdlAudioTransport{std::move(impl)};
 }
 
 SdlAudioTransport::SdlAudioTransport(std::unique_ptr<Impl> impl) noexcept
@@ -404,6 +519,42 @@ auto SdlAudioTransport::operator=(SdlAudioTransport&& other) noexcept -> SdlAudi
         impl_ = std::move(other.impl_);
     }
     return *this;
+}
+
+auto SdlAudioTransport::applyGain(float gain) -> core::Result<void> {
+    if (auto owner = impl_->requireOwner("apply_gain"); !owner) {
+        return owner;
+    }
+    if (!std::isfinite(gain) || gain < 0.0F || gain > 1.0F) {
+        return core::unexpected(
+            core::Error{"audio.sdl.gain_invalid", "gain must be finite and in [0, 1]"});
+    }
+    impl_->gain = gain;
+    if (impl_->stream != nullptr && !SDL_SetAudioStreamGain(impl_->stream, gain)) {
+        return core::unexpected(
+            sdlError("audio.sdl.gain_failed", "SDL audio stream gain could not be set"));
+    }
+    return {};
+}
+
+auto SdlAudioTransport::recheckBoundDevice() -> core::Result<void> {
+    if (auto owner = impl_->requireOwner("recheck_device"); !owner) {
+        return owner;
+    }
+    if (!impl_->exactDevice) {
+        return {};
+    }
+    auto listed = enumeratePlaybackDevicesUnlocked();
+    if (!listed) {
+        return impl_->enterError(std::move(listed.error()));
+    }
+    auto matched = findUniqueDevice(*listed, impl_->boundDriver, impl_->boundDeviceName);
+    if (!matched) {
+        return impl_->enterError(
+            std::move(matched.error()).withContext("profile_device", impl_->boundDeviceName));
+    }
+    impl_->boundInstanceId = (*matched)->instanceId;
+    return {};
 }
 
 auto SdlAudioTransport::load(audio::AudioClipHandle handle) -> core::Result<void> {

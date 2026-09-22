@@ -1,5 +1,6 @@
 add_library(cuexis_player_support STATIC
     src/config_json.cpp
+    src/config_location.cpp
     src/user_preferences.cpp
     src/audio_device_profile.cpp
     src/resolved_config.cpp

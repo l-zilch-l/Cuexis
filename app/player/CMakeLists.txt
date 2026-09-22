@@ -26,6 +26,7 @@ target_link_libraries(
         cuexis::platform_sdl
         cuexis::render
         cuexis::render_opengl
+        cuexis::player_support
         spdlog::spdlog
 )
 
@@ -75,6 +76,14 @@ add_custom_target(player_stage1c_assets ALL
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
         "${PROJECT_SOURCE_DIR}/assets/projects/stage3_project"
         "$<TARGET_FILE_DIR:cuexis_player>/assets/projects/stage3_project"
+    COMMAND "${CMAKE_COMMAND}" -E make_directory
+        "$<TARGET_FILE_DIR:cuexis_player>/assets/schemas"
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+        "${PROJECT_SOURCE_DIR}/schemas/cuexis.player-preferences.v1.schema.json"
+        "$<TARGET_FILE_DIR:cuexis_player>/assets/schemas/cuexis.player-preferences.v1.schema.json"
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+        "${PROJECT_SOURCE_DIR}/schemas/cuexis.audio-device-profile.v1.schema.json"
+        "$<TARGET_FILE_DIR:cuexis_player>/assets/schemas/cuexis.audio-device-profile.v1.schema.json"
     DEPENDS
         "${PROJECT_SOURCE_DIR}/assets/charts/stage1a_example.cuexis.chart.json"
         "${PROJECT_SOURCE_DIR}/assets/charts/stage2_example.cuexis.chart.json"
@@ -82,6 +91,8 @@ add_custom_target(player_stage1c_assets ALL
         ${CUEXIS_STAGE1C_PROJECT_FILES}
         ${CUEXIS_STAGE1D_PROJECT_FILES}
         ${CUEXIS_STAGE3_PROJECT_FILES}
+        "${PROJECT_SOURCE_DIR}/schemas/cuexis.player-preferences.v1.schema.json"
+        "${PROJECT_SOURCE_DIR}/schemas/cuexis.audio-device-profile.v1.schema.json"
     VERBATIM
 )
 

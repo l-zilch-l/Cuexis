@@ -766,6 +766,7 @@ if(TARGET cuexis_player)
             cuexis::platform_sdl
             cuexis::render
             cuexis::render_opengl
+            cuexis::player_support
             spdlog::spdlog
     )
 endif()

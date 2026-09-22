@@ -1,4 +1,5 @@
 #include <cuexis/player_support/audio_device_profile.hpp>
+#include <cuexis/player_support/config_location.hpp>
 #include <cuexis/player_support/resolved_config.hpp>
 #include <cuexis/player_support/user_preferences.hpp>
 
@@ -138,6 +139,69 @@ TEST_CASE("Audio profiles match exactly one device and keep correction arithmeti
     const auto seek = cuexis::player_support::reverseSeekSourcePositionUs(500000, 10000, -12500);
     REQUIRE(seek.has_value());
     CHECK(*seek == 497500);
+}
+
+TEST_CASE("Config directory and app load keep defaults when files are absent",
+          "[player][preferences]") {
+    cuexis::player_support::ConfigDirectoryEnvironment windows;
+    windows.windows = true;
+    windows.appData = "C:/Users/cuexis/AppData/Roaming";
+    const auto windowsDirectory = cuexis::player_support::userConfigDirectory(windows);
+    REQUIRE(windowsDirectory.has_value());
+    CHECK(windowsDirectory->filename() == "Cuexis");
+
+    cuexis::player_support::ConfigDirectoryEnvironment missing;
+    missing.windows = true;
+    CHECK_FALSE(cuexis::player_support::userConfigDirectory(missing).has_value());
+
+    cuexis::player_support::ConfigDirectoryEnvironment linuxHome;
+    linuxHome.home = "/home/cuexis";
+    const auto linuxDirectory = cuexis::player_support::userConfigDirectory(linuxHome);
+    REQUIRE(linuxDirectory.has_value());
+    CHECK(linuxDirectory->filename() == "Cuexis");
+
+    const auto root = tempDirectory();
+    const auto preferencesSchema = schemaPath("cuexis.player-preferences.v1.schema.json");
+    const auto profileSchema = schemaPath("cuexis.audio-device-profile.v1.schema.json");
+    const auto loaded = cuexis::player_support::loadAppConfig(root / "empty-config",
+                                                              preferencesSchema, profileSchema);
+    REQUIRE(loaded.has_value());
+    CHECK(loaded->app.preferencesSource == cuexis::player_support::ConfigValueSource::CodeDefault);
+    CHECK(loaded->profile.selector == cuexis::player_support::AudioSelectorKind::SystemDefault);
+    CHECK(loaded->profile.outputCorrectionUs == 0);
+    CHECK(loaded->diagnostics.items().back().code() == "player.audio_profile.default");
+
+    writeText(
+        root / "named-preferences.json",
+        R"({"format":"cuexis.player-preferences","version":1,"windowWidth":1280,"windowHeight":720,"fullscreen":false,"vsync":true,"gain":1,"audioDeviceProfileId":"desk-speakers"})");
+    const auto configRoot = root / "named-config";
+    std::filesystem::create_directories(configRoot);
+    std::filesystem::copy_file(root / "named-preferences.json",
+                               cuexis::player_support::preferencesFilePath(configRoot),
+                               std::filesystem::copy_options::overwrite_existing);
+    const auto missingProfile =
+        cuexis::player_support::loadAppConfig(configRoot, preferencesSchema, profileSchema);
+    REQUIRE_FALSE(missingProfile.has_value());
+    CHECK(missingProfile.error().code() == "player.audio_profile.missing");
+
+    CHECK_FALSE(cuexis::player_support::audioProfileFilePath(configRoot, "../escape").has_value());
+    const auto blocked = root / "not-a-directory";
+    writeText(blocked, "file");
+    const auto rejected = cuexis::player_support::saveUserPreferences(
+        blocked / "preferences.json", cuexis::player_support::defaultUserPreferences(),
+        preferencesSchema);
+    REQUIRE_FALSE(rejected.has_value());
+    std::ifstream blockedInput{blocked, std::ios::binary};
+    std::string blockedText{(std::istreambuf_iterator<char>(blockedInput)),
+                            std::istreambuf_iterator<char>()};
+    CHECK(blockedText == "file");
+
+    const auto corrected = cuexis::player_support::correctConsumedAudioPositionMs(1.0, 2500);
+    REQUIRE(corrected.has_value());
+    CHECK(*corrected == 0.0);
+    const auto negative = cuexis::player_support::correctConsumedAudioPositionMs(1000.0, -12500);
+    REQUIRE(negative.has_value());
+    CHECK(*negative == 1012.5);
 }
 
 TEST_CASE("Session configuration identity ignores window state", "[player][session-config]") {

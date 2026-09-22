@@ -443,3 +443,27 @@ TEST_CASE("SDL presented frame update guards invalid clamp bounds",
     CHECK(body->find("std::min(std::max") != std::string_view::npos);
     CHECK(body->find("numeric_limits<std::int64_t>::max()") != std::string_view::npos);
 }
+
+TEST_CASE("SDL explicit device open rejects an unknown name and keeps the default route",
+          "[audio][sdl][device]") {
+    const auto config = cuexis::audio::validateAudioConfig({});
+    REQUIRE(config.has_value());
+    cuexis::audio::AudioClipStore store;
+    auto subsystem = cuexis::audio_sdl::SdlAudioSubsystem::create();
+    REQUIRE(subsystem.has_value());
+    const auto devices = subsystem->enumeratePlaybackDevices();
+    REQUIRE(devices.has_value());
+
+    auto rejected = cuexis::audio_sdl::SdlAudioTransport::createForDevice(
+        *subsystem, store, *config,
+        cuexis::audio_sdl::PlaybackDeviceTarget{
+            .instanceId = 1, .driver = "missing-driver", .deviceName = "missing-device"});
+    REQUIRE_FALSE(rejected.has_value());
+    CHECK(rejected.error().code() == "player.audio_profile.unmatched");
+
+    auto transport = cuexis::audio_sdl::SdlAudioTransport::create(*subsystem, store, *config);
+    REQUIRE(transport.has_value());
+    REQUIRE(transport->recheckBoundDevice().has_value());
+    CHECK_FALSE(transport->applyGain(1.5F).has_value());
+    REQUIRE(transport->applyGain(0.25F).has_value());
+}

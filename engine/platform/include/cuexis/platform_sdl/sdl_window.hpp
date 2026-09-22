@@ -25,6 +25,7 @@ struct WindowConfig final {
     bool resizable{true};
     bool highDpi{true};
     bool openGl{true};
+    bool fullscreen{false};
 };
 
 struct WindowEvents final {
