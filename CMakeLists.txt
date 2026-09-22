@@ -715,6 +715,7 @@ if(TARGET cuexis_render_opengl)
         cuexis::render
         cuexis::platform_sdl
         cuexis::playback
+        cuexis::presentation_renderer
         cuexis::shader_cache
         glad::glad
         SDL3::SDL3

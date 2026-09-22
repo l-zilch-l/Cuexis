@@ -24,6 +24,7 @@ target_link_libraries(
         cuexis::render
         cuexis::platform_sdl
         cuexis::playback
+        cuexis::presentation_renderer
     PRIVATE
         cuexis::shader_cache
         glad::glad

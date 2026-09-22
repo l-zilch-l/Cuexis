@@ -45,8 +45,8 @@ feature `shader-tools` 同时打开时构建；Playback 链接闭包不得包含
 
 Stage 6 的新增依赖方向已在
 [ADR 0042](../adr/0042-stage-6-productization-boundaries.md) 冻结。内部
-`cuexis_presentation_renderer` 已位于 Playback/render 之上，供测试 renderer 消费；
-OpenGL adapter 尚未改接到该层。Playback、Runtime 和底层 render 不反向依赖它，也不安装其
+`cuexis_presentation_renderer` 已位于 Playback/render 之上。测试 renderer 与
+OpenGL adapter 都实现 `IPresentationRenderer`；Player 正式帧调用 `submit`/`present`。Playback、Runtime 和底层 render 不反向依赖它，也不安装其
 头文件为公共 SDK。内部 `cuexis_player_support` 与离线 `cuexis_media_import` 仍未实现，
 二者均不得成为 Playback 核心依赖。
 

@@ -23,6 +23,8 @@
   （实现当时的本地 MSVC 快照；该页不改写成退出证据）
 - [2026-09-22 S6-D1 退出](2026-09-22-s6-d1-exit.md)
   （同 SHA hosted 默认矩阵与批次退出边界；不是 D2 或 Stage 6 关闭）
+- [2026-09-22 S6-D2 OpenGL 迁移](2026-09-22-s6-d2-opengl-migration.md)
+  （Player 正式帧改走中立接口，本地 GPU smoke；批次尚未退出）
 
 权威范围见 [Stage 6 计划](../../../stage_plans/active/stage-06/plan.md)、
 [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md) 和

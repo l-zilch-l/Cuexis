@@ -503,7 +503,16 @@ OpenGlBackend::OpenGlBackend(OpenGlBackend&& other) noexcept
       debugVertexArray_(std::exchange(other.debugVertexArray_, 0)),
       debugVertexBuffer_(std::exchange(other.debugVertexBuffer_, 0)),
       viewProjectionLocation_(std::exchange(other.viewProjectionLocation_, -1)),
-      presentation_(std::move(other.presentation_)) {
+      presentation_(std::move(other.presentation_)),
+      interfaceCandidate_(std::move(other.interfaceCandidate_)),
+      rendererGeneration_(std::exchange(other.rendererGeneration_, 0)),
+      surfaceWidth_(std::exchange(other.surfaceWidth_, 0)),
+      surfaceHeight_(std::exchange(other.surfaceHeight_, 0)),
+      frameSubmitted_(std::exchange(other.frameSubmitted_, false)),
+      deviceLost_(std::exchange(other.deviceLost_, false)),
+      presentFailure_(std::move(other.presentFailure_)), lastProbe_(other.lastProbe_),
+      capabilities_(std::move(other.capabilities_)),
+      capabilitiesReady_(std::exchange(other.capabilitiesReady_, false)) {
     if (!SDL_IsMainThread() || !other.ownerThread_.isCurrent()) {
         std::terminate();
     }
@@ -515,6 +524,10 @@ auto OpenGlBackend::info() const noexcept -> const OpenGlInfo& {
 }
 
 auto OpenGlBackend::close() -> core::Result<void> {
+    if (interfaceCandidate_) {
+        return core::unexpected(core::Error{"presentation.renderer.close.candidate_outstanding",
+                                            "Close cannot run while a candidate is outstanding"});
+    }
     if (!SDL_IsMainThread() || !ownerThread_.isCurrent()) {
         return core::unexpected(core::Error{"render.opengl.not_main_thread",
                                             "OpenGL backend must be closed on its owner thread"}

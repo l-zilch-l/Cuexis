@@ -57,6 +57,12 @@ class PreparedPresentation final {
   private:
     friend class IPresentationRenderer;
     friend class TestPresentationRenderer;
+    friend auto sealPreparedPresentation(IPresentationRenderer& renderer, std::uint64_t instance,
+                                         std::uint64_t rendererGeneration,
+                                         std::uint64_t candidateGeneration,
+                                         playback::PresentationCandidateToken token,
+                                         playback::EffectivePresentationSettings settings)
+        -> PreparedPresentation;
 
     struct State;
     explicit PreparedPresentation(std::unique_ptr<State> state) noexcept;
@@ -149,5 +155,13 @@ class TestPresentationRenderer final : public IPresentationRenderer {
 };
 
 [[nodiscard]] auto portableRendererCapabilities() noexcept -> playback::PresentationCapabilities;
+
+// Binds a candidate to an existing renderer. The renderer must outlive the candidate.
+[[nodiscard]] auto sealPreparedPresentation(IPresentationRenderer& renderer, std::uint64_t instance,
+                                            std::uint64_t rendererGeneration,
+                                            std::uint64_t candidateGeneration,
+                                            playback::PresentationCandidateToken token,
+                                            playback::EffectivePresentationSettings settings)
+    -> PreparedPresentation;
 
 } // namespace cuexis::presentation_renderer

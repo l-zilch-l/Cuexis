@@ -13,6 +13,7 @@
 #include <cuexis/platform_sdl/sdl_window.hpp>
 #include <cuexis/playback/playback_session.hpp>
 #include <cuexis/playback/presentation.hpp>
+#include <cuexis/presentation_renderer/presentation_renderer.hpp>
 #include <cuexis/render/render_backend.hpp>
 
 #include <array>
@@ -153,7 +154,8 @@ class OpenGlContextConfiguration final {
 // Owns an SDL GL context and must be used, moved, and destroyed on its SDL main thread.
 // Move, destruction, or candidate sequencing violations terminate.
 // Result-returning operations report thread errors.
-class OpenGlBackend final : public render::RenderBackend {
+class OpenGlBackend final : public render::RenderBackend,
+                            public presentation_renderer::IPresentationRenderer {
   public:
     // Consumes the configuration on the SDL main thread after the OpenGL window has been created.
     [[nodiscard]] static auto create(platform_sdl::SdlWindow& window,
@@ -179,22 +181,41 @@ class OpenGlBackend final : public render::RenderBackend {
     // Discards a candidate after Playback commit failure without touching the active cache. The
     // call must run on the owner thread; an invalid or out-of-sequence candidate terminates.
     void discardPresentation(OpenGlPresentationCandidate&& candidate) noexcept;
-    [[nodiscard]] bool hasActivePresentation() const noexcept;
+    [[nodiscard]] bool hasActivePresentation() const noexcept override;
+    [[nodiscard]] auto capabilities() const noexcept
+        -> const playback::PresentationCapabilities& override;
+    [[nodiscard]] auto identity() const noexcept
+        -> presentation_renderer::RendererIdentity override;
+    [[nodiscard]] auto prepare(playback::PreparedPlayback& prepared,
+                               const playback::PresentationRequest& request = {})
+        -> core::Result<presentation_renderer::PreparedPresentation> override;
+    [[nodiscard]] auto accepts(const presentation_renderer::PreparedPresentation& candidate) const
+        -> core::Result<void> override;
+    void activate(presentation_renderer::PreparedPresentation&& candidate) noexcept override;
+    void discard(presentation_renderer::PreparedPresentation&& candidate) noexcept override;
+    [[nodiscard]] auto submit(const playback::FrameSnapshot& snapshot,
+                              const render::RenderScene* debugScene = nullptr)
+        -> core::Result<presentation_renderer::DrawSummary> override;
+    [[nodiscard]] auto present() -> core::Result<void> override;
+    [[nodiscard]] auto resize(std::uint32_t width, std::uint32_t height)
+        -> core::Result<void> override;
+    [[nodiscard]] auto rebuild() -> core::Result<void> override;
+    [[nodiscard]] auto close() -> core::Result<void> override;
+    // Smoke and tests read the probe captured by the latest submit. Formal playback does not.
+    [[nodiscard]] auto lastPixelProbe() const noexcept -> const OpenGlPixelProbe&;
+    void injectPresentFailure(presentation_renderer::PresentationFailureClass failure) noexcept;
     // Adapter-private CXSCCH01 directory. Empty means parameterized prepare requires
     // opt-in compile (shader-tools) or fails with shader.cache.missing.
     void setShaderCacheDirectory(std::filesystem::path directory);
-    // Draws the portable snapshot and optional Debug pass, then presents the SDL window. This
-    // is the active rendering path for SDK 0.7.0.
+    // Compatibility entry retained for SDK 0.7.0 tests and smoke probes. The formal Player
+    // frame uses submit() and present().
     [[nodiscard]] auto renderPresentationFrame(const playback::FrameSnapshot& snapshot,
                                                const render::RenderScene* debugScene = nullptr,
                                                OpenGlDrawSummary* summary = nullptr,
                                                OpenGlPixelProbe* pixelProbe = nullptr)
         -> core::Result<void>;
-    // Releases all GPU, context and window resources on the owner thread.
-    [[nodiscard]] auto close() -> core::Result<void>;
     // Legacy diagnostic-only compatibility entry point retained in SDK 0.7.0. New callers
-    // use renderPresentationFrame(), which consumes the versioned portable presentation
-    // snapshot.
+    // use submit() and present(), which consume the versioned portable presentation snapshot.
     // Rendering remains bound to the SDL main thread that created this backend.
     auto renderFrame(const render::RenderFrame& frame) -> core::Result<void> override;
 
@@ -206,6 +227,23 @@ class OpenGlBackend final : public render::RenderBackend {
                   std::shared_ptr<const core::LogSink> logSink) noexcept;
 
     void release() noexcept;
+    void detachCandidate(std::uint64_t rendererGeneration, std::uint64_t candidateGeneration,
+                         const playback::PresentationCandidateToken& token) noexcept override;
+    [[nodiscard]] auto renderPresentation(const playback::FrameSnapshot& snapshot,
+                                          const render::RenderScene* debugScene,
+                                          OpenGlDrawSummary* summary, OpenGlPixelProbe* pixelProbe,
+                                          bool presentFrame) -> core::Result<void>;
+
+    std::optional<OpenGlPresentationCandidate> interfaceCandidate_;
+    std::uint64_t rendererGeneration_{1};
+    std::uint32_t surfaceWidth_{1};
+    std::uint32_t surfaceHeight_{1};
+    bool frameSubmitted_{};
+    bool deviceLost_{};
+    std::optional<presentation_renderer::PresentationFailureClass> presentFailure_;
+    OpenGlPixelProbe lastProbe_{};
+    mutable playback::PresentationCapabilities capabilities_{};
+    mutable bool capabilitiesReady_{};
 
     platform_sdl::SdlWindowLease window_{};
     void* context_{};

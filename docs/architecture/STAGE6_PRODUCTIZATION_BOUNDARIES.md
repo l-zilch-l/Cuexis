@@ -95,7 +95,7 @@ files. A candidate package cannot be accepted by a production consumer accidenta
 | Boundary | Current state | Required verification |
 | --- | --- | --- |
 | Existing Playback isolation | Implemented and covered by A1 baseline | Preserve in C1/F1 |
-| New renderer direction | D1 exited locally on `c2861c3`; OpenGL still uses its own path | D2 migrates the adapter |
+| New renderer direction | D1 exited; OpenGL implements the same interface and Player submits through it | D2 hosted exit still open |
 | Player support separation | Contract only; target does not exist | C2/C3 architecture tests |
 | Media importer isolation | Contract only; target does not exist | E1/E2 target and package tests |
 | Production/experimental staging | Contract only; no package flavor gate yet | B1/C4 clean staging |

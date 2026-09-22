@@ -164,6 +164,22 @@ auto PreparedPresentation::settings() const noexcept
     return state_ == nullptr ? nullptr : &state_->settings;
 }
 
+auto sealPreparedPresentation(IPresentationRenderer& renderer, std::uint64_t instance,
+                              std::uint64_t rendererGeneration, std::uint64_t candidateGeneration,
+                              playback::PresentationCandidateToken token,
+                              playback::EffectivePresentationSettings settings)
+    -> PreparedPresentation {
+    auto state = std::make_unique<PreparedPresentation::State>();
+    state->renderer = &renderer;
+    state->attached = true;
+    state->instance = instance;
+    state->rendererGeneration = rendererGeneration;
+    state->candidateGeneration = candidateGeneration;
+    state->token = std::move(token);
+    state->settings = std::move(settings);
+    return PreparedPresentation{std::move(state)};
+}
+
 auto portableRendererCapabilities() noexcept -> playback::PresentationCapabilities {
     playback::PresentationCapabilities capabilities;
     capabilities.opaquePass = true;

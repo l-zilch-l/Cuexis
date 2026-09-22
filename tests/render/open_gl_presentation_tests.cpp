@@ -321,7 +321,7 @@ TEST_CASE("OpenGL summary characterization preserves command order and digest",
 TEST_CASE("OpenGL summary omission skips command copies and digest work",
           "[render][opengl][summary][characterization]") {
     const auto source = renderImplementationSource();
-    const auto body = functionRegion(source, "renderPresentationFrame");
+    const auto body = functionRegion(source, "bool presentFrame");
     REQUIRE(body.has_value());
 
     CHECK(body->find("const bool needSummary = summary != nullptr") != std::string_view::npos);
@@ -334,7 +334,7 @@ TEST_CASE("OpenGL summary omission skips command copies and digest work",
 TEST_CASE("OpenGL frame scratch vectors persist in backend state",
           "[render][opengl][scratch][characterization]") {
     const auto source = renderImplementationSource();
-    const auto body = functionRegion(source, "renderPresentationFrame");
+    const auto body = functionRegion(source, "bool presentFrame");
     REQUIRE(body.has_value());
 
     CHECK(body->find("state.opaqueScratch.clear()") != std::string_view::npos);

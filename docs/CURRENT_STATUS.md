@@ -72,7 +72,10 @@ Stage 6 完成、PR 合并或 owner acceptance。SDK API 仍为 `0.7.0`。S6-D1 
 [实现报告](stage_reports/stages/stage-06/2026-09-22-s6-d1-renderer-contract.md)；
 退出 SHA `c2861c3d0712f087be2a76ea7a7c39d05a60f602` 的 hosted 默认矩阵见
 [D1 退出报告](stage_reports/stages/stage-06/2026-09-22-s6-d1-exit.md)。
-OpenGL 迁移仍属 D2。C2、E1/E2 及后续批次仍按依赖图未完成。
+S6-D2 已开始把 OpenGL adapter 接到该合同，Player 正式帧使用
+`submit`/`present`；本地 GPU smoke 见
+[D2 报告](stage_reports/stages/stage-06/2026-09-22-s6-d2-opengl-migration.md)。
+该报告不是 D2 退出。C2、E1/E2 及后续批次仍按依赖图未完成。
 
 ## 已关闭的 Full Review
 

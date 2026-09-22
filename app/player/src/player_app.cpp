@@ -495,6 +495,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
             std::move(backendResult.error()).withContext("operation", "create_opengl_backend"));
     }
     auto backend = std::move(backendResult).value();
+    presentation_renderer::IPresentationRenderer& renderer = backend;
     if (options.shaderCacheDirectory.has_value()) {
         backend.setShaderCacheDirectory(*options.shaderCacheDirectory);
     }
@@ -504,16 +505,16 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
     logger.info("player.opengl", std::string{"Vendor: "} + openGlInfo.vendor);
     logger.info("player.opengl", std::string{"Renderer: "} + openGlInfo.renderer);
 
-    auto presentationCandidate = backend.preparePresentation(prepared, {.enableDebugPass = true});
+    auto presentationCandidate = renderer.prepare(prepared, {.enableDebugPass = true});
     if (!presentationCandidate) {
         return core::unexpected(std::move(presentationCandidate.error())
                                     .withContext("operation", "prepare_presentation"));
     }
     if (auto committed = playbackSession.commit(std::move(prepared)); !committed) {
-        backend.discardPresentation(std::move(*presentationCandidate));
+        renderer.discard(std::move(*presentationCandidate));
         return core::unexpected(std::move(committed.error()));
     }
-    backend.activatePresentation(std::move(*presentationCandidate));
+    renderer.activate(std::move(*presentationCandidate));
 
     auto chartInfo = playbackSession.chartInfo();
     if (!chartInfo) {
@@ -654,7 +655,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                     return core::unexpected(std::move(replacement.error()));
                 }
                 auto replacementPresentation =
-                    backend.preparePresentation(*replacement, {.enableDebugPass = true});
+                    renderer.prepare(*replacement, {.enableDebugPass = true});
                 if (!replacementPresentation) {
                     return core::unexpected(
                         std::move(replacementPresentation.error())
@@ -662,7 +663,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                 }
                 auto replacementHandle = prepareAudioClip(*replacement, audioStore);
                 if (!replacementHandle) {
-                    backend.discardPresentation(std::move(*replacementPresentation));
+                    renderer.discard(std::move(*replacementPresentation));
                     return core::unexpected(std::move(replacementHandle.error()));
                 }
                 if (auto replacementPrepared = audioTransport->prepareReplacement(
@@ -672,7 +673,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                     if (!removed) {
                         logger.warn("player.audio", "Replacement cleanup failed after prepare");
                     }
-                    backend.discardPresentation(std::move(*replacementPresentation));
+                    renderer.discard(std::move(*replacementPresentation));
                     return core::unexpected(std::move(replacementPrepared.error()));
                 }
                 if (auto activated = audioTransport->activateReplacement(); !activated) {
@@ -680,14 +681,14 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                     if (!removed) {
                         logger.warn("player.audio", "Replacement cleanup failed after activation");
                     }
-                    backend.discardPresentation(std::move(*replacementPresentation));
+                    renderer.discard(std::move(*replacementPresentation));
                     return core::unexpected(std::move(activated.error()));
                 }
                 if (auto committed = playbackSession.commit(std::move(*replacement)); !committed) {
-                    backend.discardPresentation(std::move(*replacementPresentation));
+                    renderer.discard(std::move(*replacementPresentation));
                     return core::unexpected(std::move(committed.error()));
                 }
-                backend.activatePresentation(std::move(*replacementPresentation));
+                renderer.activate(std::move(*replacementPresentation));
                 const auto contentInfo = playbackSession.contentInfo();
                 if (!contentInfo) {
                     return core::unexpected(std::move(contentInfo.error()));
@@ -740,7 +741,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
             if (!rejectedPresentationCandidate) {
                 return core::unexpected(std::move(rejectedPresentationCandidate.error()));
             }
-            const auto unsupportedPresentation = backend.preparePresentation(
+            const auto unsupportedPresentation = renderer.prepare(
                 *rejectedPresentationCandidate,
                 {.version = 2, .portableProfileVersion = 2, .enableDebugPass = true});
             if (unsupportedPresentation || !backend.hasActivePresentation()) {
@@ -767,7 +768,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                 return core::unexpected(std::move(legacyReplacement.error()));
             }
             const auto legacyPresentation =
-                backend.preparePresentation(*legacyReplacement, {.enableDebugPass = true});
+                renderer.prepare(*legacyReplacement, {.enableDebugPass = true});
             if (legacyPresentation ||
                 legacyPresentation.error().code() !=
                     "render.opengl.presentation.portable_candidate_required" ||
@@ -791,7 +792,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                 return core::unexpected(std::move(replacement.error()));
             }
             auto replacementPresentation =
-                backend.preparePresentation(*replacement, {.enableDebugPass = true});
+                renderer.prepare(*replacement, {.enableDebugPass = true});
             if (!replacementPresentation) {
                 return core::unexpected(std::move(replacementPresentation.error())
                                             .withContext("operation", "prepare_smoke_reload"));
@@ -799,32 +800,32 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
 
             auto competingSource = makeSource();
             if (!competingSource) {
-                backend.discardPresentation(std::move(*replacementPresentation));
+                renderer.discard(std::move(*replacementPresentation));
                 return core::unexpected(std::move(competingSource.error()));
             }
             auto competingReplacement =
                 playbackSession.prepareReload(std::move(*competingSource), *runtimeFrameResult,
                                               playback::ReloadPolicy::RestartAtZero);
             if (!competingReplacement) {
-                backend.discardPresentation(std::move(*replacementPresentation));
+                renderer.discard(std::move(*replacementPresentation));
                 return core::unexpected(std::move(competingReplacement.error()));
             }
             const auto competingPresentation =
-                backend.preparePresentation(*competingReplacement, {.enableDebugPass = true});
+                renderer.prepare(*competingReplacement, {.enableDebugPass = true});
             if (competingPresentation ||
                 competingPresentation.error().code() !=
                     "render.opengl.presentation.candidate_outstanding" ||
                 !replacementPresentation->valid() || !backend.hasActivePresentation()) {
-                backend.discardPresentation(std::move(*replacementPresentation));
+                renderer.discard(std::move(*replacementPresentation));
                 return core::unexpected(core::Error{
                     "player.smoke_test.outstanding_candidate_overwritten",
                     "A second OpenGL candidate was accepted or invalidated the first candidate"});
             }
             if (auto committed = playbackSession.commit(std::move(*replacement)); !committed) {
-                backend.discardPresentation(std::move(*replacementPresentation));
+                renderer.discard(std::move(*replacementPresentation));
                 return core::unexpected(std::move(committed.error()));
             }
-            backend.activatePresentation(std::move(*replacementPresentation));
+            renderer.activate(std::move(*replacementPresentation));
             logger.info("player.smoke_test",
                         "Outstanding candidate rejection preserved the first candidate");
             const auto contentInfo = playbackSession.contentInfo();
@@ -857,8 +858,12 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                                         .withContext("operation", "query_drawable_size"));
         }
         const auto drawableSize = *drawableSizeResult;
-        const auto width = static_cast<std::uint32_t>(std::max(drawableSize.width, 1));
-        const auto height = static_cast<std::uint32_t>(std::max(drawableSize.height, 1));
+        const auto width = static_cast<std::uint32_t>(std::max(drawableSize.width, 0));
+        const auto height = static_cast<std::uint32_t>(std::max(drawableSize.height, 0));
+        if (auto resized = renderer.resize(width, height); !resized) {
+            return core::unexpected(
+                std::move(resized.error()).withContext("operation", "resize_presentation"));
+        }
         if (auto result =
                 playbackSession.extractFrame({.width = width, .height = height}, snapshot);
             !result) {
@@ -901,15 +906,26 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
             }
         }
 
-        render_opengl::OpenGlDrawSummary drawSummary;
-        render_opengl::OpenGlPixelProbe pixelProbe;
         const auto renderStarted = std::chrono::steady_clock::now();
-        if (auto result = backend.renderPresentationFrame(
-                snapshot, &scene, &drawSummary, options.smokeTest ? &pixelProbe : nullptr);
-            !result) {
+        auto submitted = renderer.submit(snapshot, &scene);
+        if (!submitted) {
+            if (submitted.error().code() == "presentation.renderer.surface.zero_size") {
+                continue;
+            }
             return core::unexpected(
-                std::move(result.error()).withContext("frame", std::to_string(renderedFrames)));
+                std::move(submitted.error()).withContext("frame", std::to_string(renderedFrames)));
         }
+        if (auto presented = renderer.present(); !presented) {
+            return core::unexpected(
+                std::move(presented.error()).withContext("frame", std::to_string(renderedFrames)));
+        }
+        render_opengl::OpenGlDrawSummary drawSummary;
+        drawSummary.debugPassEnabled = submitted->debugPassEnabled;
+        drawSummary.debugCommandCount = submitted->debugCommandCount;
+        drawSummary.digest = submitted->digest;
+        drawSummary.opaque.resize(submitted->opaque.size());
+        drawSummary.transparent.resize(submitted->transparent.size());
+        const auto pixelProbe = backend.lastPixelProbe();
         if (omittedDebugSummary && emptyDebugSummary) {
             if (auto parity = validateDebugSummaryParity(*omittedDebugSummary, *emptyDebugSummary,
                                                          drawSummary);
