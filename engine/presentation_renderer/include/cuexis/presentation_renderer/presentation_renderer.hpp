@@ -38,6 +38,8 @@ struct PresentationRendererStatus final {
     std::size_t activeResourceCount{};
 };
 
+class IPresentationRenderer;
+
 class PreparedPresentation final {
   public:
     PreparedPresentation() noexcept;
