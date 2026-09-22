@@ -234,6 +234,15 @@ class OpenGlBackend final : public render::RenderBackend,
                                           OpenGlDrawSummary* summary, OpenGlPixelProbe* pixelProbe,
                                           bool presentFrame) -> core::Result<void>;
 
+    platform_sdl::SdlWindowLease window_{};
+    void* context_{};
+    OpenGlInfo info_{};
+    std::shared_ptr<const core::LogSink> logSink_;
+    std::uint32_t debugProgram_{};
+    std::uint32_t debugVertexArray_{};
+    std::uint32_t debugVertexBuffer_{};
+    int viewProjectionLocation_{-1};
+    std::unique_ptr<detail::OpenGlPresentationBackendState> presentation_;
     std::optional<OpenGlPresentationCandidate> interfaceCandidate_;
     std::uint64_t rendererGeneration_{1};
     std::uint32_t surfaceWidth_{1};
@@ -244,16 +253,6 @@ class OpenGlBackend final : public render::RenderBackend,
     OpenGlPixelProbe lastProbe_{};
     mutable playback::PresentationCapabilities capabilities_{};
     mutable bool capabilitiesReady_{};
-
-    platform_sdl::SdlWindowLease window_{};
-    void* context_{};
-    OpenGlInfo info_{};
-    std::shared_ptr<const core::LogSink> logSink_;
-    std::uint32_t debugProgram_{};
-    std::uint32_t debugVertexArray_{};
-    std::uint32_t debugVertexBuffer_{};
-    int viewProjectionLocation_{-1};
-    std::unique_ptr<detail::OpenGlPresentationBackendState> presentation_;
     core::ThreadChecker ownerThread_{};
 };
 

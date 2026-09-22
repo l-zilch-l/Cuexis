@@ -43,20 +43,27 @@ class ExclusiveFileLock final {
     static auto acquire(const std::filesystem::path& path) -> core::Result<ExclusiveFileLock> {
         ExclusiveFileLock lock;
         lock.path_ = path;
-        std::FILE* handle = nullptr;
-#if defined(_MSC_VER)
-        if (fopen_s(&handle, path.string().c_str(), "wx") != 0) {
-            handle = nullptr;
+#if defined(_WIN32)
+        // MinGW's CRT rejects the "x" fopen mode, so an exclusive create has to go through
+        // CreateFileW. The handle is closed after creation; a later writer fails while the
+        // lock file still exists.
+        const HANDLE handle = CreateFileW(path.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_NEW,
+                                          FILE_ATTRIBUTE_NORMAL, nullptr);
+        if (handle == INVALID_HANDLE_VALUE) {
+            return core::unexpected(
+                core::Error{"player.preferences.busy", "Another writer holds the preferences lock"}
+                    .withContext("path", path.string()));
         }
+        CloseHandle(handle);
 #else
-        handle = std::fopen(path.string().c_str(), "wx");
-#endif
+        std::FILE* handle = std::fopen(path.string().c_str(), "wx");
         if (handle == nullptr) {
             return core::unexpected(
                 core::Error{"player.preferences.busy", "Another writer holds the preferences lock"}
                     .withContext("path", path.string()));
         }
         std::fclose(handle);
+#endif
         lock.held_ = true;
         return lock;
     }
