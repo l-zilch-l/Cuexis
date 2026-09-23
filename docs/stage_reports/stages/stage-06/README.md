@@ -26,7 +26,7 @@
 - [2026-09-22 S6-D2 OpenGL 迁移](2026-09-22-s6-d2-opengl-migration.md)
   （实现当时的本地 GPU smoke；该页不改写成退出证据）
 - [2026-09-23 S6-D2 退出](2026-09-23-s6-d2-exit.md)
-  （OpenGL 接线与 Player 正式帧的本地退出；Linux/MSVC hosted 成功，MinGW 成员顺序修正尚未复验）
+  （OpenGL 接线与 Player 正式帧的本地退出；该页记录退出当时的证据，不含之后的 MinGW 复验）
 - [2026-09-23 S6-C2 Player support](2026-09-23-s6-c2-player-support.md)
   （实现当时的配置发布和默认路由 smoke；该页不改写成退出证据）
 - [2026-09-23 S6-C2 退出](2026-09-23-s6-c2-exit.md)

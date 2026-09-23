@@ -75,8 +75,12 @@ Stage 6 完成、PR 合并或 owner acceptance。SDK API 仍为 `0.7.0`。S6-D1 
 S6-D2 已于 2026-09-23 在本地退出：OpenGL adapter 实现同一渲染接口，Player 正式帧使用
 `submit`/`present`。本地 GPU smoke 见
 [实现报告](stage_reports/stages/stage-06/2026-09-22-s6-d2-opengl-migration.md)；
-Linux、Windows MSVC 与后续 SHA 上的 Windows MinGW 见
+退出当时的 Linux 与 Windows MSVC 见
 [D2 退出报告](stage_reports/stages/stage-06/2026-09-23-s6-d2-exit.md)。
+成员顺序修正之后，Windows MinGW 在 `9bb94b4` 的
+[PR 35760537757](https://github.com/l-zilch-l/Cuexis/actions/runs/35760537757)
+与 [push 35760532938](https://github.com/l-zilch-l/Cuexis/actions/runs/35760532938) 通过。
+最小化与恢复没有执行。
 该退出不是 Stage 6 完成。S6-C2 已于 2026-09-23 在本地退出：配置快照、进程锁、只读偏好、
 热拔插观察和按名称打开的音频设备已接入。`e01a4b1` 的 hosted 矩阵见
 [C2 退出报告](stage_reports/stages/stage-06/2026-09-23-s6-c2-exit.md)。
