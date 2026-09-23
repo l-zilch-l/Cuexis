@@ -95,7 +95,7 @@ files. A candidate package cannot be accepted by a production consumer accidenta
 | Boundary | Current state | Required verification |
 | --- | --- | --- |
 | Existing Playback isolation | Implemented and covered by A1 baseline | Preserve in C1/F1 |
-| New renderer direction | D2 local exit: OpenGL implements the interface and Player submits through it | Minimize and restore were not executed |
+| New renderer direction | D2 local exit: OpenGL implements the interface and Player submits through it | Local smoke minimized and restored; hosted CI does not run that step |
 | Player support separation | C2 local exit: config snapshots and enumerated device open exist and are not installed | C3 still consumes the exited batch |
 | Media importer isolation | Contract only; target does not exist | E1/E2 target and package tests |
 | Production/experimental staging | Contract only; no package flavor gate yet | B1/C4 clean staging |

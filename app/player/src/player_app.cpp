@@ -373,6 +373,133 @@ class PlayerClock final {
     return {};
 }
 
+[[nodiscard]] auto waitForMinimized(platform_sdl::SdlWindow& window, bool wantMinimized)
+    -> core::Result<void> {
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds{2};
+    while (std::chrono::steady_clock::now() < deadline) {
+        if (window.pollEvents().quitRequested) {
+            return core::unexpected(core::Error{"player.smoke_test.minimize_quit",
+                                                "The smoke window closed during minimize or restore"});
+        }
+        auto state = window.minimized();
+        if (!state) {
+            return core::unexpected(std::move(state.error()));
+        }
+        if (*state == wantMinimized) {
+            return {};
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds{16});
+    }
+    return core::unexpected(core::Error{"player.smoke_test.minimize_timeout",
+                                        wantMinimized ? "The smoke window did not minimize"
+                                                      : "The smoke window did not restore"});
+}
+
+[[nodiscard]] auto verifySmokeMinimizeRestore(
+    platform_sdl::SdlWindow& window, presentation_renderer::IPresentationRenderer& renderer,
+    render_opengl::OpenGlBackend& backend, playback::PlaybackSession& playbackSession,
+    std::uint64_t baselineDigest, const render_opengl::OpenGlPixelProbe& baselineProbe,
+    PlayerLogger& logger) -> core::Result<void> {
+    if (!renderer.hasActivePresentation()) {
+        return core::unexpected(core::Error{"player.smoke_test.minimize_lost_cache",
+                                            "Minimize started without an active presentation"});
+    }
+    if (auto minimized = window.setMinimized(true); !minimized) {
+        return core::unexpected(std::move(minimized.error()));
+    }
+    if (auto waited = waitForMinimized(window, true); !waited) {
+        return core::unexpected(std::move(waited.error()));
+    }
+    auto minimizedSize = window.drawableSize();
+    if (!minimizedSize) {
+        return core::unexpected(std::move(minimizedSize.error()));
+    }
+    const auto suspendedWidth = static_cast<std::uint32_t>(std::max(minimizedSize->width, 0));
+    const auto suspendedHeight = static_cast<std::uint32_t>(std::max(minimizedSize->height, 0));
+    if (auto resized = renderer.resize(suspendedWidth, suspendedHeight); !resized) {
+        return core::unexpected(std::move(resized.error()));
+    }
+    if (suspendedWidth == 0 || suspendedHeight == 0) {
+        playback::FrameSnapshot suspendedSnapshot;
+        if (auto extracted = playbackSession.extractFrame(
+                {.width = suspendedWidth, .height = suspendedHeight}, suspendedSnapshot);
+            !extracted) {
+            return core::unexpected(std::move(extracted.error()));
+        }
+        auto suspended = renderer.submit(suspendedSnapshot, nullptr);
+        if (suspended) {
+            return core::unexpected(core::Error{"player.smoke_test.minimize_still_submitted",
+                                                "A zero-size minimized surface still submitted"});
+        }
+        if (suspended.error().code() != "presentation.renderer.surface.zero_size") {
+            return core::unexpected(std::move(suspended.error()));
+        }
+    }
+    if (!renderer.hasActivePresentation()) {
+        return core::unexpected(core::Error{"player.smoke_test.minimize_lost_cache",
+                                            "Minimize dropped the active presentation"});
+    }
+    logger.info("player.smoke_test", std::string{"Minimized drawable "} +
+                                         std::to_string(minimizedSize->width) + "x" +
+                                         std::to_string(minimizedSize->height));
+
+    if (auto restored = window.setMinimized(false); !restored) {
+        return core::unexpected(std::move(restored.error()));
+    }
+    if (auto waited = waitForMinimized(window, false); !waited) {
+        return core::unexpected(std::move(waited.error()));
+    }
+    auto restoredSize = window.drawableSize();
+    if (!restoredSize || restoredSize->width <= 0 || restoredSize->height <= 0) {
+        return core::unexpected(core::Error{"player.smoke_test.restore_size_invalid",
+                                            "The restored smoke window has no drawable size"});
+    }
+    const auto width = static_cast<std::uint32_t>(restoredSize->width);
+    const auto height = static_cast<std::uint32_t>(restoredSize->height);
+    if (auto resized = renderer.resize(width, height); !resized) {
+        return core::unexpected(std::move(resized.error()));
+    }
+    playback::FrameSnapshot restoredSnapshot;
+    if (auto extracted =
+            playbackSession.extractFrame({.width = width, .height = height}, restoredSnapshot);
+        !extracted) {
+        return core::unexpected(std::move(extracted.error()));
+    }
+    render::RenderScene restoredScene;
+    if (auto axes = appendSnapshotAxes(restoredSnapshot, restoredScene); !axes) {
+        return core::unexpected(std::move(axes.error()));
+    }
+    auto submitted = renderer.submit(restoredSnapshot, &restoredScene);
+    if (!submitted) {
+        return core::unexpected(std::move(submitted.error()));
+    }
+    if (auto presented = renderer.present(); !presented) {
+        return core::unexpected(std::move(presented.error()));
+    }
+    if (submitted->digest != baselineDigest) {
+        return core::unexpected(core::Error{"player.smoke_test.restore_digest_mismatch",
+                                            "Restoring the window changed the presentation digest"}
+                                    .withContext("baseline", std::to_string(baselineDigest))
+                                    .withContext("restored", std::to_string(submitted->digest)));
+    }
+    const auto probe = backend.lastPixelProbe();
+    for (std::size_t component = 0; component < 4; ++component) {
+        if (probe.rgba[component] != baselineProbe.rgba[component]) {
+            return core::unexpected(core::Error{"player.smoke_test.restore_pixel_mismatch",
+                                                "Restoring the window changed the center pixel"});
+        }
+    }
+    if (!renderer.hasActivePresentation()) {
+        return core::unexpected(core::Error{"player.smoke_test.restore_lost_cache",
+                                            "Restore dropped the active presentation"});
+    }
+    logger.info("player.smoke_test", std::string{"Restore kept digest "} +
+                                         std::to_string(baselineDigest) + " at drawable " +
+                                         std::to_string(restoredSize->width) + "x" +
+                                         std::to_string(restoredSize->height));
+    return {};
+}
+
 } // namespace
 
 auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Result<void> {
@@ -1130,6 +1257,14 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                             std::to_string(pixelProbe.rgba[2]) + "," +
                             std::to_string(pixelProbe.rgba[3]) +
                             " render_us=" + std::to_string(renderMicroseconds));
+            if (renderedFrames == 0) {
+                if (auto minimized =
+                        verifySmokeMinimizeRestore(window, renderer, backend, playbackSession,
+                                                   drawSummary.digest, pixelProbe, logger);
+                    !minimized) {
+                    return core::unexpected(std::move(minimized.error()));
+                }
+            }
         }
 
         ++renderedFrames;

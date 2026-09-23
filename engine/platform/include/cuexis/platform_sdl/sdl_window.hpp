@@ -91,6 +91,8 @@ class SdlWindow final {
 
     [[nodiscard]] WindowEvents pollEvents();
     [[nodiscard]] core::Result<DrawableSize> drawableSize() const;
+    [[nodiscard]] core::Result<void> setMinimized(bool minimized);
+    [[nodiscard]] core::Result<bool> minimized() const;
     [[nodiscard]] SdlWindowLease lease() const;
 
   private:

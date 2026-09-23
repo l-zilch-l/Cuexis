@@ -148,6 +148,30 @@ core::Result<DrawableSize> SdlWindow::drawableSize() const {
     return result;
 }
 
+core::Result<void> SdlWindow::setMinimized(bool minimized) {
+    assertOwner(state_);
+    if (!state_) {
+        return core::unexpected(
+            core::Error{"platform.sdl.window_unavailable", "Cannot change an empty SDL window"});
+    }
+    if (minimized) {
+        SDL_MinimizeWindow(state_->window);
+    } else {
+        SDL_RestoreWindow(state_->window);
+    }
+    return {};
+}
+
+core::Result<bool> SdlWindow::minimized() const {
+    assertOwner(state_);
+    if (!state_) {
+        return core::unexpected(
+            core::Error{"platform.sdl.window_unavailable", "Cannot query an empty SDL window"});
+    }
+    const auto flags = SDL_GetWindowFlags(state_->window);
+    return (flags & SDL_WINDOW_MINIMIZED) != 0;
+}
+
 SdlWindowLease SdlWindow::lease() const {
     assertOwner(state_);
     return SdlWindowLease{state_};

@@ -80,7 +80,9 @@ S6-D2 已于 2026-09-23 在本地退出：OpenGL adapter 实现同一渲染接�
 成员顺序修正之后，Windows MinGW 在 `9bb94b4` 的
 [PR 35760537757](https://github.com/l-zilch-l/Cuexis/actions/runs/35760537757)
 与 [push 35760532938](https://github.com/l-zilch-l/Cuexis/actions/runs/35760532938) 通过。
-最小化与恢复没有执行。
+本机 `--smoke-test` 已自动最小化再恢复，digest 与中心像素保持不变；这次最小化后的 drawable
+仍是 `1280x720`。见
+[最小化记录](stage_reports/stages/stage-06/2026-09-23-s6-d2-minimize-restore.md)。
 该退出不是 Stage 6 完成。S6-C2 已于 2026-09-23 在本地退出：配置快照、进程锁、只读偏好、
 热拔插观察和按名称打开的音频设备已接入。`e01a4b1` 的 hosted 矩阵见
 [C2 退出报告](stage_reports/stages/stage-06/2026-09-23-s6-c2-exit.md)。
