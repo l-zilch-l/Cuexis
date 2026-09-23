@@ -250,7 +250,8 @@ auto runPlayerFrameLoop(PlayerFrameLoop& input) -> core::Result<void> {
             }
             runtimeFrameResult = input.timeline.advance(consumedSource);
         } else {
-            auto source = input.chartClock.sample(clock.nextChartTime(input.smokeTest, renderedFrames));
+            auto source =
+                input.chartClock.sample(clock.nextChartTime(input.smokeTest, renderedFrames));
             if (!source) {
                 return core::unexpected(std::move(source.error()));
             }

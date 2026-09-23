@@ -81,9 +81,9 @@ auto parsePlayerOptions(int argumentCount, char** arguments) -> core::Result<Pla
                     core::Error{"player.arguments.duplicate_frame_stats",
                                 "The frame stats option may only be provided once"});
             }
-            auto path = requirePathArgument(index, argumentCount, arguments,
-                                            "player.arguments.frame_stats_path_missing",
-                                            "The frame stats option requires an artifact path prefix");
+            auto path = requirePathArgument(
+                index, argumentCount, arguments, "player.arguments.frame_stats_path_missing",
+                "The frame stats option requires an artifact path prefix");
             if (!path) {
                 return core::unexpected(std::move(path.error()));
             }

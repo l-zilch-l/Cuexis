@@ -94,9 +94,9 @@ auto PlayerSmokeBinding::beforeAudioService(std::uint32_t renderedFrames) -> cor
             heldClock.presentedFrame != pausedClock.presentedFrame ||
             heldClock.source.positionMs != pausedClock.source.positionMs ||
             heldClock.source.discontinuityId != pausedClock.source.discontinuityId) {
-            return core::unexpected(core::Error{
-                "player.audio_smoke_test.pause_clock_advanced",
-                "Audio clock changed during the required two-second pause"});
+            return core::unexpected(
+                core::Error{"player.audio_smoke_test.pause_clock_advanced",
+                            "Audio clock changed during the required two-second pause"});
         }
         if (auto resumed = transport.play(); !resumed) {
             return core::unexpected(std::move(resumed.error()));
@@ -148,9 +148,9 @@ auto PlayerSmokeBinding::afterTimelineAdvance(PlayerClockContext& context) -> co
             R"json({"format":"cuexis.chart","version":2})json", *context.runtimeFrame,
             playback::ReloadPolicy::KeepChartTime);
         if (rejected) {
-            return core::unexpected(core::Error{
-                "player.audio_smoke_test.failed_reload_accepted",
-                "Invalid replacement chart unexpectedly prepared successfully"});
+            return core::unexpected(
+                core::Error{"player.audio_smoke_test.failed_reload_accepted",
+                            "Invalid replacement chart unexpectedly prepared successfully"});
         }
         const auto contentAfterFailure = context.session.contentInfo();
         if (!contentAfterFailure) {
@@ -164,8 +164,7 @@ auto PlayerSmokeBinding::afterTimelineAdvance(PlayerClockContext& context) -> co
             contentAfterFailure->mainMusicAssetId != contentBeforeFailure->mainMusicAssetId ||
             clockAfterFailure.presentedFrame != clockBeforeFailure.presentedFrame ||
             clockAfterFailure.source.state != clockBeforeFailure.source.state ||
-            clockAfterFailure.source.discontinuityId !=
-                clockBeforeFailure.source.discontinuityId) {
+            clockAfterFailure.source.discontinuityId != clockBeforeFailure.source.discontinuityId) {
             return core::unexpected(
                 core::Error{"player.audio_smoke_test.failed_reload_mutated_state",
                             "Failed reload changed active playback or audio state"});
@@ -186,9 +185,9 @@ auto PlayerSmokeBinding::afterTimelineAdvance(PlayerClockContext& context) -> co
         if (!replacementSource) {
             return core::unexpected(std::move(replacementSource.error()));
         }
-        auto replacement = context.session.prepareReload(std::move(*replacementSource),
-                                                         *context.runtimeFrame,
-                                                         playback::ReloadPolicy::KeepChartTime);
+        auto replacement =
+            context.session.prepareReload(std::move(*replacementSource), *context.runtimeFrame,
+                                          playback::ReloadPolicy::KeepChartTime);
         if (!replacement) {
             return core::unexpected(std::move(replacement.error()));
         }
@@ -252,9 +251,9 @@ auto PlayerSmokeBinding::afterTimelineAdvance(PlayerClockContext& context) -> co
             R"json({"format":"cuexis.chart","version":2})json", *context.runtimeFrame,
             playback::ReloadPolicy::KeepChartTime);
         if (rejected || !backend_.hasActivePresentation()) {
-            return core::unexpected(core::Error{
-                "player.smoke_test.failed_reload_mutated_state",
-                "Failed presentation reload did not preserve the active GPU cache"});
+            return core::unexpected(
+                core::Error{"player.smoke_test.failed_reload_mutated_state",
+                            "Failed presentation reload did not preserve the active GPU cache"});
         }
         context.logger.info("player.smoke_test",
                             "Failed reload preserved the active OpenGL presentation cache");
@@ -263,9 +262,9 @@ auto PlayerSmokeBinding::afterTimelineAdvance(PlayerClockContext& context) -> co
         if (!replacementSource) {
             return core::unexpected(std::move(replacementSource.error()));
         }
-        auto rejectedPresentationCandidate = context.session.prepareReload(
-            std::move(*replacementSource), *context.runtimeFrame,
-            playback::ReloadPolicy::KeepChartTime);
+        auto rejectedPresentationCandidate =
+            context.session.prepareReload(std::move(*replacementSource), *context.runtimeFrame,
+                                          playback::ReloadPolicy::KeepChartTime);
         if (!rejectedPresentationCandidate) {
             return core::unexpected(std::move(rejectedPresentationCandidate.error()));
         }
@@ -273,9 +272,9 @@ auto PlayerSmokeBinding::afterTimelineAdvance(PlayerClockContext& context) -> co
             *rejectedPresentationCandidate,
             {.version = 2, .portableProfileVersion = 2, .enableDebugPass = true});
         if (unsupportedPresentation || !backend_.hasActivePresentation()) {
-            return core::unexpected(core::Error{
-                "player.smoke_test.failed_adapter_prepare_mutated_state",
-                "Failed adapter preparation did not preserve the active GPU cache"});
+            return core::unexpected(
+                core::Error{"player.smoke_test.failed_adapter_prepare_mutated_state",
+                            "Failed adapter preparation did not preserve the active GPU cache"});
         }
         context.logger.info(
             "player.smoke_test",
@@ -313,9 +312,9 @@ auto PlayerSmokeBinding::afterTimelineAdvance(PlayerClockContext& context) -> co
         if (!replacementSource) {
             return core::unexpected(std::move(replacementSource.error()));
         }
-        auto replacement = context.session.prepareReload(std::move(*replacementSource),
-                                                         *context.runtimeFrame,
-                                                         playback::ReloadPolicy::RestartAtZero);
+        auto replacement =
+            context.session.prepareReload(std::move(*replacementSource), *context.runtimeFrame,
+                                          playback::ReloadPolicy::RestartAtZero);
         if (!replacement) {
             return core::unexpected(std::move(replacement.error()));
         }
@@ -331,9 +330,9 @@ auto PlayerSmokeBinding::afterTimelineAdvance(PlayerClockContext& context) -> co
             context.renderer.discard(std::move(*replacementPresentation));
             return core::unexpected(std::move(competingSource.error()));
         }
-        auto competingReplacement = context.session.prepareReload(
-            std::move(*competingSource), *context.runtimeFrame,
-            playback::ReloadPolicy::RestartAtZero);
+        auto competingReplacement =
+            context.session.prepareReload(std::move(*competingSource), *context.runtimeFrame,
+                                          playback::ReloadPolicy::RestartAtZero);
         if (!competingReplacement) {
             context.renderer.discard(std::move(*replacementPresentation));
             return core::unexpected(std::move(competingReplacement.error()));
@@ -390,8 +389,7 @@ auto PlayerSmokeBinding::beforeSubmit(const playback::FrameSnapshot& snapshot,
     }
     render::RenderScene emptyScene;
     emptyDebugSummary_.emplace();
-    if (auto result =
-            backend_.renderPresentationFrame(snapshot, &emptyScene, &*emptyDebugSummary_);
+    if (auto result = backend_.renderPresentationFrame(snapshot, &emptyScene, &*emptyDebugSummary_);
         !result) {
         return core::unexpected(
             std::move(result.error()).withContext("operation", "debug_summary_empty"));
@@ -399,7 +397,8 @@ auto PlayerSmokeBinding::beforeSubmit(const playback::FrameSnapshot& snapshot,
     return {};
 }
 
-auto PlayerSmokeBinding::notePresented(const PlayerPresentedFrame& presented) -> core::Result<void> {
+auto PlayerSmokeBinding::notePresented(const PlayerPresentedFrame& presented)
+    -> core::Result<void> {
     if (!omittedDebugSummary_ || !emptyDebugSummary_) {
         return {};
     }
@@ -435,9 +434,8 @@ auto PlayerSmokeBinding::validatePresented(const PlayerPresentedFrame& presented
                  std::string{"Frame "} + std::to_string(presented.renderedFrames) +
                      " summary=" + std::to_string(drawSummary.digest) +
                      " pixel=" + std::to_string(pixelProbe.rgba[0]) + "," +
-                     std::to_string(pixelProbe.rgba[1]) + "," +
-                     std::to_string(pixelProbe.rgba[2]) + "," +
-                     std::to_string(pixelProbe.rgba[3]) +
+                     std::to_string(pixelProbe.rgba[1]) + "," + std::to_string(pixelProbe.rgba[2]) +
+                     "," + std::to_string(pixelProbe.rgba[3]) +
                      " render_us=" + std::to_string(presented.renderMicroseconds));
     if (presented.renderedFrames == 0) {
         if (auto minimized = verifyMinimizeRestore(presented, drawSummary.digest, pixelProbe);
@@ -452,9 +450,9 @@ auto PlayerSmokeBinding::waitForMinimized(bool wantMinimized) -> core::Result<vo
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds{2};
     while (std::chrono::steady_clock::now() < deadline) {
         if (window_.pollEvents().quitRequested) {
-            return core::unexpected(core::Error{
-                "player.smoke_test.minimize_quit",
-                "The smoke window closed during minimize or restore"});
+            return core::unexpected(
+                core::Error{"player.smoke_test.minimize_quit",
+                            "The smoke window closed during minimize or restore"});
         }
         auto state = window_.minimized();
         if (!state) {
@@ -470,9 +468,10 @@ auto PlayerSmokeBinding::waitForMinimized(bool wantMinimized) -> core::Result<vo
                                                       : "The smoke window did not restore"});
 }
 
-auto PlayerSmokeBinding::verifyMinimizeRestore(
-    const PlayerPresentedFrame& presented, std::uint64_t baselineDigest,
-    const render_opengl::OpenGlPixelProbe& baselineProbe) -> core::Result<void> {
+auto PlayerSmokeBinding::verifyMinimizeRestore(const PlayerPresentedFrame& presented,
+                                               std::uint64_t baselineDigest,
+                                               const render_opengl::OpenGlPixelProbe& baselineProbe)
+    -> core::Result<void> {
     if (!presented.renderer.hasActivePresentation()) {
         return core::unexpected(core::Error{"player.smoke_test.minimize_lost_cache",
                                             "Minimize started without an active presentation"});
@@ -513,8 +512,8 @@ auto PlayerSmokeBinding::verifyMinimizeRestore(
                                             "Minimize dropped the active presentation"});
     }
     logger_.info("player.smoke_test", std::string{"Minimized drawable "} +
-                                         std::to_string(minimizedSize->width) + "x" +
-                                         std::to_string(minimizedSize->height));
+                                          std::to_string(minimizedSize->width) + "x" +
+                                          std::to_string(minimizedSize->height));
 
     if (auto restored = window_.setMinimized(false); !restored) {
         return core::unexpected(std::move(restored.error()));
@@ -567,9 +566,9 @@ auto PlayerSmokeBinding::verifyMinimizeRestore(
                                             "Restore dropped the active presentation"});
     }
     logger_.info("player.smoke_test", std::string{"Restore kept digest "} +
-                                         std::to_string(baselineDigest) + " at drawable " +
-                                         std::to_string(restoredSize->width) + "x" +
-                                         std::to_string(restoredSize->height));
+                                          std::to_string(baselineDigest) + " at drawable " +
+                                          std::to_string(restoredSize->width) + "x" +
+                                          std::to_string(restoredSize->height));
     return {};
 }
 

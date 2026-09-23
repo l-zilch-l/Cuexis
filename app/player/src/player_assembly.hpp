@@ -30,14 +30,13 @@ namespace cuexis::player {
                                           audio::AudioClipStore& store)
     -> core::Result<audio::AudioClipHandle>;
 
-[[nodiscard]] auto openPlayerAudio(playback::PreparedPlayback& prepared,
-                                   playback::PlaybackMode mode,
-                                   const player_support::AudioDeviceProfile& profile, double gain,
-                                   audio::AudioClipStore& store,
-                                   std::optional<audio::AudioClipHandle>& activeHandle,
-                                   std::optional<audio_sdl::SdlAudioSubsystem>& subsystem,
-                                   std::optional<audio_sdl::SdlAudioTransport>& transport,
-                                   PlayerLogger& logger) -> core::Result<void>;
+[[nodiscard]] auto
+openPlayerAudio(playback::PreparedPlayback& prepared, playback::PlaybackMode mode,
+                const player_support::AudioDeviceProfile& profile, double gain,
+                audio::AudioClipStore& store, std::optional<audio::AudioClipHandle>& activeHandle,
+                std::optional<audio_sdl::SdlAudioSubsystem>& subsystem,
+                std::optional<audio_sdl::SdlAudioTransport>& transport, PlayerLogger& logger)
+    -> core::Result<void>;
 
 [[nodiscard]] auto createPlayerRuntime(PlayerLogger& logger)
     -> core::Result<platform_sdl::SdlRuntime>;
@@ -46,10 +45,9 @@ namespace cuexis::player {
                                       const player_support::UserPreferences& requested)
     -> core::Result<platform_sdl::SdlWindow>;
 
-[[nodiscard]] auto createPlayerBackend(platform_sdl::SdlRuntime& runtime,
-                                       platform_sdl::SdlWindow& window, bool vsync,
-                                       const std::optional<std::filesystem::path>& shaderCache,
-                                       PlayerLogger& logger)
+[[nodiscard]] auto
+createPlayerBackend(platform_sdl::SdlRuntime& runtime, platform_sdl::SdlWindow& window, bool vsync,
+                    const std::optional<std::filesystem::path>& shaderCache, PlayerLogger& logger)
     -> core::Result<render_opengl::OpenGlBackend>;
 
 [[nodiscard]] auto logEffectiveWindow(platform_sdl::SdlWindow& window,

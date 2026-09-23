@@ -141,9 +141,9 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
         return core::unexpected(std::move(backendResult.error()));
     }
     auto backend = std::move(*backendResult);
-    if (auto recorded = logEffectiveWindow(window, appConfig->app.requested,
-                                           appConfig->app.requested.vsync, audioTransport.has_value(),
-                                           appConfig->profile.id, logger);
+    if (auto recorded =
+            logEffectiveWindow(window, appConfig->app.requested, appConfig->app.requested.vsync,
+                               audioTransport.has_value(), appConfig->profile.id, logger);
         !recorded) {
         return core::unexpected(std::move(recorded.error()));
     }
@@ -162,8 +162,8 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
     PlayerHooks hooks;
     if (options.smokeTest || options.audioSmokeTest) {
         smokeBinding.emplace(
-            window, backend, logger, options.smokeTest, options.audioSmokeTest, content.sessionConfig,
-            content.timingOffsetMs,
+            window, backend, logger, options.smokeTest, options.audioSmokeTest,
+            content.sessionConfig, content.timingOffsetMs,
             [&options]() { return openConfiguredPlaybackSource(options); },
             [](std::string_view directory) { return playerProjectDirectory(directory); },
             [](playback::PreparedPlayback& prepared, audio::AudioClipStore& store) {

@@ -4,8 +4,8 @@
 
 #include "player_control.hpp"
 
-#include <cuexis/playback/playback_source.hpp>
 #include <cuexis/platform_sdl/sdl_window.hpp>
+#include <cuexis/playback/playback_source.hpp>
 #include <cuexis/player_support/resolved_config.hpp>
 #include <cuexis/render_opengl/open_gl_backend.hpp>
 

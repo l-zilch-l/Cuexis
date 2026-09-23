@@ -16,7 +16,9 @@ class SdlPlayerSurface final : public PlayerSurface {
   public:
     explicit SdlPlayerSurface(platform_sdl::SdlWindow& window) : window_(window) {}
 
-    [[nodiscard]] bool quitRequested() override { return window_.pollEvents().quitRequested; }
+    [[nodiscard]] bool quitRequested() override {
+        return window_.pollEvents().quitRequested;
+    }
 
     [[nodiscard]] auto drawableSize() -> core::Result<PlayerDrawableSize> override {
         auto size = window_.drawableSize();
@@ -34,7 +36,9 @@ class SdlPlayerAudioSeat final : public PlayerAudioSeat {
   public:
     explicit SdlPlayerAudioSeat(audio_sdl::SdlAudioTransport& transport) : transport_(transport) {}
 
-    [[nodiscard]] auto transport() -> audio::IAudioTransport& override { return transport_; }
+    [[nodiscard]] auto transport() -> audio::IAudioTransport& override {
+        return transport_;
+    }
 
     [[nodiscard]] auto recheckBoundDevice() -> core::Result<void> override {
         return transport_.recheckBoundDevice();
@@ -53,7 +57,9 @@ class SdlPlayerAudioSeat final : public PlayerAudioSeat {
         return transport_.applyGain(gain);
     }
 
-    [[nodiscard]] auto unload() -> core::Result<void> override { return transport_.unload(); }
+    [[nodiscard]] auto unload() -> core::Result<void> override {
+        return transport_.unload();
+    }
 
   private:
     audio_sdl::SdlAudioTransport& transport_;
@@ -119,8 +125,8 @@ auto openPlayerAudio(playback::PreparedPlayback& prepared, playback::PlaybackMod
         return core::unexpected(std::move(createdSubsystem.error()));
     }
     subsystem.emplace(std::move(*createdSubsystem));
-    core::Result<audio_sdl::SdlAudioTransport> createdTransport = core::unexpected(
-        core::Error{"player.audio.unopened", "Audio transport was not created"});
+    core::Result<audio_sdl::SdlAudioTransport> createdTransport =
+        core::unexpected(core::Error{"player.audio.unopened", "Audio transport was not created"});
     if (profile.selector == player_support::AudioSelectorKind::SystemDefault) {
         createdTransport = audio_sdl::SdlAudioTransport::create(*subsystem, store, *config);
     } else {
@@ -225,8 +231,7 @@ auto createPlayerBackend(platform_sdl::SdlRuntime& runtime, platform_sdl::SdlWin
         return core::unexpected(
             std::move(configureResult.error()).withContext("operation", "configure_opengl"));
     }
-    auto backendResult =
-        render_opengl::OpenGlBackend::create(window, std::move(*configureResult));
+    auto backendResult = render_opengl::OpenGlBackend::create(window, std::move(*configureResult));
     if (!backendResult) {
         return core::unexpected(
             std::move(backendResult.error()).withContext("operation", "create_opengl_backend"));
