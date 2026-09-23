@@ -209,6 +209,9 @@ if(CUEXIS_BUILD_TESTS)
     if(TARGET cuexis_player_diagnostics_tests)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_player_diagnostics_tests)
     endif()
+    if(TARGET cuexis_player_control_tests)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_player_control_tests)
+    endif()
     if(TARGET cuexis_shader_tests)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_shader_tests)
     endif()
@@ -932,6 +935,20 @@ if(CUEXIS_BUILD_TESTS)
                 cuexis::core
                 cuexis::playback
                 cuexis::render
+                Catch2::Catch2WithMain
+        )
+    endif()
+    if(TARGET cuexis_player_control_tests)
+        cuexis_verify_target_dependencies(cuexis_player_control_tests
+            ALLOWED
+                cuexis::audio
+                cuexis::core
+                cuexis::filesystem
+                cuexis::playback
+                cuexis::player_support
+                cuexis::presentation_renderer
+                cuexis::render
+                spdlog::spdlog
                 Catch2::Catch2WithMain
         )
     endif()

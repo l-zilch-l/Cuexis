@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <cuexis/core/result.hpp>
 
@@ -28,8 +29,29 @@ struct WindowConfig final {
     bool fullscreen{false};
 };
 
+// The keys a window reports by name. The mapping from a named key to an application action belongs
+// to the application, not to this module.
+enum class WindowKey : std::uint8_t {
+    Unknown = 0,
+    Space,
+    Left,
+    Right,
+    R,
+    S,
+    B,
+    Escape,
+};
+
+struct WindowKeyEvent final {
+    WindowKey key{WindowKey::Unknown};
+    bool pressed{false};
+};
+
 struct WindowEvents final {
     bool quitRequested{false};
+    // Key transitions observed since the previous call, in arrival order. Auto-repeat is not
+    // reported, so one press yields exactly one event.
+    std::vector<WindowKeyEvent> keys;
 };
 
 struct DrawableSize final {

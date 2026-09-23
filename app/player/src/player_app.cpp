@@ -101,28 +101,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
     logger.info("player.config", std::string{"Profile "} + appConfig->profile.id + ", gain " +
                                      std::to_string(appConfig->app.requested.gain));
 
-    playback::PlaybackSession playbackSession;
-    auto contentResult = preparePlayerContent(playbackSession, options,
-                                              appConfig->profile.outputCorrectionUs, logger);
-    if (!contentResult) {
-        return core::unexpected(std::move(contentResult.error()));
-    }
-    auto content = std::move(*contentResult);
-
     audio::AudioClipStore audioStore;
-    std::optional<audio::AudioClipHandle> activeAudioHandle;
-    std::optional<audio_sdl::SdlAudioSubsystem> audioSubsystem;
-    std::optional<audio_sdl::SdlAudioTransport> audioTransport;
-    if (auto opened = openPlayerAudio(content.prepared, content.mode, appConfig->profile,
-                                      appConfig->app.requested.gain, audioStore, activeAudioHandle,
-                                      audioSubsystem, audioTransport, logger);
-        !opened) {
-        return core::unexpected(std::move(opened.error()));
-    }
-    std::unique_ptr<PlayerAudioSeat> audioSeat;
-    if (audioTransport.has_value()) {
-        audioSeat = makePlayerAudioSeat(*audioTransport);
-    }
 
     auto runtimeResult = createPlayerRuntime(logger);
     if (!runtimeResult) {
@@ -141,35 +120,46 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
         return core::unexpected(std::move(backendResult.error()));
     }
     auto backend = std::move(*backendResult);
+
+    // The control layer owns the active bundle and drives every transaction. The assembly layer
+    // only supplies the source, clip decoding, and the audio device opener.
+    PlayerControlPorts ports;
+    ports.makeSource = [&options]() { return openConfiguredPlaybackSource(options); };
+    ports.prepareClip = [](playback::PreparedPlayback& prepared, audio::AudioClipStore& store) {
+        return preparePlayerAudioClip(prepared, store);
+    };
+    ports.openAudio = makePlayerAudioOpener(appConfig->profile, audioStore, logger);
+    PlayerController controller{backend,
+                                audioStore,
+                                appConfig->app.requested.gain,
+                                appConfig->profile.outputCorrectionUs,
+                                std::move(ports),
+                                logger};
+
+    if (auto loaded =
+            controller.apply(PlayerCommand{.kind = player_support::PlayerCommandKind::Load});
+        !loaded) {
+        return core::unexpected(std::move(loaded.error()));
+    }
     if (auto recorded =
             logEffectiveWindow(window, appConfig->app.requested, appConfig->app.requested.vsync,
-                               audioTransport.has_value(), appConfig->profile.id, logger);
+                               controller.audio() != nullptr, appConfig->profile.id, logger);
         !recorded) {
         return core::unexpected(std::move(recorded.error()));
     }
-    if (auto activated =
-            activatePreparedPlayback(playbackSession, content.prepared, backend, logger);
-        !activated) {
-        return core::unexpected(std::move(activated.error()));
-    }
-    if (audioSeat) {
-        if (auto played = audioSeat->transport().play(); !played) {
-            return core::unexpected(std::move(played.error()));
-        }
+    if (auto played =
+            controller.apply(PlayerCommand{.kind = player_support::PlayerCommandKind::Play});
+        !played) {
+        return core::unexpected(std::move(played.error()));
     }
 
     std::optional<PlayerSmokeBinding> smokeBinding;
     PlayerHooks hooks;
     if (options.smokeTest || options.audioSmokeTest) {
         smokeBinding.emplace(
-            window, backend, logger, options.smokeTest, options.audioSmokeTest,
-            content.sessionConfig, content.timingOffsetMs,
+            window, backend, logger, options.smokeTest, options.audioSmokeTest, controller,
             [&options]() { return openConfiguredPlaybackSource(options); },
-            [](std::string_view directory) { return playerProjectDirectory(directory); },
-            [](playback::PreparedPlayback& prepared, audio::AudioClipStore& store) {
-                return preparePlayerAudioClip(prepared, store);
-            },
-            audioSeat.get());
+            [](std::string_view directory) { return playerProjectDirectory(directory); });
         hooks = smokeBinding->hooks();
     }
     std::optional<FrameDiagnostics> frameDiagnostics;
@@ -177,15 +167,9 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
         frameDiagnostics.emplace(*options.frameStatsPrefix);
     }
 
-    PlayerFrameLoop loop{.session = playbackSession,
-                         .timeline = content.timeline,
-                         .chartClock = content.chartClock,
+    PlayerFrameLoop loop{.controller = controller,
                          .renderer = backend,
                          .surface = *surface,
-                         .audio = audioSeat.get(),
-                         .audioStore = audioStore,
-                         .activeAudioHandle = activeAudioHandle,
-                         .sessionConfig = content.sessionConfig,
                          .smokeTest = options.smokeTest,
                          .audioSmokeTest = options.audioSmokeTest,
                          .diagnostics = frameDiagnostics ? &*frameDiagnostics : nullptr,
@@ -195,9 +179,9 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
         return core::unexpected(std::move(ran.error()));
     }
 
-    if (audioTransport) {
-        const auto finalClock = audioTransport->snapshot();
-        const auto finalMetrics = audioTransport->metrics();
+    if (auto* audio = controller.audio(); audio != nullptr) {
+        const auto finalClock = audio->transport().snapshot();
+        const auto finalMetrics = audio->transport().metrics();
         logger.info(
             "player.audio",
             std::string{"Final state: "} + std::string{audioStateName(finalClock.source.state)} +
@@ -206,7 +190,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                 ", underruns: " + std::to_string(finalMetrics.underrunCount));
     }
     if (frameDiagnostics) {
-        if (auto exported = frameDiagnostics->exportArtifacts(content.mode); !exported) {
+        if (auto exported = frameDiagnostics->exportArtifacts(controller.mode()); !exported) {
             return core::unexpected(std::move(exported.error()));
         }
         logger.info("player.frame_stats",
@@ -217,21 +201,11 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                                        frameDiagnostics->droppedAudioRows()));
     }
 
-    if (auto result = backend.close(); !result) {
-        return core::unexpected(std::move(result.error()));
+    if (auto closed = backend.close(); !closed) {
+        return core::unexpected(std::move(closed.error()));
     }
-    if (audioSeat) {
-        if (auto result = audioSeat->unload(); !result) {
-            return core::unexpected(std::move(result.error()));
-        }
-    }
-    if (activeAudioHandle) {
-        if (auto result = audioStore.remove(*activeAudioHandle); !result) {
-            return core::unexpected(std::move(result.error()));
-        }
-    }
-    if (auto result = playbackSession.unload(); !result) {
-        return core::unexpected(std::move(result.error()));
+    if (auto shut = controller.shutdown(); !shut) {
+        return core::unexpected(std::move(shut.error()));
     }
     return {};
 }

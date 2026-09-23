@@ -86,7 +86,13 @@ S6-D2 已于 2026-09-23 在本地退出：OpenGL adapter 实现同一渲染接�
 该退出不是 Stage 6 完成。S6-C2 已于 2026-09-23 在本地退出：配置快照、进程锁、只读偏好、
 热拔插观察和按名称打开的音频设备已接入。`e01a4b1` 的 hosted 矩阵见
 [C2 退出报告](stage_reports/stages/stage-06/2026-09-23-s6-c2-exit.md)。
-Player 源文件职责见 [Player 应用结构](architecture/PLAYER_APPLICATION.md)。S6-C3 的命令状态机仍未开始。
+Player 源文件职责见 [Player 应用结构](architecture/PLAYER_APPLICATION.md)。S6-C3 已于
+2026-09-24 在本地退出：`cuexis_player_support` 的命令表与 `PlayerController` 固定事务顺序、
+应用状态机、跨子系统提交、保留时间的连续 reload 和最小键盘绑定（空格/←/→/S/R/B/Esc）
+已接入。真实窗口按键验证发现并修复了一个 discontinuity 合同缺陷：输入路径在帧内采样前替换
+bundle 时，再采样帧会带着非零 delta 进入新 discontinuity。证据见
+[C3 退出报告](stage_reports/stages/stage-06/2026-09-24-s6-c3-exit.md)。该退出不是 Stage 6
+完成、PR 合并或 owner acceptance，SDK API 仍为 `0.7.0`。
 E1/E2 及后续批次仍未完成。
 
 ## 已关闭的 Full Review

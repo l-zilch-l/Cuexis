@@ -77,6 +77,7 @@ cuexis_platform_sdl_tests
 cuexis_audio_sdl_tests
 cuexis_render_opengl_tests
 cuexis_player_diagnostics_tests
+cuexis_player_control_tests
 cuexis_format_check
 ```
 <!-- CUEXIS_ACTIVE_TARGETS_END -->

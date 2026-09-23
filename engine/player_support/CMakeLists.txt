@@ -4,6 +4,7 @@ add_library(cuexis_player_support STATIC
     src/user_preferences.cpp
     src/audio_device_profile.cpp
     src/resolved_config.cpp
+    src/player_command.cpp
 )
 add_library(cuexis::player_support ALIAS cuexis_player_support)
 

@@ -30,13 +30,11 @@ namespace cuexis::player {
                                           audio::AudioClipStore& store)
     -> core::Result<audio::AudioClipHandle>;
 
-[[nodiscard]] auto
-openPlayerAudio(playback::PreparedPlayback& prepared, playback::PlaybackMode mode,
-                const player_support::AudioDeviceProfile& profile, double gain,
-                audio::AudioClipStore& store, std::optional<audio::AudioClipHandle>& activeHandle,
-                std::optional<audio_sdl::SdlAudioSubsystem>& subsystem,
-                std::optional<audio_sdl::SdlAudioTransport>& transport, PlayerLogger& logger)
-    -> core::Result<void>;
+// Builds the device opener the control layer uses while activating a content transaction. The
+// returned closure owns device creation; the seat it returns owns the SDL subsystem and transport.
+[[nodiscard]] auto makePlayerAudioOpener(const player_support::AudioDeviceProfile& profile,
+                                         audio::AudioClipStore& store, PlayerLogger& logger)
+    -> PlayerAudioOpener;
 
 [[nodiscard]] auto createPlayerRuntime(PlayerLogger& logger)
     -> core::Result<platform_sdl::SdlRuntime>;
@@ -57,8 +55,5 @@ createPlayerBackend(platform_sdl::SdlRuntime& runtime, platform_sdl::SdlWindow& 
 
 [[nodiscard]] auto makePlayerSurface(platform_sdl::SdlWindow& window)
     -> std::unique_ptr<PlayerSurface>;
-
-[[nodiscard]] auto makePlayerAudioSeat(audio_sdl::SdlAudioTransport& transport)
-    -> std::unique_ptr<PlayerAudioSeat>;
 
 } // namespace cuexis::player

@@ -3,7 +3,6 @@
 #include "player_log.hpp"
 #include "snapshot_scene.hpp"
 
-#include <cuexis/player_support/audio_device_profile.hpp>
 #include <cuexis/render/render_scene.hpp>
 
 #include <algorithm>
@@ -37,18 +36,12 @@ constexpr auto audioSmokePauseDuration = std::chrono::seconds{2};
 
 PlayerSmokeBinding::PlayerSmokeBinding(
     platform_sdl::SdlWindow& window, render_opengl::OpenGlBackend& backend, PlayerLogger& logger,
-    bool smokeTest, bool audioSmokeTest, player_support::ResolvedSessionConfig sessionConfig,
-    double timingOffsetMs, std::function<core::Result<playback::PlaybackSource>()> makeSource,
-    std::function<core::Result<std::filesystem::path>(std::string_view)> projectDirectory,
-    std::function<core::Result<audio::AudioClipHandle>(playback::PreparedPlayback&,
-                                                       audio::AudioClipStore&)>
-        prepareClip,
-    PlayerAudioSeat* audio)
+    bool smokeTest, bool audioSmokeTest, PlayerController& controller,
+    std::function<core::Result<playback::PlaybackSource>()> makeSource,
+    std::function<core::Result<std::filesystem::path>(std::string_view)> projectDirectory)
     : window_(window), backend_(backend), logger_(logger), smokeTest_(smokeTest),
-      audioSmokeTest_(audioSmokeTest), sessionConfig_(sessionConfig),
-      timingOffsetMs_(timingOffsetMs), makeSource_(std::move(makeSource)),
-      projectDirectory_(std::move(projectDirectory)), prepareClip_(std::move(prepareClip)),
-      audio_(audio) {}
+      audioSmokeTest_(audioSmokeTest), controller_(controller), makeSource_(std::move(makeSource)),
+      projectDirectory_(std::move(projectDirectory)) {}
 
 auto PlayerSmokeBinding::hooks() -> PlayerHooks {
     PlayerHooks bound;
@@ -78,13 +71,16 @@ auto PlayerSmokeBinding::hooks() -> PlayerHooks {
 }
 
 auto PlayerSmokeBinding::beforeAudioService(std::uint32_t renderedFrames) -> core::Result<void> {
-    if (audio_ == nullptr) {
+    auto* audio = controller_.audio();
+    if (audio == nullptr) {
         return core::unexpected(
             core::Error{"player.audio.unopened", "Audio transport was not created"});
     }
-    auto& transport = audio_->transport();
+    auto& transport = audio->transport();
     if (renderedFrames == 15) {
-        if (auto paused = transport.pause(); !paused) {
+        if (auto paused =
+                controller_.apply(PlayerCommand{.kind = player_support::PlayerCommandKind::Pause});
+            !paused) {
             return core::unexpected(std::move(paused.error()));
         }
         const auto pausedClock = transport.snapshot();
@@ -98,32 +94,28 @@ auto PlayerSmokeBinding::beforeAudioService(std::uint32_t renderedFrames) -> cor
                 core::Error{"player.audio_smoke_test.pause_clock_advanced",
                             "Audio clock changed during the required two-second pause"});
         }
-        if (auto resumed = transport.play(); !resumed) {
+        if (auto resumed =
+                controller_.apply(PlayerCommand{.kind = player_support::PlayerCommandKind::Play});
+            !resumed) {
             return core::unexpected(std::move(resumed.error()));
         }
         logger_.info("player.audio_smoke_test", "Two-second pause preserved the audio clock");
     } else if (renderedFrames == 30) {
-        const auto targetChartUs = std::int64_t{500000};
-        const auto offsetUs = std::llround(timingOffsetMs_ * 1000.0);
-        auto sourceUs = player_support::reverseSeekSourcePositionUs(
-            targetChartUs, offsetUs, sessionConfig_.outputCorrectionUs);
-        if (!sourceUs) {
-            return core::unexpected(std::move(sourceUs.error()));
-        }
-        if (*sourceUs < 0) {
-            return core::unexpected(
-                core::Error{"player.audio_profile.seek_outside",
-                            "The corrected seek source is outside the playable range"});
-        }
-        if (auto sought = transport.seekMs(static_cast<double>(*sourceUs) / 1000.0); !sought) {
+        if (auto sought = controller_.apply(PlayerCommand{
+                .kind = player_support::PlayerCommandKind::Seek, .seekTargetMs = 500.0});
+            !sought) {
             return core::unexpected(std::move(sought.error()));
         }
     } else if (renderedFrames == 45) {
-        if (auto stopped = transport.stop(); !stopped) {
+        if (auto stopped =
+                controller_.apply(PlayerCommand{.kind = player_support::PlayerCommandKind::Stop});
+            !stopped) {
             return core::unexpected(std::move(stopped.error()));
         }
     } else if (renderedFrames == 46) {
-        if (auto restarted = transport.play(); !restarted) {
+        if (auto restarted =
+                controller_.apply(PlayerCommand{.kind = player_support::PlayerCommandKind::Play});
+            !restarted) {
             return core::unexpected(std::move(restarted.error()));
         }
     }
@@ -135,28 +127,33 @@ auto PlayerSmokeBinding::afterTimelineAdvance(PlayerClockContext& context) -> co
         if (!context.runtimeFrame) {
             return core::unexpected(std::move(context.runtimeFrame.error()));
         }
-        if (context.audio == nullptr) {
+        auto* audio = controller_.audio();
+        if (audio == nullptr) {
             return core::unexpected(
                 core::Error{"player.audio.unopened", "Audio transport was not created"});
         }
-        const auto contentBeforeFailure = context.session.contentInfo();
+        const auto contentBeforeFailure = controller_.session().contentInfo();
         if (!contentBeforeFailure) {
             return core::unexpected(std::move(contentBeforeFailure.error()));
         }
-        const auto clockBeforeFailure = context.audio->transport().snapshot();
-        const auto rejected = context.session.prepareReload(
-            R"json({"format":"cuexis.chart","version":2})json", *context.runtimeFrame,
-            playback::ReloadPolicy::KeepChartTime);
-        if (rejected) {
-            return core::unexpected(
-                core::Error{"player.audio_smoke_test.failed_reload_accepted",
-                            "Invalid replacement chart unexpectedly prepared successfully"});
+        const auto clockBeforeFailure = audio->transport().snapshot();
+        // The invalid replacement enters through the same command entry as a valid one.
+        if (auto parsed = playback::PlaybackSource::fromChartText(
+                R"json({"format":"cuexis.chart","version":2})json");
+            parsed) {
+            PlayerCommand command{.kind = player_support::PlayerCommandKind::Reload};
+            command.source = std::move(*parsed);
+            if (controller_.apply(std::move(command))) {
+                return core::unexpected(
+                    core::Error{"player.audio_smoke_test.failed_reload_accepted",
+                                "Invalid replacement chart unexpectedly prepared successfully"});
+            }
         }
-        const auto contentAfterFailure = context.session.contentInfo();
+        const auto contentAfterFailure = controller_.session().contentInfo();
         if (!contentAfterFailure) {
             return core::unexpected(std::move(contentAfterFailure.error()));
         }
-        const auto clockAfterFailure = context.audio->transport().snapshot();
+        const auto clockAfterFailure = audio->transport().snapshot();
         if (contentAfterFailure->chartId != contentBeforeFailure->chartId ||
             contentAfterFailure->chartFormatVersion != contentBeforeFailure->chartFormatVersion ||
             contentAfterFailure->timingOffsetMs != contentBeforeFailure->timingOffsetMs ||
@@ -177,80 +174,50 @@ auto PlayerSmokeBinding::afterTimelineAdvance(PlayerClockContext& context) -> co
         if (!context.runtimeFrame) {
             return core::unexpected(std::move(context.runtimeFrame.error()));
         }
-        if (context.audio == nullptr) {
+        if (controller_.audio() == nullptr) {
             return core::unexpected(
                 core::Error{"player.audio.unopened", "Audio transport was not created"});
         }
-        auto replacementSource = makeSource_();
-        if (!replacementSource) {
-            return core::unexpected(std::move(replacementSource.error()));
+        const auto contentBeforeReload = controller_.session().contentInfo();
+        if (!contentBeforeReload) {
+            return core::unexpected(std::move(contentBeforeReload.error()));
         }
-        auto replacement =
-            context.session.prepareReload(std::move(*replacementSource), *context.runtimeFrame,
-                                          playback::ReloadPolicy::KeepChartTime);
-        if (!replacement) {
-            return core::unexpected(std::move(replacement.error()));
+        // The formal entry performs the whole transaction: renderer candidate, audio replacement,
+        // token precheck, audio activation, Playback commit, renderer activation, discontinuity.
+        if (auto reloaded = controller_.apply(
+                PlayerCommand{.kind = player_support::PlayerCommandKind::Reload,
+                              .reloadPolicy = player_support::PlayerReloadPolicy::KeepChartTime});
+            !reloaded) {
+            return core::unexpected(std::move(reloaded.error()));
         }
-        auto replacementPresentation =
-            context.renderer.prepare(*replacement, {.enableDebugPass = true});
-        if (!replacementPresentation) {
-            return core::unexpected(std::move(replacementPresentation.error())
-                                        .withContext("operation", "prepare_reload_presentation"));
+        const auto contentAfterReload = controller_.session().contentInfo();
+        if (!contentAfterReload) {
+            return core::unexpected(std::move(contentAfterReload.error()));
         }
-        auto replacementHandle = prepareClip_(*replacement, context.audioStore);
-        if (!replacementHandle) {
-            context.renderer.discard(std::move(*replacementPresentation));
-            return core::unexpected(std::move(replacementHandle.error()));
+        if (contentAfterReload->chartId != contentBeforeReload->chartId ||
+            contentAfterReload->mode != contentBeforeReload->mode ||
+            contentAfterReload->timingOffsetMs != contentBeforeReload->timingOffsetMs) {
+            return core::unexpected(
+                core::Error{"player.audio_smoke_test.reload_changed_identity",
+                            "Reload changed the chart identity, mode, or timing offset"});
         }
-        if (auto replacementPrepared = context.audio->prepareReplacement(
-                *replacementHandle, context.audioClock.source.positionMs);
-            !replacementPrepared) {
-            const auto removed = context.audioStore.remove(*replacementHandle);
-            if (!removed) {
-                context.logger.warn("player.audio", "Replacement cleanup failed after prepare");
-            }
-            context.renderer.discard(std::move(*replacementPresentation));
-            return core::unexpected(std::move(replacementPrepared.error()));
-        }
-        if (auto activated = context.audio->activateReplacement(); !activated) {
-            const auto removed = context.audioStore.remove(*replacementHandle);
-            if (!removed) {
-                context.logger.warn("player.audio", "Replacement cleanup failed after activation");
-            }
-            context.renderer.discard(std::move(*replacementPresentation));
-            return core::unexpected(std::move(activated.error()));
-        }
-        if (auto committed = context.session.commit(std::move(*replacement)); !committed) {
-            context.renderer.discard(std::move(*replacementPresentation));
-            return core::unexpected(std::move(committed.error()));
-        }
-        context.renderer.activate(std::move(*replacementPresentation));
-        const auto contentInfo = context.session.contentInfo();
-        if (!contentInfo) {
-            return core::unexpected(std::move(contentInfo.error()));
-        }
-        if (auto reset = context.timeline.reset(contentInfo->timingOffsetMs); !reset) {
-            return core::unexpected(std::move(reset.error()));
-        }
-        if (context.activeAudioHandle) {
-            if (auto removed = context.audioStore.remove(*context.activeAudioHandle); !removed) {
-                return core::unexpected(std::move(removed.error()));
-            }
-        }
-        context.activeAudioHandle = *replacementHandle;
-        if (auto serviced = context.audio->transport().service(); !serviced) {
-            return core::unexpected(std::move(serviced.error()));
-        }
-        context.audioClock = context.audio->transport().snapshot();
-        context.runtimeFrame = context.timeline.advance(context.audioClock.source);
         context.logger.info("player.audio_smoke_test", "Reload transaction completed");
     }
 
     if (smokeTest_ && context.renderedFrames == 3) {
-        const auto rejected = context.session.prepareReload(
-            R"json({"format":"cuexis.chart","version":2})json", *context.runtimeFrame,
-            playback::ReloadPolicy::KeepChartTime);
-        if (rejected || !backend_.hasActivePresentation()) {
+        // A rejected reload must enter through the command entry and preserve the GPU cache.
+        if (auto parsed = playback::PlaybackSource::fromChartText(
+                R"json({"format":"cuexis.chart","version":2})json");
+            parsed) {
+            PlayerCommand command{.kind = player_support::PlayerCommandKind::Reload};
+            command.source = std::move(*parsed);
+            if (controller_.apply(std::move(command))) {
+                return core::unexpected(
+                    core::Error{"player.smoke_test.failed_reload_accepted",
+                                "Invalid replacement chart unexpectedly prepared successfully"});
+            }
+        }
+        if (!backend_.hasActivePresentation()) {
             return core::unexpected(
                 core::Error{"player.smoke_test.failed_reload_mutated_state",
                             "Failed presentation reload did not preserve the active GPU cache"});
@@ -258,13 +225,14 @@ auto PlayerSmokeBinding::afterTimelineAdvance(PlayerClockContext& context) -> co
         context.logger.info("player.smoke_test",
                             "Failed reload preserved the active OpenGL presentation cache");
 
+        // Negative probes: these prepare candidates that must be rejected, and never commit.
         auto replacementSource = makeSource_();
         if (!replacementSource) {
             return core::unexpected(std::move(replacementSource.error()));
         }
-        auto rejectedPresentationCandidate =
-            context.session.prepareReload(std::move(*replacementSource), *context.runtimeFrame,
-                                          playback::ReloadPolicy::KeepChartTime);
+        auto rejectedPresentationCandidate = controller_.session().prepareReload(
+            std::move(*replacementSource), *context.runtimeFrame,
+            playback::ReloadPolicy::KeepChartTime);
         if (!rejectedPresentationCandidate) {
             return core::unexpected(std::move(rejectedPresentationCandidate.error()));
         }
@@ -288,7 +256,7 @@ auto PlayerSmokeBinding::afterTimelineAdvance(PlayerClockContext& context) -> co
         if (!legacySource) {
             return core::unexpected(std::move(legacySource.error()));
         }
-        auto legacyReplacement = context.session.prepareReload(
+        auto legacyReplacement = controller_.session().prepareReload(
             std::move(*legacySource), *context.runtimeFrame, playback::ReloadPolicy::KeepChartTime);
         if (!legacyReplacement) {
             return core::unexpected(std::move(legacyReplacement.error()));
@@ -308,13 +276,14 @@ auto PlayerSmokeBinding::afterTimelineAdvance(PlayerClockContext& context) -> co
     }
 
     if (smokeTest_ && context.renderedFrames == 4) {
+        // Negative probe: a competing candidate must be rejected and must not displace the first.
         auto replacementSource = makeSource_();
         if (!replacementSource) {
             return core::unexpected(std::move(replacementSource.error()));
         }
-        auto replacement =
-            context.session.prepareReload(std::move(*replacementSource), *context.runtimeFrame,
-                                          playback::ReloadPolicy::RestartAtZero);
+        auto replacement = controller_.session().prepareReload(
+            std::move(*replacementSource), *context.runtimeFrame,
+            playback::ReloadPolicy::RestartAtZero);
         if (!replacement) {
             return core::unexpected(std::move(replacement.error()));
         }
@@ -331,8 +300,8 @@ auto PlayerSmokeBinding::afterTimelineAdvance(PlayerClockContext& context) -> co
             return core::unexpected(std::move(competingSource.error()));
         }
         auto competingReplacement =
-            context.session.prepareReload(std::move(*competingSource), *context.runtimeFrame,
-                                          playback::ReloadPolicy::RestartAtZero);
+            controller_.session().prepareReload(std::move(*competingSource), *context.runtimeFrame,
+                                                playback::ReloadPolicy::RestartAtZero);
         if (!competingReplacement) {
             context.renderer.discard(std::move(*replacementPresentation));
             return core::unexpected(std::move(competingReplacement.error()));
@@ -348,27 +317,16 @@ auto PlayerSmokeBinding::afterTimelineAdvance(PlayerClockContext& context) -> co
                 "player.smoke_test.outstanding_candidate_overwritten",
                 "A second OpenGL candidate was accepted or invalidated the first candidate"});
         }
-        if (auto committed = context.session.commit(std::move(*replacement)); !committed) {
-            context.renderer.discard(std::move(*replacementPresentation));
-            return core::unexpected(std::move(committed.error()));
-        }
-        context.renderer.activate(std::move(*replacementPresentation));
+        // The probe is complete. The formal entry performs the committed transaction, and the
+        // frame loop re-advances this frame against the new bundle.
+        context.renderer.discard(std::move(*replacementPresentation));
         context.logger.info("player.smoke_test",
                             "Outstanding candidate rejection preserved the first candidate");
-        const auto contentInfo = context.session.contentInfo();
-        if (!contentInfo) {
-            return core::unexpected(std::move(contentInfo.error()));
-        }
-        if (auto reset = context.timeline.reset(contentInfo->timingOffsetMs); !reset) {
-            return core::unexpected(std::move(reset.error()));
-        }
-        auto source = context.chartClock.sample(0.0);
-        if (!source) {
-            return core::unexpected(std::move(source.error()));
-        }
-        context.runtimeFrame = context.timeline.advance(*source);
-        if (!context.runtimeFrame) {
-            return core::unexpected(std::move(context.runtimeFrame.error()));
+        if (auto reloaded = controller_.apply(
+                PlayerCommand{.kind = player_support::PlayerCommandKind::Reload,
+                              .reloadPolicy = player_support::PlayerReloadPolicy::RestartAtZero});
+            !reloaded) {
+            return core::unexpected(std::move(reloaded.error()));
         }
         context.logger.info("player.smoke_test",
                             "Successful reload activated a complete OpenGL presentation cache");
@@ -493,7 +451,7 @@ auto PlayerSmokeBinding::verifyMinimizeRestore(const PlayerPresentedFrame& prese
     }
     if (suspendedWidth == 0 || suspendedHeight == 0) {
         playback::FrameSnapshot suspendedSnapshot;
-        if (auto extracted = presented.session.extractFrame(
+        if (auto extracted = presented.controller.session().extractFrame(
                 {.width = suspendedWidth, .height = suspendedHeight}, suspendedSnapshot);
             !extracted) {
             return core::unexpected(std::move(extracted.error()));
@@ -532,8 +490,8 @@ auto PlayerSmokeBinding::verifyMinimizeRestore(const PlayerPresentedFrame& prese
         return core::unexpected(std::move(resized.error()));
     }
     playback::FrameSnapshot restoredSnapshot;
-    if (auto extracted =
-            presented.session.extractFrame({.width = width, .height = height}, restoredSnapshot);
+    if (auto extracted = presented.controller.session().extractFrame(
+            {.width = width, .height = height}, restoredSnapshot);
         !extracted) {
         return core::unexpected(std::move(extracted.error()));
     }

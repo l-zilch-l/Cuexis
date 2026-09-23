@@ -1,5 +1,6 @@
 add_executable(cuexis_player_support_tests
     player_support_tests.cpp
+    player_command_tests.cpp
 )
 
 target_compile_features(cuexis_player_support_tests PRIVATE cxx_std_20)

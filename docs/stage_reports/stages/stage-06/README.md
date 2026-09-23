@@ -33,6 +33,9 @@
   （实现当时的配置发布和默认路由 smoke；该页不改写成退出证据）
 - [2026-09-23 S6-C2 退出](2026-09-23-s6-c2-exit.md)
   （进程锁、只读偏好、热拔插观察和命名设备打开的本地退出；`e01a4b1` hosted 已通过）
+- [2026-09-24 S6-C3 退出](2026-09-24-s6-c3-exit.md)
+  （命令表、应用状态机、固定事务顺序与最小键盘绑定的本地退出；真实窗口按键验证发现并修复了
+  输入路径替换 bundle 时的 discontinuity delta 缺陷）
 
 权威范围见 [Stage 6 计划](../../../stage_plans/active/stage-06/plan.md)、
 [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md) 和

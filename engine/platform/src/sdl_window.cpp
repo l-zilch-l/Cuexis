@@ -34,6 +34,27 @@ void assertOwner(const std::shared_ptr<detail::WindowState>& state) noexcept {
     }
 }
 
+WindowKey namedKey(SDL_Keycode key) noexcept {
+    switch (key) {
+    case SDLK_SPACE:
+        return WindowKey::Space;
+    case SDLK_LEFT:
+        return WindowKey::Left;
+    case SDLK_RIGHT:
+        return WindowKey::Right;
+    case SDLK_R:
+        return WindowKey::R;
+    case SDLK_S:
+        return WindowKey::S;
+    case SDLK_B:
+        return WindowKey::B;
+    case SDLK_ESCAPE:
+        return WindowKey::Escape;
+    default:
+        return WindowKey::Unknown;
+    }
+}
+
 } // namespace
 
 core::Result<SdlWindow> SdlWindow::create(SdlRuntime& runtime, const WindowConfig& config) {
@@ -128,6 +149,21 @@ WindowEvents SdlWindow::pollEvents() {
         if (event.type == SDL_EVENT_QUIT || (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
                                              event.window.windowID == state_->windowId)) {
             result.quitRequested = true;
+            continue;
+        }
+        if (event.type != SDL_EVENT_KEY_DOWN && event.type != SDL_EVENT_KEY_UP) {
+            continue;
+        }
+        if (event.key.windowID != state_->windowId) {
+            continue;
+        }
+        if (event.type == SDL_EVENT_KEY_DOWN && event.key.repeat) {
+            continue;
+        }
+        const auto key = namedKey(event.key.key);
+        if (key != WindowKey::Unknown) {
+            result.keys.push_back(
+                WindowKeyEvent{.key = key, .pressed = event.type == SDL_EVENT_KEY_DOWN});
         }
     }
     return result;

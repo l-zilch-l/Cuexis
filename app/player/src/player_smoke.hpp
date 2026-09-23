@@ -1,11 +1,12 @@
 #pragma once
 
 // Smoke and audio-smoke scripts. Formal playback leaves these hooks empty.
+// Every lifecycle step in these scripts goes through PlayerController; only the negative
+// renderer probes prepare a candidate without committing it.
 
 #include "player_control.hpp"
 
 #include <cuexis/platform_sdl/sdl_window.hpp>
-#include <cuexis/playback/playback_source.hpp>
 #include <cuexis/player_support/resolved_config.hpp>
 #include <cuexis/render_opengl/open_gl_backend.hpp>
 
@@ -19,14 +20,9 @@ class PlayerSmokeBinding final {
   public:
     PlayerSmokeBinding(
         platform_sdl::SdlWindow& window, render_opengl::OpenGlBackend& backend,
-        PlayerLogger& logger, bool smokeTest, bool audioSmokeTest,
-        player_support::ResolvedSessionConfig sessionConfig, double timingOffsetMs,
+        PlayerLogger& logger, bool smokeTest, bool audioSmokeTest, PlayerController& controller,
         std::function<core::Result<playback::PlaybackSource>()> makeSource,
-        std::function<core::Result<std::filesystem::path>(std::string_view)> projectDirectory,
-        std::function<core::Result<audio::AudioClipHandle>(playback::PreparedPlayback&,
-                                                           audio::AudioClipStore&)>
-            prepareClip,
-        PlayerAudioSeat* audio);
+        std::function<core::Result<std::filesystem::path>(std::string_view)> projectDirectory);
 
     [[nodiscard]] auto hooks() -> PlayerHooks;
 
@@ -54,14 +50,11 @@ class PlayerSmokeBinding final {
     PlayerLogger& logger_;
     bool smokeTest_{};
     bool audioSmokeTest_{};
-    player_support::ResolvedSessionConfig sessionConfig_{};
-    double timingOffsetMs_{};
+    PlayerController& controller_;
+    // Used only by the negative renderer probes at frames 3 and 4, which prepare a candidate that
+    // must be rejected and never commit it.
     std::function<core::Result<playback::PlaybackSource>()> makeSource_;
     std::function<core::Result<std::filesystem::path>(std::string_view)> projectDirectory_;
-    std::function<core::Result<audio::AudioClipHandle>(playback::PreparedPlayback&,
-                                                       audio::AudioClipStore&)>
-        prepareClip_;
-    PlayerAudioSeat* audio_{};
     std::optional<render_opengl::OpenGlDrawSummary> omittedDebugSummary_;
     std::optional<render_opengl::OpenGlDrawSummary> emptyDebugSummary_;
 };
