@@ -5,6 +5,7 @@
 // Every operation must run on the associated SDL main thread.
 // Video backends use nativeHandle() without exposing SDL types.
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>

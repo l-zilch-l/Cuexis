@@ -10,6 +10,7 @@
 #include <cuexis/player_support/resolved_config.hpp>
 #include <cuexis/render_opengl/open_gl_backend.hpp>
 
+#include <cstdint>
 #include <functional>
 #include <optional>
 #include <string_view>
