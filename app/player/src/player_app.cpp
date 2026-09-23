@@ -724,7 +724,21 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                     logger.info("player.audio_smoke_test",
                                 "Two-second pause preserved the audio clock");
                 } else if (renderedFrames == 30) {
-                    if (auto sought = audioTransport->seekMs(500.0); !sought) {
+                    const auto targetChartUs = std::int64_t{500000};
+                    const auto offsetUs = std::llround(preparedInfo->timingOffsetMs * 1000.0);
+                    auto sourceUs = player_support::reverseSeekSourcePositionUs(
+                        targetChartUs, offsetUs, sessionConfig.outputCorrectionUs);
+                    if (!sourceUs) {
+                        return core::unexpected(std::move(sourceUs.error()));
+                    }
+                    if (*sourceUs < 0) {
+                        return core::unexpected(
+                            core::Error{"player.audio_profile.seek_outside",
+                                        "The corrected seek source is outside the playable range"});
+                    }
+                    if (auto sought =
+                            audioTransport->seekMs(static_cast<double>(*sourceUs) / 1000.0);
+                        !sought) {
                         return core::unexpected(std::move(sought.error()));
                     }
                 } else if (renderedFrames == 45) {

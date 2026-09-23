@@ -948,7 +948,7 @@ if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_player_support_tests
         ALLOWED
             cuexis::player_support
-            Catch2::Catch2WithMain
+            Catch2::Catch2
     )
     cuexis_verify_target_dependencies(cuexis_runtime_tests
         ALLOWED

@@ -541,19 +541,34 @@ auto SdlAudioTransport::recheckBoundDevice() -> core::Result<void> {
     if (auto owner = impl_->requireOwner("recheck_device"); !owner) {
         return owner;
     }
-    if (!impl_->exactDevice) {
+    if (impl_->exactDevice) {
+        auto listed = enumeratePlaybackDevicesUnlocked();
+        if (!listed) {
+            return impl_->enterError(std::move(listed.error()));
+        }
+        auto matched = findUniqueDevice(*listed, impl_->boundDriver, impl_->boundDeviceName);
+        if (!matched) {
+            return impl_->enterError(
+                std::move(matched.error()).withContext("profile_device", impl_->boundDeviceName));
+        }
+        impl_->boundInstanceId = (*matched)->instanceId;
+    }
+    if (impl_->stream == nullptr || impl_->device == 0 || impl_->effective.deviceSampleRate == 0 ||
+        impl_->effective.deviceChannels == 0) {
         return {};
     }
-    auto listed = enumeratePlaybackDevicesUnlocked();
-    if (!listed) {
-        return impl_->enterError(std::move(listed.error()));
-    }
-    auto matched = findUniqueDevice(*listed, impl_->boundDriver, impl_->boundDeviceName);
-    if (!matched) {
+    SDL_AudioSpec spec{};
+    int frames = 0;
+    if (!SDL_GetAudioDeviceFormat(impl_->device, &spec, &frames) || spec.freq <= 0 ||
+        spec.channels <= 0) {
         return impl_->enterError(
-            std::move(matched.error()).withContext("profile_device", impl_->boundDeviceName));
+            core::Error{"audio.sdl.device.lost", "The opened audio device is no longer available"});
     }
-    impl_->boundInstanceId = (*matched)->instanceId;
+    if (static_cast<std::uint32_t>(spec.freq) != impl_->effective.deviceSampleRate ||
+        static_cast<std::uint32_t>(spec.channels) != impl_->effective.deviceChannels) {
+        return impl_->enterError(core::Error{"player.audio_profile.format_changed",
+                                             "The opened audio device format changed"});
+    }
     return {};
 }
 

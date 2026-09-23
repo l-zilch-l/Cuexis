@@ -160,6 +160,30 @@ auto matchAudioDevice(const AudioDeviceProfile& profile, std::span<const AudioOu
         .systemDefault = false, .driver = matched->driver, .deviceName = matched->deviceName};
 }
 
+auto observeOpenedFormat(const AudioDeviceMatch& bound, std::span<const AudioOutputDevice> devices,
+                         OpenedAudioFormat opened, OpenedAudioFormat current)
+    -> core::Result<AudioDeviceMatch> {
+    AudioDeviceMatch observed = bound;
+    if (!bound.systemDefault) {
+        AudioDeviceProfile probe;
+        probe.selector = AudioSelectorKind::Exact;
+        probe.driver = bound.driver;
+        probe.deviceName = bound.deviceName;
+        auto matched = matchAudioDevice(probe, devices);
+        if (!matched) {
+            return core::unexpected(std::move(matched.error()));
+        }
+        observed = *matched;
+    }
+    if (opened.sampleRate != 0 && opened.channelCount != 0 &&
+        (opened.sampleRate != current.sampleRate || opened.channelCount != current.channelCount)) {
+        return core::unexpected(core::Error{"player.audio_profile.format_changed",
+                                            "The opened audio device format changed"}
+                                    .withContext("profile_device", bound.deviceName));
+    }
+    return observed;
+}
+
 auto correctedAudioPositionUs(std::int64_t rawAudioPositionUs, std::int64_t correctionUs)
     -> core::Result<std::int64_t> {
     auto delta = checkedSubtract(rawAudioPositionUs, correctionUs);

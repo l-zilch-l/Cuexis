@@ -24,14 +24,17 @@ class ExclusiveFileLock final {
     ExclusiveFileLock(const ExclusiveFileLock&) = delete;
     auto operator=(const ExclusiveFileLock&) -> ExclusiveFileLock& = delete;
     ExclusiveFileLock(ExclusiveFileLock&& other) noexcept
-        : path_(std::move(other.path_)), held_(other.held_) {
+        : path_(std::move(other.path_)), handle_(other.handle_), held_(other.held_) {
+        other.handle_ = invalidHandle();
         other.held_ = false;
     }
     auto operator=(ExclusiveFileLock&& other) noexcept -> ExclusiveFileLock& {
         if (this != &other) {
             release();
             path_ = std::move(other.path_);
+            handle_ = other.handle_;
             held_ = other.held_;
+            other.handle_ = invalidHandle();
             other.held_ = false;
         }
         return *this;
@@ -45,8 +48,7 @@ class ExclusiveFileLock final {
         lock.path_ = path;
 #if defined(_WIN32)
         // MinGW's CRT rejects the "x" fopen mode, so an exclusive create has to go through
-        // CreateFileW. The handle is closed after creation; a later writer fails while the
-        // lock file still exists.
+        // CreateFileW. The handle stays open until release.
         const HANDLE handle = CreateFileW(path.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_NEW,
                                           FILE_ATTRIBUTE_NORMAL, nullptr);
         if (handle == INVALID_HANDLE_VALUE) {
@@ -54,7 +56,7 @@ class ExclusiveFileLock final {
                 core::Error{"player.preferences.busy", "Another writer holds the preferences lock"}
                     .withContext("path", path.string()));
         }
-        CloseHandle(handle);
+        lock.handle_ = handle;
 #else
         std::FILE* handle = std::fopen(path.string().c_str(), "wx");
         if (handle == nullptr) {
@@ -62,23 +64,47 @@ class ExclusiveFileLock final {
                 core::Error{"player.preferences.busy", "Another writer holds the preferences lock"}
                     .withContext("path", path.string()));
         }
-        std::fclose(handle);
+        lock.handle_ = handle;
 #endif
         lock.held_ = true;
         return lock;
     }
 
   private:
+#if defined(_WIN32)
+    using Handle = HANDLE;
+    static auto invalidHandle() noexcept -> Handle {
+        return INVALID_HANDLE_VALUE;
+    }
+#else
+    using Handle = std::FILE*;
+    static auto invalidHandle() noexcept -> Handle {
+        return nullptr;
+    }
+#endif
+
     void release() noexcept {
         if (!held_) {
             return;
         }
+#if defined(_WIN32)
+        if (handle_ != INVALID_HANDLE_VALUE) {
+            CloseHandle(handle_);
+            handle_ = INVALID_HANDLE_VALUE;
+        }
+#else
+        if (handle_ != nullptr) {
+            std::fclose(handle_);
+            handle_ = nullptr;
+        }
+#endif
         std::error_code error;
         std::filesystem::remove(path_, error);
         held_ = false;
     }
 
     std::filesystem::path path_{};
+    Handle handle_{invalidHandle()};
     bool held_{false};
 };
 

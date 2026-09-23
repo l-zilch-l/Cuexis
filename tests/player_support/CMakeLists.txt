@@ -10,7 +10,7 @@ target_compile_definitions(cuexis_player_support_tests
 target_link_libraries(cuexis_player_support_tests
     PRIVATE
         cuexis::player_support
-        Catch2::Catch2WithMain
+        Catch2::Catch2
 )
 
 include(Catch)

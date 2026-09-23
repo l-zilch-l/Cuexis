@@ -45,6 +45,19 @@ struct AudioDeviceMatch final {
                                     std::span<const AudioOutputDevice> devices)
     -> core::Result<AudioDeviceMatch>;
 
+struct OpenedAudioFormat final {
+    std::uint32_t sampleRate{0};
+    std::uint32_t channelCount{0};
+};
+
+// Re-matches an already opened device. A zero opened format skips the format comparison.
+// Removal and ambiguity fail. A changed sample rate or channel count fails without selecting
+// a different device.
+[[nodiscard]] auto observeOpenedFormat(const AudioDeviceMatch& bound,
+                                       std::span<const AudioOutputDevice> devices,
+                                       OpenedAudioFormat opened, OpenedAudioFormat current)
+    -> core::Result<AudioDeviceMatch>;
+
 [[nodiscard]] auto correctedAudioPositionUs(std::int64_t rawAudioPositionUs,
                                             std::int64_t correctionUs)
     -> core::Result<std::int64_t>;

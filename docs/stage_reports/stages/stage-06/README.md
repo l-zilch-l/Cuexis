@@ -28,7 +28,9 @@
 - [2026-09-23 S6-D2 退出](2026-09-23-s6-d2-exit.md)
   （OpenGL 接线与 Player 正式帧的本地退出；Linux/MSVC hosted 成功，MinGW 成员顺序修正尚未复验）
 - [2026-09-23 S6-C2 Player support](2026-09-23-s6-c2-player-support.md)
-  （配置发布、AudioSDL 枚举与默认路由 smoke；批次尚未退出）
+  （实现当时的配置发布和默认路由 smoke；该页不改写成退出证据）
+- [2026-09-23 S6-C2 退出](2026-09-23-s6-c2-exit.md)
+  （进程锁、只读偏好、热拔插观察和命名设备打开的本地退出；`e01a4b1` hosted 已通过）
 
 权威范围见 [Stage 6 计划](../../../stage_plans/active/stage-06/plan.md)、
 [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md) 和

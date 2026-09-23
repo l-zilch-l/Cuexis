@@ -62,8 +62,8 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
   关闭并经 owner 接受，允许/禁止消费边界见其
   [R5 报告](../stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)。
   2026-09-20 已细化子批次依赖、阻塞决策和验收矩阵。八项关键决策已在
-  [ADR 0042](../adr/0042-stage-6-productization-boundaries.md) 冻结。A1、A2、B1、C1、D1 和 D2
-  已有退出证据；C2、E1/E2 及后续批次尚未完成。设计冻结不表示这些后续批次已经实现。
+  [ADR 0042](../adr/0042-stage-6-productization-boundaries.md) 冻结。A1、A2、B1、C1、C2、D1 和 D2
+  已有退出证据；E1/E2 及后续批次尚未完成。设计冻结不表示这些后续批次已经实现。
 - [Stage 7A / 7B+](future/stage-07/plan.md)：7A 冻结最小 Input/Judgement/Score/Replay 内核，
   7B+ 持续扩展 Slide、Flick、多指、校准和高级判定能力。
 - [Stage 8](future/stage-08/plan.md)：Chart v5 正式语义、CXT v2、Packed Chart 和 CXC 发行收敛；

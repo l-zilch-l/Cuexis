@@ -50,10 +50,10 @@ Stage 6 的条件性源兼容 SDK 目标为 `0.7.1`，当前实现仍为 `0.7.0`
 S6-A2 已于 2026-09-21 完成合同落盘与表征，形成 entry/config/media Spec、三份 Schema、
 API/安装草案、依赖图及独立 identity/media/config golden；实际证据见 [S6-A2 报告](stage_reports/stages/stage-06/2026-09-21-s6-a2-contracts-and-characterization.md)。
 A2 只证明冻结决策可以被明确描述和表征，不代表 v5 Playback、Player、renderer、media importer、
-版本门禁或 Reference Host 已实现；SDK 仍为 `0.7.0`，三个工程问题继续 open。A2 之后 B1、C1、D1 与 D2
-已分别取得退出证据。C2 正在实现且尚未退出；E1/E2 及其后续批次仍按计划依赖图保持未完成。
+版本门禁或 Reference Host 已实现；SDK 仍为 `0.7.0`，三个工程问题继续 open。A2 之后 B1、C1、C2、D1 与 D2
+已分别取得退出证据。E1/E2 及其后续批次仍按计划依赖图保持未完成。
 S6-B1 已落下版本比较器、独立负例测试、trusted-baseline workflow 和发行 checklist；当前显示版本
-为 `26.09.22-1`，SDK API 仍为 `0.7.0`。`26.09.21-2` 在 UTC `2026-09-22` 已过期，因此前进到当天 build 1。随后写成的 `26.09.23-1` 被 Version Gate 以 `version.release_date.future` 拒绝，因为当时 trusted UTC 仍是 `2026-09-22`；分支已收回 `26.09.22-1`。bootstrap PR #26 已将门禁纳入 `master`，并启用
+为 `26.09.23-1`，SDK API 仍为 `0.7.0`。`26.09.21-2` 在 UTC `2026-09-22` 已过期，因此前进到当天 build 1。当天曾写成的 `26.09.23-1` 被 Version Gate 以 `version.release_date.future` 拒绝，分支收回 `26.09.22-1`；UTC 进入 `2026-09-23` 后再前进到 `26.09.23-1`。bootstrap PR #26 已将门禁纳入 `master`，并启用
 `Version advancement (pre-merge)` required check、strict latest-base 和 admin enforcement。
 候选 PR #27 的 `d4697549a50e9c517ac393c27786826aa43ce9cc` 以 trusted baseline
 `4545742ed63ae2d8f11ad07e80930ce5b88fa0ce` 通过 protected Version Gate run `35586930775`，
@@ -75,12 +75,11 @@ Stage 6 完成、PR 合并或 owner acceptance。SDK API 仍为 `0.7.0`。S6-D1 
 S6-D2 已于 2026-09-23 在本地退出：OpenGL adapter 实现同一渲染接口，Player 正式帧使用
 `submit`/`present`。本地 GPU smoke 见
 [实现报告](stage_reports/stages/stage-06/2026-09-22-s6-d2-opengl-migration.md)；
-Linux 与 Windows MSVC 的 hosted 结果，以及尚未复验的 MinGW 成员顺序修正，见
+Linux、Windows MSVC 与后续 SHA 上的 Windows MinGW 见
 [D2 退出报告](stage_reports/stages/stage-06/2026-09-23-s6-d2-exit.md)。
-该退出不是 Stage 6 完成。S6-C2 仍在进行：Player 会在 prepare 前发布
-`ResolvedAppConfig` 和 `ResolvedSessionConfig`，AudioSDL 有独立的枚举、`createForDevice` 和
-`applyGain`。本地默认路由音频 smoke 已通过；命名设备 smoke 和 C2 退出还没有。见
-[C2 报告](stage_reports/stages/stage-06/2026-09-23-s6-c2-player-support.md)。
+该退出不是 Stage 6 完成。S6-C2 已于 2026-09-23 在本地退出：配置快照、进程锁、只读偏好、
+热拔插观察和按名称打开的音频设备已接入。`e01a4b1` 的 hosted 矩阵见
+[C2 退出报告](stage_reports/stages/stage-06/2026-09-23-s6-c2-exit.md)。
 E1/E2 及后续批次仍未完成。
 
 ## 已关闭的 Full Review
