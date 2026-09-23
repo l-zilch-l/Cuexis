@@ -28,17 +28,19 @@ class FrameDiagnostics;
 class PlayerLogger;
 
 // One application command. Every control surface, including the smoke scripts, produces this
-// value and hands it to PlayerController::apply.
+// value and hands it to PlayerController::apply. Every member carries a default initializer so a
+// designated initializer that names only the interesting members stays warning-free under GCC's
+// -Wmissing-field-initializers.
 struct PlayerCommand final {
     player_support::PlayerCommandKind kind{player_support::PlayerCommandKind::Load};
     double seekTargetMs{};
     player_support::PlayerReloadPolicy reloadPolicy{
         player_support::PlayerReloadPolicy::KeepChartTime};
     // Explicit replacement source. When empty the controller asks its configured source port.
-    std::optional<playback::PlaybackSource> source;
+    std::optional<playback::PlaybackSource> source{};
     // Explicit target mode for Load. When empty the controller resolves the mode from the source
     // instead of guessing from a failed load.
-    std::optional<playback::PlaybackMode> mode;
+    std::optional<playback::PlaybackMode> mode{};
 };
 
 // Operations the control layer cannot implement itself. The assembly layer supplies them.

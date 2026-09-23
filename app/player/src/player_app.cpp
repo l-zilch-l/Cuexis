@@ -101,6 +101,14 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
     logger.info("player.config", std::string{"Profile "} + appConfig->profile.id + ", gain " +
                                      std::to_string(appConfig->app.requested.gain));
 
+    // Content is resolved before any device exists. A content error is deterministic and must not
+    // hide behind an environment error: on a machine that cannot create an OpenGL context, a
+    // missing chart still has to be reported as a missing chart. The transaction resolves the
+    // configured source again, so the audio mode probe can still re-read it.
+    if (auto content = openConfiguredPlaybackSource(options); !content) {
+        return core::unexpected(std::move(content.error()));
+    }
+
     audio::AudioClipStore audioStore;
 
     auto runtimeResult = createPlayerRuntime(logger);
