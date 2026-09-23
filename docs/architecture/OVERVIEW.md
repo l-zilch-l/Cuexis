@@ -104,6 +104,7 @@ pack、prepare 或 Playback 隐式执行。
 ## 深入阅读
 
 - [模块边界](MODULE_BOUNDARIES.md)
+- [Player 应用结构](PLAYER_APPLICATION.md)
 - [RuntimeSession](RUNTIME_SESSION.md)
 - [配置所有权 ADR](../adr/0024-configuration-ownership-and-staged-formats.md)
 - [Chart/Runtime/World ADR](../adr/0007-chart-runtime-world-boundary.md)

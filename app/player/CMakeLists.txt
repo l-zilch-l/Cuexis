@@ -5,6 +5,16 @@ add_executable(
     src/frame_diagnostics.hpp
     src/player_app.cpp
     src/player_app.hpp
+    src/player_options.cpp
+    src/player_options.hpp
+    src/player_surface.hpp
+    src/player_audio_seat.hpp
+    src/player_assembly.cpp
+    src/player_assembly.hpp
+    src/player_control.cpp
+    src/player_control.hpp
+    src/player_smoke.cpp
+    src/player_smoke.hpp
     src/player_log.cpp
     src/player_log.hpp
     src/snapshot_scene.cpp

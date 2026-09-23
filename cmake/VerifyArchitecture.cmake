@@ -197,6 +197,25 @@ function(cuexis_verify_source_architecture source_dir)
         endif()
     endforeach()
 
+    set(player_neutral_sources
+        "${source_dir}/app/player/src/player_options.hpp"
+        "${source_dir}/app/player/src/player_options.cpp"
+        "${source_dir}/app/player/src/player_surface.hpp"
+        "${source_dir}/app/player/src/player_audio_seat.hpp"
+        "${source_dir}/app/player/src/player_control.hpp"
+        "${source_dir}/app/player/src/player_control.cpp"
+    )
+    foreach(source IN LISTS player_neutral_sources)
+        if(NOT EXISTS "${source}")
+            message(FATAL_ERROR "Player neutral source is missing: ${source}")
+        endif()
+        file(READ "${source}" contents)
+        if(contents MATCHES
+           "#[ \t]*include[ \t]*[<\"](SDL|glad|GL/|cuexis/audio_sdl/|cuexis/platform_sdl/|cuexis/render_opengl/)")
+            message(FATAL_ERROR "Player control or options include an adapter header: ${source}")
+        endif()
+    endforeach()
+
     file(READ "${source_dir}/CMakeLists.txt" root_lists)
     foreach(install_list IN ITEMS CUEXIS_PUBLIC_EXPORT_TARGETS CUEXIS_STATIC_IMPLEMENTATION_TARGETS)
         string(REGEX MATCH "set\\(${install_list}[^)]*\\)" install_block "${root_lists}")

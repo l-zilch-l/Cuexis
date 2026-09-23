@@ -86,6 +86,7 @@ S6-D2 已于 2026-09-23 在本地退出：OpenGL adapter 实现同一渲染接�
 该退出不是 Stage 6 完成。S6-C2 已于 2026-09-23 在本地退出：配置快照、进程锁、只读偏好、
 热拔插观察和按名称打开的音频设备已接入。`e01a4b1` 的 hosted 矩阵见
 [C2 退出报告](stage_reports/stages/stage-06/2026-09-23-s6-c2-exit.md)。
+Player 源文件职责见 [Player 应用结构](architecture/PLAYER_APPLICATION.md)。S6-C3 的命令状态机仍未开始。
 E1/E2 及后续批次仍未完成。
 
 ## 已关闭的 Full Review

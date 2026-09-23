@@ -2,7 +2,7 @@
 
 状态：现行模块边界摘要
 
-更新日期：2026-09-20
+更新日期：2026-09-23
 
 本文总结稳定依赖方向。构建时的精确 allowlist 和 architecture tests 仍由根 CMake 配置拥有。
 
@@ -48,7 +48,8 @@ Stage 6 的新增依赖方向已在
 `cuexis_presentation_renderer` 已位于 Playback/render 之上。测试 renderer 与
 OpenGL adapter 都实现 `IPresentationRenderer`；Player 正式帧调用 `submit`/`present`。Playback、Runtime 和底层 render 不反向依赖它，也不安装其
 头文件为公共 SDK。内部 `cuexis_player_support` 已提供偏好、音频 profile 匹配和 session config identity，
-仍不进入 Playback 依赖。离线 `cuexis_media_import` 仍未实现。
+仍不进入 Playback 依赖。参考播放器的源文件边界见
+[Player 应用结构](PLAYER_APPLICATION.md)。离线 `cuexis_media_import` 仍未实现。
 
 ## JSON 和第三方类型
 
