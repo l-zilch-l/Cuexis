@@ -202,14 +202,93 @@ E2 验收要求「三种格式各有完整导入/播放正例」。仓库里唯�
   `media.audio.truncated` 与 `media.audio.container_invalid`。
 - MSVC C4611：libpng/libjpeg 的 setjmp 桥接函数只保留 C 结构与裸指针，并在这两处调用上做
   定点抑制；此前的 C4324、C4244、C4189、C2665 也已在实现中消除。
+- gate 的内存上限用例原来用 2x2 的 `rgb8.png` 加 1 MiB 上限。这个用例在 MSVC 与 Linux 上失败
+  关闭，但在 MinGW 上**通过**了：MinGW 运行时基线提交低于 1 MiB，2x2 导入的分配量也低于 1 MiB，
+  于是 job object 上限根本没被触发，用例什么都证明不了。现在改为解码新增的
+  `image/budget_1024.png`（1024x1024，解出 4 MiB RGBA8），1 MiB 上限在四个平台都必须失败关闭。
+- POSIX 的 `RLIMIT_AS` 上限与 AddressSanitizer 不兼容：ASan 需要预留 TB 级 shadow 地址空间，
+  设上限后 sanitizer runtime 在 `main` 之前就 abort（hosted 日志为
+  `AddressSanitizer failed to allocate 0x10000000 ... (errno: 12)`），于是 Clang ASan media-tools
+  作业里**每一次** worker 调用都失败。现在 worker 在检测到 sanitizer 时跳过地址空间上限并在
+  stderr 说明 `--memory-limit` 被忽略，gate 在 sanitized 构建里跳过该用例；上限本身仍由 MSVC、
+  MinGW 与 GCC media-tools 三个作业覆盖。
 
-## 6. 未完成项
+## 6. Hosted 四平台结果与阻塞项
 
-- 四平台字节一致（Windows MSVC、Windows MinGW、Linux GCC、Linux Clang）与安装许可证文件
-  属于 hosted 证据。本页不声明这些结果；同一 SHA 的 hosted 矩阵通过后才另行记录退出报告。
+本节的 hosted 证据对应提交 `ec9c6f8`（push run `35977679483`、`35977679432`、`35977679343`；
+PR run `35977684169`）。
+
+### 6.1 通过的 hosted 检查
+
+| 作业 | 结果 |
+| --- | --- |
+| Windows MSVC `debug` / `release` | 通过 |
+| Windows MinGW `debug` / `release`（`test optional media tools`） | 构建、格式检查、`-Werror` 通过；CTest 只有 6.2 的一项失败 |
+| Linux Quality `GCC media-tools` | 构建与 656 项中的 655 项通过；只有 6.2 的一项失败 |
+| Linux Quality `Clang ASan + UBSan media-tools` | 同上；只有 6.2 的一项失败 |
+| Linux Quality 其余 10 个作业（`GCC Coverage`、`GCC Release`、`GCC Shared Release`、`GCC Adapter Coverage`、`GCC Shader Tools Coverage`、`Clang Shared Debug`、`Clang ASan + UBSan`、`Clang ASan + UBSan shader-tools`、`clang-tidy`、`Documentation contracts`） | 通过 |
+
+也就是说：所有图像 golden（libpng/libjpeg-turbo）、MP3 golden（minimp3）与 FLAC golden
+（libFLAC）在 Windows MSVC、Windows MinGW GCC、Linux GCC 与 Linux Clang 上逐字节一致；FLAC
+还额外与 ffmpeg 写出的 PCM 源逐字节相同。`audio_mono_ogg` 也一致。CLI gate 在 sanitized 构建
+之外的三个作业上完整执行（含内存上限失败关闭用例）。
+
+### 6.2 阻塞项：Ogg Vorbis 立体声的 canonical identity 不满足四平台一致
+
+| 平台 | `audio_stereo_ogg` canonical WAV SHA-256 |
+| --- | --- |
+| Windows MSVC | `6d961c9ee42002962c4448109c5e20c192b44b331c46428037530e272b70db59`（已提交的 golden） |
+| Linux GCC | `df73cb81daa93c9e53370a3887083c98543fb2bd68615239a2680c976a5d10e8` |
+| Linux Clang（ASan+UBSan） | 同上 `df73cb81...` |
+| Windows MinGW GCC | 同上 `df73cb81...` |
+
+失败断言只有一条（该 TEST_CASE 内 47 条断言中 46 条通过）：采样率、声道数、帧数与**字节数**
+全部一致，只有样本字节不同。`audio_mono_ogg` 在四个平台一致。
+
+已经排除与已确认的事实：
+
+- 依赖版本在四个平台完全相同（libvorbis 1.3.7、libogg 1.3.6），profile 字符串
+  `libvorbis-1.3.7-libogg-1.3.6` 相同；MSVC 侧 vcpkg 构建日志为 `/O2 /Oi /Gy /MD`，**没有**
+  `/fp:fast`，也没有 FMA 级别的 `/arch`；`tools/media_import` 与 `tools/media_importer` 自身在
+  两侧都强制 `/fp:precise` 或 `-fno-fast-math -ffp-contract=off`。
+- libvorbis 自己带平台条件化的浮点→整数规则：`lib/os.h` 在 `_WIN32` 下把 `rint()` 重定义为
+  `floor((x)+0.5f)`，并定义 `NO_FLOAT_MATH_LIB` 与 `FAST_HYPOT`；Linux 构建用 libm 的真
+  `rint()`（round-half-to-even）与 `hypot()`。`rint()` 在解码路径上被使用：
+  `floor1.c:498-499`（曲线插值）、`lsp.c:147-148`（LSP 幅度）、`mdct.c:57`（表初始化）。
+  也就是说 Ogg Vorbis 的解码结果**不被其上游保证跨平台逐位一致**。
+- 但这条机制无法单独解释观测结果：MinGW 也是 `_WIN32` 构建，却与 Linux 一致。因此差异的确切
+  归属（是 `rint` 覆盖、还是 MSVC 与 GCC 家族在其余浮点表达式上的求值差异）尚未定位到单一原因。
+
+结论与处置：按 `plan.md` 的规则（「如某平台实现无法满足逐字节一致，先阻塞并复核算法/构建选项；
+不得私自按平台拆分 profile」），这里**阻塞**而不是绕过：golden 没有被改写，profile 没有被按平台
+拆分，也没有把身份比较放宽成容差比较；失败断言保持可见。要解除阻塞需要 ADR 0042 §S6-D06 层面的
+决定，可选路径：
+
+1. 用 vcpkg overlay 固定 libvorbis 的舍入路径（例如统一去掉 `_WIN32` 的 `rint` 覆盖），再一次性
+   重新冻结 profile 身份与 golden，并在报告里写明原因与四平台复验结果；
+2. 把 Ogg Vorbis 从「冻结的跨平台 canonical profile」中移除（ADR 变更），保留已被四平台证明逐字节
+   一致的 MP3 与 FLAC；
+3. 接受按平台不同的 Vorbis 身份（需要 ADR 变更 + 每平台 golden，当前计划明确禁止）。
+
+在得到决定之前，E1/E2 保持「已实现、未退出」。
+
+### 6.3 Version Gate
+
+PR 触发的 `Version Gate` 失败与 E1/E2 无关，是日期滚动：`version.release_date.stale: candidate
+date 26.09.23-1 is before trusted UTC date 2026-09-24`。该失败在 C3 之前的 tip（`5c638ea`）上
+同样复现，而两个 SHA 在 `--trusted-utc-date 2026-09-23` 下都通过。修它需要版本号推进，超出本批次
+范围，因此没有改动。
+
+## 7. 未完成项
+
+- 四平台字节一致：E1 与 MP3/FLAC 已通过；Ogg Vorbis 立体声按 6.2 阻塞。
+- 安装许可证文件（`THIRD_PARTY_NOTICES.md`、`DEPENDENCY_POLICY.md` 已更新；安装闭包不含媒体
+  工具）属于 hosted 证据。
 - 本批次不包含 E3（媒体工具与项目/缓存集成）与 C4。
+- 次要清理项：`tools/media_import/CMakeLists.txt` 里 `target_include_directories` 引用了未定义
+  的 `${MINIMP3_INCLUDE_DIRS}`（无副作用的空展开，minimp3 头文件经由 vcpkg include 根解析）。
 
-## 7. 边界
+## 8. 边界
 
 本页是 S6-E1/E2 的实现证据，不是批次退出、不是 Stage 6 关闭、不是 PR 合并，也不构成 owner
 acceptance。媒体工具保持默认 `OFF`，不进入 SDK 安装闭包。
