@@ -20,7 +20,6 @@ using detail::ByteReader;
 using detail::WorkingBudget;
 
 constexpr std::uint32_t maxImageDimension = 8192;
-constexpr std::uint64_t maxImagePixels = 8'388'608ULL;
 constexpr std::uint64_t maxImageBytes = 32ULL * 1024ULL * 1024ULL;
 constexpr std::string_view pngDecoderName = "libpng-1.6.58";
 constexpr std::string_view jpegDecoderName = "libjpeg-turbo-3.2.0";

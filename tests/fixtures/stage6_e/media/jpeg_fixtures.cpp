@@ -33,9 +33,9 @@ struct Rgb {
     for (int y = 0; y < imageHeight; ++y) {
         for (int x = 0; x < imageWidth; ++x) {
             const auto index = static_cast<std::size_t>(y * imageWidth + x);
-            pixels[index] = Rgb{static_cast<std::uint8_t>(20 + 50 * x),
-                                static_cast<std::uint8_t>(200 - 40 * y),
-                                static_cast<std::uint8_t>(10 + 30 * (x + y))};
+            pixels[index] =
+                Rgb{static_cast<std::uint8_t>(20 + 50 * x), static_cast<std::uint8_t>(200 - 40 * y),
+                    static_cast<std::uint8_t>(10 + 30 * (x + y))};
         }
     }
     return pixels;

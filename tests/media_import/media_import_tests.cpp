@@ -105,23 +105,6 @@ namespace media = cuexis::media_import;
     return value;
 }
 
-[[nodiscard]] auto hexToBytes(std::string_view hex) -> std::vector<std::byte> {
-    REQUIRE(hex.size() % 2 == 0);
-    const auto nibble = [](char value) -> unsigned {
-        if (value >= '0' && value <= '9') {
-            return static_cast<unsigned>(value - '0');
-        }
-        return static_cast<unsigned>(std::tolower(static_cast<unsigned char>(value)) - 'a' + 10);
-    };
-    std::vector<std::byte> bytes;
-    bytes.reserve(hex.size() / 2);
-    for (std::size_t index = 0; index + 1 < hex.size(); index += 2) {
-        bytes.push_back(
-            static_cast<std::byte>((nibble(hex[index]) << 4U) | nibble(hex[index + 1])));
-    }
-    return bytes;
-}
-
 [[nodiscard]] auto toHex(std::span<const std::byte> bytes) -> std::string {
     constexpr std::string_view digits = "0123456789abcdef";
     std::string out;
