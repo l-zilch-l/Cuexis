@@ -124,7 +124,9 @@ WAV header 布局。
 
 - MinGW g++ 20 `-Wall -Wextra -Wpedantic -Werror -fsyntax-only`：7 个媒体实现源文件和测试
   源文件全部通过。
-- `clang-format --dry-run --Werror`：新增和改动的源文件全部通过。
+- `clang-format --dry-run --Werror`：新增和改动的源文件全部通过。第一次 hosted 运行发现本地
+  漏掉了 `tests/fixtures/stage6_e/media/jpeg_fixtures.cpp`（它落在 `tests/**` 的 GLOB_RECURSE
+  里），已按同一 `.clang-format` 修正，并用两个 clang-format 版本复核。
 - `python -B tools/check_docs.py` 与 `git diff --check` 通过。
 
 ### 4.1 Player 实际显示（E1 验收）

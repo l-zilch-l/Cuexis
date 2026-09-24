@@ -243,6 +243,10 @@ int main(int argc, char** argv) {
 
     const auto limit =
         options.memoryLimit != 0 ? options.memoryLimit : defaultMemoryLimit(source->size());
+    if (options.memoryLimit != 0 && !cuexis::media_importer::workerAddressSpaceCapSupported) {
+        std::cerr << "note: this sanitized build cannot apply an address-space limit, so "
+                     "--memory-limit is ignored\n";
+    }
     const auto temporary =
         options.outputDirectory /
         ("import-" + std::to_string(cuexis::media_importer::currentProcessId()) + ".tmp");

@@ -24,6 +24,7 @@ pass: a byte difference between platforms is a blocked profile decision, not a g
 | `apng.png` | APNG animation must be rejected |
 | `forged_dimensions.png` | declared size above the image dimension budget |
 | `corrupt_chunk.png`, `truncated.png` | damaged container |
+| `budget_1024.png` | 1024x1024 truecolour: decoding needs 4 MiB of RGBA8, so the CLI gate can prove that a 1 MiB process memory limit fails closed. It has no canonical golden. |
 
 `jpeg_fixtures.cpp` writes the JPEG inputs with libjpeg-turbo itself: baseline, progressive,
 grayscale, CMYK, YCCK, the four supported EXIF orientations, an out-of-range orientation and a

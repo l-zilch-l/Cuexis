@@ -25,6 +25,7 @@ if(CUEXIS_BUILD_TESTS)
             "-DCUEXIS_MEDIA_IMPORTER=$<TARGET_FILE:cuexis_media_importer>"
             "-DCUEXIS_MEDIA_IMPORTER_WORK=$<TARGET_FILE_DIR:cuexis_media_importer>/s6e_importer_work"
             "-DCUEXIS_MEDIA_FIXTURES=${PROJECT_SOURCE_DIR}/tests/fixtures/stage6_e/media"
+            "-DCUEXIS_MEDIA_IMPORTER_SANITIZED=${CUEXIS_ENABLE_SANITIZERS}"
             -P "${PROJECT_SOURCE_DIR}/cmake/VerifyMediaImporter.cmake"
     )
     set_tests_properties(cuexis_media_importer_tool_tests PROPERTIES LABELS "tools;s6-e")

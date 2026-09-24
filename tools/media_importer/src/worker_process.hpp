@@ -23,6 +23,22 @@ struct WorkerOutcome final {
     std::string output;
 };
 
+// AddressSanitizer reserves terabytes of shadow address space, so a POSIX address-space cap makes
+// the sanitizer runtime abort before main. Sanitized builds therefore run the worker without the
+// operating-system cap, and the CLI gate only asserts cap enforcement in a non-sanitized build.
+// Windows job-object limits are per-process commit limits and stay active under ASan.
+#if defined(__SANITIZE_ADDRESS__)
+inline constexpr bool workerAddressSpaceCapSupported = false;
+#elif defined(__has_feature)
+#if __has_feature(address_sanitizer)
+inline constexpr bool workerAddressSpaceCapSupported = false;
+#else
+inline constexpr bool workerAddressSpaceCapSupported = true;
+#endif
+#else
+inline constexpr bool workerAddressSpaceCapSupported = true;
+#endif
+
 // Runs the importer again as a child process whose memory is capped by the operating system: a job
 // object process-memory limit on Windows and RLIMIT_AS on POSIX. The cap is a backstop for decoder
 // allocations that cannot be measured; the measured conversion budget remains the primary gate.

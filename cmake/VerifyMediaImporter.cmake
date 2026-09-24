@@ -5,7 +5,7 @@
 #   * worker-mode and in-process conversion producing the same content-addressed artifact,
 #   * the artifact name is the SHA-256 of its own bytes and matches the committed golden,
 #   * republishing is immutable: identical bytes are a no-op, different bytes are a conflict,
-#   * a tiny process memory limit fails closed and publishes nothing.
+#   * a process memory limit below the decode requirement fails closed and publishes nothing.
 #
 # The gate never runs a decoder inside Playback or Player; it only drives the offline importer.
 
@@ -202,23 +202,31 @@ endif()
 # A tiny process memory limit fails closed and publishes nothing
 # ---------------------------------------------------------------------------------------------
 
-set(limited_dir "${CUEXIS_MEDIA_IMPORTER_WORK}/limited")
-file(REMOVE_RECURSE "${limited_dir}")
-file(MAKE_DIRECTORY "${limited_dir}")
-execute_process(
-    COMMAND "${CUEXIS_MEDIA_IMPORTER}" --kind image --input "${image_fixture}"
-        --output-dir "${limited_dir}" --memory-limit 1048576
-    RESULT_VARIABLE limited_status
-    OUTPUT_VARIABLE limited_output
-    ERROR_VARIABLE limited_error
-)
-if(limited_status EQUAL 0)
-    list(APPEND failures
-        "memory limit: a 1 MiB process limit succeeded: ${limited_output}${limited_error}")
-endif()
-file(GLOB limited_files "${limited_dir}/*")
-if(limited_files)
-    list(APPEND failures "memory limit: a failed import published ${limited_files}")
+# A 1024x1024 source needs at least 4 MiB of decoded RGBA8, so a 1 MiB process cap must fail closed
+# on every platform. Sanitized builds cannot apply a POSIX address-space cap at all, so the case is
+# skipped there and stays covered by the non-sanitized presets.
+if(CUEXIS_MEDIA_IMPORTER_SANITIZED)
+    message(STATUS "media importer gate: skipping the memory-limit case in a sanitized build")
+else()
+    set(limited_dir "${CUEXIS_MEDIA_IMPORTER_WORK}/limited")
+    file(REMOVE_RECURSE "${limited_dir}")
+    file(MAKE_DIRECTORY "${limited_dir}")
+    execute_process(
+        COMMAND "${CUEXIS_MEDIA_IMPORTER}" --kind image
+            --input "${CUEXIS_MEDIA_FIXTURES}/image/budget_1024.png"
+            --output-dir "${limited_dir}" --memory-limit 1048576
+        RESULT_VARIABLE limited_status
+        OUTPUT_VARIABLE limited_output
+        ERROR_VARIABLE limited_error
+    )
+    if(limited_status EQUAL 0)
+        list(APPEND failures
+            "memory limit: a 1 MiB process limit succeeded: ${limited_output}${limited_error}")
+    endif()
+    file(GLOB limited_files "${limited_dir}/*")
+    if(limited_files)
+        list(APPEND failures "memory limit: a failed import published ${limited_files}")
+    endif()
 endif()
 
 # ---------------------------------------------------------------------------------------------

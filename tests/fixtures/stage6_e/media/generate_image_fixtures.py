@@ -193,6 +193,20 @@ def truncated() -> bytes:
     return good[: len(good) - 14]
 
 
+def budget_1024() -> bytes:
+    """1024x1024 truecolor 8-bit. Decoding it needs at least 4 MiB of RGBA8 output, so the CLI gate
+    can prove that a 1 MiB process memory limit fails closed on every platform."""
+    row = bytearray()
+    for x in range(1024):
+        row += bytes(((x * 7) & 0xFF, (x * 11 + 3) & 0xFF, (x * 13 + 5) & 0xFF))
+    return (
+        PNG_SIGNATURE
+        + ihdr(1024, 1024, 8, 2)
+        + chunk(b"IDAT", zlib.compress(raw_rows(bytes(row), 1024), 9))
+        + chunk(b"IEND", b"")
+    )
+
+
 def main() -> None:
     write("rgb8.png", rgb8())
     write("rgba8.png", rgba8())
@@ -206,6 +220,7 @@ def main() -> None:
     write("forged_dimensions.png", forged_dimensions())
     write("corrupt_chunk.png", corrupt_chunk())
     write("truncated.png", truncated())
+    write("budget_1024.png", budget_1024())
 
 
 if __name__ == "__main__":

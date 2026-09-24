@@ -136,11 +136,16 @@ auto runBoundedWorkerPosix(const WorkerRequest& request) -> core::Result<WorkerO
         ::dup2(pipeEnds[1], STDOUT_FILENO);
         ::dup2(pipeEnds[1], STDERR_FILENO);
         ::close(pipeEnds[1]);
-        rlimit limit{};
-        limit.rlim_cur = static_cast<rlim_t>(request.memoryLimitBytes);
-        limit.rlim_max = static_cast<rlim_t>(request.memoryLimitBytes);
-        if (::setrlimit(RLIMIT_AS, &limit) != 0) {
-            ::_exit(120);
+        // RLIMIT_AS caps the whole address space, which a sanitizer runtime cannot work inside:
+        // see workerAddressSpaceCapSupported. The sanitize presets therefore run without the cap
+        // and the CLI gate only asserts cap enforcement where the cap is actually applied.
+        if (workerAddressSpaceCapSupported) {
+            rlimit limit{};
+            limit.rlim_cur = static_cast<rlim_t>(request.memoryLimitBytes);
+            limit.rlim_max = static_cast<rlim_t>(request.memoryLimitBytes);
+            if (::setrlimit(RLIMIT_AS, &limit) != 0) {
+                ::_exit(120);
+            }
         }
         std::vector<char*> arguments;
         arguments.reserve(request.arguments.size() + 2);
