@@ -64,6 +64,18 @@ Debug 与 adapter-disabled headless 不会下载这些 port。真实 CMake impor
 `cuexis_animation` 链接闭包。该依赖不进入安装公共头；替换路径是保持 `cuexis_shader` 内部接口
 并改用另一套 SPIR-V 工具链，而不是让 Playback 直接调用编译器。
 
+Stage 6 E1/E2 把 libpng 1.6.58、libjpeg-turbo 3.2.0、minimp3 2021-11-30、libvorbis 1.3.7#4、
+libogg 1.3.6#1 和 libFLAC 1.5.0 放在可选 vcpkg feature `media-tools` 中，并由 CMake 选项
+`CUEXIS_BUILD_MEDIA_TOOLS`（默认 `OFF`）接入内部静态库 `cuexis_media_import` 与 developer-only
+CLI `cuexis_media_importer`。libpng 传递 zlib 1.3.2#1。这些依赖与 `shader-tools` 相互独立：
+打开其中一个不会引入另一个。真实 CMake imported target 为 `PNG::PNG`、`JPEG::JPEG`、
+`FLAC::FLAC`、`Vorbis::vorbis`、`Ogg::ogg` 和 `ZLIB::ZLIB`，只允许出现在 `cuexis_media_import`
+的 allowlist 中，不得写入安装的 `CuexisConfig.cmake`，也不得进入 `cuexis_playback`、
+`cuexis_player`、`cuexis_runtime` 或任何 headless consumer 的链接闭包。Playback/Player 既
+不链接该库，也不在运行时启动该 CLI；运行时直接解码不是回退路径。替换路径是保持
+`cuexis_media_import` 的固定 profile 接口并整体替换某一解码器，且必须重新冻结 profile
+identity 与 golden，不允许静默更换解码器或做平台特有分支。
+
 ## 封装原则
 
 第三方库可以用于内部实现，但除明确基础类型外，不进入 Cuexis 公共接口。Chart、Component 和资产格式不得保存第三方运行时对象。后端库通过模块边界封装，替换依赖不应要求修改无关模块。
@@ -80,7 +92,8 @@ cuexis_playback、cuexis_audio 与 cuexis_judgement 的安装公共头使用更�
 链接闭包的 vcpkg copyright 文件安装到 `licenses/`。基础 Playback/Content/Audio 包配置只查找
 EnTT、GLM、nlohmann-json、JSON Schema Validator 和 tl-expected。CXC 接入静态 Playback 后可以
 私有增加无默认 feature 的 minizip-ng 链接闭包，但不得把它宣传为公共 Cuexis component 或传播其
-头文件。基础包不得查找 SDL3、glad、spdlog、Catch2、shaderc、SPIRV-Tools 或 SPIRV-Cross。显式请求 `AudioSDL` component 时才允许查找 SDL3，并载入独立的
+头文件。基础包不得查找 SDL3、glad、spdlog、Catch2、shaderc、SPIRV-Tools、SPIRV-Cross、libpng、
+libjpeg-turbo、minimp3、libvorbis、libogg、libFLAC 或 zlib。显式请求 `AudioSDL` component 时才允许查找 SDL3，并载入独立的
 `CuexisAudioSDLTargets.cmake`；包含该组件的安装树必须额外分发 SDL3 copyright。Player 或其他
 可选组件形成正式分发物时，必须另行把其新增依赖许可证加入安装清单和 consumer 门禁。
 

@@ -1,0 +1,17 @@
+{
+  "fixture": "image/palette_trns.png",
+  "kind": "image",
+  "profile": "46a74958149d185b6963f3ed28cffb2665b3118fea1d83ffa8b742e3c65beee8",
+  "decoder": "libpng-1.6.58",
+  "sha256": "de76303ddbff1fc82629beaf69d340683afdf9fbf64aaf432e03d04055788bb4",
+  "byteCount": 48,
+  "sourceBytes": 100,
+  "decodedBytes": 8,
+  "peakWorkingBytes": 11237,
+  "width": 2,
+  "height": 1,
+  "sourceWidth": 2,
+  "sourceHeight": 1,
+  "orientation": 1,
+  "bytesHex": "43585052455330310200000001000000300000000000000002000000010000000200000000000000ff0000ff0000ff40"
+}

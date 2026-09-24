@@ -38,6 +38,7 @@ option(CUEXIS_BUILD_OPENGL_ADAPTER "Build the OpenGL render adapter" ${CUEXIS_BU
 option(CUEXIS_BUILD_DEVELOPER_TOOLS "Build repository developer-only targets"
        ${CUEXIS_TOP_LEVEL_DEFAULT})
 option(CUEXIS_BUILD_SHADER_TOOLS "Build the optional shader compiler module" OFF)
+option(CUEXIS_BUILD_MEDIA_TOOLS "Build the optional offline media import library and tool" OFF)
 option(CUEXIS_ENABLE_CHART_V5_CANDIDATE
        "Enable the experimental Chart v5 candidate Playback source path" OFF)
 option(CUEXIS_BUILD_TESTS "Build the Cuexis test suite" ${CUEXIS_TESTS_DEFAULT})
@@ -105,7 +106,7 @@ if(CUEXIS_BUILD_PLAYER)
     add_subdirectory(app)
 endif()
 
-if(CUEXIS_BUILD_DEVELOPER_TOOLS)
+if(CUEXIS_BUILD_DEVELOPER_TOOLS OR CUEXIS_BUILD_MEDIA_TOOLS)
     add_subdirectory(tools)
 endif()
 
@@ -166,6 +167,12 @@ if(CUEXIS_BUILD_DEVELOPER_TOOLS)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_asset_importer)
     endif()
 endif()
+if(CUEXIS_BUILD_MEDIA_TOOLS)
+    list(APPEND CUEXIS_ACTIVE_TARGETS
+        cuexis_media_import
+        cuexis_media_importer
+    )
+endif()
 
 if(CUEXIS_BUILD_TESTS)
     list(APPEND CUEXIS_ACTIVE_TARGETS
@@ -214,6 +221,9 @@ if(CUEXIS_BUILD_TESTS)
     endif()
     if(TARGET cuexis_shader_tests)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_shader_tests)
+    endif()
+    if(TARGET cuexis_media_import_tests)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_media_import_tests)
     endif()
 
     add_test(
@@ -817,6 +827,26 @@ if(TARGET cuexis_asset_importer)
     cuexis_verify_target_dependencies(cuexis_asset_importer
         ALLOWED
             cuexis::shader
+    )
+endif()
+
+if(TARGET cuexis_media_import)
+    cuexis_verify_target_dependencies(cuexis_media_import
+        ALLOWED
+            cuexis::core
+            FLAC::FLAC
+            JPEG::JPEG
+            Ogg::ogg
+            PNG::PNG
+            Vorbis::vorbis
+            ZLIB::ZLIB
+    )
+endif()
+if(TARGET cuexis_media_importer)
+    cuexis_verify_target_dependencies(cuexis_media_importer
+        ALLOWED
+            cuexis::core
+            cuexis::media_import
     )
 endif()
 

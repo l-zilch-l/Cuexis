@@ -41,6 +41,14 @@ jobs:
             preset: headless-sanitize-shader-tools
             compiler: clang++
             developer_tools: "OFF"
+          - name: Clang ASan + UBSan media-tools
+            preset: headless-sanitize-media-tools
+            compiler: clang++
+            developer_tools: "OFF"
+          - name: GCC media-tools
+            preset: media-tools-coverage
+            compiler: g++
+            developer_tools: "OFF"
 
     steps:
       - name: Check out repository

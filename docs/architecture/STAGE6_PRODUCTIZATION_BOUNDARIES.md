@@ -104,10 +104,10 @@ files. A candidate package cannot be accepted by a production consumer accidenta
 | New renderer direction | D2 local exit: OpenGL implements the interface and Player submits through it | Local smoke minimized and restored; hosted CI does not run that step |
 | Player support separation | C2 local exit: config snapshots and enumerated device open exist and are not installed | C3 still consumes the exited batch |
 | Player source boundaries | Control, options, assembly, and smoke are separate translation units | C3 adds the typed command table |
-| Media importer isolation | Contract only; target does not exist | E1/E2 target and package tests |
+| Media importer isolation | E1/E2 local exit: `cuexis_media_import` and `cuexis_media_importer` exist behind default-OFF `CUEXIS_BUILD_MEDIA_TOOLS`; Playback/Player do not link them | Hosted four-platform byte equality and package tests |
 | Production/experimental staging | Contract only; no package flavor gate yet | B1/C4 clean staging |
 | Reference Host | Contract only; example not yet present | C4 external consumer/interactive host |
 
 This document records the dependency contract. The presentation renderer target and the OpenGL
-dependency edge now exist. Player support exists and is not installed. Media import does not
-exist yet.
+dependency edge now exist. Player support exists and is not installed. The media import target exists
+behind the media-tools feature and remains outside the SDK install closure.

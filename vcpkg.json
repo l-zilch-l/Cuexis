@@ -44,6 +44,17 @@
         "spirv-cross",
         "spirv-tools"
       ]
+    },
+    "media-tools": {
+      "description": "Fixed offline decoders for the Cuexis media importer",
+      "dependencies": [
+        "libflac",
+        "libjpeg-turbo",
+        "libogg",
+        "libpng",
+        "libvorbis",
+        "minimp3"
+      ]
     }
   }
 }

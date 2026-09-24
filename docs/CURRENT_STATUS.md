@@ -94,7 +94,14 @@ bundle 时，再采样帧会带着非零 delta 进入新 discontinuity。`e5eb16
 （Linux Quality、Windows MSVC、Windows MinGW、Version Gate）全部通过。证据见
 [C3 退出报告](stage_reports/stages/stage-06/2026-09-24-s6-c3-exit.md)。该退出不是 Stage 6
 完成、PR 合并或 owner acceptance，SDK API 仍为 `0.7.0`。
-E1/E2 及后续批次仍未完成。
+E1/E2 的实现已经落地但尚未退出：默认关闭的 `CUEXIS_BUILD_MEDIA_TOOLS` 下新增内部
+`cuexis_media_import` 与 CLI `cuexis_media_importer`（PNG/JPEG → CXPRES01 RGBA8，
+MP3/Ogg Vorbis/FLAC → canonical RIFF/WAVE PCM S16LE），固定解码器 profile
+`46a74958…beee8`、canonical golden、发布不可变冲突门禁和进程内存上限都已就位；本机 MSVC
+`debug-media-tools` 与既有 732 项测试全绿，Player 实际显示与三种格式的完整导入/播放正例见
+[S6-E1/E2 实现报告](stage_reports/stages/stage-06/2026-09-25-s6-e1-e2-media-importer.md)。
+四平台字节一致与安装许可证证据仍待 hosted 矩阵；该实现不是批次退出，SDK API 仍为 `0.7.0`。
+E3/C4 及后续批次仍未完成。
 
 ## 已关闭的 Full Review
 

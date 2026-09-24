@@ -1,0 +1,17 @@
+{
+  "fixture": "image/rgb8.png",
+  "kind": "image",
+  "profile": "46a74958149d185b6963f3ed28cffb2665b3118fea1d83ffa8b742e3c65beee8",
+  "decoder": "libpng-1.6.58",
+  "sha256": "12799c16d89a1f6cd0ca4285391ebc38607d11095bc47840c800bc7b9467caa1",
+  "byteCount": 64,
+  "sourceBytes": 78,
+  "decodedBytes": 24,
+  "peakWorkingBytes": 41927,
+  "width": 3,
+  "height": 2,
+  "sourceWidth": 3,
+  "sourceHeight": 2,
+  "orientation": 1,
+  "bytesHex": "43585052455330310200000001000000400000000000000003000000020000000200000000000000102030ff405060ff708090ff102030ff405060ff708090ff"
+}

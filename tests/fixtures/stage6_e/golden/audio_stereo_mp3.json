@@ -1,0 +1,14 @@
+{
+  "fixture": "audio/stereo.mp3",
+  "kind": "audio",
+  "profile": "46a74958149d185b6963f3ed28cffb2665b3118fea1d83ffa8b742e3c65beee8",
+  "decoder": "minimp3-2021-11-30-no-simd",
+  "sha256": "f27a925f6619cb1d9b264dd7dd19b15a0ec1433df535f596b22ad0093088700f",
+  "byteCount": 17684,
+  "sourceBytes": 2551,
+  "decodedBytes": 17684,
+  "peakWorkingBytes": 0,
+  "sampleRate": 44100,
+  "channels": 2,
+  "frames": 4410
+}

@@ -1,0 +1,14 @@
+{
+  "fixture": "audio/stereo.ogg",
+  "kind": "audio",
+  "profile": "46a74958149d185b6963f3ed28cffb2665b3118fea1d83ffa8b742e3c65beee8",
+  "decoder": "libvorbis-1.3.7-libogg-1.3.6",
+  "sha256": "6d961c9ee42002962c4448109c5e20c192b44b331c46428037530e272b70db59",
+  "byteCount": 17684,
+  "sourceBytes": 6315,
+  "decodedBytes": 17684,
+  "peakWorkingBytes": 0,
+  "sampleRate": 44100,
+  "channels": 2,
+  "frames": 4410
+}

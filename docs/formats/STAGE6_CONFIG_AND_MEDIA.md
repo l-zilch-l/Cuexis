@@ -230,6 +230,40 @@ FMA-changing options are forbidden for conversion code.
 Truncated data, bad frames, holes, checksum errors and decoder exceptions fail closed. They are not
 recovered by zero-fill, frame skipping, resynchronization or silent end-of-stream acceptance.
 
+### 5.3 Implemented Rejection Taxonomy
+
+The importer reports one stable code per rejected input. `media.source.empty` and
+`media.source.limit` cover the encoded source, `media.budget.working_limit` and
+`media.image.pixel_limit`, `media.image.byte_limit`, `media.audio.duration_limit`,
+`media.audio.wav_limit` cover the budgets, `media.publish.immutable_conflict` covers publication,
+and `media.io.*` covers input and output failures.
+
+Images report `media.image.format_unsupported` for a container that is neither PNG nor JPEG or for
+APNG animation, `media.image.truncated` for a source that ends inside the container,
+`media.image.header_invalid` for inconsistent headers, `media.image.dimension_invalid` for an
+oversized or overflowing declared size, `media.image.bit_depth_unsupported` for 16-bit PNG,
+`media.image.color_type_unsupported` for unexpandable PNG colour types and for CMYK/YCCK JPEG,
+`media.image.icc_unsupported` and `media.image.gamma_unsupported` for unsupported colour metadata,
+`media.image.exif_invalid` and `media.image.orientation_invalid` for malformed, out-of-range or
+contradictory EXIF orientation, and `media.image.decode_failed` or `media.image.decode_incomplete`
+for a decoder-level failure.
+
+Audio reports `media.audio.format_unsupported` for a container that is not MP3, Ogg Vorbis or native
+FLAC or for a non-Layer-III MPEG stream, `media.audio.container_invalid` for unusable container
+metadata, `media.audio.truncated` for a stream that ends before the length its own metadata
+declares, `media.audio.chained_stream` for a chained or multiplexed Ogg stream,
+`media.audio.channels_unsupported` and `media.audio.rate_unsupported` outside the profile,
+`media.audio.sample_non_finite` for a non-finite float Vorbis sample, and
+`media.audio.decode_failed` for a decoder-level or checksum failure. A source that decodes to zero
+frames is never accepted.
+
+### 5.4 Evidence State
+
+E1/E2 implementation and local Windows/MSVC verification are recorded in
+[the S6-E1/E2 report](../stage_reports/stages/stage-06/2026-09-25-s6-e1-e2-media-importer.md).
+Installed license files, build options and four-platform byte equality are hosted evidence: until a
+same-SHA hosted matrix passes, the profile is implemented but not release-verified.
+
 ## 6. Budgets And Atomic Publication
 
 The importer uses the stricter of these limits and any existing resource limit:
@@ -265,3 +299,9 @@ adoption is explicit through generation selection or repack.
 The identity and canonical media fixtures under tests/fixtures/stage6_a2/golden/ are deterministic
 preimage/byte characterizations. They are not decoder interoperability, hardware, hosted or
 release-license evidence. Those checks belong to C2, E1/E2, C4 and F1.
+
+The E1/E2 canonical outputs under tests/fixtures/stage6_e/golden/ are recorded from the fixed
+profile implementation. They pin the decoder versions and build options that produced them through
+the media profile identity, and the library-level suite verifies the profile, the canonical layout,
+the rejection taxonomy and the budgets. Cross-platform byte equality, installed license files and
+release build options remain hosted evidence.

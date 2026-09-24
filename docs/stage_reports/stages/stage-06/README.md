@@ -38,6 +38,9 @@
   输入路径替换 bundle 时的 discontinuity delta 缺陷，hosted MinGW/MSVC 又发现并修复了
   `<cstdint>`、`-Wmissing-field-initializers` 与内容先于设备的启动顺序三个缺陷；
   `e5eb169` hosted 全部通过）
+- [2026-09-25 S6-E1/E2 媒体导入实现](2026-09-25-s6-e1-e2-media-importer.md)
+  （默认 OFF 的 `cuexis_media_import`/`cuexis_media_importer`、固定解码器 profile、canonical
+  golden、CLI 发布门禁和本地 MSVC/MinGW 语法证据；四平台字节一致仍是 hosted 证据）
 
 权威范围见 [Stage 6 计划](../../../stage_plans/active/stage-06/plan.md)、
 [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md) 和
