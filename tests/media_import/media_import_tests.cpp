@@ -14,6 +14,8 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
+#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -115,6 +117,67 @@ namespace media = cuexis::media_import;
         out.push_back(digits[byte & 0x0FU]);
     }
     return out;
+}
+
+// Prints an exact, platform-comparable summary of canonical PCM samples. The stereo Ogg Vorbis
+// artifact is not byte-identical on every platform, so this dump characterizes the divergence:
+// per-block SHA-256 localizes which samples differ, and the integer absSum/sqSum deltas between two
+// platforms give the exact magnitude without transferring the artifact.
+void dumpSampleDiagnostics(std::string_view stem, std::span<const std::byte> bytes) {
+    constexpr std::size_t headerBytes = 44;
+    constexpr std::size_t samplesPerBlock = 4096;
+    if (bytes.size() < headerBytes) {
+        return;
+    }
+    const auto dataBytes = bytes.size() - headerBytes;
+    const auto sampleCount = dataBytes / 2;
+    const auto channelCount = std::to_integer<std::uint16_t>(bytes[22]);
+    std::cout << "[s6e-diag] " << stem << " samples=" << sampleCount << " channels=" << channelCount
+              << " bytes=" << bytes.size() << "\n";
+    std::vector<std::int64_t> samples;
+    samples.reserve(sampleCount);
+    for (std::size_t index = 0; index < sampleCount; ++index) {
+        const auto low = std::to_integer<std::uint16_t>(bytes[headerBytes + index * 2]);
+        const auto high = std::to_integer<std::uint16_t>(bytes[headerBytes + index * 2 + 1]);
+        samples.push_back(static_cast<std::int16_t>(low | static_cast<std::uint16_t>(high << 8U)));
+    }
+    for (std::size_t block = 0; block * samplesPerBlock < sampleCount; ++block) {
+        const auto begin = block * samplesPerBlock;
+        const auto end = std::min(sampleCount, begin + samplesPerBlock);
+        std::uint64_t absSum = 0;
+        std::uint64_t squareSum = 0;
+        std::int64_t minimum = 0;
+        std::int64_t maximum = 0;
+        std::uint64_t clipped = 0;
+        std::uint64_t zeros = 0;
+        for (auto index = begin; index < end; ++index) {
+            const auto value = samples[index];
+            absSum += static_cast<std::uint64_t>(value < 0 ? -value : value);
+            squareSum += static_cast<std::uint64_t>(value * value);
+            minimum = std::min(minimum, value);
+            maximum = std::max(maximum, value);
+            clipped += (value == 32767 || value == -32768) ? 1U : 0U;
+            zeros += value == 0 ? 1U : 0U;
+        }
+        std::vector<std::byte> blockBytes(bytes.begin() + static_cast<std::ptrdiff_t>(headerBytes) +
+                                              static_cast<std::ptrdiff_t>(begin * 2),
+                                          bytes.begin() + static_cast<std::ptrdiff_t>(headerBytes) +
+                                              static_cast<std::ptrdiff_t>(end * 2));
+        std::cout << "[s6e-diag] " << stem << " block=" << block << " samples=" << (end - begin)
+                  << " sha=" << media::contentIdentity(blockBytes) << " absSum=" << absSum
+                  << " sqSum=" << squareSum << " min=" << minimum << " max=" << maximum
+                  << " clipped=" << clipped << " zeros=" << zeros << "\n";
+    }
+    std::cout << "[s6e-diag] " << stem << " head=";
+    for (std::size_t index = 0; index < std::min<std::size_t>(16, sampleCount); ++index) {
+        std::cout << samples[index]
+                  << (index + 1 == std::min<std::size_t>(16, sampleCount) ? "" : ",");
+    }
+    std::cout << " tail=";
+    for (auto index = sampleCount > 16 ? sampleCount - 16 : 0; index < sampleCount; ++index) {
+        std::cout << samples[index] << (index + 1 == sampleCount ? "" : ",");
+    }
+    std::cout << "\n";
 }
 
 // Asserts that the canonical bytes match the frozen golden and returns them for further checks.
@@ -352,6 +415,7 @@ TEST_CASE("audio preserves sample rate and mono or stereo channel count", "[medi
     const auto ogg = importAudioOrFail(fixture("audio/stereo.ogg"));
     CHECK(ogg.info.sampleRate == 44100);
     CHECK(ogg.info.channels == 2);
+    dumpSampleDiagnostics("audio_stereo_ogg", ogg.canonicalWav);
     requireCanonical(ogg.canonicalWav, "audio_stereo_ogg");
 
     const auto flac = importAudioOrFail(fixture("audio/stereo.flac"));
