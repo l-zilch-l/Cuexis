@@ -52,3 +52,8 @@ are not part of the installed Playback package, are not copied into `share/Cuexi
 not appear in `CuexisConfig.cmake`. A release that distributes an importer artifact must preserve the
 libpng, libjpeg-turbo, minimp3, libvorbis, libogg, libFLAC and zlib notices from the vcpkg
 `copyright` files for the exact resolved versions.
+
+libvorbis is built from the repository overlay port `vcpkg-overlays/libvorbis`, which adds
+`0005-unify-m-pi-precision.patch` on top of the registry revision. The patch changes only the
+fallback `M_PI` constant in `lib/os.h`; it does not alter licensing, so the BSD-3-Clause notice and
+the vcpkg `copyright` file above remain the complete obligation.

@@ -242,6 +242,11 @@ minimp3、libvorbis、libogg、libFLAC），并打开 `CUEXIS_BUILD_MEDIA_TOOLS`
 或 Player 的链接闭包；Playback/Player 不会在运行时启动该 CLI。Linux sanitizer 覆盖媒体工具时
 使用 `headless-sanitize-media-tools`，覆盖率使用 `media-tools-coverage`。
 
+这三个 preset 都通过 `VCPKG_OVERLAY_PORTS` 指向仓库内的 `vcpkg-overlays/`，其中
+`vcpkg-overlays/libvorbis` 在注册表 port 之上叠加 `0005-unify-m-pi-precision.patch`，把
+libvorbis 的回落 `M_PI` 固定为全精度 double，使四个平台解码同一份依赖源码。overlay 内容参与
+vcpkg ABI 哈希，改动它会触发依赖重建；不需要手工修改 `VCPKG_ROOT` 下的全局 vcpkg 树。
+
 ## 生成文件
 
 版本头生成到 `${binaryDir}/generated/cuexis/version.hpp`，不写回源码树。Shader、资源缓存和测试发现文件也属于构建产物。

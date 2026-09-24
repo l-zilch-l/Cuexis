@@ -1,8 +1,8 @@
 {
   "fixture": "audio/mono.ogg",
   "kind": "audio",
-  "profile": "46a74958149d185b6963f3ed28cffb2665b3118fea1d83ffa8b742e3c65beee8",
-  "decoder": "libvorbis-1.3.7-libogg-1.3.6",
+  "profile": "928c22b9761bca9829aca174a826334d2b8ce59069fe67050ab6323eafdc4610",
+  "decoder": "libvorbis-1.3.7-pinned-mpi-libogg-1.3.6",
   "sha256": "27362b839c111d3c4b9c260d25474402b05839c127c441cca779c5fa13272427",
   "byteCount": 1324,
   "sourceBytes": 3028,

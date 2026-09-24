@@ -270,32 +270,68 @@ PR run `35977684169`）。
   `quantizeToS16` 把 libvorbis 的 `float` 样本按 `floor(sample*32768+0.5)` 量化，边界上的 1 ULP
   浮点差会被放大成 1-2 个整数 LSB。
 
-已经排除与已确认的事实：
+已排除的次要嫌疑：
 
-- 依赖版本在四个平台完全相同（libvorbis 1.3.7、libogg 1.3.6），profile 字符串
-  `libvorbis-1.3.7-libogg-1.3.6` 相同；MSVC 侧 vcpkg 构建日志为 `/O2 /Oi /Gy /MD`，**没有**
-  `/fp:fast`，也没有 FMA 级别的 `/arch`；`tools/media_import` 与 `tools/media_importer` 自身在
-  两侧都强制 `/fp:precise` 或 `-fno-fast-math -ffp-contract=off`。
-- libvorbis 自己带平台条件化的浮点→整数规则：`lib/os.h` 在 `_WIN32` 下把 `rint()` 重定义为
-  `floor((x)+0.5f)`，并定义 `NO_FLOAT_MATH_LIB` 与 `FAST_HYPOT`；Linux 构建用 libm 的真
-  `rint()`（round-half-to-even）与 `hypot()`。`rint()` 在解码路径上被使用：
-  `floor1.c:498-499`（曲线插值）、`lsp.c:147-148`（LSP 幅度）、`mdct.c:57`（表初始化）。
-  也就是说 Ogg Vorbis 的解码结果**不被其上游保证跨平台逐位一致**。
-- 但这条机制无法单独解释观测结果：MinGW 也是 `_WIN32` 构建，却与 Linux 一致。因此差异的确切
-  归属（是 `rint` 覆盖、还是 MSVC 与 GCC 家族在其余浮点表达式上的求值差异）尚未定位到单一原因。
+- 依赖版本在四个平台完全相同（libvorbis 1.3.7、libogg 1.3.6）；MSVC 侧 vcpkg 构建日志为
+  `/O2 /Oi /Gy /MD`，**没有** `/fp:fast`，也没有 FMA 级别的 `/arch`；`tools/media_import` 与
+  `tools/media_importer` 自身在两侧都强制 `/fp:precise` 或 `-fno-fast-math -ffp-contract=off`。
+- libvorbis 在 `_WIN32` 下把 `rint()` 重定义为 `floor((x)+0.5f)`，但 MinGW 同样是 `_WIN32` 却与
+  Linux 一致，所以它不是分组差异的原因；它保留为“上游解码器不保证跨平台逐位一致”的旁证，而不是
+  本次根因。
 
-结论与处置：按 `plan.md` 的规则（「如某平台实现无法满足逐字节一致，先阻塞并复核算法/构建选项；
-不得私自按平台拆分 profile」），这里**阻塞**而不是绕过：golden 没有被改写，profile 没有被按平台
-拆分，也没有把身份比较放宽成容差比较；失败断言保持可见。要解除阻塞需要 ADR 0042 §S6-D06 层面的
-决定，可选路径：
+关于 6.2.1 的统计量本身有一个必须写明的限度：`sum(abs(x)) - sum(abs(y))` 不等于
+`sum(abs(x-y))`，样本置换甚至能保持全部聚合量不变。因此那些数字只用于**刻画**差异，不构成对逐样本
+差值的上界；验收判据始终是逐字节相等，诊断输出不替代它。
 
-1. 用 vcpkg overlay 固定 libvorbis 的舍入路径（例如统一去掉 `_WIN32` 的 `rint` 覆盖），再一次性
-   重新冻结 profile 身份与 golden，并在报告里写明原因与四平台复验结果；
-2. 把 Ogg Vorbis 从「冻结的跨平台 canonical profile」中移除（ADR 变更），保留已被四平台证明逐字节
-   一致的 MP3 与 FLAC；
-3. 接受按平台不同的 Vorbis 身份（需要 ADR 变更 + 每平台 golden，当前计划明确禁止）。
+#### 6.2.2 根因（已复现，单变量）
 
-在得到决定之前，E1/E2 保持「已实现、未退出」。
+`libvorbis 1.3.7` 的 `lib/os.h` 在 `<math.h>` 没有提供 `M_PI` 时回落到只有十位有效数字的 float
+字面量：
+
+```c
+#ifndef M_PI
+#  define M_PI (3.1415926536f)
+#endif
+```
+
+MSVC 未定义 `_USE_MATH_DEFINES` 时 `<math.h>` 不暴露该常量，于是走这条回落；GCC、Clang 与 MinGW
+的 `<math.h>` 提供全精度 double。本机用同一份源码预处理 `lib/os.h`（只读）得到：
+
+| 编译器 | `M_PI` 实际展开 |
+| --- | --- |
+| MSVC | `3.1415926536f` |
+| Windows Clang | `3.1415926536f` |
+| MinGW GCC | `3.14159265358979323846` |
+
+`M_PI` 参与解码路径：`mdct.c:65-72`（MDCT 系数表）、`lsp.c:68/251`（LSP 曲线步长）与
+`lsp.c:150`。这正好解释了观测到的分组（MSVC 一侧，其余三个平台一侧）。
+
+单变量验证：只给 libvorbis 打一个把 `M_PI` 固定为全精度 double 的补丁（`rint()`、量化函数、输入
+与编译优化都不动），完整重建依赖后，同一台 MSVC 上 `audio_stereo_ogg` 的 canonical WAV 变为
+`df73cb81daa93c9e53370a3887083c98543fb2bd68615239a2680c976a5d10e8`，与 Linux GCC、Linux Clang
+和 MinGW GCC 完全一致；分块摘要也随之一致（block1 由 `9e918ce5…` 变为 `cff293f7…`）。修复前后对照
+见 6.2.1 与本节。
+
+#### 6.2.3 修复与 golden 重新冻结
+
+- 新增仓库内 overlay port `vcpkg-overlays/libvorbis`，在注册表 port 之上叠加
+  `0005-unify-m-pi-precision.patch`（只改回落常量），port 版本仍为 `1.3.7#4`；overlay 内容参与
+  vcpkg ABI 哈希，旧缓存不会被复用。三个 media-tools preset 通过 `VCPKG_OVERLAY_PORTS` 使用它，
+  因此四个平台构建同一份依赖源码。
+- 解码器身份字符串与 profile identity 更新为
+  `libvorbis-1.3.7-pinned-mpi-libogg-1.3.6`，profile 由
+  `46a74958149d185b6963f3ed28cffb2665b3118fea1d83ffa8b742e3c65beee8` 变为
+  `928c22b9761bca9829aca174a826334d2b8ce59069fe67050ab6323eafdc4610`，使旧 profile/缓存不能被
+  沿用。
+- 重新冻结 golden 的**范围**：18 个 golden 中 17 个只改了 `profile` 字段（内容摘要与字节数完全
+  不变），只有 `audio_stereo_ogg` 的内容摘要从 `6d961c9e…` 变为 `df73cb81…`。没有批量改内容摘要，
+  也没有给任何产物加 epsilon、丢低位或平台分支。
+- 本机复核：`debug-media-tools` 下 `cuexis_media_import_tests` 18 个 TEST_CASE、534 条断言全通过；
+  `ctest -R media` 3/3 通过（含 CLI gate）；改动过的媒体源文件在 MinGW g++ 20
+  `-Wall -Wextra -Wpedantic -Werror -fsyntax-only` 下通过；`clang-format --dry-run --Werror` 通过。
+
+四平台字节相等的最终确认由本次提交的 hosted 矩阵给出（MSVC、MinGW、Linux GCC、Linux Clang
+media-tools 四个作业）。
 
 ### 6.3 Version Gate
 
@@ -306,7 +342,7 @@ date 26.09.23-1 is before trusted UTC date 2026-09-24`。该失败在 C3 之前�
 
 ## 7. 未完成项
 
-- 四平台字节一致：E1 与 MP3/FLAC 已通过；Ogg Vorbis 立体声按 6.2 阻塞。
+- 四平台字节一致的 hosted 确认（本次提交的媒体作业）；本地与单变量实验已给出修复前后对照。
 - 安装许可证文件（`THIRD_PARTY_NOTICES.md`、`DEPENDENCY_POLICY.md` 已更新；安装闭包不含媒体
   工具）属于 hosted 证据。
 - 本批次不包含 E3（媒体工具与项目/缓存集成）与 C4。

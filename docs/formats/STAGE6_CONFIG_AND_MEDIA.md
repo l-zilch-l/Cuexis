@@ -194,8 +194,16 @@ The media profile is selected but not yet verified for release. The fixed vcpkg 
 | PNG | libpng | 1.6.58 | CXPRES01 Texture2D RGBA8 sRGB |
 | JPEG | libjpeg-turbo | 3.2.0 | CXPRES01 Texture2D RGBA8 sRGB |
 | MP3 | minimp3 | 2021-11-30 | RIFF/WAVE PCM S16LE |
-| Ogg Vorbis | libvorbis 1.3.7#4 + libogg 1.3.6#1 | Fixed baseline ports | RIFF/WAVE PCM S16LE |
+| Ogg Vorbis | libvorbis 1.3.7#4 + libogg 1.3.6#1 | Fixed baseline ports plus the `vcpkg-overlays/libvorbis` M_PI pin | RIFF/WAVE PCM S16LE |
 | FLAC | libFLAC | 1.5.0 | RIFF/WAVE PCM S16LE |
+
+The Vorbis row carries a repository overlay port. libvorbis 1.3.7 falls back to a ten-digit float
+`M_PI` when `<math.h>` does not define it, which is what MSVC does without `_USE_MATH_DEFINES`,
+while GCC, Clang and MinGW get the full-precision double. `M_PI` feeds the MDCT coefficient table
+and the LSP decode path, so the two spellings produced different canonical bytes for the same
+input: `6d961c9e...` on MSVC against `df73cb81...` on the other three platforms. The overlay pins
+one value for every compiler; the recorded decoder string is
+`libvorbis-1.3.7-pinned-mpi-libogg-1.3.6` and the profile identity covers it.
 
 The baseline record is not license or cross-platform release evidence. Before E1/E2 close, the
 implementation must verify installed license files, build options, decoder error behavior and

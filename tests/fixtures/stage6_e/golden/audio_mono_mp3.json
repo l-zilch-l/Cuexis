@@ -1,7 +1,7 @@
 {
   "fixture": "audio/mono.mp3",
   "kind": "audio",
-  "profile": "46a74958149d185b6963f3ed28cffb2665b3118fea1d83ffa8b742e3c65beee8",
+  "profile": "928c22b9761bca9829aca174a826334d2b8ce59069fe67050ab6323eafdc4610",
   "decoder": "minimp3-2021-11-30-no-simd",
   "sha256": "c41966babb2bc1a40f4a746de6b68abaaa35169a80649be64553b34365933306",
   "byteCount": 1324,

@@ -76,6 +76,19 @@ CLI `cuexis_media_importer`。libpng 传递 zlib 1.3.2#1。这些依赖与 `shad
 `cuexis_media_import` 的固定 profile 接口并整体替换某一解码器，且必须重新冻结 profile
 identity 与 golden，不允许静默更换解码器或做平台特有分支。
 
+### libvorbis overlay（`vcpkg-overlays/libvorbis`）
+
+libvorbis 1.3.7#4 通过仓库内 overlay port 构建，叠加一个补丁
+`0005-unify-m-pi-precision.patch`：当 `<math.h>` 未定义 `M_PI` 时，libvorbis 回落到只有十位
+有效数字的 float 字面量（MSVC 未定义 `_USE_MATH_DEFINES` 时就是这种情况），而 GCC、Clang 与
+MinGW 的 `<math.h>` 提供全精度 double。`M_PI` 参与 MDCT 系数表与 LSP 解码路径，因此同一输入在
+MSVC 与其余三个平台上产生不同的 canonical 字节（`6d961c9e…` 对 `df73cb81…`）。overlay 把
+`M_PI` 固定为同一个全精度 double 值，不引入 epsilon、不舍弃低位、不做平台分支，也不改变解码
+算法。三个 media-tools preset（`debug-media-tools`、`headless-sanitize-media-tools`、
+`media-tools-coverage`）通过 `VCPKG_OVERLAY_PORTS` 使用它，因此四个平台构建同一份依赖源码。
+port 版本保持 `1.3.7#4`，overlay 内容参与 vcpkg ABI 哈希，旧的二进制缓存不会被复用。解码器
+身份字符串与 profile identity 已随之更新为 `libvorbis-1.3.7-pinned-mpi-libogg-1.3.6`。
+
 ## 封装原则
 
 第三方库可以用于内部实现，但除明确基础类型外，不进入 Cuexis 公共接口。Chart、Component 和资产格式不得保存第三方运行时对象。后端库通过模块边界封装，替换依赖不应要求修改无关模块。

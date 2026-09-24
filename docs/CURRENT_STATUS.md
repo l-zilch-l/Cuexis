@@ -94,18 +94,21 @@ bundle 时，再采样帧会带着非零 delta 进入新 discontinuity。`e5eb16
 （Linux Quality、Windows MSVC、Windows MinGW、Version Gate）全部通过。证据见
 [C3 退出报告](stage_reports/stages/stage-06/2026-09-24-s6-c3-exit.md)。该退出不是 Stage 6
 完成、PR 合并或 owner acceptance，SDK API 仍为 `0.7.0`。
-E1/E2 的实现已经落地但尚未退出，并且卡在一个 profile 决定上：默认关闭的
-`CUEXIS_BUILD_MEDIA_TOOLS` 下新增内部 `cuexis_media_import` 与 CLI `cuexis_media_importer`
-（PNG/JPEG → CXPRES01 RGBA8，MP3/Ogg Vorbis/FLAC → canonical RIFF/WAVE PCM S16LE），固定解码器
-profile `46a74958…beee8`、canonical golden、发布不可变冲突门禁和进程内存上限都已就位；本机 MSVC
-`debug-media-tools` 与既有 732 项测试全绿，Player 实际显示与三种格式的完整导入/播放正例见
+E1/E2 的实现已经落地但尚未退出：默认关闭的 `CUEXIS_BUILD_MEDIA_TOOLS` 下新增内部
+`cuexis_media_import` 与 CLI `cuexis_media_importer`（PNG/JPEG → CXPRES01 RGBA8，
+MP3/Ogg Vorbis/FLAC → canonical RIFF/WAVE PCM S16LE），固定解码器 profile、canonical golden、
+发布不可变冲突门禁和进程内存上限都已就位；本机 MSVC `debug-media-tools` 与既有 732 项测试全绿，
+Player 实际显示与三种格式的完整导入/播放正例见
 [S6-E1/E2 实现报告](stage_reports/stages/stage-06/2026-09-25-s6-e1-e2-media-importer.md)。
-hosted 矩阵显示所有图像 golden、MP3、FLAC 与单声道 Ogg 在 Windows MSVC、Windows MinGW、
-Linux GCC、Linux Clang 上逐字节一致，但**立体声 Ogg Vorbis** 的 canonical WAV 在 MSVC 与其余
-三个平台之间样本不同（长度相同），libvorbis 上游在 `_WIN32` 下把 `rint()` 覆盖为
-`floor(x+0.5f)`，其解码结果不保证跨平台逐位一致。按计划规则该批次**阻塞**而不是改写 golden 或
-按平台拆分 profile；解除阻塞需要 ADR 0042 §S6-D06 层面的决定（固定依赖舍入路径后重新冻结，或把
-Ogg Vorbis 移出冻结的跨平台 canonical profile）。该实现不是批次退出，SDK API 仍为 `0.7.0`。
+hosted 矩阵曾显示立体声 Ogg Vorbis 的 canonical WAV 在 MSVC 与其余三个平台之间样本不同（长度
+相同）；根因已复现并修复：libvorbis 1.3.7 在 `<math.h>` 不提供 `M_PI` 时回落到十位有效数字的
+float 字面量（MSVC 即如此），而 GCC/Clang/MinGW 使用全精度 double，`M_PI` 参与 MDCT 系数表与 LSP
+解码路径。修复方式是仓库内 overlay port `vcpkg-overlays/libvorbis` 叠加
+`0005-unify-m-pi-precision.patch`，把 `M_PI` 固定为同一个全精度 double；解码器身份字符串更新为
+`libvorbis-1.3.7-pinned-mpi-libogg-1.3.6`，profile identity 更新为
+`928c22b9761bca9829aca174a826334d2b8ce59069fe67050ab6323eafdc4610`。18 个 golden 中 17 个只更新
+了 profile 元数据，仅 `audio_stereo_ogg` 重新冻结内容摘要（`df73cb81…`），没有加 epsilon、丢低位或
+平台分支。四平台 hosted 复验通过后才会另行记录退出报告；该实现不是批次退出，SDK API 仍为 `0.7.0`。
 E3/C4 及后续批次仍未完成。
 
 ## 已关闭的 Full Review

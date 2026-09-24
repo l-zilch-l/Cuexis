@@ -119,10 +119,13 @@ namespace media = cuexis::media_import;
     return out;
 }
 
-// Prints an exact, platform-comparable summary of canonical PCM samples. The stereo Ogg Vorbis
-// artifact is not byte-identical on every platform, so this dump characterizes the divergence:
-// per-block SHA-256 localizes which samples differ, and the integer absSum/sqSum deltas between two
-// platforms give the exact magnitude without transferring the artifact.
+// Prints an exact, platform-comparable summary of canonical PCM samples. It characterized the
+// stereo Ogg Vorbis divergence that the pinned libvorbis M_PI patch resolved: per-block SHA-256
+// localizes which samples differ and the integer absSum/sqSum make the difference measurable on
+// any platform without transferring the artifact. Note that the aggregates characterize, they do
+// not bound, the per-sample difference: sum(abs(x)) - sum(abs(y)) is not sum(abs(x - y)), and a
+// permutation of samples can leave every aggregate unchanged. Byte equality stays the acceptance
+// criterion, and this dump never replaces it.
 void dumpSampleDiagnostics(std::string_view stem, std::span<const std::byte> bytes) {
     constexpr std::size_t headerBytes = 44;
     constexpr std::size_t samplesPerBlock = 4096;
@@ -390,7 +393,7 @@ TEST_CASE("MP3, Ogg Vorbis and FLAC import to the canonical WAV", "[media_import
     requireCanonical(mp3.canonicalWav, "audio_mono_mp3");
 
     const auto ogg = importAudioOrFail(fixture("audio/mono.ogg"));
-    CHECK(ogg.info.decoder == "libvorbis-1.3.7-libogg-1.3.6");
+    CHECK(ogg.info.decoder == "libvorbis-1.3.7-pinned-mpi-libogg-1.3.6");
     CHECK(ogg.info.sampleRate == 8000);
     CHECK(ogg.info.channels == 1);
     requireCanonical(ogg.canonicalWav, "audio_mono_ogg");

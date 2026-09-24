@@ -1,7 +1,7 @@
 {
   "fixture": "image/rgba8.png",
   "kind": "image",
-  "profile": "46a74958149d185b6963f3ed28cffb2665b3118fea1d83ffa8b742e3c65beee8",
+  "profile": "928c22b9761bca9829aca174a826334d2b8ce59069fe67050ab6323eafdc4610",
   "decoder": "libpng-1.6.58",
   "sha256": "0459ef24a3a9ba806f5f6c762117b2fc280d0beedfa99156fa5c67164e814f48",
   "byteCount": 56,

@@ -329,7 +329,10 @@ constexpr std::string_view profileVersion = "1";
 constexpr std::string_view pngDecoderVersion = "libpng-1.6.58";
 constexpr std::string_view jpegDecoderVersion = "libjpeg-turbo-3.2.0-idct-islow-fancy-upsample";
 constexpr std::string_view mp3DecoderVersion = "minimp3-2021-11-30-no-simd";
-constexpr std::string_view vorbisDecoderVersion = "libvorbis-1.3.7-libogg-1.3.6";
+// "pinned-mpi" records the overlay patch that pins libvorbis' M_PI to the full-precision double
+// constant on every compiler. Without it MSVC used a ten-digit float literal and decoded different
+// canonical bytes, so the marker keeps pre-patch caches and artifacts from being reused.
+constexpr std::string_view vorbisDecoderVersion = "libvorbis-1.3.7-pinned-mpi-libogg-1.3.6";
 constexpr std::string_view flacDecoderVersion = "libflac-1.5.0-native";
 
 } // namespace

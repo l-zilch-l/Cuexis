@@ -1,7 +1,7 @@
 {
   "fixture": "image/orientation3.jpg",
   "kind": "image",
-  "profile": "46a74958149d185b6963f3ed28cffb2665b3118fea1d83ffa8b742e3c65beee8",
+  "profile": "928c22b9761bca9829aca174a826334d2b8ce59069fe67050ab6323eafdc4610",
   "decoder": "libjpeg-turbo-3.2.0",
   "sha256": "71a7ff78f051544ea4995f1b3519bb590641a7e38ea684677292af818fec0030",
   "byteCount": 72,

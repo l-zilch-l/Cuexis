@@ -18,7 +18,7 @@ namespace cuexis::media_import {
 namespace {
 
 constexpr std::string_view mp3DecoderName = "minimp3-2021-11-30-no-simd";
-constexpr std::string_view vorbisDecoderName = "libvorbis-1.3.7-libogg-1.3.6";
+constexpr std::string_view vorbisDecoderName = "libvorbis-1.3.7-pinned-mpi-libogg-1.3.6";
 constexpr std::string_view flacDecoderName = "libflac-1.5.0-native";
 constexpr std::size_t oggInputChunkBytes = 64U * 1024U;
 

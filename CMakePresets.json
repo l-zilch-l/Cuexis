@@ -58,7 +58,8 @@
       "inherits": "debug",
       "cacheVariables": {
         "CUEXIS_BUILD_MEDIA_TOOLS": "ON",
-        "VCPKG_MANIFEST_FEATURES": "media-tools"
+        "VCPKG_MANIFEST_FEATURES": "media-tools",
+        "VCPKG_OVERLAY_PORTS": "${sourceDir}/vcpkg-overlays"
       }
     },
     {
@@ -153,7 +154,8 @@
       "inherits": "headless-sanitize",
       "cacheVariables": {
         "CUEXIS_BUILD_MEDIA_TOOLS": "ON",
-        "VCPKG_MANIFEST_FEATURES": "tests;media-tools"
+        "VCPKG_MANIFEST_FEATURES": "tests;media-tools",
+        "VCPKG_OVERLAY_PORTS": "${sourceDir}/vcpkg-overlays"
       }
     },
     {
@@ -199,7 +201,8 @@
       "inherits": "headless-coverage",
       "cacheVariables": {
         "CUEXIS_BUILD_MEDIA_TOOLS": "ON",
-        "VCPKG_MANIFEST_FEATURES": "tests;media-tools"
+        "VCPKG_MANIFEST_FEATURES": "tests;media-tools",
+        "VCPKG_OVERLAY_PORTS": "${sourceDir}/vcpkg-overlays"
       }
     }
   ],

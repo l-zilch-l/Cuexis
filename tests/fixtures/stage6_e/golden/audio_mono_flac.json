@@ -1,7 +1,7 @@
 {
   "fixture": "audio/mono.flac",
   "kind": "audio",
-  "profile": "46a74958149d185b6963f3ed28cffb2665b3118fea1d83ffa8b742e3c65beee8",
+  "profile": "928c22b9761bca9829aca174a826334d2b8ce59069fe67050ab6323eafdc4610",
   "decoder": "libflac-1.5.0-native",
   "sha256": "691a7aefdd3e2910e3567da6d02208c2e8e59ef33aa2582852de8e69b8f72ef0",
   "byteCount": 1324,

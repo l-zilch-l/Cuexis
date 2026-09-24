@@ -1,7 +1,7 @@
 {
   "fixture": "audio/stereo.flac",
   "kind": "audio",
-  "profile": "46a74958149d185b6963f3ed28cffb2665b3118fea1d83ffa8b742e3c65beee8",
+  "profile": "928c22b9761bca9829aca174a826334d2b8ce59069fe67050ab6323eafdc4610",
   "decoder": "libflac-1.5.0-native",
   "sha256": "2010d75d2ef44119351f8753830877e95d46cb346d0a0e16e7711ac1f020f504",
   "byteCount": 17684,
