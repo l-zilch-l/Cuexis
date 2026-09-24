@@ -1,6 +1,6 @@
 {
   "name": "cuexis",
-  "version-string": "26.09.23-1",
+  "version-string": "26.09.24-1",
   "default-features": [
     "player",
     "tests"

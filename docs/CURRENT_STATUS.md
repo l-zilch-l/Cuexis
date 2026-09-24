@@ -51,9 +51,9 @@ S6-A2 已于 2026-09-21 完成合同落盘与表征，形成 entry/config/media 
 API/安装草案、依赖图及独立 identity/media/config golden；实际证据见 [S6-A2 报告](stage_reports/stages/stage-06/2026-09-21-s6-a2-contracts-and-characterization.md)。
 A2 只证明冻结决策可以被明确描述和表征，不代表 v5 Playback、Player、renderer、media importer、
 版本门禁或 Reference Host 已实现；SDK 仍为 `0.7.0`，三个工程问题继续 open。A2 之后 B1、C1、C2、D1 与 D2
-已分别取得退出证据。E1/E2 及其后续批次仍按计划依赖图保持未完成。
+已分别取得退出证据。E1/E2 的实现与四平台验证已完成但尚未退出（见下文），其后续批次仍未完成。
 S6-B1 已落下版本比较器、独立负例测试、trusted-baseline workflow 和发行 checklist；当前显示版本
-为 `26.09.23-1`，SDK API 仍为 `0.7.0`。`26.09.21-2` 在 UTC `2026-09-22` 已过期，因此前进到当天 build 1。当天曾写成的 `26.09.23-1` 被 Version Gate 以 `version.release_date.future` 拒绝，分支收回 `26.09.22-1`；UTC 进入 `2026-09-23` 后再前进到 `26.09.23-1`。bootstrap PR #26 已将门禁纳入 `master`，并启用
+为 `26.09.24-1`（E1/E2 收尾时按 Version Gate 日期滚动推进，见下），SDK API 仍为 `0.7.0`。`26.09.21-2` 在 UTC `2026-09-22` 已过期，因此前进到当天 build 1。当天曾写成的 `26.09.23-1` 被 Version Gate 以 `version.release_date.future` 拒绝，分支收回 `26.09.22-1`；UTC 进入 `2026-09-23` 后再前进到 `26.09.23-1`。bootstrap PR #26 已将门禁纳入 `master`，并启用
 `Version advancement (pre-merge)` required check、strict latest-base 和 admin enforcement。
 候选 PR #27 的 `d4697549a50e9c517ac393c27786826aa43ce9cc` 以 trusted baseline
 `4545742ed63ae2d8f11ad07e80930ce5b88fa0ce` 通过 protected Version Gate run `35586930775`，
@@ -94,11 +94,11 @@ bundle 时，再采样帧会带着非零 delta 进入新 discontinuity。`e5eb16
 （Linux Quality、Windows MSVC、Windows MinGW、Version Gate）全部通过。证据见
 [C3 退出报告](stage_reports/stages/stage-06/2026-09-24-s6-c3-exit.md)。该退出不是 Stage 6
 完成、PR 合并或 owner acceptance，SDK API 仍为 `0.7.0`。
-E1/E2 的实现已经落地但尚未退出：默认关闭的 `CUEXIS_BUILD_MEDIA_TOOLS` 下新增内部
-`cuexis_media_import` 与 CLI `cuexis_media_importer`（PNG/JPEG → CXPRES01 RGBA8，
-MP3/Ogg Vorbis/FLAC → canonical RIFF/WAVE PCM S16LE），固定解码器 profile、canonical golden、
-发布不可变冲突门禁和进程内存上限都已就位；本机 MSVC `debug-media-tools` 与既有 732 项测试全绿，
-Player 实际显示与三种格式的完整导入/播放正例见
+E1/E2 的实现与四平台验证已经完成，尚未进入批次退出流程：默认关闭的
+`CUEXIS_BUILD_MEDIA_TOOLS` 下新增内部 `cuexis_media_import` 与 CLI `cuexis_media_importer`
+（PNG/JPEG → CXPRES01 RGBA8，MP3/Ogg Vorbis/FLAC → canonical RIFF/WAVE PCM S16LE），固定解码器
+profile、canonical golden、发布不可变冲突门禁和进程内存上限都已就位；本机 MSVC
+`debug-media-tools` 与既有 732 项测试全绿，Player 实际显示与三种格式的完整导入/播放正例见
 [S6-E1/E2 实现报告](stage_reports/stages/stage-06/2026-09-25-s6-e1-e2-media-importer.md)。
 hosted 矩阵曾显示立体声 Ogg Vorbis 的 canonical WAV 在 MSVC 与其余三个平台之间样本不同（长度
 相同）；根因已复现并修复：libvorbis 1.3.7 在 `<math.h>` 不提供 `M_PI` 时回落到十位有效数字的
@@ -108,8 +108,10 @@ float 字面量（MSVC 即如此），而 GCC/Clang/MinGW 使用全精度 double
 `libvorbis-1.3.7-pinned-mpi-libogg-1.3.6`，profile identity 更新为
 `928c22b9761bca9829aca174a826334d2b8ce59069fe67050ab6323eafdc4610`。18 个 golden 中 17 个只更新
 了 profile 元数据，仅 `audio_stereo_ogg` 重新冻结内容摘要（`df73cb81…`），没有加 epsilon、丢低位或
-平台分支。四平台 hosted 复验通过后才会另行记录退出报告；该实现不是批次退出，SDK API 仍为 `0.7.0`。
-E3/C4 及后续批次仍未完成。
+平台分支。`66a15d0` 的 hosted 矩阵（Linux Quality、Windows MSVC、Windows MinGW）全部通过，立体声
+Ogg 的 canonical identity 断言在四个平台对着同一份 golden 通过；Version Gate 的日期滚动在同批收尾
+中用 `tools/update_version.py 26.09.24-1` 处置（仅日期构建身份，SDK API 仍为 `0.7.0`）。该实现不是
+批次退出、不是 Stage 6 关闭，也不构成 owner acceptance。E3/C4 及后续批次仍未完成。
 
 ## 已关闭的 Full Review
 

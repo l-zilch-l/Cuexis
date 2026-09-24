@@ -1,13 +1,15 @@
 # S6-E1/E2 媒体导入实现
 
-状态：implemented（本地实现与本地 MSVC 证据；不是批次退出、Stage 6 关闭或 owner acceptance）
+状态：implemented（本地实现、单变量根因实验与四平台 hosted 证据；不是批次退出、Stage 6 关闭或
+owner acceptance）
 
 日期：2026-09-25
 
 本报告记录 S6-E1（JPEG/PNG → portable texture）与 S6-E2（MP3/Ogg Vorbis/FLAC → audio artifact）
-的实现和本地验证证据。冻结决定来自 ADR 0042 §S6-D06 与
+的实现、验证证据，以及 Ogg Vorbis 立体声四平台不一致的根因定位、修复与一次性 golden 重新冻结。
+冻结决定来自 ADR 0042 §S6-D06 与
 [STAGE6_CONFIG_AND_MEDIA.md](../../../formats/STAGE6_CONFIG_AND_MEDIA.md) §5；本页不重新裁定
-profile，也不把本地结果当作 hosted 或 release 证据。
+profile，也不把本地结果当作 release 或 owner acceptance 证据。
 
 ## 1. 批次基线
 
@@ -18,7 +20,7 @@ profile，也不把本地结果当作 hosted 或 release 证据。
 | PR | #29，`OPEN`，未合并 |
 | 起始顶端 SHA | `5c638ea2e558705f0827d9aa25b1aed2b1cb0e48` |
 | 目标基线 | `master` `46b65d1f2345f543b98e7e87fe5ec9ed735f10bf` |
-| 显示版本 | `26.09.23-1`（本批次没有改版本） |
+| 显示版本 | 起始 `26.09.23-1`；收尾时按 Version Gate 日期滚动推进到 `26.09.24-1`（见 6.4） |
 | SDK API | `0.7.0`（本批次没有改 SDK minor） |
 
 本批次没有扩大 R5 §10.1 的允许消费清单，没有引入运行时脚本入口，没有让 `engine/animation/`
@@ -86,10 +88,12 @@ profile，也不把本地结果当作 hosted 或 release 证据。
 - `tools/CMakeLists.txt`、`tests/CMakeLists.txt` 的接线。
 
 profile identity 为
-`46a74958149d185b6963f3ed28cffb2665b3118fea1d83ffa8b742e3c65beee8`，由 domain
+`928c22b9761bca9829aca174a826334d2b8ce59069fe67050ab6323eafdc4610`，由 domain
 `cuexis.media.import.profile.v1`、profile version `1` 与五个解码器标识串构成：
 `libpng-1.6.58`、`libjpeg-turbo-3.2.0`、`minimp3-2021-11-30-no-simd`、
-`libvorbis-1.3.7-libogg-1.3.6`、`libflac-1.5.0-native`。
+`libvorbis-1.3.7-pinned-mpi-libogg-1.3.6`、`libflac-1.5.0-native`。Vorbis 一项在 6.2 修复后
+加入 `pinned-mpi` 标记，旧值 `46a74958149d185b6963f3ed28cffb2665b3118fea1d83ffa8b742e3c65beee8`
+不再被任何 golden 或产物使用。
 
 ## 4. 本地验证
 
@@ -213,12 +217,13 @@ E2 验收要求「三种格式各有完整导入/播放正例」。仓库里唯�
   stderr 说明 `--memory-limit` 被忽略，gate 在 sanitized 构建里跳过该用例；上限本身仍由 MSVC、
   MinGW 与 GCC media-tools 三个作业覆盖。
 
-## 6. Hosted 四平台结果与阻塞项
+## 6. Hosted 四平台结果
 
-本节的 hosted 证据对应提交 `ec9c6f8`（push run `35977679483`、`35977679432`、`35977679343`；
-PR run `35977684169`）。
+6.1 与 6.2 记录的是提交 `ec9c6f8`（push run `35977679483`、`35977679432`、`35977679343`；
+PR run `35977684169`）上的原始测量与当时唯一的阻塞项；6.3 记录该阻塞项在 `66a15d0` 上解除后的
+四平台复验，6.4 记录 Version Gate 的日期滚动处置。
 
-### 6.1 通过的 hosted 检查
+### 6.1 通过的 hosted 检查（`ec9c6f8`）
 
 | 作业 | 结果 |
 | --- | --- |
@@ -233,7 +238,7 @@ PR run `35977684169`）。
 还额外与 ffmpeg 写出的 PCM 源逐字节相同。`audio_mono_ogg` 也一致。CLI gate 在 sanitized 构建
 之外的三个作业上完整执行（含内存上限失败关闭用例）。
 
-### 6.2 阻塞项：Ogg Vorbis 立体声的 canonical identity 不满足四平台一致
+### 6.2 当时的阻塞项：Ogg Vorbis 立体声的 canonical identity 不满足四平台一致
 
 | 平台 | `audio_stereo_ogg` canonical WAV SHA-256 |
 | --- | --- |
@@ -327,22 +332,60 @@ MSVC 未定义 `_USE_MATH_DEFINES` 时 `<math.h>` 不暴露该常量，于是走
   不变），只有 `audio_stereo_ogg` 的内容摘要从 `6d961c9e…` 变为 `df73cb81…`。没有批量改内容摘要，
   也没有给任何产物加 epsilon、丢低位或平台分支。
 - 本机复核：`debug-media-tools` 下 `cuexis_media_import_tests` 18 个 TEST_CASE、534 条断言全通过；
-  `ctest -R media` 3/3 通过（含 CLI gate）；改动过的媒体源文件在 MinGW g++ 20
-  `-Wall -Wextra -Wpedantic -Werror -fsyntax-only` 下通过；`clang-format --dry-run --Werror` 通过。
+  `ctest --preset debug-media-tools` 751/751 通过（含 CLI gate，1 个既有 symlink 用例在 Windows 上
+  为 Skipped）；默认 `debug` preset 732/732 通过；改动过的媒体源文件在 MinGW g++ 20
+  `-Wall -Wextra -Wpedantic -Werror -fsyntax-only` 下通过；`clang-format --dry-run --Werror` 与
+  `tools/check_docs.py` 通过。
+- 行尾：overlay 的补丁由 vcpkg 在 port 构建树里用 `git apply` 施加。仓库所在环境
+  `core.autocrlf=true`，Windows 检出会把补丁变成 CRLF；在临时仓库里用 CRLF 版本实测得到
+  `patch does not apply`。因此 `.gitattributes` 增加 `vcpkg-overlays/** text eol=lf`，使补丁在
+  四个平台的检出字节一致（同时保证 overlay 的 vcpkg ABI 哈希不受检出影响）。这是先验证因果、
+  而不是只看“编译命令里出现过宏”的结果。
+- 因果链的实测记录（本机 MSVC，`debug-media-tools`）：
+  - vcpkg 解析到的 overlay：`libvorbis:x64-windows@1.3.7#4 -- .../vcpkg-overlays/libvorbis`，
+    package ABI `22e829506a61cd05e0dad7d9cdf8339255fb14e482e511d7caa6cad7424fcd4d`（注册表 port 的
+    ABI 是 `8f622e061a6726ab1c998a691651663fe8147c22e24f7246028a5efdfb2ef50d`），说明旧包没有被复用。
+  - 补丁确实被施加：构建树里存在 `patch-x64-windows-4-*.log`（第 5 个补丁的日志位）。
+  - 实际参与编译的源码是
+    `vcpkg_installed/vcpkg/blds/libvorbis/src/v1.3.7-14447fd466.clean/lib/os.h`，其
+    `M_PI` 为 `3.14159265358979323846`（sha256 `A1DEF33D…4790`）；同目录下另有两个 pristine
+    `.clean` 副本仍保留十位 float 值，它们不是本次编译输入。
+  - 实际被加载的 DLL 是测试可执行文件同目录的 `out/build/debug-media-tools/bin/vorbis.dll`
+    （sha256 `ED6C78AC79B3AD99557569EB555FCCDA8C52E7100899C4B496859613FB096EB5`），与 overlay 构建产物
+    `.../blds/libvorbis/x64-windows-dbg/lib/vorbis.dll` 逐字节相同；`dumpbin /dependents` 确认测试
+    依赖 `vorbis.dll`，而 Windows 加载顺序先看 exe 目录。
 
 四平台字节相等的最终确认由本次提交的 hosted 矩阵给出（MSVC、MinGW、Linux GCC、Linux Clang
 media-tools 四个作业）。
 
-### 6.3 Version Gate
+### 6.3 hosted 四平台复验（`66a15d0`）
+
+`66a15d0` 的三个工作流全部通过，唯一红色是 Version Gate 的日期滚动（见 6.4）：
+
+| 工作流 | 运行 | 媒体相关作业 | 结果 |
+| --- | --- | --- | --- |
+| Linux Quality | `35997124499` | `GCC media-tools`（job `107624593744`）、`Clang ASan + UBSan media-tools`（job `107624593914`） | 12 个作业全绿；两个媒体作业各 656/656 通过，`audio preserves sample rate and mono or stereo channel count` 分别作为 #652 / #644 `Passed` |
+| Windows MSVC | `35997124047` | `debug`（job `107624591832`）、`release` | 全绿；debug 732/732 与 751/751 通过，该用例作为 #739 `Passed` |
+| Windows MinGW | `35997124189` | `debug`（job `107624592412`）、`release` | 全绿；debug 732/732 与 751/751 通过，该用例作为 #748 `Passed` |
+| Version Gate | `35997124364` | — | 仅 `Version advancement (pre-merge)` 因日期滚动失败（6.4） |
+
+该用例正是立体声 Ogg Vorbis 的 canonical identity 断言：它在四个平台上对着**同一份**重新冻结的
+golden（`df73cb81daa93c9e53370a3887083c98543fb2bd68615239a2680c976a5d10e8`）通过，因此 ADR 0042
+§S6-D06 要求的四平台逐字节一致在 E1/E2 范围内已经成立。修复前后的对照、单变量实验与因果链证据见
+6.2.2 与 6.2.3。
+
+### 6.4 Version Gate 日期滚动
 
 PR 触发的 `Version Gate` 失败与 E1/E2 无关，是日期滚动：`version.release_date.stale: candidate
 date 26.09.23-1 is before trusted UTC date 2026-09-24`。该失败在 C3 之前的 tip（`5c638ea`）上
-同样复现，而两个 SHA 在 `--trusted-utc-date 2026-09-23` 下都通过。修它需要版本号推进，超出本批次
-范围，因此没有改动。
+同样复现，而两个 SHA 在 `--trusted-utc-date 2026-09-23` 下都通过。本批次收尾时用
+`tools/update_version.py 26.09.24-1` 推进日期版本（`cmake/CuexisVersion.cmake` 与 `vcpkg.json`
+同步），并在本机用与 CI 相同的参数复跑 `tools/check_version_gate.py`（`--base-ref` 为与
+`origin/master` 的 merge-base、`--trusted-utc-date 2026-09-24`、`--context live`、
+`--event pull_request`）确认通过。这次推进只改日期构建身份，`CUEXIS_SDK_API_VERSION` 仍为 `0.7.0`。
 
 ## 7. 未完成项
 
-- 四平台字节一致的 hosted 确认（本次提交的媒体作业）；本地与单变量实验已给出修复前后对照。
 - 安装许可证文件（`THIRD_PARTY_NOTICES.md`、`DEPENDENCY_POLICY.md` 已更新；安装闭包不含媒体
   工具）属于 hosted 证据。
 - 本批次不包含 E3（媒体工具与项目/缓存集成）与 C4。
