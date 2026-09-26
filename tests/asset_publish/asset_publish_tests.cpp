@@ -205,7 +205,8 @@ struct CandidateFixture final {
 
 [[nodiscard]] auto readEnv(std::string_view name) -> std::string {
     const std::string key{name};
-#if defined(_WIN32)
+    // _dupenv_s is MSVC-only; MinGW links no such symbol.
+#if defined(_MSC_VER)
     char* value = nullptr;
     std::size_t size = 0;
     if (::_dupenv_s(&value, &size, key.c_str()) != 0 || value == nullptr) {
@@ -659,4 +660,55 @@ TEST_CASE("E3 a failed candidate replacement rolls the v4 package back", "[s6-e3
     // The pair is transactional: no half-updated v4 package is left visible.
     CHECK_FALSE(fs::exists(request.v4Target));
     CHECK_FALSE(fs::exists(request.candidateTarget));
+}
+
+TEST_CASE("E3 a failed candidate replacement restores the previous valid v4 package",
+          "[s6-e3][asset-publish]") {
+    const auto root = scratchRoot("package-pair-restore");
+    const auto fixture = candidateFixture();
+    const auto v4Target = root / "static.cxc";
+    const auto candidateTarget = root / "static.candidate.cxc";
+
+    // A valid v4 package is already published, and a candidate package from an earlier batch too.
+    PackagePublishRequest baseline;
+    baseline.target = v4Target;
+    baseline.entries = staticProjectEntries();
+    const auto previous = cuexis::tools::publishPackage(baseline);
+    requireOk(previous);
+    const auto previousBytes = readBytes(v4Target);
+
+    PackagePublishRequest earlierCandidate;
+    earlierCandidate.target = candidateTarget;
+    earlierCandidate.entries = staticProjectEntries();
+    earlierCandidate.entries.push_back(
+        cuexis::cxc::CxcWriteEntry{std::string{candidateEntryPath}, fixture.bytes});
+    earlierCandidate.extensionsJson = fixture.extensionJson;
+    requireOk(cuexis::tools::publishPackage(earlierCandidate));
+    const auto earlierCandidateBytes = readBytes(candidateTarget);
+
+    // The same batch is published again, but the candidate replacement fails.
+    PackagePairRequest request;
+    request.v4Target = v4Target;
+    request.candidateTarget = candidateTarget;
+    request.entries = staticProjectEntries();
+    request.candidateEntries.push_back(
+        cuexis::cxc::CxcWriteEntry{std::string{candidateEntryPath}, fixture.bytes});
+    request.candidateExtensionsJson = fixture.extensionJson;
+    {
+        const ScopedEnv fail{"CUEXIS_ASSET_PUBLISH_FAIL_REPLACE_TARGET",
+                             candidateTarget.filename().string()};
+        const auto published = cuexis::tools::publishPackagePair(request);
+        REQUIRE_FALSE(published.has_value());
+        CHECK(errorCode(published.error()) == "asset.publish.replace_failed");
+    }
+
+    // The last valid pair survives the failure byte for byte, and no temporary sibling remains.
+    CHECK(readBytes(v4Target) == previousBytes);
+    CHECK(readBytes(candidateTarget) == earlierCandidateBytes);
+    CHECK(loadPackage(v4Target).identity().hex() == previous->packageIdentity);
+    std::error_code status;
+    for (const auto& entry : fs::directory_iterator{root, status}) {
+        const auto name = entry.path().filename().string();
+        CHECK(name.find(".tmp.") == std::string::npos);
+    }
 }

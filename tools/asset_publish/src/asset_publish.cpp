@@ -971,6 +971,29 @@ struct BuiltPackage final {
     return {};
 }
 
+// Puts a package target back to the bytes captured before a pair publication. A target that did not
+// exist before is removed; a target that existed is restored byte for byte.
+[[nodiscard]] auto rollbackPackage(const fs::path& target,
+                                   const std::optional<std::vector<std::byte>>& previous)
+    -> core::Result<void> {
+    if (!previous) {
+        detail::removeTreeQuiet(target);
+        return {};
+    }
+    auto temporary = detail::uniqueSibling(target, "rollback");
+    auto written = detail::writeFileExclusive(temporary, *previous);
+    if (!written) {
+        detail::removeTreeQuiet(temporary);
+        return core::unexpected(std::move(written.error()));
+    }
+    auto replaced = detail::replaceAtomically(temporary, target);
+    if (!replaced) {
+        detail::removeTreeQuiet(temporary);
+        return core::unexpected(std::move(replaced.error()));
+    }
+    return detail::syncDirectory(target.parent_path());
+}
+
 } // namespace
 
 auto publishPackage(const PackagePublishRequest& request) -> core::Result<PackagePublishResult> {
@@ -1037,6 +1060,18 @@ auto publishPackagePair(const PackagePairRequest& request) -> core::Result<Packa
         return core::unexpected(std::move(lock.error()));
     }
 
+    // The pair is transactional, so the previous v4 package is captured before it is replaced. A
+    // failure of the second replacement restores those exact bytes: the last valid package must
+    // survive the failure, and deleting it would be as wrong as leaving a half-updated pair.
+    std::optional<std::vector<std::byte>> previousV4;
+    if (detail::isRegularFile(request.v4Target)) {
+        auto previous = detail::readFileBytes(request.v4Target, request.limits.maxPackageBytes);
+        if (!previous) {
+            return core::unexpected(std::move(previous.error()));
+        }
+        previousV4 = std::move(*previous);
+    }
+
     bool v4Replaced = false;
     auto v4Committed = commitPackage(request.v4Target, *v4, request.limits, v4Replaced);
     if (!v4Committed) {
@@ -1046,8 +1081,14 @@ auto publishPackagePair(const PackagePairRequest& request) -> core::Result<Packa
     auto candidateCommitted =
         commitPackage(request.candidateTarget, *candidate, request.limits, candidateReplaced);
     if (!candidateCommitted) {
-        // The pair is transactional: a failed second package must not leave a half-updated pair.
-        detail::removeTreeQuiet(request.v4Target);
+        auto rolledBack = rollbackPackage(request.v4Target, previousV4);
+        if (!rolledBack) {
+            return core::unexpected(
+                publishError(publishReplaceCode,
+                             "Candidate package publication failed and the v4 package could not be "
+                             "rolled back")
+                    .withCause(std::move(candidateCommitted.error())));
+        }
         return core::unexpected(
             publishError(publishReplaceCode,
                          "Candidate package publication failed; the v4 package was rolled back")

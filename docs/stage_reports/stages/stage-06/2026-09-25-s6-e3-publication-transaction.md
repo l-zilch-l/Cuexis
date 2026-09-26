@@ -107,12 +107,13 @@ cmake --build --preset debug-media-tools
 ctest --preset debug-media-tools --no-tests=error
 ```
 
-- `cuexis_asset_publish_tests`：15 个 TEST_CASE、176 条断言全部通过，无编译警告。覆盖：generation
+- `cuexis_asset_publish_tests`：16 个 TEST_CASE、212 条断言全部通过，无编译警告。覆盖：generation
   发布/幂等/内容寻址/标签参与身份、非法批次不落盘、注入失败后 staging 清理且旧 generation 完好、
   被篡改的已发布 generation 以 `asset.publish.validation_failed` 拒绝且不覆盖、重启恢复清理
   staging 与临时文件、显式 adopt 不改写工程入口、同进程与**跨进程**发布锁 busy、包发布与替换、
   替换失败保留上一有效包、缺失目标目录 fail closed、同一批次的 v4+candidate 双闭包、candidate
-  闭包非法时两个目标都不动、candidate 替换失败时 v4 回滚。
+  闭包非法时两个目标都不动、candidate 替换失败时 v4 目标回到替换前的字节（上一有效包逐字节保留，
+  此前没有 v4 包时该目标不出现）。
 - `cuexis_media_import_tests`：23 个 TEST_CASE、615 条断言全部通过（含 5 个新增 E3 用例）。
 - `cuexis_media_importer_tool_tests`：CLI 门禁通过，含 4.2 的 E3 用例。
 
@@ -144,6 +145,9 @@ ctest --preset debug-media-tools --no-tests=error
 
 - `clang-format --dry-run --Werror`：新增与改动的源文件全部通过。
 - `python -B tools/check_docs.py` 与 `git diff --check` 通过。
+- 本机 UCRT MinGW `g++ -std=c++20 -fsyntax-only`：对新增与改动的六个源文件与两个测试文件全部
+  通过（含 `tools/asset_publish`、`tools/media_import` 与 `tools/media_importer`）。这一步是
+  hosted MinGW 之前能廉价发现的交叉编译器差异检查：`_dupenv_s` 缺陷就是它抓到的（见 5）。
 - shader-tools OFF：`debug-media-tools` 在 `CUEXIS_BUILD_SHADER_TOOLS=OFF` 下配置、构建、测试
   全部通过；`developer-tools` OFF 的默认 `debug` preset 不构建媒体工具，Playback 安装消费者
   不依赖任何媒体解码库（`cuexis_asset_publish` 与 `cuexis_media_import` 都不在安装闭包里）。
@@ -168,16 +172,26 @@ ctest --preset debug-media-tools --no-tests=error
   （需要引用的路径不算可移植）。`isPortableRelativePath` 相应调整。
 - **`REQUIRE_MESSAGE` 在 Catch2 v3.15.2 不可用**：测试改用 `requireOk` 辅助函数，在失败时输出库
   诊断而不是只输出布尔值。
-- **MSVC 弃用警告**：`getenv` 在库与测试里都改为 `_dupenv_s`（POSIX 保留 `getenv`），
+- **`_dupenv_s` 不是 MinGW 符号**：库与测试里的环境读取最初按 `_WIN32` 选择 `_dupenv_s`，MSVC
+  通过，MinGW 链接时报 `undefined reference to '__imp__dupenv_s'`（hosted Windows MinGW 的
+  `cuexis_media_importer.exe` 链接失败，见 6.1）。`_dupenv_s` 是 MSVC CRT 扩展，条件改为
+  `_MSC_VER`（与仓库既有 `cxc_tool_common.cpp`、`image_import.cpp` 的写法一致），非 MSVC 用
+  `std::getenv`。本机 UCRT MinGW 语法检查已复验。
+- **pair 回滚不能删除上一有效包**：candidate 替换失败时原实现直接删除 v4 目标，若该目标此前是一个
+  有效包，删除等于丢失上一有效包。现在在替换前捕获 v4 目标的字节，失败时逐字节恢复（此前不存在
+  时才删除），并由新增用例断言 v4 与 candidate 两个目标的字节都与失败前完全一致、目录里没有
+  `.tmp.` 残余。
+- **MSVC 弃用警告**：`getenv` 在库与测试里都改为 `_dupenv_s`（非 MSVC 保留 `getenv`），
   `debug-media-tools` 保持零警告。
 
 ## 6. Hosted 四平台结果
 
 ### 6.1 四平台矩阵
 
-待补：本批次提交后需要与 E1/E2 相同的四平台证据（Linux Quality GCC media-tools、Linux Quality
-Clang ASan+UBSan media-tools、Windows MSVC、Windows MinGW），并确认新增目标在四个平台都编译、
-注册与运行。本页在拿到该证据之前只声明本地结果。
+本批次第一次推送（`2d6c96a`，E3 实现 + 日期滚动）的 hosted 结果：Linux Quality、Windows MSVC 与
+Version Gate 通过，**Windows MinGW 失败**，失败点是 `cuexis_media_importer.exe` 链接期的
+`undefined reference to '__imp__dupenv_s'`（见 5），与实现逻辑无关，是交叉编译器的 CRT 差异。
+修复后需要在新 SHA 上重跑四平台；本页在该证据到手之前只声明本地结果，不声明四平台通过。
 
 ### 6.2 Version Gate 日期滚动
 

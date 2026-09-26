@@ -37,7 +37,9 @@ namespace fs = std::filesystem;
 
 [[nodiscard]] auto readEnvValue(std::string_view name) -> std::string {
     const std::string key{name};
-#if defined(_WIN32)
+    // _dupenv_s is an MSVC CRT extension: MinGW has no such symbol, so it must not be selected by
+    // _WIN32.
+#if defined(_MSC_VER)
     char* value = nullptr;
     std::size_t size = 0;
     if (::_dupenv_s(&value, &size, key.c_str()) != 0 || value == nullptr) {
