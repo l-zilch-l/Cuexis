@@ -17,7 +17,7 @@
 | 分支 | `stage-06-workspace` |
 | PR | #29，`OPEN`，未合并 |
 | 起始顶端 SHA | `730d0d6`（E1/E2 收尾后的 green 顶端） |
-| 显示版本 | `26.09.24-1`（本批次没有再次滚动日期版本） |
+| 显示版本 | 起始 `26.09.24-1`；收尾时按 Version Gate 日期滚动推进到 `26.09.26-1`（见 6.2） |
 | SDK API | `0.7.0`（本批次没有改 SDK minor） |
 
 本批次没有扩大 R5 §10.1 的允许消费清单，没有引入运行时脚本入口，没有让 `engine/animation/`
@@ -173,9 +173,21 @@ ctest --preset debug-media-tools --no-tests=error
 
 ## 6. Hosted 四平台结果
 
+### 6.1 四平台矩阵
+
 待补：本批次提交后需要与 E1/E2 相同的四平台证据（Linux Quality GCC media-tools、Linux Quality
 Clang ASan+UBSan media-tools、Windows MSVC、Windows MinGW），并确认新增目标在四个平台都编译、
 注册与运行。本页在拿到该证据之前只声明本地结果。
+
+### 6.2 Version Gate 日期滚动
+
+本批次第一次推送时 `Version Gate` 失败，与 E3 实现无关，是日期滚动：可信 UTC 日期已进入
+`2026-09-26`，而候选版本仍是 E1/E2 收尾时滚动的 `26.09.24-1`，检查器报
+`version.release_date.stale: candidate date 26.09.24-1 is before trusted UTC date 2026-09-26`。
+处置方式与 E1/E2 相同：用 `tools/update_version.py 26.09.26-1` 推进日期版本
+（`cmake/CuexisVersion.cmake` 与 `vcpkg.json` 同步），并在本机用与 CI 相同的参数复跑
+`tools/check_version_gate.py` 确认通过。这次推进只改日期构建身份，`CUEXIS_SDK_API_VERSION` 仍为
+`0.7.0`，不影响媒体 profile identity、canonical golden 或发布事务的 identity 计算。
 
 ## 7. 未完成项
 

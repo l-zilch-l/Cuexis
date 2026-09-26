@@ -53,7 +53,7 @@ A2 只证明冻结决策可以被明确描述和表征，不代表 v5 Playback�
 版本门禁或 Reference Host 已实现；SDK 仍为 `0.7.0`，三个工程问题继续 open。A2 之后 B1、C1、C2、D1 与 D2
 已分别取得退出证据。E1/E2 的实现与四平台验证已完成但尚未退出（见下文），其后续批次仍未完成。
 S6-B1 已落下版本比较器、独立负例测试、trusted-baseline workflow 和发行 checklist；当前显示版本
-为 `26.09.24-1`（E1/E2 收尾时按 Version Gate 日期滚动推进，见下），SDK API 仍为 `0.7.0`。`26.09.21-2` 在 UTC `2026-09-22` 已过期，因此前进到当天 build 1。当天曾写成的 `26.09.23-1` 被 Version Gate 以 `version.release_date.future` 拒绝，分支收回 `26.09.22-1`；UTC 进入 `2026-09-23` 后再前进到 `26.09.23-1`。bootstrap PR #26 已将门禁纳入 `master`，并启用
+为 `26.09.26-1`（E1/E2 收尾时滚动到 `26.09.24-1`，E3 收尾时按 Version Gate 日期滚动推进到 `26.09.26-1`，见下），SDK API 仍为 `0.7.0`。`26.09.21-2` 在 UTC `2026-09-22` 已过期，因此前进到当天 build 1。当天曾写成的 `26.09.23-1` 被 Version Gate 以 `version.release_date.future` 拒绝，分支收回 `26.09.22-1`；UTC 进入 `2026-09-23` 后再前进到 `26.09.23-1`。bootstrap PR #26 已将门禁纳入 `master`，并启用
 `Version advancement (pre-merge)` required check、strict latest-base 和 admin enforcement。
 候选 PR #27 的 `d4697549a50e9c517ac393c27786826aa43ce9cc` 以 trusted baseline
 `4545742ed63ae2d8f11ad07e80930ce5b88fa0ce` 通过 protected Version Gate run `35586930775`，
@@ -110,7 +110,7 @@ float 字面量（MSVC 即如此），而 GCC/Clang/MinGW 使用全精度 double
 了 profile 元数据，仅 `audio_stereo_ogg` 重新冻结内容摘要（`df73cb81…`），没有加 epsilon、丢低位或
 平台分支。`66a15d0` 的 hosted 矩阵（Linux Quality、Windows MSVC、Windows MinGW）全部通过，立体声
 Ogg 的 canonical identity 断言在四个平台对着同一份 golden 通过；Version Gate 的日期滚动在同批收尾
-中用 `tools/update_version.py 26.09.24-1` 处置（仅日期构建身份，SDK API 仍为 `0.7.0`）。该实现不是
+中先用 `tools/update_version.py 26.09.24-1` 处置；E3 收尾时可信 UTC 日期已进入 `2026-09-26`，同一检查器再次报 `version.release_date.stale`，因此用 `tools/update_version.py 26.09.26-1` 再滚动一次（仅日期构建身份，SDK API 仍为 `0.7.0`）。该实现不是
 批次退出、不是 Stage 6 关闭，也不构成 owner acceptance。
 E3 已在同一 `CUEXIS_BUILD_MEDIA_TOOLS` 开关下落地并取得本地证据，尚未取得 hosted 四平台证据，因此
 仍未退出：`tools/asset_publish`（`cuexis_asset_publish`）把「先在 staging 生成并验证，再以一次

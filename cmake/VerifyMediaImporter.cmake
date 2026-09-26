@@ -316,7 +316,7 @@ execute_process(
     COMMAND "${CUEXIS_MEDIA_IMPORTER}" --kind image --input "${image_fixture}"
         --output-dir "${e3_artifacts}" --asset-id "textures/checker"
         --provenance-dir "${e3_provenance}" --cache-dir "${e3_cache}"
-        --generation-dir "${e3_generations}" --generation-id "26.09.24-1" --print-info
+        --generation-dir "${e3_generations}" --generation-id "26.09.26-1" --print-info
     RESULT_VARIABLE e3_status
     OUTPUT_VARIABLE e3_output
     ERROR_VARIABLE e3_error
@@ -403,7 +403,7 @@ execute_process(
     COMMAND "${CUEXIS_MEDIA_IMPORTER}" --kind image --input "${image_fixture}"
         --output-dir "${e3_artifacts}" --asset-id "textures/checker"
         --provenance-dir "${e3_provenance}" --cache-dir "${e3_cache}"
-        --generation-dir "${e3_generations}" --generation-id "26.09.24-1"
+        --generation-dir "${e3_generations}" --generation-id "26.09.26-1"
     RESULT_VARIABLE e3_republish_status
     OUTPUT_VARIABLE e3_republish_output
     ERROR_VARIABLE e3_republish_error
@@ -540,7 +540,7 @@ file(WRITE "${e3_recovery_dir}/staging/abandoned/textures/half.texture" "half")
 execute_process(
     COMMAND "${CUEXIS_MEDIA_IMPORTER}" --kind image --input "${image_fixture}"
         --output-dir "${e3_recovery_dir}/artifacts" --asset-id "textures/checker"
-        --generation-dir "${e3_recovery_dir}" --generation-id "26.09.24-1"
+        --generation-dir "${e3_recovery_dir}" --generation-id "26.09.26-1"
     RESULT_VARIABLE e3_recovery_status
     OUTPUT_VARIABLE e3_recovery_output
     ERROR_VARIABLE e3_recovery_error
