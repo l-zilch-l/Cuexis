@@ -1,11 +1,11 @@
 # S6-E3 资源身份、缓存与包原子发布
 
-状态：in_progress（本地实现与 `debug-media-tools` 全量验证；同 SHA hosted 四平台证据待补。不是批次
-退出、Stage 6 关闭、PR 合并或 owner acceptance）
+状态：implemented（本地 `debug-media-tools` 全量验证与同 SHA hosted 四平台证据；不是批次退出、
+Stage 6 关闭、PR 合并或 owner acceptance）
 
 日期：2026-09-25
 
-本报告记录 S6-E3（资源身份、缓存、索引与 CXC 原子发布）的实现与本地证据。合同来自
+本报告记录 S6-E3（资源身份、缓存、索引与 CXC 原子发布）的实现与验证证据。合同来自
 [stage-06 plan.md](../../../stage_plans/active/stage-06/plan.md) §S6-E3 与 ADR 0042 §S6-D06；
 本页不重新裁定 profile，不把本地结果当作 release 或 owner acceptance 证据。
 
@@ -191,7 +191,23 @@ ctest --preset debug-media-tools --no-tests=error
 本批次第一次推送（`2d6c96a`，E3 实现 + 日期滚动）的 hosted 结果：Linux Quality、Windows MSVC 与
 Version Gate 通过，**Windows MinGW 失败**，失败点是 `cuexis_media_importer.exe` 链接期的
 `undefined reference to '__imp__dupenv_s'`（见 5），与实现逻辑无关，是交叉编译器的 CRT 差异。
-修复后需要在新 SHA 上重跑四平台；本页在该证据到手之前只声明本地结果，不声明四平台通过。
+
+修复提交 `0753e6a`（`_dupenv_s` 改为按 `_MSC_VER` 选择 + pair 回滚逐字节恢复上一有效 v4 包）的
+hosted 矩阵全部通过：
+
+| 平台 / 工作流 | 结果 |
+| --- | --- |
+| Version Gate | pass |
+| Linux Quality（GCC media-tools） | 677/677 |
+| Linux Quality（Clang ASan + UBSan media-tools） | 677/677 |
+| Linux Quality（Clang Shared Debug / shader-tools） | 654/654、668/668 |
+| Windows MSVC（debug / release，含 media-tools） | 732/732、772/772 |
+| Windows MinGW（debug / release，含 media-tools） | 732/732、772/772 |
+
+同一 SHA 上 `cuexis_asset_publish_tests`、`cuexis_media_import_tests` 与
+`cuexis_media_importer_tool_tests`（E3 门禁）在四个平台都编译、注册并通过；Windows 与 Linux 的
+注册测试数量差（772 与 677）与 E1/E2 时的基线差一致（751 与 656），来自平台条件测试而非本批次
+新增的跳过。E3 的验收矩阵因此在本批次实现 SHA 上成立；这不等于批次退出或 Stage 6 关闭。
 
 ### 6.2 Version Gate 日期滚动
 
@@ -205,10 +221,11 @@ Version Gate 通过，**Windows MinGW 失败**，失败点是 `cuexis_media_impo
 
 ## 7. 未完成项
 
-- hosted 四平台证据（6）。
 - E3 验收里「完整产物可由 clean staging Player 与宿主消费」在本批次由
   `cuexis_asset_publish_tests` 的 v4+candidate 双闭包用例与既有 CXC/Player 门禁覆盖；把
   importer 产出的媒体资源接进一个真实工程的端到端用例仍属 C4。
+- E3 的磁盘满与权限失败在本批次由「父目录不存在即 `asset.publish.invalid_request`」与注入替换
+  失败两条路径覆盖；真正的磁盘满与只读介质需要在 C4 的具名宿主上取证。
 - 次要清理项（E1/E2 报告已记录）：`tools/media_import/CMakeLists.txt` 里
   `${MINIMP3_INCLUDE_DIRS}` 是未定义变量的空展开。
 
