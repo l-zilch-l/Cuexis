@@ -294,13 +294,60 @@ while decoding. Metadata lengths are untrusted. If a library allocation cannot b
 hard limit, import runs in a bounded worker process; catching bad_alloc at the outer boundary is not
 a budget implementation.
 
-Cache keys contain the original bytes hash, conversion profile, exact decoder version and build
+Cache keys contain the original bytes hash, conversion profile, decoder family token and build
 options. Cache output is revalidated. Output paths are content-identity addressed and immutable.
 Project assets are written into a new generation directory. CXC publication writes a same-directory
 temporary package, closes and validates it, then performs one atomic replacement while holding a
 process-shared publication lock. A concurrent writer returns busy. Individual file renames do not
 claim project-level atomicity. Import does not rewrite the user project entry automatically;
 adoption is explicit through generation selection or repack.
+
+### 6.1 Implemented identity, cache and publication contract (S6-E3)
+
+One imported resource has four independent identities, and the pipeline keeps them apart:
+
+| Identity | Preimage |
+| --- | --- |
+| Raw source identity | SHA-256 of the original encoded bytes (PNG/JPEG/MP3/Ogg Vorbis/FLAC) |
+| Profile identity | `mediaProfileIdentity()`: profile version plus every decoder build and output-affecting build option |
+| Artifact identity | SHA-256 of the canonical artifact (CXPRES01 payload or canonical RIFF/WAVE PCM) |
+| Resource AssetId | The id the project asset index addresses the resource by |
+
+The provenance sidecar (`cuexis.media-provenance` version 1, canonical single-line JSON with a fixed
+key order) records all four plus the raw source byte count, an author-side locator and the exact
+decoder. It is written next to the published generation, never inside the runtime closure, and
+Playback never reads it. The original encoded source stays on the author side. Unknown keys,
+duplicate keys, a wrong version, a non-portable AssetId or an artifact identity that does not match
+the artifact bytes are refused rather than repaired.
+
+The media cache key is the SHA-256 of a domain-separated (`cuexis.media.cache.key.v1`),
+length-prefixed preimage of the raw source identity, the profile identity, a decoder family token and
+the output-affecting build options (`minimp3-no-simd;fp-precise;contract-off`). A hit revalidates the
+record against the request, then re-hashes the stored artifact against the recorded identity. A
+damaged, edited or incomplete entry is refused with `media.cache.corrupt`; it is never treated as a
+hit and never silently re-imported. Rebuilding is an explicit offline action (`--rebuild`), and the
+content-addressed artifact survives a record discard because another key may reference it.
+
+Publication is a transaction with a single visible switch. A generation is an immutable,
+content-addressed directory `generations/<identity>`, where the identity covers the generation label,
+the runtime closure list and the provenance list. Publication validates the request, takes the
+process-shared lock, writes every entry into a staging directory with exclusive creation and fsync,
+writes the generation marker, re-reads the marker and re-hashes every listed entry, fsyncs the
+directory and then performs exactly one `rename`. Every failure path removes the staging tree, so a
+generation either appears complete or does not appear at all. Re-publishing identical content is a
+verified no-op; a same-identity generation whose bytes differ is `asset.publish.conflict`.
+
+The publication lock is an OS-level exclusive lock on an open handle (Windows `LockFileEx`, POSIX
+`flock`), so a crashed writer releases it in the kernel and restart recovery needs no stale-lock
+timeout. The lock file itself persists and its mere existence is not a lock. A second writer returns
+`asset.publish.busy`.
+
+Package publication builds the v4 and candidate closures from one batch, self-checks both through the
+production loader before touching either target, writes a same-directory temporary file with the
+`.cxc` extension, re-validates the bytes on disk and compares the package identity, then replaces,
+backing up the previous package and restoring it if the replacement fails. A failed candidate
+replacement rolls the v4 target back, so a failure never leaves a half-updated pair or changes the
+active Playback package. None of these tools are part of the SDK install closure.
 
 ## 7. A2 Evidence State
 

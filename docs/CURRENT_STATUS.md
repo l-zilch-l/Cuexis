@@ -111,7 +111,21 @@ float 字面量（MSVC 即如此），而 GCC/Clang/MinGW 使用全精度 double
 平台分支。`66a15d0` 的 hosted 矩阵（Linux Quality、Windows MSVC、Windows MinGW）全部通过，立体声
 Ogg 的 canonical identity 断言在四个平台对着同一份 golden 通过；Version Gate 的日期滚动在同批收尾
 中用 `tools/update_version.py 26.09.24-1` 处置（仅日期构建身份，SDK API 仍为 `0.7.0`）。该实现不是
-批次退出、不是 Stage 6 关闭，也不构成 owner acceptance。E3/C4 及后续批次仍未完成。
+批次退出、不是 Stage 6 关闭，也不构成 owner acceptance。
+E3 已在同一 `CUEXIS_BUILD_MEDIA_TOOLS` 开关下落地并取得本地证据，尚未取得 hosted 四平台证据，因此
+仍未退出：`tools/asset_publish`（`cuexis_asset_publish`）把「先在 staging 生成并验证，再以一次
+`rename` 切换可见产物」实现为发布事务，使用不可变、内容寻址的 `generations/<identity>` 目录、
+独占创建加 `fsync`、marker 重新读取并逐条重算摘要、操作系统级进程间发布锁（崩溃即释放，锁文件
+存在与否不代表持锁）以及显式失败清理与重启恢复；`publishPackagePair` 从同一批条目构建 v4 与
+candidate 两个闭包，先全部构建并自校验，再替换、必要时回滚，失败不覆盖上一有效包。
+`tools/media_import` 新增 provenance 记录（原始输入、profile、canonical 产物与资源 AssetId 四类
+身份分离，原始资源保留在作者侧）与身份复验缓存（键覆盖原始输入身份、profile 身份、decoder 家族与
+输出相关构建策略；命中时复验记录并重算产物摘要，损坏缓存以 `media.cache.corrupt` 拒绝，只有
+`--rebuild` 才做显式离线重建）。CLI 新增 `--asset-id`、`--provenance-dir`、`--cache-dir`、
+`--rebuild`、`--generation-dir`、`--generation-id`，E3 门禁覆盖旧 profile、坏缓存、缺失原始资源、
+重启恢复与双闭包替换回滚；本地 `debug-media-tools` 全绿，证据见
+[S6-E3 报告](stage_reports/stages/stage-06/2026-09-25-s6-e3-publication-transaction.md)。
+C4 及后续批次仍未完成。
 
 ## 已关闭的 Full Review
 

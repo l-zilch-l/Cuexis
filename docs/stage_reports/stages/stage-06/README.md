@@ -41,6 +41,9 @@
 - [2026-09-25 S6-E1/E2 媒体导入实现](2026-09-25-s6-e1-e2-media-importer.md)
   （默认 OFF 的 `cuexis_media_import`/`cuexis_media_importer`、固定解码器 profile、canonical
   golden、CLI 发布门禁和本地 MSVC/MinGW 语法证据；四平台字节一致仍是 hosted 证据）
+- [2026-09-25 S6-E3 资源身份、缓存与包原子发布](2026-09-25-s6-e3-publication-transaction.md)
+  （provenance 四类身份、身份复验媒体缓存、不可变 generation 目录与进程间发布锁、
+  v4+candidate 双闭包替换与回滚；hosted 四平台证据待补）
 
 权威范围见 [Stage 6 计划](../../../stage_plans/active/stage-06/plan.md)、
 [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md) 和

@@ -8,6 +8,7 @@ add_executable(cuexis::media_importer ALIAS cuexis_media_importer)
 target_compile_features(cuexis_media_importer PRIVATE cxx_std_20)
 target_link_libraries(cuexis_media_importer
     PRIVATE
+        cuexis::asset_publish
         cuexis::core
         cuexis::media_import
 )

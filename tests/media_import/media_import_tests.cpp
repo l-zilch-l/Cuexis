@@ -6,7 +6,9 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <cuexis/media_import/media_cache.hpp>
 #include <cuexis/media_import/media_import.hpp>
+#include <cuexis/media_import/media_provenance.hpp>
 
 #include <algorithm>
 #include <cctype>
@@ -18,6 +20,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <system_error>
 #include <vector>
 
 namespace {
@@ -223,6 +226,38 @@ void requireCanonical(std::span<const std::byte> bytes, std::string_view stem) {
     auto result = media::importAudio(source, budget);
     REQUIRE_FALSE(result.has_value());
     return std::string{result.error().code()};
+}
+
+// An empty scratch directory for the E3 cache and publication cases.
+[[nodiscard]] auto scratchDirectory(std::string_view name) -> std::filesystem::path {
+    const auto root =
+        std::filesystem::temp_directory_path() / "cuexis-s6e3-media" / std::string{name};
+    std::error_code status;
+    std::filesystem::remove_all(root, status);
+    std::filesystem::create_directories(root, status);
+    REQUIRE_FALSE(status);
+    return root;
+}
+
+void writeFile(const std::filesystem::path& path, std::string_view text) {
+    std::error_code status;
+    std::filesystem::create_directories(path.parent_path(), status);
+    std::ofstream stream{path, std::ios::binary | std::ios::trunc};
+    REQUIRE(stream.good());
+    stream.write(text.data(), static_cast<std::streamsize>(text.size()));
+    REQUIRE(stream.good());
+}
+
+void writeFile(const std::filesystem::path& path, const std::vector<std::byte>& bytes) {
+    std::error_code status;
+    std::filesystem::create_directories(path.parent_path(), status);
+    std::ofstream stream{path, std::ios::binary | std::ios::trunc};
+    REQUIRE(stream.good());
+    if (!bytes.empty()) {
+        stream.write(reinterpret_cast<const char*>(bytes.data()),
+                     static_cast<std::streamsize>(bytes.size()));
+    }
+    REQUIRE(stream.good());
 }
 
 } // namespace
@@ -504,4 +539,185 @@ TEST_CASE("audio import is deterministic", "[media_import][e2]") {
     const auto second = importAudioOrFail(source);
     CHECK(first.canonicalWav == second.canonicalWav);
     CHECK(first.info.frames == second.info.frames);
+}
+
+TEST_CASE("provenance keeps the four resource identities apart", "[media_import][e3]") {
+    const auto source = fixture("image/rgb8.png");
+    const auto image = importImageOrFail(source);
+    const auto provenance =
+        media::makeImageProvenance(source, image, "textures/checker", "assets-src/checker.png");
+    REQUIRE(media::validateProvenance(provenance).has_value());
+    CHECK(provenance.kind == media::MediaArtifactKind::Texture);
+    CHECK(provenance.rawSourceIdentity == media::contentIdentity(source));
+    CHECK(provenance.rawSourceBytes == source.size());
+    CHECK(provenance.profileIdentity == media::mediaProfileIdentity());
+    CHECK(provenance.artifactIdentity == media::contentIdentity(image.portableTexture));
+    CHECK(provenance.artifactBytes == image.portableTexture.size());
+    CHECK(provenance.assetId == "textures/checker");
+    // The raw source identity is not the artifact identity: the two must never be conflated.
+    CHECK(provenance.rawSourceIdentity != provenance.artifactIdentity);
+    CHECK(media::verifyProvenanceArtifact(provenance, image.portableTexture).has_value());
+
+    const auto audio = importAudioOrFail(fixture("audio/mono.flac"));
+    const auto audioProvenance = media::makeAudioProvenance(fixture("audio/mono.flac"), audio,
+                                                            "audio/track", "assets-src/track.flac");
+    CHECK(audioProvenance.kind == media::MediaArtifactKind::Audio);
+    CHECK(audioProvenance.decoderVersion == audio.info.decoder);
+    CHECK(media::verifyProvenanceArtifact(audioProvenance, audio.canonicalWav).has_value());
+}
+
+TEST_CASE("provenance encodes canonically and decodes strictly", "[media_import][e3]") {
+    const auto source = fixture("image/rgb8.png");
+    const auto image = importImageOrFail(source);
+    const auto provenance =
+        media::makeImageProvenance(source, image, "textures/checker", "src.png");
+    const auto encoded = media::encodeProvenance(provenance);
+    CHECK(encoded.back() == '\n');
+    CHECK(encoded.find('\n') == encoded.size() - 1);
+    const auto decoded = media::decodeProvenance(encoded);
+    REQUIRE(decoded.has_value());
+    CHECK(*decoded == provenance);
+    CHECK(media::encodeProvenance(*decoded) == encoded);
+
+    // Unknown keys, a wrong version and a truncated document are refused, not repaired.
+    auto unknown = encoded;
+    unknown.insert(unknown.size() - 2, ",\"extra\":1");
+    const auto unknownResult = media::decodeProvenance(unknown);
+    REQUIRE_FALSE(unknownResult.has_value());
+    CHECK(std::string{unknownResult.error().code()} == "media.provenance.invalid");
+
+    auto wrongVersion = encoded;
+    const auto versionAt = wrongVersion.find("\"version\":1");
+    REQUIRE(versionAt != std::string::npos);
+    wrongVersion.replace(versionAt, 11, "\"version\":2");
+    const auto versionResult = media::decodeProvenance(wrongVersion);
+    REQUIRE_FALSE(versionResult.has_value());
+    CHECK(std::string{versionResult.error().code()} == "media.provenance.unsupported");
+
+    const auto truncated = media::decodeProvenance(encoded.substr(0, encoded.size() / 2));
+    REQUIRE_FALSE(truncated.has_value());
+
+    // A record whose artifact identity does not describe the bytes is refused.
+    auto tampered = provenance;
+    tampered.artifactIdentity = std::string(64, 'a');
+    const auto mismatch = media::verifyProvenanceArtifact(tampered, image.portableTexture);
+    REQUIRE_FALSE(mismatch.has_value());
+    CHECK(std::string{mismatch.error().code()} == "media.provenance.artifact_mismatch");
+
+    // An AssetId is a portable name, not a path.
+    auto pathLike = provenance;
+    pathLike.assetId = "../escape";
+    CHECK_FALSE(media::validateProvenance(pathLike).has_value());
+    CHECK(media::provenanceFileName("textures/checker").value() ==
+          "textures%2Fchecker.provenance.json");
+    CHECK_FALSE(media::provenanceFileName("../escape").has_value());
+}
+
+TEST_CASE("media cache hit revalidates the record and the artifact", "[media_import][e3]") {
+    const auto source = fixture("image/rgb8.png");
+    const auto image = importImageOrFail(source);
+    const auto provenance =
+        media::makeImageProvenance(source, image, "textures/checker", "src.png");
+    const auto root = scratchDirectory("cache-hit");
+    const media::MediaCacheStore store{root};
+
+    const media::MediaCacheKeyInput input{provenance.rawSourceIdentity, provenance.profileIdentity,
+                                          provenance.decoderVersion};
+    CHECK(store.load(input).error().code() == "media.cache.missing");
+
+    const media::MediaCacheRecord record{
+        media::mediaCacheKey(input), media::MediaArtifactKind::Texture, input,
+        provenance.decoderVersion,   provenance.artifactIdentity,       provenance.artifactBytes};
+    REQUIRE(store.store(record, image.portableTexture).has_value());
+    const auto hit = store.load(input);
+    REQUIRE(hit.has_value());
+    CHECK(hit->artifact == image.portableTexture);
+    CHECK(hit->record.decoder == provenance.decoderVersion);
+    CHECK(store.recordCount() == 1);
+    // Storing the same result again is idempotent.
+    CHECK(store.store(record, image.portableTexture).has_value());
+
+    // A different profile identity is a different key: an old profile never reuses the artifact.
+    auto otherProfile = input;
+    otherProfile.profileIdentity = std::string(64, 'b');
+    CHECK(store.load(otherProfile).error().code() == "media.cache.missing");
+    // A different decoder version and different build options are also distinct keys.
+    auto otherDecoder = input;
+    otherDecoder.decoderVersion = "libpng-other";
+    CHECK(store.load(otherDecoder).error().code() == "media.cache.missing");
+    auto otherOptions = input;
+    otherOptions.buildOptions = "minimp3-no-simd;fp-precise;contract-on";
+    CHECK(store.load(otherOptions).error().code() == "media.cache.missing");
+
+    // An incomplete key input is refused instead of silently sharing a key.
+    auto incomplete = input;
+    incomplete.rawSourceIdentity.clear();
+    CHECK(store.load(incomplete).error().code() == "media.cache.invalid_request");
+}
+
+TEST_CASE("a corrupt media cache is refused instead of silently re-imported",
+          "[media_import][e3]") {
+    const auto source = fixture("audio/mono.flac");
+    const auto audio = importAudioOrFail(source);
+    const auto provenance = media::makeAudioProvenance(source, audio, "audio/track", "src.flac");
+    const auto root = scratchDirectory("cache-corrupt");
+    const media::MediaCacheStore store{root};
+    const media::MediaCacheKeyInput input{provenance.rawSourceIdentity, provenance.profileIdentity,
+                                          provenance.decoderVersion};
+    const media::MediaCacheRecord record{
+        media::mediaCacheKey(input), media::MediaArtifactKind::Audio, input,
+        provenance.decoderVersion,   provenance.artifactIdentity,     provenance.artifactBytes};
+    REQUIRE(store.store(record, audio.canonicalWav).has_value());
+    const auto recordPath = store.recordPath(record.key);
+    const auto artifactPath = store.artifactPath(record.artifactIdentity);
+
+    // A damaged record is a refusal with a stable code, not a silent rebuild.
+    writeFile(recordPath, "{\"format\":\"cuexis.media-cache\",\"version\":1,\"key\":\"");
+    CHECK(store.load(input).error().code() == "media.cache.corrupt");
+
+    // A record that no longer matches its own inputs is also refused.
+    auto edited = media::encodeMediaCacheRecord(record);
+    const auto profileAt = edited.find(provenance.profileIdentity);
+    REQUIRE(profileAt != std::string::npos);
+    edited.replace(profileAt, 64, std::string(64, 'c'));
+    writeFile(recordPath, edited);
+    CHECK(store.load(input).error().code() == "media.cache.corrupt");
+
+    // A damaged artifact is refused even when the record itself is intact. The cache refuses to
+    // overwrite the edited record, because overwriting it would destroy the evidence of the damage.
+    const auto conflict = store.store(record, audio.canonicalWav);
+    REQUIRE_FALSE(conflict.has_value());
+    CHECK(std::string{conflict.error().code()} == "media.cache.conflict");
+    CHECK(store.discard(input).value());
+    REQUIRE(store.store(record, audio.canonicalWav).has_value());
+    writeFile(artifactPath, "not the canonical wav");
+    CHECK(store.load(input).error().code() == "media.cache.corrupt");
+
+    // A record that describes a different artifact than the stored one is refused.
+    writeFile(artifactPath, audio.canonicalWav);
+    CHECK(store.load(input).has_value());
+    auto other = record;
+    other.artifactIdentity = std::string(64, 'd');
+    CHECK(store.store(other, audio.canonicalWav).error().code() == "media.cache.invalid_request");
+
+    // Rebuilding is explicit: discard clears the record, and the content addressed artifact stays.
+    CHECK(store.discard(input).value());
+    CHECK_FALSE(store.discard(input).value());
+    CHECK(store.load(input).error().code() == "media.cache.missing");
+    CHECK(std::filesystem::is_regular_file(artifactPath));
+    CHECK(store.store(record, audio.canonicalWav).has_value());
+    CHECK(store.load(input).has_value());
+}
+
+TEST_CASE("a missing raw source and a missing cache entry are distinct refusals",
+          "[media_import][e3]") {
+    const auto root = scratchDirectory("cache-missing-source");
+    const media::MediaCacheStore store{root};
+    const media::MediaCacheKeyInput input{std::string(64, '0'), media::mediaProfileIdentity(),
+                                          "libflac-1.5.0-native"};
+    // A never-imported source is a cache miss, not a corrupt entry and not an import.
+    const auto missing = store.load(input);
+    REQUIRE_FALSE(missing.has_value());
+    CHECK(std::string{missing.error().code()} == "media.cache.missing");
+    CHECK(store.recordCount() == 0);
 }

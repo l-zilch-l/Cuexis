@@ -297,6 +297,278 @@ if(reject_files)
     list(APPEND failures "reject: a failed import published ${reject_files}")
 endif()
 
+# ---------------------------------------------------------------------------------------------
+# S6-E3: provenance, cache identity revalidation and generation publication
+# ---------------------------------------------------------------------------------------------
+
+media_golden_field(image_rgb8 profile image_profile_identity)
+string(REPEAT "0" 64 e3_zero_identity)
+
+set(e3_root "${CUEXIS_MEDIA_IMPORTER_WORK}/e3")
+set(e3_artifacts "${e3_root}/artifacts")
+set(e3_provenance "${e3_root}/provenance")
+set(e3_generations "${e3_root}/generations")
+set(e3_cache "${e3_root}/cache")
+file(REMOVE_RECURSE "${e3_root}")
+file(MAKE_DIRECTORY "${e3_artifacts}" "${e3_provenance}" "${e3_generations}")
+
+execute_process(
+    COMMAND "${CUEXIS_MEDIA_IMPORTER}" --kind image --input "${image_fixture}"
+        --output-dir "${e3_artifacts}" --asset-id "textures/checker"
+        --provenance-dir "${e3_provenance}" --cache-dir "${e3_cache}"
+        --generation-dir "${e3_generations}" --generation-id "26.09.24-1" --print-info
+    RESULT_VARIABLE e3_status
+    OUTPUT_VARIABLE e3_output
+    ERROR_VARIABLE e3_error
+)
+set(e3_text "${e3_output}${e3_error}")
+if(NOT e3_status EQUAL 0)
+    list(APPEND failures "e3 publish: exited ${e3_status}: ${e3_text}")
+endif()
+
+# The author-side provenance sidecar keeps the four identities apart.
+set(e3_sidecar "${e3_provenance}/textures%2Fchecker.provenance.json")
+if(NOT EXISTS "${e3_sidecar}")
+    list(APPEND failures "e3 provenance: expected ${e3_sidecar}")
+else()
+    file(READ "${e3_sidecar}" e3_provenance_text)
+    file(SHA256 "${image_fixture}" e3_source_identity)
+    foreach(needle
+            "\"format\":\"cuexis.media-provenance\""
+            "\"version\":1"
+            "\"kind\":\"texture\""
+            "\"rawSourceIdentity\":\"${e3_source_identity}\""
+            "\"profileIdentity\":\"${image_profile_identity}\""
+            "\"artifactIdentity\":\"${image_golden_identity}\""
+            "\"decoderVersion\":\"libpng"
+            "\"assetId\":\"textures/checker\"")
+        string(FIND "${e3_provenance_text}" "${needle}" e3_at)
+        if(e3_at EQUAL -1)
+            list(APPEND failures
+                "e3 provenance: record has no ${needle}: ${e3_provenance_text}")
+        endif()
+    endforeach()
+    # The raw source identity must not be the artifact identity.
+    if(e3_source_identity STREQUAL image_golden_identity)
+        list(APPEND failures "e3 provenance: the raw source and the artifact share an identity")
+    endif()
+endif()
+
+# The generation is a complete, content addressed closure: the runtime entry is the golden artifact
+# and the provenance sidecar is stored beside the closure rather than inside it.
+file(GLOB e3_generation_dirs "${e3_generations}/generations/*")
+list(LENGTH e3_generation_dirs e3_generation_count)
+if(NOT e3_generation_count EQUAL 1)
+    list(APPEND failures "e3 generation: expected one generation, found ${e3_generation_dirs}")
+else()
+    list(GET e3_generation_dirs 0 e3_generation)
+    get_filename_component(e3_generation_identity "${e3_generation}" NAME)
+    string(LENGTH "${e3_generation_identity}" e3_generation_name_length)
+    string(REGEX MATCH "^[0-9a-f]+$" e3_generation_name_hex "${e3_generation_identity}")
+    if(NOT e3_generation_name_length EQUAL 64 OR NOT e3_generation_name_hex)
+        list(APPEND failures "e3 generation: directory name is not a SHA-256 (${e3_generation})")
+    endif()
+    set(e3_runtime_entry "${e3_generation}/textures/textures%2Fchecker.texture.bin")
+    if(NOT EXISTS "${e3_runtime_entry}")
+        list(APPEND failures "e3 generation: expected runtime entry ${e3_runtime_entry}")
+    else()
+        file(SHA256 "${e3_runtime_entry}" e3_runtime_identity)
+        if(NOT e3_runtime_identity STREQUAL image_golden_identity)
+            list(APPEND failures
+                "e3 generation: runtime entry ${e3_runtime_identity} is not the golden artifact")
+        endif()
+    endif()
+    if(NOT EXISTS "${e3_generation}/cuexis.generation")
+        list(APPEND failures "e3 generation: the generation marker is missing")
+    endif()
+    if(NOT EXISTS "${e3_generation}/provenance/textures%2Fchecker.provenance.json")
+        list(APPEND failures "e3 generation: the provenance record is missing")
+    endif()
+    file(READ "${e3_generation}/cuexis.generation" e3_marker)
+    string(FIND "${e3_marker}" "cuexis.generation 1" e3_marker_format)
+    if(e3_marker_format EQUAL -1)
+        list(APPEND failures "e3 generation: unexpected marker: ${e3_marker}")
+    endif()
+endif()
+
+# Staging is transient: a successful publication leaves no staging directory behind.
+file(GLOB e3_staging "${e3_generations}/staging/*")
+if(e3_staging)
+    list(APPEND failures "e3 generation: staging survived publication: ${e3_staging}")
+endif()
+
+# Republishing the same batch is an immutable no-op, and the label is part of the recorded identity.
+file(GLOB e3_before_dirs "${e3_generations}/generations/*")
+execute_process(
+    COMMAND "${CUEXIS_MEDIA_IMPORTER}" --kind image --input "${image_fixture}"
+        --output-dir "${e3_artifacts}" --asset-id "textures/checker"
+        --provenance-dir "${e3_provenance}" --cache-dir "${e3_cache}"
+        --generation-dir "${e3_generations}" --generation-id "26.09.24-1"
+    RESULT_VARIABLE e3_republish_status
+    OUTPUT_VARIABLE e3_republish_output
+    ERROR_VARIABLE e3_republish_error
+)
+if(NOT e3_republish_status EQUAL 0)
+    list(APPEND failures
+        "e3 republish: exited ${e3_republish_status}: ${e3_republish_output}${e3_republish_error}")
+endif()
+file(GLOB e3_after_dirs "${e3_generations}/generations/*")
+if(NOT e3_before_dirs STREQUAL e3_after_dirs)
+    list(APPEND failures "e3 republish: the generation set changed: ${e3_before_dirs} -> ${e3_after_dirs}")
+endif()
+
+# A cache hit serves the same artifact without a decoder run, and the cache holds one record.
+file(GLOB e3_cache_records "${e3_cache}/records/*.json")
+list(LENGTH e3_cache_records e3_record_count)
+if(NOT e3_record_count EQUAL 1)
+    list(APPEND failures "e3 cache: expected one record, found ${e3_cache_records}")
+endif()
+execute_process(
+    COMMAND "${CUEXIS_MEDIA_IMPORTER}" --kind image --input "${image_fixture}"
+        --output-dir "${e3_artifacts}" --asset-id "textures/checker"
+        --provenance-dir "${e3_provenance}" --cache-dir "${e3_cache}" --print-info
+    RESULT_VARIABLE e3_hit_status
+    OUTPUT_VARIABLE e3_hit_output
+    ERROR_VARIABLE e3_hit_error
+)
+if(NOT e3_hit_status EQUAL 0)
+    list(APPEND failures "e3 cache hit: exited ${e3_hit_status}: ${e3_hit_output}${e3_hit_error}")
+elseif(NOT e3_hit_output MATCHES "\"cached\":true")
+    list(APPEND failures "e3 cache hit: the run did not report a cache hit: ${e3_hit_output}")
+elseif(NOT e3_hit_output MATCHES "\"artifactIdentity\":\"${image_golden_identity}\"")
+    list(APPEND failures "e3 cache hit: the served artifact identity is wrong: ${e3_hit_output}")
+endif()
+
+# A damaged record is refused with its own code, and the published artifact is not rewritten.
+if(e3_record_count EQUAL 1)
+    list(GET e3_cache_records 0 e3_record)
+    file(READ "${e3_record}" e3_record_text)
+    file(WRITE "${e3_record}" "{\"format\":\"cuexis.media-cache\",\"version\":1,\"key\":\"")
+    execute_process(
+        COMMAND "${CUEXIS_MEDIA_IMPORTER}" --kind image --input "${image_fixture}"
+            --output-dir "${e3_artifacts}" --asset-id "textures/checker"
+            --cache-dir "${e3_cache}"
+        RESULT_VARIABLE e3_corrupt_status
+        OUTPUT_VARIABLE e3_corrupt_output
+        ERROR_VARIABLE e3_corrupt_error
+    )
+    set(e3_corrupt_text "${e3_corrupt_output}${e3_corrupt_error}")
+    if(e3_corrupt_status EQUAL 0 OR NOT e3_corrupt_text MATCHES "media.cache.corrupt")
+        list(APPEND failures
+            "e3 cache corrupt: expected media.cache.corrupt and a nonzero exit;"
+            " got status=${e3_corrupt_status}, output=${e3_corrupt_text}")
+    endif()
+    if(EXISTS "${e3_artifacts}/${image_golden_identity}.texture.bin")
+        file(SHA256 "${e3_artifacts}/${image_golden_identity}.texture.bin" e3_artifact_identity)
+        if(NOT e3_artifact_identity STREQUAL image_golden_identity)
+            list(APPEND failures "e3 cache corrupt: the published artifact changed")
+        endif()
+    endif()
+
+    # An old profile identity is a different key: the entry is not reused. The record is rewritten
+    # with an edited profile, which must be refused instead of silently re-imported.
+    file(WRITE "${e3_record}" "${e3_record_text}")
+    string(REPLACE "${image_profile_identity}" "${e3_zero_identity}" e3_old_profile_record
+        "${e3_record_text}")
+    if(e3_old_profile_record STREQUAL e3_record_text)
+        list(APPEND failures "e3 old profile: the record does not carry the profile identity")
+    else()
+        file(WRITE "${e3_record}" "${e3_old_profile_record}")
+        execute_process(
+            COMMAND "${CUEXIS_MEDIA_IMPORTER}" --kind image --input "${image_fixture}"
+                --output-dir "${e3_artifacts}" --asset-id "textures/checker"
+                --cache-dir "${e3_cache}"
+            RESULT_VARIABLE e3_old_status
+            OUTPUT_VARIABLE e3_old_output
+            ERROR_VARIABLE e3_old_error
+        )
+        set(e3_old_text "${e3_old_output}${e3_old_error}")
+        if(e3_old_status EQUAL 0 OR NOT e3_old_text MATCHES "media.cache.corrupt")
+            list(APPEND failures
+                "e3 old profile: expected media.cache.corrupt and a nonzero exit;"
+                " got status=${e3_old_status}, output=${e3_old_text}")
+        endif()
+    endif()
+
+    # Rebuilding is explicit: --rebuild clears the record and re-imports.
+    execute_process(
+        COMMAND "${CUEXIS_MEDIA_IMPORTER}" --kind image --input "${image_fixture}"
+            --output-dir "${e3_artifacts}" --asset-id "textures/checker"
+            --cache-dir "${e3_cache}" --rebuild --print-info
+        RESULT_VARIABLE e3_rebuild_status
+        OUTPUT_VARIABLE e3_rebuild_output
+        ERROR_VARIABLE e3_rebuild_error
+    )
+    if(NOT e3_rebuild_status EQUAL 0)
+        list(APPEND failures
+            "e3 rebuild: exited ${e3_rebuild_status}: ${e3_rebuild_output}${e3_rebuild_error}")
+    endif()
+    file(GLOB e3_rebuilt_records "${e3_cache}/records/*.json")
+    list(LENGTH e3_rebuilt_records e3_rebuilt_count)
+    if(NOT e3_rebuilt_count EQUAL 1)
+        list(APPEND failures "e3 rebuild: expected one record after the rebuild, found ${e3_rebuilt_records}")
+    endif()
+endif()
+
+# A missing raw source fails closed and publishes nothing.
+set(e3_missing_dir "${e3_root}/missing")
+file(REMOVE_RECURSE "${e3_missing_dir}")
+file(MAKE_DIRECTORY "${e3_missing_dir}")
+execute_process(
+    COMMAND "${CUEXIS_MEDIA_IMPORTER}" --kind image
+        --input "${e3_root}/absent.png" --output-dir "${e3_missing_dir}"
+        --asset-id "textures/absent" --cache-dir "${e3_cache}"
+    RESULT_VARIABLE e3_missing_status
+    OUTPUT_VARIABLE e3_missing_output
+    ERROR_VARIABLE e3_missing_error
+)
+if(e3_missing_status EQUAL 0)
+    list(APPEND failures "e3 missing source: a missing source succeeded: ${e3_missing_output}${e3_missing_error}")
+endif()
+file(GLOB e3_missing_files "${e3_missing_dir}/*")
+if(e3_missing_files)
+    list(APPEND failures "e3 missing source: a failed import published ${e3_missing_files}")
+endif()
+
+# A stale lock file is not a lock: publication locks the open handle at the OS level, so a lock file
+# left behind by an earlier process must not block a later one. This is the restart recovery case.
+set(e3_recovery_dir "${e3_root}/recovery")
+file(REMOVE_RECURSE "${e3_recovery_dir}")
+file(MAKE_DIRECTORY "${e3_recovery_dir}")
+file(WRITE "${e3_recovery_dir}/.cuexis.publish.lock" "")
+file(WRITE "${e3_recovery_dir}/staging/abandoned/textures/half.texture" "half")
+execute_process(
+    COMMAND "${CUEXIS_MEDIA_IMPORTER}" --kind image --input "${image_fixture}"
+        --output-dir "${e3_recovery_dir}/artifacts" --asset-id "textures/checker"
+        --generation-dir "${e3_recovery_dir}" --generation-id "26.09.24-1"
+    RESULT_VARIABLE e3_recovery_status
+    OUTPUT_VARIABLE e3_recovery_output
+    ERROR_VARIABLE e3_recovery_error
+)
+if(NOT e3_recovery_status EQUAL 0)
+    list(APPEND failures
+        "e3 restart recovery: a stale lock file blocked publication: "
+        "${e3_recovery_output}${e3_recovery_error}")
+endif()
+file(GLOB e3_recovery_generations "${e3_recovery_dir}/generations/*")
+list(LENGTH e3_recovery_generations e3_recovery_count)
+if(NOT e3_recovery_count EQUAL 1)
+    list(APPEND failures
+        "e3 restart recovery: expected one generation, found ${e3_recovery_generations}")
+elseif(NOT e3_generation_count EQUAL 1)
+    list(APPEND failures "e3 restart recovery: no serial generation to compare against")
+else()
+    # The same batch produces the same content addressed identity on both roots.
+    list(GET e3_recovery_generations 0 e3_recovery_generation)
+    list(GET e3_generation_dirs 0 e3_serial_generation)
+    get_filename_component(e3_recovery_name "${e3_recovery_generation}" NAME)
+    get_filename_component(e3_serial_name "${e3_serial_generation}" NAME)
+    if(NOT e3_recovery_name STREQUAL e3_serial_name)
+        list(APPEND failures
+            "e3 restart recovery: identity ${e3_recovery_name} differs from ${e3_serial_name}")
+    endif()
+endif()
+
 if(failures)
     string(REPLACE ";" "\n  - " failure_text "${failures}")
     message(FATAL_ERROR "cuexis_media_importer gate failed:\n  - ${failure_text}")

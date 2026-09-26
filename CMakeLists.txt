@@ -169,6 +169,7 @@ if(CUEXIS_BUILD_DEVELOPER_TOOLS)
 endif()
 if(CUEXIS_BUILD_MEDIA_TOOLS)
     list(APPEND CUEXIS_ACTIVE_TARGETS
+        cuexis_asset_publish
         cuexis_media_import
         cuexis_media_importer
     )
@@ -224,6 +225,9 @@ if(CUEXIS_BUILD_TESTS)
     endif()
     if(TARGET cuexis_media_import_tests)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_media_import_tests)
+    endif()
+    if(TARGET cuexis_asset_publish_tests)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_asset_publish_tests)
     endif()
 
     add_test(
@@ -830,6 +834,13 @@ if(TARGET cuexis_asset_importer)
     )
 endif()
 
+if(TARGET cuexis_asset_publish)
+    cuexis_verify_target_dependencies(cuexis_asset_publish
+        ALLOWED
+            cuexis::core
+            cuexis_cxc
+    )
+endif()
 if(TARGET cuexis_media_import)
     cuexis_verify_target_dependencies(cuexis_media_import
         ALLOWED
@@ -845,8 +856,17 @@ endif()
 if(TARGET cuexis_media_importer)
     cuexis_verify_target_dependencies(cuexis_media_importer
         ALLOWED
+            cuexis::asset_publish
             cuexis::core
             cuexis::media_import
+    )
+endif()
+if(TARGET cuexis_asset_publish_tests)
+    cuexis_verify_target_dependencies(cuexis_asset_publish_tests
+        ALLOWED
+            cuexis::asset_publish
+            cuexis::chart
+            Catch2::Catch2WithMain
     )
 endif()
 

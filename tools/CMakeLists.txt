@@ -14,6 +14,7 @@ if(CUEXIS_BUILD_DEVELOPER_TOOLS)
 endif()
 
 if(CUEXIS_BUILD_MEDIA_TOOLS)
+    add_subdirectory(asset_publish)
     add_subdirectory(media_import)
     add_subdirectory(media_importer)
 endif()
