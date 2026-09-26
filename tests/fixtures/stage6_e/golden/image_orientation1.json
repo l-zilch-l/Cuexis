@@ -1,0 +1,17 @@
+{
+  "fixture": "image/orientation1.jpg",
+  "kind": "image",
+  "profile": "928c22b9761bca9829aca174a826334d2b8ce59069fe67050ab6323eafdc4610",
+  "decoder": "libjpeg-turbo-3.2.0",
+  "sha256": "548d4c3b38ad632458f395e591db4c63c8228f7f3d0e57651889f93db2f361e2",
+  "byteCount": 72,
+  "sourceBytes": 697,
+  "decodedBytes": 32,
+  "peakWorkingBytes": 16,
+  "width": 4,
+  "height": 2,
+  "sourceWidth": 4,
+  "sourceHeight": 2,
+  "orientation": 1,
+  "bytesHex": "435850524553303102000000010000004800000000000000040000000200000002000000000000002fb329ff43c73dff8eb562ffa2c976ff1ca016ff30b42aff7ba24fff8fb663ff"
+}

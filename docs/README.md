@@ -44,6 +44,7 @@
 - [架构总览](architecture/README.md)
 - [音乐游戏玩法抽象模型](architecture/GAMEPLAY_ABSTRACTION_MODEL.md)
 - [模块边界](architecture/MODULE_BOUNDARIES.md)
+- [Player 应用结构](architecture/PLAYER_APPLICATION.md)
 - [RuntimeSession](architecture/RUNTIME_SESSION.md)
 - [项目路线图](ROADMAP.md)
 - [文档整理政策](DOCUMENTATION_POLICY.md)

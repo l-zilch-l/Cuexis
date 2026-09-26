@@ -443,3 +443,59 @@ TEST_CASE("SDL presented frame update guards invalid clamp bounds",
     CHECK(body->find("std::min(std::max") != std::string_view::npos);
     CHECK(body->find("numeric_limits<std::int64_t>::max()") != std::string_view::npos);
 }
+
+TEST_CASE("SDL explicit device open rejects an unknown name and keeps the default route",
+          "[audio][sdl][device]") {
+    const auto config = cuexis::audio::validateAudioConfig({});
+    REQUIRE(config.has_value());
+    cuexis::audio::AudioClipStore store;
+    auto subsystem = cuexis::audio_sdl::SdlAudioSubsystem::create();
+    REQUIRE(subsystem.has_value());
+    const auto devices = subsystem->enumeratePlaybackDevices();
+    REQUIRE(devices.has_value());
+
+    auto rejected = cuexis::audio_sdl::SdlAudioTransport::createForDevice(
+        *subsystem, store, *config,
+        cuexis::audio_sdl::PlaybackDeviceTarget{
+            .instanceId = 1, .driver = "missing-driver", .deviceName = "missing-device"});
+    REQUIRE_FALSE(rejected.has_value());
+    CHECK(rejected.error().code() == "player.audio_profile.unmatched");
+
+    auto transport = cuexis::audio_sdl::SdlAudioTransport::create(*subsystem, store, *config);
+    REQUIRE(transport.has_value());
+    REQUIRE(transport->recheckBoundDevice().has_value());
+    CHECK_FALSE(transport->applyGain(1.5F).has_value());
+    REQUIRE(transport->applyGain(0.25F).has_value());
+}
+
+TEST_CASE("SDL opens one enumerated playback device by its exact name", "[audio][sdl][device]") {
+    const auto config = cuexis::audio::validateAudioConfig({});
+    REQUIRE(config.has_value());
+    auto subsystem = cuexis::audio_sdl::SdlAudioSubsystem::create();
+    REQUIRE(subsystem.has_value());
+    const auto devices = subsystem->enumeratePlaybackDevices();
+    REQUIRE(devices.has_value());
+    if (devices->empty()) {
+        SKIP("This process has no playback device to open by name");
+    }
+    const auto& device = devices->front();
+    cuexis::audio::AudioClipStore store;
+    auto clip = cuexis::audio::AudioClip::create(48000, 2, std::vector<float>(9600, 0.0F));
+    REQUIRE(clip.has_value());
+    const auto handle = store.registerClip(std::move(*clip));
+    REQUIRE(handle.has_value());
+    auto transport = cuexis::audio_sdl::SdlAudioTransport::createForDevice(
+        *subsystem, store, *config,
+        cuexis::audio_sdl::PlaybackDeviceTarget{.instanceId = device.instanceId,
+                                                .driver = device.driver,
+                                                .deviceName = device.deviceName});
+    REQUIRE(transport.has_value());
+    REQUIRE(transport->applyGain(0.0F).has_value());
+    REQUIRE(transport->load(*handle).has_value());
+    CHECK(transport->effectiveSettings().deviceSampleRate > 0);
+    REQUIRE(transport->recheckBoundDevice().has_value());
+    REQUIRE(transport->play().has_value());
+    REQUIRE(transport->service().has_value());
+    REQUIRE(transport->stop().has_value());
+    WARN("Opened enumerated device driver=" << device.driver << " name=" << device.deviceName);
+}

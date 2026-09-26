@@ -1,0 +1,17 @@
+{
+  "fixture": "image/srgb_chunk.png",
+  "kind": "image",
+  "profile": "928c22b9761bca9829aca174a826334d2b8ce59069fe67050ab6323eafdc4610",
+  "decoder": "libpng-1.6.58",
+  "sha256": "a5fcf57fab0b0b2a49404e6fc6939b8845b7ab2eb70eb660523f67a91c68ce69",
+  "byteCount": 44,
+  "sourceBytes": 82,
+  "decodedBytes": 4,
+  "peakWorkingBytes": 9126,
+  "width": 1,
+  "height": 1,
+  "sourceWidth": 1,
+  "sourceHeight": 1,
+  "orientation": 1,
+  "bytesHex": "435850524553303102000000010000002c0000000000000001000000010000000200000000000000000000ff"
+}

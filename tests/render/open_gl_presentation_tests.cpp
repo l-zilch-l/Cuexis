@@ -105,7 +105,7 @@ auto hasContext(const cuexis::core::Error& error, std::string_view key, std::str
 
 [[nodiscard]] auto playerImplementationSource() -> std::string {
     const auto path =
-        std::filesystem::path{CUEXIS_SOURCE_DIR} / "app" / "player" / "src" / "player_app.cpp";
+        std::filesystem::path{CUEXIS_SOURCE_DIR} / "app" / "player" / "src" / "player_control.cpp";
     std::ifstream input{path, std::ios::binary};
     REQUIRE(input.good());
     std::ostringstream contents;
@@ -321,7 +321,7 @@ TEST_CASE("OpenGL summary characterization preserves command order and digest",
 TEST_CASE("OpenGL summary omission skips command copies and digest work",
           "[render][opengl][summary][characterization]") {
     const auto source = renderImplementationSource();
-    const auto body = functionRegion(source, "renderPresentationFrame");
+    const auto body = functionRegion(source, "bool presentFrame");
     REQUIRE(body.has_value());
 
     CHECK(body->find("const bool needSummary = summary != nullptr") != std::string_view::npos);
@@ -334,7 +334,7 @@ TEST_CASE("OpenGL summary omission skips command copies and digest work",
 TEST_CASE("OpenGL frame scratch vectors persist in backend state",
           "[render][opengl][scratch][characterization]") {
     const auto source = renderImplementationSource();
-    const auto body = functionRegion(source, "renderPresentationFrame");
+    const auto body = functionRegion(source, "bool presentFrame");
     REQUIRE(body.has_value());
 
     CHECK(body->find("state.opaqueScratch.clear()") != std::string_view::npos);
@@ -348,7 +348,7 @@ TEST_CASE("OpenGL frame scratch vectors persist in backend state",
 TEST_CASE("Player frame scene is persistent and cleared per frame",
           "[player][scene][allocation][characterization]") {
     const auto source = playerImplementationSource();
-    const auto loopBody = functionRegion(source, "run");
+    const auto loopBody = functionRegion(source, "runPlayerFrameLoop");
     REQUIRE(loopBody.has_value());
 
     const auto sceneDeclaration = loopBody->find("render::RenderScene scene;");

@@ -1,7 +1,8 @@
 # Stage 6 Productization Boundaries
 
-Status: S6-A2 dependency and installation contract. The new targets shown here are planned
-boundaries; only the existing targets are currently implemented.
+Status: S6-A2 dependency and installation contract. `cuexis_presentation_renderer` and
+`cuexis_player_support` exist as internal static libraries. `cuexis_media_import` remains planned.
+Player source boundaries are recorded in [PLAYER_APPLICATION.md](PLAYER_APPLICATION.md).
 
 ## 1. Direct Dependency Graph
 
@@ -18,10 +19,14 @@ cuexis_presentation_renderer (new internal static library)
 cuexis_render_opengl
   -> cuexis_presentation_renderer / cuexis_platform_sdl / existing shader cache
 
-cuexis_player_support (new internal application library)
-  -> cuexis_playback / cuexis_presentation_renderer / backend-neutral cuexis_audio
+cuexis_player_support
+  -> cuexis_core / cuexis_json_support
 
-Player assembly and adapters
+cuexis_player control sources
+  -> cuexis_playback / cuexis_presentation_renderer / backend-neutral cuexis_audio /
+     cuexis_player_support
+
+cuexis_player assembly and smoke sources
   -> cuexis_platform_sdl / cuexis_render_opengl / cuexis_audio_sdl
 
 cuexis_media_import (new default-OFF internal tool library)
@@ -50,8 +55,9 @@ Submit and present are separate operations; a valid frame is submitted/presented
 Zero-size surfaces suspend submission. Resize does not rebuild Playback content. Renderer close
 releases GPU/context resources but does not close the application-owned window.
 
-The Player control loop and command layer include Playback, the renderer contract and backend-neutral
-audio only. SDL, OpenGL and concrete factories occur only in the application assembly/adapter files.
+The Player control sources include Playback, the renderer contract and backend-neutral audio only.
+SDL, OpenGL and concrete factories occur only in the assembly and smoke sources. The typed command
+table remains S6-C3. File boundaries are in [PLAYER_APPLICATION.md](PLAYER_APPLICATION.md).
 
 ## 3. Media And Tool Isolation
 
@@ -95,11 +101,13 @@ files. A candidate package cannot be accepted by a production consumer accidenta
 | Boundary | Current state | Required verification |
 | --- | --- | --- |
 | Existing Playback isolation | Implemented and covered by A1 baseline | Preserve in C1/F1 |
-| New renderer direction | Contract only; target does not exist | D1 architecture/allowlist tests |
-| Player support separation | Contract only; target does not exist | C2/C3 architecture tests |
-| Media importer isolation | Contract only; target does not exist | E1/E2 target and package tests |
+| New renderer direction | D2 local exit: OpenGL implements the interface and Player submits through it | Local smoke minimized and restored; hosted CI does not run that step |
+| Player support separation | C2 local exit: config snapshots and enumerated device open exist and are not installed | C3 still consumes the exited batch |
+| Player source boundaries | Control, options, assembly, and smoke are separate translation units | C3 adds the typed command table |
+| Media importer isolation | E1/E2 local exit: `cuexis_media_import` and `cuexis_media_importer` exist behind default-OFF `CUEXIS_BUILD_MEDIA_TOOLS`; Playback/Player do not link them | Hosted four-platform byte equality and package tests |
 | Production/experimental staging | Contract only; no package flavor gate yet | B1/C4 clean staging |
 | Reference Host | Contract only; example not yet present | C4 external consumer/interactive host |
 
-This document is evidence that the dependency and installation boundaries are specified, not evidence
-that the future targets or hosted consumers have been built.
+This document records the dependency contract. The presentation renderer target and the OpenGL
+dependency edge now exist. Player support exists and is not installed. The media import target exists
+behind the media-tools feature and remains outside the SDK install closure.

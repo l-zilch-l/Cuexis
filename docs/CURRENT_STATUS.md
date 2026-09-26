@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-09-21
+更新日期：2026-09-23
 
 本文是 Cuexis 当前产品和阶段状态的唯一摘要。ADR 定义决策，Spec 定义字段和语义，阶段计划定义未来
 范围，阶段报告保存带日期的实施证据；它们不得绕过本文重新定义当前状态。
@@ -50,16 +50,86 @@ Stage 6 的条件性源兼容 SDK 目标为 `0.7.1`，当前实现仍为 `0.7.0`
 S6-A2 已于 2026-09-21 完成合同落盘与表征，形成 entry/config/media Spec、三份 Schema、
 API/安装草案、依赖图及独立 identity/media/config golden；实际证据见 [S6-A2 报告](stage_reports/stages/stage-06/2026-09-21-s6-a2-contracts-and-characterization.md)。
 A2 只证明冻结决策可以被明确描述和表征，不代表 v5 Playback、Player、renderer、media importer、
-版本门禁或 Reference Host 已实现；SDK 仍为 `0.7.0`，三个工程问题继续 open。下游 B1、C1、D1、
-C2、E1/E2 及其后续批次仍按计划依赖图保持未完成。
+版本门禁或 Reference Host 已实现；SDK 仍为 `0.7.0`，三个工程问题继续 open。A2 之后 B1、C1、C2、D1 与 D2
+已分别取得退出证据。E1/E2 的实现与四平台验证已完成但尚未退出（见下文），其后续批次仍未完成。
 S6-B1 已落下版本比较器、独立负例测试、trusted-baseline workflow 和发行 checklist；当前显示版本
-已按可信 UTC 日期 `2026-09-20` 修正为 `26.09.20-1`，SDK API 仍为 `0.7.0`。本地 checker、
-当前一致性、文档和版本源验证已通过，版本变更后的 fresh configure/clean build 与 CTest 证据见
-[S6-B1 报告](stage_reports/stages/stage-06/2026-09-20-s6-b1-version-gate.md)。
-但当前 `origin/master` 的 trusted baseline `e3c4589c62af36f29ae5e8ebda62fe37fadbf7e7` 尚无
-checker，首次 workflow 会按合同明确失败；远端 `master` 当前也未启用 branch protection。因此
-B1 目前是 blocked：脚本已实现并可本地验证，hosted required check、bootstrap 例外和保护配置尚未
-生效；不得把本地通过或 post-merge audit 报告为合并前门禁或 owner acceptance。
+为 `26.09.26-1`（E1/E2 收尾时滚动到 `26.09.24-1`，E3 收尾时按 Version Gate 日期滚动推进到 `26.09.26-1`，见下），SDK API 仍为 `0.7.0`。`26.09.21-2` 在 UTC `2026-09-22` 已过期，因此前进到当天 build 1。当天曾写成的 `26.09.23-1` 被 Version Gate 以 `version.release_date.future` 拒绝，分支收回 `26.09.22-1`；UTC 进入 `2026-09-23` 后再前进到 `26.09.23-1`。bootstrap PR #26 已将门禁纳入 `master`，并启用
+`Version advancement (pre-merge)` required check、strict latest-base 和 admin enforcement。
+候选 PR #27 的 `d4697549a50e9c517ac393c27786826aa43ce9cc` 以 trusted baseline
+`4545742ed63ae2d8f11ad07e80930ce5b88fa0ce` 通过 protected Version Gate run `35586930775`，
+并在同一 SHA 通过 Linux Quality、Windows MSVC、Windows MinGW；随后合并为 `master`
+`46b65d1f2345f543b98e7e87fe5ec9ed735f10bf`。本地 focused tests、docs、fresh configure、
+clean-first build 与 `683/683` CTest 证据见 [S6-B1 报告](stage_reports/stages/stage-06/2026-09-20-s6-b1-version-gate.md)。
+B1 与 S6-G02 已满足其计划门禁。S6-C1 已于 2026-09-22 在本地退出：默认关闭的显式
+candidate 工厂、生产 CXC bridge、typed lowering、Runtime opacity 和 candidate prepared
+identity 已接入。本地 MSVC 快照见
+[实现报告](stage_reports/stages/stage-06/2026-09-22-s6-c1-candidate-source.md)；
+退出 SHA `3e11b167f8fccae47b0bd8b0a94080e649ba544f` 的 hosted 默认 OFF 矩阵见
+[C1 退出报告](stage_reports/stages/stage-06/2026-09-22-s6-c1-exit.md)。该退出不是
+Stage 6 完成、PR 合并或 owner acceptance。SDK API 仍为 `0.7.0`。S6-D1 已于 2026-09-22
+在本地退出：内部 `cuexis_presentation_renderer`、事务 token 和无 GPU 测试 renderer 已接入。
+本地快照见
+[实现报告](stage_reports/stages/stage-06/2026-09-22-s6-d1-renderer-contract.md)；
+退出 SHA `c2861c3d0712f087be2a76ea7a7c39d05a60f602` 的 hosted 默认矩阵见
+[D1 退出报告](stage_reports/stages/stage-06/2026-09-22-s6-d1-exit.md)。
+S6-D2 已于 2026-09-23 在本地退出：OpenGL adapter 实现同一渲染接口，Player 正式帧使用
+`submit`/`present`。本地 GPU smoke 见
+[实现报告](stage_reports/stages/stage-06/2026-09-22-s6-d2-opengl-migration.md)；
+退出当时的 Linux 与 Windows MSVC 见
+[D2 退出报告](stage_reports/stages/stage-06/2026-09-23-s6-d2-exit.md)。
+成员顺序修正之后，Windows MinGW 在 `9bb94b4` 的
+[PR 35760537757](https://github.com/l-zilch-l/Cuexis/actions/runs/35760537757)
+与 [push 35760532938](https://github.com/l-zilch-l/Cuexis/actions/runs/35760532938) 通过。
+本机 `--smoke-test` 已自动最小化再恢复，digest 与中心像素保持不变；这次最小化后的 drawable
+仍是 `1280x720`。见
+[最小化记录](stage_reports/stages/stage-06/2026-09-23-s6-d2-minimize-restore.md)。
+该退出不是 Stage 6 完成。S6-C2 已于 2026-09-23 在本地退出：配置快照、进程锁、只读偏好、
+热拔插观察和按名称打开的音频设备已接入。`e01a4b1` 的 hosted 矩阵见
+[C2 退出报告](stage_reports/stages/stage-06/2026-09-23-s6-c2-exit.md)。
+Player 源文件职责见 [Player 应用结构](architecture/PLAYER_APPLICATION.md)。S6-C3 已于
+2026-09-24 在本地退出：`cuexis_player_support` 的命令表与 `PlayerController` 固定事务顺序、
+应用状态机、跨子系统提交、保留时间的连续 reload 和最小键盘绑定（空格/←/→/S/R/B/Esc）
+已接入。真实窗口按键验证发现并修复了一个 discontinuity 合同缺陷：输入路径在帧内采样前替换
+bundle 时，再采样帧会带着非零 delta 进入新 discontinuity。`e5eb169` 的 hosted 矩阵
+（Linux Quality、Windows MSVC、Windows MinGW、Version Gate）全部通过。证据见
+[C3 退出报告](stage_reports/stages/stage-06/2026-09-24-s6-c3-exit.md)。该退出不是 Stage 6
+完成、PR 合并或 owner acceptance，SDK API 仍为 `0.7.0`。
+E1/E2 的实现与四平台验证已经完成，尚未进入批次退出流程：默认关闭的
+`CUEXIS_BUILD_MEDIA_TOOLS` 下新增内部 `cuexis_media_import` 与 CLI `cuexis_media_importer`
+（PNG/JPEG → CXPRES01 RGBA8，MP3/Ogg Vorbis/FLAC → canonical RIFF/WAVE PCM S16LE），固定解码器
+profile、canonical golden、发布不可变冲突门禁和进程内存上限都已就位；本机 MSVC
+`debug-media-tools` 与既有 732 项测试全绿，Player 实际显示与三种格式的完整导入/播放正例见
+[S6-E1/E2 实现报告](stage_reports/stages/stage-06/2026-09-25-s6-e1-e2-media-importer.md)。
+hosted 矩阵曾显示立体声 Ogg Vorbis 的 canonical WAV 在 MSVC 与其余三个平台之间样本不同（长度
+相同）；根因已复现并修复：libvorbis 1.3.7 在 `<math.h>` 不提供 `M_PI` 时回落到十位有效数字的
+float 字面量（MSVC 即如此），而 GCC/Clang/MinGW 使用全精度 double，`M_PI` 参与 MDCT 系数表与 LSP
+解码路径。修复方式是仓库内 overlay port `vcpkg-overlays/libvorbis` 叠加
+`0005-unify-m-pi-precision.patch`，把 `M_PI` 固定为同一个全精度 double；解码器身份字符串更新为
+`libvorbis-1.3.7-pinned-mpi-libogg-1.3.6`，profile identity 更新为
+`928c22b9761bca9829aca174a826334d2b8ce59069fe67050ab6323eafdc4610`。18 个 golden 中 17 个只更新
+了 profile 元数据，仅 `audio_stereo_ogg` 重新冻结内容摘要（`df73cb81…`），没有加 epsilon、丢低位或
+平台分支。`66a15d0` 的 hosted 矩阵（Linux Quality、Windows MSVC、Windows MinGW）全部通过，立体声
+Ogg 的 canonical identity 断言在四个平台对着同一份 golden 通过；Version Gate 的日期滚动在同批收尾
+中先用 `tools/update_version.py 26.09.24-1` 处置；E3 收尾时可信 UTC 日期已进入 `2026-09-26`，同一检查器再次报 `version.release_date.stale`，因此用 `tools/update_version.py 26.09.26-1` 再滚动一次（仅日期构建身份，SDK API 仍为 `0.7.0`）。该实现不是
+批次退出、不是 Stage 6 关闭，也不构成 owner acceptance。
+E3 已在同一 `CUEXIS_BUILD_MEDIA_TOOLS` 开关下落地，并取得本地与同 SHA hosted 四平台证据，但尚未
+形成批次退出结论：`tools/asset_publish`（`cuexis_asset_publish`）把「先在 staging 生成并验证，再以一次
+`rename` 切换可见产物」实现为发布事务，使用不可变、内容寻址的 `generations/<identity>` 目录、
+独占创建加 `fsync`、marker 重新读取并逐条重算摘要、操作系统级进程间发布锁（崩溃即释放，锁文件
+存在与否不代表持锁）以及显式失败清理与重启恢复；`publishPackagePair` 从同一批条目构建 v4 与
+candidate 两个闭包，先全部构建并自校验，再替换，candidate 失败时把 v4 目标恢复到替换前的字节，
+失败不覆盖上一有效包。
+`tools/media_import` 新增 provenance 记录（原始输入、profile、canonical 产物与资源 AssetId 四类
+身份分离，原始资源保留在作者侧）与身份复验缓存（键覆盖原始输入身份、profile 身份、decoder 家族与
+输出相关构建策略；命中时复验记录并重算产物摘要，损坏缓存以 `media.cache.corrupt` 拒绝，只有
+`--rebuild` 才做显式离线重建）。CLI 新增 `--asset-id`、`--provenance-dir`、`--cache-dir`、
+`--rebuild`、`--generation-dir`、`--generation-id`，E3 门禁覆盖旧 profile、坏缓存、缺失原始资源、
+重启恢复与双闭包替换回滚。hosted 矩阵在实现 SHA `0753e6a` 上通过：Linux Quality GCC media-tools
+677/677、Clang ASan+UBSan media-tools 677/677、Windows MSVC 与 Windows MinGW 各 732/732（默认）与
+772/772（media-tools），Version Gate 通过；该批次第一次推送时 MinGW 因 `_dupenv_s` 不是 MinGW CRT
+符号而链接失败，改为按 `_MSC_VER` 选择后修复。证据见
+[S6-E3 报告](stage_reports/stages/stage-06/2026-09-25-s6-e3-publication-transaction.md)。
+C4 及后续批次仍未完成。
 
 ## 已关闭的 Full Review
 

@@ -83,6 +83,17 @@ jobs:
         shell: msys2 {0}
         run: ctest --preset ${{ matrix.preset }} --no-tests=error
 
+      - name: Build and test optional media tools
+        shell: msys2 {0}
+        run: |
+          cmake --preset debug-media-tools --fresh \
+            -DCMAKE_C_COMPILER=gcc \
+            -DCMAKE_CXX_COMPILER=g++ \
+            -DCMAKE_MAKE_PROGRAM=ninja \
+            -DVCPKG_TARGET_TRIPLET=x64-mingw-dynamic
+          cmake --build --preset debug-media-tools
+          ctest --preset debug-media-tools --no-tests=error
+
       - name: Verify architecture
         shell: msys2 {0}
         run: ctest --preset ${{ matrix.preset }} --no-tests=error -R "^cuexis_architecture_tests$"

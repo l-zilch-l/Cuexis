@@ -220,6 +220,10 @@ struct HostOverrideWrite final {
 
 class PlaybackSession;
 
+namespace detail {
+struct CandidateMetadataAccess;
+} // namespace detail
+
 class CUEXIS_PLAYBACK_API PreparedPlayback final {
   public:
     PreparedPlayback() noexcept;
@@ -245,6 +249,7 @@ class CUEXIS_PLAYBACK_API PreparedPlayback final {
 
   private:
     friend class PlaybackSession;
+    friend struct detail::CandidateMetadataAccess;
     struct State;
     explicit PreparedPlayback(std::unique_ptr<State> state) noexcept;
 
@@ -330,6 +335,8 @@ class CUEXIS_PLAYBACK_API PlaybackSession final {
     [[nodiscard]] auto releaseHostOverride(HostOverrideToken token) -> core::Result<void>;
 
   private:
+    friend struct detail::CandidateMetadataAccess;
+
     [[nodiscard]] auto prepare(PlaybackSource&& source, PlaybackMode mode,
                                const RuntimeFrame* targetFrame, ReloadPolicy policy,
                                bool replacement, const PlaybackPrepareOptions& options)

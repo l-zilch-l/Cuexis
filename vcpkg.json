@@ -1,6 +1,6 @@
 {
   "name": "cuexis",
-  "version-string": "26.09.21-1",
+  "version-string": "26.09.26-1",
   "default-features": [
     "player",
     "tests"
@@ -43,6 +43,17 @@
         "shaderc",
         "spirv-cross",
         "spirv-tools"
+      ]
+    },
+    "media-tools": {
+      "description": "Fixed offline decoders for the Cuexis media importer",
+      "dependencies": [
+        "libflac",
+        "libjpeg-turbo",
+        "libogg",
+        "libpng",
+        "libvorbis",
+        "minimp3"
       ]
     }
   }

@@ -22,6 +22,8 @@ struct RuntimeObject final {
     ChartObjectId id;
     std::optional<std::size_t> parentIndex;
     ObjectComponents components;
+    // v4 compilation leaves this at 1. Candidate lowering writes alpha/255 once.
+    double renderableOpacity{1.0};
 };
 
 struct RuntimeKey final {
