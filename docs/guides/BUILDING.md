@@ -2,7 +2,7 @@
 
 状态：阶段 3 最终验收后的现行构建、安装与质量门禁规范
 
-更新日期：2026-09-22
+更新日期：2026-09-28
 
 ## 当前仓库说明
 
@@ -489,6 +489,20 @@ ctest --preset debug -R cuexis_reference_host_staging --output-on-failure
 
 门禁同时校验示例源码只包含 `cuexis/playback/` 公共头、不引用仓库内 target、包身份与参考帧摘要
 匹配 CFU-F golden，以及（shared 包）记录的 toolchain 与 consumer 不一致时被拒绝。
+
+**已记录的机制**（2026-09-28 起，见
+[Stage 6 复核修正计划](../stage_plans/active/stage-06-review-remediation/plan.md) 的 R1/SPEC-29）：
+`cmake/VerifyReferenceHost.cmake` 有两处**计划外但有意**的机制，此前只在批次报告里说明，
+现纳入本节的正式记录，以免被当成意外行为：
+
+1. **插桩选项转发**：门禁把**父构建**的 sanitizer/coverage 插桩选项转发给源树之外复制出来的
+   宿主工程。Cuexis 以目录级选项施加插桩，而外部工程链接已插桩的静态库时必须镜像同一套选项，
+   否则 `__asan_*`/`__gcov_*` 会未定义。这些选项**不是安装导出的一部分**：
+   将来新增插桩类型时需要同步维护这一转发约定。
+2. **MinGW 运行库复制**：门禁会把 MinGW 编译器的运行时 DLL 复制进宿主构建目录，使清理过的
+   `PATH` 下仍能启动宿主。这些 DLL 由打包工具链提供，**不是 Cuexis 包文件**，也不进许可证清单。
+   运行宿主的门禁（`cuexis_reference_host_staging`、`cuexis_player_distribution`）因此不宣称
+   "运行目录完全由安装文件构成"，实测通过的是"安装包加公共边界足以运行"。
 
 ### 可运行 Player 分发目录
 

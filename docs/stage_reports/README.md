@@ -41,6 +41,7 @@ Standards / Spec 记录），由该专题自己的 `README.md` 承担导航；�
   [Spec 轴](reviews/stage-06-review-2026-09/2026-09-28-spec.md)、
   [切片附录](reviews/stage-06-review-2026-09/2026-09-28-slice-appendix.md)、
   [二轮细化](reviews/stage-06-review-2026-09/2026-09-28-refinement.md)（active）
+- Stage 6 复核修正（批次报告）：[R1 文档与证据链修正](reviews/stage-06-review-2026-09/2026-09-28-r1-document-and-evidence.md)
 
 ## 历史路径
 

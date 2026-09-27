@@ -2,7 +2,7 @@
 
 状态：现行路线图
 
-更新日期：2026-09-17
+更新日期：2026-09-28
 
 产品边界由 [ADR 0027](adr/0027-playback-sdk-product-boundary.md) 冻结。本文维护
 阶段顺序、依赖关系和交接，不复制阶段内部的完整字段合同或完成证据。
@@ -32,7 +32,8 @@ Chart 格式不能脱离 Judgement 语义单独演进。CXC 是发行容器，�
 Stage 5 已于 2026-08-28 关闭并合并至 `master`；260830 follow-up 已于 2026-09-01
 完成。Chart Format Foundation 保留原完成确认；其后继的 Foundation 交接加固（R0-R5）已于
 2026-09-17 关闭并经 owner 接受，本地六配置回归、最终 SHA 容量复跑与同 SHA hosted 三平台
-验证全部通过。Stage 6 自此从 future 恢复 active，以 Chart v5 Core/Packed candidate 为主要
+验证全部通过。Stage 6 自此进入实施（已于 2026-09-27 关闭并归档，见
+[关闭报告](stage_reports/stages/stage-06/completion.md)），以 Chart v5 Core/Packed candidate 为主要
 开发基线。
 完整 Chart v5 尚未正式发行；Input/Judgement 和 Studio 也均未进入生产实施。
 
@@ -110,7 +111,7 @@ Stage 7B+ 的高级判定设计研究
 ```
 
 但生产实现交接必须遵守主链：Foundation 只交付候选 Core/Packed 和验证工具，
-交接加固已于 2026-09-17 关闭并经 owner 接受，Stage 6 自此恢复实施；Stage 6
+交接加固已于 2026-09-17 关闭并经 owner 接受，Stage 6 自此实施（已于 2026-09-27 关闭并归档）；Stage 6
 可以加载、验证和消费受支持的 v5 candidate subset，同时保留 v4 回退；Stage 7A 冻结
 Chart v5 所需的最小 Input/Judgement/Replay 合同；Stage 8 只依赖 Stage 7A，不等待
 全部高级判定能力；Stage 7B+ 必须通过版本化 capability 持续增加，不能破坏 7A 合同；
