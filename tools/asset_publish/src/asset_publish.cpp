@@ -107,6 +107,17 @@ struct ListedEntry final {
     std::string sha256;
 };
 
+// The total payload of a generation closure. It is the sum of the entry byte counts, not the number
+// of entries: `GenerationPublishResult::closureBytes` names bytes, and a republish must report the
+// same value as the publish that created the generation.
+[[nodiscard]] auto closureByteTotal(const std::vector<ListedEntry>& closure) -> std::uint64_t {
+    std::uint64_t total = 0;
+    for (const auto& entry : closure) {
+        total += entry.byteCount;
+    }
+    return total;
+}
+
 [[nodiscard]] auto listEntries(const std::vector<PublishEntry>& entries)
     -> core::Result<std::vector<ListedEntry>> {
     if (entries.size() > maxEntries) {
@@ -498,19 +509,21 @@ auto PublicationLock::acquire(const fs::path& target) -> core::Result<Publicatio
     }
     PublicationLock lock;
     lock.path_ = target;
-    lock.handle_ = handle;
+    lock.handles_.push_back(handle);
     return lock;
 }
 
 void PublicationLock::release() noexcept {
-    if (handle_ == nullptr) {
-        return;
+    for (void* entry : handles_) {
+        if (entry == nullptr) {
+            continue;
+        }
+        const HANDLE handle = static_cast<HANDLE>(entry);
+        OVERLAPPED overlapped{};
+        UnlockFileEx(handle, 0, 1, 0, &overlapped);
+        CloseHandle(handle);
     }
-    const HANDLE handle = static_cast<HANDLE>(handle_);
-    OVERLAPPED overlapped{};
-    UnlockFileEx(handle, 0, 1, 0, &overlapped);
-    CloseHandle(handle);
-    handle_ = nullptr;
+    handles_.clear();
 }
 #else
 auto PublicationLock::acquire(const fs::path& target) -> core::Result<PublicationLock> {
@@ -536,32 +549,54 @@ auto PublicationLock::acquire(const fs::path& target) -> core::Result<Publicatio
     }
     PublicationLock lock;
     lock.path_ = target;
-    lock.handle_ = reinterpret_cast<void*>(static_cast<std::intptr_t>(descriptor));
+    lock.handles_.push_back(reinterpret_cast<void*>(static_cast<std::intptr_t>(descriptor)));
     return lock;
 }
 
 void PublicationLock::release() noexcept {
-    if (handle_ == nullptr) {
-        return;
+    for (void* entry : handles_) {
+        if (entry == nullptr) {
+            continue;
+        }
+        const int descriptor = static_cast<int>(reinterpret_cast<std::intptr_t>(entry));
+        ::flock(descriptor, LOCK_UN);
+        ::close(descriptor);
     }
-    const int descriptor = static_cast<int>(reinterpret_cast<std::intptr_t>(handle_));
-    ::flock(descriptor, LOCK_UN);
-    ::close(descriptor);
-    handle_ = nullptr;
+    handles_.clear();
 }
 #endif
 
+auto PublicationLock::acquireAll(std::vector<fs::path> targets) -> core::Result<PublicationLock> {
+    std::sort(targets.begin(), targets.end());
+    targets.erase(std::unique(targets.begin(), targets.end()), targets.end());
+    PublicationLock lock;
+    for (const auto& target : targets) {
+        auto one = acquire(target);
+        if (!one) {
+            // `lock` is destroyed here, which releases every handle already taken: a partial
+            // acquisition must not leave a lock behind.
+            return core::unexpected(std::move(one.error()));
+        }
+        if (lock.path_.empty()) {
+            lock.path_ = one->path_;
+        }
+        lock.handles_.insert(lock.handles_.end(), one->handles_.begin(), one->handles_.end());
+        one->handles_.clear();
+    }
+    return lock;
+}
+
 PublicationLock::PublicationLock(PublicationLock&& other) noexcept
-    : path_(std::move(other.path_)), handle_(other.handle_) {
-    other.handle_ = nullptr;
+    : path_(std::move(other.path_)), handles_(std::move(other.handles_)) {
+    other.handles_.clear();
 }
 
 auto PublicationLock::operator=(PublicationLock&& other) noexcept -> PublicationLock& {
     if (this != &other) {
         release();
         path_ = std::move(other.path_);
-        handle_ = other.handle_;
-        other.handle_ = nullptr;
+        handles_ = std::move(other.handles_);
+        other.handles_.clear();
     }
     return *this;
 }
@@ -594,8 +629,6 @@ auto recoverPublicationStaging(const fs::path& root) -> core::Result<std::size_t
             }
             const auto name = entry.path().filename().generic_string();
             if (name.find(std::string{"."} + std::string{publicationRole} +
-                          std::string{temporaryInfix}) != std::string::npos ||
-                name.find(std::string{"."} + std::string{publicationBackupRole} +
                           std::string{temporaryInfix}) != std::string::npos) {
                 candidates.push_back(entry.path());
             }
@@ -609,6 +642,47 @@ auto recoverPublicationStaging(const fs::path& root) -> core::Result<std::size_t
         }
     };
     removeMatchingTemporaries(root);
+    // A backup is not a temporary file. Earlier revisions published by moving the target aside
+    // first; if such a revision crashed before its second rename, the backup holds the last valid
+    // package and deleting it would destroy the only surviving copy. Restore it over a missing
+    // target, and leave a target that already exists untouched.
+    const auto restoreMatchingBackups = [&removed](const fs::path& directory) {
+        std::error_code scanStatus;
+        std::vector<fs::path> candidates;
+        for (const auto& entry : fs::directory_iterator{directory, scanStatus}) {
+            if (scanStatus) {
+                break;
+            }
+            const auto name = entry.path().filename().generic_string();
+            if (name.find(std::string{"."} + std::string{publicationBackupRole} +
+                          std::string{temporaryInfix}) != std::string::npos) {
+                candidates.push_back(entry.path());
+            }
+        }
+        for (const auto& candidate : candidates) {
+            const auto restored = detail::backupTargetOf(candidate, publicationBackupRole);
+            std::error_code existsStatus;
+            const bool targetExists = fs::exists(restored, existsStatus) && !existsStatus;
+            if (!targetExists) {
+                auto moved = detail::replaceAtomically(candidate, restored);
+                if (!moved) {
+                    continue;
+                }
+            }
+            std::error_code removeStatus;
+            fs::remove_all(candidate, removeStatus);
+            if (!removeStatus) {
+                ++removed;
+            }
+        }
+    };
+    restoreMatchingBackups(root);
+    for (const auto& directory :
+         {root / pathOf(generationStagingDirectory), root / pathOf(generationPublishedDirectory)}) {
+        if (fs::is_directory(directory, status) && !status) {
+            restoreMatchingBackups(directory);
+        }
+    }
     for (const auto& directory :
          {root / pathOf(generationStagingDirectory), root / pathOf(generationPublishedDirectory)}) {
         if (fs::is_directory(directory, status) && !status) {
@@ -691,7 +765,8 @@ auto publishGeneration(const GenerationPublishRequest& request)
         if (!verified) {
             return core::unexpected(std::move(verified.error()));
         }
-        return GenerationPublishResult{generationPath, marker.identity, 0, marker.closure.size(),
+        return GenerationPublishResult{generationPath, marker.identity,
+                                       closureByteTotal(marker.closure), marker.closure.size(),
                                        marker.provenance.size()};
     }
 
@@ -894,8 +969,8 @@ struct BuiltPackage final {
 }
 
 // Writes one package to a same-directory temporary file, re-validates the bytes on disk through the
-// production loader, and only then replaces the target. The previous package is restored if the
-// final replacement fails.
+// production loader, and only then replaces the target in one step. The target is therefore always
+// either the previous package or the new one; there is no interval in which it is absent.
 [[nodiscard]] auto commitPackage(const fs::path& target, const BuiltPackage& built,
                                  const cxc::CxcPackageLimits& limits, bool& replacedExisting)
     -> core::Result<void> {
@@ -916,6 +991,15 @@ struct BuiltPackage final {
     }
     const auto temporary = detail::uniqueSibling(target, publicationRole);
     detail::removeTreeQuiet(temporary);
+    if (detail::testFailureTargetMatches("CUEXIS_ASSET_PUBLISH_FAIL_WRITE_TARGET",
+                                         target.filename().string())) {
+        // A write that the operating system would refuse with a full or read-only volume. The
+        // failure is reported through the same code path as a real `writeFileExclusive` failure,
+        // so the case proves the transaction cleans up and leaves the previous package in place.
+        return core::unexpected(
+            publishError(publishIoCode, "Injected package write failure (test hook)")
+                .withContext("path", target.generic_string()));
+    }
     auto written = detail::writeFileExclusive(temporary, built.bytes);
     if (!written) {
         detail::removeTreeQuiet(temporary);
@@ -943,35 +1027,28 @@ struct BuiltPackage final {
             publishError(publishReplaceCode, "Injected failure before replace (test hook)"));
     }
 
-    fs::path backup;
+    // A crash in the window this contract forbids would leave the target absent. The single
+    // replacement below has no such window, and this probe makes that visible: it removes the
+    // temporary file, so the replacement cannot succeed, and the case can then assert that the
+    // previous package is still the one on disk rather than a missing path.
+    if (detail::testFailureTargetMatches("CUEXIS_ASSET_PUBLISH_FAIL_TEMPORARY_TARGET",
+                                         target.filename().string())) {
+        detail::removeTreeQuiet(temporary);
+    }
+
     std::error_code status;
     if (fs::exists(target, status) && !status) {
-        backup = detail::uniqueSibling(target, publicationBackupRole);
-        auto moved = detail::replaceAtomically(target, backup);
-        if (!moved) {
-            detail::removeTreeQuiet(temporary);
-            return core::unexpected(std::move(moved.error()));
-        }
         replacedExisting = true;
     }
+    // One atomic replacement, and only one. Moving the previous package aside first would open a
+    // window in which the target does not exist: a crash between the two renames would leave
+    // neither the new package nor the last valid one, which is exactly the outcome this contract
+    // forbids. `replaceAtomically` overwrites the target in a single step, so the target is always
+    // either the previous package or the new one, never absent.
     auto committed = detail::replaceAtomically(temporary, target);
     if (!committed) {
         detail::removeTreeQuiet(temporary);
-        if (!backup.empty()) {
-            auto restored = detail::replaceAtomically(backup, target);
-            if (!restored) {
-                return core::unexpected(
-                    publishError(publishReplaceCode,
-                                 "Package replacement failed and the previous package could not be "
-                                 "restored")
-                        .withContext("backup", backup.generic_string())
-                        .withContext("target", target.generic_string()));
-            }
-        }
         return core::unexpected(std::move(committed.error()));
-    }
-    if (!backup.empty()) {
-        detail::removeTreeQuiet(backup);
     }
     auto synced = detail::syncDirectory(parent);
     if (!synced) {
@@ -1063,8 +1140,12 @@ auto publishPackagePair(const PackagePairRequest& request) -> core::Result<Packa
     if (!candidate) {
         return core::unexpected(std::move(candidate.error()));
     }
-    auto lock =
-        PublicationLock::acquire(request.v4Target.parent_path() / pathOf(publicationLockName));
+    // The transaction writes both targets, and they need not share a parent directory. Locking only
+    // the v4 parent would leave a concurrent writer free to replace the candidate target inside
+    // this transaction. Lock the whole target set, in a deterministic order.
+    auto lock = PublicationLock::acquireAll(
+        {request.v4Target.parent_path() / pathOf(publicationLockName),
+         request.candidateTarget.parent_path() / pathOf(publicationLockName)});
     if (!lock) {
         return core::unexpected(std::move(lock.error()));
     }

@@ -254,6 +254,27 @@ auto uniqueSibling(const fs::path& target, std::string_view role) -> fs::path {
     return target.parent_path() / name;
 }
 
+auto backupTargetOf(const fs::path& sibling, std::string_view role) -> fs::path {
+    std::string infix{"."};
+    infix.append(role);
+    infix.append(".tmp.");
+    const auto stem = sibling.stem().string();
+    const auto at = stem.rfind(infix);
+    if (at == std::string::npos) {
+        return {};
+    }
+    const auto targetStem = stem.substr(0, at);
+    if (targetStem.empty()) {
+        return {};
+    }
+    // `fs::path::stem()` drops the extension, so rebuild the original name and add it back: the
+    // preserved extension is what makes the temporary name acceptable to a suffix-validating
+    // loader.
+    fs::path name{targetStem};
+    name += sibling.extension();
+    return sibling.parent_path() / name;
+}
+
 auto isPortableRelativePath(std::string_view path) noexcept -> bool {
     if (path.empty() || path.size() > publishMaxPathBytes) {
         return false;

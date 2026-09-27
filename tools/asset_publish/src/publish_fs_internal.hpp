@@ -61,6 +61,12 @@ void removeTreeQuiet(const std::filesystem::path& path) noexcept;
 [[nodiscard]] auto uniqueSibling(const std::filesystem::path& target, std::string_view role)
     -> std::filesystem::path;
 
+// The inverse of `uniqueSibling` for a role-tagged name: the original target a sibling was derived
+// from, or an empty path when `sibling` does not carry the tag. Recovery uses it to put a
+// discontinued-format backup back in place instead of deleting it.
+[[nodiscard]] auto backupTargetOf(const std::filesystem::path& sibling, std::string_view role)
+    -> std::filesystem::path;
+
 // Portable relative path rules: forward slashes, no dot segments, no absolute or drive prefix,
 // every segment non-empty, bounded length.
 [[nodiscard]] auto isPortableRelativePath(std::string_view path) noexcept -> bool;
