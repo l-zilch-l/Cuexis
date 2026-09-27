@@ -2,10 +2,14 @@
 
 状态：current index
 
-更新日期：2026-09-27
+更新日期：2026-09-28
 
 报告保存带日期的实施、审查和验证证据。报告中的“下一步”只代表其快照日期，不能重新定义
 [CURRENT_STATUS.md](../CURRENT_STATUS.md)。
+
+`reviews/<topic>/` 保存跨阶段专题复核。一篇复核可以包含多份正文（例如按审查轴拆分的
+Standards / Spec 记录），由该专题自己的 `README.md` 承担导航；轴与轴之间保持独立，
+不合并成一张表，也不跨轴重排。
 
 ## 按阶段归档
 
@@ -32,6 +36,10 @@
 - [Full Review final closure](reviews/full-review-2026-08/2026-08-30-final.md)
 - [SDK transition verification](sdk-transition/verification.md)
 - [Stage Verification 2026-09 核验记录](reviews/stage-verification-2026-09/2026-09-01-findings.md)（active）
+- Stage 6 双轴复核（`13dab93..eaaf375`，事后复核）：[汇总](reviews/stage-06-review-2026-09/2026-09-28-summary.md)、
+  [Standards 轴](reviews/stage-06-review-2026-09/2026-09-28-standards.md)、
+  [Spec 轴](reviews/stage-06-review-2026-09/2026-09-28-spec.md)、
+  [切片附录](reviews/stage-06-review-2026-09/2026-09-28-slice-appendix.md)（active）
 
 ## 历史路径
 
