@@ -139,7 +139,7 @@ class SummaryHash final {
 [[nodiscard]] auto frameError(std::string message, std::string_view objectId,
                               const playback::PresentationResourceRef* reference = nullptr)
     -> core::Error {
-    auto error = resourceError("presentation.renderer.frame.resource_mismatch", std::move(message),
+    auto error = resourceError("playback.presentation.frame.resource_mismatch", std::move(message),
                                reference);
     if (!objectId.empty()) {
         error.withContext("object_id", std::string{objectId});
@@ -149,7 +149,7 @@ class SummaryHash final {
 
 [[nodiscard]] auto nonFiniteError(std::string_view objectId, std::string_view field)
     -> core::Error {
-    auto error = core::Error{"presentation.renderer.frame.non_finite",
+    auto error = core::Error{"playback.presentation.frame.non_finite",
                              "Presentation calculation contains a non-finite value"}
                      .withContext("field", std::string{field});
     if (!objectId.empty()) {
@@ -283,7 +283,7 @@ auto buildPresentationCommands(const playback::FrameSnapshot& snapshot,
     if (!std::all_of(summary.clearColor.begin(), summary.clearColor.end(), [](float value) {
             return std::isfinite(value) && value >= 0.0F && value <= 1.0F;
         })) {
-        return core::unexpected(core::Error{"presentation.renderer.frame.clear_color",
+        return core::unexpected(core::Error{"playback.presentation.frame.value_invalid",
                                             "Clear color must be finite and within [0, 1]"});
     }
     if (!finiteMatrix(summary.viewMatrix) || !finiteMatrix(summary.projectionMatrix)) {
@@ -299,7 +299,7 @@ auto buildPresentationCommands(const playback::FrameSnapshot& snapshot,
     }
     if (snapshot.objects.size() > maxNormalizedRecords) {
         return core::unexpected(
-            core::Error{"presentation.renderer.frame.command_budget_exceeded",
+            core::Error{"playback.presentation.frame.command_budget_exceeded",
                         "Presentation command count exceeds the Portable v1 limit"}
                 .withContext("limit", std::to_string(maxNormalizedRecords))
                 .withContext("actual", std::to_string(snapshot.objects.size())));
@@ -432,7 +432,7 @@ auto buildPresentationCommands(const playback::FrameSnapshot& snapshot,
             continue;
         }
         if (!snapshot.camera.active) {
-            return core::unexpected(core::Error{"presentation.renderer.frame.camera_required",
+            return core::unexpected(core::Error{"playback.presentation.frame.camera_required",
                                                 "Visible renderables require an active camera"}
                                         .withContext("object_id", object.id));
         }
@@ -453,6 +453,7 @@ auto buildPresentationCommands(const playback::FrameSnapshot& snapshot,
         OrderedDraw draw;
         draw.objectIndex = objectIndex;
         draw.command.objectId = object.id;
+        draw.command.objectIndex = objectIndex;
         std::copy(std::begin(object.worldMatrix), std::end(object.worldMatrix),
                   draw.command.worldMatrix.begin());
         draw.command.mesh = *object.mesh;

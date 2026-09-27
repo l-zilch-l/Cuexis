@@ -51,47 +51,17 @@ struct OpenGlInfo final {
     std::string renderer;
 };
 
-enum class OpenGlPresentationPass : std::uint8_t {
-    Opaque,
-    Transparent,
-};
-
-struct OpenGlDrawCommand final {
-    std::string objectId;
-    std::array<float, 16> worldMatrix{};
-    playback::PresentationResourceRef mesh;
-    playback::PresentationResourceRef material;
-    std::array<double, 4> effectiveColor{};
-    OpenGlPresentationPass pass{OpenGlPresentationPass::Opaque};
-    bool backFaceCulling{true};
-    bool depthTest{true};
-    bool depthWrite{true};
-    bool sourceOverBlend{};
-    double depthMeters{};
-    std::int64_t transparentDepthKey{};
-};
-
-struct OpenGlDrawSummary final {
-    std::uint32_t version{1};
-    std::uint32_t viewportWidth{};
-    std::uint32_t viewportHeight{};
-    std::array<float, 4> clearColor{};
-    bool cameraActive{};
-    std::array<float, 16> viewMatrix{};
-    std::array<float, 16> projectionMatrix{};
-    bool debugPassEnabled{};
-    std::vector<OpenGlDrawCommand> opaque;
-    std::vector<OpenGlDrawCommand> transparent;
-    std::size_t debugCommandCount{};
-    std::uint64_t digest{};
-
-    void clear() noexcept;
-};
-
 struct OpenGlPixelProbe final {
     std::array<std::uint8_t, 4> rgba{};
     bool presentationDrawn{};
 };
+
+// The OpenGL adapter consumes the backend-neutral Portable Presentation commands directly. These
+// aliases keep the SDK 0.7.0 compatibility entry point source-compatible without a second set of
+// draw, ordering, or digest types. New code uses presentation_renderer::DrawSummary.
+using OpenGlPresentationPass = presentation_renderer::PresentationPass;
+using OpenGlDrawCommand = presentation_renderer::DrawCommand;
+using OpenGlDrawSummary = presentation_renderer::DrawSummary;
 
 class OpenGlPresentationCandidate final {
   public:

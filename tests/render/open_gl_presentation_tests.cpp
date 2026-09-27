@@ -103,6 +103,16 @@ auto hasContext(const cuexis::core::Error& error, std::string_view key, std::str
     return contents.str();
 }
 
+[[nodiscard]] auto renderPublicHeaderSource() -> std::string {
+    const auto path = std::filesystem::path{CUEXIS_SOURCE_DIR} / "engine" / "render_opengl" /
+                      "include" / "cuexis" / "render_opengl" / "open_gl_backend.hpp";
+    std::ifstream input{path, std::ios::binary};
+    REQUIRE(input.good());
+    std::ostringstream contents;
+    contents << input.rdbuf();
+    return contents.str();
+}
+
 [[nodiscard]] auto playerImplementationSource() -> std::string {
     const auto path =
         std::filesystem::path{CUEXIS_SOURCE_DIR} / "app" / "player" / "src" / "player_control.cpp";
@@ -324,11 +334,31 @@ TEST_CASE("OpenGL summary omission skips command copies and digest work",
     const auto body = functionRegion(source, "bool presentFrame");
     REQUIRE(body.has_value());
 
-    CHECK(body->find("const bool needSummary = summary != nullptr") != std::string_view::npos);
-    CHECK(body->find("if (needSummary)") != std::string_view::npos);
-    CHECK(body->find("buildDraws(snapshot, *presentation_->active, preparedSummary") !=
-          std::string_view::npos);
+    // The adapter no longer re-derives ordering, split, or the digest. It consumes the neutral
+    // builder result and only resolves GL handles, so a second summary implementation cannot
+    // drift from the backend-neutral contract (ADR 0042).
+    CHECK(body->find("buildPresentationCommands(") != std::string_view::npos);
+    CHECK(body->find("resolveGpuDraw(") != std::string_view::npos);
+    CHECK(body->find("preparedSummary") != std::string_view::npos);
     CHECK(body->find("*summary = std::move(preparedSummary)") != std::string_view::npos);
+}
+
+TEST_CASE("OpenGL does not keep a second draw builder, hasher, or summary type",
+          "[render][opengl][convergence][characterization]") {
+    const auto source = renderImplementationSource();
+    const auto header = renderPublicHeaderSource();
+
+    // One builder, one hasher, one summary. The adapter only consumes them.
+    CHECK(source.find("class SummaryHash final") == std::string::npos);
+    CHECK(source.find("summaryDigest(") == std::string::npos);
+    CHECK(source.find("buildDraws(") == std::string::npos);
+    CHECK(source.find("toDrawSummary(") == std::string::npos);
+    CHECK(source.find("toDrawCommand(") == std::string::npos);
+    CHECK(header.find("struct OpenGlDrawCommand final") == std::string::npos);
+    CHECK(header.find("struct OpenGlDrawSummary final") == std::string::npos);
+    // The compatibility entry point is an alias, not a parallel type.
+    CHECK(header.find("using OpenGlDrawSummary = presentation_renderer::DrawSummary") !=
+          std::string_view::npos);
 }
 
 TEST_CASE("OpenGL frame scratch vectors persist in backend state",

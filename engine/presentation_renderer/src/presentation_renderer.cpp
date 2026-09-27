@@ -285,9 +285,9 @@ auto TestPresentationRenderer::prepare(playback::PreparedPlayback& prepared,
         }
         if (const auto* mesh = std::get_if<playback::PortableMesh>(&(*resource)->value);
             mesh != nullptr && !finiteBounds(*mesh)) {
-            return core::unexpected(
-                core::Error{"presentation.renderer.frame.non_finite", "Mesh bounds are not finite"}
-                    .withContext("asset_id", entry.reference.assetId));
+            return core::unexpected(core::Error{"playback.presentation.mesh.value_invalid",
+                                                "Mesh bounds are not finite"}
+                                        .withContext("asset_id", entry.reference.assetId));
         }
         cache.resources.push_back(std::move(*resource));
     }
