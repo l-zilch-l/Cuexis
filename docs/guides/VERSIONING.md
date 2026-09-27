@@ -212,3 +212,29 @@ python -B tools/update_version.py --check
 发布前还必须记录对应 SHA、显示版本、SDK API 版本、静态/共享安装 consumer 和 fresh
 configure/clean build 证据；版本变化不隐式升级 SDK API、内容格式或 ABI。仓库保护未启用时，
 只能报告“脚本完成、门禁未启用”，不能把本地通过写成 B1 退出证据。
+
+### 升级示例：从 `0.7.0` 基线重建宿主
+
+`examples/reference_host/` 是当前唯一可执行的升级示例，也是 `0.7.0` 基线的写法样本：
+
+```cmake
+find_package(Cuexis 0.7.0 CONFIG REQUIRED COMPONENTS Playback)
+```
+
+它显式声明自己编写时对齐的 API 版本，并在安装包记录的 API minor 不兼容时于 configure 阶段失败，
+而不是留到运行期。从旧基线升级到当前构建的最小流程是：
+
+1. 用新版本重新配置并安装 SDK（`cmake --install <build> --prefix <new-prefix>`）。
+2. 把宿主指向新前缀（`-DCuexis_DIR=<new-prefix>/lib/cmake/Cuexis`）。
+3. 干净重建宿主（新构建目录），不要在旧构建目录上增量链接。
+
+`0.7.0` 与当前实现之间**没有源不兼容变更**：C4 只新增了示例宿主与打包目标，没有改动任何已发布
+的公开头、签名、枚举语义或默认入口，也没有提升 SDK API 版本。因此从 `0.7.0` 基线重建宿主不需要
+迁移步骤。shared 预览仍不承诺 binary 可替换：升级必须重新构建 consumer，不能只替换 `.so`/`.dll`。
+
+配置存储的升级与回滚边界（[STAGE6_CONFIG_AND_MEDIA.md](../formats/STAGE6_CONFIG_AND_MEDIA.md) §1）：
+`cuexis.player-preferences` 与 `cuexis.audio-device-profile` 目前都只有 v1，实现**不发明** v0
+迁移。遇到更高或更低版本的既有文件时，加载会退回文档化默认值、保留原文件并给出
+`player.preferences.unsupported_version` / `player.audio_profile.unsupported_version`，保存路径
+拒绝覆盖该文件。因此“升级”不会静默改写用户文件，回滚到旧构建也仍然可读；这是当前可验证的迁移
+安全边界，而不是迁移实现。

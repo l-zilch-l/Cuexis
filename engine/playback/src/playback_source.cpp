@@ -35,6 +35,9 @@ constexpr std::size_t maxProjectDocumentTotalBytes = 512U * 1024U * 1024U;
 constexpr std::size_t maxProjectPathBytes = 4096;
 constexpr std::size_t maxProjectPathDepth = 64;
 constexpr std::size_t maxSourceIdBytes = 256;
+#if defined(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+constexpr std::size_t maxCandidateEntryBytes = 16U * 1024U * 1024U;
+#endif
 
 struct CxcSourceData final {
     std::string sourceId;
@@ -87,6 +90,11 @@ struct CxcSourceData final {
     return core::Error{"playback.source.budget_exceeded",
                        "PlaybackSource allocation could not be satisfied"}
         .withContext("operation", std::string{operation});
+}
+
+[[nodiscard]] auto candidateDisabledError() -> core::Error {
+    return core::Error{"playback.candidate.disabled",
+                       "Chart v5 candidate Playback is disabled in this build"};
 }
 
 [[nodiscard]] auto readTextFile(const std::filesystem::path& path,
@@ -779,6 +787,152 @@ auto PlaybackSource::fromCxcMemory(std::vector<std::byte> packageBytes)
     } catch (...) {
         return core::unexpected(sourceFailure("cxc_memory"));
     }
+}
+
+auto PlaybackSource::fromFilesystemProjectEntry(const std::filesystem::path& locator,
+                                                std::string entryPath)
+    -> core::Result<PlaybackSource> {
+#if !defined(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+    static_cast<void>(locator);
+    static_cast<void>(entryPath);
+    return core::unexpected(candidateDisabledError());
+#else
+    try {
+        auto projectResult = project::ProjectLoader::load(locator);
+        if (!projectResult.hasValue()) {
+            return core::unexpected(firstDiagnosticError("playback.source.project_invalid",
+                                                         "Project loading produced errors",
+                                                         projectResult.diagnostics));
+        }
+        auto sourceResult = fromFilesystemProject(locator);
+        if (!sourceResult) {
+            return core::unexpected(std::move(sourceResult.error()));
+        }
+        auto selected = cxc::parseCandidateChartEntryExtension(
+            projectResult.project->config.extensions.canonicalText, entryPath);
+        if (!selected.hasValue()) {
+            return core::unexpected(firstDiagnosticError("playback.candidate.entry_invalid",
+                                                         "Candidate entry metadata is invalid",
+                                                         selected.diagnostics));
+        }
+        auto bytes = filesystem::readBoundedFile(
+            projectResult.project->projectRoot / entryPath,
+            {.root = projectResult.project->projectRoot,
+             .maxBytes = maxCandidateEntryBytes,
+             .errors = {.rootUnavailable = "playback.candidate.root_unavailable",
+                        .rootChanged = "playback.candidate.root_changed",
+                        .openFailed = "playback.candidate.open_failed",
+                        .outsideRoot = "playback.candidate.outside_root",
+                        .notRegular = "playback.candidate.not_regular",
+                        .tooLarge = "playback.candidate.too_large",
+                        .readFailed = "playback.candidate.read_failed",
+                        .changedDuringRead = "playback.candidate.changed_during_read"}});
+        if (!bytes) {
+            return core::unexpected(std::move(bytes.error()));
+        }
+        auto candidate = cxc::validateCandidateChartBytes(*selected.entry, bytes->bytes);
+        if (!candidate.hasValue()) {
+            return core::unexpected(firstDiagnosticError("playback.candidate.invalid",
+                                                         "Candidate Packed entry is invalid",
+                                                         candidate.diagnostics));
+        }
+        auto source = std::move(*sourceResult);
+        source.state_->candidate = std::move(*candidate.candidate);
+        return source;
+    } catch (const std::bad_alloc&) {
+        return core::unexpected(sourceAllocationFailure("filesystem_project_entry"));
+    } catch (const std::exception& exception) {
+        return core::unexpected(sourceFailure("filesystem_project_entry", &exception));
+    } catch (...) {
+        return core::unexpected(sourceFailure("filesystem_project_entry"));
+    }
+#endif
+}
+
+auto PlaybackSource::fromCxcFileEntry(const std::filesystem::path& locator, std::string entryPath)
+    -> core::Result<PlaybackSource> {
+#if !defined(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+    static_cast<void>(locator);
+    static_cast<void>(entryPath);
+    return core::unexpected(candidateDisabledError());
+#else
+    try {
+        auto loaded = cxc::CxcPackageLoader::loadFile(locator);
+        if (!loaded.hasValue()) {
+            return core::unexpected(firstDiagnosticError("playback.source.cxc_invalid",
+                                                         "CXC package loading produced errors",
+                                                         loaded.diagnostics));
+        }
+        auto candidate = cxc::validateCandidateChartEntry(*loaded.package, entryPath);
+        if (!candidate.hasValue()) {
+            return core::unexpected(firstDiagnosticError("playback.candidate.invalid",
+                                                         "Candidate Packed entry is invalid",
+                                                         candidate.diagnostics));
+        }
+        auto converted = convertCxcPackage(std::move(*loaded.package));
+        if (!converted) {
+            return core::unexpected(std::move(converted.error()));
+        }
+        auto state = std::make_unique<State>();
+        state->sourceId = std::move(converted->sourceId);
+        state->entryChartPath = std::move(converted->entryChartPath);
+        state->projectDocuments = std::move(converted->projectDocuments);
+        state->database = std::move(converted->database);
+        state->provider = std::move(converted->provider);
+        state->cxcPackageIdentity = converted->packageIdentity;
+        state->candidate = std::move(*candidate.candidate);
+        return PlaybackSource{std::move(state)};
+    } catch (const std::bad_alloc&) {
+        return core::unexpected(sourceAllocationFailure("cxc_file_entry"));
+    } catch (const std::exception& exception) {
+        return core::unexpected(sourceFailure("cxc_file_entry", &exception));
+    } catch (...) {
+        return core::unexpected(sourceFailure("cxc_file_entry"));
+    }
+#endif
+}
+
+auto PlaybackSource::fromCxcMemoryEntry(std::vector<std::byte> packageBytes, std::string entryPath)
+    -> core::Result<PlaybackSource> {
+#if !defined(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+    static_cast<void>(packageBytes);
+    static_cast<void>(entryPath);
+    return core::unexpected(candidateDisabledError());
+#else
+    try {
+        auto loaded = cxc::CxcPackageLoader::loadMemory(std::move(packageBytes));
+        if (!loaded.hasValue()) {
+            return core::unexpected(firstDiagnosticError("playback.source.cxc_invalid",
+                                                         "CXC package loading produced errors",
+                                                         loaded.diagnostics));
+        }
+        auto candidate = cxc::validateCandidateChartEntry(*loaded.package, entryPath);
+        if (!candidate.hasValue()) {
+            return core::unexpected(firstDiagnosticError("playback.candidate.invalid",
+                                                         "Candidate Packed entry is invalid",
+                                                         candidate.diagnostics));
+        }
+        auto converted = convertCxcPackage(std::move(*loaded.package));
+        if (!converted) {
+            return core::unexpected(std::move(converted.error()));
+        }
+        auto state = std::make_unique<State>();
+        state->sourceId = std::move(converted->sourceId);
+        state->entryChartPath = std::move(converted->entryChartPath);
+        state->projectDocuments = std::move(converted->projectDocuments);
+        state->database = std::move(converted->database);
+        state->provider = std::move(converted->provider);
+        state->cxcPackageIdentity = converted->packageIdentity;
+        state->candidate = std::move(*candidate.candidate);
+        return PlaybackSource{std::move(state)};
+    } catch (const std::bad_alloc&) {
+        return core::unexpected(sourceAllocationFailure("cxc_memory_entry"));
+    } catch (const std::exception& exception) {
+        return core::unexpected(sourceFailure("cxc_memory_entry", &exception));
+    } catch (...) {
+        return core::unexpected(sourceFailure("cxc_memory_entry"));
+    }
+#endif
 }
 
 } // namespace cuexis::playback

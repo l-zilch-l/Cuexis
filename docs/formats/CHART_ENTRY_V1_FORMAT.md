@@ -179,11 +179,11 @@ it does not expose Packed, CXC, CanonicalSemanticChart, Requirement or CXT AST t
 
 | Capability | A2 contract | Current implementation state | Verification owner |
 | --- | --- | --- | --- |
-| Project and CXC extension shape | Recorded and schema-linked | Reader/factory not implemented | C1 |
-| Explicit candidate factory names | Recorded in API draft | Public declarations not added | C1/C4 |
-| v4 legacy factory behavior | Preserved by scope | Existing tests pass in A1 | C1/F1 |
-| R5 candidate profile | Repeated here as a hard boundary | Foundation tool validator exists; Playback does not | C1 |
-| Typed lowering and A16 | Field retention and ownership recorded | Runtime path not implemented | C1 |
+| Project and CXC extension shape | Recorded and schema-linked | Local production bridge exists; C1 exit is open | C1 |
+| Explicit candidate factory names | Recorded in API draft | Public declarations exist; experimental install gate remains C4 | C1/C4 |
+| v4 legacy factory behavior | Preserved by scope | Local MSVC playback tests still pass | C1/F1 |
+| R5 candidate profile | Repeated here as a hard boundary | Playback uses the production bridge; hosted exit is open | C1 |
+| Typed lowering and A16 | Field retention and ownership recorded | Local lowering and prepare path exist; C1 exit is open | C1 |
 | Experimental install separation | Consumer and staging contract recorded | Version/package gate not implemented | B1/C4 |
 | Official v5/default Writer | Explicitly excluded | Not supported | Stage 8 |
 

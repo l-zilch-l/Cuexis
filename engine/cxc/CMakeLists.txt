@@ -8,6 +8,7 @@ set_target_properties(cuexis_cxc PROPERTIES EXPORT_NAME InternalCxc)
 target_sources(cuexis_cxc
     PRIVATE
         src/cxc_hash_internal.cpp
+        src/cxc_candidate.cpp
         src/cxc_manifest_loader.cpp
         src/cxc_package.cpp
         src/cxc_path_internal.cpp
@@ -16,6 +17,7 @@ target_sources(cuexis_cxc
         src/cxc_hash_internal.hpp
         src/cxc_path_internal.hpp
         src/zip32_envelope_internal.hpp
+        include/cuexis/cxc/cxc_candidate.hpp
     PRIVATE
         FILE_SET HEADERS
         BASE_DIRS include

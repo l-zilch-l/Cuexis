@@ -1,0 +1,14 @@
+{
+  "fixture": "audio/stereo.flac",
+  "kind": "audio",
+  "profile": "928c22b9761bca9829aca174a826334d2b8ce59069fe67050ab6323eafdc4610",
+  "decoder": "libflac-1.5.0-native",
+  "sha256": "2010d75d2ef44119351f8753830877e95d46cb346d0a0e16e7711ac1f020f504",
+  "byteCount": 17684,
+  "sourceBytes": 15519,
+  "decodedBytes": 17684,
+  "peakWorkingBytes": 0,
+  "sampleRate": 44100,
+  "channels": 2,
+  "frames": 4410
+}

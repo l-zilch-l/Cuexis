@@ -2,12 +2,14 @@
 
 #include <cuexis/playback/playback_session.hpp>
 
+#include "playback_candidate_internal.hpp"
 #include "playback_source_state.hpp"
 #include "presentation_internal.hpp"
 
 #include <cuexis/animation/animation_compiler.hpp>
 #include <cuexis/assets/asset_database.hpp>
 #include <cuexis/assets/resource_manager.hpp>
+#include <cuexis/chart/candidate_lowering.hpp>
 #include <cuexis/chart/chart_loader.hpp>
 #include <cuexis/chart/chart_runtime.hpp>
 #include <cuexis/chart/chart_v4_loader.hpp>
@@ -180,6 +182,7 @@ struct PrepareArtifact final {
     std::optional<chart::ChartV4ResolvedArtifact> v4Artifact;
     std::optional<chart::CanonicalContentIdentity> chartIdentity;
     std::optional<chart::CanonicalContentIdentity> parameterIdentity;
+    std::optional<chart::CandidateRuntimeMetadata> candidateMetadata;
     std::vector<chart::CxtIdentityComponent> cxtIdentities;
     std::vector<chart::ChartResourceRequirement> resourceRequirements;
     std::vector<std::string> additionalCapabilities;
@@ -640,6 +643,105 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
     return documents;
 }
 
+[[nodiscard]] auto candidateResourceRequirements(const chart::CanonicalResourceClosure& closure,
+                                                 core::Diagnostics& diagnostics)
+    -> std::optional<std::vector<chart::ChartResourceRequirement>> {
+    std::map<std::string, chart::ChartResourceRequirement, std::less<>> grouped;
+    for (const auto& resource : closure.resources) {
+        chart::ChartResourceUse use = chart::ChartResourceUse::MainMusic;
+        switch (resource.use) {
+        case chart::CanonicalResourceUseKind::MainMusic:
+            use = chart::ChartResourceUse::MainMusic;
+            break;
+        case chart::CanonicalResourceUseKind::RenderableMesh:
+            use = chart::ChartResourceUse::RenderableMesh;
+            break;
+        case chart::CanonicalResourceUseKind::RenderableMaterial:
+            use = chart::ChartResourceUse::RenderableMaterial;
+            break;
+        }
+        auto& requirement = grouped[resource.assetId.value];
+        requirement.assetId = resource.assetId;
+        if (std::ranges::find(requirement.uses, use) == requirement.uses.end()) {
+            requirement.uses.push_back(use);
+        }
+    }
+
+    std::vector<chart::ChartResourceRequirement> requirements;
+    requirements.reserve(grouped.size());
+    for (auto& [unused, requirement] : grouped) {
+        static_cast<void>(unused);
+        const bool audio = std::ranges::any_of(requirement.uses, [](chart::ChartResourceUse use) {
+            return use == chart::ChartResourceUse::MainMusic;
+        });
+        const bool presentation =
+            std::ranges::any_of(requirement.uses, [](chart::ChartResourceUse use) {
+                return use != chart::ChartResourceUse::MainMusic;
+            });
+        if (requirement.assetId.value.empty() || (audio && presentation)) {
+            diagnostics.add(core::Diagnostic{
+                core::DiagnosticSeverity::Error, "candidate.identity.resource_conflict",
+                "Candidate resource closure has an empty or mixed-identity asset",
+                "$/resources/" + requirement.assetId.value});
+            continue;
+        }
+        requirements.push_back(std::move(requirement));
+    }
+    if (diagnostics.hasErrors()) {
+        diagnostics.sortDeterministically();
+        return std::nullopt;
+    }
+    return requirements;
+}
+
+// Lowers the typed chart already validated by the explicit source factory. It does not read
+// Chart JSON, expand CXT v2, or decode Packed bytes again.
+[[nodiscard]] auto prepareCandidateStage(const cxc::CandidateChart& candidate,
+                                         const PlaybackPrepareOptions& options, bool replacement,
+                                         const chart::ChartLimits& limits,
+                                         PrepareArtifact& artifact, core::Diagnostics& diagnostics)
+    -> core::Result<chart::ChartRuntime> {
+    if (!options.parameters.values.empty()) {
+        for (std::size_t index = 0; index < options.parameters.values.size(); ++index) {
+            diagnostics.add(
+                core::Diagnostic{core::DiagnosticSeverity::Error, "chart.parameter.unknown",
+                                 "Host parameter input is not supported by this Chart version",
+                                 "$/parameterInputs/" + std::to_string(index) + "/id"});
+        }
+        diagnostics.sortDeterministically();
+        return core::unexpected(operationError(
+            replacement ? "playback.chart.reload_load_failed" : "playback.chart.load_failed",
+            "Chart parameter resolution produced errors", diagnostics));
+    }
+
+    auto lowered = chart::lowerCandidateRuntime(candidate.semantic, limits);
+    diagnostics.append(std::move(lowered.diagnostics));
+    if (!lowered.hasValue()) {
+        diagnostics.sortDeterministically();
+        return core::unexpected(operationError(replacement ? "playback.chart.reload_compile_failed"
+                                                           : "playback.chart.compile_failed",
+                                               "Candidate lowering produced errors", diagnostics));
+    }
+
+    auto requirements =
+        candidateResourceRequirements(lowered.artifact->metadata.resourceClosure, diagnostics);
+    if (!requirements) {
+        return core::unexpected(operationError("playback.candidate.resource_closure_invalid",
+                                               "Candidate resource closure could not be prepared",
+                                               diagnostics));
+    }
+    const bool renderable = std::ranges::any_of(lowered.artifact->runtime.objects,
+                                                [](const chart::RuntimeObject& object) {
+                                                    return object.components.renderable.has_value();
+                                                });
+    if (renderable) {
+        artifact.additionalCapabilities.emplace_back(capabilityMaterialSnapshotV1);
+    }
+    artifact.resourceRequirements = std::move(*requirements);
+    artifact.candidateMetadata = std::move(lowered.artifact->metadata);
+    return std::move(lowered.artifact->runtime);
+}
+
 [[nodiscard]] auto loadDocumentStage(const PrepareContext& context, PrepareArtifact& artifact,
                                      core::Diagnostics& diagnostics) -> core::Result<void> {
     auto loaded = chart::detail::loadChartForPlayback(context.chartJson, context.limits);
@@ -1032,9 +1134,13 @@ assembleResourceIdentities(std::span<const chart::ChartResourceRequirement> requ
         if (requiresParameterized) {
             presentationCapabilities.emplace_back(capabilityMaterialParameterizedV1);
         }
-        if (!presentationCapabilities.empty() &&
-            !preflightCapabilities(*artifact.document, presentationCapabilities,
-                                   context.capabilities, diagnostics)) {
+        const bool capabilitiesOk =
+            artifact.document
+                ? preflightCapabilities(*artifact.document, presentationCapabilities,
+                                        context.capabilities, diagnostics)
+                : preflightCapabilities(chart::ChartDocument{}, presentationCapabilities,
+                                        context.capabilities, diagnostics);
+        if (!presentationCapabilities.empty() && !capabilitiesOk) {
             return core::unexpected(operationError("playback.capability.preflight_failed",
                                                    "Playback capability preflight failed",
                                                    diagnostics));
@@ -1066,6 +1172,26 @@ assembleResourceIdentities(std::span<const chart::ChartResourceRequirement> requ
 
 [[nodiscard]] auto assembleIdentityStage(PrepareArtifact& artifact, core::Diagnostics& diagnostics)
     -> core::Result<chart::CanonicalContentIdentity> {
+    if (artifact.candidateMetadata) {
+        auto resourceIdentities =
+            assembleResourceIdentities(artifact.resourceRequirements, artifact.audioSourceLease,
+                                       artifact.presentation, diagnostics);
+        if (!resourceIdentities) {
+            return core::unexpected(
+                operationError("playback.identity.assemble_failed",
+                               "Prepared semantic identity could not be assembled", diagnostics));
+        }
+        auto identity = chart::assembleCandidatePreparedSemanticIdentity(
+            artifact.candidateMetadata->semanticIdentity, *resourceIdentities);
+        if (!identity) {
+            addErrorDiagnostic(diagnostics, identity.error());
+            diagnostics.sortDeterministically();
+            return core::unexpected(operationError(
+                "playback.identity.assemble_failed",
+                "Candidate prepared semantic identity could not be assembled", diagnostics));
+        }
+        return std::move(*identity);
+    }
     if (!artifact.v4Artifact) {
         if (artifact.audioSourceLease && artifact.audioSourceLease->valid()) {
             artifact.resourceRequirements.push_back(chart::ChartResourceRequirement{
@@ -1124,6 +1250,7 @@ struct PlaybackSession::State final {
     std::optional<PlaybackContentInfo> activeContentInfo;
     std::optional<PlaybackMode> activeMode;
     std::optional<PreparedSemanticIdentity> semanticIdentity;
+    std::optional<chart::CandidateRuntimeMetadata> candidateMetadata;
     ChartParameterSet parameters;
     std::uint64_t sessionToken{allocatePlaybackSessionToken()};
     std::uint64_t generation{1};
@@ -1149,6 +1276,7 @@ struct PreparedPlayback::State final {
     PlaybackContentInfo contentInfo;
     ChartParameterSet parameters;
     PreparedSemanticIdentity semanticIdentity;
+    std::optional<chart::CandidateRuntimeMetadata> candidateMetadata;
     std::optional<assets::AudioSourceLease> audioSourceLease;
     core::Diagnostics diagnostics;
     core::Diagnostics lastOperationDiagnostics;
@@ -1205,6 +1333,22 @@ bool PreparedPlayback::valid() const noexcept {
 
 const PlaybackContentInfo* PreparedPlayback::contentInfo() const noexcept {
     return valid() ? &state_->contentInfo : nullptr;
+}
+
+auto detail::CandidateMetadataAccess::prepared(const PreparedPlayback& playback)
+    -> const chart::CandidateRuntimeMetadata* {
+    if (playback.state_ == nullptr || !playback.state_->candidateMetadata) {
+        return nullptr;
+    }
+    return &*playback.state_->candidateMetadata;
+}
+
+auto detail::CandidateMetadataAccess::active(const PlaybackSession& session)
+    -> const chart::CandidateRuntimeMetadata* {
+    if (session.state_ == nullptr || !session.state_->candidateMetadata) {
+        return nullptr;
+    }
+    return &*session.state_->candidateMetadata;
 }
 
 std::optional<PreparedSemanticIdentity> PreparedPlayback::semanticIdentity() const noexcept {
@@ -1706,13 +1850,15 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
         }
         auto& sourceState = *source.state_;
         const auto* entryChart = sourceState.entryChart();
-        if (entryChart == nullptr) {
+        const bool candidateSource = sourceState.candidate.has_value();
+        if (!candidateSource && entryChart == nullptr) {
             auto error =
                 core::Error{"playback.source.invalid", "PlaybackSource entry Chart is unavailable"};
             addErrorDiagnostic(diagnostics, error);
             return core::unexpected(std::move(error));
         }
-        const auto& jsonText = entryChart->utf8Text;
+        const std::string_view jsonText =
+            entryChart != nullptr ? entryChart->utf8Text : std::string_view{};
         const chart::ChartLimits limits;
         PrepareContext context{*this,  source,      jsonText, mode,   targetFrame,
                                policy, replacement, options,  limits, state_->capabilities};
@@ -1727,51 +1873,70 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
             additionalCapabilities.emplace_back(capabilitySourceCxcV1);
         }
 
-        if (auto loaded = loadDocumentStage(context, artifact, diagnostics); !loaded) {
-            const auto message = artifact.isV4 ? "Chart v4 loading produced errors"
-                                               : "Chart loading produced errors";
-            return core::unexpected(operationError(context.replacement
-                                                       ? "playback.chart.reload_load_failed"
+        std::optional<chart::ChartRuntime> chartRuntimeStorage;
+        std::optional<animation::AnimationProgram> compiledAnimation;
+        if (candidateSource) {
+            auto candidateRuntime = prepareCandidateStage(
+                *sourceState.candidate, options, replacement, limits, artifact, diagnostics);
+            if (!candidateRuntime) {
+                return core::unexpected(std::move(candidateRuntime.error()));
+            }
+            if (!preflightCapabilities(chart::ChartDocument{}, additionalCapabilities,
+                                       context.capabilities, diagnostics)) {
+                return core::unexpected(operationError("playback.capability.preflight_failed",
+                                                       "Playback capability preflight failed",
+                                                       diagnostics));
+            }
+            compiledAnimation = animation::AnimationProgram{};
+            chartRuntimeStorage = std::move(*candidateRuntime);
+        } else {
+            if (auto loaded = loadDocumentStage(context, artifact, diagnostics); !loaded) {
+                const auto message = artifact.isV4 ? "Chart v4 loading produced errors"
+                                                   : "Chart loading produced errors";
+                return core::unexpected(operationError(context.replacement
+                                                           ? "playback.chart.reload_load_failed"
+                                                           : "playback.chart.load_failed",
+                                                       message, diagnostics));
+            }
+            if (auto resolved = resolveParametersStage(context, artifact,
+                                                       sourceState.projectDocuments, diagnostics);
+                !resolved) {
+                return core::unexpected(
+                    operationError(context.replacement ? "playback.chart.reload_load_failed"
                                                        : "playback.chart.load_failed",
-                                                   message, diagnostics));
-        }
-        if (auto resolved = resolveParametersStage(context, artifact, sourceState.projectDocuments,
-                                                   diagnostics);
-            !resolved) {
-            return core::unexpected(
-                operationError(context.replacement ? "playback.chart.reload_load_failed"
-                                                   : "playback.chart.load_failed",
-                               artifact.v4Source ? "Chart v4 resolution produced errors"
-                                                 : "Chart parameter resolution produced errors",
-                               diagnostics));
-        }
+                                   artifact.v4Source ? "Chart v4 resolution produced errors"
+                                                     : "Chart parameter resolution produced errors",
+                                   diagnostics));
+            }
 
-        if (!preflightCapabilities(*document, additionalCapabilities, context.capabilities,
-                                   diagnostics)) {
-            return core::unexpected(operationError("playback.capability.preflight_failed",
-                                                   "Playback capability preflight failed",
-                                                   diagnostics));
-        }
+            if (!preflightCapabilities(*document, additionalCapabilities, context.capabilities,
+                                       diagnostics)) {
+                return core::unexpected(operationError("playback.capability.preflight_failed",
+                                                       "Playback capability preflight failed",
+                                                       diagnostics));
+            }
 
-        auto compiledAnimation =
-            compileAnimationProgram(std::move(animationProgram), limits, diagnostics);
-        if (!compiledAnimation) {
-            return core::unexpected(
-                operationError(replacement ? "playback.animation.reload_compile_failed"
-                                           : "playback.animation.compile_failed",
-                               "Animation program compilation produced errors", diagnostics));
-        }
+            compiledAnimation =
+                compileAnimationProgram(std::move(animationProgram), limits, diagnostics);
+            if (!compiledAnimation) {
+                return core::unexpected(
+                    operationError(replacement ? "playback.animation.reload_compile_failed"
+                                               : "playback.animation.compile_failed",
+                                   "Animation program compilation produced errors", diagnostics));
+            }
 
-        auto runtimeResult = chart::ChartCompiler::compile(*document, limits);
-        const bool runtimeValid = runtimeResult.hasValue();
-        diagnostics.append(std::move(runtimeResult.diagnostics));
-        if (!runtimeValid) {
-            return core::unexpected(
-                operationError(replacement ? "playback.chart.reload_compile_failed"
-                                           : "playback.chart.compile_failed",
-                               "Chart compilation produced errors", diagnostics));
+            auto runtimeResult = chart::ChartCompiler::compile(*document, limits);
+            const bool runtimeValid = runtimeResult.hasValue();
+            diagnostics.append(std::move(runtimeResult.diagnostics));
+            if (!runtimeValid) {
+                return core::unexpected(
+                    operationError(replacement ? "playback.chart.reload_compile_failed"
+                                               : "playback.chart.compile_failed",
+                                   "Chart compilation produced errors", diagnostics));
+            }
+            chartRuntimeStorage = std::move(*runtimeResult.runtime);
         }
-        auto& chartRuntime = *runtimeResult.runtime;
+        auto& chartRuntime = *chartRuntimeStorage;
         const bool hasMainMusic = chartRuntime.mainMusic.has_value();
         if ((context.mode == PlaybackMode::ChartClock && hasMainMusic) ||
             (context.mode != PlaybackMode::ChartClock && !hasMainMusic)) {
@@ -1836,7 +2001,7 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
         prepared->replacement = context.replacement;
         prepared->contentProvider = std::move(sourceState.provider);
         prepared->resourceManager = std::move(resourceManager);
-        prepared->chartJson = jsonText;
+        prepared->chartJson = candidateSource ? std::string{} : std::string{jsonText};
         prepared->runtimeSession = std::move(artifact.runtimeSession);
         prepared->snapshotLayout = std::move(*artifact.snapshotLayout);
         prepared->chartInfo = chartInfoFor(chartRuntime, prepared->runtimeSession->resourceCount());
@@ -1847,6 +2012,7 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
                                    : std::nullopt};
         prepared->parameters = context.options.parameters;
         prepared->semanticIdentity = toPublicIdentity(*assembledIdentity);
+        prepared->candidateMetadata = std::move(artifact.candidateMetadata);
         prepared->audioSourceLease = std::move(audioSourceLease);
         prepared->targetFrame = committedFrame;
         prepared->committedState = replacement ? state_->sessionState : SessionState::Ready;
@@ -1931,6 +2097,7 @@ auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> 
     state_->activeContentInfo = std::move(candidate.contentInfo);
     state_->activeMode = state_->activeContentInfo->mode;
     state_->semanticIdentity = candidate.semanticIdentity;
+    state_->candidateMetadata = std::move(candidate.candidateMetadata);
     state_->parameters = std::move(candidate.parameters);
     state_->lastFrame = candidate.targetFrame;
     state_->diagnostics = std::move(candidate.diagnostics);
@@ -2231,6 +2398,7 @@ auto PlaybackSession::unload() -> core::Result<void> {
     state_->activeContentInfo.reset();
     state_->activeMode.reset();
     state_->semanticIdentity.reset();
+    state_->candidateMetadata.reset();
     state_->parameters = {};
     state_->presentation.reset();
     state_->sessionState = SessionState::Empty;

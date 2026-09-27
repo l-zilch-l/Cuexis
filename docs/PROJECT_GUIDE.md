@@ -92,8 +92,12 @@ Chart Format Foundation [计划](stage_plans/completed/chart-format-foundation/p
 （R0-R5）也已于 2026-09-17 完成并经 owner 接受，补齐了身份、profile、预算、端到端、容量与
 跨平台证据（允许/禁止消费边界见
 [R5 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)）。
-Stage 6 [计划](stage_plans/active/stage-06/plan.md) 已恢复 active 并于 2026-09-17 启动（首批
-S6-A），作为当前实施阶段处理版本门禁、后端中立表现渲染、常用媒体和 CXC v1 合同。
+Stage 6 [计划](stage_plans/completed/stage-06/plan.md) 于 2026-09-17 启动（首批 S6-A），
+处理版本门禁、后端中立表现渲染、常用媒体和 CXC v1 合同，并已于 2026-09-27 关闭归档：
+[A1 至 F1 全部批次退出](stage_reports/stages/stage-06/README.md)，关闭报告、
+[三个核验问题的处置](stage_reports/reviews/stage-verification-2026-09/2026-09-01-findings.md)
+与 Stage 7A / Stage 8 交接清单经 owner 接受（见
+[关闭报告](stage_reports/stages/stage-06/completion.md)）。Stage 7A 与 Stage 8 尚未启动。
 
 格式权威入口：[formats/README.md](formats/README.md)。
 

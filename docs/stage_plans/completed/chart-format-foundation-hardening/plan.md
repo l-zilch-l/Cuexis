@@ -10,7 +10,7 @@ Stage 6 已恢复 active
 归档来源：[Foundation 原计划](../../completed/chart-format-foundation/plan.md)、
 [Foundation 关闭与交接记录](../../../stage_reports/stages/chart-format-foundation/2026-09-16-closure-and-handoff.md)、
 [交接复核记录](../../../stage_reports/stages/chart-format-foundation/2026-09-16-handoff-review.md)、
-[Stage 6 计划](../../active/stage-06/plan.md)。
+[Stage 6 计划](../../completed/stage-06/plan.md)。
 
 ## 1. 阶段目标
 

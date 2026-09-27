@@ -13,6 +13,7 @@ target_sources(cuexis_chart
         src/chart_migrator.cpp
         src/chart_parameter_resolver.cpp
         src/chart_runtime.cpp
+        src/candidate_lowering.cpp
         src/chart_v4_loader.cpp
         src/chart_v4_resolver.cpp
         src/chart_writer.cpp

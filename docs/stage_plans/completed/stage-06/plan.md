@@ -1,9 +1,10 @@
 # Stage 6 Implementation Plan: Playback C++ API and Player Productization
 
-状态：active；当前实施阶段；Foundation 交接加固（R0-R5）已于 2026-09-17 关闭并经 owner
-接受，本阶段自此恢复实施
+状态：completed；已于 2026-09-27 关闭并归档（`S6-F2` 关闭报告、三个核验问题处置与 Stage 7A /
+Stage 8 交接清单经项目所有者明确接受）；Foundation 交接加固（R0-R5）已于 2026-09-17 关闭并经
+owner 接受，本阶段曾自此恢复实施
 
-更新日期：2026-09-21
+更新日期：2026-09-27
 
 归档来源：[旧版 PROJECT_GUIDE](../../../archive/PROJECT_GUIDE_LEGACY_2026-08-10.md) 与
 [SDK transition plan 快照](../../../archive/CUEXIS_SDK_TRANSITION_PLAN_2026-08-10.md)。2026-09-01
@@ -46,7 +47,9 @@ Chart v1-v3 退出仍是待项目所有者决策的 candidate 提案，不因本
 2026-09-20 的可实施性评审以本地 `master` 的 `e3c4589` 为阅读基线。owner 已接受将评审
 建议落实为详细计划，并授权冻结关键实施决策；其权威结论见
 [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md)。设计已冻结不表示字段级
-Schema、表征或实施批次已经通过。当前只进入 S6-A，尚无新增功能的完成证据。本计划不替代
+Schema、表征或实施批次已经通过。A1、A2、B1、C1、C2、D1、D2、C3、E3 与 C4 已有各自退出证据；
+E1/E2 与 F1 尚未退出。
+本计划不替代
 [ADR 0024](../../../adr/0024-configuration-ownership-and-staged-formats.md)、
 [ADR 0033](../../../adr/0033-cpp-shared-library-preview-boundary.md)、
 [Packed Spec](../../../formats/PACKED_CHART_FORMAT.md) 或 R5 交接合同。
@@ -88,19 +91,19 @@ S6-A1 基线、入口和证据矩阵
 | --- | --- | --- | --- |
 | A1 | R5 交接已接受 | 固定基线、代码入口盘点、测试与支持矩阵 | completed ([报告](../../../stage_reports/stages/stage-06/2026-09-20-s6-a1-baseline.md)) |
 | A2 | A1、ADR 0042 已冻结 | Spec/Schema、API 草案、依赖图与接口表征 | completed ([报告](../../../stage_reports/stages/stage-06/2026-09-21-s6-a2-contracts-and-characterization.md)) |
-| B1 | A2 | 版本比较器、受保护门禁、发行 checklist | blocked（本地实现与验证完成；受保护 master/bootstrap 待 owner 启用，见报告） |
-| C1 | A2 | candidate 消费链、身份和要求数据保留 | planned |
-| D1 | A2 | 无环渲染合同、事务 token、测试 renderer | planned |
-| D2 | D1 | OpenGL adapter 迁移、统一帧与诊断路径 | planned |
-| C2 | A2 | 配置解析、快照、设备 profile 与受控应用 | planned |
-| C3 | C1、C2、D2 | Player 用户入口、状态机、跨子系统事务 | planned |
-| E1 / E2 | A2 | 图片 / 音频离线导入及各自 golden | planned |
-| E3 | E1、E2、C1 | 资源身份、缓存、索引与 CXC 原子发布 | planned |
-| C4 | C3、E3 | 具名真实宿主、安装包、升级与部署证明 | planned |
-| F1 | B1、C4 及其前置全部退出 | 最终 SHA 全量、hosted、GPU 与许可证证据 | planned |
-| F2 | F1 | 关闭报告、问题处置、Stage 7A/8 交接与 owner 接受 | planned |
+| B1 | A2 | 版本比较器、受保护门禁、发行 checklist | completed（trusted baseline、required Version Gate、同 SHA hosted 验证与合并后审计均已记录，见报告） |
+| C1 | A2 | candidate 消费链、身份和要求数据保留 | completed（本地 MSVC 快照与同 SHA hosted 默认 OFF 矩阵见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-22-s6-c1-exit.md)；不是 Stage 6 关闭或 owner acceptance） |
+| D1 | A2 | 无环渲染合同、事务 token、测试 renderer | completed（本地 MSVC 快照与同 SHA hosted 默认矩阵见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-22-s6-d1-exit.md)；OpenGL 迁移仍属 D2） |
+| D2 | D1 | OpenGL adapter 迁移、统一帧与诊断路径 | completed（退出当时的记录见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-23-s6-d2-exit.md)；成员顺序修正后的 MinGW 在 `9bb94b4` 已通过。本机最小化/恢复见 [补充记录](../../../stage_reports/stages/stage-06/2026-09-23-s6-d2-minimize-restore.md)，最小化时 drawable 仍为 1280x720） |
+| C2 | A2 | 配置解析、快照、设备 profile 与受控应用 | completed（本地验收与 `e01a4b1` hosted 见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-23-s6-c2-exit.md)；新增测试的 hosted 复验尚未发生） |
+| C3 | C1、C2、D2 | Player 用户入口、状态机、跨子系统事务 | completed（本地验收见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-24-s6-c3-exit.md)；该退出不是 Stage 6 关闭或 owner acceptance） |
+| E1 / E2 | A2 | 图片 / 音频离线导入及各自 golden | completed（`S6-G10`/`S6-G11` 逐项验收、测试注册、本地矩阵与同 SHA 四平台 hosted 复验见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-27-s6-e1-e2-exit.md)；过程、根因与 golden 重新冻结见 [实现报告](../../../stage_reports/stages/stage-06/2026-09-25-s6-e1-e2-media-importer.md)。本地批次退出，不是 Stage 6 关闭或 owner acceptance） |
+| E3 | E1、E2、C1 | 资源身份、缓存、索引与 CXC 原子发布 | completed（`S6-G12` 逐项验收与同 SHA 四平台 hosted 矩阵见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-26-s6-e3-exit.md)；本地批次退出，不是 Stage 6 关闭或 owner acceptance） |
+| C4 | C3、E3 | 具名真实宿主、安装包、升级与部署证明 | completed（`S6-G13` 逐项验收、本地 flavor 矩阵与同 SHA 四平台 hosted 见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-27-s6-c4-exit.md)；实现与缺陷过程见 [C4 报告](../../../stage_reports/stages/stage-06/2026-09-27-s6-c4-reference-host-and-player-distribution.md)。本地批次退出，不是 Stage 6 关闭或 owner acceptance） |
+| F1 | B1、C4 及其前置全部退出 | 最终 SHA 全量、hosted、GPU 与许可证证据 | completed（`S6-G14` 与 `S6-G15` 的 F1 部分逐项验收、7 个 preset 的 fresh configure 与 clean-first 本地全量矩阵、candidate 开关与工具隔离、GPU/真实音频设备单列证据、同 SHA 三平台 hosted 复验见 [退出记录](../../../stage_reports/stages/stage-06/2026-09-27-s6-f1-final-validation.md)。F1 本地批次退出，不是 Stage 6 关闭或 owner acceptance；`S6-F2` 未开始） |
+| F2 | F1 | 关闭报告、问题处置、Stage 7A/8 交接与 owner 接受 | completed（[关闭报告](../../../stage_reports/stages/stage-06/completion.md)：`S6-G01`…`S6-G15` 逐项映射、三个核验问题改为 closed、Stage 7A 与 Stage 8 交接清单、未执行与残余清单；项目所有者于 2026-09-27 明确接受该交接清单与残余，本计划随之归档到 `completed/stage-06/`。PR、合并与发布仍属另行授权） |
 
-`planned` 表示尚未取得退出证据；Stage 6 的 active 状态不等于 A1/A2 已完成。实际工作开始后
+`planned` 表示尚未取得退出证据；Stage 6 的 active 状态不等于尚未列出证据的批次已完成。实际工作开始后
 逐项更新为 in_progress、blocked 或 completed，并链接证据。阻塞项必须记录原因和恢复条件，
 不能以缩小测试矩阵或静默放宽合同解除。
 

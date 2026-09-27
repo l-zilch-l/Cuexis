@@ -1,6 +1,7 @@
 add_executable(cuexis_playback_tests
     frame_digest_tests.cpp
     mode_parity_tests.cpp
+    playback_candidate_tests.cpp
     playback_identity_tests.cpp
     playback_migration_equivalence_tests.cpp
     playback_session_tests.cpp
@@ -25,6 +26,7 @@ target_compile_definitions(cuexis_playback_tests
 target_include_directories(cuexis_playback_tests
     PRIVATE
         ${PROJECT_SOURCE_DIR}/engine/assets/include
+        ${PROJECT_SOURCE_DIR}/engine/core/internal
         ${PROJECT_SOURCE_DIR}/engine/json_support/src
         ${PROJECT_SOURCE_DIR}/engine/playback/src
         ${PROJECT_SOURCE_DIR}/tests/presentation
@@ -34,9 +36,17 @@ target_link_libraries(cuexis_playback_tests
     PRIVATE
         cuexis::audio
         cuexis::chart
+        cuexis::cxc
         cuexis::playback
         Catch2::Catch2WithMain
 )
+
+if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+    target_compile_definitions(cuexis_playback_tests
+        PRIVATE
+            CUEXIS_ENABLE_CHART_V5_CANDIDATE=1
+    )
+endif()
 
 include(Catch)
 catch_discover_tests(cuexis_playback_tests)

@@ -2,7 +2,7 @@
 
 状态：阶段 3 最终验收后的现行构建、安装与质量门禁规范
 
-更新日期：2026-08-28
+更新日期：2026-09-22
 
 ## 当前仓库说明
 
@@ -34,6 +34,8 @@ cuexis_render
 cuexis_debug
 cuexis_runtime
 cuexis_playback
+cuexis_presentation_renderer
+cuexis_player_support
 cuexis_platform_sdl
 cuexis_audio_sdl
 cuexis_render_opengl
@@ -59,6 +61,8 @@ cuexis_behavior_tests
 cuexis_gameplay_tests
 cuexis_debug_tests
 cuexis_render_tests
+cuexis_presentation_renderer_tests
+cuexis_player_support_tests
 cuexis_runtime_tests
 cuexis_world_tests
 cuexis_playback_tests
@@ -73,7 +77,9 @@ cuexis_platform_sdl_tests
 cuexis_audio_sdl_tests
 cuexis_render_opengl_tests
 cuexis_player_diagnostics_tests
+cuexis_player_control_tests
 cuexis_format_check
+cuexis_player_dist
 ```
 <!-- CUEXIS_ACTIVE_TARGETS_END -->
 
@@ -221,6 +227,26 @@ Linux sanitizer 覆盖 shader-tools 时使用 `headless-sanitize-shader-tools`�
 feature，`CUEXIS_BUILD_SHADER_TOOLS=ON`）。默认 `headless-sanitize` 仍不下载 shader 编译器。
 S5-H 最大合法 shader/material 趋势探针默认跳过；设置 `CUEXIS_RUN_PERFORMANCE_PROBE=1` 才记录
 内存趋势，不设跨机器硬阈值。
+
+可选媒体导入工具（S6-E1/E2 接线，默认关闭）：
+
+```powershell
+cmake --preset debug-media-tools --fresh
+cmake --build --preset debug-media-tools
+ctest --preset debug-media-tools --no-tests=error
+```
+
+`debug-media-tools` 在默认 Debug feature 之上追加 `media-tools`（libpng、libjpeg-turbo、
+minimp3、libvorbis、libogg、libFLAC），并打开 `CUEXIS_BUILD_MEDIA_TOOLS`。它构建内部静态库
+`cuexis_media_import`、其 `cuexis_media_import_tests`、以及 `tools/media_importer` 下的
+`cuexis_media_importer` CLI。媒体工具与 shader-tools 相互独立，两者都不进入 `cuexis_playback`
+或 Player 的链接闭包；Playback/Player 不会在运行时启动该 CLI。Linux sanitizer 覆盖媒体工具时
+使用 `headless-sanitize-media-tools`，覆盖率使用 `media-tools-coverage`。
+
+这三个 preset 都通过 `VCPKG_OVERLAY_PORTS` 指向仓库内的 `vcpkg-overlays/`，其中
+`vcpkg-overlays/libvorbis` 在注册表 port 之上叠加 `0005-unify-m-pi-precision.patch`，把
+libvorbis 的回落 `M_PI` 固定为全精度 double，使四个平台解码同一份依赖源码。overlay 内容参与
+vcpkg ABI 哈希，改动它会触发依赖重建；不需要手工修改 `VCPKG_ROOT` 下的全局 vcpkg 树。
 
 ## 生成文件
 
@@ -438,6 +464,57 @@ component 被拒绝；安装包门禁同时扫描全部已安装公共头是否�
 ```powershell
 ctest --preset headless-debug -R "^cuexis_external_consumer_" --output-on-failure
 ```
+
+### 具名参考宿主（Reference Host）
+
+SDK 安装树之外还有一个独立示例宿主工程 `examples/reference_host/`。它只通过
+`find_package(Cuexis 0.7.0 CONFIG REQUIRED COMPONENTS Playback)` 消费安装后的公共头与导出
+target，自带主循环、`IContentProvider` 实现、宿主时钟和帧消费，不包含仓库内私有头，也不链接
+Player 配置实现（`cuexis_player_support`）。它的运行记录覆盖启动、加载、提交、逐帧更新与摘要、
+Seek、成功重载、被拒绝的宿主提供者故障重载、发布包加载与销毁：
+
+```powershell
+cmake -S examples/reference_host -B out/build/reference-host `
+  -DCuexis_DIR=out/install/headless-release/lib/cmake/Cuexis
+cmake --build out/build/reference-host
+```
+
+宿主声明 `CUEXIS_HOST_API_VERSION`（默认 `0.7.0`）作为它编写时对齐的 SDK API 基线，并在 SDK
+minor 不兼容时于 configure 阶段失败。门禁 `cuexis_reference_host_staging` 会把当前构建安装到
+staging 前缀、把示例工程复制到源树之外、在该副本上配置和构建，并在**清理过的 PATH** 下运行：
+
+```powershell
+ctest --preset debug -R cuexis_reference_host_staging --output-on-failure
+```
+
+门禁同时校验示例源码只包含 `cuexis/playback/` 公共头、不引用仓库内 target、包身份与参考帧摘要
+匹配 CFU-F golden，以及（shared 包）记录的 toolchain 与 consumer 不一致时被拒绝。
+
+### 可运行 Player 分发目录
+
+Player **不进入 SDK 安装树**。分发物由独立打包目标生成，一个目录即一个 flavor：
+
+```powershell
+cmake --build --preset release --target cuexis_player_dist
+```
+
+产物位于 `out/build/<preset>/dist/cuexis-player-<display-version>-<system>-<linkage>-<build-type>/`，
+包含 Player 可执行文件、它实际链接的运行时库（static 构建通常只有 vcpkg 构建的动态第三方库；
+MinGW 构建额外包含 libgcc/libstdc++/libwinpthread）、默认资源位置 `assets/`（charts、projects、
+schemas）、`VERSION.txt` 元数据、`README.txt`、许可证文本与 `licenses/` 下的全部第三方版权文本。
+分发目录不含 `.lib`/`.pdb`/`.ilk`/`CMakeCache.txt` 等构建产物，也不含 SDK 安装树。
+
+`VERSION.txt` 记录 `library_type`、`build_type`、`system_name`、`system_processor`、compiler 和
+display/SDK 版本；static/shared 或 Debug/Release 不得合并到同一目录。门禁
+`cuexis_player_distribution` 打包、校验内容与 flavor 记录，把目录复制到别处后在清理过的 PATH
+下启动 Player，并要求参数与内容失败返回稳定诊断码（`player.arguments.unknown`、
+`player.chart.open_failed`），从而证明运行时库部署完整：
+
+```powershell
+ctest --preset debug -R cuexis_player_distribution --output-on-failure
+```
+
+`--smoke-test` 仍然需要窗口与 GPU，因此不属于无头门禁。
 
 ### Shared preview
 

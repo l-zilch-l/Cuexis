@@ -1,8 +1,8 @@
 # S6-B1 版本比较与发行门禁
 
-状态：blocked（本地实现与验证完成；受保护 master 的 bootstrap、required check 和 hosted 同 SHA 证据待 owner 启用）
+状态：completed（bootstrap、受保护 required check、同 SHA hosted 验证与合并后审计已完成）
 
-日期：2026-09-20
+日期：2026-09-21
 
 本报告只记录 Stage 6 计划中的 S6-B1。B1 已将版本比较器、focused 反例测试、trusted-baseline
 workflow 和发行 checklist 落盘，并完成当前工作区的本地验证；它没有把本地绿色测试写成
@@ -15,9 +15,10 @@ workflow 和发行 checklist 落盘，并完成当前工作区的本地验证；
 | 工作区 | `C:/Users/Zilch/.codex/worktrees/7596/Cuexis` |
 | 起始 HEAD | `e7d6c1ea3ff950226b7a3582eb128cb2d01800fb` |
 | B1 实现提交 | `4fd46adf2eff454bc6e43fee78db36e3310254aa` |
+| B1 收尾候选提交 | `b1a59d1457f8b300091a5d657fdf989af3ef31af` |
 | 起始状态 | detached HEAD；B1 报告创建前未创建 PR、未合并、未发布 |
-| 可信 UTC 日期 | `2026-09-20` |
-| 日期版本变化 | `26.08.01-1` -> `26.09.20-1` |
+| 可信 UTC 日期 | 初始 B1：`2026-09-20`；收尾候选：`2026-09-21` |
+| 日期版本变化 | `26.08.01-1` -> `26.09.20-1`（初始 B1）-> `26.09.21-2`（收尾候选） |
 | SDK API | `0.7.0`，未提前升级到 `0.7.1` |
 | 可信合并基线 | `e3c4589c62af36f29ae5e8ebda62fe37fadbf7e7` |
 | 环境 | Windows x64、MSVC 19.51.36256、CMake 4.3.3、Ninja 1.13.2、`VCPKG_ROOT=D:/vcpkg` |
@@ -32,7 +33,8 @@ workflow 和发行 checklist 落盘，并完成当前工作区的本地验证；
 | focused 测试 | `tools/check_version_gate_tests.py` | 正例、负例、历史复验、Git ref 和 workflow trust 合同 |
 | CI workflow | `.github/workflows/version-gate.yml` | PR、merge queue、合并后 push 审计和显式 historical revalidation |
 | 发行 checklist | `docs/guides/VERSIONING.md` | 本地命令、hosted 边界、SDK 与日期版本分离 |
-| 当前版本源 | `cmake/CuexisVersion.cmake`、`vcpkg.json` | 两处规范版本同步为 `26.09.20-1` |
+| 初始 B1 版本源 | `cmake/CuexisVersion.cmake`、`vcpkg.json` | 两处规范版本同步为 `26.09.20-1` |
+| 收尾候选版本源 | `cmake/CuexisVersion.cmake`、`vcpkg.json` | 两处规范版本同步为 `26.09.21-2` |
 
 比较器按规范化 `(year, month, day, build)` 比较，不比较显示字符串或 Debug suffix。它拒绝
 无效或缺失的完整 SHA、非祖先基线、CMake/manifest 漂移、基线未来日期、候选过期或未来日期、
@@ -49,16 +51,17 @@ focused 测试在 trusted 临时目录执行时通过 `GITHUB_WORKSPACE` 使用�
 
 ## 3. 版本与兼容结果
 
-本次按可信 UTC 日期 `2026-09-20` 将显示版本从 A1 基线的 `26.08.01-1` 修正为
-`26.09.20-1`。日期版本的变化没有隐式改变 SDK API、内容格式或 ABI；生成头和安装 package
-继续报告 SDK API `0.7.0`。`0.7.1` 仍只是满足 ADR 0042 兼容条件后的目标，Stage 8 不预留
+初始 B1 按可信 UTC 日期 `2026-09-20` 将显示版本从 A1 基线的 `26.08.01-1` 修正为
+`26.09.20-1`；本次收尾候选按 `2026-09-21` 前进为 `26.09.21-2`。日期版本的变化没有
+隐式改变 SDK API、内容格式或 ABI；生成头和安装 package 继续报告 SDK API `0.7.0`。
+`0.7.1` 仍只是满足 ADR 0042 兼容条件后的目标，Stage 8 不预留
 `0.8.0`。
 
 Release 安装树已核对：
 
 | 元数据 | 实际值 |
 | --- | --- |
-| display/canonical version | `26.09.20-1` |
+| display/canonical version | `26.09.21-2` |
 | SDK/package version | `0.7.0` |
 
 ## 4. Focused 验证矩阵
@@ -81,10 +84,24 @@ Release 安装树已核对：
 | 命令 | 结果 |
 | --- | --- |
 | `python -B tools/check_version_gate_tests.py` | 通过，11 tests，退出码 0 |
-| `python -B tools/check_version_gate.py --check-current --json` | 通过，`26.09.20-1` / SDK `0.7.0` |
+| `python -B tools/check_version_gate.py --check-current --json` | 通过，`26.09.21-2` / SDK `0.7.0` |
 | `python -B tools/update_version.py --check` | 通过，CMake 与 manifest 一致 |
 | `python -B tools/check_stage6_a2.py` | 通过；A2 schemas、fixtures、goldens 和边界未回归 |
 | `git diff --check` | 通过；仅有 Git 的 LF/CRLF 转换提示 |
+
+## 4A. Hosted bootstrap and protected evidence
+
+Bootstrap PR #26 was merged as `4545742ed63ae2d8f11ad07e80930ce5b88fa0ce`. Its pre-merge
+Version Gate intentionally failed with `version.bootstrap.required` because the trusted
+baseline predated the checker; this was the documented bootstrap exception. `master` was then
+protected with strict latest-base enforcement, admin enforcement, and required check
+`Version advancement (pre-merge)`.
+
+Candidate PR #27 used candidate SHA `d4697549a50e9c517ac393c27786826aa43ce9cc` and trusted
+baseline `4545742ed63ae2d8f11ad07e80930ce5b88fa0ce`. Protected Version Gate run `35586930775`
+passed. The same candidate SHA passed Linux Quality, Windows MSVC, and Windows MinGW, and PR #27
+merged as `master` SHA `46b65d1f2345f543b98e7e87fe5ec9ed735f10bf`. The resulting master push
+passed Version Gate post-merge audit run `35590201888`.
 
 在修正 trusted materialized test 的 workspace 路径后，使用非 Git 临时目录模拟 hosted
 `TRUSTED_ROOT`，并设置真实 `GITHUB_WORKSPACE`，`check_version_gate_tests.py` 再次通过
@@ -92,7 +109,8 @@ Release 安装树已核对：
 
 ## 5. 构建、安装和 CTest 结果
 
-版本源变化后执行了 Release fresh configure 和 clean-first build；随后在修正 workflow trusted
+初始 B1 版本源变化后执行了 Release fresh configure 和 clean-first build；收尾候选版本源变化后
+重新执行了 fresh configure 和 clean-first build；随后在修正 workflow trusted
 路径后重新执行了 Debug fresh configure 和 clean-first build：
 
 ```powershell
@@ -110,34 +128,29 @@ ctest --preset release --no-tests=error
 FrameDigest v1-v3、portable presentation、prepare/reload 及既有 v4 回退测试。Windows 不
 替代 Linux Quality、sanitizer、coverage 或 hosted MinGW 证据。
 
-## 6. Hosted / 保护阻塞
+## 6. Hosted / 保护结果
 
-本地实现和本地验证不能关闭 B1。实现提交首次推送后的分支和保护查询只读快照为：
+本地实现和本地验证之外，B1 已取得受保护仓库和同 SHA hosted 证据。最终只读快照为：
 
 | 项 | 结果 |
 | --- | --- |
-| `origin/master` | `e3c4589c62af36f29ae5e8ebda62fe37fadbf7e7` |
-| `origin/codex/stage-06-b1-version-gate` | `4fd46adf2eff454bc6e43fee78db36e3310254aa` |
-| `gh api repos/l-zilch-l/Cuexis/branches/master/protection` | `404 Branch not protected` |
+| `origin/master` | `46b65d1f2345f543b98e7e87fe5ec9ed735f10bf` |
+| `bootstrap PR #26` | merged as `4545742ed63ae2d8f11ad07e80930ce5b88fa0ce` |
+| `candidate PR #27` | merged as `46b65d1f2345f543b98e7e87fe5ec9ed735f10bf` |
+| required check | `Version advancement (pre-merge)` |
+| strict latest-base | enabled |
+| admin enforcement | enabled |
+| post-merge audit | Version Gate run `35590201888`, success |
 
-当前剩余阻塞为：
-
-1. `origin/master` 的可信基线尚未包含 B1 checker、focused tests 和 workflow，首次 bootstrap
-   需要 owner 审查并启用，而不是绕过 trusted-baseline 逻辑。
-2. 仓库保护查询返回 `404 Branch not protected`；required Version Gate 尚未在受保护 `master`
-   上启用。
-3. 因此尚无同一候选 SHA 的 hosted Version Gate 成功证据，不能把 S6-G02 或 B1 标为 completed。
-
-恢复条件是：owner 审查 bootstrap 例外和 required check 配置，在受保护 `master` 建立 trusted
-   baseline 后，通过实际 PR/merge queue、合并后 push 审计和需要时的 historical revalidation，
-   并记录对应候选 SHA。这个恢复动作不包含在本次工作区变更中。
+GitHub API 在本次收尾查询中间歇性 TLS 超时，但重试后已取得 PR、run、保护配置和合并
+ref 证据。bootstrap push audit 的失败是预期的旧基线审计结果；正式 protected pre-merge
+Version Gate 和合并后 Version Gate audit 均成功。
 
 ## 7. 结论与下游边界
 
-B1 的本地实现、正反例、版本源一致性、安装元数据和 Windows Debug/Release 回归均已取得
-证据；B1 整体仍为 `blocked`，原因仅是 hosted 保护/bootstrap 证据未启用。没有修改 ADR 0042、
+B1 的本地实现、正反例、版本源一致性、安装元数据、受保护 Version Gate 和同 SHA hosted
+回归均已取得证据；B1 已完成。没有修改 ADR 0042、
 R5 允许消费范围、旧 v4 identity、FrameDigest v1-v3 golden、稳定 C ABI 或正式 v5 Writer。
 
-在 owner 启用受保护门禁并取得同 SHA hosted 证据前，不释放 B1 的 hosted 依赖，也不将 Stage 6
-推进到最终关闭。C1、D1、C2、E1/E2、C3、C4 仍按计划依赖图推进；B1 的本地脚本可以作为
+Stage 6 仍不能因此关闭。C1、D1、C2、E1/E2、C3、C4 仍按计划依赖图推进；B1 的本地脚本可以作为
 后续批次的版本变化门禁，但不能替代其各自的合同、失败路径和 external consumer 验收。

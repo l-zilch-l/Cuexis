@@ -5,7 +5,8 @@
 //  backend is reserved for the future
 //  Callers must never invoke OpenGL directly; RenderScene contains no backend types
 //  RenderFrame/renderFrame are legacy diagnostic-only compatibility interfaces retained in
-//  SDK 0.7.0. The current presentation path is renderPresentationFrame on the OpenGL adapter.
+//  SDK 0.7.0. The formal presentation path is IPresentationRenderer. renderFrame remains the
+//  legacy diagnostic entry, and renderPresentationFrame remains an OpenGL compatibility entry.
 //  RenderFrame holds a non-owning scene reference valid only for the duration of
 //  renderFrame().
 

@@ -1,0 +1,17 @@
+{
+  "fixture": "image/gray8.png",
+  "kind": "image",
+  "profile": "928c22b9761bca9829aca174a826334d2b8ce59069fe67050ab6323eafdc4610",
+  "decoder": "libpng-1.6.58",
+  "sha256": "0c017ff1d2354926cd1fbbed1d837dbe9b350a2929936ad0e43ac6833d47b2b9",
+  "byteCount": 48,
+  "sourceBytes": 68,
+  "decodedBytes": 8,
+  "peakWorkingBytes": 9053,
+  "width": 2,
+  "height": 1,
+  "sourceWidth": 2,
+  "sourceHeight": 1,
+  "orientation": 1,
+  "bytesHex": "435850524553303102000000010000003000000000000000020000000100000002000000000000007f7f7fff3f3f3fff"
+}

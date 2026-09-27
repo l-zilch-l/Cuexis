@@ -390,8 +390,8 @@ auto ChartWorldInstantiator::instantiate(
                     registry.emplace<render::RenderableComponent>(entity, resources.mesh,
                                                                   resources.material);
                     registry.emplace<render::AppearanceComponent>(
-                        entity, true, object.components.renderable->material.value, 1.0,
-                        core::Vec3{1.0F, 1.0F, 1.0F});
+                        entity, true, object.components.renderable->material.value,
+                        object.renderableOpacity, core::Vec3{1.0F, 1.0F, 1.0F});
                 }
                 if (object.components.camera.has_value()) {
                     const auto& cam = *object.components.camera;

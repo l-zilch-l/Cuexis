@@ -1,0 +1,17 @@
+{
+  "fixture": "image/gray.jpg",
+  "kind": "image",
+  "profile": "928c22b9761bca9829aca174a826334d2b8ce59069fe67050ab6323eafdc4610",
+  "decoder": "libjpeg-turbo-3.2.0",
+  "sha256": "48334289633c321ad6e2f8b6de903da0f7728c7904906e1163a236c69b1b20db",
+  "byteCount": 72,
+  "sourceBytes": 344,
+  "decodedBytes": 32,
+  "peakWorkingBytes": 16,
+  "width": 4,
+  "height": 2,
+  "sourceWidth": 4,
+  "sourceHeight": 2,
+  "orientation": 1,
+  "bytesHex": "43585052455330310200000001000000480000000000000004000000020000000200000000000000c8c8c8ffc8c8c8ffc8c8c8ffc8c8c8ffa0a0a0ffa0a0a0ffa0a0a0ffa0a0a0ff"
+}

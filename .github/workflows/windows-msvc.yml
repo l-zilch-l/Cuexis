@@ -55,6 +55,12 @@ jobs:
       - name: Test
         run: ctest --preset ${{ matrix.preset }} --no-tests=error
 
+      - name: Build and test optional media tools
+        run: |
+          cmake --preset debug-media-tools --fresh
+          cmake --build --preset debug-media-tools
+          ctest --preset debug-media-tools --no-tests=error
+
       - name: Verify architecture
         run: >-
           ctest --preset ${{ matrix.preset }} --no-tests=error

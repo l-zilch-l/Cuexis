@@ -20,6 +20,13 @@ This file is the source-tree notice inventory for the current Cuexis Stage 3 tre
 | shaderc | 2026.2 | https://github.com/google/shaderc | Optional GLSL 450 to SPIR-V compile facade / internal `cuexis_shader` only when feature `shader-tools` is enabled | Apache-2.0 | Not linked into Playback, Player, or the base SDK package | Replace behind `cuexis_shader`; never link from `cuexis_playback` |
 | SPIRV-Tools | 1.4.350.1 | https://github.com/KhronosGroup/SPIRV-Tools | Optional SPIR-V validation / internal `cuexis_shader` only when feature `shader-tools` is enabled | Apache-2.0 | Not linked into Playback, Player, or the base SDK package | Replace behind `cuexis_shader` |
 | SPIRV-Cross | 1.4.350.1 | https://github.com/KhronosGroup/SPIRV-Cross | Optional SPIR-V reflection and GLSL 330 / ES 300 lowering / internal `cuexis_shader` only when feature `shader-tools` is enabled | Apache-2.0 | Not linked into Playback, Player, or the base SDK package | Replace behind `cuexis_shader` |
+| libpng | 1.6.58 | https://github.com/pnggroup/libpng | Optional PNG decode / internal `cuexis_media_import` only when feature `media-tools` is enabled | libpng-2.0 | Not linked into Playback, Player, or the base SDK package | Replace behind `cuexis_media_import`; a profile change requires owner re-ruling |
+| libjpeg-turbo | 3.2.0 | https://github.com/libjpeg-turbo/libjpeg-turbo | Optional JPEG decode / internal `cuexis_media_import` only when feature `media-tools` is enabled | BSD-3-Clause and IJG; the distribution also carries zlib and BSD-3-Clause-No-Nuclear-Warranty components | Not linked into Playback, Player, or the base SDK package | Replace behind `cuexis_media_import`; a profile change requires owner re-ruling |
+| minimp3 | 2021-11-30 | https://github.com/lieff/minimp3 | Optional MPEG Layer III decode / internal `cuexis_media_import` only when feature `media-tools` is enabled | CC0-1.0 | Not linked into Playback, Player, or the base SDK package | Replace behind `cuexis_media_import`; a profile change requires owner re-ruling |
+| libvorbis | 1.3.7#4 | https://github.com/xiph/vorbis | Optional Ogg Vorbis decode / internal `cuexis_media_import` only when feature `media-tools` is enabled | BSD-3-Clause | Not linked into Playback, Player, or the base SDK package | Replace behind `cuexis_media_import`; a profile change requires owner re-ruling |
+| libogg | 1.3.6#1 | https://github.com/xiph/ogg | Ogg container framing for the Vorbis adapter / internal `cuexis_media_import` only when feature `media-tools` is enabled | BSD-3-Clause | Not linked into Playback, Player, or the base SDK package | Replace behind `cuexis_media_import` |
+| libFLAC | 1.5.0 | https://github.com/xiph/flac | Optional native FLAC decode / internal `cuexis_media_import` only when feature `media-tools` is enabled | BSD-3-Clause | Not linked into Playback, Player, or the base SDK package | Replace behind `cuexis_media_import`; a profile change requires owner re-ruling |
+| zlib | 1.3.2#1 | https://github.com/madler/zlib | Transitive decompression dependency of the optional libpng port | Zlib | Not linked into Playback, Player, or the base SDK package | Follows the libpng dependency |
 
 ## Generated Registry Inputs
 
@@ -32,8 +39,33 @@ that includes the optional AudioSDL component additionally copies the SDL3 copyr
 inventory does not replace those full texts. Player packaging must additionally preserve the
 SDL3, glad, spdlog and applicable fmt notices required by the artifacts it redistributes.
 
+The runnable Player distribution produced by the `cuexis_player_dist` target ships the project
+`LICENSE`, `NOTICE` and `THIRD_PARTY_NOTICES.md` plus `licenses/` with the exact vcpkg copyright
+texts for entt, fmt, glad, glm, json-schema-validator, minizip-ng, nlohmann-json, sdl3, spdlog and
+tl-expected. That set is the Player link closure: the static SDK implementation targets compiled
+into the Player plus the third-party runtime libraries the packaged executable loads. The vcpkg
+port that builds `nlohmann_json_schema_validator.dll` ships no `copyright` file, so its upstream
+JSON Schema Validator text is registered once as `json-schema-validator-copyright.txt`. A MinGW
+distribution additionally carries the compiler runtime (`libgcc_s_seh-1.dll`, `libstdc++-6.dll`,
+`libwinpthread-1.dll`); toolchain runtimes are not third-party project dependencies and are not
+listed in `licenses/`. The `cuexis_player_distribution` gate checks this set for exact equality in
+both directions.
+
 Optional vcpkg feature `shader-tools` additionally resolves shaderc 2026.2, SPIRV-Tools
 1.4.350.1 and SPIRV-Cross 1.4.350.1, plus transitive glslang 16.4.0 (BSD-3-Clause with Apache-2.0
 Google components) and SPIRV-Headers. Those ports are developer-only compile-time tools for
 `cuexis_shader` / `cuexis_asset_importer`. They are not part of the installed Playback package,
 are not copied into `share/Cuexis/licenses`, and must not appear in `CuexisConfig.cmake`.
+
+Optional vcpkg feature `media-tools` additionally resolves libpng 1.6.58, libjpeg-turbo 3.2.0,
+minimp3 2021-11-30, libvorbis 1.3.7#4, libogg 1.3.6#1, libFLAC 1.5.0 and transitive zlib 1.3.2#1
+for the developer-only offline `cuexis_media_import` / `cuexis_media_importer` tools. Those ports
+are not part of the installed Playback package, are not copied into `share/Cuexis/licenses`, and must
+not appear in `CuexisConfig.cmake`. A release that distributes an importer artifact must preserve the
+libpng, libjpeg-turbo, minimp3, libvorbis, libogg, libFLAC and zlib notices from the vcpkg
+`copyright` files for the exact resolved versions.
+
+libvorbis is built from the repository overlay port `vcpkg-overlays/libvorbis`, which adds
+`0005-unify-m-pi-precision.patch` on top of the registry revision. The patch changes only the
+fallback `M_PI` constant in `lib/os.h`; it does not alter licensing, so the BSD-3-Clause notice and
+the vcpkg `copyright` file above remain the complete obligation.

@@ -2,7 +2,7 @@
 
 状态：historical
 
-更新日期：2026-09-16
+更新日期：2026-09-27
 
 以下旧逻辑路径已迁入 canonical 目录。映射供历史引用迁移使用，不保留逐文件 compatibility stub。
 
@@ -19,7 +19,7 @@
 - `stage_3_implementation_plan.md` -> [canonical](completed/stage-03/plan.md)
 - `stage_4_implementation_plan.md` -> [canonical](completed/stage-04/plan.md)
 - `stage_5_implementation_plan.md` -> [canonical](completed/stage-05/plan.md)
-- `stage_6_implementation_plan.md` -> [canonical](active/stage-06/plan.md)
+- `stage_6_implementation_plan.md` -> [canonical](completed/stage-06/plan.md)
 - `stage_7_implementation_plan.md` -> [canonical](future/stage-07/plan.md)
 - `stage_8_implementation_plan.md` -> [canonical](future/stage-08/plan.md)
 - `stage_9a_implementation_plan.md` -> [canonical](future/stage-09a/plan.md)
@@ -28,5 +28,6 @@
 - `active/260830-followup/` -> [canonical](completed/260830-followup/)
 - `future/chart-format-foundation/plan.md` -> [canonical](completed/chart-format-foundation/plan.md)
 - `active/chart-format-foundation/plan.md` -> [canonical](completed/chart-format-foundation/plan.md)
-- `future/stage-06/plan.md` -> [canonical](active/stage-06/plan.md)（2026-09-17 交接加固关闭并经 owner 接受后恢复 active）
+- `future/stage-06/plan.md` -> [canonical](completed/stage-06/plan.md)（2026-09-17 交接加固关闭并经 owner 接受后恢复 active）
 - `active/chart-format-foundation-hardening/plan.md` -> [canonical](completed/chart-format-foundation-hardening/plan.md)（2026-09-17 R0-R5 完成并归档）
+- `active/stage-06/plan.md` -> [canonical](completed/stage-06/plan.md)（2026-09-27 Stage 6 关闭报告、三个核验问题处置与 Stage 7A/8 交接清单经 owner 接受后归档）

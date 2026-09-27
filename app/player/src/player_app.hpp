@@ -1,9 +1,7 @@
 #pragma once
 
-//  Cuexis Player 应用入口 — 解析命令行参数，预检 Project/Asset/Chart，再初始化 SDL/OpenGL
-//  run() 只通过 PlaybackSession 驱动更新与帧提取，然后把 Snapshot 适配到渲染后端
-//  支持 --smoke-test（渲染六帧后退出）、--chart（谱面文件路径，与 --project
-//  互斥）、--project（项目路径）、--shader-cache-dir（OpenGL CXSCCH01 目录）
+//  Cuexis Player 组合根。准备、设备、窗口和帧循环分在相邻源文件中。
+//  run() 持有对象寿命，并按关闭 renderer、音频、clip、PlaybackSession 的顺序退出。
 
 #include <cuexis/core/result.hpp>
 

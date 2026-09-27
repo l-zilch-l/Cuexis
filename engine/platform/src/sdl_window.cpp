@@ -34,6 +34,27 @@ void assertOwner(const std::shared_ptr<detail::WindowState>& state) noexcept {
     }
 }
 
+WindowKey namedKey(SDL_Keycode key) noexcept {
+    switch (key) {
+    case SDLK_SPACE:
+        return WindowKey::Space;
+    case SDLK_LEFT:
+        return WindowKey::Left;
+    case SDLK_RIGHT:
+        return WindowKey::Right;
+    case SDLK_R:
+        return WindowKey::R;
+    case SDLK_S:
+        return WindowKey::S;
+    case SDLK_B:
+        return WindowKey::B;
+    case SDLK_ESCAPE:
+        return WindowKey::Escape;
+    default:
+        return WindowKey::Unknown;
+    }
+}
+
 } // namespace
 
 core::Result<SdlWindow> SdlWindow::create(SdlRuntime& runtime, const WindowConfig& config) {
@@ -73,6 +94,9 @@ core::Result<SdlWindow> SdlWindow::create(SdlRuntime& runtime, const WindowConfi
     }
     if (config.openGl) {
         flags |= SDL_WINDOW_OPENGL;
+    }
+    if (config.fullscreen) {
+        flags |= SDL_WINDOW_FULLSCREEN;
     }
 
     std::unique_ptr<SDL_Window, WindowDeleter> window{
@@ -125,6 +149,21 @@ WindowEvents SdlWindow::pollEvents() {
         if (event.type == SDL_EVENT_QUIT || (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
                                              event.window.windowID == state_->windowId)) {
             result.quitRequested = true;
+            continue;
+        }
+        if (event.type != SDL_EVENT_KEY_DOWN && event.type != SDL_EVENT_KEY_UP) {
+            continue;
+        }
+        if (event.key.windowID != state_->windowId) {
+            continue;
+        }
+        if (event.type == SDL_EVENT_KEY_DOWN && event.key.repeat) {
+            continue;
+        }
+        const auto key = namedKey(event.key.key);
+        if (key != WindowKey::Unknown) {
+            result.keys.push_back(
+                WindowKeyEvent{.key = key, .pressed = event.type == SDL_EVENT_KEY_DOWN});
         }
     }
     return result;
@@ -143,6 +182,30 @@ core::Result<DrawableSize> SdlWindow::drawableSize() const {
         return core::unexpected(core::Error{"platform.sdl.window_size_failed", SDL_GetError()});
     }
     return result;
+}
+
+core::Result<void> SdlWindow::setMinimized(bool minimized) {
+    assertOwner(state_);
+    if (!state_) {
+        return core::unexpected(
+            core::Error{"platform.sdl.window_unavailable", "Cannot change an empty SDL window"});
+    }
+    if (minimized) {
+        SDL_MinimizeWindow(state_->window);
+    } else {
+        SDL_RestoreWindow(state_->window);
+    }
+    return {};
+}
+
+core::Result<bool> SdlWindow::minimized() const {
+    assertOwner(state_);
+    if (!state_) {
+        return core::unexpected(
+            core::Error{"platform.sdl.window_unavailable", "Cannot query an empty SDL window"});
+    }
+    const auto flags = SDL_GetWindowFlags(state_->window);
+    return (flags & SDL_WINDOW_MINIMIZED) != 0;
 }
 
 SdlWindowLease SdlWindow::lease() const {

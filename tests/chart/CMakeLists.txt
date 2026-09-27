@@ -1,6 +1,7 @@
 add_executable(cuexis_chart_tests
     animation_template_loader_tests.cpp
     canonical_chart_loader_tests.cpp
+    candidate_lowering_tests.cpp
     canonical_semantic_chart_tests.cpp
     cxt_v2_loader_tests.cpp
     chart_foundation_capacity_tests.cpp

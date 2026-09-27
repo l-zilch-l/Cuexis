@@ -1,0 +1,18 @@
+diff --git a/lib/os.h b/lib/os.h
+--- a/lib/os.h
++++ b/lib/os.h
+@@ -40,8 +40,13 @@
+ #  define rint(x)   (floor((x)+0.5f))
+ #endif
+ 
++/* Pin one value for every compiler. The historical float literal carries only ten
++   significant digits, while compilers whose <math.h> exposes M_PI (GCC, Clang,
++   MinGW) expand the full-precision double constant instead. The table-driven MDCT
++   and LSP decode paths consume M_PI, so the two spellings would otherwise produce
++   slightly different decoded samples on MSVC. */
+ #ifndef M_PI
+-#  define M_PI (3.1415926536f)
++#  define M_PI (3.14159265358979323846)
+ #endif
+ 
+ #if defined(_WIN32) && !defined(__SYMBIAN32__)

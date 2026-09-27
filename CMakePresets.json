@@ -53,6 +53,16 @@
       }
     },
     {
+      "name": "debug-media-tools",
+      "displayName": "Debug with optional media tools",
+      "inherits": "debug",
+      "cacheVariables": {
+        "CUEXIS_BUILD_MEDIA_TOOLS": "ON",
+        "VCPKG_MANIFEST_FEATURES": "media-tools",
+        "VCPKG_OVERLAY_PORTS": "${sourceDir}/vcpkg-overlays"
+      }
+    },
+    {
       "name": "release",
       "displayName": "Release",
       "inherits": "base",
@@ -139,6 +149,16 @@
       }
     },
     {
+      "name": "headless-sanitize-media-tools",
+      "displayName": "Headless ASan + UBSan with media tools",
+      "inherits": "headless-sanitize",
+      "cacheVariables": {
+        "CUEXIS_BUILD_MEDIA_TOOLS": "ON",
+        "VCPKG_MANIFEST_FEATURES": "tests;media-tools",
+        "VCPKG_OVERLAY_PORTS": "${sourceDir}/vcpkg-overlays"
+      }
+    },
+    {
       "name": "headless-clang-tidy",
       "displayName": "Headless clang-tidy",
       "inherits": "headless-debug",
@@ -174,6 +194,16 @@
         "CUEXIS_BUILD_SHADER_TOOLS": "ON",
         "VCPKG_MANIFEST_FEATURES": "tests;shader-tools"
       }
+    },
+    {
+      "name": "media-tools-coverage",
+      "displayName": "Media Tools Coverage",
+      "inherits": "headless-coverage",
+      "cacheVariables": {
+        "CUEXIS_BUILD_MEDIA_TOOLS": "ON",
+        "VCPKG_MANIFEST_FEATURES": "tests;media-tools",
+        "VCPKG_OVERLAY_PORTS": "${sourceDir}/vcpkg-overlays"
+      }
     }
   ],
   "buildPresets": [
@@ -192,6 +222,10 @@
     {
       "name": "debug-shader-tools",
       "configurePreset": "debug-shader-tools"
+    },
+    {
+      "name": "debug-media-tools",
+      "configurePreset": "debug-media-tools"
     },
     {
       "name": "release",
@@ -230,6 +264,10 @@
       "configurePreset": "headless-sanitize-shader-tools"
     },
     {
+      "name": "headless-sanitize-media-tools",
+      "configurePreset": "headless-sanitize-media-tools"
+    },
+    {
       "name": "headless-clang-tidy",
       "configurePreset": "headless-clang-tidy"
     },
@@ -244,6 +282,10 @@
     {
       "name": "shader-tools-coverage",
       "configurePreset": "shader-tools-coverage"
+    },
+    {
+      "name": "media-tools-coverage",
+      "configurePreset": "media-tools-coverage"
     }
   ],
   "testPresets": [
@@ -280,6 +322,16 @@
     {
       "name": "debug-shader-tools",
       "configurePreset": "debug-shader-tools",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "debug-media-tools",
+      "configurePreset": "debug-media-tools",
       "output": {
         "outputOnFailure": true
       },
@@ -378,6 +430,16 @@
       }
     },
     {
+      "name": "headless-sanitize-media-tools",
+      "configurePreset": "headless-sanitize-media-tools",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
       "name": "headless-coverage",
       "configurePreset": "headless-coverage",
       "output": {
@@ -400,6 +462,16 @@
     {
       "name": "shader-tools-coverage",
       "configurePreset": "shader-tools-coverage",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "media-tools-coverage",
+      "configurePreset": "media-tools-coverage",
       "output": {
         "outputOnFailure": true
       },

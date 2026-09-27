@@ -4,7 +4,7 @@
 
 日期：2026-09-20
 
-适用范围：[Stage 6](../stage_plans/active/stage-06/plan.md) 的 S6-D01 至 S6-D08。
+适用范围：[Stage 6](../stage_plans/completed/stage-06/plan.md) 的 S6-D01 至 S6-D08。
 本 ADR 冻结实施方向，不代表 A1 基线、A2 合同落盘/表征或任何实现批次已经通过。
 字段级 Schema、诊断表与独立 golden 由 A2 按此决策形成，不得在该过程中重新选择架构。
 

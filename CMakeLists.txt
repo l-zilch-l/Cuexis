@@ -38,6 +38,9 @@ option(CUEXIS_BUILD_OPENGL_ADAPTER "Build the OpenGL render adapter" ${CUEXIS_BU
 option(CUEXIS_BUILD_DEVELOPER_TOOLS "Build repository developer-only targets"
        ${CUEXIS_TOP_LEVEL_DEFAULT})
 option(CUEXIS_BUILD_SHADER_TOOLS "Build the optional shader compiler module" OFF)
+option(CUEXIS_BUILD_MEDIA_TOOLS "Build the optional offline media import library and tool" OFF)
+option(CUEXIS_ENABLE_CHART_V5_CANDIDATE
+       "Enable the experimental Chart v5 candidate Playback source path" OFF)
 option(CUEXIS_BUILD_TESTS "Build the Cuexis test suite" ${CUEXIS_TESTS_DEFAULT})
 option(CUEXIS_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
 option(CUEXIS_ENABLE_CLANG_TIDY "Run clang-tidy while compiling Cuexis targets" OFF)
@@ -103,7 +106,7 @@ if(CUEXIS_BUILD_PLAYER)
     add_subdirectory(app)
 endif()
 
-if(CUEXIS_BUILD_DEVELOPER_TOOLS)
+if(CUEXIS_BUILD_DEVELOPER_TOOLS OR CUEXIS_BUILD_MEDIA_TOOLS)
     add_subdirectory(tools)
 endif()
 
@@ -129,6 +132,8 @@ set(CUEXIS_ACTIVE_TARGETS
     cuexis_debug
     cuexis_runtime
     cuexis_playback
+    cuexis_presentation_renderer
+    cuexis_player_support
 )
 
 if(CUEXIS_BUILD_SDL_ADAPTER)
@@ -162,6 +167,13 @@ if(CUEXIS_BUILD_DEVELOPER_TOOLS)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_asset_importer)
     endif()
 endif()
+if(CUEXIS_BUILD_MEDIA_TOOLS)
+    list(APPEND CUEXIS_ACTIVE_TARGETS
+        cuexis_asset_publish
+        cuexis_media_import
+        cuexis_media_importer
+    )
+endif()
 
 if(CUEXIS_BUILD_TESTS)
     list(APPEND CUEXIS_ACTIVE_TARGETS
@@ -179,6 +191,8 @@ if(CUEXIS_BUILD_TESTS)
         cuexis_gameplay_tests
         cuexis_debug_tests
         cuexis_render_tests
+        cuexis_presentation_renderer_tests
+        cuexis_player_support_tests
         cuexis_runtime_tests
         cuexis_world_tests
         cuexis_playback_tests
@@ -203,8 +217,17 @@ if(CUEXIS_BUILD_TESTS)
     if(TARGET cuexis_player_diagnostics_tests)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_player_diagnostics_tests)
     endif()
+    if(TARGET cuexis_player_control_tests)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_player_control_tests)
+    endif()
     if(TARGET cuexis_shader_tests)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_shader_tests)
+    endif()
+    if(TARGET cuexis_media_import_tests)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_media_import_tests)
+    endif()
+    if(TARGET cuexis_asset_publish_tests)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_asset_publish_tests)
     endif()
 
     add_test(
@@ -359,6 +382,52 @@ if(CUEXIS_BUILD_TESTS)
                 TIMEOUT 900
             )
         endforeach()
+        add_test(
+            NAME cuexis_reference_host_staging
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                "-DCUEXIS_BINARY_DIR=${PROJECT_BINARY_DIR}"
+                "-DCUEXIS_GENERATOR=${CMAKE_GENERATOR}"
+                "-DCUEXIS_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+                "-DCUEXIS_LIBRARY_TYPE=${CUEXIS_LIBRARY_TYPE}"
+                "-DCUEXIS_ENABLE_SANITIZERS=${CUEXIS_ENABLE_SANITIZERS}"
+                "-DCUEXIS_ENABLE_COVERAGE=${CUEXIS_ENABLE_COVERAGE}"
+                "-DCUEXIS_SDK_API_VERSION=${CUEXIS_SDK_API_VERSION}"
+                "-DCUEXIS_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+                "-DCUEXIS_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
+                "-DCUEXIS_RC_COMPILER=${CMAKE_RC_COMPILER}"
+                "-DCUEXIS_MT=${CMAKE_MT}"
+                "-DCUEXIS_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}"
+                "-DCUEXIS_VCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}"
+                "-DCUEXIS_VCPKG_MANIFEST_MODE=${VCPKG_MANIFEST_MODE}"
+                "-DCUEXIS_VCPKG_INSTALLED_DIR=${VCPKG_INSTALLED_DIR}"
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyReferenceHost.cmake"
+        )
+        set_tests_properties(cuexis_reference_host_staging PROPERTIES
+            LABELS "external;package;s6-c4;reference-host"
+            RESOURCE_LOCK cuexis_external_consumer
+            TIMEOUT 900
+        )
+        if(CUEXIS_BUILD_PLAYER)
+            add_test(
+                NAME cuexis_player_distribution
+                COMMAND "${CMAKE_COMMAND}"
+                    "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                    "-DCUEXIS_BINARY_DIR=${PROJECT_BINARY_DIR}"
+                    "-DCUEXIS_GENERATOR=${CMAKE_GENERATOR}"
+                    "-DCUEXIS_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+                    "-DCUEXIS_LIBRARY_TYPE=${CUEXIS_LIBRARY_TYPE}"
+                    "-DCUEXIS_ENABLE_SANITIZERS=${CUEXIS_ENABLE_SANITIZERS}"
+                    "-DCUEXIS_ENABLE_COVERAGE=${CUEXIS_ENABLE_COVERAGE}"
+                    "-DCUEXIS_VERSION_DISPLAY=${CUEXIS_VERSION_DISPLAY}"
+                    -P "${PROJECT_SOURCE_DIR}/cmake/VerifyPlayerDistribution.cmake"
+            )
+            set_tests_properties(cuexis_player_distribution PROPERTIES
+                LABELS "external;package;s6-c4;player-distribution"
+                RESOURCE_LOCK cuexis_external_consumer
+                TIMEOUT 900
+            )
+        endif()
         if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
             if(MSVC)
                 find_program(CUEXIS_SYMBOL_TOOL NAMES dumpbin REQUIRED)
@@ -453,6 +522,12 @@ if(CUEXIS_BUILD_DEVELOPER_TOOLS)
     endif()
 
     list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_format_check)
+endif()
+
+if(CUEXIS_BUILD_PLAYER)
+    # Custom target: it has no compilable sources, so it is registered after the
+    # warning-flag loop.
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_player_dist)
 endif()
 
 string(REPLACE ";" "\n" CUEXIS_ACTIVE_TARGETS_TEXT "${CUEXIS_ACTIVE_TARGETS}")
@@ -711,6 +786,7 @@ if(TARGET cuexis_render_opengl)
         cuexis::render
         cuexis::platform_sdl
         cuexis::playback
+        cuexis::presentation_renderer
         cuexis::shader_cache
         glad::glad
         SDL3::SDL3
@@ -737,6 +813,17 @@ cuexis_verify_target_dependencies(cuexis_playback
         cuexis::runtime
         cuexis::world
 )
+cuexis_verify_target_dependencies(cuexis_presentation_renderer
+    ALLOWED
+        cuexis::core
+        cuexis::playback
+        cuexis::render
+)
+cuexis_verify_target_dependencies(cuexis_player_support
+    ALLOWED
+        cuexis::core
+        cuexis::json_support
+)
 if(TARGET cuexis_player)
     cuexis_verify_target_dependencies(cuexis_player
         ALLOWED
@@ -748,6 +835,7 @@ if(TARGET cuexis_player)
             cuexis::platform_sdl
             cuexis::render
             cuexis::render_opengl
+            cuexis::player_support
             spdlog::spdlog
     )
 endif()
@@ -795,6 +883,42 @@ if(TARGET cuexis_asset_importer)
     cuexis_verify_target_dependencies(cuexis_asset_importer
         ALLOWED
             cuexis::shader
+    )
+endif()
+
+if(TARGET cuexis_asset_publish)
+    cuexis_verify_target_dependencies(cuexis_asset_publish
+        ALLOWED
+            cuexis::core
+            cuexis_cxc
+    )
+endif()
+if(TARGET cuexis_media_import)
+    cuexis_verify_target_dependencies(cuexis_media_import
+        ALLOWED
+            cuexis::core
+            FLAC::FLAC
+            JPEG::JPEG
+            Ogg::ogg
+            PNG::PNG
+            Vorbis::vorbis
+            ZLIB::ZLIB
+    )
+endif()
+if(TARGET cuexis_media_importer)
+    cuexis_verify_target_dependencies(cuexis_media_importer
+        ALLOWED
+            cuexis::asset_publish
+            cuexis::core
+            cuexis::media_import
+    )
+endif()
+if(TARGET cuexis_asset_publish_tests)
+    cuexis_verify_target_dependencies(cuexis_asset_publish_tests
+        ALLOWED
+            cuexis::asset_publish
+            cuexis::chart
+            Catch2::Catch2WithMain
     )
 endif()
 
@@ -916,10 +1040,34 @@ if(CUEXIS_BUILD_TESTS)
                 Catch2::Catch2WithMain
         )
     endif()
+    if(TARGET cuexis_player_control_tests)
+        cuexis_verify_target_dependencies(cuexis_player_control_tests
+            ALLOWED
+                cuexis::audio
+                cuexis::core
+                cuexis::filesystem
+                cuexis::playback
+                cuexis::player_support
+                cuexis::presentation_renderer
+                cuexis::render
+                spdlog::spdlog
+                Catch2::Catch2WithMain
+        )
+    endif()
     cuexis_verify_target_dependencies(cuexis_render_tests
         ALLOWED
             cuexis::render
             Catch2::Catch2WithMain
+    )
+    cuexis_verify_target_dependencies(cuexis_presentation_renderer_tests
+        ALLOWED
+            cuexis::presentation_renderer
+            Catch2::Catch2WithMain
+    )
+    cuexis_verify_target_dependencies(cuexis_player_support_tests
+        ALLOWED
+            cuexis::player_support
+            Catch2::Catch2
     )
     cuexis_verify_target_dependencies(cuexis_runtime_tests
         ALLOWED
@@ -943,6 +1091,7 @@ if(CUEXIS_BUILD_TESTS)
             cuexis::audio
             cuexis::assets
             cuexis::chart
+            cuexis::cxc
             cuexis::playback
             Catch2::Catch2WithMain
     )

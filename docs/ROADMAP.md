@@ -43,7 +43,7 @@ Stage 5 已于 2026-08-28 关闭并合并至 `master`；260830 follow-up 已于 
 
 ```text
 生产 Playback 兼容基线   Chart v4 / CXT v1 / CXC v1 / SDK 0.7.0
-当前实施阶段              Stage 6（Playback C++ API 与 Player 产品化）
+当前实施阶段              无（Stage 6 已于 2026-09-27 关闭并归档；Stage 7A 尚未启动，需另行授权）
 前一阶段                  Chart Format Foundation Hardening（2026-09-17 完成并经 owner 接受）
 Stage 6 主要开发基线      Chart v5 Core / Packed candidate
 Stage 6 兼容回退基线      Chart v4 / CXT v1 / CXC v1
@@ -73,7 +73,7 @@ Chart v5                  candidate；Stage 8 后成为默认发行格式
 | --- | --- | --- | --- |
 | [Chart Format Foundation（已完成）](stage_plans/completed/chart-format-foundation/plan.md) | Stage 6 前解决高密度谱面存储风险 | Chart v4 subset / v5 candidate tools | CXT v2 Core、Packed 原型、40k/16 MiB 门禁、CXC entry 设计 |
 | [Foundation Hardening（已完成）](stage_plans/completed/chart-format-foundation-hardening/plan.md) | 补齐交接技术门禁 | Foundation candidate / v4 compatibility | identity、profile、预算、端到端、容量与跨平台证据（2026-09-17 关闭并经 owner 接受） |
-| [Stage 6（当前）](stage_plans/active/stage-06/plan.md) | 以 v5 为主线完成 Playback/Player/CXC candidate path | Chart v5 Core/Packed candidate；v4 fallback | v5 subset 播放验证、Player、CXC v1、媒体、后端中立渲染 |
+| [Stage 6（已完成）](stage_plans/completed/stage-06/plan.md) | 以 v5 为主线完成 Playback/Player/CXC candidate path | Chart v5 Core/Packed candidate；v4 fallback | v5 subset 播放验证、Player、CXC v1、媒体、后端中立渲染（2026-09-27 关闭并归档，并经 owner 接受交接清单与残余） |
 | [Stage 7A](stage_plans/future/stage-07/plan.md) | 冻结最小可玩闭环和 Judgement Kernel | Chart v5 Core/Packed + v4 compatibility | Input、Judgement、Score、Replay、Tap/Hold/Release |
 | [Stage 7B+](stage_plans/future/stage-07/plan.md) | 持续扩展高级输入与判定能力 | Stage 7A contracts + selected v5 capabilities | Slide、Flick、方向、连续轨迹、多指、校准 |
 | [Stage 8](stage_plans/future/stage-08/plan.md) | Chart v5 正式发行和语义收敛 | v5 candidate + Stage 7A | v5 Spec、CXT v2、Packed、CXC playback entry、迁移、默认 Writer |
@@ -115,6 +115,11 @@ Stage 7B+ 的高级判定设计研究
 Chart v5 所需的最小 Input/Judgement/Replay 合同；Stage 8 只依赖 Stage 7A，不等待
 全部高级判定能力；Stage 7B+ 必须通过版本化 capability 持续增加，不能破坏 7A 合同；
 Stage 9 不得改变判定语义。
+
+Stage 6 的子批次与 F1 最终验证已全部退出，关闭报告、三个核验问题处置与 Stage 7A/Stage 8 交接
+清单已形成（见 [Stage 6 关闭报告](stage_reports/stages/stage-06/completion.md)），并经 owner 于
+2026-09-27 明确接受；Stage 6 由此关闭、计划归档，上文主链约束不变。关闭不启动 Stage 7A 或
+Stage 8，也不构成合并或发布授权。
 
 ## 格式路线
 

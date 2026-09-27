@@ -27,11 +27,12 @@ class StatusContractTests(unittest.TestCase):
             ("completed",),
             requirements["stage_plans/completed/chart-format-foundation-hardening/plan.md"],
         )
-        self.assertEqual(("active",), requirements["stage_plans/active/stage-06/plan.md"])
+        self.assertEqual(("completed",), requirements["stage_plans/completed/stage-06/plan.md"])
         self.assertEqual(
             ("active",),
             requirements["stage_plans/active/chart-format-update-for-v5/plan.md"],
         )
+        self.assertNotIn("stage_plans/active/stage-06/plan.md", requirements)
         self.assertNotIn("stage_plans/active/chart-format-foundation/plan.md", requirements)
         self.assertNotIn(
             "stage_plans/active/chart-format-foundation-hardening/plan.md", requirements

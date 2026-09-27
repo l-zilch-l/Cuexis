@@ -6,6 +6,7 @@ add_library(cuexis_playback ${CUEXIS_LIBRARY_TYPE}
     src/presentation_extraction.cpp
     src/presentation_extraction.hpp
     src/presentation_internal.hpp
+    src/playback_candidate_internal.hpp
     src/playback_session.cpp
     src/playback_source.cpp
     src/playback_source_state.hpp
@@ -23,6 +24,9 @@ if(CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
     target_compile_definitions(cuexis_playback PUBLIC CUEXIS_PLAYBACK_STATIC_DEFINE)
 else()
     target_compile_definitions(cuexis_playback PRIVATE CUEXIS_PLAYBACK_EXPORTS)
+endif()
+if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+    target_compile_definitions(cuexis_playback PRIVATE CUEXIS_ENABLE_CHART_V5_CANDIDATE=1)
 endif()
 
 set_target_properties(cuexis_playback PROPERTIES EXPORT_NAME Playback)
