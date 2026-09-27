@@ -68,6 +68,17 @@
 
 ## 5. 残余与未核对
 
+> **追加订正（2026-09-28，W3 批次）**：本批次新增的用例
+> `test_compare_refs_rejects_invalid_missing_and_non_ancestor_refs` 使用了**环境仓库的 `HEAD^`**，
+> 因此在 hosted 的 `actions/checkout` 浅检出（`fetch-depth: 1`）下 `HEAD^` 无法解析，
+> 导致 `cuexis_contract_version_gate` 在 `GCC Coverage` 与 `GCC Adapter Coverage` 两个 job 中失败
+> （run `36348824124`，`633/634` 与 `679/680`），而本机全历史检出下 15 tests 全绿。
+> 这是本批次引入的**真实可移植性缺陷**，由 hosted 门禁捕获；已在 W3 批次改为自建临时仓库
+> （不依赖环境历史深度），并在 depth-1 浅克隆中复现失败条件后验证修复。详见
+> [W3 报告 §7](2026-09-28-w3-publication-transaction.md)。
+> **本节第 4 节所列"本机通过"的结论仅对本机全历史检出成立，不等于 hosted 通过**——这正是
+> 任务说明中"不得把未通过写成通过"红线要求区分的情形。
+
 - **SPEC-04：BLOCKED**。ADR 0042 §S6-D07（`:321`）要求"修改门禁本身需要代码所有者复核与独立负例"。
   当前状态：仓库内**没有 `CODEOWNERS`**（`git ls-files | grep -i codeowners` 无输出），
   分支保护与 required reviewers 属于 **GitHub 仓库外设置**，提交任何文件都不能使其生效。

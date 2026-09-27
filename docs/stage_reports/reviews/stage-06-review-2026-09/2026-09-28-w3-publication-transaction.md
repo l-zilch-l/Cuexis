@@ -93,3 +93,24 @@
 - 测试：`tests/asset_publish/asset_publish_tests.cpp`（新增 5 条 R5 用例）、
   `tests/chart/packed_budget_tests.cpp`、`tests/cxc/cxc_candidate_roundtrip_tests.cpp`（格式化）
 - 文档：本报告
+
+## 7. 跨批次修复：W1 用例的检出深度依赖（hosted 阻断项）
+
+W1 提交 `07c8a97` 在 PR #30 的 hosted 检查中**未通过**，是本批次必须先行修掉的阻断项。
+
+- **现象**：`cuexis_contract_version_gate` 在 `GCC Coverage`（job `108703347653`，`633/634`）与
+  `GCC Adapter Coverage`（job `108703347683`，`679/680`）中以
+  `fatal: ambiguous argument 'HEAD^': unknown revision or path not in the working tree.` 失败。
+- **根因**：W1 新增的 `test_compare_refs_rejects_invalid_missing_and_non_ancestor_refs`
+  调用 `git rev-parse HEAD^` 读取**环境仓库**的父提交。hosted 的 `actions/checkout` 取
+  `fetch-depth: 1` 浅检出，父提交不存在；本机是全历史检出，所以本机 15 tests 全绿而 hosted 失败。
+  两个失败 job 的失败测试**是同一个**，根因相同，不是两个独立问题。
+- **修复**：该用例改为在 `tempfile.TemporaryDirectory` 中 `git init` 并造两个提交，
+  自身构造 base/candidate 关系，或用例不读环境历史。变更后不再引用 `HEAD^`。
+- **复现与验证**：
+  1. 复现失败条件：`git clone --depth 1` 得单提交仓库，`git rev-parse HEAD^` 确认报同样的 fatal。
+  2. 在该浅克隆中先跑**旧**用例文件 → `FAILED (errors=1)`，与 hosted 一致。
+  3. 覆盖为**新**用例文件后重跑 → `Ran 15 tests ... OK`。
+  4. 本机全历史检出：`Ran 15 tests in 24.464s ... OK`。
+- **订正说明**：该修复同时是本批次对 W1 结论的**诚实订正**——
+  W1 §4 的"本机通过"不蕴含 hosted 通过；已在 W1 报告 §5 追加订正说明指向本节。
