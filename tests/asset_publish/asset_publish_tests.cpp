@@ -585,6 +585,73 @@ TEST_CASE("E3 a missing package target directory fails closed", "[s6-e3][asset-p
     CHECK_FALSE(fs::exists(request.target));
 }
 
+TEST_CASE("E3 a package target that is not a regular file is refused", "[s6-e3][asset-publish]") {
+    const auto root = scratchRoot("package-directory-target");
+    const auto target = root / "static.cxc";
+    // A real path that happens to be a directory: publishing over it would silently destroy a
+    // directory the caller never identified as a package.
+    fs::create_directories(target / "keep");
+    writeBytes(target / "keep" / "file.bin", "untouched");
+
+    PackagePublishRequest request;
+    request.target = target;
+    request.entries = staticProjectEntries();
+    const auto published = cuexis::tools::publishPackage(request);
+    REQUIRE_FALSE(published.has_value());
+    CHECK(errorCode(published.error()) == "asset.publish.invalid_request");
+
+    CHECK(fs::is_directory(target));
+    CHECK(readBytes(target / "keep" / "file.bin") == asBytes("untouched"));
+    // Nothing was staged: the only entries are the refused target and the publication lock file.
+    std::size_t entries = 0;
+    std::error_code status;
+    for (const auto& entry : fs::directory_iterator{root, status}) {
+        const auto name = entry.path().filename().string();
+        CHECK(name.find(".tmp.") == std::string::npos);
+        if (name != cuexis::tools::publicationLockName) {
+            ++entries;
+        }
+    }
+    CHECK(entries == 1U);
+}
+
+TEST_CASE("E3 a native filesystem failure refuses the generation and leaves no staging",
+          "[s6-e3][asset-publish]") {
+    const auto root = scratchRoot("generation-native-failure");
+    GenerationPublishRequest request;
+    request.root = root;
+    request.generationId = "26.09.24-1";
+    request.entries = {PublishEntry{"textures/checker.texture", asBytes("canonical")}};
+
+    // A regular file where the staging directory must be: the operating system refuses the staging
+    // directory, without any injection hook, and nothing is published.
+    writeBytes(root / "staging", "not-a-directory");
+    const auto blockedStaging = cuexis::tools::publishGeneration(request);
+    REQUIRE_FALSE(blockedStaging.has_value());
+    CHECK(errorCode(blockedStaging.error()) == "asset.publish.staging_failed");
+    CHECK(readBytes(root / "staging") == asBytes("not-a-directory"));
+    CHECK_FALSE(fs::exists(root / "generations"));
+
+    // The same story one level later: the published-generation directory is blocked by a regular
+    // file, so the single publishing rename cannot happen. Either the directory creation or the
+    // rename reports the failure, the blocking file is untouched and staging is cleaned.
+    std::error_code status;
+    fs::remove(root / "staging", status);
+    fs::create_directories(root / "staging", status);
+    writeBytes(root / "generations", "not-a-directory");
+    const auto blockedPublish = cuexis::tools::publishGeneration(request);
+    REQUIRE_FALSE(blockedPublish.has_value());
+    const auto code = errorCode(blockedPublish.error());
+    CHECK((code == "asset.publish.staging_failed" || code == "asset.publish.replace_failed"));
+    CHECK(readBytes(root / "generations") == asBytes("not-a-directory"));
+    std::size_t staged = 0;
+    for (const auto& entry : fs::directory_iterator{root / "staging", status}) {
+        static_cast<void>(entry);
+        ++staged;
+    }
+    CHECK(staged == 0U);
+}
+
 TEST_CASE("E3 one batch publishes a v4 and a candidate package closure", "[s6-e3][asset-publish]") {
     const auto root = scratchRoot("package-pair");
     const auto fixture = candidateFixture();

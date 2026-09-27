@@ -905,6 +905,15 @@ struct BuiltPackage final {
             publishError(publishInvalidCode, "Package target directory does not exist")
                 .withContext("path", parent.generic_string()));
     }
+    // A package path must be a file. An existing directory (or any other non-file) is refused
+    // instead of being renamed away and deleted, because that would silently destroy a path the
+    // caller never identified as a package.
+    std::error_code existingStatus;
+    if (fs::exists(target, existingStatus) && !existingStatus && !detail::isRegularFile(target)) {
+        return core::unexpected(
+            publishError(publishInvalidCode, "Package target exists and is not a regular file")
+                .withContext("path", target.generic_string()));
+    }
     const auto temporary = detail::uniqueSibling(target, publicationRole);
     detail::removeTreeQuiet(temporary);
     auto written = detail::writeFileExclusive(temporary, built.bytes);
