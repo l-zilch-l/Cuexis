@@ -43,7 +43,7 @@ Stage 5 已于 2026-08-28 关闭并合并至 `master`；260830 follow-up 已于 
 
 ```text
 生产 Playback 兼容基线   Chart v4 / CXT v1 / CXC v1 / SDK 0.7.0
-当前实施阶段              Stage 6（Playback C++ API 与 Player 产品化）
+当前实施阶段              Stage 6（Playback C++ API 与 Player 产品化；关闭报告候选已形成，等待 owner 接受）
 前一阶段                  Chart Format Foundation Hardening（2026-09-17 完成并经 owner 接受）
 Stage 6 主要开发基线      Chart v5 Core / Packed candidate
 Stage 6 兼容回退基线      Chart v4 / CXT v1 / CXC v1
@@ -115,6 +115,10 @@ Stage 7B+ 的高级判定设计研究
 Chart v5 所需的最小 Input/Judgement/Replay 合同；Stage 8 只依赖 Stage 7A，不等待
 全部高级判定能力；Stage 7B+ 必须通过版本化 capability 持续增加，不能破坏 7A 合同；
 Stage 9 不得改变判定语义。
+
+Stage 6 的子批次与 F1 最终验证已全部退出，关闭报告候选与 Stage 7A/Stage 8 交接清单已形成
+（见 [Stage 6 关闭报告](stage_reports/stages/stage-06/completion.md)）；在 owner 明确接受交接
+清单与残余之前，Stage 6 不关闭、不归档，上文主链约束不变。
 
 ## 格式路线
 
