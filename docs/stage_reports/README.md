@@ -44,7 +44,8 @@ Standards / Spec 记录），由该专题自己的 `README.md` 承担导航；�
 - Stage 6 复核修正（批次报告）：[R1 文档与证据链修正](reviews/stage-06-review-2026-09/2026-09-28-r1-document-and-evidence.md)、
   [W1 诊断码与版本门禁](reviews/stage-06-review-2026-09/2026-09-28-w1-diagnostics-and-version-gate.md)、
   [W2 媒体导入修正](reviews/stage-06-review-2026-09/2026-09-28-w2-media-import.md)、
-  [W3 发布事务修正](reviews/stage-06-review-2026-09/2026-09-28-w3-publication-transaction.md)
+  [W3 发布事务修正](reviews/stage-06-review-2026-09/2026-09-28-w3-publication-transaction.md)、
+  [W4 渲染收敛](reviews/stage-06-review-2026-09/2026-09-28-w4-render-convergence.md)
 
 ## 历史路径
 
