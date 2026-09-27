@@ -158,9 +158,13 @@ if(CUEXIS_ENABLE_SANITIZERS)
         "-DCMAKE_CXX_FLAGS=-fsanitize=address,undefined -fno-omit-frame-pointer"
         "-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined -fno-omit-frame-pointer")
 elseif(CUEXIS_ENABLE_COVERAGE)
+    # --coverage on the linker line may expand to -lgcov before the static
+    # archives; appending it to the standard libraries makes the resolution
+    # independent of link order.
     set(instrumentation_arguments
         "-DCMAKE_CXX_FLAGS=--coverage -O0 -g"
-        "-DCMAKE_EXE_LINKER_FLAGS=--coverage")
+        "-DCMAKE_EXE_LINKER_FLAGS=--coverage"
+        "-DCMAKE_CXX_STANDARD_LIBRARIES=--coverage")
 endif()
 
 set(configure_arguments
