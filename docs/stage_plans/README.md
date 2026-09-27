@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-09-22
+更新日期：2026-09-27
 
 阶段计划定义目标、范围、批次、门禁和交接。当前实现状态只以
 [CURRENT_STATUS.md](../CURRENT_STATUS.md) 为准；完成证据只以
@@ -21,16 +21,15 @@ deferred
   暂不排期、等待触发条件或需要重新立项的设计输入
 ```
 
-当前 `active` 目录中的两个计划职责不同：
+当前 `active` 目录中只剩一个跨阶段总工作包：
 
 ```text
-stage-06
-  当前实施计划：Playback C++ API 与 Player 产品化。Foundation 交接加固已于 2026-09-17
-  关闭并经 owner 接受，本计划自此恢复实施
-
 chart-format-update-for-v5
   Chart v5 跨阶段总工作包，负责维护 Foundation、Stage 6、Stage 7A 和 Stage 8 的总体设计与交接
 ```
+
+Stage 6 已于 2026-09-27 关闭并归档到 `completed/stage-06/`，见
+[关闭报告](../stage_reports/stages/stage-06/completion.md)。
 
 ## 已完成计划
 
@@ -48,6 +47,8 @@ chart-format-update-for-v5
 - Chart Format Foundation：[plan](completed/chart-format-foundation/plan.md)
 - Foundation 交接加固（R0-R5）：[plan](completed/chart-format-foundation-hardening/plan.md)，
   完成证据见 [R5 报告](../stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)
+- Stage 6：[plan](completed/stage-06/plan.md)，关闭于 2026-09-27，
+  完成证据见 [关闭报告](../stage_reports/stages/stage-06/completion.md)
 - 260830 follow-up：[plan](completed/260830-followup/plan.md)
 
 CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块分支覆盖率已完成，
@@ -55,15 +56,16 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
 
 ## 当前主路线
 
-- [Stage 6](active/stage-06/plan.md)：**当前阶段，2026-09-17 启动（首批 S6-A）**，以 Chart v5
-  Core/Packed 为主要开发基线的 Playback/Player/CXC candidate path；Chart v4 保留为兼容回退。
-  前置的
+- Stage 6（已关闭并归档）：[plan](completed/stage-06/plan.md)，2026-09-17 启动（首批 S6-A）、
+  2026-09-27 关闭，以 Chart v5 Core/Packed 为主要开发基线的 Playback/Player/CXC candidate
+  path；Chart v4 保留为兼容回退。前置的
   [Foundation 交接加固](completed/chart-format-foundation-hardening/plan.md) 已于 2026-09-17
   关闭并经 owner 接受，允许/禁止消费边界见其
   [R5 报告](../stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)。
-  2026-09-20 已细化子批次依赖、阻塞决策和验收矩阵。八项关键决策已在
-  [ADR 0042](../adr/0042-stage-6-productization-boundaries.md) 冻结。A1、A2、B1、C1、C2、D1 和 D2
-  已有退出证据；E1/E2 及后续批次尚未完成。设计冻结不表示这些后续批次已经实现。
+  八项关键决策已在 [ADR 0042](../adr/0042-stage-6-productization-boundaries.md) 冻结；A1 至 F1
+  全部批次退出，关闭报告、三个核验问题处置与 Stage 7A / Stage 8 交接清单经 owner 接受
+  （见 [关闭报告](../stage_reports/stages/stage-06/completion.md)）。Stage 6 关闭**不**启动
+  Stage 7A 或 Stage 8，也不构成合并或发布授权。
 - [Stage 7A / 7B+](future/stage-07/plan.md)：7A 冻结最小 Input/Judgement/Score/Replay 内核，
   7B+ 持续扩展 Slide、Flick、多指、校准和高级判定能力。
 - [Stage 8](future/stage-08/plan.md)：Chart v5 正式语义、CXT v2、Packed Chart 和 CXC 发行收敛；

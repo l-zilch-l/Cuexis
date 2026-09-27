@@ -492,5 +492,5 @@ Stage 5 只有在下列全部成立后才能标为 completed：
 
 后续阶段导航：[Foundation 已完成计划](../chart-format-foundation/plan.md)、
 [Foundation 交接加固](../../completed/chart-format-foundation-hardening/plan.md)、
-[Stage 6 后续计划](../../active/stage-06/plan.md)；
+[Stage 6 后续计划](../../completed/stage-06/plan.md)；
 [Chart v5 格式计划](../../active/chart-format-update-for-v5/plan.md) 是跨阶段工作包。

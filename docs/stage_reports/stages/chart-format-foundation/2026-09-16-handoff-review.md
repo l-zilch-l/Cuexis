@@ -35,7 +35,7 @@ typed semantic model、CXT 展开与 Packed 编码分层、显式 candidate revi
 
 项目所有者要求建立
 [Chart Format Foundation Hardening](../../../stage_plans/completed/chart-format-foundation-hardening/plan.md)，
-按 R0-R5 执行；[Stage 6](../../../stage_plans/active/stage-06/plan.md) 暂回 future。
+按 R0-R5 执行；[Stage 6](../../../stage_plans/completed/stage-06/plan.md) 暂回 future。
 `chart-format-update-for-v5` 保留 active，仍为跨阶段总工作包。
 
 本决策不宣称任何 H01-H04 已修复，也不宣称已取得新的 hosted PASS。

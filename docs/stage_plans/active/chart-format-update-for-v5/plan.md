@@ -16,7 +16,7 @@ SDK 版本遵循 [版本规范](../../../guides/VERSIONING.md)。本文“v5 发
 
 归档来源：[Stage Chart Format Update 完成计划](../../completed/chart-format-update/plan.md)、
 [Chart v4 格式合同](../../../formats/CHART_V4_FORMAT.md)、[谱面格式审计记录](../../../stage_reports/reviews/stage-verification-2026-09/2026-09-01-findings.md)
-与前置 [Stage 6 计划](../../active/stage-06/plan.md)。
+与前置 [Stage 6 计划](../../completed/stage-06/plan.md)。
 
 ## 计划定位
 
@@ -31,7 +31,7 @@ SDK 版本遵循 [版本规范](../../../guides/VERSIONING.md)。本文“v5 发
 当前实施计划
   -> ../chart-format-foundation-hardening/plan.md
 后续阶段（加固关闭后）
-  -> ../../active/stage-06/plan.md
+  -> ../../completed/stage-06/plan.md
   -> ../../future/stage-07/plan.md（Stage 7A）
   -> ../../future/stage-08/plan.md
 ```
@@ -116,7 +116,8 @@ Additive opacity        已拒绝
   [Foundation 交接加固](../../completed/chart-format-foundation-hardening/plan.md) 的 R0-R5 于
   2026-09-17 关闭（允许/禁止消费边界见
   [R5 报告](../../../stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)
-  §10），[Stage 6](../stage-06/plan.md) 已自此启动 v5 Core/Packed candidate path；Stage 6
+  §10），[Stage 6](../../completed/stage-06/plan.md) 已于 2026-09-27 关闭并完成 v5 Core/Packed
+  candidate path；Stage 6
   同时保留 Chart v4、CXT v1 和 CXC v1 的兼容回退。
 - Stage 7A 必须冻结 Chart v5 所需的 JudgementRequirement、InputEvent、JudgementResult 和
   Replay identity。Stage 7B+ 的高级判定能力不是本阶段或 Stage 8 的整体前置。

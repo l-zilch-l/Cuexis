@@ -34,11 +34,16 @@ The subsequent handoff review established the Foundation hardening stage under
 `docs/stage_plans/completed/chart-format-foundation-hardening/` (R0-R5); it closed on
 September 17, 2026 after green local matrices, a final-SHA capacity rerun and same-SHA hosted
 Linux Quality, Windows MSVC and Windows MinGW validation, and the owner accepted its handoff
-list. Stage 6 is active under `docs/stage_plans/active/stage-06/`. Original Foundation
+list. Stage 6 ran from September 17 to September 27, 2026 under
+`docs/stage_plans/completed/stage-06/`; A1 through F1 exited, and the owner accepted its closure
+report, the dispositions of the three stage-verification issues and the Stage 7A / Stage 8 handoff
+lists, so the stage is closed and archived. Original Foundation
 completion does not certify the new technical gates.
 `chart-format-update-for-v5` remains active as a cross-stage work package, not the current stage.
-Stage 6 retains the three open issues from the September stage-verification report: release version
-enforcement, a backend-neutral presentation renderer boundary, and common media support.
+The three September stage-verification issues are closed with disposition evidence: release version
+enforcement (S6-B1), a backend-neutral presentation renderer boundary (S6-D1/S6-D2), and common
+media support (S6-E1/E2/E3). Stage 7A and Stage 8 have not started; Stage 6 closure authorizes
+neither a PR nor a merge or release.
 Stage 4 is complete. ADR 0038 defines `.cxc` as a strict ZIP32 Stored exchange
 package containing existing Project/Asset Index formats, `cuexis.chart` v4 data, CXT JSON, and
 required resources. The CXT v1, ChartParameter, and Template Binding subdecision was accepted on
@@ -307,7 +312,8 @@ Stage 1D modules. `sdk/` and `adapters/` directories do not exist yet (planned).
 - `docs/stage_plans/completed/chart-format-foundation/plan.md` — completed Foundation plan
 - `docs/stage_plans/completed/chart-format-foundation-hardening/plan.md` — completed R0-R5
   hardening plan (closed 2026-09-17)
-- `docs/stage_plans/active/stage-06/plan.md` — current Stage 6 plan
+- `docs/stage_plans/completed/stage-06/plan.md` — completed Stage 6 plan (closed 2026-09-27),
+  with the closure report at `docs/stage_reports/stages/stage-06/completion.md`
 - `docs/stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md` —
   R5 regression, hosted and handoff evidence, including the allowed/forbidden consumption list
 - `docs/stage_plans/completed/stage-04/plan.md` through

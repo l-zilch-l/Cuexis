@@ -1,9 +1,10 @@
 # Stage 6 Implementation Plan: Playback C++ API and Player Productization
 
-状态：active；当前实施阶段；Foundation 交接加固（R0-R5）已于 2026-09-17 关闭并经 owner
-接受，本阶段自此恢复实施
+状态：completed；已于 2026-09-27 关闭并归档（`S6-F2` 关闭报告、三个核验问题处置与 Stage 7A /
+Stage 8 交接清单经项目所有者明确接受）；Foundation 交接加固（R0-R5）已于 2026-09-17 关闭并经
+owner 接受，本阶段曾自此恢复实施
 
-更新日期：2026-09-22
+更新日期：2026-09-27
 
 归档来源：[旧版 PROJECT_GUIDE](../../../archive/PROJECT_GUIDE_LEGACY_2026-08-10.md) 与
 [SDK transition plan 快照](../../../archive/CUEXIS_SDK_TRANSITION_PLAN_2026-08-10.md)。2026-09-01
@@ -100,7 +101,7 @@ S6-A1 基线、入口和证据矩阵
 | E3 | E1、E2、C1 | 资源身份、缓存、索引与 CXC 原子发布 | completed（`S6-G12` 逐项验收与同 SHA 四平台 hosted 矩阵见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-26-s6-e3-exit.md)；本地批次退出，不是 Stage 6 关闭或 owner acceptance） |
 | C4 | C3、E3 | 具名真实宿主、安装包、升级与部署证明 | completed（`S6-G13` 逐项验收、本地 flavor 矩阵与同 SHA 四平台 hosted 见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-27-s6-c4-exit.md)；实现与缺陷过程见 [C4 报告](../../../stage_reports/stages/stage-06/2026-09-27-s6-c4-reference-host-and-player-distribution.md)。本地批次退出，不是 Stage 6 关闭或 owner acceptance） |
 | F1 | B1、C4 及其前置全部退出 | 最终 SHA 全量、hosted、GPU 与许可证证据 | completed（`S6-G14` 与 `S6-G15` 的 F1 部分逐项验收、7 个 preset 的 fresh configure 与 clean-first 本地全量矩阵、candidate 开关与工具隔离、GPU/真实音频设备单列证据、同 SHA 三平台 hosted 复验见 [退出记录](../../../stage_reports/stages/stage-06/2026-09-27-s6-f1-final-validation.md)。F1 本地批次退出，不是 Stage 6 关闭或 owner acceptance；`S6-F2` 未开始） |
-| F2 | F1 | 关闭报告、问题处置、Stage 7A/8 交接与 owner 接受 | in_progress（已形成 [关闭报告候选](../../../stage_reports/stages/stage-06/completion.md)：`S6-G01`…`S6-G15` 逐项映射、三个核验问题改为 closed、Stage 7A 与 Stage 8 交接清单、未执行与残余清单；**owner 对交接清单与残余的明确接受未记录**，因此阶段未关闭、未归档，PR、合并与发布属另行授权） |
+| F2 | F1 | 关闭报告、问题处置、Stage 7A/8 交接与 owner 接受 | completed（[关闭报告](../../../stage_reports/stages/stage-06/completion.md)：`S6-G01`…`S6-G15` 逐项映射、三个核验问题改为 closed、Stage 7A 与 Stage 8 交接清单、未执行与残余清单；项目所有者于 2026-09-27 明确接受该交接清单与残余，本计划随之归档到 `completed/stage-06/`。PR、合并与发布仍属另行授权） |
 
 `planned` 表示尚未取得退出证据；Stage 6 的 active 状态不等于尚未列出证据的批次已完成。实际工作开始后
 逐项更新为 in_progress、blocked 或 completed，并链接证据。阻塞项必须记录原因和恢复条件，

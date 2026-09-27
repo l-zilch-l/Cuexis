@@ -6,7 +6,7 @@ Stage 6 关闭、PR 合并或 owner acceptance）
 日期：2026-09-25
 
 本报告记录 S6-E3（资源身份、缓存、索引与 CXC 原子发布）的实现与验证证据。合同来自
-[stage-06 plan.md](../../../stage_plans/active/stage-06/plan.md) §S6-E3 与 ADR 0042 §S6-D06；
+[stage-06 plan.md](../../../stage_plans/completed/stage-06/plan.md) §S6-E3 与 ADR 0042 §S6-D06；
 本页不重新裁定 profile，不把本地结果当作 release 或 owner acceptance 证据。
 
 ## 1. 批次基线

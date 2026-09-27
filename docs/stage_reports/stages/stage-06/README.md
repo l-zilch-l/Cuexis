@@ -1,15 +1,15 @@
 # Stage 6 Reports
 
-状态：current
+状态：historical（Stage 6 已于 2026-09-27 关闭并归档）
 
 更新日期：2026-09-27
 
-本目录保存 Stage 6 各子批次的带日期实施和验证证据。当前阶段仍为 active；报告只记录实际
+本目录保存 Stage 6 各子批次的带日期实施和验证证据。阶段已关闭；报告只记录实际
 执行结果，不把 ADR 冻结、历史 hosted 结果或后续计划当作本批次实现证据。
 
-- [Stage 6 关闭报告（候选）](completion.md)：按 `S6-G01`…`S6-G15` 汇总实现、测试、SHA 与证据，
-  记录三个核验问题的处置、Stage 7A / Stage 8 交接清单与未执行项；owner 接受未记录，阶段未关闭、
-  未归档。
+- [Stage 6 关闭报告](completion.md)：按 `S6-G01`…`S6-G15` 汇总实现、测试、SHA 与证据，
+  记录三个核验问题的处置、Stage 7A / Stage 8 交接清单与未执行项；项目所有者于 2026-09-27
+  接受交接清单与残余，阶段关闭并归档。
 
 ## 报告
 
@@ -67,6 +67,6 @@
   clean-first 本地全量矩阵、candidate 开关与工具隔离、GPU/真实音频设备单列证据、同 SHA 三平台
   hosted 与插桩覆盖核对、跳过项与未执行项；本地批次退出，不是 Stage 6 关闭或 owner acceptance）
 
-权威范围见 [Stage 6 计划](../../../stage_plans/active/stage-06/plan.md)、
+权威范围见 [Stage 6 计划](../../../stage_plans/completed/stage-06/plan.md)、
 [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md) 和
 [CURRENT_STATUS.md](../../../CURRENT_STATUS.md)。

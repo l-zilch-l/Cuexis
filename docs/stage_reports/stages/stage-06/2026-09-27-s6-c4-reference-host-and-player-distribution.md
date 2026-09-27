@@ -35,7 +35,7 @@ SDK API 仍为 `0.7.0`。
 修改：`docs/guides/BUILDING.md`、`docs/guides/VERSIONING.md`、`docs/guides/DEPENDENCY_POLICY.md`、
 `THIRD_PARTY_NOTICES.md`、`docs/architecture/PLAYER_APPLICATION.md`、
 `docs/architecture/STAGE6_PRODUCTIZATION_BOUNDARIES.md`、`docs/proposals/STAGE6_API_AND_INSTALL_DRAFT.md`、
-`docs/CURRENT_STATUS.md`、`docs/stage_plans/active/stage-06/plan.md`。
+`docs/CURRENT_STATUS.md`、`docs/stage_plans/completed/stage-06/plan.md`。
 
 没有改动任何公开头、签名、枚举语义、默认入口或 SDK API 版本；Playback 的链接闭包不变；新增的
 `cuexis_player_dist` 是自定义 target，无编译单元。

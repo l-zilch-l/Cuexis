@@ -1,20 +1,28 @@
-# Stage 6 关闭报告（候选）
+# Stage 6 关闭报告
 
-状态：待 owner 接受（Stage 6 未关闭、未归档）
+状态：completed（2026-09-27 关闭并归档）
 
 更新日期：2026-09-27
 
-本报告是 [Stage 6 计划](../../../stage_plans/active/stage-06/plan.md) `S6-F2` 要求的阶段关闭记录候选：
-按计划 §3 的验收 ID 链接实现、测试、SHA 与证据，汇总三个核验问题的处置，并给出 Stage 7A / Stage 8
-交接清单与未执行/残余项。**owner 的明确接受尚未记录**，因此 Stage 6 仍为 active：关闭、归档、PR、
-合并与发布都属于另行授权动作。
+本报告是 [Stage 6 计划](../../../stage_plans/completed/stage-06/plan.md) `S6-F2` 要求的阶段关闭记录：
+按计划 §3 的验收 ID 链接实现、测试、SHA 与证据，汇总三个核验问题的处置，并给出 Stage 7A /
+Stage 8 交接清单与未执行/残余项。项目所有者于 2026-09-27 明确接受该交接清单与残余清单，Stage 6
+随之关闭，计划移至 `docs/stage_plans/completed/stage-06/`。PR、合并与发布仍属另行授权，本报告不
+主张任何合并或发布动作。
+
+## 0. 关闭与接受记录
+
+- 2026-09-27：项目所有者接受 §6 Stage 7A 交接清单、§7 Stage 8 交接清单与 §8 未执行/残余清单，
+  Stage 6 关闭并归档。
+- 同时确认：三个核验问题（版本强制更新、后端中立 renderer、常用媒体）按 §5 处置为 `closed`；
+  Chart v1–v3 退出提案保持 `candidate`；Stage 7A 与 Stage 8 仍按各自计划另行启动。
 
 ## 1. 关闭结论与当前状态
 
 - 子批次 A1、A2、B1、C1、C2、C3、D1、D2、E1/E2、E3、C4 与 F1 均已退出，退出记录集中在
   [本目录](README.md)；F1 的最终验证见 [S6-F1 退出记录](2026-09-27-s6-f1-final-validation.md)。
-- `S6-G01` 至 `S6-G15` 全部取得实现、注册与执行证据（§3），其中 `S6-G15` 的 owner 交接与接受
-  记录部分尚未完成。
+- `S6-G01` 至 `S6-G15` 全部取得实现、注册与执行证据（§3），`S6-G15` 的 owner 交接与接受记录
+  由 §0 完成。
 - 三个开放工程问题（版本强制更新、后端中立 renderer、常用媒体支持）均已取得处置证据，核验记录
   中对应项已改为 `closed`（§5）；历史现象与影响未改写。
 - 本阶段**不**关闭 Stage 7A/Stage 8，也**不**把 F1 的全绿测试解释为发布授权（plan §2 F2 第 4 条）。
@@ -62,7 +70,7 @@ Schema/API 草案、独立 golden 与无环依赖/安装图，按计划不要求
 | S6-G12 | 媒体 provenance、缓存、资源 closure 和发布事务完整 | E3 | [E3 退出](2026-09-26-s6-e3-exit.md)（`47d90c3`/`5a5e21e1…`/`0753e6a0…`/`730d0d6`，runs 36261277766/831/846、36261281151、36264473853/856/857、36264475784） | 通过 |
 | S6-G13 | SDK 与 Player 可独立安装部署，真实宿主使用公开边界 | C4 | [C4 退出](2026-09-27-s6-c4-exit.md)（`716b697`、`2c8211e`、`cb56e62`，runs 36298996619/623/643、36298998943/948/952/954、36301616745）；安装后宿主、staging、static/shared、升级/拒绝门禁 | 通过 |
 | S6-G14 | 兼容、架构、许可证与候选隔离没有回归 | F1 | [F1 退出](2026-09-27-s6-f1-final-validation.md)：8 个 preset 的 fresh/clean-first 全量矩阵、developer-tools OFF 与 shader-tools OFF/ON 两向、候选开关隔离、分发许可证集合 | 通过 |
-| S6-G15 | 最终代码拥有完整同 SHA 验证与 owner 交接 | F1/F2 | F1 部分：`c80a5b5` 的 7 个 hosted run 全绿（36323246316/366/298/392/305/349/354）、`95bfa70` 的 7 个 run 全绿（36328047694/358/772/360/781/305/306）、GPU/设备单列证据；owner 接受部分：**未记录**（§8） | F1 部分通过；owner 接受待完成 |
+| S6-G15 | 最终代码拥有完整同 SHA 验证与 owner 交接 | F1/F2 | F1 部分：`c80a5b5` 的 7 个 hosted run 全绿（36323246316/366/298/392/305/349/354）、`95bfa70` 的 7 个 run 全绿（36328047694/358/772/360/781/305/306）、GPU/设备单列证据；owner 交接部分：项目所有者于 2026-09-27 接受 §6/§7 交接清单与 §8 残余清单（§0） | 通过 |
 
 ## 4. 最终 SHA 与验证矩阵
 
@@ -118,8 +126,8 @@ Schema/API 草案、独立 golden 与无环依赖/安装图，按计划不要求
 
 | 项 | 状态 | 说明 |
 |---|---|---|
-| owner 对交接清单与残余的接受 | 未记录 | plan §2 F2 第 4 条要求记录明确接受后才关闭/归档；这是 Stage 6 关闭的唯一未决项 |
-| Stage 6 关闭与归档 | 未执行 | 随上一条；PR、合并、发布均为另行授权动作 |
+| owner 对交接清单与残余的接受 | 已记录 | 项目所有者于 2026-09-27 明确接受 §6/§7 交接清单与 §8 残余清单（§0） |
+| Stage 6 关闭与归档 | 已完成 | 计划移至 `docs/stage_plans/completed/stage-06/`，状态改为 completed；PR、合并与发布仍为另行授权动作 |
 | 真实音频设备 smoke 的 underrun | 观察保留 | 空载复跑 3 次为 1、1、0；三次均退出码 0、90 帧、暂停/重载断言通过，未定位确定性成因 |
 | C2 行记录的"新增测试 hosted 复验尚未发生" | 已被覆盖 | C2 退出时新增的进程锁、只读文件、热拔插观察与命名设备打开用例属默认套件；F1 在 `c80a5b5` 的同 SHA hosted 中，配置/设备用例族在 Linux 插桩与覆盖作业及 Windows 整包（734/776）中实际运行，例如 `SDL opens one enumerated playback device by its exact name` |
 | D2 退出时的 MinGW hosted 缺口 | 已被覆盖 | D2 退出报告记录上一 hosted SHA 的 MinGW 因 `-Werror=reorder` 失败，实现 SHA `fdfaa46` 当时没有同 SHA 三平台证据；最终 SHA `c80a5b5` 的 MinGW push `36323246305` 与 PR `36323249349` 均 success，该历史缺口在最终 SHA 上关闭 |
@@ -146,12 +154,12 @@ capability/bytecode/ABI/hook）。
 
 | 文档 | 动作 |
 |---|---|
-| [CURRENT_STATUS.md](../../../CURRENT_STATUS.md) | Stage 6 行改为"F1 已退出，关闭报告已形成，等待 owner 接受"；追加 F2 段落 |
-| [ROADMAP.md](../../../ROADMAP.md) | 阶段状态与并行工作段落更新为关闭报告候选状态 |
-| [本目录 README](README.md) | 追加本报告与 F1 退出记录入口 |
-| [stage_reports 索引](../../README.md) | 追加 Stage 6 归档入口 |
+| [CURRENT_STATUS.md](../../../CURRENT_STATUS.md) | Stage 6 行改为 completed（关闭报告、问题处置与交接清单已接受）；追加 F2 段落 |
+| [ROADMAP.md](../../../ROADMAP.md) | 阶段状态与并行工作段落更新为已关闭、计划已归档 |
+| [本目录 README](README.md) | 追加本报告与 F1 退出记录入口，目录状态改为 historical |
+| [stage_reports 索引](../../README.md) | Stage 6 条目追加关闭报告入口 |
 | [核验记录](../../reviews/stage-verification-2026-09/2026-09-01-findings.md) | 问题 1/2/3 状态改为 `closed` 并追加处置证据；提案 1 保持 candidate |
-| [Stage 6 计划](../../../stage_plans/active/stage-06/plan.md) | F2 行记录关闭报告与交接清单已形成、owner 接受待记录 |
+| [Stage 6 计划](../../../stage_plans/completed/stage-06/plan.md) | 状态改为 completed、F2 行记录 owner 接受并归档；`docs/stage_plans/legacy-paths.md` 记录旧路径 `active/stage-06/plan.md` |
 | `docs/api/README.md` | 无需改动：它是按任务导航的索引页，本阶段没有新增公共 SDK 契约（SDK API 保持 `0.7.0`） |
 | BUILDING.md / VERSIONING.md / DEPENDENCY_POLICY.md / THIRD_PARTY_NOTICES.md | 已在 B1 与 E1/E2 批次更新，本阶段不再追加 |
 
