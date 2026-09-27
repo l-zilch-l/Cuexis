@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-09-23
+更新日期：2026-09-27
 
 本文是 Cuexis 当前产品和阶段状态的唯一摘要。ADR 定义决策，Spec 定义字段和语义，阶段计划定义未来
 范围，阶段报告保存带日期的实施证据；它们不得绕过本文重新定义当前状态。
@@ -29,7 +29,7 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Stage 5 | completed; S5-A through S5-H closed and merged into `master` 2026-08-28 | [plan](stage_plans/completed/stage-05/plan.md)、[completion](stage_reports/stages/stage-05/completion.md) |
 | Chart Format Foundation | completed；保留 PR #24 与 2026-09-16 owner 完成确认；后续交接缺口由独立加固阶段处理，不代表技术门禁全部通过 | [plan](stage_plans/completed/chart-format-foundation/plan.md)、[关闭记录](stage_reports/stages/chart-format-foundation/2026-09-16-closure-and-handoff.md) |
 | Chart Format Foundation Hardening | completed；R0-R5 全部完成（D1-D10 已裁定，A19/A20/A21/A22 已修复），本地六配置全量回归、最终 SHA 容量复跑与同 SHA hosted 三平台验证（`e0ca9ff`，docs-only 复验 `c24f34e`）全绿，owner 于 2026-09-17 接受 R5 交接清单 | [plan](stage_plans/completed/chart-format-foundation-hardening/plan.md)、[R5 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)、[R5 容量数据 Debug](stage_reports/stages/chart-format-foundation/2026-09-17-r5-capacity-data.json)、[Release](stage_reports/stages/chart-format-foundation/2026-09-17-r5-capacity-data-release.json)、[R4 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r4-roundtrip-capacity-rollback.md)、[R4 容量数据](stage_reports/stages/chart-format-foundation/2026-09-17-r4-capacity-data.json)、[R3 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r3-budgets-and-arithmetic.md)、[R2 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r2-profile-rejection.md)、[R1 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r1-semantic-identity.md)、[R0 报告](stage_reports/stages/chart-format-foundation/2026-09-16-r0-baseline-and-reproduction.md) |
-| Stage 6 | active；当前实施阶段，2026-09-17 启动（首批 S6-A：合同、基线和依赖决策）。交接加固已关闭并经 owner 接受，本阶段实施 v5-first candidate path，保留 v4 回退；消费边界见 [R5 报告 §10](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md) | [plan](stage_plans/active/stage-06/plan.md) |
+| Stage 6 | active；当前实施阶段，2026-09-17 启动（首批 S6-A：合同、基线和依赖决策）。交接加固已关闭并经 owner 接受，本阶段实施 v5-first candidate path，保留 v4 回退；消费边界见 [R5 报告 §10](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)。A1、A2、B1、C1、C2、C3、D1、D2、E3 与 C4 已退出；E1/E2 已完成实现与四平台验证但尚未退出；F1/F2 未开始 | [plan](stage_plans/active/stage-06/plan.md) |
 | Stage 7A | future；最小 Input / Judgement / Score / Replay Kernel，作为 Stage 8 硬前置 | [plan](stage_plans/future/stage-07/plan.md) |
 | Stage 7B+ | future；Slide、Flick、多指、校准和高级 Judgement 能力持续演进 | [plan](stage_plans/future/stage-07/plan.md) |
 | Stage 8 | future；Chart v5 / CXT v2 / Packed Chart 正式发行与语义收敛 | [plan](stage_plans/future/stage-08/plan.md) |
@@ -130,7 +130,7 @@ candidate 两个闭包，先全部构建并自校验，再替换，candidate 失
 772/772（media-tools），Version Gate 通过；该批次第一次推送时 MinGW 因 `_dupenv_s` 不是 MinGW CRT
 符号而链接失败，改为按 `_MSC_VER` 选择后修复。按 `S6-G12` 的逐项验收、测试注册与残余见
 [S6-E3 退出报告](stage_reports/stages/stage-06/2026-09-26-s6-e3-exit.md)。
-C4 已落地具名参考宿主与可运行 Player 分发目录，但尚未形成批次退出结论：`examples/reference_host/`
+C4 已取得本地批次退出结论（不是 Stage 6 关闭、PR 合并或 owner acceptance）：`examples/reference_host/`
 是一个独立宿主工程，只通过 `find_package(Cuexis 0.7.0 CONFIG REQUIRED COMPONENTS Playback)` 消费
 安装后的公共头与导出 target，自带主循环、`IContentProvider` 实现、宿主时钟与帧消费，声明
 `CUEXIS_HOST_API_VERSION` 作为编写基线，不包含仓库私有头、不链接 `cuexis_player_support`；门禁
@@ -145,12 +145,16 @@ C4 已落地具名参考宿主与可运行 Player 分发目录，但尚未形成
 的两个门禁全部通过，并且四个 flavor 的分发目录各自在真实 GPU 上完成 `--smoke-test`（exit 0，6 帧）。
 hosted 上 Windows MSVC（`release`，734/734 与媒体工具 776/776）与 Windows MinGW（`debug`，同样
 734/776）都实际执行并通过两个门禁；Linux 的 `GCC Release`、`Clang Shared Debug`、`GCC Shared
-Release` 通过宿主门禁（shared 覆盖 toolchain 拒绝用例），六个插桩 job 暴露了门禁自身的第五个缺陷
+Release` 通过宿主门禁（shared 覆盖 toolchain 拒绝用例），六个插桩 job 暴露了门禁自身的缺陷
 （插桩选项不进安装导出、外部消费者必须同样插桩，且第一次修复把参数挂到了错误的 `add_test`），
-修复后重跑。SDK API 仍为 `0.7.0`，candidate 开关仍只是构建树编译定义，草案中的
-`Cuexis_ALLOW_EXPERIMENTAL` opt-in 尚未实现。C4 报告见
+修复后 `d7980bd` 的 Linux Quality 十二个 job 全绿。candidate 路径另以独立二进制目录
+`out/build/c4-candidate`（`CUEXIS_ENABLE_CHART_V5_CANDIDATE=ON`）验证，生产安装树的全部已安装
+文本文件中没有 candidate 或实验开关标记。按 `S6-G13` 的逐项验收、六条门禁与打包缺陷、残余与 F1
+消费边界见 [S6-C4 退出报告](stage_reports/stages/stage-06/2026-09-27-s6-c4-exit.md)。
+SDK API 仍为 `0.7.0`，candidate 开关仍只是构建树编译定义，草案中的
+`Cuexis_ALLOW_EXPERIMENTAL` opt-in 尚未实现。实现、本地矩阵与缺陷过程见
 [参考宿主与 Player 分发](stage_reports/stages/stage-06/2026-09-27-s6-c4-reference-host-and-player-distribution.md)。
-C4 尚未形成批次退出结论，F1 仍待其前置批次全部退出。
+C4 的退出不改变 F1 的前置：F1 仍待其前置批次（包含 E1/E2）全部退出。
 
 ## 已关闭的 Full Review
 

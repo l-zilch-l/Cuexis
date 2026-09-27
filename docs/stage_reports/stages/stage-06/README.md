@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-09-23
+更新日期：2026-09-27
 
 本目录保存 Stage 6 各子批次的带日期实施和验证证据。当前阶段仍为 active；报告只记录实际
 执行结果，不把 ADR 冻结、历史 hosted 结果或后续计划当作本批次实现证据。
@@ -51,6 +51,9 @@
   （`examples/reference_host/` 的安装后公共边界宿主、staging/清理 PATH/拒绝门禁、`cuexis_player_dist`
   自包含分发目录与许可证集合、`0.7.0` 基线升级与配置回滚边界、残余与未完成项；该页明确不是
   批次退出）
+- [2026-09-27 S6-C4 退出](2026-09-27-s6-c4-exit.md)
+  （按 `S6-G13` 逐项映射验收证据、测试注册、本地矩阵与四平台 hosted 复验、六条门禁与打包缺陷、
+  残余与 F1 消费边界；本地批次退出，不是 Stage 6 关闭或 owner acceptance）
 
 权威范围见 [Stage 6 计划](../../../stage_plans/active/stage-06/plan.md)、
 [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md) 和

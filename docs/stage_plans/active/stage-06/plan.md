@@ -46,7 +46,8 @@ Chart v1-v3 退出仍是待项目所有者决策的 candidate 提案，不因本
 2026-09-20 的可实施性评审以本地 `master` 的 `e3c4589` 为阅读基线。owner 已接受将评审
 建议落实为详细计划，并授权冻结关键实施决策；其权威结论见
 [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md)。设计已冻结不表示字段级
-Schema、表征或实施批次已经通过。A1、A2、B1、C1、C2、D1 和 D2 已有各自退出证据；其余批次尚未完成。
+Schema、表征或实施批次已经通过。A1、A2、B1、C1、C2、D1、D2、C3、E3 与 C4 已有各自退出证据；
+E1/E2 与 F1 尚未退出。
 本计划不替代
 [ADR 0024](../../../adr/0024-configuration-ownership-and-staged-formats.md)、
 [ADR 0033](../../../adr/0033-cpp-shared-library-preview-boundary.md)、
@@ -97,7 +98,7 @@ S6-A1 基线、入口和证据矩阵
 | C3 | C1、C2、D2 | Player 用户入口、状态机、跨子系统事务 | completed（本地验收见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-24-s6-c3-exit.md)；该退出不是 Stage 6 关闭或 owner acceptance） |
 | E1 / E2 | A2 | 图片 / 音频离线导入及各自 golden | in_progress（实现、canonical golden 与同 SHA 四平台字节一致已记录在 [实现报告](../../../stage_reports/stages/stage-06/2026-09-25-s6-e1-e2-media-importer.md)；该报告明确不是批次退出，退出结论尚未形成） |
 | E3 | E1、E2、C1 | 资源身份、缓存、索引与 CXC 原子发布 | completed（`S6-G12` 逐项验收与同 SHA 四平台 hosted 矩阵见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-26-s6-e3-exit.md)；本地批次退出，不是 Stage 6 关闭或 owner acceptance） |
-| C4 | C3、E3 | 具名真实宿主、安装包、升级与部署证明 | in_progress（参考宿主与 Player 分发实现及两个门禁见 [C4 报告](../../../stage_reports/stages/stage-06/2026-09-27-s6-c4-reference-host-and-player-distribution.md)；批次退出结论尚未形成） |
+| C4 | C3、E3 | 具名真实宿主、安装包、升级与部署证明 | completed（`S6-G13` 逐项验收、本地 flavor 矩阵与同 SHA 四平台 hosted 见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-27-s6-c4-exit.md)；实现与缺陷过程见 [C4 报告](../../../stage_reports/stages/stage-06/2026-09-27-s6-c4-reference-host-and-player-distribution.md)。本地批次退出，不是 Stage 6 关闭或 owner acceptance） |
 | F1 | B1、C4 及其前置全部退出 | 最终 SHA 全量、hosted、GPU 与许可证证据 | planned |
 | F2 | F1 | 关闭报告、问题处置、Stage 7A/8 交接与 owner 接受 | planned |
 
