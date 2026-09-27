@@ -107,3 +107,38 @@ add_custom_target(player_stage1c_assets ALL
 )
 
 add_dependencies(cuexis_player player_stage1c_assets)
+
+# Runnable Player distribution (ADR 0042 S6-D08, stage plan S6-C4 item 3).
+# The Player is deliberately not part of the SDK install tree; this target
+# assembles a self-contained directory instead.
+set(CUEXIS_PLAYER_DIST_ROOT "${PROJECT_BINARY_DIR}/dist" CACHE PATH
+    "Directory that receives the packaged Cuexis Player distributions")
+
+get_filename_component(CUEXIS_CXX_COMPILER_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY)
+set(CUEXIS_PLAYER_LIBRARY_DIRS
+    "${PROJECT_BINARY_DIR}"
+    "${PROJECT_BINARY_DIR}/lib"
+    "${PROJECT_BINARY_DIR}/bin"
+    "${CUEXIS_CXX_COMPILER_DIR}"
+    "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin")
+
+add_custom_target(cuexis_player_dist
+    COMMAND "${CMAKE_COMMAND}"
+        "-DCUEXIS_PLAYER_EXECUTABLE=$<TARGET_FILE:cuexis_player>"
+        "-DCUEXIS_PLAYER_ASSETS_DIR=$<TARGET_FILE_DIR:cuexis_player>/assets"
+        "-DCUEXIS_PLAYER_DIST_ROOT=${CUEXIS_PLAYER_DIST_ROOT}"
+        "-DCUEXIS_PLAYER_LIBRARY_DIRS=${CUEXIS_PLAYER_LIBRARY_DIRS}"
+        "-DCUEXIS_VERSION_DISPLAY=${CUEXIS_VERSION_DISPLAY}"
+        "-DCUEXIS_SDK_API_VERSION=${CUEXIS_SDK_API_VERSION}"
+        "-DCUEXIS_LIBRARY_TYPE=${CUEXIS_LIBRARY_TYPE}"
+        "-DCUEXIS_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+        "-DCUEXIS_SYSTEM_NAME=${CMAKE_SYSTEM_NAME}"
+        "-DCUEXIS_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}"
+        "-DCUEXIS_CXX_COMPILER_ID=${CMAKE_CXX_COMPILER_ID}"
+        "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+        "-DCUEXIS_VCPKG_SHARE_DIR=${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/share"
+        -P "${PROJECT_SOURCE_DIR}/cmake/PackagePlayer.cmake"
+    DEPENDS cuexis_player player_stage1c_assets
+    COMMENT "Assembling the runnable Cuexis Player distribution"
+    VERBATIM
+)

@@ -382,6 +382,48 @@ if(CUEXIS_BUILD_TESTS)
                 TIMEOUT 900
             )
         endforeach()
+        add_test(
+            NAME cuexis_reference_host_staging
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                "-DCUEXIS_BINARY_DIR=${PROJECT_BINARY_DIR}"
+                "-DCUEXIS_GENERATOR=${CMAKE_GENERATOR}"
+                "-DCUEXIS_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+                "-DCUEXIS_LIBRARY_TYPE=${CUEXIS_LIBRARY_TYPE}"
+                "-DCUEXIS_SDK_API_VERSION=${CUEXIS_SDK_API_VERSION}"
+                "-DCUEXIS_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+                "-DCUEXIS_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
+                "-DCUEXIS_RC_COMPILER=${CMAKE_RC_COMPILER}"
+                "-DCUEXIS_MT=${CMAKE_MT}"
+                "-DCUEXIS_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}"
+                "-DCUEXIS_VCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}"
+                "-DCUEXIS_VCPKG_MANIFEST_MODE=${VCPKG_MANIFEST_MODE}"
+                "-DCUEXIS_VCPKG_INSTALLED_DIR=${VCPKG_INSTALLED_DIR}"
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyReferenceHost.cmake"
+        )
+        set_tests_properties(cuexis_reference_host_staging PROPERTIES
+            LABELS "external;package;s6-c4;reference-host"
+            RESOURCE_LOCK cuexis_external_consumer
+            TIMEOUT 900
+        )
+        if(CUEXIS_BUILD_PLAYER)
+            add_test(
+                NAME cuexis_player_distribution
+                COMMAND "${CMAKE_COMMAND}"
+                    "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                    "-DCUEXIS_BINARY_DIR=${PROJECT_BINARY_DIR}"
+                    "-DCUEXIS_GENERATOR=${CMAKE_GENERATOR}"
+                    "-DCUEXIS_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+                    "-DCUEXIS_LIBRARY_TYPE=${CUEXIS_LIBRARY_TYPE}"
+                    "-DCUEXIS_VERSION_DISPLAY=${CUEXIS_VERSION_DISPLAY}"
+                    -P "${PROJECT_SOURCE_DIR}/cmake/VerifyPlayerDistribution.cmake"
+            )
+            set_tests_properties(cuexis_player_distribution PROPERTIES
+                LABELS "external;package;s6-c4;player-distribution"
+                RESOURCE_LOCK cuexis_external_consumer
+                TIMEOUT 900
+            )
+        endif()
         if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
             if(MSVC)
                 find_program(CUEXIS_SYMBOL_TOOL NAMES dumpbin REQUIRED)
@@ -476,6 +518,12 @@ if(CUEXIS_BUILD_DEVELOPER_TOOLS)
     endif()
 
     list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_format_check)
+endif()
+
+if(CUEXIS_BUILD_PLAYER)
+    # Custom target: it has no compilable sources, so it is registered after the
+    # warning-flag loop.
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_player_dist)
 endif()
 
 string(REPLACE ";" "\n" CUEXIS_ACTIVE_TARGETS_TEXT "${CUEXIS_ACTIVE_TARGETS}")
