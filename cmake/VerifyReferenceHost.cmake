@@ -143,6 +143,10 @@ file(COPY "${CUEXIS_SOURCE_DIR}/tests/fixtures/chart_format_update/golden/cfu_f_
     DESTINATION "${content_dir}")
 
 set(host_build "${work_dir}/host-build")
+# Arguments the host project needs to resolve its own dependency set. The
+# foreign-toolchain case below reuses them so that it fails for exactly one
+# documented reason.
+set(vcpkg_arguments "")
 set(configure_arguments
     -S "${host_project}"
     -B "${host_build}"
@@ -168,9 +172,15 @@ if(DEFINED CUEXIS_TOOLCHAIN_FILE AND NOT "${CUEXIS_TOOLCHAIN_FILE}" STREQUAL "")
     list(APPEND configure_arguments "-DVCPKG_MANIFEST_DIR=${CUEXIS_SOURCE_DIR}")
     list(APPEND configure_arguments "-DVCPKG_MANIFEST_NO_DEFAULT_FEATURES=ON")
     list(APPEND configure_arguments "-DVCPKG_INSTALLED_DIR=${work_dir}/vcpkg-installed")
+    list(APPEND vcpkg_arguments
+        "-DCMAKE_TOOLCHAIN_FILE=${CUEXIS_TOOLCHAIN_FILE}"
+        "-DVCPKG_MANIFEST_DIR=${CUEXIS_SOURCE_DIR}"
+        "-DVCPKG_MANIFEST_NO_DEFAULT_FEATURES=ON"
+        "-DVCPKG_INSTALLED_DIR=${work_dir}/vcpkg-installed")
 endif()
 if(DEFINED CUEXIS_VCPKG_TARGET_TRIPLET AND NOT "${CUEXIS_VCPKG_TARGET_TRIPLET}" STREQUAL "")
     list(APPEND configure_arguments "-DVCPKG_TARGET_TRIPLET=${CUEXIS_VCPKG_TARGET_TRIPLET}")
+    list(APPEND vcpkg_arguments "-DVCPKG_TARGET_TRIPLET=${CUEXIS_VCPKG_TARGET_TRIPLET}")
 endif()
 
 cuexis_host_run_checked("Reference host configure" "${CMAKE_COMMAND}" ${configure_arguments})
@@ -222,6 +232,8 @@ endif()
 
 # The run must not depend on the development machine PATH: only the directory
 # that holds the host runtime libraries plus the system directories remain.
+set(saved_path "$ENV{PATH}")
+set(saved_library_path "$ENV{LD_LIBRARY_PATH}")
 set(ENV{PATH} "${clean_path}")
 if(WIN32)
     set(ENV{LD_LIBRARY_PATH} "")
@@ -278,6 +290,11 @@ if(NOT host_report MATCHES "${golden_package_pattern}")
     message(FATAL_ERROR "The published package did not reproduce the host content")
 endif()
 
+# The sanitized PATH exists only for the host run above; the later configure
+# steps need the real toolchain environment back.
+set(ENV{PATH} "${saved_path}")
+set(ENV{LD_LIBRARY_PATH} "${saved_library_path}")
+
 # No installed file may mention the source tree or the build tree.
 file(GLOB_RECURSE installed_headers "${prefix}/include/cuexis/*.hpp")
 foreach(header IN LISTS installed_headers)
@@ -321,7 +338,8 @@ if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
         "-DCuexis_DIR=${doctored_prefix}/lib/cmake/Cuexis"
         "-DCMAKE_PREFIX_PATH=${doctored_prefix}"
         "-DCUEXIS_HOST_API_VERSION=0.7.0"
-        "-DCUEXIS_HOST_CONTENT_DIR=${content_dir}/cfu_f_reference_project")
+        "-DCUEXIS_HOST_CONTENT_DIR=${content_dir}/cfu_f_reference_project"
+        ${vcpkg_arguments})
     message(STATUS "Reference host refused a foreign-toolchain package")
 else()
     message(STATUS
