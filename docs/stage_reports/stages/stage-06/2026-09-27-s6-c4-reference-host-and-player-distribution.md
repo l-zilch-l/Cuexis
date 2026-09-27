@@ -140,17 +140,51 @@ candidate 能力。
 
 ## 5. 本地证据
 
+### 5.1 完整矩阵
+
 | 检查 | 结果 |
 | --- | --- |
 | `cmake --preset debug` + `ctest --preset debug` | `100% tests passed, 0 tests failed out of 734`；1 个既有 symlink 用例 skip；`s6-c4` 标签 2 个用例通过（`cuexis_reference_host_staging` 23.31 s、`cuexis_player_distribution` 19.24 s） |
 | `cmake --preset debug-media-tools` + `ctest` | `100% tests passed, 0 tests failed out of 776`；同一 skip；两个新门禁同样注册并通过 |
-| `ctest --preset mingw-debug -R cuexis_player_distribution` | 通过（55.51 s）；产物含 `libgcc_s_seh-1.dll`、`libstdc++-6.dll`、`libwinpthread-1.dll`，证明 MinGW 运行时被正确解析与部署，且该 triplet 的第三方库为静态 |
+| `ctest --preset mingw-debug -R "cuexis_reference_host_staging\|cuexis_player_distribution"` | 两个门禁通过（21.87 s / 55.51 s）；证明宿主在 MinGW 工具链下也只需要安装后的公共包 |
+| `ctest --preset shared-debug -R "cuexis_reference_host_staging\|cuexis_player_distribution"` | 两个门禁通过（31.54 s / 3.03 s）；shared flavor 会执行 toolchain 拒绝用例 |
+| `ctest --preset release -R ...` | 两个门禁通过 |
+| `ctest --preset shared-release -R ...` | 两个门禁通过（30.72 s / 3.72 s） |
 | MSVC `/W4` 编译宿主源码（对着 staging 安装头） | 四个源文件无警告 |
 | `clang-format --dry-run --Werror` | 宿主全部源文件通过 |
-| `python -B tools/check_docs.py` | 通过（含新 target 的 BUILDING 目标清单一致性） |
+| `python -B tools/check_docs.py` | 通过（256 个 Markdown 文件，含新 target 的 BUILDING 目标清单一致性） |
 
-MSVC static 分发的运行时库为 `fmtd.dll`、`nlohmann_json_schema_validator.dll`、`SDL3.dll`、
-`spdlogd.dll`（4 个，记录在 `VERSION.txt`）；Debug UCRT 属系统库，未被打包。
+### 5.2 分发目录与随包 smoke
+
+四个 flavor 各生成一个独立目录，并从复制到别处、`PATH` 只含分发目录与系统目录的环境下运行
+`--smoke-test`：
+
+| flavor | 目录 | 运行时库 | `--smoke-test` |
+| --- | --- | --- | --- |
+| static Debug (MSVC) | `cuexis-player-26.09.27-1-dev-windows-static-debug` | 4（`fmtd`、`nlohmann_json_schema_validator`、`SDL3`、`spdlogd`） | exit 0，6 帧 |
+| static Release (MSVC) | `cuexis-player-26.09.27-1-windows-static-release` | 4（release 变体） | exit 0，6 帧 |
+| shared Debug (MSVC) | `cuexis-player-26.09.27-1-dev-windows-shared-debug` | 9（`cuexis_core/playback/content/audio/audio_sdl-0.7d.dll` + 4 个第三方） | exit 0，6 帧 |
+| shared Release (MSVC) | `cuexis-player-26.09.27-1-windows-shared-release` | 9（`-0.7.dll` 变体） | exit 0，6 帧 |
+| static Debug (MinGW) | `cuexis-player-26.09.27-1-dev-windows-static-debug`（mingw 构建树） | 3（`libgcc_s_seh-1`、`libstdc++-6`、`libwinpthread-1`） | exit 0，6 帧 |
+
+每次 smoke 记录的 `Prepared objects: 2, behaviors: 1, resources: 4`、`Successful reload activated a
+complete OpenGL presentation cache` 与 `Completed frames: 6` 均一致；Debug UCRT 与 Windows 系统 DLL
+属系统库，未被打包。MinGW 分发的第三方依赖是静态链接的，因此只需要工具链运行时。
+
+### 5.3 首轮推翻与修复
+
+门禁在 static/MSVC 上通过后在另两个环境失败，暴露的都是**门禁自身**的缺陷（不是 SDK 缺陷）：
+
+1. **shared flavor：`PATH` 未恢复。** 清理过的 `PATH` 在宿主运行之后没有恢复，后续 configure 找不到
+   资源编译器，编译器检查（`RC Pass 1 ... failed`）在到达包之前就失败。
+2. **shared flavor：负例缺少依赖解析参数。** 外来 toolchain 的负例 configure 没有带上正例使用的
+   vcpkg 参数，于是先因为找不到 `tl-expected` 而失败，而不是因为工具链不一致。
+3. **MinGW flavor：清理环境缺少编译器运行时。** `0xc0000135` 表示加载器找不到 DLL：宿主需要
+   `libgcc_s_seh-1.dll`、`libstdc++-6.dll`、`libwinpthread-1.dll`。门禁现在与 Player 打包一样，把
+   编译器目录中的这三个运行时复制到可执行文件旁；它不是 Cuexis 包文件，也不属于包许可证清单。
+
+修复后负例复用同一套依赖解析参数，并只以 `requires compiler AnotherCompiler` 这一条已记录原因失败。
+static Debug/Release、shared Debug/Release 与 MinGW static Debug 五个组合的两个门禁全部通过。
 
 ## 6. 升级示例
 
@@ -164,13 +198,14 @@ MSVC static 分发的运行时库为 `fmtd.dll`、`nlohmann_json_schema_validato
 
 ## 7. 残余
 
-- 本地没有 shared Player 分发目录证据：本机现有构建树都是 static。Linux hosted 的
-  `Clang Shared Debug` 不构建 Player（headless preset），因此 shared 分发只有代码路径与
-  `VERSION.txt` flavor 判据，没有本地或 hosted 产物证据。
-- 参考宿主的 hosted 复验尚未发生；Linux hosted 会以 shared 包运行该门禁，从而覆盖 3.4 的
-  toolchain 拒绝用例。
-- `cuexis_player_distribution` 只会在构建 Player 的 preset 上注册；Windows MSVC 与 MinGW 会覆盖它，
-  Linux headless preset 不会。
+- hosted 复验尚未发生。计划要求同 SHA 四平台证据；本机已完成 static/shared × Debug/Release 与
+  MSVC/MinGW 的本地矩阵，但 hosted 是独立证据。
+- Linux hosted preset 是 headless（不构建 Player），因此 hosted 只会注册
+  `cuexis_reference_host_staging`（shared 包，会执行 toolchain 拒绝用例），不会注册
+  `cuexis_player_distribution`；Player 分发的 hosted 覆盖只有 Windows MSVC 与 Windows MinGW。
+- 宿主二进制的符号级检查（导入表/依赖清单白名单）还不是门禁：当前证明来自“只链接
+  `Cuexis::Playback`、只包含公共头、在清理 PATH 下运行成功”。把导入表纳入门禁属于 F1。
 - 真正的磁盘满、只读介质与配额失败仍未取证（E3 残余，属于 F1）。
-- GPU、窗口与真实音频设备下的宿主/Player 行为不在本批次内。
+- GPU、窗口与真实音频设备下的宿主/Player 行为不在本批次内；本节记录的 `--smoke-test` 是本机
+  一次真实 GPU 运行，不是 CI 证据。
 - 本报告不是批次退出、不是 Stage 6 关闭，也不构成 owner acceptance；SDK API 仍为 `0.7.0`。

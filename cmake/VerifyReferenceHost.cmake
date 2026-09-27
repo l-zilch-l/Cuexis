@@ -214,6 +214,18 @@ if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
     endforeach()
 endif()
 
+# A compiler runtime is not a Cuexis package file, but the host executable needs
+# it in the sanitized environment: a MinGW build requires libgcc, libstdc++ and
+# libwinpthread next to the executable, exactly as the Player distribution does.
+get_filename_component(compiler_dir "${CUEXIS_CXX_COMPILER}" DIRECTORY)
+file(GLOB toolchain_runtime_libraries
+    "${compiler_dir}/libgcc_s_*.dll"
+    "${compiler_dir}/libstdc++-6.dll"
+    "${compiler_dir}/libwinpthread-1.dll")
+foreach(library IN LISTS toolchain_runtime_libraries)
+    file(COPY "${library}" DESTINATION "${host_build}")
+endforeach()
+
 set(report_path "${work_dir}/host-report.txt")
 set(golden_identity "6d01494c126f3ae8fc9420259dc92873233022dec9dd6bf9caf04b217f100cc5")
 set(golden_digest "1=11596562486377158370")
