@@ -112,8 +112,9 @@ float 字面量（MSVC 即如此），而 GCC/Clang/MinGW 使用全精度 double
 Ogg 的 canonical identity 断言在四个平台对着同一份 golden 通过；Version Gate 的日期滚动在同批收尾
 中先用 `tools/update_version.py 26.09.24-1` 处置；E3 收尾时可信 UTC 日期已进入 `2026-09-26`，同一检查器再次报 `version.release_date.stale`，因此用 `tools/update_version.py 26.09.26-1` 再滚动一次（仅日期构建身份，SDK API 仍为 `0.7.0`）。该实现不是
 批次退出、不是 Stage 6 关闭，也不构成 owner acceptance。
-E3 已在同一 `CUEXIS_BUILD_MEDIA_TOOLS` 开关下落地，并取得本地与同 SHA hosted 四平台证据，但尚未
-形成批次退出结论：`tools/asset_publish`（`cuexis_asset_publish`）把「先在 staging 生成并验证，再以一次
+E3 已在同一 `CUEXIS_BUILD_MEDIA_TOOLS` 开关下落地，取得本地与同 SHA hosted 四平台证据，并已形成
+本地批次退出结论（不是 Stage 6 关闭或 owner acceptance）：`tools/asset_publish`
+（`cuexis_asset_publish`）把「先在 staging 生成并验证，再以一次
 `rename` 切换可见产物」实现为发布事务，使用不可变、内容寻址的 `generations/<identity>` 目录、
 独占创建加 `fsync`、marker 重新读取并逐条重算摘要、操作系统级进程间发布锁（崩溃即释放，锁文件
 存在与否不代表持锁）以及显式失败清理与重启恢复；`publishPackagePair` 从同一批条目构建 v4 与
@@ -127,8 +128,8 @@ candidate 两个闭包，先全部构建并自校验，再替换，candidate 失
 重启恢复与双闭包替换回滚。hosted 矩阵在实现 SHA `0753e6a` 上通过：Linux Quality GCC media-tools
 677/677、Clang ASan+UBSan media-tools 677/677、Windows MSVC 与 Windows MinGW 各 732/732（默认）与
 772/772（media-tools），Version Gate 通过；该批次第一次推送时 MinGW 因 `_dupenv_s` 不是 MinGW CRT
-符号而链接失败，改为按 `_MSC_VER` 选择后修复。证据见
-[S6-E3 报告](stage_reports/stages/stage-06/2026-09-25-s6-e3-publication-transaction.md)。
+符号而链接失败，改为按 `_MSC_VER` 选择后修复。按 `S6-G12` 的逐项验收、测试注册与残余见
+[S6-E3 退出报告](stage_reports/stages/stage-06/2026-09-26-s6-e3-exit.md)。
 C4 及后续批次仍未完成。
 
 ## 已关闭的 Full Review

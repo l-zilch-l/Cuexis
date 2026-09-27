@@ -44,6 +44,9 @@
 - [2026-09-25 S6-E3 资源身份、缓存与包原子发布](2026-09-25-s6-e3-publication-transaction.md)
   （provenance 四类身份、身份复验媒体缓存、不可变 generation 目录与进程间发布锁、
   v4+candidate 双闭包替换与回滚；`0753e6a` 四平台 hosted 矩阵通过）
+- [2026-09-26 S6-E3 退出](2026-09-26-s6-e3-exit.md)
+  （按 `S6-G12` 逐项映射验收证据、测试注册、本地与四平台 hosted 复验及残余；本地批次退出，
+  不是 Stage 6 关闭或 owner acceptance）
 
 权威范围见 [Stage 6 计划](../../../stage_plans/active/stage-06/plan.md)、
 [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md) 和
