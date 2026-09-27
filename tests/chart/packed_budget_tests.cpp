@@ -583,8 +583,8 @@ TEST_CASE("SPEC-02 wire-range representability has its own code, not a budget co
     // causes apart. The guard is intentionally source-level, because the branch is defensive -
     // every budget sits far below the uint32 ceiling, so no public input can reach it and a
     // behavioural test cannot construct the state that would exercise it.
-    const auto source = fs::path{CUEXIS_SOURCE_DIR} / "engine" / "chart" / "src" /
-                        "packed_chart_tables.cpp";
+    const auto source =
+        fs::path{CUEXIS_SOURCE_DIR} / "engine" / "chart" / "src" / "packed_chart_tables.cpp";
     REQUIRE(fs::exists(source));
     std::ifstream stream{source, std::ios::binary};
     REQUIRE(stream);

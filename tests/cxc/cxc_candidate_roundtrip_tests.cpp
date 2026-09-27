@@ -234,26 +234,25 @@ TEST_CASE("R2 the candidate file budget is inclusive at the limit and exclusive 
     const auto acceptedEntry = std::vector<std::byte>(budget, std::byte{0});
     const auto acceptedIdentity = cuexis::cxc::detail::sha256Hex(acceptedEntry);
     const auto acceptedFixture = PackedFixture{acceptedEntry, std::string(64, '0'), 1U, 1U};
-    const auto acceptedDiagnostics = cuexis::tools::validateCandidateChartExtension(loadPackage(
-        cuexis::cxc::test::writePackage(candidateRequest(
-            acceptedFixture, packedEntryPath, true, "chart", "packed-chart", true,
-            acceptedIdentity, acceptedFixture.semanticIdentity, acceptedFixture.entityCount,
-            acceptedFixture.requirementCount))));
+    const auto acceptedDiagnostics =
+        cuexis::tools::validateCandidateChartExtension(loadPackage(cuexis::cxc::test::writePackage(
+            candidateRequest(acceptedFixture, packedEntryPath, true, "chart", "packed-chart", true,
+                             acceptedIdentity, acceptedFixture.semanticIdentity,
+                             acceptedFixture.entityCount, acceptedFixture.requirementCount))));
     // At the limit the budget gate must not fire; the placeholder payload is then rejected for
     // its own (structural) reason, so the assertion is on the budget code being absent.
-    CHECK_FALSE(cuexis::cxc::test::hasDiagnostic(acceptedDiagnostics,
-                                                 "cxc.candidate.budget_exceeded"));
+    CHECK_FALSE(
+        cuexis::cxc::test::hasDiagnostic(acceptedDiagnostics, "cxc.candidate.budget_exceeded"));
 
     const auto refusedEntry = std::vector<std::byte>(budget + 1U, std::byte{0});
     const auto refusedIdentity = cuexis::cxc::detail::sha256Hex(refusedEntry);
     const auto refusedFixture = PackedFixture{refusedEntry, std::string(64, '0'), 1U, 1U};
-    const auto refusedDiagnostics = cuexis::tools::validateCandidateChartExtension(loadPackage(
-        cuexis::cxc::test::writePackage(candidateRequest(
-            refusedFixture, packedEntryPath, true, "chart", "packed-chart", true,
-            refusedIdentity, refusedFixture.semanticIdentity, refusedFixture.entityCount,
-            refusedFixture.requirementCount))));
-    CHECK(cuexis::cxc::test::hasDiagnostic(refusedDiagnostics,
-                                          "cxc.candidate.budget_exceeded"));
+    const auto refusedDiagnostics =
+        cuexis::tools::validateCandidateChartExtension(loadPackage(cuexis::cxc::test::writePackage(
+            candidateRequest(refusedFixture, packedEntryPath, true, "chart", "packed-chart", true,
+                             refusedIdentity, refusedFixture.semanticIdentity,
+                             refusedFixture.entityCount, refusedFixture.requirementCount))));
+    CHECK(cuexis::cxc::test::hasDiagnostic(refusedDiagnostics, "cxc.candidate.budget_exceeded"));
 }
 
 TEST_CASE("R4 a source-only entry cannot serve as the playback entry", "[cxc][hardening][r4]") {

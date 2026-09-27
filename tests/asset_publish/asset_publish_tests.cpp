@@ -91,6 +91,18 @@ void writeBytes(const fs::path& path, std::string_view text) {
     REQUIRE(stream.good());
 }
 
+// The same thing for an already-read package: a fixture that must hold exact bytes rather than
+// text.
+void writeBytes(const fs::path& path, const std::vector<std::byte>& bytes) {
+    std::error_code status;
+    fs::create_directories(path.parent_path(), status);
+    std::ofstream stream{path, std::ios::binary | std::ios::trunc};
+    REQUIRE(stream.good());
+    stream.write(reinterpret_cast<const char*>(bytes.data()),
+                 static_cast<std::streamsize>(bytes.size()));
+    REQUIRE(stream.good());
+}
+
 // Scoped environment variable, so an injection hook cannot leak into another case.
 class ScopedEnv final {
   public:
@@ -778,4 +790,167 @@ TEST_CASE("E3 a failed candidate replacement restores the previous valid v4 pack
         const auto name = entry.path().filename().string();
         CHECK(name.find(".tmp.") == std::string::npos);
     }
+}
+
+// --- R5 publication transaction -----------------------------------------------------------------
+
+TEST_CASE("R5 a replacement failure never leaves the target missing",
+          "[s6-e3][asset-publish][r5]") {
+    const auto root = scratchRoot("r5-no-missing-window");
+    const auto target = root / "static.cxc";
+
+    PackagePublishRequest baseline;
+    baseline.target = target;
+    baseline.entries = staticProjectEntries();
+    const auto previous = cuexis::tools::publishPackage(baseline);
+    requireOk(previous);
+    const auto previousBytes = readBytes(target);
+
+    // The failure is injected after validation and before the replacement, with the temporary file
+    // absent so the replacement cannot succeed. The previous package must still be the package on
+    // disk: a two-rename implementation that moved the target aside first would have deleted it by
+    // this point and left nothing behind.
+    const auto fixture = candidateFixture();
+    PackagePublishRequest request;
+    request.target = target;
+    request.entries = staticProjectEntries();
+    request.entries.push_back(
+        cuexis::cxc::CxcWriteEntry{std::string{candidateEntryPath}, fixture.bytes});
+    request.extensionsJson = fixture.extensionJson;
+    {
+        const ScopedEnv fail{"CUEXIS_ASSET_PUBLISH_FAIL_TEMPORARY_TARGET",
+                             target.filename().string()};
+        const auto failed = cuexis::tools::publishPackage(request);
+        REQUIRE_FALSE(failed.has_value());
+        CHECK(errorCode(failed.error()) == "asset.publish.replace_failed");
+    }
+    CHECK(fs::exists(target));
+    CHECK(readBytes(target) == previousBytes);
+    CHECK(loadPackage(target).identity().hex() == previous->packageIdentity);
+}
+
+TEST_CASE("R5 recovery restores a backup instead of deleting it", "[s6-e3][asset-publish][r5]") {
+    const auto root = scratchRoot("r5-backup-recovery");
+
+    // A backup left behind by an interrupted two-rename publication is the only surviving copy of
+    // the last valid package. Recovery must put it back, not delete it. The name has the shape
+    // `uniqueSibling` produced in the discontinued format: `<stem>.cuexis-backup.tmp.<token><ext>`.
+    const auto target = root / "static.cxc";
+    PackagePublishRequest baseline;
+    baseline.target = target;
+    baseline.entries = staticProjectEntries();
+    const auto previous = cuexis::tools::publishPackage(baseline);
+    requireOk(previous);
+    const auto packageBytes = readBytes(target);
+
+    const auto backup = root / "static.cuexis-backup.tmp.424242.cxc";
+    writeBytes(backup, packageBytes);
+    std::error_code status;
+    fs::remove(target, status);
+    REQUIRE_FALSE(fs::exists(target));
+
+    const auto removed = cuexis::tools::recoverPublicationStaging(root);
+    requireOk(removed);
+    CHECK(fs::exists(target));
+    CHECK(readBytes(target) == packageBytes);
+    CHECK_FALSE(fs::exists(backup));
+}
+
+TEST_CASE("R5 a write failure leaves the previous package and no temporary file",
+          "[s6-e3][asset-publish][r5]") {
+    const auto root = scratchRoot("r5-write-failure");
+    const auto target = root / "static.cxc";
+
+    PackagePublishRequest baseline;
+    baseline.target = target;
+    baseline.entries = staticProjectEntries();
+    const auto previous = cuexis::tools::publishPackage(baseline);
+    requireOk(previous);
+    const auto previousBytes = readBytes(target);
+
+    const auto fixture = candidateFixture();
+    PackagePublishRequest request;
+    request.target = target;
+    request.entries = staticProjectEntries();
+    request.entries.push_back(
+        cuexis::cxc::CxcWriteEntry{std::string{candidateEntryPath}, fixture.bytes});
+    request.extensionsJson = fixture.extensionJson;
+    {
+        const ScopedEnv fail{"CUEXIS_ASSET_PUBLISH_FAIL_WRITE_TARGET", target.filename().string()};
+        const auto failed = cuexis::tools::publishPackage(request);
+        REQUIRE_FALSE(failed.has_value());
+        CHECK(errorCode(failed.error()) == "asset.publish.io_failed");
+    }
+    CHECK(readBytes(target) == previousBytes);
+    CHECK(loadPackage(target).identity().hex() == previous->packageIdentity);
+    std::error_code status;
+    std::size_t leftovers = 0;
+    for (const auto& entry : fs::directory_iterator{root, status}) {
+        const auto name = entry.path().filename().string();
+        if (name.find(".tmp.") != std::string::npos) {
+            ++leftovers;
+        }
+    }
+    CHECK(leftovers == 0U);
+}
+
+TEST_CASE("R5 the pair lock covers both target parent directories", "[s6-e3][asset-publish][r5]") {
+    const auto root = scratchRoot("r5-pair-lock-scope");
+    const auto v4Directory = root / "v4";
+    const auto candidateDirectory = root / "candidate";
+    std::error_code status;
+    fs::create_directories(v4Directory, status);
+    fs::create_directories(candidateDirectory, status);
+
+    const auto fixture = candidateFixture();
+    PackagePairRequest request;
+    request.v4Target = v4Directory / "static.cxc";
+    request.candidateTarget = candidateDirectory / "static.candidate.cxc";
+    request.entries = staticProjectEntries();
+    request.candidateEntries.push_back(
+        cuexis::cxc::CxcWriteEntry{std::string{candidateEntryPath}, fixture.bytes});
+    request.candidateExtensionsJson = fixture.extensionJson;
+
+    // A writer that already holds the candidate-side lock must block the whole pair transaction:
+    // the transaction writes that directory, so a v4-only lock would let the two writers race on
+    // the candidate target. The v4-side lock alone must block it for the same reason.
+    for (const auto& held : {candidateDirectory, v4Directory}) {
+        auto blocker =
+            cuexis::tools::PublicationLock::acquire(held / cuexis::tools::publicationLockName);
+        requireOk(blocker);
+        const auto blocked = cuexis::tools::publishPackagePair(request);
+        REQUIRE_FALSE(blocked.has_value());
+        CHECK(errorCode(blocked.error()) == "asset.publish.busy");
+        CHECK_FALSE(fs::exists(request.v4Target));
+        CHECK_FALSE(fs::exists(request.candidateTarget));
+    }
+
+    // With the lock free again the same batch publishes, so the refusal above was the lock and not
+    // an input problem.
+    const auto published = cuexis::tools::publishPackagePair(request);
+    requireOk(published);
+    CHECK(fs::exists(request.v4Target));
+    CHECK(fs::exists(request.candidateTarget));
+}
+
+TEST_CASE("R5 an idempotent republish reports the real closure size",
+          "[s6-e3][asset-publish][r5]") {
+    const auto root = scratchRoot("r5-idempotent-closure-bytes");
+    GenerationPublishRequest request;
+    request.root = root;
+    request.generationId = "26.09.28-1";
+    const auto bytes = asBytes("canonical");
+    request.entries = {PublishEntry{"textures/checker.texture", bytes}};
+
+    const auto first = cuexis::tools::publishGeneration(request);
+    requireOk(first);
+    CHECK(first->closureBytes == bytes.size());
+
+    // The same batch again is a verified no-op, and it reports the same closure size: a zero here
+    // would claim an empty closure for a generation that has content.
+    const auto second = cuexis::tools::publishGeneration(request);
+    requireOk(second);
+    CHECK(second->generationIdentity == first->generationIdentity);
+    CHECK(second->closureBytes == first->closureBytes);
+    CHECK(second->closureBytes == bytes.size());
 }
