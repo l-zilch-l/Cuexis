@@ -23,6 +23,8 @@ constexpr std::uint32_t maxImageDimension = 8192;
 constexpr std::uint64_t maxImageBytes = 32ULL * 1024ULL * 1024ULL;
 constexpr std::string_view pngDecoderName = "libpng-1.6.58";
 constexpr std::string_view jpegDecoderName = "libjpeg-turbo-3.2.0";
+// IHDR interlace method 0: no interlacing. Method 1 (Adam7) is the only other defined value.
+constexpr std::uint8_t pngInterlaceNone = 0U;
 
 // ---------------------------------------------------------------------------------------------
 // EXIF / TIFF orientation
@@ -230,6 +232,16 @@ struct PngProfile final {
             profile.height = header.readU32Be();
             profile.bitDepth = header.readU8();
             profile.colorType = header.readU8();
+            header.readU8(); // compression method, always 0 in the v1 profile
+            header.readU8(); // filter method, always 0 in the v1 profile
+            // IHDR byte 12 is the interlace method. The v1 profile freezes one layout, so an
+            // interlaced image is refused here rather than de-interlaced by libpng and published
+            // under a profile that never described it.
+            if (header.readU8() != pngInterlaceNone) {
+                return core::unexpected(
+                    detail::mediaError("media.image.interlace_unsupported",
+                                       "PNG interlace is not part of the v1 image profile"));
+            }
             sawHeader = true;
         } else if (matchesAscii(type, "acTL")) {
             return core::unexpected(
@@ -350,9 +362,15 @@ struct PngProfile final {
         return core::unexpected(detail::mediaError("media.image.gamma_unsupported",
                                                    "PNG gAMA contradicts its sRGB chunk"));
     }
-    if (sawGammaChunk && !sawSrgbChunk && gammaValue != 45455U && gammaValue != 100000U) {
-        return core::unexpected(detail::budgetError(
-            "media.image.gamma_unsupported", "PNG gAMA is not sRGB or linear", 45455U, gammaValue));
+    // The v1 profile has exactly one supported gamma: the sRGB transfer function. A file that
+    // declares another gamma is encoding linear-light or otherwise non-sRGB samples, and this
+    // importer performs no colour conversion, so accepting it would publish the samples under a
+    // colour space they do not use. ADR 0042 forbids silently approximating colour, so any other
+    // gAMA is refused instead of being treated as sRGB.
+    if (sawGammaChunk && !sawSrgbChunk && gammaValue != 45455U) {
+        return core::unexpected(detail::budgetError("media.image.gamma_unsupported",
+                                                    "PNG gAMA is not the sRGB transfer function",
+                                                    45455U, gammaValue));
     }
     if (exifOrientation.has_value()) {
         profile.orientation = *exifOrientation;
@@ -489,8 +507,12 @@ enum class PngDecodeStatus : std::uint8_t {
     if (!hasAlpha) {
         png_set_add_alpha(png, 0xFF, PNG_FILLER_AFTER);
     }
+    // The profile refused an interlaced IHDR before this point, so libpng must be looking at a
+    // non-interlaced image. Keep the check as a decode-time guard rather than silently
+    // de-interlacing an image the profile never admitted.
     if (png_get_interlace_type(png, info) != PNG_INTERLACE_NONE) {
-        png_set_interlace_handling(png);
+        png_destroy_read_struct(&png, &info, nullptr);
+        return PngDecodeStatus::layoutUnsupported;
     }
     png_read_update_info(png, info);
     if (png_get_channels(png, info) != 4 || png_get_bit_depth(png, info) != 8) {

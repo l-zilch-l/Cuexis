@@ -585,18 +585,20 @@ void flacError(const FLAC__StreamDecoder*, FLAC__StreamDecoderErrorStatus status
             detail::mediaError("media.audio.container_invalid",
                                "FLAC stream stopped before its end of stream marker"));
     }
+    if (client.declaredSamples != 0 && client.accumulator->frames() != client.declaredSamples) {
+        // STREAMINFO declares the exact sample total of the stream. A decoded count that differs
+        // means the declared length lies, whether or not the frame CRC and stream MD5 happened to
+        // pass: a forged total is not repaired by a checksum that covers the audio rather than the
+        // metadata. This is checked unconditionally, not only on the failure path below.
+        return core::unexpected(detail::mediaError(
+            "media.audio.truncated",
+            "FLAC stream length differs from the sample count its STREAMINFO declares"));
+    }
     if (!processed || !verified || client.failed) {
         if (!client.accumulator.has_value()) {
             // No STREAMINFO was ever delivered, so the metadata itself is unusable.
             return core::unexpected(detail::mediaError("media.audio.container_invalid",
                                                        "FLAC metadata could not be read"));
-        }
-        // The stream MD5 covers every sample. A decoded sample count below the STREAMINFO total
-        // means the source was cut or its declared length lies; either way nothing is published.
-        if (client.declaredSamples != 0 && client.accumulator->frames() < client.declaredSamples) {
-            return core::unexpected(detail::mediaError(
-                "media.audio.truncated",
-                "FLAC stream ended before the sample count its STREAMINFO declares"));
         }
         return core::unexpected(detail::mediaError("media.audio.decode_failed",
                                                    "libFLAC rejected the stream or its checksum"));
