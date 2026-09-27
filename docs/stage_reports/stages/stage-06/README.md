@@ -54,6 +54,10 @@
 - [2026-09-27 S6-C4 退出](2026-09-27-s6-c4-exit.md)
   （按 `S6-G13` 逐项映射验收证据、测试注册、本地矩阵与四平台 hosted 复验、六条门禁与打包缺陷、
   残余与 F1 消费边界；本地批次退出，不是 Stage 6 关闭或 owner acceptance）
+- [2026-09-27 S6-E1/E2 退出](2026-09-27-s6-e1-e2-exit.md)
+  （按 `S6-G10`/`S6-G11` 逐项映射验收证据、测试注册（18 个 TEST_CASE、CLI 门禁、18 个 golden）、
+  本地矩阵与同 SHA 四平台 hosted 复验、六条缺陷、残余与 F1 消费边界；本地批次退出，不是
+  Stage 6 关闭或 owner acceptance）
 
 权威范围见 [Stage 6 计划](../../../stage_plans/active/stage-06/plan.md)、
 [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md) 和

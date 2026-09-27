@@ -96,7 +96,7 @@ S6-A1 基线、入口和证据矩阵
 | D2 | D1 | OpenGL adapter 迁移、统一帧与诊断路径 | completed（退出当时的记录见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-23-s6-d2-exit.md)；成员顺序修正后的 MinGW 在 `9bb94b4` 已通过。本机最小化/恢复见 [补充记录](../../../stage_reports/stages/stage-06/2026-09-23-s6-d2-minimize-restore.md)，最小化时 drawable 仍为 1280x720） |
 | C2 | A2 | 配置解析、快照、设备 profile 与受控应用 | completed（本地验收与 `e01a4b1` hosted 见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-23-s6-c2-exit.md)；新增测试的 hosted 复验尚未发生） |
 | C3 | C1、C2、D2 | Player 用户入口、状态机、跨子系统事务 | completed（本地验收见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-24-s6-c3-exit.md)；该退出不是 Stage 6 关闭或 owner acceptance） |
-| E1 / E2 | A2 | 图片 / 音频离线导入及各自 golden | in_progress（实现、canonical golden 与同 SHA 四平台字节一致已记录在 [实现报告](../../../stage_reports/stages/stage-06/2026-09-25-s6-e1-e2-media-importer.md)；该报告明确不是批次退出，退出结论尚未形成） |
+| E1 / E2 | A2 | 图片 / 音频离线导入及各自 golden | completed（`S6-G10`/`S6-G11` 逐项验收、测试注册、本地矩阵与同 SHA 四平台 hosted 复验见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-27-s6-e1-e2-exit.md)；过程、根因与 golden 重新冻结见 [实现报告](../../../stage_reports/stages/stage-06/2026-09-25-s6-e1-e2-media-importer.md)。本地批次退出，不是 Stage 6 关闭或 owner acceptance） |
 | E3 | E1、E2、C1 | 资源身份、缓存、索引与 CXC 原子发布 | completed（`S6-G12` 逐项验收与同 SHA 四平台 hosted 矩阵见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-26-s6-e3-exit.md)；本地批次退出，不是 Stage 6 关闭或 owner acceptance） |
 | C4 | C3、E3 | 具名真实宿主、安装包、升级与部署证明 | completed（`S6-G13` 逐项验收、本地 flavor 矩阵与同 SHA 四平台 hosted 见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-27-s6-c4-exit.md)；实现与缺陷过程见 [C4 报告](../../../stage_reports/stages/stage-06/2026-09-27-s6-c4-reference-host-and-player-distribution.md)。本地批次退出，不是 Stage 6 关闭或 owner acceptance） |
 | F1 | B1、C4 及其前置全部退出 | 最终 SHA 全量、hosted、GPU 与许可证证据 | planned |

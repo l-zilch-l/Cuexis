@@ -29,7 +29,7 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Stage 5 | completed; S5-A through S5-H closed and merged into `master` 2026-08-28 | [plan](stage_plans/completed/stage-05/plan.md)、[completion](stage_reports/stages/stage-05/completion.md) |
 | Chart Format Foundation | completed；保留 PR #24 与 2026-09-16 owner 完成确认；后续交接缺口由独立加固阶段处理，不代表技术门禁全部通过 | [plan](stage_plans/completed/chart-format-foundation/plan.md)、[关闭记录](stage_reports/stages/chart-format-foundation/2026-09-16-closure-and-handoff.md) |
 | Chart Format Foundation Hardening | completed；R0-R5 全部完成（D1-D10 已裁定，A19/A20/A21/A22 已修复），本地六配置全量回归、最终 SHA 容量复跑与同 SHA hosted 三平台验证（`e0ca9ff`，docs-only 复验 `c24f34e`）全绿，owner 于 2026-09-17 接受 R5 交接清单 | [plan](stage_plans/completed/chart-format-foundation-hardening/plan.md)、[R5 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)、[R5 容量数据 Debug](stage_reports/stages/chart-format-foundation/2026-09-17-r5-capacity-data.json)、[Release](stage_reports/stages/chart-format-foundation/2026-09-17-r5-capacity-data-release.json)、[R4 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r4-roundtrip-capacity-rollback.md)、[R4 容量数据](stage_reports/stages/chart-format-foundation/2026-09-17-r4-capacity-data.json)、[R3 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r3-budgets-and-arithmetic.md)、[R2 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r2-profile-rejection.md)、[R1 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r1-semantic-identity.md)、[R0 报告](stage_reports/stages/chart-format-foundation/2026-09-16-r0-baseline-and-reproduction.md) |
-| Stage 6 | active；当前实施阶段，2026-09-17 启动（首批 S6-A：合同、基线和依赖决策）。交接加固已关闭并经 owner 接受，本阶段实施 v5-first candidate path，保留 v4 回退；消费边界见 [R5 报告 §10](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)。A1、A2、B1、C1、C2、C3、D1、D2、E3 与 C4 已退出；E1/E2 已完成实现与四平台验证但尚未退出；F1/F2 未开始 | [plan](stage_plans/active/stage-06/plan.md) |
+| Stage 6 | active；当前实施阶段，2026-09-17 启动（首批 S6-A：合同、基线和依赖决策）。交接加固已关闭并经 owner 接受，本阶段实施 v5-first candidate path，保留 v4 回退；消费边界见 [R5 报告 §10](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)。A1、A2、B1、C1、C2、C3、D1、D2、E1/E2、E3 与 C4 已退出；F1/F2 未开始 | [plan](stage_plans/active/stage-06/plan.md) |
 | Stage 7A | future；最小 Input / Judgement / Score / Replay Kernel，作为 Stage 8 硬前置 | [plan](stage_plans/future/stage-07/plan.md) |
 | Stage 7B+ | future；Slide、Flick、多指、校准和高级 Judgement 能力持续演进 | [plan](stage_plans/future/stage-07/plan.md) |
 | Stage 8 | future；Chart v5 / CXT v2 / Packed Chart 正式发行与语义收敛 | [plan](stage_plans/future/stage-08/plan.md) |
@@ -51,7 +51,7 @@ S6-A2 已于 2026-09-21 完成合同落盘与表征，形成 entry/config/media 
 API/安装草案、依赖图及独立 identity/media/config golden；实际证据见 [S6-A2 报告](stage_reports/stages/stage-06/2026-09-21-s6-a2-contracts-and-characterization.md)。
 A2 只证明冻结决策可以被明确描述和表征，不代表 v5 Playback、Player、renderer、media importer、
 版本门禁或 Reference Host 已实现；SDK 仍为 `0.7.0`，三个工程问题继续 open。A2 之后 B1、C1、C2、D1 与 D2
-已分别取得退出证据。E1/E2 的实现与四平台验证已完成但尚未退出（见下文），其后续批次仍未完成。
+已分别取得退出证据。E1/E2 已取得退出证据（见下文），其后续批次 E3 与 C4 也已完成退出。
 S6-B1 已落下版本比较器、独立负例测试、trusted-baseline workflow 和发行 checklist；当前显示版本
 为 `26.09.27-1`（E1/E2 收尾时滚动到 `26.09.24-1`，E3 收尾时按 Version Gate 日期滚动推进到 `26.09.26-1`，C4 实现提交时可信 UTC 日期进入 `2026-09-27`，再次滚动到 `26.09.27-1`，见下），SDK API 仍为 `0.7.0`。`26.09.21-2` 在 UTC `2026-09-22` 已过期，因此前进到当天 build 1。当天曾写成的 `26.09.23-1` 被 Version Gate 以 `version.release_date.future` 拒绝，分支收回 `26.09.22-1`；UTC 进入 `2026-09-23` 后再前进到 `26.09.23-1`。bootstrap PR #26 已将门禁纳入 `master`，并启用
 `Version advancement (pre-merge)` required check、strict latest-base 和 admin enforcement。
@@ -94,12 +94,14 @@ bundle 时，再采样帧会带着非零 delta 进入新 discontinuity。`e5eb16
 （Linux Quality、Windows MSVC、Windows MinGW、Version Gate）全部通过。证据见
 [C3 退出报告](stage_reports/stages/stage-06/2026-09-24-s6-c3-exit.md)。该退出不是 Stage 6
 完成、PR 合并或 owner acceptance，SDK API 仍为 `0.7.0`。
-E1/E2 的实现与四平台验证已经完成，尚未进入批次退出流程：默认关闭的
+E1/E2 已取得本地批次退出结论（不是 Stage 6 关闭或 owner acceptance）：默认关闭的
 `CUEXIS_BUILD_MEDIA_TOOLS` 下新增内部 `cuexis_media_import` 与 CLI `cuexis_media_importer`
 （PNG/JPEG → CXPRES01 RGBA8，MP3/Ogg Vorbis/FLAC → canonical RIFF/WAVE PCM S16LE），固定解码器
 profile、canonical golden、发布不可变冲突门禁和进程内存上限都已就位；本机 MSVC
 `debug-media-tools` 与既有 732 项测试全绿，Player 实际显示与三种格式的完整导入/播放正例见
-[S6-E1/E2 实现报告](stage_reports/stages/stage-06/2026-09-25-s6-e1-e2-media-importer.md)。
+[S6-E1/E2 实现报告](stage_reports/stages/stage-06/2026-09-25-s6-e1-e2-media-importer.md)；按
+`S6-G10`/`S6-G11` 的逐项验收、测试注册、四平台 hosted 复验、六条缺陷与 F1 消费边界见
+[S6-E1/E2 退出报告](stage_reports/stages/stage-06/2026-09-27-s6-e1-e2-exit.md)。
 hosted 矩阵曾显示立体声 Ogg Vorbis 的 canonical WAV 在 MSVC 与其余三个平台之间样本不同（长度
 相同）；根因已复现并修复：libvorbis 1.3.7 在 `<math.h>` 不提供 `M_PI` 时回落到十位有效数字的
 float 字面量（MSVC 即如此），而 GCC/Clang/MinGW 使用全精度 double，`M_PI` 参与 MDCT 系数表与 LSP
@@ -110,8 +112,8 @@ float 字面量（MSVC 即如此），而 GCC/Clang/MinGW 使用全精度 double
 了 profile 元数据，仅 `audio_stereo_ogg` 重新冻结内容摘要（`df73cb81…`），没有加 epsilon、丢低位或
 平台分支。`66a15d0` 的 hosted 矩阵（Linux Quality、Windows MSVC、Windows MinGW）全部通过，立体声
 Ogg 的 canonical identity 断言在四个平台对着同一份 golden 通过；Version Gate 的日期滚动在同批收尾
-中先用 `tools/update_version.py 26.09.24-1` 处置；E3 收尾时可信 UTC 日期已进入 `2026-09-26`，同一检查器再次报 `version.release_date.stale`，因此用 `tools/update_version.py 26.09.26-1` 再滚动一次（仅日期构建身份，SDK API 仍为 `0.7.0`）。该实现不是
-批次退出、不是 Stage 6 关闭，也不构成 owner acceptance。
+中先用 `tools/update_version.py 26.09.24-1` 处置；E3 收尾时可信 UTC 日期已进入 `2026-09-26`，同一检查器再次报 `version.release_date.stale`，因此用 `tools/update_version.py 26.09.26-1` 再滚动一次（仅日期构建身份，SDK API 仍为 `0.7.0`）。本批次已形成退出结论；它不是 Stage 6 关闭，也不构成
+owner acceptance。
 E3 已在同一 `CUEXIS_BUILD_MEDIA_TOOLS` 开关下落地，取得本地与同 SHA hosted 四平台证据，并已形成
 本地批次退出结论（不是 Stage 6 关闭或 owner acceptance）：`tools/asset_publish`
 （`cuexis_asset_publish`）把「先在 staging 生成并验证，再以一次
@@ -154,7 +156,8 @@ Release` 通过宿主门禁（shared 覆盖 toolchain 拒绝用例），六个�
 SDK API 仍为 `0.7.0`，candidate 开关仍只是构建树编译定义，草案中的
 `Cuexis_ALLOW_EXPERIMENTAL` opt-in 尚未实现。实现、本地矩阵与缺陷过程见
 [参考宿主与 Player 分发](stage_reports/stages/stage-06/2026-09-27-s6-c4-reference-host-and-player-distribution.md)。
-C4 的退出不改变 F1 的前置：F1 仍待其前置批次（包含 E1/E2）全部退出。
+E1/E2 退出后，F1 的前置（B1、C4 及其上游批次全部退出）已满足；F1 需在最终候选 SHA 上以
+fresh configure 与 `--clean-first` 重新取得全量、hosted、GPU/设备与许可证证据。
 
 ## 已关闭的 Full Review
 
