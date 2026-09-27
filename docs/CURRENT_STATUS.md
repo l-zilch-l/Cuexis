@@ -141,10 +141,16 @@ C4 已落地具名参考宿主与可运行 Player 分发目录，但尚未形成
 生成一个自包含的分发目录（可执行文件、实际加载的运行时库、默认资源位置 `assets/`、`VERSION.txt`、
 `README.txt`、notices 与 `licenses/` 下十个 vcpkg port 版权文本），门禁
 `cuexis_player_distribution` 把目录复制到别处、在清理过的 PATH 下启动并要求稳定失败码，同时拒绝
-构建产物混入与 SDK 安装树混装。SDK API 仍为 `0.7.0`，candidate 开关仍只是构建树编译定义，草案中的
+构建产物混入与 SDK 安装树混装。本地矩阵覆盖 static/shared × Debug/Release 与 MinGW，五个 flavor
+的两个门禁全部通过，并且四个 flavor 的分发目录各自在真实 GPU 上完成 `--smoke-test`（exit 0，6 帧）。
+hosted 上 Windows MSVC（`release`，734/734 与媒体工具 776/776）与 Windows MinGW（`debug`，同样
+734/776）都实际执行并通过两个门禁；Linux 的 `GCC Release`、`Clang Shared Debug`、`GCC Shared
+Release` 通过宿主门禁（shared 覆盖 toolchain 拒绝用例），六个插桩 job 暴露了门禁自身的第五个缺陷
+（插桩选项不进安装导出、外部消费者必须同样插桩，且第一次修复把参数挂到了错误的 `add_test`），
+修复后重跑。SDK API 仍为 `0.7.0`，candidate 开关仍只是构建树编译定义，草案中的
 `Cuexis_ALLOW_EXPERIMENTAL` opt-in 尚未实现。C4 报告见
 [参考宿主与 Player 分发](stage_reports/stages/stage-06/2026-09-27-s6-c4-reference-host-and-player-distribution.md)。
-C4 的残余（本地 shared 分发目录、hosted 四平台同 SHA 证据）与后续批次仍未完成。
+C4 尚未形成批次退出结论，F1 仍待其前置批次全部退出。
 
 ## 已关闭的 Full Review
 

@@ -213,6 +213,36 @@ static Debug/Release、shared Debug/Release 与 MinGW static Debug 五个组合�
 `--coverage -O0 -g`，编译与链接选项都传，正例与负例都传。该修复只能由 hosted 验证：本机是
 MSVC，sanitize/coverage preset 在 MSVC 上是 configure 致命错误。
 
+### 5.5 hosted 证据
+
+`a38d6cc`（实现 + 三次门禁修复）hosted 结果：
+
+| run | 平台 | 结果 |
+| --- | --- | --- |
+| `36295150629` | Version Gate | success |
+| `36295150667` / `36295147115` | Windows MSVC | success；`release` job 中 `cuexis_reference_host_staging` 10.93 s、`cuexis_player_distribution` 17.16 s 通过，734/734 与 776/776 全绿 |
+| `36295150623` / `36295147060` | Windows MinGW | success；`debug` job 中同一对门禁 10.85 s / 20.51 s 通过，734/734 与 776/776 全绿 |
+| `36295147129` / `36295150669` | Linux Quality | failure：`GCC Release`、`Clang Shared Debug`、`GCC Shared Release` 全绿（宿主门禁 3.20 s / 4.18 s 通过，shared 两个 job 覆盖 toolchain 拒绝），6 个插桩 job 仅 `cuexis_reference_host_staging` 失败 |
+
+因此 Windows MSVC 与 Windows MinGW 在 hosted 上同时覆盖了两个 C4 门禁，Linux 的 static/shared
+非插桩 job 覆盖了宿主门禁，而插桩 job 暴露的缺陷由 5.4 的修复处理。五次门禁缺陷修复分别是：
+清理 PATH 未恢复、负例缺依赖解析参数、MinGW 清理环境缺编译器运行时、插桩选项未转发，
+以及第一次转发时把参数挂到了**错误的** `add_test`（Player 分发门禁，它不链接任何目标），
+由 `out/build/debug/CTestTestfile.cmake` 反查发现——门禁在该 SHA 上仍然失败，直到参数挂到
+staging 门禁上。
+
+`d7980bd`（挂对参数后的修复）hosted 结果：
+
+| run | 平台 | 结果 |
+| --- | --- | --- |
+| `36298998954` | Version Gate | success |
+| `36298996643` | Windows MSVC | success |
+| `36298996619` | Linux Quality | success：12 个 job 全部通过，包含此前失败的 `GCC Coverage`、`GCC Adapter Coverage`、`GCC Shader Tools Coverage`、`Clang ASan + UBSan`、`Clang ASan + UBSan shader-tools`、`Clang ASan + UBSan media-tools` |
+
+Linux 每个 job 都是 `100% tests passed, 0 tests failed out of N`（631/638/639/654/655/662/669/677/680 等），
+宿主门禁在所有 preset 中都注册并通过，包括 ASan+UBSan 与 coverage 插桩。至此 C4 的 hosted 四平台
+闭环完成：Windows MSVC、Windows MinGW、Linux GCC、Linux Clang（含插桩 preset）与 Version Gate。
+
 ## 6. 升级示例
 
 `docs/guides/VERSIONING.md` 新增「升级示例：从 `0.7.0` 基线重建宿主」：宿主声明基线版本、升级三步
@@ -225,14 +255,13 @@ MSVC，sanitize/coverage preset 在 MSVC 上是 configure 致命错误。
 
 ## 7. 残余
 
-- hosted 复验尚未发生。计划要求同 SHA 四平台证据；本机已完成 static/shared × Debug/Release 与
-  MSVC/MinGW 的本地矩阵，但 hosted 是独立证据。
-- Linux hosted preset 是 headless（不构建 Player），因此 hosted 只会注册
-  `cuexis_reference_host_staging`（shared 包，会执行 toolchain 拒绝用例），不会注册
-  `cuexis_player_distribution`；Player 分发的 hosted 覆盖只有 Windows MSVC 与 Windows MinGW。
+- hosted 同 SHA 证据已完成（§5.5），但 hosted 的 Player **分发** 门禁只在 Windows（MSVC、MinGW）注册：
+  Linux preset 是 headless，不构建 Player，因此 Linux 只覆盖宿主门禁。
 - 宿主二进制的符号级检查（导入表/依赖清单白名单）还不是门禁：当前证明来自“只链接
   `Cuexis::Playback`、只包含公共头、在清理 PATH 下运行成功”。把导入表纳入门禁属于 F1。
+- 插桩 preset 的宿主门禁依赖“把父构建的插桩选项转发给外部工程”这一约定；它是本地与 hosted 都验证过
+  的机制，但不是安装导出的一部分，因此未来新增插桩类型时需要同步维护。
 - 真正的磁盘满、只读介质与配额失败仍未取证（E3 残余，属于 F1）。
-- GPU、窗口与真实音频设备下的宿主/Player 行为不在本批次内；本节记录的 `--smoke-test` 是本机
-  一次真实 GPU 运行，不是 CI 证据。
+- GPU、窗口与真实音频设备下的宿主/Player 行为不在本批次内；§5.2 的 `--smoke-test` 是本机一次真实
+  GPU 运行，不是 CI 证据。
 - 本报告不是批次退出、不是 Stage 6 关闭，也不构成 owner acceptance；SDK API 仍为 `0.7.0`。
