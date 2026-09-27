@@ -26,6 +26,10 @@
 说明：部分子代理运行环境没有 shell，改用直读工作区文件（`eaaf375`，与 diff 结果一致），
 已在各条注明；父代理对高/中严重度发现做了独立复核，结论以两轴记录中的"父代理已核实"标记为准。
 
+**本附录保留子代理原文，不代表最终判定。** 二轮细化后有 4 条被驳回、1 条被撤回、
+10 条被改级或改状态，逐条对照见[细化记录 §4](2026-09-28-refinement.md)与
+[汇总的被驳回项](2026-09-28-summary.md)；文中已加删改标记的位置以两轴记录为准。
+
 ## 2. S1 — Foundation 加固 R0–R5
 
 ### 2.1 Standards
@@ -141,6 +145,10 @@ execution ID（`v5g1:`）与 prepared identity 预映像逐字节符合 `CHART_E
 **正面确认**：未走 v4 JSON 中转（`playback_session.cpp:1878-1891`）；默认 v4 路由未改
 （`playback_source.cpp:762`、`:792`）；candidate 失败不回退读同包 v4；工具层已收为纯转发。
 
+**二轮更正**：本节第 1 条（A16 feature/resource closure 缺生产入口，原 SPEC-09）**已被父代理撤回**——
+`packed_chart_tables.cpp:2009-2027` 在 decode 侧派生闭包并在 `:2031` 校验 profile。
+其余各条的判定保留，详见[细化记录 §4](2026-09-28-refinement.md)。
+
 1. **(a)** 计划 §S6-C1 #6 + ADR 0042 S6-D03：实现只校验**已声明** feature
    （`packed_profile.cpp:34-52`），闭包原样透传（`candidate_lowering.cpp:307`）；全仓无派生
    feature/closure 生产入口，正例在测试手写 `CanonicalFeature{...}`
@@ -249,7 +257,7 @@ execution ID（`v5g1:`）与 prepared identity 预映像逐字节符合 `CHART_E
 
 ### 7.1 Standards
 
-**已记录整改未落实**：`player_app.cpp:27-43` `audioStateName` 与 `frame_diagnostics.cpp:19-35` `stateName`
+**已记录整改未落实（二轮判定：本轮范围外，见 STD-04）**：`player_app.cpp:27-43` `audioStateName` 与 `frame_diagnostics.cpp:19-35` `stateName`
 逐字相同的 `audio::PlaybackState` switch；仓库文档明确要求合并——
 `docs/stage_reports/reviews/full-review-2026-08/2026-08-29-review.md:1039-1042`（AP-09）与
 `docs/stage_plans/reviews/full-review-2026-08/remediation-plan.md:1240`。

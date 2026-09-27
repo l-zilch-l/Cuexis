@@ -39,7 +39,8 @@ Standards / Spec 记录），由该专题自己的 `README.md` 承担导航；�
 - Stage 6 双轴复核（`13dab93..eaaf375`，事后复核）：[汇总](reviews/stage-06-review-2026-09/2026-09-28-summary.md)、
   [Standards 轴](reviews/stage-06-review-2026-09/2026-09-28-standards.md)、
   [Spec 轴](reviews/stage-06-review-2026-09/2026-09-28-spec.md)、
-  [切片附录](reviews/stage-06-review-2026-09/2026-09-28-slice-appendix.md)（active）
+  [切片附录](reviews/stage-06-review-2026-09/2026-09-28-slice-appendix.md)、
+  [二轮细化](reviews/stage-06-review-2026-09/2026-09-28-refinement.md)（active）
 
 ## 历史路径
 
