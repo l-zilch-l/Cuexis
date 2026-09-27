@@ -95,7 +95,7 @@ R0 决策门禁（owner 裁定 4 项）
 | R2 | R0-1 | 诊断码修正 + 负例 | completed：契约码与实现一致；候选负例断言新码；wire-range 独立成码。退出记录见 [2026-09-28-w1-diagnostics-and-version-gate.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w1-diagnostics-and-version-gate.md) |
 | R3 | — | 门禁加固 + 负例 | completed（SPEC-04 登记 BLOCKED）：扩展后的门禁自测 15 tests 通过；A2 表征注册为 CTest。退出记录同上 |
 | R4 | R0-2 | 媒体修正 + fixture/golden 决策 | 三平台 canonical 证据；负例注册 |
-| R5 | R0-1 | 原子替换修正 + 故障注入用例 | 崩溃/并发/磁盘失败用例通过 |
+| R5 | R0-1 | 原子替换修正 + 故障注入用例 | completed：单次原子替换（无 target 缺失窗口）；恢复逻辑还原 backup 而非删除；pair 锁覆盖两个目标父目录；幂等重发报告真实闭包字节。5 条新用例各以变异反证非空转。退出记录见 [2026-09-28-w3-publication-transaction.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w3-publication-transaction.md) |
 | R6 | R0-3 | 渲染收敛 + 配置语义修正 | GPU smoke + 状态机用例通过 |
 | R7 | R5 | 宿主与分发门禁补齐 | 门禁注册并跑通 |
 | R8 | — | 重复/死代码/可移植性修正 | 每项有修正或书面豁免 |
