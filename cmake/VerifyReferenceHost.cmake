@@ -147,6 +147,22 @@ set(host_build "${work_dir}/host-build")
 # foreign-toolchain case below reuses them so that it fails for exactly one
 # documented reason.
 set(vcpkg_arguments "")
+
+# An instrumented SDK build must give its consumer the same instrumentation:
+# Cuexis applies sanitizer and coverage flags as directory options, so an
+# external project that links the installed static libraries has to mirror them
+# or the link fails on undefined __asan_/__ubsan_/__gcov_ symbols.
+set(instrumentation_arguments "")
+if(CUEXIS_ENABLE_SANITIZERS)
+    set(instrumentation_arguments
+        "-DCMAKE_CXX_FLAGS=-fsanitize=address,undefined -fno-omit-frame-pointer"
+        "-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined -fno-omit-frame-pointer")
+elseif(CUEXIS_ENABLE_COVERAGE)
+    set(instrumentation_arguments
+        "-DCMAKE_CXX_FLAGS=--coverage -O0 -g"
+        "-DCMAKE_EXE_LINKER_FLAGS=--coverage")
+endif()
+
 set(configure_arguments
     -S "${host_project}"
     -B "${host_build}"
@@ -157,7 +173,8 @@ set(configure_arguments
     "-DCuexis_DIR=${prefix}/lib/cmake/Cuexis"
     "-DCMAKE_PREFIX_PATH=${prefix}"
     "-DCUEXIS_HOST_API_VERSION=0.7.0"
-    "-DCUEXIS_HOST_CONTENT_DIR=${content_dir}/cfu_f_reference_project")
+    "-DCUEXIS_HOST_CONTENT_DIR=${content_dir}/cfu_f_reference_project"
+    ${instrumentation_arguments})
 if(DEFINED CUEXIS_RC_COMPILER AND NOT "${CUEXIS_RC_COMPILER}" STREQUAL "")
     list(APPEND configure_arguments "-DCMAKE_RC_COMPILER=${CUEXIS_RC_COMPILER}")
 endif()
@@ -351,6 +368,7 @@ if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
         "-DCMAKE_PREFIX_PATH=${doctored_prefix}"
         "-DCUEXIS_HOST_API_VERSION=0.7.0"
         "-DCUEXIS_HOST_CONTENT_DIR=${content_dir}/cfu_f_reference_project"
+        ${instrumentation_arguments}
         ${vcpkg_arguments})
     message(STATUS "Reference host refused a foreign-toolchain package")
 else()

@@ -415,6 +415,8 @@ if(CUEXIS_BUILD_TESTS)
                     "-DCUEXIS_GENERATOR=${CMAKE_GENERATOR}"
                     "-DCUEXIS_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
                     "-DCUEXIS_LIBRARY_TYPE=${CUEXIS_LIBRARY_TYPE}"
+                    "-DCUEXIS_ENABLE_SANITIZERS=${CUEXIS_ENABLE_SANITIZERS}"
+                    "-DCUEXIS_ENABLE_COVERAGE=${CUEXIS_ENABLE_COVERAGE}"
                     "-DCUEXIS_VERSION_DISPLAY=${CUEXIS_VERSION_DISPLAY}"
                     -P "${PROJECT_SOURCE_DIR}/cmake/VerifyPlayerDistribution.cmake"
             )

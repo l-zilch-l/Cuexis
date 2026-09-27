@@ -111,7 +111,10 @@ candidate 能力。
   `AnotherCompiler`（并断言改写确实发生），再要求宿主配置失败且输出包含
   `requires compiler AnotherCompiler`。static 安装的配置本身不带 toolchain 门禁，门禁会明确报告
   该用例只在 shared flavor 下运行，而不是假装通过。
-- **API minor**：宿主在 configure 阶段拒绝 `0.7.x` 之外的接口版本。
+- **API minor**：宿主在 configure 阶段拒绝 `0.7.x` 之外的接口版本。本地手动核对：以
+  `-DCUEXIS_HOST_API_VERSION=0.8.0` 对 staging 安装前缀配置宿主时，`find_package(Cuexis 0.8.0 ...)`
+  立即失败并停止 configure；`0.7.0` 是门禁中的正例（`CUEXIS_HOST_API_VERSION=0.7.0`）。该用例目前
+  是手动核对，尚未注册为门禁用例。SDK 侧的 `0.6`/`0.8` 版本拒绝已由既有 find_package 门禁覆盖。
 - **内容与参数**：`--expect-identity`、`--expect-digest` 不匹配即失败；被拒绝的宿主提供者故障
   必须保持活动身份、状态与帧摘要不变。
 - **Player 分发**：缺失/多余的许可证文件、构建产物、SDK 安装树内容与 flavor 记录不一致都会失败。
@@ -185,6 +188,30 @@ complete OpenGL presentation cache` 与 `Completed frames: 6` 均一致；Debug 
 
 修复后负例复用同一套依赖解析参数，并只以 `requires compiler AnotherCompiler` 这一条已记录原因失败。
 static Debug/Release、shared Debug/Release 与 MinGW static Debug 五个组合的两个门禁全部通过。
+
+### 5.4 hosted 推翻：instrumented preset 下消费者必须同样被插桩
+
+`a38d6cc` 的 Linux Quality run `36295147129` 给出两条结论：
+
+- 通过：`GCC Release`、`Clang Shared Debug`、`GCC Shared Release` 全绿。其中 shared 两个 job 覆盖了
+  3.4 的 toolchain 拒绝用例，说明宿主在 shared Linux 包上可用。
+- 失败：`GCC Coverage`、`GCC Adapter Coverage`、`GCC Shader Tools Coverage`、
+  `Clang ASan + UBSan`、`Clang ASan + UBSan shader-tools`、`Clang ASan + UBSan media-tools`
+  六个 job 失败，且失败测试只有 `cuexis_reference_host_staging` 一个
+  （`2 - cuexis_reference_host_staging`、`9 - cuexis_reference_host_staging`）。
+
+原因是宿主链接**被插桩的** static SDK 时缺少同一套插桩选项：Cuexis 用目录级
+`add_compile_options`/`add_link_options` 施加 `-fsanitize=address,undefined`（ASan）与
+`--coverage`（coverage），这些选项不进入安装导出，因此外部工程按 `find_package` 链接时会得到
+`undefined reference to __gcov_init/__gcov_exit/__gcov_merge_add`（coverage）与
+`undefined reference to __asan_option_detect_stack_use_after_return/__ubsan_handle_type_mismatch_v1`
+（ASan/UBSan）。`cuaxis_external_consumer_*` 在 coverage job 中被 workflow 的
+`-E "^cuexis_external_consumer_"` 排除，所以此前没有暴露这个问题。
+
+修复：门禁把父构建的插桩配置转发给宿主工程——`CUEXIS_ENABLE_SANITIZERS` 时传
+`-fsanitize=address,undefined -fno-omit-frame-pointer`，`CUEXIS_ENABLE_COVERAGE` 时传
+`--coverage -O0 -g`，编译与链接选项都传，正例与负例都传。该修复只能由 hosted 验证：本机是
+MSVC，sanitize/coverage preset 在 MSVC 上是 configure 致命错误。
 
 ## 6. 升级示例
 
