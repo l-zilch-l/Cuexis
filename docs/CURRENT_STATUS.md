@@ -29,7 +29,7 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Stage 5 | completed; S5-A through S5-H closed and merged into `master` 2026-08-28 | [plan](stage_plans/completed/stage-05/plan.md)、[completion](stage_reports/stages/stage-05/completion.md) |
 | Chart Format Foundation | completed；保留 PR #24 与 2026-09-16 owner 完成确认；后续交接缺口由独立加固阶段处理，不代表技术门禁全部通过 | [plan](stage_plans/completed/chart-format-foundation/plan.md)、[关闭记录](stage_reports/stages/chart-format-foundation/2026-09-16-closure-and-handoff.md) |
 | Chart Format Foundation Hardening | completed；R0-R5 全部完成（D1-D10 已裁定，A19/A20/A21/A22 已修复），本地六配置全量回归、最终 SHA 容量复跑与同 SHA hosted 三平台验证（`e0ca9ff`，docs-only 复验 `c24f34e`）全绿，owner 于 2026-09-17 接受 R5 交接清单 | [plan](stage_plans/completed/chart-format-foundation-hardening/plan.md)、[R5 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)、[R5 容量数据 Debug](stage_reports/stages/chart-format-foundation/2026-09-17-r5-capacity-data.json)、[Release](stage_reports/stages/chart-format-foundation/2026-09-17-r5-capacity-data-release.json)、[R4 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r4-roundtrip-capacity-rollback.md)、[R4 容量数据](stage_reports/stages/chart-format-foundation/2026-09-17-r4-capacity-data.json)、[R3 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r3-budgets-and-arithmetic.md)、[R2 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r2-profile-rejection.md)、[R1 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r1-semantic-identity.md)、[R0 报告](stage_reports/stages/chart-format-foundation/2026-09-16-r0-baseline-and-reproduction.md) |
-| Stage 6 | active；当前实施阶段，2026-09-17 启动（首批 S6-A：合同、基线和依赖决策）。交接加固已关闭并经 owner 接受，本阶段实施 v5-first candidate path，保留 v4 回退；消费边界见 [R5 报告 §10](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)。A1、A2、B1、C1、C2、C3、D1、D2、E1/E2、E3 与 C4 已退出；F1/F2 未开始 | [plan](stage_plans/active/stage-06/plan.md) |
+| Stage 6 | active；当前实施阶段，2026-09-17 启动（首批 S6-A：合同、基线和依赖决策）。交接加固已关闭并经 owner 接受，本阶段实施 v5-first candidate path，保留 v4 回退；消费边界见 [R5 报告 §10](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)。A1、A2、B1、C1、C2、C3、D1、D2、E1/E2、E3、C4 与 F1 已退出；F2 未开始 | [plan](stage_plans/active/stage-06/plan.md) |
 | Stage 7A | future；最小 Input / Judgement / Score / Replay Kernel，作为 Stage 8 硬前置 | [plan](stage_plans/future/stage-07/plan.md) |
 | Stage 7B+ | future；Slide、Flick、多指、校准和高级 Judgement 能力持续演进 | [plan](stage_plans/future/stage-07/plan.md) |
 | Stage 8 | future；Chart v5 / CXT v2 / Packed Chart 正式发行与语义收敛 | [plan](stage_plans/future/stage-08/plan.md) |
@@ -51,7 +51,7 @@ S6-A2 已于 2026-09-21 完成合同落盘与表征，形成 entry/config/media 
 API/安装草案、依赖图及独立 identity/media/config golden；实际证据见 [S6-A2 报告](stage_reports/stages/stage-06/2026-09-21-s6-a2-contracts-and-characterization.md)。
 A2 只证明冻结决策可以被明确描述和表征，不代表 v5 Playback、Player、renderer、media importer、
 版本门禁或 Reference Host 已实现；SDK 仍为 `0.7.0`，三个工程问题继续 open。A2 之后 B1、C1、C2、D1 与 D2
-已分别取得退出证据。E1/E2 已取得退出证据（见下文），其后续批次 E3 与 C4 也已完成退出。
+已分别取得退出证据。E1/E2 已取得退出证据（见下文），其后续批次 E3、C4 与 F1 也已完成退出。
 S6-B1 已落下版本比较器、独立负例测试、trusted-baseline workflow 和发行 checklist；当前显示版本
 为 `26.09.27-1`（E1/E2 收尾时滚动到 `26.09.24-1`，E3 收尾时按 Version Gate 日期滚动推进到 `26.09.26-1`，C4 实现提交时可信 UTC 日期进入 `2026-09-27`，再次滚动到 `26.09.27-1`，见下），SDK API 仍为 `0.7.0`。`26.09.21-2` 在 UTC `2026-09-22` 已过期，因此前进到当天 build 1。当天曾写成的 `26.09.23-1` 被 Version Gate 以 `version.release_date.future` 拒绝，分支收回 `26.09.22-1`；UTC 进入 `2026-09-23` 后再前进到 `26.09.23-1`。bootstrap PR #26 已将门禁纳入 `master`，并启用
 `Version advancement (pre-merge)` required check、strict latest-base 和 admin enforcement。
@@ -156,8 +156,19 @@ Release` 通过宿主门禁（shared 覆盖 toolchain 拒绝用例），六个�
 SDK API 仍为 `0.7.0`，candidate 开关仍只是构建树编译定义，草案中的
 `Cuexis_ALLOW_EXPERIMENTAL` opt-in 尚未实现。实现、本地矩阵与缺陷过程见
 [参考宿主与 Player 分发](stage_reports/stages/stage-06/2026-09-27-s6-c4-reference-host-and-player-distribution.md)。
-E1/E2 退出后，F1 的前置（B1、C4 及其上游批次全部退出）已满足；F1 需在最终候选 SHA 上以
-fresh configure 与 `--clean-first` 重新取得全量、hosted、GPU/设备与许可证证据。
+F1 已取得本地批次退出结论（不是 Stage 6 关闭或 owner acceptance）：候选 SHA 固定为
+`c80a5b5f43a6aa7021037aaf2e308e2b9ec3d764`（代码末端 `d7980bd`，候选只在其上追加文档提交），
+版本 `26.09.27-1`、SDK API `0.7.0`，Version Gate 在可信 UTC `2026-09-27` 通过。七个 preset 以
+fresh configure 与 `--clean-first` 取得全量结果：`debug` 734/734、`release` 734/734、
+`shared-debug` 737/737、`shared-release` 737/737、`debug-media-tools` 776/776、
+`debug-shader-tools` 766/766、`headless-debug`（adapter 关闭）640/640、`mingw-debug` 734/734；
+candidate 开关配置另列 737/737。同 SHA 的
+Linux Quality、Windows MSVC、Windows MinGW（push 与 pull_request）与 Version Gate 共 7 个 run
+全部 success；插桩与覆盖作业中 candidate、lowering、配置与媒体用例均有实际注册与运行记录，
+不存在"未注册却总体绿色"的空洞。GUI/GPU 与真实音频设备 smoke 单列执行环境与证据（音频终态
+出现间歇 0–1 underrun，如实保留）。按 `S6-G14` 与 `S6-G15` 的 F1 部分逐项验收、跳过项与未执行项见
+[S6-F1 最终验证退出报告](stage_reports/stages/stage-06/2026-09-27-s6-f1-final-validation.md)。
+`S6-F2`（关闭报告、问题 1/2/3 处置、Stage 7A/Stage 8 交接与 owner 接受）未开始。
 
 ## 已关闭的 Full Review
 

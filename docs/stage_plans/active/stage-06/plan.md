@@ -99,7 +99,7 @@ S6-A1 基线、入口和证据矩阵
 | E1 / E2 | A2 | 图片 / 音频离线导入及各自 golden | completed（`S6-G10`/`S6-G11` 逐项验收、测试注册、本地矩阵与同 SHA 四平台 hosted 复验见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-27-s6-e1-e2-exit.md)；过程、根因与 golden 重新冻结见 [实现报告](../../../stage_reports/stages/stage-06/2026-09-25-s6-e1-e2-media-importer.md)。本地批次退出，不是 Stage 6 关闭或 owner acceptance） |
 | E3 | E1、E2、C1 | 资源身份、缓存、索引与 CXC 原子发布 | completed（`S6-G12` 逐项验收与同 SHA 四平台 hosted 矩阵见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-26-s6-e3-exit.md)；本地批次退出，不是 Stage 6 关闭或 owner acceptance） |
 | C4 | C3、E3 | 具名真实宿主、安装包、升级与部署证明 | completed（`S6-G13` 逐项验收、本地 flavor 矩阵与同 SHA 四平台 hosted 见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-27-s6-c4-exit.md)；实现与缺陷过程见 [C4 报告](../../../stage_reports/stages/stage-06/2026-09-27-s6-c4-reference-host-and-player-distribution.md)。本地批次退出，不是 Stage 6 关闭或 owner acceptance） |
-| F1 | B1、C4 及其前置全部退出 | 最终 SHA 全量、hosted、GPU 与许可证证据 | planned |
+| F1 | B1、C4 及其前置全部退出 | 最终 SHA 全量、hosted、GPU 与许可证证据 | completed（`S6-G14` 与 `S6-G15` 的 F1 部分逐项验收、7 个 preset 的 fresh configure 与 clean-first 本地全量矩阵、candidate 开关与工具隔离、GPU/真实音频设备单列证据、同 SHA 三平台 hosted 复验见 [退出记录](../../../stage_reports/stages/stage-06/2026-09-27-s6-f1-final-validation.md)。F1 本地批次退出，不是 Stage 6 关闭或 owner acceptance；`S6-F2` 未开始） |
 | F2 | F1 | 关闭报告、问题处置、Stage 7A/8 交接与 owner 接受 | planned |
 
 `planned` 表示尚未取得退出证据；Stage 6 的 active 状态不等于尚未列出证据的批次已完成。实际工作开始后

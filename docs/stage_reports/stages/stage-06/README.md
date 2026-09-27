@@ -58,6 +58,10 @@
   （按 `S6-G10`/`S6-G11` 逐项映射验收证据、测试注册（18 个 TEST_CASE、CLI 门禁、18 个 golden）、
   本地矩阵与同 SHA 四平台 hosted 复验、六条缺陷、残余与 F1 消费边界；本地批次退出，不是
   Stage 6 关闭或 owner acceptance）
+- [2026-09-27 S6-F1 最终验证退出](2026-09-27-s6-f1-final-validation.md)
+  （按 `S6-G14` 与 `S6-G15` 的 F1 部分逐项映射验收证据、7 个 preset 的 fresh configure 与
+  clean-first 本地全量矩阵、candidate 开关与工具隔离、GPU/真实音频设备单列证据、同 SHA 三平台
+  hosted 与插桩覆盖核对、跳过项与未执行项；本地批次退出，不是 Stage 6 关闭或 owner acceptance）
 
 权威范围见 [Stage 6 计划](../../../stage_plans/active/stage-06/plan.md)、
 [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md) 和
