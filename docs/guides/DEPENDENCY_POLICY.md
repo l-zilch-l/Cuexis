@@ -107,8 +107,26 @@ EnTT、GLM、nlohmann-json、JSON Schema Validator 和 tl-expected。CXC 接入�
 私有增加无默认 feature 的 minizip-ng 链接闭包，但不得把它宣传为公共 Cuexis component 或传播其
 头文件。基础包不得查找 SDL3、glad、spdlog、Catch2、shaderc、SPIRV-Tools、SPIRV-Cross、libpng、
 libjpeg-turbo、minimp3、libvorbis、libogg、libFLAC 或 zlib。显式请求 `AudioSDL` component 时才允许查找 SDL3，并载入独立的
-`CuexisAudioSDLTargets.cmake`；包含该组件的安装树必须额外分发 SDL3 copyright。Player 或其他
-可选组件形成正式分发物时，必须另行把其新增依赖许可证加入安装清单和 consumer 门禁。
+`CuexisAudioSDLTargets.cmake`；包含该组件的安装树必须额外分发 SDL3 copyright。
+
+Player 分发目录（`cuexis_player_dist`）是独立于 SDK 安装树的正式分发物，因此它另行携带自己的
+许可证清单。`VERSION.txt` 旁边的 `licenses/` 必须精确包含：
+
+```text
+entt  fmt  glad  glm  json-schema-validator  minizip-ng
+nlohmann-json  sdl3  spdlog  tl-expected
+```
+
+这十个 vcpkg port 覆盖 Player 的实际链接闭包：SDL3（平台/音频）、glad 与 OpenGL registry
+（渲染 adapter 编译进 Player）、spdlog 与 fmt（日志）、以及静态 SDK 实现闭包中的 EnTT、GLM、
+nlohmann-json、JSON Schema Validator、minizip-ng、tl-expected。构建
+`nlohmann_json_schema_validator.dll` 的 vcpkg port 不提供 `copyright` 文件，其上游许可证文本与
+`json-schema-validator` 相同，因此只登记一份，并在打包脚本中记录该映射。MinGW 分发还必须包含
+编译器运行时（`libgcc_s_seh-1.dll`、`libstdc++-6.dll`、`libwinpthread-1.dll`）；这些是工具链
+运行时，不是第三方项目依赖，不打入 `licenses/` 清单。
+
+门禁 `cuexis_player_distribution` 校验该清单在两个方向上精确相等，并拒绝任何 `.lib`/`.pdb`/
+`.ilk`/`CMakeCache.txt` 构建产物进入分发目录。
 
 ## 例外流程
 

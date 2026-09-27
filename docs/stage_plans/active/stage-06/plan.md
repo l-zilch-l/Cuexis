@@ -97,7 +97,7 @@ S6-A1 基线、入口和证据矩阵
 | C3 | C1、C2、D2 | Player 用户入口、状态机、跨子系统事务 | completed（本地验收见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-24-s6-c3-exit.md)；该退出不是 Stage 6 关闭或 owner acceptance） |
 | E1 / E2 | A2 | 图片 / 音频离线导入及各自 golden | in_progress（实现、canonical golden 与同 SHA 四平台字节一致已记录在 [实现报告](../../../stage_reports/stages/stage-06/2026-09-25-s6-e1-e2-media-importer.md)；该报告明确不是批次退出，退出结论尚未形成） |
 | E3 | E1、E2、C1 | 资源身份、缓存、索引与 CXC 原子发布 | completed（`S6-G12` 逐项验收与同 SHA 四平台 hosted 矩阵见 [退出报告](../../../stage_reports/stages/stage-06/2026-09-26-s6-e3-exit.md)；本地批次退出，不是 Stage 6 关闭或 owner acceptance） |
-| C4 | C3、E3 | 具名真实宿主、安装包、升级与部署证明 | planned |
+| C4 | C3、E3 | 具名真实宿主、安装包、升级与部署证明 | in_progress（参考宿主与 Player 分发实现及两个门禁见 [C4 报告](../../../stage_reports/stages/stage-06/2026-09-27-s6-c4-reference-host-and-player-distribution.md)；批次退出结论尚未形成） |
 | F1 | B1、C4 及其前置全部退出 | 最终 SHA 全量、hosted、GPU 与许可证证据 | planned |
 | F2 | F1 | 关闭报告、问题处置、Stage 7A/8 交接与 owner 接受 | planned |
 

@@ -38,6 +38,30 @@ cuexis_player 装配源文件与 smoke 源文件
 
 `cuexis_player` 直接链接 Playback、audio、AudioSDL、core、filesystem、platform_sdl、render、render_opengl、player_support 和 spdlog。`IPresentationRenderer` 经 `cuexis_render_opengl` 的公开依赖到达控制源文件，Player 不再为它增加一条直接 CMake 链接。
 
+### 1.1 分发目录与资源位置
+
+Player 不进入 SDK 安装树。打包目标 `cuexis_player_dist` 生成一个自包含目录
+`dist/cuexis-player-<display-version>-<system>-<linkage>-<build-type>/`，其内容是 Player 可执行
+文件、它实际加载的运行时库、默认资源位置 `assets/`、`VERSION.txt`、`README.txt`、项目 notices
+和 `licenses/` 下的第三方版权文本。一个目录只对应一个 flavor：static/shared 与 Debug/Release
+不得合并。
+
+默认资源位置相对可执行文件解析，与构建树一致：
+
+```text
+<distribution>/cuexis_player.exe
+<distribution>/assets/charts
+<distribution>/assets/projects/<project-name>
+<distribution>/assets/schemas
+```
+
+`player_assembly.cpp` 的 `playerExecutableBase()` 与 `player_app.cpp` 的 schema/project 查找都以
+可执行文件目录为根，因此从分发目录直接启动 Player 时不需要开发机 PATH，也不需要 Cuexis 源码树
+的 `assets/`。门禁 `cuexis_player_distribution` 把分发目录复制到别处、在清理过的 PATH 下启动
+Player，并要求 `--bogus`、缺失 chart 参数与不可读 chart 分别返回
+`player.arguments.unknown`、`player.arguments.chart_path_missing` 和 `player.chart.open_failed`；
+`--smoke-test` 仍需要窗口与 GPU。
+
 ## 2. 可执行文件入口
 
 `app/player/src/main.cpp` 创建 `PlayerLogger`，调用 `cuexis::player::run`，把 `Result` 错误和逃出的异常写成日志后返回进程退出码。播放逻辑从 `run` 开始。

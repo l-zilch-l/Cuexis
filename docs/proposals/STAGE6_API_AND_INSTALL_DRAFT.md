@@ -89,6 +89,14 @@ The Reference Host is a future independent executable that consumes a clean stag
 installation. It owns its command loop, Memory ContentProvider, HostClock and frame/resource
 consumption; it cannot be replaced by a compile-only consumer or a Player private include path.
 
+C4 status (implementation, not owner acceptance): `examples/reference_host/` exists and does exactly
+that, verified by `cuexis_reference_host_staging`; the runnable Player distribution exists as the
+separate `cuexis_player_dist` target, verified by `cuexis_player_distribution`. The
+`Cuexis_ALLOW_EXPERIMENTAL` consumer opt-in and the candidate package flavor metadata are still
+**not implemented**: the candidate switch remains a build-tree compile definition that never reaches
+the install tree, so a production consumer cannot enable it by accident, and there is currently no
+experimental install flavor to gate.
+
 ## 4. API And Consumer Gates
 
 | Gate | Required behavior | A2 state | Owner |
@@ -96,9 +104,10 @@ consumption; it cannot be replaced by a compile-only consumer or a Player privat
 | Declaration parity | OFF/ON public declarations and layout are identical | Draft only | C1/C4 |
 | Legacy behavior | Existing factories preserve v1-v4 default semantics | Existing baseline | C1/F1 |
 | Candidate opt-in | Explicit factory and explicit path required | Contract recorded | C1 |
-| Package opt-in | Experimental consumer opt-in is required | Contract recorded | B1/C4 |
-| Installed consumer | Clean staging uses public headers and package targets only | Not implemented | C4/F1 |
-| Reference Host | Named host uses installed public Playback API | Not implemented | C4 |
+| Package opt-in | Experimental consumer opt-in is required | Not implemented; the candidate switch is build-tree only | B1/C4 |
+| Installed consumer | Clean staging uses public headers and package targets only | Implemented and gated for the reference host (C4) | C4/F1 |
+| Reference Host | Named host uses installed public Playback API | Implemented as `examples/reference_host/`, gated by `cuexis_reference_host_staging` | C4 |
+| Player distribution | One self-contained flavor directory, no developer PATH or source assets | Implemented as `cuexis_player_dist`, gated by `cuexis_player_distribution` | C4 |
 | SDK version | 0.7.1 only after additive implementation gates | Current 0.7.0 | B1 |
 
 No row in this draft is an implementation or owner-acceptance claim.

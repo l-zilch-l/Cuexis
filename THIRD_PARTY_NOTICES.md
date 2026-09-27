@@ -39,6 +39,18 @@ that includes the optional AudioSDL component additionally copies the SDL3 copyr
 inventory does not replace those full texts. Player packaging must additionally preserve the
 SDL3, glad, spdlog and applicable fmt notices required by the artifacts it redistributes.
 
+The runnable Player distribution produced by the `cuexis_player_dist` target ships the project
+`LICENSE`, `NOTICE` and `THIRD_PARTY_NOTICES.md` plus `licenses/` with the exact vcpkg copyright
+texts for entt, fmt, glad, glm, json-schema-validator, minizip-ng, nlohmann-json, sdl3, spdlog and
+tl-expected. That set is the Player link closure: the static SDK implementation targets compiled
+into the Player plus the third-party runtime libraries the packaged executable loads. The vcpkg
+port that builds `nlohmann_json_schema_validator.dll` ships no `copyright` file, so its upstream
+JSON Schema Validator text is registered once as `json-schema-validator-copyright.txt`. A MinGW
+distribution additionally carries the compiler runtime (`libgcc_s_seh-1.dll`, `libstdc++-6.dll`,
+`libwinpthread-1.dll`); toolchain runtimes are not third-party project dependencies and are not
+listed in `licenses/`. The `cuexis_player_distribution` gate checks this set for exact equality in
+both directions.
+
 Optional vcpkg feature `shader-tools` additionally resolves shaderc 2026.2, SPIRV-Tools
 1.4.350.1 and SPIRV-Cross 1.4.350.1, plus transitive glslang 16.4.0 (BSD-3-Clause with Apache-2.0
 Google components) and SPIRV-Headers. Those ports are developer-only compile-time tools for

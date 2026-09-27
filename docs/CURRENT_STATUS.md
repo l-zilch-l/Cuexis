@@ -53,7 +53,7 @@ A2 只证明冻结决策可以被明确描述和表征，不代表 v5 Playback�
 版本门禁或 Reference Host 已实现；SDK 仍为 `0.7.0`，三个工程问题继续 open。A2 之后 B1、C1、C2、D1 与 D2
 已分别取得退出证据。E1/E2 的实现与四平台验证已完成但尚未退出（见下文），其后续批次仍未完成。
 S6-B1 已落下版本比较器、独立负例测试、trusted-baseline workflow 和发行 checklist；当前显示版本
-为 `26.09.26-1`（E1/E2 收尾时滚动到 `26.09.24-1`，E3 收尾时按 Version Gate 日期滚动推进到 `26.09.26-1`，见下），SDK API 仍为 `0.7.0`。`26.09.21-2` 在 UTC `2026-09-22` 已过期，因此前进到当天 build 1。当天曾写成的 `26.09.23-1` 被 Version Gate 以 `version.release_date.future` 拒绝，分支收回 `26.09.22-1`；UTC 进入 `2026-09-23` 后再前进到 `26.09.23-1`。bootstrap PR #26 已将门禁纳入 `master`，并启用
+为 `26.09.27-1`（E1/E2 收尾时滚动到 `26.09.24-1`，E3 收尾时按 Version Gate 日期滚动推进到 `26.09.26-1`，C4 实现提交时可信 UTC 日期进入 `2026-09-27`，再次滚动到 `26.09.27-1`，见下），SDK API 仍为 `0.7.0`。`26.09.21-2` 在 UTC `2026-09-22` 已过期，因此前进到当天 build 1。当天曾写成的 `26.09.23-1` 被 Version Gate 以 `version.release_date.future` 拒绝，分支收回 `26.09.22-1`；UTC 进入 `2026-09-23` 后再前进到 `26.09.23-1`。bootstrap PR #26 已将门禁纳入 `master`，并启用
 `Version advancement (pre-merge)` required check、strict latest-base 和 admin enforcement。
 候选 PR #27 的 `d4697549a50e9c517ac393c27786826aa43ce9cc` 以 trusted baseline
 `4545742ed63ae2d8f11ad07e80930ce5b88fa0ce` 通过 protected Version Gate run `35586930775`，
@@ -130,7 +130,21 @@ candidate 两个闭包，先全部构建并自校验，再替换，candidate 失
 772/772（media-tools），Version Gate 通过；该批次第一次推送时 MinGW 因 `_dupenv_s` 不是 MinGW CRT
 符号而链接失败，改为按 `_MSC_VER` 选择后修复。按 `S6-G12` 的逐项验收、测试注册与残余见
 [S6-E3 退出报告](stage_reports/stages/stage-06/2026-09-26-s6-e3-exit.md)。
-C4 及后续批次仍未完成。
+C4 已落地具名参考宿主与可运行 Player 分发目录，但尚未形成批次退出结论：`examples/reference_host/`
+是一个独立宿主工程，只通过 `find_package(Cuexis 0.7.0 CONFIG REQUIRED COMPONENTS Playback)` 消费
+安装后的公共头与导出 target，自带主循环、`IContentProvider` 实现、宿主时钟与帧消费，声明
+`CUEXIS_HOST_API_VERSION` 作为编写基线，不包含仓库私有头、不链接 `cuexis_player_support`；门禁
+`cuexis_reference_host_staging` 把当前构建安装到 staging 前缀、把宿主复制到源树之外配置构建，并在
+清理过的 PATH 下完成启动、加载、提交、逐帧更新与摘要、Seek、成功重载、被拒绝的宿主提供者故障
+重载（活动内容不被扰动）、发布 `.cxc` 包加载与销毁，同时校验参考身份与 CFU-F 帧摘要 golden、
+公共头白名单和（shared 包）外来 toolchain 拒绝。Player 不进入 SDK 安装树：`cuexis_player_dist`
+生成一个自包含的分发目录（可执行文件、实际加载的运行时库、默认资源位置 `assets/`、`VERSION.txt`、
+`README.txt`、notices 与 `licenses/` 下十个 vcpkg port 版权文本），门禁
+`cuexis_player_distribution` 把目录复制到别处、在清理过的 PATH 下启动并要求稳定失败码，同时拒绝
+构建产物混入与 SDK 安装树混装。SDK API 仍为 `0.7.0`，candidate 开关仍只是构建树编译定义，草案中的
+`Cuexis_ALLOW_EXPERIMENTAL` opt-in 尚未实现。C4 报告见
+[参考宿主与 Player 分发](stage_reports/stages/stage-06/2026-09-27-s6-c4-reference-host-and-player-distribution.md)。
+C4 的残余（本地 shared 分发目录、hosted 四平台同 SHA 证据）与后续批次仍未完成。
 
 ## 已关闭的 Full Review
 

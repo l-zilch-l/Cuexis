@@ -86,15 +86,25 @@ application staging
   Player support + renderer + SDL/OpenGL/audio adapters + optional media tools
   never exported as Cuexis SDK components
 
-reference-host staging (future C4)
+player distribution
+  one self-contained directory per flavor: executable, loaded runtime libraries,
+  assets/ default resource location, VERSION.txt metadata, notices and licenses/
+  produced by cuexis_player_dist; never merged across static/shared or Debug/Release
+
+reference-host staging (S6-C4)
   clean find_package consumer of the installed public Playback boundary
   no source-tree engine include, no Player private library, no third-party engine SDK
+  examples/reference_host/ configured and run from a copied directory with a
+  sanitized PATH
 ~~~
 
 Production/experimental, static/shared and Debug/Release staging directories are independent.
 The runtime directory does not rely on source-tree assets or developer PATH. Installed package
 metadata exposes display version, SDK API version, enabled flavor/components and required license
-files. A candidate package cannot be accepted by a production consumer accidentally.
+files. A candidate package cannot be accepted by a production consumer accidentally: SDK API
+`0.7.0` installs one production flavor, the candidate switch `CUEXIS_ENABLE_CHART_V5_CANDIDATE` is a
+build-tree compile definition that is not installed and adds no consumer-visible switch, and the
+`Cuexis_ALLOW_EXPERIMENTAL` opt-in of the draft proposal is still not implemented.
 
 ## 5. Architecture Verification State
 
@@ -106,8 +116,11 @@ files. A candidate package cannot be accepted by a production consumer accidenta
 | Player source boundaries | Control, options, assembly, and smoke are separate translation units | C3 adds the typed command table |
 | Media importer isolation | E1/E2 local exit: `cuexis_media_import` and `cuexis_media_importer` exist behind default-OFF `CUEXIS_BUILD_MEDIA_TOOLS`; Playback/Player do not link them | Hosted four-platform byte equality and package tests |
 | Production/experimental staging | Contract only; no package flavor gate yet | B1/C4 clean staging |
-| Reference Host | Contract only; example not yet present | C4 external consumer/interactive host |
+| Reference Host | C4: `examples/reference_host/` builds against the installed `Cuexis::Playback` package only and runs from a clean staging copy; gate `cuexis_reference_host_staging` | Hosted evidence on the C4 SHA |
+| Player distribution | C4: `cuexis_player_dist` assembles one flavor-labelled self-contained directory; gate `cuexis_player_distribution` verifies contents, licenses and a sanitized-PATH start | Hosted evidence on the C4 SHA; Linux hosted presets do not build the Player |
 
 This document records the dependency contract. The presentation renderer target and the OpenGL
 dependency edge now exist. Player support exists and is not installed. The media import target exists
-behind the media-tools feature and remains outside the SDK install closure.
+behind the media-tools feature and remains outside the SDK install closure. The reference host and the
+Player distribution are separate artifacts: the host consumes the installed SDK package, the
+distribution is not an SDK install tree.

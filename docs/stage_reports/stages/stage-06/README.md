@@ -47,6 +47,10 @@
 - [2026-09-26 S6-E3 退出](2026-09-26-s6-e3-exit.md)
   （按 `S6-G12` 逐项映射验收证据、测试注册、本地与四平台 hosted 复验及残余；本地批次退出，
   不是 Stage 6 关闭或 owner acceptance）
+- [2026-09-27 S6-C4 参考宿主与 Player 分发](2026-09-27-s6-c4-reference-host-and-player-distribution.md)
+  （`examples/reference_host/` 的安装后公共边界宿主、staging/清理 PATH/拒绝门禁、`cuexis_player_dist`
+  自包含分发目录与许可证集合、`0.7.0` 基线升级与配置回滚边界、残余与未完成项；该页明确不是
+  批次退出）
 
 权威范围见 [Stage 6 计划](../../../stage_plans/active/stage-06/plan.md)、
 [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md) 和

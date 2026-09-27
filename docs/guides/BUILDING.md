@@ -79,6 +79,7 @@ cuexis_render_opengl_tests
 cuexis_player_diagnostics_tests
 cuexis_player_control_tests
 cuexis_format_check
+cuexis_player_dist
 ```
 <!-- CUEXIS_ACTIVE_TARGETS_END -->
 
@@ -463,6 +464,57 @@ component 被拒绝；安装包门禁同时扫描全部已安装公共头是否�
 ```powershell
 ctest --preset headless-debug -R "^cuexis_external_consumer_" --output-on-failure
 ```
+
+### 具名参考宿主（Reference Host）
+
+SDK 安装树之外还有一个独立示例宿主工程 `examples/reference_host/`。它只通过
+`find_package(Cuexis 0.7.0 CONFIG REQUIRED COMPONENTS Playback)` 消费安装后的公共头与导出
+target，自带主循环、`IContentProvider` 实现、宿主时钟和帧消费，不包含仓库内私有头，也不链接
+Player 配置实现（`cuexis_player_support`）。它的运行记录覆盖启动、加载、提交、逐帧更新与摘要、
+Seek、成功重载、被拒绝的宿主提供者故障重载、发布包加载与销毁：
+
+```powershell
+cmake -S examples/reference_host -B out/build/reference-host `
+  -DCuexis_DIR=out/install/headless-release/lib/cmake/Cuexis
+cmake --build out/build/reference-host
+```
+
+宿主声明 `CUEXIS_HOST_API_VERSION`（默认 `0.7.0`）作为它编写时对齐的 SDK API 基线，并在 SDK
+minor 不兼容时于 configure 阶段失败。门禁 `cuexis_reference_host_staging` 会把当前构建安装到
+staging 前缀、把示例工程复制到源树之外、在该副本上配置和构建，并在**清理过的 PATH** 下运行：
+
+```powershell
+ctest --preset debug -R cuexis_reference_host_staging --output-on-failure
+```
+
+门禁同时校验示例源码只包含 `cuexis/playback/` 公共头、不引用仓库内 target、包身份与参考帧摘要
+匹配 CFU-F golden，以及（shared 包）记录的 toolchain 与 consumer 不一致时被拒绝。
+
+### 可运行 Player 分发目录
+
+Player **不进入 SDK 安装树**。分发物由独立打包目标生成，一个目录即一个 flavor：
+
+```powershell
+cmake --build --preset release --target cuexis_player_dist
+```
+
+产物位于 `out/build/<preset>/dist/cuexis-player-<display-version>-<system>-<linkage>-<build-type>/`，
+包含 Player 可执行文件、它实际链接的运行时库（static 构建通常只有 vcpkg 构建的动态第三方库；
+MinGW 构建额外包含 libgcc/libstdc++/libwinpthread）、默认资源位置 `assets/`（charts、projects、
+schemas）、`VERSION.txt` 元数据、`README.txt`、许可证文本与 `licenses/` 下的全部第三方版权文本。
+分发目录不含 `.lib`/`.pdb`/`.ilk`/`CMakeCache.txt` 等构建产物，也不含 SDK 安装树。
+
+`VERSION.txt` 记录 `library_type`、`build_type`、`system_name`、`system_processor`、compiler 和
+display/SDK 版本；static/shared 或 Debug/Release 不得合并到同一目录。门禁
+`cuexis_player_distribution` 打包、校验内容与 flavor 记录，把目录复制到别处后在清理过的 PATH
+下启动 Player，并要求参数与内容失败返回稳定诊断码（`player.arguments.unknown`、
+`player.chart.open_failed`），从而证明运行时库部署完整：
+
+```powershell
+ctest --preset debug -R cuexis_player_distribution --output-on-failure
+```
+
+`--smoke-test` 仍然需要窗口与 GPU，因此不属于无头门禁。
 
 ### Shared preview
 
