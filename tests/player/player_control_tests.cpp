@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <functional>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
@@ -316,6 +317,15 @@ class Fixture final {
         return apply(PlayerCommand{.kind = PlayerCommandKind::Load});
     }
 
+    // Loads content that carries a main music track. The clock is named explicitly because the
+    // controller refuses to guess a mode from a failed default load.
+    [[nodiscard]] auto loadAudio(std::string_view project) -> Result<void> {
+        sourceProject = std::string{project};
+        explicitChart.clear();
+        return apply(
+            PlayerCommand{.kind = PlayerCommandKind::Load, .mode = PlaybackMode::CuexisAudio});
+    }
+
     [[nodiscard]] auto play() -> Result<void> {
         return apply(PlayerCommand{.kind = PlayerCommandKind::Play});
     }
@@ -578,7 +588,7 @@ TEST_CASE("PlayerController keeps the active bundle when the renderer candidate 
 TEST_CASE("PlayerController rejects a candidate that went stale before the precheck",
           "[player][control][command][failure]") {
     Fixture fixture;
-    REQUIRE(fixture.load(audioProject).has_value());
+    REQUIRE(fixture.loadAudio(audioProject).has_value());
     REQUIRE(fixture.controller->mode() == PlaybackMode::CuexisAudio);
     const auto before = snapshotBundle(fixture);
 
@@ -618,10 +628,105 @@ TEST_CASE("PlayerController rejects a candidate that went stale before the prech
     CHECK(fixture.audio.openCalls == 2);
 }
 
+TEST_CASE("PlayerController Load refuses audio content under the default clock without a mode",
+          "[player][control][command][mode]") {
+    Fixture fixture;
+
+    // The configured source carries a main music track, so the default ChartClock does not match.
+    // The controller must refuse instead of re-reading the source and preparing CuexisAudio: an
+    // automatic retry after a mode failure is rejected by ADR 0042, and the mode is never guessed
+    // from a failed load.
+    const auto rejected = fixture.load(audioProject);
+    REQUIRE_FALSE(rejected.has_value());
+    CHECK(rejected.error().code() == "player.command.mode_required");
+    // The cause keeps the engine's own diagnosis of why the default clock did not fit.
+    REQUIRE(rejected.error().cause() != nullptr);
+    CHECK(rejected.error().cause()->code() == "playback.mode.content_mismatch");
+
+    // The refused load prepared the source once and never decoded a clip or opened a device.
+    CHECK(fixture.clipPreparationCalls == 0);
+    CHECK(fixture.audio.openCalls == 0);
+    CHECK(fixture.controller->state() == PlayerAppState::Empty);
+    CHECK(fixture.controller->audio() == nullptr);
+    CHECK_FALSE(fixture.renderer.status().candidateOutstanding);
+
+    // Naming the clock on Load is the explicit switch the ADR requires, and it succeeds.
+    const auto accepted = fixture.loadAudio(audioProject);
+    REQUIRE(accepted.has_value());
+    CHECK(fixture.controller->mode() == PlaybackMode::CuexisAudio);
+    CHECK(fixture.controller->state() == PlayerAppState::Loaded);
+}
+
+TEST_CASE("PlayerController Load refuses an explicit audio source that names no mode",
+          "[player][control][command][mode]") {
+    Fixture fixture;
+
+    // An explicit source cannot be re-read at all, so a named mode is the only way through.
+    auto explicitSource = projectSource(audioProject);
+    REQUIRE(explicitSource.has_value());
+    auto command = PlayerCommand{.kind = PlayerCommandKind::Load};
+    command.source = std::move(*explicitSource);
+
+    const auto rejected = fixture.apply(std::move(command));
+    REQUIRE_FALSE(rejected.has_value());
+    CHECK(rejected.error().code() == "player.command.mode_required");
+    CHECK(fixture.clipPreparationCalls == 0);
+    CHECK(fixture.controller->state() == PlayerAppState::Empty);
+}
+
+TEST_CASE("PlayerController reports a decoder-stage clip failure without publishing a bundle",
+          "[player][control][command][failure][decoder]") {
+    Fixture fixture;
+
+    // The clip port decodes the chart's main music. Failing it exercises the decoder stage the
+    // staged-failure acceptance list names, which no earlier case reached.
+    fixture.failClipPreparation = true;
+    const auto rejected = fixture.loadAudio(audioProject);
+    REQUIRE_FALSE(rejected.has_value());
+    CHECK(rejected.error().code() == "test.clip.decode_failed");
+    // The decoder runs before any device is opened, so the failure is a prepare failure.
+    CHECK(fixture.clipPreparationCalls == 1);
+    CHECK(fixture.audio.openCalls == 0);
+
+    // A prepare-stage failure publishes nothing and leaves the controller empty.
+    CHECK(fixture.controller->state() == PlayerAppState::Empty);
+    CHECK(fixture.controller->audio() == nullptr);
+    CHECK_FALSE(fixture.controller->activeAudioHandle().has_value());
+    CHECK(fixture.store.metrics().registeredClips == 0);
+    CHECK_FALSE(fixture.renderer.status().active);
+    CHECK_FALSE(fixture.renderer.status().candidateOutstanding);
+
+    // Retrying with the port healthy loads normally, so the failure left no residue.
+    fixture.failClipPreparation = false;
+    REQUIRE(fixture.loadAudio(audioProject).has_value());
+    CHECK(fixture.controller->state() == PlayerAppState::Loaded);
+    CHECK(fixture.store.metrics().registeredClips == 1);
+}
+
+TEST_CASE("PlayerController keeps the published bundle when a decoder-stage reload fails",
+          "[player][control][command][failure][decoder]") {
+    Fixture fixture;
+    REQUIRE(fixture.loadAudio(audioProject).has_value());
+    REQUIRE(fixture.play().has_value());
+    const auto before = snapshotBundle(fixture);
+    REQUIRE(before.audioHandle.has_value());
+
+    // Reloading with a failing decoder must not disturb the active bundle, its identity, or its
+    // audio handle. Only the audio activation step may publish a physical failure.
+    fixture.failClipPreparation = true;
+    const auto rejected = fixture.reload();
+    REQUIRE_FALSE(rejected.has_value());
+    CHECK(rejected.error().code() == "test.clip.decode_failed");
+
+    checkBundleUnchanged(fixture, before, PlayerAppState::Playing);
+    CHECK(fixture.store.metrics().registeredClips == 1);
+    CHECK(fixture.audio.unloadCalls == 0);
+}
+
 TEST_CASE("PlayerController enters Failed when audio activation fails and keeps the old bundle",
           "[player][control][command][failure]") {
     Fixture fixture;
-    REQUIRE(fixture.load(audioProject).has_value());
+    REQUIRE(fixture.loadAudio(audioProject).has_value());
     REQUIRE(fixture.controller->mode() == PlaybackMode::CuexisAudio);
     REQUIRE(fixture.play().has_value());
     REQUIRE(fixture.audio.openCalls == 1);
@@ -651,7 +756,7 @@ TEST_CASE("PlayerController enters Failed when audio activation fails and keeps 
 TEST_CASE("PlayerController enters Failed when the commit fails and keeps the published handles",
           "[player][control][command][failure]") {
     Fixture fixture;
-    REQUIRE(fixture.load(audioProject).has_value());
+    REQUIRE(fixture.loadAudio(audioProject).has_value());
     REQUIRE(fixture.play().has_value());
     const auto before = snapshotBundle(fixture);
     REQUIRE(before.audioHandle.has_value());
@@ -677,7 +782,7 @@ TEST_CASE("PlayerController enters Failed when the audio device cannot be opened
     Fixture fixture;
     fixture.audio.failOpen = true;
 
-    const auto rejected = fixture.load(audioProject);
+    const auto rejected = fixture.loadAudio(audioProject);
     REQUIRE_FALSE(rejected.has_value());
     CHECK(rejected.error().code() == "test.audio.device_open_failed");
     CHECK(contextValue(rejected.error(), "stage") == "audio_activate");
@@ -690,9 +795,13 @@ TEST_CASE("PlayerController enters Failed when the audio device cannot be opened
     CHECK_FALSE(fixture.controller->activeAudioHandle().has_value());
 
     // Rebuild is still the recovery from Failed, even when the failure happened before the first
-    // bundle existed.
+    // bundle existed. With no bundle to rebuild, Rebuild falls back to a fresh Load, which must
+    // name the clock because the controller never guesses a mode from a failed load.
     fixture.audio.failOpen = false;
-    REQUIRE(fixture.rebuild().has_value());
+    REQUIRE(fixture
+                .apply(PlayerCommand{.kind = PlayerCommandKind::Rebuild,
+                                     .mode = PlaybackMode::CuexisAudio})
+                .has_value());
     CHECK(fixture.controller->state() == PlayerAppState::Loaded);
     CHECK(fixture.renderer.status().active);
     CHECK(fixture.controller->audio() != nullptr);
@@ -702,7 +811,7 @@ TEST_CASE("PlayerController enters Failed when the audio device cannot be opened
 TEST_CASE("PlayerController leaves Failed only through Load or Rebuild",
           "[player][control][command][failure]") {
     Fixture fixture;
-    REQUIRE(fixture.load(audioProject).has_value());
+    REQUIRE(fixture.loadAudio(audioProject).has_value());
     REQUIRE(fixture.play().has_value());
     fixture.audio.failActivateReplacement = true;
     REQUIRE_FALSE(fixture.reload().has_value());
@@ -828,10 +937,54 @@ TEST_CASE("PlayerController preserves the chart time across consecutive reloads"
     CHECK_FALSE(fixture.renderer.status().candidateOutstanding);
 }
 
+TEST_CASE("PlayerController defines the ChartClock seek range as unbounded above",
+          "[player][control][command][seek]") {
+    Fixture fixture;
+    REQUIRE(fixture.load(chartClockProject).has_value());
+    REQUIRE(fixture.play().has_value());
+
+    // A ChartClock session has no decoded clip and therefore no known playable duration. The
+    // documented semantic is that a seek validates finiteness and non-negativity and applies any
+    // finite target, because the upper bound is only knowable where a duration exists.
+    const auto far = fixture.seek(600000.0);
+    REQUIRE(far.has_value());
+    const auto applied = fixture.controller->consumeChartSeekTarget();
+    REQUIRE(applied.has_value());
+    CHECK(*applied == Catch::Approx(600000.0));
+    // A seek is a discontinuity rather than an implicit continuity.
+    const auto sampled = fixture.controller->chartClock().sample(0.0);
+    REQUIRE(sampled.has_value());
+    CHECK(sampled->discontinuityId > 0);
+}
+
+TEST_CASE("PlayerController still rejects a non-finite or negative ChartClock seek",
+          "[player][control][command][seek]") {
+    Fixture fixture;
+    REQUIRE(fixture.load(chartClockProject).has_value());
+    REQUIRE(fixture.play().has_value());
+
+    // The play transition stages its own target. Drain it so the refusals below are the only
+    // thing that could stage another.
+    REQUIRE(fixture.controller->consumeChartSeekTarget().has_value());
+
+    // The lower bound is knowable without a duration, so it is enforced regardless of mode.
+    const auto negative = fixture.seek(-1.0);
+    REQUIRE_FALSE(negative.has_value());
+    CHECK(negative.error().code() == "player.command.seek_negative");
+    CHECK(contextValue(negative.error(), "command") == "seek");
+
+    const auto infinite = fixture.seek(std::numeric_limits<double>::infinity());
+    REQUIRE_FALSE(infinite.has_value());
+    CHECK(infinite.error().code() == "player.command.seek_not_finite");
+
+    // Neither refusal reached the chart clock.
+    CHECK_FALSE(fixture.controller->consumeChartSeekTarget().has_value());
+}
+
 TEST_CASE("PlayerController reload never switches the active PlaybackMode",
           "[player][control][command][reload]") {
     Fixture fixture;
-    REQUIRE(fixture.load(audioProject).has_value());
+    REQUIRE(fixture.loadAudio(audioProject).has_value());
     REQUIRE(fixture.controller->mode() == PlaybackMode::CuexisAudio);
     const auto before = snapshotBundle(fixture);
 
@@ -854,7 +1007,7 @@ TEST_CASE("PlayerController reload never switches the active PlaybackMode",
 TEST_CASE("PlayerController seeks an audio session in the source domain",
           "[player][control][command][audio]") {
     Fixture fixture;
-    REQUIRE(fixture.load(audioProject).has_value());
+    REQUIRE(fixture.loadAudio(audioProject).has_value());
     REQUIRE(fixture.play().has_value());
     REQUIRE(fixture.audio.transport != nullptr);
 
@@ -877,7 +1030,7 @@ TEST_CASE("PlayerController seeks an audio session in the source domain",
 TEST_CASE("PlayerController folds device observations into the application state",
           "[player][control][command][audio]") {
     Fixture fixture;
-    REQUIRE(fixture.load(audioProject).has_value());
+    REQUIRE(fixture.loadAudio(audioProject).has_value());
     REQUIRE(fixture.play().has_value());
 
     // End of stream stops a playing application without losing its position.
@@ -903,7 +1056,7 @@ TEST_CASE("PlayerController folds device observations into the application state
 TEST_CASE("PlayerController loads content with no audio track and no object",
           "[player][control][command]") {
     Fixture fixture;
-    REQUIRE(fixture.load(audioProject).has_value());
+    REQUIRE(fixture.loadAudio(audioProject).has_value());
     REQUIRE(fixture.controller->mode() == PlaybackMode::CuexisAudio);
     CHECK(fixture.store.metrics().registeredClips == 1);
 
@@ -1023,7 +1176,7 @@ TEST_CASE("PlayerController keeps the discontinuity contract when input replaces
 TEST_CASE("PlayerController shuts audio, the clip, and the session down in order",
           "[player][control][command][shutdown]") {
     Fixture fixture;
-    REQUIRE(fixture.load(audioProject).has_value());
+    REQUIRE(fixture.loadAudio(audioProject).has_value());
     REQUIRE(fixture.play().has_value());
     CHECK(fixture.store.metrics().registeredClips == 1);
 

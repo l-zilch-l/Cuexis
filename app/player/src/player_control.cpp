@@ -259,6 +259,10 @@ auto PlayerController::audio() noexcept -> PlayerAudioSeat* {
     return audioSeat_.get();
 }
 
+auto PlayerController::gain() const noexcept -> double {
+    return gain_;
+}
+
 auto PlayerController::activeAudioHandle() const noexcept -> std::optional<audio::AudioClipHandle> {
     return activeClip_;
 }
@@ -389,7 +393,6 @@ auto PlayerController::discardClip(const std::optional<audio::AudioClipHandle>& 
 }
 
 auto PlayerController::runLoad(PlayerCommand& command) -> core::Result<void> {
-    const bool explicitSource = command.source.has_value();
     TransactionGuard guard{transactionInProgress_};
 
     auto source = sourceFor(command);
@@ -402,22 +405,14 @@ auto PlayerController::runLoad(PlayerCommand& command) -> core::Result<void> {
     auto prepared = session->prepareLoad(std::move(*source), mode);
     if (!prepared && !command.mode.has_value() &&
         prepared.error().code() == "playback.mode.content_mismatch") {
-        if (explicitSource) {
-            // An explicit source cannot be re-read, so the mode must be named instead of probed.
-            return core::unexpected(
-                core::Error{"player.command.mode_required",
-                            "An explicit source that needs an audio clock must name its mode"}
-                    .withCause(std::move(prepared.error())));
-        }
-        // The configured source is re-read and prepared once with the audio clock. The mode is
-        // never guessed from a failed file.
-        auto retry = sourceFor(command);
-        if (!retry) {
-            return core::unexpected(std::move(retry.error()));
-        }
-        mode = playback::PlaybackMode::CuexisAudio;
-        config = freezeConfig(mode);
-        prepared = session->prepareLoad(std::move(*retry), mode);
+        // The mode is never guessed from a failed load and the source is never prepared twice.
+        // Content that needs another clock must name it on Load, which is the explicit switch
+        // ADR 0042 requires. An explicit source cannot be re-read either, so both paths refuse.
+        return core::unexpected(
+            core::Error{"player.command.mode_required",
+                        "Content whose clock differs from the default must be loaded with an "
+                        "explicit mode"}
+                .withCause(std::move(prepared.error())));
     }
     if (!prepared) {
         return core::unexpected(std::move(prepared.error()).withContext("command", "load"));

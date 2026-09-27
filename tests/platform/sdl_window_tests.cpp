@@ -130,6 +130,59 @@ TEST_CASE("Stage 0 rejects a second active window", "[platform][window]") {
     CHECK(second.error().code() == "platform.sdl.window_already_active");
 }
 
+TEST_CASE("Window reports the negotiated fullscreen state, not the request",
+          "[platform][window][fullscreen]") {
+    auto runtime = cuexis::platform_sdl::SdlRuntime::create();
+    REQUIRE(runtime.has_value());
+
+    auto windowedConfig = dummyWindowConfig();
+    windowedConfig.fullscreen = false;
+    auto windowed = cuexis::platform_sdl::SdlWindow::create(runtime.value(), windowedConfig);
+    REQUIRE(windowed.has_value());
+    const auto windowedState = windowed->fullscreen();
+    REQUIRE(windowedState.has_value());
+    CHECK_FALSE(*windowedState);
+}
+
+TEST_CASE("A requested-fullscreen window reports the granted state",
+          "[platform][window][fullscreen]") {
+    auto runtime = cuexis::platform_sdl::SdlRuntime::create();
+    REQUIRE(runtime.has_value());
+
+    // The request and the grant are separate facts. This window asks for fullscreen, so a getter
+    // that echoes the request and a getter that reads SDL_GetWindowFlags disagree only on a
+    // platform that declines. The assertion pins the granted value on a platform that accepts.
+    auto config = dummyWindowConfig();
+    config.fullscreen = true;
+    auto created = cuexis::platform_sdl::SdlWindow::create(runtime.value(), config);
+    REQUIRE(created.has_value());
+    const auto state = created->fullscreen();
+    REQUIRE(state.has_value());
+    CHECK(*state);
+
+    // Repeated reads are stable, so the value is a live query rather than a one-shot latch.
+    const auto again = created->fullscreen();
+    REQUIRE(again.has_value());
+    CHECK(*again == *state);
+}
+
+TEST_CASE("A moved-from window refuses the fullscreen query", "[platform][window][fullscreen]") {
+    auto runtime = cuexis::platform_sdl::SdlRuntime::create();
+    REQUIRE(runtime.has_value());
+
+    auto created = cuexis::platform_sdl::SdlWindow::create(runtime.value(), dummyWindowConfig());
+    REQUIRE(created.has_value());
+    auto window = std::move(created).value();
+    auto replacement = std::move(window);
+
+    const auto missing = window.fullscreen();
+    REQUIRE_FALSE(missing.has_value());
+    CHECK(missing.error().code() == "platform.sdl.window_unavailable");
+
+    const auto replacementState = replacement.fullscreen();
+    REQUIRE(replacementState.has_value());
+}
+
 TEST_CASE("A copied window lease outlives the window wrapper", "[platform][window][lease]") {
     cuexis::platform_sdl::SdlWindowLease lease;
     {

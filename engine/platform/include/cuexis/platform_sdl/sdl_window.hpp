@@ -116,6 +116,9 @@ class SdlWindow final {
     [[nodiscard]] core::Result<DrawableSize> drawableSize() const;
     [[nodiscard]] core::Result<void> setMinimized(bool minimized);
     [[nodiscard]] core::Result<bool> minimized() const;
+    // Reads the negotiated window flags. This reports what the platform actually granted, not the
+    // fullscreen value the window was requested with.
+    [[nodiscard]] core::Result<bool> fullscreen() const;
     [[nodiscard]] SdlWindowLease lease() const;
 
   private:

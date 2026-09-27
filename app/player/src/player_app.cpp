@@ -144,14 +144,33 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                                 std::move(ports),
                                 logger};
 
-    if (auto loaded =
-            controller.apply(PlayerCommand{.kind = player_support::PlayerCommandKind::Load});
+    // The startup Load names its clock. The audio smoke test is defined against the audio clock, so
+    // it selects CuexisAudio; otherwise an explicit --mode wins, and the default is the ChartClock
+    // the controller would use anyway. Nothing is probed from a failed load.
+    auto startupMode = playback::PlaybackMode::ChartClock;
+    if (options.clock.has_value()) {
+        switch (*options.clock) {
+        case PlayerClockOption::Host:
+            startupMode = playback::PlaybackMode::HostClock;
+            break;
+        case PlayerClockOption::Audio:
+            startupMode = playback::PlaybackMode::CuexisAudio;
+            break;
+        case PlayerClockOption::Chart:
+            startupMode = playback::PlaybackMode::ChartClock;
+            break;
+        }
+    } else if (options.audioSmokeTest) {
+        startupMode = playback::PlaybackMode::CuexisAudio;
+    }
+    if (auto loaded = controller.apply(
+            PlayerCommand{.kind = player_support::PlayerCommandKind::Load, .mode = startupMode});
         !loaded) {
         return core::unexpected(std::move(loaded.error()));
     }
-    if (auto recorded =
-            logEffectiveWindow(window, appConfig->app.requested, appConfig->app.requested.vsync,
-                               controller.audio() != nullptr, appConfig->profile.id, logger);
+    if (auto recorded = logEffectiveWindow(
+            window, appConfig->app.requested, appConfig->app.requested.vsync, controller.gain(),
+            controller.audio() != nullptr, appConfig->profile.id, logger);
         !recorded) {
         return core::unexpected(std::move(recorded.error()));
     }
