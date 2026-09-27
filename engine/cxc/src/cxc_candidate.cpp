@@ -530,7 +530,7 @@ auto validateCandidateChartExtension(const CxcPackage& package) -> core::Diagnos
             continue;
         }
         if (bytes->size() > maxPackedBytes) {
-            addError(diagnostics, "cxc.budget.exceeded",
+            addError(diagnostics, "cxc.candidate.budget_exceeded",
                      "Packed Chart candidate exceeds the 16 MiB entry limit", field + "/path");
         }
         const auto artifactIdentity = readRequiredString(*item, "artifactIdentity", diagnostics);

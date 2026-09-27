@@ -29,10 +29,13 @@ auto fail(std::string code, std::string message) -> core::Error {
 
 // Checked narrowing for the fixed-width wire fields of the artifact. Every call site is preceded
 // by a budget gate that makes the value fit; the check keeps that provable instead of implicit.
+// The diagnostic is distinct from the byte budgets on purpose: a wire-range overflow is a
+// representability failure, not a budget violation, so it must not be reported as
+// `packed.budget.section_bytes` (see Spec 3.3 and the review note SPEC-02).
 [[nodiscard]] auto narrowU32(std::uint64_t value) -> core::Result<std::uint32_t> {
     if (value > std::numeric_limits<std::uint32_t>::max()) {
         return core::unexpected(
-            fail("packed.budget.section_bytes", "Packed field exceeds the uint32 wire range"));
+            fail("packed.field.wire_range", "Packed field exceeds the uint32 wire range"));
     }
     return static_cast<std::uint32_t>(value);
 }
@@ -986,7 +989,7 @@ auto encode(const CanonicalSemanticChart& chart, PackedChartProfile profile,
     const auto decoded = narrowU32(decodedBytes);
     if (!sectionCount || !directorySize || !total || !decoded)
         return core::unexpected(
-            fail("packed.budget.section_bytes", "Packed directory exceeds the uint32 wire range"));
+            fail("packed.field.wire_range", "Packed directory exceeds the uint32 wire range"));
     ByteWriter file;
     static constexpr std::array<std::byte, 8> magic{std::byte{'C'}, std::byte{'X'}, std::byte{'P'},
                                                     std::byte{'K'}, std::byte{'5'}, std::byte{0},
@@ -1009,7 +1012,7 @@ auto encode(const CanonicalSemanticChart& chart, PackedChartProfile profile,
     const auto referenceTotal = narrowU32(dict.refIndex.size());
     if (!entityTotal || !requirementTotal || !stringTotal || !referenceTotal)
         return core::unexpected(
-            fail("packed.budget.section_bytes", "Packed counters exceed the uint32 wire range"));
+            fail("packed.field.wire_range", "Packed counters exceed the uint32 wire range"));
     file.writeU32(*entityTotal);
     file.writeU32(*requirementTotal);
     file.writeU32(0);

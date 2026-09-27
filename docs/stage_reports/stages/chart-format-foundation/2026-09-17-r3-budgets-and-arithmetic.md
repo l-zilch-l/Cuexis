@@ -76,6 +76,15 @@ assertions: 136 | 87 passed | 49 failed
 R3 保留 `packed.constraints.invalid`（CNS0 行级）与 `packed.strings.count` /
 `packed.references.invalid`（行数超出 payload）作为各自结构检查的诊断。
 
+> **订正说明（2026-09-28，SPEC-02）**：上表末行把两种语义合并到了 `packed.budget.section_bytes`
+> 一个码上。其中「section 内部 u32 字段越界」（wire-range 不可表示）**不是**预算违规，
+> 而该码在 [PACKED_CHART_FORMAT.md](../../../formats/PACKED_CHART_FORMAT.md) §3.3 被定义为
+> 单 section 的 encoded/decoded **字节预算**。两者混用会让「每个预算有自己的诊断」的陈述
+> 不精确。**现状**：wire-range 溢出已改用独立稳定码 `packed.field.wire_range`
+> （`engine/chart/src/packed_chart_tables.cpp` 的 `narrowU32` 与两处 header 计数器检查）；
+> `packed.budget.section_bytes` 现在只用于真正的 section 字节预算。本行原文保留不改，
+> 以上为追加订正。
+
 ## 4. 入口一致性（R3.3）
 
 `packed::encode` 增加第三参数 `PackedChartLimits limits = {}`，`PackedChartWriter::size`/
