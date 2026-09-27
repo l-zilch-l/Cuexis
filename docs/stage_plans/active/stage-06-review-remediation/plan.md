@@ -92,8 +92,8 @@ R0 决策门禁（owner 裁定 4 项）
 | --- | --- | --- | --- |
 | R0 | — | owner 对 4 项裁定的书面记录 | 4 项裁定各有结论与生效文档指针 |
 | R1 | — | 报告/索引/状态词修正 | completed：文档门禁全绿；两轴复核指出的文档不一致项关闭。退出记录见 [2026-09-28-r1-document-and-evidence.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-r1-document-and-evidence.md) |
-| R2 | R0-1 | 诊断码修正 + 负例 | focused 测试通过；契约表与实现一致 |
-| R3 | — | 门禁加固 + 负例 | 扩展后的门禁自测通过；受保护 Version Gate 通过 |
+| R2 | R0-1 | 诊断码修正 + 负例 | completed：契约码与实现一致；候选负例断言新码；wire-range 独立成码。退出记录见 [2026-09-28-w1-diagnostics-and-version-gate.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w1-diagnostics-and-version-gate.md) |
+| R3 | — | 门禁加固 + 负例 | completed（SPEC-04 登记 BLOCKED）：扩展后的门禁自测 15 tests 通过；A2 表征注册为 CTest。退出记录同上 |
 | R4 | R0-2 | 媒体修正 + fixture/golden 决策 | 三平台 canonical 证据；负例注册 |
 | R5 | R0-1 | 原子替换修正 + 故障注入用例 | 崩溃/并发/磁盘失败用例通过 |
 | R6 | R0-3 | 渲染收敛 + 配置语义修正 | GPU smoke + 状态机用例通过 |

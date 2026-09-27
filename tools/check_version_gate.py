@@ -108,6 +108,9 @@ def compare_snapshots(
     base_date = date(2000 + base.version.year, base.version.month, base.version.day)
     candidate_date = date(2000 + candidate.version.year, candidate.version.month, candidate.version.day)
 
+    # Two hard gates that hold in both contexts: the baseline may not be dated
+    # after the trusted day, and the candidate may never move backwards past the
+    # baseline.
     if base_date > trusted_utc_date:
         raise GateError(
             "version.baseline.future",
@@ -118,23 +121,50 @@ def compare_snapshots(
             "version.date.backward",
             f"candidate {candidate.version.canonical} is before baseline {base.version.canonical}",
         )
-    if candidate_date > trusted_utc_date:
-        raise GateError(
-            "version.release_date.future",
-            f"candidate date {candidate.version.canonical} is after trusted UTC date {trusted_utc_date.isoformat()}",
-        )
-    if candidate_date < trusted_utc_date:
-        raise GateError(
-            "version.release_date.stale",
-            f"candidate date {candidate.version.canonical} is before trusted UTC date {trusted_utc_date.isoformat()}",
-        )
+
+    # The context selects which release rule is authoritative. `live` judges the
+    # candidate against the trusted UTC date supplied by the protected workflow.
+    # `historical` re-verifies an already-recorded SHA against its recorded
+    # release context: the candidate's date is not required to equal the current
+    # day, but it must still be at or after the recorded baseline and at or
+    # before the trusted upper bound (ADR 0042 S6-D07: historical SHAs are
+    # re-verified with their recorded release context, not rewritten because the
+    # re-run happens on another day). `live` keeps the strict same-day rule.
+    if context == "live":
+        if candidate_date > trusted_utc_date:
+            raise GateError(
+                "version.release_date.future",
+                f"candidate date {candidate.version.canonical} is after trusted UTC date "
+                f"{trusted_utc_date.isoformat()}",
+            )
+        if candidate_date < trusted_utc_date:
+            raise GateError(
+                "version.release_date.stale",
+                f"candidate date {candidate.version.canonical} is before trusted UTC date "
+                f"{trusted_utc_date.isoformat()}",
+            )
+    else:
+        # historical: the trusted date is the recorded release upper bound. The
+        # candidate may precede it (it was recorded earlier), but it may not be
+        # after it, so a historical re-run cannot be used to smuggle in a
+        # candidate dated after the recorded day.
+        if candidate_date > trusted_utc_date:
+            raise GateError(
+                "version.release_date.future",
+                f"candidate date {candidate.version.canonical} is after the recorded UTC date "
+                f"{trusted_utc_date.isoformat()} (historical)",
+            )
 
     if candidate_date == base_date:
+        # Report "not advanced" before "exhausted": when the candidate simply
+        # repeats the baseline build the real reason is that nothing moved, not
+        # that the same-day build number ran out. Only a candidate that does
+        # advance to an unrepresentable build is exhausted.
+        if candidate.version.build == base.version.build:
+            raise GateError("version.unchanged", "candidate version is unchanged from the baseline")
         expected_build = base.version.build + 1
         if expected_build > 2_147_483_647:
             raise GateError("version.build.exhausted", "same-day build number cannot be incremented")
-        if candidate.version.build == base.version.build:
-            raise GateError("version.unchanged", "candidate version is unchanged from the baseline")
         if candidate.version.build < expected_build:
             raise GateError(
                 "version.build.backward",
@@ -288,8 +318,20 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--base-ref", help="trusted baseline commit SHA")
     parser.add_argument("--candidate-ref", help="candidate commit SHA")
     parser.add_argument("--trusted-utc-date", help="trusted release context as YYYY-MM-DD")
-    parser.add_argument("--context", choices=("live", "historical"), default="live")
-    parser.add_argument("--event", default="local")
+    parser.add_argument(
+        "--context",
+        choices=("live", "historical"),
+        default="live",
+        help="live judges against --trusted-utc-date; historical re-verifies an already-recorded "
+        "SHA against the recorded baseline date (see ADR 0042 S6-D07)",
+    )
+    parser.add_argument(
+        "--event",
+        default="local",
+        choices=("local", "pull_request", "merge_group", "push", "workflow_dispatch"),
+        help="recorded only: event routing is decided by the workflow job conditions, not by a "
+        "date rule here. Rejected if it is ever given a different rule than --context.",
+    )
     parser.add_argument("--allow-sdk-api-change", action="store_true")
     parser.add_argument("--json", action="store_true", dest="json_output")
     return parser
@@ -328,7 +370,7 @@ def main(arguments: list[str] | None = None) -> int:
             print(_result_json(result))
         else:
             print(
-                f"version.gate.pass: event={args.event} context={result.context} "
+                f"version.gate.pass: event={args.event}(recorded) context={result.context} "
                 f"base={result.base_ref}({result.base_version}) "
                 f"candidate={result.candidate_ref}({result.candidate_version}) "
                 f"trusted_utc_date={result.trusted_utc_date}"

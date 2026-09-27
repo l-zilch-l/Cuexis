@@ -263,6 +263,120 @@ def check_text_boundaries() -> None:
         require(required_edge in architecture, f"missing planned target {required_edge}")
 
 
+def check_version_gate_contract() -> None:
+    """Characterizes S6-D07 (version gate) against the real checker and workflow.
+
+    D07 is a process contract, so the only meaningful characterization is that
+    the shipped artifacts still encode its non-negotiable clauses: build +1 on
+    the same UTC day, build=1 across days, a trusted event-derived baseline and
+    the bootstrap refusal. The behavioural half lives in
+    `tools/check_version_gate_tests.py`; this check pins the wiring so a silent
+    weakening of the workflow or the checker is caught here as well.
+    """
+    checker = (ROOT / "tools" / "check_version_gate.py").read_text(encoding="utf-8")
+    workflow = (ROOT / ".github" / "workflows" / "version-gate.yml").read_text(encoding="utf-8")
+    for code in ("version.build.skipped", "version.build.backward",
+                 "version.cross_day_build.invalid", "version.date.backward",
+                 "version.release_date.future", "version.release_date.stale",
+                 "version.baseline.not_ancestor", "version.sdk_api.changed"):
+        require(code in checker, f"missing version-gate diagnostic {code}")
+    for token in ("github.event.pull_request.base.sha",
+                  "github.event.merge_group.base_sha",
+                  "github.event.before",
+                  "version.bootstrap.required",
+                  "--trusted-utc-date",
+                  "--context live"):
+        require(token in workflow, f"missing version-gate workflow token {token}")
+    require("version.bootstrap.required" in workflow,
+            "the bootstrap refusal must stay in the trusted workflow")
+
+
+def check_reference_host_contract() -> None:
+    """Characterizes S6-D08 (SDK target and named host).
+
+    The named host is frozen as `examples/reference_host/`. This check asserts
+    the host stays a clean-staged, `find_package`-consuming, independent-process
+    example that owns its command loop and ContentProvider, and that the SDK
+    target is not silently rewritten into a date-versioned or experimental
+    bypass.
+    """
+    host_dir = ROOT / "examples" / "reference_host"
+    for relative in ("CMakeLists.txt", "README.md",
+                     "src/main.cpp", "src/host_runner.cpp",
+                     "src/host_runner.hpp", "src/host_content.cpp",
+                     "src/host_content.hpp", "src/host_report.cpp",
+                     "src/host_report.hpp"):
+        require((host_dir / relative).is_file(),
+                f"named host is missing {relative}")
+    cmake = (host_dir / "CMakeLists.txt").read_text(encoding="utf-8")
+    # D08 requires clean-staged consumption: the host resolves the installed
+    # package by name and links the exported imported target. A comment that
+    # merely mentions `find_package` must not satisfy this, so the real call
+    # statement (never commented out) is required.
+    require(
+        any(
+            line.lstrip().startswith("find_package(Cuexis ")
+            for line in cmake.splitlines()
+        ),
+        "the named host must consume a clean-staged installed Cuexis package",
+    )
+    require(
+        any(
+            line.lstrip().startswith("target_link_libraries(")
+            and line.rstrip().endswith("Cuexis::Playback)")
+            for line in cmake.splitlines()
+        ),
+        "the named host must link the exported Cuexis::Playback target",
+    )
+    require("Cuexis::Playback" in cmake,
+            "the named host must depend on the public Playback component")
+    # The host must not reach into the source tree for private headers.
+    require("target_include_directories" not in cmake.replace(
+        "target_include_directories(cuexis_reference_host PRIVATE src)", ""),
+        "the named host must only add its own src directory to the include path")
+    require("engine/" not in cmake and "EXPORT" not in cmake.split("find_package")[0],
+            "the named host must not reference engine internals")
+    main_cpp = (host_dir / "src" / "main.cpp").read_text(encoding="utf-8")
+    # The host is script-driven rather than an interactive REPL: it exposes the
+    # frozen command surface as CLI flags, and the run stages are named in the
+    # report. Both halves are part of the freeze. Flags are matched as complete
+    # string literals compared by the parser, so a renamed suffix
+    # (e.g. `--expect-digestX`) cannot satisfy the check by containment.
+    for flag in ("--content", "--package", "--advance", "--expect-identity",
+                 "--expect-digest", "--report", "--help"):
+        require(f'argument == "{flag}"' in main_cpp,
+                f"the named host does not compare the CLI flag {flag}")
+    runner = (host_dir / "src" / "host_runner.cpp").read_text(encoding="utf-8")
+    # The frozen run script names every stage in the structured report. Each
+    # stage must be reached from the report channel, and `load`/`package` are
+    # additionally required on both the success and failure paths, so a rename
+    # at any single site is caught rather than masked by a sibling occurrence.
+    for stage in ("start", "load", "commit", "frames", "digest",
+                  "reload", "reload-failed", "active", "package"):
+        channels = [f'report.event("{stage}"', f'report.failure("{stage}"',
+                    f'report.rejection("{stage}"']
+        require(any(channel in runner for channel in channels),
+                f"the named host run script lost the {stage} stage")
+    for stage in ("load", "reload", "package"):
+        require(f'report.failure("{stage}"' in runner,
+                f"the {stage} stage must keep its failure path in the report")
+        require(f'report.event("{stage}"' in runner,
+                f"the {stage} stage must keep its success path in the report")
+    require("buildProjectSource" in runner,
+            "the named host must own its ContentProvider construction")
+    require("prepareReload" in runner and "commit(" in runner,
+            "the named host must drive reload through the public session contract")
+    adr = (ROOT / "docs" / "adr"
+           / "0042-stage-6-productization-boundaries.md").read_text(encoding="utf-8")
+    # Match the whole frozen clause, not a bare version number: `0.7.1` appears
+    # in several places, so an isolated substring would survive an edit that
+    # re-pointed the target elsewhere in the same document.
+    require("Stage 6 SDK \u76ee\u6807\u51bb\u7ed3\u4e3a `0.7.1`" in adr,
+            "the Stage 6 SDK target 0.7.1 is no longer recorded as a frozen decision")
+    require("examples/reference_host/" in adr,
+            "the frozen named host location is no longer recorded")
+
+
 def main() -> int:
     try:
         load_schemas()
@@ -274,10 +388,13 @@ def main() -> int:
         check_media_golden()
         check_audio_correction_golden()
         check_text_boundaries()
+        check_version_gate_contract()
+        check_reference_host_contract()
     except AssertionError as error:
         print(f"S6-A2 characterization failed: {error}")
         return 1
-    print("S6-A2 characterization passed: schemas, entry fixtures, identity/media goldens and boundaries")
+    print("S6-A2 characterization passed: schemas, entry fixtures, identity/media goldens, "
+          "boundaries, S6-D07 version gate and S6-D08 named host")
     return 0
 
 
