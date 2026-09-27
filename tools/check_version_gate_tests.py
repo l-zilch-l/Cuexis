@@ -169,60 +169,64 @@ class VersionGateTests(unittest.TestCase):
         )
 
     def test_compare_refs_rejects_invalid_missing_and_non_ancestor_refs(self) -> None:
-        head = subprocess.run(
-            ["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD"],
-            check=True,
-            stdout=subprocess.PIPE,
-            text=True,
-        ).stdout.strip()
-        parent = subprocess.run(
-            ["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD^"],
-            check=True,
-            stdout=subprocess.PIPE,
-            text=True,
-        ).stdout.strip()
-        trusted_date = date(2026, 9, 20)
+        # Self-contained history, so the case does not depend on the ambient checkout depth. A
+        # hosted job may fetch a single commit, in which case `HEAD^` does not resolve and a test
+        # that reads it would fail for a reason unrelated to the gate.
+        with tempfile.TemporaryDirectory(prefix="cuexis-gate-refs-") as directory:
+            root = Path(directory)
+            self._init_repository(root)
+            (root / "seed.txt").write_text("seed\n", encoding="utf-8")
+            self._git(root, "add", "-A")
+            self._git(root, "commit", "-q", "-m", "seed")
+            base = self._git(root, "rev-parse", "HEAD")
+            (root / "seed.txt").write_text("seed\nsecond\n", encoding="utf-8")
+            self._git(root, "add", "-A")
+            self._git(root, "commit", "-q", "-m", "second")
+            head = self._git(root, "rev-parse", "HEAD")
+            trusted_date = date(2026, 9, 20)
 
-        assert_code(
-            self,
-            "version.baseline.ref.invalid",
-            gate.compare_refs,
-            REPO_ROOT,
-            "HEAD",
-            head,
-            trusted_date,
-            "historical",
-        )
-        assert_code(
-            self,
-            "version.baseline.missing",
-            gate.compare_refs,
-            REPO_ROOT,
-            "0" * 40,
-            head,
-            trusted_date,
-            "historical",
-        )
-        assert_code(
-            self,
-            "version.candidate.missing",
-            gate.compare_refs,
-            REPO_ROOT,
-            head,
-            "0" * 40,
-            trusted_date,
-            "historical",
-        )
-        assert_code(
-            self,
-            "version.baseline.not_ancestor",
-            gate.compare_refs,
-            REPO_ROOT,
-            head,
-            parent,
-            trusted_date,
-            "historical",
-        )
+            assert_code(
+                self,
+                "version.baseline.ref.invalid",
+                gate.compare_refs,
+                root,
+                "HEAD",  # a symbolic ref is not a full 40-character SHA
+                head,
+                trusted_date,
+                "historical",
+            )
+            assert_code(
+                self,
+                "version.baseline.missing",
+                gate.compare_refs,
+                root,
+                "0" * 40,
+                head,
+                trusted_date,
+                "historical",
+            )
+            assert_code(
+                self,
+                "version.candidate.missing",
+                gate.compare_refs,
+                root,
+                head,
+                "0" * 40,
+                trusted_date,
+                "historical",
+            )
+            # HEAD and its parent are unrelated to each other in ancestry terms: the candidate must
+            # descend from the baseline, not the other way round.
+            assert_code(
+                self,
+                "version.baseline.not_ancestor",
+                gate.compare_refs,
+                root,
+                head,
+                base,
+                trusted_date,
+                "historical",
+            )
 
     def test_workflow_uses_trusted_event_baselines_and_full_history(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")
