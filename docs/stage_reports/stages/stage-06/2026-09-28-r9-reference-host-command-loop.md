@@ -61,6 +61,47 @@ never fail, and a frame comparison that passed its condition to `if()` as text,
 which re-tokenizes on whitespace and turns the embedded quotes into literals, so
 a deliberately wrong frame silently matched. Both are fixed.
 
+### 2.1 Two gate defects that only the Linux runner could see
+
+The command-mode gate passed on Windows MSVC, Windows MinGW and locally, and
+failed every Linux job on one test. Neither failure was in the host. Both were in
+the gate's own use of CMake lists, and both came from the same cause.
+
+The case list declares each case as `<id>|<kind>|<flags>`, and most cases
+legitimately have an empty flags field, so splitting a declaration on `|` ends in
+an empty element. Whether a trailing empty element counts is not the same in every
+CMake version: it is counted by the CMake used locally and on the Windows runners
+and dropped by the one the Linux runners use. Two sites depended on it, and the
+second was hidden behind the first, because the gate stopped at the first before
+ever reaching the second.
+
+- The shape check split the declaration and required three fields, so a correct
+  declaration was reported malformed on Linux alone. The same declaration cannot
+  be well formed and malformed at once, which is what said the check was asking
+  the wrong question. It now counts separators, which no version treats
+  differently, and which also rejects a declaration that has lost the field
+  outright rather than merely leaving it empty.
+- The per-case flags lookup indexed the third field of the same split. On the
+  versions that drop the trailing empty element that index is out of range for
+  every case with empty flags, which is most of them. It now takes the field by
+  pattern.
+
+The flags field turned out not to be read anywhere in the loop that runs the shape
+check, which is why that check could be about the field's shape without anyone
+noticing the version dependency until the gate ran somewhere else. The rest of the
+file was swept for the same mistake: the only other split that can end in an empty
+element is the expectation file split on newlines, and that one is safe because an
+empty line is skipped either way.
+
+This is worth recording for how it was found and how it was not found. Local runs,
+both Windows runners and the entire case suite agreed that the gate was sound, and
+the first defect surfaced as a malformed declaration rather than as a broken
+check. The second was then found by asking why the first had happened and looking
+for the same cause elsewhere, not by waiting for the next run; the runner later
+confirmed the exact line and the exact error that reasoning had named. A gate
+exercised on one platform by one CMake version is validated less than it appears
+to be.
+
 ## 3. A parser defect found by review
 
 The command file parser was reviewed line by line only after the case suite and
