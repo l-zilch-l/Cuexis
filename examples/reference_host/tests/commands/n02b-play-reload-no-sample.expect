@@ -1,0 +1,4 @@
+# n02b-play-reload-no-sample: section 7 N02 (H4/H5) - play is not a sample, so reload is no_sample
+exit fail
+code host.command.no_sample
+absent host.reload-sample

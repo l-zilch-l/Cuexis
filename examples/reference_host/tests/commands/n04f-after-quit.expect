@@ -1,0 +1,9 @@
+# n04f-after-quit: section 7 N04 (H6) - a command after quit, rejected before any SDK load
+exit fail
+code host.command.after_quit
+diagnostic-step parse
+absent host.load
+absent host.frame
+# NOTE: section 3.2 rejects "a command after quit" before any SDK load, so the pre-parse absents
+# apply even though the task table listed only absent host.frame for this case.
+# NOTE: absent host.command omitted, see n04a for the reason (code=host.command.* in the record).

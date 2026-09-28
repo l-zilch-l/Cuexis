@@ -1,0 +1,8 @@
+# n05f-seek-then-tick-overflow: section 7 N05 (H6) - the tick, not the seek, is the overflow
+exit fail
+code host.command.clock_overflow
+frame 9007199254740991/0/1
+# NOTE: the seek to the endpoint is expected to succeed, so its frame precedes the failure and the
+# runner's frame quantity rule needs this directive. The task table lists only the code, so the
+# failing tick's diagnostic step (section 3.6.1 step=tick) and its outcome=rejected host.command
+# are not asserted here.

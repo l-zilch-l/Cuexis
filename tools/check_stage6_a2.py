@@ -296,9 +296,15 @@ def check_reference_host_contract() -> None:
 
     The named host is frozen as `examples/reference_host/`. This check asserts
     the host stays a clean-staged, `find_package`-consuming, independent-process
-    example that owns its command loop and ContentProvider, and that the SDK
+    example that owns its ContentProvider and its command loop, and that the SDK
     target is not silently rewritten into a date-versioned or experimental
     bypass.
+
+    The command-loop half was a claim without a check until R9: the seven frozen
+    CLI flags are a command *surface*, and a host can expose all of them without
+    ever consuming an externally supplied program. The R9 additions below name
+    the command entry point and its private translation units, so the claim is
+    now backed by something that fails when the loop is absent.
     """
     host_dir = ROOT / "examples" / "reference_host"
     for relative in ("CMakeLists.txt", "README.md",
@@ -375,6 +381,40 @@ def check_reference_host_contract() -> None:
             "the Stage 6 SDK target 0.7.1 is no longer recorded as a frozen decision")
     require("examples/reference_host/" in adr,
             "the frozen named host location is no longer recorded")
+    # R9 (Stage 6 remediation): the host additionally accepts an external
+    # command program. The seven flags above are a command *surface*, not the
+    # command loop, and the earlier revision of this check characterized only
+    # the surface while its docstring claimed the loop. These checks name the
+    # new entry point, the private parser and clock translation units, the case
+    # runner wiring and the fixture set, so a host that has no command loop can
+    # no longer be reported as characterized.
+    require('argument == "--command-file"' in main_cpp,
+            "the named host does not compare the CLI flag --command-file")
+    for name in ("host_commands.cpp", "host_clock.cpp"):
+        require((host_dir / "src" / name).is_file(),
+                f"the named host does not own the private {name}")
+        require(name in cmake,
+                f"the named host's source list does not build {name}")
+    require("host_commands.hpp" in main_cpp or "host_commands.hpp" in runner,
+            "the named host does not reach the command parser")
+    staging = (ROOT / "cmake" / "VerifyReferenceHost.cmake").read_text(encoding="utf-8")
+    require("VerifyReferenceHostCommands.cmake" in staging,
+            "the staging gate no longer calls the command case runner")
+    case_runner = ROOT / "cmake" / "VerifyReferenceHostCommands.cmake"
+    require(case_runner.is_file(), "the command case runner is missing")
+    case_runner_text = case_runner.read_text(encoding="utf-8")
+    # Sentinels rather than a count: the runner itself asserts set equality
+    # between the declared list and the fixtures on disk (R9 section 8.7), while
+    # this static check only has to notice a declaration being deleted.
+    for case_id in ("c01-absolute-anchor", "c12-legacy-regression",
+                    "n05c-tick-budget-ok", "n07b-wrong-content-root"):
+        require(case_id in case_runner_text,
+                f"the command case list no longer declares {case_id}")
+    fixtures = host_dir / "tests" / "commands"
+    require(fixtures.is_dir() and any(fixtures.glob("*.cmd")),
+            "the command fixtures are missing")
+    require(any(fixtures.glob("*.expect")),
+            "the command expectations are missing")
 
 
 def main() -> int:

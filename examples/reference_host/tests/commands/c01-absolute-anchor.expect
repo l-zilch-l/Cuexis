@@ -1,0 +1,17 @@
+# c01-absolute-anchor: section 7 C01 (H1/H3/H7) and the section 6.1 absolute anchor
+exit ok
+frame 625/0/1
+digest-anchor
+count tickAttempts 0
+count suppressedTicks 0
+count emittedTickFrames 0
+count publicUpdateAttempts 1
+count publicUpdateSuccesses 1
+count frameCount 1
+require host.command index=1 line=3 verb=seek outcome=ok
+# NOTE (source line numbers): the task table spelled this as line=2 because it counted the
+# program without the header comment that names the case. The header comment is source line 1,
+# the open is line 2 and the seek is line 3. Section 3.5 and 3.6.1 define line= as the source
+# line number, so this fixture uses 3. If the host numbers only effective commands, use 2.
+# NOTE (runner): require takes one literal substring, but the case runner keeps only the token
+# after the directive, so this assertion is currently truncated to "host.command".

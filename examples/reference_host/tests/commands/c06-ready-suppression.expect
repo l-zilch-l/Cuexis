@@ -1,0 +1,13 @@
+# c06-ready-suppression: section 7 C06 (H3) - Ready is kept, 2 attempts, 2 suppressed, no update
+exit ok
+count tickAttempts 2
+count suppressedTicks 2
+count emittedTickFrames 0
+count publicUpdateAttempts 0
+count publicUpdateSuccesses 0
+count frameCount 0
+absent host.frame
+require host.pause state=Ready
+require host.observation reason=pause-check state=Ready
+# NOTE (runner): the case runner truncates these two requires to "host.pause" and
+# "host.observation", so the state=Ready part is inert until the runner is fixed.

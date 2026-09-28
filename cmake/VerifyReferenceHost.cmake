@@ -333,6 +333,24 @@ if(NOT host_report MATCHES "${golden_package_pattern}")
     message(FATAL_ERROR "The published package did not reproduce the host content")
 endif()
 
+# ---------------------------------------------------------------------------
+# 4b. R9 command-mode cases.
+#
+# The reference host accepts an external command program, so the transport
+# rules a static check cannot reach - pause without an update, resume without
+# catch-up, idempotent control, in-place reload - are driven from outside and
+# asserted against the run record. This runner drives the same
+# installed-package host executable the legacy run above used. It adds no CTest
+# test and never nests a ctest invocation.
+#
+# The fixtures are read from the copied example tree rather than from the
+# source tree, so a fixture the whole-directory copy above failed to carry is
+# caught here instead of being read from a hidden input.
+# ---------------------------------------------------------------------------
+set(package_path "${content_dir}/cfu_f_v4_reference.cxc")
+set(command_fixture_dir "${host_project}/tests/commands")
+include("${CUEXIS_SOURCE_DIR}/cmake/VerifyReferenceHostCommands.cmake")
+
 # The sanitized PATH was restored inline immediately after the one
 # execute_process that needed it, so nothing is pending here. The earlier design
 # used cmake_language(DEFER), which is unavailable in `cmake -P` script mode.

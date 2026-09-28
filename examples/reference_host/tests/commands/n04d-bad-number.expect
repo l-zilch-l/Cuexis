@@ -1,0 +1,7 @@
+# n04d-bad-number: section 7 N04 (H6) - a signed tick argument is not a decimal non-negative integer
+exit fail
+code host.command.invalid_number
+diagnostic-step parse
+absent host.load
+absent host.frame
+# NOTE: absent host.command omitted, see n04a for the reason (code=host.command.* in the record).

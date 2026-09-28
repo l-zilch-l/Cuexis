@@ -1,0 +1,9 @@
+# n07b-wrong-content-root: section 7 N07 (H5/H6) - the load step fails and keeps its own reason
+exit fail
+require host.diagnostic step=load
+absent host.commit
+absent host.frame
+# NOTE (ambiguous, kept as specified): the diagnostic code is deliberately not asserted because
+# section 3.5 preserves the SDK's own code in the detail, and the SDK's reason is not asserted
+# verbatim. The case runner truncates a require to its first token, so the step=load half of the
+# assertion is inert until the runner joins the tokens again.

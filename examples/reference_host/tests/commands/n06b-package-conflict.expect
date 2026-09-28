@@ -1,0 +1,7 @@
+# n06b-package-conflict: section 7 N06 (H6/H7) - an explicit --package is a flag conflict
+exit fail
+code host.command.flag_conflict
+diagnostic-step flags
+absent host.load
+absent host.frame
+# NOTE: absent host.command omitted, see n04a for the reason (code=host.command.* in the record).

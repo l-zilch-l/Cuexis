@@ -1,0 +1,7 @@
+# n05d-tick-budget-exceeded: section 7 N05 (H6) - 100000 + 1 exceeds the cumulative budget
+exit fail
+code host.command.limit_exceeded
+diagnostic-step parse
+absent host.load
+absent host.frame
+# NOTE: absent host.command omitted, see n04a for the reason (code=host.command.* in the record).

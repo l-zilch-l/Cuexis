@@ -1,0 +1,9 @@
+# n05c-tick-budget-ok: section 7 N05 (H6) - exactly 100000 tick attempts is accepted
+exit ok
+count tickAttempts 100000
+count suppressedTicks 100000
+count emittedTickFrames 0
+count publicUpdateAttempts 0
+count publicUpdateSuccesses 0
+count frameCount 0
+absent host.frame

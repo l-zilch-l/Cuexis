@@ -431,6 +431,10 @@ host.diagnostic step=<open|play|pause|tick|seek|reload|quit|parse|flags|file> co
 `transport` 取值域 `Empty|Paused|Playing|Terminated`。被拒绝的命令**也发** `host.command`（`outcome=rejected`，transport 前后相同），
 随后紧跟 `host.diagnostic`。
 
+`line=` 是 **1 基物理源行号**：注释行与空行**照常计数**，BOM 不占行。
+因此 fixture 顶部加一行 `#` 注释会使其后所有行号后移一位——C01 的 `seek` 在第 **3** 行、
+C05 的 `reload` 在第 **5** 行（两者都有 case-id 头注释）。用户诊断指向真实文件行，故取物理行号而非「有效命令序号」。
+
 **出现规则**（runner 依赖这些规则，不能靠猜）：
 
 | 事件 | 何时出现 |
@@ -444,6 +448,11 @@ host.diagnostic step=<open|play|pause|tick|seek|reload|quit|parse|flags|file> co
 | `host.destroy` | `quit` 成功卸载后，沿用旧形状 `state=Empty` |
 
 `host.diagnostic` 置 run 失败意味着负例的 `host.summary` 为 `outcome=failed`，退出码非零——**这正是负例的判据**。
+
+**报告文件在 CLI/flag/文件/解析的任何验证之前打开。** 因此 `flags`/`parse`/`file` 级拒绝
+**也会留下记录**，负例的「准确原因」才有处可查。若在验证之后才开报告，
+`file_read`/`flag_conflict`/`syntax` 这些负例就只剩一个退出码而**没有原因**，
+不满足 §8.5「不接受任意崩溃」。
 
 **不新增** `host.tick`/`host.seek`：§7 的断言全部可由 `host.frame` 与 `host.clock` 表达，
 少一个事件就少一处需要独立验证的表面。
@@ -465,12 +474,22 @@ frame <t>/<dt>/<id>           # 按序匹配 host.frame 的 chartTimeMs/simulati
 digest-anchor                 # 该帧 digest 必须等于 §6.1 的冻结 golden（不写字面值）
 count tickAttempts 6          # host.clock 的字段必须等于该值
 require <子串>                # 报告必须含该子串
+require-count <子串> <n>      # 该子串必须**恰好**出现 n 次（用于「两次 reload」这类次数断言）
 absent <子串>                 # 报告必须不含该子串
 ```
 
 `code` 的检查对象是 `host.diagnostic` 行的 `code=` 字段**后缀**（稳定诊断码见 §3.5）。
 **`.expect` 里不允许出现任何 64 位摘要字面值**：锚点只写 `digest-anchor`，
 其余一律用 §6.2 的关系判据（逐帧相等、帧数、计数、state），从而**不新增 golden**。
+
+**case 种类**（决定需要哪些文件）：`cmd`（有 `.cmd` fixture）、`invocation`（无 fixture，
+由 runner 直接构造调用，如不存在的命令文件路径）、`generated`（runner 在测试时生成，
+如超限文件）、`legacy`（C12，证据是既有 `VerifyReferenceHost.cmake:282-334` 那段，不新增 fixture）。
+
+`.expect` 对 **`cmd`/`invocation`/`generated` 三种都必需**——否则 `generated`/`invocation`
+用例没有任何断言、会**空过**。`.cmd` 只对 `cmd` 种类必需。
+因此集合相等校验分两条：`*.cmd` 集合 == `cmd` 种类 id 集合；`*.expect` 集合 == 其余三种 id 集合。
+三者（声明、磁盘上的 fixture、磁盘上的期望）任一不等即失败。
 
 **必跑清单与集合相等**（承接 §14 未决项）：case runner 在 CMake 里**声明** case 清单，
 并用 glob **仅作校验**断言「声明的 id 集合 == `*.cmd` 文件集合 == `*.expect` 文件集合」，

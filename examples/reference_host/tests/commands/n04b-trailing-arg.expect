@@ -1,0 +1,7 @@
+# n04b-trailing-arg: section 7 N04 (H6) - a trailing argument is a syntax error
+exit fail
+code host.command.syntax
+diagnostic-step parse
+absent host.load
+absent host.frame
+# NOTE: absent host.command omitted, see n04a for the reason (code=host.command.* in the record).

@@ -1,0 +1,9 @@
+# n04a-unknown-verb: section 7 N04 (H6) - unknown verb, rejected before any SDK load
+exit fail
+code host.command.unknown_verb
+diagnostic-step parse
+absent host.load
+absent host.frame
+# NOTE: the pre-parse rule also asks for "absent host.command", but the required diagnostic carries
+# code=host.command.* in the same record, so that substring can never be absent. The one-token
+# .expect grammar cannot express "host.command index=" either, so it is deliberately omitted.
