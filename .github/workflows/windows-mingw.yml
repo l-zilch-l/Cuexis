@@ -56,7 +56,7 @@ jobs:
       - name: Locate build tools
         shell: msys2 {0}
         run: |
-          for tool in gcc g++ cmake ninja clang-format; do
+          for tool in gcc g++ cmake ninja clang-format objdump; do
             if ! command -v "$tool" >/dev/null; then
               echo "$tool is not available in the MinGW64 environment" >&2
               exit 1
