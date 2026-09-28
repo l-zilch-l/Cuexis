@@ -41,7 +41,7 @@ touched; the two fields section 3.6 adds are appended only for a user program.
 | A2 characterization | `ctest --preset debug -j1 -R cuexis_contract_s6_a2` | passed |
 | Architecture | `ctest --preset debug -j1 -R cuexis_architecture_tests` | passed |
 | Documentation | `python -B tools/check_docs.py` | passed |
-| Full local suite | `ctest --preset debug -j1` | see section 5 |
+| Full local suite | `ctest --preset debug -j1` | see section 6 |
 
 The absolute anchor in section 6.1 was re-derived by running the built host
 directly rather than read off the gate, so the claim does not depend on the
@@ -61,7 +61,45 @@ never fail, and a frame comparison that passed its condition to `if()` as text,
 which re-tokenizes on whitespace and turns the embedded quotes into literals, so
 a deliberately wrong frame silently matched. Both are fixed.
 
-## 3. Section 6.2 digest relations
+## 3. A parser defect found by review
+
+The command file parser was reviewed line by line only after the case suite and
+the mutation evidence were both green, because both of those exercise the
+behaviour the contract describes and neither can see a path the fixtures never
+take.
+
+Building a filesystem path from the decoded `open` argument is the one step in
+the parser that can fail: on a platform whose native path encoding cannot
+represent those bytes, the conversion throws. The decoded bytes are arbitrary
+and unchecked, so a command file can reach it. The throw left the parser, left
+`main`, and in a debug build with no console handler ended in a blocking abort
+rather than an exit.
+
+This is not hypothetical. A command file holding `open "<0xFF 0xFE>"` made the
+host hang with a zero-byte report on Windows with code page 936, which is the
+code page of the machine this work was done on; the same invocation with an ASCII
+path exits normally with a diagnostic. The host is a diagnostic tool, and hanging
+on malformed input with no diagnostic is the one outcome it must never produce.
+
+The conversion is now guarded: a path the system cannot represent is reported as
+`host.command.syntax` with `step=parse` and the source line, and the host exits
+non-zero. The invalid-byte file now yields
+`line 2: 'open' has a path argument that this system cannot represent.`, and all
+41 cases still pass.
+
+Two things follow. First, this cannot become a committed fixture, because the
+fixture set is pure ASCII by policy, so a regression here would not be caught by
+the suite; it is recorded here and the reproduction is a one-line command file
+holding those two bytes. Second, the reason originally given for constructing the
+path from a narrow string rather than `u8string` was that the narrow conversion
+cannot throw. That is wrong: the narrow conversion is not exception-free either,
+so the choice between the overloads does not remove this failure mode at all. A
+general backstop that turns any escaped exception into a diagnostic and a
+non-zero exit would be more robust than a guard at the one currently reachable
+site, but it needs a diagnostic code and section 3.5's list is closed, so that is
+an owner decision rather than something to settle here.
+
+## 4. Section 6.2 digest relations
 
 Section 6.2 asks for two relations that a per-frame triple comparison cannot
 express, because the `frame` directive deliberately carries no digest value. Both
@@ -86,7 +124,7 @@ it still contains the substring that probe looks for, so the check reads as live
 while reporting less than it claims. All four now pass a single message, and the
 A2 characterization check rejects the split form outright.
 
-## 4. Mutation evidence, section 7
+## 5. Mutation evidence
 
 Sixteen mutations, each applied inside an isolated git worktree that the main
 working tree never sees. Every run had the unmutated host green first, every
@@ -126,7 +164,7 @@ makes the second of two consecutive paused reloads pass the stale non-zero delta
 and c04 fails on `require-count targetSimulationDeltaTimeMs=0 1`. That is the
 assertion catching the actual SDK call argument, not a proxy.
 
-### 4.1 The one recorded survivor
+### 5.1 The one recorded survivor
 
 Removing the per-command tick budget guard alone leaves the suite green, and that
 is a property of the contract rather than a hole. A single tick above the budget
@@ -141,7 +179,7 @@ would leave the next reader unable to tell a redundant guard from an unverified
 one. Whether the two guards should be collapsed into one is a contract question
 for the owner, not something to be settled by deleting a check.
 
-## 5. Local environment deviations
+## 6. Local environment deviations
 
 The full local suite reports two failures, and both are pre-existing and
 unrelated to R9:
@@ -155,7 +193,7 @@ unrelated to R9:
 The version date is not the cause: UTC was still 2026-09-28 and
 `26.09.28-2` matched the trusted date when this was written.
 
-## 6. Boundaries held
+## 7. Boundaries held
 
 The frozen text of ADR 0042 was not modified. No SDK public API, enum or golden
 was changed. No existing gate was removed or weakened, and `RESOURCE_LOCK` and the
@@ -164,13 +202,13 @@ evidence were not rewritten. Stage 7A / Stage 8 / Stage 9-12 deliverables and
 Proposal 1 were not started. SPEC-27 remains open; closing it needs owner
 acceptance and is not part of R9.
 
-## 7. Not claimed
+## 8. Not claimed
 
 - Hosted same-SHA Linux Quality, Windows MSVC and Windows MinGW validation on the
   final R9 commit. The Version Gate passes on the current commit; the rest are
   recorded when the branch stops moving.
 - Owner acceptance of the R9 contract, including the redundant tick budget guard
-  noted in section 4.1.
+  noted in section 5.1.
 - The mutation harness and the checker self-test live under `out/`, which is not
   committed. The harness is reproducible from this report's method, and the
   defect class it fixed is now guarded permanently by the A2 check, but the

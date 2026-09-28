@@ -296,7 +296,20 @@ class LineInterpreter final {
             return failureAtLine(diagnostic::syntax, lineNumber,
                                  "'open' requires a non-empty path.");
         }
-        record(Verb::Open, lineNumber, 0, (parentDirectory_ / decoded).lexically_normal());
+        // The decoded bytes are arbitrary, and building a path from them is the
+        // one step here that can fail: on a platform whose native path encoding
+        // cannot represent those bytes the conversion throws. Without this guard
+        // that exception leaves the parser, so a malformed path argument aborts
+        // the host instead of being rejected with a diagnostic, which is the one
+        // outcome a command file must never be able to cause.
+        std::filesystem::path resolved;
+        try {
+            resolved = (parentDirectory_ / decoded).lexically_normal();
+        } catch (const std::system_error&) {
+            return failureAtLine(diagnostic::syntax, lineNumber,
+                                 "'open' has a path argument that this system cannot represent.");
+        }
+        record(Verb::Open, lineNumber, 0, std::move(resolved));
         return std::nullopt;
     }
 
