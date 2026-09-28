@@ -4,6 +4,6 @@ code host.command.unknown_verb
 diagnostic-step parse
 absent host.load
 absent host.frame
-# NOTE: the pre-parse rule also asks for "absent host.command", but the required diagnostic carries
-# code=host.command.* in the same record, so that substring can never be absent. The one-token
-# .expect grammar cannot express "host.command index=" either, so it is deliberately omitted.
+# NOTE: a bare 'absent host.command' cannot hold, because the required diagnostic code
+# contains that substring; the indexed form 'absent host.command index=' can express it and is
+# used by n05a, n05b and n07a. This case does not need it.

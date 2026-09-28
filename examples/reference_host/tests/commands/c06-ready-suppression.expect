@@ -9,5 +9,5 @@ count frameCount 0
 absent host.frame
 require host.pause state=Ready
 require host.observation reason=pause-check state=Ready
-# NOTE (runner): the case runner truncates these two requires to "host.pause" and
-# "host.observation", so the state=Ready part is inert until the runner is fixed.
+# The state=Ready half of both assertions is load-bearing: the runner rejoins a multi-token
+# require, so a pause that wrongly reported Running would fail the case.

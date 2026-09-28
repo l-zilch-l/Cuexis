@@ -13,4 +13,5 @@ require-count host.reload-sample 1
 require host.command index=3 line=5 verb=reload outcome=ok transport=Playing->Playing
 # NOTE (source line numbers): the task table spelled this as line=4 by counting the program
 # without the header comment that names the case. The reload is source line 5.
-# NOTE (runner): the case runner truncates this require to "host.command".
+# The assertion is load-bearing: the runner rejoins a multi-token require, so a wrong index, line,
+# verb, outcome or transport fails the case.

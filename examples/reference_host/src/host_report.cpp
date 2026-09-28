@@ -28,6 +28,12 @@ void HostReport::rejection(std::string_view step, std::string_view code) {
     sink_.flush();
 }
 
+void HostReport::diagnostic(std::string_view step, std::string_view code, std::string_view detail) {
+    ok_ = false;
+    sink_ << "host.diagnostic step=" << step << " code=" << code << " detail=" << detail << '\n';
+    sink_.flush();
+}
+
 void HostReport::note(std::string_view text) {
     sink_ << "host.note " << text << '\n';
     sink_.flush();

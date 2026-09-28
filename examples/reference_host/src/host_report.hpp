@@ -24,6 +24,11 @@ class HostReport final {
     // Records a step that was expected to fail and did.
     void rejection(std::string_view step, std::string_view code);
 
+    // Records a host diagnostic that ends the run. Unlike rejection(), this
+    // marks the run as failed: a refusal the host did not plan for is an
+    // outcome, never a success.
+    void diagnostic(std::string_view step, std::string_view code, std::string_view detail);
+
     void note(std::string_view text);
 
     void summary();

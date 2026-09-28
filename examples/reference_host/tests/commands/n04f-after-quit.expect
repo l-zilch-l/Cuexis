@@ -6,4 +6,6 @@ absent host.load
 absent host.frame
 # NOTE: section 3.2 rejects "a command after quit" before any SDK load, so the pre-parse absents
 # apply even though the task table listed only absent host.frame for this case.
-# NOTE: absent host.command omitted, see n04a for the reason (code=host.command.* in the record).
+# NOTE: a bare 'absent host.command' cannot hold, because the required diagnostic code contains
+# that substring; absence of a dispatched command is expressed as 'absent host.command index='.
+# This case does not need that stronger form.

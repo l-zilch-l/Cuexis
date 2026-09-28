@@ -5,5 +5,5 @@ absent host.commit
 absent host.frame
 # NOTE (ambiguous, kept as specified): the diagnostic code is deliberately not asserted because
 # section 3.5 preserves the SDK's own code in the detail, and the SDK's reason is not asserted
-# verbatim. The case runner truncates a require to its first token, so the step=load half of the
-# assertion is inert until the runner joins the tokens again.
+# verbatim. The step=load half of the assertion is load-bearing: the runner rejoins a
+# multi-token require, so a failure reported under a different step would fail the case.

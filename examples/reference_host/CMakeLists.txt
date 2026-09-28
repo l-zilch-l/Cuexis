@@ -32,6 +32,8 @@ endif()
 
 add_executable(cuexis_reference_host
     src/main.cpp
+    src/host_clock.cpp
+    src/host_commands.cpp
     src/host_content.cpp
     src/host_report.cpp
     src/host_runner.cpp)

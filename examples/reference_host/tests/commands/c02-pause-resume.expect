@@ -12,6 +12,5 @@ count frameCount 3
 require host.observation reason=pause-check state=Running chartTimeMs=500 discontinuityId=0 sampled=yes
 require host.pause state=Running chartTimeMs=500 discontinuityId=0
 require host.play state=Running chartTimeMs=500 discontinuityId=0
-# NOTE (runner): the case runner truncates each require to its first token ("host.observation",
-# "host.pause", "host.play"), so the field-level part of these three assertions is inert until
-# the runner joins the remaining tokens back into one literal substring.
+# These three assertions are field-level and load-bearing: the runner rejoins a multi-token require,
+# so a wrong state, chart time, discontinuity id or sampled flag fails the case.
