@@ -79,7 +79,7 @@ Player 控制覆盖缺口的发现项（SPEC-13、SPEC-15、SPEC-16、SPEC-18、
 | `cuexis_sdl_window_tests`（platform） | 10 cases / 57 assertions 全过 |
 | `ctest --test-dir out/build/debug -R "render\|presentation\|player_control\|player_support\|presentation_renderer\|PlayerController\|SdlWindow\|Window reports" -j1 --timeout 90 --no-tests=error` | **57/57 全过**（13.97 s） |
 | `python -B tools/check_docs.py` | `Documentation checks passed: 271 Markdown files and 20 candidate JSON/CXT files validated.` |
-| `python -B tools/update_version.py --check` | `Cuexis version is consistent: 26.09.27-2` |
+| `python -B tools/update_version.py --check` | `Cuexis version is consistent: 26.09.28-1` |
 | `git diff --check` | 通过（无空白错误；仅 `.gitattributes` 已覆盖的 LF→CRLF 提示） |
 | `cmake --build --preset debug --target cuexis_format_check` | **通过**（`fmt_exit=0`，对 21 个 W4 涉及文件应用 clang-format 22.1.3 后） |
 
@@ -106,6 +106,65 @@ Player 控制覆盖缺口的发现项（SPEC-13、SPEC-15、SPEC-16、SPEC-18、
   只有把它放回**并行**（`ctest` 默认 `-j`）且与 render/presentation 套件同时分派时才超时。
   该套件会打开进程内假 audio 传输，而并行兄弟套件同样占用音频/进程资源——属本机并行争用。
   结论：**非回归**；本机验证口径应使用 `-j1`（或分批 `-R`），已在 §5 记为环境注意事项。
+
+### 4.3 hosted 首次暴露的两个阻断项与订正（2026-09-28）
+
+W4 推送后 hosted 首次运行暴露两个**真实缺陷**，均为本工作包自身的错误，已分别订正并附反证。
+两项都不是产品逻辑缺陷，但都是「本机门禁看不见、hosted 才暴露」的门禁覆盖缺口。
+
+**（1）`cuexis_contract_version_gate` 在 Windows MinGW 上整体崩溃**（run `36350608962`，SHA `7f69de2`；
+`737 - cuexis_contract_version_gate`，`Ran 15 tests` / `FAILED (errors=5)`）：
+
+- **根因**：`tools/check_version_gate_tests.py` 的 `_git()` 以**裸名** `"git"` 起子进程，依赖 `PATH`
+  解析。MinGW job 的 ctest 步骤使用 `shell: msys2 {0}`（`MSYSTEM=MINGW64`），该环境 `PATH` 中
+  没有 Windows Git 安装，于是每次调用都抛 `FileNotFoundError: [WinError 2]`。5 个 error 正是
+  全部经由 `_init_repository → _git` 构建临时仓库的用例。
+- **定性**：这是 W1 提交 `ae8c6c6` 的**修复引入的替换缺陷**——它把「依赖检出深度（`fetch-depth: 1`
+  下 `HEAD^` 不可解析）」换成了「依赖 `git` 可被 `PATH` 解析」，两者都是环境假设，而本机 `PATH`
+  始终有 git，所以本机门禁无法发现。
+- **订正**：新增 `resolve_git()`，先 `shutil.which("git")`，再回退已知 Git for Windows 安装位置；
+  两者皆无时 `skipTest` 并写明 `PATH`，绝不伪造通过。`tools/check_version_gate.py` 的
+  `_run_git()` 同源隐患一并改为 `git_executable()`，缺失时给出契约码 `version.git.missing`。
+- **反证**：把 `PATH` 中的 git 全部移除后**本机复现出与 hosted 完全相同的签名**
+  （`Ran 15 tests` / `FAILED (errors=5)` / `FileNotFoundError: [WinError 2]`）；订正后同一条件
+  退出码 0。以「强制 `resolve_git()` 返回 `None`」的强变异验证，**恰好那 5 个用例逐个 `skipped`**
+  且理由可读（证明 skip 分支是活代码而非空转）。
+
+**（2）`tools/media_import/src/image_import.cpp` 在 Clang `-Werror` 下编译失败**
+（run `36354303038`，`Clang ASan + UBSan media-tools` 步骤）：
+`image_import.cpp:235:13` 与 `:236:13`：`ignoring return value of function declared with 'nodiscard'
+attribute [-Werror,-Wunused-result]`。
+
+- **根因**：W3 新增 PNG `scanPng` profile 检查时，把 IHDR 的 compression/filter method 两字节
+  写成裸 `header.readU8();` 丢弃返回值，而 `ByteReader::readU8()` 带 `[[nodiscard]]`。
+- **为何本机漏过**：本机 `out/build/debug-media-tools` 的 `CUEXIS_WARNINGS_AS_ERRORS=BOOL=OFF`
+  （MSVC），而 hosted 走 `headless-sanitize-media-tools`（继承 `headless-sanitize`，显式
+  `CUEXIS_WARNINGS_AS_ERRORS: "ON"`）且用 Clang。两个条件本机都未复制。
+- **订正**：两个字节不再丢弃，改为**按冻结 v1 profile 显式校验**（新增
+  `pngCompressionDeflate` / `pngFilterAdaptive` 常量，取值不符则返回
+  `media.image.header_invalid`）。这比丢弃返回值更严格，也消除了 `[[nodiscard]]` 违规。
+- **反证**：本机用 Clang 22.1.8 构造最小用例，**复现出与 hosted 逐字相同的诊断串**
+  `ignoring return value of function declared with 'nodiscard' attribute [-Werror,-Wunused-result]`；
+  订正写法在 `-Werror -Wunused-result` 下无诊断；另以 `-DCUEXIS_WARNINGS_AS_ERRORS=ON` 完成
+  307 步 `debug-media-tools` 全量构建（0 错误 0 警告）。
+
+**（3）版本滚动订正（Version Gate 拒绝）**：本工作包在**同一个 PR #30** 内滚动过两次
+（`26.09.27-2` → `26.09.27-3`），而 protected Version Gate 要求相对 `master` 基线（`eaaf375`，
+`26.09.27-1`）**同日只前进一个 build**，因此 `26.09.27-3` 被以 `version.build.skipped` 正确拒绝
+（run `36354303041`）。订正过程中可信 UTC 日期跨入 `2026-09-28`，同日规则让位于跨日规则
+（build 必须为 1），故唯一正确取值为 **`26.09.28-1`**；本机以 `master` 真实快照快照做基线复算，
+逐字段通过（`26.09.27-1 → 26.09.28-1`）。**该失败是门禁按设计工作，不是门禁缺陷**；
+教训是「一个 PR 只滚动一次」，不得把多个批次的版本滚动累积进同一 PR。
+
+**（4）新增的 4 条回归用例**（防止上述类别回归）：git 绝不以裸名作为 `argv[0]`（用 AST 检查真实
+参数列表，因为两个模块的注释中合法地引用了旧的错误写法，纯文本匹配会误报）、解析出的 git 必须是
+绝对路径可执行文件、不可用的 shell 被拒绝、失败消息在「进程从未启动」（`stdout`/`stderr` 为 `None`）
+时仍可构造。第 1 条已用「把 gate 改回裸名」的变异验证会失败并给出准确行号。
+
+**附带订正**：`shutil.which("bash")` 在 Windows 可能返回 `C:\Windows\System32\bash.exe`（WSL 启动器），
+原用例仅判 `None`，因而会去执行该 shim 并因无关原因失败；现在改为**实际试运行**探测可用性。
+`completed.stdout + completed.stderr` 在进程从未启动时会抛 `TypeError` 并掩盖真实诊断，已改为
+None-safe 的 `captured()` 助手。
 
 ## 5. 残余与未核对
 

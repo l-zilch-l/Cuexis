@@ -25,6 +25,10 @@ constexpr std::string_view pngDecoderName = "libpng-1.6.58";
 constexpr std::string_view jpegDecoderName = "libjpeg-turbo-3.2.0";
 // IHDR interlace method 0: no interlacing. Method 1 (Adam7) is the only other defined value.
 constexpr std::uint8_t pngInterlaceNone = 0U;
+// IHDR compression and filter methods: the only values the PNG specification
+// permits, and therefore the only ones the v1 image profile describes.
+constexpr std::uint8_t pngCompressionDeflate = 0U;
+constexpr std::uint8_t pngFilterAdaptive = 0U;
 
 // ---------------------------------------------------------------------------------------------
 // EXIF / TIFF orientation
@@ -232,8 +236,21 @@ struct PngProfile final {
             profile.height = header.readU32Be();
             profile.bitDepth = header.readU8();
             profile.colorType = header.readU8();
-            header.readU8(); // compression method, always 0 in the v1 profile
-            header.readU8(); // filter method, always 0 in the v1 profile
+            // IHDR byte 10 (compression) and byte 11 (filter) are fixed by the PNG
+            // specification for the permitted bit depth / colour type combinations, and the v1
+            // profile freezes one layout. They are checked rather than discarded so a file that
+            // relies on a method libpng would accept but the profile never described is refused
+            // here, and the [[nodiscard]] reader result is not dropped silently.
+            if (header.readU8() != pngCompressionDeflate) {
+                return core::unexpected(
+                    detail::mediaError("media.image.header_invalid",
+                                       "PNG compression method is not part of the v1 image profile"));
+            }
+            if (header.readU8() != pngFilterAdaptive) {
+                return core::unexpected(
+                    detail::mediaError("media.image.header_invalid",
+                                       "PNG filter method is not part of the v1 image profile"));
+            }
             // IHDR byte 12 is the interlace method. The v1 profile freezes one layout, so an
             // interlaced image is refused here rather than de-interlaced by libpng and published
             // under a profile that never described it.
