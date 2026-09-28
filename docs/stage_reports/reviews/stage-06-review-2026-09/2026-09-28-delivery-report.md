@@ -224,8 +224,24 @@ R8 的 7 项死代码删除、状态名合并、`_MSC_VER` 选择、工作流空
 | --- | --- | --- |
 | `05f9a20` | R7 门禁首次接线 | Version Gate ✅、Linux Quality ✅、Windows MSVC ✅、Windows MinGW ✅ |
 | `5374631` | 尝试以 `nm` 探测工具 | 该尝试本身未解决 ELF（见 W5 §4.2 缺陷 2） |
-| `0c8f837` | 把 `CUEXIS_SYMBOL_TOOL` 改为 `objdump` | Version Gate ✅、Windows MSVC/MinGW 未见失败；**Linux Quality ❌** |
-| `2c74f5f` | 拆分工具变量 + ELF 库名归一化（W5 §4.2 四项修正） | **待返回** |
+| `0c8f837` | 把 `CUEXIS_SYMBOL_TOOL` 改为 `objdump` | Version Gate ✅、Windows MSVC ✅；**Linux Quality ❌ 且 Windows MinGW ❌** |
+| `2c74f5f` | 拆分工具变量 + ELF 库名归一化（W5 §4.2 四项修正） | 待返回 |
+| `7ac37f8` | 审计发现的两处代码缺陷（`closureBytes`、坏 shebang）+ gamma 正向夹具 | 待返回 |
+| `c6f1e45` | 审计更正（W2/W3/W4/W5/W6 + 本报告） | 待返回 |
+
+`0c8f837` 的 MinGW 失败是**第二个独立的真实红**，与 Linux 的两项根因不同：
+`publish_fs_internal.cpp` 编译失败——
+
+```text
+error: cannot convert 'const std::filesystem::__cxx11::path::value_type*'
+       {aka 'const wchar_t*'} to 'const char*'
+```
+
+该行**此前一直只在本机 MSVC 上验证**（MSVC 走 `_wfopen_s` 分支，改动是空操作），因此本机
+「构建 0 错误 + 332/23 全绿」对该分支**没有任何证明力**，W6 §4 行 D 已据此更正。
+根因是 R8 的 STD-10 把 `_WIN32` 改成 `_MSC_VER` 后，MinGW 落入窄 `fopen` 回退，而 MinGW 的
+`path::value_type` 同为 `wchar_t`。现行修正与验证见 W6 §6。`2c74f5f` 及以后各 SHA 因此
+**仍带该 MinGW 编译错误**，直到 W6 §6 的修正提交落地。
 
 `0c8f837` 在 Linux 上失败的两项与本批次新增门禁直接相关，均已定因并修复：
 

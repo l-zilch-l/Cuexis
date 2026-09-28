@@ -214,3 +214,32 @@ FAILED (failures=1)
 | `cmake --build --preset debug` 全量构建 0 错误 | **未核实** | 复核期间被禁止运行 `cmake --build`（构建树被其他代理并发使用），只允许运行既有测试二进制 |
 | `cmake --build --preset debug --target cuexis_format_check` 通过 | **未核实** | 同上 |
 | 全量 `ctest` 748 个测试及其失败集 | **未核实** | 未重跑全量 `ctest`；且数量已漂移为 751（见 §4） |
+
+### 6. 必须更正：STD-10 的修正方向把 MinGW 构建打红了
+
+R8 §2 的 STD-10 行把方向定为「统一按 `_MSC_VER` 分支」，理由是「`_wfopen_s` 是 MSVC CRT 扩展，MinGW 无此符号」。**这句理由对 `_wfopen_s` 从未被证实，而该修正本身让 `debug-media-tools` 的 Windows MinGW 构建直接编译失败。** 托管证据：`0c8f837` 的 MinGW run（`36417041282`，job `108910546976`）在 `publish_fs_internal.cpp` 报
+
+```text
+error: cannot convert 'const std::filesystem::__cxx11::path::value_type*'
+       {aka 'const wchar_t*'} to 'const char*'
+```
+
+原因是改动后 MinGW 落入 `#else` 的**窄** `std::fopen(file.c_str(), "rb")`，而 MinGW 的 `std::filesystem::path::value_type` 同样是 `wchar_t`：宽路径无法传给窄 `fopen`。那不是回退，是编译错误。
+
+**`readEnvValue` 的 `_MSC_VER` 是对的，不能一起回退。** `0753e6a` 记录过一次真实的 MinGW 链接失败 `undefined reference to '__imp__dupenv_s'`；本次以 mingw-w64 的导入库复核，`libmsvcrt-os.a`（msvcrt 路径）中 `_dupenv_s` **absent**、`_wfopen` **present**，与该失败完全对应。因此两处站点的守卫**本就应当不同**，因为其回退分支的可行性不同：`readEnvValue` 的 `getenv` 回退在 MinGW 上有效，而 `readFileBytes` 的窄 `fopen` 回退在 MinGW 上根本无法编译。STD-10 原文「统一」这一处方本身即为错误——它把「两处写法不一致」当成了缺陷，而实际的一致条件应当是「回退分支各自可用」。
+
+现行修正为三分支：
+
+| 工具链 | 分支条件 | 打开方式 | 路径类型 |
+| --- | --- | --- | --- |
+| MSVC | `_MSC_VER` | `_wfopen_s` | 宽 |
+| MinGW | `_WIN32 && !_MSC_VER` | `_wfopen` | 宽 |
+| Linux | 其余 | `std::fopen` | 窄 |
+
+**方法学更正（重要）**：本机 `ucrt64` **不能**代表 CI 使用的 msvcrt 变体，不得作为其代理。本次先用 ucrt64 测得 `_wfopen_s` 与 `_dupenv_s` 均可编译且可链接，据此一度准备回退 `_MSC_VER`；而 `0753e6a` 的真实 CI 证据恰恰相反。原因是 UCRT 变体提供安全 CRT 实现、msvcrt 变体不提供。真正可用的验证是：
+
+- 用 ucrt64 g++ 编译**真实源文件**（会走 `_WIN32 && !_MSC_VER` 分支）→ **通过**；
+- 把同一分支换回旧写法编译同一文件（对照）→ 复现出与托管 CI **逐字相同**的 `wchar_t* → const char*` 错误。
+
+即该检验非空转。`_wfopen` 在 msvcrt 上的存在性由 `libmsvcrt-os.a` 佐证，最终判据仍是 MinGW CI 本身。
+
