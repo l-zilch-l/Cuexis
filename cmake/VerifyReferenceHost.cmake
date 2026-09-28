@@ -410,34 +410,30 @@ else()
         string(REGEX MATCHALL "[A-Za-z0-9_.+-]+\\.dll" host_imported_libraries
             "${host_import_output}")
     elseif(CUEXIS_SYMBOL_TOOL_KIND STREQUAL "objdump")
-        # MinGW builds PE/COFF binaries. `nm` cannot read their import table
-        # (it reports "no symbols"), so objdump prints the import directory and
-        # the library names come from the "DLL Name:" lines.
+        # objdump covers both non-MSVC formats, and `nm` cannot serve either:
+        #  - PE/COFF (MinGW): the import table is not symbols at all; `nm`
+        #    reports "no symbols". objdump lists it as "DLL Name: <name>".
+        #  - ELF (Linux): dependencies are DT_NEEDED entries, while `nm -D`
+        #    prints symbols (libc_start_main@GLIBC_...) and never the library
+        #    file names. objdump lists them as "NEEDED <name>".
         execute_process(
             COMMAND "${CUEXIS_SYMBOL_TOOL}" -p "${host_executable}"
             RESULT_VARIABLE host_import_result
             OUTPUT_VARIABLE host_import_output
             ERROR_VARIABLE host_import_error)
-        string(REGEX MATCHALL "DLL Name: *([A-Za-z0-9_.+-]+)" host_import_matches
+        string(REGEX MATCHALL "DLL Name: *([A-Za-z0-9_.+-]+)" host_import_dll_matches
+            "${host_import_output}")
+        string(REGEX MATCHALL "NEEDED +([A-Za-z0-9_.+-]+)" host_import_needed_matches
             "${host_import_output}")
         set(host_imported_libraries "")
-        foreach(import_match IN LISTS host_import_matches)
+        foreach(import_match IN LISTS host_import_dll_matches)
             string(REGEX REPLACE "^DLL Name: *" "" import_name "${import_match}")
             list(APPEND host_imported_libraries "${import_name}")
         endforeach()
-    else()
-        execute_process(
-            COMMAND "${CUEXIS_SYMBOL_TOOL}" -D --undefined-only "${host_executable}"
-            RESULT_VARIABLE host_import_result
-            OUTPUT_VARIABLE host_import_output
-            ERROR_VARIABLE host_import_error)
-        execute_process(
-            COMMAND "${CUEXIS_SYMBOL_TOOL}" -D --dynamic "${host_executable}"
-            RESULT_VARIABLE host_needed_result
-            OUTPUT_VARIABLE host_needed_output
-            ERROR_VARIABLE host_needed_error)
-        string(REGEX MATCHALL "[A-Za-z0-9_.+-]+\\.so[0-9.]*" host_imported_libraries
-            "${host_needed_output}")
+        foreach(import_match IN LISTS host_import_needed_matches)
+            string(REGEX REPLACE "^NEEDED +" "" import_name "${import_match}")
+            list(APPEND host_imported_libraries "${import_name}")
+        endforeach()
     endif()
     if(NOT host_import_result EQUAL 0)
         message(FATAL_ERROR "Host import inspection failed: ${host_import_error}")

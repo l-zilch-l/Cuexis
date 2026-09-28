@@ -350,16 +350,16 @@ if(CUEXIS_BUILD_TESTS)
         if(MSVC)
             find_program(CUEXIS_SYMBOL_TOOL NAMES dumpbin REQUIRED)
             set(CUEXIS_SYMBOL_TOOL_KIND dumpbin)
-        elseif(WIN32)
-            # MinGW produces PE/COFF binaries, whose import table `nm` cannot
-            # read: it reports "no symbols" for both `-D` and `--dynamic`, which
-            # would leave the host import check with nothing to parse. objdump
-            # prints the PE import directory as "DLL Name:" lines instead.
+        else()
+            # Both non-MSVC formats need objdump, because `nm` cannot read the
+            # import list of either one:
+            #  - PE/COFF (MinGW): the import table is not symbols; `nm` answers
+            #    "no symbols". objdump prints "DLL Name: <name>" lines.
+            #  - ELF (Linux): dependencies are DT_NEEDED entries, while `nm -D`
+            #    prints symbols (libc_start_main@GLIBC_...), never library file
+            #    names. objdump prints "NEEDED <name>" lines.
             find_program(CUEXIS_SYMBOL_TOOL NAMES objdump REQUIRED)
             set(CUEXIS_SYMBOL_TOOL_KIND objdump)
-        else()
-            find_program(CUEXIS_SYMBOL_TOOL NAMES llvm-nm nm REQUIRED)
-            set(CUEXIS_SYMBOL_TOOL_KIND nm)
         endif()
         foreach(consumer_mode IN ITEMS
                 add_subdirectory
