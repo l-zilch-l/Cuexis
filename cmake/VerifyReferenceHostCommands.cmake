@@ -398,16 +398,14 @@ foreach(entry IN LISTS cuexis_command_cases)
     # A timeout and a signal death are not negative evidence.
     if(case_result MATCHES "timeout|No such file|not found|cannot execute")
         cuexis_command_record_failure("${case_id}"
-            "the host did not run to a normal exit (result '${case_result}'); "
-            "a crash or timeout is not negative evidence")
+            "the host did not run to a normal exit (result '${case_result}'); a crash or timeout is not negative evidence")
         list(APPEND cuexis_command_evidence "  ${case_id}: abnormal exit '${case_result}'")
         continue()
     endif()
 
     if(NOT EXISTS "${case_report}")
         cuexis_command_record_failure("${case_id}"
-            "the host produced no run record (exit ${case_result})\n"
-            "    stdout: ${case_output}\n    stderr: ${case_error}")
+            "the host produced no run record (exit ${case_result})\n    stdout: ${case_output}\n    stderr: ${case_error}")
         list(APPEND cuexis_command_evidence "  ${case_id}: no record (exit ${case_result})")
         continue()
     endif()
@@ -609,6 +607,61 @@ foreach(entry IN LISTS cuexis_command_cases)
     if(NOT case_frame_cursor EQUAL case_frame_total)
         cuexis_command_record_failure("${case_id}"
             "the record has ${case_frame_total} frames but only ${case_frame_cursor} were expected")
+    endif()
+
+    # Section 6.2 asks for two relations a per-frame triple comparison cannot
+    # express, because the frame directive deliberately does not carry a digest
+    # value: a digest that never changes when the sampled frame does is a
+    # constant rather than a measurement, and the same sampled frame must always
+    # produce the same digest. Without these, a host that printed one fixed
+    # digest for every frame would pass every case that samples more than once.
+    set(case_triples "")
+    set(case_digests "")
+    foreach(frame_line IN LISTS case_frames)
+        string(REGEX MATCH
+            "chartTimeMs=([-0-9]+) discontinuityId=([0-9]+) objects=([0-9]+) digest=([0-9]+) algorithm=([0-9]+) cmdIndex=([0-9]+) simulationDeltaTimeMs=([-0-9]+)"
+            frame_shape "${frame_line}")
+        if(NOT frame_shape)
+            # A frame that is not in the command-mode shape is reported by the
+            # frame directive itself; the relations below need the fields.
+            continue()
+        endif()
+        set(frame_triple "${CMAKE_MATCH_1}/${CMAKE_MATCH_7}/${CMAKE_MATCH_2}")
+        set(frame_digest "${CMAKE_MATCH_4}")
+        list(APPEND case_triples "${frame_triple}")
+        list(APPEND case_digests "${frame_digest}")
+        # Three parallel lists rather than one joined key: splitting a joined
+        # key back apart is one more thing that can silently desynchronize.
+        list(LENGTH cuexis_command_seen_triples cuexis_seen_total)
+        set(cuexis_seen_index 0)
+        while(cuexis_seen_index LESS cuexis_seen_total)
+            list(GET cuexis_command_seen_triples ${cuexis_seen_index} seen_triple)
+            list(GET cuexis_command_seen_digests ${cuexis_seen_index} seen_digest)
+            list(GET cuexis_command_seen_cases ${cuexis_seen_index} seen_case)
+            if(seen_triple STREQUAL frame_triple AND NOT seen_digest STREQUAL frame_digest)
+                cuexis_command_record_failure("${case_id}"
+                    "frame (${frame_triple}) produced two digests: ${frame_digest} in ${case_id} and ${seen_digest} in ${seen_case}")
+                break()
+            endif()
+            math(EXPR cuexis_seen_index "${cuexis_seen_index} + 1")
+        endwhile()
+        list(APPEND cuexis_command_seen_triples "${frame_triple}")
+        list(APPEND cuexis_command_seen_digests "${frame_digest}")
+        list(APPEND cuexis_command_seen_cases "${case_id}")
+    endforeach()
+
+    list(LENGTH case_frames case_frame_count)
+    if(case_frame_count GREATER 1)
+        list(REMOVE_DUPLICATES case_triples)
+        list(LENGTH case_triples case_distinct_triples)
+        if(case_distinct_triples GREATER 1)
+            list(REMOVE_DUPLICATES case_digests)
+            list(LENGTH case_digests case_distinct_digests)
+            if(case_distinct_digests EQUAL 1)
+                cuexis_command_record_failure("${case_id}"
+                    "the record samples ${case_distinct_triples} different frames but reports the same digest for all of them")
+            endif()
+        endif()
     endif()
 
     # Exit code and summary are checked only after the record has been parsed,

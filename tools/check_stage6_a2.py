@@ -403,6 +403,77 @@ def check_reference_host_contract() -> None:
     case_runner = ROOT / "cmake" / "VerifyReferenceHostCommands.cmake"
     require(case_runner.is_file(), "the command case runner is missing")
     case_runner_text = case_runner.read_text(encoding="utf-8")
+
+    def failure_call_literals(source: str):
+        """Yield the top level string literal count of every real failure call.
+
+        The runner declares `function(cuexis_command_record_failure case_id
+        message)`, so a call written as two adjacent quoted strings binds only
+        the first half and silently discards the rest (CMake concatenates
+        adjacent literals into one argument only when the callee accepts one).
+        A truncated message is worse than a short one: it still contains the
+        substrings that call site's own probe looks for, so the check reads as
+        live while reporting less than it claims. Counting literals detects it
+        because implicit concatenation is exactly what adds a literal.
+        """
+        marker = "cuexis_command_record_failure("
+        cursor = 0
+        while True:
+            found = source.find(marker, cursor)
+            if found < 0:
+                return
+            line_start = source.rfind("\n", 0, found) + 1
+            if source[line_start:found].lstrip().startswith("#"):
+                cursor = found + len(marker)
+                continue
+            index = found + len(marker) - 1
+            depth = 0
+            in_string = False
+            escaped = False
+            while index < len(source):
+                character = source[index]
+                if in_string:
+                    if escaped:
+                        escaped = False
+                    elif character == "\\":
+                        escaped = True
+                    elif character == '"':
+                        in_string = False
+                elif character == '"':
+                    in_string = True
+                elif character == "(":
+                    depth += 1
+                elif character == ")":
+                    depth -= 1
+                    if depth == 0:
+                        break
+                index += 1
+            call_text = source[found:index + 1]
+            literal_count = 0
+            in_literal = False
+            escaped = False
+            for character in call_text[len(marker) - 1:]:
+                if in_literal:
+                    if escaped:
+                        escaped = False
+                    elif character == "\\":
+                        escaped = True
+                    elif character == '"':
+                        in_literal = False
+                    continue
+                if character == '"':
+                    in_literal = True
+                    literal_count += 1
+            yield literal_count, call_text
+            cursor = index + 1
+
+    for literal_count, call_text in failure_call_literals(case_runner_text):
+        require(literal_count == 2,
+                "a cuexis_command_record_failure call passes "
+                f"{literal_count} top level string literals instead of a case id "
+                "and exactly one message, which truncates the failure text: "
+                f"{' '.join(call_text.split())[:120]}")
+
     # Sentinels rather than a count: the runner itself asserts set equality
     # between the declared list and the fixtures on disk (R9 section 8.7), while
     # this static check only has to notice a declaration being deleted.
