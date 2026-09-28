@@ -343,6 +343,17 @@ if(CUEXIS_BUILD_TESTS)
     endif()
 
     if(PROJECT_IS_TOP_LEVEL)
+        # The symbol tool is discovered before the gates are registered because
+        # the reference-host gate needs it too, and it must be available on every
+        # flavor (the host import whitelist is not shared-only). The earlier
+        # placement inside the SHARED block left it undefined for the host test.
+        if(MSVC)
+            find_program(CUEXIS_SYMBOL_TOOL NAMES dumpbin REQUIRED)
+            set(CUEXIS_SYMBOL_TOOL_KIND dumpbin)
+        else()
+            find_program(CUEXIS_SYMBOL_TOOL NAMES llvm-nm nm REQUIRED)
+            set(CUEXIS_SYMBOL_TOOL_KIND nm)
+        endif()
         foreach(consumer_mode IN ITEMS
                 add_subdirectory
                 add_subdirectory_playback
@@ -401,6 +412,8 @@ if(CUEXIS_BUILD_TESTS)
                 "-DCUEXIS_VCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}"
                 "-DCUEXIS_VCPKG_MANIFEST_MODE=${VCPKG_MANIFEST_MODE}"
                 "-DCUEXIS_VCPKG_INSTALLED_DIR=${VCPKG_INSTALLED_DIR}"
+                "-DCUEXIS_SYMBOL_TOOL=${CUEXIS_SYMBOL_TOOL}"
+                "-DCUEXIS_SYMBOL_TOOL_KIND=${CUEXIS_SYMBOL_TOOL_KIND}"
                 -P "${PROJECT_SOURCE_DIR}/cmake/VerifyReferenceHost.cmake"
         )
         set_tests_properties(cuexis_reference_host_staging PROPERTIES
@@ -429,13 +442,6 @@ if(CUEXIS_BUILD_TESTS)
             )
         endif()
         if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
-            if(MSVC)
-                find_program(CUEXIS_SYMBOL_TOOL NAMES dumpbin REQUIRED)
-                set(CUEXIS_SYMBOL_TOOL_KIND dumpbin)
-            else()
-                find_program(CUEXIS_SYMBOL_TOOL NAMES llvm-nm nm REQUIRED)
-                set(CUEXIS_SYMBOL_TOOL_KIND nm)
-            endif()
             add_test(
                 NAME cuexis_shared_export_surface
                 COMMAND "${CMAKE_COMMAND}"

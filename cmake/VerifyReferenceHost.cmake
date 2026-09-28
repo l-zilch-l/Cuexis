@@ -387,6 +387,100 @@ if(NOT installed_texts)
 endif()
 
 # ---------------------------------------------------------------------------
+# Host import surface: the built host must import only the Cuexis libraries it
+# is entitled to. This is the symbol-level half of S6-D08 (SPEC-27): the source
+# hygiene check above proves the host *asks* for the right targets, and this
+# proves the linker actually produced a binary with the matching dependency set.
+#
+# The symbol tool is discovered by the parent build and passed in, because
+# find_program() results are not visible inside a -P script. When it is absent
+# the case is skipped with a notice rather than silently passing.
+# ---------------------------------------------------------------------------
+if(NOT DEFINED CUEXIS_SYMBOL_TOOL OR "${CUEXIS_SYMBOL_TOOL}" STREQUAL "" OR
+   NOT DEFINED CUEXIS_SYMBOL_TOOL_KIND OR "${CUEXIS_SYMBOL_TOOL_KIND}" STREQUAL "")
+    message(STATUS
+        "No symbol tool was provided; the host import surface check was not executed")
+else()
+    if(CUEXIS_SYMBOL_TOOL_KIND STREQUAL "dumpbin")
+        execute_process(
+            COMMAND "${CUEXIS_SYMBOL_TOOL}" /nologo /imports "${host_executable}"
+            RESULT_VARIABLE host_import_result
+            OUTPUT_VARIABLE host_import_output
+            ERROR_VARIABLE host_import_error)
+        string(REGEX MATCHALL "[A-Za-z0-9_.+-]+\\.dll" host_imported_libraries
+            "${host_import_output}")
+    else()
+        execute_process(
+            COMMAND "${CUEXIS_SYMBOL_TOOL}" -D --undefined-only "${host_executable}"
+            RESULT_VARIABLE host_import_result
+            OUTPUT_VARIABLE host_import_output
+            ERROR_VARIABLE host_import_error)
+        execute_process(
+            COMMAND "${CUEXIS_SYMBOL_TOOL}" -D --dynamic "${host_executable}"
+            RESULT_VARIABLE host_needed_result
+            OUTPUT_VARIABLE host_needed_output
+            ERROR_VARIABLE host_needed_error)
+        string(REGEX MATCHALL "[A-Za-z0-9_.+-]+\\.so[0-9.]*" host_imported_libraries
+            "${host_needed_output}")
+    endif()
+    if(NOT host_import_result EQUAL 0)
+        message(FATAL_ERROR "Host import inspection failed: ${host_import_error}")
+    endif()
+    if(NOT host_imported_libraries)
+        message(FATAL_ERROR
+            "The host import inspection parsed no libraries from ${host_executable}; "
+            "the check would pass vacuously")
+    endif()
+
+    # The host may depend on the Playback SDK plus its own transitive Cuexis
+    # runtime, and on nothing else that is Cuexis-owned. Internal modules are
+    # named explicitly so a new leak is a build failure rather than a review
+    # note. Only libraries whose names start with "cuexis" are judged: the
+    # compiler runtime and OS libraries are the host's own business.
+    set(host_forbidden_cuexis_libraries
+        cuexis_assets
+        cuexis_world
+        cuexis_runtime
+        cuexis_debug
+        cuexis_render
+        cuexis_render_opengl
+        cuexis_platform
+        cuexis_behavior
+        cuexis_gameplay)
+    foreach(imported_library IN LISTS host_imported_libraries)
+        string(TOLOWER "${imported_library}" imported_library_lower)
+        if(NOT imported_library_lower MATCHES "^cuexis_")
+            continue()
+        endif()
+        foreach(forbidden_library IN LISTS host_forbidden_cuexis_libraries)
+            if(imported_library_lower MATCHES "^${forbidden_library}")
+                message(FATAL_ERROR
+                    "The reference host imports the internal Cuexis library "
+                    "${imported_library}; only Playback and its public runtime are allowed")
+            endif()
+        endforeach()
+    endforeach()
+
+    # A shared package must actually be consumed through its import library; a
+    # host that linked nothing would satisfy the forbidden list trivially.
+    if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
+        set(host_imports_playback FALSE)
+        foreach(imported_library IN LISTS host_imported_libraries)
+            string(TOLOWER "${imported_library}" imported_library_lower)
+            if(imported_library_lower MATCHES "^cuexis_playback")
+                set(host_imports_playback TRUE)
+            endif()
+        endforeach()
+        if(NOT host_imports_playback)
+            message(FATAL_ERROR
+                "The shared reference host does not import cuexis_playback: "
+                "${host_imported_libraries}")
+        endif()
+    endif()
+    message(STATUS "Reference host import surface verified")
+endif()
+
+# ---------------------------------------------------------------------------
 # 5. Negative gate: a package that records another toolchain is refused.
 # ---------------------------------------------------------------------------
 if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
