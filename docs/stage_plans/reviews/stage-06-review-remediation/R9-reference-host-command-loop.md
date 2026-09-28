@@ -403,6 +403,79 @@ host.frame index=... mode=... chartTimeMs=... discontinuityId=... objects=... di
 `reload` 记录**实际 targetFrame 参数**及 commit 后的 normalized 采样信息，用 `host.reload-sample`
 或等价非 frame 事件。**事件数据来自传入 SDK 的同一个局部变量**，不能重新拼装「期望 target」打印。
 
+### 3.6.1 命令模式报告 schema（**冻结，R9-1**）
+
+本节是冻结点 **F4**：case fixture 与 case runner 都按此写，**实现不得单方面改字段名或顺序**。
+旧事件与旧字段一律不变；新字段**只能追加**。
+
+**旧 `host.frame` 的连续前缀必须逐字保留**，新字段追加在其后：
+
+```text
+host.frame index=<n> mode=<advance|seek> chartTimeMs=<t> discontinuityId=<id> objects=<n> digest=<d> algorithm=3 cmdIndex=<n> simulationDeltaTimeMs=<dt>
+```
+
+`simulationDeltaTimeMs`：tick 产生的帧为 `250`，seek 产生的帧为 `0`。命令模式 `index` **全程从 0 递增**。
+
+**新增事件**（字段顺序固定，`<...>` 为占位）：
+
+```text
+host.command index=<n> line=<源行号> verb=<open|play|pause|tick|seek|reload|quit> outcome=<ok|rejected> transport=<前>-><后>
+host.play state=<SessionState> chartTimeMs=<t> discontinuityId=<id>
+host.pause state=<SessionState> chartTimeMs=<t> discontinuityId=<id>
+host.observation reason=pause-check state=<SessionState> chartTimeMs=<t> discontinuityId=<id> sampled=<yes|no> objects=<n> digest=<d|none>
+host.reload-sample cmdIndex=<n> targetChartTimeMs=<t> targetSimulationDeltaTimeMs=<dt> targetDiscontinuityId=<id> normalizedChartTimeMs=<t> normalizedSimulationDeltaTimeMs=0 normalizedDiscontinuityId=<id>
+host.clock tickAttempts=<n> suppressedTicks=<n> emittedTickFrames=<n> publicUpdateAttempts=<n> publicUpdateSuccesses=<n> frameCount=<n>
+host.diagnostic step=<open|play|pause|tick|seek|reload|quit|parse|flags|file> code=<host.command.*> detail=<文本>
+```
+
+`transport` 取值域 `Empty|Paused|Playing|Terminated`。被拒绝的命令**也发** `host.command`（`outcome=rejected`，transport 前后相同），
+随后紧跟 `host.diagnostic`。
+
+**出现规则**（runner 依赖这些规则，不能靠猜）：
+
+| 事件 | 何时出现 |
+| --- | --- |
+| `host.command` | 每条**被分发**的命令一次。预解析拒绝时**没有**（没有任何命令被分发） |
+| `host.play` / `host.pause` | 每次**被接受**的 `play` / `pause` |
+| `host.observation` | 每次**被接受**的 `pause`；`sampled=yes` 当且仅当已存在成功 update 帧，此时 `objects`/`digest` 取自 `lastSampleFrame`，且**不调用 `update`** |
+| `host.reload-sample` | 每次**成功**的 `reload` |
+| `host.clock` | **恰好一次**，在命令循环结束、统一清理与 unload 之后、`host.summary` 之前；**仅当程序被接受并开始执行** |
+| `host.diagnostic` | 每次用户错误一次，且**置 run 为 failed**（`rejection` 只用于既有预期失败自验，不得用于用户运行错误） |
+| `host.destroy` | `quit` 成功卸载后，沿用旧形状 `state=Empty` |
+
+`host.diagnostic` 置 run 失败意味着负例的 `host.summary` 为 `outcome=failed`，退出码非零——**这正是负例的判据**。
+
+**不新增** `host.tick`/`host.seek`：§7 的断言全部可由 `host.frame` 与 `host.clock` 表达，
+少一个事件就少一处需要独立验证的表面。
+
+### 3.6.2 case fixture 与 `.expect` 语法（**冻结，R9-1**）
+
+case 数据放在 `examples/reference_host/tests/commands/`（随既有整目录复制到源树外）：
+
+- `<case-id>.cmd`：命令文件，语法见 §3.2。
+- `<case-id>.expect`：期望，**面向行的固定语法**，由 case runner 逐行解析。
+
+`.expect` 行（`#` 起首为注释，空行忽略）：
+
+```text
+exit ok                       # 或 exit fail
+code host.command.not_open    # 负例必需：host.diagnostic 必须含此后缀
+diagnostic-step parse         # 负例可选：限定 step=
+frame <t>/<dt>/<id>           # 按序匹配 host.frame 的 chartTimeMs/simulationDeltaTimeMs/discontinuityId
+digest-anchor                 # 该帧 digest 必须等于 §6.1 的冻结 golden（不写字面值）
+count tickAttempts 6          # host.clock 的字段必须等于该值
+require <子串>                # 报告必须含该子串
+absent <子串>                 # 报告必须不含该子串
+```
+
+`code` 的检查对象是 `host.diagnostic` 行的 `code=` 字段**后缀**（稳定诊断码见 §3.5）。
+**`.expect` 里不允许出现任何 64 位摘要字面值**：锚点只写 `digest-anchor`，
+其余一律用 §6.2 的关系判据（逐帧相等、帧数、计数、state），从而**不新增 golden**。
+
+**必跑清单与集合相等**（承接 §14 未决项）：case runner 在 CMake 里**声明** case 清单，
+并用 glob **仅作校验**断言「声明的 id 集合 == `*.cmd` 文件集合 == `*.expect` 文件集合」，
+三者任一不等即失败。**glob 永不作为发现手段**，因此「fixture 存在但从未被声明」会硬失败而不是被静默跳过。
+
 ---
 
 ## 4. 实现结构
