@@ -97,7 +97,7 @@ R0 决策门禁（owner 裁定 4 项）
 | R4 | R0-2 | 媒体修正 + fixture/golden 决策 | completed：按 R0-2 (a) 拒绝线性 `gAMA`（不改 canonical bytes、不重冻结 golden）；FLAC 伪造时长无条件拒绝；interlaced PNG 显式拒绝；JPEG 损坏 marker fixture 补齐；`.gitattributes` 覆盖 fixture 树。6 项媒体负例均可执行且各以变异反证。退出记录见 [2026-09-28-w2-media-import.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w2-media-import.md) |
 | R5 | R0-1 | 原子替换修正 + 故障注入用例 | completed：单次原子替换（无 target 缺失窗口）；恢复逻辑还原 backup 而非删除；pair 锁覆盖两个目标父目录；幂等重发报告真实闭包字节。5 条新用例各以变异反证非空转。退出记录见 [2026-09-28-w3-publication-transaction.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w3-publication-transaction.md) |
 | R6 | R0-3 | 渲染收敛 + 配置语义修正 | completed（SPEC-19b 登记 BLOCKED）：`buildPresentationCommands` 成为唯一排序/摘要来源（adapter 删除约 16.7 KB 重复实现）；四个宿主字段按可回读性改名/新增回读；`LaunchOption` 删除；自动重试按 R0-3 (a) 移除并新增 `--mode`；SPEC-19a/19c 用例各以变异反证。SPEC-19b 因 `CUEXIS_ENABLE_CHART_V5_CANDIDATE` 在所有预设与 CI 中为 `OFF` 无法注册，按构建隔离证据缺口登记。退出记录见 [2026-09-28-w4-render-convergence.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w4-render-convergence.md) |
-| R7 | R5 | 宿主与分发门禁补齐 | 门禁注册并跑通 |
+| R7 | R5 | 宿主与分发门禁补齐 | completed（步骤 3/4/6 按口径登记，ADR 冲突上报）：宿主导入门禁新增导入表符号检查与 SDK minor 负例；candidate 零命中扫描成为门禁（「默认 OFF 下工厂拒绝」本已注册）；static 无 toolchain 负例改由 minor 负例承担；交互命令循环口径与 ADR 0042 `:350-351` 的冲突**未处置**、需 owner 裁定；分发门禁 Linux 未注册登记为 Stage 8 输入。退出记录见 [2026-09-28-w5-host-and-distribution-gates.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w5-host-and-distribution-gates.md) |
 | R8 | — | 重复/死代码/可移植性修正 | 每项有修正或书面豁免 |
 
 ## 6. 各批次的问题、目标与具体步骤
