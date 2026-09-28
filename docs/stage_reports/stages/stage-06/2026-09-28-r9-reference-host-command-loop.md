@@ -127,11 +127,13 @@ A2 characterization check rejects the split form outright.
 ## 5. Mutation evidence
 
 Sixteen mutations, each applied inside an isolated git worktree that the main
-working tree never sees. Every run had the unmutated host green first, every
-mutation was restored byte for byte afterwards (the worktree was verified clean in
-all sixteen cases), and no mutation was allowed to count if the mutant failed to
-build, crashed, or timed out. The target column is the assertion the mutation was
-expected to break.
+working tree never sees. The whole set was run against `0e14232` and re-run
+against it after the parser fix in section 3, because evidence about a revision
+stops being evidence as soon as the revision moves. Every run had the unmutated
+host green first, every mutation was restored byte for byte afterwards (the
+worktree was verified clean in all sixteen cases), and no mutation was allowed to
+count if the mutant failed to build, crashed, or timed out. The target column is
+the assertion the mutation was expected to break.
 
 | Mutation | Target | Result | Other cases that also failed |
 |---|---|---|---|
