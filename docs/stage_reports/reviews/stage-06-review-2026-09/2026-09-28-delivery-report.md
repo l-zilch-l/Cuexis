@@ -225,9 +225,10 @@ R8 的 7 项死代码删除、状态名合并、`_MSC_VER` 选择、工作流空
 | `05f9a20` | R7 门禁首次接线 | Version Gate ✅、Linux Quality ✅、Windows MSVC ✅、Windows MinGW ✅ |
 | `5374631` | 尝试以 `nm` 探测工具 | 该尝试本身未解决 ELF（见 W5 §4.2 缺陷 2） |
 | `0c8f837` | 把 `CUEXIS_SYMBOL_TOOL` 改为 `objdump` | Version Gate ✅、Windows MSVC ✅；**Linux Quality ❌ 且 Windows MinGW ❌** |
-| `2c74f5f` | 拆分工具变量 + ELF 库名归一化（W5 §4.2 四项修正） | 待返回 |
-| `7ac37f8` | 审计发现的两处代码缺陷（`closureBytes`、坏 shebang）+ gamma 正向夹具 | 待返回 |
-| `c6f1e45` | 审计更正（W2/W3/W4/W5/W6 + 本报告） | 待返回 |
+| `2c74f5f` | 拆分工具变量 + ELF 库名归一化（W5 §4.2 四项修正） | 被取代后取消（仍带 MinGW 编译错误） |
+| `7ac37f8` | 审计发现的两处代码缺陷（`closureBytes`、坏 shebang）+ gamma 正向夹具 | 被取代后取消（仍带 MinGW 编译错误） |
+| `c6f1e45` | 审计更正（W2/W3/W4/W5/W6 + 本报告） | 被取代后取消（仍带 MinGW 编译错误） |
+| `18c9272` | MinGW 宽路径打开修正（W6 §6） | **Version Gate ✅、Linux Quality ✅、Windows MSVC ✅、Windows MinGW ✅（push 与 pull_request 两组事件均绿）** |
 
 `0c8f837` 的 MinGW 失败是**第二个独立的真实红**，与 Linux 的两项根因不同：
 `publish_fs_internal.cpp` 编译失败——
@@ -250,9 +251,17 @@ error: cannot convert 'const std::filesystem::__cxx11::path::value_type*'
 | `cuexis_shared_export_surface` | `Shared symbol inspection failed: /usr/bin/objdump: unrecognized option '--defined-only'` | 共享变量被挪用（W5 §4.2 缺陷 3） |
 | `cuexis_reference_host_staging` | `The shared reference host does not import cuexis_playback: libcuexis_playback-0.7.so.0.7;...` | ELF `lib` 前缀使判断失效（W5 §4.2 缺陷 4） |
 
-**口径**：在 `2c74f5f` 的 hosted 三平台结果返回且为绿之前，
-本报告**不得**把门禁改写成"已验证"。上表 `05f9a20` 一行的"全绿"只对该 SHA 成立，
-它**早于** R7 新增门禁真正可用的版本，不构成对当前 HEAD 的结论。
+**口径**：本批次**构建与行为**的已验证 SHA 是 `18c9272`——它是最后一个改动构建输入的提交，
+上面四个门禁在 push 与 pull_request 两组事件上均为 `success`。此后仅追加**文档**更正
+（按 `AGENTS.md`，文档-only 变更不改变构建输入、无需重跑构建与 CTest），
+但该文档提交若改变 HEAD，其自身的 hosted 结果仍须单独核对，不得用 `18c9272` 的绿替代。
+上表 `05f9a20` 一行的"全绿"只对该 SHA 成立，它**早于** R7 新增门禁真正可用的版本，
+不构成对 `18c9272` 的结论；`18c9272` 的绿来自它自己那一组运行。
+
+**中间 SHA 的取消是主动清理，不是失败遮蔽**：`2c74f5f`、`7ac37f8`、`c6f1e45` 在
+`18c9272` 推送后被取消，原因是三者都带 `0c8f837` 引入、由 `18c9272` 修复的 MinGW 编译错误，
+其 hosted 结果对最终 SHA 不再有信息量。`0c8f837` 与 `2c74f5f` 的真实失败记录保留在上表，
+未被删除。
 
 ### 6.2 本批次门禁的四次自查失败（值得留存）
 
