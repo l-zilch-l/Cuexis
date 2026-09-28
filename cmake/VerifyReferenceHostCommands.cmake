@@ -296,10 +296,16 @@ set(cuexis_command_expected_ids "${cuexis_command_case_ids}")
 set(cuexis_command_case_total 0)
 
 foreach(entry IN LISTS cuexis_command_cases)
+    # The flags field is everything after the second separator and is empty for
+    # most cases. It is taken by pattern rather than by splitting, for the same
+    # reason the shape is checked by counting separators: a split cannot be
+    # indexed for a field that is legitimately empty, because whether the
+    # trailing empty element survives list() is not the same in every CMake
+    # version. Indexing it made this loop fail on the runners that drop it.
+    string(REGEX REPLACE "^[^|]*\\|[^|]*\\|" "" case_flags "${entry}")
     string(REPLACE "|" ";" fields "${entry}")
     list(GET fields 0 case_id)
     list(GET fields 1 case_kind)
-    list(GET fields 2 case_flags)
 
     # The legacy case is not re-run here: the assertions that constitute its
     # evidence already ran in VerifyReferenceHost.cmake and would have aborted
