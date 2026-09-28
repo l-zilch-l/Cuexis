@@ -460,7 +460,26 @@ foreach(entry IN LISTS cuexis_command_cases)
 
         # The directive is checked before arity so that a typo is reported as a
         # typo rather than as a wrong argument count.
-        if(NOT directive IN_LIST cuexis_command_known_directives)
+        #
+        # list(FIND) rather than IN_LIST: IN_LIST is a keyword only while policy
+        # CMP0057 is NEW, and this file runs in script mode where nothing has
+        # called cmake_minimum_required() to set it. A CMake that still defaults
+        # that policy to OLD does not recognise the keyword and turns the whole
+        # line into "Unknown arguments specified" instead of the fixture defect it
+        # is, which is how this gate passed on every local and Windows run and
+        # failed on the runners that install CMake from the distribution.
+        # list(FIND) has no policy attached and says the same thing.
+        #
+        # A directive carrying a ';' cannot be looked up as a single value and is
+        # already a malformed line, so it is named as one instead of being passed
+        # to list(FIND) as several arguments.
+        if(directive MATCHES ";")
+            cuexis_command_record_failure("${case_id}"
+                "malformed .expect line '${line}' in ${case_id}.expect")
+            continue()
+        endif()
+        list(FIND cuexis_command_known_directives "${directive}" directive_index)
+        if(directive_index EQUAL -1)
             cuexis_command_record_failure("${case_id}"
                 "unknown .expect directive '${directive}' in ${case_id}.expect")
             continue()

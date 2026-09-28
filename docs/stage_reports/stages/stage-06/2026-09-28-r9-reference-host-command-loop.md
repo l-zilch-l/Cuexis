@@ -61,11 +61,12 @@ never fail, and a frame comparison that passed its condition to `if()` as text,
 which re-tokenizes on whitespace and turns the embedded quotes into literals, so
 a deliberately wrong frame silently matched. Both are fixed.
 
-### 2.1 Two gate defects that only the Linux runner could see
+### 2.1 Three gate defects that only the Linux runner could see
 
 The command-mode gate passed on Windows MSVC, Windows MinGW and locally, and
-failed every Linux job on one test. Neither failure was in the host. Both were in
-the gate's own use of CMake lists, and both came from the same cause.
+failed every Linux job on one test. None of the failures was in the host. All
+three were in the gate's own use of CMake, and the first two came from the same
+cause.
 
 The case list declares each case as `<id>|<kind>|<flags>`, and most cases
 legitimately have an empty flags field, so splitting a declaration on `|` ends in
@@ -93,14 +94,35 @@ file was swept for the same mistake: the only other split that can end in an emp
 element is the expectation file split on newlines, and that one is safe because an
 empty line is skipped either way.
 
+The third defect had a different cause, and it is the one worth reading. With
+both of the above fixed the gate advanced into the expectation parser and failed
+on the directive lookup:
+
+  CMake Error at cmake/VerifyReferenceHostCommands.cmake:463 (if):
+    if given arguments:
+      "NOT" "directive" "IN_LIST" "cuexis_command_known_directives"
+    Unknown arguments specified
+
+The lookup used `IN_LIST`, which is a keyword only while policy `CMP0057` is
+`NEW`. The file runs in script mode, and nothing in it or in the file that
+includes it calls `cmake_minimum_required()`, so on a CMake that still defaults
+that policy to `OLD` the keyword is not recognised and a well-formed `if` becomes
+a hard error. The distribution CMake the Linux jobs install still behaves that
+way; CMake 4.x forces the policy to `NEW` and refuses to set it back, which is
+why local runs and both Windows runners could not reproduce it, and why the
+error text is no help: it prints the source tokens, not the values, so a variable
+looks undefined in the message whether or not it is. `list(FIND)` says the same
+thing with no policy attached, and a directive carrying a `;` is now named as the
+malformed line it is rather than passed on as several arguments.
+
 This is worth recording for how it was found and how it was not found. Local runs,
 both Windows runners and the entire case suite agreed that the gate was sound, and
 the first defect surfaced as a malformed declaration rather than as a broken
-check. The second was then found by asking why the first had happened and looking
-for the same cause elsewhere, not by waiting for the next run; the runner later
-confirmed the exact line and the exact error that reasoning had named. A gate
-exercised on one platform by one CMake version is validated less than it appears
-to be.
+check. Each was then found by asking why the previous one had happened and looking
+for the same cause, or for a different one, rather than by waiting for the next
+run. Three consecutive Linux runs were needed, but no run was spent on a change
+that had not already been reproduced or explained. A gate exercised on one
+platform by one CMake version is validated less than it appears to be.
 
 ## 3. A parser defect found by review
 
