@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shutil
 import subprocess
 import sys
 from dataclasses import asdict, dataclass
@@ -12,6 +13,34 @@ from datetime import date
 from pathlib import Path
 
 from update_version import Version, parse_version, version_from_cmake, version_from_manifest
+
+
+# Git is not on PATH in every runner environment. The hosted MinGW job runs
+# ctest through the MSYS2 shell (`MSYSTEM=MINGW64`), where the Windows Git
+# installation is absent from PATH, so a bare `subprocess.run(["git", ...])`
+# raises FileNotFoundError instead of reporting a gate diagnostic. Resolve the
+# executable explicitly so a missing git surfaces as `version.git.missing`
+# rather than as an unhandled traceback.
+GIT_FALLBACKS = (
+    Path(r"C:\Program Files\Git\cmd\git.exe"),
+    Path(r"C:\Program Files\Git\bin\git.exe"),
+    Path(r"C:\Program Files (x86)\Git\cmd\git.exe"),
+)
+
+
+def git_executable() -> str:
+    """Returns an executable git path, following PATH or a known install."""
+    found = shutil.which("git")
+    if found is not None:
+        return found
+    for candidate in GIT_FALLBACKS:
+        if candidate.is_file():
+            return str(candidate)
+    raise GateError(
+        "version.git.missing",
+        "no git executable on PATH or in a known install location; "
+        "the version gate cannot inspect repository history",
+    )
 
 
 VERSION_FILES = ("cmake/CuexisVersion.cmake", "vcpkg.json")
@@ -203,7 +232,7 @@ def compare_snapshots(
 
 def _run_git(repo_root: Path, *arguments: str) -> subprocess.CompletedProcess[bytes]:
     return subprocess.run(
-        ["git", "-C", str(repo_root), *arguments],
+        [git_executable(), "-C", str(repo_root), *arguments],
         check=False,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

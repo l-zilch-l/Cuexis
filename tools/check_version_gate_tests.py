@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import json
 import os
 import shutil
@@ -19,6 +20,75 @@ TOOLS = Path(__file__).resolve().parent
 REPO_ROOT = Path(os.environ.get("GITHUB_WORKSPACE", TOOLS.parent))
 TRUSTED_ROOT = Path(os.environ.get("CUEXIS_TRUSTED_ROOT", TOOLS.parent))
 WORKFLOW = TRUSTED_ROOT / ".github" / "workflows" / "version-gate.yml"
+
+# Git is not on PATH in every runner environment. The hosted MinGW job runs
+# ctest through the MSYS2 shell (`MSYSTEM=MINGW64`), where the Windows Git
+# installation is absent from PATH, so a bare `subprocess.run(["git", ...])`
+# raises FileNotFoundError and the whole self-test dies for a reason unrelated
+# to the gate. Resolve the executable explicitly instead of relying on PATH.
+GIT_FALLBACKS = (
+    Path(r"C:\Program Files\Git\cmd\git.exe"),
+    Path(r"C:\Program Files\Git\bin\git.exe"),
+    Path(r"C:\Program Files (x86)\Git\cmd\git.exe"),
+)
+
+
+def resolve_git() -> str | None:
+    """Returns an executable git path, following PATH or a known install.
+
+    A visible diagnostic on failure matters more than a clever search: if git
+    genuinely cannot be found, the caller must be able to tell that apart from
+    a version-gate rejection.
+    """
+    found = shutil.which("git")
+    if found is not None:
+        return found
+    for candidate in GIT_FALLBACKS:
+        if candidate.is_file():
+            return str(candidate)
+    return None
+
+
+def usable_posix_shell() -> str | None:
+    """Returns a shell that actually runs a trivial command, or None.
+
+    `shutil.which("bash")` is not enough on Windows: `C:\\Windows\\System32\\bash.exe`
+    is the WSL launcher, which either fails outright or runs inside a different
+    filesystem view. Either way the bootstrap block would be tested against the
+    shim instead of the workflow. The only reliable check is to run something.
+
+    Non-UTF-8 bytes are tolerated here precisely because a broken shim emits
+    localized text; the caller only needs to know whether the shell is usable.
+    """
+    shell = shutil.which("bash")
+    if shell is None:
+        return None
+    try:
+        probe = subprocess.run(
+            [shell, "-c", "exit 0"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if probe.returncode != 0:
+        return None
+    # The WSL shim identifies itself in its banner; reject it even when the
+    # probe happens to succeed on a machine with a working WSL distribution.
+    if "wsl" in Path(shell).name.lower():
+        return None
+    return shell
+
+
+def captured(result: subprocess.CompletedProcess[str]) -> str:
+    """Safely renders a completed process's streams for a failure message.
+
+    `stdout`/`stderr` stay None when the process never started (for example a
+    blacklisted or missing interpreter), so a naive concatenation raises
+    TypeError and replaces the real diagnostic with a confusing one.
+    """
+    return (result.stdout or "") + (result.stderr or "")
 
 
 def snapshot(value: str, sdk: str = "0.7.0") -> gate.VersionSnapshot:
@@ -260,10 +330,97 @@ class VersionGateTests(unittest.TestCase):
         self.assertIn("Run trusted version-gate tests", text)
         self.assertNotIn("|| cp", text)
 
+    def test_git_is_never_invoked_by_bare_name(self) -> None:
+        # Regression: the hosted MinGW job runs ctest under the MSYS2 shell
+        # (`MSYSTEM=MINGW64`), where git is absent from PATH. A bare
+        # `subprocess.run(["git", ...])` raised FileNotFoundError there and took
+        # the whole self-test down with it. Every git invocation must go through
+        # an explicitly resolved executable.
+        #
+        # The check inspects real argument lists rather than raw text, because
+        # the modules legitimately quote the old broken call in prose comments.
+        for module in ("check_version_gate.py", "check_version_gate_tests.py"):
+            source = (TOOLS / module).read_text(encoding="utf-8")
+            tree = ast.parse(source)
+            for node in ast.walk(tree):
+                if not isinstance(node, ast.List) or not node.elts:
+                    continue
+                first = node.elts[0]
+                if not isinstance(first, ast.Constant) or not isinstance(first.value, str):
+                    continue
+                self.assertNotEqual(
+                    "git",
+                    first.value,
+                    "%s passes the bare name 'git' as argv[0] at line %s; "
+                    "resolve the executable instead" % (module, node.lineno),
+                )
+            self.assertIn(
+                "resolve_git" if module.endswith("_tests.py") else "git_executable",
+                source,
+                "%s no longer resolves a git executable" % module,
+            )
+
+    def test_resolved_git_is_an_absolute_executable_when_available(self) -> None:
+        # The resolver must never hand back a bare name, which would put the
+        # PATH dependency straight back. When nothing resolves, it returns None
+        # and the callers skip with a readable reason instead of crashing.
+        executable = resolve_git()
+        if executable is None:
+            self.skipTest("no git executable available to resolve on this machine")
+        self.assertTrue(Path(executable).is_absolute(), executable)
+        self.assertTrue(Path(executable).is_file(), executable)
+        completed = subprocess.run(
+            [executable, "--version"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            errors="replace",
+        )
+        self.assertEqual(0, completed.returncode, captured(completed))
+        self.assertIn("git version", completed.stdout)
+
+    def test_usable_posix_shell_rejects_a_shell_that_cannot_run(self) -> None:
+        # Regression: a bootstrap block executed through the WSL shim reported
+        # success or failed for reasons unrelated to the workflow, and a naive
+        # `completed.stdout + completed.stderr` then raised TypeError because
+        # both streams are None when the process never started.
+        shell = usable_posix_shell()
+        if shell is None:
+            self.skipTest("no usable POSIX shell available on this machine")
+        self.assertTrue(Path(shell).is_absolute(), shell)
+        self.assertNotIn("wsl", Path(shell).name.lower())
+        completed = subprocess.run(
+            [shell, "-c", "exit 0"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            errors="replace",
+        )
+        self.assertEqual(0, completed.returncode, captured(completed))
+
+    def test_failure_messages_survive_a_process_that_never_started(self) -> None:
+        # A blacklisted or missing interpreter leaves stdout and stderr as None.
+        # The diagnostic helper must still produce a usable message rather than
+        # raising TypeError and hiding the real failure.
+        never_started = subprocess.CompletedProcess(args=["missing"], returncode=1)
+        self.assertEqual("", captured(never_started))
+        self.assertEqual(
+            "out\nerr\n",
+            captured(subprocess.CompletedProcess(args=["ok"], returncode=0, stdout="out\n", stderr="err\n")),
+        )
+
     def _git(self, repo: Path, *arguments: str) -> str:
+        executable = resolve_git()
+        if executable is None:
+            # Skipping is honest; a FileNotFoundError traceback would look like a
+            # gate rejection and a silently passing test would be worse still.
+            self.skipTest(
+                "no git executable on PATH (%s) or in a known install location; "
+                "the repository-building cases cannot run" % os.environ.get("PATH", "")
+            )
         completed = subprocess.run(
             [
-                "git",
+                executable,
                 "-C",
                 str(repo),
                 "-c",
@@ -410,9 +567,12 @@ class VersionGateTests(unittest.TestCase):
         # (a syntax error in the extraction, a WSL shim on PATH, a missing
         # interpreter), which would make the test vacuously green. The positive
         # case pins the block to a real, materializing script.
-        shell = shutil.which("bash")
+        shell = usable_posix_shell()
         if shell is None:
-            self.skipTest("no POSIX shell available to execute the bootstrap block")
+            self.skipTest(
+                "no usable POSIX shell available to execute the bootstrap block; "
+                "`bash` is either absent or resolves to the WSL shim"
+            )
         script = self._bootstrap_script()
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -435,12 +595,16 @@ class VersionGateTests(unittest.TestCase):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
+                # A shell started outside MSYS may emit localized bytes; an
+                # undecodable stream must not turn into a decode traceback that
+                # hides which step actually failed.
+                errors="replace",
             )
             self.assertEqual(
                 0,
                 completed.returncode,
                 "the extracted bootstrap block is not executable shell: %s"
-                % (completed.stdout + completed.stderr),
+                % captured(completed),
             )
             materialized = sorted(
                 # Normalize to forward slashes: `relative_to` yields backslashes
@@ -469,9 +633,10 @@ class VersionGateTests(unittest.TestCase):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
+                errors="replace",
             )
             self.assertNotEqual(0, completed.returncode)
-            self.assertIn("version.bootstrap.required", completed.stdout + completed.stderr)
+            self.assertIn("version.bootstrap.required", captured(completed))
 
     def _bootstrap_script(self) -> str:
         """Extracts the trusted-baseline materialize block from the workflow.
