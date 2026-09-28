@@ -17,7 +17,7 @@ Stage 6 已于 2026-09-27 关闭并归档，本计划不构成 Stage 7A / Stage 
 前置阶段 [Stage 6 计划](../../completed/stage-06/plan.md) 与
 [关闭报告](../../../stage_reports/stages/stage-06/completion.md)、
 边界 [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md)、
-[chart-format-update-for-v5](../chart-format-update-for-v5/plan.md)。
+[chart-format-update-for-v5](../../active/chart-format-update-for-v5/plan.md)。
 
 ## 1. 背景
 
@@ -40,7 +40,7 @@ Stage 6 已于 2026-09-27 关闭并归档，本计划不构成 Stage 7A / Stage 
 - **[ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md) 的八项冻结决策不变**；
   需要修改冻结决策的发现项（§5 R0）必须先由项目所有者重新裁定，不得由实现者自行选择。
 - **提案 1（分期退出 Chart v1–v3）保持 `candidate`**，本计划不实施、不改变其状态。
-- **[chart-format-update-for-v5](../chart-format-update-for-v5/plan.md) 仍是 active 的跨阶段总工作包**；
+- **[chart-format-update-for-v5](../../active/chart-format-update-for-v5/plan.md) 仍是 active 的跨阶段总工作包**；
   本计划只做修正，不重定义 Chart v5 方向。
 - **SDK API 仍为 `0.7.0`**，无公共契约增量；本计划不新增公共头、公共类型或安装组件，
   不建立稳定 C ABI，不引入运行时脚本或逐帧回调。

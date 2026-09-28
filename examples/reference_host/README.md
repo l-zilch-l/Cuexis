@@ -59,7 +59,7 @@
 
 参考宿主是**脚本式宿主**：`main.cpp` 解析 argv 后运行 §2 的固定命令序列，
 不接受交互式 stdin 命令。这是本阶段记录的口径（见
-[Stage 6 复核修正计划](../../docs/stage_plans/active/stage-06-review-remediation/plan.md) 的 R7）。
+[Stage 6 复核修正计划](../../docs/stage_plans/reviews/stage-06-review-remediation/plan.md) 的 R7）。
 
 ```text
 usage: cuexis_reference_host --content <project-directory> [options]

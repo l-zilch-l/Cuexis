@@ -4,7 +4,7 @@
 快照日期：2026-09-28
 更新日期：2026-09-28
 
-本报告是 [Stage 6 复核修正计划](../../../stage_plans/active/stage-06-review-remediation/plan.md)
+本报告是 [Stage 6 复核修正计划](../../../stage_plans/reviews/stage-06-review-remediation/plan.md)
 批次 **W5（R7）** 的退出记录。它逐条处置
 [Spec 轴](2026-09-28-spec.md) 的 SPEC-27 / SPEC-28 / SPEC-30 与
 [Standards 轴](2026-09-28-standards.md) 的 STD-12。

@@ -4,7 +4,7 @@
 快照日期：2026-09-28
 更新日期：2026-09-28
 
-本报告是 [Stage 6 复核修正计划](../../../stage_plans/active/stage-06-review-remediation/plan.md)
+本报告是 [Stage 6 复核修正计划](../../../stage_plans/reviews/stage-06-review-remediation/plan.md)
 批次 **W4（R6）** 的退出记录。它逐条处置
 [两轴复核记录](2026-09-28-spec.md) 中属于渲染层收敛、宿主可回读字段、模式切换语义与
 Player 控制覆盖缺口的发现项（SPEC-13、SPEC-15、SPEC-16、SPEC-18、SPEC-19）。

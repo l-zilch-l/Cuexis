@@ -4,7 +4,7 @@
 快照日期：2026-09-28
 更新日期：2026-09-28
 
-本报告是 [Stage 6 复核修正计划](../../../stage_plans/active/stage-06-review-remediation/plan.md)
+本报告是 [Stage 6 复核修正计划](../../../stage_plans/reviews/stage-06-review-remediation/plan.md)
 批次 **W2（R4）** 的退出记录。它逐条处置
 [两轴复核记录](2026-09-28-spec.md) §7（S7 — S6-E1/E2 媒体导入）与
 [Standards 轴](2026-09-28-standards.md) STD-11 的发现项。
@@ -128,7 +128,7 @@ method 而非 interlace method）时，测试**仍然失败**，但失败原因�
 
 - 本报告正文 §3 的「反证记录」**只有 3 行**（A、B、C），并非 6 行。
 - 真实计数：R4 新增或改写的负例断言为 **4** 条（伪造 FLAC 时长、`gamma_linear.png`、`interlaced.png`、`corrupt_marker.jpg`）；`tests/media_import/media_import_tests.cpp` 中 `importImageCode(`/`importAudioCode(` 调用点为 **37** 处；被断言的 `media.*` 诊断码共 **25** 个不同取值。**没有任何一种计数等于 6。**
-- `docs/stage_plans/active/stage-06-review-remediation/plan.md:97` 与 `:242` 的「6 项媒体负例」没有任何枚举支撑，属**无依据的账面数字**，应改为上述真实计数或删除。
+- `docs/stage_plans/reviews/stage-06-review-remediation/plan.md:97` 与 `:242` 的「6 项媒体负例」没有任何枚举支撑，属**无依据的账面数字**，应改为上述真实计数或删除。
 
 ### 3. gamma 规则的「接受方向」无测试覆盖（真实盲点）
 

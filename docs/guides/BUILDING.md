@@ -513,7 +513,7 @@ ctest --preset debug -R cuexis_reference_host_staging --output-on-failure
 而不是假装通过；static 的拒绝面由第 2 项（与 flavor 无关）承担。
 
 **已记录的机制**（2026-09-28 起，见
-[Stage 6 复核修正计划](../stage_plans/active/stage-06-review-remediation/plan.md) 的 R1/SPEC-29）：
+[Stage 6 复核修正计划](../stage_plans/reviews/stage-06-review-remediation/plan.md) 的 R1/SPEC-29）：
 `cmake/VerifyReferenceHost.cmake` 有两处**计划外但有意**的机制，此前只在批次报告里说明，
 现纳入本节的正式记录，以免被当成意外行为：
 

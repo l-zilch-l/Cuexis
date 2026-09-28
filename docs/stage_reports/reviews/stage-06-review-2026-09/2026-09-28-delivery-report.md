@@ -4,7 +4,7 @@
 快照日期：2026-09-28
 更新日期：2026-09-28
 
-本报告是 [Stage 6 复核修正计划](../../../stage_plans/active/stage-06-review-remediation/plan.md)
+本报告是 [Stage 6 复核修正计划](../../../stage_plans/reviews/stage-06-review-remediation/plan.md)
 的**总交付记录**。它汇总 R0–R8 全部批次的结论、逐条处置两轴复核的发现项、
 列出所有**未关闭项及其归属与恢复条件**，并给出可复核的门禁证据。
 

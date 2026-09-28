@@ -4,7 +4,7 @@
 快照日期：2026-09-28
 更新日期：2026-09-28
 
-本报告是 [Stage 6 复核修正计划](../../../stage_plans/active/stage-06-review-remediation/plan.md)
+本报告是 [Stage 6 复核修正计划](../../../stage_plans/reviews/stage-06-review-remediation/plan.md)
 批次 **W6（R8）** 的退出记录。它逐条处置
 [Standards 轴](2026-09-28-standards.md) 的 STD-04、STD-07、STD-10、STD-12、STD-13，
 并登记 STD-05/06/08/09（重复、开关、中间人、原始沉迷）的**有界处置**边界。

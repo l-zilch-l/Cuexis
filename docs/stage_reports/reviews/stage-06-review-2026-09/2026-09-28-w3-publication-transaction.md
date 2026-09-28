@@ -4,7 +4,7 @@
 快照日期：2026-09-28
 更新日期：2026-09-28
 
-本报告是 [Stage 6 复核修正计划](../../../stage_plans/active/stage-06-review-remediation/plan.md)
+本报告是 [Stage 6 复核修正计划](../../../stage_plans/reviews/stage-06-review-remediation/plan.md)
 批次 **W3（R5）** 的退出记录。它逐条处置
 [两轴复核记录](2026-09-28-spec.md) §8（S8 — S6-E3 资源身份、缓存与原子发布）中属于发布事务的发现项。
 
