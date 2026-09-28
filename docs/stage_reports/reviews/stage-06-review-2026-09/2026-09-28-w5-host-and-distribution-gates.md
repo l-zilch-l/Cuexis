@@ -120,6 +120,31 @@ Stage 8 归属见 §5。
 于是走进了正例分支。以原生 bash（`C:\msys64\usr\bin` 前置到 PATH）复跑为 **19 tests OK**。
 因该差异只存在于本机沙箱，本批次**不改**该探测逻辑；hosted 上 MSYS2 环境不存在 WSL shim。
 
+## 4.1 hosted MinGW 暴露的真实缺陷（非空转守卫生效）
+
+本批次首次推送后，**hosted Windows MinGW 在 `cuexis_reference_host_staging` 上真实失败**：
+
+```
+The host import inspection parsed no libraries from .../cuexis_reference_host.exe;
+the check would pass vacuously
+```
+
+根因是本批次新增门禁自身的**工具选择缺陷**：非 MSVC 分支选了 `nm`，而 **`nm` 读不了 PE 的导入表**。
+本机直接验证：对该 `.exe` 运行 `nm -D -undefined-only` 与 `nm -D --dynamic` 均返回
+`no symbols`，且 GNU `nm` 分支匹配的是 `.so` 名，PE 镜像里根本不含。
+
+**这恰好是本批次 §3 非空转守卫设计要拦的失败模式**：若没有该守卫，MinGW 上这项检查会在
+"什么都没解析到"的情况下**报通过**——即静默空转。守卫把静默通过变成了显式失败。
+
+**修正**：MinGW（`WIN32` 且非 MSVC）改用 `objdump`，其 `-p` 以 `DLL Name:` 行打印 PE 导入目录；
+MSVC 仍用 `dumpbin`，Linux 仍用 `nm`。
+
+**证据**：以 `CUEXIS_SYMBOL_TOOL_KIND=objdump` 强制走该分支后，门禁到达并打印
+`Reference host import surface verified`；本机 static 与 shared 两种 flavor 的
+`cuexis_reference_host_staging` 均 `100% tests passed`，其中 shared 另报
+`Reference host refused a foreign-toolchain package` 与 `Reference host refused an incompatible SDK minor`。
+（注：本机无 MinGW 工具链，故 MinGW 侧由 hosted CI 复验，本机不宣称已通过 MinGW 构建。）
+
 ## 5. 残余与未核对
 
 - **ADR 0042 `:350-351` 与交互命令循环实现的冲突**：未处置（需 owner 裁定），详见 §2.2。
