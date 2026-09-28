@@ -98,7 +98,7 @@ R0 决策门禁（owner 裁定 4 项）
 | R5 | R0-1 | 原子替换修正 + 故障注入用例 | completed：单次原子替换（无 target 缺失窗口）；恢复逻辑还原 backup 而非删除；pair 锁覆盖两个目标父目录；幂等重发报告真实闭包字节。5 条新用例各以变异反证非空转。退出记录见 [2026-09-28-w3-publication-transaction.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w3-publication-transaction.md) |
 | R6 | R0-3 | 渲染收敛 + 配置语义修正 | completed（SPEC-19b 登记 BLOCKED）：`buildPresentationCommands` 成为唯一排序/摘要来源（adapter 删除约 16.7 KB 重复实现）；四个宿主字段按可回读性改名/新增回读；`LaunchOption` 删除；自动重试按 R0-3 (a) 移除并新增 `--mode`；SPEC-19a/19c 用例各以变异反证。SPEC-19b 因 `CUEXIS_ENABLE_CHART_V5_CANDIDATE` 在所有预设与 CI 中为 `OFF` 无法注册，按构建隔离证据缺口登记。退出记录见 [2026-09-28-w4-render-convergence.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w4-render-convergence.md) |
 | R7 | R5 | 宿主与分发门禁补齐 | completed（步骤 3/4/6 按口径登记，ADR 冲突上报）：宿主导入门禁新增导入表符号检查与 SDK minor 负例；candidate 零命中扫描成为门禁（「默认 OFF 下工厂拒绝」本已注册）；static 无 toolchain 负例改由 minor 负例承担；交互命令循环口径与 ADR 0042 `:350-351` 的冲突**未处置**、需 owner 裁定；分发门禁 Linux 未注册登记为 Stage 8 输入。退出记录见 [2026-09-28-w5-host-and-distribution-gates.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w5-host-and-distribution-gates.md) |
-| R8 | — | 重复/死代码/可移植性修正 | 每项有修正或书面豁免 |
+| R8 | — | 重复/死代码/可移植性修正 | completed（STD-05/06/08/09 按计划 §4/§5 边界登记残余）：STD-13 两个 `.obj` 去跟踪 + `*.obj` 规则；STD-07 六项死代码删除（含两项需实查的 `readCount()` 与 `readRequiredString` 冗余参数）；STD-04 两份逐字相同的状态名级联合并为 `playbackStateName`；STD-10 `_wfopen_s` 统一按 `_MSC_VER` 分支；STD-12 workflow 块缩进对齐（`git diff -w` 为空）。STD-05/06/08/09 因属重构/公共 API 变更，按 §4 排除并登记。退出记录见 [2026-09-28-w6-code-health.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w6-code-health.md) |
 
 ## 6. 各批次的问题、目标与具体步骤
 
@@ -371,9 +371,9 @@ OpenGL 像素/summary 与最小化/恢复证据；同 SHA hosted 三平台；证
 | RS-05 | 媒体负例真实存在：伪造时长被拒、线性色彩有明确处置、损坏 marker 与 interlaced 已冻结 | R4 | fixture/golden、用例、三平台 canonical 证据 |
 | RS-06 | 发布失败与崩溃后始终保留有效包；并发与磁盘失败有证据 | R5 | 故障注入用例 + E3 订正说明 |
 | RS-07 | 排序/digest 只有一套实现；`applied*` 名副其实；命令语义与 ADR 一致 | R6 | 代码差异、GPU smoke、状态机用例 |
-| RS-08 | C4 的每项验收要么成门禁、要么登记为残余并给出归属 | R7 | 宿主/分发门禁记录 + 残余清单 |
-| RS-09 | 被标记的重复/死代码/可移植性项全部修正或有书面豁免 | R8 | 逐项修正提交或豁免理由 |
-| RS-10 | 修正未越过阶段边界：无新公共 API、无版本跳跃、无 Stage 7A/8 交付物 | 全部 | 安装树/公共头检查、SDK API 仍为 `0.7.0`、PR 范围检查 |
+| RS-08 | C4 的每项验收要么成门禁、要么登记为残余并给出归属 | R7 | completed：宿主导入表、SDK minor 拒绝、candidate 零命中扫描均已成门禁并在 static/shared 实跑；static toolchain 与分发平台范围两项按口径登记并给出归属（见 [W5 报告](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w5-host-and-distribution-gates.md) §2/§5） |
+| RS-09 | 被标记的重复/死代码/可移植性项全部修正或有书面豁免 | R8 | completed：STD-04/07/10/12/13 已修正并各有一条命令证据；STD-05/06/08/09 按计划 §4/§5 书面豁免（属重构或公共 API 变更），理由见 [W6 报告](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w6-code-health.md) §5 |
+| RS-10 | 修正未越过阶段边界：无新公共 API、无版本跳跃、无 Stage 7A/8 交付物 | 全部 | completed：`cmake/CuexisVersion.cmake` 的 `CUEXIS_SDK_API_VERSION` 仍为 `0.7.0`；R7/R8 未新增安装头或安装组件（R8 新增的 `app/player/src/player_state_name.hpp` 位于 `app/`；R8 触及的 `engine/chart/include/cuexis/chart/candidate_lowering.hpp` **不在** `engine/chart/CMakeLists.txt` 的 `FILE_SET HEADERS` 内，已核实不进安装前缀）；对安装公共头的净改动仅**删除**一个从未被读取的候选元数据字段，不改任何契约 |
 
 ## 8. 验证方式
 
