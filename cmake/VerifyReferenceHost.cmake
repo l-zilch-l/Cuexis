@@ -409,6 +409,22 @@ else()
             ERROR_VARIABLE host_import_error)
         string(REGEX MATCHALL "[A-Za-z0-9_.+-]+\\.dll" host_imported_libraries
             "${host_import_output}")
+    elseif(CUEXIS_SYMBOL_TOOL_KIND STREQUAL "objdump")
+        # MinGW builds PE/COFF binaries. `nm` cannot read their import table
+        # (it reports "no symbols"), so objdump prints the import directory and
+        # the library names come from the "DLL Name:" lines.
+        execute_process(
+            COMMAND "${CUEXIS_SYMBOL_TOOL}" -p "${host_executable}"
+            RESULT_VARIABLE host_import_result
+            OUTPUT_VARIABLE host_import_output
+            ERROR_VARIABLE host_import_error)
+        string(REGEX MATCHALL "DLL Name: *([A-Za-z0-9_.+-]+)" host_import_matches
+            "${host_import_output}")
+        set(host_imported_libraries "")
+        foreach(import_match IN LISTS host_import_matches)
+            string(REGEX REPLACE "^DLL Name: *" "" import_name "${import_match}")
+            list(APPEND host_imported_libraries "${import_name}")
+        endforeach()
     else()
         execute_process(
             COMMAND "${CUEXIS_SYMBOL_TOOL}" -D --undefined-only "${host_executable}"

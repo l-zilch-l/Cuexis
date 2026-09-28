@@ -350,6 +350,13 @@ if(CUEXIS_BUILD_TESTS)
         if(MSVC)
             find_program(CUEXIS_SYMBOL_TOOL NAMES dumpbin REQUIRED)
             set(CUEXIS_SYMBOL_TOOL_KIND dumpbin)
+        elseif(WIN32)
+            # MinGW produces PE/COFF binaries, whose import table `nm` cannot
+            # read: it reports "no symbols" for both `-D` and `--dynamic`, which
+            # would leave the host import check with nothing to parse. objdump
+            # prints the PE import directory as "DLL Name:" lines instead.
+            find_program(CUEXIS_SYMBOL_TOOL NAMES objdump REQUIRED)
+            set(CUEXIS_SYMBOL_TOOL_KIND objdump)
         else()
             find_program(CUEXIS_SYMBOL_TOOL NAMES llvm-nm nm REQUIRED)
             set(CUEXIS_SYMBOL_TOOL_KIND nm)
