@@ -452,7 +452,7 @@ git diff --check
   （Linux 两项门禁失败 + MinGW 编译失败），`5374631`、`2c74f5f`、`7ac37f8`、`c6f1e45` 均带
   同一 MinGW 编译错误，其运行在 `18c9272` 推送后被主动取消。**不得**把这几个 SHA 的中间失败
   或取消表述为"一次通过"。逐 SHA 时间线见
-  [交付报告](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md) §6.1。
+  [交付报告](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md) §7.1。
 - 本计划与交付报告的更新顺序遵循 §11：**新增更正一律追加，不复写已记录的托管失败现象**。
 
 ## 11. 证据维护

@@ -242,4 +242,3 @@ error: cannot convert 'const std::filesystem::__cxx11::path::value_type*'
 - 把同一分支换回旧写法编译同一文件（对照）→ 复现出与托管 CI **逐字相同**的 `wchar_t* → const char*` 错误。
 
 即该检验非空转。`_wfopen` 在 msvcrt 上的存在性由 `libmsvcrt-os.a` 佐证，最终判据仍是 MinGW CI 本身。
-
