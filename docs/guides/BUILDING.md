@@ -2,7 +2,7 @@
 
 状态：阶段 3 最终验收后的现行构建、安装与质量门禁规范
 
-更新日期：2026-09-22
+更新日期：2026-09-28
 
 ## 当前仓库说明
 
@@ -489,6 +489,42 @@ ctest --preset debug -R cuexis_reference_host_staging --output-on-failure
 
 门禁同时校验示例源码只包含 `cuexis/playback/` 公共头、不引用仓库内 target、包身份与参考帧摘要
 匹配 CFU-F golden，以及（shared 包）记录的 toolchain 与 consumer 不一致时被拒绝。
+
+2026-09-28 的 R7 批次（见 [W5 报告](../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w5-host-and-distribution-gates.md)）
+把此前只靠人工核对的四项接入同一门禁，全部在 `cuexis_reference_host_staging` 内执行：
+
+1. **宿主导入表**：检查构建出的宿主可执行文件，要求每个 Cuexis 归属的导入都属于允许集
+   （Playback 及其公共运行库）；内部模块显式列名。shared 下还要求**确实**导入 `cuexis_playback`，
+   以免"什么都没链接"的宿主平凡满足禁止清单。该检查在 static 下同样运行（static 只导入系统/CRT 库）。
+2. **SDK minor 拒绝**：以 `-DCUEXIS_HOST_API_VERSION=0.8.0` 配置宿主并要求其失败。断言的是
+   安装包 `SameMinorVersion` 版本文件产生的真实文本——宿主自己的 `0.7.x` 守卫对该输入**不可达**。
+3. **candidate 隔离**：扫描 staging 前缀的 `*.hpp`/`*.cmake`/`*.txt`，要求零命中 candidate
+   开关与候选格式标识。匹配五个**具体 token** 而非子串 `candidate`，因为已接受的 S5-C 展示面
+   （`PresentationCandidateToken`、`CandidateMetadataAccess`）合法包含该子串。
+4. **`ENV{PATH}` 恢复边界**：净化 PATH 只覆盖需要它的那一次 `execute_process`，随即恢复，
+   使后续任何 `FATAL_ERROR` 都不会把调用方进程留在坏 PATH 上。
+
+该门禁在 static 与 shared 两种 flavor 下各跑一次（本机 `debug` 与
+`debug -DCUEXIS_LIBRARY_TYPE=SHARED` 均通过）；符号工具由父构建发现并传入，
+缺失时打印明确提示而不是静默通过。
+
+**shared 专属**：toolchain 不一致拒绝用例只在 SHARED 运行，因为 static 安装包的
+`CuexisConfig.cmake` 本身不含兼容性检查块。static 下另一条 `STATUS` 会说明这一点，
+而不是假装通过；static 的拒绝面由第 2 项（与 flavor 无关）承担。
+
+**已记录的机制**（2026-09-28 起，见
+[Stage 6 复核修正计划](../stage_plans/reviews/stage-06-review-remediation/plan.md) 的 R1/SPEC-29）：
+`cmake/VerifyReferenceHost.cmake` 有两处**计划外但有意**的机制，此前只在批次报告里说明，
+现纳入本节的正式记录，以免被当成意外行为：
+
+1. **插桩选项转发**：门禁把**父构建**的 sanitizer/coverage 插桩选项转发给源树之外复制出来的
+   宿主工程。Cuexis 以目录级选项施加插桩，而外部工程链接已插桩的静态库时必须镜像同一套选项，
+   否则 `__asan_*`/`__gcov_*` 会未定义。这些选项**不是安装导出的一部分**：
+   将来新增插桩类型时需要同步维护这一转发约定。
+2. **MinGW 运行库复制**：门禁会把 MinGW 编译器的运行时 DLL 复制进宿主构建目录，使清理过的
+   `PATH` 下仍能启动宿主。这些 DLL 由打包工具链提供，**不是 Cuexis 包文件**，也不进许可证清单。
+   运行宿主的门禁（`cuexis_reference_host_staging`、`cuexis_player_distribution`）因此不宣称
+   "运行目录完全由安装文件构成"，实测通过的是"安装包加公共边界足以运行"。
 
 ### 可运行 Player 分发目录
 

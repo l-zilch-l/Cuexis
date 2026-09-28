@@ -343,6 +343,33 @@ if(CUEXIS_BUILD_TESTS)
     endif()
 
     if(PROJECT_IS_TOP_LEVEL)
+        # Two different tools are needed, so they get two different variables.
+        #
+        # The export gate reads the *dynamic symbol table*, and `nm -D
+        # --defined-only` is the right reader for that on non-MSVC.
+        #
+        # The reference-host gate reads the *import list*, and `nm` cannot serve
+        # it on either non-MSVC format:
+        #  - PE/COFF (MinGW): the import table is not a symbol table at all;
+        #    `nm` answers "no symbols". objdump prints "DLL Name: <name>".
+        #  - ELF (Linux): dependencies are DT_NEEDED entries, while `nm -D`
+        #    prints symbols (libc_start_main@GLIBC_...), never library file
+        #    names. objdump prints "NEEDED <name>".
+        #
+        # Sharing one variable pair between the two gates is what broke
+        # cuexis_shared_export_surface on Linux: repurposing it to objdump fed
+        # nm-only flags (`--defined-only`) to objdump.
+        if(MSVC)
+            find_program(CUEXIS_SYMBOL_TOOL NAMES dumpbin REQUIRED)
+            set(CUEXIS_SYMBOL_TOOL_KIND dumpbin)
+            set(CUEXIS_IMPORT_TOOL "${CUEXIS_SYMBOL_TOOL}")
+            set(CUEXIS_IMPORT_TOOL_KIND "${CUEXIS_SYMBOL_TOOL_KIND}")
+        else()
+            find_program(CUEXIS_SYMBOL_TOOL NAMES nm REQUIRED)
+            set(CUEXIS_SYMBOL_TOOL_KIND nm)
+            find_program(CUEXIS_IMPORT_TOOL NAMES objdump REQUIRED)
+            set(CUEXIS_IMPORT_TOOL_KIND objdump)
+        endif()
         foreach(consumer_mode IN ITEMS
                 add_subdirectory
                 add_subdirectory_playback
@@ -401,6 +428,8 @@ if(CUEXIS_BUILD_TESTS)
                 "-DCUEXIS_VCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}"
                 "-DCUEXIS_VCPKG_MANIFEST_MODE=${VCPKG_MANIFEST_MODE}"
                 "-DCUEXIS_VCPKG_INSTALLED_DIR=${VCPKG_INSTALLED_DIR}"
+                "-DCUEXIS_IMPORT_TOOL=${CUEXIS_IMPORT_TOOL}"
+                "-DCUEXIS_IMPORT_TOOL_KIND=${CUEXIS_IMPORT_TOOL_KIND}"
                 -P "${PROJECT_SOURCE_DIR}/cmake/VerifyReferenceHost.cmake"
         )
         set_tests_properties(cuexis_reference_host_staging PROPERTIES
@@ -429,13 +458,6 @@ if(CUEXIS_BUILD_TESTS)
             )
         endif()
         if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
-            if(MSVC)
-                find_program(CUEXIS_SYMBOL_TOOL NAMES dumpbin REQUIRED)
-                set(CUEXIS_SYMBOL_TOOL_KIND dumpbin)
-            else()
-                find_program(CUEXIS_SYMBOL_TOOL NAMES llvm-nm nm REQUIRED)
-                set(CUEXIS_SYMBOL_TOOL_KIND nm)
-            endif()
             add_test(
                 NAME cuexis_shared_export_surface
                 COMMAND "${CMAKE_COMMAND}"

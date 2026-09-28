@@ -30,6 +30,30 @@ auto parsePlayerOptions(int argumentCount, char** arguments) -> core::Result<Pla
             options.audioSmokeTest = true;
             continue;
         }
+        if (argument == "--mode") {
+            if (options.clock.has_value()) {
+                return core::unexpected(core::Error{"player.arguments.duplicate_mode",
+                                                    "The mode option may only be provided once"});
+            }
+            if (++index >= argumentCount || std::string_view{arguments[index]}.empty() ||
+                std::string_view{arguments[index]}.starts_with("--")) {
+                return core::unexpected(core::Error{"player.arguments.mode_value_missing",
+                                                    "The mode option requires a value"});
+            }
+            const std::string_view value{arguments[index]};
+            if (value == "chart") {
+                options.clock = PlayerClockOption::Chart;
+            } else if (value == "host") {
+                options.clock = PlayerClockOption::Host;
+            } else if (value == "audio") {
+                options.clock = PlayerClockOption::Audio;
+            } else {
+                return core::unexpected(core::Error{"player.arguments.mode_unknown",
+                                                    "The mode option accepts chart, host, or audio"}
+                                            .withContext("value", std::string{value}));
+            }
+            continue;
+        }
         if (argument == "--chart") {
             if (options.chartPath.has_value()) {
                 return core::unexpected(core::Error{"player.arguments.duplicate_chart",

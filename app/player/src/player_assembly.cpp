@@ -298,26 +298,31 @@ auto createPlayerBackend(platform_sdl::SdlRuntime& runtime, platform_sdl::SdlWin
 }
 
 auto logEffectiveWindow(platform_sdl::SdlWindow& window,
-                        const player_support::UserPreferences& requested, bool vsync,
-                        bool audioDeviceOpen, std::string_view profileId, PlayerLogger& logger)
-    -> core::Result<void> {
+                        const player_support::UserPreferences& requested, bool requestedVsync,
+                        double appliedGain, bool audioDeviceOpen, std::string_view profileId,
+                        PlayerLogger& logger) -> core::Result<void> {
     const auto drawable = window.drawableSize();
     if (!drawable) {
         return core::unexpected(std::move(drawable.error()));
+    }
+    const auto fullscreen = window.fullscreen();
+    if (!fullscreen) {
+        return core::unexpected(std::move(fullscreen.error()));
     }
     player_support::EffectiveSettings effective;
     effective.requested = requested;
     effective.appliedWindowWidth = drawable->width;
     effective.appliedWindowHeight = drawable->height;
-    effective.appliedFullscreen = requested.fullscreen;
-    effective.appliedVsync = vsync;
-    effective.appliedGain = requested.gain;
+    effective.appliedFullscreen = *fullscreen;
+    effective.requestedVsync = requestedVsync;
+    effective.appliedGain = appliedGain;
     effective.appliedProfileId = std::string{profileId};
     effective.audioDeviceOpen = audioDeviceOpen;
     logger.info("player.config", std::string{"Effective window "} +
                                      std::to_string(effective.appliedWindowWidth) + "x" +
-                                     std::to_string(effective.appliedWindowHeight) + ", audio " +
-                                     (effective.audioDeviceOpen ? "open" : "closed"));
+                                     std::to_string(effective.appliedWindowHeight) + ", " +
+                                     (effective.appliedFullscreen ? "fullscreen" : "windowed") +
+                                     ", audio " + (effective.audioDeviceOpen ? "open" : "closed"));
     return {};
 }
 

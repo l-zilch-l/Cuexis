@@ -265,6 +265,12 @@ endif()
 
 # The run must not depend on the development machine PATH: only the directory
 # that holds the host runtime libraries plus the system directories remain.
+#
+# The sanitized PATH is restored inline right after the run rather than by
+# wrapping the whole tail in a function, because the steps below must keep
+# emitting their own message(FATAL_ERROR) diagnostics on the caller's stack.
+# Restoring immediately after the one execute_process that needs the sanitized
+# environment bounds the exposure to that single command (STD-12).
 set(saved_path "$ENV{PATH}")
 set(saved_library_path "$ENV{LD_LIBRARY_PATH}")
 set(ENV{PATH} "${clean_path}")
@@ -279,6 +285,10 @@ execute_process(
     RESULT_VARIABLE host_result
     OUTPUT_VARIABLE host_output
     ERROR_VARIABLE host_error)
+# Restore before any check can fail: every message(FATAL_ERROR) from here on
+# must leave the caller's process with its real toolchain PATH.
+set(ENV{PATH} "${saved_path}")
+set(ENV{LD_LIBRARY_PATH} "${saved_library_path}")
 if(NOT EXISTS "${report_path}")
     message(FATAL_ERROR
         "The reference host produced no run record (exit ${host_result}) running "
@@ -323,10 +333,9 @@ if(NOT host_report MATCHES "${golden_package_pattern}")
     message(FATAL_ERROR "The published package did not reproduce the host content")
 endif()
 
-# The sanitized PATH exists only for the host run above; the later configure
-# steps need the real toolchain environment back.
-set(ENV{PATH} "${saved_path}")
-set(ENV{LD_LIBRARY_PATH} "${saved_library_path}")
+# The sanitized PATH was restored inline immediately after the one
+# execute_process that needed it, so nothing is pending here. The earlier design
+# used cmake_language(DEFER), which is unavailable in `cmake -P` script mode.
 
 # No installed file may mention the source tree or the build tree.
 file(GLOB_RECURSE installed_headers "${prefix}/include/cuexis/*.hpp")
@@ -338,6 +347,171 @@ foreach(header IN LISTS installed_headers)
         message(FATAL_ERROR "An installed Playback header references the development tree: ${header}")
     endif()
 endforeach()
+
+# ---------------------------------------------------------------------------
+# Candidate isolation: a default (non-candidate) install tree must carry no
+# candidate switch or candidate format identifier at all.
+#
+# The C4 exit report recorded this as a manual scan ("no hits"), which is
+# exactly the kind of claim that rots silently. Registering it here makes the
+# property a gate instead of a snapshot (SPEC-28).
+#
+# The scan deliberately matches the five specific tokens rather than the bare
+# substring "candidate": the installed public headers legitimately contain
+# PresentationCandidateToken and CandidateMetadataAccess for the accepted S5-C
+# presentation surface, so a substring scan would fail on a correct tree.
+# Verified against a real install before being registered.
+set(candidate_isolation_tokens
+    "CUEXIS_ENABLE_CHART_V5_CANDIDATE"
+    "Cuexis_ALLOW_EXPERIMENTAL"
+    "v5.candidate"
+    "candidate.1"
+    "semantic.v5")
+file(GLOB_RECURSE installed_texts
+    "${prefix}/include/cuexis/*.hpp"
+    "${prefix}/lib/cmake/Cuexis/*.cmake"
+    "${prefix}/share/Cuexis/*.txt")
+foreach(installed_text IN LISTS installed_texts)
+    file(READ "${installed_text}" installed_contents)
+    foreach(token IN LISTS candidate_isolation_tokens)
+        string(FIND "${installed_contents}" "${token}" token_hit)
+        if(NOT token_hit EQUAL -1)
+            message(FATAL_ERROR
+                "The default install tree exposes the candidate token '${token}': ${installed_text}")
+        endif()
+    endforeach()
+endforeach()
+if(NOT installed_texts)
+    # An empty scan would make the loop above vacuous and the gate green for the
+    # wrong reason, so the absence of any scanned file is itself a failure.
+    message(FATAL_ERROR "The candidate isolation scan found no installed files under ${prefix}")
+endif()
+
+# ---------------------------------------------------------------------------
+# Host import surface: the built host must import only the Cuexis libraries it
+# is entitled to. This is the symbol-level half of S6-D08 (SPEC-27): the source
+# hygiene check above proves the host *asks* for the right targets, and this
+# proves the linker actually produced a binary with the matching dependency set.
+#
+# The import tool is discovered by the parent build and passed in, because
+# find_program() results are not visible inside a -P script. It is deliberately
+# a *separate* variable from CUEXIS_SYMBOL_TOOL: the export gate reads the
+# dynamic symbol table with `nm`, and this gate reads the import list with
+# `objdump`. When it is absent the case is skipped with a notice rather than
+# silently passing.
+# ---------------------------------------------------------------------------
+if(NOT DEFINED CUEXIS_IMPORT_TOOL OR "${CUEXIS_IMPORT_TOOL}" STREQUAL "" OR
+   NOT DEFINED CUEXIS_IMPORT_TOOL_KIND OR "${CUEXIS_IMPORT_TOOL_KIND}" STREQUAL "")
+    message(STATUS
+        "No import tool was provided; the host import surface check was not executed")
+else()
+    if(CUEXIS_IMPORT_TOOL_KIND STREQUAL "dumpbin")
+        execute_process(
+            COMMAND "${CUEXIS_IMPORT_TOOL}" /nologo /imports "${host_executable}"
+            RESULT_VARIABLE host_import_result
+            OUTPUT_VARIABLE host_import_output
+            ERROR_VARIABLE host_import_error)
+        string(REGEX MATCHALL "[A-Za-z0-9_.+-]+\\.dll" host_imported_libraries
+            "${host_import_output}")
+    elseif(CUEXIS_IMPORT_TOOL_KIND STREQUAL "objdump")
+        # objdump covers both non-MSVC formats, and `nm` cannot serve either:
+        #  - PE/COFF (MinGW): the import table is not symbols at all; `nm`
+        #    reports "no symbols". objdump lists it as "DLL Name: <name>".
+        #  - ELF (Linux): dependencies are DT_NEEDED entries, while `nm -D`
+        #    prints symbols (libc_start_main@GLIBC_...) and never the library
+        #    file names. objdump lists them as "NEEDED <name>".
+        execute_process(
+            COMMAND "${CUEXIS_IMPORT_TOOL}" -p "${host_executable}"
+            RESULT_VARIABLE host_import_result
+            OUTPUT_VARIABLE host_import_output
+            ERROR_VARIABLE host_import_error)
+        string(REGEX MATCHALL "DLL Name: *([A-Za-z0-9_.+-]+)" host_import_dll_matches
+            "${host_import_output}")
+        string(REGEX MATCHALL "NEEDED +([A-Za-z0-9_.+-]+)" host_import_needed_matches
+            "${host_import_output}")
+        set(host_imported_libraries "")
+        foreach(import_match IN LISTS host_import_dll_matches)
+            string(REGEX REPLACE "^DLL Name: *" "" import_name "${import_match}")
+            list(APPEND host_imported_libraries "${import_name}")
+        endforeach()
+        foreach(import_match IN LISTS host_import_needed_matches)
+            string(REGEX REPLACE "^NEEDED +" "" import_name "${import_match}")
+            list(APPEND host_imported_libraries "${import_name}")
+        endforeach()
+    endif()
+    if(NOT host_import_result EQUAL 0)
+        message(FATAL_ERROR "Host import inspection failed: ${host_import_error}")
+    endif()
+    if(NOT host_imported_libraries)
+        message(FATAL_ERROR
+            "The host import inspection parsed no libraries from ${host_executable}; "
+            "the check would pass vacuously")
+    endif()
+
+    # The host may depend on the Playback SDK plus its own transitive Cuexis
+    # runtime, and on nothing else that is Cuexis-owned. Internal modules are
+    # named explicitly so a new leak is a build failure rather than a review
+    # note. Only libraries whose names start with "cuexis" are judged: the
+    # compiler runtime and OS libraries are the host's own business.
+    #
+    # Names are normalized first, because the two formats spell the same library
+    # differently: PE imports are "cuexis_playback-0.7.dll", while ELF sonames
+    # are "libcuexis_playback-0.7.so.0.7.0". Without stripping the "lib" prefix
+    # and the ".so" suffix chain the ELF names would match neither the
+    # ownership guard below nor the forbidden list, which would leave this whole
+    # check passing vacuously on Linux while its PE sibling did real work.
+    set(host_forbidden_cuexis_libraries
+        cuexis_assets
+        cuexis_world
+        cuexis_runtime
+        cuexis_debug
+        cuexis_render
+        cuexis_render_opengl
+        cuexis_platform
+        cuexis_behavior
+        cuexis_gameplay)
+    set(host_cuexis_imports "")
+    foreach(imported_library IN LISTS host_imported_libraries)
+        string(TOLOWER "${imported_library}" imported_library_lower)
+        string(REGEX REPLACE "^lib" "" import_normalized "${imported_library_lower}")
+        string(REGEX REPLACE "\\.so.*$" "" import_normalized "${import_normalized}")
+        if(NOT import_normalized MATCHES "^cuexis_")
+            continue()
+        endif()
+        list(APPEND host_cuexis_imports "${import_normalized}")
+        foreach(forbidden_library IN LISTS host_forbidden_cuexis_libraries)
+            if(import_normalized MATCHES "^${forbidden_library}")
+                message(FATAL_ERROR
+                    "The reference host imports the internal Cuexis library "
+                    "${imported_library}; only Playback and its public runtime are allowed")
+            endif()
+        endforeach()
+    endforeach()
+
+    # A static host links the Cuexis objects into the executable, so it imports
+    # no Cuexis library at all and the ownership judgement above can never fire.
+    # Say so explicitly instead of letting the "verified" line imply otherwise.
+    if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
+        # A shared package must actually be consumed through its import library;
+        # a host that linked nothing would satisfy the forbidden list trivially.
+        set(host_imports_playback FALSE)
+        foreach(import_normalized IN LISTS host_cuexis_imports)
+            if(import_normalized MATCHES "^cuexis_playback")
+                set(host_imports_playback TRUE)
+            endif()
+        endforeach()
+        if(NOT host_imports_playback)
+            message(FATAL_ERROR
+                "The shared reference host does not import cuexis_playback: "
+                "${host_imported_libraries}")
+        endif()
+    elseif(NOT host_cuexis_imports)
+        message(STATUS
+            "Reference host is static: it imports no Cuexis library, so the "
+            "internal-library ownership check has nothing to judge")
+    endif()
+    message(STATUS "Reference host import surface verified")
+endif()
 
 # ---------------------------------------------------------------------------
 # 5. Negative gate: a package that records another toolchain is refused.
@@ -380,5 +554,38 @@ else()
         "Static package: the installed configuration carries no toolchain gate, "
         "so the toolchain rejection case runs only for the shared flavor")
 endif()
+
+# ---------------------------------------------------------------------------
+# 6. Negative gate: a host written against an incompatible SDK minor is refused.
+#
+# The reference host declares CUEXIS_HOST_API_VERSION as the API baseline it was
+# written against and refuses anything outside 0.7.x. That refusal was only ever
+# checked by hand (C4 report section 3.4), so this case registers it. It runs for
+# both flavors: the rejection comes from the installed package configuration's
+# own compatibility version, not from a toolchain-specific gate.
+#
+# The refusal fires inside find_package (examples/reference_host/CMakeLists.txt
+# line 23) before the host's explicit 0.7.x guard on line 28 can run, so the
+# asserted text is the package-manager message, verified by running the case
+# rather than assumed from the guard's wording.
+# ---------------------------------------------------------------------------
+set(minor_build "${work_dir}/minor-build")
+cuexis_host_expect_failure(
+    "Reference host configure against an incompatible SDK minor"
+    "with requested version \"0\\.8\\.0\""
+    "${CMAKE_COMMAND}"
+    -S "${host_project}"
+    -B "${minor_build}"
+    -G "${CUEXIS_GENERATOR}"
+    "-DCMAKE_BUILD_TYPE=${CUEXIS_BUILD_TYPE}"
+    "-DCMAKE_CXX_COMPILER=${CUEXIS_CXX_COMPILER}"
+    "-DCMAKE_MAKE_PROGRAM=${CUEXIS_MAKE_PROGRAM}"
+    "-DCuexis_DIR=${prefix}/lib/cmake/Cuexis"
+    "-DCMAKE_PREFIX_PATH=${prefix}"
+    "-DCUEXIS_HOST_API_VERSION=0.8.0"
+    "-DCUEXIS_HOST_CONTENT_DIR=${content_dir}/cfu_f_reference_project"
+    ${instrumentation_arguments}
+    ${vcpkg_arguments})
+message(STATUS "Reference host refused an incompatible SDK minor")
 
 message(STATUS "Reference host staging verification passed")

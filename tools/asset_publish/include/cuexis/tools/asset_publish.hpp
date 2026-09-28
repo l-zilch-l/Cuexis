@@ -61,7 +61,9 @@ struct GenerationPublishResult final {
 };
 
 // An exclusive lock file held for the lifetime of the object. A second writer, in this process or
-// in another one, fails with `asset.publish.busy` instead of queueing.
+// in another one, fails with `asset.publish.busy` instead of queueing. One lock can cover several
+// paths at once, so a transaction that writes two different parent directories is still protected
+// as a whole.
 class PublicationLock final {
   public:
     PublicationLock(const PublicationLock&) = delete;
@@ -73,6 +75,11 @@ class PublicationLock final {
     [[nodiscard]] static auto acquire(const std::filesystem::path& target)
         -> core::Result<PublicationLock>;
 
+    // Locks every lock-file path in order, so that two writers asking for an overlapping set never
+    // deadlock against each other. Fails with `asset.publish.busy` when any one of them is held.
+    [[nodiscard]] static auto acquireAll(std::vector<std::filesystem::path> targets)
+        -> core::Result<PublicationLock>;
+
     [[nodiscard]] auto path() const noexcept -> const std::filesystem::path&;
 
   private:
@@ -81,11 +88,12 @@ class PublicationLock final {
     void release() noexcept;
 
     std::filesystem::path path_;
-    void* handle_{};
+    std::vector<void*> handles_;
 };
 
-// Removes staging directories and abandoned temporary files left by an interrupted writer. Returns
-// the number of removed entries. Call it while holding the publication lock.
+// Removes staging directories and abandoned temporary files left by an interrupted writer, and
+// restores a backup left by an interrupted two-rename publication over a missing target. Returns
+// the number of handled entries. Call it while holding the publication lock.
 [[nodiscard]] auto recoverPublicationStaging(const std::filesystem::path& root)
     -> core::Result<std::size_t>;
 

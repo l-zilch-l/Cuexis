@@ -27,6 +27,12 @@ SDK API 仍为 `0.7.0`。
 
 - `examples/reference_host/`（`CMakeLists.txt`、`README.md`、`src/host_report.{hpp,cpp}`、
   `src/host_content.{hpp,cpp}`、`src/host_runner.{hpp,cpp}`、`src/main.cpp`）。
+
+  **订正（2026-09-28，Stage 6 复核 STD-02）**：本行原列出的 `README.md` 在交付时**并未落盘**
+  （`examples/reference_host/` 只有 `CMakeLists.txt` 与 `src/`）；原行保留了该错误记载。
+  该 README 已在本次修正工作包中补写（宿主主循环、脚本命令序列、`IContentProvider` 构造、
+  安装与运行步骤），因此本行现在与实际交付一致。原始现象保留不改写，
+  处置证据见 [2026-09-28-r1-document-and-evidence.md](../../reviews/stage-06-review-2026-09/2026-09-28-r1-document-and-evidence.md)。
 - `cmake/VerifyReferenceHost.cmake`、`cmake/PackagePlayer.cmake`、
   `cmake/VerifyPlayerDistribution.cmake`。
 - `app/player/CMakeLists.txt` 中的 `cuexis_player_dist` 自定义 target；

@@ -21,11 +21,14 @@ enum class PlaybackClockMode : std::uint8_t {
 enum class ConfigValueSource : std::uint8_t {
     CodeDefault,
     PreferencesFile,
-    LaunchOption,
 };
 
 struct ResolvedAppConfig final {
     UserPreferences requested{};
+    // Records the source of the whole requested snapshot, not a per-field provenance. The loader
+    // either accepts the preferences file or falls back to the code defaults as one unit, so every
+    // field shares this source. Field-level location is carried by core::Diagnostic codes and
+    // context, per ADR 0024.
     ConfigValueSource preferencesSource{ConfigValueSource::CodeDefault};
     bool preservePreferencesFile{false};
 };
@@ -39,8 +42,13 @@ struct EffectiveSettings final {
     UserPreferences requested{};
     int appliedWindowWidth{0};
     int appliedWindowHeight{0};
+    // Read back from the negotiated window flags by SdlWindow::fullscreen, never a requested
+    // mirror.
     bool appliedFullscreen{false};
-    bool appliedVsync{false};
+    // The swap interval is set once through SDL_GL_SetSwapInterval and cannot be read back, so this
+    // records the value the Player asked for rather than a negotiated result.
+    bool requestedVsync{false};
+    // The gain the controller opened the audio device with, read back from PlayerController.
     double appliedGain{0.0};
     std::string appliedProfileId{};
     bool audioDeviceOpen{false};

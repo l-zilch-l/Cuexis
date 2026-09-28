@@ -87,10 +87,6 @@ void HostFileProvider::failAllReads(std::string code) {
     pendingFailure_ = std::move(code);
 }
 
-auto HostFileProvider::readCount() const noexcept -> std::size_t {
-    return readCount_;
-}
-
 auto HostFileProvider::readBlob(const ContentRequest& request) -> Result<ContentBlob> {
     ++readCount_;
     if (!pendingFailure_.empty()) {

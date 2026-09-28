@@ -195,10 +195,20 @@ auto readFileBytes(const fs::path& file, std::size_t maxBytes)
     }
     std::vector<std::byte> bytes(static_cast<std::size_t>(size));
     std::FILE* stream = nullptr;
-#if defined(_WIN32)
+    // Windows needs a wide open here, and the two toolchains need different
+    // spellings of it. `_wfopen_s` is the MSVC secure variant. MinGW's
+    // std::filesystem::path is wchar_t as well, so the narrow std::fopen cannot
+    // take path::c_str() there either - that is a compile error, not a
+    // fallback, which is exactly how this branch broke the MinGW build.
+    // `_wfopen` is the pre-UCRT wide open that msvcrt itself exports; checked
+    // against mingw-w64's libmsvcrt-os.a, where `_dupenv_s` is the symbol that
+    // is genuinely missing and `_wfopen` is present.
+#if defined(_MSC_VER)
     if (::_wfopen_s(&stream, file.c_str(), L"rb") != 0) {
         stream = nullptr;
     }
+#elif defined(_WIN32)
+    stream = ::_wfopen(file.c_str(), L"rb");
 #else
     stream = std::fopen(file.c_str(), "rb");
 #endif
@@ -252,6 +262,27 @@ auto uniqueSibling(const fs::path& target, std::string_view role) -> fs::path {
     name += fs::path{infix};
     name += target.extension();
     return target.parent_path() / name;
+}
+
+auto backupTargetOf(const fs::path& sibling, std::string_view role) -> fs::path {
+    std::string infix{"."};
+    infix.append(role);
+    infix.append(".tmp.");
+    const auto stem = sibling.stem().string();
+    const auto at = stem.rfind(infix);
+    if (at == std::string::npos) {
+        return {};
+    }
+    const auto targetStem = stem.substr(0, at);
+    if (targetStem.empty()) {
+        return {};
+    }
+    // `fs::path::stem()` drops the extension, so rebuild the original name and add it back: the
+    // preserved extension is what makes the temporary name acceptable to a suffix-validating
+    // loader.
+    fs::path name{targetStem};
+    name += sibling.extension();
+    return sibling.parent_path() / name;
 }
 
 auto isPortableRelativePath(std::string_view path) noexcept -> bool {

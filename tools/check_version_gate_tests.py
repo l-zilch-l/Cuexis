@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import ast
 import json
 import os
+import shutil
 import subprocess
+import tempfile
 import unittest
 from datetime import date
 from pathlib import Path
@@ -17,6 +20,93 @@ TOOLS = Path(__file__).resolve().parent
 REPO_ROOT = Path(os.environ.get("GITHUB_WORKSPACE", TOOLS.parent))
 TRUSTED_ROOT = Path(os.environ.get("CUEXIS_TRUSTED_ROOT", TOOLS.parent))
 WORKFLOW = TRUSTED_ROOT / ".github" / "workflows" / "version-gate.yml"
+
+# Git is not on PATH in every runner environment. The hosted MinGW job runs
+# ctest through the MSYS2 shell (`MSYSTEM=MINGW64`), where the Windows Git
+# installation is absent from PATH, so a bare `subprocess.run(["git", ...])`
+# raises FileNotFoundError and the whole self-test dies for a reason unrelated
+# to the gate. Resolve the executable explicitly instead of relying on PATH.
+GIT_FALLBACKS = (
+    Path(r"C:\Program Files\Git\cmd\git.exe"),
+    Path(r"C:\Program Files\Git\bin\git.exe"),
+    Path(r"C:\Program Files (x86)\Git\cmd\git.exe"),
+)
+
+
+def resolve_git() -> str | None:
+    """Returns an executable git path, following PATH or a known install.
+
+    A visible diagnostic on failure matters more than a clever search: if git
+    genuinely cannot be found, the caller must be able to tell that apart from
+    a version-gate rejection.
+    """
+    found = shutil.which("git")
+    if found is not None:
+        return found
+    for candidate in GIT_FALLBACKS:
+        if candidate.is_file():
+            return str(candidate)
+    return None
+
+
+def usable_posix_shell() -> str | None:
+    """Returns a shell that can actually execute the bootstrap block, or None.
+
+    `shutil.which("bash")` is not enough on Windows: `C:\\Windows\\System32\\bash.exe`
+    is the WSL launcher, which either fails outright or runs inside a different
+    filesystem view. Either way the bootstrap block would be tested against the
+    shim instead of the workflow. The only reliable check is to run something.
+
+    The bootstrap block is extracted verbatim from the trusted workflow, and that
+    script shells out to `git` by bare name. A shell whose PATH cannot resolve
+    git (the hosted MinGW job runs ctest under the MSYS2 shell, where the Windows
+    Git install under `C:\\Program Files\\Git` is absent from PATH) would make the
+    positive case fail with a false "lacks <file>" and the negative case pass
+    vacuously, so git must be resolvable by the same shell too.
+
+    Non-UTF-8 bytes are tolerated here precisely because a broken shim emits
+    localized text; the caller only needs to know whether the shell is usable.
+    """
+    shell = shutil.which("bash")
+    if shell is None:
+        return None
+    try:
+        probe = subprocess.run(
+            [shell, "-c", "exit 0"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if probe.returncode != 0:
+        return None
+    # The WSL shim identifies itself in its banner; reject it even when the
+    # probe happens to succeed on a machine with a working WSL distribution.
+    if "wsl" in Path(shell).name.lower():
+        return None
+    try:
+        git_probe = subprocess.run(
+            [shell, "-c", "git --version"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if git_probe.returncode != 0:
+        return None
+    return shell
+
+
+def captured(result: subprocess.CompletedProcess[str]) -> str:
+    """Safely renders a completed process's streams for a failure message.
+
+    `stdout`/`stderr` stay None when the process never started (for example a
+    blacklisted or missing interpreter), so a naive concatenation raises
+    TypeError and replaces the real diagnostic with a confusing one.
+    """
+    return (result.stdout or "") + (result.stderr or "")
 
 
 def snapshot(value: str, sdk: str = "0.7.0") -> gate.VersionSnapshot:
@@ -57,6 +147,9 @@ class VersionGateTests(unittest.TestCase):
     def test_rejects_unchanged_skipped_backward_and_bad_cross_day_builds(self) -> None:
         checks = (
             ("version.unchanged", "26.09.20-3", "26.09.20-3", date(2026, 9, 20)),
+            # A repeated build at the ceiling must still be reported as "not advanced": the
+            # diagnostic order must not let exhaustion mask the real reason (SPEC-06).
+            ("version.unchanged", "26.09.20-2147483647", "26.09.20-2147483647", date(2026, 9, 20)),
             ("version.build.skipped", "26.09.20-3", "26.09.20-5", date(2026, 9, 20)),
             ("version.build.backward", "26.09.20-3", "26.09.20-2", date(2026, 9, 20)),
             ("version.cross_day_build.invalid", "26.09.20-3", "26.09.21-2", date(2026, 9, 21)),
@@ -95,13 +188,36 @@ class VersionGateTests(unittest.TestCase):
         )
 
     def test_historical_context_uses_recorded_date_not_current_date(self) -> None:
+        # A historical SHA is re-verified with its recorded release context: the
+        # baseline's recorded date is authoritative, so re-running the gate on a
+        # much later day must not reject the candidate as stale (SPEC-03).
+        recorded = date(2026, 8, 2)
         result = gate.compare_snapshots(
             snapshot("26.08.01-1"),
             snapshot("26.08.02-1"),
-            date(2026, 8, 2),
+            recorded,
             "historical",
         )
         self.assertEqual("historical", result.context)
+        # Prove the context really selects the rule: the same pair judged live on
+        # a later day must still be stale, so the two paths genuinely diverge.
+        assert_code(
+            self,
+            "version.release_date.stale",
+            gate.compare_snapshots,
+            snapshot("26.08.01-1"),
+            snapshot("26.08.02-1"),
+            date(2026, 9, 28),
+            "live",
+        )
+        # ...while historical on that same later day pair still passes.
+        historical = gate.compare_snapshots(
+            snapshot("26.08.01-1"),
+            snapshot("26.08.02-1"),
+            date(2026, 9, 28),
+            "historical",
+        )
+        self.assertEqual("26.08.02-1", historical.candidate_version)
 
     def test_rejects_sdk_change_without_explicit_acceptance(self) -> None:
         assert_code(
@@ -141,60 +257,64 @@ class VersionGateTests(unittest.TestCase):
         )
 
     def test_compare_refs_rejects_invalid_missing_and_non_ancestor_refs(self) -> None:
-        head = subprocess.run(
-            ["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD"],
-            check=True,
-            stdout=subprocess.PIPE,
-            text=True,
-        ).stdout.strip()
-        parent = subprocess.run(
-            ["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD^"],
-            check=True,
-            stdout=subprocess.PIPE,
-            text=True,
-        ).stdout.strip()
-        trusted_date = date(2026, 9, 20)
+        # Self-contained history, so the case does not depend on the ambient checkout depth. A
+        # hosted job may fetch a single commit, in which case `HEAD^` does not resolve and a test
+        # that reads it would fail for a reason unrelated to the gate.
+        with tempfile.TemporaryDirectory(prefix="cuexis-gate-refs-") as directory:
+            root = Path(directory)
+            self._init_repository(root)
+            (root / "seed.txt").write_text("seed\n", encoding="utf-8")
+            self._git(root, "add", "-A")
+            self._git(root, "commit", "-q", "-m", "seed")
+            base = self._git(root, "rev-parse", "HEAD")
+            (root / "seed.txt").write_text("seed\nsecond\n", encoding="utf-8")
+            self._git(root, "add", "-A")
+            self._git(root, "commit", "-q", "-m", "second")
+            head = self._git(root, "rev-parse", "HEAD")
+            trusted_date = date(2026, 9, 20)
 
-        assert_code(
-            self,
-            "version.baseline.ref.invalid",
-            gate.compare_refs,
-            REPO_ROOT,
-            "HEAD",
-            head,
-            trusted_date,
-            "historical",
-        )
-        assert_code(
-            self,
-            "version.baseline.missing",
-            gate.compare_refs,
-            REPO_ROOT,
-            "0" * 40,
-            head,
-            trusted_date,
-            "historical",
-        )
-        assert_code(
-            self,
-            "version.candidate.missing",
-            gate.compare_refs,
-            REPO_ROOT,
-            head,
-            "0" * 40,
-            trusted_date,
-            "historical",
-        )
-        assert_code(
-            self,
-            "version.baseline.not_ancestor",
-            gate.compare_refs,
-            REPO_ROOT,
-            head,
-            parent,
-            trusted_date,
-            "historical",
-        )
+            assert_code(
+                self,
+                "version.baseline.ref.invalid",
+                gate.compare_refs,
+                root,
+                "HEAD",  # a symbolic ref is not a full 40-character SHA
+                head,
+                trusted_date,
+                "historical",
+            )
+            assert_code(
+                self,
+                "version.baseline.missing",
+                gate.compare_refs,
+                root,
+                "0" * 40,
+                head,
+                trusted_date,
+                "historical",
+            )
+            assert_code(
+                self,
+                "version.candidate.missing",
+                gate.compare_refs,
+                root,
+                head,
+                "0" * 40,
+                trusted_date,
+                "historical",
+            )
+            # HEAD and its parent are unrelated to each other in ancestry terms: the candidate must
+            # descend from the baseline, not the other way round.
+            assert_code(
+                self,
+                "version.baseline.not_ancestor",
+                gate.compare_refs,
+                root,
+                head,
+                base,
+                trusted_date,
+                "historical",
+            )
 
     def test_workflow_uses_trusted_event_baselines_and_full_history(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")
@@ -227,6 +347,354 @@ class VersionGateTests(unittest.TestCase):
         self.assertIn("trusted baseline", text)
         self.assertIn("Run trusted version-gate tests", text)
         self.assertNotIn("|| cp", text)
+
+    def test_git_is_never_invoked_by_bare_name(self) -> None:
+        # Regression: the hosted MinGW job runs ctest under the MSYS2 shell
+        # (`MSYSTEM=MINGW64`), where git is absent from PATH. A bare
+        # `subprocess.run(["git", ...])` raised FileNotFoundError there and took
+        # the whole self-test down with it. Every git invocation must go through
+        # an explicitly resolved executable.
+        #
+        # The check inspects real argument lists rather than raw text, because
+        # the modules legitimately quote the old broken call in prose comments.
+        for module in ("check_version_gate.py", "check_version_gate_tests.py"):
+            source = (TOOLS / module).read_text(encoding="utf-8")
+            tree = ast.parse(source)
+            for node in ast.walk(tree):
+                if not isinstance(node, ast.List) or not node.elts:
+                    continue
+                first = node.elts[0]
+                if not isinstance(first, ast.Constant) or not isinstance(first.value, str):
+                    continue
+                self.assertNotEqual(
+                    "git",
+                    first.value,
+                    "%s passes the bare name 'git' as argv[0] at line %s; "
+                    "resolve the executable instead" % (module, node.lineno),
+                )
+            self.assertIn(
+                "resolve_git" if module.endswith("_tests.py") else "git_executable",
+                source,
+                "%s no longer resolves a git executable" % module,
+            )
+
+    def test_resolved_git_is_an_absolute_executable_when_available(self) -> None:
+        # The resolver must never hand back a bare name, which would put the
+        # PATH dependency straight back. When nothing resolves, it returns None
+        # and the callers skip with a readable reason instead of crashing.
+        executable = resolve_git()
+        if executable is None:
+            self.skipTest("no git executable available to resolve on this machine")
+        self.assertTrue(Path(executable).is_absolute(), executable)
+        self.assertTrue(Path(executable).is_file(), executable)
+        completed = subprocess.run(
+            [executable, "--version"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            errors="replace",
+        )
+        self.assertEqual(0, completed.returncode, captured(completed))
+        self.assertIn("git version", completed.stdout)
+
+    def test_usable_posix_shell_rejects_a_shell_that_cannot_run(self) -> None:
+        # Regression: a bootstrap block executed through the WSL shim reported
+        # success or failed for reasons unrelated to the workflow, and a naive
+        # `completed.stdout + completed.stderr` then raised TypeError because
+        # both streams are None when the process never started.
+        shell = usable_posix_shell()
+        if shell is None:
+            self.skipTest("no usable POSIX shell available on this machine")
+        self.assertTrue(Path(shell).is_absolute(), shell)
+        self.assertNotIn("wsl", Path(shell).name.lower())
+        completed = subprocess.run(
+            [shell, "-c", "exit 0"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            errors="replace",
+        )
+        self.assertEqual(0, completed.returncode, captured(completed))
+
+    def test_failure_messages_survive_a_process_that_never_started(self) -> None:
+        # A blacklisted or missing interpreter leaves stdout and stderr as None.
+        # The diagnostic helper must still produce a usable message rather than
+        # raising TypeError and hiding the real failure.
+        never_started = subprocess.CompletedProcess(args=["missing"], returncode=1)
+        self.assertEqual("", captured(never_started))
+        self.assertEqual(
+            "out\nerr\n",
+            captured(subprocess.CompletedProcess(args=["ok"], returncode=0, stdout="out\n", stderr="err\n")),
+        )
+
+    def _git(self, repo: Path, *arguments: str) -> str:
+        executable = resolve_git()
+        if executable is None:
+            # Skipping is honest; a FileNotFoundError traceback would look like a
+            # gate rejection and a silently passing test would be worse still.
+            self.skipTest(
+                "no git executable on PATH (%s) or in a known install location; "
+                "the repository-building cases cannot run" % os.environ.get("PATH", "")
+            )
+        completed = subprocess.run(
+            [
+                executable,
+                "-C",
+                str(repo),
+                "-c",
+                "user.email=gate@test.invalid",
+                "-c",
+                "user.name=Version Gate Test",
+                "-c",
+                "commit.gpgsign=false",
+                *arguments,
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        return completed.stdout.strip()
+
+    def _init_repository(self, root: Path) -> None:
+        self._git(root, "init", "-q", "-b", "master")
+        # Keep the rendered CMake lines byte-exact: autocrlf would rewrite the
+        # `set(...)` lines and break the renderer's line-anchored pattern.
+        self._git(root, "config", "core.autocrlf", "false")
+        self._git(root, "config", "core.eol", "lf")
+
+    GATE_FILES = (
+        "tools/check_version_gate.py",
+        "tools/check_version_gate_tests.py",
+        "tools/update_version.py",
+        ".github/workflows/version-gate.yml",
+    )
+
+    def _commit_version_files(self, root: Path, version: str, *, with_gate: bool) -> str:
+        """Writes a real candidate tree and commits it, returning the commit SHA.
+
+        The version files are rendered from the repository's own canonical
+        templates through `update_version`, so the fixture stays valid as the
+        real file layout evolves instead of drifting from a hand-written stub.
+        """
+        from update_version import Version, render_cmake, render_manifest
+
+        parsed = Version(
+            year=int(version[0:2]),
+            month=int(version[3:5]),
+            day=int(version[6:8]),
+            build=int(version.split("-")[1]),
+        )
+        cmake = root / "cmake" / "CuexisVersion.cmake"
+        cmake.parent.mkdir(parents=True, exist_ok=True)
+        # Write with LF explicitly: the renderer's patterns are line-anchored and
+        # a translated CRLF would make `^set(...)$` fail to match.
+        cmake.write_text(
+            render_cmake((TOOLS.parent / "cmake" / "CuexisVersion.cmake").read_text(encoding="utf-8"), parsed),
+            encoding="utf-8",
+            newline="\n",
+        )
+        (root / "vcpkg.json").write_text(
+            render_manifest((TOOLS.parent / "vcpkg.json").read_text(encoding="utf-8"), parsed),
+            encoding="utf-8",
+            newline="\n",
+        )
+        if with_gate:
+            for name in self.GATE_FILES:
+                target = root / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text("# candidate gate stub\n", encoding="utf-8")
+        else:
+            # A candidate that lacks the gate must really lack it. Leaving stale
+            # files on disk would let `git add -A` re-commit them and the
+            # "missing" assertion would silently test nothing (SPEC-05).
+            for name in self.GATE_FILES:
+                (root / name).unlink(missing_ok=True)
+        self._git(root, "add", "-A")
+        self._git(root, "commit", "-q", "-m", "candidate %s" % version)
+        return self._git(root, "rev-parse", "HEAD")
+
+    def test_rejects_a_real_baseline_that_predates_the_version_files(self) -> None:
+        # A real empty history: the baseline commit exists and resolves, but it
+        # carries no version files, so the gate must fail on baseline.missing
+        # rather than on rev-parse (SPEC-05). Previously this path was only
+        # covered by a fake all-zero SHA.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._init_repository(root)
+            (root / "README.md").write_text("no version files yet\n", encoding="utf-8")
+            self._git(root, "add", "-A")
+            self._git(root, "commit", "-q", "-m", "baseline without version files")
+            baseline = self._git(root, "rev-parse", "HEAD")
+            candidate = self._commit_version_files(root, "26.09.20-1", with_gate=True)
+
+            assert_code(
+                self,
+                "version.baseline.missing",
+                gate.compare_refs,
+                root,
+                baseline,
+                candidate,
+                date(2026, 9, 20),
+                "live",
+            )
+
+    def test_rejects_a_real_candidate_missing_the_gate_artifacts(self) -> None:
+        # A candidate tree that drops the checker, the focused tests or the
+        # workflow must not be able to pass. Two executable layers are asserted:
+        #   1. the Python reader refuses a missing gate file per role, and
+        #   2. the real bootstrap shell (extracted from the trusted workflow)
+        #      exits non-zero with version.bootstrap.required.
+        # The workflow script is executed for real when a POSIX shell exists;
+        # otherwise that half is skipped explicitly instead of being faked.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._init_repository(root)
+            self._commit_version_files(root, "26.09.20-1", with_gate=True)
+            candidate = self._commit_version_files(root, "26.09.20-2", with_gate=False)
+            for name in ("tools/check_version_gate.py", "tools/check_version_gate_tests.py"):
+                with self.subTest(role="candidate", path=name):
+                    assert_code(
+                        self,
+                        "version.candidate.missing",
+                        gate._read_git_file,
+                        root,
+                        candidate,
+                        name,
+                        "candidate",
+                    )
+            # A baseline that lacks the gate artifacts is refused the same way.
+            assert_code(
+                self,
+                "version.baseline.missing",
+                gate._read_git_file,
+                root,
+                candidate,
+                "tools/check_version_gate.py",
+                "baseline",
+            )
+
+    def test_bootstrap_shell_fails_when_the_trusted_tree_lacks_the_gate(self) -> None:
+        # Executes the materialize block from the trusted workflow against two
+        # real baselines. This is the only way to actually run
+        # version.bootstrap.required, which lives in shell rather than in the
+        # Python checker.
+        #
+        # Both directions are asserted on purpose: the rejection alone would
+        # also be satisfied by a shell that failed for an unrelated reason
+        # (a syntax error in the extraction, a WSL shim on PATH, a missing
+        # interpreter), which would make the test vacuously green. The positive
+        # case pins the block to a real, materializing script.
+        shell = usable_posix_shell()
+        if shell is None:
+            self.skipTest(
+                "no usable POSIX shell available to execute the bootstrap block; "
+                "`bash` is absent, resolves to the WSL shim, or its PATH cannot "
+                "resolve `git` (the block shells out to git by bare name)"
+            )
+        script = self._bootstrap_script()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._init_repository(root)
+            self._commit_version_files(root, "26.09.20-1", with_gate=True)
+            trusted = self._git(root, "rev-parse", "HEAD")
+            completed = subprocess.run(
+                [shell, "-c", script],
+                cwd=str(root),
+                env={
+                    **os.environ,
+                    "CUEXIS_BASE_SHA": trusted,
+                    # The block both reads and exports TRUSTED_ROOT; the
+                    # workflow assigns it a few lines above the slice, so the
+                    # harness must provide it or `set -u` aborts on an
+                    # unrelated unbound-variable error.
+                    "TRUSTED_ROOT": str(root / "trusted"),
+                    "CUEXIS_TRUSTED_ROOT": str(root / "trusted"),
+                },
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                # A shell started outside MSYS may emit localized bytes; an
+                # undecodable stream must not turn into a decode traceback that
+                # hides which step actually failed.
+                errors="replace",
+            )
+            self.assertEqual(
+                0,
+                completed.returncode,
+                "the extracted bootstrap block is not executable shell: %s"
+                % captured(completed),
+            )
+            materialized = sorted(
+                # Normalize to forward slashes: `relative_to` yields backslashes
+                # on Windows, which would never equal the GATE_FILES spelling.
+                path.relative_to(root / "trusted").as_posix()
+                for path in (root / "trusted").rglob("*")
+                if path.is_file()
+            )
+            self.assertEqual(sorted(self.GATE_FILES), materialized)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._init_repository(root)
+            (root / "README.md").write_text("no gate here\n", encoding="utf-8")
+            self._git(root, "add", "-A")
+            self._git(root, "commit", "-q", "-m", "baseline without the gate")
+            empty = self._git(root, "rev-parse", "HEAD")
+            completed = subprocess.run(
+                [shell, "-c", script],
+                cwd=str(root),
+                env={
+                    **os.environ,
+                    "CUEXIS_BASE_SHA": empty,
+                    "TRUSTED_ROOT": str(root / "trusted"),
+                    "CUEXIS_TRUSTED_ROOT": str(root / "trusted"),
+                },
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                errors="replace",
+            )
+            self.assertNotEqual(0, completed.returncode)
+            self.assertIn("version.bootstrap.required", captured(completed))
+
+    def _bootstrap_script(self) -> str:
+        """Extracts the trusted-baseline materialize block from the workflow.
+
+        The block is a `for` loop, so a naive "from `git cat-file -e` to `exit 1`"
+        slice would cut the loop open and bash would report a syntax error
+        instead of the intended diagnostic. The slice therefore starts at the
+        enclosing `for path in` line and ends at the matching `done`, which keeps
+        the extracted shell genuinely executable.
+        """
+        text = WORKFLOW.read_text(encoding="utf-8")
+        for_start = text.index("for path in \\")
+        for_start = text.rindex("\n", 0, for_start) + 1
+        done = text.index("\n", text.index("done", for_start)) + 1
+        block = text[for_start:done]
+        return "set -euo pipefail\n" + block
+
+    def test_rejects_a_candidate_that_raced_past_the_latest_baseline(self) -> None:
+        # Two PRs racing: PR A merges and advances master, so the baseline is the
+        # newer commit while the candidate is built on an older one. The gate
+        # must reject the stale-based candidate with baseline.not_ancestor. This
+        # is an executable approximation of the race: a true interleaving of two
+        # concurrent merges cannot be reproduced in a single process.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._init_repository(root)
+            older = self._commit_version_files(root, "26.09.20-1", with_gate=True)
+            newer = self._commit_version_files(root, "26.09.20-2", with_gate=True)
+            # master tip is `newer`; the candidate branch tip is `older`.
+            assert_code(
+                self,
+                "version.baseline.not_ancestor",
+                gate.compare_refs,
+                root,
+                newer,
+                older,
+                date(2026, 9, 20),
+                "live",
+            )
 
 
 if __name__ == "__main__":

@@ -3,5 +3,20 @@ tests/fixtures/*.golden.cuexis.chart.json text eol=lf
 tests/fixtures/chart_format_update/**/*.json text eol=lf
 tests/fixtures/chart_format_update/**/*.cxt text eol=lf
 tests/fixtures/chart_format_update/source_project/**/*.bin binary
+# The S6-E and S6-A2 fixture trees are canonical-byte evidence: JSON and text goldens must keep LF
+# so a Windows checkout does not change the bytes a digest is computed over, and the encoded media
+# is byte-exact and must never be probed or rewritten as text.
+tests/fixtures/stage6_e/**/*.json text eol=lf
+tests/fixtures/stage6_e/**/*.cxt text eol=lf
+tests/fixtures/stage6_e/**/*.png binary
+tests/fixtures/stage6_e/**/*.jpg binary
+tests/fixtures/stage6_e/**/*.flac binary
+tests/fixtures/stage6_e/**/*.ogg binary
+tests/fixtures/stage6_e/**/*.mp3 binary
+tests/fixtures/stage6_e/**/*.wav binary
+tests/fixtures/stage6_a2/**/*.json text eol=lf
+tests/fixtures/stage6_a2/**/*.bin binary
+tests/fixtures/stage6_a2/**/*.png binary
+tests/fixtures/stage6_a2/**/*.jpg binary
 *.cxc binary
 vcpkg-overlays/** text eol=lf

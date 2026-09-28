@@ -31,8 +31,6 @@ class HostFileProvider final : public cuexis::content::IContentProvider {
     // code, as it would when a host storage device disappears.
     void failAllReads(std::string code);
 
-    [[nodiscard]] auto readCount() const noexcept -> std::size_t;
-
   private:
     std::filesystem::path root_;
     HostReport& report_;
@@ -43,7 +41,6 @@ class HostFileProvider final : public cuexis::content::IContentProvider {
 struct HostContent final {
     std::filesystem::path projectDirectory;
     std::string chartEntryPath{"charts/main.cuexis.chart.json"};
-    std::string providerRootId{"main"};
 };
 
 // The declared asset table of the reference content. A production host derives

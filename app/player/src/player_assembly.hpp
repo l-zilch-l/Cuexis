@@ -48,10 +48,13 @@ createPlayerBackend(platform_sdl::SdlRuntime& runtime, platform_sdl::SdlWindow& 
                     const std::optional<std::filesystem::path>& shaderCache, PlayerLogger& logger)
     -> core::Result<render_opengl::OpenGlBackend>;
 
+// Records the settings the subsystems actually reached. `requestedVsync` is named as a request
+// because the swap interval cannot be read back; every other field is read from live state.
 [[nodiscard]] auto logEffectiveWindow(platform_sdl::SdlWindow& window,
-                                      const player_support::UserPreferences& requested, bool vsync,
-                                      bool audioDeviceOpen, std::string_view profileId,
-                                      PlayerLogger& logger) -> core::Result<void>;
+                                      const player_support::UserPreferences& requested,
+                                      bool requestedVsync, double appliedGain, bool audioDeviceOpen,
+                                      std::string_view profileId, PlayerLogger& logger)
+    -> core::Result<void>;
 
 [[nodiscard]] auto makePlayerSurface(platform_sdl::SdlWindow& window)
     -> std::unique_ptr<PlayerSurface>;

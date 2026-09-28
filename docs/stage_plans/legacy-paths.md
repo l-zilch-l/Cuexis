@@ -2,7 +2,7 @@
 
 状态：historical
 
-更新日期：2026-09-27
+更新日期：2026-09-28
 
 以下旧逻辑路径已迁入 canonical 目录。映射供历史引用迁移使用，不保留逐文件 compatibility stub。
 
@@ -31,3 +31,4 @@
 - `future/stage-06/plan.md` -> [canonical](completed/stage-06/plan.md)（2026-09-17 交接加固关闭并经 owner 接受后恢复 active）
 - `active/chart-format-foundation-hardening/plan.md` -> [canonical](completed/chart-format-foundation-hardening/plan.md)（2026-09-17 R0-R5 完成并归档）
 - `active/stage-06/plan.md` -> [canonical](completed/stage-06/plan.md)（2026-09-27 Stage 6 关闭报告、三个核验问题处置与 Stage 7A/8 交接清单经 owner 接受后归档）
+- `active/stage-06-review-remediation/plan.md` -> [canonical](reviews/stage-06-review-remediation/plan.md)（2026-09-28 复核整改计划移入 `reviews/`，与 260829 整改计划同级；计划本身仍为 active，未关闭）

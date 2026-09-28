@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shutil
 import subprocess
 import sys
 from dataclasses import asdict, dataclass
@@ -12,6 +13,34 @@ from datetime import date
 from pathlib import Path
 
 from update_version import Version, parse_version, version_from_cmake, version_from_manifest
+
+
+# Git is not on PATH in every runner environment. The hosted MinGW job runs
+# ctest through the MSYS2 shell (`MSYSTEM=MINGW64`), where the Windows Git
+# installation is absent from PATH, so a bare `subprocess.run(["git", ...])`
+# raises FileNotFoundError instead of reporting a gate diagnostic. Resolve the
+# executable explicitly so a missing git surfaces as `version.git.missing`
+# rather than as an unhandled traceback.
+GIT_FALLBACKS = (
+    Path(r"C:\Program Files\Git\cmd\git.exe"),
+    Path(r"C:\Program Files\Git\bin\git.exe"),
+    Path(r"C:\Program Files (x86)\Git\cmd\git.exe"),
+)
+
+
+def git_executable() -> str:
+    """Returns an executable git path, following PATH or a known install."""
+    found = shutil.which("git")
+    if found is not None:
+        return found
+    for candidate in GIT_FALLBACKS:
+        if candidate.is_file():
+            return str(candidate)
+    raise GateError(
+        "version.git.missing",
+        "no git executable on PATH or in a known install location; "
+        "the version gate cannot inspect repository history",
+    )
 
 
 VERSION_FILES = ("cmake/CuexisVersion.cmake", "vcpkg.json")
@@ -108,6 +137,9 @@ def compare_snapshots(
     base_date = date(2000 + base.version.year, base.version.month, base.version.day)
     candidate_date = date(2000 + candidate.version.year, candidate.version.month, candidate.version.day)
 
+    # Two hard gates that hold in both contexts: the baseline may not be dated
+    # after the trusted day, and the candidate may never move backwards past the
+    # baseline.
     if base_date > trusted_utc_date:
         raise GateError(
             "version.baseline.future",
@@ -118,23 +150,50 @@ def compare_snapshots(
             "version.date.backward",
             f"candidate {candidate.version.canonical} is before baseline {base.version.canonical}",
         )
-    if candidate_date > trusted_utc_date:
-        raise GateError(
-            "version.release_date.future",
-            f"candidate date {candidate.version.canonical} is after trusted UTC date {trusted_utc_date.isoformat()}",
-        )
-    if candidate_date < trusted_utc_date:
-        raise GateError(
-            "version.release_date.stale",
-            f"candidate date {candidate.version.canonical} is before trusted UTC date {trusted_utc_date.isoformat()}",
-        )
+
+    # The context selects which release rule is authoritative. `live` judges the
+    # candidate against the trusted UTC date supplied by the protected workflow.
+    # `historical` re-verifies an already-recorded SHA against its recorded
+    # release context: the candidate's date is not required to equal the current
+    # day, but it must still be at or after the recorded baseline and at or
+    # before the trusted upper bound (ADR 0042 S6-D07: historical SHAs are
+    # re-verified with their recorded release context, not rewritten because the
+    # re-run happens on another day). `live` keeps the strict same-day rule.
+    if context == "live":
+        if candidate_date > trusted_utc_date:
+            raise GateError(
+                "version.release_date.future",
+                f"candidate date {candidate.version.canonical} is after trusted UTC date "
+                f"{trusted_utc_date.isoformat()}",
+            )
+        if candidate_date < trusted_utc_date:
+            raise GateError(
+                "version.release_date.stale",
+                f"candidate date {candidate.version.canonical} is before trusted UTC date "
+                f"{trusted_utc_date.isoformat()}",
+            )
+    else:
+        # historical: the trusted date is the recorded release upper bound. The
+        # candidate may precede it (it was recorded earlier), but it may not be
+        # after it, so a historical re-run cannot be used to smuggle in a
+        # candidate dated after the recorded day.
+        if candidate_date > trusted_utc_date:
+            raise GateError(
+                "version.release_date.future",
+                f"candidate date {candidate.version.canonical} is after the recorded UTC date "
+                f"{trusted_utc_date.isoformat()} (historical)",
+            )
 
     if candidate_date == base_date:
+        # Report "not advanced" before "exhausted": when the candidate simply
+        # repeats the baseline build the real reason is that nothing moved, not
+        # that the same-day build number ran out. Only a candidate that does
+        # advance to an unrepresentable build is exhausted.
+        if candidate.version.build == base.version.build:
+            raise GateError("version.unchanged", "candidate version is unchanged from the baseline")
         expected_build = base.version.build + 1
         if expected_build > 2_147_483_647:
             raise GateError("version.build.exhausted", "same-day build number cannot be incremented")
-        if candidate.version.build == base.version.build:
-            raise GateError("version.unchanged", "candidate version is unchanged from the baseline")
         if candidate.version.build < expected_build:
             raise GateError(
                 "version.build.backward",
@@ -173,7 +232,7 @@ def compare_snapshots(
 
 def _run_git(repo_root: Path, *arguments: str) -> subprocess.CompletedProcess[bytes]:
     return subprocess.run(
-        ["git", "-C", str(repo_root), *arguments],
+        [git_executable(), "-C", str(repo_root), *arguments],
         check=False,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -273,10 +332,7 @@ def current_snapshot(repo_root: Path) -> VersionSnapshot:
 
 
 def _result_json(result: GateResult) -> str:
-    value = asdict(result)
-    value["base_version"] = result.base_version
-    value["candidate_version"] = result.candidate_version
-    return json.dumps(value, sort_keys=True)
+    return json.dumps(asdict(result), sort_keys=True)
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -288,8 +344,20 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--base-ref", help="trusted baseline commit SHA")
     parser.add_argument("--candidate-ref", help="candidate commit SHA")
     parser.add_argument("--trusted-utc-date", help="trusted release context as YYYY-MM-DD")
-    parser.add_argument("--context", choices=("live", "historical"), default="live")
-    parser.add_argument("--event", default="local")
+    parser.add_argument(
+        "--context",
+        choices=("live", "historical"),
+        default="live",
+        help="live judges against --trusted-utc-date; historical re-verifies an already-recorded "
+        "SHA against the recorded baseline date (see ADR 0042 S6-D07)",
+    )
+    parser.add_argument(
+        "--event",
+        default="local",
+        choices=("local", "pull_request", "merge_group", "push", "workflow_dispatch"),
+        help="recorded only: event routing is decided by the workflow job conditions, not by a "
+        "date rule here. Rejected if it is ever given a different rule than --context.",
+    )
     parser.add_argument("--allow-sdk-api-change", action="store_true")
     parser.add_argument("--json", action="store_true", dest="json_output")
     return parser
@@ -328,7 +396,7 @@ def main(arguments: list[str] | None = None) -> int:
             print(_result_json(result))
         else:
             print(
-                f"version.gate.pass: event={args.event} context={result.context} "
+                f"version.gate.pass: event={args.event}(recorded) context={result.context} "
                 f"base={result.base_ref}({result.base_version}) "
                 f"candidate={result.candidate_ref}({result.candidate_version}) "
                 f"trusted_utc_date={result.trusted_utc_date}"

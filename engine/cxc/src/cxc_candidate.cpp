@@ -52,8 +52,8 @@ void addError(core::Diagnostics& diagnostics, std::string code, std::string mess
     return value ? std::optional<std::string>{std::string{*value}} : std::nullopt;
 }
 
-[[nodiscard]] auto readRequiredString(const json::Reader& reader, std::string_view field,
-                                      core::Diagnostics&) -> std::optional<std::string> {
+[[nodiscard]] auto readRequiredString(const json::Reader& reader, std::string_view field)
+    -> std::optional<std::string> {
     const auto child = reader.requiredField(field);
     if (!child) {
         return std::nullopt;
@@ -207,9 +207,9 @@ auto parseCandidateChartEntryExtension(std::string_view extensionsJson,
         }
         item->rejectUnknownFields(fields);
         const auto fieldPath = std::string{item->fieldPath()};
-        const auto path = readRequiredString(*item, "path", readerDiagnostics);
-        const auto kind = readRequiredString(*item, "kind", readerDiagnostics);
-        const auto encoding = readRequiredString(*item, "encoding", readerDiagnostics);
+        const auto path = readRequiredString(*item, "path");
+        const auto kind = readRequiredString(*item, "kind");
+        const auto encoding = readRequiredString(*item, "encoding");
         const auto playbackReader = item->requiredField("playback");
         const auto playback = playbackReader ? playbackReader->readBoolean() : std::nullopt;
         // value_or avoids a libstdc++ optional false positive under -Wmaybe-uninitialized.
@@ -497,9 +497,9 @@ auto validateCandidateChartExtension(const CxcPackage& package) -> core::Diagnos
         };
         item->rejectUnknownFields(fields);
 
-        const auto path = readRequiredString(*item, "path", diagnostics);
-        const auto kind = readRequiredString(*item, "kind", diagnostics);
-        const auto encoding = readRequiredString(*item, "encoding", diagnostics);
+        const auto path = readRequiredString(*item, "path");
+        const auto kind = readRequiredString(*item, "kind");
+        const auto encoding = readRequiredString(*item, "encoding");
         const auto playbackReader = item->requiredField("playback");
         const auto playback = playbackReader ? playbackReader->readBoolean() : std::nullopt;
         const bool playbackEnabled = playback.value_or(false);
@@ -530,10 +530,10 @@ auto validateCandidateChartExtension(const CxcPackage& package) -> core::Diagnos
             continue;
         }
         if (bytes->size() > maxPackedBytes) {
-            addError(diagnostics, "cxc.budget.exceeded",
+            addError(diagnostics, "cxc.candidate.budget_exceeded",
                      "Packed Chart candidate exceeds the 16 MiB entry limit", field + "/path");
         }
-        const auto artifactIdentity = readRequiredString(*item, "artifactIdentity", diagnostics);
+        const auto artifactIdentity = readRequiredString(*item, "artifactIdentity");
         const auto artifactText = artifactIdentity.value_or(std::string{});
         if (!isSha256(artifactText)) {
             addError(diagnostics, "cxc.candidate.identity_invalid",
@@ -543,8 +543,7 @@ auto validateCandidateChartExtension(const CxcPackage& package) -> core::Diagnos
                      "artifactIdentity does not match exact archive entry bytes",
                      field + "/artifactIdentity");
         }
-        const auto compiledIdentity =
-            readRequiredString(*item, "compiledSemanticIdentity", diagnostics);
+        const auto compiledIdentity = readRequiredString(*item, "compiledSemanticIdentity");
         const auto compiledText = compiledIdentity.value_or(std::string{});
         if (!isSha256(compiledText)) {
             addError(diagnostics, "cxc.candidate.identity_invalid",
@@ -570,7 +569,7 @@ auto validateCandidateChartExtension(const CxcPackage& package) -> core::Diagnos
                 }
             }
         }
-        const auto profile = readRequiredString(*item, "compilerProfile", diagnostics);
+        const auto profile = readRequiredString(*item, "compilerProfile");
         const auto profileText = profile.value_or(std::string{});
         if (profileText != candidateProfile) {
             addError(diagnostics, "cxc.candidate.profile_unsupported",

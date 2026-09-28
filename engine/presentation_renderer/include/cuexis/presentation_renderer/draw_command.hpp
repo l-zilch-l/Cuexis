@@ -24,6 +24,10 @@ enum class PresentationPass : std::uint8_t {
 
 struct DrawCommand final {
     std::string objectId;
+    // Index of the source object inside the submitted FrameSnapshot. It is the tie-breaker for
+    // both pass sorts, so a backend that retains per-object state can recover it without
+    // re-deriving the ordering rules.
+    std::size_t objectIndex{};
     std::array<float, 16> worldMatrix{};
     playback::PresentationResourceRef mesh;
     playback::PresentationResourceRef material;

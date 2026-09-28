@@ -656,6 +656,12 @@ semanticIdentity 比对，使一个 hash 自洽但超出登记 subset 的产物�
 先于 STR0/REF0/IDN0 的行解析。所有入口的 Packed 文件 byte 门禁使用同一个
 `packed.budget.file_bytes`，取代旧的 `packed.io.file_limit` 别名。
 
+固定宽度字段的**可表示性**失败与上述预算失败是两类原因，使用独立稳定码
+`packed.field.wire_range`：当某个 u32 header/目录字段的值超出 uint32 时报告它，而不是
+`packed.budget.section_bytes`。按本文件 §3.1–3.2 的次序，预算门禁先于窄化，因此该码只覆盖
+防御性分支；即便如此也不得与字节预算共用诊断码，否则按码分支的调用方会把「字段无法表示」
+误判成「超出预算」。
+
 Writer 只接受已展开且引用完整的 canonical model。在写盘前通过无副作用 sizing pass
 计算确切 bytes、count 和 checked arithmetic，超过 16 MiB 不产出部分有效文件。
 次序为 revision/flags -> profile -> 计数预算 -> semanticIdentity -> 字典预算 ->

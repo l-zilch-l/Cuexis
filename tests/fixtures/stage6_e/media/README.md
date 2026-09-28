@@ -41,7 +41,11 @@ import must equal `source_mono.wav` / `source_stereo.wav` byte for byte.
 
 `generate_negative_fixtures.py` derives the damaged audio inputs: truncated MP3, Ogg and FLAC
 copies, a FLAC with a destroyed metadata block header, a chained Ogg stream, and a FLAC whose
-`STREAMINFO` total-sample field is forged.
+`STREAMINFO` total-sample field is forged. It also derives the image negatives from the committed
+baselines, so the only difference from the baseline is the defect: `gamma_linear.png` (a linear-light
+`gAMA`, which must be refused), `interlaced.png` and `corrupt_marker.jpg`. One case is **positive**:
+`gamma_srgb_value.png` carries `gAMA` 45455, which *is* the sRGB transfer function, so it must
+import — without it, an implementation that refused every `gAMA` chunk would pass the whole suite.
 
 `generate_goldens.py` records `golden/*.json` from a local importer build. Each golden holds the
 fixture path, kind, media profile identity, decoder identity, SHA-256 and byte count of the

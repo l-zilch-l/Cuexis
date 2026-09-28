@@ -2,6 +2,8 @@
 
 #include <cuexis/render_opengl/open_gl_backend.hpp>
 
+#include <cuexis/presentation_renderer/draw_command.hpp>
+
 #include <glad/glad.h>
 
 #include <cuexis/shader/shader_cache.hpp>
@@ -133,9 +135,11 @@ struct DebugVertex final {
     float alpha{};
 };
 
+// Per-draw GPU retention resolved from the neutral draw command. The neutral builder owns the
+// ordering, split, validation, and digest; this only carries the GL handles that cannot live in
+// the backend-neutral layer.
 struct PreparedDraw final {
-    std::size_t objectIndex{};
-    OpenGlDrawCommand command;
+    presentation_renderer::DrawCommand command;
     const GpuMesh* mesh{};
     const GpuMaterial* material{};
     const GpuTexture* texture{};
@@ -179,7 +183,7 @@ struct BoundsProbeStats final {
                                    const playback::PresentationResourceManifest& manifest,
                                    std::span<const playback::PortableResourcePtr> resources,
                                    BoundsProbeStats* stats = nullptr)
-    -> core::Result<OpenGlDrawSummary>;
+    -> core::Result<presentation_renderer::DrawSummary>;
 
 [[nodiscard]] auto createPresentationBackendState(std::uint64_t backendToken)
     -> core::Result<std::unique_ptr<OpenGlPresentationBackendState>>;

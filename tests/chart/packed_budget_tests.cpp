@@ -18,9 +18,12 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
+#include <fstream>
+#include <iterator>
 #include <optional>
 #include <span>
 #include <string>
@@ -570,4 +573,46 @@ TEST_CASE("R3 the Writer budget gates run before any artifact or file output",
         CHECK(atomicCode(chart, file.path, tight) == "packed.budget.section_bytes");
         CHECK_FALSE(fs::exists(file.path));
     }
+}
+
+TEST_CASE("SPEC-02 wire-range representability has its own code, not a budget code",
+          "[chart][packed][budget][spec-02]") {
+    // A u32 wire-range overflow is a representability failure, not a byte-budget violation.
+    // Sharing `packed.budget.section_bytes` made the "every declared budget is reported by its
+    // own diagnostic" claim imprecise: a caller branching on the code could not tell the two
+    // causes apart. The guard is intentionally source-level, because the branch is defensive -
+    // every budget sits far below the uint32 ceiling, so no public input can reach it and a
+    // behavioural test cannot construct the state that would exercise it.
+    const auto source =
+        fs::path{CUEXIS_SOURCE_DIR} / "engine" / "chart" / "src" / "packed_chart_tables.cpp";
+    REQUIRE(fs::exists(source));
+    std::ifstream stream{source, std::ios::binary};
+    REQUIRE(stream);
+    const std::string text{std::istreambuf_iterator<char>{stream},
+                           std::istreambuf_iterator<char>{}};
+
+    // The three header/directory narrowing guards report the dedicated code. Each is a
+    // `fail("<code>", "<message>")` call, so the code and message must be adjacent literals on
+    // one line with no statement separator between them.
+    constexpr std::array<std::string_view, 3> messages{
+        "Packed field exceeds the uint32 wire range",
+        "Packed directory exceeds the uint32 wire range",
+        "Packed counters exceed the uint32 wire range",
+    };
+    for (const auto message : messages) {
+        const auto messageAt = text.find(message);
+        REQUIRE(messageAt != std::string::npos);
+        const auto codeAt = text.rfind("packed.field.wire_range", messageAt);
+        REQUIRE(codeAt != std::string::npos);
+        const auto between = text.substr(codeAt, messageAt - codeAt);
+        CHECK(between.find(";") == std::string::npos);
+        CHECK(between.find("packed.budget.section_bytes") == std::string::npos);
+    }
+
+    // The section byte-budget code must survive only where a real section budget is checked.
+    const auto budgetSites = text.find("Packed section exceeds the section budget");
+    REQUIRE(budgetSites != std::string::npos);
+    const auto budgetCodeAt = text.rfind("packed.budget.section_bytes", budgetSites);
+    REQUIRE(budgetCodeAt != std::string::npos);
+    CHECK(budgetCodeAt < budgetSites);
 }

@@ -21,17 +21,6 @@ constexpr std::uint64_t presentationSmokeDigest = 18316288860163381829ULL;
 constexpr std::string_view legacySmokeTestProjectDirectory = "stage1b_project";
 constexpr auto audioSmokePauseDuration = std::chrono::seconds{2};
 
-[[nodiscard]] auto copyNeutralSummary(const presentation_renderer::DrawSummary& summary)
-    -> render_opengl::OpenGlDrawSummary {
-    render_opengl::OpenGlDrawSummary copied;
-    copied.debugPassEnabled = summary.debugPassEnabled;
-    copied.debugCommandCount = summary.debugCommandCount;
-    copied.digest = summary.digest;
-    copied.opaque.resize(summary.opaque.size());
-    copied.transparent.resize(summary.transparent.size());
-    return copied;
-}
-
 } // namespace
 
 PlayerSmokeBinding::PlayerSmokeBinding(
@@ -360,7 +349,7 @@ auto PlayerSmokeBinding::notePresented(const PlayerPresentedFrame& presented)
     if (!omittedDebugSummary_ || !emptyDebugSummary_) {
         return {};
     }
-    const auto drawSummary = copyNeutralSummary(presented.summary);
+    const auto& drawSummary = presented.summary;
     if (omittedDebugSummary_->debugPassEnabled != emptyDebugSummary_->debugPassEnabled ||
         omittedDebugSummary_->debugPassEnabled != drawSummary.debugPassEnabled ||
         omittedDebugSummary_->digest != emptyDebugSummary_->digest ||
@@ -381,7 +370,7 @@ auto PlayerSmokeBinding::notePresented(const PlayerPresentedFrame& presented)
 
 auto PlayerSmokeBinding::validatePresented(const PlayerPresentedFrame& presented)
     -> core::Result<void> {
-    const auto drawSummary = copyNeutralSummary(presented.summary);
+    const auto& drawSummary = presented.summary;
     const auto pixelProbe = backend_.lastPixelProbe();
     if (auto validated =
             validateFrame(presented.renderedFrames, presented.snapshot, drawSummary, pixelProbe);
@@ -532,7 +521,7 @@ auto PlayerSmokeBinding::verifyMinimizeRestore(const PlayerPresentedFrame& prese
 
 auto PlayerSmokeBinding::validateFrame(std::uint32_t frameIndex,
                                        const playback::FrameSnapshot& snapshot,
-                                       const render_opengl::OpenGlDrawSummary& summary,
+                                       const presentation_renderer::DrawSummary& summary,
                                        const render_opengl::OpenGlPixelProbe& probe)
     -> core::Result<void> {
     const bool expectedEmpty = frameIndex == 2;

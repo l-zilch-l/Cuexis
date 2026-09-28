@@ -208,6 +208,16 @@ core::Result<bool> SdlWindow::minimized() const {
     return (flags & SDL_WINDOW_MINIMIZED) != 0;
 }
 
+core::Result<bool> SdlWindow::fullscreen() const {
+    assertOwner(state_);
+    if (!state_) {
+        return core::unexpected(
+            core::Error{"platform.sdl.window_unavailable", "Cannot query an empty SDL window"});
+    }
+    const auto flags = SDL_GetWindowFlags(state_->window);
+    return (flags & SDL_WINDOW_FULLSCREEN) != 0;
+}
+
 SdlWindowLease SdlWindow::lease() const {
     assertOwner(state_);
     return SdlWindowLease{state_};

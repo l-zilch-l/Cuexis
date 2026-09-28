@@ -8,6 +8,7 @@
 
 #include <cuexis/platform_sdl/sdl_window.hpp>
 #include <cuexis/player_support/resolved_config.hpp>
+#include <cuexis/presentation_renderer/draw_command.hpp>
 #include <cuexis/render_opengl/open_gl_backend.hpp>
 
 #include <cstdint>
@@ -42,7 +43,7 @@ class PlayerSmokeBinding final {
         -> core::Result<void>;
     [[nodiscard]] auto validateFrame(std::uint32_t frameIndex,
                                      const playback::FrameSnapshot& snapshot,
-                                     const render_opengl::OpenGlDrawSummary& summary,
+                                     const presentation_renderer::DrawSummary& summary,
                                      const render_opengl::OpenGlPixelProbe& probe)
         -> core::Result<void>;
 
@@ -56,8 +57,8 @@ class PlayerSmokeBinding final {
     // must be rejected and never commit it.
     std::function<core::Result<playback::PlaybackSource>()> makeSource_;
     std::function<core::Result<std::filesystem::path>(std::string_view)> projectDirectory_;
-    std::optional<render_opengl::OpenGlDrawSummary> omittedDebugSummary_;
-    std::optional<render_opengl::OpenGlDrawSummary> emptyDebugSummary_;
+    std::optional<presentation_renderer::DrawSummary> omittedDebugSummary_;
+    std::optional<presentation_renderer::DrawSummary> emptyDebugSummary_;
 };
 
 } // namespace cuexis::player

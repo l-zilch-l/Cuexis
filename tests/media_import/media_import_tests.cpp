@@ -324,10 +324,32 @@ TEST_CASE("PNG rejects unsupported color metadata, animation and damage", "[medi
     CHECK(importImageCode(fixture("image/iccp_non_srgb.png")) == "media.image.icc_unsupported");
     CHECK(importImageCode(fixture("image/gamma_unsupported.png")) ==
           "media.image.gamma_unsupported");
+    // A linear-light gAMA is not converted by this importer, so it must be refused rather than
+    // published as if it were sRGB.
+    CHECK(importImageCode(fixture("image/gamma_linear.png")) == "media.image.gamma_unsupported");
+    // Interlacing is outside the frozen v1 layout, so it is refused instead of de-interlaced.
+    CHECK(importImageCode(fixture("image/interlaced.png")) == "media.image.interlace_unsupported");
     CHECK(importImageCode(fixture("image/forged_dimensions.png")) ==
           "media.image.dimension_invalid");
     CHECK(importImageCode(fixture("image/corrupt_chunk.png")) == "media.image.decode_failed");
     CHECK(importImageCode(fixture("image/truncated.png")) == "media.image.truncated");
+    // The JPEG counterpart of the corrupted PNG chunk: a damaged marker segment in the entropy
+    // stream is refused, so the "corrupt chunk/marker" requirement is covered for both codecs.
+    CHECK(importImageCode(fixture("image/corrupt_marker.jpg")) == "media.image.decode_failed");
+}
+
+TEST_CASE("PNG accepts a gAMA chunk that declares the sRGB transfer function",
+          "[media_import][e1]") {
+    // 45455 is 1/2.2, i.e. the sRGB transfer function. The rejection rule covered above refuses a
+    // gAMA chunk that is NEITHER this value NOR linear, so this file must import. The case exists
+    // because without it an implementation that refused *every* gAMA chunk would still pass the
+    // whole suite: every other gamma fixture is one that must be refused.
+    const auto declared_srgb = importImageOrFail(fixture("image/gamma_srgb_value.png"));
+    CHECK(declared_srgb.info.width == 1);
+    CHECK(declared_srgb.info.height == 1);
+    // Declaring sRGB through gAMA must land on the same transfer tag as declaring it via sRGB.
+    const auto explicit_srgb = importImageOrFail(fixture("image/srgb_chunk.png"));
+    CHECK(declared_srgb.portableTexture[32] == explicit_srgb.portableTexture[32]);
 }
 
 TEST_CASE("JPEG baseline, progressive and grayscale import to the canonical texture",
@@ -508,11 +530,14 @@ TEST_CASE("audio rejects unsupported channel counts and sample rates", "[media_i
           "media.audio.channels_unsupported");
 }
 
-TEST_CASE("a forged FLAC sample count does not change the decoded frames", "[media_import][e2]") {
+TEST_CASE("a forged FLAC sample count is refused, not silently republished", "[media_import][e2]") {
+    // The forged fixture rewrites only the STREAMINFO total, so the frame CRC and stream MD5 still
+    // pass. The declared length is a claim about the audio itself, so a mismatch must fail
+    // regardless of the checksum result: accepting it would publish the samples under a length the
+    // metadata does not support.
     const auto honest = importAudioOrFail(fixture("audio/mono.flac"));
-    const auto forged = importAudioOrFail(fixture("audio/forged_total_samples.flac"));
-    CHECK(forged.info.frames == honest.info.frames);
-    CHECK(forged.canonicalWav == honest.canonicalWav);
+    REQUIRE(honest.info.frames > 0U);
+    CHECK(importAudioCode(fixture("audio/forged_total_samples.flac")) == "media.audio.truncated");
 }
 
 TEST_CASE("audio budgets reject duration, final WAV and source overflow", "[media_import][e2]") {

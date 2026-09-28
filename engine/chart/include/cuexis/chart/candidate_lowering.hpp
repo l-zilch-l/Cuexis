@@ -37,8 +37,6 @@ struct CandidateRuntimeObjectMetadata final {
 // Candidate-only typed metadata retained beside the existing ChartRuntime. It deliberately
 // carries Requirement values as internal chart data; it is not a judgement or scoring API.
 struct CandidateRuntimeMetadata final {
-    std::uint32_t flags{1};
-    std::uint32_t candidateRevision{1};
     std::string compilerProfile{"candidate.static-tap-lanes4-v1"};
     packed::PackedSemanticIdentity semanticIdentity{};
     CanonicalResourceClosure resourceClosure;

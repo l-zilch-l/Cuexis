@@ -764,32 +764,6 @@ template <typename Resource>
     return {};
 }
 
-[[nodiscard]] auto finiteMatrix(const float (&matrix)[16]) noexcept -> bool {
-    return std::all_of(std::begin(matrix), std::end(matrix),
-                       [](float value) { return std::isfinite(value); });
-}
-
-struct Point3 final {
-    double x{};
-    double y{};
-    double z{};
-};
-
-[[nodiscard]] auto transformPoint(const float (&matrix)[16], const Point3& point) noexcept
-    -> Point3 {
-    return Point3{
-        static_cast<double>(matrix[0]) * point.x + static_cast<double>(matrix[4]) * point.y +
-            static_cast<double>(matrix[8]) * point.z + static_cast<double>(matrix[12]),
-        static_cast<double>(matrix[1]) * point.x + static_cast<double>(matrix[5]) * point.y +
-            static_cast<double>(matrix[9]) * point.z + static_cast<double>(matrix[13]),
-        static_cast<double>(matrix[2]) * point.x + static_cast<double>(matrix[6]) * point.y +
-            static_cast<double>(matrix[10]) * point.z + static_cast<double>(matrix[14])};
-}
-
-[[nodiscard]] auto finitePoint(const Point3& point) noexcept -> bool {
-    return std::isfinite(point.x) && std::isfinite(point.y) && std::isfinite(point.z);
-}
-
 [[nodiscard]] auto multiplyMatrices(const std::array<float, 16>& left,
                                     const std::array<float, 16>& right) noexcept
     -> std::array<float, 16> {
@@ -807,316 +781,60 @@ struct Point3 final {
     return result;
 }
 
-class SummaryHash final {
-  public:
-    SummaryHash() noexcept {
-        static constexpr char domain[] = "cuexis.validation.summary.v1";
-        writeBytes(std::as_bytes(std::span{domain, sizeof(domain)}));
-    }
-
-    void writeU8(std::uint8_t value) noexcept {
-        value_ ^= value;
-        value_ *= 1099511628211ULL;
-    }
-
-    void writeU32(std::uint32_t value) noexcept {
-        for (std::size_t index = 0; index < 4; ++index) {
-            writeU8(static_cast<std::uint8_t>((value >> (index * 8U)) & 0xFFU));
-        }
-    }
-
-    void writeU64(std::uint64_t value) noexcept {
-        for (std::size_t index = 0; index < 8; ++index) {
-            writeU8(static_cast<std::uint8_t>((value >> (index * 8U)) & 0xFFU));
-        }
-    }
-
-    void writeBool(bool value) noexcept {
-        writeU8(value ? 1U : 0U);
-    }
-
-    void writeFloat(float value) noexcept {
-        if (value == 0.0F) {
-            value = 0.0F;
-        }
-        writeU32(std::bit_cast<std::uint32_t>(value));
-    }
-
-    void writeDouble(double value) noexcept {
-        if (value == 0.0) {
-            value = 0.0;
-        }
-        writeU64(std::bit_cast<std::uint64_t>(value));
-    }
-
-    void writeBytes(std::span<const std::byte> bytes) noexcept {
-        for (const auto value : bytes) {
-            writeU8(std::to_integer<std::uint8_t>(value));
-        }
-    }
-
-    void writeString(std::string_view value) noexcept {
-        writeU32(static_cast<std::uint32_t>(value.size()));
-        writeBytes(std::as_bytes(std::span{value.data(), value.size()}));
-    }
-
-    void writeReference(const playback::PresentationResourceRef& reference) noexcept {
-        writeU32(static_cast<std::uint32_t>(reference.type));
-        writeString(reference.assetId);
-        writeBytes(std::as_bytes(std::span{reference.identity.sha256}));
-    }
-
-    [[nodiscard]] auto value() const noexcept -> std::uint64_t {
-        return value_;
-    }
-
-  private:
-    std::uint64_t value_{14695981039346656037ULL};
-};
-
-void hashCommand(SummaryHash& hash, const OpenGlDrawCommand& command) noexcept {
-    hash.writeString(command.objectId);
-    for (const auto value : command.worldMatrix) {
-        hash.writeFloat(value);
-    }
-    hash.writeReference(command.mesh);
-    hash.writeReference(command.material);
-    for (const auto value : command.effectiveColor) {
-        hash.writeDouble(value);
-    }
-    hash.writeU8(static_cast<std::uint8_t>(command.pass));
-    hash.writeBool(command.backFaceCulling);
-    hash.writeBool(command.depthTest);
-    hash.writeBool(command.depthWrite);
-    hash.writeBool(command.sourceOverBlend);
-    hash.writeDouble(command.depthMeters);
-    hash.writeU64(std::bit_cast<std::uint64_t>(command.transparentDepthKey));
-}
-
-[[nodiscard]] auto summaryDigest(const OpenGlDrawSummary& summary) noexcept -> std::uint64_t {
-    SummaryHash hash;
-    hash.writeU32(summary.version);
-    hash.writeU32(summary.viewportWidth);
-    hash.writeU32(summary.viewportHeight);
-    for (const auto value : summary.clearColor) {
-        hash.writeFloat(value);
-    }
-    hash.writeBool(summary.cameraActive);
-    for (const auto value : summary.viewMatrix) {
-        hash.writeFloat(value);
-    }
-    for (const auto value : summary.projectionMatrix) {
-        hash.writeFloat(value);
-    }
-    hash.writeBool(summary.debugPassEnabled);
-    hash.writeU32(static_cast<std::uint32_t>(summary.opaque.size()));
-    for (const auto& command : summary.opaque) {
-        hashCommand(hash, command);
-    }
-    hash.writeU32(static_cast<std::uint32_t>(summary.transparent.size()));
-    for (const auto& command : summary.transparent) {
-        hashCommand(hash, command);
-    }
-    return hash.value();
-}
-
-[[nodiscard]] auto buildDraws(const playback::FrameSnapshot& snapshot,
-                              const detail::PresentationResourceSet& resources,
-                              OpenGlDrawSummary& summary, std::vector<PreparedDraw>& opaque,
-                              std::vector<PreparedDraw>& transparent, bool needSummary)
-    -> core::Result<void> {
-    if (snapshot.objects.size() > maxNormalizedRecords) {
+// Resolves the GL handles a neutral draw command needs. The neutral builder already validated that
+// every reference is backed by the active set, so a miss here is an internal inconsistency rather
+// than a caller error.
+[[nodiscard]] auto resolveGpuDraw(const presentation_renderer::DrawCommand& command,
+                                  const detail::PresentationResourceSet& resources,
+                                  PreparedDraw& draw) -> core::Result<void> {
+    draw.command = command;
+    draw.mesh = findGpuResource(resources.meshes, command.mesh);
+    draw.material = findGpuResource(resources.materials, command.material);
+    if (draw.mesh == nullptr || draw.material == nullptr) {
         return core::unexpected(
-            core::Error{"playback.presentation.frame.command_budget_exceeded",
-                        "OpenGL presentation command count exceeds the Portable v1 limit"}
-                .withContext("limit", std::to_string(maxNormalizedRecords))
-                .withContext("actual", std::to_string(snapshot.objects.size())));
+            frameError("Snapshot ref is not backed by the active OpenGL cache", command.objectId,
+                       draw.mesh == nullptr ? &command.mesh : &command.material));
     }
-    if (resources.manifest.entries.empty()) {
-        return {};
-    }
-    opaque.reserve(snapshot.objects.size());
-    transparent.reserve(snapshot.objects.size());
-    bool cameraValidated = false;
-    for (std::size_t objectIndex = 0; objectIndex < snapshot.objects.size(); ++objectIndex) {
-        const auto& object = snapshot.objects[objectIndex];
-        if (object.mesh.has_value() != object.material.has_value()) {
-            const auto* reference = object.mesh ? &*object.mesh : &*object.material;
-            return core::unexpected(frameError("Renderable Mesh and Material refs must be paired",
-                                               object.id, reference));
-        }
-        if (!object.mesh) {
-            if (!object.materialAssetId.empty()) {
-                return core::unexpected(
-                    frameError("Renderable snapshot is missing portable refs", object.id));
-            }
-            continue;
-        }
-        if (object.mesh->type != playback::PresentationResourceType::Mesh ||
-            (object.material->type != playback::PresentationResourceType::UnlitMaterial &&
-             object.material->type != playback::PresentationResourceType::ParameterizedMaterial) ||
-            object.materialAssetId != object.material->assetId) {
+    draw.texture = nullptr;
+    draw.program = nullptr;
+    draw.parameterizedTextures = {};
+    if (draw.material->parameterized) {
+        if (draw.material->programIndex >= resources.programs.size()) {
             return core::unexpected(
-                frameError("Snapshot portable refs have incompatible types or IDs", object.id,
-                           &*object.material));
+                frameError("Parameterized material is missing a compiled program", command.objectId,
+                           &command.material));
         }
-        const auto* mesh = findGpuResource(resources.meshes, *object.mesh);
-        const auto* material = findGpuResource(resources.materials, *object.material);
-        if (mesh == nullptr || material == nullptr) {
-            return core::unexpected(
-                frameError("Snapshot ref is not backed by the active OpenGL cache", object.id,
-                           mesh == nullptr ? &*object.mesh : &*object.material));
-        }
-        const detail::GpuTexture* texture = nullptr;
-        const detail::GpuParameterizedProgram* program = nullptr;
-        std::array<const detail::GpuTexture*, playback::presentationMaxTextureBindings>
-            parameterizedTextures{};
-        if (material->parameterized) {
-            if (material->programIndex >= resources.programs.size()) {
+        draw.program = &resources.programs[draw.material->programIndex];
+        for (std::size_t index = 0; index < draw.program->textures.size(); ++index) {
+            const auto& binding = draw.program->textures[index];
+            const auto parameter =
+                std::find_if(draw.material->parameterizedMaterial.parameters.begin(),
+                             draw.material->parameterizedMaterial.parameters.end(),
+                             [&](const playback::ShaderParameterValue& candidate) {
+                                 return candidate.name == binding.name &&
+                                        candidate.type == playback::ShaderParameterType::Texture2D;
+                             });
+            if (parameter == draw.material->parameterizedMaterial.parameters.end() ||
+                !parameter->texture) {
                 return core::unexpected(
-                    frameError("Parameterized material is missing a compiled program", object.id,
-                               &*object.material));
+                    frameError("Parameterized texture binding is not supplied by the material",
+                               command.objectId, &command.material));
             }
-            program = &resources.programs[material->programIndex];
-            for (std::size_t index = 0; index < program->textures.size(); ++index) {
-                const auto& binding = program->textures[index];
-                const auto parameter = std::find_if(
-                    material->parameterizedMaterial.parameters.begin(),
-                    material->parameterizedMaterial.parameters.end(),
-                    [&](const playback::ShaderParameterValue& candidate) {
-                        return candidate.name == binding.name &&
-                               candidate.type == playback::ShaderParameterType::Texture2D;
-                    });
-                if (parameter == material->parameterizedMaterial.parameters.end() ||
-                    !parameter->texture) {
-                    return core::unexpected(
-                        frameError("Parameterized texture binding is not supplied by the material",
-                                   object.id, &*object.material));
-                }
-                const auto* bound = findGpuResource(resources.textures, *parameter->texture);
-                if (bound == nullptr) {
-                    return core::unexpected(
-                        frameError("Material texture ref is not backed by the active OpenGL cache",
-                                   object.id, &*parameter->texture));
-                }
-                parameterizedTextures[index] = bound;
-            }
-        } else if (material->material.baseColorTexture) {
-            texture = findGpuResource(resources.textures, *material->material.baseColorTexture);
-            if (texture == nullptr) {
+            const auto* bound = findGpuResource(resources.textures, *parameter->texture);
+            if (bound == nullptr) {
                 return core::unexpected(
                     frameError("Material texture ref is not backed by the active OpenGL cache",
-                               object.id, &*material->material.baseColorTexture));
+                               command.objectId, &*parameter->texture));
             }
+            draw.parameterizedTextures[index] = bound;
         }
-        if (!object.visible) {
-            continue;
-        }
-        if (!snapshot.camera.active) {
-            return core::unexpected(core::Error{"playback.presentation.frame.camera_required",
-                                                "Visible renderables require an active camera"}
-                                        .withContext("object_id", object.id));
-        }
-        if (!cameraValidated) {
-            if (!finiteMatrix(snapshot.camera.viewMatrix) ||
-                !finiteMatrix(snapshot.camera.projectionMatrix)) {
-                return core::unexpected(nonFiniteError({}, "camera_matrix"));
-            }
-            cameraValidated = true;
-        }
-        if (!finiteMatrix(object.worldMatrix)) {
-            return core::unexpected(nonFiniteError(object.id, "world_matrix"));
-        }
-        if (!std::isfinite(object.materialOpacity)) {
-            return core::unexpected(nonFiniteError(object.id, "material_opacity"));
-        }
-
-        PreparedDraw draw;
-        draw.objectIndex = objectIndex;
-        draw.mesh = mesh;
-        draw.material = material;
-        draw.texture = texture;
-        draw.program = program;
-        draw.parameterizedTextures = parameterizedTextures;
-        draw.command.objectId = object.id;
-        std::copy(std::begin(object.worldMatrix), std::end(object.worldMatrix),
-                  draw.command.worldMatrix.begin());
-        draw.command.mesh = *object.mesh;
-        draw.command.material = *object.material;
-        for (std::size_t component = 0; component < 3; ++component) {
-            if (!std::isfinite(material->material.baseColor[component]) ||
-                !std::isfinite(object.materialTint[component])) {
-                return core::unexpected(nonFiniteError(object.id, "effective_rgb"));
-            }
-            draw.command.effectiveColor[component] =
-                static_cast<double>(material->material.baseColor[component]) *
-                static_cast<double>(object.materialTint[component]);
-            if (!std::isfinite(draw.command.effectiveColor[component])) {
-                return core::unexpected(nonFiniteError(object.id, "effective_rgb"));
-            }
-        }
-        if (!std::isfinite(material->material.baseColor[3])) {
-            return core::unexpected(nonFiniteError(object.id, "effective_alpha"));
-        }
-        draw.command.effectiveColor[3] =
-            static_cast<double>(material->material.baseColor[3]) * object.materialOpacity;
-        if (!std::isfinite(draw.command.effectiveColor[3])) {
-            return core::unexpected(nonFiniteError(object.id, "effective_alpha"));
-        }
-
-        Point3 localCenter;
-        localCenter.x = mesh->boundsCenter[0];
-        localCenter.y = mesh->boundsCenter[1];
-        localCenter.z = mesh->boundsCenter[2];
-        const auto worldCenter = transformPoint(object.worldMatrix, localCenter);
-        const auto viewCenter = transformPoint(snapshot.camera.viewMatrix, worldCenter);
-        if (!finitePoint(localCenter) || !finitePoint(worldCenter) || !finitePoint(viewCenter)) {
-            return core::unexpected(nonFiniteError(object.id, "depth_transform"));
-        }
-        draw.command.depthMeters = -viewCenter.z;
-        const double scaledDepth = draw.command.depthMeters * depthQuantization;
-        const double roundedDepth = std::round(scaledDepth);
-        if (!std::isfinite(draw.command.depthMeters) || !std::isfinite(scaledDepth) ||
-            !std::isfinite(roundedDepth) || roundedDepth < -signedIntegerLimit ||
-            roundedDepth >= signedIntegerLimit) {
-            return core::unexpected(nonFiniteError(object.id, "depth"));
-        }
-        draw.command.transparentDepthKey = static_cast<std::int64_t>(roundedDepth);
-        draw.command.backFaceCulling = !material->material.doubleSided;
-        draw.command.pass =
-            material->material.alphaMode == playback::PresentationAlphaMode::Blend ||
-                    draw.command.effectiveColor[3] < 1.0
-                ? OpenGlPresentationPass::Transparent
-                : OpenGlPresentationPass::Opaque;
-        draw.command.depthWrite = draw.command.pass == OpenGlPresentationPass::Opaque;
-        draw.command.sourceOverBlend = draw.command.pass == OpenGlPresentationPass::Transparent;
-        if (draw.command.pass == OpenGlPresentationPass::Opaque) {
-            opaque.push_back(std::move(draw));
-        } else {
-            transparent.push_back(std::move(draw));
-        }
-    }
-
-    std::sort(opaque.begin(), opaque.end(), [](const auto& left, const auto& right) {
-        return std::tie(left.command.objectId, left.objectIndex) <
-               std::tie(right.command.objectId, right.objectIndex);
-    });
-    std::sort(transparent.begin(), transparent.end(), [](const auto& left, const auto& right) {
-        if (left.command.transparentDepthKey != right.command.transparentDepthKey) {
-            return left.command.transparentDepthKey > right.command.transparentDepthKey;
-        }
-        return std::tie(left.command.objectId, left.objectIndex) <
-               std::tie(right.command.objectId, right.objectIndex);
-    });
-
-    if (needSummary) {
-        summary.opaque.reserve(opaque.size());
-        summary.transparent.reserve(transparent.size());
-        for (const auto& draw : opaque) {
-            summary.opaque.push_back(draw.command);
-        }
-        for (const auto& draw : transparent) {
-            summary.transparent.push_back(draw.command);
+    } else if (draw.material->material.baseColorTexture) {
+        draw.texture =
+            findGpuResource(resources.textures, *draw.material->material.baseColorTexture);
+        if (draw.texture == nullptr) {
+            return core::unexpected(
+                frameError("Material texture ref is not backed by the active OpenGL cache",
+                           command.objectId, &*draw.material->material.baseColorTexture));
         }
     }
     return {};
@@ -1295,7 +1013,8 @@ void drawPresentationCommands(const detail::PresentationPipeline& pipeline,
 auto detail::probeBuildDraws(const playback::FrameSnapshot& snapshot,
                              const playback::PresentationResourceManifest& manifest,
                              std::span<const playback::PortableResourcePtr> resources,
-                             detail::BoundsProbeStats* stats) -> core::Result<OpenGlDrawSummary> {
+                             detail::BoundsProbeStats* stats)
+    -> core::Result<presentation_renderer::DrawSummary> {
     detail::PresentationResourceSet set;
     set.manifest = manifest;
     set.resources.assign(resources.begin(), resources.end());
@@ -1331,13 +1050,10 @@ auto detail::probeBuildDraws(const playback::FrameSnapshot& snapshot,
     std::sort(set.meshes.begin(), set.meshes.end(), byReference);
     std::sort(set.materials.begin(), set.materials.end(), byReference);
 
-    OpenGlDrawSummary summary;
-    std::vector<PreparedDraw> opaque;
-    std::vector<PreparedDraw> transparent;
-    if (auto result = buildDraws(snapshot, set, summary, opaque, transparent, true); !result) {
-        return core::unexpected(std::move(result.error()));
-    }
-    return summary;
+    // Characterization seam: the real backend-neutral builder produces the summary. Only the
+    // bounds-cache statistics are adapter-specific.
+    return presentation_renderer::buildPresentationCommands(
+        snapshot, set.resources, set.manifest.entries.empty(), false, nullptr);
 }
 
 auto builtInPresentationCapabilities(std::uint32_t maxTextureDimension, bool debugPass) noexcept
@@ -1471,21 +1187,6 @@ auto createPresentationBackendState(std::uint64_t backendToken)
 }
 
 } // namespace detail
-
-void OpenGlDrawSummary::clear() noexcept {
-    version = 1;
-    viewportWidth = 0;
-    viewportHeight = 0;
-    clearColor.fill(0.0F);
-    cameraActive = false;
-    viewMatrix.fill(0.0F);
-    projectionMatrix.fill(0.0F);
-    debugPassEnabled = false;
-    opaque.clear();
-    transparent.clear();
-    debugCommandCount = 0;
-    digest = 0;
-}
 
 OpenGlPresentationCandidate::OpenGlPresentationCandidate(
     OpenGlPresentationCandidate&& other) noexcept
@@ -1822,42 +1523,41 @@ auto OpenGlBackend::renderPresentation(const playback::FrameSnapshot& snapshot,
     state.debugVerticesScratch.clear();
     presentation_->retired.reset();
 
-    OpenGlDrawSummary preparedSummary;
-    preparedSummary.viewportWidth = snapshot.viewportWidth;
-    preparedSummary.viewportHeight = snapshot.viewportHeight;
-    preparedSummary.clearColor = {snapshot.clearRed, snapshot.clearGreen, snapshot.clearBlue,
-                                  snapshot.clearAlpha};
-    preparedSummary.cameraActive = snapshot.camera.active;
-    std::copy(std::begin(snapshot.camera.viewMatrix), std::end(snapshot.camera.viewMatrix),
-              preparedSummary.viewMatrix.begin());
-    std::copy(std::begin(snapshot.camera.projectionMatrix),
-              std::end(snapshot.camera.projectionMatrix), preparedSummary.projectionMatrix.begin());
-    preparedSummary.debugPassEnabled = presentation_->active->settings.debugPassEnabled;
-    preparedSummary.debugCommandCount =
-        preparedSummary.debugPassEnabled && debugScene != nullptr ? debugScene->size() : 0;
-    if (!std::all_of(
-            preparedSummary.clearColor.begin(), preparedSummary.clearColor.end(),
-            [](float value) { return std::isfinite(value) && value >= 0.0F && value <= 1.0F; })) {
-        return core::unexpected(core::Error{"render.opengl.invalid_frame",
-                                            "Clear color must be finite and within [0, 1]"});
-    }
-
     try {
         const auto reserveCount = std::min(snapshot.objects.size(), maxNormalizedRecords);
         state.opaqueScratch.reserve(reserveCount);
         state.transparentScratch.reserve(reserveCount);
-        if (preparedSummary.debugPassEnabled && debugScene != nullptr) {
+        if (presentation_->active->settings.debugPassEnabled && debugScene != nullptr) {
             state.debugVerticesScratch.reserve(
                 std::min(debugScene->size(), render::RenderScene::maxCommandCount) * 2U);
         }
-        const bool needSummary = summary != nullptr;
-        if (auto built = buildDraws(snapshot, *presentation_->active, preparedSummary,
-                                    state.opaqueScratch, state.transparentScratch, needSummary);
-            !built) {
+
+        // Ordering, pass split, validation, and the digest all come from the backend-neutral
+        // builder. This adapter only resolves the GL handles the neutral layer cannot carry.
+        auto built = presentation_renderer::buildPresentationCommands(
+            snapshot, presentation_->active->resources,
+            presentation_->active->manifest.entries.empty(),
+            presentation_->active->settings.debugPassEnabled, debugScene);
+        if (!built) {
             return core::unexpected(std::move(built.error()));
         }
-        if (needSummary) {
-            preparedSummary.digest = summaryDigest(preparedSummary);
+        presentation_renderer::DrawSummary preparedSummary = std::move(*built);
+
+        state.opaqueScratch.reserve(preparedSummary.opaque.size());
+        state.transparentScratch.reserve(preparedSummary.transparent.size());
+        for (const auto& command : preparedSummary.opaque) {
+            PreparedDraw draw;
+            if (auto resolved = resolveGpuDraw(command, *presentation_->active, draw); !resolved) {
+                return core::unexpected(std::move(resolved.error()));
+            }
+            state.opaqueScratch.push_back(std::move(draw));
+        }
+        for (const auto& command : preparedSummary.transparent) {
+            PreparedDraw draw;
+            if (auto resolved = resolveGpuDraw(command, *presentation_->active, draw); !resolved) {
+                return core::unexpected(std::move(resolved.error()));
+            }
+            state.transparentScratch.push_back(std::move(draw));
         }
 
         if (preparedSummary.debugPassEnabled) {
@@ -1953,54 +1653,6 @@ auto OpenGlBackend::renderPresentation(const playback::FrameSnapshot& snapshot,
                                             "OpenGL presentation frame failed"});
     }
 }
-
-namespace {
-
-[[nodiscard]] auto toDrawCommand(const OpenGlDrawCommand& command)
-    -> presentation_renderer::DrawCommand {
-    presentation_renderer::DrawCommand converted;
-    converted.objectId = command.objectId;
-    converted.worldMatrix = command.worldMatrix;
-    converted.mesh = command.mesh;
-    converted.material = command.material;
-    converted.effectiveColor = command.effectiveColor;
-    converted.pass = command.pass == OpenGlPresentationPass::Transparent
-                         ? presentation_renderer::PresentationPass::Transparent
-                         : presentation_renderer::PresentationPass::Opaque;
-    converted.backFaceCulling = command.backFaceCulling;
-    converted.depthTest = command.depthTest;
-    converted.depthWrite = command.depthWrite;
-    converted.sourceOverBlend = command.sourceOverBlend;
-    converted.depthMeters = command.depthMeters;
-    converted.transparentDepthKey = command.transparentDepthKey;
-    return converted;
-}
-
-[[nodiscard]] auto toDrawSummary(const OpenGlDrawSummary& summary)
-    -> presentation_renderer::DrawSummary {
-    presentation_renderer::DrawSummary converted;
-    converted.version = summary.version;
-    converted.viewportWidth = summary.viewportWidth;
-    converted.viewportHeight = summary.viewportHeight;
-    converted.clearColor = summary.clearColor;
-    converted.cameraActive = summary.cameraActive;
-    converted.viewMatrix = summary.viewMatrix;
-    converted.projectionMatrix = summary.projectionMatrix;
-    converted.debugPassEnabled = summary.debugPassEnabled;
-    converted.opaque.reserve(summary.opaque.size());
-    converted.transparent.reserve(summary.transparent.size());
-    for (const auto& command : summary.opaque) {
-        converted.opaque.push_back(toDrawCommand(command));
-    }
-    for (const auto& command : summary.transparent) {
-        converted.transparent.push_back(toDrawCommand(command));
-    }
-    converted.debugCommandCount = summary.debugCommandCount;
-    converted.digest = summary.digest;
-    return converted;
-}
-
-} // namespace
 
 auto OpenGlBackend::capabilities() const noexcept -> const playback::PresentationCapabilities& {
     if (!capabilitiesReady_ && presentation_ != nullptr && window_.valid() && context_ != nullptr &&
@@ -2112,7 +1764,7 @@ auto OpenGlBackend::submit(const playback::FrameSnapshot& snapshot,
         return core::unexpected(core::Error{"presentation.renderer.frame.already_submitted",
                                             "The current frame was already submitted"});
     }
-    OpenGlDrawSummary summary;
+    presentation_renderer::DrawSummary summary;
     OpenGlPixelProbe probe;
     auto drawn = renderPresentation(snapshot, debugScene, &summary, &probe, false);
     if (!drawn) {
@@ -2120,7 +1772,8 @@ auto OpenGlBackend::submit(const playback::FrameSnapshot& snapshot,
     }
     frameSubmitted_ = true;
     lastProbe_ = probe;
-    return toDrawSummary(summary);
+    // The neutral builder already produced the authoritative summary; no second conversion.
+    return summary;
 }
 
 auto OpenGlBackend::present() -> core::Result<void> {
