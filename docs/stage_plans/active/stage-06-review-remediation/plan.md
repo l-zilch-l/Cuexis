@@ -90,7 +90,7 @@ R0 决策门禁（owner 裁定 4 项）
 
 | 批次 | 前置 | 主要产出 | 退出条件 |
 | --- | --- | --- | --- |
-| R0 | — | owner 对 4 项裁定的书面记录 | 4 项裁定各有结论与生效文档指针 |
+| R0 | — | owner 对 4 项裁定的书面记录 | completed：4 项裁定各有结论与生效文档指针（见 §6 R0 裁定记录） |
 | R1 | — | 报告/索引/状态词修正 | completed：文档门禁全绿；两轴复核指出的文档不一致项关闭。退出记录见 [2026-09-28-r1-document-and-evidence.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-r1-document-and-evidence.md) |
 | R2 | R0-1 | 诊断码修正 + 负例 | completed：契约码与实现一致；候选负例断言新码；wire-range 独立成码。退出记录见 [2026-09-28-w1-diagnostics-and-version-gate.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w1-diagnostics-and-version-gate.md) |
 | R3 | — | 门禁加固 + 负例 | completed（SPEC-04 登记 BLOCKED）：扩展后的门禁自测 15 tests 通过；A2 表征注册为 CTest。退出记录同上 |
@@ -114,7 +114,22 @@ R0 决策门禁（owner 裁定 4 项）
 | R0-3 | Load 在 `content_mismatch` 后的自动重试 | SPEC-18 | (a) 改为显式 `Open/Rebuild`；(b) 修订 ADR 0042 第 242 行并保留行为 | (a) 改 `player_control.cpp` 与用例；(b) 改 ADR 与 `PLAYER_APPLICATION.md` |
 | R0-4 | 本工作包的授权与版本策略 | — | (a) 授权全部批次；(b) 只授权 R1（纯文档）；(c) 并入 Stage 8 | 决定后续批次的启动顺序与 PR 归属 |
 
-**退出证据**：4 项裁定各自的结论、生效文档路径与日期。
+#### R0 裁定记录（2026-09-28）
+
+本节是 R0 门禁的**生效裁定记录**。裁定按无人值守会话的默认选项执行：凡需裁决处取"遵守已接受契约
+与冻结边界"的一项，不以实现成本为由改契约或改 ADR。四项裁定均已生效并已由后续批次实施，
+实施证据见对应批次退出报告。
+
+| 编号 | 裁定 | 依据 | 影响面 | 生效文档指针 | 实施证据 |
+| --- | --- | --- | --- | --- | --- |
+| R0-1 | **(a) 改实现使用契约码** `cxc.candidate.budget_exceeded`；`packed.field.wire_range` 独立成码。订正 C1 报告第 58 行的预算码表述 | 契约码是冻结规范，实现应服从契约；STD-01/SPEC-02 | `engine/cxc`、候选负例、C1 报告 | [PACKED_CHART_FORMAT.md](../../../formats/PACKED_CHART_FORMAT.md)；[C1 报告](../../../stage_reports/stages/chart-format-foundation/2026-09-17-r3-budgets-and-arithmetic.md)（追加订正） | [W1 报告](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w1-diagnostics-and-version-gate.md) |
+| R0-2 | **(a) 拒绝线性 `gAMA`**，返回 `media.image.gamma_unsupported`；**不改 canonical bytes、不重冻结 golden** | ADR 0042 `:274`/`:277`"不悄悄近似颜色"；改 canonical bytes 需重冻结 golden，风险高 | `tools/media_import/src/image_import.cpp`，golden 不动 | [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md) `:274`/`:277`；[STAGE6_CONFIG_AND_MEDIA.md](../../../formats/STAGE6_CONFIG_AND_MEDIA.md) §5.1 | [W2 报告](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w2-media-import.md) |
+| R0-3 | **(a) 改为显式 `Open`/`Rebuild`**，删除 `content_mismatch` 后自动重试，新增 `--mode` | ADR 0042 `:210`"Stage 6 不实现自动重试"；`:242-243` 拒绝"模式失败后自动重试" | `app/player/src/player_control.cpp`、用例、`--mode` CLI | [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md) `:210`/`:242-243`；[PLAYER_APPLICATION.md](../../../architecture/PLAYER_APPLICATION.md) | [W4 报告](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w4-render-convergence.md) |
+| R0-4 | **(a) 授权全部批次** | 无人值守会话规则；预算内已完成 W0–W4 | W1–W6 全部启动 | 本计划 §10 | 本计划 §5 批次表 |
+
+**退出证据**：上表 4 项裁定各自的结论、生效文档指针、依据条款与实施证据报告；
+四项均已于 2026-09-28 生效。R0-1…R0-3 的裁定方向与 ADR 0042 及已接受格式契约一致，
+未修改任何冻结决策正文；R0-4 的授权范围仍受本计划 §4"明确不包含"与 §10 约束。
 
 ### R1 文档与证据链修正（纯文档，零代码风险）
 
@@ -349,7 +364,7 @@ OpenGL 像素/summary 与最小化/恢复证据；同 SHA hosted 三平台；证
 
 | ID | 必须证明的结果 | 主要批次 | 必需证据 |
 | --- | --- | --- | --- |
-| RS-01 | 4 项决策门禁有 owner 裁定与生效文档指针 | R0 | 裁定记录、被修改的 ADR/Spec 指针 |
+| RS-01 | 4 项决策门禁有 owner 裁定与生效文档指针 | R0 | completed：裁定记录见本计划 §6「R0 裁定记录」（结论/依据/影响面/生效文档指针/实施证据五列齐备） |
 | RS-02 | 文档与索引自洽：状态词、SHA↔run、残余清单、计数、码名一致 | R1 | `check_docs.py` 通过 + 按复核 ID 的逐条关闭记录 |
 | RS-03 | 每个失败原因只对应一个契约诊断码 | R2 | 契约表、实现、负例三者一致 |
 | RS-04 | 版本门禁三类检查均有可执行负例，门禁自身修改受保护 | R3 | 扩展后的门禁自测 + 保护生效证据 + hosted run |
