@@ -47,7 +47,8 @@ Standards / Spec 记录），由该专题自己的 `README.md` 承担导航；�
   [W3 发布事务修正](reviews/stage-06-review-2026-09/2026-09-28-w3-publication-transaction.md)、
   [W4 渲染收敛](reviews/stage-06-review-2026-09/2026-09-28-w4-render-convergence.md)、
   [W5 宿主与分发门禁](reviews/stage-06-review-2026-09/2026-09-28-w5-host-and-distribution-gates.md)、
-  [W6 代码健康度](reviews/stage-06-review-2026-09/2026-09-28-w6-code-health.md)
+  [W6 代码健康度](reviews/stage-06-review-2026-09/2026-09-28-w6-code-health.md)、
+  [交付报告](reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md)
 
 ## 历史路径
 

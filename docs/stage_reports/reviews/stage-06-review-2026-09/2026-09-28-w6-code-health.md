@@ -27,7 +27,7 @@
 | 复核 ID | 严重度 | 现象（原文摘要） | 本批次修正 | 证据 |
 | --- | --- | --- | --- | --- |
 | STD-13 | 低（范围外） | `hello.obj`（46,882 B）与 `dump_chart_writer.obj`（589,044 B）被 git 跟踪，`.gitignore` 无 `*.obj` | `git rm --cached` 两者（保留在工作区为未跟踪）；`.gitignore` 追加 `*.obj` 规则 | `.gitignore`；`git ls-files \| Select-String '\.obj$'` 修正前后 |
-| STD-07 | 低 | 6 项死代码 | 全部删除，逐项先核实无调用者（见 §2.1） | 各源文件；§3 反证 |
+| STD-07 | 低 | 8 项死代码 | 7 项删除，逐项先核实无调用者（见 §2.1）；第 8 项 `--event` 判为有真实角色，保留并说明 | 各源文件；§3 反证 |
 | STD-04 | 低（范围外） | `audioStateName` 与 `stateName` 是逐字相同的 `PlaybackState` 级联 | 合并为单一 `playbackStateName`（`app/player/src/player_state_name.{hpp,cpp}`），两个调用点改用之 | 新文件；`player_app.cpp`、`frame_diagnostics.cpp` |
 | STD-10 | 低 | `publish_fs_internal.cpp:198` 按 `_WIN32` 选 `_wfopen_s`，但同文件 `:42` 已按 `_MSC_VER` 选 `_dupenv_s` | 统一按 `_MSC_VER` 分支（`_wfopen_s` 是 MSVC CRT 扩展，MinGW 无此符号） | `tools/asset_publish/src/publish_fs_internal.cpp` |
 | STD-12（第 3 条） | 低 | workflow 的 `run: \|` 块内缩进不齐 | 三处 materialize 块对齐到 10/12 空格 | `.github/workflows/version-gate.yml` |
@@ -42,6 +42,12 @@
 | 4 | `CandidateRuntimeMetadata::flags/candidateRevision` | `candidate_lowering.hpp:40-41` | 全仓零读取者。**注意同名陷阱**：仍然存活的是**另一个类型** `packed::PackedChartProfile`（`packed_chart_tables.hpp:20`，由 `packed_chart_tables.cpp:887` 校验），未触碰 |
 | 5 | `_result_json` 的重复赋值 | `check_version_gate.py:275-279` | `base_version`/`candidate_version` 是 `GateResult` 的**声明字段**（`:75-76`），`asdict` 本就会输出；两行赋值是 no-op，删除 |
 | 6 | `readRequiredString` 的第三参数 | `cxc_candidate.cpp:55` | **需调查**：判为**真正多余**而非"诊断被静默丢弃"。依据：首参 `json::Reader` 自身持有 `Diagnostics&`，`requiredField` 会自行上报 `json.field.missing`，传参冗余。删除签名参数与 10 处调用点后 `cuexis_cxc_tests` 全绿 |
+| 7 | `HostContent::providerRootId{"main"}` | `host_content.hpp:44` | **补删**：声明后全仓**零读取**（`git grep` 仅命中该声明行），而 `readBlob` 直接硬编码 `request.rootId != "main"` 与 `.rootId = "main"`。删除后全量构建 0 错误，`cuexis_reference_host_staging` 仍通过 |
+
+**第 8 项 `--event` 判为保留**（非死代码）：它把事件名带进审计记录，
+`version-gate.yml` 三条作业路径各传不同值（`pull_request`/`merge_group`、`push`、`workflow_dispatch`），
+且已由 W1 以 `choices` + help 明确"仅记录"。计划 §R3 步骤 1 的措辞是"若不能定义规则则删除"，
+反之为可保留的记录角色。
 
 **未触碰（按计划第 7 条与复核自身说明保留）**：`NullJudgeSystem`（对应尚未存在的 Stage 7A Judgement）、
 `--event`（复核明确记为"仅记录"，属有意设计）。
@@ -62,6 +68,7 @@
 | C | `readRequiredString` 的参数是冗余而非丢弃诊断 | 查 `json::Reader::requiredField` 的上报路径 | `requiredField` 自行上报 `json.field.missing`；且 `cuexis_cxc_tests` 62 用例 772 断言全绿 |
 | D | STD-10 的 `_wfopen_s` 改动行为不变 | 构建 `cuexis_asset_publish` + 直接运行测试二进制 | 构建 0 错误；`All tests passed (332 assertions in 23 test cases)` |
 | E | STD-12 缩进改动是纯空白 | `git diff -w` | **输出为空**，证明仅空白变化；且 workflow 的 bootstrap 块被**逐字抽取**执行的门禁用例仍 19/19 通过 |
+| F | `providerRootId` 确实零读取 | 删除后 `git grep providerRootId` + 全量构建 + 暂存门禁 | 仅剩历史复核报告中的提及（不得改写）；构建 0 错误；`cuexis_reference_host_staging` 通过 |
 
 **方法论记录**：本例最值得记的两点——
 （i）**同名不同型的陷阱**：`candidateRevision` 同时存在于一个已死类型与一个存活类型上，
