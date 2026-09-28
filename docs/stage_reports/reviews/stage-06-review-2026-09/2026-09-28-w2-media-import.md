@@ -103,3 +103,72 @@ method 而非 interlace method）时，测试**仍然失败**，但失败原因�
   `tests/fixtures/stage6_e/media/image/{gamma_linear.png,interlaced.png,corrupt_marker.jpg}`（新增）
 - 仓库规则：`.gitattributes`
 - 文档：本报告
+
+## 复核更正（独立审计，2026-09-28）
+
+本次复核对 R4 的代码与真实测试执行做了对抗式核对。以下为**已确认的实质性声明**与**必须更正的表述**。
+
+本节为追加内容，§1 至 §6 的历史现象与证据原文一字未改。本次审计未写入、未修改、未删除任何文件，未运行 `cmake --preset`、`cmake --build` 或 `ctest`。
+
+### 1. 已确认的实质性声明
+
+以下七项经代码读取与真实执行核对通过：
+
+- **线性 `gAMA` 被拒**：`tools/media_import/src/image_import.cpp:387-390`，`gammaValue != 45455U` 时返回 `media.image.gamma_unsupported`。实测 `CHECK( importImageCode(fixture("image/gamma_linear.png")) == "media.image.gamma_unsupported" )` 通过。
+- **FLAC 伪造时长无条件被拒**：`tools/media_import/src/audio_import.cpp:588` 的 `client.declaredSamples != 0 && client.accumulator->frames() != client.declaredSamples` 位于 `:597` 的 `if (!processed || !verified || client.failed)` 分支**之前**；提交 `84e93c7` 的 diff 确认比较块被移出失败分支且判据由 `<` 改为 `!=`。实测 `REQUIRE_FALSE( result.has_value() )` 与 `CHECK( importAudioCode(fixture("audio/forged_total_samples.flac")) == "media.audio.truncated" )` 均通过，展开为 `"media.audio.truncated" == "media.audio.truncated"`。
+- **interlaced PNG 以新码被拒**：`image_import.cpp:257-261`；`git log -S"media.image.interlace_unsupported"` 仅命中 `84e93c7`，确为本次新增。实测 `CHECK( importImageCode(fixture("image/interlaced.png")) == "media.image.interlace_unsupported" )` 通过。字节偏移核对正确：`rgb8.png` 与 `interlaced.png` 仅差文件偏移 28（`0->1`，即 IHDR 第 12 字节 interlace method）与 29-32（该 chunk CRC）。
+- **损坏 marker JPEG 驱动真实负例**：`tests/media_import/media_import_tests.cpp:338` 实测通过。`corrupt_marker.jpg` 与 `baseline.jpg` 同为 661 字节，仅 625-632 共 8 字节按 `0xFF` 异或，文件前 4 字节为 `FF D8 FF E0`（SOI/APP0 完好）。
+- **`.gitattributes` 覆盖 fixture 树**：`.gitattributes:9-20`。`git check-attr -a`：`interlaced.png` 得 `binary: set`、`text: unset`、`diff: unset`、`merge: unset`；`stage6_a2/golden/*.json` 得 `text: set`、`eol: lf`。
+- **未改 canonical bytes、未重冻结 golden**：`git diff --stat 6dbaa59 HEAD -- tests/fixtures/` 仅列出 `generate_negative_fixtures.py` 与三个新增二进制 fixture（`corrupt_marker.jpg`、`gamma_linear.png`、`interlaced.png`），**无任何 golden 文件**；全套用例通过，其中包含 `requireCanonical` 对 `tests/fixtures/stage6_e/golden/*.json` 的真实摘要比较。
+- **测试结果**：`out\build\debug-media-tools\bin\cuexis_media_import_tests.exe` 实测输出 `All tests passed (625 assertions in 23 test cases)`，与 §4 记录一致（23 个 `TEST_CASE`）。
+
+**二进制新鲜度说明**：`out\build\debug\bin\` 下**不存在** `cuexis_media_import_tests.exe`，唯一媒体测试二进制在 `debug-media-tools` 树（时间戳早于提交 `4737cbb`/`fe654ad`）。为确认可执行文件确实包含 R4 代码，本次审计扫描该 PE 镜像并命中 `media.image.interlace_unsupported`、`media.image.gamma_unsupported`、`is not the sRGB transfer function`，以及 `4737cbb` 引入的 `PNG compression method is not part of the v1 image profile`。其后唯一改动 `image_import.cpp` 的提交 `fe654ad` 只是同一个 `mediaError(...)` 调用的 clang-format 重排（字符串字面量与语义相同），故该次运行对 HEAD 的 R4 行为有效。
+
+### 2. 「6 项媒体负例且各以变异反证」不成立，须更正
+
+- 本报告正文 §3 的「反证记录」**只有 3 行**（A、B、C），并非 6 行。
+- 真实计数：R4 新增或改写的负例断言为 **4** 条（伪造 FLAC 时长、`gamma_linear.png`、`interlaced.png`、`corrupt_marker.jpg`）；`tests/media_import/media_import_tests.cpp` 中 `importImageCode(`/`importAudioCode(` 调用点为 **37** 处；被断言的 `media.*` 诊断码共 **25** 个不同取值。**没有任何一种计数等于 6。**
+- `docs/stage_plans/active/stage-06-review-remediation/plan.md:97` 与 `:242` 的「6 项媒体负例」没有任何枚举支撑，属**无依据的账面数字**，应改为上述真实计数或删除。
+
+### 3. gamma 规则的「接受方向」无测试覆盖（真实盲点）
+
+扫描 `tests/fixtures/stage6_e/media/image/*.png` 的全部 chunk 得到：`gamma_linear.png: gAMA=100000`、`gamma_unsupported.png: gAMA=25000`、`srgb_chunk.png: sRGB present`。**没有任何 fixture 携带 `gAMA=45455`**。因此 `image_import.cpp:387` 的接受分支（`gammaValue != 45455U` 为假）与 `:378`（`sawSrgbChunk && sawGammaChunk`）**从未被执行**。后果：一个**拒绝全部 `gAMA`**（连合法的 sRGB 传递函数也拒）的实现同样能通过整套用例。这是真实的覆盖盲点；补一个 `gAMA=45455` 且无 sRGB chunk 的正例即可消除。
+
+### 4. 解码期 interlace 守卫不可达，且报出误导性诊断码
+
+`image_import.cpp:530-533` 返回 `PngDecodeStatus::layoutUnsupported`，该状态在 `:593-595` 映射为 `media.image.color_type_unsupported`。但 `scanPng` 已在 `:257` 先拒绝 interlace，故解码期守卫**不可达**，也没有任何测试能到达它。§2 中「解码路径保留一条匹配守卫而非静默去交错」的表述成立（代码确实存在），但它不构成有效防线。
+
+### 5. R4 引入了一处未记录的 shebang 损坏
+
+`tests/fixtures/stage6_e/media/generate_negative_fixtures.py` 第 1 行由 `#!/usr/bin/env python3`（`git show 49cbfb8` 的 pre-image）变为 `#!/ usr / bin / env python3`；同一提交把 `:101`、`:119`、`:137` 三处函数内注释从 4 空格缩进改为列 0。注释在 Python 中可置于列 0，且文档式调用为 `python -B …`，故属**表面问题**；但脚本不再可直接执行，本报告未记录该改动。
+
+### 6. 新码未进入冻结格式契约，且当前无门禁拦截
+
+`media.image.interlace_unsupported` 不出现于任何 `docs/formats/` 文件（`git grep -rn interlace_unsupported -- docs/` 只命中本报告）。`tools/check_stage6_a2.py:245-256` 只校验固定 token 列表，不包含媒体诊断码，故该遗漏不会被门禁发现。§5 已诚实登记该残余，此处补充事实：**当前没有任何门禁覆盖这一致性**。
+
+### 7. 非空转判断的性质与边界
+
+§3 的 A/B/C 三条变异反证**未核实**：执行变异需改写 `image_import.cpp`/`audio_import.cpp` 并重新构建，两者均为本次审计禁止项。下文的非空转判断**全部是分析性的**，依据是（a）诊断码在实现中的唯一产生点，与（b）git 历史中的行为证据，而非实际观察到的变异结果：
+
+- 伪造 FLAC：`declaredSamples` 仅在 `:480` 与 `:588` 被消费（`git grep`）；另一处 `media.audio.truncated` 产生点 `:542` 需要流尾解码错误，而**修复前**的用例断言该 fixture 被接受且解码帧数与 `mono.flac` 相同（`git show 49cbfb8`），证明 `:588` 是唯一可能来源。
+- `gamma_linear`：`media.image.gamma_unsupported` 有两个产生点，`:379` 需要 `sawSrgbChunk`，而该文件无 sRGB chunk（已核验），故只可能来自 `:388`。
+- `interlaced`：该码只有一个产生点（`:259`）；fixture 与被接受的 `rgb8.png` 仅差 IHDR 第 12 字节与 CRC。移除该检查后回落到 `:594` 的 `color_type_unsupported`，与 §3 变异 C 记录的现象一致。
+- **corrupt-marker JPEG 是本组最弱的一条**：`media.image.decode_failed` 有多个产生点，仅凭码值无法归因；其非空转依赖「未改动的 `baseline.jpg` 被接受」这一配对事实，且本报告**未记录**该用例的任何变异反证。
+- 音频负例（`truncated.mp3/ogg/flac`、`bad_header.flac`、`chained.ogg`）的码值断言唯一，实测 `All tests passed (15 assertions in 1 test case)`；同样无变异记录。
+
+### 8. 本次审计未核实的项目（均注明原因）
+
+- §3 变异记录 A/B/C 的实际执行结果 —— **未核实**：需改写源码并重新构建，属禁止项。
+- §4 `cmake --build --preset debug-media-tools`「全量构建 0 错误」 —— **未核实**：禁止构建。
+- §4 `cuexis_format_check` —— **未核实**：禁止构建。
+- §4.1 libvorbis 重建与重建前的失败 —— **未核实**：只能观察到当前状态。`D:\vcpkg\buildtrees\libvorbis\src\v1.3.7-*\lib\os.h` 现为 `#  define M_PI (3.14159265358979323846)`，与 `vcpkg-overlays/libvorbis/0005-unify-m-pi-precision.patch` 一致；`*audio preserves sample rate*` 用例实测 `All tests passed (47 assertions in 1 test case)`。§4.1 的叙述与当前状态自洽，但重建过程本身未被观察。
+- §4 生成脚本的重跑确定性（以 `git status` 判定） —— **未核实**：重跑会写入 fixture 文件，属禁止项。改以**内存内重算**替代（不写任何文件）：9 个派生 fixture 与磁盘字节完全一致（`gamma_linear.png` 85、`interlaced.png` 78、`corrupt_marker.jpg` 661、`forged_total_samples.flac` 8759，以及 `truncated.flac/mp3/ogg`、`chained.ogg`、`bad_header.flac` 全部 `True`）。
+- hosted 三平台复验 —— **未核实**：§5 已登记为未完成，超出本批次范围。
+
+### 9. 与 R4 无关、不计入本次更正的现象
+
+本机 `cuexis_player_distribution` 与 `cuexis_contract_version_gate` 的失败属环境原因，不作为 R4 发现项。
+
+### 10. 结论
+
+R4 的四项实质性行为声明（线性 `gAMA` 被拒、FLAC 伪造时长被拒且用例方向已翻转为拒绝、interlaced PNG 被拒、损坏 marker JPEG 负例）在代码与真实执行两个层面均成立；「未改 canonical bytes、未重冻结 golden」亦成立。不成立的是计划中「6 项媒体负例各以变异反证」的账面表述。另有三个应予登记的缺口：gamma 接受方向无覆盖、解码期 interlace 守卫不可达、新诊断码未进入格式契约且无门禁拦截。

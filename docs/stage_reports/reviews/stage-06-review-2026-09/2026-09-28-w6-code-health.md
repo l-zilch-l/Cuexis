@@ -142,3 +142,75 @@
 - CI：`.github/workflows/version-gate.yml`（仅缩进）
 - 文档：本报告、`examples/reference_host/README.md`（`readCount()` 删除后的证据描述订正）、
   `docs/guides/BUILDING.md`（R7 门禁记录）、`docs/stage_reports/README.md`（索引）
+
+## 复核更正（独立审计，2026-09-28）
+
+本次复核逐条核对了 R8 的删除与改动。以下为**已确认的实质性声明**与**必须更正的表述**。
+本节为**追加**：上文历史观察与证据原文未被改写。
+
+### 1. 已确认的声明（逐条实查）
+
+- **STD-13**：`git ls-files | Select-String "\.obj$"` 输出为空（count=0）；`.gitignore:14` 为 `*.obj`；两个文件仍保留在工作区且为未跟踪（`hello.obj` 46,882 B、`dump_chart_writer.obj` 589,044 B，与应用新规则后的忽略状态一致）。
+- **STD-07 七项删除全部属实**：
+  1. `PlayerController::timingOffsetMs()`：`e8be5fc:app/player/src/player_control.hpp` 存在该访问器声明，HEAD 已无；仅存私有成员 `player_control.hpp:156`（`double timingOffsetMs_{};`）。
+  2. `HostReport::steps()`：`git grep -n steps -- examples/reference_host` 仅剩 `host_report.cpp:11,37` 与 `host_report.hpp:35`（`steps_` 仍在用，`host.summary ... steps=` 输出不变）。
+  3. `HostFileProvider::readCount()`：仅剩 `host_content.cpp:91,94,119,122` 与 `host_content.hpp:37`（`readCount_` 仍在用）。
+  4. `CandidateRuntimeMetadata::flags/candidateRevision`：HEAD 的 `engine/chart/include/cuexis/chart/candidate_lowering.hpp` 中该结构体只剩 `compilerProfile`/`semanticIdentity`/`resourceClosure`/`objects`。**同名不同型**的存活类型 `packed::PackedChartProfile` 被正确保留：`packed_chart_tables.hpp:19-22` 仍有 `candidateRevision{1};` 与 `flags{1};`，并由 `packed_chart_io.hpp:34,41`、`packed_chart_io.cpp:221`、`packed_chart_tables.cpp:885` 使用。
+  5. `_result_json`：`tools/check_version_gate.py:334-335` 现仅剩 `return json.dumps(asdict(result), sort_keys=True)`，两行同值赋值已无；`base_version`/`candidate_version` 仍是 `GateResult` 声明字段（`:75-76`）。
+  6. `readRequiredString`：`engine/cxc/src/cxc_candidate.cpp:55` 已是两参数；`json::Reader::requiredField` 自身上报 `json.field.missing`（`engine/json_support/src/reader.cpp:57-73`）。
+  7. `HostContent::providerRootId`：HEAD 的 `examples/reference_host/src/host_content.hpp` 中 `struct HostContent` 只有 `projectDirectory` 与 `chartEntryPath`。
+- **第 8 项 `--event` 确为保留且有真实角色**：`tools/check_version_gate.py:354-360` 定义该选项（含 `choices` 与「recorded only」help）、`:399` 在通过消息中输出 `event={args.event}(recorded)`；`.github/workflows/version-gate.yml:77`、`:120`、`:163` 三条作业路径分别传值。
+- **STD-04**：新增 `app/player/src/player_state_name.{hpp,cpp}`，单一 `playbackStateName`（6 分支 switch）。`e8be5fc` 的 `frame_diagnostics.cpp:19-33`（`stateName`）与 `player_app.cpp:27-42`（`audioStateName`）逐字相同，二者在 HEAD 均已不存在；`git grep -n playbackStateName` 命中 `frame_diagnostics.cpp:140`、`player_app.cpp:197`、`player_state_name.cpp:5`。接线：`app/player/CMakeLists.txt:20-21`、`tests/player/CMakeLists.txt:5` 与 `:35`；全仓只有这两个测试目标直接编译 `frame_diagnostics.cpp`，二者均已接入 `player_state_name.cpp`。
+- **STD-10**：`tools/asset_publish/src/publish_fs_internal.cpp:202` 为 `#if defined(_MSC_VER)`；残留的两处 `_WIN32`（`:19`、`:63`）用于 `<Windows.h>`/`CreateFileW`/unistd，与 CRT 扩展选择无关，正确。
+- **STD-12**：`git diff -w e8be5fc..HEAD -- .github/workflows/version-gate.yml` 输出为空（非 `-w` 统计为 21 insertions / 21 deletions），证明仅空白变化；以原生 bash（`C:\msys64\usr\bin` 前置到 PATH）复跑 `python -B tools/check_version_gate_tests.py` 得 `Ran 19 tests in 9.055s` 与 `OK`，bootstrap 块抽取仍可执行。
+
+本次实际运行的门禁与用例（本机 MSVC）：
+
+| 命令 | 逐字结果 |
+| --- | --- |
+| `cuexis_cxc_tests.exe` | `All tests passed (772 assertions in 62 test cases)` |
+| `cuexis_asset_publish_tests.exe`（二进制位于 `out\build\debug-media-tools\bin\`，**不在** `out\build\debug\bin\`） | `All tests passed (332 assertions in 23 test cases)` |
+| `cuexis_player_control_tests.exe` | `All tests passed (479 assertions in 26 test cases)` |
+| `cuexis_player_diagnostics_tests.exe` | `All tests passed (78 assertions in 4 test cases)` |
+| `python -B tools/check_docs.py` | `Documentation checks passed: 274 Markdown files and 20 candidate JSON/CXT files validated.` |
+| `ctest --preset debug -R cuexis_reference_host_staging -V` | `100% tests passed, 0 tests failed out of 1` |
+
+### 2. 必须更正：STD-05 残余登记部分失效
+
+R8 §5 把「STD-05 第 1、2 组是 `render_opengl` 与 `presentation_renderer` 的中立层与 adapter 逐字重复」列为规模最大的残余未修项。**该表述在 R8 修订版上已不成立**：这两组重复已由 `dcc4232`（R6 render convergence，2026-09-28 06:07）删除，而 `dcc4232` 是 R8 各提交（`e8be5fc`、`3f9551b`）的祖先 —— R8 开工时它们已不存在，因此 R8 不可能「留下未修」。
+
+证据：`engine/render_opengl/include/cuexis/render_opengl/open_gl_backend.hpp:62-64` 现直接别名中立层类型（`using OpenGlDrawCommand = presentation_renderer::DrawCommand;` 等）；`git grep -n "SummaryHash\|summaryDigest\|hashCommand\|transformPoint\|finiteMatrix" -- engine` 在 `render_opengl` 下**零命中**，实现只剩 `engine/presentation_renderer/src/draw_command.cpp`（域串 `cuexis.validation.summary.v1` 见 `:61`）与 `engine/playback/src/presentation_extraction.cpp`。
+
+**应把第 1、2 组从残余清单中划掉。仍然成立的 STD-05 组（本次至少实查以下两组）**：
+
+- 版本门禁工作流三处近乎逐字的 trusted-baseline materialize 块：`.github/workflows/version-gate.yml:48-67`、`:95-114`、`:139-157`。
+- 错误工厂重复：`engine/chart/src/packed_chart_tables.cpp`、`engine/chart/src/packed_profile.cpp`、`engine/chart/src/packed_semantic_identity.cpp` 各有一份 `auto fail(`。
+
+（STD-06 重复开关：`engine/player_support/src/player_command.cpp:74-128` 仍在 Play/Pause/Stop/Seek/Reload 各重复 `Empty`/`Failed` 前置级联；STD-08 中间人：`tools/cxc_common/src/cxc_candidate.cpp:7-9` 仍是纯转发；STD-09 原始沉迷：如 `app/player/src/player_control.hpp:156` 的裸 `double`。此三项的残余登记属实。）
+
+### 3. 两处数字更正
+
+- R8 §2.1 第 6 项写「删除签名参数与 **10 处调用点**」：`git grep -n readRequiredString -- engine/cxc/src/cxc_candidate.cpp` 的匹配行数为 10，其中 1 行是 `:55` 的定义，**实际调用点 9 处**。
+- R8 §2 STD-12 写「三处 materialize 块对齐到 10/12 空格」：`for path in \` 三行（`.github/workflows/version-gate.yml:54`、`:100`、`:143`）仍为 **11** 空格，且在该提交 diff 中是未改动的上下文行（块体 12、`done` 10）。空白-only 的性质仍由 `git diff -w` 为空证实，但「10/12」措辞不准确。
+
+### 4. 测试数量漂移
+
+R8 §4.1 记录全量 `ctest --preset debug -j1 --no-tests=error` 为 **748** 个测试、失败集 `{#19, #747}`。当前树（HEAD `0c8f837`）本机唯一可查的 `out/build/debug/Testing/Temporary/LastTest.log`（2026-09-28 19:55）显示 **751**（`750/751`、`751/751`）——R7/R8 之后又新增了测试。**748 这一数字现已无法复现**，属漂移，而非虚假结论。
+
+本次唯一复现到的失败是版本门禁在 WSL `bash.exe` shim 下的用例。LastTest.log 逐字为：
+
+```text
+AssertionError: 0 != 1 : the extracted bootstrap block is not executable shell: ::error title=Version gate bootstrap required::version.bootstrap.required: trusted baseline  lacks ; owner must review the checker and protection rules before the first bootstrap merge. The workflow intentionally fails and never falls back to candidate code.
+Ran 19 tests in 12.785s
+FAILED (failures=1)
+```
+
+把 `C:\msys64\usr\bin` 前置到 PATH 后为 **19/19 OK**（见 §1）。分发门禁（#19）的本机失败本次未重跑，不作任何通过声明。
+
+### 5. 未核实（本次无法运行）
+
+| 声明 | 状态 | 原因 |
+| --- | --- | --- |
+| `cmake --build --preset debug` 全量构建 0 错误 | **未核实** | 复核期间被禁止运行 `cmake --build`（构建树被其他代理并发使用），只允许运行既有测试二进制 |
+| `cmake --build --preset debug --target cuexis_format_check` 通过 | **未核实** | 同上 |
+| 全量 `ctest` 748 个测试及其失败集 | **未核实** | 未重跑全量 `ctest`；且数量已漂移为 751（见 §4） |

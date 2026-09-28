@@ -205,3 +205,98 @@ None-safe 的 `captured()` 助手。
 - 测试：`tests/render/open_gl_presentation_tests.cpp`、`tests/platform/sdl_window_tests.cpp`、
   `tests/player/player_control_tests.cpp`
 - 文档：本报告
+
+## 复核更正（独立审计，2026-09-28）
+
+本次复核对 R6 的代码做了对抗式核对并重跑了受影响的测试。以下为**已确认的实质性声明**与**必须更正的表述**。
+本节的追加不修改上文 §1–§6 的任何一行；发现与原报告不一致处，以本节为准，且不改写历史现象与证据原文。
+
+### A. 已确认的实质性声明
+
+- 适配器第二套实现确实删除：`git grep -n "SummaryHash\|hashCommand\|summaryDigest\|buildDraws\|toDrawCommand\|toDrawSummary" -- engine/render_opengl/` **无输出**（退出码 1）；适配器改为消费中立层 `presentation_renderer::buildPresentationCommands`，命中两处：
+  `engine/render_opengl/src/open_gl_presentation.cpp:1055`（`probeBuildDraws`）与 `:1537`（`renderPresentation`）。
+- `OpenGlDrawCommand`/`OpenGlDrawSummary`/`OpenGlPresentationPass` 已是中立类型别名：
+  `engine/render_opengl/include/cuexis/render_opengl/open_gl_backend.hpp:62-64`。`app/player/src/player_smoke.cpp` 的第三份转发层 `copyNeutralSummary` 一并删除。
+- `ConfigValueSource::LaunchOption` 已删除：`git grep -n "LaunchOption" -- "*.hpp" "*.cpp"` **无输出**（退出码 1）；
+  枚举现存定义 `engine/player_support/include/cuexis/player_support/resolved_config.hpp:21-24` 只剩 `CodeDefault`/`PreferencesFile`。
+- `requestedVsync` 改名并文档化：`resolved_config.hpp:50`；全仓代码零命中 `appliedVsync`。
+- `fullscreen()` 为真实回读：`engine/platform/src/sdl_window.cpp:211-219` 读 `SDL_GetWindowFlags` 的 `SDL_WINDOW_FULLSCREEN` 位；
+  消费点 `app/player/src/player_assembly.cpp:308-316`；用例 `tests/platform/sdl_window_tests.cpp:147-167`，其中 `:161` 正是 `CHECK(*state);`，与 §3 变异记录一致。
+- `content_mismatch` 自动重试确实删除：`git diff 5ab5fb7^ 5ab5fb7 -- app/player/src/player_control.cpp` 显示「重读来源 + 二次 `prepareLoad`」整块被移除；
+  现两条分支统一拒绝 `player.command.mode_required`（`app/player/src/player_control.cpp:402-412`，附 cause）。
+- `--mode` 真实存在并接线：解析在 `app/player/src/player_options.cpp:33-56`（`chart|host|audio`，重复/缺值/未知各有错误码），
+  声明在 `player_options.hpp:14-19`、`:27`；`app/player/src/player_app.cpp:133-150` 把它映射为启动 Load 的 `.mode`；`--audio-smoke-test` 隐含 CuexisAudio（`:146-148`）。
+- 中立层 frame 码已对齐冻结规范（`docs/formats/PORTABLE_PRESENTATION.md:616-620`）：`engine/presentation_renderer/src/draw_command.cpp:142`、`:152`、`:286`（clear_color → `playback.presentation.frame.value_invalid`）、`:302`、`:435`；mesh-bounds → `playback.presentation.mesh.value_invalid`（`presentation_renderer.cpp:288`）；submit/present 生命周期码按 §2.1 保留。
+- SPEC-19a/19c 用例存在且通过：`tests/player/player_control_tests.cpp:677`、`:706`、`:940`、`:960`，并在已构建二进制中注册（`--list-tests` 可见）。
+- SPEC-19b 登记 BLOCKED 诚实：`CMakeLists.txt:42-43` 默认 `OFF`；该 token 在 `CMakePresets.json` 与 `.github/` 中的出现次数均为 **0**；
+  OFF 路径的候选入口工厂返回 `candidateDisabledError()`（`engine/playback/src/playback_source.cpp:795-799`、`:854`、`:897`），故任何已配置构建都无法注册该端到端用例。
+
+真实运行（使用 `out\build\debug\bin\` 既有二进制，未重新配置或构建）：
+
+```text
+cuexis_render_opengl_tests.exe   -> All tests passed (140 assertions in 22 test cases)
+cuexis_player_control_tests.exe  -> All tests passed (479 assertions in 26 test cases)
+cuexis_platform_sdl_tests.exe    -> All tests passed (57 assertions in 10 test cases)
+```
+
+补充运行（同一目录，均通过）：`cuexis_presentation_renderer_tests` 87 assertions / 2 cases、`cuexis_player_support_tests` 383/16、
+`cuexis_presentation_validation_tests` 261/9、`cuexis_render_tests` 13/3。`python -B tools/update_version.py --check` 输出
+`Cuexis version is consistent: 26.09.28-1`。
+
+**未核实（本次未运行，原因随附）**：
+
+- §4 的 `ctest -R "render|presentation|..." 57/57`：**未运行**——`ctest` 会写入 `out/build/debug/Testing/*.log`，本复核禁止创建或修改任何文件；替代证据为 A 节逐个直接运行受影响套件（全过）。
+- `cmake --build --preset debug` 的「0 错误 0 警告」、`cuexis_format_check`、`git diff --check`：**未运行**——禁止构建，且 `git diff --check` 只在 W4 当时的树上才有意义。
+- §3 的全部变异反证（PROBE 补丁 → 目标用例失败）：**未运行**——复现需改源码并重建。可提供的旁证仅为：对 W4 触碰的全部实现文件执行 `git grep -c PROBE` **无输出**（退出码 1），即「实现已还原」这半边成立，「用例确实会失败」这半边未取证。
+- §5 的 GPU smoke golden：**未运行**（本机无 GPU）。仅可确认 `app/player/src/player_smoke.cpp:20` 的 `presentationSmokeDigest = 18316288860163381829ULL` 在 `dcc4232` 中作为上下文行未被修改。
+
+### B. 更正 1：`~16.7 KB` 必须说明度量口径
+
+「约 16.7 KB」是**被删除重复实现的体积**，不是净减少量。复核实测：`dcc4232^` 的 `open_gl_presentation.cpp` 中七个被删区域
+（`SummaryHash`、`hashCommand`、`summaryDigest`、`buildDraws`、`OpenGlDrawSummary::clear`、`toDrawCommand`、`toDrawSummary`）的并集字节数为
+**16,657 字节 = 16.66 KB（十进制）= 16.27 KiB**。同一提交里 `open_gl_presentation.cpp` 文件净缩 13,535 字节，
+整提交为 `9 files changed, 148 insertions(+), 470 deletions(-)`（净减 12,371 字节）。因此该数字**不得**被读作净删除量或净缩减量。
+
+### C. 更正 2：`resolveGpuDraw` 并非「只做 GPU 句柄解析」
+
+`engine/render_opengl/src/open_gl_presentation.cpp:787-841` 除解析句柄外还承担校验并返回 `frameError`：
+`:793`（mesh/material 未在活动缓存中）、`:802`（参数化材质缺少已编译 program）、`:817`（参数化纹理绑定未由材质提供）、
+`:824`、`:834`（纹理引用未被活动缓存支持）。§2 与 §6 中的「只做 GPU 句柄解析」应改为「GPU 句柄解析 + 适配器侧缓存完整性校验」。
+
+### D. 更正 3：`appliedGain` 不是平台回读（SPEC-15 措辞更正）
+
+`app/player/src/player_app.cpp:125` 用 `appConfig->app.requested.gain` 构造 `PlayerController`，同一处 `:155` 又把 `controller.gain()` 当作 `appliedGain` 传入；
+gain 在 schema 层被限制在 `[0,1]`（`schemas/cuexis.player-preferences.v1.schema.json:24`），并由 `audio_config.cpp:39` 再次校验、由
+`player_assembly.cpp:166` 原值 `applyGain`（无钳制路径）。因此在**所有可达路径**上 `appliedGain` 与 `effective.requested.gain` 数值恒等。
+它是「开设备时所用的值」（`resolved_config.hpp:51` 的注释是诚实的），**不是**从设备读回的值。§2 SPEC-15 行的「读真实值」应改为「改为经 `PlayerController` 取用开设备时的值（与请求值恒等，非平台回读）」。
+
+### E. 更正 4：同族重复仍然存在（对「仅消费」边界的反证）
+
+- **没有**任何重复的 digest 实现或重复的排序/分 pass/summary 实现存活：全仓 `SummaryHash`/`hashCommand`/`summaryDigest`/FNV 常量/opaque-transparent 排序只存在于
+  `engine/presentation_renderer/src/draw_command.cpp`（`:58-242`、`:366-372`、`:512-516`），`engine/render_opengl/` 零命中。至此原声明的**核心**成立。
+- **但**同族辅助代码仍以第二份形式留在适配器：`referenceKey`（`open_gl_presentation.cpp:102-104`）与中立层 `draw_command.cpp:125-127` 逐字节相同；
+  `findGpuResource`（`:727-736`）镜像中立层 `findCached`（`draw_command.cpp:186-196`）；`resourceError`/`frameError`/`nonFiniteError`（`:106-137`）是
+  `draw_command.cpp:129-159` 的近似副本；`probeBuildDraws` 仍用该比较器对自己的 `GpuMesh`/`GpuMaterial` 向量排序（`:1047-1051`），
+  由于 `buildPresentationCommands` 已自行从 `resources` 派生缓存，这段排序现为**死代码**。
+- 结构守卫用例（`tests/render/open_gl_presentation_tests.cpp:346-362`）只断言 5 个字面串，无法发现上述同族重复；该用例通过并不等于「无重复」。
+  结论口径应是：**唯一排序/摘要来源已成立；「只保留 GPU 句柄解析」不成立。**
+
+### F. 更正 5：引用错误
+
+| 位置 | 原文 | 实际 |
+| --- | --- | --- |
+| §2 SPEC-19b、§5 | `tests/playback/playback_candidate_internal.hpp` | 该路径不存在；fixture 为 `engine/playback/src/playback_candidate_internal.hpp`（经 `tests/playback/CMakeLists.txt:31` 的 include 目录进入测试） |
+| §5 | 「`CMakePresets.json` 的 **22 个预设**」 | 现为 **21** 个 configure preset（21 + 20 build + 19 test = 60）；且 `CMakePresets.json` 自 `7245a0b` 起未再改动，故 W4 当时也已不是 22 |
+| §4 第 3 行 | `cuexis_sdl_window_tests` | 无此目标/可执行文件；该套件为 `cuexis_platform_sdl_tests`（其输出恰为 10 cases / 57 assertions） |
+| §4 表 | 「3 条收敛后预期失败已处置，见 §4.2」 | 本报告无 §4.2，应为 §4.1 |
+| §3 第 3 行 | 「`:683`/`:716` 两条 `REQUIRE_FALSE` 失败」 | `:683`/`:716` 是 `fixture.failClipPreparation = true` 赋值行；两条 `REQUIRE_FALSE` 实际在 `:685` 与 `:718` |
+
+### G. 更正 6：`check_docs.py` 数字为漂移，非错误
+
+原 §4 记录 `271 Markdown files`；复核运行 `python -B tools/check_docs.py` 现输出：
+
+```text
+Documentation checks passed: 274 Markdown files and 20 candidate JSON/CXT files validated.
+```
+
+W4 之后另有 9 个 docs 提交落地，故 271 → 274 属**漂移**（candidate JSON/CXT 的 20 未变），不是原报告的错误，无需回改历史记录。

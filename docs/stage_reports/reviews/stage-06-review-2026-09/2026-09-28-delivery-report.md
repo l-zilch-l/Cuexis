@@ -161,19 +161,91 @@ toolchain 拒绝仅在 shared（因 static 包无该检查块，见 §4 第 7 �
   `frame_diagnostics.cpp`，新符号必须同时接入两者（首建 `LNK2019`）。复核清单未指出。
 - STD-02 的原文表述有一处不精确，已在 R1 报告 §3 据实修正并保留原句。
 
+### 5.4 对已完成批次的独立对抗式审计（R2–R8）
+
+本批次全部退出后，对 R2–R8 的**代码**做了一次独立对抗式审计：六个审计单元各自
+只拿"批次报告声称什么"与"仓库实际是什么"作比对，**不采信报告文本**，
+并要求每条声明给出真实命令与其逐字输出。结论分三类：
+
+**（a）关键代码确实已修复（审计确认）**：R2 的契约码（`cxc.candidate.budget_exceeded` /
+`packed.field.wire_range`，含 `CHECK_FALSE` 钉住旧码与 16 MiB 两侧边界）；
+R3 的 `--context` 真实分流日期规则、四个负例可执行且非空转、A2 已注册为 CTest；
+R4 的四条行为声明（线性 `gAMA` 拒绝、FLAC 伪造时长无条件拒绝、隔行 PNG 拒绝、
+损坏 JPEG 标记夹具）；R5 的原子替换（`asset_publish.cpp:1048` 为唯一触碰目标处）、
+备份恢复、双父目录配对锁；R6 的适配器重复实现确实删除且改为消费中立实现、
+`LaunchOption` 删除、`content_mismatch` 自动重试删除并接入 `--mode`；
+R7 的三个门禁确实存在并注册、minor 负例断言的是真实文本；
+R8 的 7 项死代码删除、状态名合并、`_MSC_VER` 选择、工作流空白最小改动，全部逐条落实。
+**审计未发现任何"报告说已修而代码未修"的情况。**
+
+**（b）报告表述被高估，必须更正（已按"只追加、不改写历史证据"处理）**：
+
+| 批次 | 被高估的表述 | 更正后的实际 |
+| --- | --- | --- |
+| R4 | "6 条媒体负例、逐条被变异推翻" | 报告正文只有 **3** 条变异记录；无任何计数等于 6 |
+| R4 | （未提交的覆盖盲点） | 无 `gAMA=45455` 夹具，gamma 的**接受**分支从未执行：一个拒绝**全部** `gAMA` 的实现会通过全套测试 |
+| R5 | "`closureBytes` 幂等已修" | **只修了一半**：`asset_publish.cpp:849` 另一条幂等路径仍返回 `0` |
+| R5 | 变异例 1 可推翻旧缺陷 | 旧代码在优雅替换失败时会回滚备份，该变异下用例**仍通过**；它只覆盖"无回滚的挪开" |
+| R6 | "`resolveGpuDraw` 只做 GPU 句柄解析" | 它同时做四类校验并返回 `frameError`（`:793`/`:802`/`:817`/`:824`） |
+| R6 | `appliedGain` 为"真实读回值" | 它是构造时传入并经 schema `[0,1]` 约束的**请求值镜像**，非设备读回 |
+| R8 | STD-05 残余把 render_opengl 与 presentation_renderer 的逐字重复列为主要未修项 | 该两组**已被 R6 的 `dcc4232` 删除**，而 `dcc4232` 是 R8 提交的祖先——R8 不可能留下它们 |
+| 多份 | 若干行号/路径/预设数/测试目标名引用有误 | 已在各批次报告的追加章节逐条列出并给出正确值 |
+
+**（c）审计发现并已修复的真实缺陷（最重要的一类）**：R7 新增门禁在 hosted 上
+**四次**判失败，全部是检查器自身的问题（`nm` 读不出 PE/ELF 导入表、共享工具变量被挪用
+而打坏共享导出闸门、ELF `lib`/`.so` 命名使判断空转且误判）。详见 §6.2 与 W5 §4.2。
+其中 `0c8f837` 的 Linux 失败是**真实的 CI 红**，已由 `2c74f5f` 修复。
+
+**方法论结论**：这一轮审计的价值不在于"确认了什么"，而在于
+**（i）** 发现了一个会让 CI 变红的自身回归，
+**（ii）** 发现了两处"报告比代码更乐观"的表述，
+**（iii）** 发现了 R4 一处会让"过度拒绝"通过测试的覆盖盲点。
+三者都属于"若不做独立核对就会长期存活"的问题。
+
 ## 6. 门禁证据
 
 | 门禁 | 结果 |
 | --- | --- |
-| `python -B tools/check_docs.py` | `Documentation checks passed: 273 Markdown files and 20 candidate JSON/CXT files validated.` |
+| `python -B tools/check_docs.py` | `Documentation checks passed: 274 Markdown files and 20 candidate JSON/CXT files validated.`（本批次早期为 267→273，随报告增加而增长） |
 | `python -B tools/check_version_gate_tests.py`（原生 bash） | `Ran 19 tests ... OK` |
 | `python -B tools/update_version.py --check` | `Cuexis version is consistent: 26.09.28-1` |
 | `cmake --build --preset debug` | 0 错误 |
 | `cmake --build --preset debug --target cuexis_format_check` | 通过 |
 | `ctest --preset debug -R cuexis_reference_host_staging`（static + shared） | 均 `100% tests passed` |
+| `ctest --preset debug -R "cuexis_reference_host_staging\|cuexis_shared_export_surface"`（修复后复跑） | `100% tests passed, 0 tests failed out of 2` |
 | `ctest --preset debug -j1 --no-tests=error`（全量） | `744/746` 通过；2 项为本机既有偏差，见 §5.2 |
 | `git diff --check` | 干净 |
-| **hosted（同 SHA `05f9a20`）** | Version Gate ✅、Linux Quality ✅、Windows MSVC ✅、Windows MinGW ✅ |
+
+### 6.1 hosted 结果的时间线（必须按 SHA 读，不可合并成一句"全绿"）
+
+本批次的门禁改动**不是一次推送就通过的**。按 SHA 记录实际结果：
+
+| SHA | 内容 | hosted 结果 |
+| --- | --- | --- |
+| `05f9a20` | R7 门禁首次接线 | Version Gate ✅、Linux Quality ✅、Windows MSVC ✅、Windows MinGW ✅ |
+| `5374631` | 尝试以 `nm` 探测工具 | 该尝试本身未解决 ELF（见 W5 §4.2 缺陷 2） |
+| `0c8f837` | 把 `CUEXIS_SYMBOL_TOOL` 改为 `objdump` | Version Gate ✅、Windows MSVC/MinGW 未见失败；**Linux Quality ❌** |
+| `2c74f5f` | 拆分工具变量 + ELF 库名归一化（W5 §4.2 四项修正） | **待返回** |
+
+`0c8f837` 在 Linux 上失败的两项与本批次新增门禁直接相关，均已定因并修复：
+
+| 失败测试 | hosted 报错（摘要） | 定因 |
+| --- | --- | --- |
+| `cuexis_shared_export_surface` | `Shared symbol inspection failed: /usr/bin/objdump: unrecognized option '--defined-only'` | 共享变量被挪用（W5 §4.2 缺陷 3） |
+| `cuexis_reference_host_staging` | `The shared reference host does not import cuexis_playback: libcuexis_playback-0.7.so.0.7;...` | ELF `lib` 前缀使判断失效（W5 §4.2 缺陷 4） |
+
+**口径**：在 `2c74f5f` 的 hosted 三平台结果返回且为绿之前，
+本报告**不得**把门禁改写成"已验证"。上表 `05f9a20` 一行的"全绿"只对该 SHA 成立，
+它**早于** R7 新增门禁真正可用的版本，不构成对当前 HEAD 的结论。
+
+### 6.2 本批次门禁的四次自查失败（值得留存）
+
+本批次新增的检查在 hosted 上**四次**判失败，全部是**检查器自身**的问题，
+没有一次是被测代码的问题（详见 W5 §4.2）：`nm` 在 PE 上读不出导入表；
+`nm` 在 ELF 上只输出符号、从不输出库名；共享工具变量被挪用而打坏另一个闸门；
+ELF 的 `lib`/`.so` 命名使归属判断既空转又误判。
+其中前两次由**反空转守卫**主动判失败——若没有该守卫，它们会以"永远通过"的形态长期存活。
+
 
 ## 7. 复核索引
 

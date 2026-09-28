@@ -24,7 +24,7 @@
 
 | 计划步骤 | 复核 ID | 现象（原文摘要） | 本批次处置 | 证据 |
 | --- | --- | --- | --- | --- |
-| 步骤 1 | SPEC-27 | 宿主符号级检查未接线；机制（`VerifySharedExports`/`VerifySharedConsumerImports`）已有但不用于宿主 | **已补齐**：宿主门禁新增导入表检查，要求宿主可执行文件的每个 Cuexis 归属导入都属于允许集；内部模块显式列名 | `cmake/VerifyReferenceHost.cmake`；`CMakeLists.txt` |
+| 步骤 1 | SPEC-27 | 宿主符号级检查未接线；机制（`VerifySharedExports`/`VerifySharedConsumerImports`）已有但不用于宿主 | **已补齐**：宿主门禁新增导入表检查，拒绝宿主可执行文件导入**内部模块**（9 个名称的禁用表，非允许集；措辞更正见 §4.2 末）；shared 下另要求确实导入了 Playback | `cmake/VerifyReferenceHost.cmake`；`CMakeLists.txt` |
 | 步骤 2 | SPEC-27 | 「错误 SDK minor 拒绝」仅手动核对，未注册 | **已补齐**：新增负例，以 `CUEXIS_HOST_API_VERSION=0.8.0` 配置宿主并要求失败文本 | 同上 |
 | 步骤 3 | SPEC-27 | 工具链拒绝路径仅 shared | **登记口径**（不改实现）：见 §2.1 | 本报告 §2.1 |
 | 步骤 4 | SPEC-27 | 交互命令循环口径未定；ADR 0042 `:350-351` 与实现不符 | **登记口径 + ADR 冲突上报**：见 §2.2 | 本报告 §2.2 |
@@ -120,50 +120,139 @@ Stage 8 归属见 §5。
 于是走进了正例分支。以原生 bash（`C:\msys64\usr\bin` 前置到 PATH）复跑为 **19 tests OK**。
 因该差异只存在于本机沙箱，本批次**不改**该探测逻辑；hosted 上 MSYS2 环境不存在 WSL shim。
 
-## 4.1 新增门禁自身被非空转守卫抓出的缺陷（hosted MinGW 与 Linux 各一次）
+## 4.2 新增门禁在 hosted 上连续暴露的三个缺陷（均已修复）
 
-本批次新增的宿主导入表检查，在推送后**连续两次在 hosted 上被自己的非空转守卫判失败**。
-两次是**同一个根因**，只是暴露在不同平台：
+本批次新增/改动的宿主导入表检查在推送后**连续三次在 hosted 上判失败**，
+三次都是**新增门禁自身的缺陷**，不是被测代码的问题，也不是环境问题。
+按发现顺序记录如下；三次都由门禁自己的反空转守卫或既有闸门暴露，而非人工审查发现。
+
+### 缺陷 1：`nm` 读不出导入表（MinGW）
+
+首次推送后 **hosted Windows MinGW** 判失败：
 
 ```
-The host import inspection parsed no libraries from .../cuexis_reference_host;
+The host import inspection parsed no libraries from .../cuexis_reference_host.exe;
 the check would pass vacuously
 ```
 
-首次在 **Windows MinGW**，随后在 **Linux（`GCC Coverage` 与 `GCC Adapter Coverage`）**。
+根因：非 MSVC 分支选了 `nm`，而 **`nm` 读不了 PE 的导入表**。本机直接验证：
+对该 `.exe` 运行 `nm -D -undefined-only` 与 `nm -D --dynamic` 均返回 `no symbols`，
+且旧正则匹配的是 `.so` 名，PE 镜像里根本不含。
 
-**根因（本批次自身的工具选择错误，不是环境问题）**：非 MSVC 分支原本选了 `nm`，
-但 **`nm` 在两个平台上都读不出「导入了哪些库」**：
+### 缺陷 2：同一根因在 Linux 上同样成立（ELF）
 
-| 平台 | 格式 | `nm` 的实际行为 | 正确的工具与输出 |
-| --- | --- | --- | --- |
-| MinGW | PE/COFF | 对 `.exe` 返回 `no symbols`（`-D` 与 `--dynamic` 皆然） | `objdump -p` → `DLL Name: <name>` |
-| Linux | ELF | 输出的是**符号**（`libc_start_main@GLIBC_2.34`），**从不含库文件名** | `objdump -p` → `NEEDED <name>` |
+随后 **hosted Linux（`GCC Coverage` 与 `GCC Adapter Coverage`）** 报出**同样的**
+反空转消息，只是路径变成 `.../host-build/cuexis_reference_host`。
 
-**本机实测对比（ELF，真实环境）**：
+根因与缺陷 1 相同：`nm -D` 在 ELF 上输出的是**符号**
+（`libc_start_main@GLIBC_2.34`），**从不输出库文件名**；依赖关系位于 `DT_NEEDED`。
+本机以真实 ELF 复核：
 
-| 方式 | 解析出的库 | 守卫判定 |
+| 方式 | 解析结果 | 守卫判定 |
 | --- | --- | --- |
-| 旧：`nm -D --dynamic` + `.so` 正则 | 无（匹配 **0** 行） | 失败 |
-| 新：`objdump -p` + `NEEDED` 正则 | `libc.so.6`（匹配 **1** 行） | 通过 |
+| 旧：`nm -D` + 库名正则 | 库名匹配 **0** 行（只得到符号） | 失败 |
+| 新：`objdump -p` + `NEEDED` 正则 | `libc.so.6` 等真实依赖 | 通过 |
 
-**这恰是本批次 §3 非空转守卫设计要拦的失败模式**：若没有该守卫，这项检查会在
-"什么都没解析到"的情况下于**两个平台上都报通过**，且**长期静默**——这正是它要防的。
+**这恰是本批次 §3 反空转守卫设计要拦的失败模式**：若没有该守卫，这项检查会在
+"什么都没解析到"的情况下于**两个平台上都报成功**，且**长期静默**。
 
-**修正**：非 MSVC 平台统一改用 `objdump -p`，同一分支同时解析 PE 的 `DLL Name:` 与
-ELF 的 `NEEDED`；`nm` 分支因两个格式都用不上而删除。MSVC 仍用 `dumpbin`。
+### 缺陷 3：共享变量被挪用，跨闸门打坏 `cuexis_shared_export_surface`（Linux）
 
-**证据（本机）**：以 `CUEXIS_SYMBOL_TOOL_KIND=objdump` 强制走该分支后，门禁到达并打印
-`Reference host import surface verified`；本机 static 与 shared 两种 flavor 的
-`cuexis_reference_host_staging` 均 `100% tests passed`，其中 shared 另报
+缺陷 1/2 的修正把 `CUEXIS_SYMBOL_TOOL` 从 `nm` 改成了 `objdump`，但**该变量有两个消费者**，
+而它们需要不同的工具。Linux CI 立刻抓到（`GCC Shared Release` 与 `Clang Shared Debug`）：
+
+```
+cuexis_shared_export_surface
+CMake Error at cmake/VerifySharedExports.cmake:21 (message):
+  Shared symbol inspection failed: /usr/bin/objdump: unrecognized option
+  '--defined-only'
+```
+
+导出闸门读的是**动态符号表**，`nm -D --defined-only` 才是它的正确读取器；
+`objdump` 不认识该选项。这是**我在修正缺陷 1/2 时引入的回归**，且**未登记在任何报告中**。
+
+### 缺陷 4：ELF 的 `lib` 前缀让导入检查在 Linux 上既空转又误判
+
+同一批 Linux 作业还暴露了导入检查本身更深的一处错误。ELF soname 带 `lib` 前缀与
+`.so` 版本链，CI 打印出的真实导入表是：
+
+```
+libcuexis_playback-0.7.so.0.7;libcuexis_content-0.7.so.0.7;libcuexis_core-0.7.so.0.7;
+libstdc++.so.6;libgcc_s.so.1;libc.so.6
+```
+
+两处判断同时失效：
+
+| 判断 | 旧写法 | 在 ELF 上的后果 |
+| --- | --- | --- |
+| 归属守卫 | `^cuexis_` | 跳过**每一个** Cuexis 库 → 内部库禁用表**永不生效**（空转） |
+| shared 正例 | `^cuexis_playback` | 永远匹配不上 → 正确的 Linux 宿主**误报失败** |
+
+CI 的报错正是后者：
+
+```
+The shared reference host does not import cuexis_playback: libcuexis_playback-0.7.so.0.7;...
+```
+
+### 四项缺陷的修正
+
+1. **拆开工具变量**（缺陷 3）：`CUEXIS_SYMBOL_TOOL` 恢复为 MSVC `dumpbin` / 非 MSVC `nm`，
+   供导出闸门使用；另立 `CUEXIS_IMPORT_TOOL` 为 MSVC `dumpbin` / 非 MSVC `objdump`，
+   供宿主导入闸门使用。两个变量各有一个消费者，不再共享。
+2. **导入工具统一为 `objdump -p`**（缺陷 1/2）：同一分支同时解析 PE 的 `DLL Name:` 与
+   ELF 的 `NEEDED`。
+3. **归一化库名**（缺陷 4）：先去掉前导 `lib`，再在 `.so` 处截断，
+   再做归属与禁用判断。`libcuexis_playback-0.7.so.0.7` → `cuexis_playback-0.7`。
+4. **static 口径显式化**（缺陷 4 的附带问题）：static 宿主不导入任何 Cuexis 库，
+   归属判断无可判断对象。现在显式打印
+   `Reference host is static: it imports no Cuexis library, so the internal-library ownership check has nothing to judge`，
+   而不是让 `verified` 那一行暗示它做了无法做的检查。
+
+### 证据
+
+**本机（MSVC, SHARED）**：`cuexis_reference_host_staging` 与 `cuexis_shared_export_surface`
+均通过，`100% tests passed, 0 tests failed out of 2`；staging 另报
 `Reference host refused a foreign-toolchain package` 与 `Reference host refused an incompatible SDK minor`。
 
-**口径声明**：本机**既无 MinGW 工具链也无 Linux 环境**，故这两个平台的复验**只能由 hosted CI 提供**。
-本报告不宣称本机已通过这两个平台；在 hosted 复验变绿之前，本批次不得写成"已验证"。
+**真实二进制（PE）**：`objdump -p` 读本机 MSVC 构建的宿主得到 **8** 条 `DLL Name:`，
+含 `cuexis_playback-0.7d.dll`；反空转守卫通过。
 
-**方法论备注（值得留存）**：一个"防止空转"的守卫，其价值在于它会**先烧到自己**。
-这两次失败都不是被测代码有问题，而是检查器本身没能力观察——若没有守卫，
-缺陷会以"永远通过"的形态存活下去。
+**真实二进制（ELF）**：在 WSL（Ubuntu 26.04）对 `/bin/ls` 运行 `objdump -p` 得到
+`NEEDED libc.so.6` 等；对同一 ELF 运行 `nm -D` 得到**0** 个库名形状的行——
+这是"`nm` 在此根本上不可能工作"的直接证明。归一化对真实 ELF 无任何误判（全部非 Cuexis）。
+
+**归一化正反例**（PE 与 ELF 两种写法各跑接受/内部泄漏/无 Playback 导入）：
+
+| 用例 | 归一化结果 | 判定 |
+| --- | --- | --- |
+| PE `cuexis_playback-0.7.dll` | `cuexis_playback-0.7.dll` | 接受 |
+| PE `cuexis_world-0.7.dll` | `cuexis_world-0.7.dll` | 拒绝（内部库） |
+| ELF `libcuexis_playback-0.7.so.0.7.0` | `cuexis_playback-0.7` | 接受 |
+| ELF `libcuexis_world-0.7.so.0.7.0` | `cuexis_world-0.7` | 拒绝（内部库） |
+| ELF `libcuexis_render_opengl-0.7.so.0.7.0` | `cuexis_render_opengl-0.7` | 拒绝（内部库） |
+| 仅 OS 库（PE 或 ELF），SHARED | （无 Cuexis） | 拒绝（未导入 Playback） |
+| 仅 OS 库，STATIC | （无 Cuexis） | 接受 + 显式说明 |
+
+**口径声明**：本机**既无 MinGW 工具链也无 Linux 环境**，故这两个平台的最终复验
+**只能由 hosted CI 提供**。本报告不宣称本机已通过这两个平台；
+在 hosted 复验变绿之前，本批次不得写成"已验证"。
+
+### 方法论备注（值得留存）
+
+一个"防止空转"的守卫，其价值在于它会**先烧到自己**。缺陷 1–2 四次失败中，
+没有一次是被测代码有问题，而是检查器本身没能力观察——若没有守卫，
+缺陷会以"永远通过"的形态长期存活。
+缺陷 3 则是另一个教训：**共享一个变量对**给两个需求不同的消费者，
+是一个只在特定平台上才显形的耦合；本机 MSVC 全程绿，因为 MSVC 上两者恰好都是 `dumpbin`。
+
+### 复核更正（同日，追加）
+
+上述缺陷 3 与缺陷 4 由本批次报告的**独立复核**（对 R7/R8 的对抗式审计）发现并复现，
+其结论已并入本节。审计同时指出：§2 第 1 行把该检查描述为"每个 Cuexis 归属导入都属于
+**允许集**"是**措辞过强**——代码实际是一份 **9 个名称的禁用表**，不是允许集。
+本机 MSVC 宿主的真实导入表恰好证明了这一点：它导入了 `cuexis_content-0.7d.dll` 与
+`cuexis_core-0.7d.dll`，二者**不在**禁用表中，因而直接通过。
+该措辞已在 §2 更正；禁用表本身是否应收紧为允许集，属**产品决策**，不在本批次范围内。
 
 ## 5. 残余与未核对
 
@@ -177,15 +266,27 @@ ELF 的 `NEEDED`；`nm` 分支因两个格式都用不上而删除。MSVC 仍用
   本批次**只在本报告记录归属意向**，未修改 `docs/stage_plans/future/stage-08/plan.md`
   与 `docs/stage_reports/stages/stage-06/completion.md` §7——那两者属于阶段计划/关闭报告的
   正式修订，应由阶段关闭动作完成。恢复条件：Stage 8 启动时按计划 §10 执行移交。
-- **hosted 三平台复验未完成**：本批次的门禁改动与 `CMakeLists.txt` 的 `find_program` 移位
+- **hosted 三平台复验未完成**：本批次的门禁改动与 `CMakeLists.txt` 的工具发现移位
   影响所有 flavor 的注册路径，**必须在同 SHA 的 Linux Quality / Windows MSVC / Windows MinGW
   上复验**后才可作为本批次的最终结论。
+  已知历史：`0c8f837`（仅修缺陷 1/2 的那一版）在 Linux 上**确实失败**，
+  失败的是 `cuexis_shared_export_surface` 与 `cuexis_reference_host_staging`
+  （`GCC Shared Release` / `Clang Shared Debug`），即 §4.2 的缺陷 3 与缺陷 4；
+  修复提交为 `2c74f5f`，其 hosted 结果**尚未返回**，故在此之前本批次不得写成"已验证"。
+- **导入检查的覆盖边界（本次复核新增登记）**：
+  - 该检查是 **9 个名称的禁用表**，不是允许集。宿主真实导入了 `cuexis_content` 与
+    `cuexis_core`，二者不在表内而直接通过。是否收紧为允许集属**产品决策**（见 §4.2 末）。
+  - **static 下该判断无可判断对象**：static 宿主不导入任何 Cuexis 库，
+    禁用表永不触发。现已显式打印说明（§4.2 修正 4），但"内部库未泄漏"这一结论
+    在 static flavor 上**并未被本门禁证实**，只是无害。
 
 ## 6. 变更文件
 
 - 门禁：`cmake/VerifyReferenceHost.cmake`（新增导入表检查、SDK minor 负例、candidate 零命中扫描；
-  `ENV{PATH}` 恢复点前移）
-- 构建：`CMakeLists.txt`（符号工具发现上移到门禁注册之前；向宿主门禁传入
-  `CUEXIS_SYMBOL_TOOL` / `CUEXIS_SYMBOL_TOOL_KIND`）
+  `ENV{PATH}` 恢复点前移；库名归一化 `lib` 前缀与 `.so` 后缀；static 口径显式说明）
+- 构建：`CMakeLists.txt`（工具发现上移到门禁注册之前；**两个工具变量各自独立**——
+  `CUEXIS_SYMBOL_TOOL` = MSVC `dumpbin` / 非 MSVC `nm` 供导出闸门，
+  `CUEXIS_IMPORT_TOOL` = MSVC `dumpbin` / 非 MSVC `objdump` 供宿主导入闸门；
+  宿主门禁接收后者）
 - 文档：本报告、`docs/stage_reports/reviews/stage-06-review-2026-09/README.md`（索引）、
   `docs/stage_reports/README.md`（可达性）

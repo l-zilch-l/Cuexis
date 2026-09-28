@@ -114,3 +114,146 @@ W1 提交 `07c8a97` 在 PR #30 的 hosted 检查中**未通过**，是本批次�
   4. 本机全历史检出：`Ran 15 tests in 24.464s ... OK`。
 - **订正说明**：该修复同时是本批次对 W1 结论的**诚实订正**——
   W1 §4 的"本机通过"不蕴含 hosted 通过；已在 W1 报告 §5 追加订正说明指向本节。
+
+## 复核更正（独立审计，2026-09-28）
+
+本次复核独立重跑了 R5 的测试并用 git 历史核对前置版本。以下为**已确认的实质性声明**与**必须更正的表述**。
+
+**核对前提**：审计期间工作区 HEAD 由 `0c8f837` 前进到 `b59d899`；`git status --porcelain` 除既有未跟踪文件（`.buildenv.ps1`、`.workbuddy/`）外无改动，无跟踪文件被修改。R5 的代码与用例自批次提交后未变：`git log 3ee5717..HEAD -- tools/asset_publish/ tests/asset_publish/` 仅列出 `3f9551b`，且该提交只改 `publish_fs_internal.cpp` 的 `_MSC_VER` 选择（MSVC 下与 `_WIN32` 等价）。因此下述核对结论对批次代码成立。
+
+### 1. 已确认的实质性声明
+
+- **单次原子替换**：`tools/asset_publish/src/asset_publish.cpp:1048` 的
+  `auto committed = detail::replaceAtomically(temporary, target);` 是 `commitPackage` 中唯一触碰
+  target 的调用。前置版本（`git show 07c8a97:tools/asset_publish/src/asset_publish.cpp`）确有两次
+  rename：blob `:951` `auto moved = detail::replaceAtomically(target, backup);` 与 blob `:958`
+  `auto committed = detail::replaceAtomically(temporary, target);`；两者均被 `e907606` 删除。
+  `git grep -n replaceAtomically -- tools/asset_publish/` 的其余站点（`:667`、`:842`、`:907`、`:1075`）
+  没有任何一处把在用包移开。target 缺失窗口在代码层确已关闭。
+- **恢复还原 backup 而非删除**：`asset_publish.cpp:649-679` 新增 `restoreMatchingBackups`
+  （target 缺失时 `:667 auto moved = detail::replaceAtomically(candidate, restored);`，仅在 target 已存在时
+  `:672-676` 删除备份）；`detail::backupTargetOf` 见 `publish_fs_internal.cpp:261-280`。前置版本 blob `:598`
+  在 `removeMatchingTemporaries` 中匹配 `publicationBackupRole`，即把备份当临时文件删除。
+- **pair 锁覆盖两个目标父目录**：`asset_publish.cpp:1146-1148` 调用
+  `PublicationLock::acquireAll({v4 父目录锁, candidate 父目录锁})`，实现见 `:569-587`（排序、去重、任一失败即由
+  析构释放已持有句柄）。
+- **五条 R5 用例存在、已注册、全绿**：
+  `out\build\debug-media-tools\bin\cuexis_asset_publish_tests.exe "[r5]"` →
+  `All tests passed (85 assertions in 5 test cases)`；
+  `out\build\debug-media-tools\bin\cuexis_asset_publish_tests.exe` →
+  `All tests passed (332 assertions in 23 test cases)`（与 §4 记录一致）；
+  `--list-tests "[r5]"` → `5 matching test cases`；`TEST_CASE` 计数由 `07c8a97` 的 19 增至 24（+5，其中 1 条为
+  锁持有子进程用例，默认运行中被隐藏）。
+
+### 2. `closureBytes` 只修了一半（**必须按此表述**）
+
+`asset_publish.cpp:768-770` 的幂等路径已改用 `closureByteTotal(marker.closure)`，但**第二条幂等返回路径仍返回 `0`**：
+`asset_publish.cpp:849`
+
+```
+                return GenerationPublishResult{generationPath, marker.identity, 0,
+                                               marker.closure.size(), marker.provenance.size()};
+```
+
+该路径是"替换失败但目标上已存在同一 generation"的竞态返回，`e907606` 未触及。在该行修正前，SPEC-24（幂等）
+的表述应为**部分修正**，并点名 `:849`；§2 中"幂等路径与首次发布路径共用同一算法"一句不成立。
+
+### 3. 前置值不是条目数，而是 `0`
+
+§2 写"幂等重发把 `closureBytes` 报为条目数（`marker.closure.size()`）"，与实际前置代码不符：
+`git show 07c8a97:tools/asset_publish/src/asset_publish.cpp` 在该路径上读作
+`GenerationPublishResult{generationPath, marker.identity, 0, marker.closure.size(), ...}`，
+第三字段为 `0`；本批次处置的复核记录亦如此写：`docs/stage_reports/reviews/stage-06-review-2026-09/2026-09-28-spec.md:376`
+"在重复发布时把 `closureBytes` 置 0"。因此 §2 的现象描述应更正为"置 0"，§3 第 4 行的变异（改为
+`marker.closure.size()`）不是"改回缺陷形态"，而是一个同样可被断言捕获的替代错误值。
+
+### 4. R5 用例 1 未被报告所述的变异推翻
+
+用例 1（`tests/asset_publish/asset_publish_tests.cpp:797`）注入 `CUEXIS_ASSET_PUBLISH_FAIL_TEMPORARY_TARGET`
+移除临时文件，使替换**优雅失败**。前置版本的 `commitPackage` 在第二次 rename 失败后有一条回滚分支
+（blob `:961-962` `if (!backup.empty()) { auto restored = detail::replaceAtomically(backup, target);`），
+因此把控制流改回双 rename（保留同一注入钩子）时 target 会被还原、`CHECK(fs::exists(target))` 通过，用例仍然**通过**。
+该用例只能捕获"移开 target 且**没有**回滚分支"的形态，不能区分本批次修正前后的实现。§3 第 1 行的变异记录不得
+被读作"该窗口已被用例证明关闭"；窗口关闭的依据是单次 rename 的结构（见 §1），而非此用例。
+
+### 5. 用例 3 的断言偏弱
+
+用例 3（`:859`）的写失败钩子在 `asset_publish.cpp:994-1002` 提前返回，位于 `detail::writeFileExclusive`
+（`:1003`）之前，因此临时文件从未被创建，`:894 CHECK( leftovers == 0U )` 恒真；真正的写失败清理分支
+`asset_publish.cpp:1004-1007` 从未被执行。它仍然可被变异推翻（禁用钩子后发布成功，`:881 REQUIRE_FALSE` 失败），
+但 §2 所称"走真实 `asset.publish.io_failed` 码路径"只对错误码常量成立，不对失败的写系统调用成立（§5 已自认）。
+
+### 6. §3 行号引用更正
+
+用例文件自 `3ee5717` 起未再改动（`git diff --stat 3ee5717 HEAD -- tests/asset_publish/` 为空），故下列为确实的引用错误：
+
+| §3 行 | 报告引用 | 实际行 | 实际内容 |
+| --- | --- | --- | --- |
+| 1 | `:825 CHECK(fs::exists(target))` | `:827` | `:825` 是 `CHECK(errorCode(failed.error()) == "asset.publish.replace_failed");` |
+| 2 | `:853 CHECK(fs::exists(target))` | `:854` | `:853` 是 `requireOk(removed);` |
+| 3 | `:923 REQUIRE_FALSE(blocked.has_value())` | `:922` | `:923` 是 `CHECK(errorCode(blocked.error()) == "asset.publish.busy");` |
+| 4 | `:955` | `:955` | 正确 |
+| 5 | `:881` | `:881` | 正确 |
+
+### 7. §3 第 1 行的失败签名不可能成立
+
+若 target 真的缺失，用例会先在 `:828 CHECK(readBytes(target) == previousBytes)` 处经由 `readBytes` 内部的
+`REQUIRE(stream.good())`（`:68`）中止，早于 `:829 loadPackage(target)`（其内部断言在 `:198`）。因此"`loadPackage`
+以嵌套断言异常终止"的记录与该用例的实际控制流不符。
+
+### 8. §4 CTest 编号更正
+
+编号今天不可复现。`ctest --preset debug-media-tools -N` 的实际输出为：
+
+```
+  Test #777: R5 a replacement failure never leaves the target missing
+  Test #783: R5 recovery restores a backup instead of deleting it
+  Test #784: R5 a write failure leaves the previous package and no temporary file
+  Test #789: R5 an idempotent republish reports the real closure size
+  Test #793: R5 the pair lock covers both target parent directories
+Total Tests: 795
+```
+
+注册本身为真：`out\build\debug-media-tools\tests\asset_publish\cuexis_asset_publish_tests-b12d07c_tests.cmake`
+含 23 条 `add_test`。差异属后续提交引起的编号漂移，但 §4 所记 `#764`/`#769`/`#772`/`#773`/`#777` 应更正为上述实际值。
+另外 §4 把 `ctest --preset debug-media-tools --no-tests=error` 的结果指向 §4.1，而 §4.1 并未记录任何结果。
+
+### 9. 新登记的残余（本报告此前未声明，不属"表述不符"）
+
+- pair 事务在 `asset_publish.cpp:1166`（v4 提交）与 `:1172`（candidate 提交）之间崩溃，会留下"新 v4 + 旧 candidate"
+  的混合对；`asset_publish.hpp:134-135` 只承诺替换**失败**时回滚，未承诺崩溃一致性。
+- `rollbackPackage` 的临时文件角色为 `"rollback"`（`asset_publish.cpp:1069`），既不被
+  `removeMatchingTemporaries`（`cuexis-publish`）也不被 `restoreMatchingBackups`（`cuexis-backup`）匹配，
+  回滚中途崩溃会永久泄漏 `.rollback.tmp.*` 文件。
+
+### 10. 未核实项
+
+- §3 的五条变异实验本身**未核实**（未重新执行）：执行变异需要修改源码，本次审计为只读，不允许改动任何文件。
+  第 2、3、4、5 条的"可被变异推翻"由代码路径推理得出；第 1 条按 §4 的推理判定为不可复现。
+- §4 的构建类门禁**未核实**：`cmake --preset`、`cmake --build`（含 `cuexis_format_check`）被本次审计的硬性限制
+  禁止执行（其他代理共用同一构建树）。
+- 只读门禁的复跑结果与 §4 记录存在后续提交造成的漂移，非本批次证据失效：
+  `python -B tools/check_docs.py` → `Documentation checks passed: 274 Markdown files and 20 candidate JSON/CXT files validated.`（§4 记 268）；
+  `python -B tools/update_version.py --check` → `Cuexis version is consistent: 26.09.28-1`（§4 记 `26.09.27-2`）；
+  `git diff --check` → 无输出，退出码 0（与 §4 一致）。
+
+**结论**：§2 的原子替换与恢复两项修正、§2 的锁范围修正均已在代码中落实并经真实用例复跑确认；幂等 `closureBytes`
+为部分修正（`:849` 仍返回 0）；§3 的变异记录与行号、§4 的 CTest 编号需按本节更正；用例 1 与用例 3 的证明力弱于
+报告表述。
+
+### 后续（同日，`:849` 已修复）
+
+上节记录的"幂等 `closureBytes` 为部分修正（`:849` 仍返回 0）"**已不再成立**：
+`asset_publish.cpp:849` 现返回 `closureByteTotal(marker.closure)`，与该函数另一条幂等路径
+（`:768-770`）一致。修复理由是该处**违反本模块自身的契约**——即"即使本次未写入，
+也要报告真实的闭包字节总数"，这一点由既有用例直接钉住
+（`tests/asset_publish/asset_publish_tests.cpp:955` 断言 `second->closureBytes == bytes.size()`，
+`:954` 断言两次 `closureBytes` 相等）。
+
+**诚实性登记**：`:842` 的 `replaceAtomically` 失败分支**没有故障注入钩子**
+（现有钩子 `CUEXIS_ASSET_PUBLISH_FAIL_BEFORE_PUBLISH` 在 `:828` 提前返回，
+`CUEXIS_ASSET_PUBLISH_FAIL_REPLACE_TARGET` 只作用于 `:1023` 的 `commitPackage` 路径），
+因此这处修复**没有本次新增的测试覆盖**；它的正确性来自与被测路径 `:768-770` 的对称性，
+而不是来自一次独立复跑。此分支若要被测试覆盖，需要新增一个能令该次 `replaceAtomically`
+失败的注入点——属**后续工作**，本报告不作"已验证"之声明。
+
