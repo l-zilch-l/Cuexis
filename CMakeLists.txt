@@ -343,23 +343,32 @@ if(CUEXIS_BUILD_TESTS)
     endif()
 
     if(PROJECT_IS_TOP_LEVEL)
-        # The symbol tool is discovered before the gates are registered because
-        # the reference-host gate needs it too, and it must be available on every
-        # flavor (the host import whitelist is not shared-only). The earlier
-        # placement inside the SHARED block left it undefined for the host test.
+        # Two different tools are needed, so they get two different variables.
+        #
+        # The export gate reads the *dynamic symbol table*, and `nm -D
+        # --defined-only` is the right reader for that on non-MSVC.
+        #
+        # The reference-host gate reads the *import list*, and `nm` cannot serve
+        # it on either non-MSVC format:
+        #  - PE/COFF (MinGW): the import table is not a symbol table at all;
+        #    `nm` answers "no symbols". objdump prints "DLL Name: <name>".
+        #  - ELF (Linux): dependencies are DT_NEEDED entries, while `nm -D`
+        #    prints symbols (libc_start_main@GLIBC_...), never library file
+        #    names. objdump prints "NEEDED <name>".
+        #
+        # Sharing one variable pair between the two gates is what broke
+        # cuexis_shared_export_surface on Linux: repurposing it to objdump fed
+        # nm-only flags (`--defined-only`) to objdump.
         if(MSVC)
             find_program(CUEXIS_SYMBOL_TOOL NAMES dumpbin REQUIRED)
             set(CUEXIS_SYMBOL_TOOL_KIND dumpbin)
+            set(CUEXIS_IMPORT_TOOL "${CUEXIS_SYMBOL_TOOL}")
+            set(CUEXIS_IMPORT_TOOL_KIND "${CUEXIS_SYMBOL_TOOL_KIND}")
         else()
-            # Both non-MSVC formats need objdump, because `nm` cannot read the
-            # import list of either one:
-            #  - PE/COFF (MinGW): the import table is not symbols; `nm` answers
-            #    "no symbols". objdump prints "DLL Name: <name>" lines.
-            #  - ELF (Linux): dependencies are DT_NEEDED entries, while `nm -D`
-            #    prints symbols (libc_start_main@GLIBC_...), never library file
-            #    names. objdump prints "NEEDED <name>" lines.
-            find_program(CUEXIS_SYMBOL_TOOL NAMES objdump REQUIRED)
-            set(CUEXIS_SYMBOL_TOOL_KIND objdump)
+            find_program(CUEXIS_SYMBOL_TOOL NAMES nm REQUIRED)
+            set(CUEXIS_SYMBOL_TOOL_KIND nm)
+            find_program(CUEXIS_IMPORT_TOOL NAMES objdump REQUIRED)
+            set(CUEXIS_IMPORT_TOOL_KIND objdump)
         endif()
         foreach(consumer_mode IN ITEMS
                 add_subdirectory
@@ -419,8 +428,8 @@ if(CUEXIS_BUILD_TESTS)
                 "-DCUEXIS_VCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}"
                 "-DCUEXIS_VCPKG_MANIFEST_MODE=${VCPKG_MANIFEST_MODE}"
                 "-DCUEXIS_VCPKG_INSTALLED_DIR=${VCPKG_INSTALLED_DIR}"
-                "-DCUEXIS_SYMBOL_TOOL=${CUEXIS_SYMBOL_TOOL}"
-                "-DCUEXIS_SYMBOL_TOOL_KIND=${CUEXIS_SYMBOL_TOOL_KIND}"
+                "-DCUEXIS_IMPORT_TOOL=${CUEXIS_IMPORT_TOOL}"
+                "-DCUEXIS_IMPORT_TOOL_KIND=${CUEXIS_IMPORT_TOOL_KIND}"
                 -P "${PROJECT_SOURCE_DIR}/cmake/VerifyReferenceHost.cmake"
         )
         set_tests_properties(cuexis_reference_host_staging PROPERTIES

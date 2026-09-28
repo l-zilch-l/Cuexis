@@ -333,8 +333,9 @@ if(NOT host_report MATCHES "${golden_package_pattern}")
     message(FATAL_ERROR "The published package did not reproduce the host content")
 endif()
 
-# The sanitized PATH is restored by the deferred calls registered above, which
-# run on every exit path including a fatal error; nothing to do here.
+# The sanitized PATH was restored inline immediately after the one
+# execute_process that needed it, so nothing is pending here. The earlier design
+# used cmake_language(DEFER), which is unavailable in `cmake -P` script mode.
 
 # No installed file may mention the source tree or the build tree.
 file(GLOB_RECURSE installed_headers "${prefix}/include/cuexis/*.hpp")
@@ -392,24 +393,27 @@ endif()
 # hygiene check above proves the host *asks* for the right targets, and this
 # proves the linker actually produced a binary with the matching dependency set.
 #
-# The symbol tool is discovered by the parent build and passed in, because
-# find_program() results are not visible inside a -P script. When it is absent
-# the case is skipped with a notice rather than silently passing.
+# The import tool is discovered by the parent build and passed in, because
+# find_program() results are not visible inside a -P script. It is deliberately
+# a *separate* variable from CUEXIS_SYMBOL_TOOL: the export gate reads the
+# dynamic symbol table with `nm`, and this gate reads the import list with
+# `objdump`. When it is absent the case is skipped with a notice rather than
+# silently passing.
 # ---------------------------------------------------------------------------
-if(NOT DEFINED CUEXIS_SYMBOL_TOOL OR "${CUEXIS_SYMBOL_TOOL}" STREQUAL "" OR
-   NOT DEFINED CUEXIS_SYMBOL_TOOL_KIND OR "${CUEXIS_SYMBOL_TOOL_KIND}" STREQUAL "")
+if(NOT DEFINED CUEXIS_IMPORT_TOOL OR "${CUEXIS_IMPORT_TOOL}" STREQUAL "" OR
+   NOT DEFINED CUEXIS_IMPORT_TOOL_KIND OR "${CUEXIS_IMPORT_TOOL_KIND}" STREQUAL "")
     message(STATUS
-        "No symbol tool was provided; the host import surface check was not executed")
+        "No import tool was provided; the host import surface check was not executed")
 else()
-    if(CUEXIS_SYMBOL_TOOL_KIND STREQUAL "dumpbin")
+    if(CUEXIS_IMPORT_TOOL_KIND STREQUAL "dumpbin")
         execute_process(
-            COMMAND "${CUEXIS_SYMBOL_TOOL}" /nologo /imports "${host_executable}"
+            COMMAND "${CUEXIS_IMPORT_TOOL}" /nologo /imports "${host_executable}"
             RESULT_VARIABLE host_import_result
             OUTPUT_VARIABLE host_import_output
             ERROR_VARIABLE host_import_error)
         string(REGEX MATCHALL "[A-Za-z0-9_.+-]+\\.dll" host_imported_libraries
             "${host_import_output}")
-    elseif(CUEXIS_SYMBOL_TOOL_KIND STREQUAL "objdump")
+    elseif(CUEXIS_IMPORT_TOOL_KIND STREQUAL "objdump")
         # objdump covers both non-MSVC formats, and `nm` cannot serve either:
         #  - PE/COFF (MinGW): the import table is not symbols at all; `nm`
         #    reports "no symbols". objdump lists it as "DLL Name: <name>".
@@ -417,7 +421,7 @@ else()
         #    prints symbols (libc_start_main@GLIBC_...) and never the library
         #    file names. objdump lists them as "NEEDED <name>".
         execute_process(
-            COMMAND "${CUEXIS_SYMBOL_TOOL}" -p "${host_executable}"
+            COMMAND "${CUEXIS_IMPORT_TOOL}" -p "${host_executable}"
             RESULT_VARIABLE host_import_result
             OUTPUT_VARIABLE host_import_output
             ERROR_VARIABLE host_import_error)
@@ -449,6 +453,13 @@ else()
     # named explicitly so a new leak is a build failure rather than a review
     # note. Only libraries whose names start with "cuexis" are judged: the
     # compiler runtime and OS libraries are the host's own business.
+    #
+    # Names are normalized first, because the two formats spell the same library
+    # differently: PE imports are "cuexis_playback-0.7.dll", while ELF sonames
+    # are "libcuexis_playback-0.7.so.0.7.0". Without stripping the "lib" prefix
+    # and the ".so" suffix chain the ELF names would match neither the
+    # ownership guard below nor the forbidden list, which would leave this whole
+    # check passing vacuously on Linux while its PE sibling did real work.
     set(host_forbidden_cuexis_libraries
         cuexis_assets
         cuexis_world
@@ -459,13 +470,17 @@ else()
         cuexis_platform
         cuexis_behavior
         cuexis_gameplay)
+    set(host_cuexis_imports "")
     foreach(imported_library IN LISTS host_imported_libraries)
         string(TOLOWER "${imported_library}" imported_library_lower)
-        if(NOT imported_library_lower MATCHES "^cuexis_")
+        string(REGEX REPLACE "^lib" "" import_normalized "${imported_library_lower}")
+        string(REGEX REPLACE "\\.so.*$" "" import_normalized "${import_normalized}")
+        if(NOT import_normalized MATCHES "^cuexis_")
             continue()
         endif()
+        list(APPEND host_cuexis_imports "${import_normalized}")
         foreach(forbidden_library IN LISTS host_forbidden_cuexis_libraries)
-            if(imported_library_lower MATCHES "^${forbidden_library}")
+            if(import_normalized MATCHES "^${forbidden_library}")
                 message(FATAL_ERROR
                     "The reference host imports the internal Cuexis library "
                     "${imported_library}; only Playback and its public runtime are allowed")
@@ -473,13 +488,15 @@ else()
         endforeach()
     endforeach()
 
-    # A shared package must actually be consumed through its import library; a
-    # host that linked nothing would satisfy the forbidden list trivially.
+    # A static host links the Cuexis objects into the executable, so it imports
+    # no Cuexis library at all and the ownership judgement above can never fire.
+    # Say so explicitly instead of letting the "verified" line imply otherwise.
     if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
+        # A shared package must actually be consumed through its import library;
+        # a host that linked nothing would satisfy the forbidden list trivially.
         set(host_imports_playback FALSE)
-        foreach(imported_library IN LISTS host_imported_libraries)
-            string(TOLOWER "${imported_library}" imported_library_lower)
-            if(imported_library_lower MATCHES "^cuexis_playback")
+        foreach(import_normalized IN LISTS host_cuexis_imports)
+            if(import_normalized MATCHES "^cuexis_playback")
                 set(host_imports_playback TRUE)
             endif()
         endforeach()
@@ -488,6 +505,10 @@ else()
                 "The shared reference host does not import cuexis_playback: "
                 "${host_imported_libraries}")
         endif()
+    elseif(NOT host_cuexis_imports)
+        message(STATUS
+            "Reference host is static: it imports no Cuexis library, so the "
+            "internal-library ownership check has nothing to judge")
     endif()
     message(STATUS "Reference host import surface verified")
 endif()
