@@ -120,30 +120,50 @@ Stage 8 归属见 §5。
 于是走进了正例分支。以原生 bash（`C:\msys64\usr\bin` 前置到 PATH）复跑为 **19 tests OK**。
 因该差异只存在于本机沙箱，本批次**不改**该探测逻辑；hosted 上 MSYS2 环境不存在 WSL shim。
 
-## 4.1 hosted MinGW 暴露的真实缺陷（非空转守卫生效）
+## 4.1 新增门禁自身被非空转守卫抓出的缺陷（hosted MinGW 与 Linux 各一次）
 
-本批次首次推送后，**hosted Windows MinGW 在 `cuexis_reference_host_staging` 上真实失败**：
+本批次新增的宿主导入表检查，在推送后**连续两次在 hosted 上被自己的非空转守卫判失败**。
+两次是**同一个根因**，只是暴露在不同平台：
 
 ```
-The host import inspection parsed no libraries from .../cuexis_reference_host.exe;
+The host import inspection parsed no libraries from .../cuexis_reference_host;
 the check would pass vacuously
 ```
 
-根因是本批次新增门禁自身的**工具选择缺陷**：非 MSVC 分支选了 `nm`，而 **`nm` 读不了 PE 的导入表**。
-本机直接验证：对该 `.exe` 运行 `nm -D -undefined-only` 与 `nm -D --dynamic` 均返回
-`no symbols`，且 GNU `nm` 分支匹配的是 `.so` 名，PE 镜像里根本不含。
+首次在 **Windows MinGW**，随后在 **Linux（`GCC Coverage` 与 `GCC Adapter Coverage`）**。
 
-**这恰好是本批次 §3 非空转守卫设计要拦的失败模式**：若没有该守卫，MinGW 上这项检查会在
-"什么都没解析到"的情况下**报通过**——即静默空转。守卫把静默通过变成了显式失败。
+**根因（本批次自身的工具选择错误，不是环境问题）**：非 MSVC 分支原本选了 `nm`，
+但 **`nm` 在两个平台上都读不出「导入了哪些库」**：
 
-**修正**：MinGW（`WIN32` 且非 MSVC）改用 `objdump`，其 `-p` 以 `DLL Name:` 行打印 PE 导入目录；
-MSVC 仍用 `dumpbin`，Linux 仍用 `nm`。
+| 平台 | 格式 | `nm` 的实际行为 | 正确的工具与输出 |
+| --- | --- | --- | --- |
+| MinGW | PE/COFF | 对 `.exe` 返回 `no symbols`（`-D` 与 `--dynamic` 皆然） | `objdump -p` → `DLL Name: <name>` |
+| Linux | ELF | 输出的是**符号**（`libc_start_main@GLIBC_2.34`），**从不含库文件名** | `objdump -p` → `NEEDED <name>` |
 
-**证据**：以 `CUEXIS_SYMBOL_TOOL_KIND=objdump` 强制走该分支后，门禁到达并打印
+**本机实测对比（ELF，真实环境）**：
+
+| 方式 | 解析出的库 | 守卫判定 |
+| --- | --- | --- |
+| 旧：`nm -D --dynamic` + `.so` 正则 | 无（匹配 **0** 行） | 失败 |
+| 新：`objdump -p` + `NEEDED` 正则 | `libc.so.6`（匹配 **1** 行） | 通过 |
+
+**这恰是本批次 §3 非空转守卫设计要拦的失败模式**：若没有该守卫，这项检查会在
+"什么都没解析到"的情况下于**两个平台上都报通过**，且**长期静默**——这正是它要防的。
+
+**修正**：非 MSVC 平台统一改用 `objdump -p`，同一分支同时解析 PE 的 `DLL Name:` 与
+ELF 的 `NEEDED`；`nm` 分支因两个格式都用不上而删除。MSVC 仍用 `dumpbin`。
+
+**证据（本机）**：以 `CUEXIS_SYMBOL_TOOL_KIND=objdump` 强制走该分支后，门禁到达并打印
 `Reference host import surface verified`；本机 static 与 shared 两种 flavor 的
 `cuexis_reference_host_staging` 均 `100% tests passed`，其中 shared 另报
 `Reference host refused a foreign-toolchain package` 与 `Reference host refused an incompatible SDK minor`。
-（注：本机无 MinGW 工具链，故 MinGW 侧由 hosted CI 复验，本机不宣称已通过 MinGW 构建。）
+
+**口径声明**：本机**既无 MinGW 工具链也无 Linux 环境**，故这两个平台的复验**只能由 hosted CI 提供**。
+本报告不宣称本机已通过这两个平台；在 hosted 复验变绿之前，本批次不得写成"已验证"。
+
+**方法论备注（值得留存）**：一个"防止空转"的守卫，其价值在于它会**先烧到自己**。
+这两次失败都不是被测代码有问题，而是检查器本身没能力观察——若没有守卫，
+缺陷会以"永远通过"的形态存活下去。
 
 ## 5. 残余与未核对
 
