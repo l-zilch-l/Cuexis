@@ -29,7 +29,6 @@ class HostReport final {
     void summary();
 
     [[nodiscard]] auto ok() const noexcept -> bool;
-    [[nodiscard]] auto steps() const noexcept -> std::size_t;
 
   private:
     std::ostream& sink_;

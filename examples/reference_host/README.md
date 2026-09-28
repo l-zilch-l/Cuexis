@@ -48,8 +48,8 @@
 - `HostContent`（`src/host_content.hpp`）持有内容根目录、chart entry 相对路径
   （默认 `charts/main.cuexis.chart.json`）与 provider root id。
 - `HostFileProvider::readBlob()` 实现 `cuexis::content::IContentProvider`：把请求解析到
-  内容根**之下**，**拒绝任何越界请求**，并统计读取次数（`readCount()`），
-  使宿主能证明 SDK 确实向宿主索要了内容。
+  内容根**之下**，**拒绝任何越界请求**，并把每次读取的序号记入运行记录
+  （`provider.read index=N`），使宿主能证明 SDK 确实向宿主索要了内容。
 - `hostAssetTable()` 给出**显式声明**的资产表。生产宿主从自己的创作数据派生它；
   参考宿主保持显式，以便公共契约保持可见。
 - `buildProjectSource()` 把 `HostContent` 组装成 typed `PlaybackSource`；

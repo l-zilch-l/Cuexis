@@ -6,6 +6,7 @@
 #include "player_log.hpp"
 #include "player_options.hpp"
 #include "player_smoke.hpp"
+#include "player_state_name.hpp"
 
 #include <cuexis/audio/audio_transport.hpp>
 #include <cuexis/player_support/config_location.hpp>
@@ -23,24 +24,6 @@ namespace {
 
 constexpr std::string_view defaultProjectDirectory = "stage1d_project";
 constexpr std::string_view smokeTestProjectDirectory = "stage3_project";
-
-[[nodiscard]] std::string_view audioStateName(audio::PlaybackState state) noexcept {
-    switch (state) {
-    case audio::PlaybackState::Empty:
-        return "empty";
-    case audio::PlaybackState::Stopped:
-        return "stopped";
-    case audio::PlaybackState::Playing:
-        return "playing";
-    case audio::PlaybackState::Paused:
-        return "paused";
-    case audio::PlaybackState::Ended:
-        return "ended";
-    case audio::PlaybackState::Error:
-        return "error";
-    }
-    return "unknown";
-}
 
 } // namespace
 
@@ -211,7 +194,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
         const auto finalMetrics = audio->transport().metrics();
         logger.info(
             "player.audio",
-            std::string{"Final state: "} + std::string{audioStateName(finalClock.source.state)} +
+            std::string{"Final state: "} + std::string{playbackStateName(finalClock.source.state)} +
                 ", queue: " + std::to_string(finalMetrics.queuedFrames) +
                 " frames, discontinuity: " + std::to_string(finalClock.source.discontinuityId) +
                 ", underruns: " + std::to_string(finalMetrics.underrunCount));

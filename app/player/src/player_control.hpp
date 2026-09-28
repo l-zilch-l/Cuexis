@@ -101,7 +101,6 @@ class PlayerController final {
     [[nodiscard]] auto mode() const noexcept -> playback::PlaybackMode;
     [[nodiscard]] auto sessionConfig() const noexcept
         -> const player_support::ResolvedSessionConfig&;
-    [[nodiscard]] auto timingOffsetMs() const noexcept -> double;
     [[nodiscard]] auto audio() noexcept -> PlayerAudioSeat*;
     // The gain the controller was constructed with and used to open the audio device. Read back so
     // EffectiveSettings never reports a requested gain as an applied one.

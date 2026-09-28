@@ -195,7 +195,11 @@ auto readFileBytes(const fs::path& file, std::size_t maxBytes)
     }
     std::vector<std::byte> bytes(static_cast<std::size_t>(size));
     std::FILE* stream = nullptr;
-#if defined(_WIN32)
+    // _wfopen_s is an MSVC CRT extension, exactly like _dupenv_s above: MinGW
+    // defines _WIN32 but has no such symbol, so selecting it by _WIN32 would
+    // reintroduce the failure mode readEnvValue was fixed for. Both sites now
+    // branch on the same condition.
+#if defined(_MSC_VER)
     if (::_wfopen_s(&stream, file.c_str(), L"rb") != 0) {
         stream = nullptr;
     }

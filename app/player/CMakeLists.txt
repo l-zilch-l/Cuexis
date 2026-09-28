@@ -17,6 +17,8 @@ add_executable(
     src/player_smoke.hpp
     src/player_log.cpp
     src/player_log.hpp
+    src/player_state_name.cpp
+    src/player_state_name.hpp
     src/snapshot_scene.cpp
     src/snapshot_scene.hpp
 )

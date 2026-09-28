@@ -42,10 +42,6 @@ auto HostReport::ok() const noexcept -> bool {
     return ok_;
 }
 
-auto HostReport::steps() const noexcept -> std::size_t {
-    return steps_;
-}
-
 auto hexIdentity(const unsigned char* bytes, std::size_t size) -> std::string {
     std::string text;
     text.reserve(size * 2U);

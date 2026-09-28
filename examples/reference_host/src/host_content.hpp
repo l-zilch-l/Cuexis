@@ -31,8 +31,6 @@ class HostFileProvider final : public cuexis::content::IContentProvider {
     // code, as it would when a host storage device disappears.
     void failAllReads(std::string code);
 
-    [[nodiscard]] auto readCount() const noexcept -> std::size_t;
-
   private:
     std::filesystem::path root_;
     HostReport& report_;

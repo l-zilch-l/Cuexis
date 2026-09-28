@@ -251,10 +251,6 @@ auto PlayerController::sessionConfig() const noexcept
     return sessionConfig_;
 }
 
-auto PlayerController::timingOffsetMs() const noexcept -> double {
-    return timingOffsetMs_;
-}
-
 auto PlayerController::audio() noexcept -> PlayerAudioSeat* {
     return audioSeat_.get();
 }

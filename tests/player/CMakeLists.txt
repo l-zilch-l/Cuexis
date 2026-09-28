@@ -1,6 +1,7 @@
 add_executable(cuexis_player_diagnostics_tests
     frame_diagnostics_tests.cpp
     "${PROJECT_SOURCE_DIR}/app/player/src/frame_diagnostics.cpp"
+    "${PROJECT_SOURCE_DIR}/app/player/src/player_state_name.cpp"
     "${PROJECT_SOURCE_DIR}/app/player/src/snapshot_scene.cpp"
 )
 
@@ -31,6 +32,7 @@ add_executable(cuexis_player_control_tests
     "${PROJECT_SOURCE_DIR}/app/player/src/player_control.cpp"
     "${PROJECT_SOURCE_DIR}/app/player/src/player_log.cpp"
     "${PROJECT_SOURCE_DIR}/app/player/src/frame_diagnostics.cpp"
+    "${PROJECT_SOURCE_DIR}/app/player/src/player_state_name.cpp"
     "${PROJECT_SOURCE_DIR}/app/player/src/snapshot_scene.cpp"
 )
 

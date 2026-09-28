@@ -9,3 +9,6 @@ CMakeUserPresets.json
 *.user
 *.VC.db
 *.VC.VC.opendb
+
+# Compiler object files (MSVC .obj pick up the same name on every platform).
+*.obj

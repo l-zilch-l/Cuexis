@@ -1,5 +1,7 @@
 #include "frame_diagnostics.hpp"
 
+#include "player_state_name.hpp"
+
 #include <cuexis/core/error.hpp>
 #include <cuexis/playback/frame_digest.hpp>
 #include <cuexis/version.hpp>
@@ -15,24 +17,6 @@
 
 namespace cuexis::player {
 namespace {
-
-[[nodiscard]] std::string_view stateName(audio::PlaybackState state) noexcept {
-    switch (state) {
-    case audio::PlaybackState::Empty:
-        return "empty";
-    case audio::PlaybackState::Stopped:
-        return "stopped";
-    case audio::PlaybackState::Playing:
-        return "playing";
-    case audio::PlaybackState::Paused:
-        return "paused";
-    case audio::PlaybackState::Ended:
-        return "ended";
-    case audio::PlaybackState::Error:
-        return "error";
-    }
-    return "unknown";
-}
 
 [[nodiscard]] std::string_view modeName(playback::PlaybackMode mode) noexcept {
     switch (mode) {
@@ -153,7 +137,7 @@ auto FrameDiagnostics::exportArtifacts(playback::PlaybackMode mode) const -> cor
     for (const auto& row : audio_) {
         *audioOutput << row.frameIndex << ',' << row.wallClockMs << ',' << row.sourcePositionMs
                      << ',' << row.estimatedOutputLatencyMs << ',' << row.queuedFrames << ','
-                     << row.underrunCount << ',' << stateName(row.state) << "\r\n";
+                     << row.underrunCount << ',' << playbackStateName(row.state) << "\r\n";
     }
     if (auto finished = finishArtifact(*audioOutput, audioPath); !finished) {
         return finished;

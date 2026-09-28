@@ -332,10 +332,7 @@ def current_snapshot(repo_root: Path) -> VersionSnapshot:
 
 
 def _result_json(result: GateResult) -> str:
-    value = asdict(result)
-    value["base_version"] = result.base_version
-    value["candidate_version"] = result.candidate_version
-    return json.dumps(value, sort_keys=True)
+    return json.dumps(asdict(result), sort_keys=True)
 
 
 def _build_parser() -> argparse.ArgumentParser:
