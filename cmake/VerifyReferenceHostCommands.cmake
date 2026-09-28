@@ -102,11 +102,19 @@ set(cuexis_command_case_ids "")
 set(cuexis_command_fixture_ids "")
 set(cuexis_command_expectation_ids "")
 foreach(entry IN LISTS cuexis_command_cases)
-    string(REPLACE "|" ";" fields "${entry}")
-    list(LENGTH fields field_count)
-    if(NOT field_count EQUAL 3)
+    # The declaration is <id>|<kind>|<flags> and the flags field is legitimately
+    # empty for most cases. The shape is checked by counting separators rather
+    # than by splitting, because splitting leaves a trailing empty element that
+    # not every CMake version keeps: the same declaration was well formed with a
+    # trailing element counted and malformed where it was dropped, so the gate
+    # passed locally and failed on the runner. Counting also rejects a
+    # declaration that is missing the field entirely.
+    string(REGEX MATCHALL "\\|" separators "${entry}")
+    list(LENGTH separators separator_count)
+    if(NOT separator_count EQUAL 2)
         message(FATAL_ERROR "Malformed case declaration '${entry}': expected <id>|<kind>|<flags>")
     endif()
+    string(REPLACE "|" ";" fields "${entry}")
     list(GET fields 0 case_id)
     list(GET fields 1 case_kind)
     if(NOT case_kind MATCHES "^(cmd|invocation|generated|legacy)$")
