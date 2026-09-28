@@ -507,6 +507,42 @@ viewport  = 1280 x 720
 **禁止用 `math(EXPR)` 转换 `11596562486377158370` 等超出有符号 64 位的数**。
 数字轨迹的小范围算术与摘要比较**分开**。
 
+### 6.4 C01 前置的探索性测量（**设计探索，不是证据**）
+
+§6.1 把「省略 legacy 初始 sample 仍满足同一参考采样」列为 C01 的执行前置，并要求**不靠推断写成已通过**。
+该前置在动手实现前做过一次**探索性**测量，结论如下，供 R9-1/R9-3 定形使用。
+
+**问题**：legacy 路径的 `(625,0,1)` 是**第二次** update（前面有 `(0,0,0)`）；C01 的锚点命令
+`open; seek 625; quit` 使它成为**第一次**。两次 digest 是否相同？
+
+**方法**：临时把 `examples/reference_host/src/host_runner.cpp:36-41` 的 `scriptedSteps`
+由 4 项改为 3 项、去掉 `(0,0,0)` 那一项，跑
+`ctest --preset debug -j1 -R cuexis_reference_host_staging`，读
+`out/build/debug/ec/host/host-report.txt`，随后**逐字节恢复**。
+因为 `runFrameScript` 用 `scriptedSteps.back()` 初始化 advance 循环，`back()` 前后都是 `(1250,id=3)`，
+所以该扰动**只改变了「首帧之前是否有一次 update」这一个变量**。
+
+**观察结果**（逐字摘自记录）：
+
+```text
+host.frame index=0 mode=advance chartTimeMs=625 discontinuityId=1 objects=2 digest=11596562486377158370 algorithm=3
+```
+
+**与冻结 golden 逐位相同。** 结论：宿主 digest **不依赖**先采样 `t=0`；C01 的锚点语义可达。
+这与源码一致：`FrameSnapshot`（`playback_session.hpp:129-162`）不含任何历史相关字段，
+`computeFrameDigestVersion`（`frame_digest_version.cpp:123-174`）只哈希
+(frame 三元组, viewport, camera, clear color, 每个 object 的 id/变换/可见性/材质/引用)。
+
+**边界（必须遵守）**：
+
+1. 这是**探索**，**不是退出证据**。C01 仍须在 R9-5 真实执行；本节的观察值**不得**复制进任何 `expected`。
+2. 该次运行的 advance 循环摘要（1500/1750/2000/2250 ms）是**探索副产物**，
+   按 §5.2 **不得记录**；C02–C08 继续只用 §6.2 的**关系判据**。
+3. 恢复后已复跑该门禁确认通过（基线 9.62 s / 恢复后 9.01 s），且
+   `git diff -- examples/reference_host/` 为空，即扰动未残留。
+4. §10 的停止条件「绝对锚点无法解释地不匹配」**未被本次测量触发**。若 R9 实现后 C01 仍失败，
+   按 §6.1 调查初始化依赖，**不重录 golden**。
+
 ---
 
 ## 7. 验收用例
