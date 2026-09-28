@@ -338,6 +338,20 @@ TEST_CASE("PNG rejects unsupported color metadata, animation and damage", "[medi
     CHECK(importImageCode(fixture("image/corrupt_marker.jpg")) == "media.image.decode_failed");
 }
 
+TEST_CASE("PNG accepts a gAMA chunk that declares the sRGB transfer function",
+          "[media_import][e1]") {
+    // 45455 is 1/2.2, i.e. the sRGB transfer function. The rejection rule covered above refuses a
+    // gAMA chunk that is NEITHER this value NOR linear, so this file must import. The case exists
+    // because without it an implementation that refused *every* gAMA chunk would still pass the
+    // whole suite: every other gamma fixture is one that must be refused.
+    const auto declared_srgb = importImageOrFail(fixture("image/gamma_srgb_value.png"));
+    CHECK(declared_srgb.info.width == 1);
+    CHECK(declared_srgb.info.height == 1);
+    // Declaring sRGB through gAMA must land on the same transfer tag as declaring it via sRGB.
+    const auto explicit_srgb = importImageOrFail(fixture("image/srgb_chunk.png"));
+    CHECK(declared_srgb.portableTexture[32] == explicit_srgb.portableTexture[32]);
+}
+
 TEST_CASE("JPEG baseline, progressive and grayscale import to the canonical texture",
           "[media_import][e1]") {
     const auto baseline = importImageOrFail(fixture("image/baseline.jpg"));

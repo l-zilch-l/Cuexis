@@ -1,4 +1,4 @@
-#!/ usr / bin / env python3
+#!/usr/bin/env python3
 """Derive the byte-level negative fixtures for S6-E1/S6-E2 from the encoded fixtures.
 
 These fixtures are deliberately damaged copies: truncation, a corrupted metadata block, a
@@ -144,16 +144,19 @@ def main() -> None:
     write("forged_total_samples.flac", patch_flac_total_samples(mono_flac, (1 << 36) - 1))
 
 #Image negatives, derived from the committed baselines so the only difference is the defect.
-# `gamma_unsupported.png` is the source for both gamma cases : it already carries a gAMA chunk,
-#so the linear variant differs from the sRGB profile only in the gamma value.
+# `gamma_unsupported.png` is the source for all three gamma cases : it already carries a gAMA
+#chunk, so each variant differs from it only in the gamma value.
     write_image("gamma_linear.png", replace_gamma(read_image("gamma_unsupported.png"), 100000))
+#The positive counterpart : gAMA 45455 IS the sRGB transfer function, so this file must be
+#accepted. Without it an implementation that rejected every gAMA chunk would pass the suite.
+    write_image("gamma_srgb_value.png", replace_gamma(read_image("gamma_unsupported.png"), 45455))
     write_image("interlaced.png", set_interlace(read_image("rgb8.png")))
     write_image("corrupt_marker.jpg", corrupt_jpeg_marker(read_image("baseline.jpg")))
 
     for name in ("truncated.mp3", "truncated.ogg", "truncated.flac", "bad_header.flac",
                  "chained.ogg", "forged_total_samples.flac"):
         assert (AUDIO / name).exists(), name
-    for name in ("gamma_linear.png", "interlaced.png", "corrupt_marker.jpg"):
+    for name in ("gamma_linear.png", "gamma_srgb_value.png", "interlaced.png", "corrupt_marker.jpg"):
         assert (IMAGE / name).exists(), name
 
 

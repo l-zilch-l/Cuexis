@@ -846,7 +846,8 @@ auto publishGeneration(const GenerationPublishRequest& request)
         if (existing) {
             auto verified = verifyGenerationTree(generationPath, *existing);
             if (verified && markersEqual(*existing, marker)) {
-                return GenerationPublishResult{generationPath, marker.identity, 0,
+                return GenerationPublishResult{generationPath, marker.identity,
+                                               closureByteTotal(marker.closure),
                                                marker.closure.size(), marker.provenance.size()};
             }
         }
