@@ -756,3 +756,113 @@ hosted run 引用、未覆盖范围、历史追加订正、owner 最终接受。
 **保留的未决项**：`examples/reference_host/tests/commands/` 的 fixture 文件若与 §8 的必跑清单漂移，
 清单硬编码本身抓不到。**建议 case runner 用「声明清单」与「fixture 文件枚举」做 set-equality 交叉校验**
 （glob 仅作校验，不作发现）——此项**尚未获 owner 裁定**，实施时若采纳需记录。
+
+---
+
+## 15. 子代理并行执行流程表
+
+> **本节是执行编排序，不是合同。** 合同仍是 §3–§9；本节只回答「谁在什么时候动哪个文件」。
+> 行号、限额、判据一律以 §3–§9 为准，本节不复述数值。
+
+### 15.1 编排的三条硬约束
+
+1. **文件独占**：任一文件在同一时刻**只能有一个写者**。并行只发生在**不相交文件集**之间。
+2. **构建串行**：本仓库**不并发构建同一 build 目录**——`ctest` 并行在本机会挂（必须 `-j1`），
+   两个 agent 同时 `cmake --build --preset debug` 会互相破坏产物。**并行的是作者，构建是串行的。**
+3. **唯一集成写者**：`src/host_runner.cpp` 与 `src/host_report.hpp` 是集成核心，
+   **永远只有一个写者**（见 §2.4(A)：A2 把该文件名硬编码 4 次，且 §4 要求九阶段与
+   `buildProjectSource`/`prepareReload`/`commit` 留在该文件内）。
+
+**例外**：`host_commands` 与 `host_clock` 按 §4 是**不依赖 SDK 的私有单元**，
+所以它们可以由各自作者用**直接编译器调用**（不经 CMake build 目录）做 focused 自测，不违反约束 2。
+
+### 15.2 阶段与泳道
+
+| 阶段 | 泳道 | 子代理 | 独占文件（写入） | 依赖 | 产出 |
+| --- | --- | --- | --- | --- | --- |
+| **P1-a 接口冻结** | 串行 | `iface` | `src/host_commands.hpp`、`src/host_clock.hpp`（**仅头文件，先落地**） | 无 | 两个头 + 冻结的类型/函数签名 |
+| **P1-b 并行扇出** | 并行 ×4 | `parser` | `src/host_commands.cpp` | P1-a | 解析器/限额/类型化命令 + focused 自测 |
+| | | `clock` | `src/host_clock.cpp` | P1-a | transport 状态机 + 有界整数毫秒算术 + focused 自测 |
+| | | `fixtures` | `examples/reference_host/tests/commands/**` | §7 用例表 | 19 个 case 的命令文件 + 期望事件断言表 |
+| | | `runner` | `cmake/VerifyReferenceHostCommands.cmake` | §7/§8 | 必跑清单、逐例 `execute_process`、报告解析、set-equality |
+| **P1-c 并行扇出** | 并行 ×2 | `a2gate` | `tools/check_stage6_a2.py` | §2.4(A) | 新入口/私有源文件接线/case runner 调用/必跑清单的检查项 + 订正 `:340-344` 注释 |
+| | | `readme` | `examples/reference_host/README.md` | §3 | 命令模式使用说明（**草稿，P4 定稿**） |
+| **P2-a 接线** | 串行 | `wire` | `src/main.cpp`、`src/host_runner.hpp`、`CMakeLists.txt` | P1-b | `--command-file` 解析、`flag_conflict`、源文件清单加入四个新文件 |
+| **P2-b 集成** | 串行（唯一写者） | `core` | `src/host_runner.cpp`、`src/host_report.hpp` | P2-a | `HostContext`、共享 SDK 动作、真实 dispatcher、legacy 迁移 |
+| **P3-a 静态门禁** | 并行 ×2（只读） | `v-a2` | — | P2-b | `check_docs.py` + `check_stage6_a2.py` 通过，且**新检查项确实能红**（各自变异一次） |
+| | | `v-golden` | — | P2-b | 根 staging 门禁内**旧 golden 与九阶段未退化** |
+| **P3-b 动态验证** | 并行（只读） | `v-cases` | — | P3-a | C01–C12 / N01–N07 全部实跑；报告解析逐字段 |
+| | | `v-contract` | — | P3-a | 对照 §3.4 状态矩阵**逐格**核对实现，输出不符格清单 |
+| **P3-c 变异** | 串行（隔离副本） | `v-mutants` | 隔离副本（不碰主工作区） | P3-b | §7 必做变异逐条：原版绿 → 变异红 → 恢复绿，附补丁/命令/退出码/诊断 |
+| **P4 收尾** | 串行 | `ship` | `README.md` 定稿、`plan.md`、报告、版本 | P3-c | 显示版本按 §11 计算、全量两配置矩阵、R9 报告、历史追加订正 |
+
+### 15.3 每个子代理的任务契约（派发时逐条写明）
+
+**公共前提（所有子代理必读，禁止转述为"已通过"）**
+
+- 分支 `stage-06-r9-reference-host-command-loop`，基线 `670cca8`；合同见 §3–§9。
+- **禁做**：改 ADR 0042、改 SDK 公共头/API、改**任何既有 golden**、删旧门禁、
+   改失败回滚、扩大公共头 allowlist、触碰 Stage 7A/8/9–12。
+- **禁写不属自己的文件**；需要别人的文件时**只读**，并在产出中报告发现。
+- 新增 `src/` 下文件必须满足 §2.4(B)：**不得 `#include "../..."`**；
+  若包含 `cuexis/...` 头，**必须位于 `cuexis/playback/` 下**（否则 `VerifyReferenceHost.cmake:74-90` 红）。
+- **不得**把未执行/未通过/未注册的检查写成通过。
+
+| 子代理 | 必须做到 | 自验方式 | 明确不做 |
+| --- | --- | --- | --- |
+| `iface` | 落地两个头，签名能覆盖 §3.2 的语法/限额与 §3.4 的 transport 转移；类型不含 SDK 依赖 | 头文件可独立包含（`cl.exe /c` 单 TU 语法检查） | 不写 `.cpp` |
+| `parser` | §3.2 全部语法与限额；`std::from_chars` + 完整消费 + 溢出；UTF-8 BOM/CRLF；拒绝尾随 token | **直接编译器调用**跑 focused 边界自测（上限/上限+1/溢出/未闭合引号/BOM）；不占用 CMake build 目录 | 不碰 `main.cpp`、不碰 SDK |
+| `clock` | §3.4 transport 转移与有界整数毫秒算术；Paused tick 不作 clock 相加 | 同上，focused 自测覆盖 §3.4 每一格的 transport 列 | 不碰 SDK、不碰报告 |
+| `fixtures` | §7 的 C01–C12、N01–N07 逐条落成命令文件；每个 case 附**期望事件断言表**（含负例的期望诊断码与行号） | 逐文件人工核对与 §7 表格逐字对应 | 不写 CMake、不写 C++ |
+| `runner` | §8 的七条 runner 要求；**必跑清单硬编码**；每 case 独立报告路径且执行前删除旧报告；净化 PATH 后立即恢复 | 用一个**故意的假 case**确认清单/计数/set-equality 能红 | 不改 `VerifyReferenceHost.cmake` |
+| `a2gate` | §2.4(A) 的增量项 + 修 §14 记录的缺口（docstring 声称 "owns its command loop" 却无检查） | 每个新检查项**各自变异一次**确认能红 | 不放宽任何既有检查范围 |
+| `readme` | §3 的用户可见语法与语义；直说确定性 headless transport，不声称完整媒体播放暂停 | 与 §3 逐条对照，无自造语义 | 不定义限额/判据 |
+| `wire` | §3.1 CLI 兼容表；旧七 flag 的 `argument == "--xxx"` **留在 `main.cpp`**；`--advance` 冲突按"是否实际出现"判定 | `check_stage6_a2.py` 仍绿 | 不动 `host_runner.cpp` 的 SDK 动作 |
+| `core` | §4 结构：`HostContext` + 顺序 dispatch + **共享** `consumeStep`；九阶段与三个被检查符号留在 `host_runner.cpp`；§3.6 字段**只能追加在 `algorithm=3` 之后** | 本地 focused staging 跑通 + 旧 golden 不变 | **不改 golden**、不为过字符串检查留死代码 |
+| `v-a2` / `v-golden` | 见 15.2；只读 | 报告**原始命令与输出**，不得只给结论 | 不修代码，只报告 |
+| `v-cases` | 逐 case 实跑并逐字段解析报告 | 附每 case 的完整命令、退出码、报告路径 | 不接受"崩溃/超时/缺 DLL"当作负例通过 |
+| `v-contract` | 对照 §3.4 **逐格**核对；对无成功帧/`Failed`/`T×Empty` 等边界格单独构造 | 输出**不符格清单**，无则明说"逐格核对无不符" | 不推断，必须实测 |
+| `v-mutants` | §7 必做变异逐条；隔离副本 | 记录补丁/命令/退出码/诊断；**编译失败、崩溃、超时不算变异通过** | 不在主工作区改代码 |
+| `ship` | §11 版本计算、§12 命令、§13 退出清单 | 最终 SHA 上重跑；**文档提交改变 SHA 后重新验证** | 不把 case 成功等同于整体退出 |
+
+### 15.4 接口冻结点（并行能否成立的关键）
+
+- **F1**：`iface` 落地两个头 —— **在此之前 `parser`/`clock` 不得开工**，否则签名漂移。
+- **F2**：`parser`/`clock` 的 `.cpp` 与头一致 —— **在此之前 `wire` 不得开工**。
+- **F3**：`fixtures` 的 case 清单冻结 —— `runner` 的必跑清单以它为准（两者由**不同**子代理产出，
+  正好构成 §14 未决项所建议的交叉校验：`fixtures` 产出文件，`runner` 声明清单，`v-cases` 核对集合相等）。
+- **F4**：`core` 的**报告事件字段**冻结 —— 在此之前的 `runner` 报告解析只能按 §3.6 的既有字段写。
+
+### 15.5 并发度与预算建议
+
+| 项 | 建议 |
+| --- | --- |
+| P1-b 并发写者 | **4**（文件完全不相交，且 `parser`/`clock` 用直接编译器自测） |
+| P1-c 并发写者 | **2** |
+| P3-a / P3-b 并发只读者 | **2**，避免同时触发重型门禁（根 staging 有 `RESOURCE_LOCK`，互相等待而非失败） |
+| 变异执行 | **串行**，且必须在隔离副本 |
+| 重型构建（`--preset debug/release` 全量） | **同一时刻只有 1 个**，由 `ship` 或当前阶段唯一验证者持有 |
+
+**不建议**同时让两个以上子代理跑根 staging 门禁：它做 clean install + 源外配置构建，
+既贵又受 `RESOURCE_LOCK cuexis_external_consumer` 串行化，并发只会互相阻塞。
+
+### 15.6 失败与回退
+
+- 任一子代理报告**合同与实现不符**：**先记录复现/影响/替代方案/兼容迁移/测试**，
+  再由 owner 裁定，**不自行缩小范围**（§10 停止条件）。
+- 任一子代理发现需要改 ADR / SDK 公共合同 / golden：**立即停止并上报**，不得自行处置。
+- `core` 集成失败且无法在不改断言语义的前提下修复：回退到 P1-b 产物，重开接口冻结（F1），
+  **不得**通过删旧自验或平台跳过换取绿色。
+
+### 15.7 与 §10 子步骤的对应
+
+§15 不替代 §10；两者是同一批次的两种视图：
+
+| §10 子步骤 | §15 阶段 |
+| --- | --- |
+| R9-1 先红用例 | P1-b 的 `fixtures` + `runner`，接在 P2-a 之后首次成红 |
+| R9-2 parser/clock | P1-a + P1-b 的 `parser`/`clock`，加 P2-a 的 `wire` |
+| R9-3 编排 | P2-b 的 `core` |
+| R9-4 lifecycle/reload | P2-b 的 `core` 后半（`no_sample`/`lastSampleFrame`/统一清理） |
+| R9-5 门禁闭环 | P3-a / P3-b / P3-c + `a2gate` |
+| R9-6 回归/交付 | P4 的 `ship` |
