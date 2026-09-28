@@ -50,12 +50,19 @@ def resolve_git() -> str | None:
 
 
 def usable_posix_shell() -> str | None:
-    """Returns a shell that actually runs a trivial command, or None.
+    """Returns a shell that can actually execute the bootstrap block, or None.
 
     `shutil.which("bash")` is not enough on Windows: `C:\\Windows\\System32\\bash.exe`
     is the WSL launcher, which either fails outright or runs inside a different
     filesystem view. Either way the bootstrap block would be tested against the
     shim instead of the workflow. The only reliable check is to run something.
+
+    The bootstrap block is extracted verbatim from the trusted workflow, and that
+    script shells out to `git` by bare name. A shell whose PATH cannot resolve
+    git (the hosted MinGW job runs ctest under the MSYS2 shell, where the Windows
+    Git install under `C:\\Program Files\\Git` is absent from PATH) would make the
+    positive case fail with a false "lacks <file>" and the negative case pass
+    vacuously, so git must be resolvable by the same shell too.
 
     Non-UTF-8 bytes are tolerated here precisely because a broken shim emits
     localized text; the caller only needs to know whether the shell is usable.
@@ -77,6 +84,17 @@ def usable_posix_shell() -> str | None:
     # The WSL shim identifies itself in its banner; reject it even when the
     # probe happens to succeed on a machine with a working WSL distribution.
     if "wsl" in Path(shell).name.lower():
+        return None
+    try:
+        git_probe = subprocess.run(
+            [shell, "-c", "git --version"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if git_probe.returncode != 0:
         return None
     return shell
 
@@ -571,7 +589,8 @@ class VersionGateTests(unittest.TestCase):
         if shell is None:
             self.skipTest(
                 "no usable POSIX shell available to execute the bootstrap block; "
-                "`bash` is either absent or resolves to the WSL shim"
+                "`bash` is absent, resolves to the WSL shim, or its PATH cannot "
+                "resolve `git` (the block shells out to git by bare name)"
             )
         script = self._bootstrap_script()
         with tempfile.TemporaryDirectory() as directory:
