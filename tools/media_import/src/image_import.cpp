@@ -242,9 +242,9 @@ struct PngProfile final {
             // relies on a method libpng would accept but the profile never described is refused
             // here, and the [[nodiscard]] reader result is not dropped silently.
             if (header.readU8() != pngCompressionDeflate) {
-                return core::unexpected(
-                    detail::mediaError("media.image.header_invalid",
-                                       "PNG compression method is not part of the v1 image profile"));
+                return core::unexpected(detail::mediaError(
+                    "media.image.header_invalid",
+                    "PNG compression method is not part of the v1 image profile"));
             }
             if (header.readU8() != pngFilterAdaptive) {
                 return core::unexpected(

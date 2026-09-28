@@ -764,32 +764,6 @@ template <typename Resource>
     return {};
 }
 
-[[nodiscard]] auto finiteMatrix(const float (&matrix)[16]) noexcept -> bool {
-    return std::all_of(std::begin(matrix), std::end(matrix),
-                       [](float value) { return std::isfinite(value); });
-}
-
-struct Point3 final {
-    double x{};
-    double y{};
-    double z{};
-};
-
-[[nodiscard]] auto transformPoint(const float (&matrix)[16], const Point3& point) noexcept
-    -> Point3 {
-    return Point3{
-        static_cast<double>(matrix[0]) * point.x + static_cast<double>(matrix[4]) * point.y +
-            static_cast<double>(matrix[8]) * point.z + static_cast<double>(matrix[12]),
-        static_cast<double>(matrix[1]) * point.x + static_cast<double>(matrix[5]) * point.y +
-            static_cast<double>(matrix[9]) * point.z + static_cast<double>(matrix[13]),
-        static_cast<double>(matrix[2]) * point.x + static_cast<double>(matrix[6]) * point.y +
-            static_cast<double>(matrix[10]) * point.z + static_cast<double>(matrix[14])};
-}
-
-[[nodiscard]] auto finitePoint(const Point3& point) noexcept -> bool {
-    return std::isfinite(point.x) && std::isfinite(point.y) && std::isfinite(point.z);
-}
-
 [[nodiscard]] auto multiplyMatrices(const std::array<float, 16>& left,
                                     const std::array<float, 16>& right) noexcept
     -> std::array<float, 16> {
