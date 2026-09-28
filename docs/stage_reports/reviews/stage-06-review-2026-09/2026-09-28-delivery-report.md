@@ -59,7 +59,52 @@
 | STD-12 | 低 | **已修正**：`ENV{PATH}` 恢复不可再被 `FATAL_ERROR` 跳过；分发脚本 GLOB 行为已记录 | W5 / R8 |
 | STD-13 | 低（范围外） | **已修正**：两个 `.obj` 去跟踪 + `*.obj` 规则 | R8 |
 
-## 4. 未关闭项：归属与恢复条件
+## 4. Spec 轴：32 项逐条处置
+
+复核共 32 项（高 5 / 中 11 / 低 16），另有 1 项（SPEC-09）经二轮核实**撤回**。逐项处置如下；
+每项的证据在其批次退出报告中。
+
+| ID | 严重度 | 处置 | 批次 |
+| --- | --- | --- | --- |
+| SPEC-18 | 高 | **已修正**：按 R0-3 (a) 移除 `content_mismatch` 后的自动重试，改为显式 `Open`/`Rebuild` | R6 |
+| SPEC-20 | 高 | **已修正**：FLAC 伪造时长改为无条件拒绝，负例可执行 | R4 |
+| SPEC-21 | 高 | **已修正**：按 R0-2 (a) 拒绝线性 `gAMA`（`media.image.gamma_unsupported`），不改 canonical bytes、不重冻结 golden | R4 |
+| SPEC-23 | 高 | **已修正**：单次原子替换消除双 rename 窗口；恢复逻辑还原 backup 而非删除 | R5 |
+| SPEC-26 | 高 | **已修正**：按 C4 §8 的 run 表重写 `S6-G13` 归属，并追加订正说明 | R1 |
+| SPEC-03 | 中 | **已修正**：`--context` 真正选择日期规则（historical 用其记录的发布上下文），`live` 语义保留 | R3 |
+| SPEC-04 | 中 | **登记 BLOCKED**：门禁自身修改保护需跨阶段编号与 protection 规则裁定 | R3 |
+| SPEC-05 | 中 | **已修正**：四条可执行负例（缺基线、缺 checker/test/workflow、PR 竞争、历史上下文复验） | R3 |
+| SPEC-07 | 中 | **已修正**：A2 表征补齐冻结决策内容，`check_stage6_a2.py` 注册为 CTest `cuexis_contract_s6_a2` | R3 |
+| SPEC-15 | 中 | **已修正**：`EffectiveSettings` 三字段改为真实协商值，不再是 requested 镜像 | R6 |
+| SPEC-16 | 中 | **已修正**：四个宿主字段按可回读性改名/新增回读；`LaunchOption` 删除 | R6 |
+| SPEC-19 | 中 | **已修正**（19b 登记 BLOCKED）：decoder 故障注入用例补齐；19a/19c 以变异反证 | R6 |
+| SPEC-22 | 中 | **已修正**：JPEG 损坏 marker fixture 补齐；interlaced PNG 显式拒绝 | R4 |
+| SPEC-24 | 中 | **已修正**：pair 锁覆盖两个目标父目录；幂等重发报告真实闭包字节 | R5 |
+| SPEC-32 | 中 | **已修正**：关闭报告 §8 承接 5 条批次自认残余，并注明未随 2026-09-27 接受一并被接受 | R1 |
+| SPEC-13 | 中 | **已修正**：`buildPresentationCommands` 成为唯一排序/摘要来源，adapter 删除约 16.7 KB 重复实现 | R6 |
+| SPEC-01 | 低 | **登记残余（未处置）**：CXT→canonical lowering 新增的 `validateFoundationProfile` 硬拒入口**未在任何批次报告中落盘**。行为方向与加固计划一致，风险低，属"报告须对应实际调用路径"的缺口（见 §5 第 10 项） | — |
+| SPEC-02 | 低 | **已修正**：`packed.field.wire_range` 独立成码，不再复用预算码 | R2 |
+| SPEC-06 | 低 | **已修正**：修正 `version.build.exhausted` 抢在 `version.unchanged` 之前的诊断语义 | R3 |
+| SPEC-08 | 低 | **已修正**：`--event` 加 `choices` 与 help，明确"仅记录；事件分流由 workflow job 条件承担" | R1 |
+| SPEC-10 | 低 | **已修正**：追加订正说明，给出正确码 `playback.identity.resource_missing` | R1 |
+| SPEC-11 | 低 | **登记残余（未处置）**：C1 专用的零上限、C1 专用 stale、`candidate.identity.resource_conflict` 独立用例**仍缺**。该项原已被 C1 退出报告自认、列入关闭报告 §8"残余（有意保留）"并经 owner 2026-09-27 接受，本计划按已接受残余保留可见性（见 §5 第 11 项） | — |
+| SPEC-12 | 低 | **登记残余（未处置）**：两条计划外新增约束（`lowerCandidateRuntime` 按 execution ID 重排 `RuntimeObject`；`candidateResourceRequirements` 额外拒绝 audio+presentation 混合资产）**未落盘**。风险低，属未记录的行为扩张（见 §5 第 12 项） | — |
+| SPEC-14 | 低 | **登记残余（未处置）**：D1 的线程/borrow-owning 寿命语义**仍无测试**。复核二轮已降级并指出计划只要求**定义**（接口注释已定义），验收段要求的 renderer 覆盖已具备。处置需 owner 选择：补 focused 用例，或在计划里明确它只是文档约定（见 §5 第 9 项） | — |
+| SPEC-17 | 低 | **已修正**：补注**证据级别**（单测 ≠ 热拔插验证） | R1 |
+| SPEC-25 | 低 | **已登记残余**：磁盘满/只读介质/配额失败仍未取证（见 §5 第 8 项） | R5 |
+| SPEC-27 | 低 | **已修正**：符号级检查与非 shared 门禁接线（见下）；toolchain 与分发范围按口径登记 | R7 |
+| SPEC-28 | 低 | **已修正**：candidate 隔离扫描成为门禁（工厂断言本已注册，见 §5.1） | R7 |
+| SPEC-29 | 低 | **已修正**：两处计划外机制写入 `BUILDING.md`，成为已记录机制 | R1 |
+| SPEC-30 | 低 | **已登记残余**：分发门禁仅 Windows（门禁本身无平台锁定，见 §4 第 6 项） | R7 |
+| SPEC-31 | 低 | **已修正**：preset 计数统一为 8 | R1 |
+| SPEC-09 | — | **已撤回**：二轮核实后不成立 | — |
+
+**SPEC-27 的落地**：符号级检查（宿主导入表）、SDK minor 拒绝负例、candidate 零命中扫描
+三项均已在 `cuexis_reference_host_staging` 内注册并在 static/shared 实跑；
+toolchain 拒绝仅在 shared（因 static 包无该检查块，见 §4 第 7 项）；
+交互命令循环的 ADR 冲突已上报（§4 第 1 项）。
+
+## 5. 未关闭项：归属与恢复条件
 
 本计划**没有**把任何未处置项静默丢弃。以下每项都有明确归属与可执行的恢复条件。
 
@@ -72,6 +117,11 @@
 | 5 | STD-09（原始沉迷） | 类型强化变更公共 API，计划 §2 排除 | 残余；登记为后续设计项，需独立 ADR |
 | 6 | 分发门禁在 Linux 未注册 | `CMakePresets.json:98-102` 的 `headless-*` 系列设 `CUEXIS_BUILD_PLAYER: "OFF"`，Linux 门禁不构建 Player。**门禁本身没有 Windows 锁定**（受 `if(CUEXIS_BUILD_PLAYER)` 保护） | 登记为 **Stage 8 输入**；恢复条件：在 Linux 启用 `CUEXIS_BUILD_PLAYER` |
 | 7 | static 无 toolchain 拒绝负例 | static 安装包的 `CuexisConfig.cmake` 本身**不含**兼容性检查块（在 `if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")` 内），故不存在可拒绝的面 | 已按口径登记（不造"永远空转"的负例）；static 的拒绝面由**与 flavor 无关**的 SDK minor 负例承担，且该负例在 static 下真实运行 |
+| 8 | SPEC-25：磁盘满/只读介质/配额失败未取证 | 需真实或可注入的介质故障环境，本机与 CI 均不提供 | 残余（W3 已登记）；恢复条件：引入可注入的写入失败端口后补故障注入用例 |
+| 9 | SPEC-14：D1 线程/borrow-owning 寿命语义无测试 | 复核二轮已降级：计划只要求**定义**（接口注释已定义），验收段要求的 renderer 覆盖已具备 | **需 owner 选择**：(a) 补 focused 用例把线程语义当合同，或 (b) 在计划中明确它只是文档约定 |
+| 10 | SPEC-01：lowering 的 `validateFoundationProfile` 硬拒入口未落盘 | 属**记录缺口**而非行为缺陷（行为方向与加固计划一致）；本计划的批次报告未补登 | 残余；恢复条件：在 R2 或 Stage 8 的记录中补登该入口。**不写成已修正** |
+| 11 | SPEC-11：C1 零上限 / C1 专用 stale / `resource_conflict` 独立用例 | 该项为**已接受残余**：C1 退出报告自认、列入 Stage 6 关闭报告 §8「残余（有意保留）」，owner 于 2026-09-27 接受 | 残余（保持可见）；归属 Stage 7A/8；恢复条件：补三条 focused 用例 |
+| 12 | SPEC-12：两条计划外新增约束未落盘 | 同为**记录缺口**（execution ID 重排、audio+presentation 混合拒绝），spec 未写但风险低 | 残余；恢复条件：在 Spec 或 C1 报告中落盘这两条约束。**不写成已修正** |
 
 ## 5. 诚实性登记（本计划最重要的部分）
 
