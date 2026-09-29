@@ -375,6 +375,8 @@ R7 步骤 4 把「交互命令循环」按「脚本式宿主即本阶段口径�
 - **规范来源**：[R9-reference-host-command-loop.md](R9-reference-host-command-loop.md)（唯一权威）。
 - **门禁策略裁定**：[R9-gate-policy-audit-decisions.md](R9-gate-policy-audit-decisions.md)
   —— 记录门禁策略基线的根因、修法裁定、策略影响审计与反例判据，是本批次门禁改动的实施依据。
+- **策略影响表**：[R9-gate-policy-impact-table.md](R9-gate-policy-impact-table.md)
+  —— 逐策略列出该门禁是否依赖，含 `CMP0007` 空元素溯源、`CMP0124` 作用域分析与基线在原始脚本上的判定性实验。
 - **不改动**：ADR 0042 冻结正文、SDK 公共 API/枚举、SDK API `0.7.0`、既有 golden。
 - **关闭条件**：该文档 §13 的退出清单全部满足，含 owner 接受 R9 退出；**R9 退出不等于 PR 合并授权**，
   其他残余也不随 R9 关闭。
