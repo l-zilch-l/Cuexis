@@ -333,3 +333,71 @@ R9 状态：实现完成、本地验证完成，并在最后行为 SHA `71de8b1`
 该数字的源头是 [修正计划](../../../stage_plans/reviews/stage-06-review-remediation/plan.md) 的 §5 R4 行与
 §6 R4 预期结果；两处已于 2026-09-29 改为 **4 条**负例断言（其中 **3 条**有变异反证记录），
 依据是 [W2](2026-09-28-w2-media-import.md) 追加审计 §2 的计数论证。
+
+## 10. 追加核查（2026-09-29）：ADR 0042 的 S6-D01–S6-D08 实施状态
+
+[ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md) 的状态行原写「尚未实现」。该词在
+2026-09-20 冻结当日是准确的（该 ADR 自己注明"不代表 A1 基线、A2 合同落盘/表征或任何实现批次已经通过"），
+但自冻结起逐字未变——Stage 6 关闭时唯一的改动是把"适用范围"链接从 `active/` 改为 `completed/`——到今天
+会把 8 条决策中已落地的成果一并抹掉。**其状态行已按本节结论订正；ADR 的 S6-D01–S6-D08 决策正文未作
+任何改动。** 本节承担证据角色（ADR 拥有决策，报告拥有日期化证据）。
+
+核查分两个基线，因为二者结论不同：**Stage 6 关闭基线 `eaaf375`** 与 **当前 `master` `670cca8`**
+（PR #30 合并，比关闭点晚 43 个提交）。R9 只在未合并分支上，不计入本节。
+
+### 10.1 逐条状态
+
+| 决策 | 状态 | 关键证据 |
+| --- | --- | --- |
+| S6-D01 显式 source 与候选隔离 | **部分实现** | 开关默认 OFF `CMakeLists.txt:42-43`；3 个工厂在安装 `FILE_SET` 内 `engine/playback/CMakeLists.txt:37,44`、实现 `engine/playback/src/playback_source.cpp:792,852,895`；entry 表 `schemas/cuexis.chart-entry.v1.schema.json`。**缺口**：`Cuexis_ALLOW_EXPERIMENTAL` 在非文档代码中**只出现在两张禁止 token 表**（`cmake/VerifyReferenceHost.cmake:396`、`tools/check_stage6_a2.py:252`），无实现；candidate flavor 库名/安装元数据不存在；Player `--candidate-entry` 与 `--cxc` 均不存在（`git grep` 于 `app/` 零命中）；**无任何 preset 或 CI 开启 candidate** |
+| S6-D02 身份与 lowering | **已实现** | 域/NUL/`v5g1:` `engine/chart/src/candidate_lowering.cpp:49-65`；重复拒绝 `:163`、`:352`；golden `tests/fixtures/stage6_a2/golden/execution_identity.json`、`prepared_identity.json`；断言 `tests/chart/candidate_lowering_tests.cpp:134` |
+| S6-D03 A16 feature 与 resource closure | **部分实现（关键缺口）** | **不存在派生 feature 的 typed assembler**：`git grep -i assembl` 在 `engine/`、`tools/` 只命中身份装配（`assembleCandidatePreparedSemanticIdentity`、`assemblePreparedSemanticIdentity`、`assembleResourceIdentities`、`assembleIdentityStage`）与注释，无 assembler；feature 从 wire 读出、由调用方写入；closure 在 decode 期派生；`tools/` 无 chart-candidate 工具入口；candidate 正例为测试内注入 feature（ADR `:114` 明文禁止该做法） |
+| S6-D04 renderer 分层 | `670cca8` **已实现**；`eaaf375` **未满足** | 见 §10.2。实测 `eaaf375:engine/render_opengl/src/open_gl_presentation.cpp`：`SummaryHash` 4 处、`hashCommand` 3 处、`buildDraws` 4 处、`buildPresentationCommands` **0 处**；`670cca8` 与当前 HEAD：0/0/1/**2** |
+| S6-D05 配置、设备与事务 | 主体**已实现**；`eaaf375` 含 1 处**违反 ADR** | 类型与用例见 `engine/player_support/`、`tests/player_support/player_support_tests.cpp`；6 步事务 `app/player/src/player_control.cpp:586,613,647,655,677,686`。**偏差**见 §10.2 |
+| S6-D06 离线媒体栈与发布 | **已实现** | 默认 OFF `CMakeLists.txt:41`；预算表与 ADR 逐项一致 `tools/media_import/include/cuexis/media_import/media_import.hpp:25-36`；CLI 门禁 `cmake/VerifyMediaImporter.cmake`；golden `tests/fixtures/stage6_e/media/`。关闭后查出 4 处真实缺陷，R4 已修（本文 §6） |
+| S6-D07 版本门禁 | 主体**已实现**；1 项登记 BLOCKED | `.github/workflows/version-gate.yml:31-83`（受信任拷贝清单 `:58-71`）、`:85-119+`、`:160+`；CTest `cuexis_contract_version_gate`。**未满足**：`:321` 的"修改门禁本身需代码所有者复核"——仓库**无 CODEOWNERS**，SPEC-04 BLOCKED（本文 §5 第 4 项） |
+| S6-D08 SDK 版本与具名宿主 | **部分实现** | 宿主与 clean-staged `find_package` 消费由 `tools/check_stage6_a2.py:316-338` 钉住、CTest `cuexis_contract_s6_a2`。**缺口**：`:350-351` 的六动词命令循环在 `670cca8` 上**不存在**（该 SHA 的 `examples/reference_host/src/main.cpp` 只有 argv 解析），仅由未合并的 R9 分支实现；`:333` 冻结的 SDK 目标 `0.7.1` 未落地（`cmake/CuexisVersion.cmake:8` 仍 `0.7.0`） |
+
+### 10.2 关闭基线 `eaaf375` 上的两处偏差
+
+两处都**直接违反 ADR 正文**，都写在关闭报告的残余清单里、而对应的验收项仍记为「通过」：
+
+- **S6-D04**：ADR `:145` 要求"OpenGL 只消费命令、不维护独立算法"。`eaaf375` 的
+  `open_gl_presentation.cpp` 仍有 `SummaryHash`/`hashCommand`/`buildDraws`，且**完全不引用**
+  `buildPresentationCommands`（实测 0 处）。`completion.md:145` 把它登记为"残余（有意保留）"，
+  但 `S6-G09` 仍记"通过"。独立复核把它评为**高**，R6 才收敛（[W4](2026-09-28-w4-render-convergence.md)）。
+- **S6-D05**：ADR `:210`/`:214`/`:242-243` 要求**不实现自动重试**、不把 content mismatch 当模式探测。
+  `eaaf375:app/player/src/player_control.cpp:404,446` 在 `playback.mode.content_mismatch` 后自动重试并
+  改变模式。由关闭后的 R0-3/R6 删除，并代之以显式 `--mode`（[修正计划](../../../stage_plans/reviews/stage-06-review-remediation/plan.md) 的 §5/§6）。
+
+两者在 `670cca8` 上均已收敛（`SummaryHash`/`hashCommand` 归零、`content_mismatch` 分支消失）。
+
+### 10.3 变更控制未满足项
+
+ADR `:369` 写「**每个例外都必须先变更本 ADR 或所属 Spec**」。§10.2 的两处例外**既未变更 ADR 也未变更
+Spec**，只以"残余"记入 `completion.md` 并经 owner 于 2026-09-27 接受。ADR `:362-375` 另要求 A2 完成六项
+交付物——这六项**已满足**（字段级 Spec/Schema、API 草案、模块/安装图、golden、表征脚本已注册为
+CTest `cuexis_contract_s6_a2`）。
+
+### 10.4 一处需要 owner 判断、本节不下结论的账目
+
+`completion.md:94` 与 `:175` 写「本阶段没有新增公共 SDK 契约（SDK API 保持 `0.7.0`）」。但
+`engine/playback/include/cuexis/playback/playback_source.hpp:83-91` **新增了 3 个公开静态工厂**
+（`fromFilesystemProjectEntry`、`fromCxcFileEntry`、`fromCxcMemoryEntry`），且该头在安装
+`FILE_SET HEADERS` 内（`engine/playback/CMakeLists.txt:37,44`）。ADR `:333` 把 Stage 6 的 SDK 目标
+冻结为 `0.7.1`，正是为这类 additive 新名预留的位次；而 `:370` 又写"SDK/库版本本轮不改代码、不新增
+实际依赖"。
+
+**这两句如何并存，取决于对 `:333` 与 `:370` 的解释，属 owner 的裁定范围，本节只记录事实，不判定
+Stage 6 是否违反该 ADR。** 需要指出的是：`0.7.1` 至今未落地确属事实（`cmake/CuexisVersion.cmake:8`）。
+
+### 10.5 本次核查未能核实的事项
+
+- **受保护分支、串行合并与 required check 的当前有效性**：只有 `2026-09-20-s6-b1-version-gate.md:140-143`
+  的当日快照；本次只读、未访问 GitHub API。
+- **真实安装树中是否存在 candidate flavor 与 experimental 元数据**：需 configure/install 实验树；
+  本次只读未构建，结论由 CMake 源码推断（**证据强度高，但非实测**）。
+- **candidate ON 的端到端行为**：无 preset/CI 配置该宏，且本次不允许构建，无法运行。
+- **S6-D06 的跨平台逐字节一致**：仅能引用 hosted 报告自述，无法本地复现（Windows 主机、只读）。
+- **S6-D02 的 typed requirements 逐字段对照**：只核对载体结构与重复拒绝路径，未把全部字段与
+  Packed Spec §6.5 逐项比对（**证据强度：中**）。
