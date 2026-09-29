@@ -72,7 +72,19 @@ Stage 6 关闭并归档后，以下四项**没有任何阶段计划把它列入�
 | 显式 candidate 与实验隔离 | S6-D01 | `Cuexis_ALLOW_EXPERIMENTAL` 无代码实现；candidate flavor 库名与安装元数据不存在；Player `--candidate-entry`（配 `--project`/`--cxc`）未实现；**没有任何 preset 或 CI 开启 `CUEXIS_ENABLE_CHART_V5_CANDIDATE`** | 该宏在非文档代码中只出现在两张禁止 token 表（`cmake/VerifyReferenceHost.cmake:396`、`tools/check_stage6_a2.py:252`）；根 `CMakeLists.txt:42` 默认 OFF；`git grep CHART_V5_CANDIDATE -- CMakePresets.json .github/` 零命中；复核已登记 SPEC-19b BLOCKED |
 | 离线 typed assembler 与 feature 派生 | S6-D03 | 不存在派生 feature 与 resource closure 的 assembler；无 chart-candidate 离线工具入口；`CxtV2Loader::expand` 无生产调用方；candidate 正例仍是测试内注入 feature（ADR `:114` 明文禁止） | `git grep -in assembler -- engine/ tools/ tests/` 只命中 `assembleResourceIdentities`（资源身份装配，非 feature 派生） |
 | 具名宿主六动词命令循环 | S6-D08 | `open`/`play`/`pause`/`seek`/`reload`/`quit` 未进入 `master` | `670cca8:examples/reference_host/src/` 无 `host_commands.*` 与 `host_clock.*`；实现仅存在于未合并的 R9 批次 |
-| SDK API `0.7.1` | S6-D08（`:333`） | ADR 冻结的 Stage 6 SDK 目标未落地 | `cmake/CuexisVersion.cmake:8` = `0.7.0`；同期确有 3 个 additive 公开工厂进入安装头 `engine/playback/include/cuexis/playback/playback_source.hpp:83-91` |
+| SDK API `0.7.1` | S6-D08（`:333`） | ADR 冻结的 Stage 6 SDK 目标未落地，且**被 Stage 6 自己建的版本门禁锁死**（见下） | `cmake/CuexisVersion.cmake:8` = `0.7.0`；同期确有 3 个 additive 公开工厂进入安装头 `engine/playback/include/cuexis/playback/playback_source.hpp:83-91` |
+
+**`0.7.1` 的门禁阻塞（2026-09-29 实测）**：`tools/check_version_gate.py:213-218` 规定 SDK API 版本
+一经变更即须 `--allow-sdk-api-change` 放行，否则报 `version.sdk_api.changed`；而该开关**没有任何工作流
+传入**（`.github/workflows/version-gate.yml:74-83`、`:126`、`:175` 均未传），且 `:58-71` 把检查器**从
+base commit 取出**再运行，故**候选分支无法自行开启它**。用工作流的默认参数实测：`0.7.0 → 0.7.1`
+**失败**（`version.sdk_api.changed`），同版本对照**通过**。
+
+因此 `0.7.1` **不是改一个数字即可落地**：必须先往 `master` 合入对 `version-gate.yml` 的修改，而这
+改的是防篡改契约门禁本身——ADR 0042 `:321` 要求这类修改经**代码所有者复核**，本仓库**没有
+CODEOWNERS**（SPEC-04 至今 BLOCKED），该复核无处可做。**技术上升版本本身是安全的**（`SameMinorVersion`
+下 `0.7.0` 与 `0.7.1` 同 minor 兼容，与 ADR `:333` 的描述一致）：**阻塞来自门禁，不是兼容性。**
+处置该阻塞需要一次条件化放行机制的设计（保持"每次变更都需一次刻意记录"的本意），属本阶段范围。
 
 **这四项是 Stage 7A 的关闭前置条件**：Stage 7A 必须在关闭前**逐项处置**——或已实现并有门禁/用例
 证据，或经 [ADR](../../../adr/README.md) 或所属 Spec 的变更**明示为被接受的例外**；任一项既未实现

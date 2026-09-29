@@ -442,3 +442,38 @@ CTest `cuexis_contract_s6_a2`）。
 - **S6-D06 的跨平台逐字节一致**：仅能引用 hosted 报告自述，无法本地复现（Windows 主机、只读）。
 - **S6-D02 的 typed requirements 逐字段对照**：只核对载体结构与重复拒绝路径，未把全部字段与
   Packed Spec §6.5 逐项比对（**证据强度：中**）。
+
+### 10.6 SDK API 版本变更被本阶段自己的门禁锁死（2026-09-29 实测）
+
+§10.4 把"是否补进到 `0.7.1`"留给 owner。在补做这项处置时发现一个**与版本号本身无关的阻塞**，实测如下。
+
+`tools/check_version_gate.py:213-218` 规定 `CUEXIS_SDK_API_VERSION` 一经变更即须 `--allow-sdk-api-change`
+放行，否则失败：
+
+```text
+version.sdk_api.changed: SDK API changed from 0.7.0 to 0.7.1 without explicit acceptance
+```
+
+而该开关**没有被任何工作流传入**——`version-gate.yml:74-83`、`:126`、`:175` 三处调用均不含它；全仓库
+仅 `check_version_gate.py` 自身与 `check_version_gate_tests.py:237`（以 `True` 调用）引用该名字。更
+关键的是 `version-gate.yml:58-71` 把检查器**从 `CUEXIS_BASE_SHA` 取出**再运行，且 `:62` 连工作流文件
+本身也从 base 取——**这是正确的防篡改设计，其副作用是候选分支无法自行开启该开关**。
+
+以工作流相同的默认参数直接调用 `compare_snapshots` 的结果（含同版本对照）：
+
+| 场景 | `allow_sdk_api_change` | 结果 |
+| --- | --- | --- |
+| `0.7.0 → 0.7.1` | `False`（工作流默认） | **失败** `version.sdk_api.changed` |
+| `0.7.0 → 0.7.1` | `True` | 通过，`sdk_api_change_explicitly_allowed=True` |
+| `0.7.0 → 0.7.0`（对照） | `False` | 通过 |
+
+**结论**：`0.7.1` 无法由本批次落地。要落地须先往 `master` 合入对 `version-gate.yml` 的修改，而这改的是
+**防篡改契约门禁本身**——ADR 0042 `:321` 要求这类修改经代码所有者复核，而本仓库**没有 CODEOWNERS**
+（SPEC-04 至今 BLOCKED），该复核无处可做；无条件传入该开关则会**永久**放开 SDK API 变更保护。
+
+需要区分的是：**版本变更本身在契约上没有问题**。`CMakeLists.txt:645-646` 以
+`COMPATIBILITY SameMinorVersion` 写出安装包版本，`0.7.0` 与 `0.7.1` 同 major.minor，正是 ADR `:333`
+为 additive 新名预留的位次。**阻塞全部来自门禁的放行通路未接线，不是兼容性问题。**
+
+经项目所有者于 2026-09-29 决定：**本批次不升版本**；`0.7.1` 连同本节实测的阻塞一并作为 Stage 7A 的
+关闭前置条件登记（[Stage 7 计划](../../../stage_plans/future/stage-07/plan.md)）。

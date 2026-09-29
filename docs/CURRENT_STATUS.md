@@ -200,6 +200,14 @@ PR #30 合并进 `master`（`670cca8`）；批次 R9（Reference Host 命令循�
 归属与前置条件，不构成任何实现或发布声明。逐条证据见
 [复核交付报告 §10](stage_reports/reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md)。
 
+其中 **SDK API `0.7.1` 另有一个实测到的阻塞**（2026-09-29）：`tools/check_version_gate.py:213-218`
+要求 SDK API 版本变更须经 `--allow-sdk-api-change` 放行，而该开关**没有任何工作流传入**，且
+`version-gate.yml:58-71` 把检查器从 base commit 取出再运行，因此**候选分支无法自行开启**。实测
+`0.7.0 → 0.7.1` 在工作流默认参数下**失败**（`version.sdk_api.changed`），同版本对照通过。落地
+`0.7.1` 须先改 `version-gate.yml` 本身，而 ADR 0042 `:321` 要求这类修改经代码所有者复核——本仓库
+**没有 CODEOWNERS**。**版本变更在契约上是安全的**（`SameMinorVersion` 下同 minor 兼容），**阻塞来自
+门禁的放行通路未接线**。经所有者决定，本批次不升版本，该阻塞随 `0.7.1` 一并归入 Stage 7A 关闭前置。
+
 ## 已关闭的 Full Review
 
 Stage 5 已于 2026-08-28 经 PR #20 合并至 `master`；其 S5-H 报告保留为关闭前的本地检查快照，
