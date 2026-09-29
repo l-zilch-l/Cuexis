@@ -181,13 +181,13 @@ Linux Quality、Windows MSVC、Windows MinGW（push 与 pull_request）与 Versi
 [legacy-paths](stage_plans/legacy-paths.md) 记录。PR、合并与发布属于另行授权动作，本阶段未开 PR、
 未合并、未发布。
 
-`stage-06-review-remediation`（Stage 6 双轴复核发现项修正工作包）当前 active：批次 R0–R8 已退出并随
-PR #30 合并进 `master`（`670cca8`）；批次 R9（Reference Host 命令循环与 play/pause）已实现，并通过
-**最终 tip `cc14fcd`** 的 hosted 验证——该 tip 在 push 与 pull_request 两个事件上共 **7 个运行全部
+`stage-06-review-remediation`（Stage 6 双轴复核发现项修正工作包）**已于 2026-09-29 关闭**：批次 R0–R8
+已退出并随 PR #30 合并进 `master`（`670cca8`）；批次 R9（Reference Host 命令循环与 play/pause）已实现，
+并通过**最终 tip `cc14fcd`** 的 hosted 验证——该 tip 在 push 与 pull_request 两个事件上共 **7 个运行全部
 通过**（含 Version Gate），覆盖最后**行为** SHA `71de8b1` 之后的 10 个文档提交。**owner 已于
-2026-09-29 接受 R9 退出**，`SPEC-27` 的关闭依据至此完整，记为 **closed**。**本工作包本身尚未关闭**：
-其关闭仍需 owner 接受关闭报告，且 §4.1 记录的重复 tick 预算守卫是否应合并 **owner 尚未裁定**——
-**R9 退出达成不等于本工作包关闭**。本工作包不重开已关闭的 Stage 6，也不
+2026-09-29 接受 R9 退出**，`SPEC-27` 的关闭依据至此完整，记为 **closed**；owner 同日接受本工作包的关闭
+报告，并一并接受 R9 契约（含 R9 报告 §5.1 记录的冗余 tick 预算守卫，**保持现状、不合并**），故
+**本工作包已无未决项、状态词为 `completed`**。本工作包不重开已关闭的 Stage 6，也不
 构成 Stage 7A / Stage 8 的实现授权或发布授权。入口：
 [修正计划](stage_plans/reviews/stage-06-review-remediation/plan.md)。
 

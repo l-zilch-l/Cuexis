@@ -42,7 +42,8 @@ stage-06-review-remediation
   批次 R0–R8 已退出并随 PR #30 合并进 master，交付证据见 stage_reports/reviews/stage-06-review-2026-09/；
   批次 R9（Reference Host 命令循环与 play/pause）另行开启，已实现并通过最终 tip `cc14fcd` 的
   hosted 验证（push 与 pull_request 两事件共 7 个运行全绿），**owner 已于 2026-09-29 接受退出**，
-  `SPEC-27` 关闭依据完整并记为 closed；本工作包本身尚未关闭（关闭仍需 owner 接受关闭报告）
+  `SPEC-27` 关闭依据完整并记为 closed；owner 同日接受关闭报告并一并接受 R9 契约（含 R9 报告 §5.1 的
+  冗余 tick 预算守卫，保持现状、不合并），**本工作包已完成（completed）**
 ```
 
 Stage 6 已于 2026-09-27 关闭并归档到 `completed/stage-06/`，见
@@ -114,6 +115,7 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
   两事件共 7 个运行全绿）；
   **owner 已于 2026-09-29 接受 R9 退出**，`SPEC-27` 关闭依据完整并记为 **closed**（订正历史：此处
   曾写"尚未实现"，后改为"尚未获 owner 接受退出"——两处旧措辞均已被本次退出取代）。
+  R9 报告 §5.1 记录的冗余 tick 预算守卫亦已于同日随契约接受一并裁定为**保持现状、不合并**。
 
 ## 格式专题
 

@@ -4,19 +4,21 @@
 （区间 `13dab93..eaaf375`）的发现项整理为可执行、可验证的修正批次。两轴结果在记录中保持分离，
 本计划**只在批次内部按依赖排序**，不跨轴重新排序，也不把两轴合并成一张判定表。
 
-状态：active；修正工作包，**已取得实施授权**（2026-09-28 无人值守会话，R0 四项按默认选项执行）；
+状态：completed；修正工作包，**已取得实施授权**（2026-09-28 无人值守会话，R0 四项按默认选项执行）；
 R0–R8 已全部退出并随 PR #30 合并进 `master`（合并提交 `670cca8`），R9 已另行开启、**实现、本地
 变异证据与 hosted 复验均已完成**（独立分支、独立 PR），且 **owner 已于 2026-09-29 接受 R9 退出**
 （最终 tip `cc14fcd` 在 push 与 pull_request 两个事件上 7 个运行全部通过，见
 [R9 报告](../../../stage_reports/stages/stage-06/2026-09-28-r9-reference-host-command-loop.md) §2.3 与 §8），
 `SPEC-27` 关闭依据至此完整并记为 **closed**；
-**本工作包本身尚未关闭**——其关闭仍需 owner 接受关闭报告，且 §4.1 记录的重复 tick 预算守卫是否应合并
-**owner 尚未裁定**；
+**本工作包已由 owner 于 2026-09-29 接受关闭报告而关闭**（状态词转 `completed`）：R9 契约（含 R9 报告
+§5.1 记录的冗余 tick 预算守卫）已获 owner 接受，两个守卫保持现状、不合并；
 Stage 6 已于 2026-09-27 关闭并归档，本计划不构成 Stage 7A / Stage 8 的实现授权
 
-更新日期：2026-09-29（订正历史：本节曾写"同 SHA hosted 复验与 owner 接受**尚未完成**"（更新日期
-`2026-09-28`），其后改为"hosted 复验已完成、owner 接受退出仍未完成"。**两件事始终分开陈述**——
-不得因任一者达成而暗示另一者已达成；也不得把 R9 退出达成读作本工作包已关闭）
+更新日期：2026-09-29（**工作包关闭**：owner 于本日接受关闭报告，R9 契约（含 R9 报告 §5.1 的冗余 tick
+预算守卫）一并接受，两个守卫保持现状。订正历史：本节曾写"同 SHA hosted 复验与 owner 接受**尚未完成**"
+（更新日期 `2026-09-28`），其后改为"hosted 复验已完成、owner 接受退出仍未完成"，再改为"R9 已退出、
+工作包尚未关闭"——**三处旧措辞依次是当时状态，现均被本次关闭取代**。两件事始终分开陈述：不得因任一者
+达成而暗示另一者已达成）
 
 归档来源：[Stage 6 双轴复核汇总](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-summary.md)、
 [Standards 轴](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-standards.md)、
@@ -110,7 +112,7 @@ R0 决策门禁（owner 裁定 4 项）
 | R7 | R5 | 宿主与分发门禁补齐 | completed（步骤 3/4/6 按口径登记，ADR 冲突上报）：宿主导入门禁新增导入表符号检查与 SDK minor 负例；candidate 零命中扫描成为门禁（「默认 OFF 下工厂拒绝」本已注册）；static 无 toolchain 负例改由 minor 负例承担；交互命令循环口径与 ADR 0042 `:350-351` 的冲突**未处置**、需 owner 裁定；分发门禁 Linux 未注册登记为 Stage 8 输入。退出记录见 [2026-09-28-w5-host-and-distribution-gates.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w5-host-and-distribution-gates.md) |
 | R8 | — | 重复/死代码/可移植性修正 | completed（STD-05/06/08/09 按计划 §4/§5 边界登记残余）：STD-13 两个 `.obj` 去跟踪 + `*.obj` 规则；STD-07 七项死代码删除（含两项需实查的 `readCount()` 与 `readRequiredString` 冗余参数，及清单外补删的 `providerRootId`），第 8 项 `--event` 判为有真实审计角色故保留；STD-04 两份逐字相同的状态名级联合并为 `playbackStateName`；STD-10 定因后改为**三分支**（MSVC `_wfopen_s`、MinGW `_wfopen`、其余窄 `fopen`）：原文"统一按 `_MSC_VER` 分支"的处方本身有误——它使 MinGW 落入窄 `fopen` 回退而编译失败，见 W6 §6；STD-12 workflow 块缩进对齐（`git diff -w` 为空）。STD-05/06/08/09 因属重构/公共 API 变更，按 §4 排除并登记。退出记录见 [2026-09-28-w6-code-health.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w6-code-health.md) |
 
-| R9 | R7 | Reference Host 命令循环与 play/pause | **completed**（**owner 于 2026-09-29 接受退出**；`SPEC-27` 关闭依据完整，记为 closed）：设计已获 owner 接受，处理 SPEC-27（ADR 0042 `:350-351` 的六动词命令循环）。命令模式、§6.2 digest 关系、门禁接线与 16 条变异证据均已落地（15 条被目标断言抓住，1 条按合同冗余**记录为预期存活**）；版本规则按 §11 计算，未预填。最后**行为** SHA `71de8b1` 上 Linux Quality、Windows MSVC、Windows MinGW 与 Version Gate 四工作流全部通过，证据见 [2026-09-28 R9 报告](../../../stage_reports/stages/stage-06/2026-09-28-r9-reference-host-command-loop.md) §2.3；该 SHA 之后的文档提交按仓库政策须各自核对 hosted，见报告 §8。**未完成**：仅剩 §4.1 记录的重复 tick 预算守卫是否应合并的合同裁定（owner 尚未裁）。**唯一规范来源是 [R9-reference-host-command-loop.md](R9-reference-host-command-loop.md)**——本行只记录状态、依赖与链接，不复制其合同、限额或判据。从 PR #30 合并后的 `master`（`670cca8`）独立开分支、独立 PR。完整合同、状态矩阵、C01–C12/N01–N07 用例、变异清单、门禁接线与退出清单见该文档；证据记录见 [2026-09-28 R9 报告](../../../stage_reports/stages/stage-06/2026-09-28-r9-reference-host-command-loop.md) |
+| R9 | R7 | Reference Host 命令循环与 play/pause | **completed**（**owner 于 2026-09-29 接受退出**；`SPEC-27` 关闭依据完整，记为 closed）：设计已获 owner 接受，处理 SPEC-27（ADR 0042 `:350-351` 的六动词命令循环）。命令模式、§6.2 digest 关系、门禁接线与 16 条变异证据均已落地（15 条被目标断言抓住，1 条按合同冗余**记录为预期存活**）；版本规则按 §11 计算，未预填。最后**行为** SHA `71de8b1` 上 Linux Quality、Windows MSVC、Windows MinGW 与 Version Gate 四工作流全部通过，证据见 [2026-09-28 R9 报告](../../../stage_reports/stages/stage-06/2026-09-28-r9-reference-host-command-loop.md) §2.3；该 SHA 之后的文档提交按仓库政策须各自核对 hosted，见报告 §8。**未完成**：无。唯一登记残余——R9 报告 §5.1 的冗余 tick 预算守卫是否合并——已由 owner 于 2026-09-29 接受契约时一并裁定为**保持现状、不合并**（订正：本行此前写作"§4.1"，该节在两份文档中均不存在）。**唯一规范来源是 [R9-reference-host-command-loop.md](R9-reference-host-command-loop.md)**——本行只记录状态、依赖与链接，不复制其合同、限额或判据。从 PR #30 合并后的 `master`（`670cca8`）独立开分支、独立 PR。完整合同、状态矩阵、C01–C12/N01–N07 用例、变异清单、门禁接线与退出清单见该文档；证据记录见 [2026-09-28 R9 报告](../../../stage_reports/stages/stage-06/2026-09-28-r9-reference-host-command-loop.md) |
 
 ## 6. 各批次的问题、目标与具体步骤
 
@@ -378,8 +380,8 @@ R7 步骤 4 把「交互命令循环」按「脚本式宿主即本阶段口径�
 的冲突上报为**未处置、需 owner 裁定**；那条路径现已由 owner 裁定并转为独立批次 **R9**。
 
 - **状态**：**已退出**——实现完成、本地与 hosted 证据齐备，且 **owner 于 2026-09-29 接受 R9 退出**
-  （与 §6 状态表 R9 行一致）。`SPEC-27` 关闭依据至此完整并记为 closed；§4.1 的 tick 预算守卫合并裁定
-  **仍未裁**，作为已登记残余保留，不影响本次退出成立。
+  （与 §6 状态表 R9 行一致）。`SPEC-27` 关闭依据至此完整并记为 closed；R9 报告 §5.1 的冗余 tick 预算
+  守卫合并裁定已由 owner 于同日一并作出——**保持现状、不合并**，故本批次**已无未决项**。
 - **依赖**：R7（宿主与分发门禁）；载体基准为 PR #30 合并后的 `master`（`670cca8`）。
 - **规范来源**：[R9-reference-host-command-loop.md](R9-reference-host-command-loop.md)（唯一权威）。
 - **门禁策略裁定**：[R9-gate-policy-audit-decisions.md](R9-gate-policy-audit-decisions.md)
@@ -529,7 +531,7 @@ git diff --check
 6. **[交付报告](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md)**
    —— 批次总表、SHA 表、CI 处置，以及中间 SHA 被主动取消（而非失败遮蔽）的记录。
 7. **R9 三份文档与其报告** —— 见下表。R9 已于 2026-09-29 获 owner 接受退出，**现已无任何批次处于
-   "未获 owner 接受退出"状态**；但**本工作包自身尚未关闭**（见本节开头状态行）。
+   "未获 owner 接受退出"状态**；本工作包亦已于同日获 owner 接受关闭报告而关闭（见本节开头状态行）。
 
 ### 12.2 文档地图
 

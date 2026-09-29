@@ -525,7 +525,33 @@ passes because no version change was made; the separate finding that the SDK API
 version cannot be advanced at all, and the reason for it, are recorded in the Stage 6
 review delivery report section 10.6 and in the Stage 7A plan.
 
-**What this acceptance does not do.** It does not close the remediation work package
-itself, whose closure still needs owner acceptance of its closure report and an
-owner ruling on the duplicated tick budget guard recorded in the remediation plan's
-section 4.1. It does not authorize Stage 7A / Stage 8 work, a release, or any merge.
+**What that acceptance did not do, at the time it was written.** It did not close the
+remediation work package itself, whose closure still needed owner acceptance of its
+closure report and a ruling on the duplicated tick budget guard. It does not authorize
+Stage 7A / Stage 8 work, a release, or any merge.
+
+Correction: that paragraph pointed at "the remediation plan's section 4.1". No such
+section exists in either the R9 document or the remediation plan; the guard is recorded
+in this report's section 5.1 and listed in section 8. Section 11 below supersedes it.
+
+## 11. Owner ruling on the redundant guard, and package closure (2026-09-29)
+
+This section is appended. Nothing above it was rewritten.
+
+The owner accepted two further items on 2026-09-29, the same day as the R9 exit:
+
+| Item | Recorded at | Ruling |
+| --- | --- | --- |
+| The R9 contract, **including** the redundant tick budget guard | Section 5.1 and the section 8 entry | Accepted; **both guards stay as implemented, not collapsed** -- no code change |
+| Closure of the Stage 6 review remediation work package | Section 10 and the remediation plan | Accepted; the package's status becomes `completed` |
+
+Section 5.1 described the redundancy as a property of the contract rather than a gap, and
+left "whether the two guards should be collapsed into one" explicitly to the owner rather
+than to a deleted check. The ruling keeps both guards, which means the implemented contract
+is accepted as written.
+
+**What did not change.** No source file, no gate and no test was touched by this ruling,
+so the code SHA is unaffected and the hosted evidence in sections 2.3 and 10 still applies
+to it. The remediation package keeps its location under `stage_plans/reviews/`, which the
+documentation policy assigns to review-topic plans whether open or closed; nothing was
+moved, so no compatibility entry is needed.
