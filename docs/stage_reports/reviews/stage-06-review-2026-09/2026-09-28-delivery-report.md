@@ -415,17 +415,22 @@ ADR `:362-375` 另要求 A2 完成六项
 交付物——这六项**已满足**（字段级 Spec/Schema、API 草案、模块/安装图、golden、表征脚本已注册为
 CTest `cuexis_contract_s6_a2`）。
 
-### 10.4 一处需要 owner 判断、本节不下结论的账目
+### 10.4 公共 SDK 契约与 SDK API 版本（按实际实现记录）
 
-`completion.md:94` 与 `:175` 写「本阶段没有新增公共 SDK 契约（SDK API 保持 `0.7.0`）」。但
-`engine/playback/include/cuexis/playback/playback_source.hpp:83-91` **新增了 3 个公开静态工厂**
-（`fromFilesystemProjectEntry`、`fromCxcFileEntry`、`fromCxcMemoryEntry`），且该头在安装
-`FILE_SET HEADERS` 内（`engine/playback/CMakeLists.txt:37,44`）。ADR `:333` 把 Stage 6 的 SDK 目标
-冻结为 `0.7.1`，正是为这类 additive 新名预留的位次；而 `:370` 又写"SDK/库版本本轮不改代码、不新增
-实际依赖"。
+关闭报告的原文与实际实现相反，此处按实现记录：
 
-**这两句如何并存，取决于对 `:333` 与 `:370` 的解释，属 owner 的裁定范围，本节只记录事实，不判定
-Stage 6 是否违反该 ADR。** 需要指出的是：`0.7.1` 至今未落地确属事实（`cmake/CuexisVersion.cmake:8`）。
+- **实际实现**：`engine/playback/include/cuexis/playback/playback_source.hpp:83-91` 新增了 3 个公开静态
+  工厂（`fromFilesystemProjectEntry`、`fromCxcFileEntry`、`fromCxcMemoryEntry`），且该头在安装
+  `FILE_SET HEADERS` 内（`engine/playback/CMakeLists.txt:37,44`）。即**本阶段确实新增了 additive 的
+  公共 SDK 名字**。
+- **实际版本**：`cmake/CuexisVersion.cmake:8` = `0.7.0`，`docs/api/README.md:7` 同样写"适用版本：SDK API
+  `0.7.0`"。ADR `:333` 冻结的 Stage 6 目标 `0.7.1` **没有落地**。
+- **结论**：`completion.md` §4 与 §7 的"本阶段没有新增公共 SDK 契约"**与实现相反**，已在该报告追加的
+  §12.1 订正（append-only，未改原文）。
+
+仍待处置的只有**版本是否补进到 `0.7.1`**：ADR `:333` 为这类 additive 新名预留了该位次，而 `:370` 又
+写"SDK/库版本本轮不改代码、不新增实际依赖"（该句处在 A2 交付物的语境中）。本节按实现记录事实，
+是否补进版本属 owner 决定，本节不代作裁定。
 
 ### 10.5 本次核查未能核实的事项
 

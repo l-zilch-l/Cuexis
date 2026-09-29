@@ -200,3 +200,35 @@ run 数**。两者不一致时**以 §3 为准**；本节不重排既有列表�
 
 本地证据（随 `out/` 忽略）：F1 的 `out/f1/*.log`、`out/f1-local-matrix.ps1`、`out/f1-candidate.ps1`、
 `out/f1-smoke.ps1`，见 [F1 退出记录 §11](2026-09-27-s6-f1-final-validation.md)。
+
+## 12. 关闭后追加订正（2026-09-29）
+
+本节**只追加**，不改动上文任何原有表述。
+
+### 12.1 §4 与 §7 的「本阶段没有新增公共 SDK 契约」不准确
+
+§4 的「版本 / SDK API」行写"`26.09.27-1` / `0.7.0`（本阶段没有新增公共 SDK 契约）"，§7 关于
+`docs/api/README.md` 的行重复了同一判断。按实际实现：
+
+- 安装公共头 `engine/playback/include/cuexis/playback/playback_source.hpp:83-91` **新增了 3 个公开静态
+  工厂**：`fromFilesystemProjectEntry`、`fromCxcFileEntry`、`fromCxcMemoryEntry`；该头在安装
+  `FILE_SET HEADERS` 内（`engine/playback/CMakeLists.txt:37,44`）。
+- `cmake/CuexisVersion.cmake:8` 实际为 `0.7.0`，即 [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md)
+  `:333` 冻结的 Stage 6 目标 `0.7.1` **并未落地**。
+
+因此准确表述是：**本阶段确实新增了 additive 的公共 SDK 名字，而 SDK API 版本仍停在 `0.7.0`**，
+两者合起来与 §4/§7 的原文相反。§4/§7 的原文保留不改，以本行为准。
+
+### 12.2 §8 未登记 D05 的 Load 自动重试
+
+§8 的残余清单登记了"OpenGL 绘制未改为直接消费 `buildPresentationCommands`"（D04），但**没有登记**
+`app/player/src/player_control.cpp:403-421` 在 `playback.mode.content_mismatch` 后的自动重试（D05）——
+该行为是 ADR 0042 `:210`/`:242` 的明文拒绝项。本文对该文件检索"重试"/"content_mismatch"/"mode"
+无命中，故它在关闭时既无对应验收行、也无残余登记，属**未披露**，由关闭后的独立复核登记为
+`SPEC-18 [高 · 未声明]`。两者在 `670cca8` 上均已收敛；逐条证据见
+[复核交付报告 §10](../../reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md)。
+
+按 ADR 0042 `:369`「每个例外都必须先变更本 ADR 或所属 Spec」，这两处例外现已补走 Spec 变更：
+D05 落在 [PLAYER_APPLICATION.md](../../../architecture/PLAYER_APPLICATION.md) 的命令语义行，
+D04 落在 [STAGE6_PRODUCTIZATION_BOUNDARIES.md](../../../architecture/STAGE6_PRODUCTIZATION_BOUNDARIES.md)
+的架构验证状态表。

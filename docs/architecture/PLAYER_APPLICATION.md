@@ -149,7 +149,8 @@ Player，并要求 `--bogus`、缺失 chart 参数与不可读 chart 分别返�
 
 命令语义：
 
-- `Load` 是显式替换。它建一个新的 `PlaybackSession`，按显式 mode 或 `ChartClock` 准备，遇到 `playback.mode.content_mismatch` 且来源是配置来源时重新读取并以 `CuexisAudio` 再准备一次。显式来源不能重读，必须自带 mode，否则返回 `player.command.mode_required`。这是切换有/无音轨内容的入口。
+- `Load` 是显式替换。它建一个新的 `PlaybackSession`，按显式 mode 或默认 `ChartClock` 准备。准备阶段出现 `playback.mode.content_mismatch` 时**不重读来源、不二次 prepare、不推定 mode**，而是返回 `player.command.mode_required`；需要另一个时钟的内容必须在 `Load` 上自行命名 mode（CLI `--mode chart|host|audio`）。显式来源同样不能重读。这是切换有/无音轨内容的入口，也是 ADR 0042 `:210` 与 `:242` 拒绝"模式失败后自动重试"的直接落实。
+  〔订正 2026-09-29：本行原写"遇到 `playback.mode.content_mismatch` 且来源是配置来源时重新读取并以 `CuexisAudio` 再准备一次"，描述的正是 ADR 0042 `:242` 明文拒绝的行为。该行为存在于 Stage 6 关闭基线 `eaaf375` 的 `app/player/src/player_control.cpp:403-421`，被独立复核登记为 `SPEC-18 [高 · 未声明]`，已由 R0-3 删除并代之以显式 mode。本行当时未随代码同步，因此长期与实现相反。〕
 - `Reload` 保持活动 `PlaybackMode`，位置由 `PlayerReloadPolicy` 决定。准备阶段出现 `playback.mode.content_mismatch` 时返回 `player.command.mode_change_requires_load`。
 - `Rebuild` 重建 renderer 和音频设备，再按 `KeepChartTime` 重载活动来源。它是 `Failed` 的唯一恢复入口：先 `renderer.rebuild()` 失效所有 token，再关闭现有 seat，让事务重新开设备。没有已发布 bundle 时，只有 `Failed` 会退化为一次 load 事务；其他状态返回 `player.command.not_loaded`。
 - `Play` / `Pause` / `Stop` / `Seek` 在 CuexisAudio 下转给 transport，在 ChartClock 下改控制器持有的时间。ChartClock 的 `Pause` 冻结上一帧的 chart time，`Play` 从该时间恢复，`Stop` 回到 chart time 0，`Seek` 设置目标；每次都发布一个 discontinuity。暂停中的 `Seek` 合法并保持暂停状态。
