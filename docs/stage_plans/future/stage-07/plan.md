@@ -60,6 +60,25 @@ Stage 7A 必须只冻结跨品类稳定的概念，不把轨道、Note、屏幕�
 渲染后端写入公共 Judgement API。时间使用显式区间和绝对观测时间；位置可以是离散
 判定位置、区域、输入通道或其他已注册 InputDomain。
 
+#### Stage 7A 承接的 Stage 6 未完成项（2026-09-29 登记）
+
+Stage 6 关闭并归档后，以下四项**没有任何阶段计划把它列入范围**：Stage 6 已关闭，Stage 8 计划
+正文对四项零命中（只在主题名上以「已交付」措辞提到前两项），Stage 7A 此前也没有记录。经项目
+所有者于 2026-09-29 指定，自本节起由 **Stage 7A 承接**。四项都是 Stage 6 冻结决策
+（[ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md)）的未完成部分，不是新需求：
+
+| 项 | ADR 决策 | 未完成内容 | 现状证据（2026-09-29 实测） |
+| --- | --- | --- | --- |
+| 显式 candidate 与实验隔离 | S6-D01 | `Cuexis_ALLOW_EXPERIMENTAL` 无代码实现；candidate flavor 库名与安装元数据不存在；Player `--candidate-entry`（配 `--project`/`--cxc`）未实现；**没有任何 preset 或 CI 开启 `CUEXIS_ENABLE_CHART_V5_CANDIDATE`** | 该宏在非文档代码中只出现在两张禁止 token 表（`cmake/VerifyReferenceHost.cmake:396`、`tools/check_stage6_a2.py:252`）；根 `CMakeLists.txt:42` 默认 OFF；`git grep CHART_V5_CANDIDATE -- CMakePresets.json .github/` 零命中；复核已登记 SPEC-19b BLOCKED |
+| 离线 typed assembler 与 feature 派生 | S6-D03 | 不存在派生 feature 与 resource closure 的 assembler；无 chart-candidate 离线工具入口；`CxtV2Loader::expand` 无生产调用方；candidate 正例仍是测试内注入 feature（ADR `:114` 明文禁止） | `git grep -in assembler -- engine/ tools/ tests/` 只命中 `assembleResourceIdentities`（资源身份装配，非 feature 派生） |
+| 具名宿主六动词命令循环 | S6-D08 | `open`/`play`/`pause`/`seek`/`reload`/`quit` 未进入 `master` | `670cca8:examples/reference_host/src/` 无 `host_commands.*` 与 `host_clock.*`；实现仅存在于未合并的 R9 批次 |
+| SDK API `0.7.1` | S6-D08（`:333`） | ADR 冻结的 Stage 6 SDK 目标未落地 | `cmake/CuexisVersion.cmake:8` = `0.7.0`；同期确有 3 个 additive 公开工厂进入安装头 `engine/playback/include/cuexis/playback/playback_source.hpp:83-91` |
+
+**登记边界**：本节把这四项登记为 Stage 7A 的**范围**，**不代表它们已在 Stage 7A 内实现**，也不改变
+Stage 6 已关闭的事实。前两项同时是 Stage 8 的输入（Stage 8 计划此前只以主题名提到、未列入范围）；
+后两项此前无任何归属。**是否把这四项加严为 Stage 7A 的关闭前置条件，应在 7A 启动时按本表重新确认**
+——本节只负责消除「无人认领」状态，不预先改动 §6 的关闭标准。
+
 ### Stage 7B：Advanced Judgement Capabilities
 
 Stage 7B 及其后续批次负责增加更复杂的要求与输入约束：

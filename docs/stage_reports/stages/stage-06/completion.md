@@ -232,3 +232,27 @@ run 数**。两者不一致时**以 §3 为准**；本节不重排既有列表�
 D05 落在 [PLAYER_APPLICATION.md](../../../architecture/PLAYER_APPLICATION.md) 的命令语义行，
 D04 落在 [STAGE6_PRODUCTIZATION_BOUNDARIES.md](../../../architecture/STAGE6_PRODUCTIZATION_BOUNDARIES.md)
 的架构验证状态表。
+
+### 12.3 四项未完成实现此前无任何阶段归属
+
+Stage 6 关闭后对 ADR 0042 逐条核查发现四项**只部分实现或完全未实现**的内容。逐条比对全部阶段计划
+后的实际状态是：**§6 的 Stage 7A 交接清单一条都没有登记它们，§7 的 Stage 8 交接清单只在主题名上
+碰到前两项且写成已交付语气，§8 残余清单与 `future/stage-08/plan.md` 正文对四项均无记载。** 即这四项
+在关闭时处于「无阶段认领」状态：
+
+| 项 | ADR 决策 | §6 | §7 | §8 | Stage 8 计划 |
+| --- | --- | --- | --- | --- | --- |
+| 显式 candidate 与实验隔离（`ALLOW_EXPERIMENTAL`、flavor、`--candidate-entry`、无 CI 开启 candidate） | S6-D01 | 无 | 仅主题名 `:130` | 无 | 零命中 |
+| 离线 typed assembler 与 feature 派生 | S6-D03 | 无 | 仅主题名 `:132` | 无 | 无 `assembler` 字样 |
+| 具名宿主六动词命令循环 | S6-D08 | 无 | 无 | 无 | 零命中 |
+| SDK API `0.7.1` | S6-D08（`:333`） | 无 | 无 | 无 | 无关（其 `:357-359` 指届时批准的 v5 发行版本） |
+
+需要说明的是，`§7 :134`「发行剩余门禁」确实把"完整 Chart v5/CXT v2 正式发行、默认 Writer 切换、
+v4→v5 迁移与 CXC v1 Packed playback entry 的最终发布门禁"指派给了 Stage 8。其中"CXC v1 Packed
+playback entry"与第 1 项（`--candidate-entry` 未实现）在**主题上部分重叠**，但该行讲的是**发布门禁**，
+并未点名四项中任何一个未完成的子项，因此仍不构成逐条归属。
+
+经项目所有者于 2026-09-29 指定，四项自即日起由 **Stage 7A 承接**，登记在该计划
+「Stage 7A 承接的 Stage 6 未完成项」一节（[计划](../../../stage_plans/future/stage-07/plan.md)）。
+本节只记录归属变更，不改动 §6/§7/§8 的原有表述；§7 将前两项写成已交付语气的措辞，其实际状态以
+[复核交付报告 §10.1](../../reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md) 的逐条表为准。
