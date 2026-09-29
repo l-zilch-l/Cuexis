@@ -74,10 +74,12 @@ Stage 6 关闭并归档后，以下四项**没有任何阶段计划把它列入�
 | 具名宿主六动词命令循环 | S6-D08 | `open`/`play`/`pause`/`seek`/`reload`/`quit` 未进入 `master` | `670cca8:examples/reference_host/src/` 无 `host_commands.*` 与 `host_clock.*`；实现仅存在于未合并的 R9 批次 |
 | SDK API `0.7.1` | S6-D08（`:333`） | ADR 冻结的 Stage 6 SDK 目标未落地 | `cmake/CuexisVersion.cmake:8` = `0.7.0`；同期确有 3 个 additive 公开工厂进入安装头 `engine/playback/include/cuexis/playback/playback_source.hpp:83-91` |
 
-**登记边界**：本节把这四项登记为 Stage 7A 的**范围**，**不代表它们已在 Stage 7A 内实现**，也不改变
-Stage 6 已关闭的事实。前两项同时是 Stage 8 的输入（Stage 8 计划此前只以主题名提到、未列入范围）；
-后两项此前无任何归属。**是否把这四项加严为 Stage 7A 的关闭前置条件，应在 7A 启动时按本表重新确认**
-——本节只负责消除「无人认领」状态，不预先改动 §6 的关闭标准。
+**这四项是 Stage 7A 的关闭前置条件**：Stage 7A 必须在关闭前**逐项处置**——或已实现并有门禁/用例
+证据，或经 [ADR](../../../adr/README.md) 或所属 Spec 的变更**明示为被接受的例外**；任一项既未实现
+又无例外登记，Stage 7A 不得关闭。判据见 §6「Stage 7A 关闭标准」的最后一条。
+
+本节同时声明：登记为关闭前置**不代表它们已实现**，也不改变 Stage 6 已关闭的事实。前两项同时是
+Stage 8 的输入（Stage 8 计划此前只以主题名提到、未列入范围）；后两项在本次登记前无任何阶段归属。
 
 ### Stage 7B：Advanced Judgement Capabilities
 
@@ -248,6 +250,7 @@ Stage 8 可以在此合同上正式收敛 Chart v5；不得重新发明一套与
 - 非法输入、时间回退、预算超限和 identity 不匹配均稳定失败。
 - external consumer、static/shared package 和 headless 路径均通过生命周期测试。
 - Chart v5 Core/Packed candidate 可以消费 Stage 7A 要求并获得相同的判定结果。
+- §2 登记的「Stage 7A 承接的 Stage 6 未完成项」四项——显式 candidate 与实验隔离（含 `Cuexis_ALLOW_EXPERIMENTAL`、candidate flavor、Player `--candidate-entry`、以及某个被配置的 preset 或 CI 确实开启 candidate）、离线 typed assembler 与 feature 派生、具名宿主六动词命令循环、SDK API `0.7.1`——**逐项处置完毕**：或已实现并有门禁/用例证据，或经 ADR 或所属 Spec 的变更明示为被接受的例外。**任一项既未实现又无例外登记时，本阶段不得关闭。**
 
 ### Stage 7B+ 批次标准
 

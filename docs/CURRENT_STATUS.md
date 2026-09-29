@@ -190,6 +190,16 @@ PR #30 合并进 `master`（`670cca8`）；批次 R9（Reference Host 命令循�
 构成 Stage 7A / Stage 8 的实现授权或发布授权。入口：
 [修正计划](stage_plans/reviews/stage-06-review-remediation/plan.md)。
 
+**Stage 6 未完成项的归属变更（2026-09-29）**：关闭后对 [ADR 0042](adr/0042-stage-6-productization-boundaries.md)
+逐条核查发现四项只部分实现或未实现，且**此前不被任何阶段计划列入范围**（`completion.md` 的 Stage 7A
+与 Stage 8 交接清单均未登记，Stage 8 计划正文对四项零命中）。它们是：显式 candidate 与实验隔离
+（`Cuexis_ALLOW_EXPERIMENTAL`、candidate flavor、Player `--candidate-entry`、没有任何 preset 或 CI
+开启 candidate）、离线 typed assembler 与 feature 派生、具名宿主六动词命令循环、SDK API `0.7.1`。
+经项目所有者指定，四项自 2026-09-29 起由 **Stage 7A 承接，并作为其关闭前置条件**，登记在
+[Stage 7 计划](stage_plans/future/stage-07/plan.md) 的 §2 与 §6。**这四项目前仍未实现**，本段只记录
+归属与前置条件，不构成任何实现或发布声明。逐条证据见
+[复核交付报告 §10](stage_reports/reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md)。
+
 ## 已关闭的 Full Review
 
 Stage 5 已于 2026-08-28 经 PR #20 合并至 `master`；其 S5-H 报告保留为关闭前的本地检查快照，
