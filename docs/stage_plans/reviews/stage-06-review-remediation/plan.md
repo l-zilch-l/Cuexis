@@ -245,7 +245,7 @@ canonical 身份诚实。
    （按 R5 §10 要求说明原因）。
 3. `image_import.cpp:492-494` 的 interlaced PNG：显式纳入 profile 并加 fixture/golden，或在导入层拒绝。
 4. 补"损坏 marker 的 JPEG"fixture 与断言（与既有 `corrupt_chunk.png` 对称），
-   生成脚本 `tests/fixtures/stage6_e/generate_negative_fixtures.py` 同步。
+   生成脚本 `tests/fixtures/stage6_e/media/generate_negative_fixtures.py` 同步。
 5. 在 `.gitattributes` 为 `tests/fixtures/stage6_e/**`（golden `.json` 用 `text eol=lf`，
    媒体文件用 `binary`）与 `tests/fixtures/stage6_a2/**` 补规则。
 

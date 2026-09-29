@@ -10,5 +10,13 @@ CMakeUserPresets.json
 *.VC.db
 *.VC.VC.opendb
 
+# Local toolchain shims. These hard-code one machine's Visual Studio, Windows SDK
+# and vcpkg locations, so they are wrong everywhere else; each developer keeps
+# their own. Same reasoning as CMakeUserPresets.json above.
+/.buildenv.ps1
+
+# Agent/tooling scratch space, never repository content.
+/.workbuddy/
+
 # Compiler object files (MSVC .obj pick up the same name on every platform).
 *.obj
