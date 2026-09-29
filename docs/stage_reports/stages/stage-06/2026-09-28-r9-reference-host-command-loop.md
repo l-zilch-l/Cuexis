@@ -3,9 +3,14 @@
 Date: 2026-09-28
 Package: Stage 6 review remediation, R9
 Normative source: [R9-reference-host-command-loop.md](../../../stage_plans/reviews/stage-06-review-remediation/R9-reference-host-command-loop.md)
-Status: implemented, locally verified, and validated on the hosted runs at the final
-SHA `71de8b1f3f43c779821468c54c5e2803812924c3` (section 2.3); owner acceptance of the
-R9 exit is still not claimed here.
+Status: implemented, locally verified, validated on the hosted runs at the final
+behavioral SHA `71de8b1f3f43c779821468c54c5e2803812924c3` (section 2.3), and now carried
+by the final tip `cc14fcd` whose seven runs passed on both the push and the
+pull_request events (section 10). **The owner accepted the R9 exit on 2026-09-29**,
+which completes every SPEC-27 closure requirement listed in the R9 document's
+section 0.2, so SPEC-27 is recorded as closed. The earlier wording, which stated
+that owner acceptance was not claimed, is quoted in section 10 and is no longer the
+current status.
 
 This report owns dated evidence only. The contract, the state matrix and the case
 definitions stay in the R9 document; nothing here restates them as a second
@@ -475,3 +480,52 @@ not conclude the command-loop gap is still open.
 
 The correction is also required by the R9 document's section 9, which states that
 the historical delivery report and the R7 report receive appended corrections only.
+
+## 10. Owner acceptance of the R9 exit (2026-09-29)
+
+This section is appended. Nothing above it was rewritten.
+
+The owner accepted the R9 exit on 2026-09-29. Before that date this report's status
+line read "owner acceptance of the R9 exit is still not claimed here", and section 7
+read "SPEC-27 remains open; closing it needs owner acceptance and is not part of
+R9". Both were accurate when written and are superseded by this acceptance.
+
+The acceptance closes the requirements the R9 document lists in section 0.2, every
+one of which is now met:
+
+| Requirement (R9 document section 0.2) | State |
+| --- | --- |
+| Owner approves the semantics | Met; the design was accepted before implementation |
+| H1-H7 measured, with mutation evidence | Met; section 5, 15 of 16 mutations caught |
+| The old contract has not degraded | Met; section 7 |
+| Gates pass at the final SHA | Met; section 2.3 and the `cc14fcd` runs below |
+| New report plus appended corrections | Met; this report and section 9 |
+| Owner accepts the exit | **Met on 2026-09-29, which is what this section records** |
+
+**Hosted evidence at the tip that carries the acceptance.** The documentation-only
+commits after `71de8b1` moved the tip, which section 8 correctly refused to claim.
+The tip is now `cc14fcd`, and it has been checked on both events: seven runs, all
+successful.
+
+| Workflow | Event | Result | Duration | Run |
+| --- | --- | --- | --- | --- |
+| Version Gate | pull_request | success | 5m17s | `36574246285` |
+| Linux Quality | pull_request | success | 39m28s | `36574246145` |
+| Windows MSVC | pull_request | success | 52m2s | `36574246154` |
+| Windows MinGW | pull_request | success | 57m20s | `36574246280` |
+| Linux Quality | push | success | 30m14s | `36574240797` |
+| Windows MinGW | push | success | 46m40s | `36574240525` |
+| Windows MSVC | push | success | 47m56s | `36574240523` |
+
+The push event does not run the Version Gate by design: its push job only performs
+the post-merge audit on `refs/heads/master`. The Version Gate result above is
+therefore the pull_request one, and it carries a second meaning here -- that gate is
+the one that raises `version.sdk_api.changed` for any SDK API version change. It
+passes because no version change was made; the separate finding that the SDK API
+version cannot be advanced at all, and the reason for it, are recorded in the Stage 6
+review delivery report section 10.6 and in the Stage 7A plan.
+
+**What this acceptance does not do.** It does not close the remediation work package
+itself, whose closure still needs owner acceptance of its closure report and an
+owner ruling on the duplicated tick budget guard recorded in the remediation plan's
+section 4.1. It does not authorize Stage 7A / Stage 8 work, a release, or any merge.

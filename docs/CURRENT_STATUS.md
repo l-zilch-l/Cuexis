@@ -182,11 +182,12 @@ Linux Quality、Windows MSVC、Windows MinGW（push 与 pull_request）与 Versi
 未合并、未发布。
 
 `stage-06-review-remediation`（Stage 6 双轴复核发现项修正工作包）当前 active：批次 R0–R8 已退出并随
-PR #30 合并进 `master`（`670cca8`）；批次 R9（Reference Host 命令循环与 play/pause）已实现、本地验证
-完成，并在最后**行为** SHA `71de8b1` 上通过 Linux Quality、Windows MSVC、Windows MinGW 与 Version Gate
-的 hosted 验证，**尚未获 owner 接受退出**，`SPEC-27` 仍为 open。`71de8b1` 之后仅有文档提交；按仓库
-政策，改变 tip 的文档提交其自身 hosted 结果须单独核对、不得用 `71de8b1` 的绿替代，故此处不把它记为
-当前 tip 的验证结论。本工作包不重开已关闭的 Stage 6，也不
+PR #30 合并进 `master`（`670cca8`）；批次 R9（Reference Host 命令循环与 play/pause）已实现，并通过
+**最终 tip `cc14fcd`** 的 hosted 验证——该 tip 在 push 与 pull_request 两个事件上共 **7 个运行全部
+通过**（含 Version Gate），覆盖最后**行为** SHA `71de8b1` 之后的 10 个文档提交。**owner 已于
+2026-09-29 接受 R9 退出**，`SPEC-27` 的关闭依据至此完整，记为 **closed**。**本工作包本身尚未关闭**：
+其关闭仍需 owner 接受关闭报告，且 §4.1 记录的重复 tick 预算守卫是否应合并 **owner 尚未裁定**——
+**R9 退出达成不等于本工作包关闭**。本工作包不重开已关闭的 Stage 6，也不
 构成 Stage 7A / Stage 8 的实现授权或发布授权。入口：
 [修正计划](stage_plans/reviews/stage-06-review-remediation/plan.md)。
 

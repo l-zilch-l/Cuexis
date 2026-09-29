@@ -40,8 +40,9 @@ full-review-2026-08
 stage-06-review-remediation
   Stage 6 双轴复核（13dab93..eaaf375）发现项的修正工作包；2026-09-28 取得实施授权，
   批次 R0–R8 已退出并随 PR #30 合并进 master，交付证据见 stage_reports/reviews/stage-06-review-2026-09/；
-  批次 R9（Reference Host 命令循环与 play/pause）另行开启，已实现并在最后行为 SHA
-  71de8b1 上通过 hosted 四工作流验证，尚未获 owner 接受退出
+  批次 R9（Reference Host 命令循环与 play/pause）另行开启，已实现并通过最终 tip `cc14fcd` 的
+  hosted 验证（push 与 pull_request 两事件共 7 个运行全绿），**owner 已于 2026-09-29 接受退出**，
+  `SPEC-27` 关闭依据完整并记为 closed；本工作包本身尚未关闭（关闭仍需 owner 接受关闭报告）
 ```
 
 Stage 6 已于 2026-09-27 关闭并归档到 `completed/stage-06/`，见
@@ -109,8 +110,10 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
 - [R9：Reference Host 命令循环与 play/pause](reviews/stage-06-review-remediation/R9-reference-host-command-loop.md)：
   批次 R9 的实施文档与唯一规范来源，处理 SPEC-27。命令文件驱动、有状态分发、无 stdin；
   含命令合同、完整状态矩阵、限额、C01–C12/N01–N07 用例、变异清单与门禁接线。
-  设计已获 owner 接受，**已实现并经本地与最后行为 SHA `71de8b1` 的 hosted 验证**；
-  **尚未获 owner 接受退出**，`SPEC-27` 仍为 open（订正 2026-09-29：此处原写"尚未实现"）。
+  设计已获 owner 接受，**已实现并通过最终 tip `cc14fcd` 的 hosted 验证**（push 与 pull_request
+  两事件共 7 个运行全绿）；
+  **owner 已于 2026-09-29 接受 R9 退出**，`SPEC-27` 关闭依据完整并记为 **closed**（订正历史：此处
+  曾写"尚未实现"，后改为"尚未获 owner 接受退出"——两处旧措辞均已被本次退出取代）。
 
 ## 格式专题
 
