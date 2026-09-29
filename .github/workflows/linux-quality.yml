@@ -12,6 +12,15 @@ permissions:
 
 env:
   VCPKG_COMMIT: 40f3c709db80acf154ac4b17a1f83c564ebd022e
+  # CMake is pinned instead of taken from the runner image. The image's version
+  # changes without notice and this gate is sensitive to which version it is --
+  # three defects reached these runners exactly that way, passing on every local
+  # and Windows run. 3.28.3 is the version the failures were reproduced with, so
+  # the strictest condition is the one under test. The checksum was cross-checked
+  # against the SHA-256 file Kitware publishes beside the archive rather than only
+  # computed from a local download.
+  CMAKE_VERSION: 3.28.3
+  CMAKE_SHA256: 804d231460ab3c8b556a42d2660af4ac7a0e21c98a7f8ee3318a74b4a9a187a6
 
 jobs:
   headless-build-and-test:
@@ -54,6 +63,24 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Install pinned CMake
+        run: |
+          set -euo pipefail
+          archive="cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz"
+          url="https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/${archive}"
+          curl -fsSL -o "/tmp/${archive}" "${url}"
+          echo "${CMAKE_SHA256}  /tmp/${archive}" | sha256sum -c -
+          mkdir -p "${RUNNER_TEMP}/cmake-pinned"
+          tar -xzf "/tmp/${archive}" -C "${RUNNER_TEMP}/cmake-pinned" --strip-components=1
+          echo "${RUNNER_TEMP}/cmake-pinned/bin" >> "${GITHUB_PATH}"
+
+      - name: Report CMake version
+        run: |
+          command -v cmake
+          command -v ctest
+          cmake --version
+          ctest --version
+
       - name: Check out pinned vcpkg
         uses: actions/checkout@v4
         with:
@@ -87,7 +114,21 @@ jobs:
         env:
           ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
           UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
-        run: ctest --preset ${{ matrix.preset }} --no-tests=error
+        run: |
+          # The reference host command gate is run in two passes on purpose. The
+          # first pass covers the suite without it, so a failure elsewhere is
+          # reported as itself. The second runs that one test verbosely and alone,
+          # which is what puts its accounting line -- "expected N, completed N,
+          # passed N" -- into the job log. Without it the gate passes silently
+          # under ctest's non-verbose default and the counts are never visible in
+          # the hosted evidence. --no-tests=error is on both passes so that a gate
+          # which stops being registered fails rather than quietly matching
+          # nothing. A scripted pass/fail pattern is deliberately not used: the
+          # test's own exit status is the criterion.
+          ctest --preset ${{ matrix.preset }} --no-tests=error \
+            -E '^cuexis_reference_host_staging$'
+          ctest --preset ${{ matrix.preset }} --no-tests=error -V \
+            -R '^cuexis_reference_host_staging$'
 
       - name: Capture CFU-F4 sanitizer evidence
         if: matrix.preset == 'headless-sanitize'
@@ -273,6 +314,17 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Install pinned CMake
+        run: |
+          set -euo pipefail
+          archive="cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz"
+          url="https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/${archive}"
+          curl -fsSL -o "/tmp/${archive}" "${url}"
+          echo "${CMAKE_SHA256}  /tmp/${archive}" | sha256sum -c -
+          mkdir -p "${RUNNER_TEMP}/cmake-pinned"
+          tar -xzf "/tmp/${archive}" -C "${RUNNER_TEMP}/cmake-pinned" --strip-components=1
+          echo "${RUNNER_TEMP}/cmake-pinned/bin" >> "${GITHUB_PATH}"
+
       - name: Check out pinned vcpkg
         uses: actions/checkout@v4
         with:
@@ -397,6 +449,17 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Install pinned CMake
+        run: |
+          set -euo pipefail
+          archive="cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz"
+          url="https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/${archive}"
+          curl -fsSL -o "/tmp/${archive}" "${url}"
+          echo "${CMAKE_SHA256}  /tmp/${archive}" | sha256sum -c -
+          mkdir -p "${RUNNER_TEMP}/cmake-pinned"
+          tar -xzf "/tmp/${archive}" -C "${RUNNER_TEMP}/cmake-pinned" --strip-components=1
+          echo "${RUNNER_TEMP}/cmake-pinned/bin" >> "${GITHUB_PATH}"
+
       - name: Check out pinned vcpkg
         uses: actions/checkout@v4
         with:
@@ -487,6 +550,17 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Install pinned CMake
+        run: |
+          set -euo pipefail
+          archive="cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz"
+          url="https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/${archive}"
+          curl -fsSL -o "/tmp/${archive}" "${url}"
+          echo "${CMAKE_SHA256}  /tmp/${archive}" | sha256sum -c -
+          mkdir -p "${RUNNER_TEMP}/cmake-pinned"
+          tar -xzf "/tmp/${archive}" -C "${RUNNER_TEMP}/cmake-pinned" --strip-components=1
+          echo "${RUNNER_TEMP}/cmake-pinned/bin" >> "${GITHUB_PATH}"
+
       - name: Check out pinned vcpkg
         uses: actions/checkout@v4
         with:
@@ -556,3 +630,103 @@ jobs:
           name: cuexis-task-3-shader-tools-coverage-${{ github.sha }}
           path: out/build/shader-tools-coverage/task-3-coverage/
           if-no-files-found: warn
+
+  # The declared minimum, exercised on an actual 3.x rather than on whatever the
+  # image ships. The parser test needs no configure and no build, so pinning the
+  # oldest supported CMake costs one cheap job.
+  #
+  # It exists because the empty-element detector inside that test cannot bite on
+  # CMake 4.x at all: 4.x has no OLD behaviour to select, so the policies are NEW
+  # whether or not anything declares them, and a green 4.x run therefore says
+  # nothing about 3.x. Running the same test on 3.25.3 is what makes the check
+  # mean something.
+  parser-lower-bound:
+    name: CMake 3.25.3 lower bound (parser only)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install pinned CMake 3.25.3
+        run: |
+          set -euo pipefail
+          archive="cmake-3.25.3-linux-x86_64.tar.gz"
+          curl -fsSL -o "/tmp/${archive}" \
+            "https://github.com/Kitware/CMake/releases/download/v3.25.3/${archive}"
+          echo "d4d2ba83301b215857d3b6590cd4434a414fa151c5807693abe587bd6c03581e  /tmp/${archive}" \
+            | sha256sum -c -
+          mkdir -p "${RUNNER_TEMP}/cmake-pinned"
+          tar -xzf "/tmp/${archive}" -C "${RUNNER_TEMP}/cmake-pinned" --strip-components=1
+          echo "${RUNNER_TEMP}/cmake-pinned/bin" >> "${GITHUB_PATH}"
+
+      - name: Report CMake version
+        run: |
+          cmake --version
+          ctest --version
+
+      - name: Run the parser test on the declared minimum
+        run: cmake -P cmake/VerifyReferenceHostCommandParser.cmake
+
+  # The other end of the supported range. The gate itself is exercised here and
+  # not only the parser test, because "the policies are all NEW on 4.x" is a
+  # reason to expect the gate to behave, not evidence that it does.
+  cmake-4-reference:
+    name: CMake 4.4.0 reference (gate and parser)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install pinned CMake 4.4.0
+        run: |
+          set -euo pipefail
+          archive="cmake-4.4.0-linux-x86_64.tar.gz"
+          curl -fsSL -o "/tmp/${archive}" \
+            "https://github.com/Kitware/CMake/releases/download/v4.4.0/${archive}"
+          echo "3864eb649b4466ae126a64bbde1657adad78efbbaa068bf38201de5cf1b5349f  /tmp/${archive}" \
+            | sha256sum -c -
+          mkdir -p "${RUNNER_TEMP}/cmake-pinned"
+          tar -xzf "/tmp/${archive}" -C "${RUNNER_TEMP}/cmake-pinned" --strip-components=1
+          echo "${RUNNER_TEMP}/cmake-pinned/bin" >> "${GITHUB_PATH}"
+
+      - name: Report CMake version
+        run: |
+          cmake --version
+          ctest --version
+
+      - name: Check out pinned vcpkg
+        uses: actions/checkout@v4
+        with:
+          repository: microsoft/vcpkg
+          ref: ${{ env.VCPKG_COMMIT }}
+          path: .vcpkg
+
+      - name: Install build tools
+        run: >-
+          sudo apt-get update && sudo apt-get install -y
+          ninja-build clang autoconf autoconf-archive automake libtool libltdl-dev
+          python3-venv
+
+      - name: Bootstrap pinned vcpkg
+        run: |
+          ./.vcpkg/bootstrap-vcpkg.sh -disableMetrics
+          printf 'VCPKG_ROOT=%s/.vcpkg\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+
+      - name: Configure
+        run: >-
+          cmake --preset headless-release --fresh
+          -DCMAKE_CXX_COMPILER=g++
+          -DCUEXIS_BUILD_DEVELOPER_TOOLS=ON
+          -DCUEXIS_IMPLEMENTATION_SHA=${{ github.sha }}
+          -DVCPKG_TARGET_TRIPLET=x64-linux
+
+      - name: Build
+        run: cmake --build --preset headless-release --clean-first
+
+      - name: Run the reference host gate and the parser test
+        run: |
+          cmake -P cmake/VerifyReferenceHostCommandParser.cmake
+          ctest --preset headless-release --no-tests=error -V \
+            -R '^cuexis_reference_host_staging$'
