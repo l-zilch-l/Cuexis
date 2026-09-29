@@ -362,15 +362,27 @@ R9 状态：实现完成、本地验证完成，并在最后行为 SHA `71de8b1`
 
 两处都**直接违反 ADR 正文**，都写在关闭报告的残余清单里、而对应的验收项仍记为「通过」：
 
-- **S6-D04**：ADR `:145` 要求"OpenGL 只消费命令、不维护独立算法"。`eaaf375` 的
-  `open_gl_presentation.cpp` 仍有 `SummaryHash`/`hashCommand`/`buildDraws`，且**完全不引用**
-  `buildPresentationCommands`（实测 0 处）。`completion.md:145` 把它登记为"残余（有意保留）"，
-  但 `S6-G09` 仍记"通过"。独立复核把它评为**高**，R6 才收敛（[W4](2026-09-28-w4-render-convergence.md)）。
-- **S6-D05**：ADR `:210`/`:214`/`:242-243` 要求**不实现自动重试**、不把 content mismatch 当模式探测。
-  `eaaf375:app/player/src/player_control.cpp:404,446` 在 `playback.mode.content_mismatch` 后自动重试并
-  改变模式。由关闭后的 R0-3/R6 删除，并代之以显式 `--mode`（[修正计划](../../../stage_plans/reviews/stage-06-review-remediation/plan.md) 的 §5/§6）。
+- **S6-D04**：ADR `:145` 要求"draw 排序/分 pass/summary 构造在新层共用，OpenGL 只消费命令并实现
+  GPU 上传和绘制"，`:159` 要求旧入口"共用新实现，不继续维护独立算法"。`eaaf375` 的
+  `engine/render_opengl/src/open_gl_presentation.cpp` 实测：对 `presentation_renderer` 与
+  `buildPresentationCommands` 的引用数为 **0**——它整套自造：自有 `class SummaryHash` `:810`、
+  `hashCommand` `:877`、`buildDraws` `:923`，并自带两处排序 `:1100`、`:1104`（opaque/transparent 分
+  pass）。即排序、分 pass 与 summary 构造都不在新层共用。`completion.md:145` 把它登记为
+  "残余（有意保留）"，但 `S6-G09` 仍记"通过"。独立复核把它评为**高**，R6 才收敛
+  （[W4](2026-09-28-w4-render-convergence.md)）。
+- **S6-D05**：ADR `:210` 要求"不实现后台异步 prepare、取消、自动重试或自动热重载"，`:214` 要求
+  "不把 reload 的 content mismatch 当作模式探测"，`:242` 把"模式失败后自动重试"列入拒绝清单。
+  `eaaf375:app/player/src/player_control.cpp:403-421` 在 **`load` 路径**上正是这么做的：当
+  `prepareLoad` 以 `playback.mode.content_mismatch` 失败、且调用方未显式给出 mode 时，它**重新读取
+  source、把 mode 置为 `CuexisAudio`、再 prepare 一次**（`:414`、`:418`、`:420`）。其 `:412-413` 的注释
+  写"The mode is never guessed from a failed file"，而代码恰恰是从失败码推定了模式。
+  **需要精确区分**：同一文件 `:446-451` 的 `reload` 路径反而是**合规**的——它把 `content_mismatch`
+  转成 `player.command.mode_change_requires_load` 并拒绝，符合 `:213`。违规只在 `load` 路径。
+  已由关闭后的 R0-3/R6 删除，并代之以显式 `--mode`（[修正计划](../../../stage_plans/reviews/stage-06-review-remediation/plan.md) 的 §5/§6）。
 
-两者在 `670cca8` 上均已收敛（`SummaryHash`/`hashCommand` 归零、`content_mismatch` 分支消失）。
+两者在 `670cca8` 上均已收敛：`SummaryHash`/`hashCommand` 归零、该文件改为在 `:1055` 与 `:1537` 调用
+`presentation_renderer::buildPresentationCommands`，仅保留诊断用的 `probeBuildDraws` `:1013`；
+`load` 路径的自动重试分支消失。
 
 ### 10.3 变更控制未满足项
 
