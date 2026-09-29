@@ -318,7 +318,7 @@ R9 据此实现，见
 `STAGE_NAVIGATION_INDEXES` 白名单**不含**该路径，新建它会违反检查器——R9 规范 §9 第 3 项据此明确
 「**不新建叶目录 README**，也不新增 `reviews/README`」。原句保留，本订正为其更正。
 
-R9 状态：实现完成、本地验证完成，并在最终 SHA `71de8b1` 上通过 hosted 四工作流验证；**尚未获 owner
+R9 状态：实现完成、本地验证完成，并在最后行为 SHA `71de8b1` 上通过 hosted 四工作流验证；**尚未获 owner
 接受退出**，`SPEC-27` 仍为 open。
 
 ### 7.3 §5 的两条 hosted 残余声明已被取代
@@ -333,7 +333,7 @@ R9 状态：实现完成、本地验证完成，并在最终 SHA `71de8b1` 上�
   [交付报告](2026-09-28-delivery-report.md) 的 SHA 表（`2c74f5f` 一行与紧邻说明）与
   [修正计划 §4](../../../stage_plans/reviews/stage-06-review-remediation/plan.md)。
 - 本批次（R7）在[交付报告 §2](2026-09-28-delivery-report.md) 的批次总表中记为 `completed
-  （3 项登记，1 项上报）`，其门禁改动此后持续在 hosted 上运行；R9 在最终 SHA `71de8b1` 的验证中
+  （3 项登记，1 项上报）`，其门禁改动此后持续在 hosted 上运行；R9 在最后行为 SHA `71de8b1` 的验证中
   同样覆盖了 `VerifyReferenceHost.cmake` 的导入表检查与 minor 负例。
 
 **原文保留不改**：本节只追加后续指向，不修改 §5 的任何字句与当时判断。

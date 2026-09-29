@@ -215,10 +215,11 @@ today's text pass, and keeping those two statements apart is the point.
   the parser test's empty-element detector was exercised on a 3.x CMake with the
   baseline in place.
 
-### 2.3 Final-SHA hosted validation
+### 2.3 Final behavioral SHA: hosted validation
 
 The runs recorded just above were taken at `b36ba25`, which the version advance
-described in section 6 then moved. The final commit of this branch is
+described in section 6 then moved. The last commit of this branch that changes
+**behaviour, contracts, tests or workflows** is
 `71de8b1f3f43c779821468c54c5e2803812924c3`, and every hosted run on it is green:
 
 | Workflow | Event | Result |
@@ -428,6 +429,16 @@ acceptance and is not part of R9.
 
 ## 8. Not claimed
 
+- **Hosted validation of the documentation-only commits that follow `71de8b1`.**
+  This report is maintained by documentation commits, and each one moves the tip
+  past the SHA whose runs are tabulated in section 2.3. The project's own rule for
+  the R0–R8 batches is that such a commit's hosted result must be checked
+  separately and may not be replaced by the earlier green
+  ([delivery report](../../reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md)
+  §7), and the R9 document's exit checklist repeats it. `71de8b1` is therefore
+  recorded as the last **behavioral** SHA, not as the current tip, and no hosted
+  result for the documentation commits after it is claimed here. Those results are
+  recorded when they exist.
 - Owner acceptance of the R9 contract, including the redundant tick budget guard
   noted in section 5.1.
 - The mutation harness and the checker self-test live under `out/`, which is not

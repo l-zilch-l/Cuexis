@@ -4,7 +4,12 @@
 使实施与后续评审不必重新推导。背景与现象见
 `docs/stage_reports/stages/stage-06/2026-09-28-r9-reference-host-command-loop.md` §2.1。
 
-**状态**：裁定完成，待实施。基准修订 `f0837aa`。
+**状态**：裁定完成，**已实施**。基准修订 `f0837aa`。
+
+订正 2026-09-29：本行原写"待实施"。本文件 §4 的审计项已由
+[R9-gate-policy-impact-table.md](R9-gate-policy-impact-table.md) 逐项作答并落表（该表自述 closing the
+audit items left open by section 4 of this file，即 D11/D14/D15），策略基线与 CI 固定亦已在
+`354c801`、`99de5ae` 落地。
 
 ---
 
@@ -204,12 +209,12 @@ OLD 对照限定在支持旧行为的 3.x 上执行。
 
 | 策略 | 摘要 | 结论 |
 |---|---|---|
-| **CMP0054** (v3.1) | `if()` 仅对未加引号实参做变量/关键字解释 | **需按 D15 保守过近似审计** |
-| **CMP0053** (v3.1) | 简化变量引用与转义求值 | 待逐点核对 |
+| **CMP0054** (v3.1) | `if()` 仅对未加引号实参做变量/关键字解释 | 已按 D15 过近似审计，结论见[影响表](R9-gate-policy-impact-table.md) |
+| **CMP0053** (v3.1) | 简化变量引用与转义求值 | 已逐点核对，结论见[影响表](R9-gate-policy-impact-table.md) |
 | CMP0007 (v2.8) | `list()` 不再忽略空元素 | 缺陷 1、2；按 D11 审计 |
 | CMP0057 (v3.3) | `IN_LIST` 运算符 | 缺陷 3 |
-| CMP0121 (v3.21) | `list()` 检测非法索引 | 待核对 |
-| CMP0124 / CMP0130 / CMP0139 / CMP0064 | foreach 作用域 / while / PATH_EQUAL / TEST | 待核对 |
+| CMP0121 (v3.21) | `list()` 检测非法索引 | 已核对，结论见[影响表](R9-gate-policy-impact-table.md) |
+| CMP0124 / CMP0130 / CMP0139 / CMP0064 | foreach 作用域 / while / PATH_EQUAL / TEST | 已核对，结论见[影响表](R9-gate-policy-impact-table.md) |
 
 `list()` 子命令实际用法（对照 `CMP0007` 受影响集合：
 
@@ -235,7 +240,7 @@ VerifyReferenceHostCommands.cmake : APPEND, FIND, GET, LENGTH,
 
 ---
 
-## 4. 待完成的审计（实施时逐项作答并落表）
+## 4. 审计项（已逐项作答并落表）
 
 1. **逐点追踪**喂给 `FIND`／`REMOVE_DUPLICATES`／`SORT`／`GET`／`LENGTH` 的列表来源，
    记录**输入约束**，按 D11 在首次可能有损读取**之前**设检查点。
@@ -243,6 +248,10 @@ VerifyReferenceHostCommands.cmake : APPEND, FIND, GET, LENGTH,
 3. 核对 `CMP0053`／`CMP0121`／`CMP0124`／`CMP0130`／`CMP0139`／`CMP0064` 在两张文件中的命中点。
 4. 产出**策略影响表**并随代码提交：**入口、策略号、调用点、输入约束、探针、预期差异**。
    修改相关脚本或升级测试用 CMake 时由改动者更新，评审者核对。
+
+**完成记录（2026-09-29）**：本节四项已由 [R9-gate-policy-impact-table.md](R9-gate-policy-impact-table.md)
+逐项作答并落表；该表覆盖 `CMP0054`／`CMP0053`／`CMP0007`／`CMP0057`／`CMP0121`／`CMP0124`／`CMP0130`／
+`CMP0139`／`CMP0064` 九个策略并各给结论与理由。本节文字保留为实现时的原始清单，不改写。
 
 ---
 

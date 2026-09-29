@@ -1,8 +1,10 @@
 # R9：Reference Host 命令循环与 play/pause（实施文档）
 
-状态：active；设计已获 owner 接受，**已实现并经本地与最终 SHA 验证**
-（最终 SHA `71de8b1` 的 hosted 四工作流全绿，证据见
-[R9 报告](../../../stage_reports/stages/stage-06/2026-09-28-r9-reference-host-command-loop.md)）；
+状态：active；设计已获 owner 接受，**已实现并经本地与最后行为 SHA 验证**
+（最后**行为** SHA `71de8b1` 的 hosted 四工作流全绿，证据见
+[R9 报告](../../../stage_reports/stages/stage-06/2026-09-28-r9-reference-host-command-loop.md) §2.3。
+该 SHA 之后仅有文档提交；按 §13 与仓库政策，改变 tip 的文档提交其自身 hosted 结果须单独核对、
+不得用 `71de8b1` 的绿替代，报告 §8 已把这一点列为未主张）；
 **尚未获 owner 接受退出**，`SPEC-27` 仍为 open。本文是 R9 的唯一规范来源
 
 更新日期：2026-09-29（订正：本行原写「**未实现**」与更新日期 `2026-09-28`，二者均为实现落地前的
@@ -896,6 +898,13 @@ hosted run 引用、未覆盖范围、历史追加订正、owner 最终接受。
 **保留的未决项**：`examples/reference_host/tests/commands/` 的 fixture 文件若与 §8 的必跑清单漂移，
 清单硬编码本身抓不到。**建议 case runner 用「声明清单」与「fixture 文件枚举」做 set-equality 交叉校验**
 （glob 仅作校验，不作发现）——此项**尚未获 owner 裁定**，实施时若采纳需记录。
+
+**实施记录（2026-09-29）**：该 set-equality 交叉校验**已采纳并实现**，因此上句的自设要求"实施时若采纳
+需记录"在此履行。实现见 `cmake/VerifyReferenceHostCommands.cmake` 的头部注释
+（"cross-checked against it for set equality"）与其两处 `file(GLOB …)` 站点：声明清单来自
+`cmake/ReferenceHostCommandCases.txt`，磁盘枚举来自 `examples/reference_host/tests/commands/`，
+glob 仅用于校验、不用于发现。**设计采纳不改变本项的性质**：它仍不是 owner 对"清单漂移风险已消除"
+的裁定，只表明建议的缓解措施已落地。
 
 ---
 
