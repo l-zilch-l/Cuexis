@@ -286,6 +286,28 @@ set(cuexis_command_known_directives
     exit code diagnostic-step frame digest-anchor
     count require require-count absent)
 
+# The allowed set is the single definition of the nine directive names: the
+# anchored pattern used by the expectation parser is derived from it instead of
+# repeating them. Deriving it is only safe because the set is validated first,
+# so a typo here cannot widen the pattern or inject a regex metacharacter.
+list(LENGTH cuexis_command_known_directives cuexis_command_directive_count)
+if(cuexis_command_directive_count EQUAL 0)
+    message(FATAL_ERROR "The known .expect directive set is empty")
+endif()
+foreach(directive_name IN LISTS cuexis_command_known_directives)
+    if(NOT directive_name MATCHES "^[a-z][a-z0-9-]*$")
+        message(FATAL_ERROR
+            "Known .expect directive '${directive_name}' is not a lower-case name")
+    endif()
+endforeach()
+set(cuexis_command_directive_unique ${cuexis_command_known_directives})
+list(REMOVE_DUPLICATES cuexis_command_directive_unique)
+list(LENGTH cuexis_command_directive_unique cuexis_command_directive_unique_count)
+if(NOT cuexis_command_directive_unique_count EQUAL cuexis_command_directive_count)
+    message(FATAL_ERROR "The known .expect directive set contains a duplicate")
+endif()
+list(JOIN cuexis_command_known_directives "|" cuexis_command_directive_pattern)
+
 # ---------------------------------------------------------------------------
 # Pass 1: a case whose input is a fixture that the contract requires to be
 # rejected before any command is dispatched. Section 8.5 rejects "any crash" as
@@ -453,37 +475,26 @@ foreach(entry IN LISTS cuexis_command_cases)
         if(line STREQUAL "" OR line MATCHES "^#")
             continue()
         endif()
+        # The directive is recognised on the raw line, before
+        # separate_arguments() can reinterpret it. separate_arguments() honours
+        # quotes and lets a backslash escape the next character, so splitting on
+        # whitespace and taking the first word would accept "require", req\ uire
+        # and require;bad as the directive named inside the quoting. Anchoring
+        # the allowed set against the raw line rejects those aliases instead of
+        # accepting them.
+        #
+        # It is checked before arity so that a typo is reported as a typo rather
+        # than as a wrong argument count. The pattern is derived from
+        # cuexis_command_known_directives so the nine names have one definition.
+        if(NOT line MATCHES "^(${cuexis_command_directive_pattern})($|[ \t])")
+            cuexis_command_record_failure("${case_id}"
+                "unknown .expect directive in '${line}' (${case_id}.expect)")
+            continue()
+        endif()
         separate_arguments(line_parts UNIX_COMMAND "${line}")
         list(GET line_parts 0 directive)
         list(LENGTH line_parts directive_arity)
         math(EXPR directive_last "${directive_arity} - 1")
-
-        # The directive is checked before arity so that a typo is reported as a
-        # typo rather than as a wrong argument count.
-        #
-        # list(FIND) rather than IN_LIST: IN_LIST is a keyword only while policy
-        # CMP0057 is NEW, and this file runs in script mode where nothing has
-        # called cmake_minimum_required() to set it. A CMake that still defaults
-        # that policy to OLD does not recognise the keyword and turns the whole
-        # line into "Unknown arguments specified" instead of the fixture defect it
-        # is, which is how this gate passed on every local and Windows run and
-        # failed on the runners that install CMake from the distribution.
-        # list(FIND) has no policy attached and says the same thing.
-        #
-        # A directive carrying a ';' cannot be looked up as a single value and is
-        # already a malformed line, so it is named as one instead of being passed
-        # to list(FIND) as several arguments.
-        if(directive MATCHES ";")
-            cuexis_command_record_failure("${case_id}"
-                "malformed .expect line '${line}' in ${case_id}.expect")
-            continue()
-        endif()
-        list(FIND cuexis_command_known_directives "${directive}" directive_index)
-        if(directive_index EQUAL -1)
-            cuexis_command_record_failure("${case_id}"
-                "unknown .expect directive '${directive}' in ${case_id}.expect")
-            continue()
-        endif()
         # Arity is guarded before dispatch: a malformed expectation must produce
         # a readable assertion failure, not an out-of-range list(GET) error that
         # aborts the gate without naming the fixture line. require/absent take

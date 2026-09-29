@@ -1,3 +1,15 @@
+cmake_minimum_required(VERSION 3.25)
+# This scripts runs in CMake script mode, where nothing else establishes a policy
+# baseline: the call in the root CMakeLists.txt belongs to a different process.
+# Several policies change the meaning of constructs used by this gate and by
+# cmake/VerifyReferenceHostCommands.cmake, which this file includes, so without
+# the line above the same script behaves differently on different CMake
+# versions. It is the same declaration the sibling gate scripts open with.
+#
+# VerifyReferenceHostCommands.cmake deliberately does not repeat it: it is only
+# ever reached through this entry point, and that contract is what makes the
+# declaration sufficient.
+#
 # Verifies the Cuexis Reference Host (ADR 0042 S6-D08, stage plan S6-C4).
 #
 # The gate proves, from a clean staging directory and with the source tree
