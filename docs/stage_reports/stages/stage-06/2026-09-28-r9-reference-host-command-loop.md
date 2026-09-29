@@ -70,11 +70,18 @@ cause.
 
 The case list declares each case as `<id>|<kind>|<flags>`, and most cases
 legitimately have an empty flags field, so splitting a declaration on `|` ends in
-an empty element. Whether a trailing empty element counts is not the same in every
-CMake version: it is counted by the CMake used locally and on the Windows runners
-and dropped by the one the Linux runners use. Two sites depended on it, and the
-second was hidden behind the first, because the gate stopped at the first before
-ever reaching the second.
+an empty element. Whether that trailing empty element survives is decided by policy
+`CMP0007`, and nothing in this script ever set it. The gate runs in CMake script
+mode, where the `cmake_minimum_required()` in the root `CMakeLists.txt` belongs to
+a different process and has no effect on it, so every policy a 3.x CMake still
+defaults to `OLD` was `OLD` for the gate. A CMake that drops the element and one
+that keeps it disagree about the same declaration, which is why it was well formed
+on Windows and malformed on Linux.
+
+Two sites depended on it. They are the two that triggered this failure, not a
+proof that no others exist; the sweep that establishes the weaker, checkable claim
+is recorded in section 2.2. The second was hidden behind the first, because the
+gate stopped at the first before ever reaching the second.
 
 - The shape check split the declaration and required three fields, so a correct
   declaration was reported malformed on Linux alone. The same declaration cannot
@@ -90,9 +97,11 @@ ever reaching the second.
 The flags field turned out not to be read anywhere in the loop that runs the shape
 check, which is why that check could be about the field's shape without anyone
 noticing the version dependency until the gate ran somewhere else. The rest of the
-file was swept for the same mistake: the only other split that can end in an empty
-element is the expectation file split on newlines, and that one is safe because an
-empty line is skipped either way.
+file was swept for the same mistake, and that sweep found one more split that can
+end in an empty element: the expectation file split on newlines, which is safe
+because an empty line is skipped either way. This paragraph originally said those
+were the only two places. That was stronger than the sweep behind it could support,
+so the checkable version of the claim is now a test that runs; see section 2.2.
 
 The third defect had a different cause, and it is the one worth reading. With
 both of the above fixed the gate advanced into the expectation parser and failed
@@ -107,13 +116,20 @@ The lookup used `IN_LIST`, which is a keyword only while policy `CMP0057` is
 `NEW`. The file runs in script mode, and nothing in it or in the file that
 includes it calls `cmake_minimum_required()`, so on a CMake that still defaults
 that policy to `OLD` the keyword is not recognised and a well-formed `if` becomes
-a hard error. The distribution CMake the Linux jobs install still behaves that
-way; CMake 4.x forces the policy to `NEW` and refuses to set it back, which is
-why local runs and both Windows runners could not reproduce it, and why the
-error text is no help: it prints the source tokens, not the values, so a variable
-looks undefined in the message whether or not it is. `list(FIND)` says the same
-thing with no policy attached, and a directive carrying a `;` is now named as the
-malformed line it is rather than passed on as several arguments.
+a hard error. The CMake those Linux jobs run still behaves that way. It comes from
+the `ubuntu-latest` runner image; the workflow never installed CMake, and an
+earlier version of this report said the jobs "install from the distribution",
+which was wrong and is corrected here. CMake 4.x forces the policy to `NEW` and
+refuses to set it back, which is why local runs and both Windows runners could not
+reproduce it, and why the error text is no help: it prints the source tokens, not
+the values, so a variable looks undefined in the message whether or not it is.
+
+The first repair for this one avoided the keyword, using `list(FIND)` instead, and
+guarded a directive containing `;`. That guard's stated reason was wrong: it said
+such a value would reach `list(FIND)` as several arguments, and a quoted `;` stays
+a single argument -- `list(FIND known "a;b" idx)` returns `-1` without error. The
+guard was still worth having, but for a different reason, and the repair has since
+been replaced rather than re-justified; see section 2.2.
 
 This is worth recording for how it was found and how it was not found. Local runs,
 both Windows runners and the entire case suite agreed that the gate was sound, and
@@ -123,6 +139,74 @@ for the same cause, or for a different one, rather than by waiting for the next
 run. Three consecutive Linux runs were needed, but no run was spent on a change
 that had not already been reproduced or explained. A gate exercised on one
 platform by one CMake version is validated less than it appears to be.
+
+### 2.2 Remediation: the shared cause, and how the claim is now checked
+
+Adjudicated after the three defects above. The full decision record is
+[R9-gate-policy-audit-decisions.md](../../../stage_plans/reviews/stage-06-review-remediation/R9-gate-policy-audit-decisions.md).
+
+**One cause, two mechanisms.** The three failures were not three unrelated
+mistakes. They had one environmental cause: the gate runs in CMake script mode and
+had never established a policy baseline, so every policy a 3.x CMake still defaults
+to `OLD` applied to it while a 4.x CMake running the same text applied `NEW`. Two
+mechanisms did the damage -- `CMP0007` dropped the empty trailing field and
+`CMP0057` made `IN_LIST` an ordinary word. Each of the three repairs above removed
+one construct from that exposure rather than removing the exposure.
+
+**The fix.** `cmake/VerifyReferenceHost.cmake` now opens with
+`cmake_minimum_required(VERSION 3.25)`, the declaration the six sibling gate
+scripts open with. The included command runner deliberately does not repeat it: it
+is only reached through this entry point, and that contract is written where it is
+relied upon.
+
+**Evidence that this is the fix rather than a precaution.** The pre-fix command
+runner as of `2eed5c9` was run under the official Kitware CMake 3.28.3 Windows
+binary, with the exact command line CTest registers for the staging gate. Without
+the baseline it fails at `VerifyReferenceHostCommands.cmake:108` with `Malformed
+case declaration 'c01-absolute-anchor|cmd|': expected <id>|<kind>|<flags>` -- the
+same file, line and message as the hosted failure. With only the baseline line
+added and nothing else changed, it reports `expected 41, completed 41, passed 41`.
+Removing the baseline from the *current* scripts, by contrast, does not reintroduce
+a failure, because the three constructs had each been worked around first. The
+baseline removes the condition that produced the defects; it is not what makes
+today's text pass, and keeping those two statements apart is the point.
+
+**How the claim is checked rather than asserted.**
+
+- The 41 declarations moved out of the runner into
+  `cmake/ReferenceHostCommandCases.txt`, one `<id>|<kind>|<flags>` per line. The
+  reason is not tidiness: an independent check cannot read declarations out of a
+  700-line script by text pattern and still be independent.
+- `cmake/VerifyReferenceHostCommandParser.cmake` validates the same data with a
+  different algorithm -- one anchored pattern with capture groups, where the gate
+  counts separators and indexes fields -- plus hand-written accept/reject samples
+  written in the test rather than generated from the file. It is registered as
+  `cuexis_reference_host_command_parser` and needs no build, so it also runs
+  directly. Both it and the staging gate pass.
+- The directive is now recognised on the raw line before `separate_arguments()`
+  can reinterpret it, and the allowed set is derived from
+  `cuexis_command_known_directives` after that set is validated. The previous
+  check ran after the split, so `"require"`, `req\ uire` and `require;bad` were all
+  read as the directive named inside the quoting.
+- Every policy that could plausibly reach either script is enumerated with its
+  evidence in
+  [R9-gate-policy-impact-table.md](../../../stage_plans/reviews/stage-06-review-remediation/R9-gate-policy-impact-table.md),
+  including a trace of every input to the `CMP0007`-affected read path and an
+  explicit `CMP0124` scope analysis. `CMP0054` is answered by a mechanical rule
+  (every condition containing a quoted argument must also contain an operator)
+  rather than by spot inspection, and returns 0 sites.
+- The Linux workflow now pins CMake instead of taking the image version, with
+  checksums cross-checked against Kitware's own published SHA-256 files, prints
+  `cmake --version` in each job, adds a 3.25.3 job that runs the parser test on the
+  declared minimum and a 4.4.0 job that runs the gate itself, and runs the staging
+  gate in a second verbose pass so its `expected/completed/passed` line lands in
+  the hosted log instead of passing silently.
+
+**Scope of this remediation.** `VerifyPlayerDistribution.cmake` still has no policy
+baseline of its own; it fails today for an unrelated, pre-existing reason recorded
+in section 6, and its baseline is a separate follow-up rather than part of this
+work. The version matrix above covers 3.25.x, 3.28.3 and 4.4.0; it does not cover
+every 3.x release.
 
 ## 3. A parser defect found by review
 
@@ -278,3 +362,19 @@ acceptance and is not part of R9.
   committed. The harness is reproducible from this report's method, and the
   defect class it fixed is now guarded permanently by the A2 check, but the
   records themselves are working-tree evidence rather than repository contents.
+  The two policy auditors referenced by
+  [R9-gate-policy-impact-table.md](../../../stage_plans/reviews/stage-06-review-remediation/R9-gate-policy-impact-table.md)
+  are in the same position, which is why that document carries the line numbers
+  needed to re-derive each finding by hand.
+- The section 2.2 workflow changes are verified only as far as a local check can
+  reach: the YAML parses, the pinned step lands in exactly the four jobs that run
+  the gate, the three checksum literals match Kitware's published values, and the
+  two-pass invocation excludes exactly one test and prints the accounting line.
+  The two new jobs have never executed. Their first execution is the next hosted
+  run, and anything they report about 3.25.3 or 4.4.0 is unverified until then.
+- No claim that the version matrix is exhaustive. It covers 3.25.3, 3.28.3 and
+  4.4.0; other 3.x releases are not exercised, and the parser test's empty-element
+  detector is meaningful only on the 3.x side of that range.
+- No claim that the audit in section 2.2 found every policy dependence. It found
+  every dependence reachable from the constructs the scripts actually use, which
+  is a smaller and checkable statement than "there are none".
