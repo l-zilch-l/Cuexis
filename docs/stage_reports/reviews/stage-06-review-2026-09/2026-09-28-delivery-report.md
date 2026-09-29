@@ -360,25 +360,40 @@ R9 状态：实现完成、本地验证完成，并在最后行为 SHA `71de8b1`
 
 ### 10.2 关闭基线 `eaaf375` 上的两处偏差
 
-两处都**直接违反 ADR 正文**，都写在关闭报告的残余清单里、而对应的验收项仍记为「通过」：
+两处在 `eaaf375` 上**都未满足 ADR 正文**，但**披露程度完全不同**，不能混为一谈。
 
-- **S6-D04**：ADR `:145` 要求"draw 排序/分 pass/summary 构造在新层共用，OpenGL 只消费命令并实现
-  GPU 上传和绘制"，`:159` 要求旧入口"共用新实现，不继续维护独立算法"。`eaaf375` 的
-  `engine/render_opengl/src/open_gl_presentation.cpp` 实测：对 `presentation_renderer` 与
-  `buildPresentationCommands` 的引用数为 **0**——它整套自造：自有 `class SummaryHash` `:810`、
-  `hashCommand` `:877`、`buildDraws` `:923`，并自带两处排序 `:1100`、`:1104`（opaque/transparent 分
-  pass）。即排序、分 pass 与 summary 构造都不在新层共用。`completion.md:145` 把它登记为
-  "残余（有意保留）"，但 `S6-G09` 仍记"通过"。独立复核把它评为**高**，R6 才收敛
-  （[W4](2026-09-28-w4-render-convergence.md)）。
-- **S6-D05**：ADR `:210` 要求"不实现后台异步 prepare、取消、自动重试或自动热重载"，`:214` 要求
-  "不把 reload 的 content mismatch 当作模式探测"，`:242` 把"模式失败后自动重试"列入拒绝清单。
-  `eaaf375:app/player/src/player_control.cpp:403-421` 在 **`load` 路径**上正是这么做的：当
-  `prepareLoad` 以 `playback.mode.content_mismatch` 失败、且调用方未显式给出 mode 时，它**重新读取
-  source、把 mode 置为 `CuexisAudio`、再 prepare 一次**（`:414`、`:418`、`:420`）。其 `:412-413` 的注释
-  写"The mode is never guessed from a failed file"，而代码恰恰是从失败码推定了模式。
-  **需要精确区分**：同一文件 `:446-451` 的 `reload` 路径反而是**合规**的——它把 `content_mismatch`
-  转成 `player.command.mode_change_requires_load` 并拒绝，符合 `:213`。违规只在 `load` 路径。
-  已由关闭后的 R0-3/R6 删除，并代之以显式 `--mode`（[修正计划](../../../stage_plans/reviews/stage-06-review-remediation/plan.md) 的 §5/§6）。
+**S6-D04：已披露，但未按 `:369` 处理**
+
+ADR `:145` 要求"draw 排序/分 pass/summary 构造在新层共用，OpenGL 只消费命令并实现 GPU 上传和
+绘制"，`:159` 要求旧入口"共用新实现，不继续维护独立算法"。`eaaf375` 的
+`engine/render_opengl/src/open_gl_presentation.cpp` 实测：对 `presentation_renderer` 与
+`buildPresentationCommands` 的引用数为 **0**——它整套自造：自有 `class SummaryHash` `:810`、
+`hashCommand` `:877`、`buildDraws` `:923`，并自带 opaque/transparent 两处排序 `:1100`、`:1104`，
+即排序、分 pass 与 summary 构造都不在新层共用。
+
+**但关闭报告披露了它，且没有把它算作已完成**：`completion.md:145` 的说明列写"D2 报告记录该项未做……
+**不把该重构项算作已完成**"，对应的验收行 `S6-G09` 状态为"**通过（历史缺口与残余见 §8）**"。
+需要说明的是，`S6-G09` 的判据是"中立 renderer 覆盖候选事务和统一帧，Player 正式循环不依赖具体
+adapter"，与 ADR `:145` 并非同一条要求，因此该行记"通过"本身不构成矛盾。
+仍未满足的是 `:369`——该例外**没有先变更 ADR 或所属 Spec**。独立复核把对应项评为**高**，R6 才
+收敛（[W4](2026-09-28-w4-render-convergence.md)）。
+
+**S6-D05：未披露**
+
+ADR `:210` 要求"不实现后台异步 prepare、取消、自动重试或自动热重载"，`:214` 要求"不把 reload 的
+content mismatch 当作模式探测"，`:242` 把"模式失败后自动重试"列入拒绝清单。
+`eaaf375:app/player/src/player_control.cpp:403-421` 在 **`load` 路径**上正是这么做的：当
+`prepareLoad` 以 `playback.mode.content_mismatch` 失败、且调用方未显式给出 mode 时，它**重新读取
+source、把 mode 置为 `CuexisAudio`、再 prepare 一次**（`:414`、`:418`、`:420`）。其 `:412-413` 的注释
+写"The mode is never guessed from a failed file"，而代码恰恰是从失败码推定了模式。
+**需要精确区分**：同一文件 `:446-451` 的 `reload` 路径反而是**合规**的——它把 `content_mismatch`
+转成 `player.command.mode_change_requires_load` 并拒绝，符合 `:213`。违规只在 `load` 路径。
+
+**与 D04 不同，这一处在关闭时既没有对应验收行覆盖，也没有在 `completion.md` 中披露**（对该文件检索
+"重试"/"content_mismatch"/"mode" 零命中）。它由**关闭后**的独立复核登记为
+`SPEC-18 [高 · 未声明 · 本轮新增]`（[spec](2026-09-28-spec.md):271），并按
+[R0-3](../../../stage_plans/reviews/stage-06-review-remediation/plan.md)（`:137`）选择了"改为显式
+`Open`/`Rebuild` 并新增 `--mode`"，而非修订 ADR `:242` 保留原行为。
 
 两者在 `670cca8` 上均已收敛：`SummaryHash`/`hashCommand` 归零、该文件改为在 `:1055` 与 `:1537` 调用
 `presentation_renderer::buildPresentationCommands`，仅保留诊断用的 `probeBuildDraws` `:1013`；
@@ -386,8 +401,17 @@ R9 状态：实现完成、本地验证完成，并在最后行为 SHA `71de8b1`
 
 ### 10.3 变更控制未满足项
 
-ADR `:369` 写「**每个例外都必须先变更本 ADR 或所属 Spec**」。§10.2 的两处例外**既未变更 ADR 也未变更
-Spec**，只以"残余"记入 `completion.md` 并经 owner 于 2026-09-27 接受。ADR `:362-375` 另要求 A2 完成六项
+ADR `:369` 写「**每个例外都必须先变更本 ADR 或所属 Spec**」。§10.2 的两处例外**都没有变更 ADR 或所属
+Spec**，但两者在这一点上的经过并不同：
+
+- **S6-D04** 以"残余（有意保留）"记入 `completion.md` §8，并经 owner 于 2026-09-27 接受该残余清单——
+  即走了**披露与接受**，只是没有走 `:369` 要求的 ADR/Spec 变更。
+- **S6-D05** 未进入任何残余清单，也没有对应验收行，是**关闭后**才由独立复核发现的（`SPEC-18`，
+  标注"未声明"）。
+
+因此 `:369` 的未满足有两层：已披露的例外没有落到 ADR/Spec，而未披露的例外根本不在关闭时的视野内。
+
+ADR `:362-375` 另要求 A2 完成六项
 交付物——这六项**已满足**（字段级 Spec/Schema、API 草案、模块/安装图、golden、表征脚本已注册为
 CTest `cuexis_contract_s6_a2`）。
 
