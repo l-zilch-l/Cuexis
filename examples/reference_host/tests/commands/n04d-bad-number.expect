@@ -1,0 +1,9 @@
+# n04d-bad-number: section 7 N04 (H6) - a signed tick argument is not a decimal non-negative integer
+exit fail
+code host.command.invalid_number
+diagnostic-step parse
+absent host.load
+absent host.frame
+# NOTE: a bare 'absent host.command' cannot hold, because the required diagnostic code contains
+# that substring; absence of a dispatched command is expressed as 'absent host.command index='.
+# This case does not need that stronger form.

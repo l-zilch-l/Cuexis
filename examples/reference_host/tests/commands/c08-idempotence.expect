@@ -1,0 +1,9 @@
+# c08-idempotence: section 7 C08 (H3) - only 250/250/0, repeats never sample and never bump the id
+exit ok
+frame 250/250/0
+count tickAttempts 1
+count suppressedTicks 0
+count emittedTickFrames 1
+count publicUpdateAttempts 1
+count publicUpdateSuccesses 1
+count frameCount 1

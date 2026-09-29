@@ -1,0 +1,8 @@
+# n03-second-open: section 7 N03 (H5) - already_open, and only the first tick produced a frame
+exit fail
+code host.command.already_open
+frame 250/250/0
+require-count host.frame 1
+# NOTE: the frame directive states the same fact as the table's "require-count host.frame 1"
+# (the tick after the rejected open never runs) and additionally satisfies the runner's rule
+# that the number of frame directives equals the number of host.frame events.

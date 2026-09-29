@@ -20,3 +20,12 @@ tests/fixtures/stage6_a2/**/*.png binary
 tests/fixtures/stage6_a2/**/*.jpg binary
 *.cxc binary
 vcpkg-overlays/** text eol=lf
+# The R9 command fixtures are input-program evidence, and their bytes are part of
+# what is under test. The .cmd/.expect text must keep LF so that a Windows
+# checkout does not hand the parser different bytes than a Linux one, and the
+# input-portability case must keep its BOM and its CRLF exactly, so it is marked
+# binary rather than normalized. The specific rule comes after the glob because
+# the later rule wins.
+examples/reference_host/tests/commands/*.cmd text eol=lf
+examples/reference_host/tests/commands/*.expect text eol=lf
+examples/reference_host/tests/commands/c11b-line-endings-bom.cmd binary

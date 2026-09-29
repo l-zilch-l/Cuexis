@@ -1,3 +1,15 @@
+cmake_minimum_required(VERSION 3.25)
+# This scripts runs in CMake script mode, where nothing else establishes a policy
+# baseline: the call in the root CMakeLists.txt belongs to a different process.
+# Several policies change the meaning of constructs used by this gate and by
+# cmake/VerifyReferenceHostCommands.cmake, which this file includes, so without
+# the line above the same script behaves differently on different CMake
+# versions. It is the same declaration the sibling gate scripts open with.
+#
+# VerifyReferenceHostCommands.cmake deliberately does not repeat it: it is only
+# ever reached through this entry point, and that contract is what makes the
+# declaration sufficient.
+#
 # Verifies the Cuexis Reference Host (ADR 0042 S6-D08, stage plan S6-C4).
 #
 # The gate proves, from a clean staging directory and with the source tree
@@ -332,6 +344,24 @@ set(golden_package_pattern
 if(NOT host_report MATCHES "${golden_package_pattern}")
     message(FATAL_ERROR "The published package did not reproduce the host content")
 endif()
+
+# ---------------------------------------------------------------------------
+# 4b. R9 command-mode cases.
+#
+# The reference host accepts an external command program, so the transport
+# rules a static check cannot reach - pause without an update, resume without
+# catch-up, idempotent control, in-place reload - are driven from outside and
+# asserted against the run record. This runner drives the same
+# installed-package host executable the legacy run above used. It adds no CTest
+# test and never nests a ctest invocation.
+#
+# The fixtures are read from the copied example tree rather than from the
+# source tree, so a fixture the whole-directory copy above failed to carry is
+# caught here instead of being read from a hidden input.
+# ---------------------------------------------------------------------------
+set(package_path "${content_dir}/cfu_f_v4_reference.cxc")
+set(command_fixture_dir "${host_project}/tests/commands")
+include("${CUEXIS_SOURCE_DIR}/cmake/VerifyReferenceHostCommands.cmake")
 
 # The sanitized PATH was restored inline immediately after the one
 # execute_process that needed it, so nothing is pending here. The earlier design

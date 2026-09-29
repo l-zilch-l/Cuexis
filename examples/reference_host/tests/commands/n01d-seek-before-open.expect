@@ -1,0 +1,5 @@
+# n01d-seek-before-open: section 7 N01 (H5) - seek before open is rejected as not_open
+exit fail
+code host.command.not_open
+absent host.load
+absent host.frame

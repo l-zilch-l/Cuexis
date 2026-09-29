@@ -469,6 +469,16 @@ class VersionGateTests(unittest.TestCase):
         "tools/update_version.py",
         ".github/workflows/version-gate.yml",
     )
+    # The bootstrap block materializes the gate files plus the two canonical
+    # templates it renders its fixtures from, so the materialize assertion must
+    # not reuse GATE_FILES. Adding the templates to GATE_FILES would instead make
+    # the with_gate stub loop overwrite the real version files and the
+    # without_gate branch delete them, which is exactly the fixture the version
+    # tests depend on.
+    MATERIALIZED_FILES = GATE_FILES + (
+        "cmake/CuexisVersion.cmake",
+        "vcpkg.json",
+    )
 
     def _commit_version_files(self, root: Path, version: str, *, with_gate: bool) -> str:
         """Writes a real candidate tree and commits it, returning the commit SHA.
@@ -632,7 +642,7 @@ class VersionGateTests(unittest.TestCase):
                 for path in (root / "trusted").rglob("*")
                 if path.is_file()
             )
-            self.assertEqual(sorted(self.GATE_FILES), materialized)
+            self.assertEqual(sorted(self.MATERIALIZED_FILES), materialized)
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             self._init_repository(root)

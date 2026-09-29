@@ -53,7 +53,11 @@ A2 只证明冻结决策可以被明确描述和表征，不代表 v5 Playback�
 版本门禁或 Reference Host 已实现；SDK 仍为 `0.7.0`，三个工程问题继续 open。A2 之后 B1、C1、C2、D1 与 D2
 已分别取得退出证据。E1/E2 已取得退出证据（见下文），其后续批次 E3、C4 与 F1 也已完成退出。
 S6-B1 已落下版本比较器、独立负例测试、trusted-baseline workflow 和发行 checklist；当前显示版本
-为 `26.09.28-1`（订正：本工作包曾先后写成 `26.09.27-2` 与 `26.09.27-3`，两者均被 protected Version Gate 拒绝——`26.09.27-3` 以 `version.build.skipped` 登记，因为同一 PR 从 `master` 基线 `26.09.27-1` 只允许前进一个 build，而该 PR 内滚动过两次；`26.09.27-2` 在可信 UTC 日期进入 `2026-09-28` 后以 `version.release_date.stale` 登记。同日 build+1 规则与跨日 build=1 规则共同要求唯一正确的取值是 `26.09.28-1`，见下），SDK API 仍为 `0.7.0`。`26.09.21-2` 在 UTC `2026-09-22` 已过期，因此前进到当天 build 1。当天曾写成的 `26.09.23-1` 被 Version Gate 以 `version.release_date.future` 拒绝，分支收回 `26.09.22-1`；UTC 进入 `2026-09-23` 后再前进到 `26.09.23-1`。bootstrap PR #26 已将门禁纳入 `master`，并启用
+为 `26.09.29-1`（订正 2026-09-29：此处原写 `26.09.28-1`；该值在 `2026-09-28` 当天正确，可信 UTC
+日期进入 `2026-09-29` 后被 protected Version Gate 以 `version.release_date.stale` 拒绝，按同日
+build+1 / 跨日 build=1 规则前进一位，见
+[R9 报告](stage_reports/stages/stage-06/2026-09-28-r9-reference-host-command-loop.md) §6。
+以下为原始订正记录，保留不改：本工作包曾先后写成 `26.09.27-2` 与 `26.09.27-3`，两者均被 protected Version Gate 拒绝——`26.09.27-3` 以 `version.build.skipped` 登记，因为同一 PR 从 `master` 基线 `26.09.27-1` 只允许前进一个 build，而该 PR 内滚动过两次；`26.09.27-2` 在可信 UTC 日期进入 `2026-09-28` 后以 `version.release_date.stale` 登记。同日 build+1 规则与跨日 build=1 规则共同要求唯一正确的取值是 `26.09.28-1`，见下），SDK API 仍为 `0.7.0`。`26.09.21-2` 在 UTC `2026-09-22` 已过期，因此前进到当天 build 1。当天曾写成的 `26.09.23-1` 被 Version Gate 以 `version.release_date.future` 拒绝，分支收回 `26.09.22-1`；UTC 进入 `2026-09-23` 后再前进到 `26.09.23-1`。bootstrap PR #26 已将门禁纳入 `master`，并启用
 `Version advancement (pre-merge)` required check、strict latest-base 和 admin enforcement。
 候选 PR #27 的 `d4697549a50e9c517ac393c27786826aa43ce9cc` 以 trusted baseline
 `4545742ed63ae2d8f11ad07e80930ce5b88fa0ce` 通过 protected Version Gate run `35586930775`，
@@ -176,6 +180,34 @@ Linux Quality、Windows MSVC、Windows MinGW（push 与 pull_request）与 Versi
 清单与残余清单，Stage 6 随之关闭，计划归档到 `stage_plans/completed/stage-06/`，旧路径由
 [legacy-paths](stage_plans/legacy-paths.md) 记录。PR、合并与发布属于另行授权动作，本阶段未开 PR、
 未合并、未发布。
+
+`stage-06-review-remediation`（Stage 6 双轴复核发现项修正工作包）**已于 2026-09-29 关闭**：批次 R0–R8
+已退出并随 PR #30 合并进 `master`（`670cca8`）；批次 R9（Reference Host 命令循环与 play/pause）已实现，
+并通过**最终 tip `cc14fcd`** 的 hosted 验证——该 tip 在 push 与 pull_request 两个事件上共 **7 个运行全部
+通过**（含 Version Gate），覆盖最后**行为** SHA `71de8b1` 之后的 10 个文档提交。**owner 已于
+2026-09-29 接受 R9 退出**，`SPEC-27` 的关闭依据至此完整，记为 **closed**；owner 同日接受本工作包的关闭
+报告，并一并接受 R9 契约（含 R9 报告 §5.1 记录的冗余 tick 预算守卫，**保持现状、不合并**），故
+**本工作包已无未决项、状态词为 `completed`**。本工作包不重开已关闭的 Stage 6，也不
+构成 Stage 7A / Stage 8 的实现授权或发布授权。入口：
+[修正计划](stage_plans/reviews/stage-06-review-remediation/plan.md)。
+
+**Stage 6 未完成项的归属变更（2026-09-29）**：关闭后对 [ADR 0042](adr/0042-stage-6-productization-boundaries.md)
+逐条核查发现四项只部分实现或未实现，且**此前不被任何阶段计划列入范围**（`completion.md` 的 Stage 7A
+与 Stage 8 交接清单均未登记，Stage 8 计划正文对四项零命中）。它们是：显式 candidate 与实验隔离
+（`Cuexis_ALLOW_EXPERIMENTAL`、candidate flavor、Player `--candidate-entry`、没有任何 preset 或 CI
+开启 candidate）、离线 typed assembler 与 feature 派生、具名宿主六动词命令循环、SDK API `0.7.1`。
+经项目所有者指定，四项自 2026-09-29 起由 **Stage 7A 承接，并作为其关闭前置条件**，登记在
+[Stage 7 计划](stage_plans/future/stage-07/plan.md) 的 §2 与 §6。**这四项目前仍未实现**，本段只记录
+归属与前置条件，不构成任何实现或发布声明。逐条证据见
+[复核交付报告 §10](stage_reports/reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md)。
+
+其中 **SDK API `0.7.1` 另有一个实测到的阻塞**（2026-09-29）：`tools/check_version_gate.py:213-218`
+要求 SDK API 版本变更须经 `--allow-sdk-api-change` 放行，而该开关**没有任何工作流传入**，且
+`version-gate.yml:58-71` 把检查器从 base commit 取出再运行，因此**候选分支无法自行开启**。实测
+`0.7.0 → 0.7.1` 在工作流默认参数下**失败**（`version.sdk_api.changed`），同版本对照通过。落地
+`0.7.1` 须先改 `version-gate.yml` 本身，而 ADR 0042 `:321` 要求这类修改经代码所有者复核——本仓库
+**没有 CODEOWNERS**。**版本变更在契约上是安全的**（`SameMinorVersion` 下同 minor 兼容），**阻塞来自
+门禁的放行通路未接线**。经所有者决定，本批次不升版本，该阻塞随 `0.7.1` 一并归入 Stage 7A 关闭前置。
 
 ## 已关闭的 Full Review
 

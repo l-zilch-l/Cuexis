@@ -1,0 +1,15 @@
+# c07-paused-seek: section 7 C07 (H3) - first frame 1250/0/1, 2 suppressed ticks, then 1500/250/1
+exit ok
+frame 1250/0/1
+frame 1500/250/1
+count tickAttempts 3
+count suppressedTicks 2
+count emittedTickFrames 1
+count publicUpdateAttempts 2
+count publicUpdateSuccesses 2
+count frameCount 2
+# Section 7 C07 names the Paused x Running cell: the host transport stays Paused while a seek still
+# samples through the SDK. The transport half is carried by host.command; the Running half is carried
+# by the seek frame existing at all, since a seek frame is only produced by a real update.
+require host.command index=1 line=3 verb=seek outcome=ok transport=Paused->Paused
+require host.command index=3 line=5 verb=play outcome=ok transport=Paused->Playing

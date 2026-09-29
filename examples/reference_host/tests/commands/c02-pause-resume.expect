@@ -1,0 +1,16 @@
+# c02-pause-resume: section 7 C02 (H2) - only 250/500/750 with dt 250 and id 0, 6 attempts, 3 suppressed
+exit ok
+frame 250/250/0
+frame 500/250/0
+frame 750/250/0
+count tickAttempts 6
+count suppressedTicks 3
+count emittedTickFrames 3
+count publicUpdateAttempts 3
+count publicUpdateSuccesses 3
+count frameCount 3
+require host.observation reason=pause-check state=Running chartTimeMs=500 discontinuityId=0 sampled=yes
+require host.pause state=Running chartTimeMs=500 discontinuityId=0
+require host.play state=Running chartTimeMs=500 discontinuityId=0
+# These three assertions are field-level and load-bearing: the runner rejoins a multi-token require,
+# so a wrong state, chart time, discontinuity id or sampled flag fails the case.

@@ -111,7 +111,7 @@ build-tree compile definition that is not installed and adds no consumer-visible
 | Boundary | Current state | Required verification |
 | --- | --- | --- |
 | Existing Playback isolation | Implemented and covered by A1 baseline | Preserve in C1/F1 |
-| New renderer direction | D2 local exit: OpenGL implements the interface and Player submits through it | Local smoke minimized and restored; hosted CI does not run that step |
+| New renderer direction | D2 local exit: OpenGL implements the interface and Player submits through it. At `eaaf375` the adapter still carried its own `SummaryHash`/`hashCommand`/`buildDraws` and never called `buildPresentationCommands`, which ADR 0042 `:145`/`:159` forbid; converged at `670cca8`, where the adapter consumes `presentation_renderer::buildPresentationCommands` and keeps only the diagnostic `probeBuildDraws` | Local smoke minimized and restored; hosted CI does not run that step |
 | Player support separation | C2 local exit: config snapshots and enumerated device open exist and are not installed | C3 still consumes the exited batch |
 | Player source boundaries | Control, options, assembly, and smoke are separate translation units | C3 adds the typed command table |
 | Media importer isolation | E1/E2 local exit: `cuexis_media_import` and `cuexis_media_importer` exist behind default-OFF `CUEXIS_BUILD_MEDIA_TOOLS`; Playback/Player do not link them | Hosted four-platform byte equality and package tests |

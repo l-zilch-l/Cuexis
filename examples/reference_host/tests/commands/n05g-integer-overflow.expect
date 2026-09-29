@@ -1,0 +1,12 @@
+# n05g-integer-overflow: section 7 N05 (H6) - 2^64 does not fit uint64
+exit fail
+code host.command.invalid_number
+diagnostic-step parse
+absent host.load
+absent host.frame
+# NOTE (ambiguous, kept as specified): std::from_chars reports result_out_of_range here, and
+# section 3.2 leaves room to classify that as limit_exceeded rather than invalid_number. The task
+# table fixes invalid_number, so verify this against the parser before freezing it.
+# NOTE: a bare 'absent host.command' cannot hold, because the required diagnostic code contains
+# that substring; absence of a dispatched command is expressed as 'absent host.command index='.
+# This case does not need that stronger form.

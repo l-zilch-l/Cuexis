@@ -1,0 +1,13 @@
+# Section 7 N07 input/IO: a command file that does not resolve is refused
+# before execution begins, and the refusal names the file layer rather than
+# being folded into a generic parse error. The runner supplies the absent path
+# directly, so this case has no .cmd fixture.
+exit fail
+code host.command.file_read
+diagnostic-step file
+absent host.load
+absent host.frame
+# The bare substring "host.command" is present in the required
+# host.diagnostic code, so absence has to be expressed against a line shape
+# that only a dispatched command produces.
+absent host.command index=

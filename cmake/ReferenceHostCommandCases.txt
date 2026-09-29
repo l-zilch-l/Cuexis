@@ -1,0 +1,84 @@
+# Reference host command cases, one declaration per line.
+#
+# This file is the single definition of the case set. The gate reads it to build
+# its expectations and the independent parser test reads the same file with its
+# own algorithm, so the two share data rather than conclusions.
+#
+# Syntax
+#   * One declaration per line: <id>|<kind>|<flags>
+#   * Exactly two '|' separators on every declaration line.
+#   * The flags field is legitimately empty; a line ending in '|' declares an
+#     empty flags field, and a line with only one separator is malformed.
+#   * id     - lower-case words separated by '-', matching ^[a-z][a-z0-9-]*$.
+#              The id names the fixture files when kind is cmd.
+#   * kind   - exactly one of: cmd invocation generated legacy
+#   * flags  - zero or one lower-case flag word matching ^[a-z][a-z0-9-]*$.
+#              Multiple flags are not used today and the gate reads only the first
+#              field, so a ';' here would silently drop the rest. Keep it to one.
+#   * Blank lines are ignored. A line whose first non-blank character is '#' is a
+#     comment. Trailing '#' comments are not supported; '#' is only a comment at
+#     the start of a line.
+#   * Leading and trailing whitespace on a line is stripped before parsing.
+#   * CRLF and LF line endings are both accepted.
+#
+# Paths are repository-relative and resolved by the gate; this file holds no
+# absolute paths.
+
+# --- positive: transport, clock and digest behaviour ---
+c01-absolute-anchor|cmd|
+c02-pause-resume|cmd|
+c03-continuous-control|cmd|
+c04-paused-reload-twice|cmd|
+c05-playing-reload|cmd|
+c06-ready-suppression|cmd|
+c07-paused-seek|cmd|
+c08-idempotence|cmd|
+c09-zero-frame-play|cmd|
+c10a-empty-quit|cmd|
+c10b-empty-quit-expect-identity|cmd|expect-identity
+c11a-space-path|cmd|
+c11b-line-endings-bom|cmd|
+
+# --- C12: the legacy invocation and its golden assertions, already run ---
+c12-legacy-regression|legacy|
+
+# --- negative: pre-open verbs ---
+n01a-play-before-open|cmd|
+n01b-pause-before-open|cmd|
+n01c-tick-before-open|cmd|
+n01d-seek-before-open|cmd|
+n01e-reload-before-open|cmd|
+
+# --- negative: reload without a sample ---
+n02a-reload-no-sample|cmd|
+n02b-play-reload-no-sample|cmd|
+
+# --- negative: second open ---
+n03-second-open|cmd|
+
+# --- negative: malformed programs ---
+n04a-unknown-verb|cmd|
+n04b-trailing-arg|cmd|
+n04c-missing-arg|cmd|
+n04d-bad-number|cmd|
+n04e-no-quit|cmd|
+n04f-after-quit|cmd|
+
+# --- negative: budgets ---
+n05a-file-too-large|generated|
+n05b-too-many-commands|generated|
+n05c-tick-budget-ok|cmd|
+n05d-tick-budget-exceeded|cmd|
+n05e-seek-out-of-range|cmd|
+n05f-seek-then-tick-overflow|cmd|
+n05g-integer-overflow|cmd|
+
+# --- negative: flag surface ---
+n06a-advance-conflict|cmd|advance
+n06b-package-conflict|cmd|package
+n06c-expect-digest-conflict|cmd|expect-digest
+n06d-duplicate-command-file|cmd|duplicate-command-file
+
+# --- negative: input and IO ---
+n07a-missing-file|invocation|missing-file
+n07b-wrong-content-root|cmd|wrong-content-root

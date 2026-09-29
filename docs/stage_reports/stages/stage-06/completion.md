@@ -193,5 +193,66 @@ hosted 证据（按批次，SHA 见 §3）：
 - C4：`36295147060`、`36295147115`、`36295147129`、`36295150623`、`36295150629`、`36295150667`、`36295150669`、`36298996619`、`36298996623`、`36298996643`、`36298998943`、`36298998948`、`36298998952`、`36298998954`、`36301616745`
 - F1：`36323246298`、`36323246305`、`36323246316`、`36323249349`、`36323249354`、`36323249366`、`36323249392`、`36328047694`、`36328047772`、`36328047781`、`36328051305`、`36328051306`、`36328051358`、`36328051360`
 
+**C4 行的范围说明（2026-09-29 追加，不改动上列）**：上列 C4 行的 15 个 run 是 SPEC-26 订正**之前**
+登记的集合。该订正（见 §3 的 `S6-G13` 行）随后把 docs 证据 SHA `2c8211e` 的 6 个 run 与承载退出报告
+的 docs-only SHA `cb56e62` 的 7 个 run 补进了 §3，而本节这一行未同步，**故本节的 C4 行少于 §3 引用的
+run 数**。两者不一致时**以 §3 为准**；本节不重排既有列表，以免把一次订正改写成两次。
+
 本地证据（随 `out/` 忽略）：F1 的 `out/f1/*.log`、`out/f1-local-matrix.ps1`、`out/f1-candidate.ps1`、
 `out/f1-smoke.ps1`，见 [F1 退出记录 §11](2026-09-27-s6-f1-final-validation.md)。
+
+## 12. 关闭后追加订正（2026-09-29）
+
+本节**只追加**，不改动上文任何原有表述。
+
+### 12.1 §4 与 §7 的「本阶段没有新增公共 SDK 契约」不准确
+
+§4 的「版本 / SDK API」行写"`26.09.27-1` / `0.7.0`（本阶段没有新增公共 SDK 契约）"，§7 关于
+`docs/api/README.md` 的行重复了同一判断。按实际实现：
+
+- 安装公共头 `engine/playback/include/cuexis/playback/playback_source.hpp:83-91` **新增了 3 个公开静态
+  工厂**：`fromFilesystemProjectEntry`、`fromCxcFileEntry`、`fromCxcMemoryEntry`；该头在安装
+  `FILE_SET HEADERS` 内（`engine/playback/CMakeLists.txt:37,44`）。
+- `cmake/CuexisVersion.cmake:8` 实际为 `0.7.0`，即 [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md)
+  `:333` 冻结的 Stage 6 目标 `0.7.1` **并未落地**。
+
+因此准确表述是：**本阶段确实新增了 additive 的公共 SDK 名字，而 SDK API 版本仍停在 `0.7.0`**，
+两者合起来与 §4/§7 的原文相反。§4/§7 的原文保留不改，以本行为准。
+
+### 12.2 §8 未登记 D05 的 Load 自动重试
+
+§8 的残余清单登记了"OpenGL 绘制未改为直接消费 `buildPresentationCommands`"（D04），但**没有登记**
+`app/player/src/player_control.cpp:403-421` 在 `playback.mode.content_mismatch` 后的自动重试（D05）——
+该行为是 ADR 0042 `:210`/`:242` 的明文拒绝项。本文对该文件检索"重试"/"content_mismatch"/"mode"
+无命中，故它在关闭时既无对应验收行、也无残余登记，属**未披露**，由关闭后的独立复核登记为
+`SPEC-18 [高 · 未声明]`。两者在 `670cca8` 上均已收敛；逐条证据见
+[复核交付报告 §10](../../reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md)。
+
+按 ADR 0042 `:369`「每个例外都必须先变更本 ADR 或所属 Spec」，这两处例外现已补走 Spec 变更：
+D05 落在 [PLAYER_APPLICATION.md](../../../architecture/PLAYER_APPLICATION.md) 的命令语义行，
+D04 落在 [STAGE6_PRODUCTIZATION_BOUNDARIES.md](../../../architecture/STAGE6_PRODUCTIZATION_BOUNDARIES.md)
+的架构验证状态表。
+
+### 12.3 四项未完成实现此前无任何阶段归属
+
+Stage 6 关闭后对 ADR 0042 逐条核查发现四项**只部分实现或完全未实现**的内容。逐条比对全部阶段计划
+后的实际状态是：**§6 的 Stage 7A 交接清单一条都没有登记它们，§7 的 Stage 8 交接清单只在主题名上
+碰到前两项且写成已交付语气，§8 残余清单与 `future/stage-08/plan.md` 正文对四项均无记载。** 即这四项
+在关闭时处于「无阶段认领」状态：
+
+| 项 | ADR 决策 | §6 | §7 | §8 | Stage 8 计划 |
+| --- | --- | --- | --- | --- | --- |
+| 显式 candidate 与实验隔离（`ALLOW_EXPERIMENTAL`、flavor、`--candidate-entry`、无 CI 开启 candidate） | S6-D01 | 无 | 仅主题名 `:130` | 无 | 零命中 |
+| 离线 typed assembler 与 feature 派生 | S6-D03 | 无 | 仅主题名 `:132` | 无 | 无 `assembler` 字样 |
+| 具名宿主六动词命令循环 | S6-D08 | 无 | 无 | 无 | 零命中 |
+| SDK API `0.7.1` | S6-D08（`:333`） | 无 | 无 | 无 | 无关（其 `:357-359` 指届时批准的 v5 发行版本） |
+
+需要说明的是，`§7 :134`「发行剩余门禁」确实把"完整 Chart v5/CXT v2 正式发行、默认 Writer 切换、
+v4→v5 迁移与 CXC v1 Packed playback entry 的最终发布门禁"指派给了 Stage 8。其中"CXC v1 Packed
+playback entry"与第 1 项（`--candidate-entry` 未实现）在**主题上部分重叠**，但该行讲的是**发布门禁**，
+并未点名四项中任何一个未完成的子项，因此仍不构成逐条归属。
+
+经项目所有者于 2026-09-29 指定，四项自即日起由 **Stage 7A 承接**，登记在该计划
+「Stage 7A 承接的 Stage 6 未完成项」一节（[计划](../../../stage_plans/future/stage-07/plan.md)）。
+本节只记录归属变更，不改动 §6/§7/§8 的原有表述；§7 将前两项写成已交付语气的措辞，其实际状态以
+[复核交付报告 §10.1](../../reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md) 的逐条表为准。

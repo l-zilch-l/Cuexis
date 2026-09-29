@@ -1,0 +1,13 @@
+# c06-ready-suppression: section 7 C06 (H3) - Ready is kept, 2 attempts, 2 suppressed, no update
+exit ok
+count tickAttempts 2
+count suppressedTicks 2
+count emittedTickFrames 0
+count publicUpdateAttempts 0
+count publicUpdateSuccesses 0
+count frameCount 0
+absent host.frame
+require host.pause state=Ready
+require host.observation reason=pause-check state=Ready
+# The state=Ready half of both assertions is load-bearing: the runner rejoins a multi-token
+# require, so a pause that wrongly reported Running would fail the case.

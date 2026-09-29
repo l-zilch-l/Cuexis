@@ -1,0 +1,4 @@
+# c10b-empty-quit-expect-identity: section 7 C10 (H5) and section 3.5 line 367 - an identity
+# expectation with no open can never be satisfied, so the accepted program must still fail
+exit fail
+code host.command.expectation_failed

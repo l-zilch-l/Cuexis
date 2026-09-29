@@ -1,0 +1,9 @@
+# n04e-no-quit: section 7 N04 (H6) - missing quit, rejected before any SDK load
+exit fail
+code host.command.missing_quit
+diagnostic-step parse
+absent host.load
+absent host.frame
+# NOTE: a bare 'absent host.command' cannot hold, because the required diagnostic code contains
+# that substring; absence of a dispatched command is expressed as 'absent host.command index='.
+# This case does not need that stronger form.

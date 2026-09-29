@@ -242,3 +242,17 @@ error: cannot convert 'const std::filesystem::__cxx11::path::value_type*'
 - 把同一分支换回旧写法编译同一文件（对照）→ 复现出与托管 CI **逐字相同**的 `wchar_t* → const char*` 错误。
 
 即该检验非空转。`_wfopen` 在 msvcrt 上的存在性由 `libmsvcrt-os.a` 佐证，最终判据仍是 MinGW CI 本身。
+
+### 7. 追加订正（2026-09-29）：hosted 残余已由后续记录承接
+
+本文追加审计 §5 写「**hosted 三平台复验**：…**必须在同 SHA 的三平台门禁上复验**，本报告 §4 的本机
+结论不能替代它」。该判断在写下时准确，且其自我约束正确。但**后续状态**记录在别处，单读本文会得出
+"R8 至今未验证"的错误结论：
+
+- R8 属于 R0–R8 工作包，该工作包已在 `18c9272` 取得 hosted 全绿（Version Gate、Linux Quality、
+  Windows MSVC、Windows MinGW，push 与 pull_request 两组事件），登记见
+  [交付报告](2026-09-28-delivery-report.md) 的 SHA 表；R9 随后在 `71de8b1` 再次全绿。
+- 本文 §6 的方法学更正（`ucrt64` 不代表 CI 使用的 msvcrt 变体）**仍然有效**，不因 hosted 复验而失效：
+  hosted 给出的是最终判据，不改变"本机代理不可靠"这条结论。
+
+**原文保留不改**：本节只追加后续指向，不修改 §5/§6 的任何字句。

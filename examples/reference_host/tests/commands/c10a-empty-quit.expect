@@ -1,0 +1,11 @@
+# c10a-empty-quit: section 7 C10 (H5) - no load, no update, normal termination
+exit ok
+count tickAttempts 0
+count suppressedTicks 0
+count emittedTickFrames 0
+count publicUpdateAttempts 0
+count publicUpdateSuccesses 0
+count frameCount 0
+absent host.frame
+absent host.load
+require host.destroy state=Empty

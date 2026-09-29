@@ -296,9 +296,15 @@ def check_reference_host_contract() -> None:
 
     The named host is frozen as `examples/reference_host/`. This check asserts
     the host stays a clean-staged, `find_package`-consuming, independent-process
-    example that owns its command loop and ContentProvider, and that the SDK
+    example that owns its ContentProvider and its command loop, and that the SDK
     target is not silently rewritten into a date-versioned or experimental
     bypass.
+
+    The command-loop half was a claim without a check until R9: the seven frozen
+    CLI flags are a command *surface*, and a host can expose all of them without
+    ever consuming an externally supplied program. The R9 additions below name
+    the command entry point and its private translation units, so the claim is
+    now backed by something that fails when the loop is absent.
     """
     host_dir = ROOT / "examples" / "reference_host"
     for relative in ("CMakeLists.txt", "README.md",
@@ -375,6 +381,120 @@ def check_reference_host_contract() -> None:
             "the Stage 6 SDK target 0.7.1 is no longer recorded as a frozen decision")
     require("examples/reference_host/" in adr,
             "the frozen named host location is no longer recorded")
+    # R9 (Stage 6 remediation): the host additionally accepts an external
+    # command program. The seven flags above are a command *surface*, not the
+    # command loop, and the earlier revision of this check characterized only
+    # the surface while its docstring claimed the loop. These checks name the
+    # new entry point, the private parser and clock translation units, the case
+    # runner wiring and the fixture set, so a host that has no command loop can
+    # no longer be reported as characterized.
+    require('argument == "--command-file"' in main_cpp,
+            "the named host does not compare the CLI flag --command-file")
+    for name in ("host_commands.cpp", "host_clock.cpp"):
+        require((host_dir / "src" / name).is_file(),
+                f"the named host does not own the private {name}")
+        require(name in cmake,
+                f"the named host's source list does not build {name}")
+    require("host_commands.hpp" in main_cpp or "host_commands.hpp" in runner,
+            "the named host does not reach the command parser")
+    staging = (ROOT / "cmake" / "VerifyReferenceHost.cmake").read_text(encoding="utf-8")
+    require("VerifyReferenceHostCommands.cmake" in staging,
+            "the staging gate no longer calls the command case runner")
+    case_runner = ROOT / "cmake" / "VerifyReferenceHostCommands.cmake"
+    require(case_runner.is_file(), "the command case runner is missing")
+    case_runner_text = case_runner.read_text(encoding="utf-8")
+    case_data = ROOT / "cmake" / "ReferenceHostCommandCases.txt"
+    require(case_data.is_file(),
+            "the command case data file is missing (the declarations live there)")
+    case_data_text = case_data.read_text(encoding="utf-8")
+    require("ReferenceHostCommandCases.txt" in case_runner_text,
+            "the command case runner no longer reads the command case data file, "
+            "so the declarations it asserts are no longer the ones that run")
+
+    def failure_call_literals(source: str):
+        """Yield the top level string literal count of every real failure call.
+
+        The runner declares `function(cuexis_command_record_failure case_id
+        message)`, so a call written as two adjacent quoted strings binds only
+        the first half and silently discards the rest (CMake concatenates
+        adjacent literals into one argument only when the callee accepts one).
+        A truncated message is worse than a short one: it still contains the
+        substrings that call site's own probe looks for, so the check reads as
+        live while reporting less than it claims. Counting literals detects it
+        because implicit concatenation is exactly what adds a literal.
+        """
+        marker = "cuexis_command_record_failure("
+        cursor = 0
+        while True:
+            found = source.find(marker, cursor)
+            if found < 0:
+                return
+            line_start = source.rfind("\n", 0, found) + 1
+            if source[line_start:found].lstrip().startswith("#"):
+                cursor = found + len(marker)
+                continue
+            index = found + len(marker) - 1
+            depth = 0
+            in_string = False
+            escaped = False
+            while index < len(source):
+                character = source[index]
+                if in_string:
+                    if escaped:
+                        escaped = False
+                    elif character == "\\":
+                        escaped = True
+                    elif character == '"':
+                        in_string = False
+                elif character == '"':
+                    in_string = True
+                elif character == "(":
+                    depth += 1
+                elif character == ")":
+                    depth -= 1
+                    if depth == 0:
+                        break
+                index += 1
+            call_text = source[found:index + 1]
+            literal_count = 0
+            in_literal = False
+            escaped = False
+            for character in call_text[len(marker) - 1:]:
+                if in_literal:
+                    if escaped:
+                        escaped = False
+                    elif character == "\\":
+                        escaped = True
+                    elif character == '"':
+                        in_literal = False
+                    continue
+                if character == '"':
+                    in_literal = True
+                    literal_count += 1
+            yield literal_count, call_text
+            cursor = index + 1
+
+    for literal_count, call_text in failure_call_literals(case_runner_text):
+        require(literal_count == 2,
+                "a cuexis_command_record_failure call passes "
+                f"{literal_count} top level string literals instead of a case id "
+                "and exactly one message, which truncates the failure text: "
+                f"{' '.join(call_text.split())[:120]}")
+
+    # Sentinels rather than a count: the runner itself asserts set equality
+    # between the declared list and the fixtures on disk (R9 section 8.7), while
+    # this static check only has to notice a declaration being deleted. The
+    # declarations live in the data file the runner reads, so the sentinels are
+    # checked there; the assertion above keeps that indirection honest.
+    for case_id in ("c01-absolute-anchor", "c12-legacy-regression",
+                    "n05c-tick-budget-ok", "n07b-wrong-content-root"):
+        require(case_id in case_data_text,
+                f"the command case list no longer declares {case_id}")
+    fixtures = host_dir / "tests" / "commands"
+    require(fixtures.is_dir() and any(fixtures.glob("*.cmd")),
+            "the command fixtures are missing")
+    require(any(fixtures.glob("*.expect")),
+            "the command expectations are missing")
 
 
 def main() -> int:

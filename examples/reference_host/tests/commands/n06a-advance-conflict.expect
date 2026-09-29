@@ -1,0 +1,9 @@
+# n06a-advance-conflict: section 7 N06 (H6/H7) - an explicit --advance is a flag conflict
+exit fail
+code host.command.flag_conflict
+diagnostic-step flags
+absent host.load
+absent host.frame
+# NOTE: a bare 'absent host.command' cannot hold, because the required diagnostic code contains
+# that substring; absence of a dispatched command is expressed as 'absent host.command index='.
+# This case does not need that stronger form.

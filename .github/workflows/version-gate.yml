@@ -51,11 +51,17 @@ jobs:
           test -n "${CUEXIS_CANDIDATE_SHA}"
           TRUSTED_ROOT="${RUNNER_TEMP}/cuexis-version-gate"
           mkdir -p "${TRUSTED_ROOT}/tools" "${TRUSTED_ROOT}/.github/workflows"
+          # The trusted tests build their fixtures by rendering a version file, so
+          # the base's own templates for cmake/CuexisVersion.cmake and vcpkg.json
+          # must be part of the trusted copy. Taking them from the base keeps the
+          # fixture format trusted instead of letting a candidate shape it.
            for path in \
             tools/check_version_gate.py \
             tools/check_version_gate_tests.py \
             tools/update_version.py \
-            .github/workflows/version-gate.yml; do
+            .github/workflows/version-gate.yml \
+            cmake/CuexisVersion.cmake \
+            vcpkg.json; do
             if ! git cat-file -e "${CUEXIS_BASE_SHA}:${path}" 2>/dev/null; then
               echo "::error title=Version gate bootstrap required::version.bootstrap.required: trusted baseline ${CUEXIS_BASE_SHA} lacks ${path}; owner must review the checker and protection rules before the first bootstrap merge. The workflow intentionally fails and never falls back to candidate code."
               exit 1
@@ -97,11 +103,17 @@ jobs:
           test "${CUEXIS_BASE_SHA}" != "0000000000000000000000000000000000000000"
           TRUSTED_ROOT="${RUNNER_TEMP}/cuexis-version-gate"
           mkdir -p "${TRUSTED_ROOT}/tools" "${TRUSTED_ROOT}/.github/workflows"
+          # The trusted tests build their fixtures by rendering a version file, so
+          # the base's own templates for cmake/CuexisVersion.cmake and vcpkg.json
+          # must be part of the trusted copy. Taking them from the base keeps the
+          # fixture format trusted instead of letting a candidate shape it.
            for path in \
             tools/check_version_gate.py \
             tools/check_version_gate_tests.py \
             tools/update_version.py \
-            .github/workflows/version-gate.yml; do
+            .github/workflows/version-gate.yml \
+            cmake/CuexisVersion.cmake \
+            vcpkg.json; do
             if ! git cat-file -e "${CUEXIS_BASE_SHA}:${path}" 2>/dev/null; then
               echo "::error title=Version gate bootstrap required::version.bootstrap.required: trusted baseline ${CUEXIS_BASE_SHA} lacks ${path}; owner must review the checker and protection rules before the first bootstrap merge. The workflow intentionally fails and never falls back to candidate code."
               exit 1
@@ -140,11 +152,17 @@ jobs:
           set -euo pipefail
           TRUSTED_ROOT="${RUNNER_TEMP}/cuexis-version-gate"
           mkdir -p "${TRUSTED_ROOT}/tools" "${TRUSTED_ROOT}/.github/workflows"
+          # The trusted tests build their fixtures by rendering a version file, so
+          # the base's own templates for cmake/CuexisVersion.cmake and vcpkg.json
+          # must be part of the trusted copy. Taking them from the base keeps the
+          # fixture format trusted instead of letting a candidate shape it.
            for path in \
             tools/check_version_gate.py \
             tools/check_version_gate_tests.py \
             tools/update_version.py \
-            .github/workflows/version-gate.yml; do
+            .github/workflows/version-gate.yml \
+            cmake/CuexisVersion.cmake \
+            vcpkg.json; do
             if ! git cat-file -e "${CUEXIS_BASE_SHA}:${path}" 2>/dev/null; then
               echo "::error title=Version gate bootstrap required::version.bootstrap.required: trusted baseline ${CUEXIS_BASE_SHA} lacks ${path}; owner must review the checker and protection rules before the first bootstrap merge. The workflow intentionally fails and never falls back to candidate code."
               exit 1

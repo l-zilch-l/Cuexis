@@ -280,3 +280,255 @@ ELF 的 `lib`/`.so` 命名使归属判断既空转又误判。
   [W2](2026-09-28-w2-media-import.md)｜[W3](2026-09-28-w3-publication-transaction.md)｜
   [W4](2026-09-28-w4-render-convergence.md)｜[W5](2026-09-28-w5-host-and-distribution-gates.md)｜
   [W6](2026-09-28-w6-code-health.md)
+
+## 9. 追加订正（2026-09-29）：批次 R9
+
+本节为**追加**内容，不改动本文 §2–§8 的任何原文、现象与证据。
+
+本文 §2 批次总表覆盖 R0–R8。批次 R9 在本文写成之后经 owner 另行裁定开启，因此不在该表内；其记录见
+[R9 参考宿主命令循环与 play/pause](../../stages/stage-06/2026-09-28-r9-reference-host-command-loop.md)
+与规范 [R9-reference-host-command-loop.md](../../../stage_plans/reviews/stage-06-review-remediation/R9-reference-host-command-loop.md)。
+
+本文 §5 第 1 项与 §7 把「交互命令循环」与 ADR 0042 `:350-351` 的冲突记为**未处置、需 owner 裁定**。
+该记录在写下时准确。owner 其后裁定并开启批次 R9，须追加订正三点：
+
+1. **零 stdin 不是缺陷**。参考宿主按设计从命令文件读取指令，不读标准输入；把「零 stdin」本身当作
+   缺口是对 ADR 的误读。
+2. **缺口是命令不可由外部下达，以及缺少 play/pause 语义**。ADR 0042 `:350-351` 要求宿主支持
+   `open` / `play` / `pause` / `seek` / `reload` / `quit`，而当时宿主只有 argv 解析，七动词中
+   `play` / `pause` / `quit` 无法被外部下达（`SPEC-27`）。
+3. **原计划允许本批次补实现，不只限 Stage 8**。因此 R9 在 Stage 6 复核修正包内实现该循环，属计划内
+   处置，而非越过阶段边界。
+
+R9 状态：实现完成、本地验证完成，并在最后行为 SHA `71de8b1` 上通过 hosted 四工作流验证；**尚未获 owner
+接受退出**，`SPEC-27` 仍为 open。
+
+### 9.1 本文 §4 的 `SPEC-27` 行不等于"SPEC-27 已关闭"
+
+本文 §4 表中 `SPEC-27` 一行写「**已修正**：符号级检查与非 shared 门禁接线（见下）；toolchain 与分发
+范围按口径登记」。该格在写下时覆盖的是符号级检查与 minor 拒绝两项，**不含**交互命令循环子项；而同一
+文件 §5 第 1 项写「已上报」、§7 写「**未处置**」，本节上方又写「`SPEC-27` 仍为 open」。
+
+[双轴复核汇总](2026-09-28-summary.md) 的 `SPEC-27` 条目本身含多个子项。R7 关掉了其中两项，交互命令循环
+子项被上报并转由批次 R9 处置。因此：
+
+- 只读 §4 表会得出"`SPEC-27` 已关闭"的**错误**结论；
+- §4 表的"已修正"应理解为**该子项已修正**，而非整条 `SPEC-27` 已关闭；
+- `SPEC-27` 的最终关闭仍待 owner 接受 R9 退出。
+
+§4 表原文保留不改，本小节为其限定范围。
+
+### 9.2 本文 §5 的完整性声明与各批次自身登记的关系
+
+本文 §5 开头写「本计划**没有**把任何未处置项静默丢弃」，其表内为 12 项。该声明应理解为
+"R0–R8 各批次**报告内登记过的**项已按批次给出归属与恢复条件"，**而非**"全部残余都已收进该表"。
+若干残余只登记在各自批次报告内，未进本表，例如
+[W2](2026-09-28-w2-media-import.md) §4/§6 的三个缺口（见其 §13）与
+[W3](2026-09-28-w3-publication-transaction.md) 追加审计 §9 登记的 pair 事务崩溃与 `.rollback.tmp.*`
+永久泄漏两项。
+这些项**仍然有效**，其归属与恢复条件以各自批次报告为准；本节不把它们补进 §5 表，以免事后改写该表。
+
+本节同时指向一处本文自己已登记、但**至今未在源头更正**的账面数字：本文 §6「诚实性登记」把
+「6 条媒体负例、逐条被变异推翻」登记为高估（原文即写"报告正文只有 **3** 条变异记录；无任何计数等于 6"）。
+该数字的源头是 [修正计划](../../../stage_plans/reviews/stage-06-review-remediation/plan.md) 的 §5 R4 行与
+§6 R4 预期结果；两处已于 2026-09-29 改为 **4 条**负例断言（其中 **3 条**有变异反证记录），
+依据是 [W2](2026-09-28-w2-media-import.md) 追加审计 §2 的计数论证。
+
+## 10. 追加核查（2026-09-29）：ADR 0042 的 S6-D01–S6-D08 实施状态
+
+[ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md) 的状态行原写「尚未实现」。该词在
+2026-09-20 冻结当日是准确的（该 ADR 自己注明"不代表 A1 基线、A2 合同落盘/表征或任何实现批次已经通过"），
+但自冻结起逐字未变——Stage 6 关闭时唯一的改动是把"适用范围"链接从 `active/` 改为 `completed/`——到今天
+会把 8 条决策中已落地的成果一并抹掉。**其状态行已按本节结论订正；ADR 的 S6-D01–S6-D08 决策正文未作
+任何改动。** 本节承担证据角色（ADR 拥有决策，报告拥有日期化证据）。
+
+核查分两个基线，因为二者结论不同：**Stage 6 关闭基线 `eaaf375`** 与 **当前 `master` `670cca8`**
+（PR #30 合并，比关闭点晚 43 个提交）。R9 只在未合并分支上，不计入本节。
+
+### 10.1 逐条状态
+
+| 决策 | 状态 | 关键证据 |
+| --- | --- | --- |
+| S6-D01 显式 source 与候选隔离 | **部分实现** | 开关默认 OFF `CMakeLists.txt:42-43`；3 个工厂在安装 `FILE_SET` 内 `engine/playback/CMakeLists.txt:37,44`、实现 `engine/playback/src/playback_source.cpp:792,852,895`；entry 表 `schemas/cuexis.chart-entry.v1.schema.json`。**缺口**：`Cuexis_ALLOW_EXPERIMENTAL` 在非文档代码中**只出现在两张禁止 token 表**（`cmake/VerifyReferenceHost.cmake:396`、`tools/check_stage6_a2.py:252`），无实现；candidate flavor 库名/安装元数据不存在；Player `--candidate-entry` 与 `--cxc` 均不存在（`git grep` 于 `app/` 零命中）；**无任何 preset 或 CI 开启 candidate** |
+| S6-D02 身份与 lowering | **已实现** | 域/NUL/`v5g1:` `engine/chart/src/candidate_lowering.cpp:49-65`；重复拒绝 `:163`、`:352`；golden `tests/fixtures/stage6_a2/golden/execution_identity.json`、`prepared_identity.json`；断言 `tests/chart/candidate_lowering_tests.cpp:134` |
+| S6-D03 A16 feature 与 resource closure | **部分实现（关键缺口）** | **不存在派生 feature 的 typed assembler**：`git grep -i assembl` 在 `engine/`、`tools/` 只命中身份装配（`assembleCandidatePreparedSemanticIdentity`、`assemblePreparedSemanticIdentity`、`assembleResourceIdentities`、`assembleIdentityStage`）与注释，无 assembler；feature 从 wire 读出、由调用方写入；closure 在 decode 期派生；`tools/` 无 chart-candidate 工具入口；candidate 正例为测试内注入 feature（ADR `:114` 明文禁止该做法） |
+| S6-D04 renderer 分层 | `670cca8` **已实现**；`eaaf375` **未满足** | 见 §10.2。实测 `eaaf375:engine/render_opengl/src/open_gl_presentation.cpp`：`SummaryHash` 4 处、`hashCommand` 3 处、`buildDraws` 4 处、`buildPresentationCommands` **0 处**；`670cca8` 与当前 HEAD：0/0/1/**2** |
+| S6-D05 配置、设备与事务 | 主体**已实现**；`eaaf375` 含 1 处**违反 ADR** | 类型与用例见 `engine/player_support/`、`tests/player_support/player_support_tests.cpp`；6 步事务 `app/player/src/player_control.cpp:586,613,647,655,677,686`。**偏差**见 §10.2 |
+| S6-D06 离线媒体栈与发布 | **已实现** | 默认 OFF `CMakeLists.txt:41`；预算表与 ADR 逐项一致 `tools/media_import/include/cuexis/media_import/media_import.hpp:25-36`；CLI 门禁 `cmake/VerifyMediaImporter.cmake`；golden `tests/fixtures/stage6_e/media/`。关闭后查出 4 处真实缺陷，R4 已修（本文 §6） |
+| S6-D07 版本门禁 | 主体**已实现**；1 项登记 BLOCKED | `.github/workflows/version-gate.yml:31-83`（受信任拷贝清单 `:58-71`）、`:85-119+`、`:160+`；CTest `cuexis_contract_version_gate`。**未满足**：`:321` 的"修改门禁本身需代码所有者复核"——仓库**无 CODEOWNERS**，SPEC-04 BLOCKED（本文 §5 第 4 项） |
+| S6-D08 SDK 版本与具名宿主 | **部分实现** | 宿主与 clean-staged `find_package` 消费由 `tools/check_stage6_a2.py:316-338` 钉住、CTest `cuexis_contract_s6_a2`。**缺口**：`:350-351` 的六动词命令循环在 `670cca8` 上**不存在**（该 SHA 的 `examples/reference_host/src/main.cpp` 只有 argv 解析），仅由未合并的 R9 分支实现；`:333` 冻结的 SDK 目标 `0.7.1` 未落地（`cmake/CuexisVersion.cmake:8` 仍 `0.7.0`） |
+
+### 10.2 关闭基线 `eaaf375` 上的两处偏差
+
+两处在 `eaaf375` 上**都未满足 ADR 正文**，但**披露程度完全不同**，不能混为一谈。
+
+**S6-D04：已披露，但未按 `:369` 处理**
+
+ADR `:145` 要求"draw 排序/分 pass/summary 构造在新层共用，OpenGL 只消费命令并实现 GPU 上传和
+绘制"，`:159` 要求旧入口"共用新实现，不继续维护独立算法"。`eaaf375` 的
+`engine/render_opengl/src/open_gl_presentation.cpp` 实测：对 `presentation_renderer` 与
+`buildPresentationCommands` 的引用数为 **0**——它整套自造：自有 `class SummaryHash` `:810`、
+`hashCommand` `:877`、`buildDraws` `:923`，并自带 opaque/transparent 两处排序 `:1100`、`:1104`，
+即排序、分 pass 与 summary 构造都不在新层共用。
+
+**但关闭报告披露了它，且没有把它算作已完成**：`completion.md:145` 的说明列写"D2 报告记录该项未做……
+**不把该重构项算作已完成**"，对应的验收行 `S6-G09` 状态为"**通过（历史缺口与残余见 §8）**"。
+需要说明的是，`S6-G09` 的判据是"中立 renderer 覆盖候选事务和统一帧，Player 正式循环不依赖具体
+adapter"，与 ADR `:145` 并非同一条要求，因此该行记"通过"本身不构成矛盾。
+仍未满足的是 `:369`——该例外**没有先变更 ADR 或所属 Spec**。独立复核把对应项评为**高**，R6 才
+收敛（[W4](2026-09-28-w4-render-convergence.md)）。
+
+**S6-D05：未披露**
+
+ADR `:210` 要求"不实现后台异步 prepare、取消、自动重试或自动热重载"，`:214` 要求"不把 reload 的
+content mismatch 当作模式探测"，`:242` 把"模式失败后自动重试"列入拒绝清单。
+`eaaf375:app/player/src/player_control.cpp:403-421` 在 **`load` 路径**上正是这么做的：当
+`prepareLoad` 以 `playback.mode.content_mismatch` 失败、且调用方未显式给出 mode 时，它**重新读取
+source、把 mode 置为 `CuexisAudio`、再 prepare 一次**（`:414`、`:418`、`:420`）。其 `:412-413` 的注释
+写"The mode is never guessed from a failed file"，而代码恰恰是从失败码推定了模式。
+**需要精确区分**：同一文件 `:446-451` 的 `reload` 路径反而是**合规**的——它把 `content_mismatch`
+转成 `player.command.mode_change_requires_load` 并拒绝，符合 `:213`。违规只在 `load` 路径。
+
+**与 D04 不同，这一处在关闭时既没有对应验收行覆盖，也没有在 `completion.md` 中披露**（对该文件检索
+"重试"/"content_mismatch"/"mode" 零命中）。它由**关闭后**的独立复核登记为
+`SPEC-18 [高 · 未声明 · 本轮新增]`（[spec](2026-09-28-spec.md):271），并按
+[R0-3](../../../stage_plans/reviews/stage-06-review-remediation/plan.md)（`:137`）选择了"改为显式
+`Open`/`Rebuild` 并新增 `--mode`"，而非修订 ADR `:242` 保留原行为。
+
+两者在 `670cca8` 上均已收敛：`SummaryHash`/`hashCommand` 归零、该文件改为在 `:1055` 与 `:1537` 调用
+`presentation_renderer::buildPresentationCommands`，仅保留诊断用的 `probeBuildDraws` `:1013`；
+`load` 路径的自动重试分支消失。
+
+### 10.3 变更控制未满足项
+
+ADR `:369` 写「**每个例外都必须先变更本 ADR 或所属 Spec**」。§10.2 的两处例外**都没有变更 ADR 或所属
+Spec**，但两者在这一点上的经过并不同：
+
+- **S6-D04** 以"残余（有意保留）"记入 `completion.md` §8，并经 owner 于 2026-09-27 接受该残余清单——
+  即走了**披露与接受**，只是没有走 `:369` 要求的 ADR/Spec 变更。
+- **S6-D05** 未进入任何残余清单，也没有对应验收行，是**关闭后**才由独立复核发现的（`SPEC-18`，
+  标注"未声明"）。
+
+因此 `:369` 的未满足有两层：已披露的例外没有落到 ADR/Spec，而未披露的例外根本不在关闭时的视野内。
+
+ADR `:362-375` 另要求 A2 完成六项
+交付物——这六项**已满足**（字段级 Spec/Schema、API 草案、模块/安装图、golden、表征脚本已注册为
+CTest `cuexis_contract_s6_a2`）。
+
+### 10.4 公共 SDK 契约与 SDK API 版本（按实际实现记录）
+
+关闭报告的原文与实际实现相反，此处按实现记录：
+
+- **实际实现**：`engine/playback/include/cuexis/playback/playback_source.hpp:83-91` 新增了 3 个公开静态
+  工厂（`fromFilesystemProjectEntry`、`fromCxcFileEntry`、`fromCxcMemoryEntry`），且该头在安装
+  `FILE_SET HEADERS` 内（`engine/playback/CMakeLists.txt:37,44`）。即**本阶段确实新增了 additive 的
+  公共 SDK 名字**。
+- **实际版本**：`cmake/CuexisVersion.cmake:8` = `0.7.0`，`docs/api/README.md:7` 同样写"适用版本：SDK API
+  `0.7.0`"。ADR `:333` 冻结的 Stage 6 目标 `0.7.1` **没有落地**。
+- **结论**：`completion.md` §4 与 §7 的"本阶段没有新增公共 SDK 契约"**与实现相反**，已在该报告追加的
+  §12.1 订正（append-only，未改原文）。
+
+仍待处置的只有**版本是否补进到 `0.7.1`**：ADR `:333` 为这类 additive 新名预留了该位次，而 `:370` 又
+写"SDK/库版本本轮不改代码、不新增实际依赖"（该句处在 A2 交付物的语境中）。本节按实现记录事实，
+是否补进版本属 owner 决定，本节不代作裁定。
+
+### 10.5 本次核查未能核实的事项
+
+- **受保护分支、串行合并与 required check 的当前有效性**：只有 `2026-09-20-s6-b1-version-gate.md:140-143`
+  的当日快照；本次只读、未访问 GitHub API。
+- **真实安装树中是否存在 candidate flavor 与 experimental 元数据**：需 configure/install 实验树；
+  本次只读未构建，结论由 CMake 源码推断（**证据强度高，但非实测**）。
+- **candidate ON 的端到端行为**：无 preset/CI 配置该宏，且本次不允许构建，无法运行。
+- **S6-D06 的跨平台逐字节一致**：仅能引用 hosted 报告自述，无法本地复现（Windows 主机、只读）。
+- **S6-D02 的 typed requirements 逐字段对照**：只核对载体结构与重复拒绝路径，未把全部字段与
+  Packed Spec §6.5 逐项比对（**证据强度：中**）。
+
+### 10.6 SDK API 版本变更被本阶段自己的门禁锁死（2026-09-29 实测）
+
+§10.4 把"是否补进到 `0.7.1`"留给 owner。在补做这项处置时发现一个**与版本号本身无关的阻塞**，实测如下。
+
+`tools/check_version_gate.py:213-218` 规定 `CUEXIS_SDK_API_VERSION` 一经变更即须 `--allow-sdk-api-change`
+放行，否则失败：
+
+```text
+version.sdk_api.changed: SDK API changed from 0.7.0 to 0.7.1 without explicit acceptance
+```
+
+而该开关**没有被任何工作流传入**——`version-gate.yml:74-83`、`:126`、`:175` 三处调用均不含它；全仓库
+仅 `check_version_gate.py` 自身与 `check_version_gate_tests.py:237`（以 `True` 调用）引用该名字。更
+关键的是 `version-gate.yml:58-71` 把检查器**从 `CUEXIS_BASE_SHA` 取出**再运行，且 `:62` 连工作流文件
+本身也从 base 取——**这是正确的防篡改设计，其副作用是候选分支无法自行开启该开关**。
+
+以工作流相同的默认参数直接调用 `compare_snapshots` 的结果（含同版本对照）：
+
+| 场景 | `allow_sdk_api_change` | 结果 |
+| --- | --- | --- |
+| `0.7.0 → 0.7.1` | `False`（工作流默认） | **失败** `version.sdk_api.changed` |
+| `0.7.0 → 0.7.1` | `True` | 通过，`sdk_api_change_explicitly_allowed=True` |
+| `0.7.0 → 0.7.0`（对照） | `False` | 通过 |
+
+**结论**：`0.7.1` 无法由本批次落地。要落地须先往 `master` 合入对 `version-gate.yml` 的修改，而这改的是
+**防篡改契约门禁本身**——ADR 0042 `:321` 要求这类修改经代码所有者复核，而本仓库**没有 CODEOWNERS**
+（SPEC-04 至今 BLOCKED），该复核无处可做；无条件传入该开关则会**永久**放开 SDK API 变更保护。
+
+需要区分的是：**版本变更本身在契约上没有问题**。`CMakeLists.txt:645-646` 以
+`COMPATIBILITY SameMinorVersion` 写出安装包版本，`0.7.0` 与 `0.7.1` 同 major.minor，正是 ADR `:333`
+为 additive 新名预留的位次。**阻塞全部来自门禁的放行通路未接线，不是兼容性问题。**
+
+经项目所有者于 2026-09-29 决定：**本批次不升版本**；`0.7.1` 连同本节实测的阻塞一并作为 Stage 7A 的
+关闭前置条件登记（[Stage 7 计划](../../../stage_plans/future/stage-07/plan.md)）。
+
+## 11. 追加订正（2026-09-29）：owner 接受 R9 退出，`SPEC-27` 记为 closed
+
+本节**只追加**，上文任何字句与其当时判断均不改动。
+
+本文 §9、§9.1 与 w5 报告 §7.2 都写着 R9「尚未获 owner 接受退出」、`SPEC-27`「仍为 open」。这些
+表述在写入时是准确的，现已被后续事实取代：**owner 于 2026-09-29 接受 R9 退出**。
+
+按 R9 规范文档 §0.2，`SPEC-27` 的关闭要求共六项，至此**逐条满足**：
+
+| 要求（R9 规范 §0.2） | 状态 |
+| --- | --- |
+| owner 批准语义 | 满足（设计在实现前已获接受） |
+| H1–H7 实测与变异 | 满足（16 条变异捕获 15 条，1 条记录为预期存活） |
+| 旧契约未退化 | 满足（R9 报告 §7） |
+| 最终 SHA 门禁 | 满足（见下） |
+| 新报告与追加订正 | 满足（R9 报告 §9 与本文 §9/§10） |
+| **owner 接受退出** | **2026-09-29 满足** |
+
+**最终 SHA 的证据**：`71de8b1` 之后的文档提交把 tip 推到 `cc14fcd`，该 tip 在 push 与 pull_request
+两个事件上共 **7 个运行全部通过**（Version Gate `36574246285`；Linux Quality `36574246145` /
+`36574240797`；Windows MSVC `36574246154` / `36574240523`；Windows MinGW `36574246280` /
+`36574240525`）。push 事件不触发 Version Gate 属设计如此（其 push 作业只在 `refs/heads/master` 上
+做合并后审计），故上表用的是 pull_request 的那一次。已写入 R9 报告 §10。
+
+**当时接受不做什么**（本节写作时）：不关闭修正工作包本身（其关闭尚需 owner 接受关闭报告，且 R9 报告
+§5.1 记录的冗余 tick 预算守卫合并裁定当时未裁）；不构成 Stage 7A / Stage 8 的实现授权、发布授权或
+合并授权。本文 §5 中与 `SPEC-27` 交互命令循环相关的未关闭项由此转为已处置，其余未关闭项不受影响。
+
+订正：本节原把该残余写作"§4.1 的重复 tick 预算守卫"——**该节在 R9 规范文档与修正计划中都不存在**，
+出处是 R9 报告 §5.1 与其 §8。原文保留于上方引号外的叙述中，以本行为准。
+
+## 12. 追加订正（2026-09-29）：工作包关闭与 R9 契约接受
+
+本节**只追加**，上文任何字句与其当时判断均不改动。
+
+owner 于 2026-09-29 一并接受了两项，使上节所列的两处未决项全部消解：
+
+| 项 | 出处 | owner 裁定 |
+| --- | --- | --- |
+| R9 契约，**含**冗余 tick 预算守卫 | R9 报告 §5.1 与 §8 | **接受；两个守卫保持现状、不合并**（零代码改动） |
+| 本修正工作包的关闭报告 | 本文 §11 与 [修正计划](../../../stage_plans/reviews/stage-06-review-remediation/plan.md) | **接受；工作包关闭，状态词转 `completed`** |
+
+R9 报告 §5.1 把该冗余描述为"契约属性而非覆盖漏洞"：单独移除 per-command 守卫时套件仍绿，是因为单条
+超预算 tick 同时把累计值推过上限、两个守卫在同一行报同一个诊断码、而 `detail` 措辞未在任何断言中被
+固定；同时移除两者会被 `n05d` 抓住。因此"是否合并"被明确留作 owner 的契约问题。owner 的裁定是
+**保留两者**，即接受已实现的契约，而非删除检查。
+
+**工作包关闭后的状态**：`stage-06-review-remediation` 状态词为 `completed`，其档案位置**不变**——
+按 [文档政策](../../../DOCUMENTATION_POLICY.md) 的 `stage_plans/reviews/<topic>/` 归属规则，
+评审类工作包无论开闭都留在 `reviews/` 下（先例：`stage_plans/reviews/full-review-2026-08/`
+为 `completed` 且原位保留）。**未发生目录搬迁，故无兼容页需求。**
+
+**本次接受仍不做什么**：不重开 Stage 6；不构成 Stage 7A / Stage 8 的实现授权、发布授权或合并授权；
+不改变本文与 R9 报告所记录的**任何历史证据**。

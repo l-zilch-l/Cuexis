@@ -1,0 +1,17 @@
+# c01-absolute-anchor: section 7 C01 (H1/H3/H7) and the section 6.1 absolute anchor
+exit ok
+frame 625/0/1
+digest-anchor
+count tickAttempts 0
+count suppressedTicks 0
+count emittedTickFrames 0
+count publicUpdateAttempts 1
+count publicUpdateSuccesses 1
+count frameCount 1
+require host.command index=1 line=3 verb=seek outcome=ok
+# NOTE (source line numbers): the task table spelled this as line=2 because it counted the program
+# without the header comment that names the case. Section 3.6.1 settles it as the 1-based physical
+# source line, counting comments and blank lines, so the open is line 2 and this seek is line 3.
+# Confirmed by the host's own record rather than by inference.
+# The assertion is load-bearing: the runner rejoins a multi-token require, so a wrong index, line,
+# verb or outcome fails the case.

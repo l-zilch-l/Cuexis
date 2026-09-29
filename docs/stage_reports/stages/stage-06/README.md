@@ -67,6 +67,15 @@
   clean-first 本地全量矩阵、candidate 开关与工具隔离、GPU/真实音频设备单列证据、同 SHA 三平台
   hosted 与插桩覆盖核对、跳过项与未执行项；本地批次退出，不是 Stage 6 关闭或 owner acceptance）
 
+## Stage 6 复核修正报告
+
+阶段已于 2026-09-27 关闭；下列报告属于关闭后的复核修正工作包，不改变阶段状态，也不代表
+owner 接受了修正包的最终退出。
+
+- [2026-09-28 R9 参考宿主命令循环与 play/pause](2026-09-28-r9-reference-host-command-loop.md)
+  （命令行模式、§6.2 digest 关系与检查器消息截断缺陷、16 条变异证据及唯一已记录存活、
+  本地环境偏差、未主张项）
+
 权威范围见 [Stage 6 计划](../../../stage_plans/completed/stage-06/plan.md)、
 [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md) 和
 [CURRENT_STATUS.md](../../../CURRENT_STATUS.md)。

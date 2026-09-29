@@ -1,0 +1,14 @@
+# c09-zero-frame-play: section 7 C09 (H3/H5) - no frame, normal Empty exit
+exit ok
+count tickAttempts 0
+count suppressedTicks 0
+count emittedTickFrames 0
+count publicUpdateAttempts 0
+count publicUpdateSuccesses 0
+count frameCount 0
+absent host.frame
+require host.destroy state=Empty
+# Section 7 C09 also requires the session to stay Ready: play alone starts the transport but no tick
+# ever reaches the SDK, so the session is loaded and not Running. host.play carries the SDK state.
+require host.play state=Ready
+require host.command index=1 line=3 verb=play outcome=ok transport=Paused->Playing

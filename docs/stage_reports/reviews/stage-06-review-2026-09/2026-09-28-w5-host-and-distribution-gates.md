@@ -290,3 +290,60 @@ The shared reference host does not import cuexis_playback: libcuexis_playback-0.
   宿主门禁接收后者）
 - 文档：本报告、`docs/stage_reports/reviews/stage-06-review-2026-09/README.md`（索引）、
   `docs/stage_reports/README.md`（可达性）
+
+## 7. 追加订正（2026-09-29）：批次 R9 与本报告的一处错误登记
+
+本节为**追加**内容，不改动本文 §1–§6 的任何原文、现象与证据。
+
+### 7.1 §2.2 步骤 4 与残余清单的「未处置」
+
+本文 §2.2 与残余清单把「交互命令循环」的口径记为「登记口径」，把 ADR 0042 `:350-351` 的冲突记为
+**未处置（需 owner 裁定）**。该记录在写下时准确。owner 其后裁定并开启批次 **R9**，追加三点订正：
+
+1. **零 stdin 不是缺陷**。参考宿主按设计从命令文件读取指令，不读标准输入。
+2. **缺口是命令不可由外部下达，以及缺少 play/pause 语义**。七动词中 `play` / `pause` / `quit`
+   当时无法被外部下达（`SPEC-27`）。本文新增的符号级导入表检查与 minor 负例只覆盖 argv 面，
+   这正是 `SPEC-27` 能在门禁全绿下存活的机械原因。
+3. **原计划允许本批次补实现，不只限 Stage 8**。
+
+R9 据此实现，见
+[R9 报告](../../stages/stage-06/2026-09-28-r9-reference-host-command-loop.md)。
+
+### 7.2 §6 登记了一个从未存在的文件
+
+本文 §6 的文档项写有 `docs/stage_reports/reviews/stage-06-review-2026-09/README.md`（索引）。
+**该文件从未在任何 ref 上提交过**（对该路径执行 `git log --all --diff-filter=A` 为空），现在也不存在。
+
+索引职责实际由 `docs/stage_reports/README.md` 承担；并且 `tools/check_docs.py` 的
+`STAGE_NAVIGATION_INDEXES` 白名单**不含**该路径，新建它会违反检查器——R9 规范 §9 第 3 项据此明确
+「**不新建叶目录 README**，也不新增 `reviews/README`」。原句保留，本订正为其更正。
+
+R9 状态：实现完成、本地验证完成，并在最后行为 SHA `71de8b1` 上通过 hosted 四工作流验证；**尚未获 owner
+接受退出**，`SPEC-27` 仍为 open。
+
+### 7.3 §5 的两条 hosted 残余声明已被取代
+
+本文 §5 第一条写「**hosted 三平台复验未完成**」，其下第三条写「修复提交为 `2c74f5f`，其 hosted 结果
+**尚未返回**，故在此之前本批次不得写成"已验证"」。两条在写下时都准确，且第二条的**自我约束是正确
+的**——不要拿未返回的结果当已验证。但它们的**后续状态**记录在别处，单独读本文会得出"本批次仍未
+验证"的错误结论，故在此指向后续记录：
+
+- `2c74f5f` **不是**"尚未返回"，而是**被取代后主动取消**（它仍带 MinGW 编译错误）。该 SHA 之后的
+  `7ac37f8`、`c6f1e45` 同样被取消；中间 SHA 的取消是主动清理，不是失败遮蔽。登记见
+  [交付报告](2026-09-28-delivery-report.md) 的 SHA 表（`2c74f5f` 一行与紧邻说明）与
+  [修正计划 §4](../../../stage_plans/reviews/stage-06-review-remediation/plan.md)。
+- 本批次（R7）在[交付报告 §2](2026-09-28-delivery-report.md) 的批次总表中记为 `completed
+  （3 项登记，1 项上报）`，其门禁改动此后持续在 hosted 上运行；R9 在最后行为 SHA `71de8b1` 的验证中
+  同样覆盖了 `VerifyReferenceHost.cmake` 的导入表检查与 minor 负例。
+
+**原文保留不改**：本节只追加后续指向，不修改 §5 的任何字句与当时判断。
+
+### 7.4 R9 状态已被 owner 接受退出取代（2026-09-29）
+
+§7.2 末尾那条状态行写 R9「**尚未获 owner 接受退出**，`SPEC-27` 仍为 open」。该行写入时准确，
+现已被取代：**owner 于 2026-09-29 接受 R9 退出**，R9 规范文档 §0.2 的六项关闭要求至此逐条满足，
+`SPEC-27` 记为 **closed**。
+
+最终 SHA 的证据：`71de8b1` 之后的文档提交把 tip 推到 `cc14fcd`，该 tip 在 push 与 pull_request 两个
+事件上共 7 个运行全部通过。**上句原文保留不改**，以本行为准。逐条对照与"本次接受不做什么"见
+[交付报告 §11](2026-09-28-delivery-report.md) 与 [R9 报告 §10](../../stages/stage-06/2026-09-28-r9-reference-host-command-loop.md)。
