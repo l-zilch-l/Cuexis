@@ -202,6 +202,17 @@ today's text pass, and keeping those two statements apart is the point.
   gate in a second verbose pass so its `expected/completed/passed` line lands in
   the hosted log instead of passing silently.
 
+  That last point was the one thing here that could only be answered by a hosted
+  run, and the run at `b36ba25` answered it. All fourteen Linux Quality jobs are
+  green, including both new ones; the log records `cmake version 3.25.3` in the
+  lower-bound job and `cmake version 4.4.0` in the reference job, so neither ran
+  on the image version; the nine gate-running jobs each record `cmake version
+  3.28.3`; and `-- Reference host command cases: expected 41, completed 41, passed
+  41` now appears in the log, which is the visibility the second pass was added
+  for. The lower-bound job passing is the load-bearing one: it is the only place
+  the parser test's empty-element detector was exercised on a 3.x CMake with the
+  baseline in place.
+
 **Scope of this remediation.** `VerifyPlayerDistribution.cmake` still has no policy
 baseline of its own; it fails today for an unrelated, pre-existing reason recorded
 in section 6, and its baseline is a separate follow-up rather than part of this
@@ -342,6 +353,29 @@ unrelated to R9:
 The version date is not the cause: UTC was still 2026-09-28 and
 `26.09.28-2` matched the trusted date when this was written.
 
+Correction, 2026-09-29: UTC advanced overnight, and the protected Version Gate then
+rejected this branch's `26.09.28-2` with `version.release_date.stale`, because a
+live candidate's date must equal the trusted UTC date rather than merely be later
+than the baseline's. The sentence above was true when written and is left as
+written. The branch was advanced to `26.09.29-1`, computed rather than chosen: the
+baseline `670cca8` carries `26.09.28-1`, and a baseline date earlier than the
+trusted date requires build 1. This is the calendar rule the remediation plan
+already required be recomputed across a UTC day instead of carried over from an
+earlier green run, so the failure is that rule working, not a defect, and it is
+unrelated to sections 2 to 5 — the check that failed compares version dates only.
+
+A second local-only observation, recorded because it looks alarming and is not: the
+registered test count depends on the age of the build directory. The full debug
+suite for this work reports 749 tests, while the same directory before a fresh
+configure reported 752. Rather than leave that as an unexplained difference, the
+merge base `670cca8` was checked out into a separate worktree and configured and
+built in the same way; it registers 748. The branch therefore registers exactly one
+test more than the baseline, which is the parser test from section 2.2, and the
+earlier 751/752 figures came from CTest discovery state left behind in a long-lived
+build directory. That is the same drift this repository already recorded once, when
+a previously published count stopped being reproducible. The failure set is
+unaffected in either case: the two failures above are the only ones at both counts.
+
 ## 7. Boundaries held
 
 The frozen text of ADR 0042 was not modified. No SDK public API, enum or golden
@@ -354,8 +388,11 @@ acceptance and is not part of R9.
 ## 8. Not claimed
 
 - Hosted same-SHA Linux Quality, Windows MSVC and Windows MinGW validation on the
-  final R9 commit. The Version Gate passes on the current commit; the rest are
-  recorded when the branch stops moving.
+  final R9 commit. At `b36ba25` those three workflows are green on both the push
+  and pull_request events, but its Version Gate run failed on the UTC-day rollover
+  recorded in section 6 rather than on this work, and the version advance that
+  answers it moves the SHA again. The rest are recorded when the branch stops
+  moving.
 - Owner acceptance of the R9 contract, including the redundant tick budget guard
   noted in section 5.1.
 - The mutation harness and the checker self-test live under `out/`, which is not
