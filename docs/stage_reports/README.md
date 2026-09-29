@@ -49,6 +49,8 @@ Standards / Spec 记录），由该专题自己的 `README.md` 承担导航；�
   [W5 宿主与分发门禁](reviews/stage-06-review-2026-09/2026-09-28-w5-host-and-distribution-gates.md)、
   [W6 代码健康度](reviews/stage-06-review-2026-09/2026-09-28-w6-code-health.md)、
   [交付报告](reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md)
+- Stage 6 复核修正批次 R9（另行开启；最终 SHA `71de8b1`，owner 接受待定）：
+  [R9 参考宿主命令循环与 play/pause](stages/stage-06/2026-09-28-r9-reference-host-command-loop.md)
 
 ## 历史路径
 

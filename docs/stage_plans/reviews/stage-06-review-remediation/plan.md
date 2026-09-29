@@ -5,11 +5,16 @@
 本计划**只在批次内部按依赖排序**，不跨轴重新排序，也不把两轴合并成一张判定表。
 
 状态：active；修正工作包，**已取得实施授权**（2026-09-28 无人值守会话，R0 四项按默认选项执行）；
-R0–R8 已全部退出并随 PR #30 合并进 `master`（合并提交 `670cca8`），R9 已另行开启、**实现与
-本地变异证据已完成**（独立分支、独立 PR），同 SHA hosted 复验与 owner 接受**尚未完成**；
+R0–R8 已全部退出并随 PR #30 合并进 `master`（合并提交 `670cca8`），R9 已另行开启、**实现、本地
+变异证据与 hosted 复验均已完成**（独立分支、独立 PR；最终 SHA `71de8b1` 上 Linux Quality、
+Windows MSVC、Windows MinGW 与 Version Gate 四工作流全部通过，见
+[R9 报告](../../../stage_reports/stages/stage-06/2026-09-28-r9-reference-host-command-loop.md) §2.3），
+**owner 接受退出尚未完成**；
 Stage 6 已于 2026-09-27 关闭并归档，本计划不构成 Stage 7A / Stage 8 的实现授权
 
-更新日期：2026-09-28
+更新日期：2026-09-29（订正：本节原写"同 SHA hosted 复验与 owner 接受**尚未完成**"，更新日期
+`2026-09-28`。hosted 复验已在最终 SHA 完成，owner 接受退出仍未完成——两件事须分开陈述，
+不得因前者达成而暗示后者也已达成）
 
 归档来源：[Stage 6 双轴复核汇总](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-summary.md)、
 [Standards 轴](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-standards.md)、
@@ -103,7 +108,7 @@ R0 决策门禁（owner 裁定 4 项）
 | R7 | R5 | 宿主与分发门禁补齐 | completed（步骤 3/4/6 按口径登记，ADR 冲突上报）：宿主导入门禁新增导入表符号检查与 SDK minor 负例；candidate 零命中扫描成为门禁（「默认 OFF 下工厂拒绝」本已注册）；static 无 toolchain 负例改由 minor 负例承担；交互命令循环口径与 ADR 0042 `:350-351` 的冲突**未处置**、需 owner 裁定；分发门禁 Linux 未注册登记为 Stage 8 输入。退出记录见 [2026-09-28-w5-host-and-distribution-gates.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w5-host-and-distribution-gates.md) |
 | R8 | — | 重复/死代码/可移植性修正 | completed（STD-05/06/08/09 按计划 §4/§5 边界登记残余）：STD-13 两个 `.obj` 去跟踪 + `*.obj` 规则；STD-07 七项死代码删除（含两项需实查的 `readCount()` 与 `readRequiredString` 冗余参数，及清单外补删的 `providerRootId`），第 8 项 `--event` 判为有真实审计角色故保留；STD-04 两份逐字相同的状态名级联合并为 `playbackStateName`；STD-10 定因后改为**三分支**（MSVC `_wfopen_s`、MinGW `_wfopen`、其余窄 `fopen`）：原文"统一按 `_MSC_VER` 分支"的处方本身有误——它使 MinGW 落入窄 `fopen` 回退而编译失败，见 W6 §6；STD-12 workflow 块缩进对齐（`git diff -w` 为空）。STD-05/06/08/09 因属重构/公共 API 变更，按 §4 排除并登记。退出记录见 [2026-09-28-w6-code-health.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w6-code-health.md) |
 
-| R9 | R7 | Reference Host 命令循环与 play/pause | 实现与本地证据已完成（**未获 owner 接受**）：设计已获 owner 接受，处理 SPEC-27（ADR 0042 `:350-351` 的六动词命令循环）。命令模式、§6.2 digest 关系、门禁接线与 16 条变异证据均已落地（15 条被目标断言抓住，1 条按合同冗余**记录为预期存活**）；版本规则按 §11 计算，未预填。**未完成**：同 SHA hosted Linux/MSVC/MinGW、owner 接受，以及 §4.1 记录的重复 tick 预算守卫是否应合并的合同裁定。**唯一规范来源是 [R9-reference-host-command-loop.md](R9-reference-host-command-loop.md)**——本行只记录状态、依赖与链接，不复制其合同、限额或判据。从 PR #30 合并后的 `master`（`670cca8`）独立开分支、独立 PR。完整合同、状态矩阵、C01–C12/N01–N07 用例、变异清单、门禁接线与退出清单见该文档；证据记录见 [2026-09-28 R9 报告](../../../stage_reports/stages/stage-06/2026-09-28-r9-reference-host-command-loop.md) |
+| R9 | R7 | Reference Host 命令循环与 play/pause | 实现、本地与 hosted 证据均已完成（**未获 owner 接受退出**）：设计已获 owner 接受，处理 SPEC-27（ADR 0042 `:350-351` 的六动词命令循环）。命令模式、§6.2 digest 关系、门禁接线与 16 条变异证据均已落地（15 条被目标断言抓住，1 条按合同冗余**记录为预期存活**）；版本规则按 §11 计算，未预填。最终 SHA `71de8b1` 上 Linux Quality、Windows MSVC、Windows MinGW 与 Version Gate 四工作流全部通过，证据见 [2026-09-28 R9 报告](../../../stage_reports/stages/stage-06/2026-09-28-r9-reference-host-command-loop.md) §2.3。**未完成**：owner 接受退出，以及 §4.1 记录的重复 tick 预算守卫是否应合并的合同裁定。**唯一规范来源是 [R9-reference-host-command-loop.md](R9-reference-host-command-loop.md)**——本行只记录状态、依赖与链接，不复制其合同、限额或判据。从 PR #30 合并后的 `master`（`670cca8`）独立开分支、独立 PR。完整合同、状态矩阵、C01–C12/N01–N07 用例、变异清单、门禁接线与退出清单见该文档；证据记录见 [2026-09-28 R9 报告](../../../stage_reports/stages/stage-06/2026-09-28-r9-reference-host-command-loop.md) |
 
 ## 6. 各批次的问题、目标与具体步骤
 
@@ -489,3 +494,61 @@ git diff --check
   复核记录中的历史现象与影响不得回改。
 - 修正完成后，把两轴复核记录中对应项的处置指向本计划的批次报告，
   但保留原现象与证据原文。
+
+## 12. 阅读地图
+
+本工作包的文档横跨"计划"与"报告"两个区域，且报告写于不同时点。初次接手时按下面的顺序读，可以
+避免重复推导已经做过的判断，也避免引用已被撤回的结论。
+
+### 12.1 建议顺序
+
+1. **本文件** —— §1 背景、§3 目标、§4 明确不包含、§5 批次与实施顺序、§6 各批次的问题与步骤、
+   §7 验收标准 RS-01–RS-10、§11 证据维护规则。
+2. **[双轴复核汇总](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-summary.md)**
+   —— 全景、方法，以及**已知局限**（子代理证据只到 `文件:行`；标注"父代理已核实"的条目由命令或
+   直读代码确认）。**先读它的局限一节**，再读两轴正文。
+3. **[二轮细化](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-refinement.md)**
+   —— 二轮用 `git diff --name-status` + `git blame` 逐条判定范围，**修正了一轮的 11 条判断（含撤回
+   1 条）**。读一轮结论之前先看它，否则可能引用已被撤回的判断。
+4. **两轴正文** —— [Spec 轴](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-spec.md)、
+   [Standards 轴](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-standards.md)；
+   [切片附录](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-slice-appendix.md)
+   是逐切片与子代理原文附录，作为证据查阅而非通读。
+5. **批次退出报告** —— R0 的裁定记录在本文件 §6「R0 裁定记录」；R1–R8 见下表。
+6. **[交付报告](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md)**
+   —— 批次总表、SHA 表、CI 处置，以及中间 SHA 被主动取消（而非失败遮蔽）的记录。
+7. **R9 三份文档与其报告** —— 见下表。R9 是本工作包中**唯一尚未获 owner 接受退出**的批次。
+
+### 12.2 文档地图
+
+| 文档 | 角色 | 状态 |
+| --- | --- | --- |
+| [plan.md](plan.md)（本文件） | 工作包规范：批次、步骤、验收 RS-01–RS-10 | active |
+| [2026-09-28-summary.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-summary.md) | 双轴复核汇总与局限 | active |
+| [2026-09-28-spec.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-spec.md) | Spec 轴逐条发现 | active |
+| [2026-09-28-standards.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-standards.md) | Standards 轴逐条发现 | active |
+| [2026-09-28-slice-appendix.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-slice-appendix.md) | 切片与子代理原文附录 | active |
+| [2026-09-28-refinement.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-refinement.md) | 二轮细化：范围判定与实测，修正一轮 11 条 | active |
+| [2026-09-28-r1-document-and-evidence.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-r1-document-and-evidence.md) | R1 退出报告（文档与证据链） | completed |
+| [2026-09-28-w1-diagnostics-and-version-gate.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w1-diagnostics-and-version-gate.md) | R2 + R3 退出报告（诊断码、版本门禁） | completed |
+| [2026-09-28-w2-media-import.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w2-media-import.md) | R4 退出报告（媒体导入） | completed |
+| [2026-09-28-w3-publication-transaction.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w3-publication-transaction.md) | R5 退出报告（发布事务） | completed |
+| [2026-09-28-w4-render-convergence.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w4-render-convergence.md) | R6 退出报告（渲染收敛） | completed |
+| [2026-09-28-w5-host-and-distribution-gates.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w5-host-and-distribution-gates.md) | R7 退出报告（宿主与分发门禁） | completed |
+| [2026-09-28-w6-code-health.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w6-code-health.md) | R8 退出报告（代码健康度） | completed |
+| [2026-09-28-delivery-report.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md) | 工作包交付/关闭报告 | completed |
+| [R9-reference-host-command-loop.md](R9-reference-host-command-loop.md) | **R9 唯一规范来源** | active |
+| [R9-gate-policy-audit-decisions.md](R9-gate-policy-audit-decisions.md) | R9 门禁策略裁定与实施依据 | active |
+| [R9-gate-policy-impact-table.md](R9-gate-policy-impact-table.md) | R9 逐策略影响审计 | active |
+| [2026-09-28-r9-reference-host-command-loop.md](../../../stage_reports/stages/stage-06/2026-09-28-r9-reference-host-command-loop.md) | R9 日期化证据报告 | 见其 §2.3 |
+
+### 12.3 三处容易踩的坑
+
+1. **不要复制 R9 规范的常量**。§9 规定本文与报告只引用
+   [R9-reference-host-command-loop.md](R9-reference-host-command-loop.md)，不复制其中的合同、限额或判据，
+   以免两处定义漂移。
+2. **历史报告的"当时未处置"要连同其追加订正一起读**。R1–W6 写于 R9 之前，其中
+   [交付报告 §9](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md)
+   与 [W5 §7](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w5-host-and-distribution-gates.md)
+   是 2026-09-29 追加的 R9 订正，**不改动原文**。
+3. **本工作包不重开已关闭的 Stage 6**，也不构成 Stage 7A / Stage 8 的实现授权、PR 授权或发布授权。

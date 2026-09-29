@@ -280,3 +280,25 @@ ELF 的 `lib`/`.so` 命名使归属判断既空转又误判。
   [W2](2026-09-28-w2-media-import.md)｜[W3](2026-09-28-w3-publication-transaction.md)｜
   [W4](2026-09-28-w4-render-convergence.md)｜[W5](2026-09-28-w5-host-and-distribution-gates.md)｜
   [W6](2026-09-28-w6-code-health.md)
+
+## 9. 追加订正（2026-09-29）：批次 R9
+
+本节为**追加**内容，不改动本文 §2–§8 的任何原文、现象与证据。
+
+本文 §2 批次总表覆盖 R0–R8。批次 R9 在本文写成之后经 owner 另行裁定开启，因此不在该表内；其记录见
+[R9 参考宿主命令循环与 play/pause](../../stages/stage-06/2026-09-28-r9-reference-host-command-loop.md)
+与规范 [R9-reference-host-command-loop.md](../../../stage_plans/reviews/stage-06-review-remediation/R9-reference-host-command-loop.md)。
+
+本文 §5 第 1 项与 §7 把「交互命令循环」与 ADR 0042 `:350-351` 的冲突记为**未处置、需 owner 裁定**。
+该记录在写下时准确。owner 其后裁定并开启批次 R9，须追加订正三点：
+
+1. **零 stdin 不是缺陷**。参考宿主按设计从命令文件读取指令，不读标准输入；把「零 stdin」本身当作
+   缺口是对 ADR 的误读。
+2. **缺口是命令不可由外部下达，以及缺少 play/pause 语义**。ADR 0042 `:350-351` 要求宿主支持
+   `open` / `play` / `pause` / `seek` / `reload` / `quit`，而当时宿主只有 argv 解析，七动词中
+   `play` / `pause` / `quit` 无法被外部下达（`SPEC-27`）。
+3. **原计划允许本批次补实现，不只限 Stage 8**。因此 R9 在 Stage 6 复核修正包内实现该循环，属计划内
+   处置，而非越过阶段边界。
+
+R9 状态：实现完成、本地验证完成，并在最终 SHA `71de8b1` 上通过 hosted 四工作流验证；**尚未获 owner
+接受退出**，`SPEC-27` 仍为 open。

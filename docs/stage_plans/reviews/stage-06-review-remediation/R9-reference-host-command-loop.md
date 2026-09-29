@@ -1,8 +1,13 @@
 # R9：Reference Host 命令循环与 play/pause（实施文档）
 
-状态：active；设计已获 owner 接受，**未实现**；本文是 R9 的唯一规范来源
+状态：active；设计已获 owner 接受，**已实现并经本地与最终 SHA 验证**
+（最终 SHA `71de8b1` 的 hosted 四工作流全绿，证据见
+[R9 报告](../../../stage_reports/stages/stage-06/2026-09-28-r9-reference-host-command-loop.md)）；
+**尚未获 owner 接受退出**，`SPEC-27` 仍为 open。本文是 R9 的唯一规范来源
 
-更新日期：2026-09-28
+更新日期：2026-09-29（订正：本行原写「**未实现**」与更新日期 `2026-09-28`，二者均为实现落地前的
+状态。§9 要求在退出时按政策更新状态，且**不得把 owner 接受设计写成已接受最终退出**——本行据此更新，
+而退出状态**仍未达成**，故状态词保持 `active`）
 
 基线：`670cca8`（PR #30 合并后的 `master`；分支 `stage-06-r9-reference-host-command-loop`）
 

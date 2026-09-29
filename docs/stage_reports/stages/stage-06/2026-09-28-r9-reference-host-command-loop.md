@@ -3,7 +3,9 @@
 Date: 2026-09-28
 Package: Stage 6 review remediation, R9
 Normative source: [R9-reference-host-command-loop.md](../../../stage_plans/reviews/stage-06-review-remediation/R9-reference-host-command-loop.md)
-Status: implemented and locally verified; hosted same-SHA validation and owner acceptance are not claimed here.
+Status: implemented, locally verified, and validated on the hosted runs at the final
+SHA `71de8b1f3f43c779821468c54c5e2803812924c3` (section 2.3); owner acceptance of the
+R9 exit is still not claimed here.
 
 This report owns dated evidence only. The contract, the state matrix and the case
 definitions stay in the R9 document; nothing here restates them as a second
@@ -213,6 +215,45 @@ today's text pass, and keeping those two statements apart is the point.
   the parser test's empty-element detector was exercised on a 3.x CMake with the
   baseline in place.
 
+### 2.3 Final-SHA hosted validation
+
+The runs recorded just above were taken at `b36ba25`, which the version advance
+described in section 6 then moved. The final commit of this branch is
+`71de8b1f3f43c779821468c54c5e2803812924c3`, and every hosted run on it is green:
+
+| Workflow | Event | Result |
+| --- | --- | --- |
+| Linux Quality | push and pull_request | 14 jobs each, none failing |
+| Windows MSVC | push and pull_request | `debug` and `release` |
+| Windows MinGW | push and pull_request | 2 jobs each, none failing |
+| Version Gate | pull_request | `Version advancement (pre-merge)`; the post-merge audit and historical revalidation jobs are skipped by design, not by failure |
+
+The two new jobs have now executed, which is the fact section 8 previously recorded
+as unclaimed. Their logs carry `cmake version 3.25.3` in the lower-bound job and
+`cmake version 4.4.0` in the reference job, so neither ran on the image version;
+the gate-running jobs carry `cmake version 3.28.3`; and the gate's
+`expected 41, completed 41, passed 41` accounting line reaches the log at the final
+SHA as well.
+
+One job failed on its first attempt at this SHA and passed on a re-run:
+`Clang ASan + UBSan shader-tools`. The failure was inside vcpkg building `libmount`
+for the `audio_sdl` external consumer, after `curl` returned error 18
+(`Transferred a partial file`) fetching `util-linux-2.41.3.tar.xz` from
+`mirrors.edge.kernel.org`. The same job at the same SHA is green on the
+pull_request event, and it was green at `b36ba25` too, so it is an infrastructure
+flake rather than a property of this work. It is recorded rather than omitted
+because a re-run is weaker evidence than a first-try pass, and a reader of this
+report should be able to see that the distinction was noticed.
+
+Section 8 carried two entries that this section supersedes. Its first read "Hosted
+same-SHA Linux Quality, Windows MSVC and Windows MinGW validation on the final R9
+commit. At `b36ba25` those three workflows are green ... The rest are recorded when
+the branch stops moving." Its fourth read "The two new jobs have never executed.
+Their first execution is the next hosted run, and anything they report about 3.25.3
+or 4.4.0 is unverified until then." Both were accurate when written and both are
+quoted here rather than silently dropped, because the change of state is itself
+part of the record.
+
 **Scope of this remediation.** `VerifyPlayerDistribution.cmake` still has no policy
 baseline of its own; it fails today for an unrelated, pre-existing reason recorded
 in section 6, and its baseline is a separate follow-up rather than part of this
@@ -387,12 +428,6 @@ acceptance and is not part of R9.
 
 ## 8. Not claimed
 
-- Hosted same-SHA Linux Quality, Windows MSVC and Windows MinGW validation on the
-  final R9 commit. At `b36ba25` those three workflows are green on both the push
-  and pull_request events, but its Version Gate run failed on the UTC-day rollover
-  recorded in section 6 rather than on this work, and the version advance that
-  answers it moves the SHA again. The rest are recorded when the branch stops
-  moving.
 - Owner acceptance of the R9 contract, including the redundant tick budget guard
   noted in section 5.1.
 - The mutation harness and the checker self-test live under `out/`, which is not
@@ -403,15 +438,29 @@ acceptance and is not part of R9.
   [R9-gate-policy-impact-table.md](../../../stage_plans/reviews/stage-06-review-remediation/R9-gate-policy-impact-table.md)
   are in the same position, which is why that document carries the line numbers
   needed to re-derive each finding by hand.
-- The section 2.2 workflow changes are verified only as far as a local check can
-  reach: the YAML parses, the pinned step lands in exactly the four jobs that run
-  the gate, the three checksum literals match Kitware's published values, and the
-  two-pass invocation excludes exactly one test and prints the accounting line.
-  The two new jobs have never executed. Their first execution is the next hosted
-  run, and anything they report about 3.25.3 or 4.4.0 is unverified until then.
 - No claim that the version matrix is exhaustive. It covers 3.25.3, 3.28.3 and
   4.4.0; other 3.x releases are not exercised, and the parser test's empty-element
   detector is meaningful only on the 3.x side of that range.
 - No claim that the audit in section 2.2 found every policy dependence. It found
   every dependence reachable from the constructs the scripts actually use, which
   is a smaller and checkable statement than "there are none".
+
+## 9. Historical corrections appended
+
+Section 13 requires this report to record the historical corrections separately
+from the new work. Two documents were written before R9 addressed the command-loop
+gap and carry statements that were accurate when written. Both were **appended to,
+never rewritten**:
+
+| Document | Where | What the appended correction establishes |
+| --- | --- | --- |
+| [2026-09-28-delivery-report.md](../../reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md) | §9, added 2026-09-29 | Its §5 item 1 and §7 recorded the ADR 0042 `:350-351` conflict as unhandled and awaiting owner adjudication, and its §2 batch table covers R0–R8 only. The correction records that zero stdin is **not** the defect, that the missing externally-orderable commands and play/pause semantics **is**, and that the plan allowed this batch to implement it rather than deferring to Stage 8. |
+| [2026-09-28-w5-host-and-distribution-gates.md](../../reviews/stage-06-review-2026-09/2026-09-28-w5-host-and-distribution-gates.md) | §7, added 2026-09-29 | Its §2.2 step 4 and residual list registered the command loop as a scope decision needing owner adjudication, and its §6 registered an index file that was never committed on any ref. The correction records the R9 disposition, corrects the file claim, and points its superseded hosted-verification residual at the delivery report's SHA table. |
+
+Neither document's original wording, phenomena or evidence was changed, and the
+review records for R0–R8 stay as written. This section is the pointer from R9's
+exit record to those corrections, so that a reader of the batch reports alone does
+not conclude the command-loop gap is still open.
+
+The correction is also required by the R9 document's section 9, which states that
+the historical delivery report and the R7 report receive appended corrections only.
