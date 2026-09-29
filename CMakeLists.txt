@@ -437,6 +437,22 @@ if(CUEXIS_BUILD_TESTS)
             RESOURCE_LOCK cuexis_external_consumer
             TIMEOUT 900
         )
+        # The command case parser is checked by a second, independent script. The
+        # gate is the only judge of the command cases, so a defect in the gate
+        # cannot be seen from the gate's own success count; this test reads the
+        # same declaration data with a different algorithm (R9 D9/D10). It needs no
+        # build, so it is also runnable on its own as
+        #   cmake -P cmake/VerifyReferenceHostCommandParser.cmake
+        # which is how the pinned lower-bound CMake job exercises it.
+        add_test(
+            NAME cuexis_reference_host_command_parser
+            COMMAND "${CMAKE_COMMAND}"
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyReferenceHostCommandParser.cmake"
+        )
+        set_tests_properties(cuexis_reference_host_command_parser PROPERTIES
+            LABELS "gate;reference-host;s6-c4"
+            TIMEOUT 120
+        )
         if(CUEXIS_BUILD_PLAYER)
             add_test(
                 NAME cuexis_player_distribution
