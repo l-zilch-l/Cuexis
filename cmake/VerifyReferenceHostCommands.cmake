@@ -46,57 +46,43 @@ set(cuexis_golden_digest_value "${CMAKE_MATCH_1}")
 # flags select extra argv for the case. They exist because several negative
 # cases are about the flag surface rather than about file content.
 # ---------------------------------------------------------------------------
-set(cuexis_command_cases
-    # --- positive: transport, clock and digest behaviour ---
-    "c01-absolute-anchor|cmd|"
-    "c02-pause-resume|cmd|"
-    "c03-continuous-control|cmd|"
-    "c04-paused-reload-twice|cmd|"
-    "c05-playing-reload|cmd|"
-    "c06-ready-suppression|cmd|"
-    "c07-paused-seek|cmd|"
-    "c08-idempotence|cmd|"
-    "c09-zero-frame-play|cmd|"
-    "c10a-empty-quit|cmd|"
-    "c10b-empty-quit-expect-identity|cmd|expect-identity"
-    "c11a-space-path|cmd|"
-    "c11b-line-endings-bom|cmd|"
-    # --- C12: the legacy invocation and its golden assertions, already run ---
-    "c12-legacy-regression|legacy|"
-    # --- negative: pre-open verbs ---
-    "n01a-play-before-open|cmd|"
-    "n01b-pause-before-open|cmd|"
-    "n01c-tick-before-open|cmd|"
-    "n01d-seek-before-open|cmd|"
-    "n01e-reload-before-open|cmd|"
-    # --- negative: reload without a sample ---
-    "n02a-reload-no-sample|cmd|"
-    "n02b-play-reload-no-sample|cmd|"
-    # --- negative: second open ---
-    "n03-second-open|cmd|"
-    # --- negative: malformed programs ---
-    "n04a-unknown-verb|cmd|"
-    "n04b-trailing-arg|cmd|"
-    "n04c-missing-arg|cmd|"
-    "n04d-bad-number|cmd|"
-    "n04e-no-quit|cmd|"
-    "n04f-after-quit|cmd|"
-    # --- negative: budgets ---
-    "n05a-file-too-large|generated|"
-    "n05b-too-many-commands|generated|"
-    "n05c-tick-budget-ok|cmd|"
-    "n05d-tick-budget-exceeded|cmd|"
-    "n05e-seek-out-of-range|cmd|"
-    "n05f-seek-then-tick-overflow|cmd|"
-    "n05g-integer-overflow|cmd|"
-    # --- negative: flag surface ---
-    "n06a-advance-conflict|cmd|advance"
-    "n06b-package-conflict|cmd|package"
-    "n06c-expect-digest-conflict|cmd|expect-digest"
-    "n06d-duplicate-command-file|cmd|duplicate-command-file"
-    # --- negative: input and IO ---
-    "n07a-missing-file|invocation|missing-file"
-    "n07b-wrong-content-root|cmd|wrong-content-root")
+# The case set lives in a data file rather than inline, so that the gate and the
+# independent parser test can read the same declarations with their own
+# algorithms. Sharing the data is not sharing the judgement. Its syntax is
+# documented in that file.
+#
+# A caller may pre-set cuexis_command_case_file to supply its own declarations --
+# the checker self-test does exactly that to run a trimmed probe set without
+# editing this script. Otherwise the file beside this script is used.
+if(NOT DEFINED cuexis_command_case_file)
+    set(cuexis_command_case_file "${CMAKE_CURRENT_LIST_DIR}/ReferenceHostCommandCases.txt")
+endif()
+if(NOT EXISTS "${cuexis_command_case_file}")
+    message(FATAL_ERROR "Missing command case file: ${cuexis_command_case_file}")
+endif()
+file(READ "${cuexis_command_case_file}" cuexis_command_case_text)
+string(REPLACE "\r\n" "\n" cuexis_command_case_text "${cuexis_command_case_text}")
+# A ';' anywhere in the data -- including inside a comment -- splits a CMake list
+# element, which would turn one commented line into two, the second of which no
+# longer starts with '#'. Escaping before the split and restoring per line keeps
+# every physical line a single element regardless of its content.
+string(REPLACE ";" "\\;" cuexis_command_case_text "${cuexis_command_case_text}")
+string(REPLACE "\n" ";" cuexis_command_case_lines "${cuexis_command_case_text}")
+set(cuexis_command_cases "")
+foreach(cuexis_command_line IN LISTS cuexis_command_case_lines)
+    string(REPLACE "\\;" ";" cuexis_command_line "${cuexis_command_line}")
+    # Blank lines and lines whose first non-blank character is "#" are ignored.
+    # Skipping them here also keeps a trailing empty element, which splitting on
+    # newlines always produces, out of the case list.
+    string(STRIP "${cuexis_command_line}" cuexis_command_line)
+    if(cuexis_command_line STREQUAL "" OR cuexis_command_line MATCHES "^#")
+        continue()
+    endif()
+    list(APPEND cuexis_command_cases "${cuexis_command_line}")
+endforeach()
+if(cuexis_command_cases STREQUAL "")
+    message(FATAL_ERROR "The command case file declares no cases")
+endif()
 
 set(cuexis_command_case_ids "")
 set(cuexis_command_fixture_ids "")
@@ -488,7 +474,7 @@ foreach(entry IN LISTS cuexis_command_cases)
         # cuexis_command_known_directives so the nine names have one definition.
         if(NOT line MATCHES "^(${cuexis_command_directive_pattern})($|[ \t])")
             cuexis_command_record_failure("${case_id}"
-                "unknown .expect directive in '${line}' (${case_id}.expect)")
+                "unknown .expect directive '${line}' in ${case_id}.expect")
             continue()
         endif()
         separate_arguments(line_parts UNIX_COMMAND "${line}")

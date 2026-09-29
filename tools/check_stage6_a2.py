@@ -403,6 +403,13 @@ def check_reference_host_contract() -> None:
     case_runner = ROOT / "cmake" / "VerifyReferenceHostCommands.cmake"
     require(case_runner.is_file(), "the command case runner is missing")
     case_runner_text = case_runner.read_text(encoding="utf-8")
+    case_data = ROOT / "cmake" / "ReferenceHostCommandCases.txt"
+    require(case_data.is_file(),
+            "the command case data file is missing (the declarations live there)")
+    case_data_text = case_data.read_text(encoding="utf-8")
+    require("ReferenceHostCommandCases.txt" in case_runner_text,
+            "the command case runner no longer reads the command case data file, "
+            "so the declarations it asserts are no longer the ones that run")
 
     def failure_call_literals(source: str):
         """Yield the top level string literal count of every real failure call.
@@ -476,10 +483,12 @@ def check_reference_host_contract() -> None:
 
     # Sentinels rather than a count: the runner itself asserts set equality
     # between the declared list and the fixtures on disk (R9 section 8.7), while
-    # this static check only has to notice a declaration being deleted.
+    # this static check only has to notice a declaration being deleted. The
+    # declarations live in the data file the runner reads, so the sentinels are
+    # checked there; the assertion above keeps that indirection honest.
     for case_id in ("c01-absolute-anchor", "c12-legacy-regression",
                     "n05c-tick-budget-ok", "n07b-wrong-content-root"):
-        require(case_id in case_runner_text,
+        require(case_id in case_data_text,
                 f"the command case list no longer declares {case_id}")
     fixtures = host_dir / "tests" / "commands"
     require(fixtures.is_dir() and any(fixtures.glob("*.cmd")),
