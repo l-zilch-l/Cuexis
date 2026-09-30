@@ -15,6 +15,15 @@
 - [CXT v1 candidate](../formats/CXT_FORMAT.md)：声明式模板 JSON 文件。
 - [Stage 6 candidate API and install draft](STAGE6_API_AND_INSTALL_DRAFT.md)：显式 candidate entry、experimental 安装和 Reference Host 的未实现草案。
 
+## 设计讨论记录
+
+- [Gameplay Ruleset 设计讨论记录](GAMEPLAY_RULESET_DISCUSSION.md)：Input / Judgement / 脚本系统
+  重新设计的共识与待讨论项，未接受、未实施。
+- [Gameplay Program IR 原语草案](GAMEPLAY_PROGRAM_IR_DRAFT.md)：判定程序执行模型、原语、仲裁、
+  静态验证与七个案例压测，未接受、未实施。
+- [Ruleset Fold Language 草案](GAMEPLAY_RULESET_FOLD_DRAFT.md)：L3 Ruleset 折叠语言、打包、
+  静态验证与待决项，未接受、未实施。
+
 ## 延期设计输入
 
 - [Deferred proposals](deferred/README.md)：粒子和 Android/移动端方向。Shader 字段合同已由
