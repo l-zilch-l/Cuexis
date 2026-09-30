@@ -1,0 +1,747 @@
+# Gameplay Program IR 原语草案
+
+状态：candidate（设计草案，未接受，未实施）
+
+更新日期：2026-09-29
+
+本文回应 [Gameplay Ruleset 设计讨论记录](GAMEPLAY_RULESET_DISCUSSION.md) 待讨论项 1：定义判定
+程序的执行模型、原语集合和静态验证规则，并用四个案例压测表达力。文中语法只用于说明，不是
+最终编码；最终 IR 是类型化数据，作者语法另行讨论。
+
+## 1. 设计约束
+
+```text
+程序不可信          全部验证在 prepare 完成，演奏中不出现"程序错误"
+必然结算            每个实例在静态可知的时刻前到达终态
+状态有界            寄存器数量与取值范围固定，可快照、可 Seek
+读写受限            只读：输入观察、时间、Controller、Hook；只写：自身寄存器与 Fact
+整数运算            程序中没有浮点、Beat 或宿主类型
+```
+
+## 2. 执行模型
+
+### 2.1 时间
+
+`Tick` 是 chartTime 域内的 i64 微秒。Chart 锚点（Beat）在 prepare 时经 TimingMap 转为
+chartTimeMs，再按唯一的舍入规则量化为 Tick，只量化一次。InputEvent 在映射时量化为 Tick。
+程序看不到 Beat 和 double。
+
+### 2.2 实例与生命周期
+
+Chart 中每个 Requirement 对应一个 ProgramInstance：`(program, 冻结参数, 寄存器, 当前状态)`。
+
+```text
+Dormant --armTick--> Live(state) --settle(outcome)--> Settled
+```
+
+`armTick` 与 `hardDeadline` 是参数和 Ruleset 静态上界的仿射表达式，不读 Hook，因此在 prepare
+时即可算出，用于活动实例数的扫描预算。技能对窗口的缩放必须落在 Ruleset 声明的静态上界之内。
+
+`settle` 的结果是 Ruleset Interface 声明的枚举。引擎只要求"每个实例必须在 deadline 前结算"，
+不规定哪个结果算好、哪个算坏。普通音符的 `hit`/`miss` 和炸弹的 `avoided`/`detonated` 是同一种
+机制的不同取值。
+
+### 2.3 同一 Tick 内的求值顺序
+
+判定是离散事件模拟。同一 Tick `t` 内的固定顺序为：
+
+1. 激活 `armTick == t` 的实例（按 Requirement identity 排序）
+2. 触发截止时刻为 `t` 的定时器（按实例 identity，再按边的声明顺序）
+3. 按 sequence 顺序派发 `t` 时刻的输入事件（见第 7 节仲裁）
+4. Ruleset 按发出顺序折叠第 1–3 步产生的 Fact，并更新 Hook 值
+
+程序在 `t` 时刻读取的 Hook 值，是第 `t-1` 步结束时的值。因此 `t` 时刻产生的 Fact
+（比如技能被触发）最早在 `t+1` 时刻影响判定。因果环在结构上无法闭合。
+
+Controller 在 `t` 时刻的采样值，只由严格早于 `t` 的输入决定。
+
+## 3. 程序结构
+
+```text
+Program {
+  params     类型化参数，由谱面提供，prepare 时冻结
+  registers  有界寄存器，初值为常量
+  states     有限状态集合，其中一个为初始状态
+  edges      每条边：trigger + guard + actions + target
+  arm        激活时刻表达式
+  deadline   hardDeadline 表达式，以及必须提供的 onDeadline 动作
+  claimKey   仲裁排序键表达式
+  dispatch   consume | observe
+  category   Ruleset Interface 声明的类别（note / penalty / bonus / filler 等）
+}
+```
+
+参数和寄存器可以使用以下类型：
+
+| 类型 | 说明 |
+| --- | --- |
+| `Tick` | i64 微秒 |
+| `Int[lo..hi]` | 声明了取值范围的整数；越界在验证阶段按区间分析拒绝 |
+| `Bool` | 布尔值 |
+| `Enum<E>` | Ruleset Interface 中声明的枚举 |
+| `Channel` / `Region` | Ruleset Interface 中声明的判定域引用，必须能解析 |
+| `Array<T, N>` | 定长数组，静态上界 N，只能用常量或有界下标访问 |
+| `Contact` | 仅限寄存器，保存已认领的接触点句柄 |
+
+## 4. 原语
+
+### 4.1 触发器
+
+| 触发器 | 语义 |
+| --- | --- |
+| `input(kind, domainFilter)` | 边沿输入：press、release、contactBegin、contactMove、contactEnd、axisStep |
+| `timer(expr)` | 在绝对 Tick `expr` 触发。`expr` 只能读参数、寄存器和 Hook，并且必须 ≤ deadline |
+| `level` | 本实例发生状态变化后立即重新求值，用于电平条件。连续触发次数有静态上界 |
+
+每次输入派发有两种方式，由 Requirement 自己声明。不能按判定域声明：同一轨道或同一判定区里
+同时存在要抢输入的普通音符和不该抢输入的炸弹，按域划分无法区分二者。
+
+- `consume`：参与仲裁竞争。经排序后，一次输入最多交给一个 consume 实例。典型是按键或触摸
+  的按下。
+- `observe`：不参与竞争。事件同时交给所有监听者，不消耗输入。典型是炸弹、maimai 传感器的
+  开关，以及共用同一次触摸的多条 Slide。
+
+Ruleset 可以强制某个判定域整体为 `observe`，用于触摸区域这类输入，但不能把 `observe`
+改成 `consume`。程序不能声明自己为 consume 却绕过仲裁。
+
+### 4.2 守卫表达式
+
+守卫是纯表达式，没有循环，也没有调用。可用的内容：
+
+```text
+算术          + - * min max abs clamp（checked，溢出在验证阶段按区间分析拒绝）
+比较与逻辑    < <= == && || !
+事件载荷      evt.t, evt.channel, evt.region, evt.contact, evt.pos
+电平查询      held(channel), active(region), contactIn(contact, region)
+Controller    ctrl.<name>.<field>        当前 Tick 的解析采样值
+Hook          hook.<name>、win(<set>).<grade>.early/late
+有界量词      some k in 0..K : expr      K 为静态常量或有界参数；动作中用 firstk 取回最小满足下标
+```
+
+### 4.3 动作
+
+| 动作 | 语义 |
+| --- | --- |
+| `set r := expr` | 写入本实例的寄存器 |
+| `claim(evt.contact)` / `release(r)` | 认领接触点或释放认领。被认领接触点的后续事件只发给认领者 |
+| `emit Fact(...)` | 向 Ruleset 发出事实，Fact 类型见 4.4 |
+| `settle(outcome)` | 进入 Settled 状态，释放全部认领，之后不再接收事件 |
+
+每条边执行的动作数量有静态上限。一条边最多执行一次 `settle`。
+
+### 4.4 Fact 与等级
+
+```text
+Hit    { phase, grade, errorTicks }
+Miss   { phase }
+Break  { phase, t }
+Signal { kind, payload: Int[] }      kind 与 payload 的形状由 Ruleset Interface 声明
+```
+
+每条 Fact 都带 Program 声明的 `category`。引擎在语义上不区分"命中是好事"和"命中是坏事"，
+两者都是 Fact；一次被触发与未被触发的区别由程序所在的判定类型决定。
+
+`phase` 是程序内声明的阶段枚举，例如 head、body、tail。
+
+内置函数 `grade(err, windowSet) -> Enum<Grade> | none` 用 Ruleset 声明的窗口表，把带符号的
+误差映射到 Ruleset 的等级集合；窗口表可以带上 Hook 缩放。程序不能自己构造等级值，只能
+通过 `grade` 得到，或者使用 Ruleset 声明的常量。
+
+### 4.5 折叠表
+
+Ruleset 用一个声明式的折叠表定义 (category, outcome, grade) 对 Score / Combo / Life /
+Accuracy 的效果。这张表是数据，不是代码；技能通过修改这一层的挂点（例如"免疫 penalty 类别"）
+来表达，不需要写程序。
+
+普通音符与惩罚音符的差别落在表里，而不是落在引擎判断 Fact 是好是坏。所以同一套 Fact 类型，
+既能表达命中得分，也能表达炸弹被触发而扣分。Combo 分母、Accuracy 与 All Perfect 判定只统计
+`note` 类别，`penalty` 不进分母，也不破坏 All Perfect。
+
+### 4.6 可观察寄存器
+
+寄存器可以标记为 `observable`。只有被标记的寄存器、实例状态和 Fact 会进入
+GameplayState(T)，供表现层只读使用，例如 Slide 已经走过几段、Hold 是否已断开。
+没有标记的寄存器属于内部实现，修改它们不影响表现层合同。
+
+## 5. 空间状态
+
+判定需要读取的两类空间状态：Controller（由输入派生）与 frame（由谱面数据声明）。
+两者都是只读的，程序不能写。
+
+### 5.1 Controller
+
+Controller 是由输入派生的连续状态，在第 2.3 节规定的时刻采样。它是 Ruleset 声明的全局
+对象，不属于任何 Requirement 实例。
+
+Controller 由"形状 + 参数"构成。形状是引擎实现的闭式基元，参数是数据，由 Ruleset 作者填写。
+每个形状都必须能对上一个输入事件以来的时间段做整数闭式求解，不做逐帧积分。
+
+| 形状 | 状态 | 求值 |
+| --- | --- | --- |
+| `Steady1D` | x、方向 | 分段常量速度：`clamp(x0 + v*(t - t0), lo, hi)`，可算出越界时刻 |
+| `Ramp1D` | x、v | 定加速度斜坡，可带终速；分段二次式 |
+| `Clamp` | x | 边界吸附 |
+| `Damped` | x、v | 指数衰减，整数近似，`v *= f^n` 用定点幂的闭式近似 |
+| `Ballistic` | x、v | 定加速度自由落体 |
+| `PointerHold2D` | 接触点位置 | 取最近一次 move 事件的位置（零阶保持） |
+| `Toggle` / `Counter` | 离散量 | 由边沿事件驱动 |
+
+osu!catch 的盘子是 `Steady1D` 加 dash 倍率。若某个游戏还需要惯性，就是 `Damped`；
+需要加速度就是 `Ramp1D`。参数由 Ruleset 作者填写，不需要写代码。
+
+逃生通道：如果某个形状确实没有闭式解（例如依赖鼠标倾斜角的非线性变换），可以声明为
+`sampled` 模式。在这种模式下，Controller 只在输入事件到达时按 IR 步进一次，两次事件之间
+零阶保持。代价从"每 Tick 一次检查点"变成"每个输入事件一次"，而输入事件数本来就有预算，
+所以仍然有界。这一模式应当后置，先只开放形状表。
+
+Ruleset 也可以用 IR 自定义 Controller 的形状逻辑，但必须同时提供"闭式基元组合"的表达；
+引擎不执行任意代码，自定义结果仍然必须能对任意 Tick 求值，否则退化为 `sampled` 模式。
+Controller 可以接收 Ruleset 发出的命令，用于表达 hyperdash 这类"判定结果影响移动"的机制。
+命令同样遵守 t+1 规则。
+
+### 5.2 几何轨道（frame）
+
+Phigros 的判定线会移动和旋转，Arcaea 的 Arc 位置随时间变化，osu! 的 Slider 路径随时间推进。
+这些都不是静态判定区，但也不该变成表现层的实现细节。
+
+**设计要点是把形状和摆放分开。** 形状在 frame 的局部坐标里是静态的；摆放是一段随时间采样的
+`Transform`。命中检测因此变成"把输入点变换到局部坐标一次，再做静态判定"，每次查询代价 O(1)，
+不需要给每个判定区写动画逻辑。
+
+```text
+frame <name> {
+  track   Segment[]        分段闭式，任意 Tick 可求值
+  units   Point 与角度的整数量化单位
+}
+
+Transform = (origin: Point2, angle: QuantizedAngle, scale: Int)
+
+Segment:
+  Const  常量
+  Lerp   线性
+  Ease   固定曲线集合之一（线性、二次、三次、回退、弹性等）
+```
+
+评定使用二分查找定位分段，再对该段求值，复杂度 O(log N)，N 有静态上界。整条轨道是
+谱面或 Ruleset 的数据。
+
+**旋转必须量化。** 角度以 1/65536 圈的整数表示，正弦余弦取自引擎内置的定点表。那张表随
+引擎版本冻结，不使用平台数学库，否则跨平台结果会不一致。表的版本进入 capability 集合。
+
+**frame 是运行期不可变的数据。** 没有任何东西在演奏中写 frame。这一条同时解决了一个原有
+冲突：移动判定线到底属于判定还是表现。它是一个被两层同时读取的数据对象，不属于任何一层的
+运行期状态。判定读它做命中检测，表现读它做绘制，表现不能写。
+
+**区域声明获得一个可选的 frame 绑定：**
+
+```text
+region <name> {
+  frame   <frameName> | static
+  shape   Segment | Strip | Rect | Disc | Corridor
+}
+```
+
+`contactIn(contact, region)` 的语义固定为：按当前 Tick 把 `contact.pos` 变换到该 region 的
+局部坐标，然后做静态判定。静态 region 等价于绑定一个恒等 frame。
+
+形状集合至此收敛为五类，全部在局部坐标中是静态的：
+
+| 形状 | 用途 |
+| --- | --- |
+| `Segment` | 离散轨道或判定段，例如 Phigros 判定线上的一段 |
+| `Strip` | 单轴有界的无限长条 |
+| `Rect` / `Disc` | 有界二维区域 |
+| `Corridor` | 以路径为中心、半宽可变的走廊，路径与半宽本身也是轨道 |
+
+**近似。** frame 在采样 Tick 上被冻结。两次输入事件之间 frame 仍在移动，但我们只在事件
+发生的时刻做检测。这与 Slider 已经接受的近似是同一个，二者共享同一条规则：事件频率就是
+采样率。
+
+**不覆盖的情况。** frame 的位置由运行期状态驱动（例如某个 Boss 的移动改变判定线）不在本
+设计内。那会让 frame 变成运行期状态，破坏不可变规则。若将来确实需要，应当作为
+Controller 驱动的 frame 单独决策。
+
+**代价。** frame 求值进入每事件的代价预算，在 prepare 时静态计入。跨 frame 的区域重叠由
+第 7 节的仲裁处理，`claimKey` 可以包含位置误差项。
+
+## 6. 表现绑定（L4）
+
+L4 把谱面数据、时间、输入观察和判定事实映射为画面与声音。它只读，不能写回 L1、L2、L3。
+
+### 6.1 三类读入口
+
+只有状态查询不足以支撑表现。"命中闪光"是瞬时事件，不是状态；状态查询回答不了"刚刚发生过
+什么"。所以 L4 有三类读入口：
+
+```text
+状态查询   GameplayState(T)                当前值
+事件窗口   最近一段 Tick 内产生的 Fact      有界环形缓冲，长度由 L4 声明并计入预算
+连续量     frame(T)、输入观察流             几何与输入
+```
+
+事件窗口必须有界。Seek 之后它由重新折叠自然填回，不需要单独的正确性处理。
+
+### 6.2 三条驱动路径
+
+| 路径 | 读什么 | 典型用途 |
+| --- | --- | --- |
+| 时间与谱面 | Chart、Timing、frame | Note 下落、判定线绘制、轨道变形 |
+| 输入观察 | L1 的输入事件 | 按键音、按键高亮、按触摸位置倾斜轨道 |
+| 判定事实 | Fact 流与事件窗口 | 判定文字、命中特效、连击提示 |
+
+**按键音（key sound）必须分成两种，不能合并。**
+
+- 输入驱动的按键音：在按下瞬间播放，**不经过判定**。理由是延迟：若等判定结果再发声，
+  至少要经过一个 Tick 再经过折叠，手感会明显变差；而且按下但未命中时，多数游戏仍要发声。
+  这条路径是 `L1 -> L4 -> 音频`。
+- 判定驱动的音效：命中音、断开音、Miss 音效。由 Fact 流驱动。
+
+同一次按下可以同时触发两条路径，它们各说各话、互不干扰。按键音是输入反馈，不是判定声明。
+这一点需要写进合同，因为直觉上容易把按键音挂在"命中"上。
+
+### 6.3 绝对时间采样
+
+命中闪光不能按帧累加。它应当表示为"从 Tick `t` 开始、持续 200 ms 的衰减包络"，
+渲染时按 `T - t` 求值。这与模型层"支持绝对时间采样"的规则一致，也是 Seek 后画面正确的
+前提。音频播放本身有延迟，但判定不依赖它，所以不影响确定性。
+
+### 6.4 分层与覆盖策略
+
+表现的来源有四个，从低到高：
+
+```text
+engine    引擎内置兜底
+ruleset   Ruleset 包的 defaults 块，定义整个游戏的外观基调
+chart     谱面自带的绑定与资源
+skin      玩家或平台选择的皮肤（可选层，由 Ruleset 决定是否开放）
+```
+
+默认规则是**高优先层覆盖低优先层**，也就是谱面可以覆盖 Ruleset 默认。这符合谱师需要为
+具体谱面调手感的需求。
+
+### 6.5 覆盖必须按"绑定键"逐项进行
+
+"谱面覆盖 Ruleset 默认"如果理解成"整个表现配置二选一"，就会丢掉统一性：谱面只想改按键音，
+却顺带把判定线样式也换成了自己的。所以覆盖的粒度必须是**绑定键**，不是整层。
+
+```text
+绑定键 = (目标对象, 属性, 触发源)
+```
+
+生效规则：对每个绑定键，取优先级最高的那一层提供者。没有提供者的层不参与。因此谱面只提供
+自己关心的那几个键，其余全部落回 Ruleset 默认。
+
+这样一来，"谱面覆盖默认"和"同一游戏玩法表现统一"不再冲突：**统一性来自 Ruleset 默认覆盖
+的键集合足够完整，而谱面只被允许覆盖其中被标为可覆盖的键。**
+
+### 6.6 overridable
+
+Ruleset 在每个绑定键上声明 `overridable`，默认 `true`：
+
+```text
+overridable = true    谱面可以覆盖这个键
+overridable = false   谱面覆盖该键时在 prepare 阶段被拒绝，并给出稳定诊断
+locked = true         该键连 skin 也不能改，用于必须保持品牌或公平性的表现
+```
+
+这是把"我希望谱面能调手感"和"我希望游戏风格统一"同时表达出来的机制。美术风格、判定文字
+字体、命中特效主色这类键设成 `false`，谱师就只能在开放的那些键上调手感，无法破坏统一性。
+
+拒绝发生在 prepare，不静默忽略，也不降级：与 L2 程序、L3 模块冲突的处置方式一致。
+
+覆盖关系进入内容 identity：谱面里实际生效的绑定参与谱面语义 identity 的计算，但
+**Ruleset 提供的默认值不参与**，否则一次美术调整会让全部已有 Replay 失效。
+
+### 6.7 资源闭包
+
+按键音、特效材质等都属于资源。归属按提供者划分：由谱面声明的进谱面闭包，由 Ruleset 包的
+`defaults` 声明的进 Ruleset 包闭包。谱面覆盖某个键时，被覆盖的默认资源仍按源语义计入
+Ruleset 包闭包，不因未被使用而消失。
+
+## 7. 仲裁
+
+输入事件 `e` 到达时，按以下步骤分配：
+
+1. 如果 `e.contact` 已被某个实例认领，直接交给该实例，跳过仲裁。
+2. 候选集合：所有处于 Live 状态、且存在一条可触发边的实例。可触发指触发器匹配、守卫为真。
+   这一步只求值守卫，不产生副作用。候选集合按 `dispatch` 分成两组。
+3. 可消耗组（`consume`）：Ruleset 的 `ArbitrationPolicy` 先过滤、再排序。
+   - 过滤，例如 note lock：同一 channel 上只保留 arm 最早且尚未结算的实例。
+   - 排序：按 `(claimKey, Requirement identity)` 字典序。`claimKey` 由程序给出，
+     因为不同判定类型需要的键不同：Tap 看 `abs(evt.t - anchor)`，Slider 可能看位置距离。
+4. 可消耗组的第一名执行它的边，其余 consume 实例与本次事件无关。
+5. 观察组（`observe`）的全部实例都执行它们匹配的边，不消耗输入。炸弹不会被消耗掉，
+   也不会把输入从普通音符手里抢走。
+6. 可消耗组为空时，Ruleset 收到 `StrayInput(e)`。空按是否惩罚由 Ruleset 折叠规则决定，
+   不由程序判断。
+
+`ArbitrationPolicy` 是 Ruleset Build 的一部分，它的 identity 进入 Replay。它只做过滤和排序，
+不读其他实例的内部寄存器，因此程序之间保持零耦合。
+
+`fanout` 只在锚点完全相同这类需要"一次输入同时结算多个音符"的场合使用（多押）。
+它是 Ruleset 策略，和上文的 consume 竞争不冲突：fanout 决定在可消耗组里取前几名。
+
+规则：程序不能读另一个实例的寄存器。唯一例外是 Ruleset 的过滤步骤可以读候选的 `arm`
+与守卫结果。这条限制使每个实例可以独立验证，也让仲裁的代价保持在可计算范围内。
+
+`fanout` 只在锚点完全相同这类需要"一次输入同时结算多个音符"的场合使用（多押）。
+它是 Ruleset 策略，和上文的 consume 竞争不冲突：fanout 决定在可消耗组里取前几名。
+
+`ArbitrationPolicy` 是 Ruleset Build 的一部分，它的 identity 进入 Replay。
+
+## 8. 案例压测
+
+下面用 `W` 表示 Ruleset 声明的窗口集合，`W.max` 表示它在技能缩放后的静态上界。
+
+### 8.1 Tap
+
+```text
+program tap
+  params    anchor: Tick, lane: Channel
+  arm       anchor - W.max.early
+  deadline  anchor + W.max.late
+  claimKey  abs(evt.t - anchor)
+
+  state Wait
+    on input(press, lane)
+      guard grade(evt.t - anchor, W) != none
+      do    emit Hit(head, grade(evt.t - anchor, W), evt.t - anchor)
+            settle(hit)
+
+  onDeadline  emit Miss(head); settle(miss)
+```
+
+结论：只用到一个状态、一个输入触发器和截止时刻处理。
+
+### 8.2 中途可断开的 Hold
+
+头部判定和 Tap 相同。中段允许短暂松开：在宽限时间 `hook.holdGrace` 内重新按下即可继续。
+超过宽限时间，Hold 断开。尾部采用"按住到结束即成功"的街机式规则。其他尾部规则（按释放时刻
+判定）可以作为同一程序的一个参数分支，或者写成另一个程序。
+
+```text
+program hold
+  params     start: Tick, end: Tick, lane: Channel
+  registers  c: Contact, releasedAt: Tick
+             observable headGrade: Enum<Grade>, broken: Bool := false
+  arm        start - W.max.early
+  deadline   end + holdGrace.max
+  claimKey   abs(evt.t - start)
+
+  state Head
+    on input(press, lane)
+      guard grade(evt.t - start, W) != none
+      do    claim(evt.contact); set c := evt.contact
+            set headGrade := grade(evt.t - start, W)
+            emit Hit(head, headGrade, evt.t - start)
+      goto  Body
+    on timer(start + W.late)
+      do    emit Miss(head); settle(miss)
+
+  state Body
+    on timer(end)
+      do    emit Hit(tail, Grade.best, 0); settle(hit)
+    on input(contactEnd, c)
+      do    release(c); set releasedAt := evt.t
+      goto  Gap
+
+  state Gap
+    on input(press, lane)
+      guard evt.t < releasedAt + hook.holdGrace
+      do    claim(evt.contact); set c := evt.contact
+      goto  Body
+    on timer(releasedAt + hook.holdGrace)
+      do    set broken := true
+            emit Break(body, releasedAt); settle(broken)
+    on timer(end)
+      do    emit Hit(tail, Grade.best, 0); settle(hit)
+
+  onDeadline  emit Miss(tail); settle(miss)
+```
+
+Hold 变灰由表现层绑定实现，程序不参与：
+
+```text
+material.tint = outcome(req) in {miss, broken} at T ? gray : normal
+```
+
+`outcome(req)` 是对 GameplayState(T) 的绝对时间查询，所以 Seek 到断开前后都能得到正确画面。
+
+发现的问题：
+
+1. `timer` 表达式需要读取寄存器（`releasedAt`）和 Hook（`holdGrace`），因此必须要求
+   `holdGrace` 在 Ruleset 中声明静态上界，否则算不出 deadline。
+2. 需要按 contact 过滤的输入（`contactEnd, c`）。只按 lane 过滤不够：同一 lane 上可能有
+   另一根手指。
+3. Gap 期间同一 lane 上可能落下一个新 Tap。这次按下交给 Hold 还是交给 Tap，由第 7 节的
+   仲裁排序决定。Ruleset 需要为"接回 Hold"和"新音符"规定优先级，这是一个真实的策略参数。
+
+### 8.3 带跳区的 maimai 星星
+
+路径拟合是数据变换，不属于运行时。谱面给出路径形状，比如"1-5 直线"或某个曲线编号，
+Ruleset 的形状表在 prepare 时把形状展开为判定区序列 `zones`。程序只负责按顺序匹配这些判定区。
+
+传感器输入属于观察型输入：同一时刻多条 Slide 可以共用同一次触摸，不需要认领。
+
+```text
+program slide
+  params     zones: Array<Region, 32>, n: Int[1..32], skip: Int[0..3],
+             start: Tick, end: Tick
+  registers  observable i: Int[0..32] := 0      // 已完成的判定区数量
+  arm        start
+  deadline   end + Wslide.max.late
+
+  state Track
+    level
+      guard  some k in 0..skip : i + k < n && active(zones[i + k])
+      do     set i := i + firstk + 1
+             if i == n: emit Hit(tail, grade(evt.t - end, Wslide), evt.t - end)
+                        settle(hit)
+      progress i
+
+  onDeadline  emit Miss(tail); settle(miss)
+```
+
+语义：当前判定区到后面 `skip` 个判定区中，任何一个被触摸，进度就推进到该判定区之后，
+中间被跳过的判定区不再要求。"跳区"只是参数 `skip`。
+
+发现的问题：
+
+1. 需要"找到第一个满足条件的下标"，由 4.2 的 `some k in 0..K` 与 `firstk` 提供。
+2. 需要按电平检查判定区当前是否被触摸，而不只是检查"进入判定区"这个边沿：手指可能在
+   上一步推进时已经停在下一个判定区里。这就是 `level` 触发器存在的原因。
+3. 为了防止 `level` 在同一 Tick 内无限触发，每条 `level` 边都必须声明 `progress` 度量：
+   一个有界寄存器，每次触发都严格增加。验证器检查这个性质，得到每个 Tick 最多触发 n 次。
+4. 在 `level` 边中 `evt.t` 表示当前 Tick。
+5. `if` 只能出现在动作列表中，而且只能分支到"发出 Fact 和 settle"。它是语法糖，
+   等价于拆成两条守卫互斥的边。
+
+### 8.4 osu!catch 水果
+
+Ruleset 声明 Controller：
+
+```text
+controller catcher: Steady1D
+  inputs  left/right 边沿决定方向，dash 电平决定速度倍率
+  params  speed、dashFactor、bounds 由 Ruleset Build 给定
+  units   x 为 1/1024 个 playfield 单位（整数）
+```
+
+```text
+program fruit
+  params    x: Int, anchor: Tick
+  arm       anchor
+  deadline  anchor
+
+  state Wait
+    on timer(anchor)
+      guard abs(ctrl.catcher.x - x) <= hook.catchHalfWidth
+      do    emit Hit(head, Grade.catch, 0); settle(hit)
+    on timer(anchor)
+      do    emit Miss(head); settle(miss)
+```
+
+同一个触发器上有多条边时，按声明顺序选取第一条守卫为真的边。
+
+Hyperdash 的写法：带 hyperdash 标记的水果被接住时，程序发出
+`Signal(hyperdash, [targetX, targetTick])`，Ruleset 据此向 catcher 下发命令，按 t+1 规则生效。
+
+发现的问题：
+
+1. 判定域不是固定判定区，而是 Controller 的采样值。Controller 必须能在任意 Tick 做闭式求解，
+   并且只使用整数运算，否则跨平台结果会不一致。
+2. 在 `anchor` 同一 Tick 到达的输入不影响这次采样，这是第 2.3 节"只由严格早于 t 的输入决定"
+   的直接结果。这一点需要写进作者文档。
+3. Droplet、Banana 可以用同一个程序加不同的等级常量表示，或者只发 Signal 不计入 Combo。
+   是否计入 Combo 由 Ruleset 的折叠规则决定。
+
+### 8.5 判定区重叠（Phigros 竖直线）
+
+Phigros 的判定区是垂直于判定线的无限长条，不同时间落下的音符区域会互相重叠。判定要求是：
+只把输入交给完美判定时刻最接近的那个音符。
+
+这个需求由第 7 节的 `claimKey` 直接满足，不需要新原语。
+
+```text
+program tap              // 与 7.1 相同
+  claimKey  abs(evt.t - anchor)
+  dispatch  consume
+```
+
+要正确工作，需要下面几条一起成立：
+
+1. 候选过滤先执行。窗口不含 `evt.t` 的音符在排序前就被守卫剔除，否则"最近的锚点"可能
+   落在一个窗口外的音符上。
+2. 锚点完全相同时，取最小值会丢掉一个音符。这时改用 `fanout = all`，让同一次输入同时
+   结算所有同名锚点，用来支持多押。
+3. `claimKey` 相同时按 Requirement identity 破平局，保证确定性。
+4. 重叠判定区在准备阶段就要算进活动度预算：同一时刻可能有多个实例处于 Live。
+
+发现的问题：
+
+1. 无限长条本身只是区域形状的一种，属于 Ruleset Interface 的区域声明，不需要新原语。
+   但它可以有开放式边界，例如 `x` 方向无限延伸、`y` 方向有范围。区域类型需要支持"只在一维上有界"。
+2. 如果判定线本身会移动，静态区域就不够用了。这时区域也要按时间采样，也就是需要一个
+   几何轨道（geometry track）概念。该机制由 §5.2 提供：区域绑定一个 frame，形状在 frame
+   局部坐标中保持静态。
+3. 排序键只解决"一次输入给谁"，不解决"一个音符被多次输入命中"。重复输入的规则由程序决定，
+   例如结算后就 `settle`，之后不再接收事件。
+
+### 8.6 宽度随时间变化的 Slider（类 Malody 无轨）
+
+Slider 是一条带时间参数的路径，加上一个随时间变化的宽度：
+
+```text
+区间 [t0, t1]，段数 m
+path(T)   在锚点列表上按时间分段线性插值得到的坐标
+width(T)  同样分段线性，允许每段不同
+```
+
+```text
+program slider
+  params     t0: Tick, t1: Tick, m: Int[1..16],
+             anchors: Array<Point, 16>, widths: Array<Int, 16>
+  registers  c: Contact, seg: Int[0..15]
+             observable following: Bool := false
+  arm        t0 - W.max.early
+  deadline   t1 + W.max.late
+  claimKey   abs(evt.t - t0)
+  dispatch   consume
+
+  state Head
+    on input(press, inRegion(sliderArea))
+      guard grade(evt.t - t0, W) != none
+      do    claim(evt.contact); set c := evt.contact; set seg := 0
+            emit Hit(head, grade(evt.t - t0, W), evt.t - t0)
+      goto  Follow
+    on timer(t0 + W.late)
+      do    emit Miss(head); settle(miss)
+
+  state Follow
+    level
+      guard seg < m - 1 && evt.t >= segEnd(seg)
+      do    set seg := seg + 1
+      progress seg
+    level
+      guard evt.t >= t1
+      do    emit Hit(tail, grade(evt.t - t1, W), evt.t - t1); settle(hit)
+      progress seg
+    on input(contactMove, c)
+      guard inside(c.pos, path(seg, evt.t), width(seg, evt.t))
+      do    set following := true
+    on input(contactMove, c)
+      do    set following := false
+    on input(contactEnd, c)
+      do    set following := false
+            emit Break(body, evt.t); settle(broken)
+
+  onDeadline  emit Miss(tail); settle(miss)
+```
+
+`path(seg, T)` 与 `width(seg, T)` 是段内的仿射函数，只用整数运算。整段的宽度变化只是
+`width` 从常量变成变量，IR 层面没有区别。Hold 是这个程序在 `m = 1`、宽度恒定时的特例。
+
+发现的问题：
+
+1. 位置谓词只在实际到达的输入事件上求值。两次 move 之间接触点短暂离开又回来检测不到。
+   这是有意的近似：事件频率就是采样率。需要写进作者文档。如果某个 Ruleset 要求严格
+   不出界，需要可选的按固定速率采样模式，并声明相应代价，这属于后续能力。
+2. `inside` 需要能用"点 + 中心线 + 半宽"表达，因此区域形状要支持"以路径为中心、半宽可变的
+   走廊"，而不只是静态多边形。
+### 8.7 惩罚音符（炸弹）
+
+炸弹是"被触发即惩罚、不被触发即无事"的要求。它不抢输入，也不进 Combo 分母。
+
+```text
+program bomb
+  params     anchor: Tick, lane: Channel
+  arm        anchor - Wb.max.early
+  deadline   anchor + Wb.max.late
+  dispatch   observe
+  category   penalty
+
+  state Wait
+    on input(press, lane)
+      guard held(lane) && evt.t >= anchor - Wb.bad && evt.t <= anchor + Wb.bad
+      do    emit Hit(head, Grade.detonated, evt.t - anchor)
+            settle(detonated)
+
+  onDeadline  settle(avoided)
+```
+
+要点：
+
+1. `dispatch = observe` 决定炸弹不参与仲裁：它不会把输入从同轨道的普通音符手里抢走，
+   但仍然能收到事件并判定。这就是 4.1 从"按判定域声明"改为"按 Requirement 声明"的原因：
+   炸弹和普通音符通常同域。
+2. `category = penalty` 让折叠表知道它既不计入 Combo 分母，也不破坏 All Perfect。
+3. `settle(avoided)` 必须是一个合法的结算结果。这说明结算结果枚举由 Ruleset 声明，
+   引擎不规定哪个结果算好。
+4. `Grade.detonated` 是 Ruleset 声明的常量等级，不是由 `grade()` 从窗口算出来的。
+
+发现的问题：
+
+1. 如果炸弹和普通音符锚点相同，observe 的炸弹和 consume 的音符会同时收到事件，
+   这是正确的行为，两边都按自己的规则结算。
+2. "免疫炸弹"这类技能不需要写程序：它改的是折叠表对 `penalty` 类别的处理，或者改
+   `Wb` 的挂点。安全性来自"技能是数据"这条设计。
+3. 反向的惩罚音符（碰到就加分）也是同一形状，只是 category 不同，程序不需要改。
+
+## 9. 静态验证
+
+prepare 时逐个程序、逐个实例检查以下各项，任一项失败都拒绝整张谱面。
+
+| 检查 | 方法 |
+| --- | --- |
+| 类型和引用 | Channel、Region、Grade、Hook、Controller、frame 必须在 Ruleset Interface 或谱面中已声明 |
+| 取值范围 | 对所有算术和寄存器写入做区间分析，可能越界或溢出即拒绝 |
+| 必然结算 | 必须有 `onDeadline`，而且它会 settle；所有 timer 表达式的上界 ≤ deadline |
+| 同 Tick 终止 | 输入和 timer 边每次事件最多触发一次；`level` 边必须声明 progress 度量并严格增加 |
+| 结算唯一 | 每条路径上 `settle` 最多执行一次；settle 之后不可达的边给出警告 |
+| 规模 | 状态数、边数、寄存器数、表达式节点数、数组长度、轨道分段数都有上限 |
+| 活动度 | 用 arm 和 deadline 做扫描线，算出最大同时存活的实例数，要求 ≤ 预算 |
+| 单事件代价 | 活动度 × 候选边数 × （表达式代价 + frame 求值代价），要求 ≤ 预算 |
+| 轨道单调性 | 轨道分段必须按 Tick 严格升序且不重叠、无空洞，覆盖 `[start, end)` |
+| frame 不可变 | 没有任何程序能写 frame；这是结构上的保证，不需要额外检查 |
+
+单事件代价现在包含 frame 求值。每个涉及几何的守卫求解时是一次二分加常数次定点运算，
+复杂度 O(log N)，N 是分段数且有静态上界，所以这一项仍可静态预算。
+
+## 10. 结论与待决问题
+
+七个案例全部能够表达。为此在第一版原语上补充了以下内容：
+
+```text
+contact 过滤的输入              来自 Hold
+timer 读寄存器/Hook + 静态上界   来自 Hold
+some k / firstk 有界搜索        来自 Slide
+level 触发 + progress 度量      来自 Slide
+观察型输入                      来自 Slide
+解析求值的 Controller           来自 Catch
+同触发器多边的声明顺序           来自 Catch
+dispatch 下放到 Requirement     来自 炸弹（不能按判定域声明）
+Ruleset 声明的 category         来自 炸弹
+Ruleset 声明的结算结果枚举       来自 炸弹
+```
+
+第八个案例（移动判定线）由 §5.2 的 frame 机制覆盖，它不改变程序 IR，只增加一类可读的
+空间状态和区域上的 frame 绑定。
+
+待决：
+
+1. Hook 是否允许在演奏中动态改变判定窗口？本草案的答案是允许，但必须声明静态上界。
+   代价是技能的缩放幅度需要在 Ruleset 中预先声明范围。
+2. Controller 的自定义程度。本草案采用"形状表 + 参数 + 可选的按事件步进逃生通道"，
+   形状由引擎实现。是否允许 Ruleset 用 IR 直接写 Controller 逻辑，以及如何处理
+   无法闭式求解的情况，仍是待决项。
+3. 斜坡、缓动与缓动曲线的最终集合。目前只列了线性、二次、三次、回退、弹性五类，
+   实际需要多少条由案例决定；曲线表随引擎冻结，属于 capability。
+4. Ruleset 自身的逻辑见
+   [Ruleset Fold Language 草案](GAMEPLAY_RULESET_FOLD_DRAFT.md)。
+5. 作者语法：面向谱师的写法，可以是 JSON 形式的 IR、类似上文的文本 DSL，或者 Studio 的
+   可视化编辑，IR 只是它们共同的编译目标。
+6. 由运行期状态驱动的 frame（例如移动的 Boss 改变判定线）不在本设计内。若将来需要，
+   应作为 Controller 驱动的 frame 单独决策。
+7. 还需要继续压测的案例：Arcaea 的 Arc 与 Sky Note、Taiko 的连打、DJMAX 的长按连打、
+   多指 Slide。
+8. 是否需要可选的按固定速率采样模式，以支持"严格不允许出界"的 Slider 或 frame。
