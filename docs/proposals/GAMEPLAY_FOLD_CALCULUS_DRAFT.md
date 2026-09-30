@@ -64,7 +64,7 @@ Effect    写状态 | 绑定资源 | 发出 Fact | 终结
 ```text
 仲裁       多条 requirement 争同一个输入          见 §5.1
 归属       资源（接触点）的分配与可见性            见 §5.2
-匹配策略   一个 Pattern 的多种合法匹配             见 §3.1
+匹配策略   一个 Pattern 的多种合法匹配             见 §3.4
 ```
 
 **正交化的边界应当在"单实体"与"跨实体"之间，而不是在"简单"与"复杂"之间。** 核心只描述
@@ -83,25 +83,60 @@ Measure   对被匹配区间的有界折叠，可以是多个分量的积
 Grading   按分量把 Measure 映射到 Ruleset 的等级集合
 ```
 
-**Pattern 是一个有界时间正则表达式**，原子是轨迹谓词：
+**Pattern 是一个有界时间正则表达式**，原子是轨迹谓词。算子集合经归约后是：
 
 ```text
-atom        p                  轨迹谓词在一点成立
-interval    p over [a, b]      谓词在区间内成立，可带容差约束
-sequence    P · Q              先后
-alternation P | Q              任一
-repeat      P{lo, hi}          有界重复
-skip        P .. Q  within k   允许跳过多达 k 步
-bind        sameContact(P)     全程同一接触点身份
-instant     at(t) : expr       某时刻的瞬时谓词（位置、控制量）
-negation    ¬P                 补
+atom(p, extent)       轨迹谓词在给定时间范围成立，extent ∈ {point, interval}
+sequence   P · Q      先后
+alternation P | Q     任一
+repeat     P{lo, hi}  有界重复；hi 可为 ∞，由窗口给出上界
+negation   ¬P         补
 ```
 
-**核心不含积。** 第一版把积列为最大风险，验证发现它对全部 34 个案例都是多余的：多指判定就是
-n 条独立 requirement，"全部命中"由 fold 层聚合。补保留，它的规模可控——补在区间谓词上就是
-"区间内原子恒假"。
+四个时序算子，加两项声明：
 
-### 3.0 原子的两个属性：边沿与电平
+```text
+bind       P as v     绑定变量（接触点、区域、通道），供守卫比较
+strategy   leftmost-first | leftmost-longest        见 §3.4
+```
+
+**这个签名就是带补的 Kleene 代数**（`+` 择一、`·` 序列、`*` 重复、补），也是正则语言的标准
+最小签名。空串用 `P{0,0}` 表达，通配用 `p | ¬p` 表达，两者都是派生。
+
+**这不是"试了几个算子"，而是可达最小性**：给定正则表达力与补，这四个算子无法再删，删任何一个
+都会掉出这个表达力类。归约过程见
+[封闭性验证](GAMEPLAY_CALCULUS_CLOSURE_CHECK.md) §7。
+
+### 3.1 算子的最小签名（第三版新增）
+
+初稿的九项里有五项不是独立算子：
+
+```text
+interval    并入 atom —— extent = interval
+instant     并入 atom —— extent = point，配电平谓词
+skip        降级为语法糖 —— 等价于 · repeat 与通配的组合
+sameContact 重新定义 —— 它不是时序算子，是变量绑定
+```
+
+前三项是同一件事的不同写法。`skip` 的具体展开：
+
+```text
+P .. Q within k   ≡   P · (any){0, k} · Q，其中 any ≡ p | ¬p
+```
+
+**`sameContact` 的重新定义值得单独说明。** 它约束的是"这次匹配绑定的是哪个接触点"，而不是
+"什么时候发生了什么"——属于绑定，不属于时序。原来写成包裹算子，只覆盖了"全部原子同一接触点"
+一种情形。改成显式绑定之后：
+
+```text
+inCorridor as c                  绑定走廊匹配到的接触点
+interval (inCorridor as c) over [t0,t1]
+  同一性由 c 的重复使用表达，不需要特殊算子
+```
+
+这比原写法更宽也更简单：区域与通道同样可以绑定与比较，而不只是接触点。
+
+### 3.2 原子的两个属性：边沿与电平
 
 每个原子必须声明它是边沿还是电平。这不是细节，它决定了谁会强制周期采样。
 
@@ -111,7 +146,7 @@ level 只在求值时刻成立      held(channel)、active(region)、contactIn(.
 ```
 
 含电平原子的模式必须在电平变化可能被观察到的时刻被求值，因此**周期采样是编译产物，不是
-作者声明**。作者只写 `interval held(lane) over [t0,t1]`；编译器判定它含电平原子，于是为它
+作者声明**。作者只写 `atom(held(lane), interval[t0,t1])`；编译器判定它含电平原子，于是为它
 生成 `every(period)`。
 
 **"是否需要采样"与"采样周期取值"是两个问题，来源不同**（第二版修订，见 §11）：
@@ -127,7 +162,7 @@ level 只在求值时刻成立      held(channel)、active(region)、contactIn(.
 现在按上表划分：构造性消除针对的是"决定是否采样"这件事，而周期的**取值**保留游戏作者与
 谱面作者的自由。相位由锚点与时间界唯一确定，与前序输入无关。
 
-### 3.0b Pattern 必须落在声明的窗口内（第二版新增）
+### 3.3 Pattern 必须落在声明的窗口内
 
 requirement 的 `arm` 与 `deadline` 由参数给出，Pattern 必须只在该窗口内匹配。这是验证规则：
 
@@ -138,7 +173,7 @@ requirement 的 `arm` 与 `deadline` 由参数给出，Pattern 必须只在该�
 缺少这条检查时，一个自相矛盾的 Pattern（要求窗口外的匹配）会让实现者得到两种不同行为：
 "永远不满足"或"在窗口外满足"。两者都不可接受。
 
-### 3.1 匹配策略（第二版新增）
+### 3.4 匹配策略
 
 `skip`、`repeat`、`alternation` 会让同一条输入轨迹产生**多个合法匹配**，而 Measure 取决于
 选中的那一个。
@@ -163,7 +198,7 @@ leftmost-longest  取最长匹配。需要回看，实现代价高
 第一版丢掉了这条规则，而它属于原设计确已明确写过的那类语义（"推进到第一个满足的下标"）。
 这与 D1–D10 是同一类错误：一条没写的语义规则导致结果不唯一，且只在特定输入序列下暴露。
 
-### 3.2 容差算子的两种型
+### 3.5 容差算子的两种型
 
 ```text
 gap   允许 A 为假的累计时长为 d
@@ -173,24 +208,26 @@ hole  允许 A 连续为假的单段时长不超过 d
 Hold 要的是 `hole`（松手一次不能超过 grace，但可以松很多次）；整体覆盖率型判定要的是
 `gap`。两者不能共用一个算子名，因为它们是不同语义。
 
-### 3.3 全部标准类型是组合，不是新增概念
+### 3.6 全部标准类型是组合，不是新增概念
 
 ```text
-Tap        atom press(lane) · scalar(t - anchor)
-Hold       touch · interval held(lane) over [t0,t1] with hole(¬held, grace) · release
+Tap        atom(press(lane), point) · scalar(t − anchor)
+Hold       atom(held(lane), interval[t0,t1]) with hole(¬held, grace) · release
            Measure: (head = scalar(t_press − t0), coverage = duration(held)/(t1 − t0))
-Slide      touch(z0) · (.. within k)* · touch(z_last) · last(t)
-Bomb       ¬atom press(lane) over [open, close) · none
-Catch      instant at(t) : |ctrl.x − x| ≤ w · boolean
-Roll       repeat press{0,∞} over [t0,t1] · count
-Spinner    interval motion(region) · sum(|cross|)        （采样敏感，见 §7.3）
-Flick      atom press · atom release · scalar(cross(dir, Δ)) · direction
-Arc        interval sameContact(inCorridor) over [t0,t1] · duration
-多指 Slide n 条独立 requirement + fold 聚合            （无需积，见 §3）
+Slide      atom(touch(z0), point) · any{0,k} · atom(touch(z_last), point) · last(t)
+Bomb       ¬atom(press(lane), interval[open, close)) · none
+Catch      atom(|ctrl.x − x| ≤ w, point) · boolean
+Roll       repeat atom(press, point){0,∞} ⊆ [t0,t1] · count
+Spinner    atom(motion(region), interval) · sum(|cross|)     （采样敏感，见 §7.3）
+Flick      atom(press, point) · atom(release, point) · scalar(cross(dir, Δ)) · direction
+Arc        atom(inCorridor as c, interval[t0,t1]) · duration
+多指 Slide n 条独立 requirement + fold 聚合                  （无需积，见 §3）
 ```
 
-**Hold** 在原设计里需要一个 `Gap` 状态加两个定时器；在这里是区间谓词的一个容差参数加一个
-双分量 Measure。这是归约强度的直接体现。
+其中 `any ≡ p | ¬p` 是通配，用于 `Slide` 的跳区。
+
+**Hold** 在原设计里需要一个 `Gap` 状态加两个定时器；在这里是一个容差算子加一个双分量
+Measure。这是归约强度的直接体现。
 
 **多阶段计量**（V2 的修补）体现在 Hold 的两个 Measure 分量上：头按时间窗口评级，体按覆盖率
 评级，各自带 `phase` 与 `category`，各自发一条 Fact。这恢复了原设计 `Hit{phase, grade,
@@ -237,13 +274,17 @@ fanout      equal_anchor: all
 
 ### 5.2 归属与可见性（V4 的修补）
 
-`sameContact`（Pattern 层）与"绑定资源"（Effect 层）是两层，必须分开说明：
+变量绑定（Pattern 层）与"绑定资源"（Effect 层）是两层，必须分开说明：
 
 ```text
-sameContact   匹配约束：这一条匹配必须由同一个接触点完成
+bind 变量     匹配约束：这一条匹配必须由同一个接触点（或区域、通道）完成
 绑定资源      资源分配：认领后独占消费权
 归属裁决      全局分配：落在 §5.1 的仲裁，不在 Pattern 内
 ```
+
+旧草案的 `sameContact` 是绑定的一种特例。它在第二版被重新定义为通用变量绑定（§3.1），
+两者通过 `bind` 统一：Pattern 里的 `x as c` 约束匹配，Effect 里的 `claim` 分配归属，
+Guard 里的使用决定是否接受。
 
 可见性规则沿用并保留：**观察型边始终可见**。已被认领的接触点对 `observe` 边仍然可读，
 所以 `sticky` 类型的判定（换手即断开）才能**看到但拿不到**，从而判出断开。
@@ -454,8 +495,12 @@ frame）全部保留，但位置改变：从"原语"变成"原子与算子的定
    Hook 它是可表达的（§5.6）。§5.5 的排除清单现在只保留 W1。
 
    §6.5 的六类清单中，第 4 类排除、第 5 类可表达，其余四类已声明。
-3. Pattern 的完整算子集合需要冻结。§3 的九项是推导结果，需要按 §6.5 的清单逐类核对，
-   而不是逐案重写。
+3. **Pattern 的算子集合已经归约到最小签名**（§3）：四个时序算子（序列、择一、有界重复、补）
+   加两个声明（绑定、匹配策略）。归约过程见
+   [封闭性验证](GAMEPLAY_CALCULUS_CLOSURE_CHECK.md) §7。
+
+   仍待冻结的是**签名的编码**，不是签名本身：`atom` 的 `extent` 取值、`repeat` 的无穷上界与
+   窗口的关系、`bind` 对哪些原子类型适用。
 4. 补的规模上界与 capability 划分。
 5. Measure 的算子集合与 Pattern 是否共享表达式核（应当共享，与 L3 的表达式核是同一个）。
 6. 标准库是否随引擎发行、随 Ruleset 包发行，还是两者都可以提供。
@@ -463,7 +508,7 @@ frame）全部保留，但位置改变：从"原语"变成"原子与算子的定
    倾向后者：L3 的输入是 Fact 流，不是有界的输入轨迹，Pattern 的时间界概念不适用。
    但 §5.6 的 Hook 通道依赖 L3 能写 Hook，这条通道需要与 L3 草案核对。
 8. 谓词读取集合纳入 `hook` 之后，需要在 Ruleset Interface 里明确哪些 Hook 对谱面可见。
-9. W2 的划分已并入 §3.0；W3 已并入 §3.0b；W4 已并入 §5.4。
+9. W2 的划分已并入 §3.2；W3 已并入 §3.3；W4 已并入 §5.4。
 
 ## 11. 第二版修订记录
 
@@ -480,4 +525,16 @@ frame）全部保留，但位置改变：从"原语"变成"原子与算子的定
 增加  §5.6 谓词读取集合，并把 hook 纳入
 修正  §9 对净收益的表述，承认第一版高估了收益
 修正  L4 的处置从"不可表达"改为"经由 Hook 可表达"（逐类核对的产出）
+```
+
+## 12. 第三版修订记录
+
+```text
+归约  算子集合从九项降到四个时序算子加两个声明
+删除  interval  并入 atom 的 extent 参数
+删除  instant   并入 atom 的 extent 参数
+删除  skip      降级为语法糖，等价于 · repeat 与通配的组合
+重定义 sameContact -> 通用变量绑定（它不是时序算子，是绑定）
+保留  sequence / alternation / repeat / negation，构成带补的 Kleene 代数
+说明  可达最小性：给定正则表达力与补，这四个算子无法再删
 ```
