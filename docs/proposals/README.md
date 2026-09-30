@@ -33,6 +33,9 @@
   个（Fold / Pattern / Measure）的替换性重设计，消除 10 条缺陷中的 6 条，未接受、未实施。
 - [Fold Calculus 封闭性验证](GAMEPLAY_CALCULUS_CLOSURE_CHECK.md)：34 项案例只许用算子组合的
   重写结果，确认无新核心概念，但发现 7 处声明缺失（V1–V7），未接受、未实施。
+- [Gameplay 预算与规模上界草案](GAMEPLAY_BUDGET_AND_SCALE_DRAFT.md)：容量 / 稳态 / Seek 三类
+  成本、活动度与每事件代价、补的规模裁决、快照间隔可行区间与 identity 分区清单，
+  未接受、未实施。
 
 ## 延期设计输入
 

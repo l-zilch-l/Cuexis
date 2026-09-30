@@ -244,6 +244,18 @@ L2 的静态验证只针对 L3 声明的 Interface（含每个 Hook 的静态取
     判定线）由此可表达，需要 Interface 声明所需硬件与最低输入上报率，L1 提供归一化朝向角
     而非原始角速度。仍不覆盖 3D 空间玩法与连续音高输入。
 
+第四轮（预算与规模）：
+
+35. 容量、稳态、Seek 三类成本不合并，各自独立预算与诊断。沿用 `PackedChartLimits`
+    的逐项独立做法。
+36. 活动度（瞬时存活的 requirement 数）是容量与稳态之间的桥梁，也是每事件代价的乘数。
+    40,000 是整曲计数，活动度是瞬时计数，两者相差约两个数量级——这是设计成立的关键前提。
+    技能带来的窗口放宽**先影响活动度，再影响判定**，因此 `windowScale` 上限要过活动度预算。
+37. 补的规模进预算，不进 capability。确定化是机械算法，没有引擎不支持的情况，它是复杂度
+    问题而非能力问题；做成 capability 会让同一引擎对不同谱面宣称支持不同的语言特性。
+38. 快照必须无损（`snapshot(T)` 与连续推进逐位相同），间隔是引擎自由参数、不进 identity。
+    周期采样相位必须进快照，否则 Seek 会复现缺陷 D1。
+
 ### 3.2 草案状态
 
 [Bounded Fold Calculus 提案](GAMEPLAY_FOLD_CALCULUS_DRAFT.md) 是**替换性重设计**，不是增量
@@ -256,6 +268,8 @@ L2 的静态验证只针对 L3 声明的 Interface（含每个 Hook 的静态取
 开头的「取代关系」一节。
 
 [Ruleset Fold Language 草案](GAMEPLAY_RULESET_FOLD_DRAFT.md) 已完成第一版。
+[Gameplay 预算与规模上界草案](GAMEPLAY_BUDGET_AND_SCALE_DRAFT.md) 已完成第一版，
+代价条目不再分散在四处。
 [Gameplay Identity 分层草案](GAMEPLAY_IDENTITY_DRAFT.md)、
 [Skill Hooks 与模块扩展性草案](GAMEPLAY_SKILL_HOOKS_DRAFT.md) 与
 [Gameplay 设计压测与缺陷登记](GAMEPLAY_STRESS_TEST_DRAFT.md) 仍是各自主题的载体；
@@ -273,6 +287,7 @@ L2 的静态验证只针对 L3 声明的 Interface（含每个 Hook 的静态取
 5  Gameplay Identity 分层草案      身份与分区
 6  Skill Hooks 与模块扩展性草案    技能扩展与核心外声明
 7  Ruleset Fold Language 草案      L3 规则集语言与打包
+8  预算与规模上界草案              容量 / 稳态 / Seek 的公式与待实测的候选值
 ```
 
 第 3 份的 §2、§3、§4 只作为设计过程记录阅读，见该文的「取代关系」。
@@ -319,6 +334,12 @@ H. 技能挂点体系的覆盖范围 —— 已完成初稿
 
 I. 收敛
    ADR（含威胁模型）、Spec、预算与 ABI、修订 Stage 7 范围。
+
+J. 预算与规模上界 —— 已完成初稿
+   见 [预算与规模上界草案](GAMEPLAY_BUDGET_AND_SCALE_DRAFT.md)：容量 / 稳态 / Seek 三类成本
+   不合并；活动度是容量与稳态之间的桥梁；补进预算不进 capability；快照间隔是引擎自由参数
+   而非内容声明；并给出进 / 不进 identity 的完整清单。**候选值全部待实测冻结**，其中三项
+   回应了 Fold §10.4、压测 L3 与压测 L6。
 ```
 
 ### 3.4 尚未登记的设计输入

@@ -1429,7 +1429,9 @@ Controller 自定义 §5.3  事件侧可编程，时间侧封闭，三个外推�
 2. 缓动（`Ease`）曲线的最终集合。§5.4 只列出线性、二次、三次、回退、弹性五类作为起点，
    实际需要多少条由案例决定；曲线表随引擎冻结，属于 capability。
 3. Ruleset 自身的逻辑见
-   [Ruleset Fold Language 草案](GAMEPLAY_RULESET_FOLD_DRAFT.md)。
+   [Ruleset Fold Language 草案](GAMEPLAY_RULESET_FOLD_DRAFT.md)。§9 的检查项在
+   [预算与规模上界草案](GAMEPLAY_BUDGET_AND_SCALE_DRAFT.md) §6 与其余三份草案合并为一份
+   完整清单，并增补了活动度、确定化规模、采样负载与内联 AST 四项。
 4. 作者语法：面向谱师的写法，可以是 JSON 形式的 IR、类似上文的文本 DSL，或者 Studio 的
    可视化编辑，IR 只是它们共同的编译目标。
 5. ~~由运行期状态驱动的 frame 不在本设计内~~ 已在 §5.4b 处置：frame 的来源可以是 `track`

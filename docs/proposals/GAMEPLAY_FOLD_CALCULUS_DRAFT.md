@@ -459,7 +459,8 @@ Hook 必须在 Interface 中已声明    因此谱面不能自创跨 requirement
 ### 7.1 补的规模
 
 补保留，它的规模可控：在区间谓词上就是"区间内原子恒假"。爆炸式增长的主要来源（积）已在
-§3 删除。
+§3 删除。规模上界与它为什么**不进 capability**，见
+[预算与规模上界草案](GAMEPLAY_BUDGET_AND_SCALE_DRAFT.md) §3.3。
 
 ### 7.2 多接触点仍是语法最重的地方
 
@@ -526,7 +527,11 @@ frame）全部保留，但位置改变：从"原语"变成"原子与算子的定
 3. **Pattern 的算子集合已经归约到最小签名**（§3），**签名编码已冻结**（§3.7）：`extent` 取值、
    `repeat` 的无穷上界与窗口的关系、`bind` 的适用范围。归约过程见
    [封闭性验证](GAMEPLAY_CALCULUS_CLOSURE_CHECK.md) §7。
-4. 补的规模上界与 capability 划分。
+4. ~~补的规模上界与 capability 划分~~ 已在
+   [预算与规模上界草案](GAMEPLAY_BUDGET_AND_SCALE_DRAFT.md) §3.3 裁决：**补进预算，不进
+   capability**。确定化是机械算法，没有引擎不支持的情况，因此它是复杂度问题而非能力问题；
+   做成 capability 会让同一引擎对不同谱面宣称支持不同的语言特性。规模门上界为
+   `patternStateBudget`，诊断指向具体子表达式而非整条 requirement。
 5. Measure 的算子集合与 Pattern 是否共享表达式核（应当共享，与 L3 的表达式核是同一个）。
 6. 标准库是否随引擎发行、随 Ruleset 包发行，还是两者都可以提供。
 7. 与 L3 的关系：L3 的 fold 是否也用 Pattern/Measure 表达，还是保持"事件处理器 + 有界 for"。

@@ -265,3 +265,8 @@ capability，需要它的内容在缺少该表的引擎上稳定拒绝。
 5. Interface 投影的粒度：按 Hook 标识逐项，还是按"判定域 + 参数族"聚合。粒度太细会让
    identity 计算量与内容规模线性相关。与
    [Skill Hooks 与模块扩展性草案](GAMEPLAY_SKILL_HOOKS_DRAFT.md) §10 是同一问题。
+6. 哪些参数进 identity 的完整清单见
+   [预算与规模上界草案](GAMEPLAY_BUDGET_AND_SCALE_DRAFT.md) §5。该节新增一条区分：
+   **引擎能力上限的收紧是兼容性破坏，不是 identity 变化**，因此不进任何分量（含 engine
+   分量）。若按"引擎变了就 bump engine"处理，每次调预算都会失效全部既有 Replay，
+   而判定结果一个字都没改。
