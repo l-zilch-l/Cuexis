@@ -36,6 +36,8 @@
 - [Gameplay 预算与规模上界草案](GAMEPLAY_BUDGET_AND_SCALE_DRAFT.md)：容量 / 稳态 / Seek 三类
   成本、活动度与每事件代价、补的规模裁决、快照间隔可行区间与 identity 分区清单，
   未接受、未实施。
+- [引擎冻结合同草案](GAMEPLAY_ENGINE_FROZEN_CONTRACTS_DRAFT.md)：定点表登记点、缓动曲线的准入
+  判据与起始集合、判定语义版本清单与门禁三来源原则，未接受、未实施。
 
 ## 延期设计输入
 

@@ -259,9 +259,17 @@ capability，需要它的内容在缺少该表的引擎上稳定拒绝。
 
 1. Ruleset Interface 版本的 bump 细则。§2.2 给出了判据与主要条目，但完整清单需要与
    Interface 的字段集合一起冻结。
-2. 定点表是否允许同一张表多版本并存，还是永久冻结、只能新增。
+2. ~~定点表是否允许同一张表多版本并存，还是永久冻结、只能新增~~ 已在
+   [引擎冻结合同草案](GAMEPLAY_ENGINE_FROZEN_CONTRACTS_DRAFT.md) §3 处置：
+   **问题被消解**。表条目的 id 即语义内容，改进是新增条目而非提升版本，
+   两个条目永久并存。理由三条：并存是必然的（老内容要逐位可复现）、
+   版本提升会让全部角度相关 Replay 立即失效、capability 按 id 声明天然成立。
 3. Studio 的诊断模式需要多详细的可视化，以及"结果差异"报告的量化粒度。
-4. 判定语义的清单如何与 `check_version_gate.py` 的现有机制合并，以及放行开关的传递路径。
+4. ~~判定语义的清单如何与 `check_version_gate.py` 的现有机制合并，以及放行开关的传递路径~~
+   已在 [引擎冻结合同草案](GAMEPLAY_ENGINE_FROZEN_CONTRACTS_DRAFT.md) §5–§6 处置：
+   清单在 §5 逐项列出（在清单内 / 不在清单内两组），门禁在 §6 采用**三来源原则**
+   （执行器取自 base、声明取自 candidate、放行取自 workflow 事件），
+   **放行按清单项而非全局布尔**。该节同时说明为什么只做其中两条都会失效。
 5. Interface 投影的粒度：按 Hook 标识逐项，还是按"判定域 + 参数族"聚合。粒度太细会让
    identity 计算量与内容规模线性相关。与
    [Skill Hooks 与模块扩展性草案](GAMEPLAY_SKILL_HOOKS_DRAFT.md) §10 是同一问题。
