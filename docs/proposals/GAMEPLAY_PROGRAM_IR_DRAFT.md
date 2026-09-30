@@ -500,7 +500,7 @@ Phigros 的判定线会移动和旋转，Arcaea 的 Arc 位置随时间变化，
 
 ```text
 frame <name> {
-  track   Segment[]        分段闭式，任意 Tick 可求值
+  source  track(Segment[]) | bound(ctrl.<name>.<field>)
   units   Point 与角度的整数量化单位
 }
 
@@ -518,9 +518,10 @@ Segment:
 **旋转必须量化。** 角度以 1/65536 圈的整数表示，正弦余弦取自引擎内置的定点表。那张表随
 引擎版本冻结，不使用平台数学库，否则跨平台结果会不一致。表的版本进入 capability 集合。
 
-**frame 是运行期不可变的数据。** 没有任何东西在演奏中写 frame。这一条同时解决了一个原有
-冲突：移动判定线到底属于判定还是表现。它是一个被两层同时读取的数据对象，不属于任何一层的
-运行期状态。判定读它做命中检测，表现读它做绘制，表现不能写。
+**frame 是派生数据，不是被写入的数据。** 此前写的"运行期不可变"过严，见 §5.4b。真正要保证
+的是：**没有任何东西在演奏中写 frame**，判定与表现都只读。这一条解决了一个原有冲突——
+移动判定线到底属于判定还是表现。它是一个被两层同时读取的数据对象，不属于任何一层的运行期
+状态。判定读它做命中检测，表现读它做绘制，表现不能写。
 
 **区域声明获得一个可选的 frame 绑定：**
 
@@ -548,12 +549,64 @@ region <name> {
 这个近似时（例如手指不动而走廊移出），用 §2.4 的 `every(period)` 显式提高采样密度，代价
 也随之声明。不再需要靠"提高输入上报率"这类隐含手段。
 
-**不覆盖的情况。** frame 的位置由运行期状态驱动（例如某个 Boss 的移动改变判定线）不在本
-设计内。那会让 frame 变成运行期状态，破坏不可变规则。若将来确实需要，应当作为
-Controller 驱动的 frame 单独决策。
-
 **代价。** frame 求值进入每事件的代价预算，在 prepare 时静态计入。跨 frame 的区域重叠由
 第 8 节的仲裁处理，`claimKey` 可以包含位置误差项。
+
+### 5.4b frame 绑定 Controller（设备绑定型玩法）
+
+**此前把这一类整个排除，是过严的。** 原文写"frame 的位置由运行期状态驱动不在本设计内，
+那会让 frame 变成运行期状态，破坏不可变规则"。该论证把两件事混在一起：
+
+```text
+被写入       有东西在演奏中修改 frame            —— 必须禁止
+依赖会话状态  frame(T) 是折叠状态的函数          —— 一直成立，且无害
+```
+
+`frame(T)` **本来就**是会话状态的函数（依赖时钟 T）。绑定 Controller 只是扩大了这个函数的
+定义域，没有改变它的种类。而定量的检查如下：
+
+| 不变量 | 数据轨道 frame | 绑定 Controller 的 frame |
+| --- | --- | --- |
+| 无人写入 | 成立 | 成立 |
+| 判定不读渲染 | 成立 | 成立（Controller 只由输入驱动） |
+| 快照与 Seek | 成立 | 成立（Controller 状态本来就在快照内） |
+| 自引用 | 不适用 | 无（t 时刻取严格早于 t 的输入，与 §5.3 一致） |
+| 求值代价 | O(log N) | O(1)，更便宜 |
+
+因此：**frame 的来源有两种，`track` 与 `bound`，接口都是 `frameAt(t) -> Transform`。**
+
+```text
+frame playfield { source bound(ctrl.deviceYaw) }
+
+program rotateNote
+  params    anchor: Tick, theta: QuantizedAngle, w: QuantizedAngle
+  instant   at(anchor) : press(lane) ∧ |ctrl.deviceYaw − theta| ≤ w
+```
+
+Rotaeno、Tone Sphere 一类"判定线朝向由设备旋转驱动"的玩法由此可表达。它们此前被排除，
+不是因为需要新机制，而是因为一条写得过严的不变量。
+
+**L1 提供的是归一化朝向角，不是原始角速度。** 这一点是必须的：若把陀螺仪速率积分交给判定
+侧，漂移就成了判定模型的一部分；放在 L1 则与"校准烘进事件流"是同一条处理（见
+[Gameplay Identity 分层草案](GAMEPLAY_IDENTITY_DRAFT.md) §6）。融合算法属于 L1 实现，
+不进 identity。
+
+**设备能力声明。** 这类玩法需要 Interface 声明所需硬件：
+
+```text
+requiresOrientation   无相应传感器时拒绝启动，并给出稳定诊断
+minInputRate          沿用 §5.2 的每域最低上报率
+```
+
+与 `minPollRate` 同形：把"设备差异"变成 prepare 时的一句明确诊断，而不是静默产生不同结果。
+
+**这一类仍然不覆盖：**
+
+```text
+3D 空间玩法        Beat Saber 一类，需要 Vec3 原语族，见压测登记 L2
+连续音高           Rocksmith 一类真实乐器输入
+私有外设协议       需要宿主适配器，不属于 L1 的声明式映射
+```
 
 ### 5.5 数值模型：数据浮点，决策投影到整数
 
@@ -1249,9 +1302,11 @@ Controller 自定义 §5.3  事件侧可编程，时间侧封闭，三个外推�
    [Ruleset Fold Language 草案](GAMEPLAY_RULESET_FOLD_DRAFT.md)。
 4. 作者语法：面向谱师的写法，可以是 JSON 形式的 IR、类似上文的文本 DSL，或者 Studio 的
    可视化编辑，IR 只是它们共同的编译目标。
-5. 由运行期状态驱动的 frame（例如移动的 Boss 改变判定线）不在本设计内。若将来需要，
-   应作为 Controller 驱动的 frame 单独决策。
+5. ~~由运行期状态驱动的 frame 不在本设计内~~ 已在 §5.4b 处置：frame 的来源可以是 `track`
+   或 `bound(ctrl)`，两者都满足不可变与快照要求。仍不覆盖的是 3D 空间玩法与连续音高输入。
 6. 还需要继续压测的案例：Arcaea 的 Arc 与 Sky Note、Taiko 的连打、DJMAX 的长按连打、
    多指 Slide、osu! 的 Slider。
 7. 定点表的集合与版本：角度表已定，`exp` / `sinusoid` 外推基若启用会带来新的表。
    表的清单与版本管理需要一个统一的声明点。
+8. L1 的朝向融合算法（陀螺仪加加速度计的归一化）需要独立规范：它影响 §5.4b 的判定结果，
+   但按 §6 的裁决不进 identity。
