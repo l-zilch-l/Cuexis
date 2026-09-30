@@ -239,6 +239,9 @@ extendable  可以新增程序，但只能产出包内已声明的 category 与 
 open        可以新增程序与新的 grade 产出行为
 ```
 
+**本条只定义来源轴。产出轴是独立的 `outcomeScope`，见 §6.2。** 两个轴不能合并，
+理由与裁决见该节。
+
 默认 `extendable`，因为它是"允许谱师编写自己的判定形状"与"计分与统计仍然可比"之间的
 平衡点。
 
@@ -256,18 +259,175 @@ L3 不能写回 L2 的实例状态、不能生成新的 Requirement、不能改�
 
 ## 6. 打包与兼容
 
-Ruleset 是一个可分发的包，沿用仓库既有的容器约定。包内包含：interface 声明、fold 程序、
-L2 程序库、窗口表、region 与 controller 声明、模块与默认参数、表现默认绑定、资源。
-
-```text
-requiredFeatures   引擎缺少所需能力位即拒绝，沿用 Packed 的 requiredFeatures 模式
-Interface 版本     谱面绑定它，决定能否运行
-Build 内容 hash    Replay 绑定它，决定结果能否复现
-Loadout            启用模块与参数，进入 Replay identity
-```
+Ruleset 是一个可分发的包。包内包含：interface 声明、fold 程序、L2 程序库、窗口表、
+region 与 controller 声明、模块与默认参数、表现默认绑定、资源。本节给出五个打包决定的裁决，
+包的完整构成、版本轴与 hash 覆盖范围见 §6.5。
 
 谱面可以引用包内的 L2 程序库，也可以自带程序。自带程序的权限由 interface 的 `programPolicy`
-决定，取值见 §4.9。`interfaceVariesWithLoadout`（§4.6）在这里生效。
+与 `outcomeScope` 决定，取值见 §4.9 与 §6.2。`interfaceVariesWithLoadout`（§4.6）在这里生效。
+
+### 6.1 内置原生模式与分发模式共用 Interface
+
+**裁决：允许，而且应当成为常态而不是例外。**
+
+这两种"模式"的区别此前被表述成表示形式的区别（引擎内置 vs 可分发包），但它实际上只是
+**谁发行**的区别。把它们做成两种表示会带来一串不必要的分叉：两套加载路径、两套验证入口、
+两套 identity 计算。
+
+因此把内置模式也做成包——随引擎发行、但仍有自己的内容 hash——三件事同时简化：
+
+```text
+一种加载路径     引擎发行目录与用户目录只是两个来源，不是两条代码路径
+一种验证入口     §7 的验证对两者同样强制
+identity 分量不变  内置模式的 hash 仍落在 ruleset 分量，不落进 engine 分量
+```
+
+**第三条是这条裁决真正的价值，值得单独说明。** 若内置模式的 Build 直接编进引擎代码，
+它的任何数值调整都会变成 engine 分量的变化，而 engine 分量是全局的——于是"给内置模式微调一个
+窗口"会让**该引擎上全部已发行的 Replay**失效，包括其他模式的。
+
+这正是 §2.5 把 Ruleset 拆成 Interface 与 Build 两层要避免的事。做成包之后，调整只改变那个包
+的 hash，失效范围恰好是使用它的谱面。
+
+**代价**：内置模式不能再"直接调用引擎内部函数"，必须走 L3 的公开表面。这与讨论记录 §2.10
+已经确定的"L3 是可分发内容、拥有自己的语言"一致，不构成新限制。真正的内部能力（定点表、
+几何原语、时间域）本来就通过 Interface 声明而不是通过函数调用暴露。
+
+### 6.2 programPolicy 的两个轴（回应 §8.4）
+
+`programPolicy` 的三个取值此前把两件不同的事压在一个轴上：
+
+```text
+来源轴   谱面的程序从哪来    包内库 / 可以新增
+产出轴   谱面的程序能产出什么  既有取值 / 新行为
+```
+
+**裁决：拆成两个轴，各自封闭。**
+
+```text
+programPolicy  = locked | extendable | open      （来源轴，保持原义）
+                 locked      只能用包内的 L2 程序库
+                 extendable  可以新增程序（默认）
+                 open        可以新增程序，且其判定规则由谱面自定
+
+outcomeScope   = declared | extended             （产出轴，新增）
+                 declared    只能产出包内已声明的 outcome 与 category（默认）
+                 extended    可以声明新的 outcome 与 category
+```
+
+**两轴不是正交组合，产出轴被独立收紧**：`outcomeScope = extended` 只在
+`programPolicy = open` 下允许声明，否则静态拒绝。
+
+**为什么 outcome 必须保持封闭（这是 §8.4 的答案）。** 新增一个 `outcome` 等于新增一个折叠
+键。§7 已有一条检查："所有可结算的事件类型都有处理器或落入显式忽略"。若谱面的程序能自创
+outcome，这条检查要么失败（拒绝整张谱面），要么它必须退化成"忽略未知 outcome"——
+而后者会让判定结果依赖 L3 是否恰好写了处理器，正是本设计一直在消除的那类隐式依赖。
+
+因此答案取更窄的一侧：**`open` 只开放"新的 grade 产出行为"，不开放新的 outcome。**
+`extendable` 与 `open` 的区别因此是：
+
+```text
+extendable  新增的程序只能通过 grade(err, windowSet) 或已声明的常量等级产出等级
+open        新增的程序可以自定判定规则来产出等级（例如按音符分别声明严格性、
+            保护音符、自定义的到达判定），但仍只能产出已声明的等级值
+```
+
+**真正需要新 outcome 或新 category 的情形，正确表达是新 Interface 版本或另一个包**，
+与 §4.6 对"新等级、新 region、新 Hook"的处置一致。这不是限制能力，而是把"改变判定语义
+的形状"留在包级声明里——那里它可见、可审查、可版本化。
+
+### 6.3 包容器：复用 CXC 的载体，不复用它的 entry 分层（回应 §8.3）
+
+**裁决：容器取 CXC v1 的 ZIP32 Stored 子集与 manifest 形状，`format` 取新值。**
+
+```text
+复用    ZIP32、Stored (method 0)、portable ASCII 路径、CRC32 + manifest SHA-256
+        目录项与 metadata 的冻结值（flags 0、1980-01-01、version needed 10、无 extra field）
+        路径规则（无重复、无 file/descendant 冲突）、entry 计数上限
+        规范 writer 的确定性要求（相同输入产生相同字节）
+新取    manifest format = "cuexis.ruleset"，version = 1
+不复用  CXC 的 Chart v5 entry 分层（compiler profile、playback entry、实体与要求计数）
+```
+
+**复用载体的理由**是载体问题已经被解决过一次：冻结的 golden bytes、一个验证器、
+三个工具（pack / validate / unpack）。造第二个容器意味着第二套验证器、第二套 golden，
+以及"某个 ZIP 边界情况要修两处"。容器与内容是正交的两件事，没有理由让内容决定它。
+
+**不复用 entry 分层的理由**是那部分不是容器，是 CXC 为 Chart v5 加的内容约定。Ruleset 包里
+没有播放 entry，因此那些字段要么空置、要么含义被误读。直接不引入。
+
+**诊断前缀天然分开**：CXC 的稳定诊断已经是 `cxc.*` 命名空间，本包用 `ruleset.*`。
+复用载体不会产生诊断冲突，也不需要给现有诊断改名。
+
+**预算的差异点**：CXC §8 的表里，与 Chart 相关的两项（`expandedEntityCount`、
+`expandedRequirementCount`）不适用；本包新增的是模块数与 Hook 数。其余条目（包字节、
+entry 字节、manifest 字节、entry 数、路径字节与深度、诊断数）直接沿用同一组数值，
+理由相同：它们量的是载体，不是内容。
+
+**与语言版本的关系**：容器版本（外层信封）与 Interface 版本（包内声明）是两条独立的轴。
+容器决定"能不能打开"，Interface 决定"能不能运行"。两者都需要，且不互相蕴含。
+
+### 6.4 独占 Hook 的所有权是静态表，不可转交（回应 §8.5）
+
+**裁决：不可转交。所有权由包清单静态指定，运行期只读取。**
+
+```text
+hookOwnership {
+  <hookId>: <core | moduleId>
+  <hookId>: { owner: moduleId, fallback: core }      可选
+}
+```
+
+**为什么不做转交**：§4.7 的全部校验力量来自"每个可写目标恰好有一个写入者"是**集合运算**
+而不是图可达性分析。允许转交之后，判定"两个模块是否可能同时写"需要遍历模块图与启用组合，
+校验从一次查表变成一次搜索；而搜索的结论还会依赖 `group` / `conflicts` 的交互，
+出现"这个组合安全、那个组合不安全"的结论。
+
+**真正需要转交的情形，已有更好的表达**：
+
+```text
+想让它只在某些 Loadout 下归属别的模块     用 fallback。owner 模块未启用时回落到 fallback，
+                                         Hook 永远不会无主
+想让它被多个模块影响                     用派生 Hook 的合成算子，本来就不需要独占
+想让它在一个 Tick 内先后被两个模块改写      用信号，多一个 Tick 延迟，顺序问题消失
+```
+
+**fallback 这一条值得强调**：它使"禁用某个模块"不可能让 Hook 处于无主状态。没有它，
+`owner` 指向一个被 Loadout 禁用的模块时，Hook 要么无主（判定读什么？）要么隐式回落
+（回落规则没写）。两种都不可接受，所以 `fallback` 是必需的而不是可选的糖。
+
+**静态验证因此只多一条**：
+
+```text
+每个独占 Hook 的所有者必须存在，且 owner 与 fallback 不得指向同一模块
+```
+
+### 6.5 包的构成与版本
+
+```text
+interface 声明        §4.1，含 programPolicy 与 outcomeScope
+hookOwnership          §6.4 的静态表
+fold 程序              §4.3
+L2 程序库              §4.9 的 programPolicy 限定其可用范围
+只读数据              窗口表、region、controller 声明、定点表引用（按 tableId，见引擎冻结合同草案）
+模块与默认参数          §4.4
+表现默认绑定             §4.5，属 L4 输入
+资源                   与谱面资源同一套闭包规则
+```
+
+```text
+requiredFeatures     引擎缺少所需能力位即拒绝，沿用 Packed 的 requiredFeatures 模式
+Interface 版本       谱面绑定它，决定能否运行
+Build 内容 hash      Replay 绑定它，决定结果能否复现
+Loadout             启用模块与参数，进入 Replay identity
+```
+
+**hash 的覆盖范围**必须写在包规范里而不是留给实现：Build 内容 hash 覆盖
+interface 声明、hookOwnership、fold 程序、L2 程序库、只读数据与模块声明；
+**不覆盖**表现默认绑定与资源（它们是 `presentation` 类，见身份草案 §2）。
+
+这条分区不是形式要求：若 Build hash 覆盖了资源，换一张贴图就会让全部 Replay 失效，
+而那正是身份草案 §3 引入两个摘要要消除的事。
 
 ## 7. 静态验证
 
@@ -286,16 +446,24 @@ Loadout            启用模块与参数，进入 Replay identity
 
 ## 8. 待决
 
-1. 引擎内置的原生模式与分发模式是否允许共用同一个 Interface。
+1. ~~引擎内置的原生模式与分发模式是否允许共用同一个 Interface~~ 已在 §6.1 裁决：**允许，
+   且应当成为常态**。两者的区别只是"谁发行"，不是表示形式。内置模式也做成包之后，
+   它的 Build 变化落在 ruleset 分量而不是 engine 分量，失效范围从"该引擎上全部 Replay"
+   收窄到"使用它的谱面"。
 2. 是否需要比"有界 for"更强的聚合能力。如果需要，优先考虑扩展 `Table` 和声明式折叠表，
    而不是引入通用循环。**部分裁决**：Fold Calculus §5.9 已定 L3 不使用 Pattern / Measure，
    因为 L3 的输入没有时间界、寿命语义不同、且 Pattern 不描述 Effect。但这不排除 L3 需要
    自己的有界聚合形式；本项仍开放。
-3. Ruleset 包是否直接复用 CXC v1 容器，还是需要自己的容器版本。
-4. `open` 档 programPolicy 下，谱面自带程序能否产出新的结算结果，还是只能是新的 grade
-   产出行为。
-5. 独占 Hook 能否转交所有权（一个模块把一个 Hook 让给另一个模块），还是只能由包清单
-   静态指定。前者需要更复杂的校验规则。
+3. ~~Ruleset 包是否直接复用 CXC v1 容器~~ 已在 §6.3 裁决：**复用载体，不复用 entry 分层**。
+   ZIP32 Stored 子集、manifest 形状、路径规则、writer 确定性全部沿用；
+   `format` 取 `cuexis.ruleset`；不带入 CXC 的 Chart v5 entry 字段。诊断前缀 `ruleset.*`
+   与既有的 `cxc.*` 天然分开。
+4. ~~`open` 档下谱面自带程序能否产出新的结算结果~~ 已在 §6.2 裁决：**不能**。
+   `programPolicy` 拆成来源轴与产出轴，产出轴默认封闭；新增 outcome 等于新增折叠键，
+   会让"结算完备"检查退化成"忽略未知 outcome"。`open` 只开放新的 grade 产出行为。
+5. ~~独占 Hook 能否转交所有权~~ 已在 §6.4 裁决：**不可转交**。所有权是包清单里的静态表，
+   每项带必需的 `fallback`，因此禁用模块不会让 Hook 无主。转交会让校验从集合运算变成
+   图搜索，且真实需求已有三种更好的表达（fallback / 派生合成 / 信号）。
 6. L3 快照的字节数上限与模块数上限，与 L2 的预算合并还是分开计。见
    [预算与规模上界草案](GAMEPLAY_BUDGET_AND_SCALE_DRAFT.md) §7.1：该文的候选值全部待实测，
    L3 侧尚未量化。

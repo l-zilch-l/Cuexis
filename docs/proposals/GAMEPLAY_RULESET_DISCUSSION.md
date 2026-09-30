@@ -202,6 +202,8 @@ L2 的静态验证只针对 L3 声明的 Interface（含每个 Hook 的静态取
 19. L3 的结构与值分离：Interface 静态（模块只能写值），导出字段增量（模块可新增），
     fold 处理器可新增。逃生通道为 `interfaceVariesWithLoadout`，默认关闭。
 20. 谱面自带 L2 程序的权限由 `programPolicy` 决定，默认 `extendable`。
+    （2026-10-01 修订：拆成来源轴 `programPolicy` 与产出轴 `outcomeScope`，
+    产出轴默认封闭。见第 49 条。）
 21. 模块合成靠消除共享写入实现，不靠定序：派生 Hook 用可交换可结合的算子对贡献集合一次
     合成，独占 Hook 与折叠表 key 都要求唯一写入者并在 Loadout 校验期拒绝冲突，处理器顺序
     冻结在包内，信号只在下个 Tick 投递。
@@ -276,6 +278,23 @@ L2 的静态验证只针对 L3 声明的 Interface（含每个 Hook 的静态取
     交集。它比逐 Hook 更细因而更安全，成本却由 Loadout 决定、不随谱面规模增长。
 47. Fact 携带 `requirementId`。身份本来就在系统里（仲裁按它排序），只是此前没有随 Fact
     暴露；补上之后"按音符的例外"可由 fold 处理器表达。这不破坏 W1 的边界，因为方向单向。
+48. 引擎内置的原生模式也做成包，与分发模式共用同一套 Interface、加载路径与验证入口。
+    关键收益是失效范围：内置模式的 Build 变化落在 ruleset 分量而不是全局的 engine 分量，
+    否则"给内置模式微调一个窗口"会让该引擎上全部已发行的 Replay 失效。
+49. `programPolicy` 拆成两个轴：来源轴（`locked` / `extendable` / `open`）与产出轴
+    （`outcomeScope = declared` / `extended`，默认封闭）。`open` 只开放新的 grade 产出行为，
+    **不开放新的 outcome**——新增 outcome 等于新增折叠键，会让"结算完备"检查退化成
+    "忽略未知 outcome"，即判定结果依赖 L3 是否恰好写了处理器。真正需要新 outcome 的
+    正确表达是新 Interface 版本或另一个包。
+50. Ruleset 包复用 CXC v1 的**载体**（ZIP32 Stored 子集、manifest 形状、路径规则、
+    writer 确定性），但**不复用**它的 Chart v5 entry 分层。`format` 取 `cuexis.ruleset`，
+    诊断前缀 `ruleset.*`。容器与内容是正交的两件事。
+51. 独占 Hook 的所有权是包清单里的静态表，**不可转交**；每项带必需的 `fallback`，
+    因此禁用模块不会让 Hook 无主。转交会让校验从集合运算变成图搜索，而真实需求已有
+    三种更好的表达：fallback、派生 Hook 的合成算子、信号。
+52. Ruleset 包的 Build 内容 hash 覆盖 interface、hookOwnership、fold 程序、L2 程序库、
+    只读数据与模块声明，**不覆盖**表现默认绑定与资源。否则换一张贴图就会让全部 Replay
+    失效，正是身份草案引入两个摘要要消除的事。
 
 ### 3.2 草案状态
 
@@ -356,6 +375,11 @@ H. 技能挂点体系的覆盖范围 —— 已完成初稿
 
 I. 收敛
    ADR（含威胁模型）、Spec、预算与 ABI、修订 Stage 7 范围。
+
+M. L3 打包与权限 —— 已完成
+   见 [Ruleset Fold Language 草案](GAMEPLAY_RULESET_FOLD_DRAFT.md) §6.1–§6.5：内置模式也
+   做成包、`programPolicy` 拆两轴、复用 CXC 载体不复用其 entry 分层、独占 Hook 所有权
+   静态且带 fallback、Build hash 的覆盖范围。该草案的待决项 1 / 3 / 4 / 5 同时关闭。
 
 L. 投影粒度与 Fact 身份 —— 已完成
    见 [Gameplay Identity 分层草案](GAMEPLAY_IDENTITY_DRAFT.md) §4.2 与
