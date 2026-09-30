@@ -209,22 +209,44 @@ L2 的静态验证只针对 L3 声明的 Interface（含每个 Hook 的静态取
 23. 几何轨道用"形状静态 + 摆放采样"表达：frame 是一段随时间采样的 Transform 轨道，形状在
     frame 局部坐标中保持静态；角度用 1/65536 圈整数加引擎内置定点三角函数表；frame 运行期
     不可变，判定与表现都可读，表现不能写。
-24. 自定义按键映射属于 L1，由 Player 或宿主提供，谱面与程序不需要感知。做法是记录**映射后**
-    的规范化事件，同时把映射 identity 写入 Replay 头部；播放时校验 identity，不匹配稳定拒绝，
-    不静默改用其他映射。理由与 TimingMap 对"不同来源的延迟不得合并"的规定一致。
+24. 自定义按键映射属于 L1，由 Player 或宿主提供，谱面与程序不需要感知。Replay 记录**映射后**
+    的规范化事件，映射 identity 与校准参数只作为**信息性元数据**写入 Replay 头部，**不参与
+    校验门**。（2026-09-29 修正：原文同时要求记录映射后事件与校验映射 identity，两者不能
+    同时成立。理由与 TimingMap 对"不同来源的延迟不得合并"的规定一致。）
 25. 数值模型取"数据浮点，决策投影到整数"：作者侧用 f32/f64 表达位置、路径与 frame，
     prepare 时按声明的单位量化一次（向偶舍入、单调、唯一），决策侧只看整数，表现侧回到浮点。
     边界判据是"写不出来就加一个闭式基或声明式能力"，不是放开浮点。
 26. 输入模型为两类事件加一类状态：接触点事件（begin/move/end，带 contactId）、通道事件
     （press/release）、以及作为状态的轴与指针位置。轴不进事件流，`axisStep` 是 L1 越阈合成
     的边沿。映射、死区、阈值与接触点线性插值都在 L1，程序侧不可见。
+27. 每个语义字段必须声明 `judgment` / `presentation` / `neutral` 类别，分区逐字段判定并做机械
+    检查。在此之上定义两个摘要：`ContentIdentity` 覆盖全部字段，`JudgementIdentity` 只覆盖
+    judgment 类字段并分为 engine / ruleset / chart / session 四个命名分量。Replay 绑定后者。
+    既有 `PreparedSemanticIdentity` 继续服务 prepare 事务与 CXC 身份，不复用为 Replay 绑定。
+28. 失配默认严格拒绝，并提供显式的诊断模式：可用当前内容重新折叠，结果标记为非权威，
+    不计分、不写排行榜。
+29. 认领策略拆成两层：`grip`（`sticky` / `handoff`）声明中途能否换手，属于判定语义；
+    归属与可见性分离，`observe` 边始终可见。所有权由引擎维护，是边的隐式前提而不是运行期
+    错误；引擎不在接触点结束时自动归还归属，句柄永不回收。
+30. 连续谓词在两次输入事件之间的变化需要状态级 `every(period)` 周期采样。周期由 Ruleset
+    声明基线与允许区间、内容在区间内覆盖，不写死梯级。语义定义为"采样得到"，解析求交将来
+    只能是另一种带 capability 的模式。
+31. 守卫表达式补一组整数几何原语：`vec` / `posAt` / `sub` / `dot` / `cross` / `len2` /
+    `sqrtApprox`。`cross` 的符号判转向，`dot` 的正负判前进或回摆。这是 Flick 与方向动作的前置。
+32. `claim` 的动作签名带槽位：`claim(contact, slot)` 与 `release(slot)`，用于多指判定。
+33. 输入重采样采用方案 A：离散边沿保留原始时间戳绝不重采样，连续量按 Interface 声明的规范
+    格点重采样，低于声明最低上报率的设备在上报率上稳定拒绝。重采样属于归一化，Replay 记录
+    重采样之后的流。可保证"同一设备类别下不同上报率结果一致"，**不能**保证跨设备类别等价，
+    也不能消除重建轨迹的插值误差。
 
 ### 3.2 草案状态
 
-[Gameplay Program IR 原语草案](GAMEPLAY_PROGRAM_IR_DRAFT.md) 已完成第二版，含执行模型、
-原语、空间状态与输入、表现绑定、仲裁、静态验证，以及八个案例压测：Tap、中途断开的 Hold、
-带跳区的 maimai 星星、osu!catch 水果、重叠判定区、变宽 Slider、炸弹、移动判定线。
-八个案例全部可表达。
+[Bounded Fold Calculus 提案](GAMEPLAY_FOLD_CALCULUS_DRAFT.md) 是**替换性重设计**，不是增量
+修订。它把核心概念从约 15 个归约到 3 个（Fold / Pattern / Measure），并把 10 条缺陷中的 6 条
+消除（其中 3 条是构造性消除）。归约的动机来自压测登记的观察：原语数量在收敛，规则数量没有。
+
+[Gameplay Program IR 原语草案](GAMEPLAY_PROGRAM_IR_DRAFT.md) 是当前第三版，在 Fold Calculus
+被接受前仍是详细设计的载体。其 §2–§4 在重设计被接受后会被整体替换。
 
 [Ruleset Fold Language 草案](GAMEPLAY_RULESET_FOLD_DRAFT.md) 已完成第一版。
 
@@ -238,27 +260,35 @@ A. Ruleset 折叠与技能的 IR 表达 —— 已完成初稿
    系统，语句层分开；Interface 与 fold 程序同包分发。
 
 B. 几何轨道 —— 已完成
-   见 [Gameplay Program IR 原语草案](GAMEPLAY_PROGRAM_IR_DRAFT.md) §5.3：区域绑定 frame，
+   见 [Gameplay Program IR 原语草案](GAMEPLAY_PROGRAM_IR_DRAFT.md) §5.4：区域绑定 frame，
    形状在局部坐标中静态。不改变程序 IR。
 
 C. Controller 自定义程度 —— 已完成
-   见同文 §5.2：事件侧可编程，时间侧封闭；三个外推基加一个后处理算子；`sampled` 逃生通道
+   见同文 §5.3：事件侧可编程，时间侧封闭；三个外推基加一个后处理算子；`sampled` 逃生通道
    取消。
 
 D. Input 形状 —— 已完成
-   见同文 §5.1：两类事件加一类状态；映射、死区、阈值、线性插值都在 L1。
+   见同文 §5.1 与 §5.2：两类事件加一类状态；映射、死区、阈值、线性插值都在 L1；
+   离散边沿保留原时间戳，连续量按声明格点重采样。
 
 E. 表现绑定 —— 已完成
    见同文 §6：三类读入口、三条驱动路径、按键音分两种、按绑定键的覆盖与 `overridable`。
 
-F. identity 分层
-   gameplay identity、chart semantic identity、Ruleset Build、Loadout、presentation。
+F. identity 分层 —— 已完成初稿
+   见 [Gameplay Identity 分层草案](GAMEPLAY_IDENTITY_DRAFT.md)：字段分区为
+   judgment / presentation / neutral，两个摘要（ContentIdentity 覆盖全部，
+   JudgementIdentity 只覆盖 judgment），四个命名分量，显式排除清单与失配策略。
+   同时修正了第 24 条：映射 identity 与校准降为信息性元数据，不做校验门。
 
-G. 继续压测
-   Arcaea 的 Arc 与 Sky Note、Taiko 连打、osu! Slider、DJMAX 长按连打、多指 Slide。
+G. 继续压测 —— 已完成
+   见 [Gameplay 设计压测与缺陷登记](GAMEPLAY_STRESS_TEST_DRAFT.md)：案例扩到 34 项，
+   新增 22 项中没有一项需要新的判定原语；同时登记 10 条设计缺陷（D1–D10）与 7 条局限
+   （L1–L7），并给出复杂度收敛判断。
 
-H. 技能挂点体系的覆盖范围
-   决定新技能/角色是否需要升级 Ruleset Interface。
+H. 技能挂点体系的覆盖范围 —— 已完成初稿
+   见 [Skill Hooks 与模块扩展性草案](GAMEPLAY_SKILL_HOOKS_DRAFT.md)：结论是新增技能或角色
+   不需要升级 Interface。关键区分是程序可见 Hook 与模块本地状态，加上 L3 模块代码这条
+   扩展路径。三边界全部禁止（变速、谱面变换、运行期生成 Requirement、非确定效果）。
 
 I. 收敛
    ADR（含威胁模型）、Spec、预算与 ABI、修订 Stage 7 范围。
