@@ -720,7 +720,12 @@ frame）全部保留，但位置改变：从"原语"变成"原子与算子的定
 7. ~~与 L3 的关系~~ 已在 §5.9 裁决：**L3 不用 Pattern / Measure，但两者都是 Fold 的实例**。
    Pattern 没有时间界、寿命语义不同、且不描述 Effect，三条中的任何一条都足以否定。
    §5.6 的 Hook 通道与 Ruleset Fold 草案 §2.1 第 4 步核对通过。
-8. 谓词读取集合纳入 `hook` 之后，需要在 Ruleset Interface 里明确哪些 Hook 对谱面可见。
+8. ~~谓词读取集合纳入 `hook` 之后，需要在 Ruleset Interface 里明确哪些 Hook 对谱面可见~~
+   已处置。Interface 的 `hook` 声明本身**就是**"哪些 Hook 对谱面可见"的清单
+   （[Ruleset Fold Language 草案](GAMEPLAY_RULESET_FOLD_DRAFT.md) §4.1），
+   不属于 Interface 的 Hook 是模块本地状态（Skill Hooks 草案 §2.1），谱面读不到。
+   范围的 bump 判据见 [Gameplay Identity 分层草案](GAMEPLAY_IDENTITY_DRAFT.md) §2.3：
+   放宽不 bump，收窄 bump。
 9. W2 的划分已并入 §3.2；W3 已并入 §3.3；W4 已并入 §5.4。
 
 ## 11. 第二版修订记录
