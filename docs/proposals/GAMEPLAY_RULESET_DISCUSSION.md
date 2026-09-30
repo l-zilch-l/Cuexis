@@ -245,10 +245,32 @@ L2 的静态验证只针对 L3 声明的 Interface（含每个 Hook 的静态取
 修订。它把核心概念从约 15 个归约到 3 个（Fold / Pattern / Measure），并把 10 条缺陷中的 6 条
 消除（其中 3 条是构造性消除）。归约的动机来自压测登记的观察：原语数量在收敛，规则数量没有。
 
-[Gameplay Program IR 原语草案](GAMEPLAY_PROGRAM_IR_DRAFT.md) 是当前第三版，在 Fold Calculus
-被接受前仍是详细设计的载体。其 §2–§4 在重设计被接受后会被整体替换。
+[Gameplay Program IR 原语草案](GAMEPLAY_PROGRAM_IR_DRAFT.md) **部分被取代**：它的 §2、§3、§4
+（执行模型、程序结构、原语）由 calculus 替换，而 §3.1、§4.3、§4.5–4.8、§5–§9 **仍然有效**，
+且是 calculus 的依赖项（定义原子与算子的定义域、表现层边界、验证规则）。逐节处置表见该文
+开头的「取代关系」一节。
 
 [Ruleset Fold Language 草案](GAMEPLAY_RULESET_FOLD_DRAFT.md) 已完成第一版。
+[Gameplay Identity 分层草案](GAMEPLAY_IDENTITY_DRAFT.md)、
+[Skill Hooks 与模块扩展性草案](GAMEPLAY_SKILL_HOOKS_DRAFT.md) 与
+[Gameplay 设计压测与缺陷登记](GAMEPLAY_STRESS_TEST_DRAFT.md) 仍是各自主题的载体；
+前两份使用的术语（Hook、窗口集）在 calculus 下名称不同但概念对应，需要一次术语复核。
+
+### 3.2b 阅读顺序
+
+按核心概念 → 依赖细节 → 主题文档的顺序：
+
+```text
+1  Bounded Fold Calculus 提案      核心概念：Fold / Pattern / Measure
+2  Fold Calculus 封闭性验证        归约与封闭性的证据
+3  Gameplay Program IR 原语草案    原子与算子的定义域、表现边界、验证规则、案例细节
+4  Gameplay 设计压测与缺陷登记     缺陷与局限的完整登记
+5  Gameplay Identity 分层草案      身份与分区
+6  Skill Hooks 与模块扩展性草案    技能扩展与核心外声明
+7  Ruleset Fold Language 草案      L3 规则集语言与打包
+```
+
+第 3 份的 §2、§3、§4 只作为设计过程记录阅读，见该文的「取代关系」。
 
 ### 3.3 下一步工作
 
