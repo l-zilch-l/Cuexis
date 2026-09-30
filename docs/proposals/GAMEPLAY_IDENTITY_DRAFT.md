@@ -75,7 +75,7 @@ Ruleset Interface 的变化同样需要区分"对既有内容是否可见"，判
 | 收窄 Hook 的取值范围 | 是（既有程序或 Loadout 可能非法） | 是 |
 | 新增一个 Hook | 否 | **否** |
 | 新增 outcome 或 category | 否 | 否 |
-| 改窗口集数值 | 不适用 | 这是 Build 变化，本来就不 bump |
+| 改窗口表数值 | 不适用 | 这是 Build 变化，本来就不 bump |
 
 由此得到两条结论：
 
@@ -107,10 +107,12 @@ JudgementIdentity
 
 ```text
 engine     判定语义版本、定点表版本（角度表等）、Tick 分辨率
-ruleset    Interface 版本（等级、category、outcome、Hook 及静态范围、窗口集）
+ruleset    Interface 版本（等级集合、category、outcome、程序可见 Hook 及静态范围、窗口表）
            Build 的 judgment 投影（Controller、region、仲裁策略、fold、模块骨架）
-chart      judgment 投影：requirement 集（参数已解析）、被引用的 region 与 frame、
-           Slider 路径与宽度、谱面自带的判定程序
+chart      judgment 投影：requirement 集（参数已解析）。
+           每条 requirement 在 Fold Calculus 下是
+           （标准库条目 ID | 内联 Pattern） + 参数 + 计量规格
+           另含被引用的 region 与 frame、谱面自带的判定程序
 session    Loadout（启用模块与参数取值）
 ```
 
@@ -118,10 +120,24 @@ session    Loadout（启用模块与参数取值）
 变了，而不是只报"身份不符"。这也让既有 `PreparedSemanticIdentity` 的域分隔合成方式可以
 直接扩展为分量表。
 
+### 4.0 术语对应
+
+本文写作时间早于 [Bounded Fold Calculus 提案](GAMEPLAY_FOLD_CALCULUS_DRAFT.md)，个别名词与其
+不同但概念对应：
+
+| 本文 | Fold Calculus | 说明 |
+| --- | --- | --- |
+| Hook | 程序可见 Hook（calculus §5.6） | 同一概念；calculus 把 `hook` 列入谓词读取集合 |
+| 窗口集 | 窗口表 / 等级集合（calculus §3.6） | 同一概念；Grading 用它把 Measure 映射到等级 |
+| requirement 集 | Pattern / 标准库条目 + 参数 + 计量规格 | 同一概念，表达形式改变 |
+| 判定程序 | Pattern（编译为 Fold） | 作者写 Pattern，引擎编译为自动机 |
+
+引用本文的结论时，以本表换算到 calculus 的名词。
+
 ### 4.1 Interface 投影（use-based）
 
 ruleset 分量不直接使用 Interface 版本的内容清单，而是使用 **Interface 投影**：内容与 Loadout
-**实际引用**了哪些 Hook、窗口集、region 与 grade。
+**实际引用**了哪些 Hook、窗口表、region 与 grade。
 
 理由见 [Skill Hooks 与模块扩展性草案](GAMEPLAY_SKILL_HOOKS_DRAFT.md) §7：Interface 版本是
 "兼容集合"，只回答内容能否运行；投影才回答"实际用到哪些"。两者分开之后，

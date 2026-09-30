@@ -86,7 +86,8 @@ grade     有序等级集合，索引即名次。例如 perfect / great / good /
 category  note / penalty / bonus / filler 等
 outcome   结算结果枚举，例如 hit / miss / broken / avoided / detonated
 phase     阶段枚举，例如 head / body / tail
-window    命名窗口集，每个等级一个带符号区间，可被 Hook 缩放
+window    命名窗口表，每个等级一个带符号区间，可被 Hook 缩放
+          （即 Fold Calculus 提案 §3.6 的等级集合与 Grading 依据）
 hook      类型化变量及其静态取值范围，例如 windowScale: Int[750..1250]
           每个 Hook 还必须声明 derived（带合成算子）或 owned（唯一所有者），见 4.7
 region    判定域：离散 channel 集合、路径走廊、一维有界区域等

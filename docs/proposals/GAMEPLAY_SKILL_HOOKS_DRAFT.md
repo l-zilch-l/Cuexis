@@ -68,9 +68,9 @@ prepare 时静态界定。**
 按前面八个案例，L2 实际读到的程序可见 Hook 只有：
 
 ```text
-窗口集的缩放或偏移        例如 win(set).grade.early / late
-Hold 宽限时间             holdGrace
-接水果盘子的判定半宽        catchHalfWidth
+窗口表（等级集合）的缩放或偏移   例如 win(set).grade.early / late
+Hold 宽限时间                  holdGrace
+接水果盘子的判定半宽             catchHalfWidth
 ```
 
 共同特征：都是**判定相关的标量**，且都是"技能希望放宽或收紧判定"的产物。
@@ -152,7 +152,7 @@ Fold 草案 §4.7 的规则完全一致，不需要新机制。
 
 ```text
 Interface 版本   兼容集合："哪些能力存在"。决定内容能否运行。
-Interface 投影   use-based："内容与 Loadout 实际引用了哪些 Hook、窗口集、region、grade"。
+Interface 投影   use-based："内容与 Loadout 实际引用了哪些 Hook、窗口表、region、grade"。
 ```
 
 `JudgementIdentity` 的 ruleset 分量只覆盖**被实际引用**的部分。
@@ -164,6 +164,20 @@ Interface 投影   use-based："内容与 Loadout 实际引用了哪些 Hook、�
 
 这与 Gameplay Identity 草案"只覆盖影响结果的字段"是同一条原则，只是从"字段"推进到
 "实际使用"。现在回到 §2.2 的结论：新增 Hook 既不改版本，也不让已有 Replay 失效。
+
+### 7.1 与 Fold Calculus 的接口
+
+本文写作时间早于 [Bounded Fold Calculus 提案](GAMEPLAY_FOLD_CALCULUS_DRAFT.md)。术语对应：
+
+| 本文 | Fold Calculus | 说明 |
+| --- | --- | --- |
+| 程序可见 Hook | 谓词读取集合中的 `hook` | calculus §5.6 把读取集合显式写出，`hook` 是其中之一 |
+| L2 程序守卫读 Hook | Pattern 的 atom / instant 谓词读 `hook` | 同一能力，作者写作位置改变 |
+| 窗口集 | 窗口表 / 等级集合 | Grading 用它把 Measure 映射到等级 |
+| 模块本地状态 | Fold 的 State（per-session 寿命） | 同一机制，calculus 按寿命统一 |
+
+**§1 的结论在 calculus 下更强**，因为 calculus 把 `hook` 明确列入谓词读取集合（§5.6），
+于是"技能改变判定参数"这条路径在核心里有位置，不需要额外说明。
 
 ## 8. 禁止清单
 
