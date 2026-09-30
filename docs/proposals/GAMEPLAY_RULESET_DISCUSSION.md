@@ -307,6 +307,10 @@ L2 的静态验证只针对 L3 声明的 Interface（含每个 Hook 的静态取
 56. L3 与 L2 的预算分开计。L3 的核心是定值而 L2 随活动度变化，合并会掩盖两种不同的
     失败现象（高密谱面掉帧 vs 模块写太多）。L3 侧的例外是 `l3FactCostPerSecond`：
     Fact 数与谱面密度成正比，因此折叠代价实际随谱面规模线性增长。
+57. Ruleset Interface 的 bump 细则按 Interface 的十个字段（Ruleset Fold 草案 §4.1）逐个
+    套用判据，得到一张可机械检查的表。十项里只有 `grade` 与 `hook` 会 bump，且只在收窄或
+    重排方向。`grade` 中间插入是判定语义变更而非容器变更；同一 hookId 下改合成算子的正确
+    做法是新增 hookId；`module` 改 group 不 bump，因为它只让某些 Loadout 从合法变非法。
 
 ### 3.2 草案状态
 
@@ -387,6 +391,10 @@ H. 技能挂点体系的覆盖范围 —— 已完成初稿
 
 I. 收敛
    ADR（含威胁模型）、Spec、预算与 ABI、修订 Stage 7 范围。
+
+P. Interface bump 细则 —— 已完成
+   见 [Gameplay Identity 分层草案](GAMEPLAY_IDENTITY_DRAFT.md) §2.3：十个字段的逐项表，
+   可直接写成逐字段 diff 的检查脚本。
 
 O. 跨层共享面与 L3 预算 —— 已完成
    见 [Ruleset Fold Language 草案](GAMEPLAY_RULESET_FOLD_DRAFT.md) §3.1–§3.2：表达式核的
