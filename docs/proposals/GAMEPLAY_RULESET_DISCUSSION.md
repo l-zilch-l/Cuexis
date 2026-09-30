@@ -255,6 +255,14 @@ L2 的静态验证只针对 L3 声明的 Interface（含每个 Hook 的静态取
     问题而非能力问题；做成 capability 会让同一引擎对不同谱面宣称支持不同的语言特性。
 38. 快照必须无损（`snapshot(T)` 与连续推进逐位相同），间隔是引擎自由参数、不进 identity。
     周期采样相位必须进快照，否则 Seek 会复现缺陷 D1。
+39. Pattern 与 Measure 共享表达式核（读取集合、类型系统、几何原语、绑定变量、窗口表），
+    但不共享算子集：Pattern 算子生成语言，Measure 算子归约区间。方向相反、代价模型不同、
+    编译目标不同，三条理由任何一条都足以否定合并。
+40. 标准库分两层：引擎核心库（随引擎发行、ID 永久稳定、版本进 capability）与包扩展库
+    （随 Ruleset 包发行、由 Interface 声明签名）。两个命名空间独立，包库不得遮蔽引擎库，
+    否则 engine 前缀"ID 永久稳定"失效。
+41. L3 不使用 Pattern / Measure，但两者都是 Fold 的实例。L2 与 L3 真正共享的是 Fold，
+    不是 Pattern；Pattern 只是 L2 面向作者的源语言。
 
 ### 3.2 草案状态
 
@@ -269,7 +277,8 @@ L2 的静态验证只针对 L3 声明的 Interface（含每个 Hook 的静态取
 
 [Ruleset Fold Language 草案](GAMEPLAY_RULESET_FOLD_DRAFT.md) 已完成第一版。
 [Gameplay 预算与规模上界草案](GAMEPLAY_BUDGET_AND_SCALE_DRAFT.md) 已完成第一版，
-代价条目不再分散在四处。
+代价条目不再分散在四处。Fold Calculus 提案的 §5 已扩为"核心之外的声明与裁决"，
+把表达式核、标准库与 L3 的关系三项裁决一并写入（§5.7–§5.9）。
 [Gameplay Identity 分层草案](GAMEPLAY_IDENTITY_DRAFT.md)、
 [Skill Hooks 与模块扩展性草案](GAMEPLAY_SKILL_HOOKS_DRAFT.md) 与
 [Gameplay 设计压测与缺陷登记](GAMEPLAY_STRESS_TEST_DRAFT.md) 仍是各自主题的载体；
