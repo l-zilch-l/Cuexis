@@ -188,8 +188,9 @@ L2 的静态验证只针对 L3 声明的 Interface（含每个 Hook 的静态取
 11. 派发方式由 Requirement 声明（`consume` / `observe`），不按判定域声明；炸弹因此不会抢输入。
 12. 折叠是声明式折叠表，(category, outcome, grade) 组成键；结算结果是 Ruleset 声明的枚举，
     引擎不区分好坏。
-13. Controller 是"形状表 + 参数"，形状由引擎实现并整数闭式求解；逃生通道为按事件步进的
-    `sampled` 模式，暂不开放。
+13. Controller 分 `onEvent` 与 `sampleAt` 两个函数：事件侧可编程，时间侧封闭。`sampleAt` 的
+    每个字段从三个外推基（`hold` / `linear` / `quadratic`）里选一个，再可选地套一个后处理
+    算子 `clamp`。外推基集合可扩展且扩展是纯增量，并声明为 capability。
 14. 等级只能通过 `grade(err, 窗口集)` 或 Ruleset 常量取得，程序不能自己构造。
 15. 程序之间零耦合：唯一能看别人状态的地方是 Ruleset 的仲裁过滤。
 
@@ -208,42 +209,53 @@ L2 的静态验证只针对 L3 声明的 Interface（含每个 Hook 的静态取
 23. 几何轨道用"形状静态 + 摆放采样"表达：frame 是一段随时间采样的 Transform 轨道，形状在
     frame 局部坐标中保持静态；角度用 1/65536 圈整数加引擎内置定点三角函数表；frame 运行期
     不可变，判定与表现都可读，表现不能写。
+24. 自定义按键映射属于 L1，由 Player 或宿主提供，谱面与程序不需要感知。做法是记录**映射后**
+    的规范化事件，同时把映射 identity 写入 Replay 头部；播放时校验 identity，不匹配稳定拒绝，
+    不静默改用其他映射。理由与 TimingMap 对"不同来源的延迟不得合并"的规定一致。
+25. 数值模型取"数据浮点，决策投影到整数"：作者侧用 f32/f64 表达位置、路径与 frame，
+    prepare 时按声明的单位量化一次（向偶舍入、单调、唯一），决策侧只看整数，表现侧回到浮点。
+    边界判据是"写不出来就加一个闭式基或声明式能力"，不是放开浮点。
+26. 输入模型为两类事件加一类状态：接触点事件（begin/move/end，带 contactId）、通道事件
+    （press/release）、以及作为状态的轴与指针位置。轴不进事件流，`axisStep` 是 L1 越阈合成
+    的边沿。映射、死区、阈值与接触点线性插值都在 L1，程序侧不可见。
 
 ### 3.2 草案状态
 
-[Gameplay Program IR 原语草案](GAMEPLAY_PROGRAM_IR_DRAFT.md) 已完成第一版，含执行模型、
-原语、仲裁、静态验证，以及七个案例压测：Tap、中途断开的 Hold、带跳区的 maimai 星星、
-osu!catch 水果、重叠判定区、变宽 Slider、炸弹。七个案例全部可表达。
+[Gameplay Program IR 原语草案](GAMEPLAY_PROGRAM_IR_DRAFT.md) 已完成第二版，含执行模型、
+原语、空间状态与输入、表现绑定、仲裁、静态验证，以及八个案例压测：Tap、中途断开的 Hold、
+带跳区的 maimai 星星、osu!catch 水果、重叠判定区、变宽 Slider、炸弹、移动判定线。
+八个案例全部可表达。
+
+[Ruleset Fold Language 草案](GAMEPLAY_RULESET_FOLD_DRAFT.md) 已完成第一版。
 
 ### 3.3 下一步工作
 
-按依赖排序，前四项是设计工作，之后才是实施。
+按依赖排序，前几项是设计工作，最后才进入实施。
 
 ```text
-A. Ruleset 折叠与技能的 IR 表达
-   决定 L3 的语言与打包。初稿见
+A. Ruleset 折叠与技能的 IR 表达 —— 已完成初稿
    [Ruleset Fold Language 草案](GAMEPLAY_RULESET_FOLD_DRAFT.md)：与 L2 共用表达式核与类型
    系统，语句层分开；Interface 与 fold 程序同包分发。
 
-B. 几何轨道
-   判定区随时间移动或变形（Phigros 判定线）。已在
-   [Gameplay Program IR 原语草案](GAMEPLAY_PROGRAM_IR_DRAFT.md) §5.2 给出方案：
-   区域绑定 frame，形状在局部坐标中静态。不改变程序 IR。
+B. 几何轨道 —— 已完成
+   见 [Gameplay Program IR 原语草案](GAMEPLAY_PROGRAM_IR_DRAFT.md) §5.3：区域绑定 frame，
+   形状在局部坐标中静态。不改变程序 IR。
 
-C. Controller 自定义程度
-   形状表是否够用；是否需要 sampled 逃生通道；是否允许 Ruleset 用 IR 写 Controller。
+C. Controller 自定义程度 —— 已完成
+   见同文 §5.2：事件侧可编程，时间侧封闭；三个外推基加一个后处理算子；`sampled` 逃生通道
+   取消。
 
-D. Input 形状
-   接触点模型、InputMapping 坐标空间、区域形状的最终列表。
+D. Input 形状 —— 已完成
+   见同文 §5.1：两类事件加一类状态；映射、死区、阈值、线性插值都在 L1。
 
-E. 表现绑定模型
-   触发源（输入观察、判定事件、GameplayState）、禁止级联、目标属性集合。
+E. 表现绑定 —— 已完成
+   见同文 §6：三类读入口、三条驱动路径、按键音分两种、按绑定键的覆盖与 `overridable`。
 
 F. identity 分层
    gameplay identity、chart semantic identity、Ruleset Build、Loadout、presentation。
 
 G. 继续压测
-   Arcaea 的 Arc 与 Sky Note、Phigros 移动判定线、Taiko 连打、osu! Slider、DJMAX 长按连打。
+   Arcaea 的 Arc 与 Sky Note、Taiko 连打、osu! Slider、DJMAX 长按连打、多指 Slide。
 
 H. 技能挂点体系的覆盖范围
    决定新技能/角色是否需要升级 Ruleset Interface。
@@ -256,3 +268,4 @@ I. 收敛
 
 1. 目标游戏清单：用于压测全部抽象，尚未提供。
 2. 作者语法：JSON IR、文本 DSL、还是 Studio 可视化编辑，尚未选择。
+3. 定点表清单与版本管理：角度表已定，`exp` / `sinusoid` 外推基若启用会带来新的表。
