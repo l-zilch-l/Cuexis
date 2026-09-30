@@ -272,6 +272,10 @@ L2 的静态验证只针对 L3 声明的 Interface（含每个 Hook 的静态取
     放行取自 workflow 事件。放行按清单项而非全局布尔。
 45. L1 朝向归一化的接口只保证输出单位与值域、单调性、单圈值域三件事，融合算法留作
     L1 实现且不进 identity——与输入映射同级，都"烘进事件流"。
+46. Interface 投影的单位是 (hookId, 贡献来源)，且只取"生效贡献集合"与谱面实际读取集合的
+    交集。它比逐 Hook 更细因而更安全，成本却由 Loadout 决定、不随谱面规模增长。
+47. Fact 携带 `requirementId`。身份本来就在系统里（仲裁按它排序），只是此前没有随 Fact
+    暴露；补上之后"按音符的例外"可由 fold 处理器表达。这不破坏 W1 的边界，因为方向单向。
 
 ### 3.2 草案状态
 
@@ -352,6 +356,11 @@ H. 技能挂点体系的覆盖范围 —— 已完成初稿
 
 I. 收敛
    ADR（含威胁模型）、Spec、预算与 ABI、修订 Stage 7 范围。
+
+L. 投影粒度与 Fact 身份 —— 已完成
+   见 [Gameplay Identity 分层草案](GAMEPLAY_IDENTITY_DRAFT.md) §4.2 与
+   [Fold Calculus 提案](GAMEPLAY_FOLD_CALCULUS_DRAFT.md) §5.4：投影单位确定为
+   (hookId, 贡献来源) 与读取集合的交集；Fact 补入 `requirementId`，压测 L5 与 L7 同时关闭。
 
 K. 引擎冻结合同 —— 已完成初稿
    见 [引擎冻结合同草案](GAMEPLAY_ENGINE_FROZEN_CONTRACTS_DRAFT.md)：定点表登记点与

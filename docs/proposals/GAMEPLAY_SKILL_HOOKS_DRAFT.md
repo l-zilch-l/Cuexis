@@ -157,6 +157,16 @@ Interface 投影   use-based："内容与 Loadout 实际引用了哪些 Hook、�
 
 `JudgementIdentity` 的 ruleset 分量只覆盖**被实际引用**的部分。
 
+**投影的单位**（2026-10-01 补充，见
+[Gameplay Identity 分层草案](GAMEPLAY_IDENTITY_DRAFT.md) §4.2）：不是 Hook 标识，
+也不是判定域，而是 **(hookId, 贡献来源)**，且只覆盖"生效贡献集合"与该谱面实际读取的
+Hook 集合的**交集**。理由与本文 §7 完全一致——判定读到的是合成后的**生效值**，
+不是声明范围，所以记录 `windowScale: Int[750..1250]` 没有意义，
+记录 `{core: 1000, skillA: +150}` 才有意义。
+
+这个单位比逐 Hook 更细（更安全），但**不随谱面规模增长**：贡献集合的规模由 Loadout 决定，
+与 requirement 数、小节数无关。线性于谱面的部分是 chart 分量，不是这里。
+
 于是：
 
 - 新增一个 Hook 且无人引用：版本不变，投影不变，没有 Replay 失效。
@@ -223,8 +233,11 @@ L2 程序看到的 Hook 集合与取值范围始终由 Interface 决定，且与
 
 ## 10. 待决
 
-1. Interface 投影的粒度：按 Hook 标识逐项，还是按"判定域 + 参数族"聚合。粒度太细会让
-   identity 计算量与内容规模线性相关。
+1. ~~Interface 投影的粒度~~ 已在
+   [Gameplay Identity 分层草案](GAMEPLAY_IDENTITY_DRAFT.md) §4.2 裁决：
+   单位是 **(hookId, 贡献来源)**，且只取"生效贡献集合"与实际读取集合的交集。
+   它比逐 Hook 更细，但成本由 Loadout 而非谱面规模决定，因此没有原来担心的线性成本。
+   本文 §7 已同步。
 2. 触发词汇表的完整列表需要与目标游戏清单一起压测。目前七类是否够用尚无证据，用户也未提供
    目标游戏清单（讨论记录 §3.4）。
 3. 周期触发（`every`）的预算与稳态负载如何计入每 Tick 代价上界。
