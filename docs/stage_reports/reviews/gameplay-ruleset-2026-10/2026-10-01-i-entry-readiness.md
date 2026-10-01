@@ -77,7 +77,8 @@ prepare            显式值量化并校验；缺省值继承 prepare 前的 hol
 | explicit / inherited identity 区分 | GCC/clang 通过 C12：最终值相同 identity 相同，来源 / policy 可区分 | 通过研究性 spike |
 | prepare 后 Hook 变化不追溯 | GCC/clang 通过 C13 | 通过研究性 spike |
 | Slider 尾部 deadline | GCC/clang 通过 C14 | 通过研究性 spike |
-| 真实内容切片与预算冻结 | 尚未完成 | 未通过 |
+| 代表性研究切片与预算测量 | GCC/clang 通过：96 条 requirement、672 事件、activity peak 3、Gap timer peak 2、快照恢复无损 | 通过研究性 spike；不等于真实作者内容 |
+| 真实内容分布与预算冻结 | 尚未完成 | 未通过 |
 
 C10-C14 已登记并完成于 [Gameplay 压测草案](../../../proposals/GAMEPLAY_STRESS_TEST_DRAFT.md) §2.1。
 证据仍限定为研究性 spike：它没有接入产品 `engine/`，也没有替代真实内容切片。
@@ -88,7 +89,7 @@ C10-C14 已登记并完成于 [Gameplay 压测草案](../../../proposals/GAMEPLA
 
 原因不是核心设计不可行，而是 I 的输入合同还缺少一类证据：
 
-1. 预算草案中的候选值仍需最小可运行切片和真实内容测量；不能把研究性 spike 的合成数字直接
+1. 预算草案中的候选值仍需更广泛的真实内容分布测量；不能把研究性 spike 的合成数字直接
    写成 ABI 或生产限制。
 
 此外，用户已经明确要求停在 I 收敛之前；本记录遵守该停止点。即使 C10-C14 后续通过，是否
@@ -98,7 +99,7 @@ C10-C14 已登记并完成于 [Gameplay 压测草案](../../../proposals/GAMEPLA
 
 在不进入 I 的前提下，下一批工作应只做：
 
-1. 用一条真实内容切片验证 Hold / Slider 的 prepared grace、快照 / Seek 和 deadline。
+1. 用更多真实内容分布验证 activity、Gap timer、尾部 deadline 与 Seek 成本；当前代表性切片只完成路径证据。
 2. 把测得的 activity、Gap timer、尾部 deadline 影响写回预算证据；继续保持候选值与冻结值分开。
 3. 由用户确认是否解除“I 前停止”后，才创建 ADR / Spec / ABI 变更。
 

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
+#include <numeric>
 #include <string>
 #include <vector>
 
@@ -395,6 +396,186 @@ void reportPreparedGraceMatrix() {
                 static_cast<long long>(item(c14).deadline), c14Ok ? "passed" : "FAILED");
 }
 
+struct SliceMeasurement {
+    Result baseline;
+    std::size_t requirements = 0;
+    std::size_t events = 0;
+    std::size_t activityPeak = 0;
+    std::size_t gapTimerPeak = 0;
+    std::size_t maxSnapshotBytes = 0;
+    double seekP95Ms = 0.0;
+    double seekMaxMs = 0.0;
+    bool lossless = false;
+};
+
+std::vector<Requirement> representativeRequirements() {
+    std::vector<Requirement> requirements;
+    requirements.reserve(96);
+    for (std::uint32_t i = 0; i < 96; ++i) {
+        const bool isSlider = (i % 3u) == 0u;
+        Requirement req = isSlider ? slider(1000u + i) : hold(1000u + i);
+        req.lane = static_cast<std::uint8_t>(i % 8u);
+        req.anchor = 1'000'000 + static_cast<Tick>(i) * 350'000;
+        req.end = req.anchor + (isSlider ? 620'000 : 420'000);
+        req.segments = isSlider ? 8 : 1;
+        if ((i % 4u) == 0u) {
+            req = withGrace(req, 20'000);
+        } else if ((i % 4u) == 1u) {
+            req = withGrace(req, 60'000);
+        } else if ((i % 4u) == 2u) {
+            req = withGrace(req, 100'000);
+        }
+        requirements.push_back(req);
+    }
+    return requirements;
+}
+
+std::vector<Event> representativeEvents(const std::vector<Requirement>& requirements) {
+    std::vector<Event> events;
+    events.reserve(requirements.size() * 7);
+    for (const Requirement& req : requirements) {
+        const std::uint32_t firstContact = req.id * 2u;
+        events.push_back(press(req.anchor, firstContact, req.lane));
+        if (req.kind == Kind::Slider) {
+            const Tick step = (req.end - req.anchor) / static_cast<Tick>(req.segments);
+            for (std::uint32_t segment = 1; segment <= req.segments; ++segment) {
+                events.push_back(move(req.anchor + step * static_cast<Tick>(segment), firstContact,
+                                      segment));
+            }
+            const Tick releaseAt = req.end - 80'000;
+            events.push_back(release(releaseAt, firstContact, req.lane));
+            events.push_back(press(releaseAt + 30'000, firstContact + 1u, req.lane));
+            events.push_back(move(req.end, firstContact + 1u, req.segments));
+            events.push_back(release(req.end + 10'000, firstContact + 1u, req.lane));
+        } else {
+            const Tick releaseAt = req.anchor + 200'000;
+            events.push_back(release(releaseAt, firstContact, req.lane));
+            events.push_back(press(releaseAt + 30'000, firstContact + 1u, req.lane));
+            events.push_back(release(req.end + 10'000, firstContact + 1u, req.lane));
+        }
+    }
+    std::stable_sort(events.begin(), events.end(), [](const Event& a, const Event& b) {
+        return a.t < b.t;
+    });
+    return events;
+}
+
+std::size_t peakIntervals(const std::vector<std::pair<Tick, Tick>>& intervals) {
+    std::vector<std::pair<Tick, int>> edges;
+    edges.reserve(intervals.size() * 2);
+    for (const auto& [begin, end] : intervals) {
+        if (begin >= end) {
+            continue;
+        }
+        edges.emplace_back(begin, 1);
+        edges.emplace_back(end, -1);
+    }
+    std::stable_sort(edges.begin(), edges.end(), [](const auto& a, const auto& b) {
+        if (a.first != b.first) {
+            return a.first < b.first;
+        }
+        return a.second < b.second;
+    });
+    std::size_t active = 0;
+    std::size_t peak = 0;
+    for (const auto& edge : edges) {
+        if (edge.second > 0) {
+            ++active;
+            peak = std::max(peak, active);
+        } else {
+            --active;
+        }
+    }
+    return peak;
+}
+
+SliceMeasurement measureRepresentativeSlice() {
+    Config config;
+    config.holdGraceUs = kGrace;
+    config.holdGraceMinUs = 0;
+    config.holdGraceMaxUs = 120'000;
+    config.sliderLateUs = 20'000;
+    const std::vector<Requirement> requirements = representativeRequirements();
+    const std::vector<Event> events = representativeEvents(requirements);
+
+    Session baselineSession(config, requirements);
+    for (const Event& event : events) {
+        baselineSession.apply(event);
+    }
+    baselineSession.finish();
+
+    std::vector<std::pair<Tick, Tick>> activity;
+    std::vector<std::pair<Tick, Tick>> gaps;
+    activity.reserve(requirements.size());
+    gaps.reserve(requirements.size());
+    for (const Requirement& req : requirements) {
+        const Tick effectiveGrace = req.explicitGrace ? req.graceUs : config.holdGraceUs;
+        const Tick deadline = req.end +
+                              (req.kind == Kind::Slider
+                                   ? std::max(config.sliderLateUs, effectiveGrace)
+                                   : effectiveGrace);
+        activity.emplace_back(req.anchor - config.goodUs, deadline);
+        const Tick releaseAt = req.kind == Kind::Slider ? req.end - 80'000 : req.anchor + 200'000;
+        gaps.emplace_back(releaseAt, releaseAt + effectiveGrace);
+    }
+
+    std::vector<double> seekMs;
+    seekMs.reserve(24);
+    std::size_t maxSnapshotBytes = 0;
+    bool lossless = true;
+    for (std::size_t target = 1; target <= 24; ++target) {
+        const std::size_t split = (events.size() * target) / 25;
+        Session recorder(config, requirements);
+        for (std::size_t i = 0; i < split; ++i) {
+            recorder.apply(events[i]);
+        }
+        const std::vector<std::uint8_t> snapshot = recorder.snapshot();
+        maxSnapshotBytes = std::max(maxSnapshotBytes, snapshot.size());
+        Session seeker(config, requirements);
+        const auto start = std::chrono::steady_clock::now();
+        seeker.restore(snapshot);
+        for (std::size_t i = split; i < events.size(); ++i) {
+            seeker.apply(events[i]);
+        }
+        seeker.finish();
+        seekMs.push_back(std::chrono::duration<double, std::milli>(
+                             std::chrono::steady_clock::now() - start)
+                             .count());
+        if (seeker.result().judgementDigest != baselineSession.result().judgementDigest ||
+            seeker.result().digest != baselineSession.result().digest) {
+            lossless = false;
+        }
+    }
+
+    SliceMeasurement measurement;
+    measurement.baseline = baselineSession.result();
+    measurement.requirements = requirements.size();
+    measurement.events = events.size();
+    measurement.activityPeak = peakIntervals(activity);
+    measurement.gapTimerPeak = peakIntervals(gaps);
+    measurement.maxSnapshotBytes = maxSnapshotBytes;
+    measurement.seekP95Ms = seekMs[static_cast<std::size_t>(0.95 * (seekMs.size() - 1))];
+    measurement.seekMaxMs = *std::max_element(seekMs.begin(), seekMs.end());
+    measurement.lossless = lossless;
+    return measurement;
+}
+
+void reportRepresentativeSlice() {
+    const SliceMeasurement measurement = measureRepresentativeSlice();
+    const bool ok = measurement.lossless && measurement.baseline.prepareRejected == false;
+    if (!ok) {
+        ++failures;
+    }
+    std::printf("\n### Representative research slice\n\n");
+    std::printf("This is a deterministic research slice, not a production chart fixture.\n\n");
+    std::printf("| requirements | input events | activity peak | Gap timer peak | max snapshot bytes | seek p95 ms | seek max ms | lossless | status |\n");
+    std::printf("| ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |\n");
+    std::printf("| %zu | %zu | %zu | %zu | %zu | %.3f | %.3f | %s | %s |\n",
+                measurement.requirements, measurement.events, measurement.activityPeak,
+                measurement.gapTimerPeak, measurement.maxSnapshotBytes, measurement.seekP95Ms,
+                measurement.seekMaxMs, measurement.lossless ? "yes" : "NO", ok ? "passed" : "FAILED");
+}
+
 } // namespace
 
 void reportContinuity() {
@@ -403,6 +584,7 @@ void reportContinuity() {
     reportDirected();
     reportStress();
     reportPreparedGraceMatrix();
+    reportRepresentativeSlice();
     if (failures != 0) {
         std::printf("\nFAIL: %d continuity check(s) failed\n", failures);
         std::exit(7);
