@@ -215,6 +215,11 @@ Hold 要的是 `hole`（松手一次不能超过 grace，但可以松很多次�
 `sum` 等采样型 Measure 不自动套用这条归一化规则；若某种自定义 Slider 以运动累计量评分，
 仍需单独声明断连期间的计量方式。
 
+连续音符的 `grace` 在 prepare 阶段解析为每条 requirement 的最终 `Tick` 参数：显式谱面值先
+量化并校验，未提供时使用 Ruleset / Loadout 的 `holdGrace` 默认值。编译后的 `hole` 只读取该
+冻结参数；它不在 Gap 中重新读取 Hook，也不因后续技能状态变化而重排接受路径。这样 `hole` 的
+有效区间、`Break` timer 和 hard deadline 使用同一数值，`grace = 0` 也自然退化为不允许断连。
+
 ### 3.6 全部标准类型是组合，不是新增概念
 
 ```text

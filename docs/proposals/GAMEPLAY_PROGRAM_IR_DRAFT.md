@@ -64,8 +64,10 @@ Chart 中每个 Requirement 对应一个 ProgramInstance：`(program, 冻结参�
 Dormant --armTick--> Live(state) --settle(outcome)--> Settled
 ```
 
-`armTick` 与 `hardDeadline` 是参数和 Ruleset 静态上界的仿射表达式，不读 Hook，因此在 prepare
-时即可算出，用于活动实例数的扫描预算。技能对窗口的缩放必须落在 Ruleset 声明的静态上界之内。
+`armTick` 与 `hardDeadline` 是参数和 Ruleset 静态上界的仿射表达式，在 prepare 后冻结，因此可
+用于活动实例数的扫描预算。技能对窗口的缩放必须落在 Ruleset 声明的静态上界之内。连续音符的
+`grace` 也在 prepare 时解析为最终 Tick 值；Gap 中的 timer 只读这个冻结值，不会被后续 Hook
+变化重排。
 
 `settle` 的结果是 Ruleset Interface 声明的枚举。引擎只要求"每个实例必须在 deadline 前结算"，
 不规定哪个结果算好、哪个算坏。普通音符的 `hit`/`miss` 和炸弹的 `avoided`/`detonated` 是同一种
@@ -170,7 +172,23 @@ handoff   允许换手；接触结束后也可在最终 `grace` 内重新认领�
 
 Arcaea 的 Arc 是 `sticky`：一旦跟随，换指视为断开，所以它永不 `release`。
 §8.2 的 Hold 与 §8.6 的连续 Slider 是 `handoff`。为保持改动最小，继续复用已有的
-`holdGrace` Hook；它在这里提供未覆盖音符的默认宽限，不新增 Hook 或 Interface 字段。
+`holdGrace` Hook；它在这里提供未覆盖音符的 prepare-time 默认宽限，不新增 Hook 或 Interface
+字段。
+
+### 3.2 continuity grace 的解析与冻结
+
+`handoff` Hold 与接触跟随型 Slider 的源参数可以带可选的 `grace: Tick`。Ruleset Interface
+声明 `holdGrace` 的默认值、允许范围和是否允许谱面覆盖。prepare 按以下顺序得到每条
+requirement 的最终值：
+
+```text
+显式 grace       量化并校验 [min, max]，允许时作为该音符的最终值
+未显式提供       使用当前 Ruleset / Loadout 的 holdGrace 默认值
+```
+
+解析结果写入 prepared requirement，随后不再读取运行中的 Hook。这样技能仍可以通过冻结前的
+Loadout 选择全局宽限，但不会在 Gap 已经建立后追溯地移动断开 deadline。`sticky` 或 `observe`
+型 requirement 提供 `grace` 时，prepare 必须拒绝；不允许静默忽略。
 
 ## 4. 原语
 
@@ -1046,19 +1064,19 @@ program tap
 
 ### 8.2 中途可断开的 Hold
 
-头部判定和 Tap 相同。中段允许短暂松开：在最终宽限值 `grace` 内重新按下即可继续。`grace`
-是一个可选的 `Tick` 参数：谱面未提供时继承 `hook.holdGrace`，谱面提供时在 `prepare` 时冻结为
-该音符的最终值。Ruleset 为它声明默认值、允许范围和覆盖开关；显式覆盖不能超出该范围。
+头部判定和 Tap 相同。中段允许短暂松开：在 prepare 冻结的最终宽限值 `grace` 内重新按下即可
+继续。源谱面参数仍是可选的 `grace: Tick`；未提供时继承 Ruleset / Loadout 的 `holdGrace`
+默认值。显式覆盖不能超出 Interface 声明的范围。
 超过宽限时间，Hold 断开。尾部采用"按住到结束即成功"的街机式规则。其他尾部规则（按释放时刻
 判定）可以作为同一程序的一个参数分支，或者写成另一个程序。
 
 ```text
 program hold
-  params     start: Tick, end: Tick, lane: Channel, grace?: Tick
+  params     start: Tick, end: Tick, lane: Channel, grace: Tick  // prepared final value
   registers  releasedAt: Tick
              observable headGrade: Enum<Grade>, broken: Bool := false
   arm        start - W.max.early
-  deadline   end + holdGrace.max
+  deadline   end + grace
   claimKey   abs(evt.t - start)
   grip       handoff
 
@@ -1120,14 +1138,15 @@ material.tint = outcome(req) in {miss, broken} at T ? gray : normal
 
 `outcome(req)` 是对 GameplayState(T) 的绝对时间查询，所以 Seek 到断开前后都能得到正确画面。
 
-发现的问题：
+边界与验证要求：
 
-1. `timer` 表达式需要读取寄存器（`releasedAt`）和 Hook（`holdGrace`），因此必须要求
-   `holdGrace` 在 Ruleset 中声明静态上界，否则算不出 deadline。
+1. `timer` 只读取寄存器（`releasedAt`）和 prepared 参数（`grace`），因此不会被演奏中的
+   Hook 改写；`deadline = end + grace` 已在 prepare 时可计算。
 2. 需要按 contact 过滤的输入（`contactEnd, c`）。只按 lane 过滤不够：同一 lane 上可能有
    另一根手指。
 3. Gap 期间同一 lane 上可能落下一个新 Tap。这次按下交给 Hold 还是交给 Tap，由第 8 节的
-   仲裁排序决定。Ruleset 需要为"接回 Hold"和"新音符"规定优先级，这是一个真实的策略参数。
+   仲裁排序决定。Ruleset 需要为"接回 Hold"和"新音符"规定优先级，这是一个真实的策略参数，
+   且该策略进入判定 identity。
 
 ### 8.3 带跳区的 maimai 星星
 
@@ -1260,11 +1279,11 @@ width(T)  同样分段线性，允许每段不同
 ```text
 program slider
   params     t0: Tick, t1: Tick, m: Int[1..16],
-             anchors: Array<Point, 16>, widths: Array<Int, 16>, grace?: Tick
+             anchors: Array<Point, 16>, widths: Array<Int, 16>, grace: Tick  // prepared final value
   registers  c: Contact, releasedAt: Tick, seg: Int[0..15]
              observable following: Bool := false
   arm        t0 - W.max.early
-  deadline   t1 + W.max.late
+  deadline   t1 + max(W.max.late, grace)
   claimKey   abs(evt.t - t0)
   dispatch   consume
 
@@ -1485,6 +1504,7 @@ prepare 时逐个程序、逐个实例检查以下各项，任一项失败都拒
 | 类型和引用 | Channel、Region、Grade、Hook、Controller、frame 必须在 Ruleset Interface 或谱面中已声明 |
 | 取值范围 | 对所有算术和寄存器写入做区间分析，可能越界或溢出即拒绝 |
 | 判定域量程 | 每个判定域声明坐标与尺寸取值范围；判定不等式的每一项可由此推出上界且不溢出（2026-10-01 新增，见 §5.5） |
+| 连续宽限 | `grace` 在 prepare 时解析并落在 Interface 范围内；`sticky` / `observe` 不得提供覆盖；Gap timer 只读冻结值 |
 | 必然结算 | 必须有 `onDeadline`，而且它会 settle；所有 timer 表达式的上界 ≤ deadline |
 | 同 Tick 终止 | 输入和 timer 边每次事件最多触发一次；`level` 边必须声明 progress 度量并严格增加 |
 | 结算唯一 | 每条路径上 `settle` 最多执行一次；settle 之后不可达的边给出警告 |

@@ -109,6 +109,20 @@ maxInlinedPatternBytes   内联 Pattern 的编码字节总和
 因此 `windowScale` 的允许上界不能只按"判定公平性"定，还要过一遍活动度预算。
 这条此前没有写在任何地方。
 
+### 3.1a 连续宽限对活动度的影响
+
+连续音符在 prepare 时得到最终 `grace(r)`。它不是新的实例类型，也不增加活动度乘数，但会
+延长 `handoff` requirement 的静态寿命，因此必须进入扫描线：
+
+```text
+Hold     deadline(r) = end(r) + grace(r)
+Slider   deadline(r) = t1(r) + max(W.max.late, grace(r))
+```
+
+显式谱面值使用解析后的 `grace(r)`；未覆盖音符使用当前 Interface / Loadout 的默认值。扫描线
+和 Gap timer 数量都只读取这个 prepared 值，不读取运行中的 Hook。这样 `grace = 0`、最小值和
+最大值都落在同一套活动度与 deadline 公式内，不需要另增预算项。
+
 ### 3.2 每事件代价
 
 ```text
@@ -308,6 +322,8 @@ stateBytes * duration / memoryBudget <= maxSeekLatency / (eventRate * perEventCo
 | `every` 的周期 | **进** | 改变 Spinner 类 Measure 的取值，见 Fold §7.3 |
 | `minInputRate` | **进** | 改变重采样结果 |
 | `windowScale` 等派生 Hook 的实际值 | **进** | 直接改变判定 |
+| 单个 requirement 的 prepared `grace` | **进** | 改变断连接受区间与 deadline |
+| `holdGrace` 的默认值 / 范围 / 覆盖开关 | **进** | 改变未覆盖 requirement 的 prepared 参数或合法性 |
 | 快照间隔 | 不进 | 无损加速结构 |
 | 活动度上限 | 不进 | 引擎能力上限，收紧只是拒绝更多谱面 |
 | 补的规模门 | 不进 | 同上 |
@@ -336,6 +352,8 @@ stateBytes * duration / memoryBudget <= maxSeekLatency / (eventRate * perEventCo
 每事件代价      activityPeak * candidateEdges * guardCost <= eventBudget   本文 §3.2
 确定化规模      含补的子表达式确定化后 <= patternStateBudget           本文 §3.3
 采样负载        sampleCostPerSecond <= 预算                            本文 §3.4
+连续宽限        prepared grace 在 Interface 范围内；deadline 按 §3.1a 计算
+Gap timer       每个 handoff requirement 至多一个宽限 timer，计入 timer / candidateEdges
 内联 AST        个数与字节 <= 预算                                    本文 §2.2
 轨道单调性      分段按 Tick 严格升序、不重叠、无空洞、覆盖 [start,end)
 采样周期区间    every(period) 落在 Ruleset 声明的允许区间内

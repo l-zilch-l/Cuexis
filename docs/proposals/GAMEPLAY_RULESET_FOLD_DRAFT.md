@@ -2,7 +2,7 @@
 
 状态：candidate（设计草案，未接受，未实施）
 
-更新日期：2026-09-29
+更新日期：2026-10-01
 
 本文回应 [Gameplay Ruleset 设计讨论记录](GAMEPLAY_RULESET_DISCUSSION.md) 下一步工作 A：L3
 Ruleset Core 的语言与打包。前置决定见该文 §2.9 与 §2.10：四层分层、L3 是可分发内容、L3 不
@@ -184,6 +184,19 @@ module    模块清单：group 与 conflicts 声明，见 4.7
 ```
 
 L2 的验证器只依赖本块。
+
+`holdGrace` 是连续音符的保留 Hook 名称，但在本候选设计中属于 **prepare-time 默认值**，
+不是 Gap 期间可追溯修改的运行期参数。Interface 必须同时声明：
+
+```text
+holdGrace              Tick 的默认值
+holdGraceRange         允许范围 [min, max]
+allowChartGrace        是否允许 handoff Hold / 连续 Slider 提供 grace: Tick 覆盖
+```
+
+prepare 对每条 requirement 解析最终 `grace`：显式谱面值先量化并校验，未显式提供时继承当前
+Ruleset / Loadout 的 `holdGrace` 默认值。`sticky` 与 `observe` 型 requirement 提供覆盖时稳定
+拒绝；解析后的值写入 prepared requirement，进入 Gap 后不再读取 Hook。
 
 ### 4.2 arbitration
 

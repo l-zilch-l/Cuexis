@@ -2,7 +2,7 @@
 
 状态：candidate（设计草案，未接受，未实施）
 
-更新日期：2026-09-29
+更新日期：2026-10-01
 
 本文回应 [Gameplay Ruleset 设计讨论记录](GAMEPLAY_RULESET_DISCUSSION.md) 下一步工作 H：技能挂点
 体系的覆盖范围。它回答的问题只有一个：**新增技能或角色，是否必须升级 Ruleset Interface**。
@@ -78,8 +78,13 @@ prepare 时静态界定。**
 
 `holdGrace` 是游戏侧的默认/继承值。谱面可以在单个 `handoff` Hold 或连续 Slider 上提供显式
 的 `grace: Tick` 参数，但该值必须落在 Interface 声明的范围内，并在 `prepare` 时冻结。显式
-`grace` 是该音符的最终值，不再叠加技能 Hook；未显式提供时，音符才读取当前生效的
-`hook.holdGrace`。这条优先级避免“谱面覆盖”和“技能贡献”各自解释同一数值。
+`grace` 是该音符的最终值，不再叠加技能 Hook；未显式提供时，音符才读取 prepare 前当前
+生效的 `hook.holdGrace` 默认值。进入 Gap 后不再读取 Hook，也不因后续技能状态变化而重排
+timer。这条优先级避免“谱面覆盖”和“技能贡献”各自解释同一数值。
+
+因此 `holdGrace` 在本候选设计中是**可由游戏作者和 Loadout 自定义、但按场次 prepare 冻结**的
+程序可见值；它与允许在演奏中变化的窗口 Hook 分开。若将来需要运行中改变连续宽限，必须先
+单独定义新的捕获时点、deadline 和 identity 语义，不能把动态叠加默认为现有合同的一部分。
 
 反向清单（必须是模块本地状态，不能进 Interface）：
 
