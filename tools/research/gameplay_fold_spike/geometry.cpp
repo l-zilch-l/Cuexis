@@ -206,6 +206,66 @@ std::vector<Tick> sampleGrid(Tick arm, Tick end, Tick period) {
     return out;
 }
 
+Point RawTrack::at(Tick query) const {
+    if (t.empty()) {
+        return Point{};
+    }
+    if (query <= t.front()) {
+        return p.front();
+    }
+    if (query >= t.back()) {
+        return p.back();
+    }
+    std::size_t lo = 0;
+    std::size_t hi = t.size() - 1;
+    while (lo + 1 < hi) {
+        const std::size_t mid = (lo + hi) / 2;
+        if (t[mid] <= query) {
+            lo = mid;
+        } else {
+            hi = mid;
+        }
+    }
+    const Tick span = t[lo + 1] - t[lo];
+    if (span <= 0) {
+        return p[lo];
+    }
+    const Tick elapsed = query - t[lo];
+    auto lerp = [&](std::int32_t a, std::int32_t b) {
+        return static_cast<std::int32_t>(
+            a + roundShiftEaven(static_cast<std::int64_t>(b - a) * elapsed, 0) / span);
+    };
+    return Point{lerp(p[lo].x, p[lo + 1].x), lerp(p[lo].y, p[lo + 1].y)};
+}
+
+Tick firstOnGrid(Tick anchor, Tick period, Tick from) {
+    if (period <= 0 || from <= anchor) {
+        return anchor;
+    }
+    const Tick k = (from - anchor + period - 1) / period;
+    return anchor + k * period;
+}
+
+PredicateObservation observePredicate(const std::vector<Tick>& wakeups,
+                                      const std::function<bool(Tick)>& predicate, Tick trueFrom,
+                                      Tick trueUntil) {
+    // Detection latency: how late the first wake-up that sees the transition arrives, relative to
+    // the instant the transition actually happened. Bounded by one sampling period.
+    PredicateObservation out;
+    bool seen = false;
+    for (const Tick t : wakeups) {
+        ++out.evaluations;
+        const bool got = predicate(t);
+        if (got && !seen) {
+            seen = true;
+            const Tick delay = (t > trueFrom) ? t - trueFrom : 0;
+            out.worstDelay = std::max(out.worstDelay, delay);
+        }
+    }
+    (void)trueUntil;
+    return out;
+}
+
 std::uint64_t resampleCount(Tick duration, Tick period, int contacts) {
     if (period <= 0) {
         return 0;

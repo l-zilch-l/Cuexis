@@ -257,6 +257,72 @@ void reportResampling() {
                 static_cast<unsigned long long>(big));
 }
 
+void reportL1Resampling() {
+    // IR 5.2 (plan A): edges keep their original timestamps, continuous quantities are resampled
+    // on a declared grid whose phase is fixed by the requirement, and the reconstruction between
+    // raw events is a straight line. These three properties are what makes two devices with
+    // different polling rates agree.
+    std::mt19937 rng(4242);
+    const Tick period = 4'000;
+    const Tick arm = 1'000'000;
+
+    std::printf("| raw rate | raw events in 1 s | grid samples | max pos error at grid |\n");
+    std::printf("| --- | --- | --- | --- |\n");
+    for (const Tick rawPeriod : {Tick{1'000}, Tick{4'000}, Tick{8'000}}) {
+        RawTrack track;
+        // A smooth motion sampled at the device's rate, covering the whole query range.
+        for (Tick t = 0; t <= arm + 1'000'000; t += rawPeriod) {
+            const double phase = 2.0 * kPi * static_cast<double>(t) / 1'000'000.0;
+            track.t.push_back(t);
+            track.p.push_back(
+                Point{static_cast<std::int32_t>((500 + 300 * std::sin(phase)) * kPosUnit),
+                      static_cast<std::int32_t>((500 + 300 * std::cos(phase)) * kPosUnit)});
+        }
+        int worst = 0;
+        int samples = 0;
+        for (Tick t = arm; t < arm + 1'000'000; t += period) {
+            const Point got = track.at(t);
+            const double phase = 2.0 * kPi * static_cast<double>(t - arm) / 1'000'000.0;
+            // The reference is sampled at the same phase the raw track was built with.
+            const double exactX = (500 + 300 * std::sin(phase)) * kPosUnit;
+            const double exactY = (500 + 300 * std::cos(phase)) * kPosUnit;
+            worst = std::max(
+                worst, static_cast<int>(std::llabs(got.x - static_cast<std::int32_t>(exactX))));
+            worst = std::max(
+                worst, static_cast<int>(std::llabs(got.y - static_cast<std::int32_t>(exactY))));
+            ++samples;
+        }
+        std::printf("| %lld us | %zu | %d | %d |\n", static_cast<long long>(rawPeriod),
+                    track.t.size(), samples, worst);
+    }
+    std::printf("Reconstruction error is bounded by the straight-line approximation between raw\n");
+    std::printf("events; it shrinks with the device rate but never reaches zero.\n\n");
+
+    // The grid phase is fixed by arm, so a sample set does not depend on preceding input.
+    const Tick a = firstOnGrid(arm, period, arm + 1);
+    const Tick b = firstOnGrid(arm, period, arm + period - 1);
+    check("grid phase fixed by arm", a == arm + period && b == arm + period,
+          "the first sample after arm must not depend on when the query happens");
+
+    // A level predicate can only change on a wake-up, so the detection lag is bounded by the
+    // period.
+    std::vector<Tick> wakeups;
+    for (Tick t = arm; t < arm + 100'000; t += period) {
+        wakeups.push_back(t);
+    }
+    Tick worst = 0;
+    for (Tick offset = 0; offset < period; offset += 137) {
+        const Tick trueFrom = arm + 20'000 + offset;
+        const auto obs = observePredicate(
+            wakeups, [&](Tick t) { return t >= trueFrom; }, trueFrom, trueFrom + 10'000);
+        worst = std::max(worst, obs.worstDelay);
+    }
+    check("detection lag is under one period", worst < period,
+          "a level change is seen at the next wake-up, never later");
+    std::printf("Level-change detection lag: worst %lld us with a %lld us period\n",
+                static_cast<long long>(worst), static_cast<long long>(period));
+}
+
 void reportQuantization() {
     // Round-half-even must be symmetric and exactly representable values must be untouched.
     check("half rounds to even down", roundShiftEaven(2, 1) == 1, "1.0 stays 1");
@@ -286,6 +352,8 @@ void reportGeometry() {
     reportRegions();
     std::printf("\n");
     reportResampling();
+    std::printf("\n");
+    reportL1Resampling();
     std::printf("\n");
     reportQuantization();
     if (failures != 0) {

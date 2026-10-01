@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <functional>
 #include <vector>
 
 namespace spike::geo {
@@ -80,5 +81,28 @@ std::vector<Tick> sampleGrid(Tick arm, Tick end, Tick period);
 
 // Count of grid samples for a domain of the given duration and concurrent contacts.
 std::uint64_t resampleCount(Tick duration, Tick period, int contacts);
+
+// L1 model: raw contact positions at irregular instants, and the piecewise-linear reconstruction
+// that answers a position query at any instant (IR 5.1). Whether the query instant lies on the
+// normalized resampling grid is irrelevant to the value.
+struct RawTrack {
+    std::vector<Tick> t;
+    std::vector<Point> p;
+    Point at(Tick query) const;
+};
+
+// First instant at or after "from" on a grid anchored at "anchor".
+Tick firstOnGrid(Tick anchor, Tick period, Tick from);
+
+// Does a level predicate's truth, evaluated only at the given wake-up instants, ever lag more than
+// the declared period? Returns the worst observed delay.
+struct PredicateObservation {
+    Tick worstDelay = 0;
+    std::uint64_t evaluations = 0;
+};
+
+PredicateObservation observePredicate(const std::vector<Tick>& wakeups,
+                                      const std::function<bool(Tick)>& predicate, Tick trueFrom,
+                                      Tick trueUntil);
 
 } // namespace spike::geo
