@@ -420,6 +420,9 @@ void reportSweepSignature() {
 
 } // namespace
 
+void reportContacts();
+void reportDifferential();
+
 int main() {
     std::printf("# Gameplay fold spike report\n\n");
     reportPatterns();
@@ -465,6 +468,12 @@ int main() {
     reportSweepSignature();
 
     // Determinism across toolchains: run this binary built by different compilers and compare.
+    std::printf("\n## D3. Compiled Pattern vs reference predicate (differential)\n\n");
+    reportDifferential();
+
+    std::printf("\n## D2. Multi-contact scenarios (Program IR 4.5, D10, slot reuse)\n\n");
+    reportContacts();
+
     std::printf("\n## E. Result digests (compare across compilers)\n\n| profile | digest |\n| --- "
                 "| --- |\n");
     for (const Profile& p : profiles) {
