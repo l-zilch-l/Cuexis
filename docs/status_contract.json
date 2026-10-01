@@ -25,14 +25,6 @@
       "Chart/CXC parse-once",
       "关键模块分支覆盖率"
     ],
-    "docs/ROADMAP.md": [
-      "CFU-F consumers and determinism closed; final-SHA hosted gates passed 2026-08-16",
-      "Stage 5 已于 2026-08-28 关闭",
-      "stage_plans/completed/260830-followup/plan.md",
-      "Chart/CXC parse-once",
-      "关键模块分支覆盖率",
-      "CFU-G final closure                                 completed; G6 owner acceptance recorded 2026-08-24"
-    ],
     "docs/PROJECT_GUIDE.md": [
       "CFU-F 已在最终实现 SHA 上关闭跨平台 consumer、确定性、安全与性能门禁",
       "G1 退出审计和 G2 Stage 4 typed handoff 已完成",

@@ -28,6 +28,7 @@ class StatusContractTests(unittest.TestCase):
             requirements["stage_plans/completed/chart-format-foundation-hardening/plan.md"],
         )
         self.assertEqual(("completed",), requirements["stage_plans/completed/stage-06/plan.md"])
+        self.assertNotIn("docs/ROADMAP.md", requirements)
         self.assertEqual(
             ("active",),
             requirements["stage_plans/active/chart-format-update-for-v5/plan.md"],
