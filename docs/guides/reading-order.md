@@ -50,7 +50,7 @@
 1. [玩法抽象模型](../architecture/GAMEPLAY_ABSTRACTION_MODEL.md)
 2. [Gameplay Judgement Spec](../formats/GAMEPLAY_JUDGEMENT_SPEC.md)
 3. [Gameplay Judgement ABI](../api/GAMEPLAY_JUDGEMENT_ABI.md)
-4. [Stage 7 计划](../stage_plans/future/stage-07/plan.md)
+4. [Stage 7 计划](../stage_plans/active/stage-07/plan.md)
 5. [Gameplay 提案索引](../proposals/README.md) → [Gameplay research](../proposals/research/gameplay/README.md)
 
 Gameplay Judgement Spec、ABI 和 ADR 0043 是 I 收敛后的 candidate 工作稿，仍待 owner
@@ -152,7 +152,7 @@ git diff --check
 
 1. 历史报告中的“下一步”不代表当前路线。
 2. `future` 和 `deferred` 不代表已实现；`candidate` 不代表已发布。
-3. Stage 6 关闭不等于 Stage 7A 已启动，也不等于发布授权。
+3. Stage 7A 进入 active 不等于产品实现已经开始，也不等于发布授权。
 4. “脚本”在当前设计中主要指受约束的 Behavior / Event / Effect Schedule，不是通用
    Script VM；运行时脚本和逐帧回调已无限期延期。
 5. 判定必须独立于渲染帧率、渲染后端、Presentation 和 World Entity。

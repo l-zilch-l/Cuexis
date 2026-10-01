@@ -35,7 +35,7 @@ STAGE_PLAN_REQUIREMENTS = (
     ("stage_plans/completed/chart-format-foundation/plan.md", ("completed",)),
     ("stage_plans/completed/chart-format-foundation-hardening/plan.md", ("completed",)),
     ("stage_plans/completed/stage-06/plan.md", ("completed",)),
-    ("stage_plans/future/stage-07/plan.md", ("future",)),
+    ("stage_plans/active/stage-07/plan.md", ("active",)),
     ("stage_plans/future/stage-08/plan.md", ("future",)),
     ("stage_plans/future/stage-11/plan.md", ("future",)),
     ("stage_plans/future/stage-12/plan.md", ("future",)),

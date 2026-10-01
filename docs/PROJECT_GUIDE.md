@@ -98,7 +98,8 @@ Stage 6 [计划](stage_plans/completed/stage-06/plan.md) 于 2026-09-17 启动�
 [A1 至 F1 全部批次退出](stage_reports/stages/stage-06/README.md)，关闭报告、
 [三个核验问题的处置](stage_reports/reviews/stage-verification-2026-09/2026-09-01-findings.md)
 与 Stage 7A / Stage 8 交接清单经 owner 接受（见
-[关闭报告](stage_reports/stages/stage-06/completion.md)）。Stage 7A 与 Stage 8 尚未启动。
+[关闭报告](stage_reports/stages/stage-06/completion.md)）。Stage 7A 计划已进入 active，但产品实现尚未开始；
+Stage 8 尚未启动。
 
 格式权威入口：[formats/README.md](formats/README.md)。
 

@@ -32,7 +32,7 @@ SDK 版本遵循 [版本规范](../../../guides/VERSIONING.md)。本文“v5 发
   -> ../chart-format-foundation-hardening/plan.md
 后续阶段（加固关闭后）
   -> ../../completed/stage-06/plan.md
-  -> ../../future/stage-07/plan.md（Stage 7A）
+  -> ../../active/stage-07/plan.md（Stage 7A）
   -> ../../future/stage-08/plan.md
 ```
 

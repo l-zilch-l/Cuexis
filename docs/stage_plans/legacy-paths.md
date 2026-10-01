@@ -20,7 +20,7 @@
 - `stage_4_implementation_plan.md` -> [canonical](completed/stage-04/plan.md)
 - `stage_5_implementation_plan.md` -> [canonical](completed/stage-05/plan.md)
 - `stage_6_implementation_plan.md` -> [canonical](completed/stage-06/plan.md)
-- `stage_7_implementation_plan.md` -> [canonical](future/stage-07/plan.md)
+- `stage_7_implementation_plan.md` -> [canonical](active/stage-07/plan.md)
 - `stage_8_implementation_plan.md` -> [canonical](future/stage-08/plan.md)
 - `stage_9a_implementation_plan.md` -> [historical input](historical-inputs/stage-09a/plan.md); scope is now [Stage 12](future/stage-12/plan.md)
 - `stage_9b_implementation_plan.md` -> [historical input](historical-inputs/stage-09b/plan.md); scope is now [Stage 12](future/stage-12/plan.md)

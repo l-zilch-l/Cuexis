@@ -1,8 +1,8 @@
 # Stage 7 Implementation Plan: Gameplay Foundation and Judgement Evolution
 
-状态：future；I 收敛文档基线已整理，产品实现未开始
+状态：active；Stage 7A 进入实施准备，I 收敛文档基线已整理，产品实现未开始
 
-更新日期：2026-09-05
+更新日期：2026-10-01
 
 归档来源：[旧版 PROJECT_GUIDE](../../../archive/PROJECT_GUIDE_LEGACY_2026-08-10.md)、
 [SDK transition plan 快照](../../../archive/CUEXIS_SDK_TRANSITION_PLAN_2026-08-10.md) 和

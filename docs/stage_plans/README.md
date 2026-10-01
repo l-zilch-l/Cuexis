@@ -27,11 +27,14 @@ reviews
   某次复核的整改计划；复核记录与其证据仍在 stage_reports/reviews/<review>/
 ```
 
-当前 `active` 目录中有一个计划：
+当前 `active` 目录中有两个计划：
 
 ```text
 chart-format-update-for-v5
   Chart v5 跨阶段总工作包，负责维护 Foundation、Stage 6、Stage 7A 和 Stage 8 的总体设计与交接
+
+stage-07
+  Stage 7A 最小 Input/Judgement/Score/Replay 内核与 Stage 7B+ 高级判定能力
 ```
 
 当前 `reviews` 目录中有两个复核整改计划：
@@ -85,9 +88,10 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
   [R5 报告](../stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)。
   八项关键决策已在 [ADR 0042](../adr/0042-stage-6-productization-boundaries.md) 冻结；A1 至 F1
   全部批次退出，关闭报告、三个核验问题处置与 Stage 7A / Stage 8 交接清单经 owner 接受
-  （见 [关闭报告](../stage_reports/stages/stage-06/completion.md)）。Stage 6 关闭**不**启动
-  Stage 7A 或 Stage 8，也不构成合并或发布授权。
-- [Stage 7A / 7B+](future/stage-07/plan.md)：7A 冻结最小 Input/Judgement/Score/Replay 内核，
+  （见 [关闭报告](../stage_reports/stages/stage-06/completion.md)）。Stage 6 关闭本身**不**
+  实现或授权 Stage 7A；Stage 7A 现已进入实施准备，但仍不构成合并或发布授权。Stage 8
+  尚未启动。
+- [Stage 7A / 7B+](active/stage-07/plan.md)：7A 冻结最小 Input/Judgement/Score/Replay 内核，
   7B+ 持续扩展 Slide、Flick、多指、校准和高级判定能力。
 - [Stage 8](future/stage-08/plan.md)：Chart v5 正式语义、CXT v2、Packed Chart 和 CXC 发行收敛；
   只依赖 Stage 7A，不等待全部 Stage 7B+。
