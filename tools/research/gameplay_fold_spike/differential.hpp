@@ -39,4 +39,8 @@ struct Report {
 // Enumerates traces for the entry and compares the compiled DFA with the reference predicate.
 Report check(const Spec& spec, int maxSteps);
 
+// Randomised long traces: the exhaustive check above only reaches trace length 5, so this covers
+// the long end. It is a probabilistic argument, not a proof.
+Report randomCheck(const Spec& spec, int trials, int minLen, int maxLen, std::uint64_t seed);
+
 } // namespace spike::diff

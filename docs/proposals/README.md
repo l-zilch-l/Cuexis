@@ -27,10 +27,11 @@
   组成与失配策略，未接受、未实施。
 - [Skill Hooks 与模块扩展性草案](GAMEPLAY_SKILL_HOOKS_DRAFT.md)：程序可见 Hook 与模块本地状态
   的区分、触发词汇表、Interface 投影与禁止清单，未接受、未实施。
-- [Gameplay 设计压测与缺陷登记](GAMEPLAY_STRESS_TEST_DRAFT.md)：34 项案例压测、10 条设计缺陷、
+- [Gameplay 设计压测与缺陷登记](GAMEPLAY_STRESS_TEST_DRAFT.md)：34 项案例压测、12 条设计缺陷、
   7 条局限与收敛趋势观察，未接受、未实施。
 - [Bounded Fold Calculus 提案](GAMEPLAY_FOLD_CALCULUS_DRAFT.md)：把核心概念从约 15 个归约到 3
-  个（Fold / Pattern / Measure）的替换性重设计，消除 10 条缺陷中的 6 条，未接受、未实施。
+  个（Fold / Pattern / Measure）的替换性重设计，消除 10 条缺陷中的 6 条（D1–D10 计数），
+  未接受、未实施。
 - [Fold Calculus 封闭性验证](GAMEPLAY_CALCULUS_CLOSURE_CHECK.md)：34 项案例只许用算子组合的
   重写结果，确认无新核心概念，但发现 7 处声明缺失（V1–V7），未接受、未实施。
 - [Gameplay 预算与规模上界草案](GAMEPLAY_BUDGET_AND_SCALE_DRAFT.md)：容量 / 稳态 / Seek 三类

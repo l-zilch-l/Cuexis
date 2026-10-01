@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <random>
 
 namespace spike::diff {
 
@@ -124,6 +125,37 @@ Report check(const Spec& spec, int maxSteps) {
             if (got != want && report.mismatches.size() < 8) {
                 report.mismatches.push_back(Mismatch{trace, got, want});
             }
+        }
+    }
+    return report;
+}
+
+Report randomCheck(const Spec& spec, int trials, int minLen, int maxLen, std::uint64_t seed) {
+    Report report;
+    const CompileResult compiled = compile(build(spec), kAlphabet, 1 << 16);
+    if (!compiled.withinBudget) {
+        report.mismatches.push_back(Mismatch{});
+        return report;
+    }
+    const Dfa& dfa = compiled.dfa;
+
+    // Lengths are drawn uniformly from [minLen, maxLen] rather than always using maxLen: a
+    // mismatch is usually reachable by a short suffix, and short traces find it sooner.
+    std::mt19937_64 rng(seed);
+    std::uniform_int_distribution<int> lenPick(minLen, maxLen);
+    std::uniform_int_distribution<int> symPick(0, kAlphabet - 1);
+    std::vector<int> trace;
+    for (int i = 0; i < trials; ++i) {
+        const int n = lenPick(rng);
+        trace.assign(static_cast<std::size_t>(n), 0);
+        for (int k = 0; k < n; ++k) {
+            trace[static_cast<std::size_t>(k)] = symPick(rng);
+        }
+        ++report.cases;
+        const bool got = accepts(dfa, trace);
+        const bool want = referenceHolds(spec, trace);
+        if (got != want && report.mismatches.size() < 8) {
+            report.mismatches.push_back(Mismatch{trace, got, want});
         }
     }
     return report;
