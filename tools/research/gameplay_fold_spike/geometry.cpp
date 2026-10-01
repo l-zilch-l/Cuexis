@@ -1,0 +1,216 @@
+#include "geometry.hpp"
+
+#include <algorithm>
+#include <cmath>
+
+namespace spike::geo {
+
+namespace {
+
+// Generated at load time from double math, then frozen for the run. The report measures the
+// deviation of the frozen table from the exact values, which is what a shipped table would have.
+const std::vector<std::int32_t>& sinTable() {
+    static const std::vector<std::int32_t> table = [] {
+        std::vector<std::int32_t> t(kFullTurn + 1);
+        for (int i = 0; i <= kFullTurn; ++i) {
+            const double angle = 2.0 * 3.14159265358979323846 * static_cast<double>(i) /
+                                 static_cast<double>(kFullTurn);
+            t[static_cast<std::size_t>(i)] =
+                static_cast<std::int32_t>(std::llround(std::sin(angle) * 65536.0));
+        }
+        return t;
+    }();
+    return table;
+}
+
+Angle wrap(Angle a) {
+    a %= kFullTurn;
+    if (a < 0) {
+        a += kFullTurn;
+    }
+    return a;
+}
+
+} // namespace
+
+std::int32_t sinQ16(Angle a) {
+    return sinTable()[static_cast<std::size_t>(wrap(a))];
+}
+
+std::int32_t cosQ16(Angle a) {
+    return sinTable()[static_cast<std::size_t>(wrap(a + kFullTurn / 4))];
+}
+
+int tableMaxErrorQ16() {
+    int worst = 0;
+    for (int i = 0; i <= kFullTurn; ++i) {
+        const double angle =
+            2.0 * 3.14159265358979323846 * static_cast<double>(i) / static_cast<double>(kFullTurn);
+        const double exact = std::sin(angle) * 65536.0;
+        const int deviation = static_cast<int>(
+            std::llabs(std::llround(exact) - sinTable()[static_cast<std::size_t>(i)]));
+        worst = std::max(worst, deviation);
+    }
+    return worst;
+}
+
+std::int64_t roundShiftEaven(std::int64_t value, int shift) {
+    if (shift <= 0) {
+        return value;
+    }
+    const std::int64_t half = std::int64_t{1} << (shift - 1);
+    const std::int64_t sign = value < 0 ? -1 : 1;
+    const std::int64_t magnitude = value < 0 ? -value : value;
+    const std::int64_t quotient = magnitude >> shift;
+    const std::int64_t remainder = magnitude - (quotient << shift);
+    std::int64_t result = quotient;
+    if (remainder > half || (remainder == half && (quotient & 1) != 0)) {
+        ++result;
+    }
+    return sign * result;
+}
+
+Point apply(const Transform& t, Point p) {
+    const std::int64_t dx = p.x - t.origin.x;
+    const std::int64_t dy = p.y - t.origin.y;
+    const std::int64_t c = cosQ16(t.angle);
+    const std::int64_t s = sinQ16(t.angle);
+    // One quantized affine operation: rotate, scale, round once (D6's fix).
+    const std::int64_t rx = roundShiftEaven((dx * c - dy * s) * t.scaleQ16, 32);
+    const std::int64_t ry = roundShiftEaven((dx * s + dy * c) * t.scaleQ16, 32);
+    // Translation is in the parent frame, so it does not rotate.
+    return Point{static_cast<std::int32_t>(rx + t.origin.x),
+                 static_cast<std::int32_t>(ry + t.origin.y)};
+}
+
+Transform Frame::at(Tick t) const {
+    Transform out;
+    if (segments.empty()) {
+        return out;
+    }
+    ++evalOps;
+    // Binary search over segment starts.
+    std::size_t lo = 0;
+    std::size_t hi = segments.size();
+    while (lo + 1 < hi) {
+        const std::size_t mid = (lo + hi) / 2;
+        ++evalOps;
+        if (segments[mid].t <= t) {
+            lo = mid;
+        } else {
+            hi = mid;
+        }
+    }
+    const Segment& seg = segments[lo];
+    if (seg.kind == SegKind::Const || lo + 1 >= segments.size()) {
+        out.origin = seg.origin;
+        out.angle = seg.angle;
+        out.scaleQ16 = seg.scaleQ16;
+        return out;
+    }
+    const Tick span = segments[lo + 1].t - seg.t;
+    if (span <= 0) {
+        out.origin = seg.origin;
+        out.angle = seg.angle;
+        out.scaleQ16 = seg.scaleQ16;
+        return out;
+    }
+    const Tick elapsed = t - seg.t;
+    // Integer linear interpolation with one rounding; monotone and order preserving.
+    auto lerp = [&](std::int32_t from, std::int32_t to) {
+        const std::int64_t delta = static_cast<std::int64_t>(to) - from;
+        const std::int64_t scaled = roundShiftEaven(delta * elapsed, 0);
+        return static_cast<std::int32_t>(from + scaled / span);
+    };
+    out.origin = Point{lerp(seg.origin.x, seg.originNext.x), lerp(seg.origin.y, seg.originNext.y)};
+    out.angle = lerp(seg.angle, seg.angleNext);
+    out.scaleQ16 = lerp(seg.scaleQ16, seg.scaleNextQ16);
+    return out;
+}
+
+bool Region::contains(Point local, std::uint64_t* ops) const {
+    auto add = [&](std::uint64_t n) {
+        if (ops != nullptr) {
+            *ops += n;
+        }
+    };
+    switch (kind) {
+    case ShapeKind::Disc: {
+        const std::int64_t dx = local.x - a.x;
+        const std::int64_t dy = local.y - a.y;
+        add(5);
+        return dx * dx + dy * dy <= static_cast<std::int64_t>(halfWidth) * halfWidth;
+    }
+    case ShapeKind::Rect: {
+        add(4);
+        return std::llabs(static_cast<std::int64_t>(local.x) - a.x) <= halfWidth &&
+               std::llabs(static_cast<std::int64_t>(local.y) - a.y) <= halfWidth;
+    }
+    case ShapeKind::Strip: {
+        // Distance to the infinite line through a with direction (b - a), half width w.
+        const std::int64_t dx = b.x - a.x;
+        const std::int64_t dy = b.y - a.y;
+        const std::int64_t px = local.x - a.x;
+        const std::int64_t py = local.y - a.y;
+        const std::int64_t cross = dx * py - dy * px;
+        const std::int64_t len2 = dx * dx + dy * dy;
+        add(9);
+        return cross * cross <= static_cast<std::int64_t>(halfWidth) * halfWidth * len2;
+    }
+    case ShapeKind::Segment: {
+        const std::int64_t dx = b.x - a.x;
+        const std::int64_t dy = b.y - a.y;
+        const std::int64_t px = local.x - a.x;
+        const std::int64_t py = local.y - a.y;
+        const std::int64_t len2 = dx * dx + dy * dy;
+        const std::int64_t dot = dx * px + dy * py;
+        add(8);
+        return dot >= 0 && dot <= len2 &&
+               (dx * py - dy * px) * (dx * py - dy * px) <=
+                   static_cast<std::int64_t>(halfWidth) * halfWidth * len2;
+    }
+    case ShapeKind::Corridor: {
+        if (path.size() < 2) {
+            return false;
+        }
+        for (std::size_t i = 0; i + 1 < path.size(); ++i) {
+            const std::int64_t dx = path[i + 1].x - path[i].x;
+            const std::int64_t dy = path[i + 1].y - path[i].y;
+            const std::int64_t px = local.x - path[i].x;
+            const std::int64_t py = local.y - path[i].y;
+            const std::int64_t len2 = dx * dx + dy * dy;
+            const std::int64_t dot = dx * px + dy * py;
+            add(12);
+            if (dot < 0 || dot > len2) {
+                continue;
+            }
+            const std::int64_t w = pathHalfWidths[i];
+            if ((dx * py - dy * px) * (dx * py - dy * px) <= w * w * len2) {
+                return true;
+            }
+        }
+        return false;
+    }
+    }
+    return false;
+}
+
+std::vector<Tick> sampleGrid(Tick arm, Tick end, Tick period) {
+    std::vector<Tick> out;
+    if (period <= 0) {
+        return out;
+    }
+    for (Tick t = arm; t < end; t += period) {
+        out.push_back(t);
+    }
+    return out;
+}
+
+std::uint64_t resampleCount(Tick duration, Tick period, int contacts) {
+    if (period <= 0) {
+        return 0;
+    }
+    return static_cast<std::uint64_t>(duration / period) * static_cast<std::uint64_t>(contacts);
+}
+
+} // namespace spike::geo

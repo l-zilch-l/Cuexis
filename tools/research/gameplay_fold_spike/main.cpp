@@ -422,6 +422,7 @@ void reportSweepSignature() {
 
 void reportContacts();
 void reportDifferential();
+void reportGeometry();
 
 int main() {
     std::printf("# Gameplay fold spike report\n\n");
@@ -467,14 +468,16 @@ int main() {
     std::printf("\n## D. Sweep signature, targeted case (budget draft 7.5)\n\n");
     reportSweepSignature();
 
-    // Determinism across toolchains: run this binary built by different compilers and compare.
-    std::printf("\n## D3. Compiled Pattern vs reference predicate (differential)\n\n");
-    reportDifferential();
-
-    std::printf("\n## D2. Multi-contact scenarios (Program IR 4.5, D10, slot reuse)\n\n");
+    std::printf("\n## E. Multi-contact scenarios (Program IR 4.5, D9, D10)\n\n");
     reportContacts();
 
-    std::printf("\n## E. Result digests (compare across compilers)\n\n| profile | digest |\n| --- "
+    std::printf("\n## F. Compiled Pattern vs reference predicate (differential)\n\n");
+    reportDifferential();
+
+    std::printf("\n## G. Geometry, frames and quantization (Program IR 4.3, 5.4, 5.5)\n\n");
+    reportGeometry();
+
+    std::printf("\n## H. Result digests (compare across compilers)\n\n| profile | digest |\n| --- "
                 "| --- |\n");
     for (const Profile& p : profiles) {
         rt::Interface iface;
