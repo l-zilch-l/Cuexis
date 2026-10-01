@@ -18,14 +18,18 @@ findings are recorded in
 - `runtime.*`: a tick-driven fold for Tap / Hold / Bomb / Roll with the four-phase tick order,
   arbitration by `claimKey`, `every(period)` sampling anchored at `arm`, a derived window-scale
   hook visible from `t+1`, an L3 fold with one time-bounded module, and canonical snapshot / seek.
-- `main.cpp`: synthetic charts and players, and the report.
+- `continuity.*`: an isolated minimum model for handoff Hold / contact-following Slider continuity
+  (`Gap` + `holdGrace`), strict grace boundaries, preserved Slider progress, and snapshot restore.
+- `main.cpp` / `continuity_report.cpp`: synthetic charts and players, and the report.
 
 ## Build and run
 
 No dependencies beyond a C++20 compiler.
 
 ```sh
-g++ -std=c++20 -O2 pattern.cpp runtime.cpp main.cpp -o fold_spike
+g++ -std=c++20 -O2 pattern.cpp runtime.cpp contacts.cpp scenarios.cpp differential.cpp \
+  differential_report.cpp geometry.cpp geometry_report.cpp continuity.cpp continuity_report.cpp \
+  main.cpp -o fold_spike
 ./fold_spike > report.md
 ```
 

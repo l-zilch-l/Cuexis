@@ -160,15 +160,17 @@ Program {
 
 ### 3.1 grip：保持策略
 
-`grip` 声明认领之后中途能否更换接触点。它是判定语义，不是引擎路由规则：
+`grip` 声明认领之后中途能否更换接触点，以及接触结束后是否允许在已有宽限内恢复。
+它是判定语义，不是引擎路由规则：
 
 ```text
 sticky    认领后不可换手。接触点结束即断开，不能由另一个接触点接续
-handoff   允许换手，中间受宽限时间约束
+handoff   允许换手；接触结束后也可在最终 `grace` 内重新认领并继续原阶段
 ```
 
 Arcaea 的 Arc 是 `sticky`：一旦跟随，换指视为断开，所以它永不 `release`。
-§8.2 的 Hold 是 `handoff`：它的 `holdGrace` 是这条策略的参数，不是通用机制。
+§8.2 的 Hold 与 §8.6 的连续 Slider 是 `handoff`。为保持改动最小，继续复用已有的
+`holdGrace` Hook；它在这里提供未覆盖音符的默认宽限，不新增 Hook 或 Interface 字段。
 
 ## 4. 原语
 
@@ -291,10 +293,10 @@ frame 求值（§5.4）是 O(log N)。这确认了几何不进"每事件代价"�
 **不能抢占。** 归属独占至释放或接触点终止。需要交接的场合用 `observe`，或由持有者显式释放。
 
 **换手是一次消费，进入候选集比较。** `grip = handoff` 的实例在接触点未结束时收到新接触点的
-按下，是**用这个新接触点继续同一条 requirement 的同一阶段**。按 §4.5 第 4 条，它必须与同一
-次按下上的其他 `consume` 边一起参加 `claimKey` 比较，而不是无条件接管。这对"滑动经过多个
-判定区、其间两支手交替"是决定性的：若换手绕过仲裁，一个接触点就可能既续上旧 requirement
-又开启新 requirement。
+按下，是**用这个新接触点继续同一条 requirement 的同一阶段**。接触点已经结束时，只有处于
+`holdGrace` 内的实例可以用同一条恢复边重新认领；这条边也必须与同一次按下上的其他
+`consume` 边一起参加 `claimKey` 比较，而不是无条件接管。这对"滑动经过多个判定区、其间两支手
+交替"是决定性的：若换手绕过仲裁，一个接触点就可能既续上旧 requirement 又开启新 requirement。
 
 **由此得到一条要求**：`handoff` 的可换手窗口与 `sticky` 的不可换手都是**边上的谓词**，
 一起进候选集计算，而不是先于候选集判断。Fold Spike 的场景 S3/S4 验证了这条：
@@ -1044,13 +1046,15 @@ program tap
 
 ### 8.2 中途可断开的 Hold
 
-头部判定和 Tap 相同。中段允许短暂松开：在宽限时间 `hook.holdGrace` 内重新按下即可继续。
+头部判定和 Tap 相同。中段允许短暂松开：在最终宽限值 `grace` 内重新按下即可继续。`grace`
+是一个可选的 `Tick` 参数：谱面未提供时继承 `hook.holdGrace`，谱面提供时在 `prepare` 时冻结为
+该音符的最终值。Ruleset 为它声明默认值、允许范围和覆盖开关；显式覆盖不能超出该范围。
 超过宽限时间，Hold 断开。尾部采用"按住到结束即成功"的街机式规则。其他尾部规则（按释放时刻
 判定）可以作为同一程序的一个参数分支，或者写成另一个程序。
 
 ```text
 program hold
-  params     start: Tick, end: Tick, lane: Channel
+  params     start: Tick, end: Tick, lane: Channel, grace?: Tick
   registers  releasedAt: Tick
              observable headGrade: Enum<Grade>, broken: Bool := false
   arm        start - W.max.early
@@ -1077,10 +1081,10 @@ program hold
 
   state Gap
     on input(press, lane)
-      guard evt.t < releasedAt + hook.holdGrace
+      guard evt.t < releasedAt + grace
       do    claim(evt.contact, 0)
       goto  Body
-    on timer(releasedAt + hook.holdGrace)
+    on timer(releasedAt + grace)
       do    set broken := true
             emit Break(body, releasedAt); settle(broken)
     on timer(end)
@@ -1096,10 +1100,10 @@ program hold
 
   state Gap
     on input(press, lane)
-      guard evt.t < releasedAt + hook.holdGrace
+      guard evt.t < releasedAt + grace
       do    claim(evt.contact, 0)
       goto  Body
-    on timer(releasedAt + hook.holdGrace)
+    on timer(releasedAt + grace)
       do    set broken := true
             emit Break(body, releasedAt); settle(broken)
     on timer(end)
@@ -1256,8 +1260,8 @@ width(T)  同样分段线性，允许每段不同
 ```text
 program slider
   params     t0: Tick, t1: Tick, m: Int[1..16],
-             anchors: Array<Point, 16>, widths: Array<Int, 16>
-  registers  c: Contact, seg: Int[0..15]
+             anchors: Array<Point, 16>, widths: Array<Int, 16>, grace?: Tick
+  registers  c: Contact, releasedAt: Tick, seg: Int[0..15]
              observable following: Bool := false
   arm        t0 - W.max.early
   deadline   t1 + W.max.late
@@ -1288,14 +1292,31 @@ program slider
     on input(contactMove, c)
       do    set following := false
     on input(contactEnd, c)
-      do    set following := false
-            emit Break(body, evt.t); settle(broken)
+      do    release(0); set following := false
+            set releasedAt := evt.t
+      goto Gap
+
+  state Gap
+    on input(press, inRegion(sliderArea))
+      guard evt.t < releasedAt + grace
+      do    claim(evt.contact, 0); set following := true
+      goto Follow
+    on timer(releasedAt + grace)
+      do    emit Break(body, releasedAt); settle(broken)
+    on timer(t1)
+      do    emit Hit(tail, grade(evt.t - t1, W), evt.t - t1); settle(hit)
 
   onDeadline  emit Miss(tail); settle(miss)
 ```
 
 `path(seg, T)` 与 `width(seg, T)` 是段内的仿射函数，只用整数运算。整段的宽度变化只是
 `width` 从常量变成变量，IR 层面没有区别。Hold 是这个程序在 `m = 1`、宽度恒定时的特例。
+
+`Gap` 不重置 `seg`、路径进度或已发出的 `head` Fact。宽限内的重新按下只恢复原来的 `Follow`
+阶段，因此它不产生第二个 head 判定，也不回退已经完成的路径段。连续 Slider 与 Hold 使用同一
+条 `handoff` 规则；需要 `observe` 的 maimai 跳区 Slide 不持有 Contact，不经过这条 Gap 语义。
+对被 `hole`/Gap 接受的断开，持续判定读取有效连续区间，所以宽限内的松开与全程按住给出相同
+的持续结果；原始断开次数可以作为诊断，不进入该结果。
 
 发现的问题：
 

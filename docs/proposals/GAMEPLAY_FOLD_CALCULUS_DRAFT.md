@@ -208,12 +208,19 @@ hole  允许 A 连续为假的单段时长不超过 d
 Hold 要的是 `hole`（松手一次不能超过 grace，但可以松很多次）；整体覆盖率型判定要的是
 `gap`。两者不能共用一个算子名，因为它们是不同语义。
 
+`hole` 是连续性宽限，不是一次隐形 Miss。若一个 Measure 读取的是被 `hole` 修饰的电平原子，
+`duration` 按宽限归一化后的有效持续区间计算；每个不超过 `grace` 的假段仍视为连续，因而不会
+改变该 Measure 的等级。只有超过 `grace` 才离开接受路径并产生 `Break`。需要统计原始断开时间
+时，另读未被 `hole` 修饰的输入量；这不改变判定结果。
+`sum` 等采样型 Measure 不自动套用这条归一化规则；若某种自定义 Slider 以运动累计量评分，
+仍需单独声明断连期间的计量方式。
+
 ### 3.6 全部标准类型是组合，不是新增概念
 
 ```text
 Tap        atom(press(lane), point) · scalar(t − anchor)
 Hold       atom(held(lane), interval[t0,t1]) with hole(¬held, grace) · release
-           Measure: (head = scalar(t_press − t0), coverage = duration(held)/(t1 − t0))
+           Measure: (head = scalar(t_press − t0), coverage = duration(held under hole)/(t1 − t0))
 Slide      atom(touch(z0), point) · any{0,k} · atom(touch(z_last), point) · last(t)
 Bomb       ¬atom(press(lane), interval[open, close)) · none
 Catch      atom(|ctrl.x − x| ≤ w, point) · boolean

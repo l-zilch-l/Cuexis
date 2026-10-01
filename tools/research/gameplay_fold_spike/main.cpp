@@ -423,6 +423,7 @@ void reportSweepSignature() {
 void reportContacts();
 void reportDifferential();
 void reportGeometry();
+void reportContinuity();
 
 int main() {
     std::printf("# Gameplay fold spike report\n\n");
@@ -476,6 +477,8 @@ int main() {
 
     std::printf("\n## G. Geometry, frames and quantization (Program IR 4.3, 5.4, 5.5)\n\n");
     reportGeometry();
+
+    reportContinuity();
 
     std::printf("\n## H. Result digests (compare across compilers)\n\n| profile | digest |\n| --- "
                 "| --- |\n");

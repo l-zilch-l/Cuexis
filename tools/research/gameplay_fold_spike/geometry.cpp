@@ -2,10 +2,60 @@
 
 #include <algorithm>
 #include <cmath>
+#include <stdexcept>
 
 namespace spike::geo {
 
 namespace {
+
+using SignedWide = __int128_t;
+using Wide = __uint128_t;
+
+Wide absWide(SignedWide value) {
+    return value < 0 ? static_cast<Wide>(-(value + 1)) + 1 : static_cast<Wide>(value);
+}
+
+Wide squareChecked(Wide value) {
+    const Wide max = ~Wide{0};
+    if (value != 0 && value > max / value) {
+        throw std::overflow_error("geometry square exceeds declared integer range");
+    }
+    return value * value;
+}
+
+Wide multiplyChecked(Wide lhs, Wide rhs) {
+    const Wide max = ~Wide{0};
+    if (lhs != 0 && rhs > max / lhs) {
+        throw std::overflow_error("geometry product exceeds declared integer range");
+    }
+    return lhs * rhs;
+}
+
+Wide addChecked(Wide lhs, Wide rhs) {
+    const Wide max = ~Wide{0};
+    if (rhs > max - lhs) {
+        throw std::overflow_error("geometry sum exceeds declared integer range");
+    }
+    return lhs + rhs;
+}
+
+Wide crossMagnitude(std::int64_t dx, std::int64_t dy, std::int64_t px, std::int64_t py) {
+    const SignedWide cross = static_cast<SignedWide>(dx) * py - static_cast<SignedWide>(dy) * px;
+    return absWide(cross);
+}
+
+Wide lengthSquared(std::int64_t dx, std::int64_t dy) {
+    const Wide x = absWide(static_cast<SignedWide>(dx));
+    const Wide y = absWide(static_cast<SignedWide>(dy));
+    return addChecked(multiplyChecked(x, x), multiplyChecked(y, y));
+}
+
+bool withinHalfWidth(Wide cross, Wide halfWidth, Wide len2) {
+    if (len2 == 0) {
+        return cross == 0;
+    }
+    return squareChecked(cross) <= multiplyChecked(squareChecked(halfWidth), len2);
+}
 
 // Generated at load time from double math, then frozen for the run. The report measures the
 // deviation of the frozen table from the exact values, which is what a shipped table would have.
@@ -71,8 +121,8 @@ std::int64_t roundShiftEaven(std::int64_t value, int shift) {
 }
 
 Point apply(const Transform& t, Point p) {
-    const std::int64_t dx = p.x - t.origin.x;
-    const std::int64_t dy = p.y - t.origin.y;
+    const std::int64_t dx = static_cast<std::int64_t>(p.x) - t.origin.x;
+    const std::int64_t dy = static_cast<std::int64_t>(p.y) - t.origin.y;
     const std::int64_t c = cosQ16(t.angle);
     const std::int64_t s = sinQ16(t.angle);
     // One quantized affine operation: rotate, scale, round once (D6's fix).
@@ -136,8 +186,8 @@ bool Region::contains(Point local, std::uint64_t* ops) const {
     };
     switch (kind) {
     case ShapeKind::Disc: {
-        const std::int64_t dx = local.x - a.x;
-        const std::int64_t dy = local.y - a.y;
+        const std::int64_t dx = static_cast<std::int64_t>(local.x) - a.x;
+        const std::int64_t dy = static_cast<std::int64_t>(local.y) - a.y;
         add(5);
         return dx * dx + dy * dy <= static_cast<std::int64_t>(halfWidth) * halfWidth;
     }
@@ -148,44 +198,44 @@ bool Region::contains(Point local, std::uint64_t* ops) const {
     }
     case ShapeKind::Strip: {
         // Distance to the infinite line through a with direction (b - a), half width w.
-        const std::int64_t dx = b.x - a.x;
-        const std::int64_t dy = b.y - a.y;
-        const std::int64_t px = local.x - a.x;
-        const std::int64_t py = local.y - a.y;
-        const std::int64_t cross = dx * py - dy * px;
-        const std::int64_t len2 = dx * dx + dy * dy;
+        const std::int64_t dx = static_cast<std::int64_t>(b.x) - a.x;
+        const std::int64_t dy = static_cast<std::int64_t>(b.y) - a.y;
+        const std::int64_t px = static_cast<std::int64_t>(local.x) - a.x;
+        const std::int64_t py = static_cast<std::int64_t>(local.y) - a.y;
+        const Wide cross = crossMagnitude(dx, dy, px, py);
+        const Wide len2 = lengthSquared(dx, dy);
         add(9);
-        return cross * cross <= static_cast<std::int64_t>(halfWidth) * halfWidth * len2;
+        return withinHalfWidth(cross, absWide(halfWidth), len2);
     }
     case ShapeKind::Segment: {
-        const std::int64_t dx = b.x - a.x;
-        const std::int64_t dy = b.y - a.y;
-        const std::int64_t px = local.x - a.x;
-        const std::int64_t py = local.y - a.y;
-        const std::int64_t len2 = dx * dx + dy * dy;
-        const std::int64_t dot = dx * px + dy * py;
+        const std::int64_t dx = static_cast<std::int64_t>(b.x) - a.x;
+        const std::int64_t dy = static_cast<std::int64_t>(b.y) - a.y;
+        const std::int64_t px = static_cast<std::int64_t>(local.x) - a.x;
+        const std::int64_t py = static_cast<std::int64_t>(local.y) - a.y;
+        const Wide len2 = lengthSquared(dx, dy);
+        const SignedWide dot = static_cast<SignedWide>(dx) * px + static_cast<SignedWide>(dy) * py;
         add(8);
         return dot >= 0 && dot <= len2 &&
-               (dx * py - dy * px) * (dx * py - dy * px) <=
-                   static_cast<std::int64_t>(halfWidth) * halfWidth * len2;
+               withinHalfWidth(crossMagnitude(dx, dy, px, py), absWide(halfWidth), len2);
     }
     case ShapeKind::Corridor: {
         if (path.size() < 2) {
             return false;
         }
         for (std::size_t i = 0; i + 1 < path.size(); ++i) {
-            const std::int64_t dx = path[i + 1].x - path[i].x;
-            const std::int64_t dy = path[i + 1].y - path[i].y;
-            const std::int64_t px = local.x - path[i].x;
-            const std::int64_t py = local.y - path[i].y;
-            const std::int64_t len2 = dx * dx + dy * dy;
-            const std::int64_t dot = dx * px + dy * py;
+            const std::int64_t dx = static_cast<std::int64_t>(path[i + 1].x) - path[i].x;
+            const std::int64_t dy = static_cast<std::int64_t>(path[i + 1].y) - path[i].y;
+            const std::int64_t px = static_cast<std::int64_t>(local.x) - path[i].x;
+            const std::int64_t py = static_cast<std::int64_t>(local.y) - path[i].y;
+            const Wide len2 = lengthSquared(dx, dy);
+            const SignedWide dot =
+                static_cast<SignedWide>(dx) * px + static_cast<SignedWide>(dy) * py;
             add(12);
             if (dot < 0 || dot > len2) {
                 continue;
             }
-            const std::int64_t w = pathHalfWidths[i];
-            if ((dx * py - dy * px) * (dx * py - dy * px) <= w * w * len2) {
+            const Wide w = absWide(pathHalfWidths[i]);
+            if (withinHalfWidth(crossMagnitude(dx, dy, px, py), w, len2)) {
                 return true;
             }
         }

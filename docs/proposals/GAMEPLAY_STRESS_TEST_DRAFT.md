@@ -216,7 +216,7 @@ Hook 读取，不覆盖 Fact 发出顺序。
 也是继 V 缺口、W 缺口之后第三次证明跨实体语义必须按类检查。证据见
 [Fold Spike 报告](../stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md) §4.1。
 
-### D12 整数量化不足以保证确定性：判定式越出 int64 量程（中，2026-10-01 实测发现）
+### D12 整数量化不足以保证确定性：判定式越出 int64 量程（中，2026-10-01 实测发现；已修复并复测）
 
 **现象**：同一个几何判定在两个编译器上给出不同结果——Segment 形状的容忍率，GCC 报 11.3%，
 clang 报 0.1%（手算约 0.0625%，clang 一侧正确）。
@@ -248,6 +248,11 @@ cross = dx * py - dy * px
 
 证据与影响范围见
 [Fold Spike 报告](../stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md) §9.7。
+
+**处置记录（2026-10-01）**：研究 spike 已将 `Segment`、`Strip` 与 `Corridor` 的相关平方
+比较改为宽整数中间值并加入显式范围检查。GCC 16.1.0 与 clang 22.1.8（MSVC ABI）重建后，
+完整报告逐行比较除运行耗时外无差异，Segment 容忍率均为 0.1%。D12 的 spike 实现缺陷已处置；
+判定域量程声明和跨实现复测仍是后续规范的必要约束。
 
 ## 4. 局限登记
 
