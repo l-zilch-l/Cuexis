@@ -26,6 +26,7 @@
 | 检查表现资源、renderer capability | [表现资源与能力预检](presentation-and-capabilities.md) |
 | 处理错误、diagnostics、identity 和兼容性 | [诊断、身份与兼容性](diagnostics-identity-and-compatibility.md) |
 | 判断实现应落在哪个内部模块 | [内部模块速查](internal-module-catalog.md) |
+| 设计 Gameplay Judgement typed preview 边界 | [Gameplay Judgement ABI（候选）](GAMEPLAY_JUDGEMENT_ABI.md) |
 
 ## 公共边界
 

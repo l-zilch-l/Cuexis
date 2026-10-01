@@ -8,6 +8,11 @@
 断连宽限设计是否已经在候选文档中闭合，以及是否具备进入 I 收敛（ADR、Spec、预算与 ABI、
 Stage 7 范围修订）的条件。它不启动 I 收敛，也不改变当前阶段状态。
 
+**历史快照说明（2026-10-01）**：本文记录入口审查时点的“暂不进入 I”结论。用户随后已授权
+进入 I 收敛；当前整理以 [I 收敛整理报告](2026-10-01-i-convergence.md)、[ADR 0043](../../../adr/0043-gameplay-judgement-ruleset-convergence.md)、
+[Gameplay Judgement Spec](../../../formats/GAMEPLAY_JUDGEMENT_SPEC.md) 和
+[Gameplay Judgement ABI](../../../api/GAMEPLAY_JUDGEMENT_ABI.md) 为准。
+
 ## 1. 审查范围
 
 本轮只检查以下交叉合同：

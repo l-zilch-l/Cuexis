@@ -10,6 +10,11 @@
 [Skill Hooks 与模块扩展性草案](GAMEPLAY_SKILL_HOOKS_DRAFT.md) 做扩展压测与对抗性检查。
 所有缺陷都是**设计自身的缺陷**，不是实现缺陷。
 
+**状态更新（2026-10-01）**：本文仍是研究性压测和缺陷证据，不是生产合同。I 收敛后的决策
+以 [ADR 0043](../adr/0043-gameplay-judgement-ruleset-convergence.md)、
+[Gameplay Judgement Spec](../formats/GAMEPLAY_JUDGEMENT_SPEC.md) 和
+[Gameplay Judgement ABI](../api/GAMEPLAY_JUDGEMENT_ABI.md) 为准。
+
 ## 1. 方法与范围
 
 ```text
@@ -454,7 +459,8 @@ t+1 规则的一个正面结果：同一 Tick 内所有实例读到同一份 Hoo
 1  保持 D1-D12 的修法与跨实现证据同步到候选文档
 2  用最小可运行切片覆盖至少一条真实内容，验证 prepared grace、快照 / Seek 和 deadline
 3  用真实内容冻结预算候选值，确认 grace 对 activity / deadline 的实际影响
-4  在上述证据通过且用户解除暂停后，才进入 I 收敛（ADR / Spec / 预算与 ABI）
+4  （历史建议）在上述证据通过且用户解除暂停后，进入 I 收敛（ADR / Spec / 预算与 ABI）；
+   该入口已于 2026-10-01 建立，当前文档只保留为证据记录
 ```
 
 ### 6.1 这份清单的失效（2026-10-01）
@@ -477,4 +483,4 @@ D12   判定式越出 int64 量程，编译器各选一条 UB 分支   自由度
 
 第 1 条是写进文档的规则（已落在 Ruleset Fold §7 的「判定域量程」、Program IR §5.5、
 预算草案 §6.1）；第 2 条是验证手段，**不要求任何产品代码**。C10-C14 已在研究性 spike
-中完成，但真实内容切片仍是进入 I 前的证据门。
+中完成；真实内容预算仍是 I 收敛后的实现门，不是本文把研究数据写成生产限额的授权。

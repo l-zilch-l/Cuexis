@@ -7,6 +7,11 @@
 提案文档描述候选合同、已接受但未实施的方向或延期研究输入。它们不等同于生产 API；
 生产与候选边界以 [格式索引](../formats/README.md) 和 [当前状态](../CURRENT_STATUS.md) 为准。
 
+Gameplay I 收敛已经建立工作稿权威：取舍见 [ADR 0043](../adr/0043-gameplay-judgement-ruleset-convergence.md)，
+字段和运行语义见 [Gameplay Judgement Spec](../formats/GAMEPLAY_JUDGEMENT_SPEC.md)，typed preview
+边界见 [Gameplay Judgement ABI](../api/GAMEPLAY_JUDGEMENT_ABI.md)。下列 Gameplay 提案继续保留
+为研究推导、案例和压测证据；发生冲突时，以三份收敛工作稿为准，直到 owner acceptance。
+
 ## 当前候选格式提案
 
 - [ADR 0038](../adr/0038-cxc-v1-and-chart-v4-boundary.md)：CXC v1、Chart v4 和 CXT v1 边界。

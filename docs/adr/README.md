@@ -51,3 +51,4 @@ ADR 是决策理由的权威来源。字段级合同和实施证据分别见 [�
 | [0040](0040-stage-5-material-shader-contracts.md) | Stage 5 Material/Shader 合同 | 已接受，阶段 5；S5-A 已冻结 |
 | [0041](0041-legacy-format-exit-policy.md) | Legacy 格式和兼容路径退出政策 | 已接受；Full Review 整改 |
 | [0042](0042-stage-6-productization-boundaries.md) | Stage 6 显式 candidate、身份、渲染分层、事务、媒体与发行边界 | 已接受；设计冻结，**实施状态订正于 2026-09-29**：D02/D04–D07 已实现，D01/D03/D08 部分实现（详见该 ADR 状态行与[复核交付报告](../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md) §10） |
+| [0043](0043-gameplay-judgement-ruleset-convergence.md) | Gameplay Judgement / Ruleset I 收敛边界 | proposed；工作稿，待 owner acceptance |

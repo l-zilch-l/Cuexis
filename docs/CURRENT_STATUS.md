@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-09-28
+更新日期：2026-10-01
 
 本文是 Cuexis 当前产品和阶段状态的唯一摘要。ADR 定义决策，Spec 定义字段和语义，阶段计划定义未来
 范围，阶段报告保存带日期的实施证据；它们不得绕过本文重新定义当前状态。
@@ -30,7 +30,7 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Chart Format Foundation | completed；保留 PR #24 与 2026-09-16 owner 完成确认；后续交接缺口由独立加固阶段处理，不代表技术门禁全部通过 | [plan](stage_plans/completed/chart-format-foundation/plan.md)、[关闭记录](stage_reports/stages/chart-format-foundation/2026-09-16-closure-and-handoff.md) |
 | Chart Format Foundation Hardening | completed；R0-R5 全部完成（D1-D10 已裁定，A19/A20/A21/A22 已修复），本地六配置全量回归、最终 SHA 容量复跑与同 SHA hosted 三平台验证（`e0ca9ff`，docs-only 复验 `c24f34e`）全绿，owner 于 2026-09-17 接受 R5 交接清单 | [plan](stage_plans/completed/chart-format-foundation-hardening/plan.md)、[R5 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)、[R5 容量数据 Debug](stage_reports/stages/chart-format-foundation/2026-09-17-r5-capacity-data.json)、[Release](stage_reports/stages/chart-format-foundation/2026-09-17-r5-capacity-data-release.json)、[R4 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r4-roundtrip-capacity-rollback.md)、[R4 容量数据](stage_reports/stages/chart-format-foundation/2026-09-17-r4-capacity-data.json)、[R3 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r3-budgets-and-arithmetic.md)、[R2 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r2-profile-rejection.md)、[R1 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r1-semantic-identity.md)、[R0 报告](stage_reports/stages/chart-format-foundation/2026-09-16-r0-baseline-and-reproduction.md) |
 | Stage 6 | completed；2026-09-17 启动（首批 S6-A：合同、基线和依赖决策），2026-09-27 关闭并归档。交接加固已关闭并经 owner 接受，本阶段实施 v5-first candidate path，保留 v4 回退；消费边界见 [R5 报告 §10](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)。A1、A2、B1、C1、C2、C3、D1、D2、E1/E2、E3、C4 与 F1 全部退出，F2 的关闭报告、三个核验问题的 closed 处置与 Stage 7A/8 交接清单已经 owner 明确接受；未开 PR、未合并、未发布 | [plan](stage_plans/completed/stage-06/plan.md)、[关闭报告](stage_reports/stages/stage-06/completion.md) |
-| Stage 7A | future；最小 Input / Judgement / Score / Replay Kernel，作为 Stage 8 硬前置 | [plan](stage_plans/future/stage-07/plan.md) |
+| Stage 7A | future；I 收敛文档基线已整理，最小 Input / Judgement / Score / Replay Kernel 产品实现未开始 | [plan](stage_plans/future/stage-07/plan.md)、[ADR 0043](adr/0043-gameplay-judgement-ruleset-convergence.md) |
 | Stage 7B+ | future；Slide、Flick、多指、校准和高级 Judgement 能力持续演进 | [plan](stage_plans/future/stage-07/plan.md) |
 | Stage 8 | future；Chart v5 / CXT v2 / Packed Chart 正式发行与语义收敛 | [plan](stage_plans/future/stage-08/plan.md) |
 | Stage 9 | future；Presentation Environment、天空盒、模型和有限形变 | [plan](stage_plans/future/stage-09/plan.md) |
@@ -223,6 +223,16 @@ Chart/CXC parse-once、RT-29、World/Animation 大规模优化、大包解析降
 证据：[Full Review final closure](stage_reports/reviews/full-review-2026-08/2026-08-30-final.md)。
 
 ## 当前格式与 SDK 合同
+
+### Gameplay I 收敛状态（2026-10-01）
+
+Gameplay Judgement / Ruleset 已进入文档 I 收敛：取舍与威胁模型见 [ADR 0043](adr/0043-gameplay-judgement-ruleset-convergence.md)，
+字段与运行语义见 [Gameplay Judgement Spec](formats/GAMEPLAY_JUDGEMENT_SPEC.md)，候选 typed C++
+边界见 [Gameplay Judgement ABI](api/GAMEPLAY_JUDGEMENT_ABI.md)。Hold/Slider 的 prepared grace、
+作者默认值与单条覆盖、严格边界、Slider deadline、identity 分区和预算/快照原则已统一。
+
+这些文档仍是工作稿，待 owner acceptance；本次没有修改 `engine/`、公共安装头、CMake、SDK API
+版本或默认发行格式。C10-C14 与代表性切片仍是研究性证据，不能直接作为生产 ABI 限额。
 
 - Chart v1/v2/v3 Reader、迁移和 Playback 路径继续保留；Chart v4 的静态、参数化和合法非空动画已由
   默认 Playback Session 求值。

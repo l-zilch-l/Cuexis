@@ -49,6 +49,7 @@ Compiled Runtime
 | Material/Shader v1 | [MATERIAL_SHADER.md](MATERIAL_SHADER.md) | accepted contract; S5-A through S5-H completed; Stage 5 closed and merged into `master` 2026-08-28 |
 | Stage 6 chart entry extension v1 | [CHART_ENTRY_V1_FORMAT.md](CHART_ENTRY_V1_FORMAT.md) | candidate contract recorded by A2; explicit Playback entry implementation not yet present |
 | Stage 6 configuration and media contract | [STAGE6_CONFIG_AND_MEDIA.md](STAGE6_CONFIG_AND_MEDIA.md) | candidate contract recorded by A2; Player support/media importer not yet present |
+| Gameplay Judgement | [GAMEPLAY_JUDGEMENT_SPEC.md](GAMEPLAY_JUDGEMENT_SPEC.md) | candidate；I 收敛工作稿，未实施，待 ADR 0043 owner acceptance |
 
 ADR 记录选择理由，格式文档记录字段和语义。手写 v4 谱面可先阅读
 [Chart v4 谱面编写指南](../guides/CHART_V4_AUTHORING.md)。CXC 不重新定义 Chart/CXT；CXT 不重新定义

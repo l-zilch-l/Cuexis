@@ -1,6 +1,6 @@
 # Stage 7 Implementation Plan: Gameplay Foundation and Judgement Evolution
 
-状态：future；未开始
+状态：future；I 收敛文档基线已整理，产品实现未开始
 
 更新日期：2026-09-05
 
@@ -33,6 +33,17 @@ InputEvent
 
 判定必须独立于渲染帧率、渲染后端、画面表现和 World Entity。Presentation、Behavior
 和有限 Effect Schedule 可以消费结果，但不能反向改变同一事件的判定事实。
+
+### 1.1 I 收敛输入（2026-10-01）
+
+Gameplay 判定的设计基线已进入 I 收敛工作稿阶段，权威输入为 [ADR 0043](../../../adr/0043-gameplay-judgement-ruleset-convergence.md)、
+[Gameplay Judgement Spec](../../../formats/GAMEPLAY_JUDGEMENT_SPEC.md) 和
+[Gameplay Judgement ABI](../../../api/GAMEPLAY_JUDGEMENT_ABI.md)。它们统一了 L1-L4 分层、
+Pattern/Measure/Fold、仲裁、prepared grace、四分量 identity、预算/快照和稳定拒绝路径。
+
+这不代表 Stage 7A 已启动或完成：`engine/`、安装头、CMake、SDK API、Stage 7A 实现和
+Chart v5 默认发行路径均未因 I 收敛工作稿而改变。owner acceptance、真实内容预算测量、
+实现批次和 hosted 验证仍是后续门禁。
 
 ## 2. 分阶段范围
 
@@ -99,6 +110,7 @@ Stage 7B 及其后续批次负责增加更复杂的要求与输入约束：
 
 ```text
 Slide / 连续轨迹
+handoff Hold / 接触跟随型 Slider 的 continuity grace
 Flick / 方向动作
 多指和指间关系
 复杂 Hold、分段持续和 Release 约束
@@ -109,6 +121,10 @@ Flick / 方向动作
 每项能力都必须成为版本化的 `RequirementKind`、约束集合或 capability。高级能力可以
 在 Stage 8 前后持续开发；只有明确纳入某次 v5 发行的能力才需要进入 Stage 8 的选定
 发行矩阵。未纳入的能力必须稳定拒绝，不能静默降级为 Tap、Hold 或 v4 语义。
+
+其中 continuity grace 的候选语义已经在 I 收敛工作稿中闭合：它复用 `handoff + Gap`，使用
+prepare 时冻结的 per-requirement `grace`，不新增运行期 Hook、Fact 或 Pattern 原语。它仍是
+Stage 7B+ capability，除非后续发行矩阵明确选择，否则不成为 Stage 7A 或 Stage 8 的隐含前置。
 
 ### Stage 7C：Judgement Policy and Device Evolution
 

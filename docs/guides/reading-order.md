@@ -103,6 +103,11 @@ target allowlist 规则、C++ 命名与公共头 ASCII 规则、依赖变更流�
 [formats/CHART_ENTRY_V1_FORMAT.md](../formats/CHART_ENTRY_V1_FORMAT.md)、
 [formats/STAGE6_CONFIG_AND_MEDIA.md](../formats/STAGE6_CONFIG_AND_MEDIA.md)。
 
+Gameplay I 收敛工作稿另见：[Gameplay Judgement Spec](../formats/GAMEPLAY_JUDGEMENT_SPEC.md)、
+[Gameplay Judgement ABI](../api/GAMEPLAY_JUDGEMENT_ABI.md) 和
+[ADR 0043](../adr/0043-gameplay-judgement-ruleset-convergence.md)。三者仍是 candidate，未实施，
+待 owner acceptance；研究推导和压测仍从 [proposals/README.md](../proposals/README.md) 进入。
+
 相关 ADR：[0038](../adr/0038-cxc-v1-and-chart-v4-boundary.md) CXC/Chart v4/CXT 边界、
 [0018](../adr/0018-timing-map-semantics.md) TimingMap 语义、
 [0041](../adr/0041-legacy-format-exit-policy.md) Legacy 格式退出政策。
@@ -114,7 +119,7 @@ target allowlist 规则、C++ 命名与公共头 ASCII 规则、依赖变更流�
 | 顺序 | 文档 | 回答什么问题 |
 | --- | --- | --- |
 | 22 | [stage_plans/README.md](../stage_plans/README.md) | 计划索引、`active`/`future`/`deferred`/`reviews` 目录约定 |
-| 23 | [future/stage-07/plan.md](../stage_plans/future/stage-07/plan.md) | **Input / Judgement / Score / Replay 的唯一范围来源**：7A 最小内核、7B 高级能力、7C 策略与设备演进 |
+| 23 | [future/stage-07/plan.md](../stage_plans/future/stage-07/plan.md) | **Input / Judgement / Score / Replay 的唯一范围来源**：7A 最小内核、7B 高级能力、7C 策略与设备演进；I 收敛输入见 §1.1 |
 | 24 | [future/stage-08/plan.md](../stage_plans/future/stage-08/plan.md) | Chart v5 / CXT v2 / Packed 正式发行与语义收敛 |
 | 25 | [active/chart-format-update-for-v5/plan.md](../stage_plans/active/chart-format-update-for-v5/plan.md) | Chart v5 跨阶段总工作包 |
 
