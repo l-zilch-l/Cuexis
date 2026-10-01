@@ -5,7 +5,7 @@
 日期：2026-10-01
 
 本文是 Gameplay 判定字段和运行语义的单一候选权威。研究背景、案例推演和缺陷发现保留在
-[Gameplay 设计压测](../proposals/GAMEPLAY_STRESS_TEST_DRAFT.md)、[Fold Calculus 封闭性验证](../proposals/GAMEPLAY_CALCULUS_CLOSURE_CHECK.md)
+[Gameplay 设计压测](../proposals/research/gameplay/GAMEPLAY_STRESS_TEST_DRAFT.md)、[Fold Calculus 封闭性验证](../proposals/research/gameplay/GAMEPLAY_CALCULUS_CLOSURE_CHECK.md)
 和 [Fold Spike 报告](../stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md)。
 
 ## 1. 范围与层次

@@ -80,3 +80,4 @@
 - `stage_3_completion_report.md` -> [canonical](stages/stage-03/completion.md)
 - `stage_4_completion_report.md` -> [canonical](stages/stage-04/completion.md)
 - `stage_chart_format_update_completion_report.md` -> [canonical](chart-format-update/completion.md)
+- `stages/stage-06/2026-09-28-r9-reference-host-command-loop.md` -> [canonical](reviews/stage-06-review-2026-09/2026-09-28-r9-reference-host-command-loop.md)

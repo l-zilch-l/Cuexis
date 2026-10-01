@@ -1,6 +1,6 @@
 # Stage 6 复核：切片与子代理原文附录
 
-状态：active
+状态：historical review snapshot
 快照日期：2026-09-28
 更新日期：2026-09-28
 

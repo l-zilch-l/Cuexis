@@ -286,7 +286,7 @@ ELF 的 `lib`/`.so` 命名使归属判断既空转又误判。
 本节为**追加**内容，不改动本文 §2–§8 的任何原文、现象与证据。
 
 本文 §2 批次总表覆盖 R0–R8。批次 R9 在本文写成之后经 owner 另行裁定开启，因此不在该表内；其记录见
-[R9 参考宿主命令循环与 play/pause](../../stages/stage-06/2026-09-28-r9-reference-host-command-loop.md)
+[R9 参考宿主命令循环与 play/pause](2026-09-28-r9-reference-host-command-loop.md)
 与规范 [R9-reference-host-command-loop.md](../../../stage_plans/reviews/stage-06-review-remediation/R9-reference-host-command-loop.md)。
 
 本文 §5 第 1 项与 §7 把「交互命令循环」与 ADR 0042 `:350-351` 的冲突记为**未处置、需 owner 裁定**。

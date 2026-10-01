@@ -1,6 +1,6 @@
 # Deferred Design Proposals
 
-状态：active index
+状态：historical/deferred index
 
 更新日期：2026-10-01
 

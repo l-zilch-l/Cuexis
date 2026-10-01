@@ -7,14 +7,14 @@
 更新日期：2026-10-01
 
 本文记录对 Input / Judgement / "脚本"系统的重新设计讨论。它是设计输入，不是 ADR、Spec
-或阶段计划；后续设计可能整体取代 [音乐游戏玩法抽象模型](../architecture/GAMEPLAY_ABSTRACTION_MODEL.md)
-与 [Stage 7 计划](../stage_plans/future/stage-07/plan.md) 中的相应内容。讨论中已明确：与现有文档
+或阶段计划；后续设计可能整体取代 [音乐游戏玩法抽象模型](../../../architecture/GAMEPLAY_ABSTRACTION_MODEL.md)
+与 [Stage 7 计划](../../../stage_plans/future/stage-07/plan.md) 中的相应内容。讨论中已明确：与现有文档
 （含"运行时脚本无限期延后"条款）的冲突不作为约束，待设计收敛后再统一修订。
 
 **状态更新（2026-10-01）**：I 收敛工作稿已经建立。本文继续作为推导和历史讨论记录；取舍、
-字段/运行语义与候选 typed preview 边界分别以 [ADR 0043](../adr/0043-gameplay-judgement-ruleset-convergence.md)、
-[Gameplay Judgement Spec](../formats/GAMEPLAY_JUDGEMENT_SPEC.md) 和
-[Gameplay Judgement ABI](../api/GAMEPLAY_JUDGEMENT_ABI.md) 为准。
+字段/运行语义与候选 typed preview 边界分别以 [ADR 0043](../../../adr/0043-gameplay-judgement-ruleset-convergence.md)、
+[Gameplay Judgement Spec](../../../formats/GAMEPLAY_JUDGEMENT_SPEC.md) 和
+[Gameplay Judgement ABI](../../../api/GAMEPLAY_JUDGEMENT_ABI.md) 为准。
 
 ## 1. 重新设计的动机
 
@@ -602,7 +602,7 @@ Stage 7 范围。
 
 按 §3.3b 的第 2 条路径，先做了一个**研究性 spike**（`tools/research/gameplay_fold_spike/`，
 不进产品构建、不是 Stage 7A 实施），证据见
-[Fold Spike 报告](../stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md)。
+[Fold Spike 报告](../../../stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md)。
 
 ```text
 证实    活动度数量级、快照无损、Seek 代价远低于边界、补的规模门、L7、跨编译器逐位一致 *
@@ -647,7 +647,7 @@ D11 是设计层面的真实缺陷，说明"设计已收敛"之后仍需要实�
 ```
 
 在本记录形成时，用户曾暂缓 I 收敛，因此当时停在第 2 条入口；该历史状态现由
-[I 收敛整理报告](../stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-i-convergence.md)
+[I 收敛整理报告](../../../stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-i-convergence.md)
 承接，不再作为当前阶段状态。
 
 **收敛前新增一项前置条件（2026-10-01，见 §3.3e）。** D11 与 D12 都是在"设计已收敛"之后

@@ -1,11 +1,11 @@
 # chart-format-update-for-v8：Chart v8 双轴贝塞尔形变、模型动画与内置后处理
 
-状态：superseded input；内容已并入 [Stage 13](../../future/stage-13/plan.md)
+状态：historical/superseded input；内容已并入 [Stage 13](../../future/stage-13/plan.md)
 
 更新日期：2026-09-03
 
-归档来源：[Chart v7 延期计划](../chart-format-update-for-v7/plan.md)、
-[Chart v6 延期计划](../chart-format-update-for-v6/plan.md)、
+归档来源：[Chart v7 历史输入](../chart-format-update-for-v7/plan.md)、
+[Chart v6 历史输入](../chart-format-update-for-v6/plan.md)、
 [Material/Shader v1](../../../formats/MATERIAL_SHADER.md)、
 [ADR 0008](../../../adr/0008-coordinate-transform-hierarchy.md) 与
 [Stage 11](../../future/stage-11/plan.md)。

@@ -1,10 +1,10 @@
 # chart-format-update-for-v7：Chart v7 曲线形变、line 模型与后处理接口
 
-状态：superseded input；内容已并入 [Stage 11](../../future/stage-11/plan.md)
+状态：historical/superseded input；内容已并入 [Stage 11](../../future/stage-11/plan.md)
 
 更新日期：2026-09-03
 
-归档来源：[Chart v6 延期计划](../chart-format-update-for-v6/plan.md)、
+归档来源：[Chart v6 历史输入](../chart-format-update-for-v6/plan.md)、
 [Chart v5 格式计划](../../active/chart-format-update-for-v5/plan.md)、
 [CXC v1](../../../formats/CXC_FORMAT.md)、
 [Portable Presentation v1](../../../formats/PORTABLE_PRESENTATION.md)、

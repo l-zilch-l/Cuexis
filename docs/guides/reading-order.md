@@ -158,7 +158,7 @@ Stage 7 有两条容易忽略的性质：它是一条**持续能力线**而非�
 | 32 | [archive/README.md](../archive/README.md) | 历史格式、历史计划与过期审视材料 |
 
 旧阶段计划（v6/v7/v8、Stage 9B、旧 Stage 10、旧 Stage 9A）在 `stage_plans/deferred/` 与
-`stage_plans/future/stage-09a/`；它们是已并入新主阶段的历史输入，**不等于已实施**。
+`stage_plans/historical-inputs/`；其中的旧阶段计划已并入新主阶段，**不等于已实施**。
 
 ## 11. 三条最小路径
 

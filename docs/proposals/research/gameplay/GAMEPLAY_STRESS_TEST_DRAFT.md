@@ -13,9 +13,9 @@
 所有缺陷都是**设计自身的缺陷**，不是实现缺陷。
 
 **状态更新（2026-10-01）**：本文仍是研究性压测和缺陷证据，不是生产合同。I 收敛后的决策
-以 [ADR 0043](../adr/0043-gameplay-judgement-ruleset-convergence.md)、
-[Gameplay Judgement Spec](../formats/GAMEPLAY_JUDGEMENT_SPEC.md) 和
-[Gameplay Judgement ABI](../api/GAMEPLAY_JUDGEMENT_ABI.md) 为准。
+以 [ADR 0043](../../../adr/0043-gameplay-judgement-ruleset-convergence.md)、
+[Gameplay Judgement Spec](../../../formats/GAMEPLAY_JUDGEMENT_SPEC.md) 和
+[Gameplay Judgement ABI](../../../api/GAMEPLAY_JUDGEMENT_ABI.md) 为准。
 
 ## 1. 方法与范围
 
@@ -233,7 +233,7 @@ Hook 读取，不覆盖 Fact 发出顺序。
 **这一条为什么前十条都没抓到**：D1–D10 与 34 项案例都是逐 requirement 推演的，D11 只在
 "一次输入、多条结算"时出现，属于跨实体语义。它是 Fold Calculus §2.1 核心边界之外的东西，
 也是继 V 缺口、W 缺口之后第三次证明跨实体语义必须按类检查。证据见
-[Fold Spike 报告](../stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md) §4.1。
+[Fold Spike 报告](../../../stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md) §4.1。
 
 ### D12 整数量化不足以保证确定性：判定式越出 int64 量程（中，2026-10-01 实测发现；已修复并复测）
 
@@ -266,7 +266,7 @@ cross = dx * py - dy * px
 并且必须跨实现。
 
 证据与影响范围见
-[Fold Spike 报告](../stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md) §9.7。
+[Fold Spike 报告](../../../stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md) §9.7。
 
 **处置记录（2026-10-01）**：研究 spike 已将 `Segment`、`Strip` 与 `Corridor` 的相关平方
 比较改为宽整数中间值并加入显式范围检查。GCC 16.1.0 与 clang 22.1.8（MSVC ABI）重建后，

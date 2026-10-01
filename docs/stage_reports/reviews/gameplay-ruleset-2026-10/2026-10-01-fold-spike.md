@@ -4,7 +4,7 @@
 
 更新日期：2026-10-01
 
-本报告记录对 [Gameplay 预算与规模上界草案](../../../proposals/GAMEPLAY_BUDGET_AND_SCALE_DRAFT.md)
+本报告记录对 [Gameplay 预算与规模上界草案](../../../proposals/research/gameplay/GAMEPLAY_BUDGET_AND_SCALE_DRAFT.md)
 的第一次实测。被测对象是一个**独立的研究性 spike**，位于 `tools/research/gameplay_fold_spike/`：
 不进产品构建、无 CMake target、不链接任何 Cuexis 库，也不是 Stage 7A 的实施。它的唯一用途是
 给候选预算表填上第一批数字，并检验设计中的三条确定性声明。
@@ -141,7 +141,7 @@ GCC 与 clang（MSVC ABI）构建的两个二进制，在五个 profile 上的�
 反向   2280405 req=40 Detonated / 2280405 req=32 Detonated
 ```
 
-**根因**：[Ruleset Fold Language 草案](../../../proposals/GAMEPLAY_RULESET_FOLD_DRAFT.md) §2.1
+**根因**：[Ruleset Fold Language 草案](../../../proposals/research/gameplay/GAMEPLAY_RULESET_FOLD_DRAFT.md) §2.1
 第 4 步规定"按发出顺序折叠本 Tick 产生的 Fact"。L7 的结构性保证只覆盖 **Hook 读取**
 （同 Tick 内所有实例读到同一份 Hook），不覆盖 **Fact 发出顺序**——后者在 observe 边会让
 一次输入同时结算多条 requirement 时，取决于实现遍历实例的顺序。

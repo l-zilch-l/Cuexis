@@ -37,9 +37,6 @@ STAGE_PLAN_REQUIREMENTS = (
     ("stage_plans/completed/stage-06/plan.md", ("completed",)),
     ("stage_plans/future/stage-07/plan.md", ("future",)),
     ("stage_plans/future/stage-08/plan.md", ("future",)),
-    ("stage_plans/future/stage-09a/plan.md", ("future",)),
-    ("stage_plans/deferred/stage-09b/plan.md", ("deferred",)),
-    ("stage_plans/deferred/stage-10/plan.md", ("deferred",)),
     ("stage_plans/future/stage-11/plan.md", ("future",)),
     ("stage_plans/future/stage-12/plan.md", ("future",)),
 )

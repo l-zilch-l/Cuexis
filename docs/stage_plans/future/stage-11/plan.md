@@ -4,8 +4,8 @@
 
 更新日期：2026-10-01
 
-归档来源：[Chart v7 历史设计输入](../../deferred/chart-format-update-for-v7/plan.md)、
-[Chart v6 / Model v1](../../deferred/chart-format-update-for-v6/plan.md)、
+归档来源：[Chart v7 历史设计输入](../../historical-inputs/chart-format-update-for-v7/plan.md)、
+[Chart v6 / Model v1](../../historical-inputs/chart-format-update-for-v6/plan.md)、
 [Portable Presentation v1](../../../formats/PORTABLE_PRESENTATION.md) 和
 [Material/Shader v1](../../../formats/MATERIAL_SHADER.md)。
 

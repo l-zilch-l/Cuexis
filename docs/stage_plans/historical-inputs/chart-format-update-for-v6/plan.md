@@ -1,6 +1,6 @@
 # chart-format-update-for-v6：Chart v6 模型、内置网格与 submesh 合同
 
-状态：superseded input；内容已并入 [Stage 9](../../future/stage-09/plan.md)
+状态：historical/superseded input；内容已并入 [Stage 9](../../future/stage-09/plan.md)
 
 更新日期：2026-09-20
 

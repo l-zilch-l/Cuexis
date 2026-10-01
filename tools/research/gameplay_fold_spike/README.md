@@ -7,7 +7,7 @@ implementation of Stage 7A, and none of it may be copied into `engine/` without 
 normal ADR, specification and stage gates.
 
 It exists to put numbers on the candidate budget table in
-`docs/proposals/GAMEPLAY_BUDGET_AND_SCALE_DRAFT.md` and to test three determinism claims. The
+`docs/proposals/research/gameplay/GAMEPLAY_BUDGET_AND_SCALE_DRAFT.md` and to test three determinism claims. The
 findings are recorded in
 `docs/stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md`.
 

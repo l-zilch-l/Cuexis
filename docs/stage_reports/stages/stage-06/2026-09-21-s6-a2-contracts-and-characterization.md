@@ -31,7 +31,7 @@ CMake target、版本源、`vcpkg.json`、既有 v4 identity 或 FrameDigest v1-
 | Player preferences Schema | [cuexis.player-preferences.v1.schema.json](../../../../schemas/cuexis.player-preferences.v1.schema.json) | 已落盘；只包含 ADR 0042 首批实际消费字段 |
 | Audio device profile Schema | [cuexis.audio-device-profile.v1.schema.json](../../../../schemas/cuexis.audio-device-profile.v1.schema.json) | 已落盘；system-default/exact selector、校准范围和默认路由规则有约束 |
 | 配置、身份、媒体和事务 Spec | [STAGE6_CONFIG_AND_MEDIA.md](../../../formats/STAGE6_CONFIG_AND_MEDIA.md) | 已落盘；字段 owner、身份预映像、设备公式、预算和原子发布边界 |
-| API/安装声明草案 | [STAGE6_API_AND_INSTALL_DRAFT.md](../../../proposals/STAGE6_API_AND_INSTALL_DRAFT.md) | 已落盘；三个新工厂名称、OFF/ON parity、实验安装和 Reference Host 边界 |
+| API/安装声明草案 | [STAGE6_API_AND_INSTALL_DRAFT.md](../../../proposals/implementation-input/stage-06/STAGE6_API_AND_INSTALL_DRAFT.md) | 已落盘；三个新工厂名称、OFF/ON parity、实验安装和 Reference Host 边界 |
 | 模块/安装依赖图 | [STAGE6_PRODUCTIZATION_BOUNDARIES.md](../../../architecture/STAGE6_PRODUCTIZATION_BOUNDARIES.md) | 已落盘；renderer、Player support、media tools 的 planned one-way graph |
 | 独立表征 | [stage6_a2 fixtures](../../../../tests/fixtures/stage6_a2/) 与 [checker](../../../../tools/check_stage6_a2.py) | 已落盘；entry 正反例、identity/session、媒体 bytes 和音频校准算术 |
 

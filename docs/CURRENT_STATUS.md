@@ -58,7 +58,7 @@ S6-B1 已落下版本比较器、独立负例测试、trusted-baseline workflow 
 为 `26.09.29-1`（订正 2026-09-29：此处原写 `26.09.28-1`；该值在 `2026-09-28` 当天正确，可信 UTC
 日期进入 `2026-09-29` 后被 protected Version Gate 以 `version.release_date.stale` 拒绝，按同日
 build+1 / 跨日 build=1 规则前进一位，见
-[R9 报告](stage_reports/stages/stage-06/2026-09-28-r9-reference-host-command-loop.md) §6。
+[R9 报告](stage_reports/reviews/stage-06-review-2026-09/2026-09-28-r9-reference-host-command-loop.md) §6。
 以下为原始订正记录，保留不改：本工作包曾先后写成 `26.09.27-2` 与 `26.09.27-3`，两者均被 protected Version Gate 拒绝——`26.09.27-3` 以 `version.build.skipped` 登记，因为同一 PR 从 `master` 基线 `26.09.27-1` 只允许前进一个 build，而该 PR 内滚动过两次；`26.09.27-2` 在可信 UTC 日期进入 `2026-09-28` 后以 `version.release_date.stale` 登记。同日 build+1 规则与跨日 build=1 规则共同要求唯一正确的取值是 `26.09.28-1`，见下），SDK API 仍为 `0.7.0`。`26.09.21-2` 在 UTC `2026-09-22` 已过期，因此前进到当天 build 1。当天曾写成的 `26.09.23-1` 被 Version Gate 以 `version.release_date.future` 拒绝，分支收回 `26.09.22-1`；UTC 进入 `2026-09-23` 后再前进到 `26.09.23-1`。bootstrap PR #26 已将门禁纳入 `master`，并启用
 `Version advancement (pre-merge)` required check、strict latest-base 和 admin enforcement。
 候选 PR #27 的 `d4697549a50e9c517ac393c27786826aa43ce9cc` 以 trusted baseline

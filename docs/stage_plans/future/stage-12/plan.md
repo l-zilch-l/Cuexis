@@ -4,9 +4,9 @@
 
 更新日期：2026-10-01
 
-归档来源：[旧 Stage 9A 性能计划](../stage-09a/plan.md)、
-[Android 历史输入](../../deferred/stage-09b/plan.md)、
-[Vulkan 历史输入](../../deferred/stage-10/plan.md) 和
+归档来源：[旧 Stage 9A 性能计划](../../historical-inputs/stage-09a/plan.md)、
+[Android 历史输入](../../historical-inputs/stage-09b/plan.md)、
+[Vulkan 历史输入](../../historical-inputs/stage-10/plan.md) 和
 [旧 Stage 11 规模化计划](../stage-11/plan.md)。
 
 前置：

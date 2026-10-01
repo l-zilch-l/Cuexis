@@ -656,7 +656,7 @@ region <name> {
 
 实测（64 分段）：每次求值 7 次比较，与 log₂64 = 6 相符，确认 O(log N)。分段内的整数线性
 插值单调（x 步长在 [40, 41] px 单位之间），因此"摆放采样"不会在段内回退。见
-[Fold Spike 报告](../stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md) §9。
+[Fold Spike 报告](../../../stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md) §9。
 
 **边界约定需要写明**：§5.4 的五类形状全部取**含**边界（`<=`），包括半宽为 0 的 `Segment`。
 不写清会让"正好在边界上"在实现之间分叉。
@@ -759,7 +759,7 @@ prepare    量化一次          向偶舍入，单位由判定域声明
 量化的代价只有格点之下的精度，而格点远小于人的感知。
 
 **整数只是必要条件，不是充分条件：每一项都必须在量程内。** 2026-10-01 的跨编译器实测
-（[Fold Spike 报告](../stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md)
+（[Fold Spike 报告](../../../stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md)
 §9.7，缺陷 D12）给出了反例：一条用平方比较避开开方的几何判定式，在 1/1024 px 单位下
 `cross² ≈ 4.4e20`，**超出 `int64` 上限 9.22e18**。有符号整数溢出是未定义行为，GCC 与 clang
 各自选了一条分支，同一份输入得到不同的判定结果。

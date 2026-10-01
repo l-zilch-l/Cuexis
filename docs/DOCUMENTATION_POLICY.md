@@ -2,7 +2,7 @@
 
 状态：已接受的文档整理政策
 
-更新日期：2026-08-30
+更新日期：2026-10-01
 
 ## 文档角色
 
@@ -67,6 +67,10 @@ docs/examples/      评审和验证样例
 docs/archive/       历史材料
 docs/api/           已发布 SDK 与内部技术参考
 ```
+
+提案目录按生命周期继续细分为 `proposals/research/`、`proposals/implementation-input/` 和
+`proposals/deferred/`；已并入主路线的旧阶段计划统一放在
+`stage_plans/historical-inputs/`，不再混入 `future/` 或 `deferred/`。
 
 阶段计划和阶段报告按阶段或跨阶段专题归档，而不是按生成日期平铺：
 

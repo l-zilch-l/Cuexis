@@ -1,5 +1,9 @@
 # Cuexis Chart Entry Extension v1
 
+状态：candidate（Stage 6 候选格式合同，阶段已关闭）
+
+更新日期：2026-10-01
+
 Status: Stage 6 candidate contract recorded by S6-A2. The entry factories and candidate
 Playback implementation are not present yet.
 

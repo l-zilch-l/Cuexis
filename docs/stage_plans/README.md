@@ -20,6 +20,9 @@ future
 deferred
   暂不排期、等待触发条件或需要重新立项的设计输入
 
+historical-inputs
+  已并入现行主路线、仅供追溯的旧计划输入
+
 reviews
   某次复核的整改计划；复核记录与其证据仍在 stage_reports/reviews/<review>/
 ```
@@ -97,9 +100,9 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
 
 历史编号专题（内容已并入新主阶段）：
 
-- Stage 9A：[旧桌面性能计划](future/stage-09a/plan.md)，现归入 Stage 12。
-- Stage 9B：[Android 设计输入](deferred/stage-09b/plan.md)，现归入 Stage 12。
-- 旧 Stage 10：[Vulkan 设计输入](deferred/stage-10/plan.md)，现归入 Stage 12。
+- Stage 9A：[旧桌面性能计划](historical-inputs/stage-09a/plan.md)，现归入 Stage 12。
+- Stage 9B：[Android 设计输入](historical-inputs/stage-09b/plan.md)，现归入 Stage 12。
+- 旧 Stage 10：[Vulkan 设计输入](historical-inputs/stage-10/plan.md)，现归入 Stage 12。
 
 ## 修正工作包
 
@@ -124,17 +127,17 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
 - [Chart v5 format plan](active/chart-format-update-for-v5/plan.md)：保留 active 的跨阶段总工作包，正式发行门禁归 Stage 8；
   Foundation 及其交接加固关闭后为 Stage 6 提供 candidate Core/Packed path，在 Stage 7A 判定合同冻结
   后完成正式发行收敛。
-- [Chart v6 / Model v1](deferred/chart-format-update-for-v6/plan.md)：历史输入，已并入 Stage 9。
-- [Chart v7](deferred/chart-format-update-for-v7/plan.md)：历史输入，已并入 Stage 11。
-- [Chart v8](deferred/chart-format-update-for-v8/plan.md)：历史输入，已并入 Stage 13。
+- [Chart v6 / Model v1](historical-inputs/chart-format-update-for-v6/plan.md)：历史输入，已并入 Stage 9。
+- [Chart v7](historical-inputs/chart-format-update-for-v7/plan.md)：历史输入，已并入 Stage 11。
+- [Chart v8](historical-inputs/chart-format-update-for-v8/plan.md)：历史输入，已并入 Stage 13。
 
 ## 已并入主阶段的历史输入
 
 以下旧计划不再代表独立主阶段，但保留为兼容入口和历史设计输入：
 
-- [桌面性能](future/stage-09a/plan.md)
-- [Android](deferred/stage-09b/plan.md)
-- [Vulkan](deferred/stage-10/plan.md)
+- [桌面性能](historical-inputs/stage-09a/plan.md)
+- [Android](historical-inputs/stage-09b/plan.md)
+- [Vulkan](historical-inputs/stage-10/plan.md)
 - [确定性粒子](../proposals/deferred/PARTICLE_TIMELINE.md)，已并入 Stage 13
 
 这些文件的可执行范围已经在 Stage 9、11、12、13 中登记；它们不能继续被解释为独立主阶段。

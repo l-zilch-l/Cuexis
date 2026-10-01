@@ -23,7 +23,7 @@ Fold §10.4   补的规模上界与 capability 划分
 ## 1. 一条前置原则：三种成本不合并
 
 既有容器已经有一条正确做法：`PackedChartLimits` 逐项独立，单位是各自的语义单位，
-不折算成"分"（[PACKED_CHART_FORMAT.md](../formats/PACKED_CHART_FORMAT.md) §3.3）。
+不折算成"分"（[PACKED_CHART_FORMAT.md](../../../formats/PACKED_CHART_FORMAT.md) §3.3）。
 本设计沿用，并扩展到三类成本。
 
 | 维度 | 何时发生 | 单位 | 失败的表现 |
@@ -220,7 +220,7 @@ every 的周期下限由 Ruleset 声明；周期越短，可以同时采样的�
 数值部分需要真实谱面才能定。这份文档的当前价值在公式，不在数字。
 
 **第一批实测（2026-10-01，合成数据）**：见
-[Fold Spike 报告](../stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md)。
+[Fold Spike 报告](../../../stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md)。
 据此给出**建议**候选值（约为合成负载实测最坏值的 10 倍），仍不是冻结值：
 
 | 预算 | 实测最坏 | 建议候选值 |
@@ -383,7 +383,7 @@ Gap timer       每个 handoff requirement 至多一个宽限 timer，计入 tim
 未覆盖    引擎定义的判定式    几何原语的平方比较、距离比较、角度归一化……
 ```
 
-D12 的具体表现是几何的平方比较（[Fold Spike 报告 §9.7](../stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md)）：
+D12 的具体表现是几何的平方比较（[Fold Spike 报告 §9.7](../../../stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md)）：
 `cross²` 达到 4.4e20，超出 `int64` 上限 9.22e18，两个编译器各选一条 UB 分支。
 
 因此本项拆成两条，并新增一条**按判定域**的检查：

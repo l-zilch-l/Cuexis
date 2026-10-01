@@ -85,7 +85,7 @@ prepare            显式值量化并校验；缺省值继承 prepare 前的 hol
 | 代表性研究切片与预算测量 | GCC/clang 通过：96 条 requirement、672 事件、activity peak 3、Gap timer peak 2、快照恢复无损 | 通过研究性 spike；不等于真实作者内容 |
 | 真实内容分布与预算冻结 | 尚未完成 | 未通过 |
 
-C10-C14 已登记并完成于 [Gameplay 压测草案](../../../proposals/GAMEPLAY_STRESS_TEST_DRAFT.md) §2.1。
+C10-C14 已登记并完成于 [Gameplay 压测草案](../../../proposals/research/gameplay/GAMEPLAY_STRESS_TEST_DRAFT.md) §2.1。
 证据仍限定为研究性 spike：它没有接入产品 `engine/`，也没有替代真实内容切片。
 
 ## 4. I 收敛判断
