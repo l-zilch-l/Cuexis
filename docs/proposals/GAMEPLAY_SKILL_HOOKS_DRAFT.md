@@ -1,5 +1,7 @@
 # Skill Hooks 与模块扩展性草案
 
+> 目录状态：Gameplay research input。Hook 扩展边界以 ADR 0043 和 Gameplay Judgement Spec 为准；本文保留扩展性研究。
+
 状态：candidate（设计草案，未接受，未实施）
 
 更新日期：2026-10-01

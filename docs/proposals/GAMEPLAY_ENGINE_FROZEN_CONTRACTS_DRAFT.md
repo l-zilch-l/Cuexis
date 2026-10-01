@@ -1,5 +1,7 @@
 # 引擎冻结合同草案（定点表、缓动曲线、判定语义版本）
 
+> 目录状态：Gameplay research input。本文保留引擎侧登记点和门禁研究；接受后的权威入口为 ADR 0043 与 Gameplay Judgement Spec。
+
 状态：candidate（设计草案，未接受，未实施）
 
 更新日期：2026-10-01

@@ -1,5 +1,7 @@
 # Gameplay 设计压测与缺陷登记
 
+> 目录状态：Gameplay research evidence。本文记录案例、缺陷和跨实现压测；不冻结实现、ABI 或生产预算。
+
 状态：candidate（审查记录，未接受，未实施）
 
 更新日期：2026-10-01

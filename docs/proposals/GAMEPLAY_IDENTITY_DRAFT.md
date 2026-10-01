@@ -1,5 +1,7 @@
 # Gameplay Identity 分层草案
 
+> 目录状态：Gameplay research input。身份裁决已整理到 ADR 0043 与 Gameplay Judgement Spec；本文保留分层推导。
+
 状态：candidate（设计草案，未接受，未实施）
 
 更新日期：2026-10-01

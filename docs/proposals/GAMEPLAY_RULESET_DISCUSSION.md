@@ -1,5 +1,7 @@
 # Gameplay Ruleset 设计讨论记录
 
+> 目录状态：Gameplay research history。本文保留讨论过程；当前取舍以 ADR 0043、Gameplay Judgement Spec 和候选 ABI 为准。
+
 状态：candidate（设计讨论记录，未接受，未实施）
 
 更新日期：2026-10-01

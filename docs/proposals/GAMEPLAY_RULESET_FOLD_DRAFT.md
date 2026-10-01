@@ -1,5 +1,7 @@
 # Ruleset Fold Language 草案（L3）
 
+> 目录状态：Gameplay research input。字段与运行语义以 Gameplay Judgement Spec 为准；本文保留 L3 研究细节。
+
 状态：candidate（设计草案，未接受，未实施）
 
 更新日期：2026-10-01

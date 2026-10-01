@@ -1,5 +1,7 @@
 # Fold Calculus 封闭性验证
 
+> 目录状态：Gameplay research evidence。本文记录算子封闭性、V/W 缺口和修补过程，不是生产 Spec。
+
 状态：candidate（验证记录，未接受，未实施）
 
 更新日期：2026-10-01

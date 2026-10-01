@@ -1,5 +1,7 @@
 # Stage 6 Candidate API And Install Draft
 
+> 目录状态：Stage 6 implementation input。本文仍被 Stage 6 工具、阶段报告和门禁引用；不是 Gameplay I 收敛文档。
+
 Status: S6-A2 declaration draft. It is an accepted-boundary implementation input, not an installed
 SDK API. No public header or CMake package was changed by A2.
 
