@@ -1,0 +1,133 @@
+# Cuexis 开源与第三方依赖政策
+
+状态：已接受
+
+更新日期：2026-08-28
+
+## 项目许可
+
+Cuexis 采用 Apache License 2.0。维护者不以商业盈利为目标，但许可证不限制下游的商业使用；再分发者必须遵守 Apache-2.0 的版权、许可证、NOTICE 和修改声明要求。
+
+正式公开发布前，根目录必须包含从 Apache 官方来源取得的完整 `LICENSE` 文本。若项目包含需要 NOTICE 的内容，根目录同时维护 `NOTICE`。
+
+## 依赖选择
+
+通用系统优先采用成熟、持续维护的开源库。评估顺序：
+
+```text
+功能与平台适配
+维护状态和安全响应
+许可证兼容性
+vcpkg / CMake 集成
+测试和文档质量
+构建时间与二进制体积
+公共 API 泄漏程度
+替换和退出成本
+```
+
+MIT、BSD、Apache-2.0 和 zlib 等宽松许可证通常可以接受。MPL、LGPL 和 GPL 依赖必须逐项审查其链接、修改公开和再分发义务；未经 ADR 和明确合规方案不得进入正式发布依赖。
+
+## 依赖记录
+
+每个直接依赖至少记录：
+
+```text
+名称和上游 URL
+固定版本或 vcpkg baseline
+用途和所属模块
+许可证与 NOTICE 要求
+是否进入分发产物
+替代方案和退出路径
+```
+
+发布产物维护 `THIRD_PARTY_NOTICES`，列出直接依赖以及依法需要披露的传递依赖。不得仅依赖 vcpkg 缓存作为许可证记录。
+
+当前依赖图固定到 vcpkg baseline `40f3c709db80acf154ac4b17a1f83c564ebd022e`。更新
+baseline 时必须同步验证 `vcpkg.json`、`THIRD_PARTY_NOTICES.md`、安装许可证清单和所有 CI
+平台，不能依赖 hosted runner 恰好缓存的 port tree。
+
+Stage Chart Format Update 选择 baseline 中的 `minizip-ng` 4.1.0 作为内部 `cuexis_cxc` 的 ZIP
+读写依赖，并关闭全部默认 feature。CXC v1 只允许 Stored，因此不启用 zlib、bzip2、lzma、zstd、
+传统加密或 AES。Cuexis 自己的窄 envelope validator 在调用库前检查 local/central header、EOCD、
+ZIP64 sentinel、extra/comment、entry range、overlap 和 trailing bytes；archive 库的宽松接受行为不
+改变 CXC 合同。该依赖不进入安装公共头，也不作为 CMake component 暴露；替换路径是保持
+`cuexis_cxc` 内部接口并改用另一成熟 ZIP 库，而不是自研压缩器。
+
+Stage 5 把 shaderc、SPIRV-Tools 和 SPIRV-Cross 放在可选 vcpkg feature `shader-tools` 中，并由
+CMake 选项 `CUEXIS_BUILD_SHADER_TOOLS`（默认 `OFF`）接入内部静态库 `cuexis_shader`。当前
+baseline 解析版本为 shaderc 2026.2、SPIRV-Tools 1.4.350.1、SPIRV-Cross 1.4.350.1；shaderc
+传递 glslang 16.4.0 与 SPIRV-Headers。默认 feature 仍只有 `player` 与 `tests`，因此日常
+Debug 与 adapter-disabled headless 不会下载这些 port。真实 CMake imported target 为
+`unofficial::shaderc::shaderc`、`spirv-cross-core`、`spirv-cross-glsl`、`spirv-cross-reflect`
+和 `SPIRV-Tools-static`。这些名称只允许出现在 `cuexis_shader` 的 allowlist 中，不得写入安装的
+`CuexisConfig.cmake`，也不得进入 `cuexis_playback` / `cuexis_runtime` / `cuexis_chart` /
+`cuexis_animation` 链接闭包。该依赖不进入安装公共头；替换路径是保持 `cuexis_shader` 内部接口
+并改用另一套 SPIR-V 工具链，而不是让 Playback 直接调用编译器。
+
+Stage 6 E1/E2 把 libpng 1.6.58、libjpeg-turbo 3.2.0、minimp3 2021-11-30、libvorbis 1.3.7#4、
+libogg 1.3.6#1 和 libFLAC 1.5.0 放在可选 vcpkg feature `media-tools` 中，并由 CMake 选项
+`CUEXIS_BUILD_MEDIA_TOOLS`（默认 `OFF`）接入内部静态库 `cuexis_media_import` 与 developer-only
+CLI `cuexis_media_importer`。libpng 传递 zlib 1.3.2#1。这些依赖与 `shader-tools` 相互独立：
+打开其中一个不会引入另一个。真实 CMake imported target 为 `PNG::PNG`、`JPEG::JPEG`、
+`FLAC::FLAC`、`Vorbis::vorbis`、`Ogg::ogg` 和 `ZLIB::ZLIB`，只允许出现在 `cuexis_media_import`
+的 allowlist 中，不得写入安装的 `CuexisConfig.cmake`，也不得进入 `cuexis_playback`、
+`cuexis_player`、`cuexis_runtime` 或任何 headless consumer 的链接闭包。Playback/Player 既
+不链接该库，也不在运行时启动该 CLI；运行时直接解码不是回退路径。替换路径是保持
+`cuexis_media_import` 的固定 profile 接口并整体替换某一解码器，且必须重新冻结 profile
+identity 与 golden，不允许静默更换解码器或做平台特有分支。
+
+### libvorbis overlay（`vcpkg-overlays/libvorbis`）
+
+libvorbis 1.3.7#4 通过仓库内 overlay port 构建，叠加一个补丁
+`0005-unify-m-pi-precision.patch`：当 `<math.h>` 未定义 `M_PI` 时，libvorbis 回落到只有十位
+有效数字的 float 字面量（MSVC 未定义 `_USE_MATH_DEFINES` 时就是这种情况），而 GCC、Clang 与
+MinGW 的 `<math.h>` 提供全精度 double。`M_PI` 参与 MDCT 系数表与 LSP 解码路径，因此同一输入在
+MSVC 与其余三个平台上产生不同的 canonical 字节（`6d961c9e…` 对 `df73cb81…`）。overlay 把
+`M_PI` 固定为同一个全精度 double 值，不引入 epsilon、不舍弃低位、不做平台分支，也不改变解码
+算法。三个 media-tools preset（`debug-media-tools`、`headless-sanitize-media-tools`、
+`media-tools-coverage`）通过 `VCPKG_OVERLAY_PORTS` 使用它，因此四个平台构建同一份依赖源码。
+port 版本保持 `1.3.7#4`，overlay 内容参与 vcpkg ABI 哈希，旧的二进制缓存不会被复用。解码器
+身份字符串与 profile identity 已随之更新为 `libvorbis-1.3.7-pinned-mpi-libogg-1.3.6`。
+
+## 封装原则
+
+第三方库可以用于内部实现，但除明确基础类型外，不进入 Cuexis 公共接口。Chart、Component 和资产格式不得保存第三方运行时对象。后端库通过模块边界封装，替换依赖不应要求修改无关模块。
+
+cuexis_playback、cuexis_audio 与 cuexis_judgement 的安装公共头使用更严格的封装规则：不得要求消费者包含 EnTT、SDL、OpenGL/GLAD、JSON 实现或日志实现头。可选后端依赖只能由对应 CMake component 传播，纯 `Cuexis::Playback`/`Cuexis::Audio` headless consumer 不得被迫安装 SDL 或 OpenGL 依赖。
+
+## SDK 分发
+
+每个正式分发组件必须记录其公共与私有传递依赖、静态/动态链接方式、许可证文件安装位置和消费方义务。`CuexisConfig.cmake` 的组件依赖必须与实际链接边界一致；不能通过 umbrella target 静默把 Player、Studio、测试或后端依赖带入宿主。
+
+官方宿主适配器可以依赖对应引擎 SDK，但该依赖不得进入 Playback 核心。无法随 Cuexis 再分发的宿主 SDK 必须采用由消费者提供的查找方式，并在构建和许可证文档中明确说明。
+
+当前 C++20 静态 Playback 包安装 metadata 到 `${CMAKE_INSTALL_DATADIR}/Cuexis`，并把实际基础
+链接闭包的 vcpkg copyright 文件安装到 `licenses/`。基础 Playback/Content/Audio 包配置只查找
+EnTT、GLM、nlohmann-json、JSON Schema Validator 和 tl-expected。CXC 接入静态 Playback 后可以
+私有增加无默认 feature 的 minizip-ng 链接闭包，但不得把它宣传为公共 Cuexis component 或传播其
+头文件。基础包不得查找 SDL3、glad、spdlog、Catch2、shaderc、SPIRV-Tools、SPIRV-Cross、libpng、
+libjpeg-turbo、minimp3、libvorbis、libogg、libFLAC 或 zlib。显式请求 `AudioSDL` component 时才允许查找 SDL3，并载入独立的
+`CuexisAudioSDLTargets.cmake`；包含该组件的安装树必须额外分发 SDL3 copyright。
+
+Player 分发目录（`cuexis_player_dist`）是独立于 SDK 安装树的正式分发物，因此它另行携带自己的
+许可证清单。`VERSION.txt` 旁边的 `licenses/` 必须精确包含：
+
+```text
+entt  fmt  glad  glm  json-schema-validator  minizip-ng
+nlohmann-json  sdl3  spdlog  tl-expected
+```
+
+这十个 vcpkg port 覆盖 Player 的实际链接闭包：SDL3（平台/音频）、glad 与 OpenGL registry
+（渲染 adapter 编译进 Player）、spdlog 与 fmt（日志）、以及静态 SDK 实现闭包中的 EnTT、GLM、
+nlohmann-json、JSON Schema Validator、minizip-ng、tl-expected。构建
+`nlohmann_json_schema_validator.dll` 的 vcpkg port 不提供 `copyright` 文件，其上游许可证文本与
+`json-schema-validator` 相同，因此只登记一份，并在打包脚本中记录该映射。MinGW 分发还必须包含
+编译器运行时（`libgcc_s_seh-1.dll`、`libstdc++-6.dll`、`libwinpthread-1.dll`）；这些是工具链
+运行时，不是第三方项目依赖，不打入 `licenses/` 清单。
+
+门禁 `cuexis_player_distribution` 校验该清单在两个方向上精确相等，并拒绝任何 `.lib`/`.pdb`/
+`.ilk`/`CMakeCache.txt` 构建产物进入分发目录。
+
+## 例外流程
+
+引入大型依赖或具有传播性许可证的依赖时必须写 ADR，说明不用成熟库、自研以及其他候选的总成本。项目免费不构成忽略许可证义务的理由。

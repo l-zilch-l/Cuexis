@@ -1,0 +1,21 @@
+{
+  "format": "cuexis.animation-template",
+  "version": 1,
+  "templateId": "motion.move-y-runtime-script",
+  "metadata": { "name": "moveY" },
+  "application": {
+    "coordinateSpace": "local",
+    "blendMode": "additive",
+    "iterations": 1,
+    "fillMode": "hold"
+  },
+  "script": "return entity.y + host.speed;",
+  "clip": {
+    "version": 1,
+    "durationBeats": { "numerator": 1, "denominator": 1 },
+    "tracks": [],
+    "stepTracks": []
+  },
+  "requiredExtensions": [],
+  "extensions": {}
+}

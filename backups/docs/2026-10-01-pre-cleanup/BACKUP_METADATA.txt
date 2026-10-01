@@ -1,0 +1,5 @@
+source=docs
+created=2026-10-01
+file_count=321
+byte_count=3631102
+commit=5709793
