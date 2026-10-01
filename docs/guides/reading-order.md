@@ -127,7 +127,7 @@ Stage 7 有两条容易忽略的性质：它是一条**持续能力线**而非�
 7B+ 在不破坏 7A 身份与生命周期的前提下持续增加能力，Stage 8 只依赖 7A）；以及其计划 §2
 登记的**四项 Stage 6 未完成项**已被指定为 Stage 7A 的**关闭前置条件**。
 
-后续阶段按需查 `future/stage-09`…`stage-12` 的 `plan.md`。
+后续阶段按需查 `future/stage-09`…`stage-14` 的 `plan.md`。
 
 ## 8. 公共 SDK 视角
 
@@ -157,8 +157,8 @@ Stage 7 有两条容易忽略的性质：它是一条**持续能力线**而非�
 | 31 | [proposals/deferred/README.md](../proposals/deferred/README.md) | 粒子、Android/移动端等延期方向 |
 | 32 | [archive/README.md](../archive/README.md) | 历史格式、历史计划与过期审视材料 |
 
-延期的阶段计划（v6/v7/v8、Stage 9B、旧 Stage 10）在 `stage_plans/deferred/` 与
-`stage_plans/future/stage-09a/`；它们是设计输入，**不等于实施承诺**。
+旧阶段计划（v6/v7/v8、Stage 9B、旧 Stage 10、旧 Stage 9A）在 `stage_plans/deferred/` 与
+`stage_plans/future/stage-09a/`；它们是已并入新主阶段的历史输入，**不等于已实施**。
 
 ## 11. 三条最小路径
 

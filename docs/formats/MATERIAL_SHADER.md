@@ -641,7 +641,7 @@ FrameDigest v3 已包含 material type、AssetId 与 32 identity bytes。Paramet
 identity 递归包含 shader 与纹理，因此不需要 digest v4。v1/v2 digest golden 保持不变。
 
 Package：Portable/Parameterized 公开 API 仍属于 `Playback` component。Validation Sink 不安装。
-OpenGL adapter 与 `cuexis_shader` 均不安装。稳定 C ABI 仍属 Stage 12。
+OpenGL adapter 与 `cuexis_shader` 均不安装。稳定 C ABI 仍属 Stage 14。
 
 ## 14. Implementation status
 

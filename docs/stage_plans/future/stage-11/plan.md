@@ -1,146 +1,71 @@
-# Stage 11 Implementation Plan: Scale, Platforms and Advanced Presentation
+# Stage 11 Implementation Plan: Presentation Geometry and Chart v7
 
 状态：future；未开始
 
-更新日期：2026-09-05
+更新日期：2026-10-01
 
-归档来源：[旧 Stage 9A 性能计划](../stage-09a/plan.md)、
-[Android 设计输入](../../deferred/stage-09b/plan.md)、
-[Vulkan 设计输入](../../deferred/stage-10/plan.md) 和
-[粒子时间轴提案](../../../proposals/deferred/PARTICLE_TIMELINE.md)。
+归档来源：[Chart v7 历史设计输入](../../deferred/chart-format-update-for-v7/plan.md)、
+[Chart v6 / Model v1](../../deferred/chart-format-update-for-v6/plan.md)、
+[Portable Presentation v1](../../../formats/PORTABLE_PRESENTATION.md) 和
+[Material/Shader v1](../../../formats/MATERIAL_SHADER.md)。
 
 前置：
 
 ```text
-Stage 7A Gameplay Foundation
-Stage 7B+ capabilities selected for scale/platform validation
-Stage 8 Chart v5 / CXT v2 / Packed Chart
-Stage 9 Presentation extensions
-Stage 10 Studio workflows
+Stage 8 Chart v5 production baseline
+Stage 9 Chart v6 / Model v1 / Presentation Foundation
+Stage 10 Studio MVP only where preview or authoring support is required
 ```
 
-本阶段不重新定义 Chart、Input、Judgement 或 Presentation 语义，而是验证它们在
-大规模内容和更多运行环境中的可用性。
+本阶段吸收原 `chart-format-update-for-v7` 延期计划。它建立 Chart v7 的几何表现合同，
+不实现用户后处理绘制，不改变 Judgement、Score 或 Replay。
 
 ## 1. 阶段目标
 
 ```text
-40,000 实体可测量运行
-Packed Chart / CXT 展开性能
-完整 Input -> Judgement 链路性能
-桌面设备预算
-Android SDK / host validation
-可选 Vulkan adapter
-高级粒子和后处理
+Chart v7
+  -> 单轴分段三次 Bézier 曲线形变
+  -> 内置 line 与更多常见模型
+  -> line 粗细/棱柱表现
+  -> CXC 根 shader.json 的声明式接口
 ```
 
-## 2. 子批次
+## 2. 工作批次
 
-### S11-A：桌面性能基线
+### S11-A：单轴曲线形变
 
-测量：
+- `mappingAxes` 只允许一条 X/Y/Z 轴；两轴留给 Stage 13，三轴永久拒绝。
+- 只使用分段三次 Bézier；不支持公式、表达式字符串或运行时生成曲线。
+- 采样由绝对 Beat 与当前局部 TRS 一次完成；Seek、Reload、不同帧率必须相同。
+- 使用稳定的平行移动标架，C0/C1 边界和拐点必须有 golden。
 
-```text
-Packed Chart load/decode
-CXT finite expansion
-prepare peak memory
-ChartRuntime memory
-Judgement query
-Input timestamp mapping
-FrameSnapshot extraction
-Seek / Reload
-CXC package load
-audio clock stability
-CPU/GPU frame time
-```
+### S11-B：line 与几何资源
 
-必须区分硬预算、软目标和用户偏好，并形成版本化 DesktopDeviceProfile。
+- line 的 portable 表示、粗细和棱柱挤出方式由 ADR/Spec 冻结。
+- 不把 line 的视觉轨迹当成 Judgement 轨迹；对象/子对象共享既有 Transform 层级。
+- 与 Stage 9 的 Model/Submesh、材质和资源闭包保持独立、可组合。
 
-### S11-B：大谱面压力
+### S11-C：shader.json 声明接口
 
-至少覆盖：
-
-```text
-40,000 semantic entities
-high repetition Pattern
-low repetition Chart
-large resource closure
-many animation events
-many Judgement requirements
-worst-case Packed sections
-```
-
-性能测试不能只测渲染，也必须测从输入到判定结果的完整链路。
-
-### S11-C：Android
-
-Android 只能消费已有公共合同：
-
-```text
-PlaybackSession
-FrameSnapshot
-InputEvent
-JudgementResult
-Presentation capability
-```
-
-需要验证：
-
-```text
-音频时钟
-触摸输入
-资源派生
-内存预算
-Packed Chart 解码
-CXC closure
-安装包和宿主
-```
-
-### S11-D：Vulkan
-
-Vulkan 是可选 Presentation Adapter。不得建立第二套 Chart、Judgement 或
-FrameSnapshot 求值路径，也不得向公共 SDK 暴露 Vulkan 类型。
-
-### S11-E：高级表现
-
-在性能合同稳定后，可实现：
-
-```text
-确定性粒子
-后处理实现
-模型动画
-更复杂的 Presentation Environment
-```
-
-粒子必须使用绝对时间、版本化随机种子和有界 Checkpoint/重建，不得引入任意
-脚本化发射逻辑。
-
-## 3. 交接
-
-本阶段向 Stage 12 交付：
-
-```text
-设备与宿主能力矩阵
-性能预算和降级规则
-Input/Judgement/Replay 性能证据
-Packed/CXC 大内容证据
-Android/Vulkan capability 合同
-稳定的 FrameSnapshot / JudgementResult 使用证据
-```
+- CXC 根可包含空或省略的 `shader.json`；空值表示 SDK 默认。
+- 本阶段只定义 schema、identity、capability、参数类型和拒绝路径，不执行用户 shader。
+- 不接受 GLSL/HLSL 源、Shader Graph 或任意全屏 pass 图。
 
 ## 4. 验收标准
 
-- 目标设备矩阵有可复现的真实测量。
-- 40,000 实体下，加载、解码、展开、判定、采样和渲染均在约定预算内。
-- 超预算时稳定失败或执行明确、可诊断的确定性降级。
-- Android 和 Vulkan 不复制第二套语义。
-- 粒子和后处理不会改变 Judgement、Score、Replay 或既有 Chart identity。
-- 性能采集关闭后不改变 FrameSnapshot、JudgementResult 或 Replay。
-- static/shared、external consumer 和目标平台门禁通过。
+- V7 ADR、Chart v7 Spec、曲线形变 Spec、line 资源合同和 `shader.json` 接口 Spec 先于生产实现。
+- 单轴轨迹、标架、Seek/Reload、跨平台 identity 和预算有 deterministic golden。
+- v6 对象、v7 单轴对象和无曲线对象的语义边界清晰；不支持能力稳定拒绝。
+- 合法 v4-v6 输入的既有 FrameDigest、Judgement、Score 和 Replay 结果不变。
+- CXC、Player、headless、external consumer 和 owner acceptance 完整。
 
 ## 5. 明确不包含
 
-- 修改 Chart v5/CXT v2 的核心语义。
-- 修改 Judgement 判定规则以适配单一设备。
-- 任意运行时脚本。
-- 宿主 UI、在线服务和编辑器 ABI。
+- 双轴曲线、公式曲线、用户后处理绘制、骨骼、morph、任意脚本。
+- 修改 Chart v5/v6 的字段含义或判定语义。
+- Android、Vulkan 和整机性能矩阵；它们归 Stage 12。
+
+## 6. 交接
+
+交付 Chart v7 单轴曲线 capability、line/几何资源合同和声明式 `shader.json` 接口。Stage 13
+可在保持 v7 identity 不变的前提下增加双轴形变和内置后处理执行。

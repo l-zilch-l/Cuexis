@@ -145,4 +145,4 @@ Fact。模块处理顺序固定在包清单中；同一写目标只能有一个 
 ## 12. 明确排除
 
 本 Spec 不定义作者 DSL/JSON/Studio 编辑器、不承诺 Stage 7B 全部高级能力、不冻结 Chart v5
-默认 Writer、不实现产品 `engine/`、不定义稳定 C ABI。稳定 C ABI 继续归 Stage 12。
+默认 Writer、不实现产品 `engine/`、不定义稳定 C ABI。稳定 C ABI 继续归 Stage 14。

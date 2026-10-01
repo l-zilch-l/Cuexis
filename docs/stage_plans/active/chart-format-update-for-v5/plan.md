@@ -672,11 +672,11 @@ Seek、循环、零持续、相邻边界和 timeDiscontinuity 沿用既有绝对
 ## 7. 明确不包含
 
 - Chart v6 / Model v1（静态 glTF、内置网格、默认扁平片、submesh 槽）。该项见
-  [延期计划](../../deferred/chart-format-update-for-v6/plan.md)，不在本阶段实施。
+  [Stage 9 计划](../../future/stage-09/plan.md)，不在本阶段实施。
 - Chart v7 曲线形变、line 模型与 `shader.json` 后处理接口。该项见
-  [延期计划](../../deferred/chart-format-update-for-v7/plan.md)，不在本阶段实施。
+  [Stage 11 计划](../../future/stage-11/plan.md)，不在本阶段实施。
 - Chart v8 双轴贝塞尔、模型基本动画与内置后处理。该项见
-  [延期计划](../../deferred/chart-format-update-for-v8/plan.md)，不在本阶段实施。
+  [Stage 13 计划](../../future/stage-13/plan.md)，不在本阶段实施。
 - Stage 6 的版本门禁、Player 产品化、后端中立渲染和常用媒体支持。本阶段不包含这些工作；Stage 6
   先以 v5-first candidate path 完成并保留 v4 回退，随后本阶段消费 Stage 6 的稳定 Playback/Player 合同。
 - Studio 编辑器、Viewport、Timeline 和 Preview 实现。本阶段只把 v5 typed authoring model 与“必须经

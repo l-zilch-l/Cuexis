@@ -13,8 +13,8 @@
 - [Shader Pipeline](SHADER_PIPELINE.md): historical design input; production contract is
   [MATERIAL_SHADER.md](../../formats/MATERIAL_SHADER.md) and
   [Stage 5 plan](../../stage_plans/completed/stage-05/plan.md)
-- [Particle Timeline](PARTICLE_TIMELINE.md): [Stage 8 plan](../../stage_plans/future/stage-08/plan.md)
-- [Android and Mobile Strategy](MOBILE_STRATEGY.md): [Stage 9B plan](../../stage_plans/deferred/stage-09b/plan.md)
+- [Particle Timeline](PARTICLE_TIMELINE.md): [Stage 13 plan](../../stage_plans/future/stage-13/plan.md)
+- [Android and Mobile Strategy](MOBILE_STRATEGY.md): [Stage 12 plan](../../stage_plans/future/stage-12/plan.md)
 
 ## Compatibility Entries
 

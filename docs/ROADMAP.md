@@ -2,7 +2,7 @@
 
 状态：现行路线图
 
-更新日期：2026-09-28
+更新日期：2026-10-01
 
 产品边界由 [ADR 0027](adr/0027-playback-sdk-product-boundary.md) 冻结。本文维护
 阶段顺序、依赖关系和交接，不复制阶段内部的完整字段合同或完成证据。
@@ -17,9 +17,11 @@ Cuexis 的实施顺序以可玩的音游闭环和可演进的格式合同为中�
   -> 冻结最小 Input / Judgement / Score / Replay 闭环（Stage 7A）
   -> 正式冻结高密度 Chart 发行格式（Stage 8）
   -> 持续扩展高级 Input / Judgement 能力（Stage 7B+）
-  -> 扩展 Presentation Environment 与模型表现
+  -> 建立 Presentation Foundation 与 Chart v6 / Model v1
   -> 建设 Studio 创作工作流
-  -> 验证性能、移动端和其他后端
+  -> 扩展 Chart v7 几何表现
+  -> 验证规模、桌面性能、Android 和 Vulkan
+  -> 扩展 Chart v8、高级表现和确定性粒子
   -> 冻结稳定 SDK ABI
 ```
 
@@ -48,9 +50,15 @@ Stage 5 已于 2026-08-28 关闭并合并至 `master`；260830 follow-up 已于 
 前一阶段                  Chart Format Foundation Hardening（2026-09-17 完成并经 owner 接受）
 Stage 6 主要开发基线      Chart v5 Core / Packed candidate
 Stage 6 兼容回退基线      Chart v4 / CXT v1 / CXC v1
-Stage 7A                   最小 Input / Judgement / Score / Replay Kernel
+Stage 7A                   最小 Input / Judgement / Score / Replay Kernel + Stage 6 遗留收口
 Stage 7B+                  Slide、多指、校准和高级判定能力持续演进
 Stage 8                   Chart v5 正式发行与语义收敛
+Stage 9                   Chart v6 / Model v1 / Presentation Foundation
+Stage 10                  Studio 创作工作流
+Stage 11                  Chart v7 单轴几何表现与 shader.json 接口
+Stage 12                  规模化、桌面性能、Android、Vulkan
+Stage 13                  Chart v8 双轴表现、内置后处理、确定性粒子
+Stage 14                  稳定 SDK v1 与 C ABI
 当前默认发行格式          Chart v4
 Chart v5                  candidate；Stage 8 后成为默认发行格式
 运行时脚本                无限期延后
@@ -78,10 +86,12 @@ Chart v5                  candidate；Stage 8 后成为默认发行格式
 | [Stage 7A](stage_plans/future/stage-07/plan.md) | 冻结最小可玩闭环和 Judgement Kernel | Chart v5 Core/Packed + v4 compatibility | Input、Judgement、Score、Replay、Tap/Hold/Release |
 | [Stage 7B+](stage_plans/future/stage-07/plan.md) | 持续扩展高级输入与判定能力 | Stage 7A contracts + selected v5 capabilities | Slide、Flick、方向、连续轨迹、多指、校准 |
 | [Stage 8](stage_plans/future/stage-08/plan.md) | Chart v5 正式发行和语义收敛 | v5 candidate + Stage 7A | v5 Spec、CXT v2、Packed、CXC playback entry、迁移、默认 Writer |
-| [Stage 9](stage_plans/future/stage-09/plan.md) | Presentation 扩展 | Chart v5 | 天空盒、环境、静态模型、有限形变 |
+| [Stage 9](stage_plans/future/stage-09/plan.md) | Presentation Foundation 与 Chart v6 | Chart v5 | 环境、静态 glTF、Model v1、内置网格、submesh |
 | [Stage 10](stage_plans/future/stage-10/plan.md) | Studio 创作工作流 | Chart v5 / Packed Chart | 编辑、预览、编译、打包、资源闭包 |
-| [Stage 11](stage_plans/future/stage-11/plan.md) | 规模化和平台扩展 | Chart v5 | 性能、移动端、Vulkan、粒子和高级表现 |
-| [Stage 12](stage_plans/future/stage-12/plan.md) | 稳定 SDK v1 | Chart v5 / CXC v1 | 稳定 C ABI、公共生命周期和发布政策 |
+| [Stage 11](stage_plans/future/stage-11/plan.md) | Chart v7 几何表现 | Chart v6 / Model v1 | 单轴 Bézier、line、shader.json 声明接口 |
+| [Stage 12](stage_plans/future/stage-12/plan.md) | 规模化与目标平台 | Chart v5-v7 | 桌面性能、40k 压测、Android、Vulkan |
+| [Stage 13](stage_plans/future/stage-13/plan.md) | Chart v8 与高级表现 | Chart v7 | 双轴 Bézier、内置后处理、确定性粒子 |
+| [Stage 14](stage_plans/future/stage-14/plan.md) | 稳定 SDK v1 | 已接受的核心/平台基线 | 稳定 C ABI、公共生命周期和发布政策 |
 
 ## 阶段依赖
 
@@ -94,8 +104,10 @@ Stage 5
           -> Stage 8
               -> Stage 9
                   -> Stage 10
-                      -> Stage 11
-                          -> Stage 12
+              -> Stage 11
+                  -> Stage 12
+                      +--> Stage 13 (optional advanced presentation line)
+                      +--> Stage 14 (stable ABI; does not wait for all Stage 13 capabilities)
 
 Stage 7A
   -> Stage 7B+ (持续能力线，可跨越 Stage 8 继续)
@@ -115,7 +127,7 @@ Stage 7B+ 的高级判定设计研究
 可以加载、验证和消费受支持的 v5 candidate subset，同时保留 v4 回退；Stage 7A 冻结
 Chart v5 所需的最小 Input/Judgement/Replay 合同；Stage 8 只依赖 Stage 7A，不等待
 全部高级判定能力；Stage 7B+ 必须通过版本化 capability 持续增加，不能破坏 7A 合同；
-Stage 9 不得改变判定语义。
+Stage 9、Stage 11 和 Stage 13 不得改变判定语义；Stage 12 只验证实现和平台，不重定义语义。
 
 Stage 6 的子批次与 F1 最终验证已全部退出，关闭报告、三个核验问题处置与 Stage 7A/Stage 8 交接
 清单已形成（见 [Stage 6 关闭报告](stage_reports/stages/stage-06/completion.md)），并经 owner 于
@@ -163,19 +175,19 @@ Packed Chart 物理编码
 CXC 中 Packed Chart 的 entry 语义
 ```
 
-Chart v6/v7/v8 不再作为脱离主路线的漂浮格式计划：
+Chart v6/v7/v8 已纳入连续主路线，不再作为脱离主路线的漂浮格式计划：
 
 | 能力 | 归属 |
 | --- | --- |
 | CXT 模板、Pattern、Packed Chart | Stage 8 / Chart v5 |
-| Presentation Environment、天空盒 | Stage 9 |
-| 静态 glTF、Model、Mesh、submesh | Stage 9 |
-| 曲线形变和有限 Geometry Deformation | Stage 9 |
-| 后处理、模型动画、粒子 | Stage 11 |
+| Presentation Environment、天空盒、静态 glTF、Model、Mesh、submesh | Stage 9 |
+| 曲线形变和 line 表现、shader.json 声明接口 | Stage 11 |
+| 桌面性能、40k 压测、Android、Vulkan | Stage 12 |
+| 双轴形变、后处理、模型动画、粒子 | Stage 13 |
 | Studio 对上述能力的编辑 | Stage 10 |
 
-现有 v6/v7/v8 讨论文件保留为设计输入，恢复实施前必须分别建立 ADR、正式 Spec
-和对应 Stage 9/11 工作包。
+现有 v6/v7/v8 文件保留为历史设计输入；对应实施范围已经并入 Stage 9、11、13，
+恢复实施前仍必须分别建立 ADR 和正式 Spec。
 
 ## CXC 路线
 
@@ -192,6 +204,9 @@ Stage 8
 
 Stage 9/10
   扩展 portable Model / Environment 资源和 Studio 打包工作流
+
+Stage 11/13
+  以版本化 capability 扩展几何表现和高级表现
 ```
 
 CXC v1 不需要因为 Chart v5 升级容器版本。Foundation 只冻结 entry 映射和验证工具；
@@ -234,7 +249,7 @@ owner acceptance
 
 ## 无限期延后
 
-运行时脚本和逐帧脚本回调没有排期，不属于 Stage 6–12 的隐含任务。
+运行时脚本和逐帧脚本回调没有排期，不属于 Stage 6–14 的隐含任务。
 
 ## 维护规则
 

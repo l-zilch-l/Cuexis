@@ -1,67 +1,74 @@
-# Stage 12 Implementation Plan: Stable ABI and Playback SDK v1
+# Stage 12 Implementation Plan: Scale, Desktop Performance and Target Platforms
 
 状态：future；未开始
 
-更新日期：2026-09-20
+更新日期：2026-10-01
 
-归档来源：[旧版 PROJECT_GUIDE](../../../archive/PROJECT_GUIDE_LEGACY_2026-08-10.md) 与
-[SDK transition plan 快照](../../../archive/CUEXIS_SDK_TRANSITION_PLAN_2026-08-10.md)。
+归档来源：[旧 Stage 9A 性能计划](../stage-09a/plan.md)、
+[Android 历史输入](../../deferred/stage-09b/plan.md)、
+[Vulkan 历史输入](../../deferred/stage-10/plan.md) 和
+[旧 Stage 11 规模化计划](../stage-11/plan.md)。
+
+前置：
+
+```text
+Stage 7A Gameplay Foundation and selected 7B+ capabilities
+Stage 8 Chart v5 / CXT v2 / Packed Chart
+Stage 9 Presentation Foundation
+Stage 10 Studio workflows needed by the measured scenarios
+Stage 11 Chart v7 geometry contract for any measured presentation profile
+```
+
+本阶段合并原 Stage 11 的规模化目标、旧 Stage 9A 桌面性能计划、Stage 9B Android 计划和旧
+Stage 10 Vulkan 计划。它验证既有合同在真实内容、目标设备和可选后端上的可用性，不重新定义
+Chart、Input、Judgement、Replay 或 FrameSnapshot 语义。
 
 ## 1. 阶段目标
 
-在 C++ preview 和 Judgement/Replay 公共生命周期获得真实 consumer 证据后，冻结稳定 C ABI，
-提供薄 C++ RAII wrapper，并发布正式 Cuexis Playback SDK v1。
+验证 Chart、Playback、Gameplay 和 Presentation 合同在大规模内容、桌面设备、Android 以及
+可选 Vulkan adapter 上的可用性，形成可复现的性能、预算、生命周期和平台能力证据。
 
-## 2. 前置条件
+## 2. 工作批次
 
-- Stage 7A 的 Input/Judgement/Replay 核心公共生命周期、实现、external consumer 和确定性回放
-  门禁全部完成；Stage 8 已确定 SDK v1 发行范围内纳入的 Stage 7B+ capability，并为这些能力
-  提供兼容证据。Stage 12 不等待所有未来 Judgement 扩展完成。
-- Stage 11 已完成目标平台和规模化运行证据。
-- Stage 1E 与 Stage 6 已积累 C++ 所有权、线程、错误、部署、升级和真实宿主证据。
-- 公共 FrameSnapshot、JudgementResult、ReplayData 和 ContentProvider 生命周期无开放语义问题。
+### S12-A：桌面性能与大谱面
 
-## 3. ABI 工作范围
+- 测量 Packed/CXC load、CXT expansion、prepare 峰值、Runtime 内存、Judgement query、Replay、
+  FrameSnapshot、Seek/Reload、AudioClock、CPU/GPU frame time 和资源上传。
+- 覆盖 40,000 semantic entities、Pattern 高低重复、复杂资源闭包、动画和 Judgement requirements。
+- 形成版本化 DesktopDeviceProfile，区分硬预算、软目标、用户偏好、EffectiveSettings 和降级原因。
+- 统计关闭后不得改变 FrameSnapshot、JudgementResult 或 Replay。
 
-- 冻结 opaque handle、allocator、字符串、数组、回调和快照有效期。
-- 定义独立 C ABI version、符号可见性、capability 查询、兼容和弃用政策。
-- 规定 Result/error、诊断、线程 owner、重入、取消和资源释放合同。
-- 验证 Windows CRT、Debug/Release、static/shared 和支持平台矩阵。
-- 提供不增加第二套语义的薄 C++ RAII wrapper。
-- 提供至少一个正式宿主 adapter 和纯 C external consumer。
-- 发布完整集成、升级、部署、许可证和符号文档。
+### S12-B：Android SDK 与宿主适配
 
-## 4. 版本边界
+- 验证 Android Playback SDK、headless、可选 OpenGL ES 3.0 adapter、APK/AAB、AssetManager、
+  后台恢复、Context 丢失、内存压力和真实设备音频/输入链路。
+- 为 KTX2/Basis Universal、meshoptimizer、Ogg/Vorbis 和 GLSL ES 300 定义 target profile；派生资源
+  记录 source hash、importer、profile 和压缩参数。
+- 只验证原始输入时间戳和延迟链路；InputProfile/CalibrationProfile 只有在另行批准后持久化。
 
-以下版本独立演进，任何一个变化都不得隐式升级其他版本：
+### S12-C：Vulkan 可选 adapter
 
-- 项目显示版本。
-- C++ SDK API version。
-- C ABI version。
-- Chart、Project、Asset Index、CXC/CXT 和 ReplayData 内容格式版本。
+- 审查 RenderBackend、PipelineDesc、BindingSet、资源生命周期和 SPIR-V/cache 路径。
+- 在隔离的 LaunchOptions/RenderConfig 中验证显式 auto/opengl/vulkan 请求、capability、回退和
+  EffectiveSettings。
+- 如有真实需求，实现最小 Vulkan adapter；不向 Playback、Chart、Judgement 或 FrameSnapshot 暴露 Vulkan 类型。
+- OpenGL/Vulkan 对同一 portable profile 产出等价的规范化表现摘要。
 
-遵循 [SDK 版本规范](../../../guides/VERSIONING.md)：此前的 preview minor 不设一位数字上限，
-`0.10.0`、`0.11.0` 均合法，不与阶段号绑定。本阶段目标为 SDK `1.0.0`，但只有稳定公共合同、
-C ABI、兼容矩阵及下述验收全部完成并经 owner 接受后才可正式发行；未完成时继续使用 `0.x`，
-不得因到达 Stage 12 或 minor 达到 9 而自动提升 major。
-本阶段须以 ADR 冻结 `1.x` 的 API/ABI 版本递增、兼容和弃用政策，并确定安装包兼容规则；
-不得直接沿用 preview 的 additive patch 政策或将源码兼容解释为二进制兼容。
+## 3. 验收标准
 
-## 5. 验收标准
+- 目标桌面、Android 和 Vulkan 矩阵有可复现真实测量；环境和设备限制明确记录。
+- 40,000 实体下加载、展开、判定、采样和渲染预算分别有硬门禁或明确降级。
+- Android 生命周期、资源派生、音频、触摸时间戳和内存压力有设备证据。
+- Vulkan 形成接受、延期或拒绝产品化的 ADR；不可用后端稳定诊断，回退只由显式策略决定。
+- static/shared、external consumer、headless 和目标平台门禁通过，owner acceptance 完整。
 
-- 纯 C consumer 不包含 C++ 标准库、异常、RTTI 或第三方实现类型。
-- ABI 对象创建、销毁、错误、回调和快照生命周期具有正反例测试。
-- 不同支持编译器/运行库组合按兼容矩阵接受或稳定拒绝。
-- 旧 minor consumer 与兼容的新 SDK 通过二进制兼容测试；不兼容版本在加载前失败。
-- static/shared、Debug/Release、Windows CRT 和支持平台矩阵全部通过。
-- Playback、Judgement 和 Replay 的 external consumer 只使用安装产物。
-- package、符号、license/NOTICE、部署和升级文档完整。
-- C++ RAII wrapper 与 C ABI consumer 对相同输入产生相同 FrameSnapshot/Judgement/Replay 结果。
-- SDK v1 发布不改变既有内容格式 identity 或迁移语义。
-- `1.x` 版本与兼容政策已有接受的 ADR 和正反例测试；实际 `1.0.0` 发行版本、独立 C ABI
-  版本、同 SHA 验收证据和 owner 接受记录完整，不能仅凭版本常量宣称稳定。
+## 4. 明确不包含
 
-## 6. 明确不包含
+- 修改 Chart v5/v6/v7 核心语义或为单一设备修改 Judgement。
+- 任意运行时脚本、宿主 UI、在线服务、编辑器 ABI 或稳定 C ABI。
+- 把 Android、Vulkan 或性能 profile 写入 Chart 内容 identity。
 
-- 在证据不足时冻结宿主插件 ABI、编辑器 ABI 或渲染后端 ABI。
-- 通过 C ABI 暴露 RuntimeSession、World、EnTT、SDL、OpenGL、JSON DOM 或宿主引擎类型。
+## 5. 交接
+
+交付设备与宿主能力矩阵、预算和降级规则、Input/Judgement/Replay 性能证据、Android/Vulkan
+capability 合同以及 Stage 14 所需的真实 consumer 和部署证据。

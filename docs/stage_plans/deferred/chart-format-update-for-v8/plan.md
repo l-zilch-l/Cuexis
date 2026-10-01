@@ -1,6 +1,6 @@
 # chart-format-update-for-v8：Chart v8 双轴贝塞尔形变、模型动画与内置后处理
 
-状态：deferred；未排入当前实施序列
+状态：superseded input；内容已并入 [Stage 13](../../future/stage-13/plan.md)
 
 更新日期：2026-09-03
 
@@ -10,7 +10,8 @@
 [ADR 0008](../../../adr/0008-coordinate-transform-hierarchy.md) 与
 [Stage 11](../../future/stage-11/plan.md)。
 
-本文件是讨论后的延期格式计划，不是 ADR、生产 Spec 或实施中的阶段。未恢复为 active 且未关闭
+本文件保留为历史设计输入，不是独立阶段。其可执行范围已并入 [Stage 13](../../future/stage-13/plan.md)；
+字段仍须以未来 ADR/Spec 为准。未关闭
 V8-0 门禁前，不得新增生产 Schema/Reader/Writer，也不得把 Chart v8、双轴形变或内置后处理写成
 已可加载。本阶段属于 Stage 11 的高级 Presentation 设计输入，排在 Chart v7 关闭之后；
 日历排期另由项目所有者决定。

@@ -1,6 +1,6 @@
-# Stage 10 Implementation Plan: Optional Vulkan Adapter Validation
+# Historical Input: Optional Vulkan Adapter Validation
 
-状态：deferred；可选，未排入当前实施序列
+状态：deferred；已并入 [Stage 12](../../future/stage-12/plan.md)，本文仅保留为历史输入
 
 更新日期：2026-08-10
 

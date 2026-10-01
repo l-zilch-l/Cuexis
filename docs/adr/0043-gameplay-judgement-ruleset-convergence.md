@@ -117,7 +117,7 @@ manifest 形状，但使用 `cuexis.ruleset` format，不复用 Chart entry 分�
 | 匹配策略 | leftmost-first | leftmost-longest | 后者需要回看，扩大状态和 Seek 成本 |
 | 多指表达 | 独立 requirement + L3 聚合 | Pattern 积 | 积没有提供必要语义，增加复杂度 |
 | 快照 | 第一版全量 | 先做增量 | 尚无证据证明全量不可行，增量差分增加风险 |
-| ABI | C++ typed preview | 现在冻结稳定 C ABI | 稳定 C ABI 属 Stage 12，过早冻结会阻塞演进 |
+| ABI | C++ typed preview | 现在冻结稳定 C ABI | 稳定 C ABI 属 Stage 14，过早冻结会阻塞演进 |
 
 ## 威胁模型
 
@@ -129,5 +129,5 @@ Hold 或旧版本语义。
 ## 后续边界
 
 本 ADR 不声明 `engine/` 实现完成，不冻结真实预算数值，不切换 Chart v5 默认 Writer，也不
-启动 Studio 语法、完整 Stage 7B 高级能力或 Stage 12 C ABI。owner acceptance、Spec/ABI 实现和
+启动 Studio 语法、完整 Stage 7B 高级能力或 Stage 14 C ABI。owner acceptance、Spec/ABI 实现和
 真实内容预算测量是后续工作项。

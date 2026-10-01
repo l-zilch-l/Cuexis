@@ -1,9 +1,9 @@
 # Stage 9A Implementation Plan: SDK and Host Performance Validation
 
-> 路线说明：本文件保留为旧性能专题计划，主路线编号已调整为 Stage 11A。
-> 新的阶段入口见 [Stage 11](../stage-11/plan.md)。
+> 路线说明：本文件保留为旧性能专题计划，内容已并入 [Stage 12](../stage-12/plan.md)。
+> 新的阶段入口见 [Stage 12](../stage-12/plan.md)。
 
-状态：future；未开始
+状态：future；已并入 Stage 12，本文仅保留为历史输入
 
 更新日期：2026-08-10
 

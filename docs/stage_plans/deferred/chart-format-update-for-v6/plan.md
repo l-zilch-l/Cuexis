@@ -1,6 +1,6 @@
 # chart-format-update-for-v6：Chart v6 模型、内置网格与 submesh 合同
 
-状态：deferred；未排入当前实施序列
+状态：superseded input；内容已并入 [Stage 9](../../future/stage-09/plan.md)
 
 更新日期：2026-09-20
 
@@ -12,7 +12,8 @@
 [ADR 0038](../../../adr/0038-cxc-v1-and-chart-v4-boundary.md) 与
 [Stage 11](../../future/stage-11/plan.md)。
 
-本文件是讨论后的延期格式计划，不是 ADR、生产 Spec 或实施中的阶段。未恢复为 active 且未关闭
+本文件保留为历史设计输入，不是独立阶段。其可执行范围已并入 [Stage 9](../../future/stage-09/plan.md)；
+字段仍须以未来 ADR/Spec 为准。未关闭
 V6-0 门禁前，不得新增生产 Schema/Reader/Writer，也不得把 Chart v6 / Model v1 写成已可加载。
 本阶段属于 Stage 9 的 Model/Environment 设计输入；恢复为 active、指定实施批次和日历排期
 另由项目所有者决定。

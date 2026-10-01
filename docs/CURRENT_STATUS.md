@@ -33,10 +33,12 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Stage 7A | future；I 收敛文档基线已整理，最小 Input / Judgement / Score / Replay Kernel 产品实现未开始 | [plan](stage_plans/future/stage-07/plan.md)、[ADR 0043](adr/0043-gameplay-judgement-ruleset-convergence.md) |
 | Stage 7B+ | future；Slide、Flick、多指、校准和高级 Judgement 能力持续演进 | [plan](stage_plans/future/stage-07/plan.md) |
 | Stage 8 | future；Chart v5 / CXT v2 / Packed Chart 正式发行与语义收敛 | [plan](stage_plans/future/stage-08/plan.md) |
-| Stage 9 | future；Presentation Environment、天空盒、模型和有限形变 | [plan](stage_plans/future/stage-09/plan.md) |
+| Stage 9 | future；Presentation Foundation 与 Chart v6 / Model v1 | [plan](stage_plans/future/stage-09/plan.md) |
 | Stage 10 | future；Chart v5 Studio 和发行工作流 | [plan](stage_plans/future/stage-10/plan.md) |
-| Stage 11 | future；性能、Android、Vulkan、粒子和高级表现 | [plan](stage_plans/future/stage-11/plan.md) |
-| Stage 12 | future；稳定 ABI 与 Playback SDK v1 | [plan](stage_plans/future/stage-12/plan.md) |
+| Stage 11 | future；Chart v7 单轴几何表现与 shader.json 声明接口 | [plan](stage_plans/future/stage-11/plan.md) |
+| Stage 12 | future；规模化、桌面性能、Android 与 Vulkan | [plan](stage_plans/future/stage-12/plan.md) |
+| Stage 13 | future；Chart v8、高级表现与确定性粒子 | [plan](stage_plans/future/stage-13/plan.md) |
+| Stage 14 | future；稳定 ABI 与 Playback SDK v1 | [plan](stage_plans/future/stage-14/plan.md) |
 
 Stage 6 计划已于 2026-09-20 按可实施性评审细分为基线/决策、candidate 消费、配置与控制、
 中立渲染、离线媒体导入、宿主安装及最终验证子批次，依赖顺序和验收矩阵见
@@ -256,7 +258,7 @@ Gameplay Judgement / Ruleset 已进入文档 I 收敛：取舍与威胁模型见
 - CXC v1 仍为容器版本。Foundation 负责 entry 映射和 Packed 验证原型，Stage 6 验证 v5
   candidate playback path 并保留 v4 entry，Stage 8 负责在 CXC v1 内正式发行已验证的
   Chart v5 Packed playback entry。
-- Chart v6 / Model v1、Chart v7 和 Chart v8 仍不可加载，分别作为 Stage 9/11 的表现设计输入；
+- Chart v6 / Model v1、Chart v7 和 Chart v8 仍不可加载，分别作为 Stage 9/11/13 的表现设计输入；
   不再作为 Judgement 的隐性前置。
 - SDK API 为 `0.7.0`。安装后的 Playback headers 不泄露 EnTT、SDL、OpenGL/GLAD、JSON DOM、
   RuntimeSession 或 World。
