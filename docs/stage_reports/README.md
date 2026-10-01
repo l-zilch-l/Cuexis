@@ -49,6 +49,8 @@ Standards / Spec 记录），由该专题自己的 `README.md` 承担导航；�
   [W5 宿主与分发门禁](reviews/stage-06-review-2026-09/2026-09-28-w5-host-and-distribution-gates.md)、
   [W6 代码健康度](reviews/stage-06-review-2026-09/2026-09-28-w6-code-health.md)、
   [交付报告](reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md)
+- Gameplay Ruleset 设计（candidate 提案的研究性实测，非实施）：
+  [Fold Spike 预算实测与确定性检查](reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md)（2026-10-01）
 - Stage 6 复核修正批次 R9（另行开启；最后行为 SHA `71de8b1`，owner 接受待定）：
   [R9 参考宿主命令循环与 play/pause](stages/stage-06/2026-09-28-r9-reference-host-command-loop.md)
 

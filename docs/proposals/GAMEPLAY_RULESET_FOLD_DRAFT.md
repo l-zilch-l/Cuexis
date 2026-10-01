@@ -40,7 +40,15 @@ L2 实例、L3 核心和会话事件共用一条全序队列。队列元素有�
 1. 激活 `armTick == t` 的 L2 实例
 2. 定时器，按 `(ownerKind, ownerId, edgeIndex)` 定序
 3. 输入事件，按 sequence
-4. 折叠：先执行 L3 自己的定时器状态推进，再按发出顺序折叠本 Tick 产生的 Fact
+4. 折叠：先执行 L3 自己的定时器状态推进，再按 `(requirementId, phase, outcome)` 的
+   规范顺序折叠本 Tick 产生的 Fact
+
+**第 4 步原写"按发出顺序"，已于 2026-10-01 修正（缺陷 D11）。** 发出顺序取决于实现遍历
+实例的顺序：一次按下经 observe 边同时结算两条 requirement 时（例如同轨两个炸弹），
+两条 Fact 的先后随遍历顺序互换。L7 只保证同 Tick 的 **Hook 读取**一致，不覆盖 **Fact
+发出顺序**。对顺序敏感的 L3 处理器会因此对同一输入得到不同结果。规范排序用的
+`requirementId` 已随 Fact 暴露，不需要新字段。实测与复现见
+[Fold Spike 报告](../stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md)。
 
 Hook 的写入在第 4 步，按 t+1 规则在下一个 Tick 对判定生效。这条规定是
 [Bounded Fold Calculus 提案](GAMEPLAY_FOLD_CALCULUS_DRAFT.md) §5.6 链式依赖通道的实现

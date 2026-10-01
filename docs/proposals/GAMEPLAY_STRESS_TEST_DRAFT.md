@@ -177,6 +177,25 @@ strayWhen = consumeEmpty | noCandidate
 
 `consumeEmpty` 是当前语义，`noCandidate` 表示完全没有任何实例监听该输入。
 
+### D11 同 Tick 内 Fact 的折叠顺序依赖实例枚举顺序（中，2026-10-01 实测发现）
+
+**现象**：Fold Spike 的 mixed-40k profile 在正向与反向枚举实例时结果摘要不同。第一处差异
+是同一次按下在同一 Tick 内引爆了同轨两个炸弹，两条 `Detonated` Fact 的发出顺序随枚举互换。
+
+**根因**：Ruleset Fold 草案 §2.1 第 4 步原规定"按发出顺序折叠"。L7 的结构性保证只覆盖
+Hook 读取，不覆盖 Fact 发出顺序。
+
+**后果**：可交换的计分不受影响，但 Fact 流本身不同；任何对顺序敏感的 L3 处理器都会对
+同一输入得到不同结果，而 L3 是可分发内容，不能假设处理器都是可交换的。
+
+**修法**：折叠前按 `(requirementId, phase, outcome)` 规范排序。已写入 Ruleset Fold 草案
+§2.1 第 4 步，并在 spike 中验证：开启后五个 profile 正反枚举一致，关闭时复现差异。
+
+**这一条为什么前十条都没抓到**：D1–D10 与 34 项案例都是逐 requirement 推演的，D11 只在
+"一次输入、多条结算"时出现，属于跨实体语义。它是 Fold Calculus §2.1 核心边界之外的东西，
+也是继 V 缺口、W 缺口之后第三次证明跨实体语义必须按类检查。证据见
+[Fold Spike 报告](../stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md) §4.1。
+
 ## 4. 局限登记
 
 设计本身正确，但存在必须写明的边界。
