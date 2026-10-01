@@ -19,7 +19,8 @@ findings are recorded in
   arbitration by `claimKey`, `every(period)` sampling anchored at `arm`, a derived window-scale
   hook visible from `t+1`, an L3 fold with one time-bounded module, and canonical snapshot / seek.
 - `continuity.*`: an isolated minimum model for handoff Hold / contact-following Slider continuity
-  (`Gap` + `holdGrace`), strict grace boundaries, preserved Slider progress, and snapshot restore.
+  (`Gap` + prepared per-requirement `effectiveGrace`, `graceResolutionPolicy`, strict boundaries,
+  preserved Slider progress, and snapshot restore).
 - `main.cpp` / `continuity_report.cpp`: synthetic charts and players, and the report.
 
 ## Build and run

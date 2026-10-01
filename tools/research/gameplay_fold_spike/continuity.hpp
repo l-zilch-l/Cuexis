@@ -15,6 +15,7 @@ enum class Grip : std::uint8_t { Sticky, Handoff };
 enum class EventKind : std::uint8_t { Press, Release, Move };
 enum class Outcome : std::uint8_t { HeadHit, BodyHit, Break, Miss };
 enum class Stage : std::uint8_t { Pending, Follow, Gap, Broken, Settled };
+enum class GraceSource : std::uint8_t { Inherited, Explicit };
 
 struct Requirement {
     std::uint32_t id = 0;
@@ -24,6 +25,10 @@ struct Requirement {
     Tick anchor = 0;
     Tick end = 0;
     std::uint32_t segments = 1;
+    Tick graceUs = 0;
+    bool explicitGrace = false;
+    Tick effectiveGraceUs = 0;
+    GraceSource graceSource = GraceSource::Inherited;
 };
 
 struct Event {
@@ -37,6 +42,11 @@ struct Event {
 struct Config {
     Tick goodUs = 120'000;
     Tick holdGraceUs = 60'000;
+    Tick holdGraceMinUs = 0;
+    Tick holdGraceMaxUs = 120'000;
+    bool allowChartGrace = true;
+    std::uint32_t graceResolutionPolicy = 1;
+    Tick sliderLateUs = 20'000;
 };
 
 struct Fact {
@@ -55,6 +65,7 @@ struct ItemSummary {
     std::uint32_t moves = 0;
     bool headEmitted = false;
     bool breakEmitted = false;
+    Tick deadline = 0;
 };
 
 struct Result {
@@ -62,7 +73,9 @@ struct Result {
     std::vector<ItemSummary> items;
     std::size_t strays = 0;
     std::uint64_t digest = 0;
+    std::uint64_t contentDigest = 0;
     std::uint64_t judgementDigest = 0;
+    bool prepareRejected = false;
 };
 
 class Session {
@@ -75,6 +88,7 @@ class Session {
     Session& operator=(const Session&) = delete;
 
     void apply(const Event& event);
+    void setRuntimeHoldGraceForTesting(Tick value);
     void finish();
     std::vector<std::uint8_t> snapshot() const;
     void restore(const std::vector<std::uint8_t>& bytes);

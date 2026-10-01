@@ -475,11 +475,28 @@ sticky             不允许重新 claim；仍由宽限计时器产生一次 Bre
 profile 的摘要仍为 `63ff9cebc811ee9a`、`c862befbe096f01c`、`357c381fdd3a4744`、
 `f07c2f59c8b62dd4`、`0de3815ce79887d8`。
 
-### 10.3 结论与边界
+### 10.3 C10-C14 prepared grace 矩阵
+
+第二轮把统一的 `holdGrace` 扩展为最小的 prepare 模型：每条 requirement 解析自己的最终
+`effectiveGrace`，并记录 `graceResolutionPolicy = 1`。运行时只读取冻结值；来源
+`explicit` / `inherited` 保留在内容与诊断摘要。GCC 与 clang 的结果逐行一致：
+
+| 案例 | 验证内容 | 结果 |
+| --- | --- | --- |
+| C10 | 同一谱面短宽限与长宽限并存 | 短值断开，长值恢复 |
+| C11 | `grace = 0`、最小值、最大值 | 零值同 Tick 不恢复；最大值在 119,999 us 恢复 |
+| C12 | explicit / inherited 与 policy identity | 最终值相同则 JudgementIdentity 相同；ContentIdentity 来源不同；policy 变化导致 JudgementIdentity 变化 |
+| C13 | prepare 后将运行中 Hook 改为 0 | 已准备的 60 ms 不被追溯修改 |
+| C14 | Slider 尾部 `max(W.max.late, grace)` | `20 ms` 尾窗与 `60 ms` grace 得到 `deadline = t1 + 60 ms`，尾部未提前结算 |
+
+五项全部通过。连续性专用章节和既有 profile 摘要在两个编译器之间逐行一致；仅运行耗时不同。
+
+### 10.4 结论与边界
 
 这次压测支持“复用 `handoff + Gap + holdGrace` 是可行的最小实现”：不需要新增 Hook、Pattern
 算子或 `reconnect` Fact；Slider 只需在 Gap 中保留已有的段号和路径进度。严格 `<` 边界、一次性
-`Break`、普通仲裁和 Gap 快照均有运行证据。
+`Break`、普通仲裁、Gap 快照、逐音符 prepared grace、identity policy 和 Slider deadline 均有
+研究性 spike 证据。
 
 这不是产品实现，也不是 Stage 7A 验收：模型没有接入 `engine/`，没有验证真实几何路径、设备
 事件采样丢失、音频时钟或完整判定/计分折叠。连续 Slider 的实际区域判定仍需在后续实现阶段
@@ -492,7 +509,8 @@ profile 的摘要仍为 `63ff9cebc811ee9a`、`c862befbe096f01c`、`357c381fdd3a4
              几何代价、串联旋转的实测依据、含边界约定、
              整数量程必须显式上界（§9.7，回应 §5.5 的第一次跨编译器实测）
 前轮完成     D12 的宽整数修复、GCC/clang 重建、完整报告逐行复测
-下一步 spike 两套采样格点叠加后的联合最坏延迟（9.6 的未合并项）
+下一步       一条真实内容切片上的 prepared grace、快照 / Seek 与预算测量
+              两套采样格点叠加后的联合最坏延迟（9.6 的未合并项）
               执行编译出的自动机，而非手写条目（局限 3 的剩余部分）
               自动机层面的等价判定（把两侧都化成自动机比语言，替代随机化）
               扫掠体判定（若将来做 3D）的代价形状——本次只测了点与静态区域的命中

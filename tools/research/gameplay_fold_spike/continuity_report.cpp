@@ -34,6 +34,22 @@ int countOutcome(const Result& result, Outcome outcome) {
                                            [&](const Fact& fact) { return fact.outcome == outcome; }));
 }
 
+const char* stageLabel(Stage stage) {
+    switch (stage) {
+    case Stage::Pending:
+        return "Pending";
+    case Stage::Follow:
+        return "Follow";
+    case Stage::Gap:
+        return "Gap";
+    case Stage::Broken:
+        return "Broken";
+    case Stage::Settled:
+        return "Settled";
+    }
+    return "?";
+}
+
 const ItemSummary& item(const Result& result, std::size_t index = 0) {
     return result.items[index];
 }
@@ -58,6 +74,12 @@ Requirement hold(std::uint32_t id = 0, Grip grip = Grip::Handoff) {
 
 Requirement slider(std::uint32_t id = 0, Grip grip = Grip::Handoff) {
     return Requirement{id, Kind::Slider, grip, 0, kAnchor, kEnd, 4};
+}
+
+Requirement withGrace(Requirement req, Tick grace) {
+    req.graceUs = grace;
+    req.explicitGrace = true;
+    return req;
 }
 
 Event press(Tick t, std::uint32_t contact, std::uint8_t lane = 0) {
@@ -248,6 +270,131 @@ void reportStress() {
     }
 }
 
+void reportPreparedGraceMatrix() {
+    std::printf("\n### C10-C14 prepared grace matrix\n\n");
+    std::printf("| case | expectation | observed | status |\n| --- | --- | --- | --- |\n");
+
+    Config config;
+    config.holdGraceUs = kGrace;
+    config.holdGraceMinUs = 0;
+    config.holdGraceMaxUs = 120'000;
+
+    // C10: each requirement owns its own prepared grace value.
+    Requirement shortGrace = withGrace(hold(10), 20'000);
+    Requirement longGrace = withGrace(hold(11), 80'000);
+    shortGrace.lane = 0;
+    longGrace.lane = 1;
+    const Result c10 = runEvents(
+        config, {shortGrace, longGrace},
+        {press(kAnchor, 1, 0), press(kAnchor, 2, 1), release(1'400'000, 1, 0),
+         release(1'400'000, 2, 1), press(1'450'000, 3, 0), press(1'450'000, 4, 1),
+         release(kEnd + 10'000, 4, 1)});
+    const bool c10Ok = !c10.prepareRejected && countOutcome(c10, Outcome::HeadHit) == 2 &&
+                       countOutcome(c10, Outcome::Break) == 1 &&
+                       countOutcome(c10, Outcome::BodyHit) == 1 && c10.strays == 1;
+    if (!c10Ok) {
+        ++failures;
+    }
+    std::printf("| C10 per-requirement grace | short breaks, long recovers | %s | %s |\n",
+                describe(c10).c_str(), c10Ok ? "passed" : "FAILED");
+
+    // C11: zero and maximum values use the same strict boundary rule.
+    Requirement zero = withGrace(hold(12), 0);
+    const Result c11Zero = runEvents(config, {zero},
+                                     {press(kAnchor, 1), release(1'400'000, 1),
+                                      press(1'400'000, 2)});
+    Config maxConfig = config;
+    maxConfig.holdGraceMaxUs = 120'000;
+    Requirement maximum = withGrace(hold(13), maxConfig.holdGraceMaxUs);
+    const Result c11Max = runEvents(maxConfig, {maximum},
+                                    {press(kAnchor, 1), release(1'400'000, 1),
+                                     press(1'519'999, 2), release(kEnd + 10'000, 2)});
+    const Result c11Rejected = runEvents(config, {withGrace(hold(18, Grip::Sticky), 10'000)},
+                                         {press(kAnchor, 1), release(1'400'000, 1),
+                                          press(1'405'000, 2)});
+    const bool c11Ok = countOutcome(c11Zero, Outcome::Break) == 1 && c11Zero.strays == 1 &&
+                       countOutcome(c11Max, Outcome::Break) == 0 &&
+                       countOutcome(c11Max, Outcome::BodyHit) == 1 && c11Max.strays == 0 &&
+                       c11Rejected.prepareRejected;
+    if (!c11Ok) {
+        ++failures;
+    }
+    std::printf("| C11 zero/min/max grace | zero rejects same-tick recovery; max accepts 119,999 us; invalid sticky override rejects | zero=%s; max=%s; rejected=%s | %s |\n",
+                describe(c11Zero).c_str(), describe(c11Max).c_str(), c11Rejected.prepareRejected ? "yes" : "no",
+                c11Ok ? "passed" : "FAILED");
+
+    // C12: source is content metadata, while effective value + policy define judgement identity.
+    const Result inherited = runEvents(config, {hold(14)},
+                                       {press(kAnchor, 1), release(1'400'000, 1),
+                                        press(1'450'000, 2), release(kEnd + 10'000, 2)});
+    const Result explicitSame = runEvents(config, {withGrace(hold(14), kGrace)},
+                                          {press(kAnchor, 1), release(1'400'000, 1),
+                                           press(1'450'000, 2), release(kEnd + 10'000, 2)});
+    const Result explicitDifferent = runEvents(config, {withGrace(hold(14), 80'000)},
+                                                {press(kAnchor, 1), release(1'400'000, 1),
+                                                 press(1'450'000, 2), release(kEnd + 10'000, 2)});
+    Config policy2 = config;
+    policy2.graceResolutionPolicy = 2;
+    const Result policyChanged = runEvents(policy2, {withGrace(hold(14), kGrace)},
+                                           {press(kAnchor, 1), release(1'400'000, 1),
+                                            press(1'450'000, 2), release(kEnd + 10'000, 2)});
+    const bool c12Ok = inherited.judgementDigest == explicitSame.judgementDigest &&
+                       inherited.contentDigest != explicitSame.contentDigest &&
+                       inherited.judgementDigest != explicitDifferent.judgementDigest &&
+                       explicitSame.judgementDigest != policyChanged.judgementDigest;
+    if (!c12Ok) {
+        ++failures;
+    }
+    std::printf("| C12 identity policy/source | same effective value shares judgement identity; source/policy remain distinguishable | jd=%s/%s/%s/%s | %s |\n",
+                inherited.judgementDigest == explicitSame.judgementDigest ? "same" : "DIFF",
+                inherited.contentDigest != explicitSame.contentDigest ? "content-diff" : "content-SAME",
+                inherited.judgementDigest != explicitDifferent.judgementDigest ? "value-diff" : "value-SAME",
+                explicitSame.judgementDigest != policyChanged.judgementDigest ? "policy-diff" : "policy-SAME",
+                c12Ok ? "passed" : "FAILED");
+
+    // C13: a late Hook update cannot rewrite the prepared value.
+    Session c13Session(config, {hold(15)});
+    c13Session.apply(press(kAnchor, 1));
+    c13Session.apply(release(1'400'000, 1));
+    c13Session.setRuntimeHoldGraceForTesting(0);
+    c13Session.apply(press(1'450'000, 2));
+    c13Session.apply(release(kEnd + 10'000, 2));
+    c13Session.finish();
+    const Result c13 = c13Session.result();
+    const bool c13Ok = countOutcome(c13, Outcome::Break) == 0 &&
+                       countOutcome(c13, Outcome::BodyHit) == 1 && c13.strays == 0;
+    if (!c13Ok) {
+        ++failures;
+    }
+    std::printf("| C13 post-prepare Hook change | inherited 60 ms remains frozen after Hook becomes 0 | %s | %s |\n",
+                describe(c13).c_str(), c13Ok ? "passed" : "FAILED");
+
+    // C14: Slider hard deadline uses max(tail late window, prepared grace).
+    Config sliderConfig = config;
+    sliderConfig.sliderLateUs = 20'000;
+    Requirement sliderReq = withGrace(slider(16), 60'000);
+    Session c14Session(sliderConfig, {sliderReq});
+    c14Session.apply(press(kAnchor, 1));
+    c14Session.apply(release(kEnd - 10'000, 1));
+    c14Session.apply(move(kEnd + 45'000, 1, 4));
+    const Result c14BeforeDeadline = c14Session.result();
+    c14Session.finish();
+    const Result c14 = c14Session.result();
+    const Tick expectedDeadline = kEnd + 60'000;
+    const bool c14Ok = !c14BeforeDeadline.prepareRejected &&
+                       item(c14BeforeDeadline).stage == Stage::Gap &&
+                       !item(c14BeforeDeadline).breakEmitted &&
+                       item(c14BeforeDeadline).deadline == expectedDeadline &&
+                       countOutcome(c14, Outcome::BodyHit) == 1 &&
+                       countOutcome(c14, Outcome::Break) == 0;
+    if (!c14Ok) {
+        ++failures;
+    }
+    std::printf("| C14 Slider deadline | deadline=max(20 ms, 60 ms) and no early break | before=%s; final=%s; deadline=%lld | %s |\n",
+                stageLabel(item(c14BeforeDeadline).stage), describe(c14).c_str(),
+                static_cast<long long>(item(c14).deadline), c14Ok ? "passed" : "FAILED");
+}
+
 } // namespace
 
 void reportContinuity() {
@@ -255,6 +402,7 @@ void reportContinuity() {
     std::printf("Research-only minimum implementation: handoff reuses Gap + holdGrace; Slider keeps seg and head fact.\n\n");
     reportDirected();
     reportStress();
+    reportPreparedGraceMatrix();
     if (failures != 0) {
         std::printf("\nFAIL: %d continuity check(s) failed\n", failures);
         std::exit(7);

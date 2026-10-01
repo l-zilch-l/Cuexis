@@ -324,6 +324,8 @@ stateBytes * duration / memoryBudget <= maxSeekLatency / (eventRate * perEventCo
 | `windowScale` 等派生 Hook 的实际值 | **进** | 直接改变判定 |
 | 单个 requirement 的 prepared `grace` | **进** | 改变断连接受区间与 deadline |
 | `holdGrace` 的默认值 / 范围 / 覆盖开关 | **进** | 改变未覆盖 requirement 的 prepared 参数或合法性 |
+| `graceResolutionPolicy` | **进** | 改变显式 / 继承值的解析语义 |
+| `graceSource`（explicit / inherited） | 不进 JudgementIdentity | 来源只用于 ContentIdentity 与诊断；最终值已单独进入 |
 | 快照间隔 | 不进 | 无损加速结构 |
 | 活动度上限 | 不进 | 引擎能力上限，收紧只是拒绝更多谱面 |
 | 补的规模门 | 不进 | 同上 |

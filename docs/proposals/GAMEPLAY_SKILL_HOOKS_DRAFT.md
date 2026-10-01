@@ -86,6 +86,11 @@ timer。这条优先级避免“谱面覆盖”和“技能贡献”各自解释
 程序可见值；它与允许在演奏中变化的窗口 Hook 分开。若将来需要运行中改变连续宽限，必须先
 单独定义新的捕获时点、deadline 和 identity 语义，不能把动态叠加默认为现有合同的一部分。
 
+`graceResolutionPolicy` 是连续宽限解析语义的版本标识。当前 policy 只规定“显式值优先，否则
+继承 prepare 前的 `holdGrace`，然后冻结最终值”。JudgementIdentity 记录最终 `grace` 与 policy；
+`explicit` / `inherited` 来源只进入 ContentIdentity 和诊断。这样作者改变表达方式但不改变判定时，
+不会无谓地使 Replay 失效；若未来改变解析规则，则升级 policy 并稳定区分旧 Replay。
+
 反向清单（必须是模块本地状态，不能进 Interface）：
 
 ```text

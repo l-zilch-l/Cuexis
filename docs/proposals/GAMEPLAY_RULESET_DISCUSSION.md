@@ -543,6 +543,11 @@ Hold 或连续 Slider 提供可选的 `grace: Tick` 参数。参数在 `prepare`
 同时不增加新的 Hook、贡献来源或运行时寄存器。若未来需要“谱面基值再叠加技能”，应先单独
 定义有界的加法或缩放语义，不能让两种来源隐式覆盖。
 
+本轮进一步裁决 identity 的粒度：`JudgementIdentity` 记录最终 prepared `grace` 与
+`graceResolutionPolicy`，不记录显式 / 继承来源；来源、原始字段和继承层次保留在
+`ContentIdentity` 与诊断元数据中。只要最终值和 policy 不变，改变作者表达方式不应使 Replay
+失效；改变解析 policy 即使偶然得到相同数值，也必须造成判定身份变化。
+
 `grace` 只对 `grip = handoff` 的连续音符有效；`sticky` 或 `observe` 型 requirement 提供该
 字段应在 `prepare` 时拒绝，而不是静默忽略。无论来源如何，最终值进入 chart 的判定投影，严格
 沿用 `evt.t < releasedAt + grace`，因此不同宽限值的 Replay / 排行榜身份仍可区分。

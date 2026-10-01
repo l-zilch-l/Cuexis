@@ -73,12 +73,33 @@ struct Session::Impl {
     std::vector<Fact> facts;
     std::size_t strays = 0;
     bool finished = false;
+    bool prepareRejected = false;
+    Tick preparedHoldGraceUs = 0;
 
     Impl(const Config& cfg, const std::vector<Requirement>& reqs)
-        : config(cfg), requirements(reqs), states(reqs.size()) {}
+        : config(cfg), requirements(reqs), states(reqs.size()), preparedHoldGraceUs(cfg.holdGraceUs) {
+        for (Requirement& req : requirements) {
+            req.graceSource = req.explicitGrace ? GraceSource::Explicit : GraceSource::Inherited;
+            req.effectiveGraceUs = req.explicitGrace ? req.graceUs : config.holdGraceUs;
+            if ((req.explicitGrace && !config.allowChartGrace) ||
+                req.effectiveGraceUs < config.holdGraceMinUs ||
+                req.effectiveGraceUs > config.holdGraceMaxUs ||
+                (req.explicitGrace && req.grip != Grip::Handoff)) {
+                prepareRejected = true;
+            }
+        }
+    }
 
     void emit(Tick t, std::uint32_t req, Outcome outcome, std::uint8_t phase) {
         facts.push_back(Fact{t, req, outcome, phase});
+    }
+
+    Tick deadlineFor(std::size_t index) const {
+        const Requirement& req = requirements[index];
+        if (req.kind == Kind::Slider) {
+            return req.end + std::max(config.sliderLateUs, req.effectiveGraceUs);
+        }
+        return req.end + req.effectiveGraceUs;
     }
 
     void breakItem(std::size_t i, Tick t) {
@@ -95,8 +116,8 @@ struct Session::Impl {
     void advance(Tick t) {
         for (std::size_t i = 0; i < states.size(); ++i) {
             State& state = states[i];
-            if (state.stage == Stage::Gap && t >= state.releasedAt + config.holdGraceUs) {
-                breakItem(i, state.releasedAt + config.holdGraceUs);
+            if (state.stage == Stage::Gap && t >= state.releasedAt + requirements[i].effectiveGraceUs) {
+                breakItem(i, state.releasedAt + requirements[i].effectiveGraceUs);
             }
         }
     }
@@ -121,7 +142,7 @@ struct Session::Impl {
                 }
                 candidates.push_back({i, std::llabs(event.t - req.anchor)});
             } else if (state.stage == Stage::Gap && req.grip == Grip::Handoff &&
-                       event.t < state.releasedAt + config.holdGraceUs) {
+                       event.t < state.releasedAt + req.effectiveGraceUs) {
                 // Gap recovery is a normal consume candidate. A nearby new head may win it.
                 candidates.push_back({i, std::llabs(event.t - req.anchor)});
             }
@@ -177,7 +198,7 @@ struct Session::Impl {
     }
 
     void apply(const Event& event) {
-        if (finished) {
+        if (finished || prepareRejected) {
             return;
         }
         advance(event.t);
@@ -195,15 +216,16 @@ struct Session::Impl {
     }
 
     void finish() {
-        if (finished) {
+        if (finished || prepareRejected) {
+            finished = true;
             return;
         }
         for (std::size_t i = 0; i < states.size(); ++i) {
             State& state = states[i];
             const Requirement& req = requirements[i];
             if (state.stage == Stage::Gap) {
-                if (req.end >= state.releasedAt + config.holdGraceUs) {
-                    breakItem(i, state.releasedAt + config.holdGraceUs);
+                if (req.end >= state.releasedAt + req.effectiveGraceUs) {
+                    breakItem(i, state.releasedAt + req.effectiveGraceUs);
                 } else {
                     emit(req.end, req.id, Outcome::BodyHit, 1);
                     state.stage = Stage::Settled;
@@ -236,12 +258,14 @@ struct Session::Impl {
         Result out;
         out.facts = facts;
         out.strays = strays;
+        out.prepareRejected = prepareRejected;
         out.items.reserve(states.size());
         for (std::size_t i = 0; i < states.size(); ++i) {
             const State& state = states[i];
             out.items.push_back(ItemSummary{requirements[i].id, state.stage, state.releasedAt,
                                             state.contact, state.segment, state.moves,
-                                            state.headEmitted, state.breakEmitted});
+                                            state.headEmitted, state.breakEmitted,
+                                            deadlineFor(i)});
         }
         std::uint64_t hash = 1469598103934665603ull;
         auto mix = [&](std::uint64_t value) {
@@ -262,9 +286,30 @@ struct Session::Impl {
             mix(item.moves);
             mix(item.headEmitted);
             mix(item.breakEmitted);
+            mix(static_cast<std::uint64_t>(item.deadline));
         }
         mix(out.strays);
         out.digest = hash;
+
+        std::uint64_t content = hash;
+        auto mixContent = [&](std::uint64_t value) {
+            content ^= value;
+            content *= 1099511628211ull;
+        };
+        mixContent(config.graceResolutionPolicy);
+        mixContent(preparedHoldGraceUs);
+        mixContent(config.holdGraceMinUs);
+        mixContent(config.holdGraceMaxUs);
+        mixContent(config.allowChartGrace);
+        mixContent(config.sliderLateUs);
+        for (const Requirement& req : requirements) {
+            mixContent(req.id);
+            mixContent(req.graceUs);
+            mixContent(req.effectiveGraceUs);
+            mixContent(static_cast<std::uint8_t>(req.graceSource));
+            mixContent(req.explicitGrace);
+        }
+        out.contentDigest = content;
 
         std::uint64_t judgement = 1469598103934665603ull;
         auto mixJudgement = [&](std::uint64_t value) {
@@ -276,6 +321,12 @@ struct Session::Impl {
             mixJudgement(fact.req);
             mixJudgement(static_cast<std::uint8_t>(fact.outcome));
             mixJudgement(fact.phase);
+        }
+        mixJudgement(config.graceResolutionPolicy);
+        mixJudgement(config.sliderLateUs);
+        for (const Requirement& req : requirements) {
+            mixJudgement(req.id);
+            mixJudgement(req.effectiveGraceUs);
         }
         mixJudgement(out.strays);
         out.judgementDigest = judgement;
@@ -351,6 +402,7 @@ Session& Session::operator=(Session&& other) noexcept {
     return *this;
 }
 void Session::apply(const Event& event) { impl_->apply(event); }
+void Session::setRuntimeHoldGraceForTesting(Tick value) { impl_->config.holdGraceUs = value; }
 void Session::finish() { impl_->finish(); }
 std::vector<std::uint8_t> Session::snapshot() const { return impl_->snapshot(); }
 void Session::restore(const std::vector<std::uint8_t>& bytes) { impl_->restore(bytes); }

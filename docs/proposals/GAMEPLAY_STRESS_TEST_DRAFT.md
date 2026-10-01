@@ -64,13 +64,14 @@
 
 | 编号 | 场景 | 必须保持的性质 | 状态 |
 | --- | --- | --- | --- |
-| C10 | 同一谱面中每条 Hold / Slider 使用不同 `grace` | 每条 requirement 使用自己的 prepared 值 | 未执行 |
-| C11 | `grace = 0`、Interface 最小值、最大值 | 零宽限、边界宽限和严格 `<` 一致 | 未执行 |
-| C12 | 显式 `grace` 与 inherited 默认值 | 两条路径结果可区分且 identity 不碰撞 | 未执行 |
-| C13 | prepare 后改变 `hook.holdGrace` | 已准备的音符不被追溯重排 | 未执行 |
-| C14 | Slider 在 Gap 中接近 `t1` | deadline 覆盖 `max(W.max.late, grace)`，不提前 onDeadline | 未执行 |
+| C10 | 同一谱面中每条 Hold / Slider 使用不同 `grace` | 每条 requirement 使用自己的 prepared 值 | GCC/clang 通过 |
+| C11 | `grace = 0`、Interface 最小值、最大值 | 零宽限、边界宽限和严格 `<` 一致 | GCC/clang 通过 |
+| C12 | 显式 `grace` 与 inherited 默认值 | 最终值相同则 JudgementIdentity 相同；来源 / policy 可诊断 | GCC/clang 通过 |
+| C13 | prepare 后改变 `hook.holdGrace` | 已准备的音符不被追溯重排 | GCC/clang 通过 |
+| C14 | Slider 在 Gap 中接近 `t1` | deadline 覆盖 `max(W.max.late, grace)`，不提前 onDeadline | GCC/clang 通过 |
 
-这些是覆盖缺口，不是新增核心语义；在最小实现和真实内容切片完成前，不能把它们标成已通过。
+这些是覆盖缺口，不是新增核心语义。最小研究 spike 已完成 C10-C14；真实内容切片和产品实现
+仍未验证，不能把本结果扩大为 Stage 7A 验收。
 
 ## 3. 缺陷登记
 
@@ -451,8 +452,8 @@ t+1 规则的一个正面结果：同一 Tick 内所有实例读到同一份 Hoo
 
 ```text
 1  保持 D1-D12 的修法与跨实现证据同步到候选文档
-2  完成 C10-C14 的连续宽限专项压测，并覆盖至少一条真实内容切片
-3  用最小可运行切片冻结预算候选值，确认 grace 对 activity / deadline 的实际影响
+2  用最小可运行切片覆盖至少一条真实内容，验证 prepared grace、快照 / Seek 和 deadline
+3  用真实内容冻结预算候选值，确认 grace 对 activity / deadline 的实际影响
 4  在上述证据通过且用户解除暂停后，才进入 I 收敛（ADR / Spec / 预算与 ABI）
 ```
 
@@ -475,5 +476,5 @@ D12   判定式越出 int64 量程，编译器各选一条 UB 分支   自由度
 ```
 
 第 1 条是写进文档的规则（已落在 Ruleset Fold §7 的「判定域量程」、Program IR §5.5、
-预算草案 §6.1）；第 2 条是验证手段，**不要求任何产品代码**，但 C10-C14 仍需专门 spike
-证据。这也是本轮整理后保留的唯一连续性准入缺口。
+预算草案 §6.1）；第 2 条是验证手段，**不要求任何产品代码**。C10-C14 已在研究性 spike
+中完成，但真实内容切片仍是进入 I 前的证据门。

@@ -155,12 +155,12 @@ JudgementIdentity
 ```text
 engine     判定语义版本、定点表版本（角度表等）、Tick 分辨率
 ruleset    Interface 版本（等级集合、category、outcome、程序可见 Hook 及静态范围、窗口表，
-           含 holdGrace 默认值、允许范围和谱面覆盖开关）
+           含 holdGrace 默认值、允许范围、谱面覆盖开关和 graceResolutionPolicy）
            Build 的 judgment 投影（Controller、region、仲裁策略、fold、模块骨架）
 chart      judgment 投影：requirement 集（参数已解析）。
             每条 requirement 在 Fold Calculus 下是
-            （标准库条目 ID | 内联 Pattern） + 参数 + 计量规格；连续音符还记录
-            graceSource（explicit / inherited）及显式 grace 的量化值
+            （标准库条目 ID | 内联 Pattern） + 参数 + 计量规格；连续音符记录最终
+            prepared grace 值
             另含被引用的 region 与 frame、谱面自带的判定程序
 session    Loadout（启用模块与参数取值，含 prepare 时提供 holdGrace 默认值的配置）
 ```
@@ -196,10 +196,11 @@ ruleset 分量不直接使用 Interface 版本的内容清单，而是使用 **I
 
 这与 §2 的字段分区是同一条原则，只是从"字段"推进到"实际使用"。
 
-连续音符的最终 `grace` 不单独引入运行期 identity 字段：显式值与来源标记属于 `chart`，
-Ruleset 的默认值 / 范围 / 覆盖开关属于 `ruleset`，Loadout 提供的 prepare-time 默认值属于
-`session`。三者合起来即可重建 prepared requirement；Gap 中的释放时刻是运行状态，不进入
-identity。
+连续音符的 JudgementIdentity 记录最终 prepared `grace` 值，以及版本化的
+`graceResolutionPolicy`。显式值还是继承值、原始字段是否存在、继承自哪个默认层，属于
+ContentIdentity 和诊断元数据，不属于 JudgementIdentity。Ruleset 的默认值 / 范围 / 覆盖开关
+属于 `ruleset`，Loadout 提供的 prepare-time 默认值属于 `session`；三者合起来即可重建
+prepared requirement。Gap 中的释放时刻是运行状态，不进入 identity。
 
 ### 4.2 Interface 投影的粒度
 
@@ -296,6 +297,8 @@ L1 归一化整体被排除，因为 Replay 记录的是**规范化之后**的�
 | 改 Ruleset 窗口数值 | 变 | 变 |
 | 改单个 handoff 音符的显式 `grace` | 变 | 变 |
 | 改 `holdGrace` 默认值、范围或谱面覆盖开关 | 变 | 变 |
+| 显式 grace 与继承 grace 的来源互换，但最终值和 policy 不变 | 变 | 不变 |
+| 改 `graceResolutionPolicy` | 变 | 变 |
 | 只改 Ruleset 的按键音 | 变 | 不变 |
 | 换 Loadout | 不变 | 变 |
 | 换输入映射或校准 | 不变 | 不变（已烘进事件） |

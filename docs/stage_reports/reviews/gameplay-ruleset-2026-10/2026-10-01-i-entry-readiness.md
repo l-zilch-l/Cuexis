@@ -4,7 +4,7 @@
 
 更新日期：2026-10-01
 
-本记录承接提交 `63f25d4` 的连续音符宽限 spike 证据，检查 Hold / 接触跟随型 Slider 的
+本记录承接提交 `63f25d4` 的连续音符宽限 spike 证据，并更新至 C10-C14 完成后的状态，检查 Hold / 接触跟随型 Slider 的
 断连宽限设计是否已经在候选文档中闭合，以及是否具备进入 I 收敛（ADR、Spec、预算与 ABI、
 Stage 7 范围修订）的条件。它不启动 I 收敛，也不改变当前阶段状态。
 
@@ -50,6 +50,9 @@ prepare            显式值量化并校验；缺省值继承 prepare 前的 hol
 显式谱面值优先于默认值，但不与技能贡献隐式叠加。`sticky` 或 `observe` 型 requirement 提供
 覆盖时在 prepare 稳定拒绝。
 
+身份口径已进一步裁决：`JudgementIdentity` 记录最终 prepared `grace` 与
+`graceResolutionPolicy`；显式 / 继承来源、原始字段和继承层次只进入 `ContentIdentity` 与诊断。
+
 ### 2.3 文档合同已统一，但证据还没有完全闭合
 
 本轮已同步 Program IR、Fold Calculus、Ruleset Fold、Skill Hooks、Identity、Budget 和讨论记录：
@@ -69,24 +72,23 @@ prepare            显式值量化并校验；缺省值继承 prepare 前的 hol
 | 统一宽限的定向行为 | 9 个案例通过 | 通过候选 spike |
 | 并发状态压力 | 2,048 条 Hold、26,624 个输入事件通过 | 通过候选 spike |
 | GCC / clang 一致性 | 连续性输出逐行一致；D12 修复后几何摘要一致 | 通过研究性证据 |
-| 每条 requirement 不同 `grace` | 尚未执行 C10 | 未通过 |
-| `grace = 0`、最小值、最大值 | 尚未执行 C11 | 未通过 |
-| explicit / inherited identity 区分 | 尚未执行 C12 | 未通过 |
-| prepare 后 Hook 变化不追溯 | 尚未执行 C13 | 未通过 |
-| Slider 尾部 deadline | 尚未执行 C14 | 未通过 |
+| 每条 requirement 不同 `grace` | GCC/clang 通过 C10 | 通过研究性 spike |
+| `grace = 0`、最小值、最大值 | GCC/clang 通过 C11 | 通过研究性 spike |
+| explicit / inherited identity 区分 | GCC/clang 通过 C12：最终值相同 identity 相同，来源 / policy 可区分 | 通过研究性 spike |
+| prepare 后 Hook 变化不追溯 | GCC/clang 通过 C13 | 通过研究性 spike |
+| Slider 尾部 deadline | GCC/clang 通过 C14 | 通过研究性 spike |
 | 真实内容切片与预算冻结 | 尚未完成 | 未通过 |
 
-C10-C14 已登记在 [Gameplay 压测草案](../../../proposals/GAMEPLAY_STRESS_TEST_DRAFT.md) §2.1。
-现有 spike 不能替代这组覆盖：它只验证统一 `holdGrace`，没有验证每条 requirement 的解析差异。
+C10-C14 已登记并完成于 [Gameplay 压测草案](../../../proposals/GAMEPLAY_STRESS_TEST_DRAFT.md) §2.1。
+证据仍限定为研究性 spike：它没有接入产品 `engine/`，也没有替代真实内容切片。
 
 ## 4. I 收敛判断
 
 **当前不能开始 I 收敛。**
 
-原因不是核心设计不可行，而是 I 的输入合同还缺少两类证据：
+原因不是核心设计不可行，而是 I 的输入合同还缺少一类证据：
 
-1. 连续宽限的逐音符解析、边界值、identity 和 Slider deadline 尚未有专门压测结果。
-2. 预算草案中的候选值仍需最小可运行切片和真实内容测量；不能把研究性 spike 的合成数字直接
+1. 预算草案中的候选值仍需最小可运行切片和真实内容测量；不能把研究性 spike 的合成数字直接
    写成 ABI 或生产限制。
 
 此外，用户已经明确要求停在 I 收敛之前；本记录遵守该停止点。即使 C10-C14 后续通过，是否
@@ -96,10 +98,9 @@ C10-C14 已登记在 [Gameplay 压测草案](../../../proposals/GAMEPLAY_STRESS_
 
 在不进入 I 的前提下，下一批工作应只做：
 
-1. 为 C10-C14 增加最小实现压测，至少在 GCC 与 clang 上复跑。
-2. 用一条真实内容切片验证 Hold / Slider 的 prepared grace、快照 / Seek 和 deadline。
-3. 把测得的 activity、Gap timer、尾部 deadline 影响写回预算证据；继续保持候选值与冻结值分开。
-4. 由用户确认是否解除“I 前停止”后，才创建 ADR / Spec / ABI 变更。
+1. 用一条真实内容切片验证 Hold / Slider 的 prepared grace、快照 / Seek 和 deadline。
+2. 把测得的 activity、Gap timer、尾部 deadline 影响写回预算证据；继续保持候选值与冻结值分开。
+3. 由用户确认是否解除“I 前停止”后，才创建 ADR / Spec / ABI 变更。
 
 ## 6. 结论
 
