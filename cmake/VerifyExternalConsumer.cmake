@@ -266,8 +266,12 @@ else()
         endif()
     endforeach()
 
+    # S7A-1 (S1-04, installation option 1): the judgement typed kernel exports its internal
+    # archive and installs no header at all, so no judgement header directory may appear in the
+    # package.
     foreach(internal_header_directory IN ITEMS
-            assets behavior chart cxc filesystem gameplay json project render render_opengl runtime world)
+            assets behavior chart cxc filesystem gameplay json judgement project render
+            render_opengl runtime world)
         if(EXISTS "${package_prefix}/include/cuexis/${internal_header_directory}")
             message(FATAL_ERROR
                 "Cuexis package installed internal ${internal_header_directory} headers")

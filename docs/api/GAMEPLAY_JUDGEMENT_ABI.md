@@ -1,6 +1,6 @@
 # Gameplay Judgement ABI（候选）
 
-状态：candidate；I 收敛输入，未实施，未冻结稳定 C ABI
+状态：superseded as typed preview input；retained as design-input history。Gameplay I 的候选 typed 输入，未实施，从未冻结为稳定 C ABI；typed 内部 / preview 边界现为 [GAMEPLAY_V2_ABI.md](GAMEPLAY_V2_ABI.md)，其语义权威为 [GAMEPLAY_V2_SPEC.md](../formats/GAMEPLAY_V2_SPEC.md)、决策依据为 [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md)。本文件保留为历史候选输入与字段级差异对照，不删除、不再更新结论。
 
 日期：2026-10-01
 

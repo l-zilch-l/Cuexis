@@ -18,7 +18,8 @@
    - [音乐游戏玩法抽象模型](architecture/GAMEPLAY_ABSTRACTION_MODEL.md)
 4. [ADR 索引](adr/README.md)，先读 ADR 0027、0024、0025、0026、0037、0038 和 0040
 5. [格式索引](formats/README.md)
-   - [Gameplay Judgement Spec](formats/GAMEPLAY_JUDGEMENT_SPEC.md)（I 收敛工作稿）
+   - [Gameplay Judgement Spec](formats/GAMEPLAY_JUDGEMENT_SPEC.md)（已 superseded；Gameplay I 历史候选基线）
+   - [Gameplay V2 Spec](formats/GAMEPLAY_V2_SPEC.md)（Stage 7A 的 V2 字段与运行语义唯一权威，candidate）
 6. [Stage 6 关闭报告](stage_reports/stages/stage-06/completion.md)（阶段已关闭并归档）
 7. [指南索引](guides/README.md)
 8. [API 参考](api/README.md)
@@ -53,7 +54,8 @@
 - [项目路线图](ROADMAP.md)
 - [文档整理政策](DOCUMENTATION_POLICY.md)
 - [Playback SDK API 参考](api/README.md)
-- [Gameplay Judgement ABI（候选）](api/GAMEPLAY_JUDGEMENT_ABI.md)
+- [Gameplay Judgement ABI（已 superseded）](api/GAMEPLAY_JUDGEMENT_ABI.md)
+- [Gameplay V2 ABI（候选）](api/GAMEPLAY_V2_ABI.md)
 
 ## 格式和运行语义
 

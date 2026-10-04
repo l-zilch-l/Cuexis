@@ -48,13 +48,20 @@
 ### 做玩法、Input 或 Judgement
 
 1. [玩法抽象模型](../architecture/GAMEPLAY_ABSTRACTION_MODEL.md)
-2. [Gameplay Judgement Spec](../formats/GAMEPLAY_JUDGEMENT_SPEC.md)
-3. [Gameplay Judgement ABI](../api/GAMEPLAY_JUDGEMENT_ABI.md)
-4. [Stage 7 计划](../stage_plans/active/stage-07/plan.md)
-5. [Gameplay 提案索引](../proposals/README.md) → [Gameplay research](../proposals/research/gameplay/README.md)
+2. [Gameplay V2 Spec](../formats/GAMEPLAY_V2_SPEC.md)（现行候选权威：字段与运行语义）
+3. [Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md)（typed 内部 / preview 边界）
+4. [ADR 0044：Gameplay V2 语义内核](../adr/0044-gameplay-v2-semantic-kernel.md)（决策与威胁模型）
+5. [Stage 7 计划](../stage_plans/active/stage-07/plan.md)
+6. [Gameplay 提案索引](../proposals/README.md) → [Gameplay research](../proposals/research/gameplay/README.md)（历史输入）
 
-Gameplay Judgement Spec、ABI 和 ADR 0043 是 I 收敛后的 candidate 工作稿，仍待 owner
-acceptance，不能写成已实施 API。研究稿用于追溯推导、压测和取舍，不是第二份规范。
+Gameplay I 的 [Gameplay Judgement Spec](../formats/GAMEPLAY_JUDGEMENT_SPEC.md)、
+[Gameplay Judgement ABI](../api/GAMEPLAY_JUDGEMENT_ABI.md) 与
+[ADR 0043](../adr/0043-gameplay-judgement-ruleset-convergence.md) 已被 **superseded**：保留为历史候选基线与
+差异对照，不再是权威。现行 Gameplay V2 的三份文档（ADR 0044 / V2 Spec / V2 ABI）均为 `candidate`，
+**第 1–7 轮已全部裁定（无待裁定轮次）**，见[裁决清单](../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) §3、§5、§7、§9
+与[第 7 轮收尾裁定记录](../stage_reports/stages/stage-07/2026-10-03-s7a-7-wrapup-rulings.md)；
+**裁定完成不等于实现完成**（实现批次 S7A-3…S7A-9 仍未开始），仍不能写成已实施 API，还需 typed contract review。
+研究稿用于追溯推导、压测和取舍，不是第二份规范。
 
 ### 做格式、谱面或打包链
 

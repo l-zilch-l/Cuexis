@@ -8,3 +8,4 @@
 发生冲突时，以接受的 ADR、生产 Spec 和当前状态页为准。
 
 - [Gameplay research](gameplay/README.md)
+- [Gameplay V2 redesign research](gameplay-v2/README.md)

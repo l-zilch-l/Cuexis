@@ -34,6 +34,12 @@ The Stage 6 candidate path is deliberately narrow:
 This contract is candidate-only. It does not enable a default Writer, a formal Chart v5
 capability, a stable C ABI, or a new SDK version.
 
+Gameplay V2 的独立 `gameplay-graph` Playback entry 不属于本 Stage 6 extension。现有
+candidate factory 只接受上文的 `packed-chart` tap profile；遇到带有 V2 Graph entry kind
+的未来扩展必须稳定拒绝，不能按 Packed Chart、source entry 或空表现路径解释。该扩展只有
+在 Stage 7A/Stage 8 的 manifest、Graph round-trip、prepared identity 和同一 Judgement
+kernel 证据全部接受后，才可加入新的 entry contract。
+
 ## 2. Extension Shape
 
 The value stored under extensions[cuexis.chart-entry.v1] is an object with one member:

@@ -7,10 +7,13 @@
 提案文档描述候选合同、已接受但未实施的方向或延期研究输入。它们不等同于生产 API；
 生产与候选边界以 [格式索引](../formats/README.md) 和 [当前状态](../CURRENT_STATUS.md) 为准。
 
-Gameplay I 收敛已经建立工作稿权威：取舍见 [ADR 0043](../adr/0043-gameplay-judgement-ruleset-convergence.md)，
-字段和运行语义见 [Gameplay Judgement Spec](../formats/GAMEPLAY_JUDGEMENT_SPEC.md)，typed preview
-边界见 [Gameplay Judgement ABI](../api/GAMEPLAY_JUDGEMENT_ABI.md)。下列 Gameplay 提案继续保留
-为研究推导、案例和压测证据；发生冲突时，以三份收敛工作稿为准，直到 owner acceptance。
+Gameplay I 工作稿是**已被取代**的历史研究基线：取舍见 [ADR 0043](../adr/0043-gameplay-judgement-ruleset-convergence.md)
+（`superseded`），字段和运行语义见 [Gameplay Judgement Spec](../formats/GAMEPLAY_JUDGEMENT_SPEC.md)
+（`superseded`），typed preview 边界见 [Gameplay Judgement ABI](../api/GAMEPLAY_JUDGEMENT_ABI.md)
+（`superseded`）。[Gameplay V2 redesign research](research/gameplay-v2/README.md) 已成为 Chart v5 / Stage 7A 的
+现行方向：决策见 [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md)、字段与运行语义见
+[Gameplay V2 Spec](../formats/GAMEPLAY_V2_SPEC.md)、typed 边界见 [Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md)；
+三份 V2 文档当前均为 `candidate`，尚未实施。
 
 ## 目录分区
 
@@ -21,11 +24,19 @@ Gameplay I 收敛已经建立工作稿权威：取舍见 [ADR 0043](../adr/0043-
 | --- | --- | --- |
 | Stage 6 implementation input | `implementation-input/stage-06/STAGE6_API_AND_INSTALL_DRAFT.md` | 仍被工具、阶段报告和实施门禁引用的候选输入 |
 | Gameplay research inputs | `research/gameplay/GAMEPLAY_*.md` | I 收敛前的推导、缺陷、压测和设计历史 |
+| Gameplay v2 redesign | `research/gameplay-v2/` | Chart v5/Stage 7A 的候选重构、压测和交接合同 |
+| Gameplay V2 acceptance package | `gameplay-v2-acceptance/` | 由 S7A-0 产出的准入包：合同台账、支持/拒绝矩阵、预算计划、批次门禁、交接台账与 owner 决策请求 |
 | Deferred inputs | `deferred/` | 尚未进入当前实施阶段的专题设计 |
 
-Gameplay 文件不是生产 API、已接受 Spec 或当前实现声明；冲突时以本索引顶部列出的 I 收敛工作稿为准。
+Gameplay 文件不是生产 API、已接受 Spec 或当前实现声明；旧研究文件以本索引顶部列出的 I 工作稿为准，
+Gameplay v2 目录则记录新的候选路线及其尚未闭合的实施合同。
 
 - [Gameplay research index](research/README.md)
+- [Gameplay V2 redesign research](research/gameplay-v2/README.md)
+- [Gameplay V2 acceptance package](gameplay-v2-acceptance/README.md)：S7A-0 产出的准入包（合同台账、
+  支持/拒绝矩阵、Chart v5/CXC entry 与 identity 矩阵、target/依赖图、预算与证据计划、批次门禁、
+  四项 Stage 6 交接台账、未决问题与 owner 决策请求）。它仍是 candidate：owner 接受前不修改
+  ADR/Spec/ABI 的权威状态，也不构成实施授权。
 - [Stage 6 implementation-input index](implementation-input/README.md)
 
 ## 当前候选格式提案

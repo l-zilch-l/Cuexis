@@ -181,7 +181,8 @@ playback entry
   manifest 明确指定、可被 Playback 读取的 compiled entry
 ```
 
-Chart v5 的 Playback entry 必须是 Packed Chart。Playback 不读取作者层 JSON 或
+Foundation/Stage 6 candidate Chart v5 的 Playback entry 必须是 Packed Chart。Gameplay V2
+扩展尚未被本格式接受；在该扩展接受前，Playback 不读取作者层 JSON 或
 CXT source，也不在包内隐式执行 CXT Pattern。Packed entry 必须在 pack 前完成：
 
 ```text
@@ -243,7 +244,8 @@ Foundation revision 1 使用已登记的 `extensions["cuexis.chart-entry.v1"]` �
 ```
 
 `sourcePath` 与 `sourceSemanticIdentity` 可省略；其余字段对每个 candidate entry 必需。
-`playback=true` 的 entry 必须是 `packed-chart`，其 `path` 必须存在于同一个 CXC，且
+当前 Foundation/Stage 6 候选合同中，`playback=true` 的 entry 必须是 `packed-chart`，其 `path`
+必须存在于同一个 CXC，且
 `artifactIdentity` 必须等于 manifest 基础 entry 的精确 SHA-256。Foundation validator
 还会在 16 MiB entry 门禁内检查 Packed Header/目录和 declared entity/requirement counts。
 `compiledSemanticIdentity` 是展开语义的 typed identity；它不能由 source path、CXT
@@ -254,6 +256,12 @@ Foundation Playback 入口。
 时，必须先运行显式 compile/prepare 步骤，再把已生成的 Packed entry 交给 CXC tooling。
 候选 extension 中的未知必需字段、非 `packed-chart` playback、缺失 playback entry、
 artifact hash、count 或 profile 不匹配均 fail closed。
+
+Gameplay V2 研究路线提出一个待接受的 Stage 7A manifest 扩展：在不改变 CXC v1 ZIP32
+载体的前提下，允许明确标记的 `entryKind=gameplay-graph` Playback entry。该扩展尚未被
+本格式合同接受；现有 Foundation/Stage 6 reader 必须以稳定诊断拒绝它，不能把它当作
+`packed-chart` 或 author source。扩展接受后，`gameplay-graph` 与 `packed-chart` 仍必须
+恢复同一 Canonical Gameplay Graph、prepared judgement identity 和运行时 kernel。
 
 Chart v5 的大小预算分为：
 

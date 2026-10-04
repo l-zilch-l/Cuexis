@@ -24,6 +24,7 @@ add_executable(cuexis_chart_tests
     packed_fixture_support.cpp
     packed_fixture_support.hpp
     packed_profile_rejection_tests.cpp
+    packed_gameplay_static_tests.cpp
     packed_roundtrip_tests.cpp
     packed_semantic_identity_tests.cpp
     prepared_semantic_identity_tests.cpp
@@ -41,6 +42,7 @@ target_compile_definitions(cuexis_chart_tests
 target_include_directories(cuexis_chart_tests
     PRIVATE
         ${PROJECT_SOURCE_DIR}/engine/json_support/src
+        ${PROJECT_SOURCE_DIR}/engine/chart/src
 )
 
 target_link_libraries(cuexis_chart_tests

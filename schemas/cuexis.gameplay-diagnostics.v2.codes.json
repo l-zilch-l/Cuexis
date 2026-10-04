@@ -1,0 +1,1173 @@
+{
+  "schemaVersion": 2,
+  "kind": "cuexis.gameplay-diagnostics.codes",
+  "tableId": "cuexis.gameplay-diagnostics.v2.codes",
+  "owner": "CM-D04 / P1-09",
+  "rulingProvenance": {
+    "round": "round 6, follow-up completion of the CM-D04 / P1-09 first consumption (not a new ruling round)",
+    "decisionCard": "2026-10-02T21:03:39.462Z",
+    "codexThread": "01a0fe6b-6e57-7051-87f8-cf9588e85568",
+    "verdict": "adopt",
+    "confidence": 0.96,
+    "dateRegistered": "2026-10-03",
+    "landedActions": [
+      "the nine categories of GAMEPLAY_V2_SPEC.md 9.2 are the only authority; the literal 'capability' in Spec 9.3 / Spec 7.2 and in the ABI was replaced by capability_disabled, and the ABI code-family example is now labelled illustrative only",
+      "eight registered codes were re-ruled: R-11 pattern.relation_unsupported to invalid_relation, R-12 geometry.inference_rejected to invalid_relation (changed from the earlier derived unknown_capability), R-13 session.mutation_rejected to invalid_relation, R-14 capability.permanently_unsupported to capability_disabled, R-15 capability.future_development to capability_disabled, capability.revision_mismatch to unknown_capability, R-17 format.gameplay_version_unsupported to ambiguous_migration, capability.budget_insufficient to budget_exceeded",
+      "ruleset.transaction_failed was added and registered as the dedicated code of the only runtime faulted path (category invalid_relation, severity error, faulted session_faulted, first consumption S7A-5)",
+      "presentation-target-missing and partial-group were registered as final code strings (category invalid_relation, severity error, faulted session_unaffected, first consumption S7A-7)",
+      "six codes that had no batch declaration in BATCH_GATES.md were registered with first consumption S7A-3: capability.budget_insufficient, capability.revision_mismatch, capability.permanently_unsupported, capability.future_development, input.direction_unsupported (R-06) and format.gameplay_version_unsupported (R-17)",
+      "the thirteen judgement.s7a2.* tokens stay src-only for ever and are marked status=not_registered_src_only",
+      "no count changed: CONTRACT_MATRIX 114, Spec 7.2 19 entries, nine categories, ABI 9 domains / 126 = 96 + 30"
+    ],
+    "notChanged": "This registration touches no engine / tests / tools / cmake source and no root CMakeLists.txt. The src-only capability category token named in ownerReviewRequired was renamed to capability_disabled by the parallel implementation line, not by this task."
+  },
+  "srcOnlyPolicyNote": "The thirteen judgement.s7a2.* tokens carry status=not_registered_src_only. That status word is intentionally NOT a pending marker: the 2026-10-02T21:03:39.462Z card (adopt 0.96) ruled that all thirteen stay src-only and never enter the public code table or the ABI, and that their public projection uses only the registered nine categories and the already registered stable codes. A future reader must not treat not_registered_src_only as 'waiting to be registered'.",
+  "status": "registered-pending-owner-review",
+  "statusNote": "Round-6 registration of the Gameplay V2 diagnostic code table (Codex thread 01a0fe61-3476-7882-9674-5f6b05035237, verdict adopt, confidence 0.97), then the follow-up completion of the same round-6 CM-D04 / P1-09 first consumption (Codex thread 01a0fe6b-6e57-7051-87f8-cf9588e85568, decision card 2026-10-02T21:03:39.462Z, verdict adopt, confidence 0.96; see rulingProvenance below). Every code string in this file is quoted from an existing document; no code and no category is invented here. The category set is the nine V2 categories of GAMEPLAY_V2_SPEC.md 9.2. Eight categories that the first registration marked categoryBasis=derived_pending_owner_confirmation were ruled by the follow-up card and now carry categoryBasis=owner_ruled; geometry.inference_rejected moved from unknown_capability to invalid_relation under that ruling. The severity and faulted value sets are the ones this file declares below; see severitySources and faultedBehaviorSources for their documented basis. The thirteen judgement.s7a2.* tokens are marked status=not_registered_src_only: that status word is deliberate and means explicitly never to be registered, not a pending state - see srcOnlyPolicyNote.",
+  "authorityNote": "GAMEPLAY_V2_SPEC.md 9.1 owns the four-layer diagnostic model (code / category / severity / faulted) and its category set; GAMEPLAY_V2_ABI.md only consumes them. A diagnostic code string must be registered in this file and pass the CTest gate cuexis_gameplay_diagnostics_codes before it may enter a public header.",
+  "categories": [
+    {
+      "name": "unknown_capability",
+      "source": "GAMEPLAY_V2_SPEC.md#9.2",
+      "note": "One of the nine V2 categories. Spec 9.3 lists an unknown capability as an atomic prepare failure condition."
+    },
+    {
+      "name": "capability_disabled",
+      "source": "GAMEPLAY_V2_SPEC.md#9.2",
+      "note": "One of the nine V2 categories. Spec 9.3 lists a capability that is declared but not enabled as an atomic prepare failure condition; GAMEPLAY_V2_ABI.md domain 8 CapabilityState names the state 'known but not enabled'."
+    },
+    {
+      "name": "budget_exceeded",
+      "source": "GAMEPLAY_V2_SPEC.md#9.2",
+      "note": "One of the nine V2 categories. Spec 9.3 assigns tick overflow, amount out-of-range, amount narrowing and an enabled-but-under-budget capability to it."
+    },
+    {
+      "name": "ambiguous_migration",
+      "source": "GAMEPLAY_V2_SPEC.md#9.2",
+      "note": "One of the nine V2 categories. Spec 7.2 assigns it to R-18 and R-19."
+    },
+    {
+      "name": "non_terminating_source",
+      "source": "GAMEPLAY_V2_SPEC.md#9.2",
+      "note": "One of the nine V2 categories. Spec 9.3 names a non-terminating CXT expansion or unbounded loop as its atomic failure condition."
+    },
+    {
+      "name": "non_unique_solution",
+      "source": "GAMEPLAY_V2_SPEC.md#9.2",
+      "note": "One of the nine V2 categories. Spec 9.3 names a missing solver profile, an incomplete objective, an exceeded fuel budget or an unprovable unique result as its atomic failure condition."
+    },
+    {
+      "name": "invalid_relation",
+      "source": "GAMEPLAY_V2_SPEC.md#9.2",
+      "note": "One of the nine V2 categories. Spec 9.3 assigns an incomplete or self-contradicting declaration, a dangling relation reference, an illegal resource state transition and a calibrated session clock reversal to it."
+    },
+    {
+      "name": "late_policy_incomplete",
+      "source": "GAMEPLAY_V2_SPEC.md#9.2",
+      "note": "One of the nine V2 categories. Spec 9.3 assigns a missing, undeclared or unmeasured late-policy parameter and a duplicate queue entry to it."
+    },
+    {
+      "name": "identity_closure_incomplete",
+      "source": "GAMEPLAY_V2_SPEC.md#9.2",
+      "note": "One of the nine V2 categories. GAMEPLAY_V2_ABI.md domain 8 records that a declared capability set smaller than the derived closure is a stable failure."
+    }
+  ],
+  "categorySourceNote": "GAMEPLAY_V2_SPEC.md 9.2 freezes exactly these nine category names and states that the ten Gameplay I categories of GAMEPLAY_JUDGEMENT_ABI.md section 4 must be merged into them with an old-to-new mapping (CM-D02). That merge mapping is not frozen and is recorded under pendingRegistration, so the Gameplay I names are deliberately not registered as categories here.",
+  "severityValues": [
+    "info",
+    "warning",
+    "error"
+  ],
+  "severitySources": {
+    "info": "engine/core/include/cuexis/core/diagnostic.hpp (DiagnosticSeverity); docs/api/diagnostics-identity-and-compatibility.md; docs/guides/CODE_POLICY.md",
+    "warning": "engine/core/include/cuexis/core/diagnostic.hpp (DiagnosticSeverity); docs/api/diagnostics-identity-and-compatibility.md; docs/guides/CODE_POLICY.md",
+    "error": "engine/core/include/cuexis/core/diagnostic.hpp (DiagnosticSeverity); docs/api/diagnostics-identity-and-compatibility.md; docs/guides/CODE_POLICY.md"
+  },
+  "severityBasisNote": "GAMEPLAY_V2_ABI.md domain 8 still marks DiagnosticSeverity as 'to be frozen (CM-D04)' and GAMEPLAY_V2_SPEC.md 9.1 names the layer without enumerating values. This file therefore registers the repository-wide severity surface that already ships in engine/core/include/cuexis/core/diagnostic.hpp (info / warning / error) instead of inventing a new value set. The 2026-10-02T21:03:39.462Z card (adopt 0.96) confirmed this whole set as the Stage 7A severity value set and confirmed that every stable rejection and atomic failure carries severity=error, so every code registered here is error; info and warning are closed-set members that no registered code uses yet.",
+  "faultedBehaviors": [
+    "session_unaffected",
+    "session_faulted"
+  ],
+  "faultedBehaviorSources": {
+    "session_unaffected": "GAMEPLAY_V2_SPEC.md#9.3 (a prepare atomic failure must not publish a half-prepared result and must not change the existing active session)",
+    "session_faulted": "GAMEPLAY_V2_SPEC.md#9.4 item 1 and #3.14 item 2 (a second-stage Ruleset transaction failure leaves the Tick uncommitted, keeps the old state and moves the session into a queryable faulted state)"
+  },
+  "faultedBasisNote": "Spec 9.1 freezes 'faulted' as the fourth diagnostic layer and Spec 9.4 plus 3.14 freeze when a session enters the queryable faulted state. Two behaviors are therefore registered: session_unaffected for prepare/entry atomic failures and for the two presentation codes, session_faulted for the runtime Ruleset transaction failure path. The 2026-10-02T21:03:39.462Z card (adopt 0.96) closed that previously codeless path by registering ruleset.transaction_failed (first consumption S7A-5) as the only code whose faulted value is session_faulted, and confirmed the closed two-value set; every other code registered here is session_unaffected.",
+  "codes": [
+    {
+      "code": "capability.unknown",
+      "family": "capability",
+      "category": "unknown_capability",
+      "categoryBasis": "documented_name_correspondence",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": "capability.unknown",
+      "rejectionEntries": [
+        "R-16"
+      ],
+      "source": [
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_SPEC.md#7.2",
+        "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-7",
+        "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3"
+      ],
+      "note": "Candidate rejection code of R-16. Spec 7.2 rule 2 makes R-12 to R-16 prohibitions; a capability rejection must name a capabilityId and a replacement path (Spec 7.2 rule 1).",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "capability.disabled",
+      "family": "capability",
+      "category": "capability_disabled",
+      "categoryBasis": "documented_name_correspondence",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-2",
+      "stableRejectCode": "capability.disabled",
+      "rejectionEntries": [],
+      "source": [
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_SPEC.md#7.2",
+        "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-2",
+        "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-5"
+      ],
+      "note": "The Life capability is closed in 7A and reported with capability.disabled (Spec 7.2 fifth-round mapping row); the S7A-2 and S7A-5 diagnostic rows list the same code. It is not the candidate rejection code of any R-01..R-19 entry.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "capability.budget_insufficient",
+      "family": "capability",
+      "category": "budget_exceeded",
+      "categoryBasis": "owner_ruled",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-3",
+      "stableRejectCode": "capability.budget_insufficient",
+      "rejectionEntries": [],
+      "source": [
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_ABI.md \u57df 8 CapabilityId / CapabilityRevision \u884c",
+        "GAMEPLAY_V2_SPEC.md#9.3",
+        "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
+      ],
+      "note": "Owner-ruled (2026-10-02T21:03:39.462Z card, adopt 0.96): the category is confirmed as budget_exceeded and the first consumption batch is confirmed as S7A-3, replacing the earlier derived_pending_owner_confirmation value and the null ownerBatch. Spec 9.3 opens with 'unknown / disabled / under-budget capability' as three separate atomic failure conditions and ABI domain 8 CapabilityState names 'enabled but under budget' as a distinct state; of the nine categories only budget_exceeded covers an under-budget capability. Not the candidate rejection code of any R entry.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "capability.revision_mismatch",
+      "family": "capability",
+      "category": "unknown_capability",
+      "categoryBasis": "owner_ruled",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-3",
+      "stableRejectCode": "capability.revision_mismatch",
+      "rejectionEntries": [],
+      "source": [
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_ABI.md \u57df 8 CapabilityRevision \u884c",
+        "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
+      ],
+      "note": "Owner-ruled (2026-10-02T21:03:39.462Z card, adopt 0.96): the category is confirmed as unknown_capability and the first consumption batch is confirmed as S7A-3, replacing the earlier derived_pending_owner_confirmation value and the null ownerBatch. ABI domain 8 CapabilityRevision requires a semantic change to add a new ID or revision, so a revision the engine does not support is not a capability the engine knows. Not the candidate rejection code of any R entry.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "capability.permanently_unsupported",
+      "family": "capability",
+      "category": "capability_disabled",
+      "categoryBasis": "owner_ruled",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-3",
+      "stableRejectCode": "capability.permanently_unsupported",
+      "rejectionEntries": [
+        "R-14"
+      ],
+      "source": [
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_SPEC.md#7.2",
+        "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3",
+        "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
+      ],
+      "note": "Owner-ruled (2026-10-02T21:03:39.462Z card, adopt 0.96): candidate rejection code of R-14 (permanent capability boundary); the category is confirmed as capability_disabled and the first consumption batch is confirmed as S7A-3, replacing the earlier derived_pending_owner_confirmation value and the null ownerBatch. The capability is known to the engine and permanently not enabled, which is the capability_disabled state of ABI domain 8.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "capability.future_development",
+      "family": "capability",
+      "category": "capability_disabled",
+      "categoryBasis": "owner_ruled",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-3",
+      "stableRejectCode": "capability.future_development",
+      "rejectionEntries": [
+        "R-15"
+      ],
+      "source": [
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_SPEC.md#7.2",
+        "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3",
+        "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
+      ],
+      "note": "Owner-ruled (2026-10-02T21:03:39.462Z card, adopt 0.96): candidate rejection code of R-15 (future development); the category is confirmed as capability_disabled and the first consumption batch is confirmed as S7A-3, replacing the earlier derived_pending_owner_confirmation value and the null ownerBatch. The capability is named and known but not enabled in Stage 7A.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "resource.capacity_unsupported",
+      "family": "resource",
+      "category": "capability_disabled",
+      "categoryBasis": "derived_from_9.3_capability_state",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-4",
+      "stableRejectCode": "resource.capacity_unsupported",
+      "rejectionEntries": [
+        "R-01"
+      ],
+      "source": [
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_SPEC.md#7.2",
+        "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-4",
+        "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3"
+      ],
+      "note": "Candidate rejection code of R-01. Its rejection reason type is a capability boundary: a known capability that Stage 7A does not enable, which Spec 9.3 and the ABI CapabilityState four states place in the capability_disabled category.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "resource.handoff_unsupported",
+      "family": "resource",
+      "category": "capability_disabled",
+      "categoryBasis": "derived_from_9.3_capability_state",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-4",
+      "stableRejectCode": "resource.handoff_unsupported",
+      "rejectionEntries": [
+        "R-04"
+      ],
+      "source": [
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_SPEC.md#7.2",
+        "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-4",
+        "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3"
+      ],
+      "note": "Candidate rejection code of R-04, a later capability (resource.handoff.v1) that Stage 7A does not enable.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "coordination.relation_unsupported",
+      "family": "coordination",
+      "category": "capability_disabled",
+      "categoryBasis": "derived_from_9.3_capability_state",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-4",
+      "stableRejectCode": "coordination.relation_unsupported",
+      "rejectionEntries": [
+        "R-02",
+        "R-03"
+      ],
+      "source": [
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_SPEC.md#7.2",
+        "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-4",
+        "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3"
+      ],
+      "note": "Shared candidate rejection code of R-02 (Chord / binding relation) and R-03 (temporal / quota relation), both later capabilities. One code with two R entries is the documented shape, not a duplication defect.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "solver.profile_unsupported",
+      "family": "solver",
+      "category": "capability_disabled",
+      "categoryBasis": "derived_from_9.3_capability_state",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-4",
+      "stableRejectCode": "solver.profile_unsupported",
+      "rejectionEntries": [
+        "R-07"
+      ],
+      "source": [
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_SPEC.md#7.2",
+        "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-4",
+        "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3"
+      ],
+      "note": "Candidate rejection code of R-07 (global optimum / max_cardinality / bounded backtracking solver), a later capability. The missing-profile and non-unique-result atomic failures of Spec 9.3 are a different condition and use the non_unique_solution category, which has no registered code yet.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "pattern.relation_unsupported",
+      "family": "pattern",
+      "category": "invalid_relation",
+      "categoryBasis": "owner_ruled",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-3",
+      "stableRejectCode": "pattern.relation_unsupported",
+      "rejectionEntries": [
+        "R-11"
+      ],
+      "source": [
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_SPEC.md#7.2",
+        "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-3",
+        "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3",
+        "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
+      ],
+      "note": "Owner-ruled (2026-10-02T21:03:39.462Z card, adopt 0.96): the category is confirmed as invalid_relation, replacing the earlier derived_pending_owner_confirmation value. Candidate rejection code of R-11 (sameContact constraint, a cross-Requirement relation hidden inside a Pattern). Spec 9.3 makes a relation the contract does not permit an invalid_relation atomic failure.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "input.continuous_unsupported",
+      "family": "input",
+      "category": "capability_disabled",
+      "categoryBasis": "derived_from_9.3_capability_state",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-2",
+      "stableRejectCode": "input.continuous_unsupported",
+      "rejectionEntries": [
+        "R-05"
+      ],
+      "source": [
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u5df2\u767b\u8bb0\u7801\u7684\u9010\u6761\u5b9a\u6848\uff09",
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u5df2\u767b\u8bb0\u7801\u7684\u9010\u6761\u5b9a\u6848\uff09",
+        "GAMEPLAY_V2_SPEC.md#7.2",
+        "GAMEPLAY_V2_SPEC.md#9.3",
+        "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-2"
+      ],
+      "note": "One of the three frozen input/geometry codes. Candidate rejection code of R-05 and the code Stage 7A reuses for a discontinuous representation, distinguished by field.path (continuityCapability vs discontinuity). Spec 9.3, Spec 7.2 and the ABI formerly spelled its category literally as 'capability', which is not one of the nine Spec 9.2 names; the 2026-10-02T21:03:39.462Z card (adopt 0.96) ruled the nine categories authoritative and required that literal to be replaced by capability_disabled in Spec 9.3, Spec 7.2 and the ABI. The nine-category value is capability_disabled because the capability is known and admitted by S7B-1.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "input.direction_unsupported",
+      "family": "input",
+      "category": "capability_disabled",
+      "categoryBasis": "derived_from_9.3_capability_state",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-3",
+      "stableRejectCode": "input.direction_unsupported",
+      "rejectionEntries": [
+        "R-06"
+      ],
+      "source": [
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u5df2\u767b\u8bb0\u7801\u7684\u9010\u6761\u5b9a\u6848\uff09",
+        "GAMEPLAY_V2_SPEC.md#7.2",
+        "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3",
+        "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
+      ],
+      "note": "One of the three frozen input/geometry codes. Candidate rejection code of R-06 (flick, direction, speed, input.direction.v1), a later capability. The 2026-10-02T21:03:39.462Z card (adopt 0.96) ruled that this code had no batch declaration in BATCH_GATES.md and set its first consumption batch to S7A-3, replacing the earlier null ownerBatch.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "geometry.inference_rejected",
+      "family": "geometry",
+      "category": "invalid_relation",
+      "categoryBasis": "owner_ruled",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": "geometry.inference_rejected",
+      "rejectionEntries": [
+        "R-12"
+      ],
+      "source": [
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u5df2\u767b\u8bb0\u7801\u7684\u9010\u6761\u5b9a\u6848\uff09",
+        "GAMEPLAY_V2_SPEC.md#7.2",
+        "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-7",
+        "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3",
+        "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
+      ],
+      "note": "One of the three frozen input/geometry codes. Candidate rejection code of R-12, a semantic prohibition in the R-12..R-16 group. The 2026-10-02T21:03:39.462Z card (adopt 0.96) changed the category from the earlier derived unknown_capability to invalid_relation: inferring the judgement domain implicitly is a relation / declaration constraint error, not an unknown capability.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "fact.correction_unsupported",
+      "family": "fact",
+      "category": "capability_disabled",
+      "categoryBasis": "derived_from_9.3_capability_state",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-5",
+      "stableRejectCode": "fact.correction_unsupported",
+      "rejectionEntries": [
+        "R-08"
+      ],
+      "source": [
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_SPEC.md#7.2",
+        "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-5",
+        "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3"
+      ],
+      "note": "Candidate rejection code of R-08 (Fact correction, correctionDepth > 1), a later capability that Stage 7A does not enable.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "late.reopen_unsupported",
+      "family": "late",
+      "category": "capability_disabled",
+      "categoryBasis": "derived_from_9.3_capability_state",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-2",
+      "stableRejectCode": "late.reopen_unsupported",
+      "rejectionEntries": [
+        "R-10"
+      ],
+      "source": [
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_SPEC.md#7.2",
+        "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-2",
+        "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3"
+      ],
+      "note": "Candidate rejection code of R-10 (the reopen_uncommitted_window late policy); Stage 7A enables only reject_late and one-hop queue_next_tick.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "format.gameplay_version_unsupported",
+      "family": "format",
+      "category": "ambiguous_migration",
+      "categoryBasis": "owner_ruled",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-3",
+      "stableRejectCode": "format.gameplay_version_unsupported",
+      "rejectionEntries": [
+        "R-17"
+      ],
+      "source": [
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_ABI.md \u7801\u65cf\u6765\u6e90\uff08\u683c\u5f0f\u4e0e\u8fc1\u79fb\u65cf\uff09",
+        "GAMEPLAY_V2_SPEC.md#7.2",
+        "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3",
+        "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
+      ],
+      "note": "Owner-ruled (2026-10-02T21:03:39.462Z card, adopt 0.96): candidate rejection code of R-17 (an old gameplay.version = 1 with no explicit migration); the category is confirmed as ambiguous_migration and the first consumption batch is confirmed as S7A-3, replacing the earlier derived_pending_owner_confirmation value and the null ownerBatch. Spec 9.2 has no 'unsupported version' category, so the migration family category is used. The ABI's informal four-layer example lists a 'format' category, which is not one of the nine Spec 9.2 names and is now explicitly labelled illustrative only.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "migration.ambiguous",
+      "family": "migration",
+      "category": "ambiguous_migration",
+      "categoryBasis": "documented_name_correspondence",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-3",
+      "stableRejectCode": "migration.ambiguous",
+      "rejectionEntries": [
+        "R-18",
+        "R-19"
+      ],
+      "source": [
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_SPEC.md#7.2",
+        "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-3",
+        "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3"
+      ],
+      "note": "Shared candidate rejection code of R-18 (non-empty CXT v2 effects reaching gameplay.requirements) and R-19 (migration cannot decide the judgement domain, resource sharing or the presentation/Gameplay relation). Spec 7.2 rule 3 requires these to be handled explicitly by an offline tool.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "session.mutation_rejected",
+      "family": "session",
+      "category": "invalid_relation",
+      "categoryBasis": "owner_ruled",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-1",
+      "stableRejectCode": "session.mutation_rejected",
+      "rejectionEntries": [
+        "R-13"
+      ],
+      "source": [
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_SPEC.md#7.2",
+        "GAMEPLAY_V2_SPEC.md#9.3",
+        "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-1",
+        "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3",
+        "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
+      ],
+      "note": "Owner-ruled (2026-10-02T21:03:39.462Z card, adopt 0.96): the category is confirmed as invalid_relation, replacing the earlier derived_pending_owner_confirmation value. Candidate rejection code of R-13 (modifying InputMapping / Loadout / Ruleset projection during a run), whose rejection reason type is a lifecycle prohibition; Spec 9.3 treats an illegal resource state machine transition as invalid_relation, which is the documented nine-category anchor for a forbidden lifecycle transition.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "ruleset.package_unsupported",
+      "family": "ruleset",
+      "category": "capability_disabled",
+      "categoryBasis": "derived_from_9.3_capability_state",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-5",
+      "stableRejectCode": "ruleset.package_unsupported",
+      "rejectionEntries": [
+        "R-09"
+      ],
+      "source": [
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_SPEC.md#7.2",
+        "GAMEPLAY_V2_SPEC.md#3.16",
+        "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-5"
+      ],
+      "note": "Candidate rejection code of R-09. The fifth round froze that Stage 7A contains no cuexis.ruleset package and uses only the built-in Ruleset; the package shape, identity and migration move to S7C-2. The capability is known and not enabled, so capability_disabled.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "judgement.s7a2.timebase.tick_overflow",
+      "family": "judgement.s7a2.timebase",
+      "category": "budget_exceeded",
+      "categoryBasis": "documented_mapping_row",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-2",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "GAMEPLAY_V2_ABI.md \u6570\u503c\u57df\u4e0e\u91cf\u7a0b\uff08\u8d1f observationTick \u5408\u6cd5\uff09",
+        "GAMEPLAY_V2_SPEC.md#9.3"
+      ],
+      "note": "Atomic-failure diagnostic token named by the ABI: a tick value, displacement or difference leaving the signed 64-bit domain is a tick-domain representation failure mapped to budget_exceeded, and it is reused for a calibrated clock value that cannot be represented. It is not a CapabilityRecord.stableRejectCode, so stableRejectCode is null.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "judgement.s7a2.timebase.time_reversal",
+      "family": "judgement.s7a2.timebase",
+      "category": "invalid_relation",
+      "categoryBasis": "documented_mapping_row",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-2",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "GAMEPLAY_V2_SPEC.md#3.7.8",
+        "GAMEPLAY_V2_SPEC.md#9.3",
+        "GAMEPLAY_V2_ABI.md \u6570\u503c\u57df\u4e0e\u91cf\u7a0b\uff08\u8d1f observationTick \u5408\u6cd5\uff09"
+      ],
+      "note": "Named by the Spec mapping table: a calibrated session clock reversal is a time-order relation error mapped to invalid_relation, explicitly not budget_exceeded. A negative observationTick is legal and carries no rejection code.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "judgement.s7a2.input.amount_out_of_range",
+      "family": "judgement.s7a2.input",
+      "category": "budget_exceeded",
+      "categoryBasis": "documented_mapping_row",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-2",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "GAMEPLAY_V2_SPEC.md#3.7.8",
+        "GAMEPLAY_V2_SPEC.md#9.3",
+        "GAMEPLAY_V2_ABI.md \u6570\u503c\u57df\u4e0e\u91cf\u7a0b\uff08\u5224\u5b9a\u987a\u5e8f\uff1a\u53ef\u8868\u793a\u6027\u5148\u4e8e\u8303\u56f4\uff09"
+      ],
+      "note": "Named by the Spec mapping table: a canonically representable amount that leaves its declared range maps to budget_exceeded. Representability is checked before range, so this token is never reported when the amount is not representable.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "judgement.s7a2.input.amount_narrowed",
+      "family": "judgement.s7a2.input",
+      "category": "budget_exceeded",
+      "categoryBasis": "documented_mapping_row",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-2",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "GAMEPLAY_V2_SPEC.md#3.7.8",
+        "GAMEPLAY_V2_SPEC.md#9.3",
+        "GAMEPLAY_V2_ABI.md \u6570\u503c\u57df\u4e0e\u91cf\u7a0b\uff08\u5224\u5b9a\u987a\u5e8f\uff1a\u53ef\u8868\u793a\u6027\u5148\u4e8e\u8303\u56f4\uff09"
+      ],
+      "note": "Named by the Spec mapping table: an amount that cannot be represented exactly in the declared canonical integer quantization is a narrowing failure mapped to budget_exceeded. exactNumerator == INT64_MIN counts as not representable.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "judgement.s7a2.input.same_tick_collision",
+      "family": "judgement.s7a2.input",
+      "category": "invalid_relation",
+      "categoryBasis": "documented_mapping_row",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-2",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "GAMEPLAY_V2_SPEC.md#3.7.8",
+        "GAMEPLAY_V2_SPEC.md#9.3",
+        "docs/proposals/gameplay-v2-acceptance/CONTRACT_MATRIX.md#CM-T10"
+      ],
+      "note": "Named by the Spec mapping table: a second, different canonical observation identity at a tick the session already admitted is an input identity / order relation error mapped to invalid_relation, registered separately from the late-policy duplicate queue entry which is late_policy_incomplete.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "identity_closure_incomplete",
+      "family": "judgement.prepare",
+      "category": "identity_closure_incomplete",
+      "categoryBasis": "documented_name_correspondence",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "GAMEPLAY_V2_SPEC.md#9.6",
+        "GAMEPLAY_V2_SPEC.md#9.7",
+        "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-3",
+        "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-7",
+        "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
+      ],
+      "note": "Spec 9.6 item 4 freezes this stable code for a missing target / domain / action / table inside the judgement closure, or for a compiledSemanticIdentity and capability closure that are not carried together and comparable; the failure is a prepare atomic failure (session_unaffected). The code string equals the category name identity_closure_incomplete, so the category is a documented name correspondence. The 2026-10-02T21:03:39.462Z card (adopt 0.96) confirmed severity=error, faulted=session_unaffected and first consumption batch S7A-7. It is not a CapabilityRecord.stableRejectCode, so stableRejectCode is null.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "presentation-target-missing",
+      "family": "presentation",
+      "category": "invalid_relation",
+      "categoryBasis": "owner_ruled",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "GAMEPLAY_V2_SPEC.md#9.6",
+        "GAMEPLAY_V2_SPEC.md#9.7",
+        "GAMEPLAY_V2_SPEC.md#9.8",
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u7b2c 6 \u8f6e\u8865\u5145\uff09",
+        "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-7",
+        "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
+      ],
+      "note": "Spec 9.6 item 4 and Spec 9.7 freeze this stable code for a purely presentational target that is missing: empty binding is allowed and the projection event is discarded, without faulting the session and without writing the Fact Ledger. The 2026-10-02T21:03:39.462Z card (adopt 0.96) ruled that the code string stays exactly as written, that its category is invalid_relation, its severity is error and its faulted behaviour is session_unaffected, and that its first consumption batch is S7A-7 (the BATCH_GATES S7A-7 diagnostic row listed the code before it was registered here and required this registration before it could enter a public ABI). Not a CapabilityRecord.stableRejectCode, so stableRejectCode is null.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "partial-group",
+      "family": "aggregation",
+      "category": "invalid_relation",
+      "categoryBasis": "owner_ruled",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "GAMEPLAY_V2_SPEC.md#9.6",
+        "GAMEPLAY_V2_SPEC.md#9.7",
+        "GAMEPLAY_V2_SPEC.md#9.8",
+        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u7b2c 6 \u8f6e\u8865\u5145\uff09",
+        "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-7",
+        "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
+      ],
+      "note": "Spec 9.6 item 4 and Spec 9.7 freeze this stable code for a groupCommit aggregation that commits only part of a group: the committed part is kept (not rolled back) and the session enters the stable rejection path, without faulting the session and without writing the Fact Ledger. The 2026-10-02T21:03:39.462Z card (adopt 0.96) ruled that the code string stays exactly as written, that its category is invalid_relation, its severity is error and its faulted behaviour is session_unaffected, and that its first consumption batch is S7A-7. Not a CapabilityRecord.stableRejectCode, so stableRejectCode is null.",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "ruleset.transaction_failed",
+      "family": "ruleset",
+      "category": "invalid_relation",
+      "categoryBasis": "owner_ruled",
+      "severity": "error",
+      "faulted": "session_faulted",
+      "ownerBatch": "S7A-5",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "GAMEPLAY_V2_SPEC.md#9.4",
+        "GAMEPLAY_V2_SPEC.md#9.6",
+        "GAMEPLAY_V2_SPEC.md#7.2",
+        "GAMEPLAY_V2_SPEC.md#3.14",
+        "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-5",
+        "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
+      ],
+      "note": "Newly registered by the 2026-10-02T21:03:39.462Z card (adopt 0.96) as the dedicated stable code of the only runtime faulted path: a second-phase (Ruleset state commit) atomic validation failure. The Tick stays uncommitted, the old state is kept, the Fact Ledger is already committed and cannot be rolled back, no fault Fact is appended and no RuleEffectEvent / PresentationEvent is published; the session moves into the queryable faulted state and stops accepting new judgement mutations. Spec 9.4 now names this code instead of leaving the stable code to be chosen from the existing 9.2 / 9.3 table. It is the only registered code whose faulted value is session_faulted. Its trigger includes a RegisterKind outside the three frozen kinds, a duplicate contribution identity, a non-commutative or non-associative fold, a second exclusive owner or writer, a direct ledger_derived StateDelta write, and a steady-state budget / overflow / conflict validation failure in that phase. It is not a CapabilityRecord.stableRejectCode, so stableRejectCode is null, and it adds no R entry (Spec 7.2 still holds exactly 19).",
+      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    }
+  ],
+  "rejectionEntries": [
+    {
+      "id": "R-01",
+      "rejectedCapability": "capacity > 1 resources, owner sets, parallel slots",
+      "reasonType": "capability boundary",
+      "stableRejectCode": "resource.capacity_unsupported",
+      "ownerBatch": "S7A-4",
+      "source": "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3; GAMEPLAY_V2_SPEC.md#7.2"
+    },
+    {
+      "id": "R-02",
+      "rejectedCapability": "Chord / binding relation",
+      "reasonType": "later capability",
+      "stableRejectCode": "coordination.relation_unsupported",
+      "ownerBatch": "S7A-4",
+      "source": "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3; GAMEPLAY_V2_SPEC.md#7.2"
+    },
+    {
+      "id": "R-03",
+      "rejectedCapability": "temporal / quota relation, bounded alternation, protection window",
+      "reasonType": "later capability",
+      "stableRejectCode": "coordination.relation_unsupported",
+      "ownerBatch": "S7A-4",
+      "source": "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3; GAMEPLAY_V2_SPEC.md#7.2"
+    },
+    {
+      "id": "R-04",
+      "rejectedCapability": "Handoff Hold, gap / handoff_pending, non-zero grace, resource.handoff.v1",
+      "reasonType": "later capability",
+      "stableRejectCode": "resource.handoff_unsupported",
+      "ownerBatch": "S7A-4",
+      "source": "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3; GAMEPLAY_V2_SPEC.md#7.2"
+    },
+    {
+      "id": "R-05",
+      "rejectedCapability": "continuous trajectory, slider, area coverage, input.trajectory.v1, minimum report rate, reconstruction, discontinuous representation",
+      "reasonType": "later capability",
+      "stableRejectCode": "input.continuous_unsupported",
+      "ownerBatch": "S7A-2",
+      "source": "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3; GAMEPLAY_V2_SPEC.md#7.2"
+    },
+    {
+      "id": "R-06",
+      "rejectedCapability": "flick, direction, speed, input.direction.v1",
+      "reasonType": "later capability",
+      "stableRejectCode": "input.direction_unsupported",
+      "ownerBatch": null,
+      "source": "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3; GAMEPLAY_V2_SPEC.md#7.2"
+    },
+    {
+      "id": "R-07",
+      "rejectedCapability": "global optimum / max_cardinality / bounded backtracking solver",
+      "reasonType": "later capability",
+      "stableRejectCode": "solver.profile_unsupported",
+      "ownerBatch": "S7A-4",
+      "source": "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3; GAMEPLAY_V2_SPEC.md#7.2"
+    },
+    {
+      "id": "R-08",
+      "rejectedCapability": "Fact correction, correctionDepth > 1",
+      "reasonType": "later capability",
+      "stableRejectCode": "fact.correction_unsupported",
+      "ownerBatch": "S7A-5",
+      "source": "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3; GAMEPLAY_V2_SPEC.md#7.2"
+    },
+    {
+      "id": "R-09",
+      "rejectedCapability": "cuexis.ruleset package as a Stage 7A input (round 5: 7A has no package, built-in Ruleset only)",
+      "reasonType": "batch attribution",
+      "stableRejectCode": "ruleset.package_unsupported",
+      "ownerBatch": "S7A-5",
+      "source": "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3; GAMEPLAY_V2_SPEC.md#7.2; GAMEPLAY_V2_SPEC.md#3.16"
+    },
+    {
+      "id": "R-10",
+      "rejectedCapability": "reopen_uncommitted_window late policy",
+      "reasonType": "later capability",
+      "stableRejectCode": "late.reopen_unsupported",
+      "ownerBatch": "S7A-2",
+      "source": "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3; GAMEPLAY_V2_SPEC.md#7.2"
+    },
+    {
+      "id": "R-11",
+      "rejectedCapability": "sameContact constraint, a cross-Requirement relation hidden inside a Pattern",
+      "reasonType": "structural constraint",
+      "stableRejectCode": "pattern.relation_unsupported",
+      "ownerBatch": "S7A-3",
+      "source": "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3; GAMEPLAY_V2_SPEC.md#7.2"
+    },
+    {
+      "id": "R-12",
+      "rejectedCapability": "inferring judgementDomain implicitly from render position, material, camera or animation",
+      "reasonType": "semantic prohibition",
+      "stableRejectCode": "geometry.inference_rejected",
+      "ownerBatch": "S7A-7",
+      "source": "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3; GAMEPLAY_V2_SPEC.md#7.2"
+    },
+    {
+      "id": "R-13",
+      "rejectedCapability": "modifying InputMapping / Loadout / Ruleset projection during a run",
+      "reasonType": "lifecycle prohibition",
+      "stableRejectCode": "session.mutation_rejected",
+      "ownerBatch": "S7A-1",
+      "source": "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3; GAMEPLAY_V2_SPEC.md#7.2"
+    },
+    {
+      "id": "R-14",
+      "rejectedCapability": "runtime scripts, per-frame callbacks, host bytecode, dynamic Requirement generation, randomness, wall clock, IO",
+      "reasonType": "permanent capability boundary",
+      "stableRejectCode": "capability.permanently_unsupported",
+      "ownerBatch": null,
+      "source": "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3; GAMEPLAY_V2_SPEC.md#7.2"
+    },
+    {
+      "id": "R-15",
+      "rejectedCapability": "three-dimensional physical slash, arbitrary free-body sensor fusion",
+      "reasonType": "future development",
+      "stableRejectCode": "capability.future_development",
+      "ownerBatch": null,
+      "source": "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3; GAMEPLAY_V2_SPEC.md#7.2"
+    },
+    {
+      "id": "R-16",
+      "rejectedCapability": "unknown required section, unknown capability, a new requirement kind interpreted as tap",
+      "reasonType": "silent downgrade prohibition",
+      "stableRejectCode": "capability.unknown",
+      "ownerBatch": "S7A-7",
+      "source": "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3; GAMEPLAY_V2_SPEC.md#7.2"
+    },
+    {
+      "id": "R-17",
+      "rejectedCapability": "old gameplay.version = 1 without an explicit migration",
+      "reasonType": "version migration",
+      "stableRejectCode": "format.gameplay_version_unsupported",
+      "ownerBatch": null,
+      "source": "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3; GAMEPLAY_V2_SPEC.md#7.2"
+    },
+    {
+      "id": "R-18",
+      "rejectedCapability": "non-empty CXT v2 effects reaching gameplay.requirements without an explicit lowering",
+      "reasonType": "layer prohibition",
+      "stableRejectCode": "migration.ambiguous",
+      "ownerBatch": "S7A-3",
+      "source": "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3; GAMEPLAY_V2_SPEC.md#7.2"
+    },
+    {
+      "id": "R-19",
+      "rejectedCapability": "migration cannot decide the judgement domain, resource sharing or the presentation/Gameplay relation",
+      "reasonType": "migration ambiguity",
+      "stableRejectCode": "migration.ambiguous",
+      "ownerBatch": "S7A-3",
+      "source": "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3; GAMEPLAY_V2_SPEC.md#7.2"
+    }
+  ],
+  "rejectionListNote": "Spec 7.2 freezes exactly 19 entries (R-01..R-19) and Spec 7.2 states that rounds 2 to 5 added no entry. Every one of the 19 has a candidate rejection code in the document, so no rejectionEntries row carries a null stableRejectCode or the pending_landing_batch marker. A row would carry stableRejectCode null plus \"status\": \"pending_landing_batch\" only if a future R entry were added without a candidate code; the validator accepts both shapes.",
+  "registeredFamiliesFrozenPrefixRule": {
+    "note": "The input and geometry families are frozen to exactly three codes by GAMEPLAY_V2_ABI.md and GAMEPLAY_V2_SPEC.md 7.2 (R-05, R-06, R-12). The validator rejects any additional input.* or geometry.* code in the codes array, including a re-spelling of an existing one.",
+    "frozenPrefixes": [
+      "input.",
+      "geometry."
+    ],
+    "frozenCodes": [
+      "input.continuous_unsupported",
+      "input.direction_unsupported",
+      "geometry.inference_rejected"
+    ]
+  },
+  "ownerReviewRequired": [
+    {
+      "item": "severity value set",
+      "disposition": "closed_by_decision_card_2026-10-02T21-03-39-462Z__thread_01a0fe6b-6e57-7051-87f8-cf9588e85568__verdict_adopt__confidence_0.96",
+      "issue": "GAMEPLAY_V2_ABI.md domain 8 still marks DiagnosticSeverity as 'to be frozen (CM-D04)' and GAMEPLAY_V2_SPEC.md 9.1 names the severity layer without enumerating values. This table registers the existing repository severity surface (info / warning / error) from engine/core/include/cuexis/core/diagnostic.hpp and assigns error to every code.",
+      "requestedAction": "Confirm info / warning / error as the V2 severity set, or freeze a different set in Spec 9.1 / ABI domain 8."
+    },
+    {
+      "item": "input and geometry category spelling",
+      "disposition": "closed_by_decision_card_2026-10-02T21-03-39-462Z__thread_01a0fe6b-6e57-7051-87f8-cf9588e85568__verdict_adopt__confidence_0.96",
+      "issue": "GAMEPLAY_V2_SPEC.md 9.3, 7.2 and GAMEPLAY_V2_ABI.md spell the category of input.continuous_unsupported literally as 'capability', which is not one of the nine names frozen in Spec 9.2.",
+      "requestedAction": "Confirm that the literal 'capability' is a family label and that the nine-category value is capability_disabled, or add the missing category by ruling."
+    },
+    {
+      "item": "ABI informal category list",
+      "disposition": "closed_by_decision_card_2026-10-02T21-03-39-462Z__thread_01a0fe6b-6e57-7051-87f8-cf9588e85568__verdict_adopt__confidence_0.96",
+      "issue": "GAMEPLAY_V2_ABI.md, in its diagnostic-layering section, lists 'identity / capability / budget / format / migration / lifecycle ...' as an example category set. Only budget and migration overlap the nine names frozen in Spec 9.2.",
+      "requestedAction": "Confirm that the ABI example list is illustrative only and not a second category set."
+    },
+    {
+      "item": "structural and lifecycle prohibitions",
+      "disposition": "closed_by_decision_card_2026-10-02T21-03-39-462Z__thread_01a0fe6b-6e57-7051-87f8-cf9588e85568__verdict_adopt__confidence_0.96",
+      "issue": "R-11 (structural constraint), R-12 (semantic prohibition) and R-13 (lifecycle prohibition) have a documented reason type but no documented nine-category value. This table derives invalid_relation, unknown_capability and invalid_relation respectively.",
+      "requestedAction": "Confirm the three derivations or rule the intended categories."
+    },
+    {
+      "item": "forbidden and future capabilities",
+      "disposition": "closed_by_decision_card_2026-10-02T21-03-39-462Z__thread_01a0fe6b-6e57-7051-87f8-cf9588e85568__verdict_adopt__confidence_0.96",
+      "issue": "R-14 (permanent capability boundary) and R-15 (future development) have no documented nine-category value. This table derives capability_disabled for both.",
+      "requestedAction": "Confirm capability_disabled, or rule unknown_capability / a new value."
+    },
+    {
+      "item": "capability revision mismatch",
+      "disposition": "closed_by_decision_card_2026-10-02T21-03-39-462Z__thread_01a0fe6b-6e57-7051-87f8-cf9588e85568__verdict_adopt__confidence_0.96",
+      "issue": "capability.revision_mismatch is listed in the ABI code family but has no documented category. This table derives unknown_capability.",
+      "requestedAction": "Confirm the derivation."
+    },
+    {
+      "item": "version migration category",
+      "disposition": "closed_by_decision_card_2026-10-02T21-03-39-462Z__thread_01a0fe6b-6e57-7051-87f8-cf9588e85568__verdict_adopt__confidence_0.96",
+      "issue": "format.gameplay_version_unsupported (R-17) has no documented nine-category value; the nine contain no 'unsupported version' category, so this table derives ambiguous_migration although R-17 is not itself ambiguous.",
+      "requestedAction": "Confirm ambiguous_migration or add a migration sub-category by ruling."
+    },
+    {
+      "item": "near-synonym code and category",
+      "disposition": "closed_by_decision_card_2026-10-02T21-03-39-462Z__thread_01a0fe6b-6e57-7051-87f8-cf9588e85568__verdict_adopt__confidence_0.96",
+      "issue": "capability.disabled (registered code) and capability_disabled (registered category) are near-synonymous spellings. Spec 9.2 CM-D02 forbids two synonymous codes.",
+      "requestedAction": "Confirm that a code and a category are different layers here and are not the CM-D02 duplicate."
+    },
+    {
+      "item": "src-only capability category token",
+      "disposition": "closed_by_decision_card_2026-10-02T21-03-39-462Z__thread_01a0fe6b-6e57-7051-87f8-cf9588e85568__verdict_adopt__confidence_0.96",
+      "issue": "engine/judgement/src/source_codes.hpp previously defined the category token 'capability' (kCapabilityCategory), which is not one of the nine Spec 9.2 categories, and engine/judgement/src/session.cpp used it. This file does not modify source or headers.",
+      "requestedAction": "Closed: the 2026-10-02T21:03:39.462Z card (adopt 0.96) ruled that the src-only token needs no rename and that every public projection must map it to capability_disabled. The parallel implementation line has since replaced the token: source_codes.hpp now defines kCapabilityDisabledCategory{\"capability_disabled\"} with the comment that no token spelling a bare \"capability\" category exists any more, and session.cpp shares the two legal spellings. Re-verified 2026-10-03: 'kCapabilityCategory' no longer occurs in either file. Any public projection that leaks the literal 'capability' still violates the nine-category gate. This registration touches no source or header."
+    },
+    {
+      "item": "Gameplay I category set merge",
+      "issue": "Spec 9.2 requires the ten Gameplay I categories of docs/api/GAMEPLAY_JUDGEMENT_ABI.md section 4 to be merged into the nine V2 categories with an old-to-new mapping (CM-D02). That mapping is not frozen.",
+      "requestedAction": "Freeze the merge mapping so the legacy names can be registered or retired."
+    },
+    {
+      "item": "runtime faulted code",
+      "disposition": "closed_by_decision_card_2026-10-02T21-03-39-462Z__thread_01a0fe6b-6e57-7051-87f8-cf9588e85568__verdict_adopt__confidence_0.96",
+      "issue": "Spec 9.4 item 1 leaves the stable code of a second-stage Ruleset transaction failure to be chosen from the existing 9.2 / 9.3 table. No registered code therefore carries faulted=session_faulted yet, even though the behavior is frozen.",
+      "requestedAction": "Select and register the runtime faulted code before the first batch that must report it."
+    }
+  ],
+  "pendingRegistration": [
+    {
+      "kind": "code",
+      "registered": false,
+      "status": "not_registered_src_only",
+      "code": "judgement.s7a2.timebase.profile_value_out_of_range",
+      "family": "judgement.s7a2.timebase",
+      "reason": "Src-only S7A-2 local token. The string exists only in engine/judgement/src/source_codes.hpp, which states that it registers no code; it is not named by GAMEPLAY_V2_SPEC.md or GAMEPLAY_V2_ABI.md, so it may not enter a public header until it is registered here.",
+      "source": "engine/judgement/src/source_codes.hpp kProfileValueOutOfRangeCode token definition (judgement.s7a2.timebase.profile_value_out_of_range)",
+      "publicConsumptionSurface": null
+    },
+    {
+      "kind": "code",
+      "registered": false,
+      "status": "not_registered_src_only",
+      "code": "judgement.s7a2.timebase.rational_invalid",
+      "family": "judgement.s7a2.timebase",
+      "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI.",
+      "source": "engine/judgement/src/source_codes.hpp kRationalInvalidCode token definition (judgement.s7a2.timebase.rational_invalid)",
+      "publicConsumptionSurface": null
+    },
+    {
+      "kind": "code",
+      "registered": false,
+      "status": "not_registered_src_only",
+      "code": "judgement.s7a2.timebase.interval_reversed",
+      "family": "judgement.s7a2.timebase",
+      "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI.",
+      "source": "engine/judgement/src/source_codes.hpp kIntervalReversedCode token definition (judgement.s7a2.timebase.interval_reversed)",
+      "publicConsumptionSurface": null
+    },
+    {
+      "kind": "code",
+      "registered": false,
+      "status": "not_registered_src_only",
+      "code": "judgement.s7a2.timebase.commit_window_invalid",
+      "family": "judgement.s7a2.timebase",
+      "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI.",
+      "source": "engine/judgement/src/source_codes.hpp kCommitWindowInvalidCode token definition (judgement.s7a2.timebase.commit_window_invalid)",
+      "publicConsumptionSurface": null
+    },
+    {
+      "kind": "code",
+      "registered": false,
+      "status": "not_registered_src_only",
+      "code": "judgement.s7a2.timebase.commit_not_at_commit_tick",
+      "family": "judgement.s7a2.timebase",
+      "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI.",
+      "source": "engine/judgement/src/source_codes.hpp kCommitNotAtCommitTickCode token definition (judgement.s7a2.timebase.commit_not_at_commit_tick)",
+      "publicConsumptionSurface": null
+    },
+    {
+      "kind": "code",
+      "registered": false,
+      "status": "not_registered_src_only",
+      "code": "judgement.s7a2.late.parameter_pending",
+      "family": "judgement.s7a2.late",
+      "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI. The Spec names the late_policy_incomplete category but not this spelling.",
+      "source": "engine/judgement/src/source_codes.hpp kLatePolicyPendingCode token definition (judgement.s7a2.late.parameter_pending)",
+      "publicConsumptionSurface": null
+    },
+    {
+      "kind": "code",
+      "registered": false,
+      "status": "not_registered_src_only",
+      "code": "judgement.s7a2.late.policy_undeclared",
+      "family": "judgement.s7a2.late",
+      "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI.",
+      "source": "engine/judgement/src/source_codes.hpp kLatePolicyUndeclaredCode token definition (judgement.s7a2.late.policy_undeclared)",
+      "publicConsumptionSurface": null
+    },
+    {
+      "kind": "code",
+      "registered": false,
+      "status": "not_registered_src_only",
+      "code": "judgement.s7a2.late.duplicate_queue_entry",
+      "family": "judgement.s7a2.late",
+      "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI. The Spec maps a duplicate queue entry to the late_policy_incomplete category without naming a code.",
+      "source": "engine/judgement/src/source_codes.hpp kDuplicateQueueCode token definition (judgement.s7a2.late.duplicate_queue_entry)",
+      "publicConsumptionSurface": null
+    },
+    {
+      "kind": "code",
+      "registered": false,
+      "status": "not_registered_src_only",
+      "code": "judgement.s7a2.late.queue_hop_exceeded",
+      "family": "judgement.s7a2.late",
+      "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI.",
+      "source": "engine/judgement/src/source_codes.hpp kQueueHopExceededCode token definition (judgement.s7a2.late.queue_hop_exceeded)",
+      "publicConsumptionSurface": null
+    },
+    {
+      "kind": "code",
+      "registered": false,
+      "status": "not_registered_src_only",
+      "code": "judgement.s7a2.input.ingress_sequence_duplicate",
+      "family": "judgement.s7a2.input",
+      "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI. CONTRACT_MATRIX CM-T10 maps a duplicate ingressSequence to late_policy_incomplete without naming a code.",
+      "source": "engine/judgement/src/source_codes.hpp kIngressSequenceDuplicateCode token definition (judgement.s7a2.input.ingress_sequence_duplicate)",
+      "publicConsumptionSurface": null
+    },
+    {
+      "kind": "code",
+      "registered": false,
+      "status": "not_registered_src_only",
+      "code": "judgement.s7a2.timebase.profile_invalid",
+      "family": "judgement.s7a2.timebase",
+      "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI. The Spec maps a structurally incomplete declaration to the invalid_relation category without naming a code.",
+      "source": "engine/judgement/src/source_codes.hpp kProfileInvalidCode token definition (judgement.s7a2.timebase.profile_invalid)",
+      "publicConsumptionSurface": null
+    },
+    {
+      "kind": "code",
+      "registered": false,
+      "status": "not_registered_src_only",
+      "code": "judgement.s7a2.input.mapping_declaration_invalid",
+      "family": "judgement.s7a2.input",
+      "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI.",
+      "source": "engine/judgement/src/source_codes.hpp kInputMappingInvalidCode token definition (judgement.s7a2.input.mapping_declaration_invalid)",
+      "publicConsumptionSurface": null
+    },
+    {
+      "kind": "code",
+      "registered": false,
+      "status": "not_registered_src_only",
+      "code": "judgement.s7a2.input.runtime_mapping_change",
+      "family": "judgement.s7a2.input",
+      "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI. Spec 5.2 states the mapping is a session component and a runtime modification is a stable rejection, but no code string is frozen.",
+      "source": "engine/judgement/src/source_codes.hpp kRuntimeMappingChangeCode token definition (judgement.s7a2.input.runtime_mapping_change)",
+      "publicConsumptionSurface": null
+    },
+    {
+      "kind": "code",
+      "registered": false,
+      "code": null,
+      "family": "judgement.prepare",
+      "reason": "Spec 7.2 third-round row: content that requires tail semantics without an explicit Release / tail phase declaration is a prepare atomic failure whose stable code must be chosen from the existing 9.2 / 9.3 table. No code string is frozen.",
+      "source": "GAMEPLAY_V2_SPEC.md#7.2 (third-round table row 2); GAMEPLAY_V2_SPEC.md#9.3",
+      "publicConsumptionSurface": null
+    },
+    {
+      "kind": "code",
+      "registered": false,
+      "code": null,
+      "family": "judgement.prepare",
+      "reason": "Spec 7.2 third-round row and Spec 3.8.4: the concrete stableRejectCode of a boundedRelationInstance or an unbounded loop representation must close before S7A-3 consumes it. No code string is frozen.",
+      "source": "GAMEPLAY_V2_SPEC.md#7.2 (third-round table row 3); GAMEPLAY_V2_SPEC.md#3.8.4",
+      "publicConsumptionSurface": null
+    },
+    {
+      "kind": "code",
+      "registered": false,
+      "code": null,
+      "family": "judgement.prepare",
+      "reason": "Spec 7.2 fourth-round row: interpreting 'observe occupies a resource' is a semantic interpretation error whose stable code must be chosen from the existing 9.2 / 9.3 table. No code string is frozen.",
+      "source": "GAMEPLAY_V2_SPEC.md#7.2 (fourth-round table row 4); GAMEPLAY_V2_SPEC.md#3.13",
+      "publicConsumptionSurface": null
+    },
+    {
+      "kind": "code_family",
+      "registered": false,
+      "code": null,
+      "family": "budget.*",
+      "reason": "The S7A-3, S7A-4, S7A-5 and S7A-6 diagnostic rows of BATCH_GATES.md use wildcard families (budget.content.*, budget.steady.*, budget.*, ruleset.*). A wildcard is not a code string and no concrete code is frozen, so none is registered.",
+      "source": "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-3, #S7A-4, #S7A-5, #S7A-6",
+      "publicConsumptionSurface": null,
+      "alsoObservedFamilies": [
+        "budget.content.*",
+        "budget.steady.*",
+        "ruleset.*"
+      ]
+    },
+    {
+      "kind": "category_set",
+      "registered": false,
+      "code": null,
+      "family": "gameplay-i-legacy-categories",
+      "names": [
+        "identity_mismatch",
+        "unsupported_capability",
+        "invalid_requirement",
+        "invalid_grace",
+        "range_overflow",
+        "budget_exceeded",
+        "time_regression",
+        "ownership_conflict",
+        "non_terminating_program",
+        "replay_format_error"
+      ],
+      "reason": "Spec 9.2 states that the ten Gameplay I categories of GAMEPLAY_JUDGEMENT_ABI.md section 4 must be merged into the nine V2 categories with an old-to-new mapping and that two synonymous codes must not exist (CM-D02). The merge mapping is unfrozen, so these names are recorded as unregistered legacy categories rather than as V2 categories. budget_exceeded is the one name present in both sets.",
+      "source": "GAMEPLAY_V2_SPEC.md#9.2; docs/api/GAMEPLAY_JUDGEMENT_ABI.md#4",
+      "publicConsumptionSurface": null
+    },
+    {
+      "kind": "category_set",
+      "registered": false,
+      "code": null,
+      "family": "gameplay-i-replay-error-categories",
+      "reason": "Spec 9.5 and the Spec 10 artifact table record that the ten stable Replay error categories and their merge with the nine V2 categories are still to be ruled. No Replay error category name is registered here.",
+      "source": "GAMEPLAY_V2_SPEC.md#9.5; GAMEPLAY_V2_SPEC.md#10",
+      "publicConsumptionSurface": null
+    },
+    {
+      "kind": "code_set",
+      "registered": false,
+      "code": null,
+      "family": "category-named-but-code-unnamed",
+      "names": [
+        "non_terminating_source",
+        "non_unique_solution",
+        "late_policy_incomplete",
+        "identity_closure_incomplete"
+      ],
+      "reason": "These are Spec 9.2 category names used by BATCH_GATES.md diagnostic rows, but no stable code string is frozen for them. They are categories, not codes, and registering a bare category name as a code would create the synonymous-code pair that CM-D02 forbids.",
+      "source": "GAMEPLAY_V2_SPEC.md#9.2; docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-3, #S7A-4",
+      "publicConsumptionSurface": null
+    }
+  ],
+  "diagnosticStringPolicy": {
+    "rule": "A string is a public diagnostic code when its named code string, its applicable scenario and its nine-category mapping are unambiguously traceable to one another in the canonical texts. The scenario row and the code-string row may live in different sections (for example Spec 3.7.8 versus Spec 9.3 or ABI), but they must point at each other explicitly. A name prefix (judgement.s7a2.* or otherwise) does not decide publicness, and no owner naming condition is introduced.",
+    "publicSurfaceRule": "A non-null publicConsumptionSurface marks a public registered code and is carried only by codes[] entries, where it must be a non-empty string. Every pendingRegistration entry carries publicConsumptionSurface: null, whether it is one of the thirteen src-only tokens (status = not_registered_src_only) or an open slot with no code string chosen yet (code = null). A pendingRegistration entry that names a public consumption surface is a table error. The surface count and the pending count are therefore never the same number and neither may be read as \"all codes are public\".",
+    "publicCodeCount": 29,
+    "srcOnlyTokenCount": 13,
+    "openSlotCount": 7,
+    "srcOnlyMarks": "pendingRegistration entries with status=not_registered_src_only",
+    "ruledBy": "Decision card 2026-10-02T21:51:38.591Z (thread diagnostics-code-table-disposition, verdict reject with per-item dispositions, confidence 0.7) and its follow-up card 2026-10-02T22:02:31.461Z (same thread, resumed, verdict reject with per-item dispositions, confidence 0.78). The written ruling lives in GAMEPLAY_V2_SPEC.md 9.9 and GAMEPLAY_V2_ABI.md domain 8."
+  },
+  "sourceAnchorPolicy": {
+    "rule": "Live citations use stable section names or symbol names only. This file contains no literal line anchor at all. A line anchor is a dated evidence artefact: it may appear only inside a dated evidence record that carries the document version or the snapshot hash it was read against, never as a live contract source.",
+    "replacementCounts": {
+      "codeSourceAnchorsReplacedBySectionReference": 30,
+      "severitySourceAnchorLiteralsRemoved": 6,
+      "srcOnlyTokenAnchorsReplacedBySymbolName": 13,
+      "liveAnchorsReworked": 49,
+      "metaRecordAnchorLiteralsRemoved": 13,
+      "totalAnchorLiteralsRemoved": 62,
+      "note": "30 + 6 + 13 = 49 live anchors were reworked. 13 further literals lived only in this policy record itself (10 in the retired crosswalk list, 1 kept-range list entry, 2 in the severity note) and were removed with the record. 62 literal occurrences were removed in total and the file now holds none."
+    },
+    "srcOnlyTokenAnchors": "The thirteen judgement.s7a2.* entries name their engine/judgement/src/source_codes.hpp token by symbol (k...Code) instead of by line. The former line ranges had already drifted on the parallel implementation line: every cited range had shifted down by one line while the token still sat on the last cited line.",
+    "severityAnchorNote": "severitySources names documents only. Its former line anchors were removed for the same drift reason; the core enum is cited by symbol (DiagnosticSeverity) instead of by line.",
+    "evidenceRecord": {
+      "path": "docs/stage_reports/stages/stage-07/2026-10-03-s7a-diagnostics-taxonomy-rulings.md",
+      "section": "11.7",
+      "holds": "the per-item crosswalk for all 49 reworked anchors, and the identity of the ABI revision those line ranges were read against",
+      "role": "That dated record is the only place in the repository where the retired line ranges are written down. They are evidence, not a citation this table relies on."
+    },
+    "replacementReason": "Decision card 2026-10-02T22:02:31.461Z ruled that the seventeen codes still citing the ABI section by line range 599 to 617 must move to a section reference as well, and that a retained range belongs only in a dated evidence record carrying the document version or the snapshot hash. No literal line anchor therefore remains in this machine-readable table."
+  }
+}

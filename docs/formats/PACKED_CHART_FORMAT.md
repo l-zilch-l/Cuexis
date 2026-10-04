@@ -4,6 +4,12 @@
 
 更新日期：2026-09-05
 
+2026-10-04 补充：本文继续拥有 Foundation `candidateRevision=1` 的合同。
+Gameplay 的显式 revision 2 扩展由 [Gameplay Capsule v2 format](GAMEPLAY_CAPSULE_V2_FORMAT.md)
+唯一拥有，复用本文 Header/directory/静态流/预算，并明确 REQ0/CNS0、Header requirementCount、
+ENT0 bit 2、REF0 与 semantic hash 的差异。不能把这些差异倒灌 revision 1，
+不能让旧 Reader 忽略 Gameplay 后继续成功；本补充不切换默认 Writer 或宣称生产实现。
+
 依据：[玩法抽象模型](../architecture/GAMEPLAY_ABSTRACTION_MODEL.md)、
 [CXT v2](CXT_V2_FORMAT.md)、
 [Chart Format Foundation](../stage_plans/completed/chart-format-foundation/plan.md)、

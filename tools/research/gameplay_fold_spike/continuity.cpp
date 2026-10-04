@@ -77,7 +77,8 @@ struct Session::Impl {
     Tick preparedHoldGraceUs = 0;
 
     Impl(const Config& cfg, const std::vector<Requirement>& reqs)
-        : config(cfg), requirements(reqs), states(reqs.size()), preparedHoldGraceUs(cfg.holdGraceUs) {
+        : config(cfg), requirements(reqs), states(reqs.size()),
+          preparedHoldGraceUs(cfg.holdGraceUs) {
         for (Requirement& req : requirements) {
             req.graceSource = req.explicitGrace ? GraceSource::Explicit : GraceSource::Inherited;
             req.effectiveGraceUs = req.explicitGrace ? req.graceUs : config.holdGraceUs;
@@ -116,7 +117,8 @@ struct Session::Impl {
     void advance(Tick t) {
         for (std::size_t i = 0; i < states.size(); ++i) {
             State& state = states[i];
-            if (state.stage == Stage::Gap && t >= state.releasedAt + requirements[i].effectiveGraceUs) {
+            if (state.stage == Stage::Gap &&
+                t >= state.releasedAt + requirements[i].effectiveGraceUs) {
                 breakItem(i, state.releasedAt + requirements[i].effectiveGraceUs);
             }
         }
@@ -151,13 +153,13 @@ struct Session::Impl {
             ++strays;
             return;
         }
-        std::stable_sort(candidates.begin(), candidates.end(), [&](const Candidate& a,
-                                                                    const Candidate& b) {
-            if (a.distance != b.distance) {
-                return a.distance < b.distance;
-            }
-            return requirements[a.index].id < requirements[b.index].id;
-        });
+        std::stable_sort(candidates.begin(), candidates.end(),
+                         [&](const Candidate& a, const Candidate& b) {
+                             if (a.distance != b.distance) {
+                                 return a.distance < b.distance;
+                             }
+                             return requirements[a.index].id < requirements[b.index].id;
+                         });
         State& state = states[candidates.front().index];
         const Requirement& req = requirements[candidates.front().index];
         state.stage = Stage::Follow;
@@ -264,8 +266,7 @@ struct Session::Impl {
             const State& state = states[i];
             out.items.push_back(ItemSummary{requirements[i].id, state.stage, state.releasedAt,
                                             state.contact, state.segment, state.moves,
-                                            state.headEmitted, state.breakEmitted,
-                                            deadlineFor(i)});
+                                            state.headEmitted, state.breakEmitted, deadlineFor(i)});
         }
         std::uint64_t hash = 1469598103934665603ull;
         auto mix = [&](std::uint64_t value) {
@@ -384,7 +385,7 @@ struct Session::Impl {
         facts.reserve(factCount);
         for (std::uint32_t i = 0; i < factCount; ++i) {
             facts.push_back(Fact{read<Tick>(bytes, offset), read<std::uint32_t>(bytes, offset),
-                                  read<Outcome>(bytes, offset), read<std::uint8_t>(bytes, offset)});
+                                 read<Outcome>(bytes, offset), read<std::uint8_t>(bytes, offset)});
         }
         assert(offset == bytes.size());
     }
@@ -392,7 +393,9 @@ struct Session::Impl {
 
 Session::Session(const Config& config, const std::vector<Requirement>& requirements)
     : impl_(new Impl(config, requirements)) {}
-Session::~Session() { delete impl_; }
+Session::~Session() {
+    delete impl_;
+}
 Session::Session(Session&& other) noexcept : impl_(std::exchange(other.impl_, nullptr)) {}
 Session& Session::operator=(Session&& other) noexcept {
     if (this != &other) {
@@ -401,12 +404,24 @@ Session& Session::operator=(Session&& other) noexcept {
     }
     return *this;
 }
-void Session::apply(const Event& event) { impl_->apply(event); }
-void Session::setRuntimeHoldGraceForTesting(Tick value) { impl_->config.holdGraceUs = value; }
-void Session::finish() { impl_->finish(); }
-std::vector<std::uint8_t> Session::snapshot() const { return impl_->snapshot(); }
-void Session::restore(const std::vector<std::uint8_t>& bytes) { impl_->restore(bytes); }
-Result Session::result() const { return impl_->result(); }
+void Session::apply(const Event& event) {
+    impl_->apply(event);
+}
+void Session::setRuntimeHoldGraceForTesting(Tick value) {
+    impl_->config.holdGraceUs = value;
+}
+void Session::finish() {
+    impl_->finish();
+}
+std::vector<std::uint8_t> Session::snapshot() const {
+    return impl_->snapshot();
+}
+void Session::restore(const std::vector<std::uint8_t>& bytes) {
+    impl_->restore(bytes);
+}
+Result Session::result() const {
+    return impl_->result();
+}
 
 Result run(const Config& config, const std::vector<Requirement>& requirements,
            const std::vector<Event>& events) {

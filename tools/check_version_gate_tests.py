@@ -5,6 +5,7 @@ from __future__ import annotations
 import ast
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import tempfile
@@ -49,6 +50,49 @@ def resolve_git() -> str | None:
     return None
 
 
+# A shell can answer `exit 0` and `git --version` while living in a different
+# filesystem view. `C:\Windows\System32\bash.exe` is the WSL launcher: its
+# filename contains no "wsl" and inside WSL `git` resolves, so a name-only check
+# selects it even though it cannot read the Windows workspace the bootstrap
+# block materializes into. The guard therefore has to test the invariant the
+# block actually depends on.
+SYSTEM_BASH = Path(os.environ.get("SystemRoot", r"C:\Windows")) / "System32" / "bash.exe"
+SHELL_VIEW_MARKER = "cuexis-shell-view-probe"
+
+
+def is_system_bash(shell: str) -> bool:
+    """True when `shell` resolves to the Windows WSL launcher under System32."""
+    try:
+        return os.path.normcase(os.path.abspath(shell)) == os.path.normcase(
+            os.path.abspath(SYSTEM_BASH)
+        )
+    except (OSError, ValueError):
+        return False
+
+
+def reads_marker_through_native_path(shell: str) -> bool:
+    """True when `shell` can read a marker through a native absolute path.
+
+    Git Bash and MSYS2 translate `C:\\...`-style paths and a POSIX shell on
+    Linux reads the POSIX path unchanged, so both keep working. A shell in a
+    different filesystem view cannot resolve the string at all, which is the
+    case that must never be selected for the bootstrap block.
+    """
+    try:
+        with tempfile.TemporaryDirectory() as directory:
+            marker = Path(directory) / SHELL_VIEW_MARKER
+            marker.write_text("ok", encoding="ascii")
+            probe = subprocess.run(
+                [shell, "-c", "test -f %s" % shlex.quote(str(marker))],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=30,
+            )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return probe.returncode == 0
+
+
 def usable_posix_shell() -> str | None:
     """Returns a shell that can actually execute the bootstrap block, or None.
 
@@ -66,6 +110,14 @@ def usable_posix_shell() -> str | None:
 
     Non-UTF-8 bytes are tolerated here precisely because a broken shim emits
     localized text; the caller only needs to know whether the shell is usable.
+
+    The last probe is the invariant the bootstrap block actually depends on: the
+    shell must read a marker through the native absolute path spelling of the
+    workspace. A shell in another filesystem view -- the WSL launcher reached
+    through `C:\\Windows\\System32\\bash.exe` -- answers `exit 0` and even
+    `git --version` but cannot resolve that path, so a name-only check would
+    select it and turn the positive bootstrap case into a false "lacks <file>"
+    failure.
     """
     shell = shutil.which("bash")
     if shell is None:
@@ -83,7 +135,9 @@ def usable_posix_shell() -> str | None:
         return None
     # The WSL shim identifies itself in its banner; reject it even when the
     # probe happens to succeed on a machine with a working WSL distribution.
-    if "wsl" in Path(shell).name.lower():
+    # The launcher itself is named `bash.exe`, so the banner check alone never
+    # matches it; the resolved System32 path is rejected as well.
+    if "wsl" in Path(shell).name.lower() or is_system_bash(shell):
         return None
     try:
         git_probe = subprocess.run(
@@ -95,6 +149,8 @@ def usable_posix_shell() -> str | None:
     except (OSError, subprocess.SubprocessError):
         return None
     if git_probe.returncode != 0:
+        return None
+    if not reads_marker_through_native_path(shell):
         return None
     return shell
 
@@ -599,8 +655,9 @@ class VersionGateTests(unittest.TestCase):
         if shell is None:
             self.skipTest(
                 "no usable POSIX shell available to execute the bootstrap block; "
-                "`bash` is absent, resolves to the WSL shim, or its PATH cannot "
-                "resolve `git` (the block shells out to git by bare name)"
+                "`bash` is absent, resolves to the WSL shim, its PATH cannot "
+                "resolve `git` (the block shells out to git by bare name), or it "
+                "cannot read a marker through the native workspace path"
             )
         script = self._bootstrap_script()
         with tempfile.TemporaryDirectory() as directory:
@@ -666,6 +723,65 @@ class VersionGateTests(unittest.TestCase):
             )
             self.assertNotEqual(0, completed.returncode)
             self.assertIn("version.bootstrap.required", captured(completed))
+
+    def test_rejects_a_shell_that_cannot_read_the_workspace_path(self) -> None:
+        # A shell can answer `exit 0` and `git --version` while living in a
+        # different filesystem view: that is exactly how the WSL launcher
+        # (`C:\Windows\System32\bash.exe`, a filename that contains no "wsl")
+        # slips past a name-only check. If such a shell were selected, the
+        # positive bootstrap case would fail with a false "lacks <file>" and
+        # the negative case could pass vacuously, so it must be rejected.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fake = root / ("bash.cmd" if os.name == "nt" else "bash")
+            if os.name == "nt":
+                # `findstr` is addressed through %SystemRoot% on purpose: this
+                # stand-in must not depend on the caller's PATH resolving any
+                # external tool, or a trimmed PATH would turn the marker probe
+                # into a false pass and the test into a false failure.
+                content = (
+                    "@echo off\r\n"
+                    'echo %* | "%SystemRoot%\\System32\\findstr.exe" /C:"MARKER" >nul\r\n'
+                    "if %errorlevel%==0 exit /b 1\r\n"
+                    "exit /b 0\r\n"
+                )
+            else:
+                content = (
+                    "#!/bin/sh\n"
+                    'case "$*" in\n'
+                    "  *MARKER*) exit 1 ;;\n"
+                    "  *) exit 0 ;;\n"
+                    "esac\n"
+                )
+            fake.write_text(content.replace("MARKER", SHELL_VIEW_MARKER), encoding="ascii")
+            if os.name != "nt":
+                fake.chmod(0o755)
+
+            original = os.environ.get("PATH", "")
+            os.environ["PATH"] = str(root) + os.pathsep + original
+            try:
+                resolved = shutil.which("bash")
+                if resolved is None or os.path.normcase(str(resolved)) != os.path.normcase(
+                    str(fake)
+                ):
+                    self.skipTest(
+                        "this platform cannot resolve a `bash` stand-in on PATH, so the "
+                        "view-mismatch rejection cannot be exercised here"
+                    )
+                # The stand-in passes the trivial probe the guard used to rely on.
+                trivial = subprocess.run(
+                    [str(fake), "-c", "exit 0"],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    timeout=30,
+                )
+                self.assertEqual(0, trivial.returncode)
+                # It cannot read the marker through the native path, so it must
+                # never be selected for the bootstrap block.
+                self.assertFalse(reads_marker_through_native_path(str(fake)))
+                self.assertIsNone(usable_posix_shell())
+            finally:
+                os.environ["PATH"] = original
 
     def _bootstrap_script(self) -> str:
         """Extracts the trusted-baseline materialize block from the workflow.

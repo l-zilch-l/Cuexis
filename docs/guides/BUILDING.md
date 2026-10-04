@@ -30,6 +30,8 @@ cuexis_animation
 cuexis_cxc
 cuexis_behavior
 cuexis_gameplay
+cuexis_judgement
+cuexis_gameplay_packed
 cuexis_render
 cuexis_debug
 cuexis_runtime
@@ -59,6 +61,8 @@ cuexis_animation_tests
 cuexis_cxc_tests
 cuexis_behavior_tests
 cuexis_gameplay_tests
+cuexis_judgement_tests
+cuexis_gameplay_packed_tests
 cuexis_debug_tests
 cuexis_render_tests
 cuexis_presentation_renderer_tests

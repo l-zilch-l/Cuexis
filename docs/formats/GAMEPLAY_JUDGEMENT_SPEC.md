@@ -1,6 +1,6 @@
 # Gameplay Judgement Spec
 
-状态：candidate；I 收敛规范工作稿，未实施，待 ADR 0043 owner acceptance
+状态：superseded as field contract；retained as design-input history。Gameplay I 的字段与运行语义候选基线，未实施；字段与运行语义的唯一权威现为 [GAMEPLAY_V2_SPEC.md](GAMEPLAY_V2_SPEC.md)，其决策依据为 [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md)。本文件保留为历史候选基线与差异对照，不删除、不再更新结论。
 
 日期：2026-10-01
 

@@ -4,6 +4,7 @@
 #include <cuexis/core/error.hpp>
 
 #include "packed_limits_internal.hpp"
+#include "packed_file_internal.hpp"
 
 #include <algorithm>
 #include <array>
@@ -216,6 +217,35 @@ using packed::ByteReader;
 }
 
 } // namespace
+
+auto packed::file_detail::writeAtomic(std::span<const std::byte> bytes, const fs::path& target)
+    -> core::Result<void> {
+    std::error_code statusError;
+    const auto parent = target.has_parent_path() ? target.parent_path() : fs::current_path(statusError);
+    if (statusError || !fs::is_directory(parent, statusError)) {
+        return core::unexpected(error("packed.io.parent_missing", "Packed output parent is missing"));
+    }
+    // An unsuccessful exclusive creation owns no file and must never remove a colliding sibling.
+    for (std::uint64_t attempt = 0; attempt < 128; ++attempt) {
+        const auto temporary = temporarySibling(target, attempt);
+        auto written = writeTemporary(temporary, bytes);
+        if (!written && written.error().code() == "packed.io.temp_create_failed") {
+            continue;
+        }
+        if (!written) {
+            std::error_code ignored;
+            fs::remove(temporary, ignored);
+            return core::unexpected(std::move(written.error()));
+        }
+        auto replaced = replaceAtomically(temporary, target);
+        if (!replaced) {
+            std::error_code ignored;
+            fs::remove(temporary, ignored);
+        }
+        return replaced;
+    }
+    return core::unexpected(error("packed.io.temp_create_failed", "Packed temporary creation failed"));
+}
 
 auto PackedChartWriter::size(const CanonicalSemanticChart& chart,
                              packed::PackedChartProfile profile, PackedChartLimits limits)

@@ -1,6 +1,6 @@
 # ADR 0043：Gameplay Judgement 与 Ruleset 收敛边界
 
-状态：proposed；I 收敛工作稿，未实施，待 owner acceptance
+状态：superseded；I 收敛工作稿，未实施，从未被接受为实施基线；已由 [ADR 0044](0044-gameplay-v2-semantic-kernel.md)（Gameplay V2 语义内核与冻结边界）取代，字段与运行语义改为 [Gameplay V2 Spec](../formats/GAMEPLAY_V2_SPEC.md)，typed 边界改为 [Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md)。本文件保留为 Gameplay I 的历史候选基线与差异对照，不删除、不再更新结论。
 
 日期：2026-10-01
 
@@ -131,3 +131,8 @@ Hold 或旧版本语义。
 本 ADR 不声明 `engine/` 实现完成，不冻结真实预算数值，不切换 Chart v5 默认 Writer，也不
 启动 Studio 语法、完整 Stage 7B 高级能力或 Stage 14 C ABI。owner acceptance、Spec/ABI 实现和
 真实内容预算测量是后续工作项。
+
+**阶段归属澄清（缺陷 `D-11`，2026-10-03）。** 稳定 C ABI 的**唯一归属阶段是 Stage 14**，本 ADR 上表
+"稳定 C ABI 属 Stage 14"即为该口径；Stage 7A / 7B / 8 只交付 C++ typed preview（见
+[Stage 14 计划](../stage_plans/future/stage-14/plan.md)）。`AGENTS.md` 中把稳定 C ABI 写作 Stage 12 的
+表述是**孤例**，由 owner 择时订正；本轮不修改 `AGENTS.md`。

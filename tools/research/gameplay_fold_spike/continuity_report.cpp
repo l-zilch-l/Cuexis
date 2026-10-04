@@ -31,8 +31,9 @@ bool sameJudgement(const Result& a, const Result& b) {
 }
 
 int countOutcome(const Result& result, Outcome outcome) {
-    return static_cast<int>(std::count_if(result.facts.begin(), result.facts.end(),
-                                           [&](const Fact& fact) { return fact.outcome == outcome; }));
+    return static_cast<int>(
+        std::count_if(result.facts.begin(), result.facts.end(),
+                      [&](const Fact& fact) { return fact.outcome == outcome; }));
 }
 
 const char* stageLabel(Stage stage) {
@@ -60,8 +61,8 @@ void printCase(const Case& test, const Result& actual, const Result& baseline) {
     if (!ok) {
         ++failures;
     }
-    std::printf("| %s | %s | `%s` | %s |\n", test.name, test.expectation,
-                describe(actual).c_str(), ok ? "as predicted" : "UNEXPECTED");
+    std::printf("| %s | %s | `%s` | %s |\n", test.name, test.expectation, describe(actual).c_str(),
+                ok ? "as predicted" : "UNEXPECTED");
     if (!ok) {
         std::printf("\nFAIL %s: judgement=%016llx baseline=%016llx\n", test.name,
                     static_cast<unsigned long long>(actual.judgementDigest),
@@ -116,18 +117,20 @@ bool exactBoundary(const Result& actual, const Result&) {
 
 bool sliderProgress(const Result& actual, const Result& baseline) {
     return sameJudgement(actual, baseline) && actual.strays == 0 &&
-           countOutcome(actual, Outcome::HeadHit) == 1 && countOutcome(actual, Outcome::BodyHit) == 1 &&
-           item(actual).segment == 4 && item(actual).moves == 4;
+           countOutcome(actual, Outcome::HeadHit) == 1 &&
+           countOutcome(actual, Outcome::BodyHit) == 1 && item(actual).segment == 4 &&
+           item(actual).moves == 4;
 }
 
 bool competition(const Result& actual, const Result&) {
-    return countOutcome(actual, Outcome::HeadHit) == 2 && countOutcome(actual, Outcome::Break) == 1 &&
+    return countOutcome(actual, Outcome::HeadHit) == 2 &&
+           countOutcome(actual, Outcome::Break) == 1 &&
            countOutcome(actual, Outcome::BodyHit) == 1 && actual.strays == 0;
 }
 
 bool stickyRejects(const Result& actual, const Result&) {
-    return countOutcome(actual, Outcome::HeadHit) == 1 && countOutcome(actual, Outcome::Break) == 1 &&
-           actual.strays == 1;
+    return countOutcome(actual, Outcome::HeadHit) == 1 &&
+           countOutcome(actual, Outcome::Break) == 1 && actual.strays == 1;
 }
 
 std::vector<Case> directedCases() {
@@ -135,31 +138,50 @@ std::vector<Case> directedCases() {
     config.holdGraceUs = kGrace;
     const std::vector<Event> baselineEvents = {press(kAnchor, 1), release(kEnd + 10'000, 1)};
     std::vector<Case> out;
-    out.push_back({"C1 Hold baseline", "head and body are Hit", config, {hold()}, baselineEvents,
+    out.push_back({"C1 Hold baseline",
+                   "head and body are Hit",
+                   config,
+                   {hold()},
+                   baselineEvents,
                    [](const Result& actual, const Result&) {
                        return countOutcome(actual, Outcome::HeadHit) == 1 &&
                               countOutcome(actual, Outcome::BodyHit) == 1 &&
                               countOutcome(actual, Outcome::Break) == 0 && actual.strays == 0;
                    }});
-    out.push_back({"C2 Hold one gap inside grace", "judgement equals continuous hold", config, {hold()},
-                   {press(kAnchor, 1), release(1'400'000, 1), press(1'450'000, 2),
-                    release(kEnd + 10'000, 2)},
-                   baselineMatch});
-    out.push_back({"C3 Hold repeated gaps", "multiple recoveries remain continuous", config, {hold()},
+    out.push_back(
+        {"C2 Hold one gap inside grace",
+         "judgement equals continuous hold",
+         config,
+         {hold()},
+         {press(kAnchor, 1), release(1'400'000, 1), press(1'450'000, 2), release(kEnd + 10'000, 2)},
+         baselineMatch});
+    out.push_back({"C3 Hold repeated gaps",
+                   "multiple recoveries remain continuous",
+                   config,
+                   {hold()},
                    {press(kAnchor, 1), release(1'300'000, 1), press(1'350'000, 2),
                     release(1'500'000, 2), press(1'550'000, 3), release(kEnd + 10'000, 3)},
                    baselineMatch});
-    out.push_back({"C4 Hold exact grace boundary", "strict < rejects boundary recovery", config, {hold()},
-                   {press(kAnchor, 1), release(1'400'000, 1), press(1'460'000, 2)}, exactBoundary});
-    out.push_back({"C5 Hold late recovery", "timeout emits one Break", config, {hold()},
-                   {press(kAnchor, 1), release(1'400'000, 1), press(1'461'000, 2),
-                    press(1'700'000, 3)},
-                   oneBreak});
+    out.push_back({"C4 Hold exact grace boundary",
+                   "strict < rejects boundary recovery",
+                   config,
+                   {hold()},
+                   {press(kAnchor, 1), release(1'400'000, 1), press(1'460'000, 2)},
+                   exactBoundary});
+    out.push_back(
+        {"C5 Hold late recovery",
+         "timeout emits one Break",
+         config,
+         {hold()},
+         {press(kAnchor, 1), release(1'400'000, 1), press(1'461'000, 2), press(1'700'000, 3)},
+         oneBreak});
 
-    const std::vector<Event> sliderBaseline = {press(kAnchor, 1), move(1'200'000, 1, 1),
-                                                move(1'400'000, 1, 2), move(1'600'000, 1, 3),
-                                                move(1'800'000, 1, 4), release(kEnd + 10'000, 1)};
-    out.push_back({"C6 Slider gap preserves segment", "no head duplicate or progress rollback", config,
+    const std::vector<Event> sliderBaseline = {press(kAnchor, 1),     move(1'200'000, 1, 1),
+                                               move(1'400'000, 1, 2), move(1'600'000, 1, 3),
+                                               move(1'800'000, 1, 4), release(kEnd + 10'000, 1)};
+    out.push_back({"C6 Slider gap preserves segment",
+                   "no head duplicate or progress rollback",
+                   config,
                    {slider()},
                    {press(kAnchor, 1), move(1'200'000, 1, 1), move(1'400'000, 1, 2),
                     release(1'500'000, 1), press(1'550'000, 2), move(1'700'000, 2, 3),
@@ -169,31 +191,42 @@ std::vector<Case> directedCases() {
     Requirement competing = hold(1);
     competing.anchor = 1'450'000;
     competing.end = 2'000'000;
-    out.push_back({"C7 Gap competes with a new head", "recovery uses normal consume arbitration", config,
-                   {hold(0), competing},
-                   {press(kAnchor, 1), release(1'400'000, 1), press(1'450'000, 2),
-                    release(kEnd + 10'000, 2)},
-                   competition});
-    out.push_back({"C8 Sticky does not recover", "second contact is stray and body breaks", config,
+    out.push_back(
+        {"C7 Gap competes with a new head",
+         "recovery uses normal consume arbitration",
+         config,
+         {hold(0), competing},
+         {press(kAnchor, 1), release(1'400'000, 1), press(1'450'000, 2), release(kEnd + 10'000, 2)},
+         competition});
+    out.push_back({"C8 Sticky does not recover",
+                   "second contact is stray and body breaks",
+                   config,
                    {hold(0, Grip::Sticky)},
-                   {press(kAnchor, 1), release(1'400'000, 1), press(1'450'000, 2)}, stickyRejects});
-    out.push_back({"C9 snapshot in Gap", "restore preserves releasedAt and continuation", config, {slider()},
-                   sliderBaseline, baselineMatch});
+                   {press(kAnchor, 1), release(1'400'000, 1), press(1'450'000, 2)},
+                   stickyRejects});
+    out.push_back({"C9 snapshot in Gap",
+                   "restore preserves releasedAt and continuation",
+                   config,
+                   {slider()},
+                   sliderBaseline,
+                   baselineMatch});
     return out;
 }
 
 void reportDirected() {
     Config config;
     config.holdGraceUs = kGrace;
-    const Result baseline = runEvents(config, {hold()}, {press(kAnchor, 1), release(kEnd + 10'000, 1)});
+    const Result baseline =
+        runEvents(config, {hold()}, {press(kAnchor, 1), release(kEnd + 10'000, 1)});
     std::printf("| case | expected invariant | result | status |\n| --- | --- | --- | --- |\n");
     for (const Case& test : directedCases()) {
         const Result actual = runEvents(test.config, test.requirements, test.events);
         Result reference = baseline;
         if (std::string(test.name) == "C6 Slider gap preserves segment") {
-            reference = runEvents(test.config, test.requirements, {press(kAnchor, 1), move(1'200'000, 1, 1),
-                                                                  move(1'400'000, 1, 2), move(1'600'000, 1, 3),
-                                                                  move(1'800'000, 1, 4), release(kEnd + 10'000, 1)});
+            reference = runEvents(test.config, test.requirements,
+                                  {press(kAnchor, 1), move(1'200'000, 1, 1), move(1'400'000, 1, 2),
+                                   move(1'600'000, 1, 3), move(1'800'000, 1, 4),
+                                   release(kEnd + 10'000, 1)});
         } else if (std::string(test.name) == "C9 snapshot in Gap") {
             Session first(test.config, test.requirements);
             first.apply(test.events[0]);
@@ -244,9 +277,8 @@ void reportStress() {
     }
     const auto start = std::chrono::steady_clock::now();
     const Result result = runEvents(config, requirements, events);
-    const double elapsed = std::chrono::duration<double, std::milli>(
-                               std::chrono::steady_clock::now() - start)
-                               .count();
+    const double elapsed =
+        std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count();
     const int expectedHeads = count;
     const int expectedBodies = count;
     const bool ok = countOutcome(result, Outcome::HeadHit) == expectedHeads &&
@@ -255,18 +287,19 @@ void reportStress() {
     if (!ok) {
         ++failures;
     }
-    std::printf("\n| requirements | gaps/requirement | input events | heads | bodies | breaks | strays | run ms | status |\n");
+    std::printf("\n| requirements | gaps/requirement | input events | heads | bodies | breaks | "
+                "strays | run ms | status |\n");
     std::printf("| --- | --- | --- | --- | --- | --- | --- | --- | --- |\n");
-    std::printf("| %d | %d | %zu | %d | %d | %d | %zu | %.2f | %s |\n", count, gaps,
-                events.size(), countOutcome(result, Outcome::HeadHit),
-                countOutcome(result, Outcome::BodyHit), countOutcome(result, Outcome::Break),
-                result.strays, elapsed, ok ? "as predicted" : "UNEXPECTED");
+    std::printf("| %d | %d | %zu | %d | %d | %d | %zu | %.2f | %s |\n", count, gaps, events.size(),
+                countOutcome(result, Outcome::HeadHit), countOutcome(result, Outcome::BodyHit),
+                countOutcome(result, Outcome::Break), result.strays, elapsed,
+                ok ? "as predicted" : "UNEXPECTED");
     if (!ok) {
         for (std::size_t i = 0; i < std::min<std::size_t>(result.items.size(), 5); ++i) {
             const auto& state = result.items[i];
             std::printf("debug req=%u stage=%u released=%lld contact=%u seg=%u\n", state.req,
-                        static_cast<unsigned>(state.stage), static_cast<long long>(state.releasedAt),
-                        state.contact, state.segment);
+                        static_cast<unsigned>(state.stage),
+                        static_cast<long long>(state.releasedAt), state.contact, state.segment);
         }
     }
 }
@@ -285,11 +318,11 @@ void reportPreparedGraceMatrix() {
     Requirement longGrace = withGrace(hold(11), 80'000);
     shortGrace.lane = 0;
     longGrace.lane = 1;
-    const Result c10 = runEvents(
-        config, {shortGrace, longGrace},
-        {press(kAnchor, 1, 0), press(kAnchor, 2, 1), release(1'400'000, 1, 0),
-         release(1'400'000, 2, 1), press(1'450'000, 3, 0), press(1'450'000, 4, 1),
-         release(kEnd + 10'000, 4, 1)});
+    const Result c10 =
+        runEvents(config, {shortGrace, longGrace},
+                  {press(kAnchor, 1, 0), press(kAnchor, 2, 1), release(1'400'000, 1, 0),
+                   release(1'400'000, 2, 1), press(1'450'000, 3, 0), press(1'450'000, 4, 1),
+                   release(kEnd + 10'000, 4, 1)});
     const bool c10Ok = !c10.prepareRejected && countOutcome(c10, Outcome::HeadHit) == 2 &&
                        countOutcome(c10, Outcome::Break) == 1 &&
                        countOutcome(c10, Outcome::BodyHit) == 1 && c10.strays == 1;
@@ -301,18 +334,17 @@ void reportPreparedGraceMatrix() {
 
     // C11: zero and maximum values use the same strict boundary rule.
     Requirement zero = withGrace(hold(12), 0);
-    const Result c11Zero = runEvents(config, {zero},
-                                     {press(kAnchor, 1), release(1'400'000, 1),
-                                      press(1'400'000, 2)});
+    const Result c11Zero =
+        runEvents(config, {zero}, {press(kAnchor, 1), release(1'400'000, 1), press(1'400'000, 2)});
     Config maxConfig = config;
     maxConfig.holdGraceMaxUs = 120'000;
     Requirement maximum = withGrace(hold(13), maxConfig.holdGraceMaxUs);
-    const Result c11Max = runEvents(maxConfig, {maximum},
-                                    {press(kAnchor, 1), release(1'400'000, 1),
-                                     press(1'519'999, 2), release(kEnd + 10'000, 2)});
-    const Result c11Rejected = runEvents(config, {withGrace(hold(18, Grip::Sticky), 10'000)},
-                                         {press(kAnchor, 1), release(1'400'000, 1),
-                                          press(1'405'000, 2)});
+    const Result c11Max = runEvents(
+        maxConfig, {maximum},
+        {press(kAnchor, 1), release(1'400'000, 1), press(1'519'999, 2), release(kEnd + 10'000, 2)});
+    const Result c11Rejected =
+        runEvents(config, {withGrace(hold(18, Grip::Sticky), 10'000)},
+                  {press(kAnchor, 1), release(1'400'000, 1), press(1'405'000, 2)});
     const bool c11Ok = countOutcome(c11Zero, Outcome::Break) == 1 && c11Zero.strays == 1 &&
                        countOutcome(c11Max, Outcome::Break) == 0 &&
                        countOutcome(c11Max, Outcome::BodyHit) == 1 && c11Max.strays == 0 &&
@@ -320,25 +352,26 @@ void reportPreparedGraceMatrix() {
     if (!c11Ok) {
         ++failures;
     }
-    std::printf("| C11 zero/min/max grace | zero rejects same-tick recovery; max accepts 119,999 us; invalid sticky override rejects | zero=%s; max=%s; rejected=%s | %s |\n",
-                describe(c11Zero).c_str(), describe(c11Max).c_str(), c11Rejected.prepareRejected ? "yes" : "no",
-                c11Ok ? "passed" : "FAILED");
+    std::printf("| C11 zero/min/max grace | zero rejects same-tick recovery; max accepts 119,999 "
+                "us; invalid sticky override rejects | zero=%s; max=%s; rejected=%s | %s |\n",
+                describe(c11Zero).c_str(), describe(c11Max).c_str(),
+                c11Rejected.prepareRejected ? "yes" : "no", c11Ok ? "passed" : "FAILED");
 
     // C12: source is content metadata, while effective value + policy define judgement identity.
-    const Result inherited = runEvents(config, {hold(14)},
-                                       {press(kAnchor, 1), release(1'400'000, 1),
-                                        press(1'450'000, 2), release(kEnd + 10'000, 2)});
-    const Result explicitSame = runEvents(config, {withGrace(hold(14), kGrace)},
-                                          {press(kAnchor, 1), release(1'400'000, 1),
-                                           press(1'450'000, 2), release(kEnd + 10'000, 2)});
-    const Result explicitDifferent = runEvents(config, {withGrace(hold(14), 80'000)},
-                                                {press(kAnchor, 1), release(1'400'000, 1),
-                                                 press(1'450'000, 2), release(kEnd + 10'000, 2)});
+    const Result inherited = runEvents(
+        config, {hold(14)},
+        {press(kAnchor, 1), release(1'400'000, 1), press(1'450'000, 2), release(kEnd + 10'000, 2)});
+    const Result explicitSame = runEvents(
+        config, {withGrace(hold(14), kGrace)},
+        {press(kAnchor, 1), release(1'400'000, 1), press(1'450'000, 2), release(kEnd + 10'000, 2)});
+    const Result explicitDifferent = runEvents(
+        config, {withGrace(hold(14), 80'000)},
+        {press(kAnchor, 1), release(1'400'000, 1), press(1'450'000, 2), release(kEnd + 10'000, 2)});
     Config policy2 = config;
     policy2.graceResolutionPolicy = 2;
-    const Result policyChanged = runEvents(policy2, {withGrace(hold(14), kGrace)},
-                                           {press(kAnchor, 1), release(1'400'000, 1),
-                                            press(1'450'000, 2), release(kEnd + 10'000, 2)});
+    const Result policyChanged = runEvents(
+        policy2, {withGrace(hold(14), kGrace)},
+        {press(kAnchor, 1), release(1'400'000, 1), press(1'450'000, 2), release(kEnd + 10'000, 2)});
     const bool c12Ok = inherited.judgementDigest == explicitSame.judgementDigest &&
                        inherited.contentDigest != explicitSame.contentDigest &&
                        inherited.judgementDigest != explicitDifferent.judgementDigest &&
@@ -346,11 +379,15 @@ void reportPreparedGraceMatrix() {
     if (!c12Ok) {
         ++failures;
     }
-    std::printf("| C12 identity policy/source | same effective value shares judgement identity; source/policy remain distinguishable | jd=%s/%s/%s/%s | %s |\n",
+    std::printf("| C12 identity policy/source | same effective value shares judgement identity; "
+                "source/policy remain distinguishable | jd=%s/%s/%s/%s | %s |\n",
                 inherited.judgementDigest == explicitSame.judgementDigest ? "same" : "DIFF",
-                inherited.contentDigest != explicitSame.contentDigest ? "content-diff" : "content-SAME",
-                inherited.judgementDigest != explicitDifferent.judgementDigest ? "value-diff" : "value-SAME",
-                explicitSame.judgementDigest != policyChanged.judgementDigest ? "policy-diff" : "policy-SAME",
+                inherited.contentDigest != explicitSame.contentDigest ? "content-diff"
+                                                                      : "content-SAME",
+                inherited.judgementDigest != explicitDifferent.judgementDigest ? "value-diff"
+                                                                               : "value-SAME",
+                explicitSame.judgementDigest != policyChanged.judgementDigest ? "policy-diff"
+                                                                              : "policy-SAME",
                 c12Ok ? "passed" : "FAILED");
 
     // C13: a late Hook update cannot rewrite the prepared value.
@@ -367,7 +404,8 @@ void reportPreparedGraceMatrix() {
     if (!c13Ok) {
         ++failures;
     }
-    std::printf("| C13 post-prepare Hook change | inherited 60 ms remains frozen after Hook becomes 0 | %s | %s |\n",
+    std::printf("| C13 post-prepare Hook change | inherited 60 ms remains frozen after Hook "
+                "becomes 0 | %s | %s |\n",
                 describe(c13).c_str(), c13Ok ? "passed" : "FAILED");
 
     // C14: Slider hard deadline uses max(tail late window, prepared grace).
@@ -382,16 +420,16 @@ void reportPreparedGraceMatrix() {
     c14Session.finish();
     const Result c14 = c14Session.result();
     const Tick expectedDeadline = kEnd + 60'000;
-    const bool c14Ok = !c14BeforeDeadline.prepareRejected &&
-                       item(c14BeforeDeadline).stage == Stage::Gap &&
-                       !item(c14BeforeDeadline).breakEmitted &&
-                       item(c14BeforeDeadline).deadline == expectedDeadline &&
-                       countOutcome(c14, Outcome::BodyHit) == 1 &&
-                       countOutcome(c14, Outcome::Break) == 0;
+    const bool c14Ok =
+        !c14BeforeDeadline.prepareRejected && item(c14BeforeDeadline).stage == Stage::Gap &&
+        !item(c14BeforeDeadline).breakEmitted &&
+        item(c14BeforeDeadline).deadline == expectedDeadline &&
+        countOutcome(c14, Outcome::BodyHit) == 1 && countOutcome(c14, Outcome::Break) == 0;
     if (!c14Ok) {
         ++failures;
     }
-    std::printf("| C14 Slider deadline | deadline=max(20 ms, 60 ms) and no early break | before=%s; final=%s; deadline=%lld | %s |\n",
+    std::printf("| C14 Slider deadline | deadline=max(20 ms, 60 ms) and no early break | "
+                "before=%s; final=%s; deadline=%lld | %s |\n",
                 stageLabel(item(c14BeforeDeadline).stage), describe(c14).c_str(),
                 static_cast<long long>(item(c14).deadline), c14Ok ? "passed" : "FAILED");
 }
@@ -439,8 +477,8 @@ std::vector<Event> representativeEvents(const std::vector<Requirement>& requirem
         if (req.kind == Kind::Slider) {
             const Tick step = (req.end - req.anchor) / static_cast<Tick>(req.segments);
             for (std::uint32_t segment = 1; segment <= req.segments; ++segment) {
-                events.push_back(move(req.anchor + step * static_cast<Tick>(segment), firstContact,
-                                      segment));
+                events.push_back(
+                    move(req.anchor + step * static_cast<Tick>(segment), firstContact, segment));
             }
             const Tick releaseAt = req.end - 80'000;
             events.push_back(release(releaseAt, firstContact, req.lane));
@@ -454,9 +492,8 @@ std::vector<Event> representativeEvents(const std::vector<Requirement>& requirem
             events.push_back(release(req.end + 10'000, firstContact + 1u, req.lane));
         }
     }
-    std::stable_sort(events.begin(), events.end(), [](const Event& a, const Event& b) {
-        return a.t < b.t;
-    });
+    std::stable_sort(events.begin(), events.end(),
+                     [](const Event& a, const Event& b) { return a.t < b.t; });
     return events;
 }
 
@@ -510,10 +547,9 @@ SliceMeasurement measureRepresentativeSlice() {
     gaps.reserve(requirements.size());
     for (const Requirement& req : requirements) {
         const Tick effectiveGrace = req.explicitGrace ? req.graceUs : config.holdGraceUs;
-        const Tick deadline = req.end +
-                              (req.kind == Kind::Slider
-                                   ? std::max(config.sliderLateUs, effectiveGrace)
-                                   : effectiveGrace);
+        const Tick deadline =
+            req.end + (req.kind == Kind::Slider ? std::max(config.sliderLateUs, effectiveGrace)
+                                                : effectiveGrace);
         activity.emplace_back(req.anchor - config.goodUs, deadline);
         const Tick releaseAt = req.kind == Kind::Slider ? req.end - 80'000 : req.anchor + 200'000;
         gaps.emplace_back(releaseAt, releaseAt + effectiveGrace);
@@ -538,9 +574,9 @@ SliceMeasurement measureRepresentativeSlice() {
             seeker.apply(events[i]);
         }
         seeker.finish();
-        seekMs.push_back(std::chrono::duration<double, std::milli>(
-                             std::chrono::steady_clock::now() - start)
-                             .count());
+        seekMs.push_back(
+            std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start)
+                .count());
         if (seeker.result().judgementDigest != baselineSession.result().judgementDigest ||
             seeker.result().digest != baselineSession.result().digest) {
             lossless = false;
@@ -568,19 +604,22 @@ void reportRepresentativeSlice() {
     }
     std::printf("\n### Representative research slice\n\n");
     std::printf("This is a deterministic research slice, not a production chart fixture.\n\n");
-    std::printf("| requirements | input events | activity peak | Gap timer peak | max snapshot bytes | seek p95 ms | seek max ms | lossless | status |\n");
+    std::printf("| requirements | input events | activity peak | Gap timer peak | max snapshot "
+                "bytes | seek p95 ms | seek max ms | lossless | status |\n");
     std::printf("| ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |\n");
     std::printf("| %zu | %zu | %zu | %zu | %zu | %.3f | %.3f | %s | %s |\n",
                 measurement.requirements, measurement.events, measurement.activityPeak,
                 measurement.gapTimerPeak, measurement.maxSnapshotBytes, measurement.seekP95Ms,
-                measurement.seekMaxMs, measurement.lossless ? "yes" : "NO", ok ? "passed" : "FAILED");
+                measurement.seekMaxMs, measurement.lossless ? "yes" : "NO",
+                ok ? "passed" : "FAILED");
 }
 
 } // namespace
 
 void reportContinuity() {
     std::printf("## I. Continuity grace: Hold and Slider\n\n");
-    std::printf("Research-only minimum implementation: handoff reuses Gap + holdGrace; Slider keeps seg and head fact.\n\n");
+    std::printf("Research-only minimum implementation: handoff reuses Gap + holdGrace; Slider "
+                "keeps seg and head fact.\n\n");
     reportDirected();
     reportStress();
     reportPreparedGraceMatrix();

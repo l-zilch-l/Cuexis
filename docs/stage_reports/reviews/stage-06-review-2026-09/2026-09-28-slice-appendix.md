@@ -474,6 +474,10 @@ Config/Targets/Version，`CMakeLists.txt:610-626`）。
 - Duplicated Code / Shotgun Surgery：阶段状态与结论在 `CURRENT_STATUS.md:21-39`、`AGENTS.md:10-78`、
   `stage_plans/README.md:57-91`、`ROADMAP.md:30-56` 各抄一份；一次关闭迫使四处同步——
   正是上述 active/日期残留的根因；与 policy「摘要不得复制…当前阶段结论」有张力。
+**2026-10-03 追注**：本行的行号是 2026-09-28 的测量值。``CURRENT_STATUS.md`` 已于 2026-10-03 精简
+（336 行 → 135 行）：阶段状态表现为 **L21-32**，其后新增"已完成阶段的冻结事实"小节；上列的重复来源与
+Shotgun Surgery 判断不变，但引用请按**章节**而不是行号读取。
+
 - Mysterious Name：`completion.md:46` 状态格「报告已形成；owner 接受未记录」混合报告状态与接受状态。
 
 未发现历史报告被改写为新的测试结果。

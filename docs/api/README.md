@@ -27,6 +27,7 @@
 | 处理错误、diagnostics、identity 和兼容性 | [诊断、身份与兼容性](diagnostics-identity-and-compatibility.md) |
 | 判断实现应落在哪个内部模块 | [内部模块速查](internal-module-catalog.md) |
 | 设计 Gameplay Judgement typed preview 边界 | [Gameplay Judgement ABI（候选）](GAMEPLAY_JUDGEMENT_ABI.md) |
+| 设计 Gameplay V2 typed preview 边界 | [Gameplay V2 ABI（候选）](GAMEPLAY_V2_ABI.md)（语义权威在 [Gameplay V2 Spec](../formats/GAMEPLAY_V2_SPEC.md)，决策在 [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md)） |
 
 ## 公共边界
 

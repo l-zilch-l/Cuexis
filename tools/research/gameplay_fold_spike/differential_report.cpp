@@ -47,8 +47,10 @@ void randomLine(const char* name, const spike::diff::Spec spec, int trials, int 
 
 void reportDifferential() {
     using namespace spike::diff;
-    std::printf("Symbols: 0=press 1=release 2=held 3=not-held 4=idle. The reference predicate is\n");
-    std::printf("written from the entry's stated rule; the compiled side is the Pattern the IR draft\n");
+    std::printf(
+        "Symbols: 0=press 1=release 2=held 3=not-held 4=idle. The reference predicate is\n");
+    std::printf(
+        "written from the entry's stated rule; the compiled side is the Pattern the IR draft\n");
     std::printf("gives. Disagreement at any trace length means one of the two is wrong.\n\n");
     std::printf("| entry | trace length | traces | verdict |\n| --- | --- | --- | --- |\n");
     line("Tap, window 3", Spec{Entry::Tap, 3, 0, 0}, 5);
@@ -60,7 +62,8 @@ void reportDifferential() {
     line("Roll, 2 presses", Spec{Entry::Roll, 0, 0, 2}, 5);
     line("Roll, 3 presses", Spec{Entry::Roll, 0, 0, 3}, 5);
 
-    std::printf("\nRandomised long traces, 200,000 per entry. This is a probabilistic argument, not a\n");
+    std::printf(
+        "\nRandomised long traces, 200,000 per entry. This is a probabilistic argument, not a\n");
     std::printf("proof: an exhaustive check is exponential in trace length.\n\n");
     std::printf("| entry | max length | traces | verdict |\n| --- | --- | --- | --- |\n");
     randomLine("Tap, window 40", Spec{Entry::Tap, 40, 0, 0}, 200'000, 400, 11);

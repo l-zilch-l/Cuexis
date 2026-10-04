@@ -2,7 +2,7 @@
 
 状态：现行格式索引
 
-更新日期：2026-10-01
+更新日期：2026-10-04
 
 ## Artifact 分层
 
@@ -38,6 +38,7 @@ Compiled Runtime
 | Chart v4 | [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md) | accepted and implemented; C1–C4, CFU-D/E/F/G gates closed; Stage 4 animation runtime closed |
 | Chart v5 | [Chart v5 工作包](../stage_plans/active/chart-format-update-for-v5/plan.md) | candidate；Foundation 先交 Core，Stage 6 candidate 消费，Stage 8 正式发行；40k/16 MiB 为关闭门禁 |
 | Packed Chart v1 | [PACKED_CHART_FORMAT.md](PACKED_CHART_FORMAT.md) | candidate；Header/目录、字典/身份、Archetype 与实体差异流、无损 Beat；未实现 |
+| Gameplay Capsule v2 | [GAMEPLAY_CAPSULE_V2_FORMAT.md](GAMEPLAY_CAPSULE_V2_FORMAT.md) | candidate；S7A-3 首次 Packed 消费物理合同唯一权威，设计已于 2026-10-04 闭合；Reader/Writer 与 E1 实现验收未完成；revision 1 不变 |
 | CXC v1 | [CXC_FORMAT.md](CXC_FORMAT.md) | accepted and implemented internally; archive/tools and Playback source/prepare/identity gates closed; no public CXC package API |
 | CXT v1 | [CXT_FORMAT.md](CXT_FORMAT.md) | accepted contract; Reader/Writer/lowering and prepare import/lookup implemented; CFU-F and G4 hosted gates closed; Stage 4 animation execution closed |
 | CXT v2 | [CXT_V2_FORMAT.md](CXT_V2_FORMAT.md) | candidate；Foundation F2 integer/beat reader/expander 已实现；Animation Extension 在 Stage 8 收敛；非生产 Schema，未接入默认 Playback |
@@ -50,6 +51,7 @@ Compiled Runtime
 | Stage 6 chart entry extension v1 | [CHART_ENTRY_V1_FORMAT.md](CHART_ENTRY_V1_FORMAT.md) | candidate contract recorded by A2; explicit Playback entry implementation not yet present |
 | Stage 6 configuration and media contract | [STAGE6_CONFIG_AND_MEDIA.md](STAGE6_CONFIG_AND_MEDIA.md) | candidate contract recorded by A2; Player support/media importer not yet present |
 | Gameplay Judgement | [GAMEPLAY_JUDGEMENT_SPEC.md](GAMEPLAY_JUDGEMENT_SPEC.md) | candidate；I 收敛工作稿，未实施，待 ADR 0043 owner acceptance |
+| Gameplay V2 | [GAMEPLAY_V2_SPEC.md](GAMEPLAY_V2_SPEC.md) | candidate；Stage 7A 的 V2 字段与运行语义唯一权威 Spec；分批设计与部分实现不等于整批验收，现状只见 [CURRENT_STATUS](../CURRENT_STATUS.md)；与 [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md)、[Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md) 协同 |
 
 ADR 记录选择理由，格式文档记录字段和语义。手写 v4 谱面可先阅读
 [Chart v4 谱面编写指南](../guides/CHART_V4_AUTHORING.md)。CXC 不重新定义 Chart/CXT；CXT 不重新定义

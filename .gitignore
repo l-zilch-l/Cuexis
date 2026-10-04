@@ -18,5 +18,10 @@ CMakeUserPresets.json
 # Agent/tooling scratch space, never repository content.
 /.workbuddy/
 
+# DSH project-scoped skills. The ai-link bridge writes its ask-codex skill here,
+# and the rendered file hard-codes one machine's install path, so it is not
+# repository content. Each developer installs their own copy.
+/.dsh/
+
 # Compiler object files (MSVC .obj pick up the same name on every platform).
 *.obj

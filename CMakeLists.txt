@@ -128,6 +128,8 @@ set(CUEXIS_ACTIVE_TARGETS
     cuexis_cxc
     cuexis_behavior
     cuexis_gameplay
+    cuexis_judgement
+    cuexis_gameplay_packed
     cuexis_render
     cuexis_debug
     cuexis_runtime
@@ -189,6 +191,8 @@ if(CUEXIS_BUILD_TESTS)
         cuexis_cxc_tests
         cuexis_behavior_tests
         cuexis_gameplay_tests
+        cuexis_judgement_tests
+        cuexis_gameplay_packed_tests
         cuexis_debug_tests
         cuexis_render_tests
         cuexis_presentation_renderer_tests
@@ -235,6 +239,20 @@ if(CUEXIS_BUILD_TESTS)
         COMMAND "${CMAKE_COMMAND}"
             "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
             -P "${PROJECT_SOURCE_DIR}/cmake/VerifyArchitecture.cmake"
+    )
+    #  Round-6 diagnostic gate (CM-D04 / P1-09): the Gameplay V2 diagnostic code table must
+    #  be registered centrally and validate before any code string may enter a public header.
+    #  Script mode only, so it adds no cuexis_* target.
+    add_test(
+        NAME cuexis_gameplay_diagnostics_codes
+        COMMAND "${CMAKE_COMMAND}"
+            "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+            "-DCUEXIS_DIAGNOSTIC_CODES_FILE=${PROJECT_SOURCE_DIR}/schemas/cuexis.gameplay-diagnostics.v2.codes.json"
+            -P "${PROJECT_SOURCE_DIR}/cmake/VerifyGameplayDiagnosticsCodes.cmake"
+    )
+    set_tests_properties(cuexis_gameplay_diagnostics_codes PROPERTIES
+        LABELS "gameplay;judgement;diagnostics;schemas"
+        TIMEOUT 60
     )
     if(CUEXIS_BUILD_DEVELOPER_TOOLS)
         add_test(
@@ -594,6 +612,7 @@ set(CUEXIS_STATIC_IMPLEMENTATION_TARGETS
     cuexis_cxc
     cuexis_behavior
     cuexis_gameplay
+    cuexis_judgement
     cuexis_render
     cuexis_runtime
 )
@@ -797,6 +816,17 @@ cuexis_verify_target_dependencies(cuexis_gameplay
     ALLOWED
         cuexis::core
 )
+cuexis_verify_target_dependencies(cuexis_judgement
+    ALLOWED
+        cuexis::core
+)
+cuexis_verify_target_dependencies(cuexis_gameplay_packed
+    ALLOWED
+        cuexis::chart
+        cuexis::judgement
+        cuexis::filesystem
+        cuexis::core
+)
 cuexis_verify_target_dependencies(cuexis_render
     ALLOWED
         cuexis::assets
@@ -959,6 +989,14 @@ if(TARGET cuexis_asset_publish_tests)
             Catch2::Catch2WithMain
     )
 endif()
+if(TARGET cuexis_media_import_tests)
+    cuexis_verify_target_dependencies(cuexis_media_import_tests
+        ALLOWED
+            cuexis::core
+            cuexis::media_import
+            Catch2::Catch2WithMain
+    )
+endif()
 
 if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_core_tests
@@ -1054,6 +1092,16 @@ if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_gameplay_tests
         ALLOWED
             cuexis::gameplay
+            Catch2::Catch2WithMain
+    )
+    cuexis_verify_target_dependencies(cuexis_judgement_tests
+        ALLOWED
+            cuexis::judgement
+            Catch2::Catch2WithMain
+    )
+    cuexis_verify_target_dependencies(cuexis_gameplay_packed_tests
+        ALLOWED
+            cuexis::gameplay_packed
             Catch2::Catch2WithMain
     )
     cuexis_verify_target_dependencies(cuexis_debug_tests
