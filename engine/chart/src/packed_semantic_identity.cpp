@@ -534,7 +534,11 @@ static auto semanticPreimageImpl(const CanonicalSemanticChart& chart, bool gamep
                 fail("packed.requirements.component",
                      "Gameplay owners must name existing entity identities"));
         }
-        ownerKeys.insert(*key);
+        if (!ownerKeys.insert(*key).second) {
+            return core::unexpected(
+                fail("packed.requirements.owner_duplicate",
+                     "Gameplay owner identities must be unique"));
+        }
     }
 
     // The wire stores parents as entity ordinals and rejects self-parents and cycles, so the

@@ -63,11 +63,11 @@ TEST_CASE("S7A-3 Pattern value lifecycle is independent of declaration depth",
     CHECK(assigned == copy);
     assigned = std::move(root);
     CHECK_FALSE(assigned == copy);
-    auto selfCopy = [&assigned] { assigned = assigned; };
-    selfCopy();
+    auto selfCopy = [](auto& target, const auto& source) { target = source; };
+    selfCopy(assigned, assigned);
     CHECK_FALSE(assigned == copy);
-    auto selfMove = [&assigned] { assigned = std::move(assigned); };
-    selfMove();
+    auto selfMove = [](auto& target, auto&& source) { target = std::move(source); };
+    selfMove(assigned, std::move(assigned));
     CHECK_FALSE(assigned == copy);
     std::vector<PatternNodeDeclaration> forest;
     forest.push_back(assigned);
