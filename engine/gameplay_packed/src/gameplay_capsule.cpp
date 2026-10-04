@@ -920,7 +920,9 @@ auto makeModel(const EncodeRequest& request, chart::PackedChartLimits limits) ->
         const auto owner = std::find_if(request.owners.begin(), request.owners.end(), [&r](const auto& o) { return o.requirement == r.identity; });
         RequirementIndices ix;
         ix.entity = findIndex(m.entities, [&owner](const auto& e) { return e == owner->entity; }, "requirements.entity");
-        m.owners.push_back(owner->entity);
+        if (std::find(m.owners.begin(), m.owners.end(), owner->entity) == m.owners.end()) {
+            m.owners.push_back(owner->entity);
+        }
         ix.pattern = findIndex(m.patterns, [&r](const auto& p) { return p == r.pattern; }, "requirements.pattern");
         ix.measure = findIndex(m.measures, [&r, &m](const auto& w) { return w.id == namedMeasure(r, m) && w.declaration == r.measure; }, "requirements.measure");
         ix.domain = findIndex(m.graph.judgementDomains, [&r](const auto& d) { return d.domainId == r.judgementDomainId; }, "requirements.domain");
@@ -1070,7 +1072,10 @@ void link(Model& m, const std::vector<std::uint64_t>& masks) {
         require(ix.entity < m.entities.size() && ix.pattern < m.patterns.size() &&
                 ix.measure < m.measures.size() && ix.domain < g.judgementDomains.size() &&
                 ix.solver < g.solverProfiles.size(), "GPR0.indices", "dangling table index");
-        presence[ix.entity] = true; m.owners.push_back(m.entities[ix.entity]);
+        presence[ix.entity] = true;
+        if (std::find(m.owners.begin(), m.owners.end(), m.entities[ix.entity]) == m.owners.end()) {
+            m.owners.push_back(m.entities[ix.entity]);
+        }
         r.pattern = m.patterns[ix.pattern]; r.measure = m.measures[ix.measure].declaration;
         r.judgementDomainId = g.judgementDomains[ix.domain].domainId;
         r.solverProfileRef = g.solverProfiles[ix.solver].solverId;
