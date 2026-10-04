@@ -53,6 +53,7 @@ jobs:
       - name: Bootstrap pinned vcpkg
         shell: pwsh
         run: |
+          New-Item -ItemType Directory -Force "$env:RUNNER_TEMP\vcpkg-binary-cache" | Out-Null
           .\.vcpkg\bootstrap-vcpkg.bat -disableMetrics
           "VCPKG_ROOT=$env:GITHUB_WORKSPACE\.vcpkg" >> $env:GITHUB_ENV
           "VCPKG_DEFAULT_BINARY_CACHE=$env:RUNNER_TEMP\vcpkg-binary-cache" >> $env:GITHUB_ENV
