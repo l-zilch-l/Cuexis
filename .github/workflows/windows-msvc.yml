@@ -1,5 +1,9 @@
 name: Windows MSVC
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+
 on:
   push:
     branches:
@@ -35,6 +39,14 @@ jobs:
           ref: ${{ env.VCPKG_COMMIT }}
           path: .vcpkg
 
+      - name: Cache vcpkg binary packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}\vcpkg-binary-cache
+          key: vcpkg-windows-x64-${{ env.VCPKG_COMMIT }}-${{ hashFiles('vcpkg.json', 'vcpkg-overlays/**') }}
+          restore-keys: |
+            vcpkg-windows-x64-${{ env.VCPKG_COMMIT }}-
+
       - name: Set up MSVC
         uses: ilammy/msvc-dev-cmd@v1
 
@@ -43,6 +55,7 @@ jobs:
         run: |
           .\.vcpkg\bootstrap-vcpkg.bat -disableMetrics
           "VCPKG_ROOT=$env:GITHUB_WORKSPACE\.vcpkg" >> $env:GITHUB_ENV
+          "VCPKG_DEFAULT_BINARY_CACHE=$env:RUNNER_TEMP\vcpkg-binary-cache" >> $env:GITHUB_ENV
 
       - name: Configure
         run: >-
@@ -56,6 +69,7 @@ jobs:
         run: ctest --preset ${{ matrix.preset }} --no-tests=error
 
       - name: Build and test optional media tools
+        if: matrix.preset == 'debug'
         run: |
           cmake --preset debug-media-tools --fresh
           cmake --build --preset debug-media-tools

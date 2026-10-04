@@ -1,5 +1,9 @@
 name: Linux Quality
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+
 on:
   push:
     branches:
@@ -88,6 +92,14 @@ jobs:
           ref: ${{ env.VCPKG_COMMIT }}
           path: .vcpkg
 
+      - name: Cache vcpkg binary packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/vcpkg-binary-cache
+          key: vcpkg-linux-x64-${{ env.VCPKG_COMMIT }}-${{ hashFiles('vcpkg.json', 'vcpkg-overlays/**') }}
+          restore-keys: |
+            vcpkg-linux-x64-${{ env.VCPKG_COMMIT }}-
+
       - name: Install build tools
         run: >-
           sudo apt-get update && sudo apt-get install -y
@@ -98,6 +110,7 @@ jobs:
         run: |
           ./.vcpkg/bootstrap-vcpkg.sh -disableMetrics
           printf 'VCPKG_ROOT=%s/.vcpkg\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+          printf 'VCPKG_DEFAULT_BINARY_CACHE=%s/vcpkg-binary-cache\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
 
       - name: Configure
         run: >-
@@ -332,6 +345,14 @@ jobs:
           ref: ${{ env.VCPKG_COMMIT }}
           path: .vcpkg
 
+      - name: Cache vcpkg binary packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/vcpkg-binary-cache
+          key: vcpkg-linux-x64-coverage-${{ env.VCPKG_COMMIT }}-${{ hashFiles('vcpkg.json', 'vcpkg-overlays/**') }}
+          restore-keys: |
+            vcpkg-linux-x64-coverage-${{ env.VCPKG_COMMIT }}-
+
       - name: Install build tools
         run: sudo apt-get update && sudo apt-get install -y ninja-build gcovr
 
@@ -339,6 +360,7 @@ jobs:
         run: |
           ./.vcpkg/bootstrap-vcpkg.sh -disableMetrics
           printf 'VCPKG_ROOT=%s/.vcpkg\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+          printf 'VCPKG_DEFAULT_BINARY_CACHE=%s/vcpkg-binary-cache\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
 
       - name: Configure
         run: >-
@@ -467,6 +489,14 @@ jobs:
           ref: ${{ env.VCPKG_COMMIT }}
           path: .vcpkg
 
+      - name: Cache vcpkg binary packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/vcpkg-binary-cache
+          key: vcpkg-linux-x64-adapter-coverage-${{ env.VCPKG_COMMIT }}-${{ hashFiles('vcpkg.json', 'vcpkg-overlays/**') }}
+          restore-keys: |
+            vcpkg-linux-x64-adapter-coverage-${{ env.VCPKG_COMMIT }}-
+
       - name: Install build tools
         run: >-
           sudo apt-get update && sudo apt-get install -y
@@ -476,6 +506,7 @@ jobs:
         run: |
           ./.vcpkg/bootstrap-vcpkg.sh -disableMetrics
           printf 'VCPKG_ROOT=%s/.vcpkg\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+          printf 'VCPKG_DEFAULT_BINARY_CACHE=%s/vcpkg-binary-cache\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
 
       - name: Configure
         run: >-
@@ -568,6 +599,14 @@ jobs:
           ref: ${{ env.VCPKG_COMMIT }}
           path: .vcpkg
 
+      - name: Cache vcpkg binary packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/vcpkg-binary-cache
+          key: vcpkg-linux-x64-shader-tools-${{ env.VCPKG_COMMIT }}-${{ hashFiles('vcpkg.json', 'vcpkg-overlays/**') }}
+          restore-keys: |
+            vcpkg-linux-x64-shader-tools-${{ env.VCPKG_COMMIT }}-
+
       - name: Install build tools
         run: sudo apt-get update && sudo apt-get install -y ninja-build gcovr
 
@@ -575,6 +614,7 @@ jobs:
         run: |
           ./.vcpkg/bootstrap-vcpkg.sh -disableMetrics
           printf 'VCPKG_ROOT=%s/.vcpkg\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+          printf 'VCPKG_DEFAULT_BINARY_CACHE=%s/vcpkg-binary-cache\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
 
       - name: Configure
         run: >-
