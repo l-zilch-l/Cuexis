@@ -98,9 +98,11 @@ void expectRejection(const cuexis::core::Error& error, std::string_view code,
 
 [[nodiscard]] auto repeatNode(PatternNodeDeclaration operand, std::uint64_t minimum,
                               std::uint64_t maximum) -> PatternNodeDeclaration {
-    return PatternNodeDeclaration{
-        PatternPrimitive::boundedRepeat, {std::move(operand)}, {},
-        RepeatBoundsDeclaration{.minimum = minimum, .maximum = maximum}, {}};
+    return PatternNodeDeclaration{PatternPrimitive::boundedRepeat,
+                                  {std::move(operand)},
+                                  {},
+                                  RepeatBoundsDeclaration{.minimum = minimum, .maximum = maximum},
+                                  {}};
 }
 
 [[nodiscard]] auto declarationOf(PatternNodeDeclaration root) -> PatternDeclaration {

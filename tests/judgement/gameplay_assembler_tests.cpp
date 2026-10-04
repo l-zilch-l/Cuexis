@@ -618,14 +618,13 @@ TEST_CASE("S7A-3 closure contributions are diffed and identified but not complet
 //  change at exactly one place of the declaration tree.
 [[nodiscard]] auto deepPatternChain(std::size_t depth, std::string atomRef)
     -> judgement::PatternNodeDeclaration {
-    judgement::PatternNodeDeclaration chain{judgement::PatternPrimitive::atom, {},
-                                            std::move(atomRef), {}, {}};
+    judgement::PatternNodeDeclaration chain{
+        judgement::PatternPrimitive::atom, {}, std::move(atomRef), {}, {}};
     for (std::size_t level = 1U; level < depth; ++level) {
-        judgement::PatternNodeDeclaration step{judgement::PatternPrimitive::atom, {},
-                                               "atom.step", {}, {}};
-        chain =
-            judgement::PatternNodeDeclaration{judgement::PatternPrimitive::sequence,
-                                              {std::move(chain), std::move(step)}, {}, {}, {}};
+        judgement::PatternNodeDeclaration step{
+            judgement::PatternPrimitive::atom, {}, "atom.step", {}, {}};
+        chain = judgement::PatternNodeDeclaration{
+            judgement::PatternPrimitive::sequence, {std::move(chain), std::move(step)}, {}, {}, {}};
     }
     return chain;
 }
@@ -856,22 +855,20 @@ TEST_CASE("S7A-3 prepared grace and resource plan resolve atomically",
     CHECK_FALSE(claims->hasObserveOnlyCandidates());
 }
 
-TEST_CASE("S7A-3 grace source selection is explicit and half-even",
-          "[judgement][s7a-3][grace]") {
+TEST_CASE("S7A-3 grace source selection is explicit and half-even", "[judgement][s7a-3][grace]") {
     const auto half = testing::makeDuration(1, 2);
     const auto one = testing::makeDuration(1, 1);
     judgement::GraceDeclaration inherited{
         .policy = judgement::GraceResolutionPolicy::inheritedDeclaration,
         .inheritedFromDeclarationId = "grace.source",
         .allowChartGrace = false};
-    judgement::GraceResolutionInputs inputs{
-        .unitInTicks = one,
-        .minimumCanonical = 0,
-        .maximumCanonical = 8,
-        .chartDuration = std::nullopt,
-        .inheritedDuration = half,
-        .defaultDuration = std::nullopt,
-        .candidate = std::nullopt};
+    judgement::GraceResolutionInputs inputs{.unitInTicks = one,
+                                            .minimumCanonical = 0,
+                                            .maximumCanonical = 8,
+                                            .chartDuration = std::nullopt,
+                                            .inheritedDuration = half,
+                                            .defaultDuration = std::nullopt,
+                                            .candidate = std::nullopt};
     const auto resolved = judgement::resolvePreparedGrace(inherited, inputs);
     REQUIRE(resolved.has_value());
     CHECK(resolved->span() == judgement::TickSpan{0});
@@ -893,14 +890,15 @@ TEST_CASE("S7A-3 resource plan rejects duplicate occupying claim keys",
     const judgement::ResourceClaimResolutionInputs inputs{
         .declaredCapacity = 1U,
         .intents = {},
-        .candidates = {
-            {.intent = judgement::ResourceClaimIntent::claim,
-             .policyToken = "policy.one",
-             .claimKeyToken = "same"},
-            {.intent = judgement::ResourceClaimIntent::consume,
-             .policyToken = "policy.two",
-             .claimKeyToken = "same"},
-        },
+        .candidates =
+            {
+                {.intent = judgement::ResourceClaimIntent::claim,
+                 .policyToken = "policy.one",
+                 .claimKeyToken = "same"},
+                {.intent = judgement::ResourceClaimIntent::consume,
+                 .policyToken = "policy.two",
+                 .claimKeyToken = "same"},
+            },
         .preparedGrace = judgement::PreparedGrace{judgement::TickSpan{0}}};
     const auto result = judgement::resolveResourceClaims(inputs);
     REQUIRE_FALSE(result.has_value());
@@ -913,17 +911,16 @@ TEST_CASE("S7A-3 resource plan rejects incomplete occupying declarations",
     using Candidate = judgement::ResourceClaimResolutionInputs::Candidate;
     const auto run = [](std::vector<Candidate> candidates,
                         std::vector<judgement::ResourceClaimIntent> intents = {}) {
-        return judgement::resolveResourceClaims(
-            judgement::ResourceClaimResolutionInputs{
-                .declaredCapacity = 1U,
-                .intents = std::move(intents),
-                .candidates = std::move(candidates),
-                .preparedGrace = judgement::PreparedGrace{judgement::TickSpan{0}}});
+        return judgement::resolveResourceClaims(judgement::ResourceClaimResolutionInputs{
+            .declaredCapacity = 1U,
+            .intents = std::move(intents),
+            .candidates = std::move(candidates),
+            .preparedGrace = judgement::PreparedGrace{judgement::TickSpan{0}}});
     };
 
     SECTION("capacity above the Stage 7A subset") {
-        const auto result = judgement::resolveResourceClaims(
-            judgement::ResourceClaimResolutionInputs{
+        const auto result =
+            judgement::resolveResourceClaims(judgement::ResourceClaimResolutionInputs{
                 .declaredCapacity = 2U,
                 .intents = {},
                 .candidates = {},
@@ -934,58 +931,57 @@ TEST_CASE("S7A-3 resource plan rejects incomplete occupying declarations",
     }
     SECTION("occupying candidate without policy") {
         const auto result = run({Candidate{.intent = judgement::ResourceClaimIntent::claim,
-                                            .policyToken = {},
-                                            .claimKeyToken = "key"}});
+                                           .policyToken = {},
+                                           .claimKeyToken = "key"}});
         REQUIRE_FALSE(result);
         expectRejection(result.error(), "judgement.s7a3.declaration.structurally_incomplete",
                         "invalid_relation", "resourceClaims[0]");
     }
     SECTION("occupying candidate without stable key") {
         const auto result = run({Candidate{.intent = judgement::ResourceClaimIntent::consume,
-                                            .policyToken = "policy",
-                                            .claimKeyToken = {}}});
+                                           .policyToken = "policy",
+                                           .claimKeyToken = {}}});
         REQUIRE_FALSE(result);
         expectRejection(result.error(), "judgement.s7a3.declaration.structurally_incomplete",
                         "invalid_relation", "resourceClaims[0]");
     }
     SECTION("observe cannot carry an occupying key") {
         const auto result = run({Candidate{.intent = judgement::ResourceClaimIntent::observe,
-                                            .policyToken = "policy",
-                                            .claimKeyToken = "key"}});
+                                           .policyToken = "policy",
+                                           .claimKeyToken = "key"}});
         REQUIRE_FALSE(result);
         expectRejection(result.error(), "judgement.s7a3.resource.claim_conflict",
                         "invalid_relation", "resourceClaims");
     }
     SECTION("observe cannot carry a competition pair") {
-        const auto result = run({Candidate{
-            .intent = judgement::ResourceClaimIntent::observe,
-            .policyToken = {},
-            .claimKeyToken = {},
-            .graceOverrideMode = judgement::GraceOverrideMode::none,
-            .competition = judgement::ClaimPolicyDeclaration::CompetitionKey{0, 0}}});
+        const auto result = run(
+            {Candidate{.intent = judgement::ResourceClaimIntent::observe,
+                       .policyToken = {},
+                       .claimKeyToken = {},
+                       .graceOverrideMode = judgement::GraceOverrideMode::none,
+                       .competition = judgement::ClaimPolicyDeclaration::CompetitionKey{0, 0}}});
         REQUIRE_FALSE(result);
         expectRejection(result.error(), "judgement.s7a3.resource.claim_conflict",
                         "invalid_relation", "resourceClaims");
     }
     SECTION("legacy intent mismatch is rejected") {
-        const auto result = run(
-            {Candidate{.intent = judgement::ResourceClaimIntent::claim,
-                       .policyToken = "policy",
-                       .claimKeyToken = "key"}},
-            {judgement::ResourceClaimIntent::consume});
+        const auto result = run({Candidate{.intent = judgement::ResourceClaimIntent::claim,
+                                           .policyToken = "policy",
+                                           .claimKeyToken = "key"}},
+                                {judgement::ResourceClaimIntent::consume});
         REQUIRE_FALSE(result);
         expectRejection(result.error(), "judgement.s7a3.declaration.structurally_incomplete",
                         "invalid_relation", "resourceClaims[0]");
     }
     SECTION("unsupported grace override is rejected") {
-        const auto result = run({Candidate{.intent = judgement::ResourceClaimIntent::claim,
-                                            .policyToken = "policy",
-                                            .claimKeyToken = "key",
-                                            .graceOverrideMode =
-                                                judgement::GraceOverrideMode::sticky}});
+        const auto result =
+            run({Candidate{.intent = judgement::ResourceClaimIntent::claim,
+                           .policyToken = "policy",
+                           .claimKeyToken = "key",
+                           .graceOverrideMode = judgement::GraceOverrideMode::sticky}});
         REQUIRE_FALSE(result);
-        expectRejection(result.error(), "resource.handoff_unsupported",
-                        "capability_disabled", "resourceClaims[0].graceOverride");
+        expectRejection(result.error(), "resource.handoff_unsupported", "capability_disabled",
+                        "resourceClaims[0].graceOverride");
     }
 }
 

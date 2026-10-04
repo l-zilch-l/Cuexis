@@ -1,7 +1,7 @@
 #include <cuexis/judgement/gameplay_prepare.hpp>
 
-#include "source_codes.hpp"
 #include "claim_key_internal.hpp"
+#include "source_codes.hpp"
 
 #include <cuexis/core/error.hpp>
 
@@ -91,8 +91,7 @@ auto validateTiming(const RequirementRecord& requirement) -> core::Result<Tick> 
         return core::unexpected(invalid("requirements.timing.body",
                                         "body timing and body phase must be declared together"));
     }
-    if (timing.body && (timing.body->start >= timing.body->end ||
-                        timing.body->end > timing.end)) {
+    if (timing.body && (timing.body->start >= timing.body->end || timing.body->end > timing.end)) {
         return core::unexpected(
             invalid("requirements.timing.body",
                     "body must be nonempty and end no later than the declared end"));
@@ -102,21 +101,21 @@ auto validateTiming(const RequirementRecord& requirement) -> core::Result<Tick> 
         const auto bodyEnd = timing.body->end;
         bool hasHeadCoverage = false;
         for (const auto& window : timing.successWindows) {
-            if (window.phase.kind == PhaseKind::head &&
-                window.phase.declarationOrdinal == 1U && window.start <= bodyStart) {
+            if (window.phase.kind == PhaseKind::head && window.phase.declarationOrdinal == 1U &&
+                window.start <= bodyStart) {
                 hasHeadCoverage = true;
             }
             if (window.phase.kind == PhaseKind::tail &&
                 (window.start < bodyEnd || window.end > *deadline)) {
-                return core::unexpected(invalid(
-                    "requirements.timing.successWindows",
-                    "tail windows must begin after body completion and end by D"));
+                return core::unexpected(
+                    invalid("requirements.timing.successWindows",
+                            "tail windows must begin after body completion and end by D"));
             }
         }
         if (!hasHeadCoverage) {
-            return core::unexpected(invalid(
-                "requirements.timing.successWindows",
-                "the head window must establish coverage no later than body start"));
+            return core::unexpected(
+                invalid("requirements.timing.successWindows",
+                        "the head window must establish coverage no later than body start"));
         }
     }
     return *deadline;
@@ -128,8 +127,9 @@ auto validateSolverProfiles(const CanonicalGameplayGraph& graph) -> core::Result
             profile.objective != std::vector<std::string>{"first-eligible"} ||
             profile.tieBreak != std::vector<std::string>{"priority.asc", "tieRank.asc"} ||
             !profile.rejectIfNonUnique) {
-            return core::unexpected(invalid(
-                "solverProfiles", "the prepared solver profile is outside the closed Stage 7A subset"));
+            return core::unexpected(
+                invalid("solverProfiles",
+                        "the prepared solver profile is outside the closed Stage 7A subset"));
         }
     }
     return {};
@@ -317,18 +317,19 @@ auto prepareStorage(const GameplayPrepareRequest& request, bool resolved)
                         invalid("resourceClaims.competition",
                                 "occupying candidates require an explicit pair"));
                 }
-                const auto claimKey = claim.intent == ResourceClaimIntent::observe
-                    ? claim.claimPolicy.claimKeyToken
-                    : detail::structuralClaimKey(claim.claimPolicy.claimKeyToken,
-                                                assembled->graph.requirements[i].identity);
+                const auto claimKey =
+                    claim.intent == ResourceClaimIntent::observe
+                        ? claim.claimPolicy.claimKeyToken
+                        : detail::structuralClaimKey(claim.claimPolicy.claimKeyToken,
+                                                     assembled->graph.requirements[i].identity);
                 if (claim.intent != ResourceClaimIntent::observe &&
                     claim.claimPolicy.claimKeyToken.empty()) {
                     return core::unexpected(invalid("resourceClaims.explicitNamespace",
                                                     "an occupying namespace must be nonempty"));
                 }
-                input.candidates.push_back(
-                    {claim.intent, claim.claimPolicy.policyToken, claimKey,
-                     claim.graceOverride.mode, claim.claimPolicy.competition});
+                input.candidates.push_back({claim.intent, claim.claimPolicy.policyToken, claimKey,
+                                            claim.graceOverride.mode,
+                                            claim.claimPolicy.competition});
                 if (claim.intent == ResourceClaimIntent::observe) {
                     observeIndices.push_back(i);
                 } else {

@@ -107,7 +107,7 @@ generated headers.
 cmake --build --preset debug --target cuexis_format_check
 ```
 
-Requires `clang-format` in PATH. Uses `.clang-format` (LLVM-based, 4-space indent, 100 col limit). Files are globbed from `app/`, `engine/`, `tests/`, and `cmake/*.hpp.in`.
+Requires `clang-format` in PATH. Uses `.clang-format` (LLVM-based, 4-space indent, 100 col limit). Files are globbed recursively from `app/`, `engine/`, `tests/`, `tools/`, and `cmake/*.hpp.in`; the target exists only when `CUEXIS_BUILD_DEVELOPER_TOOLS` is on, and the glob also covers files that no CMake target compiles (for example the research spikes under `tools/research/`).
 
 ### Documentation check
 

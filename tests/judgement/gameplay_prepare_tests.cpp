@@ -168,7 +168,8 @@ TEST_CASE("S7A-3 overlapping windows on different phases retain independent mean
           "[judgement][s7a-3][prepare][t4]") {
     Fixture fixture;
     auto request = requestFor(fixture);
-    request.assembly.sources[0].document.requirements[0].timing->successWindows[1].start = Tick{100};
+    request.assembly.sources[0].document.requirements[0].timing->successWindows[1].start =
+        Tick{100};
     REQUIRE(prepareGameplay(request));
 }
 

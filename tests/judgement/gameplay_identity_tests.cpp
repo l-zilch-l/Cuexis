@@ -185,32 +185,30 @@ TEST_CASE("S7A-3 grace source policy is provenance when the effective policy is 
 
     AssemblyRequest explicitSource = fixture.request();
     explicitSource.sources.front().document.requirements.front().grace =
-        judgement::GraceDeclaration{
-            .policy = judgement::GraceResolutionPolicy::explicitDeclaration,
-            .inheritedFromDeclarationId = {},
-            .allowChartGrace = false};
+        judgement::GraceDeclaration{.policy = judgement::GraceResolutionPolicy::explicitDeclaration,
+                                    .inheritedFromDeclarationId = {},
+                                    .allowChartGrace = false};
     const AssembledGameplay fromExplicit = assembleOrFail(explicitSource);
 
     AssemblyRequest inheritedSource = explicitSource;
     inheritedSource.sources.front().document.requirements.front().grace =
-        judgement::GraceDeclaration{
-            .policy = judgement::GraceResolutionPolicy::inheritedDeclaration,
-            .inheritedFromDeclarationId = "doc.alpha#4",
-            .allowChartGrace = false};
+        judgement::GraceDeclaration{.policy =
+                                        judgement::GraceResolutionPolicy::inheritedDeclaration,
+                                    .inheritedFromDeclarationId = "doc.alpha#4",
+                                    .allowChartGrace = false};
     const AssembledGameplay fromInherited = assembleOrFail(inheritedSource);
 
     AssemblyRequest defaultSource = explicitSource;
     defaultSource.sources.front().document.requirements.front().grace =
-        judgement::GraceDeclaration{
-            .policy = judgement::GraceResolutionPolicy::defaultDeclaration,
-            .inheritedFromDeclarationId = {},
-            .allowChartGrace = false};
+        judgement::GraceDeclaration{.policy = judgement::GraceResolutionPolicy::defaultDeclaration,
+                                    .inheritedFromDeclarationId = {},
+                                    .allowChartGrace = false};
     const AssembledGameplay fromDefault = assembleOrFail(defaultSource);
 
     CHECK(sameBytes(fromExplicit.chart.canonicalBytes(), fromInherited.chart.canonicalBytes()));
     CHECK(sameBytes(fromExplicit.chart.canonicalBytes(), fromDefault.chart.canonicalBytes()));
-    CHECK(sameBytes(fromExplicit.prepared.canonicalBytes(),
-                    fromInherited.prepared.canonicalBytes()));
+    CHECK(
+        sameBytes(fromExplicit.prepared.canonicalBytes(), fromInherited.prepared.canonicalBytes()));
     CHECK(sameBytes(fromExplicit.prepared.canonicalBytes(), fromDefault.prepared.canonicalBytes()));
     CHECK_FALSE(
         sameBytes(fromExplicit.content.canonicalBytes(), fromInherited.content.canonicalBytes()));

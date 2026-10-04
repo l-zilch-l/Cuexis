@@ -137,13 +137,10 @@ auto operator==(const RequirementRecord& left, const RequirementRecord& right) -
     return left.stableId == right.stableId && left.identity == right.identity &&
            left.requiredActions == right.requiredActions &&
            left.domainBinding == right.domainBinding &&
-           left.judgementDomainId == right.judgementDomainId &&
-           left.phases == right.phases &&
+           left.judgementDomainId == right.judgementDomainId && left.phases == right.phases &&
            left.requiresReleaseTailSemantics == right.requiresReleaseTailSemantics &&
-           left.pattern == right.pattern &&
-           left.maxArmElements == right.maxArmElements &&
-           left.maxDeadlineElements == right.maxDeadlineElements &&
-           left.measure == right.measure &&
+           left.pattern == right.pattern && left.maxArmElements == right.maxArmElements &&
+           left.maxDeadlineElements == right.maxDeadlineElements && left.measure == right.measure &&
            left.resourceClaims == right.resourceClaims && left.grace == right.grace &&
            left.preparedGrace == right.preparedGrace && left.timing == right.timing &&
            left.patternArmRefs == right.patternArmRefs &&
@@ -295,7 +292,8 @@ template <typename Integer> [[nodiscard]] auto renderInteger(Integer value) -> s
     return renderTokens(tokens);
 }
 
-[[maybe_unused, nodiscard]] auto renderResourceRefs(const std::vector<ResourceRef>& refs) -> std::string {
+[[maybe_unused, nodiscard]] auto renderResourceRefs(const std::vector<ResourceRef>& refs)
+    -> std::string {
     std::vector<std::string> tokens;
     tokens.reserve(refs.size());
     for (const auto& ref : refs) {

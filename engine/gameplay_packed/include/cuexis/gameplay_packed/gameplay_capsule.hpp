@@ -53,17 +53,14 @@ struct PreparedCapsule final {
     std::vector<MeasureDefinition> measures;
 };
 
-[[nodiscard]] auto encode(const EncodeRequest& request,
-                          chart::PackedChartLimits limits = {})
+[[nodiscard]] auto encode(const EncodeRequest& request, chart::PackedChartLimits limits = {})
     -> core::Result<std::vector<std::byte>>;
 
 [[nodiscard]] auto decode(std::span<const std::byte> bytes, const DecodeContext& context,
-                          chart::PackedChartLimits limits = {})
-    -> core::Result<PreparedCapsule>;
+                          chart::PackedChartLimits limits = {}) -> core::Result<PreparedCapsule>;
 
 [[nodiscard]] auto read(const std::filesystem::path& source, const DecodeContext& context,
-                        chart::PackedChartLimits limits = {})
-    -> core::Result<PreparedCapsule>;
+                        chart::PackedChartLimits limits = {}) -> core::Result<PreparedCapsule>;
 
 [[nodiscard]] auto writeAtomic(const EncodeRequest& request, const std::filesystem::path& target,
                                chart::PackedChartLimits limits = {}) -> core::Result<void>;

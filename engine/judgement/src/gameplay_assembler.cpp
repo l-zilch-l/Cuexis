@@ -144,8 +144,8 @@ struct DiagnosticTokens final {
 }
 
 //  A second-half entry point reached in the first half.
-[[maybe_unused, nodiscard]] auto secondHalfError(std::string_view path, std::string_view summary, bool capability)
-    -> core::Error {
+[[maybe_unused, nodiscard]] auto secondHalfError(std::string_view path, std::string_view summary,
+                                                 bool capability) -> core::Error {
     return rejection(DiagnosticTokens{.code = codes::kSecondHalfPendingCode,
                                       .category = capability ? codes::kCapabilityDisabledCategory
                                                              : codes::kInvalidRelationCategory,
@@ -205,7 +205,8 @@ struct DiagnosticTokens final {
     return "?";
 }
 
-[[maybe_unused, nodiscard]] auto declarationRefScopeToken(ReferenceScope scope) -> std::string_view {
+[[maybe_unused, nodiscard]] auto declarationRefScopeToken(ReferenceScope scope)
+    -> std::string_view {
     switch (scope) {
     case ReferenceScope::sameDocument:
         return "same-document";
@@ -494,7 +495,8 @@ void writeCapabilityRefs(IdentityByteWriter& writer, const std::vector<Capabilit
     }
 }
 
-[[maybe_unused]] void writeResourceRefs(IdentityByteWriter& writer, const std::vector<ResourceRef>& refs) {
+[[maybe_unused]] void writeResourceRefs(IdentityByteWriter& writer,
+                                        const std::vector<ResourceRef>& refs) {
     writer.writeCount(refs.size());
     for (const auto& ref : refs) {
         writer.writeText(ref.resourceId);
@@ -877,7 +879,7 @@ template <typename Value> void sortUnique(std::vector<Value>& values) {
 }
 
 [[maybe_unused, nodiscard]] auto findRequirement(const CanonicalGameplayGraph& graph,
-                                   const RequirementIdentity& identity)
+                                                 const RequirementIdentity& identity)
     -> const RequirementRecord* {
     for (const auto& requirement : graph.requirements) {
         if (requirement.identity == identity) {
@@ -2545,7 +2547,8 @@ struct CompiledStateKey final {
         std::vector<CompiledMetrics> childMetrics;
     };
     std::vector<BuildFrame> stack;
-    stack.push_back(BuildFrame{.node = &pattern.root, .next = 0, .children = {}, .childMetrics = {}});
+    stack.push_back(
+        BuildFrame{.node = &pattern.root, .next = 0, .children = {}, .childMetrics = {}});
     std::optional<std::size_t> rootState;
     CompiledMetrics rootMetrics;
 
@@ -2559,7 +2562,8 @@ struct CompiledStateKey final {
         if (stack.back().next < stack.back().node->operands.size()) {
             const PatternNodeDeclaration* child = &stack.back().node->operands[stack.back().next];
             ++stack.back().next;
-            stack.push_back(BuildFrame{.node = child, .next = 0, .children = {}, .childMetrics = {}});
+            stack.push_back(
+                BuildFrame{.node = child, .next = 0, .children = {}, .childMetrics = {}});
             continue;
         }
         const BuildFrame frame = std::move(stack.back());

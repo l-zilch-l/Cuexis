@@ -55,7 +55,9 @@ TEST_CASE("S7A-3 Pattern value lifecycle is independent of declaration depth",
     auto copy = root;
     CHECK(copy == root);
     auto* leaf = &copy;
-    while (!leaf->operands.empty()) { leaf = &leaf->operands[0]; }
+    while (!leaf->operands.empty()) {
+        leaf = &leaf->operands[0];
+    }
     leaf->primitive = PatternPrimitive::instant;
     CHECK_FALSE(copy == root);
     PatternNodeDeclaration assigned{};

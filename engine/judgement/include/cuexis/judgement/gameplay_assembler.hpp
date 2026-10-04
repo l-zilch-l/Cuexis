@@ -955,8 +955,7 @@ class ResourceClaimResolution final {
     [[nodiscard]] auto candidateCount() const noexcept -> std::size_t;
     [[nodiscard]] auto occupyingCandidateCount() const noexcept -> std::size_t;
     [[nodiscard]] auto hasObserveOnlyCandidates() const noexcept -> bool;
-    [[nodiscard]] auto candidates() const
-        -> std::vector<ResourceClaimResolutionInputs::Candidate>;
+    [[nodiscard]] auto candidates() const -> std::vector<ResourceClaimResolutionInputs::Candidate>;
 
   private:
     friend auto resolveResourceClaims(const ResourceClaimResolutionInputs& inputs)

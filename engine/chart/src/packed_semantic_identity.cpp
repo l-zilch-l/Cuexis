@@ -530,14 +530,12 @@ static auto semanticPreimageImpl(const CanonicalSemanticChart& chart, bool gamep
             return core::unexpected(std::move(key.error()));
         }
         if (!identities.contains(*key)) {
-            return core::unexpected(
-                fail("packed.requirements.component",
-                     "Gameplay owners must name existing entity identities"));
+            return core::unexpected(fail("packed.requirements.component",
+                                         "Gameplay owners must name existing entity identities"));
         }
         if (!ownerKeys.insert(*key).second) {
-            return core::unexpected(
-                fail("packed.requirements.owner_duplicate",
-                     "Gameplay owner identities must be unique"));
+            return core::unexpected(fail("packed.requirements.owner_duplicate",
+                                         "Gameplay owner identities must be unique"));
         }
     }
 

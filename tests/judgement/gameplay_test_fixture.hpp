@@ -180,11 +180,11 @@ inline constexpr std::uint32_t kRequirementOrdinal{4};
                    PhaseDeclaration{.kind = PhaseKind::body, .declarationOrdinal = 2U}},
         .requiresReleaseTailSemantics = false,
         .pattern =
-            PatternDeclaration{.patternId = {},
-                               .matchPolicy = MatchPolicy::leftmostFirst,
-                               .root = PatternNodeDeclaration{PatternPrimitive::atom, {},
-                                                              "atom.one", {}, {}},
-                               .required = RequiredRefs{}},
+            PatternDeclaration{
+                .patternId = {},
+                .matchPolicy = MatchPolicy::leftmostFirst,
+                .root = PatternNodeDeclaration{PatternPrimitive::atom, {}, "atom.one", {}, {}},
+                .required = RequiredRefs{}},
         .maxArmElements = MeasuredParameter<std::uint64_t>::measured(1U),
         .maxDeadlineElements = MeasuredParameter<std::uint64_t>::measured(1U),
         .measure =

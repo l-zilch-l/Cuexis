@@ -555,10 +555,10 @@ struct PatternNodeDeclaration final {
     std::optional<UnsupportedContentDeclaration> unsupportedForm;
 
     PatternNodeDeclaration() = default;
-    PatternNodeDeclaration(
-        PatternPrimitive primitive, std::vector<PatternNodeDeclaration> operands,
-        std::string atomRef = {}, std::optional<RepeatBoundsDeclaration> repeatBounds = {},
-        std::optional<UnsupportedContentDeclaration> unsupportedForm = {});
+    PatternNodeDeclaration(PatternPrimitive primitive, std::vector<PatternNodeDeclaration> operands,
+                           std::string atomRef = {},
+                           std::optional<RepeatBoundsDeclaration> repeatBounds = {},
+                           std::optional<UnsupportedContentDeclaration> unsupportedForm = {});
     PatternNodeDeclaration(const PatternNodeDeclaration& other);
     PatternNodeDeclaration(PatternNodeDeclaration&& other) noexcept = default;
     auto operator=(const PatternNodeDeclaration& other) -> PatternNodeDeclaration&;
