@@ -1,8 +1,13 @@
 # S7A-5 Implementation Handoff
 
-状态：planned handoff；选定下一轮完整实施S7A-5，先通过字段/profile准入卡；本轮未实施
+状态：superseded planning snapshot；保留854efa3的单批接手内容，已由S7A-5/6联合接手取代
 
 日期：2026-10-05
+
+> 2026-10-06：owner澄清下一轮需要多个批次，并要求未定决策4–5套方案及选优。
+> 当前执行入口为 [S7A-5/6联合接手](s7a-5-6-implementation-handoff.md) 与
+> [方案比较和选择](s7a-5-6-design-selection.md)。以下全文只保留原排期快照，
+> 其中“下一轮仅5、不实施6”和“字段以后再选”不再是当前指令。
 
 ## 1. 下一轮目标和基线
 

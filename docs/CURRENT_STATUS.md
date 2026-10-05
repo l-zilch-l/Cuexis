@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-10-05
+更新日期：2026-10-06
 
 本文是 Cuexis 当前产品和阶段状态的唯一摘要。ADR 定义决策，Spec 定义字段和语义，阶段计划定义未来
 范围，阶段报告保存带日期的实施证据；它们不得绕过本文重新定义当前状态。
@@ -31,7 +31,7 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Chart Format Foundation | completed | [plan](stage_plans/completed/chart-format-foundation/plan.md)、[关闭记录](stage_reports/stages/chart-format-foundation/2026-09-16-closure-and-handoff.md) |
 | Chart Format Foundation Hardening（Foundation 交接加固） | completed | [plan](stage_plans/completed/chart-format-foundation-hardening/plan.md)、[R5 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md) |
 | Stage 6 | completed | [plan](stage_plans/completed/stage-06/plan.md)、[关闭报告](stage_reports/stages/stage-06/completion.md) |
-| Stage 7A | active；S7A-3/4 受限功能验收完成，容量整体证明未完成。2026-10-05 工作区已实现 execution fields、Capsule revision3、真实 inline/CXT author 双路与 affine，以及 owning T4/K4 kernel、L1/L2、S1/S2 和事务失败投影；聚焦 Debug 验证通过。本轮已补齐 E1 功能对账和边界断言，Debug/Release 各943项、shared858项、MinGW855项无失败（skip 另记）。Linux GCC/Clang 各853项完整矩阵通过，跨工具链 E1 行已回填 IV。CI 耗时优化已实施并完成本地验证，a0c8b7e的push/PR共7个hosted runs已全绿；本轮评估剩余5–9，下一轮选定S7A-5，先通过字段/profile首用准入。state-budget INCOMPLETE GATE、S7A-9 与 Stage 6 handover 门禁独立保留 | [plan](stage_plans/active/stage-07/plan.md)、[实施交接](stage_plans/active/stage-07/s7a-3-4-implementation-handoff.md)、[受限功能验收证据](stage_reports/stages/stage-07/2026-10-05-s7a-3-4-functional-acceptance.md)、[ADR 0045](adr/0045-gameplay-v2-execution-profile.md)、[execution Spec](formats/gameplay-v2-execution-profile.md)、[CI 优化证据](stage_reports/stages/stage-07/2026-10-05-ci-runtime-optimization.md) |
+| Stage 7A | active；S7A-3/4 受限功能验收完成，容量整体证明未完成。2026-10-05 工作区已实现 execution fields、Capsule revision3、真实 inline/CXT author 双路与 affine，以及 owning T4/K4 kernel、L1/L2、S1/S2 和事务失败投影；聚焦 Debug 验证通过。本轮已补齐 E1 功能对账和边界断言，Debug/Release 各943项、shared858项、MinGW855项无失败（skip 另记）。Linux GCC/Clang 各853项完整矩阵通过，跨工具链 E1 行已回填 IV。CI 耗时优化已实施并完成本地验证，a0c8b7e的push/PR共7个hosted runs已全绿；owner澄清后，下一轮联合实施S7A-5/6；九项未定实现决策各五套方案已比较并给出推荐，首卡登记消费字段/恢复与wire合同。state-budget INCOMPLETE GATE、S7A-9 与 Stage 6 handover 门禁独立保留 | [plan](stage_plans/active/stage-07/plan.md)、[实施交接](stage_plans/active/stage-07/s7a-3-4-implementation-handoff.md)、[受限功能验收证据](stage_reports/stages/stage-07/2026-10-05-s7a-3-4-functional-acceptance.md)、[ADR 0045](adr/0045-gameplay-v2-execution-profile.md)、[execution Spec](formats/gameplay-v2-execution-profile.md)、[CI 优化证据](stage_reports/stages/stage-07/2026-10-05-ci-runtime-optimization.md) |
 | Stage 7B+ | future；Slide、Flick、多指、校准和高级 Judgement 能力持续演进 | [plan](stage_plans/active/stage-07/plan.md) |
 | Stage 8 | future；Chart v5 / CXT v2 / Packed Chart 正式发行与语义收敛 | [plan](stage_plans/future/stage-08/plan.md) |
 | Stage 9 | future；Presentation Foundation 与 Chart v6 / Model v1 | [plan](stage_plans/future/stage-09/plan.md) |
@@ -80,8 +80,11 @@ Gameplay V2 已成为 Stage 7A 的实施基线：Gameplay I 的 ADR/Spec/ABI 已
 见 [剩余证据核对](stage_reports/stages/stage-07/2026-10-05-s7a-3-remaining-evidence.md)；该报告属于此前只读核对。随后本工作区实施了 runtime T4/K4 与真实 author adapter，聚焦 C++ 验证见
 [受限功能验收证据](stage_reports/stages/stage-07/2026-10-05-s7a-3-4-functional-acceptance.md)；E1 功能行与四工具链完整矩阵已补齐；state-budget 保持 INCOMPLETE GATE，Stage7A 不关闭。
 提交a0c8b7e的hosted与临时证据归档见 [新SHA交接报告](stage_reports/stages/stage-07/2026-10-05-s7a-3-4-hosted-and-handoff.md)；
-后续 [S7A-5–9规划](stage_plans/active/stage-07/s7a-5-9-delivery-plan.md) 已选下一轮S7A-5，
-[接手文档](stage_plans/active/stage-07/s7a-5-implementation-handoff.md) 的首卡需先闭合Ruleset字段/profile；5–9本轮未实施。设计来源见
+后续 [S7A-5–9规划](stage_plans/active/stage-07/s7a-5-9-delivery-plan.md) 已改选下一轮S7A-5/6联合实施，
+[方案比较与选优](stage_plans/active/stage-07/s7a-5-6-design-selection.md) 对九项阻碍实施的决策各给五套方案及推荐；
+[联合接手](stage_plans/active/stage-07/s7a-5-6-implementation-handoff.md) 按J0–J7先5后6并共同验收。
+选优是设计输入，未实施5–9、未冻结新生产字段/预算或关闭阶段；
+[排期修订记录](stage_reports/stages/stage-07/2026-10-06-s7a-5-6-planning-selection.md) 保存本次范围与文档检查。设计来源见
 [Gameplay V2 redesign research](proposals/research/gameplay-v2/README.md)。Hold 的 prepared grace、作者
 默认值与单条覆盖、严格边界、identity 分区和预算/快照原则已统一；Slider continuity/grace
 仍属于 Stage 7B+ capability，不是 Stage 7A 默认语义。

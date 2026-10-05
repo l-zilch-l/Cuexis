@@ -1,8 +1,8 @@
 # S7A-5–9 Delivery Plan and Readiness Assessment
 
-状态：active planning；下一次实施目标为 S7A-5，S7A-5–9 本轮均未开始产品实施
+状态：active planning；下一次联合实施S7A-5与S7A-6，5–9本轮均未开始产品实施
 
-日期：2026-10-05
+更新日期：2026-10-06；初版日期：2026-10-05
 
 ## 1. 基线、权威和评估方法
 
@@ -21,8 +21,8 @@ CI 通过不替代 S7A-9 容量阈值接受、真实设备验证或 owner 阶段
 
 | 批次 / 小目标 | 当前可复用基础 | 首次消费与准入缺口 | 相对工作量 / 风险 | 本轮选择 |
 | --- | --- | --- | --- | --- |
-| S7A-5，5.1–5.5 | sealed Fact Ledger、T4/K4 phase outcomes、canonical order、t+1信号、owning query/reset | Ruleset内存profile、Register/StateDelta、Score/Combo/Statistics表示及显式数值策略未定；先完成5A字段门禁，再接入三阶段Fold | 高；失败边界最集中，影响后续状态闭包 | 下一次完整实施；首卡有条件准入 |
-| S7A-6，6.1–6.5 | 四分量identity骨架、规范输入、prepared graph与kernel状态 | 需要S7A-5提交状态；Replay/Event/Fact/ID与Snapshot codec、全量payload表示/负例/golden首次冻结；seek/replay当前仍拒绝 | 很高；状态闭包、序列化和恢复正确性共同变化 | S7A-5退出后独立实施 |
+| S7A-5，5.1–5.5 | sealed Fact Ledger、T4/K4 phase outcomes、canonical order、t+1信号、owning query/reset | 内存profile/grade/数值/Register/事务表示由九项方案选优给出明确推荐；首卡补齐并登记消费字段 | 高；失败边界最集中，影响后续状态闭包 | 下一次联合目标的前半，先锁定状态并验收 |
+| S7A-6，6.1–6.5 | 四分量identity骨架、规范输入、prepared graph与kernel状态 | 消费5的提交状态；full DTO、wire、admission journal与Seek cut按推荐补齐；当前产品仍拒绝 | 很高；恢复正确性与线格式首次闭合 | 下一次联合目标的后半，同会话完成5/6恢复验收 |
 | S7A-7，7.1–7.5 | Playback SDK、Chart candidate、CXC、Presentation、旧consumer门禁 | 需要5/6结果及恢复入口；Graph/Packed共同prepare、manifest closure、只读表现桥、headless/Player/安装包入口未接线 | 很高；跨模块兼容和candidate隔离 | 5/6退出后实施 |
 | S7A-8，8.1–8.4 | 默认candidate开关、离线author工具、Reference Host六动词基线、现行版本门禁 | 需要7的真实入口/安装；四项Stage6交接不能沿用旧证据；D-9 master落库及SDK0.7.1显式放行是owner门禁 | 高；实现与owner决策必须分开 | 7退出后收口；owner事项可提前安排 |
 | S7A-9，9.1–9.4 | 3/4的golden、跨编译器证据、局部计数/进程观察值 | 需要5–8完整对象模型；五类预算真实/最坏fixture、阈值分别接受、最终行为SHA矩阵、Stage8 handoff和owner acceptance | 很高；容量证据、平台差异和阶段关闭风险 | 最后收口；测量记录从5开始积累 |
@@ -36,7 +36,8 @@ ABI中的角色追踪也不等于字段表示已经冻结。下一轮首先核�
 
 交付PreparedRuleset、显式静态模块manifest/Interface、三类Register、原子StateDelta、
 Score/Combo/Statistics及owning查询，并把其语义投影纳入ruleset identity。
-首卡必须选定字段、整数表示、初始化/负值/溢出/饱和策略、允许operator及缺grade处理；
+首卡按 [九项方案选优](s7a-5-6-design-selection.md) 的明确推荐补齐字段、整数表示、
+初始化/负值/溢出/饱和策略、允许operator及缺grade处理；
 选择须写入Spec/ABI对应补充，未选定字段不得以临时typedef或默认表绕过。
 
 最重要的两个边界：kernel未seal失败保留旧Fact前缀；Fact已经seal后的Fold失败保留新Fact，
@@ -45,9 +46,9 @@ Score/Combo/Statistics及owning查询，并把其语义投影纳入ruleset ident
 例如有符号checked sum的MAX、1、-1会因中间溢出受分组影响，饱和有符号加法也不能自动视为合法monoid。
 
 5.5的“Statistics snapshot”指只读owning统计投影；真正session Snapshot/Seek/Replay归6。
-本批验证从已提交Ledger重建Fold/统计的等价性，实际seek/replay路径作为6的后续门禁；
-不得删除这些跨批要求，也不得用内部fixture宣称产品seek已经通过。
-具体实施卡与退出矩阵见 [S7A-5接手文档](s7a-5-implementation-handoff.md)。
+先在5验证已提交Ledger重建Fold/统计的等价性，再在同会话6实现真实seek/replay恢复；
+联合退出时回填5.5与6.3–6.5，不能把5.5整行延期或以内部fixture冒充实际seek。
+实施卡与退出矩阵见 [S7A-5/6联合接手](s7a-5-6-implementation-handoff.md)。
 
 ### 2.2 S7A-6：完整状态与首次wire
 
@@ -94,16 +95,20 @@ capability拒绝表、未纳入7B+清单、回滚路线、Stage8交接包和owne
 
 | 方案 | 可得到的结果 | 代价 / 风险 | 结论 |
 | --- | --- | --- | --- |
-| 只做5，首卡闭合profile后完成5.1–5.5 | 稳定Fold/Score状态闭包，给6一个可验证输入 | profile首用仍需决策，但事务边界和独立oracle能集中验收 | 选定 |
-| 合并5+6 | 一轮取得Score及Replay/Seek | profile、两阶段失败、状态schema和wire同时变化，任一失败难归属 | 本轮不选 |
-| 合并5–8 | 一轮产品可用及candidate出口 | 还叠加Playback兼容、四项Stage6交接和owner-only版本门禁 | 当前前置不成立 |
+| 只做5 | 得到Fold基线 | 不符合owner澄清的多个批次目标，真实统计恢复仍跨会话悬挂 | 不选 |
+| 联合5+6 | 同会话闭合Score/Replay/Snapshot/Seek与5.5 | 高工作量；九项推荐先落字段表，J0–J7串行门禁拆开失败责任 | **选定** |
+| 联合5+6+7 | 再取得Playback/Player产品接线 | 同时扩大状态/wire/SDK桥/consumer检查面 | 下一轮之后再评估 |
+| 联合5–8 | 再完成四项Stage6交接 | 叠加D-9 master/具名复核与SDK放行owner前置 | 当前前置不齐全 |
+| 联合5–9 | 关闭全Stage7A | 阈值接受、最终SHA矩阵、设备与owner接受均须独立证据 | 当前不能预先承诺 |
 
-执行顺序为5→6→7→8→9。5A门禁、S7A-8 owner前置和S7A-9阈值接受不能因此顺序而省略。
-下一轮可完成的是S7A-5全部五个小目标的受限功能验收，预算整体仍留9；本文件不授权提前实施6–9。
+执行顺序仍为5→6→7→8→9；下一轮将5/6放在同一会话，保留上游状态与下游codec的内部消费门禁。
+计划取代854efa3的单批排期。批次组合有五套，九项未定实现决策各有五套方案和推荐，
+见 [选优记录](s7a-5-6-design-selection.md)。下一轮目标为5.1–5.5与6.1–6.5的联合受限功能验收；
+预算整体留9，不授权提前实施7–9。
 
 ## 4. 交接、停止条件与来源
 
-使用 [下一轮接手指令](s7a-5-implementation-handoff.md)。首先读取当前状态、Spec§3.14–3.22、
+使用 [下一轮联合接手指令](s7a-5-6-implementation-handoff.md)。首先读取当前状态、Spec§3.14–3.22、
 ABI域6及第5轮裁定，再消费当前execution profile；出现真正合同矛盾须提供最小反例并修订权威合同。
 普通实现错误在原合同内修复；当前未决字段不能用伪成功/默认值绕过。
 

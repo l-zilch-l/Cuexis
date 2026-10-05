@@ -2,7 +2,7 @@
 
 状态：current index
 
-更新日期：2026-10-05
+更新日期：2026-10-06
 
 本轮设计交付：[S7A-3/4 完整 execution 方案与交接](stages/stage-07/2026-10-05-s7a-3-4-execution-design.md)
 （2026-10-05，仅设计文档完成；新增合同与 revision3 未实施）。
@@ -56,6 +56,7 @@ Standards / Spec 记录），由该专题自己的 `README.md` 承担导航；�
 - [S7A-3/4 受限功能验收与最终矩阵](stages/stage-07/2026-10-05-s7a-3-4-functional-acceptance.md)
 - [Stage 7 CI 耗时基线与优化](stages/stage-07/2026-10-05-ci-runtime-optimization.md)
 - [S7A-3/4 新SHA hosted、后续规划与临时证据归档](stages/stage-07/2026-10-05-s7a-3-4-hosted-and-handoff.md)
+- [S7A-5/6联合排期、九项五方案选优与交接修订](stages/stage-07/2026-10-06-s7a-5-6-planning-selection.md)
 
 ## 跨阶段专题
 

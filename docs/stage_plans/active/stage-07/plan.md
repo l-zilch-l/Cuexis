@@ -2,7 +2,7 @@
 
 状态：active；Stage 7A 分批实施，Stage 7B+ 为可在 Stage 8 前后持续交付的能力线；本计划不构成阶段关闭或发行记录
 
-更新日期：2026-10-05
+更新日期：2026-10-06
 
 归档来源：[旧版 PROJECT_GUIDE](../../../archive/PROJECT_GUIDE_LEGACY_2026-08-10.md)、
 [SDK transition plan 快照](../../../archive/CUEXIS_SDK_TRANSITION_PLAN_2026-08-10.md) 和
@@ -470,13 +470,16 @@ author 双路与 affine，再 late/contact/phase/kernel/timer/Fact。新增合�
     窗口数值、`SolverProfile` 默认列表与 `max*` 数值、proof 编码、`terminal` 编码）只阻塞**首次消费它们的
     后续批次**，不是本批次门禁。
 
-### 后续实施队列（2026-10-05）
+### 后续实施队列（2026-10-06）
 
 S7A-3/4已达到受限功能验收，容量整体仍未完成；新SHA的hosted证据与归档见
 [交接报告](../../../stage_reports/stages/stage-07/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
 剩余5–9的依赖、首用字段门禁和实施选择见 [交付规划与评估](s7a-5-9-delivery-plan.md)。
-下一次对话目标为S7A-5.1–5.5完整实施，先完成Ruleset内存profile/字段准入卡，
-使用 [S7A-5接手文档](s7a-5-implementation-handoff.md)。本轮只规划和交接，5–9尚未开始产品实施。
+owner澄清后，下一次对话目标为S7A-5.1–5.5与S7A-6.1–6.5联合实施；
+批次组合和九项阻碍实施的未定决策各有五套 [方案比较与选择](s7a-5-6-design-selection.md)，
+使用 [联合接手文档](s7a-5-6-implementation-handoff.md) 按J0–J7先5后6、共同验收。
+旧 [单批接手](s7a-5-implementation-handoff.md) 保留为被取代快照。
+本轮仅规划、选优与交接，5–9尚未开始产品实施，容量整体仍留9。
 
 ### S7A-5：Ruleset Fold、Score、Combo 和 Statistics
 
