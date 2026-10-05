@@ -1,11 +1,7 @@
-//  Judgement typed kernel - S7A-1 会话生命周期骨架实现。
-//
-//  本文件里的所有可变状态都在下面的 pimpl 中，每个成员都标注了 owner thread、读取时点、
-//  快照归属和重置行为。本批次没有任何路径能进入 configured 或 prepared 阶段：configure 稳定拒绝，
-//  因此 prepare 稳定拒绝，因此所有依赖 prepared 的动词稳定拒绝。这是本批次的交付结果，不是遗漏：
-//  plan S7A-1 要求"受影响的按值字段、运算与可运行方法必须移出本批次交付范围"，所以动词只保留
-//  稳定的拒绝出口，而不接受任何未冻结的载荷。
+// Owning selected-profile execution with the historical rejection-only overloads.
 
+#include "execution_kernel.hpp"
+#include "execution_testing.hpp"
 #include <cuexis/judgement/judgement_session.hpp>
 
 #include <cuexis/core/thread_checker.hpp>
@@ -50,7 +46,6 @@ constexpr std::string_view kAdvancePath{"advance"};
 constexpr std::string_view kQueryPath{"query"};
 constexpr std::string_view kSnapshotPath{"snapshot"};
 constexpr std::string_view kSeekPath{"seek"};
-constexpr std::string_view kResetPath{"reset"};
 
 //  空 token = 该上下文分量对本条诊断不适用（头文件里的 absence 约定），不是任何未冻结角色的默认值。
 constexpr std::string_view kAbsent{};
@@ -112,6 +107,8 @@ struct JudgementSession::Impl final {
     core::ThreadChecker owner;
     bool configured;
     bool prepared;
+    std::optional<SessionConfiguration> configuration;
+    std::unique_ptr<detail::ExecutionKernel> kernel;
 };
 
 JudgementSession::JudgementSession(std::unique_ptr<Impl> impl) noexcept : impl_(std::move(impl)) {}
@@ -149,13 +146,13 @@ auto JudgementSession::prepare() -> core::Result<void> {
     if (!impl_->configured) {
         //  ABI 生命周期顺序为 create configuration -> prepare；未配置的会话在读取或写入任何
         //  prepared 内容之前就拒绝。
-        assert(!impl_->prepared && "a refused prepare must not leave a half-prepared session");
+
         return core::unexpected(lifecycleOrderError(kPreparePath));
     }
 
     //  已配置的会话在本批次仍然不可 prepare：prepared 的 requirement 记录、preparedGrace、
     //  仲裁策略与 Interface 投影都没有冻结表示，prepare 只能拒绝，不能发布猜出来的表示。
-    assert(!impl_->prepared && "a refused prepare must not leave a half-prepared session");
+
     return core::unexpected(unfrozenSemanticsError(kPreparePath));
 }
 
@@ -165,7 +162,7 @@ auto JudgementSession::submit() -> core::Result<void> {
     //  运行期不可变性（断言层面）：进入 prepared 阶段的唯一入口是 prepare，而它稳定拒绝；
     //  因此 requirement 集合、preparedGrace、仲裁策略与 Interface 投影在运行期不可能被修改。
     //  类型层面的形式：它们没有 setter、没有非 const 访问器、也没有任何动词参数。
-    assert(!impl_->prepared && "no S7A-1 path may enter the prepared phase");
+
     if (!impl_->prepared) {
         return core::unexpected(lifecycleOrderError(kSubmitPath));
     }
@@ -177,7 +174,6 @@ auto JudgementSession::submit() -> core::Result<void> {
 auto JudgementSession::advance() -> core::Result<void> {
     assertUsable();
 
-    assert(!impl_->prepared && "no S7A-1 path may enter the prepared phase");
     if (!impl_->prepared) {
         return core::unexpected(lifecycleOrderError(kAdvancePath));
     }
@@ -188,8 +184,12 @@ auto JudgementSession::advance() -> core::Result<void> {
 auto JudgementSession::query() const -> core::Result<JudgementProjection> {
     assertUsable();
 
+    if (impl_->kernel) {
+        return JudgementProjection{impl_->kernel->query()};
+    }
+
     //  读取动词是 const 限定的：类型层面不存在经由读取修改会话的路径。
-    assert(!impl_->prepared && "no S7A-1 path may enter the prepared phase");
+
     if (!impl_->prepared) {
         return core::unexpected(lifecycleOrderError(kQueryPath));
     }
@@ -200,7 +200,6 @@ auto JudgementSession::query() const -> core::Result<JudgementProjection> {
 auto JudgementSession::snapshot() const -> core::Result<SnapshotPayload> {
     assertUsable();
 
-    assert(!impl_->prepared && "no S7A-1 path may enter the prepared phase");
     if (!impl_->prepared) {
         return core::unexpected(lifecycleOrderError(kSnapshotPath));
     }
@@ -211,7 +210,6 @@ auto JudgementSession::snapshot() const -> core::Result<SnapshotPayload> {
 auto JudgementSession::seek() -> core::Result<void> {
     assertUsable();
 
-    assert(!impl_->prepared && "no S7A-1 path may enter the prepared phase");
     if (!impl_->prepared) {
         return core::unexpected(lifecycleOrderError(kSeekPath));
     }
@@ -221,15 +219,93 @@ auto JudgementSession::seek() -> core::Result<void> {
 
 auto JudgementSession::reset() -> core::Result<void> {
     assertUsable();
+    impl_->kernel.reset();
+    impl_->configuration.reset();
+    impl_->configured = false;
+    impl_->prepared = false;
+    return {};
+}
 
-    //  reset 在成功时会把所有可变成员复位到 created 阶段的值；本批次它稳定拒绝，且拒绝路径
-    //  不触碰任何状态。
-    assert(!impl_->prepared && "no S7A-1 path may enter the prepared phase");
-    if (!impl_->prepared) {
-        return core::unexpected(lifecycleOrderError(kResetPath));
+auto JudgementSession::configure(const SessionConfiguration& configuration)
+    -> core::Result<void> try {
+    assertUsable();
+    if (impl_->configured || impl_->prepared) {
+        return core::unexpected(rejection("judgement.s7a4.session.lifecycle_order",
+                                          kInvalidRelationCategory, kLifecycleOrderSummary,
+                                          kConfigurePath));
     }
+    auto valid = detail::validateSessionConfiguration(configuration);
+    if (!valid) {
+        return core::unexpected(valid.error());
+    }
+    auto owned = configuration;
+    impl_->configuration = std::move(owned);
+    impl_->configured = true;
+    return {};
+} catch (const std::exception&) {
+    return core::unexpected(rejection("judgement.s7a4.execution.relation_invalid",
+                                      "invalid_relation", "configuration storage allocation failed",
+                                      kConfigurePath));
+}
 
-    return core::unexpected(unfrozenSemanticsError(kResetPath));
+auto JudgementSession::prepare(const PreparedGameplay& prepared) -> core::Result<void> {
+    assertUsable();
+    if (!impl_->configured || impl_->prepared) {
+        return core::unexpected(rejection("judgement.s7a4.session.lifecycle_order",
+                                          kInvalidRelationCategory, kLifecycleOrderSummary,
+                                          kPreparePath));
+    }
+    auto kernel = detail::ExecutionKernel::prepare(*impl_->configuration, prepared);
+    if (!kernel) {
+        return core::unexpected(kernel.error());
+    }
+    impl_->kernel = std::move(*kernel);
+    impl_->prepared = true;
+    return {};
+}
+
+auto JudgementSession::submit(std::vector<ClockedIngress> batch)
+    -> core::Result<std::vector<InputReceiptPending>> {
+    assertUsable();
+    if (!impl_->kernel) {
+        return core::unexpected(rejection("judgement.s7a4.session.lifecycle_order",
+                                          kInvalidRelationCategory, kLifecycleOrderSummary,
+                                          kSubmitPath));
+    }
+    return impl_->kernel->submit(std::move(batch));
+}
+
+auto JudgementSession::advance(Tick horizon) -> core::Result<JudgementProjection> {
+    assertUsable();
+    if (!impl_->kernel) {
+        return core::unexpected(rejection("judgement.s7a4.session.lifecycle_order",
+                                          kInvalidRelationCategory, kLifecycleOrderSummary,
+                                          kAdvancePath));
+    }
+    auto result = impl_->kernel->advance(horizon);
+    if (!result) {
+        return core::unexpected(result.error());
+    }
+    return JudgementProjection{impl_->kernel->query()};
+}
+
+auto JudgementProjection::kernelView() const noexcept -> const KernelProjection& {
+    assert(storage_);
+    return storage_->projection;
+}
+
+auto detail::KernelTestAccess::inject(JudgementSession& session, KernelTestControls controls)
+    -> core::Result<void> {
+    session.assertUsable();
+    if (!session.impl_->kernel) {
+        return core::unexpected(lifecycleOrderError(kPreparePath));
+    }
+    return session.impl_->kernel->inject(std::move(controls));
+}
+auto detail::KernelTestAccess::visibleSignalCount(const JudgementSession& session, Tick tick)
+    -> std::size_t {
+    session.assertUsable();
+    return session.impl_->kernel ? session.impl_->kernel->visibleSignalCount(tick) : 0;
 }
 
 auto JudgementSession::hasPreparedState() const noexcept -> bool {
@@ -237,9 +313,7 @@ auto JudgementSession::hasPreparedState() const noexcept -> bool {
     return impl_->prepared;
 }
 
-//  投影与快照的自持有锚点只在会话需要产出结果时绑定。本批次没有能达到 prepared 阶段的路径，
-//  因此这两个构造点不会被调用；它们的存在只是让"值类型投影、按值返回、不引用会话内部存储"
-//  这一条已冻结的所有权规则在类型上可表达，而不必先猜一个字段。
+// Immutable projection storage is shared independently of the session lifetime.
 JudgementProjection::JudgementProjection(
     std::shared_ptr<const detail::ProjectionStorage> storage) noexcept
     : storage_(std::move(storage)) {}

@@ -74,7 +74,10 @@
 
 #include <compare>
 #include <cstdint>
+#include <memory>
 #include <optional>
+#include <span>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -97,6 +100,22 @@ class EventSequence;
 } // namespace cuexis::judgement::roles
 
 namespace cuexis::judgement {
+
+class SessionIngressState;
+struct InputMappingProfile;
+struct ClockedIngress;
+namespace detail {
+struct OwnedIngressSubject final {
+    std::string domain;
+    std::string channel;
+    std::string source;
+};
+struct IngressJournal;
+auto prepareIngressBatch(const SessionIngressState&, const InputMappingProfile&,
+                         std::span<const ClockedIngress>, bool) -> core::Result<IngressJournal>;
+auto reserveIngressBatch(SessionIngressState&, const IngressJournal&) -> core::Result<void>;
+void commitIngressBatch(SessionIngressState&, IngressJournal&&) noexcept;
+} // namespace detail
 
 //  ---------------------------------------------------------------------------------------------
 //  AmountSpec (Spec 3.7.6, CM-T13)
@@ -543,6 +562,11 @@ struct IngressDeclaration final {
 //  highest-only rule would reject a *fresh* ordinal that happens to be lower than a previously seen
 //  one, which is a different decision from the one the contract makes and one this batch does not
 //  own. The cost of the set is therefore the price of not inventing a rule.
+struct ClockedIngress final {
+    ObservationTick observationTick;
+    IngressDeclaration declaration;
+};
+
 class SessionIngressState final {
   public:
     SessionIngressState() = default;
@@ -563,12 +587,20 @@ class SessionIngressState final {
     void reset() noexcept;
 
   private:
+    friend auto detail::prepareIngressBatch(const SessionIngressState&, const InputMappingProfile&,
+                                            std::span<const ClockedIngress>, bool)
+        -> core::Result<detail::IngressJournal>;
+    friend auto detail::reserveIngressBatch(SessionIngressState&, const detail::IngressJournal&)
+        -> core::Result<void>;
+    friend void detail::commitIngressBatch(SessionIngressState&, detail::IngressJournal&&) noexcept;
     friend auto normalizeObservation(SessionIngressState&, const InputMappingProfile&,
                                      ObservationTick, const IngressDeclaration&)
         -> core::Result<NormalizedObservationEntry>;
 
     std::optional<ObservationTick> lastObservedTick_{};
     std::uint64_t nextObservationId_{0};
+    bool observationIdsExhausted_{false};
+    std::vector<std::unique_ptr<const detail::OwnedIngressSubject>> ownedSubjects_{};
     std::vector<IngressSequence> admittedSequences_{};
     std::vector<CanonicalIngressSubject> admittedSubjects_{};
 };

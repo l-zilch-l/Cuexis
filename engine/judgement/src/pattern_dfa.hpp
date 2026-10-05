@@ -28,10 +28,27 @@
 #include <limits>
 #include <map>
 #include <optional>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
 namespace cuexis::judgement::detail {
+
+[[nodiscard]] inline auto checkedDfaTableEntries(std::size_t states, std::size_t symbols)
+    -> std::size_t {
+    const auto maximum = std::vector<std::size_t>{}.max_size();
+    if (symbols != 0 && states > maximum / symbols) {
+        throw std::length_error{"DFA table size is not representable"};
+    }
+    return states * symbols;
+}
+[[nodiscard]] inline auto checkedDfaStateSum(std::size_t left, std::size_t right) -> std::size_t {
+    const auto maximum = std::vector<std::uint8_t>{}.max_size();
+    if (left > maximum || right > maximum - left) {
+        throw std::length_error{"DFA state count is not representable"};
+    }
+    return left + right;
+}
 
 //  The "no such state" sentinel of a partial automaton. An undefined transition rejects.
 inline constexpr std::size_t kNoTransition = std::numeric_limits<std::size_t>::max();
@@ -67,20 +84,35 @@ inline constexpr std::uint64_t kPatternDfaConstructionWork = 1U << 24;
 //  per construction step; once it is exceeded the caller abandons the measurement.
 class ConstructionBudget final {
   public:
+    explicit ConstructionBudget(bool measurement = true) : measurement_(measurement) {}
+    [[nodiscard]] auto isMeasurement() const noexcept -> bool {
+        return measurement_;
+    }
     [[nodiscard]] auto ok() const noexcept -> bool {
         return !exceeded_;
     }
 
     void chargeState() noexcept {
+        if (states_ == std::numeric_limits<std::uint64_t>::max()) {
+            exceeded_ = true;
+            return;
+        }
         ++states_;
-        if (states_ > kPatternDfaConstructionStates) {
+        if (measurement_ && states_ > kPatternDfaConstructionStates) {
             exceeded_ = true;
         }
     }
 
     void chargeWork(std::uint64_t units = 1U) noexcept {
+        if (!measurement_) {
+            return;
+        }
+        if (units > std::numeric_limits<std::uint64_t>::max() - work_) {
+            exceeded_ = true;
+            return;
+        }
         work_ += units;
-        if (work_ > kPatternDfaConstructionWork) {
+        if (measurement_ && work_ > kPatternDfaConstructionWork) {
             exceeded_ = true;
         }
     }
@@ -99,6 +131,7 @@ class ConstructionBudget final {
     }
 
   private:
+    bool measurement_;
     std::uint64_t states_{0};
     std::uint64_t work_{0};
     bool exceeded_{false};
@@ -160,7 +193,7 @@ struct PatternDfaResult final {
     dfa.symbolCount = symbolCount;
     dfa.start = 0U;
     dfa.accepting = {0U, 1U};
-    dfa.transitions.assign(2U * symbolCount, kNoTransition);
+    dfa.transitions.assign(checkedDfaTableEntries(2U, symbolCount), kNoTransition);
     dfa.transitions[symbol] = 1U;
     return dfa;
 }
@@ -179,7 +212,7 @@ class MaterialisedNfa final {
     //  that kept them would send a later child's transition into an earlier child's state.
     [[nodiscard]] auto append(const PartialDfa& child) -> std::size_t {
         const std::size_t offset = accepting.size();
-        epsilon.resize(offset + child.accepting.size());
+        epsilon.resize(checkedDfaStateSum(offset, child.accepting.size()));
         accepting.insert(accepting.end(), child.accepting.begin(), child.accepting.end());
         const std::size_t first = transitions.size();
         transitions.insert(transitions.end(), child.transitions.begin(), child.transitions.end());
@@ -231,7 +264,8 @@ class RepeatNfa final {
         //  measurement is abandoned immediately instead of being explored up to the bound: the
         //  bound is a limit of this module's measurement, and the declared maximum stays legal
         //  content either way.
-        if (!patternRepeatPairSpace(child.accepting.size(), maximum).has_value()) {
+        if (budget.isMeasurement() &&
+            !patternRepeatPairSpace(child.accepting.size(), maximum).has_value()) {
             budget.abandon();
         }
     }
@@ -289,7 +323,8 @@ class RepeatNfa final {
         if (found != ids_.end()) {
             return found->second;
         }
-        if (byId_.size() + 1U >= static_cast<std::size_t>(kPatternDfaConstructionStates)) {
+        if (budget_->isMeasurement() &&
+            byId_.size() + 1U >= static_cast<std::size_t>(kPatternDfaConstructionStates)) {
             //  The measurement is over; the caller abandons it. Returning an existing id keeps this
             //  function total so that no partially built subset can be interpreted as a real one.
             budget_->chargeState();
@@ -389,7 +424,8 @@ template <class View>
             accepting = accepting || view.viewAccepting(id);
         }
         dfa.accepting.push_back(accepting ? 1U : 0U);
-        dfa.transitions.resize((cursor + 1U) * dfa.symbolCount, kNoTransition);
+        dfa.transitions.resize(
+            checkedDfaTableEntries(checkedDfaStateSum(cursor, 1U), dfa.symbolCount), kNoTransition);
 
         for (std::size_t symbol = 0; symbol < dfa.symbolCount; ++symbol) {
             moved.clear();
@@ -506,7 +542,7 @@ template <class View>
         return result;
     }
     result.accepting.assign(kept, 0U);
-    result.transitions.assign(kept * symbols, kNoTransition);
+    result.transitions.assign(checkedDfaTableEntries(kept, symbols), kNoTransition);
     for (const std::size_t state : order) {
         const std::size_t index = remap[state];
         if (index == kNoTransition) {
@@ -608,7 +644,7 @@ template <class View>
         PartialDfa result;
         result.symbolCount = symbols;
         result.accepting.assign(classCount, 0U);
-        result.transitions.assign(classCount * symbols, kNoTransition);
+        result.transitions.assign(checkedDfaTableEntries(classCount, symbols), kNoTransition);
         for (std::size_t classId = 0; classId < byKey.size(); ++classId) {
             if (newIndex[classId] == kNoTransition) {
                 continue;
@@ -643,9 +679,9 @@ template <class View>
     }
     if (needsSink) {
         const std::size_t sink = states;
-        total = states + 1U;
+        total = checkedDfaStateSum(states, 1U);
         accepting.resize(total, 0U);
-        transitions.resize(total * symbols, kNoTransition);
+        transitions.resize(checkedDfaTableEntries(total, symbols), kNoTransition);
         for (std::size_t state = 0; state < states; ++state) {
             for (std::size_t symbol = 0; symbol < symbols; ++symbol) {
                 if (transitions[state * symbols + symbol] == kNoTransition) {
@@ -772,7 +808,7 @@ template <class View>
         return result;
     }
     result.accepting.assign(liveClasses, 0U);
-    result.transitions.assign(liveClasses * symbols, kNoTransition);
+    result.transitions.assign(checkedDfaTableEntries(liveClasses, symbols), kNoTransition);
     //  Class ids and result state numbers are different numberings, so a result state number is
     //  translated back into its class before the representative state is read.
     std::vector<std::size_t> classOfState(liveClasses, kNoTransition);
@@ -896,8 +932,9 @@ template <class View>
         }
     }
     if (sink != kNoTransition) {
-        total.accepting.resize(states + 1U, 0U);
-        total.transitions.resize((states + 1U) * symbolCount, kNoTransition);
+        total.accepting.resize(checkedDfaStateSum(states, 1U), 0U);
+        total.transitions.resize(
+            checkedDfaTableEntries(checkedDfaStateSum(states, 1U), symbolCount), kNoTransition);
         for (std::size_t state = 0; state < states; ++state) {
             for (std::size_t symbol = 0; symbol < symbolCount; ++symbol) {
                 if (total.transitions[state * symbolCount + symbol] == kNoTransition) {
@@ -1003,8 +1040,8 @@ struct DfaNode final {
 
 //  The minimised, determinised state count of `nodes[rootIndex]` over `symbolCount` symbols.
 [[nodiscard]] inline auto buildMinimalPatternDfa(const std::vector<DfaNode>& nodes,
-                                                 std::size_t rootIndex, std::size_t symbolCount)
-    -> PatternDfaResult {
+                                                 std::size_t rootIndex, std::size_t symbolCount,
+                                                 bool measurement = true) -> PatternDfaResult {
     //  A node's automaton is needed only by the nodes that reference it, so it is released as soon
     //  as its last parent has been built. Without that, a deep declaration would cost the sum of
     //  every intermediate automaton instead of the live set.
@@ -1020,7 +1057,7 @@ struct DfaNode final {
     std::vector<PartialDfa> built(nodes.size());
     for (std::size_t index = 0; index < nodes.size(); ++index) {
         const DfaNode& node = nodes[index];
-        ConstructionBudget budget;
+        ConstructionBudget budget{measurement};
         std::vector<const PartialDfa*> operands;
         operands.reserve(node.operands.size());
         for (const std::size_t operand : node.operands) {

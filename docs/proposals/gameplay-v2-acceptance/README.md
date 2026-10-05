@@ -3,7 +3,7 @@
 状态：active
 
 owner 接受：2026-10-02（记录见 [S7A-0 接受记录](../../stage_reports/stages/stage-07/2026-10-02-s7a-0-acceptance.md)）
-更新日期：2026-10-04
+更新日期：2026-10-05
 
 上级文档：[Stage 7A 实施计划](../../stage_plans/active/stage-07/plan.md) ·
 [Gameplay V2 redesign research](../research/gameplay-v2/README.md)
@@ -37,12 +37,16 @@ owner 接受：2026-10-02（记录见 [S7A-0 接受记录](../../stage_reports/s
 | [RULING_WORKSHEET.md](RULING_WORKSHEET.md) | 逐轮裁决工作表 | 把合同项（登记时为 5 项 `open`，第 7 轮后为 **0**）与 53 项未决问题合并为 7 轮可批清单（76 行 / 84 项登记，**第 1–7 轮已全部裁定、无待裁定轮次**），给出建议处置、不决定的后果与裁定登记表，并以 §7B 登记 16 条 `待冻结` 的最终绑定、以 §2 / §3 / §4 / §5 / §6 / §7 / §9 登记第 2、3、4、5、6、7 轮裁定 |
 | [FREEZE_BLOCKING_BINDINGS.md](FREEZE_BLOCKING_BINDINGS.md) | S1-03 登记缺陷的处置登记 | 为 [Gameplay V2 ABI](../../api/GAMEPLAY_V2_ABI.md) 中 16 条缺可追溯阻塞批次的 `待冻结` 条目登记最终裁决编号与首次消费批次、分组小结、其余 14 条的逐条核实、Codex 裁定栏与停止条件；**已由 Codex 裁决并落地登记（thread `s7a1-freeze-bindings`，verdict `adopt`，confidence 0.96，2026-10-03），不改任何既有文档的 Spec 语义** |
 | [S7A-3_PACKED_W1_CANDIDATE.md](S7A-3_PACKED_W1_CANDIDATE.md) | S7A-3 P1-W1 设计选择历史 | 三种组织方案与增强 A 的选择理由；2026-10-04 按 owner 授权完成文档裁决；完整物理字段仅由 [Gameplay Capsule v2 format](../../formats/GAMEPLAY_CAPSULE_V2_FORMAT.md) 拥有，E1 实现证据仍待完成 |
+| [S7A-4_RECOMMENDED_DESIGN.md](S7A-4_RECOMMENDED_DESIGN.md) | S7A-4 推荐方案登记 | 推荐组合 B：L1 + L2 验证、H2、F1 + F3、R1、生产 S2 / 独立 S1；区分待细化合同、内部选择和后续批次，不关闭 late-policy 门禁或实施验收 |
+| [S7A-3/4 实施交接](../../stage_plans/active/stage-07/s7a-3-4-implementation-handoff.md) | 完整选定方案与执行卡 | 推荐比较的后续：合同/表示/版本/错误/验收已细化；设计新增尚未实施，不把缺测预算当通过 |
 | 基线报告 | S7A-0.1 固定执行基线 | `docs/stage_reports/stages/stage-07/2026-10-02-s7a-0-baseline.md` |
 
 ## 2. 接受清单（acceptance checklist）
 
 下表是接受过程与逐轮裁定记录，不拥有当前实施状态。2026-10-04 的 S7A-3 设计收口见
 [设计报告](../../stage_reports/stages/stage-07/2026-10-04-s7a-3-design-closure.md)；
+2026-10-05 对已有实现、当前 SHA hosted 与实际余项的核对见
+[剩余证据报告](../../stage_reports/stages/stage-07/2026-10-05-s7a-3-remaining-evidence.md)；
 局部实现与未完成验收以 [CURRENT_STATUS](../../CURRENT_STATUS.md) 为准。
 
 owner 接受本 package 时，请逐条确认：

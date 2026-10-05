@@ -49,6 +49,7 @@ cuexis_cxc_pack
 cuexis_cxc_tool_common
 cuexis_cxc_unpack
 cuexis_cxc_validate
+cuexis_gameplay_author
 cuexis_core_tests
 cuexis_audio_tests
 cuexis_filesystem_tests
@@ -82,6 +83,7 @@ cuexis_audio_sdl_tests
 cuexis_render_opengl_tests
 cuexis_player_diagnostics_tests
 cuexis_player_control_tests
+cuexis_gameplay_author_tests
 cuexis_format_check
 cuexis_player_dist
 ```

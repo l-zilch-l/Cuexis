@@ -1,0 +1,1533 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "cuexis.gameplay-author.t4-k4.v1",
+  "title": "Private candidate Gameplay T4/K4 author payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "authorProfile",
+    "sourceDocumentId",
+    "common",
+    "requirements",
+    "rankAssignment"
+  ],
+  "properties": {
+    "version": {
+      "const": 2
+    },
+    "authorProfile": {
+      "const": "gameplay.author.t4-k4.v1"
+    },
+    "sourceDocumentId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "common": {
+      "$ref": "#/definitions/Common"
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Requirement"
+      }
+    },
+    "rankAssignment": {
+      "$ref": "#/definitions/RankAssignment"
+    }
+  },
+  "definitions": {
+    "Q": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "numerator",
+        "denominator"
+      ],
+      "properties": {
+        "numerator": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*|-[1-9][0-9]*)$",
+          "maxLength": 20
+        },
+        "denominator": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "maxLength": 20,
+          "not": {
+            "const": "0"
+          }
+        }
+      }
+    },
+    "StableId": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceDocumentId",
+        "declarationOrdinal"
+      ],
+      "properties": {
+        "sourceDocumentId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "declarationOrdinal": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        }
+      }
+    },
+    "Phase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "declarationOrdinal"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "tap",
+            "head",
+            "body",
+            "tail"
+          ]
+        },
+        "declarationOrdinal": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        }
+      }
+    },
+    "Identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chartEntryId",
+        "invocationId",
+        "moduleId",
+        "exportId",
+        "requirementLocalId",
+        "emissionPath"
+      ],
+      "properties": {
+        "chartEntryId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "invocationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "moduleId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "exportId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requirementLocalId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "emissionPath": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "nodeId",
+              "repeatIndex"
+            ],
+            "properties": {
+              "nodeId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "repeatIndex": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]*)$",
+                "maxLength": 20
+              }
+            }
+          }
+        }
+      }
+    },
+    "RequiredRefs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "features",
+        "capabilities"
+      ],
+      "properties": {
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "capabilityId"
+            ],
+            "properties": {
+              "capabilityId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "revision": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "Node": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "primitive",
+            "operands",
+            "atomRef"
+          ],
+          "properties": {
+            "primitive": {
+              "const": "atom"
+            },
+            "operands": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Node"
+              },
+              "maxItems": 0
+            },
+            "atomRef": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "primitive",
+            "operands"
+          ],
+          "properties": {
+            "primitive": {
+              "type": "string",
+              "enum": [
+                "sequence",
+                "choice",
+                "complement",
+                "skip",
+                "instant"
+              ]
+            },
+            "operands": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Node"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "primitive",
+            "operands",
+            "repeatBounds"
+          ],
+          "properties": {
+            "primitive": {
+              "const": "boundedRepeat"
+            },
+            "operands": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Node"
+              }
+            },
+            "repeatBounds": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "minimum",
+                "maximum"
+              ],
+              "properties": {
+                "minimum": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]*)$",
+                  "maxLength": 20
+                },
+                "maximum": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]*)$",
+                  "maxLength": 20
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Pattern": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "matchPolicy",
+        "root",
+        "requiredRefs"
+      ],
+      "properties": {
+        "matchPolicy": {
+          "const": "leftmost-first"
+        },
+        "root": {
+          "$ref": "#/definitions/Node"
+        },
+        "requiredRefs": {
+          "$ref": "#/definitions/RequiredRefs"
+        },
+        "patternId": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "Measure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "components",
+        "requiredRefs"
+      ],
+      "properties": {
+        "components": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "phase",
+              "categoryToken",
+              "gradeTokens"
+            ],
+            "properties": {
+              "phase": {
+                "type": "string",
+                "enum": [
+                  "tap",
+                  "head",
+                  "body",
+                  "tail"
+                ]
+              },
+              "categoryToken": {
+                "type": "string"
+              },
+              "gradeTokens": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        "requiredRefs": {
+          "$ref": "#/definitions/RequiredRefs"
+        }
+      }
+    },
+    "Grace": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "policy",
+            "allowChartGrace"
+          ],
+          "properties": {
+            "policy": {
+              "type": "string",
+              "enum": [
+                "explicit",
+                "default"
+              ]
+            },
+            "allowChartGrace": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "policy",
+            "allowChartGrace",
+            "inheritedFromDeclarationId"
+          ],
+          "properties": {
+            "policy": {
+              "const": "inherited"
+            },
+            "allowChartGrace": {
+              "type": "boolean"
+            },
+            "inheritedFromDeclarationId": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "GraceInputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unitInTicks",
+        "minimumCanonical",
+        "maximumCanonical"
+      ],
+      "properties": {
+        "unitInTicks": {
+          "$ref": "#/definitions/Q"
+        },
+        "minimumCanonical": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*|-[1-9][0-9]*)$",
+          "maxLength": 20
+        },
+        "maximumCanonical": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*|-[1-9][0-9]*)$",
+          "maxLength": 20
+        },
+        "chartDuration": {
+          "$ref": "#/definitions/Q"
+        },
+        "inheritedDuration": {
+          "$ref": "#/definitions/Q"
+        },
+        "defaultDuration": {
+          "$ref": "#/definitions/Q"
+        }
+      }
+    },
+    "Timing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "end",
+        "successWindows",
+        "phaseTargets"
+      ],
+      "properties": {
+        "end": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*|-[1-9][0-9]*)$",
+          "maxLength": 20
+        },
+        "successWindows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "phase",
+              "start",
+              "end"
+            ],
+            "properties": {
+              "phase": {
+                "$ref": "#/definitions/Phase"
+              },
+              "start": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]*|-[1-9][0-9]*)$",
+                "maxLength": 20
+              },
+              "end": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]*|-[1-9][0-9]*)$",
+                "maxLength": 20
+              }
+            }
+          }
+        },
+        "phaseTargets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "phase",
+              "chartTick"
+            ],
+            "properties": {
+              "phase": {
+                "type": "string",
+                "enum": [
+                  "tap",
+                  "head",
+                  "body",
+                  "tail"
+                ]
+              },
+              "chartTick": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]*|-[1-9][0-9]*)$",
+                "maxLength": 20
+              }
+            }
+          }
+        },
+        "body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "start",
+            "end"
+          ],
+          "properties": {
+            "start": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*|-[1-9][0-9]*)$",
+              "maxLength": 20
+            },
+            "end": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*|-[1-9][0-9]*)$",
+              "maxLength": 20
+            }
+          }
+        }
+      }
+    },
+    "AtomBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "atomRef",
+        "domainToken",
+        "sourceClass",
+        "channelToken",
+        "action",
+        "tailOnly"
+      ],
+      "properties": {
+        "atomRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "domainToken": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceClass": {
+          "type": "string",
+          "minLength": 1
+        },
+        "channelToken": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "press",
+            "release",
+            "update"
+          ]
+        },
+        "tailOnly": {
+          "type": "boolean"
+        },
+        "amountRange": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "minimum",
+            "maximum"
+          ],
+          "properties": {
+            "minimum": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*|-[1-9][0-9]*)$",
+              "maxLength": 20
+            },
+            "maximum": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*|-[1-9][0-9]*)$",
+              "maxLength": 20
+            }
+          }
+        }
+      }
+    },
+    "Requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stableId",
+        "identity",
+        "requiredActions",
+        "domainBinding",
+        "judgementDomainId",
+        "phases",
+        "requiresReleaseTailSemantics",
+        "pattern",
+        "patternArmRefs",
+        "maxArmElements",
+        "maxDeadlineElements",
+        "measure",
+        "resourceClaims",
+        "grace",
+        "timing",
+        "atomBindings",
+        "solverProfileRef",
+        "localClosePolicyToken",
+        "factBindingRefs",
+        "requiredRefs"
+      ],
+      "properties": {
+        "stableId": {
+          "$ref": "#/definitions/StableId"
+        },
+        "identity": {
+          "$ref": "#/definitions/Identity"
+        },
+        "requiredActions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "domainBinding": {
+          "type": "string",
+          "minLength": 1
+        },
+        "judgementDomainId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "phases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Phase"
+          }
+        },
+        "requiresReleaseTailSemantics": {
+          "type": "boolean"
+        },
+        "pattern": {
+          "$ref": "#/definitions/Pattern"
+        },
+        "patternArmRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "maxArmElements": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "value"
+          ],
+          "properties": {
+            "state": {
+              "const": "measured"
+            },
+            "value": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)$",
+              "maxLength": 20
+            }
+          }
+        },
+        "maxDeadlineElements": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "value"
+          ],
+          "properties": {
+            "state": {
+              "const": "measured"
+            },
+            "value": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)$",
+              "maxLength": 20
+            }
+          }
+        },
+        "measure": {
+          "$ref": "#/definitions/Measure"
+        },
+        "resourceClaims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "resourceId",
+              "intent",
+              "policyToken",
+              "graceOverride"
+            ],
+            "properties": {
+              "resourceId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "intent": {
+                "type": "string",
+                "enum": [
+                  "observe",
+                  "consume",
+                  "claim"
+                ]
+              },
+              "policyToken": {
+                "type": "string",
+                "minLength": 1
+              },
+              "graceOverride": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "mode",
+                  "overrideToken"
+                ],
+                "properties": {
+                  "mode": {
+                    "const": "none"
+                  },
+                  "overrideToken": {
+                    "const": ""
+                  }
+                }
+              }
+            }
+          },
+          "maxItems": 1
+        },
+        "grace": {
+          "$ref": "#/definitions/Grace"
+        },
+        "timing": {
+          "$ref": "#/definitions/Timing"
+        },
+        "atomBindings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AtomBinding"
+          }
+        },
+        "solverProfileRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "localClosePolicyToken": {
+          "type": "string",
+          "minLength": 1
+        },
+        "factBindingRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "requiredRefs": {
+          "$ref": "#/definitions/RequiredRefs"
+        }
+      }
+    },
+    "Declaration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stableId",
+        "kind",
+        "localName",
+        "references",
+        "requiredRefs"
+      ],
+      "properties": {
+        "stableId": {
+          "$ref": "#/definitions/StableId"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "requirement",
+            "patternDefinition",
+            "measureDefinition",
+            "resourceRecord",
+            "judgementDomain",
+            "solverProfile"
+          ]
+        },
+        "localName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "scope",
+                  "declarationOrdinal"
+                ],
+                "properties": {
+                  "scope": {
+                    "const": "sameDocument"
+                  },
+                  "declarationOrdinal": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "scope",
+                  "sourceDocumentId",
+                  "declarationOrdinal"
+                ],
+                "properties": {
+                  "scope": {
+                    "const": "explicitCrossDocument"
+                  },
+                  "sourceDocumentId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "declarationOrdinal": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "requiredRefs": {
+          "$ref": "#/definitions/RequiredRefs"
+        }
+      }
+    },
+    "Resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resourceId",
+        "declaredCapacity",
+        "slotToken",
+        "decisionPolicyRef",
+        "terminalAfterTermination",
+        "declaredGapGrace",
+        "requiredRefs"
+      ],
+      "properties": {
+        "resourceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "declaredCapacity": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "maxLength": 20
+        },
+        "slotToken": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decisionPolicyRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "terminalAfterTermination": {
+          "type": "boolean"
+        },
+        "declaredGapGrace": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*|-[1-9][0-9]*)$",
+          "maxLength": 20
+        },
+        "requiredRefs": {
+          "$ref": "#/definitions/RequiredRefs"
+        }
+      }
+    },
+    "Relation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "resourceId",
+        "members",
+        "policyToken",
+        "declaredCapacity",
+        "requiredRefs"
+      ],
+      "properties": {
+        "kind": {
+          "const": "exclusive"
+        },
+        "resourceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StableId"
+          }
+        },
+        "policyToken": {
+          "type": "string",
+          "minLength": 1
+        },
+        "declaredCapacity": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "maxLength": 20
+        },
+        "requiredRefs": {
+          "$ref": "#/definitions/RequiredRefs"
+        }
+      }
+    },
+    "Solver": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "solverId",
+        "revision",
+        "algorithmToken",
+        "objective",
+        "tieBreak",
+        "rejectIfNonUnique",
+        "requiredRefs"
+      ],
+      "properties": {
+        "solverId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "algorithmToken": {
+          "type": "string",
+          "minLength": 1
+        },
+        "objective": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "tieBreak": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "rejectIfNonUnique": {
+          "type": "boolean"
+        },
+        "requiredRefs": {
+          "$ref": "#/definitions/RequiredRefs"
+        }
+      }
+    },
+    "Domain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "domainId",
+        "coordinateSystemToken",
+        "axes",
+        "frame",
+        "requiredRefs"
+      ],
+      "properties": {
+        "domainId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "coordinateSystemToken": {
+          "type": "string",
+          "minLength": 1
+        },
+        "axes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "axisToken",
+              "minimum",
+              "maximum"
+            ],
+            "properties": {
+              "axisToken": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minimum": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]*|-[1-9][0-9]*)$",
+                "maxLength": 20
+              },
+              "maximum": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]*|-[1-9][0-9]*)$",
+                "maxLength": 20
+              }
+            }
+          }
+        },
+        "frame": {
+          "const": "static"
+        },
+        "requiredRefs": {
+          "$ref": "#/definitions/RequiredRefs"
+        }
+      }
+    },
+    "Timebase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profileId",
+        "unitToken",
+        "tickScale",
+        "originBeat",
+        "initialTempo",
+        "tempoSections",
+        "stopSections"
+      ],
+      "properties": {
+        "profileId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "unitToken": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tickScale": {
+          "$ref": "#/definitions/Q"
+        },
+        "originBeat": {
+          "$ref": "#/definitions/Q"
+        },
+        "initialTempo": {
+          "$ref": "#/definitions/Q"
+        },
+        "tempoSections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "startBeat",
+              "durationPerBeat"
+            ],
+            "properties": {
+              "startBeat": {
+                "$ref": "#/definitions/Q"
+              },
+              "durationPerBeat": {
+                "$ref": "#/definitions/Q"
+              }
+            }
+          }
+        },
+        "stopSections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "startBeat",
+              "endBeat",
+              "duration"
+            ],
+            "properties": {
+              "startBeat": {
+                "$ref": "#/definitions/Q"
+              },
+              "endBeat": {
+                "$ref": "#/definitions/Q"
+              },
+              "duration": {
+                "$ref": "#/definitions/Q"
+              }
+            }
+          }
+        }
+      }
+    },
+    "Late": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "finalizationWatermark",
+        "maxQueueHop",
+        "windowCloseThreshold",
+        "windowOpenThreshold"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "reject_late",
+            "queue_next_tick"
+          ]
+        },
+        "finalizationWatermark": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "value"
+          ],
+          "properties": {
+            "state": {
+              "const": "measured"
+            },
+            "value": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*|-[1-9][0-9]*)$",
+              "maxLength": 20
+            }
+          }
+        },
+        "maxQueueHop": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "value"
+          ],
+          "properties": {
+            "state": {
+              "const": "measured"
+            },
+            "value": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*|-[1-9][0-9]*)$",
+              "maxLength": 20
+            }
+          }
+        },
+        "windowCloseThreshold": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "value"
+          ],
+          "properties": {
+            "state": {
+              "const": "measured"
+            },
+            "value": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*|-[1-9][0-9]*)$",
+              "maxLength": 20
+            }
+          }
+        },
+        "windowOpenThreshold": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "value"
+          ],
+          "properties": {
+            "state": {
+              "const": "measured"
+            },
+            "value": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*|-[1-9][0-9]*)$",
+              "maxLength": 20
+            }
+          }
+        }
+      }
+    },
+    "MeasureDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "declaration"
+      ],
+      "properties": {
+        "declaration": {
+          "$ref": "#/definitions/Measure"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "Common": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chartEntryId",
+        "graphRevision",
+        "rulesetRef",
+        "normalizationProfileToken",
+        "coordinatorPolicy",
+        "executionProfile",
+        "timebase",
+        "latePolicy",
+        "graceInputs",
+        "declarations",
+        "resources",
+        "relations",
+        "solverProfiles",
+        "factBindings",
+        "judgementDomains",
+        "declaredFeatures",
+        "declaredCapabilities",
+        "namedGraceDurations",
+        "patternDefinitions",
+        "measureDefinitions"
+      ],
+      "properties": {
+        "chartEntryId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "graphRevision": {
+          "const": "2"
+        },
+        "rulesetRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "normalizationProfileToken": {
+          "type": "string",
+          "minLength": 1
+        },
+        "coordinatorPolicy": {
+          "const": "coordinator.policy.greedy_v1"
+        },
+        "executionProfile": {
+          "const": "gameplay.execution.t4-k4.v1"
+        },
+        "timebase": {
+          "$ref": "#/definitions/Timebase"
+        },
+        "latePolicy": {
+          "$ref": "#/definitions/Late"
+        },
+        "graceInputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "requirement",
+              "inputs"
+            ],
+            "properties": {
+              "requirement": {
+                "$ref": "#/definitions/StableId"
+              },
+              "inputs": {
+                "$ref": "#/definitions/GraceInputs"
+              }
+            }
+          }
+        },
+        "declarations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Declaration"
+          }
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Resource"
+          }
+        },
+        "relations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Relation"
+          }
+        },
+        "solverProfiles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Solver"
+          }
+        },
+        "factBindings": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "judgementDomains": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Domain"
+          }
+        },
+        "declaredFeatures": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "declaredCapabilities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "capabilityId"
+            ],
+            "properties": {
+              "capabilityId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "revision": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "namedGraceDurations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "declarationId",
+              "duration"
+            ],
+            "properties": {
+              "declarationId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "duration": {
+                "$ref": "#/definitions/Q"
+              }
+            }
+          }
+        },
+        "patternDefinitions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Pattern"
+          }
+        },
+        "measureDefinitions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MeasureDefinition"
+          }
+        }
+      }
+    },
+    "RankAssignment": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "rows"
+          ],
+          "properties": {
+            "mode": {
+              "const": "explicit"
+            },
+            "rows": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "identity",
+                  "priority",
+                  "tieRank",
+                  "namespace"
+                ],
+                "properties": {
+                  "identity": {
+                    "$ref": "#/definitions/Identity"
+                  },
+                  "priority": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*|-[1-9][0-9]*)$",
+                    "maxLength": 20
+                  },
+                  "tieRank": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)$",
+                    "maxLength": 20
+                  },
+                  "namespace": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "blocks"
+          ],
+          "properties": {
+            "mode": {
+              "const": "affine"
+            },
+            "blocks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "invocationId",
+                  "moduleId",
+                  "exportId",
+                  "requirementLocalId",
+                  "namespace",
+                  "priority",
+                  "base",
+                  "stride",
+                  "nodeOrder",
+                  "radices"
+                ],
+                "properties": {
+                  "invocationId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "moduleId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "exportId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "requirementLocalId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "namespace": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "priority": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*|-[1-9][0-9]*)$",
+                    "maxLength": 20
+                  },
+                  "base": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)$",
+                    "maxLength": 20
+                  },
+                  "stride": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)$",
+                    "maxLength": 20,
+                    "not": {
+                      "const": "0"
+                    }
+                  },
+                  "nodeOrder": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "radices": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]*)$",
+                      "maxLength": 20
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

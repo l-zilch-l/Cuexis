@@ -2,13 +2,18 @@
 
 状态：candidate；S7A-0 准入产出，待 owner acceptance
 
-更新日期：2026-10-02
+更新日期：2026-10-05
 
 上级文档：[Gameplay V2 acceptance package](README.md) ·
 [Stage 7A 实施计划](../../stage_plans/active/stage-07/plan.md)
 
 文档角色：格式与入口表征。它记录版本层级、Playback entry、四类身份与迁移规则，并标出未决点。
 它不是格式 Spec 正文，也不产生格式变更授权。
+
+本表含 S7A-0 历史候选；第 1–7 轮后续裁定由 [Gameplay V2 Spec](../../formats/GAMEPLAY_V2_SPEC.md)
+拥有，§9 的历史“未决”不得直接作为当前阻塞。S7A-3/4 新增字段与首次运行消费以
+[执行补充](../../formats/gameplay-v2-execution-profile.md)、[author profile](../../formats/gameplay-v2-author-profile.md)
+和 [Capsule §12](../../formats/GAMEPLAY_CAPSULE_V2_FORMAT.md) 为准；当前实施状态仍只由 CURRENT_STATUS 拥有。
 
 ## 1. 版本层级与接受/拒绝矩阵
 
@@ -19,7 +24,7 @@
 | 旧 Gameplay 语义版本 | `gameplay.version` | `1` | **不在最早入口接受**；必须显式离线迁移或稳定拒绝 | 迁移器属 S7A-8.2 |
 | 同义替代字段 | `semanticRevision` | 禁止 | 不得引入 | 无 |
 | Packed 载体版本 | `packedVersion` | `1`（candidate） | 保留 | 无 |
-| Packed 候选期修订 | `candidateRevision` | `1` | 保留；**是否改变 `compiledSemanticIdentity` 未定** | CM-V07 |
+| Packed 候选期修订 | `candidateRevision` | `1` Foundation / `2` 静态 Gameplay / `3` execution | 显式互拒；物理 revision 本身不改变 semantic identity，新语义字段与 graphRevision 改变它 | CM-V07 已裁定；revision3 设计尚未实施 |
 | capability 修订 | `revision` | 单调递增 | 语义变化必须新增 ID 或 revision | 无 |
 | 判定语义版本 | engine 分量的一部分 | 未冻结 | 与 SDK API 版本独立 | CM-I06 |
 | Replay 格式版本 | Replay header | 未冻结 | 与判定语义版本独立 | CM-K01 |
@@ -146,7 +151,11 @@ prepared identity、同一 Judgement kernel（PD §0）。
 
 迁移工具不得把 CXC pack 称为语义迁移，也不得用 `ChartWriter` 的 v4/v5 投影伪造新的 Gameplay Graph。
 
-## 9. 本文件的未决项
+## 9. S7A-0 历史未决项（不得视为当前阻塞）
+
+当前裁定与范围以 Spec §3.8、§5.2、§5.6、§3.18 及其第 1–7 轮台账为准。
+后续 Snapshot wire 等首次消费属 S7A-6，不把历史 open 文字带入本次 S7A-3/4。
+以下列表仅保留候选形成时的 provenance：
 
 1. CM-V06 Canonical Graph 物理归属；
 2. CM-V07 Packed `candidateRevision` 与 `compiledSemanticIdentity` 的关系；

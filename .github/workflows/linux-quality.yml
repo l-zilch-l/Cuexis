@@ -99,6 +99,13 @@ jobs:
           ./.vcpkg/bootstrap-vcpkg.sh -disableMetrics
           printf 'VCPKG_ROOT=%s/.vcpkg\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
 
+      - name: Restore vcpkg binary archives
+        uses: ./.github/actions/cache-vcpkg
+        with:
+          compiler: ${{ matrix.compiler }}
+          profile: ${{ matrix.preset }}
+          vcpkg-commit: ${{ env.VCPKG_COMMIT }}
+
       - name: Configure
         run: >-
           cmake --preset ${{ matrix.preset }} --fresh
@@ -245,6 +252,13 @@ jobs:
           ./.vcpkg/bootstrap-vcpkg.sh -disableMetrics
           printf 'VCPKG_ROOT=%s/.vcpkg\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
 
+      - name: Restore vcpkg binary archives
+        uses: ./.github/actions/cache-vcpkg
+        with:
+          compiler: g++
+          profile: debug
+          vcpkg-commit: ${{ env.VCPKG_COMMIT }}
+
       - name: Configure documentation target facts
         run: >-
           cmake --preset debug --fresh
@@ -281,6 +295,13 @@ jobs:
         run: |
           ./.vcpkg/bootstrap-vcpkg.sh -disableMetrics
           printf 'VCPKG_ROOT=%s/.vcpkg\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+
+      - name: Restore vcpkg binary archives
+        uses: ./.github/actions/cache-vcpkg
+        with:
+          compiler: clang++
+          profile: headless-clang-tidy
+          vcpkg-commit: ${{ env.VCPKG_COMMIT }}
 
       - name: Configure
         run: >-
@@ -339,6 +360,13 @@ jobs:
         run: |
           ./.vcpkg/bootstrap-vcpkg.sh -disableMetrics
           printf 'VCPKG_ROOT=%s/.vcpkg\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+
+      - name: Restore vcpkg binary archives
+        uses: ./.github/actions/cache-vcpkg
+        with:
+          compiler: g++
+          profile: headless-coverage
+          vcpkg-commit: ${{ env.VCPKG_COMMIT }}
 
       - name: Configure
         run: >-
@@ -477,6 +505,13 @@ jobs:
           ./.vcpkg/bootstrap-vcpkg.sh -disableMetrics
           printf 'VCPKG_ROOT=%s/.vcpkg\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
 
+      - name: Restore vcpkg binary archives
+        uses: ./.github/actions/cache-vcpkg
+        with:
+          compiler: g++
+          profile: adapter-coverage
+          vcpkg-commit: ${{ env.VCPKG_COMMIT }}
+
       - name: Configure
         run: >-
           cmake --preset adapter-coverage --fresh
@@ -575,6 +610,13 @@ jobs:
         run: |
           ./.vcpkg/bootstrap-vcpkg.sh -disableMetrics
           printf 'VCPKG_ROOT=%s/.vcpkg\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+
+      - name: Restore vcpkg binary archives
+        uses: ./.github/actions/cache-vcpkg
+        with:
+          compiler: g++
+          profile: shader-tools-coverage
+          vcpkg-commit: ${{ env.VCPKG_COMMIT }}
 
       - name: Configure
         run: >-
@@ -713,6 +755,13 @@ jobs:
         run: |
           ./.vcpkg/bootstrap-vcpkg.sh -disableMetrics
           printf 'VCPKG_ROOT=%s/.vcpkg\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+
+      - name: Restore vcpkg binary archives
+        uses: ./.github/actions/cache-vcpkg
+        with:
+          compiler: g++
+          profile: headless-release
+          vcpkg-commit: ${{ env.VCPKG_COMMIT }}
 
       - name: Configure
         run: >-

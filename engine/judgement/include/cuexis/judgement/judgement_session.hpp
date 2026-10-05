@@ -1,43 +1,14 @@
 #pragma once
 
-//  Judgement typed kernel - S7A-1 session lifecycle skeleton.
-//
-//  Frozen by this batch (plan S7A-1, rulings S1-03 / S1-04 / S1-05):
-//
-//    * the module and its installation boundary: an internal STATIC target cuexis_judgement that
-//      links cuexis::core only, installs no header and adds no public component and no Playback
-//      method;
-//    * the nine lifecycle verbs: create / configure / prepare / submit / advance / query /
-//      snapshot / seek / reset;
-//    * the ownership and exception commitments of the ABI section "ownership and lifetime": a
-//      single owner thread with a unique owner of the mutable state, atomic prepare, prepared
-//      values read-only after prepare, non-owning prepared views, the Result error channel, no
-//      exception across the module boundary, and no throw from a destructor or a real-time path.
-//
-//  Deliberately not frozen by this batch, and therefore not representable here:
-//
-//    * every payload role. No lifecycle verb takes an argument. A verb that accepted a guessed
-//      payload type, integer width, enumeration value, default value or serialization encoding
-//      would freeze exactly what ruling S1-05 moves out of this batch, so those by-value fields
-//      and operations are out of scope and the verb only reports its stable rejection;
-//    * every semantic result. No verb has a success path: configure refuses because no
-//      configuration role is representable, and prepare, submit, advance, query, snapshot, seek
-//      and reset refuse because no prepared session can exist. create is the only verb that can
-//      succeed, and it returns an empty session that owns no judgement state;
-//    * the prepared graph, prepared grace, arbitration policy and interface projection: they have
-//      no setter, no non-const accessor and no verb parameter, so no runtime mutation of them is
-//      expressible at all, not merely forbidden by a comment;
-//    * the projection and snapshot field tables, any serialization layout, and the diagnostic
-//      code table.
-//
-//  Runtime immutability is structural: the reading verbs are const-qualified, the session is
-//  move-only so no second alias can mutate it, and there is no code path that could modify
-//  prepared state because there is no code path that could create it.
-//
-//  A moved-from session is only valid for destruction or for move assignment. Using it is a
-//  programming error that debug builds report through an assertion.
+// Internal owning T4/K4 session. Typed overloads execute the selected S7A-4 profile;
+// legacy argument-free verbs and snapshot/seek retain their stable rejection paths.
+// Prepared state and projections own their storage. Query returns immutable shared
+// snapshots; reset cannot invalidate earlier projections. No header is installed.
+// A session has one owner thread and is move-only. A moved-from value is usable
+// only for destruction or move assignment.
 
 #include <cuexis/core/result.hpp>
+#include <cuexis/judgement/kernel_types.hpp>
 
 #include <memory>
 
@@ -45,21 +16,15 @@ namespace cuexis::judgement {
 
 namespace detail {
 
-//  Storage anchors of the self-owning output carriers. Declared and never defined: the field
-//  table of judged output and of a snapshot is unfrozen (unresolved item #3), so this boundary
-//  promises no member, no width and no byte encoding. Only shared ownership of the opaque anchor
-//  crosses the boundary.
 class ProjectionStorage;
 class SnapshotStorage;
+class KernelTestAccess;
 
 } // namespace detail
 
-//  Self-owning, read-only projection of judged output. The frozen ownership rule for a judgement
-//  result is "value type projection, returned by value, never referencing session storage"; that
-//  rule is expressed by the shared, self-owned anchor below. No accessor and no field is exposed,
-//  because an accessor would freeze one entry of an unfrozen field table.
 class JudgementProjection final {
   public:
+    [[nodiscard]] auto kernelView() const noexcept -> const KernelProjection&;
     JudgementProjection(const JudgementProjection&) noexcept = default;
     JudgementProjection(JudgementProjection&&) noexcept = default;
     auto operator=(const JudgementProjection&) noexcept -> JudgementProjection& = default;
@@ -69,9 +34,6 @@ class JudgementProjection final {
   private:
     friend class JudgementSession;
 
-    //  The session is the only producer of a projection. S7A-1 never reaches a prepared session,
-    //  so this seam is never called; it exists so that the ownership contract stays expressible
-    //  without inventing a field.
     explicit JudgementProjection(std::shared_ptr<const detail::ProjectionStorage> storage) noexcept;
 
     std::shared_ptr<const detail::ProjectionStorage> storage_;
@@ -119,6 +81,7 @@ class JudgementSession final {
     //  accepting nothing while reporting success would be a pseudo-success. A refused configure
     //  publishes nothing, so no half-configured session can exist.
     [[nodiscard]] auto configure() -> core::Result<void>;
+    [[nodiscard]] auto configure(const SessionConfiguration& configuration) -> core::Result<void>;
 
     //  prepare - freezes chart, ruleset, loadout, input mapping, timing and judgement config. It
     //  is atomic: a refused prepare publishes nothing and leaves no half-prepared session.
@@ -127,12 +90,16 @@ class JudgementSession final {
     //  requires a configuration first; a configured session would still refuse rather than
     //  publish a guessed representation.
     [[nodiscard]] auto prepare() -> core::Result<void>;
+    [[nodiscard]] auto prepare(const PreparedGameplay& prepared) -> core::Result<void>;
 
     //  submit / advance - the single live and replay path of the ABI. Both require a prepared
     //  session plus a representable observation, event sequence and timebase; none exists in
     //  this batch, so both refuse.
     [[nodiscard]] auto submit() -> core::Result<void>;
     [[nodiscard]] auto advance() -> core::Result<void>;
+    [[nodiscard]] auto submit(std::vector<ClockedIngress> batch)
+        -> core::Result<std::vector<InputReceiptPending>>;
+    [[nodiscard]] auto advance(Tick horizon) -> core::Result<JudgementProjection>;
 
     //  query / snapshot - reads. Const-qualified, so no read path can modify the session. Both
     //  require a prepared session; the returned carriers are self-owning value types that never
@@ -154,6 +121,7 @@ class JudgementSession final {
 
   private:
     struct Impl;
+    friend class detail::KernelTestAccess;
 
     explicit JudgementSession(std::unique_ptr<Impl> impl) noexcept;
 

@@ -3,12 +3,16 @@
 状态：candidate；2026-10-04 按 owner 的文档设计授权闭合 S7A-3 首次消费合同；
 不是生产 wire、Reader/Writer 实现证据或 S7A-3 整批关闭证明。
 
-更新日期：2026-10-04
+更新日期：2026-10-05
 
 依据：[Gameplay V2 Spec](GAMEPLAY_V2_SPEC.md) §3.8–§3.12、§5、§8，
 [Foundation Packed](PACKED_CHART_FORMAT.md) 与
 [决策登记](../stage_reports/stages/stage-07/2026-10-03-s7a-3-decision-register.md)。
 本文唯一拥有 Capsule 的物理字段；时间消费与仲裁语义仍由 Gameplay V2 Spec 拥有。
+
+2026-10-05 新增 §12 的 execution candidate revision 3；§§1–11 的 revision 2 合同与
+已有 golden 不被改写。当前实现状态只见 [CURRENT_STATUS](../CURRENT_STATUS.md)。
+
 
 ## 1. Profile 与兼容
 
@@ -402,3 +406,58 @@ state-budget 测量缺口仍是独立 **INCOMPLETE GATE**；没有 accepted thre
 S7A-3 的 E1 不缩减；S7A-7 承接 Playback/Player/CXC 的入口、manifest 与生命周期集成。
 Snapshot/Replay/FactId/CommitId codec、runtime resource state encoding、S7A-9 新数值上限、
 7B+ capabilities 均不由此文件冻结。
+
+## 12. Execution candidate revision 3
+
+本节为 2026-10-05 的选定补充，运行含义由
+[execution profile](gameplay-v2-execution-profile.md) 拥有，不表示实现已存在。
+candidateRevision=3、graphRevision 显式为数值 `2`（既有 V/u64，不是字符串 token）；
+chartVersion=5、gameplayVersion=2、packedVersion=1 保持。revision3 仅完整 execution profile，
+不接受 legacy requirements、runtime state/proof/AST 或缺字段的静态图。
+所有基础 section、flags、directory、varint、CRC、bounds 和七项物理限额沿 §§1–11。
+
+增量字段恰为以下内容；按行指定的位置串接，使用本文已有 S/Z/V/B/L/O/J atoms。
+
+| 位置 | 新增字段与物理顺序 |
+| --- | --- |
+| GPH0，§5 第 7 行 counts 之后 | `executionProfile:S`，精确 token `gameplay.execution.t4-k4.v1` |
+| GPR0，每条 §6 第 8 行 graceProvenance 之后 | `phaseTargets:L(phase:J,chartTick:Z)` |
+| 紧接 phaseTargets | `atomBindings:L(atomRef:S,domainToken:S,sourceClass:S,channelToken:S,action:u8,amountRange:O(minimum:Z,maximum:Z),tailOnly:B)` |
+| 紧接 atomBindings | `independentCompetition:O(priority:Z,tieRank:V)` |
+
+phaseTargets 按 J 升序且每个声明 phase 恰一行；J 是已有 phase kind tag，不追加 declarationOrdinal。
+atomBindings 按 atomRef bytes 升序、同一 atomRef 不重复；action 明确 1=press、2=release、3=update，
+未知拒绝。amountRange 非空闭区间；tailOnly 为显式 B，不是 hint。新增字符串全部进入 STR0，
+不借 REF0 原有 kind 给 source/channel 编造新资源引用；atomRef 必须定位同实例 Pattern atom
+或已声明 tailOnly binding。不存在新公共 capability 自动补全。
+independentCompetition 与真实 resourceClaims 互斥；无 claim 的非观察实例必须 present，
+读取后放入 prepare 的虚拟独立仲裁组，不能在文件添加名为 `@independent` 的 Resource row。
+资源引用的存在性、target 合法性、mapping 兼容与执行 gate 仍由 Reader→prepare 完整复核。
+
+结构 preimage domain 改为 `cuexis.chart.semantic.v5.gameplay.2`，后跟 NUL+u16 LE(5)。
+§9 全部步骤沿用，但 GPH0 添加 executionProfile，GPR0 每行添加本节三个完整结构字段，
+位置与 wire 增量相同；S 展开为 text，不 hash dictionary indices。每个 phase target 用 u8 J+i64 LE；
+binding 用 text×4+u8 action+option tag+i64 range×2+B；独立 pair 用 option+ i64+u64。
+所有新增字段进入 chart/compiled judgement 投影，sourceMap 和物理顺序仍不进入。
+旧 semanticIdentity/golden 不重解释，新 revision3 golden 单独固定长度、bytes 与 preimage digest。
+
+revision1/2 Reader 对 3 在 header gate 早拒绝；revision3 dispatcher 可以显式分派旧 Reader
+用于离线读取，但不能把旧图补零后交 execution gate。执行旧图拒绝 profile_incomplete；
+不自动迁移 phase targets、bindings 或 pair。Writer 显式选 revision3，不切换已有默认模式。
+向低版本 Writer 交新增 profile 数据必须拒绝，不能丢字段写 revision2。
+
+E1 增加 target/binding/pair typed round-trip、非法/缺失/重复 binding、unknown action、
+旧/新 revision 互拒、target/hash mutation 与全新 byte golden。
+原 revision2 E1/golden 保留；不能删除旧测试让 revision3 通过。
+
+
+### 12.1 Revision 3 增量的严格验证
+
+不允许重复 phase kind，即使 declarationOrdinal 不同；phaseTargets 引用 phase kind 而非 ordinal，
+且 phase declarationOrdinal 在该 Requirement 内唯一。完整 phase shape/Release flag/body 单窗口
+由 execution Spec §2.1 校验。新增字段必须在 Writer/Reader/所有 canonical identity 投影保真。
+phase/body/tail validation 不使用 admitsSuccess 的无 phase union helper 来代替 runtime gate。
+旧合成 E/path fixtures 不作 CXT 真实身份的证据；实际 CXT marker 映射归 author profile §3。
+normalization/coordinator 约束在 revision3 的 owning graph/AssemblyRequest 必须保留，
+不能只存在 CapsuleProfiles 中而被 identity generator 丢弃；其既有 GPH0 wire 位置不改。
+Reader 的 DecodeContext/coordinator/identity 声明与保存的约束逐字段对账。

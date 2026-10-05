@@ -2,7 +2,12 @@
 
 状态：current index
 
-更新日期：2026-10-04
+更新日期：2026-10-05
+
+本轮设计交付：[S7A-3/4 完整 execution 方案与交接](stages/stage-07/2026-10-05-s7a-3-4-execution-design.md)
+（2026-10-05，仅设计文档完成；新增合同与 revision3 未实施）。
+后续复核：[S7A-3/4 剩余歧义审计与修订](stages/stage-07/2026-10-05-s7a-3-4-ambiguity-audit.md)
+（同日较晚快照，登记 15 组实际缺项和修订，不表示运行验收）。
 
 报告保存带日期的实施、审查和验证证据。报告中的“下一步”只代表其快照日期，不能重新定义
 [CURRENT_STATUS.md](../CURRENT_STATUS.md)。
@@ -23,6 +28,7 @@ Standards / Spec 记录），由该专题自己的 `README.md` 承担导航；�
 - [Chart Format Foundation](stages/chart-format-foundation/README.md)
 - [Stage 6](stages/stage-06/README.md)：[关闭报告](stages/stage-06/completion.md)（2026-09-27 关闭并归档）
 - Stage 7A：[Gameplay V2 acceptance package：owner 接受记录](stages/stage-07/2026-10-02-s7a-0-acceptance.md)（2026-10-02，准入接受与冻结顺序）、
+  [S7A-3 剩余实施与验收证据核对](stages/stage-07/2026-10-05-s7a-3-remaining-evidence.md)（2026-10-05，收窄过时未完成表述，核对既有实现及当前 SHA hosted，登记 authoring 双路、K4 affine、完整 E1 与独立状态预算余项；不关闭 S7A-3）、
   [S7A-0 执行基线与合同表征](stages/stage-07/2026-10-02-s7a-0-baseline.md)（2026-10-02，S7A-0 批次证据）、
   [S7A-0 Release 基线证据](stages/stage-07/2026-10-02-s7a-0-release-baseline.md)（2026-10-02，749/749 本地 Release 结论）、
   [D-9 候选补丁与验证证据](stages/stage-07/2026-10-02-d9-shell-guard-candidate.md)（2026-10-02，未提交的候选修复，待 owner 按 ADR 0042 复核）、
@@ -44,6 +50,9 @@ Standards / Spec 记录），由该专题自己的 `README.md` 承担导航；�
   [第 6 轮 `CM-D04` / `P1-09` 首次消费的诊断分类学后续补齐记录](stages/stage-07/2026-10-03-s7a-diagnostics-taxonomy-rulings.md)（2026-10-03，决策卡 2026-10-02T21:03:39.462Z / thread `01a0fe6b-6e57-7051-87f8-cf9588e85568` / `adopt` 0.96 ＋ 处置确认卡 2026-10-02T21:51:38.591Z / thread `01a0fe97-f1b6-7332-b0c9-cafc3c9f25ec` / verdict `reject`（逐项处置）/ 0.7：九类为唯一 category 权威与 6 处裸 `capability` → `capability_disabled` 逐字替换、ABI 码族分组词的"不是取值"限定句、八条已登记码 category 定案（含 R-12 改正为 `invalid_relation`）、新增并登记 `ruleset.transaction_failed`（`invalid_relation` / `error` / `session_faulted` / S7A-5）与 `presentation-target-missing` / `partial-group`（`invalid_relation` / `error` / `session_unaffected` / S7A-7）、六个码首次消费登记为 S7A-3、13 个 `judgement.s7a2.*` 令牌状态词 `not_registered_src_only`、**公共诊断码判据（具名码串 / 适用场景 / 九类映射可在正典文本中明确相互追溯；前缀与 owner 命名均不决定公开性）与五条"码 → 来源映射行 → 域 8 承载面"清单写入 Spec §9.9 / ABI 域 8、并留 §11.2 独立裁定说明**、49 处活行号锚 → 稳定章节 / 符号引用且 JSON 内字面行号锚清零（逐条对照见 §11.7，锚定 ABI 定版 `c49447e4…`）、`docs/DOCUMENTATION_POLICY.md` 新增"行号锚只作带日期定版证据"规则、`BATCH_GATES.md` 撤下 6 行 Gameplay I → V2 推导表改为指向 Spec §9.2 / §9.3 与未关闭 `CM-D02`、公共承载面与 13 条 src-only 令牌由 `publicConsumptionSurface`（公共码非空 / 待登记一律 `null`）区分并由校验器新增 Rule 6 强制、BATCH_GATES / CONTRACT_MATRIX / OPEN_QUESTIONS 现行措辞订正与历史报告订正说明（§11.3 C-4）、`severity` / `faulted` 闭集明示（含 `info` / `warning` 暂未使用）、码表校验器正例 + 7 负例（含"src-only 令牌携带公共承载面"）与 `check_docs.py` / `git diff --check` 结果、计数一律不变（九类 / 19 / 9 域 126 / 20 / 114 / 76 行 84 项 / 29-13-7）；**只落地文档与集中码表语义，不表示 Judgement 实现完成、也不表示 Stage 7A 完成**）、
   [ABI 文档事故性截断与重建的证据记录](stages/stage-07/2026-10-03-abi-document-restoration.md)（2026-10-03，`docs/api/GAMEPLAY_V2_ABI.md`（untracked 候选）曾被一条 PowerShell 写命令截断为 2 行 / 309 字节（`AddRange` 绑定异常后 `WriteAllLines` 仍执行）；由 62 个 transcript + 8 份片段转储 + 29 条写入命令重建成 1245 行 / 148685 字节 / sha256 `d3e06a99…c585aa`，1040 / 1048 非空行逐字可溯（99.24%）；双线独立交叉验证：948 条直接观测行中 922 条在落盘件逐字命中（97.3%）、逐域 `126 = 96 + 30` 拆分完全相同、**实质冲突 0**，残余仅 L744 / L746 引号字形与 L752 / L753 折行点两处纯排版项；含根因、缓解纪律与"不表示实现完成、也不表示 Stage 7A 完成"声明）、
   [S7A-3 第二半 part 1：主控独立复验的带日期证据](stages/stage-07/2026-10-03-s7a-3-independent-verification.md)（2026-10-03，控制侧对实现交付的**两次独立复跑**且不复用代理自述数字：第 2 轮复审改正（`All tests passed (3335 assertions in 104 test cases)`、8/8 门禁、越界 0、STAGED=0、构建"真编译"取证）与第 3 轮改正（`3407 assertions / 105 test cases`、10/10 门禁、定点用例 50 / 35 / 25 断言与 `[budget]` 255 / 9、逐字节扫描、行尾未被静默改写、与代理自述逐项相符）；含 `git diff --check` 对 untracked 改动无鉴别力的盲区、`--clean-first` 与"真编译"取证的硬性要求、按名复跑的 Catch2 逗号分隔陷阱、静止守卫假阳性判据，以及"不主张 S7A-3 / Stage 7A 完成、不主张状态预算门禁完整、不主张包含性门禁已生效、不主张预算数值已冻结"的表述纪律与未覆盖范围清单；**只登记复验证据与方法学结论，不表示实现完成、也不表示 Stage 7A 完成**）、
+
+- [S7A-3/4 实施进度与暂停点](stages/stage-07/2026-10-05-s7a-3-4-implementation-progress.md)（2026-10-05，工作区实现、聚焦验证和剩余验收；不关闭整批）
+- [S7A-3 E1 与 S7A-4 逐项审计](stages/stage-07/2026-10-05-s7a-3-4-e1-audit.md)
 
 ## 跨阶段专题
 
@@ -84,3 +93,7 @@ Standards / Spec 记录），由该专题自己的 `README.md` 承担导航；�
 - [Legacy stage-report paths](legacy-paths.md)
 
 历史报告不可被改写为新的验证结果。新的关闭或复核必须创建新的报告，并从当前状态页或相应索引链接。
+
+- [S7A-3/4 受限功能验收与最终矩阵](stages/stage-07/2026-10-05-s7a-3-4-functional-acceptance.md)
+
+- [Stage 7 CI 耗时基线与优化](stages/stage-07/2026-10-05-ci-runtime-optimization.md)

@@ -2,7 +2,7 @@
 
 状态：candidate
 
-更新日期：2026-10-04
+更新日期：2026-10-05
 
 文档角色：内部技术参考（候选）
 
@@ -17,6 +17,11 @@
 ADR，更**不是**已发布 SDK 的宿主 API。
 
 四条边界必须先讲清楚，否则后续所有条款都会被误读：
+
+2026-10-05 的 S7A-3/4 首次执行表示由
+[execution typed supplement](gameplay-v2-execution-types.md) 补齐；相应语义见
+[execution Spec](../formats/gameplay-v2-execution-profile.md)。这只覆盖已列明的内部字段，
+不冻结后续 wire，不把新增 helper 算为新 ABI 角色，不表示实现或公共 SDK 已可用。
 
 1. **内部 / preview typed 边界。** 本 ABI 描述的是 Gameplay typed kernel 与 Playback 集成之间的
    C++ 边界。它面向仓库内消费者与 reference host，不面向第三方宿主。ADR 0027 冻结的宿主入口仍是

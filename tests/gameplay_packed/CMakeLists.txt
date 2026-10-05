@@ -10,4 +10,4 @@ target_link_libraries(cuexis_gameplay_packed_tests PRIVATE
     Catch2::Catch2WithMain
 )
 include(Catch)
-catch_discover_tests(cuexis_gameplay_packed_tests)
+catch_discover_tests(cuexis_gameplay_packed_tests PROPERTIES LABELS "gameplay_packed")

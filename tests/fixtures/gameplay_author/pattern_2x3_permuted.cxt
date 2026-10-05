@@ -1,0 +1,1178 @@
+{
+  "format": "cuexis.animation-template",
+  "version": 2,
+  "moduleId": "module.one",
+  "moduleKind": "pattern",
+  "metadata": {},
+  "parameters": [
+    {
+      "id": "outerCount",
+      "type": "integer",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 100
+    }
+  ],
+  "prototypes": [
+    {
+      "id": "tap",
+      "slots": [],
+      "components": [],
+      "requirements": [],
+      "extensions": {}
+    }
+  ],
+  "patterns": [
+    {
+      "id": "export.one",
+      "nodes": [
+        {
+          "op": "repeat",
+          "nodeId": "outer",
+          "count": {
+            "kind": "parameter",
+            "id": "outerCount"
+          },
+          "index": "i",
+          "body": [
+            {
+              "op": "repeat",
+              "nodeId": "inner",
+              "count": {
+                "kind": "literal",
+                "value": 3
+              },
+              "index": "j",
+              "body": [
+                {
+                  "op": "emit",
+                  "nodeId": "emit",
+                  "prototype": "tap",
+                  "bindings": [],
+                  "parent": {
+                    "kind": "invocation-parent"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "extensions": {}
+    }
+  ],
+  "animations": [],
+  "exports": [
+    {
+      "kind": "pattern",
+      "id": "export.one"
+    }
+  ],
+  "requiredExtensions": [
+    "cuexis.gameplay.v2"
+  ],
+  "extensions": {
+    "cuexis.gameplay.v2": {
+      "version": 2,
+      "authorProfile": "gameplay.author.t4-k4.v1",
+      "sourceDocumentId": "doc.alpha",
+      "common": {
+        "chartEntryId": "chart.entry.one",
+        "graphRevision": "2",
+        "rulesetRef": "ruleset.one",
+        "normalizationProfileToken": "normalization.one",
+        "coordinatorPolicy": "coordinator.policy.greedy_v1",
+        "executionProfile": "gameplay.execution.t4-k4.v1",
+        "timebase": {
+          "profileId": "engine.tick.us.v1",
+          "unitToken": "us",
+          "tickScale": {
+            "numerator": "1",
+            "denominator": "1"
+          },
+          "originBeat": {
+            "numerator": "0",
+            "denominator": "1"
+          },
+          "initialTempo": {
+            "numerator": "500000",
+            "denominator": "1"
+          },
+          "tempoSections": [],
+          "stopSections": []
+        },
+        "latePolicy": {
+          "mode": "queue_next_tick",
+          "finalizationWatermark": {
+            "state": "measured",
+            "value": "8"
+          },
+          "maxQueueHop": {
+            "state": "measured",
+            "value": "4"
+          },
+          "windowCloseThreshold": {
+            "state": "measured",
+            "value": "3"
+          },
+          "windowOpenThreshold": {
+            "state": "measured",
+            "value": "2"
+          }
+        },
+        "graceInputs": [
+          {
+            "requirement": {
+              "sourceDocumentId": "doc.alpha",
+              "declarationOrdinal": 9
+            },
+            "inputs": {
+              "unitInTicks": {
+                "numerator": "1",
+                "denominator": "1"
+              },
+              "minimumCanonical": "0",
+              "maximumCanonical": "1000",
+              "chartDuration": {
+                "numerator": "0",
+                "denominator": "1"
+              }
+            }
+          },
+          {
+            "requirement": {
+              "sourceDocumentId": "doc.alpha",
+              "declarationOrdinal": 8
+            },
+            "inputs": {
+              "unitInTicks": {
+                "numerator": "1",
+                "denominator": "1"
+              },
+              "minimumCanonical": "0",
+              "maximumCanonical": "1000",
+              "chartDuration": {
+                "numerator": "0",
+                "denominator": "1"
+              }
+            }
+          },
+          {
+            "requirement": {
+              "sourceDocumentId": "doc.alpha",
+              "declarationOrdinal": 7
+            },
+            "inputs": {
+              "unitInTicks": {
+                "numerator": "1",
+                "denominator": "1"
+              },
+              "minimumCanonical": "0",
+              "maximumCanonical": "1000",
+              "chartDuration": {
+                "numerator": "0",
+                "denominator": "1"
+              }
+            }
+          },
+          {
+            "requirement": {
+              "sourceDocumentId": "doc.alpha",
+              "declarationOrdinal": 6
+            },
+            "inputs": {
+              "unitInTicks": {
+                "numerator": "1",
+                "denominator": "1"
+              },
+              "minimumCanonical": "0",
+              "maximumCanonical": "1000",
+              "chartDuration": {
+                "numerator": "0",
+                "denominator": "1"
+              }
+            }
+          },
+          {
+            "requirement": {
+              "sourceDocumentId": "doc.alpha",
+              "declarationOrdinal": 5
+            },
+            "inputs": {
+              "unitInTicks": {
+                "numerator": "1",
+                "denominator": "1"
+              },
+              "minimumCanonical": "0",
+              "maximumCanonical": "1000",
+              "chartDuration": {
+                "numerator": "0",
+                "denominator": "1"
+              }
+            }
+          },
+          {
+            "requirement": {
+              "sourceDocumentId": "doc.alpha",
+              "declarationOrdinal": 4
+            },
+            "inputs": {
+              "unitInTicks": {
+                "numerator": "1",
+                "denominator": "1"
+              },
+              "minimumCanonical": "0",
+              "maximumCanonical": "1000",
+              "chartDuration": {
+                "numerator": "0",
+                "denominator": "1"
+              }
+            }
+          }
+        ],
+        "declarations": [
+          {
+            "stableId": {
+              "sourceDocumentId": "doc.alpha",
+              "declarationOrdinal": 101
+            },
+            "kind": "measureDefinition",
+            "localName": "unused.measure",
+            "references": [],
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          },
+          {
+            "stableId": {
+              "sourceDocumentId": "doc.alpha",
+              "declarationOrdinal": 100
+            },
+            "kind": "patternDefinition",
+            "localName": "unused.pattern",
+            "references": [],
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          },
+          {
+            "stableId": {
+              "sourceDocumentId": "doc.alpha",
+              "declarationOrdinal": 9
+            },
+            "kind": "requirement",
+            "localName": "requirement.5",
+            "references": [],
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          },
+          {
+            "stableId": {
+              "sourceDocumentId": "doc.alpha",
+              "declarationOrdinal": 8
+            },
+            "kind": "requirement",
+            "localName": "requirement.4",
+            "references": [],
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          },
+          {
+            "stableId": {
+              "sourceDocumentId": "doc.alpha",
+              "declarationOrdinal": 7
+            },
+            "kind": "requirement",
+            "localName": "requirement.3",
+            "references": [],
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          },
+          {
+            "stableId": {
+              "sourceDocumentId": "doc.alpha",
+              "declarationOrdinal": 6
+            },
+            "kind": "requirement",
+            "localName": "requirement.2",
+            "references": [],
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          },
+          {
+            "stableId": {
+              "sourceDocumentId": "doc.alpha",
+              "declarationOrdinal": 5
+            },
+            "kind": "requirement",
+            "localName": "requirement.1",
+            "references": [],
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          },
+          {
+            "stableId": {
+              "sourceDocumentId": "doc.alpha",
+              "declarationOrdinal": 4
+            },
+            "kind": "requirement",
+            "localName": "requirement.0",
+            "references": [],
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          },
+          {
+            "stableId": {
+              "sourceDocumentId": "doc.alpha",
+              "declarationOrdinal": 3
+            },
+            "kind": "solverProfile",
+            "localName": "solver.exclusive",
+            "references": [],
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          },
+          {
+            "stableId": {
+              "sourceDocumentId": "doc.alpha",
+              "declarationOrdinal": 1
+            },
+            "kind": "judgementDomain",
+            "localName": "domain.main",
+            "references": [],
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          }
+        ],
+        "resources": [],
+        "relations": [],
+        "solverProfiles": [
+          {
+            "solverId": "solver.exclusive",
+            "revision": "revision.one",
+            "algorithmToken": "coordinator.policy.greedy_v1",
+            "objective": [
+              "first-eligible"
+            ],
+            "tieBreak": [
+              "priority.asc",
+              "tieRank.asc"
+            ],
+            "rejectIfNonUnique": true,
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          }
+        ],
+        "factBindings": [
+          "binding.one"
+        ],
+        "judgementDomains": [
+          {
+            "domainId": "domain.main",
+            "coordinateSystemToken": "coordinate.plane",
+            "axes": [
+              {
+                "axisToken": "axis.horizontal",
+                "minimum": "0",
+                "maximum": "1000"
+              }
+            ],
+            "frame": "static",
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          }
+        ],
+        "declaredFeatures": [],
+        "declaredCapabilities": [],
+        "namedGraceDurations": [],
+        "patternDefinitions": [
+          {
+            "patternId": "unused.pattern",
+            "matchPolicy": "leftmost-first",
+            "root": {
+              "primitive": "instant",
+              "operands": []
+            },
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          }
+        ],
+        "measureDefinitions": [
+          {
+            "id": "unused.measure",
+            "declaration": {
+              "components": [
+                {
+                  "phase": "tap",
+                  "categoryToken": "tap",
+                  "gradeTokens": []
+                }
+              ],
+              "requiredRefs": {
+                "features": [],
+                "capabilities": []
+              }
+            }
+          }
+        ]
+      },
+      "requirements": [
+        {
+          "stableId": {
+            "sourceDocumentId": "doc.alpha",
+            "declarationOrdinal": 9
+          },
+          "identity": {
+            "chartEntryId": "chart.entry.one",
+            "invocationId": "invocation.one",
+            "moduleId": "module.one",
+            "exportId": "export.one",
+            "emissionPath": [
+              {
+                "nodeId": "outer",
+                "repeatIndex": "2"
+              },
+              {
+                "nodeId": "inner",
+                "repeatIndex": "3"
+              },
+              {
+                "nodeId": "emit",
+                "repeatIndex": "0"
+              }
+            ],
+            "requirementLocalId": "requirement.one"
+          },
+          "requiredActions": [
+            "action.primary"
+          ],
+          "domainBinding": "domain.binding.one",
+          "judgementDomainId": "domain.main",
+          "phases": [
+            {
+              "kind": "tap",
+              "declarationOrdinal": 1
+            }
+          ],
+          "requiresReleaseTailSemantics": false,
+          "pattern": {
+            "matchPolicy": "leftmost-first",
+            "root": {
+              "primitive": "atom",
+              "atomRef": "atom.one",
+              "operands": []
+            },
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          },
+          "patternArmRefs": [
+            "atom.one"
+          ],
+          "maxArmElements": {
+            "state": "measured",
+            "value": "1"
+          },
+          "maxDeadlineElements": {
+            "state": "measured",
+            "value": "1"
+          },
+          "measure": {
+            "components": [
+              {
+                "phase": "tap",
+                "categoryToken": "tap",
+                "gradeTokens": []
+              }
+            ],
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          },
+          "resourceClaims": [],
+          "grace": {
+            "policy": "explicit",
+            "allowChartGrace": true
+          },
+          "timing": {
+            "end": "940",
+            "successWindows": [
+              {
+                "phase": {
+                  "kind": "tap",
+                  "declarationOrdinal": 1
+                },
+                "start": "850",
+                "end": "920"
+              }
+            ],
+            "phaseTargets": [
+              {
+                "phase": "tap",
+                "chartTick": "900"
+              }
+            ]
+          },
+          "atomBindings": [
+            {
+              "atomRef": "atom.one",
+              "domainToken": "domain.binding.one",
+              "sourceClass": "keyboard",
+              "channelToken": "lane.one",
+              "action": "press",
+              "tailOnly": false
+            }
+          ],
+          "solverProfileRef": "solver.exclusive",
+          "localClosePolicyToken": "local.close.t4.v1",
+          "factBindingRefs": [
+            "binding.one"
+          ],
+          "requiredRefs": {
+            "features": [],
+            "capabilities": []
+          }
+        },
+        {
+          "stableId": {
+            "sourceDocumentId": "doc.alpha",
+            "declarationOrdinal": 8
+          },
+          "identity": {
+            "chartEntryId": "chart.entry.one",
+            "invocationId": "invocation.one",
+            "moduleId": "module.one",
+            "exportId": "export.one",
+            "emissionPath": [
+              {
+                "nodeId": "outer",
+                "repeatIndex": "2"
+              },
+              {
+                "nodeId": "inner",
+                "repeatIndex": "2"
+              },
+              {
+                "nodeId": "emit",
+                "repeatIndex": "0"
+              }
+            ],
+            "requirementLocalId": "requirement.one"
+          },
+          "requiredActions": [
+            "action.primary"
+          ],
+          "domainBinding": "domain.binding.one",
+          "judgementDomainId": "domain.main",
+          "phases": [
+            {
+              "kind": "tap",
+              "declarationOrdinal": 1
+            }
+          ],
+          "requiresReleaseTailSemantics": false,
+          "pattern": {
+            "matchPolicy": "leftmost-first",
+            "root": {
+              "primitive": "atom",
+              "atomRef": "atom.one",
+              "operands": []
+            },
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          },
+          "patternArmRefs": [
+            "atom.one"
+          ],
+          "maxArmElements": {
+            "state": "measured",
+            "value": "1"
+          },
+          "maxDeadlineElements": {
+            "state": "measured",
+            "value": "1"
+          },
+          "measure": {
+            "components": [
+              {
+                "phase": "tap",
+                "categoryToken": "tap",
+                "gradeTokens": []
+              }
+            ],
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          },
+          "resourceClaims": [],
+          "grace": {
+            "policy": "explicit",
+            "allowChartGrace": true
+          },
+          "timing": {
+            "end": "940",
+            "successWindows": [
+              {
+                "phase": {
+                  "kind": "tap",
+                  "declarationOrdinal": 1
+                },
+                "start": "850",
+                "end": "920"
+              }
+            ],
+            "phaseTargets": [
+              {
+                "phase": "tap",
+                "chartTick": "900"
+              }
+            ]
+          },
+          "atomBindings": [
+            {
+              "atomRef": "atom.one",
+              "domainToken": "domain.binding.one",
+              "sourceClass": "keyboard",
+              "channelToken": "lane.one",
+              "action": "press",
+              "tailOnly": false
+            }
+          ],
+          "solverProfileRef": "solver.exclusive",
+          "localClosePolicyToken": "local.close.t4.v1",
+          "factBindingRefs": [
+            "binding.one"
+          ],
+          "requiredRefs": {
+            "features": [],
+            "capabilities": []
+          }
+        },
+        {
+          "stableId": {
+            "sourceDocumentId": "doc.alpha",
+            "declarationOrdinal": 7
+          },
+          "identity": {
+            "chartEntryId": "chart.entry.one",
+            "invocationId": "invocation.one",
+            "moduleId": "module.one",
+            "exportId": "export.one",
+            "emissionPath": [
+              {
+                "nodeId": "outer",
+                "repeatIndex": "2"
+              },
+              {
+                "nodeId": "inner",
+                "repeatIndex": "1"
+              },
+              {
+                "nodeId": "emit",
+                "repeatIndex": "0"
+              }
+            ],
+            "requirementLocalId": "requirement.one"
+          },
+          "requiredActions": [
+            "action.primary"
+          ],
+          "domainBinding": "domain.binding.one",
+          "judgementDomainId": "domain.main",
+          "phases": [
+            {
+              "kind": "tap",
+              "declarationOrdinal": 1
+            }
+          ],
+          "requiresReleaseTailSemantics": false,
+          "pattern": {
+            "matchPolicy": "leftmost-first",
+            "root": {
+              "primitive": "atom",
+              "atomRef": "atom.one",
+              "operands": []
+            },
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          },
+          "patternArmRefs": [
+            "atom.one"
+          ],
+          "maxArmElements": {
+            "state": "measured",
+            "value": "1"
+          },
+          "maxDeadlineElements": {
+            "state": "measured",
+            "value": "1"
+          },
+          "measure": {
+            "components": [
+              {
+                "phase": "tap",
+                "categoryToken": "tap",
+                "gradeTokens": []
+              }
+            ],
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          },
+          "resourceClaims": [],
+          "grace": {
+            "policy": "explicit",
+            "allowChartGrace": true
+          },
+          "timing": {
+            "end": "940",
+            "successWindows": [
+              {
+                "phase": {
+                  "kind": "tap",
+                  "declarationOrdinal": 1
+                },
+                "start": "850",
+                "end": "920"
+              }
+            ],
+            "phaseTargets": [
+              {
+                "phase": "tap",
+                "chartTick": "900"
+              }
+            ]
+          },
+          "atomBindings": [
+            {
+              "atomRef": "atom.one",
+              "domainToken": "domain.binding.one",
+              "sourceClass": "keyboard",
+              "channelToken": "lane.one",
+              "action": "press",
+              "tailOnly": false
+            }
+          ],
+          "solverProfileRef": "solver.exclusive",
+          "localClosePolicyToken": "local.close.t4.v1",
+          "factBindingRefs": [
+            "binding.one"
+          ],
+          "requiredRefs": {
+            "features": [],
+            "capabilities": []
+          }
+        },
+        {
+          "stableId": {
+            "sourceDocumentId": "doc.alpha",
+            "declarationOrdinal": 6
+          },
+          "identity": {
+            "chartEntryId": "chart.entry.one",
+            "invocationId": "invocation.one",
+            "moduleId": "module.one",
+            "exportId": "export.one",
+            "emissionPath": [
+              {
+                "nodeId": "outer",
+                "repeatIndex": "1"
+              },
+              {
+                "nodeId": "inner",
+                "repeatIndex": "3"
+              },
+              {
+                "nodeId": "emit",
+                "repeatIndex": "0"
+              }
+            ],
+            "requirementLocalId": "requirement.one"
+          },
+          "requiredActions": [
+            "action.primary"
+          ],
+          "domainBinding": "domain.binding.one",
+          "judgementDomainId": "domain.main",
+          "phases": [
+            {
+              "kind": "tap",
+              "declarationOrdinal": 1
+            }
+          ],
+          "requiresReleaseTailSemantics": false,
+          "pattern": {
+            "matchPolicy": "leftmost-first",
+            "root": {
+              "primitive": "atom",
+              "atomRef": "atom.one",
+              "operands": []
+            },
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          },
+          "patternArmRefs": [
+            "atom.one"
+          ],
+          "maxArmElements": {
+            "state": "measured",
+            "value": "1"
+          },
+          "maxDeadlineElements": {
+            "state": "measured",
+            "value": "1"
+          },
+          "measure": {
+            "components": [
+              {
+                "phase": "tap",
+                "categoryToken": "tap",
+                "gradeTokens": []
+              }
+            ],
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          },
+          "resourceClaims": [],
+          "grace": {
+            "policy": "explicit",
+            "allowChartGrace": true
+          },
+          "timing": {
+            "end": "940",
+            "successWindows": [
+              {
+                "phase": {
+                  "kind": "tap",
+                  "declarationOrdinal": 1
+                },
+                "start": "850",
+                "end": "920"
+              }
+            ],
+            "phaseTargets": [
+              {
+                "phase": "tap",
+                "chartTick": "900"
+              }
+            ]
+          },
+          "atomBindings": [
+            {
+              "atomRef": "atom.one",
+              "domainToken": "domain.binding.one",
+              "sourceClass": "keyboard",
+              "channelToken": "lane.one",
+              "action": "press",
+              "tailOnly": false
+            }
+          ],
+          "solverProfileRef": "solver.exclusive",
+          "localClosePolicyToken": "local.close.t4.v1",
+          "factBindingRefs": [
+            "binding.one"
+          ],
+          "requiredRefs": {
+            "features": [],
+            "capabilities": []
+          }
+        },
+        {
+          "stableId": {
+            "sourceDocumentId": "doc.alpha",
+            "declarationOrdinal": 5
+          },
+          "identity": {
+            "chartEntryId": "chart.entry.one",
+            "invocationId": "invocation.one",
+            "moduleId": "module.one",
+            "exportId": "export.one",
+            "emissionPath": [
+              {
+                "nodeId": "outer",
+                "repeatIndex": "1"
+              },
+              {
+                "nodeId": "inner",
+                "repeatIndex": "2"
+              },
+              {
+                "nodeId": "emit",
+                "repeatIndex": "0"
+              }
+            ],
+            "requirementLocalId": "requirement.one"
+          },
+          "requiredActions": [
+            "action.primary"
+          ],
+          "domainBinding": "domain.binding.one",
+          "judgementDomainId": "domain.main",
+          "phases": [
+            {
+              "kind": "tap",
+              "declarationOrdinal": 1
+            }
+          ],
+          "requiresReleaseTailSemantics": false,
+          "pattern": {
+            "matchPolicy": "leftmost-first",
+            "root": {
+              "primitive": "atom",
+              "atomRef": "atom.one",
+              "operands": []
+            },
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          },
+          "patternArmRefs": [
+            "atom.one"
+          ],
+          "maxArmElements": {
+            "state": "measured",
+            "value": "1"
+          },
+          "maxDeadlineElements": {
+            "state": "measured",
+            "value": "1"
+          },
+          "measure": {
+            "components": [
+              {
+                "phase": "tap",
+                "categoryToken": "tap",
+                "gradeTokens": []
+              }
+            ],
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          },
+          "resourceClaims": [],
+          "grace": {
+            "policy": "explicit",
+            "allowChartGrace": true
+          },
+          "timing": {
+            "end": "940",
+            "successWindows": [
+              {
+                "phase": {
+                  "kind": "tap",
+                  "declarationOrdinal": 1
+                },
+                "start": "850",
+                "end": "920"
+              }
+            ],
+            "phaseTargets": [
+              {
+                "phase": "tap",
+                "chartTick": "900"
+              }
+            ]
+          },
+          "atomBindings": [
+            {
+              "atomRef": "atom.one",
+              "domainToken": "domain.binding.one",
+              "sourceClass": "keyboard",
+              "channelToken": "lane.one",
+              "action": "press",
+              "tailOnly": false
+            }
+          ],
+          "solverProfileRef": "solver.exclusive",
+          "localClosePolicyToken": "local.close.t4.v1",
+          "factBindingRefs": [
+            "binding.one"
+          ],
+          "requiredRefs": {
+            "features": [],
+            "capabilities": []
+          }
+        },
+        {
+          "stableId": {
+            "sourceDocumentId": "doc.alpha",
+            "declarationOrdinal": 4
+          },
+          "identity": {
+            "chartEntryId": "chart.entry.one",
+            "invocationId": "invocation.one",
+            "moduleId": "module.one",
+            "exportId": "export.one",
+            "emissionPath": [
+              {
+                "nodeId": "outer",
+                "repeatIndex": "1"
+              },
+              {
+                "nodeId": "inner",
+                "repeatIndex": "1"
+              },
+              {
+                "nodeId": "emit",
+                "repeatIndex": "0"
+              }
+            ],
+            "requirementLocalId": "requirement.one"
+          },
+          "requiredActions": [
+            "action.primary"
+          ],
+          "domainBinding": "domain.binding.one",
+          "judgementDomainId": "domain.main",
+          "phases": [
+            {
+              "kind": "tap",
+              "declarationOrdinal": 1
+            }
+          ],
+          "requiresReleaseTailSemantics": false,
+          "pattern": {
+            "matchPolicy": "leftmost-first",
+            "root": {
+              "primitive": "atom",
+              "atomRef": "atom.one",
+              "operands": []
+            },
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          },
+          "patternArmRefs": [
+            "atom.one"
+          ],
+          "maxArmElements": {
+            "state": "measured",
+            "value": "1"
+          },
+          "maxDeadlineElements": {
+            "state": "measured",
+            "value": "1"
+          },
+          "measure": {
+            "components": [
+              {
+                "phase": "tap",
+                "categoryToken": "tap",
+                "gradeTokens": []
+              }
+            ],
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          },
+          "resourceClaims": [],
+          "grace": {
+            "policy": "explicit",
+            "allowChartGrace": true
+          },
+          "timing": {
+            "end": "940",
+            "successWindows": [
+              {
+                "phase": {
+                  "kind": "tap",
+                  "declarationOrdinal": 1
+                },
+                "start": "850",
+                "end": "920"
+              }
+            ],
+            "phaseTargets": [
+              {
+                "phase": "tap",
+                "chartTick": "900"
+              }
+            ]
+          },
+          "atomBindings": [
+            {
+              "atomRef": "atom.one",
+              "domainToken": "domain.binding.one",
+              "sourceClass": "keyboard",
+              "channelToken": "lane.one",
+              "action": "press",
+              "tailOnly": false
+            }
+          ],
+          "solverProfileRef": "solver.exclusive",
+          "localClosePolicyToken": "local.close.t4.v1",
+          "factBindingRefs": [
+            "binding.one"
+          ],
+          "requiredRefs": {
+            "features": [],
+            "capabilities": []
+          }
+        }
+      ],
+      "rankAssignment": {
+        "mode": "affine",
+        "blocks": [
+          {
+            "invocationId": "invocation.one",
+            "moduleId": "module.one",
+            "exportId": "export.one",
+            "requirementLocalId": "requirement.one",
+            "priority": "-1",
+            "base": "10",
+            "stride": "2",
+            "namespace": "@independent",
+            "nodeOrder": [
+              "outer",
+              "inner"
+            ],
+            "radices": [
+              "2",
+              "3"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

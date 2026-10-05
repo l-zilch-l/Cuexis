@@ -15,6 +15,7 @@ struct DecodeContext final {
     judgement::PatternCompileBudget patternBudget;
     judgement::PreparedIdentityDeclarations identities;
     std::string coordinatorPolicyToken;
+    std::uint32_t candidateRevision{2};
 };
 
 struct RequirementOwner final {
@@ -42,6 +43,7 @@ struct EncodeRequest final {
     CapsuleProfiles profiles;
     std::span<const judgement::PatternDeclaration> additionalPatterns{};
     std::span<const MeasureDefinition> additionalMeasures{};
+    std::uint32_t candidateRevision{2};
 };
 
 struct PreparedCapsule final {
@@ -51,6 +53,7 @@ struct PreparedCapsule final {
     CapsuleProfiles profiles;
     std::vector<judgement::PatternDeclaration> patterns;
     std::vector<MeasureDefinition> measures;
+    std::uint32_t candidateRevision{2};
 };
 
 [[nodiscard]] auto encode(const EncodeRequest& request, chart::PackedChartLimits limits = {})

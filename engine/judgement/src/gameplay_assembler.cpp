@@ -721,6 +721,37 @@ void writeChartProjection(IdentityByteWriter& writer, const CanonicalGameplayGra
         writer.writeText(requirement.localClosePolicyToken);
         writeRequiredRefs(writer, requirement.required);
         writeUnsupportedForms(writer, requirement.unsupportedForms);
+        if (!graph.executionProfile.empty() || !requirement.atomBindings.empty() ||
+            requirement.independentCompetition ||
+            (requirement.timing && !requirement.timing->phaseTargets.empty())) {
+            writer.writeText("execution.requirement.v1");
+            writer.writeCount(requirement.timing ? requirement.timing->phaseTargets.size() : 0);
+            if (requirement.timing) {
+                for (const auto& target : requirement.timing->phaseTargets) {
+                    writer.writeText(phaseKindToken(target.phase));
+                    writer.writeSigned(target.chartTick.value());
+                }
+            }
+            writer.writeCount(requirement.atomBindings.size());
+            for (const auto& binding : requirement.atomBindings) {
+                writer.writeText(binding.atomRef);
+                writer.writeText(binding.domainToken);
+                writer.writeText(binding.sourceClass);
+                writer.writeText(binding.channelToken);
+                writer.writeUnsigned(static_cast<unsigned>(binding.action));
+                writer.writeBool(binding.amountRange.has_value());
+                if (binding.amountRange) {
+                    writer.writeSigned(binding.amountRange->minimum);
+                    writer.writeSigned(binding.amountRange->maximum);
+                }
+                writer.writeBool(binding.tailOnly);
+            }
+            writer.writeBool(requirement.independentCompetition.has_value());
+            if (requirement.independentCompetition) {
+                writer.writeSigned(requirement.independentCompetition->priority);
+                writer.writeUnsigned(requirement.independentCompetition->tieRank);
+            }
+        }
     }
     writer.writeCount(graph.resources.size());
     for (const auto& resource : graph.resources) {
@@ -786,6 +817,13 @@ void writeChartProjection(IdentityByteWriter& writer, const CanonicalGameplayGra
     //  part in the judgement projection (Spec 5.2 `capabilities[]` and plan P1-15).
     writeCapabilityRefs(writer, graph.declaredCapabilities.capabilities);
     writeCapabilityRefs(writer, graph.derivedCapabilities.capabilities);
+    if (!graph.executionProfile.empty() || !graph.normalizationProfileToken.empty() ||
+        !graph.coordinatorPolicyToken.empty()) {
+        writer.writeText("execution.graph.v1");
+        writer.writeText(graph.executionProfile);
+        writer.writeText(graph.normalizationProfileToken);
+        writer.writeText(graph.coordinatorPolicyToken);
+    }
 }
 
 //  The provenance the content projection adds. None of it is judgement content: it is authoring
@@ -1192,8 +1230,18 @@ struct DeclarationInput final {
 
 void stabilizeGraph(CanonicalGameplayGraph& graph) {
     for (auto& requirement : graph.requirements) {
+        std::sort(requirement.atomBindings.begin(), requirement.atomBindings.end(),
+                  [](const auto& left, const auto& right) {
+                      return std::lexicographical_compare(
+                          left.atomRef.begin(), left.atomRef.end(), right.atomRef.begin(),
+                          right.atomRef.end(),
+                          [](unsigned char a, unsigned char b) { return a < b; });
+                  });
         std::sort(requirement.patternArmRefs.begin(), requirement.patternArmRefs.end());
         if (requirement.timing.has_value()) {
+            std::sort(requirement.timing->phaseTargets.begin(),
+                      requirement.timing->phaseTargets.end(),
+                      [](const auto& left, const auto& right) { return left.phase < right.phase; });
             std::sort(requirement.timing->successWindows.begin(),
                       requirement.timing->successWindows.end(),
                       [](const auto& left, const auto& right) {
@@ -1722,7 +1770,8 @@ struct PatternDeclarationShape final {
                 std::string{codes::kRequirementsPath} + "[" + std::to_string(index) + "]",
                 "a requirement record must be declared as a requirement in the merged namespace"));
         }
-        if (declared->name != requirement.identity.requirementLocalId) {
+        if (graph.executionProfile.empty() &&
+            declared->name != requirement.identity.requirementLocalId) {
             return core::unexpected(declarationInvalidError(
                 codes::kDeclarationIncompleteCode, codes::kMergeSection,
                 std::string{codes::kRequirementsPath} + "[" + std::to_string(index) + "]",
@@ -1944,6 +1993,17 @@ auto makePreparedIdentity(const CanonicalGameplayGraph& graph,
     writer.writeText(declarations.engine.factSemanticRevision);
     writer.writeText(declarations.engine.fixedPointTableId);
     writer.writeText(declarations.engine.coordinationPhaseOrderToken);
+    if (declarations.engine.executionProfileToken || declarations.engine.lateAlgorithmToken) {
+        writer.writeText("execution.engine.v1");
+        writer.writeBool(declarations.engine.executionProfileToken.has_value());
+        if (declarations.engine.executionProfileToken) {
+            writer.writeText(*declarations.engine.executionProfileToken);
+        }
+        writer.writeBool(declarations.engine.lateAlgorithmToken.has_value());
+        if (declarations.engine.lateAlgorithmToken) {
+            writer.writeText(*declarations.engine.lateAlgorithmToken);
+        }
+    }
     //  The snapshot state schema revision has no field here on purpose: a normalized snapshot
     //  detail must not be able to change the semantic judgement identity.
     writer.beginComponent("ruleset");
@@ -1963,6 +2023,47 @@ auto makePreparedIdentity(const CanonicalGameplayGraph& graph,
     writer.writeText(declarations.session.normalizationProfileToken);
     writer.writeText(declarations.session.judgementConfigToken);
     return PreparedIdentity{CanonicalIdentityBytes{writer.take()}};
+}
+
+auto makeRuntimePreparedIdentity(const CanonicalGameplayGraph& graph,
+                                 const PreparedIdentityDeclarations& declarations,
+                                 const InputMappingProfile& mapping,
+                                 const LatePolicyParameters& late, std::string_view calibration)
+    -> PreparedIdentity {
+    auto bytes = makePreparedIdentity(graph, declarations).canonicalBytes().bytes();
+    IdentityByteWriter writer{"cuexis.judgement.identity.session.execution.v1"};
+    writer.writeText(mapping.profileId);
+    writer.writeText(mapping.profileVersion);
+    writer.writeText(mapping.sourceClass.token());
+    auto domains = mapping.domains;
+    std::sort(domains.begin(), domains.end(),
+              [](const auto& a, const auto& b) { return a.domainToken < b.domainToken; });
+    writer.writeCount(domains.size());
+    for (const auto& d : domains) {
+        writer.writeText(d.domainToken);
+        writer.writeSigned(d.amount.scale.numerator());
+        writer.writeSigned(d.amount.scale.denominator());
+        writer.writeSigned(d.amount.minimum);
+        writer.writeSigned(d.amount.maximum);
+        writer.writeText(d.amount.boundaryPolicy == AmountBoundaryPolicy::inclusive ? "inclusive"
+                                                                                    : "exclusive");
+    }
+    for (const auto& p : {late.finalizationWatermark, late.maxQueueHop, late.windowCloseThreshold,
+                          late.windowOpenThreshold}) {
+        writer.writeBool(p.isMeasured());
+        if (p.isMeasured()) {
+            writer.writeSigned(p.measuredValue()->value());
+        }
+    }
+    writer.writeBool(late.policy.has_value());
+    if (late.policy) {
+        writer.writeText(*late.policy == LateEventPolicy::rejectLate ? "reject_late"
+                                                                     : "queue_next_tick");
+    }
+    writer.writeText(calibration);
+    auto session = writer.take();
+    bytes.insert(bytes.end(), session.begin(), session.end());
+    return PreparedIdentity{CanonicalIdentityBytes{std::move(bytes)}};
 }
 
 //  Counts every content-profile dimension of one canonical graph. The pattern dimensions are
@@ -2074,6 +2175,9 @@ auto assembleGameplay(const AssemblyRequest& request) -> core::Result<AssembledG
     CanonicalGameplayGraph graph{};
     graph.gameplayVersion = 2U;
     graph.graphRevision = request.graphRevision;
+    graph.executionProfile = request.executionProfile;
+    graph.normalizationProfileToken = request.normalizationProfileToken;
+    graph.coordinatorPolicyToken = request.coordinatorPolicyToken;
     graph.timebase = request.timebase;
     graph.latePolicy = request.latePolicy;
     graph.rulesetRef = request.rulesetRef;
@@ -3321,6 +3425,120 @@ auto CompiledPattern::stateCount() const -> std::optional<std::uint64_t> {
     //  by itself: the budget check refuses this dimension only on a count or on a proven lower
     //  bound of it that is above the accepted bound.
     return measurePatternStateCount(*storage_).value;
+}
+
+auto CompiledPattern::executionProgram() const -> core::Result<PatternExecutionProgram> try {
+    std::vector<detail::DfaNode> nodes;
+    nodes.reserve(storage_->states.size());
+    for (const auto& state : storage_->states) {
+        detail::DfaNode node;
+        switch (state.kind) {
+        case detail::CompiledStateKind::atom:
+            node.kind = detail::DfaNodeKind::atom;
+            node.atomSymbol =
+                static_cast<std::size_t>(std::lower_bound(storage_->atomRefs.begin(),
+                                                          storage_->atomRefs.end(), state.atomRef) -
+                                         storage_->atomRefs.begin());
+            break;
+        case detail::CompiledStateKind::sequence:
+            node.kind = detail::DfaNodeKind::sequence;
+            break;
+        case detail::CompiledStateKind::choice:
+            node.kind = detail::DfaNodeKind::choice;
+            break;
+        case detail::CompiledStateKind::repeat:
+            node.kind = detail::DfaNodeKind::repeat;
+            node.minimum = state.minimum;
+            node.maximum = state.maximum;
+            break;
+        case detail::CompiledStateKind::complement:
+            node.kind = detail::DfaNodeKind::complement;
+            break;
+        case detail::CompiledStateKind::skip:
+        case detail::CompiledStateKind::instant:
+            node.kind = detail::DfaNodeKind::epsilon;
+            break;
+        }
+        node.operands = state.operands;
+        nodes.push_back(std::move(node));
+    }
+    // Execution construction is subject to allocation/representability, never to the state-count
+    // measurement's working-set cutoffs or an unaccepted production threshold.
+    auto built =
+        detail::buildMinimalPatternDfa(nodes, storage_->root, storage_->atomRefs.size() + 1, false);
+    if (!built.available) {
+        return core::unexpected(core::Error{"judgement.s7a4.execution.relation_invalid",
+                                            "executable language table could not be constructed"}
+                                    .withContext("category", "invalid_relation")
+                                    .withContext("severity", "error")
+                                    .withContext("faulted", "false")
+                                    .withContext("field.path", "requirements.pattern"));
+    }
+    auto& dfa = built.dfa;
+    PatternExecutionProgram program{storage_->atomRefs,
+                                    dfa.start,
+                                    dfa.accepting,
+                                    {},
+                                    std::vector<std::uint8_t>(dfa.stateCount(), 0)};
+    if (!program.atomRefs.empty() &&
+        dfa.stateCount() > program.transitions.max_size() / program.atomRefs.size()) {
+        return core::unexpected(core::Error{"judgement.s7a4.execution.relation_invalid",
+                                            "executable transition table size overflow"}
+                                    .withContext("category", "invalid_relation")
+                                    .withContext("severity", "error")
+                                    .withContext("faulted", "false")
+                                    .withContext("field.path", "requirements.pattern"));
+    }
+    program.transitions.reserve(dfa.stateCount() * program.atomRefs.size());
+    for (std::size_t s = 0; s < dfa.stateCount(); ++s) {
+        for (std::size_t a = 0; a < program.atomRefs.size(); ++a) {
+            auto target = dfa.step(s, a);
+            program.transitions.push_back(target == detail::kNoTransition
+                                              ? std::nullopt
+                                              : std::optional<std::size_t>{target});
+        }
+    }
+    program.live = program.accepting;
+    bool changed = true;
+    while (changed) {
+        changed = false;
+        for (std::size_t s = 0; s < program.live.size(); ++s) {
+            if (program.live[s]) {
+                continue;
+            }
+            for (std::size_t a = 0; a < program.atomRefs.size(); ++a) {
+                const auto target = program.transitions[s * program.atomRefs.size() + a];
+                if (target && program.live[*target]) {
+                    program.live[s] = 1;
+                    changed = true;
+                    break;
+                }
+            }
+        }
+    }
+    std::vector<std::uint8_t> reachable(program.live.size(), 0);
+    std::vector<std::size_t> queue{program.start};
+    reachable[program.start] = 1;
+    for (std::size_t i = 0; i < queue.size(); ++i) {
+        for (std::size_t a = 0; a < program.atomRefs.size(); ++a) {
+            auto next = program.transitions[queue[i] * program.atomRefs.size() + a];
+            if (next && !reachable[*next]) {
+                reachable[*next] = 1;
+                queue.push_back(*next);
+            }
+        }
+    }
+    for (std::size_t i = 0; i < program.live.size(); ++i) {
+        program.live[i] &= reachable[i];
+    }
+    return program;
+} catch (const std::exception&) {
+    return core::unexpected(core::Error{"judgement.s7a4.execution.relation_invalid",
+                                        "executable Pattern allocation failed"}
+                                .withContext("category", "invalid_relation")
+                                .withContext("severity", "error")
+                                .withContext("faulted", "false")
+                                .withContext("field.path", "requirements.pattern"));
 }
 
 auto CompiledPattern::evaluationSteps() const noexcept -> std::optional<std::uint64_t> {

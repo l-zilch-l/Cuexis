@@ -13,7 +13,7 @@
     "landedActions": [
       "the nine categories of GAMEPLAY_V2_SPEC.md 9.2 are the only authority; the literal 'capability' in Spec 9.3 / Spec 7.2 and in the ABI was replaced by capability_disabled, and the ABI code-family example is now labelled illustrative only",
       "eight registered codes were re-ruled: R-11 pattern.relation_unsupported to invalid_relation, R-12 geometry.inference_rejected to invalid_relation (changed from the earlier derived unknown_capability), R-13 session.mutation_rejected to invalid_relation, R-14 capability.permanently_unsupported to capability_disabled, R-15 capability.future_development to capability_disabled, capability.revision_mismatch to unknown_capability, R-17 format.gameplay_version_unsupported to ambiguous_migration, capability.budget_insufficient to budget_exceeded",
-      "ruleset.transaction_failed was added and registered as the dedicated code of the only runtime faulted path (category invalid_relation, severity error, faulted session_faulted, first consumption S7A-5)",
+      "ruleset.transaction_failed was added and registered as the dedicated code of the only runtime faulted path frozen at round 6 (category invalid_relation, severity error, faulted session_faulted, first consumption S7A-5)",
       "presentation-target-missing and partial-group were registered as final code strings (category invalid_relation, severity error, faulted session_unaffected, first consumption S7A-7)",
       "six codes that had no batch declaration in BATCH_GATES.md were registered with first consumption S7A-3: capability.budget_insufficient, capability.revision_mismatch, capability.permanently_unsupported, capability.future_development, input.direction_unsupported (R-06) and format.gameplay_version_unsupported (R-17)",
       "the thirteen judgement.s7a2.* tokens stay src-only for ever and are marked status=not_registered_src_only",
@@ -90,9 +90,9 @@
   ],
   "faultedBehaviorSources": {
     "session_unaffected": "GAMEPLAY_V2_SPEC.md#9.3 (a prepare atomic failure must not publish a half-prepared result and must not change the existing active session)",
-    "session_faulted": "GAMEPLAY_V2_SPEC.md#9.4 item 1 and #3.14 item 2 (a second-stage Ruleset transaction failure leaves the Tick uncommitted, keeps the old state and moves the session into a queryable faulted state)"
+    "session_faulted": "GAMEPLAY_V2_SPEC.md#9.4 and gameplay-v2-execution-profile.md#7.3: Ruleset or admitted kernel Tick transaction failure permits query/reset."
   },
-  "faultedBasisNote": "Spec 9.1 freezes 'faulted' as the fourth diagnostic layer and Spec 9.4 plus 3.14 freeze when a session enters the queryable faulted state. Two behaviors are therefore registered: session_unaffected for prepare/entry atomic failures and for the two presentation codes, session_faulted for the runtime Ruleset transaction failure path. The 2026-10-02T21:03:39.462Z card (adopt 0.96) closed that previously codeless path by registering ruleset.transaction_failed (first consumption S7A-5) as the only code whose faulted value is session_faulted, and confirmed the closed two-value set; every other code registered here is session_unaffected.",
+  "faultedBasisNote": "The closed behaviors remain session_unaffected and session_faulted. Ruleset transaction failure and the S7A-4 kernel Tick transaction failure are registered faulted paths; prepare and submit failures leave the session unchanged.",
   "codes": [
     {
       "code": "capability.unknown",
@@ -686,6 +686,142 @@
       ],
       "note": "Newly registered by the 2026-10-02T21:03:39.462Z card (adopt 0.96) as the dedicated stable code of the only runtime faulted path: a second-phase (Ruleset state commit) atomic validation failure. The Tick stays uncommitted, the old state is kept, the Fact Ledger is already committed and cannot be rolled back, no fault Fact is appended and no RuleEffectEvent / PresentationEvent is published; the session moves into the queryable faulted state and stops accepting new judgement mutations. Spec 9.4 now names this code instead of leaving the stable code to be chosen from the existing 9.2 / 9.3 table. It is the only registered code whose faulted value is session_faulted. Its trigger includes a RegisterKind outside the three frozen kinds, a duplicate contribution identity, a non-commutative or non-associative fold, a second exclusive owner or writer, a direct ledger_derived StateDelta write, and a steady-state budget / overflow / conflict validation failure in that phase. It is not a CapabilityRecord.stableRejectCode, so stableRejectCode is null, and it adds no R entry (Spec 7.2 still holds exactly 19).",
       "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+    },
+    {
+      "code": "judgement.s7a4.execution.profile_incomplete",
+      "family": "judgement.s7a4",
+      "category": "identity_closure_incomplete",
+      "categoryBasis": "execution_profile_selected",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-4",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/gameplay-v2-execution-types.md#3",
+        "docs/formats/gameplay-v2-execution-profile.md#8"
+      ],
+      "note": "Selected execution-profile detailed diagnostic; no new category or R entry.",
+      "publicConsumptionSurface": "Existing Diagnostic / Result carrier (internal execution profile)."
+    },
+    {
+      "code": "judgement.s7a4.execution.profile_unsupported",
+      "family": "judgement.s7a4",
+      "category": "capability_disabled",
+      "categoryBasis": "execution_profile_selected",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-4",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/gameplay-v2-execution-types.md#3",
+        "docs/formats/gameplay-v2-execution-profile.md#8"
+      ],
+      "note": "Selected execution-profile detailed diagnostic; no new category or R entry.",
+      "publicConsumptionSurface": "Existing Diagnostic / Result carrier (internal execution profile)."
+    },
+    {
+      "code": "judgement.s7a4.execution.relation_invalid",
+      "family": "judgement.s7a4",
+      "category": "invalid_relation",
+      "categoryBasis": "execution_profile_selected",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-4",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/gameplay-v2-execution-types.md#3",
+        "docs/formats/gameplay-v2-execution-profile.md#8"
+      ],
+      "note": "Selected execution-profile detailed diagnostic; no new category or R entry.",
+      "publicConsumptionSurface": "Existing Diagnostic / Result carrier (internal execution profile)."
+    },
+    {
+      "code": "judgement.s7a4.late.parameters_invalid",
+      "family": "judgement.s7a4",
+      "category": "late_policy_incomplete",
+      "categoryBasis": "execution_profile_selected",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-4",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/gameplay-v2-execution-types.md#3",
+        "docs/formats/gameplay-v2-execution-profile.md#8"
+      ],
+      "note": "Selected execution-profile detailed diagnostic; no new category or R entry.",
+      "publicConsumptionSurface": "Existing Diagnostic / Result carrier (internal execution profile)."
+    },
+    {
+      "code": "judgement.s7a4.late.rejected",
+      "family": "judgement.s7a4",
+      "category": "late_policy_incomplete",
+      "categoryBasis": "execution_profile_selected",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-4",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/gameplay-v2-execution-types.md#3",
+        "docs/formats/gameplay-v2-execution-profile.md#8"
+      ],
+      "note": "Selected execution-profile detailed diagnostic; no new category or R entry.",
+      "publicConsumptionSurface": "Existing Diagnostic / Result carrier (internal execution profile)."
+    },
+    {
+      "code": "judgement.s7a4.late.dispatch_collision",
+      "family": "judgement.s7a4",
+      "category": "invalid_relation",
+      "categoryBasis": "execution_profile_selected",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-4",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/gameplay-v2-execution-types.md#3",
+        "docs/formats/gameplay-v2-execution-profile.md#8"
+      ],
+      "note": "Selected execution-profile detailed diagnostic; no new category or R entry.",
+      "publicConsumptionSurface": "Existing Diagnostic / Result carrier (internal execution profile)."
+    },
+    {
+      "code": "judgement.s7a4.session.lifecycle_order",
+      "family": "judgement.s7a4",
+      "category": "invalid_relation",
+      "categoryBasis": "execution_profile_selected",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-4",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/gameplay-v2-execution-types.md#3",
+        "docs/formats/gameplay-v2-execution-profile.md#8"
+      ],
+      "note": "Selected execution-profile detailed diagnostic; no new category or R entry.",
+      "publicConsumptionSurface": "Existing Diagnostic / Result carrier (internal execution profile)."
+    },
+    {
+      "code": "judgement.s7a4.kernel.transaction_failed",
+      "family": "judgement.s7a4",
+      "category": "invalid_relation",
+      "categoryBasis": "execution_profile_selected",
+      "severity": "error",
+      "faulted": "session_faulted",
+      "ownerBatch": "S7A-4",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/gameplay-v2-execution-types.md#3",
+        "docs/formats/gameplay-v2-execution-profile.md#8"
+      ],
+      "note": "Selected execution-profile detailed diagnostic; no new category or R entry.",
+      "publicConsumptionSurface": "Existing Diagnostic / Result carrier (internal execution profile)."
     }
   ],
   "rejectionEntries": [
@@ -1143,7 +1279,7 @@
   "diagnosticStringPolicy": {
     "rule": "A string is a public diagnostic code when its named code string, its applicable scenario and its nine-category mapping are unambiguously traceable to one another in the canonical texts. The scenario row and the code-string row may live in different sections (for example Spec 3.7.8 versus Spec 9.3 or ABI), but they must point at each other explicitly. A name prefix (judgement.s7a2.* or otherwise) does not decide publicness, and no owner naming condition is introduced.",
     "publicSurfaceRule": "A non-null publicConsumptionSurface marks a public registered code and is carried only by codes[] entries, where it must be a non-empty string. Every pendingRegistration entry carries publicConsumptionSurface: null, whether it is one of the thirteen src-only tokens (status = not_registered_src_only) or an open slot with no code string chosen yet (code = null). A pendingRegistration entry that names a public consumption surface is a table error. The surface count and the pending count are therefore never the same number and neither may be read as \"all codes are public\".",
-    "publicCodeCount": 29,
+    "publicCodeCount": 37,
     "srcOnlyTokenCount": 13,
     "openSlotCount": 7,
     "srcOnlyMarks": "pendingRegistration entries with status=not_registered_src_only",

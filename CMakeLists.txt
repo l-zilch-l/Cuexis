@@ -164,6 +164,7 @@ if(CUEXIS_BUILD_DEVELOPER_TOOLS)
         cuexis_cxc_tool_common
         cuexis_cxc_unpack
         cuexis_cxc_validate
+        cuexis_gameplay_author
     )
     if(TARGET cuexis_asset_importer)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_asset_importer)
@@ -193,6 +194,7 @@ if(CUEXIS_BUILD_TESTS)
         cuexis_gameplay_tests
         cuexis_judgement_tests
         cuexis_gameplay_packed_tests
+
         cuexis_debug_tests
         cuexis_render_tests
         cuexis_presentation_renderer_tests
@@ -544,6 +546,10 @@ if(CUEXIS_BUILD_TESTS)
     endif()
 endif()
 
+if(TARGET cuexis_gameplay_author_tests)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_gameplay_author_tests)
+endif()
+
 foreach(target IN LISTS CUEXIS_ACTIVE_TARGETS)
     cuexis_enable_warnings(${target})
 endforeach()
@@ -827,6 +833,13 @@ cuexis_verify_target_dependencies(cuexis_gameplay_packed
         cuexis::filesystem
         cuexis::core
 )
+if(TARGET cuexis_gameplay_author_tests)
+    cuexis_verify_target_dependencies(cuexis_gameplay_author_tests ALLOWED cuexis::gameplay_author Catch2::Catch2WithMain)
+endif()
+if(TARGET cuexis_gameplay_author)
+    cuexis_verify_target_dependencies(cuexis_gameplay_author
+        ALLOWED cuexis::core cuexis::json_support cuexis::chart cuexis::judgement cuexis::gameplay_packed)
+endif()
 cuexis_verify_target_dependencies(cuexis_render
     ALLOWED
         cuexis::assets

@@ -101,8 +101,7 @@ auto validateTiming(const RequirementRecord& requirement) -> core::Result<Tick> 
         const auto bodyEnd = timing.body->end;
         bool hasHeadCoverage = false;
         for (const auto& window : timing.successWindows) {
-            if (window.phase.kind == PhaseKind::head && window.phase.declarationOrdinal == 1U &&
-                window.start <= bodyStart) {
+            if (window.phase.kind == PhaseKind::head && window.start <= bodyStart) {
                 hasHeadCoverage = true;
             }
             if (window.phase.kind == PhaseKind::tail &&
@@ -153,6 +152,8 @@ class PreparedGameplayStorage final {
     std::optional<AssembledGameplay> assembled;
     std::vector<PreparedRequirement> requirements;
     std::vector<PreparedResource> resources;
+    std::vector<PreparedTimerKey> timers;
+    PreparedIdentityDeclarations identities;
 };
 } // namespace detail
 
@@ -166,6 +167,14 @@ auto PreparedGameplay::requirements() const noexcept -> std::span<const Prepared
 
 auto PreparedGameplay::resources() const noexcept -> std::span<const PreparedResource> {
     return storage_->resources;
+}
+
+auto PreparedGameplay::timers() const noexcept -> std::span<const PreparedTimerKey> {
+    return storage_->timers;
+}
+auto PreparedGameplay::identityDeclarations() const noexcept
+    -> const PreparedIdentityDeclarations& {
+    return storage_->identities;
 }
 
 auto PreparedGameplay::admitsSuccess(std::size_t index, Tick tick) const noexcept -> bool {
@@ -185,6 +194,41 @@ auto prepareStorage(const GameplayPrepareRequest& request, bool resolved)
     if (!request.assembly.timebase || !request.assembly.latePolicy) {
         return core::unexpected(invalid("timebaseRef", "prepare requires profile and late policy"));
     }
+    const auto& sourceAssembly = request.assembly;
+    const auto& engine = sourceAssembly.identityDeclarations.engine;
+    if (!sourceAssembly.executionProfile.empty()) {
+        if (engine.executionProfileToken != sourceAssembly.executionProfile ||
+            engine.lateAlgorithmToken != "late.window.logical.v1" ||
+            engine.judgementSemanticRevision != "judgement.t4-k4.v1" ||
+            engine.factSemanticRevision != "fact.semantic.phase-local.v1" ||
+            engine.fixedPointTableId != "fixed-point.none.v1" ||
+            engine.coordinationPhaseOrderToken != "coordination.six-eight.t4-k4.v1" ||
+            sourceAssembly.normalizationProfileToken !=
+                sourceAssembly.identityDeclarations.session.normalizationProfileToken) {
+            return core::unexpected(
+                invalid("identityDeclarations.engine",
+                        "execution declarations do not match the selected algorithm"));
+        }
+        if (auto late = validateExecutionLateParameters(*sourceAssembly.latePolicy); !late) {
+            return core::unexpected(late.error());
+        }
+    } else {
+        bool fields = !sourceAssembly.normalizationProfileToken.empty() ||
+                      !sourceAssembly.coordinatorPolicyToken.empty() ||
+                      engine.executionProfileToken.has_value() ||
+                      engine.lateAlgorithmToken.has_value();
+        for (const auto& source : sourceAssembly.sources) {
+            for (const auto& r : source.document.requirements) {
+                fields = fields || !r.atomBindings.empty() ||
+                         r.independentCompetition.has_value() ||
+                         (r.timing && !r.timing->phaseTargets.empty());
+            }
+        }
+        if (fields) {
+            return core::unexpected(
+                invalid("executionProfile", "execution fields require an explicit profile"));
+        }
+    }
     // Enforce accepted compiler limits before the assembler performs its semantic proofs.
     for (const auto& source : request.assembly.sources) {
         for (const auto& requirement : source.document.requirements) {
@@ -197,6 +241,7 @@ auto prepareStorage(const GameplayPrepareRequest& request, bool resolved)
     auto storage = std::make_shared<detail::PreparedGameplayStorage>(*request.assembly.timebase,
                                                                      *request.assembly.latePolicy);
     auto assembly = request.assembly;
+    storage->identities = assembly.identityDeclarations;
     assembly.timebase = &storage->timebase;
     assembly.latePolicy = &storage->latePolicy;
     if (!resolved) {
@@ -297,7 +342,20 @@ auto prepareStorage(const GameplayPrepareRequest& request, bool resolved)
             return core::unexpected(
                 invalid("requirements.resourceClaims", "Stage 7A fanout is one"));
         }
-        storage->requirements.push_back({requirement.stableId, *pattern, *measure, *deadline});
+        std::optional<PatternExecutionProgram> executable;
+        if (!assembled->graph.executionProfile.empty()) {
+            auto program = pattern->executionProgram();
+            if (!program) {
+                return core::unexpected(program.error());
+            }
+            auto valid = validateExecutionRequirement(requirement, *program);
+            if (!valid) {
+                return core::unexpected(valid.error());
+            }
+            executable = std::move(*program);
+        }
+        storage->requirements.push_back(
+            {requirement.stableId, *pattern, *measure, *deadline, std::move(executable)});
     }
     for (const auto& resource : assembled->graph.resources) {
         ResourceClaimResolutionInputs input{.declaredCapacity = resource.declaredCapacity,
@@ -360,6 +418,13 @@ auto prepareStorage(const GameplayPrepareRequest& request, bool resolved)
             }
         }
         storage->resources.push_back({resource.ref.resourceId, *claims, std::move(indices)});
+    }
+    if (!assembled->graph.executionProfile.empty()) {
+        auto timers = makeExecutionTimers(assembled->graph);
+        if (!timers) {
+            return core::unexpected(timers.error());
+        }
+        storage->timers = std::move(*timers);
     }
     storage->assembled = std::move(*assembled);
     return std::shared_ptr<const detail::PreparedGameplayStorage>{std::move(storage)};

@@ -326,3 +326,14 @@ gate、architecture / allowlist 校验与 CTest 全部通过；`git diff --check
 计划 §3.1 已把每个批次拆成可独立退出的小目标（S7A-0.1 … S7A-9.4）。本文件的批次门禁是
 该台账的**横向补充**：小目标回答"这一行做什么、怎么算退出"，本文件回答"这一批用什么正例/负例/
 诊断/golden/命令/证据验证"。两者都必须逐行核验，不能互相替代。
+
+## 2026-10-05 S7A-3 / S7A-4 首次执行补充
+
+本轮完整选定方案与消费顺序见 [实施交接](../../stage_plans/active/stage-07/s7a-3-4-implementation-handoff.md)。
+历史门禁中的 late 参数关系、runtime identity/ordinal/rank/state 表示已有
+[execution Spec](../../formats/gameplay-v2-execution-profile.md) 与
+[typed supplement](../../api/gameplay-v2-execution-types.md) 的明确落点。
+这是设计门禁的补齐，运行验证未完成；不得凭本段标实现通过。
+首次 Packed 消费新增 target/binding/pair 走 [Capsule §12](../../formats/GAMEPLAY_CAPSULE_V2_FORMAT.md)
+的 candidate revision3，旧 wire/golden 保留；不消费 Snapshot/Replay codec。
+独立状态预算缺测与 S7A-9 阈值仍保持 INCOMPLETE GATE；受限功能验收口径见交接 §5。

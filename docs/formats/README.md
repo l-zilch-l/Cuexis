@@ -2,7 +2,7 @@
 
 状态：现行格式索引
 
-更新日期：2026-10-04
+更新日期：2026-10-05
 
 ## Artifact 分层
 
@@ -52,6 +52,7 @@ Compiled Runtime
 | Stage 6 configuration and media contract | [STAGE6_CONFIG_AND_MEDIA.md](STAGE6_CONFIG_AND_MEDIA.md) | candidate contract recorded by A2; Player support/media importer not yet present |
 | Gameplay Judgement | [GAMEPLAY_JUDGEMENT_SPEC.md](GAMEPLAY_JUDGEMENT_SPEC.md) | candidate；I 收敛工作稿，未实施，待 ADR 0043 owner acceptance |
 | Gameplay V2 | [GAMEPLAY_V2_SPEC.md](GAMEPLAY_V2_SPEC.md) | candidate；Stage 7A 的 V2 字段与运行语义唯一权威 Spec；分批设计与部分实现不等于整批验收，现状只见 [CURRENT_STATUS](../CURRENT_STATUS.md)；与 [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md)、[Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md) 协同 |
+| Gameplay V2 execution / author profile | [execution](gameplay-v2-execution-profile.md)、[authoring](gameplay-v2-author-profile.md) | candidate；2026-10-05 补齐 S7A-3/4 首次消费，Capsule revision3，未实施 |
 
 ADR 记录选择理由，格式文档记录字段和语义。手写 v4 谱面可先阅读
 [Chart v4 谱面编写指南](../guides/CHART_V4_AUTHORING.md)。CXC 不重新定义 Chart/CXT；CXT 不重新定义

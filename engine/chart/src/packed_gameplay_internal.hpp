@@ -41,7 +41,8 @@ struct DecodedStatic final {
 // Foundation global and static entity preimage with the Gameplay domain and bit-2 presence.
 // This is a prefix, never the complete Capsule semantic identity.
 [[nodiscard]] auto staticPreimage(const CanonicalSemanticChart& chart,
-                                  std::span<const CanonicalEntityIdentity> gameplayOwners)
+                                  std::span<const CanonicalEntityIdentity> gameplayOwners,
+                                  std::uint32_t candidateRevision = 2)
     -> core::Result<std::vector<std::byte>>;
 
 [[nodiscard]] auto inspect(std::span<const std::byte> bytes, PackedChartLimits limits = {})

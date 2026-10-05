@@ -2,9 +2,16 @@
 
 状态：candidate
 
-更新日期：2026-10-04
+更新日期：2026-10-05
 
 本 Spec 是 Stage 7A 的候选合同正文，不是字段、公共头、Schema、Replay 或 Snapshot 的实现证据。
+
+**2026-10-05 首次执行补充。** S7A-3 余项与 S7A-4 采用
+[execution profile](gameplay-v2-execution-profile.md) 和
+[author profile](gameplay-v2-author-profile.md) 的完整选定方案，选择理由见
+[ADR 0045](../adr/0045-gameplay-v2-execution-profile.md)。补充拥有本次新增运行字段/语义，
+[Capsule §12](GAMEPLAY_CAPSULE_V2_FORMAT.md) 拥有其 candidate revision3 wire。
+旧限定冻结中的“首次消费时补齐”在这些明确覆盖字段上已有落点；不表示产品实现或整批验收。
 局部实现与整批验收须区分，当前进度只由 [CURRENT_STATUS](../CURRENT_STATUS.md) 拥有。
 
 上级文档：[Stage 7A 实施计划](../stage_plans/active/stage-07/plan.md) ·
@@ -119,7 +126,7 @@ W 类缺口（W-class gap）的编号规则、字段定义与登记位置**不�
 | 外层 `version` | `cuexis.chart` | `5` | 唯一接受值；其它值在最早入口稳定拒绝 |
 | `gameplay.version` | Chart v5 `gameplay` 区段 | `2` | 唯一接受值 |
 | `packedVersion` | Packed 载体 | `1`（candidate） | 保留现有候选值 |
-| `candidateRevision` | Packed header | `2`（Gameplay Capsule v2） | Gameplay V2 首次 Packed 消费；只改 artifact identity，见 §2.3 |
+| `candidateRevision` | Packed header | `2`（既有静态 Capsule） / `3`（execution profile） | 2 保留原 round-trip；3 完整执行字段见 Capsule §12；不自动迁移 |
 | gameplay revision | Packed header | 显式携带 | 必填；Reader 不得推断 |
 
 **唯一合法组合是外层 `version = 5` 与 `gameplay.version = 2`。** 该组合取代
@@ -342,6 +349,8 @@ semantic 比较，**不能只比 hash**（FE §2 硬要求 1）。
    关系**（序关系、上界与相互一致性），因为那些数值尚不属本批次。**"参数量级关系的校验"登记为阻塞
    S7A-4 的 late-window / 判定消费门禁**：S7A-4 在按 late policy 消费窗口与判定之前必须补齐该校验。
    **具体实测数值与最终限额**仍由 **S7A-9 的硬化与测量门禁**承载；上述两项都不阻塞 S7A-2 的语义冻结。
+   2026-10-05 的完整选定关系、边界与准入算法见 [execution profile §3](gameplay-v2-execution-profile.md)；
+   后续实现应增加该执行 gate，不能将旧 helper 的历史验证结果冒充新增 gate 已通过。
 
 #### 3.7.5 `commitTick` 与 commit window（P2-03）
 
@@ -1122,7 +1131,7 @@ effective late-policy metadata、`eventCodecId`、normalized event count、encod
    由 phase **派生**，不得由调用方任意赋值，也不得出现"有 category 无 phase"的 Fact。
 4. **grade table 可选**：缺失时 grade 为 **absent**，只报 Outcome；**绝不以 error、category 或默认表隐式
    升级** grade，也不得用默认表补齐缺失的 grade。
-5. `TimingError` = **`observationTick - chartTick` 的有符号整数 tick 差**：符号表达 early / late，绝对值是
+5. `TimingError` 存在时 = **`observationTick - chartTick` 的有符号整数 tick 差**：符号表达 early / late，绝对值是
    tick 距离；不做单位换算、不取绝对值、不饱和（单位与符号的 ABI 承载见 ABI §单位与量程）。
 6. **统计规则**：`seek` / `replay` 从**已提交 Fact Ledger** 重建 Score / Combo / Statistics（不依赖未提交
    state、不依赖表现事件）；`reset` 清空**新 session** 的状态且**不产生 Fact**（不写 Fact Ledger、不产生
@@ -1777,11 +1786,12 @@ R-09 映射外，诊断码字符串必须先在集中码表登记并通过该 CT
 | 层 | 取值集（闭集） | 含义 | 依据 |
 | --- | --- | --- | --- |
 | `severity` | `info` / `warning` / `error` | 与仓库已发布面 `engine/core/include/cuexis/core/diagnostic.hpp` 的 `DiagnosticSeverity{Info, Warning, Error}` 一一对应（小写拼写为码表与文档中的规范写法） | SPEC §9.1 四层模型 + core 既有面 |
-| `faulted` | `session_unaffected` / `session_faulted` | `session_unaffected`：诊断不改变已有 active session、不进入 `faulted`；`session_faulted`：诊断对应 §9.4 第二阶段 Ruleset state commit 失败，整 Tick 不提交、保留旧 state、session 进入**可查询** `faulted` | SPEC §9.3、§9.4 第 1 条、§3.14 ② |
+| `faulted` | `session_unaffected` / `session_faulted` | `session_unaffected`：诊断不改变已有 active session、不进入 `faulted`；`session_faulted`：session 进入可查询 faulted；未 seal kernel 失败保留旧 state/ledger，§9.4 Fold 失败保留已 seal Ledger 与旧 fold state；本轮补充见 execution profile §7 | SPEC §9.3、§9.4 第 1 条、§3.14 ② |
 
 **7A 的已有稳定拒绝与原子失败一律取 `severity = error`**（`info` / `warning` 为保留取值，本轮没有码使用
-它们）。`faulted` 的**唯一** `session_faulted` 承载者是 §9.4 新增的 `ruleset.transaction_failed`；其余已登记码
-一律 `session_unaffected`。两个值集与逐码取值由集中码表 `schemas/cuexis.gameplay-diagnostics.v2.codes.json`
+它们）。既有 `session_faulted` 承载者为 §9.4 的 `ruleset.transaction_failed`；本轮 execution profile
+另选定未 seal kernel 失败的详细码，见 [typed supplement §3](../api/gameplay-v2-execution-types.md)。
+新增码尚须实现批次登记/校验后消费；其他已有拒绝保持 `session_unaffected`。两个值集与逐码取值由集中码表 `schemas/cuexis.gameplay-diagnostics.v2.codes.json`
 持有，并由 CTest 校验项 `cuexis_gameplay_diagnostics_codes` 校验完整性。
 
 ### 9.2 类别

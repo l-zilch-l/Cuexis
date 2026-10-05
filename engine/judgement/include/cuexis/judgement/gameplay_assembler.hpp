@@ -156,6 +156,11 @@ struct EngineIdentityDeclaration final {
     //  The canonical coordination phase order semantics the engine applies. The eight-phase order
     //  enters the engine component and never the chart or content projection.
     std::string coordinationPhaseOrderToken;
+    std::optional<std::string> executionProfileToken;
+    std::optional<std::string> lateAlgorithmToken;
+
+    friend auto operator==(const EngineIdentityDeclaration&, const EngineIdentityDeclaration&)
+        -> bool = default;
 };
 
 //  The declared ruleset-side identity projection (ABI domain 7 `RulesetIdentity`).
@@ -164,6 +169,8 @@ struct RulesetIdentityDeclaration final {
     //  The module / fold order. It is an ordered semantic list, which is why it is not sorted.
     std::vector<std::string> moduleOrder;
     std::string buildHash;
+    friend auto operator==(const RulesetIdentityDeclaration&, const RulesetIdentityDeclaration&)
+        -> bool = default;
 };
 
 //  The declared session-side identity projection (ABI domain 7 `SessionIdentity`).
@@ -176,6 +183,8 @@ struct SessionIdentityDeclaration final {
     std::string defaultGraceSourceToken;
     std::string normalizationProfileToken;
     std::string judgementConfigToken;
+    friend auto operator==(const SessionIdentityDeclaration&, const SessionIdentityDeclaration&)
+        -> bool = default;
 };
 
 //  The three declared components the assembler cannot derive from the graph.
@@ -183,6 +192,8 @@ struct PreparedIdentityDeclarations final {
     EngineIdentityDeclaration engine;
     RulesetIdentityDeclaration ruleset;
     SessionIdentityDeclaration session;
+    friend auto operator==(const PreparedIdentityDeclarations&, const PreparedIdentityDeclarations&)
+        -> bool = default;
 };
 
 //  The three identity generators, declared first so that the identity carriers below can name them
@@ -191,6 +202,12 @@ class CanonicalIdentityBytes;
 class ChartIdentity;
 class ContentIdentity;
 class PreparedIdentity;
+
+[[nodiscard]] auto makeRuntimePreparedIdentity(const CanonicalGameplayGraph& graph,
+                                               const PreparedIdentityDeclarations& declarations,
+                                               const InputMappingProfile& mapping,
+                                               const LatePolicyParameters& late,
+                                               std::string_view calibration) -> PreparedIdentity;
 
 [[nodiscard]] auto makeChartIdentity(const CanonicalGameplayGraph& graph) -> ChartIdentity;
 [[nodiscard]] auto makeContentIdentity(const CanonicalGameplayGraph& graph) -> ContentIdentity;
@@ -226,6 +243,10 @@ class CanonicalIdentityBytes final {
         -> bool = default;
 
   private:
+    friend auto makeRuntimePreparedIdentity(const CanonicalGameplayGraph&,
+                                            const PreparedIdentityDeclarations&,
+                                            const InputMappingProfile&, const LatePolicyParameters&,
+                                            std::string_view) -> PreparedIdentity;
     friend auto makeChartIdentity(const CanonicalGameplayGraph& graph) -> ChartIdentity;
     friend auto makeContentIdentity(const CanonicalGameplayGraph& graph) -> ContentIdentity;
     friend auto makePreparedIdentity(const CanonicalGameplayGraph& graph,
@@ -298,6 +319,10 @@ class PreparedIdentity final {
         -> bool = default;
 
   private:
+    friend auto makeRuntimePreparedIdentity(const CanonicalGameplayGraph&,
+                                            const PreparedIdentityDeclarations&,
+                                            const InputMappingProfile&, const LatePolicyParameters&,
+                                            std::string_view) -> PreparedIdentity;
     friend auto makePreparedIdentity(const CanonicalGameplayGraph& graph,
                                      const PreparedIdentityDeclarations& declarations)
         -> PreparedIdentity;
@@ -431,6 +456,11 @@ struct AssemblyRequest final {
     ContentProfileLimits contentProfileLimits;
     //  The declared engine / ruleset / session components of the prepared identity.
     PreparedIdentityDeclarations identityDeclarations;
+    //  Execution and compile profile declarations are explicit owning graph fields. Empty values
+    //  preserve the revision-2 static prepare path; executable revision 3 requires all three.
+    std::string executionProfile;
+    std::string normalizationProfileToken;
+    std::string coordinatorPolicyToken;
 };
 
 //  One successfully assembled result.
@@ -687,6 +717,16 @@ enum class ContainmentStatus : std::uint8_t {
 //      `k` copies of the operand. A copy does not have to consume an element: an operand that
 //      accepts the empty word is compiled and matched like any other, its fixed point ends the
 //      expansion, and the declared finite bound does not depend on a copy consuming anything.
+// Internal executable language table. Undefined transitions use optional indices; the explicit
+// alphabet excludes the reference evaluator's unnamed-symbol class.
+struct PatternExecutionProgram final {
+    std::vector<std::string> atomRefs;
+    std::size_t start;
+    std::vector<std::uint8_t> accepting;
+    std::vector<std::optional<std::size_t>> transitions;
+    std::vector<std::uint8_t> live;
+};
+
 class CompiledPattern final {
   public:
     CompiledPattern(const CompiledPattern&) noexcept = default;
@@ -763,6 +803,7 @@ class CompiledPattern final {
     //  Every atom reference the pattern names, sorted and deduplicated. This is the arm set the
     //  containment check reads.
     [[nodiscard]] auto atomRefs() const -> std::vector<std::string>;
+    [[nodiscard]] auto executionProgram() const -> core::Result<PatternExecutionProgram>;
 
     //  The reference predicate: `trace` is the observed atom reference sequence, and the pattern
     //  matches when it accepts the whole trace. The decision is total and terminating for every

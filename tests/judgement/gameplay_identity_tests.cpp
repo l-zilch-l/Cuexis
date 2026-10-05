@@ -221,16 +221,19 @@ TEST_CASE("S7A-3 the declared identity components reach only the prepared identi
     const Fixture fixture;
     const AssembledGameplay baseline = assembleOrFail(fixture.request());
 
-    //  The engine declaration is exactly four semantic tokens; there is no member that could carry
-    //  the snapshot state schema revision, because round 5 keeps it out of the engine identity.
+    // Legacy engine declarations retain four tokens; execution adds two explicit optional tokens.
+    // The snapshot state schema revision remains outside the engine identity.
     const EngineIdentityDeclaration& engine = fixture.request().identityDeclarations.engine;
-    const auto& [judgementRevision, factRevision, fixedPointTable, phaseOrder] = engine;
+    const auto& [judgementRevision, factRevision, fixedPointTable, phaseOrder, executionProfile,
+                 lateAlgorithm] = engine;
     static_assert(std::is_same_v<std::remove_cvref_t<decltype(judgementRevision)>, std::string>);
     static_assert(std::is_same_v<std::remove_cvref_t<decltype(factRevision)>, std::string>);
     static_assert(std::is_same_v<std::remove_cvref_t<decltype(fixedPointTable)>, std::string>);
     static_assert(std::is_same_v<std::remove_cvref_t<decltype(phaseOrder)>, std::string>);
     CHECK(judgementRevision == "engine.judgement.revision.one");
     CHECK(factRevision == "engine.fact.revision.one");
+    CHECK_FALSE(executionProfile);
+    CHECK_FALSE(lateAlgorithm);
 
     AssemblyRequest factRevisionChanged = fixture.request();
     factRevisionChanged.identityDeclarations.engine.factSemanticRevision =

@@ -325,13 +325,16 @@ auto collectAssets(const CanonicalSemanticChart& chart) -> std::set<std::string>
 } // namespace
 
 static auto semanticPreimageImpl(const CanonicalSemanticChart& chart, bool gameplay,
-                                 std::span<const CanonicalEntityIdentity> gameplayOwners)
+                                 std::span<const CanonicalEntityIdentity> gameplayOwners,
+                                 std::uint32_t candidateRevision = 2)
     -> core::Result<std::vector<std::byte>> {
     Preimage out;
     out.bytes.reserve(256U + chart.entities.size() * 128U);
 
-    const auto domain =
-        gameplay ? std::string_view{"cuexis.chart.semantic.v5.gameplay.1"} : semanticDomain;
+    const auto domain = gameplay ? (candidateRevision == 3
+                                        ? std::string_view{"cuexis.chart.semantic.v5.gameplay.2"}
+                                        : std::string_view{"cuexis.chart.semantic.v5.gameplay.1"})
+                                 : semanticDomain;
     append(out, std::as_bytes(std::span{domain.data(), domain.size()}));
     const std::array<std::byte, 1> terminator{std::byte{0}};
     append(out, terminator);
@@ -593,9 +596,10 @@ auto semanticPreimage(const CanonicalSemanticChart& chart) -> core::Result<std::
 }
 
 auto gameplay_detail::staticPreimage(const CanonicalSemanticChart& chart,
-                                     std::span<const CanonicalEntityIdentity> gameplayOwners)
+                                     std::span<const CanonicalEntityIdentity> gameplayOwners,
+                                     std::uint32_t candidateRevision)
     -> core::Result<std::vector<std::byte>> {
-    return semanticPreimageImpl(chart, true, gameplayOwners);
+    return semanticPreimageImpl(chart, true, gameplayOwners, candidateRevision);
 }
 
 auto semanticIdentity(const CanonicalSemanticChart& chart) -> core::Result<PackedSemanticIdentity> {

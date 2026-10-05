@@ -143,6 +143,8 @@ auto operator==(const RequirementRecord& left, const RequirementRecord& right) -
            left.maxDeadlineElements == right.maxDeadlineElements && left.measure == right.measure &&
            left.resourceClaims == right.resourceClaims && left.grace == right.grace &&
            left.preparedGrace == right.preparedGrace && left.timing == right.timing &&
+           left.atomBindings == right.atomBindings &&
+           left.independentCompetition == right.independentCompetition &&
            left.patternArmRefs == right.patternArmRefs &&
            left.factBindingRefs == right.factBindingRefs &&
            left.solverProfileRef == right.solverProfileRef &&
@@ -692,6 +694,28 @@ void compareRequirement(DifferenceRecorder& recorder, const std::string& path,
     compareValue(recorder, path + ".pattern", left.pattern, right.pattern, renderPattern);
     compareValue(recorder, path + ".patternArmRefs", left.patternArmRefs, right.patternArmRefs,
                  renderTokens);
+    compareValue(recorder, path + ".atomBindings", left.atomBindings, right.atomBindings,
+                 [](const auto& rows) {
+                     std::string text;
+                     for (const auto& row : rows) {
+                         text += row.atomRef + ":" + row.domainToken + ":" + row.sourceClass + ":" +
+                                 row.channelToken + ":" +
+                                 std::to_string(static_cast<unsigned>(row.action)) + ":" +
+                                 renderBool(row.tailOnly);
+                         if (row.amountRange) {
+                             text += ":" + std::to_string(row.amountRange->minimum) + ":" +
+                                     std::to_string(row.amountRange->maximum);
+                         }
+                         text += ";";
+                     }
+                     return text;
+                 });
+    compareValue(recorder, path + ".independentCompetition", left.independentCompetition,
+                 right.independentCompetition, [](const auto& pair) {
+                     return pair ? std::to_string(pair->priority) + "," +
+                                       std::to_string(pair->tieRank)
+                                 : std::string{"absent"};
+                 });
     compareValue(recorder, path + ".timing", left.timing, right.timing, [](const auto& timing) {
         if (!timing.has_value()) {
             return std::string{"absent"};
@@ -711,6 +735,10 @@ void compareRequirement(DifferenceRecorder& recorder, const std::string& path,
             append(*timing->body);
         } else {
             result += "absent";
+        }
+        for (const auto& target : timing->phaseTargets) {
+            result += ";target=" + std::to_string(static_cast<unsigned>(target.phase)) + ":" +
+                      std::to_string(target.chartTick.value());
         }
         return result;
     });
@@ -1247,6 +1275,12 @@ auto semanticDiff(const CanonicalGameplayGraph& left, const CanonicalGameplayGra
                  right.graphRevision, renderInteger<std::uint64_t>);
     compareValue(recorder, std::string{codes::kRulesetRefPath}, left.rulesetRef, right.rulesetRef,
                  renderText);
+    compareValue(recorder, "executionProfile", left.executionProfile, right.executionProfile,
+                 renderText);
+    compareValue(recorder, "normalizationProfileToken", left.normalizationProfileToken,
+                 right.normalizationProfileToken, renderText);
+    compareValue(recorder, "coordinatorPolicyToken", left.coordinatorPolicyToken,
+                 right.coordinatorPolicyToken, renderText);
 
     if (left.timebase == nullptr || right.timebase == nullptr) {
         if (left.timebase != right.timebase) {

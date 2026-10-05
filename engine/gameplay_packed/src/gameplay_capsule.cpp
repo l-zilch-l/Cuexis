@@ -354,6 +354,9 @@ template <> auto registry<GraceResolutionPolicy>() {
 template <> auto registry<LateEventPolicy>() {
     return std::array{LateEventPolicy::rejectLate, LateEventPolicy::queueNextTick};
 }
+template <> auto registry<InputAction>() {
+    return std::array{InputAction::press, InputAction::release, InputAction::update};
+}
 template <typename A, typename E> void enumeration(A& a, E& v) {
     const auto table = registry<E>();
     std::uint8_t ordinal{};
@@ -402,6 +405,18 @@ template <typename A> void visit(A& a, RequirementIdentity& v) {
 template <typename A> void visit(A& a, PhaseDeclaration& v) {
     enumeration(a, v.kind);
     a.value(v.declarationOrdinal);
+}
+template <typename A> void visit(A& a, PhaseTarget& v) {
+    enumeration(a, v.phase);
+    a.value(v.chartTick);
+}
+template <typename A> void visit(A& a, AmountMatchRange& v) {
+    a.fields(v.minimum, v.maximum);
+}
+template <typename A> void visit(A& a, AtomBinding& v) {
+    a.fields(v.atomRef, v.domainToken, v.sourceClass, v.channelToken);
+    enumeration(a, v.action);
+    a.fields(v.amountRange, v.tailOnly);
 }
 template <typename A> void visit(A& a, TimeInterval& v) {
     a.fields(v.start, v.end);
@@ -633,6 +648,7 @@ struct Model final {
     std::vector<MeasureDefinition> measures;
     std::vector<ClaimRow> claims;
     CapsuleProfiles profiles;
+    std::uint32_t candidateRevision{2};
     std::string resolver{kResolver}, close{kClose}, profileId, unit;
     TimebaseProfile timebase{
         {}, {}, checked(RationalDuration::create(1, 1)), checked(RationalBeat::create(0, 1)), {},
@@ -644,6 +660,10 @@ struct Model final {
         timebase.unitToken = unit;
         graph.timebase = &timebase;
         graph.latePolicy = &latePolicy;
+        if (candidateRevision == 3) {
+            graph.normalizationProfileToken = profiles.normalizationProfileToken;
+            graph.coordinatorPolicyToken = profiles.coordinatorPolicyToken;
+        }
     }
 };
 
@@ -920,6 +940,10 @@ template <typename A> void visit(A& a, RequirementRecord::SuccessWindow& v) {
 template <typename A> void visit(A& a, RequirementRecord::Timing& v) {
     a.fields(v.end, v.successWindows, v.body);
 }
+template <typename A> void executionFields(A& a, RequirementRecord& v) {
+    require(v.timing.has_value(), "requirements.timing", "revision 3 requires timing");
+    a.fields(v.timing->phaseTargets, v.atomBindings, v.independentCompetition);
+}
 template <typename A>
 void requirementRow(A& a, RequirementRecord& v, RequirementIndices& ix, Model& m) {
     if constexpr (A::reading) {
@@ -981,6 +1005,9 @@ void requirementRow(A& a, RequirementRecord& v, RequirementIndices& ix, Model& m
     a.fields(v.required, v.timing);
     if constexpr (!A::reading) {
         if (a.mode == Mode::hash) {
+            if (m.candidateRevision == 3) {
+                executionFields(a, v);
+            }
             return;
         }
     }
@@ -998,6 +1025,9 @@ void requirementRow(A& a, RequirementRecord& v, RequirementIndices& ix, Model& m
             "requirements.graceProvenance", "invalid inherited provenance");
     if constexpr (A::reading) {
         v.grace.inheritedFromDeclarationId = inherited.value_or("");
+    }
+    if (m.candidateRevision == 3) {
+        executionFields(a, v);
     }
 }
 template <typename A> void globalRow(A& a, Model& m) {
@@ -1043,6 +1073,9 @@ template <typename A> void globalRow(A& a, Model& m) {
         for (auto& n : m.counts) {
             a.value(n);
         }
+    }
+    if (m.candidateRevision == 3) {
+        a.value(g.executionProfile);
     }
 }
 template <typename A, typename T, typename F> void table(A& a, std::vector<T>& rows, F visitRow) {
@@ -1309,9 +1342,11 @@ void validate(Model& m, chart::PackedChartLimits limits,
         bool exists = false;
         switch (d.kind) {
         case DeclarationKind::requirement:
-            exists = std::any_of(g.requirements.begin(), g.requirements.end(), [&d](const auto& r) {
-                return r.stableId == d.stableId && r.identity.requirementLocalId == d.name;
-            });
+            exists =
+                std::any_of(g.requirements.begin(), g.requirements.end(), [&d, &g](const auto& r) {
+                    return r.stableId == d.stableId &&
+                           (!g.executionProfile.empty() || r.identity.requirementLocalId == d.name);
+                });
             break;
         case DeclarationKind::patternDefinition:
             exists = patternNames.contains(d.name);
@@ -1373,6 +1408,17 @@ void validate(Model& m, chart::PackedChartLimits limits,
         refsValid(r.required);
         ordered(r.phases, "requirements.phases");
         ordered(r.patternArmRefs, "requirements.patternArmRefs");
+        if (m.candidateRevision == 3) {
+            ordered(
+                r.atomBindings,
+                [](const auto& l, const auto& rr) { return textLess(l.atomRef, rr.atomRef); },
+                "requirements.atomBindings");
+            require(r.timing.has_value(), "requirements.timing", "execution timing absent");
+            ordered(
+                r.timing->phaseTargets,
+                [](const auto& l, const auto& rr) { return l.phase < rr.phase; },
+                "requirements.phaseTargets");
+        }
         ordered(
             r.requiredActions,
             [](const auto& l, const auto& rr) { return textLess(l.token(), rr.token()); },
@@ -1425,6 +1471,25 @@ auto makeModel(const EncodeRequest& request, chart::PackedChartLimits limits) ->
     Model m;
     m.chart = request.chart;
     m.graph = request.gameplay.assembled().graph;
+    m.candidateRevision = request.candidateRevision;
+    require(m.candidateRevision == 2 || m.candidateRevision == 3, "candidateRevision",
+            "unsupported Writer revision");
+    if (m.candidateRevision == 2) {
+        require(m.graph.executionProfile.empty() && m.graph.normalizationProfileToken.empty() &&
+                    m.graph.coordinatorPolicyToken.empty(),
+                "executionProfile", "revision 2 Writer cannot discard execution fields");
+        for (const auto& r : m.graph.requirements) {
+            require(r.atomBindings.empty() && !r.independentCompetition &&
+                        (!r.timing || r.timing->phaseTargets.empty()),
+                    "requirements", "revision 2 Writer cannot discard execution fields");
+        }
+    } else {
+        require(m.graph.executionProfile == "gameplay.execution.t4-k4.v1" &&
+                    m.graph.normalizationProfileToken ==
+                        request.profiles.normalizationProfileToken &&
+                    m.graph.coordinatorPolicyToken == request.profiles.coordinatorPolicyToken,
+                "executionProfile", "revision 3 graph and Writer profiles must agree");
+    }
     require(m.graph.timebase && m.graph.latePolicy, "GPH0.timebase", "missing prepared timebase");
     m.timebase = *m.graph.timebase;
     m.latePolicy = *m.graph.latePolicy;
@@ -1565,7 +1630,7 @@ auto staticTables(Model& m, chart::PackedChartLimits limits) -> gp::StaticTables
 }
 auto preimage(Model& m, chart::PackedChartLimits limits) -> Bytes {
     m.bind();
-    auto prefix = checked(gp::staticPreimage(m.chart, m.owners));
+    auto prefix = checked(gp::staticPreimage(m.chart, m.owners, m.candidateRevision));
     bound(prefix.size(), limits.maxPackedDecodedBytes, "packed.budget.decoded_bytes");
     const auto visitRows = [&prefix](auto& a, auto& model) {
         a.raw(prefix);
@@ -1656,7 +1721,7 @@ auto envelope(Model& m, gp::StaticTables tables, chart::PackedChartLimits limits
     out.writeU32(u32(static_cast<std::size_t>(decoded)));
     out.writeU32(u32(tables.strings.size()));
     out.writeU32(u32(tables.references.size()));
-    out.writeU32(2);
+    out.writeU32(m.candidateRevision);
     out.writeU32(0);
     auto offset = 96 + directoryBytes;
     for (const auto& s : tables.sections) {
@@ -1822,7 +1887,13 @@ auto reconstruct(Model& m, const DecodeContext& context) -> PreparedGameplay {
                             &m.latePolicy,
                             context.capabilities,
                             context.contentLimits,
-                            context.identities};
+                            context.identities,
+                            {},
+                            {},
+                            {}};
+    request.executionProfile = g.executionProfile;
+    request.normalizationProfileToken = g.normalizationProfileToken;
+    request.coordinatorPolicyToken = g.coordinatorPolicyToken;
     auto prepared = checked(prepareResolvedGameplay({std::move(request), context.patternBudget}));
     const auto differences = semanticDiff(g, prepared.assembled().graph);
     require(differences.empty(), differences.empty() ? "gameplay" : differences.front().path,
@@ -1833,10 +1904,17 @@ auto reconstruct(Model& m, const DecodeContext& context) -> PreparedGameplay {
 }
 auto decoded(std::span<const std::byte> bytes, const DecodeContext& context,
              chart::PackedChartLimits limits) -> PreparedCapsule {
+    require(bytes.size() >= 96, "Header", "truncated Capsule header");
+    ByteReader revisionReader{bytes.subspan(88, 4)};
+    const auto revision = checked(revisionReader.readU32());
+    if (revision != context.candidateRevision || (revision != 2 && revision != 3)) {
+        fail("packed.header.unsupported_revision", "Capsule Reader revision mismatch", "Header");
+    }
     const auto statistics = checked(gp::inspect(bytes, limits));
     auto base = checked(gp::decodeStatic(bytes, limits));
     const auto sections = payloads(bytes);
     Model m;
+    m.candidateRevision = revision;
     m.chart = std::move(base.chart);
     for (const auto& e : m.chart.entities) {
         m.entities.push_back(e.identity);
@@ -1887,8 +1965,8 @@ auto decoded(std::span<const std::byte> bytes, const DecodeContext& context,
     for (std::size_t i = 0; i < m.graph.requirements.size(); ++i) {
         owners.push_back({m.graph.requirements[i].identity, m.entities[m.indices[i].entity]});
     }
-    return {std::move(m.chart),    std::move(prepared),   std::move(owners),
-            std::move(m.profiles), std::move(m.patterns), std::move(m.measures)};
+    return {std::move(m.chart),    std::move(prepared),   std::move(owners), std::move(m.profiles),
+            std::move(m.patterns), std::move(m.measures), revision};
 }
 template <typename T, typename F> auto boundary(F operation) -> core::Result<T> {
     try {

@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-10-04
+更新日期：2026-10-05
 
 本文是 Cuexis 当前产品和阶段状态的唯一摘要。ADR 定义决策，Spec 定义字段和语义，阶段计划定义未来
 范围，阶段报告保存带日期的实施证据；它们不得绕过本文重新定义当前状态。
@@ -31,7 +31,7 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Chart Format Foundation | completed | [plan](stage_plans/completed/chart-format-foundation/plan.md)、[关闭记录](stage_reports/stages/chart-format-foundation/2026-09-16-closure-and-handoff.md) |
 | Chart Format Foundation Hardening（Foundation 交接加固） | completed | [plan](stage_plans/completed/chart-format-foundation-hardening/plan.md)、[R5 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md) |
 | Stage 6 | completed | [plan](stage_plans/completed/stage-06/plan.md)、[关闭报告](stage_reports/stages/stage-06/completion.md) |
-| Stage 7A | active；**S7A-3 设计已收口，实施验收未完成**。V2 acceptance package 已接受，第 1–7 轮语义已裁定；受限 S7A-1、S7A-2 与 S7A-3 部分实现已有带日期记录。2026-10-04 按 owner 自主裁决与“仅文档”授权闭合 **G2-S2 + G2-T4 + R2-K4 + P1-W1 + E1** 及 Gameplay Capsule v2 candidate 物理合同。包含性状态化与装配接线按当前 Spec 已记录落地，本轮未独立重跑 runtime；整批仍须 identity 来源分区修正、Reader/Writer、inline/CXT、file/memory 与跨工具链 E1。状态预算 **INCOMPLETE GATE** 保持，新数值上限仍归 S7A-9；Stage 6 四项仍按各自台账作为关闭前置 | [plan](stage_plans/active/stage-07/plan.md)、[ADR 0044](adr/0044-gameplay-v2-semantic-kernel.md)、[V2 Spec](formats/GAMEPLAY_V2_SPEC.md)、[Capsule](formats/GAMEPLAY_CAPSULE_V2_FORMAT.md)、[设计收口报告](stage_reports/stages/stage-07/2026-10-04-s7a-3-design-closure.md) |
+| Stage 7A | active；S7A-3/4 受限功能验收完成，容量整体证明未完成。2026-10-05 工作区已实现 execution fields、Capsule revision3、真实 inline/CXT author 双路与 affine，以及 owning T4/K4 kernel、L1/L2、S1/S2 和事务失败投影；聚焦 Debug 验证通过。本轮已补齐 E1 功能对账和边界断言，Debug/Release 各943项、shared858项、MinGW855项无失败（skip 另记）。Linux GCC/Clang 各853项完整矩阵通过，跨工具链 E1 行已回填 IV。CI 耗时优化已实施并完成本地验证，hosted 效果待新 SHA 实测；owner 已授权提交/推送且不等待 CI 完成。state-budget INCOMPLETE GATE、S7A-9 与 Stage 6 handover 门禁独立保留 | [plan](stage_plans/active/stage-07/plan.md)、[实施交接](stage_plans/active/stage-07/s7a-3-4-implementation-handoff.md)、[受限功能验收证据](stage_reports/stages/stage-07/2026-10-05-s7a-3-4-functional-acceptance.md)、[ADR 0045](adr/0045-gameplay-v2-execution-profile.md)、[execution Spec](formats/gameplay-v2-execution-profile.md)、[CI 优化证据](stage_reports/stages/stage-07/2026-10-05-ci-runtime-optimization.md) |
 | Stage 7B+ | future；Slide、Flick、多指、校准和高级 Judgement 能力持续演进 | [plan](stage_plans/active/stage-07/plan.md) |
 | Stage 8 | future；Chart v5 / CXT v2 / Packed Chart 正式发行与语义收敛 | [plan](stage_plans/future/stage-08/plan.md) |
 | Stage 9 | future；Presentation Foundation 与 Chart v6 / Model v1 | [plan](stage_plans/future/stage-09/plan.md) |
@@ -75,9 +75,10 @@ Gameplay V2 已成为 Stage 7A 的实施基线：Gameplay I 的 ADR/Spec/ABI 已
 （第 1–7 轮**已全部裁定、无待裁定轮次**，语义由各自小节授权；第 7 轮"收尾澄清与缺陷"见
 [第 7 轮收尾裁定与缺陷处置记录](stage_reports/stages/stage-07/2026-10-03-s7a-7-wrapup-rulings.md)）。
 **裁定完成不等于实现完成**：受限 S7A-1 骨架、S7A-2 两个半批与 S7A-3 第二半 part 1 已落地并有带日期记录；
-**S7A-3 实现验收仍未完成**；包含性 gateIncomplete 与真实容量装配消费点已由当前 Spec §3.8.8
-记录落地（本轮未重验），不再作为“尚未接线”缺口。2026-10-04 的设计收口只新增文档证据；
-runtime T4/K4 仍待 S7A-4，后续整批状态不因该设计变化而关闭。设计来源见
+**S7A-3/4 受限功能验收完成，容量整体证明未完成**；包含性 gateIncomplete 与真实容量装配消费点已由当前 Spec §3.8.8
+记录落地，不再作为“尚未接线”缺口。2026-10-05 的只读核对补齐既有实现与当前 SHA hosted 证据，
+见 [剩余证据核对](stage_reports/stages/stage-07/2026-10-05-s7a-3-remaining-evidence.md)；该报告属于此前只读核对。随后本工作区实施了 runtime T4/K4 与真实 author adapter，聚焦 C++ 验证见
+[受限功能验收证据](stage_reports/stages/stage-07/2026-10-05-s7a-3-4-functional-acceptance.md)；E1 功能行与四工具链完整矩阵已补齐；state-budget 保持 INCOMPLETE GATE，Stage7A 不关闭。设计来源见
 [Gameplay V2 redesign research](proposals/research/gameplay-v2/README.md)。Hold 的 prepared grace、作者
 默认值与单条覆盖、严格边界、identity 分区和预算/快照原则已统一；Slider continuity/grace
 仍属于 Stage 7B+ capability，不是 Stage 7A 默认语义。
@@ -89,8 +90,8 @@ Stage 12 的表述是**孤例**（第 21、260 行），由 owner 择时订正�
 Playback entry，与 `packed-chart` entry 共用 typed prepare、Judgement、Ruleset、Snapshot、
 Replay 和 Presentation bridge。Stage 7A 的目标合同包括 Tap/Hold/Release-tail、单一
 `capacity=1` exclusive resource、TimebaseProfile、Ruleset fault transaction，以及
-early/exact/late/Miss 的 early/late Presentation bridge；除 TimebaseProfile 已随 S7A-2 时基半批落地外，
-其余仍是路线合同，待 S7A-4…S7A-9 实施。
+early/exact/late/Miss 的 early/late Presentation bridge；TimebaseProfile 已随 S7A-2 落地，T4/K4 当前有工作区实现；Ruleset、Snapshot/Replay、
+Playback/Presentation bridge 等仍待后续批次，当前工作不关闭 S7A-4…S7A-9 的完整验收。
 
 V2 三份顶层文档仍是工作稿、待 owner acceptance；C10–C14 与代表性切片仍是研究性证据，不能直接作为生产 ABI 限额。
 
@@ -112,8 +113,9 @@ V2 三份顶层文档仍是工作稿、待 owner acceptance；C10–C14 与代�
   Reader；40k/16 MiB 仍需实测验收，更改被冻结的 CXT 参数需要显式重新编译。
 - Gameplay revision 2 的完整 Packed 字段由 [Capsule format](formats/GAMEPLAY_CAPSULE_V2_FORMAT.md)
   唯一拥有；来源 / 有效 policy、T4 时间端点、K4 实例顺序与局部 proof 已设计闭合。
-  当前源码仍有来源枚举写入 judgement projection 的偏差，列为后续实现必改项；
-  历史 3519/110 测试数字只见带日期推进报告，不代表本轮复跑或新合同验收。
+  来源身份投影修正、Reader/Writer、file/memory 与三工具链 focused 已有实施证据，
+  当前 SHA hosted 包含既有 Capsule golden；完整 E1 与 authoring/affine 余项见上述核对报告。
+  历史 3519/110 与 focused 测试数字不代表本轮复跑或整批新合同验收。
 - CXC v1 仍为容器版本，v5 candidate playback path 与 v4 entry 并存。Stage 7A / Stage 8 负责收敛
   `gameplay-graph` 与 `packed-chart` 两种 Playback entry；Stage 8 只有在二者恢复同一 Canonical Gameplay
   Graph、prepared identity 和 Judgement kernel 后，才可正式发行。

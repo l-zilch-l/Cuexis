@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cuexis/judgement/execution_profile.hpp>
 #include <cuexis/judgement/gameplay_assembler.hpp>
 
 #include <memory>
@@ -36,6 +37,7 @@ struct PreparedRequirement final {
     CompiledPattern pattern;
     CompiledMeasure measure;
     Tick deadline;
+    std::optional<PatternExecutionProgram> executionProgram;
 };
 
 struct PreparedResource final {
@@ -55,6 +57,8 @@ class PreparedGameplay final {
     [[nodiscard]] auto assembled() const noexcept -> const AssembledGameplay&;
     [[nodiscard]] auto requirements() const noexcept -> std::span<const PreparedRequirement>;
     [[nodiscard]] auto resources() const noexcept -> std::span<const PreparedResource>;
+    [[nodiscard]] auto timers() const noexcept -> std::span<const PreparedTimerKey>;
+    [[nodiscard]] auto identityDeclarations() const noexcept -> const PreparedIdentityDeclarations&;
     // Pure prepared-window query, not a runtime state transition. At D the timer wins.
     [[nodiscard]] auto admitsSuccess(std::size_t requirementIndex, Tick tick) const noexcept
         -> bool;

@@ -158,9 +158,16 @@ if(DEFINED CUEXIS_VCPKG_MANIFEST_MODE AND NOT CUEXIS_VCPKG_MANIFEST_MODE STREQUA
         "-DVCPKG_MANIFEST_MODE=${CUEXIS_VCPKG_MANIFEST_MODE}"
     )
 endif()
-if(DEFINED CUEXIS_VCPKG_INSTALLED_DIR AND NOT CUEXIS_VCPKG_INSTALLED_DIR STREQUAL "")
+# Manifest consumers change their feature set (headless versus audio-sdl). Keep
+# those installs local to this clean consumer so they cannot uninstall producer
+# dependencies or invalidate another staging gate's license inputs.
+set(consumer_dependency_root "${CUEXIS_VCPKG_INSTALLED_DIR}")
+if(CUEXIS_VCPKG_MANIFEST_MODE)
+    set(consumer_dependency_root "${work_dir}/vcpkg-installed")
+endif()
+if(NOT consumer_dependency_root STREQUAL "")
     list(APPEND common_configure_arguments
-        "-DVCPKG_INSTALLED_DIR=${CUEXIS_VCPKG_INSTALLED_DIR}"
+        "-DVCPKG_INSTALLED_DIR=${consumer_dependency_root}"
     )
 endif()
 
@@ -436,8 +443,8 @@ else()
     endforeach()
 
     set(consumer_build_dir "${work_dir}/build")
-    if(DEFINED CUEXIS_VCPKG_INSTALLED_DIR AND NOT CUEXIS_VCPKG_INSTALLED_DIR STREQUAL "")
-        set(dependency_root "${CUEXIS_VCPKG_INSTALLED_DIR}")
+    if(NOT consumer_dependency_root STREQUAL "")
+        set(dependency_root "${consumer_dependency_root}")
         set(dependency_prefix
             "${dependency_root}/${CUEXIS_VCPKG_TARGET_TRIPLET}")
     else()

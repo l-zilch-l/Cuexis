@@ -62,6 +62,7 @@
 //  saturates, truncates, clamps or falls back to a default, and no exception crosses this boundary.
 
 #include <cuexis/core/result.hpp>
+#include <cuexis/judgement/input_boundary.hpp>
 #include <cuexis/judgement/timebase.hpp>
 
 #include <array>
@@ -619,6 +620,37 @@ struct PhaseDeclaration final {
         -> std::strong_ordering = default;
 };
 
+struct PhaseTarget final {
+    PhaseKind phase;
+    Tick chartTick;
+
+    friend auto operator==(const PhaseTarget&, const PhaseTarget&) noexcept -> bool = default;
+    friend auto operator<=>(const PhaseTarget&, const PhaseTarget&) noexcept
+        -> std::strong_ordering = default;
+};
+
+struct AmountMatchRange final {
+    std::int64_t minimum;
+    std::int64_t maximum;
+
+    friend auto operator==(const AmountMatchRange&, const AmountMatchRange&) noexcept
+        -> bool = default;
+    friend auto operator<=>(const AmountMatchRange&, const AmountMatchRange&) noexcept
+        -> std::strong_ordering = default;
+};
+
+struct AtomBinding final {
+    std::string atomRef;
+    std::string domainToken;
+    std::string sourceClass;
+    std::string channelToken;
+    InputAction action;
+    std::optional<AmountMatchRange> amountRange;
+    bool tailOnly;
+
+    friend auto operator==(const AtomBinding&, const AtomBinding&) noexcept -> bool = default;
+};
+
 //  ABI domain 5 `FactCategory`: the fact classification layer, one to one with the phase (Spec 3.20
 //  rule 3). The category is *derived* from the phase and is never assigned by a caller, so a
 //  component that spells a different category than its phase implies is refused rather than
@@ -1010,6 +1042,8 @@ struct RequirementRecord final {
     std::vector<UnsupportedContentDeclaration> unsupportedForms;
     // Explicit arm membership, independent of required input actions.
     std::vector<std::string> patternArmRefs;
+    std::vector<AtomBinding> atomBindings;
+    std::optional<ClaimPolicyDeclaration::CompetitionKey> independentCompetition;
     struct SuccessWindow final {
         Tick start;
         Tick end;
@@ -1021,6 +1055,7 @@ struct RequirementRecord final {
         Tick end;
         std::vector<SuccessWindow> successWindows;
         std::optional<TimeInterval> body;
+        std::vector<PhaseTarget> phaseTargets;
         friend auto operator==(const Timing&, const Timing&) noexcept -> bool = default;
     };
     std::optional<Timing> timing;
@@ -1155,6 +1190,9 @@ struct CanonicalGameplayGraph final {
     std::uint32_t gameplayVersion;
     //  The semantic graph revision (Spec 5.2 `graphRevision`).
     std::uint64_t graphRevision;
+    std::string executionProfile;
+    std::string normalizationProfileToken;
+    std::string coordinatorPolicyToken;
     //  The typed timebase binding, borrowed (Spec 3.2 `timebaseRef`).
     const TimebaseProfile* timebase;
     //  The late-policy parameters the timebase binding was validated against (Spec 5.2 timebaseRef

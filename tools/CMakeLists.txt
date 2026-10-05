@@ -2,6 +2,7 @@
 # CUEXIS_BUILD_MEDIA_TOOLS alone so that image and audio import never requires shader-tools.
 
 if(CUEXIS_BUILD_DEVELOPER_TOOLS)
+    add_subdirectory(gameplay_assembler)
     add_subdirectory(cxc_common)
     add_subdirectory(cxc_pack)
     add_subdirectory(cxc_validate)

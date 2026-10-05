@@ -134,7 +134,7 @@ TEST_CASE("a rejection is stable across repeated calls and across sessions",
     CHECK(firstAttempt.error().message() == otherSessionAttempt.error().message());
 }
 
-TEST_CASE("query snapshot seek and reset reject stably before prepare",
+TEST_CASE("query snapshot seek reject before prepare and reset returns Created",
           "[judgement][s7a-1][rejection]") {
     auto session = requiredSession();
 
@@ -146,13 +146,12 @@ TEST_CASE("query snapshot seek and reset reject stably before prepare",
     REQUIRE_FALSE(query.has_value());
     REQUIRE_FALSE(snapshot.has_value());
     REQUIRE_FALSE(seek.has_value());
-    REQUIRE_FALSE(reset.has_value());
+    REQUIRE(reset.has_value());
 
     //  One reason class for one missing lifecycle phase.
     CHECK(query.error().code() == snapshot.error().code());
     CHECK(query.error().code() == seek.error().code());
-    CHECK(query.error().code() == reset.error().code());
-    CHECK(query.error().message() == reset.error().message());
+    CHECK_FALSE(session.hasPreparedState());
     CHECK_FALSE(query.error().code().empty());
 }
 
@@ -192,7 +191,7 @@ TEST_CASE("a session is destructible in every reachable phase", "[judgement][s7a
         CHECK_FALSE(session.query().has_value());
         CHECK_FALSE(session.snapshot().has_value());
         CHECK_FALSE(session.seek().has_value());
-        CHECK_FALSE(session.reset().has_value());
+        CHECK(session.reset().has_value());
     }
     {
         //  Destroyed after ownership moved to another session value.

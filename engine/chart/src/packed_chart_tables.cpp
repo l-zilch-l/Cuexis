@@ -1147,7 +1147,7 @@ static auto inspectImpl(std::span<const std::byte> bytes, PackedChartLimits limi
         return core::unexpected(fail("packed.header.crc", "Packed header CRC mismatch"));
     // Spec 5.1: only the implemented candidate revision may be read, and the Foundation profile
     // declares no schedule events. Neither declaration may be ignored as "nothing to do".
-    if (*revision != (gameplay ? 2U : 1U))
+    if (gameplay ? (*revision != 2U && *revision != 3U) : (*revision != 1U))
         return core::unexpected(
             fail("packed.header.unsupported_revision", "Packed candidate revision is unsupported"));
     if (*events != 0U)
@@ -1262,7 +1262,8 @@ static auto decodeImpl(std::span<const std::byte> bytes, PackedChartLimits limit
     auto revision = header.readU32();
     auto headerCrc = header.readU32();
     if (!entityCount || !requirementCount || !eventCount || !decodedBytes || !stringCount ||
-        !refCount || !revision || !headerCrc || *revision != (gameplay ? 2U : 1U))
+        !refCount || !revision || !headerCrc ||
+        (gameplay ? (*revision != 2U && *revision != 3U) : (*revision != 1U)))
         return core::unexpected(
             fail("packed.header.invalid", "Packed header counters are invalid"));
     std::vector<Directory> directories;

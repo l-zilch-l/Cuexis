@@ -6,10 +6,13 @@ set_target_properties(cuexis_judgement PROPERTIES EXPORT_NAME InternalJudgement)
 target_sources(cuexis_judgement
     PRIVATE
         src/diagnostic.cpp
+        src/execution_profile.cpp
+        src/execution_kernel.cpp
         src/gameplay_assembler.cpp
         src/gameplay_graph.cpp
         src/gameplay_prepare.cpp
         src/input.cpp
+        src/kernel_types.cpp
         src/session.cpp
         src/timebase.cpp
 )

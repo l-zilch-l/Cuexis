@@ -320,3 +320,72 @@ TEST_CASE("S7A-3 frozen artifacts share prepare without rerunning the grace reso
     CHECK(publication.active() == active);
     CHECK(publication.active()->assembled().prepared == source->assembled().prepared);
 }
+
+TEST_CASE("S2 grace source failures are atomic and never invent values",
+          "[judgement][s7a-3][prepare][grace][hostile]") {
+    Fixture fixture;
+    auto good = requestFor(fixture);
+    PreparedGameplayPublication publication;
+    REQUIRE(prepareInto(publication, good));
+    const auto* active = publication.active();
+    const auto identity = active->assembled().prepared;
+    auto bad = good;
+    auto& r = bad.assembly.sources[0].document.requirements[0];
+    auto& inputs = bad.graceInputs[0].inputs;
+    SECTION("negative canonical") {
+        inputs.candidate = TickSpan{-1};
+    }
+    SECTION("outside declared range") {
+        inputs.candidate = TickSpan{11};
+    }
+    SECTION("reversed range") {
+        inputs.minimumCanonical = 9;
+        inputs.maximumCanonical = 8;
+    }
+    SECTION("zero quantization unit") {
+        inputs.unitInTicks = makeDuration(0, 1);
+    }
+    SECTION("negative quantization unit") {
+        inputs.unitInTicks = makeDuration(-1, 1);
+    }
+    SECTION("chart and canonical sources conflict") {
+        inputs.chartDuration = makeDuration(3, 1);
+    }
+    SECTION("chart override forbidden") {
+        inputs.candidate.reset();
+        inputs.chartDuration = makeDuration(3, 1);
+        r.grace.allowChartGrace = false;
+    }
+    SECTION("missing default") {
+        r.grace = {GraceResolutionPolicy::defaultDeclaration, {}, false};
+        inputs.candidate.reset();
+        inputs.defaultDuration.reset();
+    }
+    SECTION("inheritance is not implicit name lookup") {
+        r.grace = {GraceResolutionPolicy::inheritedDeclaration, "missing.literal", false};
+        inputs.candidate.reset();
+        bad.namedGraceDurations.clear();
+    }
+    SECTION("duplicate named source") {
+        r.grace = {GraceResolutionPolicy::inheritedDeclaration, "literal", false};
+        inputs.candidate.reset();
+        bad.namedGraceDurations = {{"literal", makeDuration(3, 1)},
+                                   {"literal", makeDuration(4, 1)}};
+    }
+    SECTION("negative duration rejected before rounding") {
+        inputs.candidate.reset();
+        inputs.chartDuration = makeDuration(-1, 3);
+        r.grace.allowChartGrace = true;
+    }
+    SECTION("rational quantization overflow") {
+        inputs.candidate.reset();
+        inputs.chartDuration = makeDuration(INT64_MAX, 1);
+        inputs.unitInTicks = makeDuration(1, INT64_MAX);
+        r.grace.allowChartGrace = true;
+    }
+    auto rejected = prepareInto(publication, bad);
+    REQUIRE_FALSE(rejected);
+    CHECK_FALSE(rejected.error().code().empty());
+    CHECK(publication.active() == active);
+    CHECK(publication.active()->assembled().prepared == identity);
+}

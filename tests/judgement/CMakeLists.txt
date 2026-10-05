@@ -1,4 +1,7 @@
 add_executable(cuexis_judgement_tests
+    execution_profile_tests.cpp
+    execution_kernel_tests.cpp
+    execution_reference.cpp
     gameplay_assembler_tests.cpp
     gameplay_graph_tests.cpp
     gameplay_identity_tests.cpp
@@ -21,4 +24,4 @@ target_link_libraries(cuexis_judgement_tests
 )
 
 include(Catch)
-catch_discover_tests(cuexis_judgement_tests)
+catch_discover_tests(cuexis_judgement_tests PROPERTIES LABELS "judgement")

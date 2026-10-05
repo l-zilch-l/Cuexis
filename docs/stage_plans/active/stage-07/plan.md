@@ -2,7 +2,7 @@
 
 状态：active；Stage 7A 处于实施准备，Stage 7B+ 为可在 Stage 8 前后持续交付的能力线；产品实现未开始
 
-更新日期：2026-10-02
+更新日期：2026-10-05
 
 归档来源：[旧版 PROJECT_GUIDE](../../../archive/PROJECT_GUIDE_LEGACY_2026-08-10.md)、
 [SDK transition plan 快照](../../../archive/CUEXIS_SDK_TRANSITION_PLAN_2026-08-10.md) 和
@@ -400,6 +400,20 @@ S2/T4/K4 语义见 [V2 Spec](../../../formats/GAMEPLAY_V2_SPEC.md) §3.8.10–§
 ### S7A-4：Judgement Kernel 生命周期、Tap/Hold/Release 和仲裁
 
 **目的。** 交付最小、无渲染、确定性的可玩判定。
+
+**2026-10-05 完整方案与交接。** 推荐组合 B 已细化为
+[实施交接](s7a-3-4-implementation-handoff.md) 的 A–G 卡：先 S7A-3 余项、candidate revision3、
+author 双路与 affine，再 late/contact/phase/kernel/timer/Fact。新增合同唯一落点为
+[execution Spec](../../../formats/gameplay-v2-execution-profile.md)、
+[author profile](../../../formats/gameplay-v2-author-profile.md) 与
+[typed supplement](../../../api/gameplay-v2-execution-types.md)；理由见
+[ADR 0045](../../../adr/0045-gameplay-v2-execution-profile.md)。
+上述设计交付当时只补齐 late-policy 合同，不含产品实现；状态预算缺测不判通过。
+同日 owner 授权实施后，本工作区已落地 A/B/D/E/F 与 E1 逐行审计；Windows 与 Linux GCC/Clang 完整矩阵均通过，S7A-3/4 受限功能验收完成，容量整体证明未完成；
+见 [本地验收证据](../../../stage_reports/stages/stage-07/2026-10-05-s7a-3-4-functional-acceptance.md)。
+不能把局部功能通过记为容量整体证明或 Stage 7A 完成。
+旧推荐比较保留于 [推荐登记](../../../proposals/gameplay-v2-acceptance/S7A-4_RECOMMENDED_DESIGN.md)，
+已有实现/hosted 证据见 [余项报告](../../../stage_reports/stages/stage-07/2026-10-05-s7a-3-remaining-evidence.md)。
 
 **固定 Tick 顺序。**
 
