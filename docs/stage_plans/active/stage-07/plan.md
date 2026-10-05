@@ -1,6 +1,6 @@
 # Stage 7 Implementation Plan: Gameplay Foundation and Judgement Evolution
 
-状态：active；Stage 7A 处于实施准备，Stage 7B+ 为可在 Stage 8 前后持续交付的能力线；产品实现未开始
+状态：active；Stage 7A 分批实施，Stage 7B+ 为可在 Stage 8 前后持续交付的能力线；本计划不构成阶段关闭或发行记录
 
 更新日期：2026-10-05
 
@@ -392,7 +392,7 @@ S2/T4/K4 语义见 [V2 Spec](../../../formats/GAMEPLAY_V2_SPEC.md) §3.8.10–§
    映射为 `MeasuredParameter`；既有"无有限最长长度 ⇒ 保守拒绝"的措辞**必须**改为 `gate_incomplete` 并补测试。
 
 ⑤ **装配消费点（以真实 arm / deadline 容量调用门禁并验证原子失败）已落地**；`gateIncomplete` 在装配路径中保守拒绝，
-   已测超限仍走既有诊断，身份只写入已测有效值。数值限额在 S7A-9 前**不冻结**；本批次**不得**声称 S7A-3 完成。
+   已测超限仍走既有诊断，身份只写入已测有效值。数值限额在 S7A-9 前**不冻结**；本批次只能按受限功能验收口径退出，不得声称容量整体证明完成。
    逐字裁定与主控独立复核见两份带日期记录：
    [S7A-3 第二半 part 1 实现裁定落地记录](../../../stage_reports/stages/stage-07/2026-10-03-s7a-3-implementation-rulings.md)
    与 [S7A-3 落地位置裁定（卡 4 / 卡 5）](../../../stage_reports/stages/stage-07/2026-10-03-s7a-3-landing-location-rulings.md)。
@@ -469,6 +469,14 @@ author 双路与 affine，再 late/contact/phase/kernel/timer/Fact。新增合�
     本节的工作内容 1–5 与上列内容**不冲突、不新增工作项**；仍未冻结的部分（阶段编号、序列化编码、预算与
     窗口数值、`SolverProfile` 默认列表与 `max*` 数值、proof 编码、`terminal` 编码）只阻塞**首次消费它们的
     后续批次**，不是本批次门禁。
+
+### 后续实施队列（2026-10-05）
+
+S7A-3/4已达到受限功能验收，容量整体仍未完成；新SHA的hosted证据与归档见
+[交接报告](../../../stage_reports/stages/stage-07/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
+剩余5–9的依赖、首用字段门禁和实施选择见 [交付规划与评估](s7a-5-9-delivery-plan.md)。
+下一次对话目标为S7A-5.1–5.5完整实施，先完成Ruleset内存profile/字段准入卡，
+使用 [S7A-5接手文档](s7a-5-implementation-handoff.md)。本轮只规划和交接，5–9尚未开始产品实施。
 
 ### S7A-5：Ruleset Fold、Score、Combo 和 Statistics
 
@@ -701,7 +709,7 @@ policy 并由引擎分配 owner / lease / contact；③ P1，以新 candidate re
 section 组隔离 Gameplay v2。2026-10-04 已进一步闭合 S2/T4/K4、Capsule revision 2 与完整
 物理字段，见本计划 S7A-3 段及 Capsule；不再等待 wire 数字选择。
 默认预算数值、运行时资源状态编码和 Snapshot/Replay/FactId/CommitId codec 不由本次闭合。
-状态预算 `INCOMPLETE GATE` 仍独立保持，S7A-3 实现验收仍未完成。
+状态预算 `INCOMPLETE GATE` 仍独立保持；S7A-3/4仅达到受限功能验收完成，容量整体证明未完成。
 
 ## 4. Stage 7A 关闭标准
 

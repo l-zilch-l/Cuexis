@@ -31,7 +31,7 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Chart Format Foundation | completed | [plan](stage_plans/completed/chart-format-foundation/plan.md)、[关闭记录](stage_reports/stages/chart-format-foundation/2026-09-16-closure-and-handoff.md) |
 | Chart Format Foundation Hardening（Foundation 交接加固） | completed | [plan](stage_plans/completed/chart-format-foundation-hardening/plan.md)、[R5 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md) |
 | Stage 6 | completed | [plan](stage_plans/completed/stage-06/plan.md)、[关闭报告](stage_reports/stages/stage-06/completion.md) |
-| Stage 7A | active；S7A-3/4 受限功能验收完成，容量整体证明未完成。2026-10-05 工作区已实现 execution fields、Capsule revision3、真实 inline/CXT author 双路与 affine，以及 owning T4/K4 kernel、L1/L2、S1/S2 和事务失败投影；聚焦 Debug 验证通过。本轮已补齐 E1 功能对账和边界断言，Debug/Release 各943项、shared858项、MinGW855项无失败（skip 另记）。Linux GCC/Clang 各853项完整矩阵通过，跨工具链 E1 行已回填 IV。CI 耗时优化已实施并完成本地验证，hosted 效果待新 SHA 实测；owner 已授权提交/推送且不等待 CI 完成。state-budget INCOMPLETE GATE、S7A-9 与 Stage 6 handover 门禁独立保留 | [plan](stage_plans/active/stage-07/plan.md)、[实施交接](stage_plans/active/stage-07/s7a-3-4-implementation-handoff.md)、[受限功能验收证据](stage_reports/stages/stage-07/2026-10-05-s7a-3-4-functional-acceptance.md)、[ADR 0045](adr/0045-gameplay-v2-execution-profile.md)、[execution Spec](formats/gameplay-v2-execution-profile.md)、[CI 优化证据](stage_reports/stages/stage-07/2026-10-05-ci-runtime-optimization.md) |
+| Stage 7A | active；S7A-3/4 受限功能验收完成，容量整体证明未完成。2026-10-05 工作区已实现 execution fields、Capsule revision3、真实 inline/CXT author 双路与 affine，以及 owning T4/K4 kernel、L1/L2、S1/S2 和事务失败投影；聚焦 Debug 验证通过。本轮已补齐 E1 功能对账和边界断言，Debug/Release 各943项、shared858项、MinGW855项无失败（skip 另记）。Linux GCC/Clang 各853项完整矩阵通过，跨工具链 E1 行已回填 IV。CI 耗时优化已实施并完成本地验证，a0c8b7e的push/PR共7个hosted runs已全绿；本轮评估剩余5–9，下一轮选定S7A-5，先通过字段/profile首用准入。state-budget INCOMPLETE GATE、S7A-9 与 Stage 6 handover 门禁独立保留 | [plan](stage_plans/active/stage-07/plan.md)、[实施交接](stage_plans/active/stage-07/s7a-3-4-implementation-handoff.md)、[受限功能验收证据](stage_reports/stages/stage-07/2026-10-05-s7a-3-4-functional-acceptance.md)、[ADR 0045](adr/0045-gameplay-v2-execution-profile.md)、[execution Spec](formats/gameplay-v2-execution-profile.md)、[CI 优化证据](stage_reports/stages/stage-07/2026-10-05-ci-runtime-optimization.md) |
 | Stage 7B+ | future；Slide、Flick、多指、校准和高级 Judgement 能力持续演进 | [plan](stage_plans/active/stage-07/plan.md) |
 | Stage 8 | future；Chart v5 / CXT v2 / Packed Chart 正式发行与语义收敛 | [plan](stage_plans/future/stage-08/plan.md) |
 | Stage 9 | future；Presentation Foundation 与 Chart v6 / Model v1 | [plan](stage_plans/future/stage-09/plan.md) |
@@ -48,7 +48,7 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 开启 candidate）、离线 typed assembler 与 feature 派生、具名宿主六动词命令循环、SDK API `0.7.1`。
 经项目所有者指定，四项自 2026-09-29 起由 **Stage 7A 承接，并作为其关闭前置条件**，登记在
 [Stage 7 计划](stage_plans/active/stage-07/plan.md) 的 §1.2（并在 §3 的 S7A-8 工作内容与 §3.1 台账的
-S7A-8.1–S7A-8.4 展开；2026-10-02 订正，原文误写为 §2 与 §6）。**这四项目前仍未实现**，本段只记录
+S7A-8.1–S7A-8.4 展开；2026-10-02 订正，原文误写为 §2 与 §6）。**这四项的S7A-8关闭门禁尚未整体退出**；Reference Host命令循环基线已有实现，3/4也已有离线author局部实现，真实candidate/assembler产品接线、同SHA交接和SDK放行仍需8逐项验证。本段只记录
 归属与前置条件，不构成任何实现或发布声明。逐条证据见
 [复核交付报告 §10](stage_reports/reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md)；
 2026-10-02 的当前状态逐项复核（含"具名宿主命令循环已由 PR #31 合入 `master`、动词集为
@@ -78,7 +78,10 @@ Gameplay V2 已成为 Stage 7A 的实施基线：Gameplay I 的 ADR/Spec/ABI 已
 **S7A-3/4 受限功能验收完成，容量整体证明未完成**；包含性 gateIncomplete 与真实容量装配消费点已由当前 Spec §3.8.8
 记录落地，不再作为“尚未接线”缺口。2026-10-05 的只读核对补齐既有实现与当前 SHA hosted 证据，
 见 [剩余证据核对](stage_reports/stages/stage-07/2026-10-05-s7a-3-remaining-evidence.md)；该报告属于此前只读核对。随后本工作区实施了 runtime T4/K4 与真实 author adapter，聚焦 C++ 验证见
-[受限功能验收证据](stage_reports/stages/stage-07/2026-10-05-s7a-3-4-functional-acceptance.md)；E1 功能行与四工具链完整矩阵已补齐；state-budget 保持 INCOMPLETE GATE，Stage7A 不关闭。设计来源见
+[受限功能验收证据](stage_reports/stages/stage-07/2026-10-05-s7a-3-4-functional-acceptance.md)；E1 功能行与四工具链完整矩阵已补齐；state-budget 保持 INCOMPLETE GATE，Stage7A 不关闭。
+提交a0c8b7e的hosted与临时证据归档见 [新SHA交接报告](stage_reports/stages/stage-07/2026-10-05-s7a-3-4-hosted-and-handoff.md)；
+后续 [S7A-5–9规划](stage_plans/active/stage-07/s7a-5-9-delivery-plan.md) 已选下一轮S7A-5，
+[接手文档](stage_plans/active/stage-07/s7a-5-implementation-handoff.md) 的首卡需先闭合Ruleset字段/profile；5–9本轮未实施。设计来源见
 [Gameplay V2 redesign research](proposals/research/gameplay-v2/README.md)。Hold 的 prepared grace、作者
 默认值与单条覆盖、严格边界、identity 分区和预算/快照原则已统一；Slider continuity/grace
 仍属于 Stage 7B+ capability，不是 Stage 7A 默认语义。

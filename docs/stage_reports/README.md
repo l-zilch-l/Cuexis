@@ -53,6 +53,9 @@ Standards / Spec 记录），由该专题自己的 `README.md` 承担导航；�
 
 - [S7A-3/4 实施进度与暂停点](stages/stage-07/2026-10-05-s7a-3-4-implementation-progress.md)（2026-10-05，工作区实现、聚焦验证和剩余验收；不关闭整批）
 - [S7A-3 E1 与 S7A-4 逐项审计](stages/stage-07/2026-10-05-s7a-3-4-e1-audit.md)
+- [S7A-3/4 受限功能验收与最终矩阵](stages/stage-07/2026-10-05-s7a-3-4-functional-acceptance.md)
+- [Stage 7 CI 耗时基线与优化](stages/stage-07/2026-10-05-ci-runtime-optimization.md)
+- [S7A-3/4 新SHA hosted、后续规划与临时证据归档](stages/stage-07/2026-10-05-s7a-3-4-hosted-and-handoff.md)
 
 ## 跨阶段专题
 
@@ -93,7 +96,3 @@ Standards / Spec 记录），由该专题自己的 `README.md` 承担导航；�
 - [Legacy stage-report paths](legacy-paths.md)
 
 历史报告不可被改写为新的验证结果。新的关闭或复核必须创建新的报告，并从当前状态页或相应索引链接。
-
-- [S7A-3/4 受限功能验收与最终矩阵](stages/stage-07/2026-10-05-s7a-3-4-functional-acceptance.md)
-
-- [Stage 7 CI 耗时基线与优化](stages/stage-07/2026-10-05-ci-runtime-optimization.md)
