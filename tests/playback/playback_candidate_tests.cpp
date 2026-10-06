@@ -9,14 +9,22 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <atomic>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
 #include <iterator>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
+
+#if defined(_WIN32)
+#include <process.h>
+#else
+#include <unistd.h>
+#endif
 
 namespace {
 
@@ -117,11 +125,21 @@ struct PackedCandidate final {
 class TemporaryDirectory final {
   public:
     TemporaryDirectory() {
-        static unsigned sequence = 0;
-        path_ = std::filesystem::temp_directory_path() /
-                ("cuexis-candidate-" + std::to_string(++sequence));
-        std::filesystem::remove_all(path_);
-        std::filesystem::create_directories(path_);
+        static std::atomic<unsigned> sequence{0};
+#if defined(_WIN32)
+        const auto process = _getpid();
+#else
+        const auto process = getpid();
+#endif
+        for (unsigned attempt = 0; attempt < 4096; ++attempt) {
+            path_ = std::filesystem::temp_directory_path() /
+                    ("cuexis-candidate-" + std::to_string(process) + "-" +
+                     std::to_string(sequence.fetch_add(1)));
+            if (std::filesystem::create_directory(path_)) {
+                return;
+            }
+        }
+        throw std::runtime_error{"Cannot reserve an isolated candidate fixture directory"};
     }
 
     ~TemporaryDirectory() {
