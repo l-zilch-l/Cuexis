@@ -79,6 +79,36 @@ also covers squash, source branch deletion and a fresh clone lacking the approve
 checker fetches only the validated SHA from the trusted repository, never executing that code.
 The independent reviewer reproduced this absence before the fix.
 
+## PR 32 CI repair follow-up
+
+The push and PR Linux runs for `9ae9bb0d86862a5d076377fa059fe21f318156e9`
+([push run](https://github.com/l-zilch-l/Cuexis/actions/runs/37502110978),
+[PR run](https://github.com/l-zilch-l/Cuexis/actions/runs/37502119233)) exposed two causes:
+
+- GCC Release and the CMake 4.4 reference gate rejected the ignored `system()` result in the
+  inter-process publication-lock test. The test now requires successful child launch on both
+  POSIX and Windows, preserving the ready/release-file synchronization assertions.
+- Documentation configuration and several AudioSDL external-consumer rows timed out fetching
+  gperf/automake from GNU origins. Linux jobs now use a narrow
+  [vcpkg x-script provider](https://learn.microsoft.com/vcpkg/users/assetcaching#x-script)
+  for those two GNU archives. It checks the pinned port's SHA512 before atomic publication;
+  other assets and failed mirror attempts retain normal vcpkg origin fallback. No test exclusion,
+  increased CTest timeout, matrix reduction or binary-cache policy change was made.
+
+The owner requested a build-version increment before this repair push. The version tool updated
+both canonical version and manifest to `26.10.06-3`, using the current UTC date; SDK API stays
+`0.7.1` candidate. Fresh/clean GCC Release and MSVC Release builds passed. GCC E3 tests passed
+18/18; an additional full-source compile with `_FORTIFY_SOURCE=2` and
+`-Werror=unused-result` passed. Mirror integrity/failure tests passed 5/5 on Windows and Linux.
+Real vcpkg `x-download` fetched gperf and automake through the provider and verified their
+original SHA512 values. SDK authorization tests remained 22 passed / 2 Windows skips out of 24.
+MSVC Release focused regression passed 22/22, including both AudioSDL external consumers,
+all E3 cases, the version gate and OFF candidate CLI (121.69 seconds). Documentation and
+format checks passed. Logs are
+`out/ci-fix-{gcc,msvc}-{configure,build,tests}.log`, `out/ci-fix-fortify.log`,
+`out/ci-fix-gnu-provider.log`, `out/ci-fix-mirror-tests.log` and `out/ci-fix-version-tests.log`.
+New hosted results must bind the repair SHA; the failed old runs are not its validation.
+
 ## Owner and hosted evidence to fill
 
 1. Owner reviews PR #32 and supplies the exact unedited owner record defined by

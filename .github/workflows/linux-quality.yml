@@ -11,6 +11,9 @@ permissions:
   contents: read
 
 env:
+  # Only GNU gperf/automake assets use the fallback mirror. The pinned port's
+  # SHA512 remains mandatory; every other asset uses vcpkg's existing sources.
+  X_VCPKG_ASSET_SOURCES: 'x-script,python3 "${{ github.workspace }}/tools/ci/gnu_asset_mirror.py" "{url}" "{sha512}" "{dst}"'
   VCPKG_COMMIT: 40f3c709db80acf154ac4b17a1f83c564ebd022e
   # CMake is pinned instead of taken from the runner image. The image's version
   # changes without notice and this gate is sensitive to which version it is --
@@ -276,6 +279,7 @@ jobs:
         run: |
           python3 -B tools/check_docs.py
           python3 -B tools/update_version.py --check
+          python3 -B tools/ci/gnu_asset_mirror_tests.py
 
   clang-tidy:
     name: clang-tidy

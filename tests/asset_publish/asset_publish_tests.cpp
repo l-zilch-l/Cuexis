@@ -242,11 +242,12 @@ void spawnLockHolder() {
     }
     constexpr std::string_view argument{"[.publish-lock-child]"};
 #if defined(_WIN32)
-    ::_spawnl(_P_NOWAIT, executable.c_str(), executable.c_str(), argument.data(), nullptr);
+    REQUIRE(::_spawnl(_P_NOWAIT, executable.c_str(), executable.c_str(), argument.data(),
+                      nullptr) != -1);
 #else
     const std::string command{"\"" + executable + "\" \"" + std::string{argument} +
                               "\" >/dev/null 2>&1 &"};
-    static_cast<void>(std::system(command.c_str()));
+    REQUIRE(std::system(command.c_str()) == 0);
 #endif
 }
 
