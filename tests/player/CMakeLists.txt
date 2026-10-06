@@ -29,6 +29,8 @@ find_package(spdlog CONFIG REQUIRED)
 
 add_executable(cuexis_player_control_tests
     player_control_tests.cpp
+    player_candidate_options_tests.cpp
+    "${PROJECT_SOURCE_DIR}/app/player/src/player_options.cpp"
     "${PROJECT_SOURCE_DIR}/app/player/src/player_control.cpp"
     "${PROJECT_SOURCE_DIR}/app/player/src/player_log.cpp"
     "${PROJECT_SOURCE_DIR}/app/player/src/frame_diagnostics.cpp"

@@ -26,6 +26,7 @@ void printUsage(std::ostream& out) {
     out << "usage: cuexis_reference_host --content <project-directory> [options]\n"
            "  --content <dir>            host content root (a project directory)\n"
            "  --package <file.cxc>       also load a published Cuexis package\n"
+           "  --candidate-entry <path>  explicitly select an experimental entry\n"
            "  --advance <n>              extra host-clock advance frames (default 4)\n"
            "  --expect-identity <hex>    require the reference content identity\n"
            "  --expect-digest <i>=<v>    require a frame digest (repeatable)\n"
@@ -135,6 +136,15 @@ void parseInvocation(int argc, char** argv, Invocation& invocation) {
             }
             invocation.options.packageFile = std::filesystem::path{*value};
             invocation.packageSeen = true;
+            continue;
+        }
+        if (argument == "--candidate-entry") {
+            const auto value = next();
+            if (!value || value->empty() || invocation.options.candidateEntry) {
+                recordParseFailure(invocation, "missing or duplicate candidate entry");
+            } else {
+                invocation.options.candidateEntry = std::string{*value};
+            }
             continue;
         }
         if (argument == "--advance") {

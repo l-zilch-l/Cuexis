@@ -123,6 +123,23 @@ Stage 6 关闭后由 Stage 7A 承接四项未完成内容。它们是关闭前�
 四项中任一项既未实现也没有被 ADR 或所属 Spec 明示接受的例外，Stage 7A 不得关闭。Stage 6
 的关闭事实不被改写；只把剩余证据归入当前阶段。
 
+2026-10-06 逐项源码与门禁核对及实施建议见
+[四项交接复核](../../../stage_reports/stages/stage-07/verification/2026-10-06-stage6-handover-audit.md)。
+该报告更新旧台账事实，记录 S7A-8.1–8.4 的建议顺序与退出证据；不表示已实施 S7A-7/8/9、
+接受生产预算或批准新的版本/门禁合同。
+
+**2026-10-07 owner 实施授权补充：** 四项在现有 `stage-7` 实施并提交 PR #32，审批由项目
+所有者本人完成。S7A-8.1 使用 ON/OFF binary flavor、显式 consumer 许可和安装前缀 stamp；
+S7A-8.2 沿用 `candidate.static-tap-lanes4-v1` 的 typed Foundation assembler，实际 CLI 输出
+Packed、project/CXC entry metadata 和原子嵌入的 closure report，发布前运行真实 Playback prepare。
+此 versioned Foundation profile 不取代 Gameplay v2 authored/derived closure，不接受旧 Gameplay
+语义进入当前 Judgement；Judgement/Playback bridge 仍属 S7A-7，本批不将其声称为已完成。
+S7A-8.3 对安装后的宿主运行既有七动词及显式 candidate entry。S7A-8.4 准备兼容的 SDK
+`0.7.1`，通过可信 base owner registry 与精确 API 审批记录验证；同作者 PR 的本人审批路径
+按 [VERSIONING](../../../guides/VERSIONING.md#s7a-84-owner-approval-record) 与 ADR 0042 补充实施。
+代码交付、hosted 证据、保护启用和 owner 审批分别记录；缺可信 bootstrap 不自动放行或关闭
+S7A-8.4，不扩张至 S7A-7 产品集成、S7A-9 预算/阶段关闭。
+
 ## 2. 总体依赖和发布路线
 
 ```text

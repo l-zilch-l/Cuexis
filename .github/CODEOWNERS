@@ -1,0 +1,11 @@
+# The repository owner reviews these contracts. For a self-authored PR, the explicit
+# SDK authorization is recorded by an owner comment, not a GitHub self-Approve review.
+/.github/workflows/ @l-zilch-l
+/.github/sdk-api-owners.json @l-zilch-l
+/.github/CODEOWNERS @l-zilch-l
+/tools/check_version_gate* @l-zilch-l
+/cmake/CuexisVersion.cmake @l-zilch-l
+/cmake/CuexisConfig.cmake.in @l-zilch-l
+/engine/*/include/ @l-zilch-l
+/docs/adr/0042-stage-6-productization-boundaries.md @l-zilch-l
+/docs/guides/VERSIONING.md @l-zilch-l

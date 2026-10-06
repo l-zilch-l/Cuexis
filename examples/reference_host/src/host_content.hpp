@@ -10,6 +10,7 @@
 
 #include <cstddef>
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -41,6 +42,7 @@ class HostFileProvider final : public cuexis::content::IContentProvider {
 struct HostContent final {
     std::filesystem::path projectDirectory;
     std::string chartEntryPath{"charts/main.cuexis.chart.json"};
+    std::optional<std::string> candidateEntry;
 };
 
 // The declared asset table of the reference content. A production host derives

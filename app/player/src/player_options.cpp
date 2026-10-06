@@ -54,6 +54,39 @@ auto parsePlayerOptions(int argumentCount, char** arguments) -> core::Result<Pla
             }
             continue;
         }
+        if (argument == "--candidate-entry") {
+#ifndef CUEXIS_EXPERIMENTAL_BUILD
+            return core::unexpected(core::Error{"player.candidate.disabled",
+                                                "Candidate entry requires an experimental build"});
+#else
+            if (options.candidateEntry) {
+                return core::unexpected(core::Error{"player.arguments.duplicate_candidate_entry",
+                                                    "Candidate entry may only be provided once"});
+            }
+            auto path = requirePathArgument(index, argumentCount, arguments,
+                                            "player.arguments.candidate_entry_missing",
+                                            "Candidate entry requires a relative entry path");
+            if (!path) {
+                return core::unexpected(std::move(path.error()));
+            }
+            options.candidateEntry = path->generic_string();
+            continue;
+#endif
+        }
+        if (argument == "--cxc") {
+            if (options.cxcPath) {
+                return core::unexpected(core::Error{"player.arguments.duplicate_cxc",
+                                                    "CXC locator may only be provided once"});
+            }
+            auto path = requirePathArgument(index, argumentCount, arguments,
+                                            "player.arguments.cxc_path_missing",
+                                            "CXC requires a package path");
+            if (!path) {
+                return core::unexpected(std::move(path.error()));
+            }
+            options.cxcPath = std::move(*path);
+            continue;
+        }
         if (argument == "--chart") {
             if (options.chartPath.has_value()) {
                 return core::unexpected(core::Error{"player.arguments.duplicate_chart",
@@ -123,6 +156,14 @@ auto parsePlayerOptions(int argumentCount, char** arguments) -> core::Result<Pla
         return core::unexpected(
             core::Error{"player.arguments.project_chart_conflict",
                         "The project and chart options are mutually exclusive"});
+    }
+    if (options.cxcPath && (options.chartPath || options.projectPath)) {
+        return core::unexpected(core::Error{"player.arguments.source_conflict",
+                                            "CXC, project and chart locators are exclusive"});
+    }
+    if (options.candidateEntry && (!options.projectPath && !options.cxcPath)) {
+        return core::unexpected(core::Error{"player.arguments.candidate_source_required",
+                                            "Candidate entry requires project or CXC locator"});
     }
     if (options.smokeTest && options.audioSmokeTest) {
         return core::unexpected(core::Error{"player.arguments.smoke_test_conflict",

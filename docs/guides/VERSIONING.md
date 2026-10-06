@@ -124,6 +124,40 @@ SDK API 版本和已启用组件；稳定 C ABI 在阶段 12 建立后再提供�
 
 ## SDK 版本递增规范
 
+Stage 7 prepares SDK `0.7.1` as an unreleased compatible patch candidate for explicit Entry
+factories and experimental package isolation. This repair preserves installed public layouts,
+signatures, vtables and default production source selection. `0.7.0` consumers rebuild against
+the new package; new Entry consumers request at least `0.7.1`. Owner approval and trusted-base
+bootstrap remain release prerequisites.
+
+### S7A-8.4 owner approval record
+
+A same-author PR uses an owner GitHub issue-comment record because GitHub does not accept
+self-Approve reviews. The record starts with `cuexis-sdk-api-approval-v1` on its own line,
+followed by one JSON object with exactly: `repository`, integer `pr`, full `base_sha`, full
+`candidate_sha`, full `candidate_tree_sha`, `from`, `to`, `utc_date`. The API-observed actor
+must be a human owner in `.github/sdk-api-owners.json` at the trusted base. The record must
+be unedited and created on that UTC release date. Missing approval, wrong actor, stale date,
+changed SHA/base/version/tree or an unavailable API denies permission. The newest owner record
+supersedes older records; an invalid newer record revokes permission. Candidate files, labels
+and `--allow-sdk-api-change` cannot grant permission. The agent does not publish owner approval.
+
+The metadata-only `pull_request_target` gate checks out the base and fetches the head as data;
+it never executes PR code. The latest event base must be an ancestor of the PR head, so outdated
+branches need updating. Merge-group approval binds the actual queue tree. Post-merge audit
+permits a different merge/squash SHA only for the identical approved tree, actual previous-master
+base and SDK transition. Only single-PR queues are supported; combined queues are rejected even
+with an approval for their final tree. Historical checks
+are evidence, not new release authorization.
+
+The checker, tests, registry and workflow must first exist on trusted master. Missing baseline
+files produce `version.bootstrap.required`, never candidate fallback. CODEOWNERS records owners
+but does not activate protection. Initial bootstrap and activation of a trusted required workflow
+remain owner operations. The current classic required-check context alone does not prove an
+unforgeable workflow source; protection and same-SHA hosted evidence remain acceptance items.
+
+### SDK version selection
+
 本节是 SDK 版本选择和更新流程的统一规范；阶段计划引用本节，不为后续阶段预留版本号。
 SDK 使用 `major.minor.patch` 三个非负整数，不是小数；例如
 `0.9.0 -> 0.10.0 -> 0.11.0`，minor 和 patch 不设一位数字上限。

@@ -374,6 +374,16 @@ SDK/库版本本轮不改代码、不新增实际依赖；没有新实现/hosted
 
 ## 依据
 
+### Stage 7 S7A-8.4 implementation amendment (2026-10-07)
+
+The owner authorizes implementation on `stage-7` and retains approval through PR #32.
+SDK `0.7.1` is an unreleased compatible patch candidate for Entry factories and experimental
+package isolation. This accepts a reviewable implementation path, not merge/release approval
+or stage closure. Exact owner-record fields, trusted-base bootstrap and rejection behavior are
+owned by [VERSIONING](../guides/VERSIONING.md#s7a-84-owner-approval-record). A same-author PR
+uses an owner issue-comment record; the agent must not submit it for the owner. Protection
+activation and hosted release evidence remain prerequisites; CODEOWNERS alone is insufficient.
+
 - 仓库：
   [PlaybackSource](../../engine/playback/include/cuexis/playback/playback_source.hpp)、
   [render 依赖](../../engine/playback/CMakeLists.txt)、

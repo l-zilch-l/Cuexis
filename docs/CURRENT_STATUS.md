@@ -31,7 +31,7 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Chart Format Foundation | completed | [plan](stage_plans/completed/chart-format-foundation/plan.md)、[关闭记录](stage_reports/stages/chart-format-foundation/2026-09-16-closure-and-handoff.md) |
 | Chart Format Foundation Hardening（Foundation 交接加固） | completed | [plan](stage_plans/completed/chart-format-foundation-hardening/plan.md)、[R5 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md) |
 | Stage 6 | completed | [plan](stage_plans/completed/stage-06/plan.md)、[关闭报告](stage_reports/stages/stage-06/completion.md) |
-| Stage 7A | active；S7A-3/4受限功能验收已完成。S7A-5.1–5.5与S7A-6.1–6.5联合实现已落地，J0–J7受限功能验收与本地跨工具链证据回填完成；实际Fold/Hook、canonical Replay、全量Snapshot、exact Seek和惰性分支已接线。生产容量/state-budget、S7A-7/8/9及Stage6 handover门禁独立保留；新SHA hosted待推送后回填，不关闭阶段 | [plan](stage_plans/active/stage-07/plan.md)、[5/6报告](stage_reports/stages/stage-07/verification/2026-10-06-s7a-5-6-functional-acceptance.md)、[3/4证据](stage_reports/stages/stage-07/verification/2026-10-05-s7a-3-4-functional-acceptance.md) |
+| Stage 7A | active；S7A-3/4受限功能验收已完成。S7A-5.1–5.5与S7A-6.1–6.5联合实现已落地，J0–J7受限功能验收与本地跨工具链证据回填完成；实际Fold/Hook、canonical Replay、全量Snapshot、exact Seek和惰性分支已接线。生产容量/state-budget、S7A-7/8/9及Stage6 handover门禁独立保留；实现提交4d8024e已推送，hosted矩阵待回填，不关闭阶段 | [plan](stage_plans/active/stage-07/plan.md)、[5/6报告](stage_reports/stages/stage-07/verification/2026-10-06-s7a-5-6-functional-acceptance.md)、[3/4证据](stage_reports/stages/stage-07/verification/2026-10-05-s7a-3-4-functional-acceptance.md) |
 | Stage 7B+ | future；Slide、Flick、多指、校准和高级 Judgement 能力持续演进 | [plan](stage_plans/active/stage-07/plan.md) |
 | Stage 8 | future；Chart v5 / CXT v2 / Packed Chart 正式发行与语义收敛 | [plan](stage_plans/future/stage-08/plan.md) |
 | Stage 9 | future；Presentation Foundation 与 Chart v6 / Model v1 | [plan](stage_plans/future/stage-09/plan.md) |
@@ -48,17 +48,21 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 开启 candidate）、离线 typed assembler 与 feature 派生、具名宿主六动词命令循环、SDK API `0.7.1`。
 经项目所有者指定，四项自 2026-09-29 起由 **Stage 7A 承接，并作为其关闭前置条件**，登记在
 [Stage 7 计划](stage_plans/active/stage-07/plan.md) 的 §1.2（并在 §3 的 S7A-8 工作内容与 §3.1 台账的
-S7A-8.1–S7A-8.4 展开；2026-10-02 订正，原文误写为 §2 与 §6）。**这四项的S7A-8关闭门禁尚未整体退出**；Reference Host命令循环基线已有实现，3/4也已有离线author局部实现，真实candidate/assembler产品接线、同SHA交接和SDK放行仍需8逐项验证。本段只记录
+S7A-8.1–S7A-8.4 展开；2026-10-02 订正，原文误写为 §2 与 §6）。**这四项的S7A-8关闭门禁尚未整体退出**；实施进度与本轮证据见下文。本段只记录
 归属与前置条件，不构成任何实现或发布声明。逐条证据见
 [复核交付报告 §10](stage_reports/reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md)；
 2026-10-02 的当前状态逐项复核（含"具名宿主命令循环已由 PR #31 合入 `master`、动词集为
 `open/play/pause/tick/seek/reload/quit`"这一取代性事实）见
 [S7A-0 四项交接收口台账](proposals/gameplay-v2-acceptance/STAGE6_HANDOVER_LEDGER.md)。
 
-其中 **SDK API `0.7.1` 另有门禁放行通路未接线的实测阻塞**（2026-09-29）：`version-gate.yml` 未传入
-`--allow-sdk-api-change`，候选分支无法自行开启；而该改动按 ADR 0042 需代码所有者复核，本仓库没有
-CODEOWNERS。本批次不升版本，该阻塞随 `0.7.1` 一并归入 Stage 7A 关闭前置，细节见
-[复核交付报告 §10](stage_reports/reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md)。
+2026-10-07 四项实施已授权提交现有 PR #32，由 owner 本人审批。candidate flavor/许可/安装隔离、
+Foundation typed assembler CLI 原子包与真实 prepare、安装后宿主 candidate entry 和 SDK `0.7.1`
+候选及精确审批门禁均已实施；本地 ON/OFF static/shared 回归已取得证据，跨工具链矩阵继续回填。
+当前代码交付不等于门禁整体退出：可信 master bootstrap、平台保护与 owner 精确审批以及同 SHA
+hosted 证据仍待回填。尤其 merge_group 的候选 workflow 不能仅靠复制 base checker 证明可信；
+启用 merge queue 前必须采用受保护的 required workflow/外部可信检查源，否则保持禁用。
+历史复核见[四项交接复核](stage_reports/stages/stage-07/verification/2026-10-06-stage6-handover-audit.md)，
+本轮实施与证据见[四项实施报告](stage_reports/stages/stage-07/verification/2026-10-07-stage6-handover-implementation.md)。
 
 ## 当前格式与 SDK 合同
 
@@ -100,8 +104,10 @@ Stage 12 的表述是**孤例**（第 21、260 行），由 owner 择时订正�
 Playback entry，与 `packed-chart` entry 共用 typed prepare、Judgement、Ruleset、Snapshot、
 Replay 和 Presentation bridge。Stage 7A 的目标合同包括 Tap/Hold/Release-tail、单一
 `capacity=1` exclusive resource、TimebaseProfile、Ruleset fault transaction，以及
-early/exact/late/Miss 的 early/late Presentation bridge；TimebaseProfile 已随 S7A-2 落地，T4/K4 当前有工作区实现；Ruleset、Snapshot/Replay、
-Playback/Presentation bridge 等仍待后续批次，当前工作不关闭 S7A-4…S7A-9 的完整验收。
+early/exact/late/Miss 的 early/late Presentation bridge；TimebaseProfile 已随 S7A-2 落地，T4/K4 与真实 author adapter
+已有受限功能验收。Ruleset Fold、Score/Combo/Statistics、Snapshot/Replay、exact Seek 和惰性分支已随
+S7A-5/6 落地；Playback/Presentation bridge 产品集成仍归 S7A-7，四项 Stage 6 交接收口归 S7A-8，
+生产预算、最终矩阵与阶段关闭归 S7A-9。局部功能验收不替代这些后续门禁。
 
 V2 三份顶层文档仍是工作稿、待 owner acceptance；C10–C14 与代表性切片仍是研究性证据，不能直接作为生产 ABI 限额。
 
@@ -131,7 +137,7 @@ V2 三份顶层文档仍是工作稿、待 owner acceptance；C10–C14 与代�
   Graph、prepared identity 和 Judgement kernel 后，才可正式发行。
 - Chart v6 / Model v1、Chart v7 和 Chart v8 仍不可加载，分别作为 Stage 9/11/13 的表现设计输入；
   不再作为 Judgement 的隐性前置。
-- SDK API 为 `0.7.0`。安装后的 Playback headers 不泄露 EnTT、SDL、OpenGL/GLAD、JSON DOM、
+- SDK API 分支候选为 `0.7.1`（未发行，owner 审批与可信基线启用待回填）；已发行基线仍为 `0.7.0`。安装后的 Playback headers 不泄露 EnTT、SDL、OpenGL/GLAD、JSON DOM、
   RuntimeSession 或 World。
 - Playback 的 default `allCapabilities()` 包含 shader asset 和 parameterized material capability；
   显式裁剪 Session 仍可稳定拒绝它们。Playback 热路径不调用 shader compiler。

@@ -41,6 +41,24 @@ option(CUEXIS_BUILD_SHADER_TOOLS "Build the optional shader compiler module" OFF
 option(CUEXIS_BUILD_MEDIA_TOOLS "Build the optional offline media import library and tool" OFF)
 option(CUEXIS_ENABLE_CHART_V5_CANDIDATE
        "Enable the experimental Chart v5 candidate Playback source path" OFF)
+set(CUEXIS_BUILD_FLAVOR "production")
+set(CUEXIS_EXPERIMENTAL_CONFIG_BLOCK "")
+if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+    set(CUEXIS_BUILD_FLAVOR "experimental")
+    add_compile_definitions(CUEXIS_EXPERIMENTAL_BUILD=1)
+    set(CUEXIS_EXPERIMENTAL_CONFIG_BLOCK [=[
+if(NOT Cuexis_ALLOW_EXPERIMENTAL)
+    set(Cuexis_FOUND FALSE)
+    set(Cuexis_NOT_FOUND_MESSAGE
+        "Cuexis experimental package requires explicit Cuexis_ALLOW_EXPERIMENTAL=ON")
+    return()
+endif()
+]=])
+endif()
+configure_file(cmake/CuexisInstallFlavor.cmake.in
+    "${PROJECT_BINARY_DIR}/CuexisInstallFlavor.cmake" @ONLY)
+# Register before subdirectories install any files. A prefix cannot change flavor in place.
+install(SCRIPT "${PROJECT_BINARY_DIR}/CuexisInstallFlavor.cmake")
 option(CUEXIS_BUILD_TESTS "Build the Cuexis test suite" ${CUEXIS_TESTS_DEFAULT})
 option(CUEXIS_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
 option(CUEXIS_ENABLE_CLANG_TIDY "Run clang-tidy while compiling Cuexis targets" OFF)
@@ -165,14 +183,17 @@ if(CUEXIS_BUILD_DEVELOPER_TOOLS)
         cuexis_cxc_unpack
         cuexis_cxc_validate
         cuexis_gameplay_author
+        cuexis_chart_candidate
     )
     if(TARGET cuexis_asset_importer)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_asset_importer)
     endif()
 endif()
+if(TARGET cuexis_asset_publish)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_asset_publish)
+endif()
 if(CUEXIS_BUILD_MEDIA_TOOLS)
     list(APPEND CUEXIS_ACTIVE_TARGETS
-        cuexis_asset_publish
         cuexis_media_import
         cuexis_media_importer
     )
@@ -402,6 +423,7 @@ if(CUEXIS_BUILD_TESTS)
                 NAME cuexis_external_consumer_${consumer_mode}
                 COMMAND "${CMAKE_COMMAND}"
                     "-DCUEXIS_CONSUMER_MODE=${consumer_mode}"
+                    "-DCUEXIS_EXPERIMENTAL=${CUEXIS_ENABLE_CHART_V5_CANDIDATE}"
                     "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
                     "-DCUEXIS_BINARY_DIR=${PROJECT_BINARY_DIR}"
                     "-DCUEXIS_GENERATOR=${CMAKE_GENERATOR}"
@@ -429,6 +451,12 @@ if(CUEXIS_BUILD_TESTS)
                 TIMEOUT 900
             )
         endforeach()
+        set(candidate_host_arguments)
+        if(TARGET cuexis_chart_candidate)
+            list(APPEND candidate_host_arguments
+                "-DCUEXIS_CHART_TESTS=$<TARGET_FILE:cuexis_chart_tests>"
+                "-DCUEXIS_CANDIDATE_TOOL=$<TARGET_FILE:cuexis_chart_candidate>")
+        endif()
         add_test(
             NAME cuexis_reference_host_staging
             COMMAND "${CMAKE_COMMAND}"
@@ -437,6 +465,8 @@ if(CUEXIS_BUILD_TESTS)
                 "-DCUEXIS_GENERATOR=${CMAKE_GENERATOR}"
                 "-DCUEXIS_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
                 "-DCUEXIS_LIBRARY_TYPE=${CUEXIS_LIBRARY_TYPE}"
+                "-DCUEXIS_EXPERIMENTAL=${CUEXIS_ENABLE_CHART_V5_CANDIDATE}"
+                ${candidate_host_arguments}
                 "-DCUEXIS_ENABLE_SANITIZERS=${CUEXIS_ENABLE_SANITIZERS}"
                 "-DCUEXIS_ENABLE_COVERAGE=${CUEXIS_ENABLE_COVERAGE}"
                 "-DCUEXIS_SDK_API_VERSION=${CUEXIS_SDK_API_VERSION}"
@@ -485,6 +515,7 @@ if(CUEXIS_BUILD_TESTS)
                     "-DCUEXIS_ENABLE_SANITIZERS=${CUEXIS_ENABLE_SANITIZERS}"
                     "-DCUEXIS_ENABLE_COVERAGE=${CUEXIS_ENABLE_COVERAGE}"
                     "-DCUEXIS_VERSION_DISPLAY=${CUEXIS_VERSION_DISPLAY}"
+                    "-DCUEXIS_SDK_API_VERSION=${CUEXIS_SDK_API_VERSION}"
                     -P "${PROJECT_SOURCE_DIR}/cmake/VerifyPlayerDistribution.cmake"
             )
             set_tests_properties(cuexis_player_distribution PROPERTIES
@@ -839,6 +870,11 @@ endif()
 if(TARGET cuexis_gameplay_author)
     cuexis_verify_target_dependencies(cuexis_gameplay_author
         ALLOWED cuexis::core cuexis::json_support cuexis::chart cuexis::judgement cuexis::gameplay_packed)
+endif()
+if(TARGET cuexis_chart_candidate)
+    cuexis_verify_target_dependencies(cuexis_chart_candidate
+        ALLOWED cuexis::chart cuexis::cxc cuexis::core cuexis::json_support
+                cuexis::asset_publish cuexis::playback)
 endif()
 cuexis_verify_target_dependencies(cuexis_render
     ALLOWED

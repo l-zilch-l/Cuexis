@@ -30,6 +30,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - name: GCC experimental candidate
+            preset: candidate-headless-debug
+            compiler: g++
+            developer_tools: "ON"
           - name: GCC Release
             preset: headless-release
             compiler: g++

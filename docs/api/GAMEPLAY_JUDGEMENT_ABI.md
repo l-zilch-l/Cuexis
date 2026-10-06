@@ -4,7 +4,7 @@
 
 日期：2026-10-01
 
-本文定义 Stage 7A 可实现的 C++ typed preview 边界，不改变当前 SDK API `0.7.0`，也不宣称
+本文定义 Stage 7A 可实现的 C++ typed preview 边界，不改变当前 SDK API `0.7.1`，也不宣称
 已有安装包暴露这些类型。稳定 C ABI 仍属于 Stage 14。
 
 ## 1. 生命周期

@@ -1,5 +1,10 @@
 # 四项 Stage 6 交接收口台账
 
+2026-10-07 更新：四项实施及本轮证据见
+[实施报告](../../stage_reports/stages/stage-07/verification/2026-10-07-stage6-handover-implementation.md)。
+owner 本人在 PR #32 审批；可信基线/平台保护和 hosted 证据仍为独立退出门禁。
+
+
 状态：candidate；S7A-0 准入产出，待 owner acceptance
 
 更新日期：2026-10-02
@@ -9,6 +14,11 @@
 
 文档角色：交接台账。它记录四项 Stage 6 遗留内容的**当前**实现状态、缺口、阻塞与最小关闭证据。
 它不重开 Stage 6，也不把历史报告当作当前证据。
+
+**2026-10-06 复核入口**：[四项现状与解决方案](../../stage_reports/stages/stage-07/verification/2026-10-06-stage6-handover-audit.md)。
+下文保存 2026-10-02 的基线，不能据此继续宣称 assembler 只有身份装配、命令名称仍待裁定或保护配置未访问。
+当前已存在 author adapter 与 Gameplay feature/capability closure 派生；命令命名已在主计划订正；
+四项完整关闭门禁仍未退出。当前状态与本次建议见上述带日期报告，建议不等于已接受决策。
 
 ## 0. 基线事实
 

@@ -141,6 +141,31 @@ artifact must not be made to look like a hash failure.
 
 ## 5. Typed Lowering And Identity Preservation
 
+The S7A-8 offline `cuexis_chart_candidate` tool consumes explicit fallback CXC, canonical
+Packed metadata, CXT v2 and frozen Binding/module/export inputs. Integer parameters are
+explicit `--parameter id=value` inputs. `assembleCandidateChart` validates base assertions,
+appends typed expansion and derives the registered Foundation lanes4 feature and resource
+uses through the existing Packed codecs. It writes `compiled/chart.packed`, entry metadata
+and the manifest `cuexis.candidate-closure.v1` report in one atomic CXC publication. Real explicit-entry Playback
+prepare validates assets before publication; failure preserves the old package.
+
+This versioned Foundation profile does not lower Gameplay v2/Capsule revision 3 or infer
+missing Gameplay v2 authored declarations. That author adapter retains its strict
+declared/derived contract. Judgement/Playback integration remains S7A-7 and production budget
+acceptance remains S7A-9; neither is certified by this tool.
+
+Candidate presets enable the existing build switch. Installed public library binary names
+gain `-candidate`; target names and public layouts remain invariant. Package metadata exposes
+`Cuexis_BUILD_FLAVOR` and `Cuexis_EXPERIMENTAL`. Experimental packages reject imports unless
+the consumer sets `Cuexis_ALLOW_EXPERIMENTAL=ON`; separate install prefixes are required,
+with a flavor stamp rejecting mixed installs before copying package files. Consumer permission
+cannot enable candidate decoding in production binaries.
+
+Player `--candidate-entry path` requires exactly one `--project` or `--cxc` locator; OFF parsing
+rejects it before opening input. Reference Host uses the same explicit Entry factories and
+reports package flavor. Legacy factories never select candidates implicitly. Consumers of
+the released Entry contract request SDK API `0.7.1` or newer in the same minor.
+
 The offline typed assembler supplies chart metadata, expanded entities, parent relations,
 requirements and resource references. It derives the lanes4 feature and closure from validated
 typed requirements; Player cannot add a feature after decode. The resulting candidate keeps:

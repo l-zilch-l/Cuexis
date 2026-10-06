@@ -151,6 +151,14 @@ auto hostAssetTable() -> std::vector<cuexis::playback::PlaybackAssetDescriptor> 
 
 auto buildProjectSource(const HostContent& content, HostReport& report, bool faulty)
     -> Result<cuexis::playback::PlaybackSource> {
+    if (content.candidateEntry) {
+        if (faulty) {
+            return unexpected(Error{"host.content.asset_unavailable",
+                                    "Injected source failure before candidate loading"});
+        }
+        return cuexis::playback::PlaybackSource::fromFilesystemProjectEntry(
+            content.projectDirectory, *content.candidateEntry);
+    }
     const auto chartPath =
         content.projectDirectory / "assets" / std::filesystem::path{content.chartEntryPath};
     auto chart = readText(chartPath);

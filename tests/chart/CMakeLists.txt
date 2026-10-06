@@ -2,6 +2,7 @@ add_executable(cuexis_chart_tests
     animation_template_loader_tests.cpp
     canonical_chart_loader_tests.cpp
     candidate_lowering_tests.cpp
+    candidate_assembler_tests.cpp
     canonical_semantic_chart_tests.cpp
     cxt_v2_loader_tests.cpp
     chart_foundation_capacity_tests.cpp
@@ -37,6 +38,7 @@ add_executable(cuexis_chart_tests
 target_compile_definitions(cuexis_chart_tests
     PRIVATE
         CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+        CUEXIS_BINARY_DIR="${CMAKE_BINARY_DIR}"
 )
 
 target_include_directories(cuexis_chart_tests
@@ -53,6 +55,18 @@ target_link_libraries(cuexis_chart_tests
 
 include(Catch)
 catch_discover_tests(cuexis_chart_tests)
+
+if(TARGET cuexis_chart_candidate)
+    add_test(NAME cuexis_candidate_cli
+        COMMAND "${CMAKE_COMMAND}"
+            "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+            "-DCUEXIS_BINARY_DIR=${CMAKE_BINARY_DIR}"
+            "-DCUEXIS_CHART_TESTS=$<TARGET_FILE:cuexis_chart_tests>"
+            "-DCUEXIS_CANDIDATE_TOOL=$<TARGET_FILE:cuexis_chart_candidate>"
+            "-DCUEXIS_EXPERIMENTAL=${CUEXIS_ENABLE_CHART_V5_CANDIDATE}"
+            -P "${PROJECT_SOURCE_DIR}/cmake/VerifyCandidateCli.cmake")
+    set_tests_properties(cuexis_candidate_cli PROPERTIES LABELS "chart;candidate;tools")
+endif()
 
 # R4 capacity probe: machine-readable Packed capacity data behind CUEXIS_RUN_PERFORMANCE_PROBE.
 add_executable(cuexis_chart_capacity_probe

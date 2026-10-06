@@ -6,7 +6,7 @@
 （`cuexis_player_support`），也不读取 Cuexis 源码树。
 
 本工程由 [ADR 0042](../../docs/adr/0042-stage-6-productization-boundaries.md) 的 `S6-D08` 冻结在
-`examples/reference_host/`；它对齐的 SDK API 基线是 `0.7.0`。工程是**宿主模板**，
+`examples/reference_host/`；它对齐的 SDK API 基线是 `0.7.1`。工程是**宿主模板**，
 不是 SDK 交付面——它的内部结构不是公共承诺。
 
 ## 1. 组成
@@ -80,12 +80,12 @@ usage: cuexis_reference_host --content <project-directory> [options]
 
 ## 5. SDK API 基线校验
 
-`CMakeLists.txt` 声明 `CUEXIS_HOST_API_VERSION`（默认 `0.7.0`）作为宿主编写时对齐的基线，
+`CMakeLists.txt` 声明 `CUEXIS_HOST_API_VERSION`（默认 `0.7.1`）作为宿主编写时对齐的基线，
 并在 configure 阶段拒绝**不兼容的 SDK minor**：`find_package` 的
 `COMPATIBILITY SameMinorVersion` 与显式的
 
 ```cmake
-if(Cuexis_API_VERSION VERSION_LESS "0.7.0" OR NOT Cuexis_API_VERSION VERSION_LESS "0.8.0")
+if(Cuexis_API_VERSION VERSION_LESS "0.7.1" OR NOT Cuexis_API_VERSION VERSION_LESS "0.8.0")
     message(FATAL_ERROR "The reference host supports SDK API 0.7.x; found ${Cuexis_API_VERSION}")
 endif()
 ```
@@ -122,3 +122,13 @@ ctest --preset debug -R cuexis_reference_host_staging --output-on-failure
 - 本工程是宿主**模板**，内部结构、文件划分与记录格式都不是 SDK 公共 API。
 - 它不构成 Cuexis 的发布产物，也不进入 SDK 安装树。
 - `CUEXIS_HOST_API_VERSION` 是**宿主侧**的编写基线，不是 SDK 版本来源。
+
+## 8. Experimental candidate entry
+
+The updated host requests SDK API 0.7.1 for the additive Entry factories. To consume an
+experimental install, explicitly pass `-DCuexis_ALLOW_EXPERIMENTAL=ON` when configuring.
+At runtime select `--candidate-entry compiled/chart.packed` together with an explicit
+`--content` project root; the legacy source path does not select a candidate. The host logs
+`host.build flavor=experimental` or `production`. It still uses public Playback APIs for all
+open/play/pause/tick/seek/reload/quit commands. OFF libraries reject Entry factories even when
+the consumer permitted experimental packages at configure time.

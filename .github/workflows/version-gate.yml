@@ -1,7 +1,7 @@
 name: Version Gate
 
 on:
-  pull_request:
+  pull_request_target:
     branches:
       - master
     types: [opened, synchronize, reopened, ready_for_review]
@@ -26,29 +26,35 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
+  issues: read
 
 jobs:
   pre-merge:
     name: Version advancement (pre-merge)
-    if: github.event_name == 'pull_request' || github.event_name == 'merge_group'
+    if: github.event_name == 'pull_request_target' || github.event_name == 'merge_group'
     runs-on: ubuntu-latest
     steps:
       - name: Check out full history
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.sha }}
           fetch-depth: 0
 
       - name: Run trusted version-gate tests and checker
         env:
-          CUEXIS_BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
-          CUEXIS_CANDIDATE_SHA: ${{ github.sha }}
-          CUEXIS_EVENT: ${{ github.event_name }}
+          CUEXIS_BASE_SHA: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          CUEXIS_CANDIDATE_SHA: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}
+          CUEXIS_EVENT: ${{ github.event_name == 'pull_request_target' && 'pull_request' || github.event_name }}
+          CUEXIS_APPROVAL_PR: ${{ github.event.pull_request.number || 0 }}
+          GITHUB_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
           test -n "${CUEXIS_BASE_SHA}"
           test -n "${CUEXIS_CANDIDATE_SHA}"
+          # Fetch data only. Never check out or execute PR code in pull_request_target.
+          git fetch --no-tags origin "${CUEXIS_CANDIDATE_SHA}"
           TRUSTED_ROOT="${RUNNER_TEMP}/cuexis-version-gate"
           mkdir -p "${TRUSTED_ROOT}/tools" "${TRUSTED_ROOT}/.github/workflows"
           # The trusted tests build their fixtures by rendering a version file, so
@@ -60,6 +66,7 @@ jobs:
             tools/check_version_gate_tests.py \
             tools/update_version.py \
             .github/workflows/version-gate.yml \
+            .github/sdk-api-owners.json \
             cmake/CuexisVersion.cmake \
             vcpkg.json; do
             if ! git cat-file -e "${CUEXIS_BASE_SHA}:${path}" 2>/dev/null; then
@@ -73,14 +80,12 @@ jobs:
           python3 -B "${TRUSTED_ROOT}/tools/check_version_gate_tests.py"
           python3 -B "${TRUSTED_ROOT}/tools/check_version_gate.py" \
             --repo-root "${GITHUB_WORKSPACE}" \
-            --check-current
-          python3 -B "${TRUSTED_ROOT}/tools/check_version_gate.py" \
-            --repo-root "${GITHUB_WORKSPACE}" \
             --base-ref "${CUEXIS_BASE_SHA}" \
             --candidate-ref "${CUEXIS_CANDIDATE_SHA}" \
             --trusted-utc-date "$(date -u +%F)" \
             --context live \
-            --event "${CUEXIS_EVENT}"
+            --event "${CUEXIS_EVENT}" \
+            --sdk-owner-approval-pr "${CUEXIS_APPROVAL_PR}"
 
   post-merge-audit:
     name: Version advancement (post-merge audit)
@@ -97,6 +102,7 @@ jobs:
         env:
           CUEXIS_BASE_SHA: ${{ github.event.before }}
           CUEXIS_CANDIDATE_SHA: ${{ github.sha }}
+          GITHUB_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
@@ -112,6 +118,7 @@ jobs:
             tools/check_version_gate_tests.py \
             tools/update_version.py \
             .github/workflows/version-gate.yml \
+            .github/sdk-api-owners.json \
             cmake/CuexisVersion.cmake \
             vcpkg.json; do
             if ! git cat-file -e "${CUEXIS_BASE_SHA}:${path}" 2>/dev/null; then
@@ -129,7 +136,8 @@ jobs:
             --candidate-ref "${CUEXIS_CANDIDATE_SHA}" \
             --trusted-utc-date "$(date -u +%F)" \
             --context live \
-            --event push
+            --event push \
+            --sdk-owner-approval-pr 0
 
   historical-revalidation:
     name: Version advancement (historical revalidation)
@@ -161,6 +169,7 @@ jobs:
             tools/check_version_gate_tests.py \
             tools/update_version.py \
             .github/workflows/version-gate.yml \
+            .github/sdk-api-owners.json \
             cmake/CuexisVersion.cmake \
             vcpkg.json; do
             if ! git cat-file -e "${CUEXIS_BASE_SHA}:${path}" 2>/dev/null; then

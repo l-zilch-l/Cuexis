@@ -4,7 +4,7 @@
 
 更新日期：2026-08-30
 
-适用版本：SDK API `0.7.0`
+适用版本：SDK API `0.7.1`
 
 文档角色：公共 API 参考
 
@@ -61,7 +61,7 @@ prepare 诊断按以下阶段形成并保持稳定顺序：
 
 ## 兼容合同
 
-- SDK API 当前为 `0.7.0`。
+- SDK API 分支候选为 `0.7.1`（待 owner 审批与可信基线启用）。
 - Chart v1/v2/v3 Reader、迁移入口和已公开旧 API 按 ADR 0041 退出政策维护。
 - FrameDigest v1-v3 和 canonical bytes/order 保持稳定。
 - installed Playback headers 不暴露 EnTT、SDL、OpenGL/GLAD、JSON DOM、RuntimeSession 或 World。

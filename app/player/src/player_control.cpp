@@ -141,8 +141,16 @@ class TransactionGuard final {
 
 auto openConfiguredPlaybackSource(const PlayerOptions& options)
     -> core::Result<playback::PlaybackSource> {
+    if (options.cxcPath) {
+        return options.candidateEntry ? playback::PlaybackSource::fromCxcFileEntry(
+                                            *options.cxcPath, *options.candidateEntry)
+                                      : playback::PlaybackSource::fromCxcFile(*options.cxcPath);
+    }
     if (options.projectPath.has_value()) {
-        auto source = playback::PlaybackSource::fromFilesystemProject(*options.projectPath);
+        auto source = options.candidateEntry
+                          ? playback::PlaybackSource::fromFilesystemProjectEntry(
+                                *options.projectPath, *options.candidateEntry)
+                          : playback::PlaybackSource::fromFilesystemProject(*options.projectPath);
         if (!source) {
             return core::unexpected(core::Error{"player.project.load_failed",
                                                 "Filesystem Playback source loading failed"}

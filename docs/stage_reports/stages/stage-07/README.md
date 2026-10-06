@@ -2,7 +2,7 @@
 
 状态：current index
 
-更新日期：2026-10-06
+更新日期：2026-10-07
 
 本索引按报告用途分类，不复制裁定、字段合同或当前阶段结论。
 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 是唯一当前实现状态摘要；
@@ -16,7 +16,7 @@
 | 准入与基线 (readiness) | 5 | owner准入记录、工具链基线、typed合同审视、D-9候选证据 |
 | 裁定记录 (decisions) | 13 | 分轮准入/实施裁定、合同选择、落地位置与诊断分类；现行字段仍归Spec/ABI |
 | 设计与实施记录 (implementation) | 4 | 带日期的设计收口和实施推进；设计交付与运行验证分别按报告声明解释 |
-| 验证与审计 (verification) | 9 | 独立复验、功能验收、边界审计、CI优化和文档恢复证据 |
+| 验证与审计 (verification) | 12 | 独立复验、功能验收、边界审计、CI优化和文档恢复证据 |
 | 交接与规划修订 (handoffs) | 3 | hosted交接、排期修订和桌面接手整理；历史下一步不覆盖主计划 |
 
 ## 常用入口
@@ -67,6 +67,7 @@
 
 | 报告 | 证据日期 |
 | --- | --- |
+| [Stage 6 四项交接实施与验收](verification/2026-10-07-stage6-handover-implementation.md) | 2026-10-07 |
 | [`docs/api/GAMEPLAY_V2_ABI.md` 事故性截断与重建的证据报告](verification/2026-10-03-abi-document-restoration.md) | 2026-10-03 |
 | [S7A-3 第二半 part 1：主控独立复验的带日期证据](verification/2026-10-03-s7a-3-independent-verification.md) | 2026-10-03 |
 | [Stage 7 CI runtime optimization](verification/2026-10-05-ci-runtime-optimization.md) | 2026-10-05 |
@@ -76,8 +77,8 @@
 | [S7A-3 剩余实施与验收证据核对](verification/2026-10-05-s7a-3-remaining-evidence.md) | 2026-10-05 |
 | [S7A-5/6 实施阻塞复核](verification/2026-10-06-s7a-5-6-implementation-blocker-audit.md) | 2026-10-06 |
 | [S7A-5/6 U01–U13全量重审](verification/2026-10-06-s7a-5-6-u01-u13-rereview.md) | 2026-10-06 |
-
 | [S7A-5/6 limited functional acceptance](verification/2026-10-06-s7a-5-6-functional-acceptance.md) | 2026-10-06 |
+| [Stage 6 四项交接现状复核与解决方案](verification/2026-10-06-stage6-handover-audit.md) | 2026-10-06 |
 
 ## 交接与规划修订
 
@@ -89,6 +90,6 @@
 
 ## 路径迁移
 
-32份报告按用途迁入上述叶目录，历史正文和证据日期保留，链接已重定位。
+历史报告按用途迁入上述叶目录，历史正文和证据日期保留，链接已重定位；新增报告在对应分类登记。
 旧逻辑路径见 [legacy-paths](legacy-paths.md)，不建立逐文件stub。
 叶目录由本索引直接列出全部正文，不再为每个分类复制README。

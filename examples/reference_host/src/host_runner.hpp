@@ -20,6 +20,7 @@ namespace cuexis_reference_host {
 struct HostOptions final {
     std::filesystem::path contentDirectory;
     std::optional<std::filesystem::path> packageFile;
+    std::optional<std::string> candidateEntry;
     std::size_t advanceFrames{4};
     std::optional<std::string> expectedIdentity;
     std::vector<std::pair<std::size_t, std::uint64_t>> expectedDigests;

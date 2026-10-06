@@ -26,7 +26,7 @@ ADR，更**不是**已发布 SDK 的宿主 API。
 1. **内部 / preview typed 边界。** 本 ABI 描述的是 Gameplay typed kernel 与 Playback 集成之间的
    C++ 边界。它面向仓库内消费者与 reference host，不面向第三方宿主。ADR 0027 冻结的宿主入口仍是
    `cuexis::playback::PlaybackSession`；本文不新增、不替换、不重命名任何宿主入口。
-2. **不是已发布 SDK 的宿主 API。** 现有安装包（SDK API `0.7.0`）不暴露本文的任何类型。本文不改变
+2. **不是已发布 SDK 的宿主 API。** 现有安装包（SDK API `0.7.1`）不暴露本文的任何类型。本文不改变
    SDK API 版本，也不构成版本升级授权；Stage 7A 的 typed 类型即使实现，也只进入内部/preview 安装
    组件，且必须由实现批次的安装图（见 [依赖与安装图](../proposals/gameplay-v2-acceptance/TARGETS_AND_DEPENDENCIES.md)）
    显式登记。

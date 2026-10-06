@@ -109,16 +109,15 @@ void reportStepFailure(HostReport& report, std::string_view step, std::string_vi
         reportStepFailure(report, stepName, "frame digest unavailable", command);
         return std::nullopt;
     }
-    std::string fields = std::string{"index="} + std::to_string(index) + " mode=" +
-                         std::string{stepName} +
-                         " chartTimeMs=" + std::to_string(static_cast<std::int64_t>(step.chartTimeMs)) +
-                         " discontinuityId=" + std::to_string(step.discontinuityId) +
-                         " objects=" + std::to_string(snapshot->objects.size()) +
-                         " digest=" + std::to_string(digest->value) +
-                         " algorithm=" + std::to_string(digest->algorithmVersion);
+    std::string fields =
+        std::string{"index="} + std::to_string(index) + " mode=" + std::string{stepName} +
+        " chartTimeMs=" + std::to_string(static_cast<std::int64_t>(step.chartTimeMs)) +
+        " discontinuityId=" + std::to_string(step.discontinuityId) +
+        " objects=" + std::to_string(snapshot->objects.size()) +
+        " digest=" + std::to_string(digest->value) +
+        " algorithm=" + std::to_string(digest->algorithmVersion);
     if (command != nullptr) {
-        fields += " cmdIndex=" + std::to_string(command->commandIndex) +
-                  " simulationDeltaTimeMs=" +
+        fields += " cmdIndex=" + std::to_string(command->commandIndex) + " simulationDeltaTimeMs=" +
                   std::to_string(static_cast<std::int64_t>(step.simulationDeltaTimeMs));
     }
     report.event("frame", fields);
@@ -227,8 +226,8 @@ struct HostContext final {
     return *state;
 }
 
-void emitCommand(HostReport& report, std::uint64_t index, std::size_t line, Verb verb, bool rejected,
-                 Transport before, Transport after) {
+void emitCommand(HostReport& report, std::uint64_t index, std::size_t line, Verb verb,
+                 bool rejected, Transport before, Transport after) {
     report.event("command", std::string{"index="} + std::to_string(index) + " line=" +
                                 std::to_string(line) + " verb=" + std::string{verbName(verb)} +
                                 " outcome=" + (rejected ? "rejected" : "ok") +
@@ -279,7 +278,8 @@ void emitCommand(HostReport& report, std::uint64_t index, std::size_t line, Verb
     context.content.projectDirectory = projectDirectory;
     auto source = buildProjectSource(context.content, report, false);
     if (!source) {
-        report.diagnostic("load", source.error().code(), "the host could not build a project source");
+        report.diagnostic("load", source.error().code(),
+                          "the host could not build a project source");
         return false;
     }
     auto prepared = context.session.prepareLoad(std::move(*source), PlaybackMode::ChartClock);
@@ -295,8 +295,8 @@ void emitCommand(HostReport& report, std::uint64_t index, std::size_t line, Verb
         return false;
     }
     report.event("load", std::string{"source=host-project identity="} +
-                             identityText(*candidateIdentity) + " presentation_entries=" +
-                             std::to_string(manifest->entries.size()));
+                             identityText(*candidateIdentity) +
+                             " presentation_entries=" + std::to_string(manifest->entries.size()));
     auto committed = context.session.commit(std::move(*prepared));
     if (!committed) {
         report.diagnostic("load", committed.error().code(), "the session refused the commit");
@@ -323,8 +323,8 @@ void emitCommand(HostReport& report, std::uint64_t index, std::size_t line, Verb
 [[nodiscard]] auto sampleCommand(HostContext& context, HostReport& report, bool seek,
                                  std::uint64_t commandIndex) -> bool {
     const CommandStep command{.commandIndex = commandIndex,
-                              .diagnosticStep = seek ? std::string_view{"seek"}
-                                                     : std::string_view{"tick"}};
+                              .diagnosticStep =
+                                  seek ? std::string_view{"seek"} : std::string_view{"tick"}};
     const ClockStep step{.chartTimeMs = static_cast<double>(context.clock.chartTimeMs),
                          .simulationDeltaTimeMs = seek ? 0.0 : static_cast<double>(tickStepMs),
                          .discontinuityId = context.clock.discontinuityId};
@@ -384,8 +384,8 @@ void emitCommand(HostReport& report, std::uint64_t index, std::size_t line, Verb
 
 void emitPlayPause(HostReport& report, std::string_view name, SessionState state,
                    const Clock& clock) {
-    report.event(name, std::string{"state="} + std::string{stateName(state)} + " chartTimeMs=" +
-                           std::to_string(clock.chartTimeMs) +
+    report.event(name, std::string{"state="} + std::string{stateName(state)} +
+                           " chartTimeMs=" + std::to_string(clock.chartTimeMs) +
                            " discontinuityId=" + std::to_string(clock.discontinuityId));
 }
 
@@ -477,7 +477,8 @@ void emitPlayPause(HostReport& report, std::string_view name, SessionState state
         context.counters.tickAttempts += command.number;
         if (context.transport == Transport::Paused) {
             context.counters.suppressedTicks += command.number;
-            emitCommand(report, index, command.line, command.verb, false, before, context.transport);
+            emitCommand(report, index, command.line, command.verb, false, before,
+                        context.transport);
             return true;
         }
         for (std::uint64_t step = 0; step < command.number; ++step) {
@@ -486,7 +487,8 @@ void emitPlayPause(HostReport& report, std::string_view name, SessionState state
                               "the host clock would leave the exactly representable range");
             }
             if (!sampleCommand(context, report, false, index)) {
-                emitCommand(report, index, command.line, command.verb, true, before, context.transport);
+                emitCommand(report, index, command.line, command.verb, true, before,
+                            context.transport);
                 return false;
             }
         }
@@ -544,8 +546,7 @@ void emitPlayPause(HostReport& report, std::string_view name, SessionState state
                                               .objects = context.lastSample->objects,
                                               .seek = false};
         report.event("reload-sample",
-                     std::string{"cmdIndex="} + std::to_string(index) +
-                         " targetChartTimeMs=" +
+                     std::string{"cmdIndex="} + std::to_string(index) + " targetChartTimeMs=" +
                          std::to_string(static_cast<std::int64_t>(target.chartTimeMs)) +
                          " targetSimulationDeltaTimeMs=" +
                          std::to_string(static_cast<std::int64_t>(target.simulationDeltaTimeMs)) +
@@ -566,7 +567,8 @@ void emitPlayPause(HostReport& report, std::string_view name, SessionState state
 [[nodiscard]] auto runCommandProgram(const HostOptions& options, HostReport& report,
                                      const Program& program) -> int {
     HostContext context;
-    report.event("start", std::string{"sdk_api_baseline=0.7.0 content="} +
+    context.content.candidateEntry = options.candidateEntry;
+    report.event("start", std::string{"sdk_api_baseline=0.7.1 content="} +
                               (options.contentDirectory.empty()
                                    ? std::string{"none"}
                                    : options.contentDirectory.filename().string()) +
@@ -576,15 +578,14 @@ void emitPlayPause(HostReport& report, std::string_view name, SessionState state
     // the run actually got. It is emitted even when the loop never started,
     // because the program itself was accepted.
     const auto emitClock = [&report](const Counters& counters) {
-        report.event("clock",
-                     std::string{"tickAttempts="} + std::to_string(counters.tickAttempts) +
-                         " suppressedTicks=" + std::to_string(counters.suppressedTicks) +
-                         " emittedTickFrames=" + std::to_string(counters.emittedTickFrames) +
-                         " publicUpdateAttempts=" +
-                         std::to_string(counters.publicUpdateAttempts) +
-                         " publicUpdateSuccesses=" +
-                         std::to_string(counters.publicUpdateSuccesses) +
-                         " frameCount=" + std::to_string(counters.frameCount));
+        report.event(
+            "clock",
+            std::string{"tickAttempts="} + std::to_string(counters.tickAttempts) +
+                " suppressedTicks=" + std::to_string(counters.suppressedTicks) +
+                " emittedTickFrames=" + std::to_string(counters.emittedTickFrames) +
+                " publicUpdateAttempts=" + std::to_string(counters.publicUpdateAttempts) +
+                " publicUpdateSuccesses=" + std::to_string(counters.publicUpdateSuccesses) +
+                " frameCount=" + std::to_string(counters.frameCount));
     };
 
     // A fresh host is Empty, and that is the expected starting point rather than
@@ -629,6 +630,7 @@ void emitPlayPause(HostReport& report, std::string_view name, SessionState state
 } // namespace
 
 auto runHost(const HostOptions& options, HostReport& report) -> int {
+    report.event("build", std::string{"flavor="} + CUEXIS_HOST_BUILD_FLAVOR);
     if (options.commandProgram) {
         return runCommandProgram(options, report, *options.commandProgram);
     }
@@ -636,9 +638,10 @@ auto runHost(const HostOptions& options, HostReport& report) -> int {
         report.failure("start", "content directory is required");
         return 1;
     }
-    HostContent content{.projectDirectory = options.contentDirectory};
+    HostContent content{.projectDirectory = options.contentDirectory,
+                        .candidateEntry = options.candidateEntry};
 
-    report.event("start", std::string{"sdk_api_baseline=0.7.0 content="} +
+    report.event("start", std::string{"sdk_api_baseline=0.7.1 content="} +
                               options.contentDirectory.filename().string() +
                               (options.packageFile ? " package=yes" : " package=no"));
 
@@ -790,7 +793,10 @@ auto runHost(const HostOptions& options, HostReport& report) -> int {
             report.failure("package", unloadedForPackage.error().code());
             return 1;
         }
-        auto packageSource = PlaybackSource::fromCxcFile(*options.packageFile);
+        auto packageSource =
+            options.candidateEntry
+                ? PlaybackSource::fromCxcFileEntry(*options.packageFile, *options.candidateEntry)
+                : PlaybackSource::fromCxcFile(*options.packageFile);
         if (!packageSource) {
             report.failure("package", packageSource.error().code());
             return 1;

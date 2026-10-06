@@ -38,7 +38,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
     if (!executableBase) {
         return core::unexpected(std::move(executableBase.error()));
     }
-    if (!options.chartPath && !options.projectPath) {
+    if (!options.chartPath && !options.projectPath && !options.cxcPath) {
         auto pathResult = playerProjectDirectory(options.smokeTest ? smokeTestProjectDirectory
                                                                    : defaultProjectDirectory);
         if (!pathResult) {
@@ -49,6 +49,11 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
 
     logger.info("player.startup",
                 std::string{"Starting Cuexis Player "} + std::string{version::display});
+#ifdef CUEXIS_EXPERIMENTAL_BUILD
+    logger.info("player.build_flavor", "experimental");
+#else
+    logger.info("player.build_flavor", "production");
+#endif
 
     const auto preferencesSchema =
         *executableBase / "assets" / "schemas" / "cuexis.player-preferences.v1.schema.json";

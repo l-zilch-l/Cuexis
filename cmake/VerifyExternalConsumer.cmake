@@ -119,6 +119,8 @@ foreach(playback_consumer_cmake IN ITEMS
 endforeach()
 
 set(common_configure_arguments
+    "-DCUEXIS_EXPECTED_SDK_API_VERSION=${CUEXIS_SDK_API_VERSION}"
+    "-DCuexis_ALLOW_EXPERIMENTAL=${CUEXIS_EXPERIMENTAL}"
     -G "${CUEXIS_GENERATOR}"
     "-DCMAKE_BUILD_TYPE=${CUEXIS_BUILD_TYPE}"
     "-DCUEXIS_LIBRARY_TYPE=${CUEXIS_LIBRARY_TYPE}"

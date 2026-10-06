@@ -5,6 +5,7 @@ from __future__ import annotations
 import ast
 import json
 import os
+import re
 import shlex
 import shutil
 import subprocess
@@ -12,6 +13,7 @@ import tempfile
 import unittest
 from datetime import date
 from pathlib import Path
+from unittest.mock import patch
 
 import check_version_gate as gate
 from update_version import Version
@@ -375,7 +377,7 @@ class VersionGateTests(unittest.TestCase):
     def test_workflow_uses_trusted_event_baselines_and_full_history(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")
         for token in (
-            "pull_request:",
+            "pull_request_target:",
             "merge_group:",
             "push:",
             "workflow_dispatch:",
@@ -394,7 +396,8 @@ class VersionGateTests(unittest.TestCase):
             "--trusted-utc-date",
         ):
             self.assertIn(token, text)
-        self.assertNotIn("github.event.pull_request.head.sha", text)
+        self.assertIn("github.event.pull_request.head.sha", text)
+        self.assertIn("Never check out or execute PR code", text)
         self.assertNotIn("${GITHUB_WORKSPACE}/tools/check_version_gate.py", text)
 
     def test_workflow_does_not_silently_bypass_bootstrap_or_trust_candidate_tests(self) -> None:
@@ -524,6 +527,7 @@ class VersionGateTests(unittest.TestCase):
         "tools/check_version_gate_tests.py",
         "tools/update_version.py",
         ".github/workflows/version-gate.yml",
+        ".github/sdk-api-owners.json",
     )
     # The bootstrap block materializes the gate files plus the two canonical
     # templates it renders its fixtures from, so the materialize assertion must
@@ -821,6 +825,111 @@ class VersionGateTests(unittest.TestCase):
                 date(2026, 9, 20),
                 "live",
             )
+
+
+class SdkOwnerApprovalTests(unittest.TestCase):
+    def test_real_git_tree_and_api_owner_record(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            def git(*args):
+                return subprocess.check_output([gate.git_executable(), "-C", str(root), *args]).decode().strip()
+            git("init", "-q")
+            git("config", "user.name", "Gate Test")
+            git("config", "user.email", "gate@example.invalid")
+            (root / "cmake").mkdir()
+            (root / ".github").mkdir()
+            version = (TOOLS.parent / "cmake/CuexisVersion.cmake").read_text()
+            version = re.sub(r'set\(CUEXIS_SDK_API_VERSION "[^"]+"\)', 'set(CUEXIS_SDK_API_VERSION "0.7.0")', version)
+            (root / "cmake/CuexisVersion.cmake").write_text(version)
+            (root / "vcpkg.json").write_text((TOOLS.parent / "vcpkg.json").read_text())
+            (root / gate.SDK_OWNERS_FILE).write_text(json.dumps({"format": "cuexis.sdk-api-owners",
+                "version": 1, "owners": ["l-zilch-l"], "repository": "l-zilch-l/Cuexis"}))
+            git("add", ".")
+            git("commit", "-qm", "trusted baseline")
+            base = git("rev-parse", "HEAD")
+            (root / "cmake/CuexisVersion.cmake").write_text(version.replace('"0.7.0"', '"0.7.1"'))
+            git("add", ".")
+            git("commit", "-qm", "candidate")
+            candidate = git("rev-parse", "HEAD")
+            expected, comment = self.record()
+            expected.update(base_sha=base, candidate_sha=candidate,
+                            candidate_tree_sha=git("rev-parse", "HEAD^{tree}"))
+            comment["body"] = gate.SDK_APPROVAL_PREFIX + json.dumps(expected)
+            def api(repository, suffix):
+                return {"head": {"sha": candidate}} if suffix == "pulls/32" else [comment]
+            with patch.object(gate, "_github_json", side_effect=api), patch.dict(os.environ, {"GITHUB_REPOSITORY": "l-zilch-l/Cuexis"}):
+                self.assertEqual(gate.sdk_owner_approval(root, base, candidate, date(2026, 10, 6), 32,
+                                                         "pull_request"), 123)
+                git("branch", "topic", candidate)
+                git("checkout", "-q", "-B", "master", base)
+                git("merge", "--squash", "topic")
+                git("commit", "-qm", "squash candidate")
+                merged = git("rev-parse", "HEAD")
+                git("branch", "-D", "topic")
+                fresh = root / "fresh"
+                subprocess.check_call([gate.git_executable(), "clone", "-q", "--no-local",
+                                       str(root), str(fresh)])
+                self.assertNotEqual(gate._run_git(fresh, "cat-file", "-e",
+                                                  candidate + "^{commit}").returncode, 0)
+                original_run = gate._run_git
+                def fetching(repo, *arguments):
+                    if arguments and arguments[0] == "fetch":
+                        self.assertEqual(arguments[-2], "https://github.com/l-zilch-l/Cuexis.git")
+                        self.assertEqual(arguments[-1], candidate)
+                        return original_run(repo, *arguments[:-2], str(root), candidate)
+                    return original_run(repo, *arguments)
+                with patch.object(gate, "_run_git", side_effect=fetching):
+                    self.assertEqual(gate.sdk_owner_approval(fresh, base, merged,
+                        date(2026, 10, 6), 32, "push"), 123)
+                comment["user"]["login"] = "intruder"
+                with self.assertRaises(gate.GateError):
+                    gate.sdk_owner_approval(root, base, candidate, date(2026, 10, 6), 32, "pull_request")
+
+    def record(self):
+        expected = {"repository": "l-zilch-l/Cuexis", "pr": 32, "base_sha": "a" * 40,
+                    "candidate_sha": "b" * 40, "candidate_tree_sha": "c" * 40,
+                    "from": "0.7.0", "to": "0.7.1", "utc_date": "2026-10-06"}
+        comment = {"id": 123, "user": {"login": "l-zilch-l", "type": "User"},
+                   "created_at": "2026-10-06T12:00:00Z", "updated_at": "2026-10-06T12:00:00Z",
+                   "body": gate.SDK_APPROVAL_PREFIX + json.dumps(expected)}
+        return expected, comment
+
+    def test_exact_owner_record_and_merge_tree(self):
+        expected, comment = self.record()
+        self.assertEqual(gate.validate_sdk_approval(comment, ["l-zilch-l"], expected,
+                                                   "pull_request", "c" * 40), 123)
+        merged = dict(expected, candidate_sha="d" * 40)
+        self.assertEqual(gate.validate_sdk_approval(comment, ["l-zilch-l"], merged,
+                                                   "push", "c" * 40), 123)
+        with self.assertRaises(gate.GateError):
+            gate.validate_sdk_approval(comment, ["l-zilch-l"], merged, "push", "e" * 40)
+
+    def test_stale_sha_base_sdk_date_or_actor_never_grants_permission(self):
+        for field, value in (("candidate_sha", "e" * 40), ("base_sha", "f" * 40),
+                             ("candidate_tree_sha", "e" * 40), ("to", "0.8.0"),
+                             ("utc_date", "2026-10-07"), ("pr", True)):
+            with self.subTest(field=field):
+                expected, comment = self.record()
+                wrong = dict(expected, **{field: value})
+                comment["body"] = gate.SDK_APPROVAL_PREFIX + json.dumps(wrong)
+                with self.assertRaises(gate.GateError):
+                    gate.validate_sdk_approval(comment, ["l-zilch-l"], expected,
+                                               "pull_request", "c" * 40)
+        for user in ({"login": "intruder", "type": "User"},
+                     {"login": "l-zilch-l", "type": "Bot"}):
+            expected, comment = self.record()
+            comment["user"] = user
+            with self.assertRaises(gate.GateError):
+                gate.validate_sdk_approval(comment, ["l-zilch-l"], expected,
+                                           "pull_request", "c" * 40)
+        expected, comment = self.record()
+        comment["updated_at"] = "2026-10-06T13:00:00Z"
+        with self.assertRaises(gate.GateError):
+            gate.validate_sdk_approval(comment, ["l-zilch-l"], expected,
+                                       "pull_request", "c" * 40)
+
+    def test_cli_boolean_cannot_grant_authorization(self):
+        self.assertEqual(gate.main(["--check-current", "--allow-sdk-api-change"]), 1)
 
 
 if __name__ == "__main__":
