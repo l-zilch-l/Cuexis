@@ -8,4 +8,4 @@
 对应的生产边界以 ADR、API 参考和当前状态页为准。
 
 - [Stage 6 implementation input](stage-06/README.md)
-- [Stage 7 S7A-5/6方案比较与选优](stage-07/s7a-5-6-design-selection.md)：九项各五套方向方案及十三项残余细节的备选；当前目标和选定处置归 [主计划§3.2](../../stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)。
+- [Stage 7 S7A-5/6方案比较与选优](stage-07/s7a-5-6-design-selection.md)：九项各五套方向方案及十三项残余细节的备选与§15全量重审；当前目标和选定处置归 [主计划§3.2](../../stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)。

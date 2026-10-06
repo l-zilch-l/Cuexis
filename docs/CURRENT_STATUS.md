@@ -31,7 +31,7 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Chart Format Foundation | completed | [plan](stage_plans/completed/chart-format-foundation/plan.md)、[关闭记录](stage_reports/stages/chart-format-foundation/2026-09-16-closure-and-handoff.md) |
 | Chart Format Foundation Hardening（Foundation 交接加固） | completed | [plan](stage_plans/completed/chart-format-foundation-hardening/plan.md)、[R5 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md) |
 | Stage 6 | completed | [plan](stage_plans/completed/stage-06/plan.md)、[关闭报告](stage_reports/stages/stage-06/completion.md) |
-| Stage 7A | active；S7A-3/4 受限功能验收完成，容量整体证明未完成。2026-10-05 工作区已实现 execution fields、Capsule revision3、真实 inline/CXT author 双路与 affine，以及 owning T4/K4 kernel、L1/L2、S1/S2 和事务失败投影；聚焦 Debug 验证通过。本轮已补齐 E1 功能对账和边界断言，Debug/Release 各943项、shared858项、MinGW855项无失败（skip 另记）。Linux GCC/Clang 各853项完整矩阵通过，跨工具链 E1 行已回填 IV。CI 耗时优化已实施并完成本地验证，a0c8b7e的push/PR共7个hosted runs已全绿；owner已选下一轮联合实施S7A-5/6，目标/决策/执行卡归plan§3.2，十三项残余字段与边界待合同落定、各五方案已选优；当前接手导出到桌面。state-budget INCOMPLETE GATE、S7A-9 与 Stage 6 handover 门禁独立保留 | [plan](stage_plans/active/stage-07/plan.md)、[5/6决策与准入](stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)、[受限功能验收证据](stage_reports/stages/stage-07/verification/2026-10-05-s7a-3-4-functional-acceptance.md)、[ADR 0045](adr/0045-gameplay-v2-execution-profile.md)、[execution Spec](formats/gameplay-v2-execution-profile.md)、[CI 优化证据](stage_reports/stages/stage-07/verification/2026-10-05-ci-runtime-optimization.md) |
+| Stage 7A | active；S7A-3/4 受限功能验收完成，容量整体证明未完成。2026-10-05 工作区已实现 execution fields、Capsule revision3、真实 inline/CXT author 双路与 affine，以及 owning T4/K4 kernel、L1/L2、S1/S2 和事务失败投影；聚焦 Debug 验证通过。本轮已补齐 E1 功能对账和边界断言，Debug/Release 各943项、shared858项、MinGW855项无失败（skip 另记）。Linux GCC/Clang 各853项完整矩阵通过，跨工具链 E1 行已回填 IV。CI 耗时优化已实施并完成本地验证，a0c8b7e的push/PR共7个hosted runs已全绿；owner已选下一轮联合实施S7A-5/6，目标/决策/执行卡归plan§3.2，十三项残余字段与边界待合同落定、各五方案已选优，U01–U13全量重审已修正六项边界；当前接手导出到桌面。state-budget INCOMPLETE GATE、S7A-9 与 Stage 6 handover 门禁独立保留 | [plan](stage_plans/active/stage-07/plan.md)、[5/6决策与准入](stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)、[受限功能验收证据](stage_reports/stages/stage-07/verification/2026-10-05-s7a-3-4-functional-acceptance.md)、[ADR 0045](adr/0045-gameplay-v2-execution-profile.md)、[execution Spec](formats/gameplay-v2-execution-profile.md)、[CI 优化证据](stage_reports/stages/stage-07/verification/2026-10-05-ci-runtime-optimization.md) |
 | Stage 7B+ | future；Slide、Flick、多指、校准和高级 Judgement 能力持续演进 | [plan](stage_plans/active/stage-07/plan.md) |
 | Stage 8 | future；Chart v5 / CXT v2 / Packed Chart 正式发行与语义收敛 | [plan](stage_plans/future/stage-08/plan.md) |
 | Stage 9 | future；Presentation Foundation 与 Chart v6 / Model v1 | [plan](stage_plans/future/stage-09/plan.md) |
@@ -82,7 +82,8 @@ Gameplay V2 已成为 Stage 7A 的实施基线：Gameplay I 的 ADR/Spec/ABI 已
 提交a0c8b7e的hosted与临时证据归档见 [新SHA交接报告](stage_reports/stages/stage-07/handoffs/2026-10-05-s7a-3-4-hosted-and-handoff.md)；
 下一轮由owner选定S7A-5.1–5.5 + S7A-6.1–6.5；目标、九项已选方向、十三项待合同落定细节和
 J0–J7执行卡归 [主计划§3.2](stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)。
-[方案比较与选优](proposals/implementation-input/stage-07/s7a-5-6-design-selection.md) 保存每项五套备选及反例。
+[方案比较与选优](proposals/implementation-input/stage-07/s7a-5-6-design-selection.md) 保存每项五套备选及反例；
+[U01–U13重审](stage_reports/stages/stage-07/verification/2026-10-06-s7a-5-6-u01-u13-rereview.md) 修正六项边界，其他七项保留方向并补条件，消费合同仍待J0完成。
 active/stage-07只保留主计划与 [旧路径映射](stage_plans/active/stage-07/legacy-paths.md)，
 历史接手和交付评估已归档；当前接手导出至owner桌面，决策仍写回plan/对应合同。
 选优是设计输入，未实施5–9、未冻结新生产字段/预算或关闭阶段；既有
