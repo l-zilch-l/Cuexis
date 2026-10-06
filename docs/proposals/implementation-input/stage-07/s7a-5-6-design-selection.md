@@ -4,7 +4,7 @@
 
 日期：2026-10-06
 
-当前目标、选定方向、U01–U10待合同落定台账与实施卡由
+当前目标、选定方向、U01–U13待合同落定台账与实施卡由
 [Stage 7主计划§3.2](../../../stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)
 维护。本文件保留比较过程和最小反例；对应消费字段在J0及首次消费前落入Spec/ABI/profile。
 原接手与排期文件已 [归档](../../../archive/stage-07-planning/README.md)，当前接手导出至owner桌面。
@@ -242,7 +242,7 @@ ObservationId仍由会话生成；不单独复制第二套去重、排序或late
 Replay保存已提交Fact Ledger供逐commit结构检验，不能把文件Fact安装到kernel假装完成判定。
 旧journal无与结果相关的信息时稳定拒绝；不能只按observationTick排序后全量预提交。
 
-文件格式拒绝在变更旧active前完成；执行/校验使用新候选session，全部成功才接受替换。
+文件格式拒绝在变更旧active前完成；执行/校验使用新候选session；证据验证与候选terminal状态按U11分开，只有健康候选才接受活动视图替换。
 格式坏、identity错与实际执行的deterministic Ruleset fault分别登记，
 故障等价性使用相同故障注入条件，不承诺重放随机分配失败或墙钟性能差异。
 负例分别比较shared-input层的同code/category/faulted与wire层格式拒绝；
@@ -260,7 +260,8 @@ Replay保存已提交Fact Ledger供逐commit结构检验，不能把文件Fact�
 
 **推荐K2，独立reference用K1和从起点运行。**
 目标Tick解释为advance horizon，不混成observationTick、dispatchTick或processedFrontier。
-首先定义目标cut：原journal中第一次advance horizon达到/超过目标的control前缀；
+首先定义目标cut：原journal中第一次advance请求horizon达到/超过目标的control前缀；
+若该control失败，必须按U11实际重执行截断控制，不能把请求视作成功推进；
 若该advance跨过目标，用同一已admit输入将它截到目标；若目标超过已录制horizon，
 使用完整已录制输入/control前缀再空推进到目标。Tick表示与目标域错误仍原子拒绝。
 这一定义是首次恢复消费所需的推荐补充，须先以late-admission最小反例写入恢复profile并验证，
@@ -412,7 +413,7 @@ pending保存未来输入需要的语义值/可见时刻，不保存RuleEffectEv
 
 选A：Reader只产owning规范输入，canonical validator处理域/tag/量程/subject/sequence，
 之后会话复算admission、转发与ObservationId；文件metadata是对照值，不是执行权威。
-反例：amountScale=2时规范量1再次当raw量会变2；Replay不能为了复用入口重做量化。
+反例：scale=2、raw quantity=2得到规范量1；把1再当raw量将roundHalfToEven(1/2)得到0；Replay不能为了复用入口重做量化。
 关闭点：J0/J3，非单位scale、负值/端点、重复sequence/subject与queue_next_tick。
 
 ### U07：Seek后继续live与分支证据
@@ -484,3 +485,72 @@ J0明确Reader的合法fault状态组合及实际restore权限；若读取合法
 不能以Schema接受绕过live mutation禁令。旧healthy snapshot只用于显式新session replacement，
 不解除当前faulted session。非法组合整体拒绝，原active/query不变。
 关闭点：J0/J4，fault Schema负例、旧healthy恢复、双前缀和未提交delta拒绝。
+
+## 14. 2026-10-06进一步复核：三个行为合同阻塞
+
+本节补充U11–U13，每项五方案。选择归主计划§3.2.3，消费字段仍须J0落入Spec/ABI/profile。
+不重新裁定T4/K4、Fact seal、三类Register、t+1或faulted生命周期。
+
+### U11：合法失败录制的验证结果与Seek
+
+| 方案 | 处置 | 评估 |
+| --- | --- | --- |
+| A | owning ReplayEvaluation分离证据有效性与terminal状态，Seek真实重执行截断控制 | **选用**；保留失败证据，健康候选替换规则清楚 |
+| B | 遇到录制失败一律格式拒绝 | 简单，但把合法证据误当损坏文件 |
+| C | Reader按control声明直接注入fault | 可以复现任意失败，但文件成为执行结果权威，不选 |
+| D | 丢弃失败control，仅重放成功前缀 | 不能解释已seal Fact与可查询fault，不选 |
+| E | 普通错误返回附带独立可查询候选句柄 | 可实现，但句柄寿命/验证是否通过易混淆，首版不选 |
+
+选A：解析/identity/执行对照失败返回验证错误；完整对照成功返回owning评价，
+内含terminal状态、稳定诊断、sealed/Fold前缀。返回有效评价不表示live advance成功，
+也不授权把faulted候选装成healthy。Seek仅以成功健康候选替换旧active；
+目标穿越确定性fault时返回实际稳定失败，旧active保持。终止fault后不得继续消费mutation。
+随机分配失败只能在相同故障注入条件下作对照；生产Reader不得信任control注入失败，
+无法自然复现的结果报告执行不匹配，不伪称录制损坏或已重现。
+
+反例（仅测试数值）：关闭窗口3时F(H)=H−3；advance(20)在Tick8阶段2失败。
+Seek horizon10的目标frontier7可重建健康前缀；horizon11包含Tick8必须重现失败。
+不能直接拿目标horizon与failedTick比较，也不能认为请求20已经成功执行。
+关闭：J0/J3/J5，结果类型与诊断优先级、完整失败control、两种目标和旧active不变golden。
+
+### U12：恢复依赖与checkpoint验证层次
+
+| 方案 | 处置 | 评估 |
+| --- | --- | --- |
+| A | 调用方提供owning RecoveryInputs，绑定验证后恢复；外部Seek checkpoint与archive重放对照 | **选用**；不复制immutable graph，依赖和信任边界明确 |
+| B | 将完整graph/Ruleset/config复制进每份Snapshot | 自包含但违背既定不重复保存graph方向，增加版本面 |
+| C | 全局可变identity缓存隐式取回依赖 | 命中/寿命影响恢复，缺失行为不稳定，不选 |
+| D | restore内部调用磁盘/网络resolver | IO/异常/环境依赖进入执行边界，不选 |
+| E | 用户先创建专用prepared恢复session，再交snapshot | 可行但依赖隐含在可变session，错误归属与生命周期较多，首版不选 |
+
+选A：RecoveryInputs在调用前构造并自持有PreparedGameplay/SessionConfiguration/PreparedRuleset；
+重算四分量identity、revision与preparedGrace，并验证引用；缺失或错配在替换旧active前拒绝。
+原session销毁不影响恢复，不依赖借用mapping、原session地址或进程内全局缓存。
+FactBinding按既定判定/表现边界取得；headless恢复不凭空新增presentation资源依赖。
+
+Reader结构解码通过仅代表物理有效；绑定后才能称引用/语义验证通过。
+Snapshot的摘要不是执行可达性证明：外部decoded checkpoint若用于所属Replay archive的Seek加速，
+先对该archive/cut从起点重建并比较完整语义状态；内部真实capture也必须绑定archive/cut。
+未经验证者不可直接成为加速起点，可回退从起点；缓存验证结果自持有且不改变judgement identity。
+独立Snapshot restore仅承诺相应结构/绑定状态验证，不把它谎称Replay历史对照通过。
+关闭：J0/J3/J4，依赖类型/ownership/绑定验证顺序、销毁原session、错identity与篡改checkpoint负例。
+
+### U13：Hook消费的Tick边界与事务归属
+
+| 方案 | 处置 | 评估 |
+| --- | --- | --- |
+| A | Tick起点安装due可见值到kernel候选，seal保留消费，阶段2输出只排未来 | **选用**；输入/timer可见性与两阶段失败闭包明确 |
+| B | 同Tick先处理输入再安装due Hook | 输入看不到已到期值，改变nextTick含义，不选 |
+| C | 每处理一个Fact立即反馈新Hook到本Tick | 违反下一Tick可见，不选 |
+| D | due队列只由Fold持有，kernel seal后Fold失败回滚其消费 | kernel已观察值但队列仍待消费，恢复会重复消费，不选 |
+| E | 把每次Hook消费另建独立提交事务 | 可设计但增加提交边界与identity语义，首版不选 |
+
+选A：安装上Tick已提交且到期的值是固定六步开始前的可见状态准备，
+不添加第二套Fact仲裁/提交顺序。Tick内Hook输入视图冻结，阶段2输出只在t+1及以后可见。
+kernel候选拥有due消费进度与本Tick可见值；未seal失败撤销候选消费；
+已seal后Fold失败保留kernel消费，不重复安装、不撤销Fact，同时Fold旧状态保持且新输出不发布。
+持久Fold输出与kernel可见状态分字段保存，faulted两者允许停在各自已提交前缀。
+模块读集/读版本必须在静态registry列明：本Tick输入Hook只读冻结视图，模块局部累计读自身候选；
+不得默认读到其他模块未发布delta。若某内置操作确需有序跨模块读，必须显式声明依赖/读版本，
+以manifest顺序验证并写入identity，不由实现循环顺序隐式决定。
+关闭：J0/J2/J4，Hook/timer/input同Tick、无Fact工作Tick、两侧故障与Snapshot恢复无重复消费golden。

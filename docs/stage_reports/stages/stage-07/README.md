@@ -16,7 +16,7 @@
 | 准入与基线 (readiness) | 5 | owner准入记录、工具链基线、typed合同审视、D-9候选证据 |
 | 裁定记录 (decisions) | 13 | 分轮准入/实施裁定、合同选择、落地位置与诊断分类；现行字段仍归Spec/ABI |
 | 设计与实施记录 (implementation) | 4 | 带日期的设计收口和实施推进；设计交付与运行验证分别按报告声明解释 |
-| 验证与审计 (verification) | 7 | 独立复验、功能验收、边界审计、CI优化和文档恢复证据 |
+| 验证与审计 (verification) | 8 | 独立复验、功能验收、边界审计、CI优化和文档恢复证据 |
 | 交接与规划修订 (handoffs) | 3 | hosted交接、排期修订和桌面接手整理；历史下一步不覆盖主计划 |
 
 ## 常用入口
@@ -74,6 +74,8 @@
 | [S7A-3 E1 and S7A-4 execution acceptance audit](verification/2026-10-05-s7a-3-4-e1-audit.md) | 2026-10-05 |
 | [S7A-3/4 limited functional acceptance](verification/2026-10-05-s7a-3-4-functional-acceptance.md) | 2026-10-05 |
 | [S7A-3 剩余实施与验收证据核对](verification/2026-10-05-s7a-3-remaining-evidence.md) | 2026-10-05 |
+
+| [S7A-5/6 实施阻塞复核](verification/2026-10-06-s7a-5-6-implementation-blocker-audit.md) | 2026-10-06 |
 
 ## 交接与规划修订
 

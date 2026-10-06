@@ -477,7 +477,7 @@ S7A-3/4已达到受限功能验收，容量整体仍未完成；新SHA的hosted�
 owner已明确下一轮目标为 **S7A-5.1–5.5 + S7A-6.1–6.5**，按本文§3.2的J0–J7先5后6、
 共同验收。五批依赖、已选方向和剩余未定项由本文统一维护；
 九项各五套备选的比较正文见 [5/6实施输入](../../../proposals/implementation-input/stage-07/s7a-5-6-design-selection.md)。
-2026-10-06追加复核的U01–U10也各有五套处置比较；推荐与准入归本文§3.2，理由和反例归实施输入§13。
+2026-10-06追加复核的U01–U10也各有五套处置比较；推荐与准入归本文§3.2，理由和反例归实施输入§13；进一步行为阻塞U11–U13的五方案与选优见§14。
 接手文档导出到owner桌面，不在active目录维护第二份执行正文；
 原接手/排期快照见 [旧路径映射](legacy-paths.md)。本轮只有文档准备，容量整体仍归9。
 
@@ -770,6 +770,9 @@ P56和U编号仅为本计划局部追踪，不增加CONTRACT_MATRIX、R编号或
 | U08 counts/cursors/frontiers含义 | Snapshot normalized count是已接受至cut（含pending）的事件数；Replay event count不含control；Fact count是sealed前缀大小；Fold cursor只覆盖已成功阶段2。推荐再存各自optional的Fold committed frontier和kernel sealed frontier，零Fact Tick不能只用相同Fact count表示进度；horizon/frontier互不充当默认值 | J0/J4→6.3；pending输入、零Fact信号Tick、seal后Fold失败、各count互不替代 |
 | U09 codec/诊断具体登记 | 宽度方向已选，magic/section/tag/presence/UTF-8现行token规则、revision接受集、checksum覆盖、length/count覆盖和错误优先级仍缺完整表。推荐byte计数覆盖完整payload含section framing，不含外层header/digest；先结构可表示性，再identity/引用，再语义重建，细码先登记 | J0/J3→6.2/6.3；独立Writer/Reader人工bytes、截断/篡改/重算摘要后的语义错、跨编译器对照 |
 | U10 fault schema与恢复接受面 | fault字段属于payload闭包，但live faulted不可新建快照；需要明确Reader可验证状态与实际restore权限。推荐typed稳定diagnostic，不序列化本机异常blob/线程地址；若读取合法faulted payload，保持faulted，不能转healthy；旧healthy snapshot只恢复显式新session，不就地解除当前faulted | J0/J4→6.3；schema/fault矩阵、两个提交前缀、诊断一致、未提交delta不可伪造 |
+| U11 失败录制的Replay结果与Seek边界 | control已保存失败，但合法录制重现fault与文件无效尚无返回合同。推荐独立owning ReplayEvaluation（验证通过与terminal healthy/faulted分开），只比较真实执行结果，不信任文件强制fault；Seek截断advance后重执行，按实际seal/Fold前缀判断可达，不把requestedHorizon当成功末端 | J0/J3/J5→6.2/6.4/6.5；确定性fault重现、随机失败不可伪注入、跨失败Tick目标、失败候选不替换旧active |
+| U12 恢复依赖的重新取得与校验层次 | identity不能还原prepared graph/配置/Ruleset。推荐调用方提供owning RecoveryInputs，固定PreparedGameplay、SessionConfiguration、PreparedRuleset并重算四分量identity；纯Reader可结构解码，绑定后才做引用/语义验证；用于Replay Seek的外部checkpoint还须与所属archive/cut从起点对照，结构/摘要通过不等于可达 | J0/J3/J4→6.1/6.3；原session销毁后恢复、缺失/错配原子拒绝、重算摘要的伪状态不成为Seek加速点 |
+| U13 Hook消费时序与事务所有权 | t+1可见尚未确定消费在timer/input前后及消费后Fold失败归属。推荐due Hook在Tick起点装入kernel候选，随后固定六步；该Tick读取冻结可见值，阶段2只提交未来值；kernel seal保留已消费队列/可见状态，Fold失败不撤销该消费，也不发布新输出；模块读集/读版本由静态registry明确，禁止隐式跨模块反馈 | J0/J2/J4→5.4/6.3；同Ticktimer+input+Hook、无Fact消费、未seal回滚与seal后失败、恢复不重复消费 |
 
 **U06入口纠正。** “复用normalize”是共用规范化合同与canonical校验，不要求把已规范化事件逆推成
 raw声明后再次量化/校准。原始raw入口仍运行S7A-2；Replay输出owning canonical records后复算
@@ -792,11 +795,16 @@ advance若已保留kernel seal前缀或发布可查询fault，即使整体Result
 7B+和外部Ruleset package不在5/6首次消费范围。不用这些后续门禁阻止不消费它们的5/6功能实现，
 也不提前宣称容量或owner门禁通过。
 
+**进一步复核（2026-10-06）。** U11–U13是本轮新增的行为合同缺口；推荐方向已选，
+与U01–U10同为待合同落定。详细反例与五方案见实施输入§14，证据见
+[实施阻塞复核](../../../stage_reports/stages/stage-07/verification/2026-10-06-s7a-5-6-implementation-blocker-audit.md)。
+J0可按已有目标推进；需要在消费点之前完成合同，不要求先实施7–9。
+
 #### 3.2.4 实施顺序与退出
 
 | 卡 | 交付 | 内部退出条件 |
 | --- | --- | --- |
-| J0 | U01–U10字段/owner/表示/初值/reset/identity/诊断/profile/byte表 | 先补相应Spec/ABI/profile；没有需要猜的必需字段，不等于功能已实现 |
+| J0 | U01–U13字段/owner/表示/初值/reset/identity/诊断/profile/byte表 | 先补相应Spec/ABI/profile；没有需要猜的必需字段，不等于功能已实现 |
 | J1 | owning PreparedRuleset、G2 grade与prepare原子性 | 缺失/未知/重复/错配稳定拒绝，新旧profile与identity正反例齐全 |
 | J2 | perTick Fold、三类Register、Score/Combo/Statistics、t+1 Hook | kernel未seal与seal后Fold失败分开；完整失败查询与独立Fold oracle |
 | J3 | 四分量identity、W2 codec、E2输入/control journal与Replay | 完整bytes与预检、共用canonical入口、转发复算与Fact逐commit对照 |
