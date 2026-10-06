@@ -2,7 +2,7 @@
 
 状态：现行提案索引
 
-更新日期：2026-10-01
+更新日期：2026-10-06
 
 提案文档描述候选合同、已接受但未实施的方向或延期研究输入。它们不等同于生产 API；
 生产与候选边界以 [格式索引](../formats/README.md) 和 [当前状态](../CURRENT_STATUS.md) 为准。
@@ -13,16 +13,18 @@ Gameplay I 工作稿是**已被取代**的历史研究基线：取舍见 [ADR 00
 （`superseded`）。[Gameplay V2 redesign research](research/gameplay-v2/README.md) 已成为 Chart v5 / Stage 7A 的
 现行方向：决策见 [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md)、字段与运行语义见
 [Gameplay V2 Spec](../formats/GAMEPLAY_V2_SPEC.md)、typed 边界见 [Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md)；
-三份 V2 文档当前均为 `candidate`，尚未实施。
+三份 V2 文档的字段与冻结状态按各自声明维护；分批实现进度只由 [CURRENT_STATUS](../CURRENT_STATUS.md)
+汇总，不从候选文档状态推断实现完成。
 
 ## 目录分区
 
-本目录按生命周期分为三组。Gameplay 研究稿、Stage 6 实施输入和延期输入分别进入独立子目录；
+本目录按生命周期分为三组。Gameplay 研究稿、分阶段实施输入和延期输入分别进入独立子目录；
 历史路径统一记录在本目录的迁移说明中，不再把不同生命周期的正文平铺在根目录。
 
 | 分区 | 文件 | 角色 |
 | --- | --- | --- |
 | Stage 6 implementation input | `implementation-input/stage-06/STAGE6_API_AND_INSTALL_DRAFT.md` | 仍被工具、阶段报告和实施门禁引用的候选输入 |
+| Stage 7 implementation input | `implementation-input/stage-07/s7a-5-6-design-selection.md` | 联合5/6的方案比较；决策台账归主计划，消费字段归Spec/ABI/profile |
 | Gameplay research inputs | `research/gameplay/GAMEPLAY_*.md` | I 收敛前的推导、缺陷、压测和设计历史 |
 | Gameplay v2 redesign | `research/gameplay-v2/` | Chart v5/Stage 7A 的候选重构、压测和交接合同 |
 | Gameplay V2 acceptance package | `gameplay-v2-acceptance/` | 由 S7A-0 产出的准入包：合同台账、支持/拒绝矩阵、预算计划、批次门禁、交接台账与 owner 决策请求 |
@@ -37,7 +39,11 @@ Gameplay v2 目录则记录新的候选路线及其尚未闭合的实施合同�
   支持/拒绝矩阵、Chart v5/CXC entry 与 identity 矩阵、target/依赖图、预算与证据计划、批次门禁、
   四项 Stage 6 交接台账、未决问题与 owner 决策请求）。它仍是 candidate：owner 接受前不修改
   ADR/Spec/ABI 的权威状态，也不构成实施授权。
-- [Stage 6 implementation-input index](implementation-input/README.md)
+- [Implementation-input index](implementation-input/README.md)
+
+## Stage 7 实施输入
+
+- [S7A-5/6方案比较和选优](implementation-input/stage-07/s7a-5-6-design-selection.md)：45套方向方案、残余细节备选及推荐理由；当前目标和准入见 [Stage 7主计划§3.2](../stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)。
 
 ## 当前候选格式提案
 

@@ -1,12 +1,17 @@
 # S7A-5 Implementation Handoff
 
-状态：superseded planning snapshot；保留854efa3的单批接手内容，已由S7A-5/6联合接手取代
+状态：historical planning snapshot；保留854efa3的单批接手内容，已归档并被联合目标取代
 
 日期：2026-10-05
 
+> 归档日期：2026-10-06；来源为b5594cf保存的规划正文，链接随目录迁移修正。
+> 下文的接手入口和可复制指令均是历史快照；当前联合目标与决策见
+> [主计划§3.2](../../stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)。
+> 当前接手文档已导出到owner桌面，不再以active目录中的独立接手文件维护决策。
+
 > 2026-10-06：owner澄清下一轮需要多个批次，并要求未定决策4–5套方案及选优。
 > 当前执行入口为 [S7A-5/6联合接手](s7a-5-6-implementation-handoff.md) 与
-> [方案比较和选择](s7a-5-6-design-selection.md)。以下全文只保留原排期快照，
+> [方案比较和选择](../../proposals/implementation-input/stage-07/s7a-5-6-design-selection.md)。以下全文只保留原排期快照，
 > 其中“下一轮仅5、不实施6”和“字段以后再选”不再是当前指令。
 
 ## 1. 下一轮目标和基线
@@ -14,26 +19,26 @@
 在 `D:\Cuexis-worktree`、现有 `stage-7` 分支完成Ruleset Fold、Score、Combo、Statistics
 及其查询/reset/故障事务闭包，逐项退出S7A-5.1–5.5。
 理由与其余五批的依赖评估见 [交付计划](s7a-5-9-delivery-plan.md)。
-当前状态以 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 为准。
+当前状态以 [CURRENT_STATUS](../../CURRENT_STATUS.md) 为准。
 
 代码行为基线是 `a0c8b7e4f783995bc19e626f3654ab11f845a0a7`；包含本接手文档的Git提交为规划锚点。
 开始前读git status/log、核对基线仍为当前HEAD的祖先；不要为了匹配a0c8b7e而丢弃后续文档或用户改动。
 S7A-3/4已完成受限功能验收；同源head SHA的7个CI runs成功，详见
-[hosted/归档证据](../../../stage_reports/stages/stage-07/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
+[hosted/归档证据](../../stage_reports/stages/stage-07/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
 SDK0.7.0、build26.10.05-1；容量整体保持S7A-9 INCOMPLETE GATE。
 当前judgement模块仍是internal，不能由本批改成默认安装SDK产品入口。
 
 首先读取：
 
-1. AGENTS.md、CURRENT_STATUS、[Stage7计划](plan.md) 的5.1–5.5。
-2. [V2 Spec](../../../formats/GAMEPLAY_V2_SPEC.md) §3.14–3.22、§7.2、§9.4，
-   [V2 ABI](../../../api/GAMEPLAY_V2_ABI.md) 域5–7和S7A-5限定冻结范围。
-3. [execution profile](../../../formats/gameplay-v2-execution-profile.md)、
-   [execution types](../../../api/gameplay-v2-execution-types.md)、
-   [第5轮裁定](../../../stage_reports/stages/stage-07/2026-10-03-s7a-5-6-gate-rulings.md)。
-4. [kernel类型](../../../../engine/judgement/include/cuexis/judgement/kernel_types.hpp)、
-   [session接口](../../../../engine/judgement/include/cuexis/judgement/judgement_session.hpp)、
-   [kernel实现](../../../../engine/judgement/src/execution_kernel.cpp) 和既有独立S1/L2测试。
+1. AGENTS.md、CURRENT_STATUS、[Stage7计划](../../stage_plans/active/stage-07/plan.md) 的5.1–5.5。
+2. [V2 Spec](../../formats/GAMEPLAY_V2_SPEC.md) §3.14–3.22、§7.2、§9.4，
+   [V2 ABI](../../api/GAMEPLAY_V2_ABI.md) 域5–7和S7A-5限定冻结范围。
+3. [execution profile](../../formats/gameplay-v2-execution-profile.md)、
+   [execution types](../../api/gameplay-v2-execution-types.md)、
+   [第5轮裁定](../../stage_reports/stages/stage-07/2026-10-03-s7a-5-6-gate-rulings.md)。
+4. [kernel类型](../../../engine/judgement/include/cuexis/judgement/kernel_types.hpp)、
+   [session接口](../../../engine/judgement/include/cuexis/judgement/judgement_session.hpp)、
+   [kernel实现](../../../engine/judgement/src/execution_kernel.cpp) 和既有独立S1/L2测试。
    typed动词已有3/4行为；无参数旧动词与snapshot/seek的拒绝不是本批可用成功入口。
 
 ## 2. 不变语义与本批范围
@@ -151,7 +156,7 @@ Life/correction/package输入、配置与identity不匹配；失败不替换旧p
 ## 5. 本机证据与临时目录
 
 先前3/4的raw logs、XML、manifest、脚本及CI JSON已迁出临时目录；位置、hash和清理清单见
-[hosted与归档报告](../../../stage_reports/stages/stage-07/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
+[hosted与归档报告](../../stage_reports/stages/stage-07/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
 out/build仍保留可复用构建/依赖缓存；清理不要求每次删除vcpkg或全量重建依赖。
 WSL Clang直接配置曾使用Linux专用prefix，与Windows包不可混用；重用前查CMakeCache/toolchain，
 重配命令可从证据ZIP恢复，或按现行Linux preset fresh配置，不能据旧build目录名猜环境。

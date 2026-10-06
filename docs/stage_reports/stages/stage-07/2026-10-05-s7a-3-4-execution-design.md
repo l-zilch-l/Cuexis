@@ -26,7 +26,7 @@ owner 要求一套完整、健全、能交给后续模型实施的方案，消�
   详细诊断登记和私有 tools target。
 - [Capsule §12](../../../formats/GAMEPLAY_CAPSULE_V2_FORMAT.md)：revision3 完整新增物理字段/hash/互拒，
   revision2 合同与已有 golden 保留。
-- [实施交接](../../../stage_plans/active/stage-07/s7a-3-4-implementation-handoff.md)：A–G 顺序卡、
+- [实施交接](../../../archive/stage-07-planning/s7a-3-4-implementation-handoff.md)：A–G 顺序卡、
   正反 golden、失败注入、逐项 E1/后续 runtime/预算证据、命令和新对话指令。
 
 ## 2. 本轮明确补齐的相互影响

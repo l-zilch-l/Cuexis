@@ -38,7 +38,7 @@ owner 接受：2026-10-02（记录见 [S7A-0 接受记录](../../stage_reports/s
 | [FREEZE_BLOCKING_BINDINGS.md](FREEZE_BLOCKING_BINDINGS.md) | S1-03 登记缺陷的处置登记 | 为 [Gameplay V2 ABI](../../api/GAMEPLAY_V2_ABI.md) 中 16 条缺可追溯阻塞批次的 `待冻结` 条目登记最终裁决编号与首次消费批次、分组小结、其余 14 条的逐条核实、Codex 裁定栏与停止条件；**已由 Codex 裁决并落地登记（thread `s7a1-freeze-bindings`，verdict `adopt`，confidence 0.96，2026-10-03），不改任何既有文档的 Spec 语义** |
 | [S7A-3_PACKED_W1_CANDIDATE.md](S7A-3_PACKED_W1_CANDIDATE.md) | S7A-3 P1-W1 设计选择历史 | 三种组织方案与增强 A 的选择理由；2026-10-04 按 owner 授权完成文档裁决；完整物理字段仅由 [Gameplay Capsule v2 format](../../formats/GAMEPLAY_CAPSULE_V2_FORMAT.md) 拥有，E1 实现证据仍待完成 |
 | [S7A-4_RECOMMENDED_DESIGN.md](S7A-4_RECOMMENDED_DESIGN.md) | S7A-4 推荐方案登记 | 推荐组合 B：L1 + L2 验证、H2、F1 + F3、R1、生产 S2 / 独立 S1；区分待细化合同、内部选择和后续批次，不关闭 late-policy 门禁或实施验收 |
-| [S7A-3/4 实施交接](../../stage_plans/active/stage-07/s7a-3-4-implementation-handoff.md) | 完整选定方案与执行卡 | 推荐比较的后续：合同/表示/版本/错误/验收已细化；设计新增尚未实施，不把缺测预算当通过 |
+| [S7A-3/4 实施交接](../../archive/stage-07-planning/s7a-3-4-implementation-handoff.md) | 完整选定方案与执行卡 | 推荐比较的后续：合同/表示/版本/错误/验收已细化；设计新增尚未实施，不把缺测预算当通过 |
 | 基线报告 | S7A-0.1 固定执行基线 | `docs/stage_reports/stages/stage-07/2026-10-02-s7a-0-baseline.md` |
 
 ## 2. 接受清单（acceptance checklist）

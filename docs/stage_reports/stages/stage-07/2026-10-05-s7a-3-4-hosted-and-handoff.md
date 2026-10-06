@@ -39,8 +39,8 @@ API的source headSha均为a0c8b7e。push验证实际分支提交；pull_request�
 5的Fold/Score状态闭包是6的Snapshot/Replay前置，6又是7的产品集成前置；
 8需四项Stage6交接及owner-only版本门禁，9需全部对象模型、真实容量/阈值和owner最终接受。
 
-详细交付与风险见 [五批规划评估](../../../stage_plans/active/stage-07/s7a-5-9-delivery-plan.md)，
-可直接复制的下一对话指令见 [S7A-5接手文档](../../../stage_plans/active/stage-07/s7a-5-implementation-handoff.md)。
+详细交付与风险见 [五批规划评估](../../../archive/stage-07-planning/s7a-5-9-delivery-plan.md)，
+可直接复制的下一对话指令见 [S7A-5接手文档](../../../archive/stage-07-planning/s7a-5-implementation-handoff.md)。
 本轮只作文档、接口/生命周期定点核对和清理，没有实施5–9或冻结新Ruleset字段/数值/codec。
 S7A-9预算整体继续INCOMPLETE GATE，Stage7A不关闭，不进行merge/release或SDK0.7.1放行。
 

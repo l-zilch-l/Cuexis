@@ -1,8 +1,13 @@
 # S7A-5 / S7A-6 Joint Implementation Handoff
 
-状态：planned handoff；下一轮联合实施5.1–5.5与6.1–6.5，按先5后6顺序；本轮只有规划与选优
+状态：historical planning snapshot；原S7A-5/6联合接手正文，当前执行安排已归入主计划
 
 日期：2026-10-06
+
+> 归档日期：2026-10-06；来源为b5594cf保存的规划正文，链接随目录迁移修正。
+> 本文保留当时的九项方案、执行卡和指令；当前十项残余细节与实施安排以
+> [主计划§3.2](../../stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入) 为准。
+> 当前接手文档导出到owner桌面；下文的旧接手指令不再作为独立维护入口。
 
 ## 1. 目标、基线与阅读顺序
 
@@ -17,20 +22,20 @@ S7A-7/8/9、Life、package、correction、连续能力和SDK0.7.1不进入本轮
 
 代码行为基线a0c8b7e4f783995bc19e626f3654ab11f845a0a7；854efa3是先前单批规划提交，
 owner随后澄清为“多个批次 + 未定决策4–5套方案并选优”，以本文件和
-[方案比较与选择](s7a-5-6-design-selection.md) 为当前接手输入。
+[方案比较与选择](../../proposals/implementation-input/stage-07/s7a-5-6-design-selection.md) 为当前接手输入。
 开工先核对HEAD/branch/status，基线须为祖先；保留后续文档、用户改动和现有缓存。
-SDK仍0.7.0。阶段状态只由 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 维护。
+SDK仍0.7.0。阶段状态只由 [CURRENT_STATUS](../../CURRENT_STATUS.md) 维护。
 
 阅读顺序：
 
-1. AGENTS、CURRENT_STATUS、[总计划](plan.md) 的5/6与小目标台账、
+1. AGENTS、CURRENT_STATUS、[总计划](../../stage_plans/active/stage-07/plan.md) 的5/6与小目标台账、
    [五批交付评估](s7a-5-9-delivery-plan.md)。
-2. [方案选择](s7a-5-6-design-selection.md) 的组合B与九项推荐；不要重做已裁定语义选择。
-3. [V2 Spec](../../../formats/GAMEPLAY_V2_SPEC.md) §3.14–3.22/§3.25/§5/§8，
-   [V2 ABI](../../../api/GAMEPLAY_V2_ABI.md) 域5–7/9、未决项及5/6限定冻结节。
-4. [第5轮](../../../stage_reports/stages/stage-07/2026-10-03-s7a-5-6-gate-rulings.md)、
-   [execution profile](../../../formats/gameplay-v2-execution-profile.md)、
-   [execution types](../../../api/gameplay-v2-execution-types.md)。
+2. [方案选择](../../proposals/implementation-input/stage-07/s7a-5-6-design-selection.md) 的组合B与九项推荐；不要重做已裁定语义选择。
+3. [V2 Spec](../../formats/GAMEPLAY_V2_SPEC.md) §3.14–3.22/§3.25/§5/§8，
+   [V2 ABI](../../api/GAMEPLAY_V2_ABI.md) 域5–7/9、未决项及5/6限定冻结节。
+4. [第5轮](../../stage_reports/stages/stage-07/2026-10-03-s7a-5-6-gate-rulings.md)、
+   [execution profile](../../formats/gameplay-v2-execution-profile.md)、
+   [execution types](../../api/gameplay-v2-execution-types.md)。
 5. kernel_types、judgement_session、execution_kernel、input_boundary、ingress_transaction与
    execution_reference及其fixture；本文件中的模块拆分是实施建议，不是已有实现。
 
@@ -207,7 +212,7 @@ Replay/event/byte/decode、snapshot/restore/Seek分布；budget分支以test-onl
 ## 5. 接手证据、清理与来源
 
 3/4 hosted和已归档临时证据见
-[hosted/归档报告](../../../stage_reports/stages/stage-07/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
+[hosted/归档报告](../../stage_reports/stages/stage-07/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
 其“下一轮仅5”是854efa3当时计划，后续排期以本文件为准；CI与归档事实仍有效。
 out/build缓存、用户备份和早期非本次证据保留；不要git clean -fdx。
 本轮没有新产品代码或C++运行证据。

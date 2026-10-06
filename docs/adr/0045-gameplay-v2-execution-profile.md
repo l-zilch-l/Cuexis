@@ -60,4 +60,4 @@ S7A-5/6/7/9 的范围和 Stage 6 owner-only 版本门禁仍按各自计划执行
 - [Author profile](../formats/gameplay-v2-author-profile.md)：本轮源字段和 lowering。
 - [Capsule](../formats/GAMEPLAY_CAPSULE_V2_FORMAT.md) §12：revision 3 物理字段。
 - [Typed supplement](../api/gameplay-v2-execution-types.md)：表示、所有权、错误与生命周期。
-- [实施交接](../stage_plans/active/stage-07/s7a-3-4-implementation-handoff.md)：顺序、测试和关闭证据。
+- [历史实施交接](../archive/stage-07-planning/s7a-3-4-implementation-handoff.md)：原3/4顺序与验收门禁；当前排期归 [Stage 7计划](../stage_plans/active/stage-07/plan.md)。

@@ -6,7 +6,7 @@
 
 ## 1. 范围与版本
 
-按 [A–G 交接](../../../stage_plans/active/stage-07/s7a-3-4-implementation-handoff.md)
+按 [A–G 交接](../../../archive/stage-07-planning/s7a-3-4-implementation-handoff.md)
 推进。分支 stage-7，基线 HEAD `6b11d102f6dcac4d9782cd03d0bae15add54af28`。
 实现位于未提交工作区，基线 SHA 不代表新增行为已获得 hosted 验证。
 57 个变更实现/测试/Schema/CMake 输入的 path+SHA256 manifest 指纹为

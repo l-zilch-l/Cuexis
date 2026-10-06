@@ -1,17 +1,21 @@
 # S7A-5–9 Delivery Plan and Readiness Assessment
 
-状态：active planning；下一次联合实施S7A-5与S7A-6，5–9本轮均未开始产品实施
+状态：historical planning snapshot；原S7A-5–9评估已归入Stage 7主计划
 
 更新日期：2026-10-06；初版日期：2026-10-05
 
+> 归档日期：2026-10-06；来源为b5594cf保存的规划正文，链接随目录迁移修正。
+> 本文保留当时的依赖评估和排期；当前5+6目标、剩余决策与执行卡见
+> [主计划§3.2](../../stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)。
+
 ## 1. 基线、权威和评估方法
 
-当前状态只由 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 维护；本文件负责剩余批次的顺序、范围与门禁，
-不替代 [Stage 7 总计划](plan.md)、[V2 Spec](../../../formats/GAMEPLAY_V2_SPEC.md) 或
-[V2 ABI](../../../api/GAMEPLAY_V2_ABI.md)。代码行为基线为
+当前状态只由 [CURRENT_STATUS](../../CURRENT_STATUS.md) 维护；本文件负责剩余批次的顺序、范围与门禁，
+不替代 [Stage 7 总计划](../../stage_plans/active/stage-07/plan.md)、[V2 Spec](../../formats/GAMEPLAY_V2_SPEC.md) 或
+[V2 ABI](../../api/GAMEPLAY_V2_ABI.md)。代码行为基线为
 `a0c8b7e4f783995bc19e626f3654ab11f845a0a7`，SDK0.7.0、日期build26.10.05-1。
 S7A-3/4 已达到“受限功能验收完成，容量整体证明未完成”；同源 head SHA 的7个 hosted runs 全绿，
-详见 [新 SHA hosted 与交接记录](../../../stage_reports/stages/stage-07/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
+详见 [新 SHA hosted 与交接记录](../../stage_reports/stages/stage-07/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
 CI 通过不替代 S7A-9 容量阈值接受、真实设备验证或 owner 阶段接受。
 
 本次评估读取既有裁定、公开角色/内部接口和生命周期实现的相关声明，不进行新产品实现。
@@ -36,7 +40,7 @@ ABI中的角色追踪也不等于字段表示已经冻结。下一轮首先核�
 
 交付PreparedRuleset、显式静态模块manifest/Interface、三类Register、原子StateDelta、
 Score/Combo/Statistics及owning查询，并把其语义投影纳入ruleset identity。
-首卡按 [九项方案选优](s7a-5-6-design-selection.md) 的明确推荐补齐字段、整数表示、
+首卡按 [九项方案选优](../../proposals/implementation-input/stage-07/s7a-5-6-design-selection.md) 的明确推荐补齐字段、整数表示、
 初始化/负值/溢出/饱和策略、允许operator及缺grade处理；
 选择须写入Spec/ABI对应补充，未选定字段不得以临时typedef或默认表绕过。
 
@@ -103,7 +107,7 @@ capability拒绝表、未纳入7B+清单、回滚路线、Stage8交接包和owne
 
 执行顺序仍为5→6→7→8→9；下一轮将5/6放在同一会话，保留上游状态与下游codec的内部消费门禁。
 计划取代854efa3的单批排期。批次组合有五套，九项未定实现决策各有五套方案和推荐，
-见 [选优记录](s7a-5-6-design-selection.md)。下一轮目标为5.1–5.5与6.1–6.5的联合受限功能验收；
+见 [选优记录](../../proposals/implementation-input/stage-07/s7a-5-6-design-selection.md)。下一轮目标为5.1–5.5与6.1–6.5的联合受限功能验收；
 预算整体留9，不授权提前实施7–9。
 
 ## 4. 交接、停止条件与来源
@@ -115,7 +119,7 @@ ABI域6及第5轮裁定，再消费当前execution profile；出现真正合同�
 本轮不改生产代码、CMake、CI、SDK或版本；仅规划和清理。新的实施、commit/push及owner-only行为
 以对应会话明确授权为准，已经授予的授权不重复请求。
 
-历史输入：[第5轮](../../../stage_reports/stages/stage-07/2026-10-03-s7a-5-6-gate-rulings.md)、
-[第6轮](../../../stage_reports/stages/stage-07/2026-10-03-s7a-6-gate-rulings.md)、
-[第7轮](../../../stage_reports/stages/stage-07/2026-10-03-s7a-7-wrapup-rulings.md)、
+历史输入：[第5轮](../../stage_reports/stages/stage-07/2026-10-03-s7a-5-6-gate-rulings.md)、
+[第6轮](../../stage_reports/stages/stage-07/2026-10-03-s7a-6-gate-rulings.md)、
+[第7轮](../../stage_reports/stages/stage-07/2026-10-03-s7a-7-wrapup-rulings.md)、
 [旧S7A-3/4实施交接](s7a-3-4-implementation-handoff.md)。历史记录的当时状态保留，不覆盖实时评估。

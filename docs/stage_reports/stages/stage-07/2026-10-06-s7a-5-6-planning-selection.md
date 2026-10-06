@@ -30,14 +30,14 @@ owner随后明确要求：选几个批次作为下一轮目标、规划实施方
 | P56-09 | B2 测量状态与预算接受分离 | pending descriptor、生产数值拒绝与test-only门禁 |
 
 完整45套实现方案及五套批次组合的优缺点和选择理由见
-[方案比较与选择](../../../stage_plans/active/stage-07/s7a-5-6-design-selection.md)。
+[方案比较与选择](../../../proposals/implementation-input/stage-07/s7a-5-6-design-selection.md)。
 其推荐是设计输入，不是Spec/ABI生产冻结或实现验证。
 已裁定的三阶段、Fact总序、Register三类、faulted、Life/package/correction边界不重新开放；
 owner-only D-9/SDK门禁归8，生产容量/Seek承诺数值归9。
 
 ## 3. 新的接手入口
 
-[联合接手](../../../stage_plans/active/stage-07/s7a-5-6-implementation-handoff.md) 按八张卡执行：
+[联合接手](../../../archive/stage-07-planning/s7a-5-6-implementation-handoff.md) 按八张卡执行：
 J0完整合同补充→J1 prepare/grade→J2 Fold/Hook→J3 identity/codec/Replay→
 J4 full Snapshot→J5 Seek→J6联合故障/回归→J7完整矩阵与退出报告。
 十个小目标分别列出实际实现卡和退出证据，5.5真实恢复不再整行推给另一会话。

@@ -57,6 +57,7 @@ Standards / Spec 记录），由该专题自己的 `README.md` 承担导航；�
 - [Stage 7 CI 耗时基线与优化](stages/stage-07/2026-10-05-ci-runtime-optimization.md)
 - [S7A-3/4 新SHA hosted、后续规划与临时证据归档](stages/stage-07/2026-10-05-s7a-3-4-hosted-and-handoff.md)
 - [S7A-5/6联合排期、九项五方案选优与交接修订](stages/stage-07/2026-10-06-s7a-5-6-planning-selection.md)
+- [S7A-5/6主计划收拢、十项残余细节选优与桌面接手](stages/stage-07/2026-10-06-s7a-5-6-plan-and-desktop-handoff.md)
 
 ## 跨阶段专题
 

@@ -5,7 +5,7 @@
 2026-10-05 后续：本文件保留方案比较与当时的未决清单；当前完整选定方案已落入
 [ADR 0045](../../adr/0045-gameplay-v2-execution-profile.md)、
 [execution Spec](../../formats/gameplay-v2-execution-profile.md) 和
-[实施交接](../../stage_plans/active/stage-07/s7a-3-4-implementation-handoff.md)。
+[实施交接](../../archive/stage-07-planning/s7a-3-4-implementation-handoff.md)。
 本文件中“仍需细化”的历史文字不再作为新增语义阻塞；运行验证/容量证据仍按交接计划补齐。
 
 日期：2026-10-05（Asia/Shanghai）

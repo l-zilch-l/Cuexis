@@ -40,7 +40,7 @@ CxtV2Loader 要求 extension 空；两个现有 Catch2 target 的 catch_discover
 
 ## 2. 修订后的实施入口与边界
 
-唯一顺序入口是 [S7A-3/4 实施交接](../../../stage_plans/active/stage-07/s7a-3-4-implementation-handoff.md)，
+唯一顺序入口是 [S7A-3/4 实施交接](../../../archive/stage-07-planning/s7a-3-4-implementation-handoff.md)，
 其链接的 [execution](../../../formats/gameplay-v2-execution-profile.md)、
 [author](../../../formats/gameplay-v2-author-profile.md)、[typed](../../../api/gameplay-v2-execution-types.md)
 与 [Capsule §12](../../../formats/GAMEPLAY_CAPSULE_V2_FORMAT.md) 拥有实际合同。

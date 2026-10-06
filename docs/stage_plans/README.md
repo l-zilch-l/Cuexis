@@ -93,9 +93,10 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
   尚未启动。
 - [Stage 7A / 7B+](active/stage-07/plan.md)：7A 冻结最小 Input/Judgement/Score/Replay 内核，
   7B+ 持续扩展 Slide、Flick、多指、校准和高级判定能力。
-  后续执行见 [S7A-5–9规划评估](active/stage-07/s7a-5-9-delivery-plan.md)，
-  下一轮使用 [S7A-5/6联合接手](active/stage-07/s7a-5-6-implementation-handoff.md)；
-  批次组合与九项未定决策各五套方案见 [比较与选优](active/stage-07/s7a-5-6-design-selection.md)。
+  下一轮目标是S7A-5.1–5.5 + S7A-6.1–6.5；决策、十项残余细节和执行卡见
+  [主计划§3.2](active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)，
+  备选比较见 [5/6实施输入](../proposals/implementation-input/stage-07/s7a-5-6-design-selection.md)。
+  接手文档导出到owner桌面；历史正文入口见 [旧路径映射](active/stage-07/legacy-paths.md)。
 - [Stage 8](future/stage-08/plan.md)：Chart v5 正式语义、CXT v2、Packed Chart 和 CXC 发行收敛；
   只依赖 Stage 7A，不等待全部 Stage 7B+。
 - [Stage 9](future/stage-09/plan.md)：Presentation Foundation 与 Chart v6 / Model v1。

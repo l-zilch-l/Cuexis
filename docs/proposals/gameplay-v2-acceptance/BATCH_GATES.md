@@ -329,7 +329,7 @@ gate、architecture / allowlist 校验与 CTest 全部通过；`git diff --check
 
 ## 2026-10-05 S7A-3 / S7A-4 首次执行补充
 
-本轮完整选定方案与消费顺序见 [实施交接](../../stage_plans/active/stage-07/s7a-3-4-implementation-handoff.md)。
+本轮完整选定方案与消费顺序见 [实施交接](../../archive/stage-07-planning/s7a-3-4-implementation-handoff.md)。
 历史门禁中的 late 参数关系、runtime identity/ordinal/rank/state 表示已有
 [execution Spec](../../formats/gameplay-v2-execution-profile.md) 与
 [typed supplement](../../api/gameplay-v2-execution-types.md) 的明确落点。

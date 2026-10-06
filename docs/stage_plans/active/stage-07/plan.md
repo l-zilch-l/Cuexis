@@ -402,7 +402,7 @@ S2/T4/K4 语义见 [V2 Spec](../../../formats/GAMEPLAY_V2_SPEC.md) §3.8.10–§
 **目的。** 交付最小、无渲染、确定性的可玩判定。
 
 **2026-10-05 完整方案与交接。** 推荐组合 B 已细化为
-[实施交接](s7a-3-4-implementation-handoff.md) 的 A–G 卡：先 S7A-3 余项、candidate revision3、
+[实施交接](../../../archive/stage-07-planning/s7a-3-4-implementation-handoff.md) 的 A–G 卡：先 S7A-3 余项、candidate revision3、
 author 双路与 affine，再 late/contact/phase/kernel/timer/Fact。新增合同唯一落点为
 [execution Spec](../../../formats/gameplay-v2-execution-profile.md)、
 [author profile](../../../formats/gameplay-v2-author-profile.md) 与
@@ -474,12 +474,12 @@ author 双路与 affine，再 late/contact/phase/kernel/timer/Fact。新增合�
 
 S7A-3/4已达到受限功能验收，容量整体仍未完成；新SHA的hosted证据与归档见
 [交接报告](../../../stage_reports/stages/stage-07/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
-剩余5–9的依赖、首用字段门禁和实施选择见 [交付规划与评估](s7a-5-9-delivery-plan.md)。
-owner澄清后，下一次对话目标为S7A-5.1–5.5与S7A-6.1–6.5联合实施；
-批次组合和九项阻碍实施的未定决策各有五套 [方案比较与选择](s7a-5-6-design-selection.md)，
-使用 [联合接手文档](s7a-5-6-implementation-handoff.md) 按J0–J7先5后6、共同验收。
-旧 [单批接手](s7a-5-implementation-handoff.md) 保留为被取代快照。
-本轮仅规划、选优与交接，5–9尚未开始产品实施，容量整体仍留9。
+owner已明确下一轮目标为 **S7A-5.1–5.5 + S7A-6.1–6.5**，按本文§3.2的J0–J7先5后6、
+共同验收。五批依赖、已选方向和剩余未定项由本文统一维护；
+九项各五套备选的比较正文见 [5/6实施输入](../../../proposals/implementation-input/stage-07/s7a-5-6-design-selection.md)。
+2026-10-06追加复核的U01–U10也各有五套处置比较；推荐与准入归本文§3.2，理由和反例归实施输入§13。
+接手文档导出到owner桌面，不在active目录维护第二份执行正文；
+原接手/排期快照见 [旧路径映射](legacy-paths.md)。本轮只有文档准备，容量整体仍归9。
 
 ### S7A-5：Ruleset Fold、Score、Combo 和 Statistics
 
@@ -713,6 +713,104 @@ section 组隔离 Gameplay v2。2026-10-04 已进一步闭合 S2/T4/K4、Capsule
 物理字段，见本计划 S7A-3 段及 Capsule；不再等待 wire 数字选择。
 默认预算数值、运行时资源状态编码和 Snapshot/Replay/FactId/CommitId codec 不由本次闭合。
 状态预算 `INCOMPLETE GATE` 仍独立保持；S7A-3/4仅达到受限功能验收完成，容量整体证明未完成。
+
+### 3.2 S7A-5 / S7A-6 联合实施目标、决策和准入
+
+#### 3.2.1 本轮目标与后续批次
+
+2026-10-06 owner已选择5+6为下一实施会话目标：5交付可验证的Fold/结果状态，6消费该状态
+完成identity、Replay、全量Snapshot、Seek；5.5的真实恢复验收与6.3–6.5同轮退出。
+不先写5整批完成再把真实恢复逐项挂到另一会话。
+
+| 批次 | 相对工作量 / 风险 | 安排与门禁 |
+| --- | --- | --- |
+| 5.1–5.5 | 高；首次状态表示、算术和seal后失败 | 下一轮前半；先完成字段准入，再PreparedRuleset/grade/Fold/Hook |
+| 6.1–6.5 | 很高；状态闭包、wire、late admission和任意恢复 | 下一轮后半；消费稳定Fold状态，最后与5共同验收 |
+| 7.1–7.5 | 很高；Playback/Chart/Player/consumer跨模块 | 5/6退出后再实施，不将内部headless fixture记成产品桥已完成 |
+| 8.1–8.4 | 高；四项Stage6交接及owner-only版本门禁 | 7之后；D-9 master落库/具名接受、SDK放行仍独立，前置可提前安排 |
+| 9.1–9.4 | 很高；五类容量、最终SHA、平台/设备与owner接受 | 最后收口；从5/6累计测量，未接受数值保持INCOMPLETE GATE |
+
+没有本轮性能实测；工作量是结构评估，不是工时或提速承诺。
+SDK0.7.0保持，Life/package/correction/连续能力继续既有稳定拒绝。
+
+#### 3.2.2 已选实现方向
+
+各方案比较和取舍保存在 [5/6实施输入](../../../proposals/implementation-input/stage-07/s7a-5-6-design-selection.md)；
+本文登记选定方向，字段合同仍归Spec/ABI及首用profile，不用计划代替生产冻结。
+P56和U编号仅为本计划局部追踪，不增加CONTRACT_MATRIX、R编号或九类诊断。
+
+| 本地决策 | 已选方向 | 消费前的最后门禁 |
+| --- | --- | --- |
+| P56-01 / R1 | owning typed Interface/有序manifest、有限内置操作；无任意回调/解释器 | Interface/module/operator/值tag/owner/policy/scope的闭合集和拒绝表 |
+| P56-02 / G2 | phase-local有符号tick区间grade表，seal前求值一次 | 可达域覆盖、Miss/error absence、表归属与新旧profile兼容 |
+| P56-03 / N1 | i64 Score、u64计数；明确checked/clamp；已证明carrier的operator | 逐Fact中间值、单位元/结合性、第二写与贡献去重人工golden |
+| P56-04 / T2 | kernel seal独立；Fold候选/预留fault载体，阶段2一次发布 | 无失败发布点、双cursor/双frontier、成功前缀后失败 |
+| P56-05 / S2 | Kernel/Ingress/Fold三个owning全量状态族 | Spec十四项逐成员映射，私有状态与借用闭包，不只存KernelProjection |
+| P56-06 / W2 | 有序section、LE定宽record、独立摘要/identity校验 | 完整字段/tag/长度/section/revision表与人工bytes golden |
+| P56-07 / E2 | accepted规范输入 + admission/control journal + Fact结构校验 | 共用canonical输入入口、转发复算、非法输入与文件错误分层 |
+| P56-08 / K2 | 明确目标cut + 全量快照按(horizon,cut)索引 | 同horizon晚到、未advance/负Tick、录制分支与原子Seek |
+| P56-09 / B2 | pending measurement与accepted阈值分开；事实counts独立 | 生产数值拒绝、test-only门禁、无隐藏0/MAX/无限值 |
+
+#### 3.2.3 复核后仍须落定的项目
+
+以下没有被“选R1/W2”等架构方向自动解决。当前状态为 **待合同落定**：
+推荐处置已经给出，实施方须在对应消费点之前写入权威字段/行为补充，并以最小反例验证；
+普通表示细节可依owner已有实施目标自主完成，不额外请求已授予的授权。
+若实质改变已裁定语义，先给反例与影响再修该项；禁止用临时typedef/默认值/伪成功跳过。
+
+| 未定项 | 具体剩余问题与推荐处置 | 最早阻塞 / 关闭证据 |
+| --- | --- | --- |
+| U01 profile/Interface与静态操作闭合集 | 还缺programPolicy/outcomeScope/arbitration/Loadout有效字段与支持值、module/operator ID/revision、旧/新profile组合表。推荐显式registry，未知即拒绝；arbitration只消费已裁定T4/K4，不让Fold重选赢家 | J0→5.1；全量字段/owner/identity/拒绝表，legacy不被新门禁误拒绝 |
+| U02 grade的表归属与缺失分支 | 缺表、声明token缺表、Miss/无error、表外值的分支尚未写字段合同。推荐表属Measure/chart语义、求值算法属engine、grade→score映射属ruleset；新profile必须有显式presence政策与可达域覆盖，不从error补默认grade | J0/J1→5.3；closed端点、各phase/Miss/error absence/new-old profile人工golden |
+| U03 算术检查粒度 | 需要明确逐Fact还是最终Tick和才检查、clamp发生点、maxCombo是否取中间峰值。推荐按规范Fact顺序逐步checked/clamp，模块局部累计后exclusive每Tick一次最终写；MAX、+1、-1不能用最终和掩盖中间失败 | J0/J2→5.2/5.3；中间溢出、负值、饱和顺序、同Tick多Fact/第二写golden |
+| U04 空Tick和无Fact工作 | kernel当前跳过没有timer/input/signal的时间区间。推荐新profile明示模块trigger集合，空Tick为状态/贡献单位元，无自主每Tick副作用；有due timer或signal则是真正工作Tick，即使无Fact仍处理显式Hook状态 | J0/J2→5.4；大空区间、不同advance分段与稀疏signal等价，不能枚举全部整数Tick |
+| U05 Hook目的地/载荷/身份与t+1极值 | 还缺signal的typed目的地、有限载荷、贡献键、持久Hook值与队列事件的区分。推荐仅指向已声明step/Hook目标，pending保存语义值/可见时刻，不存RuleEffect envelope；t+1不可表示在阶段2提交前失败 | J0/J2→5.4；未知target/重复贡献、同Tick不可见、nextTick可见、极值与失败不发布 |
+| U06 Replay接入规范化之后的入口 | 当前规范事件存i64量和校准tick，不存原始量/设备时间；不能把canonical量当raw再次量化。推荐live raw normalize后与Replay decoded canonical value汇合到同一canonical validator/admission/submit核心；Replay不提供权威ObservationId或dispatch | J0/J3→6.2/6.5；非单位scale、负值/端点、重复sequence/subject、queue_next_tick对照 |
+| U07 Seek后继续live mutation的录制分支 | 当前K2只有target cut/快照选择，没有未来journal如何处理的合同。推荐seek保留owning原archive，首次已接受submit、成功advance或保留提交/发布fault的advance才fork目标前缀；未发布失败不fork；保留precut已接受的pending输入，跨目标advance物化至target | J0/J3/J5→6.2/6.4/6.5；back/forward seek、空推进、提交前失败与保留前缀/Foldfault分开、旧owning证据存活 |
+| U08 counts/cursors/frontiers含义 | Snapshot normalized count是已接受至cut（含pending）的事件数；Replay event count不含control；Fact count是sealed前缀大小；Fold cursor只覆盖已成功阶段2。推荐再存各自optional的Fold committed frontier和kernel sealed frontier，零Fact Tick不能只用相同Fact count表示进度；horizon/frontier互不充当默认值 | J0/J4→6.3；pending输入、零Fact信号Tick、seal后Fold失败、各count互不替代 |
+| U09 codec/诊断具体登记 | 宽度方向已选，magic/section/tag/presence/UTF-8现行token规则、revision接受集、checksum覆盖、length/count覆盖和错误优先级仍缺完整表。推荐byte计数覆盖完整payload含section framing，不含外层header/digest；先结构可表示性，再identity/引用，再语义重建，细码先登记 | J0/J3→6.2/6.3；独立Writer/Reader人工bytes、截断/篡改/重算摘要后的语义错、跨编译器对照 |
+| U10 fault schema与恢复接受面 | fault字段属于payload闭包，但live faulted不可新建快照；需要明确Reader可验证状态与实际restore权限。推荐typed稳定diagnostic，不序列化本机异常blob/线程地址；若读取合法faulted payload，保持faulted，不能转healthy；旧healthy snapshot只恢复显式新session，不就地解除当前faulted | J0/J4→6.3；schema/fault矩阵、两个提交前缀、诊断一致、未提交delta不可伪造 |
+
+**U06入口纠正。** “复用normalize”是共用规范化合同与canonical校验，不要求把已规范化事件逆推成
+raw声明后再次量化/校准。原始raw入口仍运行S7A-2；Replay输出owning canonical records后复算
+admission/forwarding。不能单独实现第二套去重、排序或late处理，也不能用caller填ObservationId。
+
+**U07分支纠正。** 截断的是target cut之后的journal操作，不是按observationTick过滤；
+target cut之前已接受的future pending输入保持，取消它们需显式reset/session replacement。
+seek本身不修改原录制证据；新分支的session scope不进judgement identity，旧owning值保持有效。
+原archive和分支archive有独立只读寿命；快照索引按所属archive/cut选择，不能跨分支误复用。
+若target cut位于原advance内部，新分支先将该控制记录物化为advance(target)，不能保留原来
+更大的horizon；若目标超过已录制末端，物化推进至目标的控制记录。query/snapshot不fork，
+Replay/Seek内部复放也不伪装成新的live mutation。首次已接受submit或成功advance提交新分支；
+advance若已保留kernel seal前缀或发布可查询fault，即使整体Result失败也必须保留新分支证据。
+只有没有持久发布的预检/候选构造失败才不fork；不能为保持旧journal回滚已seal Fact。
+分支前缀、control outcome/稳定诊断及发布容量在mutation前预构造，随真实提交/fault发布且不再分配；
+记录requestedHorizon和实际前缀/frontier，不把失败的请求horizon当成功推进。
+
+**仍独立未接受。** 业务分值/grade阈值由显式Ruleset/Measure声明提供，不在计划填默认数值；
+生产内容/稳态/Snapshot/Replay预算与maxSeekLatency数值归9，D-9/master/SDK放行归8，
+7B+和外部Ruleset package不在5/6首次消费范围。不用这些后续门禁阻止不消费它们的5/6功能实现，
+也不提前宣称容量或owner门禁通过。
+
+#### 3.2.4 实施顺序与退出
+
+| 卡 | 交付 | 内部退出条件 |
+| --- | --- | --- |
+| J0 | U01–U10字段/owner/表示/初值/reset/identity/诊断/profile/byte表 | 先补相应Spec/ABI/profile；没有需要猜的必需字段，不等于功能已实现 |
+| J1 | owning PreparedRuleset、G2 grade与prepare原子性 | 缺失/未知/重复/错配稳定拒绝，新旧profile与identity正反例齐全 |
+| J2 | perTick Fold、三类Register、Score/Combo/Statistics、t+1 Hook | kernel未seal与seal后Fold失败分开；完整失败查询与独立Fold oracle |
+| J3 | 四分量identity、W2 codec、E2输入/control journal与Replay | 完整bytes与预检、共用canonical入口、转发复算与Fact逐commit对照 |
+| J4 | S2完整owning Snapshot/restore | 十四项→真实私有成员；原session销毁后可校验，新候选恢复失败保持旧active |
+| J5 | K2 Seek/目标cut与U07原子分支 | 多间隔/任意点/late/pending/负Tick与从起点独立oracle一致 |
+| J6 | live/Replay/restore/Seek联合失败和旧fixture回归 | 十个小目标逐字段对账；人工golden先校验oracle，不只比较score/hash |
+| J7 | Debug/Release/headless/shared/MinGW、Linux与hosted证据，计数与报告 | 功能行准确IV/IU/M/LB；真实恢复回填5.5，未接受容量保留9，不进入7 |
+
+全部旧T4/K4、L1/L2、S1/S2、author双路/affine、Capsule2/3与Playback包消费者回归保留。
+按labels枚举非零case后运行，Windows不伪跑Linux-only sanitizer/coverage。
+CPU/内存/bytes/prepare/Fold/restore/Seek测量是9的输入，不直接接受阈值；
+缺设备/GPU/音频验证单列，Stage7A不关闭。
+按owner要求推送后不等CI；hosted结果尚未返回时标待回填，绑定实际SHA，不提前记通过。
+桌面接手只是本节的导出执行快照；后续决策始终更新本计划/对应权威文档。
 
 ## 4. Stage 7A 关闭标准
 

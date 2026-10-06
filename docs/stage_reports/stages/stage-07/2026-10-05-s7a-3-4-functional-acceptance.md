@@ -6,7 +6,7 @@
 
 ## 1. 范围和输入锚点
 
-依据 [A–G 实施交接](../../../stage_plans/active/stage-07/s7a-3-4-implementation-handoff.md)。
+依据 [A–G 实施交接](../../../archive/stage-07-planning/s7a-3-4-implementation-handoff.md)。
 本次消费已选定的 execution / author profile，实现 S7A-3 剩余静态与离线 author 工作，以及
 S7A-4 的 ingress、contact、T4/K4、timer、Fact 和事务 kernel。
 逐行合同证据见 [E1 / D–F 审计](2026-10-05-s7a-3-4-e1-audit.md)；

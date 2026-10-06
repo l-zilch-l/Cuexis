@@ -1,24 +1,29 @@
 # S7A-3 remaining work and S7A-4 implementation handoff
 
-状态：active；选定方案的实施计划，不是完成报告
+状态：historical planning snapshot；原S7A-3/4实施接手，现已归档
 
 更新日期：2026-10-05
 
-上级：[Stage 7 计划](plan.md)；当前状态唯一入口：[CURRENT_STATUS](../../../CURRENT_STATUS.md)。
-设计依据：[ADR 0045](../../../adr/0045-gameplay-v2-execution-profile.md)、
-[execution Spec](../../../formats/gameplay-v2-execution-profile.md)、
-[author profile](../../../formats/gameplay-v2-author-profile.md)、
-[typed supplement](../../../api/gameplay-v2-execution-types.md)、
-[Capsule §12](../../../formats/GAMEPLAY_CAPSULE_V2_FORMAT.md)。
+> 归档日期：2026-10-06；来源为b5594cf保存的规划正文，链接随目录迁移修正。
+> S7A-3/4当前受限功能验收已完成，容量整体证明仍属S7A-9；本文保留当时的基线与实施指令。
+> 当前排期和决策以 [主计划§3.2](../../stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)
+> 及 [CURRENT_STATUS](../../CURRENT_STATUS.md) 为准，不按本文历史指令重做3/4。
 
-同日后续[歧义复核](../../../stage_reports/stages/stage-07/2026-10-05-s7a-3-4-ambiguity-audit.md)
+上级：[Stage 7 计划](../../stage_plans/active/stage-07/plan.md)；当前状态唯一入口：[CURRENT_STATUS](../../CURRENT_STATUS.md)。
+设计依据：[ADR 0045](../../adr/0045-gameplay-v2-execution-profile.md)、
+[execution Spec](../../formats/gameplay-v2-execution-profile.md)、
+[author profile](../../formats/gameplay-v2-author-profile.md)、
+[typed supplement](../../api/gameplay-v2-execution-types.md)、
+[Capsule §12](../../formats/GAMEPLAY_CAPSULE_V2_FORMAT.md)。
+
+同日后续[歧义复核](../../stage_reports/stages/stage-07/2026-10-05-s7a-3-4-ambiguity-audit.md)
 已修订本计划引用的合同与 §4/§5 验收；旧推荐与早期报告不覆盖现行补充。
 
 ## 1. 给实施者的范围与基线
 
 基线 branch=`stage-7`，已核对 HEAD=`6b11d102f6dcac4d9782cd03d0bae15add54af28`。
 该 SHA 的四条 hosted workflow 证据及实际余项见
-[余项核对报告](../../../stage_reports/stages/stage-07/2026-10-05-s7a-3-remaining-evidence.md)。
+[余项核对报告](../../stage_reports/stages/stage-07/2026-10-05-s7a-3-remaining-evidence.md)。
 新对话先执行 git status/HEAD/diff；工作区已有本轮未提交设计文档，必须保留。
 不要重做已存在 Reader/Writer/file-memory/S2 修复，也不要把旧 CI 成绩移给新行为 SHA。
 不要恢复本轮开始前已回退的 CI 优化；本计划没有 CI 省略/裁剪授权。

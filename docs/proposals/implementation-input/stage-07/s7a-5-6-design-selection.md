@@ -1,8 +1,13 @@
 # S7A-5 / S7A-6 Implementation Options and Selection
 
-状态：design recommendation；已选下一轮批次组合与推荐方案，尚未实施或冻结生产字段/线格式
+状态：candidate implementation input；方案比较与推荐理由，不是当前状态或生产合同
 
 日期：2026-10-06
+
+当前目标、选定方向、U01–U10待合同落定台账与实施卡由
+[Stage 7主计划§3.2](../../../stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)
+维护。本文件保留比较过程和最小反例；对应消费字段在J0及首次消费前落入Spec/ABI/profile。
+原接手与排期文件已 [归档](../../../archive/stage-07-planning/README.md)，当前接手导出至owner桌面。
 
 ## 1. 本次要解决的问题
 
@@ -226,10 +231,14 @@ snapshot独立校验不需要原session；恢复仍必须取得同identity的pre
 
 **推荐E2。** 记录accepted规范输入、source/sequence去重所需metadata、submit batch boundary、
 admissionFrontier/admissionHorizon、原始与dispatch tick/wasForwarded，以及advance horizon/control cut。
+advance control还须显式携带成功/失败结果、稳定诊断与实际保留前缀/frontier；
+不能因整次advance返回失败而删掉已seal Tick和fault证据。记录载体在mutation前预留。
 这些复现上下文不成为Fact规范排序键；原始设备私有对象、表现/Effect事件不进文件。
 
-live与Replay都进入同一normalize/admission/submit/advance核心：Reader重建owning输入，
-复算并对照dispatch/forwarded结果，不能凭文件提供的dispatch tick绕过late policy。
+live raw先经过S7A-2量化/时钟校准，Replay Reader重建owning canonical records；二者汇合到
+同一canonical validator/admission/submit/advance核心。已规范化量和tick不再次量化/校准，
+不伪造raw输入。复算并对照dispatch/forwarded结果，不能凭文件dispatch tick绕过late policy。
+ObservationId仍由会话生成；不单独复制第二套去重、排序或late策略。U06的五方案比较见§13。
 Replay保存已提交Fact Ledger供逐commit结构检验，不能把文件Fact安装到kernel假装完成判定。
 旧journal无与结果相关的信息时稳定拒绝；不能只按observationTick排序后全量预提交。
 
@@ -262,6 +271,12 @@ Replay保存已提交Fact Ledger供逐commit结构检验，不能把文件Fact�
 尚未advance的horizon保持absent，作为独立起点checkpoint处理，不能用隐式0覆盖负Tick。
 空日志目标以初始状态推进；目标早于首个已录制advance时，保留该步骤之前已admit的pending输入。
 这些cut边界必须成为人工golden，不能由生产Seek函数自己生成参考答案。
+Seek只替换活动视图并保留原owning archive；首次已接受submit、成功advance或
+保留提交/发布fault的advance才原子生成新分支，是否fork不能只看整次Result成功。
+分支保留target cut之前已接受的future pending输入，截断的是操作前缀而非observationTick。
+跨目标advance必须物化为advance(target)；目标超过原末端则物化追加推进至目标的记录。
+未发布的预检/候选失败不fork，保留seal前缀或可查询fault的失败必须保留分支证据；
+query/snapshot和Seek内部复放不fork。快照按所属archive索引，不跨分支误复用。
 从选定snapshot建立新候选状态，重放control前缀，重新构造t+1语义signal并校验Ledger/统计；
 成功后一次替换，失败保持旧active。输入archive/快照自持有，不借用原session。
 
@@ -294,11 +309,178 @@ budget超限分支通过显式test-only accepted fixture/injection验证，不�
 
 组合B + R1/G2/N1/T2/S2/W2/E2/K2/B2构成下一轮推荐。
 核心做法是先确定可序列化的真实Fold状态，再实现两个独立提交边界，最后以同一输入日志完成恢复闭包。
-完整实施步骤、小目标对账、验证矩阵和新对话指令见
-[联合实施接手](s7a-5-6-implementation-handoff.md)；剩余7–9归属见
-[五批交付规划](s7a-5-9-delivery-plan.md)。
+完整实施步骤、十项目标与剩余7–9归属见
+[主计划§3.2](../../../stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)。
+当前接手是桌面导出，旧联合接手/五批评估只作历史输入。
 
 第一张实施卡必须把九项推荐转成完整字段/owner/revision/诊断与正负例表；
 本轮不会预填缺失的业务阈值，不会把选优文档升级为实施/容量证明。
 遇到反例先指出具体哪项推荐无法满足既有合同并修订该项，其他独立卡继续推进；
 普通表示细节可在已选方案内补齐，不能无证据改回“所有字段留到以后”。
+
+## 13. 2026-10-06复核：十项残余细节的备选与选优
+
+九项方向已经选定，但其字段和边界并未自动成为可消费合同。以下每项再比较五套处置，
+推荐与主计划U01–U10一一对应；状态均为**待合同落定**，不是新一轮语义裁定或CONTRACT_MATRIX open。
+J0先登记字段/owner/读取时点/初值/reset/identity/revision/诊断和最小反例，
+对应首次消费卡完成合同及验证后才关闭本地U项。普通表示选择按已有实施授权完成。
+
+### U01：Interface、静态操作与兼容接受集
+
+| 方案 | 处置 | 评估 |
+| --- | --- | --- |
+| A | 显式typed registry，逐ID/revision登记支持值与新旧profile组合 | **推荐**；R1自然延伸，拒绝面可逐项审计 |
+| B | 为每个完整profile定义独立aggregate类型 | 编译期约束强，组合扩展会复制字段/校验 |
+| C | 在prepare生成完整capability/policy可执行决策表 | 接受组合直观，有限表规模和版本生成责任更大 |
+| D | variant envelope按profile tag分派各套validator | 入口集中，但状态和identity易被两套validator分别定义 |
+| E | profile-specific builder逐步校验后产出sealed manifest | 人工调用友好，Reader仍需独立全量验证，不能把构造顺序当语义 |
+
+选A：逐字段枚举programPolicy/outcomeScope/arbitration/Loadout、module/operator与值tag。
+arbitration引用已准备的T4/K4政策，不让Fold再次裁定winner；未知/缺失/错配原子拒绝。
+反例：同一个旧3/4声明仅携带opaque grade token，不能被新可执行grade profile的table门禁误拒绝。
+关闭点：J0/J1，profile兼容及identity正负例。
+
+### U02：grade表的归属与absence/error分支
+
+| 方案 | 处置 | 评估 |
+| --- | --- | --- |
+| A | owning Measure-side typed表；执行revision属engine，grade→分值属ruleset | **推荐**；符合现有四分量归属，易对照source与prepared value |
+| B | prepared graph内用Measure ID索引typed表pool | 去重好，但pool构造/引用闭合与source投影更复杂 |
+| C | 独立不可变grading catalog，prepared声明携带完整已解析表 | 源复用方便，需证明catalog内容已经owning并投影，不引入外部package |
+| D | 每phase独立sealed evaluator object及显式DTO | 封装强，算法与表归属易分散，需要更大字段审查 |
+| E | 一个新profile内置显式固定table，声明引用其版本并携带presence政策 | 可实现但只支持固定尺度；不能默认为所有Measure补table |
+
+选A：缺table表示absent；新profile的token/table覆盖、Hit/Miss/无error/presence必须明确。
+只有显式表存在才求值，表外值稳定失败；闭端点重叠/缺口在prepare检查。
+反例：timer Miss没有error，不能为了套区间而伪造error=0或默认grade。
+关闭点：J0/J1→5.3，端点、Miss与新旧profile人工golden。
+
+### U03：Score算术检查粒度与Combo峰值
+
+| 方案 | 处置 | 评估 |
+| --- | --- | --- |
+| A | 规范Fact序逐步checked/clamp，局部累计后每Tick一次exclusive write | **推荐**；顺序、失败与人工golden直接对应 |
+| B | 宽化精确累计整Tick，在Tick末检查最终值 | 会让中间溢出抵消；需要独立不同评分语义/revision，首版不选 |
+| C | 固定二进制树规约，再检查根结果 | 对合法monoid可用，但不能替代有顺序的Score/Combo |
+| D | prepare证明分值及Fact上界确保运行期不可溢出 | 静态证明复杂，并依赖尚未接受的容量假设；不替代动态检查 |
+| E | 按受检chunk累计，chunk末校验 | 可批处理但chunk大小易变成结果语义，难保持分段不变 |
+
+选A：clamp发生于每个规范Fact的局部更新；maxCombo记录中间峰值。
+exclusive只提交该Tick最终值，不将每Fact更新误当多writer；monoid仍沿已证明carrier。
+反例：Score=MAX，后续增量+1、-1，最终和可表示仍不能掩盖checked分支的中间失败。
+关闭点：J0/J2，负值、峰值、饱和顺序和第二写golden。
+
+### U04：空Tick与无Fact工作Tick
+
+| 方案 | 处置 | 评估 |
+| --- | --- | --- |
+| A | 新profile声明空Tick为单位元，只由输入/timer/已声明signal触发工作 | **推荐**；保留稀疏kernel与advance分段等价 |
+| B | 对每个整数Tick都执行有限Fold | 概念直接，大跨度不可行；不能靠隐含预算避免长循环 |
+| C | 支持显式周期timer模块，列出将来的有限工作Tick | 未来可扩展，需新增状态/revision/合法性闭包，首版不消费 |
+| D | 对空区间使用可证明的jump operator | 可批量累积，但等价证明、溢出和Hook时刻复杂 |
+| E | prepare将任意空Tick行为展开为全部定时工作清单 | 时间域和条目预算未闭合，巨大有限区间也可能不可用 |
+
+选A：模块trigger集合必须明示并验证，无自主每Tick副作用；真正due signal/timer仍处理，
+即使该Tick没有Fact。不得把“没有Fact”等同于“没有工作”，也不得逐整数扫描空区间。
+反例：t产生Hook，t+1没有Fact；Hook committed值仍必须在t+1可见并可恢复。
+关闭点：J0/J2→5.4，稀疏signal、大空区间和不同advance分段golden。
+
+### U05：Hook目的地、载荷与t+1边界
+
+| 方案 | 处置 | 评估 |
+| --- | --- | --- |
+| A | typed target/payload registry；owning committed值与pending语义队列分开 | **推荐**；合同和Snapshot职责直接对应 |
+| B | 稠密target handle数组，prepare建立图ID到handle映射 | 高效，恢复必须复核graph与索引映射，字段审计较难 |
+| C | 每target单独typed mailbox | 强类型但异构module间组合和wire清单容易分散 |
+| D | 每Hook不可变value history，从Fact/cursor重建未来可见值 | 参考重建方便，不能省略后续执行所需的未到期语义队列 |
+| E | 一个声明式route table驱动有限built-in转换 | routing集中，但转换组合增加profile/identity与覆盖成本 |
+
+选A：只指向prepared声明中的step/Hook目标；值tag、owner、贡献键与序号耗尽都显式校验。
+pending保存未来输入需要的语义值/可见时刻，不保存RuleEffectEvent envelope/cache。
+反例：commitTick=INT64_MAX时不可计算t+1；必须在Fold提交前失败，不能发布同Tick信号。
+关闭点：J0/J2，目标/重复键、t/t+1和极值失败查询。
+
+### U06：规范化Replay共用输入入口
+
+| 方案 | 处置 | 评估 |
+| --- | --- | --- |
+| A | live raw normalization之后与Replay canonical records汇合到同一admission核心 | **推荐**；不重复量化且保持唯一执行路径 |
+| B | Replay同时保存完整raw输入，复放时再次normalize | 可实现，但扩大codec/原始设备字段和溯源责任，偏离E2首次范围 |
+| C | Reader逆推raw有理数/时间戳再调用raw入口 | 量化一般不可逆，会伪造溯源和再次校准；不选 |
+| D | Reader直接安装文件dispatch/ObservationId到kernel | 绕开去重/late校验和引擎ID责任；违反既有合同 |
+| E | 单独实现Replay admission，但逐项仿照live算法 | 两套路径会漂移，共用helper自我对照也不能证明一致性 |
+
+选A：Reader只产owning规范输入，canonical validator处理域/tag/量程/subject/sequence，
+之后会话复算admission、转发与ObservationId；文件metadata是对照值，不是执行权威。
+反例：amountScale=2时规范量1再次当raw量会变2；Replay不能为了复用入口重做量化。
+关闭点：J0/J3，非单位scale、负值/端点、重复sequence/subject与queue_next_tick。
+
+### U07：Seek后继续live与分支证据
+
+| 方案 | 处置 | 评估 |
+| --- | --- | --- |
+| A | Seek保留原archive视图，首次live接受/持久发布时物化前缀并fork | **推荐**；随真实提交点保留证据，历史与继续游玩均可用 |
+| B | Seek立即截断原journal并销毁后缀 | 简单，但往返Seek及旧证据寿命受损，不选 |
+| C | Seek立即建立完整新分支，源archive不变 | 合同可行，但只浏览/查询也产生复制与分支，额外失败点 |
+| D | Seek得到只读session，live mutation必须显式clone/fork | 所有权清楚，但增加API步骤，不符合直接继续live的目标 |
+| E | 不fork，继续把新mutation附加到原完整journal末尾 | 会重复执行原未来；不同活动状态与日志失配，不选 |
+
+选A：target cut之前已admit的future pending输入保留；截断操作，不按observationTick删事件。
+若原advance(20)被Seek截到5，新分支记录advance(5)，不能仍保留advance(20)。
+无持久发布的submit/advance失败不提交分支；advance已有成功Tick、seal后Foldfault或可查询fault发布时，
+即使整次Result失败也保留新分支及实际前缀/诊断。不能丢掉日志或倒退kernel seal来假装原子失败。
+候选前缀/control outcome及发布容量预构造，提交/fault发布点不再分配；
+成功空推进也记录控制边界，requestedHorizon与实际frontier分别保存。
+只读query/snapshot及内部复放不fork。
+archive/cut隔离快照索引，新session scope不进judgement identity，原archive/旧owning值继续有效。
+反例：Seek后advance seal新Fact，再Fold溢出，Fact仍可查询；旧journal无法解释这段新历史，必须保留分支。
+关闭点：J0/J3/J5，control codec、跨advance目标、空推进、晚到、前后Seek、未发布失败与有保留前缀/fault失败golden。
+
+### U08：counts、两条提交前缀与无Fact进度
+
+| 方案 | 处置 | 评估 |
+| --- | --- | --- |
+| A | counts按事件/Fact分别定义，另存kernel sealed与Fold committed frontier | **推荐**；无Fact推进及seal后失败可直接表达 |
+| B | 使用两个完整(commit ordinal,Tick,Fact cursor)结构 | 可审计，新增ordinal与现有CommitId映射责任较大 |
+| C | 只保留Fact cursor并从最后Fact推断Tick | 零Fact信号Tick无法恢复，不选 |
+| D | 用horizon代替两个frontier | horizon含未发生工作/失败请求，混淆实际提交进度，不选 |
+| E | 只保存journal cut，恢复时从起点重建所有进度 | 可作reference，不宜取代全量Snapshot闭包和最近快照恢复 |
+
+选A：Snapshot normalized count为已接受至cut的事件数，含pending；Replay event count不含control。
+Fact count为sealed前缀；Fold cursor为成功Fold前缀；两个frontier保持各自optional状态，
+lastAdvanceHorizon、requestedHorizon与processedFrontier不得互相充当默认值。
+反例：两个零Fact Tick具有相同Fact count，但Hook已提交值/可见时间不同；Fold失败可使两个frontier分离。
+关闭点：J0/J4，pending、空输入、无Fact工作Tick与fault恢复字段对账。
+
+### U09：完整codec与拒绝优先级
+
+| 方案 | 处置 | 评估 |
+| --- | --- | --- |
+| A | 固定W2字段/tag/section表；payload framing计数；结构→身份/引用→语义校验 | **推荐**；人工bytes与边界错误可独立复算 |
+| B | 从一个声明式IDL自动生成Reader/Writer | 漂移少，需新生成工具/可信边界，首次scope扩大 |
+| C | 手写schema和codec并只靠roundtrip同步 | 省工具，但缺独立人工byte表，会让同源错误通过 |
+| D | TLV未知section全部跳过，靠required字段校验 | forward扩展方便，但首次revision接受集未闭合，现不选 |
+| E | 全部先解析成通用DOM，再验证typed状态 | 新依赖/中间分配较大，架构与owning边界更难证明 |
+
+选A：J0先列完整magic、外层header/digest、payload section framing、record顺序/宽度/presence、
+UTF-8现行token规则和revision接受表。byte计数覆盖完整payload含section framing，不含外层header/digest。
+先检查物理长度/可表示性及摘要，再identity/引用，再语义重建；同输入多错的优先级和detail码先登记。
+反例：篡改语义后重算SHA仍须被引用/执行对照拒绝；摘要不代替identity和Fact校验。
+关闭点：J0/J3，独立bytes、截断/重算摘要/错版本和跨工具链golden。
+
+### U10：fault诊断Schema与restore接受面
+
+| 方案 | 处置 | 评估 |
+| --- | --- | --- |
+| A | typed稳定fault record；解码验证与可恢复权限分别校验，faulted不得变healthy | **推荐**；满足字段闭包并保留faulted行为矩阵 |
+| B | Schema有fault字段，但Reader一律拒绝faulted payload | 实现简单，需明确合法闭包与拒绝行为，可能缩小恢复接受集 |
+| C | 独立只读fault evidence envelope，与可恢复Snapshot完全分型 | 责任清楚，新增wire类型和版本范围，首版不选 |
+| D | 将fault诊断保存在外部sidecar | 字节少，但payload自持有闭包不足，不选 |
+| E | faulted恢复时自动丢弃失败Tick并转healthy | 隐式recovery/伪造语义，违反就地恢复限制，不选 |
+
+选A：只保存稳定code/category/severity、failedTick、两cursor/frontier及语义上下文，
+禁止序列化native异常blob、指针/线程地址或未提交delta。Writer在live faulted上仍拒绝新snapshot。
+J0明确Reader的合法fault状态组合及实际restore权限；若读取合法faulted payload，恢复结果仍faulted，
+不能以Schema接受绕过live mutation禁令。旧healthy snapshot只用于显式新session replacement，
+不解除当前faulted session。非法组合整体拒绝，原active/query不变。
+关闭点：J0/J4，fault Schema负例、旧healthy恢复、双前缀和未提交delta拒绝。

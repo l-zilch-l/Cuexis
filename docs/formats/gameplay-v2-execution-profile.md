@@ -2,14 +2,16 @@
 
 状态：candidate；本轮选定的完整实施方案，不是运行验证或生产发布
 
-更新日期：2026-10-05
+更新日期：2026-10-06
 
-实现状态：未实施本补充合同；已有部分实现见 [CURRENT_STATUS](../CURRENT_STATUS.md)
+实现状态：分批实现与受限功能验收只由 [CURRENT_STATUS](../CURRENT_STATUS.md) 汇总；
+本候选合同的状态不等同于Stage 7A关闭或容量证明。
 
 本文件是 [Gameplay V2 Spec](GAMEPLAY_V2_SPEC.md) 的补充 Spec。选择理由由
 [ADR 0045](../adr/0045-gameplay-v2-execution-profile.md) 拥有；字段所有权与接口由
 [typed 补充](../api/gameplay-v2-execution-types.md) 拥有；实施顺序由
-[交接计划](../stage_plans/active/stage-07/s7a-3-4-implementation-handoff.md) 拥有。
+[Stage 7计划](../stage_plans/active/stage-07/plan.md) 拥有；原3/4执行卡见
+[历史交接](../archive/stage-07-planning/s7a-3-4-implementation-handoff.md)。
 本文件补齐首次运行消费的空白，不重开 T4/K4、19 条拒绝面或已有第 1–7 轮裁定。
 引用“待首次消费冻结”的历史文字时，本文件在明确覆盖的字段上给出本轮选择；不冒充旧裁定。
 
@@ -426,5 +428,5 @@ arm/deadline 包含性 missing/pending 是 gate_incomplete，prepare 原子失�
 编译状态数测量 missing。后者保留 measured/unknown/证得下界状态，不当作超限，也不写通过。
 若实际测得值或下界超过显式 acceptedThreshold，budget_exceeded；没有接受阈值不编造一个。
 状态/稳态性能数值整体证明仍归 S7A-9，S7A-3/4 仅允许按
-[交接计划](../stage_plans/active/stage-07/s7a-3-4-implementation-handoff.md) 的受限功能验收关闭。
+[交接计划](../archive/stage-07-planning/s7a-3-4-implementation-handoff.md) 的受限功能验收关闭。
 这不解除 Stage 7A 整阶段关闭门禁，也不为 future stage 创建默认可执行承诺。
