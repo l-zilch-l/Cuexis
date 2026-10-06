@@ -77,6 +77,8 @@
 | [S7A-5/6 实施阻塞复核](verification/2026-10-06-s7a-5-6-implementation-blocker-audit.md) | 2026-10-06 |
 | [S7A-5/6 U01–U13全量重审](verification/2026-10-06-s7a-5-6-u01-u13-rereview.md) | 2026-10-06 |
 
+| [S7A-5/6 limited functional acceptance](verification/2026-10-06-s7a-5-6-functional-acceptance.md) | 2026-10-06 |
+
 ## 交接与规划修订
 
 | 报告 | 证据日期 |

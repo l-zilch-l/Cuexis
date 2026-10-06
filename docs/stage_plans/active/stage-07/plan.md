@@ -479,7 +479,7 @@ owner已明确下一轮目标为 **S7A-5.1–5.5 + S7A-6.1–6.5**，按本文§
 九项各五套备选的比较正文见 [5/6实施输入](../../../proposals/implementation-input/stage-07/s7a-5-6-design-selection.md)。
 2026-10-06追加复核的U01–U10也各有五套处置比较；推荐与准入归本文§3.2，理由和反例归实施输入§13；进一步行为阻塞U11–U13的五方案与选优见§14。
 接手文档导出到owner桌面，不在active目录维护第二份执行正文；
-原接手/排期快照见 [旧路径映射](legacy-paths.md)。本轮只有文档准备，容量整体仍归9。
+原接手/排期快照见 [旧路径映射](legacy-paths.md)。本轮已进入J0–J7实施与验证；容量整体仍归9。
 
 ### S7A-5：Ruleset Fold、Score、Combo 和 Statistics
 
@@ -799,7 +799,7 @@ advance若已保留kernel seal前缀或发布可查询fault，即使整体Result
 也不提前宣称容量或owner门禁通过。
 
 **进一步复核（2026-10-06）。** U11–U13是本轮新增的行为合同缺口；推荐方向已选，
-与U01–U10同为待合同落定。详细反例与五方案见实施输入§14，证据见
+当时与U01–U10同为待合同落定；本轮已按§3.3在首次消费前写入Spec/ABI/profile。详细反例与五方案见实施输入§14，证据见
 [实施阻塞复核](../../../stage_reports/stages/stage-07/verification/2026-10-06-s7a-5-6-implementation-blocker-audit.md)。
 J0可按已有目标推进；需要在消费点之前完成合同，不要求先实施7–9。
 
@@ -829,6 +829,36 @@ CPU/内存/bytes/prepare/Fold/restore/Seek测量是9的输入，不直接接受�
 缺设备/GPU/音频验证单列，Stage7A不关闭。
 按owner要求推送后不等CI；hosted结果尚未返回时标待回填，绑定实际SHA，不提前记通过。
 桌面接手只是本节的导出执行快照；后续决策始终更新本计划/对应权威文档。
+
+### 3.3 S7A-5/6 本轮实施记录（2026-10-06）
+
+本轮授权为5.1–5.5与6.1–6.5受限功能验收、提交推送且不等待CI。
+J0–J7本轮受限功能验收已完成，十行本地证据按IV回填；新提交hosted仍为IU，生产预算和设备证据独立保留。
+实际开工HEAD=9f6803f1752650dffb576742ff4592b8f59c0b4b，stage-7，初始clean；没有reset历史SHA。
+组合B与R1/G2/N1/T2/S2/W2/E2/K2/B2采用重审方向，首次消费合同已分别进入
+[Spec J0-5/J0-6](../../../formats/GAMEPLAY_V2_SPEC.md)、[ABI](../../../api/GAMEPLAY_V2_ABI.md)与
+[profile](../../../formats/gameplay-v2-execution-profile.md)。U01–U05/U13先于Fold消费，U06–U12先于恢复消费。
+
+| 卡 | 本轮产物与验收入口 |
+| --- | --- |
+| J0 | 有限registry、显式数值、grade、三Register、fault、DTO、W2、cut合同；生产预算pending |
+| J1 | owning PreparedRuleset与实际build绑定、optional G2 table及可达error覆盖 |
+| J2 | 真实perTick Fold，checked/clamp，Combo峰值，ledger-derived统计，Fold-only bonus Hook |
+| J3 | 实际四分量identity、canonical共享入口、accepted/control journal、全结果ReplayEvaluation、LE codec |
+| J4 | 完整私有DTO、依赖重取、coverage/activation/ID等闭包验证、healthy原子恢复及新faulted恢复 |
+| J5 | exact H/F(H)、future pending/lastObservedTick、archive/cut/H checkpoint、partial和惰性分支 |
+| J6 | 人工bytes/算术/统计golden、独立S1 kernel及Fold oracle、真实consumer故障、篡改与旧fixture |
+| J7 | 逐行与跨工具链证据见[本轮报告](../../../stage_reports/stages/stage-07/verification/2026-10-06-s7a-5-6-functional-acceptance.md) |
+
+真实合同冲突U05：旧timer prepare无条件调用观测cell检查，deadline MAX即预算t+1失败；
+已改为实际timer边界检查，观测准入仍保留cell。Hook只实际输出才checked(t+1)。
+极值证据分开：close=3时H=MAX只到F(H)=MAX−3，deadline MAX仍pending；close=0时
+F(H)=MAX，真实deadline工作Tick无Hook输出成功、有输出则checked(t+1)故障，kernel seal保留且旧Fold不变。
+另一个实际consumer反例是MIN+UINT64_MAX的数学结果MAX：u64 bonus不窄化为i64，先比较数学room，
+再取得可表示结果；checked/clamp分别验证，避免错误拒绝合法和或先溢出再clamp。
+普通表示按本轮授权落地；没有扩展kernel/shared/step route，它们无真实consumer时稳定拒绝。
+独立审查的partial checkpoint full-cut绕过、coverageHistory丢失、Ingress ID伪造已修复并加负例。
+本记录不接受7–9、生产容量、预算或Stage7A关闭。新SHA hosted/GPU/设备证据须按报告待回填。
 
 ## 4. Stage 7A 关闭标准
 

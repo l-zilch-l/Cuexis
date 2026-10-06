@@ -1,4 +1,5 @@
 add_executable(cuexis_judgement_tests
+    fold_recovery_tests.cpp
     execution_profile_tests.cpp
     execution_kernel_tests.cpp
     execution_reference.cpp

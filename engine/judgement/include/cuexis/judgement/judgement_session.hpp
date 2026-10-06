@@ -8,7 +8,7 @@
 // only for destruction or move assignment.
 
 #include <cuexis/core/result.hpp>
-#include <cuexis/judgement/kernel_types.hpp>
+#include <cuexis/judgement/recovery.hpp>
 
 #include <memory>
 
@@ -44,6 +44,7 @@ class JudgementProjection final {
 //  it. As above, no field and no accessor is exposed in this batch.
 class SnapshotPayload final {
   public:
+    [[nodiscard]] auto state() const noexcept -> const SnapshotDTO&;
     SnapshotPayload(const SnapshotPayload&) noexcept = default;
     SnapshotPayload(SnapshotPayload&&) noexcept = default;
     auto operator=(const SnapshotPayload&) noexcept -> SnapshotPayload& = default;
@@ -52,6 +53,9 @@ class SnapshotPayload final {
 
   private:
     friend class JudgementSession;
+    friend auto encodeSnapshot(const SnapshotPayload&) -> core::Result<std::vector<std::byte>>;
+    friend auto decodeSnapshot(std::span<const std::byte>, const RecoveryInputs&,
+                               std::optional<CodecBudget>) -> core::Result<SnapshotPayload>;
 
     explicit SnapshotPayload(std::shared_ptr<const detail::SnapshotStorage> storage) noexcept;
 
@@ -99,6 +103,19 @@ class JudgementSession final {
     [[nodiscard]] auto advance() -> core::Result<void>;
     [[nodiscard]] auto submit(std::vector<ClockedIngress> batch)
         -> core::Result<std::vector<InputReceiptPending>>;
+    [[nodiscard]] auto submitCanonical(std::vector<CanonicalInput> batch)
+        -> core::Result<std::vector<InputReceiptPending>>;
+    [[nodiscard]] auto archive() const -> core::Result<ReplayArchive>;
+    [[nodiscard]] static auto evaluateReplay(const ReplayArchive&)
+        -> core::Result<ReplayEvaluation>;
+    [[nodiscard]] static auto recover(const SnapshotPayload&, const RecoveryInputs&)
+        -> core::Result<JudgementSession>;
+    [[nodiscard]] auto restore(const SnapshotPayload&, const RecoveryInputs&) -> core::Result<void>;
+    [[nodiscard]] static auto checkpoint(const ReplayArchive&, Tick horizon)
+        -> core::Result<ReplayCheckpoint>;
+    [[nodiscard]] auto seek(const ReplayArchive&, Tick horizon) -> core::Result<void>;
+    [[nodiscard]] auto seek(const ReplayArchive&, Tick horizon, const ReplayCut&,
+                            std::span<const ReplayCheckpoint> = {}) -> core::Result<void>;
     [[nodiscard]] auto advance(Tick horizon) -> core::Result<JudgementProjection>;
 
     //  query / snapshot - reads. Const-qualified, so no read path can modify the session. Both

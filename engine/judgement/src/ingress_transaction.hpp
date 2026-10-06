@@ -18,7 +18,8 @@ struct IngressJournal final {
 };
 // All storage allocation precedes publication. Entries borrow stable heap nodes in this journal.
 auto prepareIngressBatch(const SessionIngressState&, const InputMappingProfile&,
-                         std::span<const ClockedIngress>, bool resolveDomains = true)
+                         std::span<const ClockedIngress>, bool resolveDomains = true,
+                         std::span<const std::optional<std::int64_t>> canonicalAmounts = {})
     -> core::Result<IngressJournal>;
 auto reserveIngressBatch(SessionIngressState&, const IngressJournal&) -> core::Result<void>;
 void commitIngressBatch(SessionIngressState&, IngressJournal&&) noexcept;

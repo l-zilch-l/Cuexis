@@ -13,6 +13,9 @@ target_sources(cuexis_judgement
         src/gameplay_prepare.cpp
         src/input.cpp
         src/kernel_types.cpp
+        src/recovery_codec.cpp
+        src/recovery.cpp
+        src/ruleset.cpp
         src/session.cpp
         src/timebase.cpp
 )

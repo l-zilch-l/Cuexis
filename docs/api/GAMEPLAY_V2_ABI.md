@@ -1334,3 +1334,35 @@ S7A-5 / S7A-6**。
 - [内部模块速查](internal-module-catalog.md)：判定类型的模块归属边界
 - [API 参考导航](README.md)：本目录的边界与权威说明
 - [文档整理政策](../DOCUMENTATION_POLICY.md)：文档角色与状态词枚举
+
+## S7A-5 首用 typed 表示补充（2026-10-06）
+
+本补充覆盖本轮消费的待冻结表示，语义及registry归Spec的J0-5。
+`ruleset.hpp`拥有 owning RulesetDeclaration/PreparedRuleset/ScoreConfiguration/ScoreRule/
+ModuleDeclaration/HookDeclaration/FoldProjection；ProgramPolicy、OutcomeScope、ArithmeticPolicy、
+RegisterKind、CombineOperator、HookConsumer为u8枚举，未知值拒绝。
+Score为i64；combo/maxCombo/hits/misses/cursors/monoid/bonus为u64；Tick为既有i64。
+optional grade为owning UTF-8 string；table为MeasureComponent的optional owning interval数组。
+projection的Fold可absent，legacy无评分不伪造结果；actual config/Loadout进入identity。
+owner为session线程、读版本为旧committed/新sealed；reset遵循显式初值；
+异常不得跨边界。Hook首版实际只支持Fold消费者，其他route稳定拒绝。
+
+## S7A-6 首用 typed 表示补充（2026-10-06）
+
+`recovery.hpp`拥有CanonicalInput、MatcherSnapshot、IngressSnapshot、SnapshotDTO、RecoveryInputs、
+ReplayRecord/Data/Archive/Cut/Evaluation与CodecBudget。宽度/tag/framing归Spec J0-6 W2表。
+SnapshotPayload提供const全量state视图；JudgementSession的submitCanonical/archive/evaluateReplay/
+recover/restore/seek(archive,H)为内部noninstalled边界，query拥有完整Kernel/Fold结果。
+所有依赖owning，restore/Seek候选验证后替换；faulted就地恢复/Seek拒绝。
+旧无参数seek等仍保持拒绝。预算数值只接受testOnly fixtures，生产容量不在本次接受。
+
+
+`RegisterValue`为signed64/unsigned64 typed variant；RegisterDeclaration/Contribution承载owner、
+carrier、operator、target与完整贡献identity。`FaultStage`为kernel/fold/control的u8闭合枚举。
+`ReplayCheckpoint` owning绑定archive、ReplayCut与H；工厂验证凭证私有不可伪造，外部替换state
+使凭证失效并从起点复验，失败fallback。统计及所有Fold成员均参与完整结果比较。
+
+
+StatisticsCount拥有phase/outcome/optional grade与u64 count；FoldProjection owning counts按键排序，
+另有u64 strayCount/consumeEmptyCount。全部归session state schema，运行计数不进identity；
+显式映射/初值/算术仍进ruleset、有效loadoutId归session。初始统计构造返回Result。

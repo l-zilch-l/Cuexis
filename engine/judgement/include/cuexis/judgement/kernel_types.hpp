@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cuexis/judgement/gameplay_prepare.hpp>
+#include <cuexis/judgement/ruleset.hpp>
 
 #include <variant>
 
@@ -40,6 +40,7 @@ struct SessionConfiguration final {
     std::string executionProfileToken;
     std::string lateAlgorithmToken;
     std::string factSemanticRevision;
+    std::optional<PreparedRuleset> ruleset;
 };
 
 struct CanonicalObservationKey final {
@@ -140,6 +141,7 @@ struct ResourceProjection final {
     friend auto operator==(const ResourceProjection&, const ResourceProjection&) -> bool = default;
 };
 
+enum class FaultStage : std::uint8_t { kernel, fold, control };
 enum class KernelSessionState : std::uint8_t { Created, Configured, Prepared, Faulted };
 enum class KernelPhaseState : std::uint8_t { Dormant, Pending, Hit, Miss, Observed, Expired };
 struct PhaseProjection final {
@@ -173,6 +175,7 @@ struct PhaseOutcomeFact final {
     FactId factId;
     Tick commitTick;
     LogicalCanonicalOrdinal canonicalOrdinal;
+    std::optional<std::string> grade;
     friend auto operator==(const PhaseOutcomeFact&, const PhaseOutcomeFact&) -> bool = default;
 };
 struct ReceiptFact final {
@@ -216,6 +219,11 @@ struct KernelProjection final {
     // Opaque per-prepare anchor; excluded from deterministic identities.
     std::shared_ptr<const std::uint8_t> runScope;
     std::optional<Tick> failedTick, requestedHorizon;
+    std::optional<Tick> kernelWorkTick;
+    std::uint64_t sealedFactCursor{0};
+    std::optional<FoldProjection> fold;
+    std::string effectiveFactSemanticRevision;
+    std::optional<FaultStage> faultStage;
 };
 
 } // namespace cuexis::judgement

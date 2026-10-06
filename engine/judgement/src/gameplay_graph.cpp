@@ -603,6 +603,13 @@ void compareKeyedTable(DifferenceRecorder& recorder, std::string path,
         //  component and must not compare equal.
         rendered.append(":grades=");
         rendered.append(renderTokens(measure.components[index].declaredGradeTokens));
+        if (measure.components[index].gradeTable) {
+            rendered.append(":intervals=");
+            for (const auto& row : *measure.components[index].gradeTable) {
+                rendered.append(std::to_string(row.minimum) + ":" + std::to_string(row.maximum) +
+                                ":" + row.grade + ";");
+            }
+        }
     }
     rendered.append(";required=");
     rendered.append(renderRequiredRefs(measure.required));

@@ -108,7 +108,10 @@ F 不表示绝对 Tick；同样的 span 相对每个窗口平移，负 observati
 cell 的 open=t-O、close=t+C、final=t+F。open 是提前准备/pending 分类边界，
 不扩大成功窗口；close 是逻辑提交可处理边界；final 是禁止迟到转发边界。
 所有所需加减法 checked；不能在 i64 最大值处加一并 wrap。
-不可表示的事件/cell 拒绝；不可表示的 prepare timer 边界拒绝整个 prepare。
+不可表示的事件/cell 拒绝；不可表示的实际 prepare timer 边界拒绝整个 prepare。
+2026-10-06 U05首用订正：timer不是观测cell，不预先计算timer的t+1/open/close/final。
+仅实际Hook输出检查t+1；无输出INT64_MAX timer合法。原timer cell预检会错误拒绝已Hit且无新输出的deadline，
+最小反例是MAX−4命中、MAX无Fact due；观测入口的cell范围检查保持。
 cell 不逐微秒分配对象，用公式计算；O 只控制提前准备，不制造逐 Tick timer。
 
 ### 3.2 两个时钟游标
@@ -430,3 +433,25 @@ arm/deadline 包含性 missing/pending 是 gate_incomplete，prepare 原子失�
 状态/稳态性能数值整体证明仍归 S7A-9，S7A-3/4 仅允许按
 [交接计划](../archive/stage-07-planning/s7a-3-4-implementation-handoff.md) 的受限功能验收关闭。
 这不解除 Stage 7A 整阶段关闭门禁，也不为 future stage 创建默认可执行承诺。
+
+## S7A-5/6 首用 profile（2026-10-06）
+
+组合B及R1/G2/N1/T2/S2/W2/E2/K2/B2采用U01–U13重审推荐。
+有限compiled registry、optional signed grade table、Fold事务、Hook消费、恢复与wire字段的权威合同见
+[Gameplay V2 Spec首用补充](GAMEPLAY_V2_SPEC.md#s7a-56-首用补充j0-消费合同2026-10-06)，
+C++表示见[ABI首用补充](../api/GAMEPLAY_V2_ABI.md)。本profile不重复完整合同。
+
+legacy `gameplay.execution.t4-k4.v1` 无Ruleset时Fold absent；显式PreparedRuleset启用
+`gameplay.fold.finite.v1`。UTF8限制随该新profile用于prepare/live/canonical/Writer/Reader，
+不改变legacy输入准入。grade table缺省合法；表存在时实际算法与FactSemantic进入engine identity。
+首版只接受真实Fold consumer `fold.bonus.u64`；kernel/shared/step route稳定拒绝。
+所有生产容量阈值保持pending，仅允许显式testOnly codec budget。
+
+U05反例：timer deadline=INT64_MAX且不产出时，旧prepare预算观测cell的t+1会错误拒绝。
+prepare只检查实际timer边界；观测仍检查完整cell，Hook仅实际输出才检查t+1。
+同时exact H按F(H)执行：本测试F间隔3，H=MAX时deadline MAX仍pending；该fixture不能
+充当实际MAX工作Tick输出故障的证据。数学checked(MAX+1)拒绝另有直接边界测试。
+
+
+补充真实可达极值：合法close=0、观测MAX−12，F(MAX)=MAX；已Hit deadline无输出成功，
+真实Miss的Hook输出checked(MAX+1)失败。与close=3的pending正例分别回填，不混用证据。

@@ -713,6 +713,13 @@ enum class GradePresence : std::uint8_t {
 //  *scale*, the tolerance and the aggregation rule belong to CM-S10 / P1-07 and are first consumed
 //  by S7A-5, so the declared tokens travel as opaque declarations: this batch neither interprets
 //  them nor substitutes a default table for a missing one.
+struct GradeInterval final {
+    std::int64_t minimum, maximum;
+    std::string grade;
+    friend auto operator==(const GradeInterval&, const GradeInterval&) -> bool = default;
+    friend auto operator<=>(const GradeInterval&, const GradeInterval&) = default;
+};
+
 struct MeasureComponentDeclaration final {
     PhaseKind phase;
     //  The caller-declared category token, when the content declared one. Empty is "not assigned",
@@ -722,6 +729,7 @@ struct MeasureComponentDeclaration final {
     //  The grade tokens the content declared for this component, in declaration order. An empty
     //  table is the `absent` state of the grade, not a table of defaults.
     std::vector<std::string> declaredGradeTokens;
+    std::optional<std::vector<GradeInterval>> gradeTable;
 
     friend auto operator==(const MeasureComponentDeclaration&,
                            const MeasureComponentDeclaration&) noexcept -> bool = default;

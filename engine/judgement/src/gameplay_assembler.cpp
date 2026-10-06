@@ -694,6 +694,15 @@ void writeChartProjection(IdentityByteWriter& writer, const CanonicalGameplayGra
             for (const auto& grade : component.declaredGradeTokens) {
                 writer.writeText(grade);
             }
+            if (component.gradeTable) {
+                writer.writeText("measure.signed-interval.v1");
+                writer.writeCount(component.gradeTable->size());
+                for (const auto& row : *component.gradeTable) {
+                    writer.writeText(std::to_string(row.minimum));
+                    writer.writeText(std::to_string(row.maximum));
+                    writer.writeText(row.grade);
+                }
+            }
         }
         writeRequiredRefs(writer, requirement.measure.required);
         writer.writeCount(requirement.resourceClaims.size());

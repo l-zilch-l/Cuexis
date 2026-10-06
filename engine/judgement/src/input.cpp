@@ -606,7 +606,9 @@ void SessionIngressState::reset() noexcept {
 namespace {
 auto buildNormalizedEntry(const InputMappingProfile& mapping, ObservationTick sessionClock,
                           const IngressDeclaration& declaration, ObservationId id,
-                          bool resolveDomains) -> core::Result<NormalizedObservationEntry> {
+                          bool resolveDomains,
+                          const std::optional<std::int64_t>* canonicalAmount = nullptr)
+    -> core::Result<NormalizedObservationEntry> {
     //  The mapping is re-validated here, so an entry on a mapping that validateInputMapping would
     //  refuse is a stable rejection rather than undefined behaviour.
     const auto mappingStatus = validateInputMapping(mapping);
@@ -648,7 +650,17 @@ auto buildNormalizedEntry(const InputMappingProfile& mapping, ObservationTick se
         if (!domain.has_value()) {
             return core::unexpected(domain.error());
         }
-        if (declaration.quantity) {
+        if (canonicalAmount && *canonicalAmount) {
+            const auto value = **canonicalAmount;
+            const auto& spec = (*domain)->amount;
+            if (value < spec.minimum || value > spec.maximum ||
+                (spec.boundaryPolicy == AmountBoundaryPolicy::exclusive &&
+                 (value == spec.minimum || value == spec.maximum))) {
+                return core::unexpected(declarationInvalidError(
+                    codes::kDomainTokenPath, "canonical amount outside declared range"));
+            }
+            amount = NormalizedAmount{{value, &spec}, (*domain)->domainToken};
+        } else if (!canonicalAmount && declaration.quantity) {
             const auto quantized = quantizeAmount((*domain)->amount, *declaration.quantity);
             if (!quantized) {
                 return core::unexpected(quantized.error());
@@ -683,8 +695,13 @@ auto buildNormalizedEntry(const InputMappingProfile& mapping, ObservationTick se
 
 auto detail::prepareIngressBatch(const SessionIngressState& state,
                                  const InputMappingProfile& mapping,
-                                 std::span<const ClockedIngress> batch, bool resolveDomains)
+                                 std::span<const ClockedIngress> batch, bool resolveDomains,
+                                 std::span<const std::optional<std::int64_t>> canonicalAmounts)
     -> core::Result<IngressJournal> try {
+    if (!canonicalAmounts.empty() && canonicalAmounts.size() != batch.size()) {
+        return core::unexpected(
+            declarationInvalidError(codes::kDomainTokenPath, "canonical amount count mismatch"));
+    }
     IngressJournal journal{
         {}, {}, state.lastObservedTick_, state.nextObservationId_, state.observationIdsExhausted_};
     journal.entries.reserve(batch.size());
@@ -708,8 +725,11 @@ auto detail::prepareIngressBatch(const SessionIngressState& state,
             return core::unexpected(
                 declarationInvalidError(codes::kDomainTokenPath, "unknown input action"));
         }
-        auto entry = buildNormalizedEntry(mapping, item.observationTick, item.declaration,
-                                          ObservationId{}, resolveDomains);
+        auto entry = buildNormalizedEntry(
+            mapping, item.observationTick, item.declaration, ObservationId{}, resolveDomains,
+            canonicalAmounts.empty()
+                ? nullptr
+                : &canonicalAmounts[static_cast<std::size_t>(&item - batch.data())]);
         if (!entry) {
             return core::unexpected(entry.error());
         }

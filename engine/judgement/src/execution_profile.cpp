@@ -294,11 +294,8 @@ auto makeExecutionTimers(const CanonicalGameplayGraph& g)
         }
         add(root, PreparedTimerKind::hardDeadline, *d);
     }
-    for (const auto& timer : timers) {
-        if (auto valid = cell(*g.latePolicy, timer.tick); !valid) {
-            return core::unexpected(valid.error());
-        }
-    }
+    // Timers are logical obligations, not ingress observations. Their actual boundary
+    // arithmetic was checked above. Future Hook visibility is checked only when emitted.
     std::sort(timers.begin(), timers.end(), [](const auto& a, const auto& b) {
         return std::tie(a.tick, a.kind, a.requirement, a.phase, a.windowStart, a.windowEnd) <
                std::tie(b.tick, b.kind, b.requirement, b.phase, b.windowStart, b.windowEnd);

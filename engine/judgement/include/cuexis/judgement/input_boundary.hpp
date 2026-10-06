@@ -111,8 +111,11 @@ struct OwnedIngressSubject final {
     std::string source;
 };
 struct IngressJournal;
+class ExecutionKernel;
 auto prepareIngressBatch(const SessionIngressState&, const InputMappingProfile&,
-                         std::span<const ClockedIngress>, bool) -> core::Result<IngressJournal>;
+                         std::span<const ClockedIngress>, bool,
+                         std::span<const std::optional<std::int64_t>>)
+    -> core::Result<IngressJournal>;
 auto reserveIngressBatch(SessionIngressState&, const IngressJournal&) -> core::Result<void>;
 void commitIngressBatch(SessionIngressState&, IngressJournal&&) noexcept;
 } // namespace detail
@@ -587,8 +590,10 @@ class SessionIngressState final {
     void reset() noexcept;
 
   private:
+    friend class detail::ExecutionKernel;
     friend auto detail::prepareIngressBatch(const SessionIngressState&, const InputMappingProfile&,
-                                            std::span<const ClockedIngress>, bool)
+                                            std::span<const ClockedIngress>, bool,
+                                            std::span<const std::optional<std::int64_t>>)
         -> core::Result<detail::IngressJournal>;
     friend auto detail::reserveIngressBatch(SessionIngressState&, const detail::IngressJournal&)
         -> core::Result<void>;

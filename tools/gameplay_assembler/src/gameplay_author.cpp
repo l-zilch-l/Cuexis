@@ -103,7 +103,7 @@ auto pattern(const dto::Pattern& d) -> PatternDeclaration {
 auto measure(const dto::Measure& d) -> MeasureSpecDeclaration {
     MeasureSpecDeclaration result{{}, refs(d.requiredRefs)};
     for (const auto& c : d.components) {
-        result.components.push_back({phase(c.phase), c.categoryToken, c.gradeTokens});
+        result.components.push_back({phase(c.phase), c.categoryToken, c.gradeTokens, {}});
     }
     return result;
 }

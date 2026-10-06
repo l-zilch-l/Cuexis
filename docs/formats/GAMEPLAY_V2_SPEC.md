@@ -2642,3 +2642,170 @@ S7A-3…S7A-9 仍未完成。**（第 1 轮、第 1 轮补充、第 2 轮、第 
 - [CXC Chart Entry Extension v1](CHART_ENTRY_V1_FORMAT.md)：Stage 6 candidate entry 边界
 - [音乐游戏玩法抽象模型](../architecture/GAMEPLAY_ABSTRACTION_MODEL.md)：共同语义基础
 - [Gameplay Judgement Spec](GAMEPLAY_JUDGEMENT_SPEC.md)：Gameplay I 历史候选基线（本 Spec 是其字段与运行语义的替代者；标注动作晚于三份 V2 文档冻结）
+
+## S7A-5/6 首用补充：J0 消费合同（2026-10-06）
+
+本节明确覆盖旧“待冻结”在本轮消费的表示；不接受业务默认数值或生产预算。
+组合B、R1/G2/N1/T2/S2/W2/E2/K2/B2保持，U01–U13采用重审推荐。
+
+### J0-5：有限 compiled registry 与事务
+
+首版 Interface `cuexis.ruleset.finite` revision `1`、compiled build
+`cuexis.finite-fold.1` 绑定实际编译实现，不接受 caller 自称另一 build。
+有序 manifest 必须为 score/1、combo/1、statistics/1，可追加 hook/1；每项 build 同上。
+本首版有效Loadout的支持字段为显式owning loadoutId，归session投影。
+ScoreConfiguration/ScoreRule/HookDeclaration是本finite Ruleset的显式有效配置，归ruleset投影；
+grade→score不能混入chart，Loadout值不能混入ruleset。
+programPolicy 为 locked/extendable/open；outcomeScope declared/extended，extended 仅 open。
+本版均只执行已声明 hit/miss；未知枚举拒绝。package/Life/step route 保持 capability_disabled。
+legacy t4-k4.v1 无 Ruleset 时 Fold absent，不能显示零分成功；有 Ruleset 时使用
+`gameplay.fold.finite.v1` 首用语义，其实际配置进入 ruleset/session identity。
+
+| module | readSet / 时点 | writeSet / reducer / trigger |
+| --- | --- | --- |
+| score | sealed phase-local Fact、旧 committed Fold bonus | i64 score；exclusive 单 owner，每工作 Tick 一次最终写；Fact/due |
+| combo | sealed phase-local Fact | u64 combo/maxCombo；exclusive；逐Fact保存峰值；Fact |
+| statistics | sealed phase-local Fact | u64 hits/misses；exclusive；ledgerDerivedCount 从成功 Fold 前缀重建；Fact |
+| hook | sealed phase-local Fact、声明常量 | u64 monoidValue，max或bit-or，单位元0、全u64闭合；规范贡献去重后合成；仅非空 phase Fact |
+
+Score 初值/min/max、checked或clamp、initialCombo、逐phase/outcome/optional-grade映射均必须显式提供。
+逐规范Fact检查：MAX,+1,-1在+1即checked失败；clamp先比较数学方向，禁止溢出后clamp。
+没有对应ScoreRule拒绝prepare；无grade匹配absent分支，不回退其它grade。
+
+MeasureComponent 的 optional `gradeTable` 由 chart 拥有：有序闭区间(minimum,maximum,grade)，
+engine 算法 signed-interval/1。无表所有profile合法，opaque tokens仍不是表。
+有表需端点有序/无交叠/无空洞，覆盖该phase实际可达 signed error，grade引用已声明token；
+允许多个区间引用同一grade。seal前只在真实error存在时求值一次；timer Miss等无error保持absent；真实body break Miss有error时按body表求grade。
+
+首版实际支持值型 `fold.bonus.u64`，consumer=Fold，读旧 committed view，值为u64，
+贡献键(moduleId,FactId,target,localOrdinal=0)，贡献者仅hook，按max/bit-or合成，
+同target每Tick只发布一个最终值，t+1安装到Fold候选。due零Fact仍消费，无Fact禁止再发future。
+Kernel/shared/step route尚无已闭合实际consumer，必须显式拒绝，禁止用visibility marker假装支持。
+未来增加真实kernel route时消费随seal；Fold-only消费仅随阶段2提交，失败旧Fold逐成员不变。
+producer不可变记录与consumer cursor独立；持久bonus不等于pending队列。
+仅实际输出时checked(t+1)；无输出INT64_MAX不检查t+1。
+
+新schema成员 reset/初值：Fold由显式配置初始化，counts/cursors/monoid/bonus为代数单位元0，
+workTick absent、produced空；所有状态session owner thread，query只读owning。
+Kernel watermark、kernelWorkTick、Fold workTick、sealedFactCursor、Fold factCursor、成功horizon、
+failedTick/requestedHorizon互相独立；空推进不伪造workTick。
+阶段2失败稳定 `ruleset.transaction_failed` / invalid_relation / faulted=true；
+旧Fold保留且已seal Fact留存，无fault Fact/新effect。
+
+最小人工预期：无表hit grade absent；[-2,-1]和[0,2]可同grade；显式缺口拒绝；
+checked MAX,+1拒绝；clamp MAX,+1,-1得到MAX-1；combo hit/hit/miss峰值2、末值0；
+Tick5输出bonus3在Tick6才安装，Tick6无Fact消费且不产生Tick7记录。
+
+## S7A-6 首用补充：J0-6 全量恢复与 W2（2026-10-06）
+
+U06–U12以重审为准。RecoveryInputs owning持有实际SessionConfiguration、有效PreparedRuleset和
+PreparedGameplay；重算四分量identity后取依赖，不能仅拿hash。独立restore不绑定历史。
+
+| owning族 | 完整成员 / 初值与读写 |
+| --- | --- |
+| Kernel | KernelProjection全部phases/resources/contacts/ownership/observers/receipts/Facts；matcher states/epsilonAttempted、coverageHistory、activeRequirements、timerCursor、nextCommitId/exhausted；由prepare初始化，工作Tick候选随seal发布 |
+| Ingress | accepted canonical key+sequence、自持有tokens、lastObservedTick、nextId/exhausted、admitted pending含dispatch/forwarding/admission frontier/horizon；初始空/absent/0/false，accepted batch原子提交 |
+| Fold | optional完整FoldProjection，包括Score/Combo/maxCombo/hits/misses/factCursor/workTick/produced/consumer cursor/bonus/monoid/ledgerDerived；阶段2原子提交；无Ruleset为absent |
+
+KernelProjection的runScope/session线程/指针不进入wire、identity或状态比较。fault包含code/category/severity/
+faulted和完整query状态；失败Evaluation不包含可恢复Snapshot。合法faulted DTO仅在显式new recovery保持faulted，
+faulted receiver禁止snapshot/Seek/就地restore。Snapshot stateSchemaRevision=1不进identity，
+FactSemantic标识属于engine。identity来源是实际prepared graph、mapping/timebase/late/config与实际compiled registry。
+
+canonical submit共用prepareIngressBatch的序列/碰撞/时间/ID检查，amount直接按canonical范围检查，
+不再除scale；sourceClass必须等于mapping。新Fold profile的live/canonical/Writer/Reader共同UTF8准入；
+不normalization合法token、不更改legacy准入。raw校准/量化拒绝不作canonical Replay证据。
+Replay record为accepted完整batch+复算admission或advance(H)+稳定终态+完整owning query anchor。
+record容量、outcome anchor在mutation前预留；发布/fault记录路径无编码buffer分配。
+
+Seek exact H按F(H)执行，不强制finalize H内输入；cut按journal位置，不按observationTick过滤。
+precut已接受future/sequence/lastObservedTick全部保留。partial control物化advance(H)，不与原大H故障比较；
+complete control必须逐字段对照全部结果。成功same-H control也保存；空submit无fork。
+候选健康才替换healthy receiver；原archive继续owning有效。首次accepted live或持久advance/fault发布
+惰性分支；仅预检失败不fork。checkpoint必须绑定archive内容、completeRecords/partialHorizon与H，
+首次从起点复算完整Snapshot后才进入缓存；失败从起点fallback。索引同时满足cut和horizon，
+独立restore无archive不能隐式Seek；外部archive须显式传入并校验。
+
+### W2 有序字节合同
+
+LE、无padding、不用native memcpy。u8 tag/bool/enum，u32 format/schema版本，u64 count/length/ID，
+i64 Tick/Score/error使用二补码。bool和optional presence只接受0/1，variant按C++声明顺序0起，
+enum按ABI声明顺序0起且Reader检查闭合集。UTF8 string=u64字节长+原始字节，无终止NUL；
+vector=u64个数+record顺序；optional=u8 presence+值；variant=u8 tag+record。
+所有length/count在转换和乘加前检查，element数量与剩余实际byte bounds交叉校验。
+
+Envelope：magic 8字节、formatVersion u32=1、kind u8(Replay=1/Snapshot=2)、payloadLength u64、
+payloadDigest u64（FNV-1a64，offset14695981039346656037，prime1099511628211）；随后payload。
+payload count包括section framing，envelope总字节另为29+payloadLength。未知version/tag/截断优先于
+摘要，摘要优先于identity/引用/全状态，摘要不证明语义或历史。
+
+| ordered section | framing和逐record成员（顺序即wire） |
+| --- | --- |
+| 1 header | sectionId u8=1 + length u64；四分量actual canonical identity bytes、FactSemantic string、stateSchema u32=1、eventCount u64、FactCount u64；规范化/late元数据由actual session identity及重新取得的配置逐字段验证；eventCodecId=canonical.discrete.le.v1 |
+| 2 Replay records | id=2+length；vector records：batch vector(key,sequence)、admission vector、horizon optional、result optional完整KernelProjection |
+| 2 Snapshot state | id=2+length；KernelProjection、matchers vector(states u64 vector,epsilon bool)、coverageHistory vector、activeRequirements u64 vector、timerCursor u64、nextCommitId u64、exhausted bool、IngressSnapshot(accepted vector,lastObservedTick optional,nextId u64,exhausted bool)、pending vector |
+
+key=observationTick i64/domain/source/channel string/action u8/amount optional i64；admission=
+key/dispatch i64/forwarded bool/frontier optional i64/horizon optional i64；CanonicalInput=key/sequence u64。
+RequirementIdentity依既有六元组顺序；Origin按Observation/Timer/Coordination声明tag与typed成员顺序；
+Candidate/Contact/Slot/Lease/Ownership/Fact/Phase/Resource/ObservationRecord/InputReceipt均按
+kernel_types.hpp具名成员声明顺序（不含runScope）；KernelProjection按该头声明顺序，identity在header
+校验后重新绑定且不重复写；fold按ruleset.hpp成员声明顺序。fault编码稳定code/message/context
+key-value vector/cause optional；禁止未提交delta。附加未知section与尾随bytes拒绝。
+
+解码预算状态pending与testOnly accepted fixtures分开；仅显式testOnly descriptor可声明数值，
+生产传入数值稳定拒绝；无已接受阈值时按实际输入字节有限界及受检count运行，不声称生产容量通过。
+人工bytes、重算摘要伪状态、版本/截断/UTF8/count、完整结果偏差与历史错绑是J6/J7证据，
+本合同不是实现完成或容量接受。
+
+
+### J0-6 接受面补齐
+
+faultStage为u8 kernel/fold/control，随稳定诊断进入完整结果及wire，不进identity；healthy必须absent。
+coverageHistory必须逐项等于成功head Fact派生的contact/lease/acquiredTick历史；不能清空后恢复。
+Ingress accepted保留全部历史，初始ID=0且连续分配，因此nextId严格等于accepted数量、
+可表示的载体exhausted=false；任意seed跳号或自称exhausted不属于生产Snapshot接受面。
+full cut的最后完整advance必须为目标H，partial checkpoint不得替代cut中的控制记录。
+checkpoint优化不得改变无checkpoint时的接受/拒绝与结果。
+Reader完成结构/摘要/identity校验后，accepted batch通过同一canonical入口及admission复算；
+header eventCount必须等于全部accepted batch总数。完整终态比较由ReplayEvaluation执行，
+带注入故障的源结果仍需同注入环境，不将结构合法等同执行等价。
+
+
+StatisticsCount的规范键为(phase,outcome,optional grade)，u64 count，覆盖全部显式ScoreRule键；
+prepare初值全部0，按键排序；不存在的映射仍prepare拒绝，不动态补业务默认值。
+FoldProjection另有u64 strayCount/consumeEmptyCount初值0，从真实receipt Fact计数。
+各计数与score/combo统一阶段2提交、受检+1；全字段进入query/Snapshot/W2/full Replay比较。
+wire在FoldProjection既有ledgerDerivedCount之后追加counts vector、strayCount、consumeEmptyCount。
+Snapshot kernel闭包从prepare与真实receipt dispatch重执行至同watermark，验证所有kernel投影和matcher，
+H由watermark+windowCloseThreshold计算；finalizationWatermark是输入final界，不可替代该close间隔。
+ScoreRule是唯一映射集合，prepare按(phase,outcome,grade)规范排序，数组置换不改变身份/初始统计；
+模块manifest仍是有序声明，重排不被registry默许。
+
+
+### 首用诊断登记
+
+本轮codec码均category=invalid_relation、severity=error、faulted=false；完整原因随Core Error owning保存。
+`codec.magic_invalid/version_unsupported/section_invalid/tag_invalid/truncated/length_invalid/trailing_bytes/utf8_invalid`
+登记载体结构/版本/tag/bounds/编码拒绝；`codec.digest_mismatch`登记摘要；
+`codec.identity_mismatch/count_mismatch/record_invalid`登记依赖/count/canonical admission；
+`codec.budget_unaccepted`登记生产数值预算未接受，`codec.budget_exceeded`仅testOnly已接受fixture超限；
+`codec.allocation_failed`登记预发布存储失败。
+Ruleset的`registry_invalid/configuration_invalid/hook_invalid`为prepare拒绝，
+`ruleset.package_unsupported`与`capability.disabled`保留明确拒绝面；运行Fold
+`ruleset.transaction_failed`保存faulted=true及faultStage=fold，与seal前kernel故障分开。
+Replay/Seek/Snapshot闭包仍复用`judgement.s7a4.execution.relation_invalid`，
+依赖缺失用`judgement.s7a4.execution.profile_incomplete`（identity_closure_incomplete）；
+不新增capability，不把普通结构拒绝冒充业务预算。
+
+
+Fold bonus consumer把u64 bonus作为数学非负增量加到i64 score；不先窄化成i64。
+真实反例：bonus=UINT64_MAX且score=4，clamp应取显式maximum，不能按“窄化失败”Fault；
+score=INT64_MIN加UINT64_MAX则数学结果INT64_MAX，checked必须允许。
+先比较u64增量与数学可用空间(MAX-score)，随后以受检表示取得结果，再应用声明范围/策略。
+无效min>max或未知算术策略先拒绝，任何clamp调用均满足范围前提。
+
+
+U05真实极值出口：显式合法close=0使F(MAX)=MAX，观测选MAX−12以满足完整cell，
+已Hit的deadline MAX无Fact不产生Hook而成功；无输入的deadline MAX产生真实Miss，
+Hook的MAX+1检查失败，保留seal后的Fact与旧Fold。默认close=3的MAX horizon仍保留MAX deadline pending。
