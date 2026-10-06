@@ -176,7 +176,7 @@ Playback         -> 直接读 CXT AST 或在运行期展开 Pattern
 **状态：五项全部已决定（2026-10-02，编号 S1-04，owner 已接受）。** 登记依据：owner 于 2026-10-02
 接受 Codex（`gpt-6-astra`，hard / medium，verdict `reject`，confidence 0.94，thread
 `s7a1-admission-rulings`）修订后的处置，即**方案 A**；这正是
-[Stage 7A typed contract review](../../stage_reports/stages/stage-07/2026-10-02-s7a-1-typed-contract-review.md)
+[Stage 7A typed contract review](../../stage_reports/stages/stage-07/readiness/2026-10-02-s7a-1-typed-contract-review.md)
 F-12 指出的"未登记到任何裁定轮次"的五项前置。
 
 | §9 项 | 原待决问题（逐字摘要） | 决策（2026-10-02，S1-04） | 依据 / 落点 |

@@ -24,7 +24,7 @@
 代码行为基线是 `a0c8b7e4f783995bc19e626f3654ab11f845a0a7`；包含本接手文档的Git提交为规划锚点。
 开始前读git status/log、核对基线仍为当前HEAD的祖先；不要为了匹配a0c8b7e而丢弃后续文档或用户改动。
 S7A-3/4已完成受限功能验收；同源head SHA的7个CI runs成功，详见
-[hosted/归档证据](../../stage_reports/stages/stage-07/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
+[hosted/归档证据](../../stage_reports/stages/stage-07/handoffs/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
 SDK0.7.0、build26.10.05-1；容量整体保持S7A-9 INCOMPLETE GATE。
 当前judgement模块仍是internal，不能由本批改成默认安装SDK产品入口。
 
@@ -35,7 +35,7 @@ SDK0.7.0、build26.10.05-1；容量整体保持S7A-9 INCOMPLETE GATE。
    [V2 ABI](../../api/GAMEPLAY_V2_ABI.md) 域5–7和S7A-5限定冻结范围。
 3. [execution profile](../../formats/gameplay-v2-execution-profile.md)、
    [execution types](../../api/gameplay-v2-execution-types.md)、
-   [第5轮裁定](../../stage_reports/stages/stage-07/2026-10-03-s7a-5-6-gate-rulings.md)。
+   [第5轮裁定](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-5-6-gate-rulings.md)。
 4. [kernel类型](../../../engine/judgement/include/cuexis/judgement/kernel_types.hpp)、
    [session接口](../../../engine/judgement/include/cuexis/judgement/judgement_session.hpp)、
    [kernel实现](../../../engine/judgement/src/execution_kernel.cpp) 和既有独立S1/L2测试。
@@ -156,7 +156,7 @@ Life/correction/package输入、配置与identity不匹配；失败不替换旧p
 ## 5. 本机证据与临时目录
 
 先前3/4的raw logs、XML、manifest、脚本及CI JSON已迁出临时目录；位置、hash和清理清单见
-[hosted与归档报告](../../stage_reports/stages/stage-07/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
+[hosted与归档报告](../../stage_reports/stages/stage-07/handoffs/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
 out/build仍保留可复用构建/依赖缓存；清理不要求每次删除vcpkg或全量重建依赖。
 WSL Clang直接配置曾使用Linux专用prefix，与Windows包不可混用；重用前查CMakeCache/toolchain，
 重配命令可从证据ZIP恢复，或按现行Linux preset fresh配置，不能据旧build目录名猜环境。

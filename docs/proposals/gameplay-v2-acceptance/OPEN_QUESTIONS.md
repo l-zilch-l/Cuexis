@@ -54,7 +54,7 @@
 **provenance。** 决策卡 thread `s7a1-freeze-bindings`，verdict `adopt`，confidence 0.99，日期 2026-10-03，
 模型 `gpt-6-astra`；补充确认卡 thread `cm-x01-disposition`（`CM-X01` 保持 `open`，不改计数），verdict
 `adopt`，confidence 0.99，2026-10-03。带日期的落地证据见
-[第 2 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-2-gate-rulings.md)。**本小节只登记裁定
+[第 2 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-2-gate-rulings.md)。**本小节只登记裁定
 结果，不改写 §1–§5 表中 2026-10-02 的原始证据文字。**
 
 | 编号 | 涉及合同项 | 裁定（第 2 轮，2026-10-03） | 落点 |
@@ -85,7 +85,7 @@ thread `s7a1-freeze-bindings` 的两张续裁卡（verdict 均 `adopt`，confide
 **不是**默认单位或可用 profile）与 **Tick → Beat 反查**契约（不得返回单一 Beat，登记为首次消费该反查的
 后续批次阻塞项）。**上表第 2 轮的原始裁定文字保留不改**；修订不改变任何计数（`open` 仍 14、§7.2 仍
 19 条、§9.2 仍九类）。落点：Spec §3.7.2 / §3.7.4 第 5 条 / §3.7.7 表 / §9.3；带日期证据见
-[第 2 轮实现裁定记录](../../stage_reports/stages/stage-07/2026-10-03-s7a-2-implementation-rulings.md)。
+[第 2 轮实现裁定记录](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-2-implementation-rulings.md)。
 
 ## 3. P1：不阻塞最小内核，但会重复改写（15 条）
 
@@ -113,7 +113,7 @@ provenance：三张 Codex 决策卡来自同一话题 thread `s7a3-prepare-rulin
 主裁定卡 verdict `need_info`、confidence 0.8（本轮 5 条裁定与规范字节边界）；补答 `CM-X05` 的卡 verdict
 `reject`、confidence 0.88；计数一致性确认卡 verdict `adopt`、confidence 0.99。三张卡的文件名时间戳为
 2026-10-02T19:4xZ（UTC），统一按**本地日期 2026-10-03** 登记（与第 2 轮先例一致）。带日期的落地证据见
-[第 3 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-3-gate-rulings.md)。**本小节只登记裁定
+[第 3 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-3-gate-rulings.md)。**本小节只登记裁定
 结果，不改写 §1–§5 表中 2026-10-02 的原始证据文字。**
 
 | 编号 | 涉及合同项 | 裁定（第 3 轮，2026-10-03） | 落点 |
@@ -156,7 +156,7 @@ consult）：主裁定卡 verdict `adopt`、confidence 0.97（本轮六项裁定
 coordinator）；处置词与计数确认卡 verdict `adopt`、confidence 0.99（`CM-C05` / `CM-C09` 均 `open` →
 `accept`；最终 `open` 14 / `accept` 38；总数仍 114）。两张卡的文件名时间戳为 2026-10-02T20:0xZ（UTC），
 本轮统一按**本地日期 2026-10-03** 登记（与第 2、3 轮先例一致）。带日期的落地证据见
-[第 4 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-4-gate-rulings.md)。**本小节只登记裁定
+[第 4 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-4-gate-rulings.md)。**本小节只登记裁定
 结果，不改写 §1–§5 表中 2026-10-02 的原始证据文字**（`Q-03` / `Q-11` / `Q-16` 三行仅在"必须决定的批次"
 列追加裁定指针）。
 
@@ -188,7 +188,7 @@ proof 编码、wire / serialization、`terminal` 编码、后续 `gap` / handoff
 verdict `adopt`、confidence 0.98（9 行状态格首词全部保持 `待冻结`；**126 = 96 + 30** 不变；**不新增
 §未决项 #21、不新增 §类型清单条目**）。三张卡的文件名时间戳为 2026-10-02T20:2x–20:3xZ（UTC），统一按
 **本地日期 2026-10-03** 登记（与第 2、3、4 轮先例一致）。带日期的落地证据见
-[第 5 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-5-6-gate-rulings.md)。**本小节只登记裁定
+[第 5 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-5-6-gate-rulings.md)。**本小节只登记裁定
 结果，不改写 §1–§3 表中 2026-10-02 的原始证据文字**（`Q-08` / `Q-12` / `Q-13` / `Q-17` 四行仅在"必须决定的
 批次"列追加裁定指针；`P1-07` / `P1-14` 两行只在未决点列追加指针）。
 
@@ -229,7 +229,7 @@ verdict `adopt`、confidence 0.98（9 行状态格首词全部保持 `待冻结`
 模型 `gpt-6-astra`，consult），verdict 均为 `adopt`，confidence **0.97**（6 处语义裁量）与 **0.99**（两处
 死令牌与措辞对齐）；文件名时间戳为 2026-10-02T20:4xZ（UTC），按第 2、3、4、5 轮先例统一按**本地日期
 2026-10-03** 登记。带日期的落地证据见
-[第 2 轮输入半批实现裁定记录](../../stage_reports/stages/stage-07/2026-10-03-s7a-2-input-implementation-rulings.md)。
+[第 2 轮输入半批实现裁定记录](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-2-input-implementation-rulings.md)。
 **本小节只登记裁定结果，不改写 §1–§5 表中 2026-10-02 的原始证据文字**（相关行的 2026-10-02 原文保留，
 只在行内附裁定指针）。
 
@@ -258,7 +258,7 @@ verdict `adopt`、confidence 0.98（9 行状态格首词全部保持 `待冻结`
 为 `open` **5** / `accept` **47**，总数仍 114——**第 7 轮（见 §4.5）再把残余五条 `CM-V*` 补齐为 `accept`，
 最终 `open` 0 / `accept` 52**）。卡的文件名时间戳为 2026-10-02T20:51:47.167Z（UTC），统一按**本地日期
 2026-10-03** 登记（与第 2、3、4、5 轮先例一致）。带日期的落地证据见
-[第 6 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-6-gate-rulings.md)。**本小节只登记裁定
+[第 6 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-6-gate-rulings.md)。**本小节只登记裁定
 结果，不改写 §1–§3 表中 2026-10-02 的原始证据文字**（`Q-06` / `Q-09` / `Q-15` / `Q-19` 四行只在"必须
 决定的批次"列追加裁定指针，其余各行不动）。
 
@@ -303,7 +303,7 @@ verdict `adopt`、confidence 0.99，2026-10-03）已确认该映射成立**（�
 （同议题小追问：三处计数 / 编号口径）thread `01a0fe61-3476-7882-9674-5f6b05035237`，verdict **`adopt`**，
 confidence **0.99**。卡的文件名时间戳为 2026-10-02T20:52:37.188Z 与 2026-10-02T21:08:34.383Z（UTC），统一按
 **本地日期 2026-10-03** 登记。带日期的落地证据见
-[第 7 轮收尾裁定与缺陷处置记录](../../stage_reports/stages/stage-07/2026-10-03-s7a-7-wrapup-rulings.md)。
+[第 7 轮收尾裁定与缺陷处置记录](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-7-wrapup-rulings.md)。
 **本小节只登记裁定结果，不改写 §1–§3 表中 2026-10-02 的原始证据文字。**
 
 第 7 轮共 **16 行 / 18 项**，编号 `S7A7-R01…R16`：
@@ -355,7 +355,7 @@ confidence **0.99**。卡的文件名时间戳为 2026-10-02T20:52:37.188Z 与 2
 `2026-10-02T21:03:39.462Z`（UTC），按先例统一按**本地日期 2026-10-03** 登记。**本卡是第 6 轮
 `CM-D04` / `P1-09` 首次消费的后续补齐，不是新的裁定轮次**，因此本小节**不新增轮次行、不改动任何既有
 计数**。带日期的落地证据见
-[第 6 轮诊断分类学后续补齐记录](../../stage_reports/stages/stage-07/2026-10-03-s7a-diagnostics-taxonomy-rulings.md)。
+[第 6 轮诊断分类学后续补齐记录](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-diagnostics-taxonomy-rulings.md)。
 **本小节只追加登记，不改写 §1–§4 表中 2026-10-02 / 2026-10-03 的既有文字与计数。**
 
 | 条目 | 涉及项 | 裁定（第 6 轮首次消费后续补齐，2026-10-03） | 落点 / 首次消费 |
@@ -388,7 +388,7 @@ confidence **0.99**。卡的文件名时间戳为 2026-10-02T20:52:37.188Z 与 2
 | D-6 | Stage 6 交付报告对 `tools/check_stage6_a2.py` 的行号引用与实际不符 | 报告写 `:252`，实际 token 在 `:259` | 在引用处加订正注记，不改写历史报告正文 |
 | D-7 | 计划 §1.2 第 3 行把交接项描述为"对 load/play/pause/stop/seek/reload 的交接回归"，但该动词集在实现中不存在 | 同 D-2 | 同 D-2 |
 | D-8 | 构建系统现状缺口：`cuexis_media_import_tests` 在 active 列表中但无 `cuexis_verify_target_dependencies` 调用 | 根 `CMakeLists.txt` active 段与 allowlist 段 | 登记为独立小缺陷，在 S7A-1 的 allowlist 批次内补齐（不属 Gameplay 语义） |
-| D-9 | 版本门禁自检的 shell 守卫不覆盖"WSL 启动器名为 `bash.exe`"：`usable_posix_shell()` 只按名字含 `wsl` 排除 shim | S7A-0 基线实测：默认 `PATH` 下 `ctest` 失败 1 项（`cuexis_contract_version_gate`），把 Git Bash 置于 `PATH` 首位后 19/19 通过；详见 [S7A-0 基线报告](../../stage_reports/stages/stage-07/2026-10-02-s7a-0-baseline.md) §4.2 | **方案已裁决**（Codex `adopt`，confidence 0.98）：采用"视图一致性探针 + 显式拒绝 `System32\bash.exe` + 独立负例"。**候选补丁已在工作区就绪但未提交**，验证见 [D-9 候选补丁证据](../../stage_reports/stages/stage-07/2026-10-02-d9-shell-guard-candidate.md)。剩余动作属 owner：按 ADR 0042 具名复核后落到 `master`（可信基线前置），再于 S7A-8 消费 |
+| D-9 | 版本门禁自检的 shell 守卫不覆盖"WSL 启动器名为 `bash.exe`"：`usable_posix_shell()` 只按名字含 `wsl` 排除 shim | S7A-0 基线实测：默认 `PATH` 下 `ctest` 失败 1 项（`cuexis_contract_version_gate`），把 Git Bash 置于 `PATH` 首位后 19/19 通过；详见 [S7A-0 基线报告](../../stage_reports/stages/stage-07/readiness/2026-10-02-s7a-0-baseline.md) §4.2 | **方案已裁决**（Codex `adopt`，confidence 0.98）：采用"视图一致性探针 + 显式拒绝 `System32\bash.exe` + 独立负例"。**候选补丁已在工作区就绪但未提交**，验证见 [D-9 候选补丁证据](../../stage_reports/stages/stage-07/readiness/2026-10-02-d9-shell-guard-candidate.md)。剩余动作属 owner：按 ADR 0042 具名复核后落到 `master`（可信基线前置），再于 S7A-8 消费 |
 
 | D-10 | 本 package §2.1 的文档动作清单把 `CHART_V5_GAMEPLAY_AMENDMENT.md` 写成 `docs/formats/` 下的路径，但该文件唯一存在的路径是 `docs/proposals/research/gameplay-v2/CHART_V5_GAMEPLAY_AMENDMENT.md` | `README.md` §2.1 第 63 行（已订正）vs 同包 `CONTRACT_MATRIX.md` 第 231 行的正确相对路径；全仓库 `glob **/CHART_V5_GAMEPLAY_AMENDMENT.md` 仅一处命中 | 路径引用已修正；缺陷本身与 D-5 同属"引用规范"类，建议合并登记。**轮次归属随第 1 轮的 Codex 裁决确定** |
 | D-11 | 稳定 C ABI 的归属阶段在仓库内不一致 | `AGENTS.md` 第 21、260 行写 **Stage 12**；`docs/ROADMAP.md` 第 49 行与 `docs/stage_plans/active/stage-07/plan.md` 第 836 行写 **Stage 14**；`docs/adr/0043-…` 第 120 行、`docs/api/GAMEPLAY_JUDGEMENT_ABI.md` 第 8 行、`docs/formats/GAMEPLAY_JUDGEMENT_SPEC.md` 第 148 行也写 Stage 14 | 以 **Stage 14** 为准（当前阶段计划 + ROADMAP + ADR 三处一致，`AGENTS.md` 为孤例），登记为文档一致性缺陷；**不改 `AGENTS.md`**（它受 `check_docs.py` 的必备/禁用片段校验约束，且不属本次冻结范围），由 owner 决定何时订正上游指引 |

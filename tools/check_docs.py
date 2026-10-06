@@ -60,6 +60,7 @@ DIRECTORY_INDEXES = (
     "stage_reports/stages/stage-05/README.md",
     "stage_reports/stages/chart-format-foundation/README.md",
     "stage_reports/stages/stage-06/README.md",
+    "stage_reports/stages/stage-07/README.md",
 )
 STAGE_NAVIGATION_INDEXES = {
     "stage_plans/README.md",
@@ -71,6 +72,7 @@ STAGE_NAVIGATION_INDEXES = {
     "stage_reports/stages/stage-05/README.md",
     "stage_reports/stages/chart-format-foundation/README.md",
     "stage_reports/stages/stage-06/README.md",
+    "stage_reports/stages/stage-07/README.md",
 }
 ROOT_DOCUMENTATION_FILES = {
     "README.md",

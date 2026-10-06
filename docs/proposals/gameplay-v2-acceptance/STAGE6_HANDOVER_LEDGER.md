@@ -215,7 +215,7 @@
 - **S7A-0 基线实测**：该 CTest 项在默认 `PATH` 下**失败 1/19**，原因是 `bash` 解析到 WSL 启动器
   （`C:\Windows\system32\bash.exe`）而 `usable_posix_shell()` 只按文件名含 `wsl` 排除 shim；
   把 Git Bash 置于 `PATH` 首位后 19/19 通过。证据与复现见
-  [S7A-0 基线报告](../../stage_reports/stages/stage-07/2026-10-02-s7a-0-baseline.md) §4.2，缺陷编号 D-9。
+  [S7A-0 基线报告](../../stage_reports/stages/stage-07/readiness/2026-10-02-s7a-0-baseline.md) §4.2，缺陷编号 D-9。
   本项**不阻塞 S7A-0**，但 S7A-8 的同 SHA 回归必须先消除该环境噪声。
 - Version Gate 工作流：`pre-merge`、`post-merge-audit`、`historical-revalidation`。
 

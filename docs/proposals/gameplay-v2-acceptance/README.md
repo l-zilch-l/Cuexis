@@ -2,7 +2,7 @@
 
 状态：active
 
-owner 接受：2026-10-02（记录见 [S7A-0 接受记录](../../stage_reports/stages/stage-07/2026-10-02-s7a-0-acceptance.md)）
+owner 接受：2026-10-02（记录见 [S7A-0 接受记录](../../stage_reports/stages/stage-07/readiness/2026-10-02-s7a-0-acceptance.md)）
 更新日期：2026-10-05
 
 上级文档：[Stage 7A 实施计划](../../stage_plans/active/stage-07/plan.md) ·
@@ -17,7 +17,7 @@ owner 接受：2026-10-02（记录见 [S7A-0 接受记录](../../stage_reports/s
 - [ADR 0043](../../adr/0043-gameplay-judgement-ruleset-convergence.md)、
   [Gameplay Judgement Spec](../../formats/GAMEPLAY_JUDGEMENT_SPEC.md) 与
   [Gameplay Judgement ABI](../../api/GAMEPLAY_JUDGEMENT_ABI.md) 的权威状态只能按
-  [接受记录](../../stage_reports/stages/stage-07/2026-10-02-s7a-0-acceptance.md) §4 的冻结顺序改动
+  [接受记录](../../stage_reports/stages/stage-07/readiness/2026-10-02-s7a-0-acceptance.md) §4 的冻结顺序改动
   （先建 V2 文档、后标注替代关系），不得零散改动；
 - 在 P0 未全部裁定前，仍不得进入公共头或产品实现批次（计划 §1.1）；
 - 本 package 的任何内容都不得被表述为"已实施"或"生产合同"；V2 文档在冻结完成前同样保持 candidate。
@@ -44,9 +44,9 @@ owner 接受：2026-10-02（记录见 [S7A-0 接受记录](../../stage_reports/s
 ## 2. 接受清单（acceptance checklist）
 
 下表是接受过程与逐轮裁定记录，不拥有当前实施状态。2026-10-04 的 S7A-3 设计收口见
-[设计报告](../../stage_reports/stages/stage-07/2026-10-04-s7a-3-design-closure.md)；
+[设计报告](../../stage_reports/stages/stage-07/implementation/2026-10-04-s7a-3-design-closure.md)；
 2026-10-05 对已有实现、当前 SHA hosted 与实际余项的核对见
-[剩余证据报告](../../stage_reports/stages/stage-07/2026-10-05-s7a-3-remaining-evidence.md)；
+[剩余证据报告](../../stage_reports/stages/stage-07/verification/2026-10-05-s7a-3-remaining-evidence.md)；
 局部实现与未完成验收以 [CURRENT_STATUS](../../CURRENT_STATUS.md) 为准。
 
 owner 接受本 package 时，请逐条确认：
@@ -58,7 +58,7 @@ owner 接受本 package 时，请逐条确认：
 | A3 | 7A 只交付 [SUPPORT_AND_REJECTION_MATRIX.md](SUPPORT_AND_REJECTION_MATRIX.md) §2 支持集合内的能力，其余按 19 条拒绝清单稳定拒绝 | 已接受 |
 | A4 | 15 条 P0 与 4 条追加未决逐条裁定（接受 / 修改后接受 / 拒绝 / 登记阻塞） | **已裁定并登记（第 1–7 轮全部已完成）**（[RULING_WORKSHEET.md](RULING_WORKSHEET.md) 的 7 轮协议）：第 1 轮 2026-10-02；第 2 轮 2026-10-03 时间域与迟到策略；第 3 轮 2026-10-03 prepare、装配与 entry；第 4 轮 2026-10-03 仲裁、资源与事实序；第 5 轮 2026-10-03 Ruleset、事实序、Score 与 Snapshot；第 6 轮 2026-10-03 发布粒度、表现桥接与诊断；第 7 轮 2026-10-03 收尾澄清与缺陷（16 行 / 18 项、`S7A7-R01…R16`）。**无待裁定轮次；`open` 集合为空（0 项）**。**裁定完成不等于实现完成**（本表不重新定义实施状态；`D-9` owner-only、`D-12` 待 owner 确认） |
 | A5 | 9 条新发现缺陷（D-1…D-9）的处置方式 | 已接受：D-1 已订正；D-3/D-4/D-8 在第 1 轮；D-2/D-5/D-6/D-7/D-9 在第 7 轮（另 `D-10` 随第 1 轮、`D-11`/`D-12`/`D-13`/`D-14` 在第 7 轮） |
-| A6 | 旧 Gameplay I 三份合同的处置映射（第 3 节） | 已接受（执行时点见[接受记录](../../stage_reports/stages/stage-07/2026-10-02-s7a-0-acceptance.md) §4） |
+| A6 | 旧 Gameplay I 三份合同的处置映射（第 3 节） | 已接受（执行时点见[接受记录](../../stage_reports/stages/stage-07/readiness/2026-10-02-s7a-0-acceptance.md) §4） |
 | A7 | 四项 Stage 6 交接收口的本阶段目标与例外 | 已接受（只确认目标，不解除关闭前置） |
 | A8 | Gameplay 运行时预算在 S7A-9 前保持未冻结，只提供计数与报告 | 已接受 |
 | A9 | 接受后按 §2.1 执行文档编辑，并建立独立的 V2 ADR / Spec / typed ABI | 已接受，执行中 |
@@ -149,7 +149,7 @@ confidence 0.99；补充确认卡 thread `cm-x01-disposition`，verdict `adopt`�
 保持 `open`、不改计数）；因此 `open` 合同项由 21 降为 **18**（`CM-T03`、`CM-T04`、`CM-T08` 转为 `accept`）。
 该轮的 7 条裁定**全部登记为阻塞 S7A-2 的门禁**；**具体 late-policy 数值、具体业务量程限额、S7C-1 校准
 扩展与连续输入能力**登记为**后续批次阻塞项**（不是 S7A-2 门禁）。带日期证据见
-[第 2 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-2-gate-rulings.md)。
+[第 2 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-2-gate-rulings.md)。
 **第 2 轮语义在实现复核后被修订（2026-10-03，同 thread 两张续裁卡，verdict `adopt`，confidence 0.98 /
 0.99）**：`stop` 模型由"比例替换"修订为**塌缩 / 跳变 + 精确累计函数**（`tick(beat) =
 roundHalfToEven(F(beat))`，只舍入一次，区间内非单射，半开方向正向 `(originBeat, beat]` / 负向
@@ -157,7 +157,7 @@ roundHalfToEven(F(beat))`，只舍入一次，区间内非单射，半开方向�
 （**阻塞 S7A-4 的 late-window / 判定消费门禁**，数值与限额仍记 **S7A-9**）与 Tick → Beat 反查阻塞项
 （首次消费该反查的后续批次；`S7A-3` / `S7A-4` / `S7A-5` 均不消费它）；**`open` 计数不变，仍 14**，六类
 处置词与总数 114 不变。带日期证据见
-[第 2 轮实现裁定记录](../../stage_reports/stages/stage-07/2026-10-03-s7a-2-implementation-rulings.md)。
+[第 2 轮实现裁定记录](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-2-implementation-rulings.md)。
 
 **第 3 轮（prepare、装配与 entry；进入 S7A-3 前）已于 2026-10-03 裁定**：Q-05、Q-07、Q-18、CM-C10 / P1-03
 共 6 行（含 `P2-10` 的重述行）落地，`CM-X05` 由 D-3 落地关闭（处置词 `open` → `revise`，**不是** `accept`），
@@ -169,7 +169,7 @@ roundHalfToEven(F(beat))`，只舍入一次，区间内非单射，半开方向�
 `boundedRelationInstance` 候选表示与 [SUPPORT §6.1](SUPPORT_AND_REJECTION_MATRIX.md) 的 `W-01…W-05` 候选项
 只阻塞**首次拟消费它**的后续批次。`CM-X05` 在本批次门禁清单中标为"D-3 已关闭；仅具体 W 缺口在首次消费前
 须完成登记"。带日期证据见
-[第 3 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-3-gate-rulings.md)。
+[第 3 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-3-gate-rulings.md)。
 
 **第 4 轮（仲裁、资源与事实序；进入 S7A-4 前）已于 2026-10-03 裁定**：Q-03、Q-11、Q-16、CM-C05、CM-C09
 与 P1-12 共 6 行落地（`CM-C05` 随 `Q-16`、`CM-C09` 随 `Q-11` 一并关闭），`CM-C05`、`CM-C09` 处置词
@@ -189,7 +189,7 @@ deadline 产生 Fact、Hold head/body/tail error 不合并）。该轮的 6 行�
 wire / serialization、`terminal` 编码与后续 `gap` / handoff / `capacity > 1` 语义**登记为**首次消费它们的
 后续批次**阻塞项（数值与默认列表记 S7A-9）。`CM-C04`、`CM-C06`、`CM-C07` 的处置词**不变**（`revise` /
 `revise` / `accept`），只更新未决点文字。带日期证据见
-[第 4 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-4-gate-rulings.md)。
+[第 4 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-4-gate-rulings.md)。
 
 **第 5 轮（Ruleset、事实序、Score 与 Snapshot；进入 S7A-5 / S7A-6 前）已于 2026-10-03 裁定**：Q-08、CM-S02、
 Q-17、CM-S08、Q-12、Q-13、CM-K01、CM-K07、CM-K08、CM-F06、CM-S10 / P1-07、CM-S11 与 P1-14 共 13 行落地
@@ -218,7 +218,7 @@ grade 可选且缺失即 absent / `TimingError` 为有符号整数 tick 差 / �
 的后续阻塞项（`RULING_WORKSHEET §8` 的 `open` 由 14 降为 **10**，`§0.1` 合计行的末列仍为 **21**）。`CM-S02`、
 `CM-K01` 的处置词**不变**（均仍为 `revise`），只更新未决点文字；`CM-S11`、`CM-K08` **不是** CONTRACT_MATRIX
 的行、不改变任何计数。带日期证据见
-[第 5 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-5-6-gate-rulings.md)。
+[第 5 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-5-6-gate-rulings.md)。
 
 **第 6 轮（发布粒度、表现桥接与诊断）已于 2026-10-03 裁定**：Q-06、Q-19 + `CM-X01`、Q-09 + `CM-P04`、
 Q-15 + `CM-P06` / `P1-13`、`CM-P08` / `P1-11`、`CM-D04` / `P1-09`、`P1-08`、`P2-04`、`P2-05`、`P2-06`、
@@ -231,7 +231,7 @@ Q-15 + `CM-P06` / `P1-13`、`CM-P08` / `P1-11`、`CM-D04` / `P1-09`、`P1-08`、
 （总数仍 **114**），`§0.1` 合计行仍 **76 行 / 84 项 / 末列 21**、§7.2 仍 **19 条**。**`CM-V06`、`CM-V07`、
 `CM-V13`、`CM-I06`、`CM-X06` 五条 `open` 本轮不改处置词**（其自相矛盾由第 7 轮单独裁定）。
 **本轮只冻结文档合同与门禁，不表示 Judgement 实现完成或 Stage 7A 完成。** 带日期证据见
-[第 6 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-6-gate-rulings.md)。
+[第 6 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-6-gate-rulings.md)。
 
 **第 7 轮（收尾澄清与缺陷）已于 2026-10-03 裁定**：`P1-01`、`P1-02`、`P1-05`、`P1-06`、`P1-10`、`P1-15`、
 `P2-02`、`P2-07` 与缺陷 `D-2 / D-7`、`D-5`、`D-6`、`D-9`、`D-11`、`D-12`、`D-13`、`D-14` 共
@@ -252,7 +252,7 @@ Q-15 + `CM-P06` / `P1-13`、`CM-P08` / `P1-11`、`CM-D04` / `P1-09`、`P1-08`、
 **`D-12` 待 owner 确认**（本轮只登记、不编辑研究稿的 8 处指向行）。**第 7 轮之后无待裁定轮次。**
 **本轮只冻结文档合同与门禁，不表示 Judgement 实现完成或 Stage 7A 完成**（实现批次 S7A-3…S7A-9 仍未完成）。
 带日期证据见
-[第 7 轮收尾裁定与缺陷处置记录](../../stage_reports/stages/stage-07/2026-10-03-s7a-7-wrapup-rulings.md)。
+[第 7 轮收尾裁定与缺陷处置记录](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-7-wrapup-rulings.md)。
 
 除 7 轮清单本身外，还有一类未决点不在 Q/P/D 编号体系内：ABI 的 30 条 `待冻结` 中有 16 条
 （13 条无任何裁决编号、3 条的编号未绑轮次）缺可追溯的阻塞批次。[FREEZE_BLOCKING_BINDINGS.md](FREEZE_BLOCKING_BINDINGS.md)
@@ -261,7 +261,7 @@ Q-15 + `CM-P06` / `P1-13`、`CM-P08` / `P1-11`、`CM-D04` / `P1-09`、`P1-08`、
 第 5 轮表行）。该绑定由 Codex 于 2026-10-03 裁决（thread `s7a1-freeze-bindings`，verdict `adopt`，
 confidence 0.96），ABI `§登记缺陷` 随之关闭；缺陷 D-14 按方案 (a) 处置（`CM-X01` 记入第 6 轮、
 首次消费 S7A-7；合同台账的 `accept` **曾**被修正为 `open`，第 7 轮已按第 6 轮 `S7A6-R02` 重新闭合为
-`accept`，见本文件 §4 的第 7 轮段与 [第 7 轮报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-7-wrapup-rulings.md)）。
+`accept`，见本文件 §4 的第 7 轮段与 [第 7 轮报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-7-wrapup-rulings.md)）。
 
 ## 5. 事实与证据边界
 
@@ -279,6 +279,6 @@ confidence 0.96），ABI `§登记缺陷` 随之关闭；缺陷 D-14 按方案 (
 - [Gameplay V2 redesign research](../research/gameplay-v2/README.md)：V2 研究稿全集
 - [Stage 7A 实施计划](../../stage_plans/active/stage-07/plan.md)：批次、依赖与关闭标准
 - [音乐游戏玩法抽象模型](../../architecture/GAMEPLAY_ABSTRACTION_MODEL.md)：共同语义基础
-- [S7A-0 基线报告](../../stage_reports/stages/stage-07/2026-10-02-s7a-0-baseline.md)：执行基线证据
+- [S7A-0 基线报告](../../stage_reports/stages/stage-07/readiness/2026-10-02-s7a-0-baseline.md)：执行基线证据
 - [Packed 候选物理合同](../../formats/PACKED_CHART_FORMAT.md)：已冻结预算表
 - [版本规范](../../guides/VERSIONING.md)：SDK API 版本门禁与更新流程

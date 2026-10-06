@@ -69,7 +69,7 @@ Gameplay I 旧类名与通配族名——**S7A-2 / S7A-3 / S7A-4 / S7A-5 / S7A-6
 集中码表已把其中**部分**登记为未注册遗留项（`pendingRegistration[16]` / `[17]`），但**并未完全覆盖**：
 `[16].family` 只覆盖 `budget.*`、`[17]` 只覆盖 Gameplay I 的十类旧名，**`ruleset.*` 落在两者之外**。该覆盖
 缺口已如实登记在机器表 `pendingRegistration[16].alsoObservedFamilies`（纯事实字段，**不表示已注册**）与
-[第 6 轮诊断分类学后续补齐记录](../../stage_reports/stages/stage-07/2026-10-03-s7a-diagnostics-taxonomy-rulings.md)
+[第 6 轮诊断分类学后续补齐记录](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-diagnostics-taxonomy-rulings.md)
 §11.11。**本文件不据此声称这些名字或通配族已被覆盖、已被登记或已获放行。**
 
 
@@ -112,7 +112,7 @@ fact order）。Q-05 / Q-07 / Q-18 与 **identity 规范字节边界**登记为*
 **S7A-3 若具体消费 `W-03` / `W-04` / `W-05`，须先完成相应记录**，不消费的候选项不构成该批次门禁。
 provenance：thread `s7a3-prepare-rulings`，三卡 verdict `need_info` 0.8 / `reject` 0.88 / 计数确认卡 `adopt`
 0.99，2026-10-03；带日期证据见
-[第 3 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-3-gate-rulings.md)。
+[第 3 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-3-gate-rulings.md)。
 
 **第 7 轮追加的 S7A-3 准入门禁（2026-10-03）。** 第 7 轮另把四项裁定登记为 S7A-3 的**准入门禁**，语义正文见
 [Spec §3.8.7](../../formats/GAMEPLAY_V2_SPEC.md)（判定域 typed contract、CXT local relation 全局合并规则、
@@ -129,7 +129,7 @@ identity`**（**不新增 ABI 类型行**，ABI 仍 9 域 / **126 = 96 + 30**）
 **四项均不新增工作项**，只把既有验证项必须满足的语义边界写明；`CM-X05` 的 W 缺口登记仍按
 [SUPPORT §6.1](SUPPORT_AND_REJECTION_MATRIX.md) 在首次消费前完成。provenance：主卡 thread
 `01a0fe61-b7a3-7853-a380-0793fee14e14`（`adopt` 0.96）+ 口径确认卡 `adopt` 0.99；带日期证据见
-[第 7 轮收尾裁定与缺陷处置记录](../../stage_reports/stages/stage-07/2026-10-03-s7a-7-wrapup-rulings.md)。
+[第 7 轮收尾裁定与缺陷处置记录](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-7-wrapup-rulings.md)。
 
 ### S7A-4 Judgement Kernel 生命周期、Tap/Hold/Release 和仲裁
 
@@ -154,7 +154,7 @@ owner 集合 / 并列 slot 稳定拒绝）；Q-03、Q-16、P1-12 与 `CM-C06` / 
 **不是** S7A-4 门禁。**第 4 轮不新增 R 编号**，§7.2 的稳定拒绝清单仍为 **19 条**。provenance：thread
 `s7a4-arbitration-rulings`，主卡 `adopt` 0.97 / 处置词与计数确认卡 `adopt` 0.99，2026-10-03；
 带日期证据见
-[第 4 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-4-gate-rulings.md)。
+[第 4 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-4-gate-rulings.md)。
 
 **第 2 轮实现复核补入的 S7A-4 门禁：late-policy 参数量级关系的校验（2026-10-03）。**
 第 2 轮只冻结 late-policy 参数的**类型与角色**；`validatePrepare` 目前**只**检查参数"已声明且已测量"，
@@ -164,7 +164,7 @@ owner 集合 / 并列 slot 稳定拒绝）；Q-03、Q-16、P1-12 与 `CM-C06` / 
 本项**不阻塞 S7A-2**，也**不新增 R 编号**（§7.2 仍 19 条、§9.2 仍九类）。落点：Spec §3.7.4 第 5 条、
 §3.7.7 表与 §9.3；provenance：第 2 轮实现复核的两张续裁卡（thread `s7a1-freeze-bindings`，verdict
 `adopt`，confidence 0.98 / 0.99，2026-10-03）；带日期证据见
-[第 2 轮实现裁定记录](../../stage_reports/stages/stage-07/2026-10-03-s7a-2-implementation-rulings.md)。
+[第 2 轮实现裁定记录](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-2-implementation-rulings.md)。
 
 ### S7A-5 Ruleset Fold、Score、Combo 和 Statistics
 
@@ -234,7 +234,7 @@ confidence 0.99（`CM-F06`、`CM-S08`、`CM-S10`、`CM-K07` 四条 `open` → `a
 `accept` **42**；总数仍 114）；ABI 状态格首词与追踪计数追问卡 verdict `adopt`、confidence 0.98（9 行状态格
 首词仍为 `待冻结`；**126 = 96 + 30** 不变；**不新增 §未决项 #21、不新增 §类型清单条目**）。文件名时间戳为
 2026-10-02T20:2x–20:3xZ（UTC），统一按**本地日期 2026-10-03** 登记。带日期证据见
-[第 5 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-5-6-gate-rulings.md)。语义正文见
+[第 5 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-5-6-gate-rulings.md)。语义正文见
 [Spec §3.14–§3.22](../../formats/GAMEPLAY_V2_SPEC.md) 与 [ABI §S7A-5 / §S7A-6](../../api/GAMEPLAY_V2_ABI.md)。
 
 | 批次 | 本批次必须验证的正例 | 必须覆盖的负例 | golden / 不变量 | 停止条件 |
@@ -254,7 +254,7 @@ entry / manifest 集成属 **S7A-7**；④具体预算数值与 `maxSeekLatency`
 `CM-P04`、`CM-P06`、`CM-P08`、`CM-D04`、`CM-X01` 五条 `open` → `accept`；最终 `open` **5** /
 `accept` **47**，总数仍 **114**）。文件名时间戳为 2026-10-02T20:51:47.167Z（UTC），统一按**本地日期
 2026-10-03** 登记（与第 2、3、4、5 轮先例一致）。带日期证据见
-[第 6 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-6-gate-rulings.md)。语义正文见
+[第 6 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-6-gate-rulings.md)。语义正文见
 [Spec §3.6 / §3.23–§3.25 / §5.6 / §9.6–§9.8 / §S7A-7](../../formats/GAMEPLAY_V2_SPEC.md) 与
 [ABI 域 8 / 域 9 / §S7A-7](../../api/GAMEPLAY_V2_ABI.md)。
 
@@ -279,7 +279,7 @@ wire / codec 字节编码；④ 未冻结的 `FactId` / `CommitId` 字节编码�
 （同议题小追问：三处计数 / 编号口径）thread `01a0fe61-3476-7882-9674-5f6b05035237`，verdict **`adopt`**，
 confidence **0.99**。卡的文件名时间戳为 2026-10-02T20:52:37.188Z 与 2026-10-02T21:08:34.383Z（UTC），统一按
 **本地日期 2026-10-03** 登记。带日期证据见
-[第 7 轮收尾裁定与缺陷处置记录](../../stage_reports/stages/stage-07/2026-10-03-s7a-7-wrapup-rulings.md)。
+[第 7 轮收尾裁定与缺陷处置记录](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-7-wrapup-rulings.md)。
 **第 7 轮 = 16 行 / 18 项**（`S7A7-R01…R16`；`D-2 / D-7` 是合并行、`D-13` 的 `AGENTS.md`:110 附带子项各记
 2 项）；逐轮合计 **76 行 / 84 项**，与 `RULING_WORKSHEET §0.1` 一致。**第 1–7 轮无待裁定轮次。**
 

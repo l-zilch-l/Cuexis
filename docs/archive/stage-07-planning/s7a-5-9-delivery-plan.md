@@ -15,7 +15,7 @@
 [V2 ABI](../../api/GAMEPLAY_V2_ABI.md)。代码行为基线为
 `a0c8b7e4f783995bc19e626f3654ab11f845a0a7`，SDK0.7.0、日期build26.10.05-1。
 S7A-3/4 已达到“受限功能验收完成，容量整体证明未完成”；同源 head SHA 的7个 hosted runs 全绿，
-详见 [新 SHA hosted 与交接记录](../../stage_reports/stages/stage-07/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
+详见 [新 SHA hosted 与交接记录](../../stage_reports/stages/stage-07/handoffs/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
 CI 通过不替代 S7A-9 容量阈值接受、真实设备验证或 owner 阶段接受。
 
 本次评估读取既有裁定、公开角色/内部接口和生命周期实现的相关声明，不进行新产品实现。
@@ -119,7 +119,7 @@ ABI域6及第5轮裁定，再消费当前execution profile；出现真正合同�
 本轮不改生产代码、CMake、CI、SDK或版本；仅规划和清理。新的实施、commit/push及owner-only行为
 以对应会话明确授权为准，已经授予的授权不重复请求。
 
-历史输入：[第5轮](../../stage_reports/stages/stage-07/2026-10-03-s7a-5-6-gate-rulings.md)、
-[第6轮](../../stage_reports/stages/stage-07/2026-10-03-s7a-6-gate-rulings.md)、
-[第7轮](../../stage_reports/stages/stage-07/2026-10-03-s7a-7-wrapup-rulings.md)、
+历史输入：[第5轮](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-5-6-gate-rulings.md)、
+[第6轮](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-6-gate-rulings.md)、
+[第7轮](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-7-wrapup-rulings.md)、
 [旧S7A-3/4实施交接](s7a-3-4-implementation-handoff.md)。历史记录的当时状态保留，不覆盖实时评估。

@@ -103,7 +103,7 @@ Gameplay V2 acceptance package owner acceptance
 
 **执行顺序偏差（2026-10-02 如实记录）。** 第 3 步（Gameplay I 标注 `superseded`）在第 2 步的限定冻结
 之前就已执行；**不倒填**冻结时间，纠正动作是限定冻结后重新核验替代链接与 retained 映射，记录见
-[S7A-0 接受记录 §4.2](../../../stage_reports/stages/stage-07/2026-10-02-s7a-0-acceptance.md)。
+[S7A-0 接受记录 §4.2](../../../stage_reports/stages/stage-07/readiness/2026-10-02-s7a-0-acceptance.md)。
 
 如果实现阶段发现 V2 合同、历史 Gameplay I 文档、研究证据或真实内容预算之间矛盾，先建立可复现失败报告并停止
 受影响批次；不得在代码中隐式选择替代语义。修改四层边界、identity 分区、grace 语义、
@@ -300,7 +300,7 @@ Playback 不读取 CXT AST，也不在运行时展开未编译 Pattern。
 **2026-10-04 设计收口。** 完整组合为 G2-S2 + G2-T4 + R2-K4 + P1-W1 + E1；
 S2/T4/K4 语义见 [V2 Spec](../../../formats/GAMEPLAY_V2_SPEC.md) §3.8.10–§3.8.12，
 首次 Packed 消费字段仅见 [Gameplay Capsule v2 format](../../../formats/GAMEPLAY_CAPSULE_V2_FORMAT.md)。
-[设计收口报告](../../../stage_reports/stages/stage-07/2026-10-04-s7a-3-design-closure.md)
+[设计收口报告](../../../stage_reports/stages/stage-07/implementation/2026-10-04-s7a-3-design-closure.md)
 只证明文档合同闭合；本批次的 Reader/Writer、identity 修正与 E1 实测门禁仍需实施，不缩减验收。
 
 **工作内容。**
@@ -394,8 +394,8 @@ S2/T4/K4 语义见 [V2 Spec](../../../formats/GAMEPLAY_V2_SPEC.md) §3.8.10–§
 ⑤ **装配消费点（以真实 arm / deadline 容量调用门禁并验证原子失败）已落地**；`gateIncomplete` 在装配路径中保守拒绝，
    已测超限仍走既有诊断，身份只写入已测有效值。数值限额在 S7A-9 前**不冻结**；本批次只能按受限功能验收口径退出，不得声称容量整体证明完成。
    逐字裁定与主控独立复核见两份带日期记录：
-   [S7A-3 第二半 part 1 实现裁定落地记录](../../../stage_reports/stages/stage-07/2026-10-03-s7a-3-implementation-rulings.md)
-   与 [S7A-3 落地位置裁定（卡 4 / 卡 5）](../../../stage_reports/stages/stage-07/2026-10-03-s7a-3-landing-location-rulings.md)。
+   [S7A-3 第二半 part 1 实现裁定落地记录](../../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-3-implementation-rulings.md)
+   与 [S7A-3 落地位置裁定（卡 4 / 卡 5）](../../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-3-landing-location-rulings.md)。
 
 ### S7A-4：Judgement Kernel 生命周期、Tap/Hold/Release 和仲裁
 
@@ -410,10 +410,10 @@ author 双路与 affine，再 late/contact/phase/kernel/timer/Fact。新增合�
 [ADR 0045](../../../adr/0045-gameplay-v2-execution-profile.md)。
 上述设计交付当时只补齐 late-policy 合同，不含产品实现；状态预算缺测不判通过。
 同日 owner 授权实施后，本工作区已落地 A/B/D/E/F 与 E1 逐行审计；Windows 与 Linux GCC/Clang 完整矩阵均通过，S7A-3/4 受限功能验收完成，容量整体证明未完成；
-见 [本地验收证据](../../../stage_reports/stages/stage-07/2026-10-05-s7a-3-4-functional-acceptance.md)。
+见 [本地验收证据](../../../stage_reports/stages/stage-07/verification/2026-10-05-s7a-3-4-functional-acceptance.md)。
 不能把局部功能通过记为容量整体证明或 Stage 7A 完成。
 旧推荐比较保留于 [推荐登记](../../../proposals/gameplay-v2-acceptance/S7A-4_RECOMMENDED_DESIGN.md)，
-已有实现/hosted 证据见 [余项报告](../../../stage_reports/stages/stage-07/2026-10-05-s7a-3-remaining-evidence.md)。
+已有实现/hosted 证据见 [余项报告](../../../stage_reports/stages/stage-07/verification/2026-10-05-s7a-3-remaining-evidence.md)。
 
 **固定 Tick 顺序。**
 
@@ -473,7 +473,7 @@ author 双路与 affine，再 late/contact/phase/kernel/timer/Fact。新增合�
 ### 后续实施队列（2026-10-06）
 
 S7A-3/4已达到受限功能验收，容量整体仍未完成；新SHA的hosted证据与归档见
-[交接报告](../../../stage_reports/stages/stage-07/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
+[交接报告](../../../stage_reports/stages/stage-07/handoffs/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
 owner已明确下一轮目标为 **S7A-5.1–5.5 + S7A-6.1–6.5**，按本文§3.2的J0–J7先5后6、
 共同验收。五批依赖、已选方向和剩余未定项由本文统一维护；
 九项各五套备选的比较正文见 [5/6实施输入](../../../proposals/implementation-input/stage-07/s7a-5-6-design-selection.md)。
@@ -705,7 +705,7 @@ fixture、正例、负例、命令、原始输出和未覆盖项；“依赖批�
    是进入 S7A-4 的**硬前置**；Spec §3.8.8 已记录接线落地，整批关闭仍须复验，不能据此宣称 S7A-3 完成。
 
 **S7A-3 未闭合合同组合已选定（2026-10-03）。** 按
-[G2 + R2 + P1 裁定记录](../../../stage_reports/stages/stage-07/2026-10-03-s7a-3-contract-selection-g2-r2-p1.md)，
+[G2 + R2 + P1 裁定记录](../../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-3-contract-selection-g2-r2-p1.md)，
 后续实现采用：① G2，完整解析并冻结 prepare-time `preparedGrace`，与资源
 `declaredGapGrace` 分离；② R2，在 prepare 生成不可变资源计划，runtime 只执行已准备的确定性
 policy 并由引擎分配 owner / lease / contact；③ P1，以新 candidate revision 加新必需 semantic

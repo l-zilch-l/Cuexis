@@ -94,7 +94,7 @@ quota(window, min, max, policy)
 > [Gameplay V2 Spec §3.9](../../../formats/GAMEPLAY_V2_SPEC.md) 与
 > [Gameplay V2 ABI 域 4](../../../api/GAMEPLAY_V2_ABI.md)；裁定登记见
 > [RULING_WORKSHEET.md §4](../../gameplay-v2-acceptance/RULING_WORKSHEET.md)，带日期证据见
-> [第 4 轮门禁报告](../../../stage_reports/stages/stage-07/2026-10-03-s7a-4-gate-rulings.md)。
+> [第 4 轮门禁报告](../../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-4-gate-rulings.md)。
 > **本节正文（含五步划分与其后的求解策略段）保留不改，作为历史论证记录。**
 
 一个 Coordination window 的求值分为五步：

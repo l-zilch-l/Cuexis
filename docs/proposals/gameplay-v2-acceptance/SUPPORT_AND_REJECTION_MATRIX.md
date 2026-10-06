@@ -91,7 +91,7 @@ R-04 行的被拒绝能力描述，并在 §2 的资源行备注补上冻结子�
 §4 的 capability registry 草案与 §5 的 H 类政策均不变。provenance：thread `s7a4-arbitration-rulings`
 （`adopt` 0.97 / `adopt` 0.99），2026-10-03；语义正文见
 [Spec §3.10](../../formats/GAMEPLAY_V2_SPEC.md)，带日期证据见
-[第 4 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-4-gate-rulings.md)。
+[第 4 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-4-gate-rulings.md)。
 
 ## 4. capability registry 草案
 
@@ -195,7 +195,7 @@ V2 Spec 仅引用，不设登记表附录**。
 补全全部字段（含 `attemptedWorkarounds`、`stableRejectCode`、`ownerDecision` 与实际 `reviewDate`），并按
 `S1-03` 的口径标注**裁决编号 + 首次消费批次**。provenance：thread `s7a3-prepare-rulings`，补答卡 verdict
 `reject`，confidence 0.88，日期 2026-10-03；带日期的落地记录见
-[第 3 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-3-gate-rulings.md)。
+[第 3 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-3-gate-rulings.md)。
 
 候选项的**门禁归属按首次实际消费判定**（登记在各候选项首次被消费的批次，而不是本表）：
 

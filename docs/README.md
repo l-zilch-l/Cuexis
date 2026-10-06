@@ -2,10 +2,29 @@
 
 状态：现行文档入口
 
-更新日期：2026-10-01
+更新日期：2026-10-06
 
 本文档是 Cuexis 文档的导航页，不复制产品合同、阶段证据或完整字段定义。当前项目状态只
 以 [CURRENT_STATUS.md](CURRENT_STATUS.md) 为准。
+
+## 当前工作入口
+
+- 查当前进度：[CURRENT_STATUS](CURRENT_STATUS.md)。
+- 实施下一轮5+6：[Stage 7主计划§3.2](stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)。
+- 查方案与反例：[5/6候选实施输入](proposals/implementation-input/stage-07/s7a-5-6-design-selection.md)。
+- 查已有证据：[Stage 7分类报告索引](stage_reports/stages/stage-07/README.md)。
+
+## 按用途查找
+
+| 要回答的问题 | 文档类别 / 入口 |
+| --- | --- |
+| 为什么这样设计、是否接受 | [ADR](adr/README.md) |
+| 字段和运行语义是什么 | [格式与系统Spec](formats/README.md)；发布SDK调用见 [API](api/README.md) |
+| 接下来做什么、按什么门禁退出 | [阶段计划](stage_plans/README.md) |
+| 哪次实现/审查/验证提供了证据 | [阶段与专题报告](stage_reports/README.md) |
+| 如何构建、编码和维护版本 | [工程指南与政策](guides/README.md) |
+| 尚未生产化的方案、研究或样例 | [候选输入](proposals/README.md)、[样例](examples/README.md) |
+| 被取代的计划和历史背景 | [归档](archive/README.md)；旧名称见 [迁移映射](legacy-paths.md) |
 
 ## 推荐阅读顺序
 

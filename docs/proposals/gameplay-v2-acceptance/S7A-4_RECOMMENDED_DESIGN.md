@@ -168,4 +168,4 @@ FactId/CommitId codec、SolverProfile 默认列表、具体窗口半宽和 max* 
 gap/handoff/capacity>1/sameContact/连续轨迹。归属按 Spec §S7A-4 / ABI §未决项执行。
 
 S7A-3 的既有实现与剩余证据见
-[2026-10-05 核对报告](../../stage_reports/stages/stage-07/2026-10-05-s7a-3-remaining-evidence.md)。
+[2026-10-05 核对报告](../../stage_reports/stages/stage-07/verification/2026-10-05-s7a-3-remaining-evidence.md)。

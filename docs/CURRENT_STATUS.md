@@ -31,7 +31,7 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Chart Format Foundation | completed | [plan](stage_plans/completed/chart-format-foundation/plan.md)、[关闭记录](stage_reports/stages/chart-format-foundation/2026-09-16-closure-and-handoff.md) |
 | Chart Format Foundation Hardening（Foundation 交接加固） | completed | [plan](stage_plans/completed/chart-format-foundation-hardening/plan.md)、[R5 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md) |
 | Stage 6 | completed | [plan](stage_plans/completed/stage-06/plan.md)、[关闭报告](stage_reports/stages/stage-06/completion.md) |
-| Stage 7A | active；S7A-3/4 受限功能验收完成，容量整体证明未完成。2026-10-05 工作区已实现 execution fields、Capsule revision3、真实 inline/CXT author 双路与 affine，以及 owning T4/K4 kernel、L1/L2、S1/S2 和事务失败投影；聚焦 Debug 验证通过。本轮已补齐 E1 功能对账和边界断言，Debug/Release 各943项、shared858项、MinGW855项无失败（skip 另记）。Linux GCC/Clang 各853项完整矩阵通过，跨工具链 E1 行已回填 IV。CI 耗时优化已实施并完成本地验证，a0c8b7e的push/PR共7个hosted runs已全绿；owner已选下一轮联合实施S7A-5/6，目标/决策/执行卡归plan§3.2，十项残余字段与边界待合同落定、各五方案已选优；当前接手导出到桌面。state-budget INCOMPLETE GATE、S7A-9 与 Stage 6 handover 门禁独立保留 | [plan](stage_plans/active/stage-07/plan.md)、[5/6决策与准入](stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)、[受限功能验收证据](stage_reports/stages/stage-07/2026-10-05-s7a-3-4-functional-acceptance.md)、[ADR 0045](adr/0045-gameplay-v2-execution-profile.md)、[execution Spec](formats/gameplay-v2-execution-profile.md)、[CI 优化证据](stage_reports/stages/stage-07/2026-10-05-ci-runtime-optimization.md) |
+| Stage 7A | active；S7A-3/4 受限功能验收完成，容量整体证明未完成。2026-10-05 工作区已实现 execution fields、Capsule revision3、真实 inline/CXT author 双路与 affine，以及 owning T4/K4 kernel、L1/L2、S1/S2 和事务失败投影；聚焦 Debug 验证通过。本轮已补齐 E1 功能对账和边界断言，Debug/Release 各943项、shared858项、MinGW855项无失败（skip 另记）。Linux GCC/Clang 各853项完整矩阵通过，跨工具链 E1 行已回填 IV。CI 耗时优化已实施并完成本地验证，a0c8b7e的push/PR共7个hosted runs已全绿；owner已选下一轮联合实施S7A-5/6，目标/决策/执行卡归plan§3.2，十项残余字段与边界待合同落定、各五方案已选优；当前接手导出到桌面。state-budget INCOMPLETE GATE、S7A-9 与 Stage 6 handover 门禁独立保留 | [plan](stage_plans/active/stage-07/plan.md)、[5/6决策与准入](stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)、[受限功能验收证据](stage_reports/stages/stage-07/verification/2026-10-05-s7a-3-4-functional-acceptance.md)、[ADR 0045](adr/0045-gameplay-v2-execution-profile.md)、[execution Spec](formats/gameplay-v2-execution-profile.md)、[CI 优化证据](stage_reports/stages/stage-07/verification/2026-10-05-ci-runtime-optimization.md) |
 | Stage 7B+ | future；Slide、Flick、多指、校准和高级 Judgement 能力持续演进 | [plan](stage_plans/active/stage-07/plan.md) |
 | Stage 8 | future；Chart v5 / CXT v2 / Packed Chart 正式发行与语义收敛 | [plan](stage_plans/future/stage-08/plan.md) |
 | Stage 9 | future；Presentation Foundation 与 Chart v6 / Model v1 | [plan](stage_plans/future/stage-09/plan.md) |
@@ -73,21 +73,21 @@ Gameplay V2 已成为 Stage 7A 的实施基线：Gameplay I 的 ADR/Spec/ABI 已
 该受限骨架授权本身**不授权**字段表示、整数宽度、序列化与线格式、枚举集或其余批次语义；
 后续各批次已经闭合的时间、输入与 Capsule candidate 表示仅按其明确合同消费
 （第 1–7 轮**已全部裁定、无待裁定轮次**，语义由各自小节授权；第 7 轮"收尾澄清与缺陷"见
-[第 7 轮收尾裁定与缺陷处置记录](stage_reports/stages/stage-07/2026-10-03-s7a-7-wrapup-rulings.md)）。
+[第 7 轮收尾裁定与缺陷处置记录](stage_reports/stages/stage-07/decisions/2026-10-03-s7a-7-wrapup-rulings.md)）。
 **裁定完成不等于实现完成**：受限 S7A-1 骨架、S7A-2 两个半批与 S7A-3 第二半 part 1 已落地并有带日期记录；
 **S7A-3/4 受限功能验收完成，容量整体证明未完成**；包含性 gateIncomplete 与真实容量装配消费点已由当前 Spec §3.8.8
 记录落地，不再作为“尚未接线”缺口。2026-10-05 的只读核对补齐既有实现与当前 SHA hosted 证据，
-见 [剩余证据核对](stage_reports/stages/stage-07/2026-10-05-s7a-3-remaining-evidence.md)；该报告属于此前只读核对。随后本工作区实施了 runtime T4/K4 与真实 author adapter，聚焦 C++ 验证见
-[受限功能验收证据](stage_reports/stages/stage-07/2026-10-05-s7a-3-4-functional-acceptance.md)；E1 功能行与四工具链完整矩阵已补齐；state-budget 保持 INCOMPLETE GATE，Stage7A 不关闭。
-提交a0c8b7e的hosted与临时证据归档见 [新SHA交接报告](stage_reports/stages/stage-07/2026-10-05-s7a-3-4-hosted-and-handoff.md)；
+见 [剩余证据核对](stage_reports/stages/stage-07/verification/2026-10-05-s7a-3-remaining-evidence.md)；该报告属于此前只读核对。随后本工作区实施了 runtime T4/K4 与真实 author adapter，聚焦 C++ 验证见
+[受限功能验收证据](stage_reports/stages/stage-07/verification/2026-10-05-s7a-3-4-functional-acceptance.md)；E1 功能行与四工具链完整矩阵已补齐；state-budget 保持 INCOMPLETE GATE，Stage7A 不关闭。
+提交a0c8b7e的hosted与临时证据归档见 [新SHA交接报告](stage_reports/stages/stage-07/handoffs/2026-10-05-s7a-3-4-hosted-and-handoff.md)；
 下一轮由owner选定S7A-5.1–5.5 + S7A-6.1–6.5；目标、九项已选方向、十项待合同落定细节和
 J0–J7执行卡归 [主计划§3.2](stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)。
 [方案比较与选优](proposals/implementation-input/stage-07/s7a-5-6-design-selection.md) 保存每项五套备选及反例。
 active/stage-07只保留主计划与 [旧路径映射](stage_plans/active/stage-07/legacy-paths.md)，
 历史接手和交付评估已归档；当前接手导出至owner桌面，决策仍写回plan/对应合同。
 选优是设计输入，未实施5–9、未冻结新生产字段/预算或关闭阶段；既有
-[排期修订记录](stage_reports/stages/stage-07/2026-10-06-s7a-5-6-planning-selection.md) 保留当时证据，
-本次目录/桌面交接见 [整理记录](stage_reports/stages/stage-07/2026-10-06-s7a-5-6-plan-and-desktop-handoff.md)。设计来源见
+[排期修订记录](stage_reports/stages/stage-07/handoffs/2026-10-06-s7a-5-6-planning-selection.md) 保留当时证据，
+本次目录/桌面交接见 [整理记录](stage_reports/stages/stage-07/handoffs/2026-10-06-s7a-5-6-plan-and-desktop-handoff.md)。设计来源见
 [Gameplay V2 redesign research](proposals/research/gameplay-v2/README.md)。Hold 的 prepared grace、作者
 默认值与单条覆盖、严格边界、identity 分区和预算/快照原则已统一；Slider continuity/grace
 仍属于 Stage 7B+ capability，不是 Stage 7A 默认语义。

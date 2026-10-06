@@ -7,7 +7,7 @@
 
 依据：[Gameplay V2 Spec](GAMEPLAY_V2_SPEC.md) §3.8–§3.12、§5、§8，
 [Foundation Packed](PACKED_CHART_FORMAT.md) 与
-[决策登记](../stage_reports/stages/stage-07/2026-10-03-s7a-3-decision-register.md)。
+[决策登记](../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-3-decision-register.md)。
 本文唯一拥有 Capsule 的物理字段；时间消费与仲裁语义仍由 Gameplay V2 Spec 拥有。
 
 2026-10-05 新增 §12 的 execution candidate revision 3；§§1–11 的 revision 2 合同与

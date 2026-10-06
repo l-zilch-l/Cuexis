@@ -33,7 +33,7 @@ SDK仍0.7.0。阶段状态只由 [CURRENT_STATUS](../../CURRENT_STATUS.md) 维�
 2. [方案选择](../../proposals/implementation-input/stage-07/s7a-5-6-design-selection.md) 的组合B与九项推荐；不要重做已裁定语义选择。
 3. [V2 Spec](../../formats/GAMEPLAY_V2_SPEC.md) §3.14–3.22/§3.25/§5/§8，
    [V2 ABI](../../api/GAMEPLAY_V2_ABI.md) 域5–7/9、未决项及5/6限定冻结节。
-4. [第5轮](../../stage_reports/stages/stage-07/2026-10-03-s7a-5-6-gate-rulings.md)、
+4. [第5轮](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-5-6-gate-rulings.md)、
    [execution profile](../../formats/gameplay-v2-execution-profile.md)、
    [execution types](../../api/gameplay-v2-execution-types.md)。
 5. kernel_types、judgement_session、execution_kernel、input_boundary、ingress_transaction与
@@ -212,7 +212,7 @@ Replay/event/byte/decode、snapshot/restore/Seek分布；budget分支以test-onl
 ## 5. 接手证据、清理与来源
 
 3/4 hosted和已归档临时证据见
-[hosted/归档报告](../../stage_reports/stages/stage-07/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
+[hosted/归档报告](../../stage_reports/stages/stage-07/handoffs/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
 其“下一轮仅5”是854efa3当时计划，后续排期以本文件为准；CI与归档事实仍有效。
 out/build缓存、用户备份和早期非本次证据保留；不要git clean -fdx。
 本轮没有新产品代码或C++运行证据。

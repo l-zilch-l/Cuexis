@@ -12,7 +12,7 @@ owner 已授权自主设计裁决，并选择本轮只完成文档。
 - [Gameplay V2 Spec](../../formats/GAMEPLAY_V2_SPEC.md) §3.8.10–§3.8.12 拥有 S2/T4/K4 的消费语义。
 - [Gameplay Capsule v2 format](../../formats/GAMEPLAY_CAPSULE_V2_FORMAT.md) 唯一拥有首次 Packed 消费的完整字段、编码、hash 与拒绝规则。
 - [Foundation Packed](../../formats/PACKED_CHART_FORMAT.md) 继续拥有 revision 1；revision 2 仅按 Capsule 的显式差异扩展。
-- [决策登记](../../stage_reports/stages/stage-07/2026-10-03-s7a-3-decision-register.md) 保存授权与备选；[设计收口报告](../../stage_reports/stages/stage-07/2026-10-04-s7a-3-design-closure.md) 保存本轮证据与未完成实现门禁。
+- [决策登记](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-3-decision-register.md) 保存授权与备选；[设计收口报告](../../stage_reports/stages/stage-07/implementation/2026-10-04-s7a-3-design-closure.md) 保存本轮证据与未完成实现门禁。
 
 此页不再提供第二套 row layout。旧草稿的重复表、zero-as-absent、observe/occupy 合并、
 claim 行号分配 slot 和缺失 graph 字段已撤销，不能继续作为实现依据。

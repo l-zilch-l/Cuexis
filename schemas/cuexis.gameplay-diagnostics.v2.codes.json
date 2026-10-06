@@ -1299,7 +1299,7 @@
     "srcOnlyTokenAnchors": "The thirteen judgement.s7a2.* entries name their engine/judgement/src/source_codes.hpp token by symbol (k...Code) instead of by line. The former line ranges had already drifted on the parallel implementation line: every cited range had shifted down by one line while the token still sat on the last cited line.",
     "severityAnchorNote": "severitySources names documents only. Its former line anchors were removed for the same drift reason; the core enum is cited by symbol (DiagnosticSeverity) instead of by line.",
     "evidenceRecord": {
-      "path": "docs/stage_reports/stages/stage-07/2026-10-03-s7a-diagnostics-taxonomy-rulings.md",
+      "path": "docs/stage_reports/stages/stage-07/decisions/2026-10-03-s7a-diagnostics-taxonomy-rulings.md",
       "section": "11.7",
       "holds": "the per-item crosswalk for all 49 reworked anchors, and the identity of the ABI revision those line ranges were read against",
       "role": "That dated record is the only place in the repository where the retired line ranges are written down. They are evidence, not a citation this table relies on."

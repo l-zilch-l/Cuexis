@@ -2,7 +2,7 @@
 
 状态：已接受的文档整理政策
 
-更新日期：2026-10-01
+更新日期：2026-10-06
 
 ## 文档角色
 
@@ -105,6 +105,13 @@ docs/stage_reports/sdk-transition/
 README 只用于稳定入口、顶层文档角色或包含多份需要独立导航的正文集合。单文件目录和由上级索引即可
 清楚列出的叶目录不创建 README；上级索引直接链接 canonical 文档。所有 Markdown 仍必须从
 [docs/README.md](README.md) 可达。
+
+同一阶段的报告数量较多时，可在`stage_reports/stages/<stage>/`下按用途细分，例如
+`readiness/`（准入与基线）、`decisions/`（带日期裁定）、`implementation/`（设计/实施推进）、
+`verification/`（验证与审计）、`handoffs/`（交接与规划修订）。阶段README直接列出各类正文，
+总报告索引只链接阶段入口；不在总索引复制完整裁定计数和测试矩阵。
+这些目录不改变报告的历史角色，现行决策归ADR/Spec、当前范围归plan、当前进度归CURRENT_STATUS。
+分类目录不是每个阶段的必建模板；少量报告仍由最近索引直接导航。
 
 `docs/api/` 以发布的 Playback SDK 为首要对象，说明入口、生命周期、线程、资源、帧观察、诊断、
 capability 和兼容边界。内部模块资料必须显式标为 internal，不能把 Runtime、World、EnTT、SDL、

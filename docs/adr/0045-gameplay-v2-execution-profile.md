@@ -50,7 +50,7 @@ dense ordinal 作为首版语义会混淆容器位置与逻辑因果；不选。
 若实施中发现本合同的真实矛盾，先给出最小反例与受影响条款并修订合同，不能静默改变语义。
 S7A-5/6/7/9 的范围和 Stage 6 owner-only 版本门禁仍按各自计划执行。
 
-同日后续[歧义复核](../stage_reports/stages/stage-07/2026-10-05-s7a-3-4-ambiguity-audit.md)
+同日后续[歧义复核](../stage_reports/stages/stage-07/verification/2026-10-05-s7a-3-4-ambiguity-audit.md)
 补齐 partial advance、matcher/observer、真实 CXT、identity 与验收命令；选择仍由现行补充合同拥有。
 
 ## 对应权威

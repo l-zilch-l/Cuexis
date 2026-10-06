@@ -2,9 +2,11 @@
 
 状态：historical
 
-更新日期：2026-08-30
+更新日期：2026-10-06
 
 以下旧逻辑路径已迁入 canonical 目录。映射供历史引用迁移使用，不保留逐文件 compatibility stub。
+
+Stage 7的2026-10分类迁移另见 [阶段旧路径映射](stages/stage-07/legacy-paths.md)。
 
 - `260722-1c-review.md` -> [canonical](stages/stage-01/2026-07-22-stage-1c-review.md)
 - `260806-stage-2-review.md` -> [canonical](stages/stage-02/2026-08-06-review.md)

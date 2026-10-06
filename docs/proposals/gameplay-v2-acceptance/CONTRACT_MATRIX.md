@@ -55,18 +55,18 @@ confidence 0.99，2026-10-03）确认**保持 `open`**、不回改计数。
 转为 `revise`；计数随之变为 `accept` 36 / `revise` 26 / `open` 16，总数仍为 114。provenance：thread
 `s7a3-prepare-rulings`（三卡：`need_info` 0.8、`reject` 0.88、计数确认卡 `adopt` 0.99），2026-10-03；
 逐条落点见 [RULING_WORKSHEET.md](RULING_WORKSHEET.md) §3 与
-[第 3 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-3-gate-rulings.md)。
+[第 3 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-3-gate-rulings.md)。
 2026-10-03 第 4 轮：`CM-C05`、`CM-C09` 两条 `open` 由第 4 轮裁定并闭合，处置词均由 `open` 改为
 **`accept`**；计数随之变为 **`accept` 38 / `open` 14**，其余四类不变，总数仍为 114。provenance：
 thread `s7a4-arbitration-rulings`（`gpt-6-astra`，consult：主裁定卡 `adopt` 0.97、处置词与计数确认卡
 `adopt` 0.99），2026-10-03；逐条落点见 [RULING_WORKSHEET.md](RULING_WORKSHEET.md) §4、§8 与 §9，以及
-[第 4 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-4-gate-rulings.md)。
+[第 4 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-4-gate-rulings.md)。
 2026-10-03 第 5 轮：`CM-F06`、`CM-S08`、`CM-S10`、`CM-K07` 四条 `open` 由第 5 轮裁定并闭合，处置词均由
 `open` 改为 **`accept`**；计数随之变为 **`accept` 42 / `open` 10**，其余四类不变，总数仍为 114。
 provenance：同一 Codex 话题 thread `01a0fe49-cfe5-7933-8d03-3d0a65d34c8b`（consult，三卡：主裁定卡
 `adopt` **0.95**、处置词与计数确认卡 `adopt` **0.99**、ABI 状态格首词与追踪计数追问卡 `adopt` **0.98**），
 2026-10-03；逐条落点见 [RULING_WORKSHEET.md](RULING_WORKSHEET.md) §5、§8 与 §9，以及
-[第 5 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-5-6-gate-rulings.md)。**`CM-S02`、
+[第 5 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-5-6-gate-rulings.md)。**`CM-S02`、
 `CM-K01` 的处置词仍为 `revise`**，本轮只把裁定正文写入其未决点文字、不改处置词；`CM-S11`、`CM-K08`
 **不是**本台账的行，因此**不改变任何计数**。
 2026-10-03 输入半批复核：`CM-T09`、`CM-T10` 的**未决点文字**按同 thread `s7a1-freeze-bindings` 的两张续裁卡
@@ -81,7 +81,7 @@ identity** 的正文写入 [GAMEPLAY_V2_SPEC.md](../../formats/GAMEPLAY_V2_SPEC.
 处置词均由 `open` 改为 **`accept`**；计数随之变为 **`accept` 47 / `open` 5**，其余四类不变，总数仍为 114。
 provenance：Codex 话题 thread `01a0fe61-3476-7882-9674-5f6b05035237`（consult，单卡 verdict `adopt`、
 confidence **0.97**），2026-10-03；逐条落点见 [RULING_WORKSHEET.md](RULING_WORKSHEET.md) §6、§8 与 §9，以及
-[第 6 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-6-gate-rulings.md)。**处置词仅这五条改变**：
+[第 6 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-6-gate-rulings.md)。**处置词仅这五条改变**：
 `CM-V06`、`CM-V07`、`CM-V13`、`CM-I06`、`CM-X06` 五条 `open` 本轮不改处置词（其与 §0.1 第 33 行 /
 §8 的自相矛盾由第 7 轮单独裁定）；`CM-S02`、`CM-K01` 仍为 `revise`。
 2026-10-03 第 7 轮（收尾澄清与缺陷）：`CM-V06`、`CM-V07`、`CM-V13`、`CM-I06`、`CM-X06` 五条残余 `open`
@@ -92,7 +92,7 @@ confidence **0.97**），2026-10-03；逐条落点见 [RULING_WORKSHEET.md](RULI
 `gpt-6-astra`，verdict `adopt`、confidence **0.96**）与**口径确认卡** thread
 `01a0fe61-3476-7882-9674-5f6b05035237`（verdict `adopt`、confidence **0.99**），2026-10-03；逐条落点见
 [RULING_WORKSHEET.md](RULING_WORKSHEET.md) §7、§8 与 §9，以及
-[第 7 轮收尾裁定与缺陷处置记录](../../stage_reports/stages/stage-07/2026-10-03-s7a-7-wrapup-rulings.md)。
+[第 7 轮收尾裁定与缺陷处置记录](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-7-wrapup-rulings.md)。
 `CM-S02`、`CM-K01` 仍为 `revise`；`CM-T13`、`CM-S11`、`CM-K08` 不是本台账的行，**不改变任何计数**。
 
 ## 1. 版本与载体
@@ -136,12 +136,12 @@ confidence **0.97**），2026-10-03；逐条落点见 [RULING_WORKSHEET.md](RULI
 | --- | --- | --- | --- | --- | --- |
 | CM-T01 | 四个时间域：`chartTick` / `observationTick` / `commitTick` / `presentationTime` | SK §1 | I-SPEC 只有单一 observation/tick 概念 | `accept` | `presentationTime` 允许浮点，只能读已提交状态 |
 | CM-T02 | 推荐 `TimebaseProfile = engine.tick.us.v1`，单位由 Engine Table Registry 声明 | 计划 §S7A-2.1、PD §4.1 | 无 | `revise` | 逐字段边界（tempo/stop/负 Beat/同 Tick/offset/舍入）未冻结（AR P0-04） |
-| CM-T03 | 作者 RationalBeat → 运行时整数 `judgementTick` 的 exact mapping 与 tie rule | 计划 §S7A-2.1、AR P0-04 | 无（Spec 只要求一次性量化） | `accept` | **已裁定（第 2 轮，Codex 2026-10-03）**：映射使用**精确有理数运算**、**四舍五入到最近整数、半数取偶**（负值对称）；**tempo、stop、负 Beat 使用同一规则**；同 Tick 碰撞按规范键 **`(tick, originKind, canonicalOrdinal)`** 排序，**禁止按 ingress 顺序排序**。落点 [GAMEPLAY_V2_SPEC.md](../../formats/GAMEPLAY_V2_SPEC.md) §3.7.2。provenance：thread `s7a1-freeze-bindings`，verdict `adopt`，confidence 0.99，2026-10-03。**2026-10-03 实现复核修订（同一话题）**：`stop` 语义由"比例替换"修订为**塌缩/跳变 + 精确累计函数 `F`**——`F(originBeat) = 0`、`F(endBeat) = F(startBeat) + duration`、`tick(beat) = roundHalfToEven(F(beat))`（**只舍入一次**，不得读成整数 Tick 递推）；区间内**非单射**；半开跳变方向使**镜像配置失去奇对称**，但有向端点关系与单调性不变。provenance：verdict `adopt`，confidence 0.98 / 0.99；落点 [S7A-2 实现复核报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-2-implementation-rulings.md) |
+| CM-T03 | 作者 RationalBeat → 运行时整数 `judgementTick` 的 exact mapping 与 tie rule | 计划 §S7A-2.1、AR P0-04 | 无（Spec 只要求一次性量化） | `accept` | **已裁定（第 2 轮，Codex 2026-10-03）**：映射使用**精确有理数运算**、**四舍五入到最近整数、半数取偶**（负值对称）；**tempo、stop、负 Beat 使用同一规则**；同 Tick 碰撞按规范键 **`(tick, originKind, canonicalOrdinal)`** 排序，**禁止按 ingress 顺序排序**。落点 [GAMEPLAY_V2_SPEC.md](../../formats/GAMEPLAY_V2_SPEC.md) §3.7.2。provenance：thread `s7a1-freeze-bindings`，verdict `adopt`，confidence 0.99，2026-10-03。**2026-10-03 实现复核修订（同一话题）**：`stop` 语义由"比例替换"修订为**塌缩/跳变 + 精确累计函数 `F`**——`F(originBeat) = 0`、`F(endBeat) = F(startBeat) + duration`、`tick(beat) = roundHalfToEven(F(beat))`（**只舍入一次**，不得读成整数 Tick 递推）；区间内**非单射**；半开跳变方向使**镜像配置失去奇对称**，但有向端点关系与单调性不变。provenance：verdict `adopt`，confidence 0.98 / 0.99；落点 [S7A-2 实现复核报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-2-implementation-rulings.md) |
 | CM-T04 | `observationTick` 的来源（设备时间 / 宿主到达时间 / 音频时间 / 校准后会话时间） | SK §1、AR P0-04 | I-SPEC §2 允许 `JudgementConfig` 声明是否参与判定 | `accept` | **已裁定（第 2 轮，Codex 2026-10-03）**：`observationTick` **唯一**来自输入进入判定管线时捕获的**校准后会话时钟**；设备 / 宿主到达 / 音频 / 渲染帧时间**仅保留为诊断上下文**；**S7C-1 只能扩展 `CalibrationProfile` 参数，不得替换 canonical source**。落点 [GAMEPLAY_V2_SPEC.md](../../formats/GAMEPLAY_V2_SPEC.md) §3.7.3。provenance 同上（thread `s7a1-freeze-bindings`，`adopt`，0.99，2026-10-03） |
 | CM-T05 | `NormalizedObservation` 字段集（observationId / observationTick / ingressSequence / domain / action / channel / contact / position·amount / discontinuity / sourceClass） | SK §2、PD §8.1 | I-SPEC §2 的 `InputEvent` 字段更少 | `supersede` | ABI 的 `observationTime` 需改名（AR P1-08） |
 | CM-T06 | 宿主适配器必须在进入 PlaybackSession 前提供单一 `ingressSequence`；引擎不使用线程完成顺序 | SK §2、PD §8.1 | I-SPEC 有 sequence 但未规定提供者 | `accept` | 无 |
 | CM-T07 | 迟到策略只接受 `reject_late` 与 `queue_next_tick`；`reopen_uncommitted_window` 保持 candidate | PD §8.2、ST F04、AR P1-04 | 无 | `accept` | 策略必须写入 session judgement identity |
-| CM-T08 | `finalizationWatermark`、最大 queue hop、窗口 open/close、重复排队条件 | PD §8.2、AR P1-04 | 无 | `accept` | **已裁定（第 2 轮，Codex 2026-10-03）**：四项均为 `TimebaseProfile` / ruleset 提供的 **typed 参数**；默认值**只在 profile registry 登记为 `pending_measurement`**，不得成为 ABI 常量、隐式零值或研究切片限额；**缺失或未测量值在 prepare 稳定拒绝**；**重复排队稳定拒绝并返回诊断码**。**具体数值**（watermark / queue hop / 窗口开闭阈值）登记为**后续批次阻塞项**（不是 S7A-2 门禁）。落点 [GAMEPLAY_V2_SPEC.md](../../formats/GAMEPLAY_V2_SPEC.md) §3.7.4。provenance 同上。**2026-10-03 实现复核补充**：`validatePrepare` 只校验四项参数**已声明且已测量**，**不校验**参数之间的量级关系；量级关系校验登记为**阻塞 S7A-4 的 late-window / 判定消费门禁**，具体数值与限额继续记 **S7A-9**（落点 Spec §3.7.4 第 5 条、§3.7.7 表、[S7A-2 实现复核报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-2-implementation-rulings.md)） |
+| CM-T08 | `finalizationWatermark`、最大 queue hop、窗口 open/close、重复排队条件 | PD §8.2、AR P1-04 | 无 | `accept` | **已裁定（第 2 轮，Codex 2026-10-03）**：四项均为 `TimebaseProfile` / ruleset 提供的 **typed 参数**；默认值**只在 profile registry 登记为 `pending_measurement`**，不得成为 ABI 常量、隐式零值或研究切片限额；**缺失或未测量值在 prepare 稳定拒绝**；**重复排队稳定拒绝并返回诊断码**。**具体数值**（watermark / queue hop / 窗口开闭阈值）登记为**后续批次阻塞项**（不是 S7A-2 门禁）。落点 [GAMEPLAY_V2_SPEC.md](../../formats/GAMEPLAY_V2_SPEC.md) §3.7.4。provenance 同上。**2026-10-03 实现复核补充**：`validatePrepare` 只校验四项参数**已声明且已测量**，**不校验**参数之间的量级关系；量级关系校验登记为**阻塞 S7A-4 的 late-window / 判定消费门禁**，具体数值与限额继续记 **S7A-9**（落点 Spec §3.7.4 第 5 条、§3.7.7 表、[S7A-2 实现复核报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-2-implementation-rulings.md)） |
 | CM-T09 | InputMapping profile 属 session，不改变 Canonical Gameplay Graph | IR §1、计划 §S7A-2.3 | I-SPEC §2 把映射/校准放入 session 元数据 | `retain` | 映射的 source identity/版本/量化必须进 session identity。**2026-10-03 输入半批复核（`adopt` 0.97 / 0.99，同 thread `s7a1-freeze-bindings`；处置词不变）**：session identity 分量为 `profileId`、`profileVersion`、`sourceClass`，**加规范化后的域 token 集合与每项域声明的完整 `AmountSpec` 字段（`scale` / `minimum` / `maximum` / `boundaryPolicy`）**；**域声明顺序不承载语义**（重排不是 identity 变化），**增删任何域或改动其 `AmountSpec` 是 identity 变化**；**7A 不引入 per-domain 版本字段**——会话级版本由 `profileVersion` 承载，**不得**推迟到 S7A-4。落点 [GAMEPLAY_V2_SPEC.md](../../formats/GAMEPLAY_V2_SPEC.md) §5.2 行、§3.7.6 与 [GAMEPLAY_V2_ABI.md](../../api/GAMEPLAY_V2_ABI.md) 域 2 `InputMapping` / 域 6 `NormalizationProfile`、§数值域与量程、§S7A-2 输入半批冻结补充 |
 | CM-T10 | 时间回退、负时间、重复 sequence、跨 discontinuity 的显式行为 | 计划 §S7A-2.4 | I-SPEC §11 只要求稳定失败 | `accept` | 逐项 expected 结果需在 Spec 写成状态表。**2026-10-03 输入半批复核（`adopt` 0.97 / 0.99；处置词不变）**：四类行为结论如下——①**校准会话时钟回退**被稳定拒绝，属**时间次序关系错误** → `invalid_relation`（**不是** `budget_exceeded`）；②**负 `observationTick` 合法**（有符号 64 位域内）并参与单调排序，负值本身不触发任何拒绝码；**不可表示的 calibrated clock 值**复用既有 **tick 域表示失败**（`budget_exceeded`），**不保留**独立令牌，入口顺序违规只走既有 `invalid_relation` 路径；③**重复 `ingressSequence` 与迟到队列重复 canonical 身份**映射 `late_policy_incomplete`，**与同 Tick 同 canonical 身份重入（`invalid_relation`）分开**——后者属输入身份 / 次序关系非法；④**不连续表示**（跨 gap / 重连 / 丢样）与连续输入能力**都复用**既有 ABI 冻结码 `input.continuous_unsupported`（类别 `capability_disabled`，`capabilityId = input.trajectory.v1`，`remediation = S7B-1`），靠 `field.path`（`continuityCapability` vs `discontinuity`）区分，映射既有 **R-05**；**不新增 ABI 码、不新增 R 条目**。落点 [GAMEPLAY_V2_SPEC.md](../../formats/GAMEPLAY_V2_SPEC.md) §3.7.3、§3.7.7、§3.7.8、§9.3 与 [GAMEPLAY_V2_ABI.md](../../api/GAMEPLAY_V2_ABI.md) §时间单位与表达、§S7A-2 输入半批冻结补充 |
 | CM-T11 | 设备最低上报率与能力协商；不满足时拒绝或按显式策略降级 | IR §3、PD §8.3 | I-SPEC §2 只承诺同类别在最低上报率以上的格点相同 | `accept` | 7A 只涉及离散；连续能力属 S7B-1 |
@@ -317,7 +317,7 @@ confidence **0.97**），2026-10-03；逐条落点见 [RULING_WORKSHEET.md](RULI
   D-3 修订：W 类缺口的字段定义在 SUPPORT §6、登记与引用规则在 plan §5.3），`open` 18 → **16**、
   `accept` 35 → **36**、`revise` 25 → **26**；§14 的 S7A-3 行随之闭合（该行改为 `—`）。总数仍为 114。
   provenance：thread `s7a3-prepare-rulings`（`need_info` 0.8、`reject` 0.88、`adopt` 0.99），2026-10-03；
-  带日期落地记录见 [第 3 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-3-gate-rulings.md)。
+  带日期落地记录见 [第 3 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-3-gate-rulings.md)。
 - 计数变化（2026-10-03，第 4 轮裁定）：`CM-C05`、`CM-C09` 由 `open` 改为 `accept`（第 4 轮：`CM-C05` 随
   `Q-16` 的唯一六步 / 八阶段映射关闭；`CM-C09` 随 `Q-11` 裁定关闭，7A 资源子集冻结为 `free` / `held` /
   `terminal`，`gap` / `handoff_pending` / 非零 grace / handoff / `capacity > 1` / owner 集合 / 并列 slot
@@ -325,7 +325,7 @@ confidence **0.97**），2026-10-03；逐条落点见 [RULING_WORKSHEET.md](RULI
   `reject` 2 不变；§14 的 S7A-4 行随之闭合（该行改为 `—`）。总数仍为 114。provenance：thread
   `s7a4-arbitration-rulings`（`gpt-6-astra`，consult：主裁定卡 `adopt` 0.97、处置词与计数确认卡 `adopt`
   0.99），2026-10-03；带日期落地记录见
-  [第 4 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-4-gate-rulings.md)。**`CM-C04`、
+  [第 4 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-4-gate-rulings.md)。**`CM-C04`、
   `CM-C06`、`CM-C07` 的处置词不变**（`revise` / `revise` / `accept`），只在 §5 更新未决点文字。
 - 计数变化（2026-10-03，第 5 轮裁定）：`CM-F06`、`CM-S08`、`CM-S10`、`CM-K07` 由 `open` 改为 `accept`
   （第 5 轮：`CM-F06` 随 `Q-12` 的事实序与身份生成裁定关闭并 `S7A5-R02` 承接；`CM-S08` 随 `Q-17` 的
@@ -336,7 +336,7 @@ confidence **0.97**），2026-10-03；逐条落点见 [RULING_WORKSHEET.md](RULI
   总数仍为 114。provenance：同一 Codex 话题 thread `01a0fe49-cfe5-7933-8d03-3d0a65d34c8b`（consult，
   三卡：主裁定卡 `adopt` 0.95、处置词与计数确认卡 `adopt` 0.99、ABI 状态格首词与追踪计数追问卡
   `adopt` 0.98），2026-10-03；带日期落地记录见
-  [第 5 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-5-6-gate-rulings.md)。**`CM-S02`、
+  [第 5 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-5-6-gate-rulings.md)。**`CM-S02`、
   `CM-K01` 的处置词不变**（均仍为 `revise`），只在 §7 / §10 更新未决点文字；**`CM-S11`、`CM-K08` 不是本
   台账的行**，不改变任何计数。
 - 计数变化（2026-10-03，第 6 轮裁定）：`CM-P04`、`CM-P06`、`CM-P08`、`CM-D04`、`CM-X01` 由 `open` 改为
@@ -347,7 +347,7 @@ confidence **0.97**），2026-10-03；逐条落点见 [RULING_WORKSHEET.md](RULI
   `revise` 26 / `supersede` 17 / `retain` 17 / `reject` 2 不变；§14 的 S7A-7 行随之闭合（该行改为
   `—（本批次门禁已满足）`）。总数仍为 114。provenance：Codex 话题 thread
   `01a0fe61-3476-7882-9674-5f6b05035237`（consult，单卡 verdict `adopt`、confidence **0.97**），2026-10-03；
-  带日期落地记录见 [第 6 轮门禁报告](../../stage_reports/stages/stage-07/2026-10-03-s7a-6-gate-rulings.md)。
+  带日期落地记录见 [第 6 轮门禁报告](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-6-gate-rulings.md)。
   **`CM-V06`、`CM-V07`、`CM-V13`、`CM-I06`、`CM-X06` 五条 `open` 本轮不改处置词**（其与 §0.1 第 33 行 /
   §8 的自相矛盾由**第 7 轮**单独裁定，本轮不替第 7 轮改口径）；**`CM-S02`、`CM-K01` 仍为 `revise`**。
 - 计数变化（2026-10-03，第 7 轮裁定）：`CM-V06`、`CM-V07`、`CM-V13`、`CM-I06`、`CM-X06` 五条由 `open` 改为
@@ -361,7 +361,7 @@ confidence **0.97**），2026-10-03；逐条落点见 [RULING_WORKSHEET.md](RULI
   归属列，不随处置词变化）。provenance：**主卡** thread `01a0fe61-b7a3-7853-a380-0793fee14e14`（consult，
   `gpt-6-astra`，verdict `adopt`、confidence **0.96**）与**口径确认卡** thread
   `01a0fe61-3476-7882-9674-5f6b05035237`（verdict `adopt`、confidence **0.99**），2026-10-03；带日期落地
-  记录见 [第 7 轮收尾裁定与缺陷处置记录](../../stage_reports/stages/stage-07/2026-10-03-s7a-7-wrapup-rulings.md)。
+  记录见 [第 7 轮收尾裁定与缺陷处置记录](../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-7-wrapup-rulings.md)。
   **`CM-S02`、`CM-K01` 仍为 `revise`**；`CM-T13`、`CM-S11`、`CM-K08` 不是本台账的行，不改变任何计数。
 - 另：`CM-S02`（寄存器类型）、`CM-K01`（Replay header / `eventCodecId`）的处置词仍为 `revise`，
   其轮次归属（第 5 轮）由 [RULING_WORKSHEET.md](RULING_WORKSHEET.md) §5 与 §7B 绑定登记；二者**不在**本 `open` 清单内。
