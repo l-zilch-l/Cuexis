@@ -1,6 +1,6 @@
 # Stage 6 Four-Item Handover Implementation
 
-状态：implemented candidate；local functional verification passed; Release verification in progress；owner / hosted acceptance pending
+状态：implemented candidate；local functional and Release verification passed；owner / hosted acceptance pending
 
 证据日期：2026-10-07（UTC build date 2026-10-06）
 
@@ -36,8 +36,10 @@ The final report includes compiled/artifact/prepared identities and actual Playb
 
 ## Local evidence matrix
 
-These logs live under the ignored `out/` directory. Initial runs are working-tree evidence;
-exact behavior SHA and final results are filled after the code commit, not inferred from old runs.
+These logs live under the ignored `out/` directory. Product implementation is committed at
+`fcc2af350392b5c2b61709d168a00fbed96980ae`; parallel fixture isolation is committed at
+`6f4592b3b4718bc302a83bf398c624a021e48a96`. Initial matrices are working-tree evidence;
+post-commit rows below explicitly identify the later verification, without relabeling old runs.
 
 | Row | Invocation / evidence | Result |
 | --- | --- | --- |
@@ -46,14 +48,21 @@ exact behavior SHA and final results are filled after the code commit, not infer
 | MSVC ON shared Debug fresh/clean | `out/s7a8-candidate-shared-configure.log`, build/incremental/tests logs | 38/38 passed; final changed CLI/Host subset 7/7 passed; private access remains static-only, public shared results checked |
 | Linux GCC 15.2 headless ON | `out/s7a8-linux-configure.log`, build/test logs | build passed; 17/17 candidate tests passed |
 | MinGW headless ON | `out/s7a8-mingw-configure.log`, build/test logs | build passed; 28/28 candidate tests passed |
-| MSVC OFF Release fresh/clean | `out/s7a8-release-configure.log`, build/tests logs | configure passed; build/test in progress |
-| SDK authorization | `python -B tools/check_version_gate_tests.py`, `out/s7a8-version-tests.log` | 24 tests passed, 2 environment-dependent shell cases skipped on Windows |
+| MSVC OFF Release fresh/clean | `out/s7a8-release-configure.log`, build/tests logs | build passed; 1006 tests, zero failures, one Windows symlink case skipped; 641.51 seconds |
+| Post-commit MSVC ON static/shared | `out/s7a8-postcommit-msvc-static.log`, `out/s7a8-postcommit-msvc-shared.log` | parallel runs passed 7/7 each after the fixture isolation commit |
+| Post-commit Linux GCC / MinGW ON | `out/s7a8-postcommit-linux.log`, `out/s7a8-postcommit-mingw.log` | rebuilt changed test target; 17/17 and 28/28 passed respectively |
+| SDK authorization | `python -B tools/check_version_gate_tests.py`, `out/s7a8-version-tests.log` | 24 tests: 22 passed, 2 environment-dependent shell cases skipped on Windows |
 | Docs / target / API metadata | `python -B tools/check_docs.py` | 379 Markdown/20 JSON-CXT passed; status contract 4/4 and target contract 2/2 passed; format target passed |
 
 MSVC static/shared, Linux GCC and MinGW produce identical final package bytes: SHA256
 `11109688cd9b26cdc625e5b52c66b193eb6735e9bf4d7eb28628d21b0432dc0e`.
 The actual prepared identity is
 `2360b547c60ee506482808c7daa85f4e8a8c4051f1cce2428b5440ff7d6a3b86`.
+
+The first parallel static/shared rerun exposed a test fixture collision: both processes used
+`cuexis-candidate-1` and could clean up the other's input. The test now atomically reserves a
+process-specific directory without deleting an existing directory. Both parallel rows passed
+after rebuilding this fix; product package bytes and public contracts did not change.
 
 The 16-tap stair golden compiled semantic identity is
 `c08e0e8a1236001058ae338cffac0cb609b8ee95fb23ceb5d7b0dbc3629febcc`;

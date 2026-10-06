@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-10-06
+更新日期：2026-10-07
 
 本文是 Cuexis 当前产品和阶段状态的唯一摘要。ADR 定义决策，Spec 定义字段和语义，阶段计划定义未来
 范围，阶段报告保存带日期的实施证据；它们不得绕过本文重新定义当前状态。
@@ -57,7 +57,8 @@ S7A-8.1–S7A-8.4 展开；2026-10-02 订正，原文误写为 §2 与 §6）。
 
 2026-10-07 四项实施已授权提交现有 PR #32，由 owner 本人审批。candidate flavor/许可/安装隔离、
 Foundation typed assembler CLI 原子包与真实 prepare、安装后宿主 candidate entry 和 SDK `0.7.1`
-候选及精确审批门禁均已实施；本地 ON/OFF static/shared 回归已取得证据，跨工具链矩阵继续回填。
+候选及精确审批门禁均已实施；本地 ON/OFF static/shared、Linux GCC、MinGW 矩阵已回填，
+MSVC OFF Release 全量 1006 项无失败（1 项 Windows 符号链接测试跳过）。
 当前代码交付不等于门禁整体退出：可信 master bootstrap、平台保护与 owner 精确审批以及同 SHA
 hosted 证据仍待回填。尤其 merge_group 的候选 workflow 不能仅靠复制 base checker 证明可信；
 启用 merge queue 前必须采用受保护的 required workflow/外部可信检查源，否则保持禁用。
