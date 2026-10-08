@@ -340,3 +340,19 @@ S7A-8.4未退出，owner/可信bootstrap/保护/新SHA hosted未代办，真实�
 原始输出运行于该提交之前的同一实施输入；清单全部 input index blobs 已与该提交树逐项比较一致。
 后续证据提交仅更新日期报告、CURRENT_STATUS 和清单SHA，不改变运行代码/合同输入。
 本地输出不声称新SHA hosted通过；推送后Hosted/owner/设备证据仍需独立回填，S7A-8.4未退出。
+
+## 首次推送后的触发证据（不等待 hosted 完成）
+
+首次推送HEAD `aaa9ca34311325df2086b8e02ea3b37a6c6abfbb` 的 pull_request
+[Version Gate run](https://github.com/l-zilch-l/Cuexis/actions/runs/37786422185) 已实际启动
+`Version advancement (pre-merge)`，随后completed/failure。只读即时查询时该job已经结束，
+没有轮询等待CI完成；三平台结果继续待回填。
+[原始失败输出](2026-10-08-s7a-7-8-hosted-version-trigger.log) 对应 `gh run view 37786422185 --log-failed`。
+命令 `gh api repos/l-zilch-l/Cuexis/actions/runs/37786422185/jobs` 返回实际job状态。
+
+精确诊断为 `version.bootstrap.required`：trusted base
+`5472c463640cf3b66a03dd86fe87bd87239b2659` 缺 `.github/sdk-api-owners.json`，必须由owner审查
+checker与保护规则后首次bootstrap。workflow拒绝回退执行candidate代码。本轮没有bootstrap、
+代审批或保护修改；S7A-8.4继续未退出。触发bug已由实际job证明修复，不把该失败记成CI通过。
+本证据补提交只改报告/CURRENT_STATUS和原始日志，不改873个实现输入。补提交后的最新HEAD
+hosted证据仍待回填，旧run不声称验证新文档HEAD；实现输入与83935f1保持一致。

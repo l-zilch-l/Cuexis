@@ -1,0 +1,49 @@
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	﻿2026-10-08T13:44:05.1807123Z ##[group]Run set -euo pipefail
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1808605Z ^[[36;1mset -euo pipefail^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1809862Z ^[[36;1mtest -n "${CUEXIS_BASE_SHA}"^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1811279Z ^[[36;1mtest -n "${CUEXIS_CANDIDATE_SHA}"^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1813241Z ^[[36;1m# Fetch data only. Never check out or execute PR code in either PR event.^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1815474Z ^[[36;1mgit fetch --no-tags origin "${CUEXIS_CANDIDATE_SHA}"^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1817567Z ^[[36;1mTRUSTED_ROOT="${RUNNER_TEMP}/cuexis-version-gate"^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1819633Z ^[[36;1mmkdir -p "${TRUSTED_ROOT}/tools" "${TRUSTED_ROOT}/.github/workflows"^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1821993Z ^[[36;1m# The trusted tests build their fixtures by rendering a version file, so^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1824440Z ^[[36;1m# the base's own templates for cmake/CuexisVersion.cmake and vcpkg.json^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1827003Z ^[[36;1m# must be part of the trusted copy. Taking them from the base keeps the^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1829315Z ^[[36;1m# fixture format trusted instead of letting a candidate shape it.^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1831133Z ^[[36;1m for path in \^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1832295Z ^[[36;1m  tools/check_version_gate.py \^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1833706Z ^[[36;1m  tools/check_version_gate_tests.py \^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1835132Z ^[[36;1m  tools/update_version.py \^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1836619Z ^[[36;1m  .github/workflows/version-gate.yml \^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1838054Z ^[[36;1m  .github/sdk-api-owners.json \^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1839387Z ^[[36;1m  cmake/CuexisVersion.cmake \^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1840947Z ^[[36;1m  vcpkg.json; do^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1842788Z ^[[36;1m  if ! git cat-file -e "${CUEXIS_BASE_SHA}:${path}" 2>/dev/null; then^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1848515Z ^[[36;1m    echo "::error title=Version gate bootstrap required::version.bootstrap.required: trusted baseline ${CUEXIS_BASE_SHA} lacks ${path}; owner must review the checker and protection rules before the first bootstrap merge. The workflow intentionally fails and never falls back to candidate code."^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1853695Z ^[[36;1m    exit 1^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1854691Z ^[[36;1m  fi^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1855861Z ^[[36;1m  mkdir -p "${TRUSTED_ROOT}/$(dirname "${path}")"^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1857855Z ^[[36;1m  git show "${CUEXIS_BASE_SHA}:${path}" > "${TRUSTED_ROOT}/${path}"^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1859516Z ^[[36;1mdone^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1860639Z ^[[36;1mexport CUEXIS_TRUSTED_ROOT="${TRUSTED_ROOT}"^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1862465Z ^[[36;1mpython3 -B "${TRUSTED_ROOT}/tools/check_version_gate_tests.py"^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1864514Z ^[[36;1mpython3 -B "${TRUSTED_ROOT}/tools/check_version_gate.py" \^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1866401Z ^[[36;1m  --repo-root "${GITHUB_WORKSPACE}" \^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1867846Z ^[[36;1m  --base-ref "${CUEXIS_BASE_SHA}" \^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1869336Z ^[[36;1m  --candidate-ref "${CUEXIS_CANDIDATE_SHA}" \^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1871076Z ^[[36;1m  --trusted-utc-date "$(date -u +%F)" \^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1872425Z ^[[36;1m  --context live \^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1873559Z ^[[36;1m  --event "${CUEXIS_EVENT}" \^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.1875027Z ^[[36;1m  --sdk-owner-approval-pr "${CUEXIS_APPROVAL_PR}"^[[0m
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.2235320Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.2237173Z env:
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.2238342Z   CUEXIS_BASE_SHA: 5472c463640cf3b66a03dd86fe87bd87239b2659
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.2240224Z   CUEXIS_CANDIDATE_SHA: aaa9ca34311325df2086b8e02ea3b37a6c6abfbb
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.2241886Z   CUEXIS_EVENT: pull_request
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.2243047Z   CUEXIS_APPROVAL_PR: 32
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.2254797Z   GITHUB_TOKEN: ***
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.2255777Z ##[endgroup]
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.2414016Z From https://github.com/l-zilch-l/Cuexis
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.2415825Z  * branch            aaa9ca34311325df2086b8e02ea3b37a6c6abfbb -> FETCH_HEAD
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.2707827Z ##[error]version.bootstrap.required: trusted baseline 5472c463640cf3b66a03dd86fe87bd87239b2659 lacks .github/sdk-api-owners.json; owner must review the checker and protection rules before the first bootstrap merge. The workflow intentionally fails and never falls back to candidate code.
+Version advancement (pre-merge)	Run trusted version-gate tests and checker	2026-10-08T13:44:05.2726617Z ##[error]Process completed with exit code 1.

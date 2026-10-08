@@ -65,7 +65,7 @@ hosted 证据仍待回填。尤其 merge_group 的候选 workflow 不能仅靠�
 历史复核见[四项交接复核](stage_reports/stages/stage-07/verification/2026-10-06-stage6-handover-audit.md)，
 本轮实施与证据见[四项实施报告](stage_reports/stages/stage-07/verification/2026-10-07-stage6-handover-implementation.md)。
 
-本轮 S7A-7.1–7.5 / S7A-8.1–8.4 联合实施及受限本地功能验收完成，实现提交 `83935f1375be61ba0f3ea16205fccc6a70094c8e`，本轮提交将推送现有 PR #32。
+本轮 S7A-7.1–7.5 / S7A-8.1–8.4 联合实施及受限本地功能验收完成，实现提交 `83935f1375be61ba0f3ea16205fccc6a70094c8e`，已推送现有 PR #32。
 typed Gameplay source→Graph/Packed→完整 Entry/CXC/捕获 filesystem generation→实际 prepare、
 生产 assembler 完整闭包与确定性原子发布、显式 Gameplay 生命周期/组合事务、typed H/T bridge、
 同实际 kernel/Fold 的完整 Replay/Snapshot/exact Seek/control、optional FactBinding 的 resolver/group/
@@ -82,7 +82,8 @@ S7A-8.4 **未退出**：owner approval、trusted master bootstrap、保护/requi
 hosted 门禁未满足；未代审批、执行 bootstrap、改保护、合并或发行。S7A-9 仅累计计数/测量输入/
 handoff 草稿，不接受生产阈值，不进行最终关闭；Stage7A保持active，Stage8正式发行未开始。
 Version advancement pre-merge 触发断层已修复：保留 target、恢复 pull_request，两事件只执行
-trusted base 工具，本地回归通过。新 SHA hosted 启动/结果仍待回填，可信 base 缺前置条件时
+trusted base 工具，本地回归通过。首次推送 aaa9ca3 的 pre-merge job 已实际启动，因可信 base 缺 .github/sdk-api-owners.json 报
+version.bootstrap.required；三平台及后续最新 HEAD hosted 结果仍待回填。可信 base 缺前置条件时
 bootstrap_required 继续阻断，不执行 PR head 脚本、不绕过 owner 门禁。
 
 ## 当前格式与 SDK 合同
