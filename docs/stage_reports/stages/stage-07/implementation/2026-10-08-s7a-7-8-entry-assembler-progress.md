@@ -139,49 +139,50 @@ bounded SAX字符/row与Host进程计数；O(N)成本尚需真实内容测量，
 以下每行合同版本为本轮 2026-10-07/08 所属合同补充，实施基线 55fc8e；实现 SHA 在提交后
 单独登记。命令与原始输出使用下面最终矩阵；此表的代码/fixture映射不把未完成平台门禁标记通过。
 
-| C78 | 所属合同与实施消费者 | 人工/独立/故障及完整对照 fixture | 仍保留 |
-| --- | --- | --- | --- |
-| 01 | V2 ABI/Spec、execution profile；GameplayContent/PlaybackSession 显式配置与独立状态 | playback_gameplay_tests zero-input Miss、纯播放 digest、实际 build/无配置拒绝 | production budget/设备校准 |
-| 02 | Playback lifecycle/ABI；prepare Gameplay immutable candidate、组合 owner/generation commit | wrong owner/stale/重复commit、Runtime预检失败完整旧结果、故障 sealed/publishable prefix | hosted同SHA |
-| 03 | V2 time/profile、Playback typed H/T桥；actual submit/advance及host适配 | exact H/F(H)、future/lastObservedTick、重复序号/极值；Player整数raw timestamp、Host 250/7 | testOnly bridge非生产设备锚点 |
-| 04 | Playback control/恢复ABI；public control/Replay/Snapshot/Seek | actual Hold press/release oracle、pending snapshot、archive cut/checkpoint Seek、paused/reload、fakeaudio失败 | 实际设备discontinuity |
-| 05 | Graph1、Capsule3、ChartEntry1、CXC1；typed SAX/source/carrier factories | 64-bit整数/重复键/count/bounds/hash/closure负例、Graph/Packed完整结果、file/memory/fs | Chart v5正式发行独立 |
-| 06 | author/execution profile、ChartEntry/CXC；生产chart_candidate --gameplay | inline/CXT/2x3 permutation全artifact比较；14CLI，单CXC原子+多产物adopted故障/旧reader固定 | 内容生产阈值不接受 |
-| 07 | Spec §3.23/ABI、Animation mixing/Playback；resolver+group+scope+sourceMap | early/exact/late/Miss/false/Host/Studio、future/lifetime/cadence、partial-group/alias/恢复当前资源 | 大内容O(N)测量 |
-| 08 | V2 ABI/恢复、Playback；owning public Result/W2档案/全ReplayEvaluation | old owning寿命/篡改预算、actual Hold完整恢复、static/shared staged consumer codec | matching-toolchain shared须重建 |
-| 09 | CXC/Playback/Spec；GameplayOnly CPU closure、optional Presentation | 两intent同actualKernel/Fold、缺target不改判定、Runtime失败旧frame、坏包拒绝 | GPU/window独立 |
-| 10 | ABI/registry/诊断码表；static capability query/完整configuration identity | unknown/revision/disabled/pending insufficient/committed available、readonly generation与Paused查询 | 无新production预算/capability |
-| 11 | Playback宿主补充；SDL scancode、PlayerController、installed ReferenceHost | Player focusLost/paused resume/audio拒绝人工golden；14进程矩阵（12 Host +2 assembler）四载体Hit/Miss/六动词+tick全Replay | 实际键盘/GPU/audio设备未执行 |
-| 12 | Playback package/VERSIONING；ON条件头/宏、private link、SDK source compatibility | ON/OFF/ASCII/arch/allowlist/static/shared/package/0.7.0 source proof/toolsOFF配置 | owner审批/可信bootstrap/保护/新SHA hosted |
+| C78 | 所属合同与实施消费者 | 人工/独立/故障及完整对照 fixture | 仍保留 | 合同版本 | 实现 SHA |
+| --- | --- | --- | --- | --- | --- |
+| 01 | V2 ABI/Spec、execution profile；GameplayContent/PlaybackSession 显式配置与独立状态 | playback_gameplay_tests zero-input Miss、纯播放 digest、实际 build/无配置拒绝 | production budget/设备校准 | Gameplay v2 Spec/ABI、T4/K4 execution profile v1；10-08补充 | `83935f1375be` |
+| 02 | Playback lifecycle/ABI；prepare Gameplay immutable candidate、组合 owner/generation commit | wrong owner/stale/重复commit、Runtime预检失败完整旧结果、故障 sealed/publishable prefix | hosted同SHA | Playback preview0.7.1、Gameplay v2 ABI；10-08补充 | `83935f1375be` |
+| 03 | V2 time/profile、Playback typed H/T桥；actual submit/advance及host适配 | exact H/F(H)、future/lastObservedTick、重复序号/极值；Player整数raw timestamp、Host 250/7 | testOnly bridge非生产设备锚点 | T4/K4 execution profile v1、Gameplay v2；10-08补充 | `83935f1375be` |
+| 04 | Playback control/恢复ABI；public control/Replay/Snapshot/Seek | actual Hold press/release oracle、pending snapshot、archive cut/checkpoint Seek、paused/reload、fakeaudio失败 | 实际设备discontinuity | Gameplay v2 ABI/W2恢复、Playback0.7.1；10-08补充 | `83935f1375be` |
+| 05 | Graph1、Capsule3、ChartEntry1、CXC1；typed SAX/source/carrier factories | 64-bit整数/重复键/count/bounds/hash/closure负例、Graph/Packed完整结果、file/memory/fs | Chart v5正式发行独立 | Graph1、Capsule3、author profile v1；10-08补充 | `83935f1375be` |
+| 06 | author/execution profile、ChartEntry/CXC；生产chart_candidate --gameplay | inline/CXT/2x3 permutation全artifact比较；14CLI，单CXC原子+多产物adopted故障/旧reader固定 | 内容生产阈值不接受 | ChartEntry1、CXC1、T4/K4 author profile v1；10-08补充 | `83935f1375be` |
+| 07 | Spec §3.23/ABI、Animation mixing/Playback；resolver+group+scope+sourceMap | early/exact/late/Miss/false/Host/Studio、future/lifetime/cadence、partial-group/alias/恢复当前资源 | 大内容O(N)测量 | Gameplay v2 Spec/ABI、Animation mixing；10-08补充 | `83935f1375be` |
+| 08 | V2 ABI/恢复、Playback；owning public Result/W2档案/全ReplayEvaluation | old owning寿命/篡改预算、actual Hold完整恢复、static/shared staged consumer codec | matching-toolchain shared须重建 | Gameplay v2 ABI/W2、Playback0.7.1；10-08补充 | `83935f1375be` |
+| 09 | CXC/Playback/Spec；GameplayOnly CPU closure、optional Presentation | 两intent同actualKernel/Fold、缺target不改判定、Runtime失败旧frame、坏包拒绝 | GPU/window独立 | CXC1、ChartEntry1、Playback0.7.1；10-08补充 | `83935f1375be` |
+| 10 | ABI/registry/诊断码表；static capability query/完整configuration identity | unknown/revision/disabled/pending insufficient/committed available、readonly generation与Paused查询 | 无新production预算/capability | Gameplay v2 ABI、registry1；10-08补充 | `83935f1375be` |
+| 11 | Playback宿主补充；SDL scancode、PlayerController、installed ReferenceHost | Player focusLost/paused resume/audio拒绝人工golden；14进程矩阵（12 Host +2 assembler）四载体Hit/Miss/六动词+tick全Replay | 实际键盘/GPU/audio设备未执行 | Playback0.7.1宿主合同；10-08补充 | `83935f1375be` |
+| 12 | Playback package/VERSIONING；ON条件头/宏、private link、SDK source compatibility | ON/OFF/ASCII/arch/allowlist/static/shared/package/0.7.0 source proof/toolsOFF配置 | owner审批/可信bootstrap/保护/新SHA hosted | SDK0.7.1 package、VERSIONING；10-08补充 | `83935f1375be` |
 
-| R78 | 本轮选项与直接验收映射 |
-| --- | --- |
-| 01 A | Result/Projection/Runtime publication receipt、faulted readonly旧frame；Runtime预检/失败注入 |
-| 02 A | successfulFold可发布cursor；Fold失败sealed Fact保留/failedTick无token；full Replay对照 |
-| 03 A | mutation generation owner/stale；readonly查询不使Prepared失效，空submit不伪mutation |
-| 04 A | transient schedule/dedup/group/sourceMap/token整体swap；exact Seek/Snapshot/currentbind重建 |
-| 05 A | 四分量不含纯表现细节；同identity恢复当前绑定/资源，旧owningmap独立存活 |
-| 06 A | GameplayOverride layer与layer内priority，Animation/Host/Studio完整golden |
-| 07 A | typed [start,end)/UntilReset；dense/sparse/skipped/cut/expiry比较 |
-| 08 A | json_support bounded SAX→typed Graph；整数不经f64，重复/结构/预算正确层失败 |
-| 09a B | filesystem immutable generation+singleadopted；CXC旧publishPackage；14CLI故障与capture |
-| 09b A | 实际production API diff与0.7.0 consumer保持；保留0.7.1 patch，fresh/clean消费者矩阵 |
-| 10a B | live section owner/anchor checker5正负测试、historical例外；386文档检查 |
-| 10b A | 独立 GameplayState/Kernel-Fold-Control faultStage；不改旧Playback state、不安装内部enum |
-
-| S7A | 本轮实现与验收映射 | 本轮状态口径 |
+| R78 | 本轮选项与直接验收映射 | 实现 SHA |
 | --- | --- | --- |
-| 7.1 | C78-01–04/08；实际Lifecycle、owning查询/恢复、Tap/Hold golden+independent scan/fullReplay | 实施完成；最终矩阵结束后记录受限功能验收，生产/设备/hosted独立 |
-| 7.2 | C78-05/06；Graph/Packed/Entry/typed/file/memory/capturedfs→actualprepare、fullartifact/oracle | 同上；正式Chart v5发行未接受 |
-| 7.3 | C78-09；GameplayOnly完整闭包与相同实际判定/故障边界 | 同上；GPU资源适配另列 |
-| 7.4 | C78-07；resolver层域、typed lifetime/group/sourceMap/current资源恢复 | 同上；没有第二判定路径 |
-| 7.5 | C78-08/12；candidate public package/opaque payload/private执行图不安装 | 同上；共享consumer按matching toolchain重建 |
-| 8.1 | explicit ON/OFF/wrong flavor/entry隔离，已有candidate preset/CI消费 | 本地矩阵待下节结算；新SHA hosted待回填 |
-| 8.2 | 完整生产assembler、静态registry/完整Entry/双carrier、deterministic atomic publish | 14CLI actualprepare/fullclosure通过，跨平台最终consumer待结算 |
-| 8.3 | installed ReferenceHost六动词+tick/四载体Hit-Miss/Replay，Player真实scancode接线 | CPU人工+synthetic/fakeaudio通过；真实设备独立未执行 |
-| 8.4 | actual SDK diff/日期/version/trustedchecker正负/CI触发修复 | 未退出：owner approval、trusted master bootstrap、保护、新SHA hosted；未代办 |
+| 01 A | Result/Projection/Runtime publication receipt、faulted readonly旧frame；Runtime预检/失败注入 | `83935f1375be` |
+| 02 A | successfulFold可发布cursor；Fold失败sealed Fact保留/failedTick无token；full Replay对照 | `83935f1375be` |
+| 03 A | mutation generation owner/stale；readonly查询不使Prepared失效，空submit不伪mutation | `83935f1375be` |
+| 04 A | transient schedule/dedup/group/sourceMap/token整体swap；exact Seek/Snapshot/currentbind重建 | `83935f1375be` |
+| 05 A | 四分量不含纯表现细节；同identity恢复当前绑定/资源，旧owningmap独立存活 | `83935f1375be` |
+| 06 A | GameplayOverride layer与layer内priority，Animation/Host/Studio完整golden | `83935f1375be` |
+| 07 A | typed [start,end)/UntilReset；dense/sparse/skipped/cut/expiry比较 | `83935f1375be` |
+| 08 A | json_support bounded SAX→typed Graph；整数不经f64，重复/结构/预算正确层失败 | `83935f1375be` |
+| 09a B | filesystem immutable generation+singleadopted；CXC旧publishPackage；14CLI故障与capture | `83935f1375be` |
+| 09b A | 实际production API diff与0.7.0 consumer保持；保留0.7.1 patch，fresh/clean消费者矩阵 | `83935f1375be` |
+| 10a B | live section owner/anchor checker5正负测试、historical例外；386文档检查 | `83935f1375be` |
+| 10b A | 独立 GameplayState/Kernel-Fold-Control faultStage；不改旧Playback state、不安装内部enum | `83935f1375be` |
 
-I78-0–4 的对应实现已落地，I78-5 只在最终矩阵后按行结算；I78-6不做S7A-9最终关闭。
+| S7A | 本轮实现与验收映射 | 本轮状态口径 | 实现 SHA |
+| --- | --- | --- | --- |
+| 7.1 | C78-01–04/08；实际Lifecycle、owning查询/恢复、Tap/Hold golden+independent scan/fullReplay | 实施完成；受限本地功能验收完成，生产/设备/hosted独立 | `83935f1375be` |
+| 7.2 | C78-05/06；Graph/Packed/Entry/typed/file/memory/capturedfs→actualprepare、fullartifact/oracle | 同上；正式Chart v5发行未接受 | `83935f1375be` |
+| 7.3 | C78-09；GameplayOnly完整闭包与相同实际判定/故障边界 | 同上；GPU资源适配另列 | `83935f1375be` |
+| 7.4 | C78-07；resolver层域、typed lifetime/group/sourceMap/current资源恢复 | 同上；没有第二判定路径 | `83935f1375be` |
+| 7.5 | C78-08/12；candidate public package/opaque payload/private执行图不安装 | 同上；共享consumer按matching toolchain重建 | `83935f1375be` |
+| 8.1 | explicit ON/OFF/wrong flavor/entry隔离，已有candidate preset/CI消费 | 本地矩阵已结算；新SHA hosted待回填 | `83935f1375be` |
+| 8.2 | 完整生产assembler、静态registry/完整Entry/双carrier、deterministic atomic publish | 14CLI actualprepare/fullclosure通过，跨平台最终consumer已结算 | `83935f1375be` |
+| 8.3 | installed ReferenceHost六动词+tick/四载体Hit-Miss/Replay，Player真实scancode接线 | CPU人工+synthetic/fakeaudio通过；真实设备独立未执行 | `83935f1375be` |
+| 8.4 | actual SDK diff/日期/version/trustedchecker正负/CI触发修复 | 未退出：owner approval、trusted master bootstrap、保护、新SHA hosted；未代办 | `83935f1375be` |
+
+I78-0–4 的对应实现已落地，I78-5 已按最终本地矩阵逐行结算；I78-6不做S7A-9最终关闭。
+
 
 ## 最终矩阵中的实际缺陷与修复
 
@@ -236,7 +237,7 @@ MSVC 命令由 VS Developer shell 执行，vcvars 后重新设 `VCPKG_ROOT=D:\vc
 | MSVC ON headless/tools OFF | fresh/clean 30/30；最终 Gameplay 25/1467、11/11 受影响门禁通过，工具不存在时安装 consumer 不引用工具 target | candidate-headless-debug build/CTest；final-headless-tools-off.log、headless-off-boundary-final.log |
 | MSVC OFF Debug/Release | Debug fresh/clean 1017 中 Host header 1 fail、symlink 1 skip；修复后 10/10 受影响门禁通过。Release fresh/clean 全构建及选择的 41/41 门禁通过 | debug/release configure fresh、clean-first build、Debug 全仓/Release label matrix；final-off-debug.log、final-off-release.log、headless-off-boundary-final.log |
 | MinGW ON | fresh/clean 后缺 algorithm 编译头修复；全仓 958 中 AudioSDL consumer 1 环境 fail；最终 Gameplay 25/1467、14/14 受影响 gate（含串行 AudioSDL consumer）通过 | MinGW UCRT C++16.1、显式 compiler/toolchain、vcpkg concurrency=4；final-mingw-rerun.log、final-mingw-fixed.log、mingw-boundary-final.log |
-| Linux GCC ON shared Release/headless | fresh/clean 构建；GNU exports 和 installed consumer/Host 最终 2/2，Gameplay 25/1467。第一次漏 B5cxx11 ABI tag 与 staged transitive shared library 路径，修复后通过；其他首次门禁结果见 Linux 结算 | `cmake --build out/build/wsl-s7a78-shared --clean-first -j6`；`ctest --test-dir ... -R "cuexis_shared_export_surface|cuexis_gameplay_installed_consumer" --output-on-failure -j2`；`bin/cuexis_playback_tests "[candidate][gameplay]"`；linux-shared-final.log、linux-shared-runtime-fixed.log |
+| Linux GCC ON shared Release/headless | fresh/clean 构建；GNU exports 和 installed consumer/Host 最终 2/2，Gameplay 25/1467。第一次漏 B5cxx11 ABI tag 与 staged transitive shared library 路径，修复后通过；其他首次门禁结果见 Linux 结算 | `cmake --build out/build/wsl-s7a78-shared --clean-first -j6`；`ctest --test-dir ... -R "cuexis_shared_export_surface\|cuexis_gameplay_installed_consumer" --output-on-failure -j2`；`bin/cuexis_playback_tests "[candidate][gameplay]"`；linux-shared-final.log、linux-shared-runtime-fixed.log |
 | Linux Clang ASan/UBSan actual Gameplay/JSON | 最终 actual Gameplay 25/1467，完整 JSON 25/275，无 sanitizer finding；package label matrix 结果另行结算 | `out/build/wsl-s7a78-clang-sanitize/bin/cuexis_playback_tests "[candidate][gameplay]"`、同目录 `cuexis_json_support_tests`；linux-sanitize-actual-kernel.log |
 | Python/文档/version | docs 386 Markdown/20 JSON-CXT、live owner checker 5、status checker 4；version gate Windows 25（2 POSIX skip）/Linux 25（无 skip）；3 workflow Bash run block syntax；version 一致 | `python -B tools/check_docs.py`、`tools/check_docs_section_contract_tests.py`、`tools/check_docs_status_contract_tests.py`、`tools/check_version_gate_tests.py`、`tools/update_version.py --check`、`git diff --check`；final-docs-current.log、final-docs-sections.log、final-status-tests.log、final-version-tests.log、final-linux-python.log、version-gate-bash-syntax-rerun.log |
 
@@ -310,7 +311,7 @@ handoff：同 SHA hosted 与真实设备列表、匹配工具链 shared 重建�
 | --- | --- | --- |
 | GCC15.2 ON Debug/headless 全仓 | 956/956，无失败；随后 Gameplay25/1467 | `cmake --build out/build/wsl-s7a78-gcc -j 6`；`ctest --test-dir out/build/wsl-s7a78-gcc --output-on-failure -j 6`；`out/build/wsl-s7a78-gcc/bin/cuexis_playback_tests "[candidate][gameplay]"`；out/s7a78-linux-gcc-boundary-fixed.log |
 | Clang21.1 ASan/UBSan ON/headless | gameplay/architecture/package labels38/38，无失败；随后实际Gameplay25/1467、完整JSON25/275，无sanitizer finding | `cmake --build out/build/wsl-s7a78-clang-sanitize -j 4`；`ctest --test-dir out/build/wsl-s7a78-clang-sanitize --output-on-failure -j 4 -L "gameplay\|architecture\|package"`；该目录bin的Gameplay/JSON executable；out/s7a78-linux-sanitize-boundary-fixed.log |
-| GCC shared Release | 首轮5项中3失败，已全部修复并逐项重跑成功：export1/1、安装consumer1/1（含12 Host+2 assembler）、existing Host staging1/1；原arch/CLI2项通过；Gameplay25/1467 | out/s7a78-linux-shared-final.log、shared-abi-tag.log、shared-runtime-fixed.log、shared-installed-isolated.log、shared-host-fixed.log（后三者文件名均有s7a78-linux-前缀） |
+| GCC shared Release | 首轮5项中3失败，已全部修复并逐项重跑成功：export1/1、安装consumer1/1（含12 Host+2 assembler）、existing Host staging1/1；原arch/CLI2项通过；Gameplay25/1467 | out/s7a78-linux-shared-final.log、shared-abi-tag.log、shared-runtime-fixed.log、shared-installed-isolated.log、shared-host-fixed.log（所有省略文件名均有s7a78-linux-前缀） |
 
 上述WSL命令先 `cd /mnt/d/Cuexis-worktree`，导出
 `CMAKE_PREFIX_PATH=/mnt/d/Cuexis-worktree/out/build/wsl-gcc/vcpkg_installed/x64-linux`，
@@ -332,3 +333,10 @@ GPU补充smoke6帧且exit0另有原始输出。前文历史计数以本节和逐
 S7A-7.1–7.5、8.1–8.3本轮实现/受限本地功能验收完成，C78/R78按上表与对应fixture回填；
 S7A-8.4未退出，owner/可信bootstrap/保护/新SHA hosted未代办，真实键盘/音频/校准与Gameplay
 反馈GPU像素待回填；生产预算不接受，Stage7A不关闭。
+
+## 实现 SHA 绑定
+
+本轮实现提交：`83935f1375be61ba0f3ea16205fccc6a70094c8e`；C78 十二行、R78 所选组合与 S7A逐行表的实现SHA均指向此提交。
+原始输出运行于该提交之前的同一实施输入；清单全部 input index blobs 已与该提交树逐项比较一致。
+后续证据提交仅更新日期报告、CURRENT_STATUS 和清单SHA，不改变运行代码/合同输入。
+本地输出不声称新SHA hosted通过；推送后Hosted/owner/设备证据仍需独立回填，S7A-8.4未退出。
