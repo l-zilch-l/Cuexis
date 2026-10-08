@@ -130,6 +130,16 @@ signatures, vtables and default production source selection. `0.7.0` consumers r
 the new package; new Entry consumers request at least `0.7.1`. Owner approval and trusted-base
 bootstrap remain release prerequisites.
 
+2026-10-08 S7A-7/8 actual diff review retains this patch under the 0.x policy below:
+production declarations of installed PlaybackSession/PlaybackSource equal PR base
+5472c463640cf3b66a03dd86fe87bd87239b2659 after excluding explicit candidate blocks;
+the original 0.7.0 consumer is unchanged. New Gameplay names/types require candidate opt-in.
+No production signature, layout, enum semantics or default selection changed. This is a
+source compatibility decision; shared consumers must rebuild and package validation must
+pass. Date identity is independently updated by update_version.py; owner release approval,
+trusted bootstrap and hosted evidence remain open.
+
+
 ### S7A-8.4 owner approval record
 
 A same-author PR uses an owner GitHub issue-comment record because GitHub does not accept
@@ -142,8 +152,11 @@ changed SHA/base/version/tree or an unavailable API denies permission. The newes
 supersedes older records; an invalid newer record revokes permission. Candidate files, labels
 and `--allow-sdk-api-change` cannot grant permission. The agent does not publish owner approval.
 
-The metadata-only `pull_request_target` gate checks out the base and fetches the head as data;
-it never executes PR code. The latest event base must be an ancestor of the PR head, so outdated
+The metadata-only `pull_request` and `pull_request_target` gates check out the base and fetch
+the actual PR head as data; neither executes PR code. Keeping `pull_request` also makes the
+PR-head check reachable while the target-event workflow has not yet been installed on master.
+This trigger bridge does not bootstrap the trusted checker or grant owner approval; a missing
+trusted baseline still fails explicitly. The latest event base must be an ancestor of the PR head, so outdated
 branches need updating. Merge-group approval binds the actual queue tree. Post-merge audit
 permits a different merge/squash SHA only for the identical approved tree, actual previous-master
 base and SDK transition. Only single-PR queues are supported; combined queues are rejected even

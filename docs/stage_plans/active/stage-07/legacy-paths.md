@@ -2,7 +2,7 @@
 
 状态：compatibility entry
 
-更新日期：2026-10-06
+更新日期：2026-10-07
 
 按 [文档维护政策](../../../DOCUMENTATION_POLICY.md) 的批量stage文档整理规则，
 旧逻辑路径以代码文字映射到canonical文档，不为每个旧文件另建stub。
@@ -16,6 +16,8 @@
 | `docs/stage_plans/active/stage-07/s7a-5-9-delivery-plan.md` | [5–9历史评估](../../../archive/stage-07-planning/s7a-5-9-delivery-plan.md) |
 | `docs/stage_plans/active/stage-07/s7a-5-6-design-selection.md` | [5/6候选实施输入](../../../proposals/implementation-input/stage-07/s7a-5-6-design-selection.md) |
 
-当前实施目标、选定方向、U01–U10待合同落定台账和J0–J7执行卡均由
-[主计划§3.2](plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入) 维护。
-当前接手文档导出到owner桌面；它是执行快照，后续决策写回plan/对应合同文档。
+S7A-5/6的方向、U01–U13首用台账和J0–J7执行卡由
+[主计划§3.2](plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入) 维护，实施记录归§3.3。
+S7A-7/8的推荐方案、补查决策、首用合同核对和执行顺序由[plan-a §3.4](plan-a.md#34-s7a-78-下一轮决策首用合同与接手2026-10-07)维护；
+推荐不等于合同已冻结、产品已实施或owner门禁已退出。
+active/stage-07由plan.md总览、plan-a.md、plan-b.md与本文件组成。当前接手快照在owner桌面，后续决策写回对应分册和合同。

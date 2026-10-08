@@ -56,6 +56,27 @@ struct PreparedCapsule final {
     std::uint32_t candidateRevision{2};
 };
 
+// Explicit candidate-only bounds. No Graph production defaults are selected.
+struct GraphWriterLimits final {
+    std::size_t maxBytes;
+    std::size_t maxStringBytes;
+    std::size_t maxRowAtoms;
+    bool testOnly;
+};
+
+struct GraphReaderLimits final {
+    std::size_t maxBytes, maxDepth, maxStringBytes, maxValues, maxContainerElements;
+    std::size_t maxRowAtoms, maxRowDecodedStringBytes;
+    bool testOnly;
+};
+
+[[nodiscard]] auto decodeGraph(std::string_view text, const DecodeContext& context,
+                               GraphReaderLimits graphLimits, chart::PackedChartLimits limits = {})
+    -> core::Result<PreparedCapsule>;
+
+[[nodiscard]] auto encodeGraph(const EncodeRequest& request, GraphWriterLimits graphLimits,
+                               chart::PackedChartLimits limits = {}) -> core::Result<std::string>;
+
 [[nodiscard]] auto encode(const EncodeRequest& request, chart::PackedChartLimits limits = {})
     -> core::Result<std::vector<std::byte>>;
 

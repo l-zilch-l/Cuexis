@@ -192,6 +192,8 @@ class RuntimeSession final {
                               ReloadPolicy policy) -> RuntimeSessionReloadResult;
     [[nodiscard]] auto update(const RuntimeFrame& frame) -> core::Result<void>;
     [[nodiscard]] auto unload() -> core::Result<void>;
+    [[nodiscard]] auto updateGameplay(const RuntimeFrame&, std::span<const PropertyOverrideWrite>,
+                                      bool tickLifetimes = true) -> core::Result<void>;
     [[nodiscard]] auto configureDebug(RuntimeDebugOptions options) -> core::Result<void>;
     [[nodiscard]] auto debugSnapshot() const -> core::Result<RuntimeDebugSnapshot>;
     [[nodiscard]] auto acquireOverride(world::OverrideKind kind, std::string ownerId,
@@ -279,8 +281,10 @@ class RuntimeSession final {
   private:
     void replaceWith(PreparedRuntimeSession&& prepared) noexcept;
     [[nodiscard]] auto updatePrepared(RuntimeEvaluationState& state,
-                                      const chart::TimingMap& timingMap, const RuntimeFrame& frame)
-        -> core::Result<void>;
+                                      const chart::TimingMap& timingMap, const RuntimeFrame& frame,
+                                      bool tickLifetimes = true,
+                                      std::vector<RuntimeDebugRecord>* records = nullptr,
+                                      bool* truncated = nullptr) -> core::Result<void>;
     [[nodiscard]] auto captureDebug(const RuntimeEvaluationState& state,
                                     const ObjectEntityMap& objects, double beat,
                                     std::vector<RuntimeDebugRecord>& records, bool& truncated) const

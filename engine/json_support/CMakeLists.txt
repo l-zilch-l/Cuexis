@@ -20,6 +20,7 @@ set_target_properties(cuexis_json_support PROPERTIES EXPORT_NAME InternalJsonSup
 
 target_sources(cuexis_json_support
     PRIVATE
+        src/bounded_parse.cpp
         src/json_conversion.hpp
         src/gameplay_author.cpp
         src/parse.cpp

@@ -7,6 +7,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -88,16 +89,18 @@ void reportStepFailure(HostReport& report, std::string_view step, std::string_vi
 // the digest. The host decides when a step is an advance and when it is a seek.
 [[nodiscard]] auto consumeStep(PlaybackSession& session, const ClockStep& step, bool seek,
                                HostReport& report, std::size_t index,
-                               const CommandStep* command = nullptr)
+                               const CommandStep* command = nullptr, bool alreadyUpdated = false)
     -> std::optional<FrameObservation> {
     const RuntimeFrame frame{.chartTimeMs = step.chartTimeMs,
                              .simulationDeltaTimeMs = step.simulationDeltaTimeMs,
                              .timeDiscontinuityId = step.discontinuityId};
     const auto stepName = seek ? "seek" : "advance";
-    auto updated = session.update(frame);
-    if (!updated) {
-        reportStepFailure(report, stepName, updated.error().code(), command);
-        return std::nullopt;
+    if (!alreadyUpdated) {
+        auto updated = session.update(frame);
+        if (!updated) {
+            reportStepFailure(report, stepName, updated.error().code(), command);
+            return std::nullopt;
+        }
     }
     auto snapshot = session.extractFrame(FrameViewport{.width = 1280, .height = 720});
     if (!snapshot) {
@@ -214,7 +217,103 @@ struct HostContext final {
     std::optional<std::string> identity;
     std::size_t frameIndex{0};
     bool hasSuccessfulUpdate{false};
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    std::int64_t gameplayH{}, gameplayT{};
+    bool gameplayInputsSubmitted{false};
+#endif
 };
+
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+[[nodiscard]] auto gameplayControl(HostContext& context, HostReport& report,
+                                   cuexis::playback::GameplayControl control, std::string_view step)
+    -> bool {
+    if (!context.content.gameplay)
+        return true;
+    auto result = context.session.controlGameplay(control);
+    if (result)
+        return true;
+    report.diagnostic(step, result.error().code(), "the Gameplay control was refused");
+    return false;
+}
+
+[[nodiscard]] auto gameplaySample(HostContext& context, HostReport& report, bool seek,
+                                  const RuntimeFrame& frame) -> bool {
+    using namespace cuexis::playback;
+    const auto fail = [&](std::string_view code) {
+        report.diagnostic(seek ? "seek" : "tick", code, "the Gameplay step was refused");
+        return false;
+    };
+    auto nextH = context.gameplayH;
+    auto nextT = context.gameplayT;
+    if (seek) {
+        // The command parser admits only nonnegative exactly representable integers.
+        nextH = static_cast<std::int64_t>(context.clock.chartTimeMs);
+        nextT = nextH;
+        auto archive = context.session.archiveGameplay();
+        if (!archive)
+            return fail(archive.error().code());
+        auto cut = archive->cutAt({nextH});
+        if (!cut)
+            return fail(cut.error().code());
+        auto restored = context.session.seekGameplay(*archive, {nextH}, *cut, {}, {nextT}, frame);
+        if (!restored)
+            return fail(restored.error().code());
+        if (context.transport == Transport::Paused &&
+            !gameplayControl(context, report, GameplayControl::Pause, "seek"))
+            return false;
+    } else {
+        const auto& gameplay = *context.content.gameplay;
+        if (nextH > std::numeric_limits<std::int64_t>::max() - gameplay.horizonStep ||
+            nextT > std::numeric_limits<std::int64_t>::max() - gameplay.presentationStep)
+            return fail(diagnostic::clockOverflow);
+        nextH += gameplay.horizonStep;
+        nextT += gameplay.presentationStep;
+        if (!context.gameplayInputsSubmitted) {
+            auto submitted = context.session.submitGameplay(gameplay.observations);
+            if (!submitted)
+                return fail(submitted.error().code());
+            context.gameplayInputsSubmitted = true;
+        }
+        auto advanced = context.session.advanceGameplay({nextH}, {nextT}, frame);
+        if (!advanced)
+            return fail(advanced.error().code());
+        auto receipt = context.session.gameplayAdvanceReceipt();
+        if (!receipt)
+            return fail(receipt.error().code());
+        if (receipt->error)
+            return fail(receipt->error->code());
+    }
+    context.gameplayH = nextH;
+    context.gameplayT = nextT;
+    auto result = context.session.queryGameplay();
+    auto archive = context.session.archiveGameplay();
+    if (!result)
+        return fail(result.error().code());
+    if (!archive)
+        return fail(archive.error().code());
+    auto evaluation = context.session.evaluateGameplayReplay(*archive);
+    if (!evaluation)
+        return fail(evaluation.error().code());
+    auto same = result->sameResult(evaluation->result);
+    if (!same)
+        return fail(same.error().code());
+    if (!evaluation->evidenceValid || !*same)
+        return fail(diagnostic::stateMismatch);
+    auto score = result->score();
+    auto count = result->factCount();
+    if (!score)
+        return fail(score.error().code());
+    if (!count)
+        return fail(count.error().code());
+    report.event("gameplay",
+                 "H=" + std::to_string(nextH) + " T=" + std::to_string(nextT) +
+                     " facts=" + std::to_string(*count) + " score=" + std::to_string(score->score) +
+                     " combo=" + std::to_string(score->combo) +
+                     " hits=" + std::to_string(score->hits) +
+                     " misses=" + std::to_string(score->misses) + " completeReplay=same");
+    return true;
+}
+#endif
 
 [[nodiscard]] auto hostState(HostContext& context, HostReport& report, std::string_view step)
     -> std::optional<SessionState> {
@@ -313,6 +412,12 @@ void emitCommand(HostReport& report, std::uint64_t index, std::size_t line, Verb
     context.lastSample.reset();
     context.hasSuccessfulUpdate = false;
     context.frameIndex = 0;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    context.gameplayH = context.gameplayT = 0;
+    context.gameplayInputsSubmitted = false;
+    if (!gameplayControl(context, report, cuexis::playback::GameplayControl::Pause, "open"))
+        return false;
+#endif
     report.event("commit", std::string{"state="} + std::string{stateName(SessionState::Ready)} +
                                " identity=" + *context.identity);
     return true;
@@ -329,8 +434,18 @@ void emitCommand(HostReport& report, std::uint64_t index, std::size_t line, Verb
                          .simulationDeltaTimeMs = seek ? 0.0 : static_cast<double>(tickStepMs),
                          .discontinuityId = context.clock.discontinuityId};
     ++context.counters.publicUpdateAttempts;
-    auto observation =
-        consumeStep(context.session, step, seek, report, context.frameIndex, &command);
+    bool alreadyUpdated = false;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    if (context.content.gameplay) {
+        const RuntimeFrame frame{step.chartTimeMs, step.simulationDeltaTimeMs,
+                                 step.discontinuityId};
+        if (!gameplaySample(context, report, seek, frame))
+            return false;
+        alreadyUpdated = true;
+    }
+#endif
+    auto observation = consumeStep(context.session, step, seek, report, context.frameIndex,
+                                   &command, alreadyUpdated);
     if (!observation) {
         return false;
     }
@@ -456,12 +571,20 @@ void emitPlayPause(HostReport& report, std::string_view name, SessionState state
         return true;
     }
     case Verb::Play: {
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+        if (!gameplayControl(context, report, cuexis::playback::GameplayControl::Resume, "play"))
+            return false;
+#endif
         context.transport = Transport::Playing;
         emitPlayPause(report, "play", state, context.clock);
         emitCommand(report, index, command.line, command.verb, false, before, context.transport);
         return true;
     }
     case Verb::Pause: {
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+        if (!gameplayControl(context, report, cuexis::playback::GameplayControl::Pause, "pause"))
+            return false;
+#endif
         if (!pauseCheck(context, report)) {
             emitCommand(report, index, command.line, command.verb, true, before, context.transport);
             return false;
@@ -539,6 +662,16 @@ void emitPlayPause(HostReport& report, std::string_view name, SessionState state
         const RuntimeFrame normalized{.chartTimeMs = target.chartTimeMs,
                                       .simulationDeltaTimeMs = 0.0,
                                       .timeDiscontinuityId = target.timeDiscontinuityId};
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+        context.gameplayH = 0;
+        context.gameplayInputsSubmitted = false;
+        if (!gameplayControl(context, report,
+                             context.transport == Transport::Paused
+                                 ? cuexis::playback::GameplayControl::Pause
+                                 : cuexis::playback::GameplayControl::Resume,
+                             "reload"))
+            return false;
+#endif
         // No new frame event: reload continues the same sampling position, and a
         // later tick must compute its own delta rather than inherit this zero.
         context.lastSample = FrameObservation{.frame = normalized,
@@ -568,6 +701,9 @@ void emitPlayPause(HostReport& report, std::string_view name, SessionState state
                                      const Program& program) -> int {
     HostContext context;
     context.content.candidateEntry = options.candidateEntry;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    context.content.gameplay = options.gameplay;
+#endif
     report.event("start", std::string{"sdk_api_baseline=0.7.1 content="} +
                               (options.contentDirectory.empty()
                                    ? std::string{"none"}

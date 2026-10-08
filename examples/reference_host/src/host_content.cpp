@@ -151,6 +151,28 @@ auto hostAssetTable() -> std::vector<cuexis::playback::PlaybackAssetDescriptor> 
 
 auto buildProjectSource(const HostContent& content, HostReport& report, bool faulty)
     -> Result<cuexis::playback::PlaybackSource> {
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    if (content.gameplay) {
+        if (!content.candidateEntry || faulty)
+            return unexpected(Error{"host.content.asset_unavailable",
+                                    "Gameplay entry missing or injected source failure"});
+        const auto& g = *content.gameplay;
+        const cuexis::playback::GameplayGraphDecodeBudget graph{g.budget.maxBytes,
+                                                                g.budget.maxDepth,
+                                                                g.budget.maxStringBytes,
+                                                                g.budget.maxValues,
+                                                                g.budget.maxContainerElements,
+                                                                g.budget.maxContainerElements,
+                                                                g.budget.maxStringBytes};
+        if (content.projectDirectory.extension() == ".cxc")
+            return cuexis::playback::PlaybackSource::fromCxcFileGameplayEntry(
+                content.projectDirectory, *content.candidateEntry, g.configuration, g.budget, graph,
+                cuexis::playback::GameplayPrepareIntent::Presentation);
+        return cuexis::playback::PlaybackSource::fromFilesystemGameplayEntry(
+            content.projectDirectory, *content.candidateEntry, g.configuration, g.budget, graph,
+            cuexis::playback::GameplayPrepareIntent::Presentation);
+    }
+#endif
     if (content.candidateEntry) {
         if (faulty) {
             return unexpected(Error{"host.content.asset_unavailable",

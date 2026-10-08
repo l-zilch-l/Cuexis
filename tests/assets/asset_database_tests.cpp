@@ -15,9 +15,11 @@ class TemporaryAssetRoot final {
   public:
     TemporaryAssetRoot() {
         static std::atomic<unsigned int> next{1};
-        path_ = std::filesystem::temp_directory_path() /
-                ("cuexis-assets-tests-" + std::to_string(next.fetch_add(1)));
-        std::filesystem::create_directories(path_);
+        // Catch cases run in separate processes; claim the fixture directory exclusively.
+        do {
+            path_ = std::filesystem::temp_directory_path() /
+                    ("cuexis-assets-tests-" + std::to_string(next.fetch_add(1)));
+        } while (!std::filesystem::create_directory(path_));
     }
 
     ~TemporaryAssetRoot() {

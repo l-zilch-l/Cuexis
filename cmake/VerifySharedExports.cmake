@@ -54,6 +54,16 @@ foreach(required_symbol IN ITEMS
     endif()
 endforeach()
 set(public_class_pattern "ChartClock|PlaybackSession|PlaybackSource|PreparedPlayback|RuntimeTimeline")
+set(public_mangled_classes "10ChartClock|15PlaybackSession|14PlaybackSource|16PreparedPlayback|15RuntimeTimeline")
+set(public_function_pattern "computeFrameDigest")
+set(public_mangled_functions "18computeFrameDigest")
+if(CUEXIS_GAMEPLAY_CANDIDATE)
+    string(APPEND public_class_pattern "|GameplayContent|GameplayResult|GameplayCheckpoint|GameplayReplay|GameplaySnapshot")
+    string(APPEND public_mangled_classes "|15GameplayContent|14GameplayResult|18GameplayCheckpoint|14GameplayReplay|16GameplaySnapshot")
+    string(APPEND public_function_pattern "|gameplayCapabilities|encodeGameplayConfiguration|decodeGameplayConfiguration")
+    string(APPEND public_mangled_functions "|20gameplayCapabilities|27encodeGameplayConfiguration|27decodeGameplayConfiguration")
+endif()
+
 if(CUEXIS_SYMBOL_TOOL_KIND STREQUAL "dumpbin")
     set(forbidden_symbols
         RuntimeSession
@@ -94,7 +104,7 @@ foreach(symbol_line IN LISTS symbol_lines)
         if(exported_symbol MATCHES "^\\?\\?[014](${public_class_pattern})@" OR
            exported_symbol MATCHES
                 "^\\?[^@]+@(${public_class_pattern})@playback@cuexis@@" OR
-           exported_symbol MATCHES "^\\?computeFrameDigest@playback@cuexis@@")
+           exported_symbol MATCHES "^\\?(${public_function_pattern})@playback@cuexis@@")
             continue()
         endif()
     else()
@@ -117,8 +127,8 @@ foreach(symbol_line IN LISTS symbol_lines)
             endif()
         endforeach()
         if(exported_symbol MATCHES
-                "^_ZN[KVRrO]*6cuexis8playback(10ChartClock|15PlaybackSession|14PlaybackSource|16PreparedPlayback|15RuntimeTimeline)" OR
-           exported_symbol MATCHES "^_ZN6cuexis8playback18computeFrameDigestE")
+                "^_ZN[KVRrO]*6cuexis8playback(${public_mangled_classes})" OR
+           exported_symbol MATCHES "^_ZN6cuexis8playback(${public_mangled_functions})(B5cxx11)?E")
             continue()
         endif()
     endif()

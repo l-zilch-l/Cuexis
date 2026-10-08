@@ -677,6 +677,83 @@ validateDependencyGraph(core::Diagnostics& diagnostics,
         }
     }
 
+    // Gameplay metadata references one compiled carrier. Container validation checks only
+    // physical closure and exact archive identity; Playback owns the typed semantic check.
+    if (data->project.extensions.canonicalText != "{}") {
+        const auto metadataRoot =
+            json::parse(data->project.extensions.canonicalText,
+                        {limits.project.maxInputBytes, limits.project.maxNestingDepth,
+                         limits.project.maxStringBytes});
+        if (metadataRoot) {
+            if (const auto* directory = metadataRoot->find("cuexis.gameplay-entry.v1")) {
+                const auto* entries = directory->find("entries");
+                if (!directory->object() || directory->object()->size() != 1 || !entries ||
+                    !entries->array() || entries->array()->empty() ||
+                    entries->array()->size() > limits.maxEntries) {
+                    addError(diagnostics, "cxc.entry.unlisted", "Gameplay entry directory invalid",
+                             "$/project/extensions/cuexis.gameplay-entry.v1");
+                } else {
+                    std::set<std::string> gameplayPaths;
+                    for (const auto& item : *entries->array()) {
+                        const auto* entry = &item;
+                        constexpr std::array<std::string_view, 15> fields{
+                            "format",
+                            "version",
+                            "path",
+                            "playback",
+                            "entryKind",
+                            "encoding",
+                            "compilerProfile",
+                            "expandedEntityCount",
+                            "expandedRequirementCount",
+                            "compiledSemanticIdentity",
+                            "artifactIdentity",
+                            "rulesetBinding",
+                            "capabilityClosure",
+                            "resourcePresentationClosure",
+                            "sourceOf"};
+                        bool valid = entry->object() && entry->object()->size() == fields.size();
+                        for (const auto field : fields)
+                            valid = valid && entry->find(field);
+                        const auto stringIs = [&](std::string_view key, std::string_view expected) {
+                            const auto* field = entry->find(key);
+                            return field && field->string() && *field->string() == expected;
+                        };
+                        const auto* version = entry->find("version");
+                        const auto* playback = entry->find("playback");
+                        const auto* path = entry->find("path");
+                        const auto* hash = entry->find("artifactIdentity");
+                        valid = valid && stringIs("format", "cuexis.gameplay-entry") && version &&
+                                version->unsignedInteger() && *version->unsignedInteger() == 1 &&
+                                playback && playback->boolean() && *playback->boolean() &&
+                                ((stringIs("entryKind", "packed-chart") &&
+                                  stringIs("encoding", "capsule.3")) ||
+                                 (stringIs("entryKind", "gameplay-graph") &&
+                                  stringIs("encoding", "graph.1"))) &&
+                                path && path->string() && detail::isPortablePath(*path->string()) &&
+                                hash && hash->string();
+                        if (valid) {
+                            const auto declared = std::find_if(
+                                data->manifest.entries.begin(), data->manifest.entries.end(),
+                                [&](const auto& item) { return item.path == *path->string(); });
+                            valid = declared != data->manifest.entries.end() &&
+                                    declared->sha256 == *hash->string();
+                        }
+                        if (valid)
+                            valid = gameplayPaths.insert(*path->string()).second;
+                        if (valid)
+                            reachable.insert(*path->string());
+                        else
+                            addError(diagnostics, "cxc.entry.unlisted",
+                                     "Gameplay metadata does not declare a valid existing compiled "
+                                     "entry",
+                                     "$/project/extensions/cuexis.gameplay-entry.v1");
+                    }
+                }
+            }
+        }
+    }
+
     for (const auto& declared : data->manifest.entries) {
         if (!reachable.contains(declared.path)) {
             addError(diagnostics, "cxc.entry.unlisted",

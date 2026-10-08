@@ -9,11 +9,14 @@
 #include <cuexis/chart/packed_chart_primitives.hpp>
 #include <cuexis/core/error.hpp>
 #include <cuexis/filesystem/secure_file.hpp>
+#include <cuexis/json/parse.hpp>
 #include <cuexis_internal/sha256.hpp>
 
 #include <algorithm>
 #include <array>
 #include <bit>
+#include <charconv>
+#include <cmath>
 #include <exception>
 #include <limits>
 #include <map>
@@ -638,6 +641,7 @@ struct RequirementIndices final {
 struct ClaimRow final {
     std::uint32_t requirement{}, resource{};
     ResourceClaimDeclaration declaration;
+    std::optional<std::string> deferredClaimKey;
 };
 struct Model final {
     chart::CanonicalSemanticChart chart;
@@ -647,6 +651,7 @@ struct Model final {
     std::vector<PatternDeclaration> patterns;
     std::vector<MeasureDefinition> measures;
     std::vector<ClaimRow> claims;
+    std::vector<std::uint32_t> deferredRelationResources;
     CapsuleProfiles profiles;
     std::uint32_t candidateRevision{2};
     std::string resolver{kResolver}, close{kClose}, profileId, unit;
@@ -860,6 +865,11 @@ void index(A& a, std::uint32_t& i, std::vector<T>& table, F row) {
         a.value(i);
     }
 }
+template <typename A> constexpr auto defersGraphLinks() -> bool {
+    if constexpr (requires { A::deferLinks; })
+        return A::deferLinks;
+    return false;
+}
 template <typename A> void relationRow(A& a, RelationDeclaration& v, Model& m) {
     require(v.kind == RelationKind::exclusive, "relations.kind", "unsupported relation kind");
     constant(a, 1);
@@ -872,9 +882,13 @@ template <typename A> void relationRow(A& a, RelationDeclaration& v, Model& m) {
     }
     index(a, resource, m.graph.resources, [](auto& out, auto& r) { out.value(r.ref.resourceId); });
     if constexpr (A::reading) {
-        require(resource < m.graph.resources.size(), "relations.resource",
-                "resource index out of range");
-        v.resourceRef = m.graph.resources[resource].ref;
+        if constexpr (defersGraphLinks<A>()) {
+            m.deferredRelationResources.push_back(resource);
+        } else {
+            require(resource < m.graph.resources.size(), "relations.resource",
+                    "resource index out of range");
+            v.resourceRef = m.graph.resources[resource].ref;
+        }
     }
     require(v.policy.claimKeyToken.empty() && !v.policy.competition, "relations.policy",
             "relation cannot carry requirement-side namespace or competition");
@@ -886,11 +900,12 @@ template <typename A> void claimRow(A& a, ClaimRow& row, Model& m) {
           [](auto& out, auto& r) { out.value(r.identity); });
     index(a, row.resource, m.graph.resources,
           [](auto& out, auto& r) { out.value(r.ref.resourceId); });
-    require(row.requirement < m.graph.requirements.size() &&
-                row.resource < m.graph.resources.size(),
-            "claims", "dangling claim owner or resource");
-    if constexpr (A::reading) {
-        v.resourceRef = m.graph.resources[row.resource].ref;
+    if constexpr (!defersGraphLinks<A>()) {
+        require(row.requirement < m.graph.requirements.size() &&
+                    row.resource < m.graph.resources.size(),
+                "claims", "dangling claim owner or resource");
+        if constexpr (A::reading)
+            v.resourceRef = m.graph.resources[row.resource].ref;
     }
     enumeration(a, v.intent);
     a.value(v.claimPolicy.policyToken);
@@ -908,11 +923,18 @@ template <typename A> void claimRow(A& a, ClaimRow& row, Model& m) {
     require(ns.has_value() == hasKey && (!ns || !ns->empty()), "claims.namespace",
             "namespace presence disagrees with intent");
     if (hasKey) {
-        const auto expected = judgement::detail::structuralClaimKey(
-            *ns, m.graph.requirements[row.requirement].identity);
-        auto actual = expected;
-        a.ref(11, actual);
-        require(actual == expected, "claims.claimKey", "claim key does not match namespace and E");
+        if constexpr (defersGraphLinks<A>()) {
+            std::string key;
+            a.ref(11, key);
+            row.deferredClaimKey = std::move(key);
+        } else {
+            const auto expected = judgement::detail::structuralClaimKey(
+                *ns, m.graph.requirements[row.requirement].identity);
+            auto actual = expected;
+            a.ref(11, actual);
+            require(actual == expected, "claims.claimKey",
+                    "claim key does not match namespace and E");
+        }
     }
     a.value(v.claimPolicy.competition);
     require(v.claimPolicy.competition.has_value() == hasKey, "claims.competition",
@@ -1113,6 +1135,8 @@ template <typename T> void Output::value(T& v) {
 template <typename T> void Input::value(T& v) {
     visit(*this, v);
 }
+
+#include "gameplay_graph_writer_internal.hpp"
 
 auto refsKey(const RequiredRefs& v) {
     return std::tie(v.features, v.capabilities);
@@ -1968,6 +1992,8 @@ auto decoded(std::span<const std::byte> bytes, const DecodeContext& context,
     return {std::move(m.chart),    std::move(prepared),   std::move(owners), std::move(m.profiles),
             std::move(m.patterns), std::move(m.measures), revision};
 }
+#include "gameplay_graph_reader_internal.hpp"
+
 template <typename T, typename F> auto boundary(F operation) -> core::Result<T> {
     try {
         if constexpr (std::is_void_v<T>) {
@@ -1994,6 +2020,84 @@ auto encode(const EncodeRequest& request, chart::PackedChartLimits limits) -> co
         return envelope(m, std::move(tables), limits);
     });
 }
+
+auto encodeGraph(const EncodeRequest& request, GraphWriterLimits graphLimits,
+                 chart::PackedChartLimits limits) -> core::Result<std::string> {
+    return boundary<std::string>([&] {
+        if (!graphLimits.testOnly || !graphLimits.maxBytes || !graphLimits.maxStringBytes ||
+            !graphLimits.maxRowAtoms)
+            fail("capability.budget_insufficient",
+                 "Explicit test-only Graph Writer bounds required");
+        if (request.candidateRevision != 3)
+            fail("graph.header.unsupported_revision", "Graph v1 requires Capsule revision 3");
+        limits = chart::packed::limits_detail::effectiveLimits(limits);
+        auto m = makeModel(request, limits);
+        m.bind();
+        const auto tables = staticTables(m, limits);
+        (void)tables;
+        const auto identity = core::detail::sha256Hex(preimage(m, limits));
+        GraphText out{graphLimits};
+        const auto row = [&](auto visitRow) {
+            out.array([&] {
+                GraphOutput visitor{Mode::wire, out};
+                visitRow(visitor);
+            });
+        };
+        const auto rows = [&](auto& values, auto visitRow) {
+            out.array([&] {
+                for (auto& value : values)
+                    row([&](auto& visitor) { visitRow(visitor, value); });
+            });
+        };
+        out.object([&] {
+            out.key("format");
+            out.string("cuexis.gameplay-graph");
+            out.key("graphFormatRevision");
+            out.integer(1);
+            out.key("capsuleRevision");
+            out.integer(3);
+            out.key("semanticIdentity");
+            out.string(identity);
+            out.key("staticChart");
+            graphStaticChart(out, m.chart);
+            out.key("GPH0");
+            row([&](auto& visitor) { globalRow(visitor, m); });
+            out.key("GPR0");
+            out.array([&] {
+                for (std::size_t i = 0; i < m.graph.requirements.size(); ++i)
+                    row([&](auto& visitor) {
+                        requirementRow(visitor, m.graph.requirements[i], m.indices[i], m);
+                    });
+            });
+            out.key("GPD0");
+            out.object([&] {
+                out.key("patterns");
+                rows(m.patterns, [](auto& a, auto& v) { patternRow(a, v); });
+                out.key("measures");
+                rows(m.measures, [](auto& a, auto& v) { measureRow(a, v); });
+                out.key("judgementDomains");
+                rows(m.graph.judgementDomains, [](auto& a, auto& v) { domainRow(a, v); });
+                out.key("mergedDeclarations");
+                rows(m.graph.mergedNamespace.declarations,
+                     [](auto& a, auto& v) { mergedRow(a, v); });
+            });
+            out.key("GRC0");
+            out.object([&] {
+                out.key("resources");
+                rows(m.graph.resources, [](auto& a, auto& v) { resourceRow(a, v); });
+                out.key("relations");
+                rows(m.graph.relations, [&](auto& a, auto& v) { relationRow(a, v, m); });
+                out.key("solverProfiles");
+                rows(m.graph.solverProfiles, [](auto& a, auto& v) { solverRow(a, v); });
+                out.key("factBindings");
+                rows(m.graph.factBindings, [](auto& a, auto& v) { bindingRow(a, v); });
+                out.key("claims");
+                rows(m.claims, [&](auto& a, auto& v) { claimRow(a, v, m); });
+            });
+        });
+        return out.take();
+    });
+}
 auto semanticPreimage(const EncodeRequest& request, chart::PackedChartLimits limits)
     -> core::Result<Bytes> {
     return boundary<Bytes>([&] {
@@ -2009,6 +2113,14 @@ auto decode(std::span<const std::byte> bytes, const DecodeContext& context,
             chart::PackedChartLimits limits) -> core::Result<PreparedCapsule> {
     return boundary<PreparedCapsule>([&] {
         return decoded(bytes, context, chart::packed::limits_detail::effectiveLimits(limits));
+    });
+}
+
+auto decodeGraph(std::string_view text, const DecodeContext& context, GraphReaderLimits graphLimits,
+                 chart::PackedChartLimits limits) -> core::Result<PreparedCapsule> {
+    return boundary<PreparedCapsule>([&] {
+        return graphDecoded(text, context, graphLimits,
+                            chart::packed::limits_detail::effectiveLimits(limits));
     });
 }
 auto read(const std::filesystem::path& source, const DecodeContext& context,

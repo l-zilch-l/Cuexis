@@ -43,7 +43,7 @@ Gameplay v2 目录则记录新的候选路线及其尚未闭合的实施合同�
 
 ## Stage 7 实施输入
 
-- [S7A-5/6方案比较和选优](implementation-input/stage-07/s7a-5-6-design-selection.md)：45套方向方案、残余细节备选及推荐理由；当前目标和准入见 [Stage 7主计划§3.2](../stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)。
+- [S7A-5/6方案比较和选优](implementation-input/stage-07/s7a-5-6-design-selection.md)：45套方向方案、残余细节备选及推荐理由；当前目标和准入见 [Stage 7主计划§3.2](../stage_plans/active/stage-07/plan-a.md#32-s7a-5--s7a-6-联合实施目标决策和准入)。
 
 ## 当前候选格式提案
 

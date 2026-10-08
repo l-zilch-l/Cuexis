@@ -5,7 +5,7 @@
 更新日期：2026-10-03
 
 上级文档：[Gameplay V2 acceptance package](README.md) ·
-[Stage 7A 实施计划](../../stage_plans/active/stage-07/plan.md)
+[Stage 7A 实施计划](../../stage_plans/active/stage-07/plan-a.md)
 
 文档角色：合同表征（characterization）。它把 Gameplay V2 候选与研究稿、现有 Gameplay I
 历史候选逐项对齐，标出处置词、默认值、失败路径、identity 影响和未决点；它不是 Spec、

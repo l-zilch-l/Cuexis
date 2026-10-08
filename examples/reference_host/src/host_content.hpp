@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "host_gameplay.hpp"
 #include "host_report.hpp"
 
 namespace cuexis_reference_host {
@@ -43,6 +44,9 @@ struct HostContent final {
     std::filesystem::path projectDirectory;
     std::string chartEntryPath{"charts/main.cuexis.chart.json"};
     std::optional<std::string> candidateEntry;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    std::optional<GameplayHost> gameplay;
+#endif
 };
 
 // The declared asset table of the reference content. A production host derives

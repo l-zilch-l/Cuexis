@@ -377,6 +377,7 @@ class VersionGateTests(unittest.TestCase):
     def test_workflow_uses_trusted_event_baselines_and_full_history(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")
         for token in (
+            "pull_request:",
             "pull_request_target:",
             "merge_group:",
             "push:",
@@ -399,6 +400,31 @@ class VersionGateTests(unittest.TestCase):
         self.assertIn("github.event.pull_request.head.sha", text)
         self.assertIn("Never check out or execute PR code", text)
         self.assertNotIn("${GITHUB_WORKSPACE}/tools/check_version_gate.py", text)
+
+    def test_pre_merge_pr_trigger_and_job_mapping_stay_reachable(self) -> None:
+        text = WORKFLOW.read_text(encoding="utf-8")
+        # The target event uses the base workflow. Removing pull_request from the
+        # candidate before master has the target trigger leaves the PR with no run.
+        events, jobs = text.split("\njobs:\n", 1)
+        for event in ("pull_request", "pull_request_target"):
+            # Extract the complete indented event body, rather than only its first line.
+            block = re.search(r"(?m)^  " + event + r":\n((?:    .*\n)+)", events)
+            self.assertIsNotNone(block)
+            self.assertIn("- master", block.group(1))
+            self.assertIn("synchronize", block.group(1))
+        pre_merge = jobs.split("  post-merge-audit:\n", 1)[0]
+        pr = "startsWith(github.event_name, 'pull_request')"
+        self.assertIn("if: " + pr + " || github.event_name == 'merge_group'", pre_merge)
+        self.assertIn("ref: ${{ " + pr + " && github.event.pull_request.base.sha || github.sha }}",
+                      pre_merge)
+        for variable, expression in (
+            ("CUEXIS_BASE_SHA", "github.event.pull_request.base.sha || github.event.merge_group.base_sha"),
+            ("CUEXIS_CANDIDATE_SHA", "github.event.pull_request.head.sha || github.sha"),
+            ("CUEXIS_EVENT", "'pull_request' || github.event_name"),
+        ):
+            self.assertIn(variable + ": ${{ " + pr + " && " + expression + " }}", pre_merge)
+        self.assertIn("git fetch --no-tags origin", pre_merge)
+        self.assertNotIn("ref: ${{ github.event.pull_request.head.sha }}", pre_merge)
 
     def test_workflow_does_not_silently_bypass_bootstrap_or_trust_candidate_tests(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")

@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace cuexis::player {
 
@@ -26,6 +27,9 @@ struct PlayerOptions final {
     std::optional<std::filesystem::path> projectPath;
     std::optional<std::filesystem::path> cxcPath;
     std::optional<std::string> candidateEntry;
+    std::optional<std::filesystem::path> gameplayConfiguration;
+    std::optional<std::string> gameplayBudget, gameplayHStep, gameplayTStep;
+    std::vector<std::string> gameplayKeys;
     // The clock the startup Load names. Switching between content with and without an audio track
     // is an explicit choice, so it is named here instead of probed from a failed load. Kept as a
     // plain enum so this header stays free of Playback types.

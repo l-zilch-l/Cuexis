@@ -41,8 +41,8 @@ Stage 12 落地（`AGENTS.md` 把稳定 C ABI 写作 Stage 12 的表述是孤例
 
 | 阶段 | 目标 | 前置条件 | 主要交付 |
 | --- | --- | --- | --- |
-| [Stage 7A](stage_plans/active/stage-07/plan.md) | 冻结 Gameplay v2 最小可玩闭环和 Judgement Kernel | Stage 6 交接边界；Gameplay v2 contract | Input、Judgement、Score、Replay、Tap/Hold/Release-tail、单一 capacity=1 exclusive resource、early/late bridge、Graph/Packed 双入口，以及四项 Stage 6 遗留收口 |
-| [Stage 7B+](stage_plans/active/stage-07/plan.md) | 持续扩展高级输入与判定 | 7A 身份、生命周期和 capability 合同 | Slide、Flick、方向、连续轨迹、多指、校准和高级判定 |
+| [Stage 7A](stage_plans/active/stage-07/plan-a.md) | 冻结 Gameplay v2 最小可玩闭环和 Judgement Kernel | Stage 6 交接边界；Gameplay v2 contract | Input、Judgement、Score、Replay、Tap/Hold/Release-tail、单一 capacity=1 exclusive resource、early/late bridge、Graph/Packed 双入口，以及四项 Stage 6 遗留收口 |
+| [Stage 7B+](stage_plans/active/stage-07/plan-b.md) | 持续扩展高级输入与判定 | 7A 身份、生命周期和 capability 合同 | Slide、Flick、方向、连续轨迹、多指、校准和高级判定 |
 | [Stage 8](stage_plans/future/stage-08/plan.md) | Chart v5 正式发行和语义收敛 | Stage 7A；不等待全部 7B+ | v5/Gameplay v2 Spec、CXT v2、Canonical Graph、Packed Chart、CXC Graph/Packed playback entries、迁移和默认 Writer |
 | [Stage 9](stage_plans/future/stage-09/plan.md) | Presentation Foundation 与 Chart v6 | Chart v5 语义和资源边界 | Environment、静态 glTF、Model v1、内置网格和 submesh |
 | [Stage 10](stage_plans/future/stage-10/plan.md) | Studio 创作与发行工作流 | Stage 9 的模型/表现边界 | 编辑、预览、编译、打包和资源闭包 |

@@ -2,7 +2,7 @@
 
 状态：现行文档入口
 
-更新日期：2026-10-06
+更新日期：2026-10-07
 
 本文档是 Cuexis 文档的导航页，不复制产品合同、阶段证据或完整字段定义。当前项目状态只
 以 [CURRENT_STATUS.md](CURRENT_STATUS.md) 为准。
@@ -10,7 +10,7 @@
 ## 当前工作入口
 
 - 查当前进度：[CURRENT_STATUS](CURRENT_STATUS.md)。
-- 实施下一轮5+6：[Stage 7主计划§3.2](stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)。
+- 实施 Stage 7A：[plan-a S7A-7/8接手与决策](stage_plans/active/stage-07/plan-a.md#34-s7a-78-下一轮决策首用合同与接手2026-10-07)；全局路线见[Stage 7总计划](stage_plans/active/stage-07/plan.md)。
 - 查方案与反例：[5/6候选实施输入](proposals/implementation-input/stage-07/s7a-5-6-design-selection.md)。
 - 查已有证据：[Stage 7分类报告索引](stage_reports/stages/stage-07/README.md)。
 

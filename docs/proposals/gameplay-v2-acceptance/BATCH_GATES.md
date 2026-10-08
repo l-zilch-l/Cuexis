@@ -5,7 +5,7 @@
 更新日期：2026-10-04
 
 上级文档：[Gameplay V2 acceptance package](README.md) ·
-[Stage 7A 实施计划](../../stage_plans/active/stage-07/plan.md) §3 与 §3.1
+[Stage 7A 实施计划](../../stage_plans/active/stage-07/plan-a.md) §3 与 §3.1
 
 文档角色：批次门禁表征。计划 §S7A-0 工作内容 5 要求"为每个后续批次指定正例、负例、诊断类别、
 golden、执行命令、预期证据文件和停止条件"。本文件逐批落实该要求；命令中的 target 与测试名

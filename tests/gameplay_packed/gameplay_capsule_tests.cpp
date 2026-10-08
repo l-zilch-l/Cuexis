@@ -5,11 +5,13 @@
 
 #include <cuexis/chart/packed_chart_io.hpp>
 #include <cuexis/gameplay_packed/gameplay_capsule.hpp>
+#include <cuexis/json/parse.hpp>
 #include <cuexis_internal/sha256.hpp>
 
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <cmath>
 #include <fstream>
 
 namespace {
@@ -837,4 +839,273 @@ TEST_CASE("Revision3 optional amount and independent competition survive all pro
                                   decoded->profiles, decoded->patterns, decoded->measures, 3});
     REQUIRE(again);
     CHECK(*again == *bytes);
+}
+
+TEST_CASE("Compiled Graph Writer shares Capsule records with explicit candidate bounds",
+          "[capsule][graph][writer][revision3]") {
+    CapsuleFixture f;
+    f.base.latePolicy = executionLate();
+    executionFields(f.request.assembly);
+    f.profiles = {f.request.assembly.normalizationProfileToken,
+                  f.request.assembly.coordinatorPolicyToken};
+    const auto prepared = f.prepare();
+    capsule::EncodeRequest request{f.chart, prepared, f.owners, f.profiles, {}, {}, 3};
+    const capsule::GraphWriterLimits bounds{131072, 8192, 8192, true};
+    const auto graph = capsule::encodeGraph(request, bounds);
+    INFO((graph ? "" : std::string{graph.error().message()}));
+    REQUIRE(graph);
+    CHECK(graph->starts_with(
+        "{\"format\":\"cuexis.gameplay-graph\",\"graphFormatRevision\":1,\"capsuleRevision\":3,"));
+    const auto repeated = capsule::encodeGraph(request, bounds);
+    REQUIRE(repeated);
+    CHECK(*repeated == *graph);
+    const auto tree =
+        json::parseBounded(*graph, {{bounds.maxBytes, 32, bounds.maxStringBytes}, 16384, 8192});
+    REQUIRE(tree);
+    REQUIRE(tree->find("semanticIdentity"));
+    CHECK(*tree->find("semanticIdentity")->string() ==
+          "8c5c41467cc986974d038eb66d5836198918ffe245adf51d8e575f156bf7a8ca");
+    const auto& staticChart = *tree->find("staticChart");
+    CHECK(*staticChart.find("chartId")->string() == f.chart.chartId.value);
+    REQUIRE(staticChart.find("entities")->array()->size() == 2);
+    const auto& visual = staticChart.find("entities")->array()->at(1);
+    CHECK(*visual.find("parent")->find("objectId")->string() ==
+          std::get<chart::ExplicitEntityIdentity>(f.chart.entities[0].identity).objectId.value);
+    const auto& component = visual.find("components")->array()->at(1);
+    CHECK(*component.find("alpha")->unsignedInteger() == 37);
+    REQUIRE(tree->find("GPR0")->array()->size() == 1);
+    const auto& row = *tree->find("GPR0")->array()->at(0).array();
+    REQUIRE_FALSE(row.empty());
+    CHECK(*row.front().unsignedInteger() == 0);
+    CHECK(row.back().type() != json::ValueType::Number);
+    CHECK(tree->find("GPD0")->object()->size() == 4);
+    CHECK(tree->find("GRC0")->object()->size() == 5);
+    auto exact = bounds;
+    exact.maxBytes = graph->size();
+    CHECK(capsule::encodeGraph(request, exact));
+    --exact.maxBytes;
+    auto rejected = capsule::encodeGraph(request, exact);
+    REQUIRE_FALSE(rejected);
+    CHECK(rejected.error().code() == "graph.budget.exceeded");
+    for (unsigned field = 0; field < 3; ++field) {
+        auto invalid = bounds;
+        if (field == 0)
+            invalid.maxBytes = 0;
+        if (field == 1)
+            invalid.maxStringBytes = 0;
+        if (field == 2)
+            invalid.maxRowAtoms = 0;
+        const auto result = capsule::encodeGraph(request, invalid);
+        REQUIRE_FALSE(result);
+        CHECK(result.error().code() == "capability.budget_insufficient");
+    }
+    auto disabled = bounds;
+    disabled.testOnly = false;
+    CHECK_FALSE(capsule::encodeGraph(request, disabled));
+    auto tiny = bounds;
+    tiny.maxRowAtoms = 1;
+    rejected = capsule::encodeGraph(request, tiny);
+    REQUIRE_FALSE(rejected);
+    CHECK(rejected.error().code() == "graph.budget.exceeded");
+    tiny = bounds;
+    tiny.maxStringBytes = 1;
+    rejected = capsule::encodeGraph(request, tiny);
+    REQUIRE_FALSE(rejected);
+    CHECK(rejected.error().code() == "graph.budget.exceeded");
+    request.candidateRevision = 2;
+    rejected = capsule::encodeGraph(request, bounds);
+    REQUIRE_FALSE(rejected);
+    CHECK(rejected.error().code() == "graph.header.unsupported_revision");
+}
+
+TEST_CASE(
+    "Compiled Graph Writer preserves float sign and string escaping outside Gameplay integers",
+    "[capsule][graph][writer][revision3]") {
+    CapsuleFixture f;
+    f.base.latePolicy = executionLate();
+    executionFields(f.request.assembly);
+    f.profiles = {f.request.assembly.normalizationProfileToken,
+                  f.request.assembly.coordinatorPolicyToken};
+    f.chart.timing.offsetMs = -0.0;
+    const std::string escapedId = "measure\"\\\n";
+    f.request.assembly.sources[0].document.declarations.push_back(
+        testDeclaration(DeclarationKind::measureDefinition, escapedId, 100));
+    const std::vector measures{capsule::MeasureDefinition{
+        escapedId, f.request.assembly.sources[0].document.requirements[0].measure}};
+    const auto prepared = f.prepare();
+    const auto graph = capsule::encodeGraph(
+        {f.chart, prepared, f.owners, f.profiles, {}, measures, 3}, {131072, 8192, 8192, true});
+    INFO((graph ? "" : std::string{graph.error().message()}));
+    REQUIRE(graph);
+    CHECK(graph->find("\"offsetMs\":-0.0") != std::string::npos);
+    const auto tree = json::parseBounded(*graph, {{131072, 32, 8192}, 16384, 8192});
+    REQUIRE(tree);
+    const auto& staticChart = *tree->find("staticChart");
+    const auto* offset = staticChart.find("timing")->find("offsetMs")->number();
+    REQUIRE(offset);
+    CHECK(std::signbit(*offset));
+    bool found = false;
+    for (const auto& row : *tree->find("GPD0")->find("measures")->array()) {
+        for (const auto& atom : *row.array()) {
+            if (const auto* token = atom.find("token");
+                token && token->string() && *token->string() == escapedId)
+                found = true;
+        }
+    }
+    CHECK(found);
+}
+
+TEST_CASE("Compiled Graph typed SAX roundtrip and table permutations preserve full Capsule",
+          "[capsule][graph][reader][revision3]") {
+    CapsuleFixture f;
+    f.base.latePolicy = executionLate();
+    executionFields(f.request.assembly);
+    f.profiles = {f.request.assembly.normalizationProfileToken,
+                  f.request.assembly.coordinatorPolicyToken};
+    const auto prepared = f.prepare();
+    capsule::EncodeRequest request{f.chart, prepared, f.owners, f.profiles, {}, {}, 3};
+    const auto graph = capsule::encodeGraph(request, {131072, 8192, 8192, true});
+    REQUIRE(graph);
+    auto context = f.context();
+    context.candidateRevision = 3;
+    const capsule::GraphReaderLimits bounds{131072, 64, 8192, 16384, 8192, 8192, 65536, true};
+    const auto decoded = capsule::decodeGraph(*graph, context, bounds);
+    INFO((decoded ? ""
+                  : std::string{decoded.error().code()} + ": " +
+                        std::string{decoded.error().message()}));
+    REQUIRE(decoded);
+    CHECK(semanticDiff(prepared.assembled().graph, decoded->gameplay.assembled().graph).empty());
+    CHECK(decoded->gameplay.identityDeclarations() == prepared.identityDeclarations());
+    CHECK(std::equal(decoded->gameplay.timers().begin(), decoded->gameplay.timers().end(),
+                     prepared.timers().begin(), prepared.timers().end()));
+    REQUIRE(decoded->owners.size() == f.owners.size());
+    CHECK(decoded->owners[0].requirement == f.owners[0].requirement);
+    CHECK(decoded->owners[0].entity == f.owners[0].entity);
+    auto packed = capsule::encode(request);
+    auto roundtrip = capsule::encode({decoded->chart, decoded->gameplay, decoded->owners,
+                                      decoded->profiles, decoded->patterns, decoded->measures, 3});
+    REQUIRE(packed);
+    REQUIRE(roundtrip);
+    CHECK(*roundtrip == *packed);
+    CHECK(digestText(*roundtrip) ==
+          "ff1ff218925f2f8c684505651b9170c46ce2f386091fd3da34a8bdfe99e18bb4");
+    const auto tree = json::parseBounded(*graph, {{131072, 64, 8192}, 16384, 8192});
+    REQUIRE(tree);
+    std::string permuted = "{";
+    for (const auto name : {"semanticIdentity", "capsuleRevision", "format", "graphFormatRevision",
+                            "GRC0", "GPR0", "GPD0", "staticChart", "GPH0"}) {
+        if (permuted.size() > 1)
+            permuted += ",";
+        const auto value = json::serialize(*tree->find(name));
+        REQUIRE(value);
+        permuted += '"';
+        permuted += name;
+        permuted += "\":";
+        permuted += *value;
+    }
+    permuted += '}';
+    const auto reordered = capsule::decodeGraph(permuted, context, bounds);
+    INFO((reordered ? "" : std::string{reordered.error().message()}));
+    REQUIRE(reordered);
+    roundtrip = capsule::encode({reordered->chart, reordered->gameplay, reordered->owners,
+                                 reordered->profiles, reordered->patterns, reordered->measures, 3});
+    REQUIRE(roundtrip);
+    CHECK(*roundtrip == *packed);
+}
+
+TEST_CASE("Compiled Graph SAX rejects header shape counts and identity without fallback",
+          "[capsule][graph][reader][revision3][hostile]") {
+    CapsuleFixture f;
+    f.base.latePolicy = executionLate();
+    executionFields(f.request.assembly);
+    f.profiles = {f.request.assembly.normalizationProfileToken,
+                  f.request.assembly.coordinatorPolicyToken};
+    const auto prepared = f.prepare();
+    const auto graph = capsule::encodeGraph({f.chart, prepared, f.owners, f.profiles, {}, {}, 3},
+                                            {131072, 8192, 8192, true});
+    REQUIRE(graph);
+    auto context = f.context();
+    context.candidateRevision = 3;
+    const capsule::GraphReaderLimits bounds{131072, 64, 8192, 16384, 8192, 8192, 65536, true};
+    for (const auto& [text, code] : std::vector<std::pair<std::string, std::string>>{
+             {R"({"GPR0":[invalid)", "graph.structure.invalid"},
+             {R"({"format":"wrong","payload":invalid)", "graph.header.unsupported_format"},
+             {R"({"format":"cuexis.gameplay-graph","capsuleRevision":99,"payload":invalid)",
+              "graph.header.unsupported_revision"},
+             {R"({"format":"cuexis.gameplay-graph","format":invalid)",
+              "graph.structure.duplicate_key"},
+             {R"({"format":"cuexis.gameplay-graph","graphFormatRevision":1.0)",
+              "graph.integer.out_of_range"},
+             {R"({"format":"cuexis.gameplay-graph","graphFormatRevision":18446744073709551615)",
+              "graph.integer.out_of_range"}}) {
+        const auto rejected = capsule::decodeGraph(text, context, bounds);
+        REQUIRE_FALSE(rejected);
+        CHECK(rejected.error().code() == code);
+    }
+    auto tree = json::parseBounded(*graph, {{131072, 64, 8192}, 16384, 8192});
+    REQUIRE(tree);
+    const auto encodeTree = [&](const json::Value& value) {
+        std::string text = "{";
+        for (const auto name :
+             {"format", "graphFormatRevision", "capsuleRevision", "semanticIdentity", "staticChart",
+              "GPH0", "GPR0", "GPD0", "GRC0"}) {
+            if (text.size() > 1)
+                text += ",";
+            const auto field = json::serialize(*value.find(name));
+            REQUIRE(field);
+            text += '"';
+            text += name;
+            text += "\":";
+            text += *field;
+        }
+        text += '}';
+        return text;
+    };
+    auto sample = *tree;
+    *sample.find("semanticIdentity") = json::Value{std::string(64, '0')};
+    auto rejected = capsule::decodeGraph(encodeTree(sample), context, bounds);
+    REQUIRE_FALSE(rejected);
+    CHECK(rejected.error().code() == "graph.identity.mismatch");
+    sample = *tree;
+    sample.find("GPR0")->array()->at(0).array()->push_back(json::Value{std::uint64_t{1}});
+    rejected = capsule::decodeGraph(encodeTree(sample), context, bounds);
+    REQUIRE_FALSE(rejected);
+    CHECK(rejected.error().code() == "graph.structure.invalid");
+    sample = *tree;
+    sample.find("GPR0")->array()->at(0).array()->pop_back();
+    rejected = capsule::decodeGraph(encodeTree(sample), context, bounds);
+    REQUIRE_FALSE(rejected);
+    CHECK(rejected.error().code() == "graph.structure.invalid");
+    sample = *tree;
+    auto& global = *sample.find("GPH0")->array();
+    REQUIRE(global.back().string());
+    global[global.size() - 12] = json::Value{std::uint64_t{2}};
+    rejected = capsule::decodeGraph(encodeTree(sample), context, bounds);
+    REQUIRE_FALSE(rejected);
+    CHECK(rejected.error().code() == "graph.closure.invalid");
+    for (unsigned field = 0; field < 7; ++field) {
+        auto tiny = bounds;
+        if (field == 0)
+            tiny.maxBytes = graph->size() - 1;
+        if (field == 1)
+            tiny.maxDepth = 1;
+        if (field == 2)
+            tiny.maxStringBytes = 1;
+        if (field == 3)
+            tiny.maxValues = 1;
+        if (field == 4)
+            tiny.maxContainerElements = 1;
+        if (field == 5)
+            tiny.maxRowAtoms = 1;
+        if (field == 6)
+            tiny.maxRowDecodedStringBytes = 1;
+        rejected = capsule::decodeGraph(*graph, context, tiny);
+        REQUIRE_FALSE(rejected);
+        CHECK(rejected.error().code() == "graph.budget.exceeded");
+    }
+    auto production = bounds;
+    production.testOnly = false;
+    rejected = capsule::decodeGraph(*graph, context, production);
+    REQUIRE_FALSE(rejected);
+    CHECK(rejected.error().code() == "capability.budget_insufficient");
 }

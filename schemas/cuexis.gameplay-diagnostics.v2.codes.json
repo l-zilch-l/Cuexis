@@ -107,13 +107,13 @@
         "R-16"
       ],
       "source": [
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（诊断分层与其后各段）",
         "GAMEPLAY_V2_SPEC.md#7.2",
         "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-7",
         "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3"
       ],
       "note": "Candidate rejection code of R-16. Spec 7.2 rule 2 makes R-12 to R-16 prohibitions; a capability rejection must name a capabilityId and a replacement path (Spec 7.2 rule 1).",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "capability.disabled",
@@ -126,13 +126,13 @@
       "stableRejectCode": "capability.disabled",
       "rejectionEntries": [],
       "source": [
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（诊断分层与其后各段）",
         "GAMEPLAY_V2_SPEC.md#7.2",
         "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-2",
         "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-5"
       ],
       "note": "The Life capability is closed in 7A and reported with capability.disabled (Spec 7.2 fifth-round mapping row); the S7A-2 and S7A-5 diagnostic rows list the same code. It is not the candidate rejection code of any R-01..R-19 entry.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "capability.budget_insufficient",
@@ -145,13 +145,13 @@
       "stableRejectCode": "capability.budget_insufficient",
       "rejectionEntries": [],
       "source": [
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
-        "GAMEPLAY_V2_ABI.md \u57df 8 CapabilityId / CapabilityRevision \u884c",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（诊断分层与其后各段）",
+        "GAMEPLAY_V2_ABI.md 域 8 CapabilityId / CapabilityRevision 行",
         "GAMEPLAY_V2_SPEC.md#9.3",
         "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
       ],
       "note": "Owner-ruled (2026-10-02T21:03:39.462Z card, adopt 0.96): the category is confirmed as budget_exceeded and the first consumption batch is confirmed as S7A-3, replacing the earlier derived_pending_owner_confirmation value and the null ownerBatch. Spec 9.3 opens with 'unknown / disabled / under-budget capability' as three separate atomic failure conditions and ABI domain 8 CapabilityState names 'enabled but under budget' as a distinct state; of the nine categories only budget_exceeded covers an under-budget capability. Not the candidate rejection code of any R entry.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "capability.revision_mismatch",
@@ -164,12 +164,12 @@
       "stableRejectCode": "capability.revision_mismatch",
       "rejectionEntries": [],
       "source": [
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
-        "GAMEPLAY_V2_ABI.md \u57df 8 CapabilityRevision \u884c",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（诊断分层与其后各段）",
+        "GAMEPLAY_V2_ABI.md 域 8 CapabilityRevision 行",
         "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
       ],
       "note": "Owner-ruled (2026-10-02T21:03:39.462Z card, adopt 0.96): the category is confirmed as unknown_capability and the first consumption batch is confirmed as S7A-3, replacing the earlier derived_pending_owner_confirmation value and the null ownerBatch. ABI domain 8 CapabilityRevision requires a semantic change to add a new ID or revision, so a revision the engine does not support is not a capability the engine knows. Not the candidate rejection code of any R entry.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "capability.permanently_unsupported",
@@ -184,13 +184,13 @@
         "R-14"
       ],
       "source": [
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（诊断分层与其后各段）",
         "GAMEPLAY_V2_SPEC.md#7.2",
         "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3",
         "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
       ],
       "note": "Owner-ruled (2026-10-02T21:03:39.462Z card, adopt 0.96): candidate rejection code of R-14 (permanent capability boundary); the category is confirmed as capability_disabled and the first consumption batch is confirmed as S7A-3, replacing the earlier derived_pending_owner_confirmation value and the null ownerBatch. The capability is known to the engine and permanently not enabled, which is the capability_disabled state of ABI domain 8.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "capability.future_development",
@@ -205,13 +205,13 @@
         "R-15"
       ],
       "source": [
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（诊断分层与其后各段）",
         "GAMEPLAY_V2_SPEC.md#7.2",
         "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3",
         "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
       ],
       "note": "Owner-ruled (2026-10-02T21:03:39.462Z card, adopt 0.96): candidate rejection code of R-15 (future development); the category is confirmed as capability_disabled and the first consumption batch is confirmed as S7A-3, replacing the earlier derived_pending_owner_confirmation value and the null ownerBatch. The capability is named and known but not enabled in Stage 7A.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "resource.capacity_unsupported",
@@ -226,13 +226,13 @@
         "R-01"
       ],
       "source": [
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（诊断分层与其后各段）",
         "GAMEPLAY_V2_SPEC.md#7.2",
         "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-4",
         "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3"
       ],
       "note": "Candidate rejection code of R-01. Its rejection reason type is a capability boundary: a known capability that Stage 7A does not enable, which Spec 9.3 and the ABI CapabilityState four states place in the capability_disabled category.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "resource.handoff_unsupported",
@@ -247,13 +247,13 @@
         "R-04"
       ],
       "source": [
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（诊断分层与其后各段）",
         "GAMEPLAY_V2_SPEC.md#7.2",
         "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-4",
         "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3"
       ],
       "note": "Candidate rejection code of R-04, a later capability (resource.handoff.v1) that Stage 7A does not enable.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "coordination.relation_unsupported",
@@ -269,13 +269,13 @@
         "R-03"
       ],
       "source": [
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（诊断分层与其后各段）",
         "GAMEPLAY_V2_SPEC.md#7.2",
         "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-4",
         "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3"
       ],
       "note": "Shared candidate rejection code of R-02 (Chord / binding relation) and R-03 (temporal / quota relation), both later capabilities. One code with two R entries is the documented shape, not a duplication defect.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "solver.profile_unsupported",
@@ -290,13 +290,13 @@
         "R-07"
       ],
       "source": [
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（诊断分层与其后各段）",
         "GAMEPLAY_V2_SPEC.md#7.2",
         "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-4",
         "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3"
       ],
       "note": "Candidate rejection code of R-07 (global optimum / max_cardinality / bounded backtracking solver), a later capability. The missing-profile and non-unique-result atomic failures of Spec 9.3 are a different condition and use the non_unique_solution category, which has no registered code yet.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "pattern.relation_unsupported",
@@ -311,14 +311,14 @@
         "R-11"
       ],
       "source": [
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（诊断分层与其后各段）",
         "GAMEPLAY_V2_SPEC.md#7.2",
         "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-3",
         "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3",
         "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
       ],
       "note": "Owner-ruled (2026-10-02T21:03:39.462Z card, adopt 0.96): the category is confirmed as invalid_relation, replacing the earlier derived_pending_owner_confirmation value. Candidate rejection code of R-11 (sameContact constraint, a cross-Requirement relation hidden inside a Pattern). Spec 9.3 makes a relation the contract does not permit an invalid_relation atomic failure.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "input.continuous_unsupported",
@@ -333,14 +333,14 @@
         "R-05"
       ],
       "source": [
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u5df2\u767b\u8bb0\u7801\u7684\u9010\u6761\u5b9a\u6848\uff09",
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u5df2\u767b\u8bb0\u7801\u7684\u9010\u6761\u5b9a\u6848\uff09",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（已登记码的逐条定案）",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（已登记码的逐条定案）",
         "GAMEPLAY_V2_SPEC.md#7.2",
         "GAMEPLAY_V2_SPEC.md#9.3",
         "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-2"
       ],
       "note": "One of the three frozen input/geometry codes. Candidate rejection code of R-05 and the code Stage 7A reuses for a discontinuous representation, distinguished by field.path (continuityCapability vs discontinuity). Spec 9.3, Spec 7.2 and the ABI formerly spelled its category literally as 'capability', which is not one of the nine Spec 9.2 names; the 2026-10-02T21:03:39.462Z card (adopt 0.96) ruled the nine categories authoritative and required that literal to be replaced by capability_disabled in Spec 9.3, Spec 7.2 and the ABI. The nine-category value is capability_disabled because the capability is known and admitted by S7B-1.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "input.direction_unsupported",
@@ -355,13 +355,13 @@
         "R-06"
       ],
       "source": [
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u5df2\u767b\u8bb0\u7801\u7684\u9010\u6761\u5b9a\u6848\uff09",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（已登记码的逐条定案）",
         "GAMEPLAY_V2_SPEC.md#7.2",
         "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3",
         "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
       ],
       "note": "One of the three frozen input/geometry codes. Candidate rejection code of R-06 (flick, direction, speed, input.direction.v1), a later capability. The 2026-10-02T21:03:39.462Z card (adopt 0.96) ruled that this code had no batch declaration in BATCH_GATES.md and set its first consumption batch to S7A-3, replacing the earlier null ownerBatch.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "geometry.inference_rejected",
@@ -376,14 +376,14 @@
         "R-12"
       ],
       "source": [
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u5df2\u767b\u8bb0\u7801\u7684\u9010\u6761\u5b9a\u6848\uff09",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（已登记码的逐条定案）",
         "GAMEPLAY_V2_SPEC.md#7.2",
         "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-7",
         "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3",
         "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
       ],
       "note": "One of the three frozen input/geometry codes. Candidate rejection code of R-12, a semantic prohibition in the R-12..R-16 group. The 2026-10-02T21:03:39.462Z card (adopt 0.96) changed the category from the earlier derived unknown_capability to invalid_relation: inferring the judgement domain implicitly is a relation / declaration constraint error, not an unknown capability.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "fact.correction_unsupported",
@@ -398,13 +398,13 @@
         "R-08"
       ],
       "source": [
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（诊断分层与其后各段）",
         "GAMEPLAY_V2_SPEC.md#7.2",
         "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-5",
         "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3"
       ],
       "note": "Candidate rejection code of R-08 (Fact correction, correctionDepth > 1), a later capability that Stage 7A does not enable.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "late.reopen_unsupported",
@@ -419,13 +419,13 @@
         "R-10"
       ],
       "source": [
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（诊断分层与其后各段）",
         "GAMEPLAY_V2_SPEC.md#7.2",
         "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-2",
         "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3"
       ],
       "note": "Candidate rejection code of R-10 (the reopen_uncommitted_window late policy); Stage 7A enables only reject_late and one-hop queue_next_tick.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "format.gameplay_version_unsupported",
@@ -440,14 +440,14 @@
         "R-17"
       ],
       "source": [
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
-        "GAMEPLAY_V2_ABI.md \u7801\u65cf\u6765\u6e90\uff08\u683c\u5f0f\u4e0e\u8fc1\u79fb\u65cf\uff09",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（诊断分层与其后各段）",
+        "GAMEPLAY_V2_ABI.md 码族来源（格式与迁移族）",
         "GAMEPLAY_V2_SPEC.md#7.2",
         "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3",
         "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
       ],
       "note": "Owner-ruled (2026-10-02T21:03:39.462Z card, adopt 0.96): candidate rejection code of R-17 (an old gameplay.version = 1 with no explicit migration); the category is confirmed as ambiguous_migration and the first consumption batch is confirmed as S7A-3, replacing the earlier derived_pending_owner_confirmation value and the null ownerBatch. Spec 9.2 has no 'unsupported version' category, so the migration family category is used. The ABI's informal four-layer example lists a 'format' category, which is not one of the nine Spec 9.2 names and is now explicitly labelled illustrative only.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "migration.ambiguous",
@@ -463,13 +463,13 @@
         "R-19"
       ],
       "source": [
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（诊断分层与其后各段）",
         "GAMEPLAY_V2_SPEC.md#7.2",
         "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-3",
         "docs/proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md#3"
       ],
       "note": "Shared candidate rejection code of R-18 (non-empty CXT v2 effects reaching gameplay.requirements) and R-19 (migration cannot decide the judgement domain, resource sharing or the presentation/Gameplay relation). Spec 7.2 rule 3 requires these to be handled explicitly by an offline tool.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "session.mutation_rejected",
@@ -484,7 +484,7 @@
         "R-13"
       ],
       "source": [
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（诊断分层与其后各段）",
         "GAMEPLAY_V2_SPEC.md#7.2",
         "GAMEPLAY_V2_SPEC.md#9.3",
         "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-1",
@@ -492,7 +492,7 @@
         "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
       ],
       "note": "Owner-ruled (2026-10-02T21:03:39.462Z card, adopt 0.96): the category is confirmed as invalid_relation, replacing the earlier derived_pending_owner_confirmation value. Candidate rejection code of R-13 (modifying InputMapping / Loadout / Ruleset projection during a run), whose rejection reason type is a lifecycle prohibition; Spec 9.3 treats an illegal resource state machine transition as invalid_relation, which is the documented nine-category anchor for a forbidden lifecycle transition.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "ruleset.package_unsupported",
@@ -507,13 +507,13 @@
         "R-09"
       ],
       "source": [
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u8bca\u65ad\u5206\u5c42\u4e0e\u5176\u540e\u5404\u6bb5\uff09",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（诊断分层与其后各段）",
         "GAMEPLAY_V2_SPEC.md#7.2",
         "GAMEPLAY_V2_SPEC.md#3.16",
         "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-5"
       ],
       "note": "Candidate rejection code of R-09. The fifth round froze that Stage 7A contains no cuexis.ruleset package and uses only the built-in Ruleset; the package shape, identity and migration move to S7C-2. The capability is known and not enabled, so capability_disabled.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "judgement.s7a2.timebase.tick_overflow",
@@ -526,11 +526,11 @@
       "stableRejectCode": null,
       "rejectionEntries": [],
       "source": [
-        "GAMEPLAY_V2_ABI.md \u6570\u503c\u57df\u4e0e\u91cf\u7a0b\uff08\u8d1f observationTick \u5408\u6cd5\uff09",
+        "GAMEPLAY_V2_ABI.md 数值域与量程（负 observationTick 合法）",
         "GAMEPLAY_V2_SPEC.md#9.3"
       ],
       "note": "Atomic-failure diagnostic token named by the ABI: a tick value, displacement or difference leaving the signed 64-bit domain is a tick-domain representation failure mapped to budget_exceeded, and it is reused for a calibrated clock value that cannot be represented. It is not a CapabilityRecord.stableRejectCode, so stableRejectCode is null.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "judgement.s7a2.timebase.time_reversal",
@@ -545,10 +545,10 @@
       "source": [
         "GAMEPLAY_V2_SPEC.md#3.7.8",
         "GAMEPLAY_V2_SPEC.md#9.3",
-        "GAMEPLAY_V2_ABI.md \u6570\u503c\u57df\u4e0e\u91cf\u7a0b\uff08\u8d1f observationTick \u5408\u6cd5\uff09"
+        "GAMEPLAY_V2_ABI.md 数值域与量程（负 observationTick 合法）"
       ],
       "note": "Named by the Spec mapping table: a calibrated session clock reversal is a time-order relation error mapped to invalid_relation, explicitly not budget_exceeded. A negative observationTick is legal and carries no rejection code.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "judgement.s7a2.input.amount_out_of_range",
@@ -563,10 +563,10 @@
       "source": [
         "GAMEPLAY_V2_SPEC.md#3.7.8",
         "GAMEPLAY_V2_SPEC.md#9.3",
-        "GAMEPLAY_V2_ABI.md \u6570\u503c\u57df\u4e0e\u91cf\u7a0b\uff08\u5224\u5b9a\u987a\u5e8f\uff1a\u53ef\u8868\u793a\u6027\u5148\u4e8e\u8303\u56f4\uff09"
+        "GAMEPLAY_V2_ABI.md 数值域与量程（判定顺序：可表示性先于范围）"
       ],
       "note": "Named by the Spec mapping table: a canonically representable amount that leaves its declared range maps to budget_exceeded. Representability is checked before range, so this token is never reported when the amount is not representable.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "judgement.s7a2.input.amount_narrowed",
@@ -581,10 +581,10 @@
       "source": [
         "GAMEPLAY_V2_SPEC.md#3.7.8",
         "GAMEPLAY_V2_SPEC.md#9.3",
-        "GAMEPLAY_V2_ABI.md \u6570\u503c\u57df\u4e0e\u91cf\u7a0b\uff08\u5224\u5b9a\u987a\u5e8f\uff1a\u53ef\u8868\u793a\u6027\u5148\u4e8e\u8303\u56f4\uff09"
+        "GAMEPLAY_V2_ABI.md 数值域与量程（判定顺序：可表示性先于范围）"
       ],
       "note": "Named by the Spec mapping table: an amount that cannot be represented exactly in the declared canonical integer quantization is a narrowing failure mapped to budget_exceeded. exactNumerator == INT64_MIN counts as not representable.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "judgement.s7a2.input.same_tick_collision",
@@ -602,7 +602,7 @@
         "docs/proposals/gameplay-v2-acceptance/CONTRACT_MATRIX.md#CM-T10"
       ],
       "note": "Named by the Spec mapping table: a second, different canonical observation identity at a tick the session already admitted is an input identity / order relation error mapped to invalid_relation, registered separately from the late-policy duplicate queue entry which is late_policy_incomplete.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "identity_closure_incomplete",
@@ -622,7 +622,7 @@
         "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
       ],
       "note": "Spec 9.6 item 4 freezes this stable code for a missing target / domain / action / table inside the judgement closure, or for a compiledSemanticIdentity and capability closure that are not carried together and comparable; the failure is a prepare atomic failure (session_unaffected). The code string equals the category name identity_closure_incomplete, so the category is a documented name correspondence. The 2026-10-02T21:03:39.462Z card (adopt 0.96) confirmed severity=error, faulted=session_unaffected and first consumption batch S7A-7. It is not a CapabilityRecord.stableRejectCode, so stableRejectCode is null.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "presentation-target-missing",
@@ -638,12 +638,12 @@
         "GAMEPLAY_V2_SPEC.md#9.6",
         "GAMEPLAY_V2_SPEC.md#9.7",
         "GAMEPLAY_V2_SPEC.md#9.8",
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u7b2c 6 \u8f6e\u8865\u5145\uff09",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（第 6 轮补充）",
         "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-7",
         "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
       ],
       "note": "Spec 9.6 item 4 and Spec 9.7 freeze this stable code for a purely presentational target that is missing: empty binding is allowed and the projection event is discarded, without faulting the session and without writing the Fact Ledger. The 2026-10-02T21:03:39.462Z card (adopt 0.96) ruled that the code string stays exactly as written, that its category is invalid_relation, its severity is error and its faulted behaviour is session_unaffected, and that its first consumption batch is S7A-7 (the BATCH_GATES S7A-7 diagnostic row listed the code before it was registered here and required this registration before it could enter a public ABI). Not a CapabilityRecord.stableRejectCode, so stableRejectCode is null.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "partial-group",
@@ -659,12 +659,12 @@
         "GAMEPLAY_V2_SPEC.md#9.6",
         "GAMEPLAY_V2_SPEC.md#9.7",
         "GAMEPLAY_V2_SPEC.md#9.8",
-        "GAMEPLAY_V2_ABI.md \u9519\u8bef\u4e0e\u8bca\u65ad\u6620\u5c04\uff08\u7b2c 6 \u8f6e\u8865\u5145\uff09",
+        "GAMEPLAY_V2_ABI.md 错误与诊断映射（第 6 轮补充）",
         "docs/proposals/gameplay-v2-acceptance/BATCH_GATES.md#S7A-7",
         "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
       ],
       "note": "Spec 9.6 item 4 and Spec 9.7 freeze this stable code for a groupCommit aggregation that commits only part of a group: the committed part is kept (not rolled back) and the session enters the stable rejection path, without faulting the session and without writing the Fact Ledger. The 2026-10-02T21:03:39.462Z card (adopt 0.96) ruled that the code string stays exactly as written, that its category is invalid_relation, its severity is error and its faulted behaviour is session_unaffected, and that its first consumption batch is S7A-7. Not a CapabilityRecord.stableRejectCode, so stableRejectCode is null.",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "ruleset.transaction_failed",
@@ -685,7 +685,7 @@
         "docs decision card 2026-10-02T21:03:39.462Z (thread 01a0fe6b-6e57-7051-87f8-cf9588e85568), verdict adopt, confidence 0.96"
       ],
       "note": "Newly registered by the 2026-10-02T21:03:39.462Z card (adopt 0.96) as the dedicated stable code of the only runtime faulted path: a second-phase (Ruleset state commit) atomic validation failure. The Tick stays uncommitted, the old state is kept, the Fact Ledger is already committed and cannot be rolled back, no fault Fact is appended and no RuleEffectEvent / PresentationEvent is published; the session moves into the queryable faulted state and stops accepting new judgement mutations. Spec 9.4 now names this code instead of leaving the stable code to be chosen from the existing 9.2 / 9.3 table. It is the only registered code whose faulted value is session_faulted. Its trigger includes a RegisterKind outside the three frozen kinds, a duplicate contribution identity, a non-commutative or non-associative fold, a second exclusive owner or writer, a direct ledger_derived StateDelta write, and a steady-state budget / overflow / conflict validation failure in that phase. It is not a CapabilityRecord.stableRejectCode, so stableRejectCode is null, and it adds no R entry (Spec 7.2 still holds exactly 19).",
-      "publicConsumptionSurface": "\u901a\u8fc7\u65e2\u6709\u8bca\u65ad\u7801\u627f\u8f7d\u9762\u6d88\u8d39\uff1aJudgementError / DiagnosticCode\uff08ABI \u57df 8\uff09\u4e0e\u5176\u7a33\u5b9a\u62d2\u7edd\u8f7d\u8377\uff1b\u4e0d\u65b0\u589e ABI \u57df\u3001\u7c7b\u578b\u6216\u9519\u8bef\u679a\u4e3e\u3002"
+      "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
       "code": "judgement.s7a4.execution.profile_incomplete",
@@ -822,6 +822,518 @@
       ],
       "note": "Selected execution-profile detailed diagnostic; no new category or R entry.",
       "publicConsumptionSurface": "Existing Diagnostic / Result carrier (internal execution profile)."
+    },
+    {
+      "code": "playback.gameplay.invalid",
+      "family": "playback.gameplay",
+      "category": "invalid_relation",
+      "categoryBasis": "playback_combination_preflight",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "Candidate Gameplay facade rejects invalid state, content, binding or combination. Kernel and Fold diagnostics retain their own codes.",
+      "publicConsumptionSurface": "PlaybackSession candidate Gameplay Result and owning advance receipt."
+    },
+    {
+      "code": "codec.allocation_failed",
+      "family": "codec",
+      "category": "invalid_relation",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "codec.budget_exceeded",
+      "family": "codec",
+      "category": "invalid_relation",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "codec.budget_unaccepted",
+      "family": "codec",
+      "category": "invalid_relation",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "codec.count_mismatch",
+      "family": "codec",
+      "category": "invalid_relation",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "codec.digest_mismatch",
+      "family": "codec",
+      "category": "invalid_relation",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "codec.identity_mismatch",
+      "family": "codec",
+      "category": "invalid_relation",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "codec.length_invalid",
+      "family": "codec",
+      "category": "invalid_relation",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "codec.magic_invalid",
+      "family": "codec",
+      "category": "invalid_relation",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "codec.record_invalid",
+      "family": "codec",
+      "category": "invalid_relation",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "codec.section_invalid",
+      "family": "codec",
+      "category": "invalid_relation",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "codec.tag_invalid",
+      "family": "codec",
+      "category": "invalid_relation",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "codec.trailing_bytes",
+      "family": "codec",
+      "category": "invalid_relation",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "codec.truncated",
+      "family": "codec",
+      "category": "invalid_relation",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "codec.utf8_invalid",
+      "family": "codec",
+      "category": "invalid_relation",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "codec.version_unsupported",
+      "family": "codec",
+      "category": "invalid_relation",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "playback.gameplay.non_terminating_source",
+      "family": "playback",
+      "category": "non_terminating_source",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "playback.gameplay.non_unique_solution",
+      "family": "playback",
+      "category": "non_unique_solution",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "replay.identity_mismatch",
+      "family": "replay",
+      "category": "invalid_relation",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "replay.state_invalid",
+      "family": "replay",
+      "category": "invalid_relation",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "ruleset.configuration_invalid",
+      "family": "ruleset",
+      "category": "invalid_relation",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "ruleset.hook_invalid",
+      "family": "ruleset",
+      "category": "invalid_relation",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "ruleset.registry_invalid",
+      "family": "ruleset",
+      "category": "invalid_relation",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "snapshot.state_invalid",
+      "family": "snapshot",
+      "category": "invalid_relation",
+      "categoryBasis": "actual_existing_kernel_and_w2_first_public_consumption",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/api/GAMEPLAY_V2_ABI.md"
+      ],
+      "note": "First candidate facade consumption; existing internal execution and codec semantics unchanged.",
+      "publicConsumptionSurface": "Candidate Gameplay factory, Snapshot/Replay codec and recovery Result."
+    },
+    {
+      "code": "graph.header.unsupported_format",
+      "family": "graph",
+      "category": "invalid_relation",
+      "categoryBasis": "authorized_s7a_7_8_graph_first_use_contract",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/formats/GAMEPLAY_GRAPH_V1_FORMAT.md#Identity, validation and failure"
+      ],
+      "note": "First-use registration precedes the new typed Graph consumer. It does not certify Reader/Writer implementation or accept production budgets.",
+      "publicConsumptionSurface": "Compiled Gameplay Graph candidate Reader/Writer and owning Playback source Result."
+    },
+    {
+      "code": "graph.header.unsupported_revision",
+      "family": "graph",
+      "category": "unknown_capability",
+      "categoryBasis": "authorized_s7a_7_8_graph_first_use_contract",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/formats/GAMEPLAY_GRAPH_V1_FORMAT.md#Identity, validation and failure"
+      ],
+      "note": "First-use registration precedes the new typed Graph consumer. It does not certify Reader/Writer implementation or accept production budgets.",
+      "publicConsumptionSurface": "Compiled Gameplay Graph candidate Reader/Writer and owning Playback source Result."
+    },
+    {
+      "code": "graph.structure.invalid",
+      "family": "graph",
+      "category": "invalid_relation",
+      "categoryBasis": "authorized_s7a_7_8_graph_first_use_contract",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/formats/GAMEPLAY_GRAPH_V1_FORMAT.md#Identity, validation and failure"
+      ],
+      "note": "First-use registration precedes the new typed Graph consumer. It does not certify Reader/Writer implementation or accept production budgets.",
+      "publicConsumptionSurface": "Compiled Gameplay Graph candidate Reader/Writer and owning Playback source Result."
+    },
+    {
+      "code": "graph.structure.duplicate_key",
+      "family": "graph",
+      "category": "invalid_relation",
+      "categoryBasis": "authorized_s7a_7_8_graph_first_use_contract",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/formats/GAMEPLAY_GRAPH_V1_FORMAT.md#Identity, validation and failure"
+      ],
+      "note": "First-use registration precedes the new typed Graph consumer. It does not certify Reader/Writer implementation or accept production budgets.",
+      "publicConsumptionSurface": "Compiled Gameplay Graph candidate Reader/Writer and owning Playback source Result."
+    },
+    {
+      "code": "graph.integer.out_of_range",
+      "family": "graph",
+      "category": "invalid_relation",
+      "categoryBasis": "authorized_s7a_7_8_graph_first_use_contract",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/formats/GAMEPLAY_GRAPH_V1_FORMAT.md#Identity, validation and failure"
+      ],
+      "note": "First-use registration precedes the new typed Graph consumer. It does not certify Reader/Writer implementation or accept production budgets.",
+      "publicConsumptionSurface": "Compiled Gameplay Graph candidate Reader/Writer and owning Playback source Result."
+    },
+    {
+      "code": "graph.budget.exceeded",
+      "family": "graph",
+      "category": "budget_exceeded",
+      "categoryBasis": "authorized_s7a_7_8_graph_first_use_contract",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/formats/GAMEPLAY_GRAPH_V1_FORMAT.md#Identity, validation and failure"
+      ],
+      "note": "First-use registration precedes the new typed Graph consumer. It does not certify Reader/Writer implementation or accept production budgets.",
+      "publicConsumptionSurface": "Compiled Gameplay Graph candidate Reader/Writer and owning Playback source Result."
+    },
+    {
+      "code": "graph.identity.mismatch",
+      "family": "graph",
+      "category": "identity_closure_incomplete",
+      "categoryBasis": "authorized_s7a_7_8_graph_first_use_contract",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/formats/GAMEPLAY_GRAPH_V1_FORMAT.md#Identity, validation and failure"
+      ],
+      "note": "First-use registration precedes the new typed Graph consumer. It does not certify Reader/Writer implementation or accept production budgets.",
+      "publicConsumptionSurface": "Compiled Gameplay Graph candidate Reader/Writer and owning Playback source Result."
+    },
+    {
+      "code": "graph.closure.invalid",
+      "family": "graph",
+      "category": "identity_closure_incomplete",
+      "categoryBasis": "authorized_s7a_7_8_graph_first_use_contract",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "S7A-7",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/formats/GAMEPLAY_GRAPH_V1_FORMAT.md#Identity, validation and failure"
+      ],
+      "note": "First-use registration precedes the new typed Graph consumer. It does not certify Reader/Writer implementation or accept production budgets.",
+      "publicConsumptionSurface": "Compiled Gameplay Graph candidate Reader/Writer and owning Playback source Result."
     }
   ],
   "rejectionEntries": [

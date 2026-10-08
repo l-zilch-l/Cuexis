@@ -39,6 +39,7 @@ Compiled Runtime
 | Chart v5 | [Chart v5 工作包](../stage_plans/active/chart-format-update-for-v5/plan.md) | candidate；Foundation 先交 Core，Stage 6 candidate 消费，Stage 8 正式发行；40k/16 MiB 为关闭门禁 |
 | Packed Chart v1 | [PACKED_CHART_FORMAT.md](PACKED_CHART_FORMAT.md) | candidate；Header/目录、字典/身份、Archetype 与实体差异流、无损 Beat；未实现 |
 | Gameplay Capsule v2 | [GAMEPLAY_CAPSULE_V2_FORMAT.md](GAMEPLAY_CAPSULE_V2_FORMAT.md) | candidate；S7A-3 首次 Packed 消费物理合同唯一权威，设计已于 2026-10-04 闭合；Reader/Writer 与 E1 实现验收未完成；revision 1 不变 |
+| Compiled Gameplay Graph JSON v1 | [GAMEPLAY_GRAPH_V1_FORMAT.md](GAMEPLAY_GRAPH_V1_FORMAT.md) | candidate；C78-05 / R78-08 首用物理合同，明确 typed SAX、完整静态 chart、整数与引用；实现和等价验收仍归现行状态 |
 | CXC v1 | [CXC_FORMAT.md](CXC_FORMAT.md) | accepted and implemented internally; archive/tools and Playback source/prepare/identity gates closed; no public CXC package API |
 | CXT v1 | [CXT_FORMAT.md](CXT_FORMAT.md) | accepted contract; Reader/Writer/lowering and prepare import/lookup implemented; CFU-F and G4 hosted gates closed; Stage 4 animation execution closed |
 | CXT v2 | [CXT_V2_FORMAT.md](CXT_V2_FORMAT.md) | candidate；Foundation F2 integer/beat reader/expander 已实现；Animation Extension 在 Stage 8 收敛；非生产 Schema，未接入默认 Playback |

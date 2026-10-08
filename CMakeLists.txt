@@ -189,6 +189,9 @@ if(CUEXIS_BUILD_DEVELOPER_TOOLS)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_asset_importer)
     endif()
 endif()
+if(TARGET cuexis_gameplay_assemble)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_gameplay_assemble)
+endif()
 if(TARGET cuexis_asset_publish)
     list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_asset_publish)
 endif()
@@ -451,6 +454,44 @@ if(CUEXIS_BUILD_TESTS)
                 TIMEOUT 900
             )
         endforeach()
+        if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+            set(gameplay_host_tool_arguments)
+            if(TARGET cuexis_chart_candidate)
+                list(APPEND gameplay_host_tool_arguments "-DCUEXIS_GAMEPLAY_TOOL=$<TARGET_FILE:cuexis_chart_candidate>")
+            endif()
+            add_test(NAME cuexis_gameplay_installed_consumer
+                COMMAND "${CMAKE_COMMAND}"
+                    "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                    "-DCUEXIS_BINARY_DIR=${PROJECT_BINARY_DIR}"
+                    "-DCUEXIS_PLAYBACK_TESTS=$<TARGET_FILE:cuexis_playback_tests>"
+                    "-DCUEXIS_GENERATOR=${CMAKE_GENERATOR}"
+                    "-DCUEXIS_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+                    "-DCUEXIS_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+                    "-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
+                    "-DCMAKE_RC_COMPILER=${CMAKE_RC_COMPILER}"
+                    "-DCMAKE_MT=${CMAKE_MT}"
+                    "-DCUEXIS_VCPKG_INSTALLED_DIR=${VCPKG_INSTALLED_DIR}"
+                    "-DCUEXIS_VCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}"
+                    "-DCUEXIS_ENABLE_SANITIZERS=${CUEXIS_ENABLE_SANITIZERS}"
+                    ${gameplay_host_tool_arguments}
+                    -P "${PROJECT_SOURCE_DIR}/cmake/VerifyGameplayInstalledConsumer.cmake")
+            set_tests_properties(cuexis_gameplay_installed_consumer PROPERTIES
+                LABELS "candidate;gameplay;external;package;headless"
+                RESOURCE_LOCK cuexis_external_consumer TIMEOUT 900)
+            if(TARGET cuexis_gameplay_assemble)
+                add_test(NAME cuexis_gameplay_assembler_cli
+                    COMMAND "${CMAKE_COMMAND}"
+                        "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                        "-DCUEXIS_BINARY_DIR=${PROJECT_BINARY_DIR}"
+                        "-DCUEXIS_PLAYBACK_TESTS=$<TARGET_FILE:cuexis_playback_tests>"
+                        "-DCUEXIS_ENABLE_SANITIZERS=${CUEXIS_ENABLE_SANITIZERS}"
+                    ${gameplay_host_tool_arguments}
+                        -P "${PROJECT_SOURCE_DIR}/cmake/VerifyGameplayAssemblerCli.cmake")
+                set_tests_properties(cuexis_gameplay_assembler_cli PROPERTIES
+                    LABELS "candidate;gameplay;assembler;package;headless"
+                    RESOURCE_LOCK cuexis_external_consumer TIMEOUT 300)
+            endif()
+        endif()
         set(candidate_host_arguments)
         if(TARGET cuexis_chart_candidate)
             list(APPEND candidate_host_arguments
@@ -531,6 +572,7 @@ if(CUEXIS_BUILD_TESTS)
                     "-DCUEXIS_SHARED_LIBRARY=$<TARGET_FILE:cuexis_playback>"
                     "-DCUEXIS_SYMBOL_TOOL=${CUEXIS_SYMBOL_TOOL}"
                     "-DCUEXIS_SYMBOL_TOOL_KIND=${CUEXIS_SYMBOL_TOOL_KIND}"
+                    "-DCUEXIS_GAMEPLAY_CANDIDATE=${CUEXIS_ENABLE_CHART_V5_CANDIDATE}"
                     -P "${PROJECT_SOURCE_DIR}/cmake/VerifySharedExports.cmake"
             )
             set_tests_properties(cuexis_shared_export_surface PROPERTIES
@@ -653,6 +695,9 @@ set(CUEXIS_STATIC_IMPLEMENTATION_TARGETS
     cuexis_render
     cuexis_runtime
 )
+if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+    list(APPEND CUEXIS_STATIC_IMPLEMENTATION_TARGETS cuexis_gameplay_packed)
+endif()
 install(TARGETS ${CUEXIS_PUBLIC_EXPORT_TARGETS}
     EXPORT CuexisTargets
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
@@ -859,6 +904,7 @@ cuexis_verify_target_dependencies(cuexis_judgement
 )
 cuexis_verify_target_dependencies(cuexis_gameplay_packed
     ALLOWED
+        cuexis::json_support
         cuexis::chart
         cuexis::judgement
         cuexis::filesystem
@@ -869,12 +915,17 @@ if(TARGET cuexis_gameplay_author_tests)
 endif()
 if(TARGET cuexis_gameplay_author)
     cuexis_verify_target_dependencies(cuexis_gameplay_author
-        ALLOWED cuexis::core cuexis::json_support cuexis::chart cuexis::judgement cuexis::gameplay_packed)
+        ALLOWED cuexis::core cuexis::json_support cuexis::chart cuexis::judgement cuexis::gameplay_packed
+                cuexis::playback cuexis::cxc cuexis::asset_publish)
+endif()
+if(TARGET cuexis_gameplay_assemble)
+    cuexis_verify_target_dependencies(cuexis_gameplay_assemble ALLOWED
+        cuexis::gameplay_author)
 endif()
 if(TARGET cuexis_chart_candidate)
     cuexis_verify_target_dependencies(cuexis_chart_candidate
         ALLOWED cuexis::chart cuexis::cxc cuexis::core cuexis::json_support
-                cuexis::asset_publish cuexis::playback)
+                cuexis::asset_publish cuexis::playback cuexis::gameplay_author)
 endif()
 cuexis_verify_target_dependencies(cuexis_render
     ALLOWED
@@ -917,6 +968,7 @@ if(TARGET cuexis_render_opengl)
 endif()
 cuexis_verify_target_dependencies(cuexis_playback
     ALLOWED
+        cuexis::json_support
         cuexis::audio
         cuexis::content
         cuexis::core
@@ -929,6 +981,8 @@ cuexis_verify_target_dependencies(cuexis_playback
         cuexis::render
         cuexis::runtime
         cuexis::world
+        cuexis::judgement
+        cuexis::gameplay_packed
 )
 cuexis_verify_target_dependencies(cuexis_presentation_renderer
     ALLOWED
@@ -1151,6 +1205,7 @@ if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_gameplay_packed_tests
         ALLOWED
             cuexis::gameplay_packed
+            cuexis::json_support
             Catch2::Catch2WithMain
     )
     cuexis_verify_target_dependencies(cuexis_debug_tests
@@ -1228,7 +1283,10 @@ if(CUEXIS_BUILD_TESTS)
             cuexis::chart
             cuexis::cxc
             cuexis::playback
+            cuexis::gameplay_packed
+            cuexis::judgement
             Catch2::Catch2WithMain
+            cuexis::json_support
     )
     cuexis_verify_target_dependencies(cuexis_playback_allocation_tests
         ALLOWED

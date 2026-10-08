@@ -511,6 +511,7 @@ void PropertyResolver::resetEntry(Entry& entry) noexcept {
         copyStoredValue(state.candidate, state.baseline);
         resetStoredValue(state.behavior);
         resetStoredValue(state.animation);
+        resetStoredValue(state.gameplay);
         resetStoredValue(state.host);
         resetStoredValue(state.preview);
         state.source = PropertyLayer::Initial;
@@ -552,6 +553,9 @@ auto PropertyResolver::validateAndStore(Entry& entry, PropertyId property,
         break;
     case PropertyLayer::Animation:
         copyStoredValue(state.animation, state.candidate);
+        break;
+    case PropertyLayer::GameplayOverride:
+        copyStoredValue(state.gameplay, state.candidate);
         break;
     case PropertyLayer::HostOverride:
         copyStoredValue(state.host, state.candidate);
@@ -762,6 +766,7 @@ auto PropertyResolver::commit(World& world) -> core::Result<void> {
                                             "Property resolver commit requires prepare"});
     }
     collectCommitEntries();
+    committedEntries_.reserve(thisCommit_.size());
     auto result = world.withRegistry([&](entt::registry& registry) -> core::Result<void> {
         for (const auto index : thisCommit_) {
             const auto& entry = entries_[index];
@@ -893,6 +898,10 @@ auto PropertyResolver::layerValue(entt::entity entity, PropertyId property,
     case PropertyLayer::HostOverride:
         return (state.seenLayers & layerBit(PropertyLayer::HostOverride)) != 0U
                    ? std::optional<PropertyValue>{state.host}
+                   : std::nullopt;
+    case PropertyLayer::GameplayOverride:
+        return (state.seenLayers & layerBit(PropertyLayer::GameplayOverride)) != 0U
+                   ? std::optional<PropertyValue>{state.gameplay}
                    : std::nullopt;
     case PropertyLayer::StudioPreviewOverride:
         return (state.seenLayers & layerBit(PropertyLayer::StudioPreviewOverride)) != 0U

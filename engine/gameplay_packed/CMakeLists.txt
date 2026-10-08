@@ -12,3 +12,4 @@ target_include_directories(cuexis_gameplay_packed PRIVATE
 target_link_libraries(cuexis_gameplay_packed PUBLIC
     cuexis::chart cuexis::judgement cuexis::filesystem cuexis::core
 )
+target_link_libraries(cuexis_gameplay_packed PRIVATE cuexis::json_support)

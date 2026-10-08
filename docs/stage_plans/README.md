@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-10-06
+更新日期：2026-10-07
 
 阶段计划定义目标、范围、批次、门禁和交接。当前实现状态只以
 [CURRENT_STATUS.md](../CURRENT_STATUS.md) 为准；完成证据只以
@@ -91,12 +91,10 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
   （见 [关闭报告](../stage_reports/stages/stage-06/completion.md)）。Stage 6 关闭本身**不**
   实现或授权 Stage 7A；Stage 7A 现已进入实施准备，但仍不构成合并或发布授权。Stage 8
   尚未启动。
-- [Stage 7A / 7B+](active/stage-07/plan.md)：7A 冻结最小 Input/Judgement/Score/Replay 内核，
-  7B+ 持续扩展 Slide、Flick、多指、校准和高级判定能力。
-  下一轮目标是S7A-5.1–5.5 + S7A-6.1–6.5；决策、十项残余细节和执行卡见
-  [主计划§3.2](active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)，
-  备选比较见 [5/6实施输入](../proposals/implementation-input/stage-07/s7a-5-6-design-selection.md)。
-  接手文档导出到owner桌面；历史正文入口见 [旧路径映射](active/stage-07/legacy-paths.md)。
+- [Stage 7 总计划](active/stage-07/plan.md)：全局边界、依赖路线、统一证据和跨阶段交接。
+  - [Stage 7A 分册](active/stage-07/plan-a.md)：S7A-0–9批次、核验台账、实施记录与接手决策。
+  - [Stage 7B+ 分册](active/stage-07/plan-b.md)：S7B-0–4、S7C-1/2能力准入、依赖和退出标准。
+  - 历史路径见[legacy-paths](active/stage-07/legacy-paths.md)；当前实现状态以CURRENT_STATUS为准。
 - [Stage 8](future/stage-08/plan.md)：Chart v5 正式语义、CXT v2、Packed Chart 和 CXC 发行收敛；
   只依赖 Stage 7A，不等待全部 Stage 7B+。
 - [Stage 9](future/stage-09/plan.md)：Presentation Foundation 与 Chart v6 / Model v1。

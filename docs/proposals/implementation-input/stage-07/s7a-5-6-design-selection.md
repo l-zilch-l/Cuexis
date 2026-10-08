@@ -5,7 +5,7 @@
 日期：2026-10-06
 
 当前目标、选定方向、U01–U13待合同落定台账与实施卡由
-[Stage 7主计划§3.2](../../../stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)
+[Stage 7主计划§3.2](../../../stage_plans/active/stage-07/plan-a.md#32-s7a-5--s7a-6-联合实施目标决策和准入)
 维护。本文件保留比较过程和最小反例；对应消费字段在J0及首次消费前落入Spec/ABI/profile。
 原接手与排期文件已 [归档](../../../archive/stage-07-planning/README.md)，当前接手导出至owner桌面。
 
@@ -313,7 +313,7 @@ budget超限分支通过显式test-only accepted fixture/injection验证，不�
 组合B + R1/G2/N1/T2/S2/W2/E2/K2/B2构成下一轮推荐。
 核心做法是先确定可序列化的真实Fold状态，再实现两个独立提交边界，最后以同一输入日志完成恢复闭包。
 完整实施步骤、十项目标与剩余7–9归属见
-[主计划§3.2](../../../stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)。
+[主计划§3.2](../../../stage_plans/active/stage-07/plan-a.md#32-s7a-5--s7a-6-联合实施目标决策和准入)。
 当前接手是桌面导出，旧联合接手/五批评估只作历史输入。
 
 第一张实施卡必须把九项推荐转成完整字段/owner/revision/诊断与正负例表；

@@ -67,6 +67,12 @@ struct CandidateRuntimeArtifactResult final {
                                          const ChartLimits& limits = {})
     -> CandidateRuntimeArtifactResult;
 
+// Explicit internal consumer for a complete chart already validated by Gameplay Capsule.
+// Legacy Foundation Requirement rows are rejected; Gameplay remains in its owning carrier.
+[[nodiscard]] auto lowerGameplayPresentationRuntime(const CanonicalSemanticChart& chart,
+                                                    const ChartLimits& limits = {})
+    -> CandidateRuntimeArtifactResult;
+
 // Domain cuexis.prepared-semantic.v5.candidate.1. Duplicate asset IDs are rejected.
 // Paths, devices, windows, clock mode and gain are not inputs.
 [[nodiscard]] auto assembleCandidatePreparedSemanticIdentity(

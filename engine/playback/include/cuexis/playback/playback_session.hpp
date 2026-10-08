@@ -19,6 +19,9 @@
 #include <cuexis/playback/playback_export.hpp>
 #include <cuexis/playback/playback_source.hpp>
 #include <cuexis/playback/presentation.hpp>
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+#include <cuexis/playback/gameplay_candidate.hpp>
+#endif
 
 #include <array>
 #include <cstddef>
@@ -258,6 +261,36 @@ class CUEXIS_PLAYBACK_API PreparedPlayback final {
 
 class CUEXIS_PLAYBACK_API PlaybackSession final {
   public:
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    [[nodiscard]] auto prepareGameplayLoad(PlaybackSource&&, PlaybackMode, const GameplayContent&)
+        -> core::Result<PreparedPlayback>;
+    [[nodiscard]] auto prepareGameplayReload(PlaybackSource&&, const GameplayContent&, ReloadPolicy)
+        -> core::Result<PreparedPlayback>;
+    [[nodiscard]] auto submitGameplay(std::span<const GameplayInput>) -> core::Result<void>;
+    [[nodiscard]] auto advanceGameplay(GameplayTick, GameplayPresentationTick, const RuntimeFrame&)
+        -> core::Result<void>;
+    [[nodiscard]] auto gameplayState() const -> core::Result<GameplayState>;
+    [[nodiscard]] auto queryGameplayCapability(std::string_view id, std::string_view revision,
+                                               const GameplayConfiguration* pending = nullptr) const
+        -> core::Result<GameplayCapabilityQuery>;
+    [[nodiscard]] auto queryGameplay() const -> core::Result<GameplayResult>;
+    [[nodiscard]] auto queryGameplayPresentation() const -> core::Result<GameplayPresentationMap>;
+    [[nodiscard]] auto gameplayAdvanceReceipt() const -> core::Result<GameplayAdvanceReceipt>;
+    [[nodiscard]] auto archiveGameplay() const -> core::Result<GameplayReplay>;
+    [[nodiscard]] auto snapshotGameplay() const -> core::Result<GameplaySnapshot>;
+    [[nodiscard]] auto evaluateGameplayReplay(const GameplayReplay&) const
+        -> core::Result<GameplayReplayEvaluation>;
+    [[nodiscard]] auto restoreGameplay(const GameplaySnapshot&, GameplayPresentationTick,
+                                       const RuntimeFrame&) -> core::Result<void>;
+    [[nodiscard]] auto seekGameplay(const GameplayReplay&, GameplayTick, GameplayPresentationTick,
+                                    const RuntimeFrame&) -> core::Result<void>;
+    [[nodiscard]] auto checkpointGameplay(const GameplayReplay&, GameplayTick) const
+        -> core::Result<GameplayCheckpoint>;
+    [[nodiscard]] auto seekGameplay(const GameplayReplay&, GameplayTick, const GameplayReplayCut&,
+                                    std::span<const GameplayCheckpoint>, GameplayPresentationTick,
+                                    const RuntimeFrame&) -> core::Result<void>;
+    [[nodiscard]] auto controlGameplay(GameplayControl) -> core::Result<void>;
+#endif
     PlaybackSession() noexcept;
     explicit PlaybackSession(PlaybackCapabilitySet capabilities) noexcept;
     ~PlaybackSession();
@@ -336,6 +369,16 @@ class CUEXIS_PLAYBACK_API PlaybackSession final {
 
   private:
     friend struct detail::CandidateMetadataAccess;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    [[nodiscard]] auto gameplayWriteGuard() const -> core::Result<void>;
+    [[nodiscard]] auto
+    publishGameplayProjection(const GameplayResult&, GameplayPresentationTick, const RuntimeFrame&,
+                              bool tickLifetimes = true,
+                              GameplayPublicationFailureStage* failureStage = nullptr)
+        -> core::Result<void>;
+    [[nodiscard]] auto attachGameplay(PreparedPlayback&, const GameplayContent&)
+        -> core::Result<void>;
+#endif
 
     [[nodiscard]] auto prepare(PlaybackSource&& source, PlaybackMode mode,
                                const RuntimeFrame* targetFrame, ReloadPolicy policy,

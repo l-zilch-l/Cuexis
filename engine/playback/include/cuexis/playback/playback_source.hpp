@@ -7,6 +7,9 @@
 // the resulting PlaybackSession and PreparedPlayback follow the rules in playback_session.hpp.
 
 #include <cuexis/content/content_provider.hpp>
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+#include <cuexis/playback/gameplay_candidate.hpp>
+#endif
 #include <cuexis/core/abi_warnings.hpp>
 #include <cuexis/core/result.hpp>
 #include <cuexis/playback/playback_export.hpp>
@@ -90,9 +93,54 @@ class CUEXIS_PLAYBACK_API PlaybackSource final {
                                                  std::string entryPath)
         -> core::Result<PlaybackSource>;
 
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    [[nodiscard]] static auto
+    fromCxcFileGameplayEntry(const std::filesystem::path&, std::string entryPath,
+                             const GameplayConfiguration&, GameplayConfigurationDecodeBudget,
+                             GameplayGraphDecodeBudget, GameplayPrepareIntent)
+        -> core::Result<PlaybackSource>;
+    [[nodiscard]] static auto
+    fromCxcMemoryGameplayEntry(std::vector<std::byte>, std::string entryPath,
+                               const GameplayConfiguration&, GameplayConfigurationDecodeBudget,
+                               GameplayGraphDecodeBudget, GameplayPrepareIntent)
+        -> core::Result<PlaybackSource>;
+    [[nodiscard]] static auto
+    fromFilesystemGameplayEntry(const std::filesystem::path&, std::string entryPath,
+                                const GameplayConfiguration&, GameplayConfigurationDecodeBudget,
+                                GameplayGraphDecodeBudget, GameplayPrepareIntent)
+        -> core::Result<PlaybackSource>;
+    [[nodiscard]] static auto fromGameplayEntry(
+        std::string sourceId, std::string metadataJson, std::vector<std::byte> entryBytes,
+        const GameplayConfiguration&, GameplayConfigurationDecodeBudget metadataBudget,
+        GameplayGraphDecodeBudget graphBudget, std::vector<PlaybackAssetDescriptor> assets,
+        std::shared_ptr<content::IContentProvider>, GameplayPrepareIntent)
+        -> core::Result<PlaybackSource>;
+    [[nodiscard]] static auto
+    fromGameplayPacked(std::string sourceId, std::string entryPath, std::vector<std::byte> bytes,
+                       const GameplayConfiguration& configuration,
+                       std::vector<PlaybackAssetDescriptor> assets,
+                       std::shared_ptr<content::IContentProvider> provider,
+                       GameplayPrepareIntent intent = GameplayPrepareIntent::Presentation)
+        -> core::Result<PlaybackSource>;
+    [[nodiscard]] static auto
+    fromGameplayGraph(std::string sourceId, std::string entryPath, std::vector<std::byte> bytes,
+                      const GameplayConfiguration& configuration, GameplayGraphDecodeBudget budget,
+                      std::vector<PlaybackAssetDescriptor> assets,
+                      std::shared_ptr<content::IContentProvider> provider,
+                      GameplayPrepareIntent intent = GameplayPrepareIntent::Presentation)
+        -> core::Result<PlaybackSource>;
+#endif
+
   private:
     friend class PlaybackSession;
     struct State;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    [[nodiscard]] static auto fromGameplayEncoded(
+        std::string sourceId, std::string entryPath, std::vector<std::byte> bytes,
+        const GameplayConfiguration& configuration, std::vector<PlaybackAssetDescriptor> assets,
+        std::shared_ptr<content::IContentProvider> provider, GameplayPrepareIntent intent,
+        std::optional<GameplayGraphDecodeBudget> graphBudget) -> core::Result<PlaybackSource>;
+#endif
     explicit PlaybackSource(std::unique_ptr<State> state) noexcept;
 
     std::unique_ptr<State> state_;

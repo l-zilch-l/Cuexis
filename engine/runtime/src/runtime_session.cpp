@@ -63,6 +63,7 @@ class RuntimeEvaluationState final {
     std::vector<animation::AnimationLayerContribution> animationLayerContributions;
     std::vector<world::OverrideToken> hostOverrides;
     std::vector<world::OverrideToken> previewOverrides;
+    std::vector<world::PropertyWrite> gameplayWrites;
     std::uint64_t nextOverrideId{1};
     std::vector<CameraEntry> cameras;
     std::vector<AppearanceEntry> appearances;
@@ -661,10 +662,13 @@ void rollbackCameras(RuntimeEvaluationState& state, world::World& world) noexcep
             appearance.previous.opacity = component.opacity;
             appearance.previous.tint = component.tint;
             appearance.previous.materialAssetId.assign(component.materialAssetId);
+        }
+        for (auto& appearance : state.appearances) {
+            auto& component = registry.get<render::AppearanceComponent>(appearance.entity);
             component.visible = appearance.candidate.visible;
             component.opacity = appearance.candidate.opacity;
             component.tint = appearance.candidate.tint;
-            component.materialAssetId.assign(appearance.candidate.materialAssetId);
+            component.materialAssetId.swap(appearance.candidate.materialAssetId);
         }
         return {};
     });
@@ -679,11 +683,14 @@ void rollbackAppearances(RuntimeEvaluationState& state, world::World& world) noe
         return;
     }
     const auto rolledBack = world.withRegistry([&](entt::registry& registry) {
-        for (const auto& appearance : state.appearances) {
+        for (auto& appearance : state.appearances) {
             if (registry.valid(appearance.entity) &&
                 registry.all_of<render::AppearanceComponent>(appearance.entity)) {
-                registry.replace<render::AppearanceComponent>(appearance.entity,
-                                                              appearance.previous);
+                auto& component = registry.get<render::AppearanceComponent>(appearance.entity);
+                component.visible = appearance.previous.visible;
+                component.opacity = appearance.previous.opacity;
+                component.tint = appearance.previous.tint;
+                component.materialAssetId.swap(appearance.previous.materialAssetId);
             }
         }
     });
@@ -995,8 +1002,9 @@ auto RuntimeSession::commit(PreparedRuntimeSession&& prepared) -> core::Result<v
 }
 
 auto RuntimeSession::updatePrepared(RuntimeEvaluationState& state,
-                                    const chart::TimingMap& timingMap, const RuntimeFrame& frame)
-    -> core::Result<void> {
+                                    const chart::TimingMap& timingMap, const RuntimeFrame& frame,
+                                    bool tickLifetimes, std::vector<RuntimeDebugRecord>* records,
+                                    bool* truncated) -> core::Result<void> {
     auto beatSample = timingMap.sampleChartTimeMs(frame.chartTimeMs);
     if (!beatSample) {
         return core::unexpected(std::move(beatSample.error()));
@@ -1039,6 +1047,10 @@ auto RuntimeSession::updatePrepared(RuntimeEvaluationState& state,
         }
     }
 
+    if (auto gameplayApplied = state.resolver.applyLayer(
+            state.gameplayWrites, world::PropertyLayer::GameplayOverride, true);
+        !gameplayApplied)
+        return core::unexpected(std::move(gameplayApplied.error()));
     if (!state.hostOverrides.empty()) {
         std::vector<world::OverrideToken> activeHost;
         activeHost.reserve(state.hostOverrides.size());
@@ -1067,8 +1079,10 @@ auto RuntimeSession::updatePrepared(RuntimeEvaluationState& state,
             return core::unexpected(std::move(previewApplied.error()));
         }
     }
-    tickOverrideLifetimes(state.hostOverrides);
-    tickOverrideLifetimes(state.previewOverrides);
+    if (tickLifetimes) {
+        tickOverrideLifetimes(state.hostOverrides);
+        tickOverrideLifetimes(state.previewOverrides);
+    }
     const auto pruneInactive = [&](std::vector<world::OverrideToken>& tokens) {
         tokens.erase(std::remove_if(tokens.begin(), tokens.end(),
                                     [&](const world::OverrideToken& token) {
@@ -1086,6 +1100,16 @@ auto RuntimeSession::updatePrepared(RuntimeEvaluationState& state,
     auto presented = applyResolvedPresentation(state);
     if (!presented) {
         return core::unexpected(std::move(presented.error()));
+    }
+    if (records && truncated) {
+        if (debugOptions_.enabled) {
+            auto captured = captureDebug(state, objects_, beatSample->beat, *records, *truncated);
+            if (!captured)
+                return captured;
+        } else {
+            records->clear();
+            *truncated = false;
+        }
     }
     auto transformsCommitted = state.resolver.commit(*world_);
     if (!transformsCommitted) {
@@ -1671,6 +1695,69 @@ void RuntimeSession::replaceWith(PreparedRuntimeSession&& prepared) noexcept {
     previousObjects.clear();
     previousDiagnostics.clear();
     previousRuntime.reset();
+}
+
+auto RuntimeSession::updateGameplay(const RuntimeFrame& frame,
+                                    std::span<const PropertyOverrideWrite> writes,
+                                    bool tickLifetimes) -> core::Result<void> {
+    if (!threadChecker_.isCurrent())
+        return core::unexpected(
+            core::Error{"runtime.session.not_owner_thread", "Wrong owner thread"});
+    if (!evaluation_ || !world_)
+        return core::unexpected(core::Error{"runtime.session.empty", "Runtime inactive"});
+    if (callbackActive_)
+        return core::unexpected(
+            core::Error{"runtime.session.callback_reentrant", "Runtime callback reentry"});
+    auto valid = validateFrame(frame, lastFrame_);
+    if (!valid)
+        return valid;
+    std::unique_ptr<RuntimeEvaluationState> candidate;
+    const auto rollback = [&] {
+        if (!candidate)
+            return;
+        rollbackAppearances(*candidate, *world_);
+        rollbackCameras(*candidate, *world_);
+        candidate->resolver.rollback(*world_);
+    };
+    try {
+        candidate = std::make_unique<RuntimeEvaluationState>(*evaluation_);
+        candidate->camerasCommitted = false;
+        candidate->appearancesCommitted = false;
+        candidate->resolver.beginFrame();
+        candidate->gameplayWrites.clear();
+        candidate->gameplayWrites.reserve(writes.size());
+        for (const auto& write : writes) {
+            if (write.property != world::PropertyId::RenderVisible ||
+                !std::holds_alternative<bool>(write.value))
+                return core::unexpected(core::Error{"world.property.invalid_value",
+                                                    "Gameplay requires typed render.visible"});
+            auto entity = findEntity(write.objectId);
+            if (!entity)
+                return core::unexpected(std::move(entity.error()));
+            if (!*entity)
+                return core::unexpected(
+                    core::Error{"presentation-target-missing", "Gameplay target missing"});
+            candidate->gameplayWrites.push_back(
+                {**entity, write.property, std::get<bool>(write.value)});
+        }
+        std::vector<RuntimeDebugRecord> records;
+        bool truncated{};
+        auto updated = updatePrepared(*candidate, chartRuntime_->timingMap, frame, tickLifetimes,
+                                      &records, &truncated);
+        if (!updated) {
+            rollback();
+            return updated;
+        }
+        evaluation_.swap(candidate);
+        debugRecords_.swap(records);
+        debugTruncated_ = truncated;
+        lastFrame_ = frame;
+        return {};
+    } catch (...) {
+        rollback();
+        return core::unexpected(core::Error{"runtime.session.update_exception",
+                                            "Gameplay projection allocation failed"});
+    }
 }
 
 } // namespace cuexis::runtime

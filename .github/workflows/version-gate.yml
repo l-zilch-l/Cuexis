@@ -1,6 +1,12 @@
 name: Version Gate
 
 on:
+  # Keep the PR-head check reachable before this target-event workflow is installed on master.
+  # Both PR events execute only trusted base tools; candidate commits are fetched as data.
+  pull_request:
+    branches:
+      - master
+    types: [opened, synchronize, reopened, ready_for_review]
   pull_request_target:
     branches:
       - master
@@ -32,20 +38,20 @@ permissions:
 jobs:
   pre-merge:
     name: Version advancement (pre-merge)
-    if: github.event_name == 'pull_request_target' || github.event_name == 'merge_group'
+    if: startsWith(github.event_name, 'pull_request') || github.event_name == 'merge_group'
     runs-on: ubuntu-latest
     steps:
       - name: Check out full history
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.sha }}
+          ref: ${{ startsWith(github.event_name, 'pull_request') && github.event.pull_request.base.sha || github.sha }}
           fetch-depth: 0
 
       - name: Run trusted version-gate tests and checker
         env:
-          CUEXIS_BASE_SHA: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
-          CUEXIS_CANDIDATE_SHA: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}
-          CUEXIS_EVENT: ${{ github.event_name == 'pull_request_target' && 'pull_request' || github.event_name }}
+          CUEXIS_BASE_SHA: ${{ startsWith(github.event_name, 'pull_request') && github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          CUEXIS_CANDIDATE_SHA: ${{ startsWith(github.event_name, 'pull_request') && github.event.pull_request.head.sha || github.sha }}
+          CUEXIS_EVENT: ${{ startsWith(github.event_name, 'pull_request') && 'pull_request' || github.event_name }}
           CUEXIS_APPROVAL_PR: ${{ github.event.pull_request.number || 0 }}
           GITHUB_TOKEN: ${{ github.token }}
         shell: bash
@@ -53,7 +59,7 @@ jobs:
           set -euo pipefail
           test -n "${CUEXIS_BASE_SHA}"
           test -n "${CUEXIS_CANDIDATE_SHA}"
-          # Fetch data only. Never check out or execute PR code in pull_request_target.
+          # Fetch data only. Never check out or execute PR code in either PR event.
           git fetch --no-tags origin "${CUEXIS_CANDIDATE_SHA}"
           TRUSTED_ROOT="${RUNNER_TEMP}/cuexis-version-gate"
           mkdir -p "${TRUSTED_ROOT}/tools" "${TRUSTED_ROOT}/.github/workflows"

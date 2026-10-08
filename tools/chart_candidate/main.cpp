@@ -1,3 +1,6 @@
+#if defined(CUEXIS_GAMEPLAY_ASSEMBLER_CANDIDATE)
+#include <cuexis/tools/gameplay_assembler_cli.hpp>
+#endif
 #include <cuexis/chart/candidate_assembler.hpp>
 #include <cuexis/chart/cxt_v2_loader.hpp>
 #include <cuexis/chart/packed_chart_io.hpp>
@@ -269,6 +272,10 @@ int run(int argc, char** argv) {
 } // namespace
 
 int main(int argc, char** argv) {
+#if defined(CUEXIS_GAMEPLAY_ASSEMBLER_CANDIDATE)
+    if (argc > 1 && std::string_view{argv[1]} == "--gameplay")
+        return cuexis::tools::runGameplayAssembler(argc - 1, argv + 1);
+#endif
     try {
         return run(argc, argv);
     } catch (const std::exception& error) {

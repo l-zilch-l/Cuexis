@@ -36,7 +36,8 @@ add_executable(cuexis_reference_host
     src/host_commands.cpp
     src/host_content.cpp
     src/host_report.cpp
-    src/host_runner.cpp)
+    src/host_runner.cpp
+    src/host_gameplay.cpp)
 target_include_directories(cuexis_reference_host PRIVATE src)
 target_link_libraries(cuexis_reference_host PRIVATE Cuexis::Playback)
 target_compile_definitions(cuexis_reference_host PRIVATE

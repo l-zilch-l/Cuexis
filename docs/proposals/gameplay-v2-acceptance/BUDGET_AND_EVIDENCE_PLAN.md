@@ -5,14 +5,14 @@
 更新日期：2026-10-02
 
 上级文档：[Gameplay V2 acceptance package](README.md) ·
-[Stage 7A 实施计划](../../stage_plans/active/stage-07/plan.md)
+[Stage 7A 实施计划](../../stage_plans/active/stage-07/plan-a.md)
 
 文档角色：预算与测量计划（planning artifact）。它定义计数口径、测量输入、硬/软属性、
 超限动作和预期证据文件；它不是生产限额、不是 ABI 常量，也不是实施声明。
 
 ## 0. 为什么单独写这一份
 
-[Stage 7A 计划](../../stage_plans/active/stage-07/plan.md) 的 S7A-0.3 要求为内容、稳态、
+[Stage 7A 计划](../../stage_plans/active/stage-07/plan-a.md) 的 S7A-0.3 要求为内容、稳态、
 快照/Seek、Replay、Packed 五类预算建立 profile 草案，并在 S7A-0 输出中区分阈值与实测。
 现有仓库里已经存在一组**可被误用**的数字：`docs/stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md`
 记录了 96 条 requirement、672 个输入事件、activity peak 3、Gap timer peak 2、4,777 字节快照。

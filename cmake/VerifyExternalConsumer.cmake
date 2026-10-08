@@ -121,10 +121,14 @@ endforeach()
 set(common_configure_arguments
     "-DCUEXIS_EXPECTED_SDK_API_VERSION=${CUEXIS_SDK_API_VERSION}"
     "-DCuexis_ALLOW_EXPERIMENTAL=${CUEXIS_EXPERIMENTAL}"
+    "-DCUEXIS_ENABLE_CHART_V5_CANDIDATE=${CUEXIS_EXPERIMENTAL}"
     -G "${CUEXIS_GENERATOR}"
     "-DCMAKE_BUILD_TYPE=${CUEXIS_BUILD_TYPE}"
     "-DCUEXIS_LIBRARY_TYPE=${CUEXIS_LIBRARY_TYPE}"
 )
+if(CUEXIS_EXPERIMENTAL)
+    list(APPEND common_configure_arguments "-DCUEXIS_VERSION_SUFFIX=exp.candidate")
+endif()
 if(DEFINED CUEXIS_CXX_COMPILER AND NOT CUEXIS_CXX_COMPILER STREQUAL "")
     list(APPEND common_configure_arguments
         "-DCMAKE_CXX_COMPILER=${CUEXIS_CXX_COMPILER}"
@@ -354,7 +358,11 @@ else()
             list(APPEND required_shared_modules cuexis_audio_sdl)
         endif()
         foreach(module IN LISTS required_shared_modules)
-            set(shared_stem "${module}-${shared_name_version}${shared_debug_postfix}")
+            set(shared_flavor_suffix "")
+            if(CUEXIS_EXPERIMENTAL)
+                set(shared_flavor_suffix "-candidate")
+            endif()
+            set(shared_stem "${module}${shared_flavor_suffix}-${shared_name_version}${shared_debug_postfix}")
             if(CMAKE_HOST_WIN32)
                 if(NOT EXISTS "${package_prefix}/bin/${shared_stem}.dll" OR
                    NOT EXISTS "${package_prefix}/lib/${shared_stem}.lib")

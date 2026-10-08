@@ -54,6 +54,38 @@ auto parsePlayerOptions(int argumentCount, char** arguments) -> core::Result<Pla
             }
             continue;
         }
+        if (argument == "--gameplay-configuration" || argument == "--gameplay-config-budget" ||
+            argument == "--gameplay-h-step" || argument == "--gameplay-presentation-step" ||
+            argument == "--gameplay-key") {
+#if !defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+            return core::unexpected(core::Error{"player.candidate.disabled",
+                                                "Gameplay requires the candidate SDK flavor"});
+#else
+            auto value =
+                requirePathArgument(index, argumentCount, arguments, "player.arguments.unknown",
+                                    "Gameplay option requires a value");
+            if (!value)
+                return core::unexpected(std::move(value.error()));
+            const auto text = value->generic_string();
+            if (argument == "--gameplay-key") {
+                options.gameplayKeys.push_back(text);
+            } else if (argument == "--gameplay-configuration") {
+                if (options.gameplayConfiguration)
+                    return core::unexpected(
+                        core::Error{"player.arguments.unknown", "Duplicate Gameplay option"});
+                options.gameplayConfiguration = *value;
+            } else {
+                auto& field = argument == "--gameplay-config-budget" ? options.gameplayBudget
+                              : argument == "--gameplay-h-step"      ? options.gameplayHStep
+                                                                     : options.gameplayTStep;
+                if (field)
+                    return core::unexpected(
+                        core::Error{"player.arguments.unknown", "Duplicate Gameplay option"});
+                field = text;
+            }
+            continue;
+#endif
+        }
         if (argument == "--candidate-entry") {
 #ifndef CUEXIS_EXPERIMENTAL_BUILD
             return core::unexpected(core::Error{"player.candidate.disabled",
@@ -165,6 +197,17 @@ auto parsePlayerOptions(int argumentCount, char** arguments) -> core::Result<Pla
         return core::unexpected(core::Error{"player.arguments.candidate_source_required",
                                             "Candidate entry requires project or CXC locator"});
     }
+    const bool gameplay = options.gameplayConfiguration || options.gameplayBudget ||
+                          options.gameplayHStep || options.gameplayTStep ||
+                          !options.gameplayKeys.empty();
+    if (gameplay && (!options.candidateEntry || !options.gameplayConfiguration ||
+                     !options.gameplayBudget || !options.gameplayHStep || !options.gameplayTStep))
+        return core::unexpected(
+            core::Error{"player.arguments.unknown",
+                        "Gameplay requires explicit entry, configuration, budget and H/T steps"});
+    if (gameplay && (options.smokeTest || options.audioSmokeTest))
+        return core::unexpected(core::Error{"player.arguments.unknown",
+                                            "Legacy smoke clock is unavailable for Gameplay"});
     if (options.smokeTest && options.audioSmokeTest) {
         return core::unexpected(core::Error{"player.arguments.smoke_test_conflict",
                                             "Smoke test modes are mutually exclusive"});

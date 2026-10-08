@@ -6,16 +6,16 @@
 
 本索引按报告用途分类，不复制裁定、字段合同或当前阶段结论。
 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 是唯一当前实现状态摘要；
-[Stage 7主计划](../../../stage_plans/active/stage-07/plan.md) 持有范围、批次与实施决策。
+[Stage 7总计划](../../../stage_plans/active/stage-07/plan.md)、[7A分册](../../../stage_plans/active/stage-07/plan-a.md) 和 [7B+分册](../../../stage_plans/active/stage-07/plan-b.md) 持有范围、批次与实施决策。
 每份报告只代表其证据日期，历史“下一步”不能覆盖主计划。
 
 ## 分类导航
 
 | 分类 | 数量 | 主要用途 |
 | --- | --- | --- |
-| 准入与基线 (readiness) | 5 | owner准入记录、工具链基线、typed合同审视、D-9候选证据 |
+| 准入与基线 (readiness) | 6 | owner准入记录、工具链基线、typed合同与计划审视、D-9候选证据 |
 | 裁定记录 (decisions) | 13 | 分轮准入/实施裁定、合同选择、落地位置与诊断分类；现行字段仍归Spec/ABI |
-| 设计与实施记录 (implementation) | 4 | 带日期的设计收口和实施推进；设计交付与运行验证分别按报告声明解释 |
+| 设计与实施记录 (implementation) | 6 | 带日期的设计收口和实施推进；设计交付与运行验证分别按报告声明解释 |
 | 验证与审计 (verification) | 12 | 独立复验、功能验收、边界审计、CI优化和文档恢复证据 |
 | 交接与规划修订 (handoffs) | 3 | hosted交接、排期修订和桌面接手整理；历史下一步不覆盖主计划 |
 
@@ -24,12 +24,14 @@
 - [3/4受限功能验收](verification/2026-10-05-s7a-3-4-functional-acceptance.md)
 - [同源hosted与证据归档](handoffs/2026-10-05-s7a-3-4-hosted-and-handoff.md)
 - [5/6规划与桌面交接记录](handoffs/2026-10-06-s7a-5-6-plan-and-desktop-handoff.md)
-- [当前5+6目标与决策](../../../stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)
+- [当前Stage 7A计划和决策](../../../stage_plans/active/stage-07/plan-a.md)
+- [S7A-7/8计划与合同重审](readiness/2026-10-07-s7a-7-8-plan-review.md)
 
 ## 准入与基线
 
 | 报告 | 证据日期 |
 | --- | --- |
+| [S7A-7/8计划与合同重审](readiness/2026-10-07-s7a-7-8-plan-review.md) | 2026-10-07 |
 | [D-9 候选补丁与验证证据：version-gate 的 POSIX shell 判据](readiness/2026-10-02-d9-shell-guard-candidate.md) | 2026-10-02 |
 | [Gameplay V2 acceptance package：owner 接受记录](readiness/2026-10-02-s7a-0-acceptance.md) | 2026-10-02 |
 | [S7A-0 执行基线与合同表征](readiness/2026-10-02-s7a-0-baseline.md) | 2026-10-02 |
@@ -58,6 +60,8 @@
 
 | 报告 | 证据日期 |
 | --- | --- |
+| [S7A-7/8 Graph、Entry 与生产 assembler 证据](implementation/2026-10-08-s7a-7-8-entry-assembler-progress.md) | 2026-10-08 |
+| [S7A-7/8 集成推进记录](implementation/2026-10-07-s7a-7-8-integration-progress.md) | 2026-10-07 |
 | [S7A-3 实现推进记录：G2-S2 / G2-T4 / R2-K4 / P1-W1 裁决后状态](implementation/2026-10-03-s7a-3-implementation-progress.md) | 2026-10-03 |
 | [S7A-3 设计收口与实施交接报告](implementation/2026-10-04-s7a-3-design-closure.md) | 2026-10-04 |
 | [S7A-3 / S7A-4 complete execution design handoff](implementation/2026-10-05-s7a-3-4-execution-design.md) | 2026-10-05 |

@@ -1,5 +1,31 @@
 # Gameplay V2 字段与运行语义规范
 
+## S7A-7/8 消费修订 revision 1（2026-10-07）
+
+本轮按 owner 实施授权采用 plan-a P78 推荐及 R78 推荐；限于首次消费合同。
+字段/所有权表归 [ABI 首用补充](../api/GAMEPLAY_V2_ABI.md#s7a-78-公共首用补充-revision-12026-10-07)，
+操作、失败及 mutation generation 表归 [Playback lifecycle](../api/playback-session.md)。
+旧“无输入休眠”限定为未启用 Gameplay 的纯播放/Preview。显式 Gameplay commit 后空输入
+advance 仍运行到期 timer，Miss 经实际 kernel/Fold 发布；不改变 3/4/5/6 的规则。
+
+表现发布使用成功 Fold factCursor/workTick，无 Fold 使用 seal prefix；失败 Tick 已 sealed Fact
+可查询但不得激活 Runtime token。faulted 只读重建与实时发布是不同操作。
+projection scope 绑定当前 Ledger；Seek/restore/分支重建全部临时 cursor/dedup/queue/group/token 后
+一次 swap；失败保持旧画面。纯表现变动不进入判定四分量，恢复重取当前有效 binding/resource。
+
+resolver 层域固定 Initial < Behavior < Animation < GameplayOverride < HostOverride <
+StudioPreviewOverride。priority 仅在同层比较；不使用 Host magic priority 模拟 Gameplay。
+Gameplay PresentationTick 使用显式 signed i64 绝对区间：有限 [start,end)，start<end；
+或显式 UntilReset。T 上先去除 end<=T，再激活 start<=T<end；越过整段不补发瞬时画面。
+同 Tick 不按 queue 插入顺序选赢家；同 Fact/target 等值折叠，异值且不能静态证明互斥的绑定
+prepare 拒绝。旧 Host RemainingFrames/UntilChartTimeMs 含义和布局保持。
+
+Graph parsing 必须在 json_support 在容器分配前检查 grammar/depth/count/bounds/重复键，
+i64/u64 完整保真且不经 f64。新增生产阈值未经接受保持 gate incomplete，不能机械套 Packed
+界；physical/profile/revision 由 Entry/Capsule 合同拥有。Graph/Packed 进入同一实际 kernel。
+filesystem 多产物使用内容派生 immutable generation、现有 manifest 单一 commit 点；旧 generation
+不自动 GC；单 CXC 保持现有原子发布。原子可见性不承诺断电持久性。
+
 状态：candidate
 
 更新日期：2026-10-05
@@ -14,7 +40,7 @@
 旧限定冻结中的“首次消费时补齐”在这些明确覆盖字段上已有落点；不表示产品实现或整批验收。
 局部实现与整批验收须区分，当前进度只由 [CURRENT_STATUS](../CURRENT_STATUS.md) 拥有。
 
-上级文档：[Stage 7A 实施计划](../stage_plans/active/stage-07/plan.md) ·
+上级文档：[Stage 7A 实施计划](../stage_plans/active/stage-07/plan-a.md) ·
 [Gameplay V2 研究索引](../proposals/research/gameplay-v2/README.md) ·
 [Gameplay V2 acceptance package](../proposals/gameplay-v2-acceptance/README.md)
 
@@ -22,7 +48,7 @@
 兼容、预算口径与错误合同。它不承载决策理由、备选方案与威胁模型（属
 [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md)），不复述 typed C++ 边界、类型宽度、
 所有权与生命周期（属 [Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md)），不承载阶段进度与
-批次门禁（属 [Stage 7A 实施计划](../stage_plans/active/stage-07/plan.md)）。
+批次门禁（属 [Stage 7A 实施计划](../stage_plans/active/stage-07/plan-a.md)）。
 
 ## 0. 术语与缩写
 
@@ -86,8 +112,8 @@ identity 判定一律以准备值为准，不以作者源表达形式为准。**
 | --- | --- |
 | 决策、备选方案、威胁模型、接受门禁 | [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md) |
 | typed 内部/preview C++ 边界：类型、命名、整数宽度、所有权、异常边界、生命周期、序列化布局 | [Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md) |
-| 阶段目标、批次、依赖、门禁、冻结顺序 | [Stage 7A 实施计划](../stage_plans/active/stage-07/plan.md) |
-| W 类缺口的编号规则与登记位置 | [Stage 7A 实施计划](../stage_plans/active/stage-07/plan.md) §5.3（登记与引用规则） |
+| 阶段目标、批次、依赖、门禁、冻结顺序 | [Stage 7A 实施计划](../stage_plans/active/stage-07/plan-a.md) |
+| W 类缺口的编号规则与登记位置 | [Stage 7B+计划](../stage_plans/active/stage-07/plan-b.md#53-w-类缺口记录w-class-gap-record) §5.3（登记与引用规则） |
 | W 类缺口的字段定义与具体登记项 | [支持 / 拒绝矩阵](../proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md) §6（D-3 落地的分工；见 §1.3） |
 | Packed 已冻结物理预算表 | [Packed 候选物理合同 §3.3](PACKED_CHART_FORMAT.md) |
 | S7A-3 首次 Packed 消费的 candidate 物理字段、REF0 子域与结构 hash | [Gameplay Capsule v2 format](GAMEPLAY_CAPSULE_V2_FORMAT.md) |
@@ -99,7 +125,7 @@ W 类缺口（W-class gap）的编号规则、字段定义与登记位置**不�
 （2026-10-03 第 3 轮裁定，见 [RULING_WORKSHEET.md](../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) §3 与
 [CONTRACT_MATRIX.md](../proposals/gameplay-v2-acceptance/CONTRACT_MATRIX.md) §12）：**字段定义与具体登记项**的
 权威在 [SUPPORT_AND_REJECTION_MATRIX.md](../proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md) §6；
-**定义、登记与引用规则**在 [Stage 7A 实施计划](../stage_plans/active/stage-07/plan.md) §5.3（该计划现存正文引用
+**定义、登记与引用规则**在 [Stage 7B+计划](../stage_plans/active/stage-07/plan-b.md#53-w-类缺口记录w-class-gap-record) §5.3（该计划现存正文引用
 均显式指向 §5.3）。本 Spec 只做两件事：
 
 1. 声明 W 类缺口不构成 capability，不得据此冻结任何 gameplay 字段；
@@ -1984,6 +2010,8 @@ severity 与明确的 `faulted` 行为）；③ 所有 `CapabilityRecord.stableR
 
 ### 9.7 判定闭包失败与表现失败的分界（第 6 轮裁定，2026-10-03）
 
+现行kernel/Fold fault来源的适用范围见§9.8新增提示；本节表现失败不fault、不回写的边界保持。
+
 本体承载 `Q-15` / `CM-P06` / `P1-13`（`S7A6-R04`）与 `CM-P08` / `P1-11`（`S7A6-R05`）的分界；
 首次消费批次 **S7A-7**。
 
@@ -2000,6 +2028,11 @@ severity 与明确的 `faulted` 行为）；③ 所有 `CapabilityRecord.stableR
 §9.4 的 Ruleset state commit 失败产生）。
 
 ### 9.8 运行期 `faulted` 与表现失败的区分（第 6 轮裁定，2026-10-03）
+
+**现行适用范围提示（2026-10-07）。** 下文“只有第二阶段Ruleset失败”的表述限定于原第5/6轮范围，
+不能作为后来execution路径的全局fault白名单。现行kernel失败见[execution typed补充](../api/gameplay-v2-execution-types.md) §3，
+kernel/fold/control的FaultStage及完整结果比较见本文J0-6首用补充，实际code/faulted映射以集中码表为准。
+表现失败不fault、不回写Fact的边界保持；Playback的公共SessionState映射仍须在S7A-7首次消费合同中明确。
 
 第 5 轮的 §9.4 `faulted` 行为**保持不变**（`S7A5-R03`）：只有**第二阶段 Ruleset state commit** 失败
 才使 session 进入**可查询**的 `faulted`，且 `faulted` 上 `submit` / `advance` / `seek` / `replay` /
@@ -2098,7 +2131,7 @@ ABI §数值域与量程的"判定顺序：可表示性先于范围"段。**两�
 ## S7A-1 限定冻结范围与登记规则（2026-10-02）
 
 **顶层状态仍为 `candidate`。** 本 Spec 不改为 `frozen` / `active`：授权来自**范围精确的限定冻结**，
-不来自状态词。按 [Stage 7A 实施计划](../stage_plans/active/stage-07/plan.md) §1.1 冻结顺序第 2 步的
+不来自状态词。按 [Stage 7总计划](../stage_plans/active/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的
 **分批冻结**口径（2026-10-02 owner 接受第 1 轮补充 S1-01…S1-05，登记见 [RULING_WORKSHEET.md](../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) §7A；
 该次准入咨询 thread `s7a1-admission-rulings` 记入 [S7A-0 接受记录](../stage_reports/stages/stage-07/readiness/2026-10-02-s7a-0-acceptance.md) §4.2），
 本 Spec 只在下列四项范围内为 S7A-1 骨架提供依据：①权威来源与版本层级；②类型角色与边界；③模块与
@@ -2124,7 +2157,7 @@ ABI §数值域与量程的"判定顺序：可表示性先于范围"段。**两�
 ## S7A-2 限定冻结范围与登记规则（2026-10-03）
 
 **顶层状态仍为 `candidate`。** 本 Spec 不改为 `frozen` / `active`：授权来自**范围精确的限定冻结**，
-不来自状态词。按 [Stage 7A 实施计划](../stage_plans/active/stage-07/plan.md) §1.1 冻结顺序第 2 步的**分批冻结**
+不来自状态词。按 [Stage 7总计划](../stage_plans/active/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的**分批冻结**
 口径，第 2 轮（时间域与迟到策略）在 2026-10-03 由 Codex 裁定并经 owner 落进本文；该轮是进入 S7A-2 的
 **准入门禁**，其语义正文见 §0.1、§3.7 与 §7.2 的映射段。
 
@@ -2204,7 +2237,7 @@ minimumRate / reconstruction / discontinuity 表示；S7C-1 扩展字段；研�
 ## S7A-3 限定冻结范围与登记规则（2026-10-04 更新）
 
 **顶层状态仍为 `candidate`。** 本 Spec 不改为 `frozen` / `active`：授权来自**范围精确的限定冻结**，
-不来自状态词。按 [Stage 7A 实施计划](../stage_plans/active/stage-07/plan.md) §1.1 冻结顺序第 2 步的**分批冻结**
+不来自状态词。按 [Stage 7总计划](../stage_plans/active/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的**分批冻结**
 口径，第 3 轮（prepare、装配与 entry）于 2026-10-03 由 Codex 裁定并经 owner 落进本文；该轮是进入 S7A-3 的
 **准入门禁**，其语义正文见 §1.3、§2.5 第 1 条、§3.3、§3.8 与 §5.5，拒绝面映射见 §7.2 的第 3 轮段。
 
@@ -2279,7 +2312,7 @@ minimumRate / reconstruction / discontinuity 表示；S7C-1 扩展字段；研�
 ## S7A-4 限定冻结范围与登记规则（2026-10-03）
 
 **顶层状态仍为 `candidate`。** 本 Spec 不改为 `frozen` / `active`：授权来自**范围精确的限定冻结**，
-不来自状态词。按 [Stage 7A 实施计划](../stage_plans/active/stage-07/plan.md) §1.1 冻结顺序第 2 步的**分批冻结**
+不来自状态词。按 [Stage 7总计划](../stage_plans/active/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的**分批冻结**
 口径，第 4 轮（仲裁、资源与事实序）于 2026-10-03 由 Codex 裁定并经 owner 落进本文；该轮是进入 S7A-4 的
 **准入门禁**，其语义正文见 §3.9（六步 / 八阶段唯一映射）、§3.10（7A 资源子集与身份规则）、§3.11（早 / 晚
 判定与 error 记录）、§3.12（solver / coordinator 边界与 `SolverProfile` 语义）、§3.13（不得消费清单），
@@ -2341,7 +2374,7 @@ S7A-5 的**文档准入门禁**，并明确本批次**授权什么、不授权�
 §9 第 5 轮行在 Spec 侧的对应节，与 `## S7A-4` 同构。
 
 **顶层状态仍为 `candidate`。** 本 Spec 不改为 `frozen` / `active`：授权来自**范围精确的限定冻结**，不来自
-状态词。按 [Stage 7A 实施计划](../stage_plans/active/stage-07/plan.md) §1.1 冻结顺序第 2 步的**分批冻结**
+状态词。按 [Stage 7总计划](../stage_plans/active/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的**分批冻结**
 口径，第 5 轮于 2026-10-03 由 Codex 裁定并经 owner 落进本文；该轮与 `## S7A-6` 共为进入 S7A-5 的
 **准入门禁**。语义正文见 §3.14（Ruleset Tick 三阶段与 `faulted` 行为矩阵）、§3.15（`RegisterKind` 三类与
 冲突策略）、§3.16（Ruleset 输入边界）、§3.17（Fact 身份、commit 分配与 revision 归属）、§3.20（Outcome /
@@ -2628,7 +2661,7 @@ S7A-3…S7A-9 仍未完成。**（第 1 轮、第 1 轮补充、第 2 轮、第 
 
 - [ADR 0044：Gameplay V2 语义内核](../adr/0044-gameplay-v2-semantic-kernel.md)：决策、备选方案、威胁模型与接受门禁
 - [Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md)：typed 内部 / preview C++ 边界
-- [Stage 7A 实施计划](../stage_plans/active/stage-07/plan.md)：批次、依赖、冻结顺序、W 类缺口定义
+- [Stage 7A分册](../stage_plans/active/stage-07/plan-a.md)：批次与首用门禁；[总计划](../stage_plans/active/stage-07/plan.md)：依赖与冻结顺序；[Stage 7B+分册](../stage_plans/active/stage-07/plan-b.md)：W类缺口定义
 - [Gameplay V2 acceptance package](../proposals/gameplay-v2-acceptance/README.md)：准入包与接受清单
 - [S7A-0.2 合同逐项台账](../proposals/gameplay-v2-acceptance/CONTRACT_MATRIX.md)：114 项合同项与 `open` 清单
 - [支持 / 拒绝矩阵](../proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md)：支持集合、19 条拒绝、capability registry 草案
@@ -2809,3 +2842,45 @@ score=INT64_MIN加UINT64_MAX则数学结果INT64_MAX，checked必须允许。
 U05真实极值出口：显式合法close=0使F(MAX)=MAX，观测选MAX−12以满足完整cell，
 已Hit的deadline MAX无Fact不产生Hook而成功；无输入的deadline MAX产生真实Miss，
 Hook的MAX+1检查失败，保留seal后的Fact与旧Fold。默认close=3的MAX horizon仍保留MAX deadline pending。
+
+### C78-05 / R78-08 JSON 分配边界（2026-10-07 revision 1）
+
+compiled Graph 沿已选 R78-08 A：json_support 内专用 SAX Reader 直接构造受检 typed Graph DTO，
+在 owning Graph 容器扩张前检查字段/tag/count/bounds，key 回调即时拒绝重复与未知必需字段。
+输入限额由所属格式显式传入并逐项证明维度可比；零限额配置非法，不接受生产默认数值。
+整数指定 i64/u64 分类和范围，不经 f64。Graph 物理字段和 grammar 上界仍须补齐后首用。
+
+通用 json::parseBounded 仅作为 JSON 边界实现与测试材料，当前显式参数为 raw bytes、
+container depth、decoded string bytes、总 Value 数（含根和容器）、单容器成员数。
+它在每个值进入 owning Value 树前检查总数与父容器容量，在容器入栈前检查深度，
+key 回调即拒绝重复；分类保留 i64/u64/f64。这个通用 Value 树不能当作已选方案的 Graph DTO，
+不得将“先通用 DOM 再 typed lowering”暗记为 R78-08 A 已实现或 Graph 入口已退出。
+JSON lexer 的 token 临时存储仍受 raw bytes 上界；不声称 decoded string 检查发生在 lexer 分配前。
+失败返回 json.parse.* 稳定内部码；公共 Graph 首用投影仍须写入对应码表。
+
+
+## 2026-10-08 FactBinding 聚合首次消费表示
+
+纯表现 binding 新增闭集 aggregation=`any`/`all`/`groupCommit` 与 owning groupMembers：
+UTF-8 bindingId 集合，规范化为字节序、无重复。空集合只允许 any 独立绑定；非空必须包含自身，
+每个成员都存在且声明相同 aggregation/完整成员集合，成员来源仍各自为已提交 Fact/phase/outcome。
+这些字段只进 presentation closure，不进 judgement 四分量。any 对已有来源幂等投影；all 与
+ groupCommit 等所有成员匹配的已封存且 Fold 发布范围内 Fact 后才允许投影，各成员 start/end
+仍独立按 typed T 判断。已见成员在 scope 内记忆，到期只移除 token，不抹去聚合完成记录。
+
+ groupCommit 尝试时缺纯表现目标：有效成员仍可提交，缺失成员发 presentation-target-missing；
+若同次存在有效和缺失成员，发 partial-group 并把该成员集合置为 scope 内稳定拒绝。已提交
+成员保持其 lifetime；之后不提交该组新成员。Runtime 整体事务失败则本次有效成员也不标记
+已发布。Seek/restore/session replacement 重建整个 scope、已见成员、拒绝与已发布记录，重新
+获取当前有效 target/resource。pure missing/partial 不 fault Gameplay，不改 Fact/Fold/Replay。
+
+同优先级相反值若 lifetime 重叠，除能证明同一来源同一 phase 的 outcome/timing 互斥外，
+在 prepare 拒绝；跨 Requirement 不能用遍历次序选择值。投影去重仍为 (FactId,targetId)，
+ groupMembers/bindingId 不成为新判定身份或 token 去重键。
+
+
+组成员 bindingId 标识一个来源谓词，而非任意声明行。相同 bindingId 的所有行必须有相同
+aggregation 与规范化 groupMembers；非空组还须具有相同 source/phase/outcome/timing。
+允许同 ID 的不同 target 或不相交 lifetime，仍以 (FactId,targetId) 去重。这样既保留原合法重复
+和分段 lifetime，也不允许同 ID 的组外 Hit 行使组内 Miss 成员提前完成。mixed aliases 不受
+遍历顺序影响，在 prepare 稳定拒绝；这是首用表示缺口的合同修订，不改变既有 kernel/Fold。

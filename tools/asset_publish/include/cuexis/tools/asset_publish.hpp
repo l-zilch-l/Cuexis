@@ -102,6 +102,13 @@ class PublicationLock final {
 [[nodiscard]] auto publishGeneration(const GenerationPublishRequest& request)
     -> core::Result<GenerationPublishResult>;
 
+// Publishes an immutable generation and switches the adoption manifest under one lock.
+// Readers capture the adoption manifest once and retain that generation for the full read.
+// A durability failure after the switch carries commitVisible=true; it must not be retried
+// under the assumption that the previous selection is still active.
+[[nodiscard]] auto publishAndAdoptGeneration(const GenerationPublishRequest& request)
+    -> core::Result<GenerationPublishResult>;
+
 // Explicit adoption: records which generation is in use. It never rewrites the user project entry.
 [[nodiscard]] auto adoptGeneration(const std::filesystem::path& root, std::string_view generationId)
     -> core::Result<void>;

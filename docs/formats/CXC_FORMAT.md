@@ -429,3 +429,13 @@ CFU-C3 已实现 strict ZIP32 archive、闭包和 owning CXC package，CFU-C4 de
 见 [C4 报告](../stage_reports/chart-format-update/2026-08-13-c4-tools.md)。公共 Playback 输入、
 hosted 跨平台 consumer/determinism/safety gates 与 owner acceptance 已关闭；本节只记录已
 封存的内部实现证据，不宣称交付公共 CXC package API。
+
+## S7A-7/8 Gameplay Entry 闭包首用（2026-10-08）
+
+project optional `cuexis.gameplay-entry.v1` 的物理合同归 [Chart Entry](CHART_ENTRY_V1_FORMAT.md)。
+CXC v1 容器不解释 Gameplay kernel/Ruleset，也不依赖 Judgement；仅把严格满足该 metadata 根字段、
+format/version、闭集 kind/encoding、playback=true、portable path 和 exact artifact SHA256 的
+目录中所有已存在且 path 唯一的 entry 纳入 project-declared closure。不存在、hash 不匹配或非法物理引用不能通过
+optional extension 把任意额外文件塞进闭包。该检查在 ON/OFF 共用容器层执行；OFF 不获得
+Gameplay public factory/执行许可。compiled identity 与完整 typed 闭包仍由显式 Playback factory
+验证，容器准入不等于该语义通过。ZIP、原 Foundation extension 与物理限额不变。

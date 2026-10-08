@@ -42,9 +42,13 @@ target_link_libraries(cuexis_playback_tests
 )
 
 if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+    target_sources(cuexis_playback_tests PRIVATE playback_gameplay_tests.cpp ../judgement/execution_reference.cpp
+        "${PROJECT_SOURCE_DIR}/engine/playback/src/gameplay_entry.cpp")
+    target_link_libraries(cuexis_playback_tests PRIVATE cuexis::gameplay_packed cuexis::judgement cuexis::json_support)
     target_compile_definitions(cuexis_playback_tests
         PRIVATE
             CUEXIS_ENABLE_CHART_V5_CANDIDATE=1
+            CUEXIS_S7A78_FIXTURE_DIR="${PROJECT_BINARY_DIR}/s7a78-public-fixture"
     )
 endif()
 

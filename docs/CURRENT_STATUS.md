@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-10-07
+更新日期：2026-10-08
 
 本文是 Cuexis 当前产品和阶段状态的唯一摘要。ADR 定义决策，Spec 定义字段和语义，阶段计划定义未来
 范围，阶段报告保存带日期的实施证据；它们不得绕过本文重新定义当前状态。
@@ -31,8 +31,8 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Chart Format Foundation | completed | [plan](stage_plans/completed/chart-format-foundation/plan.md)、[关闭记录](stage_reports/stages/chart-format-foundation/2026-09-16-closure-and-handoff.md) |
 | Chart Format Foundation Hardening（Foundation 交接加固） | completed | [plan](stage_plans/completed/chart-format-foundation-hardening/plan.md)、[R5 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md) |
 | Stage 6 | completed | [plan](stage_plans/completed/stage-06/plan.md)、[关闭报告](stage_reports/stages/stage-06/completion.md) |
-| Stage 7A | active；S7A-3/4受限功能验收已完成。S7A-5.1–5.5与S7A-6.1–6.5联合实现已落地，J0–J7受限功能验收与本地跨工具链证据回填完成；实际Fold/Hook、canonical Replay、全量Snapshot、exact Seek和惰性分支已接线。生产容量/state-budget、S7A-7/8/9及Stage6 handover门禁独立保留；实现提交4d8024e已推送，hosted矩阵待回填，不关闭阶段 | [plan](stage_plans/active/stage-07/plan.md)、[5/6报告](stage_reports/stages/stage-07/verification/2026-10-06-s7a-5-6-functional-acceptance.md)、[3/4证据](stage_reports/stages/stage-07/verification/2026-10-05-s7a-3-4-functional-acceptance.md) |
-| Stage 7B+ | future；Slide、Flick、多指、校准和高级 Judgement 能力持续演进 | [plan](stage_plans/active/stage-07/plan.md) |
+| Stage 7A | active；S7A-3/4、5/6 受限功能验收已完成；本轮 S7A-7.1–7.5、8.1–8.3 受限本地功能验收完成。S7A-8.4 owner/可信基线/保护、新SHA hosted、真实设备、生产容量/state-budget 与 S7A-9 独立保留，不关闭阶段 | [总计划](stage_plans/active/stage-07/plan.md)、[Stage 7A分册](stage_plans/active/stage-07/plan-a.md)、[7/8证据](stage_reports/stages/stage-07/implementation/2026-10-08-s7a-7-8-entry-assembler-progress.md)、[5/6证据](stage_reports/stages/stage-07/verification/2026-10-06-s7a-5-6-functional-acceptance.md)、[3/4证据](stage_reports/stages/stage-07/verification/2026-10-05-s7a-3-4-functional-acceptance.md) |
+| Stage 7B+ | future；Slide、Flick、多指、校准和高级 Judgement 能力持续演进 | [plan-b](stage_plans/active/stage-07/plan-b.md) |
 | Stage 8 | future；Chart v5 / CXT v2 / Packed Chart 正式发行与语义收敛 | [plan](stage_plans/future/stage-08/plan.md) |
 | Stage 9 | future；Presentation Foundation 与 Chart v6 / Model v1 | [plan](stage_plans/future/stage-09/plan.md) |
 | Stage 10 | future；Chart v5 Studio 和发行工作流 | [plan](stage_plans/future/stage-10/plan.md) |
@@ -65,6 +65,26 @@ hosted 证据仍待回填。尤其 merge_group 的候选 workflow 不能仅靠�
 历史复核见[四项交接复核](stage_reports/stages/stage-07/verification/2026-10-06-stage6-handover-audit.md)，
 本轮实施与证据见[四项实施报告](stage_reports/stages/stage-07/verification/2026-10-07-stage6-handover-implementation.md)。
 
+本轮 S7A-7.1–7.5 / S7A-8.1–8.4 联合实施及受限本地功能验收完成，实际实现 SHA 随提交记录。
+typed Gameplay source→Graph/Packed→完整 Entry/CXC/捕获 filesystem generation→实际 prepare、
+生产 assembler 完整闭包与确定性原子发布、显式 Gameplay 生命周期/组合事务、typed H/T bridge、
+同实际 kernel/Fold 的完整 Replay/Snapshot/exact Seek/control、optional FactBinding 的 resolver/group/
+typed lifetime/owning sourceMap 已实现。Headless、Player 实际 SDL scancode 接线、Reference Host
+六动词+tick、candidate ON/OFF 与 installed static/shared consumer 已执行本地验证。
+人工 golden、独立 Tap/Hold oracle、故障注入及完整结果比较通过；Debug/Release、headless、
+MinGW、Linux GCC/Clang sanitizer、架构/package/ASCII/诊断码表/docs/version 的本轮输出和
+首次失败修复边界见[10-08受限验收记录](stage_reports/stages/stage-07/implementation/2026-10-08-s7a-7-8-entry-assembler-progress.md)。
+SDK 实际 production API 差异证明支持 preview patch 0.7.1，日期构建为 26.10.08-1，完成日期更新后
+fresh/clean-first build 与消费者验证，不构成发行许可。
+实际 GPU/OpenGL 纯播放 smoke 完成6帧；显式 Gameplay 零输入到期产生 Miss 并完整 Replay 一致。
+真实键盘/音频设备、实时校准和 Gameplay 正反馈 GPU 像素专项未执行。新 SHA hosted 待回填。
+S7A-8.4 **未退出**：owner approval、trusted master bootstrap、保护/required workflow 与同 SHA
+hosted 门禁未满足；未代审批、执行 bootstrap、改保护、合并或发行。S7A-9 仅累计计数/测量输入/
+handoff 草稿，不接受生产阈值，不进行最终关闭；Stage7A保持active，Stage8正式发行未开始。
+Version advancement pre-merge 触发断层已修复：保留 target、恢复 pull_request，两事件只执行
+trusted base 工具，本地回归通过。新 SHA hosted 启动/结果仍待回填，可信 base 缺前置条件时
+bootstrap_required 继续阻断，不执行 PR head 脚本、不绕过 owner 门禁。
+
 ## 当前格式与 SDK 合同
 
 ### Gameplay v2 收敛状态（2026-10-04）
@@ -86,7 +106,7 @@ Gameplay V2 已成为 Stage 7A 的实施基线：Gameplay I 的 ADR/Spec/ABI 已
 [受限功能验收证据](stage_reports/stages/stage-07/verification/2026-10-05-s7a-3-4-functional-acceptance.md)；E1 功能行与四工具链完整矩阵已补齐；state-budget 保持 INCOMPLETE GATE，Stage7A 不关闭。
 提交a0c8b7e的hosted与临时证据归档见 [新SHA交接报告](stage_reports/stages/stage-07/handoffs/2026-10-05-s7a-3-4-hosted-and-handoff.md)；
 本轮由owner授权实施S7A-5.1–5.5 + S7A-6.1–6.5；目标、九项已选方向、十三项首用合同和
-J0–J7执行卡归 [主计划§3.2](stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)。
+J0–J7执行卡归 [Stage 7A分册§3.2](stage_plans/active/stage-07/plan-a.md#32-s7a-5--s7a-6-联合实施目标决策和准入)。
 [方案比较与选优](proposals/implementation-input/stage-07/s7a-5-6-design-selection.md) 保存每项五套备选及反例；
 [U01–U13重审](stage_reports/stages/stage-07/verification/2026-10-06-s7a-5-6-u01-u13-rereview.md) 修正六项边界，其他七项保留方向并补条件，消费合同已落入Spec/ABI/profile，实施与验证见本轮报告。
 active/stage-07只保留主计划与 [旧路径映射](stage_plans/active/stage-07/legacy-paths.md)，

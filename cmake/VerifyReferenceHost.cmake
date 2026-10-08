@@ -397,8 +397,13 @@ if(CUEXIS_EXPERIMENTAL AND DEFINED CUEXIS_CANDIDATE_TOOL)
     file(WRITE "${candidate_commands}"
         "open\nplay\ntick 2\npause\ntick 2\nseek 1\nreload\nplay\ntick 1\nquit\n")
     string(JSON candidate_identity GET "${report}" preparedIdentity)
+    set(candidate_host_command "${host_executable}")
+    if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED" AND NOT CMAKE_HOST_WIN32)
+        set(candidate_host_command "${CMAKE_COMMAND}" -E env
+            "LD_LIBRARY_PATH=${host_build}" "${host_executable}")
+    endif()
     cuexis_host_run_checked("Installed host candidate command consumer"
-        "${host_executable}" --content "${candidate_project}"
+        ${candidate_host_command} --content "${candidate_project}"
         --candidate-entry compiled/chart.packed --command-file "${candidate_commands}"
         --expect-identity "${candidate_identity}"
         --report "${work_dir}/candidate-host-report.txt")
