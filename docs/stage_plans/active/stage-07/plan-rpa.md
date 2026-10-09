@@ -2,7 +2,7 @@
 
 状态：active；Stage 7 子阶段规划，尚未开始产品实施
 
-更新日期：2026-10-09
+更新日期：2026-10-10
 
 ## 阶段目标
 
@@ -29,7 +29,8 @@ RPA设计不等待8.4 owner门禁退出；合并/发行仍服从相应版本、�
 - 架构重构和命名迁移各自形成可审查提交及测试证据；交叉影响通过共享兼容矩阵验证。
 - 实体DFJK/focus/control、真实听音、设备失效/恢复、卡顿/刷新率/输入延迟与实时同步，
   包括实施和最终验收，整体归RPA。旧失败作为待办基线，不改记通过或回挂S7A-9。
-  原S7A-8.4版本审批/可信检查源门禁继续由原任务收口。
+  原S7A-8.4已按[10-10记录](../../../stage_reports/stages/stage-07/verification/2026-10-10-s7a-8-4-closure.md)收口；
+  RPA后续API变化仍需独立版本差异、审批与门禁证据。
 
 ## 范围与工作线
 
@@ -46,7 +47,7 @@ RPA设计不等待8.4 owner门禁退出；合并/发行仍服从相应版本、�
 | S7A-7.4 | Player实际输入、音频服务/渲染调度解耦、热路径Replay整改、快照与资源代数一致 | C78-03/04/07/11；R78-06/07，resolver层域和typed lifetime保持 |
 | S7A-7.5、8.1 | 任何新公共边界的ON/OFF、owner、ASCII及static/shared安装消费 | C78-08/10/12；无内部Kernel/Recovery安装，无默认生产新能力 |
 | S7A-8.3 | Reference Host同协议六动词加tick，typed clock供给与拒绝矩阵 | C78-04/11；fixture步进保留显式用途，不伪称实时设备模式 |
-| S7A-8.4 | 按最终公共差异重审patch/minor与owner/保护/hosted材料 | C78-12；当前0.7.1不预先约束未来API，门禁仍未退出 |
+| S7A-8.4 | 按RPA最终公共差异重审patch/minor与owner/保护/hosted材料 | C78-12；7/8既有门禁已收口，当前0.7.1不预先约束RPA未来API |
 | S7A-7.2、8.2 | 保留已完成source/assembler闭包；新时间profile若影响identity则定向回归 | C78-05/06，R78-08/09沿既有Graph/发布合同；不趁机重写格式 |
 | S7A-6.1–6.5关联回归 | 执行状态、journal和owning结果存储整改的完整语义回归 | 完整ReplayEvaluation、archive/cut/H、future pending、lastObservedTick、惰性分支不变 |
 
@@ -129,6 +130,10 @@ Stage8消费已验证合同并做发行兼容；Stage12做规模/平台优化，
 
 ## 交接与追溯来源
 
+- 下一次对话以本子阶段审核为目标，先核验实际branch/HEAD/status/diff，再复验RA反例、
+  TB-01–07、A1–A3与N1的首用合同缺口、兼容/identity/失败边界及独立验证设计。
+  输出dated审核报告、分册决策修订和实施准入清单；现有规划不自动授权产品实施。
+- [S7A-7/8受限收口与8.4关闭证据](../../../stage_reports/stages/stage-07/verification/2026-10-10-s7a-8-4-closure.md)。
 - [归入Stage 7子阶段的修订记录](../../../stage_reports/stages/stage-07/handoffs/2026-10-09-rpa-stage7-substage.md)。
 - [Stage7总计划](plan.md)与[plan-a兼容入口](plan-a.md#3418-实时架构重审与规划2026-10-09)。
 - [ADR0046](../../../adr/0046-realtime-playback-coordination.md)和[实时宿主边界草案](../../../api/realtime-host-boundary.md)。

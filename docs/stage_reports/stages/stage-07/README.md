@@ -2,7 +2,7 @@
 
 状态：current index
 
-更新日期：2026-10-09
+更新日期：2026-10-10
 
 本索引按报告用途分类，不复制裁定、字段合同或当前阶段结论。
 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 是唯一当前实现状态摘要；
@@ -14,10 +14,10 @@
 | 分类 | 数量 | 主要用途 |
 | --- | --- | --- |
 | 准入与基线 (readiness) | 8 | owner准入记录、工具链基线、typed合同与计划审视、D-9候选证据 |
-| 裁定记录 (decisions) | 13 | 分轮准入/实施裁定、合同选择、落地位置与诊断分类；现行字段仍归Spec/ABI |
+| 裁定记录 (decisions) | 14 | 分轮准入/实施裁定、合同选择、落地位置与诊断分类；现行字段仍归Spec/ABI |
 | 设计与实施记录 (implementation) | 6 | 带日期的设计收口和实施推进；设计交付与运行验证分别按报告声明解释 |
-| 验证与审计 (verification) | 19 | 独立复验、功能验收、边界审计、CI优化和文档恢复证据 |
-| 交接与规划修订 (handoffs) | 4 | hosted交接、排期修订和桌面接手整理；历史下一步不覆盖主计划 |
+| 验证与审计 (verification) | 23 | 独立复验、功能验收、边界审计、CI优化和文档恢复证据 |
+| 交接与规划修订 (handoffs) | 5 | hosted交接、排期修订和桌面接手整理；历史下一步不覆盖主计划 |
 
 ## 常用入口
 
@@ -71,6 +71,7 @@
 
 ## 验证与审计
 
+- [S7A-8.4关闭与7/8受限批次收口](verification/2026-10-10-s7a-8-4-closure.md)（2026-10-10）：1ebcbdc的七个run全部成功、准确审批/可信日志/保护与来源例外收齐；下一轮审核Stage7-RPA。
 - [Version Gate复核与Stage7B+/RPA验收归属订正](verification/2026-10-09-version-gate-and-rpa-routing.md)（2026-10-09）：实际审批绑定复现、可信工具验证、设备验收整体归RPA。
 - [S7A-7/8余项与当前提交门禁核对](verification/2026-10-09-s7a-7-8-current-gate-audit.md)（2026-10-09）：c4b1f68三平台PR及Version Gate成功；保护来源与最终交付仍待收口。
 - [S7A-7/8保护配置与受限交付收口](verification/2026-10-09-s7a-7-8-protection-and-delivery.md)（2026-10-09）：个人仓库可用规则已生效；平台不支持workflow来源规则，owner选择保留8.4未退出。

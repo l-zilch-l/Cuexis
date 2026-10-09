@@ -31,7 +31,7 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Chart Format Foundation | completed | [plan](stage_plans/completed/chart-format-foundation/plan.md)、[关闭记录](stage_reports/stages/chart-format-foundation/2026-09-16-closure-and-handoff.md) |
 | Chart Format Foundation Hardening（Foundation 交接加固） | completed | [plan](stage_plans/completed/chart-format-foundation-hardening/plan.md)、[R5 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md) |
 | Stage 6 | completed | [plan](stage_plans/completed/stage-06/plan.md)、[关闭报告](stage_reports/stages/stage-06/completion.md) |
-| Stage 7A | active；7.1–7.5与8.1–8.3已实现并完成受限功能验收；8.4未退出，S7A-9原范围最终验收未执行；架构/命名及实体设备/实时同步实施与验收整体移交RPA | [总计划](stage_plans/active/stage-07/plan.md)、[Stage 7A分册](stage_plans/active/stage-07/plan-a.md)、[实时架构审查](stage_reports/stages/stage-07/readiness/2026-10-09-realtime-architecture-review.md)、[7/8证据](stage_reports/stages/stage-07/implementation/2026-10-08-s7a-7-8-entry-assembler-progress.md)、[5/6证据](stage_reports/stages/stage-07/verification/2026-10-06-s7a-5-6-functional-acceptance.md)、[3/4证据](stage_reports/stages/stage-07/verification/2026-10-05-s7a-3-4-functional-acceptance.md) |
+| Stage 7A | active；S7A-7/8受限批次完成，8.4于2026-10-10退出；S7A-9原范围最终验收未执行；架构/命名及实体设备/实时同步实施与验收整体移交RPA | [总计划](stage_plans/active/stage-07/plan.md)、[Stage 7A分册](stage_plans/active/stage-07/plan-a.md)、[7/8收口证据](stage_reports/stages/stage-07/verification/2026-10-10-s7a-8-4-closure.md)、[7/8实现](stage_reports/stages/stage-07/implementation/2026-10-08-s7a-7-8-entry-assembler-progress.md)、[5/6证据](stage_reports/stages/stage-07/verification/2026-10-06-s7a-5-6-functional-acceptance.md)、[3/4证据](stage_reports/stages/stage-07/verification/2026-10-05-s7a-3-4-functional-acceptance.md) |
 | Stage 7-RPA | active；Stage 7子阶段已纳入当前规划，产品实施未开始；承接实时架构、66条正式命名迁移/1个占位处置，以及实体设备与实时同步最终验收 | [RPA分册](stage_plans/active/stage-07/plan-rpa.md) |
 | Stage 7B+ | future；Slide、Flick、多指、校准和高级 Judgement 能力持续演进 | [plan-b](stage_plans/active/stage-07/plan-b.md) |
 | Stage 8 | future；Chart v5 / CXT v2 / Packed Chart 正式发行与语义收敛 | [plan](stage_plans/future/stage-08/plan.md) |
@@ -46,22 +46,26 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 由Stage 7内的[Stage 7-RPA子阶段](stage_plans/active/stage-07/plan-rpa.md)承接；最新指令已将
 其从future独立阶段归入active/stage-07分册，原plan-a §3.4.18/19
 保留兼容入口。两项只有审查/规划，未改产品实现；真实Player失速、音频与判定同步仍未修复。
-S7A-7/8原有实现/受限验收保留，S7A-8.4继续独立收口。owner进一步明确实体设备和实时同步
+S7A-7/8原有实现/受限验收保留，S7A-8.4已按下述最终证据退出。owner进一步明确实体设备和实时同步
 的实施及最终验收直接归RPA，旧失败随交接保留，不再回挂S7A-9。S7A-9只验原内核/消费者范围。
 Stage7B+高级能力线保持，按各能力依赖推进；Stage8消费7A、RPA及已选入的7B+成果。
-本轮不实施RPA或7B+，不接受生产预算或关闭阶段。
+下一次对话以审核Stage 7-RPA子阶段为目标：复核现有架构、TB-01–07、正式命名兼容与实施准入，
+只审查和规划，不默认授权产品实施。本轮不实施RPA或7B+，不接受生产预算或关闭整个Stage7A。
 
-2026-10-09最新只读核对：PR32与本地HEAD为 `c4b1f68db0d809b9a9c0c27b37d53538423417ff`。
-PR事件的Linux Quality、Windows MSVC、Windows MinGW及Version Gate均success；pre-merge
-run37945013516 attempt2于23:18:43（Asia/Shanghai）成功，明确使用审批评论6083720194。
-可信bootstrap和该SHA审批已满足；旧SHA的approval_mismatch不是当前缺项。
-同HEAD push事件Linux仍有两个job运行，MSVC/MinGW成功，不声称全部事件结束。
+2026-10-10收口核对：验收基线为PR32与本地HEAD
+`1ebcbdc92d92fa9d45e4e1f835e5a1f338e7fc2d`，tree为
+`90f930a97ee2e2980fec12de3334b687ac529064`，base为
+`3076948ce403ea0da6fbe389835b6a4c9defbcd3`。
+该SHA的PR及push三平台、PR Version Gate共7个run全部success；39个job成功，
+另2个Version Gate job因不适用当前事件跳过。真实pre-merge日志确认可信base checker、
+`context=live`、UTC2026-10-09与精确owner审批评论6084640280。
 owner随后授权配置保护，master已启用active ruleset24799746：必须PR、strict App15368版本检查、
 禁止强推/删除，无bypass；既有classic protection保留。个人仓库的workflows来源规则请求被
 GitHub以422拒绝。2026-10-10 owner改为接受VERSIONING规定的单人维护来源例外，
 不再强制指定workflow来源；App/context保护、真实base checker和最终审批/日志要求保留，queue禁用。
-例外接受不等于最终交付SHA已通过验收；S7A-8.4仍待新SHA审批、日志及hosted证据收齐后裁定。
-审批助手、7-RPA分册和保护证据本轮收敛交付，新提交的审批与hosted独立待回填，不能沿用旧成功。
+owner本轮明确要求关闭8.4；最终基线的审批、真实日志、hosted和保护证据现已收齐，
+S7A-8.4退出，S7A-7/8受限批次完成。详见[关闭记录](stage_reports/stages/stage-07/verification/2026-10-10-s7a-8-4-closure.md)。
+本次关闭文档是上述已验证基线的证据回填；后续新提交审批/CI仍独立绑定，不把本记录冒作新SHA成功。
 九项目标、保护现状及原始输出见[本次余项核对](stage_reports/stages/stage-07/verification/2026-10-09-s7a-7-8-current-gate-audit.md)。
 本轮配置及平台限制见[保护与交付记录](stage_reports/stages/stage-07/verification/2026-10-09-s7a-7-8-protection-and-delivery.md)。
 来源要求后续裁定见[单人接受记录](stage_reports/stages/stage-07/decisions/2026-10-10-single-maintainer-workflow-source-exception.md)。
@@ -75,7 +79,7 @@ GitHub以422拒绝。2026-10-10 owner改为接受VERSIONING规定的单人维护
 开启 candidate）、离线 typed assembler 与 feature 派生、具名宿主六动词命令循环、SDK API `0.7.1`。
 经项目所有者指定，四项自 2026-09-29 起由 **Stage 7A 承接，并作为其关闭前置条件**，登记在
 [Stage 7 计划](stage_plans/active/stage-07/plan.md) 的 §1.2（并在 §3 的 S7A-8 工作内容与 §3.1 台账的
-S7A-8.1–S7A-8.4 展开；2026-10-02 订正，原文误写为 §2 与 §6）。**这四项的S7A-8关闭门禁尚未整体退出**；实施进度与本轮证据见下文。本段只记录
+S7A-8.1–S7A-8.4 展开；2026-10-02 订正，原文误写为 §2 与 §6）。**这四项已于2026-10-10完成本批受限收口**；实施进度与最终证据见上述关闭记录。本段只记录
 归属与前置条件，不构成任何实现或发布声明。逐条证据见
 [复核交付报告 §10](stage_reports/reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md)；
 2026-10-02 的当前状态逐项复核（含"具名宿主命令循环已由 PR #31 合入 `master`、动词集为

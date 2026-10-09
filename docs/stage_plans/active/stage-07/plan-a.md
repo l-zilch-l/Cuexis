@@ -516,6 +516,12 @@ fixture、正例、负例、命令、原始输出和未覆盖项；“依赖批�
 | S7A-9.3 | 预算和回归报告 | machine-readable measurements、regression report | 内容/稳态/快照/Replay/Packed 计数口径分开；实测与阈值分开；容量变化能追溯到 fixture/commit |
 | S7A-9.4 | Stage 8 handoff/owner acceptance | handoff checklist、completion report | 交接物、未纳入 7B+、回滚路径和开放问题齐全；owner 明确接受；否则计划保持 active |
 
+2026-10-10 owner要求按当前全部成功CI关闭S7A-8.4。I78-5九行的最终验收证据见
+[7/8收口记录](../../../stage_reports/stages/stage-07/verification/2026-10-10-s7a-8-4-closure.md)，
+其中8.4绑定`1ebcbdc`及其准确审批、实际trusted checker日志、三平台和已接受来源例外。
+本表保留验收标准；当前完成状态归CURRENT_STATUS。下一次对话审核Stage 7-RPA，
+不自动开始实施或执行S7A-9最终验收，Stage7B+能力线保留。
+
 **§3.1 与本批次裁定段的对应（2026-10-03）。** 本表作为分派单位的拆分不变，但以下三行的**核验标准**被
    `### S7A-3` 的"第二半 part 1 实现复核裁定后的范围收窄"**细化**（不新增工作项，只收紧判据）：
    ① **S7A-3.2**（Pattern 编译）的"状态预算稳定拒绝"细化为：包含性门禁返回独立的
@@ -1072,3 +1078,17 @@ owner随后明确接受不强制指定可信workflow来源，取代§3.4.20的�
 当前master保护保留，merge queue继续禁用；不削弱版本/审批checker语义，不重开Gameplay规则。
 来源例外已获接受，不再单独阻塞8.4；最终交付SHA审批、真实日志及hosted仍按I78-5完成。
 本次不授权合并/发行、S7A-9最终预算/关闭或7-RPA产品实施。
+
+### 3.4.22 S7A-8.4收口与下一子阶段审核（2026-10-10）
+
+owner在当前CI全部成功后明确要求关闭8.4并准备桌面接手。验收提交为
+`1ebcbdc92d92fa9d45e4e1f835e5a1f338e7fc2d`；精确审批6084640280、
+pre-merge实际可信base执行日志、同SHA七个成功run及保护回读收齐。
+逐行证据、合同版本与原始输出归[关闭记录](../../../stage_reports/stages/stage-07/verification/2026-10-10-s7a-8-4-closure.md)。
+§3.4.20/21及旧报告的待办是各自时点记录，不覆盖本次裁定；来源例外范围不扩大。
+
+下一次对话先审核[Stage 7-RPA](plan-rpa.md)：以代码和现行合同复验RA反例，
+逐项审视TB-01–07、线程/存储候选、正式命名兼容与设备验证设计，给出准入缺口及可执行顺序。
+已有推荐不等于字段冻结，不因7/8收口开始RPA产品实施。
+S7A-9仍只保留既有计数/测量/handoff准备，最终预算、矩阵、Stage7A关闭另行授权；
+Stage7B+继续独立，Stage8只消费明确选入并验收的能力。不合并或发行。
