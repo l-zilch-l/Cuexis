@@ -31,10 +31,6 @@ class PlayerGameplay final {
         if (restart)
             t_ = 0;
         sequence_ = 0;
-        gap_ = true;
-    }
-    void samplingGap() {
-        gap_ = true;
     }
     [[nodiscard]] auto horizon() const -> playback::GameplayTick {
         return {h_};
@@ -44,7 +40,6 @@ class PlayerGameplay final {
     PlayerGameplayProfile profile_;
     std::int64_t h_{}, t_{};
     std::uint64_t sequence_{};
-    bool gap_{};
 };
 } // namespace cuexis::player
 #endif

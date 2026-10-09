@@ -240,8 +240,11 @@ H/T；输入 observationTick 是该采样 H，SDL 时间戳仅为原始 provenan
 的 f64 chartTimeMs、设备或音频时间戳反推 Tick。无输入帧仍推进实际 kernel/Fold 并产生到期 Miss。
 
 SDL 忽略自动重复，保留每个真实 scancode 的 press/release；显式映射键不兼任传输控制。
-focus lost 先暂停并标注采样 gap，不制造 release 或重新连接 hit。暂停期间不提交输入，恢复只
-接收新的真实转换；其 provenance gap 标志不改变判定。Playback Pause/Resume/Stop 为公共
+focus lost 先暂停并丢弃该 poll 批次，不制造 release 或重新连接 hit。暂停期间不提交输入，恢复只
+接收新的真实离散转换。应用传输边界不是输入 trajectory discontinuity：新转换不得因 Load、
+Pause/Resume、Stop/reload 或 Seek 被自动标 `crossedSamplingGap=true`。SDK 显式传入的跨 gap /
+重连 / 丢样声明仍按 ABI 返回 `input.continuous_unsupported`，不能清除这些声明来绕过拒绝。
+SDL adapter 只捕获新 press/release，不声明连续重建；控制帧旧批次隔离规则不变。Playback Pause/Resume/Stop 为公共
 Gameplay control；内容替换的新 session 重置输入序号和 H，保留或重置 T 按 reload 的 Runtime
 策略。typed seek 通过公共 Replay/cut/seek 重建，在应用层拒绝把旧 f64 Seek 隐式用于 Gameplay。
 Player 输出 score/combo/hit/miss 和完整实时/Replay 结果比较；该 Replay 比较是路径一致性检查，

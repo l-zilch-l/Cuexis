@@ -996,3 +996,13 @@ H/T 每 admitted frame +1 是当前显式 testOnly 桥，音频不用于 H 定�
 设备操作步骤归[验收示例](../../../examples/s7a78-device-acceptance.md)，带日期证据归
 [修复与谱面报告](../../../stage_reports/stages/stage-07/verification/2026-10-09-crlf-and-device-fixture.md)。
 此前 c110c50 的 owner 审批/hosted 已通过，不自动授权新 HEAD；S7A-8.4 保护来源门禁继续保留。
+
+### §3.4.15 2026-10-09 真实设备首次按键修复
+
+用户 DFJK 两次运行启动成功且音频/六方块有人工观察，首次新按键却触发 discontinuity 拒绝。
+最小反例和失败边界归[设备失败报告](../../../stage_reports/stages/stage-07/verification/2026-10-09-player-discrete-device-repair.md)。
+先订正 Playback Player 合同：应用传输边界只隔离旧 poll，不能把新离散 press/release 标为轨迹跨 gap；
+public SDK 显式 discontinuity 拒绝保持，不重开 S7A-2/3/4/5/6。再修 adapter 并补 Controller 首用回归。
+启动脚本旧空退出码不得补造；新执行缓存 handle/等待后捕获。修复后设备观察仍待回填。
+同日候选 build 按 trusted master+1，当前 master1 故候选2；不能按上一 PR 候选3继续加号。
+owner 审批 6078336026 有效但不替代日期 build 校验，新 HEAD 需重绑；S7A-8.4 不提前退出。

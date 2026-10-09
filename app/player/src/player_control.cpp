@@ -570,7 +570,6 @@ auto PlayerController::runPause() -> core::Result<void> {
             publishFailure("gameplay_pause_control");
             return core::unexpected(std::move(control.error()));
         }
-        gameplay_->samplingGap();
         if (activeMode_ == playback::PlaybackMode::CuexisAudio && audioSeat_)
             return {};
     }

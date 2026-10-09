@@ -76,6 +76,77 @@ TEST_CASE("Player focus loss and resume never admit earlier aggregate key input"
     CHECK(score.misses == 1);
     CHECK(score.score == -1);
 }
+
+TEST_CASE("Player freshly loaded discrete key input is not a trajectory discontinuity",
+          "[candidate][gameplay][player][input]") {
+    const auto root = std::filesystem::path{CUEXIS_BUILD_DIR} / "s7a78-public-fixture";
+    player::PlayerOptions options;
+    options.gameplayConfiguration = root / "configuration.json";
+    options.gameplayBudget = "131072,64,8192,16384,8192";
+    options.gameplayHStep = "5";
+    options.gameplayTStep = "7";
+    options.gameplayKeys = {"7:lane.one:domain.binding.one"};
+    const auto profile = take(player::readPlayerGameplay(options));
+    const auto text = read(root / "main.packed");
+    std::vector<std::byte> bytes(text.size());
+    for (std::size_t i = 0; i < text.size(); ++i)
+        bytes[i] = std::byte{static_cast<unsigned char>(text[i])};
+    auto provider = take(playback::MemoryContentProvider::create({}));
+    auto source = take(playback::PlaybackSource::fromGameplayPacked(
+        "player-discrete-fixture", "compiled/main.packed", bytes, profile.configuration, {},
+        provider, playback::GameplayPrepareIntent::Presentation));
+    presentation_renderer::TestPresentationRenderer renderer;
+    audio::AudioClipStore store;
+    auto logger = take(player::PlayerLogger::create("gameplay-discrete-test"));
+    player::PlayerControlPorts ports;
+    ports.gameplay = profile;
+    player::PlayerController controller{renderer, store, 1, 0, std::move(ports), *logger};
+    take(controller.apply(
+        {.kind = player_support::PlayerCommandKind::Load, .source = std::move(source)}));
+    take(controller.apply({.kind = player_support::PlayerCommandKind::Play}));
+    SECTION("fresh load") {}
+    SECTION("fresh transition after pause and resume") {
+        take(controller.apply({.kind = player_support::PlayerCommandKind::Pause}));
+        take(controller.apply({.kind = player_support::PlayerCommandKind::Play}));
+    }
+    SECTION("fresh transition after Stop and Play") {
+        take(controller.apply({.kind = player_support::PlayerCommandKind::Stop}));
+        take(controller.apply({.kind = player_support::PlayerCommandKind::Play}));
+    }
+    SECTION("fresh transition after exact Seek") {
+        take(controller.gameplay()->seek(controller.session(), {0}, {0, 0, 0}));
+    }
+    class Surface final : public player::PlayerSurface {
+      public:
+        unsigned n{};
+        auto pollInput() -> core::Result<player::PlayerInput> override {
+            player::PlayerInput input;
+            if (n == 0)
+                input.keys = {{7, true, 100}};
+            if (n == 1)
+                input.keys = {{7, false, 200}};
+            if (n == 4)
+                input.quitRequested = true;
+            ++n;
+            return input;
+        }
+        auto drawableSize() -> core::Result<player::PlayerDrawableSize> override {
+            return player::PlayerDrawableSize{320, 180};
+        }
+    } surface;
+    player::PlayerFrameLoop loop{
+        .controller = controller, .renderer = renderer, .surface = surface, .logger = *logger};
+    take(player::runPlayerFrameLoop(loop));
+    const auto result = take(controller.session().queryGameplay());
+    const auto score = take(result.score());
+    CHECK(score.score == 2);
+    CHECK(score.hits == 1);
+    CHECK(score.misses == 0);
+    const auto archive = take(controller.session().archiveGameplay());
+    const auto replay = take(controller.session().evaluateGameplayReplay(archive));
+    CHECK(replay.evidenceValid);
+    CHECK(take(result.sameResult(replay.result)));
+}
 } // namespace
 TEST_CASE("Player typed discrete sampling uses actual Gameplay and complete Replay",
           "[candidate][gameplay][player]") {

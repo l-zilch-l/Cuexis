@@ -109,7 +109,8 @@ auto PlayerGameplay::step(playback::PlaybackSession& session, const PlayerInput&
                                               profile_.configuration.sourceClass,
                                               {}};
                 value.rawTimestamps = {static_cast<std::int64_t>(event.timestampNs), arrival, 0, 0};
-                value.crossedSamplingGap = gap_;
+                // Fresh SDL discrete transitions do not describe trajectory gaps.
+                // Control boundaries discard older poll batches in the frame loop.
                 observations.push_back(std::move(value));
             }
     if (!observations.empty()) {
@@ -117,7 +118,6 @@ auto PlayerGameplay::step(playback::PlaybackSession& session, const PlayerInput&
         if (!submitted)
             return core::unexpected(std::move(submitted.error()));
         sequence_ = sequence;
-        gap_ = false;
     }
     auto advanced = session.advanceGameplay({h}, {t}, frame);
     if (!advanced)
@@ -161,7 +161,6 @@ auto PlayerGameplay::seek(playback::PlaybackSession& session, playback::Gameplay
     if (restored) {
         h_ = target.value;
         t_ = target.value;
-        gap_ = true;
     }
     return restored;
 }

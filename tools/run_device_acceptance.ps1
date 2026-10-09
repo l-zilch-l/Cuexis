@@ -41,6 +41,8 @@ $stderrPath = Join-Path $runPath 'stderr.log'
 $quotedArguments = $arguments | ForEach-Object { '"' + $_ + '"' }
 $process = Start-Process -FilePath $playerPath -ArgumentList $quotedArguments -WindowStyle Normal -PassThru `
     -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath
+# Cache the handle before exit; Windows PowerShell otherwise may report a null ExitCode.
+$processHandle = $process.Handle
 try {
     while (-not $process.HasExited) {
         if (Test-Path -LiteralPath $stdoutPath) {
@@ -52,6 +54,7 @@ try {
     }
 } finally {
     if (-not $process.HasExited) { Stop-Process -Id $process.Id; $process.WaitForExit() }
+    $process.WaitForExit()
     $process.Refresh()
     $record['ended'] = (Get-Date).ToString('o')
     $record['exitCode'] = $process.ExitCode

@@ -88,6 +88,9 @@
 
 ## 交接与规划修订
 
+- [Player 真实离散按键失败与修复](verification/2026-10-09-player-discrete-device-repair.md)（2026-10-09）：
+  实际设备日志、Controller 首次输入反例、退出码与候选 build 修正。
+
 - [CRLF 修复与真实设备验收谱面](verification/2026-10-09-crlf-and-device-fixture.md)（2026-10-09）：
   审批换行回归、可重复自生成素材、生产装配与设备操作材料。
 
