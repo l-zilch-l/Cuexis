@@ -32,7 +32,7 @@ Chart、Input、Judgement、Replay 或 FrameSnapshot 语义。
 
 ### S12-A：桌面性能与大谱面
 
-基础实时架构与正式命名迁移归[独立Stage RPA](../realtime-playback-foundation/plan.md)。
+基础实时架构与正式命名迁移归[Stage 7-RPA子阶段](../../active/stage-07/plan-rpa.md)。
 S12-A在已验收的时间/所有权/发布合同上做规模与平台优化，RPA不预先接受本批数值阈值。
 
 - 测量 Packed/CXC load、CXT expansion、prepare 峰值、Runtime 内存、Judgement query、Replay、

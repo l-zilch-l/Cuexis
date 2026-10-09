@@ -34,7 +34,7 @@ chart-format-update-for-v5
   Chart v5 跨阶段总工作包，负责维护 Foundation、Stage 6、Stage 7A 和 Stage 8 的总体设计与交接
 
 stage-07
-  Stage 7A 最小 Input/Judgement/Score/Replay 内核与 Stage 7B+ 高级判定能力
+  Stage 7A 最小内核、Stage 7-RPA 实时架构与设备验收、Stage 7B+ 高级判定能力
 ```
 
 当前 `reviews` 目录中有两个复核整改计划：
@@ -94,11 +94,8 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
 - [Stage 7 总计划](active/stage-07/plan.md)：全局边界、依赖路线、统一证据和跨阶段交接。
   - [Stage 7A 分册](active/stage-07/plan-a.md)：S7A-0–9批次、核验台账、实施记录与接手决策。
   - [Stage 7B+ 分册](active/stage-07/plan-b.md)：S7B-0–4、S7C-1/2能力准入、依赖和退出标准。
+  - [Stage 7-RPA 分册](active/stage-07/plan-rpa.md)：Stage 7子阶段，承接RT78/DN78及实体设备/实时同步的实施和最终验收，向Stage8交付；S7A-9原范围验收不新增RPA前置。目前仅规划，不属于S7A-7/8新增任务。
   - 历史路径见[legacy-paths](active/stage-07/legacy-paths.md)；当前实现状态以CURRENT_STATUS为准。
-- [Stage RPA：实时播放架构与接口规范化](future/realtime-playback-foundation/plan.md)：独立阶段，
-  承接RT78/DN78及实体设备/实时同步的实施和最终验收，向Stage8交付；
-  S7A-9原范围验收不新增RPA前置，Stage7B+高级能力线保持。
-  目前仅规划，不属于S7A-7/8新增任务，不重排Stage8–14编号。
 - [Stage 8](future/stage-08/plan.md)：Chart v5 正式语义、CXT v2、Packed Chart 和 CXC 发行收敛；
   依赖 Stage 7A最终验收及RPA交付，不等待全部 Stage 7B+。
 - [Stage 9](future/stage-09/plan.md)：Presentation Foundation 与 Chart v6 / Model v1。

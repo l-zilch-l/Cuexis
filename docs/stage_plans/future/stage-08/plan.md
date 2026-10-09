@@ -17,14 +17,14 @@ Stage 7A JudgementRequirement / InputEvent / Replay 合同冻结
 Gameplay v2 (`gameplay.version = 2`) Canonical Gameplay Graph、Release/tail、single
 capacity=1 exclusive resource、early/late Presentation bridge、TimebaseProfile 和 Ruleset
 fault transaction 合同冻结
-独立Stage RPA已验收的实时边界、正式诊断命名和版本兼容交接
+Stage 7-RPA子阶段已验收的实时边界、正式诊断命名和版本兼容交接
 ```
 
 详细格式工作包见 [Chart v5 format plan](../../active/chart-format-update-for-v5/plan.md)。
 本阶段负责把 Foundation 和 Stage 6 已验证的 v5 candidate path 收敛为正式发行合同，
 而不是首次开始设计 Chart v5。Stage 7B+ 的未选定高级判定能力不属于本阶段硬前置。
 
-[独立Stage RPA](../realtime-playback-foundation/plan.md)承接实时架构与正式命名迁移，
+[Stage 7-RPA子阶段](../../active/stage-07/plan-rpa.md)承接实时架构与正式命名迁移，
 实体设备/实时同步验收直接由RPA完成，本阶段验证其发行兼容。Stage8以前序7A和RPA交付为前置，
 不等待全部7B+；规划登记不表示这些前置已完成。
 

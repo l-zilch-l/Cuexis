@@ -11,7 +11,7 @@ S7A 是 Stage 8 的硬前置；Stage 8 不等待全部 S7B/S7C。每项能力单
 
 Stage7B+是保留的独立持续能力线，不被RPA替代或从路线省略。Slide/Flick、方向、连续轨迹、
 多指及S7C高级校准策略按本计划逐项准入；基础实体设备和实时同步的实施/验收整体归
-[RPA](../../future/realtime-playback-foundation/plan.md)。需要实时宿主边界的具体能力依赖RPA
+[RPA](plan-rpa.md)。需要实时宿主边界的具体能力依赖RPA
 对应合同，其他研究与无该依赖的工作可独立安排。Stage8只消费已选入并通过验收的7B+能力，
 不等待整个能力线结束；本次文档修订不启动7B+/S7C产品实施。
 
@@ -177,7 +177,7 @@ grading 或有界重复的动作语义。7A 已支持的 Release/tail 仍是同�
 
 ### S7C-1：校准、设备延迟和 Judgement Policy
 
-基础实时架构与正式命名迁移归[独立Stage RPA](../../future/realtime-playback-foundation/plan.md)。
+基础实时架构与正式命名迁移归[Stage 7-RPA子阶段](plan-rpa.md)。
 S7C-1负责校准参数及高级设备策略；本批不承接基础同步缺口，未因此启动实施。
 
 **目标。** 将 timing offset、input latency、窗口等级和设备能力变成显式、可复现的策略。

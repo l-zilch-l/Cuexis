@@ -11,7 +11,7 @@
 
 - 查当前进度：[CURRENT_STATUS](CURRENT_STATUS.md)。
 - 实施 Stage 7A：[plan-a S7A-7/8接手与决策](stage_plans/active/stage-07/plan-a.md#34-s7a-78-下一轮决策首用合同与接手2026-10-07)；全局路线见[Stage 7总计划](stage_plans/active/stage-07/plan.md)。
-- 查高级判定路线：[Stage7B+](stage_plans/active/stage-07/plan-b.md)；实时架构、命名及实体设备/同步验收：[独立RPA](stage_plans/future/realtime-playback-foundation/plan.md)。
+- 查高级判定路线：[Stage7B+](stage_plans/active/stage-07/plan-b.md)；实时架构、命名及实体设备/同步验收：[Stage 7-RPA子阶段](stage_plans/active/stage-07/plan-rpa.md)。
 - 查方案与反例：[5/6候选实施输入](proposals/implementation-input/stage-07/s7a-5-6-design-selection.md)。
 - 查已有证据：[Stage 7分类报告索引](stage_reports/stages/stage-07/README.md)。
 

@@ -4,6 +4,11 @@
 
 证据日期：2026-10-09（Asia/Shanghai）
 
+后续归属订正：RPA按owner最新指令归入Stage 7子阶段，唯一计划为
+[plan-rpa](../../../../stage_plans/active/stage-07/plan-rpa.md)，见
+[迁移记录](../handoffs/2026-10-09-rpa-stage7-substage.md)。本文保留当时的Version Gate证据；
+实体设备/实时同步归RPA、S7A-9原范围和7B+能力线的划分继续有效。
+
 ## 1. 接手与范围
 
 接手stage-7、HEAD d33c64b15575a945e50948ad70acb88f05117dce，现有PR32，

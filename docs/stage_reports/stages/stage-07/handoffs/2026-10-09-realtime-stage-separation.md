@@ -6,7 +6,9 @@
 
 后续范围订正：owner进一步要求实体设备与实时同步直接由RPA实施和验收，并明确保留Stage7B+。
 本文原“RPA→S7A-9复验”的依赖由[后续记录](../verification/2026-10-09-version-gate-and-rpa-routing.md)
-取代；原读数和失败证据不改写。现行顺序与分支以ROADMAP和独立RPA计划为准。
+取代；原读数和失败证据不改写。另据[子阶段归属修订](2026-10-09-rpa-stage7-substage.md)，
+RPA现归Stage 7，本文原future独立阶段落点已被取代；以下保留当时拆分记录。
+现行顺序与分支以ROADMAP和Stage 7-RPA分册为准。
 
 ## 1. 基线与调整依据
 
@@ -51,7 +53,7 @@ Version Gate run37924467045的pre-merge失败，post-merge audit与historical re
 
 ## 4. 独立阶段与范围迁移
 
-新建[Stage RPA：实时播放架构与接口规范化](../../../../stage_plans/future/realtime-playback-foundation/plan.md)，
+新建[Stage RPA：实时播放架构与接口规范化](../../../../stage_plans/active/stage-07/plan-rpa.md)，
 作为独立阶段，不使用S7A-7/8子任务编号，也不重排Stage8–14。
 
 | 原工作 | 新工作 | 范围处理 |

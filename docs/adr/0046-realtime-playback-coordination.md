@@ -60,11 +60,11 @@ Miss。只要输入 admission 轨迹改变，现有 late-policy 允许结果改�
 ## 落点与验收
 
 字段职责与TB-01–07未定项（包括暂停期间真实释放与恢复准入）归[实时宿主边界草案](../api/realtime-host-boundary.md)，实施顺序归
-[独立Stage RPA](../stage_plans/future/realtime-playback-foundation/plan.md)。
+[Stage 7-RPA子阶段](../stage_plans/active/stage-07/plan-rpa.md)。
 本轮不增删公共符号、依赖或目标，不更改 date build/SDK API。
 后续若改 AudioClockSnapshot、公开准备/资源接口或 Playback 方法，必须由实际 API 差异判断版本，
 完成 candidate ON/OFF、static/shared、fresh/clean-first、消费者与 owner gate；不能沿用当前 patch 结论。
 
-独立Stage RPA负责实时架构、正式命名及实体设备/实时同步最终验收；S7A-7/8保留原集成与门禁收口，
+Stage 7-RPA子阶段负责实时架构、正式命名及实体设备/实时同步最终验收；S7A-7/8保留原集成与门禁收口，
 S7A-9负责原内核/消费者矩阵和预算，Stage7B+保留高级能力线，S7C-1负责高级校准参数/设备策略扩展，
 Stage 8 消费已验收合同，Stage 12 做大规模/平台优化。基本同步与播放可用性不得延期到 Stage 12。

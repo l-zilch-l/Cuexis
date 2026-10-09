@@ -1,8 +1,8 @@
 # Stage 7 Implementation Plan: Gameplay Foundation and Judgement Evolution
 
-状态：active；Stage 7A 分批实施，Stage 7B+ 为可在 Stage 8 前后持续交付的能力线；本计划不构成阶段关闭或发行记录
+状态：active；Stage 7A 分批实施，Stage 7-RPA 为实时架构与设备验收子阶段，Stage 7B+ 为可在 Stage 8 前后持续交付的能力线；本计划不构成阶段关闭或发行记录
 
-更新日期：2026-10-07
+更新日期：2026-10-09
 
 归档来源：[旧版 PROJECT_GUIDE](../../../archive/PROJECT_GUIDE_LEGACY_2026-08-10.md)、
 [SDK transition plan 快照](../../../archive/CUEXIS_SDK_TRANSITION_PLAN_2026-08-10.md) 和
@@ -25,6 +25,19 @@ Canonical Gameplay Graph Playback entry。Graph entry 与 Packed Chart entry 必
 prepare、Judgement、Ruleset、Snapshot 和 Replay 路径；不得形成第二套判定实现。
 Stage 7B+ 是长期能力线；Stage 8 只接收明确列入发行矩阵并已完成本计划门禁的能力，不等待全部
 7B+。任意运行时脚本、逐帧脚本回调、宿主字节码和通用 Script VM 始终不在 Stage 7 范围内。
+
+## 分册与子阶段
+
+Stage 7包含以下子阶段，统一遵守本总计划的边界和交接规则：
+
+| 子阶段 | 分册 | 职责 |
+| --- | --- | --- |
+| Stage 7A | [plan-a](plan-a.md) | 确定性内核、7/8既有集成与门禁、S7A-9原范围最终验收 |
+| Stage 7-RPA | [plan-rpa](plan-rpa.md) | 实时架构重构、正式命名、实体设备与实时同步实施和最终验收 |
+| Stage 7B+ | [plan-b](plan-b.md) | 高级能力逐项准入、交付与发行选入，可跨Stage 8演进 |
+
+RPA独立管理批次与验收，归属Stage 7；不归入S7A-7/8新增任务，也不替代7B+。
+本轮只调整规划，产品实施授权与各子阶段退出证据仍分别管理。
 
 ## 阶段目标
 
@@ -164,7 +177,9 @@ S7A-9 + S7B-0
       +-> S7C-1 calibration / device policy
       +-> S7C-2 ruleset package / module / replay evolution
 
-S7A-9 ------------------------------> Stage 8
+S7A-7/8既有受限基线 -> Stage 7-RPA -> 实时架构/命名/设备与同步验收
+
+S7A-9 + Stage 7-RPA已验收交付 ---------> Stage 8
 已选 7B+ capability + 独立发行矩阵 ------> 可选地加入 Stage 8
 未选 7B+ capability -------------------> 稳定拒绝，继续在 Stage 8 后交付
 ```
@@ -287,8 +302,8 @@ S7A 的详细目标、执行卡、实施决策和关闭标准拆至[Stage 7A 分
 
 详见 [plan-a.md：3.4 S7A-7/8 下一轮决策、首用合同与接手（2026-10-07）](plan-a.md).
 
-2026-10-09 owner要求把架构重构与正式命名迁移设为独立阶段，详见
-[Stage RPA](../../future/realtime-playback-foundation/plan.md)。S7A-7/8保留原有集成收口，
+2026-10-09 owner最新指令将架构重构与正式命名迁移作为Stage 7内独立验收的子阶段，详见
+[Stage 7-RPA](plan-rpa.md)。S7A-7/8保留原有集成收口，
 不再计入RT78/DN78新增工作。实体设备/实时同步实施和最终验收整体归RPA，旧失败随交接保留；S7A-9不新增RPA前置。
 Stage7B+高级能力线保持，Stage8消费7A、RPA与已选入7B+成果；
 范围迁移不构成Stage7A关闭或Stage8发行许可。原plan-a §3.4.18/19保留兼容索引。

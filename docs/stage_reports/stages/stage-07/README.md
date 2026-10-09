@@ -72,6 +72,8 @@
 ## 验证与审计
 
 - [Version Gate复核与Stage7B+/RPA验收归属订正](verification/2026-10-09-version-gate-and-rpa-routing.md)（2026-10-09）：实际审批绑定复现、可信工具验证、设备验收整体归RPA。
+- [S7A-7/8余项与当前提交门禁核对](verification/2026-10-09-s7a-7-8-current-gate-audit.md)（2026-10-09）：c4b1f68三平台PR及Version Gate成功；保护来源与最终交付仍待收口。
+- [S7A-7/8保护配置与受限交付收口](verification/2026-10-09-s7a-7-8-protection-and-delivery.md)（2026-10-09）：个人仓库可用规则已生效；平台不支持workflow来源规则，owner选择保留8.4未退出。
 
 | 报告 | 证据日期 |
 | --- | --- |
@@ -107,6 +109,7 @@
 | 报告 | 证据日期 |
 | --- | --- |
 | [S7A-7/8进度核对与独立RPA阶段拆分](handoffs/2026-10-09-realtime-stage-separation.md) | 2026-10-09 |
+| [RPA归入Stage 7子阶段的规划修订](handoffs/2026-10-09-rpa-stage7-substage.md) | 2026-10-09 |
 | [S7A-3/4 Hosted Evidence and S7A-5 Handoff](handoffs/2026-10-05-s7a-3-4-hosted-and-handoff.md) | 2026-10-05 |
 | [S7A-5 / S7A-6 Plan Consolidation and Desktop Handoff](handoffs/2026-10-06-s7a-5-6-plan-and-desktop-handoff.md) | 2026-10-06 |
 | [S7A-5 / S7A-6 Planning Selection and Handoff Revision](handoffs/2026-10-06-s7a-5-6-planning-selection.md) | 2026-10-06 |

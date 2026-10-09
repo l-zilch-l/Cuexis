@@ -441,7 +441,7 @@ owner已明确下一轮目标为 **S7A-5.1–5.5 + S7A-6.1–6.5**，按本文§
 **目的。** 把所有实现证据收敛成可审查的 Stage 7A 关闭包。
 
 2026-10-09范围明确：实体键盘/听音、设备故障恢复、刷新率/输入延迟及实时同步的最终验收
-归[独立RPA](../../future/realtime-playback-foundation/plan.md)，不作为本批新增退出条件。
+归[Stage 7-RPA子阶段](plan-rpa.md)，不作为本批新增退出条件。
 本批仍验收实际kernel/Fold、规范化输入/公共消费者、完整Replay/Seek、原内容预算和跨平台；
 Stage7B+的逐能力准入与后续发行选入保持。历史设备失败随RPA交接，不倒填通过。
 
@@ -957,6 +957,8 @@ trusted bootstrap/保护与新 SHA hosted 继续未退出。I78-6 仅累计计�
 
 ### §3.4.11 本轮受限验收与后续门禁口径
 
+后续同SHA hosted、审批及保护来源证据按[10-09余项核对](../../../stage_reports/stages/stage-07/verification/2026-10-09-s7a-7-8-current-gate-audit.md)登记；当前状态以CURRENT_STATUS为准。
+
 C78 十二行与 R78 首用字段、所有权、身份、失败边界、状态转换和稳定诊断已落所属合同，
 原 P78 与本次 R78 推荐经真实反例、合同修订和消费者实施后，由10-08日期报告逐行记录证据。
 受限本地功能验收不替代生产内容/state预算接受、设备/时钟校准、新SHA hosted或owner治理门禁。
@@ -1035,8 +1037,8 @@ guide、包、配置和操作说明一起更新，故旧包结果不证明新练
 
 ### 3.4.18 实时架构重审与规划（2026-10-09）
 
-2026-10-09 owner要求独立立项：原RT78-0–7整体移交
-[Stage RPA：实时播放架构与接口规范化](../../future/realtime-playback-foundation/plan.md)。
+2026-10-09 owner最新指令明确归属Stage 7子阶段：原RT78-0–7整体移交
+[Stage 7-RPA：实时播放架构与接口规范化](plan-rpa.md)。
 原审查证据继续保留在[10-09报告](../../../stage_reports/stages/stage-07/readiness/2026-10-09-realtime-architecture-review.md)，
 本节只保留兼容入口；后续设计、实施与验收不再计入S7A-7/8新增任务。
 
@@ -1047,8 +1049,16 @@ RPA不成为其新增前置。Stage7B+继续独立高级能力线，Stage8消费
 
 ### 3.4.19 诊断码去阶段命名规划（2026-10-09）
 
-原DN78-0–3移交[Stage RPA](../../future/realtime-playback-foundation/plan.md)的命名工作线，
+原DN78-0–3移交[Stage 7-RPA](plan-rpa.md)的命名工作线，
 本节仅保留索引和追溯。67个定义中66条正式名称迁移与1个占位删除候选的完整映射见
 [命名审计](../../../stage_reports/stages/stage-07/readiness/2026-10-09-diagnostic-phase-name-audit.md)。
-命名迁移的公共投影、Recovery/Replay兼容、版本差异和验证归新阶段，不列作7/8额外实现缺口。
+命名迁移的公共投影、Recovery/Replay兼容、版本差异和验证归RPA子阶段，不列作7/8额外实现缺口。
 现行诊断合同继续适用；本轮仍只规划，未改码串或默认为公共兼容。
+
+### 3.4.20 保护配置与本轮交付决策（2026-10-09）
+
+owner后续明确授权一并配置保护，原本轮禁止修改保护的范围据此更新；合并/发行仍由owner决定。
+个人仓库仅支持当前App/context与PR等保护，组织级workflows来源规则的实际请求被GitHub拒绝。
+owner选择保持个人仓库并保留S7A-8.4未退出，不是批准来源例外。当前可用保护及最终交付证据
+归[dated记录](../../../stage_reports/stages/stage-07/verification/2026-10-09-s7a-7-8-protection-and-delivery.md)。
+I78-5其余证据按最终交付提交收敛；新SHA审批和hosted单独回填。RPA、S7A-9及7B+范围保持。

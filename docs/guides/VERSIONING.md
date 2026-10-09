@@ -150,7 +150,9 @@ must be a human owner in `.github/sdk-api-owners.json` at the trusted base. The 
 be unedited and created on that UTC release date. Missing approval, wrong actor, stale date,
 changed SHA/base/version/tree or an unavailable API denies permission. The newest owner record
 supersedes older records; an invalid newer record revokes permission. Candidate files, labels
-and `--allow-sdk-api-change` cannot grant permission. The agent does not publish owner approval.
+and `--allow-sdk-api-change` cannot grant permission. Owner approval requires explicit owner
+authorization; the owner may invoke the double-click assistant below to publish through their
+authenticated account. Routine agent builds, tests and pushes do not authorize approval posting.
 Both comment selection and JSON parsing accept LF/CRLF line endings; normalization does not
 change the API-observed comment or its raw size bound.
 
@@ -177,6 +179,37 @@ required check or permits candidate fallback. A separate bootstrap PR needs expl
 authorization where the task excludes additional PRs. The current classic required-check context alone does not prove an
 unforgeable workflow source; protection and same-SHA hosted evidence remain acceptance items.
 
+Personal repositories can enforce PRs and App-bound required checks through branch rulesets, but
+GitHub configures required-workflow rules at organization/enterprise scope. A named check from
+the GitHub Actions App does not distinguish workflow, matrix or event provenance. If the
+platform rejects a workflow-source rule, keep that acceptance item open; do not replace it with
+an unrecorded exception. Protection changes may be explicitly delegated by the owner.
+
+### Windows double-click approval assistant
+
+Windows用户可直接双击仓库内的 `tools/prepare_sdk_approval.cmd`（默认本仓库PR #32）。
+需要已安装并登录GitHub CLI；当前账号须在可信base的owner名单中。助手会读取**线上当前PR**的
+base、head、tree、SDK版本及UTC日期，核对版本递增，再生成LF-only UTF-8文本到
+`out/sdk-approval/`，并以当前登录的owner账号直接发布新审批评论，随后读取API核验结果。
+双击即表示本人授权发布该次线上当前候选的审批；无需复制粘贴或再打开PowerShell。
+
+最新owner记录已完整匹配时不重复发布；较新的无效记录不会被较早有效记录掩盖。同一PR的本机
+并发运行会被阻止。助手在当前进程固定使用 `http://127.0.0.1:7890` 代理，并清空代理绕过列表；
+退出时恢复环境变量，不修改Windows或Git的全局代理设置。
+读取连接失败最多尝试三次。POST失败不自动重发，而是读取评论确认是否已被GitHub接收；无法确认
+时保留错误，请检查PR后重试。
+
+发布后在该PR的Actions中重跑失败的Version Gate。每次推送后可以重新双击，文本按线上最新提交
+生成；本地未提交改动不在审批范围。发布前后均检查分支与UTC日期；若发布后发生变更，评论
+仅绑定原候选，需重新运行。候选日期过期或账号不符时停止，不以旧文件继续审批。
+
+只生成文件的命令行模式为 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/prepare_sdk_approval.ps1 -PrepareOnly`；
+可通过 `-Repository owner/repository -PullRequest number` 选择其他适用仓库/PR。
+离线测试：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/check_sdk_approval_assistant_tests.ps1`。
+助手不替代可信Version Gate或发行验收。CMD启动器使用持久窗口，成功或报错后均保留，
+需本人关闭窗口；不再依赖按任意键暂停。每次执行在 `out/sdk-approval/run-日期时间-进程号.log`
+记录输出、错误位置和调用栈。双击 `.cmd`，不要直接运行 `.ps1`。
+
 ### Recovering a stale owner approval
 
 `version.sdk_api.approval_mismatch` requires comparing the newest owner record with the
@@ -186,8 +219,9 @@ the final candidate before preparing its approval text; avoid another report-onl
 after approval, since that changes the tuple again.
 
 Prepare the LF-only record from the final Git objects and have the owner post it as a new,
-unedited comment on the existing PR. The agent may prepare the text but must not publish it
-on the owner's behalf. Comment creation alone does not trigger this workflow: after the
+unedited comment on the existing PR, either manually or by explicitly invoking the assistant.
+The agent needs explicit owner authorization to publish approval; ordinary implementation
+authorization does not suffice. Comment creation alone does not trigger this workflow: after the
 comment exists, rerun the failed pre-merge check for that same candidate and inspect its
 result. A fresh push requires a fresh tuple; a new UTC date requires the normal version/date
 validation too. Do not reuse an old record, weaken exact binding, or execute candidate tools

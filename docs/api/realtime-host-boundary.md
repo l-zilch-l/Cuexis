@@ -7,7 +7,7 @@
 ## 权威和范围
 
 决策方向归 [ADR 0046](../adr/0046-realtime-playback-coordination.md)，工作与门禁归
-[独立Stage RPA计划](../stage_plans/future/realtime-playback-foundation/plan.md)。
+[Stage 7-RPA子阶段计划](../stage_plans/active/stage-07/plan-rpa.md)。
 本文记录需要冻结的宿主协议，不改变现有头文件、序列化或预算。旧 V2 Spec/ABI、execution profile、
 Playback lifecycle、Portable Presentation 与 ADR 0032 的已定规则继续有效。
 

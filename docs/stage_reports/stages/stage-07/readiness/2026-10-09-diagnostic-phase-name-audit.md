@@ -5,7 +5,8 @@
 证据日期：2026-10-09
 
 归属更新（同日后续owner指令）：本报告的审计发现及测量有效范围保留；原S7A-7/8下RT78/DN78
-工作归属由[独立Stage RPA](../../../../stage_plans/future/realtime-playback-foundation/plan.md)取代。
+工作归属由[Stage 7-RPA子阶段](../../../../stage_plans/active/stage-07/plan-rpa.md)取代；
+RPA按owner最新指令归入Stage 7，原future独立阶段落点已被取代。
 原plan-a链接现为交接入口；不将迁移工作计为7/8新增缺口，不将原有设备失败改记通过。
 迁移记录与原规划文本归[拆分报告](../handoffs/2026-10-09-realtime-stage-separation.md)。
 

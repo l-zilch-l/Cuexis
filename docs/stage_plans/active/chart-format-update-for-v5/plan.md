@@ -18,7 +18,7 @@ SDK 版本遵循 [版本规范](../../../guides/VERSIONING.md)。本文“v5 发
 [Chart v4 格式合同](../../../formats/CHART_V4_FORMAT.md)、[谱面格式审计记录](../../../stage_reports/reviews/stage-verification-2026-09/2026-09-01-findings.md)
 与前置 [Stage 6 计划](../../completed/stage-06/plan.md)。
 
-2026-10-09路线补充：[独立Stage RPA](../../future/realtime-playback-foundation/plan.md)
+2026-10-09路线补充：[Stage 7-RPA子阶段](../stage-07/plan-rpa.md)
 承接实时播放架构、正式诊断命名及实体设备/实时同步最终验收，基于7/8集成进入设计并向Stage8
 交付；S7A-9不新增RPA前置，Stage7B+继续独立并按选入结果交付Stage8。本跨阶段工作包不复制RPA计划，也不因路线增加而接受生产预算。
 

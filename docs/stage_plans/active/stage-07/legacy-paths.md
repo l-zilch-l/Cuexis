@@ -2,7 +2,7 @@
 
 状态：compatibility entry
 
-更新日期：2026-10-07
+更新日期：2026-10-09
 
 按 [文档维护政策](../../../DOCUMENTATION_POLICY.md) 的批量stage文档整理规则，
 旧逻辑路径以代码文字映射到canonical文档，不为每个旧文件另建stub。
@@ -20,4 +20,7 @@ S7A-5/6的方向、U01–U13首用台账和J0–J7执行卡由
 [主计划§3.2](plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入) 维护，实施记录归§3.3。
 S7A-7/8的推荐方案、补查决策、首用合同核对和执行顺序由[plan-a §3.4](plan-a.md#34-s7a-78-下一轮决策首用合同与接手2026-10-07)维护；
 推荐不等于合同已冻结、产品已实施或owner门禁已退出。
-active/stage-07由plan.md总览、plan-a.md、plan-b.md与本文件组成。当前接手快照在owner桌面，后续决策写回对应分册和合同。
+active/stage-07由plan.md总览、plan-a.md、plan-b.md、plan-rpa.md与本文件组成。当前接手快照在owner桌面，后续决策写回对应分册和合同。
+
+RPA单文件迁移保留[旧路径兼容入口](../../future/realtime-playback-foundation/plan.md)至少一个整理周期；
+唯一正文为[Stage 7-RPA分册](plan-rpa.md)，future不再维护RPA阶段计划。
