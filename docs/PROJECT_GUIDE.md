@@ -84,10 +84,12 @@ capability；S5-H 已完成关闭门禁。Stage 5 已于 2026-08-28 通过 PR #2
 的文档整理、Chart/CXC parse-once 和关键模块分支覆盖率三个任务已完成，并于 2026-09-01 通过
 PR #22 合并至 `master`。项目所有者已于 2026-09-02 启动
   [Chart v5 format plan](stage_plans/active/chart-format-update-for-v5/plan.md)；当前主路线已明确为
-Chart Format Foundation -> Foundation Hardening -> Stage 6 v5-first candidate path -> Stage 7A Gameplay Foundation -> Stage 8
+Chart Format Foundation -> Foundation Hardening -> Stage 6 v5-first candidate path -> Stage 7A Gameplay Foundation（含7/8集成和S7A-9原范围验收）-> Stage 8
 Chart v5/CXT v2/Packed Chart formal release -> Stage 9 Presentation/Chart v6 -> Stage 10 Studio
 -> Stage 11 Chart v7 geometry -> Stage 12 scale/platform -> Stage 13 Chart v8 advanced presentation
 -> Stage 14 稳定 ABI；Stage 7B+ 高级 Input/Judgement 能力在 Stage 7A 后持续演进，可跨越 Stage 8。
+独立Stage RPA承接实时架构、正式命名及实体设备/实时同步验收，与7B+各自交付；
+Stage8另需RPA交付，只选入已验收7B+能力，不等待全部7B+。
 Chart Format Foundation [计划](stage_plans/completed/chart-format-foundation/plan.md) 已完成并归档；
 其后的 [Foundation 交接加固](stage_plans/completed/chart-format-foundation-hardening/plan.md)
 （R0-R5）也已于 2026-09-17 完成并经 owner 接受，补齐了身份、profile、预算、端到端、容量与

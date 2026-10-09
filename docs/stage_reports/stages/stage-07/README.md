@@ -13,11 +13,11 @@
 
 | 分类 | 数量 | 主要用途 |
 | --- | --- | --- |
-| 准入与基线 (readiness) | 6 | owner准入记录、工具链基线、typed合同与计划审视、D-9候选证据 |
+| 准入与基线 (readiness) | 8 | owner准入记录、工具链基线、typed合同与计划审视、D-9候选证据 |
 | 裁定记录 (decisions) | 13 | 分轮准入/实施裁定、合同选择、落地位置与诊断分类；现行字段仍归Spec/ABI |
 | 设计与实施记录 (implementation) | 6 | 带日期的设计收口和实施推进；设计交付与运行验证分别按报告声明解释 |
-| 验证与审计 (verification) | 18 | 独立复验、功能验收、边界审计、CI优化和文档恢复证据 |
-| 交接与规划修订 (handoffs) | 3 | hosted交接、排期修订和桌面接手整理；历史下一步不覆盖主计划 |
+| 验证与审计 (verification) | 19 | 独立复验、功能验收、边界审计、CI优化和文档恢复证据 |
+| 交接与规划修订 (handoffs) | 4 | hosted交接、排期修订和桌面接手整理；历史下一步不覆盖主计划 |
 
 ## 常用入口
 
@@ -32,6 +32,8 @@
 | 报告 | 证据日期 |
 | --- | --- |
 | [S7A-7/8计划与合同重审](readiness/2026-10-07-s7a-7-8-plan-review.md) | 2026-10-07 |
+| [阶段诊断码审计与正式命名迁移规划](readiness/2026-10-09-diagnostic-phase-name-audit.md) | 2026-10-09 |
+| [实时架构重审与规划证据](readiness/2026-10-09-realtime-architecture-review.md) | 2026-10-09 |
 | [D-9 候选补丁与验证证据：version-gate 的 POSIX shell 判据](readiness/2026-10-02-d9-shell-guard-candidate.md) | 2026-10-02 |
 | [Gameplay V2 acceptance package：owner 接受记录](readiness/2026-10-02-s7a-0-acceptance.md) | 2026-10-02 |
 | [S7A-0 执行基线与合同表征](readiness/2026-10-02-s7a-0-baseline.md) | 2026-10-02 |
@@ -69,6 +71,8 @@
 
 ## 验证与审计
 
+- [Version Gate复核与Stage7B+/RPA验收归属订正](verification/2026-10-09-version-gate-and-rpa-routing.md)（2026-10-09）：实际审批绑定复现、可信工具验证、设备验收整体归RPA。
+
 | 报告 | 证据日期 |
 | --- | --- |
 | [Version Gate bootstrap 验证与保护阻断](verification/2026-10-09-version-gate-bootstrap.md) | 2026-10-09 |
@@ -102,6 +106,7 @@
 
 | 报告 | 证据日期 |
 | --- | --- |
+| [S7A-7/8进度核对与独立RPA阶段拆分](handoffs/2026-10-09-realtime-stage-separation.md) | 2026-10-09 |
 | [S7A-3/4 Hosted Evidence and S7A-5 Handoff](handoffs/2026-10-05-s7a-3-4-hosted-and-handoff.md) | 2026-10-05 |
 | [S7A-5 / S7A-6 Plan Consolidation and Desktop Handoff](handoffs/2026-10-06-s7a-5-6-plan-and-desktop-handoff.md) | 2026-10-06 |
 | [S7A-5 / S7A-6 Planning Selection and Handoff Revision](handoffs/2026-10-06-s7a-5-6-planning-selection.md) | 2026-10-06 |

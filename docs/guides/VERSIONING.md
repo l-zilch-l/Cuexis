@@ -177,6 +177,22 @@ required check or permits candidate fallback. A separate bootstrap PR needs expl
 authorization where the task excludes additional PRs. The current classic required-check context alone does not prove an
 unforgeable workflow source; protection and same-SHA hosted evidence remain acceptance items.
 
+### Recovering a stale owner approval
+
+`version.sdk_api.approval_mismatch` requires comparing the newest owner record with the
+actual PR base, final head commit and tree, SDK transition and UTC date. An earlier approval
+does not cover later code or documentation commits. Finish the intended changes and push
+the final candidate before preparing its approval text; avoid another report-only commit
+after approval, since that changes the tuple again.
+
+Prepare the LF-only record from the final Git objects and have the owner post it as a new,
+unedited comment on the existing PR. The agent may prepare the text but must not publish it
+on the owner's behalf. Comment creation alone does not trigger this workflow: after the
+comment exists, rerun the failed pre-merge check for that same candidate and inspect its
+result. A fresh push requires a fresh tuple; a new UTC date requires the normal version/date
+validation too. Do not reuse an old record, weaken exact binding, or execute candidate tools
+as trusted code to make this rejection disappear.
+
 ### SDK version selection
 
 本节是 SDK 版本选择和更新流程的统一规范；阶段计划引用本节，不为后续阶段预留版本号。

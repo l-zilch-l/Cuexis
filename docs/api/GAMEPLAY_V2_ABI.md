@@ -1,5 +1,9 @@
 # Gameplay V2 ABI（候选）：内部 typed preview 边界
 
+2026-10-09 实时宿主首用重审见[边界设计草案](realtime-host-boundary.md)。该草案只登记
+captured/delivered/admitted、时钟关联、owner和发布协议的设计要求，未替代本ABI的canonical
+来源、同Tick规则、身份或恢复合同，未新增公共符号。其字段冻结前不能由消费者隐式补默认值。
+
 ## S7A-7/8 公共首用补充 revision 1（2026-10-07）
 
 本轮实施授权选择 P78 原推荐组合及 R78-01–08 A、09a B、09b A、10a B、10b A。

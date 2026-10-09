@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-10-07
+更新日期：2026-10-09
 
 阶段计划定义目标、范围、批次、门禁和交接。当前实现状态只以
 [CURRENT_STATUS.md](../CURRENT_STATUS.md) 为准；完成证据只以
@@ -95,8 +95,12 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
   - [Stage 7A 分册](active/stage-07/plan-a.md)：S7A-0–9批次、核验台账、实施记录与接手决策。
   - [Stage 7B+ 分册](active/stage-07/plan-b.md)：S7B-0–4、S7C-1/2能力准入、依赖和退出标准。
   - 历史路径见[legacy-paths](active/stage-07/legacy-paths.md)；当前实现状态以CURRENT_STATUS为准。
+- [Stage RPA：实时播放架构与接口规范化](future/realtime-playback-foundation/plan.md)：独立阶段，
+  承接RT78/DN78及实体设备/实时同步的实施和最终验收，向Stage8交付；
+  S7A-9原范围验收不新增RPA前置，Stage7B+高级能力线保持。
+  目前仅规划，不属于S7A-7/8新增任务，不重排Stage8–14编号。
 - [Stage 8](future/stage-08/plan.md)：Chart v5 正式语义、CXT v2、Packed Chart 和 CXC 发行收敛；
-  只依赖 Stage 7A，不等待全部 Stage 7B+。
+  依赖 Stage 7A最终验收及RPA交付，不等待全部 Stage 7B+。
 - [Stage 9](future/stage-09/plan.md)：Presentation Foundation 与 Chart v6 / Model v1。
 - [Stage 10](future/stage-10/plan.md)：Studio 和完整创作/打包工作流。
 - [Stage 11](future/stage-11/plan.md)：Chart v7 单轴几何表现与 shader.json 声明接口。

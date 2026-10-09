@@ -54,3 +54,4 @@ ADR 是决策理由的权威来源。字段级合同和实施证据分别见 [�
 | [0043](0043-gameplay-judgement-ruleset-convergence.md) | Gameplay Judgement / Ruleset I 收敛边界 | proposed；工作稿，待 owner acceptance |
 | [0044](0044-gameplay-v2-semantic-kernel.md) | Gameplay V2 语义内核与冻结边界 | 决策已接受（owner 于 2026-10-02 接受第 1 轮裁决）；**未实施**；V2 的 ADR/Spec/ABI 三份文档当前均为 candidate |
 | [0045](0045-gameplay-v2-execution-profile.md) | S7A-3/4 完整 execution profile | candidate；本轮方案已选定，新增合同未实施，不冒充既往裁定或阶段验收 |
+| [0046](0046-realtime-playback-coordination.md) | 实时播放的时间、执行与发布边界 | proposed；S7A-7/8架构重审与规划，未冻结线程拓扑、未实施 |

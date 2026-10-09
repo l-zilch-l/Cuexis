@@ -440,6 +440,11 @@ owner已明确下一轮目标为 **S7A-5.1–5.5 + S7A-6.1–6.5**，按本文§
 
 **目的。** 把所有实现证据收敛成可审查的 Stage 7A 关闭包。
 
+2026-10-09范围明确：实体键盘/听音、设备故障恢复、刷新率/输入延迟及实时同步的最终验收
+归[独立RPA](../../future/realtime-playback-foundation/plan.md)，不作为本批新增退出条件。
+本批仍验收实际kernel/Fold、规范化输入/公共消费者、完整Replay/Seek、原内容预算和跨平台；
+Stage7B+的逐能力准入与后续发行选入保持。历史设备失败随RPA交接，不倒填通过。
+
 **工作内容。**
 
 1. 运行 Debug/Release/shared/headless/MinGW 以及 Linux Quality、Windows MSVC、Windows MinGW
@@ -800,7 +805,8 @@ P78-11/P78-13 是产品事务与验证策略，P78-14/P78-15 是宿主和包边�
 新bridge的结果对照包括完整Fact/结果/error/Score/Combo/Statistics/状态，以及恢复后的token/FrameSnapshot。
 故障注入至少覆盖内容/资源、准备/提交、Ruleset、恢复、表现与安装边界；local工具链矩阵覆盖受影响配置，
 hosted只认实际新行为SHA。旧55fc8e6的38项成功是基线证据，不是未来集成证据。
-GPU/window/audio/设备缺项单列；不能由headless通过推断。最终生产预算与完整最终矩阵在S7A-9再验收。
+GPU/window/audio/设备缺项不能由headless通过推断；按2026-10-09范围修订，实体设备/实时同步
+实施和验收整体交接RPA。原内核/消费者的生产预算与最终矩阵在S7A-9验收。
 
 **停止边界与文档维护。** 不进入S7B+/S7C、Stage8发行或Stage7A关闭。
 owner-only门禁不阻止不依赖其启用的本地集成/验证，但不得标S7A-8.4退出、绕过version gate或合并发行。
@@ -1026,3 +1032,23 @@ DFJK fixture 不变，多转换会占多个工作 Tick，操作示例/脚本须�
 guide、包、配置和操作说明一起更新，故旧包结果不证明新练习通过。真实窗口/设备项单独回填。
 本轮受限实施与验证归[可读练习报告](../../../stage_reports/stages/stage-07/verification/2026-10-09-player-readable-practice.md)：
 独立guide/source/binding核对、CPU ON/OFF及定向SDL/GPU通过；实体设备、校准与新SHA hosted仍待。
+
+### 3.4.18 实时架构重审与规划（2026-10-09）
+
+2026-10-09 owner要求独立立项：原RT78-0–7整体移交
+[Stage RPA：实时播放架构与接口规范化](../../future/realtime-playback-foundation/plan.md)。
+原审查证据继续保留在[10-09报告](../../../stage_reports/stages/stage-07/readiness/2026-10-09-realtime-architecture-review.md)，
+本节只保留兼容入口；后续设计、实施与验收不再计入S7A-7/8新增任务。
+
+S7A-7.1–7.5、8.1–8.3既有实现和受限验收范围保持；8.4继续收口自身版本/审批/保护门禁。
+按owner后续指令，实体设备及实时同步的实施和最终验收整体归RPA；旧失败原样交接，
+不再回挂本分册或S7A-9，也不改记通过。S7A-9按原内核/公共消费者范围验收，
+RPA不成为其新增前置。Stage7B+继续独立高级能力线，Stage8消费7A、RPA和已选入7B+成果。
+
+### 3.4.19 诊断码去阶段命名规划（2026-10-09）
+
+原DN78-0–3移交[Stage RPA](../../future/realtime-playback-foundation/plan.md)的命名工作线，
+本节仅保留索引和追溯。67个定义中66条正式名称迁移与1个占位删除候选的完整映射见
+[命名审计](../../../stage_reports/stages/stage-07/readiness/2026-10-09-diagnostic-phase-name-audit.md)。
+命名迁移的公共投影、Recovery/Replay兼容、版本差异和验证归新阶段，不列作7/8额外实现缺口。
+现行诊断合同继续适用；本轮仍只规划，未改码串或默认为公共兼容。

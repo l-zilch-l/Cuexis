@@ -1,11 +1,19 @@
 # Stage 7B+ Plan: Capability Evolution
 
 状态：future；各能力按独立依赖和 owner 接受情况排期
-更新日期：2026-10-07
+更新日期：2026-10-09
 
 本分册定义 S7B/S7C 能力的准入、依赖、批次和验收。Stage 7 全局边界、Stage 8 选入规则、统一证据矩阵、停止条件和跨阶段交接见[总计划](plan.md)。能力字段和运行语义必须先进入其权威 ADR/Spec/ABI；候选能力不视为已实现。
 
 S7A 是 Stage 8 的硬前置；Stage 8 不等待全部 S7B/S7C。每项能力单独准入、实现、预算与验收，未选入发行矩阵的能力保持稳定拒绝。
+
+## 与RPA及发行主线的关系
+
+Stage7B+是保留的独立持续能力线，不被RPA替代或从路线省略。Slide/Flick、方向、连续轨迹、
+多指及S7C高级校准策略按本计划逐项准入；基础实体设备和实时同步的实施/验收整体归
+[RPA](../../future/realtime-playback-foundation/plan.md)。需要实时宿主边界的具体能力依赖RPA
+对应合同，其他研究与无该依赖的工作可独立安排。Stage8只消费已选入并通过验收的7B+能力，
+不等待整个能力线结束；本次文档修订不启动7B+/S7C产品实施。
 
 ## 5. Stage 7B+ 能力线的统一规则
 
@@ -168,6 +176,9 @@ grading 或有界重复的动作语义。7A 已支持的 Release/tail 仍是同�
 几何或连续音高，归入 W 类缺口（§5.3）或超出范围。
 
 ### S7C-1：校准、设备延迟和 Judgement Policy
+
+基础实时架构与正式命名迁移归[独立Stage RPA](../../future/realtime-playback-foundation/plan.md)。
+S7C-1负责校准参数及高级设备策略；本批不承接基础同步缺口，未因此启动实施。
 
 **目标。** 将 timing offset、input latency、窗口等级和设备能力变成显式、可复现的策略。
 

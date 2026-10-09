@@ -1,5 +1,9 @@
 # Gameplay V2 字段与运行语义规范
 
+2026-10-09 实时架构规划登记：[宿主边界草案](../api/realtime-host-boundary.md)的TB-01–07
+属于首用待定问题；§3.7.3唯一canonical来源、同Tick拒绝、既有late-policy与恢复语义继续有效。
+草案不许可从raw设备时间回溯生成Tick，也不承诺任意输入交付延迟均与无延迟结果相同。
+
 ## S7A-7/8 消费修订 revision 1（2026-10-07）
 
 本轮按 owner 实施授权采用 plan-a P78 推荐及 R78 推荐；限于首次消费合同。

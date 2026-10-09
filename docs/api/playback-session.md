@@ -71,6 +71,10 @@ FrameSnapshot、semantic identity、active diagnostics 和 presentation 必须�
 
 ## S7A-7/8 candidate 组合事务 revision 1（2026-10-07）
 
+2026-10-09实时架构重审的[宿主边界草案](realtime-host-boundary.md)尚未冻结/实施，不改变下面的
+owner-thread和组合提交语义。未来若分开判定推进、表现采样或renderer准备，须先完成对应typed
+合同与兼容证明；不能把本页的同步Prepared事务直接解释为多线程事务。
+
 本节按本轮 owner 实施授权落定 C78-01–04/08/09、R78-01–05/10b 的消费合同；
 它不表示实现验收、生产预算接受、owner API approval 或阶段关闭。
 未启用 Gameplay 的原有方法及 SessionState 含义保持。显式 Gameplay 在 commit 后即可推进

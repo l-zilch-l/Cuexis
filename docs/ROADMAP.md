@@ -2,7 +2,7 @@
 
 状态：现行路线图
 
-更新日期：2026-10-02
+更新日期：2026-10-09
 
 产品边界由 [ADR 0027](adr/0027-playback-sdk-product-boundary.md) 冻结。
 本文只维护阶段顺序、依赖关系、格式演进和交接规则，不记录当前实现状态、逐批次证据或
@@ -21,14 +21,16 @@ Cuexis 的路线围绕两个相互约束的目标展开：
 
 ```text
 Playback SDK 基线与 Chart v4 兼容边界
-  -> Stage 7A：Gameplay v2 最小 Input / Judgement / Score / Replay
-  -> Stage 8：Chart v5 正式发行与语义收敛
-  -> Stage 9：Presentation Foundation 与 Chart v6 / Model v1
-  -> Stage 10：Studio 创作与发行工作流
-  -> Stage 11：Chart v7 几何表现
-  -> Stage 12：规模化、桌面性能、Android 与 Vulkan
-  -> Stage 13：Chart v8、高级表现与确定性粒子
-  -> Stage 14：稳定 ABI 与 Playback SDK v1
+  -> Stage 7A：Gameplay内核、7/8集成、S7A-9内核/消费者最终验收
+      +-> Stage 7B+：高级Input/Judgement能力，逐项准入，可跨Stage8持续演进
+      +-> Stage RPA：实时架构、正式命名、实体设备与实时同步验收
+      +-> Stage 8：消费7A与RPA交付，以及已选入的7B+能力
+          -> Stage 9：Presentation Foundation 与 Chart v6 / Model v1
+          -> Stage 10：Studio 创作与发行工作流
+          -> Stage 11：Chart v7 几何表现
+          -> Stage 12：规模化、桌面性能、Android 与 Vulkan
+          -> Stage 13：Chart v8、高级表现与确定性粒子
+          -> Stage 14：稳定 ABI 与 Playback SDK v1
 ```
 
 Stage 7B+ 是跨越 Stage 8 的持续能力线；Stage 13 是可选的高级表现线，Stage 14 不必
@@ -43,7 +45,8 @@ Stage 12 落地（`AGENTS.md` 把稳定 C ABI 写作 Stage 12 的表述是孤例
 | --- | --- | --- | --- |
 | [Stage 7A](stage_plans/active/stage-07/plan-a.md) | 冻结 Gameplay v2 最小可玩闭环和 Judgement Kernel | Stage 6 交接边界；Gameplay v2 contract | Input、Judgement、Score、Replay、Tap/Hold/Release-tail、单一 capacity=1 exclusive resource、early/late bridge、Graph/Packed 双入口，以及四项 Stage 6 遗留收口 |
 | [Stage 7B+](stage_plans/active/stage-07/plan-b.md) | 持续扩展高级输入与判定 | 7A 身份、生命周期和 capability 合同 | Slide、Flick、方向、连续轨迹、多指、校准和高级判定 |
-| [Stage 8](stage_plans/future/stage-08/plan.md) | Chart v5 正式发行和语义收敛 | Stage 7A；不等待全部 7B+ | v5/Gameplay v2 Spec、CXT v2、Canonical Graph、Packed Chart、CXC Graph/Packed playback entries、迁移和默认 Writer |
+| [Stage RPA](stage_plans/future/realtime-playback-foundation/plan.md) | 实时播放架构与正式诊断命名 | S7A-7/8受限集成基线；首用合同裁定 | 时间/输入/音频/判定/表现解耦、资源与快照协议、命名及恢复兼容、设备与平台验收 |
+| [Stage 8](stage_plans/future/stage-08/plan.md) | Chart v5 正式发行和语义收敛 | Stage 7A最终验收和RPA交付；不等待全部7B+ | v5/Gameplay v2 Spec、CXT v2、Canonical Graph、Packed Chart、CXC Graph/Packed playback entries、迁移和默认 Writer |
 | [Stage 9](stage_plans/future/stage-09/plan.md) | Presentation Foundation 与 Chart v6 | Chart v5 语义和资源边界 | Environment、静态 glTF、Model v1、内置网格和 submesh |
 | [Stage 10](stage_plans/future/stage-10/plan.md) | Studio 创作与发行工作流 | Stage 9 的模型/表现边界 | 编辑、预览、编译、打包和资源闭包 |
 | [Stage 11](stage_plans/future/stage-11/plan.md) | Chart v7 几何表现 | Chart v6 / Model v1 | 单轴 Bézier、line 和 `shader.json` 声明接口 |
@@ -57,23 +60,24 @@ Stage 12 落地（`AGENTS.md` 把稳定 C ABI 写作 Stage 12 的表述是孤例
 
 ```text
 Stage 6 交接
-  -> Stage 7A
-      -> Stage 8
-          -> Stage 9
-              -> Stage 10
-          -> Stage 11
-              -> Stage 12
-                  +--> Stage 13（可选高级表现线）
-                  +--> Stage 14（稳定 ABI，不等待全部 Stage 13 能力）
-
-Stage 7A
-  -> gameplay.version = 2 / Canonical Gameplay Graph
-  -> Tap/Hold/Release-tail + single exclusive resource
-  -> Packed / CXC Graph dual playback entry
-  -> early/late Presentation bridge + Snapshot/Replay
-      -> Stage 7B+（持续能力线，可跨越 Stage 8 继续）
-  -> Stage 8（只依赖 7A，不等待全部 7B+）
+  -> Stage 7A：最小内核、7/8集成与S7A-9原范围验收
+      +-> Stage 7B+（高级能力持续线，不被RPA替代）
+      |     -> 已选入并验收的能力进入Stage8；其余继续演进
+      +-> Stage RPA（实时架构/正式命名/实体设备/实时同步）
+      |     -> 已验收交付进入Stage8
+      +-> Stage 8（同时消费7A与RPA；不等待全部7B+）
+            -> Stage 9 -> Stage 10
+            -> Stage 11 -> Stage 12
+                             +-> Stage 13（可选）
+                             +-> Stage 14（稳定ABI，不等待全部Stage13）
 ```
+
+RPA可基于7/8受限基线设计，不要求Stage7A先关闭。实体键盘、真实听音、设备失效恢复、
+卡顿/刷新率/输入延迟和实时同步的整改及最终验收全部由RPA负责，不再回挂S7A-7/8或S7A-9。
+S7A-9保留内核、确定性公共消费者、预算与跨平台的原范围验收，不以RPA完成为前置。
+7B+保留Slide/Flick/连续轨迹/多指和高级校准策略的独立路线；需实时宿主能力的具体项目消费
+RPA已冻结边界，不阻塞无该依赖的独立能力研究。Stage8不等待全部7B+，选入项必须各自验收。
+范围迁移不将旧设备失败标通过；它们作为RPA待办和基线证据保留。
 
 允许并行研究，但不得越过主链直接形成生产承诺：
 
