@@ -975,3 +975,10 @@ Linux installed gate不得继承开发树库搜索路径；private/detail export
 
 
 §3.4.12 范围纠正：代理错误将一般修复指令理解为允许另建bootstrap PR33；owner指出后已关闭，未合并，剩余PR检查取消。原“不另建PR”限制继续有效，不能从一般修复指令推断例外；未改保护/代SDK审批/合并/发行。master未推进，S7A-8.4未退出。
+
+
+### §3.4.13 2026-10-09 已有真实检查下的直接 bootstrap
+
+关闭误建PR33后，其真实pre-merge success仍绑定3076948及required App15368，且master未漂移；这使此前GH006的“expected”条件已满足。核对commit/base/check后，依已授权bootstrap范围直接fast-forward推送master成功，无新PR、无保护修改、无人工伪造status。该部署路径仅使用已存在的实际检查，不回退执行候选脚本。
+
+stage-7同步新master并将同日build升至26.10.09-2；SDK保持0.7.1。需fresh/clean-first/consumer与最终HEAD的真实owner审批；bootstrap完成不等于S7A-8.4退出，不改变C78/R78或Gameplay语义，也不进入S7A-9关闭。证据归10-09 bootstrap报告后续章节。

@@ -53,3 +53,21 @@ Version Gate已实际触发：[run 37885355727](https://github.com/l-zilch-l/Cue
 
 
 PR33 Version Gate run 37885355727已结束为success，三项剩余PR事件CI已提交取消请求；这只证明未合并的bootstrap候选检查成功，不能证明PR32或master已修复。PR33确认CLOSED、mergedAt=null；原始关闭/取消与状态输出已追加证据归档。
+
+
+## 后续：不新建 PR，使用已有真实检查直接安装
+
+PR33关闭后，GitHub API `commits/3076948ce403ea0da6fbe389835b6a4c9defbcd3/check-runs` 仍返回required context的completed/success，head_sha精确为该候选，app.id=15368，与master保护要求一致。master仍5472c46，候选未变化，日期仍为实际UTC2026-10-09。此前GH006的expected条件因此已满足。
+
+依已授权的bootstrap验证后推送范围，再次直接推送兼容候选成功：master由5472c463640cf3b66a03dd86fe87bd87239b2659 fast-forward到3076948ce403ea0da6fbe389835b6a4c9defbcd3。不重新开PR、不修改保护、不伪造check/status、不合并PR33或PR32、不代SDK审批或发行。此前“必须另开PR”的结论过于绝对，由此实际结果修正；误建PR的责任记录保留。
+
+PR33事件的三项未完成CI及bootstrap分支push的Windows MSVC/MinGW均已取消并确认completed/cancelled；已success的Version Gate与Linux push保留其结果，bootstrap分支已无运行/排队CI。新master的push CI不属于被取消的旧候选CI。
+
+stage-7无覆盖地同步origin/master，SDK保持0.7.1，同日build经updater由26.10.09-1升至26.10.09-2。首次native Release fresh配置因现有缓存缺glad失败；保留原始输出，开启标准manifest install恢复依赖后重新fresh/clean-first，未新增依赖/修改baseline/警告策略。最终日期变化的验证结果将在本节绑定最终提交和实际日志。
+
+bootstrap缺owner registry的问题已解除。PR32下一步仍须真实owner审批tuple绑定新base/最终candidate/tree/版本/UTC日期；不能复用旧审批，也不能由agent代发。S7A-8.4仍未退出，hosted/设备/保护来源与S7A-9边界保留。
+
+
+日期更新后的实际验证完成：MSVC Debug/Release candidate OFF均fresh/clean-first/Werror、Capsule20 cases/1874 assertions、架构与安装Playback consumer2/2；MinGW Release candidate ON/headless同样fresh/clean-first/Werror、Capsule20/1874、Gameplay25/1467、架构/诊断/assembler CLI/安装consumer4/4。docs388/20、status contract4/4、updater26.10.09-2一致与diff检查通过。
+
+验证基线为2b32b7f加master3076948同步及build2输入；本节所属stage-7合并提交绑定最终实现/版本输入，归档date2 blob清单精确核对五个源码/版本文件。实际代码仍为6d34e7a的严格编译修复，无额外Gameplay行为变化。原失败输出、最终命令/log/cache/源码blob已追加归档；本轮不声称重跑Linux/shared/shader/media/coverage或GPU/window/audio/真实设备矩阵。

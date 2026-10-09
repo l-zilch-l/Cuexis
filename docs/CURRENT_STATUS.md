@@ -31,7 +31,7 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Chart Format Foundation | completed | [plan](stage_plans/completed/chart-format-foundation/plan.md)、[关闭记录](stage_reports/stages/chart-format-foundation/2026-09-16-closure-and-handoff.md) |
 | Chart Format Foundation Hardening（Foundation 交接加固） | completed | [plan](stage_plans/completed/chart-format-foundation-hardening/plan.md)、[R5 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md) |
 | Stage 6 | completed | [plan](stage_plans/completed/stage-06/plan.md)、[关闭报告](stage_reports/stages/stage-06/completion.md) |
-| Stage 7A | active；S7A-3/4、5/6 受限功能验收已完成；本轮 S7A-7.1–7.5、8.1–8.3 受限本地功能验收完成。S7A-8.4 owner/可信基线/保护、新SHA hosted、真实设备、生产容量/state-budget 与 S7A-9 独立保留，不关闭阶段 | [总计划](stage_plans/active/stage-07/plan.md)、[Stage 7A分册](stage_plans/active/stage-07/plan-a.md)、[7/8证据](stage_reports/stages/stage-07/implementation/2026-10-08-s7a-7-8-entry-assembler-progress.md)、[5/6证据](stage_reports/stages/stage-07/verification/2026-10-06-s7a-5-6-functional-acceptance.md)、[3/4证据](stage_reports/stages/stage-07/verification/2026-10-05-s7a-3-4-functional-acceptance.md) |
+| Stage 7A | active；S7A-3/4、5/6 受限功能验收已完成；本轮 S7A-7.1–7.5、8.1–8.3 受限本地功能验收完成。S7A-8.4 owner/保护、新SHA hosted、真实设备、生产容量/state-budget 与 S7A-9 独立保留，不关闭阶段 | [总计划](stage_plans/active/stage-07/plan.md)、[Stage 7A分册](stage_plans/active/stage-07/plan-a.md)、[7/8证据](stage_reports/stages/stage-07/implementation/2026-10-08-s7a-7-8-entry-assembler-progress.md)、[5/6证据](stage_reports/stages/stage-07/verification/2026-10-06-s7a-5-6-functional-acceptance.md)、[3/4证据](stage_reports/stages/stage-07/verification/2026-10-05-s7a-3-4-functional-acceptance.md) |
 | Stage 7B+ | future；Slide、Flick、多指、校准和高级 Judgement 能力持续演进 | [plan-b](stage_plans/active/stage-07/plan-b.md) |
 | Stage 8 | future；Chart v5 / CXT v2 / Packed Chart 正式发行与语义收敛 | [plan](stage_plans/future/stage-08/plan.md) |
 | Stage 9 | future；Presentation Foundation 与 Chart v6 / Model v1 | [plan](stage_plans/future/stage-09/plan.md) |
@@ -59,7 +59,7 @@ S7A-8.1–S7A-8.4 展开；2026-10-02 订正，原文误写为 §2 与 §6）。
 Foundation typed assembler CLI 原子包与真实 prepare、安装后宿主 candidate entry 和 SDK `0.7.1`
 候选及精确审批门禁均已实施；本地 ON/OFF static/shared、Linux GCC、MinGW 矩阵已回填，
 MSVC OFF Release 全量 1006 项无失败（1 项 Windows 符号链接测试跳过）。
-当前代码交付不等于门禁整体退出：可信 master bootstrap、平台保护与 owner 精确审批以及同 SHA
+当前代码交付不等于门禁整体退出：可信 master bootstrap已于2026-10-09安装，平台保护与 owner 精确审批以及同 SHA
 hosted 证据仍待回填。尤其 merge_group 的候选 workflow 不能仅靠复制 base checker 证明可信；
 启用 merge queue 前必须采用受保护的 required workflow/外部可信检查源，否则保持禁用。
 历史复核见[四项交接复核](stage_reports/stages/stage-07/verification/2026-10-06-stage6-handover-audit.md)，
@@ -74,22 +74,22 @@ typed lifetime/owning sourceMap 已实现。Headless、Player 实际 SDL scancod
 人工 golden、独立 Tap/Hold oracle、故障注入及完整结果比较通过；Debug/Release、headless、
 MinGW、Linux GCC/Clang sanitizer、架构/package/ASCII/诊断码表/docs/version 的本轮输出和
 首次失败修复边界见[10-08受限验收记录](stage_reports/stages/stage-07/implementation/2026-10-08-s7a-7-8-entry-assembler-progress.md)。
-SDK 实际 production API 差异证明支持 preview patch 0.7.1，当前日期构建为 26.10.09-1，完成日期更新后
+SDK 实际 production API 差异证明支持 preview patch 0.7.1，当前日期构建为 26.10.09-2，完成日期更新后
 fresh/clean-first build 与消费者验证，不构成发行许可。
 实际 GPU/OpenGL 纯播放 smoke 完成6帧；显式 Gameplay 零输入到期产生 Miss 并完整 Replay 一致。
 真实键盘/音频设备、实时校准和 Gameplay 正反馈 GPU 像素专项未执行。新 SHA hosted 待回填。
-S7A-8.4 **未退出**：owner approval、trusted master bootstrap、保护/required workflow 与同 SHA
-hosted 门禁未满足；未代审批、执行 bootstrap、改保护、合并或发行。S7A-9 仅累计计数/测量输入/
+S7A-8.4 **未退出**：owner approval、保护/required workflow 与同 SHA
+hosted 门禁仍未满足；trusted master bootstrap已于2026-10-09完成；未代审批、执行 bootstrap、改保护、合并或发行。S7A-9 仅累计计数/测量输入/
 handoff 草稿，不接受生产阈值，不进行最终关闭；Stage7A保持active，Stage8正式发行未开始。
 Version advancement pre-merge 触发断层已修复：保留 target、恢复 pull_request，两事件只执行
 trusted base 工具，本地回归通过。首次推送 aaa9ca3 的 pre-merge job 已实际启动，因可信 base 缺 .github/sdk-api-owners.json 报
 version.bootstrap.required。b6081c3 的 MSVC hosted 成功，Linux/MinGW 严格编译失败已定位并修复（代码提交 `6d34e7adc482a833eaea0c01e5be106539fe7940`）；
 增量 fresh/clean-first 本地验证及新修复 SHA hosted 状态见
 [10-09 CI 修复记录](stage_reports/stages/stage-07/verification/2026-10-09-s7a-7-8-ci-repair.md)。新 SHA hosted 继续待回填。可信 base 缺前置条件时
-bootstrap_required 继续阻断，不执行 PR head 脚本、不绕过 owner 门禁。
+历史缺基线情形的 bootstrap_required 保留阻断，不执行 PR head 脚本、不绕过 owner 门禁。
 2026-10-09 owner 授权验证后推送 bootstrap，旧 SHA 六个 CI 已确认取消；直接 master 推送被 GH006 required pre-merge check 拒绝，未修改保护。
 兼容候选 `3076948ce403ea0da6fbe389835b6a4c9defbcd3` 已推送 `codex/version-gate-bootstrap`，保留旧 workflow/tests、SDK0.7.0；旧可信 checker 与 Linux19项兼容测试通过。
-远程 master 未推进。代理错误将后续修复指令理解为允许另建PR，创建bootstrap PR #33；owner指出后已关闭，未合并。原“不另建PR”限制继续有效；master保护仍阻断直接安装，bootstrap及stage-7同步尚未完成。
+代理误建的bootstrap PR #33已关闭，未合并；该PR及bootstrap分支已无运行中/排队CI。核对已有真实GitHub Actions pre-merge success绑定3076948和要求的App15368后，已在不改保护、不伪造状态、不新建PR的条件下，将bootstrap提交3076948ce403ea0da6fbe389835b6a4c9defbcd3直接推入master。stage-7已同步新base，日期经updater升至26.10.09-2；SDK仍为0.7.1。bootstrap缺文件问题已解除；精确owner审批、保护来源与新SHA hosted门禁仍未退出。
 证据见[bootstrap报告](stage_reports/stages/stage-07/verification/2026-10-09-version-gate-bootstrap.md)；S7A-8.4保持未退出。
 
 ## 当前格式与 SDK 合同
