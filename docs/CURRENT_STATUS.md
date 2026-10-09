@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-10-09
+更新日期：2026-10-10
 
 本文是 Cuexis 当前产品和阶段状态的唯一摘要。ADR 定义决策，Spec 定义字段和语义，阶段计划定义未来
 范围，阶段报告保存带日期的实施证据；它们不得绕过本文重新定义当前状态。
@@ -58,10 +58,13 @@ run37945013516 attempt2于23:18:43（Asia/Shanghai）成功，明确使用审批
 同HEAD push事件Linux仍有两个job运行，MSVC/MinGW成功，不声称全部事件结束。
 owner随后授权配置保护，master已启用active ruleset24799746：必须PR、strict App15368版本检查、
 禁止强推/删除，无bypass；既有classic protection保留。个人仓库的workflows来源规则请求被
-GitHub以422拒绝；owner选择保持个人仓库并保留S7A-8.4未退出，未接受来源例外。
+GitHub以422拒绝。2026-10-10 owner改为接受VERSIONING规定的单人维护来源例外，
+不再强制指定workflow来源；App/context保护、真实base checker和最终审批/日志要求保留，queue禁用。
+例外接受不等于最终交付SHA已通过验收；S7A-8.4仍待新SHA审批、日志及hosted证据收齐后裁定。
 审批助手、7-RPA分册和保护证据本轮收敛交付，新提交的审批与hosted独立待回填，不能沿用旧成功。
 九项目标、保护现状及原始输出见[本次余项核对](stage_reports/stages/stage-07/verification/2026-10-09-s7a-7-8-current-gate-audit.md)。
 本轮配置及平台限制见[保护与交付记录](stage_reports/stages/stage-07/verification/2026-10-09-s7a-7-8-protection-and-delivery.md)。
+来源要求后续裁定见[单人接受记录](stage_reports/stages/stage-07/decisions/2026-10-10-single-maintainer-workflow-source-exception.md)。
 旧审批失败复现继续保留在[历史路线订正](stage_reports/stages/stage-07/verification/2026-10-09-version-gate-and-rpa-routing.md)。
 以下历史轨迹只证明各自SHA/fixture，不把审批材料或本地测试当作线上门禁通过。
 

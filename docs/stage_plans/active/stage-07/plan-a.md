@@ -1,7 +1,7 @@
 # Stage 7A Plan: Gameplay Kernel and Product Integration
 
 状态：active；Stage 7A 范围、批次、决策和验收标准
-更新日期：2026-10-07
+更新日期：2026-10-10
 
 本分册是 Stage 7A 的详细计划。Stage 7 全局产品边界、冻结顺序、依赖发布路线、统一证据要求、停止条件和后续交接见[总计划](plan.md)。实现状态只以[CURRENT_STATUS](../../../CURRENT_STATUS.md)为准；字段与运行语义仍归对应 ADR、Spec、ABI、Schema 和 profile。
 
@@ -693,7 +693,8 @@ F(H)=MAX，真实deadline工作Tick无Hook输出成功、有输出则checked(t+1
 登记到本计划，桌面产物为“接手文档”。本轮仅规划与文档维护，不实施产品代码、不接受预算、不合并或发行。
 下一轮目标建议为 **S7A-7.1–7.5 完整集成 + S7A-8.1–8.4 的剩余集成与门禁收口**；
 S7A-9 只累计计数、测量输入和 handoff 草稿，最终数值接受、最终矩阵与 Stage 7A 关闭另轮进行。
-S7A-8.4 的审批、可信基线和平台保护仍由 owner 本人完成，不能用普通实施授权代替。
+S7A-8.4 的审批、可信基线和平台保护需要owner明确授权，不能用普通实施授权代替；
+后续保护授权与单人来源例外按§3.4.20/21及VERSIONING执行。
 
 **复核基线。** 本轮读到的分支为 stage-7，HEAD 为
 55fc8e6920e7ddb4b34a56bd0b9c27d07d60b833，文档编辑前 worktree clean。PR #32 同一 HEAD 的
@@ -744,7 +745,7 @@ statusCheckRollup 为 38/38 SUCCESS、无 pending，PR 仍 OPEN。这是当日�
 | P78-06 / 7.4 表现消费算法 | 每次扫描全 Ledger，长期成本高 | sealed prefix 增量游标+确定性未来队列，恢复重建 | prepare 建完整索引，索引验证成本高 | 按 group 分队列再归并，状态更多 | 每帧从 Ledger 构建完整表现状态，构造成本高 | **B**；先按R78-02区分成功Fold可发布前缀与故障只读重建；未来队列/token不进 Gameplay Snapshot；重复/恢复必须 golden 一致 |
 | P78-07 / 7.1 查询寿命 | 全量 owning DTO，复制成本高 | owning immutable 公共查询对象，布局隐藏 | caller buffer，容量/重试协议复杂 | generation-bound borrowed view，误用风险高 | 拉取 cursor 分批复制，cursor 合同增加 | **B（限定）**；用于 owning JudgementResult/结果投影；不擅自把既有 borrowed FactLedgerView 改成可跨会话 view；字段与析构归 C78-08 |
 | P78-08 / 7.2 registry | 静态 typed registry+机器描述一致性校验 | Schema 生成表，增加生成链 | 外部 registry 文件，新增部署/不可信输入 | 编译模块自动汇总，归属/排序更复杂 | 分模块离线合并静态表，构建流程增加 | **A**；实际 compiled ID/revision/build 对照；七字段逐项 identity 归属不改；未知/缺闭包拒绝、预算未接受保持 incomplete |
-| P78-09 / 8.4 可信 bootstrap | 独立 owner bootstrap 建可信基线，可信 PR 检查，queue关闭 | 基线+平台受保护 required workflow 支持 queue，需核验平台能力 | 基线+外部可信 checker，维护成本高 | 当前 PR 内 bootstrap 例外，须另修合同且 owner 明示接受 | 延后公共 API 到可信基线就绪后的独立变更，延迟退出 | **A（owner 路线建议）**；不执行审批/合并/保护配置；候选 checker 不能自授权，queue 未有可信来源保持关闭 |
+| P78-09 / 8.4 可信 bootstrap | 独立 owner bootstrap 建可信基线，可信 PR 检查，queue关闭 | 基线+平台受保护 required workflow 支持 queue，需核验平台能力 | 基线+外部可信 checker，维护成本高 | 当前 PR 内 bootstrap 例外，须另修合同且 owner 明示接受 | 延后公共 API 到可信基线就绪后的独立变更，延迟退出 | **A**；已部署可信base；2026-10-10 owner接受VERSIONING单人来源例外，保留App/context、真实日志及准确审批，不启用queue |
 
 #### 3.4.3 复核补出的六组选择：每组五方案及选优
 
@@ -787,7 +788,7 @@ P78-11/P78-13 是产品事务与验证策略，P78-14/P78-15 是宿主和包边�
 | C78-09 / 7.3 headless与表现失败 | GameplayOnly/Presentation prepare意图、resource/presentation closure的optional标记、包严格完整性与可选投影的区别、partial-group拒绝作用范围/诊断投递与显式重建；归CXC、Playback API与V2 §9；消费P78-13 | 不能把坏包降级成无表现；纯表现缺target不fault Judgement/不改Score；投影失败不隐式重算规则；缺必需gameplay引用原子失败 | 无SDL/OpenGL/GPU安装consumer；有/无表现判定逐项一致；纯表现缺target与必需resource坏hash分开；partial-group保留与后续查询/重建 |
 | C78-10 / 7.2/7.5 registry与错误公共映射 | 七字段物理类型、supportedDomains排序、actual ID/revision/build、闭包包含关系、四态query、未知revision/永久拒绝/未来开发的独立诊断、稳定first-error顺序；归V2 §5.6/§6/§9与码表；消费P78-08 | cost描述/计数不冒充已接受限额；unknown语义不默认补；缺闭包拒绝与预算incomplete区别；code/category/severity/faulted沿用集中表，不建第二套枚举 | registry/Schema/运行表一致、错误重排稳定、码表CTest、旧码映射、拒绝矩阵；新增码必须先登记再消费 |
 | C78-11 / 7.4/8.3 Player/Host实际适配 | 最小离散操作映射、键盘repeat、press/release捕获、焦点丢失/暂停事件策略、批次与时间捕获、控制键隔离、Score/Combo/Miss基础反馈；归宿主适配/公共调用示例；消费P78-14 | SDL仅app/平台；owner-thread入口；按freeze的InputMapping提交，不做第二normalize/评分；不是生产设备校准承诺 | Player真实输入与相同记录Replay一致；Headless golden对照；Reference Host六动词+tick同SHA、失败旧active；窗口/GPU不可用单列 |
-| C78-12 / 7.5/8.1/8.4 包与owner退出 | candidate新公共头/符号条件、现有entry OFF拒绝例外、私有Judgement link/STATIC实现/PIC/导出宏、CMake组件/allowlist/安装stamp、0.7.0源兼容、最终审批tuple/日期/基线/保护；归SDK包/版本合同；消费P78-09/15 | 仅candidate显式许可；默认production不误启用；匹配工具链C++shared不是稳定C ABI；owner审批与可信检查来源独立；新SHA/tree使旧审批不可沿用 | ON/OFF、static/shared clean staged consumer、wrong flavor/混prefix/旧头新库拒绝、ASCII/leak、fresh/clean/version、trusted checker正反与最终SHA hosted |
+| C78-12 / 7.5/8.1/8.4 包与owner退出 | candidate新公共头/符号条件、现有entry OFF拒绝例外、私有Judgement link/STATIC实现/PIC/导出宏、CMake组件/allowlist/安装stamp、0.7.0源兼容、最终审批tuple/日期/基线/保护；归SDK包/版本合同；消费P78-09/15 | 仅candidate显式许可；默认production不误启用；匹配工具链C++shared不是稳定C ABI；owner审批与检查来源独立，来源要求适用VERSIONING单人明确例外；新SHA/tree使旧审批不可沿用 | ON/OFF、static/shared clean staged consumer、wrong flavor/混prefix/旧头新库拒绝、ASCII/leak、fresh/clean/version、trusted checker正反与最终SHA hosted及门禁文件/实际日志核对 |
 
 #### 3.4.5 下一轮执行顺序与退出
 
@@ -1062,3 +1063,12 @@ owner后续明确授权一并配置保护，原本轮禁止修改保护的范围
 owner选择保持个人仓库并保留S7A-8.4未退出，不是批准来源例外。当前可用保护及最终交付证据
 归[dated记录](../../../stage_reports/stages/stage-07/verification/2026-10-09-s7a-7-8-protection-and-delivery.md)。
 I78-5其余证据按最终交付提交收敛；新SHA审批和hosted单独回填。RPA、S7A-9及7B+范围保持。
+
+### 3.4.21 单人维护来源要求修订（2026-10-10）
+
+owner随后明确接受不强制指定可信workflow来源，取代§3.4.20的“来源门禁继续保留”安排。
+范围、补偿核对、风险和重新审查触发条件归[VERSIONING](../../../guides/VERSIONING.md#单人维护仓库的检查来源例外2026-10-10)，
+接受证据归[裁定记录](../../../stage_reports/stages/stage-07/decisions/2026-10-10-single-maintainer-workflow-source-exception.md)。
+当前master保护保留，merge queue继续禁用；不削弱版本/审批checker语义，不重开Gameplay规则。
+来源例外已获接受，不再单独阻塞8.4；最终交付SHA审批、真实日志及hosted仍按I78-5完成。
+本次不授权合并/发行、S7A-9最终预算/关闭或7-RPA产品实施。

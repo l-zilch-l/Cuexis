@@ -2,7 +2,7 @@
 
 状态：已接受
 
-更新日期：2026-09-28
+更新日期：2026-10-10
 
 ## 格式
 
@@ -177,13 +177,35 @@ The first candidate must pass the actual old trusted checker/tests; the next wor
 only installed base tools. This deployment sequence never grants SDK approval, disables a
 required check or permits candidate fallback. A separate bootstrap PR needs explicit owner
 authorization where the task excludes additional PRs. The current classic required-check context alone does not prove an
-unforgeable workflow source; protection and same-SHA hosted evidence remain acceptance items.
+unforgeable workflow source; protection and same-SHA hosted evidence remain acceptance items,
+subject to the explicitly accepted single-maintainer exception below.
 
 Personal repositories can enforce PRs and App-bound required checks through branch rulesets, but
 GitHub configures required-workflow rules at organization/enterprise scope. A named check from
 the GitHub Actions App does not distinguish workflow, matrix or event provenance. If the
-platform rejects a workflow-source rule, keep that acceptance item open; do not replace it with
-an unrecorded exception. Protection changes may be explicitly delegated by the owner.
+platform rejects a workflow-source rule, keep that acceptance item open unless the owner
+explicitly accepts and records an exception. Protection changes may be explicitly delegated by the owner.
+
+### 单人维护仓库的检查来源例外（2026-10-10）
+
+owner明确接受本仓库由本人单独维护时不强制指定可信workflow来源；这是治理要求修订，
+不声明App/context绑定具有workflow来源锁定能力。范围仅为 `l-zilch-l/Cuexis` 当前个人仓库，
+适用于S7A-8.4及后续普通PR；merge queue不在本例外内，继续保持禁用。
+
+保留以下合并条件：master必须通过PR更新；`Version advancement (pre-merge)`需绑定
+GitHub Actions App15368并通过strict检查；禁止强推/删除，无bypass；SDK变化仍要求真实
+owner未编辑评论准确绑定base/head/tree、版本及UTC日期。checker仍从可信base读取，
+不能回退候选代码、伪造status或接受CLI布尔授权。
+
+每次交付核对门禁文件差异（workflows、checker/tests/updater、owners与CODEOWNERS），
+并查看最终SHA实际Version Gate日志，确认base/head/UTC/审批comment ID以及真实校验步骤。
+自动助手或代理可完成材料核对；owner仍决定合并和发行。新SHA不沿用旧审批/日志。
+新增有写权限的维护者、改变检查App/执行方式、启用queue或转换仓库归属时，重新审查本例外，
+不得把本次单人风险接受扩为多人维护承诺。
+
+该例外接受同名Actions检查可被替换且平台无法强制锁定workflow的剩余风险；
+人工/代理核对日志是补偿措施，不是不可伪造保证。裁定及配置证据见
+[接受记录](../stage_reports/stages/stage-07/decisions/2026-10-10-single-maintainer-workflow-source-exception.md)。
 
 ### Windows double-click approval assistant
 

@@ -74,6 +74,7 @@
 - [Version Gate复核与Stage7B+/RPA验收归属订正](verification/2026-10-09-version-gate-and-rpa-routing.md)（2026-10-09）：实际审批绑定复现、可信工具验证、设备验收整体归RPA。
 - [S7A-7/8余项与当前提交门禁核对](verification/2026-10-09-s7a-7-8-current-gate-audit.md)（2026-10-09）：c4b1f68三平台PR及Version Gate成功；保护来源与最终交付仍待收口。
 - [S7A-7/8保护配置与受限交付收口](verification/2026-10-09-s7a-7-8-protection-and-delivery.md)（2026-10-09）：个人仓库可用规则已生效；平台不支持workflow来源规则，owner选择保留8.4未退出。
+- [单人维护workflow来源例外接受](decisions/2026-10-10-single-maintainer-workflow-source-exception.md)（2026-10-10）：owner后续接受有范围的来源例外，保留版本/App/PR及真实日志核对，queue禁用。
 
 | 报告 | 证据日期 |
 | --- | --- |
