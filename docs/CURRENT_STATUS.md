@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-10-08
+更新日期：2026-10-09
 
 本文是 Cuexis 当前产品和阶段状态的唯一摘要。ADR 定义决策，Spec 定义字段和语义，阶段计划定义未来
 范围，阶段报告保存带日期的实施证据；它们不得绕过本文重新定义当前状态。
@@ -74,7 +74,7 @@ typed lifetime/owning sourceMap 已实现。Headless、Player 实际 SDL scancod
 人工 golden、独立 Tap/Hold oracle、故障注入及完整结果比较通过；Debug/Release、headless、
 MinGW、Linux GCC/Clang sanitizer、架构/package/ASCII/诊断码表/docs/version 的本轮输出和
 首次失败修复边界见[10-08受限验收记录](stage_reports/stages/stage-07/implementation/2026-10-08-s7a-7-8-entry-assembler-progress.md)。
-SDK 实际 production API 差异证明支持 preview patch 0.7.1，日期构建为 26.10.08-1，完成日期更新后
+SDK 实际 production API 差异证明支持 preview patch 0.7.1，当前日期构建为 26.10.09-1，完成日期更新后
 fresh/clean-first build 与消费者验证，不构成发行许可。
 实际 GPU/OpenGL 纯播放 smoke 完成6帧；显式 Gameplay 零输入到期产生 Miss 并完整 Replay 一致。
 真实键盘/音频设备、实时校准和 Gameplay 正反馈 GPU 像素专项未执行。新 SHA hosted 待回填。
@@ -83,7 +83,9 @@ hosted 门禁未满足；未代审批、执行 bootstrap、改保护、合并或
 handoff 草稿，不接受生产阈值，不进行最终关闭；Stage7A保持active，Stage8正式发行未开始。
 Version advancement pre-merge 触发断层已修复：保留 target、恢复 pull_request，两事件只执行
 trusted base 工具，本地回归通过。首次推送 aaa9ca3 的 pre-merge job 已实际启动，因可信 base 缺 .github/sdk-api-owners.json 报
-version.bootstrap.required；三平台及后续最新 HEAD hosted 结果仍待回填。可信 base 缺前置条件时
+version.bootstrap.required。b6081c3 的 MSVC hosted 成功，Linux/MinGW 严格编译失败已定位并修复（代码提交 `6d34e7adc482a833eaea0c01e5be106539fe7940`）；
+增量 fresh/clean-first 本地验证及新修复 SHA hosted 状态见
+[10-09 CI 修复记录](stage_reports/stages/stage-07/verification/2026-10-09-s7a-7-8-ci-repair.md)。新 SHA hosted 继续待回填。可信 base 缺前置条件时
 bootstrap_required 继续阻断，不执行 PR head 脚本、不绕过 owner 门禁。
 
 ## 当前格式与 SDK 合同

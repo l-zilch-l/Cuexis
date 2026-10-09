@@ -957,3 +957,11 @@ C78 十二行与 R78 首用字段、所有权、身份、失败边界、状态�
 S7A-8.4继续未退出；I78-6仅向S7A-9移交计数/测量输入和handoff草稿，不执行最终关闭。
 Linux installed gate不得继承开发树库搜索路径；private/detail export禁令及OFF原名单保持。
 本轮差异证明采用SDK0.7.1、日期26.10.08-1；后续公共API变化重新按VERSIONING证明，不预锁patch。
+
+### §3.4.11 2026-10-09 严格编译修复边界
+
+私有 ClaimRow/GraphSink::Frame 显式默认成员初始化和 Entry header 条件括号保留现有默认状态及运算优先级；
+不修订 C78/R78 字段语义、不重开 S7A-3/4/5/6。SDK 0.7.1 不变，日期构建经 updater 更新为 26.10.09-1。
+本轮仅修复实际 Linux/MinGW CI 的生产编译诊断，保留 warnings-as-errors；版本 bootstrap 的可信基线缺失
+由 owner 处理，S7A-8.4 不因本轮代码修复退出。增量命令和原始输出归
+[10-09 CI 修复报告](../../../stage_reports/stages/stage-07/verification/2026-10-09-s7a-7-8-ci-repair.md)。

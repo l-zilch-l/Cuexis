@@ -71,6 +71,7 @@
 
 | 报告 | 证据日期 |
 | --- | --- |
+| [S7A-7/8 CI 严格编译修复](verification/2026-10-09-s7a-7-8-ci-repair.md) | 2026-10-09 |
 | [Stage 6 四项交接实施与验收](verification/2026-10-07-stage6-handover-implementation.md) | 2026-10-07 |
 | [`docs/api/GAMEPLAY_V2_ABI.md` 事故性截断与重建的证据报告](verification/2026-10-03-abi-document-restoration.md) | 2026-10-03 |
 | [S7A-3 第二半 part 1：主控独立复验的带日期证据](verification/2026-10-03-s7a-3-independent-verification.md) | 2026-10-03 |
