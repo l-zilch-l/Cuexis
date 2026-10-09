@@ -965,3 +965,10 @@ Linux installed gate不得继承开发树库搜索路径；private/detail export
 本轮仅修复实际 Linux/MinGW CI 的生产编译诊断，保留 warnings-as-errors；版本 bootstrap 的可信基线缺失
 由 owner 处理，S7A-8.4 不因本轮代码修复退出。增量命令和原始输出归
 [10-09 CI 修复报告](../../../stage_reports/stages/stage-07/verification/2026-10-09-s7a-7-8-ci-repair.md)。
+
+
+### §3.4.12 2026-10-09 可信门禁首次安装顺序
+
+实际 GH006 拒绝直接 master bootstrap；采用两步候选：SDK不变时先部署 registry/checker/CODEOWNERS与日期，保留旧 workflow/tests接受旧可信门禁检查；再由现有PR32集成新 workflow/tests与Gameplay。旧tests/newchecker Linux19/19兼容已验证，无candidate fallback，不改SDK审批语义。
+当前仅推送bootstrap候选分支，未创建额外PR，未合入master或修改保护；独立bootstrap PR需owner明确解除原“不另建PR”限制。实际base推进前不将stage-7日期提前改2，不登记bootstrap已完成或S7A-8.4退出。
+命令、最小反例、兼容边界与原始输出见[10-09 bootstrap报告](../../../stage_reports/stages/stage-07/verification/2026-10-09-version-gate-bootstrap.md)。

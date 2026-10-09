@@ -166,7 +166,13 @@ are evidence, not new release authorization.
 The checker, tests, registry and workflow must first exist on trusted master. Missing baseline
 files produce `version.bootstrap.required`, never candidate fallback. CODEOWNERS records owners
 but does not activate protection. Initial bootstrap and activation of a trusted required workflow
-remain owner operations. The current classic required-check context alone does not prove an
+remain owner operations. A protected first installation may use two steps: an SDK-unchanged
+bootstrap installs the reviewed checker and owner registry while retaining compatible trusted
+tests and workflow; a later PR installs the new tests/workflow and requests SDK authorization.
+The first candidate must pass the actual old trusted checker/tests; the next workflow must use
+only installed base tools. This deployment sequence never grants SDK approval, disables a
+required check or permits candidate fallback. A separate bootstrap PR needs explicit owner
+authorization where the task excludes additional PRs. The current classic required-check context alone does not prove an
 unforgeable workflow source; protection and same-SHA hosted evidence remain acceptance items.
 
 ### SDK version selection
