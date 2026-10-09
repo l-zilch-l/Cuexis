@@ -88,6 +88,8 @@
 
 ## 交接与规划修订
 
+- [Player 可读四轨设备练习](verification/2026-10-09-player-readable-practice.md)（2026-10-09）：
+  下落音符、判定线、Hold与实际结果；受限定向SDL/GPU验证通过，实体设备/校准待回填。
 - [Player 多转换 Tick 桥修复](verification/2026-10-09-player-multi-transition-tick-repair.md)（2026-10-09）：
   保留内核一个 Tick 至多一个输入，显式逐转换工作 Tick；CPU/完整Replay通过，设备重测待回填。
 - [真实设备复测：同 Tick 碰撞](verification/2026-10-09-device-retest-same-tick-collision.md)（2026-10-09）：

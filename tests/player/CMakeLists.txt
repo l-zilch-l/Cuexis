@@ -33,6 +33,7 @@ add_executable(cuexis_player_control_tests
     "${PROJECT_SOURCE_DIR}/app/player/src/player_options.cpp"
     "${PROJECT_SOURCE_DIR}/app/player/src/player_control.cpp"
     "${PROJECT_SOURCE_DIR}/app/player/src/player_gameplay.cpp"
+    "${PROJECT_SOURCE_DIR}/app/player/src/player_gameplay_guide.cpp"
     "${PROJECT_SOURCE_DIR}/app/player/src/player_log.cpp"
     "${PROJECT_SOURCE_DIR}/app/player/src/frame_diagnostics.cpp"
     "${PROJECT_SOURCE_DIR}/app/player/src/player_state_name.cpp"

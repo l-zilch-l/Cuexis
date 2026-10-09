@@ -256,6 +256,19 @@ Gameplay control；内容替换的新 session 重置输入序号和 H，保留�
 Player 输出 score/combo/hit/miss 和完整实时/Replay 结果比较；该 Replay 比较是路径一致性检查，
 独立 oracle 和人工 golden 仍由独立验收 fixture 提供。
 
+2026-10-09 可选 `--gameplay-guide` 为 Player 私有 testOnly 练习显示，不是新的 Chart/CXC 字段、
+SDK API 或判定入口。启用时窗口从 Ready 开始，Space 显式启动；四轨音符的位置只由当前
+整数 H 与 guide 的 typed target Tick 派生，不反向驱动 Gameplay。Hit/Miss 只能读取实际
+FrameSnapshot 中对应 FactBinding outcome 标记的 visibility，分数读取公共 query，不能按按键
+或目标到线自行声称命中。Pause/Seek/reload/Stop 从当前实际 snapshot/H 重取画面，无独立结果缓存。
+guide v1 是 ASCII token 文本：首行 `cuexis-player-guide-v1`，随后 exact unsigned count；每行
+`tap|hold D|F|J|K headTick tailTick headHit headMiss bodyHit bodyMiss tailHit tailMiss`。
+Tick 为 exact非负 i64；Tap tailTick=0、后四个对象标记为`-`，Hold tailTick>headTick且六个标记必需。
+对象标记是该 fixture 的 explicit objectId，必须存在于实际 snapshot；记录 key 必须有对应映射。
+guide 字节/记录数复用显式配置 budget 的 maxBytes/maxContainerElements；非法 count/字段/尾列/映射
+在启动拒绝，不接受新生产限额。guide 必须与生成它的包一起使用；它不拥有任何 judgement identity。
+默认无 guide 的 Playback/Preview/Player 行为保留；ON/OFF 准入沿既有 candidate 开关。
+
 
 Player 窗口适配按同一 poll 批次做保守隔离：focusLost 帧抑制除 Quit 外全部控制动作和判定输入；
 任何控制动作帧丢弃该批判定按键，只在原本 Playing 且没有控制变化的帧提交。聚合窗口队列不

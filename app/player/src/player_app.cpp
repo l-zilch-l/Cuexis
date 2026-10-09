@@ -177,11 +177,12 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
         !recorded) {
         return core::unexpected(std::move(recorded.error()));
     }
-    if (auto played =
-            controller.apply(PlayerCommand{.kind = player_support::PlayerCommandKind::Play});
-        !played) {
-        return core::unexpected(std::move(played.error()));
-    }
+    if (!options.gameplayGuide)
+        if (auto played =
+                controller.apply(PlayerCommand{.kind = player_support::PlayerCommandKind::Play});
+            !played) {
+            return core::unexpected(std::move(played.error()));
+        }
 
     std::optional<PlayerSmokeBinding> smokeBinding;
     PlayerHooks hooks;

@@ -28,6 +28,7 @@ struct PlayerOptions final {
     std::optional<std::filesystem::path> cxcPath;
     std::optional<std::string> candidateEntry;
     std::optional<std::filesystem::path> gameplayConfiguration;
+    std::optional<std::filesystem::path> gameplayGuide;
     std::optional<std::string> gameplayBudget, gameplayHStep, gameplayTStep;
     std::vector<std::string> gameplayKeys;
     // The clock the startup Load names. Switching between content with and without an audio track

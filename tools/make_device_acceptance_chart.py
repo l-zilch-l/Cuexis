@@ -19,10 +19,11 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG_BUDGET = "131072,64,8192,16384,8192"
 GRAPH_BUDGET = "131072,64,8192,16384,8192,8192,65536"
-EVENTS = [("tap.d", "lane.d", 120, 240, 180),
-          ("tap.f", "lane.f", 300, 420, 360),
-          ("miss.j", "lane.j", 480, 600, 540),
-          ("hold.k", "lane.k", 720, 840, 780)]
+EVENTS = [("tap.d", "lane.d", 40, 80, 60),
+          ("tap.f", "lane.f", 100, 140, 120),
+          ("tap.j", "lane.j", 160, 200, 180),
+          ("tap.k", "lane.k", 220, 260, 240),
+          ("hold.k", "lane.k", 280, 320, 300)]
 
 
 def json_bytes(value):
@@ -113,6 +114,7 @@ def sources(configuration, music):
                        for phase, delta in [("tap", 2), ("head", 2), ("body", 3), ("tail", 5)]
                        for outcome in ["hit", "miss"]]
     marker = 0
+    guide = ["cuexis-player-guide-v1", str(len(EVENTS))]
     for ordinal, (name, channel, start, end, target) in enumerate(EVENTS, 4):
         r = copy.deepcopy(template)
         r["stableId"]["declarationOrdinal"] = ordinal
@@ -130,13 +132,13 @@ def sources(configuration, music):
             r["measure"]["components"] = [dict(phase=phase, categoryToken="hold_"+phase,
                                                    gradeTokens=[])
                                               for phase in ["head", "body", "tail"]]
-            r["timing"] = dict(end="1200", successWindows=[
-                dict(phase=r["phases"][0], start="720", end="840"),
-                dict(phase=r["phases"][1], start="840", end="1080"),
-                dict(phase=r["phases"][2], start="1080", end="1200")],
-                body=dict(start="840", end="1080"),
+            r["timing"] = dict(end="460", successWindows=[
+                dict(phase=r["phases"][0], start="280", end="320"),
+                dict(phase=r["phases"][1], start="320", end="420"),
+                dict(phase=r["phases"][2], start="420", end="460")],
+                body=dict(start="320", end="420"),
                 phaseTargets=[dict(phase=phase, chartTick=str(tick))
-                              for phase, tick in [("head", 780), ("body", 1080), ("tail", 1140)]])
+                              for phase, tick in [("head", 300), ("body", 420), ("tail", 440)]])
             tail = copy.deepcopy(r["atomBindings"][0])
             tail.update(atomRef="tail.release", action="release", tailOnly=True)
             r["atomBindings"].append(tail)
@@ -149,24 +151,31 @@ def sources(configuration, music):
         source["entities"].append(dict(identity=dict(kind="generated", chartId=source["chartId"],
             bindingId="invocation.one", moduleId="module.one", exportId="export.one",
             path=[dict(nodeId=name, iterationIndexPlusOne=0)]), components=[], requirements=[]))
+        cues = []
         for phase in r["phases"]:
-            marker += 1
-            object_id = f"019a0000-0000-7000-8000-{marker:012d}"
-            binding = f"device.feedback.{marker}"
-            common["factBindings"].append(binding)
-            r["factBindingRefs"].append(binding)
-            source["entities"].append(dict(identity=dict(kind="explicit", objectId=object_id),
-                components=[dict(kind="transform", position=[(marker-3.5)*0.6, 0, 0],
-                                 rotation=[0, 0, 0, 1], scale=[0.3, 0.3, 0.3]),
-                            dict(kind="renderable", mesh="mesh.quad", material="material.test", alpha=255)],
-                requirements=[]))
-            reference = copy.deepcopy(r["identity"])
-            for step in reference["emissionPath"]:
-                step["repeatIndex"] = int(step["repeatIndex"])
-            c["bindings"].append(dict(bindingId=binding, source=reference, phase=phase["kind"],
-                outcome="hit", timing="any", target=object_id, visible=False,
-                start=0, end=None, aggregation="any", groupMembers=[]))
-    return source, config
+            for outcome in ["hit", "miss"]:
+                marker += 1
+                object_id = f"019a0000-0000-7000-8000-{marker:012d}"
+                binding = f"device.feedback.{marker}"
+                common["factBindings"].append(binding)
+                r["factBindingRefs"].append(binding)
+                source["entities"].append(dict(identity=dict(kind="explicit", objectId=object_id),
+                    components=[dict(kind="transform", position=[50+marker, 0, 0],
+                                     rotation=[0, 0, 0, 1], scale=[0.3, 0.3, 0.3]),
+                                dict(kind="renderable", mesh="mesh.quad", material="material.test", alpha=255)],
+                    requirements=[]))
+                reference = copy.deepcopy(r["identity"])
+                for step in reference["emissionPath"]:
+                    step["repeatIndex"] = int(step["repeatIndex"])
+                c["bindings"].append(dict(bindingId=binding, source=reference, phase=phase["kind"],
+                    outcome=outcome, timing="any", target=object_id, visible=False,
+                    start=0, end=None, aggregation="any", groupMembers=[]))
+                cues.append(object_id)
+        if name == "hold.k":
+            guide.append("hold K 300 440 " + " ".join(cues))
+        else:
+            guide.append(f"tap {channel[-1].upper()} {target} 0 " + " ".join(cues) + " - - - -")
+    return source, config, "\n".join(guide)+"\n"
 
 
 def main():
@@ -182,7 +191,8 @@ def main():
     for music, name in [(False, "keyboard"), (True, "audio")]:
         base, author, config = [output / f"{name}-{suffix}" for suffix in ["base.cxc", "author.json", "configuration.json"]]
         write_base(base, music)
-        source, settings = sources(configuration, music)
+        source, settings, guide = sources(configuration, music)
+        (output / f"{name}-guide.txt").write_text(guide, encoding="ascii")
         author.write_bytes(json_bytes(source))
         config.write_bytes(json_bytes(settings))
         command = [str(args.tool.resolve()), "--gameplay", "--base", str(base),
@@ -201,13 +211,17 @@ def main():
         if not report["actualPrepareValidated"] or report["productionBudgetAccepted"]:
             raise RuntimeError("Fixture must pass actual prepare without accepting production budgets")
     (output / "hit-observations.txt").write_bytes(
-        b"180 1 press lane.d domain.binding.one keyboard 0 0 0 0 0 0 0\n"
-        b"181 2 release lane.d domain.binding.one keyboard 0 0 0 0 0 0 0\n"
-        b"360 3 press lane.f domain.binding.one keyboard 0 0 0 0 0 0 0\n"
-        b"361 4 release lane.f domain.binding.one keyboard 0 0 0 0 0 0 0\n"
-        b"780 5 press lane.k domain.binding.one keyboard 0 0 0 0 0 0 0\n"
-        b"1140 6 release lane.k domain.binding.one keyboard 0 0 0 0 0 0 0\n")
-    (output / "commands.txt").write_bytes(b"open\nplay\ntick 125\nquit\n")
+        b"60 1 press lane.d domain.binding.one keyboard 0 0 0 0 0 0 0\n"
+        b"61 2 release lane.d domain.binding.one keyboard 0 0 0 0 0 0 0\n"
+        b"120 3 press lane.f domain.binding.one keyboard 0 0 0 0 0 0 0\n"
+        b"121 4 release lane.f domain.binding.one keyboard 0 0 0 0 0 0 0\n"
+        b"180 5 press lane.j domain.binding.one keyboard 0 0 0 0 0 0 0\n"
+        b"181 6 release lane.j domain.binding.one keyboard 0 0 0 0 0 0 0\n"
+        b"240 7 press lane.k domain.binding.one keyboard 0 0 0 0 0 0 0\n"
+        b"241 8 release lane.k domain.binding.one keyboard 0 0 0 0 0 0 0\n"
+        b"300 9 press lane.k domain.binding.one keyboard 0 0 0 0 0 0 0\n"
+        b"440 10 release lane.k domain.binding.one keyboard 0 0 0 0 0 0 0\n")
+    (output / "commands.txt").write_bytes(b"open\nplay\ntick 50\nquit\n")
     manifest = {p.name: dict(bytes=p.stat().st_size, sha256=hashlib.sha256(p.read_bytes()).hexdigest())
                 for p in sorted(output.iterdir()) if p.is_file() and p.name != "manifest.json"}
     (output / "manifest.json").write_bytes(json_bytes(manifest))

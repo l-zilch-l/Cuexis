@@ -20,3 +20,19 @@ TEST_CASE("Candidate Player entry is explicit and disabled in production", "[pla
     CHECK(result.error().code() == "player.candidate.disabled");
 #endif
 }
+
+TEST_CASE("Player practice guide is explicit and requires candidate Gameplay",
+          "[player][candidate]") {
+    std::array arguments{std::string{"player"}, std::string{"--gameplay-guide"},
+                         std::string{"guide.txt"}};
+    std::array<char*, 3> pointers{};
+    for (std::size_t i = 0; i < arguments.size(); ++i)
+        pointers[i] = arguments[i].data();
+    const auto result = cuexis::player::parsePlayerOptions(3, pointers.data());
+    REQUIRE_FALSE(result);
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    CHECK(result.error().code() == "player.arguments.unknown");
+#else
+    CHECK(result.error().code() == "player.candidate.disabled");
+#endif
+}

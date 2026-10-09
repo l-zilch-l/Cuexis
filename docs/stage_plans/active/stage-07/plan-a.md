@@ -1015,3 +1015,14 @@ Playback Player 合同改用显式 testOnly 逐转换工作 Tick：保留 poll �
 捕获 H+hStep，帧末 H 增 max(1,N)×hStep；T 仍每帧一次。整批 checked 后原子 submit，
 F(H) 实际推进，不引入跨帧队列或第二判定路径。不把此桥当 chord/生产校准，物理预算不扩大。
 DFJK fixture 不变，多转换会占多个工作 Tick，操作示例/脚本须同步；真实设备重测仍待回填。
+
+### §3.4.17 2026-10-09 可读四轨设备练习
+
+设备样例改为 D/F/J/K 四轨下落音符、判定线和 Hold 长条；窗口 Ready 等 Space 启动，
+不要求用户看 H 数字，也不再要求故意漏 J。显示桥是显式可选 testOnly Player guide，所属字段/
+准入归 Playback Player 首用补充。位置取实际 H、反馈取实际 FactBinding snapshot、计分取 query；
+不修改 kernel、时钟桥、判定四分量或生产字段/API，不伪装音乐校准。旧运行记录/包哈希保留。
+短练习四个 Tap 与一个 K Hold，人工 golden为score18/combo7/hits7/misses0，零输入为-7/0/0/7；
+guide、包、配置和操作说明一起更新，故旧包结果不证明新练习通过。真实窗口/设备项单独回填。
+本轮受限实施与验证归[可读练习报告](../../../stage_reports/stages/stage-07/verification/2026-10-09-player-readable-practice.md)：
+独立guide/source/binding核对、CPU ON/OFF及定向SDL/GPU通过；实体设备、校准与新SHA hosted仍待。

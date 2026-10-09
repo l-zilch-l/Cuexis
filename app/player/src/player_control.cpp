@@ -1087,9 +1087,27 @@ auto runPlayerFrameLoop(PlayerFrameLoop& input) -> core::Result<void> {
         }
 
         scene.clear();
-        if (auto result = appendSnapshotAxes(snapshot, scene); !result) {
-            return core::unexpected(std::move(result.error()));
+        bool guided = false;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+        if (auto* adapter = controller.gameplay(); adapter && !adapter->profile().guide.empty()) {
+            guided = true;
+            auto result = controller.session().queryGameplay();
+            if (!result)
+                return core::unexpected(std::move(result.error()));
+            auto score = result->score();
+            if (!score)
+                return core::unexpected(std::move(score.error()));
+            if (auto drawn = appendPlayerGuide(
+                    adapter->profile().guide, adapter->horizon().value, *score,
+                    controller.state() == player_support::PlayerAppState::Playing, snapshot, scene);
+                !drawn)
+                return drawn;
         }
+#endif
+        if (!guided)
+            if (auto result = appendSnapshotAxes(snapshot, scene); !result) {
+                return core::unexpected(std::move(result.error()));
+            }
         if (input.diagnostics != nullptr) {
             input.diagnostics->captureFrame(renderedFrames, runtimeFrame, snapshot);
             if (auto* audio = controller.audio(); audio != nullptr) {

@@ -119,6 +119,13 @@ input 与稳定诊断码保持。Debug/Release PlayerControl各32/713、Gameplay
 证据归[多转换桥修复](stage_reports/stages/stage-07/verification/2026-10-09-player-multi-transition-tick-repair.md)，
 修复后真实设备及新SHA approval/hosted仍待回填，S7A-8.4不退出。
 
+2026-10-09 设备练习追加可选四轨guide：Ready等Space、DFJK下落短音符、K长条与判定线，
+反馈取实际FactBinding snapshot，分数取query，不改H/T采样或kernel/Fold。新五requirement/
+七phase人工golden18/7/7/0；独立source/binding核对、四Host golden与定向SDL/GPU窗口通过。
+Debug/Release ON控制各34/739、OFF各28/483，Gameplay25/1467与安装消费者保持通过。
+说明与原始证据见[可读练习报告](stage_reports/stages/stage-07/verification/2026-10-09-player-readable-practice.md)。
+定向窗口输入不替代实体键盘/听音验收，音频节拍仍未校准；新SHA hosted/owner与S7A-8.4独立保留。
+
 ## 当前格式与 SDK 合同
 
 ### Gameplay v2 收敛状态（2026-10-04）

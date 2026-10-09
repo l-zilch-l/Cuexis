@@ -218,6 +218,78 @@ TEST_CASE("Player typed discrete sampling uses actual Gameplay and complete Repl
     CHECK_FALSE(player::readPlayerGameplay(options));
 }
 
+TEST_CASE("Player practice guide preserves exact Tick fields and refuses ambiguous cues",
+          "[candidate][gameplay][player][guide]") {
+    const auto file = std::filesystem::path{CUEXIS_BUILD_DIR} / "player-guide-parser.txt";
+    const std::string a = "019a0000-0000-7000-8000-000000000001";
+    const std::string b = "019a0000-0000-7000-8000-000000000002";
+    std::string source =
+        "cuexis-player-guide-v1\n1\ntap D 9007199254740993 0 " + a + " " + b + " - - - -\n";
+    bool valid = true;
+    SECTION("exact integer") {}
+    SECTION("count mismatch") {
+        source.replace(source.find("\n1\n"), 3, "\n2\n");
+        valid = false;
+    }
+    SECTION("floating Tick") {
+        source.replace(source.find("9007199254740993"), 16, "60.5");
+        valid = false;
+    }
+    SECTION("negative Tick") {
+        source.replace(source.find("9007199254740993"), 16, "-1");
+        valid = false;
+    }
+    SECTION("missing cue field") {
+        source.erase(source.rfind(" -"), 2);
+        valid = false;
+    }
+    SECTION("trailing field") {
+        source += "extra";
+        valid = false;
+    }
+    SECTION("aliased Hit and Miss cue") {
+        source.replace(source.find(b), b.size(), a);
+        valid = false;
+    }
+    {
+        std::ofstream stream{file, std::ios::binary};
+        stream << source;
+        REQUIRE(stream.good());
+    }
+    const auto guide = player::readPlayerGuide(file, {2048, 4, 512, 64, 16, true});
+    if (!valid) {
+        REQUIRE_FALSE(guide);
+        return;
+    }
+    REQUIRE(guide);
+    CHECK_FALSE(player::readPlayerGuide(file, {8, 4, 512, 64, 16, true}));
+    CHECK_FALSE(player::readPlayerGuide(file, {2048, 4, 512, 64, 0, true}));
+    player::PlayerOptions options;
+    options.gameplayConfiguration =
+        std::filesystem::path{CUEXIS_BUILD_DIR} / "s7a78-public-fixture/configuration.json";
+    options.gameplayBudget = "131072,64,8192,16384,8192";
+    options.gameplayHStep = "1";
+    options.gameplayTStep = "1";
+    options.gameplayGuide = file;
+    options.gameplayKeys = {"4:lane.one:domain.binding.one"};
+    const auto unmapped = player::readPlayerGameplay(options);
+    REQUIRE_FALSE(unmapped);
+    CHECK(unmapped.error().code() == "player.arguments.unknown");
+    REQUIRE(guide->size() == 1);
+    CHECK(guide->front().head == 9007199254740993LL);
+    playback::FrameSnapshot snapshot;
+    render::RenderScene scene;
+    CHECK_FALSE(player::appendPlayerGuide(*guide, 0, {0, 0, 0, 0, 0}, false, snapshot, scene));
+    snapshot.objects = {{.id = a}, {.id = b}};
+    scene.clear();
+    REQUIRE(player::appendPlayerGuide(*guide, 0, {0, 0, 0, 0, 0}, false, snapshot, scene));
+    CHECK(scene.size() > 0);
+    snapshot.objects.front().visible = false;
+    scene.clear();
+    REQUIRE(player::appendPlayerGuide(*guide, 9007199254740993LL, {2, 1, 1, 1, 0}, false, snapshot,
+                                      scene));
+}
+
 TEST_CASE("Player transition clock overflow rejects the entire poll before admission",
           "[candidate][gameplay][player][input][failure]") {
     const auto root = std::filesystem::path{CUEXIS_BUILD_DIR} / "s7a78-public-fixture";

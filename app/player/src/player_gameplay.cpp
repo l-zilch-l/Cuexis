@@ -65,6 +65,20 @@ auto readPlayerGameplay(const PlayerOptions& options) -> core::Result<PlayerGame
             require(existing.scanCode != code, "Duplicate Gameplay scancode");
         result.keys.push_back({code, key.substr(a + 1, b - a - 1), key.substr(b + 1)});
     }
+    if (options.gameplayGuide) {
+        auto guide = readPlayerGuide(*options.gameplayGuide, result.budget);
+        if (!guide)
+            return core::unexpected(std::move(guide.error()));
+        for (const auto& note : *guide) {
+            const std::string_view labels = "DFJK";
+            constexpr std::array<std::uint32_t, 4> codes{7, 9, 13, 14};
+            bool found = false;
+            for (const auto& mapping : result.keys)
+                found |= mapping.scanCode == codes[labels.find(note.key)];
+            require(found, "Guide key has no Gameplay scancode mapping");
+        }
+        result.guide = std::move(*guide);
+    }
     return result;
 } catch (const Failure& error) {
     return core::unexpected(error.error);

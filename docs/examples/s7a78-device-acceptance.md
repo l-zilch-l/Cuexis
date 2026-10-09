@@ -9,8 +9,9 @@
 `tools/make_device_acceptance_chart.py` 通过生产 `cuexis_chart_candidate --gameplay`
 生成 `keyboard.cxc`、`audio.cxc`，均包含 Graph 与 Capsule revision 3 两种 entry。
 原始 author/configuration、装配命令/输出、SHA 清单和 Host observations 同时输出。
-四条 requirement、六个 phase、六个 FactBinding 反馈方块；命中对应 phase 后方块隐藏。
-左右顺序为 D、F、J、K-head、K-body、K-tail，故意漏 J 时第三格保留。
+五条 requirement、七个 phase：D/F/J/K 四个 Tap，最后一个 K Hold。
+`--gameplay-guide` 显示四轨下落音符、判定线、长条与 Hit/Miss/分数；不再要求故意漏 J。
+guide 与包一起生成，反馈读取实际 FactBinding 的 outcome 标记，不按画面或按键伪造判定。
 
 音频由 Python 标准库自行合成：60 秒、120 BPM、单声道 PCM16/48 kHz，每四拍高音重拍。
 白色纹理由程序生成，quad/material 复用仓库 demo20s 的 portable resource；不下载外部素材。
@@ -38,21 +39,28 @@ Reference Host 路径来自实际安装 consumer；没有该文件时先运行�
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/run_device_acceptance.ps1 -Mode keyboard
 ```
 
-Player 是可交互窗口，启动脚本终端显示最近一次 H/score；建议窗口并排显示。
-按启动脚本提示准备好再按 Enter；窗口打开后会自动播放。不要按 S/R/B/方向键，先完成一次
-基础 golden。Space 控制暂停/恢复，Esc 退出。D/F/J/K 不占用 Player 的默认快捷键。
+按脚本提示按 Enter 打开窗口，再按 **Space 开始**。
+四条轨道下方分别标 **D / F / J / K**：
+
+1. 短音符落到横向判定线时，按对应键并松开；四个键都会用到。
+2. K 长条的头到线时按住 K；长条尾端到线时松开。
+3. 窗口上方显示实际分数、Hit 和 Miss；无需盯终端或记 H 数字。
+4. Space 暂停/恢复，R 重来，Esc 退出。先完整打一遍，再另测其他控制动作。
+
+以下 Tick 表只用于验收证据核对，普通操作看窗口里的音符和判定线：
 
 | 阶段 | 实际按键 | 判定 H 窗口（右端不含） | 操作/预期 |
 | --- | --- | --- | --- |
-| Tap D | D / SDL scancode 7 | [120,240) | 约 H=180 按下后松开；+2，第一格隐藏 |
-| Tap F | F / scancode 9 | [300,420) | 约 H=360 按下后松开；累计 +4，第二格隐藏 |
-| 故意 Miss J | J / scancode 13 | [480,600) | 不按 J；到封存后 -1、combo 清零，第三格保留 |
-| Hold K head | K / scancode 14 | [720,840) | 约 H=780 按下，第四格隐藏 |
-| Hold K body | 持续按住 K | body [840,1080) | 覆盖完整区间；到 body 封存后 +3，第五格隐藏 |
-| Hold K tail | 松开 K | [1080,1200) | 约 H=1140 松开；+5，第六格隐藏 |
+| Tap D | D / SDL scancode 7 | [40,80) | 目标60；+2 |
+| Tap F | F / scancode 9 | [100,140) | 目标120；+2 |
+| Tap J | J / scancode 13 | [160,200) | 目标180；+2 |
+| Tap K | K / scancode 14 | [220,260) | 目标240；+2 |
+| Hold K head | K / scancode 14 | [280,320) | 目标300按住；+2 |
+| Hold K body | 持续按住 K | body [320,420) | 覆盖完整区间；+3 |
+| Hold K tail | 松开 K | [420,460) | 目标440松开；+5 |
 
-H>=1250 时人工结果：`score=13 combo=3 hits=5 misses=1`；原分数组合
-为 `2+2-1+2+3+5`。零输入重跑结果为 `score=-6 combo=0 hits=0 misses=6`。
+H>=480 时人工结果：`score=18 combo=7 hits=7 misses=0`；分数组合
+为 `2+2+2+2+2+3+5`。零输入重跑结果为 `score=-7 combo=0 hits=0 misses=7`。
 各结果必须伴随 `completeReplay=same`；不以最终总分替代完整 Replay 比较。
 晚策略沿既有参数（finalizationWatermark=8），截止到期与已封存之间可有延迟。
 
@@ -74,7 +82,7 @@ H>=1250 时人工结果：`score=13 combo=3 hits=5 misses=1`；原分数组合
 **H/T 不等于毫秒、音频 sample 或设备时间。** 不能按固定秒数操作；帧率不同耗时不同。
 音频重拍用于输出/控制验收，不能作为这些 H 窗口的节拍定位依据。
 该谱面不能关闭 wall-clock/audio 时钟校准、端到端延迟与同步门禁。
-图像“方块消失”是人工观察项，离线 golden 不证明 GPU 像素正确。
+音符位置、判定线和反馈图形是窗口观察项，离线 golden 不证明 GPU 像素正确。
 
 ## 保存证据
 
@@ -83,6 +91,6 @@ Player/package SHA256、开始/结束时间、exit code、stdout/stderr。脚本
 Player，不留下孤儿进程。运行结果仍标 `pending owner observation`，exit=0 不自动代表设备通过。
 
 另写观察记录：键盘/音频设备型号、显示器刷新率、图形驱动、仓库实现 SHA、操作经过、
-实际 score/完整 Replay 状态、六个方块观察/截图、音频听感和故障结果、未执行项。
+实际 score/完整 Replay 状态、轨道/音符/Hit/Miss观察与截图、音频听感和故障结果、未执行项。
 屏幕录像可作为补充，不替代原始日志。校准、GPU/window/audio 与设备项逐项验收；
 不接受生产阈值，不关闭 S7A-9 或 Stage 7A，不进入 Stage 8 发行。

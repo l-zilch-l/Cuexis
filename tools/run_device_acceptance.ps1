@@ -14,11 +14,13 @@ $arguments = @('--cxc', (Join-Path $contentPath "$Mode.cxc"),
     '--gameplay-configuration', (Join-Path $contentPath "$Mode-configuration.json"),
     '--gameplay-config-budget', '131072,64,8192,16384,8192',
     '--gameplay-h-step', '1', '--gameplay-presentation-step', '1',
+    '--gameplay-guide', (Join-Path $contentPath "$Mode-guide.txt"),
     '--gameplay-key', '7:lane.d:domain.binding.one', '--gameplay-key', '9:lane.f:domain.binding.one',
     '--gameplay-key', '13:lane.j:domain.binding.one', '--gameplay-key', '14:lane.k:domain.binding.one')
-Write-Host "Player auto-plays. Space: pause/resume. D at H=120..239; F at 300..419; do NOT press J."
-Write-Host "K: press at 720..839, hold until H>=1080, release before H=1200."
-Write-Host "Six squares left to right: D, F, J, K-head, K-body, K-tail. Hit hides its square."
+Write-Host "Four lanes: D F J K. Player waits for Space to start; Space also pauses/resumes."
+Write-Host "Press the matching key when a falling note reaches the horizontal line."
+Write-Host "Long K note: press at the head, HOLD, release when its tail reaches the line."
+Write-Host "Hit/Miss and score appear in the Player window. No intentional Miss is required."
 Write-Host "Test-only clock: each mapped transition uses one H Tick; idle frame uses one; T advances once per frame."
 Write-Host "Listen to clicks separately; timing is not audio-calibrated."
 Write-Host "R reload; arrows seek one Gameplay Tick; S stop; B rebuild; Esc quit. Logs: $runPath"

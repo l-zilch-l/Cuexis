@@ -56,7 +56,7 @@ auto parsePlayerOptions(int argumentCount, char** arguments) -> core::Result<Pla
         }
         if (argument == "--gameplay-configuration" || argument == "--gameplay-config-budget" ||
             argument == "--gameplay-h-step" || argument == "--gameplay-presentation-step" ||
-            argument == "--gameplay-key") {
+            argument == "--gameplay-key" || argument == "--gameplay-guide") {
 #if !defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
             return core::unexpected(core::Error{"player.candidate.disabled",
                                                 "Gameplay requires the candidate SDK flavor"});
@@ -74,6 +74,11 @@ auto parsePlayerOptions(int argumentCount, char** arguments) -> core::Result<Pla
                     return core::unexpected(
                         core::Error{"player.arguments.unknown", "Duplicate Gameplay option"});
                 options.gameplayConfiguration = *value;
+            } else if (argument == "--gameplay-guide") {
+                if (options.gameplayGuide)
+                    return core::unexpected(
+                        core::Error{"player.arguments.unknown", "Duplicate Gameplay guide"});
+                options.gameplayGuide = *value;
             } else {
                 auto& field = argument == "--gameplay-config-budget" ? options.gameplayBudget
                               : argument == "--gameplay-h-step"      ? options.gameplayHStep
@@ -197,9 +202,9 @@ auto parsePlayerOptions(int argumentCount, char** arguments) -> core::Result<Pla
         return core::unexpected(core::Error{"player.arguments.candidate_source_required",
                                             "Candidate entry requires project or CXC locator"});
     }
-    const bool gameplay = options.gameplayConfiguration || options.gameplayBudget ||
-                          options.gameplayHStep || options.gameplayTStep ||
-                          !options.gameplayKeys.empty();
+    const bool gameplay = options.gameplayGuide || options.gameplayConfiguration ||
+                          options.gameplayBudget || options.gameplayHStep ||
+                          options.gameplayTStep || !options.gameplayKeys.empty();
     if (gameplay && (!options.candidateEntry || !options.gameplayConfiguration ||
                      !options.gameplayBudget || !options.gameplayHStep || !options.gameplayTStep))
         return core::unexpected(
