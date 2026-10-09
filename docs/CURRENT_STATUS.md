@@ -95,14 +95,15 @@ version.bootstrap.required。b6081c3 的 MSVC hosted 成功，Linux/MinGW 严格
 2026-10-09 后续核对：`c110c500e1e7987fe19a47ba7141d0787e5ce4b8` 的 hosted 三平台及
 Version Gate 已通过，实际 owner LF 评论 `6075108949` 绑定该 HEAD；此前审批/hosted 待回填
 叙述不再适用于此 SHA。CRLF 筛选/解析代码修复与 D/F/J/K 自生成设备谱面已提交实现 `33df051dc0ac3c0252f731daa32e30bca15e9537`，
-SDK 仍为 0.7.1，日期构建更新为 26.10.09-3；新 HEAD 必须另绑定 approval/hosted。
+该提交 SDK 为 0.7.1，日期构建曾误更新为 26.10.09-3（下文已订正）；新 HEAD 必须另绑定 approval/hosted。
 具体证据见[修复与谱面报告](stage_reports/stages/stage-07/verification/2026-10-09-crlf-and-device-fixture.md)，
 操作见[设备验收示例](examples/s7a78-device-acceptance.md)。master 旧 checker 不因 PR 修复自动更新；
 保护来源、真实设备/校准门禁仍独立保留，S7A-8.4 与 Stage7A 均未退出。
 
 随后真实 DFJK keyboard/audio 运行均在首个按键触发 `input.continuous_unsupported`；用户确认
 音乐与六方块可见，但按键判定未通过。首次 Controller Load 后 adapter 错把新离散事件标作
-跨采样 gap，现已按所属 Playback 合同修复并通过 Debug/Release 控制回归；修复后真实设备待重测。
+跨采样 gap，现已在 `afdcfcd8890cb8c5a3ae6aa8c8273d4fdc15b5ff` 按所属 Playback 合同修复并通过
+Debug/Release 控制回归；修复后真实设备待重测。
 SDK 显式 discontinuity 拒绝保持。1afe382 的审批
 6078336026 已核对有效，Version Gate 实际因候选 build3 而拒绝；日期候选通过 updater 订正为
 26.10.09-2（相对 trusted master build1），不会改 gate 规则。证据归
