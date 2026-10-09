@@ -5,6 +5,9 @@
 #include "playback_candidate_internal.hpp"
 #include "playback_source_state.hpp"
 #include "presentation_internal.hpp"
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+#include "gameplay_internal.hpp"
+#endif
 
 #include <cuexis/animation/animation_compiler.hpp>
 #include <cuexis/assets/asset_database.hpp>
@@ -56,6 +59,9 @@
 
 namespace cuexis::playback {
 namespace {
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+auto gameplayError(std::string_view) -> core::Error;
+#endif
 
 std::atomic<std::uint64_t> nextPlaybackSessionToken{1};
 
@@ -696,7 +702,7 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
 
 // Lowers the typed chart already validated by the explicit source factory. It does not read
 // Chart JSON, expand CXT v2, or decode Packed bytes again.
-[[nodiscard]] auto prepareCandidateStage(const cxc::CandidateChart& candidate,
+[[nodiscard]] auto prepareCandidateStage(const cxc::CandidateChart& candidate, bool gameplaySource,
                                          const PlaybackPrepareOptions& options, bool replacement,
                                          const chart::ChartLimits& limits,
                                          PrepareArtifact& artifact, core::Diagnostics& diagnostics)
@@ -714,7 +720,9 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
             "Chart parameter resolution produced errors", diagnostics));
     }
 
-    auto lowered = chart::lowerCandidateRuntime(candidate.semantic, limits);
+    auto lowered = gameplaySource
+                       ? chart::lowerGameplayPresentationRuntime(candidate.semantic, limits)
+                       : chart::lowerCandidateRuntime(candidate.semantic, limits);
     diagnostics.append(std::move(lowered.diagnostics));
     if (!lowered.hasValue()) {
         diagnostics.sortDeterministically();
@@ -1105,10 +1113,10 @@ assembleResourceIdentities(std::span<const chart::ChartResourceRequirement> requ
     return {};
 }
 
-[[nodiscard]] auto preparePresentationStage(const PrepareContext& context,
-                                            PrepareArtifact& artifact,
-                                            const chart::ChartRuntime& chartRuntime,
-                                            core::Diagnostics& diagnostics) -> core::Result<void> {
+[[nodiscard]] auto
+preparePresentationStage(const PrepareContext& context, PrepareArtifact& artifact,
+                         const chart::ChartRuntime& chartRuntime, core::Diagnostics& diagnostics,
+                         bool checkHostCapabilities = true) -> core::Result<void> {
     auto preparedPresentation = detail::preparePresentation(
         chartRuntime, artifact.resourceManager.get(), artifact.v4Artifact.has_value());
     if (!preparedPresentation) {
@@ -1116,7 +1124,7 @@ assembleResourceIdentities(std::span<const chart::ChartResourceRequirement> requ
         diagnostics.sortDeterministically();
         return core::unexpected(std::move(preparedPresentation.error()));
     }
-    if (preparedPresentation->has_value()) {
+    if (preparedPresentation->has_value() && checkHostCapabilities) {
         std::vector<std::string> presentationCapabilities;
         bool requiresShader = false;
         bool requiresParameterized = false;
@@ -1254,11 +1262,38 @@ struct PlaybackSession::State final {
     ChartParameterSet parameters;
     std::uint64_t sessionToken{allocatePlaybackSessionToken()};
     std::uint64_t generation{1};
+    void bumpGeneration() noexcept {
+        if (++generation == 0) {
+            sessionToken = allocatePlaybackSessionToken();
+            generation = 1;
+        }
+    }
+
     SessionState sessionState{SessionState::Empty};
     bool operationActive{};
     PlaybackCapabilitySet capabilities;
     std::optional<detail::PreparedPresentation> presentation;
     std::uint64_t nextCandidateGeneration{1};
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    GameplayContent gameplayContent;
+    std::unique_ptr<judgement::JudgementSession> gameplay;
+    GameplayState gameplayState{GameplayState::Inactive};
+    std::optional<GameplayAdvanceReceipt> gameplayReceipt;
+    struct GameplayProjectionState final {
+        std::shared_ptr<const std::uint8_t> scope;
+        std::uint64_t sourceScope{};
+        std::uint64_t cursor{};
+        struct Scheduled final {
+            judgement::FactId factId;
+            GameplayFactBinding binding;
+            bool published{false};
+        };
+        std::vector<Scheduled> scheduled;
+        std::set<std::string, std::less<>> completedBindings;
+        std::set<std::vector<std::string>> rejectedGroups;
+        std::optional<GameplayPresentationTick> lastTick;
+    } gameplayProjection;
+#endif
 };
 
 struct PreparedPlayback::State final {
@@ -1284,6 +1319,10 @@ struct PreparedPlayback::State final {
     SessionState committedState{SessionState::Ready};
     std::optional<detail::PreparedPresentation> presentation;
     std::uint64_t candidateGeneration{};
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    GameplayContent gameplayContent;
+    std::unique_ptr<judgement::JudgementSession> gameplay;
+#endif
 };
 
 static_assert(std::is_nothrow_move_assignable_v<core::Diagnostics>);
@@ -1851,6 +1890,13 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
         auto& sourceState = *source.state_;
         const auto* entryChart = sourceState.entryChart();
         const bool candidateSource = sourceState.candidate.has_value();
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+        const bool gameplayOnly = sourceState.gameplayContent.valid() &&
+                                  sourceState.gameplayIntent == GameplayPrepareIntent::GameplayOnly;
+#else
+        const bool gameplayOnly = false;
+#endif
+
         if (!candidateSource && entryChart == nullptr) {
             auto error =
                 core::Error{"playback.source.invalid", "PlaybackSource entry Chart is unavailable"};
@@ -1876,12 +1922,19 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
         std::optional<chart::ChartRuntime> chartRuntimeStorage;
         std::optional<animation::AnimationProgram> compiledAnimation;
         if (candidateSource) {
-            auto candidateRuntime = prepareCandidateStage(
-                *sourceState.candidate, options, replacement, limits, artifact, diagnostics);
+            auto candidateRuntime =
+                prepareCandidateStage(*sourceState.candidate,
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+                                      sourceState.gameplayContent.valid(),
+#else
+                                      false,
+#endif
+                                      options, replacement, limits, artifact, diagnostics);
             if (!candidateRuntime) {
                 return core::unexpected(std::move(candidateRuntime.error()));
             }
-            if (!preflightCapabilities(chart::ChartDocument{}, additionalCapabilities,
+            if (!gameplayOnly &&
+                !preflightCapabilities(chart::ChartDocument{}, additionalCapabilities,
                                        context.capabilities, diagnostics)) {
                 return core::unexpected(operationError("playback.capability.preflight_failed",
                                                        "Playback capability preflight failed",
@@ -1960,34 +2013,41 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
             }
             return core::unexpected(std::move(acquired.error()));
         }
-        if (auto runtime = prepareRuntimeStage(artifact, chartRuntime,
-                                               std::move(*compiledAnimation), diagnostics);
-            !runtime) {
-            return core::unexpected(std::move(runtime.error()));
-        }
-        if (auto presentation =
-                preparePresentationStage(context, artifact, chartRuntime, diagnostics);
-            !presentation) {
-            return core::unexpected(std::move(presentation.error()));
-        }
-        if (auto committed = commitRuntimeStage(artifact); !committed) {
-            addErrorDiagnostic(diagnostics, committed.error());
-            return core::unexpected(std::move(committed.error()));
-        }
-        if (auto sampled = commitFrameStage(context, artifact, diagnostics); !sampled) {
-            return core::unexpected(std::move(sampled.error()));
-        }
+        if (gameplayOnly) {
+            if (auto presentation =
+                    preparePresentationStage(context, artifact, chartRuntime, diagnostics, false);
+                !presentation)
+                return core::unexpected(std::move(presentation.error()));
+            artifact.snapshotLayout.emplace();
+        } else {
+            if (auto runtime = prepareRuntimeStage(artifact, chartRuntime,
+                                                   std::move(*compiledAnimation), diagnostics);
+                !runtime) {
+                return core::unexpected(std::move(runtime.error()));
+            }
+            if (auto presentation =
+                    preparePresentationStage(context, artifact, chartRuntime, diagnostics);
+                !presentation) {
+                return core::unexpected(std::move(presentation.error()));
+            }
+            if (auto committed = commitRuntimeStage(artifact); !committed) {
+                addErrorDiagnostic(diagnostics, committed.error());
+                return core::unexpected(std::move(committed.error()));
+            }
+            if (auto sampled = commitFrameStage(context, artifact, diagnostics); !sampled) {
+                return core::unexpected(std::move(sampled.error()));
+            }
 
-        const auto* presentationCandidate =
-            artifact.presentation ? &*artifact.presentation : nullptr;
-        auto layout =
-            buildSnapshotLayout(*artifact.runtimeSession, chartRuntime, presentationCandidate);
-        if (!layout) {
-            addErrorDiagnostic(diagnostics, layout.error());
-            return core::unexpected(std::move(layout.error()));
+            const auto* presentationCandidate =
+                artifact.presentation ? &*artifact.presentation : nullptr;
+            auto layout =
+                buildSnapshotLayout(*artifact.runtimeSession, chartRuntime, presentationCandidate);
+            if (!layout) {
+                addErrorDiagnostic(diagnostics, layout.error());
+                return core::unexpected(std::move(layout.error()));
+            }
+            artifact.snapshotLayout = std::move(*layout);
         }
-        artifact.snapshotLayout = std::move(*layout);
-
         auto assembledIdentity = assembleIdentityStage(artifact, diagnostics);
         if (!assembledIdentity) {
             return core::unexpected(std::move(assembledIdentity.error()));
@@ -2004,7 +2064,8 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
         prepared->chartJson = candidateSource ? std::string{} : std::string{jsonText};
         prepared->runtimeSession = std::move(artifact.runtimeSession);
         prepared->snapshotLayout = std::move(*artifact.snapshotLayout);
-        prepared->chartInfo = chartInfoFor(chartRuntime, prepared->runtimeSession->resourceCount());
+        prepared->chartInfo = chartInfoFor(
+            chartRuntime, prepared->runtimeSession ? prepared->runtimeSession->resourceCount() : 0);
         prepared->contentInfo = PlaybackContentInfo{
             chartRuntime.chartId.value, chartRuntime.version, chartRuntime.timingMap.offsetMs(),
             context.mode,
@@ -2025,6 +2086,22 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
         // same warnings (or an empty set) to lastOperationDiagnostics on scope exit.
         prepared->diagnostics = diagnostics;
         prepared->lastOperationDiagnostics = prepared->diagnostics;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+        if (sourceState.gameplayContent.valid()) {
+            const auto* content = detail::GameplayAccess::content(sourceState.gameplayContent);
+            auto gameplay = judgement::JudgementSession::create();
+            if (!gameplay)
+                return core::unexpected(std::move(gameplay.error()));
+            if (auto r = gameplay->configure(content->configuration); !r)
+                return core::unexpected(std::move(r.error()));
+            if (auto r = gameplay->prepare(content->capsule.gameplay); !r)
+                return core::unexpected(std::move(r.error()));
+            prepared->gameplay =
+                std::make_unique<judgement::JudgementSession>(std::move(*gameplay));
+            prepared->gameplayContent = sourceState.gameplayContent;
+        }
+#endif
+
         return PreparedPlayback{std::move(prepared)};
     } catch (const std::bad_alloc&) {
         auto error = prepareExceptionError(replacement ? "prepare_reload" : "prepare_load", true);
@@ -2104,10 +2181,14 @@ auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> 
     state_->lastOperationDiagnostics = std::move(candidate.lastOperationDiagnostics);
     state_->sessionState = candidate.committedState;
     state_->presentation = std::move(candidate.presentation);
-    ++state_->generation;
-    if (state_->generation == 0) {
-        ++state_->generation;
-    }
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    state_->gameplayContent = std::move(candidate.gameplayContent);
+    state_->gameplay = std::move(candidate.gameplay);
+    state_->gameplayState = state_->gameplay ? GameplayState::Prepared : GameplayState::Inactive;
+    state_->gameplayReceipt.reset();
+    state_->gameplayProjection = {};
+#endif
+    state_->bumpGeneration();
     prepared.state_.reset();
     return {};
 }
@@ -2146,6 +2227,12 @@ auto PlaybackSession::load(PlaybackSource&& source, PlaybackMode mode,
 }
 
 auto PlaybackSession::update(const RuntimeFrame& frame) -> core::Result<void> {
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    if (auto guard = gameplayWriteGuard(); !guard)
+        return guard;
+    if (state_->gameplayState == GameplayState::Paused)
+        return core::unexpected(gameplayError("Paused Gameplay preserves the published frame"));
+#endif
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("update"));
     }
@@ -2158,16 +2245,16 @@ auto PlaybackSession::update(const RuntimeFrame& frame) -> core::Result<void> {
         return core::unexpected(core::Error{"playback.session.not_ready",
                                             "PlaybackSession must be active to receive updates"});
     }
+    if (!state_->runtimeSession)
+        return core::unexpected(
+            core::Error{"playback.session.empty", "PlaybackSession has no committed World"});
     auto updated = state_->runtimeSession->update(runtimeFrame(frame));
     if (!updated) {
         return core::unexpected(std::move(updated.error()));
     }
     state_->lastFrame = frame;
     state_->sessionState = SessionState::Running;
-    ++state_->generation;
-    if (state_->generation == 0) {
-        ++state_->generation;
-    }
+    state_->bumpGeneration();
     return {};
 }
 
@@ -2399,13 +2486,17 @@ auto PlaybackSession::unload() -> core::Result<void> {
     state_->activeMode.reset();
     state_->semanticIdentity.reset();
     state_->candidateMetadata.reset();
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    state_->gameplay.reset();
+    state_->gameplayContent = {};
+    state_->gameplayState = GameplayState::Inactive;
+    state_->gameplayReceipt.reset();
+    state_->gameplayProjection = {};
+#endif
     state_->parameters = {};
     state_->presentation.reset();
     state_->sessionState = SessionState::Empty;
-    ++state_->generation;
-    if (state_->generation == 0) {
-        ++state_->generation;
-    }
+    state_->bumpGeneration();
     return {};
 }
 
@@ -2566,6 +2657,10 @@ auto PlaybackSession::acquireHostOverride(std::string_view ownerId, std::int64_t
                                           const HostOverrideLifetime& lifetime,
                                           std::span<const HostOverrideWrite> writes)
     -> core::Result<HostOverrideToken> {
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    if (auto guard = gameplayWriteGuard(); !guard)
+        return core::unexpected(std::move(guard.error()));
+#endif
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("acquire_host_override"));
     }
@@ -2604,6 +2699,10 @@ auto PlaybackSession::acquireHostOverride(std::string_view ownerId, std::int64_t
         if (!token) {
             return core::unexpected(mapHostOverrideError(token.error()));
         }
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+        if (state_->gameplay)
+            state_->bumpGeneration();
+#endif
         return HostOverrideToken{.value = token->value};
     } catch (const std::bad_alloc&) {
         return core::unexpected(prepareExceptionError("acquire_host_override", true));
@@ -2617,6 +2716,10 @@ auto PlaybackSession::acquireHostOverride(std::string_view ownerId, std::int64_t
 }
 
 auto PlaybackSession::releaseHostOverride(HostOverrideToken token) -> core::Result<void> {
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    if (auto guard = gameplayWriteGuard(); !guard)
+        return guard;
+#endif
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("release_host_override"));
     }
@@ -2639,7 +2742,710 @@ auto PlaybackSession::releaseHostOverride(HostOverrideToken token) -> core::Resu
     if (!released) {
         return core::unexpected(mapHostOverrideError(released.error()));
     }
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    if (state_->gameplay)
+        state_->bumpGeneration();
+#endif
     return {};
 }
 
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+namespace {
+auto gameplayError(std::string_view detail) -> core::Error {
+    return core::Error{"playback.gameplay.invalid", std::string{detail}}
+        .withContext("category", "invalid_relation")
+        .withContext("severity", "error")
+        .withContext("faulted", "false");
+}
+auto validateGameplayFrame(const RuntimeFrame& frame, const std::optional<RuntimeFrame>& previous)
+    -> core::Result<void> {
+    // The frame has its own time domain. Never derive integer H or T from this double.
+    if (!std::isfinite(frame.chartTimeMs))
+        return core::unexpected(core::Error{"runtime.frame.chart_time_non_finite",
+                                            "RuntimeFrame chartTimeMs must be finite"});
+    if (!std::isfinite(frame.simulationDeltaTimeMs) || frame.simulationDeltaTimeMs < 0)
+        return core::unexpected(
+            core::Error{"runtime.frame.delta_invalid", "Invalid RuntimeFrame delta"});
+    if (previous) {
+        if (frame.timeDiscontinuityId == previous->timeDiscontinuityId &&
+            frame.chartTimeMs < previous->chartTimeMs)
+            return core::unexpected(core::Error{"runtime.frame.backward_seek_undeclared",
+                                                "Backward time requires discontinuity"});
+        if (frame.timeDiscontinuityId != previous->timeDiscontinuityId &&
+            frame.simulationDeltaTimeMs != 0)
+            return core::unexpected(core::Error{"runtime.frame.discontinuity_delta_nonzero",
+                                                "Discontinuity requires zero delta"});
+    }
+    return {};
+}
+auto makeGameplaySession(const GameplayContent& c) -> core::Result<judgement::JudgementSession> {
+    const auto* content = detail::GameplayAccess::content(c);
+    if (!content)
+        return core::unexpected(gameplayError("Empty Gameplay content"));
+    auto session = judgement::JudgementSession::create();
+    if (!session)
+        return core::unexpected(detail::projectGameplayError(std::move(session.error())));
+    if (auto r = session->configure(content->configuration); !r)
+        return core::unexpected(detail::projectGameplayError(std::move(r.error())));
+    if (auto r = session->prepare(content->capsule.gameplay); !r)
+        return core::unexpected(detail::projectGameplayError(std::move(r.error())));
+    return std::move(*session);
+}
+auto publicTick(std::optional<judgement::Tick> t) -> std::optional<GameplayTick> {
+    return t ? std::optional{GameplayTick{t->value()}} : std::nullopt;
+}
+auto publicFault(std::optional<judgement::FaultStage> s) -> std::optional<GameplayFaultStage> {
+    if (!s)
+        return {};
+    switch (*s) {
+    case judgement::FaultStage::kernel:
+        return GameplayFaultStage::Kernel;
+    case judgement::FaultStage::fold:
+        return GameplayFaultStage::Fold;
+    case judgement::FaultStage::control:
+        return GameplayFaultStage::Control;
+    }
+    return {};
+}
+} // namespace
+auto PlaybackSession::gameplayWriteGuard() const -> core::Result<void> {
+    if (!state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("gameplay"));
+    if (state_->operationActive)
+        return core::unexpected(reentryError("gameplay"));
+    if (state_->gameplayState == GameplayState::Faulted)
+        return core::unexpected(
+            gameplayError("Faulted Gameplay is read-only until reset or replacement"));
+    return {};
+}
+auto PlaybackSession::attachGameplay(PreparedPlayback& p, const GameplayContent& c)
+    -> core::Result<void> try {
+    SessionOperation operation{state_->operationActive};
+    const auto* content = detail::GameplayAccess::content(c);
+    if (!content || !p.valid())
+        return core::unexpected(gameplayError("Empty Gameplay content or PreparedPlayback"));
+    if (p.state_->contentInfo.chartId != content->capsule.chart.chartId.value)
+        return core::unexpected(gameplayError("Presentation and Gameplay Chart identities differ"));
+    auto session = makeGameplaySession(c);
+    if (!session)
+        return core::unexpected(detail::projectGameplayError(std::move(session.error())));
+    p.state_->gameplay = std::make_unique<judgement::JudgementSession>(std::move(*session));
+    p.state_->gameplayContent = c;
+    return {};
+} catch (...) {
+    return core::unexpected(gameplayError("Gameplay prepare allocation failed"));
+}
+auto PlaybackSession::prepareGameplayLoad(PlaybackSource&& source, PlaybackMode mode,
+                                          const GameplayContent& c)
+    -> core::Result<PreparedPlayback> {
+    auto p = prepareLoad(std::move(source), mode);
+    if (!p)
+        return core::unexpected(detail::projectGameplayError(std::move(p.error())));
+    if (auto r = attachGameplay(*p, c); !r)
+        return core::unexpected(detail::projectGameplayError(std::move(r.error())));
+    return std::move(*p);
+}
+auto PlaybackSession::prepareGameplayReload(PlaybackSource&& source, const GameplayContent& c,
+                                            ReloadPolicy policy) -> core::Result<PreparedPlayback> {
+    if (!state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("prepare_gameplay_reload"));
+    const auto target = state_->lastFrame.value_or(RuntimeFrame{});
+    auto p = prepareReload(std::move(source), target, policy);
+    if (!p)
+        return core::unexpected(detail::projectGameplayError(std::move(p.error())));
+    if (auto r = attachGameplay(*p, c); !r)
+        return core::unexpected(detail::projectGameplayError(std::move(r.error())));
+    return std::move(*p);
+}
+auto PlaybackSession::submitGameplay(std::span<const GameplayInput> inputs)
+    -> core::Result<void> try {
+    if (auto guard = gameplayWriteGuard(); !guard)
+        return guard;
+    SessionOperation operation{state_->operationActive};
+    if (!state_->gameplay || state_->gameplayState == GameplayState::Paused)
+        return core::unexpected(gameplayError("Gameplay must be active and unpaused"));
+    std::vector<judgement::ClockedIngress> batch;
+    batch.reserve(inputs.size());
+    for (const auto& input : inputs) {
+        auto channel = judgement::ChannelRef::fromToken(input.channel);
+        auto source = judgement::SourceClass::fromToken(input.sourceClass);
+        if (!channel)
+            return core::unexpected(detail::projectGameplayError(std::move(channel.error())));
+        if (!source)
+            return core::unexpected(detail::projectGameplayError(std::move(source.error())));
+        const auto* current = detail::GameplayAccess::content(state_->gameplayContent);
+        if (source->token() != current->configuration.inputMapping.view().sourceClass.token())
+            return core::unexpected(
+                gameplayError("Input source class does not match frozen mapping"));
+        judgement::InputAction action;
+        switch (input.action) {
+        case GameplayInputAction::Press:
+            action = judgement::InputAction::press;
+            break;
+        case GameplayInputAction::Release:
+            action = judgement::InputAction::release;
+            break;
+        case GameplayInputAction::Update:
+            action = judgement::InputAction::update;
+            break;
+        default:
+            return core::unexpected(gameplayError("Unknown input action"));
+        }
+        std::optional<judgement::RationalBeat> amount;
+        if (input.amount) {
+            auto r =
+                judgement::RationalBeat::create(input.amount->numerator, input.amount->denominator);
+            if (!r)
+                return core::unexpected(detail::projectGameplayError(std::move(r.error())));
+            amount = *r;
+        }
+        batch.push_back({judgement::ObservationTick{judgement::Tick{input.observationTick.value}},
+                         {judgement::IngressSequence{input.sequence},
+                          action,
+                          *channel,
+                          input.domain,
+                          {input.rawTimestamps.device, input.rawTimestamps.hostArrival,
+                           input.rawTimestamps.audioFrame, input.rawTimestamps.renderFrame},
+                          {input.crossedSamplingGap, input.reconnected, input.droppedSamples},
+                          judgement::ContinuityKind::discrete,
+                          amount}});
+    }
+    auto admitted = state_->gameplay->submit(std::move(batch));
+    if (!admitted)
+        return core::unexpected(detail::projectGameplayError(std::move(admitted.error())));
+    if (!inputs.empty())
+        state_->bumpGeneration();
+    return {};
+} catch (...) {
+    return core::unexpected(gameplayError("Gameplay input allocation failed"));
+}
+auto PlaybackSession::advanceGameplay(GameplayTick h, GameplayPresentationTick t,
+                                      const RuntimeFrame& frame) -> core::Result<void> try {
+    if (auto guard = gameplayWriteGuard(); !guard)
+        return guard;
+    SessionOperation operation{state_->operationActive};
+    if (!state_->gameplay || state_->gameplayState == GameplayState::Paused)
+        return core::unexpected(gameplayError("Gameplay must be active and unpaused"));
+    if (auto valid = validateGameplayFrame(frame, state_->lastFrame); !valid)
+        return valid;
+    if (state_->gameplayProjection.lastTick && t.value < state_->gameplayProjection.lastTick->value)
+        return core::unexpected(
+            gameplayError("Presentation Tick rewind requires explicit recovery"));
+    auto previousReceipt = std::move(state_->gameplayReceipt);
+    state_->gameplayReceipt =
+        GameplayAdvanceReceipt{h, {}, {}, {}, 0, 0, false, {}, {}, false, {}, {}};
+    auto advanced = state_->gameplay->advance(judgement::Tick{h.value});
+    // A successful kernel advance is already a mutation, even if the owning query allocates.
+    if (advanced) {
+        state_->bumpGeneration();
+        state_->gameplayState = GameplayState::Running;
+        state_->gameplayReceipt->admitted = true;
+    }
+    auto query = state_->gameplay->query();
+    if (!query)
+        return core::unexpected(detail::projectGameplayError(std::move(query.error())));
+    const auto& k = query->kernelView();
+    if (!advanced && k.state != judgement::KernelSessionState::Faulted) {
+        state_->gameplayReceipt = std::move(previousReceipt);
+        return core::unexpected(detail::projectGameplayError(std::move(advanced.error())));
+    }
+    if (!advanced)
+        state_->bumpGeneration();
+    state_->gameplayReceipt =
+        GameplayAdvanceReceipt{h,
+                               publicTick(k.processedFrontier),
+                               publicTick(k.lastAdvanceHorizon),
+                               publicTick(k.failedTick),
+                               k.sealedFactCursor,
+                               k.fold ? k.fold->factCursor : k.sealedFactCursor,
+                               false,
+                               publicFault(k.faultStage),
+                               {},
+                               true,
+                               k.fold ? publicTick(k.fold->workTick) : std::nullopt,
+                               {}};
+    if (!advanced) {
+        state_->gameplayState = GameplayState::Faulted;
+        state_->gameplayReceipt->error = detail::projectGameplayError(advanced.error());
+        return core::unexpected(detail::projectGameplayError(std::move(advanced.error())));
+    }
+    state_->gameplayState = GameplayState::Running;
+    auto result = detail::GameplayAccess::result(k, state_->gameplayState);
+    auto failureStage = GameplayPublicationFailureStage::Projection;
+    auto published = publishGameplayProjection(result, t, frame, true, &failureStage);
+    if (!published) {
+        state_->gameplayReceipt->publicationFailureStage = failureStage;
+        state_->gameplayReceipt->error = published.error();
+        return published;
+    }
+    state_->gameplayReceipt->runtimeUpdated = static_cast<bool>(state_->runtimeSession);
+    return {};
+} catch (...) {
+    auto error = gameplayError("Gameplay advance allocation failed");
+    if (state_->gameplayReceipt) {
+        state_->gameplayReceipt->publicationFailureStage = GameplayPublicationFailureStage::Result;
+        state_->gameplayReceipt->error = error;
+    }
+    return core::unexpected(std::move(error));
+}
+auto PlaybackSession::publishGameplayProjection(const GameplayResult& result,
+                                                GameplayPresentationTick t,
+                                                const RuntimeFrame& frame, bool tickLifetimes,
+                                                GameplayPublicationFailureStage* failureStage)
+    -> core::Result<void> try {
+    if (failureStage)
+        *failureStage = GameplayPublicationFailureStage::Projection;
+    if (auto valid = validateGameplayFrame(frame, state_->lastFrame); !valid)
+        return valid;
+    if (!state_->runtimeSession) {
+        state_->gameplayProjection = {};
+        state_->gameplayProjection.scope = detail::GameplayAccess::result(result)->kernel.runScope;
+        state_->gameplayProjection.lastTick = t;
+        state_->lastFrame = frame;
+        state_->sessionState = SessionState::Running;
+        return {};
+    }
+    const auto& k = detail::GameplayAccess::result(result)->kernel;
+    auto projection = state_->gameplayProjection;
+    if (projection.scope != k.runScope)
+        projection = {};
+    projection.scope = k.runScope;
+    if (!projection.sourceScope)
+        projection.sourceScope = allocatePlaybackSessionToken();
+    const auto publishable = k.fold ? k.fold->factCursor : k.sealedFactCursor;
+    const auto* content = detail::GameplayAccess::content(state_->gameplayContent);
+    for (; projection.cursor < publishable; ++projection.cursor) {
+        const auto* fact = std::get_if<judgement::PhaseOutcomeFact>(
+            &k.facts[static_cast<std::size_t>(projection.cursor)]);
+        if (!fact)
+            continue;
+        for (const auto& binding : content->bindings) {
+            const auto& e = fact->requirement;
+            const auto& s = binding.source;
+            if (e.chartEntryId != s.chartEntryId || e.invocationId != s.invocationId ||
+                e.moduleId != s.moduleId || e.exportId != s.exportId ||
+                e.requirementLocalId != s.requirementLocalId ||
+                e.emissionPath.size() != s.emissionPath.size())
+                continue;
+            bool pathMatches = true;
+            for (std::size_t i = 0; i < e.emissionPath.size(); ++i)
+                pathMatches = pathMatches && e.emissionPath[i].nodeId == s.emissionPath[i].nodeId &&
+                              e.emissionPath[i].repeatIndex == s.emissionPath[i].repeatIndex;
+            if (!pathMatches)
+                continue;
+            const auto p = fact->phase == judgement::PhaseKind::tap    ? GameplayPhase::Tap
+                           : fact->phase == judgement::PhaseKind::head ? GameplayPhase::Head
+                           : fact->phase == judgement::PhaseKind::body ? GameplayPhase::Body
+                                                                       : GameplayPhase::Tail;
+            if (p != binding.phase || (fact->outcome == judgement::Outcome::hit
+                                           ? GameplayOutcome::Hit
+                                           : GameplayOutcome::Miss) != binding.outcome)
+                continue;
+            if (binding.timing != GameplayTimingClass::Any &&
+                (!fact->error ||
+                 (binding.timing == GameplayTimingClass::Early && fact->error->value() >= 0) ||
+                 (binding.timing == GameplayTimingClass::Exact && fact->error->value() != 0) ||
+                 (binding.timing == GameplayTimingClass::Late && fact->error->value() <= 0)))
+                continue;
+            projection.scheduled.push_back({fact->factId, binding});
+            projection.completedBindings.insert(binding.bindingId);
+        }
+    }
+    std::erase_if(projection.scheduled, [&](const auto& item) {
+        return item.binding.end && item.binding.end->value <= t.value;
+    });
+    std::map<std::string, bool, std::less<>> active;
+    core::Diagnostics presentationDiagnostics;
+    const auto ready = [&](const GameplayFactBinding& b) {
+        return b.aggregation == GameplayAggregation::Any ||
+               std::ranges::all_of(b.groupMembers, [&](const auto& member) {
+                   return projection.completedBindings.contains(member);
+               });
+    };
+    const auto hasTarget = [&](const GameplayFactBinding& b) {
+        return std::ranges::any_of(state_->snapshotLayout.entities, [&](const auto& object) {
+            return object.id.value == b.target && object.mesh.has_value();
+        });
+    };
+    std::map<std::vector<std::string>, std::pair<bool, bool>> groupAttempts;
+    for (const auto& scheduled : projection.scheduled) {
+        const auto& b = scheduled.binding;
+        if (b.aggregation == GameplayAggregation::GroupCommit && b.start.value <= t.value &&
+            ready(b) && !projection.rejectedGroups.contains(b.groupMembers)) {
+            auto& outcome = groupAttempts[b.groupMembers];
+            if (hasTarget(b))
+                outcome.first = true;
+            else
+                outcome.second = true;
+        }
+    }
+    for (const auto& [members, attempt] : groupAttempts)
+        if (attempt.first && attempt.second) {
+            presentationDiagnostics.add(core::Diagnostic{
+                core::DiagnosticSeverity::Error, "partial-group",
+                "Gameplay group retained committed members and rejects new members",
+                members.front()});
+        }
+    const auto priorRejected = projection.rejectedGroups;
+    for (auto& scheduled : projection.scheduled) {
+        const auto& b = scheduled.binding;
+        if (b.start.value > t.value || !ready(b) ||
+            (priorRejected.contains(b.groupMembers) && !scheduled.published))
+            continue;
+        const auto target =
+            std::ranges::find_if(state_->snapshotLayout.entities, [&](const auto& object) {
+                return object.id.value == b.target && object.mesh.has_value();
+            });
+        if (target == state_->snapshotLayout.entities.end()) {
+            presentationDiagnostics.add(
+                core::Diagnostic{core::DiagnosticSeverity::Error, "presentation-target-missing",
+                                 "Gameplay presentation target missing", b.target});
+            continue;
+        }
+        const auto [it, inserted] = active.emplace(b.target, b.visible);
+        if (!inserted && it->second != b.visible) {
+            return core::unexpected(gameplayError("Conflicting active Gameplay writes"));
+        }
+        scheduled.published = true;
+    }
+    for (const auto& [members, attempt] : groupAttempts)
+        if (attempt.first && attempt.second)
+            projection.rejectedGroups.insert(members);
+    std::vector<runtime::PropertyOverrideWrite> writes;
+    writes.reserve(active.size());
+    for (const auto& [id, value] : active)
+        writes.push_back({chart::ChartObjectId{id}, world::PropertyId::RenderVisible, value});
+    if (failureStage)
+        *failureStage = GameplayPublicationFailureStage::Runtime;
+    auto updated =
+        state_->runtimeSession->updateGameplay(runtimeFrame(frame), writes, tickLifetimes);
+    if (!updated) {
+        return updated;
+    }
+    projection.lastTick = t;
+    state_->gameplayProjection = std::move(projection);
+    state_->lastFrame = frame;
+    state_->sessionState = SessionState::Running;
+    state_->lastOperationDiagnostics = std::move(presentationDiagnostics);
+    return {};
+} catch (...) {
+    return core::unexpected(gameplayError("Gameplay projection allocation failed"));
+}
+
+auto PlaybackSession::gameplayState() const -> core::Result<GameplayState> {
+    if (!state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("gameplay_state"));
+    if (state_->operationActive)
+        return core::unexpected(reentryError("gameplay_state"));
+    return state_->gameplayState;
+}
+
+auto PlaybackSession::queryGameplayPresentation() const
+    -> core::Result<GameplayPresentationMap> try {
+    if (!state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("gameplay_presentation_query"));
+    if (state_->operationActive)
+        return core::unexpected(reentryError("gameplay_presentation_query"));
+    if (!state_->gameplay)
+        return core::unexpected(gameplayError("Gameplay must be explicitly active"));
+    const auto& projection = state_->gameplayProjection;
+    std::map<std::tuple<std::uint64_t, std::uint64_t, std::string>, GameplayPresentationSource>
+        sources;
+    for (const auto& scheduled : projection.scheduled) {
+        const auto& b = scheduled.binding;
+        if (!scheduled.published || !projection.lastTick ||
+            b.start.value > projection.lastTick->value ||
+            (b.end && b.end->value <= projection.lastTick->value))
+            continue;
+        sources.try_emplace(
+            {scheduled.factId.commitId, scheduled.factId.localOrdinal, b.target},
+            GameplayPresentationSource{{scheduled.factId.commitId, scheduled.factId.localOrdinal},
+                                       b.target,
+                                       b.visible,
+                                       b.start,
+                                       b.end});
+    }
+    GameplayPresentationMap result{projection.sourceScope, {}};
+    result.sources.reserve(sources.size());
+    for (auto& [unused, source] : sources)
+        result.sources.push_back(std::move(source));
+    return result;
+} catch (...) {
+    return core::unexpected(gameplayError("Gameplay source map query allocation failed"));
+}
+
+auto PlaybackSession::queryGameplayCapability(std::string_view id, std::string_view revision,
+                                              const GameplayConfiguration* pending) const
+    -> core::Result<GameplayCapabilityQuery> try {
+    if (!state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("gameplay_capability"));
+    if (state_->operationActive)
+        return core::unexpected(reentryError("gameplay_capability"));
+    const auto refused = [&](GameplayCapabilityState status, std::string_view code,
+                             std::string_view category) {
+        return GameplayCapabilityQuery{
+            std::string{id}, std::string{revision}, status,
+            core::Error{
+                std::string{code},
+                "Gameplay capability query did not find a matching validated active capability"}
+                .withContext("category", std::string{category})
+                .withContext("severity", "error")
+                .withContext("faulted", "false")
+                .withContext("capabilityId", std::string{id})
+                .withContext("revision", std::string{revision})};
+    };
+    auto registry = gameplayCapabilities();
+    if (!registry)
+        return core::unexpected(std::move(registry.error()));
+    const auto capability =
+        std::ranges::find_if(*registry, [&](const auto& row) { return row.id == id; });
+    if (capability == registry->end())
+        return refused(GameplayCapabilityState::Unknown, "capability.unknown",
+                       "unknown_capability");
+    if (capability->revision != revision)
+        return refused(GameplayCapabilityState::Unknown, "capability.revision_mismatch",
+                       "unknown_capability");
+    const auto* content = detail::GameplayAccess::content(state_->gameplayContent);
+    const auto enabled = pending   ? std::span<const std::string>{pending->enabledCapabilities}
+                         : content ? std::span<const std::string>{content->enabledCapabilities}
+                                   : std::span<const std::string>{};
+    if (std::ranges::find(enabled, id) == enabled.end())
+        return refused(GameplayCapabilityState::Disabled, "capability.disabled",
+                       "capability_disabled");
+    bool matching = content && state_->gameplay;
+    if (matching && pending) {
+        auto config = encodeGameplayConfiguration(*pending);
+        matching = config && *config == content->publicConfiguration;
+    }
+    if (!matching)
+        return refused(GameplayCapabilityState::Insufficient, "capability.budget_insufficient",
+                       "budget_exceeded");
+    return GameplayCapabilityQuery{
+        std::string{id}, std::string{revision}, GameplayCapabilityState::Available, {}};
+} catch (...) {
+    return core::unexpected(gameplayError("Gameplay capability query allocation failed"));
+}
+auto PlaybackSession::queryGameplay() const -> core::Result<GameplayResult> try {
+    if (!state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("query_gameplay"));
+    if (state_->operationActive)
+        return core::unexpected(reentryError("query_gameplay"));
+    if (!state_->gameplay)
+        return core::unexpected(gameplayError("Gameplay inactive"));
+    auto q = state_->gameplay->query();
+    if (!q)
+        return core::unexpected(detail::projectGameplayError(std::move(q.error())));
+    return detail::GameplayAccess::result(q->kernelView(), state_->gameplayState);
+} catch (...) {
+    return core::unexpected(gameplayError("Gameplay query allocation failed"));
+}
+auto PlaybackSession::gameplayAdvanceReceipt() const -> core::Result<GameplayAdvanceReceipt> try {
+    if (!state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("gameplay_receipt"));
+    if (state_->operationActive)
+        return core::unexpected(reentryError("gameplay_receipt"));
+    if (!state_->gameplayReceipt)
+        return core::unexpected(gameplayError("No admitted advance receipt"));
+    return *state_->gameplayReceipt;
+} catch (...) {
+    return core::unexpected(gameplayError("Gameplay receipt allocation failed"));
+}
+auto PlaybackSession::archiveGameplay() const -> core::Result<GameplayReplay> try {
+    if (!state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("archive_gameplay"));
+    if (state_->operationActive)
+        return core::unexpected(reentryError("archive_gameplay"));
+    if (!state_->gameplay)
+        return core::unexpected(gameplayError("Gameplay inactive"));
+    auto a = state_->gameplay->archive();
+    if (!a)
+        return core::unexpected(detail::projectGameplayError(std::move(a.error())));
+    return detail::GameplayAccess::replay(std::move(*a));
+} catch (...) {
+    return core::unexpected(gameplayError("Gameplay archive allocation failed"));
+}
+auto PlaybackSession::snapshotGameplay() const -> core::Result<GameplaySnapshot> try {
+    if (!state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("snapshot_gameplay"));
+    if (state_->operationActive)
+        return core::unexpected(reentryError("snapshot_gameplay"));
+    if (!state_->gameplay)
+        return core::unexpected(gameplayError("Gameplay inactive"));
+    auto s = state_->gameplay->snapshot();
+    if (!s)
+        return core::unexpected(detail::projectGameplayError(std::move(s.error())));
+    return detail::GameplayAccess::snapshot(std::move(*s));
+} catch (...) {
+    return core::unexpected(gameplayError("Gameplay snapshot allocation failed"));
+}
+auto PlaybackSession::evaluateGameplayReplay(const GameplayReplay& a) const
+    -> core::Result<GameplayReplayEvaluation> try {
+    if (!state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("evaluate_gameplay"));
+    if (state_->operationActive)
+        return core::unexpected(reentryError("evaluate_gameplay"));
+    const auto* archive = detail::GameplayAccess::replay(a);
+    if (!archive)
+        return core::unexpected(gameplayError("Empty Replay"));
+    auto e = judgement::JudgementSession::evaluateReplay(archive->archive);
+    if (!e)
+        return core::unexpected(detail::projectGameplayError(std::move(e.error())));
+    const auto s = e->result->state == judgement::KernelSessionState::Faulted
+                       ? GameplayState::Faulted
+                       : GameplayState::Running;
+    return GameplayReplayEvaluation{e->evidenceValid,
+                                    detail::GameplayAccess::result(*e->result, s)};
+} catch (...) {
+    return core::unexpected(gameplayError("Replay evaluation allocation failed"));
+}
+auto PlaybackSession::restoreGameplay(const GameplaySnapshot& s, GameplayPresentationTick t,
+                                      const RuntimeFrame& frame) -> core::Result<void> try {
+    if (auto guard = gameplayWriteGuard(); !guard)
+        return guard;
+    SessionOperation operation{state_->operationActive};
+    const auto* snapshot = detail::GameplayAccess::snapshot(s);
+    const auto* content = detail::GameplayAccess::content(state_->gameplayContent);
+    if (!snapshot || !content)
+        return core::unexpected(gameplayError("Snapshot or current content absent"));
+    auto restored = judgement::JudgementSession::recover(
+        snapshot->snapshot, {content->configuration, content->capsule.gameplay});
+    if (!restored)
+        return core::unexpected(detail::projectGameplayError(std::move(restored.error())));
+    auto candidate = std::make_unique<judgement::JudgementSession>(std::move(*restored));
+    auto q = candidate->query();
+    if (!q)
+        return core::unexpected(detail::projectGameplayError(std::move(q.error())));
+    auto result = detail::GameplayAccess::result(q->kernelView(), GameplayState::Running);
+    if (auto published = publishGameplayProjection(result, t, frame, false); !published)
+        return published;
+    state_->gameplayState = q->kernelView().state == judgement::KernelSessionState::Faulted
+                                ? GameplayState::Faulted
+                                : GameplayState::Running;
+    state_->gameplay.swap(candidate);
+    state_->gameplayReceipt.reset();
+    state_->bumpGeneration();
+    return {};
+} catch (...) {
+    return core::unexpected(gameplayError("Gameplay restore allocation failed"));
+}
+auto PlaybackSession::checkpointGameplay(const GameplayReplay& a, GameplayTick h) const
+    -> core::Result<GameplayCheckpoint> try {
+    if (!state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("checkpoint_gameplay"));
+    if (state_->operationActive)
+        return core::unexpected(reentryError("checkpoint_gameplay"));
+    const auto* archive = detail::GameplayAccess::replay(a);
+    if (!archive)
+        return core::unexpected(gameplayError("Empty Replay"));
+    auto checkpoint =
+        judgement::JudgementSession::checkpoint(archive->archive, judgement::Tick{h.value});
+    if (!checkpoint)
+        return core::unexpected(detail::projectGameplayError(std::move(checkpoint.error())));
+    return detail::GameplayAccess::checkpoint(std::move(*checkpoint));
+} catch (...) {
+    return core::unexpected(gameplayError("Checkpoint allocation failed"));
+}
+auto PlaybackSession::seekGameplay(const GameplayReplay& a, GameplayTick h,
+                                   GameplayPresentationTick t, const RuntimeFrame& frame)
+    -> core::Result<void> {
+    if (auto guard = gameplayWriteGuard(); !guard)
+        return guard;
+    const auto* archive = detail::GameplayAccess::replay(a);
+    if (!archive)
+        return core::unexpected(gameplayError("Empty Replay"));
+    const auto cut = judgement::replayCutAt(archive->archive, judgement::Tick{h.value});
+    return seekGameplay(a, h, {cut.completeRecords, publicTick(cut.partialHorizon)}, {}, t, frame);
+}
+auto PlaybackSession::seekGameplay(const GameplayReplay& a, GameplayTick h,
+                                   const GameplayReplayCut& cut,
+                                   std::span<const GameplayCheckpoint> checkpoints,
+                                   GameplayPresentationTick t, const RuntimeFrame& frame)
+    -> core::Result<void> try {
+    if (auto guard = gameplayWriteGuard(); !guard)
+        return guard;
+    SessionOperation operation{state_->operationActive};
+    const auto* archive = detail::GameplayAccess::replay(a);
+    if (!archive || !state_->gameplay)
+        return core::unexpected(gameplayError("Replay or active Gameplay absent"));
+    // Seek constructs a fresh kernel with the current dependencies before replacing active state.
+    auto candidate = makeGameplaySession(state_->gameplayContent);
+    if (!candidate)
+        return core::unexpected(detail::projectGameplayError(std::move(candidate.error())));
+    std::vector<judgement::ReplayCheckpoint> certificates;
+    certificates.reserve(checkpoints.size());
+    for (const auto& c : checkpoints) {
+        const auto* stored = detail::GameplayAccess::checkpoint(c);
+        if (!stored)
+            return core::unexpected(gameplayError("Empty Checkpoint"));
+        certificates.push_back(stored->checkpoint);
+    }
+    judgement::ReplayCut internalCut{cut.completeRecords,
+                                     cut.partialHorizon
+                                         ? std::optional{judgement::Tick{cut.partialHorizon->value}}
+                                         : std::nullopt};
+    if (auto seek =
+            candidate->seek(archive->archive, judgement::Tick{h.value}, internalCut, certificates);
+        !seek)
+        return core::unexpected(detail::projectGameplayError(std::move(seek.error())));
+    auto replacement = std::make_unique<judgement::JudgementSession>(std::move(*candidate));
+    auto q = replacement->query();
+    if (!q)
+        return core::unexpected(detail::projectGameplayError(std::move(q.error())));
+    auto result = detail::GameplayAccess::result(q->kernelView(), GameplayState::Running);
+    if (auto published = publishGameplayProjection(result, t, frame, false); !published)
+        return published;
+    state_->gameplay.swap(replacement);
+    state_->gameplayState = GameplayState::Running;
+    state_->gameplayReceipt.reset();
+    state_->bumpGeneration();
+    return {};
+} catch (...) {
+    return core::unexpected(gameplayError("Gameplay Seek allocation failed"));
+}
+auto PlaybackSession::controlGameplay(GameplayControl control) -> core::Result<void> try {
+    if (!state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("control_gameplay"));
+    if (state_->operationActive)
+        return core::unexpected(reentryError("control_gameplay"));
+    SessionOperation operation{state_->operationActive};
+    if (!state_->gameplay)
+        return core::unexpected(gameplayError("Gameplay inactive"));
+    if (control == GameplayControl::Stop && state_->gameplayState == GameplayState::Faulted)
+        return core::unexpected(gameplayError("Faulted Gameplay requires Reset or replacement"));
+    if (control == GameplayControl::Reset || control == GameplayControl::Stop) {
+        auto fresh = makeGameplaySession(state_->gameplayContent);
+        if (!fresh)
+            return core::unexpected(detail::projectGameplayError(std::move(fresh.error())));
+        auto replacement = std::make_unique<judgement::JudgementSession>(std::move(*fresh));
+        if (state_->lastFrame && state_->runtimeSession) {
+            auto updated =
+                state_->runtimeSession->updateGameplay(runtimeFrame(*state_->lastFrame), {}, false);
+            if (!updated)
+                return updated;
+        }
+        state_->gameplay.swap(replacement);
+        state_->gameplayState =
+            control == GameplayControl::Stop ? GameplayState::Paused : GameplayState::Prepared;
+        state_->gameplayReceipt.reset();
+        state_->gameplayProjection = {};
+    } else {
+        if (state_->gameplayState == GameplayState::Faulted)
+            return core::unexpected(gameplayError("Faulted Gameplay requires reset"));
+        if (control == GameplayControl::Pause) {
+            if (state_->gameplayState == GameplayState::Paused)
+                return {};
+            state_->gameplayState = GameplayState::Paused;
+        } else if (control == GameplayControl::Resume) {
+            if (state_->gameplayState != GameplayState::Paused)
+                return {};
+            state_->gameplayState = GameplayState::Running;
+        } else
+            return core::unexpected(gameplayError("Unknown Gameplay control"));
+    }
+    state_->bumpGeneration();
+    return {};
+} catch (...) {
+    return core::unexpected(gameplayError("Gameplay control allocation failed"));
+}
+#endif
 } // namespace cuexis::playback

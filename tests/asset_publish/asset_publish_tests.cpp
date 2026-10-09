@@ -17,6 +17,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <algorithm>
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
@@ -242,11 +243,12 @@ void spawnLockHolder() {
     }
     constexpr std::string_view argument{"[.publish-lock-child]"};
 #if defined(_WIN32)
-    ::_spawnl(_P_NOWAIT, executable.c_str(), executable.c_str(), argument.data(), nullptr);
+    REQUIRE(::_spawnl(_P_NOWAIT, executable.c_str(), executable.c_str(), argument.data(),
+                      nullptr) != -1);
 #else
     const std::string command{"\"" + executable + "\" \"" + std::string{argument} +
                               "\" >/dev/null 2>&1 &"};
-    static_cast<void>(std::system(command.c_str()));
+    REQUIRE(std::system(command.c_str()) == 0);
 #endif
 }
 
@@ -953,4 +955,58 @@ TEST_CASE("R5 an idempotent republish reports the real closure size",
     CHECK(second->generationIdentity == first->generationIdentity);
     CHECK(second->closureBytes == first->closureBytes);
     CHECK(second->closureBytes == bytes.size());
+}
+
+TEST_CASE("S7A78 generation manifest switches complete immutable output sets",
+          "[candidate][asset-publish][s7a78]") {
+    const auto root = scratchRoot("s7a78-manifest");
+    GenerationPublishRequest first{root,
+                                   "gameplay",
+                                   {{"graph.json", asBytes("graph-a")},
+                                    {"chart.packed", asBytes("packed-a")},
+                                    {"closure.json", asBytes("closure-a")}},
+                                   {}};
+    auto old = cuexis::tools::publishAndAdoptGeneration(first);
+    requireOk(old);
+    CHECK(*cuexis::tools::readAdoptedGeneration(root) == old->generationIdentity);
+    const auto captured = old->generationPath;
+    auto second = first;
+    second.entries[0].bytes = asBytes("graph-b");
+    second.entries[1].bytes = asBytes("packed-b");
+    {
+        const ScopedEnv fail{"CUEXIS_ASSET_PUBLISH_FAIL_BEFORE_ADOPT", "1"};
+        CHECK_FALSE(cuexis::tools::publishAndAdoptGeneration(second));
+    }
+    CHECK(*cuexis::tools::readAdoptedGeneration(root) == old->generationIdentity);
+    CHECK(readBytes(captured / "graph.json") == asBytes("graph-a"));
+    CHECK(readBytes(captured / "chart.packed") == asBytes("packed-a"));
+    auto fresh = cuexis::tools::publishAndAdoptGeneration(second);
+    requireOk(fresh);
+    CHECK(*cuexis::tools::readAdoptedGeneration(root) == fresh->generationIdentity);
+    CHECK(readBytes(fresh->generationPath / "graph.json") == asBytes("graph-b"));
+    CHECK(readBytes(fresh->generationPath / "chart.packed") == asBytes("packed-b"));
+    CHECK(readBytes(captured / "graph.json") == asBytes("graph-a"));
+    std::reverse(second.entries.begin(), second.entries.end());
+    auto reordered = cuexis::tools::publishAndAdoptGeneration(second);
+    requireOk(reordered);
+    CHECK(reordered->generationIdentity == fresh->generationIdentity);
+    {
+        auto held =
+            PublicationLock::acquire(root / std::string{cuexis::tools::publicationLockName});
+        requireOk(held);
+        auto blocked = cuexis::tools::publishAndAdoptGeneration(first);
+        REQUIRE_FALSE(blocked);
+        CHECK(blocked.error().code() == "asset.publish.busy");
+    }
+    CHECK(*cuexis::tools::readAdoptedGeneration(root) == fresh->generationIdentity);
+    {
+        const ScopedEnv fail{"CUEXIS_ASSET_PUBLISH_FAIL_AFTER_ADOPT", "1"};
+        auto ambiguous = cuexis::tools::publishAndAdoptGeneration(first);
+        REQUIRE_FALSE(ambiguous);
+        CHECK(ambiguous.error().code() == "asset.publish.io_failed");
+        CHECK(std::ranges::any_of(ambiguous.error().context(), [](const auto& c) {
+            return c.key == "commitVisible" && c.value == "true";
+        }));
+    }
+    CHECK(*cuexis::tools::readAdoptedGeneration(root) == old->generationIdentity);
 }

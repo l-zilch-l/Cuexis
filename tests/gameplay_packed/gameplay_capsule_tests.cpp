@@ -1,0 +1,1111 @@
+#include "../judgement/execution_test_fixture.hpp"
+#include "gameplay_test_fixture.hpp"
+#include "packed_fixture_support.hpp"
+#include "packed_gameplay_internal.hpp"
+
+#include <cuexis/chart/packed_chart_io.hpp>
+#include <cuexis/gameplay_packed/gameplay_capsule.hpp>
+#include <cuexis/json/parse.hpp>
+#include <cuexis_internal/sha256.hpp>
+
+#include <algorithm>
+#include <array>
+#include <chrono>
+#include <cmath>
+#include <fstream>
+
+namespace {
+using namespace cuexis;
+using namespace judgement;
+using namespace judgement::testing;
+namespace capsule = gameplay_packed;
+namespace packed = chart::packed;
+namespace support = chart::packed::test;
+using Bytes = std::vector<std::byte>;
+
+struct CapsuleFixture final {
+    Fixture base;
+    ResolvedGameplayPrepareRequest request;
+    chart::CanonicalSemanticChart chart;
+    std::vector<capsule::RequirementOwner> owners;
+    capsule::CapsuleProfiles profiles{"normalization.one", "coordination.policy.one"};
+
+    CapsuleFixture() : request{base.request(), {}} {
+        auto& r = request.assembly.sources[0].document.requirements[0];
+        r.localClosePolicyToken = "local.close.t4.v1";
+        r.phases.push_back({PhaseKind::tail, 3});
+        r.patternArmRefs = {"atom.one"};
+        r.timing = RequirementRecord::Timing{Tick{100},
+                                             {{Tick{10}, Tick{20}, {PhaseKind::head, 1}},
+                                              {Tick{100}, Tick{103}, {PhaseKind::tail, 3}}},
+                                             TimeInterval{Tick{20}, Tick{100}}};
+        r.resourceClaims[0].claimPolicy.competition = ClaimPolicyDeclaration::CompetitionKey{-1, 7};
+        request.assembly.sources[0].document.relations[0].policy.claimKeyToken.clear();
+        chart.chartId.value = "019b0000-0000-7abc-8def-000000000001";
+        chart.features = {{std::string{kFeatureId}, 1}, {std::string{kRulesetFeatureId}, 1}};
+        chart.mainMusic = chart::AssetId{"music.one"};
+        chart.resourceClosure.resources = {
+            {*chart.mainMusic, chart::CanonicalResourceUseKind::MainMusic},
+            {chart::AssetId{"mesh.one"}, chart::CanonicalResourceUseKind::RenderableMesh},
+            {chart::AssetId{"material.one"}, chart::CanonicalResourceUseKind::RenderableMaterial}};
+        std::sort(chart.resourceClosure.resources.begin(), chart.resourceClosure.resources.end());
+        chart::CanonicalEntity entity;
+        entity.identity = chart::ExplicitEntityIdentity{
+            chart::ChartObjectId{"019b0000-0000-7abc-8def-000000000002"}};
+        entity.components = {chart::CanonicalTransform{},
+                             chart::CanonicalRenderable{chart::AssetId{"mesh.one"},
+                                                        chart::AssetId{"material.one"}, 37}};
+        chart.entities.push_back(entity);
+        auto visual = entity;
+        visual.identity = chart::ExplicitEntityIdentity{
+            chart::ChartObjectId{"019b0000-0000-7abc-8def-000000000003"}};
+        visual.parent = entity.identity;
+        chart.entities.push_back(visual);
+        owners.push_back({r.identity, entity.identity});
+    }
+    auto prepare() const -> PreparedGameplay {
+        auto result = prepareResolvedGameplay(request);
+        INFO((result ? ""
+                     : std::string{result.error().code()} + ": " +
+                           std::string{result.error().message()}));
+        REQUIRE(result);
+        return *result;
+    }
+    auto context() const -> capsule::DecodeContext {
+        return {request.assembly.capabilityContext, request.assembly.contentProfileLimits,
+                request.patternBudget, request.assembly.identityDeclarations,
+                profiles.coordinatorPolicyToken};
+    }
+    auto encode(const PreparedGameplay& prepared) const -> Bytes {
+        const auto result = capsule::encode({chart, prepared, owners, profiles});
+        INFO((result ? ""
+                     : std::string{result.error().code()} + ": " +
+                           std::string{result.error().message()}));
+        REQUIRE(result);
+        return *result;
+    }
+};
+
+auto u32(const Bytes& bytes, std::size_t at) -> std::uint32_t {
+    packed::ByteReader r{std::span{bytes}.subspan(at, 4)};
+    const auto value = r.readU32();
+    REQUIRE(value);
+    return *value;
+}
+void setU32(Bytes& bytes, std::size_t at, std::uint32_t value) {
+    for (std::size_t i = 0; i < 4; ++i) {
+        bytes[at + i] = static_cast<std::byte>((value >> (i * 8)) & 255);
+    }
+}
+auto directory(const Bytes& bytes, std::string_view code) -> std::size_t {
+    for (std::uint32_t i = 0; i < u32(bytes, 24); ++i) {
+        const auto at = 96 + static_cast<std::size_t>(i) * 32;
+        if (std::string_view{reinterpret_cast<const char*>(bytes.data() + at), 4} == code) {
+            return at;
+        }
+    }
+    FAIL("section missing");
+}
+void refreshHeader(Bytes& bytes) {
+    setU32(bytes, 92, packed::crc32(std::span{bytes}.first(92)));
+}
+void refreshSection(Bytes& bytes, std::size_t dir) {
+    setU32(bytes, dir + 24,
+           packed::crc32(std::span{bytes}.subspan(u32(bytes, dir + 8), u32(bytes, dir + 12))));
+    refreshHeader(bytes);
+}
+auto rewrite(Bytes bytes, bool reverse, std::string inspection = {}) -> Bytes {
+    struct Section {
+        Bytes directory;
+        Bytes payload;
+    };
+    std::vector<Section> sections;
+    for (std::uint32_t i = 0; i < u32(bytes, 24); ++i) {
+        const auto at = 96 + static_cast<std::size_t>(i) * 32;
+        const auto offset = u32(bytes, at + 8), length = u32(bytes, at + 12);
+        sections.push_back({Bytes{bytes.begin() + at, bytes.begin() + at + 32},
+                            Bytes{bytes.begin() + offset, bytes.begin() + offset + length}});
+    }
+    if (reverse) {
+        std::reverse(sections.begin(), sections.end());
+    }
+    if (!inspection.empty()) {
+        Bytes row(32), payload{std::byte{0x42}};
+        for (std::size_t i = 0; i < 4; ++i) {
+            row[i] = static_cast<std::byte>(inspection[i]);
+        }
+        row[5] = std::byte{1};
+        setU32(row, 12, 1);
+        setU32(row, 16, 1);
+        setU32(row, 24, packed::crc32(payload));
+        sections.push_back({std::move(row), std::move(payload)});
+    }
+    Bytes result{bytes.begin(), bytes.begin() + 96};
+    const auto count = static_cast<std::uint32_t>(sections.size());
+    auto offset = 96U + count * 32;
+    for (auto& s : sections) {
+        setU32(s.directory, 8, offset);
+        offset += static_cast<std::uint32_t>(s.payload.size());
+        result.insert(result.end(), s.directory.begin(), s.directory.end());
+    }
+    for (const auto& s : sections) {
+        result.insert(result.end(), s.payload.begin(), s.payload.end());
+    }
+    setU32(result, 16, static_cast<std::uint32_t>(result.size()));
+    setU32(result, 24, count);
+    setU32(result, 28, count * 32);
+    setU32(result, 76, static_cast<std::uint32_t>(result.size()) - 96 - count * 32);
+    refreshHeader(result);
+    return result;
+}
+auto digestText(std::span<const std::byte> bytes) -> std::string {
+    const auto digest = core::detail::sha256(bytes);
+    constexpr char hex[] = "0123456789abcdef";
+    std::string result;
+    for (auto b : digest) {
+        result += hex[b >> 4];
+        result += hex[b & 15];
+    }
+    return result;
+}
+struct Workspace final {
+    std::filesystem::path path;
+    Workspace() {
+        const auto stamp = std::chrono::steady_clock::now().time_since_epoch().count();
+        for (unsigned i = 0; i < 100; ++i) {
+            auto candidate = std::filesystem::temp_directory_path() /
+                             ("cuexis-capsule-" + std::to_string(stamp) + "-" + std::to_string(i));
+            if (std::filesystem::create_directory(candidate)) {
+                path = std::move(candidate);
+                return;
+            }
+        }
+        FAIL("cannot create an exclusive test workspace");
+    }
+    ~Workspace() {
+        std::error_code error;
+        if (!path.empty()) {
+            std::filesystem::remove_all(path, error);
+        }
+    }
+};
+auto readBytes(const std::filesystem::path& path) -> Bytes {
+    std::ifstream stream{path, std::ios::binary};
+    REQUIRE(stream);
+    Bytes bytes;
+    char value{};
+    while (stream.get(value)) {
+        bytes.push_back(static_cast<std::byte>(static_cast<unsigned char>(value)));
+    }
+    return bytes;
+}
+} // namespace
+
+TEST_CASE("Capsule complete typed chart round trip uses shared prepare", "[capsule][roundtrip]") {
+    CapsuleFixture f;
+    const auto prepared = f.prepare(), copy = prepared;
+    const auto bytes = f.encode(prepared);
+    const auto decoded = capsule::decode(bytes, f.context());
+    INFO((decoded ? ""
+                  : std::string{decoded.error().code()} + ": " +
+                        std::string{decoded.error().message()}));
+    REQUIRE(decoded);
+    CHECK(judgement::semanticDiff(prepared.assembled().graph, decoded->gameplay.assembled().graph)
+              .empty());
+    CHECK(decoded->gameplay.assembled().prepared == copy.assembled().prepared);
+    CHECK(decoded->gameplay.assembled().content == copy.assembled().content);
+    CHECK(decoded->gameplay.requirements()[0].deadline == Tick{103});
+    CHECK(decoded->gameplay.admitsSuccess(0, Tick{102}));
+    CHECK_FALSE(decoded->gameplay.admitsSuccess(0, Tick{103}));
+    CHECK(decoded->chart.entities == f.chart.entities);
+    CHECK(decoded->chart.resourceClosure == f.chart.resourceClosure);
+    CHECK(decoded->owners[0].entity == f.owners[0].entity);
+    CHECK(decoded->gameplay.assembled().contentProfileVerdict ==
+          ContentProfileVerdict::notEnforcedPendingBounds);
+    CHECK(capsule::encode({decoded->chart, decoded->gameplay, decoded->owners, decoded->profiles,
+                           decoded->patterns, decoded->measures})
+              .value() == bytes);
+    CHECK_FALSE(packed::decode(bytes));
+}
+
+TEST_CASE("Capsule source provenance does not change frozen semantic identity",
+          "[capsule][identity]") {
+    CapsuleFixture f;
+    const auto original = f.encode(f.prepare());
+    for (auto policy :
+         {GraceResolutionPolicy::inheritedDeclaration, GraceResolutionPolicy::defaultDeclaration}) {
+        auto& grace = f.request.assembly.sources[0].document.requirements[0].grace;
+        grace.policy = policy;
+        grace.inheritedFromDeclarationId =
+            policy == GraceResolutionPolicy::inheritedDeclaration ? "literal.three" : "";
+        const auto bytes = f.encode(f.prepare());
+        CHECK(bytes != original);
+        CHECK(std::equal(bytes.begin() + 32, bytes.begin() + 64, original.begin() + 32));
+        const auto decoded = capsule::decode(bytes, f.context());
+        REQUIRE(decoded);
+        CHECK(decoded->gameplay.assembled().graph.requirements[0].grace == grace);
+    }
+}
+
+TEST_CASE("Capsule Reader accepts section permutation and bounded inspection",
+          "[capsule][layout]") {
+    CapsuleFixture f;
+    const auto bytes = f.encode(f.prepare());
+    for (const auto& altered :
+         {rewrite(bytes, true), rewrite(bytes, false, "DBG0"), rewrite(bytes, true, "ZZZ0")}) {
+        const auto decoded = capsule::decode(altered, f.context());
+        INFO((decoded ? ""
+                      : std::string{decoded.error().code()} + ": " +
+                            std::string{decoded.error().message()}));
+        REQUIRE(decoded);
+        CHECK(capsule::encode({decoded->chart, decoded->gameplay, decoded->owners,
+                               decoded->profiles, decoded->patterns, decoded->measures})
+                  .value() == bytes);
+    }
+}
+
+TEST_CASE("Capsule hostile framing fails before atomic publication", "[capsule][hostile][atomic]") {
+    CapsuleFixture f;
+    const auto good = f.encode(f.prepare());
+    std::optional<capsule::PreparedCapsule> active;
+    REQUIRE(capsule::decodeInto(active, good, f.context()));
+    const auto identity = active->gameplay.assembled().prepared;
+    auto bytes = good;
+    SECTION("revision") {
+        setU32(bytes, 88, 1);
+        refreshHeader(bytes);
+    }
+    SECTION("header count") {
+        setU32(bytes, 68, 2);
+        refreshHeader(bytes);
+    }
+    SECTION("digest") {
+        bytes[32] ^= std::byte{1};
+        refreshHeader(bytes);
+    }
+    SECTION("CRC") {
+        bytes.back() ^= std::byte{1};
+    }
+    SECTION("missing Gameplay section") {
+        const auto at = directory(bytes, "GPH0");
+        bytes[at] = std::byte{'Z'};
+    }
+    SECTION("table flags") {
+        const auto at = directory(bytes, "GPH0");
+        bytes[u32(bytes, at + 8) + 3] = std::byte{1};
+        refreshSection(bytes, at);
+    }
+    SECTION("table revision") {
+        const auto at = directory(bytes, "GPH0");
+        bytes[u32(bytes, at + 8)] = std::byte{2};
+        refreshSection(bytes, at);
+    }
+    SECTION("table codec") {
+        const auto at = directory(bytes, "GPD0");
+        bytes[u32(bytes, at + 8) + 2] = std::byte{2};
+        refreshSection(bytes, at);
+    }
+    SECTION("table rowCount") {
+        const auto at = directory(bytes, "GPR0");
+        setU32(bytes, u32(bytes, at + 8) + 4, 2);
+        refreshSection(bytes, at);
+    }
+    SECTION("table payloadBytes") {
+        const auto at = directory(bytes, "GRC0");
+        setU32(bytes, u32(bytes, at + 8) + 8, 0);
+        refreshSection(bytes, at);
+    }
+    SECTION("entity ordinal") {
+        const auto at = directory(bytes, "GPR0");
+        bytes[u32(bytes, at + 8) + 16] = std::byte{99};
+        refreshSection(bytes, at);
+    }
+    SECTION("nonshort varint") {
+        const auto at = directory(bytes, "GPH0");
+        const auto p = u32(bytes, at + 8) + 16;
+        bytes[p] = std::byte{0x82};
+        bytes[p + 1] = std::byte{0};
+        refreshSection(bytes, at);
+    }
+    SECTION("unknown ref kind") {
+        const auto at = directory(bytes, "REF0");
+        bytes[u32(bytes, at + 8)] = std::byte{14};
+        refreshSection(bytes, at);
+    }
+    SECTION("truncated") {
+        bytes.pop_back();
+    }
+    SECTION("trailing") {
+        bytes.push_back(std::byte{0});
+    }
+    const auto result = capsule::decodeInto(active, bytes, f.context());
+    CHECK_FALSE(result);
+    CHECK(active->gameplay.assembled().prepared == identity);
+}
+
+TEST_CASE("Capsule execution context and accepted budgets cannot be bypassed",
+          "[capsule][context][budget]") {
+    CapsuleFixture f;
+    const auto bytes = f.encode(f.prepare());
+    auto context = f.context();
+    SECTION("normalization") {
+        context.identities.session.normalizationProfileToken = "other";
+    }
+    SECTION("coordinator") {
+        context.coordinatorPolicyToken = "other";
+    }
+    SECTION("disabled capability") {
+        context.capabilities.enabledCapabilityIds.clear();
+    }
+    SECTION("unknown capability") {
+        context.capabilities.recognisedCapabilityIds.clear();
+    }
+    SECTION("content budget") {
+        context.contentLimits.maxRequirements = MeasuredParameter<std::uint64_t>::measured(0);
+    }
+    SECTION("compiled budget") {
+        context.patternBudget.maxCompiledBytes = MeasuredParameter<std::uint64_t>::measured(0);
+    }
+    CHECK_FALSE(capsule::decode(bytes, context));
+}
+
+TEST_CASE("Capsule instance claims share a namespace but not a structural key",
+          "[capsule][resource][instances]") {
+    CapsuleFixture f;
+    auto& doc = f.request.assembly.sources[0].document;
+    auto second = doc.requirements[0];
+    second.stableId.declarationOrdinal = 5;
+    second.identity.requirementLocalId = "requirement.two";
+    second.identity.emissionPath[0].repeatIndex = 1;
+    second.resourceClaims[0].intent = ResourceClaimIntent::consume;
+    second.resourceClaims[0].claimPolicy.competition =
+        ClaimPolicyDeclaration::CompetitionKey{-1, 3};
+    doc.declarations.push_back(testDeclaration(DeclarationKind::requirement, "requirement.two", 5));
+    doc.relations[0].members.push_back(second.stableId);
+    f.owners.push_back({second.identity, f.chart.entities[0].identity});
+    doc.requirements.push_back(second);
+    const auto prepared = f.prepare();
+    REQUIRE(prepared.resources()[0].claims.candidates().size() == 2);
+    CHECK(prepared.resources()[0].requirementIndices == std::vector<std::size_t>{1, 0});
+    CHECK(prepared.resources()[0].claims.candidates()[0].claimKeyToken !=
+          prepared.resources()[0].claims.candidates()[1].claimKeyToken);
+    const auto bytes = f.encode(prepared);
+    const auto decoded = capsule::decode(bytes, f.context());
+    REQUIRE(decoded);
+    CHECK(decoded->gameplay.resources()[0].claims.candidates() ==
+          prepared.resources()[0].claims.candidates());
+    CHECK(decoded->gameplay.assembled().graph.requirements[1].resourceClaims[0].intent ==
+          ResourceClaimIntent::consume);
+    std::reverse(doc.requirements.begin(), doc.requirements.end());
+    std::reverse(doc.declarations.begin(), doc.declarations.end());
+    std::reverse(doc.relations[0].members.begin(), doc.relations[0].members.end());
+    std::reverse(f.chart.entities.begin(), f.chart.entities.end());
+    std::reverse(f.owners.begin(), f.owners.end());
+    CHECK(f.encode(f.prepare()) == bytes);
+}
+
+TEST_CASE("Capsule empty requirement graph preserves independent definitions",
+          "[capsule][roundtrip][empty]") {
+    CapsuleFixture f;
+    auto& doc = f.request.assembly.sources[0].document;
+    doc.requirements.clear();
+    doc.relations.clear();
+    doc.declarations.erase(
+        std::remove_if(doc.declarations.begin(), doc.declarations.end(),
+                       [](const auto& d) { return d.kind == DeclarationKind::requirement; }),
+        doc.declarations.end());
+    f.owners.clear();
+    f.chart.features = {{std::string{kRulesetFeatureId}, 1}};
+    const auto prepared = f.prepare();
+    const auto bytes = f.encode(prepared);
+    const auto decoded = capsule::decode(bytes, f.context());
+    REQUIRE(decoded);
+    CHECK(decoded->gameplay.requirements().empty());
+    CHECK(decoded->gameplay.resources().size() == 1);
+    CHECK(decoded->gameplay.assembled().graph.judgementDomains.size() == 1);
+    CHECK(decoded->patterns.empty());
+    CHECK(decoded->measures.empty());
+    CHECK_FALSE(decoded->gameplay.admitsSuccess(0, Tick{0}));
+    CHECK(capsule::encode({decoded->chart, decoded->gameplay, decoded->owners, decoded->profiles})
+              .value() == bytes);
+}
+
+TEST_CASE("Capsule Tap and resource intent remain explicit", "[capsule][roundtrip][tap][intent]") {
+    CapsuleFixture f;
+    auto& r = f.request.assembly.sources[0].document.requirements[0];
+    r.phases = {{PhaseKind::tap, 7}};
+    r.measure.components = {{PhaseKind::tap, "tap", {"perfect", "good"}}};
+    r.timing =
+        RequirementRecord::Timing{Tick{100}, {{Tick{90}, Tick{100}, {PhaseKind::tap, 7}}}, {}};
+    auto& claim = r.resourceClaims[0];
+    SECTION("observe") {
+        claim.intent = ResourceClaimIntent::observe;
+        claim.claimPolicy.claimKeyToken.clear();
+        claim.claimPolicy.competition.reset();
+    }
+    SECTION("consume") {
+        claim.intent = ResourceClaimIntent::consume;
+    }
+    SECTION("claim") {
+        claim.intent = ResourceClaimIntent::claim;
+    }
+    const auto prepared = f.prepare();
+    const auto bytes = f.encode(prepared);
+    const auto decoded = capsule::decode(bytes, f.context());
+    REQUIRE(decoded);
+    CHECK(decoded->gameplay.assembled().graph.requirements[0].resourceClaims == r.resourceClaims);
+    CHECK(decoded->gameplay.requirements()[0].deadline == Tick{100});
+    CHECK(decoded->gameplay.admitsSuccess(0, Tick{99}));
+    CHECK_FALSE(decoded->gameplay.admitsSuccess(0, Tick{100}));
+    CHECK(decoded->gameplay.assembled().graph.requirements[0].measure == r.measure);
+    CHECK(decoded->gameplay.resources()[0].claims.occupyingCandidateCount() ==
+          (claim.intent == ResourceClaimIntent::observe ? 0 : 1));
+}
+
+TEST_CASE("Capsule exact timebase domain actions and ordered grades round trip",
+          "[capsule][roundtrip][typed]") {
+    CapsuleFixture f;
+    f.base.timebase.originBeat = makeBeat(-1, 3);
+    f.base.timebase.initialTempo = makeDuration(1000000, 3);
+    f.base.timebase.tempoSections = {{makeBeat(4, 3), makeDuration(2000000, 7)}};
+    f.base.timebase.stopSections = {{makeBeat(2, 1), makeBeat(3, 1), makeDuration(4000000, 9)}};
+    f.base.latePolicy.policy = LateEventPolicy::queueNextTick;
+    auto& doc = f.request.assembly.sources[0].document;
+    auto& r = doc.requirements[0];
+    r.requiredActions.push_back(RequiredActionRef::fromToken("action.secondary").value());
+    r.measure.components = {{PhaseKind::head, "hold_head", {"perfect", "good"}},
+                            {PhaseKind::body, "hold_body", {"steady", "rough"}},
+                            {PhaseKind::tail, "hold_tail", {"clean", "late"}}};
+    doc.judgementDomains[0].axes.push_back({"axis.vertical", -1000, 1000});
+    const auto prepared = f.prepare();
+    const auto decoded = capsule::decode(f.encode(prepared), f.context());
+    REQUIRE(decoded);
+    CHECK(semanticDiff(prepared.assembled().graph, decoded->gameplay.assembled().graph).empty());
+    CHECK(decoded->gameplay.assembled().prepared == prepared.assembled().prepared);
+    CHECK(decoded->gameplay.assembled().graph.timebase->stopSections ==
+          f.base.timebase.stopSections);
+}
+
+TEST_CASE("Capsule named and unused definitions survive canonical dictionary reuse",
+          "[capsule][roundtrip][definitions]") {
+    CapsuleFixture f;
+    auto& doc = f.request.assembly.sources[0].document;
+    auto& r = doc.requirements[0];
+    r.pattern.patternId = "pattern.named";
+    auto pattern = r.pattern;
+    auto unused = pattern;
+    unused.patternId = "pattern.unused";
+    unused.root = {PatternPrimitive::skip, {}, {}, {}, {}};
+    doc.declarations.push_back(
+        testDeclaration(DeclarationKind::patternDefinition, pattern.patternId, 6));
+    doc.declarations.push_back(
+        testDeclaration(DeclarationKind::measureDefinition, "measure.named", 7));
+    doc.declarations.push_back(
+        testDeclaration(DeclarationKind::patternDefinition, unused.patternId, 8));
+    const auto d =
+        std::find_if(doc.declarations.begin(), doc.declarations.end(),
+                     [](const auto& v) { return v.kind == DeclarationKind::requirement; });
+    d->references = {{ReferenceScope::sameDocument, "", 6}, {ReferenceScope::sameDocument, "", 7}};
+    const std::vector patterns{pattern, unused, unused};
+    const std::vector measures{capsule::MeasureDefinition{std::string{"measure.named"}, r.measure}};
+    const auto prepared = f.prepare();
+    const auto bytes =
+        capsule::encode({f.chart, prepared, f.owners, f.profiles, patterns, measures});
+    REQUIRE(bytes);
+    const auto decoded = capsule::decode(*bytes, f.context());
+    REQUIRE(decoded);
+    CHECK(decoded->patterns.size() == 2);
+    CHECK(decoded->measures.size() == 1);
+    CHECK(decoded->measures[0].id == std::optional<std::string>{"measure.named"});
+    CHECK(capsule::encode({decoded->chart, decoded->gameplay, decoded->owners, decoded->profiles,
+                           decoded->patterns, decoded->measures})
+              .value() == *bytes);
+}
+
+TEST_CASE("Capsule file and memory bridge replace only validated artifacts",
+          "[capsule][file][atomic]") {
+    CapsuleFixture f;
+    const auto prepared = f.prepare();
+    const auto bytes = f.encode(prepared);
+    Workspace workspace;
+    const auto target = workspace.path / "chart.packed";
+    REQUIRE(capsule::writeAtomic({f.chart, prepared, f.owners, f.profiles}, target));
+    CHECK(readBytes(target) == bytes);
+    const auto file = capsule::read(target, f.context());
+    REQUIRE(file);
+    CHECK(file->gameplay.assembled().prepared == prepared.assembled().prepared);
+    auto invalid = f.chart;
+    invalid.features.clear();
+    CHECK_FALSE(capsule::writeAtomic({invalid, prepared, f.owners, f.profiles}, target));
+    CHECK(readBytes(target) == bytes);
+    auto limits = chart::PackedChartLimits{};
+    limits.maxPackedFileBytes = 1;
+    CHECK_FALSE(capsule::writeAtomic({f.chart, prepared, f.owners, f.profiles}, target, limits));
+    CHECK(readBytes(target) == bytes);
+    const auto occupied = workspace.path / "occupied";
+    REQUIRE(std::filesystem::create_directory(occupied));
+    CHECK_FALSE(capsule::writeAtomic({f.chart, prepared, f.owners, f.profiles}, occupied));
+    CHECK(std::filesystem::is_directory(occupied));
+    CHECK(std::distance(std::filesystem::directory_iterator{workspace.path},
+                        std::filesystem::directory_iterator{}) == 2);
+}
+
+TEST_CASE("Capsule unused definitions cannot bypass the declared closure",
+          "[capsule][definitions][closure][hostile]") {
+    CapsuleFixture f;
+    auto pattern = f.request.assembly.sources[0].document.requirements[0].pattern;
+    pattern.root = {PatternPrimitive::skip, {}, {}, {}, {}};
+    capsule::MeasureDefinition measure{std::nullopt, {}};
+    std::vector<PatternDeclaration> patterns;
+    std::vector<capsule::MeasureDefinition> measures;
+    SECTION("unused Pattern feature") {
+        pattern.required.features.push_back({"feature.undeclared"});
+        patterns.push_back(pattern);
+    }
+    SECTION("unused Pattern capability") {
+        pattern.required.capabilities.push_back({"capability.undeclared", "revision.one"});
+        patterns.push_back(pattern);
+    }
+    SECTION("unused Measure feature") {
+        measure.declaration.required.features.push_back({"feature.undeclared"});
+        measures.push_back(measure);
+    }
+    SECTION("unused Measure capability") {
+        measure.declaration.required.capabilities.push_back({"capability.undeclared", ""});
+        measures.push_back(measure);
+    }
+    const auto prepared = f.prepare();
+    CHECK_FALSE(capsule::encode({f.chart, prepared, f.owners, f.profiles, patterns, measures}));
+}
+
+TEST_CASE("Capsule canonical byte and structural preimage goldens", "[capsule][golden]") {
+    CapsuleFixture f;
+    const auto prepared = f.prepare();
+    const auto bytes = f.encode(prepared);
+    const auto preimage = capsule::semanticPreimage({f.chart, prepared, f.owners, f.profiles});
+    REQUIRE(preimage);
+    CHECK(bytes.size() == 3264);
+    CHECK(digestText(bytes) == "471e5cefc7cd2b1376163ad87cf1b1d7557f624252fe2cef707b7af1a9774e7c");
+    CHECK(preimage->size() == 4528);
+    CHECK(digestText(*preimage) ==
+          "82765a403f7fe3c0b820aae1e3ca699793fe206223278d7a2c33606121b7c9ff");
+    const auto digest = core::detail::sha256(*preimage);
+    CHECK(std::equal(digest.begin(), digest.end(), bytes.begin() + 32,
+                     [](auto l, auto r) { return l == std::to_integer<std::uint8_t>(r); }));
+}
+
+TEST_CASE("Capsule revision 3 preserves executable fields and mutually rejects older readers",
+          "[capsule][execution][revision3]") {
+    CapsuleFixture f;
+    f.base.latePolicy = executionLate();
+    executionFields(f.request.assembly);
+    f.profiles = {f.request.assembly.normalizationProfileToken,
+                  f.request.assembly.coordinatorPolicyToken};
+    const auto prepared = f.prepare();
+    capsule::EncodeRequest request{f.chart, prepared, f.owners, f.profiles, {}, {}, 3};
+    const auto bytes = capsule::encode(request);
+    INFO((bytes ? "" : std::string{bytes.error().message()}));
+    REQUIRE(bytes);
+    auto preimage = capsule::semanticPreimage(request);
+    REQUIRE(preimage);
+    CHECK(bytes->size() == 3370);
+    CHECK(digestText(*bytes) == "ff1ff218925f2f8c684505651b9170c46ce2f386091fd3da34a8bdfe99e18bb4");
+    CHECK(preimage->size() == 4793);
+    CHECK(digestText(*preimage) ==
+          "8c5c41467cc986974d038eb66d5836198918ffe245adf51d8e575f156bf7a8ca");
+    CHECK(u32(*bytes, 88) == 3);
+    auto context = f.context();
+    CHECK_FALSE(capsule::decode(*bytes, context));
+    context.candidateRevision = 3;
+    const auto decoded = capsule::decode(*bytes, context);
+    INFO((decoded ? "" : std::string{decoded.error().message()}));
+    REQUIRE(decoded);
+    CHECK(decoded->candidateRevision == 3);
+    CHECK(semanticDiff(prepared.assembled().graph, decoded->gameplay.assembled().graph).empty());
+    CHECK(decoded->gameplay.identityDeclarations() == prepared.identityDeclarations());
+    CHECK(std::equal(decoded->gameplay.timers().begin(), decoded->gameplay.timers().end(),
+                     prepared.timers().begin(), prepared.timers().end()));
+    const auto encodedAgain =
+        capsule::encode({decoded->chart, decoded->gameplay, decoded->owners, decoded->profiles,
+                         decoded->patterns, decoded->measures, 3});
+    REQUIRE(encodedAgain);
+    CHECK(*encodedAgain == *bytes);
+    CHECK_FALSE(capsule::encode({f.chart, prepared, f.owners, f.profiles}));
+    CapsuleFixture legacy;
+    CHECK_FALSE(capsule::decode(legacy.encode(legacy.prepare()), context));
+    auto changed = f.request;
+    changed.assembly.sources[0].document.requirements[0].atomBindings[0].channelToken = "lane.two";
+    auto second = prepareResolvedGameplay(changed);
+    REQUIRE(second);
+    CHECK(second->assembled().chart != prepared.assembled().chart);
+    auto changedBytes = capsule::encode({f.chart, *second, f.owners, f.profiles, {}, {}, 3});
+    REQUIRE(changedBytes);
+    CHECK(*changedBytes != *bytes);
+}
+
+TEST_CASE("Revision3 hostile bytes and file publication preserve the previous artifact",
+          "[capsule][revision3][hostile][atomic]") {
+    CapsuleFixture f;
+    f.base.latePolicy = executionLate();
+    executionFields(f.request.assembly);
+    f.profiles = {f.request.assembly.normalizationProfileToken,
+                  f.request.assembly.coordinatorPolicyToken};
+    const auto prepared = f.prepare();
+    capsule::EncodeRequest request{f.chart, prepared, f.owners, f.profiles, {}, {}, 3};
+    auto encoded = capsule::encode(request);
+    REQUIRE(encoded);
+    auto bytes = *encoded;
+    auto context = f.context();
+    context.candidateRevision = 3;
+    std::optional<capsule::PreparedCapsule> active;
+    REQUIRE(capsule::decodeInto(active, bytes, context));
+    const auto identity = active->gameplay.assembled().prepared;
+    SECTION("wrong revision") {
+        setU32(bytes, 88, 2);
+        refreshHeader(bytes);
+    }
+    SECTION("hash forgery") {
+        bytes[32] ^= std::byte{1};
+        refreshHeader(bytes);
+    }
+    SECTION("section CRC") {
+        auto dir = directory(bytes, "GPR0");
+        bytes[u32(bytes, dir + 8) + u32(bytes, dir + 12) - 1] ^= std::byte{1};
+    }
+    SECTION("invalid UTF8") {
+        const std::string token = "gameplay.execution.t4-k4.v1";
+        const auto pattern = std::as_bytes(std::span{token.data(), token.size()});
+        auto found = std::search(bytes.begin(), bytes.end(), pattern.begin(), pattern.end());
+        REQUIRE(found != bytes.end());
+        *found = std::byte{0xff};
+        refreshSection(bytes, directory(bytes, "STR0"));
+    }
+    SECTION("table schema revision high byte") {
+        auto dir = directory(bytes, "GPD0");
+        bytes[u32(bytes, dir + 8) + 1] = std::byte{0xff};
+        refreshSection(bytes, dir);
+    }
+    SECTION("option tag") {
+        auto dir = directory(bytes, "GPD0");
+        bytes[u32(bytes, dir + 8) + 17] = std::byte{0xff};
+        refreshSection(bytes, dir);
+    }
+    SECTION("unknown opcode or illegal child shape") {
+        auto dir = directory(bytes, "GPD0");
+        auto position = static_cast<std::size_t>(u32(bytes, dir + 8)) + 16;
+        auto readV = [&]() {
+            std::uint64_t result = 0;
+            unsigned shift = 0;
+            for (;;) {
+                REQUIRE(position < bytes.size());
+                const auto byte = std::to_integer<unsigned>(bytes[position++]);
+                result |= static_cast<std::uint64_t>(byte & 127) << shift;
+                if (!(byte & 128)) {
+                    return result;
+                }
+                shift += 7;
+                REQUIRE(shift < 64);
+            }
+        };
+        REQUIRE(readV() == 1); // Pattern table count precedes its first row.
+        const auto present = std::to_integer<unsigned>(bytes[position++]);
+        REQUIRE(present <= 1);
+        if (present) {
+            (void)readV();
+        }
+        REQUIRE(bytes[position++] == std::byte{1});
+        auto features = readV();
+        for (std::uint64_t i = 0; i < features; ++i) {
+            (void)readV();
+        }
+        auto capabilities = readV();
+        for (std::uint64_t i = 0; i < capabilities; ++i) {
+            (void)readV();
+        }
+        REQUIRE(readV() > 0);
+        SECTION("opcode") {
+            bytes[position] = std::byte{0xff};
+        }
+        SECTION("atom cannot own child or backedge") {
+            REQUIRE(bytes[position] == std::byte{1});
+            bytes[position + 1] = std::byte{1};
+        }
+        refreshSection(bytes, dir);
+    }
+    SECTION("resource capacity or gap cannot bypass prepare") {
+        auto dir = directory(bytes, "GRC0");
+        auto position = static_cast<std::size_t>(u32(bytes, dir + 8)) + 16;
+        auto skipV = [&]() {
+            while (std::to_integer<unsigned>(bytes[position++]) & 128) {
+                REQUIRE(position < bytes.size());
+            }
+        };
+        skipV(); // Resource table count.
+        skipV(); // Resource REF0 index.
+        const auto capacity = position;
+        skipV();
+        skipV();
+        skipV();
+        REQUIRE(position < bytes.size());
+        ++position;
+        const auto gap = position;
+        SECTION("capacity") {
+            REQUIRE(bytes[capacity] == std::byte{1});
+            bytes[capacity] = std::byte{2};
+        }
+        SECTION("gap") {
+            REQUIRE(bytes[gap] == std::byte{0});
+            bytes[gap] = std::byte{2};
+        }
+        refreshSection(bytes, dir);
+    }
+    SECTION("truncated execution record") {
+        bytes.pop_back();
+    }
+    SECTION("trailing bytes") {
+        bytes.push_back(std::byte{0});
+    }
+    SECTION("unknown execution token") {
+        const std::string token = "gameplay.execution.t4-k4.v1";
+        const auto pattern = std::as_bytes(std::span{token.data(), token.size()});
+        auto found = std::search(bytes.begin(), bytes.end(), pattern.begin(), pattern.end());
+        REQUIRE(found != bytes.end());
+        *found = std::byte{'x'};
+        refreshSection(bytes, directory(bytes, "STR0"));
+    }
+    CHECK_FALSE(capsule::decodeInto(active, bytes, context));
+    REQUIRE(active);
+    CHECK(active->gameplay.assembled().prepared == identity);
+    Workspace workspace;
+    const auto target = workspace.path / "execution.cxp";
+    REQUIRE(capsule::writeAtomic(request, target));
+    CHECK(readBytes(target) == *encoded);
+    auto file = capsule::read(target, context);
+    REQUIRE(file);
+    CHECK(file->gameplay.assembled().prepared == identity);
+    auto malformed = f.request;
+    malformed.assembly.sources[0].document.requirements[0].atomBindings.clear();
+    PreparedGameplayPublication publication;
+    REQUIRE(prepareResolvedInto(publication, f.request));
+    CHECK_FALSE(prepareResolvedInto(publication, malformed));
+    CHECK(publication.active()->assembled().prepared == identity);
+    auto badChart = f.chart;
+    badChart.features.clear();
+    CHECK_FALSE(
+        capsule::writeAtomic({badChart, prepared, f.owners, f.profiles, {}, {}, 3}, target));
+    CHECK(readBytes(target) == *encoded);
+    auto permuted = capsule::decode(rewrite(*encoded, true), context);
+    REQUIRE(permuted);
+    auto rewritten =
+        capsule::encode({permuted->chart, permuted->gameplay, permuted->owners, permuted->profiles,
+                         permuted->patterns, permuted->measures, 3});
+    REQUIRE(rewritten);
+    CHECK(*rewritten == *encoded);
+}
+
+TEST_CASE("Revision3 optional amount and independent competition survive all projections",
+          "[capsule][revision3][optional]") {
+    CapsuleFixture f;
+    f.base.latePolicy = executionLate();
+    executionFields(f.request.assembly);
+    f.profiles = {f.request.assembly.normalizationProfileToken,
+                  f.request.assembly.coordinatorPolicyToken};
+    auto& doc = f.request.assembly.sources[0].document;
+    auto& r = doc.requirements[0];
+    r.phases = {{PhaseKind::tap, 1}};
+    r.requiresReleaseTailSemantics = false;
+    r.timing = RequirementRecord::Timing{Tick{940},
+                                         {{Tick{850}, Tick{920}, {PhaseKind::tap, 1}}},
+                                         {},
+                                         {{PhaseKind::tap, Tick{900}}}};
+    r.measure.components = {{PhaseKind::tap, "tap", {}}};
+    r.atomBindings.resize(1);
+    r.atomBindings[0].amountRange = AmountMatchRange{-4, 9};
+    r.resourceClaims.clear();
+    r.independentCompetition = {-1, 42};
+    doc.relations.clear();
+    const auto prepared = f.prepare();
+    auto bytes = capsule::encode({f.chart, prepared, f.owners, f.profiles, {}, {}, 3});
+    REQUIRE(bytes);
+    auto context = f.context();
+    context.candidateRevision = 3;
+    auto decoded = capsule::decode(*bytes, context);
+    REQUIRE(decoded);
+    const auto& restored = decoded->gameplay.assembled().graph.requirements[0];
+    CHECK(restored.atomBindings == r.atomBindings);
+    CHECK(restored.independentCompetition == r.independentCompetition);
+    CHECK(semanticDiff(prepared.assembled().graph, decoded->gameplay.assembled().graph).empty());
+    auto again = capsule::encode({decoded->chart, decoded->gameplay, decoded->owners,
+                                  decoded->profiles, decoded->patterns, decoded->measures, 3});
+    REQUIRE(again);
+    CHECK(*again == *bytes);
+}
+
+TEST_CASE("Compiled Graph Writer shares Capsule records with explicit candidate bounds",
+          "[capsule][graph][writer][revision3]") {
+    CapsuleFixture f;
+    f.base.latePolicy = executionLate();
+    executionFields(f.request.assembly);
+    f.profiles = {f.request.assembly.normalizationProfileToken,
+                  f.request.assembly.coordinatorPolicyToken};
+    const auto prepared = f.prepare();
+    capsule::EncodeRequest request{f.chart, prepared, f.owners, f.profiles, {}, {}, 3};
+    const capsule::GraphWriterLimits bounds{131072, 8192, 8192, true};
+    const auto graph = capsule::encodeGraph(request, bounds);
+    INFO((graph ? "" : std::string{graph.error().message()}));
+    REQUIRE(graph);
+    CHECK(graph->starts_with(
+        "{\"format\":\"cuexis.gameplay-graph\",\"graphFormatRevision\":1,\"capsuleRevision\":3,"));
+    const auto repeated = capsule::encodeGraph(request, bounds);
+    REQUIRE(repeated);
+    CHECK(*repeated == *graph);
+    const auto tree =
+        json::parseBounded(*graph, {{bounds.maxBytes, 32, bounds.maxStringBytes}, 16384, 8192});
+    REQUIRE(tree);
+    REQUIRE(tree->find("semanticIdentity"));
+    CHECK(*tree->find("semanticIdentity")->string() ==
+          "8c5c41467cc986974d038eb66d5836198918ffe245adf51d8e575f156bf7a8ca");
+    const auto& staticChart = *tree->find("staticChart");
+    CHECK(*staticChart.find("chartId")->string() == f.chart.chartId.value);
+    REQUIRE(staticChart.find("entities")->array()->size() == 2);
+    const auto& visual = staticChart.find("entities")->array()->at(1);
+    CHECK(*visual.find("parent")->find("objectId")->string() ==
+          std::get<chart::ExplicitEntityIdentity>(f.chart.entities[0].identity).objectId.value);
+    const auto& component = visual.find("components")->array()->at(1);
+    CHECK(*component.find("alpha")->unsignedInteger() == 37);
+    REQUIRE(tree->find("GPR0")->array()->size() == 1);
+    const auto& row = *tree->find("GPR0")->array()->at(0).array();
+    REQUIRE_FALSE(row.empty());
+    CHECK(*row.front().unsignedInteger() == 0);
+    CHECK(row.back().type() != json::ValueType::Number);
+    CHECK(tree->find("GPD0")->object()->size() == 4);
+    CHECK(tree->find("GRC0")->object()->size() == 5);
+    auto exact = bounds;
+    exact.maxBytes = graph->size();
+    CHECK(capsule::encodeGraph(request, exact));
+    --exact.maxBytes;
+    auto rejected = capsule::encodeGraph(request, exact);
+    REQUIRE_FALSE(rejected);
+    CHECK(rejected.error().code() == "graph.budget.exceeded");
+    for (unsigned field = 0; field < 3; ++field) {
+        auto invalid = bounds;
+        if (field == 0)
+            invalid.maxBytes = 0;
+        if (field == 1)
+            invalid.maxStringBytes = 0;
+        if (field == 2)
+            invalid.maxRowAtoms = 0;
+        const auto result = capsule::encodeGraph(request, invalid);
+        REQUIRE_FALSE(result);
+        CHECK(result.error().code() == "capability.budget_insufficient");
+    }
+    auto disabled = bounds;
+    disabled.testOnly = false;
+    CHECK_FALSE(capsule::encodeGraph(request, disabled));
+    auto tiny = bounds;
+    tiny.maxRowAtoms = 1;
+    rejected = capsule::encodeGraph(request, tiny);
+    REQUIRE_FALSE(rejected);
+    CHECK(rejected.error().code() == "graph.budget.exceeded");
+    tiny = bounds;
+    tiny.maxStringBytes = 1;
+    rejected = capsule::encodeGraph(request, tiny);
+    REQUIRE_FALSE(rejected);
+    CHECK(rejected.error().code() == "graph.budget.exceeded");
+    request.candidateRevision = 2;
+    rejected = capsule::encodeGraph(request, bounds);
+    REQUIRE_FALSE(rejected);
+    CHECK(rejected.error().code() == "graph.header.unsupported_revision");
+}
+
+TEST_CASE(
+    "Compiled Graph Writer preserves float sign and string escaping outside Gameplay integers",
+    "[capsule][graph][writer][revision3]") {
+    CapsuleFixture f;
+    f.base.latePolicy = executionLate();
+    executionFields(f.request.assembly);
+    f.profiles = {f.request.assembly.normalizationProfileToken,
+                  f.request.assembly.coordinatorPolicyToken};
+    f.chart.timing.offsetMs = -0.0;
+    const std::string escapedId = "measure\"\\\n";
+    f.request.assembly.sources[0].document.declarations.push_back(
+        testDeclaration(DeclarationKind::measureDefinition, escapedId, 100));
+    const std::vector measures{capsule::MeasureDefinition{
+        escapedId, f.request.assembly.sources[0].document.requirements[0].measure}};
+    const auto prepared = f.prepare();
+    const auto graph = capsule::encodeGraph(
+        {f.chart, prepared, f.owners, f.profiles, {}, measures, 3}, {131072, 8192, 8192, true});
+    INFO((graph ? "" : std::string{graph.error().message()}));
+    REQUIRE(graph);
+    CHECK(graph->find("\"offsetMs\":-0.0") != std::string::npos);
+    const auto tree = json::parseBounded(*graph, {{131072, 32, 8192}, 16384, 8192});
+    REQUIRE(tree);
+    const auto& staticChart = *tree->find("staticChart");
+    const auto* offset = staticChart.find("timing")->find("offsetMs")->number();
+    REQUIRE(offset);
+    CHECK(std::signbit(*offset));
+    bool found = false;
+    for (const auto& row : *tree->find("GPD0")->find("measures")->array()) {
+        for (const auto& atom : *row.array()) {
+            if (const auto* token = atom.find("token");
+                token && token->string() && *token->string() == escapedId)
+                found = true;
+        }
+    }
+    CHECK(found);
+}
+
+TEST_CASE("Compiled Graph typed SAX roundtrip and table permutations preserve full Capsule",
+          "[capsule][graph][reader][revision3]") {
+    CapsuleFixture f;
+    f.base.latePolicy = executionLate();
+    executionFields(f.request.assembly);
+    f.profiles = {f.request.assembly.normalizationProfileToken,
+                  f.request.assembly.coordinatorPolicyToken};
+    const auto prepared = f.prepare();
+    capsule::EncodeRequest request{f.chart, prepared, f.owners, f.profiles, {}, {}, 3};
+    const auto graph = capsule::encodeGraph(request, {131072, 8192, 8192, true});
+    REQUIRE(graph);
+    auto context = f.context();
+    context.candidateRevision = 3;
+    const capsule::GraphReaderLimits bounds{131072, 64, 8192, 16384, 8192, 8192, 65536, true};
+    const auto decoded = capsule::decodeGraph(*graph, context, bounds);
+    INFO((decoded ? ""
+                  : std::string{decoded.error().code()} + ": " +
+                        std::string{decoded.error().message()}));
+    REQUIRE(decoded);
+    CHECK(semanticDiff(prepared.assembled().graph, decoded->gameplay.assembled().graph).empty());
+    CHECK(decoded->gameplay.identityDeclarations() == prepared.identityDeclarations());
+    CHECK(std::equal(decoded->gameplay.timers().begin(), decoded->gameplay.timers().end(),
+                     prepared.timers().begin(), prepared.timers().end()));
+    REQUIRE(decoded->owners.size() == f.owners.size());
+    CHECK(decoded->owners[0].requirement == f.owners[0].requirement);
+    CHECK(decoded->owners[0].entity == f.owners[0].entity);
+    auto packed = capsule::encode(request);
+    auto roundtrip = capsule::encode({decoded->chart, decoded->gameplay, decoded->owners,
+                                      decoded->profiles, decoded->patterns, decoded->measures, 3});
+    REQUIRE(packed);
+    REQUIRE(roundtrip);
+    CHECK(*roundtrip == *packed);
+    CHECK(digestText(*roundtrip) ==
+          "ff1ff218925f2f8c684505651b9170c46ce2f386091fd3da34a8bdfe99e18bb4");
+    const auto tree = json::parseBounded(*graph, {{131072, 64, 8192}, 16384, 8192});
+    REQUIRE(tree);
+    std::string permuted = "{";
+    for (const auto name : {"semanticIdentity", "capsuleRevision", "format", "graphFormatRevision",
+                            "GRC0", "GPR0", "GPD0", "staticChart", "GPH0"}) {
+        if (permuted.size() > 1)
+            permuted += ",";
+        const auto value = json::serialize(*tree->find(name));
+        REQUIRE(value);
+        permuted += '"';
+        permuted += name;
+        permuted += "\":";
+        permuted += *value;
+    }
+    permuted += '}';
+    const auto reordered = capsule::decodeGraph(permuted, context, bounds);
+    INFO((reordered ? "" : std::string{reordered.error().message()}));
+    REQUIRE(reordered);
+    roundtrip = capsule::encode({reordered->chart, reordered->gameplay, reordered->owners,
+                                 reordered->profiles, reordered->patterns, reordered->measures, 3});
+    REQUIRE(roundtrip);
+    CHECK(*roundtrip == *packed);
+}
+
+TEST_CASE("Compiled Graph SAX rejects header shape counts and identity without fallback",
+          "[capsule][graph][reader][revision3][hostile]") {
+    CapsuleFixture f;
+    f.base.latePolicy = executionLate();
+    executionFields(f.request.assembly);
+    f.profiles = {f.request.assembly.normalizationProfileToken,
+                  f.request.assembly.coordinatorPolicyToken};
+    const auto prepared = f.prepare();
+    const auto graph = capsule::encodeGraph({f.chart, prepared, f.owners, f.profiles, {}, {}, 3},
+                                            {131072, 8192, 8192, true});
+    REQUIRE(graph);
+    auto context = f.context();
+    context.candidateRevision = 3;
+    const capsule::GraphReaderLimits bounds{131072, 64, 8192, 16384, 8192, 8192, 65536, true};
+    for (const auto& [text, code] : std::vector<std::pair<std::string, std::string>>{
+             {R"({"GPR0":[invalid)", "graph.structure.invalid"},
+             {R"({"format":"wrong","payload":invalid)", "graph.header.unsupported_format"},
+             {R"({"format":"cuexis.gameplay-graph","capsuleRevision":99,"payload":invalid)",
+              "graph.header.unsupported_revision"},
+             {R"({"format":"cuexis.gameplay-graph","format":invalid)",
+              "graph.structure.duplicate_key"},
+             {R"({"format":"cuexis.gameplay-graph","graphFormatRevision":1.0)",
+              "graph.integer.out_of_range"},
+             {R"({"format":"cuexis.gameplay-graph","graphFormatRevision":18446744073709551615)",
+              "graph.integer.out_of_range"}}) {
+        const auto rejected = capsule::decodeGraph(text, context, bounds);
+        REQUIRE_FALSE(rejected);
+        CHECK(rejected.error().code() == code);
+    }
+    auto tree = json::parseBounded(*graph, {{131072, 64, 8192}, 16384, 8192});
+    REQUIRE(tree);
+    const auto encodeTree = [&](const json::Value& value) {
+        std::string text = "{";
+        for (const auto name :
+             {"format", "graphFormatRevision", "capsuleRevision", "semanticIdentity", "staticChart",
+              "GPH0", "GPR0", "GPD0", "GRC0"}) {
+            if (text.size() > 1)
+                text += ",";
+            const auto field = json::serialize(*value.find(name));
+            REQUIRE(field);
+            text += '"';
+            text += name;
+            text += "\":";
+            text += *field;
+        }
+        text += '}';
+        return text;
+    };
+    auto sample = *tree;
+    *sample.find("semanticIdentity") = json::Value{std::string(64, '0')};
+    auto rejected = capsule::decodeGraph(encodeTree(sample), context, bounds);
+    REQUIRE_FALSE(rejected);
+    CHECK(rejected.error().code() == "graph.identity.mismatch");
+    sample = *tree;
+    sample.find("GPR0")->array()->at(0).array()->push_back(json::Value{std::uint64_t{1}});
+    rejected = capsule::decodeGraph(encodeTree(sample), context, bounds);
+    REQUIRE_FALSE(rejected);
+    CHECK(rejected.error().code() == "graph.structure.invalid");
+    sample = *tree;
+    sample.find("GPR0")->array()->at(0).array()->pop_back();
+    rejected = capsule::decodeGraph(encodeTree(sample), context, bounds);
+    REQUIRE_FALSE(rejected);
+    CHECK(rejected.error().code() == "graph.structure.invalid");
+    sample = *tree;
+    auto& global = *sample.find("GPH0")->array();
+    REQUIRE(global.back().string());
+    global[global.size() - 12] = json::Value{std::uint64_t{2}};
+    rejected = capsule::decodeGraph(encodeTree(sample), context, bounds);
+    REQUIRE_FALSE(rejected);
+    CHECK(rejected.error().code() == "graph.closure.invalid");
+    for (unsigned field = 0; field < 7; ++field) {
+        auto tiny = bounds;
+        if (field == 0)
+            tiny.maxBytes = graph->size() - 1;
+        if (field == 1)
+            tiny.maxDepth = 1;
+        if (field == 2)
+            tiny.maxStringBytes = 1;
+        if (field == 3)
+            tiny.maxValues = 1;
+        if (field == 4)
+            tiny.maxContainerElements = 1;
+        if (field == 5)
+            tiny.maxRowAtoms = 1;
+        if (field == 6)
+            tiny.maxRowDecodedStringBytes = 1;
+        rejected = capsule::decodeGraph(*graph, context, tiny);
+        REQUIRE_FALSE(rejected);
+        CHECK(rejected.error().code() == "graph.budget.exceeded");
+    }
+    auto production = bounds;
+    production.testOnly = false;
+    rejected = capsule::decodeGraph(*graph, context, production);
+    REQUIRE_FALSE(rejected);
+    CHECK(rejected.error().code() == "capability.budget_insufficient");
+}

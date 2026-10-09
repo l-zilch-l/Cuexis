@@ -1,0 +1,24 @@
+{
+  "format": "cuexis.gameplay-capabilities",
+  "version": 1,
+  "candidate": true,
+  "productionBudgetsAccepted": false,
+  "capabilities": [
+    {
+      "id": "cuexis.gameplay.t4-k4.v1",
+      "revision": "1",
+      "build": "gameplay.execution.t4-k4.v1",
+      "record": {
+        "semanticKind": "discrete.phase-local",
+        "requiredFormat": "chart.5/gameplay.2/capsule.3",
+        "staticBudget": "pending.content",
+        "snapshotCost": "pending.snapshot",
+        "replayImpact": "canonical.discrete.journal",
+        "supportedDomains": [
+          "declared.static"
+        ],
+        "stableRejectCode": "capability.budget_insufficient"
+      }
+    }
+  ]
+}

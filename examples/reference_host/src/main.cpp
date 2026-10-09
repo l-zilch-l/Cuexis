@@ -8,6 +8,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <map>
 #include <memory>
 #include <optional>
 #include <ostream>
@@ -26,6 +27,12 @@ void printUsage(std::ostream& out) {
     out << "usage: cuexis_reference_host --content <project-directory> [options]\n"
            "  --content <dir>            host content root (a project directory)\n"
            "  --package <file.cxc>       also load a published Cuexis package\n"
+           "  --candidate-entry <path>  explicitly select an experimental entry\n"
+           "  --gameplay-configuration <file> explicit test-only Gameplay profile\n"
+           "  --gameplay-config-budget <b,d,s,e,m> explicit configuration decode limits\n"
+           "  --gameplay-h-step <i64>    command Tick horizon increment\n"
+           "  --gameplay-presentation-step <i64>    presentation Tick increment\n"
+           "  --gameplay-observations <file> optional typed input records\n"
            "  --advance <n>              extra host-clock advance frames (default 4)\n"
            "  --expect-identity <hex>    require the reference content identity\n"
            "  --expect-digest <i>=<v>    require a frame digest (repeatable)\n"
@@ -95,6 +102,7 @@ struct Invocation final {
     bool helpRequested{false};
     bool parseFailed{false};
     std::string parseDetail;
+    std::map<std::string, std::string, std::less<>> gameplayFlags;
 };
 
 void recordParseFailure(Invocation& invocation, std::string_view detail) {
@@ -135,6 +143,25 @@ void parseInvocation(int argc, char** argv, Invocation& invocation) {
             }
             invocation.options.packageFile = std::filesystem::path{*value};
             invocation.packageSeen = true;
+            continue;
+        }
+        if (argument == "--candidate-entry") {
+            const auto value = next();
+            if (!value || value->empty() || invocation.options.candidateEntry) {
+                recordParseFailure(invocation, "missing or duplicate candidate entry");
+            } else {
+                invocation.options.candidateEntry = std::string{*value};
+            }
+            continue;
+        }
+        if (argument == "--gameplay-configuration" || argument == "--gameplay-config-budget" ||
+            argument == "--gameplay-h-step" || argument == "--gameplay-presentation-step" ||
+            argument == "--gameplay-observations") {
+            const auto value = next();
+            if (!value || value->empty() ||
+                !invocation.gameplayFlags.emplace(std::string{argument}, std::string{*value})
+                     .second)
+                recordParseFailure(invocation, "Missing or duplicate Gameplay flag");
             continue;
         }
         if (argument == "--advance") {
@@ -226,6 +253,35 @@ int main(int argc, char** argv) {
     Invocation invocation;
     parseInvocation(argc, argv, invocation);
     const bool commandMode = invocation.commandFileCount > 0U;
+
+    if (!invocation.gameplayFlags.empty()) {
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+        bool complete = commandMode && invocation.options.candidateEntry.has_value();
+        for (const auto* flag : {"--gameplay-configuration", "--gameplay-config-budget",
+                                 "--gameplay-h-step", "--gameplay-presentation-step"})
+            complete = complete && invocation.gameplayFlags.contains(flag);
+        if (!complete)
+            recordParseFailure(invocation, "Gameplay flags require command mode, candidate entry, "
+                                           "configuration/budget/H/T steps");
+        else {
+            std::optional<std::filesystem::path> observations;
+            if (invocation.gameplayFlags.contains("--gameplay-observations"))
+                observations = invocation.gameplayFlags.at("--gameplay-observations");
+            auto gameplay = cuexis_reference_host::readGameplayHost(
+                invocation.gameplayFlags.at("--gameplay-configuration"),
+                invocation.gameplayFlags.at("--gameplay-config-budget"),
+                invocation.gameplayFlags.at("--gameplay-h-step"),
+                invocation.gameplayFlags.at("--gameplay-presentation-step"), observations);
+            if (!gameplay)
+                recordParseFailure(invocation, std::string{gameplay.error().code()} + ": " +
+                                                   std::string{gameplay.error().message()});
+            else
+                invocation.options.gameplay = std::move(*gameplay);
+        }
+#else
+        recordParseFailure(invocation, "Gameplay host requires explicit candidate SDK flavor");
+#endif
+    }
 
     // The legacy path keeps its exact previous behaviour: an unusable command
     // line prints usage and returns without creating a report.

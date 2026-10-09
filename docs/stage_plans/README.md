@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-09-28
+更新日期：2026-10-09
 
 阶段计划定义目标、范围、批次、门禁和交接。当前实现状态只以
 [CURRENT_STATUS.md](../CURRENT_STATUS.md) 为准；完成证据只以
@@ -20,15 +20,21 @@ future
 deferred
   暂不排期、等待触发条件或需要重新立项的设计输入
 
+historical-inputs
+  已并入现行主路线、仅供追溯的旧计划输入
+
 reviews
   某次复核的整改计划；复核记录与其证据仍在 stage_reports/reviews/<review>/
 ```
 
-当前 `active` 目录中有一个计划：
+当前 `active` 目录中有两个计划：
 
 ```text
 chart-format-update-for-v5
   Chart v5 跨阶段总工作包，负责维护 Foundation、Stage 6、Stage 7A 和 Stage 8 的总体设计与交接
+
+stage-07
+  Stage 7A 最小内核、Stage 7-RPA 实时架构与设备验收、Stage 7B+ 高级判定能力
 ```
 
 当前 `reviews` 目录中有两个复核整改计划：
@@ -82,22 +88,28 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
   [R5 报告](../stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)。
   八项关键决策已在 [ADR 0042](../adr/0042-stage-6-productization-boundaries.md) 冻结；A1 至 F1
   全部批次退出，关闭报告、三个核验问题处置与 Stage 7A / Stage 8 交接清单经 owner 接受
-  （见 [关闭报告](../stage_reports/stages/stage-06/completion.md)）。Stage 6 关闭**不**启动
-  Stage 7A 或 Stage 8，也不构成合并或发布授权。
-- [Stage 7A / 7B+](future/stage-07/plan.md)：7A 冻结最小 Input/Judgement/Score/Replay 内核，
-  7B+ 持续扩展 Slide、Flick、多指、校准和高级判定能力。
+  （见 [关闭报告](../stage_reports/stages/stage-06/completion.md)）。Stage 6 关闭本身**不**
+  实现或授权 Stage 7A；Stage 7A 现已进入实施准备，但仍不构成合并或发布授权。Stage 8
+  尚未启动。
+- [Stage 7 总计划](active/stage-07/plan.md)：全局边界、依赖路线、统一证据和跨阶段交接。
+  - [Stage 7A 分册](active/stage-07/plan-a.md)：S7A-0–9批次、核验台账、实施记录与接手决策。
+  - [Stage 7B+ 分册](active/stage-07/plan-b.md)：S7B-0–4、S7C-1/2能力准入、依赖和退出标准。
+  - [Stage 7-RPA 分册](active/stage-07/plan-rpa.md)：Stage 7子阶段，承接RT78/DN78及实体设备/实时同步的实施和最终验收，向Stage8交付；S7A-9原范围验收不新增RPA前置。目前仅规划，不属于S7A-7/8新增任务。
+  - 历史路径见[legacy-paths](active/stage-07/legacy-paths.md)；当前实现状态以CURRENT_STATUS为准。
 - [Stage 8](future/stage-08/plan.md)：Chart v5 正式语义、CXT v2、Packed Chart 和 CXC 发行收敛；
-  只依赖 Stage 7A，不等待全部 Stage 7B+。
-- [Stage 9](future/stage-09/plan.md)：Presentation Environment、天空盒、模型和有限形变。
+  依赖 Stage 7A最终验收及RPA交付，不等待全部 Stage 7B+。
+- [Stage 9](future/stage-09/plan.md)：Presentation Foundation 与 Chart v6 / Model v1。
 - [Stage 10](future/stage-10/plan.md)：Studio 和完整创作/打包工作流。
-- [Stage 11](future/stage-11/plan.md)：性能、移动端、Vulkan、粒子和高级表现。
-- [Stage 12](future/stage-12/plan.md)：稳定 ABI 与 Playback SDK v1。
+- [Stage 11](future/stage-11/plan.md)：Chart v7 单轴几何表现与 shader.json 声明接口。
+- [Stage 12](future/stage-12/plan.md)：规模化、桌面性能、Android 与 Vulkan。
+- [Stage 13](future/stage-13/plan.md)：Chart v8、内置后处理与确定性粒子。
+- [Stage 14](future/stage-14/plan.md)：稳定 ABI 与 Playback SDK v1。
 
-历史编号专题：
+历史编号专题（内容已并入新主阶段）：
 
-- Stage 9A：[旧桌面性能计划](future/stage-09a/plan.md)，现归入 Stage 11A。
-- Stage 9B：[Android 设计输入](deferred/stage-09b/plan.md)，现归入 Stage 11B。
-- Stage 10：[旧 Vulkan 设计输入](deferred/stage-10/plan.md)，现归入 Stage 11C。
+- Stage 9A：[旧桌面性能计划](historical-inputs/stage-09a/plan.md)，现归入 Stage 12。
+- Stage 9B：[Android 设计输入](historical-inputs/stage-09b/plan.md)，现归入 Stage 12。
+- 旧 Stage 10：[Vulkan 设计输入](historical-inputs/stage-10/plan.md)，现归入 Stage 12。
 
 ## 修正工作包
 
@@ -106,7 +118,7 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
   Standards 轴与 Spec 轴发现项整理为 R0–R8 批次、`RS-01`…`RS-10` 验收矩阵与验证方式。
   该工作包已于 2026-09-28 取得实施授权，R0–R8 批次全部退出并随 PR #30 合并进 `master`，
   交付证据见 [交付报告](../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md)；
-  计划关闭仍需 owner 接受关闭报告。该计划不改变 Stage 6 已关闭的事实，
+  owner 已于 2026-09-29 接受关闭报告，计划状态为 completed。该计划不改变 Stage 6 已关闭的事实，
   也不构成 Stage 7A / Stage 8 的实现授权。
 - [R9：Reference Host 命令循环与 play/pause](reviews/stage-06-review-remediation/R9-reference-host-command-loop.md)：
   批次 R9 的实施文档与唯一规范来源，处理 SPEC-27。命令文件驱动、有状态分发、无 stdin；
@@ -122,21 +134,20 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
 - [Chart v5 format plan](active/chart-format-update-for-v5/plan.md)：保留 active 的跨阶段总工作包，正式发行门禁归 Stage 8；
   Foundation 及其交接加固关闭后为 Stage 6 提供 candidate Core/Packed path，在 Stage 7A 判定合同冻结
   后完成正式发行收敛。
-- [Chart v6 / Model v1](deferred/chart-format-update-for-v6/plan.md)：Stage 9 模型批次的设计输入。
-- [Chart v7](deferred/chart-format-update-for-v7/plan.md)：Stage 9 形变批次的设计输入。
-- [Chart v8](deferred/chart-format-update-for-v8/plan.md)：Stage 11 高级表现的设计输入。
+- [Chart v6 / Model v1](historical-inputs/chart-format-update-for-v6/plan.md)：历史输入，已并入 Stage 9。
+- [Chart v7](historical-inputs/chart-format-update-for-v7/plan.md)：历史输入，已并入 Stage 11。
+- [Chart v8](historical-inputs/chart-format-update-for-v8/plan.md)：历史输入，已并入 Stage 13。
 
-## Stage 11 子计划
+## 已并入主阶段的历史输入
 
-以下旧计划不再代表主阶段编号，但保留为 Stage 11 的专题输入：
+以下旧计划不再代表独立主阶段，但保留为兼容入口和历史设计输入：
 
-- [桌面性能](future/stage-09a/plan.md)
-- [Android](deferred/stage-09b/plan.md)
-- [Vulkan](deferred/stage-10/plan.md)
-- [确定性粒子](future/stage-08/plan.md)
+- [桌面性能](historical-inputs/stage-09a/plan.md)
+- [Android](historical-inputs/stage-09b/plan.md)
+- [Vulkan](historical-inputs/stage-10/plan.md)
+- [确定性粒子](../proposals/deferred/PARTICLE_TIMELINE.md)，已并入 Stage 13
 
-这些文件在恢复实施前必须按 Stage 11 目标更新为对应子计划，不能继续把旧编号解释为
-独立主阶段。
+这些文件的可执行范围已经在 Stage 9、11、12、13 中登记；它们不能继续被解释为独立主阶段。
 
 ## 文档规则
 

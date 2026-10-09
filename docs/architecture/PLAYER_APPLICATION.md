@@ -6,6 +6,12 @@
 
 `cuexis_player` 是参考播放器，不是安装进 SDK 的组件。宿主集成走 `PlaybackSession`。Player 自己组合窗口、OpenGL backend、音频设备和帧循环。
 
+2026-10-09 实时架构重审：本文现有同步循环不是异步实时架构的实现声明。
+实际candidate Gameplay接线、时钟/Replay增长和owner耦合见
+[审查报告](../stage_reports/stages/stage-07/readiness/2026-10-09-realtime-architecture-review.md)。
+[ADR0046](../adr/0046-realtime-playback-coordination.md)与[宿主边界草案](../api/realtime-host-boundary.md)
+只规划整改，不改变本文现有线程和生命周期；不能直接把PreparedPlayback或SDL renderer移到worker。
+
 正式内容路径是：
 
 ```text

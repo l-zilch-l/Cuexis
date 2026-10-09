@@ -14,6 +14,7 @@ target_sources(cuexis_chart
         src/chart_parameter_resolver.cpp
         src/chart_runtime.cpp
         src/candidate_lowering.cpp
+        src/candidate_assembler.cpp
         src/chart_v4_loader.cpp
         src/chart_v4_resolver.cpp
         src/chart_writer.cpp
@@ -37,6 +38,7 @@ target_sources(cuexis_chart
             include/cuexis/chart/animation_template_document.hpp
             include/cuexis/chart/animation_template_loader.hpp
             include/cuexis/chart/canonical_chart_loader.hpp
+            include/cuexis/chart/candidate_assembler.hpp
             include/cuexis/chart/canonical_semantic_chart.hpp
             include/cuexis/chart/cxt_v2_loader.hpp
             include/cuexis/chart/chart_document.hpp

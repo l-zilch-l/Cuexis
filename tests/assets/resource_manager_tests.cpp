@@ -24,9 +24,12 @@ class ResourceFixture final {
   public:
     ResourceFixture() {
         static std::atomic<unsigned int> next{1};
-        root_ = std::filesystem::temp_directory_path() /
-                ("cuexis-resource-tests-" + std::to_string(next.fetch_add(1)));
-        std::filesystem::create_directories(root_);
+        // Catch discovery runs cases in separate processes; their counters all start at one.
+        // Claim a directory exclusively instead of sharing an existing fixture directory.
+        do {
+            root_ = std::filesystem::temp_directory_path() /
+                    ("cuexis-resource-tests-" + std::to_string(next.fetch_add(1)));
+        } while (!std::filesystem::create_directory(root_));
     }
 
     ~ResourceFixture() {

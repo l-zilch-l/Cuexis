@@ -4,7 +4,7 @@
 
 更新日期：2026-08-30
 
-适用版本：SDK API `0.7.0`
+适用版本：SDK API `0.7.1`
 
 文档角色：公共 API 参考
 
@@ -22,6 +22,10 @@
 | 时钟转换 | `RuntimeTimeline`、`ChartClock` | 构造连续且可表达跳变的 `RuntimeFrame`。 |
 
 这四类合同不可互换。identity 描述 prepared 内容，FrameDigest 描述指定输入下的帧观察结果。
+
+Stage 7-RPA子阶段实时解耦的首用设计见[宿主边界草案](realtime-host-boundary.md)和
+[ADR0046](../adr/0046-realtime-playback-coordination.md)。草案未实施，不改变本页API；owning
+FrameSnapshot可独立存活不等于已具备跨线程资源激活/代数校验协议，RuntimeFrame也不能反推判定Tick。
 
 ## `RuntimeFrame` 速查
 

@@ -5,6 +5,7 @@
 // IPresentationRenderer, and the backend-neutral audio seat only.
 
 #include "player_audio_seat.hpp"
+#include "player_gameplay.hpp"
 #include "player_options.hpp"
 #include "player_surface.hpp"
 
@@ -50,6 +51,9 @@ struct PlayerControlPorts final {
                                                        audio::AudioClipStore&)>
         prepareClip;
     PlayerAudioOpener openAudio;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    std::optional<PlayerGameplayProfile> gameplay{};
+#endif
 };
 
 // Distance one relative seek key moves the chart time. The controller clamps the result at zero
@@ -94,6 +98,11 @@ class PlayerController final {
     void markFailed(std::string_view reason);
 
     [[nodiscard]] auto state() const noexcept -> player_support::PlayerAppState;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    [[nodiscard]] auto gameplay() noexcept -> PlayerGameplay* {
+        return gameplay_ ? &*gameplay_ : nullptr;
+    }
+#endif
     // Valid only while state() is not Empty, which is the precondition for running the frame loop.
     [[nodiscard]] auto session() -> playback::PlaybackSession&;
     [[nodiscard]] auto timeline() -> playback::RuntimeTimeline&;
@@ -165,6 +174,9 @@ class PlayerController final {
     // sets it to the requested target.
     double chartResumeMs_{};
     std::optional<double> pendingChartSeekMs_;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    std::optional<PlayerGameplay> gameplay_;
+#endif
 };
 
 struct PlayerClockContext final {

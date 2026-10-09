@@ -14,6 +14,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdio>
+#include <limits>
 #include <string>
 #include <utility>
 
@@ -141,8 +142,38 @@ class TransactionGuard final {
 
 auto openConfiguredPlaybackSource(const PlayerOptions& options)
     -> core::Result<playback::PlaybackSource> {
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    if (options.gameplayConfiguration) {
+        auto profile = readPlayerGameplay(options);
+        if (!profile)
+            return core::unexpected(std::move(profile.error()));
+        const auto& b = profile->budget;
+        const playback::GameplayGraphDecodeBudget graph{b.maxBytes,
+                                                        b.maxDepth,
+                                                        b.maxStringBytes,
+                                                        b.maxValues,
+                                                        b.maxContainerElements,
+                                                        b.maxContainerElements,
+                                                        b.maxStringBytes};
+        return options.cxcPath
+                   ? playback::PlaybackSource::fromCxcFileGameplayEntry(
+                         *options.cxcPath, *options.candidateEntry, profile->configuration, b,
+                         graph, playback::GameplayPrepareIntent::Presentation)
+                   : playback::PlaybackSource::fromFilesystemGameplayEntry(
+                         *options.projectPath, *options.candidateEntry, profile->configuration, b,
+                         graph, playback::GameplayPrepareIntent::Presentation);
+    }
+#endif
+    if (options.cxcPath) {
+        return options.candidateEntry ? playback::PlaybackSource::fromCxcFileEntry(
+                                            *options.cxcPath, *options.candidateEntry)
+                                      : playback::PlaybackSource::fromCxcFile(*options.cxcPath);
+    }
     if (options.projectPath.has_value()) {
-        auto source = playback::PlaybackSource::fromFilesystemProject(*options.projectPath);
+        auto source = options.candidateEntry
+                          ? playback::PlaybackSource::fromFilesystemProjectEntry(
+                                *options.projectPath, *options.candidateEntry)
+                          : playback::PlaybackSource::fromFilesystemProject(*options.projectPath);
         if (!source) {
             return core::unexpected(core::Error{"player.project.load_failed",
                                                 "Filesystem Playback source loading failed"}
@@ -496,6 +527,22 @@ auto PlayerController::runRebuild(PlayerCommand& command) -> core::Result<void> 
 }
 
 auto PlayerController::runPlay() -> core::Result<void> {
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    if (gameplay_) {
+        if (activeMode_ == playback::PlaybackMode::CuexisAudio && audioSeat_) {
+            auto audio = audioSeat_->transport().play();
+            if (!audio)
+                return core::unexpected(std::move(audio.error()));
+        }
+        auto control = session_->controlGameplay(playback::GameplayControl::Resume);
+        if (!control) {
+            publishFailure("gameplay_play_control");
+            return core::unexpected(std::move(control.error()));
+        }
+        if (activeMode_ == playback::PlaybackMode::CuexisAudio && audioSeat_)
+            return {};
+    }
+#endif
     if (activeMode_ == playback::PlaybackMode::CuexisAudio && audioSeat_ != nullptr) {
         if (auto played = audioSeat_->transport().play(); !played) {
             return core::unexpected(std::move(played.error()).withContext("command", "play"));
@@ -511,6 +558,22 @@ auto PlayerController::runPlay() -> core::Result<void> {
 }
 
 auto PlayerController::runPause() -> core::Result<void> {
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    if (gameplay_) {
+        if (activeMode_ == playback::PlaybackMode::CuexisAudio && audioSeat_) {
+            auto audio = audioSeat_->transport().pause();
+            if (!audio)
+                return core::unexpected(std::move(audio.error()));
+        }
+        auto control = session_->controlGameplay(playback::GameplayControl::Pause);
+        if (!control) {
+            publishFailure("gameplay_pause_control");
+            return core::unexpected(std::move(control.error()));
+        }
+        if (activeMode_ == playback::PlaybackMode::CuexisAudio && audioSeat_)
+            return {};
+    }
+#endif
     if (activeMode_ == playback::PlaybackMode::CuexisAudio && audioSeat_ != nullptr) {
         if (auto paused = audioSeat_->transport().pause(); !paused) {
             return core::unexpected(std::move(paused.error()).withContext("command", "pause"));
@@ -524,6 +587,23 @@ auto PlayerController::runPause() -> core::Result<void> {
 }
 
 auto PlayerController::runStop() -> core::Result<void> {
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    if (gameplay_) {
+        if (activeMode_ == playback::PlaybackMode::CuexisAudio && audioSeat_) {
+            auto audio = audioSeat_->transport().stop();
+            if (!audio)
+                return core::unexpected(std::move(audio.error()));
+        }
+        auto control = session_->controlGameplay(playback::GameplayControl::Stop);
+        if (!control) {
+            publishFailure("gameplay_stop_control");
+            return core::unexpected(std::move(control.error()));
+        }
+        gameplay_->reset(true);
+        if (activeMode_ == playback::PlaybackMode::CuexisAudio && audioSeat_)
+            return {};
+    }
+#endif
     if (activeMode_ == playback::PlaybackMode::CuexisAudio && audioSeat_ != nullptr) {
         if (auto stopped = audioSeat_->transport().stop(); !stopped) {
             return core::unexpected(std::move(stopped.error()).withContext("command", "stop"));
@@ -536,6 +616,11 @@ auto PlayerController::runStop() -> core::Result<void> {
 }
 
 auto PlayerController::runSeek(double targetMs) -> core::Result<void> {
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    if (gameplay_)
+        return core::unexpected(core::Error{"player.arguments.unknown",
+                                            "Gameplay seek requires an explicit typed Tick"});
+#endif
     // The application layer does not know the playable duration; the audio transport enforces the
     // upper bound against the decoded clip, and a ChartClock session has no duration to check.
     if (auto valid = player_support::validateSeekTargetMs(targetMs, -1.0); !valid) {
@@ -687,6 +772,19 @@ auto PlayerController::commitBundle(playback::PlaybackSession& session,
     if (adopt != nullptr) {
         session_ = std::move(adopt);
     }
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    if (ports_.gameplay) {
+        if (!gameplay_)
+            gameplay_.emplace(*ports_.gameplay);
+        gameplay_->reset(restartTimeline);
+        const auto control = state_ == player_support::PlayerAppState::Playing
+                                 ? playback::GameplayControl::Resume
+                                 : playback::GameplayControl::Pause;
+        auto controlled = session_->controlGameplay(control);
+        if (!controlled)
+            return core::unexpected(std::move(controlled.error()));
+    }
+#endif
     timeline_ = std::move(*nextTimeline);
     chartClock_.emplace(timingOffsetMs);
     activeMode_ = mode;
@@ -844,10 +942,46 @@ auto runPlayerFrameLoop(PlayerFrameLoop& input) -> core::Result<void> {
         if (quitRequested) {
             break;
         }
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+        auto* gameplay = controller.gameplay();
+        bool admitGameplayInput = controller.state() == player_support::PlayerAppState::Playing &&
+                                  !observedInput->focusLost;
+        if (gameplay && observedInput->focusLost &&
+            controller.state() == player_support::PlayerAppState::Playing) {
+            auto paused =
+                controller.apply(PlayerCommand{.kind = player_support::PlayerCommandKind::Pause});
+            if (!paused)
+                return core::unexpected(std::move(paused.error()));
+        }
+#endif
         // Every user action enters through the same command entry as the smoke scripts. A rejected
         // action is a warning, not a failure: pressing Pause before content exists must not stop
         // the player.
         for (const auto action : observedInput->actions) {
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+            if (gameplay && observedInput->focusLost && action != PlayerInputAction::Quit)
+                continue;
+            if (gameplay)
+                admitGameplayInput = false;
+            if (gameplay && (action == PlayerInputAction::SeekBackward ||
+                             action == PlayerInputAction::SeekForward)) {
+                const auto h = gameplay->horizon().value, distance = gameplay->profile().hStep;
+                if (action == PlayerInputAction::SeekForward &&
+                    h > std::numeric_limits<std::int64_t>::max() - distance)
+                    return core::unexpected(
+                        core::Error{"player.arguments.unknown", "Gameplay seek Tick overflow"});
+                const auto target = action == PlayerInputAction::SeekBackward
+                                        ? std::max<std::int64_t>(0, h - distance)
+                                        : h + distance;
+                auto sought =
+                    gameplay->seek(controller.session(), {target}, controller.lastRuntimeFrame());
+                if (sought && controller.state() != player_support::PlayerAppState::Playing)
+                    sought = controller.session().controlGameplay(playback::GameplayControl::Pause);
+                if (!sought)
+                    input.logger.warn("player.command", std::string{sought.error().code()});
+                continue;
+            }
+#endif
             if (action == PlayerInputAction::Quit) {
                 quitRequested = true;
                 break;
@@ -915,9 +1049,25 @@ auto runPlayerFrameLoop(PlayerFrameLoop& input) -> core::Result<void> {
         const auto runtimeFrame = *runtimeFrameResult;
         controller.noteRuntimeFrame(runtimeFrame);
         judgeSystem.update(runtimeFrame.chartTimeMs);
-        if (auto result = controller.session().update(runtimeFrame); !result) {
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+        if (auto* adapter = controller.gameplay(); adapter) {
+            if (controller.state() == player_support::PlayerAppState::Playing) {
+                auto score = adapter->step(controller.session(),
+                                           admitGameplayInput ? *observedInput : PlayerInput{},
+                                           runtimeFrame);
+                if (!score)
+                    return core::unexpected(std::move(score.error()));
+                input.logger.info("player.gameplay",
+                                  "H=" + std::to_string(adapter->horizon().value) +
+                                      " score=" + std::to_string(score->score) +
+                                      " combo=" + std::to_string(score->combo) +
+                                      " hits=" + std::to_string(score->hits) + " misses=" +
+                                      std::to_string(score->misses) + " completeReplay=same");
+            }
+        } else
+#endif
+            if (auto result = controller.session().update(runtimeFrame); !result)
             return core::unexpected(std::move(result.error()));
-        }
 
         auto drawableSizeResult = input.surface.drawableSize();
         if (!drawableSizeResult) {
@@ -937,9 +1087,27 @@ auto runPlayerFrameLoop(PlayerFrameLoop& input) -> core::Result<void> {
         }
 
         scene.clear();
-        if (auto result = appendSnapshotAxes(snapshot, scene); !result) {
-            return core::unexpected(std::move(result.error()));
+        bool guided = false;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+        if (auto* adapter = controller.gameplay(); adapter && !adapter->profile().guide.empty()) {
+            guided = true;
+            auto result = controller.session().queryGameplay();
+            if (!result)
+                return core::unexpected(std::move(result.error()));
+            auto score = result->score();
+            if (!score)
+                return core::unexpected(std::move(score.error()));
+            if (auto drawn = appendPlayerGuide(
+                    adapter->profile().guide, adapter->horizon().value, *score,
+                    controller.state() == player_support::PlayerAppState::Playing, snapshot, scene);
+                !drawn)
+                return drawn;
         }
+#endif
+        if (!guided)
+            if (auto result = appendSnapshotAxes(snapshot, scene); !result) {
+                return core::unexpected(std::move(result.error()));
+            }
         if (input.diagnostics != nullptr) {
             input.diagnostics->captureFrame(renderedFrames, runtimeFrame, snapshot);
             if (auto* audio = controller.audio(); audio != nullptr) {

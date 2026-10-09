@@ -3,6 +3,7 @@
 #include <cuexis/chart/uuid.hpp>
 #include <cuexis/core/error.hpp>
 
+#include "packed_gameplay_internal.hpp"
 #include "packed_identity_internal.hpp"
 #include "packed_limits_internal.hpp"
 #include "packed_profile_internal.hpp"
@@ -44,7 +45,7 @@ auto fail(std::string code, std::string message) -> core::Error {
 // cannot disagree about which sections an artifact may carry.
 enum class SectionRole : std::uint8_t { semantic, inspection };
 
-[[nodiscard]] auto classifySection(std::string_view name, std::uint8_t flags)
+[[nodiscard]] auto classifySection(std::string_view name, std::uint8_t flags, bool gameplay = false)
     -> core::Result<SectionRole> {
     static constexpr std::array<std::string_view, 12> semantic{"META", "TIME", "STR0", "REF0",
                                                                "IDN0", "ARCH", "ENT0", "TRN0",
@@ -54,7 +55,9 @@ enum class SectionRole : std::uint8_t { semantic, inspection };
         return core::unexpected(
             fail("packed.directory.flags", "Packed section flags must be 0 or 1"));
     }
-    if (std::find(semantic.begin(), semantic.end(), name) != semantic.end()) {
+    const bool gameplaySection =
+        gameplay && (name == "GPH0" || name == "GPR0" || name == "GPD0" || name == "GRC0");
+    if (gameplaySection || std::find(semantic.begin(), semantic.end(), name) != semantic.end()) {
         if (flags != 0U) {
             return core::unexpected(
                 fail("packed.directory.flags", "Foundation semantic sections require flags=0"));
@@ -148,11 +151,45 @@ auto readF64(ByteReader& reader) -> core::Result<double> {
         return core::unexpected(std::move(v.error()));
     return std::bit_cast<double>(*v);
 }
-struct Section final {
-    std::array<char, 4> code{};
-    std::vector<std::byte> bytes;
-    std::uint32_t records{};
-};
+using Section = gameplay_detail::Section;
+
+auto validUtf8(std::string_view text) -> bool {
+    std::uint32_t value = 0;
+    std::uint32_t minimum = 0;
+    unsigned remaining = 0;
+    for (const unsigned char byte : text) {
+        if (remaining == 0) {
+            if (byte < 0x80U) {
+                continue;
+            }
+            if (byte >= 0xc2U && byte <= 0xdfU) {
+                value = byte & 0x1fU;
+                minimum = 0x80U;
+                remaining = 1;
+            } else if (byte >= 0xe0U && byte <= 0xefU) {
+                value = byte & 0x0fU;
+                minimum = 0x800U;
+                remaining = 2;
+            } else if (byte >= 0xf0U && byte <= 0xf4U) {
+                value = byte & 0x07U;
+                minimum = 0x10000U;
+                remaining = 3;
+            } else {
+                return false;
+            }
+        } else {
+            if ((byte & 0xc0U) != 0x80U) {
+                return false;
+            }
+            value = (value << 6U) | (byte & 0x3fU);
+            if (--remaining == 0 &&
+                (value < minimum || value > 0x10ffffU || (value >= 0xd800U && value <= 0xdfffU))) {
+                return false;
+            }
+        }
+    }
+    return remaining == 0;
+}
 
 auto identityKey(const CanonicalEntityIdentity& identity) -> core::Result<std::vector<std::byte>> {
     return identity_detail::canonicalIdentityBytes(identity);
@@ -347,12 +384,18 @@ auto writeMetaSection(const CanonicalSemanticChart& chart, const Dictionaries& d
     if (!featureCount)
         return core::unexpected(std::move(featureCount.error()));
     writer.writeU32(*featureCount);
+    std::vector<const CanonicalFeature*> features;
     for (const auto& feature : chart.features) {
-        auto r = typedRef(dict, 7, feature.id);
+        features.push_back(&feature);
+    }
+    std::sort(features.begin(), features.end(),
+              [](const auto* left, const auto* right) { return left->id < right->id; });
+    for (const auto* feature : features) {
+        auto r = typedRef(dict, 7, feature->id);
         if (!r)
             return core::unexpected(std::move(r.error()));
         writer.writeUnsignedLeb128(*r);
-        writer.writeU32(feature.version);
+        writer.writeU32(feature->version);
     }
     return Section{{'M', 'E', 'T', 'A'}, std::move(writer).takeBytes(), 1};
 }
@@ -406,6 +449,7 @@ auto writeTimeSection(const ChartTiming& timing) -> core::Result<Section> {
 struct EntityOrder final {
     std::vector<const CanonicalEntity*> entities;
     std::map<std::vector<std::byte>, std::uint32_t, identity_detail::ByteKeyLess> ordinals;
+    std::map<const CanonicalEntity*, std::uint64_t> masks;
 };
 // Spec 6.5: canonical identity bytes define both the entity ordinal and the ENT0 order.
 auto orderEntities(const CanonicalSemanticChart& chart) -> core::Result<EntityOrder> {
@@ -427,6 +471,7 @@ auto orderEntities(const CanonicalSemanticChart& chart) -> core::Result<EntityOr
     order.entities.clear();
     for (std::size_t i = 0; i < keyed.size(); ++i) {
         order.entities.push_back(keyed[i].second);
+        order.masks.emplace(keyed[i].second, keyed[i].second->componentMask());
         if (!order.ordinals.emplace(keyed[i].first, static_cast<std::uint32_t>(i)).second) {
             return core::unexpected(fail("packed.identity.duplicate_identity",
                                          "Entity identities must be unique in a candidate chart"));
@@ -620,8 +665,8 @@ auto makeArchetypes(const EntityOrder& order, std::map<std::uint64_t, std::uint3
     };
     std::map<std::uint64_t, Group> byMask;
     for (const auto* entity : order.entities) {
-        auto& group = byMask[entity->componentMask()];
-        group.mask = entity->componentMask();
+        auto& group = byMask[order.masks.at(entity)];
+        group.mask = order.masks.at(entity);
         for (const auto& component : entity->components) {
             if (const auto* v = std::get_if<CanonicalTransform>(&component))
                 group.transform.add(*v);
@@ -691,7 +736,7 @@ auto writeEntitySection(const EntityOrder& order,
             parent = it->second + 1U;
         }
         writer.writeUnsignedLeb128(parent);
-        writer.writeUnsignedLeb128(arches.at(entity->componentMask()));
+        writer.writeUnsignedLeb128(arches.at(order.masks.at(entity)));
     }
     return Section{{'E', 'N', 'T', '0'},
                    std::move(writer).takeBytes(),
@@ -705,7 +750,7 @@ auto writeComponentStream(const EntityOrder& order, const std::vector<Archetype>
     std::uint32_t rows = 0;
     for (std::size_t ordinal = 0; ordinal < order.entities.size(); ++ordinal) {
         const auto* entity = order.entities[ordinal];
-        const auto mask = entity->componentMask();
+        const auto mask = order.masks.at(entity);
         if ((kind == 0 && !(mask & 1U)) || (kind == 1 && !(mask & 2U)) ||
             (kind == 2 && !(mask & 16U)))
             continue;
@@ -1052,7 +1097,7 @@ auto encode(const CanonicalSemanticChart& chart, PackedChartProfile profile,
     return result;
 }
 
-auto inspect(std::span<const std::byte> bytes, PackedChartLimits limits)
+static auto inspectImpl(std::span<const std::byte> bytes, PackedChartLimits limits, bool gameplay)
     -> core::Result<PackedChartStatistics> {
     const auto budget = limits_detail::effectiveLimits(limits);
     if (bytes.size() < 96)
@@ -1102,9 +1147,9 @@ auto inspect(std::span<const std::byte> bytes, PackedChartLimits limits)
         return core::unexpected(fail("packed.header.crc", "Packed header CRC mismatch"));
     // Spec 5.1: only the implemented candidate revision may be read, and the Foundation profile
     // declares no schedule events. Neither declaration may be ignored as "nothing to do".
-    if (*revision != 1)
+    if (gameplay ? (*revision != 2U && *revision != 3U) : (*revision != 1U))
         return core::unexpected(
-            fail("packed.header.unsupported_revision", "Only candidate revision 1 is supported"));
+            fail("packed.header.unsupported_revision", "Packed candidate revision is unsupported"));
     if (*events != 0U)
         return core::unexpected(
             fail("packed.header.events", "Foundation revision 1 declares no schedule events"));
@@ -1153,7 +1198,7 @@ auto inspect(std::span<const std::byte> bytes, PackedChartLimits limits)
         if (!sectionNames.insert(name).second)
             return core::unexpected(
                 fail("packed.directory.duplicate", "Packed section is duplicated"));
-        if (auto role = classifySection(name, *fl); !role)
+        if (auto role = classifySection(name, *fl, gameplay); !role)
             return core::unexpected(std::move(role.error()));
         // Spec 3.3: the per-section ceiling applies to every directory entry, including the
         // optional inspection sections whose payload a reader still has to read and CRC-check.
@@ -1181,9 +1226,10 @@ auto inspect(std::span<const std::byte> bytes, PackedChartLimits limits)
     return stats;
 }
 
-auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
+static auto decodeImpl(std::span<const std::byte> bytes, PackedChartLimits limits, bool gameplay,
+                       gameplay_detail::DecodedStatic* staticResult)
     -> core::Result<CanonicalSemanticChart> {
-    auto stats = inspect(bytes, limits);
+    auto stats = inspectImpl(bytes, limits, gameplay);
     if (!stats)
         return core::unexpected(std::move(stats.error()));
     struct Directory final {
@@ -1216,7 +1262,8 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
     auto revision = header.readU32();
     auto headerCrc = header.readU32();
     if (!entityCount || !requirementCount || !eventCount || !decodedBytes || !stringCount ||
-        !refCount || !revision || !headerCrc || *revision != 1)
+        !refCount || !revision || !headerCrc ||
+        (gameplay ? (*revision != 2U && *revision != 3U) : (*revision != 1U)))
         return core::unexpected(
             fail("packed.header.invalid", "Packed header counters are invalid"));
     std::vector<Directory> directories;
@@ -1248,7 +1295,7 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
         // Spec 5.3: the same registry decision as inspect(). Foundation semantic sections are
         // parsed, the registered inspection section and unknown inspection sections are ignored,
         // and later-contract sections are refused.
-        auto role = classifySection(code, *flags);
+        auto role = classifySection(code, *flags, gameplay);
         if (!role)
             return core::unexpected(std::move(role.error()));
         auto data = bytes.subspan(*offset, *encoded);
@@ -1267,6 +1314,23 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
         if (!section(required))
             return core::unexpected(
                 fail("packed.directory.required", "Packed required section is missing"));
+    if (gameplay) {
+        for (const auto required : {"GPH0", "GPR0", "GPD0", "GRC0"}) {
+            if (!section(required)) {
+                return core::unexpected(
+                    fail("packed.directory.required", "Gameplay required section is missing"));
+            }
+        }
+        if (section("STR0")->records != *stringCount || section("REF0")->records != *refCount ||
+            section("ENT0")->records != *entityCount || section("IDN0")->records != *entityCount ||
+            section("META")->records != 1U || section("TIME")->records != 1U ||
+            section("GPH0")->records != 1U || section("GPR0")->records != *requirementCount ||
+            section("REQ0")->records != 0U || section("CNS0")->records != 0U ||
+            section("REQ0")->data.size() != 2U || !section("CNS0")->data.empty()) {
+            return core::unexpected(
+                fail("packed.header.invalid", "Revision-2 section counters are inconsistent"));
+        }
+    }
     const auto* strSection = section("STR0");
     ByteReader strReader(strSection->data);
     auto strCount = strReader.readU32();
@@ -1292,6 +1356,8 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
     auto stringData = strReader.readBytes(*dataBytes);
     if (!stringData || !strReader.empty())
         return core::unexpected(fail("packed.strings.bounds", "STR0 payload is invalid"));
+    if (offsets.front() != 0U || offsets.back() != *dataBytes)
+        return core::unexpected(fail("packed.strings.offset", "STR0 endpoint offsets are invalid"));
     std::vector<std::string> strings;
     strings.reserve(*strCount);
     for (std::uint32_t i = 0; i < *strCount; ++i) {
@@ -1299,6 +1365,9 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
             return core::unexpected(fail("packed.strings.offset", "STR0 offsets are invalid"));
         strings.emplace_back(reinterpret_cast<const char*>(stringData->data() + offsets[i]),
                              offsets[i + 1U] - offsets[i]);
+        if (gameplay && !validUtf8(strings.back())) {
+            return core::unexpected(fail("packed.strings.bounds", "STR0 text is not valid UTF-8"));
+        }
     }
     // Spec 6.1: STR0 strings are deduplicated and strictly ascending by bytes. The repository
     // Writer already emits that order; a non-canonical artifact is refused instead of resolved.
@@ -1329,6 +1398,9 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
         auto value = getString(*index);
         if (!value)
             return core::unexpected(std::move(value.error()));
+        if (gameplay && (*kind == 0U || *kind > 13U))
+            return core::unexpected(fail("packed.references.kind",
+                                         "Reference kind is outside the revision-2 registry"));
         refs.emplace_back(*kind, std::move(*value));
     }
     if (!refReader.empty())
@@ -1401,6 +1473,11 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
         if (!value)
             return core::unexpected(std::move(value.error()));
         chart.features.push_back(CanonicalFeature{*value, *versionValue});
+        if (gameplay && chart.features.size() > 1U &&
+            !(chart.features[chart.features.size() - 2U].id < chart.features.back().id)) {
+            return core::unexpected(
+                fail("packed.meta.feature", "META features must be unique and ascending"));
+        }
     }
     if (!meta.empty())
         return core::unexpected(fail("packed.meta.trailing", "META has trailing bytes"));
@@ -1726,6 +1803,18 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
     }
     auto applyStreams = [&](std::string_view code, int kind) -> core::Result<void> {
         const auto* stream = section(code);
+        if (gameplay) {
+            const auto bit = kind == 0 ? 1U : kind == 1 ? 2U : 16U;
+            std::size_t expectedRows = 0;
+            for (const auto arch : archetypes) {
+                expectedRows += (arches[arch].mask & bit) != 0U ? 1U : 0U;
+            }
+            if ((stream && stream->records != expectedRows) || (!stream && expectedRows != 0U) ||
+                (stream && expectedRows == 0U)) {
+                return core::unexpected(fail("packed.stream.component",
+                                             "Component stream presence or count is invalid"));
+            }
+        }
         if (!stream)
             return {};
         ByteReader rows(stream->data);
@@ -1918,7 +2007,8 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
     std::uint32_t previousOrdinal = 0;
     std::string previousLocalId;
     bool hasPrevious = false;
-    for (std::uint32_t i = 0; i < *requirementCount; ++i) {
+    const auto legacyRequirementCount = gameplay ? 0U : *requirementCount;
+    for (std::uint32_t i = 0; i < legacyRequirementCount; ++i) {
         auto delta = req.readUnsignedLeb128(*entityCount);
         auto local = req.readUnsignedLeb128(*stringCount);
         auto kind = req.readU8();
@@ -2028,6 +2118,25 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
         }
     }
     chart.resourceClosure.resources.assign(derivedClosure.begin(), derivedClosure.end());
+    if (gameplay) {
+        std::vector<CanonicalEntityIdentity> owners;
+        std::vector<std::uint64_t> masks;
+        for (std::size_t i = 0; i < chart.entities.size(); ++i) {
+            const auto mask = arches[archetypes[i]].mask;
+            masks.push_back(mask);
+            if ((mask & 4U) != 0U) {
+                owners.push_back(chart.entities[i].identity);
+            }
+        }
+        auto validated = gameplay_detail::staticPreimage(chart, owners);
+        if (!validated) {
+            return core::unexpected(std::move(validated.error()));
+        }
+        staticResult->strings = std::move(strings);
+        staticResult->references = std::move(refs);
+        staticResult->entityMasks = std::move(masks);
+        return chart;
+    }
     // Spec 7.6: the profile gate runs on the rebuilt typed model, so a wire artifact and a typed
     // model are judged by exactly the same rules, and a profile rejection always precedes the
     // semantic identity comparison below.
@@ -2043,6 +2152,159 @@ auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
             fail("packed.identity.mismatch",
                  "Packed semantic identity does not match the recomputed digest"));
     return chart;
+}
+
+auto inspect(std::span<const std::byte> bytes, PackedChartLimits limits)
+    -> core::Result<PackedChartStatistics> {
+    return inspectImpl(bytes, limits, false);
+}
+
+auto decode(std::span<const std::byte> bytes, PackedChartLimits limits)
+    -> core::Result<CanonicalSemanticChart> {
+    return decodeImpl(bytes, limits, false, nullptr);
+}
+
+auto gameplay_detail::inspect(std::span<const std::byte> bytes, PackedChartLimits limits)
+    -> core::Result<PackedChartStatistics> {
+    return inspectImpl(bytes, limits, true);
+}
+
+auto gameplay_detail::decodeStatic(std::span<const std::byte> bytes, PackedChartLimits limits)
+    -> core::Result<DecodedStatic> {
+    DecodedStatic decoded;
+    auto chart = decodeImpl(bytes, limits, true, &decoded);
+    if (!chart) {
+        return core::unexpected(std::move(chart.error()));
+    }
+    decoded.chart = std::move(*chart);
+    return decoded;
+}
+
+auto gameplay_detail::encodeStatic(const CanonicalSemanticChart& chart,
+                                   std::span<const CanonicalEntityIdentity> gameplayOwners,
+                                   std::span<const std::string> extraStrings,
+                                   std::span<const Reference> extraReferences,
+                                   PackedChartLimits limits) -> core::Result<StaticTables> {
+    const auto budget = limits_detail::effectiveLimits(limits);
+    if (chart.entities.size() > budget.maxPackedEntities) {
+        return core::unexpected(fail("packed.budget.entities", "Packed entity budget exceeded"));
+    }
+    auto prefix = staticPreimage(chart, gameplayOwners);
+    if (!prefix) {
+        return core::unexpected(std::move(prefix.error()));
+    }
+    auto ordered = orderEntities(chart);
+    if (!ordered) {
+        return core::unexpected(std::move(ordered.error()));
+    }
+    for (const auto& owner : gameplayOwners) {
+        auto key = identityKey(owner);
+        if (!key) {
+            return core::unexpected(std::move(key.error()));
+        }
+        const auto* entity = ordered->entities[ordered->ordinals.at(*key)];
+        ordered->masks.at(entity) |= 4U;
+    }
+    Dictionaries dict;
+    collectStrings(dict, chart);
+    dict.strings.insert(dict.strings.end(), extraStrings.begin(), extraStrings.end());
+    for (const auto& ref : extraReferences) {
+        if (ref.first == 0U || ref.first > 13U) {
+            return core::unexpected(fail("packed.references.kind",
+                                         "Reference kind is outside the revision-2 registry"));
+        }
+        dict.strings.push_back(ref.second);
+        dict.refIndex.emplace(ref, 0U);
+    }
+    std::sort(dict.strings.begin(), dict.strings.end());
+    dict.strings.erase(std::unique(dict.strings.begin(), dict.strings.end()), dict.strings.end());
+    if (dict.strings.size() > budget.maxPackedStrings) {
+        return core::unexpected(fail("packed.budget.strings", "Packed string budget exceeded"));
+    }
+    if (dict.refIndex.size() > budget.maxPackedReferences) {
+        return core::unexpected(
+            fail("packed.budget.references", "Packed reference budget exceeded"));
+    }
+    std::uint64_t stringBytes = 12U + std::uint64_t{4} * dict.strings.size();
+    for (const auto& text : dict.strings) {
+        if (!validUtf8(text)) {
+            return core::unexpected(fail("packed.strings.bounds", "STR0 text is not valid UTF-8"));
+        }
+        if (text.size() > budget.maxPackedSectionBytes ||
+            stringBytes > budget.maxPackedSectionBytes - text.size()) {
+            return core::unexpected(
+                fail("packed.budget.section_bytes", "STR0 section budget exceeded"));
+        }
+        stringBytes += text.size();
+    }
+    if (stringBytes > budget.maxPackedSectionBytes) {
+        return core::unexpected(
+            fail("packed.budget.section_bytes", "STR0 section budget exceeded"));
+    }
+    dict.stringIndex.clear();
+    for (std::size_t i = 0; i < dict.strings.size(); ++i) {
+        dict.stringIndex.emplace(dict.strings[i], static_cast<std::uint32_t>(i));
+    }
+    StaticTables result;
+    result.strings = dict.strings;
+    for (auto& [key, index] : dict.refIndex) {
+        index = static_cast<std::uint32_t>(result.references.size());
+        result.references.push_back(key);
+    }
+    const auto add = [&](core::Result<Section> section) -> core::Result<void> {
+        if (!section) {
+            return core::unexpected(std::move(section.error()));
+        }
+        if (section->bytes.size() > budget.maxPackedSectionBytes) {
+            return core::unexpected(
+                fail("packed.budget.section_bytes", "Packed static section budget exceeded"));
+        }
+        result.sections.push_back(std::move(*section));
+        return {};
+    };
+    std::map<std::uint64_t, std::uint32_t> archIndices;
+    auto arches = makeArchetypes(*ordered, archIndices);
+    // All static records use the same final shared dictionaries.
+    for (auto section :
+         {writeStringSection(dict), writeReferenceSection(dict), writeMetaSection(chart, dict),
+          writeTimeSection(chart.timing), writeIdentitySection(*ordered, chart, dict),
+          writeArchetypeSection(arches, dict), writeEntitySection(*ordered, archIndices)}) {
+        if (auto added = add(std::move(section)); !added) {
+            return core::unexpected(std::move(added.error()));
+        }
+    }
+    for (int kind = 0; kind < 3; ++kind) {
+        auto stream = writeComponentStream(*ordered, arches, archIndices, dict, kind);
+        if (!stream) {
+            return core::unexpected(std::move(stream.error()));
+        }
+        if (stream->records != 0U) {
+            if (auto added = add(std::move(stream)); !added) {
+                return core::unexpected(std::move(added.error()));
+            }
+        }
+    }
+    result.sections.push_back(Section{{'C', 'N', 'S', '0'}, {}, 0U});
+    result.sections.push_back(Section{{'R', 'E', 'Q', '0'}, {std::byte{0}, std::byte{0}}, 0U});
+    std::uint64_t decodedBytes = 0;
+    for (const auto& section : result.sections) {
+        decodedBytes += section.bytes.size();
+    }
+    if (decodedBytes > budget.maxPackedDecodedBytes) {
+        return core::unexpected(
+            fail("packed.budget.decoded_bytes", "Packed static decoded byte budget exceeded"));
+    }
+    if (96U + result.sections.size() * 32U + decodedBytes > budget.maxPackedFileBytes) {
+        return core::unexpected(
+            fail("packed.budget.file_bytes", "Packed static envelope budget exceeded"));
+    }
+    for (const auto* entity : ordered->entities) {
+        result.entityIdentities.push_back(entity->identity);
+        result.entityMasks.push_back(ordered->masks.at(entity));
+    }
+    std::sort(result.sections.begin(), result.sections.end(),
+              [](const auto& left, const auto& right) { return left.code < right.code; });
+    return result;
 }
 
 } // namespace cuexis::chart::packed

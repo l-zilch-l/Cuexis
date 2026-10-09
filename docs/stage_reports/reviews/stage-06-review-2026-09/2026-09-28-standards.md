@@ -1,6 +1,6 @@
 # Stage 6 复核：Standards 轴
 
-状态：active
+状态：historical review snapshot
 快照日期：2026-09-28
 更新日期：2026-09-28
 

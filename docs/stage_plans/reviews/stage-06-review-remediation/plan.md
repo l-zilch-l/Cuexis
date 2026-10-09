@@ -8,7 +8,7 @@
 R0–R8 已全部退出并随 PR #30 合并进 `master`（合并提交 `670cca8`），R9 已另行开启、**实现、本地
 变异证据与 hosted 复验均已完成**（独立分支、独立 PR），且 **owner 已于 2026-09-29 接受 R9 退出**
 （最终 tip `cc14fcd` 在 push 与 pull_request 两个事件上 7 个运行全部通过，见
-[R9 报告](../../../stage_reports/stages/stage-06/2026-09-28-r9-reference-host-command-loop.md) §2.3 与 §8），
+[R9 报告](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-r9-reference-host-command-loop.md) §2.3 与 §8），
 `SPEC-27` 关闭依据至此完整并记为 **closed**；
 **本工作包已由 owner 于 2026-09-29 接受关闭报告而关闭**（状态词转 `completed`）：R9 契约（含 R9 报告
 §5.1 记录的冗余 tick 预算守卫）已获 owner 接受，两个守卫保持现状、不合并；
@@ -112,7 +112,7 @@ R0 决策门禁（owner 裁定 4 项）
 | R7 | R5 | 宿主与分发门禁补齐 | completed（步骤 3/4/6 按口径登记，ADR 冲突上报）：宿主导入门禁新增导入表符号检查与 SDK minor 负例；candidate 零命中扫描成为门禁（「默认 OFF 下工厂拒绝」本已注册）；static 无 toolchain 负例改由 minor 负例承担；交互命令循环口径与 ADR 0042 `:350-351` 的冲突**未处置**、需 owner 裁定；分发门禁 Linux 未注册登记为 Stage 8 输入。退出记录见 [2026-09-28-w5-host-and-distribution-gates.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w5-host-and-distribution-gates.md) |
 | R8 | — | 重复/死代码/可移植性修正 | completed（STD-05/06/08/09 按计划 §4/§5 边界登记残余）：STD-13 两个 `.obj` 去跟踪 + `*.obj` 规则；STD-07 七项死代码删除（含两项需实查的 `readCount()` 与 `readRequiredString` 冗余参数，及清单外补删的 `providerRootId`），第 8 项 `--event` 判为有真实审计角色故保留；STD-04 两份逐字相同的状态名级联合并为 `playbackStateName`；STD-10 定因后改为**三分支**（MSVC `_wfopen_s`、MinGW `_wfopen`、其余窄 `fopen`）：原文"统一按 `_MSC_VER` 分支"的处方本身有误——它使 MinGW 落入窄 `fopen` 回退而编译失败，见 W6 §6；STD-12 workflow 块缩进对齐（`git diff -w` 为空）。STD-05/06/08/09 因属重构/公共 API 变更，按 §4 排除并登记。退出记录见 [2026-09-28-w6-code-health.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w6-code-health.md) |
 
-| R9 | R7 | Reference Host 命令循环与 play/pause | **completed**（**owner 于 2026-09-29 接受退出**；`SPEC-27` 关闭依据完整，记为 closed）：设计已获 owner 接受，处理 SPEC-27（ADR 0042 `:350-351` 的六动词命令循环）。命令模式、§6.2 digest 关系、门禁接线与 16 条变异证据均已落地（15 条被目标断言抓住，1 条按合同冗余**记录为预期存活**）；版本规则按 §11 计算，未预填。最后**行为** SHA `71de8b1` 上 Linux Quality、Windows MSVC、Windows MinGW 与 Version Gate 四工作流全部通过，证据见 [2026-09-28 R9 报告](../../../stage_reports/stages/stage-06/2026-09-28-r9-reference-host-command-loop.md) §2.3；该 SHA 之后的文档提交按仓库政策须各自核对 hosted，见报告 §8。**未完成**：无。唯一登记残余——R9 报告 §5.1 的冗余 tick 预算守卫是否合并——已由 owner 于 2026-09-29 接受契约时一并裁定为**保持现状、不合并**（订正：本行此前写作"§4.1"，该节在两份文档中均不存在）。**唯一规范来源是 [R9-reference-host-command-loop.md](R9-reference-host-command-loop.md)**——本行只记录状态、依赖与链接，不复制其合同、限额或判据。从 PR #30 合并后的 `master`（`670cca8`）独立开分支、独立 PR。完整合同、状态矩阵、C01–C12/N01–N07 用例、变异清单、门禁接线与退出清单见该文档；证据记录见 [2026-09-28 R9 报告](../../../stage_reports/stages/stage-06/2026-09-28-r9-reference-host-command-loop.md) |
+| R9 | R7 | Reference Host 命令循环与 play/pause | **completed**（**owner 于 2026-09-29 接受退出**；`SPEC-27` 关闭依据完整，记为 closed）：设计已获 owner 接受，处理 SPEC-27（ADR 0042 `:350-351` 的六动词命令循环）。命令模式、§6.2 digest 关系、门禁接线与 16 条变异证据均已落地（15 条被目标断言抓住，1 条按合同冗余**记录为预期存活**）；版本规则按 §11 计算，未预填。最后**行为** SHA `71de8b1` 上 Linux Quality、Windows MSVC、Windows MinGW 与 Version Gate 四工作流全部通过，证据见 [2026-09-28 R9 报告](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-r9-reference-host-command-loop.md) §2.3；该 SHA 之后的文档提交按仓库政策须各自核对 hosted，见报告 §8。**未完成**：无。唯一登记残余——R9 报告 §5.1 的冗余 tick 预算守卫是否合并——已由 owner 于 2026-09-29 接受契约时一并裁定为**保持现状、不合并**（订正：本行此前写作"§4.1"，该节在两份文档中均不存在）。**唯一规范来源是 [R9-reference-host-command-loop.md](R9-reference-host-command-loop.md)**——本行只记录状态、依赖与链接，不复制其合同、限额或判据。从 PR #30 合并后的 `master`（`670cca8`）独立开分支、独立 PR。完整合同、状态矩阵、C01–C12/N01–N07 用例、变异清单、门禁接线与退出清单见该文档；证据记录见 [2026-09-28 R9 报告](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-r9-reference-host-command-loop.md) |
 
 ## 6. 各批次的问题、目标与具体步骤
 
@@ -445,7 +445,7 @@ git diff --check
 | R6 | `.\out\build\debug\bin\cuexis_player.exe --smoke-test`；OpenGL 像素/summary 与最小化/恢复 |
 | R7 | 宿主 staging 门禁与 Player 分发门禁（各 flavor） |
 | R8 | 全量 `ctest` 两配置 + `cuexis_format_check`；golden 不变 |
-| R9 | 见 [R9 报告](../../../stage_reports/stages/stage-06/2026-09-28-r9-reference-host-command-loop.md) §2：`VerifyReferenceHostCommands` 期望 41 / 完成 41 / 通过 41、parser 自测，以及 hosted 的 `parser-lower-bound`（CMake 3.25.3）与 `cmake-4-reference`（CMake 4.4.0）两个作业 |
+| R9 | 见 [R9 报告](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-r9-reference-host-command-loop.md) §2：`VerifyReferenceHostCommands` 期望 41 / 完成 41 / 通过 41、parser 自测，以及 hosted 的 `parser-lower-bound`（CMake 3.25.3）与 `cmake-4-reference`（CMake 4.4.0）两个作业 |
 
 ### 8.3 hosted 与最终回归
 
@@ -554,7 +554,7 @@ git diff --check
 | [R9-reference-host-command-loop.md](R9-reference-host-command-loop.md) | **R9 唯一规范来源** | active |
 | [R9-gate-policy-audit-decisions.md](R9-gate-policy-audit-decisions.md) | R9 门禁策略裁定与实施依据 | active |
 | [R9-gate-policy-impact-table.md](R9-gate-policy-impact-table.md) | R9 逐策略影响审计 | active |
-| [2026-09-28-r9-reference-host-command-loop.md](../../../stage_reports/stages/stage-06/2026-09-28-r9-reference-host-command-loop.md) | R9 日期化证据报告 | 见其 §2.3 |
+| [2026-09-28-r9-reference-host-command-loop.md](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-r9-reference-host-command-loop.md) | R9 日期化证据报告 | 见其 §2.3 |
 
 ### 12.3 三处容易踩的坑
 

@@ -4,7 +4,7 @@
 
 更新日期：2026-08-30
 
-适用版本：SDK API `0.7.0`
+适用版本：SDK API `0.7.1`
 
 文档角色：公共 API 导航
 
@@ -26,6 +26,10 @@
 | 检查表现资源、renderer capability | [表现资源与能力预检](presentation-and-capabilities.md) |
 | 处理错误、diagnostics、identity 和兼容性 | [诊断、身份与兼容性](diagnostics-identity-and-compatibility.md) |
 | 判断实现应落在哪个内部模块 | [内部模块速查](internal-module-catalog.md) |
+| 设计 Gameplay Judgement typed preview 边界 | [Gameplay Judgement ABI（候选）](GAMEPLAY_JUDGEMENT_ABI.md) |
+| 设计 Gameplay V2 typed preview 边界 | [Gameplay V2 ABI（候选）](GAMEPLAY_V2_ABI.md)（语义权威在 [Gameplay V2 Spec](../formats/GAMEPLAY_V2_SPEC.md)，决策在 [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md)） |
+| 实施 S7A-3/4 首次执行字段 | [Execution typed supplement](gameplay-v2-execution-types.md)（内部 candidate，未实施，不安装为宿主 API） |
+| 规划实际输入、音频时钟与异步发布边界 | [实时宿主边界草案](realtime-host-boundary.md)（仅设计，未冻结字段、未实施，不是现有公共 API） |
 
 ## 公共边界
 

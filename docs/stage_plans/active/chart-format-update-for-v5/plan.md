@@ -7,7 +7,7 @@ Note 表现或渲染后端提升为核心玩法语义。判定域、动作、有
 状态：active；跨阶段 Chart v5 总工作包；不是当前下一实施阶段。Foundation、Stage 6、
 Stage 7A 和 Stage 8 分别按各自计划执行；正式发行门禁归 Stage 8
 
-更新日期：2026-09-20
+更新日期：2026-10-02
 
 SDK 版本遵循 [版本规范](../../../guides/VERSIONING.md)。本文“v5 发行 SDK 版本”指 Stage 8
 按实际集成基线（包含 Stage 7A 等前序交付）和公共合同差异批准的具体版本，不预留 `0.8.0`，
@@ -17,6 +17,10 @@ SDK 版本遵循 [版本规范](../../../guides/VERSIONING.md)。本文“v5 发
 归档来源：[Stage Chart Format Update 完成计划](../../completed/chart-format-update/plan.md)、
 [Chart v4 格式合同](../../../formats/CHART_V4_FORMAT.md)、[谱面格式审计记录](../../../stage_reports/reviews/stage-verification-2026-09/2026-09-01-findings.md)
 与前置 [Stage 6 计划](../../completed/stage-06/plan.md)。
+
+2026-10-09路线补充：[Stage 7-RPA子阶段](../stage-07/plan-rpa.md)
+承接实时播放架构、正式诊断命名及实体设备/实时同步最终验收，基于7/8集成进入设计并向Stage8
+交付；S7A-9不新增RPA前置，Stage7B+继续独立并按选入结果交付Stage8。本跨阶段工作包不复制RPA计划，也不因路线增加而接受生产预算。
 
 ## 计划定位
 
@@ -32,13 +36,20 @@ SDK 版本遵循 [版本规范](../../../guides/VERSIONING.md)。本文“v5 发
   -> ../chart-format-foundation-hardening/plan.md
 后续阶段（加固关闭后）
   -> ../../completed/stage-06/plan.md
-  -> ../../future/stage-07/plan.md（Stage 7A）
+  -> ../../active/stage-07/plan.md（Stage 7A）
   -> ../../future/stage-08/plan.md
 ```
 
 其中，`chart-format-foundation` 负责先完成 v5 Core/Packed 的基础、容量验证和 CXC
 entry 设计；当前由 `chart-format-foundation-hardening` 补齐交接技术门禁后才进入 Stage 6。
 本文继续保留 active；其中的 v5 正式发行内容要到 Stage 8 才按阶段计划实施。
+本次路线修订把 Chart v5 的 Gameplay semantic revision 固定为 `gameplay.version = 2`，并允许
+Canonical Gameplay Graph 作为 CXC v1 内独立的 candidate Playback entry，并在 Stage 8 正式发行
+门禁中评估为 formal entry。该 entry 与
+Packed Chart entry 必须恢复同一 Canonical Gameplay Graph、使用同一 prepare 和同一 judgement
+identity；它不是第二套判定实现。Stage 7A 的最小发行前闭环包含 Release/tail、early/late
+Presentation bridge 和一个 capacity=1 的 exclusive resource；handoff、capacity>1、和弦、连续
+轨迹和全局最优 solver 仍属于后续 capability。
 
 字段与物理布局的候选权威分别是
 [CXT v2](../../../formats/CXT_V2_FORMAT.md) 和
@@ -211,14 +222,17 @@ Packed Chart 不是 Chart v6，也不新增 Chart/CXT 语义版本。
 V5-0A 必须在生产 Packed Reader/Writer、CXC 打包支持或 Playback Packed 输入前关闭，并至少冻结：
 
 ```text
-作者层 JSON 与 Packed Chart 的语义等价关系
+作者层 JSON 与 Canonical Gameplay Graph 的语义等价关系
+Canonical Gameplay Graph 与 Packed Chart 的无损投影关系
+Gameplay semantic revision `2` 与 outer Chart v5、Packed wire revision、capability revision 的分层关系
 Packed Chart 的 magic、version、section table 和 checksum
 STR0、REF0、IDN0、ARCH、ENT0 与 typed component stream 的局部索引规则
 Object/component mask、实体差异字段和 columnar component 布局
 Beat grid、delta/varint 编码与 RationalBeat 的无损还原合同
 16 MiB packed-file、decoded-size、section-size 和展开计数预算
 JSON/Packed identity、迁移链与 deterministic round-trip
-CXC 中 source Chart 与 Packed Chart 的 entry kind/encoding 标识
+CXC 中 source Chart、Canonical Gameplay Graph 与 Packed Chart 的 entry kind/encoding 标识
+CXC Graph Playback entry 与 Packed Playback entry 的共同 prepared identity 和拒绝矩阵
 ```
 
 Packed Chart 的目标是改变物理编码，不改变 v5 的 alpha、旋转、动画白名单、判定语义或 Runtime
@@ -268,6 +282,10 @@ Repeat 的实体数量变化另做 checked 计数；rotation、alpha 与 CXT Ani
 值仍为 literal。旧 ChartParameter 白名单不因此扩大。
 CXT 在编译时冻结参数，改变参数必须重新编译 Packed；v5 发行 Playback 不隐式
 调用 source entry 重跑模板，v4 参数 prepare 兼容合同不变。
+
+CXT Requirement 的 `effects` 不进入 Canonical Gameplay Graph。候选 CXT source 可以保留该字段，
+但非空值必须经过显式、有限的 Presentation/FactBinding lowering；不能成为判定状态、Replay
+identity 或 Ruleset 输入。无法证明为 presentation-only 的非空 effects 稳定拒绝。
 
 V5-0B 必须关闭后才能实现 CXT v2 formal-release Schema/Reader/Writer，并至少产生
 [CXT v2 Spec](../../../formats/CXT_V2_FORMAT.md)、正反例、展开 golden 和安全预算报告。
@@ -432,7 +450,10 @@ CXT 的 Track/Segment 字段权威就是外层 Chart / CXT 文件版本所绑定
 - **CXC v1**：容器、manifest、ZIP32 Stored 和闭包规则不变。CXC v1 可以包含 Chart v5 与其闭包内的
   CXT v2，也可以包含未迁移的 Chart v4 与 CXT v1；pack / validate / Playback 按内层文档
   `format`/`version` 路由。Chart v5 不得把 CXT v1 留在自己的 import 闭包里。本阶段不交付 CXC v2。
-  v5 ADR 只补充“CXC v1 允许内层 Chart v5 / CXT v2”，不重开载体决策。
+  v5 ADR 只补充“CXC v1 允许内层 Chart v5 / CXT v2”，不重开载体决策。路线修订后，manifest
+  还必须区分 `packed-chart` 与独立 `gameplay-graph` Playback entry；两者都必须声明
+  `gameplay.version = 2`、compiled semantic identity、required capability closure 和 Ruleset
+  binding，并进入同一个 prepared judgement path。作者 Chart/CXT source 仍不是 Playback entry。
 - **FrameDigest v1-v3**：合法 v4 输入的 digest 结果不得变化。v5 新作者值优先映射到现有
   `FrameSnapshot` 字段（对象透明度仍进入已有 opacity）；不因 Chart v5 单独升级 digest 版本。
   仅当公开 snapshot 布局必须新增被哈希字段时才允许新 digest 版本，且须在 ADR 中单列。
@@ -473,6 +494,37 @@ Playback 继续直接求值未迁移的 v1–v4；打开 v1–v3 不拒绝
 Seek、循环、零持续、相邻边界和 timeDiscontinuity 沿用既有绝对 Beat 规则。对象 alpha 必须同样不依赖
 上一帧。旋转采样器不改写。V5-A/C 必须先有 v4 旋转、v4 opacity 与 digest 表征，证明 v5 只在文档
 边界转换整数 alpha，不改 Mixer 单位。
+
+### 3.8 Gameplay V2 route selected for Stage 7A/8
+
+本路线采用 `gameplay.version = 2`。它是 Chart v5 外层 `version = 5` 之下的 Gameplay semantic
+revision，不替代 Packed wire revision、candidate revision、capability revision、Judgement semantic
+version 或 Replay format version。旧 Gameplay revision 必须由显式离线迁移器转换，或在最早可判定
+入口稳定拒绝；不得根据字段存在与否猜测语义版本。
+
+Canonical Gameplay Graph 可以作为 CXC v1 内独立的 `gameplay-graph` Playback entry，也可以作为
+Chart v5/Packed 的编译中间层。两种 Playback entry 必须：
+
+```text
+decode -> validate gameplay.version = 2
+      -> restore the same Canonical Gameplay Graph
+      -> derive the same capability closure and prepared identity
+      -> enter the same Stage 7A judgement kernel
+```
+
+不得为 Graph entry 和 Packed entry 建立两套判定、Ruleset、Snapshot 或 Replay 解释路径。CXC
+manifest 必须分别记录 entry kind、semantic identity、artifact identity、Ruleset binding、capability
+closure 和 source-of relationship。
+
+Stage 7A 的路线范围固定为：
+
+- Tap、Hold head/body、显式 Release/tail 和单一 capacity=1 exclusive resource；
+- `reject_late` 与 `queue_next_tick`，以及显式 TimebaseProfile；
+- Fact Ledger、Ruleset state transaction、全量 Snapshot/Seek/Replay；
+- 基于 FactBinding 的 early/exact/late/Miss `render.visible` bridge。
+
+Stage 7A 不实现 handoff、capacity>1、Chord、全局最优匹配、连续轨迹、方向/速度输入或 H06/H08。
+H06/H08 继续标记为“未来开发，现不支持”；H01-H05/H07 继续是能力边界，不会再开发，不受支持。
 
 ## 4. 数值与作者能力：本阶段冻结 / 沿用 v4 / 不实现
 
@@ -552,6 +604,10 @@ Seek、循环、零持续、相邻边界和 timeDiscontinuity 沿用既有绝对
   typed component streams、component mask、Beat GridDelta/Rational atoms、CRC 和
   checked decoded-size 预算。IDN0 保留具体实体 semantic identity；DBG0 只保存可删除
   source/build provenance。
+- 设计 Gameplay V2 candidate projection 的 section/identity 边界：Requirements、phase/measure、
+  resources、relations/groups、prepared solver policy、FactBinding 和 capability closure 必须有
+  明确的 section revision、索引域、预算和稳定拒绝规则。不得扩大 Foundation `REQ0` 的 tap 语义来
+  偷渡 Hold、Release 或跨 Requirement relation。
 - 明确 16 MiB 是 Packed file budget；JSON source、decoded chart、CXC package 和 runtime memory
   分别使用独立预算，不以压缩比替代安全限制。
 - 规定 `v4 JSON -> v5 JSON -> Packed v5` 的迁移/编译链；Packed bytes 不反向作为作者层输入。
@@ -568,6 +624,27 @@ Seek、循环、零持续、相邻边界和 timeDiscontinuity 沿用既有绝对
 - 每个缺口附正例和失败例。第 4.2 节只写入指南，不重开 ADR。
 - Foundation/V5-0A 关闭前不得开始 v5 candidate lowering 接线；V5-0 关闭前不得开始 formal-release
   Schema、Reader/Writer 和正式 Playback entry。
+
+### V5-B1：Gameplay V2 graph 与 CXC entry route
+
+本批次在 Stage 7A typed contract 进入实现前完成 Gameplay V2 的格式交接设计，仍属于 candidate
+route，不宣称生产支持。必须交付：
+
+- Chart v5 `gameplay.version = 2` 的 source/canonical 字段边界和旧 revision 的迁移/拒绝矩阵；
+- Canonical Gameplay Graph 的 typed representation，以及 Chart inline、CXT v2 emission、Packed
+  projection 的 semantic diff/reference compiler；
+- CXC v1 manifest 的 `packed-chart` 与 `gameplay-graph` Playback entry extension，包含
+  `compiledSemanticIdentity`、Ruleset binding、capability closure、artifact identity 和 source-of；
+- 两种 Playback entry 进入同一 prepare、judgement、Snapshot、Replay 和 diagnostic path 的证据；
+- CXT Requirement `effects` 的 source-only 兼容策略：非空值只能显式 lowering 到 Presentation/
+  FactBinding，Canonical Gameplay Graph 不保存 effects；无法证明 presentation-only 时稳定拒绝；
+- Release/tail、single exclusive resource、early/late binding、TimebaseProfile 和 identity projection
+  的 Chart/Packed/CXC 交接清单。
+
+本批次不能通过新的 opaque JSON section、CXT AST 或 entry-specific runtime branch 规避 typed
+contract。Graph entry 与 Packed entry 的物理 bytes 可以不同；16 MiB 是 Packed artifact 的发行
+门禁，Graph entry 另有独立的 closure、decoded/runtime 和 CXC package budget，但 compiled semantic
+identity 和 prepared judgement identity 必须可比较。
 
 ### V5-C：typed model 和 Runtime 采样
 
@@ -590,12 +667,17 @@ Seek、循环、零持续、相邻边界和 timeDiscontinuity 沿用既有绝对
 - 实现 CXT v2 Schema/Reader/Writer；Chart v5 只 import CXT v2，拒绝 CXT v1；Chart v4 拒绝 CXT v2。
 - 实现 `behavior.event` v2 Schema/Reader；Chart v5 拒绝 `behavior.event` v1。
 - CXC v1 pack/validate 按内层文档版本路由 Chart v5 与 CXT v2；发行包的 Chart v5 入口必须是
-  Packed Chart，作者层 JSON 只作为 Source Project 输入或显式 source entry 保留。
+  已验证的 `packed-chart` 或独立 `gameplay-graph` Playback entry；两者使用同一
+  Canonical Gameplay Graph、prepared identity 和 Judgement kernel。作者层 JSON/CXT 只作为
+  Source Project 输入或显式 source entry 保留。
 - 若 V5-0A 已关闭，增加 Packed Chart 编译/验证路径；Packed 输入必须先完成 header、section、
   count、decoded-size、identity 和 capability 校验，再进入既有 typed prepare。
 - Foundation 只保证其已验收静态候选 profile；Stage 6 需要的 BEH0/BHD0/ANM0 或生成
   实体动画目标绑定，必须先补候选 revision、字段枚举和 golden。未支持 section/引用
   不得通过 opaque JSON、CXT AST 或隐式命名约定继续播放。
+- Graph Playback entry 与 Packed Playback entry 必须在 prepare 前完成 gameplay.version、Ruleset、
+  capability closure、identity 和资源闭包校验；缺少表现资源时允许 headless judgement，缺少判定
+  domain/action/table 或悬空 Gameplay 引用时稳定失败。
 - 统一作者层 `[0,255]` 整数与 Runtime `[0,1]` 的范围及溢出诊断；转换只发生在文档边界。
 - 确保对象 alpha 经 `/ 255` 进入 Portable Presentation `[0,1]` 后不改变 alphaMode、资源 identity 和
   FrameDigest v3 对既有 snapshot opacity 字段的参与规则。
@@ -661,7 +743,10 @@ Seek、循环、零持续、相邻边界和 timeDiscontinuity 沿用既有绝对
 - 40,000 语义实体容量基线在 JSON source、Packed file、decoded chart 和 prepare 峰值四个维度均有报告；
   16 MiB 只对 Packed file 作为发行输入门禁，并另有 Chart Closure/Expanded Runtime 预算。
 - CXT v2 包含 Chart Template/Pattern Core 与 Animation Extension；Chart v5 只 import CXT v2，拒绝 CXT v1。
-  Chart v5 只接受 `behavior.event` v2。Chart v4 拒绝 CXT v2。CXC v1 可包含 Chart v5 与 CXT v2。
+  Chart v5 只接受 `behavior.event` v2。Chart v4 拒绝 CXT v2。CXC v1 可包含 Chart v5、CXT v2、
+  已验证的 `packed-chart` Playback entry 和独立 `gameplay-graph` Playback entry；两种 Playback
+  entry 的 Canonical Gameplay Graph、compiled semantic identity、Ruleset binding 和 prepared
+  Judgement 结果必须等价。
   FrameDigest v1-v3 对合法 v4 输入不变。Playback 安装契约使用批准的 v5 发行 SDK 版本，默认 capability 含
   `cuexis.chart.v5`、`cuexis.source.cxt.v2`、`cuexis.animation.clip.v2` 与
   `cuexis.behavior.event.v2`。
@@ -672,11 +757,11 @@ Seek、循环、零持续、相邻边界和 timeDiscontinuity 沿用既有绝对
 ## 7. 明确不包含
 
 - Chart v6 / Model v1（静态 glTF、内置网格、默认扁平片、submesh 槽）。该项见
-  [延期计划](../../deferred/chart-format-update-for-v6/plan.md)，不在本阶段实施。
+  [Stage 9 计划](../../future/stage-09/plan.md)，不在本阶段实施。
 - Chart v7 曲线形变、line 模型与 `shader.json` 后处理接口。该项见
-  [延期计划](../../deferred/chart-format-update-for-v7/plan.md)，不在本阶段实施。
+  [Stage 11 计划](../../future/stage-11/plan.md)，不在本阶段实施。
 - Chart v8 双轴贝塞尔、模型基本动画与内置后处理。该项见
-  [延期计划](../../deferred/chart-format-update-for-v8/plan.md)，不在本阶段实施。
+  [Stage 13 计划](../../future/stage-13/plan.md)，不在本阶段实施。
 - Stage 6 的版本门禁、Player 产品化、后端中立渲染和常用媒体支持。本阶段不包含这些工作；Stage 6
   先以 v5-first candidate path 完成并保留 v4 回退，随后本阶段消费 Stage 6 的稳定 Playback/Player 合同。
 - Studio 编辑器、Viewport、Timeline 和 Preview 实现。本阶段只把 v5 typed authoring model 与“必须经
@@ -709,12 +794,15 @@ Seek、循环、零持续、相邻边界和 timeDiscontinuity 沿用既有绝对
 交接给 Stage 8 之后的开发阶段的接手清单：
 
 ```text
-SDK API 使用批准的 v5 发行版本；默认写出 Chart v5；新模板 CXT v2；CXC 仍为 v1，发行入口为 Packed Chart
+SDK API 使用批准的 v5 发行版本；默认写出 Chart v5；新模板 CXT v2；CXC 仍为 v1，发行入口为已验证的
+Packed Chart 或独立 Canonical Gameplay Graph Playback entry；两者进入同一 prepared kernel
+gameplay.version = 2；旧 Gameplay revision 只能显式迁移或稳定拒绝
 AnimationClip v2（随 Chart v5 / CXT v2）；v4 / CXT v1 仍为 clip v1
 behavior.event v2（随 Chart v5）；v3 / v4 仍为 v1
 cuexis.chart.v5 / cuexis.source.cxt.v2 / cuexis.animation.clip.v2 / cuexis.behavior.event.v2
 默认 Session 含上述 v5 ID；layers.v1 仍用于非空动画
-Chart v5 只 import CXT v2；Chart v4 只 import CXT v1
+Chart v5 只 import CXT v2；Chart v4 只 import CXT v1；CXT Requirement effects 只允许 source-only
+显式 lowering 到 Presentation/FactBinding，不进入 Canonical Gameplay Graph
 旋转与相机姿态沿用 v4；fovY (0,179)
 render.alpha / renderable.alpha 作者层 [0,255]；省略默认 255；canonical 始终写出静态 alpha
 文档边界 /255 一次 → 既有 PropertyId::MaterialOpacity [0,1] / snapshot.materialOpacity

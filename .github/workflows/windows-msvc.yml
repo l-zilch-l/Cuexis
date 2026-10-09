@@ -44,6 +44,13 @@ jobs:
           .\.vcpkg\bootstrap-vcpkg.bat -disableMetrics
           "VCPKG_ROOT=$env:GITHUB_WORKSPACE\.vcpkg" >> $env:GITHUB_ENV
 
+      - name: Restore vcpkg binary archives
+        uses: ./.github/actions/cache-vcpkg
+        with:
+          compiler: cl
+          profile: ${{ matrix.preset }}
+          vcpkg-commit: ${{ env.VCPKG_COMMIT }}
+
       - name: Configure
         run: >-
           cmake --preset ${{ matrix.preset }} --fresh
@@ -56,6 +63,7 @@ jobs:
         run: ctest --preset ${{ matrix.preset }} --no-tests=error
 
       - name: Build and test optional media tools
+        if: matrix.preset == 'debug'
         run: |
           cmake --preset debug-media-tools --fresh
           cmake --build --preset debug-media-tools

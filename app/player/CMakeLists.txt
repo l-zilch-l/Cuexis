@@ -13,6 +13,8 @@ add_executable(
     src/player_assembly.hpp
     src/player_control.cpp
     src/player_control.hpp
+    src/player_gameplay.cpp
+    src/player_gameplay_guide.cpp
     src/player_smoke.cpp
     src/player_smoke.hpp
     src/player_log.cpp

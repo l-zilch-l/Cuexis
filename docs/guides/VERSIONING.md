@@ -2,7 +2,7 @@
 
 状态：已接受
 
-更新日期：2026-09-28
+更新日期：2026-10-10
 
 ## 格式
 
@@ -124,11 +124,138 @@ SDK API 版本和已启用组件；稳定 C ABI 在阶段 12 建立后再提供�
 
 ## SDK 版本递增规范
 
+Stage 7 prepares SDK `0.7.1` as an unreleased compatible patch candidate for explicit Entry
+factories and experimental package isolation. This repair preserves installed public layouts,
+signatures, vtables and default production source selection. `0.7.0` consumers rebuild against
+the new package; new Entry consumers request at least `0.7.1`. Owner approval and trusted-base
+bootstrap remain release prerequisites.
+
+2026-10-08 S7A-7/8 actual diff review retains this patch under the 0.x policy below:
+production declarations of installed PlaybackSession/PlaybackSource equal PR base
+5472c463640cf3b66a03dd86fe87bd87239b2659 after excluding explicit candidate blocks;
+the original 0.7.0 consumer is unchanged. New Gameplay names/types require candidate opt-in.
+No production signature, layout, enum semantics or default selection changed. This is a
+source compatibility decision; shared consumers must rebuild and package validation must
+pass. Date identity is independently updated by update_version.py; owner release approval,
+trusted bootstrap and hosted evidence remain open.
+
+
+### S7A-8.4 owner approval record
+
+A same-author PR uses an owner GitHub issue-comment record because GitHub does not accept
+self-Approve reviews. The record starts with `cuexis-sdk-api-approval-v1` on its own line
+using LF or CRLF, followed by one JSON object with exactly: `repository`, integer `pr`, full `base_sha`, full
+`candidate_sha`, full `candidate_tree_sha`, `from`, `to`, `utc_date`. The API-observed actor
+must be a human owner in `.github/sdk-api-owners.json` at the trusted base. The record must
+be unedited and created on that UTC release date. Missing approval, wrong actor, stale date,
+changed SHA/base/version/tree or an unavailable API denies permission. The newest owner record
+supersedes older records; an invalid newer record revokes permission. Candidate files, labels
+and `--allow-sdk-api-change` cannot grant permission. Owner approval requires explicit owner
+authorization; the owner may invoke the double-click assistant below to publish through their
+authenticated account. Routine agent builds, tests and pushes do not authorize approval posting.
+Both comment selection and JSON parsing accept LF/CRLF line endings; normalization does not
+change the API-observed comment or its raw size bound.
+
+The metadata-only `pull_request` and `pull_request_target` gates check out the base and fetch
+the actual PR head as data; neither executes PR code. Keeping `pull_request` also makes the
+PR-head check reachable while the target-event workflow has not yet been installed on master.
+This trigger bridge does not bootstrap the trusted checker or grant owner approval; a missing
+trusted baseline still fails explicitly. The latest event base must be an ancestor of the PR head, so outdated
+branches need updating. Merge-group approval binds the actual queue tree. Post-merge audit
+permits a different merge/squash SHA only for the identical approved tree, actual previous-master
+base and SDK transition. Only single-PR queues are supported; combined queues are rejected even
+with an approval for their final tree. Historical checks
+are evidence, not new release authorization.
+
+The checker, tests, registry and workflow must first exist on trusted master. Missing baseline
+files produce `version.bootstrap.required`, never candidate fallback. CODEOWNERS records owners
+but does not activate protection. Initial bootstrap and activation of a trusted required workflow
+remain owner operations. A protected first installation may use two steps: an SDK-unchanged
+bootstrap installs the reviewed checker and owner registry while retaining compatible trusted
+tests and workflow; a later PR installs the new tests/workflow and requests SDK authorization.
+The first candidate must pass the actual old trusted checker/tests; the next workflow must use
+only installed base tools. This deployment sequence never grants SDK approval, disables a
+required check or permits candidate fallback. A separate bootstrap PR needs explicit owner
+authorization where the task excludes additional PRs. The current classic required-check context alone does not prove an
+unforgeable workflow source; protection and same-SHA hosted evidence remain acceptance items,
+subject to the explicitly accepted single-maintainer exception below.
+
+Personal repositories can enforce PRs and App-bound required checks through branch rulesets, but
+GitHub configures required-workflow rules at organization/enterprise scope. A named check from
+the GitHub Actions App does not distinguish workflow, matrix or event provenance. If the
+platform rejects a workflow-source rule, keep that acceptance item open unless the owner
+explicitly accepts and records an exception. Protection changes may be explicitly delegated by the owner.
+
+### 单人维护仓库的检查来源例外（2026-10-10）
+
+owner明确接受本仓库由本人单独维护时不强制指定可信workflow来源；这是治理要求修订，
+不声明App/context绑定具有workflow来源锁定能力。范围仅为 `l-zilch-l/Cuexis` 当前个人仓库，
+适用于S7A-8.4及后续普通PR；merge queue不在本例外内，继续保持禁用。
+
+保留以下合并条件：master必须通过PR更新；`Version advancement (pre-merge)`需绑定
+GitHub Actions App15368并通过strict检查；禁止强推/删除，无bypass；SDK变化仍要求真实
+owner未编辑评论准确绑定base/head/tree、版本及UTC日期。checker仍从可信base读取，
+不能回退候选代码、伪造status或接受CLI布尔授权。
+
+每次交付核对门禁文件差异（workflows、checker/tests/updater、owners与CODEOWNERS），
+并查看最终SHA实际Version Gate日志，确认base/head/UTC/审批comment ID以及真实校验步骤。
+自动助手或代理可完成材料核对；owner仍决定合并和发行。新SHA不沿用旧审批/日志。
+新增有写权限的维护者、改变检查App/执行方式、启用queue或转换仓库归属时，重新审查本例外，
+不得把本次单人风险接受扩为多人维护承诺。
+
+该例外接受同名Actions检查可被替换且平台无法强制锁定workflow的剩余风险；
+人工/代理核对日志是补偿措施，不是不可伪造保证。裁定及配置证据见
+[接受记录](../stage_reports/stages/stage-07/decisions/2026-10-10-single-maintainer-workflow-source-exception.md)。
+
+### Windows double-click approval assistant
+
+Windows用户可直接双击仓库内的 `tools/prepare_sdk_approval.cmd`（默认本仓库PR #32）。
+需要已安装并登录GitHub CLI；当前账号须在可信base的owner名单中。助手会读取**线上当前PR**的
+base、head、tree、SDK版本及UTC日期，核对版本递增，再生成LF-only UTF-8文本到
+`out/sdk-approval/`，并以当前登录的owner账号直接发布新审批评论，随后读取API核验结果。
+双击即表示本人授权发布该次线上当前候选的审批；无需复制粘贴或再打开PowerShell。
+
+最新owner记录已完整匹配时不重复发布；较新的无效记录不会被较早有效记录掩盖。同一PR的本机
+并发运行会被阻止。助手在当前进程固定使用 `http://127.0.0.1:7890` 代理，并清空代理绕过列表；
+退出时恢复环境变量，不修改Windows或Git的全局代理设置。
+读取连接失败最多尝试三次。POST失败不自动重发，而是读取评论确认是否已被GitHub接收；无法确认
+时保留错误，请检查PR后重试。
+
+发布后在该PR的Actions中重跑失败的Version Gate。每次推送后可以重新双击，文本按线上最新提交
+生成；本地未提交改动不在审批范围。发布前后均检查分支与UTC日期；若发布后发生变更，评论
+仅绑定原候选，需重新运行。候选日期过期或账号不符时停止，不以旧文件继续审批。
+
+只生成文件的命令行模式为 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/prepare_sdk_approval.ps1 -PrepareOnly`；
+可通过 `-Repository owner/repository -PullRequest number` 选择其他适用仓库/PR。
+离线测试：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/check_sdk_approval_assistant_tests.ps1`。
+助手不替代可信Version Gate或发行验收。CMD启动器使用持久窗口，成功或报错后均保留，
+需本人关闭窗口；不再依赖按任意键暂停。每次执行在 `out/sdk-approval/run-日期时间-进程号.log`
+记录输出、错误位置和调用栈。双击 `.cmd`，不要直接运行 `.ps1`。
+
+### Recovering a stale owner approval
+
+`version.sdk_api.approval_mismatch` requires comparing the newest owner record with the
+actual PR base, final head commit and tree, SDK transition and UTC date. An earlier approval
+does not cover later code or documentation commits. Finish the intended changes and push
+the final candidate before preparing its approval text; avoid another report-only commit
+after approval, since that changes the tuple again.
+
+Prepare the LF-only record from the final Git objects and have the owner post it as a new,
+unedited comment on the existing PR, either manually or by explicitly invoking the assistant.
+The agent needs explicit owner authorization to publish approval; ordinary implementation
+authorization does not suffice. Comment creation alone does not trigger this workflow: after the
+comment exists, rerun the failed pre-merge check for that same candidate and inspect its
+result. A fresh push requires a fresh tuple; a new UTC date requires the normal version/date
+validation too. Do not reuse an old record, weaken exact binding, or execute candidate tools
+as trusted code to make this rejection disappear.
+
+### SDK version selection
+
 本节是 SDK 版本选择和更新流程的统一规范；阶段计划引用本节，不为后续阶段预留版本号。
 SDK 使用 `major.minor.patch` 三个非负整数，不是小数；例如
 `0.9.0 -> 0.10.0 -> 0.11.0`，minor 和 patch 不设一位数字上限。
 SDK 版本与 Stage 编号、日期构建号及内容格式版本均不绑定。一个阶段可以不升级 SDK，
-也可以包含多次已批准的 SDK 发行；不得为了等待 Stage 12 而压低 minor。
+也可以包含多次已批准的 SDK 发行；不得为了等待 Stage 14 而压低 minor。
 
 ### 0.x preview 的选择规则
 
@@ -138,7 +265,7 @@ SDK 版本与 Stage 编号、日期构建号及内容格式版本均不绑定。
 | 恢复既有合同的兼容修复，或经审查确认兼容的新增名字 API/类型 | 可递增 patch；必须保持旧 consumer 的源码及可观察合同兼容 |
 | 不兼容的公开布局、签名、虚表、枚举语义、默认入口/行为或 capability 合同变化 | 必须递增 minor，patch 归零；先批准合同和迁移决策，再实现/发行 |
 | 一组经批准的公共合同发行，即使全部为 additive | 可递增 minor，patch 归零；记录发行边界与理由，不强制所有新增 API 都升 minor |
-| 正式稳定 SDK | 仅在 Stage 12 稳定性与 ABI 验收后进入 `1.0.0` |
+| 正式稳定 SDK | 仅在 Stage 14 稳定性与 ABI 验收后进入 `1.0.0` |
 
 以上是本项目 **0.x preview** 政策，不宣称 additive API 使用 patch 符合稳定 1.x 的版本规则。
 “additive”不能只按名字或字段数量判断：必须验证重载解析、聚合初始化、继承实现、
@@ -169,7 +296,7 @@ preview 的源码兼容不代表 shared binary 可直接替换，旧 host 仍须
    更新当前状态及后续阶段接手基线。不能仅因版本号已改就宣称阶段或 ABI 已完成。
 
 以上是规范与验收要求，不表示全部已由自动化强制执行。
-Stage 12 必须另行冻结 `1.x` 的 API/ABI 兼容、弃用和版本递增政策及其测试；
+Stage 14 必须另行冻结 `1.x` 的 API/ABI 兼容、弃用和版本递增政策及其测试；
 在此之前，`0.x` minor 可以持续增长，不能从 `0.9.x` 自动进位到 `1.0.0`。
 
 ## Stage 6 已冻结的版本方向（阶段已于 2026-09-27 关闭并归档）

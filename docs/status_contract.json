@@ -15,23 +15,9 @@
       "Stage 5 S5-A through S5-H closed and merged into `master`"
     ],
     "docs/CURRENT_STATUS.md": [
-      "Stage Chart Format Update",
-      "CFU-C0-C4, D, E, F and G closed",
-      "S4-H hosted",
-      "S5-A through S5-H closed",
-      "merged into `master` 2026-08-28",
-      "stage_plans/completed/260830-followup/plan.md",
-      "PR #22 已于 2026-09-01 合并至 `master`",
-      "Chart/CXC parse-once",
-      "关键模块分支覆盖率"
-    ],
-    "docs/ROADMAP.md": [
-      "CFU-F consumers and determinism closed; final-SHA hosted gates passed 2026-08-16",
-      "Stage 5 已于 2026-08-28 关闭",
-      "stage_plans/completed/260830-followup/plan.md",
-      "Chart/CXC parse-once",
-      "关键模块分支覆盖率",
-      "CFU-G final closure                                 completed; G6 owner acceptance recorded 2026-08-24"
+      "Stage 7A",
+      "S7A-3",
+      "关闭前置"
     ],
     "docs/PROJECT_GUIDE.md": [
       "CFU-F 已在最终实现 SHA 上关闭跨平台 consumer、确定性、安全与性能门禁",

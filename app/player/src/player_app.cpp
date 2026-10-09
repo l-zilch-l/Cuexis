@@ -38,7 +38,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
     if (!executableBase) {
         return core::unexpected(std::move(executableBase.error()));
     }
-    if (!options.chartPath && !options.projectPath) {
+    if (!options.chartPath && !options.projectPath && !options.cxcPath) {
         auto pathResult = playerProjectDirectory(options.smokeTest ? smokeTestProjectDirectory
                                                                    : defaultProjectDirectory);
         if (!pathResult) {
@@ -49,6 +49,11 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
 
     logger.info("player.startup",
                 std::string{"Starting Cuexis Player "} + std::string{version::display});
+#ifdef CUEXIS_EXPERIMENTAL_BUILD
+    logger.info("player.build_flavor", "experimental");
+#else
+    logger.info("player.build_flavor", "production");
+#endif
 
     const auto preferencesSchema =
         *executableBase / "assets" / "schemas" / "cuexis.player-preferences.v1.schema.json";
@@ -104,7 +109,19 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
         return core::unexpected(std::move(windowResult.error()));
     }
     auto window = std::move(*windowResult);
-    auto surface = makePlayerSurface(window);
+    std::vector<std::uint32_t> gameplayKeys;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    std::optional<PlayerGameplayProfile> gameplayProfile;
+    if (options.gameplayConfiguration) {
+        auto profile = readPlayerGameplay(options);
+        if (!profile)
+            return core::unexpected(std::move(profile.error()));
+        for (const auto& key : profile->keys)
+            gameplayKeys.push_back(key.scanCode);
+        gameplayProfile = std::move(*profile);
+    }
+#endif
+    auto surface = makePlayerSurface(window, std::move(gameplayKeys));
     auto backendResult = createPlayerBackend(sdlRuntime, window, appConfig->app.requested.vsync,
                                              options.shaderCacheDirectory, logger);
     if (!backendResult) {
@@ -115,6 +132,9 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
     // The control layer owns the active bundle and drives every transaction. The assembly layer
     // only supplies the source, clip decoding, and the audio device opener.
     PlayerControlPorts ports;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    ports.gameplay = std::move(gameplayProfile);
+#endif
     ports.makeSource = [&options]() { return openConfiguredPlaybackSource(options); };
     ports.prepareClip = [](playback::PreparedPlayback& prepared, audio::AudioClipStore& store) {
         return preparePlayerAudioClip(prepared, store);
@@ -157,11 +177,12 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
         !recorded) {
         return core::unexpected(std::move(recorded.error()));
     }
-    if (auto played =
-            controller.apply(PlayerCommand{.kind = player_support::PlayerCommandKind::Play});
-        !played) {
-        return core::unexpected(std::move(played.error()));
-    }
+    if (!options.gameplayGuide)
+        if (auto played =
+                controller.apply(PlayerCommand{.kind = player_support::PlayerCommandKind::Play});
+            !played) {
+            return core::unexpected(std::move(played.error()));
+        }
 
     std::optional<PlayerSmokeBinding> smokeBinding;
     PlayerHooks hooks;

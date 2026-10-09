@@ -181,7 +181,8 @@ playback entry
   manifest 明确指定、可被 Playback 读取的 compiled entry
 ```
 
-Chart v5 的 Playback entry 必须是 Packed Chart。Playback 不读取作者层 JSON 或
+Foundation/Stage 6 candidate Chart v5 的 Playback entry 必须是 Packed Chart。Gameplay V2
+扩展尚未被本格式接受；在该扩展接受前，Playback 不读取作者层 JSON 或
 CXT source，也不在包内隐式执行 CXT Pattern。Packed entry 必须在 pack 前完成：
 
 ```text
@@ -243,7 +244,8 @@ Foundation revision 1 使用已登记的 `extensions["cuexis.chart-entry.v1"]` �
 ```
 
 `sourcePath` 与 `sourceSemanticIdentity` 可省略；其余字段对每个 candidate entry 必需。
-`playback=true` 的 entry 必须是 `packed-chart`，其 `path` 必须存在于同一个 CXC，且
+当前 Foundation/Stage 6 候选合同中，`playback=true` 的 entry 必须是 `packed-chart`，其 `path`
+必须存在于同一个 CXC，且
 `artifactIdentity` 必须等于 manifest 基础 entry 的精确 SHA-256。Foundation validator
 还会在 16 MiB entry 门禁内检查 Packed Header/目录和 declared entity/requirement counts。
 `compiledSemanticIdentity` 是展开语义的 typed identity；它不能由 source path、CXT
@@ -254,6 +256,12 @@ Foundation Playback 入口。
 时，必须先运行显式 compile/prepare 步骤，再把已生成的 Packed entry 交给 CXC tooling。
 候选 extension 中的未知必需字段、非 `packed-chart` playback、缺失 playback entry、
 artifact hash、count 或 profile 不匹配均 fail closed。
+
+Gameplay V2 研究路线提出一个待接受的 Stage 7A manifest 扩展：在不改变 CXC v1 ZIP32
+载体的前提下，允许明确标记的 `entryKind=gameplay-graph` Playback entry。该扩展尚未被
+本格式合同接受；现有 Foundation/Stage 6 reader 必须以稳定诊断拒绝它，不能把它当作
+`packed-chart` 或 author source。扩展接受后，`gameplay-graph` 与 `packed-chart` 仍必须
+恢复同一 Canonical Gameplay Graph、prepared judgement identity 和运行时 kernel。
 
 Chart v5 的大小预算分为：
 
@@ -421,3 +429,13 @@ CFU-C3 已实现 strict ZIP32 archive、闭包和 owning CXC package，CFU-C4 de
 见 [C4 报告](../stage_reports/chart-format-update/2026-08-13-c4-tools.md)。公共 Playback 输入、
 hosted 跨平台 consumer/determinism/safety gates 与 owner acceptance 已关闭；本节只记录已
 封存的内部实现证据，不宣称交付公共 CXC package API。
+
+## S7A-7/8 Gameplay Entry 闭包首用（2026-10-08）
+
+project optional `cuexis.gameplay-entry.v1` 的物理合同归 [Chart Entry](CHART_ENTRY_V1_FORMAT.md)。
+CXC v1 容器不解释 Gameplay kernel/Ruleset，也不依赖 Judgement；仅把严格满足该 metadata 根字段、
+format/version、闭集 kind/encoding、playback=true、portable path 和 exact artifact SHA256 的
+目录中所有已存在且 path 唯一的 entry 纳入 project-declared closure。不存在、hash 不匹配或非法物理引用不能通过
+optional extension 把任意额外文件塞进闭包。该检查在 ON/OFF 共用容器层执行；OFF 不获得
+Gameplay public factory/执行许可。compiled identity 与完整 typed 闭包仍由显式 Playback factory
+验证，容器准入不等于该语义通过。ZIP、原 Foundation extension 与物理限额不变。

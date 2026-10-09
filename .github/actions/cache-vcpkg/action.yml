@@ -1,0 +1,50 @@
+name: Cache vcpkg binary archives
+description: Restore ABI-keyed dependency archives without reusing build or installed trees
+inputs:
+  compiler:
+    description: Compiler executable used for the toolchain fingerprint
+    required: true
+  profile:
+    description: Dependency feature and build profile
+    required: true
+  vcpkg-commit:
+    description: Pinned vcpkg checkout commit
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Prepare cache on Windows
+      id: windows
+      if: runner.os == 'Windows'
+      shell: pwsh
+      env:
+        CACHE_COMPILER: ${{ inputs.compiler }}
+      run: python "$env:GITHUB_ACTION_PATH/prepare.py" --compiler "$env:CACHE_COMPILER"
+    - name: Prepare cache on Linux
+      id: linux
+      if: runner.os == 'Linux'
+      shell: bash
+      env:
+        CACHE_COMPILER: ${{ inputs.compiler }}
+      run: python3 "$GITHUB_ACTION_PATH/prepare.py" --compiler "$CACHE_COMPILER"
+    - name: Restore dependency archives
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.windows.outputs.path || steps.linux.outputs.path }}
+        key: cuexis-vcpkg-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.vcpkg-commit }}-${{ steps.windows.outputs.compiler-key || steps.linux.outputs.compiler-key }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json', 'CMakePresets.json', 'cmake/triplets/**') }}-${{ inputs.profile }}
+        restore-keys: |
+          cuexis-vcpkg-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.vcpkg-commit }}-${{ steps.windows.outputs.compiler-key || steps.linux.outputs.compiler-key }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json', 'CMakePresets.json', 'cmake/triplets/**') }}-
+          cuexis-vcpkg-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.vcpkg-commit }}-${{ steps.windows.outputs.compiler-key || steps.linux.outputs.compiler-key }}-
+    - name: Report restored archives on Windows
+      if: runner.os == 'Windows'
+      shell: pwsh
+      env:
+        CACHE_HIT: ${{ steps.cache.outputs.cache-hit }}
+      run: python "$env:GITHUB_ACTION_PATH/prepare.py" --report --cache-hit "$env:CACHE_HIT"
+    - name: Report restored archives on Linux
+      if: runner.os == 'Linux'
+      shell: bash
+      env:
+        CACHE_HIT: ${{ steps.cache.outputs.cache-hit }}
+      run: python3 "$GITHUB_ACTION_PATH/prepare.py" --report --cache-hit "$CACHE_HIT"

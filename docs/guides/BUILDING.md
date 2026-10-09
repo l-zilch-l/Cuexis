@@ -30,6 +30,8 @@ cuexis_animation
 cuexis_cxc
 cuexis_behavior
 cuexis_gameplay
+cuexis_judgement
+cuexis_gameplay_packed
 cuexis_render
 cuexis_debug
 cuexis_runtime
@@ -47,6 +49,9 @@ cuexis_cxc_pack
 cuexis_cxc_tool_common
 cuexis_cxc_unpack
 cuexis_cxc_validate
+cuexis_gameplay_author
+cuexis_chart_candidate
+cuexis_asset_publish
 cuexis_core_tests
 cuexis_audio_tests
 cuexis_filesystem_tests
@@ -59,6 +64,8 @@ cuexis_animation_tests
 cuexis_cxc_tests
 cuexis_behavior_tests
 cuexis_gameplay_tests
+cuexis_judgement_tests
+cuexis_gameplay_packed_tests
 cuexis_debug_tests
 cuexis_render_tests
 cuexis_presentation_renderer_tests
@@ -78,6 +85,8 @@ cuexis_audio_sdl_tests
 cuexis_render_opengl_tests
 cuexis_player_diagnostics_tests
 cuexis_player_control_tests
+cuexis_asset_publish_tests
+cuexis_gameplay_author_tests
 cuexis_format_check
 cuexis_player_dist
 ```

@@ -1,0 +1,6 @@
+add_executable(cuexis_gameplay_author_tests gameplay_author_tests.cpp)
+target_compile_features(cuexis_gameplay_author_tests PRIVATE cxx_std_20)
+target_link_libraries(cuexis_gameplay_author_tests PRIVATE cuexis::gameplay_author Catch2::Catch2WithMain)
+target_compile_definitions(cuexis_gameplay_author_tests PRIVATE CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
+include(Catch)
+catch_discover_tests(cuexis_gameplay_author_tests PROPERTIES LABELS "gameplay_author")

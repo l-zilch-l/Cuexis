@@ -1,5 +1,9 @@
 # Stage 6 Configuration And Media Contract
 
+状态：candidate（Stage 6 配置与媒体合同，阶段已关闭）
+
+更新日期：2026-10-01
+
 Status: S6-A2 contract record. This document freezes the fields needed by the Stage 6
 implementation batches; it does not claim that the Player support library or media importer
 exists. The owning decision is ADR 0042.

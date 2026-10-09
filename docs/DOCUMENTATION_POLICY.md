@@ -2,7 +2,7 @@
 
 状态：已接受的文档整理政策
 
-更新日期：2026-08-30
+更新日期：2026-10-06
 
 ## 文档角色
 
@@ -48,6 +48,10 @@ ADR 还要写决策状态；Spec 还要写实现状态；Report 还要写快照�
 - 一个字段合同只能有一个权威 Spec。
 - 摘要不得复制完整表格、完整诊断矩阵或当前阶段结论。
 - 历史文档不得删除；应标记 `historical` 或 `superseded`，并链接替代文件。
+- **行号锚只能作为带日期的定版证据，不得作为活合同来源。** 活引用一律写章节名或符号名；确需引用具体行时，
+  必须写在**带日期的证据记录**里，并同时注明所依据的**文档版本或提交标识 / 快照哈希**，使该行号可被复核到
+  某一个定版。理由有实测依据：`engine/judgement/src/source_codes.hpp` 的 13 处行号锚在并行实现线新增注释后
+  **已全部漂移 1 行**（令牌仍在被引范围的最后一行），说明行号随文档增删必然失效。
 
 ## 目录和命名
 
@@ -67,6 +71,10 @@ docs/examples/      评审和验证样例
 docs/archive/       历史材料
 docs/api/           已发布 SDK 与内部技术参考
 ```
+
+提案目录按生命周期继续细分为 `proposals/research/`、`proposals/implementation-input/` 和
+`proposals/deferred/`；已并入主路线的旧阶段计划统一放在
+`stage_plans/historical-inputs/`，不再混入 `future/` 或 `deferred/`。
 
 阶段计划和阶段报告按阶段或跨阶段专题归档，而不是按生成日期平铺：
 
@@ -97,6 +105,13 @@ docs/stage_reports/sdk-transition/
 README 只用于稳定入口、顶层文档角色或包含多份需要独立导航的正文集合。单文件目录和由上级索引即可
 清楚列出的叶目录不创建 README；上级索引直接链接 canonical 文档。所有 Markdown 仍必须从
 [docs/README.md](README.md) 可达。
+
+同一阶段的报告数量较多时，可在`stage_reports/stages/<stage>/`下按用途细分，例如
+`readiness/`（准入与基线）、`decisions/`（带日期裁定）、`implementation/`（设计/实施推进）、
+`verification/`（验证与审计）、`handoffs/`（交接与规划修订）。阶段README直接列出各类正文，
+总报告索引只链接阶段入口；不在总索引复制完整裁定计数和测试矩阵。
+这些目录不改变报告的历史角色，现行决策归ADR/Spec、当前范围归plan、当前进度归CURRENT_STATUS。
+分类目录不是每个阶段的必建模板；少量报告仍由最近索引直接导航。
 
 `docs/api/` 以发布的 Playback SDK 为首要对象，说明入口、生命周期、线程、资源、帧观察、诊断、
 capability 和兼容边界。内部模块资料必须显式标为 internal，不能把 Runtime、World、EnTT、SDL、

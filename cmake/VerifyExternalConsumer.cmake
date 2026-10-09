@@ -119,10 +119,16 @@ foreach(playback_consumer_cmake IN ITEMS
 endforeach()
 
 set(common_configure_arguments
+    "-DCUEXIS_EXPECTED_SDK_API_VERSION=${CUEXIS_SDK_API_VERSION}"
+    "-DCuexis_ALLOW_EXPERIMENTAL=${CUEXIS_EXPERIMENTAL}"
+    "-DCUEXIS_ENABLE_CHART_V5_CANDIDATE=${CUEXIS_EXPERIMENTAL}"
     -G "${CUEXIS_GENERATOR}"
     "-DCMAKE_BUILD_TYPE=${CUEXIS_BUILD_TYPE}"
     "-DCUEXIS_LIBRARY_TYPE=${CUEXIS_LIBRARY_TYPE}"
 )
+if(CUEXIS_EXPERIMENTAL)
+    list(APPEND common_configure_arguments "-DCUEXIS_VERSION_SUFFIX=exp.candidate")
+endif()
 if(DEFINED CUEXIS_CXX_COMPILER AND NOT CUEXIS_CXX_COMPILER STREQUAL "")
     list(APPEND common_configure_arguments
         "-DCMAKE_CXX_COMPILER=${CUEXIS_CXX_COMPILER}"
@@ -158,9 +164,16 @@ if(DEFINED CUEXIS_VCPKG_MANIFEST_MODE AND NOT CUEXIS_VCPKG_MANIFEST_MODE STREQUA
         "-DVCPKG_MANIFEST_MODE=${CUEXIS_VCPKG_MANIFEST_MODE}"
     )
 endif()
-if(DEFINED CUEXIS_VCPKG_INSTALLED_DIR AND NOT CUEXIS_VCPKG_INSTALLED_DIR STREQUAL "")
+# Manifest consumers change their feature set (headless versus audio-sdl). Keep
+# those installs local to this clean consumer so they cannot uninstall producer
+# dependencies or invalidate another staging gate's license inputs.
+set(consumer_dependency_root "${CUEXIS_VCPKG_INSTALLED_DIR}")
+if(CUEXIS_VCPKG_MANIFEST_MODE)
+    set(consumer_dependency_root "${work_dir}/vcpkg-installed")
+endif()
+if(NOT consumer_dependency_root STREQUAL "")
     list(APPEND common_configure_arguments
-        "-DVCPKG_INSTALLED_DIR=${CUEXIS_VCPKG_INSTALLED_DIR}"
+        "-DVCPKG_INSTALLED_DIR=${consumer_dependency_root}"
     )
 endif()
 
@@ -266,8 +279,12 @@ else()
         endif()
     endforeach()
 
+    # S7A-1 (S1-04, installation option 1): the judgement typed kernel exports its internal
+    # archive and installs no header at all, so no judgement header directory may appear in the
+    # package.
     foreach(internal_header_directory IN ITEMS
-            assets behavior chart cxc filesystem gameplay json project render render_opengl runtime world)
+            assets behavior chart cxc filesystem gameplay json judgement project render
+            render_opengl runtime world)
         if(EXISTS "${package_prefix}/include/cuexis/${internal_header_directory}")
             message(FATAL_ERROR
                 "Cuexis package installed internal ${internal_header_directory} headers")
@@ -341,7 +358,11 @@ else()
             list(APPEND required_shared_modules cuexis_audio_sdl)
         endif()
         foreach(module IN LISTS required_shared_modules)
-            set(shared_stem "${module}-${shared_name_version}${shared_debug_postfix}")
+            set(shared_flavor_suffix "")
+            if(CUEXIS_EXPERIMENTAL)
+                set(shared_flavor_suffix "-candidate")
+            endif()
+            set(shared_stem "${module}${shared_flavor_suffix}-${shared_name_version}${shared_debug_postfix}")
             if(CMAKE_HOST_WIN32)
                 if(NOT EXISTS "${package_prefix}/bin/${shared_stem}.dll" OR
                    NOT EXISTS "${package_prefix}/lib/${shared_stem}.lib")
@@ -432,8 +453,8 @@ else()
     endforeach()
 
     set(consumer_build_dir "${work_dir}/build")
-    if(DEFINED CUEXIS_VCPKG_INSTALLED_DIR AND NOT CUEXIS_VCPKG_INSTALLED_DIR STREQUAL "")
-        set(dependency_root "${CUEXIS_VCPKG_INSTALLED_DIR}")
+    if(NOT consumer_dependency_root STREQUAL "")
+        set(dependency_root "${consumer_dependency_root}")
         set(dependency_prefix
             "${dependency_root}/${CUEXIS_VCPKG_TARGET_TRIPLET}")
     else()

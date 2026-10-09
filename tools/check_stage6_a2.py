@@ -243,7 +243,14 @@ def check_audio_correction_golden() -> None:
 
 
 def check_text_boundaries() -> None:
-    api = (ROOT / "docs" / "proposals" / "STAGE6_API_AND_INSTALL_DRAFT.md").read_text(encoding="utf-8")
+    api = (
+        ROOT
+        / "docs"
+        / "proposals"
+        / "implementation-input"
+        / "stage-06"
+        / "STAGE6_API_AND_INSTALL_DRAFT.md"
+    ).read_text(encoding="utf-8")
     architecture = (ROOT / "docs" / "architecture" / "STAGE6_PRODUCTIZATION_BOUNDARIES.md").read_text(encoding="utf-8")
     entry_spec = (ROOT / "docs" / "formats" / "CHART_ENTRY_V1_FORMAT.md").read_text(encoding="utf-8")
     config_spec = (ROOT / "docs" / "formats" / "STAGE6_CONFIG_AND_MEDIA.md").read_text(encoding="utf-8")

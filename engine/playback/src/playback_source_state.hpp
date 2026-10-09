@@ -25,6 +25,10 @@ struct PlaybackSource::State final {
     std::shared_ptr<content::IContentProvider> provider;
     std::optional<std::array<std::uint8_t, 32>> cxcPackageIdentity;
     std::optional<cxc::CandidateChart> candidate;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    GameplayContent gameplayContent;
+    GameplayPrepareIntent gameplayIntent{GameplayPrepareIntent::Presentation};
+#endif
 };
 
 } // namespace cuexis::playback

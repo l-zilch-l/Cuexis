@@ -27,6 +27,9 @@ else()
 endif()
 if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
     target_compile_definitions(cuexis_playback PRIVATE CUEXIS_ENABLE_CHART_V5_CANDIDATE=1)
+    target_compile_definitions(cuexis_playback PUBLIC CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE=1)
+    target_sources(cuexis_playback PRIVATE src/gameplay_candidate.cpp src/gameplay_configuration.cpp src/gameplay_entry.cpp)
+    target_link_libraries(cuexis_playback PRIVATE cuexis::judgement cuexis::gameplay_packed cuexis::json_support)
 endif()
 
 set_target_properties(cuexis_playback PROPERTIES EXPORT_NAME Playback)
@@ -47,6 +50,10 @@ target_sources(cuexis_playback
 )
 
 target_compile_features(cuexis_playback PUBLIC cxx_std_20)
+if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+    target_sources(cuexis_playback PUBLIC FILE_SET HEADERS FILES
+        include/cuexis/playback/gameplay_candidate.hpp)
+endif()
 
 target_link_libraries(cuexis_playback
     PUBLIC

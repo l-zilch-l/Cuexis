@@ -1,5 +1,9 @@
 # Stage 6 Productization Boundaries
 
+状态：candidate（Stage 6 实施边界输入，阶段已关闭）
+
+更新日期：2026-10-01
+
 Status: S6-A2 dependency and installation contract. `cuexis_presentation_renderer` and
 `cuexis_player_support` exist as internal static libraries. `cuexis_media_import` remains planned.
 Player source boundaries are recorded in [PLAYER_APPLICATION.md](PLAYER_APPLICATION.md).

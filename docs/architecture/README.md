@@ -11,6 +11,7 @@
   Chart、Input、Judgement、Behavior、Presentation 的统一语义。
 - [模块边界](MODULE_BOUNDARIES.md)：模块职责、依赖方向和格式阶段边界。
 - [Player 应用结构](PLAYER_APPLICATION.md)：参考播放器的源文件、窄接口和关闭顺序。
+- [实时协调设计](../adr/0046-realtime-playback-coordination.md)：S7A-7/8时间、执行、发布与线程方案重审（规划，未实施）。
 - [Stage 6 产品化边界](STAGE6_PRODUCTIZATION_BOUNDARIES.md)：candidate、renderer、Player support、media importer 和安装分层的 A2 合同。
 - [RuntimeSession](RUNTIME_SESSION.md)：内部事务式运行时生命周期合同。
 - [项目指南](../PROJECT_GUIDE.md)：工程原则、开发顺序和完成定义。

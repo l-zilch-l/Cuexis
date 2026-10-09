@@ -4,7 +4,7 @@
 
 更新日期：2026-09-05
 
-归档来源：[旧 Stage 7 Studio 计划](../stage-07/plan.md)、
+归档来源：[旧 Stage 7 Studio 计划](../../active/stage-07/plan.md)、
 [Chart v5 计划](../../active/chart-format-update-for-v5/plan.md) 和
 [Stage 8 发行计划](../stage-08/plan.md)。
 

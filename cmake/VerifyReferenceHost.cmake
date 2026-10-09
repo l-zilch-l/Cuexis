@@ -16,7 +16,7 @@ cmake_minimum_required(VERSION 3.25)
 # outside the project:
 #   * the SDK installs into a prefix that is not the build tree,
 #   * an out-of-tree host project configures against that prefix through
-#     find_package(Cuexis 0.7.0 CONFIG REQUIRED COMPONENTS Playback),
+#     find_package(Cuexis 0.7.1 CONFIG REQUIRED COMPONENTS Playback),
 #   * the host uses only installed public Playback headers and the exported
 #     package target (no internal target, no Player configuration library, no
 #     source-tree include),
@@ -118,6 +118,19 @@ endif()
 # 2. Clean staging: install the SDK outside the build tree.
 # ---------------------------------------------------------------------------
 set(prefix "${work_dir}/prefix")
+set(foreign_prefix "${work_dir}/foreign-flavor")
+file(MAKE_DIRECTORY "${foreign_prefix}/share/cuexis")
+if(CUEXIS_EXPERIMENTAL)
+    file(WRITE "${foreign_prefix}/share/cuexis/build-flavor.txt" "production\n")
+else()
+    file(WRITE "${foreign_prefix}/share/cuexis/build-flavor.txt" "experimental\n")
+endif()
+cuexis_host_expect_failure("Mixed package flavor install" "cannot be mixed"
+    "${CMAKE_COMMAND}" --install "${CUEXIS_BINARY_DIR}"
+    --prefix "${foreign_prefix}" --config "${CUEXIS_BUILD_TYPE}")
+if(EXISTS "${foreign_prefix}/include" OR EXISTS "${foreign_prefix}/lib")
+    message(FATAL_ERROR "Flavor rejection happened after package files were copied")
+endif()
 cuexis_host_run_checked(
     "Cuexis install into the staging prefix"
     "${CMAKE_COMMAND}" --install "${CUEXIS_BINARY_DIR}"
@@ -187,8 +200,9 @@ set(configure_arguments
     "-DCMAKE_CXX_COMPILER=${CUEXIS_CXX_COMPILER}"
     "-DCMAKE_MAKE_PROGRAM=${CUEXIS_MAKE_PROGRAM}"
     "-DCuexis_DIR=${prefix}/lib/cmake/Cuexis"
+    "-DCuexis_ALLOW_EXPERIMENTAL=${CUEXIS_EXPERIMENTAL}"
     "-DCMAKE_PREFIX_PATH=${prefix}"
-    "-DCUEXIS_HOST_API_VERSION=0.7.0"
+    "-DCUEXIS_HOST_API_VERSION=0.7.1"
     "-DCUEXIS_HOST_CONTENT_DIR=${content_dir}/cfu_f_reference_project"
     ${instrumentation_arguments})
 if(DEFINED CUEXIS_RC_COMPILER AND NOT "${CUEXIS_RC_COMPILER}" STREQUAL "")
@@ -216,6 +230,16 @@ if(DEFINED CUEXIS_VCPKG_TARGET_TRIPLET AND NOT "${CUEXIS_VCPKG_TARGET_TRIPLET}" 
     list(APPEND vcpkg_arguments "-DVCPKG_TARGET_TRIPLET=${CUEXIS_VCPKG_TARGET_TRIPLET}")
 endif()
 
+if(CUEXIS_EXPERIMENTAL)
+    set(unpermitted_arguments ${configure_arguments})
+    list(FIND unpermitted_arguments "${host_build}" build_index)
+    list(REMOVE_AT unpermitted_arguments ${build_index})
+    list(INSERT unpermitted_arguments ${build_index} "${work_dir}/unpermitted-build")
+    list(APPEND unpermitted_arguments "-DCuexis_ALLOW_EXPERIMENTAL=OFF")
+    cuexis_host_expect_failure("Unpermitted experimental package"
+        "requires explicit Cuexis_ALLOW_EXPERIMENTAL=ON"
+        "${CMAKE_COMMAND}" ${unpermitted_arguments})
+endif()
 cuexis_host_run_checked("Reference host configure" "${CMAKE_COMMAND}" ${configure_arguments})
 cuexis_host_run_checked(
     "Reference host build"
@@ -363,6 +387,28 @@ set(package_path "${content_dir}/cfu_f_v4_reference.cxc")
 set(command_fixture_dir "${host_project}/tests/commands")
 include("${CUEXIS_SOURCE_DIR}/cmake/VerifyReferenceHostCommands.cmake")
 
+if(CUEXIS_EXPERIMENTAL AND DEFINED CUEXIS_CANDIDATE_TOOL)
+    include("${CUEXIS_SOURCE_DIR}/cmake/VerifyCandidateCli.cmake")
+    set(candidate_project "${work_dir}/candidate-project")
+    file(MAKE_DIRECTORY "${candidate_project}")
+    file(ARCHIVE_EXTRACT INPUT "${CUEXIS_BINARY_DIR}/candidate-cli/assembled.cxc"
+        DESTINATION "${candidate_project}")
+    set(candidate_commands "${work_dir}/candidate.commands")
+    file(WRITE "${candidate_commands}"
+        "open\nplay\ntick 2\npause\ntick 2\nseek 1\nreload\nplay\ntick 1\nquit\n")
+    string(JSON candidate_identity GET "${report}" preparedIdentity)
+    set(candidate_host_command "${host_executable}")
+    if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED" AND NOT CMAKE_HOST_WIN32)
+        set(candidate_host_command "${CMAKE_COMMAND}" -E env
+            "LD_LIBRARY_PATH=${host_build}" "${host_executable}")
+    endif()
+    cuexis_host_run_checked("Installed host candidate command consumer"
+        ${candidate_host_command} --content "${candidate_project}"
+        --candidate-entry compiled/chart.packed --command-file "${candidate_commands}"
+        --expect-identity "${candidate_identity}"
+        --report "${work_dir}/candidate-host-report.txt")
+endif()
+
 # The sanitized PATH was restored inline immediately after the one
 # execute_process that needed it, so nothing is pending here. The earlier design
 # used cmake_language(DEFER), which is unavailable in `cmake -P` script mode.
@@ -404,6 +450,11 @@ file(GLOB_RECURSE installed_texts
 foreach(installed_text IN LISTS installed_texts)
     file(READ "${installed_text}" installed_contents)
     foreach(token IN LISTS candidate_isolation_tokens)
+        if(CUEXIS_EXPERIMENTAL AND installed_text MATCHES "/lib/cmake/Cuexis/")
+            # Experimental package config owns the explicit consumer permit. Public headers
+            # remain identical and continue to be scanned in both flavors.
+            continue()
+        endif()
         string(FIND "${installed_contents}" "${token}" token_hit)
         if(NOT token_hit EQUAL -1)
             message(FATAL_ERROR
@@ -573,8 +624,9 @@ if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
         "-DCMAKE_CXX_COMPILER=${CUEXIS_CXX_COMPILER}"
         "-DCMAKE_MAKE_PROGRAM=${CUEXIS_MAKE_PROGRAM}"
         "-DCuexis_DIR=${doctored_prefix}/lib/cmake/Cuexis"
+        "-DCuexis_ALLOW_EXPERIMENTAL=${CUEXIS_EXPERIMENTAL}"
         "-DCMAKE_PREFIX_PATH=${doctored_prefix}"
-        "-DCUEXIS_HOST_API_VERSION=0.7.0"
+        "-DCUEXIS_HOST_API_VERSION=0.7.1"
         "-DCUEXIS_HOST_CONTENT_DIR=${content_dir}/cfu_f_reference_project"
         ${instrumentation_arguments}
         ${vcpkg_arguments})

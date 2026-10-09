@@ -142,6 +142,209 @@ function(cuexis_verify_source_architecture source_dir)
         endif()
     endforeach()
 
+    # S7A-1 typed kernel. Ruling S1-04 keeps the input layer inside this module as a separate
+    # header partition instead of splitting a cuexis_input target, and keeps the module dependency
+    # closure at cuexis::core. A link-level allowlist cannot see a header-only include, so the
+    # include list is checked here as well.
+    foreach(judgement_header IN ITEMS
+            input_boundary.hpp
+            role_boundary.hpp
+            diagnostic.hpp
+            judgement_session.hpp
+            timebase.hpp
+            gameplay_graph.hpp
+            gameplay_assembler.hpp)
+        if(NOT EXISTS "${source_dir}/engine/judgement/include/cuexis/judgement/${judgement_header}")
+            message(FATAL_ERROR
+                "Judgement boundary partition header is missing: ${judgement_header}")
+        endif()
+    endforeach()
+
+    # S7A-2 keeps the input normalization surface inside the same input-layer partition instead of
+    # adding a second input header or a cuexis_input target, so the header that this batch extends is
+    # checked for the declarations it now owns. The check is a presence check, not a semantic one:
+    # the frozen role and boundary rules themselves are asserted by the judgement tests.
+    file(READ
+        "${source_dir}/engine/judgement/include/cuexis/judgement/input_boundary.hpp"
+        judgement_input_boundary_contents)
+    foreach(judgement_input_surface IN ITEMS
+            "struct AmountSpec"
+            "struct InputDomainDeclaration"
+            "struct InputMappingProfile"
+            "struct NormalizedObservation"
+            "struct RawIngressTimestamps"
+            "class SessionIngressState"
+            "quantizeAmount"
+            "validateInputMapping"
+            "normalizeObservation"
+            "admitLateQueueEntry")
+        if(NOT judgement_input_boundary_contents MATCHES "${judgement_input_surface}")
+            message(FATAL_ERROR
+                "Judgement S7A-2 input boundary declaration is missing: "
+                "${judgement_input_surface}")
+        endif()
+    endforeach()
+
+    # S7A-3 adds the canonical gameplay graph and the offline typed assembler as two more headers in
+    # the same partition rather than a new target or a new module, so the declarations this batch owns
+    # are checked for presence here. The check is a presence check, not a semantic one: the frozen
+    # rules themselves are asserted by tests/judgement/gameplay_graph_tests.cpp,
+    # gameplay_assembler_tests.cpp and gameplay_identity_tests.cpp.
+    file(READ
+        "${source_dir}/engine/judgement/include/cuexis/judgement/gameplay_graph.hpp"
+        judgement_graph_contents)
+    foreach(judgement_graph_surface IN ITEMS
+            "enum class ReferenceClosure"
+            "enum class ReferenceKind"
+            "declareReference"
+            "struct StableDeclarationId"
+            "struct DeclarationRef"
+            "struct MergedDeclaration"
+            "struct MergedNamespace"
+            "struct CapabilityRef"
+            "struct FeatureRef"
+            "struct RequiredRefs"
+            "struct DeclaredCapabilitySet"
+            "struct FeatureClosure"
+            "struct DerivedCapabilityClosure"
+            "struct ResourceRef"
+            "struct ResourceClosure"
+            "struct ClosureContributions"
+            "struct EmissionPathStep"
+            "struct RequirementIdentity"
+            "class RequiredActionRef"
+            "class DomainBindingRef"
+            "enum class PatternPrimitive"
+            "enum class MatchPolicy"
+            "enum class UnsupportedContentKind"
+            "struct UnsupportedContentDeclaration"
+            "struct PatternNodeDeclaration"
+            "struct PatternDeclaration"
+            "enum class PhaseKind"
+            "enum class FactCategory"
+            "enum class Outcome"
+            "enum class GradePresence"
+            "factCategoryOfPhase"
+            "factCategoryToken"
+            "struct MeasureComponentDeclaration"
+            "struct MeasureSpecDeclaration"
+            "enum class ResourceClaimIntent"
+            "struct ClaimPolicyDeclaration"
+            "enum class GraceOverrideMode"
+            "struct GraceOverrideDeclaration"
+            "enum class GraceResolutionPolicy"
+            "class PreparedGrace"
+            "struct GraceDeclaration"
+            "struct ResourceClaimDeclaration"
+            "struct ResourceRecord"
+            "struct JudgementAxisRange"
+            "enum class FrameResolution"
+            "struct JudgementDomainRecord"
+            "validateJudgementDomain"
+            "geometryAdd"
+            "geometryMultiply"
+            "geometrySquare"
+            "axisExtent"
+            "narrowToAxis"
+            "struct RequirementRecord"
+            "enum class RelationKind"
+            "struct RelationDeclaration"
+            "struct SolverProfileDeclaration"
+            "struct FactBindingRef"
+            "enum class SourceForm"
+            "struct SourceClosure"
+            "struct DiagnosticMap"
+            "struct CanonicalGameplayGraph"
+            "canonicalCompare"
+            "deriveCapabilityClosure"
+            "deriveFeatureClosure"
+            "deriveResourceClosure"
+            "struct GraphFieldDifference"
+            "semanticDiff"
+            "equivalent")
+        if(NOT judgement_graph_contents MATCHES "${judgement_graph_surface}")
+            message(FATAL_ERROR
+                "Judgement S7A-3 canonical graph declaration is missing: "
+                "${judgement_graph_surface}")
+        endif()
+    endforeach()
+
+    file(READ
+        "${source_dir}/engine/judgement/include/cuexis/judgement/gameplay_assembler.hpp"
+        judgement_assembler_contents)
+    foreach(judgement_assembler_surface IN ITEMS
+            "struct LocalDeclaration"
+            "struct GameplaySourceDocument"
+            "struct GameplaySource"
+            "enum class EntryKind"
+            "struct CompileCapabilityContext"
+            "struct EngineIdentityDeclaration"
+            "struct RulesetIdentityDeclaration"
+            "struct SessionIdentityDeclaration"
+            "struct PreparedIdentityDeclarations"
+            "class CanonicalIdentityBytes"
+            "class ChartIdentity"
+            "class ContentIdentity"
+            "class PreparedIdentity"
+            "makeChartIdentity"
+            "makeContentIdentity"
+            "makePreparedIdentity"
+            "sharesJudgementIdentity"
+            "struct ContentProfileCounts"
+            "struct ContentProfileLimits"
+            "enum class ContentProfileVerdict"
+            "countContentProfile"
+            "checkContentProfile"
+            "struct AssemblyRequest"
+            "struct AssembledGameplay"
+            "assembleGameplay"
+            "class GameplayPublication"
+            "assembleInto"
+            "struct ReferenceClosurePartition"
+            "partitionReferences"
+            "struct PatternCompileBudget"
+            "struct PatternArmBound"
+            "checkPatternContainment"
+            "struct CompiledMeasureComponent"
+            "struct MeasurePhaseContext"
+            "class CompiledPattern"
+            "class CompiledMeasure"
+            "struct GraceResolutionInputs"
+            "resolvePreparedGrace"
+            "struct ResourceClaimResolutionInputs"
+            "class ResourceClaimResolution"
+            "compilePattern"
+            "compileMeasure"
+            "resolveResourceClaims")
+        if(NOT judgement_assembler_contents MATCHES "${judgement_assembler_surface}")
+            message(FATAL_ERROR
+                "Judgement S7A-3 offline assembler declaration is missing: "
+                "${judgement_assembler_surface}")
+        endif()
+    endforeach()
+
+    file(GLOB_RECURSE judgement_sources
+        "${source_dir}/engine/judgement/*.cpp"
+        "${source_dir}/engine/judgement/*.hpp"
+    )
+    foreach(source IN LISTS judgement_sources)
+        file(READ "${source}" contents)
+        string(REGEX MATCHALL "#[ \t]*include[ \t]*[<\"]cuexis/[^>\"]*[>\"]"
+               judgement_includes "${contents}")
+        foreach(judgement_include IN LISTS judgement_includes)
+            if(NOT judgement_include MATCHES "cuexis/(core|judgement)/")
+                message(FATAL_ERROR
+                    "Judgement includes a non-core Cuexis header: ${source} -> ${judgement_include}")
+            endif()
+        endforeach()
+        if(contents MATCHES
+           "#[ \t]*include[ \t]*[<\"](SDL|glad|GL/|glm/|entt/|nlohmann/|minizip|spdlog/|shaderc/|spirv-tools/|spirv_cross/|glslang/)")
+            message(FATAL_ERROR
+                "Judgement includes a platform, backend or third-party implementation header: "
+                "${source}")
+        endif()
+    endforeach()
+
     file(GLOB_RECURSE all_project_sources
         "${source_dir}/app/*.cpp"
         "${source_dir}/app/*.hpp"

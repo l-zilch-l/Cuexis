@@ -2,7 +2,7 @@
 
 状态：现行项目指南
 
-更新日期：2026-09-16
+更新日期：2026-10-01
 
 本文是项目入口，不再保存完整路线、格式字段或阶段测试日志。整理前的完整长版快照见
 [archive/PROJECT_GUIDE_LEGACY_2026-08-10.md](archive/PROJECT_GUIDE_LEGACY_2026-08-10.md)。
@@ -84,9 +84,12 @@ capability；S5-H 已完成关闭门禁。Stage 5 已于 2026-08-28 通过 PR #2
 的文档整理、Chart/CXC parse-once 和关键模块分支覆盖率三个任务已完成，并于 2026-09-01 通过
 PR #22 合并至 `master`。项目所有者已于 2026-09-02 启动
   [Chart v5 format plan](stage_plans/active/chart-format-update-for-v5/plan.md)；当前主路线已明确为
-Chart Format Foundation -> Foundation Hardening -> Stage 6 v5-first candidate path -> Stage 7A Gameplay Foundation -> Stage 8
-Chart v5/CXT v2/Packed Chart formal release -> Stage 9 Presentation -> Stage 10 Studio -> Stage 11 平台与性能
--> Stage 12 稳定 ABI；Stage 7B+ 高级 Input/Judgement 能力在 Stage 7A 后持续演进，可跨越 Stage 8。
+Chart Format Foundation -> Foundation Hardening -> Stage 6 v5-first candidate path -> Stage 7（7A Gameplay Foundation、7-RPA与7B+）-> Stage 8
+Chart v5/CXT v2/Packed Chart formal release -> Stage 9 Presentation/Chart v6 -> Stage 10 Studio
+-> Stage 11 Chart v7 geometry -> Stage 12 scale/platform -> Stage 13 Chart v8 advanced presentation
+-> Stage 14 稳定 ABI；Stage 7B+ 高级 Input/Judgement 能力在 Stage 7A 后持续演进，可跨越 Stage 8。
+Stage 7-RPA子阶段承接实时架构、正式命名及实体设备/实时同步验收，与7B+各自交付；
+Stage8另需RPA交付，只选入已验收7B+能力，不等待全部7B+。
 Chart Format Foundation [计划](stage_plans/completed/chart-format-foundation/plan.md) 已完成并归档；
 其后的 [Foundation 交接加固](stage_plans/completed/chart-format-foundation-hardening/plan.md)
 （R0-R5）也已于 2026-09-17 完成并经 owner 接受，补齐了身份、profile、预算、端到端、容量与
@@ -97,7 +100,8 @@ Stage 6 [计划](stage_plans/completed/stage-06/plan.md) 于 2026-09-17 启动�
 [A1 至 F1 全部批次退出](stage_reports/stages/stage-06/README.md)，关闭报告、
 [三个核验问题的处置](stage_reports/reviews/stage-verification-2026-09/2026-09-01-findings.md)
 与 Stage 7A / Stage 8 交接清单经 owner 接受（见
-[关闭报告](stage_reports/stages/stage-06/completion.md)）。Stage 7A 与 Stage 8 尚未启动。
+[关闭报告](stage_reports/stages/stage-06/completion.md)）。Stage 7A 正在实施，当前批次进度与未退出门禁
+统一见 [CURRENT_STATUS](CURRENT_STATUS.md)；Stage 8 尚未启动。
 
 格式权威入口：[formats/README.md](formats/README.md)。
 

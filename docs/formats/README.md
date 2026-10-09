@@ -2,7 +2,7 @@
 
 状态：现行格式索引
 
-更新日期：2026-09-07
+更新日期：2026-10-05
 
 ## Artifact 分层
 
@@ -38,17 +38,22 @@ Compiled Runtime
 | Chart v4 | [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md) | accepted and implemented; C1–C4, CFU-D/E/F/G gates closed; Stage 4 animation runtime closed |
 | Chart v5 | [Chart v5 工作包](../stage_plans/active/chart-format-update-for-v5/plan.md) | candidate；Foundation 先交 Core，Stage 6 candidate 消费，Stage 8 正式发行；40k/16 MiB 为关闭门禁 |
 | Packed Chart v1 | [PACKED_CHART_FORMAT.md](PACKED_CHART_FORMAT.md) | candidate；Header/目录、字典/身份、Archetype 与实体差异流、无损 Beat；未实现 |
+| Gameplay Capsule v2 | [GAMEPLAY_CAPSULE_V2_FORMAT.md](GAMEPLAY_CAPSULE_V2_FORMAT.md) | candidate；S7A-3 首次 Packed 消费物理合同唯一权威，设计已于 2026-10-04 闭合；Reader/Writer 与 E1 实现验收未完成；revision 1 不变 |
+| Compiled Gameplay Graph JSON v1 | [GAMEPLAY_GRAPH_V1_FORMAT.md](GAMEPLAY_GRAPH_V1_FORMAT.md) | candidate；C78-05 / R78-08 首用物理合同，明确 typed SAX、完整静态 chart、整数与引用；实现和等价验收仍归现行状态 |
 | CXC v1 | [CXC_FORMAT.md](CXC_FORMAT.md) | accepted and implemented internally; archive/tools and Playback source/prepare/identity gates closed; no public CXC package API |
 | CXT v1 | [CXT_FORMAT.md](CXT_FORMAT.md) | accepted contract; Reader/Writer/lowering and prepare import/lookup implemented; CFU-F and G4 hosted gates closed; Stage 4 animation execution closed |
 | CXT v2 | [CXT_V2_FORMAT.md](CXT_V2_FORMAT.md) | candidate；Foundation F2 integer/beat reader/expander 已实现；Animation Extension 在 Stage 8 收敛；非生产 Schema，未接入默认 Playback |
-| Chart v6 / Model v1 | [chart-format-update-for-v6 plan](../stage_plans/deferred/chart-format-update-for-v6/plan.md) | deferred；静态 glTF 2.0、内置网格、默认扁平片、submesh 槽；无生产 Spec |
-| Chart v7 | [chart-format-update-for-v7 plan](../stage_plans/deferred/chart-format-update-for-v7/plan.md) | deferred；曲线形变（最多两轴；仅贝塞尔）、line、`shader.json` 接口；后处理不实现；无生产 Spec |
-| Chart v8 | [chart-format-update-for-v8 plan](../stage_plans/deferred/chart-format-update-for-v8/plan.md) | deferred；双轴贝塞尔、模型基本动画、内置后处理；无生产 Spec |
+| Chart v6 / Model v1 | [Stage 9 plan](../stage_plans/future/stage-09/plan.md)；[历史输入](../stage_plans/historical-inputs/chart-format-update-for-v6/plan.md) | future；静态 glTF 2.0、内置网格、默认扁平片、submesh 槽；无生产 Spec |
+| Chart v7 | [Stage 11 plan](../stage_plans/future/stage-11/plan.md)；[历史输入](../stage_plans/historical-inputs/chart-format-update-for-v7/plan.md) | future；单轴曲线形变、line、`shader.json` 接口；后处理执行不在本阶段 |
+| Chart v8 | [Stage 13 plan](../stage_plans/future/stage-13/plan.md)；[历史输入](../stage_plans/historical-inputs/chart-format-update-for-v8/plan.md) | future；双轴贝塞尔、模型基本动画、内置后处理与确定性粒子 |
 | Animation Mixing | [ANIMATION_MIXING.md](ANIMATION_MIXING.md) | accepted contract; format-stage gates closed; Stage 4 runtime closed |
 | Portable Presentation v1 | [PORTABLE_PRESENTATION.md](PORTABLE_PRESENTATION.md) | implemented |
 | Material/Shader v1 | [MATERIAL_SHADER.md](MATERIAL_SHADER.md) | accepted contract; S5-A through S5-H completed; Stage 5 closed and merged into `master` 2026-08-28 |
 | Stage 6 chart entry extension v1 | [CHART_ENTRY_V1_FORMAT.md](CHART_ENTRY_V1_FORMAT.md) | candidate contract recorded by A2; explicit Playback entry implementation not yet present |
 | Stage 6 configuration and media contract | [STAGE6_CONFIG_AND_MEDIA.md](STAGE6_CONFIG_AND_MEDIA.md) | candidate contract recorded by A2; Player support/media importer not yet present |
+| Gameplay Judgement | [GAMEPLAY_JUDGEMENT_SPEC.md](GAMEPLAY_JUDGEMENT_SPEC.md) | candidate；I 收敛工作稿，未实施，待 ADR 0043 owner acceptance |
+| Gameplay V2 | [GAMEPLAY_V2_SPEC.md](GAMEPLAY_V2_SPEC.md) | candidate；Stage 7A 的 V2 字段与运行语义唯一权威 Spec；分批设计与部分实现不等于整批验收，现状只见 [CURRENT_STATUS](../CURRENT_STATUS.md)；与 [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md)、[Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md) 协同 |
+| Gameplay V2 execution / author profile | [execution](gameplay-v2-execution-profile.md)、[authoring](gameplay-v2-author-profile.md) | candidate；2026-10-05 补齐 S7A-3/4 首次消费，Capsule revision3，未实施 |
 
 ADR 记录选择理由，格式文档记录字段和语义。手写 v4 谱面可先阅读
 [Chart v4 谱面编写指南](../guides/CHART_V4_AUTHORING.md)。CXC 不重新定义 Chart/CXT；CXT 不重新定义
@@ -82,8 +87,7 @@ Chart v5 的 CXT v2 合同见 [CXT_V2_FORMAT.md](CXT_V2_FORMAT.md)，物理与�
 Packed entry 按明确的复杂度 profile 验收，decoded/峰值内存和资源闭包另有预算。
 CXT 参数在编译时冻结，更换参数需要新的 Packed artifact，不在发行 Playback 重跑模板。
 天空盒、模型和形变归入 Stage 9 Presentation 扩展，不作为普通 Chart Object。
-Chart v6 / Model v1 见 [延期计划](../stage_plans/deferred/chart-format-update-for-v6/plan.md)，
-作为 Stage 9 设计输入；Chart v7 作为 Stage 9 形变设计输入；Chart v8 作为 Stage 11
-高级表现设计输入。
+Chart v6 / Model v1 由 Stage 9 负责；Chart v7 由 Stage 11 负责；Chart v8 与确定性粒子
+由 Stage 13 负责。旧 deferred 文件仅保留为历史输入和兼容链接。
 
 运行时脚本和逐帧脚本回调无限期延后，不是任何 Cuexis 格式的隐藏扩展点。

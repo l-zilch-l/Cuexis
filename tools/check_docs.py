@@ -10,6 +10,8 @@ import json
 import os
 import re
 import sys
+import unicodedata
+from urllib.parse import unquote
 from collections import deque
 from datetime import date
 from pathlib import Path
@@ -35,11 +37,8 @@ STAGE_PLAN_REQUIREMENTS = (
     ("stage_plans/completed/chart-format-foundation/plan.md", ("completed",)),
     ("stage_plans/completed/chart-format-foundation-hardening/plan.md", ("completed",)),
     ("stage_plans/completed/stage-06/plan.md", ("completed",)),
-    ("stage_plans/future/stage-07/plan.md", ("future",)),
+    ("stage_plans/active/stage-07/plan.md", ("active",)),
     ("stage_plans/future/stage-08/plan.md", ("future",)),
-    ("stage_plans/future/stage-09a/plan.md", ("future",)),
-    ("stage_plans/deferred/stage-09b/plan.md", ("deferred",)),
-    ("stage_plans/deferred/stage-10/plan.md", ("deferred",)),
     ("stage_plans/future/stage-11/plan.md", ("future",)),
     ("stage_plans/future/stage-12/plan.md", ("future",)),
 )
@@ -63,6 +62,7 @@ DIRECTORY_INDEXES = (
     "stage_reports/stages/stage-05/README.md",
     "stage_reports/stages/chart-format-foundation/README.md",
     "stage_reports/stages/stage-06/README.md",
+    "stage_reports/stages/stage-07/README.md",
 )
 STAGE_NAVIGATION_INDEXES = {
     "stage_plans/README.md",
@@ -74,6 +74,7 @@ STAGE_NAVIGATION_INDEXES = {
     "stage_reports/stages/stage-05/README.md",
     "stage_reports/stages/chart-format-foundation/README.md",
     "stage_reports/stages/stage-06/README.md",
+    "stage_reports/stages/stage-07/README.md",
 }
 ROOT_DOCUMENTATION_FILES = {
     "README.md",
@@ -197,6 +198,45 @@ def check_reachability(graph: dict[Path, set[Path]], failures: list[CheckFailure
     for path in graph:
         if path not in visited:
             failures.append(CheckFailure(path, "not reachable from docs/README.md"))
+
+
+def heading_anchors(text: str) -> set[str]:
+    """GitHub heading slugs, including duplicate-heading suffixes; ignore fenced code."""
+    counts: dict[str, int] = {}
+    anchors: set[str] = set()
+    for line in lines_outside_fences(text):
+        match = re.match(r"^#{1,6}\s+(.+?)\s*#*\s*$", line)
+        if not match:
+            continue
+        heading = re.sub(r"!?\[([^\]]+)\]\([^)]*\)", r"\1", match[1])
+        heading = re.sub(r"<[^>]*>", "", heading).lower()
+        slug = "".join(c for c in heading if c in " -_" or not unicodedata.category(c).startswith(("P", "S")))
+        slug = slug.replace(" ", "-")
+        count = counts.get(slug, 0)
+        counts[slug] = count + 1
+        anchors.add(slug if count == 0 else f"{slug}-{count}")
+    return anchors
+
+
+def check_stage7_section_links(files: list[Path], failures: list[CheckFailure], root: Path = ROOT) -> None:
+    """Check live contract links to the split Stage 7 plans, without rewriting dated evidence."""
+    stage = (root / "docs/stage_plans/active/stage-07").resolve()
+    owners = {"1.1": "plan.md", "5.3": "plan-b.md", "10": "plan.md"}
+    for path in files:
+        relative = path.resolve().relative_to(root.resolve()).as_posix()
+        if not relative.startswith(("docs/api/", "docs/formats/", "docs/stage_plans/active/")):
+            continue
+        for label, target in re.findall(r"\[([^\]]*)\]\(([^)]+)\)", "\n".join(lines_outside_fences(path.read_text(encoding="utf-8")))):
+            destination, _, fragment = target.partition("#")
+            resolved = (path.parent / destination).resolve()
+            if resolved.parent != stage or resolved.name not in {"plan.md", "plan-a.md", "plan-b.md"} or not resolved.is_file():
+                continue
+            if fragment and unquote(fragment) not in heading_anchors(resolved.read_text(encoding="utf-8")):
+                failures.append(CheckFailure(path, f"Stage 7 section link: missing anchor {target}"))
+            section = re.search(r"§\s*(\d+(?:\.\d+)*)", label)
+            expected = owners.get(section[1]) if section else None
+            if expected and resolved.name != expected:
+                failures.append(CheckFailure(path, f"Stage 7 section link: section {section[1]} belongs to {expected}, found {resolved.name}"))
 
 
 def normalize_whitespace(text: str) -> str:
@@ -814,6 +854,7 @@ def main() -> int:
     failures: list[CheckFailure] = []
     files = markdown_files()
     graph = check_h1_and_links(files, failures)
+    check_stage7_section_links(files, failures)
     check_reachability(graph, failures)
     check_cfu_status(failures)
     check_target_contract(failures)

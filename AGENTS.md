@@ -42,7 +42,8 @@ completion does not certify the new technical gates.
 `chart-format-update-for-v5` remains active as a cross-stage work package, not the current stage.
 The three September stage-verification issues are closed with disposition evidence: release version
 enforcement (S6-B1), a backend-neutral presentation renderer boundary (S6-D1/S6-D2), and common
-media support (S6-E1/E2/E3). Stage 7A and Stage 8 have not started; Stage 6 closure authorizes
+media support (S6-E1/E2/E3). Stage 7A is now the active implementation-preparation line, but its
+product implementation has not started; Stage 8 has not started. Stage 6 closure authorizes
 neither a PR nor a merge or release.
 Stage 4 is complete. ADR 0038 defines `.cxc` as a strict ZIP32 Stored exchange
 package containing existing Project/Asset Index formats, `cuexis.chart` v4 data, CXT JSON, and
@@ -106,7 +107,7 @@ generated headers.
 cmake --build --preset debug --target cuexis_format_check
 ```
 
-Requires `clang-format` in PATH. Uses `.clang-format` (LLVM-based, 4-space indent, 100 col limit). Files are globbed from `app/`, `engine/`, `tests/`, and `cmake/*.hpp.in`.
+Requires `clang-format` in PATH. Uses `.clang-format` (LLVM-based, 4-space indent, 100 col limit). Files are globbed recursively from `app/`, `engine/`, `tests/`, `tools/`, and `cmake/*.hpp.in`; the target exists only when `CUEXIS_BUILD_DEVELOPER_TOOLS` is on, and the glob also covers files that no CMake target compiles (for example the research spikes under `tools/research/`).
 
 ### Documentation check
 

@@ -9,14 +9,22 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <atomic>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
 #include <iterator>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
+
+#if defined(_WIN32)
+#include <process.h>
+#else
+#include <unistd.h>
+#endif
 
 namespace {
 
@@ -117,11 +125,21 @@ struct PackedCandidate final {
 class TemporaryDirectory final {
   public:
     TemporaryDirectory() {
-        static unsigned sequence = 0;
-        path_ = std::filesystem::temp_directory_path() /
-                ("cuexis-candidate-" + std::to_string(++sequence));
-        std::filesystem::remove_all(path_);
-        std::filesystem::create_directories(path_);
+        static std::atomic<unsigned> sequence{0};
+#if defined(_WIN32)
+        const auto process = _getpid();
+#else
+        const auto process = getpid();
+#endif
+        for (unsigned attempt = 0; attempt < 4096; ++attempt) {
+            path_ = std::filesystem::temp_directory_path() /
+                    ("cuexis-candidate-" + std::to_string(process) + "-" +
+                     std::to_string(sequence.fetch_add(1)));
+            if (std::filesystem::create_directory(path_)) {
+                return;
+            }
+        }
+        throw std::runtime_error{"Cannot reserve an isolated candidate fixture directory"};
     }
 
     ~TemporaryDirectory() {
@@ -180,6 +198,7 @@ TEST_CASE("Explicit candidate file and memory sources prepare the same typed cha
     auto prepared =
         session.prepareLoad(std::move(*memory), cuexis::playback::PlaybackMode::ChartClock);
     REQUIRE(prepared.has_value());
+#if defined(CUEXIS_PLAYBACK_STATIC_DEFINE)
     const auto* metadata = cuexis::playback::detail::CandidateMetadataAccess::prepared(*prepared);
     REQUIRE(metadata != nullptr);
     REQUIRE(metadata->objects.size() == 1);
@@ -188,9 +207,10 @@ TEST_CASE("Explicit candidate file and memory sources prepare the same typed cha
     CHECK(metadata->semanticIdentity ==
           cuexis::chart::packed::semanticIdentity(tapChart()).value());
     CHECK(metadata->resourceClosure.resources.empty());
+#endif
 
-    const auto expected =
-        cuexis::chart::assembleCandidatePreparedSemanticIdentity(metadata->semanticIdentity, {});
+    const auto expected = cuexis::chart::assembleCandidatePreparedSemanticIdentity(
+        cuexis::chart::packed::semanticIdentity(tapChart()).value(), {});
     REQUIRE(expected.has_value());
     REQUIRE(prepared->semanticIdentity().has_value());
     CHECK(prepared->semanticIdentity()->sha256 == expected->sha256);
@@ -199,9 +219,11 @@ TEST_CASE("Explicit candidate file and memory sources prepare the same typed cha
     CHECK(prepared->contentInfo()->chartId == "019b0000-0000-7abc-8def-000000000001");
 
     REQUIRE(session.commit(std::move(*prepared)).has_value());
+#if defined(CUEXIS_PLAYBACK_STATIC_DEFINE)
     const auto* active = cuexis::playback::detail::CandidateMetadataAccess::active(session);
     REQUIRE(active != nullptr);
     CHECK(active->objects[0].executionId == "019b0000-0000-7abc-8def-000000000010");
+#endif
     REQUIRE(
         session.update({.chartTimeMs = 0.0, .simulationDeltaTimeMs = 0.0, .timeDiscontinuityId = 0})
             .has_value());
@@ -279,7 +301,9 @@ TEST_CASE("Explicit project candidate entry prepares the packed chart rather tha
     auto v4Frame = v4Session.extractFrame({.width = 16, .height = 16});
     REQUIRE(v4Frame.has_value());
     CHECK(v4Frame->objects[0].id != frame->objects[0].id);
+#if defined(CUEXIS_PLAYBACK_STATIC_DEFINE)
     CHECK(cuexis::playback::detail::CandidateMetadataAccess::active(v4Session) == nullptr);
+#endif
 }
 
 TEST_CASE("Candidate prepare failure leaves the active session unchanged",
@@ -318,7 +342,9 @@ TEST_CASE("Candidate prepare failure leaves the active session unchanged",
     CHECK(session.state().value() == cuexis::playback::SessionState::Ready);
     CHECK(session.semanticIdentity()->sha256 == identity->sha256);
     CHECK(session.contentInfo()->chartFormatVersion == info->chartFormatVersion);
+#if defined(CUEXIS_PLAYBACK_STATIC_DEFINE)
     CHECK(cuexis::playback::detail::CandidateMetadataAccess::active(session) == nullptr);
+#endif
 }
 
 #endif

@@ -19,6 +19,10 @@ set(CUEXIS_SDK_API_MAJOR "${CMAKE_MATCH_1}")
 set(CUEXIS_SDK_API_MINOR "${CMAKE_MATCH_2}")
 
 function(cuexis_configure_public_library target output_name)
+    if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+        string(APPEND output_name "-candidate")
+        set_target_properties(${target} PROPERTIES OUTPUT_NAME "${output_name}")
+    endif()
     if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
         set_target_properties(${target} PROPERTIES
             OUTPUT_NAME "${output_name}-${CUEXIS_SDK_API_MAJOR}.${CUEXIS_SDK_API_MINOR}"

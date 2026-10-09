@@ -1,5 +1,9 @@
 @PACKAGE_INIT@
 
+set(Cuexis_BUILD_FLAVOR "@CUEXIS_BUILD_FLAVOR@")
+set(Cuexis_EXPERIMENTAL "@CUEXIS_ENABLE_CHART_V5_CANDIDATE@")
+@CUEXIS_EXPERIMENTAL_CONFIG_BLOCK@
+
 include(CMakeFindDependencyMacro)
 
 find_dependency(tl-expected CONFIG)

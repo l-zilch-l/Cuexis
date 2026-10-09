@@ -204,6 +204,33 @@
         "VCPKG_MANIFEST_FEATURES": "tests;media-tools",
         "VCPKG_OVERLAY_PORTS": "${sourceDir}/vcpkg-overlays"
       }
+    },
+    {
+      "name": "candidate-debug",
+      "inherits": "debug",
+      "cacheVariables": {
+        "CUEXIS_ENABLE_CHART_V5_CANDIDATE": "ON",
+        "CUEXIS_BUILD_DEVELOPER_TOOLS": "ON",
+        "CUEXIS_VERSION_SUFFIX": "exp.candidate"
+      }
+    },
+    {
+      "name": "candidate-headless-debug",
+      "inherits": "headless-debug",
+      "cacheVariables": {
+        "CUEXIS_ENABLE_CHART_V5_CANDIDATE": "ON",
+        "CUEXIS_BUILD_DEVELOPER_TOOLS": "ON",
+        "CUEXIS_VERSION_SUFFIX": "exp.candidate"
+      }
+    },
+    {
+      "name": "candidate-shared-debug",
+      "inherits": "shared-debug",
+      "cacheVariables": {
+        "CUEXIS_ENABLE_CHART_V5_CANDIDATE": "ON",
+        "CUEXIS_BUILD_DEVELOPER_TOOLS": "ON",
+        "CUEXIS_VERSION_SUFFIX": "exp.candidate"
+      }
     }
   ],
   "buildPresets": [
@@ -286,6 +313,18 @@
     {
       "name": "media-tools-coverage",
       "configurePreset": "media-tools-coverage"
+    },
+    {
+      "name": "candidate-debug",
+      "configurePreset": "candidate-debug"
+    },
+    {
+      "name": "candidate-headless-debug",
+      "configurePreset": "candidate-headless-debug"
+    },
+    {
+      "name": "candidate-shared-debug",
+      "configurePreset": "candidate-shared-debug"
     }
   ],
   "testPresets": [
@@ -477,6 +516,42 @@
       },
       "execution": {
         "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "candidate-debug",
+      "configurePreset": "candidate-debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "filter": {
+        "include": {
+          "name": "[Cc]andidate|reference_host"
+        }
+      }
+    },
+    {
+      "name": "candidate-headless-debug",
+      "configurePreset": "candidate-headless-debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "filter": {
+        "include": {
+          "name": "[Cc]andidate|reference_host"
+        }
+      }
+    },
+    {
+      "name": "candidate-shared-debug",
+      "configurePreset": "candidate-shared-debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "filter": {
+        "include": {
+          "name": "[Cc]andidate|reference_host"
+        }
       }
     }
   ]

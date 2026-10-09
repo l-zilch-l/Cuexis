@@ -705,7 +705,7 @@ auto recoverPublicationStaging(const fs::path& root) -> core::Result<std::size_t
     return removed;
 }
 
-auto publishGeneration(const GenerationPublishRequest& request)
+static auto publishGenerationLocked(const GenerationPublishRequest& request, bool acquireLock)
     -> core::Result<GenerationPublishResult> {
     if (request.root.empty()) {
         return core::unexpected(publishError(publishInvalidCode, "Generation root is empty"));
@@ -735,9 +735,12 @@ auto publishGeneration(const GenerationPublishRequest& request)
                                     .withContext("path", request.root.generic_string()));
     }
 
-    auto lock = PublicationLock::acquire(request.root / pathOf(publicationLockName));
-    if (!lock) {
-        return core::unexpected(std::move(lock.error()));
+    std::optional<PublicationLock> lock;
+    if (acquireLock) {
+        auto acquired = PublicationLock::acquire(request.root / pathOf(publicationLockName));
+        if (!acquired)
+            return core::unexpected(std::move(acquired.error()));
+        lock.emplace(std::move(*acquired));
     }
 
     MarkerDocument marker;
@@ -866,7 +869,9 @@ auto publishGeneration(const GenerationPublishRequest& request)
                                    marker.closure.size(), marker.provenance.size()};
 }
 
-auto adoptGeneration(const fs::path& root, std::string_view generationId) -> core::Result<void> {
+static auto adoptGenerationLocked(const fs::path& root, std::string_view generationId,
+                                  bool acquireLock, bool* commitVisible = nullptr)
+    -> core::Result<void> {
     if (root.empty() || !detail::isLowerHex(generationId, 64)) {
         return core::unexpected(
             publishError(publishInvalidCode, "Adoption requires a root and a generation identity"));
@@ -894,9 +899,12 @@ auto adoptGeneration(const fs::path& root, std::string_view generationId) -> cor
     text += '\n';
     const auto bytes = std::as_bytes(std::span<const char>{text.data(), text.size()});
 
-    auto lock = PublicationLock::acquire(root / pathOf(publicationLockName));
-    if (!lock) {
-        return core::unexpected(std::move(lock.error()));
+    std::optional<PublicationLock> lock;
+    if (acquireLock) {
+        auto acquired = PublicationLock::acquire(root / pathOf(publicationLockName));
+        if (!acquired)
+            return core::unexpected(std::move(acquired.error()));
+        lock.emplace(std::move(*acquired));
     }
     const auto target = root / pathOf(adoptedGenerationName);
     const auto temporary = detail::uniqueSibling(target, publicationRole);
@@ -905,12 +913,64 @@ auto adoptGeneration(const fs::path& root, std::string_view generationId) -> cor
         detail::removeTreeQuiet(temporary);
         return core::unexpected(std::move(written.error()));
     }
+    if (detail::testFailureEnabled("CUEXIS_ASSET_PUBLISH_FAIL_BEFORE_ADOPT")) {
+        detail::removeTreeQuiet(temporary);
+        return core::unexpected(
+            publishError(publishReplaceCode, "Injected failure before adoption"));
+    }
     auto replaced = detail::replaceAtomically(temporary, target);
     if (!replaced) {
         detail::removeTreeQuiet(temporary);
         return core::unexpected(std::move(replaced.error()));
     }
-    return detail::syncDirectory(root);
+    if (commitVisible)
+        *commitVisible = true;
+    if (detail::testFailureEnabled("CUEXIS_ASSET_PUBLISH_FAIL_AFTER_ADOPT")) {
+        return core::unexpected(publishError(publishIoCode, "Injected adoption durability failure")
+                                    .withContext("commitVisible", "true"));
+    }
+    auto synced = detail::syncDirectory(root);
+    if (!synced)
+        synced.error().withContext("commitVisible", "true");
+    return synced;
+}
+
+auto publishGeneration(const GenerationPublishRequest& request)
+    -> core::Result<GenerationPublishResult> {
+    return publishGenerationLocked(request, true);
+}
+
+auto adoptGeneration(const fs::path& root, std::string_view generationId) -> core::Result<void> {
+    return adoptGenerationLocked(root, generationId, true);
+}
+
+auto publishAndAdoptGeneration(const GenerationPublishRequest& request)
+    -> core::Result<GenerationPublishResult> {
+    bool commitVisible = false;
+    try {
+        if (request.root.empty())
+            return core::unexpected(publishError(publishInvalidCode, "Generation root is empty"));
+        std::error_code status;
+        fs::create_directories(request.root, status);
+        if (status || !detail::isDirectory(request.root))
+            return core::unexpected(
+                publishError(publishIoCode, "Generation root could not be created"));
+        auto lock = PublicationLock::acquire(request.root / pathOf(publicationLockName));
+        if (!lock)
+            return core::unexpected(std::move(lock.error()));
+        auto published = publishGenerationLocked(request, false);
+        if (!published)
+            return core::unexpected(std::move(published.error()));
+        auto adopted = adoptGenerationLocked(request.root, published->generationIdentity, false,
+                                             &commitVisible);
+        if (!adopted)
+            return core::unexpected(std::move(adopted.error()));
+        return std::move(*published);
+    } catch (...) {
+        return core::unexpected(
+            publishError(publishIoCode, "Generation transaction could not produce an owning result")
+                .withContext("commitVisible", commitVisible ? "true" : "false"));
+    }
 }
 
 auto readAdoptedGeneration(const fs::path& root) -> core::Result<std::string> {

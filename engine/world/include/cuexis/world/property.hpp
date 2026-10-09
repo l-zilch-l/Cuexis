@@ -63,6 +63,7 @@ enum class PropertyLayer : std::uint8_t {
     Animation = 2,
     HostOverride = 3,
     StudioPreviewOverride = 4,
+    GameplayOverride = 5,
 };
 
 enum class OverrideKind : std::uint8_t {
@@ -197,6 +198,7 @@ class PropertyResolver final {
         PropertyValue candidate{};
         PropertyValue behavior{};
         PropertyValue animation{};
+        PropertyValue gameplay{};
         PropertyValue host{};
         PropertyValue preview{};
         PropertyLayer source{PropertyLayer::Initial};

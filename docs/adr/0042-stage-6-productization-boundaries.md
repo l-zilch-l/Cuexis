@@ -340,7 +340,7 @@ shared 仍要求匹配构建/工具链，不承诺二进制替换。若必须 br
 SDK 与 Stage 编号脱钩，minor 可增长到 `0.10.0`、`0.11.0` 及以后。
 本 ADR 原先为 Stage 8 指定的 `0.8.0` 不再作为预留目标；正式 v5 发行按届时实际基线、
 Stage 7A 等前序交付及公共合同差异批准具体版本。Stage 6 的 `0.7.1` 仅在当前 `0.7.0`
-基线与兼容条件成立时有效；基线或合同变化须先重开决策。Stage 12 的 `1.0.0` 取决于
+基线与兼容条件成立时有效；基线或合同变化须先重开决策。Stage 14 的 `1.0.0` 取决于
 稳定合同和 ABI 验收，而非 minor 数值。
 
 具名宿主冻结为 **Cuexis Reference Host**，位于独立示例工程 `examples/reference_host/`：
@@ -373,6 +373,16 @@ A2 尚须完成：字段级 Spec/Schema、API 声明草案、模块/安装图、
 SDK/库版本本轮不改代码、不新增实际依赖；没有新实现/hosted/GPU 证据，不关闭工程问题。
 
 ## 依据
+
+### Stage 7 S7A-8.4 implementation amendment (2026-10-07)
+
+The owner authorizes implementation on `stage-7` and retains approval through PR #32.
+SDK `0.7.1` is an unreleased compatible patch candidate for Entry factories and experimental
+package isolation. This accepts a reviewable implementation path, not merge/release approval
+or stage closure. Exact owner-record fields, trusted-base bootstrap and rejection behavior are
+owned by [VERSIONING](../guides/VERSIONING.md#s7a-84-owner-approval-record). A same-author PR
+uses an owner issue-comment record; the agent must not submit it for the owner. Protection
+activation and hosted release evidence remain prerequisites; CODEOWNERS alone is insufficient.
 
 - 仓库：
   [PlaybackSource](../../engine/playback/include/cuexis/playback/playback_source.hpp)、

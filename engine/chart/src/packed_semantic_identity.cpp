@@ -5,6 +5,7 @@
 
 #include <cuexis/chart/packed_chart_tables.hpp>
 
+#include "packed_gameplay_internal.hpp"
 #include "packed_identity_internal.hpp"
 #include "sha256_internal.hpp"
 
@@ -217,8 +218,8 @@ auto writeRequirement(Preimage& out, const CanonicalRequirement& requirement)
 }
 
 auto writeEntity(Preimage& out, const CanonicalEntity& entity,
-                 const std::set<std::vector<std::byte>, identity_detail::ByteKeyLess>& identities)
-    -> core::Result<void> {
+                 const std::set<std::vector<std::byte>, identity_detail::ByteKeyLess>& identities,
+                 bool gameplay = false, bool gameplayOwner = false) -> core::Result<void> {
     // The wire stores at most one component per kind, so hashing more would describe an
     // artifact the format cannot carry.
     std::size_t transforms = 0;
@@ -254,7 +255,7 @@ auto writeEntity(Preimage& out, const CanonicalEntity& entity,
     } else {
         writeU32(out, 0);
     }
-    writeU64(out, entity.componentMask());
+    writeU64(out, entity.componentMask() | (gameplayOwner ? std::uint64_t{4} : 0U));
     // Spec 10.1 writes complete components in ascending bit order: 0, 1, 4. Bits 2 and 5 carry
     // no inline payload.
     for (const auto& component : entity.components) {
@@ -275,6 +276,13 @@ auto writeEntity(Preimage& out, const CanonicalEntity& entity,
                 return result;
             }
         }
+    }
+    if (gameplay) {
+        if (!entity.requirements.empty()) {
+            return core::unexpected(fail("packed.profile.requirement",
+                                         "Gameplay revision 2 forbids legacy requirements"));
+        }
+        return {};
     }
     auto requirements = std::vector<const CanonicalRequirement*>{};
     requirements.reserve(entity.requirements.size());
@@ -316,11 +324,18 @@ auto collectAssets(const CanonicalSemanticChart& chart) -> std::set<std::string>
 
 } // namespace
 
-auto semanticPreimage(const CanonicalSemanticChart& chart) -> core::Result<std::vector<std::byte>> {
+static auto semanticPreimageImpl(const CanonicalSemanticChart& chart, bool gameplay,
+                                 std::span<const CanonicalEntityIdentity> gameplayOwners,
+                                 std::uint32_t candidateRevision = 2)
+    -> core::Result<std::vector<std::byte>> {
     Preimage out;
     out.bytes.reserve(256U + chart.entities.size() * 128U);
 
-    append(out, std::as_bytes(std::span{semanticDomain.data(), semanticDomain.size()}));
+    const auto domain = gameplay ? (candidateRevision == 3
+                                        ? std::string_view{"cuexis.chart.semantic.v5.gameplay.2"}
+                                        : std::string_view{"cuexis.chart.semantic.v5.gameplay.1"})
+                                 : semanticDomain;
+    append(out, std::as_bytes(std::span{domain.data(), domain.size()}));
     const std::array<std::byte, 1> terminator{std::byte{0}};
     append(out, terminator);
     writeU16(out, 5);
@@ -511,6 +526,21 @@ auto semanticPreimage(const CanonicalSemanticChart& chart) -> core::Result<std::
     std::sort(entities.begin(), entities.end(), [](const auto& left, const auto& right) {
         return identity_detail::ByteKeyLess{}(left.first, right.first);
     });
+    std::set<std::vector<std::byte>, identity_detail::ByteKeyLess> ownerKeys;
+    for (const auto& owner : gameplayOwners) {
+        auto key = canonicalIdentityBytes(owner);
+        if (!key) {
+            return core::unexpected(std::move(key.error()));
+        }
+        if (!identities.contains(*key)) {
+            return core::unexpected(fail("packed.requirements.component",
+                                         "Gameplay owners must name existing entity identities"));
+        }
+        if (!ownerKeys.insert(*key).second) {
+            return core::unexpected(fail("packed.requirements.owner_duplicate",
+                                         "Gameplay owner identities must be unique"));
+        }
+    }
 
     // The wire stores parents as entity ordinals and rejects self-parents and cycles, so the
     // writer must refuse those graphs before publishing rather than emit an undecodable file.
@@ -546,7 +576,9 @@ auto semanticPreimage(const CanonicalSemanticChart& chart) -> core::Result<std::
 
     writeU32(out, static_cast<std::uint32_t>(entities.size()));
     for (const auto& [bytes, entity] : entities) {
-        if (auto result = writeEntity(out, *entity, identities); !result) {
+        if (auto result =
+                writeEntity(out, *entity, identities, gameplay, ownerKeys.contains(bytes));
+            !result) {
             return core::unexpected(std::move(result.error()));
         }
     }
@@ -557,6 +589,17 @@ auto semanticPreimage(const CanonicalSemanticChart& chart) -> core::Result<std::
     writeU32(out, 0);
 
     return std::move(out.bytes);
+}
+
+auto semanticPreimage(const CanonicalSemanticChart& chart) -> core::Result<std::vector<std::byte>> {
+    return semanticPreimageImpl(chart, false, {});
+}
+
+auto gameplay_detail::staticPreimage(const CanonicalSemanticChart& chart,
+                                     std::span<const CanonicalEntityIdentity> gameplayOwners,
+                                     std::uint32_t candidateRevision)
+    -> core::Result<std::vector<std::byte>> {
+    return semanticPreimageImpl(chart, true, gameplayOwners, candidateRevision);
 }
 
 auto semanticIdentity(const CanonicalSemanticChart& chart) -> core::Result<PackedSemanticIdentity> {

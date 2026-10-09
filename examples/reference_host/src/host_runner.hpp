@@ -20,6 +20,10 @@ namespace cuexis_reference_host {
 struct HostOptions final {
     std::filesystem::path contentDirectory;
     std::optional<std::filesystem::path> packageFile;
+    std::optional<std::string> candidateEntry;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    std::optional<GameplayHost> gameplay;
+#endif
     std::size_t advanceFrames{4};
     std::optional<std::string> expectedIdentity;
     std::vector<std::pair<std::size_t, std::uint64_t>> expectedDigests;
