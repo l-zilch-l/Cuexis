@@ -44,7 +44,7 @@ ReplayEvaluation 比较均 same；两次 audio/ChartClock 明确拒绝是预期�
 
 ## 命令、结果与证据
 
-实现 SHA：待本轮实施提交后绑定。受测工作区 diff、二进制/fixture 哈希与原始命令输出归
+实现 SHA：aec09b98273278b3cf31cb7af98e8cc6d03688ff；后续绑定提交仅修改文档，不改变受测代码/构建输入。受测工作区 diff、二进制/fixture 哈希与原始命令输出归
 [原始证据 ZIP](2026-10-09-player-readable-practice-evidence.zip)。本轮自生成素材，无外部下载。
 
 | 验证 | 本轮结果 |
