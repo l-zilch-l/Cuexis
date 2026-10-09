@@ -103,12 +103,20 @@ Version Gate 已通过，实际 owner LF 评论 `6075108949` 绑定该 HEAD；�
 随后真实 DFJK keyboard/audio 运行均在首个按键触发 `input.continuous_unsupported`；用户确认
 音乐与六方块可见，但按键判定未通过。首次 Controller Load 后 adapter 错把新离散事件标作
 跨采样 gap，现已在 `afdcfcd8890cb8c5a3ae6aa8c8273d4fdc15b5ff` 按所属 Playback 合同修复并通过
-Debug/Release 控制回归；修复后真实设备待重测。
+Debug/Release 控制回归；修复后两次真实设备复测均有一次 Hit，但随后同 Tick 碰撞退出1，整体未通过。
 SDK 显式 discontinuity 拒绝保持。1afe382 的审批
 6078336026 已核对有效，Version Gate 实际因候选 build3 而拒绝；日期候选通过 updater 订正为
 26.10.09-2（相对 trusted master build1），不会改 gate 规则。证据归
 [设备失败与修复报告](stage_reports/stages/stage-07/verification/2026-10-09-player-discrete-device-repair.md)。
 修复后真实按键/控制、GPU正反馈、设备校准以及新HEAD approval/hosted仍待回填。
+18:10/18:11 的 keyboard/audio 运行绑定 `1458ec5`，最后成功 H185/H277、score2/hits1，
+完整 Replay 比较均 same；`same_tick_collision` 的物理转换序列未在日志中逐条保留，根因仍待最小反例。
+原始日志与复核见[真实设备复测](stage_reports/stages/stage-07/verification/2026-10-09-device-retest-same-tick-collision.md)。
+随后最小 poll press/release、多键与连续点按复现旧桥失败；Player testOnly 采样合同与适配器
+已改为每个映射转换一个工作 Tick、无输入帧一个 Tick，T仍每帧一次；kernel 一个 Tick 至多一个
+input 与稳定诊断码保持。Debug/Release PlayerControl各32/713、Gameplay各25/1467及安装门禁各3/3通过。
+证据归[多转换桥修复](stage_reports/stages/stage-07/verification/2026-10-09-player-multi-transition-tick-repair.md)，
+修复后真实设备及新SHA approval/hosted仍待回填，S7A-8.4不退出。
 
 ## 当前格式与 SDK 合同
 

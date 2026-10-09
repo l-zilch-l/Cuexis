@@ -69,7 +69,8 @@ H>=1250 时人工结果：`score=13 combo=3 hits=5 misses=1`；原分数组合
    Stop/reload 的设备行为。测试拔设备/切换输出时记录设备型号、操作时间与实际错误，
    不预先假定设备一定会报告丢失。
 
-当前 H/T 桥每个 admitted 渲染帧分别 +1，是显式 test-only 采样桥。
+当前显式 test-only 桥：每个映射 press/release 按 poll 保留顺序占一个 H Tick，无映射转换帧
+也占一个 H Tick；T 每个 admitted 渲染帧 +1。同一帧多转换会让 H 多步推进，不声明 chord 同时性。
 **H/T 不等于毫秒、音频 sample 或设备时间。** 不能按固定秒数操作；帧率不同耗时不同。
 音频重拍用于输出/控制验收，不能作为这些 H 窗口的节拍定位依据。
 该谱面不能关闭 wall-clock/audio 时钟校准、端到端延迟与同步门禁。

@@ -85,7 +85,7 @@ TEST_CASE("Player freshly loaded discrete key input is not a trajectory disconti
     options.gameplayBudget = "131072,64,8192,16384,8192";
     options.gameplayHStep = "5";
     options.gameplayTStep = "7";
-    options.gameplayKeys = {"7:lane.one:domain.binding.one"};
+    options.gameplayKeys = {"7:lane.one:domain.binding.one", "9:lane.other:domain.binding.one"};
     const auto profile = take(player::readPlayerGameplay(options));
     const auto text = read(root / "main.packed");
     std::vector<std::byte> bytes(text.size());
@@ -104,7 +104,17 @@ TEST_CASE("Player freshly loaded discrete key input is not a trajectory disconti
     take(controller.apply(
         {.kind = player_support::PlayerCommandKind::Load, .source = std::move(source)}));
     take(controller.apply({.kind = player_support::PlayerCommandKind::Play}));
+    std::vector<player::PlayerInput::Key> batch;
     SECTION("fresh load") {}
+    SECTION("press and release in one poll") {
+        batch = {{7, true, 100}, {7, false, 200}};
+    }
+    SECTION("different mapped keys in one poll") {
+        batch = {{7, true, 100}, {9, true, 100}, {7, false, 200}};
+    }
+    SECTION("repeated tap transitions in one poll") {
+        batch = {{7, true, 100}, {7, false, 200}, {7, true, 300}, {7, false, 400}};
+    }
     SECTION("fresh transition after pause and resume") {
         take(controller.apply({.kind = player_support::PlayerCommandKind::Pause}));
         take(controller.apply({.kind = player_support::PlayerCommandKind::Play}));
@@ -119,11 +129,13 @@ TEST_CASE("Player freshly loaded discrete key input is not a trajectory disconti
     class Surface final : public player::PlayerSurface {
       public:
         unsigned n{};
+        std::vector<player::PlayerInput::Key> batch;
         auto pollInput() -> core::Result<player::PlayerInput> override {
             player::PlayerInput input;
             if (n == 0)
-                input.keys = {{7, true, 100}};
-            if (n == 1)
+                input.keys =
+                    batch.empty() ? std::vector<player::PlayerInput::Key>{{7, true, 100}} : batch;
+            if (n == 1 && batch.empty())
                 input.keys = {{7, false, 200}};
             if (n == 4)
                 input.quitRequested = true;
@@ -134,9 +146,12 @@ TEST_CASE("Player freshly loaded discrete key input is not a trajectory disconti
             return player::PlayerDrawableSize{320, 180};
         }
     } surface;
+    surface.batch = batch;
     player::PlayerFrameLoop loop{
         .controller = controller, .renderer = renderer, .surface = surface, .logger = *logger};
     take(player::runPlayerFrameLoop(loop));
+    CHECK(controller.gameplay()->horizon().value ==
+          5 * (static_cast<std::int64_t>(batch.empty() ? 1 : batch.size()) + 3));
     const auto result = take(controller.session().queryGameplay());
     const auto score = take(result.score());
     CHECK(score.score == 2);
@@ -201,6 +216,40 @@ TEST_CASE("Player typed discrete sampling uses actual Gameplay and complete Repl
     options.gameplayKeys.clear();
     options.gameplayHStep = "1.0";
     CHECK_FALSE(player::readPlayerGameplay(options));
+}
+
+TEST_CASE("Player transition clock overflow rejects the entire poll before admission",
+          "[candidate][gameplay][player][input][failure]") {
+    const auto root = std::filesystem::path{CUEXIS_BUILD_DIR} / "s7a78-public-fixture";
+    player::PlayerOptions options;
+    options.gameplayConfiguration = root / "configuration.json";
+    options.gameplayBudget = "131072,64,8192,16384,8192";
+    options.gameplayHStep = "4611686018427387904";
+    options.gameplayTStep = "7";
+    options.gameplayKeys = {"7:lane.one:domain.binding.one"};
+    const auto profile = take(player::readPlayerGameplay(options));
+    const auto text = read(root / "main.packed");
+    std::vector<std::byte> bytes(text.size());
+    for (std::size_t i = 0; i < text.size(); ++i)
+        bytes[i] = std::byte{static_cast<unsigned char>(text[i])};
+    auto provider = take(playback::MemoryContentProvider::create({}));
+    auto source = take(playback::PlaybackSource::fromGameplayPacked(
+        "player-overflow-fixture", "compiled/main.packed", bytes, profile.configuration, {},
+        provider, playback::GameplayPrepareIntent::GameplayOnly));
+    playback::PlaybackSession session;
+    take(session.commit(
+        take(session.prepareLoad(std::move(source), playback::PlaybackMode::ChartClock))));
+    const auto before = take(take(session.archiveGameplay()).toBytes());
+    const auto result = take(session.queryGameplay());
+    player::PlayerGameplay adapter{profile};
+    player::PlayerInput input;
+    input.keys = {{7, true, 100}, {7, false, 200}};
+    const auto rejected = adapter.step(session, input, {0, 0, 0});
+    REQUIRE_FALSE(rejected);
+    CHECK(rejected.error().code() == "player.arguments.unknown");
+    CHECK(adapter.horizon().value == 0);
+    CHECK(before == take(take(session.archiveGameplay()).toBytes()));
+    CHECK(take(result.sameResult(take(session.queryGameplay()))));
 }
 
 TEST_CASE("Player rejected audio control preserves actual Gameplay state and complete result",

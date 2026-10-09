@@ -1006,3 +1006,12 @@ public SDK 显式 discontinuity 拒绝保持，不重开 S7A-2/3/4/5/6。再修 
 启动脚本旧空退出码不得补造；新执行缓存 handle/等待后捕获。修复后设备观察仍待回填。
 同日候选 build 按 trusted master+1，当前 master1 故候选2；不能按上一 PR 候选3继续加号。
 owner 审批 6078336026 有效但不替代日期 build 校验，新 HEAD 需重绑；S7A-8.4 不提前退出。
+
+### §3.4.16 2026-10-09 Player 多转换采样碰撞修订
+
+最小反例为一个 poll 中 press+release 或两个映射键：旧桥赋同一个 H，执行 profile §3
+明确一个 Tick 至多一个 input，故原子拒绝。不得以修改 S7A-3/4 规则或忽略真实转换绕过。
+Playback Player 合同改用显式 testOnly 逐转换工作 Tick：保留 poll 的转换顺序，每个映射转换
+捕获 H+hStep，帧末 H 增 max(1,N)×hStep；T 仍每帧一次。整批 checked 后原子 submit，
+F(H) 实际推进，不引入跨帧队列或第二判定路径。不把此桥当 chord/生产校准，物理预算不扩大。
+DFJK fixture 不变，多转换会占多个工作 Tick，操作示例/脚本须同步；真实设备重测仍待回填。

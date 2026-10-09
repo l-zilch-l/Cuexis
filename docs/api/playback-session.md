@@ -235,8 +235,14 @@ quit原unload。CXC locator及捕获generation内的filesystem project均使用�
 
 candidate Player Gameplay 显式要求配置文件、五项配置解码预算、整数 H/T 每帧步长和
 重复 `--gameplay-key scancode:channel:domain` 映射。此 testOnly 离散采样桥是受限功能验收输入，
-不承诺生产时钟校准、音频设备或帧率无关节奏。每个实际 Playing 帧独立按指定整数步长推进
-H/T；输入 observationTick 是该采样 H，SDL 时间戳仅为原始 provenance。不得从 RuntimeFrame
+不承诺生产时钟校准、音频设备或帧率无关节奏。2026-10-09 多转换修订：在无控制变化的实际
+Playing 帧中，按 SDL poll 保留的真实转换顺序，为每个映射转换捕获一个独立工作 Tick；
+第 i 个转换的 observationTick = 帧前 H + i × 显式 hStep（i 从1开始）。未映射键不占 Tick。
+无映射转换时仍占一个工作 Tick；帧末 H = 帧前 H + max(1,映射转换数) × hStep，
+T 始终只按显式 tStep 每帧推进一次。乘加均 checked；溢出先于 submit，整帧无准入。
+全部 owning observations 一次原子 submit，再沿同一实际 kernel/Fold 按 F(H) advance 到最终 H。
+不丢转换、不保留跨帧待提交队列、不改内核一个 Tick 至多一个输入的规则；此为显式 testOnly
+采样时钟，不宣称同帧 chord 同时性或生产设备校准。SDL 时间戳仅为原始 provenance。不得从 RuntimeFrame
 的 f64 chartTimeMs、设备或音频时间戳反推 Tick。无输入帧仍推进实际 kernel/Fold 并产生到期 Miss。
 
 SDL 忽略自动重复，保留每个真实 scancode 的 press/release；显式映射键不兼任传输控制。

@@ -2,7 +2,7 @@
 
 状态：current index
 
-更新日期：2026-10-07
+更新日期：2026-10-09
 
 本索引按报告用途分类，不复制裁定、字段合同或当前阶段结论。
 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 是唯一当前实现状态摘要；
@@ -16,7 +16,7 @@
 | 准入与基线 (readiness) | 6 | owner准入记录、工具链基线、typed合同与计划审视、D-9候选证据 |
 | 裁定记录 (decisions) | 13 | 分轮准入/实施裁定、合同选择、落地位置与诊断分类；现行字段仍归Spec/ABI |
 | 设计与实施记录 (implementation) | 6 | 带日期的设计收口和实施推进；设计交付与运行验证分别按报告声明解释 |
-| 验证与审计 (verification) | 12 | 独立复验、功能验收、边界审计、CI优化和文档恢复证据 |
+| 验证与审计 (verification) | 18 | 独立复验、功能验收、边界审计、CI优化和文档恢复证据 |
 | 交接与规划修订 (handoffs) | 3 | hosted交接、排期修订和桌面接手整理；历史下一步不覆盖主计划 |
 
 ## 常用入口
@@ -88,6 +88,10 @@
 
 ## 交接与规划修订
 
+- [Player 多转换 Tick 桥修复](verification/2026-10-09-player-multi-transition-tick-repair.md)（2026-10-09）：
+  保留内核一个 Tick 至多一个输入，显式逐转换工作 Tick；CPU/完整Replay通过，设备重测待回填。
+- [真实设备复测：同 Tick 碰撞](verification/2026-10-09-device-retest-same-tick-collision.md)（2026-10-09）：
+  修复后两次真实输入均取得一次 Hit 与完整 Replay=same，随后 same_tick_collision 退出1；整体未通过。
 - [Player 真实离散按键失败与修复](verification/2026-10-09-player-discrete-device-repair.md)（2026-10-09）：
   实际设备日志、Controller 首次输入反例、退出码与候选 build 修正。
 

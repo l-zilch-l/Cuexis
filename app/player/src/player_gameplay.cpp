@@ -84,7 +84,8 @@ auto PlayerGameplay::step(playback::PlaybackSession& session, const PlayerInput&
     if (h_ > std::numeric_limits<std::int64_t>::max() - profile_.hStep ||
         t_ > std::numeric_limits<std::int64_t>::max() - profile_.tStep)
         return core::unexpected(core::Error{"player.arguments.unknown", "Gameplay Tick overflow"});
-    const auto h = h_ + profile_.hStep, t = t_ + profile_.tStep;
+    auto h = h_;
+    const auto t = t_ + profile_.tStep;
     std::vector<playback::GameplayInput> observations;
     auto sequence = sequence_;
     const auto arrival = std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -93,6 +94,12 @@ auto PlayerGameplay::step(playback::PlaybackSession& session, const PlayerInput&
     for (const auto& event : input.keys)
         for (const auto& mapping : profile_.keys)
             if (mapping.scanCode == event.scanCode) {
+                if (h > std::numeric_limits<std::int64_t>::max() - profile_.hStep)
+                    return core::unexpected(
+                        core::Error{"player.arguments.unknown", "Gameplay Tick overflow"});
+                // Explicit test-only sampling clock: one work Tick per transition.
+                // Keep SDL transition order without changing kernel collision rules.
+                h += profile_.hStep;
                 if (sequence == std::numeric_limits<std::uint64_t>::max() ||
                     event.timestampNs >
                         static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max()))
@@ -113,6 +120,8 @@ auto PlayerGameplay::step(playback::PlaybackSession& session, const PlayerInput&
                 // Control boundaries discard older poll batches in the frame loop.
                 observations.push_back(std::move(value));
             }
+    if (observations.empty())
+        h += profile_.hStep;
     if (!observations.empty()) {
         auto submitted = session.submitGameplay(observations);
         if (!submitted)
