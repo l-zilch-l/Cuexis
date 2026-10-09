@@ -641,7 +641,7 @@ struct RequirementIndices final {
 struct ClaimRow final {
     std::uint32_t requirement{}, resource{};
     ResourceClaimDeclaration declaration;
-    std::optional<std::string> deferredClaimKey;
+    std::optional<std::string> deferredClaimKey{};
 };
 struct Model final {
     chart::CanonicalSemanticChart chart;

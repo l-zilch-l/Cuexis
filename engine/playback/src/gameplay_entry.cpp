@@ -150,8 +150,8 @@ auto parseGameplayEntryMetadata(std::string_view text, GameplayConfigurationDeco
     const auto* playback = parsed->find("playback")->boolean();
     if (!stringIs("format", "cuexis.gameplay-entry") || !version || *version != 1 || !playback ||
         !*playback ||
-        !(stringIs("entryKind", "packed-chart") && stringIs("encoding", "capsule.3")) &&
-            !(stringIs("entryKind", "gameplay-graph") && stringIs("encoding", "graph.1")))
+        (!(stringIs("entryKind", "packed-chart") && stringIs("encoding", "capsule.3")) &&
+         !(stringIs("entryKind", "gameplay-graph") && stringIs("encoding", "graph.1"))))
         return core::unexpected(invalid("Unsupported Gameplay metadata header"));
     for (const auto* key : {"artifactIdentity", "compiledSemanticIdentity"}) {
         const auto* hash = parsed->find(key)->string();

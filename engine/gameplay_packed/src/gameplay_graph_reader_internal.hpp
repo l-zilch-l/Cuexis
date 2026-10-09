@@ -187,8 +187,8 @@ class GraphSink final : public json::ISaxEventSink {
         Table table{Table::Global};
         std::uint64_t seen{};
         std::size_t count{};
-        std::string key;
-        Data data;
+        std::string key{};
+        Data data{};
     };
 
   public:
