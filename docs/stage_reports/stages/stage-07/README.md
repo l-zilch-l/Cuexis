@@ -88,6 +88,9 @@
 
 ## 交接与规划修订
 
+- [CRLF 修复与真实设备验收谱面](verification/2026-10-09-crlf-and-device-fixture.md)（2026-10-09）：
+  审批换行回归、可重复自生成素材、生产装配与设备操作材料。
+
 | 报告 | 证据日期 |
 | --- | --- |
 | [S7A-3/4 Hosted Evidence and S7A-5 Handoff](handoffs/2026-10-05-s7a-3-4-hosted-and-handoff.md) | 2026-10-05 |

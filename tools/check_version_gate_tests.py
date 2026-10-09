@@ -886,6 +886,16 @@ class SdkOwnerApprovalTests(unittest.TestCase):
             with patch.object(gate, "_github_json", side_effect=api), patch.dict(os.environ, {"GITHUB_REPOSITORY": "l-zilch-l/Cuexis"}):
                 self.assertEqual(gate.sdk_owner_approval(root, base, candidate, date(2026, 10, 6), 32,
                                                          "pull_request"), 123)
+                newer = dict(comment, id=124, body="cuexis-sdk-api-approval-v1\r\n{}")
+                with patch.object(gate, "_github_json", side_effect=lambda repository, suffix:
+                                  {"head": {"sha": candidate}} if suffix == "pulls/32"
+                                  else [comment, newer]):
+                    with self.assertRaises(gate.GateError):
+                        gate.sdk_owner_approval(root, base, candidate, date(2026, 10, 6), 32,
+                                                "pull_request")
+                comment["body"] = comment["body"].replace("\n", "\r\n")
+                self.assertEqual(gate.sdk_owner_approval(root, base, candidate, date(2026, 10, 6), 32,
+                                                         "pull_request"), 123)
                 git("branch", "topic", candidate)
                 git("checkout", "-q", "-B", "master", base)
                 git("merge", "--squash", "topic")
@@ -929,6 +939,29 @@ class SdkOwnerApprovalTests(unittest.TestCase):
                                                    "push", "c" * 40), 123)
         with self.assertRaises(gate.GateError):
             gate.validate_sdk_approval(comment, ["l-zilch-l"], merged, "push", "e" * 40)
+
+    def test_crlf_preserves_approval_checks_and_raw_body_bound(self):
+        expected, comment = self.record()
+        comment["body"] = comment["body"].replace("\n", "\r\n")
+        self.assertEqual(gate.validate_sdk_approval(comment, ["l-zilch-l"], expected,
+                                                   "pull_request", "c" * 40), 123)
+        with self.assertRaises(gate.GateError):
+            gate.validate_sdk_approval(comment, ["l-zilch-l"], dict(expected, pr=33),
+                                       "pull_request", "c" * 40)
+        comment["updated_at"] = "2026-10-06T13:00:00Z"
+        with self.assertRaises(gate.GateError):
+            gate.validate_sdk_approval(comment, ["l-zilch-l"], expected,
+                                       "pull_request", "c" * 40)
+        comment["updated_at"] = comment["created_at"]
+        comment["user"] = {"login": "intruder", "type": "User"}
+        with self.assertRaises(gate.GateError):
+            gate.validate_sdk_approval(comment, ["l-zilch-l"], expected,
+                                       "pull_request", "c" * 40)
+        comment["user"] = {"login": "l-zilch-l", "type": "User"}
+        comment["body"] += "\r\n" * 4096
+        with self.assertRaises(gate.GateError):
+            gate.validate_sdk_approval(comment, ["l-zilch-l"], expected,
+                                       "pull_request", "c" * 40)
 
     def test_stale_sha_base_sdk_date_or_actor_never_grants_permission(self):
         for field, value in (("candidate_sha", "e" * 40), ("base_sha", "f" * 40),

@@ -92,6 +92,14 @@ version.bootstrap.required。b6081c3 的 MSVC hosted 成功，Linux/MinGW 严格
 代理误建的bootstrap PR #33已关闭，未合并；该PR及bootstrap分支已无运行中/排队CI。核对已有真实GitHub Actions pre-merge success绑定3076948和要求的App15368后，已在不改保护、不伪造状态、不新建PR的条件下，将bootstrap提交3076948ce403ea0da6fbe389835b6a4c9defbcd3直接推入master。stage-7已同步新base，日期经updater升至26.10.09-2；SDK仍为0.7.1。bootstrap缺文件问题已解除；精确owner审批、保护来源与新SHA hosted门禁仍未退出。
 证据见[bootstrap报告](stage_reports/stages/stage-07/verification/2026-10-09-version-gate-bootstrap.md)；S7A-8.4保持未退出。
 
+2026-10-09 后续核对：`c110c500e1e7987fe19a47ba7141d0787e5ce4b8` 的 hosted 三平台及
+Version Gate 已通过，实际 owner LF 评论 `6075108949` 绑定该 HEAD；此前审批/hosted 待回填
+叙述不再适用于此 SHA。CRLF 筛选/解析永久代码修复与自生成真实设备验收谱面已准备，
+SDK 仍为 0.7.1，日期构建更新为 26.10.09-3；新 HEAD 必须另绑定 approval/hosted。
+具体证据见[修复与谱面报告](stage_reports/stages/stage-07/verification/2026-10-09-crlf-and-device-fixture.md)，
+操作见[设备验收示例](examples/s7a78-device-acceptance.md)。master 旧 checker 不因 PR 修复自动更新；
+保护来源、真实设备/校准门禁仍独立保留，S7A-8.4 与 Stage7A 均未退出。
+
 ## 当前格式与 SDK 合同
 
 ### Gameplay v2 收敛状态（2026-10-04）

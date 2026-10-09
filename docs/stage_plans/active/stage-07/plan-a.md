@@ -982,3 +982,17 @@ Linux installed gate不得继承开发树库搜索路径；private/detail export
 关闭误建PR33后，其真实pre-merge success仍绑定3076948及required App15368，且master未漂移；这使此前GH006的“expected”条件已满足。核对commit/base/check后，依已授权bootstrap范围直接fast-forward推送master成功，无新PR、无保护修改、无人工伪造status。该部署路径仅使用已存在的实际检查，不回退执行候选脚本。
 
 stage-7同步新master并将同日build升至26.10.09-2；SDK保持0.7.1。需fresh/clean-first/consumer与最终HEAD的真实owner审批；bootstrap完成不等于S7A-8.4退出，不改变C78/R78或Gameplay语义，也不进入S7A-9关闭。证据归10-09 bootstrap报告后续章节。
+
+### §3.4.14 2026-10-09 CRLF 修复与设备验收材料
+
+审批首行允许 LF/CRLF，合同归 VERSIONING；筛选、最新记录 JSON 提取与 validator 同用读取归一化。
+仍校验 API-observed owner、未编辑、当日、完整 tuple、原始长度；新 invalid CRLF 记录照常撤销旧授权。
+不改远端评论，不把 CLI 布尔或候选文件当授权。修复交付仍沿 stage-7 / PR32；master 写入及合并由 owner 决定。
+
+设备材料使用自生成 PCM 节拍、白纹理和仓库已有 quad/material。生产 assembler 输出 Graph/Packed
+键盘及音乐 CXC；D/F Tap、J 故意 Miss、K head/body/tail 和六个 FactBinding 方块。
+H/T 每 admitted frame +1 是当前显式 testOnly 桥，音频不用于 H 定位；不伪装设备校准或音画同步。
+离线人工 golden 与真实设备观察分别记录，Reference Host 的 ChartClock 对音乐仍须拒绝。
+设备操作步骤归[验收示例](../../../examples/s7a78-device-acceptance.md)，带日期证据归
+[修复与谱面报告](../../../stage_reports/stages/stage-07/verification/2026-10-09-crlf-and-device-fixture.md)。
+此前 c110c50 的 owner 审批/hosted 已通过，不自动授权新 HEAD；S7A-8.4 保护来源门禁继续保留。

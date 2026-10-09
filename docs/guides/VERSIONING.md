@@ -143,14 +143,16 @@ trusted bootstrap and hosted evidence remain open.
 ### S7A-8.4 owner approval record
 
 A same-author PR uses an owner GitHub issue-comment record because GitHub does not accept
-self-Approve reviews. The record starts with `cuexis-sdk-api-approval-v1` on its own line,
-followed by one JSON object with exactly: `repository`, integer `pr`, full `base_sha`, full
+self-Approve reviews. The record starts with `cuexis-sdk-api-approval-v1` on its own line
+using LF or CRLF, followed by one JSON object with exactly: `repository`, integer `pr`, full `base_sha`, full
 `candidate_sha`, full `candidate_tree_sha`, `from`, `to`, `utc_date`. The API-observed actor
 must be a human owner in `.github/sdk-api-owners.json` at the trusted base. The record must
 be unedited and created on that UTC release date. Missing approval, wrong actor, stale date,
 changed SHA/base/version/tree or an unavailable API denies permission. The newest owner record
 supersedes older records; an invalid newer record revokes permission. Candidate files, labels
 and `--allow-sdk-api-change` cannot grant permission. The agent does not publish owner approval.
+Both comment selection and JSON parsing accept LF/CRLF line endings; normalization does not
+change the API-observed comment or its raw size bound.
 
 The metadata-only `pull_request` and `pull_request_target` gates check out the base and fetch
 the actual PR head as data; neither executes PR code. Keeping `pull_request` also makes the
