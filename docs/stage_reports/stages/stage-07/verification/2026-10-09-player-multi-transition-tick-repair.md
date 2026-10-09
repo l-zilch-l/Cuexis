@@ -38,7 +38,9 @@ T 仍每 admitted frame 只加一次 tStep。先完成所有 checked 加法和 p
 
 ## 实施与验证
 
-实现 SHA 在提交后绑定；测试时父 SHA 为1458ec5，原始证据含工作区 diff、fixture/binary 哈希。
+实现 SHA：`90b8115b547b93fc80d66afb688145859ab54e40`；测试时父 SHA 为1458ec5，原始证据含
+工作区 diff 与 fixture 哈希，桌面 implementation.json 绑定本机 Player 二进制哈希。
+后续证据绑定提交只改文档，不改变本次测试的实现或构建输入。
 SDK preview 0.7.1；无 public API 差异，日期 build 按 trusted master build1 保持26.10.09-2。
 推送前 updater 运行26.10.09-2，未按上一 PR 候选自行加号；本次没有版本输入变化。
 Debug/Release 为上轮 fresh/clean-first 后的相同配置，本轮增量编译受影响目标，不伪称再次 clean-first。

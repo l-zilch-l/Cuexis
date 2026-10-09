@@ -113,7 +113,8 @@ SDK 显式 discontinuity 拒绝保持。1afe382 的审批
 完整 Replay 比较均 same；`same_tick_collision` 的物理转换序列未在日志中逐条保留，根因仍待最小反例。
 原始日志与复核见[真实设备复测](stage_reports/stages/stage-07/verification/2026-10-09-device-retest-same-tick-collision.md)。
 随后最小 poll press/release、多键与连续点按复现旧桥失败；Player testOnly 采样合同与适配器
-已改为每个映射转换一个工作 Tick、无输入帧一个 Tick，T仍每帧一次；kernel 一个 Tick 至多一个
+已在 `90b8115b547b93fc80d66afb688145859ab54e40` 改为每个映射转换一个工作 Tick、无输入帧一个
+Tick，T仍每帧一次；kernel 一个 Tick 至多一个
 input 与稳定诊断码保持。Debug/Release PlayerControl各32/713、Gameplay各25/1467及安装门禁各3/3通过。
 证据归[多转换桥修复](stage_reports/stages/stage-07/verification/2026-10-09-player-multi-transition-tick-repair.md)，
 修复后真实设备及新SHA approval/hosted仍待回填，S7A-8.4不退出。
