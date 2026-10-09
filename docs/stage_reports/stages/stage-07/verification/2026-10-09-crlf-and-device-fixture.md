@@ -73,3 +73,14 @@ H/T 每 admitted frame +1；不是音乐时间、设备时钟或校准结果。
 已有 GPU smoke 不代替新谱面设备观察。S7A-8.4 保护来源及新 HEAD owner/hosted 保留；
 仅按 I78-6 累计输入，不接受生产阈值、不做 S7A-9 最终关闭、不合并或发行。
 新 CRLF 代码进入 PR 后仍需 owner 合并/可信部署，当前 master 旧 checker 不因 PR 推送而更新。
+
+## 实现 SHA 与交付绑定
+
+实现提交：`33df051dc0ac3c0252f731daa32e30bca15e9537`。本轮源与 fixture 运行输入对应此提交；后续证据绑定提交只修改文档，不修改运行源、合同或版本。
+
+- fixture `keyboard.cxc`：70246 bytes，SHA256 `2aca248435112ddd4932c6b059371b0347da8e6a2a6421d6520e4733a9447ae5`。
+- fixture `audio.cxc`：5831853 bytes，SHA256 `da2a4d1652ace20aca94f1469d6296f7adce0932dbef0b79b5d8a0ed2ae43c85`。
+
+桌面可运行材料在 `C:\Users\Zilch\Desktop\Cuexis-S7A78-DeviceAcceptance-2026-10-09`；
+`start-keyboard.cmd` / `start-audio.cmd` 使用 fresh date3 candidate Player，映射 D/F/J/K。
+真实设备结果待用户操作回填；新最终HEAD hosted与审批待回填，不借旧CI升级结论。

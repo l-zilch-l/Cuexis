@@ -94,7 +94,7 @@ version.bootstrap.required。b6081c3 的 MSVC hosted 成功，Linux/MinGW 严格
 
 2026-10-09 后续核对：`c110c500e1e7987fe19a47ba7141d0787e5ce4b8` 的 hosted 三平台及
 Version Gate 已通过，实际 owner LF 评论 `6075108949` 绑定该 HEAD；此前审批/hosted 待回填
-叙述不再适用于此 SHA。CRLF 筛选/解析永久代码修复与自生成真实设备验收谱面已准备，
+叙述不再适用于此 SHA。CRLF 筛选/解析代码修复与 D/F/J/K 自生成设备谱面已提交实现 `33df051dc0ac3c0252f731daa32e30bca15e9537`，
 SDK 仍为 0.7.1，日期构建更新为 26.10.09-3；新 HEAD 必须另绑定 approval/hosted。
 具体证据见[修复与谱面报告](stage_reports/stages/stage-07/verification/2026-10-09-crlf-and-device-fixture.md)，
 操作见[设备验收示例](examples/s7a78-device-acceptance.md)。master 旧 checker 不因 PR 修复自动更新；
