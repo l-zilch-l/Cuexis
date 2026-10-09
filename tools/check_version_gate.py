@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
 import sys
+import urllib.request
 from dataclasses import asdict, dataclass
 from datetime import date
 from pathlib import Path
@@ -331,6 +333,164 @@ def current_snapshot(repo_root: Path) -> VersionSnapshot:
     return snapshot_from_texts("working-tree", cmake_text, manifest_text)
 
 
+SDK_APPROVAL_PREFIX = "cuexis-sdk-api-approval-v1\n"
+SDK_OWNERS_FILE = ".github/sdk-api-owners.json"
+
+
+def _github_json(repository: str, suffix: str):
+    if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
+        raise GateError("version.sdk_api.owner_config", "invalid repository identity")
+    headers = {"Accept": "application/vnd.github+json", "User-Agent": "Cuexis-Version-Gate"}
+    token = os.environ.get("GITHUB_TOKEN")
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    request = urllib.request.Request(f"https://api.github.com/repos/{repository}/{suffix}",
+                                     headers=headers)
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            data = response.read(8 * 1024 * 1024 + 1)
+        if len(data) > 8 * 1024 * 1024:
+            raise ValueError("GitHub response exceeds bound")
+        return json.loads(data)
+    except (OSError, ValueError) as error:
+        raise GateError("version.sdk_api.approval_unavailable", str(error)) from error
+
+
+def validate_sdk_approval(comment: dict, owners: list[str], expected: dict,
+                          event: str, approved_tree: str) -> int:
+    """Validate an API-observed owner record, never a candidate-controlled JSON file."""
+    actor = comment.get("user") if isinstance(comment, dict) else None
+    if (not isinstance(actor, dict) or actor.get("login") not in owners or
+            actor.get("type") != "User" or
+            comment.get("created_at") != comment.get("updated_at") or
+            str(comment.get("created_at", ""))[:10] != expected["utc_date"]):
+        raise GateError("version.sdk_api.approval_invalid", "owner/date/unedited record required")
+    body = comment.get("body", "")
+    if not isinstance(body, str) or len(body) > 8192 or not body.startswith(SDK_APPROVAL_PREFIX):
+        raise GateError("version.sdk_api.approval_invalid", "invalid approval record")
+    try:
+        record = json.loads(body[len(SDK_APPROVAL_PREFIX):])
+    except ValueError as error:
+        raise GateError("version.sdk_api.approval_invalid", "invalid approval JSON") from error
+    if (not isinstance(record, dict) or set(record) != set(expected) or
+            any(type(record[key]) is not type(value) for key, value in expected.items())):
+        raise GateError("version.sdk_api.approval_invalid", "exact approval fields required")
+    if not re.fullmatch(r"[0-9a-f]{40}", str(record["candidate_sha"])):
+        raise GateError("version.sdk_api.approval_invalid", "full approved candidate SHA required")
+    checks = dict(expected)
+    if event in ("push", "merge_group"):
+        # A merge or squash may have a different commit SHA; its entire tree must be identical.
+        checks["candidate_sha"] = record["candidate_sha"]
+    if record != checks or approved_tree != expected["candidate_tree_sha"]:
+        raise GateError("version.sdk_api.approval_mismatch", "approval does not bind this change")
+    comment_id = comment.get("id")
+    if not isinstance(comment_id, int) or isinstance(comment_id, bool) or comment_id <= 0:
+        raise GateError("version.sdk_api.approval_invalid", "GitHub comment identity required")
+    return comment_id
+
+
+def sdk_owner_approval(repo_root: Path, base: str, candidate: str,
+                       trusted_date: date, pr: int, event: str) -> int | None:
+    base = _resolve_commit(repo_root, base, "baseline")
+    candidate = _resolve_commit(repo_root, candidate, "candidate")
+    _require_ancestor(repo_root, base, candidate)
+    from_snapshot = snapshot_from_texts(base,
+        _read_git_file(repo_root, base, VERSION_FILES[0], "baseline"),
+        _read_git_file(repo_root, base, VERSION_FILES[1], "baseline"))
+    to_snapshot = snapshot_from_texts(candidate,
+        _read_git_file(repo_root, candidate, VERSION_FILES[0], "candidate"),
+        _read_git_file(repo_root, candidate, VERSION_FILES[1], "candidate"))
+    if from_snapshot.sdk_api_version == to_snapshot.sdk_api_version:
+        return None
+    try:
+        config = json.loads(_read_git_file(repo_root, base, SDK_OWNERS_FILE, "sdk_owner_config"))
+    except ValueError as error:
+        raise GateError("version.sdk_api.owner_config", "invalid trusted owner config") from error
+    if (not isinstance(config, dict) or config.get("format") != "cuexis.sdk-api-owners" or
+            type(config.get("version")) is not int or config.get("version") != 1 or not isinstance(config.get("owners"), list) or
+            not config["owners"] or not all(isinstance(x, str) for x in config["owners"]) or
+            not isinstance(config.get("repository"), str)):
+        raise GateError("version.sdk_api.owner_config", "invalid trusted owners")
+    repository = config["repository"]
+    if os.environ.get("GITHUB_REPOSITORY", repository) != repository:
+        raise GateError("version.sdk_api.owner_config", "workflow repository differs from trusted owner config")
+    if pr == 0:
+        if event == "merge_group":
+            pulls = _github_json(repository, "pulls?state=open&base=master&per_page=100")
+            if not isinstance(pulls, list) or len(pulls) >= 100:
+                raise GateError("version.sdk_api.approval_unavailable", "queue PR lookup exceeds bound")
+            matches = [item for item in pulls
+                       if FULL_SHA_RE.fullmatch(str(item.get("head", {}).get("sha", "")))
+                       and _run_git(repo_root, "merge-base", "--is-ancestor",
+                                    item["head"]["sha"], candidate).returncode == 0]
+        else:
+            pulls = _github_json(repository, f"commits/{candidate}/pulls")
+            if not isinstance(pulls, list):
+                raise GateError("version.sdk_api.approval_unavailable", "invalid associated PR list")
+            matches = [item for item in pulls if item.get("base", {}).get("ref") == "master"]
+        if len(matches) != 1:
+            raise GateError("version.sdk_api.approval_invalid", "one associated master PR required")
+        pr = matches[0]["number"]
+    if pr <= 0:
+        raise GateError("version.sdk_api.approval_invalid", "positive PR number required")
+    pull = _github_json(repository, f"pulls/{pr}")
+    if not isinstance(pull, dict):
+        raise GateError("version.sdk_api.approval_unavailable", "invalid PR response")
+    head = pull.get("head", {}).get("sha")
+    if event == "pull_request" and head != candidate:
+        raise GateError("version.sdk_api.approval_mismatch", "PR head differs from candidate")
+    if event == "merge_group":
+        head = _resolve_commit(repo_root, head or "", "pr_head")
+        _require_ancestor(repo_root, head, candidate)
+    latest = None
+    for page in range(1, 21):
+        comments = _github_json(repository, f"issues/{pr}/comments?per_page=100&page={page}")
+        if not isinstance(comments, list):
+            raise GateError("version.sdk_api.approval_unavailable", "invalid comment list")
+        for comment in comments:
+            if (isinstance(comment, dict) and isinstance(comment.get("user"), dict) and
+                    comment["user"].get("login") in config["owners"] and
+                    str(comment.get("body", "")).startswith(SDK_APPROVAL_PREFIX)):
+                latest = comment
+        if len(comments) < 100:
+            break
+    else:
+        raise GateError("version.sdk_api.approval_unavailable", "approval history exceeds bound")
+    if latest is None:
+        raise GateError("version.sdk_api.approval_required", "no unedited owner approval record")
+    try:
+        record = json.loads(latest["body"][len(SDK_APPROVAL_PREFIX):])
+        approved = record["candidate_sha"]
+    except (ValueError, KeyError, TypeError) as error:
+        raise GateError("version.sdk_api.approval_invalid", "latest record is invalid or revoked") from error
+    if not isinstance(approved, str) or FULL_SHA_RE.fullmatch(approved) is None:
+        raise GateError("version.sdk_api.approval_invalid", "full approved SHA required")
+    if _run_git(repo_root, "cat-file", "-e", f"{approved}^{{commit}}").returncode != 0:
+        # A squash followed by branch deletion can remove the approved head from a fresh clone.
+        # Fetch its strictly validated object from the trusted repository as data only.
+        fetched = _run_git(repo_root, "fetch", "--no-tags", "--no-recurse-submodules",
+                           f"https://github.com/{repository}.git", approved)
+        if fetched.returncode != 0:
+            raise GateError("version.sdk_api.approval_unavailable", "approved commit unavailable")
+    approved = _resolve_commit(repo_root, approved, "approved_candidate")
+    _require_ancestor(repo_root, base, approved)
+    if event == "merge_group":
+        _require_ancestor(repo_root, approved, candidate)
+    from_snapshot = snapshot_from_texts(base,
+        _read_git_file(repo_root, base, VERSION_FILES[0], "baseline"),
+        _read_git_file(repo_root, base, VERSION_FILES[1], "baseline"))
+    to_snapshot = snapshot_from_texts(candidate,
+        _read_git_file(repo_root, candidate, VERSION_FILES[0], "candidate"),
+        _read_git_file(repo_root, candidate, VERSION_FILES[1], "candidate"))
+    expected = {"repository": repository, "pr": pr, "base_sha": base,
+                "candidate_sha": candidate,
+                "candidate_tree_sha": _run_git(repo_root, "rev-parse", f"{candidate}^{{tree}}").stdout.decode("ascii").strip(),
+                "from": from_snapshot.sdk_api_version, "to": to_snapshot.sdk_api_version,
+                "utc_date": trusted_date.isoformat()}
+    return validate_sdk_approval(latest, config["owners"], expected, event,
+                                _run_git(repo_root, "rev-parse", f"{approved}^{{tree}}").stdout.decode("ascii").strip())
+
+
 def _result_json(result: GateResult) -> str:
     return json.dumps(asdict(result), sort_keys=True)
 
@@ -359,6 +519,8 @@ def _build_parser() -> argparse.ArgumentParser:
         "date rule here. Rejected if it is ever given a different rule than --context.",
     )
     parser.add_argument("--allow-sdk-api-change", action="store_true")
+    parser.add_argument("--sdk-owner-approval-pr", type=int,
+                        help="PR containing an exact, unedited GitHub owner approval record")
     parser.add_argument("--json", action="store_true", dest="json_output")
     return parser
 
@@ -368,6 +530,9 @@ def main(arguments: list[str] | None = None) -> int:
     args = parser.parse_args(arguments)
 
     try:
+        if args.allow_sdk_api_change:
+            raise GateError("version.sdk_api.approval_required",
+                            "CLI boolean is not owner authorization; use --sdk-owner-approval-pr")
         if args.check_current:
             if any(value is not None for value in (args.base_ref, args.candidate_ref, args.trusted_utc_date)):
                 parser.error("--check-current cannot be combined with baseline comparison arguments")
@@ -384,22 +549,30 @@ def main(arguments: list[str] | None = None) -> int:
         if args.base_ref is None or args.candidate_ref is None or args.trusted_utc_date is None:
             parser.error("baseline comparison requires --base-ref, --candidate-ref and --trusted-utc-date")
         trusted_date = parse_trusted_date(args.trusted_utc_date)
+        approval_id = None
+        if args.sdk_owner_approval_pr is not None:
+            approval_id = sdk_owner_approval(args.repo_root, args.base_ref, args.candidate_ref,
+                                             trusted_date, args.sdk_owner_approval_pr, args.event)
         result = compare_refs(
             args.repo_root,
             args.base_ref,
             args.candidate_ref,
             trusted_date,
             args.context,
-            allow_sdk_api_change=args.allow_sdk_api_change,
+            allow_sdk_api_change=approval_id is not None,
         )
         if args.json_output:
-            print(_result_json(result))
+            payload = asdict(result)
+            if approval_id is not None:
+                payload["sdk_owner_approval_comment_id"] = approval_id
+            print(json.dumps(payload, sort_keys=True))
         else:
             print(
                 f"version.gate.pass: event={args.event}(recorded) context={result.context} "
                 f"base={result.base_ref}({result.base_version}) "
                 f"candidate={result.candidate_ref}({result.candidate_version}) "
-                f"trusted_utc_date={result.trusted_utc_date}"
+                f"trusted_utc_date={result.trusted_utc_date} "
+                f"sdk_owner_approval_comment_id={approval_id}"
             )
         return 0
     except GateError as error:
