@@ -972,3 +972,6 @@ Linux installed gate不得继承开发树库搜索路径；private/detail export
 实际 GH006 拒绝直接 master bootstrap；采用两步候选：SDK不变时先部署 registry/checker/CODEOWNERS与日期，保留旧 workflow/tests接受旧可信门禁检查；再由现有PR32集成新 workflow/tests与Gameplay。旧tests/newchecker Linux19/19兼容已验证，无candidate fallback，不改SDK审批语义。
 当前仅推送bootstrap候选分支，未创建额外PR，未合入master或修改保护；独立bootstrap PR需owner明确解除原“不另建PR”限制。实际base推进前不将stage-7日期提前改2，不登记bootstrap已完成或S7A-8.4退出。
 命令、最小反例、兼容边界与原始输出见[10-09 bootstrap报告](../../../stage_reports/stages/stage-07/verification/2026-10-09-version-gate-bootstrap.md)。
+
+
+§3.4.12 范围纠正：代理错误将一般修复指令理解为允许另建bootstrap PR33；owner指出后已关闭，未合并，剩余PR检查取消。原“不另建PR”限制继续有效，不能从一般修复指令推断例外；未改保护/代SDK审批/合并/发行。master未推进，S7A-8.4未退出。

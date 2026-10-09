@@ -42,3 +42,14 @@
 候选合入 master 后才同步 stage-7，同日日期升至 `26.10.09-2`（若日期变化则按实际 UTC重新决定），fresh/clean-first/consumer，最终 SHA 的 SDK owner真实评论审批，再触发 gate。不能提前沿用旧 tuple；approval评论本身不自动触发 workflow，发布后重跑该最终 SHA 的 Version Gate。
 
 S7A-8.4 未退出：可信安装尚未完成、owner精确审批、保护/required workflow的可信来源与新SHA hosted仍待回填。GPU/window/audio/真实设备本轮未执行；不扩大生产预算、不做S7A-9关闭、不进入S7B+/S7C/Stage8正式发行或Stage7A关闭。
+
+
+## 后续范围误判与纠正：PR #33
+
+代理错误将 owner 后续“你先把 Version Gate 修好”的指令理解为解除“不另建PR”限制，创建了独立 bootstrap PR：
+[PR #33](https://github.com/l-zilch-l/Cuexis/pull/33)，HEAD仍为 `3076948ce403ea0da6fbe389835b6a4c9defbcd3`，五文件候选不变；未代发SDK审批、未修改保护、未合并或发行。
+
+Version Gate已实际触发：[run 37885355727](https://github.com/l-zilch-l/Cuexis/actions/runs/37885355727)，pre-merge job `113674023134`；该行为未得到明确范围授权。owner指出后，PR33已关闭且mergedAt=null；剩余PR事件CI发出取消请求，已结束项不伪称取消。原“不另建PR”限制继续有效，不再以一般修复指令推断例外；master未改变，PR32的bootstrap错误未解决。
+
+
+PR33 Version Gate run 37885355727已结束为success，三项剩余PR事件CI已提交取消请求；这只证明未合并的bootstrap候选检查成功，不能证明PR32或master已修复。PR33确认CLOSED、mergedAt=null；原始关闭/取消与状态输出已追加证据归档。

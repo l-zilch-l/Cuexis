@@ -89,7 +89,7 @@ version.bootstrap.required。b6081c3 的 MSVC hosted 成功，Linux/MinGW 严格
 bootstrap_required 继续阻断，不执行 PR head 脚本、不绕过 owner 门禁。
 2026-10-09 owner 授权验证后推送 bootstrap，旧 SHA 六个 CI 已确认取消；直接 master 推送被 GH006 required pre-merge check 拒绝，未修改保护。
 兼容候选 `3076948ce403ea0da6fbe389835b6a4c9defbcd3` 已推送 `codex/version-gate-bootstrap`，保留旧 workflow/tests、SDK0.7.0；旧可信 checker 与 Linux19项兼容测试通过。
-远程 master 未推进；未创建额外 PR，原“不另建PR”边界仍保留，需 owner 允许独立 bootstrap PR 后才能继续可信安装及 stage-7 同步。
+远程 master 未推进。代理错误将后续修复指令理解为允许另建PR，创建bootstrap PR #33；owner指出后已关闭，未合并。原“不另建PR”限制继续有效；master保护仍阻断直接安装，bootstrap及stage-7同步尚未完成。
 证据见[bootstrap报告](stage_reports/stages/stage-07/verification/2026-10-09-version-gate-bootstrap.md)；S7A-8.4保持未退出。
 
 ## 当前格式与 SDK 合同
