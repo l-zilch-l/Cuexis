@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-10-09
+更新日期：2026-10-10
 
 阶段计划定义目标、范围、批次、门禁和交接。当前实现状态只以
 [CURRENT_STATUS.md](../CURRENT_STATUS.md) 为准；完成证据只以
@@ -93,11 +93,12 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
   尚未启动。
 - [Stage 7 总计划](active/stage-07/plan.md)：全局边界、依赖路线、统一证据和跨阶段交接。
   - [Stage 7A 分册](active/stage-07/plan-a.md)：S7A-0–9批次、核验台账、实施记录与接手决策。
-  - [Stage 7B+ 分册](active/stage-07/plan-b.md)：S7B-0–4、S7C-1/2能力准入、依赖和退出标准。
-  - [Stage 7-RPA 分册](active/stage-07/plan-rpa.md)：Stage 7子阶段，承接RT78/DN78及实体设备/实时同步的实施和最终验收，向Stage8交付；S7A-9原范围验收不新增RPA前置。目前仅规划，不属于S7A-7/8新增任务。
+  - [诊断码正式化独立前置](active/stage-07/plan-diagnostic-formalization.md)：沿用原RPA-N0–N3追溯编号，独立完成审计、合同、迁移、验收；不是新增编号阶段，N3退出先于RPA新架构原型和A4–A6。
+  - [Stage 7-RPA 分册](active/stage-07/plan-rpa.md)：实时架构、实体设备/同步及原S7A-9矩阵、预算、交接统一收尾；诊断正式化已剥离为独立前置，完成后进入7B+。目前仅规划。
+  - [Stage 7B+ 分册](active/stage-07/plan-b.md)：RPA完成后实施S7B-0–4、S7C-1/2；当前计划范围验收并接受后进入Stage 8。
   - 历史路径见[legacy-paths](active/stage-07/legacy-paths.md)；当前实现状态以CURRENT_STATUS为准。
 - [Stage 8](future/stage-08/plan.md)：Chart v5 正式语义、CXT v2、Packed Chart 和 CXC 发行收敛；
-  依赖 Stage 7A最终验收及RPA交付，不等待全部 Stage 7B+。
+  依赖RPA完整退出后的Stage 7B+完成与owner接受，发行选入另按明确矩阵。
 - [Stage 9](future/stage-09/plan.md)：Presentation Foundation 与 Chart v6 / Model v1。
 - [Stage 10](future/stage-10/plan.md)：Studio 和完整创作/打包工作流。
 - [Stage 11](future/stage-11/plan.md)：Chart v7 单轴几何表现与 shader.json 声明接口。

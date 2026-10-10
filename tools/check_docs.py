@@ -75,6 +75,7 @@ STAGE_NAVIGATION_INDEXES = {
     "stage_reports/stages/chart-format-foundation/README.md",
     "stage_reports/stages/stage-06/README.md",
     "stage_reports/stages/stage-07/README.md",
+    "stage_reports/stages/stage-07/diagnostic-formalization/README.md",
 }
 ROOT_DOCUMENTATION_FILES = {
     "README.md",

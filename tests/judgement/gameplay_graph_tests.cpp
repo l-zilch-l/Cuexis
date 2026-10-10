@@ -160,7 +160,7 @@ TEST_CASE("S7A-3 reference attribution is a total function", "[judgement][s7a-3]
     const auto crossing =
         judgement::declareReference(ReferenceKind::resource, ReferenceClosure::diagnosticMap);
     REQUIRE_FALSE(crossing.has_value());
-    CHECK(crossing.error().code() == "judgement.s7a3.declaration.structurally_incomplete");
+    CHECK(crossing.error().code() == "judgement.declaration.structurally_incomplete");
     CHECK(contextValue(crossing.error(), "category") == "invalid_relation");
     CHECK(contextValue(crossing.error(), "severity") == "error");
     CHECK(contextValue(crossing.error(), "faulted") == "false");
@@ -183,7 +183,7 @@ TEST_CASE("S7A-3 action required action and domain are independent", "[judgement
     //  consumer can read an unnamed declaration as a declared one.
     const auto emptyAction = RequiredActionRef::fromToken("");
     REQUIRE_FALSE(emptyAction.has_value());
-    CHECK(emptyAction.error().code() == "judgement.s7a3.declaration.structurally_incomplete");
+    CHECK(emptyAction.error().code() == "judgement.declaration.structurally_incomplete");
     CHECK(contextValue(emptyAction.error(), "category") == "invalid_relation");
 
     const auto emptyDomain = DomainBindingRef::fromToken("");
@@ -226,7 +226,7 @@ TEST_CASE("S7A-3 judgement domain validation", "[judgement][s7a-3][p1-01]") {
     noAxes.axes.clear();
     const auto noAxesChecked = judgement::validateJudgementDomain(noAxes);
     REQUIRE_FALSE(noAxesChecked.has_value());
-    CHECK(noAxesChecked.error().code() == "judgement.s7a3.domain.range_undeclared");
+    CHECK(noAxesChecked.error().code() == "judgement.domain.range_undeclared");
     CHECK(contextValue(noAxesChecked.error(), "category") == "invalid_relation");
     CHECK(contextValue(noAxesChecked.error(), "field.section") == "judgement.gameplay.domain");
     CHECK(contextValue(noAxesChecked.error(), "field.path") == "axes");
@@ -244,7 +244,7 @@ TEST_CASE("S7A-3 judgement domain validation", "[judgement][s7a-3][p1-01]") {
         JudgementAxisRange{.axisToken = "axis.horizontal", .minimum = 10, .maximum = 9}};
     const auto reversedChecked = judgement::validateJudgementDomain(reversed);
     REQUIRE_FALSE(reversedChecked.has_value());
-    CHECK(reversedChecked.error().code() == "judgement.s7a3.domain.range_reversed");
+    CHECK(reversedChecked.error().code() == "judgement.domain.range_reversed");
     CHECK(contextValue(reversedChecked.error(), "category") == "budget_exceeded");
 
     JudgementDomainRecord duplicateAxis = valid;
@@ -253,7 +253,7 @@ TEST_CASE("S7A-3 judgement domain validation", "[judgement][s7a-3][p1-01]") {
         JudgementAxisRange{.axisToken = "axis.horizontal", .minimum = 0, .maximum = 6}};
     const auto duplicateChecked = judgement::validateJudgementDomain(duplicateAxis);
     REQUIRE_FALSE(duplicateChecked.has_value());
-    CHECK(duplicateChecked.error().code() == "judgement.s7a3.declaration.duplicate_entry");
+    CHECK(duplicateChecked.error().code() == "judgement.declaration.duplicate_entry");
 
     //  A dynamically resolved frame is registered as a later-batch candidate (P1-01) and is refused
     //  with the capability it belongs to and the batch it lands in.
@@ -262,7 +262,7 @@ TEST_CASE("S7A-3 judgement domain validation", "[judgement][s7a-3][p1-01]") {
     dynamicFrame.dynamicFrameProviderToken = "provider.runtime.one";
     const auto dynamicChecked = judgement::validateJudgementDomain(dynamicFrame);
     REQUIRE_FALSE(dynamicChecked.has_value());
-    CHECK(dynamicChecked.error().code() == "judgement.s7a3.domain.dynamic_frame_unsupported");
+    CHECK(dynamicChecked.error().code() == "judgement.domain.dynamic_frame_unsupported");
     CHECK(contextValue(dynamicChecked.error(), "category") == "capability_disabled");
     CHECK(contextValue(dynamicChecked.error(), "capabilityId") == "geometry.dynamic_frame.v1");
     CHECK(contextValue(dynamicChecked.error(), "remediation") == "7B+");
@@ -300,22 +300,22 @@ TEST_CASE("S7A-3 judgement geometry is exact or refused", "[judgement][s7a-3][ge
 
     const auto overflowSum = judgement::geometryAdd(kMax, 1);
     REQUIRE_FALSE(overflowSum.has_value());
-    CHECK(overflowSum.error().code() == "judgement.s7a3.domain.geometry_overflow");
+    CHECK(overflowSum.error().code() == "judgement.domain.geometry_overflow");
     CHECK(contextValue(overflowSum.error(), "category") == "budget_exceeded");
     const auto underflowSum = judgement::geometryAdd(kMin, -1);
     REQUIRE_FALSE(underflowSum.has_value());
-    CHECK(underflowSum.error().code() == "judgement.s7a3.domain.geometry_overflow");
+    CHECK(underflowSum.error().code() == "judgement.domain.geometry_overflow");
     const auto overflowProduct = judgement::geometryMultiply(kMax, 2);
     REQUIRE_FALSE(overflowProduct.has_value());
-    CHECK(overflowProduct.error().code() == "judgement.s7a3.domain.geometry_overflow");
+    CHECK(overflowProduct.error().code() == "judgement.domain.geometry_overflow");
     const auto overflowSquare = judgement::geometrySquare(kMax);
     REQUIRE_FALSE(overflowSquare.has_value());
-    CHECK(overflowSquare.error().code() == "judgement.s7a3.domain.geometry_overflow");
+    CHECK(overflowSquare.error().code() == "judgement.domain.geometry_overflow");
 
     const JudgementAxisRange wide{.axisToken = "axis.wide", .minimum = kMin, .maximum = kMax};
     const auto extent = judgement::axisExtent(wide);
     REQUIRE_FALSE(extent.has_value());
-    CHECK(extent.error().code() == "judgement.s7a3.domain.geometry_overflow");
+    CHECK(extent.error().code() == "judgement.domain.geometry_overflow");
 
     const JudgementAxisRange narrow{.axisToken = "axis.narrow", .minimum = -10, .maximum = 10};
     const auto narrowExtent = judgement::axisExtent(narrow);
@@ -329,11 +329,11 @@ TEST_CASE("S7A-3 judgement geometry is exact or refused", "[judgement][s7a-3][ge
     //  input would silently change a Fact.
     const auto outside = judgement::narrowToAxis(narrow, 11);
     REQUIRE_FALSE(outside.has_value());
-    CHECK(outside.error().code() == "judgement.s7a3.domain.narrowing_rejected");
+    CHECK(outside.error().code() == "judgement.domain.narrowing_rejected");
     CHECK(contextValue(outside.error(), "category") == "budget_exceeded");
     const auto unsatisfiable = judgement::narrowToAxis(wide, 0);
     REQUIRE_FALSE(unsatisfiable.has_value());
-    CHECK(unsatisfiable.error().code() == "judgement.s7a3.domain.geometry_overflow");
+    CHECK(unsatisfiable.error().code() == "judgement.domain.geometry_overflow");
 }
 
 //  The closure repeats declared needs only, and the declared set is never merged into it.

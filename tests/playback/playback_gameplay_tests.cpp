@@ -1635,3 +1635,130 @@ TEST_CASE("Candidate unknown capability first diagnostic is independent of decla
         CHECK(found->value == "unknown.a");
     }
 }
+
+namespace {
+void checkExactError(const core::Error& actual, const core::Error& expected) {
+    const auto* a = &actual;
+    const auto* b = &expected;
+    while (a && b) {
+        CHECK(a->code() == b->code());
+        CHECK(a->message() == b->message());
+        REQUIRE(a->context().size() == b->context().size());
+        for (std::size_t i = 0; i < a->context().size(); ++i) {
+            CHECK(a->context()[i].key == b->context()[i].key);
+            CHECK(a->context()[i].value == b->context()[i].value);
+        }
+        a = a->cause();
+        b = b->cause();
+    }
+    CHECK(a == nullptr);
+    CHECK(b == nullptr);
+}
+} // namespace
+TEST_CASE("Candidate explicit diagnostic projection preserves all fields and boundaries",
+          "[candidate][gameplay][diagnostic][projection]") {
+    const std::array<std::pair<std::string_view, std::string_view>, 10> categories{
+        {{"unknown_capability", "capability.unknown"},
+         {"capability_disabled", "capability.disabled"},
+         {"budget_exceeded", "capability.budget_insufficient"},
+         {"identity_closure_incomplete", "identity_closure_incomplete"},
+         {"late_policy_incomplete", "judgement.late.parameters_invalid"},
+         {"ambiguous_migration", "migration.ambiguous"},
+         {"non_unique_solution", "playback.gameplay.non_unique_solution"},
+         {"non_terminating_source", "playback.gameplay.non_terminating_source"},
+         {"invalid_relation", "playback.gameplay.invalid"},
+         {"unknown-category", "playback.gameplay.invalid"}}};
+    for (const auto code : judgement::detail::categoryProjectedDiagnosticCodes) {
+        for (const auto& [category, target] : categories) {
+            auto original = core::Error{std::string{code}, "unchanged summary"}
+                                .withContext("category", "ignored first")
+                                .withContext("severity", "error")
+                                .withContext("faulted", "false")
+                                .withContext("category", std::string{category})
+                                .withContext("sourceCode", "existing")
+                                .withCause(core::Error{"upstream", "unchanged cause"});
+            const auto projected = playback::detail::projectGameplayError(original);
+            auto expected = core::Error{std::string{target}, "unchanged summary"};
+            for (const auto& field : original.context())
+                expected.withContext(field.key, field.value);
+            expected.withContext("sourceCode", std::string{code});
+            checkExactError(projected, expected);
+            REQUIRE(original.cause()); // projection did not rewrite the owning original
+            CHECK(original.code() == code);
+            auto missing =
+                playback::detail::projectGameplayError(core::Error{std::string{code}, "missing"});
+            checkExactError(missing,
+                            core::Error{"playback.gameplay.invalid", "missing"}.withContext(
+                                "sourceCode", std::string{code}));
+        }
+    }
+    for (const auto code :
+         {"judgement.input.amount_narrowed", "judgement.input.amount_out_of_range",
+          "judgement.input.same_tick_collision", "judgement.timebase.tick_overflow",
+          "judgement.timebase.time_reversal", "judgement.kernel.transaction_failed",
+          "judgement.session.operation_state_invalid", "judgement.session.legacy_entry_unsupported",
+          "judgement.session.execution_state_unavailable", "unknown.business.reason",
+          "judgement.s7a2.artificial.undefined"}) {
+        auto original = core::Error{code, "same"}
+                            .withContext("category", "invalid_relation")
+                            .withCause(core::Error{"cause", "same"});
+        checkExactError(playback::detail::projectGameplayError(original), original);
+    }
+    for (const auto code : {"graph.header.unsupported_revision", "graph.budget.exceeded",
+                            "graph.closure.invalid", "graph.other"}) {
+        auto original = core::Error{code, "same"}
+                            .withContext("ordered", "first")
+                            .withCause(core::Error{"cause", "same"});
+        auto expected = original;
+        expected
+            .withContext("category", std::string_view{code} == "graph.header.unsupported_revision"
+                                         ? "unknown_capability"
+                                     : std::string_view{code} == "graph.budget.exceeded"
+                                         ? "budget_exceeded"
+                                     : std::string_view{code} == "graph.closure.invalid"
+                                         ? "identity_closure_incomplete"
+                                         : "invalid_relation")
+            .withContext("severity", "error")
+            .withContext("faulted", "false");
+        checkExactError(playback::detail::projectGameplayError(original), expected);
+    }
+}
+TEST_CASE("Candidate diagnostic failure matches full kernel Result and AdvanceReceipt",
+          "[candidate][gameplay][diagnostic][fault][full-result]") {
+    TestContent fixture;
+    fixture.config.maximumScore = 1;
+    playback::PlaybackSession session;
+    fixture.load(session);
+    const auto event = input();
+    REQUIRE(session.submitGameplay(std::span{&event, 1}));
+    const auto failed = session.advanceGameplay({20}, {20}, {20, 0, 0});
+    REQUIRE_FALSE(failed);
+    const auto result = session.queryGameplay();
+    REQUIRE(result);
+    const auto receipt = session.gameplayAdvanceReceipt();
+    REQUIRE(receipt);
+    REQUIRE(receipt->error);
+    const auto* stored = playback::detail::GameplayAccess::result(*result);
+    REQUIRE(stored);
+    const auto& kernel = stored->kernel;
+    REQUIRE(kernel.faultDiagnostic);
+    checkExactError(failed.error(), *kernel.faultDiagnostic);
+    checkExactError(*receipt->error, *kernel.faultDiagnostic);
+    CHECK(receipt->faultStage == playback::GameplayFaultStage::Fold);
+    CHECK(receipt->sealedFacts == kernel.sealedFactCursor);
+    REQUIRE(kernel.fold);
+    CHECK(receipt->publishableFacts == kernel.fold->factCursor);
+    REQUIRE(kernel.failedTick);
+    REQUIRE(receipt->failedTick);
+    CHECK(receipt->failedTick->value == kernel.failedTick->value());
+    const auto archive = session.archiveGameplay();
+    REQUIRE(archive);
+    const auto evaluation = session.evaluateGameplayReplay(*archive);
+    REQUIRE(evaluation);
+    CHECK(evaluation->evidenceValid);
+    REQUIRE(result->sameResult(evaluation->result));
+    CHECK(*result->sameResult(evaluation->result));
+    checkExactError(
+        *receipt->error,
+        *playback::detail::GameplayAccess::result(evaluation->result)->kernel.faultDiagnostic);
+}

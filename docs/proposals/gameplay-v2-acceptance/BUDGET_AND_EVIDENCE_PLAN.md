@@ -7,6 +7,11 @@
 上级文档：[Gameplay V2 acceptance package](README.md) ·
 [Stage 7A 实施计划](../../stage_plans/active/stage-07/plan-a.md)
 
+2026-10-10归属更新：下文原S7A-9预算/最终矩阵/关闭引用现映射至
+[RPA-F1–F4](../../stage_plans/active/stage-07/plan-rpa.md#综合收尾工作线原s7a-9)，
+其中预算测量与阈值接受由RPA-F3负责；旧证据文件名保留，不另排S7A-9任务。
+本次只迁移责任，不改变计数口径、预算合同或接受任何生产限额。
+
 文档角色：预算与测量计划（planning artifact）。它定义计数口径、测量输入、硬/软属性、
 超限动作和预期证据文件；它不是生产限额、不是 ABI 常量，也不是实施声明。
 

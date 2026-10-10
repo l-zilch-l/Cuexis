@@ -290,7 +290,7 @@ foreach(index RANGE 0 ${cuexis_code_last})
             "which is not one of the registered behaviors: "
             "${cuexis_registered_faulted_text}")
     endif()
-    if(cuexis_code STREQUAL "judgement.s7a4.kernel.transaction_failed" OR
+    if(cuexis_code STREQUAL "judgement.kernel.transaction_failed" OR
        cuexis_code STREQUAL "ruleset.transaction_failed")
         if(NOT cuexis_code_faulted STREQUAL "session_faulted")
             cuexis_codes_fail("transaction_failed must fault its session")

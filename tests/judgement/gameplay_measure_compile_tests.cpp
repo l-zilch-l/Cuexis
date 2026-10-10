@@ -167,7 +167,7 @@ TEST_CASE("S7A-3 fact category is derived from the phase", "[judgement][s7a-3][m
     const auto assigned =
         judgement::compileMeasure(declarationOf({component(PhaseKind::head, "category.one")}));
     REQUIRE_FALSE(assigned.has_value());
-    expectRejection(assigned.error(), "judgement.s7a3.measure.category_not_derived_from_phase",
+    expectRejection(assigned.error(), "judgement.measure.category_not_derived_from_phase",
                     "invalid_relation", "measure.categoryToken");
 }
 
@@ -199,7 +199,7 @@ TEST_CASE("S7A-3 Release tail is an explicit phase of the same requirement",
         context.requiresReleaseTailSemantics = true;
         const auto compiled = judgement::compileMeasure(headBody, context);
         REQUIRE_FALSE(compiled.has_value());
-        expectRejection(compiled.error(), "judgement.s7a3.requirement.release_tail_implicit",
+        expectRejection(compiled.error(), "judgement.requirement.release_tail_implicit",
                         "invalid_relation", "requirements[0].phases");
     }
 
@@ -231,7 +231,7 @@ TEST_CASE("S7A-3 measure component must belong to a declared phase",
     const auto compiled = judgement::compileMeasure(
         declarationOf({component(PhaseKind::body, "hold_body")}), context);
     REQUIRE_FALSE(compiled.has_value());
-    expectRejection(compiled.error(), "judgement.s7a3.declaration.structurally_incomplete",
+    expectRejection(compiled.error(), "judgement.declaration.structurally_incomplete",
                     "invalid_relation", "requirements[0].measure");
 
     //  The same declaration is complete on its own, which is what the context-free entry point
@@ -244,16 +244,16 @@ TEST_CASE("S7A-3 measure component table has no duplicates", "[judgement][s7a-3]
     const auto compiled = judgement::compileMeasure(declarationOf(
         {component(PhaseKind::head, "hold_head"), component(PhaseKind::head, "hold_head")}));
     REQUIRE_FALSE(compiled.has_value());
-    expectRejection(compiled.error(), "judgement.s7a3.declaration.duplicate_entry",
-                    "invalid_relation", "measure");
+    expectRejection(compiled.error(), "judgement.declaration.duplicate_entry", "invalid_relation",
+                    "measure");
 
     //  The check reads the canonical order, so a shuffled duplicate is the same fault.
     const auto shuffled = judgement::compileMeasure(declarationOf(
         {component(PhaseKind::body, "hold_body"), component(PhaseKind::head, "hold_head"),
          component(PhaseKind::body, "hold_body")}));
     REQUIRE_FALSE(shuffled.has_value());
-    expectRejection(shuffled.error(), "judgement.s7a3.declaration.duplicate_entry",
-                    "invalid_relation", "measure");
+    expectRejection(shuffled.error(), "judgement.declaration.duplicate_entry", "invalid_relation",
+                    "measure");
 }
 
 TEST_CASE("S7A-3 an absent grade table is absent and is never upgraded",
@@ -291,7 +291,7 @@ TEST_CASE("S7A-3 measure failure is atomic", "[judgement][s7a-3][measure][atomic
         "category.one";
     const auto rejected = judgement::assembleInto(publication, refused);
     REQUIRE_FALSE(rejected.has_value());
-    expectRejection(rejected.error(), "judgement.s7a3.measure.category_not_derived_from_phase",
+    expectRejection(rejected.error(), "judgement.measure.category_not_derived_from_phase",
                     "invalid_relation", "requirements[0].measure.categoryToken");
     REQUIRE(publication.hasActive());
     CHECK(publication.active()->chart.canonicalBytes().toHex() == chartHex);

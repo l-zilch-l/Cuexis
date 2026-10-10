@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-10-01
+更新日期：2026-10-10
 
 本文给第一次接触 Cuexis 的 AI 代理、新成员和文档维护者一条可执行的阅读路线。
 它只说明先读什么、每份文档回答什么问题、什么时候应停止下钻；合同、状态和证据仍由
@@ -60,8 +60,18 @@ Gameplay I 的 [Gameplay Judgement Spec](../formats/GAMEPLAY_JUDGEMENT_SPEC.md)�
 差异对照，不再是权威。现行 Gameplay V2 的三份文档（ADR 0044 / V2 Spec / V2 ABI）均为 `candidate`，
 **第 1–7 轮已全部裁定（无待裁定轮次）**，见[裁决清单](../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) §3、§5、§7、§9
 与[第 7 轮收尾裁定记录](../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-7-wrapup-rulings.md)；
-**裁定完成不等于实现完成**（实现批次 S7A-3…S7A-9 仍未开始），仍不能写成已实施 API，还需 typed contract review。
+**裁定完成不等于实现完成**，实现状态以[CURRENT_STATUS](../CURRENT_STATUS.md)为准。
+原S7A-9收尾现由[RPA-F1–F4](../stage_plans/active/stage-07/plan-rpa.md#综合收尾工作线原s7a-9)承接；
+RPA完成后依次实施Stage 7B+、Stage 8。审查材料本身不构成已实施API证据。
 研究稿用于追溯推导、压测和取舍，不是第二份规范。
+
+### 做诊断码正式化或接手RPA
+
+先读[独立诊断前置计划](../stage_plans/active/stage-07/plan-diagnostic-formalization.md)，
+再读其链接的N0复核报告、现行V2 Spec/ABI及集中码表；逐分支映射、投影和恢复兼容合同的收敛仍属N1待执行工作。
+原RPA-N0–N3编号仅供追溯，不是RPA内部工作线。
+随后读[RPA计划](../stage_plans/active/stage-07/plan-rpa.md)：N3退出是新架构原型及A4–A6的硬前置，
+纸面方案设计和既有行为的只读盘点可并行。历史审计和本次规划都不证明迁移或N3验收已经完成。
 
 ### 做格式、谱面或打包链
 
@@ -148,8 +158,9 @@ git diff --check
 
 - **整体理解**：`CURRENT_STATUS.md` → `PROJECT_GUIDE.md` → `ADR 0027` →
   `architecture/OVERVIEW.md` → `formats/README.md` → `api/README.md`
-- **玩法实现**：玩法抽象模型 → Gameplay Judgement Spec → Stage 7 计划 →
+- **玩法实现**：玩法抽象模型 → Gameplay V2 Spec/ABI → Stage 7 计划 →
   Gameplay research
+- **诊断/RPA接手**：当前状态 → 独立诊断前置计划及N0报告 → 现行V2合同/码表 → RPA计划
 - **格式实现**：格式索引 → TimingMap → Chart v4 → CXT v1 → CXC v1 →
   Stage 8 计划
 - **SDK 集成**：API 参考 → 模块边界 → Player 应用结构 → 构建指南 →

@@ -280,6 +280,19 @@ if(CUEXIS_BUILD_TESTS)
         LABELS "gameplay;judgement;diagnostics;schemas"
         TIMEOUT 60
     )
+    foreach(diagnostic_mode IN ITEMS residuals negatives)
+        set(diagnostic_extra_args "")
+        if(diagnostic_mode STREQUAL "negatives")
+            set(diagnostic_extra_args "--self-test")
+        endif()
+        add_test(NAME cuexis_gameplay_diagnostic_${diagnostic_mode}
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                "-DCUEXIS_DIAGNOSTIC_EXTRA_ARGS=${diagnostic_extra_args}"
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyGameplayDiagnosticFormalization.cmake")
+        set_tests_properties(cuexis_gameplay_diagnostic_${diagnostic_mode} PROPERTIES
+            LABELS "gameplay;judgement;diagnostics" TIMEOUT 120)
+    endforeach()
     if(CUEXIS_BUILD_DEVELOPER_TOOLS)
         add_test(
             NAME cuexis_cxc_tools

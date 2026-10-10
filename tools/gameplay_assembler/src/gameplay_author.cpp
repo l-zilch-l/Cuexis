@@ -13,7 +13,7 @@ struct Reject {
     core::Error error;
 };
 auto invalid(std::string_view field, std::string_view message) -> core::Error {
-    return core::Error{"judgement.s7a4.execution.relation_invalid", std::string{message}}
+    return core::Error{"judgement.execution.relation_invalid", std::string{message}}
         .withContext("category", "invalid_relation")
         .withContext("severity", "error")
         .withContext("faulted", "false")

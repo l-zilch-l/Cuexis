@@ -429,7 +429,7 @@ TEST_CASE("S7A-3 bounded repeat is prepare-time finite static structure",
                                           .declaredToken = "declared.token"};
         const auto unexpandedChecked = judgement::compilePattern(declarationOf(unexpanded));
         REQUIRE_FALSE(unexpandedChecked.has_value());
-        expectRejection(unexpandedChecked.error(), "judgement.s7a3.content.unsupported_form",
+        expectRejection(unexpandedChecked.error(), "judgement.content.unsupported_form",
                         "non_terminating_source", "pattern.root.unsupportedForm");
     }
 }
@@ -717,8 +717,8 @@ TEST_CASE("S7A-3 a state-count measurement gap refuses only a proven overrun",
         budget.maxStateCount = MeasuredParameter<std::uint64_t>::measured(1U);
         const auto refused = judgement::compilePattern(declaration, budget);
         REQUIRE_FALSE(refused.has_value());
-        expectRejection(refused.error(), "judgement.s7a3.pattern.budget_exceeded",
-                        "budget_exceeded", "pattern.maxStateCount");
+        expectRejection(refused.error(), "judgement.pattern.budget_exceeded", "budget_exceeded",
+                        "pattern.maxStateCount");
         CHECK(contextValue(refused.error(), "category") != "non_terminating_source");
     }
 
@@ -730,8 +730,8 @@ TEST_CASE("S7A-3 a state-count measurement gap refuses only a proven overrun",
             MeasuredParameter<std::uint64_t>::measured(std::numeric_limits<std::uint64_t>::max());
         const auto refused = judgement::compilePattern(declaration, widest);
         REQUIRE_FALSE(refused.has_value());
-        expectRejection(refused.error(), "judgement.s7a3.pattern.budget_exceeded",
-                        "budget_exceeded", "pattern.maxStateCount");
+        expectRejection(refused.error(), "judgement.pattern.budget_exceeded", "budget_exceeded",
+                        "pattern.maxStateCount");
     }
 
     SECTION("a construction that does not complete is not a refusal by itself") {
@@ -758,8 +758,8 @@ TEST_CASE("S7A-3 a state-count measurement gap refuses only a proven overrun",
         belowBound.maxStateCount = MeasuredParameter<std::uint64_t>::measured(100000U);
         const auto refused = judgement::compilePattern(mid, belowBound);
         REQUIRE_FALSE(refused.has_value());
-        expectRejection(refused.error(), "judgement.s7a3.pattern.budget_exceeded",
-                        "budget_exceeded", "pattern.maxStateCount");
+        expectRejection(refused.error(), "judgement.pattern.budget_exceeded", "budget_exceeded",
+                        "pattern.maxStateCount");
     }
 
     SECTION("a measured count above the accepted bound is still a budget overrun") {
@@ -774,8 +774,8 @@ TEST_CASE("S7A-3 a state-count measurement gap refuses only a proven overrun",
         narrow.maxStateCount = MeasuredParameter<std::uint64_t>::measured(1U);
         const auto refused = judgement::compilePattern(declarationOf(atomNode("atom.one")), narrow);
         REQUIRE_FALSE(refused.has_value());
-        expectRejection(refused.error(), "judgement.s7a3.pattern.budget_exceeded",
-                        "budget_exceeded", "pattern.maxStateCount");
+        expectRejection(refused.error(), "judgement.pattern.budget_exceeded", "budget_exceeded",
+                        "pattern.maxStateCount");
         CHECK(contextValue(refused.error(), "category") != "non_terminating_source");
     }
 }
@@ -827,7 +827,7 @@ TEST_CASE("S7A-3 the state-count lower bound is the longest acceptable trace plu
     budget.maxStateCount = MeasuredParameter<std::uint64_t>::measured(1U);
     const auto refused = judgement::compilePattern(nested, budget);
     REQUIRE_FALSE(refused.has_value());
-    expectRejection(refused.error(), "judgement.s7a3.pattern.budget_exceeded", "budget_exceeded",
+    expectRejection(refused.error(), "judgement.pattern.budget_exceeded", "budget_exceeded",
                     "pattern.maxStateCount");
     CHECK(contextValue(refused.error(), "category") != "non_terminating_source");
 }
@@ -879,8 +879,8 @@ TEST_CASE("S7A-3 compiled pattern depth is a budget entry and not a constant",
         CHECK(accepted.has_value());
         const auto refused = judgement::compilePattern(deep, depthBudget(kDeepChainDepth - 1U));
         REQUIRE_FALSE(refused.has_value());
-        expectRejection(refused.error(), "judgement.s7a3.pattern.budget_exceeded",
-                        "budget_exceeded", "pattern.maxDeclarationDepth");
+        expectRejection(refused.error(), "judgement.pattern.budget_exceeded", "budget_exceeded",
+                        "pattern.maxDeclarationDepth");
         //  Nothing about this rejection is non-termination: the source terminates, it only exceeds
         //  a budget a measurement accepted.
         CHECK(contextValue(refused.error(), "category") != "non_terminating_source");
@@ -914,7 +914,7 @@ TEST_CASE("S7A-3 compiled pattern budget dimensions", "[judgement][s7a-3][patter
         const auto enforce = [&](const PatternCompileBudget& budget, std::string_view path) {
             const auto compiled = judgement::compilePattern(declaration, budget);
             REQUIRE_FALSE(compiled.has_value());
-            expectRejection(compiled.error(), "judgement.s7a3.pattern.budget_exceeded",
+            expectRejection(compiled.error(), "judgement.pattern.budget_exceeded",
                             "budget_exceeded", path);
         };
 
@@ -1003,8 +1003,8 @@ TEST_CASE("S7A-3 a count with no representable value is a gap, an overrun, or ne
         narrow.maxExpansionCount = MeasuredParameter<std::uint64_t>::measured(1U);
         const auto refused = judgement::compilePattern(declaration, narrow);
         REQUIRE_FALSE(refused.has_value());
-        expectRejection(refused.error(), "judgement.s7a3.pattern.budget_exceeded",
-                        "budget_exceeded", "pattern.maxExpansionCount");
+        expectRejection(refused.error(), "judgement.pattern.budget_exceeded", "budget_exceeded",
+                        "pattern.maxExpansionCount");
         CHECK(contextValue(refused.error(), "category") != "non_terminating_source");
     }
 
@@ -1074,7 +1074,7 @@ TEST_CASE("S7A-3 compiled pattern containment in the arm and deadline surface",
         bound.declaredActionRefs = {"atom.one"};
         const auto checked = judgement::checkPatternContainment(*compiled, bound);
         REQUIRE_FALSE(checked.has_value());
-        expectRejection(checked.error(), "judgement.s7a3.pattern.atom_outside_declared_arms",
+        expectRejection(checked.error(), "judgement.pattern.atom_outside_declared_arms",
                         "invalid_relation", "declaredActionRefs");
 
         bound.declaredActionRefs = {"atom.two", "atom.one"};
@@ -1087,7 +1087,7 @@ TEST_CASE("S7A-3 compiled pattern containment in the arm and deadline surface",
         arm.maxDeadlineElements = MeasuredParameter<std::uint64_t>::measured(2U);
         const auto armChecked = judgement::checkPatternContainment(*compiled, arm);
         REQUIRE_FALSE(armChecked.has_value());
-        expectRejection(armChecked.error(), "judgement.s7a3.pattern.arm_bound_exceeded",
+        expectRejection(armChecked.error(), "judgement.pattern.arm_bound_exceeded",
                         "budget_exceeded", "pattern.maxArmElements");
 
         PatternArmBound wideArm;
@@ -1099,7 +1099,7 @@ TEST_CASE("S7A-3 compiled pattern containment in the arm and deadline surface",
         deadline.maxDeadlineElements = MeasuredParameter<std::uint64_t>::measured(1U);
         const auto deadlineChecked = judgement::checkPatternContainment(*compiled, deadline);
         REQUIRE_FALSE(deadlineChecked.has_value());
-        expectRejection(deadlineChecked.error(), "judgement.s7a3.pattern.arm_bound_exceeded",
+        expectRejection(deadlineChecked.error(), "judgement.pattern.arm_bound_exceeded",
                         "budget_exceeded", "pattern.maxDeadlineElements");
 
         PatternArmBound wideDeadline;
@@ -1125,7 +1125,7 @@ TEST_CASE("S7A-3 compiled pattern containment in the arm and deadline surface",
         arm.maxDeadlineElements = MeasuredParameter<std::uint64_t>::measured(3U);
         const auto armChecked = judgement::checkPatternContainment(*wide, arm);
         REQUIRE_FALSE(armChecked.has_value());
-        expectRejection(armChecked.error(), "judgement.s7a3.pattern.arm_bound_exceeded",
+        expectRejection(armChecked.error(), "judgement.pattern.arm_bound_exceeded",
                         "budget_exceeded", "pattern.maxArmElements");
 
         PatternArmBound deadline;
@@ -1133,7 +1133,7 @@ TEST_CASE("S7A-3 compiled pattern containment in the arm and deadline surface",
         deadline.maxDeadlineElements = MeasuredParameter<std::uint64_t>::measured(2U);
         const auto deadlineChecked = judgement::checkPatternContainment(*wide, deadline);
         REQUIRE_FALSE(deadlineChecked.has_value());
-        expectRejection(deadlineChecked.error(), "judgement.s7a3.pattern.arm_bound_exceeded",
+        expectRejection(deadlineChecked.error(), "judgement.pattern.arm_bound_exceeded",
                         "budget_exceeded", "pattern.maxDeadlineElements");
 
         PatternArmBound fitting;
@@ -1183,7 +1183,7 @@ TEST_CASE("S7A-3 compiled pattern declaration faults are stable rejections",
         PatternNodeDeclaration node = atomNode("");
         const auto compiled = judgement::compilePattern(declarationOf(node));
         REQUIRE_FALSE(compiled.has_value());
-        expectRejection(compiled.error(), "judgement.s7a3.declaration.structurally_incomplete",
+        expectRejection(compiled.error(), "judgement.declaration.structurally_incomplete",
                         "invalid_relation", "atomRef");
     }
 
@@ -1192,7 +1192,7 @@ TEST_CASE("S7A-3 compiled pattern declaration faults are stable rejections",
             composeNode(PatternPrimitive::boundedRepeat, {atomNode("atom.one")});
         const auto compiled = judgement::compilePattern(declarationOf(node));
         REQUIRE_FALSE(compiled.has_value());
-        expectRejection(compiled.error(), "judgement.s7a3.declaration.structurally_incomplete",
+        expectRejection(compiled.error(), "judgement.declaration.structurally_incomplete",
                         "invalid_relation", "repeatBounds");
     }
 
@@ -1200,7 +1200,7 @@ TEST_CASE("S7A-3 compiled pattern declaration faults are stable rejections",
         PatternNodeDeclaration node = repeatNode(atomNode("atom.one"), 4U, 2U);
         const auto compiled = judgement::compilePattern(declarationOf(node));
         REQUIRE_FALSE(compiled.has_value());
-        expectRejection(compiled.error(), "judgement.s7a3.domain.range_reversed", "budget_exceeded",
+        expectRejection(compiled.error(), "judgement.domain.range_reversed", "budget_exceeded",
                         "repeatBounds");
     }
 }

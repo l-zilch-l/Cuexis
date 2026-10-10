@@ -1,0 +1,155 @@
+#pragma once
+#include <algorithm>
+#include <array>
+#include <cuexis/core/error.hpp>
+#include <string_view>
+
+namespace cuexis::judgement::detail {
+inline constexpr std::array<std::string_view, 54> categoryProjectedDiagnosticCodes{{
+    "judgement.input.ingress_sequence_duplicate",
+    "judgement.input.mapping_declaration_invalid",
+    "judgement.input.runtime_mapping_change",
+    "judgement.late.duplicate_queue_entry",
+    "judgement.late.parameter_pending",
+    "judgement.late.policy_undeclared",
+    "judgement.late.queue_hop_exceeded",
+    "judgement.timebase.commit_not_at_commit_tick",
+    "judgement.timebase.commit_window_invalid",
+    "judgement.timebase.interval_reversed",
+    "judgement.timebase.profile_invalid",
+    "judgement.timebase.profile_value_out_of_range",
+    "judgement.timebase.rational_invalid",
+    "judgement.budget.content_profile_exceeded",
+    "judgement.closure.capability_disabled",
+    "judgement.closure.declared_incomplete",
+    "judgement.content.unsupported_form",
+    "judgement.declaration.duplicate_entry",
+    "judgement.declaration.structurally_incomplete",
+    "judgement.domain.dynamic_frame_unsupported",
+    "judgement.domain.geometry_overflow",
+    "judgement.domain.narrowing_rejected",
+    "judgement.domain.range_reversed",
+    "judgement.domain.range_undeclared",
+    "judgement.entry.chart_version_unsupported",
+    "judgement.entry.playback_entry_mismatch",
+    "judgement.entry.source_document_duplicate",
+    "judgement.entry.source_set_empty",
+    "judgement.entry.timebase_missing",
+    "judgement.grace.chart_supply_not_allowed",
+    "judgement.grace.inheritance_undeclared",
+    "judgement.grace.inheritance_unexpected",
+    "judgement.grace.not_representable",
+    "judgement.grace.out_of_range",
+    "judgement.grace.quantization_mismatch",
+    "judgement.grace.range_reversed",
+    "judgement.grace.unit_not_positive",
+    "judgement.grace.value_missing",
+    "judgement.identity.collision",
+    "judgement.measure.category_not_derived_from_phase",
+    "judgement.merge.cross_document_reference_implicit",
+    "judgement.merge.declaration_name_duplicate",
+    "judgement.merge.declaration_ordinal_unassigned",
+    "judgement.merge.reference_dangling",
+    "judgement.merge.stable_id_duplicate",
+    "judgement.pattern.arm_bound_exceeded",
+    "judgement.pattern.atom_outside_declared_arms",
+    "judgement.pattern.budget_exceeded",
+    "judgement.requirement.release_tail_implicit",
+    "judgement.requirement.solver_profile_missing",
+    "judgement.resource.claim_conflict",
+    "judgement.resource.reference_dangling",
+    "judgement.resource.state_transition_invalid",
+    "judgement.grace.value_source_conflict",
+}};
+inline constexpr std::array<std::string_view, 69> legacyDiagnosticCodes{{
+    "judgement.provisional.semantics.unfrozen",
+    "judgement.provisional.session.lifecycle_order",
+    "judgement.s7a2.input.amount_narrowed",
+    "judgement.s7a2.input.amount_out_of_range",
+    "judgement.s7a2.input.ingress_sequence_duplicate",
+    "judgement.s7a2.input.mapping_declaration_invalid",
+    "judgement.s7a2.input.runtime_mapping_change",
+    "judgement.s7a2.input.same_tick_collision",
+    "judgement.s7a2.late.duplicate_queue_entry",
+    "judgement.s7a2.late.parameter_pending",
+    "judgement.s7a2.late.policy_undeclared",
+    "judgement.s7a2.late.queue_hop_exceeded",
+    "judgement.s7a2.timebase.commit_not_at_commit_tick",
+    "judgement.s7a2.timebase.commit_window_invalid",
+    "judgement.s7a2.timebase.interval_reversed",
+    "judgement.s7a2.timebase.profile_invalid",
+    "judgement.s7a2.timebase.profile_value_out_of_range",
+    "judgement.s7a2.timebase.rational_invalid",
+    "judgement.s7a2.timebase.tick_overflow",
+    "judgement.s7a2.timebase.time_reversal",
+    "judgement.s7a3.budget.content_profile_exceeded",
+    "judgement.s7a3.closure.capability_disabled",
+    "judgement.s7a3.closure.declared_incomplete",
+    "judgement.s7a3.content.unsupported_form",
+    "judgement.s7a3.declaration.duplicate_entry",
+    "judgement.s7a3.declaration.structurally_incomplete",
+    "judgement.s7a3.domain.dynamic_frame_unsupported",
+    "judgement.s7a3.domain.geometry_overflow",
+    "judgement.s7a3.domain.narrowing_rejected",
+    "judgement.s7a3.domain.range_reversed",
+    "judgement.s7a3.domain.range_undeclared",
+    "judgement.s7a3.entry.chart_version_unsupported",
+    "judgement.s7a3.entry.playback_entry_mismatch",
+    "judgement.s7a3.entry.source_document_duplicate",
+    "judgement.s7a3.entry.source_set_empty",
+    "judgement.s7a3.entry.timebase_missing",
+    "judgement.s7a3.grace.chart_supply_not_allowed",
+    "judgement.s7a3.grace.inheritance_undeclared",
+    "judgement.s7a3.grace.inheritance_unexpected",
+    "judgement.s7a3.grace.not_representable",
+    "judgement.s7a3.grace.out_of_range",
+    "judgement.s7a3.grace.quantization_mismatch",
+    "judgement.s7a3.grace.range_reversed",
+    "judgement.s7a3.grace.unit_not_positive",
+    "judgement.s7a3.grace.value_missing",
+    "judgement.s7a3.identity.collision",
+    "judgement.s7a3.measure.category_not_derived_from_phase",
+    "judgement.s7a3.merge.cross_document_reference_implicit",
+    "judgement.s7a3.merge.declaration_name_duplicate",
+    "judgement.s7a3.merge.declaration_ordinal_unassigned",
+    "judgement.s7a3.merge.reference_dangling",
+    "judgement.s7a3.merge.stable_id_duplicate",
+    "judgement.s7a3.pattern.arm_bound_exceeded",
+    "judgement.s7a3.pattern.atom_outside_declared_arms",
+    "judgement.s7a3.pattern.budget_exceeded",
+    "judgement.s7a3.requirement.release_tail_implicit",
+    "judgement.s7a3.requirement.solver_profile_missing",
+    "judgement.s7a3.resource.claim_conflict",
+    "judgement.s7a3.resource.reference_dangling",
+    "judgement.s7a3.resource.state_transition_invalid",
+    "judgement.s7a3.second_half.not_implemented",
+    "judgement.s7a4.execution.profile_incomplete",
+    "judgement.s7a4.execution.profile_unsupported",
+    "judgement.s7a4.execution.relation_invalid",
+    "judgement.s7a4.kernel.transaction_failed",
+    "judgement.s7a4.late.dispatch_collision",
+    "judgement.s7a4.late.parameters_invalid",
+    "judgement.s7a4.late.rejected",
+    "judgement.s7a4.session.lifecycle_order",
+}};
+inline auto categoryProjectedDiagnostic(std::string_view code) noexcept -> bool {
+    return std::find(categoryProjectedDiagnosticCodes.begin(),
+                     categoryProjectedDiagnosticCodes.end(),
+                     code) != categoryProjectedDiagnosticCodes.end();
+}
+inline auto legacyDiagnostic(std::string_view code) noexcept -> bool {
+    return std::find(legacyDiagnosticCodes.begin(), legacyDiagnosticCodes.end(), code) !=
+           legacyDiagnosticCodes.end();
+}
+// Only semantic code locations are examined; arbitrary historical prose remains valid.
+inline auto containsLegacyDiagnostic(const core::Error& error) noexcept -> bool {
+    for (const auto* node = &error; node; node = node->cause()) {
+        if (legacyDiagnostic(node->code()))
+            return true;
+        for (const auto& field : node->context())
+            if (field.key == "sourceCode" && legacyDiagnostic(field.value))
+                return true;
+    }
+    return false;
+}
+} // namespace cuexis::judgement::detail

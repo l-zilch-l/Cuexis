@@ -1,4 +1,5 @@
 #include "execution_kernel.hpp"
+#include "diagnostic_policy.hpp"
 #include "execution_testing.hpp"
 
 #include <algorithm>
@@ -11,7 +12,7 @@
 namespace cuexis::judgement::detail {
 namespace {
 auto error(std::string_view suffix, std::string_view message, bool faulted = false) -> core::Error {
-    return core::Error{"judgement.s7a4." + std::string{suffix}, std::string{message}}
+    return core::Error{"judgement." + std::string{suffix}, std::string{message}}
         .withContext("category", suffix == "execution.profile_incomplete"
                                      ? "identity_closure_incomplete"
                                      : "invalid_relation")
@@ -82,7 +83,7 @@ auto validateSessionConfiguration(const SessionConfiguration& c) -> core::Result
         (!engine.lateAlgorithmToken || engine.lateAlgorithmToken->empty()) ||
         engine.judgementSemanticRevision.empty() || engine.factSemanticRevision.empty() ||
         engine.fixedPointTableId.empty() || engine.coordinationPhaseOrderToken.empty()) {
-        return core::unexpected(core::Error{"judgement.s7a4.execution.profile_incomplete",
+        return core::unexpected(core::Error{"judgement.execution.profile_incomplete",
                                             "execution configuration tokens are incomplete"}
                                     .withContext("category", "identity_closure_incomplete")
                                     .withContext("severity", "error")
@@ -99,7 +100,7 @@ auto validateSessionConfiguration(const SessionConfiguration& c) -> core::Result
         engine.fixedPointTableId != "fixed-point.none.v1" ||
         engine.coordinationPhaseOrderToken != "coordination.six-eight.t4-k4.v1") {
         return core::unexpected(
-            core::Error{"judgement.s7a4.execution.profile_unsupported",
+            core::Error{"judgement.execution.profile_unsupported",
                         "execution configuration tokens are unsupported or inconsistent"}
                 .withContext("category", "capability_disabled")
                 .withContext("severity", "error")
@@ -1178,7 +1179,7 @@ auto ExecutionKernel::submitBatch(std::span<const ClockedIngress> batch,
                     sameChannel(ownership.contact, key) &&
                     key.observationTick >= ownership.contact.startPressKey.observationTick &&
                     key.observationTick.tick() < requirement->timing->body->end) {
-                    return core::unexpected(core::Error{"judgement.s7a4.late.rejected",
+                    return core::unexpected(core::Error{"judgement.late.rejected",
                                                         "release would rewrite sealed coverage"}
                                                 .withContext("category", "late_policy_incomplete")
                                                 .withContext("severity", "error")
@@ -1470,6 +1471,9 @@ auto ExecutionKernel::restore(const SnapshotStorage& saved, const RecoveryInputs
         return core::unexpected(
             error("execution.relation_invalid", "Snapshot state closure invalid"));
     }
+    if (p.faultDiagnostic && containsLegacyDiagnostic(*p.faultDiagnostic))
+        return core::unexpected(
+            error("execution.relation_invalid", "Snapshot diagnostic dialect invalid"));
     if (p.state == KernelSessionState::Prepared) {
         if (p.faultStage || p.failedTick || p.requestedHorizon) {
             return core::unexpected(
@@ -1482,7 +1486,7 @@ auto ExecutionKernel::restore(const SnapshotStorage& saved, const RecoveryInputs
         }
         const auto expected = *p.faultStage == FaultStage::fold
                                   ? "ruleset.transaction_failed"
-                                  : "judgement.s7a4.kernel.transaction_failed";
+                                  : "judgement.kernel.transaction_failed";
         if (p.faultDiagnostic->code() != expected || p.faultDiagnostic->cause() ||
             p.faultDiagnostic->context().size() != 3) {
             return core::unexpected(
@@ -1973,6 +1977,11 @@ auto ExecutionKernel::evaluate(const ReplayArchive& archive, const KernelTestCon
     if ((*k)->query()->projection.judgementIdentity != archive.data().identity) {
         return core::unexpected(error("execution.relation_invalid", "Replay identity mismatch"));
     }
+    for (const auto& record : archive.data().records)
+        if (record.result && record.result->faultDiagnostic &&
+            containsLegacyDiagnostic(*record.result->faultDiagnostic))
+            return core::unexpected(
+                error("execution.relation_invalid", "Replay diagnostic dialect invalid"));
     if (controls) {
         auto applied = (*k)->inject(*controls);
         if (!applied) {
@@ -2072,6 +2081,11 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
         return core::unexpected(
             error("execution.relation_invalid", "Seek archive identity mismatch"));
     }
+    for (const auto& record : archive.data().records)
+        if (record.result && record.result->faultDiagnostic &&
+            containsLegacyDiagnostic(*record.result->faultDiagnostic))
+            return core::unexpected(
+                error("execution.relation_invalid", "Replay diagnostic dialect invalid"));
     std::uint64_t begin = 0;
     const ReplayCheckpoint* chosen = nullptr;
     for (const auto& checkpoint : checkpoints) {

@@ -1,19 +1,19 @@
 # Stage 7B+ Plan: Capability Evolution
 
 状态：future；各能力按独立依赖和 owner 接受情况排期
-更新日期：2026-10-09
+更新日期：2026-10-10
 
 本分册定义 S7B/S7C 能力的准入、依赖、批次和验收。Stage 7 全局边界、Stage 8 选入规则、统一证据矩阵、停止条件和跨阶段交接见[总计划](plan.md)。能力字段和运行语义必须先进入其权威 ADR/Spec/ABI；候选能力不视为已实现。
 
-S7A 是 Stage 8 的硬前置；Stage 8 不等待全部 S7B/S7C。每项能力单独准入、实现、预算与验收，未选入发行矩阵的能力保持稳定拒绝。
+实施顺序为Stage 7A既有成果 → 诊断码正式化独立前置 → RPA（含原S7A-9收尾）→ Stage 7B+ → Stage 8。
+本分册的S7B-0–4、S7C-1/2按依赖逐项实施、验收并形成owner接受的关闭交接后，才进入Stage 8。
+阶段完成不等于默认发行选入；未选入发行矩阵的能力保持稳定拒绝。
 
 ## 与RPA及发行主线的关系
 
-Stage7B+是保留的独立持续能力线，不被RPA替代或从路线省略。Slide/Flick、方向、连续轨迹、
-多指及S7C高级校准策略按本计划逐项准入；基础实体设备和实时同步的实施/验收整体归
-[RPA](plan-rpa.md)。需要实时宿主边界的具体能力依赖RPA
-对应合同，其他研究与无该依赖的工作可独立安排。Stage8只消费已选入并通过验收的7B+能力，
-不等待整个能力线结束；本次文档修订不启动7B+/S7C产品实施。
+Stage 7B+在[RPA](plan-rpa.md)完整退出后实施，继承[独立诊断前置](plan-diagnostic-formalization.md)的正式码/兼容合同，
+并消费RPA的实时宿主边界、基础设备验收及原7A综合收尾交接。Slide/Flick、方向、连续轨迹、多指及S7C高级校准策略
+仍由本分册逐项准入；本次仅调整规划，不启动产品实施。
 
 ## 5. Stage 7B+ 能力线的统一规则
 
@@ -177,7 +177,7 @@ grading 或有界重复的动作语义。7A 已支持的 Release/tail 仍是同�
 
 ### S7C-1：校准、设备延迟和 Judgement Policy
 
-基础实时架构与正式命名迁移归[Stage 7-RPA子阶段](plan-rpa.md)。
+基础实时架构归[Stage 7-RPA子阶段](plan-rpa.md)，正式命名迁移归[独立诊断前置](plan-diagnostic-formalization.md)。
 S7C-1负责校准参数及高级设备策略；本批不承接基础同步缺口，未因此启动实施。
 
 **目标。** 将 timing offset、input latency、窗口等级和设备能力变成显式、可复现的策略。
@@ -254,7 +254,8 @@ manifest、常量和已注册的有限模块参数；不得包含任意脚本、
 
 ## 7. 7B+ 与 Stage 8 的选入规则
 
-Stage 8 只在其发行矩阵中明确选入某项 7B+ 时消费该能力。选入必须同时满足：
+Stage 8启动须先取得本分册当前计划范围的完成与owner接受记录。
+发行矩阵只决定哪些已验收能力进入正式发行，不用于跳过尚未完成的7B+任务。选入必须同时满足：
 
 - Stage 7B+ capability 和 typed prepare 合同已接受；
 - Chart v5/CXT v2/Packed/CXC 有明确编码、identity 和 resource closure；
@@ -263,11 +264,13 @@ Stage 8 只在其发行矩阵中明确选入某项 7B+ 时消费该能力。选�
 - 迁移、旧版本拒绝和回滚路径可执行；
 - owner 在 Stage 8 发行矩阵中明确接受。
 
-未选入的能力仍可在 Stage 8 前开发，但只能通过显式 candidate/capability 入口使用；Stage 8
-默认生产入口必须稳定拒绝，不能把它当作 Tap/Hold 或 v4 兼容语义。Stage 8 关闭后，7B+ 可以
-继续增加兼容 capability；不得以修改已发行 v5 字段含义的方式追补。
+已验收但未选入正式发行的能力只通过明确的candidate/capability入口使用；默认生产入口
+必须稳定拒绝，不能将其当作Tap/Hold或v4兼容语义。新增计划外能力另行立项；不得自动
+把本分册未完成任务推迟到Stage 8之后，也不得修改已发行v5字段含义追补。
 
 ## 验收标准
 
-Stage 7 的验收由 Stage 7A 硬前置和每个 7B+ capability 的独立退出标准组成。任何研究性 spike、
+Stage 7B+须完成S7B-0–4、S7C-1/2当前计划范围的逐项退出，汇总实现、预算、拒绝、
+兼容、跨平台证据和Stage 8交接清单，并取得owner接受。范围调整须显式修订计划，
+不能以发行矩阵中的candidate/deferred代替未完成任务的验收。任何研究性 spike、
 单平台结果、只测正例的 golden 或历史报告都不能替代本计划要求的实现和验证证据。

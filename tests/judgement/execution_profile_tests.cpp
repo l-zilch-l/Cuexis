@@ -53,7 +53,7 @@ TEST_CASE("Execution late parameters enforce measured relationships",
     }
     const auto result = validateExecutionLateParameters(p);
     REQUIRE_FALSE(result);
-    CHECK(result.error().code() == "judgement.s7a4.late.parameters_invalid");
+    CHECK(result.error().code() == "judgement.late.parameters_invalid");
 }
 
 TEST_CASE("Executable prepare owns program targets declarations and stable timers",
@@ -182,7 +182,7 @@ TEST_CASE("Ingress journals own subjects and publish only after full reservation
     first.declaration.ingressSequence = IngressSequence{9};
     auto duplicateSubject = detail::prepareIngressBatch(live, mapping, std::span{&first, 1});
     REQUIRE_FALSE(duplicateSubject);
-    CHECK(duplicateSubject.error().code() == "judgement.s7a2.late.duplicate_queue_entry");
+    CHECK(duplicateSubject.error().code() == "judgement.late.duplicate_queue_entry");
 }
 
 TEST_CASE("Every execution field reaches both canonical identity projections",
@@ -275,18 +275,18 @@ TEST_CASE("Late parameter invalidity and same Tick precedence never publish ingr
     b.declaration.action = InputAction::release;
     auto distinct = detail::prepareIngressBatch(live, mapping, std::vector<ClockedIngress>{a, b});
     REQUIRE_FALSE(distinct);
-    CHECK(distinct.error().code() == "judgement.s7a2.input.same_tick_collision");
+    CHECK(distinct.error().code() == "judgement.input.same_tick_collision");
     CHECK(live.lastObservedTick() == nullptr);
     auto duplicate = a;
     duplicate.declaration.ingressSequence = IngressSequence{2};
     auto same =
         detail::prepareIngressBatch(live, mapping, std::vector<ClockedIngress>{a, duplicate});
     REQUIRE_FALSE(same);
-    CHECK(same.error().code() == "judgement.s7a2.late.duplicate_queue_entry");
+    CHECK(same.error().code() == "judgement.late.duplicate_queue_entry");
     b.declaration.ingressSequence = IngressSequence{1};
     auto sequence = detail::prepareIngressBatch(live, mapping, std::vector<ClockedIngress>{a, b});
     REQUIRE_FALSE(sequence);
-    CHECK(sequence.error().code() == "judgement.s7a2.input.ingress_sequence_duplicate");
+    CHECK(sequence.error().code() == "judgement.input.ingress_sequence_duplicate");
     auto p = executionLate();
     SECTION("negative open") {
         p.windowOpenThreshold = MeasuredParameter<TickSpan>::measured(TickSpan{-1});

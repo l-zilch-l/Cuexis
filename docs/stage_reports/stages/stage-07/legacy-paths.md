@@ -2,7 +2,7 @@
 
 状态：compatibility entry
 
-更新日期：2026-10-06
+更新日期：2026-10-10
 
 按DOCUMENTATION_POLICY的批量stage整理规则保留旧逻辑路径映射至少一个整理周期。
 旧路径以代码文字记录，不保证逐文件旧URL可访问；canonical正文保留原日期和证据。
@@ -10,6 +10,8 @@
 
 | 旧逻辑路径（仓库相对） | canonical位置 |
 | --- | --- |
+| `docs/stage_reports/stages/stage-07/readiness/2026-10-09-diagnostic-phase-name-audit.md` | [RPA诊断命名审计](rpa/2026-10-09-diagnostic-phase-name-audit.md)；旧Markdown保留兼容页 |
+| `docs/stage_reports/stages/stage-07/readiness/2026-10-09-diagnostic-phase-name-audit-evidence.zip` | [RPA原始证据ZIP](rpa/2026-10-09-diagnostic-phase-name-audit-evidence.zip)；内容哈希保持 |
 | `docs/stage_reports/stages/stage-07/2026-10-02-d9-shell-guard-candidate.md` | [2026-10-02-d9-shell-guard-candidate.md](readiness/2026-10-02-d9-shell-guard-candidate.md) |
 | `docs/stage_reports/stages/stage-07/2026-10-02-s7a-0-acceptance.md` | [2026-10-02-s7a-0-acceptance.md](readiness/2026-10-02-s7a-0-acceptance.md) |
 | `docs/stage_reports/stages/stage-07/2026-10-02-s7a-0-baseline.md` | [2026-10-02-s7a-0-baseline.md](readiness/2026-10-02-s7a-0-baseline.md) |

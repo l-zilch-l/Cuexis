@@ -21,9 +21,9 @@
     ],
     "notChanged": "This registration touches no engine / tests / tools / cmake source and no root CMakeLists.txt. The src-only capability category token named in ownerReviewRequired was renamed to capability_disabled by the parallel implementation line, not by this task."
   },
-  "srcOnlyPolicyNote": "The thirteen judgement.s7a2.* tokens carry status=not_registered_src_only. That status word is intentionally NOT a pending marker: the 2026-10-02T21:03:39.462Z card (adopt 0.96) ruled that all thirteen stay src-only and never enter the public code table or the ABI, and that their public projection uses only the registered nine categories and the already registered stable codes. A future reader must not treat not_registered_src_only as 'waiting to be registered'.",
+  "srcOnlyPolicyNote": "The thirteen private judgement input/late/timebase refinements tokens carry status=not_registered_src_only. That status word is intentionally NOT a pending marker: the 2026-10-02T21:03:39.462Z card (adopt 0.96) ruled that all thirteen stay src-only and never enter the public code table or the ABI, and that their public projection uses only the registered nine categories and the already registered stable codes. A future reader must not treat not_registered_src_only as 'waiting to be registered'.",
   "status": "registered-pending-owner-review",
-  "statusNote": "Round-6 registration of the Gameplay V2 diagnostic code table (Codex thread 01a0fe61-3476-7882-9674-5f6b05035237, verdict adopt, confidence 0.97), then the follow-up completion of the same round-6 CM-D04 / P1-09 first consumption (Codex thread 01a0fe6b-6e57-7051-87f8-cf9588e85568, decision card 2026-10-02T21:03:39.462Z, verdict adopt, confidence 0.96; see rulingProvenance below). Every code string in this file is quoted from an existing document; no code and no category is invented here. The category set is the nine V2 categories of GAMEPLAY_V2_SPEC.md 9.2. Eight categories that the first registration marked categoryBasis=derived_pending_owner_confirmation were ruled by the follow-up card and now carry categoryBasis=owner_ruled; geometry.inference_rejected moved from unknown_capability to invalid_relation under that ruling. The severity and faulted value sets are the ones this file declares below; see severitySources and faultedBehaviorSources for their documented basis. The thirteen judgement.s7a2.* tokens are marked status=not_registered_src_only: that status word is deliberate and means explicitly never to be registered, not a pending state - see srcOnlyPolicyNote.",
+  "statusNote": "Round-6 registration of the Gameplay V2 diagnostic code table (Codex thread 01a0fe61-3476-7882-9674-5f6b05035237, verdict adopt, confidence 0.97), then the follow-up completion of the same round-6 CM-D04 / P1-09 first consumption (Codex thread 01a0fe6b-6e57-7051-87f8-cf9588e85568, decision card 2026-10-02T21:03:39.462Z, verdict adopt, confidence 0.96; see rulingProvenance below). Every code string in this file is quoted from an existing document; no code and no category is invented here. The category set is the nine V2 categories of GAMEPLAY_V2_SPEC.md 9.2. Eight categories that the first registration marked categoryBasis=derived_pending_owner_confirmation were ruled by the follow-up card and now carry categoryBasis=owner_ruled; geometry.inference_rejected moved from unknown_capability to invalid_relation under that ruling. The severity and faulted value sets are the ones this file declares below; see severitySources and faultedBehaviorSources for their documented basis. The thirteen private judgement input/late/timebase refinements tokens are marked status=not_registered_src_only: that status word is deliberate and means explicitly never to be registered, not a pending state - see srcOnlyPolicyNote.",
   "authorityNote": "GAMEPLAY_V2_SPEC.md 9.1 owns the four-layer diagnostic model (code / category / severity / faulted) and its category set; GAMEPLAY_V2_ABI.md only consumes them. A diagnostic code string must be registered in this file and pass the CTest gate cuexis_gameplay_diagnostics_codes before it may enter a public header.",
   "categories": [
     {
@@ -516,8 +516,8 @@
       "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
-      "code": "judgement.s7a2.timebase.tick_overflow",
-      "family": "judgement.s7a2.timebase",
+      "code": "judgement.timebase.tick_overflow",
+      "family": "judgement.timebase",
       "category": "budget_exceeded",
       "categoryBasis": "documented_mapping_row",
       "severity": "error",
@@ -533,8 +533,8 @@
       "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
-      "code": "judgement.s7a2.timebase.time_reversal",
-      "family": "judgement.s7a2.timebase",
+      "code": "judgement.timebase.time_reversal",
+      "family": "judgement.timebase",
       "category": "invalid_relation",
       "categoryBasis": "documented_mapping_row",
       "severity": "error",
@@ -551,8 +551,8 @@
       "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
-      "code": "judgement.s7a2.input.amount_out_of_range",
-      "family": "judgement.s7a2.input",
+      "code": "judgement.input.amount_out_of_range",
+      "family": "judgement.input",
       "category": "budget_exceeded",
       "categoryBasis": "documented_mapping_row",
       "severity": "error",
@@ -569,8 +569,8 @@
       "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
-      "code": "judgement.s7a2.input.amount_narrowed",
-      "family": "judgement.s7a2.input",
+      "code": "judgement.input.amount_narrowed",
+      "family": "judgement.input",
       "category": "budget_exceeded",
       "categoryBasis": "documented_mapping_row",
       "severity": "error",
@@ -587,8 +587,8 @@
       "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
-      "code": "judgement.s7a2.input.same_tick_collision",
-      "family": "judgement.s7a2.input",
+      "code": "judgement.input.same_tick_collision",
+      "family": "judgement.input",
       "category": "invalid_relation",
       "categoryBasis": "documented_mapping_row",
       "severity": "error",
@@ -688,7 +688,7 @@
       "publicConsumptionSurface": "通过既有诊断码承载面消费：JudgementError / DiagnosticCode（ABI 域 8）与其稳定拒绝载荷；不新增 ABI 域、类型或错误枚举。"
     },
     {
-      "code": "judgement.s7a4.execution.profile_incomplete",
+      "code": "judgement.execution.profile_incomplete",
       "family": "judgement.s7a4",
       "category": "identity_closure_incomplete",
       "categoryBasis": "execution_profile_selected",
@@ -705,7 +705,7 @@
       "publicConsumptionSurface": "Existing Diagnostic / Result carrier (internal execution profile)."
     },
     {
-      "code": "judgement.s7a4.execution.profile_unsupported",
+      "code": "judgement.execution.profile_unsupported",
       "family": "judgement.s7a4",
       "category": "capability_disabled",
       "categoryBasis": "execution_profile_selected",
@@ -722,7 +722,7 @@
       "publicConsumptionSurface": "Existing Diagnostic / Result carrier (internal execution profile)."
     },
     {
-      "code": "judgement.s7a4.execution.relation_invalid",
+      "code": "judgement.execution.relation_invalid",
       "family": "judgement.s7a4",
       "category": "invalid_relation",
       "categoryBasis": "execution_profile_selected",
@@ -739,7 +739,7 @@
       "publicConsumptionSurface": "Existing Diagnostic / Result carrier (internal execution profile)."
     },
     {
-      "code": "judgement.s7a4.late.parameters_invalid",
+      "code": "judgement.late.parameters_invalid",
       "family": "judgement.s7a4",
       "category": "late_policy_incomplete",
       "categoryBasis": "execution_profile_selected",
@@ -756,7 +756,7 @@
       "publicConsumptionSurface": "Existing Diagnostic / Result carrier (internal execution profile)."
     },
     {
-      "code": "judgement.s7a4.late.rejected",
+      "code": "judgement.late.rejected",
       "family": "judgement.s7a4",
       "category": "late_policy_incomplete",
       "categoryBasis": "execution_profile_selected",
@@ -773,7 +773,7 @@
       "publicConsumptionSurface": "Existing Diagnostic / Result carrier (internal execution profile)."
     },
     {
-      "code": "judgement.s7a4.late.dispatch_collision",
+      "code": "judgement.late.dispatch_collision",
       "family": "judgement.s7a4",
       "category": "invalid_relation",
       "categoryBasis": "execution_profile_selected",
@@ -790,7 +790,7 @@
       "publicConsumptionSurface": "Existing Diagnostic / Result carrier (internal execution profile)."
     },
     {
-      "code": "judgement.s7a4.session.lifecycle_order",
+      "code": "judgement.session.lifecycle_order",
       "family": "judgement.s7a4",
       "category": "invalid_relation",
       "categoryBasis": "execution_profile_selected",
@@ -807,7 +807,7 @@
       "publicConsumptionSurface": "Existing Diagnostic / Result carrier (internal execution profile)."
     },
     {
-      "code": "judgement.s7a4.kernel.transaction_failed",
+      "code": "judgement.kernel.transaction_failed",
       "family": "judgement.s7a4",
       "category": "invalid_relation",
       "categoryBasis": "execution_profile_selected",
@@ -1575,130 +1575,130 @@
       "kind": "code",
       "registered": false,
       "status": "not_registered_src_only",
-      "code": "judgement.s7a2.timebase.profile_value_out_of_range",
-      "family": "judgement.s7a2.timebase",
+      "code": "judgement.timebase.profile_value_out_of_range",
+      "family": "judgement.timebase",
       "reason": "Src-only S7A-2 local token. The string exists only in engine/judgement/src/source_codes.hpp, which states that it registers no code; it is not named by GAMEPLAY_V2_SPEC.md or GAMEPLAY_V2_ABI.md, so it may not enter a public header until it is registered here.",
-      "source": "engine/judgement/src/source_codes.hpp kProfileValueOutOfRangeCode token definition (judgement.s7a2.timebase.profile_value_out_of_range)",
+      "source": "engine/judgement/src/source_codes.hpp kProfileValueOutOfRangeCode token definition (judgement.timebase.profile_value_out_of_range)",
       "publicConsumptionSurface": null
     },
     {
       "kind": "code",
       "registered": false,
       "status": "not_registered_src_only",
-      "code": "judgement.s7a2.timebase.rational_invalid",
-      "family": "judgement.s7a2.timebase",
+      "code": "judgement.timebase.rational_invalid",
+      "family": "judgement.timebase",
       "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI.",
-      "source": "engine/judgement/src/source_codes.hpp kRationalInvalidCode token definition (judgement.s7a2.timebase.rational_invalid)",
+      "source": "engine/judgement/src/source_codes.hpp kRationalInvalidCode token definition (judgement.timebase.rational_invalid)",
       "publicConsumptionSurface": null
     },
     {
       "kind": "code",
       "registered": false,
       "status": "not_registered_src_only",
-      "code": "judgement.s7a2.timebase.interval_reversed",
-      "family": "judgement.s7a2.timebase",
+      "code": "judgement.timebase.interval_reversed",
+      "family": "judgement.timebase",
       "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI.",
-      "source": "engine/judgement/src/source_codes.hpp kIntervalReversedCode token definition (judgement.s7a2.timebase.interval_reversed)",
+      "source": "engine/judgement/src/source_codes.hpp kIntervalReversedCode token definition (judgement.timebase.interval_reversed)",
       "publicConsumptionSurface": null
     },
     {
       "kind": "code",
       "registered": false,
       "status": "not_registered_src_only",
-      "code": "judgement.s7a2.timebase.commit_window_invalid",
-      "family": "judgement.s7a2.timebase",
+      "code": "judgement.timebase.commit_window_invalid",
+      "family": "judgement.timebase",
       "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI.",
-      "source": "engine/judgement/src/source_codes.hpp kCommitWindowInvalidCode token definition (judgement.s7a2.timebase.commit_window_invalid)",
+      "source": "engine/judgement/src/source_codes.hpp kCommitWindowInvalidCode token definition (judgement.timebase.commit_window_invalid)",
       "publicConsumptionSurface": null
     },
     {
       "kind": "code",
       "registered": false,
       "status": "not_registered_src_only",
-      "code": "judgement.s7a2.timebase.commit_not_at_commit_tick",
-      "family": "judgement.s7a2.timebase",
+      "code": "judgement.timebase.commit_not_at_commit_tick",
+      "family": "judgement.timebase",
       "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI.",
-      "source": "engine/judgement/src/source_codes.hpp kCommitNotAtCommitTickCode token definition (judgement.s7a2.timebase.commit_not_at_commit_tick)",
+      "source": "engine/judgement/src/source_codes.hpp kCommitNotAtCommitTickCode token definition (judgement.timebase.commit_not_at_commit_tick)",
       "publicConsumptionSurface": null
     },
     {
       "kind": "code",
       "registered": false,
       "status": "not_registered_src_only",
-      "code": "judgement.s7a2.late.parameter_pending",
-      "family": "judgement.s7a2.late",
+      "code": "judgement.late.parameter_pending",
+      "family": "judgement.late",
       "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI. The Spec names the late_policy_incomplete category but not this spelling.",
-      "source": "engine/judgement/src/source_codes.hpp kLatePolicyPendingCode token definition (judgement.s7a2.late.parameter_pending)",
+      "source": "engine/judgement/src/source_codes.hpp kLatePolicyPendingCode token definition (judgement.late.parameter_pending)",
       "publicConsumptionSurface": null
     },
     {
       "kind": "code",
       "registered": false,
       "status": "not_registered_src_only",
-      "code": "judgement.s7a2.late.policy_undeclared",
-      "family": "judgement.s7a2.late",
+      "code": "judgement.late.policy_undeclared",
+      "family": "judgement.late",
       "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI.",
-      "source": "engine/judgement/src/source_codes.hpp kLatePolicyUndeclaredCode token definition (judgement.s7a2.late.policy_undeclared)",
+      "source": "engine/judgement/src/source_codes.hpp kLatePolicyUndeclaredCode token definition (judgement.late.policy_undeclared)",
       "publicConsumptionSurface": null
     },
     {
       "kind": "code",
       "registered": false,
       "status": "not_registered_src_only",
-      "code": "judgement.s7a2.late.duplicate_queue_entry",
-      "family": "judgement.s7a2.late",
+      "code": "judgement.late.duplicate_queue_entry",
+      "family": "judgement.late",
       "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI. The Spec maps a duplicate queue entry to the late_policy_incomplete category without naming a code.",
-      "source": "engine/judgement/src/source_codes.hpp kDuplicateQueueCode token definition (judgement.s7a2.late.duplicate_queue_entry)",
+      "source": "engine/judgement/src/source_codes.hpp kDuplicateQueueCode token definition (judgement.late.duplicate_queue_entry)",
       "publicConsumptionSurface": null
     },
     {
       "kind": "code",
       "registered": false,
       "status": "not_registered_src_only",
-      "code": "judgement.s7a2.late.queue_hop_exceeded",
-      "family": "judgement.s7a2.late",
+      "code": "judgement.late.queue_hop_exceeded",
+      "family": "judgement.late",
       "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI.",
-      "source": "engine/judgement/src/source_codes.hpp kQueueHopExceededCode token definition (judgement.s7a2.late.queue_hop_exceeded)",
+      "source": "engine/judgement/src/source_codes.hpp kQueueHopExceededCode token definition (judgement.late.queue_hop_exceeded)",
       "publicConsumptionSurface": null
     },
     {
       "kind": "code",
       "registered": false,
       "status": "not_registered_src_only",
-      "code": "judgement.s7a2.input.ingress_sequence_duplicate",
-      "family": "judgement.s7a2.input",
+      "code": "judgement.input.ingress_sequence_duplicate",
+      "family": "judgement.input",
       "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI. CONTRACT_MATRIX CM-T10 maps a duplicate ingressSequence to late_policy_incomplete without naming a code.",
-      "source": "engine/judgement/src/source_codes.hpp kIngressSequenceDuplicateCode token definition (judgement.s7a2.input.ingress_sequence_duplicate)",
+      "source": "engine/judgement/src/source_codes.hpp kIngressSequenceDuplicateCode token definition (judgement.input.ingress_sequence_duplicate)",
       "publicConsumptionSurface": null
     },
     {
       "kind": "code",
       "registered": false,
       "status": "not_registered_src_only",
-      "code": "judgement.s7a2.timebase.profile_invalid",
-      "family": "judgement.s7a2.timebase",
+      "code": "judgement.timebase.profile_invalid",
+      "family": "judgement.timebase",
       "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI. The Spec maps a structurally incomplete declaration to the invalid_relation category without naming a code.",
-      "source": "engine/judgement/src/source_codes.hpp kProfileInvalidCode token definition (judgement.s7a2.timebase.profile_invalid)",
+      "source": "engine/judgement/src/source_codes.hpp kProfileInvalidCode token definition (judgement.timebase.profile_invalid)",
       "publicConsumptionSurface": null
     },
     {
       "kind": "code",
       "registered": false,
       "status": "not_registered_src_only",
-      "code": "judgement.s7a2.input.mapping_declaration_invalid",
-      "family": "judgement.s7a2.input",
+      "code": "judgement.input.mapping_declaration_invalid",
+      "family": "judgement.input",
       "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI.",
-      "source": "engine/judgement/src/source_codes.hpp kInputMappingInvalidCode token definition (judgement.s7a2.input.mapping_declaration_invalid)",
+      "source": "engine/judgement/src/source_codes.hpp kInputMappingInvalidCode token definition (judgement.input.mapping_declaration_invalid)",
       "publicConsumptionSurface": null
     },
     {
       "kind": "code",
       "registered": false,
       "status": "not_registered_src_only",
-      "code": "judgement.s7a2.input.runtime_mapping_change",
-      "family": "judgement.s7a2.input",
+      "code": "judgement.input.runtime_mapping_change",
+      "family": "judgement.input",
       "reason": "Src-only S7A-2 local token, not named by the Spec or the ABI. Spec 5.2 states the mapping is a session component and a runtime modification is a stable rejection, but no code string is frozen.",
-      "source": "engine/judgement/src/source_codes.hpp kRuntimeMappingChangeCode token definition (judgement.s7a2.input.runtime_mapping_change)",
+      "source": "engine/judgement/src/source_codes.hpp kRuntimeMappingChangeCode token definition (judgement.input.runtime_mapping_change)",
       "publicConsumptionSurface": null
     },
     {
@@ -1789,7 +1789,7 @@
     }
   ],
   "diagnosticStringPolicy": {
-    "rule": "A string is a public diagnostic code when its named code string, its applicable scenario and its nine-category mapping are unambiguously traceable to one another in the canonical texts. The scenario row and the code-string row may live in different sections (for example Spec 3.7.8 versus Spec 9.3 or ABI), but they must point at each other explicitly. A name prefix (judgement.s7a2.* or otherwise) does not decide publicness, and no owner naming condition is introduced.",
+    "rule": "A string is a public diagnostic code when its named code string, its applicable scenario and its nine-category mapping are unambiguously traceable to one another in the canonical texts. The scenario row and the code-string row may live in different sections (for example Spec 3.7.8 versus Spec 9.3 or ABI), but they must point at each other explicitly. A name prefix (private judgement input/late/timebase refinements or otherwise) does not decide publicness, and no owner naming condition is introduced.",
     "publicSurfaceRule": "A non-null publicConsumptionSurface marks a public registered code and is carried only by codes[] entries, where it must be a non-empty string. Every pendingRegistration entry carries publicConsumptionSurface: null, whether it is one of the thirteen src-only tokens (status = not_registered_src_only) or an open slot with no code string chosen yet (code = null). A pendingRegistration entry that names a public consumption surface is a table error. The surface count and the pending count are therefore never the same number and neither may be read as \"all codes are public\".",
     "publicCodeCount": 37,
     "srcOnlyTokenCount": 13,
@@ -1808,7 +1808,7 @@
       "totalAnchorLiteralsRemoved": 62,
       "note": "30 + 6 + 13 = 49 live anchors were reworked. 13 further literals lived only in this policy record itself (10 in the retired crosswalk list, 1 kept-range list entry, 2 in the severity note) and were removed with the record. 62 literal occurrences were removed in total and the file now holds none."
     },
-    "srcOnlyTokenAnchors": "The thirteen judgement.s7a2.* entries name their engine/judgement/src/source_codes.hpp token by symbol (k...Code) instead of by line. The former line ranges had already drifted on the parallel implementation line: every cited range had shifted down by one line while the token still sat on the last cited line.",
+    "srcOnlyTokenAnchors": "The thirteen private judgement input/late/timebase refinements entries name their engine/judgement/src/source_codes.hpp token by symbol (k...Code) instead of by line. The former line ranges had already drifted on the parallel implementation line: every cited range had shifted down by one line while the token still sat on the last cited line.",
     "severityAnchorNote": "severitySources names documents only. Its former line anchors were removed for the same drift reason; the core enum is cited by symbol (DiagnosticSeverity) instead of by line.",
     "evidenceRecord": {
       "path": "docs/stage_reports/stages/stage-07/decisions/2026-10-03-s7a-diagnostics-taxonomy-rulings.md",
@@ -1817,5 +1817,6 @@
       "role": "That dated record is the only place in the repository where the retired line ranges are written down. They are evidence, not a citation this table relies on."
     },
     "replacementReason": "Decision card 2026-10-02T22:02:31.461Z ruled that the seventeen codes still citing the ABI section by line range 599 to 617 must move to a section reference as well, and that a retained range belongs only in a dated evidence record carrying the document version or the snapshot hash. No literal line anchor therefore remains in this machine-readable table."
-  }
+  },
+  "diagnosticFormalization": "2026-10-10: formal business-reason names, unchanged public/private boundary; historical rulingProvenance retains its dated original wording. Compatibility clarification: judgement.session.operation_state_invalid is an existing non-DiagnosticCode value observable through the pre-existing PlaybackSession archiveGameplay core::Error Result after restoreGameplay. It is not an entry in codes[] or pendingRegistration[], is not a new DiagnosticCode ABI, and is not added to this registry; “unregistered” describes registry membership, not host observability of the existing Result code string."
 }

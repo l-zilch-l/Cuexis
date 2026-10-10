@@ -31,6 +31,7 @@ struct KernelTestControls final {
 class KernelTestAccess final {
   public:
     static auto inject(JudgementSession&, KernelTestControls) -> core::Result<void>;
+    static auto snapshotValue(SnapshotDTO, RecoveryInputs) -> SnapshotPayload;
     static auto captureDTO(const JudgementSession&) -> core::Result<SnapshotDTO>;
     static auto visibleSignalCount(const JudgementSession&, Tick) -> std::size_t;
 };

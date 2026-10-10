@@ -447,7 +447,7 @@ void validateSchema(const J& source, std::string_view bytes) {
     }
 }
 auto reject(std::string path, std::string message) -> core::Error {
-    return core::Error{"judgement.s7a4.execution.relation_invalid", std::move(message)}
+    return core::Error{"judgement.execution.relation_invalid", std::move(message)}
         .withContext("category", "invalid_relation")
         .withContext("severity", "error")
         .withContext("faulted", "false")

@@ -15,27 +15,20 @@
 namespace cuexis::judgement {
 namespace {
 
-//  临时拒绝 token：这不是诊断码表。
-//
-//  码表、类别集合与严重度集合属第 6 轮（CM-D04 / P2-04 / P2-06），其创建是接受后的独立工作项，
-//  目前没有任何一条码被登记。下面的 token 只为让拒绝在本批次内可比较、可区分、可稳定复现而存在，
-//  并且刻意带 `provisional` 字样，避免任何消费者把它当成已登记码。它们只出现在 .cpp 中，
-//  绝不写进头文件（ABI 禁止把未登记的码写入公共头）。
-constexpr std::string_view kLifecycleOrderCode{"judgement.provisional.session.lifecycle_order"};
-constexpr std::string_view kUnfrozenSemanticsCode{"judgement.provisional.semantics.unfrozen"};
+// Internal session reasons; no public diagnostic registration is added.
+constexpr std::string_view kLifecycleOrderCode{"judgement.session.operation_state_invalid"};
+constexpr std::string_view kLegacyEntryUnsupportedCode{
+    "judgement.session.legacy_entry_unsupported"};
 //  Spec 9.2 的类别集合是冻结的九类，不新增第十类，所以"会话不在该动词要求的生命周期阶段"这条
 //  拒绝必须落在既有九类里：它是一次次序关系错误，按 Spec 3.7.3 第 4、5 条与 7.2 的映射走既有
 //  `invalid_relation` 原子失败路径。此前这里输出过 `lifecycle`，那个类别名不在九类里，已删除。
 constexpr std::string_view kInvalidRelationCategory{"invalid_relation"};
-//  Spec 9.2 的九类里没有裸 "capability" 这个类别名，所以"本批次尚未冻结该语义"这一类拒绝
-//  输出 `capability_disabled`：能力 id 是已知的，只是本批次没有启用它。令牌名与输出值一致，
-//  避免同一模块内出现两种拼写。
+// Legacy entry rejection keeps the existing capability_disabled category.
 constexpr std::string_view kCapabilityDisabledCategory{"capability_disabled"};
 constexpr std::string_view kErrorSeverity{"error"};
 constexpr std::string_view kLifecycleOrderSummary{
     "the judgement session is not in the lifecycle phase this verb requires"};
-constexpr std::string_view kUnfrozenSummary{
-    "the judgement semantics this verb requires are not frozen in this batch"};
+constexpr std::string_view kLegacySummary{"the legacy judgement entry is unsupported"};
 
 //  上下文字段路径 token：它们是上下文而不是稳定码，不参与码的等价比较。
 constexpr std::string_view kSessionSection{"session"};
@@ -78,9 +71,10 @@ constexpr std::string_view kAbsent{};
     return rejection(kLifecycleOrderCode, kInvalidRelationCategory, kLifecycleOrderSummary, path);
 }
 
-//  未冻结语义拒绝：语义属后续批次，本批次既不实现也不假装成功。
-[[nodiscard]] auto unfrozenSemanticsError(std::string_view path) -> core::Error {
-    return rejection(kUnfrozenSemanticsCode, kCapabilityDisabledCategory, kUnfrozenSummary, path);
+// Legacy rejection-only overload; typed execution has its own supported entry.
+[[nodiscard]] auto legacyEntryError(std::string_view path) -> core::Error {
+    return rejection(kLegacyEntryUnsupportedCode, kCapabilityDisabledCategory, kLegacySummary,
+                     path);
 }
 
 } // namespace
@@ -96,14 +90,15 @@ struct JudgementSession::Impl final {
     //  configured   owner thread only。
     //               读取时点：prepare() 入口决定走哪条拒绝路径。
     //               快照归属：不属于任何投影或快照；载体是自持有的值类型，不从会话拷贝状态。
-    //               重置行为：reset 成功时复位为 false；本批次没有任何路径能把它置为 true，
-    //               因此"拒绝的 configure 不产生半配置会话"是可观察事实而不是承诺。
+    //               Reset clears the flag; successful typed operations publish it atomically.
+    //               Typed configure publishes true only after validation and owning storage
+    //               succeed.
     //  prepared     owner thread only。
     //               读取时点：prepare() 的原子性断言；submit/advance/query/snapshot/seek/reset 的
     //               阶段判定；hasPreparedState()。
     //               快照归属：不属于任何投影或快照。
-    //               重置行为：reset 成功时复位为 false；本批次没有任何路径能把它置为 true，
-    //               所以"拒绝的 prepare 不产生半准备会话"同样是可观察事实。
+    //               Reset clears the flag; successful typed operations publish it atomically.
+    //               Typed prepare/recover publish prepared only with a valid kernel.
     core::ThreadChecker owner;
     bool configured;
     bool prepared;
@@ -126,7 +121,7 @@ void JudgementSession::assertUsable() const noexcept {
 
 auto JudgementSession::create() -> core::Result<JudgementSession> {
     //  空会话不持有任何判定状态、不打开设备、不需要 GPU / 窗口 / 音频 / 渲染后端，
-    //  因此 create 是本批次唯一有成功路径的动词。
+    // Typed configuration and execution are separate supported overloads.
     auto impl = std::make_unique<Impl>();
     return JudgementSession{std::move(impl)};
 }
@@ -135,8 +130,8 @@ auto JudgementSession::configure() -> core::Result<void> {
     assertUsable();
 
     //  拒绝的 configure 不发布任何东西：它不进入 configured 阶段，因此不存在半配置会话。
-    //  本批次不提供配置内容的表示，接受空配置并返回成功就是"伪成功"。
-    return core::unexpected(unfrozenSemanticsError(kConfigurePath));
+    // The typed overload accepts explicit configuration; this legacy overload still refuses.
+    return core::unexpected(legacyEntryError(kConfigurePath));
 }
 
 auto JudgementSession::prepare() -> core::Result<void> {
@@ -150,10 +145,9 @@ auto JudgementSession::prepare() -> core::Result<void> {
         return core::unexpected(lifecycleOrderError(kPreparePath));
     }
 
-    //  已配置的会话在本批次仍然不可 prepare：prepared 的 requirement 记录、preparedGrace、
-    //  仲裁策略与 Interface 投影都没有冻结表示，prepare 只能拒绝，不能发布猜出来的表示。
+    // A configured typed session still cannot use the parameterless legacy prepare verb.
 
-    return core::unexpected(unfrozenSemanticsError(kPreparePath));
+    return core::unexpected(legacyEntryError(kPreparePath));
 }
 
 auto JudgementSession::submit() -> core::Result<void> {
@@ -167,8 +161,8 @@ auto JudgementSession::submit() -> core::Result<void> {
         return core::unexpected(lifecycleOrderError(kSubmitPath));
     }
 
-    //  只有在 prepared 会话存在时才会到达这里；本批次没有能进入该阶段的路径。
-    return core::unexpected(unfrozenSemanticsError(kSubmitPath));
+    // Typed prepare can reach this state; only the legacy parameterless submit is refused.
+    return core::unexpected(legacyEntryError(kSubmitPath));
 }
 
 auto JudgementSession::advance() -> core::Result<void> {
@@ -178,7 +172,7 @@ auto JudgementSession::advance() -> core::Result<void> {
         return core::unexpected(lifecycleOrderError(kAdvancePath));
     }
 
-    return core::unexpected(unfrozenSemanticsError(kAdvancePath));
+    return core::unexpected(legacyEntryError(kAdvancePath));
 }
 
 auto JudgementSession::query() const -> core::Result<JudgementProjection> {
@@ -194,7 +188,9 @@ auto JudgementSession::query() const -> core::Result<JudgementProjection> {
         return core::unexpected(lifecycleOrderError(kQueryPath));
     }
 
-    return core::unexpected(unfrozenSemanticsError(kQueryPath));
+    return core::unexpected(rejection("judgement.session.execution_state_unavailable",
+                                      kCapabilityDisabledCategory,
+                                      "the judgement execution state is unavailable", kQueryPath));
 }
 
 auto JudgementSession::snapshot() const -> core::Result<SnapshotPayload> {
@@ -218,7 +214,7 @@ auto JudgementSession::seek() -> core::Result<void> {
         return core::unexpected(lifecycleOrderError(kSeekPath));
     }
 
-    return core::unexpected(unfrozenSemanticsError(kSeekPath));
+    return core::unexpected(legacyEntryError(kSeekPath));
 }
 
 auto JudgementSession::reset() -> core::Result<void> {
@@ -234,7 +230,7 @@ auto JudgementSession::configure(const SessionConfiguration& configuration)
     -> core::Result<void> try {
     assertUsable();
     if (impl_->configured || impl_->prepared) {
-        return core::unexpected(rejection("judgement.s7a4.session.lifecycle_order",
+        return core::unexpected(rejection("judgement.session.lifecycle_order",
                                           kInvalidRelationCategory, kLifecycleOrderSummary,
                                           kConfigurePath));
     }
@@ -247,15 +243,14 @@ auto JudgementSession::configure(const SessionConfiguration& configuration)
     impl_->configured = true;
     return {};
 } catch (const std::exception&) {
-    return core::unexpected(rejection("judgement.s7a4.execution.relation_invalid",
-                                      "invalid_relation", "configuration storage allocation failed",
-                                      kConfigurePath));
+    return core::unexpected(rejection("judgement.execution.relation_invalid", "invalid_relation",
+                                      "configuration storage allocation failed", kConfigurePath));
 }
 
 auto JudgementSession::prepare(const PreparedGameplay& prepared) -> core::Result<void> {
     assertUsable();
     if (!impl_->configured || impl_->prepared) {
-        return core::unexpected(rejection("judgement.s7a4.session.lifecycle_order",
+        return core::unexpected(rejection("judgement.session.lifecycle_order",
                                           kInvalidRelationCategory, kLifecycleOrderSummary,
                                           kPreparePath));
     }
@@ -272,7 +267,7 @@ auto JudgementSession::submit(std::vector<ClockedIngress> batch)
     -> core::Result<std::vector<InputReceiptPending>> {
     assertUsable();
     if (!impl_->kernel) {
-        return core::unexpected(rejection("judgement.s7a4.session.lifecycle_order",
+        return core::unexpected(rejection("judgement.session.lifecycle_order",
                                           kInvalidRelationCategory, kLifecycleOrderSummary,
                                           kSubmitPath));
     }
@@ -282,7 +277,7 @@ auto JudgementSession::submit(std::vector<ClockedIngress> batch)
 auto JudgementSession::advance(Tick horizon) -> core::Result<JudgementProjection> {
     assertUsable();
     if (!impl_->kernel) {
-        return core::unexpected(rejection("judgement.s7a4.session.lifecycle_order",
+        return core::unexpected(rejection("judgement.session.lifecycle_order",
                                           kInvalidRelationCategory, kLifecycleOrderSummary,
                                           kAdvancePath));
     }
@@ -306,6 +301,12 @@ auto detail::KernelTestAccess::inject(JudgementSession& session, KernelTestContr
     }
     return session.impl_->kernel->inject(std::move(controls));
 }
+auto detail::KernelTestAccess::snapshotValue(SnapshotDTO dto, RecoveryInputs inputs)
+    -> SnapshotPayload {
+    return SnapshotPayload{std::make_shared<const detail::SnapshotStorage>(
+        std::move(dto), std::make_shared<const RecoveryInputs>(std::move(inputs)))};
+}
+
 auto detail::KernelTestAccess::captureDTO(const JudgementSession& session)
     -> core::Result<SnapshotDTO> {
     session.assertUsable();

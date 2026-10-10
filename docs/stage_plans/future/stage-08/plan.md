@@ -2,7 +2,7 @@
 
 状态：future；未开始
 
-更新日期：2026-10-02
+更新日期：2026-10-10
 
 归档来源：[Chart v5 格式计划](../../active/chart-format-update-for-v5/plan.md)、
 [Stage Chart Format Update 完成计划](../../completed/chart-format-update/plan.md)、
@@ -17,16 +17,20 @@ Stage 7A JudgementRequirement / InputEvent / Replay 合同冻结
 Gameplay v2 (`gameplay.version = 2`) Canonical Gameplay Graph、Release/tail、single
 capacity=1 exclusive resource、early/late Presentation bridge、TimebaseProfile 和 Ruleset
 fault transaction 合同冻结
-Stage 7-RPA子阶段已验收的实时边界、正式诊断命名和版本兼容交接
+诊断码正式化独立前置N0–N3退出
+Stage 7-RPA完整退出（实时/设备及原S7A-9矩阵/预算/关闭）
+随后Stage 7B+当前计划范围完成、owner接受及Stage 8交接
 ```
 
 详细格式工作包见 [Chart v5 format plan](../../active/chart-format-update-for-v5/plan.md)。
 本阶段负责把 Foundation 和 Stage 6 已验证的 v5 candidate path 收敛为正式发行合同，
-而不是首次开始设计 Chart v5。Stage 7B+ 的未选定高级判定能力不属于本阶段硬前置。
+而不是首次开始设计 Chart v5。Stage 7B+当前计划范围完成并接受是本阶段启动前置；
+能力是否默认发行，另由本阶段的发行矩阵明确决定。
 
-[Stage 7-RPA子阶段](../../active/stage-07/plan-rpa.md)承接实时架构与正式命名迁移，
-实体设备/实时同步验收直接由RPA完成，本阶段验证其发行兼容。Stage8以前序7A和RPA交付为前置，
-不等待全部7B+；规划登记不表示这些前置已完成。
+[诊断独立前置](../../active/stage-07/plan-diagnostic-formalization.md)承接正式命名迁移，
+[Stage 7-RPA子阶段](../../active/stage-07/plan-rpa.md)承接实时架构与实体设备/实时同步验收，
+本阶段验证发行兼容。实施顺序为诊断独立前置 → RPA → Stage 7B+ → Stage 8；
+规划登记不表示这些前置已完成。
 
 ## 1. 阶段目标
 
@@ -386,8 +390,9 @@ Replay identity
 - Ruleset transaction failure 保留已提交 Fact、拒绝半个 StateDelta，并可重建 PresentationEvent；
   faulted session 的 Snapshot/Seek/Replay 行为有负例证据。
 - 超展开数量、超 decoded bytes、超 Packed bytes、递归、溢出和非法引用均稳定失败。
-- Stage 7A 的 core external consumer、Headless 判定和 Replay golden 全部通过；Stage 7B+
-  仅对本次发行矩阵明确纳入的能力提供对应证据，不要求全部未来判定能力完成。
+- Stage 7A的core external consumer、Headless判定和Replay golden全部通过，RPA和
+  Stage 7B+当前计划范围均有完成与owner接受记录；本阶段对发行矩阵明确纳入的能力
+  另行提供发行集成证据，未选入能力的默认入口稳定拒绝。
 
 ## 8. 交接
 
@@ -408,8 +413,8 @@ SDK 版本遵循 [版本规范](../../../guides/VERSIONING.md)，不与 Stage �
 将该版本落实到安装包、consumer 最低要求、版本拒绝测试及关闭报告；未落实不得关闭。
 
 Stage 8 关闭前，Chart v5 只能称为 candidate，不能被 Player 默认作为发行格式加载。
-Stage 8 关闭不代表 Stage 7B+ 全部完成；后续高级 Judgement 能力继续沿 Stage 7B+ 能力线
-以版本化 capability 方式增加。
+Stage 7B+当前计划范围须在Stage 8启动前完成并接受；未来新增能力另行立项，
+通过版本化capability演进，不自动延后本轮7B+任务。
 
 ## 9. 明确不包含
 

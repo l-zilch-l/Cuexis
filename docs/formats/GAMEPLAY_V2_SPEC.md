@@ -401,9 +401,9 @@ semantic 比较，**不能只比 hash**（FE §2 硬要求 1）。
 6. **判定顺序：先验证 canonical 可表示性，再验证声明范围与边界策略（2026-10-03 输入半批复核）。**
    先判断该量能否在**有符号 64 位 canonical 整数域**内**精确**表示，再判断它是否落在 `AmountSpec`
    声明的 `minimum` / `maximum` 内并满足 `boundaryPolicy`：
-   - **可表示但越界** → `judgement.s7a2.input.amount_out_of_range`，类别 `budget_exceeded`；
+   - **可表示但越界** → `judgement.input.amount_out_of_range`，类别 `budget_exceeded`；
    - **根本不可表示**（分子或分母乘积溢出、无法执行精确量化）→
-     `judgement.s7a2.input.amount_narrowed`，类别 `budget_exceeded`；
+     `judgement.input.amount_narrowed`，类别 `budget_exceeded`；
    - **`exactNumerator == INT64_MIN` 按"不可表示"拒绝**：`|INT64_MIN|` 在**有符号 64 位**内**无表示**，
      因此精确域内的半数取偶（round-half-to-even）在该点不可执行，报 `amount_narrowed`。
    顺序**不得**颠倒：把不可表示报成"越界"会把它误报为声明范围内的值问题。
@@ -443,9 +443,9 @@ semantic 比较，**不能只比 hash**（FE §2 硬要求 1）。
 
 | 输入半批拒绝场景 | 映射到的既有条目 | 类别 / 拒绝码 |
 | --- | --- | --- |
-| **同一 canonical 身份在同一 Tick 再次入场**（`judgement.s7a2.input.same_tick_collision`，§3.7.4 第 4 条的 canonical 观测 identity 判据） | §9.3 的 prepare 原子失败条件（**输入身份 / 次序关系非法**） | `invalid_relation`（**不是** `late_policy_incomplete`） |
-| **`AmountSpec` 窄化 / 不可表示**（`judgement.s7a2.input.amount_narrowed`，§3.7.6 第 6 条） | §9.2 类别 `budget_exceeded` + §9.3 越界路径；**判定顺序上先于越界** | `budget_exceeded` |
-| **校准会话时钟回退**（`judgement.s7a2.timebase.time_reversal`，§3.7.3 第 4 条） | §9.3 的 prepare 原子失败条件（**时间次序关系错误**） | `invalid_relation`（**不是** `budget_exceeded`） |
+| **同一 canonical 身份在同一 Tick 再次入场**（`judgement.input.same_tick_collision`，§3.7.4 第 4 条的 canonical 观测 identity 判据） | §9.3 的 prepare 原子失败条件（**输入身份 / 次序关系非法**） | `invalid_relation`（**不是** `late_policy_incomplete`） |
+| **`AmountSpec` 窄化 / 不可表示**（`judgement.input.amount_narrowed`，§3.7.6 第 6 条） | §9.2 类别 `budget_exceeded` + §9.3 越界路径；**判定顺序上先于越界** | `budget_exceeded` |
+| **校准会话时钟回退**（`judgement.timebase.time_reversal`，§3.7.3 第 4 条） | §9.3 的 prepare 原子失败条件（**时间次序关系错误**） | `invalid_relation`（**不是** `budget_exceeded`） |
 
 **同一 canonical 身份在同一 Tick 再次入场属于输入身份 / 次序关系非法**，稳定拒绝并映射
 `invalid_relation`。它与**迟到策略的重复排队**必须分开：后者（§3.7.4 第 4 条）判据是迟到队列中
@@ -2083,11 +2083,11 @@ src-only 令牌 13 条、空位 7 条是三个不同数字**，校验器分别�
 
 | 码 | 来源映射行（已文档化） | 既有承载面 | 该行给出的类别 |
 | --- | --- | --- | --- |
-| `judgement.s7a2.timebase.tick_overflow` | §3.7.8 映射表 **Tick 溢出行** | `JudgementError` / `DiagnosticCode`（ABI 域 8） | `budget_exceeded` |
-| `judgement.s7a2.timebase.time_reversal` | §3.7.8 映射表 **校准会话时钟回退**行（"时间次序关系错误 → `invalid_relation`"结论亦见 §9.3 输入半批映射表第 3 行） | `JudgementError` / `DiagnosticCode`（ABI 域 8） | `invalid_relation` |
-| `judgement.s7a2.input.amount_out_of_range` | §3.7.8 映射表 **`DomainAmount` 量越界 / 窄化 / 量化溢出**行（行文以场景命名、未逐字带码串；码串见 ABI §数值域与量程"判定顺序：可表示性先于范围"） | `JudgementError` / `DiagnosticCode`（ABI 域 8） | `budget_exceeded` |
-| `judgement.s7a2.input.amount_narrowed` | 同上（同一"可表示性先于范围"映射行；§9.3 输入半批映射表第 2 行给出"窄化 → `budget_exceeded`"） | `JudgementError` / `DiagnosticCode`（ABI 域 8） | `budget_exceeded` |
-| `judgement.s7a2.input.same_tick_collision` | §3.7.8 映射表 **同一 canonical 身份在同一 Tick 再次入场**行（行文以场景命名、未逐字带码串；码串见 §9.3 输入半批映射表第 1 行） | `JudgementError` / `DiagnosticCode`（ABI 域 8） | `invalid_relation` |
+| `judgement.timebase.tick_overflow` | §3.7.8 映射表 **Tick 溢出行** | `JudgementError` / `DiagnosticCode`（ABI 域 8） | `budget_exceeded` |
+| `judgement.timebase.time_reversal` | §3.7.8 映射表 **校准会话时钟回退**行（"时间次序关系错误 → `invalid_relation`"结论亦见 §9.3 输入半批映射表第 3 行） | `JudgementError` / `DiagnosticCode`（ABI 域 8） | `invalid_relation` |
+| `judgement.input.amount_out_of_range` | §3.7.8 映射表 **`DomainAmount` 量越界 / 窄化 / 量化溢出**行（行文以场景命名、未逐字带码串；码串见 ABI §数值域与量程"判定顺序：可表示性先于范围"） | `JudgementError` / `DiagnosticCode`（ABI 域 8） | `budget_exceeded` |
+| `judgement.input.amount_narrowed` | 同上（同一"可表示性先于范围"映射行；§9.3 输入半批映射表第 2 行给出"窄化 → `budget_exceeded`"） | `JudgementError` / `DiagnosticCode`（ABI 域 8） | `budget_exceeded` |
+| `judgement.input.same_tick_collision` | §3.7.8 映射表 **同一 canonical 身份在同一 Tick 再次入场**行（行文以场景命名、未逐字带码串；码串见 §9.3 输入半批映射表第 1 行） | `JudgementError` / `DiagnosticCode`（ABI 域 8） | `invalid_relation` |
 
 **第 5 条（核对中的两处口径说明，必须随本条一起读）。** ①第 2、5 行的 §3.7.8 行文给的是**场景**、不是码串
 本身，码串逐字出现在 §9.3 的输入半批映射表；②第 3、4 行的 §3.7.8 行文同样以场景命名，码串逐字出现在
@@ -2771,7 +2771,7 @@ enum按ABI声明顺序0起且Reader检查闭合集。UTF8 string=u64字节长+�
 vector=u64个数+record顺序；optional=u8 presence+值；variant=u8 tag+record。
 所有length/count在转换和乘加前检查，element数量与剩余实际byte bounds交叉校验。
 
-Envelope：magic 8字节、formatVersion u32=1、kind u8(Replay=1/Snapshot=2)、payloadLength u64、
+Envelope：magic 8字节、formatVersion u32=2、kind u8(Replay=1/Snapshot=2)、payloadLength u64、
 payloadDigest u64（FNV-1a64，offset14695981039346656037，prime1099511628211）；随后payload。
 payload count包括section framing，envelope总字节另为29+payloadLength。未知version/tag/截断优先于
 摘要，摘要优先于identity/引用/全状态，摘要不证明语义或历史。
@@ -2831,8 +2831,8 @@ ScoreRule是唯一映射集合，prepare按(phase,outcome,grade)规范排序，�
 Ruleset的`registry_invalid/configuration_invalid/hook_invalid`为prepare拒绝，
 `ruleset.package_unsupported`与`capability.disabled`保留明确拒绝面；运行Fold
 `ruleset.transaction_failed`保存faulted=true及faultStage=fold，与seal前kernel故障分开。
-Replay/Seek/Snapshot闭包仍复用`judgement.s7a4.execution.relation_invalid`，
-依赖缺失用`judgement.s7a4.execution.profile_incomplete`（identity_closure_incomplete）；
+Replay/Seek/Snapshot闭包仍复用`judgement.execution.relation_invalid`，
+依赖缺失用`judgement.execution.profile_incomplete`（identity_closure_incomplete）；
 不新增capability，不把普通结构拒绝冒充业务预算。
 
 
@@ -2888,3 +2888,57 @@ aggregation 与规范化 groupMembers；非空组还须具有相同 source/phase
 允许同 ID 的不同 target 或不相交 lifetime，仍以 (FactId,targetId) 去重。这样既保留原合法重复
 和分段 lifetime，也不允许同 ID 的组外 Hit 行使组内 Miss 成员提前完成。mixed aliases 不受
 遍历顺序影响，在 prepare 稳定拒绝；这是首用表示缺口的合同修订，不改变既有 kernel/Fold。
+
+
+## 诊断正式化与 Recovery revision2（2026-10-10）
+
+本节为独立诊断前置的正式合同；实现与验证状态仅归CURRENT_STATUS。
+业务原因不含项目阶段或provisional段。原阶段码按模块/子域/原因去阶段段，
+sourceCode同步；两生命周期来源保持区分为judgement.session.lifecycle_order与
+judgement.session.operation_state_invalid。legacy无参configure/prepare/submit/advance/seek
+在原生命周期检查后拒绝为judgement.session.legacy_entry_unsupported，message为
+"the legacy judgement entry is unsupported"；query有kernel时成功；prepared但无kernel的防御兜底为
+judgement.session.execution_state_unavailable，message为"the judgement execution state is unavailable"。
+当前prepared只在成功发布kernel或recover时设为true，reset同时清除两者；因此query兜底无合法生产到达路径。
+其余message、九类别、severity、faulted、ordered context、cause、首错与失败原子性不变。
+
+grace的chartDuration与candidate竞争先拒绝judgement.grace.value_source_conflict / invalid_relation，
+禁止chart供给随后拒绝judgement.grace.chart_supply_not_allowed / budget_exceeded。
+judgement.content.unsupported_form保持现有non_terminating_source与capability_disabled两条来源。
+queue_hop_exceeded、quantization_mismatch、state_transition_invalid仅声明，无新执行能力；
+无消费者secondHalfError及专属token删除。
+
+公共投影使用有限显式集合。五个已登记input/timebase码和原S7A4公共码透传；
+其余原S7A2/3已知内部码（含grace拆分）按实际category映射既有九类别公共码，
+缺category默认invalid_relation，未知category仍fallback到playback.gameplay.invalid。
+最后一个同名category决定投影；复制全部context原顺序，末尾追加sourceCode，不去重。
+此路径保持原来不复制cause的行为。其他已知内部及未知非阶段码透传；graph族原补充元数据不变。
+人工未定义旧前缀曾被私有helper投影，不是受支持公共生产者；取消这个前缀行为，不保留alias。
+内部新码不自动登记公共能力。完整sameError/sameResult继续严格比较所有字段，不归一化。
+
+Recovery magic仍CXGREC01，envelope formatVersion u32=2，kind/length/digest/body布局不变。
+stateSchema=1、eventCodec=canonical.discrete.le.v1、FactSemanticRevision及Prepared/JudgementIdentity不变。
+合法revision1健康或故障Replay/Snapshot均拒绝codec.version_unsupported；其他未知revision同样拒绝。
+依赖prepare先于预算，预算先于29字节/truncated、magic、version、kind、length；
+随后section/编码与counts预算、digest、identity、Replay header factCount或Snapshot双count；既有结构/admission复验顺序保持。
+诊断污染检查位于digest/identity/上述header counts之后、Replay record执行校验或Snapshot restore之前。
+Replay Writer先沿原prepare/identity路径再检查全部record结果；Snapshot Writer无新增依赖prepare，检查其kernel；已知旧诊断拒绝codec.record_invalid，
+category=invalid_relation/severity=error/faulted=false，message仍recovery wire validation failed。
+检查每层Error.code与每个key恰为sourceCode的context值，按有限旧定义集合；cause迭代遍历，
+不扫描message或其他context文本，不只检查末条record，不忽略重复sourceCode。
+
+直接restore在prepare/identity和原state closure后、fault schema前检查旧诊断；evaluate在prepare/identity后
+且任何advance前检查所有record；Seek在原cut/shape/count/prepare/identity后检查archive全部record。
+这些非codec路径拒绝judgement.execution.relation_invalid，沿原三项context及faulted=false。
+Checkpoint不是独立codec：不适用者仍忽略，候选凭证仍复验；不兼容state使恢复优化失效并从起点fallback，
+不得让Checkpoint改变无优化时的接受/拒绝。返回不改已有owning错误或载体。
+健康旧owning同值无年代标签，仍可接受；只把健康旧body的header改为2且满足所有规则也可能接受，
+不作来源鉴别承诺。仅改header不能消除旧code/cause/sourceCode污染。
+完整结果变化仅为映射code/sourceCode、两类明确message、envelope版本；不声称新旧完整结果相等。
+
+
+已存在的未登记operation-state来源沿`restoreGameplay`后`archiveGameplay`可观察：
+Snapshot恢复不携带完整原journal，因此canArchive=false，原provisional生命周期错误经identity投影返回。
+本次明确保留这个既有Result载体，正式名为judgement.session.operation_state_invalid；
+原message、五项ordered context及absence cause保持，不添加公共登记或Replay能力。
+legacy无参语义拒绝与query无kernel防御兜底仍不由安装SDK公开为新动词。

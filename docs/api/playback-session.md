@@ -2,9 +2,9 @@
 
 状态：active
 
-更新日期：2026-08-30
+更新日期：2026-10-10
 
-适用版本：SDK API `0.7.1`
+适用版本：SDK API `0.7.5`
 
 文档角色：公共 API 参考
 
@@ -279,3 +279,16 @@ Player 窗口适配按同一 poll 批次做保守隔离：focusLost 帧抑制除
 声称保留按键与传输动作的交错顺序。左右 seek 键对 Gameplay 使用当前整数 H 加减一个显式
 H step，并以同一公共 Replay/cut 重建；旧 f64 Seek 命令稳定拒绝。音频 control 拒绝时不变更
 Gameplay；音频已成功而 Gameplay control 拒绝时应用进入 Failed，不能报告旧 bundle 保持成功。
+
+
+## 诊断迁移与 SDK 0.7.5
+
+本候选SDK消费Spec的“诊断正式化与 Recovery revision2”合同。公开布局/签名/枚举不变；
+可观察code/sourceCode及两类legacy/query message按该合同改变，旧owning值保持。
+Replay/Snapshot Writer输出revision2；Reader拒绝revision1健康及故障原件，
+拒绝不兼容旧诊断值，不能以SDK patch号声称旧归档兼容。
+直接evaluateGameplayReplay/restoreGameplay/checkpointGameplay/seekGameplay执行各自校验，
+fromBytes成功只证明结构校验，不代替evidenceValid或完整结果比较；Checkpoint保留fallback。
+候选安装consumer最低请求Cuexis 0.7.5并重建，matching-toolchain shared不承诺旧二进制可替换。
+production candidate-OFF无新API；新码可能随原content错误路径进入已有Result，category/context规则不变。
+失败原子性、generation、sealed前缀、GameplayAdvanceReceipt与公开Result承载均保持既有合同。

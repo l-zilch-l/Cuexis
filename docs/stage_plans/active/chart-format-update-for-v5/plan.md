@@ -5,9 +5,9 @@ Note 表现或渲染后端提升为核心玩法语义。判定域、动作、有
 可分离，以便未来接入不同输入设备与 Presentation。
 
 状态：active；跨阶段 Chart v5 总工作包；不是当前下一实施阶段。Foundation、Stage 6、
-Stage 7A 和 Stage 8 分别按各自计划执行；正式发行门禁归 Stage 8
+Stage 7A、RPA、Stage 7B+和Stage 8分别按各自计划执行；正式发行门禁归 Stage 8
 
-更新日期：2026-10-02
+更新日期：2026-10-10
 
 SDK 版本遵循 [版本规范](../../../guides/VERSIONING.md)。本文“v5 发行 SDK 版本”指 Stage 8
 按实际集成基线（包含 Stage 7A 等前序交付）和公共合同差异批准的具体版本，不预留 `0.8.0`，
@@ -18,31 +18,30 @@ SDK 版本遵循 [版本规范](../../../guides/VERSIONING.md)。本文“v5 发
 [Chart v4 格式合同](../../../formats/CHART_V4_FORMAT.md)、[谱面格式审计记录](../../../stage_reports/reviews/stage-verification-2026-09/2026-09-01-findings.md)
 与前置 [Stage 6 计划](../../completed/stage-06/plan.md)。
 
-2026-10-09路线补充：[Stage 7-RPA子阶段](../stage-07/plan-rpa.md)
-承接实时播放架构、正式诊断命名及实体设备/实时同步最终验收，基于7/8集成进入设计并向Stage8
-交付；S7A-9不新增RPA前置，Stage7B+继续独立并按选入结果交付Stage8。本跨阶段工作包不复制RPA计划，也不因路线增加而接受生产预算。
+2026-10-10路线补充：诊断码审计与正式化归[独立前置N0–N3](../stage-07/plan-diagnostic-formalization.md)；
+[Stage 7-RPA子阶段](../stage-07/plan-rpa.md)承接实时架构、实体设备/同步及原S7A-9的矩阵、预算、交接和关闭。
+实施顺序为7A既有成果 → 诊断独立前置N3退出 → RPA完整退出 → [Stage 7B+](../stage-07/plan-b.md)实施与验收
+→ Stage 8发行收敛。本跨阶段工作包不复制分册计划，也不因归属调整接受生产预算。
 
 ## 计划定位
 
 本文是 Chart v5 的跨阶段总工作包和详细设计汇总，用于维护 v5 的目标、格式方向、
 容量门禁、迁移要求和跨阶段交接。它不直接决定当前应启动的阶段。
 
-当前实施顺序是：
+阶段依赖如下；当前完成状态见[CURRENT_STATUS](../../../CURRENT_STATUS.md)：
 
 ```text
-已完成前置
-  -> ../../completed/chart-format-foundation/plan.md
-当前实施计划
-  -> ../chart-format-foundation-hardening/plan.md
-后续阶段（加固关闭后）
-  -> ../../completed/stage-06/plan.md
-  -> ../../active/stage-07/plan.md（Stage 7A）
-  -> ../../future/stage-08/plan.md
+Chart Format Foundation
+  -> Foundation Hardening
+  -> Stage 6
+  -> Stage 7A既有成果
+  -> Stage 7-RPA（含原S7A-9统一收尾）
+  -> Stage 7B+（当前计划范围完成并接受）
+  -> Stage 8
 ```
 
-其中，`chart-format-foundation` 负责先完成 v5 Core/Packed 的基础、容量验证和 CXC
-entry 设计；当前由 `chart-format-foundation-hardening` 补齐交接技术门禁后才进入 Stage 6。
-本文继续保留 active；其中的 v5 正式发行内容要到 Stage 8 才按阶段计划实施。
+Foundation及交接加固的历史计划在completed目录中；本文件继续作为跨阶段工作包维护，
+正式格式发行收敛由Stage 8执行。
 本次路线修订把 Chart v5 的 Gameplay semantic revision 固定为 `gameplay.version = 2`，并允许
 Canonical Gameplay Graph 作为 CXC v1 内独立的 candidate Playback entry，并在 Stage 8 正式发行
 门禁中评估为 formal entry。该 entry 与
@@ -131,7 +130,8 @@ Additive opacity        已拒绝
   candidate path；Stage 6
   同时保留 Chart v4、CXT v1 和 CXC v1 的兼容回退。
 - Stage 7A 必须冻结 Chart v5 所需的 JudgementRequirement、InputEvent、JudgementResult 和
-  Replay identity。Stage 7B+ 的高级判定能力不是本阶段或 Stage 8 的整体前置。
+  Replay identity；原7A剩余关闭工作归RPA。RPA完成后实施Stage 7B+，其当前计划范围
+  完成并接受后才进入Stage 8；能力是否默认发行由Stage 8矩阵决定。
 - Stage 8 关闭并经 owner acceptance 后，后续新增能力以 v5 typed/portable/Packed 谱面作为基线。
   兼容窗口内 Playback 仍直接求值未迁移的 v1–v4；默认写出与正式发行入口只在 Stage 8 关闭后切换到 v5。
 - Stage 6 的 candidate path 可以在本计划关闭前存在，但必须明确标记 candidate，不得把候选读取

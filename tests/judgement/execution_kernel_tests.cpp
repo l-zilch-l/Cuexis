@@ -228,7 +228,7 @@ TEST_CASE("T4 no-tail Hold ends coverage with physical contact still active",
     CHECK(covered->kernelView().ownership.empty());
     auto conflict = session.submit({input(999, 2, InputAction::release)});
     REQUIRE_FALSE(conflict);
-    CHECK(conflict.error().code() == "judgement.s7a4.late.rejected");
+    CHECK(conflict.error().code() == "judgement.late.rejected");
     REQUIRE(session.submit({input(1001, 2, InputAction::release)}));
     REQUIRE(session.advance(Tick{1004}));
     CHECK(session.query()->kernelView().contacts.empty());
@@ -305,7 +305,7 @@ TEST_CASE("Tick failure injection preserves sealed prefix cursors ownership rece
         REQUIRE(detail::KernelTestAccess::inject(session, {Tick{1000}, point, {}, {}}));
         auto failed = session.advance(Tick{1003});
         REQUIRE_FALSE(failed);
-        CHECK(failed.error().code() == "judgement.s7a4.kernel.transaction_failed");
+        CHECK(failed.error().code() == "judgement.kernel.transaction_failed");
         auto projection = session.query();
         REQUIRE(projection);
         const auto& p = projection->kernelView();
@@ -684,7 +684,7 @@ TEST_CASE("Late dispatch collisions reject whole admission without poisoning seq
     auto rejected =
         session.submit({input(900, 1, InputAction::press), input(901, 2, InputAction::release)});
     REQUIRE_FALSE(rejected);
-    CHECK(rejected.error().code() == "judgement.s7a4.late.dispatch_collision");
+    CHECK(rejected.error().code() == "judgement.late.dispatch_collision");
     CHECK(session.query()->kernelView().facts == before->kernelView().facts);
     auto admitted = session.submit({input(901, 1, InputAction::press)});
     REQUIRE(admitted);
@@ -692,7 +692,7 @@ TEST_CASE("Late dispatch collisions reject whole admission without poisoning seq
     CHECK_FALSE(admitted->front().wasForwarded);
     auto duplicate = session.submit({input(901, 9, InputAction::press)});
     REQUIRE_FALSE(duplicate);
-    CHECK(duplicate.error().code() == "judgement.s7a2.late.duplicate_queue_entry");
+    CHECK(duplicate.error().code() == "judgement.late.duplicate_queue_entry");
 }
 
 TEST_CASE("Matcher branches advance one step retain state across gaps and ignore dead transitions",
@@ -1089,7 +1089,7 @@ TEST_CASE("Prefix complement materializes live self loops while containment reje
     CHECK(liveLoop);
     auto rejected = prepareResolvedGameplay({f.assembly, {}});
     REQUIRE_FALSE(rejected);
-    CHECK(rejected.error().code() == "judgement.s7a3.declaration.structurally_incomplete");
+    CHECK(rejected.error().code() == "judgement.declaration.structurally_incomplete");
 }
 
 TEST_CASE("Held leases cannot be preempted by a higher priority later candidate",
@@ -1151,7 +1151,7 @@ TEST_CASE("Calibration and complete configuration mismatch preserve prepare publ
     if (configured) {
         CHECK_FALSE(third->prepare(f.prepared()));
     } else {
-        CHECK(configured.error().code() == "judgement.s7a4.execution.profile_unsupported");
+        CHECK(configured.error().code() == "judgement.execution.profile_unsupported");
         CHECK(contextValue(configured.error(), "category") == "capability_disabled");
     }
     CHECK_FALSE(third->hasPreparedState());
@@ -1187,7 +1187,7 @@ TEST_CASE("Virtual independent competition has one winner and rejects pair colli
     source.requirements[1].independentCompetition = source.requirements[0].independentCompetition;
     auto collision = prepareResolvedGameplay({f.assembly, {}});
     REQUIRE_FALSE(collision);
-    CHECK(collision.error().code() == "judgement.s7a4.execution.relation_invalid");
+    CHECK(collision.error().code() == "judgement.execution.relation_invalid");
 }
 
 TEST_CASE("Contact subjects include source class even with identical channel and press time",

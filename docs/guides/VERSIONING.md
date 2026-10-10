@@ -299,6 +299,16 @@ preview 的源码兼容不代表 shared binary 可直接替换，旧 host 仍须
 Stage 14 必须另行冻结 `1.x` 的 API/ABI 兼容、弃用和版本递增政策及其测试；
 在此之前，`0.x` minor 可以持续增长，不能从 `0.9.x` 自动进位到 `1.0.0`。
 
+### 2026-10-10诊断正式化版本裁定
+
+owner明确指定[独立诊断正式化工作包](../stage_plans/active/stage-07/plan-diagnostic-formalization.md)
+目标SDK API为`0.7.5`，同时保留此前已接受的新Recovery版本拒绝旧版本方向。
+这是本工作包的具体版本裁定，尚未更新实现、发行或完成N1/N3；版本文件在N2版本集成时同步。
+N1仍需盘点production/candidate公共差异及迁移影响，不将patch数字当作可观察合同兼容证明。
+若实际差异属于常规规则要求升minor的不兼容公开变化，本工作包按owner指定的`0.7.5`
+记录限定例外及具体影响，不反向放宽Reader来制造兼容，也不推广为其他阶段可使用breaking patch。
+该版本裁定不替代具体SHA的审批、安装消费者、内容版本拒绝或发行门禁。
+
 ## Stage 6 已冻结的版本方向（阶段已于 2026-09-27 关闭并归档）
 
 [ADR 0042](../adr/0042-stage-6-productization-boundaries.md) 将 Stage 6 SDK 目标冻结为
@@ -365,3 +375,13 @@ find_package(Cuexis 0.7.0 CONFIG REQUIRED COMPONENTS Playback)
 `player.preferences.unsupported_version` / `player.audio_profile.unsupported_version`，保存路径
 拒绝覆盖该文件。因此“升级”不会静默改写用户文件，回滚到旧构建也仍然可读；这是当前可验证的迁移
 安全边界，而不是迁移实现。
+
+
+### 0.7.5具体兼容差异
+
+诊断N1已将可观察差异落入Spec/ABI：现有错误code/sourceCode正式命名、两类内部legacy/query
+message修正、候选Recovery envelope revision2明确拒绝revision1（含健康归档）。
+这是owner指定0.7.5的限定breaking patch例外；不推广到其他工作包。
+production公开签名/布局/枚举无变化，candidate消费者需重建并最低请求0.7.5；
+旧归档没有内置迁移工具，回退须使用匹配旧源码/包和原件，不能把新产物降级重写。
+SDK文件在N2.4实施，日期身份独立经updater更新并fresh/clean-first；尚无发行或新SHA审批。

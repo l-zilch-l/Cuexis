@@ -9,7 +9,7 @@ namespace cuexis::judgement {
 namespace {
 auto rejection(std::string_view suffix, std::string_view category, std::string_view path,
                std::string_view message) -> core::Error {
-    return core::Error{"judgement.s7a4." + std::string{suffix}, std::string{message}}
+    return core::Error{"judgement." + std::string{suffix}, std::string{message}}
         .withContext("category", std::string{category})
         .withContext("severity", "error")
         .withContext("faulted", "false")

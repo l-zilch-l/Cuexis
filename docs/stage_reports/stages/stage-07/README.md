@@ -6,14 +6,15 @@
 
 本索引按报告用途分类，不复制裁定、字段合同或当前阶段结论。
 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 是唯一当前实现状态摘要；
-[Stage 7总计划](../../../stage_plans/active/stage-07/plan.md)、[7A分册](../../../stage_plans/active/stage-07/plan-a.md) 和 [7B+分册](../../../stage_plans/active/stage-07/plan-b.md) 持有范围、批次与实施决策。
+[Stage 7总计划](../../../stage_plans/active/stage-07/plan.md)、[7A分册](../../../stage_plans/active/stage-07/plan-a.md)、[RPA分册](../../../stage_plans/active/stage-07/plan-rpa.md) 和 [7B+分册](../../../stage_plans/active/stage-07/plan-b.md) 持有范围、批次与实施决策。
 每份报告只代表其证据日期，历史“下一步”不能覆盖主计划。
 
 ## 分类导航
 
 | 分类 | 数量 | 主要用途 |
 | --- | --- | --- |
-| 准入与基线 (readiness) | 8 | owner准入记录、工具链基线、typed合同与计划审视、D-9候选证据 |
+| 准入与基线 (readiness) | 7 | owner准入记录、工具链基线、typed合同与计划审视、D-9候选证据；另有诊断审计旧路径兼容页 |
+| RPA子阶段 (rpa) | 2 | 正式命名审计与证据；后续架构/综合收尾按RPA分册管理 |
 | 裁定记录 (decisions) | 14 | 分轮准入/实施裁定、合同选择、落地位置与诊断分类；现行字段仍归Spec/ABI |
 | 设计与实施记录 (implementation) | 6 | 带日期的设计收口和实施推进；设计交付与运行验证分别按报告声明解释 |
 | 验证与审计 (verification) | 23 | 独立复验、功能验收、边界审计、CI优化和文档恢复证据 |
@@ -32,13 +33,22 @@
 | 报告 | 证据日期 |
 | --- | --- |
 | [S7A-7/8计划与合同重审](readiness/2026-10-07-s7a-7-8-plan-review.md) | 2026-10-07 |
-| [阶段诊断码审计与正式命名迁移规划](readiness/2026-10-09-diagnostic-phase-name-audit.md) | 2026-10-09 |
 | [实时架构重审与规划证据](readiness/2026-10-09-realtime-architecture-review.md) | 2026-10-09 |
 | [D-9 候选补丁与验证证据：version-gate 的 POSIX shell 判据](readiness/2026-10-02-d9-shell-guard-candidate.md) | 2026-10-02 |
 | [Gameplay V2 acceptance package：owner 接受记录](readiness/2026-10-02-s7a-0-acceptance.md) | 2026-10-02 |
 | [S7A-0 执行基线与合同表征](readiness/2026-10-02-s7a-0-baseline.md) | 2026-10-02 |
 | [Stage 7A S7A-0：Release 基线证据](readiness/2026-10-02-s7a-0-release-baseline.md) | 2026-10-02 |
 | [Stage 7A typed contract review（S7A-1 冻结顺序第 4 步）](readiness/2026-10-02-s7a-1-typed-contract-review.md) | 2026-10-02 |
+
+## RPA子阶段
+
+下列诊断审计保留原dated正文/ZIP及路径；最新任务归属为[诊断码正式化独立前置](../../../stage_plans/active/stage-07/plan-diagnostic-formalization.md)，不再是RPA内部N线。
+
+- [N0当前清单与额外命名复核](rpa/2026-10-10-n0-diagnostic-inventory-review.md)（2026-10-10）：67项复核无增删，另发现2个活动provisional码与同码多原因；附[机器清单与证据ZIP](rpa/2026-10-10-n0-diagnostic-inventory-evidence.zip)，未实施N1–N3。
+- [阶段诊断码审计与正式命名迁移规划](rpa/2026-10-09-diagnostic-phase-name-audit.md)（证据2026-10-09，2026-10-10迁入）：N线逐码映射与兼容输入，附[原始证据ZIP](rpa/2026-10-09-diagnostic-phase-name-audit-evidence.zip)。
+- [诊断审计旧路径兼容页](readiness/2026-10-09-diagnostic-phase-name-audit.md)：保留一个整理周期。
+
+原S7A-9剩余收尾由[RPA-F1–F4](../../../stage_plans/active/stage-07/plan-rpa.md#综合收尾工作线原s7a-9)接管；既有7A报告保留原日期、SHA和证据范围，不因归属调整改记通过。
 
 ## 裁定记录
 
@@ -121,3 +131,7 @@
 历史报告按用途迁入上述叶目录，历史正文和证据日期保留，链接已重定位；新增报告在对应分类登记。
 旧逻辑路径见 [legacy-paths](legacy-paths.md)，不建立逐文件stub。
 叶目录由本索引直接列出全部正文，不再为每个分类复制README。
+
+## 独立诊断前置
+
+- [诊断正式化证据](diagnostic-formalization/README.md)

@@ -2,10 +2,16 @@
 
 状态：historical
 
-更新日期：2026-08-30
+更新日期：2026-10-10
 
 以下旧逻辑路径已迁入按角色归档的 canonical 文档。映射用于历史引用迁移，不保留逐文件
 compatibility stub。
+
+## 仓库根目录讨论稿
+
+- 仓库根目录`rpa-target-architecture-draft.md` -> [RPA v0.5历史初稿](archive/stage-07-planning/2026-10-10-rpa-target-architecture-draft.md)（2026-10-10归档）。按owner要求移出项目根目录，不保留旧路径文件；当前规划归[plan-rpa](stage_plans/active/stage-07/plan-rpa.md)。
+
+## 原docs根目录文档
 
 - `ANIMATION_MIXING.md` -> [canonical](formats/ANIMATION_MIXING.md)
 - `BUILDING.md` -> [canonical](guides/BUILDING.md)

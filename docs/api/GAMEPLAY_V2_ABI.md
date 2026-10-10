@@ -588,7 +588,7 @@ create configuration
 - **负 `observationTick` 合法，只有校准时钟回退被拒（2026-10-03 输入半批复核）。** 有符号 64 位域内的
   **负值合法**并**参与单调排序**，负值本身**不触发任何拒绝码**；**只有校准会话时钟回退**被稳定拒绝，
   且属**时间次序关系错误**，映射 `invalid_relation`（**不是** `budget_exceeded`）。**不可表示的
-  calibrated clock 值**复用既有 **tick 域表示失败**（`judgement.s7a2.timebase.tick_overflow` /
+  calibrated clock 值**复用既有 **tick 域表示失败**（`judgement.timebase.tick_overflow` /
   `budget_exceeded`），**不保留**独立令牌；入口违反"先捕获校准会话时钟"的顺序只走既有
   `invalid_relation` 原子失败路径（[Gameplay V2 Spec](../formats/GAMEPLAY_V2_SPEC.md) §3.7.3 第 4、5 条、
   §9.3）。
@@ -623,8 +623,8 @@ create configuration
   **最近值半数取偶**（round-half-to-even，负值对称，与 Tick 侧 tie rule 同一规则）。
 - **canonical 整数宽度已明文冻结（2026-10-03 输入半批复核）。** `AmountSpec` 的 canonical 整数表示为有符号 64 位整数；该宽度是 S7A-2 冻结的规范表示，并与 Tick 的有符号 64 位域一致；任何无法在该域内精确表示的量化、乘法或窄化稳定拒绝。该宽度**不得**靠"复用 §时间单位与表达 的 Tick 宽度"默示，**也不得**借宿主类型扩大该域（正文见 [Spec §3.7.6](../formats/GAMEPLAY_V2_SPEC.md)）。
 - **判定顺序：可表示性先于范围（2026-10-03 输入半批复核）。** 先验证 canonical 可表示性、再验证声明
-  范围与边界策略：**可表示但越界** → `judgement.s7a2.input.amount_out_of_range` / `budget_exceeded`；
-  **根本不可表示** → `judgement.s7a2.input.amount_narrowed` / `budget_exceeded`；`exactNumerator ==
+  范围与边界策略：**可表示但越界** → `judgement.input.amount_out_of_range` / `budget_exceeded`；
+  **根本不可表示** → `judgement.input.amount_narrowed` / `budget_exceeded`；`exactNumerator ==
   INT64_MIN` 因 `|INT64_MIN|` 无有符号 64 位表示而按"不可表示"拒绝。两者同属 `budget_exceeded`，
   但**顺序不得颠倒**。
 - **越界一律稳定拒绝。** 超范围、窄化（narrowing）与溢出一律**稳定拒绝并返回诊断码**，不得饱和、
@@ -1483,7 +1483,7 @@ capability、remediation 和 rawTime，把未注册内部 code 放在仅诊断�
 | capability_disabled | capability.disabled |
 | budget_exceeded | capability.budget_insufficient |
 | identity_closure_incomplete | identity_closure_incomplete |
-| late_policy_incomplete | judgement.s7a4.late.parameters_invalid |
+| late_policy_incomplete | judgement.late.parameters_invalid |
 | ambiguous_migration | migration.ambiguous |
 | non_unique_solution | playback.gameplay.non_unique_solution |
 | non_terminating_source | playback.gameplay.non_terminating_source |
@@ -1577,3 +1577,23 @@ localOrdinal，target 为稳定实体 ID，visible 为实际显式 bool，start/
 registry admission. Unknown enabled IDs are inspected in canonical byte order before carrier
 decode, so permutation selects the same capabilityId/code/category/severity/faulted context.
 This does not reorder Ruleset modules, control journals or admitted input sequences.
+
+
+## 诊断迁移与 SDK 0.7.5
+
+本候选SDK消费Spec的“诊断正式化与 Recovery revision2”合同。公开布局/签名/枚举不变；
+可观察code/sourceCode及两类legacy/query message按该合同改变，旧owning值保持。
+Replay/Snapshot Writer输出revision2；Reader拒绝revision1健康及故障原件，
+拒绝不兼容旧诊断值，不能以SDK patch号声称旧归档兼容。
+直接evaluateGameplayReplay/restoreGameplay/checkpointGameplay/seekGameplay执行各自校验，
+fromBytes成功只证明结构校验，不代替evidenceValid或完整结果比较；Checkpoint保留fallback。
+候选安装consumer最低请求Cuexis 0.7.5并重建，matching-toolchain shared不承诺旧二进制可替换。
+production candidate-OFF无新API；新码可能随原content错误路径进入已有Result，category/context规则不变。
+失败原子性、generation、sealed前缀、GameplayAdvanceReceipt与公开Result承载均保持既有合同。
+
+
+已存在的未登记operation-state来源沿`restoreGameplay`后`archiveGameplay`可观察：
+Snapshot恢复不携带完整原journal，因此canArchive=false，原provisional生命周期错误经identity投影返回。
+本次明确保留这个既有Result载体，正式名为judgement.session.operation_state_invalid；
+原message、五项ordered context及absence cause保持，不添加公共登记或Replay能力。
+legacy无参语义拒绝与query无kernel防御兜底仍不由安装SDK公开为新动词。

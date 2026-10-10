@@ -53,6 +53,7 @@ class SnapshotPayload final {
 
   private:
     friend class JudgementSession;
+    friend class detail::KernelTestAccess;
     friend auto encodeSnapshot(const SnapshotPayload&) -> core::Result<std::vector<std::byte>>;
     friend auto decodeSnapshot(std::span<const std::byte>, const RecoveryInputs&,
                                std::optional<CodecBudget>) -> core::Result<SnapshotPayload>;

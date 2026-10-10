@@ -244,11 +244,11 @@ TEST_CASE("duplicate queue: the criterion is the canonical identity, not the ord
         REQUIRE_FALSE(forward.has_value());
         REQUIRE_FALSE(backward.has_value());
         CHECK(forward.error().code() == backward.error().code());
-        CHECK(forward.error().code() == "judgement.s7a2.late.duplicate_queue_entry");
+        CHECK(forward.error().code() == "judgement.late.duplicate_queue_entry");
         CHECK(forward.error().message() == backward.error().message());
-        checkRejection(forward.error(), "judgement.s7a2.late.duplicate_queue_entry",
+        checkRejection(forward.error(), "judgement.late.duplicate_queue_entry",
                        "late_policy_incomplete", "lateQueue.canonicalKey");
-        checkRejection(backward.error(), "judgement.s7a2.late.duplicate_queue_entry",
+        checkRejection(backward.error(), "judgement.late.duplicate_queue_entry",
                        "late_policy_incomplete", "lateQueue.canonicalKey");
     }
 
@@ -274,7 +274,7 @@ TEST_CASE("duplicate queue: the criterion is the canonical identity, not the ord
         //  statement of "the ordinal is not the criterion".
         CHECK(first->subject == second->subject);
         CHECK(judgement::admitLateQueueEntry(first->subject, second->subject).error().code() ==
-              "judgement.s7a2.late.duplicate_queue_entry");
+              "judgement.late.duplicate_queue_entry");
     }
 }
 
@@ -295,8 +295,8 @@ TEST_CASE("CM-T10: a clock reversal is a stable rejection", "[judgement][s7a2][i
         //  A clock regression is a time-order relation error, so its category is invalid_relation
         //  and explicitly not budget_exceeded: budget_exceeded is reserved for a numeric value that
         //  leaves a declared range or a budget.
-        checkRejection(rejected.error(), "judgement.s7a2.timebase.time_reversal",
-                       "invalid_relation", "observationTick.calibratedClock");
+        checkRejection(rejected.error(), "judgement.timebase.time_reversal", "invalid_relation",
+                       "observationTick.calibratedClock");
         CHECK(contextValue(rejected.error(), "category") != "budget_exceeded");
         CHECK(contextValue(rejected.error(), "raw.time") ==
               "device=111 host=222 audio=333 render=444");
@@ -339,8 +339,8 @@ TEST_CASE("CM-T10: a negative capture is representable and still monotone",
         const auto rejected = judgement::normalizeObservation(
             state, profile, ObservationTick{Tick{-2}}, declaration(4, InputAction::release));
         REQUIRE_FALSE(rejected.has_value());
-        checkRejection(rejected.error(), "judgement.s7a2.timebase.time_reversal",
-                       "invalid_relation", "observationTick.calibratedClock");
+        checkRejection(rejected.error(), "judgement.timebase.time_reversal", "invalid_relation",
+                       "observationTick.calibratedClock");
         CHECK(contextValue(rejected.error(), "category") != "budget_exceeded");
     }
 }
@@ -358,7 +358,7 @@ TEST_CASE("CM-T10: a duplicated ingress ordinal is a stable rejection",
         const auto rejected = judgement::normalizeObservation(
             state, profile, ObservationTick{Tick{11}}, declaration(5, InputAction::release));
         REQUIRE_FALSE(rejected.has_value());
-        checkRejection(rejected.error(), "judgement.s7a2.input.ingress_sequence_duplicate",
+        checkRejection(rejected.error(), "judgement.input.ingress_sequence_duplicate",
                        "late_policy_incomplete", "ingressSequence");
     }
 
@@ -390,8 +390,8 @@ TEST_CASE("CM-T10: a canonically identical observation at one tick is a same-tic
         const auto rejected = judgement::normalizeObservation(state, profile, clock,
                                                               declaration(2, InputAction::press));
         REQUIRE_FALSE(rejected.has_value());
-        checkRejection(rejected.error(), "judgement.s7a2.input.same_tick_collision",
-                       "invalid_relation", "observationTick.sameTickCollision");
+        checkRejection(rejected.error(), "judgement.input.same_tick_collision", "invalid_relation",
+                       "observationTick.sameTickCollision");
     }
 
     SECTION("every component of the canonical identity is part of the verdict") {
@@ -507,8 +507,8 @@ TEST_CASE("observation amount: the mapped domain quantizes the declared quantity
         const auto rejected =
             judgement::normalizeObservation(state, profile, ObservationTick{Tick{1}}, incoming);
         REQUIRE_FALSE(rejected.has_value());
-        checkRejection(rejected.error(), "judgement.s7a2.input.amount_out_of_range",
-                       "budget_exceeded", "amountSpec.range");
+        checkRejection(rejected.error(), "judgement.input.amount_out_of_range", "budget_exceeded",
+                       "amountSpec.range");
         CHECK_FALSE(state.lastObservedTick() != nullptr);
     }
 
@@ -539,7 +539,7 @@ TEST_CASE("observation amount: the mapped domain quantizes the declared quantity
         const auto rejected =
             judgement::normalizeObservation(state, several, ObservationTick{Tick{1}}, incoming);
         REQUIRE_FALSE(rejected.has_value());
-        checkRejection(rejected.error(), "judgement.s7a2.input.mapping_declaration_invalid",
+        checkRejection(rejected.error(), "judgement.input.mapping_declaration_invalid",
                        "invalid_relation", "inputMapping.domains");
 
         //  Naming the domain explicitly resolves it.
@@ -592,7 +592,7 @@ TEST_CASE("entry state: a mapping that cannot be honoured refuses every entry",
     const auto rejected = judgement::normalizeObservation(state, broken, ObservationTick{Tick{1}},
                                                           declaration(1, InputAction::press));
     REQUIRE_FALSE(rejected.has_value());
-    checkRejection(rejected.error(), "judgement.s7a2.input.mapping_declaration_invalid",
+    checkRejection(rejected.error(), "judgement.input.mapping_declaration_invalid",
                    "invalid_relation", "inputMapping.profileVersion");
     CHECK(state.lastObservedTick() == nullptr);
 }

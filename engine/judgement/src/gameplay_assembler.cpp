@@ -143,20 +143,6 @@ struct DiagnosticTokens final {
                                       .path = path});
 }
 
-//  A second-half entry point reached in the first half.
-[[maybe_unused, nodiscard]] auto secondHalfError(std::string_view path, std::string_view summary,
-                                                 bool capability) -> core::Error {
-    return rejection(DiagnosticTokens{.code = codes::kSecondHalfPendingCode,
-                                      .category = capability ? codes::kCapabilityDisabledCategory
-                                                             : codes::kInvalidRelationCategory,
-                                      .summary = summary,
-                                      .section = codes::kSecondHalfSection,
-                                      .path = path,
-                                      .remediation = codes::kSecondHalfRemediation,
-                                      .identityComponent = codes::kSecondHalfPath,
-                                      .identityToken = codes::kAbsent});
-}
-
 //  ---------------------------------------------------------------------------------------------
 //  Stable tokens of the enumerations
 //  ---------------------------------------------------------------------------------------------
@@ -3476,7 +3462,7 @@ auto CompiledPattern::executionProgram() const -> core::Result<PatternExecutionP
     auto built =
         detail::buildMinimalPatternDfa(nodes, storage_->root, storage_->atomRefs.size() + 1, false);
     if (!built.available) {
-        return core::unexpected(core::Error{"judgement.s7a4.execution.relation_invalid",
+        return core::unexpected(core::Error{"judgement.execution.relation_invalid",
                                             "executable language table could not be constructed"}
                                     .withContext("category", "invalid_relation")
                                     .withContext("severity", "error")
@@ -3491,7 +3477,7 @@ auto CompiledPattern::executionProgram() const -> core::Result<PatternExecutionP
                                     std::vector<std::uint8_t>(dfa.stateCount(), 0)};
     if (!program.atomRefs.empty() &&
         dfa.stateCount() > program.transitions.max_size() / program.atomRefs.size()) {
-        return core::unexpected(core::Error{"judgement.s7a4.execution.relation_invalid",
+        return core::unexpected(core::Error{"judgement.execution.relation_invalid",
                                             "executable transition table size overflow"}
                                     .withContext("category", "invalid_relation")
                                     .withContext("severity", "error")
@@ -3542,12 +3528,12 @@ auto CompiledPattern::executionProgram() const -> core::Result<PatternExecutionP
     }
     return program;
 } catch (const std::exception&) {
-    return core::unexpected(core::Error{"judgement.s7a4.execution.relation_invalid",
-                                        "executable Pattern allocation failed"}
-                                .withContext("category", "invalid_relation")
-                                .withContext("severity", "error")
-                                .withContext("faulted", "false")
-                                .withContext("field.path", "requirements.pattern"));
+    return core::unexpected(
+        core::Error{"judgement.execution.relation_invalid", "executable Pattern allocation failed"}
+            .withContext("category", "invalid_relation")
+            .withContext("severity", "error")
+            .withContext("faulted", "false")
+            .withContext("field.path", "requirements.pattern"));
 }
 
 auto CompiledPattern::evaluationSteps() const noexcept -> std::optional<std::uint64_t> {
@@ -3867,7 +3853,7 @@ auto resolvePreparedGrace(const GraceDeclaration& declaration, const GraceResolu
     }
     if (inputs.chartDuration.has_value() && inputs.candidate.has_value()) {
         return core::unexpected(declarationInvalidError(
-            codes::kGraceChartSupplyNotAllowedCode, codes::kGraphSection, codes::kPreparedGracePath,
+            codes::kGraceValueSourceConflictCode, codes::kGraphSection, codes::kPreparedGracePath,
             "the chart supplied two competing grace values"));
     }
     const bool chartSupplied = inputs.chartDuration.has_value();

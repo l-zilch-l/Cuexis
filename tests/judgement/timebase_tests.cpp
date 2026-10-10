@@ -421,7 +421,7 @@ TEST_CASE("timebase: tick addition rejects overflow stably", "[judgement][timeba
     SECTION("rejected displacements") {
         const auto upward = judgement::offsetTicks(Tick{kInt64Max}, TickSpan{1});
         REQUIRE_FALSE(upward.has_value());
-        CHECK(upward.error().code() == "judgement.s7a2.timebase.tick_overflow");
+        CHECK(upward.error().code() == "judgement.timebase.tick_overflow");
         CHECK(contextValue(upward.error(), "category") == "budget_exceeded");
         CHECK(contextValue(upward.error(), "severity") == "error");
         CHECK(contextValue(upward.error(), "faulted") == "false");
@@ -430,7 +430,7 @@ TEST_CASE("timebase: tick addition rejects overflow stably", "[judgement][timeba
 
         const auto downward = judgement::offsetTicks(Tick{kInt64Min}, TickSpan{-1});
         REQUIRE_FALSE(downward.has_value());
-        CHECK(downward.error().code() == "judgement.s7a2.timebase.tick_overflow");
+        CHECK(downward.error().code() == "judgement.timebase.tick_overflow");
         CHECK(contextValue(downward.error(), "category") == "budget_exceeded");
     }
 }
@@ -457,16 +457,16 @@ TEST_CASE("timebase: tick difference rejects only a real overflow", "[judgement]
     SECTION("rejected differences") {
         const auto beyondMaximum = judgement::differenceTicks(Tick{kInt64Max}, Tick{-1});
         REQUIRE_FALSE(beyondMaximum.has_value());
-        CHECK(beyondMaximum.error().code() == "judgement.s7a2.timebase.tick_overflow");
+        CHECK(beyondMaximum.error().code() == "judgement.timebase.tick_overflow");
         CHECK(contextValue(beyondMaximum.error(), "category") == "budget_exceeded");
 
         const auto beyondMinimum = judgement::differenceTicks(Tick{kInt64Min}, Tick{1});
         REQUIRE_FALSE(beyondMinimum.has_value());
-        CHECK(beyondMinimum.error().code() == "judgement.s7a2.timebase.tick_overflow");
+        CHECK(beyondMinimum.error().code() == "judgement.timebase.tick_overflow");
 
         const auto negation = judgement::differenceTicks(Tick{0}, Tick{kInt64Min});
         REQUIRE_FALSE(negation.has_value());
-        CHECK(negation.error().code() == "judgement.s7a2.timebase.tick_overflow");
+        CHECK(negation.error().code() == "judgement.timebase.tick_overflow");
     }
 }
 
@@ -486,7 +486,7 @@ TEST_CASE("timebase: interval construction rejects a reversed end", "[judgement]
     SECTION("rejected interval") {
         const auto reversed = judgement::makeInterval(Tick{5}, Tick{4});
         REQUIRE_FALSE(reversed.has_value());
-        CHECK(reversed.error().code() == "judgement.s7a2.timebase.interval_reversed");
+        CHECK(reversed.error().code() == "judgement.timebase.interval_reversed");
         CHECK(contextValue(reversed.error(), "category") == "invalid_relation");
         CHECK(contextValue(reversed.error(), "field.path") == "interval");
     }
@@ -510,19 +510,19 @@ TEST_CASE("timebase: the mapping rejects a value it cannot hold exactly",
 
         const auto doubled = judgement::mapBeatToTick(profile, beat(2, 1));
         REQUIRE_FALSE(doubled.has_value());
-        CHECK(doubled.error().code() == "judgement.s7a2.timebase.tick_overflow");
+        CHECK(doubled.error().code() == "judgement.timebase.tick_overflow");
         CHECK(contextValue(doubled.error(), "category") == "budget_exceeded");
         CHECK(contextValue(doubled.error(), "field.section") == "judgement.timebase");
         CHECK(contextValue(doubled.error(), "field.path") == "beat");
 
         const auto halved = judgement::mapBeatToTick(profile, beat(3, 2));
         REQUIRE_FALSE(halved.has_value());
-        CHECK(halved.error().code() == "judgement.s7a2.timebase.tick_overflow");
+        CHECK(halved.error().code() == "judgement.timebase.tick_overflow");
 
         const TimebaseProfile doubledTempo = plainProfile(duration(2, 1));
         const auto far = judgement::mapBeatToTick(doubledTempo, beat(kInt64Max, 1));
         REQUIRE_FALSE(far.has_value());
-        CHECK(far.error().code() == "judgement.s7a2.timebase.tick_overflow");
+        CHECK(far.error().code() == "judgement.timebase.tick_overflow");
     }
 
     SECTION("an invalid profile is rejected before any division happens") {
@@ -530,7 +530,7 @@ TEST_CASE("timebase: the mapping rejects a value it cannot hold exactly",
         noScale.tickScale = duration(0, 1);
         const auto rejected = judgement::mapBeatToTick(noScale, beat(1, 1));
         REQUIRE_FALSE(rejected.has_value());
-        CHECK(rejected.error().code() == "judgement.s7a2.timebase.profile_value_out_of_range");
+        CHECK(rejected.error().code() == "judgement.timebase.profile_value_out_of_range");
         CHECK(contextValue(rejected.error(), "category") == "budget_exceeded");
         CHECK(contextValue(rejected.error(), "field.path") == "tickScale");
 
@@ -541,7 +541,7 @@ TEST_CASE("timebase: the mapping rejects a value it cannot hold exactly",
             judgement::TempoSection{.startBeat = beat(2, 1), .durationPerBeat = duration(1, 1)});
         const auto unorderedResult = judgement::mapBeatToTick(unordered, beat(3, 1));
         REQUIRE_FALSE(unorderedResult.has_value());
-        CHECK(unorderedResult.error().code() == "judgement.s7a2.timebase.profile_invalid");
+        CHECK(unorderedResult.error().code() == "judgement.timebase.profile_invalid");
         CHECK(contextValue(unorderedResult.error(), "category") == "invalid_relation");
     }
 }
@@ -697,7 +697,7 @@ TEST_CASE("timebase: validatePrepare rejects a policy that was never declared",
 
     const auto rejected = judgement::validatePrepare(profile, parameters);
     REQUIRE_FALSE(rejected.has_value());
-    CHECK(rejected.error().code() == "judgement.s7a2.late.policy_undeclared");
+    CHECK(rejected.error().code() == "judgement.late.policy_undeclared");
     CHECK(contextValue(rejected.error(), "category") == "late_policy_incomplete");
     CHECK(contextValue(rejected.error(), "severity") == "error");
     CHECK(contextValue(rejected.error(), "faulted") == "false");
@@ -726,7 +726,7 @@ TEST_CASE("timebase: validatePrepare rejects every parameter left pending measur
         CAPTURE(item.expectedPath);
         const auto rejected = judgement::validatePrepare(profile, parameters);
         REQUIRE_FALSE(rejected.has_value());
-        CHECK(rejected.error().code() == "judgement.s7a2.late.parameter_pending");
+        CHECK(rejected.error().code() == "judgement.late.parameter_pending");
         CHECK(contextValue(rejected.error(), "category") == "late_policy_incomplete");
         CHECK(contextValue(rejected.error(), "field.path") == std::string{item.expectedPath});
     }
@@ -744,7 +744,7 @@ TEST_CASE("timebase: a default-constructed parameter bundle is entirely unmeasur
 
     const auto rejected = judgement::validatePrepare(profile, defaults);
     REQUIRE_FALSE(rejected.has_value());
-    CHECK(rejected.error().code() == "judgement.s7a2.late.policy_undeclared");
+    CHECK(rejected.error().code() == "judgement.late.policy_undeclared");
     CHECK(contextValue(rejected.error(), "category") == "late_policy_incomplete");
 }
 
@@ -757,7 +757,7 @@ TEST_CASE("timebase: validatePrepare rejects an invalid profile declaration",
         noIdentity.profileId = {};
         const auto identityResult = judgement::validatePrepare(noIdentity, parameters);
         REQUIRE_FALSE(identityResult.has_value());
-        CHECK(identityResult.error().code() == "judgement.s7a2.timebase.profile_invalid");
+        CHECK(identityResult.error().code() == "judgement.timebase.profile_invalid");
         CHECK(contextValue(identityResult.error(), "category") == "invalid_relation");
         CHECK(contextValue(identityResult.error(), "field.path") == "profileId");
 
@@ -765,7 +765,7 @@ TEST_CASE("timebase: validatePrepare rejects an invalid profile declaration",
         noUnit.unitToken = {};
         const auto unitResult = judgement::validatePrepare(noUnit, parameters);
         REQUIRE_FALSE(unitResult.has_value());
-        CHECK(unitResult.error().code() == "judgement.s7a2.timebase.profile_invalid");
+        CHECK(unitResult.error().code() == "judgement.timebase.profile_invalid");
         CHECK(contextValue(unitResult.error(), "category") == "invalid_relation");
         CHECK(contextValue(unitResult.error(), "field.path") == "unitToken");
     }
@@ -779,7 +779,7 @@ TEST_CASE("timebase: validatePrepare rejects an invalid profile declaration",
 
         const auto rejected = judgement::validatePrepare(undeclared, parameters);
         REQUIRE_FALSE(rejected.has_value());
-        CHECK(rejected.error().code() == "judgement.s7a2.timebase.profile_invalid");
+        CHECK(rejected.error().code() == "judgement.timebase.profile_invalid");
         CHECK(contextValue(rejected.error(), "category") == "invalid_relation");
         CHECK(contextValue(rejected.error(), "severity") == "error");
         CHECK(contextValue(rejected.error(), "faulted") == "false");
@@ -789,7 +789,7 @@ TEST_CASE("timebase: validatePrepare rejects an invalid profile declaration",
         //  The mapper applies the same precondition, so an unvalidated profile cannot map either.
         const auto unmapped = judgement::mapBeatToTick(undeclared, beat(1, 1));
         REQUIRE_FALSE(unmapped.has_value());
-        CHECK(unmapped.error().code() == "judgement.s7a2.timebase.profile_invalid");
+        CHECK(unmapped.error().code() == "judgement.timebase.profile_invalid");
         CHECK(contextValue(unmapped.error(), "category") == "invalid_relation");
         CHECK(contextValue(unmapped.error(), "field.path") == "initialTempo");
     }
@@ -812,7 +812,7 @@ TEST_CASE("timebase: validatePrepare rejects an invalid profile declaration",
             CAPTURE(item.expectedPath);
             const auto rejected = judgement::validatePrepare(profile, parameters);
             REQUIRE_FALSE(rejected.has_value());
-            CHECK(rejected.error().code() == "judgement.s7a2.timebase.profile_value_out_of_range");
+            CHECK(rejected.error().code() == "judgement.timebase.profile_value_out_of_range");
             CHECK(contextValue(rejected.error(), "category") == "budget_exceeded");
             CHECK(contextValue(rejected.error(), "field.path") == std::string{item.expectedPath});
         }
@@ -826,7 +826,7 @@ TEST_CASE("timebase: validatePrepare rejects an invalid profile declaration",
             judgement::TempoSection{.startBeat = beat(2, 1), .durationPerBeat = duration(300, 1)});
         const auto duplicateResult = judgement::validatePrepare(duplicated, parameters);
         REQUIRE_FALSE(duplicateResult.has_value());
-        CHECK(duplicateResult.error().code() == "judgement.s7a2.timebase.profile_invalid");
+        CHECK(duplicateResult.error().code() == "judgement.timebase.profile_invalid");
         CHECK(contextValue(duplicateResult.error(), "field.path") == "tempoSections");
 
         TimebaseProfile unordered = plainProfile(duration(100, 1));
@@ -836,7 +836,7 @@ TEST_CASE("timebase: validatePrepare rejects an invalid profile declaration",
             judgement::TempoSection{.startBeat = beat(1, 1), .durationPerBeat = duration(300, 1)});
         const auto unorderedResult = judgement::validatePrepare(unordered, parameters);
         REQUIRE_FALSE(unorderedResult.has_value());
-        CHECK(unorderedResult.error().code() == "judgement.s7a2.timebase.profile_invalid");
+        CHECK(unorderedResult.error().code() == "judgement.timebase.profile_invalid");
         CHECK(contextValue(unorderedResult.error(), "category") == "invalid_relation");
         CHECK(contextValue(unorderedResult.error(), "field.path") == "tempoSections");
     }
@@ -847,7 +847,7 @@ TEST_CASE("timebase: validatePrepare rejects an invalid profile declaration",
             judgement::TempoSection{.startBeat = beat(2, 1), .durationPerBeat = duration(0, 1)});
         const auto rejected = judgement::validatePrepare(profile, parameters);
         REQUIRE_FALSE(rejected.has_value());
-        CHECK(rejected.error().code() == "judgement.s7a2.timebase.profile_value_out_of_range");
+        CHECK(rejected.error().code() == "judgement.timebase.profile_value_out_of_range");
         CHECK(contextValue(rejected.error(), "category") == "budget_exceeded");
         CHECK(contextValue(rejected.error(), "field.path") == "tempoSections");
     }
@@ -858,7 +858,7 @@ TEST_CASE("timebase: validatePrepare rejects an invalid profile declaration",
             .startBeat = beat(2, 1), .endBeat = beat(2, 1), .duration = duration(10, 1)});
         const auto degenerateResult = judgement::validatePrepare(degenerate, parameters);
         REQUIRE_FALSE(degenerateResult.has_value());
-        CHECK(degenerateResult.error().code() == "judgement.s7a2.timebase.profile_invalid");
+        CHECK(degenerateResult.error().code() == "judgement.timebase.profile_invalid");
         CHECK(contextValue(degenerateResult.error(), "category") == "invalid_relation");
         CHECK(contextValue(degenerateResult.error(), "field.path") == "stopSections");
 
@@ -867,7 +867,7 @@ TEST_CASE("timebase: validatePrepare rejects an invalid profile declaration",
             .startBeat = beat(4, 1), .endBeat = beat(2, 1), .duration = duration(10, 1)});
         const auto reversedResult = judgement::validatePrepare(reversed, parameters);
         REQUIRE_FALSE(reversedResult.has_value());
-        CHECK(reversedResult.error().code() == "judgement.s7a2.timebase.profile_invalid");
+        CHECK(reversedResult.error().code() == "judgement.timebase.profile_invalid");
 
         TimebaseProfile overlapping = plainProfile(duration(100, 1));
         overlapping.stopSections.push_back(judgement::StopSection{
@@ -876,7 +876,7 @@ TEST_CASE("timebase: validatePrepare rejects an invalid profile declaration",
             .startBeat = beat(4, 1), .endBeat = beat(8, 1), .duration = duration(10, 1)});
         const auto overlappingResult = judgement::validatePrepare(overlapping, parameters);
         REQUIRE_FALSE(overlappingResult.has_value());
-        CHECK(overlappingResult.error().code() == "judgement.s7a2.timebase.profile_invalid");
+        CHECK(overlappingResult.error().code() == "judgement.timebase.profile_invalid");
         CHECK(contextValue(overlappingResult.error(), "field.path") == "stopSections");
 
         TimebaseProfile unordered = plainProfile(duration(100, 1));
@@ -886,15 +886,14 @@ TEST_CASE("timebase: validatePrepare rejects an invalid profile declaration",
             .startBeat = beat(2, 1), .endBeat = beat(4, 1), .duration = duration(10, 1)});
         const auto unorderedResult = judgement::validatePrepare(unordered, parameters);
         REQUIRE_FALSE(unorderedResult.has_value());
-        CHECK(unorderedResult.error().code() == "judgement.s7a2.timebase.profile_invalid");
+        CHECK(unorderedResult.error().code() == "judgement.timebase.profile_invalid");
 
         TimebaseProfile nonPositive = plainProfile(duration(100, 1));
         nonPositive.stopSections.push_back(judgement::StopSection{
             .startBeat = beat(2, 1), .endBeat = beat(4, 1), .duration = duration(0, 1)});
         const auto nonPositiveResult = judgement::validatePrepare(nonPositive, parameters);
         REQUIRE_FALSE(nonPositiveResult.has_value());
-        CHECK(nonPositiveResult.error().code() ==
-              "judgement.s7a2.timebase.profile_value_out_of_range");
+        CHECK(nonPositiveResult.error().code() == "judgement.timebase.profile_value_out_of_range");
         CHECK(contextValue(nonPositiveResult.error(), "category") == "budget_exceeded");
         CHECK(contextValue(nonPositiveResult.error(), "field.path") == "stopSections");
     }
@@ -928,7 +927,7 @@ TEST_CASE("timebase: facts commit only at the window commit tick", "[judgement][
             CAPTURE(value);
             const auto rejected = judgement::commitAt(Tick{value}, window);
             REQUIRE_FALSE(rejected.has_value());
-            CHECK(rejected.error().code() == "judgement.s7a2.timebase.commit_not_at_commit_tick");
+            CHECK(rejected.error().code() == "judgement.timebase.commit_not_at_commit_tick");
             CHECK(contextValue(rejected.error(), "category") == "invalid_relation");
             CHECK(contextValue(rejected.error(), "severity") == "error");
             CHECK(contextValue(rejected.error(), "faulted") == "false");
@@ -959,7 +958,7 @@ TEST_CASE("timebase: facts commit only at the window commit tick", "[judgement][
             CAPTURE(item.openTick.value(), item.commitTick.tick().value(), item.closeTick.value());
             const auto rejected = judgement::commitAt(item.commitTick.tick(), item);
             REQUIRE_FALSE(rejected.has_value());
-            CHECK(rejected.error().code() == "judgement.s7a2.timebase.commit_window_invalid");
+            CHECK(rejected.error().code() == "judgement.timebase.commit_window_invalid");
             CHECK(contextValue(rejected.error(), "category") == "invalid_relation");
             CHECK(contextValue(rejected.error(), "field.path") == "commitWindow");
         }
@@ -991,13 +990,13 @@ TEST_CASE("timebase: the microsecond profile declares its unit explicitly",
 
         const auto rejected = judgement::validatePrepare(profile, measuredPolicy());
         REQUIRE_FALSE(rejected.has_value());
-        CHECK(rejected.error().code() == "judgement.s7a2.timebase.profile_invalid");
+        CHECK(rejected.error().code() == "judgement.timebase.profile_invalid");
         CHECK(contextValue(rejected.error(), "category") == "invalid_relation");
         CHECK(contextValue(rejected.error(), "field.path") == "initialTempo");
 
         const auto unmapped = judgement::mapBeatToTick(profile, beat(1, 1));
         REQUIRE_FALSE(unmapped.has_value());
-        CHECK(unmapped.error().code() == "judgement.s7a2.timebase.profile_invalid");
+        CHECK(unmapped.error().code() == "judgement.timebase.profile_invalid");
         CHECK(contextValue(unmapped.error(), "category") == "invalid_relation");
     }
 
@@ -1115,14 +1114,14 @@ TEST_CASE("timebase: exact rationals are reduced, signed and checked",
             CAPTURE(item.first, item.second);
             const auto beatValue = RationalBeat::create(item.first, item.second);
             REQUIRE_FALSE(beatValue.has_value());
-            CHECK(beatValue.error().code() == "judgement.s7a2.timebase.rational_invalid");
+            CHECK(beatValue.error().code() == "judgement.timebase.rational_invalid");
             CHECK(contextValue(beatValue.error(), "category") == "budget_exceeded");
             CHECK(contextValue(beatValue.error(), "field.section") == "judgement.timebase");
             CHECK(contextValue(beatValue.error(), "field.path") == "rational");
 
             const auto durationValue = RationalDuration::create(item.first, item.second);
             REQUIRE_FALSE(durationValue.has_value());
-            CHECK(durationValue.error().code() == "judgement.s7a2.timebase.rational_invalid");
+            CHECK(durationValue.error().code() == "judgement.timebase.rational_invalid");
             CHECK(contextValue(durationValue.error(), "category") == "budget_exceeded");
             CHECK(contextValue(durationValue.error(), "field.path") == "rational");
         }

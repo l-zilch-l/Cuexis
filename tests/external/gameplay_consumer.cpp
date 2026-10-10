@@ -30,6 +30,22 @@ void expect(bool value, const char* message) {
     if (!value)
         throw std::runtime_error{message};
 }
+void expectSameError(const cuexis::core::Error& actual, const cuexis::core::Error& expected) {
+    const auto* a = &actual;
+    const auto* b = &expected;
+    while (a && b) {
+        expect(a->code() == b->code() && a->message() == b->message() &&
+                   a->context().size() == b->context().size(),
+               "Installed complete error differs");
+        for (std::size_t i = 0; i < a->context().size(); ++i)
+            expect(a->context()[i].key == b->context()[i].key &&
+                       a->context()[i].value == b->context()[i].value,
+                   "Installed ordered error context differs");
+        a = a->cause();
+        b = b->cause();
+    }
+    expect(!a && !b, "Installed error cause chain differs");
+}
 auto fixtureConfiguration() -> GameplayConfiguration {
     GameplayConfiguration c;
     c.engine = {"judgement.t4-k4.v1",          "fact.semantic.phase-local.v1",
@@ -83,6 +99,18 @@ int main(int argc, char** argv) try {
         throw std::runtime_error{"Fixture read failed"};
     const auto configuration = fixtureConfiguration();
     const auto content = take(GameplayContent::fromPacked(bytes, configuration));
+    auto invalidConfiguration = configuration;
+    invalidConfiguration.mappingId.clear();
+    const auto invalidContent = GameplayContent::fromPacked(bytes, invalidConfiguration);
+    expect(!invalidContent && invalidContent.error().code() == "playback.gameplay.invalid",
+           "Installed internal diagnostic projection differs");
+    bool sourceFound = false;
+    for (const auto& field : invalidContent.error().context())
+        if (field.key == "sourceCode" &&
+            field.value == "judgement.input.mapping_declaration_invalid")
+            sourceFound = true;
+    expect(sourceFound, "Installed sourceCode did not use the formal internal reason");
+
     auto provider = take(MemoryContentProvider::create({}));
     auto source = take(PlaybackSource::fromGameplayPacked(
         "installed-fixture", "compiled/main.packed", bytes, configuration, {}, provider,
@@ -93,6 +121,15 @@ int main(int argc, char** argv) try {
     expect(take(take(session.queryGameplay()).factCount()) == 0, "Unexpected initial Fact");
     const GameplayInput event{
         {5}, 1, GameplayInputAction::Press, "lane.one", "domain.binding.one", "keyboard", {}};
+    const auto initialResult = take(session.queryGameplay());
+    const GameplayInput conflicting[] = {
+        event,
+        {{5}, 2, GameplayInputAction::Release, "lane.one", "domain.binding.one", "keyboard", {}}};
+    const auto rejected = session.submitGameplay(conflicting);
+    expect(!rejected && rejected.error().code() == "judgement.input.same_tick_collision",
+           "Installed collision reason differs");
+    expect(take(initialResult.sameResult(take(session.queryGameplay()))),
+           "Rejected batch changed the full result");
     take(session.submitGameplay(std::span{&event, 1}));
     const auto pending = take(session.snapshotGameplay());
     take(session.advanceGameplay({5}, {5}, {5, 0, 0}));
@@ -107,6 +144,20 @@ int main(int argc, char** argv) try {
     expect(evaluation.evidenceValid && take(golden.sameResult(evaluation.result)),
            "Complete Replay differs");
     const GameplayCodecBudget budget{1024 * 1024, 100, 100000, true};
+    auto oldReplayBytes = take(replay.toBytes());
+    auto oldSnapshotBytes = take(pending.toBytes());
+    expect(oldReplayBytes[8] == std::byte{2} && oldSnapshotBytes[8] == std::byte{2},
+           "Installed Writer did not emit revision2");
+    oldReplayBytes[8] = std::byte{1}; // artificial valid body with old envelope version
+    oldSnapshotBytes[8] = std::byte{1};
+    auto oldReplay = GameplayReplay::fromBytes(oldReplayBytes, content, budget);
+    auto oldSnapshot = GameplaySnapshot::fromBytes(oldSnapshotBytes, content, budget);
+    expect(!oldReplay && oldReplay.error().code() == "codec.version_unsupported",
+           "Installed Replay Reader accepted revision1");
+    expect(!oldSnapshot && oldSnapshot.error().code() == "codec.version_unsupported",
+           "Installed Snapshot Reader accepted revision1");
+    expect(take(golden.sameResult(take(session.queryGameplay()))),
+           "Failed Reader modified session result");
     auto archive = take(GameplayReplay::fromBytes(take(replay.toBytes()), content, budget));
     auto snapshot = take(GameplaySnapshot::fromBytes(take(pending.toBytes()), content, budget));
     const auto checkpoint = take(session.checkpointGameplay(archive, {20}));
@@ -114,6 +165,26 @@ int main(int argc, char** argv) try {
                               {20}, {20, 0, 1}));
     expect(take(golden.sameResult(take(session.queryGameplay()))), "Certified Seek differs");
     take(session.restoreGameplay(snapshot, {0}, {0, 0, 2}));
+    const auto restoredResult = take(session.queryGameplay());
+    const auto unavailableHistory = session.archiveGameplay();
+    expect(!unavailableHistory &&
+               unavailableHistory.error().code() == "judgement.session.operation_state_invalid",
+           "Restored owning state fabricated a complete Replay journal");
+    expect(unavailableHistory.error().message() ==
+               "the judgement session is not in the lifecycle phase this verb requires",
+           "Historical lifecycle message changed");
+    const auto& operationContext = unavailableHistory.error().context();
+    expect(operationContext.size() == 5 && operationContext[0].key == "category" &&
+               operationContext[0].value == "invalid_relation" &&
+               operationContext[1].key == "severity" && operationContext[1].value == "error" &&
+               operationContext[2].key == "faulted" && operationContext[2].value == "false" &&
+               operationContext[3].key == "field.section" &&
+               operationContext[3].value == "session" && operationContext[4].key == "field.path" &&
+               operationContext[4].value == "query" && !unavailableHistory.error().cause(),
+           "Restored archive rejection lost complete metadata");
+    expect(take(restoredResult.sameResult(take(session.queryGameplay()))),
+           "Unavailable journal query changed restored owning state");
+
     take(session.advanceGameplay({20}, {20}, {20, 0, 2}));
     expect(take(golden.sameResult(take(session.queryGameplay()))),
            "Pending Snapshot reconstruction differs");
@@ -131,6 +202,31 @@ int main(int argc, char** argv) try {
                checkpoint.valid(),
            "Owning values expired with session");
     expect(!session.extractFrame({640, 480}), "GameplayOnly unexpectedly created a World");
+    auto faultConfiguration = configuration;
+    faultConfiguration.maximumScore = 1;
+    auto faultProvider = take(MemoryContentProvider::create({}));
+    auto faultSource = take(PlaybackSource::fromGameplayPacked(
+        "installed-fault-fixture", "compiled/main.packed", bytes, faultConfiguration, {},
+        faultProvider, GameplayPrepareIntent::GameplayOnly));
+    PlaybackSession faultSession;
+    take(faultSession.load(std::move(faultSource), PlaybackMode::ChartClock));
+    take(faultSession.submitGameplay(std::span{&event, 1}));
+    const auto failedAdvance = faultSession.advanceGameplay({20}, {20}, {20, 0, 0});
+    expect(!failedAdvance && failedAdvance.error().code() == "ruleset.transaction_failed",
+           "Installed real Fold failure differs");
+    const auto faultReceipt = take(faultSession.gameplayAdvanceReceipt());
+    expect(faultReceipt.error.has_value(), "Installed fault receipt lost error");
+    expectSameError(*faultReceipt.error, failedAdvance.error());
+    expect(faultReceipt.admitted && faultReceipt.faultStage == GameplayFaultStage::Fold &&
+               !faultReceipt.publicationFailureStage && !faultReceipt.runtimeUpdated &&
+               faultReceipt.sealedFacts == 1 && faultReceipt.publishableFacts == 0,
+           "Installed fault receipt lost execution phase or sealed prefix");
+    const auto faultResult = take(faultSession.queryGameplay());
+    auto faultArchive = take(faultSession.archiveGameplay());
+    const auto faultEvaluation = take(faultSession.evaluateGameplayReplay(faultArchive));
+    expect(faultEvaluation.evidenceValid && take(faultResult.sameResult(faultEvaluation.result)),
+           "Installed full fault Replay differs");
+    expectSameError(*take(faultSession.gameplayAdvanceReceipt()).error, failedAdvance.error());
     std::cout << "Installed GameplayOnly: prepare/submit/F(H)/query/full "
                  "Replay/W2/Snapshot/certified Seek/pause/Stop/reset/lifetime passed\n";
     return 0;

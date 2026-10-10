@@ -361,7 +361,7 @@ TEST_CASE("S7A-3 identity collisions are rejected", "[judgement][s7a-3][identity
 
     const auto checked = judgement::assembleGameplay(colliding);
     REQUIRE_FALSE(checked.has_value());
-    CHECK(checked.error().code() == "judgement.s7a3.identity.collision");
+    CHECK(checked.error().code() == "judgement.identity.collision");
     CHECK(contextValue(checked.error(), "category") == "invalid_relation");
     CHECK(contextValue(checked.error(), "severity") == "error");
     CHECK(contextValue(checked.error(), "field.section") == "judgement.gameplay.graph");

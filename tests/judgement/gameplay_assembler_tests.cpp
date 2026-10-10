@@ -174,22 +174,22 @@ TEST_CASE("S7A-3 there is one assembling path", "[judgement][s7a-3][entry]") {
     authorSource.playback = true;
     const auto rejected = judgement::assembleGameplay(authorSource);
     REQUIRE_FALSE(rejected.has_value());
-    expectRejection(rejected.error(), "judgement.s7a3.entry.playback_entry_mismatch",
-                    "invalid_relation", "playback");
+    expectRejection(rejected.error(), "judgement.entry.playback_entry_mismatch", "invalid_relation",
+                    "playback");
     expectSection(rejected.error(), "judgement.gameplay.entry");
 
     AssemblyRequest noSources = fixture.request();
     noSources.sources.clear();
     const auto noSourcesChecked = judgement::assembleGameplay(noSources);
     REQUIRE_FALSE(noSourcesChecked.has_value());
-    expectRejection(noSourcesChecked.error(), "judgement.s7a3.entry.source_set_empty",
+    expectRejection(noSourcesChecked.error(), "judgement.entry.source_set_empty",
                     "invalid_relation", "sources");
 
     AssemblyRequest noTimebase = fixture.request();
     noTimebase.timebase = nullptr;
     const auto noTimebaseChecked = judgement::assembleGameplay(noTimebase);
     REQUIRE_FALSE(noTimebaseChecked.has_value());
-    expectRejection(noTimebaseChecked.error(), "judgement.s7a3.entry.timebase_missing",
+    expectRejection(noTimebaseChecked.error(), "judgement.entry.timebase_missing",
                     "invalid_relation", "timebaseRef");
 }
 
@@ -201,7 +201,7 @@ TEST_CASE("S7A-3 version gates reject an unmigrated older revision",
     olderChart.sources.front().document.chartVersion = 4U;
     const auto olderChartChecked = judgement::assembleGameplay(olderChart);
     REQUIRE_FALSE(olderChartChecked.has_value());
-    expectRejection(olderChartChecked.error(), "judgement.s7a3.entry.chart_version_unsupported",
+    expectRejection(olderChartChecked.error(), "judgement.entry.chart_version_unsupported",
                     "ambiguous_migration", "chartVersion");
     expectSection(olderChartChecked.error(), "judgement.gameplay.entry");
 
@@ -217,7 +217,7 @@ TEST_CASE("S7A-3 version gates reject an unmigrated older revision",
     duplicateDocument.sources.push_back(duplicateDocument.sources.front());
     const auto duplicateChecked = judgement::assembleGameplay(duplicateDocument);
     REQUIRE_FALSE(duplicateChecked.has_value());
-    expectRejection(duplicateChecked.error(), "judgement.s7a3.entry.source_document_duplicate",
+    expectRejection(duplicateChecked.error(), "judgement.entry.source_document_duplicate",
                     "invalid_relation", "sourceDocumentId");
 
     //  A pending late-policy parameter is refused by the S7A-2 gate that this batch reuses rather
@@ -245,7 +245,7 @@ TEST_CASE("S7A-3 P1-02 merge rejects instead of merging", "[judgement][s7a-3][me
     duplicateName.sources.front().document.declarations[1].localName = "domain.main";
     const auto duplicateNameChecked = judgement::assembleGameplay(duplicateName);
     REQUIRE_FALSE(duplicateNameChecked.has_value());
-    expectRejection(duplicateNameChecked.error(), "judgement.s7a3.merge.declaration_name_duplicate",
+    expectRejection(duplicateNameChecked.error(), "judgement.merge.declaration_name_duplicate",
                     "invalid_relation", "localName");
     expectSection(duplicateNameChecked.error(), "judgement.gameplay.merge");
 
@@ -254,16 +254,15 @@ TEST_CASE("S7A-3 P1-02 merge rejects instead of merging", "[judgement][s7a-3][me
         judgement::DeclarationKind::patternDefinition, "pattern.other", 1U));
     const auto duplicateOrdinalChecked = judgement::assembleGameplay(duplicateOrdinal);
     REQUIRE_FALSE(duplicateOrdinalChecked.has_value());
-    expectRejection(duplicateOrdinalChecked.error(), "judgement.s7a3.merge.stable_id_duplicate",
+    expectRejection(duplicateOrdinalChecked.error(), "judgement.merge.stable_id_duplicate",
                     "invalid_relation", "declarationOrdinal");
 
     AssemblyRequest unassignedOrdinal = fixture.request();
     unassignedOrdinal.sources.front().document.declarations[3].stableId.declarationOrdinal = 0U;
     const auto unassignedChecked = judgement::assembleGameplay(unassignedOrdinal);
     REQUIRE_FALSE(unassignedChecked.has_value());
-    expectRejection(unassignedChecked.error(),
-                    "judgement.s7a3.merge.declaration_ordinal_unassigned", "invalid_relation",
-                    "declarationOrdinal");
+    expectRejection(unassignedChecked.error(), "judgement.merge.declaration_ordinal_unassigned",
+                    "invalid_relation", "declarationOrdinal");
 
     //  A cross-document reference must name its document (P1-02): the same reference resolved by
     //  name lookup would be an implicit cross-invocation dependency.
@@ -275,7 +274,7 @@ TEST_CASE("S7A-3 P1-02 merge rejects instead of merging", "[judgement][s7a-3][me
     const auto implicitCrossChecked = judgement::assembleGameplay(implicitCross);
     REQUIRE_FALSE(implicitCrossChecked.has_value());
     expectRejection(implicitCrossChecked.error(),
-                    "judgement.s7a3.merge.cross_document_reference_implicit", "invalid_relation",
+                    "judgement.merge.cross_document_reference_implicit", "invalid_relation",
                     "references");
 
     //  The document component of a stable identity is the document the declaration lives in: a
@@ -284,7 +283,7 @@ TEST_CASE("S7A-3 P1-02 merge rejects instead of merging", "[judgement][s7a-3][me
     foreignDocument.sources.front().document.declarations[1].stableId.sourceDocumentId = "doc.beta";
     const auto foreignChecked = judgement::assembleGameplay(foreignDocument);
     REQUIRE_FALSE(foreignChecked.has_value());
-    expectRejection(foreignChecked.error(), "judgement.s7a3.declaration.structurally_incomplete",
+    expectRejection(foreignChecked.error(), "judgement.declaration.structurally_incomplete",
                     "invalid_relation", "sourceDocumentId");
     expectSection(foreignChecked.error(), "judgement.gameplay.merge");
 
@@ -295,7 +294,7 @@ TEST_CASE("S7A-3 P1-02 merge rejects instead of merging", "[judgement][s7a-3][me
                                   .declarationOrdinal = 99U});
     const auto danglingChecked = judgement::assembleGameplay(dangling);
     REQUIRE_FALSE(danglingChecked.has_value());
-    expectRejection(danglingChecked.error(), "judgement.s7a3.merge.reference_dangling",
+    expectRejection(danglingChecked.error(), "judgement.merge.reference_dangling",
                     "invalid_relation", "references");
 
     //  An explicit cross-document reference resolves, and it resolves whatever order the documents
@@ -406,7 +405,7 @@ TEST_CASE("S7A-3 excluded content forms reach their stable rejection",
     rejectWith(UnsupportedContentKind::gameplayEffectsNotLowered, false, "migration.ambiguous",
                "ambiguous_migration", "", "", "requirements[0].unsupportedForm.declared.token");
     rejectWith(UnsupportedContentKind::boundedRelationInstance, false,
-               "judgement.s7a3.content.unsupported_form", "non_terminating_source", "", "",
+               "judgement.content.unsupported_form", "non_terminating_source", "", "",
                "requirements[0].unsupportedForm.declared.token");
     rejectWith(UnsupportedContentKind::runtimeRepeatCounter, false,
                "capability.permanently_unsupported", "capability_disabled", "", "",
@@ -437,7 +436,7 @@ TEST_CASE("S7A-3 excluded content forms reach their stable rejection",
                                       .declaredToken = "declared.node.token"};
     const auto nodeChecked = judgement::assembleGameplay(nodeForm);
     REQUIRE_FALSE(nodeChecked.has_value());
-    expectRejection(nodeChecked.error(), "judgement.s7a3.content.unsupported_form",
+    expectRejection(nodeChecked.error(), "judgement.content.unsupported_form",
                     "non_terminating_source", "pattern.root.unsupportedForm");
 
     //  Content whose semantics require Release / tail while no tail phase is declared is refused
@@ -446,7 +445,7 @@ TEST_CASE("S7A-3 excluded content forms reach their stable rejection",
     implicitTail.sources.front().document.requirements.front().requiresReleaseTailSemantics = true;
     const auto implicitTailChecked = judgement::assembleGameplay(implicitTail);
     REQUIRE_FALSE(implicitTailChecked.has_value());
-    expectRejection(implicitTailChecked.error(), "judgement.s7a3.requirement.release_tail_implicit",
+    expectRejection(implicitTailChecked.error(), "judgement.requirement.release_tail_implicit",
                     "invalid_relation", "requirements[0].phases");
 
     //  The declared tail phase is what makes the same content acceptable.
@@ -508,7 +507,7 @@ TEST_CASE("S7A-3 Stage 7A resource subset", "[judgement][s7a-3][resource]") {
         .resourceRef.resourceId = "resource.missing";
     const auto danglingResourceChecked = judgement::assembleGameplay(danglingResource);
     REQUIRE_FALSE(danglingResourceChecked.has_value());
-    expectRejection(danglingResourceChecked.error(), "judgement.s7a3.resource.reference_dangling",
+    expectRejection(danglingResourceChecked.error(), "judgement.resource.reference_dangling",
                     "invalid_relation", "requirements[0].resourceClaims");
 }
 
@@ -519,7 +518,7 @@ TEST_CASE("S7A-3 closure completeness is never filled in", "[judgement][s7a-3][c
     missingCapability.declaredCapabilities.capabilities.clear();
     const auto missingCapabilityChecked = judgement::assembleGameplay(missingCapability);
     REQUIRE_FALSE(missingCapabilityChecked.has_value());
-    expectRejection(missingCapabilityChecked.error(), "judgement.s7a3.closure.declared_incomplete",
+    expectRejection(missingCapabilityChecked.error(), "judgement.closure.declared_incomplete",
                     "identity_closure_incomplete", "declaredCapabilities.capabilityId");
     expectSection(missingCapabilityChecked.error(), "judgement.gameplay.closure");
 
@@ -527,7 +526,7 @@ TEST_CASE("S7A-3 closure completeness is never filled in", "[judgement][s7a-3][c
     missingFeature.declaredFeatures.features.clear();
     const auto missingFeatureChecked = judgement::assembleGameplay(missingFeature);
     REQUIRE_FALSE(missingFeatureChecked.has_value());
-    expectRejection(missingFeatureChecked.error(), "judgement.s7a3.closure.declared_incomplete",
+    expectRejection(missingFeatureChecked.error(), "judgement.closure.declared_incomplete",
                     "identity_closure_incomplete", "declaredFeatures.featureId");
 
     //  The ruleset and presentation contributions are owned by those subsystems, so they do not
@@ -547,7 +546,7 @@ TEST_CASE("S7A-3 closure completeness is never filled in", "[judgement][s7a-3][c
     disabledCapability.capabilityContext.enabledCapabilityIds = {"test.capability.one"};
     const auto disabledChecked = judgement::assembleGameplay(disabledCapability);
     REQUIRE_FALSE(disabledChecked.has_value());
-    expectRejection(disabledChecked.error(), "judgement.s7a3.closure.capability_disabled",
+    expectRejection(disabledChecked.error(), "judgement.closure.capability_disabled",
                     "capability_disabled", "derivedCapabilities.capabilityId");
 
     //  A declared capability the derived closure does not need has an unresolved disposition
@@ -730,7 +729,7 @@ TEST_CASE("S7A-3 containment capacity is a conservative atomic gate",
         judgement::MeasuredParameter<std::uint64_t>::measured(0U);
     const auto exceededChecked = judgement::assembleInto(publication, exceeded);
     REQUIRE_FALSE(exceededChecked.has_value());
-    expectRejection(exceededChecked.error(), "judgement.s7a3.pattern.arm_bound_exceeded",
+    expectRejection(exceededChecked.error(), "judgement.pattern.arm_bound_exceeded",
                     "budget_exceeded", "pattern.maxArmElements");
     CHECK(publication.active()->chart.canonicalBytes().toHex() == baselineChart);
 
@@ -768,7 +767,7 @@ TEST_CASE("S7A-3 content profile counts and pending bounds", "[judgement][s7a-3]
     exceeded.maxRequirements = judgement::MeasuredParameter<std::uint64_t>::measured(0U);
     const auto exceededChecked = judgement::checkContentProfile(counts, exceeded);
     REQUIRE_FALSE(exceededChecked.has_value());
-    expectRejection(exceededChecked.error(), "judgement.s7a3.budget.content_profile_exceeded",
+    expectRejection(exceededChecked.error(), "judgement.budget.content_profile_exceeded",
                     "budget_exceeded", "contentProfile.maxRequirements");
     expectSection(exceededChecked.error(), "judgement.gameplay.budget");
 
@@ -792,7 +791,7 @@ TEST_CASE("S7A-3 content profile counts and pending bounds", "[judgement][s7a-3]
     overBudget.contentProfileLimits = exceeded;
     const auto overBudgetChecked = judgement::assembleGameplay(overBudget);
     REQUIRE_FALSE(overBudgetChecked.has_value());
-    expectRejection(overBudgetChecked.error(), "judgement.s7a3.budget.content_profile_exceeded",
+    expectRejection(overBudgetChecked.error(), "judgement.budget.content_profile_exceeded",
                     "budget_exceeded", "contentProfile.maxRequirements");
 }
 
@@ -881,7 +880,7 @@ TEST_CASE("S7A-3 grace source selection is explicit and half-even", "[judgement]
     inputs.inheritedDuration = std::nullopt;
     const auto missing = judgement::resolvePreparedGrace(inherited, inputs);
     REQUIRE_FALSE(missing.has_value());
-    expectRejection(missing.error(), "judgement.s7a3.grace.value_missing", "invalid_relation",
+    expectRejection(missing.error(), "judgement.grace.value_missing", "invalid_relation",
                     "preparedGrace");
 }
 
@@ -902,7 +901,7 @@ TEST_CASE("S7A-3 resource plan rejects duplicate occupying claim keys",
         .preparedGrace = judgement::PreparedGrace{judgement::TickSpan{0}}};
     const auto result = judgement::resolveResourceClaims(inputs);
     REQUIRE_FALSE(result.has_value());
-    expectRejection(result.error(), "judgement.s7a3.resource.claim_conflict", "invalid_relation",
+    expectRejection(result.error(), "judgement.resource.claim_conflict", "invalid_relation",
                     "resourceClaims[1]");
 }
 
@@ -934,7 +933,7 @@ TEST_CASE("S7A-3 resource plan rejects incomplete occupying declarations",
                                            .policyToken = {},
                                            .claimKeyToken = "key"}});
         REQUIRE_FALSE(result);
-        expectRejection(result.error(), "judgement.s7a3.declaration.structurally_incomplete",
+        expectRejection(result.error(), "judgement.declaration.structurally_incomplete",
                         "invalid_relation", "resourceClaims[0]");
     }
     SECTION("occupying candidate without stable key") {
@@ -942,7 +941,7 @@ TEST_CASE("S7A-3 resource plan rejects incomplete occupying declarations",
                                            .policyToken = "policy",
                                            .claimKeyToken = {}}});
         REQUIRE_FALSE(result);
-        expectRejection(result.error(), "judgement.s7a3.declaration.structurally_incomplete",
+        expectRejection(result.error(), "judgement.declaration.structurally_incomplete",
                         "invalid_relation", "resourceClaims[0]");
     }
     SECTION("observe cannot carry an occupying key") {
@@ -950,8 +949,8 @@ TEST_CASE("S7A-3 resource plan rejects incomplete occupying declarations",
                                            .policyToken = "policy",
                                            .claimKeyToken = "key"}});
         REQUIRE_FALSE(result);
-        expectRejection(result.error(), "judgement.s7a3.resource.claim_conflict",
-                        "invalid_relation", "resourceClaims");
+        expectRejection(result.error(), "judgement.resource.claim_conflict", "invalid_relation",
+                        "resourceClaims");
     }
     SECTION("observe cannot carry a competition pair") {
         const auto result = run(
@@ -961,8 +960,8 @@ TEST_CASE("S7A-3 resource plan rejects incomplete occupying declarations",
                        .graceOverrideMode = judgement::GraceOverrideMode::none,
                        .competition = judgement::ClaimPolicyDeclaration::CompetitionKey{0, 0}}});
         REQUIRE_FALSE(result);
-        expectRejection(result.error(), "judgement.s7a3.resource.claim_conflict",
-                        "invalid_relation", "resourceClaims");
+        expectRejection(result.error(), "judgement.resource.claim_conflict", "invalid_relation",
+                        "resourceClaims");
     }
     SECTION("legacy intent mismatch is rejected") {
         const auto result = run({Candidate{.intent = judgement::ResourceClaimIntent::claim,
@@ -970,7 +969,7 @@ TEST_CASE("S7A-3 resource plan rejects incomplete occupying declarations",
                                            .claimKeyToken = "key"}},
                                 {judgement::ResourceClaimIntent::consume});
         REQUIRE_FALSE(result);
-        expectRejection(result.error(), "judgement.s7a3.declaration.structurally_incomplete",
+        expectRejection(result.error(), "judgement.declaration.structurally_incomplete",
                         "invalid_relation", "resourceClaims[0]");
     }
     SECTION("unsupported grace override is rejected") {

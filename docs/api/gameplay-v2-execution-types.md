@@ -122,14 +122,14 @@ prepare 不包含 author compilation；编译在离线 assembler，Session 只�
 
 | detailed code | category | 条件 |
 | --- | --- | --- |
-| `judgement.s7a4.execution.profile_incomplete` | identity_closure_incomplete | profile/phase target/atom binding/独立 pair 缺失，旧 graph 不可执行 |
-| `judgement.s7a4.execution.profile_unsupported` | capability_disabled | 明确声明未知或本 profile 不支持的执行表示 |
-| `judgement.s7a4.execution.relation_invalid` | invalid_relation | target/window、atom/action、phase/contact 或 source/rank 结构关系不合法 |
-| `judgement.s7a4.late.parameters_invalid` | late_policy_incomplete | measured 参数负值或 O/C/F/H 关系不合法 |
-| `judgement.s7a4.late.rejected` | late_policy_incomplete | rejectLate、finalized、hop 超界、二次转发或会反写已 seal phase 的输入 |
-| `judgement.s7a4.late.dispatch_collision` | invalid_relation | 两个 distinct subjects 调度到同 dispatchTick |
-| `judgement.s7a4.session.lifecycle_order` | invalid_relation | 当前状态不允许该有参接口，或旧无参 skeleton 不可消费 |
-| `judgement.s7a4.kernel.transaction_failed` | invalid_relation | 已入场的 Tick 计算遇到不可恢复 allocation/arithmetic/invariant 失败；session_faulted |
+| `judgement.execution.profile_incomplete` | identity_closure_incomplete | profile/phase target/atom binding/独立 pair 缺失，旧 graph 不可执行 |
+| `judgement.execution.profile_unsupported` | capability_disabled | 明确声明未知或本 profile 不支持的执行表示 |
+| `judgement.execution.relation_invalid` | invalid_relation | target/window、atom/action、phase/contact 或 source/rank 结构关系不合法 |
+| `judgement.late.parameters_invalid` | late_policy_incomplete | measured 参数负值或 O/C/F/H 关系不合法 |
+| `judgement.late.rejected` | late_policy_incomplete | rejectLate、finalized、hop 超界、二次转发或会反写已 seal phase 的输入 |
+| `judgement.late.dispatch_collision` | invalid_relation | 两个 distinct subjects 调度到同 dispatchTick |
+| `judgement.session.lifecycle_order` | invalid_relation | 当前状态不允许该有参接口，或旧无参 skeleton 不可消费 |
+| `judgement.kernel.transaction_failed` | invalid_relation | 已入场的 Tick 计算遇到不可恢复 allocation/arithmetic/invariant 失败；session_faulted |
 
 既有同 Tick 原 observation collision、time reversal、amount、duplicate sequence/subject、
 unsupported capability、non_unique_solution、containment gate_incomplete 保持既有码，不复制同义码。

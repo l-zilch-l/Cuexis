@@ -1,11 +1,17 @@
 # Stage 7A Plan: Gameplay Kernel and Product Integration
 
-状态：active；Stage 7A 范围、批次、决策和验收标准
+状态：active；既有批次与证据保留，剩余S7A-9收尾已移交RPA，不再单独排期
 更新日期：2026-10-10
 
 本分册是 Stage 7A 的详细计划。Stage 7 全局产品边界、冻结顺序、依赖发布路线、统一证据要求、停止条件和后续交接见[总计划](plan.md)。实现状态只以[CURRENT_STATUS](../../../CURRENT_STATUS.md)为准；字段与运行语义仍归对应 ADR、Spec、ABI、Schema 和 profile。
 
 Stage 7A 是 Stage 8 的硬前置。当前执行目标与已落地证据分别见本文对应小节和[Stage 7A 证据索引](../../../stage_reports/stages/stage-07/README.md)。
+
+2026-10-10 owner后续调整：原S7A-9全部剩余工作改由[RPA综合收尾F1–F4](plan-rpa.md#综合收尾工作线原s7a-9)
+承担；诊断码审计与正式化已剥离为[独立前置N0–N3](plan-diagnostic-formalization.md)。RPA退出后依次实施Stage 7B+、Stage 8。
+本分册不再保留独立的9实施队列；旧“S7A-9”预算/矩阵/handoff引用均按该映射解释，
+带日期记录保留当时原文。RPA-F4统一交接并记录原7A关闭要求的接受，
+迁移本身不构成完成，不要求RPA结束后返回7A执行收尾。
 
 ## 3. Stage 7A 交付批次
 
@@ -438,25 +444,9 @@ owner已明确下一轮目标为 **S7A-5.1–5.5 + S7A-6.1–6.5**，按本文§
 
 ### S7A-9：最终硬化、跨平台证据、Stage 8 handoff 和关闭
 
-**目的。** 把所有实现证据收敛成可审查的 Stage 7A 关闭包。
-
-2026-10-09范围明确：实体键盘/听音、设备故障恢复、刷新率/输入延迟及实时同步的最终验收
-归[Stage 7-RPA子阶段](plan-rpa.md)，不作为本批新增退出条件。
-本批仍验收实际kernel/Fold、规范化输入/公共消费者、完整Replay/Seek、原内容预算和跨平台；
-Stage7B+的逐能力准入与后续发行选入保持。历史设备失败随RPA交接，不倒填通过。
-
-**工作内容。**
-
-1. 运行 Debug/Release/shared/headless/MinGW 以及 Linux Quality、Windows MSVC、Windows MinGW
-   hosted 矩阵；sanitize/coverage/clang-tidy 只按仓库支持的平台执行，不能伪造 Windows 等价证据。
-2. 对代表性真实内容和最坏内容测量 requirement 数、activity、Pattern 状态、Fact、Replay、
-   快照、Seek、prepare 峰值和运行时间；分别记录硬门禁、软目标和环境限制。
-3. 运行架构、target allowlist、公共头泄露、static/shared package、external consumer、version
-   gate、docs、git diff check 和许可证检查；GPU/真实设备/音频证据单独标记。
-4. 建立 Stage 8 handoff：S7A typed contract、v4/v5 输入映射、requirement/Replay identity、
-   golden fixture、capability/拒绝表、预算 profile、迁移注意事项和未纳入 7B+ 清单。
-5. 形成 dated completion report、问题 disposition、未执行项、回滚路径和 owner acceptance；未
-   满足任何硬门禁时状态保持 active/blocked，不缩小矩阵宣称完成。
+2026-10-10整体移交[RPA综合收尾工作线](plan-rpa.md#综合收尾工作线原s7a-9)，本节仅保留旧锚点。
+S7A-9.1→RPA-F1本地矩阵、9.2→F2 hosted矩阵、9.3→F3预算/回归、9.4→F4交接/接受。
+完整工作内容、退出标准和顺序由RPA分册维护；原矩阵、预算及owner接受要求不减少。
 
 ### 3.1 Stage 7A 小目标核验台账
 
@@ -511,10 +501,10 @@ fixture、正例、负例、命令、原始输出和未覆盖项；“依赖批�
 | S7A-8.2 | 离线 assembler 生产入口 | chart-candidate tool 与 closure report | feature/resource closure 由 typed assembler 派生；测试注入后门被检测；输入到 prepared identity 有完整链路 |
 | S7A-8.3 | Reference Host 交接 | 同 SHA 六动词命令回归 | `open/play/pause/seek/reload/quit` 状态矩阵、失败保持旧 active、discontinuity 和重载证据完整；不复制历史报告代替当前运行 |
 | S7A-8.4 | SDK 版本门禁（本轮差异证明为 0.7.1） | version-gate change、owner 放行记录、consumer matrix | 实际公共 API 差异决定 patch/minor；默认未经授权变更仍失败；owner 显式一次性放行可审计；0.7.0 consumer source-compatible；fresh/clean build、安装元数据和 hosted gate 一致 |
-| S7A-9.1 | 本地最终矩阵 | Debug/Release/shared/headless/MinGW logs | 所有批次 fixture、architecture、allowlist、package、docs 和 version gate 在最终 SHA 运行；失败按责任归属，不沿用旧日志 |
-| S7A-9.2 | hosted 三平台矩阵 | Linux Quality、Windows MSVC、Windows MinGW evidence | 同一最终行为 SHA 被验证；本地与 hosted 配置差异列明；缺 GPU/设备项单列为未执行或独立证据 |
-| S7A-9.3 | 预算和回归报告 | machine-readable measurements、regression report | 内容/稳态/快照/Replay/Packed 计数口径分开；实测与阈值分开；容量变化能追溯到 fixture/commit |
-| S7A-9.4 | Stage 8 handoff/owner acceptance | handoff checklist、completion report | 交接物、未纳入 7B+、回滚路径和开放问题齐全；owner 明确接受；否则计划保持 active |
+| S7A-9.1（已移交） | 本地最终矩阵 | RPA-F1 | [RPA统一收尾标准](plan-rpa.md#综合收尾工作线原s7a-9)，不再单独执行 |
+| S7A-9.2（已移交） | hosted 三平台矩阵 | RPA-F2 | 同上；旧证据不替代最终行为SHA |
+| S7A-9.3（已移交） | 预算和回归报告 | RPA-F3 | 同上；不因转移而接受数值或扩大限额 |
+| S7A-9.4（已移交） | Stage 8 handoff/owner acceptance | RPA-F4 | 同上；RPA退出前一并完成原7A关闭包 |
 
 2026-10-10 owner要求按当前全部成功CI关闭S7A-8.4。I78-5九行的最终验收证据见
 [7/8收口记录](../../../stage_reports/stages/stage-07/verification/2026-10-10-s7a-8-4-closure.md)，
@@ -1051,15 +1041,16 @@ guide、包、配置和操作说明一起更新，故旧包结果不证明新练
 
 S7A-7.1–7.5、8.1–8.3既有实现和受限验收范围保持；8.4继续收口自身版本/审批/保护门禁。
 按owner后续指令，实体设备及实时同步的实施和最终验收整体归RPA；旧失败原样交接，
-不再回挂本分册或S7A-9，也不改记通过。S7A-9按原内核/公共消费者范围验收，
-RPA不成为其新增前置。Stage7B+继续独立高级能力线，Stage8消费7A、RPA和已选入7B+成果。
+不再回挂本分册，也不改记通过。2026-10-10后续裁定进一步将原S7A-9移交RPA-F1–F4，
+由RPA统一收尾；随后实施Stage7B+，其当前计划范围完成并接受后进入Stage8。
 
 ### 3.4.19 诊断码去阶段命名规划（2026-10-09）
 
-原DN78-0–3移交[Stage 7-RPA](plan-rpa.md)的命名工作线，
+原DN78-0–3曾移交RPA-N线；2026-10-10 owner最新要求将其剥离为
+[诊断码正式化独立前置](plan-diagnostic-formalization.md)，
 本节仅保留索引和追溯。67个定义中66条正式名称迁移与1个占位删除候选的完整映射见
-[命名审计](../../../stage_reports/stages/stage-07/readiness/2026-10-09-diagnostic-phase-name-audit.md)。
-命名迁移的公共投影、Recovery/Replay兼容、版本差异和验证归RPA子阶段，不列作7/8额外实现缺口。
+[命名审计](../../../stage_reports/stages/stage-07/rpa/2026-10-09-diagnostic-phase-name-audit.md)。
+命名迁移的公共投影、Recovery/Replay兼容、版本差异和验证统一归该工作包，不列作7/8额外实现缺口或RPA内部批次。
 现行诊断合同继续适用；本轮仍只规划，未改码串或默认为公共兼容。
 
 ### 3.4.20 保护配置与本轮交付决策（2026-10-09）
@@ -1090,5 +1081,5 @@ pre-merge实际可信base执行日志、同SHA七个成功run及保护回读收�
 下一次对话先审核[Stage 7-RPA](plan-rpa.md)：以代码和现行合同复验RA反例，
 逐项审视TB-01–07、线程/存储候选、正式命名兼容与设备验证设计，给出准入缺口及可执行顺序。
 已有推荐不等于字段冻结，不因7/8收口开始RPA产品实施。
-S7A-9仍只保留既有计数/测量/handoff准备，最终预算、矩阵、Stage7A关闭另行授权；
-Stage7B+继续独立，Stage8只消费明确选入并验收的能力。不合并或发行。
+原S7A-9的既有计数/测量/handoff准备及最终预算、矩阵、关闭包现一并移交RPA-F1–F4；
+RPA退出后实施Stage7B+，其当前计划范围完成并接受后进入Stage8，发行选入另按明确矩阵。不合并或发行。

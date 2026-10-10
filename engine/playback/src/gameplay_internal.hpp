@@ -1,4 +1,5 @@
 #pragma once
+#include "../../judgement/src/diagnostic_policy.hpp"
 #include <algorithm>
 #include <array>
 #include <cuexis/gameplay_packed/gameplay_capsule.hpp>
@@ -19,13 +20,7 @@ inline auto projectGameplayError(core::Error error) -> core::Error {
         error.withContext("faulted", "false");
         return error;
     }
-    if (!code.starts_with("judgement.s7a2.") && !code.starts_with("judgement.s7a3."))
-        return error;
-    const std::array<std::string_view, 5> publicInputCodes{
-        "judgement.s7a2.timebase.tick_overflow", "judgement.s7a2.timebase.time_reversal",
-        "judgement.s7a2.input.amount_out_of_range", "judgement.s7a2.input.amount_narrowed",
-        "judgement.s7a2.input.same_tick_collision"};
-    if (std::find(publicInputCodes.begin(), publicInputCodes.end(), code) != publicInputCodes.end())
+    if (!judgement::detail::categoryProjectedDiagnostic(code))
         return error;
     std::string category = "invalid_relation";
     for (const auto& c : error.context())
@@ -36,7 +31,7 @@ inline auto projectGameplayError(core::Error error) -> core::Error {
          {"capability_disabled", "capability.disabled"},
          {"budget_exceeded", "capability.budget_insufficient"},
          {"identity_closure_incomplete", "identity_closure_incomplete"},
-         {"late_policy_incomplete", "judgement.s7a4.late.parameters_invalid"},
+         {"late_policy_incomplete", "judgement.late.parameters_invalid"},
          {"ambiguous_migration", "migration.ambiguous"},
          {"non_unique_solution", "playback.gameplay.non_unique_solution"},
          {"non_terminating_source", "playback.gameplay.non_terminating_source"},

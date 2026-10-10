@@ -1,3 +1,4 @@
+#include "diagnostic_policy.hpp"
 #include "recovery_wire.hpp"
 #include <cuexis/judgement/recovery_codec.hpp>
 
@@ -23,7 +24,7 @@ void section(Writer& out, std::uint8_t id, const Writer& payload) {
 auto envelope(const Writer& payload, std::uint8_t kind) -> std::vector<std::byte> {
     Writer out;
     out.bytes.insert(out.bytes.end(), magic.begin(), magic.end());
-    out(std::uint32_t{1}, kind, static_cast<std::uint64_t>(payload.bytes.size()),
+    out(std::uint32_t{2}, kind, static_cast<std::uint64_t>(payload.bytes.size()),
         digest(payload.bytes));
     out.bytes.insert(out.bytes.end(), payload.bytes.begin(), payload.bytes.end());
     return out.bytes;
@@ -51,7 +52,7 @@ auto unwrap(std::span<const std::byte> bytes, std::uint8_t expectedKind,
     std::uint8_t kind;
     std::uint64_t length, hash;
     reader(version, kind, length, hash);
-    if (version != 1) {
+    if (version != 2) {
         throw Failure{"codec.version_unsupported"};
     }
     if (kind != expectedKind) {
@@ -131,6 +132,9 @@ auto encodeReplay(const ReplayArchive& archive) -> core::Result<std::vector<std:
     auto p = (*base)->query();
     for (const auto& r : archive.data().records) {
         if (r.result) {
+            if (r.result->faultDiagnostic &&
+                detail::containsLegacyDiagnostic(*r.result->faultDiagnostic))
+                throw Failure{"codec.record_invalid"};
             p = std::make_shared<const detail::ProjectionStorage>(*r.result);
         }
     }
@@ -175,6 +179,10 @@ auto decodeReplay(std::span<const std::byte> bytes, const RecoveryInputs& inputs
     if (facts != h.facts) {
         throw Failure{"codec.count_mismatch"};
     }
+    for (const auto& record : data.records)
+        if (record.result && record.result->faultDiagnostic &&
+            detail::containsLegacyDiagnostic(*record.result->faultDiagnostic))
+            throw Failure{"codec.record_invalid"};
     std::uint64_t events = 0;
     std::optional<Tick> horizon;
     for (std::size_t i = 0; i < data.records.size(); ++i) {
@@ -220,6 +228,9 @@ auto decodeReplay(std::span<const std::byte> bytes, const RecoveryInputs& inputs
     return core::unexpected(failure("codec.allocation_failed"));
 }
 auto encodeSnapshot(const SnapshotPayload& value) -> core::Result<std::vector<std::byte>> try {
+    if (value.state().kernel.faultDiagnostic &&
+        detail::containsLegacyDiagnostic(*value.state().kernel.faultDiagnostic))
+        throw Failure{"codec.record_invalid"};
     Writer out, body;
     section(out, 1,
             header(value.state().kernel, *value.storage_->inputs,
@@ -254,6 +265,8 @@ auto decodeSnapshot(std::span<const std::byte> bytes, const RecoveryInputs& inpu
     if (dto.ingress.accepted.size() != h.events || dto.kernel.facts.size() != h.facts) {
         throw Failure{"codec.count_mismatch"};
     }
+    if (dto.kernel.faultDiagnostic && detail::containsLegacyDiagnostic(*dto.kernel.faultDiagnostic))
+        throw Failure{"codec.record_invalid"};
     auto stored = std::make_shared<const detail::SnapshotStorage>(
         std::move(dto), std::make_shared<const RecoveryInputs>(inputs));
     auto valid = detail::ExecutionKernel::restore(*stored, inputs);

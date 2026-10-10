@@ -120,8 +120,8 @@ void checkDomainMutationRefused(const InputMappingProfile& current,
                                 const InputMappingProfile& candidate) {
     const auto rejected = judgement::rejectRuntimeMappingChange(current, candidate);
     REQUIRE_FALSE(rejected.has_value());
-    checkRejection(rejected.error(), "judgement.s7a2.input.runtime_mapping_change",
-                   "invalid_relation", "inputMapping.domains");
+    checkRejection(rejected.error(), "judgement.input.runtime_mapping_change", "invalid_relation",
+                   "inputMapping.domains");
 }
 
 //  -------------------------------------------------------------------------------------------
@@ -200,7 +200,7 @@ TEST_CASE("amount: the declared boundary policy decides whether an endpoint is r
             CAPTURE(value);
             const auto rejected = judgement::quantizeAmount(exclusive, beat(value, 1));
             REQUIRE_FALSE(rejected.has_value());
-            checkRejection(rejected.error(), "judgement.s7a2.input.amount_out_of_range",
+            checkRejection(rejected.error(), "judgement.input.amount_out_of_range",
                            "budget_exceeded", "amountSpec.range");
         }
         for (const std::int64_t value : {-2, 0, 2}) {
@@ -222,7 +222,7 @@ TEST_CASE("amount: a value outside the declared range is a stable rejection",
             CAPTURE(value);
             const auto rejected = judgement::quantizeAmount(bounded, beat(value, 1));
             REQUIRE_FALSE(rejected.has_value());
-            checkRejection(rejected.error(), "judgement.s7a2.input.amount_out_of_range",
+            checkRejection(rejected.error(), "judgement.input.amount_out_of_range",
                            "budget_exceeded", "amountSpec.range");
         }
     }
@@ -237,8 +237,8 @@ TEST_CASE("amount: a value outside the declared range is a stable rejection",
         //  23/2 rounds to 12, which is outside the declared range.
         const auto outside = judgement::quantizeAmount(bounded, beat(23, 2));
         REQUIRE_FALSE(outside.has_value());
-        checkRejection(outside.error(), "judgement.s7a2.input.amount_out_of_range",
-                       "budget_exceeded", "amountSpec.range");
+        checkRejection(outside.error(), "judgement.input.amount_out_of_range", "budget_exceeded",
+                       "amountSpec.range");
     }
 }
 
@@ -261,7 +261,7 @@ TEST_CASE("amount: a quotient the canonical integer cannot hold is a narrowing r
         quarter.scale = quarterScale;
         const auto rejected = judgement::quantizeAmount(quarter, beat(4611686018427387904LL, 1));
         REQUIRE_FALSE(rejected.has_value());
-        checkRejection(rejected.error(), "judgement.s7a2.input.amount_narrowed", "budget_exceeded",
+        checkRejection(rejected.error(), "judgement.input.amount_narrowed", "budget_exceeded",
                        "amountSpec");
     }
 
@@ -272,7 +272,7 @@ TEST_CASE("amount: a quotient the canonical integer cannot hold is a narrowing r
         four.scale = fourScale;
         const auto rejected = judgement::quantizeAmount(four, beat(1, 4611686018427387904LL));
         REQUIRE_FALSE(rejected.has_value());
-        checkRejection(rejected.error(), "judgement.s7a2.input.amount_narrowed", "budget_exceeded",
+        checkRejection(rejected.error(), "judgement.input.amount_narrowed", "budget_exceeded",
                        "amountSpec");
     }
 
@@ -284,7 +284,7 @@ TEST_CASE("amount: a quotient the canonical integer cannot hold is a narrowing r
         quarter.scale = quarterScale;
         const auto rejected = judgement::quantizeAmount(quarter, beat(-4611686018427387904LL, 1));
         REQUIRE_FALSE(rejected.has_value());
-        checkRejection(rejected.error(), "judgement.s7a2.input.amount_narrowed", "budget_exceeded",
+        checkRejection(rejected.error(), "judgement.input.amount_narrowed", "budget_exceeded",
                        "amountSpec");
     }
 
@@ -295,8 +295,8 @@ TEST_CASE("amount: a quotient the canonical integer cannot hold is a narrowing r
         const auto bounded = spec(4, 1, -1000000, 1000000);
         const auto rejected = judgement::quantizeAmount(bounded, beat(4000004, 1));
         REQUIRE_FALSE(rejected.has_value());
-        checkRejection(rejected.error(), "judgement.s7a2.input.amount_out_of_range",
-                       "budget_exceeded", "amountSpec.range");
+        checkRejection(rejected.error(), "judgement.input.amount_out_of_range", "budget_exceeded",
+                       "amountSpec.range");
     }
 }
 
@@ -305,19 +305,19 @@ TEST_CASE("amount: a declaration that cannot be honoured is a structural rejecti
     SECTION("a non-positive scale is rejected") {
         const auto zero = judgement::quantizeAmount(spec(0, 1, -10, 10), beat(1, 1));
         REQUIRE_FALSE(zero.has_value());
-        checkRejection(zero.error(), "judgement.s7a2.input.mapping_declaration_invalid",
+        checkRejection(zero.error(), "judgement.input.mapping_declaration_invalid",
                        "invalid_relation", "amountSpec.scale");
 
         const auto negative = judgement::quantizeAmount(spec(-1, 4, -10, 10), beat(1, 1));
         REQUIRE_FALSE(negative.has_value());
-        checkRejection(negative.error(), "judgement.s7a2.input.mapping_declaration_invalid",
+        checkRejection(negative.error(), "judgement.input.mapping_declaration_invalid",
                        "invalid_relation", "amountSpec.scale");
     }
 
     SECTION("a reversed range is rejected") {
         const auto reversed = judgement::quantizeAmount(spec(1, 1, 10, -10), beat(0, 1));
         REQUIRE_FALSE(reversed.has_value());
-        checkRejection(reversed.error(), "judgement.s7a2.input.mapping_declaration_invalid",
+        checkRejection(reversed.error(), "judgement.input.mapping_declaration_invalid",
                        "invalid_relation", "amountSpec.scale");
     }
 }
@@ -341,7 +341,7 @@ TEST_CASE("mapping: the three identity components are declared and checked separ
         missing.profileId = {};
         const auto rejected = judgement::validateInputMapping(missing);
         REQUIRE_FALSE(rejected.has_value());
-        checkRejection(rejected.error(), "judgement.s7a2.input.mapping_declaration_invalid",
+        checkRejection(rejected.error(), "judgement.input.mapping_declaration_invalid",
                        "invalid_relation", "inputMapping.profileId");
     }
 
@@ -350,7 +350,7 @@ TEST_CASE("mapping: the three identity components are declared and checked separ
         missing.profileVersion = {};
         const auto rejected = judgement::validateInputMapping(missing);
         REQUIRE_FALSE(rejected.has_value());
-        checkRejection(rejected.error(), "judgement.s7a2.input.mapping_declaration_invalid",
+        checkRejection(rejected.error(), "judgement.input.mapping_declaration_invalid",
                        "invalid_relation", "inputMapping.profileVersion");
     }
 
@@ -359,7 +359,7 @@ TEST_CASE("mapping: the three identity components are declared and checked separ
         missing.sourceClass = SourceClass{};
         const auto rejected = judgement::validateInputMapping(missing);
         REQUIRE_FALSE(rejected.has_value());
-        checkRejection(rejected.error(), "judgement.s7a2.input.mapping_declaration_invalid",
+        checkRejection(rejected.error(), "judgement.input.mapping_declaration_invalid",
                        "invalid_relation", "inputMapping.sourceClass");
     }
 
@@ -368,7 +368,7 @@ TEST_CASE("mapping: the three identity components are declared and checked separ
         missing.domains = {domain({}, amount)};
         const auto rejected = judgement::validateInputMapping(missing);
         REQUIRE_FALSE(rejected.has_value());
-        checkRejection(rejected.error(), "judgement.s7a2.input.mapping_declaration_invalid",
+        checkRejection(rejected.error(), "judgement.input.mapping_declaration_invalid",
                        "invalid_relation", "domainToken");
     }
 
@@ -377,7 +377,7 @@ TEST_CASE("mapping: the three identity components are declared and checked separ
         unusable.domains = {domain("test.domain.button", spec(1, 1, 5, -5))};
         const auto rejected = judgement::validateInputMapping(unusable);
         REQUIRE_FALSE(rejected.has_value());
-        checkRejection(rejected.error(), "judgement.s7a2.input.mapping_declaration_invalid",
+        checkRejection(rejected.error(), "judgement.input.mapping_declaration_invalid",
                        "invalid_relation", "amountSpec");
     }
 
@@ -387,7 +387,7 @@ TEST_CASE("mapping: the three identity components are declared and checked separ
                               domain("test.domain.button", spec(1, 2, -4, 4))};
         const auto rejected = judgement::validateInputMapping(duplicated);
         REQUIRE_FALSE(rejected.has_value());
-        checkRejection(rejected.error(), "judgement.s7a2.input.mapping_declaration_invalid",
+        checkRejection(rejected.error(), "judgement.input.mapping_declaration_invalid",
                        "invalid_relation", "inputMapping.domains");
     }
 
@@ -410,7 +410,7 @@ TEST_CASE("mapping: each declared identity component changes the session identit
         CHECK_FALSE(judgement::contributesToSameSessionIdentity(reference, changed));
         const auto rejected = judgement::rejectRuntimeMappingChange(reference, changed);
         REQUIRE_FALSE(rejected.has_value());
-        checkRejection(rejected.error(), "judgement.s7a2.input.runtime_mapping_change",
+        checkRejection(rejected.error(), "judgement.input.runtime_mapping_change",
                        "invalid_relation", "inputMapping.profileVersion");
     }
 
@@ -420,7 +420,7 @@ TEST_CASE("mapping: each declared identity component changes the session identit
         CHECK_FALSE(judgement::contributesToSameSessionIdentity(reference, changed));
         const auto rejected = judgement::rejectRuntimeMappingChange(reference, changed);
         REQUIRE_FALSE(rejected.has_value());
-        checkRejection(rejected.error(), "judgement.s7a2.input.runtime_mapping_change",
+        checkRejection(rejected.error(), "judgement.input.runtime_mapping_change",
                        "invalid_relation", "inputMapping.sourceClass");
     }
 
@@ -430,7 +430,7 @@ TEST_CASE("mapping: each declared identity component changes the session identit
         CHECK_FALSE(judgement::contributesToSameSessionIdentity(reference, changed));
         const auto rejected = judgement::rejectRuntimeMappingChange(reference, changed);
         REQUIRE_FALSE(rejected.has_value());
-        checkRejection(rejected.error(), "judgement.s7a2.input.runtime_mapping_change",
+        checkRejection(rejected.error(), "judgement.input.runtime_mapping_change",
                        "invalid_relation", "inputMapping.profileId");
     }
 

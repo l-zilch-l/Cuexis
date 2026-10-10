@@ -134,7 +134,7 @@ TEST_CASE("S7A-3 incomplete arm or deadline containment is a stable prepare reje
     requirement.maxArmElements.reset();
     const auto rejected = prepareInto(publication, incomplete);
     REQUIRE_FALSE(rejected);
-    CHECK(rejected.error().code() == "judgement.s7a3.declaration.structurally_incomplete");
+    CHECK(rejected.error().code() == "judgement.declaration.structurally_incomplete");
     CHECK(publication.active() == active);
     CHECK(publication.active()->assembled().prepared == identity);
 }
@@ -388,4 +388,40 @@ TEST_CASE("S2 grace source failures are atomic and never invent values",
     CHECK_FALSE(rejected.error().code().empty());
     CHECK(publication.active() == active);
     CHECK(publication.active()->assembled().prepared == identity);
+}
+
+TEST_CASE("grace conflict precedes forbidden chart supply with complete diagnostic",
+          "[diagnostic][judgement][grace]") {
+    Fixture fixture;
+    auto request = requestFor(fixture);
+    auto& inputs = request.graceInputs[0].inputs;
+    auto& grace = request.assembly.sources[0].document.requirements[0].grace;
+    inputs.chartDuration = makeDuration(3, 1);
+    grace.allowChartGrace = false;
+    auto conflict = prepareGameplay(request);
+    REQUIRE_FALSE(conflict);
+    CHECK(conflict.error().code() == "judgement.grace.value_source_conflict");
+    CHECK(conflict.error().message() == "the chart supplied two competing grace values");
+    inputs.candidate.reset();
+    auto forbidden = prepareGameplay(request);
+    REQUIRE_FALSE(forbidden);
+    CHECK(forbidden.error().code() == "judgement.grace.chart_supply_not_allowed");
+    CHECK(forbidden.error().message() ==
+          "the declaration does not allow a chart-supplied grace value");
+    for (const auto* error : {&conflict.error(), &forbidden.error()}) {
+        CHECK_FALSE(error->cause());
+        const auto& context = error->context();
+        REQUIRE(context.size() == 5);
+        CHECK(context[0].key == "category");
+        CHECK(context[0].value ==
+              (error == &conflict.error() ? "invalid_relation" : "budget_exceeded"));
+        CHECK(context[1].key == "severity");
+        CHECK(context[1].value == "error");
+        CHECK(context[2].key == "faulted");
+        CHECK(context[2].value == "false");
+        for (std::size_t i = 3; i < context.size(); ++i) {
+            CHECK(context[i].key == conflict.error().context()[i].key);
+            CHECK(context[i].value == conflict.error().context()[i].value);
+        }
+    }
 }

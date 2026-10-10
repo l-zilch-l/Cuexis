@@ -16,7 +16,7 @@ cmake_minimum_required(VERSION 3.25)
 # outside the project:
 #   * the SDK installs into a prefix that is not the build tree,
 #   * an out-of-tree host project configures against that prefix through
-#     find_package(Cuexis 0.7.1 CONFIG REQUIRED COMPONENTS Playback),
+#     find_package(Cuexis 0.7.5 CONFIG REQUIRED COMPONENTS Playback),
 #   * the host uses only installed public Playback headers and the exported
 #     package target (no internal target, no Player configuration library, no
 #     source-tree include),
@@ -202,7 +202,7 @@ set(configure_arguments
     "-DCuexis_DIR=${prefix}/lib/cmake/Cuexis"
     "-DCuexis_ALLOW_EXPERIMENTAL=${CUEXIS_EXPERIMENTAL}"
     "-DCMAKE_PREFIX_PATH=${prefix}"
-    "-DCUEXIS_HOST_API_VERSION=0.7.1"
+    "-DCUEXIS_HOST_API_VERSION=0.7.5"
     "-DCUEXIS_HOST_CONTENT_DIR=${content_dir}/cfu_f_reference_project"
     ${instrumentation_arguments})
 if(DEFINED CUEXIS_RC_COMPILER AND NOT "${CUEXIS_RC_COMPILER}" STREQUAL "")
@@ -626,7 +626,7 @@ if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
         "-DCuexis_DIR=${doctored_prefix}/lib/cmake/Cuexis"
         "-DCuexis_ALLOW_EXPERIMENTAL=${CUEXIS_EXPERIMENTAL}"
         "-DCMAKE_PREFIX_PATH=${doctored_prefix}"
-        "-DCUEXIS_HOST_API_VERSION=0.7.1"
+        "-DCUEXIS_HOST_API_VERSION=0.7.5"
         "-DCUEXIS_HOST_CONTENT_DIR=${content_dir}/cfu_f_reference_project"
         ${instrumentation_arguments}
         ${vcpkg_arguments})

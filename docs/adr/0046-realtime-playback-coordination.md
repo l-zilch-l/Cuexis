@@ -65,6 +65,9 @@ Miss。只要输入 admission 轨迹改变，现有 late-policy 允许结果改�
 后续若改 AudioClockSnapshot、公开准备/资源接口或 Playback 方法，必须由实际 API 差异判断版本，
 完成 candidate ON/OFF、static/shared、fresh/clean-first、消费者与 owner gate；不能沿用当前 patch 结论。
 
-Stage 7-RPA子阶段负责实时架构、正式命名及实体设备/实时同步最终验收；S7A-7/8保留原集成与门禁收口，
-S7A-9负责原内核/消费者矩阵和预算，Stage7B+保留高级能力线，S7C-1负责高级校准参数/设备策略扩展，
-Stage 8 消费已验收合同，Stage 12 做大规模/平台优化。基本同步与播放可用性不得延期到 Stage 12。
+Stage 7-RPA子阶段负责实时架构及实体设备/实时同步最终验收；诊断正式命名已剥离为
+[独立前置工作包](../stage_plans/active/stage-07/plan-diagnostic-formalization.md)，S7A-7/8保留原集成与门禁收口，
+2026-10-10后续归属调整将原S7A-9的矩阵、预算、交接及关闭统一转入RPA-F1–F4。
+RPA完整退出后实施Stage 7B+（含S7C-1高级校准参数/设备策略扩展），7B+当前计划范围
+完成并接受后进入Stage 8。具体排期以Stage 7总计划及分册为准；本段不改变ADR的候选状态。
+Stage 12做大规模/平台优化，基本同步与播放可用性不得延期到Stage 12。
