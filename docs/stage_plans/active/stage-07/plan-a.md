@@ -1,11 +1,14 @@
 # Stage 7A Plan: Gameplay Kernel and Product Integration
 
 状态：active；既有批次与证据保留，剩余S7A-9收尾已移交RPA，不再单独排期
-更新日期：2026-10-10
+更新日期：2026-10-11
 
 本分册是 Stage 7A 的详细计划。Stage 7 全局产品边界、冻结顺序、依赖发布路线、统一证据要求、停止条件和后续交接见[总计划](plan.md)。实现状态只以[CURRENT_STATUS](../../../CURRENT_STATUS.md)为准；字段与运行语义仍归对应 ADR、Spec、ABI、Schema 和 profile。
 
 Stage 7A 是 Stage 8 的硬前置。当前执行目标与已落地证据分别见本文对应小节和[Stage 7A 证据索引](../../../stage_reports/stages/stage-07/README.md)。
+
+版本阅读说明：本分册的0.7.0/0.7.1记录保留各批次当时基线；当前分支SDK API已为0.7.5，
+见CURRENT_STATUS及[独立诊断前置](plan-diagnostic-formalization.md)。旧批次版本或审批不覆盖后续变更。
 
 2026-10-10 owner后续调整：原S7A-9全部剩余工作改由[RPA综合收尾F1–F4](plan-rpa.md#综合收尾工作线原s7a-9)
 承担；诊断码审计与正式化已剥离为[独立前置N0–N3](plan-diagnostic-formalization.md)。RPA退出后依次实施Stage 7B+、Stage 8。

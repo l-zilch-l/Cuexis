@@ -1,8 +1,11 @@
 # Gameplay V2 ABI（候选）：内部 typed preview 边界
 
-2026-10-09 实时宿主首用重审见[边界设计草案](realtime-host-boundary.md)。该草案只登记
-captured/delivered/admitted、时钟关联、owner和发布协议的设计要求，未替代本ABI的canonical
-来源、同Tick规则、身份或恢复合同，未新增公共符号。其字段冻结前不能由消费者隐式补默认值。
+2026-10-11 RPA合同修订：owner已选择capture-time、T2/O1/I1/C1/L1、G1/Q1/K1、TB-05和R2，
+并授权其余普通设计由代理收敛。正常输入顺序/身份沿execution profile，控制cut、R2 Fact、
+连续前缀/时钟观察、Replay/Seek及新profile/Recovery版本归
+[RPA补充Spec](../formats/rpa-execution-contract.md)。
+该补充只替代明确列出的RPA行为；下文旧profile/SDK0.7.5合同仍描述已实现基线。
+RPA设计已落约不等于产品已实现；当前公共头、格式字节与SDK版本未在本轮修改。
 
 ## S7A-7/8 公共首用补充 revision 1（2026-10-07）
 
@@ -61,7 +64,7 @@ ADR，更**不是**已发布 SDK 的宿主 API。
 1. **内部 / preview typed 边界。** 本 ABI 描述的是 Gameplay typed kernel 与 Playback 集成之间的
    C++ 边界。它面向仓库内消费者与 reference host，不面向第三方宿主。ADR 0027 冻结的宿主入口仍是
    `cuexis::playback::PlaybackSession`；本文不新增、不替换、不重命名任何宿主入口。
-2. **不是已发布 SDK 的宿主 API。** 现有安装包（SDK API `0.7.1`）不暴露本文的任何类型。本文不改变
+2. **不是已发布 SDK 的宿主 API。** 当前分支安装包（SDK API `0.7.5`）不直接暴露本文的内部执行类型。本文不改变
    SDK API 版本，也不构成版本升级授权；Stage 7A 的 typed 类型即使实现，也只进入内部/preview 安装
    组件，且必须由实现批次的安装图（见 [依赖与安装图](../proposals/gameplay-v2-acceptance/TARGETS_AND_DEPENDENCIES.md)）
    显式登记。

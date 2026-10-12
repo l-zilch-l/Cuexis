@@ -2,7 +2,7 @@
 
 状态：active
 
-更新日期：2026-10-10
+更新日期：2026-10-11
 
 适用版本：SDK API `0.7.5`
 
@@ -19,7 +19,7 @@
 - `Error` 描述一次操作失败；`Diagnostics` 描述一组可排序的问题。
 - 机器判断优先使用 code 和 fieldPath，不只匹配 message。
 - `PreparedSemanticIdentity`、`PresentationContentIdentity` 和 `FrameDigest` 含义不同。
-- SDK `0.7.0` 仍保持 Chart v1/v2/v3 Reader 与 FrameDigest v1-v3 兼容合同。
+- 当前 SDK `0.7.5` 继续保持 Chart v1/v2/v3 Reader 与 FrameDigest v1-v3 兼容合同。
 
 ## 错误与诊断速查
 
@@ -61,7 +61,8 @@ prepare 诊断按以下阶段形成并保持稳定顺序：
 
 ## 兼容合同
 
-- SDK API 分支候选为 `0.7.1`（待 owner 审批与可信基线启用）。
+- 当前分支 SDK API 为 `0.7.5`；交付状态见[CURRENT_STATUS](../CURRENT_STATUS.md)，版本递增与审批规则见[VERSIONING](../guides/VERSIONING.md)。
+- 0.7.5正式化诊断code/sourceCode及两类legacy/query message，candidate Recovery revision2明确拒绝revision1；消费者最低版本与回退见[具体兼容差异](../guides/VERSIONING.md#075具体兼容差异)。
 - Chart v1/v2/v3 Reader、迁移入口和已公开旧 API 按 ADR 0041 退出政策维护。
 - FrameDigest v1-v3 和 canonical bytes/order 保持稳定。
 - installed Playback headers 不暴露 EnTT、SDL、OpenGL/GLAD、JSON DOM、RuntimeSession 或 World。

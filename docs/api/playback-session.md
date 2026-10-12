@@ -94,14 +94,17 @@ typed horizon/discontinuity/输入批次预检、输入准入、kernel seal、Fo
 | advance 成功或开始执行后 fault | 增加；旧候选 stale | sealed 前缀保留；失败 Tick 不发布 token |
 | update、override、Pause/Resume 成功变更 | 增加；旧候选 stale | 不推断 Seek，不伪造 input/Fact |
 | commit、Seek/restore/reset、Stop、新内容替换、unload | 增加；旧候选 stale | 整体替换 transient projection scope |
-| 拒绝的 control、重复的 Pause/Resume | 不变 | 旧组合保持 |
+| 拒绝的 control、重复的 Pause/Resume（旧同步基线） | 不变 | 旧组合保持；RPA已发生drain/software commit者按实际阶段保留前缀 |
 
 generation 是事务失效标记，不进入 JudgementIdentity。projection scope 是当前 Ledger 的临时
 作用域，不随普通 submit 增加。Seek/restore/分支替换须暂存并整体 swap cursor、dedup、future
 queue、aggregation、target bindings 和 tokens；同长度或 same-H 不是保留旧游标的理由。
 load/commit/恢复候选失败保持旧 Frame、Fact、Fold、archive 与 projection。
 
-Pause 禁止 submit/advance，保持已发布画面和真实 held contact；Resume 不补 release。
+**SDK0.7.5旧profile基线：** Pause 禁止 submit/advance，保持已发布画面和真实 held contact；Resume 不补 release。
+**RPA设计替代：** 普通Paused禁令保留；Pause经显式cut/drain后冻结，Resume以真实PauseTrace执行R2，
+按独立control commit结算中断的Pending phase。cut、generation、失败回执、future pending和Replay
+以[RPA补充Spec §3–4](../formats/rpa-execution-contract.md)为准；这不是现有同步Resume已经支持的行为。
 Stop/reset 创建同配置空 kernel 并清空 transient 状态，不生成 Fact；Stop 进入 Paused，
 Reset 进入 Prepared。Stop 后只有 Resume 才继续推进；faulted Stop 拒绝。Pause 同时拒绝
 普通 update，保持画面。重建保留原 Host lifetime，不消耗 RemainingFrames。Seek 必须显式指定 archive、

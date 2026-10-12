@@ -131,6 +131,9 @@ Pattern 原语、仲裁顺序或拒绝策略，必须先更新 ADR/Spec，再重
 
 ### 1.2 Stage 6 交接前置
 
+下列SDK 0.7.1为Stage 6交接和S7A-8.4历史增量基线；当前分支SDK已为0.7.5，
+诊断独立前置及当前交付状态见[CURRENT_STATUS](../../../CURRENT_STATUS.md)，不沿用旧审批。
+
 Stage 6 关闭后由 Stage 7A 承接四项未完成内容。它们是关闭前置，不是“以后再补”的 backlog：
 
 | 交接项 | Stage 7A 必须交付的结果 | 关闭时最低证据 |

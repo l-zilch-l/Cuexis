@@ -2,7 +2,7 @@
 
 状态：阶段 3 最终验收后的现行构建、安装与质量门禁规范
 
-更新日期：2026-09-28
+更新日期：2026-10-11
 
 ## 当前仓库说明
 
@@ -477,7 +477,7 @@ ctest --preset headless-debug -R "^cuexis_external_consumer_" --output-on-failur
 ### 具名参考宿主（Reference Host）
 
 SDK 安装树之外还有一个独立示例宿主工程 `examples/reference_host/`。它只通过
-`find_package(Cuexis 0.7.0 CONFIG REQUIRED COMPONENTS Playback)` 消费安装后的公共头与导出
+`find_package(Cuexis 0.7.5 CONFIG REQUIRED COMPONENTS Playback)` 消费安装后的公共头与导出
 target，自带主循环、`IContentProvider` 实现、宿主时钟和帧消费，不包含仓库内私有头，也不链接
 Player 配置实现（`cuexis_player_support`）。它的运行记录覆盖启动、加载、提交、逐帧更新与摘要、
 Seek、成功重载、被拒绝的宿主提供者故障重载、发布包加载与销毁：
@@ -488,7 +488,7 @@ cmake -S examples/reference_host -B out/build/reference-host `
 cmake --build out/build/reference-host
 ```
 
-宿主声明 `CUEXIS_HOST_API_VERSION`（默认 `0.7.0`）作为它编写时对齐的 SDK API 基线，并在 SDK
+宿主声明 `CUEXIS_HOST_API_VERSION`（默认 `0.7.5`）作为它编写时对齐的 SDK API 基线，并在 SDK
 minor 不兼容时于 configure 阶段失败。门禁 `cuexis_reference_host_staging` 会把当前构建安装到
 staging 前缀、把示例工程复制到源树之外、在该副本上配置和构建，并在**清理过的 PATH** 下运行：
 
@@ -570,7 +570,7 @@ CUEXIS_LIBRARY_TYPE=STATIC|SHARED
 ```
 
 不得把 `BUILD_SHARED_LIBS` 当作 Cuexis 支持入口。当前 static/shared preview SDK API 均为
-`0.7.0`。一个 build tree 与 install prefix 只能包含一种 Cuexis linkage，consumer 继续链接
+`0.7.5`。一个 build tree 与 install prefix 只能包含一种 Cuexis linkage，consumer 继续链接
 相同的 `Cuexis::` target 名，不得硬编码 DLL/shared object 文件名。可直接使用
 `shared-debug`、`shared-release`、`headless-shared-debug` 和 `headless-shared-release` presets。
 

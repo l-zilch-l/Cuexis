@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-10-10
+更新日期：2026-10-12
 
 本文是 Cuexis 当前产品和阶段状态的唯一摘要。ADR 定义决策，Spec 定义字段和语义，阶段计划定义未来
 范围，阶段报告保存带日期的实施证据；它们不得绕过本文重新定义当前状态。
@@ -32,7 +32,7 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Chart Format Foundation Hardening（Foundation 交接加固） | completed | [plan](stage_plans/completed/chart-format-foundation-hardening/plan.md)、[R5 报告](stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md) |
 | Stage 6 | completed | [plan](stage_plans/completed/stage-06/plan.md)、[关闭报告](stage_reports/stages/stage-06/completion.md) |
 | Stage 7A | active；S7A-7/8受限批次完成，8.4于2026-10-10退出；原S7A-9剩余收尾已转交RPA，未完成阶段关闭；诊断正式化归独立前置，架构及实体设备/实时同步实施与验收移交RPA | [总计划](stage_plans/active/stage-07/plan.md)、[Stage 7A分册](stage_plans/active/stage-07/plan-a.md)、[7/8收口证据](stage_reports/stages/stage-07/verification/2026-10-10-s7a-8-4-closure.md)、[7/8实现](stage_reports/stages/stage-07/implementation/2026-10-08-s7a-7-8-entry-assembler-progress.md)、[5/6证据](stage_reports/stages/stage-07/verification/2026-10-06-s7a-5-6-functional-acceptance.md)、[3/4证据](stage_reports/stages/stage-07/verification/2026-10-05-s7a-3-4-functional-acceptance.md) |
-| Stage 7-RPA | active；多方案比较与实施顺序已更新，产品实施未开始；诊断正式化N0–N3已剥离为独立前置，其N3先于新架构原型/A4–A6；实体设备与实时同步仍待验收；原S7A-9矩阵/预算/交接统一纳入F1–F4 | [RPA分册](stage_plans/active/stage-07/plan-rpa.md)、[诊断独立前置](stage_plans/active/stage-07/plan-diagnostic-formalization.md) |
+| Stage 7-RPA | active；B0设计闭合，B1.1–B1.4观测身份、证据 manifest、可控交付/fake clock、独立 oracle、MinGW Release 原路径基线、owner 核对和初始分位数/峰值已实施并记录；B2 分块追加、不可变成功前缀、自足 ReplayEvaluation/fault prefix、checkpoint/archive/cut/H 身份、失败注入、旧 handle 与最后释放已在隔离 test-only 设施完成并验证；RPA产品协议、真实 clock drift、EOF tail、实体设备与实时同步仍待验收；原S7A-9矩阵/预算/交接统一纳入F1–F4 | [RPA分册](stage_plans/active/stage-07/plan-rpa.md)、[B1.1/B1.2记录](stage_reports/stages/stage-07/rpa/2026-10-11-b1-observation-and-oracle.md)、[B1.3/B1.4记录](stage_reports/stages/stage-07/rpa/2026-10-11-b1-baseline-and-measurements.md)、[B2记录](stage_reports/stages/stage-07/rpa/2026-10-11-b2-storage-and-lifetime.md)、[诊断独立前置](stage_plans/active/stage-07/plan-diagnostic-formalization.md) |
 | Stage 7B+ | future；RPA完整退出后实施S7B-0–4、S7C-1/2，验收并接受后进入Stage 8 | [plan-b](stage_plans/active/stage-07/plan-b.md) |
 | Stage 8 | future；Stage 7B+完成并接受后，进行Chart v5 / CXT v2 / Packed Chart正式发行与语义收敛 | [plan](stage_plans/future/stage-08/plan.md) |
 | Stage 9 | future；Presentation Foundation 与 Chart v6 / Model v1 | [plan](stage_plans/future/stage-09/plan.md) |
@@ -42,20 +42,37 @@ Cuexis 由可嵌入的 Playback SDK、独立参考 Player 和独立 Studio 构�
 | Stage 13 | future；Chart v8、高级表现与确定性粒子 | [plan](stage_plans/future/stage-13/plan.md) |
 | Stage 14 | future；稳定 ABI 与 Playback SDK v1 | [plan](stage_plans/future/stage-14/plan.md) |
 
-2026-10-10最新规划：owner接受定向原因整改、显式投影、新Recovery版本拒绝旧格式等方向，
+2026-10-12核对：当前分支SDK API为`0.7.5`，日期构建为`26.10.12-1`；诊断正式化已进入
+本地提交`7ca1fc6cf2dd4c7072aab3ae260ee5931f5df2d3`。工作树另有未提交源码/测试改动，
+不能把本地HEAD单独当作当前工作树的验证身份；本轮未查询远端或发行状态，不据本地提交宣称发行。
+RPA的B0合同设计已闭合；B1.1–B1.4已完成测试/证据基础设施与原路径基线，**产品协议实施尚未完成**。
+owner直接选择capture-time、T2/O1/I1/C1/L1、G1/Q1/K1、TB-05与R2，随后授权代理收敛其余普通决策。
+本轮按该授权采用B职责边界+P-B部署（主线程捕获/GL/协调，Playback worker共置执行/表现，独立audio owner）、
+P3-a内部owning候选、连贯时钟观察、F1+F3呈现回执观测、分块追加存储及显式尾段时钟。
+[RPA补充Spec](formats/rpa-execution-contract.md)与[宿主边界](api/realtime-host-boundary.md)已规定
+完整前缀、控制cut/末批、R2的Fact/Replay/Seek、错误、资源fence和关闭顺序；
+[ADR0046](adr/0046-realtime-playback-coordination.md)记录选择，[RPA分册](stage_plans/active/stage-07/plan-rpa.md)
+给出B1–B5小批次、检查和M-TIME/TAIL/SPLIT/CAP测量门禁。
+新profile、Recovery rev3/schema2和下一SDK minor是实施设计，当前SDK API仍为0.7.5；未修改头文件/codec，日期版本已更新为`26.10.12-1`。
+TailProfile具体参数、观察误差/有效期、生产容量及D3拆分阈值仍需B1/B3/B5数据与F3接受，
+并非未选择方向；缺参数时生产路径拒绝启用，testOnly值不转正。
+[本轮就绪记录](stage_reports/stages/stage-07/rpa/2026-10-11-implementation-readiness.md)只证明文档与纸面合同，
+不增加C++/设备/性能/hosted证据，不授权原型、产品实施或阶段关闭。B1/B2现已完成隔离设施验证，后续实施入口为B3。
+
+2026-10-10诊断工作：owner接受定向原因整改、显式投影、新Recovery版本拒绝旧格式等方向，
 并要求诊断正式化从RPA剥离为[独立前置工作包](stage_plans/active/stage-07/plan-diagnostic-formalization.md)。
 N0差异刷新无新增/删除；[N1合同与准入](stage_reports/stages/stage-07/diagnostic-formalization/2026-10-10-n1-contract-and-entry.md)
 已退出，N2正式生产者、有限投影、Recovery revision2及SDK 0.7.5已落地。N3定向诊断和安装消费者通过，
 Debug/Release、ON/OFF、static/shared及MSVC/MinGW/Linux ASan/UBSan本地硬矩阵均通过；
-[N3独立退出与冻结证据](stage_reports/stages/stage-07/diagnostic-formalization/2026-10-10-n3-verification-and-exit.md)成立，未提交/未发行。
+[N3独立退出与冻结证据](stage_reports/stages/stage-07/diagnostic-formalization/2026-10-10-n3-verification-and-exit.md)成立；报告中的未提交工作树为当时证据身份，后续本地提交见上文。
 诊断前置不新增阶段编号；N3退出先于RPA新架构原型和A4–A6，RPA纸面设计/既有行为只读盘点可并行。
-owner随后指定诊断正式化目标SDK为`0.7.5`并要求下一次开始N1–N3剩余工作；
-实际版本文件为`0.7.5`，日期构建为`26.10.10-1`；公开差异和拒绝合同已落定，本地完整平台矩阵已通过，退出证据按工作树快照冻结，
+owner指定诊断正式化目标SDK为`0.7.5`并授权的N1–N3已完成；
+公开差异和拒绝合同已落定，本地硬矩阵按N3逐项证据通过（M1为初跑123项加修复后单项复跑，非修复后全量124项重跑），退出证据按当时工作树快照冻结，
 RPA选型、生产预算和实体设备验收不构成诊断N1–N3的退出条件。
 
-2026-10-10较早规划修订：RPA按维护性、性能、扩展性的优先级开展多方案比较、有限验证和分批实施，
-尚未选定单一架构。owner要求活动诊断码采用正式名称、不保留阶段名；N1–N3须在新架构原型及A4–A6实施前退出，
-较早规划窗口尚未执行迁移与新验证。已有[逐码审计及证据入口](stage_reports/stages/stage-07/rpa/2026-10-09-diagnostic-phase-name-audit.md)
+2026-10-10较早规划修订（历史状态，已被上方2026-10-11设计决定取代）：当时RPA按维护性、性能、扩展性的优先级开展多方案比较、有限验证和分批实施，
+当时尚未选定单一架构。owner要求活动诊断码采用正式名称、不保留阶段名；N1–N3须在新架构原型及A4–A6实施前退出，
+该规划窗口当时尚未执行迁移与新验证。已有[逐码审计及证据入口](stage_reports/stages/stage-07/rpa/2026-10-09-diagnostic-phase-name-audit.md)
 继续作为先行工作输入；根目录初稿已[归档](archive/stage-07-planning/2026-10-10-rpa-target-architecture-draft.md)，
 诊断码审计及证据ZIP留在原rpa报告路径作为历史证据，任务归属按上述独立前置更新；
 原S7A-9.1–9.4全部移交RPA-F1–F4，不再独立排期。
@@ -69,8 +86,8 @@ RPA选型、生产预算和实体设备验收不构成诊断N1–N3的退出条�
 S7A-7/8原有实现/受限验收保留，S7A-8.4已按下述最终证据退出。owner进一步明确实体设备和实时同步
 的实施及最终验收直接归RPA，旧失败随交接保留。原S7A-9剩余收尾也全部转入RPA-F1–F4。
 RPA完成并接受后实施Stage 7B+，7B+当前计划范围完成并接受后再进入Stage 8。
-原“下一次泛化审核RPA”接手目标已被诊断正式化独立前置替代；下一执行输入以该计划的N1合同收敛及准入为准。
-较早的文档规划授权不默认启动产品实施；最新指令已从诊断N1进入N2/N3；实际进度以上述独立诊断记录为准。
+诊断独立前置已退出；该轮接手任务为RPA设计讨论与文档修正；其后规划就绪进展以上方2026-10-11记录为准。
+较早的诊断实施授权不自动授权RPA原型或产品；本轮只核对诊断退出基线及后续差异。
 本轮不实施RPA或7B+，不接受生产预算或关闭整个Stage7A。
 
 2026-10-10收口核对：验收基线为PR32与本地HEAD
@@ -251,7 +268,7 @@ V2 三份顶层文档仍是工作稿、待 owner acceptance；C10–C14 与代�
   Graph、prepared identity 和 Judgement kernel 后，才可正式发行。
 - Chart v6 / Model v1、Chart v7 和 Chart v8 仍不可加载，分别作为 Stage 9/11/13 的表现设计输入；
   不再作为 Judgement 的隐性前置。
-- SDK API 分支工作树候选为 `0.7.5`（未提交/未发行；历史0.7.1审批不覆盖本工作树）；已发行基线仍为 `0.7.0`。安装后的 Playback headers 不泄露 EnTT、SDL、OpenGL/GLAD、JSON DOM、
+- 当前分支SDK API为 `0.7.5`，已进入本地提交`7ca1fc6`；历史0.7.1审批不覆盖当前变更，本地提交不等于发行。既有发行基线记录为 `0.7.0`，本轮未复核远端发行。安装后的 Playback headers 不泄露 EnTT、SDL、OpenGL/GLAD、JSON DOM、
   RuntimeSession 或 World。
 - Playback 的 default `allCapabilities()` 包含 shader asset 和 parameterized material capability；
   显式裁剪 Session 仍可稳定拒绝它们。Playback 热路径不调用 shader compiler。

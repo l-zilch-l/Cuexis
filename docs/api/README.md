@@ -20,6 +20,7 @@
 
 | 当前任务 | 入口 |
 | --- | --- |
+| 理解RPA领域词义 | [Glossary](GLOSSARY.md) |
 | 创建 Session、加载、重载、逐帧更新 | [PlaybackSession 生命周期](playback-session.md) |
 | 选择输入来源、接入资源读取 | [PlaybackSource 与 ContentProvider](sources-and-content.md) |
 | 读取帧、计算摘要、处理时钟 | [帧、摘要与时间线](frames-digests-and-timelines.md) |
@@ -29,7 +30,7 @@
 | 设计 Gameplay Judgement typed preview 边界 | [Gameplay Judgement ABI（候选）](GAMEPLAY_JUDGEMENT_ABI.md) |
 | 设计 Gameplay V2 typed preview 边界 | [Gameplay V2 ABI（候选）](GAMEPLAY_V2_ABI.md)（语义权威在 [Gameplay V2 Spec](../formats/GAMEPLAY_V2_SPEC.md)，决策在 [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md)） |
 | 实施 S7A-3/4 首次执行字段 | [Execution typed supplement](gameplay-v2-execution-types.md)（内部 candidate，未实施，不安装为宿主 API） |
-| 规划实际输入、音频时钟与异步发布边界 | [实时宿主边界草案](realtime-host-boundary.md)（仅设计，未冻结字段、未实施，不是现有公共 API） |
+| 规划实际输入、音频时钟与异步发布边界 | [实时宿主边界合同](realtime-host-boundary.md)（已选实施设计，未实施，不是现有公共 API） |
 
 ## 公共边界
 

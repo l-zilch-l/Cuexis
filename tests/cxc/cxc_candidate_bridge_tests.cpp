@@ -1,13 +1,16 @@
 #include <cuexis/chart/canonical_semantic_chart.hpp>
 #include <cuexis/chart/packed_chart_tables.hpp>
 #include <cuexis/cxc/cxc_candidate.hpp>
+#include <cuexis/cxc/cxc_manifest_loader.hpp>
 
 #include "cxc_hash_internal.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <array>
 #include <string>
 #include <string_view>
+#include <utility>
 
 namespace {
 
@@ -57,6 +60,57 @@ namespace {
 }
 
 } // namespace
+
+TEST_CASE("CXC manifest and candidate identities require exactly 64 lowercase hex characters",
+          "[cxc][manifest][candidate][sha256]") {
+    const std::string valid = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+    const std::array cases{
+        std::pair{valid, true},
+        std::pair{std::string(64, '0'), true},
+        std::pair{std::string(64, 'f'), true},
+        std::pair{std::string{}, false},
+        std::pair{valid.substr(0, 63), false},
+        std::pair{valid + "0", false},
+        std::pair{"A" + valid.substr(1), false},
+        std::pair{valid.substr(0, 63) + "F", false},
+        std::pair{valid.substr(0, 32) + "g" + valid.substr(33), false},
+        std::pair{valid.substr(0, 32) + "-" + valid.substr(33), false},
+        std::pair{valid.substr(0, 32) + " " + valid.substr(33), false},
+    };
+
+    for (const auto& [value, accepted] : cases) {
+        INFO("SHA-256 text: " << value);
+        const auto manifest = cuexis::cxc::CxcManifestLoader::load(
+            R"({"format":"cuexis.cxc","version":1,"project":"cuexis.project.json",
+                "entries":[{"path":"cuexis.project.json","byteCount":1,"sha256":")" +
+            value + R"("}],"requiredExtensions":[],"extensions":{}})");
+        CHECK(manifest.hasValue() == accepted);
+        CHECK(hasCode(manifest.diagnostics, "cxc.entry.hash_mismatch") == !accepted);
+        if (accepted) {
+            REQUIRE(manifest.document.has_value());
+            REQUIRE(manifest.document->entries.size() == 1);
+            CHECK(manifest.document->entries.front().sha256 == value);
+        }
+
+        for (const auto field :
+             {std::string_view{"artifactIdentity"}, std::string_view{"compiledSemanticIdentity"},
+              std::string_view{"sourceSemanticIdentity"}}) {
+            INFO("Candidate field: " << field);
+            auto entry = entryJson("compiled/chart.packed", true,
+                                   field == "artifactIdentity" ? value : valid,
+                                   field == "compiledSemanticIdentity" ? value : valid,
+                                   "candidate.static-tap-lanes4-v1", 1, 1);
+            if (field == "sourceSemanticIdentity") {
+                entry.pop_back();
+                entry += ",\"sourceSemanticIdentity\":\"" + value + "\"}";
+            }
+            const auto candidate = cuexis::cxc::parseCandidateChartEntryExtension(
+                extensionJson(entry), "compiled/chart.packed");
+            CHECK(candidate.hasValue() == accepted);
+            CHECK(hasCode(candidate.diagnostics, "cxc.chart_entry.identity_invalid") == !accepted);
+        }
+    }
+}
 
 TEST_CASE("Candidate bridge selects one playback entry and decodes it once",
           "[cxc][candidate][bridge]") {

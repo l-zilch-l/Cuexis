@@ -217,6 +217,7 @@ if(CUEXIS_BUILD_TESTS)
         cuexis_behavior_tests
         cuexis_gameplay_tests
         cuexis_judgement_tests
+        cuexis_rpa_tests
         cuexis_gameplay_packed_tests
 
         cuexis_debug_tests
@@ -1213,6 +1214,10 @@ if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_judgement_tests
         ALLOWED
             cuexis::judgement
+            Catch2::Catch2WithMain
+    )
+    cuexis_verify_target_dependencies(cuexis_rpa_tests
+        ALLOWED
             Catch2::Catch2WithMain
     )
     cuexis_verify_target_dependencies(cuexis_gameplay_packed_tests

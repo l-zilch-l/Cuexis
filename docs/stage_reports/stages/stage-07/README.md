@@ -2,7 +2,7 @@
 
 状态：current index
 
-更新日期：2026-10-10
+更新日期：2026-10-11
 
 本索引按报告用途分类，不复制裁定、字段合同或当前阶段结论。
 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 是唯一当前实现状态摘要；
@@ -14,13 +14,15 @@
 | 分类 | 数量 | 主要用途 |
 | --- | --- | --- |
 | 准入与基线 (readiness) | 7 | owner准入记录、工具链基线、typed合同与计划审视、D-9候选证据；另有诊断审计旧路径兼容页 |
-| RPA子阶段 (rpa) | 2 | 正式命名审计与证据；后续架构/综合收尾按RPA分册管理 |
+| RPA子阶段 (rpa) | 13 | 设计审查、B0合同修订、B1观测/基线、B2存储与寿命验证设施；架构/综合收尾按RPA分册管理 |
 | 裁定记录 (decisions) | 14 | 分轮准入/实施裁定、合同选择、落地位置与诊断分类；现行字段仍归Spec/ABI |
 | 设计与实施记录 (implementation) | 6 | 带日期的设计收口和实施推进；设计交付与运行验证分别按报告声明解释 |
 | 验证与审计 (verification) | 23 | 独立复验、功能验收、边界审计、CI优化和文档恢复证据 |
 | 交接与规划修订 (handoffs) | 5 | hosted交接、排期修订和桌面接手整理；历史下一步不覆盖主计划 |
 
 ## 常用入口
+
+- [RPA实施规划就绪审查](rpa/2026-10-11-implementation-readiness.md)（仅设计与文档验证）
 
 - [3/4受限功能验收](verification/2026-10-05-s7a-3-4-functional-acceptance.md)
 - [同源hosted与证据归档](handoffs/2026-10-05-s7a-3-4-hosted-and-handoff.md)
@@ -41,6 +43,18 @@
 | [Stage 7A typed contract review（S7A-1 冻结顺序第 4 步）](readiness/2026-10-02-s7a-1-typed-contract-review.md) | 2026-10-02 |
 
 ## RPA子阶段
+
+- [B0合同修订记录](rpa/2026-10-11-b0-contract-revision.md)（2026-10-11）：TB-01、T2-O1/I1/C1/L1、AD06-G1/Q1/K1的选择与替换记录；最终合同见RPA补充Spec，产品未实施。
+- [A1–A3设计与准入审查](rpa/2026-10-11-design-and-entry-review.md)（2026-10-11）：TB-01–07反例、测量设计与五方向纸面比较；保留较早审查时的未裁定状态，不代表当前决策。
+- [RPA生产架构方案](rpa/2026-10-11-production-architecture-design.md)（2026-10-11）：现行调用链只读核对与AD-01–15历史比较、六责任域和部署依据；最终选择见ADR0046/RPA补充Spec，未实施、未接受阈值。
+- [P2判定说明：Prepared内容与跨域资源准备](rpa/2026-10-11-p2-prepared-sharing-brief.md)（2026-10-11）：只读核对和P3-a/b/c比较；已采用P3-a内部owning候选，音频侧仍须闭合跨域ClipStore/callback寿命。
+- [TB-06判定说明：音轨结束后的尾段推进](rpa/2026-10-11-tb06-tail-clock-brief.md)（2026-10-11）：EOF后剩余timer反例与A1-a至A1-d比较；已采用A1-b显式尾段时钟，具体TailProfile须测量。
+- [AD-10判定说明：首见反馈保证](rpa/2026-10-11-ad10-feedback-visibility-brief.md)（2026-10-11）：反馈可见期与present证据反例、F1/F2/F3比较；已采用F1+F3内部可观测，不保证用户首见。
+- [AD-02判定说明：执行与表现拆分阈值](rpa/2026-10-11-ad02-split-threshold-brief.md)（2026-10-11）：界定判据形式（沿用`MeasuredParameter`习惯、drift可计算）与触发规则；指出**判据前提是B3已退出**，因今天的H由帧数与按键数合成、无法测drift。
+- [RPA实施规划就绪审查](rpa/2026-10-11-implementation-readiness.md)（2026-10-11）：B0文档闭合、R01–R27待实施验证场景与剩余测量门禁；不代表产品或设备验收。
+- [B1.1/B1.2观测身份与独立验证设施](rpa/2026-10-11-b1-observation-and-oracle.md)（2026-10-11）：事件身份、证据 manifest、可控交付/fake clock、有理数与扫描 oracle；6项定向测试通过，后续协议与设备门禁未执行。
+- [B1.3/B1.4原路径基线与初始测量](rpa/2026-10-11-b1-baseline-and-measurements.md)（2026-10-11）：MinGW Release 原路径 probe、owner 只读核对、分位数/峰值、缺样与测量设计；不把同机趋势值转成生产阈值。
+- [B2存储与寿命实施证据](rpa/2026-10-11-b2-storage-and-lifetime.md)（2026-10-11）：分块追加、不可变成功前缀、自足完整 ReplayEvaluation/fault prefix、checkpoint/archive/cut/H 身份、失败注入、旧 handle、读取/恢复和最后释放；仅隔离 test-only 设施，未宣称生产协议完成。
 
 下列诊断审计保留原dated正文/ZIP及路径；最新任务归属为[诊断码正式化独立前置](../../../stage_plans/active/stage-07/plan-diagnostic-formalization.md)，不再是RPA内部N线。
 

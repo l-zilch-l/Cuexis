@@ -1,8 +1,11 @@
 # Gameplay V2 字段与运行语义规范
 
-2026-10-09 实时架构规划登记：[宿主边界草案](../api/realtime-host-boundary.md)的TB-01–07
-属于首用待定问题；§3.7.3唯一canonical来源、同Tick拒绝、既有late-policy与恢复语义继续有效。
-草案不许可从raw设备时间回溯生成Tick，也不承诺任意输入交付延迟均与无延迟结果相同。
+2026-10-11 RPA合同修订：owner已选择capture-time、T2/O1/I1/C1/L1、G1/Q1/K1、TB-05和R2，
+并授权其余普通设计由代理收敛。正常输入顺序/身份沿execution profile，控制cut、R2 Fact、
+连续前缀/时钟观察、Replay/Seek及新profile/Recovery版本归
+[RPA补充Spec](rpa-execution-contract.md)。
+该补充只替代明确列出的RPA行为；下文旧profile/SDK0.7.5合同仍描述已实现基线。
+RPA设计已落约不等于产品已实现；当前公共头、格式字节与SDK版本未在本轮修改。
 
 ## S7A-7/8 消费修订 revision 1（2026-10-07）
 
@@ -32,7 +35,7 @@ filesystem 多产物使用内容派生 immutable generation、现有 manifest �
 
 状态：candidate
 
-更新日期：2026-10-05
+更新日期：2026-10-11
 
 本 Spec 是 Stage 7A 的候选合同正文，不是字段、公共头、Schema、Replay 或 Snapshot 的实现证据。
 
@@ -339,8 +342,15 @@ semantic 比较，**不能只比 hash**（FE §2 硬要求 1）。
      因此**镜像 `stop` 配置下映射不再关于 `originBeat` 奇对称**（例：`stop = [0,2)` 时长 4 时
      `tick(1) = 0`，而镜像的 `stop = [-2,0)` 时长 4 时 `tick(-1) = -4 ≠ -tick(1)`）；
      **有向端点关系与单调性在两侧仍成立**（映射仍非递减、每个 `stop` 的有向端点等式仍成立）。
-4. **同 Tick 碰撞按规范键 `(tick, originKind, canonicalOrdinal)` 排序**；`canonicalOrdinal` 由 canonical
-   窗口 / 观测 identity 派生。**禁止按 ingress 顺序排序**，也禁止按容器顺序或线程完成顺序排序。
+4. **事实总序继续使用§3.9第3条与§3.17的 `(commitTick, originKindPriority, canonicalOrdinal)`**；
+   `canonicalOrdinal`由canonical窗口/观测identity派生，禁止直接用全局ingress数值、
+   容器顺序或线程完成顺序替代。
+   **输入处理序与Fact总序分开。** RPA T2输入批采用owner于2026-10-11裁定的O1：按来源结构键
+   分组排序，每组按该来源单调ingress sequence连续处理，完整规则归
+   [execution profile §3.4](gameplay-v2-execution-profile.md#34-rpa-t2-输入批处理顺序o1已裁定未实施)。
+   该例外只解释来源内转换先后，不允许按跨来源的全局到达顺序裁决，也不自动改变观测identity
+   或Fact总序；发生身份已由execution profile §4.1.1的I1补充，Fact的ordinal派生仍须闭合，
+   不能直接把执行次序写成Fact总序。
 5. **上述映射语义属于 S7A-2 必须冻结的部分。** 精确累计函数 `F`、`stop` 塌缩、非单射与半开跳变方向
    决定**同 Tick 碰撞**（第 4 条的规范键排序）、**late-policy 窗口**与 **`commitTick`** 行为，因此
    **不因**"映射的代码形状 / 参考实现 / golden 文件属实现批次"而推迟冻结。
@@ -352,6 +362,10 @@ semantic 比较，**不能只比 hash**（FE §2 硬要求 1）。
 
 1. `observationTick` 的**唯一 canonical 来源**是**输入进入判定管线时捕获的校准后会话时钟
    （calibrated session clock）**。
+   **阻塞期解释（2026-10-11，D-TB01/C1）：** 主线程被 present 阻塞期间发生的按键，
+   其判定时间记为恢复后实际捕获时的当前 Tick，不记为物理按下时刻。捕获后交付给执行域时
+   不重新采样或改写该 `observationTick`；跨域交付延迟仍按既有 admission / late-policy 处理。
+   本条不授权按按键数或渲染帧数合成 Tick，也不授权用设备时间戳回溯补判。
 2. 设备时间、宿主到达时间、音频时间与渲染帧时间**只保留为诊断上下文**，不参与判定时间定位，
    也不构成第二套时间语义（与 ABI「时间单位与表达」的 tick / 原始时间戳分离一致）。
 3. **S7C-1 只能扩展 `CalibrationProfile` 参数**（校准模型、参数集与测量口径），**不得替换 canonical
@@ -374,6 +388,11 @@ semantic 比较，**不能只比 hash**（FE §2 硬要求 1）。
 3. 缺失或未测量的参数值在 **prepare 稳定拒绝**（诊断类别 `late_policy_incomplete`）。
 4. **重复排队稳定拒绝并返回诊断码**（诊断类别 `late_policy_incomplete`）；重复检测的判据是 canonical
    观测 identity，不是 ingress 序号或到达顺序。
+   **RPA T2-I1补充（2026-10-11，已裁定、未实施）：** canonical发生身份包含原始Tick来源序列中的
+   局部位置，完整规则归[execution profile §4.1.1](gameplay-v2-execution-profile.md#411-rpa-t2-发生身份i1已裁定未实施)。
+   局部位置由完整来源序列派生，不采用全局ingress的绝对数值；同值内容处于不同位置可以是不同发生。
+   同一发生重交仍重复拒绝，同一发生槽位内容冲突稳定拒绝，原子失败保持旧状态。
+   这不将现行入口视为已支持T2，也不选择新增诊断码或修改旧Recovery格式。
 5. **`validatePrepare` 只检查"已声明且已测量"，不检查参数量级关系。** 它只验证 late-policy 参数**已声明
    且已测量**（第 3 条），**不检查** `finalizationWatermark` / queue hop / 窗口开闭阈值之间的**量级
    关系**（序关系、上界与相互一致性），因为那些数值尚不属本批次。**"参数量级关系的校验"登记为阻塞
@@ -2197,7 +2216,7 @@ verdict 均为 `adopt`，confidence **0.97** / **0.99**）：`AmountSpec` 的 ca
 | 范围 | 本 Spec 中属本批次的部分 | 本批次之外 |
 | --- | --- | --- |
 | ① Tick 宽度、单位与溢出（Q-04） | §0.1 四域术语；§3.7.1 有符号 64 位整数、单位由 `engine.tick.us.v1` 的 `TimebaseProfile` 声明、禁止隐式换算、溢出稳定拒绝 | 序列化字节与线格式；逐字段表示的最终命名（与实现批次一起冻结） |
-| ② RationalBeat 映射与 tie rule（Q-04 / CM-T03） | §3.7.2 **精确累计函数 `F`**（`F(originBeat) = 0`、`F(endBeat) = F(startBeat) + duration`、`tick(beat) = roundHalfToEven(F(beat))`、**只舍入一次**）、`stop` 塌缩与**非单射**、半开跳变方向（正向 `(originBeat, beat]`、负向 `(beat, originBeat]`）与"有 stop 时失去奇对称"、精确有理数、半数取偶、tempo/stop/负 Beat 同一规则、`(tick, originKind, canonicalOrdinal)` 排序、禁止按 ingress 顺序排序；Tick → Beat 反查契约登记为**首次消费它的后续批次**阻塞项（§3.7.2 第 6 条） | 映射的代码形状、参考实现与 golden 文件（属 S7A-2 实现批次）；Tick → Beat 反查的**实现** |
+| ② RationalBeat 映射与 tie rule（Q-04 / CM-T03） | §3.7.2 **精确累计函数 `F`**（`F(originBeat) = 0`、`F(endBeat) = F(startBeat) + duration`、`tick(beat) = roundHalfToEven(F(beat))`、**只舍入一次**）、`stop` 塌缩与**非单射**、半开跳变方向（正向 `(originBeat, beat]`、负向 `(beat, originBeat]`）与"有 stop 时失去奇对称"、精确有理数、半数取偶、tempo/stop/负 Beat 同一规则、`(tick, originKind, canonicalOrdinal)` 排序、Fact排序禁止直接使用ingress数值（RPA输入批顺序另见§3.7.2第4条）；Tick → Beat 反查契约登记为**首次消费它的后续批次**阻塞项（§3.7.2 第 6 条） | 映射的代码形状、参考实现与 golden 文件（属 S7A-2 实现批次）；Tick → Beat 反查的**实现** |
 | ③ `observationTick` 来源与 S7C-1 边界（Q-04 / CM-T04） | §3.7.3 校准后会话时钟为唯一 canonical source；设备 / 到达 / 音频 / 渲染帧时间仅诊断上下文；S7C-1 只能扩展 `CalibrationProfile` 参数；**负值在有符号 64 位域内合法并参与单调排序，只有校准时钟回退被拒且映射 `invalid_relation`**；**不可表示的 calibrated clock 值复用 tick 域表示失败（`budget_exceeded`）、不保留独立令牌**，入口顺序违规只走既有 `invalid_relation` 路径（2026-10-03 输入半批复核） | S7C-1 的扩展字段集与 `CalibrationProfile` 逐参数定义（后续批次阻塞项）；**负 tick 的拒绝路径**不属本批次（负值不拒绝） |
 | ④ late policy 类型化（CM-T08 / P1-04） | §3.7.4 typed 参数、默认值只在 profile registry 记 `pending_measurement`、缺失或未测量在 prepare 稳定拒绝（`validatePrepare` **只**检查"已声明且已测量"）、重复排队稳定拒绝 + 诊断码 | **具体 late-policy 数值**（watermark、queue hop、窗口开闭阈值）：后续批次阻塞项，不得写成 ABI 常量、隐式零值或研究切片限额；**参数量级关系的校验**登记为**阻塞 S7A-4 的 late-window / 判定消费门禁**（§3.7.4 第 5 条、§3.7.7 表），最终数值与限额记 **S7A-9** |
 | ⑤ `commitTick` / commit window（P2-03） | §0.1 与 §3.7.5 的定义：`commitTick` 是事务提交发生的 Tick；window 是相邻两个可提交 Tick 之间的观察区间；事实只能在 `commitTick` 提交 | 提交事务的字段布局与 Snapshot / Replay 承载（第 5 / 6 轮） |
@@ -2206,7 +2225,8 @@ verdict 均为 `adopt`，confidence **0.97** / **0.99**）：`AmountSpec` 的 ca
 
 **S7A-2 不得消费清单（实现须逐条对齐）。** 按 S1-05 的"不得用默认值、临时 typedef、序列化编码或
 伪成功实现绕过阻塞"口径，S7A-2 实现**不得消费**：浮点或宿主数学库参与 Tick 判定；隐式秒 / Beat → Tick
-转换；未校准原始时间作为 `observationTick`；按 ingress 顺序解决同 Tick 冲突；late-policy 数值默认常量；
+转换；未校准原始时间作为 `observationTick`；按跨来源的全局 ingress 顺序解决同 Tick 冲突
+（来源内转换先后仅按§3.7.2第4条的RPA T2-O1例外解释，不扩展到Fact排序）；late-policy 数值默认常量；
 饱和或未定义溢出；未声明的 `DomainAmount` 范围 / 量化；临时整数 typedef；未冻结序列化编码；连续轨迹 /
 minimumRate / reconstruction / discontinuity 表示；S7C-1 扩展字段；研究切片限额。逐条判定与证据见
 [第 2 轮门禁报告](../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-2-gate-rulings.md)。

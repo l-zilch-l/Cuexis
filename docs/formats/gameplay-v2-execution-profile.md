@@ -1,11 +1,14 @@
 # Gameplay V2 S7A-3 / S7A-4 execution profile
 
-状态：candidate；本轮选定的完整实施方案，不是运行验证或生产发布
+状态：candidate；S7A-3 / S7A-4选定基线及RPA T2已裁定补充，不是运行验证或生产发布
 
-更新日期：2026-10-06
+更新日期：2026-10-11
 
 实现状态：分批实现与受限功能验收只由 [CURRENT_STATUS](../CURRENT_STATUS.md) 汇总；
 本候选合同的状态不等同于Stage 7A关闭或容量证明。
+RPA T2及AD06-G1/Q1/K1已裁定、未实施；剩余控制/Fact/版本合同现由
+[RPA补充Spec](rpa-execution-contract.md)闭合。下文S7A-3/4旧类型和token只描述旧profile，
+不能在RPA中继续沿用旧表示而改变含义。
 
 本文件是 [Gameplay V2 Spec](GAMEPLAY_V2_SPEC.md) 的补充 Spec。选择理由由
 [ADR 0045](../adr/0045-gameplay-v2-execution-profile.md) 拥有；字段所有权与接口由
@@ -143,6 +146,10 @@ advance 不必枚举空 Tick：处理 activation/timer/input/signal 的下一个
 | t+C<=A<t+F | 拒绝 late | 仅当未转发且 q=P+1 可表示、`1<=q-t<=H` 时接收，dispatchTick=q |
 | canonical subject 已在 pending 或已接收集合 | 重复拒绝 | 重复拒绝 |
 
+上表的重复判据在现行单输入基线中使用既有canonical subject；T2按§4.1.1的I1发生身份
+及槽位冲突规则解释。不能仅按内容key拒绝同一原始Tick内、不同局部位置的两次真实发生，
+也不能因为成员的dispatchTick相同就把不同发生判成重复。
+
 未来未 open 的 entry 可 pending；到 open 后变成 ready，但直到其 dispatchTick 被处理才求值。
 队列最多转发**一次**，次数规则是固定算法条件，不把 H 改成 u32/count。
 forward 后原 observationTick 不改；调度/activation/lease 生命周期使用 dispatchTick，
@@ -154,15 +161,196 @@ tail release 若原 t<b1 而 dispatchTick>=b1，按原释放时刻判 body 覆�
 timer 只在原 logical Tick 处理，不进入迟到输入转发队列。
 事件原 t 与 dispatchTick 分别参与 origin subject 和 commitTick，不混同。
 
-同 Tick 的第二个**不同** canonical subject 仍按 S7A-2 `same_tick_collision` 拒绝；
-相同 subject 是重复输入/重复排队。转发导致 dispatchTick 碰撞时也拒绝第二个 distinct subject，
-按 canonical subjects 的整体集合验证；批量 submit 的碰撞使整批失败，不能按数组顺序选一个。
-现有单条 API 对已接收状态的拒绝是声明的 admission 行为；无权把它改为多输入仲裁。
-一个 Tick 可有多个 timer 和至多一个 admitted input；timer 释放后该输入可使用 free slot。
+**RPA T2替代规则（2026-10-11已裁定、未实施）：** 同一原始Tick的不同发生按I1区分，
+完整捕获批按T2-C1交付；同一未封存`dispatchTick`的合格输入按§3.6的T2-L1合并。
+不再仅因第二个distinct subject与已有输入共享原始Tick或dispatchTick而拒绝。
+重复发生、槽位内容冲突及其它准入失败仍拒绝；不得按数组先后静默挑选一个输入。
+一个执行Tick处理一个合并输入批，包含多个观测；timer沿既有阶段处理，
+不在同Tick内交错执行多个timer与输入子批。timer释放的free slot可供后续输入阶段使用。
+旧“至多一个admitted input”及“dispatchTick相同即碰撞拒绝”是被替换的单输入合同，
+其现行实现与历史验证不因本次文档修订而改变。T2实施按RPA补充Spec及B3门禁，不由本段单独授权。
 
 L2 独立模型枚举边界与 admission，不调用 L1 helper。测试值 O=2,C=3,F=8,H=4
 仅 fixture：t=100，A=102 native100；A=103 forward101；A=106 forward104；
 A=107 因 hop=5 拒绝；A=108 finalized。reset 恢复 A/P absent。
+
+### 3.4 RPA T2 输入批处理顺序：O1（已裁定，未实施）
+
+2026-10-11 owner选择O1：**按来源分组连续处理**。本节只冻结一个Tick内已关闭输入批的
+输入处理顺序；发生身份由§4.1.1的I1定义，捕获关批由§3.5的T2-C1定义；
+跨原始Tick的合并由§3.6的T2-L1定义。仅删除现行代码的碰撞检查不足以实施这些合同。
+timer阶段序、输入处理序与Fact总序分别定义，本节不引入多timer与输入交错。
+
+1. 来源分组键为`(domainToken,sourceClass,channelToken)`，按§4.1的结构字段比较规则全序排列；
+   它不是物理设备编号、指针、hash或到达线程。
+2. 每个来源内部按该来源单调ingress sequence保留转换先后；一个来源的全部转换处理完，
+   再处理结构键中的下一来源，不跨来源逐轮交织，也不全局提升press/release优先级。
+   跨原始Tick合并时，用§3.6规定的`(原始observationTick,I1局部位置)`复算来源内顺序，
+   不使用来源之间的全局到达次序。
+3. 不得用现行完整`CanonicalObservationKey`中的action rank重新排序组内转换。
+   合法的release→press必须保持原序；本节不把sequence的数值自动纳入canonical identity。
+4. 全局到达顺序、容器遍历顺序与线程完成顺序不决定跨来源仲裁。同一单条观测内部的
+   owner-control、K4与fanout规则保持；失败输入不因批内后续来源释放资源而自动重试。
+5. 来源排序较小者可能连续释放并重新取得资源；O1不承诺来源间轮转公平。
+   已处理来源不被后续来源打断，批内状态演进必须由独立模型按此顺序复算。
+
+最小预期：来源结构键`D < F`，D已持有非Terminal资源，批内D为release→press、F为press，
+新Hold其它资格均成立且无timer交错，则依次处理D release、D press、F press；
+新D可先取得刚释放的资源，F不能抢占。若旧owner为F而D先press，D先遇旧占用，
+不会因随后F release而自动重试。
+
+本节只决定执行顺序；发生身份归§4.1.1，`canonicalOrdinal`派生、Fact物理编码与Recovery格式
+不由本节定义，RPA新增规则见RPA补充Spec §3–6；实施状态只由CURRENT_STATUS汇总。
+
+### 3.5 RPA T2 捕获关批：T2-C1（已裁定，未实施）
+
+2026-10-11 owner选择T2-C1：**捕获方聚合后主动发布完整批**。
+本节定义正常Running、同一连续有效时钟段的捕获关批；不是TB-01/C1的时间来源选项，
+也不替代AD-06的执行推进许可或Pause/切段的控制停点合同。
+
+1. D1按原始`observationTick`暂存捕获记录，保留来源内转换顺序。同Tick的记录可以跨越多次poll，
+   一次poll结束或队列暂空均不证明该Tick输入完整。D1不执行第二套判定/规范化算法。
+2. 关闭原始Tick t的正常证据是：D1完成此前捕获操作后，取得同段有效且**严格大于t**的
+   校准时钟观察；后续同段捕获不得回退到t。相等不够，超时、原始设备时间戳或音频帧数均不能
+   替代该证据，也不能为了关批把捕获Tick改大。直接比较，不要求计算`t+1`。
+3. D1只有在掌握覆盖t的完整捕获前缀后，才将t的完整输入与对应关批声明作为一个逻辑完整、
+   拥有自身数据的不可变发布对象交付D2。声明须关联原始Tick、所依据的有效时钟段/越界观察、
+   所覆盖捕获前缀和成员，D2不能把来自不同发布对象的片段拼成“已完整”。具体载体另行落约。
+4. 未关闭或尚未交付的数据仍由D1负责保留；发布失败不等于交付成功，已关闭内容不得追溯修改。
+   D2取得完整对象后才进行现有规范化/准入校验，并从完整来源序列派生I1位置。
+   D1已关闭、D2已收到、kernel已准入是三个不同状态，不得混记。
+5. 无输入的有效越界观察同样可以证明捕获前缀完整，不需要等下一次按键；可以用范围声明
+   表达空区间，不要求每个空Tick分配一个对象。缺少有效观察时保留未关闭状态，
+   不以等待时长充当完成证据，不通过忙等或合成Tick掩盖该状态。
+6. 重交保留完整原始批及I1位置语义，不拆片重编号；同一发生仍依I1重复拒绝，
+   原子拒绝不消耗已发布的准入状态。传输是否成功与准入是否成功须分别可辨。
+7. 捕获关批不推进H、不决定`dispatchTick`、不封存Fact。一个关闭的原始Tick批到达D2时
+   仍可能迟到，继续受late-policy及已seal边界限制。多个原始Tick映入同一执行Tick时按
+   §3.6的T2-L1合并；捕获批完整不等于其它准入校验通过，也不授权改派到空闲Tick。
+8. 正常越界证据在时钟冻结/失效、Tick最大值或Pause/切段时可能不可取得；不能伪造观察、
+   静默丢弃最后一批或把未完成记成已关闭。异常/控制停点的完成与失败规则归RPA补充Spec §3，
+   Paused禁止普通submit/advance保持；显式EndRunEpoch控制例外归RPA补充Spec §3。
+   worker不得同步阻塞等待主线程完成关批。
+
+最小预期：两次捕获分别为`t:D press`与`t:D release`，同段稍后有效观察为`s>t`，
+则只形成一个原始t批，D的I1位置为0、1。越界观察无输入也能触发该批发布；
+仅有s=t或失效观察则不能宣称关闭。重复发布不能产生第二次执行。
+
+完整批的成员/顺序及准入轨迹须能供Replay复算；关批证明不自动进入content identity，
+不在此选择Recovery编码、容量、生产等待预算或新增诊断码。余下执行封存许可仍归AD-06。
+
+### 3.6 RPA T2 执行批合并：T2-L1（已裁定，未实施）
+
+2026-10-11 owner选择T2-L1：**同一未封存执行Tick合并所有合格原始批**。
+本节仅替代多输入的碰撞拒绝与合并语义，不修改late-policy的路由公式或生产参数。
+
+1. 原始捕获批保持T2-C1的完整性与I1身份。逐成员按§3.3路由：准时输入保留原始Tick；
+   允许转发的迟到输入仍只转发一次到`q=checked(P+1)`，并满足既有跨度、finalized及其它限制。
+   不搜索空闲Tick，不移动已准入输入，也不因同来源重叠而拒绝合格原始批。
+2. 同一个尚未封存的`dispatchTick=q`只有一个逻辑pending执行输入批。
+   不同原始Tick、同一或不同来源、准时或转发的合格成员均可合并；与旧pending合并和
+   同次准入中的合并使用相同规则。执行批与原始捕获批是不同概念，前者可包含多个后者。
+3. 合并后的处理顺序先按O1来源结构键，再在每个来源内按
+   **`(原始observationTick,I1局部位置)`升序**连续处理。原始Tick使用signed Tick顺序，
+   不是字符串或全局到达序；局部位置已在原始完整来源序列中确定，不因合并而重编号。
+   同槽位同内容仍为重复，同槽位异内容仍为冲突，不能靠排序或去重折叠掩盖非法提交。
+4. O1的来源优先级保持：较新但来源结构键较小的输入可先于较旧的其它来源输入。
+   这不是全局原始时间排序。一个来源处理完才进入下一来源，不在输入中间插入timer。
+   观测内部owner-control、K4、fanout及phase资格保持，不因合并就保证Hit或自动重试失败输入。
+5. 合并只作用于未封存的pending集合，不重开sealed Tick。准入保持现有原子发布边界：
+   本次准入事务有重复、冲突、finalized、超跨度、会改写已seal覆盖或其它准入失败时，
+   拒绝本次事务，旧pending/ID/去重记录/已seal结果保持，不将其合法子集偷偷发布。
+6. 每个成员保留原始Tick、I1位置、`dispatchTick`、`wasForwarded`及其准入frontier/horizon。
+   不能把全部成员的原始Tick改成q，不能用最后一次准入回执覆盖旧成员的准入证据。
+   原始t与dispatchTick的成功窗口检查、已完成phase不复活、owner早release例外等现有规则保持。
+7. Replay/Seek与恢复校验须理解“一执行Tick多成员”，逐成员保持发生身份并复算O1/L1顺序；
+   不能继续将dispatchTick唯一性作为输入合法性条件。重复/冲突校验仍依据I1，
+   Fact origin/ordinal与semantic revision采用[RPA补充Spec](rpa-execution-contract.md)；不把输入顺序直接写成Fact总序。
+
+最小预期沿用旧测试参数（非生产预算）：A=903、C=3、P=900；原始900的D press转发到901，
+原始901的D release保持准时901。若其余准入检查均通过，二者合入执行901批，
+先处理原始900 press再处理原始901 release，两个原始来源位置可均为0，仍由原始Tick区分。
+旧测试中“仅因dispatch相同而整批拒绝”的预期须在后续授权实施时替换，不表示该场景现在已通过。
+
+`judgement.late.dispatch_collision`不得在T2-L1中仅因合格成员共享q而产生；
+现有码的历史兼容与实现迁移仍须单独处理，不在此复用该码表达其它错误或删除旧格式支持记录。
+AD-06仍拥有何时允许执行/封存pending批的前置；本裁定不构成其退出或B0全部完成。
+
+### 3.7 RPA推进许可：AD06-G1（已裁定，未实施）
+
+2026-10-11 owner选择AD06-G1：**累积完整前缀、原请求等待**。本节是RPA正常Running、
+同一连续有效时钟段的宿主推进前置，不改变现行kernel的exact-H数学或公共方法签名。
+它不替代Pause/Seek/reload的控制停点，也不授权T2首用消费者提前实施。
+
+1. D2核验逻辑时间界B：当前会话与该段内所有原始`observationTick < B`的捕获输入均有
+   T2-C1完整性证据，对应发布对象已完整接收，且准入或拒绝结局已确定、无未解决缺口。
+   原始Tick等于B的批仍可能未关闭；空输入区间也须有证据，不要求逐空Tick创建对象。
+2. D1提供关闭、成员和捕获前缀证据，D2结合实际接收及处理结果建立B。
+   发送成功不等于D2完成处理，最新收到的序号或最大已见Tick不能代替连续完整前缀。
+   序列覆盖用于核验，B与请求H使用同一校准会话Tick域；两者不能直接用序号数值比较。
+   同段的完整前缀只按已核验证据扩展；未建立或失效的B不填0、不借用旧段值。
+3. 对保留的原请求H，先按现行checked规则求`F(H)=checked(H-C)`，C为
+   `windowCloseThreshold`。F(H)是本次目标处理前沿，不是`finalizationWatermark`参数、
+   最后Fact Tick或Beat映射函数。正常推进许可为**`F(H) < B`**；等号不成立。
+   单调性、数值可表示性和已有生命周期校验仍适用；算术失败不当作普通等待。
+4. 许可不足时，在宿主调度侧保留该请求及原H，等待新的完整前缀证据；不调用kernel advance，
+   不将H改小、不拆出安全子请求，也不为清空future pending把H改大。
+   等待本身不改变kernel的lastAdvanceHorizon、processed frontier、Fact/Fold或已准入输入；
+   同时接收和准入合法输入仍按既有原子规则进行。不得锁住owner阻止补齐输入或处理控制。
+5. 在同段、同有效控制上下文中许可成立时，D2在owner串行边界重新核验前置后执行原H，
+   不以采样更新值覆盖它。kernel按§3.2推进，实际失败和partial prefix沿既有事务合同；
+   许可成立不保证kernel/Fold执行成功，也不把失败前沿假写成F(H)。
+6. 等待输入前缀、时钟观察无效、执行积压与恢复静默分别可观察，报告关联H、B的有效性与
+   对应上下文。等待不是新增kernel SessionState，也不伪造一次成功advance或推进回执。
+   不以超时、队列暂空、合成Tick或忙等取得许可；worker不得同步阻塞等待主线程。
+7. T2-L1只合并尚未封存的输入，G1只决定是否可以尝试原H；两者不重开sealed Tick，
+   不改原始Tick/I1身份，不丢弃future pending，也不承诺不同admission/control轨迹结果相同。
+   Replay保留实际submit/advance及结果的既有记录要求；等待不能冒充已执行的advance。
+8. 等待期间的新普通推进请求按§3.7.1的Q1明确拒绝，不排队或覆盖；
+   控制取消采用§3.7.2的K1。证据载体、typed结果、错误、控制收尾和版本归
+   [RPA补充Spec](rpa-execution-contract.md)及宿主边界；生产等待预算仍须测量。
+
+最小预期（非生产参数）：C=3、B=101、原H=105时F(H)=102，保持等待；B=102仍等待。
+同段B达到103且其它前置满足后才调用advance(105)。等待期间不能偷偷执行advance(103)，
+也不能只因当前队列没有输入就封存102。另一个已准入原始200的future pending保持原身份，
+不为处理它把原请求105改为200。
+
+#### 3.7.1 推进请求积压：AD06-Q1（已裁定，未实施）
+
+2026-10-11 owner选择Q1：**一个等待槽，新普通推进请求明确拒绝**。
+本节定义正常运行宿主调度入口的接纳行为，不改变现有同步kernel API。
+
+1. 接纳、许可检查及开始执行由D2的owner串行处理。同一调度上下文只保留一个已接纳、
+   尚未开始的普通推进请求；保留其原H及关联上下文。该逻辑槽位是已选协议形状，
+   不是Input/控制/Replay通道的容量，也不是生产内存或等待预算。
+2. 旧请求占槽时，新普通推进请求返回明确的“忙、未接纳”结局，不占后继槽、不入内部
+   推进FIFO、不替代旧请求。即使新H与旧H相等，也不能以数值相等冒充原请求已成功。
+   新请求的拒绝不得改变旧请求、B、kernel horizon/frontier、Fact/Fold或已准入输入。
+3. “已接纳但等待”“新请求未接纳”“实际执行完成/失败”必须可关联并可区分。
+   未接纳请求不会在稍后自动执行，不产生kernel advance记录；调用方在可接纳时重新提出
+   请求并重新校验上下文和单调性，不能依赖适配器隐藏重试、隐式保留最新目标或假成功。
+   已实际执行请求的Replay与失败prefix沿原合同，不以宿主忙状态伪造kernel诊断。
+4. 旧请求满足G1后按原H开始执行；实际成功或失败据实报告。完成处理后是否允许新请求，
+   仍取决于实际生命周期/控制状态；Faulted不因槽空而允许继续推进。owner不得在执行中
+   重入启动另一普通advance；此规则不新增并发调用kernel的许可。
+5. 等待不能占住输入交付、关批证明或控制消息的处理机会；这些消息不因推进槽忙而丢弃。
+   有效时钟观察可以独立更新，更新观察不等于接纳了新推进请求，也不改写槽中H。
+   调用方应按明确的处理机会重新发起，不通过忙等或阻塞音频callback重试。
+6. 本节只定义新普通推进请求的背压。等待请求遇到有效控制按§3.7.2的K1显式取消；
+   控制消息不作为普通advance处理。具体载体和稳定诊断映射归RPA补充Spec与宿主边界；
+   文档修订不代表当前公共符号或Recovery编码已更新。
+
+最小预期：105已接纳并等待，106、107随后提出，均明确未接纳；输入继续交付并使G1成立后，
+只执行105。106/107不会自动补执行；之后调用方新提出107时，按当时上下文重新接纳或拒绝。
+在105仍等待时新提出的另一个105同样未接纳，不被误报为旧请求的完成回执。
+
+#### 3.7.2 控制接入取消等待推进：AD06-K1（已裁定，未实施）
+
+owner于2026-10-11选择K1：有效控制在D2 owner串行接入时，取消尚未开始的普通推进，
+返回可关联的CanceledNotExecuted；控制准备失败不复活它，调用方需要新请求。
+基本预检拒绝不触发取消；已开始的advance沿既有实际成功/失败前缀，不能回滚。
+输入、关批证明及future pending不随请求取消丢弃，取消也不代表Pause已完成。
+控制cut、暂停末批、drain、R2与设备失败的完整合同归[RPA补充Spec §3](rpa-execution-contract.md#3-pauser2-与恢复)。
 
 ## 4. 结构身份、contact 与资源
 
@@ -170,10 +358,14 @@ A=107 因 hop=5 拒绝；A=108 finalized。reset 恢复 A/P absent。
 
 text 按 UTF-8 unsigned bytes 比较，无 Unicode normalization/区域排序；比较结构字段，
 不按 delimiter 拼接字符串、pointer、hash 或运行期 counter 比较。
-CanonicalObservationKey=`(observationTick,domainToken,sourceClass,channelToken,actionRank,
+**现行单输入基线的内容key：** CanonicalObservationKey=`(observationTick,domainToken,sourceClass,channelToken,actionRank,
 amountPresence,amountInteger)`；action rank press=0,release=1,update=2。
 absent amount 的 integer 固定规范化为 0，但 amountPresence=false 与 present0 不等。
-现有 ObservationId/IngressSequence 只诊断与 admission，不能替代该结构 key。
+现有ObservationId/IngressSequence的**绝对数值**只用于诊断与admission，不能替代canonical key；
+来源内相对顺序按O1解释，并按I1派生局部位置。
+RPA T2输入阶段的顺序已由§3.4另行规定；上面的action rank不覆盖来源内sequence顺序。
+RPA T2中多次同值观测的发生身份由§4.1.1的I1补充；不能仅按上述内容key去重，
+也不能把全局ingress数值直接附加到该key。
 
 CandidateKey=`(Requirement E,phase,originKey,resourceId optional,intent optional)`。
 独立组的 resourceId/intent 均 absent；真实 claim 保留原 intent，不能将独立实例伪装成 consume。
@@ -186,6 +378,39 @@ LeaseIdentity=`(SlotIdentity,Requirement E,CandidateKey)`，只有真正获胜�
 内部 view 以 self-owned runScope anchor 区分每次 prepare/reset 运行，anchor 只用于有效性检查，
 不进入逻辑 key、hash、排序或 Replay。跨 scope 的 ID 不能用于 session mutation；
 相同输入运行的 canonical 值对照忽略 runScope，仍应相等。
+
+#### 4.1.1 RPA T2 发生身份：I1（已裁定，未实施）
+
+2026-10-11 owner选择I1：**原始Tick内、来源内的局部位置**。下列符号只描述逻辑语义，
+不新增公共C++类型、字段布局或Recovery字节格式；T2完整准入仍受B0剩余闭包约束。
+
+1. 在一个已关闭的原始`observationTick`输入批中，按O1的来源键分组；每组依据该来源
+   单调ingress sequence确定完整转换序列，再派生连续的局部位置`0,1,2,...`。
+   位置从每个原始Tick的每个来源重新开始，不是全局ingress数值，也不是整局计数器。
+2. T2逻辑发生身份是**现有canonical内容字段加上述局部位置**；发生槽位为
+   `(原始observationTick,domainToken,sourceClass,channelToken,局部位置)`。
+   同槽位同内容是同一次发生；同槽位不同内容是冲突，必须稳定拒绝，不能当成另一次输入。
+3. 同一已关闭来源序列`press → release → press`的位置为`0,1,2`。
+   两次同值press的局部位置不同，故不是重复；同一发生被再次提交仍按重复规则拒绝，
+   不得重新分配位置后再次执行。不能仅凭内容相同将两次真实发生折叠。
+4. 局部位置依据**完整原始来源序列**确定，不按后来准入成功的子集压缩；
+   重交保留原位置与内容，不能把截取的片段重新从0编号。全局ingress重新编号但来源内
+   内容和相对顺序不变时，派生的I1身份不变；这不放宽现行ingress重复校验。
+5. 迟到转发只按既有合同处理调度位置；原始Tick、来源、局部位置及内容身份保持。
+   多个原始Tick转发到同一`dispatchTick`时，不能把它们拼接后重新编号；
+   合并资格与处理顺序按§3.6的T2-L1解释。
+6. T2的`startPressKey`须引用带局部位置的发生身份，所以同一Tick内释放后再按下可区分新旧
+   contact；Candidate的observation origin同样不能退回内容key。I1不改变单个contact/lease的
+   reducer，也不增加一次观测的fanout。runScope仍只用于句柄有效性，不作为新逻辑序号。
+7. Replay须保留或能唯一重建完整原始来源序列及其位置；重放不按读取顺序、线程交织或
+   转发后的队列位置重新编号。只记录同值内容集合不足以重建I1。Fact origin/ordinal及
+   semantic revision按RPA补充Spec修订，不能沿用旧编码并声称语义兼容。
+8. 位置派生和冲突检查先在未发布的候选中完成；拒绝不消耗已发布ID、ingress状态或去重记录，
+   也不改变已seal事实。整数表示与稳定诊断映射须在首用前落约，不饱和、不回绕、不补默认容量。
+
+本节替代T2设计中“canonical身份不含任何发生位置、同内容即重复”的限制，
+但不改变现行单输入实现或历史Replay格式。关批证据和发布者按§3.5的T2-C1执行；
+不能假定一次poll就是一个完整Tick，也不能先发布局部位置再追溯修改已关闭序列。
 
 ### 4.2 Contact reducer
 
@@ -354,6 +579,10 @@ S2 对 sorted table 维护 cursor+active phase index；S1 每次扫描全部声�
 S1 不读 S2 cursor、heap、排序结果或缓存，实现独立 oracle。
 
 ### 7.2 Logical origin 与 rank
+
+本节的具体origin/ordinal表示是现行S7A-3 / S7A-4基线。RPA替代规则归
+[RPA补充Spec §3–4](rpa-execution-contract.md)：使用I1 occurrence origin及reconciliation rank=4，
+新Fact token与Recovery rev3。T2-L1输入处理序不直接充当Fact总序。
 
 originKindPriority 保持 observation=0,timer=1,coordination=2,correction=3；correction 拒绝。
 phasePriority：none=0,tap=1,head=2,body=3,tail=4。

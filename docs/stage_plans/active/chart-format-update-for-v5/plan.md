@@ -98,7 +98,8 @@ accepted 后，本计划可以为 v5 Core/Packed candidate path 实施必要的 
 
 ### 2.1 当前基线
 
-开工时仓库事实如下。关闭后的后续开发基线是 Chart v5；二者不得混用。
+原计划开工时仓库事实如下，保留为迁移起点，不代表当前SDK版本。当前分支SDK API为`0.7.5`，
+状态与证据归[CURRENT_STATUS](../../../CURRENT_STATUS.md)。关闭后的后续开发基线是 Chart v5；二者不得混用。
 
 ```text
 生产 Playback           Chart v4
@@ -585,7 +586,7 @@ H06/H08 继续标记为“未来开发，现不支持”；H01-H05/H07 继续是
 
 ### V5-A：基线和作者用例
 
-- 盘点第 2.1 节基线：格式、Runtime、默认 Writer（v3）、SDK `0.7.0`、Studio 预期和迁移输入。
+- 盘点第 2.1 节历史基线与开工实际差异：格式、Runtime、默认 Writer（v3）、当前SDK（现为`0.7.5`）、Studio 预期和迁移输入。
 - 建立高复用、低复用、动画密集、身份密集和资源闭包密集的容量 profile，至少包含
   40,000 个展开语义实体；分别记录 JSON source bytes、Packed candidate bytes、IDN0
   bytes、decoded bytes、对象/事件数量和 prepare 峰值，作为 V5-0A 的容量基线。

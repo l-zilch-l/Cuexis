@@ -2,12 +2,18 @@
 
 状态：candidate；S7A-3 / S7A-4 首次消费的选定表示
 
-更新日期：2026-10-05
+更新日期：2026-10-11
 
 本文件补充 [Gameplay V2 ABI](GAMEPLAY_V2_ABI.md)，只拥有表示、所有权和接口。
 运行语义以[执行 Spec](../formats/gameplay-v2-execution-profile.md) 为准。
 所有类型属于内部 `cuexis::judgement`，不安装 judgement headers、不增加 SDK API、
 不定义 wire/struct padding/稳定 C ABI。ABI 的 9 域 / 126 角色计数不因实现 helper 增加。
+
+下文具体C++载体描述S7A-3 / S7A-4基线。RPA T2的I1发生身份与
+[T2-L1执行批合并](../formats/gameplay-v2-execution-profile.md#36-rpa-t2-执行批合并t2-l1已裁定未实施)
+已裁定、未实施；现有key/contact/receipt/projection字段不能被视为已经承载T2。
+RPA表示由[宿主边界](realtime-host-boundary.md)与[RPA补充Spec](../formats/rpa-execution-contract.md)闭合；
+下表旧C++字段须在B3升级为occurrence/control载体，不能把旧key直接用于新profile。
 
 ## 1. 表示与字段
 
@@ -127,12 +133,22 @@ prepare 不包含 author compilation；编译在离线 assembler，Session 只�
 | `judgement.execution.relation_invalid` | invalid_relation | target/window、atom/action、phase/contact 或 source/rank 结构关系不合法 |
 | `judgement.late.parameters_invalid` | late_policy_incomplete | measured 参数负值或 O/C/F/H 关系不合法 |
 | `judgement.late.rejected` | late_policy_incomplete | rejectLate、finalized、hop 超界、二次转发或会反写已 seal phase 的输入 |
-| `judgement.late.dispatch_collision` | invalid_relation | 两个 distinct subjects 调度到同 dispatchTick |
+| `judgement.late.dispatch_collision` | invalid_relation | 现行单输入实现的条件：两个distinct subjects调度到同dispatchTick。T2-L1设计已替代该拒绝条件，见下文；本轮未修改实现或历史诊断载体 |
 | `judgement.session.lifecycle_order` | invalid_relation | 当前状态不允许该有参接口，或旧无参 skeleton 不可消费 |
 | `judgement.kernel.transaction_failed` | invalid_relation | 已入场的 Tick 计算遇到不可恢复 allocation/arithmetic/invariant 失败；session_faulted |
 
-既有同 Tick 原 observation collision、time reversal、amount、duplicate sequence/subject、
-unsupported capability、non_unique_solution、containment gate_incomplete 保持既有码，不复制同义码。
+**2026-10-11 T2-L1补充（已裁定、未实施）：**
+[execution profile §3.6](../formats/gameplay-v2-execution-profile.md#36-rpa-t2-执行批合并t2-l1已裁定未实施)
+允许所有通过其它准入检查的成员共享一个未封存dispatchTick；此条件不再单独产生
+`judgement.late.dispatch_collision`。pending/receipt与恢复校验不得继续假设dispatch唯一，
+但I1重复/槽位冲突和原子失败规则保持。原始身份及逐成员admission证据须保留；
+本次不新增具体C++载体，不复用旧码承载新含义，不改Recovery编码或历史实现证据。
+
+现行单输入基线的同Tick原observation collision与duplicate subject继续保留既有码及历史语义；
+T2不得继续仅因共享原始Tick或旧内容key相同而拒绝I1可区分的合法发生。
+T2的重复/槽位冲突诊断映射须在首用前落约，不在本次选码或复用旧碰撞码表达新含义。
+time reversal、amount、duplicate sequence、unsupported capability、non_unique_solution、
+containment gate_incomplete保持既有码，不复制同义码。
 纯 prepare/submit 可表示性失败沿既有 tick/amount overflow 类 budget_exceeded；
 只有运行中已接收 Tick 的 seal 失败用 transaction_failed，detail 指具体失败字段/预算维度。
 集中码表中的 faulted 允许集合应按此次 profile 补充 kernel.transaction_failed，

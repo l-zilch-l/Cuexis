@@ -164,7 +164,9 @@ cannot enable candidate decoding in production binaries.
 Player `--candidate-entry path` requires exactly one `--project` or `--cxc` locator; OFF parsing
 rejects it before opening input. Reference Host uses the same explicit Entry factories and
 reports package flavor. Legacy factories never select candidates implicitly. Consumers of
-the released Entry contract request SDK API `0.7.1` or newer in the same minor.
+the original Entry additions required SDK API `0.7.1` or newer in the same minor.
+The current Reference Host and Gameplay candidate consumers request `0.7.5`; its diagnostic
+and Recovery changes follow [VERSIONING](../guides/VERSIONING.md#075具体兼容差异).
 
 The offline typed assembler supplies chart metadata, expanded entities, parent relations,
 requirements and resource references. It derives the lanes4 feature and closure from validated

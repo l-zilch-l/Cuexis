@@ -2,7 +2,7 @@
 
 状态：已接受
 
-更新日期：2026-10-10
+更新日期：2026-10-11
 
 ## 格式
 
@@ -76,7 +76,7 @@ suffix 只来自允许集合或 exp.<name>
 
 ```text
 Cuexis display version     仓库/发行构建身份
-C++ SDK API version        CMake package 与源码兼容版本；当前 static/shared preview 为 0.7.0
+C++ SDK API version        CMake package 与源码兼容版本；当前分支 static/shared preview 为 0.7.5
 C ABI version              稳定 shared-library 二进制契约，阶段 12 首次冻结
 Chart/Project/Asset format 各自持久化 format + version
 ReplayData format          阶段 11 冻结的独立持久化版本
@@ -124,11 +124,13 @@ SDK API 版本和已启用组件；稳定 C ABI 在阶段 12 建立后再提供�
 
 ## SDK 版本递增规范
 
-Stage 7 prepares SDK `0.7.1` as an unreleased compatible patch candidate for explicit Entry
+Stage 7 originally prepared SDK `0.7.1` as a compatible patch candidate for explicit Entry
 factories and experimental package isolation. This repair preserves installed public layouts,
 signatures, vtables and default production source selection. `0.7.0` consumers rebuild against
-the new package; new Entry consumers request at least `0.7.1`. Owner approval and trusted-base
-bootstrap remain release prerequisites.
+the new package; the original Entry additions required at least `0.7.1`. This is the historical
+Entry baseline, not the current package version. The branch now uses `0.7.5`; its diagnostic and
+Recovery compatibility changes and consumer minimum are specified below. Delivery status belongs
+to [CURRENT_STATUS](../CURRENT_STATUS.md); approval and release gates remain separate.
 
 2026-10-08 S7A-7/8 actual diff review retains this patch under the 0.x policy below:
 production declarations of installed PlaybackSession/PlaybackSource equal PR base
@@ -137,7 +139,8 @@ the original 0.7.0 consumer is unchanged. New Gameplay names/types require candi
 No production signature, layout, enum semantics or default selection changed. This is a
 source compatibility decision; shared consumers must rebuild and package validation must
 pass. Date identity is independently updated by update_version.py; owner release approval,
-trusted bootstrap and hosted evidence remain open.
+trusted bootstrap and hosted evidence were still open at that review. Their historical S7A-8.4
+closure does not approve the later 0.7.5 changes.
 
 
 ### S7A-8.4 owner approval record
@@ -303,8 +306,9 @@ Stage 14 必须另行冻结 `1.x` 的 API/ABI 兼容、弃用和版本递增政�
 
 owner明确指定[独立诊断正式化工作包](../stage_plans/active/stage-07/plan-diagnostic-formalization.md)
 目标SDK API为`0.7.5`，同时保留此前已接受的新Recovery版本拒绝旧版本方向。
-这是本工作包的具体版本裁定，尚未更新实现、发行或完成N1/N3；版本文件在N2版本集成时同步。
-N1仍需盘点production/candidate公共差异及迁移影响，不将patch数字当作可观察合同兼容证明。
+这是本工作包的具体版本裁定；版本文件与消费者已在N2集成，N1/N3已退出，
+当前分支为0.7.5。具体证据与交付状态归[CURRENT_STATUS](../CURRENT_STATUS.md)。
+N1已记录production/candidate公共差异及迁移影响，不将patch数字当作可观察合同兼容证明。
 若实际差异属于常规规则要求升minor的不兼容公开变化，本工作包按owner指定的`0.7.5`
 记录限定例外及具体影响，不反向放宽Reader来制造兼容，也不推广为其他阶段可使用breaking patch。
 该版本裁定不替代具体SHA的审批、安装消费者、内容版本拒绝或发行门禁。
@@ -313,10 +317,11 @@ N1仍需盘点production/candidate公共差异及迁移影响，不将patch数�
 
 [ADR 0042](../adr/0042-stage-6-productization-boundaries.md) 将 Stage 6 SDK 目标冻结为
 `0.7.1`，仅用于新名字的源兼容增量 API；不得改变已有公开布局、签名、虚表、枚举含义或
-默认入口语义。现有实现仍为 `0.7.0`，版本代码在对应 API 实现及 consumer 门禁落地时同步更新。
+默认入口语义。该Stage 6记录形成时实现仍为 `0.7.0`；后续Stage 7完成0.7.1增量及0.7.5诊断正式化，
+当前版本不再由该历史目标表示。
 旧 consumer 需要重新构建，patch 号不承诺 shared binary 可替换。需要不兼容变更时必须重新
 裁定 minor 和 Stage 8 接手版本，不能在 `0.7.1` 内偷偷破坏契约。`0.7.1` 是以当前
-`0.7.0` 基线及上述兼容条件为前提的目标，不是可以覆盖其他已发行版本的固定配额。
+`0.7.0` 历史基线及上述兼容条件为前提的目标，不是可以覆盖其他已发行版本的固定配额。
 Stage 8 不预留 `0.8.0`；正式 v5 发行版本按届时实际基线（包括 Stage 7A）与公共合同差异
 重新裁定，并在发行前落实为具体版本、consumer 要求和验收记录。
 
@@ -352,10 +357,10 @@ configure/clean build 证据；版本变化不隐式升级 SDK API、内容格�
 
 ### 升级示例：从 `0.7.0` 基线重建宿主
 
-`examples/reference_host/` 是当前唯一可执行的升级示例，也是 `0.7.0` 基线的写法样本：
+`examples/reference_host/` 是可执行的升级示例；它源于 `0.7.0` 基线，当前默认请求已更新为：
 
 ```cmake
-find_package(Cuexis 0.7.0 CONFIG REQUIRED COMPONENTS Playback)
+find_package(Cuexis 0.7.5 CONFIG REQUIRED COMPONENTS Playback)
 ```
 
 它显式声明自己编写时对齐的 API 版本，并在安装包记录的 API minor 不兼容时于 configure 阶段失败，
@@ -365,9 +370,9 @@ find_package(Cuexis 0.7.0 CONFIG REQUIRED COMPONENTS Playback)
 2. 把宿主指向新前缀（`-DCuexis_DIR=<new-prefix>/lib/cmake/Cuexis`）。
 3. 干净重建宿主（新构建目录），不要在旧构建目录上增量链接。
 
-`0.7.0` 与当前实现之间**没有源不兼容变更**：C4 只新增了示例宿主与打包目标，没有改动任何已发布
-的公开头、签名、枚举语义或默认入口，也没有提升 SDK API 版本。因此从 `0.7.0` 基线重建宿主不需要
-迁移步骤。shared 预览仍不承诺 binary 可替换：升级必须重新构建 consumer，不能只替换 `.so`/`.dll`。
+Stage 6 C4当时只新增示例宿主与打包目标、未提升SDK；这一历史结论不能作为当前升级无需迁移的承诺。
+升级至0.7.5时，依赖诊断字符串或candidate Recovery的宿主须按下述具体差异调整；
+旧revision1归档明确拒绝。shared预览仍不承诺binary可替换：升级必须重新构建consumer，不能只替换`.so`/`.dll`。
 
 配置存储的升级与回滚边界（[STAGE6_CONFIG_AND_MEDIA.md](../formats/STAGE6_CONFIG_AND_MEDIA.md) §1）：
 `cuexis.player-preferences` 与 `cuexis.audio-device-profile` 目前都只有 v1，实现**不发明** v0
@@ -384,4 +389,5 @@ message修正、候选Recovery envelope revision2明确拒绝revision1（含健�
 这是owner指定0.7.5的限定breaking patch例外；不推广到其他工作包。
 production公开签名/布局/枚举无变化，candidate消费者需重建并最低请求0.7.5；
 旧归档没有内置迁移工具，回退须使用匹配旧源码/包和原件，不能把新产物降级重写。
-SDK文件在N2.4实施，日期身份独立经updater更新并fresh/clean-first；尚无发行或新SHA审批。
+SDK文件已在N2.4实施，日期身份独立经updater更新并fresh/clean-first；N3证据已形成，
+当前本地提交与交付状态见CURRENT_STATUS，旧0.7.1审批不覆盖0.7.5。

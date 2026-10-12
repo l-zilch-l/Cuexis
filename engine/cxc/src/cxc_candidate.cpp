@@ -35,13 +35,6 @@ void addError(core::Diagnostics& diagnostics, std::string code, std::string mess
         core::DiagnosticSeverity::Error, std::move(code), std::move(message), std::move(path)}));
 }
 
-[[nodiscard]] auto isSha256(std::string_view value) noexcept -> bool {
-    return value.size() == 64U && std::ranges::all_of(value, [](const char character) {
-               return (character >= '0' && character <= '9') ||
-                      (character >= 'a' && character <= 'f');
-           });
-}
-
 [[nodiscard]] auto readString(const json::Reader& reader, std::string_view field)
     -> std::optional<std::string> {
     const auto child = reader.optionalField(field);
@@ -257,19 +250,19 @@ auto parseCandidateChartEntryExtension(std::string_view extensionsJson,
                      "Chart entry sourcePath is not portable", fieldPath + "/sourcePath");
         }
         const auto sourceIdentity = readString(*item, "sourceSemanticIdentity");
-        if (sourceIdentity && !isSha256(*sourceIdentity)) {
+        if (sourceIdentity && !detail::isSha256(*sourceIdentity)) {
             addError(result.diagnostics, "cxc.chart_entry.identity_invalid",
                      "sourceSemanticIdentity must be lowercase SHA-256",
                      fieldPath + "/sourceSemanticIdentity");
         }
         const auto compiledIdentity = readString(*item, "compiledSemanticIdentity");
-        if (compiledIdentity && !isSha256(*compiledIdentity)) {
+        if (compiledIdentity && !detail::isSha256(*compiledIdentity)) {
             addError(result.diagnostics, "cxc.chart_entry.identity_invalid",
                      "compiledSemanticIdentity must be lowercase SHA-256",
                      fieldPath + "/compiledSemanticIdentity");
         }
         const auto artifactIdentity = readString(*item, "artifactIdentity");
-        if (artifactIdentity && !isSha256(*artifactIdentity)) {
+        if (artifactIdentity && !detail::isSha256(*artifactIdentity)) {
             addError(result.diagnostics, "cxc.chart_entry.identity_invalid",
                      "artifactIdentity must be lowercase SHA-256", fieldPath + "/artifactIdentity");
         }
@@ -338,14 +331,14 @@ auto validateCandidateChartBytes(const CandidateChartEntry& entry, std::span<con
         addError(result.diagnostics, "cxc.candidate.profile_unsupported",
                  "Candidate compiler profile is not registered", path + "/compilerProfile");
     }
-    if (!entry.artifactIdentity || !isSha256(*entry.artifactIdentity)) {
+    if (!entry.artifactIdentity || !detail::isSha256(*entry.artifactIdentity)) {
         addError(result.diagnostics, "cxc.chart_entry.identity_invalid",
                  "artifactIdentity must be lowercase SHA-256", path + "/artifactIdentity");
     } else if (detail::sha256Hex(bytes) != *entry.artifactIdentity) {
         addError(result.diagnostics, "cxc.candidate.artifact_identity_mismatch",
                  "artifactIdentity does not match exact entry bytes", path + "/artifactIdentity");
     }
-    if (!entry.compiledSemanticIdentity || !isSha256(*entry.compiledSemanticIdentity)) {
+    if (!entry.compiledSemanticIdentity || !detail::isSha256(*entry.compiledSemanticIdentity)) {
         addError(result.diagnostics, "cxc.chart_entry.identity_invalid",
                  "compiledSemanticIdentity must be lowercase SHA-256",
                  path + "/compiledSemanticIdentity");
@@ -535,7 +528,7 @@ auto validateCandidateChartExtension(const CxcPackage& package) -> core::Diagnos
         }
         const auto artifactIdentity = readRequiredString(*item, "artifactIdentity");
         const auto artifactText = artifactIdentity.value_or(std::string{});
-        if (!isSha256(artifactText)) {
+        if (!detail::isSha256(artifactText)) {
             addError(diagnostics, "cxc.candidate.identity_invalid",
                      "artifactIdentity must be lowercase SHA-256", field + "/artifactIdentity");
         } else if (artifactText != archiveEntry->sha256) {
@@ -545,7 +538,7 @@ auto validateCandidateChartExtension(const CxcPackage& package) -> core::Diagnos
         }
         const auto compiledIdentity = readRequiredString(*item, "compiledSemanticIdentity");
         const auto compiledText = compiledIdentity.value_or(std::string{});
-        if (!isSha256(compiledText)) {
+        if (!detail::isSha256(compiledText)) {
             addError(diagnostics, "cxc.candidate.identity_invalid",
                      "compiledSemanticIdentity must be lowercase SHA-256",
                      field + "/compiledSemanticIdentity");
@@ -562,7 +555,7 @@ auto validateCandidateChartExtension(const CxcPackage& package) -> core::Diagnos
             }
             if (const auto sourceIdentity = item->optionalField("sourceSemanticIdentity")) {
                 const auto identity = sourceIdentity->readString();
-                if (!isSha256(identity.value_or(std::string{}))) {
+                if (!detail::isSha256(identity.value_or(std::string{}))) {
                     addError(diagnostics, "cxc.candidate.identity_invalid",
                              "sourceSemanticIdentity must be lowercase SHA-256",
                              field + "/sourceSemanticIdentity");
