@@ -4,6 +4,7 @@
 #include "host_candidate.hpp"
 #include "owner_channel.hpp"
 #include <atomic>
+#include <chrono>
 #include <functional>
 #include <thread>
 #include <variant>
@@ -168,6 +169,7 @@ class CUEXIS_PLAYBACK_API SessionWorker final {
     [[nodiscard]] auto poll(std::uint64_t)
         -> core::Result<std::optional<core::Result<SessionReply>>>;
     [[nodiscard]] auto acknowledge(std::uint64_t) -> core::Result<void>;
+    void waitFor(std::chrono::milliseconds duration);
     void requestShutdown() noexcept;
     [[nodiscard]] auto exited() const noexcept -> bool;
     [[nodiscard]] auto joinExited() -> core::Result<void>;

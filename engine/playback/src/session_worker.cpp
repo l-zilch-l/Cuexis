@@ -516,6 +516,9 @@ auto SessionWorker::poll(std::uint64_t id)
 auto SessionWorker::acknowledge(std::uint64_t id) -> core::Result<void> {
     return channel_.ack(id);
 }
+void SessionWorker::waitFor(std::chrono::milliseconds duration) {
+    channel_.waitFor(duration);
+}
 void SessionWorker::requestShutdown() noexcept {
     channel_.closeAdmission();
     shutdown_.store(true, std::memory_order_release);

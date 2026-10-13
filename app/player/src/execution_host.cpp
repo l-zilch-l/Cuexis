@@ -97,7 +97,10 @@ void ExecutionHost::pump() {
     ++pumpCount_;
     if (ports_.pumpMain)
         take(ports_.pumpMain());
-    std::this_thread::sleep_for(std::chrono::milliseconds{1});
+    if (sessionJob_)
+        session_->waitFor(std::chrono::milliseconds{1});
+    else if (audioJob_)
+        audio_->waitFor(std::chrono::milliseconds{1});
 }
 auto ExecutionHost::session(SessionCommand command, bool control) -> SessionReply {
     if (sessionJob_)
@@ -139,6 +142,15 @@ auto ExecutionHost::audio(AudioWorkerCommand command) -> AudioWorkerReply {
             throw Failure{error("control_pending")};
         pump();
     }
+}
+void ExecutionHost::waitFor(std::chrono::milliseconds duration) {
+    checkOwner();
+    if (sessionJob_)
+        session_->waitFor(duration);
+    else if (audioJob_)
+        audio_->waitFor(duration);
+    else
+        session_->waitFor(duration);
 }
 auto ExecutionHost::proof() -> ControlReceipt {
     return take(host_->query(control_.operationId));

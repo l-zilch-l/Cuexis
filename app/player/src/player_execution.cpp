@@ -368,7 +368,7 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
                 nowUs() >= firstFrameDeadline)
                 throw Failure{decision.error.value_or(error("Initial frame did not execute"))};
             take(pumpMain());
-            std::this_thread::sleep_for(std::chrono::milliseconds{1});
+            host->waitFor(std::chrono::milliseconds{1});
         }
     };
     load();
@@ -530,7 +530,6 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
         auto presented = take(host->present(frame));
         if (presented.status != PresentStatus::succeeded)
             throw Failure{error("Present was not confirmed")};
-        std::this_thread::sleep_for(std::chrono::milliseconds{1});
     }
     take(host->close());
     if (overflow)

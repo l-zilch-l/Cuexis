@@ -72,6 +72,7 @@ class ExecutionHost final {
     [[nodiscard]] auto close() -> core::Result<void>;
     [[nodiscard]] auto resize(playback::FrameViewport) -> core::Result<void>;
     [[nodiscard]] auto audioPublication() const -> core::Result<playback::detail::AudioPublication>;
+    void waitFor(std::chrono::milliseconds duration);
     [[nodiscard]] auto hasAudio() const noexcept -> bool {
         return bool(audio_);
     }

@@ -2,6 +2,7 @@
 #include "audio_owner.hpp"
 #include "owner_channel.hpp"
 #include <atomic>
+#include <chrono>
 #include <functional>
 #include <memory>
 #include <span>
@@ -83,6 +84,7 @@ class CUEXIS_PLAYBACK_API AudioWorker final {
     [[nodiscard]] auto poll(std::uint64_t)
         -> core::Result<std::optional<core::Result<AudioWorkerReply>>>;
     [[nodiscard]] auto acknowledge(std::uint64_t) -> core::Result<void>;
+    void waitFor(std::chrono::milliseconds duration);
     [[nodiscard]] auto publication() const -> core::Result<AudioPublication>;
     void requestShutdown();
     [[nodiscard]] auto exited() const noexcept -> bool;

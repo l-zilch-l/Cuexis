@@ -31,6 +31,7 @@ template <typename Command, typename Reply> class OwnerChannel final {
                 continue;
             slots_[i].emplace(Record{next_, std::move(command), {}, false, false});
             ++next_;
+            ++wakeVersion_;
             cv_.notify_one();
             return next_ - 1;
         }
@@ -67,6 +68,7 @@ template <typename Command, typename Reply> class OwnerChannel final {
                         fault_ = Fault::allocation;
                     }
                     slot->terminal = true;
+                    ++wakeVersion_;
                     cv_.notify_all();
                     return;
                 }
