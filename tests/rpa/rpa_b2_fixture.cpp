@@ -35,7 +35,7 @@ auto OwningReplayResult::valid() const -> bool {
 
 B2Store::B2Store(std::size_t chunkCapacity, std::string profileIdentity)
     : chunkCapacity_(std::max<std::size_t>(1, chunkCapacity)),
-      profileIdentity_(std::move(profileIdentity)), metrics_(std::make_shared<LifetimeMetrics>()) {}
+      profileIdentity_(std::move(profileIdentity)), metrics_(std::make_unique<LifetimeMetrics>()) {}
 
 auto B2Store::reserve(std::uint64_t position, std::string_view stage) -> bool {
     if (failureInjection_ == FailureInjection::none) {

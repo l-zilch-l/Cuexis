@@ -1334,6 +1334,38 @@
       ],
       "note": "First-use registration precedes the new typed Graph consumer. It does not certify Reader/Writer implementation or accept production budgets.",
       "publicConsumptionSurface": "Compiled Gameplay Graph candidate Reader/Writer and owning Playback source Result."
+    },
+    {
+      "code": "judgement.input.occurrence_conflict",
+      "family": "judgement.s7a4",
+      "category": "invalid_relation",
+      "categoryBasis": "execution_profile_selected",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "Stage 7-RPA B3",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/formats/rpa-execution-contract.md#5"
+      ],
+      "note": "RPA profile detailed rejection, unchanged category and R entry set.",
+      "publicConsumptionSurface": "Existing Diagnostic / Result carrier (internal execution profile)."
+    },
+    {
+      "code": "judgement.control.reconciliation_invalid",
+      "family": "judgement.s7a4",
+      "category": "invalid_relation",
+      "categoryBasis": "execution_profile_selected",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "Stage 7-RPA B3",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "docs/formats/rpa-execution-contract.md#5"
+      ],
+      "note": "RPA profile detailed rejection, unchanged category and R entry set.",
+      "publicConsumptionSurface": "Existing Diagnostic / Result carrier (internal execution profile)."
     }
   ],
   "rejectionEntries": [

@@ -21,8 +21,7 @@ TEST_CASE("Candidate Player entry is explicit and disabled in production", "[pla
 #endif
 }
 
-TEST_CASE("Player practice guide is explicit and requires candidate Gameplay",
-          "[player][candidate]") {
+TEST_CASE("Player rejects the removed practice guide option", "[player][candidate]") {
     std::array arguments{std::string{"player"}, std::string{"--gameplay-guide"},
                          std::string{"guide.txt"}};
     std::array<char*, 3> pointers{};
@@ -30,9 +29,19 @@ TEST_CASE("Player practice guide is explicit and requires candidate Gameplay",
         pointers[i] = arguments[i].data();
     const auto result = cuexis::player::parsePlayerOptions(3, pointers.data());
     REQUIRE_FALSE(result);
-#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     CHECK(result.error().code() == "player.arguments.unknown");
-#else
-    CHECK(result.error().code() == "player.candidate.disabled");
-#endif
+}
+
+TEST_CASE("Separate Gameplay content requires explicit execution mode", "[player][candidate]") {
+    std::array arguments{std::string{"player"},
+                         std::string{"--cxc"},
+                         std::string{"scene.cxc"},
+                         std::string{"--candidate-entry"},
+                         std::string{"compiled/chart.v5.json"},
+                         std::string{"--gameplay-packed"},
+                         std::string{"gameplay.packed"}};
+    std::array<char*, 7> pointers{};
+    for (std::size_t i = 0; i < arguments.size(); ++i)
+        pointers[i] = arguments[i].data();
+    REQUIRE_FALSE(cuexis::player::parsePlayerOptions(7, pointers.data()));
 }

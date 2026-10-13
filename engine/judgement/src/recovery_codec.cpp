@@ -24,7 +24,7 @@ void section(Writer& out, std::uint8_t id, const Writer& payload) {
 auto envelope(const Writer& payload, std::uint8_t kind) -> std::vector<std::byte> {
     Writer out;
     out.bytes.insert(out.bytes.end(), magic.begin(), magic.end());
-    out(std::uint32_t{2}, kind, static_cast<std::uint64_t>(payload.bytes.size()),
+    out(payload.revision, kind, static_cast<std::uint64_t>(payload.bytes.size()),
         digest(payload.bytes));
     out.bytes.insert(out.bytes.end(), payload.bytes.begin(), payload.bytes.end());
     return out.bytes;
@@ -52,7 +52,7 @@ auto unwrap(std::span<const std::byte> bytes, std::uint8_t expectedKind,
     std::uint8_t kind;
     std::uint64_t length, hash;
     reader(version, kind, length, hash);
-    if (version != 2) {
+    if (version != (initial.rpa ? 3U : 2U)) {
         throw Failure{"codec.version_unsupported"};
     }
     if (kind != expectedKind) {
@@ -75,7 +75,7 @@ auto readSection(Reader& r, std::uint8_t expected) -> Reader {
     }
     auto data = r.bytes.subspan(r.pos, static_cast<std::size_t>(length));
     r.pos += static_cast<std::size_t>(length);
-    return Reader{data, 0, r.elements, r.budget, r.initial};
+    return Reader{data, 0, r.elements, r.budget, r.initial, r.revision};
 }
 void finish(const Reader& r) {
     if (r.pos != r.bytes.size()) {
@@ -93,9 +93,10 @@ auto header(const KernelProjection& p, const RecoveryInputs& inputs, std::uint64
     -> Writer {
     static_cast<void>(inputs);
     Writer h;
+    h.revision = p.rpa ? 3 : 2;
     h(p.judgementIdentity.canonicalBytes().bytes(), p.effectiveFactSemanticRevision,
-      std::uint32_t{1}, events, static_cast<std::uint64_t>(p.facts.size()),
-      std::string{"canonical.discrete.le.v1"});
+      std::uint32_t{p.rpa ? 2U : 1U}, events, static_cast<std::uint64_t>(p.facts.size()),
+      std::string{p.rpa ? "canonical.discrete.rpa.le.v1" : "canonical.discrete.le.v1"});
     return h;
 }
 auto readHeader(Reader& r) -> Header {
@@ -104,7 +105,9 @@ auto readHeader(Reader& r) -> Header {
     section(h.identity, h.factRevision, h.stateSchema, h.events, h.facts, h.eventCodecId);
     finish(section);
     r.elements = section.elements;
-    if (h.stateSchema != 1 || h.eventCodecId != "canonical.discrete.le.v1") {
+    if (h.stateSchema != (r.revision == 3 ? 2U : 1U) ||
+        h.eventCodecId !=
+            (r.revision == 3 ? "canonical.discrete.rpa.le.v1" : "canonical.discrete.le.v1")) {
         throw Failure{"codec.version_unsupported"};
     }
     return h;
@@ -139,6 +142,7 @@ auto encodeReplay(const ReplayArchive& archive) -> core::Result<std::vector<std:
         }
     }
     Writer out, body;
+    out.revision = body.revision = p->projection.rpa ? 3 : 2;
     section(out, 1, header(p->projection, archive.dependencies(), archive.data().eventCount));
     body(archive.data().records);
     section(out, 2, body);
@@ -156,7 +160,7 @@ auto decodeReplay(std::span<const std::byte> bytes, const RecoveryInputs& inputs
     }
     const auto p = (*base)->query()->projection;
     const auto env = unwrap(bytes, 1, p, budget);
-    Reader r{env.payload, 0, 0, budget, p};
+    Reader r{env.payload, 0, 0, budget, p, p.rpa ? 3U : 2U};
     const auto h = readHeader(r);
     auto body = readSection(r, 2);
     ReplayData data{{}, h.events, p.judgementIdentity};
@@ -187,7 +191,14 @@ auto decodeReplay(std::span<const std::byte> bytes, const RecoveryInputs& inputs
     std::optional<Tick> horizon;
     for (std::size_t i = 0; i < data.records.size(); ++i) {
         const auto& record = data.records[i];
-        if (record.horizon) {
+        if (record.control) {
+            if (!p.rpa || record.controlDrain || record.horizon || !record.batch.empty() ||
+                !record.admission.empty() || !record.result)
+                throw Failure{"codec.record_invalid"};
+            const auto result = (*base)->controlRpa(*record.control);
+            if (!result && record.result->state != KernelSessionState::Faulted)
+                throw Failure{"codec.record_invalid"};
+        } else if (record.horizon) {
             if (!record.result || !record.batch.empty() || !record.admission.empty() ||
                 (horizon && *record.horizon < *horizon) ||
                 (record.result->state == KernelSessionState::Faulted &&
@@ -195,20 +206,23 @@ auto decodeReplay(std::span<const std::byte> bytes, const RecoveryInputs& inputs
                 throw Failure{"codec.record_invalid"};
             }
             horizon = record.horizon;
-            const auto advanced = (*base)->advance(*horizon);
+            const auto advanced = (*base)->advance(*horizon, record.controlDrain);
             if (!advanced && record.result->state != KernelSessionState::Faulted) {
                 throw Failure{"codec.record_invalid"};
             }
         } else {
             if (record.result || record.batch.empty() ||
-                record.batch.size() != record.admission.size() ||
+                (record.rejection ? !record.admission.empty()
+                                  : record.batch.size() != record.admission.size()) ||
                 record.batch.size() > UINT64_MAX - events ||
                 !std::is_sorted(record.batch.begin(), record.batch.end(),
                                 [](const auto& a, const auto& b) { return a.key < b.key; })) {
                 throw Failure{"codec.record_invalid"};
             }
             const auto admitted = (*base)->submitCanonical(record.batch);
-            if (!admitted || *admitted != record.admission) {
+            if (record.rejection
+                    ? admitted.has_value() || !sameRecoveryError(admitted.error(), record.rejection)
+                    : !admitted || *admitted != record.admission) {
                 throw Failure{"codec.record_invalid"};
             }
             events += static_cast<std::uint64_t>(record.batch.size());
@@ -232,6 +246,7 @@ auto encodeSnapshot(const SnapshotPayload& value) -> core::Result<std::vector<st
         detail::containsLegacyDiagnostic(*value.state().kernel.faultDiagnostic))
         throw Failure{"codec.record_invalid"};
     Writer out, body;
+    out.revision = body.revision = value.state().kernel.rpa ? 3 : 2;
     section(out, 1,
             header(value.state().kernel, *value.storage_->inputs,
                    static_cast<std::uint64_t>(value.state().ingress.accepted.size())));
@@ -251,7 +266,7 @@ auto decodeSnapshot(std::span<const std::byte> bytes, const RecoveryInputs& inpu
     }
     const auto p = (*base)->query()->projection;
     const auto env = unwrap(bytes, 2, p, budget);
-    Reader r{env.payload, 0, 0, budget, p};
+    Reader r{env.payload, 0, 0, budget, p, p.rpa ? 3U : 2U};
     const auto h = readHeader(r);
     auto body = readSection(r, 2);
     auto dto = body.seed<SnapshotDTO>();

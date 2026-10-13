@@ -1,0 +1,87 @@
+{
+  "format": "cuexis.chart",
+  "version": 5,
+  "chartId": "019f0000-0000-7abc-8def-000000000401",
+  "metadata": {
+    "title": "Static v4 Migration Example"
+  },
+  "timing": {
+    "offsetMs": 0.0,
+    "defaultBpm": 120.0,
+    "tempoEvents": [],
+    "stops": []
+  },
+  "camera": {
+    "type": "perspective",
+    "fovY": 60.0,
+    "near": 0.1,
+    "far": 1000.0
+  },
+  "parameters": [],
+  "templates": [],
+  "behaviors": [
+    {
+      "id": "move",
+      "type": "behavior.event",
+      "version": 2,
+      "events": [
+        {
+          "property": "transform.position.y",
+          "startBeat": {
+            "numerator": 0,
+            "denominator": 1
+          },
+          "durationBeats": {
+            "numerator": 2,
+            "denominator": 1
+          },
+          "startValue": 0,
+          "endValue": 2,
+          "startSlope": 1,
+          "endSlope": 1
+        }
+      ],
+      "stepEvents": []
+    }
+  ],
+  "animationTemplateImports": [],
+  "animationClips": [],
+  "objects": [
+    {
+      "id": "019f0000-0000-7abc-8def-000000000411",
+      "name": "static_object",
+      "parent": null,
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "cuexis.behavior": {
+          "version": 1,
+          "behavior": {
+            "domain": "behavior",
+            "id": "move"
+          }
+        }
+      },
+      "extensions": {}
+    }
+  ],
+  "requiredExtensions": [],
+  "extensions": {}
+}

@@ -20,6 +20,8 @@
 
 ## 历史格式和审视
 
+- [Chart v4 作者指南原文](CHART_V4_AUTHORING_2026-09-02.md)：保留旧格式手写说明；2026-10-13按 owner 要求更新现行入口为 [v5 指南](../guides/CHART_V5_AUTHORING.md)，旧 v4 路径继续兼容。
+
 - [Stage 7历史规划与接手快照](stage-07-planning/README.md)：3/4、旧单批5、联合5/6接手、5–9评估及RPA v0.5讨论初稿；当前决策归Stage 7主计划与RPA分册。
 
 - [Simple Chart v1 历史格式](SIMPLE_CHART_FORMAT.md)

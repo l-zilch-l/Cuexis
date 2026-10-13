@@ -23,6 +23,8 @@ template <class A, class V>
     requires std::is_same_v<std::remove_cv_t<V>, CanonicalObservationKey>
 void fields(A& a, V& v) {
     a(v.observationTick, v.domainToken, v.sourceClass, v.channelToken, v.action, v.amount);
+    if (a.revision == 3)
+        a(v.sourceLocalPosition);
 }
 template <class A, class V>
     requires std::is_same_v<std::remove_cv_t<V>, CanonicalInput>
@@ -161,6 +163,8 @@ void fields(A& a, V& v) {
       v.processedFrontier, v.lastAdvanceHorizon, v.state, v.faultDiagnostic, v.failedTick,
       v.requestedHorizon, v.kernelWorkTick, v.sealedFactCursor, v.fold,
       v.effectiveFactSemanticRevision, v.faultStage);
+    if (a.revision == 3)
+        a(v.rpa);
 }
 template <class A, class V>
     requires std::is_same_v<std::remove_cv_t<V>, MatcherSnapshot>
@@ -177,11 +181,42 @@ template <class A, class V>
 void fields(A& a, V& v) {
     a(v.kernel, v.matchers, v.coverageHistory, v.activeRequirements, v.timerCursor, v.nextCommitId,
       v.commitIdsExhausted, v.ingress, v.pending);
+    if (a.revision == 3)
+        a(v.rpaHistory);
 }
 template <class A, class V>
     requires std::is_same_v<std::remove_cv_t<V>, ReplayRecord>
 void fields(A& a, V& v) {
     a(v.batch, v.admission, v.horizon, v.result);
+    if (a.revision == 3)
+        a(v.control, v.rejection, v.controlDrain);
+}
+
+template <class A, class V>
+    requires std::is_same_v<std::remove_cv_t<V>, PauseTransition>
+void fields(A& a, V& v) {
+    a(v.sequence, v.observation);
+}
+template <class A, class V>
+    requires std::is_same_v<std::remove_cv_t<V>, RpaControlRecord>
+void fields(A& a, V& v) {
+    a(v.kind, v.cutTick, v.controlOrdinal, v.pauseEpoch, v.finalTraceCut, v.trace);
+}
+template <class A, class V>
+    requires std::is_same_v<std::remove_cv_t<V>, DeferredInterruption>
+void fields(A& a, V& v) {
+    a(v.startPress, v.controlOrdinal, v.release);
+}
+template <class A, class V>
+    requires std::is_same_v<std::remove_cv_t<V>, ReconciliationOrigin>
+void fields(A& a, V& v) {
+    a(v.tick, v.controlOrdinal, v.deferredOccurrence, v.traceCut, v.release);
+}
+template <class A, class V>
+    requires std::is_same_v<std::remove_cv_t<V>, RpaLogicalState>
+void fields(A& a, V& v) {
+    a(v.paused, v.cutTick, v.nextControlOrdinal, v.pauseEpoch, v.accepted, v.quarantine, v.deferred,
+      v.controls, v.foldAtTickStart, v.foldBaseTick, v.foldedControlCount);
 }
 
 class Writer;
@@ -191,6 +226,7 @@ template <class T> void get(Reader&, T&);
 class Writer final {
   public:
     std::vector<std::byte> bytes;
+    std::uint32_t revision{2};
     template <class... T> void operator()(const T&... v) {
         (put(*this, v), ...);
     }
@@ -207,6 +243,7 @@ class Reader final {
     std::uint64_t elements{0};
     std::optional<CodecBudget> budget;
     KernelProjection initial;
+    std::uint32_t revision{2};
     template <class... T> void operator()(T&... v) {
         (get(*this, v), ...);
     }
@@ -258,7 +295,9 @@ template <class T> struct Shared<std::shared_ptr<T>> : std::true_type {
     using Value = std::remove_const_t<T>;
 };
 template <class T> constexpr auto maxEnum() -> unsigned {
-    if constexpr (std::is_same_v<T, InputAction>) {
+    if constexpr (std::is_same_v<T, RpaControlKind>) {
+        return static_cast<unsigned>(RpaControlKind::resume);
+    } else if constexpr (std::is_same_v<T, InputAction>) {
         return static_cast<unsigned>(InputAction::update);
     } else if constexpr (std::is_same_v<T, PhaseKind>) {
         return static_cast<unsigned>(PhaseKind::tail);
@@ -422,7 +461,12 @@ template <class T> void get(Reader& a, T& v) {
             v = std::make_shared<const typename Shared<T>::Value>(std::move(x));
         }
     } else if constexpr (Variant<T>::value) {
-        getVariant(a, v, static_cast<unsigned>(a.integer(1)));
+        const auto tag = static_cast<unsigned>(a.integer(1));
+        if constexpr (std::is_same_v<T, OriginId>) {
+            if (a.revision < 3 && tag >= 3)
+                throw Failure{"codec.tag_invalid"};
+        }
+        getVariant(a, v, tag);
     } else if constexpr (std::is_same_v<T, core::Error>) {
         std::vector<core::Error> chain;
         bool cause = true;

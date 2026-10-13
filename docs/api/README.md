@@ -4,7 +4,7 @@
 
 更新日期：2026-10-10
 
-适用版本：SDK API `0.7.5`
+适用版本：SDK API `0.8.0`
 
 文档角色：公共 API 导航
 
@@ -40,3 +40,5 @@
 
 本目录解释 API 的使用顺序、所有权和稳定行为，不复制完整头文件声明。公共头文件、SDK API 版本、
 capability 或行为合同变化时，必须同步更新对应页面并运行 `python -B tools/check_docs.py`。
+
+- [执行协调 preview](execution-coordination.md)：SDK 0.8.0 显式 occurrence、prefix、控制、时钟与恢复首用。

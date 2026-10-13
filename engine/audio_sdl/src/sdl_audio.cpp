@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <atomic>
 #include <bit>
+#include <chrono>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -162,6 +163,8 @@ auto SdlAudioSubsystem::operator=(SdlAudioSubsystem&& other) noexcept -> SdlAudi
 
 struct SdlAudioTransport::Impl final {
     struct CallbackCounters final {
+        std::atomic<std::uint64_t> sequence{};
+        std::atomic<std::int64_t> sampleMonotonicUs{};
         std::atomic<std::uint64_t> mixedDeviceFrames{};
         std::atomic<std::uint32_t> deviceSampleRate{};
         std::atomic<std::uint32_t> deviceChannels{};
@@ -222,12 +225,18 @@ struct SdlAudioTransport::Impl final {
         }
         const auto frameBytes =
             static_cast<std::uint64_t>(sizeof(float)) * static_cast<std::uint64_t>(spec->channels);
+        counters->sequence.fetch_add(1, std::memory_order_acq_rel);
         counters->mixedDeviceFrames.fetch_add(static_cast<std::uint64_t>(byteLength) / frameBytes,
                                               std::memory_order_relaxed);
         counters->deviceSampleRate.store(static_cast<std::uint32_t>(spec->freq),
                                          std::memory_order_relaxed);
         counters->deviceChannels.store(static_cast<std::uint32_t>(spec->channels),
                                        std::memory_order_relaxed);
+        counters->sampleMonotonicUs.store(std::chrono::duration_cast<std::chrono::microseconds>(
+                                              std::chrono::steady_clock::now().time_since_epoch())
+                                              .count(),
+                                          std::memory_order_relaxed);
+        counters->sequence.fetch_add(1, std::memory_order_release);
     }
 
     void publish() noexcept {
@@ -289,6 +298,7 @@ struct SdlAudioTransport::Impl final {
             stream = nullptr;
         }
         device = 0;
+        callbackAttached = false;
         resetCallbackCounters();
         clip.reset();
     }
@@ -347,6 +357,7 @@ struct SdlAudioTransport::Impl final {
 
         stream = opened;
         device = openedDevice;
+        callbackAttached = true;
         clip = std::move(newClip);
         segmentStartFrame = startFrame;
         submittedFrame = startFrame;
@@ -375,8 +386,24 @@ struct SdlAudioTransport::Impl final {
         if (!clip || state != audio::PlaybackState::Playing) {
             return;
         }
-        const auto deviceRate = callback.deviceSampleRate.load(std::memory_order_relaxed);
-        const auto mixed = callback.mixedDeviceFrames.load(std::memory_order_relaxed);
+        std::uint32_t deviceRate{};
+        std::uint64_t mixed{}, sequence{};
+        std::int64_t sampleUs{};
+        bool coherent = false;
+        for (unsigned attempt = 0; attempt != 8; ++attempt) {
+            sequence = callback.sequence.load(std::memory_order_acquire);
+            if (sequence & 1U)
+                continue;
+            deviceRate = callback.deviceSampleRate.load(std::memory_order_relaxed);
+            mixed = callback.mixedDeviceFrames.load(std::memory_order_relaxed);
+            sampleUs = callback.sampleMonotonicUs.load(std::memory_order_relaxed);
+            if (sequence == callback.sequence.load(std::memory_order_acquire)) {
+                coherent = true;
+                break;
+            }
+        }
+        if (!coherent)
+            return;
         const auto rate = deviceRate == 0 ? effective.deviceSampleRate : deviceRate;
         if (rate == 0) {
             return;
@@ -402,6 +429,24 @@ struct SdlAudioTransport::Impl final {
                 : segmentStartFrame + advanced;
         const auto candidate = std::min(std::max(rawCandidate, monotonicFloor), upperBound);
         presentedFrame = candidate;
+        if (sequence > clockAfterSequence && sampleUs > 0) {
+            // AudioClip's byte bound keeps this product representable. Match the clock bridge's
+            // nearest-even conversion, including odd seek frames at half-microsecond boundaries.
+            const auto scaled = presentedFrame * 1000000;
+            auto positionUs = scaled / clip->sampleRate();
+            const auto remainder = scaled % clip->sampleRate();
+            const auto complement = clip->sampleRate() - remainder;
+            if (remainder > complement || (remainder == complement && (positionUs & 1)))
+                ++positionUs;
+            const auto observedAnchor = sampleUs - positionUs;
+            clockAnchorUs =
+                clockAnchorUs ? std::min(*clockAnchorUs, observedAnchor) : observedAnchor;
+            presentedSampleUs = *clockAnchorUs + positionUs;
+            // Refine toward an earlier observed anchor only: samples cannot be future-dated and
+            // a delayed callback cannot move the derived clock backward. Report the discrepancy;
+            // the host's explicit error budget still applies.
+            clockErrorUs = std::max(clockErrorUs, std::abs(sampleUs - *presentedSampleUs));
+        }
         if (presentedFrame >= clip->frameCount()) {
             presentedFrame = clip->frameCount();
             state = audio::PlaybackState::Ended;
@@ -431,6 +476,7 @@ struct SdlAudioTransport::Impl final {
 
     SDL_AudioStream* stream{};
     SDL_AudioDeviceID device{};
+    bool callbackAttached{};
     CallbackCounters callback;
     PublishedClock published;
     audio::AudioClipLease clip;
@@ -440,6 +486,9 @@ struct SdlAudioTransport::Impl final {
     std::int64_t segmentStartFrame{};
     std::int64_t submittedFrame{};
     std::int64_t presentedFrame{};
+    std::optional<std::int64_t> clockAnchorUs, presentedSampleUs;
+    std::uint64_t clockAfterSequence{};
+    std::int64_t clockErrorUs{};
     std::uint64_t mixedDeviceFrameBaseline{};
     std::uint64_t discontinuityId{};
     std::atomic<std::int64_t> queuedFrames{};
@@ -591,6 +640,25 @@ auto SdlAudioTransport::load(audio::AudioClipHandle handle) -> core::Result<void
     return {};
 }
 
+auto SdlAudioTransport::isolateCallbacks() -> core::Result<bool> try {
+    if (auto owner = impl_->requireOwner("isolate_callbacks"); !owner)
+        return core::unexpected(owner.error());
+    if (impl_->state == audio::PlaybackState::Playing)
+        return core::unexpected(
+            core::Error{"audio.sdl.isolation_invalid", "Pause or stop before callback isolation"});
+    if (impl_->device && impl_->callbackAttached) {
+        // SDL synchronizes this setter against the device mixing iteration.
+        if (!SDL_SetAudioPostmixCallback(impl_->device, nullptr, nullptr))
+            return core::unexpected(
+                sdlError("audio.sdl.isolation_failed", "SDL callback could not be detached"));
+        impl_->callbackAttached = false;
+    }
+    return true;
+} catch (...) {
+    return core::unexpected(
+        core::Error{"audio.sdl.isolation_failed", "SDL callback isolation could not be confirmed"});
+}
+
 auto SdlAudioTransport::play() -> core::Result<void> {
     if (auto owner = impl_->requireOwner("play"); !owner) {
         return owner;
@@ -603,6 +671,16 @@ auto SdlAudioTransport::play() -> core::Result<void> {
         return core::unexpected(
             core::Error{"audio.transport.play_invalid", "Transport cannot play from this state"});
     }
+    if (!impl_->callbackAttached) {
+        if (!SDL_SetAudioPostmixCallback(impl_->device, &Impl::postmix, &impl_->callback))
+            return impl_->enterError(
+                sdlError("audio.sdl.postmix_failed", "SDL callback could not be reattached"));
+        impl_->callbackAttached = true;
+    }
+    impl_->clockAnchorUs.reset();
+    impl_->presentedSampleUs.reset();
+    impl_->clockErrorUs = 0;
+    impl_->clockAfterSequence = impl_->callback.sequence.load(std::memory_order_acquire);
     impl_->state = audio::PlaybackState::Playing;
     if (auto serviced = service(); !serviced) {
         return serviced;
@@ -613,6 +691,25 @@ auto SdlAudioTransport::play() -> core::Result<void> {
     }
     impl_->publish();
     return {};
+}
+
+auto SdlAudioTransport::presentedClockObservation() const noexcept -> PresentedClockObservation {
+    PresentedClockObservation result;
+    if (!impl_ || !impl_->isOwner())
+        return result;
+    result.clock = snapshot();
+    if (impl_->clip)
+        result.maximumPresentedFrame = static_cast<std::int64_t>(impl_->clip->frameCount());
+    if (impl_->state == audio::PlaybackState::Playing ||
+        impl_->state == audio::PlaybackState::Ended) {
+        result.sampleMonotonicUs = impl_->presentedSampleUs;
+        result.errorBoundUs = impl_->clockErrorUs;
+    } else {
+        result.sampleMonotonicUs = std::chrono::duration_cast<std::chrono::microseconds>(
+                                       std::chrono::steady_clock::now().time_since_epoch())
+                                       .count();
+    }
+    return result;
 }
 
 auto SdlAudioTransport::pause() -> core::Result<void> {
@@ -708,6 +805,10 @@ auto SdlAudioTransport::seekMs(double positionMs) -> core::Result<void> {
     impl_->mixedDeviceFrameBaseline = 0;
     impl_->queuedFrames.store(0, std::memory_order_relaxed);
     impl_->state = wasPlaying ? audio::PlaybackState::Playing : audio::PlaybackState::Paused;
+    impl_->clockAnchorUs.reset();
+    impl_->presentedSampleUs.reset();
+    impl_->clockErrorUs = 0;
+    impl_->clockAfterSequence = impl_->callback.sequence.load(std::memory_order_acquire);
     if (changed) {
         impl_->advanceDiscontinuity();
     }

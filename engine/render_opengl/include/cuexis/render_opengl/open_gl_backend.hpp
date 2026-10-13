@@ -161,6 +161,8 @@ class OpenGlBackend final : public render::RenderBackend,
         -> core::Result<presentation_renderer::PreparedPresentation> override;
     [[nodiscard]] auto accepts(const presentation_renderer::PreparedPresentation& candidate) const
         -> core::Result<void> override;
+    [[nodiscard]] auto prepareOwned(const playback::detail::PresentationCandidateInput&)
+        -> core::Result<presentation_renderer::PreparedPresentation> override;
     void activate(presentation_renderer::PreparedPresentation&& candidate) noexcept override;
     void discard(presentation_renderer::PreparedPresentation&& candidate) noexcept override;
     [[nodiscard]] auto submit(const playback::FrameSnapshot& snapshot,
@@ -195,6 +197,8 @@ class OpenGlBackend final : public render::RenderBackend,
                   std::uint32_t debugVertexBuffer, int viewProjectionLocation,
                   std::unique_ptr<detail::OpenGlPresentationBackendState> presentation,
                   std::shared_ptr<const core::LogSink> logSink) noexcept;
+    [[nodiscard]] auto preparePresentationOwned(const playback::detail::PresentationCandidateInput&)
+        -> core::Result<OpenGlPresentationCandidate>;
 
     void release() noexcept;
     void detachCandidate(std::uint64_t rendererGeneration, std::uint64_t candidateGeneration,

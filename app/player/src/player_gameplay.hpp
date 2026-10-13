@@ -1,5 +1,4 @@
 #pragma once
-#include "player_gameplay_guide.hpp"
 #include "player_options.hpp"
 #include "player_surface.hpp"
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
@@ -14,9 +13,11 @@ struct PlayerGameplayProfile final {
         std::string channel, domain;
     };
     std::vector<Key> keys;
-    std::vector<PlayerGuideNote> guide;
 };
 [[nodiscard]] auto readPlayerGameplay(const PlayerOptions&) -> core::Result<PlayerGameplayProfile>;
+[[nodiscard]] auto readPlayerGameplayContent(const std::filesystem::path&,
+                                             const playback::GameplayConfiguration&)
+    -> core::Result<playback::GameplayContent>;
 class PlayerGameplay final {
   public:
     explicit PlayerGameplay(PlayerGameplayProfile profile) : profile_(std::move(profile)) {}

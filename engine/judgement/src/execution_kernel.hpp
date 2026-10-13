@@ -33,6 +33,7 @@ class ExecutionKernel final {
         -> core::Result<std::vector<InputReceiptPending>>;
     auto submitCanonical(std::vector<CanonicalInput> batch)
         -> core::Result<std::vector<InputReceiptPending>>;
+    auto controlRpa(const RpaControlRecord&) -> core::Result<void>;
     auto snapshot() const -> core::Result<std::shared_ptr<const SnapshotStorage>>;
     static auto restore(const SnapshotStorage&, const RecoveryInputs&)
         -> core::Result<std::unique_ptr<ExecutionKernel>>;
@@ -44,7 +45,7 @@ class ExecutionKernel final {
                               const KernelTestControls* = nullptr, const ReplayCut* = nullptr,
                               std::span<const ReplayCheckpoint> = {})
         -> core::Result<std::unique_ptr<ExecutionKernel>>;
-    auto advance(Tick horizon) -> core::Result<void>;
+    auto advance(Tick horizon, bool controlDrain = false) -> core::Result<void>;
     [[nodiscard]] auto query() const noexcept -> std::shared_ptr<const ProjectionStorage>;
     auto inject(KernelTestControls) -> core::Result<void>;
     auto visibleSignalCount(Tick) const noexcept -> std::size_t;
@@ -57,6 +58,7 @@ class ExecutionKernel final {
                      std::span<const std::optional<std::int64_t>> = {})
         -> core::Result<std::vector<InputReceiptPending>>;
     auto advanceRecorded(Tick horizon) -> core::Result<void>;
+    auto submitRpa(std::vector<CanonicalInput>) -> core::Result<std::vector<InputReceiptPending>>;
     struct Impl;
     explicit ExecutionKernel(std::unique_ptr<Impl>);
     std::unique_ptr<Impl> impl_;

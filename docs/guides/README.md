@@ -12,7 +12,7 @@
 
 - [阅读顺序](reading-order.md)：从零理解本仓库的带注解推荐路线
 - [构建、安装和质量门禁](BUILDING.md)
-- [Chart v4 谱面编写指南](CHART_V4_AUTHORING.md)
+- [Chart v5 谱面编写指南](CHART_V5_AUTHORING.md)
 - [编码、错误和线程政策](CODE_POLICY.md)
 - [依赖政策](DEPENDENCY_POLICY.md)
 - [版本政策](VERSIONING.md)

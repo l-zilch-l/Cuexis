@@ -1,4 +1,5 @@
 #include "host_runner.hpp"
+#include "host_realtime.hpp"
 
 #include <cuexis/playback/frame_digest.hpp>
 #include <cuexis/playback/playback_session.hpp>
@@ -766,6 +767,10 @@ void emitPlayPause(HostReport& report, std::string_view name, SessionState state
 } // namespace
 
 auto runHost(const HostOptions& options, HostReport& report) -> int {
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    if (options.executionTailDeadline)
+        return runRealtimeHost(options, report);
+#endif
     report.event("build", std::string{"flavor="} + CUEXIS_HOST_BUILD_FLAVOR);
     if (options.commandProgram) {
         return runCommandProgram(options, report, *options.commandProgram);

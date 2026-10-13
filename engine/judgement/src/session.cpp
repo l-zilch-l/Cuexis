@@ -274,14 +274,22 @@ auto JudgementSession::submit(std::vector<ClockedIngress> batch)
     return impl_->kernel->submit(std::move(batch));
 }
 
-auto JudgementSession::advance(Tick horizon) -> core::Result<JudgementProjection> {
+auto JudgementSession::controlRpa(const RpaControlRecord& control) -> core::Result<void> {
+    assertUsable();
+    if (!impl_->kernel)
+        return core::unexpected(lifecycleOrderError("controlRpa"));
+    return impl_->kernel->controlRpa(control);
+}
+
+auto JudgementSession::advance(Tick horizon, bool controlDrain)
+    -> core::Result<JudgementProjection> {
     assertUsable();
     if (!impl_->kernel) {
         return core::unexpected(rejection("judgement.session.lifecycle_order",
                                           kInvalidRelationCategory, kLifecycleOrderSummary,
                                           kAdvancePath));
     }
-    auto result = impl_->kernel->advance(horizon);
+    auto result = impl_->kernel->advance(horizon, controlDrain);
     if (!result) {
         return core::unexpected(result.error());
     }

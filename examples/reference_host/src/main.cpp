@@ -156,7 +156,8 @@ void parseInvocation(int argc, char** argv, Invocation& invocation) {
         }
         if (argument == "--gameplay-configuration" || argument == "--gameplay-config-budget" ||
             argument == "--gameplay-h-step" || argument == "--gameplay-presentation-step" ||
-            argument == "--gameplay-observations") {
+            argument == "--gameplay-observations" ||
+            argument == "--execution-tail-input-deadline") {
             const auto value = next();
             if (!value || value->empty() ||
                 !invocation.gameplayFlags.emplace(std::string{argument}, std::string{*value})
@@ -256,10 +257,23 @@ int main(int argc, char** argv) {
 
     if (!invocation.gameplayFlags.empty()) {
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
-        bool complete = commandMode && invocation.options.candidateEntry.has_value();
-        for (const auto* flag : {"--gameplay-configuration", "--gameplay-config-budget",
-                                 "--gameplay-h-step", "--gameplay-presentation-step"})
+        const bool execution = invocation.gameplayFlags.contains("--execution-tail-input-deadline");
+        bool complete = (execution ? !commandMode : commandMode) &&
+                        invocation.options.candidateEntry.has_value();
+        for (const auto* flag : {
+                 "--gameplay-configuration",
+                 "--gameplay-config-budget",
+             })
             complete = complete && invocation.gameplayFlags.contains(flag);
+        if (!execution)
+            complete = complete && invocation.gameplayFlags.contains("--gameplay-h-step") &&
+                       invocation.gameplayFlags.contains("--gameplay-presentation-step");
+        else {
+            complete = complete && !invocation.gameplayFlags.contains("--gameplay-h-step") &&
+                       !invocation.gameplayFlags.contains("--gameplay-presentation-step");
+            invocation.options.executionTailDeadline =
+                invocation.gameplayFlags.at("--execution-tail-input-deadline");
+        }
         if (!complete)
             recordParseFailure(invocation, "Gameplay flags require command mode, candidate entry, "
                                            "configuration/budget/H/T steps");
@@ -270,8 +284,10 @@ int main(int argc, char** argv) {
             auto gameplay = cuexis_reference_host::readGameplayHost(
                 invocation.gameplayFlags.at("--gameplay-configuration"),
                 invocation.gameplayFlags.at("--gameplay-config-budget"),
-                invocation.gameplayFlags.at("--gameplay-h-step"),
-                invocation.gameplayFlags.at("--gameplay-presentation-step"), observations);
+                execution ? std::string_view{} : invocation.gameplayFlags.at("--gameplay-h-step"),
+                execution ? std::string_view{}
+                          : invocation.gameplayFlags.at("--gameplay-presentation-step"),
+                observations);
             if (!gameplay)
                 recordParseFailure(invocation, std::string{gameplay.error().code()} + ": " +
                                                    std::string{gameplay.error().message()});

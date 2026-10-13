@@ -704,9 +704,11 @@ identity 和 prepared judgement identity 必须可比较。
 
 ### V5-F：作者指南和工具链
 
-- **新建** Chart v5 authoring guide，说明 Object/Template/Parent、相机、动画、`render.alpha`、
-  CXT v2 与 Chart v5 同一白名单、资源闭包、值域和诊断。不修改现有
-  [CHART_V4_AUTHORING.md](../../../guides/CHART_V4_AUTHORING.md)（该文件只服务手写 v4）。
+- Chart v5 authoring guide 说明 Object/Template/Parent、相机、动画、`render.alpha`、
+  CXT v2 与 Chart v5 同一白名单、资源闭包、值域和诊断。2026-10-13 owner 明确要求更新
+  原 v4 作者指南入口为 [v5 指南](../../../guides/CHART_V5_AUTHORING.md)；
+  [旧路径](../../../guides/CHART_V4_AUTHORING.md)作为兼容页，完整 v4 文本保留在 archive。
+  当前指南区分可执行 candidate 与未实现动态合同，不据文档更新声明 V5-F 退出。
 - Validator、Migrator 和 Player 使用同一 v5 语义和示例。Player / Playback 仍直接加载未迁移的 v4。
 - 不实现 Studio 编辑器或 Studio Preview；Studio 约束见第 8 节。
 
@@ -784,7 +786,8 @@ identity 和 prepared judgement identity 必须可比较。
 - 放宽 v4/CXT 安全预算，或为 v5 新增 Playback 公共 C++ 类型、FrameSnapshot 字段或 FrameDigest v4。
 - 删除 v1-v4 Reader、Schema、迁移入口或长期兼容路径。没有独立退出 ADR、迁移报告、外部资产盘点和
   owner acceptance 不得删除；即使具备这些，删除也不构成本阶段关闭条件。
-- 修改现有 [CHART_V4_AUTHORING.md](../../../guides/CHART_V4_AUTHORING.md)。
+- 不保留旧 v4 指南原文或兼容入口就覆盖其作者语义；2026-10-13 owner 授权的 v5 指南更新
+  按上文 V5-F 保留历史全文与旧路径，不删除 v4 Reader 或 Schema。
 
 ## 8. 交接
 

@@ -84,7 +84,7 @@ TEST_CASE("B1.2 rational time oracle applies offsets once and rounds ties to eve
                                                 .displayLeadUs = 250});
     REQUIRE(mapped.has_value());
     CHECK(mapped->observationTick == 8500);
-    CHECK(mapped->horizonTick == mapped->observationTick);
+    CHECK(mapped->horizonTick == 9000);
     CHECK(mapped->presentationTick == 9250);
 
     const auto oddTie = Rational::create(5, 2);

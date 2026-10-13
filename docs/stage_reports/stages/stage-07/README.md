@@ -149,3 +149,9 @@
 ## 独立诊断前置
 
 - [诊断正式化证据](diagnostic-formalization/README.md)
+
+- [B3 执行与时钟](rpa/2026-10-12-b3-execution-and-clock.md)（2026-10-12）：真实内核、公共首用、rev3 与时钟实施。
+
+- [B4 宿主与资源](rpa/2026-10-12-b4-host-and-resources.md)（2026-10-12）：owner 协议、owning 候选、fence、设备回执及有向 Close。
+
+- [B5 线程部署与自动验证](rpa/2026-10-13-worker-deployment.md)（2026-10-13）：非实体设备本地实施与验证，应用 owner 线程、控制通道及测量记录。

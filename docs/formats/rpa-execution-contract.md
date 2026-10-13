@@ -1,6 +1,6 @@
 # RPA 执行与控制补充合同
 
-状态：candidate contract；2026-10-11 已选实施设计，未实施、未发行
+状态：candidate contract；SDK 0.8.0的B3执行协调实施中，未发行
 
 更新日期：2026-10-11
 
@@ -107,6 +107,9 @@ RPA 时钟桥的配置以明确单位的有理数值输入；不得从每帧 dou
 sampleMonotonicUs:i64、source/presented/device 各自帧率与位置、播放状态、quality、
 validUntilMonotonicUs、errorBoundUs，以及同一发布点的 underrun/device/rate 状态。
 可选帧字段用 optional，不能伪造精确游标。误差上界须非负且包含估计/采样偏差。
+有限源可额外提供 `maximumPresented` 真实末帧和同一帧率。Playing 时间外推在这个源端点
+停止，EOF 仍由设备状态明确报告，再按既定合同进入 tail；缺省时外推合同保持不变。
+此端点不是 Judgement horizon 上限、Hold 截断或任意旧 H 的 clamp。
 所有字段必须同一次连贯发布；adapter 在实际获取样本时打时间戳。
 旧 seqlock 缓存仍保留原时间戳和序号；接收时刻只作运输诊断，不能刷新其有效期。
 
@@ -314,7 +317,7 @@ Executed(receipt)、Failed(stage,error,actualPrefix)。前五项及 Retired 不�
 | fact semantic | `fact.semantic.rpa.v1` | 新 occurrence origin 与 reconciliation rank 进 engine identity |
 | state schema / event codec | schema `2` / `canonical.discrete.rpa.le.v1` | 当前 schema1 / canonical.discrete.le.v1 不承载新 occurrence/control；旧 snapshot 不冒充新状态 |
 | Recovery envelope | revision 3 | RPA reader/writer 只接纳 rev3；rev1/2 稳定 version_unsupported，原件保留，无隐式升级 |
-| SDK API | 下一 minor（若基线仍 0.7.x 则 0.8.0） | 新连贯时钟/批次输入及控制能力的公共差异需要 minor；本轮不改版本文件 |
+| SDK API | SDK 0.8.0（下一 minor） | 新连贯时钟/批次输入及控制能力的公共差异需要 minor；B3公共增量已按此门禁更新版本 |
 
 RPA profile 与旧 engine identity 不相等，即使某条轨迹得到相同分数也不能混合 archive。
 未来实现保留显式 legacy 同步路径；新 Player 用显式 RPA 配置，不能让旧入口默认启用新语义。
@@ -339,3 +342,5 @@ SchedulingProfile 同样持有观察有效期/误差、通道容量、积压与�
 在 B3 有真实时钟后，以预先声明的内容/配置、分位数、持续窗口和界评价 D3 成本；
 只有证实表现阻塞是超界原因才开启拆 D3 工作包，不能用拆线程掩盖输入缺口或无效时钟。
 具体数值及生产预算保留 F3 的接受门禁；不需要再讨论本轮已选的普通设计方向。
+
+字段顺序与golden的实现落点见[Execution Recovery rev3 wire](execution-recovery-wire-v3.md)。

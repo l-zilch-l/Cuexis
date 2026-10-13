@@ -8,8 +8,8 @@ internal / optional implementation details; external hosts use PlaybackSession, 
 RuntimeFrame, FrameSnapshot and later Judgement / Replay contracts.
 
 The current baseline includes a functioning `cuexis_playback` module (`PlaybackSession`,
-`FrameSnapshot`, `RuntimeFrame`, `IContentProvider`). SDK API `0.7.5` is the current branch Playback
-preview after Stage 7 diagnostic formalization; see `docs/CURRENT_STATUS.md` for delivery status.
+`FrameSnapshot`, `RuntimeFrame`, `IContentProvider`). SDK API `0.8.0` is the current branch Playback
+preview for Stage 7 execution coordination; SDK `0.7.5` is the diagnostic baseline; see `docs/CURRENT_STATUS.md` for delivery status.
 SDK API `0.7.0` is the historical S5-C public Presentation baseline. SDK API `0.6.0` remains the CFU-E historical
 package minor. The preview supports static and matching-toolchain C++ shared packages,
 versioned public libraries, clean staged consumers, compatibility rejection gates,

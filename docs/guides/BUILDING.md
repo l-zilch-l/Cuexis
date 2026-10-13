@@ -434,7 +434,7 @@ cmake --install out/build/headless-release --prefix out/install/headless-release
 ```
 
 ```cmake
-find_package(Cuexis 0.7 CONFIG REQUIRED COMPONENTS Playback Content Audio)
+find_package(Cuexis 0.8 CONFIG REQUIRED COMPONENTS Playback Content Audio)
 target_link_libraries(my_host PRIVATE Cuexis::Playback Cuexis::Content Cuexis::Audio)
 ```
 
@@ -445,7 +445,7 @@ target_link_libraries(my_host PRIVATE Cuexis::Playback Cuexis::Content Cuexis::A
 并由 consumer 显式请求组件：
 
 ```cmake
-find_package(Cuexis 0.7 CONFIG REQUIRED COMPONENTS Audio AudioSDL)
+find_package(Cuexis 0.8 CONFIG REQUIRED COMPONENTS Audio AudioSDL)
 target_link_libraries(my_host PRIVATE Cuexis::AudioSDL)
 ```
 
@@ -455,7 +455,7 @@ target_link_libraries(my_host PRIVATE Cuexis::AudioSDL)
 Stage 3 不安装 `OpenGL` component。`cuexis_render_opengl` 仍是 Player 使用的仓库内可选 target；
 安装包显式请求 `COMPONENTS OpenGL` 会失败，基础 Playback package 不查找 OpenGL 或 GLAD。
 
-`0.7` 是当前 Playback preview 的 SDK API 兼容 minor，不是日期构建版本。安装后的
+`0.8` 是当前 Playback preview 的 SDK API 兼容 minor，不是日期构建版本。安装后的
 `Cuexis_VERSION`/`Cuexis_API_VERSION` 返回完整 API 版本，`Cuexis_VERSION_DISPLAY` 返回
 `yy.mm.dd-v[-suffix]` 构建身份。版本更新必须通过
 `python -B tools/update_version.py yy.mm.dd-v` 同步 CMake 与 `vcpkg.json`；
@@ -466,7 +466,7 @@ Stage 3 不安装 `OpenGL` component。`cuexis_render_opengl` 仍是 Player 使�
 七个 `cuexis_external_consumer_*` 模式验证 add_subdirectory/find_package 的基础包、Playback-only、
 Core 和 AudioSDL 组件。Playback-only consumer 从自己的 staging fixture 完成
 load/prepare/resource validation/update/extract，只链接 `Cuexis::Playback`。基础 find_package 门禁
-显式禁用 SDL3 查找，并验证不发现 OpenGL/GLAD、`0.6`/`0.8` 请求被拒绝、未支持的 `OpenGL`
+显式禁用 SDL3 查找，并验证不发现 OpenGL/GLAD、`0.7`/`0.9` 请求被拒绝、未支持的 `OpenGL`
 component 被拒绝；安装包门禁同时扫描全部已安装公共头是否为纯 ASCII，并精确校验基础许可证
 清单及 AudioSDL 安装额外增加的 SDL3 copyright：
 
@@ -477,7 +477,7 @@ ctest --preset headless-debug -R "^cuexis_external_consumer_" --output-on-failur
 ### 具名参考宿主（Reference Host）
 
 SDK 安装树之外还有一个独立示例宿主工程 `examples/reference_host/`。它只通过
-`find_package(Cuexis 0.7.5 CONFIG REQUIRED COMPONENTS Playback)` 消费安装后的公共头与导出
+`find_package(Cuexis 0.8.0 CONFIG REQUIRED COMPONENTS Playback)` 消费安装后的公共头与导出
 target，自带主循环、`IContentProvider` 实现、宿主时钟和帧消费，不包含仓库内私有头，也不链接
 Player 配置实现（`cuexis_player_support`）。它的运行记录覆盖启动、加载、提交、逐帧更新与摘要、
 Seek、成功重载、被拒绝的宿主提供者故障重载、发布包加载与销毁：
@@ -488,7 +488,7 @@ cmake -S examples/reference_host -B out/build/reference-host `
 cmake --build out/build/reference-host
 ```
 
-宿主声明 `CUEXIS_HOST_API_VERSION`（默认 `0.7.5`）作为它编写时对齐的 SDK API 基线，并在 SDK
+宿主声明 `CUEXIS_HOST_API_VERSION`（默认 `0.8.0`）作为它编写时对齐的 SDK API 基线，并在 SDK
 minor 不兼容时于 configure 阶段失败。门禁 `cuexis_reference_host_staging` 会把当前构建安装到
 staging 前缀、把示例工程复制到源树之外、在该副本上配置和构建，并在**清理过的 PATH** 下运行：
 
@@ -506,7 +506,7 @@ ctest --preset debug -R cuexis_reference_host_staging --output-on-failure
    （Playback 及其公共运行库）；内部模块显式列名。shared 下还要求**确实**导入 `cuexis_playback`，
    以免"什么都没链接"的宿主平凡满足禁止清单。该检查在 static 下同样运行（static 只导入系统/CRT 库）。
 2. **SDK minor 拒绝**：以 `-DCUEXIS_HOST_API_VERSION=0.8.0` 配置宿主并要求其失败。断言的是
-   安装包 `SameMinorVersion` 版本文件产生的真实文本——宿主自己的 `0.7.x` 守卫对该输入**不可达**。
+   安装包 `SameMinorVersion` 版本文件产生的真实文本——宿主自己的 `0.8.x` 守卫对该输入**不可达**。
 3. **candidate 隔离**：扫描 staging 前缀的 `*.hpp`/`*.cmake`/`*.txt`，要求零命中 candidate
    开关与候选格式标识。匹配五个**具体 token** 而非子串 `candidate`，因为已接受的 S5-C 展示面
    （`PresentationCandidateToken`、`CandidateMetadataAccess`）合法包含该子串。
@@ -570,7 +570,7 @@ CUEXIS_LIBRARY_TYPE=STATIC|SHARED
 ```
 
 不得把 `BUILD_SHARED_LIBS` 当作 Cuexis 支持入口。当前 static/shared preview SDK API 均为
-`0.7.5`。一个 build tree 与 install prefix 只能包含一种 Cuexis linkage，consumer 继续链接
+`0.8.0`。一个 build tree 与 install prefix 只能包含一种 Cuexis linkage，consumer 继续链接
 相同的 `Cuexis::` target 名，不得硬编码 DLL/shared object 文件名。可直接使用
 `shared-debug`、`shared-release`、`headless-shared-debug` 和 `headless-shared-release` presets。
 
@@ -623,3 +623,17 @@ WSL 或本地 Linux 可以提前发现跨编译器问题，但不能替代 hoste
 完成报告只能引用包含当前实现 commit 的 workflow run URL；旧分支、旧 commit 或只有文档变更的
 run 不得关闭当前阶段门禁。
 
+
+
+## Player 可选 FPS 显示
+
+Player 的 `--show-fps` 参数开启右上角 FPS 显示，省略时不统计或绘制 FPS。
+数值按成功呈现帧数和单调墙钟时间，每半秒更新；谱面暂停不暂停显示循环。
+它是 Player 调试覆盖层，不写入谱面或 FrameSnapshot 的内容实体。
+
+```powershell
+.\out\build\debug\bin\cuexis_player.exe --show-fps
+```
+
+Player 的 R 键选择 `RestartAtZero` 从零重播；暂停时保留暂停，Space 恢复。
+显式控制 API 的 `KeepChartTime` 重载语义继续保留。

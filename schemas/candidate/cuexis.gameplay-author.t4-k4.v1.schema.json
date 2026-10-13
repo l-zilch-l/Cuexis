@@ -1268,7 +1268,10 @@
           "const": "coordinator.policy.greedy_v1"
         },
         "executionProfile": {
-          "const": "gameplay.execution.t4-k4.v1"
+          "enum": [
+            "gameplay.execution.t4-k4.v1",
+            "gameplay.execution.t4-k4.rpa.v1"
+          ]
         },
         "timebase": {
           "$ref": "#/definitions/Timebase"

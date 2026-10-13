@@ -54,10 +54,12 @@ auto readGameplayHost(const std::filesystem::path& configuration, std::string_vi
         return cuexis::core::unexpected(std::move(decoded.error()));
     GameplayHost result{std::move(*decoded),
                         budget,
-                        integer<std::int64_t>(horizonText),
-                        integer<std::int64_t>(presentationText),
+                        horizonText.empty() ? 0 : integer<std::int64_t>(horizonText),
+                        presentationText.empty() ? 0 : integer<std::int64_t>(presentationText),
                         {}};
-    require(result.horizonStep > 0 && result.presentationStep > 0,
+    require((result.horizonStep > 0 && result.presentationStep > 0) ||
+                (horizonText.empty() && presentationText.empty() &&
+                 result.configuration.engine[4] == "gameplay.execution.t4-k4.rpa.v1"),
             "Gameplay Tick step must be positive");
     if (observations) {
         std::istringstream lines{read(*observations)};

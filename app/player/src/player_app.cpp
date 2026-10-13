@@ -3,6 +3,7 @@
 #include "frame_diagnostics.hpp"
 #include "player_assembly.hpp"
 #include "player_control.hpp"
+#include "player_execution.hpp"
 #include "player_log.hpp"
 #include "player_options.hpp"
 #include "player_smoke.hpp"
@@ -97,6 +98,11 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
         return core::unexpected(std::move(content.error()));
     }
 
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    if (options.executionTestOnly)
+        return runExecutionPlayer(options, *appConfig, logger);
+#endif
+
     audio::AudioClipStore audioStore;
 
     auto runtimeResult = createPlayerRuntime(logger);
@@ -177,12 +183,11 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
         !recorded) {
         return core::unexpected(std::move(recorded.error()));
     }
-    if (!options.gameplayGuide)
-        if (auto played =
-                controller.apply(PlayerCommand{.kind = player_support::PlayerCommandKind::Play});
-            !played) {
-            return core::unexpected(std::move(played.error()));
-        }
+    if (auto played =
+            controller.apply(PlayerCommand{.kind = player_support::PlayerCommandKind::Play});
+        !played) {
+        return core::unexpected(std::move(played.error()));
+    }
 
     std::optional<PlayerSmokeBinding> smokeBinding;
     PlayerHooks hooks;
@@ -203,6 +208,8 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                          .surface = *surface,
                          .smokeTest = options.smokeTest,
                          .audioSmokeTest = options.audioSmokeTest,
+                         .debugAxes = options.debugAxes,
+                         .showFps = options.showFps,
                          .diagnostics = frameDiagnostics ? &*frameDiagnostics : nullptr,
                          .hooks = std::move(hooks),
                          .logger = logger};

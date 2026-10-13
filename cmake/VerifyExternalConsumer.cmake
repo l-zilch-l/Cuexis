@@ -364,8 +364,11 @@ else()
             endif()
             set(shared_stem "${module}${shared_flavor_suffix}-${shared_name_version}${shared_debug_postfix}")
             if(CMAKE_HOST_WIN32)
-                if(NOT EXISTS "${package_prefix}/bin/${shared_stem}.dll" OR
-                   NOT EXISTS "${package_prefix}/lib/${shared_stem}.lib")
+                # A matching-toolchain Windows package may use MSVC or MinGW naming.
+                if(NOT ((EXISTS "${package_prefix}/bin/${shared_stem}.dll" AND
+                         EXISTS "${package_prefix}/lib/${shared_stem}.lib") OR
+                        (EXISTS "${package_prefix}/bin/lib${shared_stem}.dll" AND
+                         EXISTS "${package_prefix}/lib/lib${shared_stem}.dll.a")))
                     message(FATAL_ERROR
                         "Shared Cuexis package is missing ${shared_stem} runtime or import library")
                 endif()
@@ -381,7 +384,10 @@ else()
             file(GLOB forbidden_internal_runtimes
                 "${package_prefix}/bin/cuexis_assets*.dll"
                 "${package_prefix}/bin/cuexis_runtime*.dll"
-                "${package_prefix}/bin/cuexis_world*.dll")
+                "${package_prefix}/bin/cuexis_world*.dll"
+                "${package_prefix}/bin/libcuexis_assets*.dll"
+                "${package_prefix}/bin/libcuexis_runtime*.dll"
+                "${package_prefix}/bin/libcuexis_world*.dll")
         else()
             file(GLOB forbidden_internal_runtimes
                 "${package_prefix}/lib/libcuexis_assets*.so*"
@@ -486,7 +492,7 @@ else()
         set(component_arguments)
     endif()
     if(CUEXIS_CONSUMER_MODE STREQUAL "find_package_playback")
-        foreach(invalid_version IN ITEMS 0.6 0.8)
+        foreach(invalid_version IN ITEMS 0.7 0.9)
             cuexis_expect_configure_failure(
                 "Cuexis package version ${invalid_version} compatibility rejection"
                 "${CMAKE_COMMAND}"

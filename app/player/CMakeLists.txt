@@ -14,7 +14,6 @@ add_executable(
     src/player_control.cpp
     src/player_control.hpp
     src/player_gameplay.cpp
-    src/player_gameplay_guide.cpp
     src/player_smoke.cpp
     src/player_smoke.hpp
     src/player_log.cpp
@@ -26,6 +25,10 @@ add_executable(
 )
 
 find_package(spdlog CONFIG REQUIRED)
+
+if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+    target_sources(cuexis_player PRIVATE src/execution_host.cpp src/player_execution.cpp)
+endif()
 
 target_compile_features(cuexis_player PRIVATE cxx_std_20)
 

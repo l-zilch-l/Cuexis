@@ -17,6 +17,8 @@ set(work "${CUEXIS_BINARY_DIR}/s7a78-installed/${nonce}")
 set(prefix "${work}/prefix")
 file(MAKE_DIRECTORY "${work}")
 run_checked("Owning typed fixture" "${CUEXIS_PLAYBACK_TESTS}" "[.candidate-gameplay-fixture]")
+run_checked("Realtime compiled fixture" "${CMAKE_COMMAND}" -E env "CUEXIS_B3_EXPORT_FILE=${work}/realtime.packed"
+    "${CUEXIS_PLAYBACK_TESTS}" "Candidate realtime execution uses explicit profile and coherent clock")
 run_checked("Clean experimental SDK installation" "${CMAKE_COMMAND}" --install "${CUEXIS_BINARY_DIR}"
     --prefix "${prefix}" --config "${CUEXIS_BUILD_TYPE}")
 if(NOT EXISTS "${prefix}/include/cuexis/playback/gameplay_candidate.hpp")
@@ -57,7 +59,7 @@ if(WIN32)
 elseif(UNIX AND NOT APPLE)
     set(ENV{LD_LIBRARY_PATH} "${prefix}/lib")
 endif()
-run_checked("Actual installed GameplayOnly lifecycle" "${program}" "${CUEXIS_BINARY_DIR}/s7a78-public-fixture/main.packed")
+run_checked("Actual installed GameplayOnly lifecycle" "${program}" "${CUEXIS_BINARY_DIR}/s7a78-public-fixture/main.packed" "${work}/realtime.packed")
 message(STATUS "S7A78 installed Gameplay-only consumer passed; work=${work}")
 
 if(DEFINED CUEXIS_GAMEPLAY_TOOL AND NOT "${CUEXIS_GAMEPLAY_TOOL}" STREQUAL "")

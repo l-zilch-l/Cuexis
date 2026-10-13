@@ -132,10 +132,17 @@ inline constexpr std::array<std::string_view, 69> legacyDiagnosticCodes{{
     "judgement.s7a4.late.rejected",
     "judgement.s7a4.session.lifecycle_order",
 }};
+inline constexpr std::array<std::string_view, 2> coordinationProjectedDiagnosticCodes{{
+    "judgement.input.occurrence_conflict",
+    "judgement.control.reconciliation_invalid",
+}};
 inline auto categoryProjectedDiagnostic(std::string_view code) noexcept -> bool {
     return std::find(categoryProjectedDiagnosticCodes.begin(),
                      categoryProjectedDiagnosticCodes.end(),
-                     code) != categoryProjectedDiagnosticCodes.end();
+                     code) != categoryProjectedDiagnosticCodes.end() ||
+           std::find(coordinationProjectedDiagnosticCodes.begin(),
+                     coordinationProjectedDiagnosticCodes.end(),
+                     code) != coordinationProjectedDiagnosticCodes.end();
 }
 inline auto legacyDiagnostic(std::string_view code) noexcept -> bool {
     return std::find(legacyDiagnosticCodes.begin(), legacyDiagnosticCodes.end(), code) !=

@@ -37,6 +37,16 @@ auto gameplayCapabilities() -> core::Result<std::vector<GameplayCapability>> try
                                              "pending.snapshot",
                                              "canonical.discrete.journal",
                                              {"declared.static"},
+                                             "capability.budget_insufficient"}},
+                                           {"cuexis.gameplay.rpa.v1",
+                                            "1",
+                                            "gameplay.execution.t4-k4.rpa.v1",
+                                            {"discrete.occurrence-control",
+                                             "chart.5/gameplay.2/capsule.3",
+                                             "pending.content",
+                                             "pending.snapshot",
+                                             "canonical.discrete.rpa.le.v1",
+                                             {"declared.static"},
                                              "capability.budget_insufficient"}}};
 } catch (...) {
     return core::unexpected(invalid("Capability registry allocation failed"));
@@ -47,10 +57,15 @@ template <typename Decoder>
 auto makeGameplayContent(const GameplayConfiguration& c, Decoder decoder)
     -> core::Result<GameplayContent> try {
     using namespace judgement;
-    const std::array<std::string, 6> actual{
+    std::array<std::string, 6> actual{
         "judgement.t4-k4.v1",          "fact.semantic.phase-local.v1",
         "fixed-point.none.v1",         "coordination.six-eight.t4-k4.v1",
         "gameplay.execution.t4-k4.v1", "late.window.logical.v1"};
+    if (c.engine[4] == "gameplay.execution.t4-k4.rpa.v1") {
+        actual[1] = "fact.semantic.rpa.v1";
+        actual[4] = c.engine[4];
+        actual[5] = "late.window.batch.v1";
+    }
     if (c.engine != actual || !c.testOnly) {
         return core::unexpected(
             invalid("Explicit compiled engine and test-only candidate profile required"));

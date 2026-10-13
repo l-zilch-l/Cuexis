@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.25)
 # configuration implementation.
 #
 # ADR 0042 S6-D08 freezes this example at examples/reference_host/ and freezes
-# SDK API 0.7.5 as the baseline this host is written against.
+# SDK API 0.8.0 as the baseline this host is written against.
 
 project(CuexisReferenceHost LANGUAGES CXX)
 
@@ -17,7 +17,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 if(NOT DEFINED CUEXIS_HOST_API_VERSION OR CUEXIS_HOST_API_VERSION STREQUAL "")
     # The baseline the host was written against. An incompatible SDK minor must
     # be refused at configure time rather than fail at run time.
-    set(CUEXIS_HOST_API_VERSION 0.7.5)
+    set(CUEXIS_HOST_API_VERSION 0.8.0)
 endif()
 
 find_package(Cuexis ${CUEXIS_HOST_API_VERSION} CONFIG REQUIRED COMPONENTS Playback)
@@ -25,9 +25,9 @@ find_package(Cuexis ${CUEXIS_HOST_API_VERSION} CONFIG REQUIRED COMPONENTS Playba
 if(NOT TARGET Cuexis::Playback)
     message(FATAL_ERROR "Cuexis::Playback is required by the reference host")
 endif()
-if(Cuexis_API_VERSION VERSION_LESS "0.7.5" OR NOT Cuexis_API_VERSION VERSION_LESS "0.8.0")
+if(Cuexis_API_VERSION VERSION_LESS "0.8.0" OR NOT Cuexis_API_VERSION VERSION_LESS "0.9.0")
     message(FATAL_ERROR
-        "The reference host supports SDK API 0.7.x; found ${Cuexis_API_VERSION}")
+        "The reference host supports SDK API 0.8.x; found ${Cuexis_API_VERSION}")
 endif()
 
 add_executable(cuexis_reference_host
@@ -37,7 +37,8 @@ add_executable(cuexis_reference_host
     src/host_content.cpp
     src/host_report.cpp
     src/host_runner.cpp
-    src/host_gameplay.cpp)
+    src/host_gameplay.cpp
+    src/host_realtime.cpp)
 target_include_directories(cuexis_reference_host PRIVATE src)
 target_link_libraries(cuexis_reference_host PRIVATE Cuexis::Playback)
 target_compile_definitions(cuexis_reference_host PRIVATE

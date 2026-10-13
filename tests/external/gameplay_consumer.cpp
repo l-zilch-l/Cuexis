@@ -86,7 +86,7 @@ auto fixtureConfiguration() -> GameplayConfiguration {
 }
 } // namespace
 int main(int argc, char** argv) try {
-    if (argc != 2)
+    if (argc != 3)
         throw std::runtime_error{"Expected the compiled test fixture path"};
     std::ifstream file{argv[1], std::ios::binary | std::ios::ate};
     const auto size = file.tellg();
@@ -227,6 +227,65 @@ int main(int argc, char** argv) try {
     expect(faultEvaluation.evidenceValid && take(faultResult.sameResult(faultEvaluation.result)),
            "Installed full fault Replay differs");
     expectSameError(*take(faultSession.gameplayAdvanceReceipt()).error, failedAdvance.error());
+    std::ifstream realtimeFile{argv[2], std::ios::binary | std::ios::ate};
+    const auto realtimeSize = realtimeFile.tellg();
+    expect(realtimeFile && realtimeSize >= 0 && realtimeSize < 16 * 1024 * 1024,
+           "Realtime fixture invalid");
+    std::vector<std::byte> realtimeBytes(static_cast<std::size_t>(realtimeSize));
+    realtimeFile.seekg(0);
+    realtimeFile.read(reinterpret_cast<char*>(realtimeBytes.data()),
+                      static_cast<std::streamsize>(realtimeBytes.size()));
+    expect(static_cast<bool>(realtimeFile), "Realtime fixture incomplete");
+    auto realtimeConfiguration = configuration;
+    const ClockMappingConfiguration realtimeMapping{{0, 1}, {0, 1}, {0, 1}, {1, 1}};
+    realtimeConfiguration.calibration = take(RealtimeClock::calibrationIdentity(realtimeMapping));
+    realtimeConfiguration.engine[1] = "fact.semantic.rpa.v1";
+    realtimeConfiguration.engine[4] = "gameplay.execution.t4-k4.rpa.v1";
+    realtimeConfiguration.engine[5] = "late.window.batch.v1";
+    realtimeConfiguration.enabledCapabilities = {"cuexis.gameplay.rpa.v1"};
+    auto realtimeProvider = take(MemoryContentProvider::create({}));
+    auto realtimeSource = take(PlaybackSource::fromGameplayPacked(
+        "installed-realtime", "compiled/main.packed", realtimeBytes, realtimeConfiguration, {},
+        realtimeProvider, GameplayPrepareIntent::GameplayOnly));
+    PlaybackSession realtime;
+    take(realtime.load(std::move(realtimeSource), PlaybackMode::ChartClock));
+    const GameplayExecutionContext context{7, 1, 1};
+    take(realtime.beginRealtimeGameplay({1000, 100, 64, "", true}, realtimeMapping, context,
+                                        "installed.clock"));
+    const ClockObservation clock{"installed.clock",
+                                 1,
+                                 1,
+                                 0,
+                                 1000,
+                                 0,
+                                 ClockFramePosition{20, 1000000},
+                                 ClockFramePosition{20, 1000000},
+                                 {},
+                                 ClockPlaybackState::Playing,
+                                 ClockQuality::Exact,
+                                 false,
+                                 false,
+                                 false};
+    expect(take(realtime.requestGameplayAdvance({context, 1, 0, {20}}, clock, 0)).disposition ==
+               GameplayAdvanceDisposition::Waiting,
+           "Realtime request did not wait");
+    take(realtime.deliverGameplayCapture(
+        {context, 0, GameplayClosedBatch{{5}, {6}, 0, 0, 1, 1, {{event, 0}}}}, clock, 0));
+    take(realtime.deliverGameplayCapture({context, 1, GameplayCapturePrefix{{21}}}, clock, 1));
+    expect(take(realtime.queryGameplayAdvance(1)).disposition ==
+               GameplayAdvanceDisposition::Executed,
+           "Verified realtime prefix did not execute");
+    const auto realtimeResult = take(realtime.queryGameplay());
+    expect(take(realtimeResult.score()).score == 2, "Realtime score differs");
+    const auto realtimeArchive = take(realtime.archiveGameplay());
+    expect(take(realtimeResult.sameResult(
+               take(realtime.evaluateGameplayReplay(realtimeArchive)).result)),
+           "Realtime full Replay differs");
+    const auto realtimeSnapshot = take(realtime.snapshotGameplay());
+    expect(std::to_integer<unsigned>(take(realtimeSnapshot.toBytes())[8]) == 3,
+           "Realtime Snapshot did not use revision 3");
+    take(realtime.unload());
+    expect(realtimeArchive.valid() && realtimeSnapshot.valid(), "Realtime owning values expired");
     std::cout << "Installed GameplayOnly: prepare/submit/F(H)/query/full "
                  "Replay/W2/Snapshot/certified Seek/pause/Stop/reset/lifetime passed\n";
     return 0;

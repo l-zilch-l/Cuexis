@@ -143,7 +143,7 @@ class TransactionGuard final {
 auto openConfiguredPlaybackSource(const PlayerOptions& options)
     -> core::Result<playback::PlaybackSource> {
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
-    if (options.gameplayConfiguration) {
+    if (options.gameplayConfiguration && !options.gameplayPacked) {
         auto profile = readPlayerGameplay(options);
         if (!profile)
             return core::unexpected(std::move(profile.error()));
@@ -234,7 +234,7 @@ auto playerCommandForInput(PlayerInputAction action, player_support::PlayerAppSt
         return command;
     case PlayerInputAction::Reload:
         command.kind = player_support::PlayerCommandKind::Reload;
-        command.reloadPolicy = player_support::PlayerReloadPolicy::KeepChartTime;
+        command.reloadPolicy = player_support::PlayerReloadPolicy::RestartAtZero;
         return command;
     case PlayerInputAction::Rebuild:
         command.kind = player_support::PlayerCommandKind::Rebuild;
@@ -875,7 +875,9 @@ auto runPlayerFrameLoop(PlayerFrameLoop& input) -> core::Result<void> {
     const NullJudgeSystem judgeSystem;
     const auto diagnosticsStarted = std::chrono::steady_clock::now();
     std::uint32_t renderedFrames = 0;
+    PlayerFpsMeter fpsMeter;
     bool quitRequested = false;
+    bool traceReloadFrame = false;
     playback::FrameSnapshot snapshot;
     render::RenderScene scene;
     auto& controller = input.controller;
@@ -992,6 +994,8 @@ auto runPlayerFrameLoop(PlayerFrameLoop& input) -> core::Result<void> {
                 input.logger.warn("player.command", std::string{"Input action rejected: "} +
                                                         std::string{applied.error().code()});
             } else {
+                if (action == PlayerInputAction::Reload)
+                    traceReloadFrame = true;
                 input.logger.info("player.input", std::string{"Applied user action: "} +
                                                       std::string{playerInputActionName(action)});
             }
@@ -1008,7 +1012,11 @@ auto runPlayerFrameLoop(PlayerFrameLoop& input) -> core::Result<void> {
 
         audio::AudioClockSnapshot audioClockSnapshot;
         playback::RuntimeFrame advancedFrame{};
+        if (traceReloadFrame)
+            input.logger.info("player.reload.frame", "Begin audio service and timeline advance");
         auto advanceResult = advanceFrame(advancedFrame, audioClockSnapshot);
+        if (traceReloadFrame)
+            input.logger.info("player.reload.frame", "Audio service and timeline advance returned");
         core::Result<playback::RuntimeFrame> runtimeFrameResult =
             advanceResult ? core::Result<playback::RuntimeFrame>{advancedFrame}
                           : core::unexpected(std::move(advanceResult.error()));
@@ -1070,6 +1078,8 @@ auto runPlayerFrameLoop(PlayerFrameLoop& input) -> core::Result<void> {
             return core::unexpected(std::move(result.error()));
 
         auto drawableSizeResult = input.surface.drawableSize();
+        if (traceReloadFrame)
+            input.logger.info("player.reload.frame", "Runtime update returned");
         if (!drawableSizeResult) {
             return core::unexpected(std::move(drawableSizeResult.error())
                                         .withContext("operation", "query_drawable_size"));
@@ -1087,24 +1097,9 @@ auto runPlayerFrameLoop(PlayerFrameLoop& input) -> core::Result<void> {
         }
 
         scene.clear();
-        bool guided = false;
-#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
-        if (auto* adapter = controller.gameplay(); adapter && !adapter->profile().guide.empty()) {
-            guided = true;
-            auto result = controller.session().queryGameplay();
-            if (!result)
-                return core::unexpected(std::move(result.error()));
-            auto score = result->score();
-            if (!score)
-                return core::unexpected(std::move(score.error()));
-            if (auto drawn = appendPlayerGuide(
-                    adapter->profile().guide, adapter->horizon().value, *score,
-                    controller.state() == player_support::PlayerAppState::Playing, snapshot, scene);
-                !drawn)
-                return drawn;
-        }
-#endif
-        if (!guided)
+        if (traceReloadFrame)
+            input.logger.info("player.reload.frame", "Frame extraction returned");
+        if (input.debugAxes)
             if (auto result = appendSnapshotAxes(snapshot, scene); !result) {
                 return core::unexpected(std::move(result.error()));
             }
@@ -1127,7 +1122,12 @@ auto runPlayerFrameLoop(PlayerFrameLoop& input) -> core::Result<void> {
         }
 
         const auto renderStarted = std::chrono::steady_clock::now();
+        if (input.showFps)
+            if (auto overlay = appendFpsOverlay(snapshot, fpsMeter.reading(), scene); !overlay)
+                return overlay;
         auto submitted = input.renderer.submit(snapshot, &scene);
+        if (traceReloadFrame)
+            input.logger.info("player.reload.frame", "Renderer submit returned");
         if (!submitted) {
             if (submitted.error().code() == "presentation.renderer.surface.zero_size") {
                 continue;
@@ -1141,12 +1141,19 @@ auto runPlayerFrameLoop(PlayerFrameLoop& input) -> core::Result<void> {
             return core::unexpected(
                 std::move(presented.error()).withContext("frame", std::to_string(renderedFrames)));
         }
+        if (traceReloadFrame) {
+            input.logger.info("player.reload.frame",
+                              "Renderer present returned; first frame complete");
+            traceReloadFrame = false;
+        }
         PlayerPresentedFrame presented{.renderedFrames = renderedFrames,
                                        .snapshot = snapshot,
                                        .summary = *submitted,
                                        .renderMicroseconds = 0.0,
                                        .renderer = input.renderer,
                                        .controller = controller};
+        if (input.showFps)
+            fpsMeter.notePresented();
         if (input.hooks.notePresented) {
             if (auto noted = input.hooks.notePresented(presented); !noted) {
                 return core::unexpected(std::move(noted.error()));

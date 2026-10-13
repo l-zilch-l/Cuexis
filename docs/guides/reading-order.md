@@ -84,7 +84,7 @@ RPA完成后依次实施Stage 7B+、Stage 8。审查材料本身不构成已实�
 7. [Chart v5 跨阶段计划](../stage_plans/active/chart-format-update-for-v5/plan.md)
 8. [Stage 8 计划](../stage_plans/future/stage-08/plan.md)
 
-需要作者视角时，再读 [Chart v4 谱面编写指南](CHART_V4_AUTHORING.md)。
+需要作者视角时，再读 [Chart v5 谱面编写指南](CHART_V5_AUTHORING.md)。
 `CXT_V2_FORMAT.md`、`PACKED_CHART_FORMAT.md` 和 `CHART_ENTRY_V1_FORMAT.md` 仍是候选输入，
 不能与 v1/v4 生产合同混读。
 

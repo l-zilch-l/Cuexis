@@ -1,3 +1,4 @@
+#include "../../playback/src/host_candidate.hpp"
 #include <cuexis/presentation_renderer/presentation_renderer.hpp>
 
 #include <cuexis/core/error.hpp>
@@ -252,31 +253,40 @@ auto TestPresentationRenderer::prepare(playback::PreparedPlayback& prepared,
     if (!validation.hasValue()) {
         return core::unexpected(validationError(validation));
     }
-    const auto* manifest = prepared.presentationManifest();
-    if (manifest == nullptr) {
-        return core::unexpected(core::Error{"presentation.renderer.prepare.manifest_missing",
-                                            "Prepared playback has no presentation manifest"});
-    }
-    if (state_->nextCandidate == 0) {
+    auto input = playback::detail::HostCoordinationAccess::materialize(
+        prepared, state_->capabilities, request, state_->instance, state_->generation, 1);
+    if (!input)
+        return core::unexpected(input.error());
+    return prepareOwned(*input);
+}
+auto TestPresentationRenderer::prepareOwned(
+    const playback::detail::PresentationCandidateInput& input)
+    -> core::Result<PreparedPresentation> try {
+    if (auto owner = requireOwner("prepare_owned"); !owner)
+        return core::unexpected(owner.error());
+    if (state_->closed || state_->deviceLost || state_->outstanding ||
+        input.rendererInstance != state_->instance ||
+        input.context.rendererGeneration != state_->generation ||
+        input.capabilities != state_->capabilities ||
+        input.resources.size() != input.manifest.entries.size())
+        return core::unexpected(
+            core::Error{"host.rpa.context_stale", "Owning renderer candidate context mismatch"});
+    if (state_->nextCandidate == 0)
         return core::unexpected(core::Error{"presentation.renderer.generation_exhausted",
-                                            "Presentation candidate generation is exhausted"});
-    }
-    auto token = prepared.presentationCandidateToken();
-    if (!token) {
-        return core::unexpected(std::move(token.error()));
-    }
-
+                                            "Renderer generation exhausted"});
+    const auto* manifest = &input.manifest;
     Cache cache;
-    cache.token = *token;
-    cache.settings = *validation.settings;
+    cache.token = input.token;
+    cache.settings = input.settings;
     cache.manifestEmpty = manifest->entries.empty();
     cache.candidateGeneration = state_->nextCandidate;
     cache.resources.reserve(manifest->entries.size());
-    for (const auto& entry : manifest->entries) {
-        auto resource = prepared.acquirePresentationResource(entry.reference);
-        if (!resource) {
-            return core::unexpected(std::move(resource.error()));
-        }
+    for (std::size_t i = 0; i < input.resources.size(); ++i) {
+        const auto& entry = manifest->entries[i];
+        core::Result<playback::PortableResourcePtr> resource{input.resources[i]};
+        if (!*resource)
+            return core::unexpected(
+                core::Error{"host.rpa.context_stale", "Missing owning resource"});
         if ((*resource)->reference != entry.reference || !resourceMatchesDeclaredType(**resource)) {
             return core::unexpected(
                 core::Error{"presentation.renderer.resource_mismatch",
@@ -304,6 +314,9 @@ auto TestPresentationRenderer::prepare(playback::PreparedPlayback& prepared,
     ++state_->nextCandidate;
     state_->outstanding = true;
     return PreparedPresentation{std::move(candidateState)};
+} catch (...) {
+    return core::unexpected(
+        core::Error{"host.rpa.capacity_exceeded", "Renderer candidate reservation failed"});
 }
 
 auto TestPresentationRenderer::accepts(const PreparedPresentation& candidate) const

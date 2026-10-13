@@ -23,12 +23,16 @@ enum class PlayerClockOption : std::uint8_t {
 struct PlayerOptions final {
     bool smokeTest{};
     bool audioSmokeTest{};
+    bool executionTestOnly{};
+    bool debugAxes{};
+    bool showFps{};
+    std::optional<std::string> executionTailDeadline;
     std::optional<std::filesystem::path> chartPath;
     std::optional<std::filesystem::path> projectPath;
     std::optional<std::filesystem::path> cxcPath;
     std::optional<std::string> candidateEntry;
     std::optional<std::filesystem::path> gameplayConfiguration;
-    std::optional<std::filesystem::path> gameplayGuide;
+    std::optional<std::filesystem::path> gameplayPacked;
     std::optional<std::string> gameplayBudget, gameplayHStep, gameplayTStep;
     std::vector<std::string> gameplayKeys;
     // The clock the startup Load names. Switching between content with and without an audio track

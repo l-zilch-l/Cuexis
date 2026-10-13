@@ -106,6 +106,7 @@ class JudgementSession final {
         -> core::Result<std::vector<InputReceiptPending>>;
     [[nodiscard]] auto submitCanonical(std::vector<CanonicalInput> batch)
         -> core::Result<std::vector<InputReceiptPending>>;
+    [[nodiscard]] auto controlRpa(const RpaControlRecord&) -> core::Result<void>;
     [[nodiscard]] auto archive() const -> core::Result<ReplayArchive>;
     [[nodiscard]] static auto evaluateReplay(const ReplayArchive&)
         -> core::Result<ReplayEvaluation>;
@@ -117,7 +118,8 @@ class JudgementSession final {
     [[nodiscard]] auto seek(const ReplayArchive&, Tick horizon) -> core::Result<void>;
     [[nodiscard]] auto seek(const ReplayArchive&, Tick horizon, const ReplayCut&,
                             std::span<const ReplayCheckpoint> = {}) -> core::Result<void>;
-    [[nodiscard]] auto advance(Tick horizon) -> core::Result<JudgementProjection>;
+    [[nodiscard]] auto advance(Tick horizon, bool controlDrain = false)
+        -> core::Result<JudgementProjection>;
 
     //  query / snapshot - reads. Const-qualified, so no read path can modify the session. Both
     //  require a prepared session; the returned carriers are self-owning value types that never

@@ -322,12 +322,14 @@ auto validateCandidateChartBytes(const CandidateChartEntry& entry, std::span<con
     -> CandidateChartResult {
     CandidateChartResult result;
     const auto path = std::string{"$/extensions/cuexis.chart-entry.v1/entries"};
-    if (!entry.playback || entry.kind != "chart" || entry.encoding != "packed-chart") {
+    const bool dynamic = entry.compilerProfile == chart::behaviorCandidateProfile;
+    if (!entry.playback || entry.kind != "chart" ||
+        entry.encoding != (dynamic ? "source-json" : "packed-chart")) {
         addError(result.diagnostics, "cxc.chart_entry.entry_invalid",
                  "Selected entry is not a playback Packed Chart candidate", path);
         return result;
     }
-    if (!entry.compilerProfile || *entry.compilerProfile != candidateProfile) {
+    if (!entry.compilerProfile || (*entry.compilerProfile != candidateProfile && !dynamic)) {
         addError(result.diagnostics, "cxc.candidate.profile_unsupported",
                  "Candidate compiler profile is not registered", path + "/compilerProfile");
     }
@@ -354,6 +356,39 @@ auto validateCandidateChartBytes(const CandidateChartEntry& entry, std::span<con
                  "Packed candidate exceeds the 16 MiB file limit", path + "/path");
     }
     if (result.diagnostics.hasErrors()) {
+        return result;
+    }
+
+    if (dynamic) {
+        auto compiled = chart::compileBehaviorCandidate(
+            {reinterpret_cast<const char*>(bytes.data()), bytes.size()});
+        if (!compiled) {
+            appendPackedError(result.diagnostics, compiled.error(), path + "/path");
+            return result;
+        }
+        const auto identity =
+            chart::packed::semanticIdentityHex(compiled->metadata.semanticIdentity);
+        if (identity != *entry.compiledSemanticIdentity) {
+            addError(result.diagnostics, "cxc.candidate.compiled_identity_mismatch",
+                     "Behavior source semantic identity mismatch",
+                     path + "/compiledSemanticIdentity");
+            return result;
+        }
+        if (compiled->runtime.objects.size() != *entry.expandedEntityCount ||
+            *entry.expandedRequirementCount != 0) {
+            addError(result.diagnostics, "cxc.candidate.count_mismatch",
+                     "Behavior source decoded counts differ", path);
+            return result;
+        }
+        CandidateChart candidate;
+        candidate.entry = entry;
+        candidate.bytes.assign(bytes.begin(), bytes.end());
+        candidate.semantic.chartId = compiled->runtime.chartId;
+        candidate.semantic.mainMusic = compiled->runtime.mainMusic;
+        candidate.semanticIdentity = compiled->metadata.semanticIdentity;
+        candidate.artifactIdentity = *entry.artifactIdentity;
+        candidate.behavior = std::move(*compiled);
+        result.candidate = std::move(candidate);
         return result;
     }
 
@@ -504,10 +539,12 @@ auto validateCandidateChartExtension(const CxcPackage& package) -> core::Diagnos
             addError(diagnostics, "cxc.candidate.entry_duplicate",
                      "Candidate extension declares an entry path more than once", field + "/path");
         }
-        if (*kind != "chart" || *encoding != "packed-chart") {
+        const auto earlyProfile = item->optionalField("compilerProfile");
+        const auto earlyText = earlyProfile ? earlyProfile->readString() : std::nullopt;
+        const bool dynamic = earlyText == chart::behaviorCandidateProfile;
+        if (*kind != "chart" || *encoding != (dynamic ? "source-json" : "packed-chart")) {
             addError(diagnostics, "cxc.candidate.entry_unsupported",
-                     "Chart candidate entries must use kind=chart and encoding=packed-chart",
-                     field);
+                     "Chart candidate encoding must match its registered compiler profile", field);
             continue;
         }
         const auto* archiveEntry = findArchiveEntry(package, *path);
@@ -564,7 +601,7 @@ auto validateCandidateChartExtension(const CxcPackage& package) -> core::Diagnos
         }
         const auto profile = readRequiredString(*item, "compilerProfile");
         const auto profileText = profile.value_or(std::string{});
-        if (profileText != candidateProfile) {
+        if (profileText != candidateProfile && !dynamic) {
             addError(diagnostics, "cxc.candidate.profile_unsupported",
                      "Candidate compilerProfile is not registered for Foundation revision 1",
                      field + "/compilerProfile");

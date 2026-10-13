@@ -7,6 +7,7 @@ target_sources(cuexis_judgement
     PRIVATE
         src/diagnostic.cpp
         src/execution_profile.cpp
+        src/execution_scheduler.cpp
         src/execution_kernel.cpp
         src/gameplay_assembler.cpp
         src/gameplay_graph.cpp

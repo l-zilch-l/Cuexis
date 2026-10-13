@@ -2,11 +2,18 @@
 
 #include <cuexis/playback/playback_session.hpp>
 
+#include "frame_observation.hpp"
+#include "host_candidate.hpp"
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+#include "capture_route.hpp"
+#endif
 #include "playback_candidate_internal.hpp"
 #include "playback_source_state.hpp"
 #include "presentation_internal.hpp"
+#include <cuexis_internal/sha256.hpp>
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
 #include "gameplay_internal.hpp"
+#include <cuexis/judgement/execution_scheduler.hpp>
 #endif
 
 #include <cuexis/animation/animation_compiler.hpp>
@@ -489,6 +496,9 @@ constexpr std::array parameterizedPresentationLimitRules{
         .version = 1,
         .ids = {std::string{capabilityAnimationClipV1}, std::string{capabilityAnimationLayersV1},
                 std::string{capabilityBehaviorEventV1}, std::string{capabilityChartV3},
+#if defined(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+                std::string{capabilityBehaviorEventV2},
+#endif
                 std::string{capabilityChartV4}, std::string{capabilityMaterialSnapshotV1},
                 std::string{capabilityRenderVisibilityV1}, std::string{capabilitySourceCxcV1},
                 std::string{capabilitySourceCxtV1}, std::string{capabilityShaderAssetV1},
@@ -720,9 +730,10 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
             "Chart parameter resolution produced errors", diagnostics));
     }
 
-    auto lowered = gameplaySource
-                       ? chart::lowerGameplayPresentationRuntime(candidate.semantic, limits)
-                       : chart::lowerCandidateRuntime(candidate.semantic, limits);
+    auto lowered =
+        candidate.behavior ? chart::CandidateRuntimeArtifactResult{*candidate.behavior, {}}
+        : gameplaySource   ? chart::lowerGameplayPresentationRuntime(candidate.semantic, limits)
+                           : chart::lowerCandidateRuntime(candidate.semantic, limits);
     diagnostics.append(std::move(lowered.diagnostics));
     if (!lowered.hasValue()) {
         diagnostics.sortDeterministically();
@@ -742,6 +753,13 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
                                                 [](const chart::RuntimeObject& object) {
                                                     return object.components.renderable.has_value();
                                                 });
+    if (candidate.behavior) {
+        artifact.additionalCapabilities.emplace_back(capabilityBehaviorEventV2);
+        for (const auto& behavior : lowered.artifact->runtime.behaviors)
+            for (const auto& track : behavior.stepTracks)
+                if (track.property == chart::BehaviorStepProperty::RenderVisible)
+                    artifact.additionalCapabilities.emplace_back(capabilityRenderVisibilityV1);
+    }
     if (renderable) {
         artifact.additionalCapabilities.emplace_back(capabilityMaterialSnapshotV1);
     }
@@ -1262,6 +1280,12 @@ struct PlaybackSession::State final {
     ChartParameterSet parameters;
     std::uint64_t sessionToken{allocatePlaybackSessionToken()};
     std::uint64_t generation{1};
+    std::optional<detail::CommitFence> hostFence;
+    std::optional<detail::ControlRequest> acceptedHostControl;
+    std::uint64_t hostDecision{};
+    std::optional<std::uint64_t> acceptedHostDecision;
+    std::optional<detail::HostContext> confirmedHostContext;
+    bool hostCommitAuthorized{};
     void bumpGeneration() noexcept {
         if (++generation == 0) {
             sessionToken = allocatePlaybackSessionToken();
@@ -1278,6 +1302,25 @@ struct PlaybackSession::State final {
     GameplayContent gameplayContent;
     std::unique_ptr<judgement::JudgementSession> gameplay;
     GameplayState gameplayState{GameplayState::Inactive};
+    std::unique_ptr<judgement::ExecutionScheduler> executionScheduler;
+    std::optional<RealtimeClock> realtimeClock;
+    std::optional<GameplayExecutionContext> executionContext;
+    std::optional<ClockMappingConfiguration> executionMapping;
+    std::optional<TailClockTransition> tailTransition;
+    bool realtimeWasStarted{};
+    auto syncExecutionState() -> core::Result<void> {
+        auto query = gameplay->query();
+        if (!query)
+            return core::unexpected(query.error());
+        const auto previous = gameplayState;
+        if (query->kernelView().state == judgement::KernelSessionState::Faulted)
+            gameplayState = GameplayState::Faulted;
+        else if (executionScheduler->suspended() && gameplayState != GameplayState::ResumeAborted)
+            gameplayState = GameplayState::Suspended;
+        if (gameplayState != previous)
+            bumpGeneration();
+        return {};
+    }
     std::optional<GameplayAdvanceReceipt> gameplayReceipt;
     struct GameplayProjectionState final {
         std::shared_ptr<const std::uint8_t> scope;
@@ -1324,6 +1367,615 @@ struct PreparedPlayback::State final {
     std::unique_ptr<judgement::JudgementSession> gameplay;
 #endif
 };
+
+auto detail::HostCoordinationAccess::materialize(PreparedPlayback& prepared,
+                                                 const PresentationCapabilities& capabilities,
+                                                 const PresentationRequest& request,
+                                                 std::uint64_t rendererInstance,
+                                                 std::uint64_t rendererGeneration,
+                                                 std::uint64_t sequence)
+    -> core::Result<PresentationCandidateInput> try {
+    if (!prepared.valid() || !rendererInstance || !rendererGeneration || !sequence)
+        return core::unexpected(
+            core::Error{"host.rpa.context_stale", "Invalid owning candidate context"});
+    auto validation = prepared.validatePresentation(capabilities, request);
+    if (!validation.hasValue())
+        return core::unexpected(
+            core::Error{"host.rpa.device_failed", "Candidate capabilities rejected"});
+    const auto* manifest = prepared.presentationManifest();
+    auto token = prepared.presentationCandidateToken();
+    if (!manifest || !token)
+        return core::unexpected(
+            core::Error{"host.rpa.context_stale", "Portable candidate missing"});
+    const auto& p = *prepared.state_;
+    PresentationCandidateInput value;
+    value.context = {p.ownerToken,      1, 1, sequence, p.candidateGeneration, rendererGeneration,
+                     p.semanticIdentity};
+    value.playbackOwnerToken = p.ownerToken;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    if (p.owner && p.owner->state_->executionContext) {
+        const auto& execution = *p.owner->state_->executionContext;
+        value.context.sessionScope = execution.sessionScope;
+        value.context.clockSegment = execution.clockSegment;
+        value.context.runEpoch = execution.runEpoch;
+    }
+#endif
+    value.mutationGeneration = p.expectedGeneration;
+    value.candidateId = p.candidateGeneration;
+    value.rendererInstance = rendererInstance;
+    value.token = *token;
+    value.capabilities = capabilities;
+    value.manifest = *manifest;
+    value.settings = *validation.settings;
+    value.resources.reserve(manifest->entries.size());
+    for (const auto& entry : manifest->entries) {
+        auto resource = prepared.acquirePresentationResource(entry.reference);
+        if (!resource)
+            return core::unexpected(resource.error());
+        value.resources.push_back(std::move(*resource));
+    }
+    if (const auto source = prepared.mainMusicSource())
+        value.audio = AudioCandidateInput{std::string{source->assetId},
+                                          source->timingOffsetMs,
+                                          source->contentRevision,
+                                          {source->bytes.begin(), source->bytes.end()}};
+    return value;
+} catch (...) {
+    return core::unexpected(
+        core::Error{"host.rpa.capacity_exceeded", "Owning candidate reservation failed"});
+}
+auto detail::HostCoordinationAccess::generation(const PlaybackSession& session)
+    -> core::Result<std::uint64_t> {
+    if (!session.state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("host_generation"));
+    return session.state_->generation;
+}
+auto detail::HostCoordinationAccess::enterFence(PlaybackSession& session,
+                                                const PresentationCandidateInput& input)
+    -> core::Result<CommitFence> {
+    auto& s = *session.state_;
+    if (!s.ownerThread.isCurrent())
+        return core::unexpected(ownerError("enter_fence"));
+    if (s.operationActive || s.hostFence || input.playbackOwnerToken != s.sessionToken ||
+        input.mutationGeneration != s.generation || !input.candidateId ||
+        !input.context.controlSequence || s.generation == UINT64_MAX)
+        return core::unexpected(
+            core::Error{"host.rpa.context_stale", "Prepared generation changed before fence"});
+    s.hostFence = CommitFence{input.context.sessionScope, s.generation, input.candidateId,
+                              input.context.controlSequence};
+    return *s.hostFence;
+}
+auto detail::HostCoordinationAccess::commit(PlaybackSession& session, PreparedPlayback&& prepared,
+                                            CommitFence fence, const ControlReceipt& ready)
+    -> core::Result<void> {
+    auto& s = *session.state_;
+    if (!s.ownerThread.isCurrent())
+        return core::unexpected(ownerError("host_commit"));
+    if (!s.hostFence || *s.hostFence != fence || !prepared.valid() ||
+        prepared.state_->candidateGeneration != fence.candidateId ||
+        ready.request.context.sessionScope != fence.scope ||
+        ready.request.context.controlSequence != fence.controlSequence ||
+        ready.request.target.candidateId != fence.candidateId || !controlReadyForCommit(ready) ||
+        generationFor(ready.request.target, Participant::software) != fence.generation ||
+        ready.request.target.nextContext.value_or(ready.request.target.context).contentIdentity !=
+            prepared.state_->semanticIdentity ||
+        ready.request.target.nextContext.value_or(ready.request.target.context)
+                .resourceGeneration != prepared.state_->candidateGeneration)
+        return core::unexpected(
+            core::Error{"host.rpa.context_stale", "Commit fence identity mismatch"});
+    struct Permission final {
+        bool& flag;
+        ~Permission() {
+            flag = false;
+        }
+    } permission{s.hostCommitAuthorized};
+    s.hostCommitAuthorized = true;
+    return session.commit(std::move(prepared));
+}
+auto detail::HostCoordinationAccess::leaveFence(PlaybackSession& session, CommitFence fence,
+                                                const ControlReceipt& confirmed)
+    -> core::Result<void> {
+    auto& s = *session.state_;
+    if (!s.ownerThread.isCurrent())
+        return core::unexpected(ownerError("leave_fence"));
+    if (!s.hostFence || *s.hostFence != fence)
+        return core::unexpected(
+            core::Error{"host.rpa.context_stale", "Old receipt cannot release fence"});
+    if (confirmed.request.context.sessionScope != fence.scope ||
+        confirmed.request.context.controlSequence != fence.controlSequence ||
+        confirmed.request.target.candidateId != fence.candidateId ||
+        !controlFullyApplied(confirmed))
+        return core::unexpected(
+            core::Error{"host.rpa.device_pending", "Participating owners not confirmed"});
+    s.confirmedHostContext = confirmed.finalizedContext.value_or(
+        confirmed.request.target.nextContext.value_or(confirmed.request.context));
+    s.hostFence.reset();
+    return {};
+}
+namespace {
+struct HostMutationPermission final {
+    bool& flag;
+    bool previous;
+    explicit HostMutationPermission(bool& value) : flag(value), previous(value) {
+        flag = true;
+    }
+    ~HostMutationPermission() {
+        flag = previous;
+    }
+};
+auto matchingStep(const detail::ControlReceipt& proof, detail::Participant participant,
+                  detail::StepPhase phase) -> const detail::StepReceipt* {
+    const auto& step =
+        proof.steps[static_cast<unsigned>(participant)][static_cast<unsigned>(phase)];
+    if (!step || step->status != detail::StepStatus::applied ||
+        step->request.target != proof.request.target ||
+        step->request.key.operationId != proof.request.operationId ||
+        step->request.key.participant != participant || step->request.key.phase != phase ||
+        step->request.key.sessionScope != proof.request.context.sessionScope)
+        return nullptr;
+    return &*step;
+}
+} // namespace
+auto detail::HostCoordinationAccess::sessionScope(const PlaybackSession& session)
+    -> core::Result<std::uint64_t> {
+    if (!session.state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("session_scope"));
+    return session.state_->sessionToken;
+}
+
+auto detail::HostCoordinationAccess::currentRuntimeFrame(const PlaybackSession& session)
+    -> core::Result<RuntimeFrame> {
+    const auto& s = *session.state_;
+    if (!s.ownerThread.isCurrent())
+        return core::unexpected(ownerError("runtime_frame"));
+    if (!s.lastFrame)
+        return core::unexpected(
+            core::Error{"host.rpa.control_pending", "No committed Runtime frame"});
+    return *s.lastFrame;
+}
+
+auto detail::HostCoordinationAccess::validateControlBinding(const PlaybackSession& session,
+                                                            const StepRequest& request)
+    -> core::Result<void> {
+    const auto& s = *session.state_;
+    if (!s.ownerThread.isCurrent())
+        return core::unexpected(ownerError("control_binding"));
+    if (!s.acceptedHostControl || request.key.participant != Participant::software ||
+        request.key.sessionScope != s.acceptedHostControl->context.sessionScope ||
+        request.key.operationId != s.acceptedHostControl->operationId ||
+        request.target != s.acceptedHostControl->target)
+        return core::unexpected(
+            core::Error{"host.rpa.context_stale", "Software step lacks accepted target"});
+    return {};
+}
+
+auto detail::HostCoordinationAccess::validateFrameContext(const PlaybackSession& session,
+                                                          const HostContext& context)
+    -> core::Result<void> {
+    const auto& s = *session.state_;
+    if (!s.ownerThread.isCurrent())
+        return core::unexpected(ownerError("frame_context"));
+    if (s.hostFence || !s.confirmedHostContext || *s.confirmedHostContext != context)
+        return core::unexpected(
+            core::Error{"host.rpa.context_stale", "Frame lacks a confirmed full context"});
+    return {};
+}
+
+auto detail::HostCoordinationAccess::acceptControl(PlaybackSession& session, HostCoordinator& host,
+                                                   const ControlRequest& request)
+    -> core::Result<ControlReceipt> {
+    auto valid = host.preflight(request);
+    if (!valid)
+        return core::unexpected(valid.error());
+    if (!*valid)
+        return host.accept(request, 0);
+    auto decision = acceptControlAtOwner(session, request);
+    if (!decision)
+        return core::unexpected(decision.error());
+    return host.accept(request, *decision);
+}
+
+auto detail::HostCoordinationAccess::acceptControlAtOwner(PlaybackSession& session,
+                                                          const ControlRequest& request)
+    -> core::Result<std::uint64_t> try {
+    auto& s = *session.state_;
+    if (!s.ownerThread.isCurrent())
+        return core::unexpected(ownerError("host_control"));
+    if (s.operationActive)
+        return core::unexpected(reentryError("host_control"));
+    if (s.acceptedHostControl && s.acceptedHostDecision &&
+        request.context.sessionScope == s.acceptedHostControl->context.sessionScope &&
+        request.operationId == s.acceptedHostControl->operationId) {
+        if (request != *s.acceptedHostControl)
+            return core::unexpected(
+                core::Error{"host.rpa.message_conflict", "Control identity conflict"});
+        return *s.acceptedHostDecision;
+    }
+    if (request.context != request.target.context || !request.context.sessionScope ||
+        !request.operationId || request.commandOrdinal != request.target.commandOrdinal ||
+        request.commandOrdinal == UINT64_MAX ||
+        (s.acceptedHostControl && request.commandOrdinal <= s.acceptedHostControl->commandOrdinal))
+        return core::unexpected(
+            core::Error{"host.rpa.context_stale", "Control target or ordinal invalid"});
+    if (s.confirmedHostContext &&
+        (request.context.sessionScope != s.confirmedHostContext->sessionScope ||
+         request.context.resourceGeneration != s.confirmedHostContext->resourceGeneration ||
+         request.context.rendererGeneration != s.confirmedHostContext->rendererGeneration ||
+         request.context.contentIdentity != s.confirmedHostContext->contentIdentity ||
+         request.context.controlSequence <= s.confirmedHostContext->controlSequence))
+        return core::unexpected(
+            core::Error{"host.rpa.context_stale", "Confirmed owner identity mismatch"});
+    // Reserve the complete binding before K1 changes any execution state.
+    auto binding = request;
+    if (s.hostFence && request.kind != ControlKind::close)
+        return core::unexpected(
+            core::Error{"host.rpa.control_pending", "Only Close can retire an unresolved fence"});
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    if (s.executionScheduler && s.executionContext) {
+        const auto& current = *s.executionContext;
+        const bool exact = request.context.sessionScope == current.sessionScope &&
+                           request.context.clockSegment == current.clockSegment &&
+                           request.context.runEpoch == current.runEpoch;
+        const bool abortedRoute =
+            request.kind == ControlKind::close && s.acceptedHostControl &&
+            s.acceptedHostControl->kind == ControlKind::resume &&
+            s.acceptedHostControl->target.nextContext &&
+            request.context.sessionScope ==
+                s.acceptedHostControl->target.nextContext->sessionScope &&
+            request.context.clockSegment ==
+                s.acceptedHostControl->target.nextContext->clockSegment &&
+            request.context.runEpoch == s.acceptedHostControl->target.nextContext->runEpoch;
+        if (!exact && !abortedRoute)
+            return core::unexpected(
+                core::Error{"host.rpa.context_stale", "Control execution context mismatch"});
+        if ((request.kind == ControlKind::pause &&
+             (!request.target.tick || !request.target.pauseEpoch)) ||
+            (request.kind == ControlKind::resume &&
+             (!request.target.tick || !request.target.pauseEpoch || !request.target.nextContext ||
+              (!request.target.reconciliationOrdinal &&
+               (!request.target.payloadIdentity || !request.target.cut)))))
+            return core::unexpected(
+                core::Error{"host.rpa.context_stale", "Control target is incomplete"});
+        // Close cancels outstanding work even when ordinary Gameplay is faulted or fenced.
+        auto accepted = request.kind == ControlKind::close
+                            ? s.executionScheduler->acceptControl(
+                                  judgement::RpaContext{current.sessionScope, current.clockSegment,
+                                                        current.runEpoch},
+                                  request.commandOrdinal)
+                            : session.acceptGameplayControl(current, request.commandOrdinal);
+        if (!accepted)
+            return core::unexpected(accepted.error());
+        const auto decision = *s.executionScheduler->lastDecisionOrdinal();
+        if (decision == UINT64_MAX)
+            return core::unexpected(
+                core::Error{"host.rpa.capacity_exceeded", "Host decision exhausted"});
+        s.hostDecision = decision + 1;
+        s.acceptedHostControl = std::move(binding);
+        s.acceptedHostDecision = decision;
+        return decision;
+    }
+#endif
+    if (request.context.sessionScope != s.sessionToken || s.hostDecision == UINT64_MAX)
+        return core::unexpected(
+            core::Error{"host.rpa.context_stale", "Software owner scope differs"});
+    const auto decision = s.hostDecision++;
+    s.acceptedHostControl = std::move(binding);
+    s.acceptedHostDecision = decision;
+    return decision;
+} catch (...) {
+    return core::unexpected(
+        core::Error{"host.rpa.capacity_exceeded", "Host control publication failed"});
+}
+
+auto detail::HostCoordinationAccess::enterControlFence(PlaybackSession& session,
+                                                       const ControlReceipt& proof)
+    -> core::Result<CommitFence> {
+    auto& s = *session.state_;
+    if (!s.ownerThread.isCurrent())
+        return core::unexpected(ownerError("control_fence"));
+    if (s.operationActive || s.hostFence || !s.acceptedHostControl ||
+        *s.acceptedHostControl != proof.request || proof.status != ControlStatus::preparing ||
+        proof.request.kind == ControlKind::load || proof.request.kind == ControlKind::reload)
+        return core::unexpected(
+            core::Error{"host.rpa.control_pending", "Control cannot enter its software fence"});
+    const auto phase =
+        proof.request.kind == ControlKind::resume || proof.request.kind == ControlKind::seek
+            ? StepPhase::resumeRoute
+            : StepPhase::cut;
+    if (proof.request.participants[0] && !matchingStep(proof, Participant::capture, phase))
+        return core::unexpected(
+            core::Error{"host.rpa.control_pending", "Final capture boundary is unconfirmed"});
+    s.hostFence =
+        CommitFence{proof.request.context.sessionScope, s.generation,
+                    proof.request.target.candidateId, proof.request.context.controlSequence};
+    return *s.hostFence;
+}
+auto detail::HostCoordinationAccess::currentFence(const PlaybackSession& session)
+    -> core::Result<CommitFence> {
+    if (!session.state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("control_fence"));
+    if (!session.state_->hostFence)
+        return core::unexpected(
+            core::Error{"host.rpa.control_pending", "No active software fence"});
+    return *session.state_->hostFence;
+}
+auto detail::HostCoordinationAccess::commitOnce(PlaybackSession& session, OwnerStepLedger& ledger,
+                                                const StepRequest& request,
+                                                PreparedPlayback&& prepared, CommitFence fence,
+                                                const ControlReceipt& proof)
+    -> core::Result<StepReceipt> try {
+    if (!session.state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("host_commit"));
+    auto old = ledger.query(request.key);
+    if (old && old->status != StepStatus::pending)
+        return ledger.apply(request);
+    if (!session.state_->acceptedHostControl ||
+        *session.state_->acceptedHostControl != proof.request ||
+        (proof.request.kind != ControlKind::load && proof.request.kind != ControlKind::reload) ||
+        request.key.participant != Participant::software ||
+        request.key.phase != StepPhase::softwareCommit ||
+        proof.request.operationId != request.key.operationId ||
+        proof.request.target != request.target || !controlReadyForCommit(proof))
+        return core::unexpected(
+            core::Error{"host.rpa.control_pending", "Owners are not prepared and fenced"});
+    auto started = ledger.start(request);
+    if (!started)
+        return core::unexpected(started.error());
+    if (!*started)
+        return ledger.query(request.key);
+    auto result = commit(session, std::move(prepared), fence, proof);
+    StepReceipt receipt{request,
+                        result ? StepStatus::applied : StepStatus::failed,
+                        {},
+                        result ? std::optional<core::Error>{} : result.error()};
+    receipt.effects.generation = session.state_->generation;
+    auto published = ledger.complete(receipt);
+    if (!published)
+        return core::unexpected(published.error());
+    return receipt;
+} catch (...) {
+    ledger.reportAllocationFailure(request.key);
+    return core::unexpected(
+        core::Error{"host.rpa.capacity_exceeded", "Software commit receipt reservation failed"});
+}
+
+auto detail::HostCoordinationAccess::retireSoftware(PlaybackSession& session,
+                                                    OwnerStepLedger& ledger,
+                                                    const StepRequest& request,
+                                                    const ControlReceipt& proof)
+    -> core::Result<StepReceipt> try {
+    auto& s = *session.state_;
+    if (!s.ownerThread.isCurrent())
+        return core::unexpected(ownerError("host_retire"));
+    auto old = ledger.query(request.key);
+    if (old && old->status != StepStatus::pending)
+        return ledger.apply(request);
+    const bool directedCleanup = proof.request.kind == ControlKind::close ||
+                                 proof.status == ControlStatus::suspended ||
+                                 proof.status == ControlStatus::failed;
+    if (!s.acceptedHostControl || !directedCleanup || *s.acceptedHostControl != proof.request ||
+        request.target != proof.request.target ||
+        request.key.operationId != proof.request.operationId ||
+        request.key.participant != Participant::software || request.key.phase != StepPhase::retire)
+        return core::unexpected(core::Error{"host.rpa.context_stale",
+                                            "Software retirement lacks accepted directed cleanup"});
+    if (proof.request.participants[0] && !matchingStep(proof, Participant::capture, StepPhase::cut))
+        return core::unexpected(
+            core::Error{"host.rpa.device_pending", "Capture route remains active"});
+    if (proof.request.participants[2]) {
+        const auto* isolation = matchingStep(proof, Participant::audio, StepPhase::isolate);
+        if (!matchingStep(proof, Participant::audio, StepPhase::stop) || !isolation ||
+            !isolation->effects.callbackIsolated)
+            return core::unexpected(core::Error{"host.rpa.device_pending",
+                                                "Audio callback still retains software resources"});
+    }
+    auto started = ledger.start(request);
+    if (!started)
+        return core::unexpected(started.error());
+    if (!*started)
+        return ledger.query(request.key);
+    HostMutationPermission permission{s.hostCommitAuthorized};
+    auto result = session.unload();
+    StepReceipt receipt{request,
+                        result ? StepStatus::applied : StepStatus::failed,
+                        {},
+                        result ? std::optional<core::Error>{} : result.error()};
+    receipt.effects.generation = s.generation;
+    receipt.effects.referencesReleased = bool(result);
+    receipt.effects.callbackIsolated = true;
+    auto published = ledger.complete(receipt);
+    if (!published)
+        return core::unexpected(published.error());
+    return receipt;
+} catch (...) {
+    ledger.reportAllocationFailure(request.key);
+    return core::unexpected(
+        core::Error{"host.rpa.capacity_exceeded", "Software retirement publication failed"});
+}
+
+auto detail::HostCoordinationAccess::completeClose(PlaybackSession& session, CommitFence fence,
+                                                   const ControlReceipt& proof)
+    -> core::Result<void> {
+    auto& s = *session.state_;
+    if (!s.ownerThread.isCurrent())
+        return core::unexpected(ownerError("host_close"));
+    if (!s.hostFence || *s.hostFence != fence || proof.request.kind != ControlKind::close ||
+        proof.request.context.sessionScope != fence.scope ||
+        proof.request.context.controlSequence <= fence.controlSequence ||
+        !controlFullyApplied(proof) || s.sessionState != SessionState::Empty)
+        return core::unexpected(
+            core::Error{"host.rpa.device_pending", "Close has not retired every fenced owner"});
+    s.hostFence.reset();
+    return {};
+}
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+auto detail::HostCoordinationAccess::resumeIdentity(const PlaybackSession& session,
+                                                    const GameplayReconciliation& r)
+    -> core::Result<PreparedSemanticIdentity> try {
+    if (!session.state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("resume_identity"));
+    const auto* content = detail::GameplayAccess::content(session.state_->gameplayContent);
+    if (!content)
+        return core::unexpected(core::Error{"host.rpa.context_stale", "Gameplay content missing"});
+    return detail::reconciliationIdentity(r);
+} catch (...) {
+    return core::unexpected(
+        core::Error{"host.rpa.capacity_exceeded", "Resume identity reservation failed"});
+}
+namespace {
+auto softwareReceipt(PlaybackSession& session, detail::OwnerStepLedger& ledger,
+                     const detail::StepRequest& request, const core::Result<void>& result)
+    -> core::Result<detail::StepReceipt> {
+    detail::StepReceipt receipt{request,
+                                result ? detail::StepStatus::applied : detail::StepStatus::failed,
+                                {},
+                                result ? std::optional<core::Error>{} : result.error()};
+    auto generation = detail::HostCoordinationAccess::generation(session);
+    if (!generation)
+        return core::unexpected(generation.error());
+    receipt.effects.generation = *generation;
+    auto query = session.queryGameplay();
+    if (query) {
+        const auto& p = detail::GameplayAccess::result(*query)->kernel;
+        receipt.effects.sealedFactCursor = p.sealedFactCursor;
+        receipt.effects.foldedFactCursor = p.fold ? p.fold->factCursor : p.sealedFactCursor;
+        if (p.rpa && p.rpa->cutTick)
+            receipt.effects.position = p.rpa->cutTick->value();
+    } else
+        return core::unexpected(query.error());
+    auto completed = ledger.complete(receipt);
+    if (!completed)
+        return core::unexpected(completed.error());
+    return receipt;
+}
+} // namespace
+auto detail::HostCoordinationAccess::applyPause(PlaybackSession& session, OwnerStepLedger& ledger,
+                                                const StepRequest& request, std::int64_t now)
+    -> core::Result<StepReceipt> try {
+    if (request.key.participant != Participant::software ||
+        request.key.phase != StepPhase::softwareCommit)
+        return core::unexpected(
+            core::Error{"host.rpa.context_stale", "Invalid software Pause step"});
+    auto& s = *session.state_;
+    if (!s.ownerThread.isCurrent())
+        return core::unexpected(ownerError("host_pause"));
+    auto previous = ledger.query(request.key);
+    if (previous && previous->status != StepStatus::pending)
+        return ledger.apply(request);
+    if (!s.acceptedHostControl || s.acceptedHostControl->kind != ControlKind::pause ||
+        s.acceptedHostControl->operationId != request.key.operationId ||
+        s.acceptedHostControl->target != request.target || !s.executionScheduler ||
+        !s.executionScheduler->pendingEpochEnd() ||
+        request.target.tick != s.executionScheduler->pendingEpochEnd()->inclusiveTick.value() ||
+        request.target.pauseEpoch != s.executionScheduler->pendingEpochEnd()->pauseEpoch)
+        return core::unexpected(
+            core::Error{"host.rpa.context_stale", "Software Pause lacks the accepted cut"});
+    if (!s.hostFence || s.hostFence->scope != request.key.sessionScope ||
+        s.hostFence->controlSequence != request.target.context.controlSequence ||
+        s.hostFence->candidateId != request.target.candidateId)
+        return core::unexpected(
+            core::Error{"host.rpa.device_pending", "Software Pause requires the control fence"});
+    auto started = ledger.start(request);
+    if (!started)
+        return core::unexpected(started.error());
+    if (!*started)
+        return ledger.query(request.key);
+    HostMutationPermission permission{s.hostCommitAuthorized};
+    if (request.target.tailPauseAt && *request.target.tailPauseAt > now)
+        return core::unexpected(
+            core::Error{"host.rpa.clock_invalid", "Tail pause action is in the future"});
+    return softwareReceipt(session, ledger, request,
+                           session.pauseRealtimeGameplay(request.target.tailPauseAt.value_or(now)));
+} catch (...) {
+    ledger.reportAllocationFailure(request.key);
+    return core::unexpected(
+        core::Error{"host.rpa.capacity_exceeded", "Software Pause publication failed"});
+}
+auto detail::HostCoordinationAccess::applyResume(PlaybackSession& session, OwnerStepLedger& ledger,
+                                                 const StepRequest& request,
+                                                 const GameplayReconciliation& reconciliation,
+                                                 GameplayExecutionContext context,
+                                                 const ClockObservation& clock, std::int64_t now,
+                                                 const StepReceipt* routeReceipt)
+    -> core::Result<StepReceipt> try {
+    if (!request.target.nextContext ||
+        request.target.nextContext->sessionScope != context.sessionScope ||
+        request.target.nextContext->clockSegment != context.clockSegment ||
+        request.target.nextContext->runEpoch != context.runEpoch ||
+        request.target.tick != reconciliation.cutTick.value ||
+        request.target.pauseEpoch != reconciliation.pauseEpoch ||
+        (request.target.cut && request.target.cut != reconciliation.finalTraceCut) ||
+        (request.target.reconciliationOrdinal &&
+         request.target.reconciliationOrdinal != reconciliation.controlOrdinal) ||
+        (request.resumeTrace && request.resumeTrace->finalCut != reconciliation.finalTraceCut) ||
+        request.key.participant != Participant::software ||
+        request.key.phase != StepPhase::softwareCommit)
+        return core::unexpected(
+            core::Error{"host.rpa.context_stale", "Invalid software Resume target"});
+    auto& s = *session.state_;
+    if (!s.ownerThread.isCurrent())
+        return core::unexpected(ownerError("host_resume"));
+    auto previous = ledger.query(request.key);
+    if (previous && previous->status != StepStatus::pending) {
+        auto exact = resumeIdentity(session, reconciliation);
+        if (!exact || (request.resumeTrace ? std::optional{request.resumeTrace->identity}
+                                           : request.target.payloadIdentity) != *exact) {
+            ledger.reportConflict(request.key);
+            return core::unexpected(
+                core::Error{"host.rpa.message_conflict", "Repeated Resume trace differs"});
+        }
+        return ledger.apply(request);
+    }
+    if (!s.acceptedHostControl || s.acceptedHostControl->kind != ControlKind::resume ||
+        s.acceptedHostControl->operationId != request.key.operationId ||
+        s.acceptedHostControl->target != request.target)
+        return core::unexpected(
+            core::Error{"host.rpa.context_stale", "Software Resume lacks accepted control"});
+    if (!routeReceipt || routeReceipt->status != StepStatus::applied ||
+        reconciliation.trace.size() < reconciliation.finalTraceCut)
+        return ledger.apply(request);
+    if (routeReceipt->request.key.participant != Participant::capture ||
+        routeReceipt->request.key.phase != StepPhase::resumeRoute ||
+        routeReceipt->request.key.operationId != request.key.operationId ||
+        routeReceipt->request.key.sessionScope != request.key.sessionScope ||
+        routeReceipt->request.target != request.target ||
+        routeReceipt->effects.cut != reconciliation.finalTraceCut ||
+        routeReceipt->effects.pauseEpoch != reconciliation.pauseEpoch ||
+        (request.resumeTrace &&
+         routeReceipt->effects.payloadIdentity != request.resumeTrace->identity))
+        return core::unexpected(core::Error{"host.rpa.message_conflict",
+                                            "Final route proof differs from software trace"});
+    auto identity = resumeIdentity(session, reconciliation);
+    if (!identity)
+        return core::unexpected(identity.error());
+    if ((request.resumeTrace ? std::optional{request.resumeTrace->identity}
+                             : request.target.payloadIdentity) != *identity) {
+        ledger.reportConflict(request.key);
+        return core::unexpected(
+            core::Error{"host.rpa.message_conflict", "Software Resume trace identity differs"});
+    }
+    if (!s.hostFence || s.hostFence->scope != request.key.sessionScope ||
+        s.hostFence->controlSequence != request.target.context.controlSequence ||
+        s.hostFence->candidateId != request.target.candidateId)
+        return core::unexpected(
+            core::Error{"host.rpa.device_pending", "Software Resume requires the control fence"});
+    auto started = ledger.start(request);
+    if (!started)
+        return core::unexpected(started.error());
+    if (!*started)
+        return ledger.query(request.key);
+    HostMutationPermission permission{s.hostCommitAuthorized};
+    auto result = session.resumeRealtimeGameplay(reconciliation, context, clock, now, true,
+                                                 request.tailResumeAt);
+    if (!result && result.error().code() == "host.rpa.control_pending")
+        return ledger.query(request.key);
+    return softwareReceipt(session, ledger, request, result);
+} catch (...) {
+    ledger.reportAllocationFailure(request.key);
+    return core::unexpected(
+        core::Error{"host.rpa.capacity_exceeded", "Software Resume publication failed"});
+}
+#endif
 
 static_assert(std::is_nothrow_move_assignable_v<core::Diagnostics>);
 static_assert(std::is_nothrow_move_assignable_v<PlaybackContentInfo>);
@@ -2132,6 +2784,11 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
 }
 
 auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> {
+    if (!state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("commit"));
+    if (state_->hostFence && !state_->hostCommitAuthorized)
+        return core::unexpected(
+            core::Error{"host.rpa.control_pending", "Commit fence owns mutation"});
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("commit"));
     }
@@ -2183,6 +2840,10 @@ auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> 
     state_->presentation = std::move(candidate.presentation);
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     state_->gameplayContent = std::move(candidate.gameplayContent);
+    state_->executionScheduler.reset();
+    state_->realtimeClock.reset();
+    state_->executionContext.reset();
+    state_->realtimeWasStarted = false;
     state_->gameplay = std::move(candidate.gameplay);
     state_->gameplayState = state_->gameplay ? GameplayState::Prepared : GameplayState::Inactive;
     state_->gameplayReceipt.reset();
@@ -2227,6 +2888,11 @@ auto PlaybackSession::load(PlaybackSource&& source, PlaybackMode mode,
 }
 
 auto PlaybackSession::update(const RuntimeFrame& frame) -> core::Result<void> {
+    if (!state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("update"));
+    if (state_->hostFence)
+        return core::unexpected(
+            core::Error{"host.rpa.control_pending", "Commit fence blocks update"});
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     if (auto guard = gameplayWriteGuard(); !guard)
         return guard;
@@ -2458,6 +3124,11 @@ auto PlaybackSession::reload(PlaybackSource&& replacement, const RuntimeFrame& t
 }
 
 auto PlaybackSession::unload() -> core::Result<void> {
+    if (!state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("unload"));
+    if (state_->hostFence && !state_->hostCommitAuthorized)
+        return core::unexpected(
+            core::Error{"host.rpa.control_pending", "Commit fence blocks unload"});
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("unload"));
     }
@@ -2487,6 +3158,10 @@ auto PlaybackSession::unload() -> core::Result<void> {
     state_->semanticIdentity.reset();
     state_->candidateMetadata.reset();
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    state_->executionScheduler.reset();
+    state_->realtimeClock.reset();
+    state_->executionContext.reset();
+    state_->realtimeWasStarted = false;
     state_->gameplay.reset();
     state_->gameplayContent = {};
     state_->gameplayState = GameplayState::Inactive;
@@ -2657,6 +3332,11 @@ auto PlaybackSession::acquireHostOverride(std::string_view ownerId, std::int64_t
                                           const HostOverrideLifetime& lifetime,
                                           std::span<const HostOverrideWrite> writes)
     -> core::Result<HostOverrideToken> {
+    if (!state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("acquire_host_override"));
+    if (state_->hostFence)
+        return core::unexpected(
+            core::Error{"host.rpa.control_pending", "Commit fence blocks override"});
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     if (auto guard = gameplayWriteGuard(); !guard)
         return core::unexpected(std::move(guard.error()));
@@ -2716,6 +3396,11 @@ auto PlaybackSession::acquireHostOverride(std::string_view ownerId, std::int64_t
 }
 
 auto PlaybackSession::releaseHostOverride(HostOverrideToken token) -> core::Result<void> {
+    if (!state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("release_host_override"));
+    if (state_->hostFence)
+        return core::unexpected(
+            core::Error{"host.rpa.control_pending", "Commit fence blocks override"});
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     if (auto guard = gameplayWriteGuard(); !guard)
         return guard;
@@ -2813,6 +3498,9 @@ auto PlaybackSession::gameplayWriteGuard() const -> core::Result<void> {
         return core::unexpected(ownerError("gameplay"));
     if (state_->operationActive)
         return core::unexpected(reentryError("gameplay"));
+    if (state_->hostFence && !state_->hostCommitAuthorized)
+        return core::unexpected(
+            core::Error{"host.rpa.control_pending", "Commit fence blocks gameplay mutation"});
     if (state_->gameplayState == GameplayState::Faulted)
         return core::unexpected(
             gameplayError("Faulted Gameplay is read-only until reset or replacement"));
@@ -2931,6 +3619,10 @@ auto PlaybackSession::advanceGameplay(GameplayTick h, GameplayPresentationTick t
     if (state_->gameplayProjection.lastTick && t.value < state_->gameplayProjection.lastTick->value)
         return core::unexpected(
             gameplayError("Presentation Tick rewind requires explicit recovery"));
+    auto selected = state_->gameplay->query();
+    if (selected && selected->kernelView().rpa)
+        return core::unexpected(
+            gameplayError("Realtime profile requires the coordinated advance entry"));
     auto previousReceipt = std::move(state_->gameplayReceipt);
     state_->gameplayReceipt =
         GameplayAdvanceReceipt{h, {}, {}, {}, 0, 0, false, {}, {}, false, {}, {}};
@@ -3318,9 +4010,15 @@ auto PlaybackSession::restoreGameplay(const GameplaySnapshot& s, GameplayPresent
     auto result = detail::GameplayAccess::result(q->kernelView(), GameplayState::Running);
     if (auto published = publishGameplayProjection(result, t, frame, false); !published)
         return published;
-    state_->gameplayState = q->kernelView().state == judgement::KernelSessionState::Faulted
-                                ? GameplayState::Faulted
-                                : GameplayState::Running;
+    state_->gameplayState =
+        q->kernelView().state == judgement::KernelSessionState::Faulted
+            ? GameplayState::Faulted
+            : (q->kernelView().rpa && q->kernelView().rpa->paused ? GameplayState::Paused
+                                                                  : GameplayState::Running);
+    state_->executionScheduler.reset();
+    state_->realtimeClock.reset();
+    state_->executionContext.reset();
+    state_->realtimeWasStarted = false;
     state_->gameplay.swap(candidate);
     state_->gameplayReceipt.reset();
     state_->bumpGeneration();
@@ -3394,14 +4092,689 @@ auto PlaybackSession::seekGameplay(const GameplayReplay& a, GameplayTick h,
     auto result = detail::GameplayAccess::result(q->kernelView(), GameplayState::Running);
     if (auto published = publishGameplayProjection(result, t, frame, false); !published)
         return published;
+    state_->executionScheduler.reset();
+    state_->realtimeClock.reset();
+    state_->executionContext.reset();
+    state_->realtimeWasStarted = false;
     state_->gameplay.swap(replacement);
-    state_->gameplayState = GameplayState::Running;
+    state_->gameplayState = q->kernelView().rpa && q->kernelView().rpa->paused
+                                ? GameplayState::Paused
+                                : GameplayState::Running;
     state_->gameplayReceipt.reset();
     state_->bumpGeneration();
     return {};
 } catch (...) {
     return core::unexpected(gameplayError("Gameplay Seek allocation failed"));
 }
+
+namespace {
+auto internalContext(GameplayExecutionContext c) -> judgement::RpaContext {
+    return {c.sessionScope, c.clockSegment, c.runEpoch};
+}
+auto canonicalOccurrence(const GameplayOccurrence& occurrence,
+                         const judgement::SessionConfiguration& config)
+    -> core::Result<judgement::CanonicalInput> try {
+    const auto& input = occurrence.input;
+    const auto mapping = config.inputMapping.view();
+    if (input.crossedSamplingGap || input.reconnected || input.droppedSamples)
+        return core::unexpected(core::Error{"host.rpa.capture_gap", "Capture continuity lost"});
+    if (input.sourceClass != mapping.sourceClass.token() ||
+        input.action > GameplayInputAction::Update)
+        return core::unexpected(gameplayError("Occurrence source or action invalid"));
+    std::optional<std::int64_t> amount;
+    if (input.amount) {
+        auto domain = std::find_if(mapping.domains.begin(), mapping.domains.end(),
+                                   [&](const auto& d) { return d.domainToken == input.domain; });
+        if (domain == mapping.domains.end())
+            return core::unexpected(gameplayError("Occurrence domain not declared"));
+        auto quantity =
+            judgement::RationalBeat::create(input.amount->numerator, input.amount->denominator);
+        if (!quantity)
+            return core::unexpected(detail::projectGameplayError(quantity.error()));
+        auto quantized = judgement::quantizeAmount(domain->amount, *quantity);
+        if (!quantized)
+            return core::unexpected(detail::projectGameplayError(quantized.error()));
+        amount = quantized->canonicalInteger;
+    }
+    return judgement::CanonicalInput{
+        {judgement::ObservationTick{judgement::Tick{input.observationTick.value}}, input.domain,
+         input.sourceClass, input.channel, static_cast<judgement::InputAction>(input.action),
+         amount, occurrence.sourceLocalPosition},
+        judgement::IngressSequence{input.sequence}};
+} catch (...) {
+    return core::unexpected(gameplayError("Occurrence normalization allocation failed"));
+}
+auto publicDecision(const judgement::AdvanceDecision& decision) -> GameplayAdvanceDecision {
+    const auto& r = decision.request;
+    return {
+        {{r.context.sessionScope, r.context.clockSegment, r.context.runEpoch},
+         r.requestId,
+         r.commandOrdinal,
+         {r.horizon.value()}},
+        static_cast<GameplayAdvanceDisposition>(decision.disposition),
+        decision.decisionOrdinal,
+        decision.verifiedExclusive
+            ? std::optional<GameplayTick>{{decision.verifiedExclusive->value()}}
+            : std::nullopt,
+        decision.result
+            ? detail::GameplayAccess::result(
+                  *decision.result, decision.result->state == judgement::KernelSessionState::Faulted
+                                        ? GameplayState::Faulted
+                                        : GameplayState::Running)
+            : GameplayResult{},
+        decision.error ? std::optional<core::Error>{detail::projectGameplayError(*decision.error)}
+                       : std::nullopt};
+}
+} // namespace
+auto PlaybackSession::beginRealtimeGameplay(SchedulingProfile profile,
+                                            ClockMappingConfiguration config,
+                                            GameplayExecutionContext context, std::string domain)
+    -> core::Result<void> try {
+    if (auto guard = gameplayWriteGuard(); !guard)
+        return guard;
+    SessionOperation operation{state_->operationActive};
+    if (!state_->gameplay || state_->executionScheduler || state_->realtimeWasStarted)
+        return core::unexpected(gameplayError("Begin requires a newly prepared realtime session"));
+    if (state_->acceptedHostControl && state_->acceptedHostControl->target.nextContext) {
+        const auto& expected = *state_->acceptedHostControl->target.nextContext;
+        if (context.sessionScope != expected.sessionScope ||
+            context.clockSegment != expected.clockSegment || context.runEpoch != expected.runEpoch)
+            return core::unexpected(core::Error{"host.rpa.context_stale",
+                                                "Realtime startup differs from accepted context"});
+    }
+    auto query = state_->gameplay->query();
+    if (!query)
+        return core::unexpected(query.error());
+    if (!query->kernelView().rpa || context.sessionScope == 0 || context.runEpoch == 0)
+        return core::unexpected(
+            gameplayError("Explicit realtime execution profile and scope required"));
+    if (!profile.testOnly)
+        return core::unexpected(core::Error{"host.rpa.profile_incomplete",
+                                            "Production candidate budgets await F3 acceptance"});
+    const auto* content = detail::GameplayAccess::content(state_->gameplayContent);
+    auto calibration = RealtimeClock::calibrationIdentity(config);
+    if (!calibration)
+        return core::unexpected(calibration.error());
+    if (content->configuration.calibrationIdentityToken != *calibration)
+        return core::unexpected(
+            core::Error{"host.rpa.calibration_mismatch",
+                        "Prepared calibration does not bind this clock mapping"});
+    auto clock = RealtimeClock::create(profile, config, std::move(domain), context.clockSegment);
+    if (!clock)
+        return core::unexpected(clock.error());
+    if (*profile.retainedMessageCapacity > SIZE_MAX)
+        return core::unexpected(
+            core::Error{"host.rpa.capacity_exceeded", "Capacity not representable"});
+    auto scheduler = judgement::ExecutionScheduler::create(
+        *state_->gameplay, internalContext(context),
+        *content->configuration.latePolicy.windowCloseThreshold.measuredValue(),
+        static_cast<std::size_t>(*profile.retainedMessageCapacity),
+        state_->acceptedHostControl ? state_->acceptedHostControl->commandOrdinal + 1 : 0,
+        state_->acceptedHostControl ? state_->hostDecision : 0);
+    if (!scheduler)
+        return core::unexpected(scheduler.error());
+    state_->executionScheduler =
+        std::make_unique<judgement::ExecutionScheduler>(std::move(*scheduler));
+    state_->tailTransition.reset();
+    state_->executionMapping = config;
+    state_->realtimeClock = std::move(*clock);
+    state_->executionContext = context;
+    state_->realtimeWasStarted = true;
+    return {};
+} catch (...) {
+    return core::unexpected(gameplayError("Realtime startup reservation failed"));
+}
+auto PlaybackSession::beginRealtimeTail(const ClockObservation& eof, std::uint64_t segment,
+                                        TailProfile profile, std::int64_t now)
+    -> core::Result<TailClockTransition> try {
+    if (auto guard = gameplayWriteGuard(); !guard)
+        return core::unexpected(guard.error());
+    auto& s = *state_;
+    if (!s.executionScheduler || !s.realtimeClock || !s.executionContext || s.tailTransition ||
+        s.hostFence)
+        return core::unexpected(
+            core::Error{"host.rpa.control_pending", "Tail transition not ready"});
+    SessionOperation operation{s.operationActive};
+    auto next = *s.executionContext;
+    next.clockSegment = segment;
+    if (!s.executionScheduler->canTransitionClock(internalContext(next)))
+        return core::unexpected(
+            core::Error{"host.rpa.control_pending", "Unconfirmed old clock delivery"});
+    const auto* content = detail::GameplayAccess::content(s.gameplayContent);
+    std::int64_t lastTimer = INT64_MIN;
+    for (const auto& timer : content->capsule.gameplay.timers())
+        lastTimer = std::max(lastTimer, timer.tick.value());
+    for (const auto& requirement : content->capsule.gameplay.requirements())
+        lastTimer = std::max(lastTimer, requirement.deadline.value());
+    const auto close =
+        content->configuration.latePolicy.windowCloseThreshold.measuredValue()->value();
+    if (lastTimer == INT64_MIN)
+        lastTimer = profile.inputDeadline;
+    if (profile.inputDeadline < lastTimer)
+        return core::unexpected(core::Error{"host.rpa.profile_incomplete",
+                                            "Tail deadline excludes prepared obligations"});
+    const auto latest = std::max(lastTimer, profile.inputDeadline);
+    if (close < 0 || latest > INT64_MAX - close || !s.executionMapping)
+        return core::unexpected(
+            core::Error{"host.rpa.profile_incomplete", "Tail terminal is not representable"});
+    const auto terminal = latest + close;
+    auto mappedTerminal = RealtimeClock::seekPosition(*s.executionMapping, terminal);
+    if (!mappedTerminal || terminal - close >= mappedTerminal->observationTick)
+        return core::unexpected(
+            core::Error{"host.rpa.profile_incomplete",
+                        "Tail terminal cannot seal its exclusive capture frontier"});
+    auto transition = s.realtimeClock->startTail(eof, now, segment, profile, lastTimer, close);
+    if (!transition)
+        return core::unexpected(transition.error());
+    auto switched = s.executionScheduler->transitionClock(internalContext(next));
+    if (!switched)
+        return core::unexpected(switched.error());
+    s.executionContext = next;
+    if (s.confirmedHostContext)
+        s.confirmedHostContext->clockSegment = segment;
+    s.tailTransition = *transition;
+    s.bumpGeneration();
+    return *transition;
+} catch (...) {
+    return core::unexpected(core::Error{"host.rpa.capacity_exceeded", "Tail transition failed"});
+}
+
+auto detail::HostCoordinationAccess::revokeRealtimePermission(PlaybackSession& session)
+    -> core::Result<void> {
+    if (!session.state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("execution_revoke"));
+    auto& s = *session.state_;
+    if (!s.executionScheduler)
+        return core::unexpected(gameplayError("Realtime session is not started"));
+    auto revoked = s.executionScheduler->clockValid(false);
+    auto synced = s.syncExecutionState();
+    return synced ? revoked : synced;
+}
+
+auto detail::HostCoordinationAccess::mapRealtimeClock(PlaybackSession& session,
+                                                      const ClockObservation& clock,
+                                                      std::int64_t now)
+    -> core::Result<ClockTicks> {
+    if (auto guard = session.gameplayWriteGuard(); !guard)
+        return core::unexpected(guard.error());
+    auto& s = *session.state_;
+    if (!s.realtimeClock || !s.executionScheduler)
+        return core::unexpected(gameplayError("Realtime session is not started"));
+    auto mapped = s.tailTransition && clock == s.tailTransition->eof
+                      ? s.realtimeClock->sampleTail(now)
+                      : s.realtimeClock->sample(clock, now);
+    if (!mapped) {
+        auto invalid = s.executionScheduler->clockValid(false);
+        if (!invalid)
+            return core::unexpected(invalid.error());
+        auto synced = s.syncExecutionState();
+        if (!synced)
+            return core::unexpected(synced.error());
+    }
+    return mapped;
+}
+
+auto detail::HostCoordinationAccess::archiveCut(const PlaybackSession& session,
+                                                const GameplayReplay& replay, GameplayTick horizon)
+    -> core::Result<GameplayReplayCut> {
+    if (!session.state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("archive_cut"));
+    const auto* archive = detail::GameplayAccess::replay(replay);
+    if (!archive)
+        return core::unexpected(gameplayError("Owning archive is absent"));
+    auto cut = judgement::replayCutAt(archive->archive, judgement::Tick{horizon.value});
+    return GameplayReplayCut{cut.completeRecords, publicTick(cut.partialHorizon)};
+}
+
+auto detail::HostCoordinationAccess::applySeek(
+    PlaybackSession& session, OwnerStepLedger& ledger, const StepRequest& request,
+    const ControlReceipt& proof, const GameplayReplay& archive, GameplayTick horizon,
+    const GameplayReplayCut& cut, std::span<const GameplayCheckpoint> checkpoints,
+    GameplayPresentationTick tick, const RuntimeFrame& frame, SchedulingProfile profile,
+    ClockMappingConfiguration mapping, const std::string& domain) -> core::Result<StepReceipt> try {
+    auto& s = *session.state_;
+    if (!s.ownerThread.isCurrent())
+        return core::unexpected(ownerError("host_seek"));
+    auto bytes = archive.toBytes();
+    if (!bytes)
+        return core::unexpected(bytes.error());
+    const PreparedSemanticIdentity identity{core::detail::sha256(*bytes)};
+    if (request.target.archiveIdentity != identity || request.target.seekHorizon != horizon.value ||
+        request.target.seekCompleteRecords != cut.completeRecords ||
+        request.target.seekPartialHorizon !=
+            (cut.partialHorizon ? std::optional{cut.partialHorizon->value} : std::nullopt))
+        return core::unexpected(
+            core::Error{"host.rpa.context_stale", "Seek archive or cut identity mismatch"});
+    auto previous = ledger.query(request.key);
+    if (previous && previous->status != StepStatus::pending)
+        return ledger.apply(request);
+    if (!s.acceptedHostControl || *s.acceptedHostControl != proof.request ||
+        proof.request.kind != ControlKind::seek || request.target != proof.request.target ||
+        request.key.operationId != proof.request.operationId ||
+        request.key.participant != Participant::software ||
+        request.key.phase != StepPhase::softwareCommit ||
+        request.target.archiveIdentity != identity || request.target.seekHorizon != horizon.value ||
+        request.target.seekCompleteRecords != cut.completeRecords ||
+        request.target.seekPartialHorizon !=
+            (cut.partialHorizon ? std::optional{cut.partialHorizon->value} : std::nullopt) ||
+        !request.target.nextContext || !s.hostFence || !controlReadyForCommit(proof))
+        return core::unexpected(
+            core::Error{"host.rpa.context_stale", "Seek target or owning archive mismatch"});
+    auto started = ledger.start(request);
+    if (!started)
+        return core::unexpected(started.error());
+    if (!*started)
+        return ledger.query(request.key);
+    HostMutationPermission permission{s.hostCommitAuthorized};
+    auto result = session.seekGameplay(archive, horizon, cut, checkpoints, tick, frame);
+    if (result) {
+        const auto& next = *request.target.nextContext;
+        result = session.beginRealtimeGameplay(
+            profile, mapping, {next.sessionScope, next.clockSegment, next.runEpoch}, domain);
+    }
+    auto receipt = softwareReceipt(session, ledger, request, result);
+    return receipt;
+} catch (...) {
+    ledger.reportAllocationFailure(request.key);
+    return core::unexpected(core::Error{"host.rpa.capacity_exceeded", "Seek publication failed"});
+}
+
+auto detail::HostCoordinationAccess::reconciliationOrdinal(const PlaybackSession& session)
+    -> core::Result<std::uint64_t> {
+    const auto& s = *session.state_;
+    if (!s.ownerThread.isCurrent())
+        return core::unexpected(ownerError("reconciliation_ordinal"));
+    if (!s.gameplay)
+        return core::unexpected(gameplayError("Gameplay is not prepared"));
+    auto query = s.gameplay->query();
+    if (!query)
+        return core::unexpected(query.error());
+    if (!query->kernelView().rpa)
+        return core::unexpected(gameplayError("RPA profile is absent"));
+    return query->kernelView().rpa->nextControlOrdinal;
+}
+
+auto detail::HostCoordinationAccess::feedbackMembership(const PlaybackSession& session,
+                                                        std::uint64_t scope)
+    -> core::Result<std::vector<FeedbackObservation>> try {
+    const auto& s = *session.state_;
+    if (!s.ownerThread.isCurrent())
+        return core::unexpected(ownerError("feedback_membership"));
+    if (!s.gameplay || !scope)
+        return core::unexpected(gameplayError("Feedback scope absent"));
+    std::vector<FeedbackObservation> members;
+    for (const auto& scheduled : s.gameplayProjection.scheduled) {
+        const auto& b = scheduled.binding;
+        if (!scheduled.published || !s.gameplayProjection.lastTick ||
+            b.start.value > s.gameplayProjection.lastTick->value ||
+            (b.end && b.end->value <= s.gameplayProjection.lastTick->value))
+            continue;
+        members.push_back({{scope, scheduled.factId.commitId, scheduled.factId.localOrdinal, 0,
+                            b.target, b.bindingId},
+                           b.start.value,
+                           b.end ? b.end->value : INT64_MAX,
+                           FeedbackStatus::created,
+                           false});
+    }
+    return members;
+} catch (...) {
+    return core::unexpected(
+        core::Error{"host.rpa.capacity_exceeded", "Feedback membership failed"});
+}
+
+auto detail::HostCoordinationAccess::samplePresentation(PlaybackSession& session,
+                                                        GameplayPresentationTick tick,
+                                                        const RuntimeFrame& frame)
+    -> core::Result<void> try {
+    if (auto guard = session.gameplayWriteGuard(); !guard)
+        return guard;
+    SessionOperation operation{session.state_->operationActive};
+    // Obtain the immutable kernel result without advancing the scheduler.
+    if (!session.state_->gameplay)
+        return core::unexpected(gameplayError("Gameplay presentation is not prepared"));
+    auto query = session.state_->gameplay->query();
+    if (!query)
+        return core::unexpected(query.error());
+    if (session.state_->gameplayState == GameplayState::Paused)
+        return core::unexpected(
+            core::Error{"host.rpa.control_pending", "Paused presentation must stay frozen"});
+    if (query->kernelView().rpa && !query->kernelView().fold)
+        return core::unexpected(
+            core::Error{"host.rpa.control_pending", "No successful Fold prefix to sample"});
+    return session.publishGameplayProjection(
+        detail::GameplayAccess::result(query->kernelView(), session.state_->gameplayState), tick,
+        frame, true);
+} catch (...) {
+    return core::unexpected(gameplayError("Presentation sampling failed"));
+}
+
+auto PlaybackSession::deliverGameplayCapture(const GameplayCaptureDelivery& message,
+                                             const ClockObservation& observation, std::int64_t now)
+    -> core::Result<void> try {
+    if (auto guard = gameplayWriteGuard(); !guard)
+        return guard;
+    SessionOperation operation{state_->operationActive};
+    if (!state_->executionScheduler)
+        return core::unexpected(gameplayError("Realtime session not started"));
+    if (!state_->executionContext ||
+        internalContext(message.context) != internalContext(*state_->executionContext))
+        return core::unexpected(core::Error{"host.rpa.context_stale", "Capture context mismatch"});
+    const auto confirmed = state_->executionScheduler->confirmedSequence();
+    if (confirmed && message.deliverySequence <= *confirmed)
+        return {};
+    judgement::CaptureMessage value{internalContext(message.context), message.deliverySequence,
+                                    judgement::CapturePrefix{judgement::Tick{0}}};
+    if (const auto* b = std::get_if<GameplayClosedBatch>(&message.payload)) {
+        judgement::ClosedCaptureBatch batch{judgement::Tick{b->originalTick.value},
+                                            judgement::Tick{b->observedTick.value},
+                                            b->batchId,
+                                            b->fragmentIndex,
+                                            b->fragmentCount,
+                                            b->totalMembers,
+                                            {},
+                                            b->epochTerminated,
+                                            b->pauseEpoch};
+        const auto* content = detail::GameplayAccess::content(state_->gameplayContent);
+        for (const auto& member : b->members) {
+            auto input = canonicalOccurrence(member, content->configuration);
+            if (!input)
+                return core::unexpected(input.error());
+            batch.members.push_back(std::move(*input));
+        }
+        value.payload = std::move(batch);
+    } else if (const auto* prefix = std::get_if<GameplayCapturePrefix>(&message.payload))
+        value.payload = judgement::CapturePrefix{judgement::Tick{prefix->exclusiveTick.value}};
+    else {
+        const auto end = std::get<GameplayEpochEnd>(message.payload);
+        value.payload =
+            judgement::EndRunEpoch{judgement::Tick{end.inclusiveTick.value}, end.pauseEpoch};
+    }
+    auto mapped = state_->tailTransition && observation == state_->tailTransition->eof
+                      ? state_->realtimeClock->sampleTail(now)
+                      : state_->realtimeClock->sample(observation, now);
+    if (!mapped) {
+        auto invalid = state_->executionScheduler->clockValid(false);
+        if (!invalid)
+            return invalid;
+        auto synced = state_->syncExecutionState();
+        if (!synced)
+            return synced;
+        return core::unexpected(mapped.error());
+    }
+    const auto proofTick = std::visit(
+        [](const auto& payload) {
+            using T = std::decay_t<decltype(payload)>;
+            if constexpr (std::is_same_v<T, judgement::ClosedCaptureBatch>)
+                return payload.observedTick.value();
+            else if constexpr (std::is_same_v<T, judgement::CapturePrefix>)
+                return payload.exclusiveTick.value();
+            else
+                return payload.inclusiveTick.value();
+        },
+        value.payload);
+    if (proofTick > mapped->observationTick) {
+        auto revoked = state_->executionScheduler->clockValid(false);
+        if (!revoked)
+            return revoked;
+        auto synced = state_->syncExecutionState();
+        if (!synced)
+            return synced;
+        return core::unexpected(core::Error{"host.rpa.message_conflict",
+                                            "Capture closure cannot cite a future observed Tick"});
+    }
+    auto previous = state_->gameplay->query();
+    if (!previous)
+        return core::unexpected(previous.error());
+    const auto previousH = previous->kernelView().lastAdvanceHorizon;
+    auto delivered = state_->executionScheduler->deliver(value);
+    auto synced = state_->syncExecutionState();
+    if (!synced)
+        return synced;
+    if (!delivered)
+        return core::unexpected(detail::projectGameplayError(delivered.error()));
+    auto query = state_->gameplay->query();
+    if (query && query->kernelView().state == judgement::KernelSessionState::Faulted)
+        state_->gameplayState = GameplayState::Faulted;
+    else if (query && query->kernelView().lastAdvanceHorizon != previousH)
+        state_->gameplayState = GameplayState::Running;
+    state_->bumpGeneration();
+    return {};
+} catch (...) {
+    return core::unexpected(gameplayError("Capture delivery reservation failed"));
+}
+auto PlaybackSession::requestGameplayAdvance(GameplayAdvanceRequest r,
+                                             const ClockObservation& observation, std::int64_t now)
+    -> core::Result<GameplayAdvanceDecision> try {
+    if (auto guard = gameplayWriteGuard(); !guard)
+        return core::unexpected(guard.error());
+    SessionOperation operation{state_->operationActive};
+    if (!state_->executionScheduler || !state_->realtimeClock)
+        return core::unexpected(gameplayError("Realtime session not started"));
+    if (!state_->executionContext ||
+        internalContext(r.context) != internalContext(*state_->executionContext))
+        return core::unexpected(core::Error{"host.rpa.context_stale", "Advance context mismatch"});
+    // Retransmission is a read of the original operation, including an expired clock sample.
+    auto old = state_->executionScheduler->poll(r.requestId);
+    if (!old) {
+        auto mapped = state_->tailTransition && observation == state_->tailTransition->eof
+                          ? state_->realtimeClock->sampleTail(now)
+                          : state_->realtimeClock->sample(observation, now);
+        if (!mapped) {
+            auto invalid = state_->executionScheduler->clockValid(false);
+            if (!invalid)
+                return core::unexpected(invalid.error());
+            auto synced = state_->syncExecutionState();
+            if (!synced)
+                return core::unexpected(synced.error());
+            return core::unexpected(mapped.error());
+        }
+        if (r.horizon.value != mapped->horizon || r.context.clockSegment != mapped->segment)
+            return core::unexpected(
+                gameplayError("Advance H must be derived from the coherent clock observation"));
+    }
+    auto result =
+        state_->executionScheduler->request({internalContext(r.context), r.requestId,
+                                             r.commandOrdinal, judgement::Tick{r.horizon.value}});
+    auto synced = state_->syncExecutionState();
+    if (!synced)
+        return core::unexpected(synced.error());
+    if (!result)
+        return core::unexpected(detail::projectGameplayError(result.error()));
+    if (!old && result->disposition == judgement::AdvanceDisposition::executed) {
+        state_->gameplayState = GameplayState::Running;
+        state_->bumpGeneration();
+    }
+    if (result->result && result->result->state == judgement::KernelSessionState::Faulted)
+        state_->gameplayState = GameplayState::Faulted;
+    return publicDecision(*result);
+} catch (...) {
+    return core::unexpected(gameplayError("Advance decision publication failed"));
+}
+auto PlaybackSession::queryGameplayAdvance(std::uint64_t id) const
+    -> core::Result<GameplayAdvanceDecision> try {
+    if (!state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("query_gameplay_advance"));
+    if (state_->operationActive)
+        return core::unexpected(reentryError("query_gameplay_advance"));
+    if (!state_->executionScheduler)
+        return core::unexpected(gameplayError("Realtime session not started"));
+    auto result = state_->executionScheduler->poll(id);
+    if (!result)
+        return core::unexpected(result.error());
+    return publicDecision(*result);
+} catch (...) {
+    return core::unexpected(gameplayError("Advance query allocation failed"));
+}
+auto PlaybackSession::retireGameplayAdvance(std::uint64_t id) -> core::Result<void> {
+    if (auto guard = gameplayWriteGuard(); !guard)
+        return guard;
+    if (!state_->executionScheduler)
+        return core::unexpected(gameplayError("Realtime session not started"));
+    return state_->executionScheduler->retire(id);
+}
+auto PlaybackSession::acceptGameplayControl(GameplayExecutionContext context, std::uint64_t command)
+    -> core::Result<void> {
+    if (auto guard = gameplayWriteGuard(); !guard)
+        return guard;
+    if (!state_->executionScheduler)
+        return core::unexpected(gameplayError("Realtime session not started"));
+    auto result = state_->executionScheduler->acceptControl(internalContext(context), command);
+    auto synced = state_->syncExecutionState();
+    return synced ? result : synced;
+}
+auto PlaybackSession::pauseRealtimeGameplay(std::int64_t now) -> core::Result<void> {
+    if (auto guard = gameplayWriteGuard(); !guard)
+        return guard;
+    if (!state_->executionScheduler)
+        return core::unexpected(gameplayError("Realtime session not started"));
+    auto result = state_->executionScheduler->pause();
+    if (result && state_->tailTransition)
+        result = state_->realtimeClock->adoptTailPause(now);
+    auto synced = state_->syncExecutionState();
+    if (!synced)
+        return synced;
+    if (result) {
+        state_->gameplayState = GameplayState::Paused;
+        state_->bumpGeneration();
+    }
+    return result;
+}
+auto PlaybackSession::resumeRealtimeGameplay(const GameplayReconciliation& r,
+                                             GameplayExecutionContext context,
+                                             const ClockObservation& observation, std::int64_t now,
+                                             bool applied, std::optional<std::int64_t> tailResumeAt)
+    -> core::Result<void> try {
+    if (auto guard = gameplayWriteGuard(); !guard)
+        return guard;
+    SessionOperation operation{state_->operationActive};
+    if (!state_->executionScheduler || !state_->realtimeClock)
+        return core::unexpected(gameplayError("Realtime session not started"));
+    judgement::RpaControlRecord value{judgement::RpaControlKind::resume,
+                                      judgement::Tick{r.cutTick.value},
+                                      r.controlOrdinal,
+                                      r.pauseEpoch,
+                                      r.finalTraceCut,
+                                      {}};
+    const auto* content = detail::GameplayAccess::content(state_->gameplayContent);
+    bool failed = false;
+    for (const auto& transition : r.trace) {
+        auto input = canonicalOccurrence(transition.occurrence, content->configuration);
+        if (!input) {
+            failed = true;
+            break;
+        }
+        value.trace.push_back({transition.sequence, std::move(input->key)});
+    }
+    auto known = state_->executionScheduler->resumeStatus(value, internalContext(context));
+    auto synced = state_->syncExecutionState();
+    if (!synced)
+        return synced;
+    if (!known)
+        return core::unexpected(known.error());
+    if (*known)
+        return {};
+    if (state_->gameplayState == GameplayState::ResumeAborted)
+        return core::unexpected(
+            core::Error{"host.rpa.resume_aborted", "Direct continuation has terminated"});
+    // Reject identity and lifecycle mismatches before changing the clock segment.
+    auto current = state_->gameplay->query();
+    if (!current)
+        return core::unexpected(current.error());
+    const auto& logical = current->kernelView().rpa;
+    if (!state_->executionContext || !logical || !logical->paused ||
+        context.sessionScope != state_->executionContext->sessionScope ||
+        context.runEpoch <= state_->executionContext->runEpoch ||
+        context.clockSegment <= state_->executionContext->clockSegment ||
+        logical->cutTick != value.cutTick || logical->pauseEpoch != value.pauseEpoch ||
+        logical->nextControlOrdinal != value.controlOrdinal)
+        return core::unexpected(core::Error{"host.rpa.context_stale",
+                                            "Resume context or paused control identity mismatch"});
+    if (!applied || (!failed && value.trace.size() < value.finalTraceCut))
+        return state_->executionScheduler->resume(value, internalContext(context), applied, failed);
+    auto clock = [&]() -> core::Result<ClockTicks> {
+        if (!state_->tailTransition)
+            return state_->realtimeClock->startSegment(context.clockSegment, observation, now);
+        if (observation != state_->tailTransition->eof)
+            return core::unexpected(
+                core::Error{"host.rpa.clock_invalid", "Tail EOF identity changed"});
+        if (tailResumeAt && *tailResumeAt > now)
+            return core::unexpected(
+                core::Error{"host.rpa.clock_invalid", "Tail resume action is in the future"});
+        const auto minimum =
+            current->kernelView().lastAdvanceHorizon
+                ? std::optional<std::int64_t>{current->kernelView().lastAdvanceHorizon->value()}
+                : std::nullopt;
+        auto resumed = state_->realtimeClock->resumeTail(tailResumeAt.value_or(now),
+                                                         context.clockSegment, minimum);
+        if (!resumed)
+            return core::unexpected(resumed.error());
+        return state_->realtimeClock->sampleTail(now);
+    }();
+    failed = failed || !clock || (clock && clock->observationTick <= r.cutTick.value);
+    auto result =
+        state_->executionScheduler->resume(value, internalContext(context), applied, failed);
+    if (result) {
+        state_->executionContext = context;
+        state_->gameplayState = GameplayState::Running;
+        state_->bumpGeneration();
+    } else if (result.error().code() != "host.rpa.control_pending") {
+        auto q = state_->gameplay->query();
+        state_->gameplayState = q && q->kernelView().state == judgement::KernelSessionState::Faulted
+                                    ? GameplayState::Faulted
+                                    : GameplayState::ResumeAborted;
+    }
+    return result;
+} catch (...) {
+    if (applied && state_->executionScheduler) {
+        state_->executionScheduler->abortResume();
+        state_->gameplayState = GameplayState::ResumeAborted;
+    }
+    return core::unexpected(gameplayError("Resume preparation allocation failed"));
+}
+auto PlaybackSession::gameplayExecutionLag(GameplayTick horizon) const
+    -> core::Result<GameplayExecutionLag> try {
+    if (!state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("gameplay_execution_lag"));
+    if (state_->operationActive)
+        return core::unexpected(reentryError("gameplay_execution_lag"));
+    if (!state_->gameplay)
+        return core::unexpected(gameplayError("Gameplay inactive"));
+    auto query = state_->gameplay->query();
+    if (!query)
+        return core::unexpected(query.error());
+    const auto& p = query->kernelView();
+    const auto* content = detail::GameplayAccess::content(state_->gameplayContent);
+    const auto frontier = judgement::offsetTicks(
+        judgement::Tick{horizon.value},
+        judgement::TickSpan{
+            -content->configuration.latePolicy.windowCloseThreshold.measuredValue()->value()});
+    if (!frontier)
+        return core::unexpected(frontier.error());
+    GameplayExecutionLag result{horizon,
+                                {},
+                                {},
+                                p.fold && p.fold->workTick
+                                    ? std::optional<GameplayTick>{{p.fold->workTick->value()}}
+                                    : std::nullopt,
+                                p.sealedFactCursor,
+                                p.fold ? p.fold->factCursor : p.sealedFactCursor};
+    if (p.lastAdvanceHorizon) {
+        auto d = judgement::differenceTicks(judgement::Tick{horizon.value}, *p.lastAdvanceHorizon);
+        if (!d)
+            return core::unexpected(d.error());
+        result.horizonLag = d->value();
+    }
+    if (p.processedFrontier) {
+        auto d = judgement::differenceTicks(*frontier, *p.processedFrontier);
+        if (!d)
+            return core::unexpected(d.error());
+        result.frontierLag = d->value();
+    }
+    return result;
+} catch (...) {
+    return core::unexpected(gameplayError("Lag query allocation failed"));
+}
+
 auto PlaybackSession::controlGameplay(GameplayControl control) -> core::Result<void> try {
     if (!state_->ownerThread.isCurrent())
         return core::unexpected(ownerError("control_gameplay"));
@@ -3410,6 +4783,10 @@ auto PlaybackSession::controlGameplay(GameplayControl control) -> core::Result<v
     SessionOperation operation{state_->operationActive};
     if (!state_->gameplay)
         return core::unexpected(gameplayError("Gameplay inactive"));
+    auto selected = state_->gameplay->query();
+    if (selected && selected->kernelView().rpa &&
+        (control == GameplayControl::Pause || control == GameplayControl::Resume))
+        return core::unexpected(gameplayError("Realtime Pause/Resume requires a cut and trace"));
     if (control == GameplayControl::Stop && state_->gameplayState == GameplayState::Faulted)
         return core::unexpected(gameplayError("Faulted Gameplay requires Reset or replacement"));
     if (control == GameplayControl::Reset || control == GameplayControl::Stop) {
@@ -3423,6 +4800,10 @@ auto PlaybackSession::controlGameplay(GameplayControl control) -> core::Result<v
             if (!updated)
                 return updated;
         }
+        state_->executionScheduler.reset();
+        state_->realtimeClock.reset();
+        state_->executionContext.reset();
+        state_->realtimeWasStarted = false;
         state_->gameplay.swap(replacement);
         state_->gameplayState =
             control == GameplayControl::Stop ? GameplayState::Paused : GameplayState::Prepared;

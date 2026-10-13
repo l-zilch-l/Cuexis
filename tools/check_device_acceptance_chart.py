@@ -10,24 +10,19 @@ import wave
 import zipfile
 
 
-def check_guide(directory, name):
+def check_author_bindings(directory, name):
     """Inspect author fields and bindings without invoking a production compiler."""
     author = json.loads((directory / (name + "-author.json")).read_bytes())
     config = json.loads((directory / (name + "-configuration.json")).read_bytes())["configuration"]
-    rows = (directory / (name + "-guide.txt")).read_text(encoding="ascii").splitlines()
-    assert rows[:2] == ["cuexis-player-guide-v1", "5"] and len(rows) == 7
     requirements = {r["identity"]["requirementLocalId"]: r for r in author["gameplay"]["requirements"]}
     objects = {e["identity"].get("objectId") for e in author["entities"]}
     bindings = {b["target"]: b for b in config["bindings"]}
     assert len(bindings) == len(config["bindings"]) == 14
     seen = set()
     # Hand-authored course expectation; do not import the generator's EVENTS.
-    for row, (key, head, tail) in zip(rows[2:], [("D", 60, 0), ("F", 120, 0),
-                                               ("J", 180, 0), ("K", 240, 0), ("K", 300, 440)]):
-        fields = row.split()
-        assert len(fields) == 10
+    for key, head, tail in [("D", 60, 0), ("F", 120, 0), ("J", 180, 0),
+                            ("K", 240, 0), ("K", 300, 440)]:
         kind = "hold" if tail else "tap"
-        assert fields[:4] == [kind, key, str(head), str(tail)]
         requirement = requirements[kind + "." + key.lower()]
         assert requirement["atomBindings"][0]["channelToken"] == "lane." + key.lower()
         targets = {t["phase"]: int(t["chartTick"]) for t in requirement["timing"]["phaseTargets"]}
@@ -36,7 +31,12 @@ def check_guide(directory, name):
         if tail:
             assert requirement["atomBindings"][1]["action"] == "release"
         phases = ["head", "body", "tail"] if tail else ["tap"]
-        for cue, (phase, outcome) in zip(fields[4:], [(p, o) for p in phases for o in ["hit", "miss"]]):
+        for phase, outcome in [(p, o) for p in phases for o in ["hit", "miss"]]:
+            matches = [(cue, b) for cue, b in bindings.items()
+                       if b["bindingId"] in requirement["factBindingRefs"]
+                       and b["phase"] == phase and b["outcome"] == outcome]
+            assert len(matches) == 1
+            cue, binding = matches[0]
             assert cue in objects and cue not in seen
             seen.add(cue)
             binding = bindings[cue]
@@ -47,8 +47,6 @@ def check_guide(directory, name):
             assert binding["source"] == identity
             assert binding["bindingId"] in requirement["factBindingRefs"]
             assert binding["visible"] is False and binding["timing"] == "any"
-        if not tail:
-            assert fields[6:] == ["-"] * 4
     assert seen == set(bindings)
     for phase, delta in [("tap", 2), ("head", 2), ("body", 3), ("tail", 5)]:
         for outcome in ["hit", "miss"]:
@@ -66,7 +64,7 @@ def main():
     directory = args.directory.resolve()
     ordinal = 0
     for name in ["keyboard", "audio"]:
-        check_guide(directory, name)
+        check_author_bindings(directory, name)
         with zipfile.ZipFile(directory / (name + ".cxc")) as archive:
             manifest = json.loads(archive.read("cuexis.cxc.json"))
             for row in manifest["entries"]:

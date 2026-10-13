@@ -23,6 +23,7 @@ struct HostOptions final {
     std::optional<std::string> candidateEntry;
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     std::optional<GameplayHost> gameplay;
+    std::optional<std::string> executionTailDeadline;
 #endif
     std::size_t advanceFrames{4};
     std::optional<std::string> expectedIdentity;

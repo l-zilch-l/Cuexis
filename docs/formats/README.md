@@ -57,7 +57,7 @@ Compiled Runtime
 | Gameplay V2 execution / author profile | [execution](gameplay-v2-execution-profile.md)、[authoring](gameplay-v2-author-profile.md) | candidate；2026-10-05 补齐 S7A-3/4 首次消费，Capsule revision3，未实施 |
 
 ADR 记录选择理由，格式文档记录字段和语义。手写 v4 谱面可先阅读
-[Chart v4 谱面编写指南](../guides/CHART_V4_AUTHORING.md)。CXC 不重新定义 Chart/CXT；CXT 不重新定义
+[Chart v5 谱面编写指南](../guides/CHART_V5_AUTHORING.md)。CXC 不重新定义 Chart/CXT；CXT 不重新定义
 ChartParameter、Template Binding 或 Animator；Animation Mixing 不重新定义序列化字段。
 
 ## 生产与实施边界
@@ -92,3 +92,5 @@ Chart v6 / Model v1 由 Stage 9 负责；Chart v7 由 Stage 11 负责；Chart v8
 由 Stage 13 负责。旧 deferred 文件仅保留为历史输入和兼容链接。
 
 运行时脚本和逐帧脚本回调无限期延后，不是任何 Cuexis 格式的隐藏扩展点。
+
+- [Execution Recovery revision3 wire](execution-recovery-wire-v3.md)：显式新执行profile的字段顺序、兼容拒绝与golden。

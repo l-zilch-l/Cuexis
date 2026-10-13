@@ -1112,7 +1112,7 @@ TEST_CASE("PlayerController translates user input into the shared command layer"
     CHECK(playerCommandForInput(PlayerInputAction::Stop, PlayerAppState::Playing, 0.0).kind ==
           PlayerCommandKind::Stop);
     CHECK(playerCommandForInput(PlayerInputAction::Reload, PlayerAppState::Playing, 0.0)
-              .reloadPolicy == PlayerReloadPolicy::KeepChartTime);
+              .reloadPolicy == PlayerReloadPolicy::RestartAtZero);
     CHECK(playerCommandForInput(PlayerInputAction::Rebuild, PlayerAppState::Playing, 0.0).kind ==
           PlayerCommandKind::Rebuild);
 

@@ -12,6 +12,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -54,6 +55,12 @@ class CUEXIS_AUDIO_SDL_API SdlAudioSubsystem final {
     std::shared_ptr<State> state_;
 };
 
+struct PresentedClockObservation final {
+    audio::AudioClockSnapshot clock;
+    std::optional<std::int64_t> sampleMonotonicUs;
+    std::optional<std::int64_t> maximumPresentedFrame;
+    std::int64_t errorBoundUs{};
+};
 class CUEXIS_AUDIO_SDL_API SdlAudioTransport final : public audio::IAudioTransport {
   public:
     [[nodiscard]] static auto create(SdlAudioSubsystem& subsystem, audio::AudioClipStore& store,
@@ -82,6 +89,9 @@ class CUEXIS_AUDIO_SDL_API SdlAudioTransport final : public audio::IAudioTranspo
     [[nodiscard]] audio::AudioClockSnapshot snapshot() const noexcept override;
     [[nodiscard]] audio::AudioMetricsSnapshot metrics() const noexcept override;
     [[nodiscard]] audio::EffectiveAudioSettings effectiveSettings() const noexcept override;
+    // Owner-thread only. Nominal device-rate mapping anchored by an actual postmix callback.
+    // Missing timestamp means warm-up; polling a cached frame does not refresh its timestamp.
+    [[nodiscard]] auto presentedClockObservation() const noexcept -> PresentedClockObservation;
 
     [[nodiscard]] auto prepareReplacement(audio::AudioClipHandle handle, double positionMs)
         -> core::Result<void>;
@@ -92,6 +102,9 @@ class CUEXIS_AUDIO_SDL_API SdlAudioTransport final : public audio::IAudioTranspo
     // Exact-device transports fail when the bound name is no longer a unique output.
     // The default route does not switch devices here.
     [[nodiscard]] auto recheckBoundDevice() -> core::Result<void>;
+    // Owner-thread only. Detaches postmix and waits for an in-flight callback to finish.
+    // load()/play() reinstall the callback before playback can resume.
+    [[nodiscard]] auto isolateCallbacks() -> core::Result<bool>;
 
   private:
     struct Impl;

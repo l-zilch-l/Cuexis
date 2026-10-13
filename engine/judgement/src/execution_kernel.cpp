@@ -1,5 +1,6 @@
 #include "execution_kernel.hpp"
 #include "diagnostic_policy.hpp"
+#include "execution_log.hpp"
 #include "execution_testing.hpp"
 
 #include <algorithm>
@@ -89,9 +90,14 @@ auto validateSessionConfiguration(const SessionConfiguration& c) -> core::Result
                                     .withContext("severity", "error")
                                     .withContext("faulted", "false"));
     }
-    if (c.executionProfileToken != "gameplay.execution.t4-k4.v1" ||
-        c.lateAlgorithmToken != "late.window.logical.v1" ||
-        c.factSemanticRevision != "fact.semantic.phase-local.v1" ||
+    if ((c.executionProfileToken != "gameplay.execution.t4-k4.v1" &&
+         c.executionProfileToken != "gameplay.execution.t4-k4.rpa.v1") ||
+        c.lateAlgorithmToken != (c.executionProfileToken == "gameplay.execution.t4-k4.rpa.v1"
+                                     ? "late.window.batch.v1"
+                                     : "late.window.logical.v1") ||
+        c.factSemanticRevision != (c.executionProfileToken == "gameplay.execution.t4-k4.rpa.v1"
+                                       ? "fact.semantic.rpa.v1"
+                                       : "fact.semantic.phase-local.v1") ||
         c.calibrationIdentityToken.empty() ||
         engine.executionProfileToken != c.executionProfileToken ||
         engine.lateAlgorithmToken != c.lateAlgorithmToken ||
@@ -129,6 +135,8 @@ struct ExecutionKernel::Impl final {
     std::shared_ptr<RuntimeState> faultReserve;
     std::shared_ptr<const RecoveryInputs> recoveryInputs;
     std::shared_ptr<const ReplayData> recording;
+    std::shared_ptr<const ExecutionLogChunk> logTail;
+    std::shared_ptr<ExecutionLogChunk> reservedLog;
     std::shared_ptr<const ReplayData> seekSource;
     core::Error failureResult;
     core::Error foldFailureResult;
@@ -149,6 +157,19 @@ struct ExecutionKernel::Impl final {
             ReplayData{{}, 0, active->projection.judgementIdentity});
         faultReserve->projection.state = KernelSessionState::Faulted;
         faultReserve->projection.faultDiagnostic = failureResult;
+    }
+    auto recordingCandidate() -> std::shared_ptr<ReplayData> {
+        if (active->projection.rpa)
+            reservedLog = reserveLogAppend(logTail);
+        return std::make_shared<ReplayData>(*recording);
+    }
+    void publishRecording(std::shared_ptr<ReplayData> value) noexcept {
+        if (active->projection.rpa) {
+            reservedLog->records.push_back(std::move(value->records.back()));
+            logTail = std::move(reservedLog);
+            value->records.clear();
+        }
+        recording = std::move(value);
     }
     auto reserveFault(const RuntimeState& value) const -> std::shared_ptr<RuntimeState> {
         auto backup = std::make_shared<RuntimeState>(value);
@@ -395,6 +416,23 @@ struct ExecutionKernel::Impl final {
                const AdmittedObservation& input) const {
         const auto& key = input.observationKey;
         const auto tick = input.dispatchTick;
+        if (d.projection.rpa) {
+            auto& quarantine = d.projection.rpa->quarantine;
+            auto blocked = std::find_if(quarantine.begin(), quarantine.end(), [&](const auto& v) {
+                return v.domainToken == key.domainToken && v.sourceClass == key.sourceClass &&
+                       v.channelToken == key.channelToken;
+            });
+            const bool deferred =
+                std::any_of(d.projection.rpa->deferred.begin(), d.projection.rpa->deferred.end(),
+                            [&](const auto& v) { return v.startPress == key; });
+            if (blocked != quarantine.end() && !deferred) {
+                if (key.action == InputAction::release) {
+                    quarantine.erase(blocked);
+                }
+                d.projection.receipts.push_back({key, 0, {}, tick});
+                return;
+            }
+        }
         const OriginId origin = ObservationOrigin{tick, key};
         auto& contacts = d.projection.contacts;
         auto existing = std::find_if(contacts.begin(), contacts.end(),
@@ -432,8 +470,10 @@ struct ExecutionKernel::Impl final {
                         std::any_of(
                             ri->atomBindings.begin(), ri->atomBindings.end(),
                             [&](const auto& b) { return matches(b, key); });
-                    outcome(d, facts, *releaseOwner, PhaseKind::tail,
-                            matched ? Outcome::hit : Outcome::miss, origin, key, true);
+                    if (std::any_of(ri->phases.begin(), ri->phases.end(),
+                                    [](const auto& p) { return p.kind == PhaseKind::tail; }))
+                        outcome(d, facts, *releaseOwner, PhaseKind::tail,
+                                matched ? Outcome::hit : Outcome::miss, origin, key, true);
                 }
                 endOwnership(d, *releaseOwner);
             }
@@ -529,6 +569,49 @@ struct ExecutionKernel::Impl final {
                              key});
         }
         d.projection.receipts.push_back(std::move(receipt));
+    }
+
+    void interruptRpa(RuntimeState& d, std::vector<FactDescriptor>& facts,
+                      const CanonicalObservationKey& start, const OriginId& origin) const {
+        std::vector<std::size_t> affected;
+        for (const auto& owned : d.projection.ownership) {
+            if (owned.contact.startPressKey == start) {
+                const auto r =
+                    std::find_if(graph().requirements.begin(), graph().requirements.end(),
+                                 [&](const auto& v) { return v.identity == owned.requirement; });
+                affected.push_back(static_cast<std::size_t>(r - graph().requirements.begin()));
+            }
+        }
+        for (const auto i : affected) {
+            for (const auto& phase : graph().requirements[i].phases) {
+                if (phase.kind == PhaseKind::body || phase.kind == PhaseKind::tail) {
+                    outcome(d, facts, i, phase.kind, Outcome::miss, origin);
+                }
+            }
+            endOwnership(d, i);
+        }
+        auto& contacts = d.projection.contacts;
+        contacts.erase(std::remove_if(contacts.begin(), contacts.end(),
+                                      [&](const auto& v) { return v.startPressKey == start; }),
+                       contacts.end());
+    }
+    void deferredRpa(RuntimeState& d, std::vector<FactDescriptor>& facts,
+                     const AdmittedObservation& input) const {
+        if (!d.projection.rpa) {
+            return;
+        }
+        auto& deferred = d.projection.rpa->deferred;
+        for (const auto& v : deferred) {
+            if (v.startPress == input.observationKey) {
+                interruptRpa(d, facts, v.startPress,
+                             ReconciliationOrigin{input.dispatchTick, v.controlOrdinal,
+                                                  v.startPress, v.release.sequence, v.release});
+            }
+        }
+        deferred.erase(
+            std::remove_if(deferred.begin(), deferred.end(),
+                           [&](const auto& v) { return v.startPress == input.observationKey; }),
+            deferred.end());
     }
 
     void validateDraft(const RuntimeState& d) const {
@@ -884,6 +967,9 @@ auto ExecutionKernel::prepare(const SessionConfiguration& c, const PreparedGamep
                                 .effectiveFactSemanticRevision = {},
                                 .faultStage = {}};
     projection.effectiveFactSemanticRevision = actual.engine.factSemanticRevision;
+    if (c.executionProfileToken == "gameplay.execution.t4-k4.rpa.v1") {
+        projection.rpa.emplace();
+    }
     projection.runScope = std::make_shared<const std::uint8_t>(0);
     if (c.ruleset) {
         auto initial = c.ruleset->initialState();
@@ -1095,11 +1181,34 @@ auto ExecutionKernel::visibleSignalCount(Tick tick) const noexcept -> std::size_
 
 auto ExecutionKernel::submit(std::vector<ClockedIngress> batch)
     -> core::Result<std::vector<InputReceiptPending>> {
+    if (impl_->active->projection.rpa) {
+        return core::unexpected(
+            error("execution.profile_unsupported", "RPA requires closed occurrence batches"));
+    }
     return submitBatch(batch);
 }
 
 auto ExecutionKernel::submitCanonical(std::vector<CanonicalInput> batch)
     -> core::Result<std::vector<InputReceiptPending>> try {
+    if (impl_->active->projection.rpa) {
+        auto result = submitRpa(batch);
+        if (!result && !batch.empty()) {
+            auto record = impl_->recordingCandidate();
+            std::sort(batch.begin(), batch.end(),
+                      [](const auto& a, const auto& b) { return a.key < b.key; });
+            if (batch.size() > UINT64_MAX - record->eventCount)
+                throw std::overflow_error{"rejection event count"};
+            record->eventCount += static_cast<std::uint64_t>(batch.size());
+            record->records.push_back({std::move(batch), {}, {}, {}, {}, result.error()});
+            impl_->publishRecording(std::move(record));
+        }
+        return result;
+    }
+    if (std::any_of(batch.begin(), batch.end(),
+                    [](const auto& v) { return v.key.sourceLocalPosition.has_value(); })) {
+        return core::unexpected(
+            error("execution.profile_unsupported", "occurrence input requires RPA"));
+    }
     std::vector<ClockedIngress> inputs;
     std::vector<std::optional<std::int64_t>> amounts;
     const auto mapping = impl_->configuration.inputMapping.view();
@@ -1217,7 +1326,7 @@ auto ExecutionKernel::submitBatch(std::span<const ClockedIngress> batch,
     if (impl_->testControls && impl_->testControls->failSubmitRecordReservation) {
         throw std::bad_alloc{};
     }
-    auto recording = std::make_shared<ReplayData>(*impl_->recording);
+    auto recording = impl_->recordingCandidate();
     if (journal->entries.size() > UINT64_MAX - recording->eventCount) {
         return core::unexpected(error("execution.relation_invalid", "Replay event count overflow"));
     }
@@ -1234,7 +1343,7 @@ auto ExecutionKernel::submitBatch(std::span<const ClockedIngress> batch,
     }
     std::sort(impl_->pending.begin(), impl_->pending.end(),
               [](const auto& a, const auto& b) { return a.dispatchTick < b.dispatchTick; });
-    impl_->recording = std::move(recording);
+    impl_->publishRecording(std::move(recording));
     impl_->seekSource.reset();
     return receipts;
 } catch (const std::exception&) {
@@ -1242,18 +1351,294 @@ auto ExecutionKernel::submitBatch(std::span<const ClockedIngress> batch,
         error("execution.relation_invalid", "submission storage allocation failed"));
 }
 
-auto ExecutionKernel::advance(Tick horizon) -> core::Result<void> try {
+auto ExecutionKernel::submitRpa(std::vector<CanonicalInput> batch)
+    -> core::Result<std::vector<InputReceiptPending>> try {
+    const auto& p = impl_->active->projection;
+    if (p.state != KernelSessionState::Prepared || p.rpa->paused) {
+        return core::unexpected(
+            error("session.lifecycle_order", "RPA admission requires running state"));
+    }
+    auto draft = std::make_shared<RuntimeState>(*impl_->active);
+    auto pending = impl_->pending;
+    auto recording = impl_->recordingCandidate();
+    std::vector<InputReceiptPending> receipts;
+    std::sort(batch.begin(), batch.end(),
+              [](const auto& a, const auto& b) { return a.key < b.key; });
+    const auto mapping = impl_->configuration.inputMapping.view();
+    for (const auto& c : batch) {
+        const auto& key = c.key;
+        const auto domain =
+            std::find_if(mapping.domains.begin(), mapping.domains.end(),
+                         [&](const auto& v) { return v.domainToken == key.domainToken; });
+        if (!key.sourceLocalPosition || key.channelToken.empty() ||
+            key.sourceClass != mapping.sourceClass.token() || domain == mapping.domains.end() ||
+            !validUtf8(key.domainToken) || !validUtf8(key.channelToken) ||
+            (key.action != InputAction::press && key.action != InputAction::release &&
+             key.action != InputAction::update)) {
+            return core::unexpected(
+                error("execution.relation_invalid", "invalid occurrence content"));
+        }
+        if (key.amount &&
+            (*key.amount < domain->amount.minimum || *key.amount > domain->amount.maximum ||
+             (domain->amount.boundaryPolicy == AmountBoundaryPolicy::exclusive &&
+              (*key.amount == domain->amount.minimum || *key.amount == domain->amount.maximum)))) {
+            return core::unexpected(
+                error("execution.relation_invalid", "occurrence amount outside domain"));
+        }
+        for (const auto& existing : draft->projection.rpa->accepted) {
+            if (std::tie(existing.observationTick, existing.domainToken, existing.sourceClass,
+                         existing.channelToken, existing.sourceLocalPosition) ==
+                std::tie(key.observationTick, key.domainToken, key.sourceClass, key.channelToken,
+                         key.sourceLocalPosition)) {
+                if (existing != key)
+                    return core::unexpected(error("input.occurrence_conflict",
+                                                  "same occurrence slot has different content"));
+                return core::unexpected(core::Error{"judgement.late.duplicate_queue_entry",
+                                                    "occurrence already admitted"}
+                                            .withContext("category", "late_policy_incomplete")
+                                            .withContext("severity", "error")
+                                            .withContext("faulted", "false"));
+            }
+        }
+        auto route = routeExecutionObservation(impl_->configuration.latePolicy,
+                                               key.observationTick.tick(), p.lastAdvanceHorizon);
+        if (!route)
+            return core::unexpected(route.error());
+        if (key.action == InputAction::release) {
+            for (const auto& owned : impl_->active->coverageHistory) {
+                const auto r = std::find_if(
+                    impl_->graph().requirements.begin(), impl_->graph().requirements.end(),
+                    [&](const auto& v) { return v.identity == owned.requirement; });
+                const auto body =
+                    std::find_if(p.phases.begin(), p.phases.end(), [&](const auto& v) {
+                        return v.requirement == owned.requirement && v.phase == PhaseKind::body;
+                    });
+                if (body != p.phases.end() && body->state == KernelPhaseState::Hit &&
+                    sameChannel(owned.contact, key) &&
+                    key.observationTick >= owned.contact.startPressKey.observationTick &&
+                    key.observationTick.tick() < r->timing->body->end) {
+                    return core::unexpected(core::Error{"judgement.late.rejected",
+                                                        "release would rewrite sealed coverage"}
+                                                .withContext("category", "late_policy_incomplete")
+                                                .withContext("severity", "error")
+                                                .withContext("faulted", "false"));
+                }
+            }
+        }
+        pending.push_back({key, route->dispatchTick, route->wasForwarded, p.processedFrontier,
+                           p.lastAdvanceHorizon});
+        receipts.push_back({key, route->dispatchTick, route->wasForwarded, p.processedFrontier,
+                            p.lastAdvanceHorizon});
+        draft->projection.rpa->accepted.push_back(key);
+    }
+    std::sort(pending.begin(), pending.end(), [](const auto& a, const auto& b) {
+        return std::tie(a.dispatchTick, a.observationKey) <
+               std::tie(b.dispatchTick, b.observationKey);
+    });
+    if (batch.size() > UINT64_MAX - recording->eventCount)
+        throw std::overflow_error{"event count"};
+    if (impl_->testControls && impl_->testControls->failSubmitRecordReservation)
+        throw std::bad_alloc{};
+    recording->eventCount += static_cast<std::uint64_t>(batch.size());
+    recording->records.push_back({std::move(batch), receipts, {}, {}, {}});
+    auto reserve = impl_->reserveFault(*draft);
+    impl_->active = std::move(draft);
+    impl_->faultReserve = std::move(reserve);
+    impl_->pending = std::move(pending);
+    impl_->publishRecording(std::move(recording));
+    impl_->seekSource.reset();
+    return receipts;
+} catch (const std::exception&) {
+    return core::unexpected(error("execution.relation_invalid", "occurrence reservation failed"));
+}
+
+auto ExecutionKernel::controlRpa(const RpaControlRecord& control) -> core::Result<void> try {
+    const auto& p = impl_->active->projection;
+    const auto invalid = [] {
+        return core::unexpected(
+            error("control.reconciliation_invalid", "invalid RPA control declaration"));
+    };
+    if (!p.rpa || p.state != KernelSessionState::Prepared)
+        return invalid();
+    for (const auto& old : p.rpa->controls) {
+        if (old.kind == control.kind && old.controlOrdinal == control.controlOrdinal) {
+            if (old == control)
+                return {};
+            return invalid();
+        }
+    }
+    if (control.controlOrdinal != p.rpa->nextControlOrdinal ||
+        control.controlOrdinal == UINT64_MAX || p.processedFrontier != control.cutTick ||
+        (!control.trace.empty() && control.kind == RpaControlKind::pause))
+        return invalid();
+    if (control.kind == RpaControlKind::pause &&
+        (p.rpa->paused || control.pauseEpoch <= p.rpa->pauseEpoch))
+        return invalid();
+    if (control.kind == RpaControlKind::resume &&
+        (!p.rpa->paused || p.rpa->cutTick != control.cutTick ||
+         p.rpa->pauseEpoch != control.pauseEpoch || control.trace.size() != control.finalTraceCut))
+        return invalid();
+    if (control.kind != RpaControlKind::pause && control.kind != RpaControlKind::resume)
+        return invalid();
+    if (control.kind == RpaControlKind::pause && control.finalTraceCut)
+        return invalid();
+    const auto mapping = impl_->configuration.inputMapping.view();
+    for (std::size_t i = 0; i < control.trace.size(); ++i) {
+        const auto& key = control.trace[i].observation;
+        const auto domain =
+            std::find_if(mapping.domains.begin(), mapping.domains.end(),
+                         [&](const auto& d) { return d.domainToken == key.domainToken; });
+        if (control.trace[i].sequence != i || !key.sourceLocalPosition ||
+            key.observationTick.tick() < control.cutTick || key.channelToken.empty() ||
+            !validUtf8(key.channelToken) || key.sourceClass != mapping.sourceClass.token() ||
+            domain == mapping.domains.end() ||
+            (key.action != InputAction::press && key.action != InputAction::release &&
+             key.action != InputAction::update) ||
+            (i && key.observationTick < control.trace[i - 1].observation.observationTick))
+            return invalid();
+        if (key.amount &&
+            (*key.amount < domain->amount.minimum || *key.amount > domain->amount.maximum ||
+             (domain->amount.boundaryPolicy == AmountBoundaryPolicy::exclusive &&
+              (*key.amount == domain->amount.minimum || *key.amount == domain->amount.maximum))))
+            return invalid();
+        for (std::size_t j = 0; j < i; ++j) {
+            const auto& prior = control.trace[j].observation;
+            if (std::tie(prior.observationTick, prior.domainToken, prior.sourceClass,
+                         prior.channelToken) == std::tie(key.observationTick, key.domainToken,
+                                                         key.sourceClass, key.channelToken) &&
+                prior.sourceLocalPosition >= key.sourceLocalPosition)
+                return invalid();
+        }
+    }
+    auto recording = impl_->recordingCandidate();
+    recording->records.push_back({{}, {}, {}, {}, control});
+    auto draft = std::make_shared<RuntimeState>(*impl_->active);
+    auto& logical = *draft->projection.rpa;
+    std::vector<FactDescriptor> facts;
+    if (control.kind == RpaControlKind::pause) {
+        logical.paused = true;
+        logical.cutTick = control.cutTick;
+        logical.pauseEpoch = control.pauseEpoch;
+    } else {
+        // Derive the physical contact at the cut from the complete admitted source history,
+        // including future dispatches. A release binds only the currently active press.
+        std::vector<CanonicalObservationKey> physical;
+        auto accepted = logical.accepted;
+        for (const auto& old : logical.controls)
+            if (old.kind == RpaControlKind::resume)
+                for (const auto& transition : old.trace)
+                    accepted.push_back(transition.observation);
+        std::sort(accepted.begin(), accepted.end());
+        for (const auto& key : accepted) {
+            if (key.observationTick.tick() > control.cutTick)
+                continue;
+            auto active = std::find_if(physical.begin(), physical.end(), [&](const auto& v) {
+                return std::tie(v.domainToken, v.sourceClass, v.channelToken) ==
+                       std::tie(key.domainToken, key.sourceClass, key.channelToken);
+            });
+            if (key.action == InputAction::release && active != physical.end())
+                physical.erase(active);
+            else if (key.action == InputAction::press && active == physical.end())
+                physical.push_back(key);
+        }
+        for (const auto& transition : control.trace) {
+            const auto& key = transition.observation;
+            auto active = std::find_if(physical.begin(), physical.end(), [&](const auto& v) {
+                return std::tie(v.domainToken, v.sourceClass, v.channelToken) ==
+                       std::tie(key.domainToken, key.sourceClass, key.channelToken);
+            });
+            if (key.action == InputAction::release && active != physical.end()) {
+                const auto start = *active;
+                physical.erase(active);
+                const bool future =
+                    std::any_of(impl_->pending.begin(), impl_->pending.end(),
+                                [&](const auto& v) { return v.observationKey == start; });
+                if (future)
+                    logical.deferred.push_back({start, control.controlOrdinal, transition});
+                else
+                    impl_->interruptRpa(*draft, facts, start,
+                                        ReconciliationOrigin{control.cutTick,
+                                                             control.controlOrdinal,
+                                                             {},
+                                                             control.finalTraceCut,
+                                                             {}});
+            } else if (key.action == InputAction::press && active == physical.end())
+                physical.push_back(key);
+        }
+        logical.quarantine.clear();
+        for (const auto& held : physical) {
+            const bool contact =
+                std::any_of(draft->projection.contacts.begin(), draft->projection.contacts.end(),
+                            [&](const auto& v) { return v.startPressKey == held; });
+            const bool future =
+                std::any_of(impl_->pending.begin(), impl_->pending.end(),
+                            [&](const auto& v) { return v.observationKey == held; });
+            if (!contact && !future)
+                logical.quarantine.push_back(held);
+        }
+        logical.paused = false;
+        ++logical.nextControlOrdinal;
+    }
+    logical.controls.push_back(control);
+    impl_->validateDraft(*draft);
+    impl_->failIfRequested(control.cutTick, KernelFailurePoint::beforeSeal);
+    impl_->ledger(*draft, facts, control.cutTick);
+    draft->projection.sealedFactCursor = static_cast<std::uint64_t>(draft->projection.facts.size());
+    auto reserve = impl_->reserveFault(*draft);
+    reserve->projection.faultDiagnostic = impl_->foldFailureResult;
+    // All fallible pre-seal work is complete. Fold is an independent failure boundary.
+    impl_->active = std::move(draft);
+    impl_->faultReserve = std::move(reserve);
+    try {
+        auto folded = std::make_shared<RuntimeState>(*impl_->active);
+        if (control.kind == RpaControlKind::resume && folded->projection.fold) {
+            auto& rpa = *folded->projection.rpa;
+            if (rpa.foldBaseTick == control.cutTick)
+                folded->projection.fold = rpa.foldAtTickStart;
+            else {
+                rpa.foldAtTickStart = folded->projection.fold;
+                rpa.foldBaseTick = control.cutTick;
+            }
+            impl_->failIfRequested(control.cutTick, KernelFailurePoint::beforeFold);
+            impl_->fold(*folded, control.cutTick);
+        }
+        folded->projection.rpa->foldedControlCount =
+            static_cast<std::uint64_t>(folded->projection.rpa->controls.size());
+        auto foldedReserve = impl_->reserveFault(*folded);
+        impl_->active = std::move(folded);
+        impl_->faultReserve = std::move(foldedReserve);
+    } catch (const std::exception&) {
+        impl_->faultReserve->projection.failedTick = control.cutTick;
+        impl_->faultReserve->projection.faultStage = FaultStage::fold;
+        impl_->active = std::move(impl_->faultReserve);
+        recording->records.back().result =
+            std::shared_ptr<const KernelProjection>(impl_->active, &impl_->active->projection);
+        impl_->publishRecording(std::move(recording));
+        impl_->seekSource.reset();
+        return core::unexpected(std::move(impl_->foldFailureResult));
+    }
+    recording->records.back().result =
+        std::shared_ptr<const KernelProjection>(impl_->active, &impl_->active->projection);
+    impl_->publishRecording(std::move(recording));
+    impl_->seekSource.reset();
+    return {};
+} catch (const std::exception&) {
+    return core::unexpected(
+        error("control.reconciliation_invalid", "RPA pre-seal reservation failed"));
+}
+
+auto ExecutionKernel::advance(Tick horizon, bool controlDrain) -> core::Result<void> try {
     if (impl_->testControls && impl_->testControls->failRecordReservationHorizon == horizon) {
         throw std::bad_alloc{};
     }
-    auto record = std::make_shared<ReplayData>(*impl_->recording);
-    record->records.push_back({{}, {}, horizon, {}});
+    auto record = impl_->recordingCandidate();
+    record->records.push_back({{}, {}, horizon, {}, {}, {}, controlDrain});
     const auto before = impl_->active;
     auto outcome = advanceRecorded(horizon);
     if (outcome || before != impl_->active) {
         record->records.back().result =
             std::shared_ptr<const KernelProjection>(impl_->active, &impl_->active->projection);
-        impl_->recording = std::move(record);
+        impl_->publishRecording(std::move(record));
         impl_->seekSource.reset();
     }
     return outcome;
@@ -1263,7 +1648,8 @@ auto ExecutionKernel::advance(Tick horizon) -> core::Result<void> try {
 }
 
 auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
-    if (impl_->active->projection.state != KernelSessionState::Prepared ||
+    if ((impl_->active->projection.rpa && impl_->active->projection.rpa->paused) ||
+        impl_->active->projection.state != KernelSessionState::Prepared ||
         (impl_->active->projection.lastAdvanceHorizon &&
          horizon < *impl_->active->projection.lastAdvanceHorizon)) {
         return core::unexpected(
@@ -1335,6 +1721,7 @@ auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
             impl_->failIfRequested(*tick, KernelFailurePoint::afterTimers);
             for (const auto& input : inputs) {
                 impl_->input(*draft, facts, input);
+                impl_->deferredRpa(*draft, facts, input);
             }
             impl_->failIfRequested(*tick, KernelFailurePoint::afterInput);
             if (impl_->testControls && impl_->testControls->duplicatePhaseTick == *tick &&
@@ -1369,6 +1756,10 @@ auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
             foldFailed = true;
             auto folded = std::make_shared<RuntimeState>(*impl_->active);
             impl_->failIfRequested(*tick, KernelFailurePoint::beforeFold);
+            if (folded->projection.rpa) {
+                folded->projection.rpa->foldAtTickStart = folded->projection.fold;
+                folded->projection.rpa->foldBaseTick = *tick;
+            }
             impl_->fold(*folded, *tick);
             auto foldedReserve = impl_->reserveFault(*folded);
             impl_->active = std::move(folded);
@@ -1423,6 +1814,9 @@ auto ExecutionKernel::captureState() const
                      impl_->ingress.nextObservationId_,
                      impl_->ingress.observationIdsExhausted_},
                     impl_->pending};
+    if (dto.kernel.rpa) {
+        dto.rpaHistory = archive().data().records;
+    }
     dto.kernel.runScope.reset();
     for (const auto& m : impl_->active->matchers) {
         MatcherSnapshot v{{}, m.epsilonAttempted};
@@ -1433,6 +1827,11 @@ auto ExecutionKernel::captureState() const
     }
     for (const auto i : impl_->active->activeRequirements) {
         dto.activeRequirements.push_back(static_cast<std::uint64_t>(i));
+    }
+    if (dto.kernel.rpa) {
+        for (std::size_t i = 0; i < dto.kernel.rpa->accepted.size(); ++i)
+            dto.ingress.accepted.push_back(
+                {dto.kernel.rpa->accepted[i], IngressSequence{static_cast<std::uint64_t>(i)}});
     }
     for (std::size_t i = 0; i < impl_->ingress.admittedSubjects_.size(); ++i) {
         const auto& v = impl_->ingress.admittedSubjects_[i];
@@ -1454,6 +1853,53 @@ auto ExecutionKernel::restore(const SnapshotStorage& saved, const RecoveryInputs
     }
     auto& k = **candidate;
     const auto& dto = saved.dto;
+    if (dto.kernel.rpa) {
+        auto candidate = prepare(inputs.configuration, inputs.prepared);
+        if (!candidate || !(*candidate)->query()->projection.rpa)
+            return core::unexpected(
+                error("execution.relation_invalid", "RPA snapshot profile mismatch"));
+        for (const auto& record : dto.rpaHistory) {
+            if (record.result && record.result->state == KernelSessionState::Faulted &&
+                record.result->failedTick) {
+                KernelTestControls controls{};
+                controls.failedTick = record.result->failedTick;
+                controls.failurePoint = record.result->faultStage == FaultStage::fold
+                                            ? KernelFailurePoint::beforeFold
+                                            : KernelFailurePoint::beforeSeal;
+                auto injected = (*candidate)->inject(controls);
+                if (!injected)
+                    return core::unexpected(injected.error());
+            }
+            if (record.control) {
+                auto result = (*candidate)->controlRpa(*record.control);
+                if (!result &&
+                    (*candidate)->query()->projection.state != KernelSessionState::Faulted)
+                    return core::unexpected(result.error());
+            } else if (record.horizon) {
+                auto result = (*candidate)->advance(*record.horizon, record.controlDrain);
+                if (!result &&
+                    (*candidate)->query()->projection.state != KernelSessionState::Faulted)
+                    return core::unexpected(result.error());
+            } else {
+                auto result = (*candidate)->submitCanonical(record.batch);
+                if (record.rejection
+                        ? result.has_value() || !sameRecoveryError(result.error(), record.rejection)
+                        : !result || *result != record.admission)
+                    return core::unexpected(
+                        error("execution.relation_invalid", "RPA snapshot admission mismatch"));
+            }
+            if (record.result &&
+                !sameKernelResult((*candidate)->query()->projection, *record.result))
+                return core::unexpected(
+                    error("execution.relation_invalid", "RPA snapshot result mismatch"));
+        }
+        auto actual = (*candidate)->captureState();
+        if (!actual || !sameSnapshot((*actual)->dto, dto))
+            return core::unexpected(
+                error("execution.relation_invalid", "RPA snapshot state unreachable"));
+        return candidate;
+    }
+
     const auto& p = dto.kernel;
     const auto& initial = k.impl_->active->projection;
     if (p.judgementIdentity != initial.judgementIdentity ||
@@ -1962,6 +2408,11 @@ auto ExecutionKernel::restore(const SnapshotStorage& saved, const RecoveryInputs
         error("execution.relation_invalid", "Snapshot restore validation failed"));
 }
 auto ExecutionKernel::archive() const -> ReplayArchive {
+    if (impl_->active->projection.rpa && !impl_->seekSource) {
+        auto data = std::make_shared<ReplayData>(*impl_->recording);
+        data->records = flattenLog(impl_->logTail);
+        return ReplayArchive{std::move(data), impl_->recoveryInputs};
+    }
     return ReplayArchive{impl_->seekSource ? impl_->seekSource : impl_->recording,
                          impl_->recoveryInputs};
 }
@@ -1982,7 +2433,13 @@ auto ExecutionKernel::evaluate(const ReplayArchive& archive, const KernelTestCon
             containsLegacyDiagnostic(*record.result->faultDiagnostic))
             return core::unexpected(
                 error("execution.relation_invalid", "Replay diagnostic dialect invalid"));
-    if (controls) {
+    const bool controlInjection =
+        controls && std::any_of(archive.data().records.begin(), archive.data().records.end(),
+                                [](const auto& r) {
+                                    return r.control && r.result &&
+                                           r.result->state == KernelSessionState::Faulted;
+                                });
+    if (controls && !controlInjection) {
         auto applied = (*k)->inject(*controls);
         if (!applied) {
             return core::unexpected(applied.error());
@@ -1990,12 +2447,28 @@ auto ExecutionKernel::evaluate(const ReplayArchive& archive, const KernelTestCon
     }
     std::uint64_t count = 0;
     for (const auto& record : archive.data().records) {
-        if (record.horizon) {
+        if (record.control) {
+            if (controlInjection && record.result &&
+                record.result->state == KernelSessionState::Faulted) {
+                auto injected = (*k)->inject(*controls);
+                if (!injected)
+                    return core::unexpected(injected.error());
+            }
+            if (record.rejection || record.horizon || !record.batch.empty() ||
+                !record.admission.empty() || !record.result)
+                return core::unexpected(
+                    error("execution.relation_invalid", "Replay RPA structure invalid"));
+            auto result = (*k)->controlRpa(*record.control);
+            if ((!result && (*k)->query()->projection.state != KernelSessionState::Faulted) ||
+                !sameKernelResult((*k)->query()->projection, *record.result))
+                return core::unexpected(
+                    error("execution.relation_invalid", "Replay RPA full result mismatch"));
+        } else if (record.horizon) {
             if (!record.batch.empty() || !record.admission.empty() || !record.result) {
                 return core::unexpected(
                     error("execution.relation_invalid", "Replay control structure invalid"));
             }
-            auto result = (*k)->advance(*record.horizon);
+            auto result = (*k)->advance(*record.horizon, record.controlDrain);
             const auto& current = (*k)->query()->projection;
             if ((!result && current.state != KernelSessionState::Faulted) ||
                 !sameKernelResult(current, *record.result)) {
@@ -2015,7 +2488,9 @@ auto ExecutionKernel::evaluate(const ReplayArchive& archive, const KernelTestCon
                     error("execution.relation_invalid", "Replay canonical records unordered"));
             }
             auto accepted = (*k)->submitCanonical(record.batch);
-            if (!accepted || *accepted != record.admission) {
+            if (record.rejection
+                    ? accepted.has_value() || !sameRecoveryError(accepted.error(), record.rejection)
+                    : !accepted || *accepted != record.admission) {
                 return core::unexpected(
                     error("execution.relation_invalid", "Replay admission mismatch"));
             }
@@ -2042,13 +2517,18 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
     }
     std::uint64_t eventCount = 0;
     for (const auto& r : archive.data().records) {
-        if (r.horizon) {
+        if (r.control) {
+            if (!r.result || r.horizon || !r.batch.empty() || !r.admission.empty())
+                return core::unexpected(
+                    error("execution.relation_invalid", "Replay RPA shape invalid"));
+        } else if (r.horizon) {
             if (!r.result || !r.batch.empty() || !r.admission.empty()) {
                 return core::unexpected(
                     error("execution.relation_invalid", "Replay control shape invalid"));
             }
         } else {
-            if (r.batch.empty() || r.result || r.batch.size() != r.admission.size() ||
+            if (r.batch.empty() || r.result ||
+                (r.rejection ? !r.admission.empty() : r.batch.size() != r.admission.size()) ||
                 r.batch.size() > UINT64_MAX - eventCount ||
                 !std::is_sorted(r.batch.begin(), r.batch.end(),
                                 [](const auto& a, const auto& b) { return a.key < b.key; })) {
@@ -2101,7 +2581,7 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
             chosen = &checkpoint;
         }
     }
-    if (chosen) {
+    if (chosen && !(*candidate)->query()->projection.rpa) {
         // A same-identity, structurally valid state is insufficient. Bind the full archive,
         // exact cut/H and compare every private member from the origin before trusting it.
         const auto& cert = chosen->certificate_;
@@ -2142,12 +2622,21 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
     }
     for (std::uint64_t i = begin; i < cut.completeRecords; ++i) {
         const auto& record = archive.data().records[static_cast<std::size_t>(i)];
-        if (record.horizon) {
+        if (record.control) {
+            if (record.control->cutTick > horizon || !record.result || record.horizon ||
+                !record.batch.empty())
+                return core::unexpected(
+                    error("execution.relation_invalid", "Seek RPA control invalid"));
+            auto result = k.controlRpa(*record.control);
+            if (!result || !sameKernelResult(k.query()->projection, *record.result))
+                return core::unexpected(
+                    error("execution.relation_invalid", "Seek RPA result mismatch"));
+        } else if (record.horizon) {
             if (!record.result || !record.batch.empty() || *record.horizon > horizon) {
                 return core::unexpected(
                     error("execution.relation_invalid", "Seek complete control invalid"));
             }
-            auto result = k.advance(*record.horizon);
+            auto result = k.advance(*record.horizon, record.controlDrain);
             if (!result) {
                 return core::unexpected(result.error());
             }
@@ -2160,7 +2649,9 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
                 return core::unexpected(error("execution.relation_invalid", "Seek batch invalid"));
             }
             auto accepted = k.submitCanonical(record.batch);
-            if (!accepted || *accepted != record.admission) {
+            if (record.rejection
+                    ? accepted.has_value() || !sameRecoveryError(accepted.error(), record.rejection)
+                    : !accepted || *accepted != record.admission) {
                 return core::unexpected(
                     error("execution.relation_invalid", "Seek admission mismatch"));
             }

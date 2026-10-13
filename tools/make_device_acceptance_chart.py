@@ -114,7 +114,6 @@ def sources(configuration, music):
                        for phase, delta in [("tap", 2), ("head", 2), ("body", 3), ("tail", 5)]
                        for outcome in ["hit", "miss"]]
     marker = 0
-    guide = ["cuexis-player-guide-v1", str(len(EVENTS))]
     for ordinal, (name, channel, start, end, target) in enumerate(EVENTS, 4):
         r = copy.deepcopy(template)
         r["stableId"]["declarationOrdinal"] = ordinal
@@ -151,7 +150,6 @@ def sources(configuration, music):
         source["entities"].append(dict(identity=dict(kind="generated", chartId=source["chartId"],
             bindingId="invocation.one", moduleId="module.one", exportId="export.one",
             path=[dict(nodeId=name, iterationIndexPlusOne=0)]), components=[], requirements=[]))
-        cues = []
         for phase in r["phases"]:
             for outcome in ["hit", "miss"]:
                 marker += 1
@@ -170,12 +168,7 @@ def sources(configuration, music):
                 c["bindings"].append(dict(bindingId=binding, source=reference, phase=phase["kind"],
                     outcome=outcome, timing="any", target=object_id, visible=False,
                     start=0, end=None, aggregation="any", groupMembers=[]))
-                cues.append(object_id)
-        if name == "hold.k":
-            guide.append("hold K 300 440 " + " ".join(cues))
-        else:
-            guide.append(f"tap {channel[-1].upper()} {target} 0 " + " ".join(cues) + " - - - -")
-    return source, config, "\n".join(guide)+"\n"
+    return source, config
 
 
 def main():
@@ -191,8 +184,7 @@ def main():
     for music, name in [(False, "keyboard"), (True, "audio")]:
         base, author, config = [output / f"{name}-{suffix}" for suffix in ["base.cxc", "author.json", "configuration.json"]]
         write_base(base, music)
-        source, settings, guide = sources(configuration, music)
-        (output / f"{name}-guide.txt").write_text(guide, encoding="ascii")
+        source, settings = sources(configuration, music)
         author.write_bytes(json_bytes(source))
         config.write_bytes(json_bytes(settings))
         command = [str(args.tool.resolve()), "--gameplay", "--base", str(base),

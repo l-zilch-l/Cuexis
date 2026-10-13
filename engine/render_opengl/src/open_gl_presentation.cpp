@@ -1,3 +1,4 @@
+#include "../../playback/src/host_candidate.hpp"
 #include "open_gl_presentation_internal.hpp"
 
 #include <cuexis/core/error.hpp>
@@ -1222,6 +1223,23 @@ auto OpenGlPresentationCandidate::settings() const noexcept
 auto OpenGlBackend::preparePresentation(playback::PreparedPlayback& prepared,
                                         const playback::PresentationRequest& request)
     -> core::Result<OpenGlPresentationCandidate> {
+    if (auto mainThread = requireMainThread("prepare_presentation"); !mainThread)
+        return core::unexpected(std::move(mainThread.error()));
+    if (!ownerThread_.isCurrent())
+        return core::unexpected(core::Error{"render.opengl.not_main_thread",
+                                            "The OpenGL backend belongs to another thread"});
+    auto validation = prepared.validatePresentation(capabilities(), request);
+    if (!validation.hasValue())
+        return core::unexpected(validationError(validation));
+    auto input = playback::detail::HostCoordinationAccess::materialize(
+        prepared, capabilities(), request, identity().instance, identity().generation, 1);
+    if (!input)
+        return core::unexpected(input.error());
+    return preparePresentationOwned(*input);
+}
+auto OpenGlBackend::preparePresentationOwned(
+    const playback::detail::PresentationCandidateInput& input)
+    -> core::Result<OpenGlPresentationCandidate> {
     if (auto mainThread = requireMainThread("prepare_presentation"); !mainThread) {
         return core::unexpected(std::move(mainThread.error()));
     }
@@ -1255,16 +1273,13 @@ auto OpenGlBackend::preparePresentation(playback::PreparedPlayback& prepared,
     const auto capabilities = builtInPresentationCapabilities(textureLimit, debugProgram_ != 0);
     capabilities_ = capabilities;
     capabilitiesReady_ = true;
-    auto validation = prepared.validatePresentation(capabilities, request);
-    if (!validation.hasValue()) {
-        return core::unexpected(validationError(validation));
-    }
-    const auto* manifest = prepared.presentationManifest();
-    if (manifest == nullptr) {
+    if (input.rendererInstance != identity().instance ||
+        input.context.rendererGeneration != rendererGeneration_ ||
+        input.capabilities != capabilities ||
+        input.resources.size() != input.manifest.entries.size())
         return core::unexpected(
-            core::Error{"render.opengl.presentation.portable_candidate_required",
-                        "OpenGL presentation requires a Portable Presentation candidate"});
-    }
+            core::Error{"host.rpa.context_stale", "Owning GPU candidate context mismatch"});
+    const auto* manifest = &input.manifest;
     if (presentation_->nextGeneration == std::numeric_limits<std::uint64_t>::max()) {
         return core::unexpected(
             core::Error{"render.opengl.presentation.generation_exhausted",
@@ -1273,22 +1288,19 @@ auto OpenGlBackend::preparePresentation(playback::PreparedPlayback& prepared,
 
     try {
         detail::PresentationResourceSet candidate;
-        candidate.settings = *validation.settings;
+        candidate.settings = input.settings;
         candidate.manifest = *manifest;
-        auto token = prepared.presentationCandidateToken();
-        if (!token) {
-            return core::unexpected(std::move(token.error()));
-        }
-        candidate.token = *token;
+        candidate.token = input.token;
         candidate.resources.reserve(manifest->entries.size());
         candidate.meshes.reserve(manifest->entries.size());
         candidate.textures.reserve(manifest->entries.size());
         candidate.materials.reserve(manifest->entries.size());
-        for (const auto& entry : manifest->entries) {
-            auto resource = prepared.acquirePresentationResource(entry.reference);
-            if (!resource) {
-                return core::unexpected(std::move(resource.error()));
-            }
+        for (std::size_t i = 0; i < input.resources.size(); ++i) {
+            const auto& entry = manifest->entries[i];
+            core::Result<playback::PortableResourcePtr> resource{input.resources[i]};
+            if (!*resource)
+                return core::unexpected(
+                    core::Error{"host.rpa.context_stale", "Missing GPU candidate resource"});
             if ((*resource)->reference != entry.reference) {
                 return core::unexpected(
                     resourceError("render.opengl.presentation.resource_mismatch",
@@ -1700,6 +1712,22 @@ auto OpenGlBackend::prepare(playback::PreparedPlayback& prepared,
         *this, presentation_->backendToken, rendererGeneration_, generation, token, settings);
 }
 
+auto OpenGlBackend::prepareOwned(const playback::detail::PresentationCandidateInput& input)
+    -> core::Result<presentation_renderer::PreparedPresentation> {
+    if (deviceLost_ || interfaceCandidate_)
+        return core::unexpected(
+            core::Error{"host.rpa.device_failed", "GPU owner cannot prepare candidate"});
+    auto candidate = preparePresentationOwned(input);
+    if (!candidate)
+        return core::unexpected(candidate.error());
+    const auto generation = candidate->generation_;
+    const auto token = candidate->token();
+    const auto settings = candidate->settings();
+    interfaceCandidate_ = std::move(*candidate);
+    return presentation_renderer::sealPreparedPresentation(
+        *this, presentation_->backendToken, rendererGeneration_, generation, token, settings);
+}
+
 auto OpenGlBackend::accepts(const presentation_renderer::PreparedPresentation& candidate) const
     -> core::Result<void> {
     if (!SDL_IsMainThread() || !ownerThread_.isCurrent()) {
@@ -1838,15 +1866,27 @@ auto OpenGlBackend::rebuild() -> core::Result<void> {
         return core::unexpected(core::Error{"presentation.renderer.generation_exhausted",
                                             "Presentation renderer generation is exhausted"});
     }
-    if (presentation_ != nullptr && window_.valid() && context_ != nullptr) {
-        auto* nativeWindow = static_cast<SDL_Window*>(window_.nativeHandle());
-        if (nativeWindow != nullptr &&
-            SDL_GL_MakeCurrent(nativeWindow, static_cast<SDL_GLContext>(context_))) {
-            presentation_->active.reset();
-            presentation_->pending.reset();
-            presentation_->retired.reset();
-            presentation_->pendingGeneration = 0;
+    const bool retainedResources =
+        presentation_ != nullptr &&
+        (presentation_->active.has_value() || presentation_->pending.has_value() ||
+         presentation_->retired.has_value());
+    if (retainedResources) {
+        if (!window_.valid() || context_ == nullptr) {
+            return core::unexpected(
+                core::Error{"render.opengl.cleanup_unavailable",
+                            "Presentation resources require their OpenGL context for cleanup"});
         }
+        auto* nativeWindow = static_cast<SDL_Window*>(window_.nativeHandle());
+        if (nativeWindow == nullptr ||
+            !SDL_GL_MakeCurrent(nativeWindow, static_cast<SDL_GLContext>(context_))) {
+            return core::unexpected(
+                core::Error{"render.opengl.cleanup_unavailable",
+                            "Cannot make the OpenGL context current for presentation cleanup"});
+        }
+        presentation_->active.reset();
+        presentation_->pending.reset();
+        presentation_->retired.reset();
+        presentation_->pendingGeneration = 0;
     }
     interfaceCandidate_.reset();
     frameSubmitted_ = false;

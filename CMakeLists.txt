@@ -132,6 +132,25 @@ if(CUEXIS_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
+# Opt-in physical-device evidence. Never discovered by CTest or required by headless CI.
+if(BUILD_TESTING AND CUEXIS_BUILD_TESTS AND CUEXIS_ENABLE_CHART_V5_CANDIDATE
+   AND TARGET cuexis_platform_sdl AND TARGET cuexis_audio_sdl AND TARGET cuexis_render_opengl)
+    find_package(Catch2 CONFIG REQUIRED)
+    add_executable(cuexis_execution_device_probe
+        tests/player/execution_device_probe.cpp
+        app/player/src/execution_host.cpp
+        app/player/src/snapshot_scene.cpp
+    )
+    target_compile_features(cuexis_execution_device_probe PRIVATE cxx_std_20)
+    target_compile_definitions(cuexis_execution_device_probe PRIVATE
+        CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+    )
+    target_link_libraries(cuexis_execution_device_probe PRIVATE
+        cuexis::playback cuexis::audio_sdl cuexis::platform_sdl cuexis::render_opengl cuexis::render
+        cuexis::judgement cuexis::gameplay_packed Catch2::Catch2WithMain
+    )
+endif()
+
 set(CUEXIS_ACTIVE_TARGETS
     cuexis_core
     cuexis_audio
@@ -236,6 +255,15 @@ if(CUEXIS_BUILD_TESTS)
         cuexis_s5h_performance_probe
     )
 
+    if(TARGET cuexis_host_protocol_tests)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_host_protocol_tests)
+    endif()
+    if(TARGET cuexis_execution_host_tests)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_execution_host_tests)
+    endif()
+    if(TARGET cuexis_execution_device_probe)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_execution_device_probe)
+    endif()
     if(TARGET cuexis_platform_sdl_tests)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_platform_sdl_tests)
     endif()
@@ -1170,6 +1198,7 @@ if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_chart_tests
         ALLOWED
             cuexis::chart
+            cuexis::json_support
             Catch2::Catch2WithMain
     )
     cuexis_verify_target_dependencies(cuexis_animation_tests
@@ -1218,8 +1247,30 @@ if(CUEXIS_BUILD_TESTS)
     )
     cuexis_verify_target_dependencies(cuexis_rpa_tests
         ALLOWED
+            cuexis::playback
+            cuexis::judgement
             Catch2::Catch2WithMain
     )
+    if(TARGET cuexis_host_protocol_tests)
+        cuexis_verify_target_dependencies(cuexis_host_protocol_tests
+            ALLOWED
+                cuexis::playback
+                cuexis::presentation_renderer
+                Catch2::Catch2WithMain
+        )
+    endif()
+    if(TARGET cuexis_execution_host_tests)
+        cuexis_verify_target_dependencies(cuexis_execution_host_tests
+            ALLOWED cuexis::playback cuexis::presentation_renderer cuexis::render cuexis::judgement
+                    cuexis::gameplay_packed Catch2::Catch2WithMain
+        )
+    endif()
+    if(TARGET cuexis_execution_device_probe)
+        cuexis_verify_target_dependencies(cuexis_execution_device_probe
+            ALLOWED cuexis::playback cuexis::audio_sdl cuexis::platform_sdl cuexis::render_opengl cuexis::render
+                    cuexis::judgement cuexis::gameplay_packed Catch2::Catch2WithMain
+        )
+    endif()
     cuexis_verify_target_dependencies(cuexis_gameplay_packed_tests
         ALLOWED
             cuexis::gameplay_packed

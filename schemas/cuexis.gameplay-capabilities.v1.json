@@ -19,6 +19,22 @@
         ],
         "stableRejectCode": "capability.budget_insufficient"
       }
+    },
+    {
+      "id": "cuexis.gameplay.rpa.v1",
+      "revision": "1",
+      "build": "gameplay.execution.t4-k4.rpa.v1",
+      "record": {
+        "semanticKind": "discrete.occurrence-control",
+        "requiredFormat": "chart.5/gameplay.2/capsule.3",
+        "staticBudget": "pending.content",
+        "snapshotCost": "pending.snapshot",
+        "replayImpact": "canonical.discrete.rpa.le.v1",
+        "supportedDomains": [
+          "declared.static"
+        ],
+        "stableRejectCode": "capability.budget_insufficient"
+      }
     }
   ]
 }

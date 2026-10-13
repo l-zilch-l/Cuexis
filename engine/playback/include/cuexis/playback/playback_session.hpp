@@ -20,6 +20,7 @@
 #include <cuexis/playback/playback_source.hpp>
 #include <cuexis/playback/presentation.hpp>
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+#include <cuexis/playback/execution_coordination.hpp>
 #include <cuexis/playback/gameplay_candidate.hpp>
 #endif
 
@@ -65,6 +66,7 @@ inline constexpr std::string_view capabilityChartV4 = "cuexis.chart.v4";
 inline constexpr std::string_view capabilitySourceCxcV1 = "cuexis.source.cxc.v1";
 inline constexpr std::string_view capabilitySourceCxtV1 = "cuexis.source.cxt.v1";
 inline constexpr std::string_view capabilityBehaviorEventV1 = "cuexis.behavior.event.v1";
+inline constexpr std::string_view capabilityBehaviorEventV2 = "cuexis.behavior.event.v2";
 inline constexpr std::string_view capabilityRenderVisibilityV1 = "cuexis.render.visibility.v1";
 inline constexpr std::string_view capabilityMaterialSnapshotV1 = "cuexis.material.snapshot.v1";
 inline constexpr std::string_view capabilityAnimationClipV1 = "cuexis.animation.clip.v1";
@@ -225,6 +227,7 @@ class PlaybackSession;
 
 namespace detail {
 struct CandidateMetadataAccess;
+struct HostCoordinationAccess;
 } // namespace detail
 
 class CUEXIS_PLAYBACK_API PreparedPlayback final {
@@ -253,6 +256,7 @@ class CUEXIS_PLAYBACK_API PreparedPlayback final {
   private:
     friend class PlaybackSession;
     friend struct detail::CandidateMetadataAccess;
+    friend struct detail::HostCoordinationAccess;
     struct State;
     explicit PreparedPlayback(std::unique_ptr<State> state) noexcept;
 
@@ -290,6 +294,31 @@ class CUEXIS_PLAYBACK_API PlaybackSession final {
                                     std::span<const GameplayCheckpoint>, GameplayPresentationTick,
                                     const RuntimeFrame&) -> core::Result<void>;
     [[nodiscard]] auto controlGameplay(GameplayControl) -> core::Result<void>;
+    [[nodiscard]] auto beginRealtimeGameplay(SchedulingProfile, ClockMappingConfiguration,
+                                             GameplayExecutionContext, std::string monotonicDomain)
+        -> core::Result<void>;
+    [[nodiscard]] auto beginRealtimeTail(const ClockObservation&, std::uint64_t tailSegment,
+                                         TailProfile, std::int64_t nowMonotonicUs)
+        -> core::Result<TailClockTransition>;
+    [[nodiscard]] auto deliverGameplayCapture(const GameplayCaptureDelivery&,
+                                              const ClockObservation&, std::int64_t monotonicNowUs)
+        -> core::Result<void>;
+    [[nodiscard]] auto requestGameplayAdvance(GameplayAdvanceRequest, const ClockObservation&,
+                                              std::int64_t nowMonotonicUs)
+        -> core::Result<GameplayAdvanceDecision>;
+    [[nodiscard]] auto queryGameplayAdvance(std::uint64_t requestId) const
+        -> core::Result<GameplayAdvanceDecision>;
+    [[nodiscard]] auto retireGameplayAdvance(std::uint64_t requestId) -> core::Result<void>;
+    [[nodiscard]] auto acceptGameplayControl(GameplayExecutionContext, std::uint64_t commandOrdinal)
+        -> core::Result<void>;
+    [[nodiscard]] auto pauseRealtimeGameplay(std::int64_t nowMonotonicUs = 0) -> core::Result<void>;
+    [[nodiscard]] auto resumeRealtimeGameplay(const GameplayReconciliation&,
+                                              GameplayExecutionContext, const ClockObservation&,
+                                              std::int64_t nowMonotonicUs, bool finalRouteApplied,
+                                              std::optional<std::int64_t> tailResumeAt = {})
+        -> core::Result<void>;
+    [[nodiscard]] auto gameplayExecutionLag(GameplayTick clockHorizon) const
+        -> core::Result<GameplayExecutionLag>;
 #endif
     PlaybackSession() noexcept;
     explicit PlaybackSession(PlaybackCapabilitySet capabilities) noexcept;
@@ -369,6 +398,7 @@ class CUEXIS_PLAYBACK_API PlaybackSession final {
 
   private:
     friend struct detail::CandidateMetadataAccess;
+    friend struct detail::HostCoordinationAccess;
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     [[nodiscard]] auto gameplayWriteGuard() const -> core::Result<void>;
     [[nodiscard]] auto

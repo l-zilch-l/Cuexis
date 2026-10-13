@@ -124,6 +124,54 @@ TEST_CASE("SDL dummy transport implements the owner-thread state machine", "[aud
     CHECK(transport->snapshot().source.state == cuexis::audio::PlaybackState::Empty);
 }
 
+TEST_CASE("SDL callback observations are cached coherent and never future dated",
+          "[audio][sdl][clock]") {
+    for (const auto rate : {44100U, 48000U}) {
+        const auto config = cuexis::audio::validateAudioConfig(
+            {.targetQueueMs = 40, .refillLowWaterMs = 10, .gain = 0.5F});
+        REQUIRE(config);
+        cuexis::audio::AudioClipStore store;
+        auto clip = cuexis::audio::AudioClip::create(rate, 1, std::vector<float>(rate, 0.1F));
+        REQUIRE(clip);
+        auto handle = store.registerClip(std::move(*clip));
+        REQUIRE(handle);
+        auto subsystem = cuexis::audio_sdl::SdlAudioSubsystem::create();
+        REQUIRE(subsystem);
+        auto transport = cuexis::audio_sdl::SdlAudioTransport::create(*subsystem, store, *config);
+        REQUIRE(transport);
+        REQUIRE(transport->load(*handle));
+        // Exercise a half-microsecond boundary rather than only whole callback-sized frames.
+        REQUIRE(transport->seekMs(3.0 * 1000.0 / rate));
+        REQUIRE(transport->play());
+        std::optional<std::int64_t> previous;
+        unsigned ready{};
+        for (unsigned index = 0; index != 80; ++index) {
+            REQUIRE(transport->service());
+            const auto sample = transport->presentedClockObservation();
+            const auto cached = transport->presentedClockObservation();
+            CHECK(cached.sampleMonotonicUs == sample.sampleMonotonicUs);
+            CHECK(sample.maximumPresentedFrame == rate);
+            if (sample.sampleMonotonicUs) {
+                const auto now = std::chrono::duration_cast<std::chrono::microseconds>(
+                                     std::chrono::steady_clock::now().time_since_epoch())
+                                     .count();
+                CHECK(*sample.sampleMonotonicUs <= now);
+                const auto position = static_cast<std::int64_t>(std::nearbyint(
+                    static_cast<double>(sample.clock.presentedFrame) * 1000000.0 / rate));
+                const auto horizon = position + now - *sample.sampleMonotonicUs;
+                if (previous)
+                    CHECK(horizon >= *previous);
+                previous = horizon;
+                CHECK(sample.errorBoundUs >= 0);
+                ++ready;
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds{1});
+        }
+        CHECK(ready > 3);
+        REQUIRE(transport->pause());
+    }
+}
+
 TEST_CASE("SDL dummy transport preserves idempotence and seek endpoints", "[audio][sdl][state]") {
     const auto config = cuexis::audio::validateAudioConfig(
         {.targetQueueMs = 40, .refillLowWaterMs = 10, .gain = 1.0F});

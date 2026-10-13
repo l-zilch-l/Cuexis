@@ -14,14 +14,14 @@ import tempfile
 def check(root: Path) -> list[str]:
     failures: list[str] = []
     rows = json.loads((root / "docs/stage_reports/stages/stage-07/diagnostic-formalization/2026-10-10-n1-branch-mapping.json").read_text(encoding="utf-8"))
-    targets = [r["proposed_name"] for r in rows if r["proposed_name"]] + ["judgement.grace.value_source_conflict"]
+    targets = [r["proposed_name"] for r in rows if r["proposed_name"]] + ["judgement.grace.value_source_conflict", "judgement.input.occurrence_conflict", "judgement.control.reconciliation_invalid"]
     if len(targets) != len(set(targets)):
         failures.append("mapping target collision")
     policy_path = root / "engine/judgement/src/diagnostic_policy.hpp"
     policy = policy_path.read_text(encoding="utf-8")
     expected_old = {r["code"] for r in rows}
     expected_projected = {r["proposed_name"] for r in rows if r["proposed_name"] and r.get("projection") == "category"} | {"judgement.grace.value_source_conflict"}
-    for name, expected in (("legacyDiagnosticCodes", expected_old), ("categoryProjectedDiagnosticCodes", expected_projected)):
+    for name, expected in (("legacyDiagnosticCodes", expected_old), ("categoryProjectedDiagnosticCodes", expected_projected), ("coordinationProjectedDiagnosticCodes", {"judgement.input.occurrence_conflict", "judgement.control.reconciliation_invalid"})):
         match = re.search(name + r"\{\{(.*?)\}\};", policy, re.S)
         values = re.findall(r'"([^"]+)"', match[1]) if match else []
         if set(values) != expected or len(values) != len(set(values)):

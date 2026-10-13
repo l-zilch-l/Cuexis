@@ -1,5 +1,6 @@
 #include "playback_candidate_internal.hpp"
 
+#include <cuexis/chart/behavior_candidate.hpp>
 #include <cuexis/chart/candidate_lowering.hpp>
 #include <cuexis/chart/packed_chart_tables.hpp>
 #include <cuexis/cxc/cxc_writer.hpp>
@@ -7,8 +8,10 @@
 #include <cuexis/playback/playback_source.hpp>
 #include <cuexis_internal/sha256.hpp>
 
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
+#include <algorithm>
 #include <atomic>
 #include <cstdint>
 #include <filesystem>
@@ -17,6 +20,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -185,6 +189,70 @@ TEST_CASE("Candidate factories stay disabled and do not read their inputs",
 }
 
 #ifdef CUEXIS_ENABLE_CHART_V5_CANDIDATE
+
+TEST_CASE("V5 Behavior CXC owns and evaluates moving source across time discontinuities",
+          "[playback][candidate][behavior-candidate]") {
+    using namespace cuexis;
+    const auto fixture =
+        std::filesystem::path{CUEXIS_SOURCE_DIR} / "tests/fixtures/chart_format_update";
+    const auto text = readText(fixture / "behavior_candidate.v5.json");
+    auto compiled = chart::compileBehaviorCandidate(text);
+    REQUIRE(compiled);
+    cxc::CxcWriteRequest request;
+    request.entries = {
+        {"cuexis.project.json",
+         textBytes(readText(fixture / "static_project/cuexis.project.json"))},
+        {"assets/cuexis.asset-index.json",
+         textBytes(readText(fixture / "static_project/assets/cuexis.asset-index.json"))},
+        {"assets/charts/main.cuexis.chart.json",
+         textBytes(readText(fixture / "static_project/assets/charts/main.cuexis.chart.json"))},
+        {"compiled/chart.v5.json", textBytes(text)}};
+    auto extension = extensionJson(
+        {textBytes(text), chart::packed::semanticIdentityHex(compiled->metadata.semanticIdentity),
+         core::detail::sha256Hex(textBytes(text))},
+        "compiled/chart.v5.json");
+    const auto encoding = extension.find("packed-chart");
+    extension.replace(encoding, std::string{"packed-chart"}.size(), "source-json");
+    const auto profile = extension.find("candidate.static-tap-lanes4-v1");
+    extension.replace(profile, std::string{"candidate.static-tap-lanes4-v1"}.size(),
+                      chart::behaviorCandidateProfile);
+    const auto count = extension.find("\"expandedRequirementCount\":1");
+    extension.replace(count, std::string{"\"expandedRequirementCount\":1"}.size(),
+                      "\"expandedRequirementCount\":0");
+    request.extensionsJson = extension;
+    auto written = cxc::CxcWriter::write(std::move(request));
+    REQUIRE(written.hasValue());
+    auto source =
+        playback::PlaybackSource::fromCxcMemoryEntry(*written.bytes, "compiled/chart.v5.json");
+    REQUIRE(source);
+    auto restrictedSource =
+        playback::PlaybackSource::fromCxcMemoryEntry(*written.bytes, "compiled/chart.v5.json");
+    REQUIRE(restrictedSource);
+    written.bytes.reset(); // The source must retain both bytes and compiled typed data.
+    playback::PlaybackSession session;
+    auto restricted = session.capabilities();
+    REQUIRE(restricted);
+    std::erase(restricted->ids, playback::capabilityBehaviorEventV2);
+    playback::PlaybackSession unsupported{*restricted};
+    CHECK_FALSE(
+        unsupported.prepareLoad(std::move(*restrictedSource), playback::PlaybackMode::ChartClock)
+            .has_value());
+    REQUIRE(session.load(std::move(*source), playback::PlaybackMode::ChartClock));
+    CHECK(session.contentInfo()->chartFormatVersion == 5);
+    for (const auto [time, expected, discontinuity] : {std::tuple{0.0, 0.0F, 0ULL},
+                                                       {500.0, 1.0F, 0ULL},
+                                                       {1000.0, 2.0F, 0ULL},
+                                                       {500.0, 1.0F, 1ULL},
+                                                       {1500.0, 2.0F, 1ULL}}) {
+        REQUIRE(session.update({.chartTimeMs = time,
+                                .simulationDeltaTimeMs = 0,
+                                .timeDiscontinuityId = discontinuity}));
+        auto frame = session.extractFrame({.width = 16, .height = 16});
+        REQUIRE(frame);
+        REQUIRE(frame->objects.size() == 1);
+        CHECK(frame->objects[0].worldMatrix[13] == Catch::Approx(expected));
+    }
+}
 
 TEST_CASE("Explicit candidate file and memory sources prepare the same typed chart",
           "[playback][candidate][prepare]") {

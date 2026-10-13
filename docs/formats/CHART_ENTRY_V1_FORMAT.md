@@ -2,10 +2,11 @@
 
 状态：candidate（Stage 6 候选格式合同，阶段已关闭）
 
-更新日期：2026-10-01
+更新日期：2026-10-13
 
-Status: Stage 6 candidate contract recorded by S6-A2. The entry factories and candidate
-Playback implementation are not present yet.
+Status: Stage 6 candidate contract recorded by S6-A2. Explicit entry factories and static
+candidate Playback are implemented. The additional Behavior source profile below is a
+limited candidate implementation, not full Chart v5 release support.
 
 This document owns the field and selection contract for the registered extension
 cuexis.chart-entry.v1. The JSON shape is defined by
@@ -61,7 +62,7 @@ true; source records may omit them.
 | sourceSemanticIdentity | lowercase SHA-256 | Optional source/build identity observation |
 | compiledSemanticIdentity | lowercase SHA-256 | Required for playback candidate records |
 | artifactIdentity | lowercase SHA-256 | Required for playback candidate records; hash of exact bytes |
-| compilerProfile | string | Required for playback; Stage 6 value is candidate.static-tap-lanes4-v1 |
+| compilerProfile | string | Required for playback; registered static or Behavior profile below |
 | expandedEntityCount | unsigned integer | Required for playback; maximum 40,000 |
 | expandedRequirementCount | unsigned integer | Required for playback; maximum 40,000 |
 
@@ -313,3 +314,30 @@ CLI 首用拓扑按原 P78-05 A：`cuexis_chart_candidate --gameplay` 为既有 
 两者调用同一实现/编译器/发布路径，不能形成第二编译或判定语义。
 发布前验证 mode 沿现有 Playback 内容合同：有 mainMusic 使用 HostClock，没有时使用 ChartClock；
 该选择只用于无设备的静态 prepare 验证，不自动打开音频设备，不接受生产时钟/校准承诺。
+
+
+## 7. Behavior Source Candidate Profile
+
+The explicit `candidate.behavior-v2-v1` profile selects `kind=chart`, `encoding=source-json`,
+`playback=true`. It does not extend the static Packed profile or register Packed Behavior sections.
+Its source is `cuexis.chart` version 5 with UUID Objects and `behavior.event` version 2.
+The component structure follows the existing typed Object representation; Renderable alpha and
+`render.alpha` event endpoints are exact integers in [0,255], normalized once at compile.
+Old `material.opacity` author events and Behavior version 1 are rejected. Position, scale,
+Quaternion rotation, visibility and existing typed event/step properties use the shared evaluator.
+Parameters, templates, Clips and animation template imports must be empty. Gameplay requirements
+are absent: `expandedRequirementCount` must be zero. Counts are compared against compiled Objects,
+with the existing 40,000 entry count ceiling and 16 MiB input ceiling.
+
+Factory validation checks exact source bytes, parses and compiles once, then compares the typed
+semantic identity and expanded counts. Typed canonical identity uses domain
+`cuexis.chart.v5.behavior-candidate.1` plus canonical typed lowering and the sorted Object alpha map.
+The existing static Packed semantic domain and bytes are unchanged. The owning typed artifact,
+source bytes and provider survive caller storage teardown; prepare and update do not reparse JSON.
+Resource closure includes Object mesh/material, step material changes and main music.
+Playback requires `cuexis.behavior.event.v2`, plus existing presentation and visibility capabilities
+where used. Candidate-disabled builds reject explicit entry factories before reading content.
+
+The default v4 Project entry remains a compatibility fallback. The host must explicitly select
+the source-json path; version, file extension or content sniffing never selects this profile.
+See [Chart v5 authoring](../guides/CHART_V5_AUTHORING.md) for the supported source dialect and limits.

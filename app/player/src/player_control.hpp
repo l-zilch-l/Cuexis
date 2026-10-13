@@ -213,6 +213,8 @@ struct PlayerFrameLoop final {
     PlayerSurface& surface;
     bool smokeTest{};
     bool audioSmokeTest{};
+    bool debugAxes{};
+    bool showFps{};
     FrameDiagnostics* diagnostics{};
     PlayerHooks hooks{};
     PlayerLogger& logger;

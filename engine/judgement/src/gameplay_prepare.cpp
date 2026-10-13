@@ -198,9 +198,15 @@ auto prepareStorage(const GameplayPrepareRequest& request, bool resolved)
     const auto& engine = sourceAssembly.identityDeclarations.engine;
     if (!sourceAssembly.executionProfile.empty()) {
         if (engine.executionProfileToken != sourceAssembly.executionProfile ||
-            engine.lateAlgorithmToken != "late.window.logical.v1" ||
+            engine.lateAlgorithmToken !=
+                (sourceAssembly.executionProfile == "gameplay.execution.t4-k4.rpa.v1"
+                     ? "late.window.batch.v1"
+                     : "late.window.logical.v1") ||
             engine.judgementSemanticRevision != "judgement.t4-k4.v1" ||
-            engine.factSemanticRevision != "fact.semantic.phase-local.v1" ||
+            engine.factSemanticRevision !=
+                (sourceAssembly.executionProfile == "gameplay.execution.t4-k4.rpa.v1"
+                     ? "fact.semantic.rpa.v1"
+                     : "fact.semantic.phase-local.v1") ||
             engine.fixedPointTableId != "fixed-point.none.v1" ||
             engine.coordinationPhaseOrderToken != "coordination.six-eight.t4-k4.v1" ||
             sourceAssembly.normalizationProfileToken !=

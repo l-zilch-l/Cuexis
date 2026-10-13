@@ -16,7 +16,7 @@ cmake_minimum_required(VERSION 3.25)
 # outside the project:
 #   * the SDK installs into a prefix that is not the build tree,
 #   * an out-of-tree host project configures against that prefix through
-#     find_package(Cuexis 0.7.5 CONFIG REQUIRED COMPONENTS Playback),
+#     find_package(Cuexis 0.8.0 CONFIG REQUIRED COMPONENTS Playback),
 #   * the host uses only installed public Playback headers and the exported
 #     package target (no internal target, no Player configuration library, no
 #     source-tree include),
@@ -202,7 +202,7 @@ set(configure_arguments
     "-DCuexis_DIR=${prefix}/lib/cmake/Cuexis"
     "-DCuexis_ALLOW_EXPERIMENTAL=${CUEXIS_EXPERIMENTAL}"
     "-DCMAKE_PREFIX_PATH=${prefix}"
-    "-DCUEXIS_HOST_API_VERSION=0.7.5"
+    "-DCUEXIS_HOST_API_VERSION=0.8.0"
     "-DCUEXIS_HOST_CONTENT_DIR=${content_dir}/cfu_f_reference_project"
     ${instrumentation_arguments})
 if(DEFINED CUEXIS_RC_COMPILER AND NOT "${CUEXIS_RC_COMPILER}" STREQUAL "")
@@ -626,7 +626,7 @@ if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
         "-DCuexis_DIR=${doctored_prefix}/lib/cmake/Cuexis"
         "-DCuexis_ALLOW_EXPERIMENTAL=${CUEXIS_EXPERIMENTAL}"
         "-DCMAKE_PREFIX_PATH=${doctored_prefix}"
-        "-DCUEXIS_HOST_API_VERSION=0.7.5"
+        "-DCUEXIS_HOST_API_VERSION=0.8.0"
         "-DCUEXIS_HOST_CONTENT_DIR=${content_dir}/cfu_f_reference_project"
         ${instrumentation_arguments}
         ${vcpkg_arguments})
@@ -641,20 +641,20 @@ endif()
 # 6. Negative gate: a host written against an incompatible SDK minor is refused.
 #
 # The reference host declares CUEXIS_HOST_API_VERSION as the API baseline it was
-# written against and refuses anything outside 0.7.x. That refusal was only ever
+# written against and refuses anything outside 0.8.x. That refusal was only ever
 # checked by hand (C4 report section 3.4), so this case registers it. It runs for
 # both flavors: the rejection comes from the installed package configuration's
 # own compatibility version, not from a toolchain-specific gate.
 #
 # The refusal fires inside find_package (examples/reference_host/CMakeLists.txt
-# line 23) before the host's explicit 0.7.x guard on line 28 can run, so the
+# line 23) before the host's explicit 0.8.x guard on line 28 can run, so the
 # asserted text is the package-manager message, verified by running the case
 # rather than assumed from the guard's wording.
 # ---------------------------------------------------------------------------
 set(minor_build "${work_dir}/minor-build")
 cuexis_host_expect_failure(
     "Reference host configure against an incompatible SDK minor"
-    "with requested version \"0\\.8\\.0\""
+    "with requested version \"0\\.9\\.0\""
     "${CMAKE_COMMAND}"
     -S "${host_project}"
     -B "${minor_build}"
@@ -664,7 +664,7 @@ cuexis_host_expect_failure(
     "-DCMAKE_MAKE_PROGRAM=${CUEXIS_MAKE_PROGRAM}"
     "-DCuexis_DIR=${prefix}/lib/cmake/Cuexis"
     "-DCMAKE_PREFIX_PATH=${prefix}"
-    "-DCUEXIS_HOST_API_VERSION=0.8.0"
+    "-DCUEXIS_HOST_API_VERSION=0.9.0"
     "-DCUEXIS_HOST_CONTENT_DIR=${content_dir}/cfu_f_reference_project"
     ${instrumentation_arguments}
     ${vcpkg_arguments})

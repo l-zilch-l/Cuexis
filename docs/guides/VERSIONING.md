@@ -76,7 +76,7 @@ suffix 只来自允许集合或 exp.<name>
 
 ```text
 Cuexis display version     仓库/发行构建身份
-C++ SDK API version        CMake package 与源码兼容版本；当前分支 static/shared preview 为 0.7.5
+C++ SDK API version        CMake package 与源码兼容版本；当前分支 static/shared preview 为 0.8.0
 C ABI version              稳定 shared-library 二进制契约，阶段 12 首次冻结
 Chart/Project/Asset format 各自持久化 format + version
 ReplayData format          阶段 11 冻结的独立持久化版本
@@ -128,7 +128,7 @@ Stage 7 originally prepared SDK `0.7.1` as a compatible patch candidate for expl
 factories and experimental package isolation. This repair preserves installed public layouts,
 signatures, vtables and default production source selection. `0.7.0` consumers rebuild against
 the new package; the original Entry additions required at least `0.7.1`. This is the historical
-Entry baseline, not the current package version. The branch now uses `0.7.5`; its diagnostic and
+Entry baseline, not the current package version. The branch now uses `0.8.0`; its diagnostic and
 Recovery compatibility changes and consumer minimum are specified below. Delivery status belongs
 to [CURRENT_STATUS](../CURRENT_STATUS.md); approval and release gates remain separate.
 
@@ -307,7 +307,7 @@ Stage 14 必须另行冻结 `1.x` 的 API/ABI 兼容、弃用和版本递增政�
 owner明确指定[独立诊断正式化工作包](../stage_plans/active/stage-07/plan-diagnostic-formalization.md)
 目标SDK API为`0.7.5`，同时保留此前已接受的新Recovery版本拒绝旧版本方向。
 这是本工作包的具体版本裁定；版本文件与消费者已在N2集成，N1/N3已退出，
-当前分支为0.7.5。具体证据与交付状态归[CURRENT_STATUS](../CURRENT_STATUS.md)。
+诊断基线为0.7.5；当前分支为0.8.0。具体证据与交付状态归[CURRENT_STATUS](../CURRENT_STATUS.md)。
 N1已记录production/candidate公共差异及迁移影响，不将patch数字当作可观察合同兼容证明。
 若实际差异属于常规规则要求升minor的不兼容公开变化，本工作包按owner指定的`0.7.5`
 记录限定例外及具体影响，不反向放宽Reader来制造兼容，也不推广为其他阶段可使用breaking patch。
@@ -391,3 +391,11 @@ production公开签名/布局/枚举无变化，candidate消费者需重建并�
 旧归档没有内置迁移工具，回退须使用匹配旧源码/包和原件，不能把新产物降级重写。
 SDK文件已在N2.4实施，日期身份独立经updater更新并fresh/clean-first；N3证据已形成，
 当前本地提交与交付状态见CURRENT_STATUS，旧0.7.1审批不覆盖0.7.5。
+
+### 0.8.0执行协调增量
+
+增加 owning ClockObservation、checked realtime clock 和 candidate PlaybackSession 的显式批次/前缀/控制入口。
+新 execution/late/Fact token 与旧 profile 隔离；新 profile 只读写 Recovery revision3/schema2，
+旧 profile 保持 revision2/schema1。消费者必须重新编译并按包兼容规则请求0.8.0。
+字段顺序见[rev3 wire](../formats/execution-recovery-wire-v3.md)，实施和实际验证归CURRENT_STATUS与B3记录。
+该minor不表示生产实时预算、B4/B5设备或阶段收尾完成。

@@ -33,7 +33,15 @@ struct GameplayRational final {
 enum class GameplayInputAction : std::uint8_t { Press, Release, Update };
 enum class GameplayPhase : std::uint8_t { Tap, Head, Body, Tail };
 enum class GameplayOutcome : std::uint8_t { Hit, Miss };
-enum class GameplayState : std::uint8_t { Inactive, Prepared, Running, Paused, Faulted };
+enum class GameplayState : std::uint8_t {
+    Inactive,
+    Prepared,
+    Running,
+    Paused,
+    Faulted,
+    Suspended,
+    ResumeAborted
+};
 enum class GameplayFaultStage : std::uint8_t { Kernel, Fold, Control };
 enum class GameplayPublicationFailureStage : std::uint8_t { Result, Projection, Runtime };
 struct GameplayRawTimestamps final {

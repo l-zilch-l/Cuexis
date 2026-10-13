@@ -20,6 +20,7 @@ struct IngressSnapshot final {
     bool exhausted;
     friend auto operator==(const IngressSnapshot&, const IngressSnapshot&) -> bool = default;
 };
+struct ReplayRecord;
 struct SnapshotDTO final {
     KernelProjection kernel;
     std::vector<MatcherSnapshot> matchers;
@@ -29,6 +30,7 @@ struct SnapshotDTO final {
     bool commitIdsExhausted;
     IngressSnapshot ingress;
     std::vector<AdmittedObservation> pending;
+    std::vector<ReplayRecord> rpaHistory{};
 };
 struct RecoveryInputs final {
     SessionConfiguration configuration;
@@ -39,6 +41,9 @@ struct ReplayRecord final {
     std::vector<InputReceiptPending> admission;
     std::optional<Tick> horizon;
     std::shared_ptr<const KernelProjection> result;
+    std::optional<RpaControlRecord> control{};
+    std::optional<core::Error> rejection{};
+    bool controlDrain{};
 };
 struct ReplayData final {
     std::vector<ReplayRecord> records;
@@ -98,6 +103,8 @@ struct CodecBudget final {
     // Numerical budgets are accepted only in explicitly test-only decoding fixtures.
     bool testOnly;
 };
+[[nodiscard]] auto sameRecoveryError(const std::optional<core::Error>&,
+                                     const std::optional<core::Error>&) -> bool;
 [[nodiscard]] auto sameKernelResult(const KernelProjection&, const KernelProjection&) -> bool;
 [[nodiscard]] auto sameSnapshot(const SnapshotDTO&, const SnapshotDTO&) -> bool;
 } // namespace cuexis::judgement

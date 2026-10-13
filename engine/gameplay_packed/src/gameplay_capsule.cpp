@@ -1508,7 +1508,8 @@ auto makeModel(const EncodeRequest& request, chart::PackedChartLimits limits) ->
                     "requirements", "revision 2 Writer cannot discard execution fields");
         }
     } else {
-        require(m.graph.executionProfile == "gameplay.execution.t4-k4.v1" &&
+        require((m.graph.executionProfile == "gameplay.execution.t4-k4.v1" ||
+                 m.graph.executionProfile == "gameplay.execution.t4-k4.rpa.v1") &&
                     m.graph.normalizationProfileToken ==
                         request.profiles.normalizationProfileToken &&
                     m.graph.coordinatorPolicyToken == request.profiles.coordinatorPolicyToken,

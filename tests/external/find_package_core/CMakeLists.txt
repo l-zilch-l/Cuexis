@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.25)
 
 project(CuexisExternalFindPackageCore LANGUAGES CXX)
 
-find_package(Cuexis 0.7 CONFIG REQUIRED COMPONENTS Core)
+find_package(Cuexis 0.8 CONFIG REQUIRED COMPONENTS Core)
 
 if(NOT Cuexis_Core_FOUND OR NOT TARGET Cuexis::Core OR
    NOT Cuexis_VERSION VERSION_EQUAL CUEXIS_EXPECTED_SDK_API_VERSION OR

@@ -6,7 +6,7 @@
 （`cuexis_player_support`），也不读取 Cuexis 源码树。
 
 本工程由 [ADR 0042](../../docs/adr/0042-stage-6-productization-boundaries.md) 的 `S6-D08` 冻结在
-`examples/reference_host/`；它当前对齐的 SDK API 基线是 `0.7.5`。工程是**宿主模板**，
+`examples/reference_host/`；它当前对齐的 SDK API 基线是 `0.8.0`。工程是**宿主模板**，
 不是 SDK 交付面——它的内部结构不是公共承诺。
 
 ## 1. 组成
@@ -80,13 +80,13 @@ usage: cuexis_reference_host --content <project-directory> [options]
 
 ## 5. SDK API 基线校验
 
-`CMakeLists.txt` 声明 `CUEXIS_HOST_API_VERSION`（默认 `0.7.5`）作为宿主编写时对齐的基线，
+`CMakeLists.txt` 声明 `CUEXIS_HOST_API_VERSION`（默认 `0.8.0`）作为宿主编写时对齐的基线，
 并在 configure 阶段拒绝**不兼容的 SDK minor**：`find_package` 的
 `COMPATIBILITY SameMinorVersion` 与显式的
 
 ```cmake
-if(Cuexis_API_VERSION VERSION_LESS "0.7.5" OR NOT Cuexis_API_VERSION VERSION_LESS "0.8.0")
-    message(FATAL_ERROR "The reference host supports SDK API 0.7.x; found ${Cuexis_API_VERSION}")
+if(Cuexis_API_VERSION VERSION_LESS "0.8.0" OR NOT Cuexis_API_VERSION VERSION_LESS "0.9.0")
+    message(FATAL_ERROR "The reference host supports SDK API 0.8.x; found ${Cuexis_API_VERSION}")
 endif()
 ```
 
@@ -125,7 +125,7 @@ ctest --preset debug -R cuexis_reference_host_staging --output-on-failure
 
 ## 8. Experimental candidate entry
 
-The updated host requests SDK API 0.7.5, including the diagnostic formalization baseline.
+The updated host requests SDK API 0.8.0, including the diagnostic formalization baseline.
 The original additive Entry factories were introduced at 0.7.1. See
 [version compatibility](../../docs/guides/VERSIONING.md#075具体兼容差异) for diagnostic and Recovery changes. To consume an
 experimental install, explicitly pass `-DCuexis_ALLOW_EXPERIMENTAL=ON` when configuring.
@@ -134,3 +134,14 @@ At runtime select `--candidate-entry compiled/chart.packed` together with an exp
 `host.build flavor=experimental` or `production`. It still uses public Playback APIs for all
 open/play/pause/tick/seek/reload/quit commands. OFF libraries reject Entry factories even when
 the consumer permitted experimental packages at configure time.
+
+## 9. Explicit realtime fixture
+
+The candidate host can drive the RPA prefix/advance/EOF-tail protocol with an explicitly
+scripted clock, using only installed Playback headers. Pass `--candidate-entry`,
+`--gameplay-configuration`, `--gameplay-config-budget`, optional `--gameplay-observations`,
+and `--execution-tail-input-deadline <tick>` with `--content`. This mode requires a testOnly
+`gameplay.execution.t4-k4.rpa.v1` configuration calibrated to A=I=V=0 and rate=1.
+It excludes command programs and legacy H/T step arguments. The report identifies the clock
+as an explicit fixture; it is not device timing evidence. It validates the full Replay result
+and retains owning archive bytes after unload.

@@ -234,13 +234,18 @@ auto mapTime(const TimeOracleInput& input) -> std::optional<TimeOracleResult> {
     if (!observed || !presented) {
         return {};
     }
+    const auto sessionOffset = checkedRational(-static_cast<Wide>(input.timingOffsetUs), 1);
+    const auto sessionTime =
+        sessionOffset ? add(*sourceUs, *sessionOffset) : std::optional<Rational>{};
+    const auto horizonTick =
+        sessionTime ? roundHalfEven(*sessionTime) : std::optional<std::int64_t>{};
     const auto observationTick = roundHalfEven(*observed);
     const auto presentationTick = roundHalfEven(*presented);
-    if (!observationTick || !presentationTick) {
+    if (!observationTick || !presentationTick || !horizonTick) {
         return {};
     }
     return TimeOracleResult{.observationTick = *observationTick,
-                            .horizonTick = *observationTick,
+                            .horizonTick = *horizonTick,
                             .presentationTick = *presentationTick};
 }
 

@@ -32,6 +32,7 @@ add_executable(cuexis_chart_tests
     rational_beat_tests.cpp
     timing_map_tests.cpp
     behavior_track_tests.cpp
+    behavior_candidate_tests.cpp
     uuid_tests.cpp
 )
 
@@ -50,6 +51,7 @@ target_include_directories(cuexis_chart_tests
 target_link_libraries(cuexis_chart_tests
     PRIVATE
         cuexis::chart
+        cuexis::json_support
         Catch2::Catch2WithMain
 )
 

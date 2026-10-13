@@ -223,8 +223,9 @@ auto validateExecutionRequirement(const RequirementRecord& r, const PatternExecu
 
 auto makeExecutionTimers(const CanonicalGameplayGraph& g)
     -> core::Result<std::vector<PreparedTimerKey>> try {
-    if (g.executionProfile != "gameplay.execution.t4-k4.v1" || g.graphRevision != 2 ||
-        g.normalizationProfileToken.empty() ||
+    if ((g.executionProfile != "gameplay.execution.t4-k4.v1" &&
+         g.executionProfile != "gameplay.execution.t4-k4.rpa.v1") ||
+        g.graphRevision != 2 || g.normalizationProfileToken.empty() ||
         g.coordinatorPolicyToken != "coordinator.policy.greedy_v1") {
         return core::unexpected(g.executionProfile.empty()
                                     ? incomplete("executionProfile")

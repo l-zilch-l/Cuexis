@@ -23,8 +23,8 @@ template <class T> auto integer(std::string_view text) -> T {
 }
 } // namespace
 auto readPlayerGameplay(const PlayerOptions& options) -> core::Result<PlayerGameplayProfile> try {
-    require(options.gameplayConfiguration && options.gameplayBudget && options.gameplayHStep &&
-                options.gameplayTStep,
+    require(options.gameplayConfiguration && options.gameplayBudget &&
+                (options.executionTestOnly || (options.gameplayHStep && options.gameplayTStep)),
             "Gameplay requires explicit configuration, budget and Tick steps");
     std::array<std::size_t, 5> values{};
     std::string_view text = *options.gameplayBudget;
@@ -51,9 +51,11 @@ auto readPlayerGameplay(const PlayerOptions& options) -> core::Result<PlayerGame
     if (!decoded)
         return core::unexpected(std::move(decoded.error()));
     result.configuration = std::move(*decoded);
-    result.hStep = integer<std::int64_t>(*options.gameplayHStep);
-    result.tStep = integer<std::int64_t>(*options.gameplayTStep);
-    require(result.hStep > 0 && result.tStep > 0, "Gameplay Tick steps must be positive");
+    if (!options.executionTestOnly) {
+        result.hStep = integer<std::int64_t>(*options.gameplayHStep);
+        result.tStep = integer<std::int64_t>(*options.gameplayTStep);
+        require(result.hStep > 0 && result.tStep > 0, "Gameplay Tick steps must be positive");
+    }
     for (const auto& key : options.gameplayKeys) {
         const auto a = key.find(':'), b = key.find(':', a == key.npos ? key.size() : a + 1);
         require(a != key.npos && b != key.npos && b > a + 1 && b + 1 < key.size() &&
@@ -65,20 +67,6 @@ auto readPlayerGameplay(const PlayerOptions& options) -> core::Result<PlayerGame
             require(existing.scanCode != code, "Duplicate Gameplay scancode");
         result.keys.push_back({code, key.substr(a + 1, b - a - 1), key.substr(b + 1)});
     }
-    if (options.gameplayGuide) {
-        auto guide = readPlayerGuide(*options.gameplayGuide, result.budget);
-        if (!guide)
-            return core::unexpected(std::move(guide.error()));
-        for (const auto& note : *guide) {
-            const std::string_view labels = "DFJK";
-            constexpr std::array<std::uint32_t, 4> codes{7, 9, 13, 14};
-            bool found = false;
-            for (const auto& mapping : result.keys)
-                found |= mapping.scanCode == codes[labels.find(note.key)];
-            require(found, "Guide key has no Gameplay scancode mapping");
-        }
-        result.guide = std::move(*guide);
-    }
     return result;
 } catch (const Failure& error) {
     return core::unexpected(error.error);
@@ -86,6 +74,25 @@ auto readPlayerGameplay(const PlayerOptions& options) -> core::Result<PlayerGame
     return core::unexpected(
         core::Error{"player.arguments.unknown", "Gameplay profile allocation or parsing failed"});
 }
+auto readPlayerGameplayContent(const std::filesystem::path& path,
+                               const playback::GameplayConfiguration& configuration)
+    -> core::Result<playback::GameplayContent> try {
+    std::ifstream file{path, std::ios::binary | std::ios::ate};
+    const auto size = file.tellg();
+    require(file && size > 0 && size <= 16 * 1024 * 1024,
+            "Gameplay Packed file unavailable or exceeds 16 MiB");
+    std::vector<std::byte> bytes(static_cast<std::size_t>(size));
+    file.seekg(0);
+    file.read(reinterpret_cast<char*>(bytes.data()), static_cast<std::streamsize>(bytes.size()));
+    require(file.good(), "Gameplay Packed file read failed");
+    return playback::GameplayContent::fromPacked(bytes, configuration);
+} catch (const Failure& failure) {
+    return core::unexpected(failure.error);
+} catch (...) {
+    return core::unexpected(
+        core::Error{"player.arguments.unknown", "Gameplay Packed file allocation or read failed"});
+}
+
 auto PlayerGameplay::mapped(std::uint32_t code) const -> bool {
     for (const auto& key : profile_.keys)
         if (key.scanCode == code)

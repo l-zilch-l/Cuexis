@@ -1,6 +1,6 @@
 # 实时宿主边界合同
 
-状态：candidate contract；2026-10-11 已选实施设计，未实施，不是 SDK 0.7.5 公共 API
+状态：candidate contract；B3在SDK 0.8.0提供同owner执行首用；跨owner/设备宿主协议仍待B4/B5
 
 更新日期：2026-10-11
 
@@ -192,3 +192,25 @@ B1 fake clock/可控交付 fixture 走同一协议；时间 oracle 用独立有�
 T2/R2 oracle 用扫描式 reducer，不调用生产调度/advance 充当预期。
 同 canonical/admission/control 轨迹比较完整 kernel/Fold/Replay，刻意改封窗轨迹则验证不同结果或稳定拒绝。
 真实 DFJK、听音、focus、设备切换和主线程阻塞仍须 B5 实测，文档与 fixture 不能代替。
+
+
+B4 已增加非安装的 `host_protocol`、`host_candidate`、`capture_route`、`audio_owner`、
+`renderer_owner` 和 `frame_observation` 实施入口；同线程显式驱动，不创建线程。
+生产源码身份、实际调用测试和验证边界见
+[B4 实施记录](../stage_reports/stages/stage-07/rpa/2026-10-12-b4-host-and-resources.md)。
+这里的接口实施不替代 B5 的设备、callback 隔离和线程部署验收。
+
+B5 应用装配位于 Player 的 `execution_host` / `player_execution`，AudioWorker 与
+SessionWorker 为非安装的 owner 实施入口；SDK facade 保持显式单 owner，不自动创建线程。
+主机以原 job ID 查询在途回执，控制等待期间泵主线程事件。D1 为关闭批和 EpochEnd
+另留两个真实消息槽；故障 Close 导出未确认输入、tentative Tick 成员和实际 fault，
+不制造 ACK 或 canonical admission。
+显式 EOF tail 在同一 kernel/run 内换 clock segment。暂停/恢复动作使用同域单调时间锚点，
+worker 采用 source 动作时间，不采用回执到达时间；新 run 的 terminal H 至少覆盖实际
+Pause control drain，原输入截止 Tick 保持不变。这是 synthetic tail 的控制状态，
+不是修改物理音频位置。配置不能在终点证明 `F(H)<B` 时拒绝启用尾段。
+Player 的候选入口为 `--execution-test-only`；EOF 要求显式
+`--execution-tail-input-deadline`。当前 A 来自 app profile output correction，I/V=0、rate=1，
+calibration 不匹配则拒绝。主音乐使用显式 Audio clock，Playback 内部由 HostClock
+接收 owner 供给的 RuntimeFrame。全部容量/误差/有效期为 testOnly，不能据此接受生产参数。
+实施、测量和自动化边界见 [B5 记录](../stage_reports/stages/stage-07/rpa/2026-10-13-worker-deployment.md)。

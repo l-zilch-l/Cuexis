@@ -2,6 +2,7 @@
 
 #include <cuexis/judgement/ruleset.hpp>
 
+#include <tuple>
 #include <variant>
 
 namespace cuexis::judgement {
@@ -48,10 +49,51 @@ struct CanonicalObservationKey final {
     std::string domainToken, sourceClass, channelToken;
     InputAction action;
     std::optional<std::int64_t> amount;
+    // Present only in the RPA profile. Position belongs to originalTick/source, not delivery.
+    std::optional<std::uint64_t> sourceLocalPosition{};
     friend auto operator==(const CanonicalObservationKey&, const CanonicalObservationKey&)
         -> bool = default;
-    friend auto operator<=>(const CanonicalObservationKey&,
-                            const CanonicalObservationKey&) = default;
+    friend auto operator<=>(const CanonicalObservationKey& a, const CanonicalObservationKey& b) {
+        return std::tie(a.observationTick, a.domainToken, a.sourceClass, a.channelToken,
+                        a.sourceLocalPosition, a.action, a.amount) <=>
+               std::tie(b.observationTick, b.domainToken, b.sourceClass, b.channelToken,
+                        b.sourceLocalPosition, b.action, b.amount);
+    }
+};
+
+struct PauseTransition final {
+    std::uint64_t sequence;
+    CanonicalObservationKey observation;
+    friend auto operator==(const PauseTransition&, const PauseTransition&) -> bool = default;
+};
+enum class RpaControlKind : std::uint8_t { pause, resume };
+struct RpaControlRecord final {
+    RpaControlKind kind;
+    Tick cutTick;
+    std::uint64_t controlOrdinal, pauseEpoch, finalTraceCut;
+    std::vector<PauseTransition> trace;
+    friend auto operator==(const RpaControlRecord&, const RpaControlRecord&) -> bool = default;
+};
+struct DeferredInterruption final {
+    CanonicalObservationKey startPress;
+    std::uint64_t controlOrdinal;
+    PauseTransition release;
+    friend auto operator==(const DeferredInterruption&, const DeferredInterruption&)
+        -> bool = default;
+};
+struct RpaLogicalState final {
+    bool paused{};
+    std::optional<Tick> cutTick;
+    std::uint64_t nextControlOrdinal{}, pauseEpoch{};
+    std::vector<CanonicalObservationKey> accepted;
+    std::vector<CanonicalObservationKey> quarantine;
+    std::vector<DeferredInterruption> deferred;
+    std::vector<RpaControlRecord> controls;
+    // Re-evaluate a same-Tick suffix from the committed Fold view at the Tick start.
+    std::optional<FoldProjection> foldAtTickStart;
+    std::optional<Tick> foldBaseTick;
+    std::uint64_t foldedControlCount{};
+    friend auto operator==(const RpaLogicalState&, const RpaLogicalState&) -> bool = default;
 };
 
 struct AdmittedObservation final {
@@ -87,7 +129,21 @@ struct CoordinationOrigin final {
     friend auto operator==(const CoordinationOrigin&, const CoordinationOrigin&) -> bool = default;
     friend auto operator<=>(const CoordinationOrigin&, const CoordinationOrigin&) = default;
 };
-using OriginId = std::variant<ObservationOrigin, TimerOrigin, CoordinationOrigin>;
+struct ReconciliationOrigin final {
+    Tick tick;
+    std::uint64_t controlOrdinal;
+    std::optional<CanonicalObservationKey> deferredOccurrence;
+    std::uint64_t traceCut;
+    std::optional<PauseTransition> release;
+    friend auto operator==(const ReconciliationOrigin&, const ReconciliationOrigin&)
+        -> bool = default;
+    friend auto operator<=>(const ReconciliationOrigin& a, const ReconciliationOrigin& b) {
+        return std::tie(a.tick, a.controlOrdinal, a.deferredOccurrence) <=>
+               std::tie(b.tick, b.controlOrdinal, b.deferredOccurrence);
+    }
+};
+using OriginId =
+    std::variant<ObservationOrigin, TimerOrigin, CoordinationOrigin, ReconciliationOrigin>;
 using OriginKey = OriginId;
 
 struct CandidateKey final {
@@ -224,6 +280,7 @@ struct KernelProjection final {
     std::optional<FoldProjection> fold;
     std::string effectiveFactSemanticRevision;
     std::optional<FaultStage> faultStage;
+    std::optional<RpaLogicalState> rpa{};
 };
 
 } // namespace cuexis::judgement
