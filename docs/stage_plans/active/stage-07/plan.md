@@ -2,7 +2,7 @@
 
 状态：active；Stage 7A 分批实施，Stage 7-RPA 为实时架构与设备验收子阶段，Stage 7B+ 在RPA完成后实施并验收，随后进入Stage 8；本计划不构成阶段关闭或发行记录
 
-更新日期：2026-10-10
+更新日期：2026-10-14
 
 归档来源：[旧版 PROJECT_GUIDE](../../../archive/PROJECT_GUIDE_LEGACY_2026-08-10.md)、
 [SDK transition plan 快照](../../../archive/CUEXIS_SDK_TRANSITION_PLAN_2026-08-10.md) 和
@@ -34,9 +34,11 @@ Stage 7包含以下子阶段，统一遵守本总计划的边界和交接规则�
 | --- | --- | --- |
 | Stage 7A | [plan-a](plan-a.md) | 既有内核、7/8集成与证据；原S7A-9剩余收尾已移交RPA，不再独立排期 |
 | Stage 7-RPA | [plan-rpa](plan-rpa.md) | 实时架构、实体设备/同步及原S7A-9矩阵/预算/交接统一收尾；消费独立诊断前置退出记录 |
+| Stage 7-PD | [plan-presentation-decoupling](plan-presentation-decoupling.md) | 判定到表现的内部架构解耦、Runtime/World 投影边界、FramePacket 与候选架构性能门禁；独立于 7A 和 RPA |
 | Stage 7B+ | [plan-b](plan-b.md) | RPA完成后实施高级能力；本分册范围验收关闭后交给Stage 8 |
 
 RPA独立管理批次与验收，归属Stage 7；不归入S7A-7/8新增任务，也不替代7B+。
+Stage 7-PD 独立管理判定到表现的架构重构；它不改变 7A 的 Gameplay 语义、不接管 RPA 的实时控制合同，也不因列入 Stage 7 就表示产品代码已实施。其候选架构比较、推荐基线、后续 owner 拆分触发条件、实施批次和复用评估见[独立计划](plan-presentation-decoupling.md)。
 2026-10-10规划修订：维护性优先，再比较性能与扩展性；多方案筛选和有限验证先于架构选型。
 owner同日最新要求将诊断码正式化N0–N3剥离为[独立前置工作包](plan-diagnostic-formalization.md)，
 不新增编号阶段，不计RPA内部进度；其N3必须在新架构原型和A4–A6产品实施前退出。
