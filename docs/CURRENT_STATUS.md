@@ -107,6 +107,15 @@ Player 不持有谱面布局或动画代码。实际 SDL/OpenGL 窗口已确认�
 这些是 testOnly 接入和自动验证，不能替代实体键盘手感、听音/同步、设备失效/压力和生产参数接受；
 B5、V5-F、Stage 8 与整体 Stage 7 仍未退出。详细证据见上述 B5 工作记录新增 10-14 章节。
 
+2026-10-14 RPA 续推进：owner 本轮暂缓实体操作，先执行自动矩阵和预算测量。
+日期构建更新到 `26.10.14-1`，SDK 保持 `0.8.0`。现场 Git 确认 B3/B4/B5 已在
+`d7a20d9` 存档，等待优化已在 `74cee7e` 提交；上文“尚未提交”是历史核对快照。
+本轮修正测试 oracle 的 MSVC 兼容、严格编译和旧合同文本检查，增加 1/256 Requirement
+的稳态、Snapshot/Replay/Seek 与 Packed 测量；首轮全量 Debug 的失败/Skip 保留，
+稳定源码最终矩阵仍在推进。实体 B5、同 SHA hosted、生产 profile/预算接受和 F4 关闭仍待。
+证据见 [自动矩阵与预算记录](stage_reports/stages/stage-07/rpa/2026-10-14-final-matrix-and-budget-progress.md)
+及 [生产验收交接草稿](stage_reports/stages/stage-07/handoffs/2026-10-14-rpa-production-acceptance-handoff.md)。
+
 2026-10-10诊断工作：owner接受定向原因整改、显式投影、新Recovery版本拒绝旧格式等方向，
 并要求诊断正式化从RPA剥离为[独立前置工作包](stage_plans/active/stage-07/plan-diagnostic-formalization.md)。
 N0差异刷新无新增/删除；[N1合同与准入](stage_reports/stages/stage-07/diagnostic-formalization/2026-10-10-n1-contract-and-entry.md)

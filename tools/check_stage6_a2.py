@@ -254,13 +254,19 @@ def check_text_boundaries() -> None:
     architecture = (ROOT / "docs" / "architecture" / "STAGE6_PRODUCTIZATION_BOUNDARIES.md").read_text(encoding="utf-8")
     entry_spec = (ROOT / "docs" / "formats" / "CHART_ENTRY_V1_FORMAT.md").read_text(encoding="utf-8")
     config_spec = (ROOT / "docs" / "formats" / "STAGE6_CONFIG_AND_MEDIA.md").read_text(encoding="utf-8")
+    cxc_spec = (ROOT / "docs" / "formats" / "CXC_FORMAT.md").read_text(encoding="utf-8")
     for name in ("fromFilesystemProjectEntry", "fromCxcFileEntry", "fromCxcMemoryEntry"):
         require(name in api and name in entry_spec, f"missing candidate factory {name}")
     for token in ("CUEXIS_ENABLE_CHART_V5_CANDIDATE", "Cuexis_ALLOW_EXPERIMENTAL=ON",
-                  "candidate.static-tap-lanes4-v1", "cxc.candidate.profile_unsupported",
+                  "cxc.candidate.profile_unsupported",
                   "cuexis.prepared-semantic.v5.candidate.1", "cuexis.execution-config.v5.candidate.1",
                   "cuexis.session.execution.v5.candidate.1"):
         require(token in api + entry_spec + config_spec, f"missing contract token {token}")
+    # The legacy static entry profile is retained by the CXC contract. Stage 7
+    # expanded the current entry profile registry; the old token need not be
+    # duplicated in the current entry/API document to remain characterized.
+    require("candidate.static-tap-lanes4-v1" in cxc_spec,
+            "missing legacy CXC static compiler profile")
     for forbidden_edge in ("cuexis_render -> cuexis_presentation_renderer",
                            "cuexis_playback -> cuexis_media_import",
                            "cuexis_playback -> cuexis_player_support"):

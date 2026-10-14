@@ -2,6 +2,7 @@
 #include "../../engine/playback/src/host_candidate.hpp"
 #include "../judgement/execution_reference.hpp"
 #include "../judgement/execution_test_fixture.hpp"
+#include "../support/environment.hpp"
 #include "gameplay_entry_internal.hpp"
 #include "gameplay_internal.hpp"
 #include <algorithm>
@@ -1787,14 +1788,17 @@ TEST_CASE("Candidate realtime execution uses explicit profile and coherent clock
     REQUIRE(calibration);
     f.config.calibration = *calibration;
     const auto packed = f.packed();
-    if (const auto* exportFile = std::getenv("CUEXIS_B3_EXPORT_FILE")) {
+    if (const auto exportFile = test_support::environmentVariable("CUEXIS_B3_EXPORT_FILE");
+        !exportFile.empty()) {
         std::ofstream file{exportFile, std::ios::binary};
         REQUIRE(file);
         file.write(reinterpret_cast<const char*>(packed.data()),
                    static_cast<std::streamsize>(packed.size()));
         REQUIRE(file);
     }
-    if (const auto* exportDirectory = std::getenv("CUEXIS_B5_REFERENCE_DIRECTORY")) {
+    if (const auto exportDirectory =
+            test_support::environmentVariable("CUEXIS_B5_REFERENCE_DIRECTORY");
+        !exportDirectory.empty()) {
         const std::filesystem::path directory{exportDirectory};
         std::filesystem::create_directories(directory / "compiled");
         std::filesystem::copy(std::filesystem::path{CUEXIS_SOURCE_DIR} /

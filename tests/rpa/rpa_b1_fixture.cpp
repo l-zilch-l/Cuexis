@@ -1,4 +1,5 @@
 #include "rpa_b1_fixture.hpp"
+#include "oracle_integer.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -8,7 +9,7 @@
 
 namespace cuexis::rpa::testing {
 namespace {
-using Wide = __int128_t;
+using Wide = OracleInteger;
 
 auto gcdWide(Wide a, Wide b) -> Wide {
     if (a < 0) {

@@ -21,7 +21,7 @@ include(Catch)
 catch_discover_tests(cuexis_rpa_tests ADD_TAGS_AS_LABELS PROPERTIES LABELS "rpa")
 
 if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
-# Owner/resource tests are independent of the GNU-only baseline rational oracle.
+# Owner/resource tests have a separate executable from the baseline oracle.
 add_executable(cuexis_host_protocol_tests rpa_b4_tests.cpp)
 target_compile_features(cuexis_host_protocol_tests PRIVATE cxx_std_20)
 target_compile_definitions(cuexis_host_protocol_tests PRIVATE CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}")

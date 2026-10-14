@@ -3,7 +3,9 @@
 #include "../../engine/judgement/src/recovery_wire.hpp"
 #include "../judgement/execution_reference.hpp"
 #include "../judgement/execution_test_fixture.hpp"
+#include "../support/environment.hpp"
 #include <algorithm>
+#include <catch2/generators/catch_generators.hpp>
 #include <chrono>
 #include <cstdlib>
 #include <cuexis/judgement/execution_scheduler.hpp>
@@ -620,12 +622,115 @@ TEST_CASE("B3 real monotonic clock measures H and frontier lag separately",
                       std::to_string(frontier[1]) + "," + std::to_string(frontier[2]) + "," +
                       std::to_string(frontier[3]) + "]}";
     std::cout << json << '\n';
-    if (const auto* destination = std::getenv("CUEXIS_B3_MEASUREMENT_FILE")) {
-        std::ofstream output{destination};
+    const auto measurementDestination =
+        cuexis::test_support::environmentVariable("CUEXIS_B3_MEASUREMENT_FILE");
+    if (!measurementDestination.empty()) {
+        std::ofstream output{measurementDestination};
         REQUIRE(output);
         output << json << '\n';
         REQUIRE(output);
     }
+}
+
+TEST_CASE("RPA F3 kernel history measures recovery and Replay at declared content bounds",
+          "[rpa][b3][measurement][budget]") {
+    const auto count = GENERATE(std::size_t{1}, std::size_t{256});
+    Fixture3 f;
+    auto& document = f.assembly.sources[0].document;
+    const auto prototype = document.requirements[0];
+    document.requirements.clear();
+    std::erase_if(document.declarations, [](const auto& declaration) {
+        return declaration.kind == DeclarationKind::requirement;
+    });
+    document.relations[0].members.clear();
+    f.assembly.contentProfileLimits.maxRequirements =
+        MeasuredParameter<std::uint64_t>::measured(count);
+    for (std::size_t i = 0; i < count; ++i) {
+        auto requirement = prototype;
+        requirement.stableId.declarationOrdinal = static_cast<std::uint32_t>(100 + i);
+        requirement.identity.requirementLocalId = "budget." + std::to_string(i);
+        requirement.resourceClaims[0].claimPolicy.competition =
+            ClaimPolicyDeclaration::CompetitionKey{-1, static_cast<std::uint64_t>(i)};
+        document.declarations.push_back(testDeclaration(DeclarationKind::requirement,
+                                                        requirement.identity.requirementLocalId,
+                                                        requirement.stableId.declarationOrdinal));
+        document.relations[0].members.push_back(requirement.stableId);
+        document.requirements.push_back(std::move(requirement));
+    }
+    const auto elapsed = [](auto start) {
+        return std::chrono::duration_cast<std::chrono::nanoseconds>(
+                   std::chrono::steady_clock::now() - start)
+            .count();
+    };
+    auto start = std::chrono::steady_clock::now();
+    const auto prepared = f.prepared();
+    auto configuration = f.configuration();
+    auto s = JudgementSession::create();
+    REQUIRE(s);
+    REQUIRE(s->configure(configuration));
+    REQUIRE(s->prepare(prepared));
+    const auto prepareNs = elapsed(start);
+    start = std::chrono::steady_clock::now();
+    REQUIRE(s->advance(Tick{1100}));
+    const auto timerBurstNs = elapsed(start);
+    const auto expected = view(*s);
+    std::vector<std::int64_t> steadyNs;
+    for (std::int64_t i = 1; i <= 32; ++i) {
+        start = std::chrono::steady_clock::now();
+        REQUIRE(s->advance(Tick{1100 + i}));
+        steadyNs.push_back(elapsed(start));
+    }
+    const auto final = view(*s);
+    CHECK(final.facts.size() == expected.facts.size());
+    start = std::chrono::steady_clock::now();
+    auto snapshot = s->snapshot();
+    REQUIRE(snapshot);
+    auto snapshotBytes = encodeSnapshot(*snapshot);
+    REQUIRE(snapshotBytes);
+    const auto snapshotNs = elapsed(start);
+    start = std::chrono::steady_clock::now();
+    auto decoded = decodeSnapshot(*snapshotBytes, {configuration, prepared});
+    REQUIRE(decoded);
+    auto recovered = JudgementSession::recover(*decoded, {configuration, prepared});
+    REQUIRE(recovered);
+    const auto restoreNs = elapsed(start);
+    CHECK(sameKernelResult(final, view(*recovered)));
+    start = std::chrono::steady_clock::now();
+    auto archive = s->archive();
+    REQUIRE(archive);
+    auto replayBytes = encodeReplay(*archive);
+    REQUIRE(replayBytes);
+    const auto archiveNs = elapsed(start);
+    start = std::chrono::steady_clock::now();
+    auto replay = decodeReplay(*replayBytes, {configuration, prepared});
+    REQUIRE(replay);
+    auto evaluation = JudgementSession::evaluateReplay(*replay);
+    REQUIRE(evaluation);
+    const auto replayNs = elapsed(start);
+    CHECK(sameKernelResult(final, *evaluation->result));
+    auto seekSession = JudgementSession::create();
+    REQUIRE(seekSession);
+    REQUIRE(seekSession->configure(configuration));
+    REQUIRE(seekSession->prepare(prepared));
+    const auto cut = replayCutAt(*replay, Tick{1132});
+    start = std::chrono::steady_clock::now();
+    REQUIRE(seekSession->seek(*replay, Tick{1132}, cut));
+    const auto seekNs = elapsed(start);
+    CHECK(sameKernelResult(final, view(*seekSession)));
+    std::sort(steadyNs.begin(), steadyNs.end());
+    std::cout << "{\"event\":\"rpa.f3.kernel_budget\",\"test_only\":true,\"requirements\":" << count
+              << ",\"phases_per_requirement\":3,\"facts\":" << final.facts.size()
+              << ",\"prepare_ns\":" << prepareNs << ",\"timer_burst_ns\":" << timerBurstNs
+              << ",\"steady_samples\":32,\"steady_p50_ns\":" << steadyNs[15]
+              << ",\"steady_p95_ns\":" << steadyNs[30] << ",\"steady_max_ns\":" << steadyNs.back()
+              << ",\"snapshot_encode_ns\":" << snapshotNs
+              << ",\"snapshot_bytes\":" << snapshotBytes->size()
+              << ",\"snapshot_decode_recover_ns\":" << restoreNs
+              << ",\"archive_encode_ns\":" << archiveNs
+              << ",\"replay_bytes\":" << replayBytes->size()
+              << ",\"replay_decode_evaluate_ns\":" << replayNs << ",\"kernel_seek_ns\":" << seekNs
+              << ",\"replay_records\":" << replay->data().records.size()
+              << ",\"prepare_peak_heap_bytes\":null,\"production_max_seek_latency_ns\":null}\n";
 }
 
 TEST_CASE(

@@ -156,3 +156,5 @@
 
 - [B5 线程部署与自动验证](rpa/2026-10-13-worker-deployment.md)（2026-10-13）：非实体设备本地实施与验证，应用 owner 线程、控制通道及测量记录。
 - [等待路径性能优化证据](rpa/2026-10-14-wait-path-optimization.md)（2026-10-14）：completion wait 替换固定轮询等待后的受控 Debug 对比、RPA 回归和证据边界。
+- [RPA 自动矩阵与预算推进](rpa/2026-10-14-final-matrix-and-budget-progress.md)（2026-10-14）：MSVC oracle/严格构建兼容、全量失败与复验、五类预算输入，实体与生产验收待完成。
+- [RPA 生产验收交接草稿](handoffs/2026-10-14-rpa-production-acceptance-handoff.md)（2026-10-14）：typed handoff、生产参数缺口、问题处置和独立关闭门禁。

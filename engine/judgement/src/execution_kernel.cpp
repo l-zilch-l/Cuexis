@@ -1847,11 +1847,11 @@ auto ExecutionKernel::captureState() const
 }
 auto ExecutionKernel::restore(const SnapshotStorage& saved, const RecoveryInputs& inputs)
     -> core::Result<std::unique_ptr<ExecutionKernel>> try {
-    auto candidate = prepare(inputs.configuration, inputs.prepared);
-    if (!candidate) {
-        return core::unexpected(candidate.error());
+    auto initialCandidate = prepare(inputs.configuration, inputs.prepared);
+    if (!initialCandidate) {
+        return core::unexpected(initialCandidate.error());
     }
-    auto& k = **candidate;
+    auto& k = **initialCandidate;
     const auto& dto = saved.dto;
     if (dto.kernel.rpa) {
         auto candidate = prepare(inputs.configuration, inputs.prepared);
@@ -2402,7 +2402,7 @@ auto ExecutionKernel::restore(const SnapshotStorage& saved, const RecoveryInputs
     k.impl_->faultReserve = k.impl_->reserveFault(*state);
     k.impl_->active = std::move(state);
     k.impl_->historyAvailable = false;
-    return std::move(*candidate);
+    return std::move(*initialCandidate);
 } catch (const std::exception&) {
     return core::unexpected(
         error("execution.relation_invalid", "Snapshot restore validation failed"));

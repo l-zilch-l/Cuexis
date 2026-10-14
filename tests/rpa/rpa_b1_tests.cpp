@@ -1,8 +1,57 @@
+#include "oracle_integer.hpp"
 #include "rpa_b1_fixture.hpp"
 
 #include <catch2/catch_test_macros.hpp>
+#include <limits>
+#include <random>
 
 namespace cuexis::rpa::testing {
+
+TEST_CASE("B1 portable rational oracle preserves wide cancellation and i64 limits", "[rpa][b1]") {
+    constexpr auto lo = std::numeric_limits<std::int64_t>::min();
+    constexpr auto hi = std::numeric_limits<std::int64_t>::max();
+    REQUIRE(Rational::create(lo, lo));
+    CHECK(Rational::create(lo, lo)->numerator() == 1);
+    CHECK_FALSE(Rational::create(lo, -1));
+    CHECK_FALSE(Rational::create(1, lo));
+    CHECK_FALSE(Rational::create(0, 0));
+    const auto a = Rational::create(hi, hi - 1);
+    const auto b = Rational::create(hi - 1, hi);
+    REQUIRE(a);
+    REQUIRE(b);
+    const auto product = multiply(*a, *b);
+    REQUIRE(product);
+    CHECK(product->numerator() == 1);
+    CHECK(product->denominator() == 1);
+    const auto canceled = add(*a, *Rational::create(-hi, hi - 1));
+    REQUIRE(canceled);
+    CHECK(canceled->numerator() == 0);
+    const auto max = Rational::create(hi, 1);
+    CHECK_FALSE(add(*max, *max));
+    CHECK(roundHalfEven(*Rational::create(lo, 1)) == lo);
+    CHECK(roundHalfEven(*Rational::create(-7, 2)) == -4);
+    FakeClock clock(hi);
+    CHECK_FALSE(clock.advance(1));
+    CHECK_FALSE(clock.observe(1, 0).valid);
+}
+
+#if defined(__SIZEOF_INT128__)
+TEST_CASE("B1 portable oracle arithmetic agrees with native wide integers", "[rpa][b1]") {
+    std::mt19937_64 random{0x525041};
+    for (unsigned i = 0; i < 2048; ++i) {
+        const auto a = static_cast<std::int64_t>(random());
+        const auto b = static_cast<std::int64_t>(random());
+        const auto divisor = static_cast<std::int64_t>((random() >> 1) | 1);
+        const auto expected = static_cast<__int128_t>(a) * b + a;
+        const auto actual = OracleInteger{a} * OracleInteger{b} + OracleInteger{a};
+        const auto expectedRemainder = static_cast<std::int64_t>(expected % divisor);
+        CHECK(static_cast<std::int64_t>(actual % OracleInteger{divisor}) == expectedRemainder);
+        const auto quotient = actual / OracleInteger{divisor};
+        CHECK(quotient * OracleInteger{divisor} + actual % OracleInteger{divisor} == actual);
+        CHECK((actual < OracleInteger{}) == (expected < 0));
+    }
+}
+#endif
 
 TEST_CASE("B1.1 records stage identity separately from canonical input identity", "[rpa][b1]") {
     TraceRecorder recorder(7, 3, 11);

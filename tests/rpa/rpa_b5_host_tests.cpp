@@ -3,6 +3,7 @@
 #include "execution_fixture.hpp"
 #include <atomic>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 #include <filesystem>
 #include <future>
 #include <iostream>
@@ -458,7 +459,7 @@ TEST_CASE("B5 full capture queue preserves control cut space and owning fault ev
 
 TEST_CASE("B5 declared 256 requirement boundary completes simultaneous timers and Replay",
           "[b5][host][measurement]") {
-    constexpr std::size_t requirementBound = 256;
+    const auto requirementBound = GENERATE(std::size_t{1}, std::size_t{256});
     auto fixture = std::make_unique<test_support::SessionTestContent>();
     const ClockMappingConfiguration mapping{{0, 1}, {0, 1}, {0, 1}, {1, 1}};
     test_support::rpa(*fixture, mapping);
