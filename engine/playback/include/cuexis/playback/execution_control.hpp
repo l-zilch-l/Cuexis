@@ -234,7 +234,17 @@ inline auto controlFullyApplied(const ControlReceipt& control) -> bool {
                 !confirmedExecutionStep(control, static_cast<Participant>(p), StepPhase::close))
                 return false;
         const auto active = [&](Participant p) {
-            return control.request.participants[static_cast<std::size_t>(p)];
+            switch (p) {
+            case Participant::capture:
+                return control.request.participants[0];
+            case Participant::software:
+                return control.request.participants[1];
+            case Participant::audio:
+                return control.request.participants[2];
+            case Participant::renderer:
+                return control.request.participants[3];
+            }
+            return false;
         };
         if (active(Participant::capture) &&
             !confirmedExecutionStep(control, Participant::capture, StepPhase::cut))
