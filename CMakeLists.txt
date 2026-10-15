@@ -705,9 +705,14 @@ if(CUEXIS_BUILD_DEVELOPER_TOOLS)
 
     find_program(CUEXIS_CLANG_FORMAT_EXECUTABLE NAMES clang-format)
     if(CUEXIS_CLANG_FORMAT_EXECUTABLE)
+        string(REPLACE ";" "\n" cuexis_format_file_lines "${CUEXIS_FORMAT_FILES}")
+        file(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/cuexis-format-files.txt"
+            CONTENT "${cuexis_format_file_lines}\n")
         add_custom_target(cuexis_format_check
-            COMMAND "${CUEXIS_CLANG_FORMAT_EXECUTABLE}" --dry-run --Werror
-                    ${CUEXIS_FORMAT_FILES}
+            COMMAND "${CMAKE_COMMAND}"
+                    "-DCUEXIS_CLANG_FORMAT_EXECUTABLE=${CUEXIS_CLANG_FORMAT_EXECUTABLE}"
+                    "-DCUEXIS_FORMAT_FILE_LIST=${CMAKE_BINARY_DIR}/cuexis-format-files.txt"
+                    -P "${PROJECT_SOURCE_DIR}/cmake/CheckFormatting.cmake"
             WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
             VERBATIM
         )

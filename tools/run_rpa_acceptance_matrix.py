@@ -81,8 +81,15 @@ def main():
         if row.startswith("msvc") and args.vcvars:
             # Paths/arguments come from this runner; quote with Windows CRT rules.
             batch = run / f"{row}-{phase}.cmd"
+            # vcvars can replace VCPKG_ROOT with Visual Studio's bundled checkout.
+            # Keep the explicitly selected dependency baseline for every phase.
+            restore_vcpkg = ""
+            if environment.get("VCPKG_ROOT"):
+                root = str(Path(environment["VCPKG_ROOT"]).resolve())
+                restore_vcpkg = 'set "VCPKG_ROOT=' + root.replace('%', '%%') + '"\n'
             batch.write_text('@echo off\ncall "' + str(args.vcvars.resolve()) +
                              '" >nul\nif errorlevel 1 exit /b %errorlevel%\n' +
+                             restore_vcpkg +
                              subprocess.list2cmdline(command) + '\nexit /b %errorlevel%\n',
                              encoding="utf-8")
             invocation = ["cmd.exe", "/d", "/c", str(batch)]
