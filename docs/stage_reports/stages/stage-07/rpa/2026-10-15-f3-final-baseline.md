@@ -38,7 +38,8 @@ Machine-readable evidence:
 
 ## Runtime budget evidence
 
-The serial budget runner executed 30 workloads, three repetitions each, across
+The serial budget runner executed 11 workload classes, three repetitions each
+(33 process runs), across
 candidate Debug, candidate Release, MinGW Release, representative content, and
 history pressure. Every process exited with code 0 and the source SHA was
 unchanged.
