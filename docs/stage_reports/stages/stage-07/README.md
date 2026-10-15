@@ -160,3 +160,6 @@
 - [RPA DLL 边界方案 A 修复](rpa/2026-10-14-dll-boundary-repair.md)（2026-10-14）：宿主静态支持外置、公共 owning/synchronous 能力、严格导出与安装消费验证；完成后按 owner 要求停止。
 - [RPA 生产验收交接草稿](handoffs/2026-10-14-rpa-production-acceptance-handoff.md)（2026-10-14）：typed handoff、生产参数缺口、问题处置和独立关闭门禁。
 - [RPA F1/F2 自动矩阵最终证据](rpa/2026-10-15-f1-f2-final-matrix.md)（2026-10-15）：同 SHA hosted、本地工具链矩阵、MinGW Release 修复复验和剩余关闭门禁。
+- [RPA F3 当前目标基线](rpa/2026-10-15-f3-target-baseline.md)（2026-10-15）：约 40,000 实体、延迟不超过 20 ms 的当前实现测量目标；PD 后必须重测，不构成最终生产结论。
+- [RPA F3 基线测量报告](rpa/2026-10-15-f3-final-baseline.md)（2026-10-15）：40,000 实体、16 MiB Packed entry、自动预算测量及未测项目。
+- [RPA F4 PD 交接包](handoffs/2026-10-15-rpa-f4-handoff.md)（2026-10-15）：RPA 基线、PD 重测规则、回退边界和未关闭验收项。
