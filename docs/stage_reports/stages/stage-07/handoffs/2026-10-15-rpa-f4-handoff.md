@@ -12,6 +12,14 @@ remain open.
 ## Inputs for PD
 
 - Current behavior baseline: commits debb206 and c82e500.
+- RPA execution and recovery contract:
+  ../../../formats/rpa-execution-contract.md.
+- Runtime host boundary and control/resource ownership:
+  ../../../api/realtime-host-boundary.md.
+- Candidate capacity and Packed entry budgets:
+  ../../../formats/PACKED_CHART_FORMAT.md.
+- Existing production acceptance inventory and source identity ledger:
+  2026-10-14-rpa-production-acceptance-handoff.md.
 - Automated F1/F2 evidence:
   rpa/2026-10-15-f1-f2-final-matrix.md.
 - F3 baseline:
@@ -21,6 +29,21 @@ remain open.
 - Current latency target: 20 ms applicable Seek target.
 - Required PD action: rerun content, steady-state, snapshot/Seek, Replay, and
   Packed measurements after the judgement refactor.
+
+## Typed handoff inventory
+
+- Input mapping: v4 remains the accepted Playback input path; v5 gameplay
+  graph and Packed Chart remain explicit candidate capabilities.
+- Requirement and Replay identity: preserve the existing canonical identity,
+  complete ReplayEvaluation, fault prefix, cut, checkpoint, archive, and
+  recovery revisions recorded by B2/B3.
+- Golden and rejection evidence: consume the existing RPA and Chart capacity
+  fixtures; retain the 40,000 and 16 MiB over-limit rejection cases.
+- Capability and rejection table: preserve candidate-only v5/Packed entry
+  selection and refuse unsupported revisions, over-budget entries, and
+  incompatible profiles.
+- Migration and rollback: PD changes receive a new implementation identity;
+  the current RPA reports remain the rollback comparison point.
 
 ## Boundary and rollback
 
