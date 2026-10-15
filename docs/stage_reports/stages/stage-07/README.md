@@ -159,3 +159,4 @@
 - [RPA 自动矩阵与预算推进](rpa/2026-10-14-final-matrix-and-budget-progress.md)（2026-10-14）：MSVC oracle/严格构建兼容、全量失败与复验、五类预算输入，实体与生产验收待完成。
 - [RPA DLL 边界方案 A 修复](rpa/2026-10-14-dll-boundary-repair.md)（2026-10-14）：宿主静态支持外置、公共 owning/synchronous 能力、严格导出与安装消费验证；完成后按 owner 要求停止。
 - [RPA 生产验收交接草稿](handoffs/2026-10-14-rpa-production-acceptance-handoff.md)（2026-10-14）：typed handoff、生产参数缺口、问题处置和独立关闭门禁。
+- [RPA F1/F2 自动矩阵最终证据](rpa/2026-10-15-f1-f2-final-matrix.md)（2026-10-15）：同 SHA hosted、本地工具链矩阵、MinGW Release 修复复验和剩余关闭门禁。
