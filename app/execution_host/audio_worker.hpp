@@ -70,7 +70,7 @@ struct AudioWorkerOptions final {
     audio::AudioClipStoreLimits clipLimits;
     std::chrono::milliseconds serviceInterval{2};
 };
-class CUEXIS_PLAYBACK_API AudioWorker final {
+class AudioWorker final {
   public:
     using DeviceFactory =
         std::function<core::Result<std::unique_ptr<OwnedAudioDevice>>(audio::AudioClipStore&)>;

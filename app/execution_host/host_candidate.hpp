@@ -3,30 +3,9 @@
 #include "host_protocol.hpp"
 
 namespace cuexis::playback::detail {
-struct FeedbackObservation;
-struct AudioCandidateInput final {
-    std::string assetId;
-    double timingOffsetMs{};
-    std::uint64_t contentRevision{};
-    std::vector<std::byte> encoded;
-};
-struct PresentationCandidateInput final {
-    HostContext context;
-    std::uint64_t mutationGeneration{}, candidateId{}, rendererInstance{};
-    PresentationCandidateToken token;
-    PresentationCapabilities capabilities;
-    PresentationResourceManifest manifest;
-    EffectivePresentationSettings settings;
-    std::vector<PortableResourcePtr> resources;
-    std::optional<AudioCandidateInput> audio;
-    std::uint64_t playbackOwnerToken{};
-};
-struct CommitFence final {
-    std::uint64_t scope{}, generation{}, candidateId{}, controlSequence{};
-    friend auto operator==(CommitFence, CommitFence) -> bool = default;
-};
+using CommitFence = ExecutionFence;
 // Prepared stays on its owner; only CPU-owning data crosses this non-installed bridge.
-struct CUEXIS_PLAYBACK_API HostCoordinationAccess final {
+struct HostCoordinationAccess final {
     [[nodiscard]] static auto
     materialize(PreparedPlayback&, const PresentationCapabilities&, const PresentationRequest&,
                 std::uint64_t rendererInstance, std::uint64_t rendererGeneration,

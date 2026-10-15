@@ -59,7 +59,7 @@ Judgement Kernel/Fold
 - [playback_session.cpp](../../../../engine/playback/src/playback_session.cpp) 的 `publishGameplayProjection()` 直接读取 `judgement::PhaseOutcomeFact`，扫描绑定，并生成 `RenderVisible` 写入。
 - [runtime_session.cpp](../../../../engine/runtime/src/runtime_session.cpp) 的 `updateGameplay()` 将 Gameplay 写入解析为 World 属性层，并与 Runtime 时间推进、候选状态和回滚绑定。
 - [playback_session.cpp](../../../../engine/playback/src/playback_session.cpp) 的 `extractFrame()` 直接读取 World、EnTT、Transform、Appearance、Camera 和资源布局。
-- [session_worker.cpp](../../../../engine/playback/src/session_worker.cpp) 在同一个 `SessionSample` 中顺序完成 Gameplay/Runtime 更新、帧提取、反馈登记和 latest 帧返回。
+- [session_worker.cpp](../../../../app/execution_host/session_worker.cpp) 在同一个 `SessionSample` 中顺序完成 Gameplay/Runtime 更新、帧提取、反馈登记和 latest 帧返回。
 - [gameplay_internal.hpp](../../../../engine/playback/src/gameplay_internal.hpp) 直接包含 Judgement 的 `src/diagnostic_policy.hpp`，使 Playback 依赖 Judgement 私有实现。
 
 问题不在 Renderer API，而在 Playback 内部同时承担了 Judgement 结果解释、表现绑定、Runtime 写入和帧生产。该结构造成以下维护风险：

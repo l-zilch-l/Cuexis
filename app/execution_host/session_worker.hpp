@@ -158,7 +158,7 @@ struct SessionWorkerConfiguration final {
     // One fixed owner clock, not a callback supplied by each job.
     std::function<std::int64_t()> monotonicNow;
 };
-class CUEXIS_PLAYBACK_API SessionWorker final {
+class SessionWorker final {
   public:
     [[nodiscard]] static auto create(SessionWorkerConfiguration)
         -> core::Result<std::unique_ptr<SessionWorker>>;

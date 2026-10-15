@@ -9,104 +9,38 @@
 #include <vector>
 
 namespace cuexis::playback::detail {
-[[nodiscard]] CUEXIS_PLAYBACK_API auto sameHostError(const std::optional<core::Error>&,
-                                                     const std::optional<core::Error>&) -> bool;
-enum class Participant : std::uint8_t { capture, software, audio, renderer };
-enum class StepPhase : std::uint8_t {
-    prepare,
-    fence,
-    cut,
-    resumeRoute,
-    softwareCommit,
-    activate,
-    stop,
-    isolate,
-    retire,
-    close
-};
-struct HostContext final {
-    std::uint64_t sessionScope{}, clockSegment{}, runEpoch{}, controlSequence{};
-    std::uint64_t resourceGeneration{}, rendererGeneration{};
-    PreparedSemanticIdentity contentIdentity{};
-    friend auto operator==(const HostContext&, const HostContext&) -> bool = default;
-};
-struct StepKey final {
-    std::uint64_t sessionScope{}, operationId{};
-    Participant participant{};
-    StepPhase phase{};
-    std::uint64_t attempt{};
-    friend auto operator==(StepKey, StepKey) -> bool = default;
-};
-struct StepTarget final {
-    HostContext context;
-    std::uint64_t expectedGeneration{}, candidateId{}, commandOrdinal{};
-    std::optional<std::int64_t> tick;
-    std::optional<std::uint64_t> cut, pauseEpoch;
-    std::optional<PreparedSemanticIdentity> archiveIdentity;
-    std::optional<HostContext> nextContext;
-    std::optional<PreparedSemanticIdentity> payloadIdentity;
-    std::optional<double> audioPositionMs;
-    std::optional<audio::AudioClipHandle> audioClip;
-    std::array<std::optional<std::uint64_t>, 4> participantGenerations;
-    std::optional<std::uint64_t> reconciliationOrdinal;
-    std::optional<std::int64_t> seekHorizon;
-    std::optional<std::uint64_t> seekCompleteRecords;
-    std::optional<std::int64_t> seekPartialHorizon;
-    std::optional<std::int64_t> tailPauseAt;
-    friend auto operator==(const StepTarget&, const StepTarget&) -> bool = default;
-};
-[[nodiscard]] inline auto generationFor(const StepTarget& target, Participant participant)
-    -> std::uint64_t {
-    const auto index = static_cast<std::size_t>(participant);
-    return index < target.participantGenerations.size()
-               ? target.participantGenerations[index].value_or(target.expectedGeneration)
-               : target.expectedGeneration;
-}
-struct ResumeTraceBinding final {
-    std::uint64_t finalCut{};
-    PreparedSemanticIdentity identity{};
-    friend auto operator==(const ResumeTraceBinding&, const ResumeTraceBinding&) -> bool = default;
-};
-struct StepRequest final {
-    StepKey key;
-    StepTarget target;
-    // Physical generation may change only in an isolated retry of this immutable target.
-    std::optional<std::uint64_t> retryGeneration;
-    std::optional<ResumeTraceBinding> resumeTrace;
-    std::optional<std::int64_t> tailResumeAt;
-    friend auto operator==(const StepRequest&, const StepRequest&) -> bool = default;
-};
-enum class StepStatus : std::uint8_t {
-    pending,
-    inProgress,
-    rejectedNotApplied,
-    canceledNotApplied,
-    applied,
-    failed,
-    unknown,
-    retired
-};
-struct StepEffects final {
-    std::uint64_t generation{};
-    std::optional<std::int64_t> position;
-    std::optional<std::uint64_t> cut, pauseEpoch;
-    bool callbackIsolated{}, referencesReleased{};
-    std::optional<std::uint64_t> sealedFactCursor, foldedFactCursor;
-    std::optional<PreparedSemanticIdentity> payloadIdentity;
-    friend auto operator==(const StepEffects&, const StepEffects&) -> bool = default;
-};
-struct StepReceipt final {
-    StepRequest request;
-    StepStatus status{StepStatus::pending};
-    StepEffects effects;
-    std::optional<core::Error> cause;
-};
+using ::cuexis::playback::AudioCandidateInput;
+using ::cuexis::playback::controlFullyApplied;
+using ::cuexis::playback::ControlKind;
+using ::cuexis::playback::controlReadyForCommit;
+using ::cuexis::playback::ControlReceipt;
+using ::cuexis::playback::ControlRequest;
+using ::cuexis::playback::controlRequiredPhase;
+using ::cuexis::playback::ControlStatus;
+using ::cuexis::playback::FeedbackId;
+using ::cuexis::playback::FeedbackObservation;
+using ::cuexis::playback::FeedbackStatus;
+using ::cuexis::playback::generationFor;
+using ::cuexis::playback::HostContext;
+using ::cuexis::playback::Participant;
+using ::cuexis::playback::PresentationCandidateInput;
+using ::cuexis::playback::ResumeTraceBinding;
+using ::cuexis::playback::StepEffects;
+using ::cuexis::playback::StepKey;
+using ::cuexis::playback::StepPhase;
+using ::cuexis::playback::StepReceipt;
+using ::cuexis::playback::StepRequest;
+using ::cuexis::playback::StepStatus;
+using ::cuexis::playback::StepTarget;
+
+[[nodiscard]] auto sameHostError(const std::optional<core::Error>&,
+                                 const std::optional<core::Error>&) -> bool;
 struct FaultSlot final {
     enum class Reason : std::uint8_t { none, capacity, allocation, conflict, captureGap } reason{};
     std::optional<StepKey> step;
 };
 // Fixed records are allocated at create; fault publication never allocates.
-class CUEXIS_PLAYBACK_API OwnerStepLedger final {
+class OwnerStepLedger final {
   public:
     [[nodiscard]] static auto create(std::uint64_t scope, Participant, std::size_t capacity,
                                      std::size_t controlReserve) -> core::Result<OwnerStepLedger>;
@@ -158,37 +92,8 @@ enum class HostState : std::uint8_t {
     closing,
     closed
 };
-enum class ControlKind : std::uint8_t { load, reload, pause, resume, seek, stop, reset, close };
-struct ControlRequest final {
-    HostContext context;
-    std::uint64_t operationId{}, commandOrdinal{};
-    ControlKind kind{};
-    StepTarget target;
-    std::array<bool, 4> participants{true, true, true, true};
-    friend auto operator==(const ControlRequest&, const ControlRequest&) -> bool = default;
-};
-enum class ControlStatus : std::uint8_t {
-    preparing,
-    softwareApplied,
-    complete,
-    suspended,
-    failed,
-    busyNotAccepted,
-    retired
-};
-struct ControlReceipt final {
-    ControlRequest request;
-    ControlStatus status{};
-    std::uint64_t decisionOrdinal{};
-    std::array<std::array<std::optional<StepReceipt>, 10>, 4> steps;
-    bool directResumeAllowed{true}, cleanupComplete{}, softwareApplied{};
-    std::optional<HostContext> finalizedContext;
-};
-[[nodiscard]] CUEXIS_PLAYBACK_API auto controlReadyForCommit(const ControlReceipt&) -> bool;
-[[nodiscard]] CUEXIS_PLAYBACK_API auto controlFullyApplied(const ControlReceipt&) -> bool;
-[[nodiscard]] CUEXIS_PLAYBACK_API auto controlRequiredPhase(ControlKind, Participant) -> StepPhase;
 // Explicit coordinator drive: acknowledgements are evidence, never inferred from timeout.
-class CUEXIS_PLAYBACK_API HostCoordinator final {
+class HostCoordinator final {
   public:
     [[nodiscard]] static auto create(HostContext, std::size_t capacity,
                                      std::uint64_t firstCommand = 0)

@@ -1,5 +1,5 @@
-#include "../../playback/src/host_candidate.hpp"
 #include "open_gl_presentation_internal.hpp"
+#include <cuexis/playback/presentation_candidate.hpp>
 
 #include <cuexis/core/error.hpp>
 #include <cuexis/shader/shader_cache.hpp>
@@ -1231,14 +1231,13 @@ auto OpenGlBackend::preparePresentation(playback::PreparedPlayback& prepared,
     auto validation = prepared.validatePresentation(capabilities(), request);
     if (!validation.hasValue())
         return core::unexpected(validationError(validation));
-    auto input = playback::detail::HostCoordinationAccess::materialize(
-        prepared, capabilities(), request, identity().instance, identity().generation, 1);
+    auto input = prepared.materializePresentation(capabilities(), request, identity().instance,
+                                                  identity().generation, 1);
     if (!input)
         return core::unexpected(input.error());
     return preparePresentationOwned(*input);
 }
-auto OpenGlBackend::preparePresentationOwned(
-    const playback::detail::PresentationCandidateInput& input)
+auto OpenGlBackend::preparePresentationOwned(const playback::PresentationCandidateInput& input)
     -> core::Result<OpenGlPresentationCandidate> {
     if (auto mainThread = requireMainThread("prepare_presentation"); !mainThread) {
         return core::unexpected(std::move(mainThread.error()));
@@ -1712,7 +1711,7 @@ auto OpenGlBackend::prepare(playback::PreparedPlayback& prepared,
         *this, presentation_->backendToken, rendererGeneration_, generation, token, settings);
 }
 
-auto OpenGlBackend::prepareOwned(const playback::detail::PresentationCandidateInput& input)
+auto OpenGlBackend::prepareOwned(const playback::PresentationCandidateInput& input)
     -> core::Result<presentation_renderer::PreparedPresentation> {
     if (deviceLost_ || interfaceCandidate_)
         return core::unexpected(

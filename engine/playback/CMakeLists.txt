@@ -12,9 +12,6 @@ add_library(cuexis_playback ${CUEXIS_LIBRARY_TYPE}
     src/playback_source_state.hpp
     src/runtime_timeline.cpp
     src/realtime_clock.cpp
-    src/audio_owner.cpp
-    src/host_protocol.cpp
-    src/frame_observation.cpp
 )
 add_library(cuexis::playback ALIAS cuexis_playback)
 add_library(Cuexis::Playback ALIAS cuexis_playback)
@@ -32,7 +29,7 @@ endif()
 if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
     target_compile_definitions(cuexis_playback PRIVATE CUEXIS_ENABLE_CHART_V5_CANDIDATE=1)
     target_compile_definitions(cuexis_playback PUBLIC CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE=1)
-    target_sources(cuexis_playback PRIVATE src/gameplay_candidate.cpp src/gameplay_configuration.cpp src/gameplay_entry.cpp src/capture_route.cpp src/audio_worker.cpp src/session_worker.cpp)
+    target_sources(cuexis_playback PRIVATE src/gameplay_candidate.cpp src/gameplay_configuration.cpp src/gameplay_entry.cpp)
     target_link_libraries(cuexis_playback PRIVATE cuexis::judgement cuexis::gameplay_packed cuexis::json_support)
 endif()
 
@@ -52,13 +49,16 @@ target_sources(cuexis_playback
             include/cuexis/playback/presentation.hpp
             include/cuexis/playback/runtime_timeline.hpp
             include/cuexis/playback/realtime_clock.hpp
+            include/cuexis/playback/playback_types.hpp
+            include/cuexis/playback/presentation_candidate.hpp
 )
 
 target_compile_features(cuexis_playback PUBLIC cxx_std_20)
 if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
     target_sources(cuexis_playback PUBLIC FILE_SET HEADERS FILES
         include/cuexis/playback/gameplay_candidate.hpp
-        include/cuexis/playback/execution_coordination.hpp)
+        include/cuexis/playback/execution_coordination.hpp
+        include/cuexis/playback/execution_control.hpp)
 endif()
 
 target_link_libraries(cuexis_playback

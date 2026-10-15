@@ -28,6 +28,7 @@ find_package(spdlog CONFIG REQUIRED)
 
 if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
     target_sources(cuexis_player PRIVATE src/execution_host.cpp src/player_execution.cpp)
+    target_link_libraries(cuexis_player PRIVATE cuexis::execution_host_support)
 endif()
 
 target_compile_features(cuexis_player PRIVATE cxx_std_20)

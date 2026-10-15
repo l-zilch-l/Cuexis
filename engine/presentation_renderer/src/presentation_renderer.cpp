@@ -1,4 +1,4 @@
-#include "../../playback/src/host_candidate.hpp"
+#include <cuexis/playback/presentation_candidate.hpp>
 #include <cuexis/presentation_renderer/presentation_renderer.hpp>
 
 #include <cuexis/core/error.hpp>
@@ -253,14 +253,13 @@ auto TestPresentationRenderer::prepare(playback::PreparedPlayback& prepared,
     if (!validation.hasValue()) {
         return core::unexpected(validationError(validation));
     }
-    auto input = playback::detail::HostCoordinationAccess::materialize(
-        prepared, state_->capabilities, request, state_->instance, state_->generation, 1);
+    auto input = prepared.materializePresentation(state_->capabilities, request, state_->instance,
+                                                  state_->generation, 1);
     if (!input)
         return core::unexpected(input.error());
     return prepareOwned(*input);
 }
-auto TestPresentationRenderer::prepareOwned(
-    const playback::detail::PresentationCandidateInput& input)
+auto TestPresentationRenderer::prepareOwned(const playback::PresentationCandidateInput& input)
     -> core::Result<PreparedPresentation> try {
     if (auto owner = requireOwner("prepare_owned"); !owner)
         return core::unexpected(owner.error());

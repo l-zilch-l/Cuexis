@@ -141,8 +141,11 @@ P-B 中 Session owner 是 Playback worker，GL renderer owner 是主线程。
    CPU owning 值析构不能调用 GL/SDL；需要设备析构的资源由所属 owner 排队回收。
 
 P3-a 不新增公共可共享 Prepared 类型，也不意味所有 RPA 公共 API 无变化。
-内部桥以不安装的 typed 边界连接 Playback 与 renderer adapter；保持 target allowlist、无 backend 反向依赖。
-现有公开 renderer.prepare(Prepared&) 仍作为同 owner 兼容入口，不能把内部 bridge 冒充该入口的跨线程许可。
+CPU owning 候选由公开的 `PreparedPlayback::materializePresentation` 产生，renderer adapter
+仅消费安装的 `PresentationCandidateInput` 值；不再包含 Playback 私有宿主头文件。保持 target
+allowlist、无 backend 反向依赖。此同步物化入口不改变 Prepared 的 owner 或 GPU 线程约束。
+现有 renderer.prepare(Prepared&) 仍作为同 owner 兼容入口；跨 owner 仅传 owning 候选，
+不能把物化入口理解为 Prepared 可跨线程使用。
 
 音频准备也必须闭合寿命：在 Prepared owner 内从 MainMusicSourceView 取得/复制 owning 编码数据或解码产物，
 然后把不含借用的音频候选交给 audio owner 创建/管理 ClipStore 与设备句柄。
@@ -214,3 +217,30 @@ Player 的候选入口为 `--execution-test-only`；EOF 要求显式
 calibration 不匹配则拒绝。主音乐使用显式 Audio clock，Playback 内部由 HostClock
 接收 owner 供给的 RuntimeFrame。全部容量/误差/有效期为 testOnly，不能据此接受生产参数。
 实施、测量和自动化边界见 [B5 记录](../stage_reports/stages/stage-07/rpa/2026-10-13-worker-deployment.md)。
+
+## 7. DLL 与内置宿主实施边界（2026-10-14 修复）
+
+按 owner 选择的方案 A，`app/execution_host/` 为非安装的静态宿主支持模块，拥有 worker、
+消息队列、capture/audio/renderer owner、步骤 ledger、表现回执 ledger 与组合控制协调器。
+这些类不使用 Playback 导出宏，SDK 不安装它们，也不负责创建宿主线程。
+
+Playback 保留软件会话的唯一 accepted control、generation、fence 和执行状态。
+`PlaybackSession` 的 candidate 同步能力分为：owner 状态/软件副作用查询、控制接受与绑定验证、
+fence/软件提交与完成确认、受控退休/Pause/Resume/Seek、时钟映射/撤销、Replay cut、
+表现采样与反馈成员读取。它们不接收宿主 ledger、worker 或协调器指针；调用、对象析构
+仍在 Session owner。宿主步骤的终态重传、Apply/Cancel 串行裁决、容量预留和回收由
+宿主 ledger 负责，调用原始 SDK mutation 不提供跨设备组合控制的 exactly-once 保证。
+
+[`execution_control.hpp`](../../engine/playback/include/cuexis/playback/execution_control.hpp)
+只在 candidate SDK 安装，声明 owning 请求/回执值、可复制但不可由调用方构造有效值的
+`ExecutionFence`、owner 状态副本及纯 proof 检查。副本不是第二份可变会话状态。
+Resume 传最终 route 回执并校验同一 trace identity；Seek 校验 owning archive identity 与 cut；
+软件清理仍需 capture cut、audio stop/isolation 证据。scope、代数和操作绑定不得省略。
+
+通用 [`presentation_candidate.hpp`](../../engine/playback/include/cuexis/playback/presentation_candidate.hpp)
+也用于旧同步 renderer prepare，拥有 manifest、portable resources 和编码音频副本，不拥有
+Prepared、provider 回调或设备句柄。其物化使用原有 acquire 路径，没有新增深拷贝资源策略。
+
+candidate OFF 不构建宿主支持模块、不安装 execution control，不保存 RPA 控制/fence 状态。
+ADR 0033 禁止私有导出的规则保留；共享库白名单仅登记实际公共类型/函数，不能放行 detail。
+上述接口仍属 SDK 0.8.0 preview；修复不接受生产 profile、设备验收或 Stage 7 关闭。

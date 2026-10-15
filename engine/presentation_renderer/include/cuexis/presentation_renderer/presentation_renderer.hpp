@@ -12,9 +12,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace cuexis::playback::detail {
-struct PresentationCandidateInput;
-}
+#include <cuexis/playback/presentation_candidate.hpp>
 namespace cuexis::presentation_renderer {
 
 enum class PresentationFailureClass : std::uint8_t {
@@ -90,7 +88,7 @@ class IPresentationRenderer {
     [[nodiscard]] virtual auto prepare(playback::PreparedPlayback& prepared,
                                        const playback::PresentationRequest& request = {})
         -> core::Result<PreparedPresentation> = 0;
-    [[nodiscard]] virtual auto prepareOwned(const playback::detail::PresentationCandidateInput&)
+    [[nodiscard]] virtual auto prepareOwned(const playback::PresentationCandidateInput&)
         -> core::Result<PreparedPresentation> = 0;
     // Returns an error for a stale, foreign, or spent candidate. Activate is noexcept only
     // after this check has succeeded.
@@ -129,7 +127,7 @@ class TestPresentationRenderer final : public IPresentationRenderer {
     [[nodiscard]] auto capabilities() const noexcept
         -> const playback::PresentationCapabilities& override;
     [[nodiscard]] auto identity() const noexcept -> RendererIdentity override;
-    [[nodiscard]] auto prepareOwned(const playback::detail::PresentationCandidateInput&)
+    [[nodiscard]] auto prepareOwned(const playback::PresentationCandidateInput&)
         -> core::Result<PreparedPresentation> override;
     [[nodiscard]] auto prepare(playback::PreparedPlayback& prepared,
                                const playback::PresentationRequest& request = {})

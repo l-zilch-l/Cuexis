@@ -1,4 +1,4 @@
-#include "../../engine/playback/src/audio_worker.hpp"
+#include "../../app/execution_host/audio_worker.hpp"
 #include "../audio/fake_audio_transport.hpp"
 #include <catch2/catch_test_macros.hpp>
 

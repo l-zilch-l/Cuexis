@@ -2,11 +2,6 @@
 #include "host_protocol.hpp"
 
 namespace cuexis::playback::detail {
-struct FeedbackId final {
-    std::uint64_t projectionScope{}, commitId{}, localOrdinal{}, activationOrdinal{};
-    std::string targetId, bindingId;
-    friend auto operator==(const FeedbackId&, const FeedbackId&) -> bool = default;
-};
 struct FrameEnvelope final {
     HostContext context;
     std::uint64_t frameId{}, projectionScope{}, foldedFactCursor{};
@@ -59,20 +54,7 @@ template <typename Renderer, typename MonotonicNow>
         return receipt;
     }
 }
-enum class FeedbackStatus : std::uint8_t {
-    created,
-    confirmedPresent,
-    expiredUnconfirmed,
-    canceledByControl,
-    unknownEvidence
-};
-struct FeedbackObservation final {
-    FeedbackId id;
-    std::int64_t created{}, expiry{};
-    FeedbackStatus status{FeedbackStatus::created};
-    bool laterConfirmed{};
-};
-class CUEXIS_PLAYBACK_API FrameObservationLedger final {
+class FrameObservationLedger final {
   public:
     [[nodiscard]] static auto create(HostContext, std::uint64_t projectionScope,
                                      std::size_t frameCapacity, std::size_t feedbackCapacity)

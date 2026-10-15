@@ -18,8 +18,11 @@
 #include <cuexis/core/result.hpp>
 #include <cuexis/playback/playback_export.hpp>
 #include <cuexis/playback/playback_source.hpp>
+#include <cuexis/playback/playback_types.hpp>
 #include <cuexis/playback/presentation.hpp>
+#include <cuexis/playback/presentation_candidate.hpp>
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+#include <cuexis/playback/execution_control.hpp>
 #include <cuexis/playback/execution_coordination.hpp>
 #include <cuexis/playback/gameplay_candidate.hpp>
 #endif
@@ -38,12 +41,6 @@
 namespace cuexis::playback {
 
 CUEXIS_ABI_WARNING_PUSH
-
-struct RuntimeFrame final {
-    double chartTimeMs{};
-    double simulationDeltaTimeMs{};
-    std::uint64_t timeDiscontinuityId{};
-};
 
 struct FrameViewport final {
     std::uint32_t width{};
@@ -102,13 +99,6 @@ struct ChartParameterSet final {
 
 struct PlaybackPrepareOptions final {
     ChartParameterSet parameters;
-};
-
-struct PreparedSemanticIdentity final {
-    std::array<std::uint8_t, 32> sha256{};
-
-    friend bool operator==(const PreparedSemanticIdentity&,
-                           const PreparedSemanticIdentity&) = default;
 };
 
 struct PlaybackCapabilitySet final {
@@ -227,7 +217,6 @@ class PlaybackSession;
 
 namespace detail {
 struct CandidateMetadataAccess;
-struct HostCoordinationAccess;
 } // namespace detail
 
 class CUEXIS_PLAYBACK_API PreparedPlayback final {
@@ -240,6 +229,11 @@ class CUEXIS_PLAYBACK_API PreparedPlayback final {
     PreparedPlayback(PreparedPlayback&& other) noexcept;
     auto operator=(PreparedPlayback&& other) noexcept -> PreparedPlayback&;
 
+    [[nodiscard]] auto
+    materializePresentation(const PresentationCapabilities&, const PresentationRequest&,
+                            std::uint64_t rendererInstance, std::uint64_t rendererGeneration,
+                            std::uint64_t controlSequence)
+        -> core::Result<PresentationCandidateInput>;
     [[nodiscard]] bool valid() const noexcept;
     [[nodiscard]] const PlaybackContentInfo* contentInfo() const noexcept;
     [[nodiscard]] std::optional<MainMusicSourceView> mainMusicSource() const noexcept;
@@ -256,7 +250,6 @@ class CUEXIS_PLAYBACK_API PreparedPlayback final {
   private:
     friend class PlaybackSession;
     friend struct detail::CandidateMetadataAccess;
-    friend struct detail::HostCoordinationAccess;
     struct State;
     explicit PreparedPlayback(std::unique_ptr<State> state) noexcept;
 
@@ -266,6 +259,54 @@ class CUEXIS_PLAYBACK_API PreparedPlayback final {
 class CUEXIS_PLAYBACK_API PlaybackSession final {
   public:
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    // Synchronous owner capabilities; the host owns threads, devices and step ledgers.
+
+    [[nodiscard]] auto enterExecutionFence(const PresentationCandidateInput& input)
+        -> core::Result<ExecutionFence>;
+    [[nodiscard]] auto commitExecutionCandidate(PreparedPlayback&& prepared, ExecutionFence fence,
+                                                const ControlReceipt& ready) -> core::Result<void>;
+    [[nodiscard]] auto releaseExecutionFence(ExecutionFence fence, const ControlReceipt& confirmed)
+        -> core::Result<void>;
+    [[nodiscard]] auto validateExecutionControlBinding(const StepRequest& request) const
+        -> core::Result<void>;
+    [[nodiscard]] auto validateExecutionFrameContext(const HostContext& context) const
+        -> core::Result<void>;
+    [[nodiscard]] auto acceptExecutionControl(const ControlRequest& request)
+        -> core::Result<std::uint64_t>;
+    [[nodiscard]] auto enterExecutionFence(const ControlReceipt& proof)
+        -> core::Result<ExecutionFence>;
+    [[nodiscard]] auto executionFence() const -> core::Result<ExecutionFence>;
+    [[nodiscard]] auto completeExecutionClose(ExecutionFence fence, const ControlReceipt& proof)
+        -> core::Result<void>;
+    [[nodiscard]] auto invalidateGameplayClock() -> core::Result<void>;
+    [[nodiscard]] auto mapGameplayClock(const ClockObservation& clock, std::int64_t now)
+        -> core::Result<ClockTicks>;
+    [[nodiscard]] auto gameplayReplayCut(const GameplayReplay& replay, GameplayTick horizon) const
+        -> core::Result<GameplayReplayCut>;
+    [[nodiscard]] auto gameplayFeedback(const std::uint64_t scope) const
+        -> core::Result<std::vector<FeedbackObservation>>;
+    [[nodiscard]] auto sampleGameplayPresentation(GameplayPresentationTick tick,
+                                                  const RuntimeFrame& frame) -> core::Result<void>;
+    [[nodiscard]] auto executionOwnerState() const -> core::Result<ExecutionOwnerState>;
+    [[nodiscard]] auto executionStepEffects() const -> core::Result<StepEffects>;
+    [[nodiscard]] auto retireExecutionStep(const StepRequest& request, const ControlReceipt& proof)
+        -> core::Result<void>;
+    [[nodiscard]] auto pauseExecutionStep(const StepRequest& request, std::int64_t now)
+        -> core::Result<void>;
+    [[nodiscard]] auto resumeExecutionStep(const StepRequest& request,
+                                           const GameplayReconciliation& reconciliation,
+                                           GameplayExecutionContext context,
+                                           const ClockObservation& clock, std::int64_t now,
+                                           const StepReceipt* routeReceipt) -> core::Result<void>;
+    [[nodiscard]] auto seekExecutionStep(const StepRequest& request, const ControlReceipt& proof,
+                                         const GameplayReplay& archive, GameplayTick horizon,
+                                         const GameplayReplayCut& cut,
+                                         std::span<const GameplayCheckpoint> checkpoints,
+                                         GameplayPresentationTick tick, const RuntimeFrame& frame,
+                                         SchedulingProfile profile,
+                                         ClockMappingConfiguration mapping,
+                                         const std::string& domain) -> core::Result<void>;
+
     [[nodiscard]] auto prepareGameplayLoad(PlaybackSource&&, PlaybackMode, const GameplayContent&)
         -> core::Result<PreparedPlayback>;
     [[nodiscard]] auto prepareGameplayReload(PlaybackSource&&, const GameplayContent&, ReloadPolicy)
@@ -397,8 +438,8 @@ class CUEXIS_PLAYBACK_API PlaybackSession final {
     [[nodiscard]] auto releaseHostOverride(HostOverrideToken token) -> core::Result<void>;
 
   private:
+    friend class PreparedPlayback;
     friend struct detail::CandidateMetadataAccess;
-    friend struct detail::HostCoordinationAccess;
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     [[nodiscard]] auto gameplayWriteGuard() const -> core::Result<void>;
     [[nodiscard]] auto

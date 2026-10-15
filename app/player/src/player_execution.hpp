@@ -1,5 +1,5 @@
 #pragma once
-#include "../../../engine/playback/src/audio_worker.hpp"
+#include "../../execution_host/audio_worker.hpp"
 #include "player_log.hpp"
 #include "player_options.hpp"
 #include <cuexis/player_support/resolved_config.hpp>

@@ -1,5 +1,5 @@
-#include "../../engine/playback/src/audio_worker.hpp"
-#include "../../engine/playback/src/renderer_owner.hpp"
+#include "../../app/execution_host/audio_worker.hpp"
+#include "../../app/execution_host/renderer_owner.hpp"
 #include "execution_fixture.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cuexis/presentation_renderer/presentation_renderer.hpp>

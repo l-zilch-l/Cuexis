@@ -1,6 +1,6 @@
+#include "../../app/execution_host/capture_route.hpp"
+#include "../../app/execution_host/session_worker.hpp"
 #include "../../engine/core/internal/cuexis_internal/sha256.hpp"
-#include "../../engine/playback/src/capture_route.hpp"
-#include "../../engine/playback/src/session_worker.hpp"
 #include "execution_fixture.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>

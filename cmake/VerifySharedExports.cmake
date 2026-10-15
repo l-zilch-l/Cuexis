@@ -10,6 +10,12 @@ if(CUEXIS_SYMBOL_TOOL_KIND STREQUAL "dumpbin")
         RESULT_VARIABLE symbol_result
         OUTPUT_VARIABLE symbol_output
         ERROR_VARIABLE symbol_error)
+elseif(CUEXIS_SYMBOL_TOOL_KIND STREQUAL "objdump")
+    execute_process(
+        COMMAND "${CUEXIS_SYMBOL_TOOL}" -p "${CUEXIS_SHARED_LIBRARY}"
+        RESULT_VARIABLE symbol_result
+        OUTPUT_VARIABLE symbol_output
+        ERROR_VARIABLE symbol_error)
 else()
     execute_process(
         COMMAND "${CUEXIS_SYMBOL_TOOL}" -D --defined-only "${CUEXIS_SHARED_LIBRARY}"
@@ -21,7 +27,20 @@ if(NOT symbol_result EQUAL 0)
     message(FATAL_ERROR "Shared symbol inspection failed: ${symbol_error}")
 endif()
 
-if(CUEXIS_SYMBOL_TOOL_KIND STREQUAL "dumpbin")
+if(CUEXIS_SYMBOL_TOOL_KIND STREQUAL "objdump")
+    # Required symbols must be exported, not merely present in PE import/debug tables.
+    set(required_symbol_output "")
+    string(REPLACE "\r\n" "\n" pe_symbol_output "${symbol_output}")
+    string(REPLACE "\n" ";" pe_symbol_lines "${pe_symbol_output}")
+    # Binutils prints either "[ordinal] name" or "[ordinal] +base[base] hint name".
+    set(pe_export_name_pattern
+        "^[ \t]*\\[[ \t]*[0-9]+\\][ \t]+(\\+base\\[[ \t]*[0-9]+\\][ \t]+[0-9A-Fa-f]+[ \t]+)?([^ \t]+)[ \t]*$")
+    foreach(pe_line IN LISTS pe_symbol_lines)
+        if(pe_line MATCHES "${pe_export_name_pattern}")
+            string(APPEND required_symbol_output "${CMAKE_MATCH_2}\n")
+        endif()
+    endforeach()
+elseif(CUEXIS_SYMBOL_TOOL_KIND STREQUAL "dumpbin")
     set(required_symbol_output "${symbol_output}")
 else()
     execute_process(
@@ -53,15 +72,15 @@ foreach(required_symbol IN ITEMS
         message(FATAL_ERROR "Playback shared library does not export ${required_symbol}")
     endif()
 endforeach()
-set(public_class_pattern "ChartClock|PlaybackSession|PlaybackSource|PreparedPlayback|RuntimeTimeline")
-set(public_mangled_classes "10ChartClock|15PlaybackSession|14PlaybackSource|16PreparedPlayback|15RuntimeTimeline")
+set(public_class_pattern "ChartClock|RealtimeClock|PlaybackSession|PlaybackSource|PreparedPlayback|RuntimeTimeline")
+set(public_mangled_classes "10ChartClock|13RealtimeClock|15PlaybackSession|14PlaybackSource|16PreparedPlayback|15RuntimeTimeline")
 set(public_function_pattern "computeFrameDigest")
 set(public_mangled_functions "18computeFrameDigest")
 if(CUEXIS_GAMEPLAY_CANDIDATE)
     string(APPEND public_class_pattern "|GameplayContent|GameplayResult|GameplayCheckpoint|GameplayReplay|GameplaySnapshot")
     string(APPEND public_mangled_classes "|15GameplayContent|14GameplayResult|18GameplayCheckpoint|14GameplayReplay|16GameplaySnapshot")
-    string(APPEND public_function_pattern "|gameplayCapabilities|encodeGameplayConfiguration|decodeGameplayConfiguration")
-    string(APPEND public_mangled_functions "|20gameplayCapabilities|27encodeGameplayConfiguration|27decodeGameplayConfiguration")
+    string(APPEND public_function_pattern "|gameplayCapabilities|encodeGameplayConfiguration|decodeGameplayConfiguration|computeGameplayReconciliationIdentity")
+    string(APPEND public_mangled_functions "|20gameplayCapabilities|27encodeGameplayConfiguration|27decodeGameplayConfiguration|37computeGameplayReconciliationIdentity")
 endif()
 
 if(CUEXIS_SYMBOL_TOOL_KIND STREQUAL "dumpbin")
@@ -108,10 +127,18 @@ foreach(symbol_line IN LISTS symbol_lines)
             continue()
         endif()
     else()
-        if(NOT symbol_line MATCHES "[ \t][A-Za-z][ \t]+([^ \t]+)$")
-            continue()
+        if(CUEXIS_SYMBOL_TOOL_KIND STREQUAL "objdump")
+            # Only the PE ordinal/name pointer table. Address and import rows do not match.
+            if(NOT symbol_line MATCHES "${pe_export_name_pattern}")
+                continue()
+            endif()
+            set(exported_symbol "${CMAKE_MATCH_2}")
+        else()
+            if(NOT symbol_line MATCHES "[ \t][A-Za-z][ \t]+([^ \t]+)$")
+                continue()
+            endif()
+            set(exported_symbol "${CMAKE_MATCH_1}")
         endif()
-        set(exported_symbol "${CMAKE_MATCH_1}")
         if(NOT exported_symbol MATCHES "^_ZN[KVRrO]*6cuexis" AND
            NOT exported_symbol MATCHES "^_ZT[VIS]N6cuexis" AND
            NOT exported_symbol MATCHES "^_ZGVN6cuexis" AND

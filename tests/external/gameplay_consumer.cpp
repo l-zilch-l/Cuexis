@@ -116,6 +116,14 @@ int main(int argc, char** argv) try {
         "installed-fixture", "compiled/main.packed", bytes, configuration, {}, provider,
         GameplayPrepareIntent::GameplayOnly));
     PlaybackSession session{{.version = 1, .ids = {}}};
+    const auto owner = take(session.executionOwnerState());
+    expect(owner.sessionScope != 0 && !owner.fence, "Installed owner status is invalid");
+    expect(!session.releaseExecutionFence(ExecutionFence{}, {}),
+           "Installed SDK accepted an invalid fence");
+    expect(!session.pauseExecutionStep({}, 0), "Installed SDK accepted an unbound Pause");
+    PreparedPlayback empty;
+    expect(!empty.materializePresentation({}, {}, 1, 1, 1),
+           "Installed SDK materialized an empty candidate");
     auto prepared = take(session.prepareLoad(std::move(source), PlaybackMode::ChartClock));
     take(session.commit(std::move(prepared)));
     expect(take(take(session.queryGameplay()).factCount()) == 0, "Unexpected initial Fact");

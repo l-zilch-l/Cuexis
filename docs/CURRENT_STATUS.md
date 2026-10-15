@@ -325,7 +325,7 @@ V2 三份顶层文档仍是工作稿、待 owner acceptance；C10–C14 与代�
   Graph、prepared identity 和 Judgement kernel 后，才可正式发行。
 - Chart v6 / Model v1、Chart v7 和 Chart v8 仍不可加载，分别作为 Stage 9/11/13 的表现设计输入；
   不再作为 Judgement 的隐性前置。
-- 当前工作树 SDK API 为 `0.8.0`（B3/B4 尚未提交）；历史0.7.1审批不覆盖当前变更，本地提交不等于发行。既有发行基线记录为 `0.7.0`，本轮未复核远端发行。安装后的 Playback headers 不泄露 EnTT、SDL、OpenGL/GLAD、JSON DOM、
+- 当前工作树 SDK API 为 `0.8.0` preview；B3/B4 实施已在 `d7a20d9` 存档，本轮 DLL 边界修复未提交；历史0.7.1审批不覆盖当前变更，本地提交不等于发行。既有发行基线记录为 `0.7.0`，本轮未复核远端发行。安装后的 Playback headers 不泄露 EnTT、SDL、OpenGL/GLAD、JSON DOM、
   RuntimeSession 或 World。
 - Playback 的 default `allCapabilities()` 包含 shader asset 和 parameterized material capability；
   显式裁剪 Session 仍可稳定拒绝它们。Playback 热路径不调用 shader compiler。
@@ -343,6 +343,12 @@ RT-29、T1 World/Animation 大规模优化与 T2 大包解析降本仍需另外�
 `closed`，历史现象不改写；删除旧 Reader 仍按 ADR 0041，不因 v5 弃用窗口实施。Stage 7B+在RPA后实施并验收，随后进入Stage 8；Stage 8 关闭后交出经批准的 SDK 发行版本 / Chart v5 / CXT v2 接手基线。
 
 ## 更新规则
+
+2026-10-14：按 owner 选择的方案 A 完成 [RPA DLL 边界局部修复与验证](stage_reports/stages/stage-07/rpa/2026-10-14-dll-boundary-repair.md)。
+宿主实现迁入非安装的静态支持，Playback 通过公共 owning 值/同步能力服务宿主；MSVC
+ON/OFF shared、ON Release/OFF Debug static 和 MinGW ON shared 的相关回归与安装门禁通过，
+Playback 私有导出/宿主私有导入均为 0。修复在未提交工作树，ADR 0033 禁止规则保留。
+按 owner 明确要求，修复验证后停止；实体、生产参数、预算与最终 F1–F4 仍未退出。
 
 任何产品阶段状态变化必须同时更新本文与相应的计划或新报告。历史报告不得被改写为新的验证结果；
 新的关闭、复核或纠正必须形成新的带日期报告。

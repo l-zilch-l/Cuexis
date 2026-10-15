@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../../../engine/playback/src/audio_worker.hpp"
-#include "../../../engine/playback/src/capture_route.hpp"
-#include "../../../engine/playback/src/renderer_owner.hpp"
-#include "../../../engine/playback/src/session_worker.hpp"
+#include "../../execution_host/audio_worker.hpp"
+#include "../../execution_host/capture_route.hpp"
+#include "../../execution_host/renderer_owner.hpp"
+#include "../../execution_host/session_worker.hpp"
 #include "snapshot_scene.hpp"
 #include <chrono>
 #include <cuexis/presentation_renderer/presentation_renderer.hpp>
@@ -30,8 +30,8 @@ struct ExecutionHostPorts final {
 };
 class ExecutionHost final {
   public:
-    using ClockSource = std::function<core::Result<playback::ClockObservation>(
-        const playback::detail::HostContext&)>;
+    using ClockSource =
+        std::function<core::Result<playback::ClockObservation>(const playback::HostContext&)>;
     [[nodiscard]] static auto create(presentation_renderer::IPresentationRenderer&,
                                      ExecutionHostOptions, ExecutionHostPorts)
         -> core::Result<std::unique_ptr<ExecutionHost>>;
@@ -76,7 +76,7 @@ class ExecutionHost final {
     [[nodiscard]] auto hasAudio() const noexcept -> bool {
         return bool(audio_);
     }
-    [[nodiscard]] auto context() const noexcept -> const playback::detail::HostContext&;
+    [[nodiscard]] auto context() const noexcept -> const playback::HostContext&;
     [[nodiscard]] auto state() const noexcept -> playback::detail::HostState;
     [[nodiscard]] auto pausedCut() const noexcept -> std::optional<std::int64_t> {
         return cut_;
@@ -109,21 +109,21 @@ class ExecutionHost final {
         -> playback::detail::AudioWorkerReply;
     void pump();
     void checkOwner() const;
-    void begin(playback::detail::ControlKind, playback::detail::StepTarget, std::array<bool, 4>);
-    void prepareControl(playback::detail::ControlKind, playback::detail::StepTarget,
-                        std::array<bool, 4>, std::uint64_t softwareGeneration);
+    void begin(playback::ControlKind, playback::StepTarget, std::array<bool, 4>);
+    void prepareControl(playback::ControlKind, playback::StepTarget, std::array<bool, 4>,
+                        std::uint64_t softwareGeneration);
     void postControl();
     void confirmControl(std::uint64_t decision);
-    void observed(const playback::detail::StepReceipt&);
-    void audioStep(playback::detail::AudioWorkerCommandKind, playback::detail::StepPhase);
+    void observed(const playback::StepReceipt&);
+    void audioStep(playback::detail::AudioWorkerCommandKind, playback::StepPhase);
     void softwarePrepared();
     void finish();
     void flush(const playback::ClockObservation&, bool normalPrefix);
     void cleanup();
     void finishTail(const playback::TailClockTransition&, playback::TailProfile);
-    [[nodiscard]] auto proof() -> playback::detail::ControlReceipt;
-    [[nodiscard]] auto step(playback::detail::Participant, playback::detail::StepPhase) const
-        -> playback::detail::StepRequest;
+    [[nodiscard]] auto proof() -> playback::ControlReceipt;
+    [[nodiscard]] auto step(playback::Participant, playback::StepPhase) const
+        -> playback::StepRequest;
     void failed() noexcept;
     core::ThreadChecker owner_;
     presentation_renderer::IPresentationRenderer& renderer_;
@@ -137,11 +137,11 @@ class ExecutionHost final {
     std::optional<playback::detail::HostCoordinator> host_;
     std::optional<playback::detail::CaptureRouteOwner> capture_;
     std::optional<playback::RealtimeClock> clock_;
-    std::optional<playback::detail::PresentationCandidateInput> candidate_;
-    playback::detail::HostContext context_;
-    playback::detail::ControlRequest control_;
+    std::optional<playback::PresentationCandidateInput> candidate_;
+    playback::HostContext context_;
+    playback::ControlRequest control_;
     std::optional<std::uint64_t> sessionJob_, audioJob_;
-    std::optional<playback::detail::StepReceipt> earlyCut_;
+    std::optional<playback::StepReceipt> earlyCut_;
     std::vector<playback::GameplayCaptureDelivery> retained_;
     std::optional<playback::detail::CaptureCloseEvidence> closeEvidence_;
     std::optional<core::Error> closeDeliveryError_;

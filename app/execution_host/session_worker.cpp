@@ -220,7 +220,7 @@ struct SessionOwner final {
                         return SessionReply{std::monostate{}};
                     }
                     if (job.proof.request.kind == ControlKind::close &&
-                        job.proof.request.context.controlSequence != current->controlSequence)
+                        job.proof.request.context.controlSequence != current->controlSequence())
                         return reply(
                             HostCoordinationAccess::completeClose(session, *current, job.proof));
                     return reply(HostCoordinationAccess::leaveFence(session, *current, job.proof));

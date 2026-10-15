@@ -25,49 +25,8 @@ auto error(std::string_view code) -> core::Error {
 }
 } // namespace
 auto reconciliationIdentity(const GameplayReconciliation& r)
-    -> core::Result<PreparedSemanticIdentity> try {
-    core::detail::Sha256 hash;
-    const auto integer = [&](std::uint64_t n) {
-        std::array<std::byte, 8> b{};
-        for (std::size_t i = 0; i < 8; ++i)
-            b[i] = std::byte((n >> (i * 8)) & 255);
-        hash.update(b);
-    };
-    const auto text = [&](std::string_view value) {
-        integer(value.size());
-        hash.update(std::as_bytes(std::span{value.data(), value.size()}));
-    };
-    text("cuexis.host.resume.target.v1");
-    integer(r.cutTick.value);
-    integer(r.controlOrdinal);
-    integer(r.pauseEpoch);
-    integer(r.finalTraceCut);
-    for (const auto& t : r.trace) {
-        const auto& in = t.occurrence.input;
-        integer(t.sequence);
-        integer(in.observationTick.value);
-        integer(t.occurrence.sourceLocalPosition);
-        text(in.domain);
-        text(in.sourceClass);
-        text(in.channel);
-        integer(static_cast<std::uint64_t>(in.action));
-        integer(in.amount.has_value());
-        if (in.amount) {
-            integer(in.amount->numerator);
-            integer(in.amount->denominator);
-        }
-        integer(in.sequence);
-        integer(in.crossedSamplingGap);
-        integer(in.reconnected);
-        integer(in.droppedSamples);
-        integer(in.rawTimestamps.device);
-        integer(in.rawTimestamps.hostArrival);
-        integer(in.rawTimestamps.audioFrame);
-        integer(in.rawTimestamps.renderFrame);
-    }
-    return PreparedSemanticIdentity{hash.finish()};
-} catch (...) {
-    return core::unexpected(error("capacity_exceeded"));
+    -> core::Result<PreparedSemanticIdentity> {
+    return computeGameplayReconciliationIdentity(r);
 }
 CaptureRouteOwner::CaptureRouteOwner(GameplayExecutionContext c, std::size_t capacity,
                                      OwnerStepLedger ledger, std::size_t dataReserve)

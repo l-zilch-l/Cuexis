@@ -146,6 +146,7 @@ if(BUILD_TESTING AND CUEXIS_BUILD_TESTS AND CUEXIS_ENABLE_CHART_V5_CANDIDATE
         CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
     )
     target_link_libraries(cuexis_execution_device_probe PRIVATE
+        cuexis::execution_host_support
         cuexis::playback cuexis::audio_sdl cuexis::platform_sdl cuexis::render_opengl cuexis::render
         cuexis::judgement cuexis::gameplay_packed Catch2::Catch2WithMain
     )
@@ -175,6 +176,9 @@ set(CUEXIS_ACTIVE_TARGETS
     cuexis_player_support
 )
 
+if(TARGET cuexis_execution_host_support)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_execution_host_support)
+endif()
 if(CUEXIS_BUILD_SDL_ADAPTER)
     list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_platform_sdl)
 endif()
@@ -432,7 +436,7 @@ if(CUEXIS_BUILD_TESTS)
         # Two different tools are needed, so they get two different variables.
         #
         # The export gate reads the *dynamic symbol table*, and `nm -D
-        # --defined-only` is the right reader for that on non-MSVC.
+        # --defined-only` is the right reader for ELF. PE uses its export directory.
         #
         # The reference-host gate reads the *import list*, and `nm` cannot serve
         # it on either non-MSVC format:
@@ -450,6 +454,13 @@ if(CUEXIS_BUILD_TESTS)
             set(CUEXIS_SYMBOL_TOOL_KIND dumpbin)
             set(CUEXIS_IMPORT_TOOL "${CUEXIS_SYMBOL_TOOL}")
             set(CUEXIS_IMPORT_TOOL_KIND "${CUEXIS_SYMBOL_TOOL_KIND}")
+        elseif(WIN32)
+            # PE exports live in the export directory, not an ELF dynamic symbol table.
+            find_program(CUEXIS_PE_EXPORT_TOOL NAMES objdump REQUIRED)
+            set(CUEXIS_SYMBOL_TOOL "${CUEXIS_PE_EXPORT_TOOL}")
+            set(CUEXIS_SYMBOL_TOOL_KIND objdump)
+            set(CUEXIS_IMPORT_TOOL "${CUEXIS_SYMBOL_TOOL}")
+            set(CUEXIS_IMPORT_TOOL_KIND objdump)
         else()
             find_program(CUEXIS_SYMBOL_TOOL NAMES nm REQUIRED)
             set(CUEXIS_SYMBOL_TOOL_KIND nm)
@@ -620,6 +631,16 @@ if(CUEXIS_BUILD_TESTS)
             set_tests_properties(cuexis_shared_export_surface PROPERTIES
                 LABELS "shared;package"
             )
+            if(CUEXIS_SYMBOL_TOOL_KIND STREQUAL "objdump")
+                find_program(CUEXIS_EXPORT_GATE_PYTHON NAMES python3 python REQUIRED)
+                add_test(NAME cuexis_pe_export_gate_negatives
+                    COMMAND "${CUEXIS_EXPORT_GATE_PYTHON}" -B
+                        "${PROJECT_SOURCE_DIR}/tools/check_pe_export_gate.py"
+                        --dll "$<TARGET_FILE:cuexis_playback>"
+                        --objdump "${CUEXIS_SYMBOL_TOOL}" --cmake "${CMAKE_COMMAND}"
+                        --candidate "${CUEXIS_ENABLE_CHART_V5_CANDIDATE}")
+                set_tests_properties(cuexis_pe_export_gate_negatives PROPERTIES LABELS "shared;package")
+            endif()
             if(MSVC)
                 add_test(
                     NAME cuexis_shared_consumer_imports
@@ -854,6 +875,9 @@ cuexis_verify_target_dependencies(cuexis_content
         cuexis::core
         cuexis::filesystem
 )
+if(TARGET cuexis_execution_host_support)
+    cuexis_verify_target_dependencies(cuexis_execution_host_support ALLOWED cuexis::playback)
+endif()
 if(TARGET cuexis_platform_sdl)
     cuexis_verify_target_dependencies(cuexis_platform_sdl
         ALLOWED
@@ -1039,7 +1063,7 @@ cuexis_verify_target_dependencies(cuexis_player_support
 )
 if(TARGET cuexis_player)
     cuexis_verify_target_dependencies(cuexis_player
-        ALLOWED
+        ALLOWED cuexis::execution_host_support
             cuexis::audio
             cuexis::audio_sdl
             cuexis::playback
@@ -1253,7 +1277,7 @@ if(CUEXIS_BUILD_TESTS)
     )
     if(TARGET cuexis_host_protocol_tests)
         cuexis_verify_target_dependencies(cuexis_host_protocol_tests
-            ALLOWED
+            ALLOWED cuexis::execution_host_support
                 cuexis::playback
                 cuexis::presentation_renderer
                 Catch2::Catch2WithMain
@@ -1261,13 +1285,13 @@ if(CUEXIS_BUILD_TESTS)
     endif()
     if(TARGET cuexis_execution_host_tests)
         cuexis_verify_target_dependencies(cuexis_execution_host_tests
-            ALLOWED cuexis::playback cuexis::presentation_renderer cuexis::render cuexis::judgement
+            ALLOWED cuexis::execution_host_support cuexis::playback cuexis::presentation_renderer cuexis::render cuexis::judgement
                     cuexis::gameplay_packed Catch2::Catch2WithMain
         )
     endif()
     if(TARGET cuexis_execution_device_probe)
         cuexis_verify_target_dependencies(cuexis_execution_device_probe
-            ALLOWED cuexis::playback cuexis::audio_sdl cuexis::platform_sdl cuexis::render_opengl cuexis::render
+            ALLOWED cuexis::execution_host_support cuexis::playback cuexis::audio_sdl cuexis::platform_sdl cuexis::render_opengl cuexis::render
                     cuexis::judgement cuexis::gameplay_packed Catch2::Catch2WithMain
         )
     endif()
@@ -1346,7 +1370,7 @@ if(CUEXIS_BUILD_TESTS)
             Catch2::Catch2WithMain
     )
     cuexis_verify_target_dependencies(cuexis_playback_tests
-        ALLOWED
+        ALLOWED cuexis::execution_host_support
             cuexis::audio
             cuexis::assets
             cuexis::chart

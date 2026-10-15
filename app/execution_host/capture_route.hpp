@@ -4,7 +4,7 @@
 
 namespace cuexis::playback::detail {
 class CaptureRouteOwner;
-class CUEXIS_PLAYBACK_API CaptureCloseEvidence final {
+class CaptureCloseEvidence final {
   public:
     [[nodiscard]] auto fault() const noexcept -> const FaultSlot& {
         return fault_;
@@ -34,9 +34,9 @@ class CUEXIS_PLAYBACK_API CaptureCloseEvidence final {
     std::vector<GameplayOccurrence> tentative_;
     FaultSlot fault_;
 };
-[[nodiscard]] CUEXIS_PLAYBACK_API auto reconciliationIdentity(const GameplayReconciliation&)
+[[nodiscard]] auto reconciliationIdentity(const GameplayReconciliation&)
     -> core::Result<PreparedSemanticIdentity>;
-class CUEXIS_PLAYBACK_API CaptureRouteOwner final {
+class CaptureRouteOwner final {
   public:
     [[nodiscard]] static auto create(GameplayExecutionContext, std::size_t capacity,
                                      std::size_t controlReserve, std::size_t dataControlReserve = 0)

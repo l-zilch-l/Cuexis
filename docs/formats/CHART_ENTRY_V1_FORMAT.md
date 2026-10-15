@@ -132,6 +132,7 @@ The minimum stable diagnostic set is:
 | cxc.candidate.revision_unsupported | Flags or candidateRevision is unsupported |
 | cxc.candidate.budget_exceeded | A file, section, decoded or count limit is exceeded |
 | cxc.candidate.packed_invalid | Packed structure, CRC, section or typed decode failed |
+| cxc.candidate.source_invalid | Behavior source JSON parsing or typed compilation failed |
 | cxc.candidate.artifact_identity_mismatch | Exact entry bytes do not match artifactIdentity |
 | cxc.candidate.compiled_identity_mismatch | Recomputed semantic identity does not match metadata |
 | cxc.candidate.resource_closure_invalid | A required resource is missing, duplicated or mismatched |
@@ -328,6 +329,11 @@ Quaternion rotation, visibility and existing typed event/step properties use the
 Parameters, templates, Clips and animation template imports must be empty. Gameplay requirements
 are absent: `expandedRequirementCount` must be zero. Counts are compared against compiled Objects,
 with the existing 40,000 entry count ceiling and 16 MiB input ceiling.
+
+Package-wide validation uses the same profile-selected content validation as explicit entry
+factories. Static Packed entries keep their binary decoder; Behavior source entries use the typed
+source compiler. Package-wide tools discard the validated artifact, while Playback factories retain
+it for prepare. Both paths enforce the input budget before decoding or compilation.
 
 Factory validation checks exact source bytes, parses and compiles once, then compares the typed
 semantic identity and expanded counts. Typed canonical identity uses domain

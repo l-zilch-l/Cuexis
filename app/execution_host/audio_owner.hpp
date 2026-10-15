@@ -6,7 +6,7 @@
 
 namespace cuexis::playback::detail {
 // The transport and isolation callback must outlive the owner. All calls are owner-thread only.
-class CUEXIS_PLAYBACK_API AudioOwner final {
+class AudioOwner final {
   public:
     using IsolationProof = std::function<core::Result<bool>()>;
     [[nodiscard]] static auto create(std::uint64_t scope, audio::IAudioTransport&, IsolationProof,

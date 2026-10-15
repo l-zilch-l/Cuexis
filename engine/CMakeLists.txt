@@ -31,3 +31,7 @@ if(CUEXIS_BUILD_OPENGL_ADAPTER)
 endif()
 add_subdirectory(playback)
 add_subdirectory(presentation_renderer)
+
+if(CUEXIS_ENABLE_CHART_V5_CANDIDATE AND (CUEXIS_BUILD_PLAYER OR (BUILD_TESTING AND CUEXIS_BUILD_TESTS)))
+    add_subdirectory("${PROJECT_SOURCE_DIR}/app/execution_host" "${PROJECT_BINARY_DIR}/app/execution_host")
+endif()

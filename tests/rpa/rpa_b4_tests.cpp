@@ -1,8 +1,8 @@
-#include "../../engine/playback/src/audio_owner.hpp"
-#include "../../engine/playback/src/capture_route.hpp"
-#include "../../engine/playback/src/frame_observation.hpp"
-#include "../../engine/playback/src/host_candidate.hpp"
-#include "../../engine/playback/src/renderer_owner.hpp"
+#include "../../app/execution_host/audio_owner.hpp"
+#include "../../app/execution_host/capture_route.hpp"
+#include "../../app/execution_host/frame_observation.hpp"
+#include "../../app/execution_host/host_candidate.hpp"
+#include "../../app/execution_host/renderer_owner.hpp"
 #include "../audio/fake_audio_transport.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cuexis/presentation_renderer/presentation_renderer.hpp>
@@ -387,7 +387,7 @@ TEST_CASE("B4 commit fence rechecks generation and blocks mutation through devic
     request.context = input->context;
     request.target.context = request.context;
     request.target.candidateId = input->candidateId;
-    request.target.expectedGeneration = fence->generation;
+    request.target.expectedGeneration = fence->generation();
     request.participants = {false, true, false, true};
     auto proof = ControlReceipt{};
     proof.request = request;
@@ -406,8 +406,7 @@ TEST_CASE("B4 commit fence rechecks generation and blocks mutation through devic
         applied(request, Participant::software, StepPhase::softwareCommit);
     proof.steps[3][static_cast<unsigned>(StepPhase::activate)] =
         applied(request, Participant::renderer, StepPhase::activate);
-    auto wrong = *fence;
-    ++wrong.controlSequence;
+    auto wrong = ExecutionFence{};
     REQUIRE_FALSE(HostCoordinationAccess::leaveFence(s, wrong, proof));
     REQUIRE(HostCoordinationAccess::leaveFence(s, *fence, proof));
     REQUIRE(s.update({0, 0, 0}));

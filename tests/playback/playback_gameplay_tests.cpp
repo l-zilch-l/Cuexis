@@ -1,5 +1,5 @@
-#include "../../engine/playback/src/capture_route.hpp"
-#include "../../engine/playback/src/host_candidate.hpp"
+#include "../../app/execution_host/capture_route.hpp"
+#include "../../app/execution_host/host_candidate.hpp"
 #include "../judgement/execution_reference.hpp"
 #include "../judgement/execution_test_fixture.hpp"
 #include "../support/environment.hpp"

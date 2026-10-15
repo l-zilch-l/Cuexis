@@ -24,6 +24,7 @@ ROWS = {
     "msvc-off-release": ("headless-release", "headless-release", []),
     "msvc-off-shared-debug": ("headless-shared-debug", "headless-shared-debug", []),
     "mingw-on-debug": ("mingw-headless-debug", "mingw-headless-debug", ["-DCUEXIS_ENABLE_CHART_V5_CANDIDATE=ON"]),
+    "mingw-on-shared-debug": ("rpa-boundary-mingw-shared", "mingw-headless-debug", ["-DCUEXIS_ENABLE_CHART_V5_CANDIDATE=ON", "-DCUEXIS_LIBRARY_TYPE=SHARED"]),
     "mingw-on-release": ("rpa-mingw-release", "mingw-headless-debug", ["-DCUEXIS_ENABLE_CHART_V5_CANDIDATE=ON", "-DCMAKE_BUILD_TYPE=Release", "-DCUEXIS_VERSION_SUFFIX=", "-DCUEXIS_WARNINGS_AS_ERRORS=ON"]),
 }
 
@@ -34,7 +35,7 @@ def identity():
     # Include new implementation files, but never unrelated caches or out evidence.
     untracked = subprocess.check_output(["git", "ls-files", "--others", "--exclude-standard", "-z"], cwd=ROOT).split(b"\0")
     paths.update(p.decode("utf-8") for p in untracked if p and
-                 p.decode("utf-8").startswith(("tests/", "tools/", "engine/", "cmake/", "schemas/", "docs/"))
+                 p.decode("utf-8").startswith(("app/", "tests/", "tools/", "engine/", "cmake/", "schemas/", "docs/"))
                  and Path(p.decode("utf-8")).suffix != ".pyc")
     files = {p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest()
              for p in sorted(paths) if (ROOT / p).is_file()}

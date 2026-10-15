@@ -42,6 +42,7 @@ target_link_libraries(cuexis_playback_tests
 )
 
 if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+    target_link_libraries(cuexis_playback_tests PRIVATE cuexis::execution_host_support)
     target_sources(cuexis_playback_tests PRIVATE playback_gameplay_tests.cpp ../judgement/execution_reference.cpp
         "${PROJECT_SOURCE_DIR}/engine/playback/src/gameplay_entry.cpp")
     target_link_libraries(cuexis_playback_tests PRIVATE cuexis::gameplay_packed cuexis::judgement cuexis::json_support)

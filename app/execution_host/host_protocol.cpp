@@ -104,61 +104,7 @@ auto ownersApplied(const ControlReceipt& control) -> bool {
     return true;
 }
 } // namespace
-auto controlRequiredPhase(ControlKind kind, Participant participant) -> StepPhase {
-    if (kind == ControlKind::close)
-        return StepPhase::close;
-    if (participant == Participant::software)
-        return StepPhase::softwareCommit;
-    const bool stopped = kind == ControlKind::stop || kind == ControlKind::reset;
-    if (participant == Participant::capture)
-        return kind == ControlKind::pause || stopped ? StepPhase::cut : StepPhase::resumeRoute;
-    if (participant == Participant::audio)
-        return stopped                      ? StepPhase::stop
-               : kind == ControlKind::pause ? StepPhase::fence
-                                            : StepPhase::activate;
-    return kind == ControlKind::pause || stopped ? StepPhase::fence : StepPhase::activate;
-}
-auto controlReadyForCommit(const ControlReceipt& control) -> bool {
-    if (control.status != ControlStatus::preparing)
-        return false;
-    for (std::size_t p = 0; p < control.request.participants.size(); ++p)
-        if (control.request.participants[p] &&
-            (!confirmed(control, static_cast<Participant>(p), StepPhase::prepare) ||
-             !confirmed(control, static_cast<Participant>(p), StepPhase::fence)))
-            return false;
-    return true;
-}
-auto controlFullyApplied(const ControlReceipt& control) -> bool {
-    if (control.status != ControlStatus::complete || !control.cleanupComplete)
-        return false;
-    if (control.request.kind == ControlKind::close) {
-        for (std::size_t p = 0; p < control.request.participants.size(); ++p)
-            if (control.request.participants[p] &&
-                !confirmed(control, static_cast<Participant>(p), StepPhase::close))
-                return false;
-        const auto active = [&](Participant p) { return control.request.participants[index(p)]; };
-        if (active(Participant::capture) &&
-            !confirmed(control, Participant::capture, StepPhase::cut))
-            return false;
-        if (active(Participant::audio)) {
-            const auto* isolated = confirmed(control, Participant::audio, StepPhase::isolate);
-            if (!confirmed(control, Participant::audio, StepPhase::stop) || !isolated ||
-                !isolated->effects.callbackIsolated)
-                return false;
-        }
-        for (auto p : {Participant::software, Participant::renderer}) {
-            const auto* retired = confirmed(control, p, StepPhase::retire);
-            if (active(p) && (!retired || !retired->effects.referencesReleased))
-                return false;
-        }
-        return true;
-    }
-    if (!control.softwareApplied ||
-        (control.request.participants[index(Participant::software)] &&
-         !confirmed(control, Participant::software, StepPhase::softwareCommit)))
-        return false;
-    return ownersApplied(control);
-}
+
 OwnerStepLedger::OwnerStepLedger(std::uint64_t scope, Participant p, std::size_t reserve,
                                  std::vector<std::optional<Record>> records)
     : scope_(scope), participant_(p), reserve_(reserve), records_(std::move(records)) {}
