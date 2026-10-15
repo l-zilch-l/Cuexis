@@ -20,7 +20,15 @@ struct IngressSnapshot final {
     bool exhausted;
     friend auto operator==(const IngressSnapshot&, const IngressSnapshot&) -> bool = default;
 };
-struct ReplayRecord;
+struct ReplayRecord final {
+    std::vector<CanonicalInput> batch;
+    std::vector<InputReceiptPending> admission;
+    std::optional<Tick> horizon;
+    std::shared_ptr<const KernelProjection> result;
+    std::optional<RpaControlRecord> control{};
+    std::optional<core::Error> rejection{};
+    bool controlDrain{};
+};
 struct SnapshotDTO final {
     KernelProjection kernel;
     std::vector<MatcherSnapshot> matchers;
@@ -36,15 +44,7 @@ struct RecoveryInputs final {
     SessionConfiguration configuration;
     PreparedGameplay prepared;
 };
-struct ReplayRecord final {
-    std::vector<CanonicalInput> batch;
-    std::vector<InputReceiptPending> admission;
-    std::optional<Tick> horizon;
-    std::shared_ptr<const KernelProjection> result;
-    std::optional<RpaControlRecord> control{};
-    std::optional<core::Error> rejection{};
-    bool controlDrain{};
-};
+
 struct ReplayData final {
     std::vector<ReplayRecord> records;
     std::uint64_t eventCount;

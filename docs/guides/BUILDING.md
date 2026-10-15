@@ -65,6 +65,7 @@ cuexis_cxc_tests
 cuexis_behavior_tests
 cuexis_gameplay_tests
 cuexis_judgement_tests
+cuexis_rpa_tests
 cuexis_gameplay_packed_tests
 cuexis_debug_tests
 cuexis_render_tests

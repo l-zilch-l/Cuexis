@@ -7,7 +7,7 @@
 
 ## 1. 现状与问题边界
 
-当前性能证据位于 [2026-10-14 性能定位报告](../../../../out/perf-investigation-20261014/findings.md)；该报告使用 Debug、Windows、RTX 4060 Laptop、同一 CXC 和受控输入，不能替代 Release、跨平台、实体设备或生产预算验收。
+当前性能证据位于 [2026-10-14 等待路径与性能记录](../../../stage_reports/stages/stage-07/rpa/2026-10-14-wait-path-optimization.md)（本地原始证据：`out/perf-investigation-20261014/findings.md`）；该报告使用 Debug、Windows、RTX 4060 Laptop、同一 CXC 和受控输入，不能替代 Release、跨平台、实体设备或生产预算验收。
 
 当前主要问题按风险排序如下：
 
