@@ -1771,6 +1771,7 @@ auto PlaybackSession::gameplayReplayCut(const GameplayReplay& replay, GameplayTi
 }
 auto PlaybackSession::gameplayFeedback(const std::uint64_t scope) const
     -> core::Result<std::vector<FeedbackObservation>> try {
+    internal::pd::Timer measurement{internal::pd::Stage::feedback};
     auto& session = *this;
     const auto& s = *session.state_;
     if (!s.ownerThread.isCurrent())

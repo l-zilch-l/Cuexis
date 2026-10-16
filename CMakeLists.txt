@@ -266,6 +266,10 @@ if(CUEXIS_BUILD_TESTS)
     if(TARGET cuexis_host_protocol_tests)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_host_protocol_tests)
     endif()
+    if(TARGET cuexis_pd_baseline_probe)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_pd_baseline_probe)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_pd_allocation_probe)
+    endif()
     if(TARGET cuexis_execution_host_tests)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_execution_host_tests)
     endif()
@@ -1278,6 +1282,14 @@ if(CUEXIS_BUILD_TESTS)
             cuexis::judgement
             Catch2::Catch2WithMain
     )
+    if(TARGET cuexis_pd_baseline_probe)
+        cuexis_verify_target_dependencies(cuexis_pd_baseline_probe
+            ALLOWED cuexis::playback cuexis::judgement cuexis::gameplay_packed
+                cuexis::execution_host_support cuexis::presentation_renderer Catch2::Catch2WithMain)
+        cuexis_verify_target_dependencies(cuexis_pd_allocation_probe
+            ALLOWED cuexis::playback cuexis::judgement cuexis::gameplay_packed
+                cuexis::execution_host_support cuexis::presentation_renderer Catch2::Catch2WithMain)
+    endif()
     cuexis_verify_target_dependencies(cuexis_rpa_tests
         ALLOWED
             cuexis::playback

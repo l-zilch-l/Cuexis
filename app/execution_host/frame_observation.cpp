@@ -1,4 +1,5 @@
 #include "frame_observation.hpp"
+#include <cuexis_internal/presentation_metrics.hpp>
 #include <algorithm>
 
 namespace cuexis::playback::detail {
@@ -56,6 +57,7 @@ auto FrameObservationLedger::feedback(FeedbackId id, std::int64_t created, std::
     return core::unexpected(allocationFailure_);
 }
 auto FrameObservationLedger::publish(FrameEnvelope frame) -> core::Result<void> try {
+    internal::pd::Timer measurement{internal::pd::Stage::ledgerPublish};
     if (!owner_.isCurrent() || frame.context != context_ || frame.projectionScope != scope_ ||
         !frame.frameId || frame.frameId <= lastFrame_ ||
         (lastTick_ && frame.presentationTick < *lastTick_))
@@ -91,6 +93,7 @@ auto FrameObservationLedger::publish(FrameEnvelope frame) -> core::Result<void> 
     return core::unexpected(allocationFailure_);
 }
 auto FrameObservationLedger::takeLatest() -> core::Result<std::optional<FrameEnvelope>> try {
+    internal::pd::Timer measurement{internal::pd::Stage::ledgerTake};
     if (!owner_.isCurrent())
         return core::unexpected(error("owner_mismatch"));
     if (!latest_)
@@ -106,6 +109,7 @@ auto FrameObservationLedger::takeLatest() -> core::Result<std::optional<FrameEnv
     return core::unexpected(allocationFailure_);
 }
 auto FrameObservationLedger::observe(const PresentReceipt& r) -> core::Result<void> try {
+    internal::pd::Timer measurement{internal::pd::Stage::receipt};
     if (!owner_.isCurrent())
         return core::unexpected(error("owner_mismatch"));
     auto record = std::find_if(frames_.begin(), frames_.end(), [&](const auto& f) {

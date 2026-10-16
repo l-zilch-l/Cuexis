@@ -17,10 +17,12 @@
 | RPA子阶段 (rpa) | 14 | 设计审查、B0合同修订、B1观测/基线、B2存储与寿命验证设施及等待路径性能证据；架构/综合收尾按RPA分册管理 |
 | 裁定记录 (decisions) | 14 | 分轮准入/实施裁定、合同选择、落地位置与诊断分类；现行字段仍归Spec/ABI |
 | 设计与实施记录 (implementation) | 7 | 带日期的设计收口和实施推进；设计交付与运行验证分别按报告声明解释 |
-| 验证与审计 (verification) | 23 | 独立复验、功能验收、边界审计、CI优化和文档恢复证据 |
+| 验证与审计 (verification) | 25 | 独立复验、功能验收、边界审计、CI优化和文档恢复证据 |
 | 交接与规划修订 (handoffs) | 13 | hosted交接、排期修订、桌面接手整理和 PD 设计收口；历史下一步不覆盖主计划 |
 
 ## 常用入口
+
+- [PD-0 性能重复性诊断与基线重建交接](verification/2026-10-16-pd0-noise-investigation.md)（2026-10-16）：时钟量化、旧 profile 历史增长和固定亲和性诊断；原慢运行根因未确定，不宣称 PD-0 退出。
 
 - [RPA实施规划就绪审查](rpa/2026-10-11-implementation-readiness.md)（仅设计与文档验证）
 
@@ -95,6 +97,9 @@
 | [S7A-3/4 implementation progress and pause point](implementation/2026-10-05-s7a-3-4-implementation-progress.md) | 2026-10-05 |
 
 ## 验证与审计
+
+- [PD-0 固定轨迹与块计时方法](verification/2026-10-16-pd0-measurement-method.md)（2026-10-16）：legacy/RPA 分组、14 次校准/试运行及 24 次正式验证通过；原组 inconclusive 和 PD-0 未退出分别保留。
+- [PD-0 存储观测与回归失败停点](verification/2026-10-16-pd0-storage-and-stop.md)（2026-10-16）：独立分配探针与首轮存储数据、旧账本容量缺陷；Release B5 Pause 的 capture_gap 导致停工待协助，新正式组未运行。
 
 - [S7A-8.4关闭与7/8受限批次收口](verification/2026-10-10-s7a-8-4-closure.md)（2026-10-10）：1ebcbdc的七个run全部成功、准确审批/可信日志/保护与来源例外收齐；下一轮审核Stage7-RPA。
 - [Version Gate复核与Stage7B+/RPA验收归属订正](verification/2026-10-09-version-gate-and-rpa-routing.md)（2026-10-09）：实际审批绑定复现、可信工具验证、设备验收整体归RPA。

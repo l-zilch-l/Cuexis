@@ -7,13 +7,23 @@
 本文是 Cuexis 当前产品和阶段状态的唯一摘要。ADR 定义决策，Spec 定义字段和语义，阶段计划定义未来
 范围，阶段报告保存带日期的实施证据；它们不得绕过本文重新定义当前状态。
 
-2026-10-16：owner 已授权完成 Stage 7-PD 实施，随后要求先提交当前状态存档并显示待办进度。
-PD-0 进行中：已加入默认关闭的 testOnly 分段计时和显式选取的确定性表征用例，
-Debug/Release 各三次该用例通过，聚合 FrameDigest 一致。PD-0 完整测量尚未退出；
-PD-1、PD-2、PD-3-a/b/c、PD-4、PD-5 尚未实施或通过。
-本次存档不是完整构建/全量 CTest、PD 完成或 RPA 生产/设备接受。
-范围和验证限制见[实施起步存档](stage_reports/stages/stage-07/implementation/2026-10-16-pd-start-checkpoint.md)，
-逐批待办见 [PD 计划进度](stage_plans/active/stage-07/plan-presentation-decoupling.md#13-实施待办与进度)。
+2026-10-16：Stage 7-PD 已授权实施，当前仍为 PD-0 进行中；起步存档为 `276358d`。
+PD 专属探针已独立放入 `tests/pd/`。原性能组因短阶段量化/观察开销与 legacy 历史增长问题
+保持 inconclusive，历史慢运行的具体触发原因未确定。新方法将 legacy/RPA 工作量分开，
+固定每条 session 轨迹、采用块外计时并记录亲和性；14 次校准/试运行与 24 次正式测量通过，
+四组块级噪声最大 12.7603%，低于预登记 15%。这只关闭本轮测量方法问题；
+分配/深复制等其余指标、完整 PD-0 基线与后续 PD-1 至 PD-5 仍未退出。
+本轮已补充独立分配与 Runtime 子阶段探针；Debug/Release 首轮存储数据已取得。
+后续回归中 Release B5 主宿主 Pause 返回 `host.rpa.capture_gap`（26 个用例中 1 个失败），
+已按 owner 要求停止并等待协助；是否与本轮改动有关尚未确定。修订版存储采样及扩展计时后的
+正式配对组尚未运行，先前噪声结果不认证新二进制。详见
+[存储观测与回归失败停点](stage_reports/stages/stage-07/verification/2026-10-16-pd0-storage-and-stop.md)。
+owner 要求再次测试后，同一 Release 二进制的两次完整普通用例及两次独立 Pause 用例均通过；
+原 capture_gap 失败未复现、根因仍未确定，未宣称已修复，后续 PD-0 正式采样尚未恢复。
+证据和限制见[测量方法与验证](stage_reports/stages/stage-07/verification/2026-10-16-pd0-measurement-method.md)、
+[诊断交接](stage_reports/stages/stage-07/verification/2026-10-16-pd0-noise-investigation.md)及
+[实施起步存档](stage_reports/stages/stage-07/implementation/2026-10-16-pd-start-checkpoint.md)。
+未完成全量 CTest、hosted 或 RPA 生产/设备接受，不据此关闭 PD 或 Stage 7。
 
 ## 产品边界
 

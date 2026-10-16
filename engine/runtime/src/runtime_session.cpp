@@ -1006,6 +1006,7 @@ auto RuntimeSession::updatePrepared(RuntimeEvaluationState& state,
                                     const chart::TimingMap& timingMap, const RuntimeFrame& frame,
                                     bool tickLifetimes, std::vector<RuntimeDebugRecord>* records,
                                     bool* truncated) -> core::Result<void> {
+    internal::pd::Timer preparation{internal::pd::Stage::runtimePrepare};
     auto beatSample = timingMap.sampleChartTimeMs(frame.chartTimeMs);
     if (!beatSample) {
         return core::unexpected(std::move(beatSample.error()));
@@ -1112,6 +1113,7 @@ auto RuntimeSession::updatePrepared(RuntimeEvaluationState& state,
             *truncated = false;
         }
     }
+    internal::pd::Timer commit{internal::pd::Stage::runtimeCommit};
     auto transformsCommitted = state.resolver.commit(*world_);
     if (!transformsCommitted) {
         return core::unexpected(std::move(transformsCommitted.error()));
@@ -1724,7 +1726,12 @@ auto RuntimeSession::updateGameplay(const RuntimeFrame& frame,
         candidate->resolver.rollback(*world_);
     };
     try {
-        candidate = std::make_unique<RuntimeEvaluationState>(*evaluation_);
+        {
+            internal::pd::Timer copy{internal::pd::Stage::runtimeCopy};
+            copy.items(1);
+            copy.logicalCopy(sizeof(RuntimeEvaluationState));
+            candidate = std::make_unique<RuntimeEvaluationState>(*evaluation_);
+        }
         candidate->camerasCommitted = false;
         candidate->appearancesCommitted = false;
         candidate->resolver.beginFrame();
