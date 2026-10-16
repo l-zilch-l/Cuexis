@@ -20,7 +20,7 @@
 
 | 当前任务 | 入口 |
 | --- | --- |
-| 理解RPA领域词义 | [Glossary](GLOSSARY.md) |
+| 理解RPA与表现领域词义 | [Glossary](GLOSSARY.md) |
 | 创建 Session、加载、重载、逐帧更新 | [PlaybackSession 生命周期](playback-session.md) |
 | 选择输入来源、接入资源读取 | [PlaybackSource 与 ContentProvider](sources-and-content.md) |
 | 读取帧、计算摘要、处理时钟 | [帧、摘要与时间线](frames-digests-and-timelines.md) |

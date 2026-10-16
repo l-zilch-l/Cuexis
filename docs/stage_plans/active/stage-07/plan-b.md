@@ -1,7 +1,7 @@
 # Stage 7B+ Plan: Capability Evolution
 
 状态：future；各能力按独立依赖和 owner 接受情况排期
-更新日期：2026-10-10
+更新日期：2026-10-16（补 PD 集成兼容与交接要求）
 
 本分册定义 S7B/S7C 能力的准入、依赖、批次和验收。Stage 7 全局边界、Stage 8 选入规则、统一证据矩阵、停止条件和跨阶段交接见[总计划](plan.md)。能力字段和运行语义必须先进入其权威 ADR/Spec/ABI；候选能力不视为已实现。
 
@@ -14,6 +14,16 @@
 Stage 7B+在[RPA](plan-rpa.md)完整退出后实施，继承[独立诊断前置](plan-diagnostic-formalization.md)的正式码/兼容合同，
 并消费RPA的实时宿主边界、基础设备验收及原7A综合收尾交接。Slide/Flick、方向、连续轨迹、多指及S7C高级校准策略
 仍由本分册逐项准入；本次仅调整规划，不启动产品实施。
+
+### PD 基线的消费与能力适配
+
+若本分册所用集成基线包含 [Stage 7-PD](plan-presentation-decoupling.md)，实施受影响能力前
+消费其实际接受的合同 revision、安装 SDK 与补充验证交接，不能把 PD proposal 当作已有行为。
+能力准入包须明确发布记录、phase/outcome、FactBinding/聚合、Snapshot/Replay 和表现预算的
+影响；adapter 不支持的必需绑定在 prepare 拒绝，不静默跳过 Fact 后推进消费 cursor。
+具体边界见[PD 细则 §12.1、§12.7](presentation-decoupling-design.md)。
+PD 不新增本分册所有研究的共同前置；受影响产品接口集成须完成迁移与新 SHA 验证。
+RPA-F4 的共同前置保持不变，PD 与 F4 的证据更新按实际集成先后处理，不能形成相互等待。
 
 ## 5. Stage 7B+ 能力线的统一规则
 

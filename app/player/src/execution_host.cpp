@@ -1,4 +1,5 @@
 #include "execution_host.hpp"
+#include <cuexis_internal/presentation_metrics.hpp>
 #include "../../../engine/core/internal/cuexis_internal/sha256.hpp"
 #include <limits>
 #include <thread>
@@ -646,6 +647,7 @@ auto ExecutionHost::present(const FrameEnvelope& frame) -> core::Result<PresentR
         }
         auto submit(const FrameSnapshot& snapshot)
             -> core::Result<presentation_renderer::DrawSummary> {
+            internal::pd::Timer measurement{internal::pd::Stage::renderer};
             if (!enabled)
                 return renderer.submit(snapshot);
             render::RenderScene scene;
@@ -655,6 +657,7 @@ auto ExecutionHost::present(const FrameEnvelope& frame) -> core::Result<PresentR
             return renderer.submit(snapshot, &scene);
         }
         auto present() -> core::Result<void> {
+            internal::pd::Timer measurement{internal::pd::Stage::renderer};
             return renderer.present();
         }
     } overlay{renderer_, fps_, options_.showFps};

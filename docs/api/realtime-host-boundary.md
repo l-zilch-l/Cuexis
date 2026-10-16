@@ -2,7 +2,7 @@
 
 状态：candidate contract；B3在SDK 0.8.0提供同owner执行首用；跨owner/设备宿主协议仍待B4/B5
 
-更新日期：2026-10-11
+更新日期：2026-10-16（新增未实施的 PD 候选修订；既有实施状态不变）
 
 决策归 [ADR 0046](../adr/0046-realtime-playback-coordination.md)，执行/时间/控制语义归
 [RPA 补充 Spec](../formats/rpa-execution-contract.md)，批次和门禁归
@@ -244,3 +244,95 @@ Prepared、provider 回调或设备句柄。其物化使用原有 acquire 路径
 candidate OFF 不构建宿主支持模块、不安装 execution control，不保存 RPA 控制/fence 状态。
 ADR 0033 禁止私有导出的规则保留；共享库白名单仅登记实际公共类型/函数，不能放行 detail。
 上述接口仍属 SDK 0.8.0 preview；修复不接受生产 profile、设备验收或 Stage 7 关闭。
+
+## 8. PD 候选修订：来源、许可与反馈寿命（2026-10-16）
+
+本节是 PD 重审选定的**拟议合同差异，尚未实施，尚未作为已发布 SDK 合同接受**。旧安装头和
+0.8.0 行为不能被本段文字视为已经迁移；实施前须完成 Spec/ABI、版本差异及消费者门禁。
+[PD 计划](../stage_plans/active/stage-07/plan-presentation-decoupling.md)拥有批次，
+[设计细则](../stage_plans/active/stage-07/presentation-decoupling-design.md)拥有内部接入和待验收项。
+
+### 8.1 状态来源与使用许可
+
+FrameEnvelope 的状态来源与当前已确认交付 context 分开：原 session/resultVersion、
+content/layout、原 T/RuntimeFrame/实际消费的 Fact/control cursor 不随重绘改写。初始 Prepared
+画面没有的来源字段使用显式 absence，不伪造 Runtime 更新或 Fold。FrameSnapshot 公共值格式
+保持不变；DeliveryBinding 是宿主从现有控制证明派生的内部概念，不是新公共控制能力。
+
+Pause/Resume/合法 EOF 仅换控制/时钟许可时，保留表现作用域及原激活身份；控制完成本身不
+重新投影、不消耗 RemainingFrames。Seek/Reset/Stop/内容或表现绑定替换按原语义重建
+projectionScope。替换当前 Player 每次 finish 递增 projectionScope 的策略时，必须同时修订
+frame admission 与 receipt 匹配；完整 HostContext/controlSequence/资源代验证不能省略。
+
+Pause 重绘实际呈现端最后成功画面，允许其修订落后于当前 Runtime。旧 envelope 不可修改；
+经全域控制确认后，宿主验证保留来源、当前资源和呈现端证明，签发新 attempt，复用 CPU backing。
+原 T/frame/cursor/membership 保留，不消费 Pause drain 的新前缀。resize 可用保留 Snapshot
+的完整对象、相机参数及 view matrix 生成新 viewport 的 Snapshot；它是物化，不是新求值。
+原资源代/内容/表现作用域失效、控制结果不明或 Closing 时不得据此重新提交。
+
+同一表现作用域的旧控制 receipt 仍只更新原 AttemptKey 对应的既有义务证据，不能确认新控制；
+作用域真的替换后，只能更新旧历史。保留画面的源 T 可以较旧，不用于倒退 expiry 或 Runtime
+的时间前沿。历史成员的迟到成功不重开义务。
+
+首版一个实际呈现端与多个 CPU capture 消费者。CPU capture 无设备完成证明、无 present
+attempt，不能确认反馈。独立第二 Renderer 需要另行扩展 RPA 的已确认设备绑定、参与者集合、
+资源激活/退休和 Close；本节不以放宽唯一 confirmedHostContext 的比较来提供多窗口。
+
+### 8.2 显式反馈寿命与迁移
+
+Gameplay FactBinding 的有限区间/UntilReset 含义不变。拟议公共 FeedbackObservation 保留
+id、created、status、laterConfirmed；将 `expiry` 从整数改为
+`optional<GameplayPresentationTick>`：有值是有限 exclusive end，absent 是 UntilReset。
+created 的现有 signed i64 表示仍解释为 presentation T，不扩展到墙钟；有限 end 必须大于
+created。有限 end=INT64_MAX 与无 end 可区分，UntilReset 不因 T 到最大值而到期。
+scope 替换/取消和证据 TTL 仍分别处理；TTL 不能改变效果寿命。
+
+`PlaybackSession::gameplayFeedback` 和内部成员读取必须保留该分支，不再用 INT64_MAX sentinel。
+此变更涉及 candidate 安装结构及外部消费者，按 [VERSIONING](../guides/VERSIONING.md)属于
+不兼容 minor 迁移。实现时记录当时的源/目标版本、Spec/ABI 差异，重建 static/shared 与安装
+消费者，并验证旧 minor 不匹配拒绝；本轮不分配版本号，不允许只改头而继续使用旧库。
+不永久维护另一套 V2 反馈状态机；旧版本保存在历史构建/证据中，不宣称其已支持新表示。
+
+### 8.3 交付、执行与证据
+
+消费注册身份沿用 PD 设计中的 ConsumerId，和 sessionScope 共同标识本次加入；同窗口/设备重新
+注册使用新身份。普通帧与保留重绘都携带该身份，实际 Renderer 调用前校验当前有效注册，
+不能只核对 HostContext/资源代。注册激活和撤销须经 Renderer owner 串行确认，沿可靠生命周期
+设施传递；撤销确认前不得让同端新注册生效。迟到激活、撤销与确认不复活旧注册，也不清除
+新注册。注册前沿独立于可淘汰历史，帧执行标记只有在旧注册失效已确认后才能为新身份初始化。
+具体状态/容量归[PD 细则 §6.3.1](../stage_plans/active/stage-07/presentation-decoupling-design.md)。
+注册确认不解除控制/fence，撤销确认不证明 GPU 已完成或外部 CPU 引用已释放；公开 HostContext
+及 Gameplay/Replay identity 不因此增加字段。
+同一 Renderer instance/generation 的控制或资源换代可保留注册，但仍更新已确认交付绑定；
+更换 Renderer instance/generation 则须先证明旧注册不能再调用，再为新端注册新身份。
+失联或超时不能代替旧注册撤销/owner 终结及旧路由失效证明。
+
+RequestId 去重、Renderer 实际执行去重和 receipt 去重是不同责任。实际呈现端在调用前登记
+已接入的 attempt；同一 ID 结局未知或历史淘汰后也不能再调用。其执行标记独立于可淘汰的
+observation journal。Renderer 本地保留 last-success CPU backing，不依赖观察回执到达；
+重绘必须签发新 attempt。CPU lease 与设备 retire/fence 仍按 §3、§5 独立结束。
+拒绝旧 envelope 副本不等于原 attempt 从未调用；已无精确执行历史则返回历史不可得，不伪造
+NotSubmitted。旧注册的合法 receipt 仍只补原 attempt 的反馈证据，不改变新注册的最后成功图。
+
+未领取响应可以在额度内持有一份 owning 帧；成功领取后，请求去重历史只保留元数据。
+响应领取与取消必须有唯一先后，重复查询/领取不生成新 attempt、不从历史保活或恢复帧。
+该移交使用有界交付槽的同步，不依赖可丢 present receipt，也不增加逐帧等待 Worker 确认。
+请求 deadline 限制最迟移交时间，过期与领取同样串行裁决；它不等于实际调用完成或 receipt
+观察时限，不能收回已经移交的 owning 帧。
+
+本候选修订不改变 G1/Q1/K1、R2/A1、跨设备确认、fault/恢复和有向 Close，也不表示这些新增
+差异已经通过实施验证。接受前 PD-3 控制接入、PD-4 公共反馈迁移不得据计划自行绕过门禁。
+
+### 8.4 保留资格撤销与显式降级
+
+拟议策略允许已声明的内存压力或设备/资源失效撤销保留画面的后续使用资格；普通稳态仍履行
+已接受的保留保证。撤销由 Renderer owner 串行裁决，在实际调用前重验保留身份；迟到重绘
+不得恢复资格。资格变化经可靠生命周期/控制通道通知并确认，不依赖可丢的 present receipt。
+在途 CPU/GPU 责任和外部 owning 值不因撤销结束，释放各自引用不能声称已回收全部存储。
+
+暂停时精确保留画面已丢失，必须显式报告无可重绘图，不能用当前较新修订替代或运行 frozen
+update 补图。该结局在 PD 文档中称 NoRetainedFrame，尚未指定公共错误码或安装类型。
+恢复沿合法更新/控制和设备确认；跨资源代的精确暂停画面恢复需另行接受资源重新取得合同。
+细节及验收归[PD 细则 §12.4](../stage_plans/active/stage-07/presentation-decoupling-design.md)。
+实施前须接受触发条件、可观察状态与恢复保证；如影响公共合同，补版本/安装消费者差异，
+不得把压力驱逐直接当成现有 SDK 已允许的行为。

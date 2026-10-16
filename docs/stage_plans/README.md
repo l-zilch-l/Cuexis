@@ -96,7 +96,8 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
   - [诊断码正式化独立前置](active/stage-07/plan-diagnostic-formalization.md)：沿用原RPA-N0–N3追溯编号，独立完成审计、合同、迁移、验收；不是新增编号阶段，N3退出先于RPA新架构原型和A4–A6。
   - [Stage 7-RPA 分册](active/stage-07/plan-rpa.md)：实时架构、实体设备/同步及原S7A-9矩阵、预算、交接统一收尾；诊断正式化已剥离为独立前置，完成后进入7B+。目前仅规划。
   - [Stage 7 RPA 性能修改方案](active/stage-07/performance-modification-plan.md)：基于2026-10-14实现审查的分阶段等待、通道、历史存储、事务复制与验证方案；不代表已实施或F3/B5已关闭。
-  - [Stage 7-PD 判定/表现解耦计划](active/stage-07/plan-presentation-decoupling.md)：独立于7A和RPA的候选架构比较、推荐基线、FramePacket边界、后续 owner 拆分触发条件与复用评估；不代表已实施。
+  - [Stage 7-PD 判定/表现解耦计划](active/stage-07/plan-presentation-decoupling.md)：候选架构、单一状态源/修订读取/独立交付绑定、迁移与维护成本、后续 owner 拆分条件；独立于7A和RPA，不代表已实施。
+  - [Stage 7-PD 内部设计与验收细则](active/stage-07/presentation-decoupling-design.md)：发布视图、投影、事务 prepare/apply、按需物化、消费者注册/撤销、响应移交与显式寿命、receipt/Close、合同差异、性能判据及 7B+/Stage 8–14 接入条件；配套设计，不是实施授权。
   - [Stage 7B+ 分册](active/stage-07/plan-b.md)：RPA完成后实施S7B-0–4、S7C-1/2；当前计划范围验收并接受后进入Stage 8。
   - 历史路径见[legacy-paths](active/stage-07/legacy-paths.md)；当前实现状态以CURRENT_STATUS为准。
 - [Stage 8](future/stage-08/plan.md)：Chart v5 正式语义、CXT v2、Packed Chart 和 CXC 发行收敛；

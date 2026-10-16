@@ -2,10 +2,18 @@
 
 状态：current
 
-更新日期：2026-10-13
+更新日期：2026-10-16
 
 本文是 Cuexis 当前产品和阶段状态的唯一摘要。ADR 定义决策，Spec 定义字段和语义，阶段计划定义未来
 范围，阶段报告保存带日期的实施证据；它们不得绕过本文重新定义当前状态。
+
+2026-10-16：owner 已授权完成 Stage 7-PD 实施，随后要求先提交当前状态存档并显示待办进度。
+PD-0 进行中：已加入默认关闭的 testOnly 分段计时和显式选取的确定性表征用例，
+Debug/Release 各三次该用例通过，聚合 FrameDigest 一致。PD-0 完整测量尚未退出；
+PD-1、PD-2、PD-3-a/b/c、PD-4、PD-5 尚未实施或通过。
+本次存档不是完整构建/全量 CTest、PD 完成或 RPA 生产/设备接受。
+范围和验证限制见[实施起步存档](stage_reports/stages/stage-07/implementation/2026-10-16-pd-start-checkpoint.md)，
+逐批待办见 [PD 计划进度](stage_plans/active/stage-07/plan-presentation-decoupling.md#13-实施待办与进度)。
 
 ## 产品边界
 

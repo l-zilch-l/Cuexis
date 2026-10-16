@@ -1600,3 +1600,14 @@ Snapshot恢复不携带完整原journal，因此canArchive=false，原provisiona
 本次明确保留这个既有Result载体，正式名为judgement.session.operation_state_invalid；
 原message、五项ordered context及absence cause保持，不添加公共登记或Replay能力。
 legacy无参语义拒绝与query无kernel防御兜底仍不由安装SDK公开为新动词。
+
+## PD 反馈观察表示的拟议迁移（2026-10-16）
+
+状态：proposal，未实施、未作为 SDK 发行合同接受。
+
+C78-07 的有限 `[start,end)` / UntilReset 语义和 GameplayFactBinding 的 optional end 不变。
+宿主反馈观察当前整数 expiry 无法区分无期限与有限最大 Tick；选定的修订由
+[实时宿主边界 §8](realtime-host-boundary.md)拥有：FeedbackObservation.expiry 改为显式
+optional typed end，gameplayFeedback 不再以 INT64_MAX 代替 absence。该安装结构变化必须
+完成不兼容 SDK minor、static/shared/installed consumer 和版本拒绝门禁后才可交付。
+PD 计划中的设计闭合不代表这些门禁通过，不改变 Fact/Replay/Snapshot 或 Gameplay identity。

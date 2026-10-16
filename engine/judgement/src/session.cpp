@@ -2,6 +2,7 @@
 
 #include "execution_kernel.hpp"
 #include "execution_testing.hpp"
+#include <cuexis_internal/presentation_metrics.hpp>
 #include <cuexis/judgement/judgement_session.hpp>
 
 #include <cuexis/core/thread_checker.hpp>
@@ -283,6 +284,7 @@ auto JudgementSession::controlRpa(const RpaControlRecord& control) -> core::Resu
 
 auto JudgementSession::advance(Tick horizon, bool controlDrain)
     -> core::Result<JudgementProjection> {
+    internal::pd::Timer measurement{internal::pd::Stage::judgement};
     assertUsable();
     if (!impl_->kernel) {
         return core::unexpected(rejection("judgement.session.lifecycle_order",

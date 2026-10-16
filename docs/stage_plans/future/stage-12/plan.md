@@ -2,7 +2,7 @@
 
 状态：future；未开始
 
-更新日期：2026-10-01
+更新日期：2026-10-16（补 PD 保留画面与设备恢复）
 
 归档来源：[旧 Stage 9A 性能计划](../../historical-inputs/stage-09a/plan.md)、
 [Android 历史输入](../../historical-inputs/stage-09b/plan.md)、
@@ -49,6 +49,12 @@ S12-A在已验收的时间/所有权/发布合同上做规模与平台优化，R
 - 为 KTX2/Basis Universal、meshoptimizer、Ogg/Vorbis 和 GLSL ES 300 定义 target profile；派生资源
   记录 source hash、importer、profile 和压缩参数。
 - 只验证原始输入时间戳和延迟链路；InputProfile/CalibrationProfile 只有在另行批准后持久化。
+
+采用 PD 基线时，平台策略须覆盖[细则 §12.4](../../active/stage-07/presentation-decoupling-design.md)
+的保留资格撤销、真实 CPU 释放与 GPU fence 分离。内存压力不能强制回收外部 lease；Context/
+资源换代不能把旧暂停图直接贴成新许可。旧图丢失且仍暂停时明确无可重绘图，不能用当前
+较新修订替代或执行 frozen update。跨代精确暂停图恢复若成为产品要求，另行接受 portable
+资源重新取得入口和来源校验。后台/恢复/低内存与保留加替换峰值均需真实设备证据。
 
 ### S12-C：Vulkan 可选 adapter
 

@@ -8,6 +8,7 @@
 #include "playback_source_state.hpp"
 #include "presentation_internal.hpp"
 #include <cuexis_internal/sha256.hpp>
+#include <cuexis_internal/presentation_metrics.hpp>
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
 #include "gameplay_internal.hpp"
 #include <cuexis/judgement/execution_scheduler.hpp>
@@ -2950,6 +2951,7 @@ auto PlaybackSession::extractFrame(const FrameViewport& viewport) const
 
 auto PlaybackSession::extractFrame(const FrameViewport& viewport, FrameSnapshot& snapshot) const
     -> core::Result<void> {
+    internal::pd::Timer measurement{internal::pd::Stage::snapshot};
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("extract_frame"));
     }
@@ -2970,6 +2972,7 @@ auto PlaybackSession::extractFrame(const FrameViewport& viewport, FrameSnapshot&
     auto extracted = state_->runtimeSession->withWorld([&](const world::World& world)
                                                            -> core::Result<void> {
         return world.withRegistry([&](const entt::registry& registry) -> core::Result<void> {
+            measurement.items(state_->snapshotLayout.entities.size());
             snapshot.camera = {};
             snapshot.clearRed = 0.055F;
             snapshot.clearGreen = 0.063F;
@@ -3702,6 +3705,7 @@ auto PlaybackSession::publishGameplayProjection(const GameplayResult& result,
                                                 const RuntimeFrame& frame, bool tickLifetimes,
                                                 GameplayPublicationFailureStage* failureStage)
     -> core::Result<void> try {
+    internal::pd::Timer measurement{internal::pd::Stage::projection};
     if (failureStage)
         *failureStage = GameplayPublicationFailureStage::Projection;
     if (auto valid = validateGameplayFrame(frame, state_->lastFrame); !valid)
@@ -3729,6 +3733,7 @@ auto PlaybackSession::publishGameplayProjection(const GameplayResult& result,
         if (!fact)
             continue;
         for (const auto& binding : content->bindings) {
+            measurement.items(1);
             const auto& e = fact->requirement;
             const auto& s = binding.source;
             if (e.chartEntryId != s.chartEntryId || e.invocationId != s.invocationId ||

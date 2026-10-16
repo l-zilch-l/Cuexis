@@ -1,6 +1,7 @@
 // RuntimeSession transactional lifecycle and absolute-time Behavior evaluation.
 
 #include <cuexis/runtime/runtime_session.hpp>
+#include <cuexis_internal/presentation_metrics.hpp>
 
 #include <cuexis/animation/animation_program.hpp>
 #include <cuexis/animation/animation_system.hpp>
@@ -1313,6 +1314,7 @@ auto RuntimeSession::debugSnapshot() const -> core::Result<RuntimeDebugSnapshot>
 }
 
 auto RuntimeSession::update(const RuntimeFrame& frame) -> core::Result<void> {
+    internal::pd::Timer measurement{internal::pd::Stage::runtime};
     if (!threadChecker_.isCurrent()) {
         return core::unexpected(core::Error{"runtime.session.not_owner_thread",
                                             "RuntimeSession update must run on its owner thread"});
@@ -1700,6 +1702,8 @@ void RuntimeSession::replaceWith(PreparedRuntimeSession&& prepared) noexcept {
 auto RuntimeSession::updateGameplay(const RuntimeFrame& frame,
                                     std::span<const PropertyOverrideWrite> writes,
                                     bool tickLifetimes) -> core::Result<void> {
+    internal::pd::Timer measurement{internal::pd::Stage::runtime};
+    measurement.items(writes.size());
     if (!threadChecker_.isCurrent())
         return core::unexpected(
             core::Error{"runtime.session.not_owner_thread", "Wrong owner thread"});

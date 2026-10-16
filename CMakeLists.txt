@@ -63,6 +63,10 @@ option(CUEXIS_BUILD_TESTS "Build the Cuexis test suite" ${CUEXIS_TESTS_DEFAULT})
 option(CUEXIS_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
 option(CUEXIS_ENABLE_CLANG_TIDY "Run clang-tidy while compiling Cuexis targets" OFF)
 option(CUEXIS_ENABLE_COVERAGE "Enable compiler coverage instrumentation" OFF)
+option(CUEXIS_PD_METRICS_TEST_ONLY "Enable bounded internal PD stage measurements (not production)" OFF)
+if(CUEXIS_PD_METRICS_TEST_ONLY)
+    add_compile_definitions(CUEXIS_PD_METRICS_TEST_ONLY=1)
+endif()
 set(CUEXIS_IMPLEMENTATION_SHA "" CACHE STRING
     "Git commit SHA recorded by deterministic implementation evidence")
 

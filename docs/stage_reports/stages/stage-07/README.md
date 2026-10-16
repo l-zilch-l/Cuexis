@@ -2,7 +2,7 @@
 
 状态：current index
 
-更新日期：2026-10-11
+更新日期：2026-10-16
 
 本索引按报告用途分类，不复制裁定、字段合同或当前阶段结论。
 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 是唯一当前实现状态摘要；
@@ -16,9 +16,9 @@
 | 准入与基线 (readiness) | 7 | owner准入记录、工具链基线、typed合同与计划审视、D-9候选证据；另有诊断审计旧路径兼容页 |
 | RPA子阶段 (rpa) | 14 | 设计审查、B0合同修订、B1观测/基线、B2存储与寿命验证设施及等待路径性能证据；架构/综合收尾按RPA分册管理 |
 | 裁定记录 (decisions) | 14 | 分轮准入/实施裁定、合同选择、落地位置与诊断分类；现行字段仍归Spec/ABI |
-| 设计与实施记录 (implementation) | 6 | 带日期的设计收口和实施推进；设计交付与运行验证分别按报告声明解释 |
+| 设计与实施记录 (implementation) | 7 | 带日期的设计收口和实施推进；设计交付与运行验证分别按报告声明解释 |
 | 验证与审计 (verification) | 23 | 独立复验、功能验收、边界审计、CI优化和文档恢复证据 |
-| 交接与规划修订 (handoffs) | 5 | hosted交接、排期修订和桌面接手整理；历史下一步不覆盖主计划 |
+| 交接与规划修订 (handoffs) | 13 | hosted交接、排期修订、桌面接手整理和 PD 设计收口；历史下一步不覆盖主计划 |
 
 ## 常用入口
 
@@ -86,6 +86,7 @@
 
 | 报告 | 证据日期 |
 | --- | --- |
+| [PD 实施起步存档（PD-0 进行中）](implementation/2026-10-16-pd-start-checkpoint.md) | 2026-10-16 |
 | [S7A-7/8 Graph、Entry 与生产 assembler 证据](implementation/2026-10-08-s7a-7-8-entry-assembler-progress.md) | 2026-10-08 |
 | [S7A-7/8 集成推进记录](implementation/2026-10-07-s7a-7-8-integration-progress.md) | 2026-10-07 |
 | [S7A-3 实现推进记录：G2-S2 / G2-T4 / R2-K4 / P1-W1 裁决后状态](implementation/2026-10-03-s7a-3-implementation-progress.md) | 2026-10-03 |
@@ -163,3 +164,9 @@
 - [RPA F3 当前目标基线](rpa/2026-10-15-f3-target-baseline.md)（2026-10-15）：约 40,000 实体、延迟不超过 20 ms 的当前实现测量目标；PD 后必须重测，不构成最终生产结论。
 - [RPA F3 基线测量报告](rpa/2026-10-15-f3-final-baseline.md)（2026-10-15）：40,000 实体、16 MiB Packed entry、自动预算测量及未测项目。
 - [RPA F4 PD 交接包](handoffs/2026-10-15-rpa-f4-handoff.md)（2026-10-15）：RPA 基线、PD 重测规则、回退边界和未关闭验收项。
+- [PD 帧账本回收计划修订](handoffs/2026-10-15-pd-frame-ledger-reclamation-revision.md)（2026-10-15）：受控复现成因、PD-3/PD-4 寿命矩阵、回执状态、背压和有界性验收修订。
+- [PD 帧账本设计收口](handoffs/2026-10-15-pd-ledger-design-selection.md)（2026-10-15）：保存已被取代的单 owner 双层账本中间裁定及其 scope/generation、receipt、Close 输入。
+- [PD 准备数据与求值结果架构收口](handoffs/2026-10-15-pd-state-result-architecture-selection.md)（2026-10-15）：保存先前架构选型；每更新完整结果的首版选择已由后续重审调整。
+- [PD 事务、交付与演进成本重审](handoffs/2026-10-16-pd-transaction-and-delivery-design-review.md)（2026-10-16）：备选方向与开发/维护/性能取舍、单一状态源和按需物化、控制绑定、显式寿命及扩展影响；仅设计记录。
+- [PD 跨阶段兼容与演进设计补齐](handoffs/2026-10-16-pd-cross-stage-design-review.md)（2026-10-16）：7B+ 与 Stage 8–14 依赖核对、有类型域、候选重建、作者/预览事务、保留资格撤销及基线交接；仅设计记录，未模拟实施。
+- [PD 消费注册生命周期与计划自查](handoffs/2026-10-16-pd-registration-and-plan-self-review.md)（2026-10-16）：普通帧注册身份、激活/撤销确认、请求响应移交与计划一致性复核；仅设计记录，无实施/模拟证据。

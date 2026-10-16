@@ -2,7 +2,7 @@
 
 状态：future；未开始
 
-更新日期：2026-10-01
+更新日期：2026-10-16（补 PD 曲线读取与观察面接入）
 
 归档来源：[Chart v7 历史设计输入](../../historical-inputs/chart-format-update-for-v7/plan.md)、
 [Chart v6 / Model v1](../../historical-inputs/chart-format-update-for-v6/plan.md)、
@@ -38,6 +38,11 @@ Chart v7
 - 只使用分段三次 Bézier；不支持公式、表达式字符串或运行时生成曲线。
 - 采样由绝对 Beat 与当前局部 TRS 一次完成；Seek、Reload、不同帧率必须相同。
 - 使用稳定的平行移动标架，C0/C1 边界和拐点必须有 golden。
+
+若采用 PD 基线，沿[细则 §12.2](../../active/stage-07/presentation-decoupling-design.md)接入
+曲线/几何表现域；唯一 evaluator 产生该采样点的值或由 Spec 冻结的 portable 参数，提帧不推进
+曲线时间或寿命。后端几何执行如被采用，须有共同 typed 合同与 headless 等价证据。
+Snapshot、FrameDigest、资源/capability 和预算分别走版本门禁，不把未来几何塞进未知属性包。
 
 ### S11-B：line 与几何资源
 

@@ -2,7 +2,7 @@
 
 状态：future；未开始
 
-更新日期：2026-10-01
+更新日期：2026-10-16（补 PD 表现域接入）
 
 前置：
 
@@ -53,6 +53,12 @@ Chart v6
 - Model v1 支持有序 submesh 槽和静态材质覆盖；未覆盖槽使用 Model 默认材质。
 - FrameSnapshot、FrameDigest、capability 和预算变化必须独立版本化。
 - 合法 v4/v5 输入的既有 digest 保持不变。
+
+若采用 PD 基线，Environment 与 Model/Submesh 接入
+[PD 有类型表现域边界](../../active/stage-07/presentation-decoupling-design.md) §12.2，复用单一
+求值与 Snapshot 物化协调入口；环境不能被硬塞成普通对象，也不建立动态 provider 或另一套
+Renderer 求值。必需域须共同完成一个逻辑采样点才可交付；新增 submesh/资源字段同步更新
+Snapshot/Digest/capability 与单帧/峰值预算，不沿用旧对象数上界。实际合同迁移与证据见该细则 §12.7。
 
 ## 3. 关闭标准
 
