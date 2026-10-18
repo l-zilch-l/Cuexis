@@ -128,7 +128,7 @@ Gameplay V2 acceptance package owner acceptance
 
 **执行顺序偏差（2026-10-02 如实记录）。** 第 3 步（Gameplay I 标注 `superseded`）在第 2 步的限定冻结
 之前就已执行；**不倒填**冻结时间，纠正动作是限定冻结后重新核验替代链接与 retained 映射，记录见
-[S7A-0 接受记录 §4.2](../../../stage_reports/stages/stage-07/readiness/2026-10-02-s7a-0-acceptance.md)。
+[S7A-0 接受记录 §4.2](../../../stage_reports/stages/stage-07/s7a/readiness/2026-10-02-s7a-0-acceptance.md)。
 
 如果实现阶段发现 V2 合同、历史 Gameplay I 文档、研究证据或真实内容预算之间矛盾，先建立可复现失败报告并停止
 受影响批次；不得在代码中隐式选择替代语义。修改四层边界、identity 分区、grace 语义、
@@ -152,7 +152,7 @@ Stage 6 关闭后由 Stage 7A 承接四项未完成内容。它们是关闭前�
 的关闭事实不被改写；只把剩余证据归入当前阶段。
 
 2026-10-06 逐项源码与门禁核对及实施建议见
-[四项交接复核](../../../stage_reports/stages/stage-07/verification/2026-10-06-stage6-handover-audit.md)。
+[四项交接复核](../../../stage_reports/stages/stage-07/s7a/verification/2026-10-07-stage6-handover-implementation.md)。
 该报告更新旧台账事实，记录 S7A-8.1–8.4 的建议顺序与退出证据；不表示已实施 S7A-7/8/9、
 接受生产预算或批准新的版本/门禁合同。
 

@@ -1,6 +1,6 @@
 # PD probes are independent from RPA acceptance. The allocation probe is static-only.
 if(CUEXIS_ENABLE_CHART_V5_CANDIDATE AND CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
-    add_executable(cuexis_pd_baseline_probe pd_baseline_probe.cpp measurement_method_tests.cpp)
+    add_executable(cuexis_pd_baseline_probe pd_baseline_probe.cpp measurement_method_tests.cpp advance_retirement_tests.cpp)
     target_compile_features(cuexis_pd_baseline_probe PRIVATE cxx_std_20)
     target_compile_definitions(cuexis_pd_baseline_probe
         PRIVATE CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
@@ -22,5 +22,15 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE AND CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
             target_link_libraries(${probe} PRIVATE cuexis::execution_host_support
                 cuexis::presentation_renderer)
         endforeach()
+    endif()
+    if(TARGET cuexis_execution_host_support)
+        add_executable(cuexis_pd_host_probe host_delivery_probe.cpp owner_wait_probe.cpp owner_channel_wait_tests.cpp coherent_retirement_tests.cpp
+            "${PROJECT_SOURCE_DIR}/app/player/src/execution_host.cpp"
+            "${PROJECT_SOURCE_DIR}/app/player/src/snapshot_scene.cpp")
+        target_compile_features(cuexis_pd_host_probe PRIVATE cxx_std_20)
+        target_compile_definitions(cuexis_pd_host_probe PRIVATE CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
+        target_link_libraries(cuexis_pd_host_probe PRIVATE cuexis::execution_host_support
+            cuexis::playback cuexis::presentation_renderer cuexis::render cuexis::judgement cuexis::gameplay_packed Catch2::Catch2WithMain)
+        catch_discover_tests(cuexis_pd_host_probe ADD_TAGS_AS_LABELS PROPERTIES LABELS "pd")
     endif()
 endif()

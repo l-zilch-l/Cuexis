@@ -1,6 +1,6 @@
 #include "frame_observation.hpp"
-#include <cuexis_internal/presentation_metrics.hpp>
 #include <algorithm>
+#include <cuexis_internal/presentation_metrics.hpp>
 
 namespace cuexis::playback::detail {
 namespace {

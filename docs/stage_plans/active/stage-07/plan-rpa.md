@@ -6,7 +6,7 @@
 
 归档来源：[旧版 PROJECT_GUIDE](../../../archive/PROJECT_GUIDE_LEGACY_2026-08-10.md)、
 [RPA目标架构v0.5历史初稿](../../../archive/stage-07-planning/2026-10-10-rpa-target-architecture-draft.md)、
-[原RT78迁移记录](../../../stage_reports/stages/stage-07/handoffs/2026-10-09-realtime-stage-separation.md)。
+[原RT78迁移记录](../../../stage_reports/stages/stage-07/rpa/2026-10-09-realtime-stage-separation.md)。
 
 ## 阶段目标
 
@@ -43,7 +43,7 @@ Stage7A保留既有内核、集成与受限验收证据；剩余S7A-9工作及�
 - 实体DFJK/focus/control、真实听音、设备失效/恢复、卡顿/刷新率/输入延迟与实时同步，
   包括实施和最终验收，整体归RPA；与F线的内核/消费者验收在同一子阶段统一调度，证据分别归类。
   旧失败作为待办基线，不改记通过或转回7A。
-- 原S7A-8.4已按[10-10记录](../../../stage_reports/stages/stage-07/verification/2026-10-10-s7a-8-4-closure.md)收口；
+- 原S7A-8.4已按[10-10记录](../../../stage_reports/stages/stage-07/s7a/verification/2026-10-10-s7a-8-4-closure.md)收口；
   RPA后续API变化仍需独立版本差异、审批与门禁证据。
 - RPA-F4接受完整交接包（包含7A既有成果及原9收尾）后进入Stage 7B+；
   7B+当前计划范围实施、验收并经owner接受后，再进入Stage 8。
@@ -245,7 +245,7 @@ A0–A7是2026-10-09迁移时的追溯编号，保留以便历史报告可对照
 
 | 原ID | 原内容 | 现在的位置 |
 | --- | --- | --- |
-| RPA-A0 架构审查 | 实际代码/合同/平台约束、RA反例、复制清单、证据限制 | 已完成，作为B0与B1的设计输入；证据见[10-09审查](../../../stage_reports/stages/stage-07/readiness/2026-10-09-realtime-architecture-review.md) |
+| RPA-A0 架构审查 | 实际代码/合同/平台约束、RA反例、复制清单、证据限制 | 已完成，作为B0与B1的设计输入；证据见[10-09审查](../../../stage_reports/stages/stage-07/rpa/2026-10-09-realtime-architecture-review.md) |
 | RPA-A1 边界设计与typed review | 完成TB-01–07，逐字段补owner、单位、捕获/准入时点、profile/identity、控制矩阵与失败码 | **B0**；分析输入见[10-11审查](../../../stage_reports/stages/stage-07/rpa/2026-10-11-design-and-entry-review.md)与[生产架构方案](../../../stage_reports/stages/stage-07/rpa/2026-10-11-production-architecture-design.md) |
 | RPA-A2 调度与存储验证设计 | 可比较轨迹、成本/复制/保留/积压与观测开销口径、fake clock、独立oracle、平台取证 | **B1**（观测与平台取证）+ **B2**（存储成本口径） |
 | RPA-A3 架构与线程模型选择 | 比较五种状态组织方向及ADR0046部署候选，纸面筛选后以关键实验裁定 | **B0**（D-AD02裁定）+ **B1**（实验证据）；五方向比较输入见10-11审查 |
@@ -262,7 +262,7 @@ A0–A7是2026-10-09迁移时的追溯编号，保留以便历史报告可对照
 完整目标、已选方案、合同收敛、生产者/消费者迁移、版本/载体兼容、验收与回退统一归
 [诊断码正式化独立前置计划](plan-diagnostic-formalization.md)。本分册不维护第二份N0–N3批次表。
 
-[N0历史复核](../../../stage_reports/stages/stage-07/rpa/2026-10-10-n0-diagnostic-inventory-review.md)
+[N0历史复核](../../../stage_reports/stages/stage-07/diagnostic-formalization/2026-10-10-n0-diagnostic-inventory-review.md)
 只记录当时静态清单；后续合同同步、迁移和运行验证由
 [N3独立退出报告](../../../stage_reports/stages/stage-07/diagnostic-formalization/2026-10-10-n3-verification-and-exit.md)
 提供证据，最新状态归CURRENT_STATUS。历史报告/ZIP仍留原路径，目录名不表示继续属于RPA内部工作线。
@@ -323,11 +323,11 @@ N3有效基线和独立授权；产品实施还需后续授权。
   TB-01–07反例、DR-01–05、A2测量表与五方向纸面比较输入。
 - [根目录v0.5初稿归档](../../../archive/stage-07-planning/2026-10-10-rpa-target-architecture-draft.md)：
   保留原设计与反例；架构筛选/实施顺序以本分册为准，命名迁移归独立前置计划。
-- [S7A-7/8受限收口与8.4关闭证据](../../../stage_reports/stages/stage-07/verification/2026-10-10-s7a-8-4-closure.md)。
-- [架构审查](../../../stage_reports/stages/stage-07/readiness/2026-10-09-realtime-architecture-review.md)及
-  [正式命名审计](../../../stage_reports/stages/stage-07/rpa/2026-10-09-diagnostic-phase-name-audit.md)。
-- [归入Stage 7子阶段的修订记录](../../../stage_reports/stages/stage-07/handoffs/2026-10-09-rpa-stage7-substage.md)
-  与[独立阶段拆分记录](../../../stage_reports/stages/stage-07/handoffs/2026-10-09-realtime-stage-separation.md)：
+- [S7A-7/8受限收口与8.4关闭证据](../../../stage_reports/stages/stage-07/s7a/verification/2026-10-10-s7a-8-4-closure.md)。
+- [架构审查](../../../stage_reports/stages/stage-07/rpa/2026-10-09-realtime-architecture-review.md)及
+  [正式命名审计](../../../stage_reports/stages/stage-07/diagnostic-formalization/2026-10-09-diagnostic-phase-name-audit.md)。
+- [Stage 7 子阶段拆分记录](../../../stage_reports/stages/stage-07/rpa/2026-10-09-realtime-stage-separation.md)
+  与[独立阶段拆分记录](../../../stage_reports/stages/stage-07/rpa/2026-10-09-realtime-stage-separation.md)：
   保存原plan-a增补文本和迁移映射；历史RT78-0–7对应RPA-A0–A7，DN78-0–3对应RPA-N0–N3。
 - [Stage7总计划](plan.md)与[plan-a兼容入口](plan-a.md#3418-实时架构重审与规划2026-10-09)。
 - [ADR0046](../../../adr/0046-realtime-playback-coordination.md)和[实时宿主边界草案](../../../api/realtime-host-boundary.md)。

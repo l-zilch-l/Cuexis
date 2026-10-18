@@ -7,8 +7,8 @@
 #include "playback_candidate_internal.hpp"
 #include "playback_source_state.hpp"
 #include "presentation_internal.hpp"
-#include <cuexis_internal/sha256.hpp>
 #include <cuexis_internal/presentation_metrics.hpp>
+#include <cuexis_internal/sha256.hpp>
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
 #include "gameplay_internal.hpp"
 #include <cuexis/judgement/execution_scheduler.hpp>
@@ -1303,6 +1303,8 @@ struct PlaybackSession::State final {
     std::unique_ptr<judgement::JudgementSession> gameplay;
     GameplayState gameplayState{GameplayState::Inactive};
     std::unique_ptr<judgement::ExecutionScheduler> executionScheduler;
+    // Transfer only across explicit state replacement; the active scheduler owns the frontier.
+    std::optional<std::uint64_t> pendingRetiredRequestFloor;
     std::optional<RealtimeClock> realtimeClock;
     std::optional<GameplayExecutionContext> executionContext;
     std::optional<ClockMappingConfiguration> executionMapping;
@@ -2849,6 +2851,7 @@ auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> 
     state_->presentation = std::move(candidate.presentation);
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     state_->gameplayContent = std::move(candidate.gameplayContent);
+    state_->pendingRetiredRequestFloor.reset();
     state_->executionScheduler.reset();
     state_->realtimeClock.reset();
     state_->executionContext.reset();
@@ -3173,6 +3176,7 @@ auto PlaybackSession::unload() -> core::Result<void> {
     state_->semanticIdentity.reset();
     state_->candidateMetadata.reset();
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    state_->pendingRetiredRequestFloor.reset();
     state_->executionScheduler.reset();
     state_->realtimeClock.reset();
     state_->executionContext.reset();
@@ -4038,6 +4042,9 @@ auto PlaybackSession::restoreGameplay(const GameplaySnapshot& s, GameplayPresent
             ? GameplayState::Faulted
             : (q->kernelView().rpa && q->kernelView().rpa->paused ? GameplayState::Paused
                                                                   : GameplayState::Running);
+    if (state_->executionScheduler)
+        state_->pendingRetiredRequestFloor =
+            state_->executionScheduler->retentionProgress().lastAcceptedId;
     state_->executionScheduler.reset();
     state_->realtimeClock.reset();
     state_->executionContext.reset();
@@ -4115,6 +4122,9 @@ auto PlaybackSession::seekGameplay(const GameplayReplay& a, GameplayTick h,
     auto result = detail::GameplayAccess::result(q->kernelView(), GameplayState::Running);
     if (auto published = publishGameplayProjection(result, t, frame, false); !published)
         return published;
+    if (state_->executionScheduler)
+        state_->pendingRetiredRequestFloor =
+            state_->executionScheduler->retentionProgress().lastAcceptedId;
     state_->executionScheduler.reset();
     state_->realtimeClock.reset();
     state_->executionContext.reset();
@@ -4233,7 +4243,7 @@ auto PlaybackSession::beginRealtimeGameplay(SchedulingProfile profile,
         *content->configuration.latePolicy.windowCloseThreshold.measuredValue(),
         static_cast<std::size_t>(*profile.retainedMessageCapacity),
         state_->acceptedHostControl ? state_->acceptedHostControl->commandOrdinal + 1 : 0,
-        state_->acceptedHostControl ? state_->hostDecision : 0);
+        state_->acceptedHostControl ? state_->hostDecision : 0, state_->pendingRetiredRequestFloor);
     if (!scheduler)
         return core::unexpected(scheduler.error());
     state_->executionScheduler =
@@ -4242,6 +4252,7 @@ auto PlaybackSession::beginRealtimeGameplay(SchedulingProfile profile,
     state_->executionMapping = config;
     state_->realtimeClock = std::move(*clock);
     state_->executionContext = context;
+    state_->pendingRetiredRequestFloor.reset();
     state_->realtimeWasStarted = true;
     return {};
 } catch (...) {
@@ -4409,6 +4420,8 @@ auto PlaybackSession::requestGameplayAdvance(GameplayAdvanceRequest r,
         return core::unexpected(core::Error{"host.rpa.context_stale", "Advance context mismatch"});
     // Retransmission is a read of the original operation, including an expired clock sample.
     auto old = state_->executionScheduler->poll(r.requestId);
+    if (!old && old.error().code() == "host.rpa.request_retired")
+        return core::unexpected(old.error());
     if (!old) {
         auto mapped = state_->tailTransition && observation == state_->tailTransition->eof
                           ? state_->realtimeClock->sampleTail(now)
@@ -4458,6 +4471,22 @@ auto PlaybackSession::queryGameplayAdvance(std::uint64_t id) const
     return publicDecision(*result);
 } catch (...) {
     return core::unexpected(gameplayError("Advance query allocation failed"));
+}
+auto PlaybackSession::executionAdvanceRetention(
+    GameplayExecutionContext& identityContext, std::optional<std::uint64_t>& lastAcceptedId,
+    std::optional<std::uint64_t>& reclaimedThrough) const -> core::Result<void> {
+    if (!state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("advance_retention"));
+    if (state_->operationActive)
+        return core::unexpected(reentryError("advance_retention"));
+    if (!state_->executionScheduler)
+        return core::unexpected(gameplayError("Realtime session not started"));
+    const auto progress = state_->executionScheduler->retentionProgress();
+    identityContext = {progress.identityContext.sessionScope, progress.identityContext.clockSegment,
+                       progress.identityContext.runEpoch};
+    lastAcceptedId = progress.lastAcceptedId;
+    reclaimedThrough = progress.reclaimedThrough;
+    return {};
 }
 auto PlaybackSession::retireGameplayAdvance(std::uint64_t id) -> core::Result<void> {
     if (auto guard = gameplayWriteGuard(); !guard)
@@ -4654,6 +4683,9 @@ auto PlaybackSession::controlGameplay(GameplayControl control) -> core::Result<v
             if (!updated)
                 return updated;
         }
+        if (state_->executionScheduler)
+            state_->pendingRetiredRequestFloor =
+                state_->executionScheduler->retentionProgress().lastAcceptedId;
         state_->executionScheduler.reset();
         state_->realtimeClock.reset();
         state_->executionContext.reset();

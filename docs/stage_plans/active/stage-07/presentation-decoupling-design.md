@@ -7,7 +7,7 @@
 失败边界和验收规则。它不表示接口已存在、产品已实现、生产预算已接受或批次获准启动。
 本轮只修订文档；不得据此启动产品实现、计时测量或新的模拟实施。此前独立审查发现的问题作为
 设计输入，不是实现失败的实测结果。备选方向、取舍与演进成本见
-[本轮设计重审记录](../../../stage_reports/stages/stage-07/handoffs/2026-10-16-pd-transaction-and-delivery-design-review.md)。
+[本轮设计重审记录](../../../stage_reports/stages/stage-07/pd/2026-10-16-pd-transaction-and-delivery-design-review.md)。
 
 ## 1. 权威、术语与范围
 
@@ -650,6 +650,24 @@ device lost 只能使用设备 owner 能证明的安全退出机制；缺失证�
 
 ### 9.2 基线与对照方法
 
+PD-0 的性能、宿主交付和归因诊断分别登记：正式性能使用 Release、正常分配器、
+`CUEXIS_PD_METRICS_TEST_ONLY=OFF`、无 ETW；Debug 同条件独立报告。
+编译了插桩的 recording OFF 不能冒充编译关闭的基线。固定轨迹包含逐步验证与 FrameDigest，
+指标名称须明确这一边界；纯 Playback 成本需要另行登记边界与正确性对照。
+宿主使用默认调度作为初始条件，均值重复性与尾延迟分开；未知尾部预算记不可判定，
+不得把诊断参考阈值当作已接受预算。带阶段插桩、分配探针或 ETW 的结果仅作归因。
+
+本轮无追踪协议采用每配置/profile 六个独立进程，分两时段各三进程；
+第二时段最早在第一时段完成十分钟后开始。两个三进程组及全部六进程的原公式
+`(max-min)/median` 均须不超过 15%。pilot 与正式组分离，预登记有限核心对照、机器预热、
+fresh-session 预热、批长、运行顺序、环境及源码/二进制指纹；保留全部慢样本。
+性能超界在固定组完成后统一记 inconclusive，不追加替换进程；执行/身份/环境错误立即停止。
+未通过后才登记有明确问题目标的诊断，仍不通过可转专用性能机；不循环追加诊断。
+
+重构收益另以独立可执行文件平衡交替运行，以独立进程对为统计单位报告配对比和
+95% 区间；recording ABBA 不代表旧/新实现对照，内部调用数不当作独立实验数。
+当前仅建立单实现基线，未有实现对照时收益与置信区间记 not applicable。
+
 PD-0 的第一份产物是测量 manifest，包含代码 SHA/差异 hash、工具链/配置、candidate 开关、
 static/shared、OS/设备/驱动、电源、VSync、content/hash、输入/Replay hash、时钟序列、viewport、
 消费者模式和 profile。旧实现没有共同结果/版本/交付计数时标记 not applicable，不能为满足计时
@@ -764,7 +782,7 @@ PD-1/2 可以在后续获得实施授权后消费本附件；PD-3/4 同样须先
 
 本节补齐对 [7B+](plan-b.md)、[Stage 8](../../future/stage-08/plan.md) 至
 [Stage 14](../../future/stage-14/plan.md) 的依赖核对；选型理由见
-[跨阶段设计记录](../../../stage_reports/stages/stage-07/handoffs/2026-10-16-pd-cross-stage-design-review.md)。
+[跨阶段设计记录](../../../stage_reports/stages/stage-07/pd/2026-10-16-pd-cross-stage-design-review.md)。
 这里区分 PD 当前交付义务与未来能力的接入条件，不把未来算法、公共错误名或任务类型写成现有接口。
 §2–11 的同步事务、来源与交付规则继续成立；后续阶段不能直接靠本节改变正式 Spec/ABI。
 

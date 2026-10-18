@@ -217,6 +217,7 @@ class PlaybackSession;
 
 namespace detail {
 struct CandidateMetadataAccess;
+struct HostCoordinationAccess;
 } // namespace detail
 
 class CUEXIS_PLAYBACK_API PreparedPlayback final {
@@ -440,7 +441,11 @@ class CUEXIS_PLAYBACK_API PlaybackSession final {
   private:
     friend class PreparedPlayback;
     friend struct detail::CandidateMetadataAccess;
+    friend struct detail::HostCoordinationAccess;
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    [[nodiscard]] auto executionAdvanceRetention(
+        GameplayExecutionContext& identityContext, std::optional<std::uint64_t>& lastAcceptedId,
+        std::optional<std::uint64_t>& reclaimedThrough) const -> core::Result<void>;
     [[nodiscard]] auto gameplayWriteGuard() const -> core::Result<void>;
     [[nodiscard]] auto
     publishGameplayProjection(const GameplayResult&, GameplayPresentationTick, const RuntimeFrame&,

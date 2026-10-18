@@ -131,7 +131,7 @@ Playback 不读取 CXT AST，也不在运行时展开未编译 Pattern。
 **2026-10-04 设计收口。** 完整组合为 G2-S2 + G2-T4 + R2-K4 + P1-W1 + E1；
 S2/T4/K4 语义见 [V2 Spec](../../../formats/GAMEPLAY_V2_SPEC.md) §3.8.10–§3.8.12，
 首次 Packed 消费字段仅见 [Gameplay Capsule v2 format](../../../formats/GAMEPLAY_CAPSULE_V2_FORMAT.md)。
-[设计收口报告](../../../stage_reports/stages/stage-07/implementation/2026-10-04-s7a-3-design-closure.md)
+[设计收口报告](../../../stage_reports/stages/stage-07/s7a/implementation/2026-10-04-s7a-3-design-closure.md)
 只证明文档合同闭合；本批次的 Reader/Writer、identity 修正与 E1 实测门禁仍需实施，不缩减验收。
 
 **工作内容。**
@@ -225,8 +225,8 @@ S2/T4/K4 语义见 [V2 Spec](../../../formats/GAMEPLAY_V2_SPEC.md) §3.8.10–§
 ⑤ **装配消费点（以真实 arm / deadline 容量调用门禁并验证原子失败）已落地**；`gateIncomplete` 在装配路径中保守拒绝，
    已测超限仍走既有诊断，身份只写入已测有效值。数值限额在 S7A-9 前**不冻结**；本批次只能按受限功能验收口径退出，不得声称容量整体证明完成。
    逐字裁定与主控独立复核见两份带日期记录：
-   [S7A-3 第二半 part 1 实现裁定落地记录](../../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-3-implementation-rulings.md)
-   与 [S7A-3 落地位置裁定（卡 4 / 卡 5）](../../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-3-landing-location-rulings.md)。
+   [S7A-3 第二半 part 1 实现裁定落地记录](../../../stage_reports/stages/stage-07/s7a/decisions/2026-10-03-s7a-3-implementation-rulings.md)
+   与 [S7A-3 落地位置裁定（卡 4 / 卡 5）](../../../stage_reports/stages/stage-07/s7a/decisions/2026-10-03-s7a-3-landing-location-rulings.md)。
 
 ### S7A-4：Judgement Kernel 生命周期、Tap/Hold/Release 和仲裁
 
@@ -241,10 +241,10 @@ author 双路与 affine，再 late/contact/phase/kernel/timer/Fact。新增合�
 [ADR 0045](../../../adr/0045-gameplay-v2-execution-profile.md)。
 上述设计交付当时只补齐 late-policy 合同，不含产品实现；状态预算缺测不判通过。
 同日 owner 授权实施后，本工作区已落地 A/B/D/E/F 与 E1 逐行审计；Windows 与 Linux GCC/Clang 完整矩阵均通过，S7A-3/4 受限功能验收完成，容量整体证明未完成；
-见 [本地验收证据](../../../stage_reports/stages/stage-07/verification/2026-10-05-s7a-3-4-functional-acceptance.md)。
+见 [本地验收证据](../../../stage_reports/stages/stage-07/s7a/verification/2026-10-05-s7a-3-4-functional-acceptance.md)。
 不能把局部功能通过记为容量整体证明或 Stage 7A 完成。
 旧推荐比较保留于 [推荐登记](../../../proposals/gameplay-v2-acceptance/S7A-4_RECOMMENDED_DESIGN.md)，
-已有实现/hosted 证据见 [余项报告](../../../stage_reports/stages/stage-07/verification/2026-10-05-s7a-3-remaining-evidence.md)。
+已有实现/hosted 证据见 [S7A 验证索引](../../../stage_reports/stages/stage-07/s7a/README.md)。
 
 **固定 Tick 顺序。**
 
@@ -304,7 +304,7 @@ author 双路与 affine，再 late/contact/phase/kernel/timer/Fact。新增合�
 ### 后续实施队列（2026-10-06）
 
 S7A-3/4已达到受限功能验收，容量整体仍未完成；新SHA的hosted证据与归档见
-[交接报告](../../../stage_reports/stages/stage-07/handoffs/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
+[交接报告](../../../stage_reports/stages/stage-07/s7a/handoffs/2026-10-05-s7a-3-4-hosted-and-handoff.md)。
 owner已明确下一轮目标为 **S7A-5.1–5.5 + S7A-6.1–6.5**，按本文§3.2的J0–J7先5后6、
 共同验收。五批依赖、已选方向和剩余未定项由本文统一维护；
 九项各五套备选的比较正文见 [5/6实施输入](../../../proposals/implementation-input/stage-07/s7a-5-6-design-selection.md)。
@@ -510,7 +510,7 @@ fixture、正例、负例、命令、原始输出和未覆盖项；“依赖批�
 | S7A-9.4（已移交） | Stage 8 handoff/owner acceptance | RPA-F4 | 同上；RPA退出前一并完成原7A关闭包 |
 
 2026-10-10 owner要求按当前全部成功CI关闭S7A-8.4。I78-5九行的最终验收证据见
-[7/8收口记录](../../../stage_reports/stages/stage-07/verification/2026-10-10-s7a-8-4-closure.md)，
+[7/8收口记录](../../../stage_reports/stages/stage-07/s7a/verification/2026-10-10-s7a-8-4-closure.md)，
 其中8.4绑定`1ebcbdc`及其准确审批、实际trusted checker日志、三平台和已接受来源例外。
 本表保留验收标准；当前完成状态归CURRENT_STATUS。下一次对话审核Stage 7-RPA，
 不自动开始实施或执行S7A-9最终验收，Stage7B+能力线保留。
@@ -531,7 +531,7 @@ fixture、正例、负例、命令、原始输出和未覆盖项；“依赖批�
    是进入 S7A-4 的**硬前置**；Spec §3.8.8 已记录接线落地，整批关闭仍须复验，不能据此宣称 S7A-3 完成。
 
 **S7A-3 未闭合合同组合已选定（2026-10-03）。** 按
-[G2 + R2 + P1 裁定记录](../../../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-3-contract-selection-g2-r2-p1.md)，
+[G2 + R2 + P1 裁定记录](../../../stage_reports/stages/stage-07/s7a/decisions/2026-10-03-s7a-3-contract-selection-g2-r2-p1.md)，
 后续实现采用：① G2，完整解析并冻结 prepare-time `preparedGrace`，与资源
 `declaredGapGrace` 分离；② R2，在 prepare 生成不可变资源计划，runtime 只执行已准备的确定性
 policy 并由引擎分配 owner / lease / contact；③ P1，以新 candidate revision 加新必需 semantic
@@ -626,12 +626,12 @@ advance若已保留kernel seal前缀或发布可查询fault，即使整体Result
 
 **进一步复核（2026-10-06）。** U11–U13是本轮新增的行为合同缺口；推荐方向已选，
 当时与U01–U10同为待合同落定；本轮已按§3.3在首次消费前写入Spec/ABI/profile。详细反例与五方案见实施输入§14，证据见
-[实施阻塞复核](../../../stage_reports/stages/stage-07/verification/2026-10-06-s7a-5-6-implementation-blocker-audit.md)。
+[实施阻塞复核](../../../stage_reports/stages/stage-07/s7a/verification/2026-10-06-s7a-5-6-u01-u13-rereview.md)。
 J0可按已有目标推进；需要在消费点之前完成合同，不要求先实施7–9。
 
 **U01–U13重审（2026-10-06）。** 保留十三项覆盖，不增加本地U编号。U02/U07/U08/U11/U12/U13
 修正原推荐的范围或行为，其他七项保留方向并补齐条件；五方案比较的现行修订见实施输入§15，
-逐项证据见 [全量重审](../../../stage_reports/stages/stage-07/verification/2026-10-06-s7a-5-6-u01-u13-rereview.md)。
+逐项证据见 [全量重审](../../../stage_reports/stages/stage-07/s7a/verification/2026-10-06-s7a-5-6-u01-u13-rereview.md)。
 “待合同落定”表示选定方向尚待消费字段/正反例落地，不表示十三个架构问题等待owner重新选择。
 先关闭5首次消费的U01–U05/U13即可进入J1/J2；其余项按6的首次消费点关闭，禁止跳过，但不要求
 先写完所有6的codec字段才开始独立的5实现。
@@ -674,7 +674,7 @@ J0–J7本轮受限功能验收已完成，十行本地证据按IV回填；新�
 | J4 | 完整私有DTO、依赖重取、coverage/activation/ID等闭包验证、healthy原子恢复及新faulted恢复 |
 | J5 | exact H/F(H)、future pending/lastObservedTick、archive/cut/H checkpoint、partial和惰性分支 |
 | J6 | 人工bytes/算术/统计golden、独立S1 kernel及Fold oracle、真实consumer故障、篡改与旧fixture |
-| J7 | 逐行与跨工具链证据见[本轮报告](../../../stage_reports/stages/stage-07/verification/2026-10-06-s7a-5-6-functional-acceptance.md) |
+| J7 | 逐行与跨工具链证据见[本轮报告](../../../stage_reports/stages/stage-07/s7a/verification/2026-10-06-s7a-5-6-functional-acceptance.md) |
 
 真实合同冲突U05：旧timer prepare无条件调用观测cell检查，deadline MAX即预算t+1失败；
 已改为实际timer边界检查，观测准入仍保留cell。Hook只实际输出才checked(t+1)。
@@ -701,7 +701,7 @@ statusCheckRollup 为 38/38 SUCCESS、无 pending，PR 仍 OPEN。这是当日�
 不替代 owner 审批、可信 bootstrap、GPU/设备证据，也不表示本轮尚未实现的集成已由 CI 验证。
 5/6 的首用补充优先于旧段落中的“未冻结”文字；不得重新套用已经被 J0-5/J0-6、W2 和 Capsule revision 3
 覆盖的旧边界。四项交接的已实施范围及待回填项见
-[四项实施报告](../../../stage_reports/stages/stage-07/verification/2026-10-07-stage6-handover-implementation.md)。
+[四项实施报告](../../../stage_reports/stages/stage-07/s7a/verification/2026-10-07-stage6-handover-implementation.md)。
 
 **完整性口径。** 原九组是架构/实施方向，不是穷尽的字段合同清单。本次按 §3.1 的九个 7/8 小目标，
 以及 source→prepare→commit→submit/advance→query→Replay/Snapshot→Seek/Reload/reset→安装/宿主链路
@@ -816,7 +816,7 @@ active/stage-07由plan.md总览、plan-a.md、plan-b.md与legacy-paths.md组成�
 
 #### 3.4.6 重审补充：消费者组合门禁（2026-10-07）
 
-详细反例、合同依据和建议归[本次计划审查记录](../../../stage_reports/stages/stage-07/readiness/2026-10-07-s7a-7-8-plan-review.md)，本节只维护首用阻塞台账。
+详细反例、合同依据和建议归[本次计划审查记录](../../../stage_reports/stages/stage-07/s7a/readiness/2026-10-07-s7a-7-8-plan-review.md)，本节只维护首用阻塞台账。
 本次没有新增产品实施证据，也未重新查询hosted；实际HEAD仍为55fc8e6，工作区含未提交规划/拆分修改。
 P78推荐与C78字段入口不是首用合同已冻结的证明。以下P1项先修所属合同，再进入受影响消费者。
 
@@ -887,7 +887,7 @@ Graph Writer 已复用 Capsule typed visitors/preimage 实施，采用显式 tes
 新 Graph bounds 只可显式 testOnly，不机械复制 Packed 字节阈值或接受生产限额。
 10a checker 已增加 live 章节锚点/归属验证及历史例外测试；09a 复用既有 generation/adoption，
 不另造发布格式；09b 等实际完整 API/安装矩阵，不能从现有 0.7.1 candidate 预认证最终版本。
-实施和中间证据归 [dated 推进报告](../../../stage_reports/stages/stage-07/implementation/2026-10-07-s7a-7-8-integration-progress.md)，
+实施和中间证据归 [S7A 实施索引](../../../stage_reports/stages/stage-07/s7a/README.md)，
 §3.1 九行均不先标 completed，最终逐行退出仍按 I78-5。
 
 ## 4. Stage 7A 关闭标准
@@ -925,7 +925,7 @@ CLI编译一次、两种载荷两种intent均actual prepare+commit后发布，pr
 `gameplay.author.t4-k4.v1`；所有编解码预算显式testOnly，content生产界继续pending。
 filesystem遵循R78-09a B单次adopted；caller捕获一次generation locator，SDK factory不逐文件重新选择。
 单CXC仍走原publishPackage。完整fixture/oracle/故障/结果证据及未执行项归
-[10-08实施记录](../../../stage_reports/stages/stage-07/implementation/2026-10-08-s7a-7-8-entry-assembler-progress.md)。
+[10-08实施记录](../../../stage_reports/stages/stage-07/s7a/implementation/2026-10-08-s7a-7-8-entry-assembler-progress.md)。
 这些表示和实现不构成C78整行或S7A-7/8整体退出；宿主、group/registry、最终矩阵和owner门禁仍逐项收口。
 
 P78-05 A 的工具拓扑保持为既有 `cuexis_chart_candidate --gameplay` dispatch；独立执行名仅共享
@@ -957,7 +957,7 @@ trusted bootstrap/保护与新 SHA hosted 继续未退出。I78-6 仅累计计�
 
 ### §3.4.11 本轮受限验收与后续门禁口径
 
-后续同SHA hosted、审批及保护来源证据按[10-09余项核对](../../../stage_reports/stages/stage-07/verification/2026-10-09-s7a-7-8-current-gate-audit.md)登记；当前状态以CURRENT_STATUS为准。
+后续同SHA hosted、审批及保护来源证据按[S7A-8.4关闭记录](../../../stage_reports/stages/stage-07/s7a/verification/2026-10-10-s7a-8-4-closure.md)登记；当前状态以CURRENT_STATUS为准。
 
 C78 十二行与 R78 首用字段、所有权、身份、失败边界、状态转换和稳定诊断已落所属合同，
 原 P78 与本次 R78 推荐经真实反例、合同修订和消费者实施后，由10-08日期报告逐行记录证据。
@@ -972,14 +972,14 @@ Linux installed gate不得继承开发树库搜索路径；private/detail export
 不修订 C78/R78 字段语义、不重开 S7A-3/4/5/6。SDK 0.7.1 不变，日期构建经 updater 更新为 26.10.09-1。
 本轮仅修复实际 Linux/MinGW CI 的生产编译诊断，保留 warnings-as-errors；版本 bootstrap 的可信基线缺失
 由 owner 处理，S7A-8.4 不因本轮代码修复退出。增量命令和原始输出归
-[10-09 CI 修复报告](../../../stage_reports/stages/stage-07/verification/2026-10-09-s7a-7-8-ci-repair.md)。
+[10-09 CI 修复报告](../../../stage_reports/stages/stage-07/s7a/verification/2026-10-09-s7a-7-8-ci-repair.md)。
 
 
 ### §3.4.12 2026-10-09 可信门禁首次安装顺序
 
 实际 GH006 拒绝直接 master bootstrap；采用两步候选：SDK不变时先部署 registry/checker/CODEOWNERS与日期，保留旧 workflow/tests接受旧可信门禁检查；再由现有PR32集成新 workflow/tests与Gameplay。旧tests/newchecker Linux19/19兼容已验证，无candidate fallback，不改SDK审批语义。
 当前仅推送bootstrap候选分支，未创建额外PR，未合入master或修改保护；独立bootstrap PR需owner明确解除原“不另建PR”限制。实际base推进前不将stage-7日期提前改2，不登记bootstrap已完成或S7A-8.4退出。
-命令、最小反例、兼容边界与原始输出见[10-09 bootstrap报告](../../../stage_reports/stages/stage-07/verification/2026-10-09-version-gate-bootstrap.md)。
+命令、最小反例、兼容边界与原始输出见[发布门禁历史](../../../stage_reports/stages/stage-07/shared/2026-10-10-release-gate-history.md)。
 
 
 §3.4.12 范围纠正：代理错误将一般修复指令理解为允许另建bootstrap PR33；owner指出后已关闭，未合并，剩余PR检查取消。原“不另建PR”限制继续有效，不能从一般修复指令推断例外；未改保护/代SDK审批/合并/发行。master未推进，S7A-8.4未退出。
@@ -1002,13 +1002,13 @@ stage-7同步新master并将同日build升至26.10.09-2；SDK保持0.7.1。需fr
 H/T 每 admitted frame +1 是当前显式 testOnly 桥，音频不用于 H 定位；不伪装设备校准或音画同步。
 离线人工 golden 与真实设备观察分别记录，Reference Host 的 ChartClock 对音乐仍须拒绝。
 设备操作步骤归[验收示例](../../../examples/s7a78-device-acceptance.md)，带日期证据归
-[修复与谱面报告](../../../stage_reports/stages/stage-07/verification/2026-10-09-crlf-and-device-fixture.md)。
+[修复与谱面报告](../../../stage_reports/stages/stage-07/rpa/device/2026-10-09-crlf-and-device-fixture.md)。
 此前 c110c50 的 owner 审批/hosted 已通过，不自动授权新 HEAD；S7A-8.4 保护来源门禁继续保留。
 
 ### §3.4.15 2026-10-09 真实设备首次按键修复
 
 用户 DFJK 两次运行启动成功且音频/六方块有人工观察，首次新按键却触发 discontinuity 拒绝。
-最小反例和失败边界归[设备失败报告](../../../stage_reports/stages/stage-07/verification/2026-10-09-player-discrete-device-repair.md)。
+最小反例和失败边界归[设备失败报告](../../../stage_reports/stages/stage-07/rpa/device/2026-10-09-player-discrete-device-repair.md)。
 先订正 Playback Player 合同：应用传输边界只隔离旧 poll，不能把新离散 press/release 标为轨迹跨 gap；
 public SDK 显式 discontinuity 拒绝保持，不重开 S7A-2/3/4/5/6。再修 adapter 并补 Controller 首用回归。
 启动脚本旧空退出码不得补造；新执行缓存 handle/等待后捕获。修复后设备观察仍待回填。
@@ -1032,14 +1032,14 @@ DFJK fixture 不变，多转换会占多个工作 Tick，操作示例/脚本须�
 不修改 kernel、时钟桥、判定四分量或生产字段/API，不伪装音乐校准。旧运行记录/包哈希保留。
 短练习四个 Tap 与一个 K Hold，人工 golden为score18/combo7/hits7/misses0，零输入为-7/0/0/7；
 guide、包、配置和操作说明一起更新，故旧包结果不证明新练习通过。真实窗口/设备项单独回填。
-本轮受限实施与验证归[可读练习报告](../../../stage_reports/stages/stage-07/verification/2026-10-09-player-readable-practice.md)：
+本轮受限实施与验证归[可读练习报告](../../../stage_reports/stages/stage-07/rpa/device/2026-10-09-player-readable-practice.md)：
 独立guide/source/binding核对、CPU ON/OFF及定向SDL/GPU通过；实体设备、校准与新SHA hosted仍待。
 
 ### 3.4.18 实时架构重审与规划（2026-10-09）
 
 2026-10-09 owner最新指令明确归属Stage 7子阶段：原RT78-0–7整体移交
 [Stage 7-RPA：实时播放架构与接口规范化](plan-rpa.md)。
-原审查证据继续保留在[10-09报告](../../../stage_reports/stages/stage-07/readiness/2026-10-09-realtime-architecture-review.md)，
+原审查证据继续保留在[10-09报告](../../../stage_reports/stages/stage-07/rpa/2026-10-09-realtime-architecture-review.md)，
 本节只保留兼容入口；后续设计、实施与验收不再计入S7A-7/8新增任务。
 
 S7A-7.1–7.5、8.1–8.3既有实现和受限验收范围保持；8.4继续收口自身版本/审批/保护门禁。
@@ -1052,7 +1052,7 @@ S7A-7.1–7.5、8.1–8.3既有实现和受限验收范围保持；8.4继续收�
 原DN78-0–3曾移交RPA-N线；2026-10-10 owner最新要求将其剥离为
 [诊断码正式化独立前置](plan-diagnostic-formalization.md)，
 本节仅保留索引和追溯。67个定义中66条正式名称迁移与1个占位删除候选的完整映射见
-[命名审计](../../../stage_reports/stages/stage-07/rpa/2026-10-09-diagnostic-phase-name-audit.md)。
+[命名审计](../../../stage_reports/stages/stage-07/diagnostic-formalization/2026-10-09-diagnostic-phase-name-audit.md)。
 命名迁移的公共投影、Recovery/Replay兼容、版本差异和验证统一归该工作包，不列作7/8额外实现缺口或RPA内部批次。
 现行诊断合同继续适用；本轮仍只规划，未改码串或默认为公共兼容。
 
@@ -1061,14 +1061,14 @@ S7A-7.1–7.5、8.1–8.3既有实现和受限验收范围保持；8.4继续收�
 owner后续明确授权一并配置保护，原本轮禁止修改保护的范围据此更新；合并/发行仍由owner决定。
 个人仓库仅支持当前App/context与PR等保护，组织级workflows来源规则的实际请求被GitHub拒绝。
 owner选择保持个人仓库并保留S7A-8.4未退出，不是批准来源例外。当前可用保护及最终交付证据
-归[dated记录](../../../stage_reports/stages/stage-07/verification/2026-10-09-s7a-7-8-protection-and-delivery.md)。
+归[发布门禁历史](../../../stage_reports/stages/stage-07/shared/2026-10-10-release-gate-history.md)。
 I78-5其余证据按最终交付提交收敛；新SHA审批和hosted单独回填。RPA、S7A-9及7B+范围保持。
 
 ### 3.4.21 单人维护来源要求修订（2026-10-10）
 
 owner随后明确接受不强制指定可信workflow来源，取代§3.4.20的“来源门禁继续保留”安排。
 范围、补偿核对、风险和重新审查触发条件归[VERSIONING](../../../guides/VERSIONING.md#单人维护仓库的检查来源例外2026-10-10)，
-接受证据归[裁定记录](../../../stage_reports/stages/stage-07/decisions/2026-10-10-single-maintainer-workflow-source-exception.md)。
+接受证据归[裁定记录](../../../stage_reports/stages/stage-07/s7a/decisions/2026-10-10-single-maintainer-workflow-source-exception.md)。
 当前master保护保留，merge queue继续禁用；不削弱版本/审批checker语义，不重开Gameplay规则。
 来源例外已获接受，不再单独阻塞8.4；最终交付SHA审批、真实日志及hosted仍按I78-5完成。
 本次不授权合并/发行、S7A-9最终预算/关闭或7-RPA产品实施。
@@ -1078,7 +1078,7 @@ owner随后明确接受不强制指定可信workflow来源，取代§3.4.20的�
 owner在当前CI全部成功后明确要求关闭8.4并准备桌面接手。验收提交为
 `1ebcbdc92d92fa9d45e4e1f835e5a1f338e7fc2d`；精确审批6084640280、
 pre-merge实际可信base执行日志、同SHA七个成功run及保护回读收齐。
-逐行证据、合同版本与原始输出归[关闭记录](../../../stage_reports/stages/stage-07/verification/2026-10-10-s7a-8-4-closure.md)。
+逐行证据、合同版本与原始输出归[关闭记录](../../../stage_reports/stages/stage-07/s7a/verification/2026-10-10-s7a-8-4-closure.md)。
 §3.4.20/21及旧报告的待办是各自时点记录，不覆盖本次裁定；来源例外范围不扩大。
 
 下一次对话先审核[Stage 7-RPA](plan-rpa.md)：以代码和现行合同复验RA反例，

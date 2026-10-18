@@ -19,7 +19,7 @@
 [RPA计划](../../../../stage_plans/active/stage-07/plan-rpa.md)、
 [归档v0.5](../../../../archive/stage-07-planning/2026-10-10-rpa-target-architecture-draft.md)、
 [ADR0046](../../../../adr/0046-realtime-playback-coordination.md)、
-[8.4受限关闭](../verification/2026-10-10-s7a-8-4-closure.md)、
+[8.4受限关闭](../s7a/verification/2026-10-10-s7a-8-4-closure.md)、
 [N3退出](../diagnostic-formalization/2026-10-10-n3-verification-and-exit.md)。
 8.4证据绑定历史1ebcbdc/0.7.1；N3证据绑定其冻结工作树，M1是初跑123/124加修复后单项通过，
 L2是恢复构建后的同配置完整282项无skip。这些记录均不证明RPA或当前dirty工作树已经验收。

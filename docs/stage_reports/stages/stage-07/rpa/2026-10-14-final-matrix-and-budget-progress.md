@@ -88,7 +88,7 @@ M-SPLIT/M-CAP 还需代表压力与 retained handle 测量；F3 未退出。
 
 ## 交接与退出边界
 
-本轮交接输入见 [生产验收交接草稿](../handoffs/2026-10-14-rpa-production-acceptance-handoff.md)。
+本轮交接输入见 [生产验收交接草稿](2026-10-14-production-acceptance-inventory.md)。
 它包含 7A 既有证据、v4/v5 输入映射、identity/golden/capability、五域预算、迁移/回退、
 未选 7B+ 项和问题处置入口。有效 N3、实体 B5、最终 F1/F2/F3 与 owner acceptance
 仍是 F4 门禁。实体证据延期不代表通过或取消；PD 也不替代这些门禁。

@@ -48,7 +48,7 @@ owner最新明确指定本工作包目标SDK API为`0.7.5`，版本数字已裁�
 - 每次执行先核对实际branch/HEAD/status/diff，保留全部已有未提交改动。
 - N0基线为`stage-7`的`2ddbcafe22bd3facc63b4917cf99eeccc3d81cd1`及报告记录的工作树。
   后续若定义/调用/码表变动，刷新相应清单，不能复用旧计数冒作新基线。
-- [N0报告](../../../stage_reports/stages/stage-07/rpa/2026-10-10-n0-diagnostic-inventory-review.md)
+- [N0报告](../../../stage_reports/stages/stage-07/diagnostic-formalization/2026-10-10-n0-diagnostic-inventory-review.md)
   及其ZIP持有逐码引用、动态构造、公开性与载体影响，不在本计划复制全部审计表。
 - [Gameplay V2 Spec](../../../formats/GAMEPLAY_V2_SPEC.md)拥有诊断分类、故障、恢复及线格式合同；
   [ABI](../../../api/GAMEPLAY_V2_ABI.md)消费公共边界；
@@ -372,8 +372,8 @@ N0对`playback.override.mask`仅提出可选弱命名建议，本包不迁移该
 
 ## 归档来源与追溯
 
-归档来源：[历史阶段诊断审计](../../../stage_reports/stages/stage-07/rpa/2026-10-09-diagnostic-phase-name-audit.md)、
-[2026-10-10 N0复核](../../../stage_reports/stages/stage-07/rpa/2026-10-10-n0-diagnostic-inventory-review.md)
+归档来源：[历史阶段诊断审计](../../../stage_reports/stages/stage-07/diagnostic-formalization/2026-10-09-diagnostic-phase-name-audit.md)、
+[2026-10-10 N0复核](../../../stage_reports/stages/stage-07/diagnostic-formalization/2026-10-10-n0-diagnostic-inventory-review.md)
 及其各自原始ZIP；[plan-a旧命名入口](plan-a.md#3419-诊断码去阶段命名规划2026-10-09)
 保留DN78到RPA-N的历史映射。最新独立前置归属以本文和Stage7总计划为准，
 不改写历史报告的审计日期、计数、当时授权或验收结论。

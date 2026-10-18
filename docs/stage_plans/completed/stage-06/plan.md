@@ -130,7 +130,7 @@ S6-A1 基线、入口和证据矩阵
 代码盘点起点包括
 [PlaybackSource](../../../../engine/playback/include/cuexis/playback/playback_source.hpp)、
 [Playback prepare](../../../../engine/playback/src/playback_session.cpp)、
-[CXC candidate validator](../../../../tools/cxc_common/src/cxc_candidate.cpp)、
+[CXC candidate validator](../../../../tools/cxc/cxc_common/src/cxc_candidate.cpp)、
 [Player](../../../../app/player/src/player_app.cpp) 和
 [OpenGL adapter](../../../../engine/render_opengl/include/cuexis/render_opengl/open_gl_backend.hpp)。
 

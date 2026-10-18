@@ -270,6 +270,9 @@ if(CUEXIS_BUILD_TESTS)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_pd_baseline_probe)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_pd_allocation_probe)
     endif()
+    if(TARGET cuexis_pd_host_probe)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_pd_host_probe)
+    endif()
     if(TARGET cuexis_execution_host_tests)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_execution_host_tests)
     endif()
@@ -643,7 +646,7 @@ if(CUEXIS_BUILD_TESTS)
                 find_program(CUEXIS_EXPORT_GATE_PYTHON NAMES python3 python REQUIRED)
                 add_test(NAME cuexis_pe_export_gate_negatives
                     COMMAND "${CUEXIS_EXPORT_GATE_PYTHON}" -B
-                        "${PROJECT_SOURCE_DIR}/tools/check_pe_export_gate.py"
+                        "${PROJECT_SOURCE_DIR}/tools/verification/check_pe_export_gate.py"
                         --dll "$<TARGET_FILE:cuexis_playback>"
                         --objdump "${CUEXIS_SYMBOL_TOOL}" --cmake "${CMAKE_COMMAND}"
                         --candidate "${CUEXIS_ENABLE_CHART_V5_CANDIDATE}")
@@ -1289,6 +1292,11 @@ if(CUEXIS_BUILD_TESTS)
         cuexis_verify_target_dependencies(cuexis_pd_allocation_probe
             ALLOWED cuexis::playback cuexis::judgement cuexis::gameplay_packed
                 cuexis::execution_host_support cuexis::presentation_renderer Catch2::Catch2WithMain)
+    endif()
+    if(TARGET cuexis_pd_host_probe)
+        cuexis_verify_target_dependencies(cuexis_pd_host_probe
+            ALLOWED cuexis::execution_host_support cuexis::playback cuexis::presentation_renderer
+                cuexis::render cuexis::judgement cuexis::gameplay_packed Catch2::Catch2WithMain)
     endif()
     cuexis_verify_target_dependencies(cuexis_rpa_tests
         ALLOWED

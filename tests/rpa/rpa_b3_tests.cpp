@@ -166,8 +166,8 @@ TEST_CASE("B3 G1 waits at equal B and retains original horizon across reordered 
     CHECK(sameKernelResult(before, view(s)));
     REQUIRE(d.retire(7));
     r = d.request({scope, 7, 0, Tick{903}});
-    REQUIRE(r);
-    CHECK(r->disposition == AdvanceDisposition::retired);
+    REQUIRE_FALSE(r);
+    CHECK(r.error().code() == "host.rpa.request_retired");
 }
 TEST_CASE("B3 Q1 K1 invalid control does not cancel and valid control cannot revive advance",
           "[rpa][b3]") {

@@ -49,7 +49,18 @@ session/segment/epoch 更换后旧证明不能授权新推进。控制期间可�
 普通推进只在 owner 串行边界执行：`F(H)=checked(H-C)` 且 `F(H)<B`。
 H、C 和 B 使用同一 Tick 域。等待保持原 H；仅一个等待槽，新请求返回 BusyNotAccepted。
 不同 requestId 即使 H 相等也不是同一请求；同 requestId 同载荷重传返回原状态，内容不同拒绝。
-请求结果确认后旧 ID 只返回 Retired，不重执行；调用方丢失原结果时必须 query，不能按成功推断。
+调用方在确认结果前必须 query 取得原结果，不能按成功推断。显式 retire 是完整结果查询的终点：
+按单调 requestId 的已接纳顺序回收连续已退役前缀，释放其身份载荷；前缀内的旧 ID 查询、
+推进重传返回 `host.rpa.request_retired`，绝不重执行，也不重新采样时钟。
+前缀内重复 retire 幂等成功；它仅确认无需再保留身份，不证明原推进执行成功。
+ID 可以跳号；未接纳的新 ID 必须高于此前已接纳 ID，不允许以后补用较低的空号。
+乱序 retire 留下的空洞闭合前，其后的 Retired 记录及原载荷仍保留，重复/冲突检查继续有效；
+未确认或 Waiting 请求不得随前缀回收。Resume/时钟切段保留此前身份边界，不让旧 ID 复活。
+同一会话内显式 Seek、restore、Reset/Stop 成功替换执行状态时，旧执行实例的身份历史失效；新实例继承旧已接纳 ID 高水位为
+已退役前缀，旧 ID 不能在新 context 下重新执行。Seek 失败不以重建宿主缓存冒充控制成功。
+新的内容提交或 Close 结束旧执行实例及其临时转移状态；控制 context 与旧 scope 拒绝规则仍须满足。
+回收进度由执行调度器唯一裁定，内部读取只返回所属执行实例、接纳高水位与回收前缀，
+不查询或复制完整判定结果；宿主原始 coherent 载荷按该进度回收。
 
 **K1：** 有效 Pause/Seek/Stop/reload/Close 在 D2 串行接入处理时，先将尚未开始的普通推进
 终结为 CanceledNotExecuted，再准备控制。基本字段/作用域校验失败的控制不取消它。

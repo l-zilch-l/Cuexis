@@ -59,7 +59,7 @@ Gameplay I 的 [Gameplay Judgement Spec](../formats/GAMEPLAY_JUDGEMENT_SPEC.md)�
 [ADR 0043](../adr/0043-gameplay-judgement-ruleset-convergence.md) 已被 **superseded**：保留为历史候选基线与
 差异对照，不再是权威。现行 Gameplay V2 的三份文档（ADR 0044 / V2 Spec / V2 ABI）均为 `candidate`，
 **第 1–7 轮已全部裁定（无待裁定轮次）**，见[裁决清单](../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) §3、§5、§7、§9
-与[第 7 轮收尾裁定记录](../stage_reports/stages/stage-07/decisions/2026-10-03-s7a-7-wrapup-rulings.md)；
+与[第 7 轮收尾裁定记录](../stage_reports/stages/stage-07/s7a/decisions/2026-10-03-s7a-7-wrapup-rulings.md)；
 **裁定完成不等于实现完成**，实现状态以[CURRENT_STATUS](../CURRENT_STATUS.md)为准。
 原S7A-9收尾现由[RPA-F1–F4](../stage_plans/active/stage-07/plan-rpa.md#综合收尾工作线原s7a-9)承接；
 RPA完成后依次实施Stage 7B+、Stage 8。审查材料本身不构成已实施API证据。
@@ -137,7 +137,7 @@ RPA完成后依次实施Stage 7B+、Stage 8。审查材料本身不构成已实�
 
 ```powershell
 python -B tools/check_docs.py
-python -B tools/check_docs_status_contract_tests.py
+python -B tools/verification/check_docs_status_contract_tests.py
 git diff --check
 ```
 

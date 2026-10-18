@@ -1,6 +1,6 @@
 # Execution coordination preview
 
-适用版本：SDK API `0.8.0`；更新日期：2026-10-12。
+适用版本：SDK API `0.8.0`；更新日期：2026-10-17。
 
 本入口属于显式 candidate SDK，复用 PlaybackSession 内的唯一 JudgementSession。
 选择 `gameplay.execution.t4-k4.rpa.v1`、`late.window.batch.v1`、`fact.semantic.rpa.v1`
@@ -21,10 +21,14 @@ SchedulingProfile、A/I/V offset、固定 rate、monotonic domain、scope/segmen
 分片 gap 不推进 cumulative acknowledgement，消息重传不再准入。
 
 `requestGameplayAdvance` 返回 Waiting、BusyNotAccepted 或 terminal decision。
-等待不占用输入/控制循环。request ID 的精确重传返回原结果；内容冲突失败。
+等待不占用输入/控制循环。结果确认前 request ID 的精确重传返回原结果；内容冲突失败。
 `acceptGameplayControl` 在有效 owner reception 取消尚未执行的等待请求；执行与取消互斥。
 `queryGameplayAdvance`、`retireGameplayAdvance` 保留同一 operation identity。
-退休记录拒绝重新开始；有限 retention 用尽明确报 capacity_exceeded。
+显式 retire 后连续前缀释放完整结果；该前缀内 query/推进重传返回 `host.rpa.request_retired`，
+重复 retire 幂等成功，不证明原推进成功。未确认及乱序确认空洞后的身份仍保留；
+有限 retention 用尽明确报 capacity_exceeded。新接纳 requestId 严格增加，可跳号。
+Resume/时钟切段保持身份历史；成功 Seek 替换执行状态后保留旧接纳高水位，旧 ID 仍不能再执行。
+同会话 restore、Reset/Stop 后重新开始执行也保留该高水位；新内容提交及 Close 清理旧实例的临时转移状态。
 
 ## Clock 与 offset
 

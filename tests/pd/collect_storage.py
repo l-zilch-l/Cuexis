@@ -1,5 +1,6 @@
 """Collect PD-0 requested-allocation and CPU delivery observations; never a timing gate."""
 import datetime as dt
+import argparse
 import json
 from pathlib import Path
 import subprocess as sp
@@ -7,16 +8,16 @@ import sys
 import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "tools"))
+sys.path.insert(0, str(ROOT / "tools" / "verification"))
 import measure_pd0_method as method
 
 
-def main():
+def main(build_directories=None):
     output = ROOT / "out/pd0-storage-v1" / (dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:6])
     output.mkdir(parents=True)
     source = method.identity()
     machine = method.machine()
-    manifest = {"revision": "pd0-storage-v2", "source": source, "machine": machine,
+    manifest = {"revision": "pd0-storage-v3", "source": source, "machine": machine,
                 "registration": {"processes_per_config_profile": 3, "profiles": ["legacy", "rpa"],
                     "measurement": "C++ operator new requested bytes; excludes malloc/CRT/driver/GPU",
                     "timing": "allocation probe timings excluded from performance conclusions",
@@ -26,8 +27,11 @@ def main():
     method.save(output / "manifest.json", manifest)
     print("EVIDENCE " + str(output), flush=True)
     try:
-        for config, directory in (("release", "rpa-candidate-release"), ("debug", "candidate-debug")):
-            binary = ROOT / "out/build" / directory / "bin/cuexis_pd_allocation_probe.exe"
+        directories = build_directories or {
+            "release": ROOT / "out/build/rpa-candidate-release",
+            "debug": ROOT / "out/build/candidate-debug"}
+        for config, directory in directories.items():
+            binary = Path(directory).resolve() / "bin/cuexis_pd_allocation_probe.exe"
             manifest["binaries"][config] = method.binary_info(binary)
             manifest["cold_binaries"][config] = method.binary_info(binary.with_name("cuexis_pd_baseline_probe.exe"))
             for profile in ("legacy", "rpa"):
@@ -45,7 +49,7 @@ def main():
             for repeat in range(1, 4):
                 stem = f"{config}-delivery-{repeat}"
                 env = dict(method.os.environ, CUEXIS_PD_METRICS=str(output / stem))
-                command = [sys.executable, str(ROOT / "tools/measure_pd0_method.py"), "--child",
+                command = [sys.executable, str(ROOT / "tools/verification/measure_pd0_method.py"), "--child",
                            str(machine["selected_affinity"]), str(binary), "[pd][allocation],[pd][ledger],[pd][renderer]",
                            "--rng-seed", "1"]
                 with (output / (stem + ".log")).open("wb") as log:
@@ -55,8 +59,11 @@ def main():
                 diagnostics = [json.loads(line) for p in output.glob(stem + ".*.jsonl")
                                for line in p.read_text().splitlines()]
                 counts = {d["stage"]: len(d["exclusive_us"]) for d in diagnostics}
+                # The renderer fixture installs one ordinary Runtime frame and extracts
+                # one Snapshot before its repeated submit/present calls.
                 if counts != {"renderer": 4096, "renderer_present": 4096, "receipt": 8200,
-                              "ledger_take": 8200, "ledger_publish": 8204}:
+                              "ledger_take": 8200, "ledger_publish": 8204, "runtime": 1,
+                              "runtime_prepare": 1, "runtime_commit": 1, "snapshot": 1}:
                     raise RuntimeError(f"Delivery observation coverage incomplete: {counts}")
                 manifest["runs"].append({"config": config, "name": stem, "exit_code": 0,
                                          "command": command, "use": "allocation and logical baseline only"})
@@ -65,7 +72,7 @@ def main():
             for repeat in range(1, 4):
                 stem = f"{config}-cold-projection-{repeat}"
                 env = dict(method.os.environ, CUEXIS_PD_METRICS=str(output / stem))
-                command = [sys.executable, "-B", str(ROOT / "tools/measure_pd0_method.py"), "--child",
+                command = [sys.executable, "-B", str(ROOT / "tools/verification/measure_pd0_method.py"), "--child",
                            str(machine["selected_affinity"]), str(binary.with_name("cuexis_pd_baseline_probe.exe")),
                            "PD deterministic presentation baseline", "--rng-seed", "1"]
                 with (output / (stem + ".log")).open("wb") as log:
@@ -106,4 +113,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--release-build', type=Path, default=ROOT / 'out/build/rpa-candidate-release')
+    parser.add_argument('--debug-build', type=Path, default=ROOT / 'out/build/candidate-debug')
+    args = parser.parse_args()
+    main({'release': args.release_build, 'debug': args.debug_build})

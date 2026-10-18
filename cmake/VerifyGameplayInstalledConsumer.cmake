@@ -73,7 +73,7 @@ if(DEFINED CUEXIS_GAMEPLAY_TOOL AND NOT "${CUEXIS_GAMEPLAY_TOOL}" STREQUAL "")
     endif()
     find_program(gameplay_python NAMES python3 python REQUIRED)
     run_checked("Installed reference host Gameplay matrix" "${gameplay_python}" -B
-        "${CUEXIS_SOURCE_DIR}/tools/check_gameplay_host_tests.py"
+        "${CUEXIS_SOURCE_DIR}/tools/verification/check_gameplay_host_tests.py"
         --host "${host}" --tool "${CUEXIS_GAMEPLAY_TOOL}"
         --fixture "${CUEXIS_BINARY_DIR}/s7a78-public-fixture" --log-dir "${work}/host-logs")
 endif()

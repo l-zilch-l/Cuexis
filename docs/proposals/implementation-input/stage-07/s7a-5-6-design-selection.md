@@ -629,4 +629,4 @@ U11仍选owning评价A而非文件强制fault或丢记录；U12仍选owning依�
 
 本轮不增加U14等新编号：校验层次归U09/U12，continuation归U07，消费归属归U05/U13。
 先关闭5消费的U01–U05/U13，再进入J1/J2；6消费项按J3–J5前关闭。
-完整逐项证据见 [重审报告](../../../stage_reports/stages/stage-07/verification/2026-10-06-s7a-5-6-u01-u13-rereview.md)。
+完整逐项证据见 [重审报告](../../../stage_reports/stages/stage-07/s7a/verification/2026-10-06-s7a-5-6-u01-u13-rereview.md)。

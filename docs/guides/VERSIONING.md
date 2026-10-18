@@ -208,7 +208,7 @@ owner未编辑评论准确绑定base/head/tree、版本及UTC日期。checker仍
 
 该例外接受同名Actions检查可被替换且平台无法强制锁定workflow的剩余风险；
 人工/代理核对日志是补偿措施，不是不可伪造保证。裁定及配置证据见
-[接受记录](../stage_reports/stages/stage-07/decisions/2026-10-10-single-maintainer-workflow-source-exception.md)。
+[接受记录](../stage_reports/stages/stage-07/s7a/decisions/2026-10-10-single-maintainer-workflow-source-exception.md)。
 
 ### Windows double-click approval assistant
 

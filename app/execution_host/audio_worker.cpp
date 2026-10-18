@@ -62,6 +62,9 @@ auto AudioWorker::acknowledge(std::uint64_t id) -> core::Result<void> {
 void AudioWorker::waitFor(std::chrono::milliseconds duration) {
     state_->channel.waitFor(duration);
 }
+void AudioWorker::waitForReply(std::uint64_t id, std::chrono::steady_clock::duration duration) {
+    state_->channel.waitForReply(id, duration);
+}
 auto AudioWorker::publication() const -> core::Result<AudioPublication> try {
     std::lock_guard lock{state_->publicationMutex};
     auto result = state_->publication;

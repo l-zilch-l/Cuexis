@@ -958,8 +958,8 @@ v0.5 深化输入前缀停滞/时钟过期/消费者积压的运行策略，定�
 - [ADR 0032](../../adr/0032-playback-clock-and-prepared-audio-transaction.md)：现有时钟/准备事务。
 - [ADR 0046](../../adr/0046-realtime-playback-coordination.md)：现有 RPA 候选决策输入。
 - [实时宿主边界](../../api/realtime-host-boundary.md)：TB-01–07 与 typed 候选。
-- [架构重审](../../stage_reports/stages/stage-07/readiness/2026-10-09-realtime-architecture-review.md)：代码反例和现有测量边界。
+- [架构重审](../../stage_reports/stages/stage-07/rpa/2026-10-09-realtime-architecture-review.md)：代码反例和现有测量边界。
 - [FrameDiagnostics](../../../app/player/src/frame_diagnostics.hpp)、[动画性能探针](../../../tests/animation/animation_performance_probe.cpp)、[Playback 性能探针](../../../tests/playback/stage3_performance_probe.cpp)：现有观测与测量代码。
 - [Gameplay V2 Spec](../../formats/GAMEPLAY_V2_SPEC.md)、[ABI](../../api/GAMEPLAY_V2_ABI.md)、[execution profile](../../formats/gameplay-v2-execution-profile.md)：现行执行/输入合同。
 - [Playback 生命周期](../../api/playback-session.md)、[模块边界](../../architecture/MODULE_BOUNDARIES.md)：当前 API 与依赖约束。
-- [单人维护 workflow 来源例外](../../stage_reports/stages/stage-07/decisions/2026-10-10-single-maintainer-workflow-source-exception.md)：已排除项的现有记录。
+- [单人维护 workflow 来源例外](../../stage_reports/stages/stage-07/s7a/decisions/2026-10-10-single-maintainer-workflow-source-exception.md)：已排除项的现有记录。

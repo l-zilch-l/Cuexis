@@ -41,6 +41,17 @@ operationId/requestId 由各会话调用方单调生成；同 ID 同载荷是查
 至多一个非终态控制操作；新控制在入口明确 ControlBusyNotAccepted，Close/紧急故障可进入清理路径。
 被拒绝的新控制未被 D2 接入，不触发 K1。已开始的控制不能被新命令覆盖或靠超时推断取消。
 结果保留到调用方确认，随后以 retired 连续前缀保证旧 ID 不再执行；跨 scope 重用旧 ID 拒绝。
+显式 retire 后连续前缀释放完整记录；前缀内查询和推进重传返回
+`host.rpa.request_retired`，不再提供原结果。重复 retire 幂等成功，不证明原推进执行成功。
+乱序确认空洞后的 Retired 记录在前缀推进前仍保留。
+requestId 可跳号，但新接纳 ID 必须严格增加；确认前的重传仍按原载荷检查。
+执行调度器是回收进度的唯一裁定者；宿主经内部轻量元数据桥清理 coherent 载荷，不复制完整结果判定寿命。
+Resume/时钟切段保留该身份历史；成功 Seek 替换执行实例后继承旧接纳高水位为已退役前缀。
+同会话 restore、Reset/Stop 后重新启动也继承该高水位；新内容提交和 Close 结束旧实例的临时转移状态。
+
+命令可取与目标回复可取使用不同等待条件；回复在同一 mutex 下发布持久终态并保留到 ACK。
+关闭 admission 本身不是 pending 回复完成。host 保留总体 deadline，并按剩余时间和主线程泵预算切片等待；
+目标回复完成早于等待时不得继续等待下一次通知。此等待不改变 owner、控制/fence 或输入捕获合同。
 
 D6 发出的 commandOrdinal 不赋予请求成功或取消效力；D2 的 decisionOrdinal 与 Spec §1.3
 是唯一推进 Started/K1 接入顺序。D6 必须保留未获 D2 接入回执的请求供同 ID 查询/重传，
@@ -60,6 +71,7 @@ Gameplay 的 Prepared/Running/Paused/Faulted 保持独立；Suspended 是禁止�
 | 普通推进占槽 | BusyNotAccepted | 不入 FIFO；不改旧请求/输入 |
 | 有效控制串行接入 | CanceledNotExecuted（K1） | 只取消未开始推进；控制失败不复活 |
 | 旧 scope/segment/代数 | `host.rpa.context_stale` | 拒绝；旧资源候选仅清理 |
+| 已回收的请求身份前缀 | `host.rpa.request_retired` | 拒绝查询/推进重传；重复 retire 幂等确认；不执行、不采样时钟、不撤销当前执行许可 |
 | 同消息或操作 ID 异载荷 | `host.rpa.message_conflict` | 撤销许可，Suspended；不得选择任一载荷继续 |
 | 连续交付尚有缺口 | Waiting，reason=InputPrefix | 保留输入、精确重传；不借超时跳过 |
 | 时钟无效/超期/误差参数缺失 | `host.rpa.clock_invalid` | 撤销许可；显式新段恢复，不静默 fallback |

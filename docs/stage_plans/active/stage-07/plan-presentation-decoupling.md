@@ -1,12 +1,12 @@
 # Stage 7-PD: Judgement/Presentation Decoupling Plan
 
-状态：active，PD-0 进行中；独立于 Stage 7A 与 Stage 7-RPA 的 Stage 7 子阶段。批次未退出，Stage 7A/RPA 与发布门禁不因本计划启动而关闭。
+状态：active，PD-0 testOnly 基线与行为表征完成，PD-1 至 PD-5 未开始；独立于 Stage 7A 与 Stage 7-RPA 的 Stage 7 子阶段。整个子阶段未退出，Stage 7A/RPA 与发布门禁不因此关闭。
 
 2026-10-16 最新授权：owner 要求“阅读接手文档并阅读相关文档，本次任务是完成PD计划”，随后要求先提交当前状态存档、后续显示 todolist。此前设计阶段关于不得启动实施的限制不再适用于本次已授权工作；正式合同接受、公共版本、逐批验收与发行门禁仍分别成立。内部接口名仍须以实际实现与证据核对。
 
 本计划拥有目标、批次与退出条件；配套[内部设计与验收细则](presentation-decoupling-design.md)拥有本计划的接口字段、状态转移、数据寿命、线程时序和测量方法。既有 Gameplay/RPA 语义仍以其正式 Spec/ABI 为准，细则不替代它们。
 
-本子阶段处理判定结果、表现绑定、Runtime/World 求值和画面交付之间的实现耦合。2026-10-16 重审后，采用单一表现状态源、轻量提交修订描述、中性只读物化和独立交付绑定；首版不再要求每次更新保存完整结果副本。完整帧只为取得额度的请求生成，观察历史独立有界。方向比较、迁移成本和未来扩展影响见[设计重审记录](../../../stage_reports/stages/stage-07/handoffs/2026-10-16-pd-transaction-and-delivery-design-review.md)。
+本子阶段处理判定结果、表现绑定、Runtime/World 求值和画面交付之间的实现耦合。2026-10-16 重审后，采用单一表现状态源、轻量提交修订描述、中性只读物化和独立交付绑定；首版不再要求每次更新保存完整结果副本。完整帧只为取得额度的请求生成，观察历史独立有界。方向比较、迁移成本和未来扩展影响见[设计重审记录](../../../stage_reports/stages/stage-07/pd/2026-10-16-pd-transaction-and-delivery-design-review.md)。
 
 本计划与下列工作保持独立：
 
@@ -266,7 +266,12 @@ D1 capture
 
 ### PD-0：基线与行为表征
 
-后续获准实施时先登记测量 manifest、testOnly profile、统计方法与噪声界；只增加内部计时和计数，不改变行为：
+回复等待与请求身份回收缺陷作为已授权的独立前置修复处理，不扩张本批次“只观测”的范围。
+修复使用持久回复终态、调度器唯一回收进度及幂等退役确认；合同归 RPA Spec/宿主边界，
+实施证据见[前置修复报告](../../../stage_reports/stages/stage-07/rpa/2026-10-17-retention-progress-and-wait-boundaries.md)。
+修复后重新绑定源码、binary 和测量组，保留旧 inconclusive 结论；不提前实施 PD-4 帧寿命或异步 receipt。
+
+本批次先登记测量 manifest、testOnly profile、统计方法与噪声界；只增加内部计时和计数，不改变行为：
 
 - Judgement advance、projection、Runtime candidate/install、只读物化、Renderer submit/present 分段耗时；首版不新增每更新完整结果捕获。
 - Fact cursor、绑定扫描数量、投影写入数量、RuntimeEvaluationState 复制字节、Snapshot 对象数量、分配次数和复制字节数。
@@ -327,7 +332,7 @@ Close，以及 CPU/GPU 仍持有旧载荷的情形；拒绝旧副本不伪造原
 同端控制/资源换代与 Renderer 实例或代数更换分别覆盖，不能把旧注册许可带入新呈现端；
 当前注册描述的保留、同键异载荷和精确历史淘汰后的拒绝行为也须验证。
 以最低双载荷 profile 覆盖连续领取、取消/过期/领取竞争和请求历史保留，确保已领取响应不因去重
-窗口长期占槽。设计核对与本轮边界见[注册与响应自查记录](../../../stage_reports/stages/stage-07/handoffs/2026-10-16-pd-registration-and-plan-self-review.md)。
+窗口长期占槽。设计核对与本轮边界见[注册与响应自查记录](../../../stage_reports/stages/stage-07/pd/2026-10-16-pd-registration-and-plan-self-review.md)。
 
 ### PD-5：后续 owner 拆分触发审查
 
@@ -448,7 +453,7 @@ Stage 7-PD 退出需要：
 ## 12. 跨阶段兼容与交接责任
 
 逐项设计与反例见[细则 §12](presentation-decoupling-design.md)，备选取舍见
-[跨阶段设计记录](../../../stage_reports/stages/stage-07/handoffs/2026-10-16-pd-cross-stage-design-review.md)。
+[跨阶段设计记录](../../../stage_reports/stages/stage-07/pd/2026-10-16-pd-cross-stage-design-review.md)。
 本节不增加未来阶段的产品实现授权，不以未来能力已经实现作为 PD 退出条件。
 
 | 后续计划 | PD 当前必须保留的边界 | 后续阶段首次接入时必须完成 |
@@ -475,7 +480,7 @@ RPA-F4 接受前若集成 PD，其最终矩阵/预算直接覆盖该实现；F4 
 
 - [x] 读取接手、核对分支/HEAD/脏文件，保留既有设计和证据。
 - [x] 保存实施前工作区快照，登记初始采样参数。
-- [ ] **进行中：PD-0**——完成分段指标、可复现 manifest、Debug/Release 基线与统计核验；当前仅确定性用例各三次通过，完整测量门禁未退出。
+- [x] **PD-0**——受控环境及经依赖核验的干净重建程序完成两窗口与合并六进程重复性；全部 owner/宿主项满足原定 15% 门槛，同源码阶段/存储/交付观测核验通过，见[退出证据](../../../stage_reports/stages/stage-07/pd/2026-10-18-pd0-controlled-environment-and-build-binding.md)。历史 inconclusive 与源码绑定失败组完整保留；历史慢态未归因，生产预算、尾延迟、帧账本回收及设备验收未关闭。
 - [ ] PD-1——Judgement publication view、读取失效与诊断桥。
 - [ ] PD-2——prepare 绑定索引、Projection Adapter 与既有 golden 对照。
 - [ ] PD-3-a——Runtime/World prepare/apply、storage 安装及派生状态故障证明。
@@ -485,4 +490,4 @@ RPA-F4 接受前若集成 PD，其最终矩阵/预算直接覆盖该实现；F4 
 - [ ] PD-5——配对测量及 owner 拆分触发审查；缺少有效阈值则记录证据不足。
 - [ ] 最终回归、适用消费者/版本门禁、迁移路径清理与交接。
 
-当前快照证据见[实施起步存档](../../../stage_reports/stages/stage-07/implementation/2026-10-16-pd-start-checkpoint.md)。
+当前快照证据见[PD 设计演进记录](../../../stage_reports/stages/stage-07/pd/2026-10-16-design-evolution.md)。

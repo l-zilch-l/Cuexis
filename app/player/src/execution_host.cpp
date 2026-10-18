@@ -1,6 +1,7 @@
 #include "execution_host.hpp"
-#include <cuexis_internal/presentation_metrics.hpp>
 #include "../../../engine/core/internal/cuexis_internal/sha256.hpp"
+#include <algorithm>
+#include <cuexis_internal/presentation_metrics.hpp>
 #include <limits>
 #include <thread>
 
@@ -92,16 +93,24 @@ void ExecutionHost::checkOwner() const {
     if (closed_)
         throw Failure{error("owner_closed")};
 }
-void ExecutionHost::pump() {
+void ExecutionHost::pump(std::chrono::steady_clock::time_point deadline) {
     if (pumpCount_ == UINT64_MAX)
         throw Failure{error("capacity_exceeded")};
     ++pumpCount_;
     if (ports_.pumpMain)
         take(ports_.pumpMain());
+    auto duration = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+        std::chrono::milliseconds{1});
+    if (deadline != std::chrono::steady_clock::time_point::max()) {
+        const auto now = std::chrono::steady_clock::now();
+        if (now >= deadline)
+            return;
+        duration = std::min(deadline - now, duration);
+    }
     if (sessionJob_)
-        session_->waitFor(std::chrono::milliseconds{1});
+        session_->waitForReply(*sessionJob_, duration);
     else if (audioJob_)
-        audio_->waitFor(std::chrono::milliseconds{1});
+        audio_->waitForReply(*audioJob_, duration);
 }
 auto ExecutionHost::session(SessionCommand command, bool control) -> SessionReply {
     if (sessionJob_)
@@ -124,7 +133,7 @@ auto ExecutionHost::awaitSession() -> SessionReply {
         }
         if (std::chrono::steady_clock::now() >= deadline)
             throw Failure{error("control_pending")};
-        pump();
+        pump(deadline);
     }
 }
 auto ExecutionHost::audio(AudioWorkerCommand command) -> AudioWorkerReply {
@@ -141,15 +150,15 @@ auto ExecutionHost::audio(AudioWorkerCommand command) -> AudioWorkerReply {
         }
         if (std::chrono::steady_clock::now() >= deadline)
             throw Failure{error("control_pending")};
-        pump();
+        pump(deadline);
     }
 }
 void ExecutionHost::waitFor(std::chrono::milliseconds duration) {
     checkOwner();
     if (sessionJob_)
-        session_->waitFor(duration);
+        session_->waitForReply(*sessionJob_, duration);
     else if (audioJob_)
-        audio_->waitFor(duration);
+        audio_->waitForReply(*audioJob_, duration);
     else
         session_->waitFor(duration);
 }

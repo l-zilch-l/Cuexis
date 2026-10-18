@@ -9,10 +9,11 @@ auto hostError(std::string_view suffix, std::string_view message) -> core::Error
 } // namespace
 ExecutionScheduler::ExecutionScheduler(JudgementSession& s, RpaContext c, TickSpan threshold,
                                        std::size_t cap) noexcept
-    : session_(s), context_(c), closeThreshold_(threshold), capacity_(cap) {}
+    : session_(s), context_(c), identityContext_(c), closeThreshold_(threshold), capacity_(cap) {}
 auto ExecutionScheduler::create(JudgementSession& s, RpaContext c, TickSpan threshold,
                                 std::size_t cap, std::uint64_t firstCommand,
-                                std::uint64_t firstDecision)
+                                std::uint64_t firstDecision,
+                                std::optional<std::uint64_t> retiredRequestFloor)
     -> core::Result<ExecutionScheduler> try {
     if (threshold.value() < 0 || !cap || !c.sessionScope || !c.clockSegment || !c.runEpoch)
         return core::unexpected(hostError("profile_incomplete", "invalid execution context"));
@@ -26,6 +27,7 @@ auto ExecutionScheduler::create(JudgementSession& s, RpaContext c, TickSpan thre
         return core::unexpected(hostError("capacity_exceeded", "startup ordinal exhausted"));
     result.nextCommand_ = firstCommand;
     result.nextDecision_ = firstDecision;
+    result.lastRequestId_ = result.retiredThrough_ = retiredRequestFloor;
     if (logical.paused) {
         if (!logical.cutTick)
             return core::unexpected(hostError("context_stale", "paused cut is absent"));
@@ -211,12 +213,16 @@ auto ExecutionScheduler::tryStart() -> core::Result<void> {
 auto ExecutionScheduler::request(AdvanceRequest r) -> core::Result<AdvanceDecision> try {
     if (r.context != context_)
         return core::unexpected(hostError("context_stale", "request context mismatch"));
+    if (retiredThrough_ && r.requestId <= *retiredThrough_)
+        return core::unexpected(hostError("request_retired", "request identity reclaimed"));
     if (auto old = requests_.find(r.requestId); old != requests_.end()) {
         if (old->second.request == r)
             return old->second;
         suspended_ = true;
         return core::unexpected(hostError("message_conflict", "request ID content conflict"));
     }
+    if (lastRequestId_ && r.requestId <= *lastRequestId_)
+        return core::unexpected(hostError("context_stale", "new request ID must increase"));
     if (waiting_)
         return AdvanceDecision{
             r, AdvanceDisposition::busyNotAccepted, nextDecision_, exclusive_, {}, {}};
@@ -246,6 +252,7 @@ auto ExecutionScheduler::request(AdvanceRequest r) -> core::Result<AdvanceDecisi
     ++nextCommand_;
     requests_.emplace(
         r.requestId, AdvanceDecision{r, AdvanceDisposition::waiting, *ordinal, exclusive_, {}, {}});
+    lastRequestId_ = r.requestId;
     waiting_ = r.requestId;
     auto started = tryStart();
     if (!started)
@@ -255,18 +262,27 @@ auto ExecutionScheduler::request(AdvanceRequest r) -> core::Result<AdvanceDecisi
     return core::unexpected(hostError("capacity_exceeded", "request reservation failed"));
 }
 auto ExecutionScheduler::poll(std::uint64_t id) const -> core::Result<AdvanceDecision> {
+    if (retiredThrough_ && id <= *retiredThrough_)
+        return core::unexpected(hostError("request_retired", "request identity reclaimed"));
     auto found = requests_.find(id);
     if (found == requests_.end())
         return core::unexpected(hostError("context_stale", "request ID unknown"));
     return found->second;
 }
 auto ExecutionScheduler::retire(std::uint64_t id) -> core::Result<void> {
+    if (retiredThrough_ && id <= *retiredThrough_)
+        return {};
     auto found = requests_.find(id);
     if (found == requests_.end() || found->second.disposition == AdvanceDisposition::waiting)
         return core::unexpected(hostError("context_stale", "request not terminal"));
     found->second.disposition = AdvanceDisposition::retired;
     found->second.result.reset();
     found->second.error.reset();
+    while (!requests_.empty() &&
+           requests_.begin()->second.disposition == AdvanceDisposition::retired) {
+        retiredThrough_ = requests_.begin()->first;
+        requests_.erase(requests_.begin());
+    }
     return {};
 }
 auto ExecutionScheduler::acceptControl(RpaContext c, std::uint64_t command) -> core::Result<void> {

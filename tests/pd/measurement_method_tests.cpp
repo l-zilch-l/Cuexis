@@ -1,5 +1,7 @@
 #include "../rpa/execution_fixture.hpp"
 #include "../support/environment.hpp"
+#include "measurement_clocks.hpp"
+#include "measurement_environment.hpp"
 #include <cuexis/playback/frame_digest.hpp>
 #include <cuexis_internal/presentation_metrics.hpp>
 #include <cuexis_internal/sha256.hpp>
@@ -13,7 +15,9 @@
 #include <iomanip>
 #include <iostream>
 #include <memory>
+#include <random>
 #include <stdexcept>
+#include <thread>
 #include <vector>
 
 namespace {
@@ -121,8 +125,7 @@ struct Evidence final {
     std::string replay, snapshot;
     double traceUs{};
 };
-auto step(PlaybackSession& session, bool realtime, std::size_t i, FrameSnapshot& snapshot)
-    -> std::uint64_t {
+void playbackStep(PlaybackSession& session, bool realtime, std::size_t i) {
     const auto tick = static_cast<std::int64_t>(i + 1) * 10;
     const RuntimeFrame frame{realtime ? static_cast<double>(tick) / 1000.0
                                       : static_cast<double>(tick),
@@ -140,17 +143,26 @@ auto step(PlaybackSession& session, bool realtime, std::size_t i, FrameSnapshot&
     } else {
         take(session.advanceGameplay({tick}, {tick}, frame));
     }
+}
+auto checkedStep(PlaybackSession& session, bool realtime, std::size_t i, FrameSnapshot& snapshot)
+    -> std::uint64_t {
+    playbackStep(session, realtime, i);
+    const auto tick = static_cast<std::int64_t>(i + 1) * 10;
+    const RuntimeFrame frame{realtime ? static_cast<double>(tick) / 1000.0
+                                      : static_cast<double>(tick),
+                             realtime ? 0.01 : 10, 0};
     take(session.extractFrame({1280, 720}, snapshot));
     verify(snapshot.objects.size() == 1 && snapshot.objects[0].visible == (tick >= 1000),
            "fixed trace visibility differs from oracle");
     return take(computeFrameDigest(frame, snapshot)).value;
 }
-auto trace(PlaybackSession& session, bool realtime, bool recording) -> Evidence {
+auto trace(PlaybackSession& session, bool realtime, bool recording,
+           pd_measure::Sample* clocks = nullptr) -> Evidence {
     Evidence result;
     FrameSnapshot snapshot;
     internal::pd::setRecording(false);
     for (std::size_t i = 0; i < warmupSteps; ++i)
-        static_cast<void>(step(session, realtime, i, snapshot));
+        static_cast<void>(checkedStep(session, realtime, i, snapshot));
     internal::pd::setRecording(recording);
     {
         // Observe the active binding window separately from the fixed timed trace.
@@ -164,10 +176,19 @@ auto trace(PlaybackSession& session, bool realtime, bool recording) -> Evidence 
     pd_allocation::bytes.store(0);
     pd_allocation::tracking = true;
 #endif
-    const auto start = Clock::now();
-    for (std::size_t i = warmupSteps; i < warmupSteps + measuredSteps; ++i)
-        result.digest = (result.digest ^ step(session, realtime, i, snapshot)) * 1099511628211ULL;
-    result.traceUs = elapsed(start);
+    const auto work = [&] {
+        for (std::size_t i = warmupSteps; i < warmupSteps + measuredSteps; ++i)
+            result.digest =
+                (result.digest ^ checkedStep(session, realtime, i, snapshot)) * 1099511628211ULL;
+    };
+    if (clocks) {
+        *clocks = pd_measure::measure(work);
+        result.traceUs = clocks->wallUs;
+    } else {
+        const auto start = Clock::now();
+        work();
+        result.traceUs = elapsed(start);
+    }
 #if defined(CUEXIS_PD_ALLOCATION_OBSERVER)
     pd_allocation::tracking = false;
     const auto liveAfter = pd_allocation::live.load();
@@ -194,6 +215,19 @@ auto trace(PlaybackSession& session, bool realtime, bool recording) -> Evidence 
     if (!realtime)
         verify(result.digest == 17504891284788938091ULL, "legacy trajectory digest changed");
     return result;
+}
+auto playbackOnly(PlaybackSession& session, bool realtime, pd_measure::Sample* clocks = nullptr)
+    -> pd_measure::Sample {
+    for (std::size_t i = 0; i < warmupSteps; ++i)
+        playbackStep(session, realtime, i);
+    const auto work = [&] {
+        for (std::size_t i = warmupSteps; i < warmupSteps + measuredSteps; ++i)
+            playbackStep(session, realtime, i);
+    };
+    const auto sample = pd_measure::measure(work);
+    if (clocks)
+        *clocks = sample;
+    return sample;
 }
 } // namespace
 
@@ -292,6 +326,209 @@ TEST_CASE("PD clock and observer calibration", "[.][pd][method]") {
               << ",\"nested_empty_block_us\":" << observerUs
               << ",\"nested_empty_operations\":4096}\n";
 }
+
+#if defined(_WIN32) && !defined(CUEXIS_PD_ALLOCATION_OBSERVER)
+namespace {
+void sampleJson(const pd_measure::Sample& s) {
+    std::cout << "{\"wall_us\":" << s.wallUs << ",\"cpu_us\":" << s.cpuUs
+              << ",\"cycles\":" << s.cycles << ",\"qpc_start\":" << s.qpcStart
+              << ",\"qpc_end\":" << s.qpcEnd << '}';
+}
+void anchorJson(std::string_view label) {
+    const auto before = pd_measure::qpc();
+    FILETIME utc{};
+    GetSystemTimePreciseAsFileTime(&utc);
+    const auto after = pd_measure::qpc();
+    const auto value = (static_cast<std::uint64_t>(utc.dwHighDateTime) << 32) | utc.dwLowDateTime;
+    std::cout << "PD_QPC_ANCHOR {\"label\":\"" << label << "\",\"pid\":" << GetCurrentProcessId()
+              << ",\"tid\":" << GetCurrentThreadId()
+              << ",\"qpc_frequency\":" << pd_measure::qpcFrequency() << ",\"qpc_before\":" << before
+              << ",\"qpc_after\":" << after << ",\"utc_filetime_100ns\":" << value << "}\n";
+}
+void row(std::string_view kind, std::size_t group, bool active, std::size_t operations,
+         const pd_measure::Sample& sample) {
+    std::cout << "PD_V2 {\"kind\":\"" << kind << "\",\"group\":" << group
+              << ",\"active\":" << (active ? "true" : "false") << ",\"operations\":" << operations
+              << ",\"sample\":";
+    sampleJson(sample);
+    std::cout << "}\n";
+}
+} // namespace
+
+TEST_CASE("PD interleaved scheduling measurement", "[.][pd][method-v2]") {
+    const auto profile = test_support::environmentVariable("CUEXIS_PD_PROFILE");
+    const auto phase = test_support::environmentVariable("CUEXIS_PD_V2_PHASE");
+    REQUIRE((profile == "legacy" || profile == "rpa"));
+    REQUIRE((phase == "pilot" || phase == "run"));
+    const bool realtime = profile == "rpa", pilot = phase == "pilot";
+    const auto seed = std::stoul(test_support::environmentVariable("CUEXIS_PD_V2_SEED"));
+    const auto reads = std::stoull(test_support::environmentVariable("CUEXIS_PD_V2_READS"));
+    REQUIRE(reads >= 4096);
+    REQUIRE(reads <= 4194304);
+    REQUIRE((reads & (reads - 1)) == 0);
+    internal::pd::setRecording(false);
+    std::cout << std::setprecision(17);
+    anchorJson("begin");
+
+    // Calibrate the observable accounting step; FILETIME units are not accuracy.
+    std::vector<double> quanta;
+    auto prior = pd_measure::counters();
+    const auto calibrationStart = Clock::now();
+    while (elapsed(calibrationStart) < 250000) {
+        const auto next = pd_measure::counters();
+        if (next.cpu100ns > prior.cpu100ns)
+            quanta.push_back(static_cast<double>(next.cpu100ns - prior.cpu100ns) / 10.0);
+        prior = next;
+    }
+    REQUIRE_FALSE(quanta.empty());
+    const auto emptyStart = Clock::now();
+    for (unsigned i = 0; i < 1000; ++i)
+        static_cast<void>(pd_measure::measure([] {}));
+    const auto envelope = elapsed(emptyStart) / 1000;
+    const auto waiting =
+        pd_measure::measure([] { std::this_thread::sleep_for(std::chrono::milliseconds{100}); });
+    REQUIRE(waiting.wallUs >= 75000);
+    REQUIRE(waiting.cpuUs < waiting.wallUs / 2);
+    std::cout << "PD_V2_CLOCK {\"cpu_accounting_steps_us\":";
+    numbers(quanta);
+    std::cout << ",\"telemetry_envelope_us\":" << envelope << ",\"deliberate_wait\":";
+    sampleJson(waiting);
+    std::cout << "}\n";
+
+    auto fixture = configuration(realtime);
+    const auto packed = fixture.packed();
+    const auto content = take(GameplayContent::fromPacked(packed, fixture.config));
+    auto warm = prepare(content, realtime);
+    const auto golden = trace(*warm, realtime, false);
+    warm.reset();
+    // Symmetric quartets cancel first-order temporal drift in paired estimates.
+    // Each operation uses a fresh session and the same fixed trajectory.
+    std::vector<bool> orientations =
+        pilot ? std::vector<bool>{false, true} : std::vector<bool>{false, true, true, false};
+    std::mt19937 random{static_cast<std::uint32_t>(seed)};
+    std::shuffle(orientations.begin(), orientations.end(), random);
+    std::unique_ptr<PlaybackSession> last;
+    for (std::size_t group = 0; group < orientations.size(); ++group) {
+        for (unsigned position = 0; position < 4; ++position) {
+            const bool active = ((position == 1 || position == 2) != orientations[group]);
+            auto session = prepare(content, realtime);
+            pd_measure::Sample sample;
+            const auto actual = trace(*session, realtime, active && !pilot, &sample);
+            REQUIRE(actual.digest == golden.digest);
+            REQUIRE(actual.replay == golden.replay);
+            REQUIRE(actual.snapshot == golden.snapshot);
+            row(pilot ? "trace_sham" : "trace", group, active, measuredSteps, sample);
+            last = std::move(session);
+        }
+    }
+    internal::pd::setRecording(false);
+    FrameSnapshot snapshot;
+    take(last->extractFrame({1280, 720}, snapshot));
+    const RuntimeFrame frame{realtime ? 10.88 : 10880, realtime ? 0.01 : 10, 0};
+    const auto readDigest = take(computeFrameDigest(frame, snapshot)).value;
+    const auto blocks = pilot ? 3U : 8U;
+    for (unsigned block = 0; block < blocks; ++block) {
+        for (unsigned position = 0; position < 2; ++position) {
+            const bool large = ((block + position + seed) % 2) != 0;
+            const auto count = large ? reads : 4096;
+            const auto sample = pd_measure::measure([&] {
+                for (std::size_t i = 0; i < count; ++i)
+                    take(last->extractFrame({1280, 720}, snapshot));
+            });
+            REQUIRE(take(computeFrameDigest(frame, snapshot)).value == readDigest);
+            row(large ? "read_long" : "read_short", block, false, count, sample);
+        }
+    }
+    REQUIRE(core::detail::sha256Hex(take(take(last->archiveGameplay()).toBytes())) ==
+            golden.replay);
+    REQUIRE(core::detail::sha256Hex(take(take(last->snapshotGameplay()).toBytes())) ==
+            golden.snapshot);
+    std::cout << "PD_V2_ID {\"profile\":\"" << profile << "\",\"phase\":\"" << phase
+              << "\",\"seed\":" << seed << ",\"reads\":" << reads << ",\"digest\":" << golden.digest
+              << ",\"replay_sha256\":\"" << golden.replay << "\",\"snapshot_sha256\":\""
+              << golden.snapshot << "\",\"packed_sha256\":\"" << core::detail::sha256Hex(packed)
+              << "\"}\n";
+    anchorJson("end");
+}
+#endif
+
+#if defined(_WIN32) && !defined(CUEXIS_PD_ALLOCATION_OBSERVER) &&                                  \
+    !defined(CUEXIS_PD_METRICS_TEST_ONLY)
+TEST_CASE("PD machine CPU warmup", "[.][pd][formal-warmup]") {
+    const auto finish = pd_measure::qpc() + 30 * pd_measure::qpcFrequency();
+    std::uint64_t checksum = 1;
+    do {
+        for (unsigned i = 0; i < 16384; ++i) {
+            checksum = checksum * 6364136223846793005ULL + 1442695040888963407ULL;
+            std::atomic_signal_fence(std::memory_order_seq_cst);
+        }
+    } while (pd_measure::qpc() < finish);
+    std::cout << "PD_MACHINE_WARMUP {\"seconds\":30,\"checksum\":" << checksum << "}\n";
+}
+
+TEST_CASE("PD uninstrumented validated fixed workload", "[.][pd][formal-baseline]") {
+    const auto profile = test_support::environmentVariable("CUEXIS_PD_PROFILE");
+    const auto phase = test_support::environmentVariable("CUEXIS_PD_FORMAL_PHASE");
+    REQUIRE((profile == "legacy" || profile == "rpa"));
+    REQUIRE((phase == "pilot" || phase == "formal"));
+    const bool realtime = profile == "rpa";
+    const auto reads = std::stoull(test_support::environmentVariable("CUEXIS_PD_V2_READS"));
+    REQUIRE(reads >= 4096);
+    REQUIRE(reads <= 4194304);
+    REQUIRE((reads & (reads - 1)) == 0);
+    const auto blocks = phase == "pilot" ? 3U : 8U;
+    std::cout << std::setprecision(17);
+    pd_measure::environmentJson("begin");
+    anchorJson("begin");
+    auto fixture = configuration(realtime);
+    const auto packed = fixture.packed();
+    const auto content = take(GameplayContent::fromPacked(packed, fixture.config));
+    auto warm = prepare(content, realtime);
+    const auto golden = trace(*warm, realtime, false);
+    warm.reset();
+    std::unique_ptr<PlaybackSession> last;
+    for (unsigned i = 0; i < blocks; ++i) {
+        auto session = prepare(content, realtime);
+        pd_measure::Sample sample;
+        const auto actual = trace(*session, realtime, false, &sample);
+        REQUIRE(actual.digest == golden.digest);
+        REQUIRE(actual.replay == golden.replay);
+        REQUIRE(actual.snapshot == golden.snapshot);
+        row("validated_trace", i, false, measuredSteps, sample);
+        last = std::move(session);
+    }
+    for (unsigned i = 0; i < blocks; ++i) {
+        auto session = prepare(content, realtime);
+        const auto sample = playbackOnly(*session, realtime);
+        auto validation = prepare(content, realtime);
+        const auto actual = trace(*validation, realtime, false);
+        REQUIRE(actual.digest == golden.digest);
+        REQUIRE(actual.replay == golden.replay);
+        REQUIRE(actual.snapshot == golden.snapshot);
+        row("playback_only", i, false, measuredSteps, sample);
+    }
+    FrameSnapshot snapshot;
+    take(last->extractFrame({1280, 720}, snapshot));
+    const RuntimeFrame frame{realtime ? 10.88 : 10880, realtime ? 0.01 : 10, 0};
+    const auto readDigest = take(computeFrameDigest(frame, snapshot)).value;
+    for (unsigned i = 0; i < blocks; ++i) {
+        const auto sample = pd_measure::measure([&] {
+            for (std::size_t j = 0; j < reads; ++j)
+                take(last->extractFrame({1280, 720}, snapshot));
+        });
+        REQUIRE(take(computeFrameDigest(frame, snapshot)).value == readDigest);
+        row("read_long", i, false, reads, sample);
+    }
+    std::cout << "PD_FORMAL_ID {\"profile\":\"" << profile
+              << "\",\"metrics_compile_enabled\":false,\"allocator\":\"normal\",\"trace_includes_"
+                 "validation\":true,\"digest\":"
+              << golden.digest << ",\"replay_sha256\":\"" << golden.replay
+              << "\",\"snapshot_sha256\":\"" << golden.snapshot << "\",\"packed_sha256\":\""
+              << core::detail::sha256Hex(packed) << "\"}\n";
+    anchorJson("end");
+    pd_measure::environmentJson("end");
+}
+#endif
 
 #if defined(CUEXIS_PD_ALLOCATION_OBSERVER)
 TEST_CASE("PD allocation observer checks requested bytes and alignment", "[pd][allocation]") {

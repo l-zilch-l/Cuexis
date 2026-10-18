@@ -1900,8 +1900,8 @@ TEST_CASE("Candidate realtime execution uses explicit profile and coherent clock
     CHECK(std::to_integer<unsigned>((*bytes)[8]) == 3);
     REQUIRE(s.retireGameplayAdvance(1));
     r = s.requestGameplayAdvance({scope, 1, 0, {20}}, observation, 2000);
-    REQUIRE(r);
-    CHECK(r->disposition == playback::GameplayAdvanceDisposition::Retired);
+    REQUIRE_FALSE(r);
+    CHECK(r.error().code() == "host.rpa.request_retired");
     // Confirmed delivery retransmission returns its original acknowledgement without sampling
     // again.
     REQUIRE(s.deliverGameplayCapture({scope, 1, playback::GameplayCapturePrefix{{21}}}, observation,
@@ -1914,9 +1914,13 @@ TEST_CASE("Candidate realtime execution uses explicit profile and coherent clock
         CHECK(future.error().code() == "host.rpa.message_conflict");
         CHECK(*s.gameplayState() == playback::GameplayState::Suspended);
     }
-    SECTION("Request identity conflict exposes Suspended") {
-        auto conflict = s.requestGameplayAdvance({scope, 1, 0, {21}}, observation, 2000);
+    SECTION("Unacknowledged request identity conflict exposes Suspended") {
+        auto accepted = s.requestGameplayAdvance({scope, 2, 1, {21}}, observation, 1);
+        REQUIRE(accepted);
+        REQUIRE(accepted->disposition == playback::GameplayAdvanceDisposition::Executed);
+        auto conflict = s.requestGameplayAdvance({scope, 2, 1, {22}}, observation, 2000);
         REQUIRE_FALSE(conflict);
+        CHECK(conflict.error().code() == "host.rpa.message_conflict");
         CHECK(*s.gameplayState() == playback::GameplayState::Suspended);
         auto actual = s.queryGameplay();
         REQUIRE(actual);

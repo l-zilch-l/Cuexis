@@ -61,12 +61,17 @@ struct AdmissionDecision final {
     std::vector<InputReceiptPending> receipts;
     std::optional<core::Error> rejection;
 };
+struct AdvanceRetentionProgress final {
+    RpaContext identityContext;
+    std::optional<std::uint64_t> lastAcceptedId, reclaimedThrough;
+};
 // Same owner as the kernel. Waiting never occupies the owner's input/control loop.
 class ExecutionScheduler final {
   public:
     [[nodiscard]] static auto create(JudgementSession&, RpaContext, TickSpan closeThreshold,
                                      std::size_t capacity, std::uint64_t firstCommand = 0,
-                                     std::uint64_t firstDecision = 0)
+                                     std::uint64_t firstDecision = 0,
+                                     std::optional<std::uint64_t> retiredRequestFloor = {})
         -> core::Result<ExecutionScheduler>;
     ExecutionScheduler(ExecutionScheduler&&) noexcept = default;
     ExecutionScheduler(const ExecutionScheduler&) = delete;
@@ -74,6 +79,9 @@ class ExecutionScheduler final {
     [[nodiscard]] auto request(AdvanceRequest) -> core::Result<AdvanceDecision>;
     [[nodiscard]] auto poll(std::uint64_t requestId) const -> core::Result<AdvanceDecision>;
     [[nodiscard]] auto retire(std::uint64_t requestId) -> core::Result<void>;
+    [[nodiscard]] auto retentionProgress() const noexcept -> AdvanceRetentionProgress {
+        return {identityContext_, lastRequestId_, retiredThrough_};
+    }
     [[nodiscard]] auto acceptControl(RpaContext, std::uint64_t commandOrdinal)
         -> core::Result<void>;
     [[nodiscard]] auto pause() -> core::Result<void>;
@@ -103,11 +111,15 @@ class ExecutionScheduler final {
     [[nodiscard]] auto decision() -> core::Result<std::uint64_t>;
     JudgementSession& session_;
     RpaContext context_;
+    RpaContext identityContext_;
     TickSpan closeThreshold_;
     std::size_t capacity_;
     std::map<std::uint64_t, CaptureMessage> delivery_;
     std::map<std::uint64_t, std::vector<ClosedCaptureBatch>> fragments_;
     std::map<std::uint64_t, AdvanceDecision> requests_;
+    // IDs are monotonic within this scheduler, including across clock/Resume transitions.
+    // Retired holes retain their identity until all earlier accepted requests are retired.
+    std::optional<std::uint64_t> lastRequestId_, retiredThrough_;
     std::optional<std::uint64_t> waiting_, confirmed_;
     std::optional<Tick> exclusive_, maxCaptured_;
     std::optional<EndRunEpoch> end_;

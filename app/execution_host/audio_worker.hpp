@@ -85,6 +85,7 @@ class AudioWorker final {
         -> core::Result<std::optional<core::Result<AudioWorkerReply>>>;
     [[nodiscard]] auto acknowledge(std::uint64_t) -> core::Result<void>;
     void waitFor(std::chrono::milliseconds duration);
+    void waitForReply(std::uint64_t id, std::chrono::steady_clock::duration duration);
     [[nodiscard]] auto publication() const -> core::Result<AudioPublication>;
     void requestShutdown();
     [[nodiscard]] auto exited() const noexcept -> bool;

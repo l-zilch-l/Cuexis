@@ -170,6 +170,7 @@ class SessionWorker final {
         -> core::Result<std::optional<core::Result<SessionReply>>>;
     [[nodiscard]] auto acknowledge(std::uint64_t) -> core::Result<void>;
     void waitFor(std::chrono::milliseconds duration);
+    void waitForReply(std::uint64_t id, std::chrono::steady_clock::duration duration);
     void requestShutdown() noexcept;
     [[nodiscard]] auto exited() const noexcept -> bool;
     [[nodiscard]] auto joinExited() -> core::Result<void>;

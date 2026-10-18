@@ -4,6 +4,10 @@
 
 namespace cuexis::playback::detail {
 using CommitFence = ExecutionFence;
+struct AdvanceRetentionProgress final {
+    GameplayExecutionContext identityContext;
+    std::optional<std::uint64_t> lastAcceptedId, reclaimedThrough;
+};
 // Prepared stays on its owner; only CPU-owning data crosses this non-installed bridge.
 struct HostCoordinationAccess final {
     [[nodiscard]] static auto
@@ -39,6 +43,8 @@ struct HostCoordinationAccess final {
     [[nodiscard]] static auto currentRuntimeFrame(const PlaybackSession&)
         -> core::Result<RuntimeFrame>;
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    [[nodiscard]] static auto advanceRetention(const PlaybackSession&)
+        -> core::Result<AdvanceRetentionProgress>;
     [[nodiscard]] static auto mapRealtimeClock(PlaybackSession&, const ClockObservation&,
                                                std::int64_t now) -> core::Result<ClockTicks>;
     [[nodiscard]] static auto revokeRealtimePermission(PlaybackSession&) -> core::Result<void>;

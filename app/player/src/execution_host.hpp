@@ -107,7 +107,8 @@ class ExecutionHost final {
     [[nodiscard]] auto awaitSession() -> playback::detail::SessionReply;
     [[nodiscard]] auto audio(playback::detail::AudioWorkerCommand)
         -> playback::detail::AudioWorkerReply;
-    void pump();
+    void pump(std::chrono::steady_clock::time_point deadline =
+                  std::chrono::steady_clock::time_point::max());
     void checkOwner() const;
     void begin(playback::ControlKind, playback::StepTarget, std::array<bool, 4>);
     void prepareControl(playback::ControlKind, playback::StepTarget, std::array<bool, 4>,

@@ -5,7 +5,7 @@ endif()
 find_program(cuexis_diagnostic_python NAMES python3 python REQUIRED)
 execute_process(
     COMMAND "${cuexis_diagnostic_python}" -B
-        "${CUEXIS_SOURCE_DIR}/tools/check_gameplay_diagnostic_formalization.py"
+        "${CUEXIS_SOURCE_DIR}/tools/verification/check_gameplay_diagnostic_formalization.py"
         --root "${CUEXIS_SOURCE_DIR}" ${CUEXIS_DIAGNOSTIC_EXTRA_ARGS}
     RESULT_VARIABLE status OUTPUT_VARIABLE output ERROR_VARIABLE errors)
 if(NOT status EQUAL 0)

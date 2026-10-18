@@ -37,7 +37,16 @@ struct SessionOwner final {
     std::optional<std::int64_t> lastPresentationTick;
     std::optional<SessionRealtimeStart> realtime;
     std::vector<std::optional<CoherentAdvanceRecord>> coherent;
+    std::optional<GameplayExecutionContext> coherentIdentity;
     SessionWorkerConfiguration& configuration;
+    void reclaimCoherent(const AdvanceRetentionProgress& progress) noexcept {
+        const bool replaced = !coherentIdentity || *coherentIdentity != progress.identityContext;
+        for (auto& record : coherent)
+            if (record && (replaced || (progress.reclaimedThrough &&
+                                        record->request.requestId <= *progress.reclaimedThrough)))
+                record.reset();
+        coherentIdentity = progress.identityContext;
+    }
     [[nodiscard]] auto ledger(std::uint64_t scope) -> core::Result<void> {
         if (software)
             return {};
@@ -154,6 +163,13 @@ struct SessionOwner final {
                     return reply(
                         session.beginRealtimeTail(job.eof, job.segment, job.profile, now()));
                 } else if constexpr (std::is_same_v<T, SessionCoherentAdvance>) {
+                    auto progress = HostCoordinationAccess::advanceRetention(session);
+                    if (!progress)
+                        return core::unexpected(progress.error());
+                    reclaimCoherent(*progress);
+                    if (progress->reclaimedThrough && job.requestId <= *progress->reclaimedThrough)
+                        return core::unexpected(
+                            workerError("request_retired", "Request identity reclaimed"));
                     for (const auto& record : coherent) {
                         if (!record || record->request.requestId != job.requestId)
                             continue;
@@ -185,15 +201,27 @@ struct SessionOwner final {
                     auto advanced = session.requestGameplayAdvance(
                         {job.context, job.requestId, job.commandOrdinal, {mapped->horizon}},
                         job.clock, actualNow);
-                    auto recorded = session.queryGameplayAdvance(job.requestId);
-                    if (!recorded)
-                        slot->reset();
+                    if (!advanced ||
+                        advanced->disposition == GameplayAdvanceDisposition::BusyNotAccepted) {
+                        auto retained = HostCoordinationAccess::advanceRetention(session);
+                        if (!retained)
+                            return core::unexpected(retained.error());
+                        if (retained->lastAcceptedId != job.requestId)
+                            slot->reset();
+                    }
                     return reply(std::move(advanced));
 
                 } else if constexpr (std::is_same_v<T, SessionQueryAdvance>) {
                     return reply(session.queryGameplayAdvance(job.requestId));
                 } else if constexpr (std::is_same_v<T, SessionRetireAdvance>) {
-                    return reply(session.retireGameplayAdvance(job.requestId));
+                    auto retired = session.retireGameplayAdvance(job.requestId);
+                    if (retired) {
+                        auto progress = HostCoordinationAccess::advanceRetention(session);
+                        if (!progress)
+                            return core::unexpected(progress.error());
+                        reclaimCoherent(*progress);
+                    }
+                    return reply(std::move(retired));
                 } else if constexpr (std::is_same_v<T, SessionConfirmControl>) {
                     auto current = HostCoordinationAccess::currentFence(session);
                     if (!current) {
@@ -519,6 +547,9 @@ auto SessionWorker::acknowledge(std::uint64_t id) -> core::Result<void> {
 void SessionWorker::waitFor(std::chrono::milliseconds duration) {
     channel_.waitFor(duration);
 }
+void SessionWorker::waitForReply(std::uint64_t id, std::chrono::steady_clock::duration duration) {
+    channel_.waitForReply(id, duration);
+}
 void SessionWorker::requestShutdown() noexcept {
     channel_.closeAdmission();
     shutdown_.store(true, std::memory_order_release);
@@ -539,7 +570,7 @@ auto SessionWorker::fault() const noexcept -> OwnerChannel<SessionCommand, Sessi
 }
 void SessionWorker::run() noexcept {
     try {
-        SessionOwner owner{PlaybackSession{}, {}, {}, {}, {}, {}, {}, 0, 0, {}, {}, {},
+        SessionOwner owner{PlaybackSession{}, {}, {}, {}, {}, {}, {}, 0, 0, {}, {}, {}, {},
                            configuration_};
         for (;;) {
             if (auto next = channel_.take()) {

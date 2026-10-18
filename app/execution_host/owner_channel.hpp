@@ -7,6 +7,7 @@
 #include <limits>
 #include <mutex>
 #include <optional>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -14,6 +15,10 @@ namespace cuexis::playback::detail {
 // A slot reserves both its command and terminal reply until explicit acknowledgement.
 // All APIs are thread-safe. take() has one consumer; replies are polled by the host.
 template <typename Command, typename Reply> class OwnerChannel final {
+    // Result publication moves through tl::expected's internal noexcept construction path.
+    static_assert(std::is_nothrow_move_constructible_v<Reply>);
+    static_assert(std::is_nothrow_move_constructible_v<core::Error>);
+
   public:
     enum class Fault : std::uint8_t { none, allocation, conflict, exhausted };
     OwnerChannel(std::size_t capacity, std::size_t reserve) : slots_(capacity), reserve_(reserve) {}
@@ -70,6 +75,7 @@ template <typename Command, typename Reply> class OwnerChannel final {
                     slot->terminal = true;
                     ++wakeVersion_;
                     cv_.notify_all();
+                    replyCv_.notify_all();
                     return;
                 }
             fault_ = Fault::conflict;
@@ -99,12 +105,25 @@ template <typename Command, typename Reply> class OwnerChannel final {
                 if (!slot->terminal)
                     return core::unexpected(error("control_pending"));
                 slot.reset();
+                replyCv_.notify_all();
                 return {};
             }
         return core::unexpected(error("context_stale"));
     } catch (...) {
         markFault(Fault::allocation);
         return core::unexpected(error("capacity_exceeded"));
+    }
+    // Host reply waits use persistent target state, including completion before entry.
+    // They do not consume replies, wake for queued commands, or steal a command notification.
+    void waitForReply(std::uint64_t id, std::chrono::steady_clock::duration duration) {
+        std::unique_lock lock{mutex_};
+        replyCv_.wait_for(lock, duration, [&] {
+            for (const auto& slot : slots_)
+                if (slot && slot->id == id)
+                    return slot->terminal;
+            // Let poll report a missing/acknowledged job instead of waiting on a stale id.
+            return true;
+        });
     }
     void waitFor(std::chrono::milliseconds duration) {
         std::unique_lock lock{mutex_};
@@ -151,6 +170,7 @@ template <typename Command, typename Reply> class OwnerChannel final {
     }
     mutable std::mutex mutex_;
     std::condition_variable cv_;
+    std::condition_variable replyCv_;
     std::vector<std::optional<Record>> slots_;
     std::size_t reserve_;
     std::uint64_t next_{1}, wakeVersion_{};

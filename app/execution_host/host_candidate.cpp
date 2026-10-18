@@ -86,6 +86,15 @@ auto HostCoordinationAccess::revokeRealtimePermission(PlaybackSession& session)
     -> core::Result<void> {
     return session.invalidateGameplayClock();
 }
+auto HostCoordinationAccess::advanceRetention(const PlaybackSession& session)
+    -> core::Result<AdvanceRetentionProgress> {
+    AdvanceRetentionProgress progress{};
+    auto read = session.executionAdvanceRetention(progress.identityContext, progress.lastAcceptedId,
+                                                  progress.reclaimedThrough);
+    if (!read)
+        return core::unexpected(read.error());
+    return progress;
+}
 auto HostCoordinationAccess::mapRealtimeClock(PlaybackSession& session,
                                               const ClockObservation& clock, std::int64_t now)
     -> core::Result<ClockTicks> {

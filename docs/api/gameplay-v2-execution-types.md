@@ -160,7 +160,7 @@ budget 生产阈值未接受时只计数；若未来 accepted steady bound 触�
 
 既有 `cuexis_judgement`：timebase/input/prepare/kernel，依赖 core；
 既有 `cuexis_gameplay_packed`：Capsule revision3，依赖按当前 target allowlist，不把 parser 放 judgement。
-离线 author adapter 选 `tools/gameplay_assembler/` 内的私有 library
+离线 author adapter 选 `tools/gameplay/gameplay_assembler/` 内的私有 library
 `cuexis_gameplay_author`，在 CUEXIS_BUILD_DEVELOPER_TOOLS=ON 时启用，测试另要求 BUILD_TESTING=ON；允许 core/json_support/chart/
 judgement/gameplay_packed，按实际 CMake target 名登记全部直接依赖。
 它是 tools 私有 target，不安装，不导出，不转成 Playback 依赖；DOM 到 DTO 的部分放 json_support。

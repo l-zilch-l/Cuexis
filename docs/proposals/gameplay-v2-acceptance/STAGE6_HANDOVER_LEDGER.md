@@ -1,7 +1,7 @@
 # 四项 Stage 6 交接收口台账
 
 2026-10-07 更新：四项实施及本轮证据见
-[实施报告](../../stage_reports/stages/stage-07/verification/2026-10-07-stage6-handover-implementation.md)。
+[实施报告](../../stage_reports/stages/stage-07/s7a/verification/2026-10-07-stage6-handover-implementation.md)。
 owner 本人在 PR #32 审批；可信基线/平台保护和 hosted 证据仍为独立退出门禁。
 
 
@@ -15,7 +15,7 @@ owner 本人在 PR #32 审批；可信基线/平台保护和 hosted 证据仍为
 文档角色：交接台账。它记录四项 Stage 6 遗留内容的**当前**实现状态、缺口、阻塞与最小关闭证据。
 它不重开 Stage 6，也不把历史报告当作当前证据。
 
-**2026-10-06 复核入口**：[四项现状与解决方案](../../stage_reports/stages/stage-07/verification/2026-10-06-stage6-handover-audit.md)。
+**2026-10-06 复核入口**：[Stage 6 handover implementation](../../stage_reports/stages/stage-07/s7a/verification/2026-10-07-stage6-handover-implementation.md)。
 下文保存 2026-10-02 的基线，不能据此继续宣称 assembler 只有身份装配、命令名称仍待裁定或保护配置未访问。
 当前已存在 author adapter 与 Gameplay feature/capability closure 派生；命令命名已在主计划订正；
 四项完整关闭门禁仍未退出。当前状态与本次建议见上述带日期报告，建议不等于已接受决策。
@@ -225,7 +225,7 @@ owner 本人在 PR #32 审批；可信基线/平台保护和 hosted 证据仍为
 - **S7A-0 基线实测**：该 CTest 项在默认 `PATH` 下**失败 1/19**，原因是 `bash` 解析到 WSL 启动器
   （`C:\Windows\system32\bash.exe`）而 `usable_posix_shell()` 只按文件名含 `wsl` 排除 shim；
   把 Git Bash 置于 `PATH` 首位后 19/19 通过。证据与复现见
-  [S7A-0 基线报告](../../stage_reports/stages/stage-07/readiness/2026-10-02-s7a-0-baseline.md) §4.2，缺陷编号 D-9。
+  [S7A-0 基线报告](../../stage_reports/stages/stage-07/s7a/readiness/2026-10-02-s7a-0-baseline.md) §4.2，缺陷编号 D-9。
   本项**不阻塞 S7A-0**，但 S7A-8 的同 SHA 回归必须先消除该环境噪声。
 - Version Gate 工作流：`pre-merge`、`post-merge-audit`、`historical-revalidation`。
 

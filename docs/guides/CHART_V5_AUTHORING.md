@@ -61,7 +61,7 @@
 
 完整源例以仓库 [inline_zero.json](../../tests/fixtures/gameplay_author/inline_zero.json) 为
 空 Gameplay author envelope；测试生成器见
-[make_entity_practice_chart.py](../../tools/make_entity_practice_chart.py)现在生成第 5 节的
+[make_entity_practice_chart.py](../../tools/practice/make_entity_practice_chart.py)现在生成第 5 节的
 Behavior source，而不是本节的静态 inline envelope。二者都不因 version=5 自动具有判定。
 
 身份必须唯一。显式身份使用 `kind: explicit` 与 UUIDv7 `objectId`；生成身份保留完整
@@ -224,15 +224,15 @@ artifact identity 与解码计数须分别核对。
 Windows / 已有 MSVC candidate 构建：
 
 ```powershell
-python -B tools/build_entity_practice_compiler.py `
+python -B tools/practice/build_entity_practice_compiler.py `
   --build out/build/candidate-debug --output out/entity-v5/compiler `
   --vcvars "D:/Program Files/Microsoft Visual Studio/18/Community/VC/Auxiliary/Build/vcvars64.bat"
 
-python -B tools/make_entity_practice_chart.py `
+python -B tools/practice/make_entity_practice_chart.py `
   --output out/entity-v5 --compiler out/entity-v5/compiler/compiler.exe `
   --fixture out/build/candidate-debug/s7a78-public-fixture
 
-python -B tools/make_judgement_practice.py `
+python -B tools/practice/make_judgement_practice.py `
   --directory out/entity-v5 --fixture out/build/candidate-debug/s7a78-public-fixture `
   --assembler out/build/candidate-debug/bin/cuexis_gameplay_assemble.exe
 

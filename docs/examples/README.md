@@ -14,4 +14,4 @@
   Tap/Hold/Miss、反馈方块与控制验收；显式保留未校准时间桥及设备门禁。
 
 候选示例的解析、CXC entry 顺序、CXT import 和运行时脚本拒绝边界由
-[tools/check_docs.py](../../tools/check_docs.py) 检查。
+[tools/verification/check_docs.py](../../tools/verification/check_docs.py) 检查。

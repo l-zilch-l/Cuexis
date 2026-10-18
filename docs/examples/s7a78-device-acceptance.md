@@ -6,17 +6,17 @@
 
 ## 内容与工具
 
-`tools/make_device_acceptance_chart.py` 使用真实 candidate assembler 生成
+`tools/practice/make_device_acceptance_chart.py` 使用真实 candidate assembler 生成
 keyboard/audio 两种 Graph 与 Capsule entry、作者源、配置与独立核对输入。
 五条 Requirement、七个 phase 覆盖四个 Tap 和一个 Hold；素材由程序生成。
-生成器不再输出私有 guide 文件。`tools/check_device_acceptance_chart.py` 直接核对
+生成器不再输出私有 guide 文件。`tools/practice/check_device_acceptance_chart.py` 直接核对
 作者 Requirement、FactBinding、包 manifest/身份与 Reference Host 的人工 golden，
 不依赖 Player 的绘制或按键推测结果。
 
 ```powershell
 .\out\build\candidate-debug\bin\cuexis_playback_tests.exe "[.candidate-gameplay-fixture]"
-python -B tools/make_device_acceptance_chart.py --tool out/build/candidate-debug/bin/cuexis_chart_candidate.exe --fixture out/build/candidate-debug/s7a78-public-fixture
-python -B tools/check_device_acceptance_chart.py --directory out/device-acceptance --host out/build/candidate-debug/ec/host/host-build/cuexis_reference_host.exe
+python -B tools/practice/make_device_acceptance_chart.py --tool out/build/candidate-debug/bin/cuexis_chart_candidate.exe --fixture out/build/candidate-debug/s7a78-public-fixture
+python -B tools/practice/check_device_acceptance_chart.py --directory out/device-acceptance --host out/build/candidate-debug/ec/host/host-build/cuexis_reference_host.exe
 ```
 
 Reference Host 的二进制由安装 consumer gate 生成。检查器的固定 ChartClock 与音频内容

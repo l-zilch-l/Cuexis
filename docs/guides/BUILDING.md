@@ -248,7 +248,7 @@ ctest --preset debug-media-tools --no-tests=error
 
 `debug-media-tools` 在默认 Debug feature 之上追加 `media-tools`（libpng、libjpeg-turbo、
 minimp3、libvorbis、libogg、libFLAC），并打开 `CUEXIS_BUILD_MEDIA_TOOLS`。它构建内部静态库
-`cuexis_media_import`、其 `cuexis_media_import_tests`、以及 `tools/media_importer` 下的
+`cuexis_media_import`、其 `cuexis_media_import_tests`、以及 `tools/media/media_importer` 下的
 `cuexis_media_importer` CLI。媒体工具与 shader-tools 相互独立，两者都不进入 `cuexis_playback`
 或 Player 的链接闭包；Playback/Player 不会在运行时启动该 CLI。Linux sanitizer 覆盖媒体工具时
 使用 `headless-sanitize-media-tools`，覆盖率使用 `media-tools-coverage`。

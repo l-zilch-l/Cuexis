@@ -2,176 +2,27 @@
 
 状态：current index
 
-更新日期：2026-10-16
+更新日期：2026-10-17
 
-本索引按报告用途分类，不复制裁定、字段合同或当前阶段结论。
-[CURRENT_STATUS](../../../CURRENT_STATUS.md) 是唯一当前实现状态摘要；
-[Stage 7总计划](../../../stage_plans/active/stage-07/plan.md)、[7A分册](../../../stage_plans/active/stage-07/plan-a.md)、[RPA分册](../../../stage_plans/active/stage-07/plan-rpa.md) 和 [7B+分册](../../../stage_plans/active/stage-07/plan-b.md) 持有范围、批次与实施决策。
-每份报告只代表其证据日期，历史“下一步”不能覆盖主计划。
+本索引只负责导航，不复制合同、裁定或当前实现状态。当前状态以 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 为准；范围与验收门禁以 [Stage 7 总计划](../../../stage_plans/active/stage-07/plan.md)、[Stage 7A](../../../stage_plans/active/stage-07/plan-a.md)、[RPA](../../../stage_plans/active/stage-07/plan-rpa.md) 和 [PD](../../../stage_plans/active/stage-07/plan-presentation-decoupling.md) 为准。
 
-## 分类导航
+## 分类入口
 
-| 分类 | 数量 | 主要用途 |
-| --- | --- | --- |
-| 准入与基线 (readiness) | 7 | owner准入记录、工具链基线、typed合同与计划审视、D-9候选证据；另有诊断审计旧路径兼容页 |
-| RPA子阶段 (rpa) | 14 | 设计审查、B0合同修订、B1观测/基线、B2存储与寿命验证设施及等待路径性能证据；架构/综合收尾按RPA分册管理 |
-| 裁定记录 (decisions) | 14 | 分轮准入/实施裁定、合同选择、落地位置与诊断分类；现行字段仍归Spec/ABI |
-| 设计与实施记录 (implementation) | 7 | 带日期的设计收口和实施推进；设计交付与运行验证分别按报告声明解释 |
-| 验证与审计 (verification) | 25 | 独立复验、功能验收、边界审计、CI优化和文档恢复证据 |
-| 交接与规划修订 (handoffs) | 13 | hosted交接、排期修订、桌面接手整理和 PD 设计收口；历史下一步不覆盖主计划 |
+- [Stage 7A](s7a/README.md)：准入、裁定、实施、验证和交接。
+- [RPA](rpa/README.md)：实时播放、宿主、设备、性能和生产验收。
+- [PD](pd/README.md)：Presentation Decoupling 设计与 PD-0 测量。
+- [诊断正式化](diagnostic-formalization/README.md)：N0-N3 独立诊断前置证据。
+- [共享证据](shared/README.md)：跨子阶段门禁、文档恢复和发布历史。
+- [旧路径映射](legacy-paths.md)：整理前路径到 canonical 文档的映射。
 
-## 常用入口
+## 当前工作线
 
-- [PD-0 性能重复性诊断与基线重建交接](verification/2026-10-16-pd0-noise-investigation.md)（2026-10-16）：时钟量化、旧 profile 历史增长和固定亲和性诊断；原慢运行根因未确定，不宣称 PD-0 退出。
+PD 当前仍处于 PD-0。无插桩基线、补充复测和测量方法演进都集中在 [PD 证据索引](pd/README.md)；历史原始测量包按 owner 要求清理后，不再将旧临时路径当作可复核入口。
 
-- [RPA实施规划就绪审查](rpa/2026-10-11-implementation-readiness.md)（仅设计与文档验证）
+RPA 与 Stage 7A 的历史报告继续保留原日期和证据范围。报告中的历史“下一步”不覆盖当前计划；新的实现状态只写入 [CURRENT_STATUS](../../../CURRENT_STATUS.md)。
 
-- [3/4受限功能验收](verification/2026-10-05-s7a-3-4-functional-acceptance.md)
-- [同源hosted与证据归档](handoffs/2026-10-05-s7a-3-4-hosted-and-handoff.md)
-- [5/6规划与桌面交接记录](handoffs/2026-10-06-s7a-5-6-plan-and-desktop-handoff.md)
-- [当前Stage 7A计划和决策](../../../stage_plans/active/stage-07/plan-a.md)
-- [S7A-7/8计划与合同重审](readiness/2026-10-07-s7a-7-8-plan-review.md)
+## 归档原则
 
-## 准入与基线
-
-| 报告 | 证据日期 |
-| --- | --- |
-| [S7A-7/8计划与合同重审](readiness/2026-10-07-s7a-7-8-plan-review.md) | 2026-10-07 |
-| [实时架构重审与规划证据](readiness/2026-10-09-realtime-architecture-review.md) | 2026-10-09 |
-| [D-9 候选补丁与验证证据：version-gate 的 POSIX shell 判据](readiness/2026-10-02-d9-shell-guard-candidate.md) | 2026-10-02 |
-| [Gameplay V2 acceptance package：owner 接受记录](readiness/2026-10-02-s7a-0-acceptance.md) | 2026-10-02 |
-| [S7A-0 执行基线与合同表征](readiness/2026-10-02-s7a-0-baseline.md) | 2026-10-02 |
-| [Stage 7A S7A-0：Release 基线证据](readiness/2026-10-02-s7a-0-release-baseline.md) | 2026-10-02 |
-| [Stage 7A typed contract review（S7A-1 冻结顺序第 4 步）](readiness/2026-10-02-s7a-1-typed-contract-review.md) | 2026-10-02 |
-
-## RPA子阶段
-
-- [B0合同修订记录](rpa/2026-10-11-b0-contract-revision.md)（2026-10-11）：TB-01、T2-O1/I1/C1/L1、AD06-G1/Q1/K1的选择与替换记录；最终合同见RPA补充Spec，产品未实施。
-- [A1–A3设计与准入审查](rpa/2026-10-11-design-and-entry-review.md)（2026-10-11）：TB-01–07反例、测量设计与五方向纸面比较；保留较早审查时的未裁定状态，不代表当前决策。
-- [RPA生产架构方案](rpa/2026-10-11-production-architecture-design.md)（2026-10-11）：现行调用链只读核对与AD-01–15历史比较、六责任域和部署依据；最终选择见ADR0046/RPA补充Spec，未实施、未接受阈值。
-- [P2判定说明：Prepared内容与跨域资源准备](rpa/2026-10-11-p2-prepared-sharing-brief.md)（2026-10-11）：只读核对和P3-a/b/c比较；已采用P3-a内部owning候选，音频侧仍须闭合跨域ClipStore/callback寿命。
-- [TB-06判定说明：音轨结束后的尾段推进](rpa/2026-10-11-tb06-tail-clock-brief.md)（2026-10-11）：EOF后剩余timer反例与A1-a至A1-d比较；已采用A1-b显式尾段时钟，具体TailProfile须测量。
-- [AD-10判定说明：首见反馈保证](rpa/2026-10-11-ad10-feedback-visibility-brief.md)（2026-10-11）：反馈可见期与present证据反例、F1/F2/F3比较；已采用F1+F3内部可观测，不保证用户首见。
-- [AD-02判定说明：执行与表现拆分阈值](rpa/2026-10-11-ad02-split-threshold-brief.md)（2026-10-11）：界定判据形式（沿用`MeasuredParameter`习惯、drift可计算）与触发规则；指出**判据前提是B3已退出**，因今天的H由帧数与按键数合成、无法测drift。
-- [RPA实施规划就绪审查](rpa/2026-10-11-implementation-readiness.md)（2026-10-11）：B0文档闭合、R01–R27待实施验证场景与剩余测量门禁；不代表产品或设备验收。
-- [B1.1/B1.2观测身份与独立验证设施](rpa/2026-10-11-b1-observation-and-oracle.md)（2026-10-11）：事件身份、证据 manifest、可控交付/fake clock、有理数与扫描 oracle；6项定向测试通过，后续协议与设备门禁未执行。
-- [B1.3/B1.4原路径基线与初始测量](rpa/2026-10-11-b1-baseline-and-measurements.md)（2026-10-11）：MinGW Release 原路径 probe、owner 只读核对、分位数/峰值、缺样与测量设计；不把同机趋势值转成生产阈值。
-- [B2存储与寿命实施证据](rpa/2026-10-11-b2-storage-and-lifetime.md)（2026-10-11）：分块追加、不可变成功前缀、自足完整 ReplayEvaluation/fault prefix、checkpoint/archive/cut/H 身份、失败注入、旧 handle、读取/恢复和最后释放；仅隔离 test-only 设施，未宣称生产协议完成。
-
-下列诊断审计保留原dated正文/ZIP及路径；最新任务归属为[诊断码正式化独立前置](../../../stage_plans/active/stage-07/plan-diagnostic-formalization.md)，不再是RPA内部N线。
-
-- [N0当前清单与额外命名复核](rpa/2026-10-10-n0-diagnostic-inventory-review.md)（2026-10-10）：67项复核无增删，另发现2个活动provisional码与同码多原因；附[机器清单与证据ZIP](rpa/2026-10-10-n0-diagnostic-inventory-evidence.zip)，未实施N1–N3。
-- [阶段诊断码审计与正式命名迁移规划](rpa/2026-10-09-diagnostic-phase-name-audit.md)（证据2026-10-09，2026-10-10迁入）：N线逐码映射与兼容输入，附[原始证据ZIP](rpa/2026-10-09-diagnostic-phase-name-audit-evidence.zip)。
-- [诊断审计旧路径兼容页](readiness/2026-10-09-diagnostic-phase-name-audit.md)：保留一个整理周期。
-
-原S7A-9剩余收尾由[RPA-F1–F4](../../../stage_plans/active/stage-07/plan-rpa.md#综合收尾工作线原s7a-9)接管；既有7A报告保留原日期、SHA和证据范围，不因归属调整改记通过。
-
-## 裁定记录
-
-| 报告 | 证据日期 |
-| --- | --- |
-| [S7A-2 准入门禁：第 2 轮（时间域与迟到策略）裁定落地记录](decisions/2026-10-03-s7a-2-gate-rulings.md) | 2026-10-03 |
-| [S7A-2 时基实现裁定落地记录（第 2 轮实现复核修订）](decisions/2026-10-03-s7a-2-implementation-rulings.md) | 2026-10-03 |
-| [S7A-2 输入规范化半批实现裁定落地记录（第 2 轮输入半批复核）](decisions/2026-10-03-s7a-2-input-implementation-rulings.md) | 2026-10-03 |
-| [S7A-3 未闭合合同组合裁定：G2 + R2 + P1](decisions/2026-10-03-s7a-3-contract-selection-g2-r2-p1.md) | 2026-10-03 |
-| [S7A-3 后续合同讨论与决策登记](decisions/2026-10-03-s7a-3-decision-register.md) | 2026-10-03 |
-| [S7A-3 准入门禁：第 3 轮（prepare、装配与 entry）裁定落地记录](decisions/2026-10-03-s7a-3-gate-rulings.md) | 2026-10-03 |
-| [S7A-3 实施裁定记录（第二半 part 1 第一轮实现复核修订 + 第 2、3 轮复审改正）](decisions/2026-10-03-s7a-3-implementation-rulings.md) | 2026-10-03 |
-| [S7A-3 落地位置裁定（卡 4 / 卡 5）](decisions/2026-10-03-s7a-3-landing-location-rulings.md) | 2026-10-03 |
-| [S7A-4 准入门禁：第 4 轮（仲裁、资源与事实序）裁定落地记录](decisions/2026-10-03-s7a-4-gate-rulings.md) | 2026-10-03 |
-| [S7A-5 / S7A-6 准入门禁：第 5 轮（Ruleset、事实序、Score 与 Snapshot）裁定落地记录](decisions/2026-10-03-s7a-5-6-gate-rulings.md) | 2026-10-03 |
-| [S7A-6 / S7A-7 准入门禁：第 6 轮（发布粒度、表现桥接与诊断）裁定落地记录](decisions/2026-10-03-s7a-6-gate-rulings.md) | 2026-10-03 |
-| [第 7 轮（收尾澄清与缺陷）裁定与收尾落地记录](decisions/2026-10-03-s7a-7-wrapup-rulings.md) | 2026-10-03 |
-| [第 6 轮 `CM-D04` / `P1-09` 首次消费的诊断分类学后续补齐记录](decisions/2026-10-03-s7a-diagnostics-taxonomy-rulings.md) | 2026-10-03 |
-
-## 设计与实施记录
-
-| 报告 | 证据日期 |
-| --- | --- |
-| [PD 实施起步存档（PD-0 进行中）](implementation/2026-10-16-pd-start-checkpoint.md) | 2026-10-16 |
-| [S7A-7/8 Graph、Entry 与生产 assembler 证据](implementation/2026-10-08-s7a-7-8-entry-assembler-progress.md) | 2026-10-08 |
-| [S7A-7/8 集成推进记录](implementation/2026-10-07-s7a-7-8-integration-progress.md) | 2026-10-07 |
-| [S7A-3 实现推进记录：G2-S2 / G2-T4 / R2-K4 / P1-W1 裁决后状态](implementation/2026-10-03-s7a-3-implementation-progress.md) | 2026-10-03 |
-| [S7A-3 设计收口与实施交接报告](implementation/2026-10-04-s7a-3-design-closure.md) | 2026-10-04 |
-| [S7A-3 / S7A-4 complete execution design handoff](implementation/2026-10-05-s7a-3-4-execution-design.md) | 2026-10-05 |
-| [S7A-3/4 implementation progress and pause point](implementation/2026-10-05-s7a-3-4-implementation-progress.md) | 2026-10-05 |
-
-## 验证与审计
-
-- [PD-0 固定轨迹与块计时方法](verification/2026-10-16-pd0-measurement-method.md)（2026-10-16）：legacy/RPA 分组、14 次校准/试运行及 24 次正式验证通过；原组 inconclusive 和 PD-0 未退出分别保留。
-- [PD-0 存储观测与回归失败停点](verification/2026-10-16-pd0-storage-and-stop.md)（2026-10-16）：独立分配探针与首轮存储数据、旧账本容量缺陷；Release B5 Pause 的 capture_gap 导致停工待协助，新正式组未运行。
-
-- [S7A-8.4关闭与7/8受限批次收口](verification/2026-10-10-s7a-8-4-closure.md)（2026-10-10）：1ebcbdc的七个run全部成功、准确审批/可信日志/保护与来源例外收齐；下一轮审核Stage7-RPA。
-- [Version Gate复核与Stage7B+/RPA验收归属订正](verification/2026-10-09-version-gate-and-rpa-routing.md)（2026-10-09）：实际审批绑定复现、可信工具验证、设备验收整体归RPA。
-- [S7A-7/8余项与当前提交门禁核对](verification/2026-10-09-s7a-7-8-current-gate-audit.md)（2026-10-09）：c4b1f68三平台PR及Version Gate成功；保护来源与最终交付仍待收口。
-- [S7A-7/8保护配置与受限交付收口](verification/2026-10-09-s7a-7-8-protection-and-delivery.md)（2026-10-09）：个人仓库可用规则已生效；平台不支持workflow来源规则，owner选择保留8.4未退出。
-- [单人维护workflow来源例外接受](decisions/2026-10-10-single-maintainer-workflow-source-exception.md)（2026-10-10）：owner后续接受有范围的来源例外，保留版本/App/PR及真实日志核对，queue禁用。
-
-| 报告 | 证据日期 |
-| --- | --- |
-| [Version Gate bootstrap 验证与保护阻断](verification/2026-10-09-version-gate-bootstrap.md) | 2026-10-09 |
-| [S7A-7/8 CI 严格编译修复](verification/2026-10-09-s7a-7-8-ci-repair.md) | 2026-10-09 |
-| [Stage 6 四项交接实施与验收](verification/2026-10-07-stage6-handover-implementation.md) | 2026-10-07 |
-| [`docs/api/GAMEPLAY_V2_ABI.md` 事故性截断与重建的证据报告](verification/2026-10-03-abi-document-restoration.md) | 2026-10-03 |
-| [S7A-3 第二半 part 1：主控独立复验的带日期证据](verification/2026-10-03-s7a-3-independent-verification.md) | 2026-10-03 |
-| [Stage 7 CI runtime optimization](verification/2026-10-05-ci-runtime-optimization.md) | 2026-10-05 |
-| [S7A-3 / S7A-4 execution design ambiguity audit](verification/2026-10-05-s7a-3-4-ambiguity-audit.md) | 2026-10-05 |
-| [S7A-3 E1 and S7A-4 execution acceptance audit](verification/2026-10-05-s7a-3-4-e1-audit.md) | 2026-10-05 |
-| [S7A-3/4 limited functional acceptance](verification/2026-10-05-s7a-3-4-functional-acceptance.md) | 2026-10-05 |
-| [S7A-3 剩余实施与验收证据核对](verification/2026-10-05-s7a-3-remaining-evidence.md) | 2026-10-05 |
-| [S7A-5/6 实施阻塞复核](verification/2026-10-06-s7a-5-6-implementation-blocker-audit.md) | 2026-10-06 |
-| [S7A-5/6 U01–U13全量重审](verification/2026-10-06-s7a-5-6-u01-u13-rereview.md) | 2026-10-06 |
-| [S7A-5/6 limited functional acceptance](verification/2026-10-06-s7a-5-6-functional-acceptance.md) | 2026-10-06 |
-| [Stage 6 四项交接现状复核与解决方案](verification/2026-10-06-stage6-handover-audit.md) | 2026-10-06 |
-
-## 交接与规划修订
-
-- [Player 可读四轨设备练习](verification/2026-10-09-player-readable-practice.md)（2026-10-09）：
-  下落音符、判定线、Hold与实际结果；受限定向SDL/GPU验证通过，实体设备/校准待回填。
-- [Player 多转换 Tick 桥修复](verification/2026-10-09-player-multi-transition-tick-repair.md)（2026-10-09）：
-  保留内核一个 Tick 至多一个输入，显式逐转换工作 Tick；CPU/完整Replay通过，设备重测待回填。
-- [真实设备复测：同 Tick 碰撞](verification/2026-10-09-device-retest-same-tick-collision.md)（2026-10-09）：
-  修复后两次真实输入均取得一次 Hit 与完整 Replay=same，随后 same_tick_collision 退出1；整体未通过。
-- [Player 真实离散按键失败与修复](verification/2026-10-09-player-discrete-device-repair.md)（2026-10-09）：
-  实际设备日志、Controller 首次输入反例、退出码与候选 build 修正。
-
-- [CRLF 修复与真实设备验收谱面](verification/2026-10-09-crlf-and-device-fixture.md)（2026-10-09）：
-  审批换行回归、可重复自生成素材、生产装配与设备操作材料。
-
-| 报告 | 证据日期 |
-| --- | --- |
-| [S7A-7/8进度核对与独立RPA阶段拆分](handoffs/2026-10-09-realtime-stage-separation.md) | 2026-10-09 |
-| [RPA归入Stage 7子阶段的规划修订](handoffs/2026-10-09-rpa-stage7-substage.md) | 2026-10-09 |
-| [S7A-3/4 Hosted Evidence and S7A-5 Handoff](handoffs/2026-10-05-s7a-3-4-hosted-and-handoff.md) | 2026-10-05 |
-| [S7A-5 / S7A-6 Plan Consolidation and Desktop Handoff](handoffs/2026-10-06-s7a-5-6-plan-and-desktop-handoff.md) | 2026-10-06 |
-| [S7A-5 / S7A-6 Planning Selection and Handoff Revision](handoffs/2026-10-06-s7a-5-6-planning-selection.md) | 2026-10-06 |
-
-## 路径迁移
-
-历史报告按用途迁入上述叶目录，历史正文和证据日期保留，链接已重定位；新增报告在对应分类登记。
-旧逻辑路径见 [legacy-paths](legacy-paths.md)，不建立逐文件stub。
-叶目录由本索引直接列出全部正文，不再为每个分类复制README。
-
-## 独立诊断前置
-
-- [诊断正式化证据](diagnostic-formalization/README.md)
-
-- [B3 执行与时钟](rpa/2026-10-12-b3-execution-and-clock.md)（2026-10-12）：真实内核、公共首用、rev3 与时钟实施。
-
-- [B4 宿主与资源](rpa/2026-10-12-b4-host-and-resources.md)（2026-10-12）：owner 协议、owning 候选、fence、设备回执及有向 Close。
-
-- [B5 线程部署与自动验证](rpa/2026-10-13-worker-deployment.md)（2026-10-13）：非实体设备本地实施与验证，应用 owner 线程、控制通道及测量记录。
-- [等待路径性能优化证据](rpa/2026-10-14-wait-path-optimization.md)（2026-10-14）：completion wait 替换固定轮询等待后的受控 Debug 对比、RPA 回归和证据边界。
-- [RPA 自动矩阵与预算推进](rpa/2026-10-14-final-matrix-and-budget-progress.md)（2026-10-14）：MSVC oracle/严格构建兼容、全量失败与复验、五类预算输入，实体与生产验收待完成。
-- [RPA DLL 边界方案 A 修复](rpa/2026-10-14-dll-boundary-repair.md)（2026-10-14）：宿主静态支持外置、公共 owning/synchronous 能力、严格导出与安装消费验证；完成后按 owner 要求停止。
-- [RPA 生产验收交接草稿](handoffs/2026-10-14-rpa-production-acceptance-handoff.md)（2026-10-14）：typed handoff、生产参数缺口、问题处置和独立关闭门禁。
-- [RPA F1/F2 自动矩阵最终证据](rpa/2026-10-15-f1-f2-final-matrix.md)（2026-10-15）：同 SHA hosted、本地工具链矩阵、MinGW Release 修复复验和剩余关闭门禁。
-- [RPA F3 当前目标基线](rpa/2026-10-15-f3-target-baseline.md)（2026-10-15）：约 40,000 实体、延迟不超过 20 ms 的当前实现测量目标；PD 后必须重测，不构成最终生产结论。
-- [RPA F3 基线测量报告](rpa/2026-10-15-f3-final-baseline.md)（2026-10-15）：40,000 实体、16 MiB Packed entry、自动预算测量及未测项目。
-- [RPA F4 PD 交接包](handoffs/2026-10-15-rpa-f4-handoff.md)（2026-10-15）：RPA 基线、PD 重测规则、回退边界和未关闭验收项。
-- [PD 帧账本回收计划修订](handoffs/2026-10-15-pd-frame-ledger-reclamation-revision.md)（2026-10-15）：受控复现成因、PD-3/PD-4 寿命矩阵、回执状态、背压和有界性验收修订。
-- [PD 帧账本设计收口](handoffs/2026-10-15-pd-ledger-design-selection.md)（2026-10-15）：保存已被取代的单 owner 双层账本中间裁定及其 scope/generation、receipt、Close 输入。
-- [PD 准备数据与求值结果架构收口](handoffs/2026-10-15-pd-state-result-architecture-selection.md)（2026-10-15）：保存先前架构选型；每更新完整结果的首版选择已由后续重审调整。
-- [PD 事务、交付与演进成本重审](handoffs/2026-10-16-pd-transaction-and-delivery-design-review.md)（2026-10-16）：备选方向与开发/维护/性能取舍、单一状态源和按需物化、控制绑定、显式寿命及扩展影响；仅设计记录。
-- [PD 跨阶段兼容与演进设计补齐](handoffs/2026-10-16-pd-cross-stage-design-review.md)（2026-10-16）：7B+ 与 Stage 8–14 依赖核对、有类型域、候选重建、作者/预览事务、保留资格撤销及基线交接；仅设计记录，未模拟实施。
-- [PD 消费注册生命周期与计划自查](handoffs/2026-10-16-pd-registration-and-plan-self-review.md)（2026-10-16）：普通帧注册身份、激活/撤销确认、请求响应移交与计划一致性复核；仅设计记录，无实施/模拟证据。
+- 报告按证据用途归类，正文中的日期、源码身份和验收范围保持不变。
+- 已被摘要替代的临时测量记录不再单独挂在索引中；摘要保留其限制和结论边界。
+- ZIP、JSON 和日志等原始证据跟随所属报告保存，不在本索引复制内容。
