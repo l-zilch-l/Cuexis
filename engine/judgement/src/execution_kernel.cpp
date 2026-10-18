@@ -1767,6 +1767,8 @@ auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
             foldFailed = false;
             failedTick.reset();
         }
+        if (impl_->testControls && impl_->testControls->failAdvanceFinalization)
+            throw std::bad_alloc{};
         auto final = std::make_shared<RuntimeState>(*impl_->active);
         final->projection.processedFrontier = *frontier;
         final->projection.lastAdvanceHorizon = horizon;

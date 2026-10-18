@@ -19,6 +19,7 @@ namespace detail {
 class ProjectionStorage;
 class SnapshotStorage;
 class KernelTestAccess;
+struct PublicationAccess;
 
 } // namespace detail
 
@@ -142,6 +143,7 @@ class JudgementSession final {
   private:
     struct Impl;
     friend class detail::KernelTestAccess;
+    friend struct detail::PublicationAccess;
 
     explicit JudgementSession(std::unique_ptr<Impl> impl) noexcept;
 

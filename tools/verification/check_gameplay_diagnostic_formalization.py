@@ -41,8 +41,13 @@ def check(root: Path) -> list[str]:
         if any("judgement." + suffix not in targets for suffix in suffixes):
             failures.append(f"{file}: dynamic reason has no finite policy")
     projection = (root / "engine/playback/src/gameplay_internal.hpp").read_text(encoding="utf-8")
-    if "judgement::detail::categoryProjectedDiagnostic(code)" not in projection:
+    if "judgement::detail::classifyPublicDiagnostic(code)" not in projection:
         failures.append("explicit projection is not used")
+    bridge = (root / "engine/judgement/src/publication.cpp").read_text(encoding="utf-8")
+    if not re.search(r"classifyPublicDiagnostic\(std::string_view code\)\s*noexcept\s*->\s*bool\s*\{\s*return categoryProjectedDiagnostic\(code\);\s*\}", bridge):
+        failures.append("publication diagnostic bridge does not delegate to the finite policy")
+    if "judgement/src/diagnostic_policy.hpp" in projection:
+        failures.append("Playback bypasses the internal diagnostic bridge")
     exceptions = {
         "tests/judgement/fold_recovery_tests.cpp": {'"judgement.s7a4.kernel.transaction_failed"'},
         "tests/playback/playback_gameplay_tests.cpp": {'"judgement.s7a2.artificial.undefined"'},
@@ -100,6 +105,8 @@ def self_test(root: Path) -> None:
             print(f"{reason}: CTest exit={result.returncode}")
         run(True, "legal exact exceptions")
         mutations = [
+            ("engine/playback/src/gameplay_internal.hpp", lambda s: s.replace('judgement::detail::classifyPublicDiagnostic(code)', 'false', 1), "missing bridge consumer"),
+            ("engine/judgement/src/publication.cpp", lambda s: s.replace('return categoryProjectedDiagnostic(code);', 'return false;', 1), "disconnected finite policy"),
             ("engine/judgement/src/source_codes.hpp", lambda s: s + '\nconstexpr auto missed = "judgement.s7a2.input.missed";\n', "old constant"),
             ("engine/judgement/src/execution_kernel.cpp", lambda s: s.replace('"judgement." +', '"judgement.s7a4." +', 1), "old dynamic prefix"),
             ("engine/judgement/src/diagnostic_policy.hpp", lambda s: s.replace('    "judgement.grace.value_source_conflict",', '', 1), "missing projection"),

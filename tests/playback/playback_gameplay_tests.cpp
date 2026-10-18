@@ -1,5 +1,6 @@
 #include "../../app/execution_host/capture_route.hpp"
 #include "../../app/execution_host/host_candidate.hpp"
+#include "../../engine/judgement/src/diagnostic_policy.hpp"
 #include "../judgement/execution_reference.hpp"
 #include "../judgement/execution_test_fixture.hpp"
 #include "../support/environment.hpp"

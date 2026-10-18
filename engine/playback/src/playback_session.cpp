@@ -1809,18 +1809,11 @@ auto PlaybackSession::sampleGameplayPresentation(GameplayPresentationTick tick,
     // Obtain the immutable kernel result without advancing the scheduler.
     if (!session.state_->gameplay)
         return core::unexpected(gameplayError("Gameplay presentation is not prepared"));
-    auto query = session.state_->gameplay->query();
-    if (!query)
-        return core::unexpected(query.error());
     if (session.state_->gameplayState == GameplayState::Paused)
         return core::unexpected(
             core::Error{"host.rpa.control_pending", "Paused presentation must stay frozen"});
-    if (query->kernelView().rpa && !query->kernelView().fold)
-        return core::unexpected(
-            core::Error{"host.rpa.control_pending", "No successful Fold prefix to sample"});
-    return session.publishGameplayProjection(
-        detail::GameplayAccess::result(query->kernelView(), session.state_->gameplayState), tick,
-        frame, true);
+    return detail::GameplayPublicationAccess::publish(session, *session.state_->gameplay, tick,
+                                                      frame, true);
 } catch (...) {
     return core::unexpected(gameplayError("Presentation sampling failed"));
 }
@@ -3687,9 +3680,9 @@ auto PlaybackSession::advanceGameplay(GameplayTick h, GameplayPresentationTick t
         return core::unexpected(detail::projectGameplayError(std::move(advanced.error())));
     }
     state_->gameplayState = GameplayState::Running;
-    auto result = detail::GameplayAccess::result(k, state_->gameplayState);
     auto failureStage = GameplayPublicationFailureStage::Projection;
-    auto published = publishGameplayProjection(result, t, frame, true, &failureStage);
+    auto published = detail::GameplayPublicationAccess::publish(*this, *state_->gameplay, t, frame,
+                                                                true, false, &failureStage);
     if (!published) {
         state_->gameplayReceipt->publicationFailureStage = failureStage;
         state_->gameplayReceipt->error = published.error();
@@ -3705,41 +3698,84 @@ auto PlaybackSession::advanceGameplay(GameplayTick h, GameplayPresentationTick t
     }
     return core::unexpected(std::move(error));
 }
-auto PlaybackSession::publishGameplayProjection(const GameplayResult& result,
-                                                GameplayPresentationTick t,
-                                                const RuntimeFrame& frame, bool tickLifetimes,
-                                                GameplayPublicationFailureStage* failureStage)
-    -> core::Result<void> try {
+auto detail::GameplayPublicationAccess::publish(
+    PlaybackSession& session, judgement::JudgementSession& source, GameplayPresentationTick t,
+    const RuntimeFrame& frame, bool tickLifetimes, bool rebuildScope,
+    GameplayPublicationFailureStage* failureStage) -> core::Result<void> try {
+    auto* state_ = session.state_.get();
     internal::pd::Timer measurement{internal::pd::Stage::projection};
     if (failureStage)
         *failureStage = GameplayPublicationFailureStage::Projection;
     if (auto valid = validateGameplayFrame(frame, state_->lastFrame); !valid)
         return valid;
+    auto scope = judgement::detail::PublicationAccess::scope(source);
+    if (!scope)
+        return core::unexpected(projectGameplayError(std::move(scope.error())));
+    auto projection = state_->gameplayProjection;
+    // A first publication or an explicit recovery establishes a new consumption scope.
+    // Ordinary sampling must never silently rewind a mismatching scope.
+    if (rebuildScope || !projection.scope)
+        projection = {};
+    const auto expectedScope = projection.scope ? projection.scope : *scope;
+    auto read =
+        judgement::detail::PublicationAccess::readSince(source, expectedScope, projection.cursor);
+    if (!read)
+        return core::unexpected(projectGameplayError(std::move(read.error())));
+    auto metadata = read->metadata();
+    if (!metadata)
+        return core::unexpected(std::move(metadata.error()));
+    const auto& publication = metadata->get();
+    if (!publication.mayProject)
+        return core::unexpected(
+            publication.faultDiagnostic
+                ? projectGameplayError(*publication.faultDiagnostic)
+                : gameplayError("Faulted Gameplay cannot publish presentation"));
+    if (publication.realtime && !publication.hasFold)
+        return core::unexpected(
+            core::Error{"host.rpa.control_pending", "No successful Fold prefix to sample"});
+    projection.scope = publication.runScope;
     if (!state_->runtimeSession) {
-        state_->gameplayProjection = {};
-        state_->gameplayProjection.scope = detail::GameplayAccess::result(result)->kernel.runScope;
-        state_->gameplayProjection.lastTick = t;
+        projection.lastTick = t;
+        state_->gameplayProjection = std::move(projection);
         state_->lastFrame = frame;
         state_->sessionState = SessionState::Running;
         return {};
     }
-    const auto& k = detail::GameplayAccess::result(result)->kernel;
-    auto projection = state_->gameplayProjection;
-    if (projection.scope != k.runScope)
-        projection = {};
-    projection.scope = k.runScope;
     if (!projection.sourceScope)
         projection.sourceScope = allocatePlaybackSessionToken();
-    const auto publishable = k.fold ? k.fold->factCursor : k.sealedFactCursor;
-    const auto* content = detail::GameplayAccess::content(state_->gameplayContent);
-    for (; projection.cursor < publishable; ++projection.cursor) {
-        const auto* fact = std::get_if<judgement::PhaseOutcomeFact>(
-            &k.facts[static_cast<std::size_t>(projection.cursor)]);
+    const auto* content = GameplayAccess::content(state_->gameplayContent);
+    for (; projection.cursor < publication.publishableCursor; ++projection.cursor) {
+        auto fact = read->fact(projection.cursor);
         if (!fact)
+            return core::unexpected(std::move(fact.error()));
+        if (fact->kind == judgement::FactKind::stray ||
+            fact->kind == judgement::FactKind::consumeEmpty)
             continue;
+        if (fact->kind != judgement::FactKind::phaseOutcome || !fact->requirement || !fact->phase ||
+            !fact->outcome)
+            return core::unexpected(gameplayError("Unsupported publication Fact"));
+        GameplayPhase p;
+        switch (*fact->phase) {
+        case judgement::PhaseKind::tap:
+            p = GameplayPhase::Tap;
+            break;
+        case judgement::PhaseKind::head:
+            p = GameplayPhase::Head;
+            break;
+        case judgement::PhaseKind::body:
+            p = GameplayPhase::Body;
+            break;
+        case judgement::PhaseKind::tail:
+            p = GameplayPhase::Tail;
+            break;
+        default:
+            return core::unexpected(gameplayError("Unsupported publication phase"));
+        }
+        if (*fact->outcome != judgement::Outcome::hit && *fact->outcome != judgement::Outcome::miss)
+            return core::unexpected(gameplayError("Unsupported publication outcome"));
         for (const auto& binding : content->bindings) {
             measurement.items(1);
-            const auto& e = fact->requirement;
+            const auto& e = *fact->requirement;
             const auto& s = binding.source;
             if (e.chartEntryId != s.chartEntryId || e.invocationId != s.invocationId ||
                 e.moduleId != s.moduleId || e.exportId != s.exportId ||
@@ -3752,11 +3788,7 @@ auto PlaybackSession::publishGameplayProjection(const GameplayResult& result,
                               e.emissionPath[i].repeatIndex == s.emissionPath[i].repeatIndex;
             if (!pathMatches)
                 continue;
-            const auto p = fact->phase == judgement::PhaseKind::tap    ? GameplayPhase::Tap
-                           : fact->phase == judgement::PhaseKind::head ? GameplayPhase::Head
-                           : fact->phase == judgement::PhaseKind::body ? GameplayPhase::Body
-                                                                       : GameplayPhase::Tail;
-            if (p != binding.phase || (fact->outcome == judgement::Outcome::hit
+            if (p != binding.phase || (*fact->outcome == judgement::Outcome::hit
                                            ? GameplayOutcome::Hit
                                            : GameplayOutcome::Miss) != binding.outcome)
                 continue;
@@ -4034,8 +4066,9 @@ auto PlaybackSession::restoreGameplay(const GameplaySnapshot& s, GameplayPresent
     auto q = candidate->query();
     if (!q)
         return core::unexpected(detail::projectGameplayError(std::move(q.error())));
-    auto result = detail::GameplayAccess::result(q->kernelView(), GameplayState::Running);
-    if (auto published = publishGameplayProjection(result, t, frame, false); !published)
+    if (auto published =
+            detail::GameplayPublicationAccess::publish(*this, *candidate, t, frame, false, true);
+        !published)
         return published;
     state_->gameplayState =
         q->kernelView().state == judgement::KernelSessionState::Faulted
@@ -4119,8 +4152,9 @@ auto PlaybackSession::seekGameplay(const GameplayReplay& a, GameplayTick h,
     auto q = replacement->query();
     if (!q)
         return core::unexpected(detail::projectGameplayError(std::move(q.error())));
-    auto result = detail::GameplayAccess::result(q->kernelView(), GameplayState::Running);
-    if (auto published = publishGameplayProjection(result, t, frame, false); !published)
+    if (auto published =
+            detail::GameplayPublicationAccess::publish(*this, *replacement, t, frame, false, true);
+        !published)
         return published;
     if (state_->executionScheduler)
         state_->pendingRetiredRequestFloor =

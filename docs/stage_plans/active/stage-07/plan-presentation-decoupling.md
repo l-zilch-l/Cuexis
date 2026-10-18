@@ -1,6 +1,6 @@
 # Stage 7-PD: Judgement/Presentation Decoupling Plan
 
-状态：active，PD-0 testOnly 基线与行为表征完成，PD-1 至 PD-5 未开始；独立于 Stage 7A 与 Stage 7-RPA 的 Stage 7 子阶段。整个子阶段未退出，Stage 7A/RPA 与发布门禁不因此关闭。
+状态：active，PD-0 testOnly 基线与行为表征、PD-1 内部实施及本地适用门禁完成，PD-2 至 PD-5 未开始；独立于 Stage 7A 与 Stage 7-RPA 的 Stage 7 子阶段。整个子阶段未退出，Stage 7A/RPA 与发布门禁不因此关闭。
 
 2026-10-16 最新授权：owner 要求“阅读接手文档并阅读相关文档，本次任务是完成PD计划”，随后要求先提交当前状态存档、后续显示 todolist。此前设计阶段关于不得启动实施的限制不再适用于本次已授权工作；正式合同接受、公共版本、逐批验收与发行门禁仍分别成立。内部接口名仍须以实际实现与证据核对。
 
@@ -481,7 +481,7 @@ RPA-F4 接受前若集成 PD，其最终矩阵/预算直接覆盖该实现；F4 
 - [x] 读取接手、核对分支/HEAD/脏文件，保留既有设计和证据。
 - [x] 保存实施前工作区快照，登记初始采样参数。
 - [x] **PD-0**——受控环境及经依赖核验的干净重建程序完成两窗口与合并六进程重复性；全部 owner/宿主项满足原定 15% 门槛，同源码阶段/存储/交付观测核验通过，见[退出证据](../../../stage_reports/stages/stage-07/pd/2026-10-18-pd0-controlled-environment-and-build-binding.md)。历史 inconclusive 与源码绑定失败组完整保留；历史慢态未归因，生产预算、尾延迟、帧账本回收及设备验收未关闭。
-- [ ] PD-1——Judgement publication view、读取失效与诊断桥。
+- [x] PD-1——Judgement publication view、读取失效与诊断桥；本地 static/shared、Release、candidate OFF 和适用消费者门禁完成，证据见[PD-1 报告](../../../stage_reports/stages/stage-07/pd/2026-10-18-pd1-publication-bridge.md)。不表示跨平台或设备验收完成。
 - [ ] PD-2——prepare 绑定索引、Projection Adapter 与既有 golden 对照。
 - [ ] PD-3-a——Runtime/World prepare/apply、storage 安装及派生状态故障证明。
 - [ ] PD-3-b——状态修订、中性 PresentationRead 与唯一物化器。

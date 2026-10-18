@@ -39,6 +39,9 @@
 #include <vector>
 
 namespace cuexis::playback {
+namespace detail {
+struct GameplayPublicationAccess;
+}
 
 CUEXIS_ABI_WARNING_PUSH
 
@@ -441,17 +444,13 @@ class CUEXIS_PLAYBACK_API PlaybackSession final {
   private:
     friend class PreparedPlayback;
     friend struct detail::CandidateMetadataAccess;
+    friend struct detail::GameplayPublicationAccess;
     friend struct detail::HostCoordinationAccess;
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     [[nodiscard]] auto executionAdvanceRetention(
         GameplayExecutionContext& identityContext, std::optional<std::uint64_t>& lastAcceptedId,
         std::optional<std::uint64_t>& reclaimedThrough) const -> core::Result<void>;
     [[nodiscard]] auto gameplayWriteGuard() const -> core::Result<void>;
-    [[nodiscard]] auto
-    publishGameplayProjection(const GameplayResult&, GameplayPresentationTick, const RuntimeFrame&,
-                              bool tickLifetimes = true,
-                              GameplayPublicationFailureStage* failureStage = nullptr)
-        -> core::Result<void>;
     [[nodiscard]] auto attachGameplay(PreparedPlayback&, const GameplayContent&)
         -> core::Result<void>;
 #endif

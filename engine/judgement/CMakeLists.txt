@@ -18,6 +18,7 @@ target_sources(cuexis_judgement
         src/recovery.cpp
         src/ruleset.cpp
         src/session.cpp
+        src/publication.cpp
         src/timebase.cpp
 )
 
@@ -27,6 +28,8 @@ target_sources(cuexis_judgement
 target_include_directories(cuexis_judgement PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
+
+target_include_directories(cuexis_judgement PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/internal)
 
 target_compile_features(cuexis_judgement PUBLIC cxx_std_20)
 

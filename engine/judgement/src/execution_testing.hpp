@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 
 #include <cuexis/judgement/judgement_session.hpp>
 
@@ -26,10 +27,13 @@ struct KernelTestControls final {
     RegisterFault registerFault{RegisterFault::none};
     std::optional<Tick> failRecordReservationHorizon;
     bool failSubmitRecordReservation{false};
+    bool failAdvanceFinalization{false};
 };
 // Internal checking fixture, unavailable in installed headers or Playback.
 class KernelTestAccess final {
   public:
+    static auto duringMutation(JudgementSession&, const std::function<void()>&)
+        -> core::Result<void>;
     static auto inject(JudgementSession&, KernelTestControls) -> core::Result<void>;
     static auto snapshotValue(SnapshotDTO, RecoveryInputs) -> SnapshotPayload;
     static auto captureDTO(const JudgementSession&) -> core::Result<SnapshotDTO>;

@@ -2,8 +2,9 @@
 
 #include "execution_kernel.hpp"
 #include "execution_testing.hpp"
-#include <cuexis_internal/presentation_metrics.hpp>
+#include "publication_lifetime.hpp"
 #include <cuexis/judgement/judgement_session.hpp>
+#include <cuexis_internal/presentation_metrics.hpp>
 
 #include <cuexis/core/thread_checker.hpp>
 #include <cuexis/judgement/diagnostic.hpp>
@@ -82,7 +83,7 @@ constexpr std::string_view kAbsent{};
 
 //  会话的全部可变状态。每个成员都标注 owner thread、读取时点、快照归属和重置行为。
 struct JudgementSession::Impl final {
-    Impl() noexcept : owner(), configured(false), prepared(false) {}
+    Impl() : owner(), configured(false), prepared(false) {}
 
     //  owner        owner thread：调用 create() 的线程；单线程唯一 owner。
     //               读取时点：每个生命周期动词入口（assertUsable）。
@@ -101,6 +102,8 @@ struct JudgementSession::Impl final {
     //               Reset clears the flag; successful typed operations publish it atomically.
     //               Typed prepare/recover publish prepared only with a valid kernel.
     core::ThreadChecker owner;
+    std::shared_ptr<detail::PublicationLifetime> publication =
+        std::make_shared<detail::PublicationLifetime>();
     bool configured;
     bool prepared;
     std::optional<SessionConfiguration> configuration;
@@ -219,6 +222,9 @@ auto JudgementSession::seek() -> core::Result<void> {
 }
 
 auto JudgementSession::reset() -> core::Result<void> {
+    auto mutation = detail::beginPublicationMutation(impl_->publication);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
     assertUsable();
     impl_->kernel.reset();
     impl_->configuration.reset();
@@ -229,6 +235,9 @@ auto JudgementSession::reset() -> core::Result<void> {
 
 auto JudgementSession::configure(const SessionConfiguration& configuration)
     -> core::Result<void> try {
+    auto mutation = detail::beginPublicationMutation(impl_->publication);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
     assertUsable();
     if (impl_->configured || impl_->prepared) {
         return core::unexpected(rejection("judgement.session.lifecycle_order",
@@ -249,6 +258,9 @@ auto JudgementSession::configure(const SessionConfiguration& configuration)
 }
 
 auto JudgementSession::prepare(const PreparedGameplay& prepared) -> core::Result<void> {
+    auto mutation = detail::beginPublicationMutation(impl_->publication);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
     assertUsable();
     if (!impl_->configured || impl_->prepared) {
         return core::unexpected(rejection("judgement.session.lifecycle_order",
@@ -266,6 +278,9 @@ auto JudgementSession::prepare(const PreparedGameplay& prepared) -> core::Result
 
 auto JudgementSession::submit(std::vector<ClockedIngress> batch)
     -> core::Result<std::vector<InputReceiptPending>> {
+    auto mutation = detail::beginPublicationMutation(impl_->publication);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
     assertUsable();
     if (!impl_->kernel) {
         return core::unexpected(rejection("judgement.session.lifecycle_order",
@@ -276,6 +291,9 @@ auto JudgementSession::submit(std::vector<ClockedIngress> batch)
 }
 
 auto JudgementSession::controlRpa(const RpaControlRecord& control) -> core::Result<void> {
+    auto mutation = detail::beginPublicationMutation(impl_->publication);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
     assertUsable();
     if (!impl_->kernel)
         return core::unexpected(lifecycleOrderError("controlRpa"));
@@ -285,6 +303,9 @@ auto JudgementSession::controlRpa(const RpaControlRecord& control) -> core::Resu
 auto JudgementSession::advance(Tick horizon, bool controlDrain)
     -> core::Result<JudgementProjection> {
     internal::pd::Timer measurement{internal::pd::Stage::judgement};
+    auto mutation = detail::beginPublicationMutation(impl_->publication);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
     assertUsable();
     if (!impl_->kernel) {
         return core::unexpected(rejection("judgement.session.lifecycle_order",
@@ -303,8 +324,20 @@ auto JudgementProjection::kernelView() const noexcept -> const KernelProjection&
     return storage_->projection;
 }
 
+auto detail::KernelTestAccess::duringMutation(JudgementSession& session,
+                                              const std::function<void()>& check)
+    -> core::Result<void> {
+    auto mutation = detail::beginPublicationMutation(session.impl_->publication);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
+    check();
+    return {};
+}
 auto detail::KernelTestAccess::inject(JudgementSession& session, KernelTestControls controls)
     -> core::Result<void> {
+    auto mutation = detail::beginPublicationMutation(session.impl_->publication);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
     session.assertUsable();
     if (!session.impl_->kernel) {
         return core::unexpected(lifecycleOrderError(kPreparePath));
@@ -337,6 +370,9 @@ auto detail::KernelTestAccess::visibleSignalCount(const JudgementSession& sessio
 
 auto JudgementSession::submitCanonical(std::vector<CanonicalInput> batch)
     -> core::Result<std::vector<InputReceiptPending>> {
+    auto mutation = detail::beginPublicationMutation(impl_->publication);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
     assertUsable();
     if (!impl_->kernel) {
         return core::unexpected(lifecycleOrderError(kSubmitPath));
@@ -381,6 +417,9 @@ auto JudgementSession::recover(const SnapshotPayload& value, const RecoveryInput
 }
 auto JudgementSession::restore(const SnapshotPayload& value, const RecoveryInputs& inputs)
     -> core::Result<void> {
+    auto mutation = detail::beginPublicationMutation(impl_->publication);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
     assertUsable();
     if (impl_->kernel && impl_->kernel->query()->projection.state == KernelSessionState::Faulted) {
         return core::unexpected(lifecycleOrderError(kSnapshotPath));
@@ -418,6 +457,9 @@ auto JudgementSession::seek(const ReplayArchive& archive, Tick horizon) -> core:
 auto JudgementSession::seek(const ReplayArchive& archive, Tick horizon, const ReplayCut& cut,
                             std::span<const ReplayCheckpoint> checkpoints)
     -> core::Result<void> try {
+    auto mutation = detail::beginPublicationMutation(impl_->publication);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
     assertUsable();
     if (!impl_->kernel ||
         impl_->kernel->query()->projection.state != KernelSessionState::Prepared) {
@@ -439,6 +481,50 @@ auto JudgementSession::seek(const ReplayArchive& archive, Tick horizon, const Re
 } catch (const std::exception&) {
     return core::unexpected(
         rejection("replay.state_invalid", "invalid_relation", "Seek allocation failed", kSeekPath));
+}
+
+auto detail::PublicationAccess::scope(const JudgementSession& session)
+    -> core::Result<std::shared_ptr<const std::uint8_t>> {
+    if (!session.impl_ || !session.impl_->publication->owner.isCurrent())
+        return core::unexpected(publicationError("wrong owner or moved session"));
+    if (session.impl_->publication->mutating || !session.impl_->kernel)
+        return core::unexpected(publicationError("reentry or unprepared session"));
+    return session.impl_->kernel->query()->projection.runScope;
+}
+auto detail::PublicationAccess::readSince(const JudgementSession& session,
+                                          const std::shared_ptr<const std::uint8_t>& expectedScope,
+                                          std::uint64_t from) -> core::Result<PublicationRead> {
+    auto actual = scope(session);
+    if (!actual)
+        return core::unexpected(std::move(actual.error()));
+    auto& lifetime = *session.impl_->publication;
+    if (lifetime.reading)
+        return core::unexpected(publicationError("publication read reentry"));
+    if (!expectedScope || *actual != expectedScope)
+        return core::unexpected(publicationError("publication scope mismatch"));
+    const auto& p = session.impl_->kernel->query()->projection;
+    const auto publishable = p.fold ? p.fold->factCursor : p.sealedFactCursor;
+    if (from > publishable || publishable > p.sealedFactCursor ||
+        p.sealedFactCursor > p.facts.size())
+        return core::unexpected(publicationError("publication cursor outside committed prefix"));
+    PublicationMetadata metadata{p.judgementIdentity,
+                                 p.runScope,
+                                 lifetime.epoch,
+                                 from,
+                                 p.sealedFactCursor,
+                                 publishable,
+                                 p.processedFrontier,
+                                 p.kernelWorkTick,
+                                 p.fold ? p.fold->workTick : std::nullopt,
+                                 p.rpa ? p.rpa->foldedControlCount : 0,
+                                 p.fold.has_value(),
+                                 p.state != KernelSessionState::Faulted && !p.faultStage &&
+                                     !p.faultDiagnostic,
+                                 p.rpa.has_value(),
+                                 p.faultStage,
+                                 p.faultDiagnostic ? &*p.faultDiagnostic : nullptr};
+    lifetime.reading = true;
+    return PublicationRead{session.impl_->publication, &p, std::move(metadata)};
 }
 
 auto JudgementSession::hasPreparedState() const noexcept -> bool {

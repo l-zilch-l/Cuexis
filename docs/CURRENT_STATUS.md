@@ -8,12 +8,13 @@
 
 ## 当前任务
 
-**Stage 7-PD / PD-0 已完成 testOnly 基线与行为表征：无插桩两窗口及合并重复性通过，同源码存储、阶段与交付观测已核验。PD-1 至 PD-5 尚未开始。**
+**Stage 7-PD / PD-0 testOnly 基线与行为表征、PD-1 内部发布视图实施及本地适用门禁已完成；PD-2 至 PD-5 尚未开始。**
 
 固定环境与干净重建后的完整注册组满足原定 15% 门槛，owner 最大进程级波动 3.89%，宿主均值最大波动 11.11%。测量前修复并验证了 MSVC/Ninja 编码不一致造成的头文件依赖丢失；历史慢态根因仍未确定，旧失败组和源码绑定失败组均保留。该结论限于已登记的有限 testOnly profile，不接受生产预算或关闭 Stage 7。
 
 方案记录：[PD-0 测量波动方案实施](stage_reports/stages/stage-07/pd/2026-10-17-pd0-measurement-variance-resolution.md)。
 最新证据：[受控环境、构建绑定与 PD-0 退出](stage_reports/stages/stage-07/pd/2026-10-18-pd0-controlled-environment-and-build-binding.md)。
+PD-1 证据：[Judgement 发布桥、读取失效与包边界](stage_reports/stages/stage-07/pd/2026-10-18-pd1-publication-bridge.md)。
 
 ## 阶段状态
 
@@ -21,7 +22,7 @@
 | --- | --- | --- |
 | Stage 7A | S7A-3/4、5/6、7/8 的受限功能验收完成；整体关闭仍待 RPA 收尾 | [Stage 7A 计划](stage_plans/active/stage-07/plan-a.md) |
 | Stage 7-RPA | testOnly 实施与自动化证据已具备；实体设备、生产预算和最终接受未完成 | [RPA 计划](stage_plans/active/stage-07/plan-rpa.md)、[交接状态](stage_reports/stages/stage-07/rpa/2026-10-15-rpa-f4-handoff.md) |
-| Stage 7-PD | PD-0 testOnly 基线与行为表征完成；PD-1 至 PD-5 未开始，子阶段未退出 | [PD 计划](stage_plans/active/stage-07/plan-presentation-decoupling.md) |
+| Stage 7-PD | PD-0 基线、PD-1 内部实施及本地适用门禁完成；PD-2 至 PD-5 未开始，子阶段未退出 | [PD 计划](stage_plans/active/stage-07/plan-presentation-decoupling.md) |
 | Stage 7B+ | 未开始，等待 RPA 完整退出 | [Stage 7B+ 计划](stage_plans/active/stage-07/plan-b.md) |
 
 Stage 0–6 已完成；Stage 8–14 尚未开始。整体 Stage 7 未关闭。

@@ -1,6 +1,10 @@
 # Stage 7 PD Evidence
 
-本目录保存 Presentation Decoupling 的设计演进、跨阶段审查和 PD-0 测量证据。PD-0 testOnly 基线与行为表征已完成，PD-1 至 PD-5 未开始；历史失败组与最新退出证据分别保留，当前状态唯一见 [CURRENT_STATUS](../../../../CURRENT_STATUS.md)。
+本目录保存 Presentation Decoupling 的设计演进、跨阶段审查、实施和测量证据。当前状态唯一见 [CURRENT_STATUS](../../../../CURRENT_STATUS.md)。
+
+## 实施与回归
+
+- [PD-1 publication bridge and local verification](2026-10-18-pd1-publication-bridge.md)
 
 ## 设计与计划审查
 

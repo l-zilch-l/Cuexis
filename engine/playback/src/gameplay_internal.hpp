@@ -1,12 +1,18 @@
 #pragma once
-#include "../../judgement/src/diagnostic_policy.hpp"
 #include <algorithm>
 #include <array>
 #include <cuexis/gameplay_packed/gameplay_capsule.hpp>
 #include <cuexis/judgement/judgement_session.hpp>
-#include <cuexis/playback/gameplay_candidate.hpp>
+#include <cuexis/judgement/publication.hpp>
+#include <cuexis/playback/playback_session.hpp>
 
 namespace cuexis::playback::detail {
+struct GameplayPublicationAccess final {
+    static auto publish(PlaybackSession&, judgement::JudgementSession&, GameplayPresentationTick,
+                        const RuntimeFrame&, bool tickLifetimes, bool rebuildScope = false,
+                        GameplayPublicationFailureStage* failureStage = nullptr)
+        -> core::Result<void>;
+};
 inline auto projectGameplayError(core::Error error) -> core::Error {
     const auto code = error.code();
     if (code.starts_with("graph.")) {
@@ -20,7 +26,7 @@ inline auto projectGameplayError(core::Error error) -> core::Error {
         error.withContext("faulted", "false");
         return error;
     }
-    if (!judgement::detail::categoryProjectedDiagnostic(code))
+    if (!judgement::detail::classifyPublicDiagnostic(code))
         return error;
     std::string category = "invalid_relation";
     for (const auto& c : error.context())
