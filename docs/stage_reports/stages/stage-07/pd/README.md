@@ -5,6 +5,7 @@
 ## 实施与回归
 
 - [PD-1 publication bridge and local verification](2026-10-18-pd1-publication-bridge.md)
+- [PD-2 continuation handoff](2026-10-18-pd2-continuation-handoff.md)
 
 ## 设计与计划审查
 
