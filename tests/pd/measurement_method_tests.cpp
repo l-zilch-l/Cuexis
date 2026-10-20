@@ -6,6 +6,7 @@
 #include <cuexis_internal/presentation_metrics.hpp>
 #include <cuexis_internal/sha256.hpp>
 #if defined(CUEXIS_PD_ALLOCATION_OBSERVER)
+#include "../../app/execution_host/frame_observation.hpp"
 #include "pd_allocation_probe.hpp"
 #endif
 
@@ -555,5 +556,45 @@ TEST_CASE("PD allocation observer checks requested bytes and alignment", "[pd][a
     REQUIRE(observedPeak == initial + 110);
     REQUIRE(finalLive == initial);
     REQUIRE(address % 256 == 0);
+}
+#endif
+
+#if defined(CUEXIS_PD_ALLOCATION_OBSERVER)
+TEST_CASE("PD4 journal charge covers the exact owning error tree allocations",
+          "[pd][pd4][allocation]") {
+    using namespace cuexis::playback::detail;
+    HostContext c;
+    c.sessionScope = c.clockSegment = c.runEpoch = c.controlSequence = c.resourceGeneration =
+        c.rendererGeneration = 1;
+    auto made = FrameObservationLedger::create(c, 1, 4, 4);
+    REQUIRE(made);
+    auto& ledger = *made;
+    FrameEnvelope frame;
+    frame.context = c;
+    frame.projectionScope = 1;
+    frame.frameId = 1;
+    REQUIRE(ledger.publish(frame));
+    REQUIRE(ledger.takeLatest());
+    std::optional<core::Error> chain;
+    for (int i = 0; i < 16; ++i) {
+        core::Error error{"x", "y"};
+        error.withContext("k", "v");
+        if (chain)
+            error.withCause(std::move(*chain));
+        chain = std::move(error);
+    }
+    PresentReceipt receipt{c, 1, 1, PresentStatus::unknown, 1, std::move(chain)};
+    const auto beforeBytes = ledger.journalBytes();
+    const auto beforeLive = pd_allocation::live.load();
+    auto observed = ledger.observe(receipt);
+    const auto actual = pd_allocation::live.load() - beforeLive;
+    const auto charged = ledger.journalBytes() - beforeBytes;
+    REQUIRE(observed);
+    REQUIRE(actual > 0);
+    CHECK(charged >= actual);
+    std::cout << "PD4_RECEIPT_STORAGE {\"requested_live_bytes\":" << actual
+              << ",\"charged_bytes\":" << charged << "}\n";
+    REQUIRE(ledger.observe({c, 1, 1, PresentStatus::succeeded, 2, {}}));
+    CHECK(ledger.journalBytes() == beforeBytes);
 }
 #endif

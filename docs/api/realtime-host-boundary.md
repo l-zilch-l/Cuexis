@@ -259,8 +259,10 @@ ADR 0033 禁止私有导出的规则保留；共享库白名单仅登记实际�
 
 ## 8. PD 候选修订：来源、许可与反馈寿命（2026-10-16）
 
-本节是 PD 重审选定的**拟议合同差异，尚未实施，尚未作为已发布 SDK 合同接受**。旧安装头和
-0.8.0 行为不能被本段文字视为已经迁移；实施前须完成 Spec/ABI、版本差异及消费者门禁。
+本节区分 PD 的已接受接入与后续候选：§8.1 的内部宿主细化已随 PD-3-c 授权实施，
+新增只读来源 API 与 SDK 0.8.1 已获 owner 接受，实施验证见
+[PD-3-c 记录](../stage_reports/stages/stage-07/pd/2026-10-19-pd3c-contract-and-version-decision.md)。
+§8.2–8.4 已于 2026-10-19 随 ADR 0047 获 owner 接受；PD-4 内部实施及适用本地门禁完成，证据见 [PD-4 实施报告](../stage_reports/stages/stage-07/pd/2026-10-19-pd4-delivery-retirement-and-observation.md)；尚未作为正式发行交付。
 [PD 计划](../stage_plans/active/stage-07/plan-presentation-decoupling.md)拥有批次，
 [设计细则](../stage_plans/active/stage-07/presentation-decoupling-design.md)拥有内部接入和待验收项。
 
@@ -290,9 +292,9 @@ Pause 重绘实际呈现端最后成功画面，允许其修订落后于当前 R
 attempt，不能确认反馈。独立第二 Renderer 需要另行扩展 RPA 的已确认设备绑定、参与者集合、
 资源激活/退休和 Close；本节不以放宽唯一 confirmedHostContext 的比较来提供多窗口。
 
-### 8.2 显式反馈寿命与迁移
+### 8.2 显式反馈寿命与迁移（ADR 0047 已接受）
 
-Gameplay FactBinding 的有限区间/UntilReset 含义不变。拟议公共 FeedbackObservation 保留
+Gameplay FactBinding 的有限区间/UntilReset 含义不变。已接受的公共 FeedbackObservation 保留
 id、created、status、laterConfirmed；将 `expiry` 从整数改为
 `optional<GameplayPresentationTick>`：有值是有限 exclusive end，absent 是 UntilReset。
 created 的现有 signed i64 表示仍解释为 presentation T，不扩展到墙钟；有限 end 必须大于
@@ -302,10 +304,10 @@ scope 替换/取消和证据 TTL 仍分别处理；TTL 不能改变效果寿命�
 `PlaybackSession::gameplayFeedback` 和内部成员读取必须保留该分支，不再用 INT64_MAX sentinel。
 此变更涉及 candidate 安装结构及外部消费者，按 [VERSIONING](../guides/VERSIONING.md)属于
 不兼容 minor 迁移。实现时记录当时的源/目标版本、Spec/ABI 差异，重建 static/shared 与安装
-消费者，并验证旧 minor 不匹配拒绝；本轮不分配版本号，不允许只改头而继续使用旧库。
+消费者，并验证旧 minor 不匹配拒绝；目标版本已接受为 SDK 0.9.0，不允许只改头而继续使用旧库。
 不永久维护另一套 V2 反馈状态机；旧版本保存在历史构建/证据中，不宣称其已支持新表示。
 
-### 8.3 交付、执行与证据
+### 8.3 交付、执行与证据（ADR 0047 已接受）
 
 消费注册身份沿用 PD 设计中的 ConsumerId，和 sessionScope 共同标识本次加入；同窗口/设备重新
 注册使用新身份。普通帧与保留重绘都携带该身份，实际 Renderer 调用前校验当前有效注册，
@@ -335,9 +337,9 @@ NotSubmitted。旧注册的合法 receipt 仍只补原 attempt 的反馈证据�
 本候选修订不改变 G1/Q1/K1、R2/A1、跨设备确认、fault/恢复和有向 Close，也不表示这些新增
 差异已经通过实施验证。接受前 PD-3 控制接入、PD-4 公共反馈迁移不得据计划自行绕过门禁。
 
-### 8.4 保留资格撤销与显式降级
+### 8.4 保留资格撤销与显式降级（ADR 0047 已接受）
 
-拟议策略允许已声明的内存压力或设备/资源失效撤销保留画面的后续使用资格；普通稳态仍履行
+已接受策略允许已声明的内存压力或设备/资源失效撤销保留画面的后续使用资格；普通稳态仍履行
 已接受的保留保证。撤销由 Renderer owner 串行裁决，在实际调用前重验保留身份；迟到重绘
 不得恢复资格。资格变化经可靠生命周期/控制通道通知并确认，不依赖可丢的 present receipt。
 在途 CPU/GPU 责任和外部 owning 值不因撤销结束，释放各自引用不能声称已回收全部存储。

@@ -23,6 +23,9 @@
 #include <vector>
 
 namespace cuexis::world {
+namespace detail {
+struct ResolverAccess;
+}
 
 class World;
 
@@ -152,6 +155,8 @@ class PropertyWriteBuffer final {
 };
 
 class PropertyResolver final {
+    friend struct detail::ResolverAccess;
+
   public:
     PropertyResolver() = default;
 

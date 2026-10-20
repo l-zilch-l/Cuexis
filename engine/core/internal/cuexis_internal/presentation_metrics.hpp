@@ -3,6 +3,7 @@
 // Opt-in, bounded test-only observations. No SDK export or session dependency.
 #if defined(CUEXIS_PD_METRICS_TEST_ONLY)
 #include <array>
+#include <atomic>
 #include <chrono>
 #include <cstdint>
 #include <cstdlib>
@@ -26,14 +27,18 @@ enum class Stage : unsigned {
     ledgerTake,
     ledgerPublish,
     rendererPresent,
+    queue,
     count
 };
 inline constexpr std::array names{
     "judgement",          "projection",      "runtime",         "snapshot", "renderer",
     "runtime_state_copy", "runtime_prepare", "runtime_commit",  "feedback", "receipt",
-    "ledger_take",        "ledger_publish",  "renderer_present"};
+    "ledger_take",        "ledger_publish",  "renderer_present", "queue"};
 struct Samples final {
-    std::array<double, 16384> exclusiveUs{};
+    // A separate observer process owns this bounded storage. The largest declared
+    // trajectory has 115200 updates; omissions are rejected by the collector.
+    std::array<double, 131072> exclusiveUs{}, inclusiveUs{};
+    std::array<std::uint64_t, 131072> correlations{};
     std::size_t count{}, omitted{};
     std::uint64_t items{};
     std::uint64_t allocationCount{}, requestedAllocationBytes{}, releasedAllocationBytes{};
@@ -79,6 +84,12 @@ struct Metrics final {
                     << ",\"logical_copy_bytes\":" << s.logicalCopyBytes << ",\"exclusive_us\":[";
                 for (std::size_t j = 0; j < s.count; ++j)
                     out << (j ? "," : "") << s.exclusiveUs[j];
+                out << "],\"inclusive_us\":[";
+                for (std::size_t j = 0; j < s.count; ++j)
+                    out << (j ? "," : "") << s.inclusiveUs[j];
+                out << "],\"correlations\":[";
+                for (std::size_t j = 0; j < s.count; ++j)
+                    out << (j ? "," : "") << s.correlations[j];
                 out << "]}\n";
             }
         } catch (...) {
@@ -87,13 +98,30 @@ struct Metrics final {
     }
 };
 inline thread_local Metrics metrics;
+inline std::atomic<bool> processRecording{true};
+inline void setProcessRecording(bool enabled) noexcept {
+    processRecording.store(enabled, std::memory_order_release);
+}
 inline void setRecording(bool enabled) noexcept {
     metrics.recording = enabled;
+}
+inline void observe(Stage stage, double inclusive, double exclusive,
+                    std::uint64_t correlation = 0) noexcept {
+    if (!metrics.path || !metrics.recording || !processRecording.load(std::memory_order_acquire))
+        return;
+    auto& sample = metrics.stages[static_cast<unsigned>(stage)];
+    if (sample.count == sample.exclusiveUs.size()) {
+        ++sample.omitted;
+        return;
+    }
+    sample.exclusiveUs[sample.count] = exclusive;
+    sample.inclusiveUs[sample.count] = inclusive;
+    sample.correlations[sample.count++] = correlation;
 }
 class Timer final {
   public:
     explicit Timer(Stage stage) noexcept : stage_(stage) {
-        enabled_ = metrics.path && metrics.recording;
+        enabled_ = metrics.path && metrics.recording && processRecording.load(std::memory_order_acquire);
         if (enabled_) {
             parent_ = active_;
             active_ = this;
@@ -104,11 +132,7 @@ class Timer final {
         if (!enabled_)
             return;
         const auto total = std::chrono::duration<double, std::micro>(Clock::now() - start_).count();
-        auto& s = metrics.stages[static_cast<unsigned>(stage_)];
-        if (s.count < s.exclusiveUs.size())
-            s.exclusiveUs[s.count++] = total - children_;
-        else
-            ++s.omitted;
+        observe(stage_, total, total - children_);
         if (parent_)
             parent_->children_ += total;
         active_ = parent_;
@@ -161,9 +185,11 @@ enum class Stage : unsigned {
     ledgerTake,
     ledgerPublish,
     rendererPresent,
+    queue,
     count
 };
 inline void setRecording(bool) noexcept {}
+inline void setProcessRecording(bool) noexcept {}
 class Timer final {
   public:
     explicit Timer(Stage) noexcept {}

@@ -14,8 +14,8 @@ import time
 import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT/'tools/verification'))
-import measure_pd0_method as base
+sys.path.insert(0, str(ROOT))
+from tools.verification.playback_performance import baseline_method as base
 from system_runtime_support import power_policy, require_same_power, validate_alignment
 from collect_host_delivery import invoke as invoke_host
 
@@ -178,7 +178,7 @@ def child(output,name,binary,mask,profile=None,phase='formal',reads=4096,warm=Fa
     env=os.environ.copy()
     for key in ('CUEXIS_PD_METRICS','CUEXIS_PD_PROFILE','CUEXIS_PD_FORMAL_PHASE','CUEXIS_PD_V2_READS'):env.pop(key,None)
     env.update(CUEXIS_PD_PROFILE=profile or 'legacy',CUEXIS_PD_FORMAL_PHASE=phase,CUEXIS_PD_V2_READS=str(reads))
-    command=[sys.executable,'-B',str(ROOT/'tools/verification/measure_pd0_method.py'),'--child',str(mask),str(binary),
+    command=[sys.executable,'-B',str(ROOT/'tools/verification/playback_performance/baseline_method.py'),'--child',str(mask),str(binary),
              'PD machine CPU warmup' if warm else 'PD uninstrumented validated fixed workload','--rng-seed','1']
     with (output/(name+'.log')).open('wb') as log:
         p=sp.run(command,cwd=ROOT,env=env,stdout=log,stderr=sp.STDOUT,timeout=180)

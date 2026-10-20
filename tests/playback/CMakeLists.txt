@@ -1,4 +1,5 @@
 add_executable(cuexis_playback_tests
+    ../pd/presentation_state_tests.cpp
     frame_digest_tests.cpp
     mode_parity_tests.cpp
     playback_candidate_tests.cpp
@@ -29,6 +30,8 @@ target_include_directories(cuexis_playback_tests
         ${PROJECT_SOURCE_DIR}/engine/core/internal
         ${PROJECT_SOURCE_DIR}/engine/json_support/src
         ${PROJECT_SOURCE_DIR}/engine/playback/src
+        ${PROJECT_SOURCE_DIR}/engine/runtime/internal
+        ${PROJECT_SOURCE_DIR}/engine/runtime/include
         ${PROJECT_SOURCE_DIR}/tests/presentation
 )
 
@@ -43,7 +46,10 @@ target_link_libraries(cuexis_playback_tests
 
 if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
     target_include_directories(cuexis_playback_tests PRIVATE ${PROJECT_SOURCE_DIR}/engine/judgement/internal)
-    target_sources(cuexis_playback_tests PRIVATE ../pd/publication_integration_tests.cpp)
+    target_sources(cuexis_playback_tests PRIVATE ../pd/publication_integration_tests.cpp
+        ../pd/projection_adapter_tests.cpp ../pd/projection_integration_tests.cpp
+        ../pd/software_transaction_integration_tests.cpp
+        "${PROJECT_SOURCE_DIR}/engine/playback/src/presentation_projection.cpp")
     target_link_libraries(cuexis_playback_tests PRIVATE cuexis::execution_host_support)
     target_sources(cuexis_playback_tests PRIVATE playback_gameplay_tests.cpp ../judgement/execution_reference.cpp
         "${PROJECT_SOURCE_DIR}/engine/playback/src/gameplay_entry.cpp")

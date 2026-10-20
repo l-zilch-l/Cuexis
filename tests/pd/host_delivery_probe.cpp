@@ -78,34 +78,38 @@ TEST_CASE("PD host delivery and receipt acknowledgement baseline", "[.][pd][host
         auto frame = take(host->sample(tick, requested, false));
         const auto readyAt = Clock::now();
         const auto receipt = take(host->present(frame));
-        const auto acknowledgedAt = Clock::now();
+        const auto presentReturnedAt = Clock::now();
         internal::pd::setRecording(false);
         REQUIRE(frame.context == context);
         REQUIRE(frame.frameId == i + 1);
-        REQUIRE(frame.snapshot.objects.size() == 2);
-        REQUIRE(frame.membership.empty());
-        REQUIRE(frame.foldedFactCursor == 0);
+        REQUIRE(frame.snapshotView().objects.size() == 2);
+        REQUIRE(frame.membershipView().empty());
+        REQUIRE_FALSE(frame.foldedFactCursor);
         REQUIRE(receipt.context == frame.context);
         REQUIRE(receipt.frameId == frame.frameId);
         REQUIRE(receipt.projectionScope == frame.projectionScope);
         REQUIRE(receipt.status == PresentStatus::succeeded);
-        const auto returnedAtUs =
-            std::chrono::duration_cast<std::chrono::microseconds>(acknowledgedAt.time_since_epoch())
-                .count();
+        const auto returnedAtUs = std::chrono::duration_cast<std::chrono::microseconds>(
+                                      presentReturnedAt.time_since_epoch())
+                                      .count();
         REQUIRE(receipt.callMonotonicUs <= returnedAtUs);
         // The reference uses the actual frame identity, independent of the worker/ledger route.
-        take(reference.update(frame.runtimeFrame));
+        REQUIRE(frame.runtimeFrame);
+        take(reference.update(*frame.runtimeFrame));
         const auto expected = take(reference.extractFrame(options.viewport));
-        const auto actualDigest = take(computeFrameDigest(frame.runtimeFrame, frame.snapshot));
-        REQUIRE(actualDigest.value == take(computeFrameDigest(frame.runtimeFrame, expected)).value);
+        const auto actualDigest =
+            take(computeFrameDigest(*frame.runtimeFrame, frame.snapshotView()));
+        REQUIRE(actualDigest.value ==
+                take(computeFrameDigest(*frame.runtimeFrame, expected)).value);
         if (i < warmup)
             continue;
         digest = (digest ^ actualDigest.value) * 1099511628211ULL;
         std::cout << "PD_HOST_SAMPLE {\"ordinal\":" << i - warmup
                   << ",\"request_to_ready_us\":" << microseconds(readyAt - requestAt)
-                  << ",\"ready_to_receipt_ack_us\":" << microseconds(acknowledgedAt - readyAt)
-                  << ",\"request_to_receipt_ack_us\":" << microseconds(acknowledgedAt - requestAt)
-                  << ",\"present_call_to_ack_us\":" << returnedAtUs - receipt.callMonotonicUs
+                  << ",\"ready_to_present_return_us\":" << microseconds(presentReturnedAt - readyAt)
+                  << ",\"request_to_present_return_us\":"
+                  << microseconds(presentReturnedAt - requestAt)
+                  << ",\"present_call_to_return_us\":" << returnedAtUs - receipt.callMonotonicUs
                   << ",\"projection_scope\":" << frame.projectionScope << "}\n";
     }
     const auto pumps = host->pumpCount() - pumpsBefore;
@@ -114,8 +118,11 @@ TEST_CASE("PD host delivery and receipt acknowledgement baseline", "[.][pd][host
 #endif
     take(host->close());
     REQUIRE(host->state() == HostState::closed);
-    std::cout << "PD_HOST_ID {\"digest\":" << digest << ",\"warmup\":" << warmup
-              << ",\"measured\":" << measured << ",\"frame_capacity\":" << frameCapacity
+    std::cout << "PD_HOST_ID "
+                 "{\"receipt_mode\":\"asynchronous\",\"measurement_schema\":\"pd4.present-return."
+                 "v1\",\"digest\":"
+              << digest << ",\"warmup\":" << warmup << ",\"measured\":" << measured
+              << ",\"frame_capacity\":" << frameCapacity
               << ",\"frames_published\":" << warmup + measured
               << ",\"successful_receipts\":" << warmup + measured
               << ",\"source\":\"assets/projects/stage3_project\",\"viewport\":[1280,720],"

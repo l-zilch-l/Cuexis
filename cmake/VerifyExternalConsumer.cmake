@@ -492,7 +492,7 @@ else()
         set(component_arguments)
     endif()
     if(CUEXIS_CONSUMER_MODE STREQUAL "find_package_playback")
-        foreach(invalid_version IN ITEMS 0.7 0.9)
+        foreach(invalid_version IN ITEMS 0.7 0.8.1 0.9.1 0.10 1.0)
             cuexis_expect_configure_failure(
                 "Cuexis package version ${invalid_version} compatibility rejection"
                 "${CMAKE_COMMAND}"

@@ -1,6 +1,6 @@
 # Execution coordination preview
 
-适用版本：SDK API `0.8.0`；更新日期：2026-10-17。
+适用版本：SDK API `0.9.0`；更新日期：2026-10-17。
 
 本入口属于显式 candidate SDK，复用 PlaybackSession 内的唯一 JudgementSession。
 选择 `gameplay.execution.t4-k4.rpa.v1`、`late.window.batch.v1`、`fact.semantic.rpa.v1`

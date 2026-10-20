@@ -4,11 +4,17 @@
 
 ## 实施与回归
 
+- [PD-4 按需交付、真实回收与紧凑观察记录](2026-10-19-pd4-delivery-retirement-and-observation.md)
+- [PD-3-c host refinement and SDK decision proposal](2026-10-19-pd3c-contract-and-version-decision.md)
+- [PD-3-b committed revisions, neutral read and unique materializer](2026-10-19-pd3b-state-read-and-materialization.md)
+- [PD-3-a Runtime and World software transaction](2026-10-18-pd3a-software-transaction.md)
+- [PD-2 prepared binding index and projection adapter](2026-10-18-pd2-projection-adapter.md)
 - [PD-1 publication bridge and local verification](2026-10-18-pd1-publication-bridge.md)
 - [PD-2 continuation handoff](2026-10-18-pd2-continuation-handoff.md)
 
 ## 设计与计划审查
 
+- [PD-4 准备与 owner 决策清单](2026-10-19-pd4-readiness-and-owner-decisions.md)
 - [PD design evolution](2026-10-16-design-evolution.md)
 - [PD cross-stage design review](2026-10-16-pd-cross-stage-design-review.md)
 - [PD registration and plan self-review](2026-10-16-pd-registration-and-plan-self-review.md)
@@ -16,6 +22,13 @@
 
 ## 测量与基线
 
+- [PD-5 P0 两窗结果、初步归因与诊断接手](2026-10-20-pd5-two-window-findings-and-diagnostic-handoff.md)
+- [测量准备的注册完整性与容量短测修正](2026-10-20-measurement-preparation-integrity.md)
+- [Playback 测量工具与内部观测实现的功能命名修正](2026-10-20-performance-tool-functional-naming.md)
+- [PD-5 窗口协议、矩阵轨迹与设备盘点扩展](2026-10-19-pd5-window-and-matrix-preparation.md)
+- [PD-5 已接受阈值与首批工具/profile 准备](2026-10-19-pd5-tools-and-profile-preparation.md)
+- [PD-5 测量就绪检查](2026-10-19-pd5-measurement-readiness.md)（初始盘点，正式采样未开始）
+- [PD-5 测量与阈值方案](../../../../stage_plans/active/stage-07/pd5-measurement-proposal.md)（本机范围/阈值/协议已接受）
 - [PD-0 controlled environment, build binding and exit evidence](2026-10-18-pd0-controlled-environment-and-build-binding.md)
 - [Measurement method history](2026-10-17-measurement-method-history.md)
 - [PD-0 uninstrumented baseline](2026-10-17-pd0-uninstrumented-baseline.md)

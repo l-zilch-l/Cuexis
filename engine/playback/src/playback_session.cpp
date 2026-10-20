@@ -7,10 +7,14 @@
 #include "playback_candidate_internal.hpp"
 #include "playback_source_state.hpp"
 #include "presentation_internal.hpp"
+#include "presentation_materializer.hpp"
+#include "presentation_state.hpp"
 #include <cuexis_internal/presentation_metrics.hpp>
+#include <cuexis_internal/allocation_observer.hpp>
 #include <cuexis_internal/sha256.hpp>
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
 #include "gameplay_internal.hpp"
+#include "presentation_projection.hpp"
 #include <cuexis/judgement/execution_scheduler.hpp>
 #endif
 
@@ -31,14 +35,8 @@
 #include <cuexis/core/error.hpp>
 #include <cuexis/core/math.hpp>
 #include <cuexis/core/thread_checker.hpp>
-#include <cuexis/render/camera_component.hpp>
-#include <cuexis/render/renderable_component.hpp>
 #include <cuexis/runtime/runtime_frame.hpp>
 #include <cuexis/runtime/runtime_session.hpp>
-#include <cuexis/world/components.hpp>
-#include <cuexis/world/world.hpp>
-
-#include <entt/entity/registry.hpp>
 
 #include <algorithm>
 #include <array>
@@ -76,10 +74,6 @@ std::atomic<std::uint64_t> nextPlaybackSessionToken{1};
         std::terminate();
     }
     return token;
-}
-
-void copyMatrix(const core::Mat4& source, float (&destination)[16]) noexcept {
-    std::copy(source.values.begin(), source.values.end(), destination);
 }
 
 [[nodiscard]] auto runtimeFrame(const RuntimeFrame& frame) noexcept -> runtime::RuntimeFrame {
@@ -156,19 +150,34 @@ void publishPrepareBoundaryDiagnostic(core::Diagnostics& destination,
     }
 }
 
-struct SnapshotEntity final {
-    chart::ChartObjectId id;
-    entt::entity entity{entt::null};
-    std::optional<PresentationResourceRef> mesh;
-    std::map<std::string, PresentationResourceRef, std::less<>> materials;
-    std::size_t maximumMeshAssetIdSize{};
-    std::size_t maximumMaterialAssetIdSize{};
-};
+using detail::SnapshotEntity;
+using detail::SnapshotLayout;
 
-struct SnapshotLayout final {
-    std::vector<SnapshotEntity> entities;
-    std::optional<entt::entity> activeCamera;
-};
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+auto prepareProjection(const detail::GameplayContentStorage& content, const SnapshotLayout& layout)
+    -> core::Result<detail::PreparedProjection> {
+    for (const auto& requirement :
+         content.capsule.gameplay.assembled().graph.derivedCapabilities.capabilities) {
+        if (std::ranges::none_of(detail::PresentationProjectionAdapter::capabilities,
+                                 [&](const auto& supported) {
+                                     return supported.first == requirement.capabilityId &&
+                                            supported.second == requirement.revision;
+                                 }))
+            return core::unexpected(
+                core::Error{"capability.unknown", "Unsupported presentation binding capability"}
+                    .withContext("category", "unknown_capability")
+                    .withContext("severity", "error")
+                    .withContext("faulted", "false")
+                    .withContext("capabilityId", requirement.capabilityId)
+                    .withContext("fieldPath", "derivedCapabilities.capabilityId"));
+    }
+    std::map<std::string, std::size_t, std::less<>> targets;
+    for (std::size_t i = 0; i < layout.entities.size(); ++i)
+        if (layout.entities[i].mesh)
+            targets.emplace(layout.entities[i].id.value, i);
+    return detail::PresentationProjectionAdapter::prepare(content.bindings, std::move(targets));
+}
+#endif
 
 // Prepare data stays internal and is moved into PreparedPlayback only after all stages succeed.
 struct PrepareContext final {
@@ -282,22 +291,7 @@ struct PrepareArtifact final {
     return error;
 }
 
-[[nodiscard]] auto presentationResourceTypeName(PresentationResourceType type) noexcept
-    -> std::string_view {
-    switch (type) {
-    case PresentationResourceType::Mesh:
-        return "mesh";
-    case PresentationResourceType::Texture2D:
-        return "texture2d";
-    case PresentationResourceType::UnlitMaterial:
-        return "unlit_material";
-    case PresentationResourceType::Shader:
-        return "shader";
-    case PresentationResourceType::ParameterizedMaterial:
-        return "parameterized_material";
-    }
-    return "unknown";
-}
+using detail::presentationResourceTypeName;
 
 constexpr std::size_t maxPresentationDiagnostics = 1024;
 
@@ -346,30 +340,7 @@ void addInsufficientPresentationLimit(core::Diagnostics& diagnostics, std::strin
                               std::to_string(actual), std::to_string(limit));
 }
 
-[[nodiscard]] auto snapshotResourceMismatch(std::string_view objectId, std::string_view assetId,
-                                            PresentationResourceType type) -> core::Error {
-    return core::Error{"playback.presentation.frame.resource_mismatch",
-                       "Snapshot presentation resource could not be resolved"}
-        .withContext("object_id", std::string{objectId})
-        .withContext("asset_id", std::string{assetId})
-        .withContext("resource_type", std::string{presentationResourceTypeName(type)});
-}
-
-void assignPresentationReference(std::optional<PresentationResourceRef>& destination,
-                                 const PresentationResourceRef& source,
-                                 std::size_t assetIdCapacity) {
-    if (!destination) {
-        destination.emplace();
-    }
-    if (destination->assetId.capacity() < assetIdCapacity) {
-        destination->assetId.reserve(assetIdCapacity);
-    }
-    destination->type = source.type;
-    if (destination->assetId != source.assetId) {
-        destination->assetId = source.assetId;
-    }
-    destination->identity = source.identity;
-}
+using detail::snapshotResourceMismatch;
 
 class SessionOperation final {
   public:
@@ -956,7 +927,7 @@ assembleResourceIdentities(std::span<const chart::ChartResourceRequirement> requ
         }
         SnapshotEntity snapshotEntity{
             .id = object.id,
-            .entity = **entity,
+            .runtimeIndex = layout.entities.size(),
             .mesh = std::nullopt,
             .materials = {},
             .maximumMeshAssetIdSize = 0,
@@ -1042,32 +1013,11 @@ assembleResourceIdentities(std::span<const chart::ChartResourceRequirement> requ
         layout.entities.push_back(std::move(snapshotEntity));
     }
 
-    auto camera = session.withWorld(
-        [&](const world::World& world) -> core::Result<std::optional<entt::entity>> {
-            return world.withRegistry([&](const entt::registry& registry)
-                                          -> core::Result<std::optional<entt::entity>> {
-                for (std::size_t index = 0; index < chartRuntime.objects.size(); ++index) {
-                    if (chartRuntime.objects[index].components.camera.has_value() &&
-                        registry.all_of<render::CameraComponent>(layout.entities[index].entity)) {
-                        return layout.entities[index].entity;
-                    }
-                }
-
-                std::optional<entt::entity> selected;
-                const auto view = registry.view<const render::CameraComponent>();
-                for (const entt::entity entity : view) {
-                    if (!selected.has_value() ||
-                        entt::to_integral(entity) < entt::to_integral(*selected)) {
-                        selected = entity;
-                    }
-                }
-                return selected;
-            });
-        });
-    if (!camera) {
-        return core::unexpected(std::move(camera.error()));
-    }
-    layout.activeCamera = *camera;
+    auto revision = runtime::detail::PresentationAccess::state(session);
+    if (!revision)
+        return core::unexpected(std::move(revision.error()));
+    layout.runtimeOwner = revision->stamp.owner;
+    layout.runtimeLayout = revision->stamp.layout;
     return layout;
 }
 
@@ -1267,6 +1217,26 @@ struct PlaybackSession::State final {
     std::string activeChartJson;
     std::unique_ptr<runtime::RuntimeSession> runtimeSession;
     SnapshotLayout snapshotLayout;
+    internal::presentation::RevisionClock presentationClock;
+    const std::uint64_t presentationSessionScope{allocatePlaybackSessionToken()};
+    std::optional<detail::CommittedPresentationState> committedPresentation;
+    void publishPresentation(internal::presentation::Mutation& mutation,
+                             detail::CommittedPresentationState descriptor) noexcept {
+        mutation.publish();
+        if (!runtimeSession) {
+            committedPresentation.reset();
+            return;
+        }
+        const auto runtime = runtime::detail::PresentationAccess::installedState(*runtimeSession);
+        descriptor.sessionScope = presentationSessionScope;
+        descriptor.resultVersion = presentationClock.version;
+        descriptor.contentRevision = presentationClock.layout;
+        descriptor.layoutRevision = presentationClock.layout;
+        descriptor.worldRevision = runtime.stamp.version;
+        descriptor.updateOrdinal = presentationClock.updates;
+        descriptor.runtime = runtime.stamp;
+        committedPresentation = descriptor;
+    }
     std::optional<RuntimeFrame> lastFrame;
     core::Diagnostics diagnostics;
     core::Diagnostics lastOperationDiagnostics;
@@ -1324,22 +1294,59 @@ struct PlaybackSession::State final {
         return {};
     }
     std::optional<GameplayAdvanceReceipt> gameplayReceipt;
-    struct GameplayProjectionState final {
-        std::shared_ptr<const std::uint8_t> scope;
-        std::uint64_t sourceScope{};
-        std::uint64_t cursor{};
-        struct Scheduled final {
-            judgement::FactId factId;
-            GameplayFactBinding binding;
-            bool published{false};
-        };
-        std::vector<Scheduled> scheduled;
-        std::set<std::string, std::less<>> completedBindings;
-        std::set<std::vector<std::string>> rejectedGroups;
-        std::optional<GameplayPresentationTick> lastTick;
-    } gameplayProjection;
+    detail::PreparedProjection gameplayProjectionIndex;
+    detail::ProjectionState gameplayProjection;
 #endif
 };
+
+auto detail::PresentationAccess::state(const PlaybackSession& session)
+    -> core::Result<CommittedPresentationState> {
+    if (!session.state_->ownerThread.isCurrent())
+        return core::unexpected(ownerError("presentation_state"));
+    if (session.state_->operationActive)
+        return core::unexpected(reentryError("presentation_state"));
+    if (!session.state_->committedPresentation)
+        return core::unexpected(
+            core::Error{"playback.session.empty", "PlaybackSession has no committed World"});
+    return *session.state_->committedPresentation;
+}
+
+auto PlaybackSession::presentationSource() const -> core::Result<PresentationSourceInfo> {
+    auto committed = detail::PresentationAccess::state(*this);
+    if (!committed)
+        return core::unexpected(committed.error());
+    const auto& s = *committed;
+    PresentationSource source{PresentationSource::Prepared};
+    switch (s.source) {
+    case internal::presentation::Source::Prepared:
+        source = PresentationSource::Prepared;
+        break;
+    case internal::presentation::Source::RuntimeUpdate:
+        source = PresentationSource::RuntimeUpdate;
+        break;
+    case internal::presentation::Source::Restore:
+        source = PresentationSource::Restore;
+        break;
+    case internal::presentation::Source::Mutation:
+        source = PresentationSource::Mutation;
+        break;
+    }
+    return PresentationSourceInfo{s.sessionScope,
+                                  s.resultVersion,
+                                  s.contentRevision,
+                                  s.layoutRevision,
+                                  s.worldRevision,
+                                  s.updateOrdinal,
+                                  source,
+                                  s.frame,
+                                  s.presentationTick,
+                                  s.workTick,
+                                  s.factCursor,
+                                  s.controlCursor,
+                                  s.activationRevision ? std::optional{s.activationRevision}
+                                                       : std::nullopt,
+                                  s.hasFold};
+}
 
 struct PreparedPlayback::State final {
     PlaybackSession* owner{};
@@ -1367,6 +1374,7 @@ struct PreparedPlayback::State final {
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     GameplayContent gameplayContent;
     std::unique_ptr<judgement::JudgementSession> gameplay;
+    detail::PreparedProjection gameplayProjectionIndex;
 #endif
 };
 
@@ -1781,8 +1789,8 @@ auto PlaybackSession::gameplayFeedback(const std::uint64_t scope) const
     if (!s.gameplay || !scope)
         return core::unexpected(gameplayError("Feedback scope absent"));
     std::vector<FeedbackObservation> members;
-    for (const auto& scheduled : s.gameplayProjection.scheduled) {
-        const auto& b = scheduled.binding;
+    for (const auto& scheduled : s.gameplayProjection.active) {
+        const auto& b = s.gameplayProjectionIndex.rows[scheduled.row].binding;
         if (!scheduled.published || !s.gameplayProjection.lastTick ||
             b.start.value > s.gameplayProjection.lastTick->value ||
             (b.end && b.end->value <= s.gameplayProjection.lastTick->value))
@@ -1790,7 +1798,7 @@ auto PlaybackSession::gameplayFeedback(const std::uint64_t scope) const
         members.push_back({{scope, scheduled.factId.commitId, scheduled.factId.localOrdinal, 0,
                             b.target, b.bindingId},
                            b.start.value,
-                           b.end ? b.end->value : INT64_MAX,
+                           b.end,
                            FeedbackStatus::created,
                            false});
     }
@@ -2743,6 +2751,9 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
         if (sourceState.gameplayContent.valid()) {
             const auto* content = detail::GameplayAccess::content(sourceState.gameplayContent);
+            auto index = prepareProjection(*content, prepared->snapshotLayout);
+            if (!index)
+                return core::unexpected(std::move(index.error()));
             auto gameplay = judgement::JudgementSession::create();
             if (!gameplay)
                 return core::unexpected(std::move(gameplay.error()));
@@ -2753,6 +2764,7 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
             prepared->gameplay =
                 std::make_unique<judgement::JudgementSession>(std::move(*gameplay));
             prepared->gameplayContent = sourceState.gameplayContent;
+            prepared->gameplayProjectionIndex = std::move(*index);
         }
 #endif
 
@@ -2826,6 +2838,13 @@ auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> 
         return core::unexpected(std::move(error));
     }
 
+    auto mutation = internal::presentation::Mutation::reserve(state_->presentationClock, true);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
+    detail::CommittedPresentationState descriptor;
+    descriptor.source = candidate.replacement ? internal::presentation::Source::Restore
+                                              : internal::presentation::Source::Prepared;
+    descriptor.frame = candidate.targetFrame;
     state_->contentProvider = std::move(candidate.contentProvider);
     state_->resourceManager = std::move(candidate.resourceManager);
     state_->activeChartJson = std::move(candidate.chartJson);
@@ -2844,6 +2863,7 @@ auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> 
     state_->presentation = std::move(candidate.presentation);
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     state_->gameplayContent = std::move(candidate.gameplayContent);
+    state_->gameplayProjectionIndex = std::move(candidate.gameplayProjectionIndex);
     state_->pendingRetiredRequestFloor.reset();
     state_->executionScheduler.reset();
     state_->realtimeClock.reset();
@@ -2855,6 +2875,7 @@ auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> 
     state_->gameplayProjection = {};
 #endif
     state_->bumpGeneration();
+    state_->publishPresentation(*mutation, descriptor);
     prepared.state_.reset();
     return {};
 }
@@ -2921,10 +2942,19 @@ auto PlaybackSession::update(const RuntimeFrame& frame) -> core::Result<void> {
     if (!state_->runtimeSession)
         return core::unexpected(
             core::Error{"playback.session.empty", "PlaybackSession has no committed World"});
+    auto mutation =
+        internal::presentation::Mutation::reserve(state_->presentationClock, false, true);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
     auto updated = state_->runtimeSession->update(runtimeFrame(frame));
     if (!updated) {
         return core::unexpected(std::move(updated.error()));
     }
+    detail::CommittedPresentationState descriptor;
+    descriptor.source = internal::presentation::Source::RuntimeUpdate;
+    descriptor.frame = frame;
+    descriptor.activationRevision = state_->committedPresentation->activationRevision;
+    state_->publishPresentation(*mutation, descriptor);
     state_->lastFrame = frame;
     state_->sessionState = SessionState::Running;
     state_->bumpGeneration();
@@ -2932,7 +2962,7 @@ auto PlaybackSession::update(const RuntimeFrame& frame) -> core::Result<void> {
 }
 
 auto PlaybackSession::extractFrame(const FrameViewport& viewport) const
-    -> core::Result<FrameSnapshot> {
+    -> core::Result<FrameSnapshot> try {
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("extract_frame"));
     }
@@ -2944,10 +2974,26 @@ auto PlaybackSession::extractFrame(const FrameViewport& viewport) const
         return core::unexpected(std::move(extracted.error()));
     }
     return snapshot;
+} catch (const std::bad_alloc&) {
+    return core::unexpected(prepareExceptionError("extract_frame", true));
+} catch (const std::length_error&) {
+    return core::unexpected(prepareExceptionError("extract_frame", true));
+} catch (const std::exception& exception) {
+    return core::unexpected(prepareExceptionError("extract_frame", false, &exception));
+} catch (...) {
+    return core::unexpected(prepareExceptionError("extract_frame", false));
 }
 
 auto PlaybackSession::extractFrame(const FrameViewport& viewport, FrameSnapshot& snapshot) const
     -> core::Result<void> {
+    return detail::PresentationAccess::materialize(*this, std::nullopt, viewport, snapshot);
+}
+
+auto detail::PresentationAccess::materialize(const PlaybackSession& session,
+                                             std::optional<std::uint64_t> exactVersion,
+                                             const FrameViewport& viewport, FrameSnapshot& snapshot)
+    -> core::Result<void> try {
+    auto* state_ = session.state_.get();
     internal::pd::Timer measurement{internal::pd::Stage::snapshot};
     if (!state_->ownerThread.isCurrent()) {
         return core::unexpected(ownerError("extract_frame"));
@@ -2966,128 +3012,29 @@ auto PlaybackSession::extractFrame(const FrameViewport& viewport, FrameSnapshot&
                                             "FrameViewport width and height must be positive"});
     }
 
-    auto extracted = state_->runtimeSession->withWorld([&](const world::World& world)
-                                                           -> core::Result<void> {
-        return world.withRegistry([&](const entt::registry& registry) -> core::Result<void> {
-            measurement.items(state_->snapshotLayout.entities.size());
-            snapshot.camera = {};
-            snapshot.clearRed = 0.055F;
-            snapshot.clearGreen = 0.063F;
-            snapshot.clearBlue = 0.071F;
-            snapshot.clearAlpha = 1.0F;
-            snapshot.viewportWidth = viewport.width;
-            snapshot.viewportHeight = viewport.height;
-            if (snapshot.objects.size() < state_->snapshotLayout.entities.size()) {
-                snapshot.objects.resize(state_->snapshotLayout.entities.size());
-            }
-
-            const core::Mat4 identity;
-            for (std::size_t index = 0; index < state_->snapshotLayout.entities.size(); ++index) {
-                const auto& entry = state_->snapshotLayout.entities[index];
-                auto& object = snapshot.objects[index];
-                if (object.materialAssetId.capacity() < entry.maximumMaterialAssetIdSize) {
-                    object.materialAssetId.reserve(entry.maximumMaterialAssetIdSize);
-                }
-                if (entry.mesh) {
-                    assignPresentationReference(object.mesh, *entry.mesh,
-                                                entry.maximumMeshAssetIdSize);
-                } else {
-                    object.mesh.reset();
-                }
-                if (object.id != entry.id.value) {
-                    object.id = entry.id.value;
-                }
-                object.hasTransform = registry.all_of<world::WorldTransformComponent>(entry.entity);
-                if (object.hasTransform) {
-                    copyMatrix(registry.get<world::WorldTransformComponent>(entry.entity).matrix,
-                               object.worldMatrix);
-                } else {
-                    copyMatrix(identity, object.worldMatrix);
-                }
-                if (registry.all_of<render::AppearanceComponent>(entry.entity)) {
-                    const auto& appearance =
-                        registry.get<render::AppearanceComponent>(entry.entity);
-                    object.visible = appearance.visible;
-                    object.materialAssetId.assign(appearance.materialAssetId);
-                    if (entry.mesh) {
-                        const auto material = entry.materials.find(appearance.materialAssetId);
-                        if (material == entry.materials.end()) {
-                            return core::unexpected(
-                                snapshotResourceMismatch(entry.id.value, appearance.materialAssetId,
-                                                         PresentationResourceType::UnlitMaterial));
-                        }
-                        assignPresentationReference(object.material, material->second,
-                                                    entry.maximumMaterialAssetIdSize);
-                    } else {
-                        object.material.reset();
-                    }
-                    object.materialOpacity = appearance.opacity;
-                    object.materialTint[0] = appearance.tint.x;
-                    object.materialTint[1] = appearance.tint.y;
-                    object.materialTint[2] = appearance.tint.z;
-                } else {
-                    if (entry.mesh) {
-                        return core::unexpected(snapshotResourceMismatch(
-                            entry.id.value, "", PresentationResourceType::UnlitMaterial));
-                    }
-                    object.visible = true;
-                    object.materialAssetId.clear();
-                    object.material.reset();
-                    object.materialOpacity = 1.0;
-                    object.materialTint[0] = 1.0F;
-                    object.materialTint[1] = 1.0F;
-                    object.materialTint[2] = 1.0F;
-                }
-            }
-            snapshot.objects.resize(state_->snapshotLayout.entities.size());
-
-            if (!state_->snapshotLayout.activeCamera.has_value()) {
-                return {};
-            }
-            const auto activeCamera = *state_->snapshotLayout.activeCamera;
-            if (!registry.all_of<render::CameraComponent>(activeCamera)) {
-                return core::unexpected(core::Error{"playback.snapshot.camera_missing",
-                                                    "Active camera is unavailable"});
-            }
-            const auto& camera = registry.get<render::CameraComponent>(activeCamera);
-            const auto projection =
-                core::makePerspective(camera.fovY * 3.14159265358979323846 / 180.0,
-                                      static_cast<double>(viewport.width) / viewport.height,
-                                      camera.nearPlane, camera.farPlane);
-            if (!projection) {
-                return core::unexpected(core::Error{"playback.snapshot.camera_invalid",
-                                                    "Active camera parameters are invalid"}
-                                            .withCause(projection.error()));
-            }
-
-            snapshot.camera.active = true;
-            snapshot.camera.fovY = camera.fovY;
-            snapshot.camera.nearPlane = camera.nearPlane;
-            snapshot.camera.farPlane = camera.farPlane;
-            snapshot.camera.pitch = camera.pitch;
-            snapshot.camera.yaw = camera.yaw;
-            snapshot.camera.roll = camera.roll;
-            copyMatrix(*projection, snapshot.camera.projectionMatrix);
-
-            core::Mat4 viewMatrix{};
-            if (registry.all_of<world::WorldTransformComponent>(activeCamera)) {
-                auto inverse = core::inverse(
-                    registry.get<world::WorldTransformComponent>(activeCamera).matrix);
-                if (!inverse) {
-                    return core::unexpected(core::Error{"playback.snapshot.camera_not_invertible",
-                                                        "Active camera transform is not invertible"}
-                                                .withCause(inverse.error()));
-                }
-                viewMatrix = *inverse;
-            }
-            copyMatrix(viewMatrix, snapshot.camera.viewMatrix);
-            return {};
+    if (!state_->committedPresentation ||
+        (exactVersion && *exactVersion != state_->committedPresentation->resultVersion))
+        return core::unexpected(core::Error{"playback.presentation.version_unavailable",
+                                            "Requested presentation version is unavailable"});
+    measurement.items(state_->snapshotLayout.entities.size());
+    const auto& committed = *state_->committedPresentation;
+    auto extracted = runtime::detail::PresentationAccess::read(
+        std::as_const(*state_->runtimeSession), committed.runtime,
+        [&](const runtime::detail::PresentationRead& view) {
+            return detail::materializeSnapshot(view, state_->snapshotLayout, viewport, snapshot);
         });
-    });
     if (!extracted) {
         return core::unexpected(std::move(extracted.error()));
     }
     return {};
+} catch (const std::bad_alloc&) {
+    return core::unexpected(prepareExceptionError("extract_frame", true));
+} catch (const std::length_error&) {
+    return core::unexpected(prepareExceptionError("extract_frame", true));
+} catch (const std::exception& exception) {
+    return core::unexpected(prepareExceptionError("extract_frame", false, &exception));
+} catch (...) {
+    return core::unexpected(prepareExceptionError("extract_frame", false));
 }
 
 auto PlaybackSession::reload(std::string_view replacementJson, const RuntimeFrame& targetFrame,
@@ -3150,6 +3097,9 @@ auto PlaybackSession::unload() -> core::Result<void> {
     if (state_->sessionState == SessionState::Empty) {
         return {};
     }
+    auto mutation = internal::presentation::Mutation::reserve(state_->presentationClock);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
     if (state_->runtimeSession) {
         if (auto result = state_->runtimeSession->unload(); !result) {
             return result;
@@ -3176,6 +3126,7 @@ auto PlaybackSession::unload() -> core::Result<void> {
     state_->realtimeWasStarted = false;
     state_->gameplay.reset();
     state_->gameplayContent = {};
+    state_->gameplayProjectionIndex = {};
     state_->gameplayState = GameplayState::Inactive;
     state_->gameplayReceipt.reset();
     state_->gameplayProjection = {};
@@ -3183,6 +3134,7 @@ auto PlaybackSession::unload() -> core::Result<void> {
     state_->parameters = {};
     state_->presentation.reset();
     state_->sessionState = SessionState::Empty;
+    state_->publishPresentation(*mutation, {});
     state_->bumpGeneration();
     return {};
 }
@@ -3387,6 +3339,9 @@ auto PlaybackSession::acquireHostOverride(std::string_view ownerId, std::int64_t
                 .value = toWorldValue(write.value),
             });
         }
+        auto mutation = internal::presentation::Mutation::reserve(state_->presentationClock);
+        if (!mutation)
+            return core::unexpected(std::move(mutation.error()));
         auto token = state_->runtimeSession->acquireOverride(
             world::OverrideKind::Host, std::string{ownerId}, priority, propertyMask,
             toWorldLifetime(lifetime), mapped);
@@ -3397,6 +3352,10 @@ auto PlaybackSession::acquireHostOverride(std::string_view ownerId, std::int64_t
         if (state_->gameplay)
             state_->bumpGeneration();
 #endif
+        detail::CommittedPresentationState descriptor;
+        descriptor.source = internal::presentation::Source::Mutation;
+        descriptor.activationRevision = state_->committedPresentation->activationRevision;
+        state_->publishPresentation(*mutation, descriptor);
         return HostOverrideToken{.value = token->value};
     } catch (const std::bad_alloc&) {
         return core::unexpected(prepareExceptionError("acquire_host_override", true));
@@ -3438,6 +3397,9 @@ auto PlaybackSession::releaseHostOverride(HostOverrideToken token) -> core::Resu
         return core::unexpected(
             core::Error{"playback.session.empty", "PlaybackSession has no committed World"});
     }
+    auto mutation = internal::presentation::Mutation::reserve(state_->presentationClock);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
     auto released =
         state_->runtimeSession->releaseOverride(world::OverrideTokenId{.value = token.value});
     if (!released) {
@@ -3447,6 +3409,10 @@ auto PlaybackSession::releaseHostOverride(HostOverrideToken token) -> core::Resu
     if (state_->gameplay)
         state_->bumpGeneration();
 #endif
+    detail::CommittedPresentationState descriptor;
+    descriptor.source = internal::presentation::Source::Mutation;
+    descriptor.activationRevision = state_->committedPresentation->activationRevision;
+    state_->publishPresentation(*mutation, descriptor);
     return {};
 }
 
@@ -3535,8 +3501,12 @@ auto PlaybackSession::attachGameplay(PreparedPlayback& p, const GameplayContent&
     auto session = makeGameplaySession(c);
     if (!session)
         return core::unexpected(detail::projectGameplayError(std::move(session.error())));
+    auto index = prepareProjection(*content, p.state_->snapshotLayout);
+    if (!index)
+        return core::unexpected(std::move(index.error()));
     p.state_->gameplay = std::make_unique<judgement::JudgementSession>(std::move(*session));
     p.state_->gameplayContent = c;
+    p.state_->gameplayProjectionIndex = std::move(*index);
     return {};
 } catch (...) {
     return core::unexpected(gameplayError("Gameplay prepare allocation failed"));
@@ -3698,12 +3668,34 @@ auto PlaybackSession::advanceGameplay(GameplayTick h, GameplayPresentationTick t
     }
     return core::unexpected(std::move(error));
 }
+void detail::GameplayPublicationAccess::finalize(PlaybackSession& session,
+                                                 ProjectionCandidate&& candidate,
+                                                 const RuntimeFrame& frame,
+                                                 internal::presentation::Mutation& mutation,
+                                                 CommittedPresentationState descriptor) noexcept {
+    static_assert(std::is_nothrow_move_assignable_v<ProjectionState>);
+    static_assert(std::is_nothrow_move_assignable_v<core::Diagnostics>);
+    auto& state = *session.state_;
+    state.gameplayProjection = std::move(candidate.state);
+    state.lastFrame = frame;
+    state.sessionState = SessionState::Running;
+    state.lastOperationDiagnostics = std::move(candidate.diagnostics);
+    state.publishPresentation(mutation, descriptor);
+}
+
 auto detail::GameplayPublicationAccess::publish(
     PlaybackSession& session, judgement::JudgementSession& source, GameplayPresentationTick t,
     const RuntimeFrame& frame, bool tickLifetimes, bool rebuildScope,
     GameplayPublicationFailureStage* failureStage) -> core::Result<void> try {
     auto* state_ = session.state_.get();
     internal::pd::Timer measurement{internal::pd::Stage::projection};
+    using internal::pd::memory::structure;
+    structure("index.snapshot-layout", state_->snapshotLayout.entities.size(), state_->snapshotLayout.entities.capacity());
+    structure("index.projection-rows", state_->gameplayProjectionIndex.rows.size(), state_->gameplayProjectionIndex.rows.capacity());
+    structure("index.projection-sources", state_->gameplayProjectionIndex.sources.size(), state_->gameplayProjectionIndex.sources.size());
+    structure("index.projection-targets", state_->gameplayProjectionIndex.targets.size(), state_->gameplayProjectionIndex.targets.size());
+    structure("current.projection-active", state_->gameplayProjection.active.size(), state_->gameplayProjection.active.capacity());
+    structure("current.projection-future", state_->gameplayProjection.future.size(), state_->gameplayProjection.future.size());
     if (failureStage)
         *failureStage = GameplayPublicationFailureStage::Projection;
     if (auto valid = validateGameplayFrame(frame, state_->lastFrame); !valid)
@@ -3711,11 +3703,11 @@ auto detail::GameplayPublicationAccess::publish(
     auto scope = judgement::detail::PublicationAccess::scope(source);
     if (!scope)
         return core::unexpected(projectGameplayError(std::move(scope.error())));
-    auto projection = state_->gameplayProjection;
+    const ProjectionState fresh;
+    const auto& projection =
+        rebuildScope || !state_->gameplayProjection.scope ? fresh : state_->gameplayProjection;
     // A first publication or an explicit recovery establishes a new consumption scope.
     // Ordinary sampling must never silently rewind a mismatching scope.
-    if (rebuildScope || !projection.scope)
-        projection = {};
     const auto expectedScope = projection.scope ? projection.scope : *scope;
     auto read =
         judgement::detail::PublicationAccess::readSince(source, expectedScope, projection.cursor);
@@ -3733,139 +3725,69 @@ auto detail::GameplayPublicationAccess::publish(
     if (publication.realtime && !publication.hasFold)
         return core::unexpected(
             core::Error{"host.rpa.control_pending", "No successful Fold prefix to sample"});
-    projection.scope = publication.runScope;
     if (!state_->runtimeSession) {
-        projection.lastTick = t;
-        state_->gameplayProjection = std::move(projection);
+        auto next = projection;
+        next.scope = publication.runScope;
+        next.lastTick = t;
+        state_->gameplayProjection = std::move(next);
         state_->lastFrame = frame;
         state_->sessionState = SessionState::Running;
         return {};
     }
-    if (!projection.sourceScope)
-        projection.sourceScope = allocatePlaybackSessionToken();
-    const auto* content = GameplayAccess::content(state_->gameplayContent);
-    for (; projection.cursor < publication.publishableCursor; ++projection.cursor) {
-        auto fact = read->fact(projection.cursor);
-        if (!fact)
-            return core::unexpected(std::move(fact.error()));
-        if (fact->kind == judgement::FactKind::stray ||
-            fact->kind == judgement::FactKind::consumeEmpty)
-            continue;
-        if (fact->kind != judgement::FactKind::phaseOutcome || !fact->requirement || !fact->phase ||
-            !fact->outcome)
-            return core::unexpected(gameplayError("Unsupported publication Fact"));
-        GameplayPhase p;
-        switch (*fact->phase) {
-        case judgement::PhaseKind::tap:
-            p = GameplayPhase::Tap;
-            break;
-        case judgement::PhaseKind::head:
-            p = GameplayPhase::Head;
-            break;
-        case judgement::PhaseKind::body:
-            p = GameplayPhase::Body;
-            break;
-        case judgement::PhaseKind::tail:
-            p = GameplayPhase::Tail;
-            break;
-        default:
-            return core::unexpected(gameplayError("Unsupported publication phase"));
-        }
-        if (*fact->outcome != judgement::Outcome::hit && *fact->outcome != judgement::Outcome::miss)
-            return core::unexpected(gameplayError("Unsupported publication outcome"));
-        for (const auto& binding : content->bindings) {
-            measurement.items(1);
-            const auto& e = *fact->requirement;
-            const auto& s = binding.source;
-            if (e.chartEntryId != s.chartEntryId || e.invocationId != s.invocationId ||
-                e.moduleId != s.moduleId || e.exportId != s.exportId ||
-                e.requirementLocalId != s.requirementLocalId ||
-                e.emissionPath.size() != s.emissionPath.size())
-                continue;
-            bool pathMatches = true;
-            for (std::size_t i = 0; i < e.emissionPath.size(); ++i)
-                pathMatches = pathMatches && e.emissionPath[i].nodeId == s.emissionPath[i].nodeId &&
-                              e.emissionPath[i].repeatIndex == s.emissionPath[i].repeatIndex;
-            if (!pathMatches)
-                continue;
-            if (p != binding.phase || (*fact->outcome == judgement::Outcome::hit
-                                           ? GameplayOutcome::Hit
-                                           : GameplayOutcome::Miss) != binding.outcome)
-                continue;
-            if (binding.timing != GameplayTimingClass::Any &&
-                (!fact->error ||
-                 (binding.timing == GameplayTimingClass::Early && fact->error->value() >= 0) ||
-                 (binding.timing == GameplayTimingClass::Exact && fact->error->value() != 0) ||
-                 (binding.timing == GameplayTimingClass::Late && fact->error->value() <= 0)))
-                continue;
-            projection.scheduled.push_back({fact->factId, binding});
-            projection.completedBindings.insert(binding.bindingId);
-        }
-    }
-    std::erase_if(projection.scheduled, [&](const auto& item) {
-        return item.binding.end && item.binding.end->value <= t.value;
-    });
-    std::map<std::string, bool, std::less<>> active;
-    core::Diagnostics presentationDiagnostics;
-    const auto ready = [&](const GameplayFactBinding& b) {
-        return b.aggregation == GameplayAggregation::Any ||
-               std::ranges::all_of(b.groupMembers, [&](const auto& member) {
-                   return projection.completedBindings.contains(member);
-               });
-    };
-    const auto hasTarget = [&](const GameplayFactBinding& b) {
-        return std::ranges::any_of(state_->snapshotLayout.entities, [&](const auto& object) {
-            return object.id.value == b.target && object.mesh.has_value();
+    auto mutation =
+        internal::presentation::Mutation::reserve(state_->presentationClock, false, !rebuildScope);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
+    auto candidate = PresentationProjectionAdapter::project(
+        state_->gameplayProjectionIndex, projection, publication, t,
+        [&](std::uint64_t ordinal) { return read->fact(ordinal); },
+        [&](std::size_t index, std::string_view id) -> core::Result<bool> {
+            if (index >= state_->snapshotLayout.entities.size())
+                return false;
+            const auto& target = state_->snapshotLayout.entities[index];
+            if (target.id.value != id || !target.mesh)
+                return false;
+            auto current =
+                runtime::detail::PresentationAccess::state(std::as_const(*state_->runtimeSession));
+            if (!current)
+                return core::unexpected(std::move(current.error()));
+            bool present{};
+            auto checked = runtime::detail::PresentationAccess::read(
+                std::as_const(*state_->runtimeSession),
+                {state_->snapshotLayout.runtimeOwner, state_->snapshotLayout.runtimeLayout,
+                 current->stamp.version},
+                [&](const runtime::detail::PresentationRead& view) -> core::Result<void> {
+                    auto value = view.readObject(target.runtimeIndex);
+                    if (!value)
+                        return core::unexpected(std::move(value.error()));
+                    present = value->id == id && value->hasRenderable;
+                    return {};
+                });
+            if (!checked)
+                return core::unexpected(std::move(checked.error()));
+            return present;
         });
-    };
-    std::map<std::vector<std::string>, std::pair<bool, bool>> groupAttempts;
-    for (const auto& scheduled : projection.scheduled) {
-        const auto& b = scheduled.binding;
-        if (b.aggregation == GameplayAggregation::GroupCommit && b.start.value <= t.value &&
-            ready(b) && !projection.rejectedGroups.contains(b.groupMembers)) {
-            auto& outcome = groupAttempts[b.groupMembers];
-            if (hasTarget(b))
-                outcome.first = true;
-            else
-                outcome.second = true;
-        }
-    }
-    for (const auto& [members, attempt] : groupAttempts)
-        if (attempt.first && attempt.second) {
-            presentationDiagnostics.add(core::Diagnostic{
-                core::DiagnosticSeverity::Error, "partial-group",
-                "Gameplay group retained committed members and rejects new members",
-                members.front()});
-        }
-    const auto priorRejected = projection.rejectedGroups;
-    for (auto& scheduled : projection.scheduled) {
-        const auto& b = scheduled.binding;
-        if (b.start.value > t.value || !ready(b) ||
-            (priorRejected.contains(b.groupMembers) && !scheduled.published))
-            continue;
-        const auto target =
-            std::ranges::find_if(state_->snapshotLayout.entities, [&](const auto& object) {
-                return object.id.value == b.target && object.mesh.has_value();
-            });
-        if (target == state_->snapshotLayout.entities.end()) {
-            presentationDiagnostics.add(
-                core::Diagnostic{core::DiagnosticSeverity::Error, "presentation-target-missing",
-                                 "Gameplay presentation target missing", b.target});
-            continue;
-        }
-        const auto [it, inserted] = active.emplace(b.target, b.visible);
-        if (!inserted && it->second != b.visible) {
-            return core::unexpected(gameplayError("Conflicting active Gameplay writes"));
-        }
-        scheduled.published = true;
-    }
-    for (const auto& [members, attempt] : groupAttempts)
-        if (attempt.first && attempt.second)
-            projection.rejectedGroups.insert(members);
+    if (!candidate)
+        return core::unexpected(std::move(candidate.error()));
+    measurement.items(candidate->matchedRows);
+    if (!candidate->state.sourceScope)
+        candidate->state.sourceScope = allocatePlaybackSessionToken();
     std::vector<runtime::PropertyOverrideWrite> writes;
-    writes.reserve(active.size());
-    for (const auto& [id, value] : active)
+    writes.reserve(candidate->writes.size());
+    for (const auto& [id, value] : candidate->writes)
         writes.push_back({chart::ChartObjectId{id}, world::PropertyId::RenderVisible, value});
+    CommittedPresentationState descriptor;
+    descriptor.source = rebuildScope ? internal::presentation::Source::Restore
+                                     : internal::presentation::Source::RuntimeUpdate;
+    descriptor.frame = frame;
+    descriptor.presentationTick = t.value;
+    descriptor.factCursor = publication.publishableCursor;
+    descriptor.controlCursor = publication.controlCursor;
+    descriptor.hasFold = publication.hasFold;
+    const auto work = publication.hasFold ? publication.foldWorkTick : publication.kernelWorkTick;
+    if (work)
+        descriptor.workTick = work->value();
+    descriptor.activationRevision = mutation->version();
     if (failureStage)
         *failureStage = GameplayPublicationFailureStage::Runtime;
     auto updated =
@@ -3873,11 +3795,7 @@ auto detail::GameplayPublicationAccess::publish(
     if (!updated) {
         return updated;
     }
-    projection.lastTick = t;
-    state_->gameplayProjection = std::move(projection);
-    state_->lastFrame = frame;
-    state_->sessionState = SessionState::Running;
-    state_->lastOperationDiagnostics = std::move(presentationDiagnostics);
+    finalize(session, std::move(*candidate), frame, *mutation, descriptor);
     return {};
 } catch (...) {
     return core::unexpected(gameplayError("Gameplay projection allocation failed"));
@@ -3902,8 +3820,8 @@ auto PlaybackSession::queryGameplayPresentation() const
     const auto& projection = state_->gameplayProjection;
     std::map<std::tuple<std::uint64_t, std::uint64_t, std::string>, GameplayPresentationSource>
         sources;
-    for (const auto& scheduled : projection.scheduled) {
-        const auto& b = scheduled.binding;
+    for (const auto& scheduled : projection.active) {
+        const auto& b = state_->gameplayProjectionIndex.rows[scheduled.row].binding;
         if (!scheduled.published || !projection.lastTick ||
             b.start.value > projection.lastTick->value ||
             (b.end && b.end->value <= projection.lastTick->value))
@@ -4707,6 +4625,9 @@ auto PlaybackSession::controlGameplay(GameplayControl control) -> core::Result<v
     if (control == GameplayControl::Stop && state_->gameplayState == GameplayState::Faulted)
         return core::unexpected(gameplayError("Faulted Gameplay requires Reset or replacement"));
     if (control == GameplayControl::Reset || control == GameplayControl::Stop) {
+        auto mutation = internal::presentation::Mutation::reserve(state_->presentationClock);
+        if (!mutation)
+            return core::unexpected(std::move(mutation.error()));
         auto fresh = makeGameplaySession(state_->gameplayContent);
         if (!fresh)
             return core::unexpected(detail::projectGameplayError(std::move(fresh.error())));
@@ -4729,6 +4650,11 @@ auto PlaybackSession::controlGameplay(GameplayControl control) -> core::Result<v
             control == GameplayControl::Stop ? GameplayState::Paused : GameplayState::Prepared;
         state_->gameplayReceipt.reset();
         state_->gameplayProjection = {};
+        detail::CommittedPresentationState descriptor;
+        descriptor.source = internal::presentation::Source::Restore;
+        descriptor.frame = state_->lastFrame;
+        descriptor.activationRevision = mutation->version();
+        state_->publishPresentation(*mutation, descriptor);
     } else {
         if (state_->gameplayState == GameplayState::Faulted)
             return core::unexpected(gameplayError("Faulted Gameplay requires reset"));

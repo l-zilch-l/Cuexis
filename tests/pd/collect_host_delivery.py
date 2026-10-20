@@ -11,8 +11,8 @@ import sys
 import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "tools/verification"))
-import measure_pd0_method as base
+sys.path.insert(0, str(ROOT))
+from tools.verification.playback_performance import baseline_method as base
 
 
 def invoke(output, name, binary, machine, active):
@@ -20,7 +20,7 @@ def invoke(output, name, binary, machine, active):
     env.pop("CUEXIS_PD_METRICS", None)
     if active:
         env["CUEXIS_PD_METRICS"] = str(output / name)
-    command = [sys.executable, "-B", str(ROOT / "tools/verification/measure_pd0_method.py"),
+    command = [sys.executable, "-B", str(ROOT / "tools/verification/playback_performance/baseline_method.py"),
                "--child", str(machine["selected_affinity"]), str(binary),
                "PD host delivery and receipt acknowledgement baseline", "--rng-seed", "1"]
     with (output / (name + ".log")).open("wb") as log:
@@ -30,6 +30,8 @@ def invoke(output, name, binary, machine, active):
     rows, identities = parse("PD_HOST_SAMPLE "), parse("PD_HOST_ID ")
     if completed.returncode or len(identities) != 1 or len(rows) != 512:
         raise RuntimeError(f"Host probe failed/incomplete: {name}, exit={completed.returncode}")
+    if identities[0].get("receipt_mode") == "asynchronous":
+        raise RuntimeError("PD4 present-return timing cannot be compared with the historical receipt-ack baseline")
     if [row["ordinal"] for row in rows] != list(range(512)) or identities[0]["recording"] != active:
         raise RuntimeError("Host sample order or observation mode differs")
     diagnostics = [json.loads(line) for p in output.glob(name + ".*.jsonl")

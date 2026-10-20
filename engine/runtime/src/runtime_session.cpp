@@ -1,7 +1,9 @@
 // RuntimeSession transactional lifecycle and absolute-time Behavior evaluation.
 
 #include <cuexis/runtime/runtime_session.hpp>
+#include <cuexis/runtime/transaction_access.hpp>
 #include <cuexis_internal/presentation_metrics.hpp>
+#include <cuexis_internal/allocation_observer.hpp>
 
 #include <cuexis/animation/animation_program.hpp>
 #include <cuexis/animation/animation_system.hpp>
@@ -14,6 +16,7 @@
 #include <cuexis/render/camera_component.hpp>
 #include <cuexis/render/renderable_component.hpp>
 #include <cuexis/world/property.hpp>
+#include <cuexis/world/resolver_access.hpp>
 #include <cuexis/world/transform_system.hpp>
 
 #include <entt/entity/registry.hpp>
@@ -44,14 +47,14 @@ class RuntimeEvaluationState final {
         entt::entity entity{entt::null};
         double baselineFovY{60.0};
         double candidateFovY{60.0};
-        render::CameraComponent previous{};
+        render::CameraComponent* slot{};
     };
 
     struct AppearanceEntry final {
         entt::entity entity{entt::null};
         render::AppearanceComponent baseline;
         render::AppearanceComponent candidate;
-        render::AppearanceComponent previous;
+        render::AppearanceComponent* slot{};
     };
 
     behavior::BehaviorProgram program;
@@ -68,9 +71,25 @@ class RuntimeEvaluationState final {
     std::uint64_t nextOverrideId{1};
     std::vector<CameraEntry> cameras;
     std::vector<AppearanceEntry> appearances;
-    bool camerasCommitted{};
-    bool appearancesCommitted{};
+    std::vector<world::detail::TransformWrite> transformWrites;
 };
+
+auto detail::RuntimeTestAccess::state(const RuntimeSession& session) -> RuntimeTransactionState {
+    RuntimeTransactionState result{session.lastFrame_, session.baseRevision(), {}};
+    if (session.evaluation_) {
+        const auto append = [&](const auto& tokens) {
+            result.tokenState.push_back(tokens.size());
+            for (const auto& token : tokens)
+                result.tokenState.insert(result.tokenState.end(),
+                                         {token.id.value,
+                                          static_cast<std::uint64_t>(token.lifetime.kind),
+                                          token.lifetime.remainingFrames});
+        };
+        append(session.evaluation_->hostOverrides);
+        append(session.evaluation_->previewOverrides);
+    }
+    return result;
+}
 
 namespace {
 
@@ -227,8 +246,8 @@ constexpr std::array<world::PropertyId, world::propertyCount> allPropertyIds{
     world::PropertyId::MaterialOpacity,    world::PropertyId::MaterialTint,
 };
 
-[[nodiscard]] auto overrideIsActive(const world::OverrideToken& token, const RuntimeFrame& frame)
-    -> bool {
+[[nodiscard]] auto overrideIsActive(const world::OverrideToken& token,
+                                    const RuntimeFrame& frame) noexcept -> bool {
     switch (token.lifetime.kind) {
     case world::OverrideLifetimeKind::UntilReleased:
         return true;
@@ -240,7 +259,7 @@ constexpr std::array<world::PropertyId, world::propertyCount> allPropertyIds{
     return false;
 }
 
-void tickOverrideLifetimes(std::vector<world::OverrideToken>& tokens) {
+void tickOverrideLifetimes(std::vector<world::OverrideToken>& tokens) noexcept {
     for (auto& token : tokens) {
         if (token.lifetime.kind == world::OverrideLifetimeKind::RemainingFrames &&
             token.lifetime.remainingFrames > 0) {
@@ -525,7 +544,6 @@ void tickOverrideLifetimes(std::vector<world::OverrideToken>& tokens) {
                 .entity = entity,
                 .baselineFovY = camera.fovY,
                 .candidateFovY = camera.fovY,
-                .previous = camera,
             });
         }
     });
@@ -567,10 +585,8 @@ void tickOverrideLifetimes(std::vector<world::OverrideToken>& tokens) {
                 .entity = entity,
                 .baseline = appearance,
                 .candidate = appearance,
-                .previous = appearance,
             };
             entry.candidate.materialAssetId.reserve(materialSize);
-            entry.previous.materialAssetId.reserve(materialSize);
             state->appearances.push_back(std::move(entry));
         }
     });
@@ -589,8 +605,7 @@ void tickOverrideLifetimes(std::vector<world::OverrideToken>& tokens) {
     for (const auto& appearance : state->appearances) {
         maxMaterialBytes =
             std::max({maxMaterialBytes, appearance.baseline.materialAssetId.capacity(),
-                      appearance.candidate.materialAssetId.capacity(),
-                      appearance.previous.materialAssetId.capacity()});
+                      appearance.candidate.materialAssetId.capacity()});
         state->resolver.reserveStringCapacity(appearance.entity, world::PropertyId::RenderMaterial,
                                               appearance.candidate.materialAssetId.capacity());
     }
@@ -605,100 +620,69 @@ void tickOverrideLifetimes(std::vector<world::OverrideToken>& tokens) {
     return state;
 }
 
-[[nodiscard]] auto commitCameras(RuntimeEvaluationState& state, world::World& world)
+// All component existence checks and owning string preparation precede installation.
+auto preparePresentationSlots(RuntimeEvaluationState& state, world::detail::TransformUpdate& plan)
     -> core::Result<void> {
-    auto result = world.withRegistry([&](entt::registry& registry) -> core::Result<void> {
-        for (const auto& camera : state.cameras) {
-            if (!registry.valid(camera.entity) ||
-                !registry.all_of<render::CameraComponent>(camera.entity)) {
-                return core::unexpected(core::Error{"runtime.camera.baseline_missing",
-                                                    "A captured CameraComponent is unavailable"});
-            }
-        }
-        for (auto& camera : state.cameras) {
-            auto& component = registry.get<render::CameraComponent>(camera.entity);
-            camera.previous = component;
-            component.fovY = camera.candidateFovY;
-        }
-        return {};
-    });
-    if (result) {
-        state.camerasCommitted = true;
+    for (auto& camera : state.cameras) {
+        camera.slot = plan.resolve<render::CameraComponent>(camera.entity);
+        if (!camera.slot)
+            return core::unexpected(core::Error{"runtime.camera.baseline_missing",
+                                                "A captured CameraComponent is unavailable"});
     }
-    return result;
+    for (auto& appearance : state.appearances) {
+        appearance.slot = plan.resolve<render::AppearanceComponent>(appearance.entity);
+        if (!appearance.slot)
+            return core::unexpected(core::Error{"runtime.appearance.baseline_missing",
+                                                "A captured AppearanceComponent is unavailable"});
+    }
+    return {};
+}
+void installPresentation(RuntimeEvaluationState& state) noexcept {
+    for (auto& camera : state.cameras) {
+        camera.slot->fovY = camera.candidateFovY;
+        camera.slot = nullptr;
+    }
+    for (auto& appearance : state.appearances) {
+        appearance.slot->visible = appearance.candidate.visible;
+        appearance.slot->opacity = appearance.candidate.opacity;
+        appearance.slot->tint = appearance.candidate.tint;
+        appearance.slot->materialAssetId.swap(appearance.candidate.materialAssetId);
+        appearance.slot = nullptr;
+    }
 }
 
-void rollbackCameras(RuntimeEvaluationState& state, world::World& world) noexcept {
-    if (!state.camerasCommitted) {
-        return;
+void installRuntimeState(RuntimeEvaluationState& state, world::detail::TransformUpdate& plan,
+                         const RuntimeFrame& frame, bool tickLifetimes) noexcept {
+    using internal::pd::memory::structure;
+    structure("candidate.runtime", 1, 1);
+    structure("candidate.cameras", state.cameras.size(), state.cameras.capacity());
+    structure("candidate.appearances", state.appearances.size(), state.appearances.capacity());
+    structure("candidate.animation-bindings", state.animationBindings.size(), state.animationBindings.capacity());
+    structure("candidate.animation-baselines", state.animationBaselines.size(), state.animationBaselines.capacity());
+    structure("candidate.animation-contributions", state.animationLayerContributions.size(), state.animationLayerContributions.capacity());
+    structure("candidate.host-overrides", state.hostOverrides.size(), state.hostOverrides.capacity());
+    structure("candidate.preview-overrides", state.previewOverrides.size(), state.previewOverrides.capacity());
+    structure("candidate.gameplay-writes", state.gameplayWrites.size(), state.gameplayWrites.capacity());
+    structure("scratch.runtime-transform-writes", state.transformWrites.size(), state.transformWrites.capacity());
+    static_assert(std::is_nothrow_move_assignable_v<world::OverrideToken>);
+    plan.apply();
+    installPresentation(state);
+    world::detail::ResolverAccess::installed(state.resolver);
+    if (tickLifetimes) {
+        tickOverrideLifetimes(state.hostOverrides);
+        tickOverrideLifetimes(state.previewOverrides);
     }
-    const auto rolledBack = world.withRegistry([&](entt::registry& registry) {
-        for (const auto& camera : state.cameras) {
-            if (registry.valid(camera.entity) &&
-                registry.all_of<render::CameraComponent>(camera.entity)) {
-                registry.replace<render::CameraComponent>(camera.entity, camera.previous);
-            }
-        }
-    });
-    if (!rolledBack) {
-        std::terminate();
-    }
-    state.camerasCommitted = false;
-}
+    const auto pruneInactive = [&](std::vector<world::OverrideToken>& tokens) {
+        tokens.erase(std::remove_if(tokens.begin(), tokens.end(),
+                                    [&](const world::OverrideToken& token) {
+                                        return !overrideIsActive(token, frame);
+                                    }),
+                     tokens.end());
+    };
+    pruneInactive(state.hostOverrides);
+    pruneInactive(state.previewOverrides);
 
-[[nodiscard]] auto commitAppearances(RuntimeEvaluationState& state, world::World& world)
-    -> core::Result<void> {
-    auto result = world.withRegistry([&](entt::registry& registry) -> core::Result<void> {
-        for (const auto& appearance : state.appearances) {
-            if (!registry.valid(appearance.entity) ||
-                !registry.all_of<render::AppearanceComponent>(appearance.entity)) {
-                return core::unexpected(
-                    core::Error{"runtime.appearance.baseline_missing",
-                                "A captured AppearanceComponent is unavailable"});
-            }
-        }
-        for (auto& appearance : state.appearances) {
-            auto& component = registry.get<render::AppearanceComponent>(appearance.entity);
-            appearance.previous.visible = component.visible;
-            appearance.previous.opacity = component.opacity;
-            appearance.previous.tint = component.tint;
-            appearance.previous.materialAssetId.assign(component.materialAssetId);
-        }
-        for (auto& appearance : state.appearances) {
-            auto& component = registry.get<render::AppearanceComponent>(appearance.entity);
-            component.visible = appearance.candidate.visible;
-            component.opacity = appearance.candidate.opacity;
-            component.tint = appearance.candidate.tint;
-            component.materialAssetId.swap(appearance.candidate.materialAssetId);
-        }
-        return {};
-    });
-    if (result) {
-        state.appearancesCommitted = true;
-    }
-    return result;
-}
-
-void rollbackAppearances(RuntimeEvaluationState& state, world::World& world) noexcept {
-    if (!state.appearancesCommitted) {
-        return;
-    }
-    const auto rolledBack = world.withRegistry([&](entt::registry& registry) {
-        for (auto& appearance : state.appearances) {
-            if (registry.valid(appearance.entity) &&
-                registry.all_of<render::AppearanceComponent>(appearance.entity)) {
-                auto& component = registry.get<render::AppearanceComponent>(appearance.entity);
-                component.visible = appearance.previous.visible;
-                component.opacity = appearance.previous.opacity;
-                component.tint = appearance.previous.tint;
-                component.materialAssetId.swap(appearance.previous.materialAssetId);
-            }
-        }
-    });
-    if (!rolledBack) {
-        std::terminate();
-    }
-    state.appearancesCommitted = false;
+    plan.finish();
 }
 
 [[nodiscard]] auto validateFrame(const RuntimeFrame& frame,
@@ -801,7 +785,8 @@ PreparedRuntimeSession::PreparedRuntimeSession(PreparedRuntimeSession&& other) n
     : owner_(other.owner_), ownerToken_(other.ownerToken_), managerToken_(other.managerToken_),
       chartRuntime_(std::move(other.chartRuntime_)), objects_(std::move(other.objects_)),
       diagnostics_(std::move(other.diagnostics_)), evaluation_(std::move(other.evaluation_)),
-      resourceScope_(std::move(other.resourceScope_)), world_(std::move(other.world_)) {
+      resourceScope_(std::move(other.resourceScope_)), world_(std::move(other.world_)),
+      presentationCamera_(other.presentationCamera_) {
     other.owner_ = nullptr;
     other.ownerToken_ = 0;
     other.managerToken_ = 0;
@@ -824,6 +809,7 @@ auto PreparedRuntimeSession::operator=(PreparedRuntimeSession&& other) noexcept
     evaluation_ = std::move(other.evaluation_);
     resourceScope_ = std::move(other.resourceScope_);
     world_ = std::move(other.world_);
+    presentationCamera_ = other.presentationCamera_;
     other.owner_ = nullptr;
     other.ownerToken_ = 0;
     other.managerToken_ = 0;
@@ -957,12 +943,32 @@ auto RuntimeSession::prepare(chart::ChartRuntime chartRuntime,
         return result;
     }
 
+    auto camera =
+        std::as_const(*instantiated.value->world)
+            .withRegistry([&](const entt::registry& registry) -> std::optional<entt::entity> {
+                for (std::size_t index = 0; index < chartRuntime.objects.size(); ++index) {
+                    const auto entity = instantiated.value->objects.entries()[index].entity;
+                    if (chartRuntime.objects[index].components.camera &&
+                        registry.all_of<render::CameraComponent>(entity))
+                        return entity;
+                }
+                std::optional<entt::entity> selected;
+                for (const auto entity : registry.view<const render::CameraComponent>())
+                    if (!selected || entt::to_integral(entity) < entt::to_integral(*selected))
+                        selected = entity;
+                return selected;
+            });
+    if (!camera) {
+        addSessionError(result.diagnostics, camera.error());
+        return result;
+    }
     result.diagnostics.sortDeterministically();
     auto world = std::move(instantiated.value->world);
     auto objects = std::move(instantiated.value->objects);
     result.prepared.emplace(PreparedRuntimeSession{
         *this, sessionToken_, managerToken_, std::move(chartRuntime), std::move(objects),
         result.diagnostics, std::move(*evaluation), std::move(resourceScope), std::move(world)});
+    result.prepared->presentationCamera_ = *camera;
     return result;
 }
 
@@ -992,17 +998,22 @@ auto RuntimeSession::commit(PreparedRuntimeSession&& prepared) -> core::Result<v
                         "PreparedRuntimeSession belongs to a different ResourceManager"});
     }
 
+    auto mutation = internal::presentation::Mutation::reserve(presentationClock_, true);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
     chartRuntime_.emplace(std::move(prepared.chartRuntime_));
     objects_ = std::move(prepared.objects_);
     activeDiagnostics_ = std::move(prepared.diagnostics_);
     evaluation_ = std::move(prepared.evaluation_);
     resourceScope_ = std::move(prepared.resourceScope_);
     world_ = std::move(prepared.world_);
+    presentationCamera_ = prepared.presentationCamera_;
     lastFrame_.reset();
+    publishPresentation(*mutation, internal::presentation::Source::Prepared);
     return {};
 }
 
-auto RuntimeSession::updatePrepared(RuntimeEvaluationState& state,
+auto RuntimeSession::updatePrepared(world::World& targetWorld, RuntimeEvaluationState& state,
                                     const chart::TimingMap& timingMap, const RuntimeFrame& frame,
                                     bool tickLifetimes, std::vector<RuntimeDebugRecord>* records,
                                     bool* truncated) -> core::Result<void> {
@@ -1081,20 +1092,6 @@ auto RuntimeSession::updatePrepared(RuntimeEvaluationState& state,
             return core::unexpected(std::move(previewApplied.error()));
         }
     }
-    if (tickLifetimes) {
-        tickOverrideLifetimes(state.hostOverrides);
-        tickOverrideLifetimes(state.previewOverrides);
-    }
-    const auto pruneInactive = [&](std::vector<world::OverrideToken>& tokens) {
-        tokens.erase(std::remove_if(tokens.begin(), tokens.end(),
-                                    [&](const world::OverrideToken& token) {
-                                        return !overrideIsActive(token, frame);
-                                    }),
-                     tokens.end());
-    };
-    pruneInactive(state.hostOverrides);
-    pruneInactive(state.previewOverrides);
-
     auto finalized = state.resolver.finalize();
     if (!finalized) {
         return core::unexpected(std::move(finalized.error()));
@@ -1113,30 +1110,40 @@ auto RuntimeSession::updatePrepared(RuntimeEvaluationState& state,
             *truncated = false;
         }
     }
+    if (!transformUpdate_)
+        transformUpdate_ = std::make_unique<world::detail::TransformUpdate>();
+    auto transforms =
+        world::detail::ResolverAccess::prepareTransforms(state.resolver, state.transformWrites);
+    if (!transforms)
+        return transforms;
+    auto planned = transformUpdate_->prepare(targetWorld, state.transformWrites);
+    if (!planned)
+        return planned;
+    struct PreparedWindow final {
+        world::detail::TransformUpdate& plan;
+        RuntimeEvaluationState& state;
+        ~PreparedWindow() {
+            for (auto& camera : state.cameras)
+                camera.slot = nullptr;
+            for (auto& appearance : state.appearances)
+                appearance.slot = nullptr;
+            plan.cancel();
+        }
+    } window{*transformUpdate_, state};
+    auto slots = preparePresentationSlots(state, *transformUpdate_);
+    if (!slots)
+        return slots;
     internal::pd::Timer commit{internal::pd::Stage::runtimeCommit};
-    auto transformsCommitted = state.resolver.commit(*world_);
-    if (!transformsCommitted) {
-        return core::unexpected(std::move(transformsCommitted.error()));
-    }
-    auto camerasCommitted = commitCameras(state, *world_);
-    if (!camerasCommitted) {
-        state.resolver.rollback(*world_);
-        return core::unexpected(std::move(camerasCommitted.error()));
-    }
-    auto appearancesCommitted = commitAppearances(state, *world_);
-    if (!appearancesCommitted) {
-        rollbackCameras(state, *world_);
-        state.resolver.rollback(*world_);
-        return core::unexpected(std::move(appearancesCommitted.error()));
-    }
-    auto transformsUpdated = world::updateWorldTransforms(*world_);
-    if (!transformsUpdated) {
-        rollbackAppearances(state, *world_);
-        rollbackCameras(state, *world_);
-        state.resolver.rollback(*world_);
-        return core::unexpected(std::move(transformsUpdated.error()));
-    }
+    installRuntimeState(state, *transformUpdate_, frame, tickLifetimes);
+
     return {};
+}
+
+auto detail::RuntimeTestAccess::sampleReload(RuntimeSession& session,
+                                             PreparedRuntimeSession& prepared,
+                                             const RuntimeFrame& frame) -> core::Result<void> {
+    return session.updatePrepared(*prepared.world_, *prepared.evaluation_,
+                                  prepared.chartRuntime_.timingMap, frame);
 }
 
 auto RuntimeSession::captureDebug(const RuntimeEvaluationState& state,
@@ -1315,7 +1322,7 @@ auto RuntimeSession::debugSnapshot() const -> core::Result<RuntimeDebugSnapshot>
     }
 }
 
-auto RuntimeSession::update(const RuntimeFrame& frame) -> core::Result<void> {
+auto RuntimeSession::update(const RuntimeFrame& frame) -> core::Result<void> try {
     internal::pd::Timer measurement{internal::pd::Stage::runtime};
     if (!threadChecker_.isCurrent()) {
         return core::unexpected(core::Error{"runtime.session.not_owner_thread",
@@ -1325,30 +1332,31 @@ auto RuntimeSession::update(const RuntimeFrame& frame) -> core::Result<void> {
         return core::unexpected(
             core::Error{"runtime.session.empty", "Cannot update an empty RuntimeSession"});
     }
+    if (callbackActive_)
+        return core::unexpected(
+            core::Error{"runtime.session.callback_reentrant", "Runtime callback reentry"});
     auto valid = validateFrame(frame, lastFrame_);
     if (!valid) {
         return core::unexpected(std::move(valid.error()));
     }
-    auto updated = updatePrepared(*evaluation_, chartRuntime_->timingMap, frame);
-    if (!updated) {
-        return core::unexpected(std::move(updated.error()));
-    }
-    if (debugOptions_.enabled) {
-        const auto beatSample = chartRuntime_->timingMap.sampleChartTimeMs(frame.chartTimeMs);
-        if (!beatSample) {
-            return core::unexpected(std::move(beatSample.error()));
-        }
-        auto captured =
-            captureDebug(*evaluation_, objects_, beatSample->beat, debugRecords_, debugTruncated_);
-        if (!captured) {
-            return core::unexpected(std::move(captured.error()));
-        }
-    } else {
-        debugRecords_.clear();
-        debugTruncated_ = false;
-    }
+    auto mutation = internal::presentation::Mutation::reserve(presentationClock_, false, true);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
+    bool truncated{};
+    auto updated = updatePrepared(*world_, *evaluation_, chartRuntime_->timingMap, frame, true,
+                                  &pendingDebugRecords_, &truncated);
+    if (!updated)
+        return updated;
+    debugRecords_.swap(pendingDebugRecords_);
+    debugTruncated_ = truncated;
     lastFrame_ = frame;
+    publishPresentation(*mutation, internal::presentation::Source::RuntimeUpdate, frame);
     return {};
+} catch (...) {
+    if (transformUpdate_)
+        transformUpdate_->cancel();
+    return core::unexpected(
+        core::Error{"runtime.session.update_exception", "Runtime preparation failed"});
 }
 
 auto RuntimeSession::acquireOverride(world::OverrideKind kind, std::string ownerId,
@@ -1379,6 +1387,9 @@ auto RuntimeSession::acquireOverride(world::OverrideKind kind, std::string owner
                                             "Override tokens require at least one property write"});
     }
 
+    auto mutation = internal::presentation::Mutation::reserve(presentationClock_);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
     world::OverrideToken token;
     token.id.value = evaluation_->nextOverrideId++;
     token.kind = kind;
@@ -1407,6 +1418,7 @@ auto RuntimeSession::acquireOverride(world::OverrideKind kind, std::string owner
     auto& store = kind == world::OverrideKind::StudioPreview ? evaluation_->previewOverrides
                                                              : evaluation_->hostOverrides;
     store.push_back(std::move(token));
+    publishPresentation(*mutation, internal::presentation::Source::Mutation);
     return store.back().id;
 }
 
@@ -1423,6 +1435,9 @@ auto RuntimeSession::releaseOverride(world::OverrideTokenId id) -> core::Result<
         return core::unexpected(
             core::Error{"runtime.session.empty", "RuntimeSession has no committed World"});
     }
+    auto mutation = internal::presentation::Mutation::reserve(presentationClock_);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
     auto eraseFrom = [&](std::vector<world::OverrideToken>& tokens) {
         const auto found =
             std::find_if(tokens.begin(), tokens.end(),
@@ -1434,6 +1449,7 @@ auto RuntimeSession::releaseOverride(world::OverrideTokenId id) -> core::Result<
         return true;
     };
     if (eraseFrom(evaluation_->hostOverrides) || eraseFrom(evaluation_->previewOverrides)) {
+        publishPresentation(*mutation, internal::presentation::Source::Mutation);
         return {};
     }
     return core::unexpected(
@@ -1443,7 +1459,7 @@ auto RuntimeSession::releaseOverride(world::OverrideTokenId id) -> core::Result<
 
 auto RuntimeSession::applyBaseProperty(const chart::ChartObjectId& objectId,
                                        world::PropertyId property, world::PropertyValue value)
-    -> core::Result<void> {
+    -> core::Result<void> try {
     if (!threadChecker_.isCurrent()) {
         return core::unexpected(core::Error{"runtime.session.not_owner_thread",
                                             "RuntimeSession belongs to another thread"});
@@ -1456,17 +1472,21 @@ auto RuntimeSession::applyBaseProperty(const chart::ChartObjectId& objectId,
         return core::unexpected(
             core::Error{"runtime.session.empty", "RuntimeSession has no committed World"});
     }
+    auto mutation = internal::presentation::Mutation::reserve(presentationClock_);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
+    auto candidate = std::make_unique<RuntimeEvaluationState>(*evaluation_);
     const auto entity = objects_.find(objectId);
     if (!entity.has_value() || *entity == entt::null) {
         return core::unexpected(
             core::Error{"runtime.property.object_missing", "Base property target was not found"}
                 .withContext("object_id", objectId.value));
     }
-    auto applied = evaluation_->resolver.applyBaseProperty(*entity, property, value);
+    auto applied = candidate->resolver.applyBaseProperty(*entity, property, value);
     if (!applied) {
         return applied;
     }
-    for (auto& binding : evaluation_->program.bindings) {
+    for (auto& binding : candidate->program.bindings) {
         if (binding.entity != *entity) {
             continue;
         }
@@ -1478,14 +1498,14 @@ auto RuntimeSession::applyBaseProperty(const chart::ChartObjectId& objectId,
     }
     if (property == world::PropertyId::CameraFovY) {
         if (const auto* fov = std::get_if<double>(&value)) {
-            for (auto& camera : evaluation_->cameras) {
+            for (auto& camera : candidate->cameras) {
                 if (camera.entity == *entity) {
                     camera.baselineFovY = *fov;
                 }
             }
         }
     }
-    for (auto& appearance : evaluation_->appearances) {
+    for (auto& appearance : candidate->appearances) {
         if (appearance.entity != *entity) {
             continue;
         }
@@ -1514,25 +1534,26 @@ auto RuntimeSession::applyBaseProperty(const chart::ChartObjectId& objectId,
             break;
         }
     }
-    if (!lastFrame_.has_value()) {
-        return {};
+    std::vector<RuntimeDebugRecord> records;
+    bool truncated{};
+    if (lastFrame_) {
+        auto updated = updatePrepared(*world_, *candidate, chartRuntime_->timingMap, *lastFrame_,
+                                      true, &records, &truncated);
+        if (!updated)
+            return updated;
     }
-    auto updated = updatePrepared(*evaluation_, chartRuntime_->timingMap, *lastFrame_);
-    if (!updated) {
-        return updated;
+    evaluation_.swap(candidate);
+    if (lastFrame_) {
+        debugRecords_.swap(records);
+        debugTruncated_ = truncated;
     }
-    if (debugOptions_.enabled) {
-        const auto beatSample = chartRuntime_->timingMap.sampleChartTimeMs(lastFrame_->chartTimeMs);
-        if (!beatSample) {
-            return core::unexpected(std::move(beatSample.error()));
-        }
-        auto captured =
-            captureDebug(*evaluation_, objects_, beatSample->beat, debugRecords_, debugTruncated_);
-        if (!captured) {
-            return core::unexpected(std::move(captured.error()));
-        }
-    }
+    publishPresentation(*mutation, internal::presentation::Source::Mutation);
     return {};
+} catch (...) {
+    if (transformUpdate_)
+        transformUpdate_->cancel();
+    return core::unexpected(
+        core::Error{"runtime.session.update_exception", "Base property preparation failed"});
 }
 
 auto RuntimeSession::applyBaseProperty(const BasePropertyCommand& command) -> core::Result<void> {
@@ -1550,7 +1571,7 @@ auto RuntimeSession::reload(chart::ChartRuntime replacement) -> RuntimeSessionRe
 }
 
 auto RuntimeSession::reload(chart::ChartRuntime replacement, const RuntimeFrame& targetFrame,
-                            ReloadPolicy policy) -> RuntimeSessionReloadResult {
+                            ReloadPolicy policy) -> RuntimeSessionReloadResult try {
     RuntimeSessionReloadResult result;
     if (!threadChecker_.isCurrent()) {
         addSessionError(result.diagnostics, "runtime.session.not_owner_thread",
@@ -1574,6 +1595,16 @@ auto RuntimeSession::reload(chart::ChartRuntime replacement, const RuntimeFrame&
         return result;
     }
 
+    if (callbackActive_) {
+        addSessionError(result.diagnostics, "runtime.session.callback_reentrant",
+                        "Runtime callback reentry");
+        return result;
+    }
+    auto mutation = internal::presentation::Mutation::reserve(presentationClock_, true);
+    if (!mutation) {
+        addSessionError(result.diagnostics, mutation.error());
+        return result;
+    }
     auto preparedResult =
         evaluation_->animation.has_value()
             ? prepare(std::move(replacement), animation::AnimationProgram{*evaluation_->animation})
@@ -1584,12 +1615,10 @@ auto RuntimeSession::reload(chart::ChartRuntime replacement, const RuntimeFrame&
         return result;
     }
 
-    auto previousWorld = std::move(world_);
-    world_ = std::move(preparedResult.prepared->world_);
-    auto sampled = updatePrepared(*preparedResult.prepared->evaluation_,
-                                  preparedResult.prepared->chartRuntime_.timingMap, reloadFrame);
-    preparedResult.prepared->world_ = std::move(world_);
-    world_ = std::move(previousWorld);
+    // Evaluate the candidate directly; the active World is never exchanged during prepare.
+    auto sampled =
+        updatePrepared(*preparedResult.prepared->world_, *preparedResult.prepared->evaluation_,
+                       preparedResult.prepared->chartRuntime_.timingMap, reloadFrame);
     if (!sampled) {
         addSessionError(result.diagnostics, sampled.error());
         result.diagnostics.sortDeterministically();
@@ -1624,7 +1653,15 @@ auto RuntimeSession::reload(chart::ChartRuntime replacement, const RuntimeFrame&
         debugRecords_.clear();
         debugTruncated_ = false;
     }
+    publishPresentation(*mutation, internal::presentation::Source::Restore, reloadFrame);
     result.reloaded = true;
+    return result;
+} catch (...) {
+    if (transformUpdate_)
+        transformUpdate_->cancel();
+    RuntimeSessionReloadResult result;
+    addSessionError(result.diagnostics, "runtime.session.update_exception",
+                    "Reload preparation failed");
     return result;
 }
 
@@ -1633,6 +1670,14 @@ auto RuntimeSession::unload() -> core::Result<void> {
         return core::unexpected(core::Error{"runtime.session.not_owner_thread",
                                             "RuntimeSession unload must run on its owner thread"});
     }
+    if (callbackActive_)
+        return core::unexpected(
+            core::Error{"runtime.session.callback_reentrant", "Runtime callback reentry"});
+    if (!world_)
+        return {};
+    auto mutation = internal::presentation::Mutation::reserve(presentationClock_);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
     evaluation_.reset();
     world_.reset();
     objects_.clear();
@@ -1642,6 +1687,8 @@ auto RuntimeSession::unload() -> core::Result<void> {
     lastFrame_.reset();
     debugRecords_.clear();
     debugTruncated_ = false;
+    presentationCamera_.reset();
+    publishPresentation(*mutation, internal::presentation::Source::Mutation);
     return {};
 }
 
@@ -1692,6 +1739,7 @@ void RuntimeSession::replaceWith(PreparedRuntimeSession&& prepared) noexcept {
     evaluation_ = std::move(prepared.evaluation_);
     resourceScope_ = std::move(prepared.resourceScope_);
     world_ = std::move(prepared.world_);
+    presentationCamera_ = prepared.presentationCamera_;
 
     previousEvaluation.reset();
     previousWorld.reset();
@@ -1717,14 +1765,11 @@ auto RuntimeSession::updateGameplay(const RuntimeFrame& frame,
     auto valid = validateFrame(frame, lastFrame_);
     if (!valid)
         return valid;
+    auto mutation =
+        internal::presentation::Mutation::reserve(presentationClock_, false, tickLifetimes);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
     std::unique_ptr<RuntimeEvaluationState> candidate;
-    const auto rollback = [&] {
-        if (!candidate)
-            return;
-        rollbackAppearances(*candidate, *world_);
-        rollbackCameras(*candidate, *world_);
-        candidate->resolver.rollback(*world_);
-    };
     try {
         {
             internal::pd::Timer copy{internal::pd::Stage::runtimeCopy};
@@ -1732,8 +1777,6 @@ auto RuntimeSession::updateGameplay(const RuntimeFrame& frame,
             copy.logicalCopy(sizeof(RuntimeEvaluationState));
             candidate = std::make_unique<RuntimeEvaluationState>(*evaluation_);
         }
-        candidate->camerasCommitted = false;
-        candidate->appearancesCommitted = false;
         candidate->resolver.beginFrame();
         candidate->gameplayWrites.clear();
         candidate->gameplayWrites.reserve(writes.size());
@@ -1753,22 +1796,35 @@ auto RuntimeSession::updateGameplay(const RuntimeFrame& frame,
         }
         std::vector<RuntimeDebugRecord> records;
         bool truncated{};
-        auto updated = updatePrepared(*candidate, chartRuntime_->timingMap, frame, tickLifetimes,
-                                      &records, &truncated);
+        auto updated = updatePrepared(*world_, *candidate, chartRuntime_->timingMap, frame,
+                                      tickLifetimes, &records, &truncated);
         if (!updated) {
-            rollback();
             return updated;
         }
         evaluation_.swap(candidate);
+        internal::pd::memory::structure("current.runtime", 1, 1);
         debugRecords_.swap(records);
         debugTruncated_ = truncated;
         lastFrame_ = frame;
+        publishPresentation(*mutation,
+                            tickLifetimes ? internal::presentation::Source::RuntimeUpdate
+                                          : internal::presentation::Source::Restore,
+                            frame);
         return {};
     } catch (...) {
-        rollback();
+        if (transformUpdate_)
+            transformUpdate_->cancel();
         return core::unexpected(core::Error{"runtime.session.update_exception",
                                             "Gameplay projection allocation failed"});
     }
+}
+
+void RuntimeSession::publishPresentation(internal::presentation::Mutation& mutation,
+                                         internal::presentation::Source source,
+                                         std::optional<RuntimeFrame> frame) noexcept {
+    mutation.publish();
+    presentationSource_ = source;
+    presentationFrame_ = frame;
 }
 
 } // namespace cuexis::runtime

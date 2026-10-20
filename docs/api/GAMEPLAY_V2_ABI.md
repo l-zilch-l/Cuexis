@@ -1601,12 +1601,12 @@ Snapshot恢复不携带完整原journal，因此canArchive=false，原provisiona
 原message、五项ordered context及absence cause保持，不添加公共登记或Replay能力。
 legacy无参语义拒绝与query无kernel防御兜底仍不由安装SDK公开为新动词。
 
-## PD 反馈观察表示的拟议迁移（2026-10-16）
+## PD 反馈观察表示迁移（2026-10-19 接受）
 
-状态：proposal，未实施、未作为 SDK 发行合同接受。
+状态：ADR 0047 已获 owner 接受，SDK 0.9.0 内部实施与适用本地消费者门禁完成；发行接受保持独立，证据见 [PD-4 报告](../stage_reports/stages/stage-07/pd/2026-10-19-pd4-delivery-retirement-and-observation.md)。
 
 C78-07 的有限 `[start,end)` / UntilReset 语义和 GameplayFactBinding 的 optional end 不变。
-宿主反馈观察当前整数 expiry 无法区分无期限与有限最大 Tick；选定的修订由
+旧宿主反馈观察整数 expiry 无法区分无期限与有限最大 Tick；已实施的修订由
 [实时宿主边界 §8](realtime-host-boundary.md)拥有：FeedbackObservation.expiry 改为显式
 optional typed end，gameplayFeedback 不再以 INT64_MAX 代替 absence。该安装结构变化必须
 完成不兼容 SDK minor、static/shared/installed consumer 和版本拒绝门禁后才可交付。

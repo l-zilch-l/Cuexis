@@ -132,6 +132,8 @@ TEST_CASE("B5 realtime main host cuts after inspection and drives Pause Resume S
         }
         return {};
     };
+    const auto capturePump = wired.pumpMain;
+    unsigned capturesAtClockRead{};
     auto host = player::ExecutionHost::create(renderer, settings, std::move(wired));
     REQUIRE(host);
     live = host->get();
@@ -141,6 +143,13 @@ TEST_CASE("B5 realtime main host cuts after inspection and drives Pause Resume S
     std::uint64_t publication{};
     player::ExecutionHost::ClockSource source =
         [&](const HostContext& c) -> core::Result<ClockObservation> {
+        // This callback is after inspection and before the control cut. A completed owner
+        // reply need not enter the wait/pump loop, so inject here independently of scheduling.
+        if (captureDuringInspect) {
+            if (auto pumped = capturePump(); !pumped)
+                return core::unexpected(std::move(pumped.error()));
+            ++capturesAtClockRead;
+        }
         const auto now = std::chrono::duration_cast<std::chrono::microseconds>(
                              std::chrono::steady_clock::now().time_since_epoch())
                              .count();
@@ -164,6 +173,7 @@ TEST_CASE("B5 realtime main host cuts after inspection and drives Pause Resume S
     REQUIRE(live->state() == HostState::paused);
     REQUIRE(live->pausedCut());
     CHECK(captures > 0);
+    CHECK(capturesAtClockRead == 1);
     CHECK(*live->pausedCut() >= sourceH - 2);
     captureDuringInspect = false;
     sourceH = *live->pausedCut() + 10000;
@@ -309,7 +319,7 @@ TEST_CASE("B5 headless EOF tail preserves owners through Pause Resume and termin
               << ",\"session_control_reserve\":" << settings.session.controlReserve
               << ",\"capture_capacity\":" << settings.captureCapacity << "}\n";
     REQUIRE(replay->toBytes());
-    CHECK_FALSE(frame->snapshot.objects.empty());
+    CHECK_FALSE(frame->snapshotView().objects.empty());
 }
 TEST_CASE("B5 main host drives actual owners and pumps while awaiting directed Close",
           "[b5][host]") {
@@ -344,7 +354,7 @@ TEST_CASE("B5 main host drives actual owners and pumps while awaiting directed C
     CHECK(pumps.load() > 0);
     CHECK((*host)->pumpCount() == pumps.load());
     // External owning snapshots do not depend on either joined worker.
-    CHECK_FALSE(frame->snapshot.objects.empty());
+    CHECK_FALSE(frame->snapshotView().objects.empty());
     REQUIRE((*host)->close());
 }
 

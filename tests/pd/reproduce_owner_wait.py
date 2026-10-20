@@ -8,8 +8,8 @@ import sys
 import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "tools/verification"))
-import measure_pd0_method as base
+sys.path.insert(0, str(ROOT))
+from tools.verification.playback_performance import baseline_method as base
 
 
 def run():
@@ -40,7 +40,7 @@ def run():
     try:
         for item in order:
             name = "{config}-{repeat}-{affinity}".format(**item)
-            command = [sys.executable, "-B", str(ROOT / "tools/verification/measure_pd0_method.py"),
+            command = [sys.executable, "-B", str(ROOT / "tools/verification/playback_performance/baseline_method.py"),
                 "--child", str(masks[item["affinity"]]), binaries[item["config"]]["path"],
                 "PD owner channel completed reply wait characterization", "--rng-seed", "1"]
             env = os.environ.copy()

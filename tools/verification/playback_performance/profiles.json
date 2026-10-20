@@ -1,0 +1,305 @@
+{
+  "schema": "pd5.profile-suite.v1",
+  "accepted": "2026-10-19: local reference scope, all latency/regression thresholds and three-window protocol",
+  "formal_registration": false,
+  "defaults": {
+    "schema": "pd5.profile.v1",
+    "config": "Release",
+    "allocator": "normal",
+    "metrics_compile_enabled": false,
+    "etw": false,
+    "audio": false,
+    "viewport": [
+      1280,
+      720
+    ],
+    "frames": 14400,
+    "warmup_frames": 2400,
+    "rate": 240,
+    "cycles": 10,
+    "source": "tests/rpa/execution_fixture.hpp: presentation() + SessionTestContent/rpa()",
+    "clock": "pd5.steady.us; monotonic timestamps observed; presented source increments exactly 7000 ticks at 1000000 Hz per observation",
+    "input": "empty captured input; fixed rpa fixture; Replay exact equivalence checked within process",
+    "capacity": {
+      "session_commands": 64,
+      "control_reserve": 16,
+      "steps": 128,
+      "step_reserve": 32,
+      "journal_attempts": 4,
+      "journal_feedback": 4,
+      "journal_bytes": 16384,
+      "tombstones": 2,
+      "coverage_intervals": 2,
+      "retention_us": 1000000,
+      "receipt_deadline_us": 5000000,
+      "receipt_capacity": 128,
+      "consumers": 8,
+      "global_payloads": 8,
+      "global_bytes": 67108864,
+      "request_history": 32,
+      "global_attempts": 64,
+      "max_frame_members": 4096,
+      "host_commands": 16,
+      "capture_commands": 64,
+      "capture_reserve": 16,
+      "reply_deadline_ms": 5000,
+      "renderer_payloads": 2,
+      "renderer_attempts": 8
+    },
+    "formal_blockers": [
+      "Full per-domain World/candidate/scratch/index and GPU accounting not instrumented or bounded by this harness",
+      "Device/power/endpoint identities and one finite pilot must be frozen before formal registration",
+      "Formal three-window runner and immutable claims are not provided by the tool-validation entrypoint"
+    ]
+  },
+  "profiles": [
+    {
+      "id": "cpu-stream-v1",
+      "mode": "stream",
+      "gpu": false,
+      "vsync": false
+    },
+    {
+      "id": "cpu-controls-v1",
+      "mode": "controls",
+      "gpu": false,
+      "vsync": false
+    },
+    {
+      "id": "gpu-stream-v1",
+      "mode": "stream",
+      "gpu": true,
+      "vsync": true
+    },
+    {
+      "id": "gpu-controls-v1",
+      "mode": "controls",
+      "gpu": true,
+      "vsync": true
+    },
+    {
+      "id": "cpu-no-consumer-v1",
+      "harness": "presentation-matrix",
+      "mode": "no-consumer",
+      "gpu": false,
+      "vsync": false,
+      "update_ratio": 1,
+      "capture_consumers": 0,
+      "frame_byte_bound": 1048576,
+      "capacity": {
+        "global_bytes": 8388608
+      },
+      "domains": [
+        "SDK",
+        "delivery"
+      ]
+    },
+    {
+      "id": "cpu-low-delivery-v1",
+      "harness": "presentation-matrix",
+      "mode": "low-delivery",
+      "gpu": false,
+      "vsync": false,
+      "update_ratio": 8,
+      "capture_consumers": 1,
+      "frame_byte_bound": 1048576,
+      "capacity": {
+        "global_bytes": 8388608
+      },
+      "domains": [
+        "SDK",
+        "delivery"
+      ]
+    },
+    {
+      "id": "cpu-capture-1-v1",
+      "harness": "presentation-matrix",
+      "mode": "capture-1",
+      "gpu": false,
+      "vsync": false,
+      "update_ratio": 1,
+      "capture_consumers": 1,
+      "frame_byte_bound": 1048576,
+      "capacity": {
+        "global_bytes": 8388608
+      },
+      "domains": [
+        "SDK",
+        "delivery"
+      ]
+    },
+    {
+      "id": "cpu-capture-2-v1",
+      "harness": "presentation-matrix",
+      "mode": "capture-2",
+      "gpu": false,
+      "vsync": false,
+      "update_ratio": 1,
+      "capture_consumers": 2,
+      "frame_byte_bound": 1048576,
+      "capacity": {
+        "global_bytes": 8388608
+      },
+      "domains": [
+        "SDK",
+        "delivery"
+      ]
+    },
+    {
+      "id": "cpu-capture-4-v1",
+      "harness": "presentation-matrix",
+      "mode": "capture-4",
+      "gpu": false,
+      "vsync": false,
+      "update_ratio": 1,
+      "capture_consumers": 4,
+      "frame_byte_bound": 1048576,
+      "capacity": {
+        "global_bytes": 8388608
+      },
+      "domains": [
+        "SDK",
+        "delivery"
+      ]
+    },
+    {
+      "id": "cpu-sparse-v1",
+      "harness": "presentation-matrix",
+      "mode": "sparse",
+      "gpu": false,
+      "vsync": false,
+      "update_ratio": 1,
+      "capture_consumers": 1,
+      "frame_byte_bound": 1048576,
+      "capacity": {
+        "global_bytes": 8388608
+      },
+      "domains": [
+        "SDK",
+        "delivery"
+      ],
+      "source": "generated fixed 200-entity typed project; one animated transform; 2400-beat linear track"
+    },
+    {
+      "id": "cpu-topology-v1",
+      "harness": "presentation-matrix",
+      "mode": "topology",
+      "gpu": false,
+      "vsync": false,
+      "update_ratio": 1,
+      "capture_consumers": 1,
+      "frame_byte_bound": 1048576,
+      "capacity": {
+        "global_bytes": 8388608
+      },
+      "domains": [
+        "SDK",
+        "delivery"
+      ],
+      "source": "generated 200/201-entity typed projects; same resource bytes in separate reload scopes; reload every 256 periods"
+    },
+    {
+      "id": "gpu-renderer-capture-1-v1",
+      "harness": "renderer-matrix",
+      "mode": "capture-1",
+      "gpu": true,
+      "vsync": true,
+      "update_ratio": 1,
+      "capture_consumers": 1,
+      "frame_byte_bound": 1048576,
+      "capacity": {
+        "global_bytes": 8388608
+      },
+      "domains": [
+        "SDK",
+        "delivery",
+        "renderer",
+        "GPU"
+      ],
+      "formal_blockers": [
+        "Full memory envelopes and GPU reclaim observer must be verified",
+        "One finite pilot and fresh foreground/environment freeze required"
+      ]
+    },
+    {
+      "id": "gpu-renderer-capture-2-v1",
+      "harness": "renderer-matrix",
+      "mode": "capture-2",
+      "gpu": true,
+      "vsync": true,
+      "update_ratio": 1,
+      "capture_consumers": 2,
+      "frame_byte_bound": 1048576,
+      "capacity": {
+        "global_bytes": 8388608
+      },
+      "domains": [
+        "SDK",
+        "delivery",
+        "renderer",
+        "GPU"
+      ],
+      "formal_blockers": [
+        "Full memory envelopes and GPU reclaim observer must be verified",
+        "One finite pilot and fresh foreground/environment freeze required"
+      ]
+    },
+    {
+      "id": "gpu-renderer-capture-4-v1",
+      "harness": "renderer-matrix",
+      "mode": "capture-4",
+      "gpu": true,
+      "vsync": true,
+      "update_ratio": 1,
+      "capture_consumers": 4,
+      "frame_byte_bound": 1048576,
+      "capacity": {
+        "global_bytes": 8388608
+      },
+      "domains": [
+        "SDK",
+        "delivery",
+        "renderer",
+        "GPU"
+      ],
+      "formal_blockers": [
+        "Full memory envelopes and GPU reclaim observer must be verified",
+        "One finite pilot and fresh foreground/environment freeze required"
+      ]
+    }
+  ],
+  "remaining_matrix": {
+    "P0": "Fixed owner/common host A/B runner implemented; pilot and formal registration pending",
+    "P1-P2": "Seven native standalone SDK matrix short checks and independent Snapshot counters validated; B-only formal orchestration pending",
+    "P3": "CPU/GPU stream tool profiles implemented; common short host endpoints separately parsed",
+    "P4": "Standalone captures and combined real renderer+1/2/4 capture probe implemented; validation pending",
+    "P5": "CPU/GPU scripted host controls implemented; host-local load excludes process startup",
+    "P6": "200/201-entity sparse/resource/consumer-generation reload short checks validated; allocation domains pending",
+    "P7": "Stable default endpoint/content inventory implemented; actual backend binding, real audio and scripted DFJK still pending",
+    "P8": "Current build rebinds 40000 entity/requirements Packed capacity probe; full runtime Snapshot/Seek/Replay still pending"
+  },
+  "matrix_defaults": {
+    "source": "tests/rpa/execution_fixture.hpp: presentation() only; no RPA runtime",
+    "clock": "direct SDK RuntimeFrame; each update adds 7000 ticks at 1000000 Hz; 1 or 8 updates per 240Hz outer period; topology restarts at zero in a new segment",
+    "input": "no Gameplay or Replay; null Replay equivalence is explicitly N/A; independent captures of one revision have identical FrameDigest",
+    "active_capacity_domains": [
+      "consumer slots",
+      "CPU payload charges",
+      "attempt leases",
+      "request history"
+    ],
+    "inactive_domains": [
+      "SessionWorker",
+      "Input/Judgement",
+      "journal",
+      "receipt worker",
+      "GPU",
+      "audio"
+    ],
+    "payload_accounting": "1 MiB conservative charge per frame, not requested allocation or process memory",
+    "formal_blockers": [
+      "Full allocation/storage envelopes must be verified for this workload",
+      "One finite pilot, environment freeze and immutable registration required"
+    ]
+  }
+}

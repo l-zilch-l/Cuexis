@@ -19,9 +19,12 @@ import sys
 import time
 import uuid
 
-from run_rpa_acceptance_matrix import identity as repository_identity
+if __package__ in (None, ''):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
-ROOT = Path(__file__).resolve().parents[2]
+from tools.verification.run_rpa_acceptance_matrix import identity as repository_identity
+
+ROOT = Path(__file__).resolve().parents[3]
 
 
 def identity():
@@ -32,7 +35,7 @@ def identity():
     implementation = {p: digest for p, digest in result["files"].items()
                       if not p.startswith("docs/") and not p.endswith(".md")
                       and (not p.startswith("tools/") or p in (
-                          "tools/verification/measure_pd0_method.py",
+                          "tools/verification/playback_performance/baseline_method.py",
                           "tools/verification/run_rpa_acceptance_matrix.py"))}
     result["implementation_sha256"] = hashlib.sha256(
         json.dumps(implementation, sort_keys=True).encode()).hexdigest()

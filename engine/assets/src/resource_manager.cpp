@@ -789,27 +789,26 @@ bool ResourceScope::EntryKeyLess::operator()(EntryKeyView left,
     return left.id < right.id.value;
 }
 
-ResourceScope::ResourceScope(ResourceManager& manager) noexcept : state_(manager.state_) {}
+struct ResourceScope::Storage final {
+    std::vector<Entry> entries;
+    std::map<EntryKey, std::size_t, EntryKeyLess> index;
+};
+
+ResourceScope::ResourceScope(ResourceManager& manager)
+    : state_(manager.state_), storage_(std::make_unique<Storage>()) {}
+ResourceScope::~ResourceScope() = default;
 
 ResourceScope::ResourceScope(ResourceScope&& other) noexcept
-    : state_(std::move(other.state_)), entries_(std::move(other.entries_)),
-      entryIndex_(std::move(other.entryIndex_)) {
-    other.entryIndex_.clear();
-    other.entries_.clear();
+    : state_(std::move(other.state_)), storage_(std::move(other.storage_)) {
     other.state_.reset();
 }
 
 auto ResourceScope::operator=(ResourceScope&& other) noexcept -> ResourceScope& {
-    if (this == &other) {
-        return *this;
+    if (this != &other) {
+        storage_ = std::move(other.storage_);
+        state_ = std::move(other.state_);
+        other.state_.reset();
     }
-    clear();
-    state_ = std::move(other.state_);
-    entries_ = std::move(other.entries_);
-    entryIndex_ = std::move(other.entryIndex_);
-    other.entryIndex_.clear();
-    other.entries_.clear();
-    other.state_.reset();
     return *this;
 }
 
@@ -830,9 +829,9 @@ auto ResourceScope::request(AssetType type, const AssetId& id, ResourcePolicy po
         return {std::nullopt, std::move(diagnostics)};
     }
 
-    const auto existing = entryIndex_.find(EntryKeyView{type, id.value});
-    if (existing != entryIndex_.end()) {
-        const auto& entry = entries_[existing->second];
+    const auto existing = storage_->index.find(EntryKeyView{type, id.value});
+    if (existing != storage_->index.end()) {
+        const auto& entry = storage_->entries[existing->second];
         if (entry.resolution == EntryResolution::Loaded) {
             return {handleFromEntry(entry.type, entry.lease), std::move(diagnostics)};
         }
@@ -862,16 +861,16 @@ auto ResourceScope::request(AssetType type, const AssetId& id, ResourcePolicy po
         }
     }
 
-    const auto originalSize = entries_.size();
+    const auto originalSize = storage_->entries.size();
     const auto addEntry = [&](Entry entry) {
         const auto keyView = EntryKeyView{entry.type, entry.requestedId.value};
-        if (entryIndex_.contains(keyView)) {
+        if (storage_->index.contains(keyView)) {
             return false;
         }
         auto key = EntryKey{entry.type, entry.requestedId};
-        const auto index = entries_.size();
-        entries_.push_back(std::move(entry));
-        entryIndex_.emplace(std::move(key), index);
+        const auto index = storage_->entries.size();
+        storage_->entries.push_back(std::move(entry));
+        storage_->index.emplace(std::move(key), index);
         return true;
     };
     std::vector<std::pair<AssetType, AssetId>> visiting;
@@ -879,9 +878,9 @@ auto ResourceScope::request(AssetType type, const AssetId& id, ResourcePolicy po
                              std::size_t depth)
         -> core::Result<std::variant<MeshHandle, MaterialHandle, TextureHandle, AudioSourceHandle,
                                      ShaderHandle>> {
-        const auto held = entryIndex_.find(EntryKeyView{requestedType, requestedId.value});
-        if (held != entryIndex_.end()) {
-            const auto& entry = entries_[held->second];
+        const auto held = storage_->index.find(EntryKeyView{requestedType, requestedId.value});
+        if (held != storage_->index.end()) {
+            const auto& entry = storage_->entries[held->second];
             if (entry.resolution == EntryResolution::Loaded) {
                 return handleFromEntry(entry.type, entry.lease);
             }
@@ -1259,64 +1258,69 @@ auto ResourceScope::requestShader(const AssetId& id, ResourcePolicy policy)
 }
 
 void ResourceScope::rollbackTo(std::size_t size) noexcept {
-    if (size >= entries_.size()) {
+    if (!storage_ || size >= storage_->entries.size()) {
         return;
     }
-    for (std::size_t index = size; index < entries_.size(); ++index) {
-        const auto& entry = entries_[index];
-        const auto found = entryIndex_.find(EntryKeyView{entry.type, entry.requestedId.value});
-        if (found != entryIndex_.end() && found->second == index) {
-            entryIndex_.erase(found);
+    for (std::size_t index = size; index < storage_->entries.size(); ++index) {
+        const auto& entry = storage_->entries[index];
+        const auto found = storage_->index.find(EntryKeyView{entry.type, entry.requestedId.value});
+        if (found != storage_->index.end() && found->second == index) {
+            storage_->index.erase(found);
         }
     }
-    entries_.resize(size);
+    storage_->entries.resize(size);
 }
 
 std::size_t ResourceScope::size() const noexcept {
-    return entries_.size();
+    return storage_ ? storage_->entries.size() : 0;
 }
 
 bool ResourceScope::empty() const noexcept {
-    return entries_.empty();
+    return !storage_ || storage_->entries.empty();
 }
 
 bool ResourceScope::contains(AssetType type, const AssetId& id) const noexcept {
-    return entryIndex_.contains(EntryKeyView{type, id.value});
+    return storage_ && storage_->index.contains(EntryKeyView{type, id.value});
 }
 
 bool ResourceScope::contains(MeshHandle handle) const noexcept {
-    return std::any_of(entries_.begin(), entries_.end(), [&](const Entry& entry) {
-        return std::holds_alternative<MeshLease>(entry.lease) &&
-               std::get<MeshLease>(entry.lease).handle() == handle;
-    });
+    return storage_ &&
+           std::any_of(storage_->entries.begin(), storage_->entries.end(), [&](const Entry& entry) {
+               return std::holds_alternative<MeshLease>(entry.lease) &&
+                      std::get<MeshLease>(entry.lease).handle() == handle;
+           });
 }
 
 bool ResourceScope::contains(MaterialHandle handle) const noexcept {
-    return std::any_of(entries_.begin(), entries_.end(), [&](const Entry& entry) {
-        return std::holds_alternative<MaterialLease>(entry.lease) &&
-               std::get<MaterialLease>(entry.lease).handle() == handle;
-    });
+    return storage_ &&
+           std::any_of(storage_->entries.begin(), storage_->entries.end(), [&](const Entry& entry) {
+               return std::holds_alternative<MaterialLease>(entry.lease) &&
+                      std::get<MaterialLease>(entry.lease).handle() == handle;
+           });
 }
 
 bool ResourceScope::contains(TextureHandle handle) const noexcept {
-    return std::any_of(entries_.begin(), entries_.end(), [&](const Entry& entry) {
-        return std::holds_alternative<TextureLease>(entry.lease) &&
-               std::get<TextureLease>(entry.lease).handle() == handle;
-    });
+    return storage_ &&
+           std::any_of(storage_->entries.begin(), storage_->entries.end(), [&](const Entry& entry) {
+               return std::holds_alternative<TextureLease>(entry.lease) &&
+                      std::get<TextureLease>(entry.lease).handle() == handle;
+           });
 }
 
 bool ResourceScope::contains(AudioSourceHandle handle) const noexcept {
-    return std::any_of(entries_.begin(), entries_.end(), [&](const Entry& entry) {
-        return std::holds_alternative<AudioSourceLease>(entry.lease) &&
-               std::get<AudioSourceLease>(entry.lease).handle() == handle;
-    });
+    return storage_ &&
+           std::any_of(storage_->entries.begin(), storage_->entries.end(), [&](const Entry& entry) {
+               return std::holds_alternative<AudioSourceLease>(entry.lease) &&
+                      std::get<AudioSourceLease>(entry.lease).handle() == handle;
+           });
 }
 
 bool ResourceScope::contains(ShaderHandle handle) const noexcept {
-    return std::any_of(entries_.begin(), entries_.end(), [&](const Entry& entry) {
-        return std::holds_alternative<ShaderLease>(entry.lease) &&
-               std::get<ShaderLease>(entry.lease).handle() == handle;
-    });
+    return storage_ &&
+           std::any_of(storage_->entries.begin(), storage_->entries.end(), [&](const Entry& entry) {
+               return std::holds_alternative<ShaderLease>(entry.lease) &&
+                      std::get<ShaderLease>(entry.lease).handle() == handle;
+           });
 }
 
 std::uint64_t ResourceScope::managerToken() const noexcept {
@@ -1325,8 +1329,10 @@ std::uint64_t ResourceScope::managerToken() const noexcept {
 }
 
 void ResourceScope::clear() noexcept {
-    entryIndex_.clear();
-    entries_.clear();
+    if (!storage_)
+        return;
+    storage_->index.clear();
+    storage_->entries.clear();
 }
 
 } // namespace cuexis::assets

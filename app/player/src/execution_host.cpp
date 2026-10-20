@@ -179,6 +179,13 @@ void ExecutionHost::begin(ControlKind kind, StepTarget target, std::array<bool, 
 }
 void ExecutionHost::prepareControl(ControlKind kind, StepTarget target,
                                    std::array<bool, 4> participants, std::uint64_t generation) {
+    const bool rebuild =
+        kind != ControlKind::pause && kind != ControlKind::resume && kind != ControlKind::close;
+    if (rebuild && projectionScope_ == UINT64_MAX)
+        throw Failure{error("capacity_exceeded")};
+    pendingFrame_.reset();
+    if (rebuild || kind == ControlKind::close)
+        retainedPresentation_ = {};
     softwareGeneration_ = generation;
     if (operation_ == UINT64_MAX || command_ == UINT64_MAX ||
         context_.controlSequence == UINT64_MAX)
@@ -246,10 +253,65 @@ void ExecutionHost::finish() {
     if (!completed.finalizedContext)
         throw Failure{error("message_conflict")};
     context_ = *completed.finalizedContext;
-    static_cast<void>(session(SessionConfirmControl{completed}));
-    if (projectionScope_ == UINT64_MAX)
+    const bool rebuild =
+        control_.kind != ControlKind::pause && control_.kind != ControlKind::resume;
+    static_cast<void>(session(SessionConfirmControl{completed, projectionScope_ + rebuild}));
+    if (rebuild) {
+        ++projectionScope_;
+        invalidateRetained();
+    }
+}
+void ExecutionHost::registerRenderer() {
+    if (consumer_)
+        return;
+    auto layout = value<FrameDeliveryLayout>(session(SessionDeliveryLayout{}));
+    if (layout.bytes > SIZE_MAX / 2 || registrationOperation_ == UINT64_MAX)
         throw Failure{error("capacity_exceeded")};
-    ++projectionScope_;
+    ConsumerProfile profile{ConsumerMode::realtimeLatest,
+                            true,
+                            2,
+                            layout.bytes * 2,
+                            layout.bytes,
+                            renderer_.identity().instance,
+                            context_.rendererGeneration};
+    consumer_ = value<ConsumerRegistration>(
+        session(SessionRegisterConsumer{registrationOperation_++, context_, profile}));
+    auto receipt =
+        take(rendererGate_.activate(*consumer_, context_, renderer_.identity().instance));
+    static_cast<void>(session(SessionConfirmConsumer{receipt, false}));
+}
+void ExecutionHost::retireRenderer() {
+    if (!consumer_)
+        return;
+    auto retiring =
+        value<ConsumerRegistration>(session(SessionRevokeConsumer{consumer_->consumerId}));
+    auto receipt = take(rendererGate_.revoke(retiring));
+    pendingFrame_.reset();
+    retainedPresentation_ = {};
+    static_cast<void>(session(SessionConfirmConsumer{receipt, true}));
+    consumer_.reset();
+}
+void ExecutionHost::invalidateRetained() {
+    if (!consumer_ || !retainedPresentation_.frame())
+        return;
+    const auto serial = retainedPresentation_.serial();
+    if (!rendererGate_.revokeRetained(consumer_->consumerId, serial))
+        throw Failure{error("context_stale")};
+    if (pendingFrame_ && pendingFrame_->retainedSerial == serial)
+        pendingFrame_.reset();
+    retainedPresentation_ = {};
+    static_cast<void>(session(SessionRevokeRetained{consumer_->consumerId, serial}));
+    deliveryStatus_ = DeliveryStatus::noRetainedFrame;
+}
+auto ExecutionHost::revokeRetained() -> core::Result<void> try {
+    checkOwner();
+    Busy operation{busy_};
+    invalidateRetained();
+    return {};
+} catch (const Failure& failure) {
+    return core::unexpected(failure.error);
+} catch (...) {
+    return core::unexpected(error("capacity_exceeded"));
 }
 void ExecutionHost::failed() noexcept {
     suspended_ = true;
@@ -325,6 +387,7 @@ auto ExecutionHost::load(PlaybackSource source, std::optional<GameplayContent> g
         capture_.emplace(take(CaptureRouteOwner::create(start.context, options_.captureCapacity,
                                                         options_.captureReserve, 2)));
     }
+    registerRenderer();
     return {};
 } catch (const Failure& failure) {
     failed();
@@ -390,7 +453,7 @@ auto ExecutionHost::beginTail(const ClockObservation& eof, TailProfile profile)
     checkOwner();
     Busy operation{busy_};
     if (tail_ || suspended_ || state() != HostState::running || !clock_ || !capture_ ||
-        context_.clockSegment == UINT64_MAX || projectionScope_ == UINT64_MAX)
+        context_.clockSegment == UINT64_MAX)
         throw Failure{error("control_pending")};
     auto next = context_;
     ++next.clockSegment;
@@ -418,7 +481,7 @@ void ExecutionHost::finishTail(const TailClockTransition& transition, TailProfil
     take(capture_->switchClock({next.sessionScope, next.clockSegment, next.runEpoch}));
     take(host_->switchClock(next));
     context_ = std::move(next);
-    ++projectionScope_;
+    pendingFrame_.reset();
     tail_ = transition;
     lastObservation_ = transition.eof;
     tailPreparing_ = false;
@@ -618,21 +681,60 @@ auto ExecutionHost::resume(const ClockSource& source) -> core::Result<void> try 
     return core::unexpected(error("capacity_exceeded"));
 }
 auto ExecutionHost::sample(std::int64_t tick, RuntimeFrame runtime, bool frozen)
-    -> core::Result<FrameEnvelope> try {
+    -> core::Result<FrameEnvelope> {
+    auto result = trySample(tick, runtime, frozen);
+    if (!result)
+        return core::unexpected(result.error());
+    if (!*result)
+        return core::unexpected(error("context_stale"));
+    return std::move(**result);
+}
+auto ExecutionHost::trySample(std::int64_t tick, RuntimeFrame runtime, bool frozen)
+    -> core::Result<std::optional<FrameEnvelope>> try {
     checkOwner();
     Busy operation{busy_};
-    if (suspended_ || !host_ || frameId_ == UINT64_MAX)
+    if (suspended_ || !host_ || frameId_ == UINT64_MAX || !consumer_ ||
+        (state() != HostState::running && state() != HostState::paused) ||
+        (state() == HostState::paused && !frozen))
         throw Failure{error("control_pending")};
-    SessionSample request;
+    const auto rendererIdentity = renderer_.identity();
+    if (!candidate_ || rendererIdentity.instance != candidate_->rendererInstance ||
+        rendererIdentity.generation != context_.rendererGeneration ||
+        !renderer_.hasActivePresentation()) {
+        invalidateRetained();
+        throw Failure{error("context_stale")};
+    }
+    pendingFrame_.reset();
+    // Update is reliable work, independent of delivery admission or available CPU leases.
+    if (!frozen)
+        static_cast<void>(session(SessionUpdatePresentation{context_, projectionScope_, tick,
+                                                            runtime, bool(options_.realtime)},
+                                  false));
+    FrameRequest request;
     request.context = context_;
     request.projectionScope = projectionScope_;
-    request.frameId = frameId_++;
-    request.presentationTick = tick;
-    request.runtimeFrame = runtime;
+    request.consumerId = consumer_->consumerId;
+    request.requestId = frameId_++;
     request.viewport = options_.viewport;
-    request.realtime = bool(options_.realtime);
     request.frozen = frozen;
-    return value<FrameEnvelope>(session(request, false));
+    request.retained = retainedPresentation_;
+    const auto now = options_.session.monotonicNow ? options_.session.monotonicNow() : nowUs();
+    const auto duration =
+        std::chrono::duration_cast<std::chrono::microseconds>(options_.replyDeadline).count();
+    if (now > INT64_MAX - duration)
+        throw Failure{error("capacity_exceeded")};
+    request.deadlineMonotonicUs = now + duration;
+    auto info = value<DeliveryInfo>(session(SessionRequestFrame{request}, false));
+    deliveryStatus_ = info.status;
+    auto frame = take(session_->takeDelivery(request.consumerId, request.requestId));
+    if (!frame) {
+        deliveryStatus_ =
+            take(session_->pollDelivery(request.consumerId, request.requestId)).status;
+        return std::optional<FrameEnvelope>{};
+    }
+    deliveryStatus_ = DeliveryStatus::transferred;
+    pendingFrame_ = std::make_shared<const FrameEnvelope>(*frame);
+    return frame;
 } catch (const Failure& failure) {
     if (failure.error.code() != "host.rpa.control_pending" || sessionJob_ || audioJob_)
         failed();
@@ -641,12 +743,31 @@ auto ExecutionHost::sample(std::int64_t tick, RuntimeFrame runtime, bool frozen)
     failed();
     return core::unexpected(error("capacity_exceeded"));
 }
+
+auto ExecutionHost::observationInfo() -> core::Result<ObservationInfo> try {
+    checkOwner();
+    Busy operation{busy_};
+    return value<ObservationInfo>(session(SessionObservationQuery{}, false));
+} catch (const Failure& failure) {
+    return core::unexpected(failure.error);
+} catch (...) {
+    return core::unexpected(error("capacity_exceeded"));
+}
 auto ExecutionHost::queryGameplay() -> core::Result<GameplayResult> {
     return value<GameplayResult>(session(SessionGameplayResult{}, false));
 }
 
 auto ExecutionHost::present(const FrameEnvelope& frame) -> core::Result<PresentReceipt> try {
     checkOwner();
+    if (busy_ || suspended_ || (state() != HostState::running && state() != HostState::paused) ||
+        !candidate_ || !pendingFrame_ || frame.frameId != pendingFrame_->frameId ||
+        frame.context != pendingFrame_->context ||
+        frame.projectionScope != pendingFrame_->projectionScope)
+        return core::unexpected(error("context_stale"));
+    Busy operation{busy_};
+    // Consume before invoking the device. Reentry/retry cannot execute this attempt twice.
+    auto attempt = std::move(pendingFrame_);
+    take(rendererGate_.begin(*attempt, context_, projectionScope_, candidate_->rendererInstance));
     struct OverlayRenderer {
         presentation_renderer::IPresentationRenderer& renderer;
         PlayerFpsMeter& fps;
@@ -670,13 +791,19 @@ auto ExecutionHost::present(const FrameEnvelope& frame) -> core::Result<PresentR
             return renderer.present();
         }
     } overlay{renderer_, fps_, options_.showFps};
-    auto receipt = take(presentOwnedFrame(frame, context_, projectionScope_,
-                                          renderer_.identity().instance, overlay, nowUs));
-    if (receipt.status == PresentStatus::succeeded && options_.showFps)
-        fps_.notePresented();
-    static_cast<void>(session(SessionPresentReceipt{receipt}, false));
-    if (receipt.status != PresentStatus::succeeded)
+    auto receipt = take(presentOwnedFrame(*attempt, context_, projectionScope_,
+                                          candidate_->rendererInstance, overlay, nowUs));
+    if (receipt.status == PresentStatus::succeeded) {
+        retainedPresentation_.serial_ = take(rendererGate_.succeeded(*attempt));
+        retainedPresentation_.frame_ = attempt;
+        if (options_.showFps)
+            fps_.notePresented();
+    }
+    session_->postReceipt(receipt);
+    if (receipt.status != PresentStatus::succeeded) {
+        invalidateRetained();
         failed();
+    }
     return receipt;
 } catch (const Failure& failure) {
     failed();
@@ -872,7 +999,9 @@ auto ExecutionHost::resize(FrameViewport viewport) -> core::Result<void> try {
     checkOwner();
     if (busy_ || suspended_ || !viewport.width || !viewport.height)
         return core::unexpected(error("control_pending"));
+    Busy operation{busy_};
     take(renderer_.resize(viewport.width, viewport.height));
+    pendingFrame_.reset();
     options_.viewport = viewport;
     return {};
 } catch (const Failure& failure) {
@@ -890,6 +1019,9 @@ auto ExecutionHost::close() -> core::Result<void> try {
         return {};
     Busy operation{busy_};
     cleanup();
+    retireRenderer();
+    pendingFrame_.reset();
+    retainedPresentation_ = {};
     if (capture_ && !clockTransitionInputs_.empty()) {
         for (const auto& queued : clockTransitionInputs_) {
             auto kept = capture_->capture(queued.first, queued.second);
@@ -990,6 +1122,14 @@ auto ExecutionHost::audioPublication() const -> core::Result<AudioPublication> {
     if (!owner_.isCurrent() || !audio_)
         return core::unexpected(error("device_pending"));
     return audio_->publication();
+}
+auto ExecutionHost::snapshotGameplay() -> core::Result<GameplaySnapshot> try {
+    checkOwner();
+    return value<GameplaySnapshot>(session(SessionSnapshot{}));
+} catch (const Failure& failure) {
+    return core::unexpected(failure.error);
+} catch (...) {
+    return core::unexpected(error("capacity_exceeded"));
 }
 auto ExecutionHost::replayCut(const GameplayReplay& archive, GameplayTick horizon)
     -> core::Result<GameplayReplayCut> try {

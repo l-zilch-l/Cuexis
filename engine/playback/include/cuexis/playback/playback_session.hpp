@@ -40,8 +40,9 @@
 
 namespace cuexis::playback {
 namespace detail {
+struct PresentationAccess;
 struct GameplayPublicationAccess;
-}
+} // namespace detail
 
 CUEXIS_ABI_WARNING_PUSH
 
@@ -215,6 +216,19 @@ struct HostOverrideWrite final {
 [[nodiscard]] constexpr auto hostPropertyBit(HostPropertyId property) noexcept -> std::uint16_t {
     return static_cast<std::uint16_t>(1U << static_cast<std::uint8_t>(property));
 }
+
+enum class PresentationSource : std::uint8_t { Prepared, RuntimeUpdate, Restore, Mutation };
+
+// Owning metadata of the committed presentation, independent of delivery/control context.
+struct PresentationSourceInfo final {
+    std::uint64_t sessionScope{}, resultVersion{}, contentRevision{}, layoutRevision{},
+        worldRevision{}, updateOrdinal{};
+    PresentationSource source{PresentationSource::Prepared};
+    std::optional<RuntimeFrame> frame;
+    std::optional<std::int64_t> presentationTick, workTick;
+    std::optional<std::uint64_t> factCursor, controlCursor, activationRevision;
+    bool hasFold{};
+};
 
 class PlaybackSession;
 
@@ -411,6 +425,7 @@ class CUEXIS_PLAYBACK_API PlaybackSession final {
     [[nodiscard]] auto loadChart(std::string_view jsonText) -> core::Result<void>;
 
     [[nodiscard]] auto update(const RuntimeFrame& frame) -> core::Result<void>;
+    [[nodiscard]] auto presentationSource() const -> core::Result<PresentationSourceInfo>;
     [[nodiscard]] auto extractFrame(const FrameViewport& viewport) const
         -> core::Result<FrameSnapshot>;
     [[nodiscard]] auto extractFrame(const FrameViewport& viewport, FrameSnapshot& destination) const
@@ -443,6 +458,7 @@ class CUEXIS_PLAYBACK_API PlaybackSession final {
 
   private:
     friend class PreparedPlayback;
+    friend struct detail::PresentationAccess;
     friend struct detail::CandidateMetadataAccess;
     friend struct detail::GameplayPublicationAccess;
     friend struct detail::HostCoordinationAccess;

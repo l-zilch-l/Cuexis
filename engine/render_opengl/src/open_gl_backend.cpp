@@ -8,6 +8,7 @@
 #include <cuexis/render_opengl/open_gl_backend.hpp>
 
 #include "open_gl_presentation_internal.hpp"
+#include "../internal/cuexis_internal/gpu_storage_observer.hpp"
 
 #include <cuexis/core/error.hpp>
 #include <cuexis/platform_sdl/sdl_window.hpp>
@@ -533,7 +534,22 @@ auto OpenGlBackend::close() -> core::Result<void> {
                                             "OpenGL backend must be closed on its owner thread"}
                                     .withContext("operation", "close"));
     }
+#if defined(CUEXIS_ALLOCATION_LIFETIME_OBSERVER)
+    // Separate observer only: explicit GPU completion before resource reclamation.
+    if (context_) {
+        auto* native = static_cast<SDL_Window*>(window_.nativeHandle());
+        if (!SDL_GL_MakeCurrent(native, static_cast<SDL_GLContext>(context_)))
+            return core::unexpected(core::Error{"pd5.gpu.context", "Observer context unavailable"});
+        glFinish();
+        if (glGetError() != GL_NO_ERROR)
+            return core::unexpected(core::Error{"pd5.gpu.drain", "GPU observer completion failed"});
+        test_only::GpuStorage::report("before-device-release", true);
+    }
+#endif
     release();
+#if defined(CUEXIS_ALLOCATION_LIFETIME_OBSERVER)
+    test_only::GpuStorage::report("after-device-release", true);
+#endif
     return {};
 }
 
@@ -607,6 +623,7 @@ auto OpenGlBackend::renderFrame(const render::RenderFrame& frame) -> core::Resul
                            frame.viewProjection.values.data());
         glBindVertexArray(debugVertexArray_);
         glBindBuffer(GL_ARRAY_BUFFER, debugVertexBuffer_);
+        test_only::GpuStorage::charge(1, debugVertexBuffer_, vertices.size() * sizeof(DebugVertex));
         glBufferData(GL_ARRAY_BUFFER,
                      static_cast<GLsizeiptr>(vertices.size() * sizeof(DebugVertex)),
                      vertices.data(), GL_DYNAMIC_DRAW);
@@ -649,6 +666,7 @@ void OpenGlBackend::release() noexcept {
     if (canReleaseGpuResources) {
         presentation_.reset();
         if (debugVertexBuffer_ != 0) {
+            test_only::GpuStorage::release(1, debugVertexBuffer_);
             glDeleteBuffers(1, &debugVertexBuffer_);
         }
         if (debugVertexArray_ != 0) {

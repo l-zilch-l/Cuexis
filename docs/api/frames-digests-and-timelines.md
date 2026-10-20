@@ -4,7 +4,7 @@
 
 更新日期：2026-10-10
 
-适用版本：SDK API `0.8.0`
+适用版本：SDK API `0.9.0`
 
 文档角色：公共 API 参考
 
@@ -79,3 +79,21 @@ canonical bytes/order 和合法输入结果是兼容合同。
 
 相关内容：[PlaybackSession 生命周期](playback-session.md)、[Timing Model](../formats/TIMING_MODEL.md)、
 [诊断与兼容性](diagnostics-identity-and-compatibility.md)。
+
+## 已提交画面来源（0.8.1）
+
+`PlaybackSession::presentationSource()` 返回 owning `PresentationSourceInfo`，只读当前已提交
+描述；不 update、Fold、求值、构帧或消费 lifetime。查询和 Snapshot 物化遵守原 owner/reentry
+边界；Empty/GameplayOnly 没有 World 时返回既有 `playback.session.empty`。
+
+`sessionScope/resultVersion/contentRevision/layoutRevision/worldRevision/updateOrdinal` 命名
+软件来源；`source` 为 Prepared、RuntimeUpdate、Restore 或 Mutation。可选 `frame`、
+`presentationTick/workTick`、`factCursor/controlCursor/activationRevision` 保留实际缺省，
+`hasFold` 表示该来源是否包含 Fold。激活身份独立于 hasFold：普通 Runtime 更新仍保留已有
+activationRevision。初始 Prepared 没有 RuntimeFrame/Fold；不得用零值代替。
+Runtime-only 更新有实际 frame，但不伪造 Gameplay cursor。该描述不是控制许可或资源激活证明。
+
+读取结果独立存活；它不锁定随后另一次查询的修订。需要配对时，宿主在同一不重入 owner
+操作中读取来源和 Snapshot。Pause/Resume 控制完成及纯 clock 换段不更新来源；其后真正
+sample 才发布新描述。保留重绘继续携带原描述，不从当前 session 的较新 drain 前缀补字段。
+新 API 消费者应 `find_package(Cuexis 0.9.0 CONFIG REQUIRED COMPONENTS Playback)`。

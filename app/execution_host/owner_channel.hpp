@@ -4,6 +4,7 @@
 #include <condition_variable>
 #include <cstdint>
 #include <cuexis/core/result.hpp>
+#include <cuexis_internal/presentation_metrics.hpp>
 #include <limits>
 #include <mutex>
 #include <optional>
@@ -35,6 +36,9 @@ template <typename Command, typename Reply> class OwnerChannel final {
             if (slots_[i])
                 continue;
             slots_[i].emplace(Record{next_, std::move(command), {}, false, false});
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+            slots_[i]->enqueued = std::chrono::steady_clock::now();
+#endif
             ++next_;
             ++wakeVersion_;
             cv_.notify_one();
@@ -46,16 +50,27 @@ template <typename Command, typename Reply> class OwnerChannel final {
         return core::unexpected(error("capacity_exceeded"));
     }
     [[nodiscard]] auto take() -> std::optional<std::pair<std::uint64_t, Command>> {
+        return takeIf([](const Command&) { return true; });
+    }
+    template <class Predicate>
+    [[nodiscard]] auto takeIf(Predicate&& eligible)
+        -> std::optional<std::pair<std::uint64_t, Command>> {
         std::lock_guard lock{mutex_};
         Record* first = nullptr;
         for (auto& slot : slots_)
-            if (slot && !slot->taken && (!first || slot->id < first->id))
+            if (slot && !slot->taken && eligible(slot->command) && (!first || slot->id < first->id))
                 first = &*slot;
         if (!first)
             return {};
         std::optional<std::pair<std::uint64_t, Command>> result{std::in_place, first->id,
                                                                 std::move(first->command)};
         first->taken = true;
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+        const auto elapsed = std::chrono::duration<double, std::micro>(
+                                 std::chrono::steady_clock::now() - first->enqueued)
+                                 .count();
+        internal::pd::observe(internal::pd::Stage::queue, elapsed, elapsed, first->id);
+#endif
         return result;
     }
     void complete(std::uint64_t id, core::Result<Reply>&& reply) noexcept {
@@ -160,6 +175,9 @@ template <typename Command, typename Reply> class OwnerChannel final {
         Command command;
         std::optional<core::Result<Reply>> reply;
         bool taken, terminal;
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+        std::chrono::steady_clock::time_point enqueued{};
+#endif
     };
     static auto error(const char* reason) -> core::Error {
         return {std::string{"host.rpa."} + reason, "Owner channel rejected request"};

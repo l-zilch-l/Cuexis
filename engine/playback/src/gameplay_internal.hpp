@@ -5,9 +5,14 @@
 #include <cuexis/judgement/judgement_session.hpp>
 #include <cuexis/judgement/publication.hpp>
 #include <cuexis/playback/playback_session.hpp>
+#include <cuexis_internal/presentation_revision.hpp>
 
 namespace cuexis::playback::detail {
+struct ProjectionCandidate;
+struct CommittedPresentationState;
 struct GameplayPublicationAccess final {
+    static void finalize(PlaybackSession&, ProjectionCandidate&&, const RuntimeFrame&,
+                         internal::presentation::Mutation&, CommittedPresentationState) noexcept;
     static auto publish(PlaybackSession&, judgement::JudgementSession&, GameplayPresentationTick,
                         const RuntimeFrame&, bool tickLifetimes, bool rebuildScope = false,
                         GameplayPublicationFailureStage* failureStage = nullptr)

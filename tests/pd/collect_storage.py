@@ -8,8 +8,8 @@ import sys
 import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "tools" / "verification"))
-import measure_pd0_method as method
+sys.path.insert(0, str(ROOT))
+from tools.verification.playback_performance import baseline_method as method
 
 
 def main(build_directories=None):
@@ -49,7 +49,7 @@ def main(build_directories=None):
             for repeat in range(1, 4):
                 stem = f"{config}-delivery-{repeat}"
                 env = dict(method.os.environ, CUEXIS_PD_METRICS=str(output / stem))
-                command = [sys.executable, str(ROOT / "tools/verification/measure_pd0_method.py"), "--child",
+                command = [sys.executable, str(ROOT / "tools/verification/playback_performance/baseline_method.py"), "--child",
                            str(machine["selected_affinity"]), str(binary), "[pd][allocation],[pd][ledger],[pd][renderer]",
                            "--rng-seed", "1"]
                 with (output / (stem + ".log")).open("wb") as log:
@@ -72,7 +72,7 @@ def main(build_directories=None):
             for repeat in range(1, 4):
                 stem = f"{config}-cold-projection-{repeat}"
                 env = dict(method.os.environ, CUEXIS_PD_METRICS=str(output / stem))
-                command = [sys.executable, "-B", str(ROOT / "tools/verification/measure_pd0_method.py"), "--child",
+                command = [sys.executable, "-B", str(ROOT / "tools/verification/playback_performance/baseline_method.py"), "--child",
                            str(machine["selected_affinity"]), str(binary.with_name("cuexis_pd_baseline_probe.exe")),
                            "PD deterministic presentation baseline", "--rng-seed", "1"]
                 with (output / (stem + ".log")).open("wb") as log:

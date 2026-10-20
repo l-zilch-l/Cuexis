@@ -39,6 +39,194 @@ struct SessionOwner final {
     std::vector<std::optional<CoherentAdvanceRecord>> coherent;
     std::optional<GameplayExecutionContext> coherentIdentity;
     SessionWorkerConfiguration& configuration;
+    std::shared_ptr<FrameDelivery> delivery;
+    std::optional<PresentationSourceInfo> currentSource;
+    std::vector<FeedbackId> currentMembership;
+    std::uint64_t membershipScope{};
+    enum class FramePath { unselected, legacy, requested };
+    FramePath framePath{FramePath::unselected};
+    SessionOwner(SessionWorkerConfiguration& config, std::shared_ptr<FrameDelivery> frameDelivery)
+        : configuration(config), delivery(std::move(frameDelivery)) {}
+    [[nodiscard]] auto bindFrames(const HostContext& context, std::uint64_t scope)
+        -> core::Result<void> {
+        auto valid = HostCoordinationAccess::validateFrameContext(session, context);
+        if (!valid)
+            return valid;
+        if (!scope)
+            return core::unexpected(workerError("context_stale", "Projection scope absent"));
+        if (!frames) {
+            auto created = FrameObservationLedger::create(
+                context, scope, configuration.frameCapacity, configuration.feedbackCapacity);
+            if (!created)
+                return core::unexpected(created.error());
+            auto configured = created->configure(configuration.observation);
+            if (!configured)
+                return configured;
+            frames.emplace(std::move(*created));
+        } else if (!frameContext || *frameContext != context || projectionScope != scope) {
+            auto bound = projectionScope == scope ? frames->rebind(context)
+                                                  : frames->activate(context, scope);
+            if (!bound)
+                return bound;
+            if (projectionScope != scope)
+                lastPresentationTick.reset();
+        }
+        frameContext = context;
+        projectionScope = scope;
+        frames->maintain(now());
+        return {};
+    }
+    [[nodiscard]] auto updatePresentation(const SessionUpdatePresentation& job)
+        -> core::Result<void> {
+        auto bound = bindFrames(job.context, job.projectionScope);
+        if (!bound)
+            return bound;
+        if (lastPresentationTick && job.presentationTick < *lastPresentationTick)
+            return core::unexpected(workerError("context_stale", "Source time stale"));
+        auto updated = job.realtime ? HostCoordinationAccess::samplePresentation(
+                                          session, {job.presentationTick}, job.runtimeFrame)
+                                    : session.update(job.runtimeFrame);
+        if (!updated)
+            return updated;
+        auto source = session.presentationSource();
+        if (!source)
+            return core::unexpected(source.error());
+        lastPresentationTick = source->presentationTick;
+        auto refreshed = refreshMembership(*source, job.projectionScope);
+        if (!refreshed)
+            return refreshed;
+        if (source->presentationTick)
+            return frames->expire(*source->presentationTick);
+        return {};
+    }
+    [[nodiscard]] auto refreshMembership(const PresentationSourceInfo& source, std::uint64_t scope)
+        -> core::Result<void> {
+        currentSource = source;
+        membershipScope = scope;
+        currentMembership.clear();
+        if (realtime) {
+            auto members = HostCoordinationAccess::feedbackMembership(session, scope);
+            if (!members)
+                return core::unexpected(members.error());
+            for (const auto& m : *members) {
+                if (frames) {
+                    auto added = frames->feedback(m.id, m.created, m.expiry);
+                    if (!added)
+                        return added;
+                }
+                currentMembership.push_back(m.id);
+            }
+        }
+        return {};
+    }
+    [[nodiscard]] auto layout() -> core::Result<FrameDeliveryLayout> {
+        auto info = session.chartInfo();
+        if (!info)
+            return core::unexpected(info.error());
+        const auto resources = activeCandidate ? activeCandidate->resources.size() : 0;
+        auto bound = frameByteBound(info->objectCount, resources, configuration.maxFrameMembers);
+        if (!bound)
+            return core::unexpected(bound.error());
+        return FrameDeliveryLayout{*bound, info->objectCount, configuration.maxFrameMembers};
+    }
+    [[nodiscard]] auto requestFrame(const FrameRequest& request) -> core::Result<DeliveryInfo> try {
+        if (framePath == FramePath::legacy)
+            return core::unexpected(
+                workerError("context_stale", "New session required for delivery migration"));
+        framePath = FramePath::requested;
+        auto bound = bindFrames(request.context, request.projectionScope);
+        if (!bound)
+            return core::unexpected(bound.error());
+        auto source = session.presentationSource();
+        if (!source)
+            return core::unexpected(source.error());
+        if (!request.frozen &&
+            (!currentSource || currentSource->resultVersion != source->resultVersion ||
+             membershipScope != request.projectionScope)) {
+            auto refreshed = refreshMembership(*source, request.projectionScope);
+            if (!refreshed)
+                return core::unexpected(refreshed.error());
+        }
+        const auto& original = request.retained.frame();
+        if (request.frozen && original &&
+            (original->projectionScope != request.projectionScope ||
+             original->context.sessionScope != request.context.sessionScope ||
+             original->context.contentIdentity != request.context.contentIdentity ||
+             original->context.resourceGeneration != request.context.resourceGeneration ||
+             original->context.rendererGeneration != request.context.rendererGeneration))
+            return DeliveryInfo{request.consumerId, request.requestId, 0, 0,
+                                DeliveryStatus::noRetainedFrame};
+        const auto& members =
+            request.frozen && original ? original->membershipView() : currentMembership;
+        if (std::any_of(members.begin(), members.end(), [](const auto& id) {
+                return id.targetId.size() > 256 || id.bindingId.size() > 256;
+            }))
+            return DeliveryInfo{request.consumerId, request.requestId, 0, 0,
+                                DeliveryStatus::skippedNoCredit};
+        const bool reuse = request.frozen && original && original->payload &&
+                           original->snapshotView().viewportWidth == request.viewport.width &&
+                           original->snapshotView().viewportHeight == request.viewport.height;
+        auto admitted = delivery->admit(request, source->resultVersion, now(), reuse);
+        if (!admitted)
+            return core::unexpected(admitted.error());
+        if (!admitted->materialize)
+            return admitted->info;
+        FrameEnvelope frame;
+        frame.attemptLease = FrameAttemptLease::create(std::move(admitted->attempt));
+        frame.context = request.context;
+        frame.projectionScope = request.projectionScope;
+        frame.consumerId = request.consumerId;
+        frame.requestId = request.requestId;
+        frame.frameId = admitted->info.frameId;
+        frame.source =
+            request.frozen ? original->source : std::optional<PresentationSourceInfo>{*source};
+        frame.presentationTick = frame.source->presentationTick;
+        frame.runtimeFrame = frame.source->frame;
+        frame.foldedFactCursor = frame.source->factCursor;
+        frame.foldedWorkTick = frame.source->workTick;
+        if (request.frozen) {
+            frame.retainedSerial = request.retained.serial();
+            frame.retainedFrameId = original->frameId;
+        }
+        if (reuse)
+            frame.payload = original->payload;
+        else {
+            if ((request.frozen ? original->membershipView().size() : currentMembership.size()) >
+                configuration.maxFrameMembers) {
+                return delivery->finishRequest(request.consumerId, request.requestId,
+                                               DeliveryStatus::skippedNoCredit);
+            }
+            auto payload = std::make_shared<FramePayload>();
+            payload->storage = std::move(admitted->reservation);
+            auto extracted =
+                request.frozen
+                    ? rematerializeRetainedSnapshot(original->snapshotView(), request.viewport)
+                    : session.extractFrame(request.viewport);
+            if (!extracted)
+                return delivery->finishRequest(request.consumerId, request.requestId,
+                                               DeliveryStatus::rejected);
+            payload->snapshot = std::move(*extracted);
+            payload->resources = request.frozen
+                                     ? original->resourcesView()
+                                     : (activeCandidate ? activeCandidate->resources
+                                                        : std::vector<PortableResourcePtr>{});
+            payload->membership = request.frozen ? original->membershipView() : currentMembership;
+            if (payloadBytes(*payload) > payload->storage.bytes())
+                return delivery->finishRequest(request.consumerId, request.requestId,
+                                               DeliveryStatus::rejected);
+            frame.payload = std::move(payload);
+        }
+        if (frame.frameId) {
+            frame.dispatch = std::make_shared<DispatchToken>();
+            auto recorded = frames->recordAttempt(frame);
+            if (!recorded)
+                return core::unexpected(recorded.error());
+        }
+        return delivery->publish(request, std::move(frame), now());
+    } catch (...) {
+        return delivery->finishRequest(request.consumerId, request.requestId,
+                                       DeliveryStatus::rejected);
+    }
     void reclaimCoherent(const AdvanceRetentionProgress& progress) noexcept {
         const bool replaced = !coherentIdentity || *coherentIdentity != progress.identityContext;
         for (auto& record : coherent)
@@ -251,48 +439,165 @@ struct SessionOwner final {
                         job.proof.request.context.controlSequence != current->controlSequence())
                         return reply(
                             HostCoordinationAccess::completeClose(session, *current, job.proof));
-                    return reply(HostCoordinationAccess::leaveFence(session, *current, job.proof));
-                } else if constexpr (std::is_same_v<T, SessionSample>) {
+                    auto released =
+                        HostCoordinationAccess::leaveFence(session, *current, job.proof);
+                    if (!released)
+                        return core::unexpected(released.error());
+                    if (frames && job.projectionScope && job.proof.finalizedContext) {
+                        auto bound = job.projectionScope == projectionScope
+                                         ? frames->rebind(*job.proof.finalizedContext)
+                                         : frames->activate(*job.proof.finalizedContext,
+                                                            job.projectionScope);
+                        if (!bound)
+                            return core::unexpected(bound.error());
+                        if (job.projectionScope != projectionScope)
+                            lastPresentationTick.reset();
+                        projectionScope = job.projectionScope;
+                        frameContext = *job.proof.finalizedContext;
+                    }
+                    currentSource.reset();
+                    currentMembership.clear();
+                    membershipScope = 0;
+                    if (realtime && frames && job.projectionScope) {
+                        auto source = session.presentationSource();
+                        if (source) {
+                            auto refreshed = refreshMembership(*source, job.projectionScope);
+                            if (!refreshed)
+                                return core::unexpected(refreshed.error());
+                        }
+                    }
+                    return SessionReply{std::monostate{}};
+                } else if constexpr (std::is_same_v<T, SessionUpdatePresentation>) {
+                    return reply(updatePresentation(job));
+                } else if constexpr (std::is_same_v<T, SessionDeliveryLayout>) {
+                    return reply(layout());
+                } else if constexpr (std::is_same_v<T, SessionRegisterConsumer>) {
                     auto valid = HostCoordinationAccess::validateFrameContext(session, job.context);
                     if (!valid)
                         return core::unexpected(valid.error());
-                    if (!job.frameId || !job.projectionScope || job.frameId <= lastFrameId ||
-                        (frameContext && *frameContext == job.context && lastPresentationTick &&
-                         job.presentationTick < *lastPresentationTick) ||
-                        (frameContext && *frameContext != job.context &&
-                         job.projectionScope == projectionScope))
+                    return reply(
+                        delivery->registerConsumer(job.operationId, job.context, job.profile));
+                } else if constexpr (std::is_same_v<T, SessionConfirmConsumer>) {
+                    if (!job.revoke) {
+                        auto valid = HostCoordinationAccess::validateFrameContext(
+                            session, job.receipt.registration.context);
+                        if (!valid) {
+                            auto retiring =
+                                delivery->beginRevoke(job.receipt.registration.consumerId);
+                            if (!retiring)
+                                return core::unexpected(retiring.error());
+                            return core::unexpected(valid.error());
+                        }
+                    }
+                    return reply(job.revoke ? delivery->confirmRevoke(job.receipt)
+                                            : delivery->confirmRegistration(job.receipt));
+                } else if constexpr (std::is_same_v<T, SessionRevokeConsumer>) {
+                    return reply(delivery->beginRevoke(job.consumerId));
+                } else if constexpr (std::is_same_v<T, SessionRequestFrame>) {
+                    return reply(requestFrame(job.request));
+                } else if constexpr (std::is_same_v<T, SessionRevokeRetained>) {
+                    delivery->cancelRetained(job.consumerId, job.serial);
+                    return SessionReply{std::monostate{}};
+                } else if constexpr (std::is_same_v<T, SessionFeedbackQuery>) {
+                    if (!frames)
+                        return core::unexpected(
+                            workerError("context_stale", "Observation history unavailable"));
+                    return reply(frames->query(job.id));
+                } else if constexpr (std::is_same_v<T, SessionObservationQuery>) {
+                    if (!frames)
+                        return SessionReply{ObservationInfo{}};
+                    const auto coverage = frames->coverage();
+                    return SessionReply{
+                        ObservationInfo{frames->retainedAttempts(),
+                                        frames->journalBytes(),
+                                        frames->peakJournalBytes(),
+                                        coverage.retainedFirst,
+                                        coverage.retainedLast,
+                                        coverage.lossEvents,
+                                        {coverage.incomplete.begin(), coverage.incomplete.end()},
+                                        coverage.exactLossCount,
+                                        coverage.attemptsEvicted,
+                                        coverage.feedbackEvicted,
+                                        coverage.receiptLoss,
+                                        coverage.historyMisses}};
+                } else if constexpr (std::is_same_v<T, SessionDeliveryMetrics>) {
+                    return SessionReply{delivery->storageMetrics()};
+                } else if constexpr (std::is_same_v<T, SessionSample>) {
+                    if (framePath == FramePath::requested)
+                        return core::unexpected(workerError(
+                            "context_stale", "New session required for legacy fallback"));
+                    framePath = FramePath::legacy;
+                    auto valid = HostCoordinationAccess::validateFrameContext(session, job.context);
+                    if (!valid)
+                        return core::unexpected(valid.error());
+                    if (!job.frameId || !job.projectionScope || job.frameId <= lastFrameId)
                         return core::unexpected(workerError(
                             "context_stale", "Frame identity or projection scope stale"));
-                    auto sampled = job.frozen ? core::Result<void>{}
-                                   : job.realtime
-                                       ? HostCoordinationAccess::samplePresentation(
-                                             session, {job.presentationTick}, job.runtimeFrame)
-                                       : session.update(job.runtimeFrame);
-                    if (!sampled)
-                        return core::unexpected(sampled.error());
-                    auto snapshot = session.extractFrame(job.viewport);
-                    if (!snapshot)
-                        return core::unexpected(snapshot.error());
                     FrameEnvelope frame;
+                    if (job.frozen) {
+                        const auto& retained = job.retained.frame();
+                        if (!retained || retained->projectionScope != job.projectionScope ||
+                            retained->context.sessionScope != job.context.sessionScope ||
+                            retained->context.contentIdentity != job.context.contentIdentity ||
+                            retained->context.resourceGeneration !=
+                                job.context.resourceGeneration ||
+                            retained->context.rendererGeneration != job.context.rendererGeneration)
+                            return core::unexpected(
+                                workerError("context_stale", "No eligible retained presentation"));
+                        frame.source = retained->source;
+                        frame.presentationTick = retained->presentationTick;
+                        frame.runtimeFrame = retained->runtimeFrame;
+                        frame.foldedFactCursor = retained->foldedFactCursor;
+                        frame.foldedWorkTick = retained->foldedWorkTick;
+                        frame.membership = retained->membershipView();
+                        frame.resources = retained->resourcesView();
+                        const auto& snapshot = retained->snapshotView();
+                        if (snapshot.viewportWidth == job.viewport.width &&
+                            snapshot.viewportHeight == job.viewport.height) {
+                            frame.retainedSnapshot =
+                                retained->payload
+                                    ? std::shared_ptr<const FrameSnapshot>{retained->payload,
+                                                                           &retained->payload
+                                                                                ->snapshot}
+                                : retained->retainedSnapshot ? retained->retainedSnapshot
+                                                             : std::shared_ptr<const FrameSnapshot>{
+                                                                   retained, &retained->snapshot};
+                        } else {
+                            auto resized = rematerializeRetainedSnapshot(snapshot, job.viewport);
+                            if (!resized)
+                                return core::unexpected(resized.error());
+                            frame.retainedSnapshot =
+                                std::make_shared<const FrameSnapshot>(std::move(*resized));
+                        }
+                    } else {
+                        if (frameContext && projectionScope == job.projectionScope &&
+                            lastPresentationTick && job.presentationTick < *lastPresentationTick)
+                            return core::unexpected(
+                                workerError("context_stale", "Source time stale"));
+                        auto sampled = updatePresentation({job.context, job.projectionScope,
+                                                           job.presentationTick, job.runtimeFrame,
+                                                           job.realtime});
+                        if (!sampled)
+                            return core::unexpected(sampled.error());
+                        auto source = session.presentationSource();
+                        if (!source)
+                            return core::unexpected(source.error());
+                        auto snapshot = session.extractFrame(job.viewport);
+                        if (!snapshot)
+                            return core::unexpected(snapshot.error());
+                        frame.source = *source;
+                        frame.presentationTick = source->presentationTick;
+                        if (source->frame)
+                            frame.runtimeFrame = *source->frame;
+                        frame.foldedFactCursor = source->factCursor;
+                        frame.foldedWorkTick = source->workTick;
+                        frame.snapshot = std::move(*snapshot);
+                        if (activeCandidate)
+                            frame.resources = activeCandidate->resources;
+                    }
                     frame.context = job.context;
                     frame.frameId = job.frameId;
                     frame.projectionScope = job.projectionScope;
-                    frame.presentationTick = job.presentationTick;
-                    auto actualFrame = HostCoordinationAccess::currentRuntimeFrame(session);
-                    if (!actualFrame)
-                        return core::unexpected(actualFrame.error());
-                    frame.runtimeFrame = *actualFrame;
-                    frame.snapshot = std::move(*snapshot);
-                    if (activeCandidate)
-                        frame.resources = activeCandidate->resources;
-                    if (job.realtime) {
-                        auto lag = session.gameplayExecutionLag({job.presentationTick});
-                        if (!lag)
-                            return core::unexpected(lag.error());
-                        frame.foldedFactCursor = lag->foldedFactCursor;
-                        if (lag->foldedWorkTick)
-                            frame.foldedWorkTick = lag->foldedWorkTick->value;
-                    }
                     if (!frames) {
                         auto created = FrameObservationLedger::create(
                             frame.context, frame.projectionScope, configuration.frameCapacity,
@@ -304,13 +609,17 @@ struct SessionOwner final {
                         projectionScope = frame.projectionScope;
                     } else if (*frameContext != frame.context ||
                                projectionScope != frame.projectionScope) {
-                        auto activated = frames->activate(frame.context, frame.projectionScope);
-                        if (!activated)
-                            return core::unexpected(activated.error());
+                        auto bound = projectionScope == frame.projectionScope
+                                         ? frames->rebind(frame.context)
+                                         : frames->activate(frame.context, frame.projectionScope);
+                        if (!bound)
+                            return core::unexpected(bound.error());
                         frameContext = frame.context;
                         projectionScope = frame.projectionScope;
+                        if (!job.frozen)
+                            lastPresentationTick.reset();
                     }
-                    if (job.realtime) {
+                    if (job.realtime && !job.frozen) {
                         auto members = HostCoordinationAccess::feedbackMembership(
                             session, frame.projectionScope);
                         if (!members)
@@ -323,12 +632,16 @@ struct SessionOwner final {
                             frame.membership.push_back(member.id);
                         }
                     }
-                    auto published = frames->publish(frame);
+                    auto published = job.frozen ? frames->publishRetained(frame, job.retained)
+                                                : frames->publish(frame);
                     if (!published)
                         return core::unexpected(published.error());
                     lastFrameId = job.frameId;
-                    lastPresentationTick = job.presentationTick;
-                    auto expired = frames->expire(job.presentationTick);
+                    if (!job.frozen)
+                        lastPresentationTick = frame.presentationTick;
+                    auto expired = job.frozen || !frame.presentationTick
+                                       ? core::Result<void>{}
+                                       : frames->expire(*frame.presentationTick);
                     if (!expired)
                         return core::unexpected(expired.error());
                     auto latest = frames->takeLatest();
@@ -349,6 +662,8 @@ struct SessionOwner final {
                     return reply(session.gameplayExecutionLag(job.horizon));
                 } else if constexpr (std::is_same_v<T, SessionArchive>) {
                     return reply(session.archiveGameplay());
+                } else if constexpr (std::is_same_v<T, SessionSnapshot>) {
+                    return reply(session.snapshotGameplay());
                 } else if constexpr (std::is_same_v<T, SessionArchiveCut>) {
                     return reply(
                         HostCoordinationAccess::archiveCut(session, job.archive, job.horizon));
@@ -512,16 +827,21 @@ struct SessionOwner final {
 } // namespace
 SessionWorker::SessionWorker(SessionWorkerConfiguration configuration)
     : configuration_(std::move(configuration)),
-      channel_(configuration_.capacity, configuration_.controlReserve) {}
+      channel_(configuration_.capacity, configuration_.controlReserve),
+      receipts_(configuration_.receiptCapacity) {}
 auto SessionWorker::create(SessionWorkerConfiguration configuration)
     -> core::Result<std::unique_ptr<SessionWorker>> try {
     if (!configuration.testOnly || configuration.capacity <= configuration.controlReserve ||
         !configuration.controlReserve || configuration.stepCapacity <= configuration.stepReserve ||
         !configuration.stepReserve || !configuration.frameCapacity ||
-        !configuration.feedbackCapacity)
+        !configuration.feedbackCapacity || !configuration.receiptCapacity)
         return core::unexpected(
             workerError("profile_incomplete", "Explicit test-only worker capacities required"));
     auto worker = std::unique_ptr<SessionWorker>{new SessionWorker{std::move(configuration)}};
+    auto delivery = FrameDelivery::create(worker->configuration_.delivery);
+    if (!delivery)
+        return core::unexpected(delivery.error());
+    worker->delivery_ = std::move(*delivery);
     worker->thread_ = std::thread{[ptr = worker.get()] { ptr->run(); }};
     return worker;
 } catch (...) {
@@ -544,6 +864,106 @@ auto SessionWorker::poll(std::uint64_t id)
 auto SessionWorker::acknowledge(std::uint64_t id) -> core::Result<void> {
     return channel_.ack(id);
 }
+auto SessionWorker::takeDelivery(std::uint64_t consumer, std::uint64_t request)
+    -> core::Result<std::optional<FrameEnvelope>> {
+    return delivery_->take(consumer, request,
+                           configuration_.monotonicNow ? configuration_.monotonicNow()
+                                                       : monotonicNow());
+}
+auto SessionWorker::pollDelivery(std::uint64_t consumer, std::uint64_t request)
+    -> core::Result<DeliveryInfo> {
+    return delivery_->poll(consumer, request,
+                           configuration_.monotonicNow ? configuration_.monotonicNow()
+                                                       : monotonicNow());
+}
+auto SessionWorker::cancelDelivery(std::uint64_t consumer, std::uint64_t request)
+    -> core::Result<DeliveryInfo> {
+    return delivery_->cancel(consumer, request);
+}
+void SessionWorker::noteLostReceipt(const PresentReceipt& receipt) noexcept {
+    try {
+        std::lock_guard lock(receiptMutex_);
+        ReceiptLoss incoming{receipt.context.sessionScope,
+                             receipt.context.sessionScope,
+                             receipt.projectionScope,
+                             receipt.projectionScope,
+                             receipt.frameId,
+                             receipt.frameId};
+        auto slot = std::find_if(receiptLosses_.begin(), receiptLosses_.end(), [&](const auto& r) {
+            return !r ||
+                   (r->sessionFirst == incoming.sessionFirst &&
+                    r->sessionLast == incoming.sessionLast &&
+                    r->scopeFirst == incoming.scopeFirst && r->scopeLast == incoming.scopeLast);
+        });
+        if (slot == receiptLosses_.end())
+            slot = receiptLosses_.begin();
+        if (*slot) {
+            auto& r = **slot;
+            r.sessionFirst = std::min(r.sessionFirst, incoming.sessionFirst);
+            r.sessionLast = std::max(r.sessionLast, incoming.sessionLast);
+            r.scopeFirst = std::min(r.scopeFirst, incoming.scopeFirst);
+            r.scopeLast = std::max(r.scopeLast, incoming.scopeLast);
+            r.frameFirst = std::min(r.frameFirst, incoming.frameFirst);
+            r.frameLast = std::max(r.frameLast, incoming.frameLast);
+        } else
+            *slot = incoming;
+    } catch (...) {
+    }
+    auto count = lostReceipts_.load();
+    while (count != UINT64_MAX && !lostReceipts_.compare_exchange_weak(count, count + 1)) {
+    }
+    channel_.wake();
+}
+void SessionWorker::postReceipt(const PresentReceipt& receipt) noexcept {
+    const auto lost = [&]() noexcept { noteLostReceipt(receipt); };
+    try {
+        std::size_t errorBytes = 0, depth = 0;
+        for (auto* cause = receipt.cause ? &*receipt.cause : nullptr; cause;
+             cause = cause->cause()) {
+            if (++depth > 16) {
+                lost();
+                return;
+            }
+            const auto add = [&](std::size_t bytes) {
+                if (bytes > 4096 || errorBytes > 4096 - bytes)
+                    return false;
+                errorBytes += bytes;
+                return true;
+            };
+            if (!add(cause->code().size()) || !add(cause->message().size())) {
+                lost();
+                return;
+            }
+            if (cause->context().size() > 64) {
+                lost();
+                return;
+            }
+            for (const auto& context : cause->context())
+                if (!add(context.key.size()) || !add(context.value.size())) {
+                    lost();
+                    return;
+                }
+        }
+        auto bounded = copyPresentReceipt(receipt);
+        if (!bounded) {
+            lost();
+            return;
+        }
+        {
+            std::lock_guard lock(receiptMutex_);
+            if (receiptCount_ < receipts_.size() && !shutdown_.load()) {
+                receipts_[receiptWrite_].emplace(std::move(*bounded));
+                receiptWrite_ = (receiptWrite_ + 1) % receipts_.size();
+                ++receiptCount_;
+                channel_.wake();
+                return;
+            }
+        }
+        lost();
+    } catch (...) {
+        lost();
+    }
+}
 void SessionWorker::waitFor(std::chrono::milliseconds duration) {
     channel_.waitFor(duration);
 }
@@ -551,6 +971,7 @@ void SessionWorker::waitForReply(std::uint64_t id, std::chrono::steady_clock::du
     channel_.waitForReply(id, duration);
 }
 void SessionWorker::requestShutdown() noexcept {
+    delivery_->closeAdmission();
     channel_.closeAdmission();
     shutdown_.store(true, std::memory_order_release);
     channel_.wake();
@@ -570,10 +991,51 @@ auto SessionWorker::fault() const noexcept -> OwnerChannel<SessionCommand, Sessi
 }
 void SessionWorker::run() noexcept {
     try {
-        SessionOwner owner{PlaybackSession{}, {}, {}, {}, {}, {}, {}, 0, 0, {}, {}, {}, {},
-                           configuration_};
+        SessionOwner owner{configuration_, delivery_};
+        auto maintain = [&]() {
+            const auto now = owner.now();
+            delivery_->expire(now);
+            if (owner.frames)
+                owner.frames->maintain(now);
+            if (lostReceipts_.exchange(0)) {
+                std::array<std::optional<ReceiptLoss>, 8> losses;
+                {
+                    std::lock_guard lock(receiptMutex_);
+                    losses = receiptLosses_;
+                    receiptLosses_ = {};
+                }
+                if (owner.frames)
+                    for (const auto& r : losses)
+                        if (r)
+                            owner.frames->receiptLost(r->sessionFirst, r->sessionLast,
+                                                      r->scopeFirst, r->scopeLast, r->frameFirst,
+                                                      r->frameLast);
+            }
+            for (std::size_t i = 0; i < 16; ++i) {
+                std::optional<PresentReceipt> receipt;
+                {
+                    std::lock_guard lock(receiptMutex_);
+                    if (!receiptCount_)
+                        break;
+                    receipt = std::move(receipts_[receiptRead_]);
+                    receipts_[receiptRead_].reset();
+                    receiptRead_ = (receiptRead_ + 1) % receipts_.size();
+                    --receiptCount_;
+                }
+                if (owner.frames) {
+                    auto observed = owner.frames->observe(*receipt);
+                    if (!observed)
+                        owner.frames->historyMiss();
+                }
+            }
+        };
         for (;;) {
-            if (auto next = channel_.take()) {
+            auto next = channel_.takeIf([](const SessionCommand& command) {
+                return !std::holds_alternative<SessionRequestFrame>(command);
+            });
+            if (!next)
+                next = channel_.take();
+            if (next) {
                 try {
                     channel_.complete(next->first, owner.dispatch(std::move(next->second)));
                 } catch (...) {
@@ -581,8 +1043,10 @@ void SessionWorker::run() noexcept {
                         next->first, core::unexpected(workerError("capacity_exceeded",
                                                                   "Worker job allocation failed")));
                 }
+                maintain();
                 continue;
             }
+            maintain();
             if (shutdown_.load(std::memory_order_acquire))
                 break;
             channel_.waitFor(std::chrono::milliseconds{20});

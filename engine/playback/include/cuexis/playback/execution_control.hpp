@@ -130,7 +130,9 @@ enum class FeedbackStatus : std::uint8_t {
 };
 struct FeedbackObservation final {
     FeedbackId id;
-    std::int64_t created{}, expiry{};
+    std::int64_t created{};
+    // Exclusive finite end, or no value for UntilReset. No integer sentinel is used.
+    std::optional<GameplayPresentationTick> expiry;
     FeedbackStatus status{FeedbackStatus::created};
     bool laterConfirmed{};
 };

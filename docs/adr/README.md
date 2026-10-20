@@ -2,7 +2,7 @@
 
 状态：现行 ADR 索引
 
-更新日期：2026-10-01
+更新日期：2026-10-19
 
 ADR 是决策理由的权威来源。字段级合同和实施证据分别见 [格式索引](../formats/README.md)
 与 [阶段报告索引](../stage_reports/README.md)。
@@ -55,3 +55,4 @@ ADR 是决策理由的权威来源。字段级合同和实施证据分别见 [�
 | [0044](0044-gameplay-v2-semantic-kernel.md) | Gameplay V2 语义内核与冻结边界 | 决策已接受（owner 于 2026-10-02 接受第 1 轮裁决）；**未实施**；V2 的 ADR/Spec/ABI 三份文档当前均为 candidate |
 | [0045](0045-gameplay-v2-execution-profile.md) | S7A-3/4 完整 execution profile | candidate；本轮方案已选定，新增合同未实施，不冒充既往裁定或阶段验收 |
 | [0046](0046-realtime-playback-coordination.md) | 实时播放的时间、执行与发布边界 | accepted design；RPA职责/初始拓扑与协议已选，未实施 |
+| [0047](0047-pd-feedback-lifetime-and-delivery-retirement.md) | PD 显式反馈寿命、交付许可与回收边界 | accepted design；2026-10-19 owner 接受三项决定，SDK 0.9.0；PD-4 内部实施/适用本地门禁完成，设备/正式性能未验收 |

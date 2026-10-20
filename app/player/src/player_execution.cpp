@@ -3,6 +3,7 @@
 #include "player_assembly.hpp"
 #include "player_control.hpp"
 #include "player_gameplay.hpp"
+#include "scripted_playback_trace.hpp"
 #include <charconv>
 #include <cmath>
 #include <cuexis/audio_sdl/sdl_audio.hpp>
@@ -128,6 +129,9 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
     for (const auto& key : profile.keys)
         keyCodes.push_back(key.scanCode);
     auto surface = makePlayerSurface(window, std::move(keyCodes));
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+    ScriptedPlaybackTrace pd5Trace;
+#endif
     SchedulingProfile scheduling{500000, 20000, 4096, "player.b5.test-only.v1", true};
     ExecutionHostOptions hostOptions;
     hostOptions.showFps = options.showFps;
@@ -136,6 +140,8 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
     hostOptions.sourceMode = options.clock == PlayerClockOption::Audio ? PlaybackMode::HostClock
                                                                        : PlaybackMode::ChartClock;
     hostOptions.session = {128, 32, 4096, 128, 4096, 4096, true, nowUs};
+    hostOptions.session.delivery = {8, 8, 64U * 1024U * 1024U, 32};
+    hostOptions.session.observation = {8U * 1024U * 1024U, 128, 8, 4096, 60'000'000, 5'000'000};
     hostOptions.audio.sessionScope = 1;
     hostOptions.audio.timeDomain = 1;
     hostOptions.audio.testOnly = true;
@@ -162,6 +168,7 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
     std::int64_t seekHistoryHorizon = 0;
     std::optional<std::int64_t> previousPresentationTick;
     std::optional<std::uint64_t> scoreCursor;
+    std::optional<DeliveryStatus> lastDeliveryStatus;
     std::uint64_t previousPresentationSegment = 0;
     std::uint64_t backendSegment = 0, logicalSegment = 0, underruns = 0;
     std::uint32_t backendRate = 0;
@@ -195,6 +202,9 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
                     backendRate = publication->clock.sampleRate;
                 }
                 value.publicationSequence = publication->sequence;
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+                pd5Trace.audio(publication->sequence, publication->metrics.underrunCount);
+#endif
                 value.sampleMonotonicUs = publication->sampleMonotonicUs;
                 value.presented = ClockFramePosition{publication->clock.presentedFrame,
                                                      publication->clock.sampleRate};
@@ -241,6 +251,9 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
     };
     auto pumpMain = [&]() -> core::Result<void> {
         try {
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+            pd5Trace.pump(static_cast<SDL_Window*>(window.lease().nativeHandle()));
+#endif
             auto input = take(surface->pollInput());
             quitting |= input.quitRequested;
             if (input.focusLost) {
@@ -251,9 +264,14 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
             for (const auto action : input.actions) {
                 if (action == PlayerInputAction::Quit)
                     quitting = true;
-                else if (actions.size() < 64)
+                else if (actions.size() < 64) {
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+                    if (action == PlayerInputAction::PlayPause || action == PlayerInputAction::Reload)
+                        pd5Trace.action(action == PlayerInputAction::Reload,
+                                        host && host->state() == HostState::paused);
+#endif
                     actions.push_back(action);
-                else
+                } else
                     overflow = true;
             }
             if (!host || faulted || input.keys.empty() || !captureClock ||
@@ -306,6 +324,9 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
                         if (host->hasAudio() && !host->tail())
                             event.rawTimestamps.audioFrame = clock->presented->frame;
                         auto captured = host->capture(std::move(event));
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+                        if (captured) pd5Trace.captured();
+#endif
                         if (!captured) {
                             if (host->tail() &&
                                 captured.error().code() == "host.rpa.control_pending") {
@@ -359,6 +380,9 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
                 const auto receipt = take(host->present(frame));
                 if (receipt.status != PresentStatus::succeeded)
                     throw Failure{error("Initial present was not confirmed")};
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+                pd5Trace.firstPresent(host->hasAudio());
+#endif
                 previousPresentationTick = ticks.presentationTick;
                 previousPresentationSegment = host->context().clockSegment;
                 break;
@@ -396,6 +420,9 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
              currentDrawable.height != drawable.height)) {
             take(host->resize({static_cast<std::uint32_t>(currentDrawable.width),
                                static_cast<std::uint32_t>(currentDrawable.height)}));
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+            pd5Trace.confirmed();
+#endif
             drawable = currentDrawable;
         }
         auto clock = host->tail() ? host->tail()->eof : take(observation(host->context()));
@@ -484,6 +511,9 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
                 faulted = true;
                 fault = error("This control requires an explicit replay cut");
             }
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+            pd5Trace.confirmed();
+#endif
             continue;
         }
         auto ticks = take(host->inputTicks(clock));
@@ -507,31 +537,69 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
             previousPresentationTick && previousPresentationSegment == host->context().clockSegment
                 ? static_cast<double>(ticks.presentationTick - *previousPresentationTick) / 1000.0
                 : 0.0;
-        auto sampled = host->sample(ticks.presentationTick,
-                                    {static_cast<double>(ticks.presentationTick) / 1000.0, delta,
-                                     host->context().clockSegment},
-                                    host->state() == HostState::paused);
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+        const auto pd5RequestStart = nowUs();
+#endif
+        auto sampled = host->trySample(ticks.presentationTick,
+                                       {static_cast<double>(ticks.presentationTick) / 1000.0, delta,
+                                        host->context().clockSegment},
+                                       host->state() == HostState::paused);
         if (!sampled && sampled.error().code() == "host.rpa.control_pending" &&
             host->state() == HostState::running)
             continue;
-        auto frame = take(std::move(sampled));
+        auto delivered = take(std::move(sampled));
+        // A successful request has already committed the logical update, even without delivery.
         previousPresentationTick = ticks.presentationTick;
         previousPresentationSegment = host->context().clockSegment;
-        if (!scoreCursor || *scoreCursor != frame.foldedFactCursor) {
+        if (!delivered) {
+            if (lastDeliveryStatus != host->deliveryStatus()) {
+                logger.info(
+                    "player.execution.delivery",
+                    host->deliveryStatus() == DeliveryStatus::noRetainedFrame
+                        ? "NoRetainedFrame: retained redraw unavailable; waiting for legal update"
+                        : "Delivery skipped: request unavailable or storage credit held by "
+                          "readers");
+                lastDeliveryStatus = host->deliveryStatus();
+            }
+            host->waitFor(std::chrono::milliseconds{1});
+            continue;
+        }
+        lastDeliveryStatus = DeliveryStatus::transferred;
+        auto frame = std::move(*delivered);
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+        const auto pd5Ready = nowUs();
+#endif
+        if (frame.source && frame.source->hasFold &&
+            (!scoreCursor || *scoreCursor != frame.source->factCursor)) {
             const auto result = take(host->queryGameplay());
             const auto score = take(result.score());
             logger.info("player.execution.judgement",
                         "score=" + std::to_string(score.score) + " combo=" +
                             std::to_string(score.combo) + " hits=" + std::to_string(score.hits) +
                             " misses=" + std::to_string(score.misses) +
-                            " factCursor=" + std::to_string(frame.foldedFactCursor));
-            scoreCursor = frame.foldedFactCursor;
+                            " factCursor=" + std::to_string(*frame.source->factCursor));
+            scoreCursor = frame.source->factCursor;
         }
         auto presented = take(host->present(frame));
         if (presented.status != PresentStatus::succeeded)
             throw Failure{error("Present was not confirmed")};
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+        pd5Trace.present(pd5RequestStart, pd5Ready);
+#endif
     }
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+    const bool pd5HadAudio = host->hasAudio();
+    bool pd5ReplayEqual = true;
+    if (pd5Trace.active()) {
+        const auto expected = take(host->queryGameplay());
+        const auto replay = take(host->evaluateReplay(take(host->archive())));
+        pd5ReplayEqual = replay.evidenceValid && take(expected.sameResult(replay.result));
+    }
+#endif
     take(host->close());
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+    pd5Trace.finish(pd5HadAudio, pd5ReplayEqual);
+#endif
     if (overflow)
         return core::unexpected(
             error("Deferred event capacity exceeded; ordinary capture stopped"));

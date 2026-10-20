@@ -76,7 +76,7 @@ suffix 只来自允许集合或 exp.<name>
 
 ```text
 Cuexis display version     仓库/发行构建身份
-C++ SDK API version        CMake package 与源码兼容版本；当前分支 static/shared preview 为 0.8.0
+C++ SDK API version        CMake package 与源码兼容版本；当前分支 static/shared preview 为 0.9.0
 C ABI version              稳定 shared-library 二进制契约，阶段 12 首次冻结
 Chart/Project/Asset format 各自持久化 format + version
 ReplayData format          阶段 11 冻结的独立持久化版本
@@ -128,7 +128,7 @@ Stage 7 originally prepared SDK `0.7.1` as a compatible patch candidate for expl
 factories and experimental package isolation. This repair preserves installed public layouts,
 signatures, vtables and default production source selection. `0.7.0` consumers rebuild against
 the new package; the original Entry additions required at least `0.7.1`. This is the historical
-Entry baseline, not the current package version. The branch now uses `0.8.0`; its diagnostic and
+Entry baseline, not the current package version. The branch now uses `0.9.0`; its diagnostic and
 Recovery compatibility changes and consumer minimum are specified below. Delivery status belongs
 to [CURRENT_STATUS](../CURRENT_STATUS.md); approval and release gates remain separate.
 
@@ -307,7 +307,7 @@ Stage 14 必须另行冻结 `1.x` 的 API/ABI 兼容、弃用和版本递增政�
 owner明确指定[独立诊断正式化工作包](../stage_plans/active/stage-07/plan-diagnostic-formalization.md)
 目标SDK API为`0.7.5`，同时保留此前已接受的新Recovery版本拒绝旧版本方向。
 这是本工作包的具体版本裁定；版本文件与消费者已在N2集成，N1/N3已退出，
-诊断基线为0.7.5；当前分支为0.8.0。具体证据与交付状态归[CURRENT_STATUS](../CURRENT_STATUS.md)。
+诊断基线为0.7.5；当前分支为0.9.0。具体证据与交付状态归[CURRENT_STATUS](../CURRENT_STATUS.md)。
 N1已记录production/candidate公共差异及迁移影响，不将patch数字当作可观察合同兼容证明。
 若实际差异属于常规规则要求升minor的不兼容公开变化，本工作包按owner指定的`0.7.5`
 记录限定例外及具体影响，不反向放宽Reader来制造兼容，也不推广为其他阶段可使用breaking patch。
@@ -399,3 +399,20 @@ SDK文件已在N2.4实施，日期身份独立经updater更新并fresh/clean-fir
 旧 profile 保持 revision2/schema1。消费者必须重新编译并按包兼容规则请求0.8.0。
 字段顺序见[rev3 wire](../formats/execution-recovery-wire-v3.md)，实施和实际验证归CURRENT_STATUS与B3记录。
 该minor不表示生产实时预算、B4/B5设备或阶段收尾完成。
+
+### 0.8.1 只读表现来源增量
+
+PD-3-c 新增独立命名的 `PresentationSource`、`PresentationSourceInfo` 与
+`PlaybackSession::presentationSource()`。它复制既有已提交描述；不更改旧方法、类布局、
+FrameSnapshot、HostContext 或 FeedbackObservation。按兼容新增 preview API 的 patch 规则，
+owner 已在 2026-10-19 接受 0.8.0 → 0.8.1；使用新查询的消费者须请求至少 0.8.1。
+原 0.8.0 源码可重建，但不承诺旧二进制兼容，也不宣称 0.8.0 库含新符号。
+具体决定与验证归 [PD-3-c 记录](../stage_reports/stages/stage-07/pd/2026-10-19-pd3c-contract-and-version-decision.md)。
+
+### 0.9.0 显式反馈寿命迁移
+
+owner 于 2026-10-19 接受 [ADR 0047](../adr/0047-pd-feedback-lifetime-and-delivery-retirement.md)。
+`FeedbackObservation::expiry` 从整数改为 `optional<GameplayPresentationTick>`：有值为有限 exclusive end，
+无值为 UntilReset，有限 INT64_MAX 不再与无期限混同。消费者须检查 optional、读取 `expiry->value`，
+修改源码并使用 0.9.0 头/库干净重建。旧 0.8.x minor 与新包互相拒绝版本请求；不支持替换 DLL 混用。
+FrameSnapshot 布局、Gameplay/Replay identity 与 wire 不因此改变。内部实施和适用本地消费者验证完成，不构成发行；见 [PD-4 报告](../stage_reports/stages/stage-07/pd/2026-10-19-pd4-delivery-retirement-and-observation.md)。

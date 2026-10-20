@@ -8,6 +8,7 @@
 #include "player_options.hpp"
 #include "player_smoke.hpp"
 #include "player_state_name.hpp"
+#include "scripted_playback_trace.hpp"
 
 #include <cuexis/audio/audio_transport.hpp>
 #include <cuexis/player_support/config_location.hpp>
@@ -128,6 +129,12 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
     }
 #endif
     auto surface = makePlayerSurface(window, std::move(gameplayKeys));
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+    ScriptedPlaybackTrace measurementTrace;
+    if (measurementTrace.active())
+        surface = std::make_unique<ScriptedPlaybackSurface>(std::move(surface),
+            static_cast<SDL_Window*>(window.lease().nativeHandle()), measurementTrace);
+#endif
     auto backendResult = createPlayerBackend(sdlRuntime, window, appConfig->app.requested.vsync,
                                              options.shaderCacheDirectory, logger);
     if (!backendResult) {
@@ -199,6 +206,34 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
         hooks = smokeBinding->hooks();
     }
     std::optional<FrameDiagnostics> frameDiagnostics;
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+    std::int64_t measuredRequest{}, measuredReady{};
+    if (measurementTrace.active()) {
+        const auto stamp = [] { return std::chrono::duration_cast<std::chrono::microseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count(); };
+        if (options.smokeTest || options.audioSmokeTest)
+            return core::unexpected(core::Error{"player.measurement.mode", "Script and smoke cannot share a run"});
+        hooks.beforeAudioService = [&, stamp](std::uint32_t) -> core::Result<void> {
+            measuredRequest = stamp();
+            return {};
+        };
+        hooks.beforeSubmit = [&, stamp](const playback::FrameSnapshot&, std::uint32_t) -> core::Result<void> {
+            measuredReady = stamp();
+            return {};
+        };
+        hooks.notePresented = [&](const PlayerPresentedFrame&) -> core::Result<void> {
+            measurementTrace.firstPresent(controller.audio() != nullptr);
+            measurementTrace.present(measuredRequest, measuredReady);
+            if (auto* audio = controller.audio()) {
+                const auto clock = audio->transport().snapshot();
+                if (clock.sampleRate)
+                    measurementTrace.audio(0, audio->transport().metrics().underrunCount);
+            }
+            return {};
+        };
+    }
+    const bool measuredHasAudio = controller.audio() != nullptr;
+#endif
     if (options.frameStatsPrefix) {
         frameDiagnostics.emplace(*options.frameStatsPrefix);
     }
@@ -245,6 +280,9 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
     if (auto shut = controller.shutdown(); !shut) {
         return core::unexpected(std::move(shut.error()));
     }
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+    measurementTrace.finish(measuredHasAudio, true, false);
+#endif
     return {};
 }
 

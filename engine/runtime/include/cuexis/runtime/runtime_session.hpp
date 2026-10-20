@@ -18,6 +18,7 @@
 #include <cuexis/runtime/runtime_frame.hpp>
 #include <cuexis/world/property.hpp>
 #include <cuexis/world/world.hpp>
+#include <cuexis_internal/presentation_revision.hpp>
 
 #include <entt/entity/entity.hpp>
 
@@ -35,8 +36,16 @@
 namespace cuexis::animation {
 class AnimationProgram;
 }
+namespace cuexis::world::detail {
+class TransformUpdate;
+}
 
 namespace cuexis::runtime {
+namespace detail {
+struct RuntimeTestAccess;
+struct PresentationAccess;
+struct PresentationWindow;
+} // namespace detail
 
 enum class RuntimeSessionKind : std::uint8_t {
     Playback,
@@ -104,6 +113,7 @@ class PreparedRuntimeSession final {
     auto operator=(PreparedRuntimeSession&& other) noexcept -> PreparedRuntimeSession&;
 
   private:
+    friend struct detail::RuntimeTestAccess;
     friend class RuntimeSession;
 
     PreparedRuntimeSession(const RuntimeSession& owner, std::uint64_t ownerToken,
@@ -123,6 +133,7 @@ class PreparedRuntimeSession final {
     // Declared before World so member destruction releases World first.
     std::optional<assets::ResourceScope> resourceScope_;
     std::unique_ptr<world::World> world_;
+    std::optional<entt::entity> presentationCamera_;
 };
 
 struct PreparedRuntimeSessionResult final {
@@ -152,6 +163,9 @@ struct RuntimeSessionReloadResult final {
 };
 
 class RuntimeSession final {
+    friend struct detail::RuntimeTestAccess;
+    friend struct detail::PresentationAccess;
+
   private:
     class CallbackScope final {
       public:
@@ -241,6 +255,16 @@ class RuntimeSession final {
                             "RuntimeSession World callback must not be reentrant"});
         }
 
+        auto mutation = internal::presentation::Mutation::reserve(presentationClock_);
+        if (!mutation)
+            return core::unexpected(std::move(mutation.error()));
+        struct PublishActualWorld final {
+            RuntimeSession& session;
+            internal::presentation::Mutation& mutation;
+            ~PublishActualWorld() noexcept {
+                session.publishPresentation(mutation, internal::presentation::Source::Mutation);
+            }
+        } publish{*this, *mutation};
         // The callback runs synchronously on the owner thread and is never retained. It must not
         // re-enter this RuntimeSession or retain World references beyond the call.
         CallbackScope callbackScope{callbackActive_};
@@ -275,12 +299,14 @@ class RuntimeSession final {
         CallbackScope callbackScope{callbackActive_};
         return core::invokeGuarded("runtime.session.callback_exception",
                                    "RuntimeSession World callback raised an exception",
-                                   std::forward<Callback>(callback), *world_);
+                                   std::forward<Callback>(callback), std::as_const(*world_));
     }
 
   private:
+    void publishPresentation(internal::presentation::Mutation&, internal::presentation::Source,
+                             std::optional<RuntimeFrame> = {}) noexcept;
     void replaceWith(PreparedRuntimeSession&& prepared) noexcept;
-    [[nodiscard]] auto updatePrepared(RuntimeEvaluationState& state,
+    [[nodiscard]] auto updatePrepared(world::World& targetWorld, RuntimeEvaluationState& state,
                                       const chart::TimingMap& timingMap, const RuntimeFrame& frame,
                                       bool tickLifetimes = true,
                                       std::vector<RuntimeDebugRecord>* records = nullptr,
@@ -298,14 +324,21 @@ class RuntimeSession final {
     std::uint64_t managerToken_{};
     core::Diagnostics activeDiagnostics_;
     std::unique_ptr<RuntimeEvaluationState> evaluation_;
+    std::unique_ptr<world::detail::TransformUpdate> transformUpdate_;
     // Declared before World so member destruction releases World first.
     std::optional<assets::ResourceScope> resourceScope_;
     std::unique_ptr<world::World> world_;
+    std::optional<entt::entity> presentationCamera_;
+    internal::presentation::RevisionClock presentationClock_;
+    internal::presentation::Source presentationSource_{internal::presentation::Source::Prepared};
+    std::optional<RuntimeFrame> presentationFrame_;
+    mutable std::shared_ptr<detail::PresentationWindow> presentationWindow_;
     mutable bool callbackActive_{false};
     core::ThreadChecker threadChecker_{};
     std::optional<RuntimeFrame> lastFrame_;
     RuntimeDebugOptions debugOptions_;
     std::vector<RuntimeDebugRecord> debugRecords_;
+    std::vector<RuntimeDebugRecord> pendingDebugRecords_;
     bool debugTruncated_{};
 };
 

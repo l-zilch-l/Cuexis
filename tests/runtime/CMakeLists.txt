@@ -3,7 +3,10 @@ add_executable(cuexis_runtime_tests
     behavior_runtime_tests.cpp
     migration_equivalence_tests.cpp
     runtime_session_tests.cpp
+    ../pd/runtime_transaction_tests.cpp
 )
+target_include_directories(cuexis_runtime_tests PRIVATE
+    "${PROJECT_SOURCE_DIR}/engine/world/internal" "${PROJECT_SOURCE_DIR}/engine/runtime/internal")
 
 target_link_libraries(cuexis_runtime_tests
     PRIVATE

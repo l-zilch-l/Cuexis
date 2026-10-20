@@ -1,6 +1,8 @@
 #include <cuexis/world/property.hpp>
+#include <cuexis_internal/allocation_observer.hpp>
 
 #include <cuexis/core/error.hpp>
+#include <cuexis/world/resolver_access.hpp>
 #include <cuexis/world/world.hpp>
 
 #include <entt/entity/registry.hpp>
@@ -758,6 +760,34 @@ auto PropertyResolver::finalize() -> core::Result<void> {
     }
     prepared_ = true;
     return {};
+}
+
+auto detail::ResolverAccess::prepareTransforms(PropertyResolver& resolver,
+                                               std::vector<TransformWrite>& writes)
+    -> core::Result<void> {
+    if (!resolver.prepared_)
+        return core::unexpected(core::Error{"world.property.not_prepared",
+                                            "Property resolver commit requires prepare"});
+    resolver.collectCommitEntries();
+    using internal::pd::memory::structure;
+    structure("index.resolver", resolver.entries_.size(), resolver.entries_.capacity());
+    structure("scratch.resolver-touched", resolver.touchedEntries_.size(), resolver.touchedEntries_.capacity());
+    structure("current.resolver-committed", resolver.committedEntries_.size(), resolver.committedEntries_.capacity());
+    structure("candidate.resolver-commit", resolver.thisCommit_.size(), resolver.thisCommit_.capacity());
+    structure("scratch.resolver-conflicts", resolver.conflicts_.size(), resolver.conflicts_.capacity());
+    writes.clear();
+    writes.reserve(resolver.entries_.size());
+    for (auto index : resolver.thisCommit_) {
+        const auto& entry = resolver.entries_[index];
+        if (entry.hasTransform)
+            writes.push_back({entry.entity, entry.transformCandidate});
+    }
+    return {};
+}
+
+void detail::ResolverAccess::installed(PropertyResolver& resolver) noexcept {
+    resolver.committedEntries_.swap(resolver.thisCommit_);
+    resolver.committed_ = false;
 }
 
 auto PropertyResolver::commit(World& world) -> core::Result<void> {

@@ -7,6 +7,7 @@
 //  World does not depend on the SDL, OpenGL, Chart or Asset modules
 
 #include <functional>
+#include <memory>
 #include <optional>
 #include <type_traits>
 #include <utility>
@@ -19,6 +20,10 @@
 #include <cuexis/world/components.hpp>
 
 namespace cuexis::world {
+namespace detail {
+class TransformUpdate;
+struct WorldTestAccess;
+} // namespace detail
 
 class World final {
   private:
@@ -39,7 +44,7 @@ class World final {
     };
 
   public:
-    World() = default;
+    World();
     ~World();
 
     World(const World&) = delete;
@@ -103,17 +108,16 @@ class World final {
     };
 
     friend auto updateWorldTransforms(World& world) -> core::Result<void>;
+    friend class detail::TransformUpdate;
+    friend struct detail::WorldTestAccess;
 
     entt::registry registry_{};
     std::vector<TransformCacheEntry> transformCache_;
     std::vector<std::size_t> transformOrder_;
-    std::vector<core::Mat4> transformLocalScratch_;
-    std::vector<core::Mat4> transformScratch_;
-    std::vector<bool> transformLocalDirty_;
-    std::vector<bool> transformDirty_;
     bool transformCacheValid_{false};
     mutable bool callbackActive_{false};
     core::ThreadChecker threadChecker_{};
+    std::unique_ptr<detail::TransformUpdate> transformUpdateScratch_;
 };
 
 } // namespace cuexis::world

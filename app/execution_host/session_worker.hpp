@@ -1,5 +1,6 @@
 #pragma once
 
+#include "frame_delivery.hpp"
 #include "frame_observation.hpp"
 #include "host_candidate.hpp"
 #include "owner_channel.hpp"
@@ -80,6 +81,7 @@ struct SessionResume final {
 };
 struct SessionConfirmControl final {
     ControlReceipt proof;
+    std::uint64_t projectionScope{};
 };
 struct SessionSample final {
     HostContext context;
@@ -89,11 +91,53 @@ struct SessionSample final {
     FrameViewport viewport{};
     bool realtime{};
     bool frozen{};
+    RetainedPresentation retained;
 };
 struct SessionPresentReceipt final {
     PresentReceipt receipt;
 };
+struct SessionUpdatePresentation final {
+    HostContext context;
+    std::uint64_t projectionScope{};
+    std::int64_t presentationTick{};
+    RuntimeFrame runtimeFrame;
+    bool realtime{};
+};
+struct FrameDeliveryLayout final {
+    std::size_t bytes{}, objects{}, members{};
+};
+struct SessionDeliveryLayout final {};
+struct SessionRegisterConsumer final {
+    std::uint64_t operationId{};
+    HostContext context;
+    ConsumerProfile profile;
+};
+struct SessionConfirmConsumer final {
+    RegistrationReceipt receipt;
+    bool revoke{};
+};
+struct SessionRevokeConsumer final {
+    std::uint64_t consumerId{};
+};
+struct SessionRequestFrame final {
+    FrameRequest request;
+};
+struct SessionRevokeRetained final {
+    std::uint64_t consumerId{}, serial{};
+};
+struct SessionFeedbackQuery final {
+    FeedbackId id;
+};
+struct SessionObservationQuery final {};
+struct ObservationInfo final {
+    std::size_t retainedAttempts{}, bytes{}, peakBytes{};
+    std::uint64_t retainedFirst{}, retainedLast{}, lossEvents{};
+    std::vector<FrameObservationLedger::CoverageInterval> incomplete;
+    bool exactLossCount{}, attemptsEvicted{}, feedbackEvicted{}, receiptLoss{}, historyMisses{};
+};
+struct SessionDeliveryMetrics final {};
 struct SessionArchive final {};
+struct SessionSnapshot final {};
 struct SessionEvaluateReplay final {
     GameplayReplay archive;
 };
@@ -137,26 +181,32 @@ struct SessionInspection final {
     std::optional<std::uint64_t> reconciliationOrdinal;
     std::uint64_t sessionScope{};
 };
-using SessionCommand =
-    std::variant<SessionInspect, SessionGameplayResult, SessionPrepareSource, SessionAcceptControl,
-                 SessionSoftwarePrepare, SessionSoftwareFence, SessionSoftwareCommit,
-                 SessionRealtimeStart, SessionCaptureDelivery, SessionAdvance,
-                 SessionCoherentAdvance, SessionTailStart, SessionQueryAdvance,
-                 SessionRetireAdvance, SessionPause, SessionResume, SessionConfirmControl,
-                 SessionSample, SessionPresentReceipt, SessionArchive, SessionEvaluateReplay,
-                 SessionLag, SessionArchiveCut, SessionSeek, SessionSoftwareRetire,
-                 SessionSoftwareClose, SessionCancelStep, SessionQueryStep>;
+using SessionCommand = std::variant<
+    SessionInspect, SessionGameplayResult, SessionPrepareSource, SessionAcceptControl,
+    SessionSoftwarePrepare, SessionSoftwareFence, SessionSoftwareCommit, SessionRealtimeStart,
+    SessionCaptureDelivery, SessionAdvance, SessionCoherentAdvance, SessionTailStart,
+    SessionQueryAdvance, SessionRetireAdvance, SessionPause, SessionResume, SessionConfirmControl,
+    SessionSample, SessionPresentReceipt, SessionUpdatePresentation, SessionDeliveryLayout,
+    SessionRegisterConsumer, SessionConfirmConsumer, SessionRevokeConsumer, SessionRequestFrame,
+    SessionRevokeRetained, SessionDeliveryMetrics, SessionFeedbackQuery, SessionObservationQuery,
+    SessionArchive, SessionSnapshot, SessionEvaluateReplay, SessionLag, SessionArchiveCut, SessionSeek,
+    SessionSoftwareRetire, SessionSoftwareClose, SessionCancelStep, SessionQueryStep>;
 using SessionReply =
     std::variant<std::monostate, PresentationCandidateInput, std::uint64_t, StepReceipt,
                  GameplayAdvanceDecision, FrameEnvelope, GameplayReplay, GameplayReplayCut,
-                 SessionInspection, TailClockTransition, GameplayReplayEvaluation,
-                 GameplayExecutionLag, GameplayResult>;
+                 SessionInspection, TailClockTransition, GameplayReplayEvaluation, GameplaySnapshot,
+                 GameplayExecutionLag, GameplayResult, ConsumerRegistration, DeliveryInfo,
+                 FrameDeliveryLayout, StorageMetrics, FeedbackObservation, ObservationInfo>;
 struct SessionWorkerConfiguration final {
     std::size_t capacity{}, controlReserve{}, stepCapacity{}, stepReserve{}, frameCapacity{},
         feedbackCapacity{};
     bool testOnly{};
     // One fixed owner clock, not a callback supplied by each job.
     std::function<std::int64_t()> monotonicNow;
+    // Explicit test-only assembly limits. No accepted production defaults are implied.
+    DeliveryLimits delivery{8, 8, 64U * 1024U * 1024U, 32};
+    std::size_t maxFrameMembers{4096}, receiptCapacity{128};
+    FrameObservationLedger::Limits observation;
 };
 class SessionWorker final {
   public:
@@ -169,6 +219,18 @@ class SessionWorker final {
     [[nodiscard]] auto poll(std::uint64_t)
         -> core::Result<std::optional<core::Result<SessionReply>>>;
     [[nodiscard]] auto acknowledge(std::uint64_t) -> core::Result<void>;
+    [[nodiscard]] auto takeDelivery(std::uint64_t consumerId, std::uint64_t requestId)
+        -> core::Result<std::optional<FrameEnvelope>>;
+    [[nodiscard]] auto pollDelivery(std::uint64_t consumerId, std::uint64_t requestId)
+        -> core::Result<DeliveryInfo>;
+    [[nodiscard]] auto cancelDelivery(std::uint64_t consumerId, std::uint64_t requestId)
+        -> core::Result<DeliveryInfo>;
+    // Bounded observation-only inbox; failure records coverage loss, never a reliable-channel
+    // fault.
+    void postReceipt(const PresentReceipt&) noexcept;
+    [[nodiscard]] auto storageMetrics() const -> StorageMetrics {
+        return delivery_->storageMetrics();
+    }
     void waitFor(std::chrono::milliseconds duration);
     void waitForReply(std::uint64_t id, std::chrono::steady_clock::duration duration);
     void requestShutdown() noexcept;
@@ -181,6 +243,17 @@ class SessionWorker final {
     void run() noexcept;
     SessionWorkerConfiguration configuration_;
     OwnerChannel<SessionCommand, SessionReply> channel_;
+    std::shared_ptr<FrameDelivery> delivery_;
+    std::mutex receiptMutex_;
+    std::vector<std::optional<PresentReceipt>> receipts_;
+    std::size_t receiptRead_{}, receiptWrite_{}, receiptCount_{};
+    struct ReceiptLoss final {
+        std::uint64_t sessionFirst{}, sessionLast{}, scopeFirst{}, scopeLast{}, frameFirst{},
+            frameLast{};
+    };
+    std::array<std::optional<ReceiptLoss>, 8> receiptLosses_;
+    void noteLostReceipt(const PresentReceipt&) noexcept;
+    std::atomic<std::uint64_t> lostReceipts_{};
     std::atomic<bool> shutdown_{}, exited_{};
     std::thread thread_;
 };

@@ -484,11 +484,11 @@ created，区间仍为 `[created,end)`。UntilReset 没有按 T 到期的转换�
 取消；`T=INT64_MAX` 不使它到期。有限 end 恰为 INT64_MAX 与 UntilReset 必须可区分。
 TTL 只管理证据，不把长期活动效果改成 ExpiredUnconfirmed。
 
-当前安装头的 FeedbackObservation 使用整数 expiry，`gameplayFeedback` 将缺失 end 映射为
-INT64_MAX，不能作为新 journal 的输入表示。选择在下一次经批准的不兼容 SDK minor 中将
+历史 0.8.x 安装头的 FeedbackObservation 使用整数 expiry，`gameplayFeedback` 将缺失 end 映射为
+INT64_MAX，不能作为新 journal 的输入表示。owner 已接受 ADR 0047 与 SDK 0.9.0，将
 expiry 改成显式 optional typed end（absent=UntilReset），同步该公共方法、ABI 与消费者；
 不并行维护永久 V1/V2 反馈状态机。旧 0.8.x 构建可作历史基线，但不得混用头/库或宣称其 sentinel
-支持完整新语义。§11 的公共合同/版本门禁须在此项实现前完成，本轮不修改头或版本。
+支持完整新语义。§11 的公共合同/版本决定已获接受；实现与消费者验证仍须分别完成。
 
 ### 7.2 状态转移和幂等
 

@@ -11,8 +11,8 @@ import sys
 import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "tools/verification"))
-import measure_pd0_method as base
+sys.path.insert(0, str(ROOT))
+from tools.verification.playback_performance import baseline_method as base
 from measurement_statistics import paired_effect, per_operation
 
 
@@ -20,7 +20,7 @@ def invoke(output, name, binary, machine, profile, phase, reads, seed):
     env = dict(os.environ, CUEXIS_PD_PROFILE=profile, CUEXIS_PD_V2_PHASE=phase,
                CUEXIS_PD_V2_READS=str(reads), CUEXIS_PD_V2_SEED=str(seed),
                CUEXIS_PD_METRICS=str(output / name))
-    cmd = [sys.executable, "-B", str(ROOT / "tools/verification/measure_pd0_method.py"),
+    cmd = [sys.executable, "-B", str(ROOT / "tools/verification/playback_performance/baseline_method.py"),
            "--child", str(machine["selected_affinity"]), str(binary),
            "PD interleaved scheduling measurement", "--rng-seed", "1"]
     with (output / (name + ".log")).open("wb") as log:

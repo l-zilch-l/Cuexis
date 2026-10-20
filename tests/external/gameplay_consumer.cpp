@@ -4,10 +4,12 @@
 #include <cuexis/playback/playback_session.hpp>
 #include <cuexis/playback/playback_source.hpp>
 
+#include <cuexis/playback/execution_control.hpp>
 #include <fstream>
 #include <iostream>
 #include <limits>
 #include <stdexcept>
+#include <type_traits>
 
 #ifndef CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE
 #error The Gameplay surface requires an explicit experimental SDK flavor.
@@ -15,6 +17,8 @@
 
 namespace {
 using namespace cuexis::playback;
+static_assert(
+    std::is_same_v<decltype(FeedbackObservation::expiry), std::optional<GameplayPresentationTick>>);
 template <typename T> auto take(cuexis::core::Result<T> result) -> T {
     if (!result)
         throw std::runtime_error{std::string{result.error().code()} + ": " +

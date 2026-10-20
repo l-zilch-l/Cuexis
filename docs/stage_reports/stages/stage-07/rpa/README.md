@@ -38,6 +38,8 @@
 
 ## Device evidence
 
+- [PD-4 独立音乐与实体 DFJK 观察](device/2026-10-19-pd4-physical-music-and-keyboard-observations.md)
+- [PD-3-c 后独立音乐与实体键盘观察](device/2026-10-19-pd3c-physical-music-and-keyboard-observations.md)
 - [CRLF and device fixture](device/2026-10-09-crlf-and-device-fixture.md)
 - [CRLF and device fixture evidence](device/2026-10-09-crlf-and-device-fixture-evidence.zip)
 - [Device same-tick collision retest](device/2026-10-09-device-retest-same-tick-collision.md)

@@ -1,6 +1,6 @@
 # Stage 7-PD: Judgement/Presentation Decoupling Plan
 
-状态：active，PD-0 testOnly 基线与行为表征、PD-1 内部实施及本地适用门禁完成，PD-2 至 PD-5 未开始；独立于 Stage 7A 与 Stage 7-RPA 的 Stage 7 子阶段。整个子阶段未退出，Stage 7A/RPA 与发布门禁不因此关闭。
+状态：active，PD-0 testOnly 基线与行为表征、PD-1/PD-2 内部实施及本地适用门禁完成，PD-3-a 补正、PD-3-b 内部实施及本地适用门禁与独立审核通过，PD-3-c 内部实施与本地门禁完成（公共来源查询/0.8.1 已获接受，新建无上下文 GPT-6-Luna 独立审核通过），PD-4 三项合同/SDK 0.9.0 已获接受，内部实施、本地适用门禁及新的无上下文独立复审完成，PD-5 P0 两窗完成，owner 要求先核查与修复性能问题后重新测量，完整正式接受未完成；独立于 Stage 7A 与 Stage 7-RPA 的 Stage 7 子阶段。整个子阶段未退出，Stage 7A/RPA 与发布门禁不因此关闭。
 
 2026-10-16 最新授权：owner 要求“阅读接手文档并阅读相关文档，本次任务是完成PD计划”，随后要求先提交当前状态存档、后续显示 todolist。此前设计阶段关于不得启动实施的限制不再适用于本次已授权工作；正式合同接受、公共版本、逐批验收与发行门禁仍分别成立。内部接口名仍须以实际实现与证据核对。
 
@@ -338,6 +338,9 @@ Close，以及 CPU/GPU 仍持有旧载荷的情形；拒绝旧副本不伪造原
 
 PD-0 至 PD-4 完成后按[细则 §9](presentation-decoupling-design.md)运行 Release 与目标设备测量；仅同一预算项在 3 个预声明有效窗口持续超界才触发独立拆分设计报告。阈值未接受或噪声未受控则记录证据不足。报告经 owner 接受并另有实施授权后才可新增 owner，不预冻结线程数量。
 
+2026-10-19 owner 授权测量就绪检查和阈值方案；[现场检查](../../../stage_reports/stages/stage-07/pd/2026-10-19-pd5-measurement-readiness.md)完成，
+[本机测量协议与阈值](pd5-measurement-proposal.md)已获 owner 明确接受。2026-10-20 P0 已完成两窗各 36 个正式进程，owner 要求先核查与修复局部性能回归，再重新测量；[两窗证据与诊断接手](../../../stage_reports/stages/stage-07/pd/2026-10-20-pd5-two-window-findings-and-diagnostic-handoff.md)保留未完成固定组及根因证据缺口。第三窗不自动续跑，完整三窗接受及连续三窗拆分触发均未成立；旧/新宿主 ACK 与异步 present-return 边界不能混用。
+
 ## 6. 保持不变的语义和兼容性
 
 - Gameplay v2 的 observationTick、dispatchTick、commitTick、processed frontier、sealed/folded cursor 和 advance horizon 继续分开。
@@ -482,12 +485,12 @@ RPA-F4 接受前若集成 PD，其最终矩阵/预算直接覆盖该实现；F4 
 - [x] 保存实施前工作区快照，登记初始采样参数。
 - [x] **PD-0**——受控环境及经依赖核验的干净重建程序完成两窗口与合并六进程重复性；全部 owner/宿主项满足原定 15% 门槛，同源码阶段/存储/交付观测核验通过，见[退出证据](../../../stage_reports/stages/stage-07/pd/2026-10-18-pd0-controlled-environment-and-build-binding.md)。历史 inconclusive 与源码绑定失败组完整保留；历史慢态未归因，生产预算、尾延迟、帧账本回收及设备验收未关闭。
 - [x] PD-1——Judgement publication view、读取失效与诊断桥；本地 static/shared、Release、candidate OFF 和适用消费者门禁完成，证据见[PD-1 报告](../../../stage_reports/stages/stage-07/pd/2026-10-18-pd1-publication-bridge.md)。不表示跨平台或设备验收完成。
-- [ ] PD-2——prepare 绑定索引、Projection Adapter 与既有 golden 对照。
-- [ ] PD-3-a——Runtime/World prepare/apply、storage 安装及派生状态故障证明。
-- [ ] PD-3-b——状态修订、中性 PresentationRead 与唯一物化器。
-- [ ] PD-3-c——正式宿主差异、确认绑定与保留画面来源。
-- [ ] PD-4——消费注册、按需交付、显式反馈寿命、紧凑 journal 与真实回收。
-- [ ] PD-5——配对测量及 owner 拆分触发审查；缺少有效阈值则记录证据不足。
+- [x] PD-2——prepare 绑定索引、Projection Adapter、候选状态与既有 golden 对照；static/shared、Release、candidate OFF 及适用消费者本地门禁完成，见[PD-2 报告](../../../stage_reports/stages/stage-07/pd/2026-10-18-pd2-projection-adapter.md)。不表示性能收益、完整 World 事务或设备验收完成。
+- [x] PD-3-a——Runtime/World prepare/apply、storage 安装、派生状态故障和安装后提帧失败的内部实施及本地适用门禁完成，见[PD-3-a 报告](../../../stage_reports/stages/stage-07/pd/2026-10-18-pd3a-software-transaction.md)；2026-10-19 资源准备 OOM 门禁已补正，GPT-6-Luna 复审 PASS。
+- [x] PD-3-b——状态修订、中性 PresentationRead、唯一物化器与内部 ExactVersion；本地四配置回归、static/shared 包消费者及 GPT-6-Luna 独立复审通过，见 [PD-3-b 报告](../../../stage_reports/stages/stage-07/pd/2026-10-19-pd3b-state-read-and-materialization.md)。不表示控制绑定、按额度交付或设备验收完成。
+- [x] PD-3-c——正式宿主差异、确认绑定与保留画面来源；已形成[来源查询和版本决策方案](../../../stage_reports/stages/stage-07/pd/2026-10-19-pd3c-contract-and-version-decision.md)，owner 已接受，控制/保留路径已接入，适用本地门禁已完成，新建无上下文 GPT-6-Luna 独立审核通过。
+- [x] PD-4——消费注册、按需交付、显式反馈寿命、紧凑 journal 与真实回收；三项合同/SDK 0.9.0 已获接受，内部实施、本地适用门禁与新的无上下文独立复审完成；[实施与验证](../../../stage_reports/stages/stage-07/pd/2026-10-19-pd4-delivery-retirement-and-observation.md)。实体设备、正式预算与子阶段退出另行验收。
+- [ ] PD-5——就绪检查与阈值方案已完成；判据已接受，待补齐工具/profile 后开展配对测量及 owner 拆分触发审查，缺少有效阈值则记录证据不足。
 - [ ] 最终回归、适用消费者/版本门禁、迁移路径清理与交接。
 
 当前快照证据见[PD 设计演进记录](../../../stage_reports/stages/stage-07/pd/2026-10-16-design-evolution.md)。

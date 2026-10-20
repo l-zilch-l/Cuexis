@@ -75,7 +75,8 @@
 | Gameplay 诊断门禁 | [check_gameplay_diagnostic_formalization.py](verification/check_gameplay_diagnostic_formalization.py) | 检查诊断映射迁移与规范化约束。 |
 | 设备验收包检查 | [check_device_acceptance_chart.py](practice/check_device_acceptance_chart.py) | 独立检查设备包 ZIP、hash、author binding，并对照 host golden。 |
 | RPA 验收矩阵 | [verification/run_rpa_acceptance_matrix.py](verification/run_rpa_acceptance_matrix.py) | 驱动全新本地 RPA 验收行并保留每次尝试；运行本身不宣告 F1/F3 验收。根目录保留兼容入口。 |
-| PD-0 测量 | [verification/measure_pd0_method.py](verification/measure_pd0_method.py) | Windows static PD-0 方法校准及单独注册的验收；校准与验收证据分开。根目录保留兼容入口。 |
+| 基线方法校准 | [baseline_method.py](verification/playback_performance/baseline_method.py) | Windows static PD-0 方法校准及单独注册的验收；校准与验收证据分开。根目录提供功能名入口。 |
+| Playback 性能测量 | [verification/playback_performance/](verification/playback_performance/README.md) | profile/构建准备、P0 三窗口、collector/统计、进程树及设备盘点；测试和 C++ 探针留在 `tests/pd/`，正式就绪条件单独核验。 |
 
 检查脚本与其检查对象一同归类，但不因此改名为内容生产工具。
 部分驱动要求现有构建、fixture、host 或特定平台；运行前应查看对应参数与阶段文档。
@@ -102,17 +103,17 @@
 
 三个原先保留在根目录的工具实现现已按职责归入 `verification/`：
 
-- [verification/measure_pd0_method.py](verification/measure_pd0_method.py)
+- [verification/playback_performance/baseline_method.py](verification/playback_performance/baseline_method.py)
 - [verification/check_docs.py](verification/check_docs.py)
 - [verification/run_rpa_acceptance_matrix.py](verification/run_rpa_acceptance_matrix.py)
 
-根目录仍保留同名兼容包装：
+根目录入口如下；测量入口已改为功能名，旧命令的对应关系见后文：
 
-- [measure_pd0_method.py](measure_pd0_method.py)
+- [measure_playback_method.py](measure_playback_method.py)
 - [check_docs.py](check_docs.py)
 - [run_rpa_acceptance_matrix.py](run_rpa_acceptance_matrix.py)
 
-现有命令、CI 和历史文档入口继续可用；新代码和工具索引应引用 `verification/` 下的实现。
+文档检查、RPA 的兼容入口和 CI 调用继续可用；测量工具的新命令使用上述功能路径。
 
 ## 目录布局
 
@@ -151,7 +152,8 @@ tools/
 | `check_gameplay_assembler_tests.py`、`check_gameplay_host_tests.py`、`check_gameplay_diagnostic_formalization.py` | `verification/` 下的同名文件 |
 | `make_entity_practice_chart.py`、`make_judgement_practice.py`、`make_device_acceptance_chart.py` | `practice/` 下的同名文件 |
 | `check_device_acceptance_chart.py`、`build_entity_practice_compiler.py`、`compile_entity_practice.cpp` | `practice/` 下的同名文件 |
-| `measure_pd0_method.py`、`check_docs.py`、`run_rpa_acceptance_matrix.py` | `verification/` 下的实现；根目录保留兼容包装 |
+| `measure_pd0_method.py`、`verification/measure_pd0_method.py` | `verification/playback_performance/baseline_method.py`；根级入口为 `measure_playback_method.py`，原阶段命名入口已移除 |
+| `check_docs.py`、`run_rpa_acceptance_matrix.py` | `verification/` 下的实现；根目录保留兼容包装 |
 
 历史报告保留原始命令、源码路径和行号；仅将真实 Markdown 链接的目标修正到当前文件，保留原有显示文字。
 当前指南与示例使用新路径。已有构建目录需重新运行 CMake configure，再继续构建和测试。
@@ -160,8 +162,8 @@ tools/
 
 PD 测量的当前无编译插桩入口是 [formal_baseline.py](../tests/pd/formal_baseline.py)，
 配置及适用范围见 [PD 测试索引](../tests/pd/README.md)。
-`verification/measure_pd0_method.py` 的插桩测量入口保留用于历史复现，其身份与 child 运行函数
-仍被新入口依赖，不能作为过时工具删除。根级兼容包装也仍在迁移保留期。
+`verification/playback_performance/baseline_method.py` 的插桩测量入口保留用于历史复现，其身份与 child 运行函数
+仍被新入口依赖，不能作为过时工具删除。根级功能入口为 `measure_playback_method.py`；阶段命名旧入口通过上表提供迁移说明，不保留同名文件。
 一次性本机构建脚本与临时产物不提升为仓库工具；归档、删除明细见
 [PD 复测与归档报告](../docs/stage_reports/stages/stage-07/pd/2026-10-17-pd0-supplemental-retests-and-archive.md)。
 

@@ -1,4 +1,5 @@
 #include "open_gl_presentation_internal.hpp"
+#include "../internal/cuexis_internal/gpu_storage_observer.hpp"
 #include <cuexis/playback/presentation_candidate.hpp>
 
 #include <cuexis/core/error.hpp>
@@ -339,6 +340,7 @@ void main() {
 
     glBindVertexArray(vertexArray);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    test_only::GpuStorage::charge(1, vertexBuffer, vertices.size() * sizeof(PresentationVertex));
     glBufferData(GL_ARRAY_BUFFER,
                  static_cast<GLsizeiptr>(vertices.size() * sizeof(PresentationVertex)),
                  vertices.data(), GL_STATIC_DRAW);
@@ -349,6 +351,7 @@ void main() {
                           reinterpret_cast<const void*>(offsetof(PresentationVertex, u)));
     glEnableVertexAttribArray(1);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    test_only::GpuStorage::charge(1, indexBuffer, mesh->indices.size() * sizeof(std::uint32_t));
     glBufferData(GL_ELEMENT_ARRAY_BUFFER,
                  static_cast<GLsizeiptr>(mesh->indices.size() * sizeof(std::uint32_t)),
                  mesh->indices.data(), GL_STATIC_DRAW);
@@ -383,6 +386,7 @@ void main() {
                                               &resource.reference));
     }
     glBindTexture(GL_TEXTURE_2D, textureName);
+    test_only::GpuStorage::charge(2, textureName, texture->pixelsRgba8.size());
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -664,6 +668,7 @@ uploadParameterizedProgram(const playback::PortableResource& shaderResource,
                                               &shaderResource.reference));
     }
     glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+    test_only::GpuStorage::charge(1, ubo, sizeof(CuexisObjectStd140));
     glBufferData(GL_UNIFORM_BUFFER, static_cast<GLsizeiptr>(sizeof(CuexisObjectStd140)), nullptr,
                  GL_DYNAMIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -1096,6 +1101,7 @@ namespace detail {
 
 UniqueBuffer::~UniqueBuffer() {
     if (value != 0) {
+        test_only::GpuStorage::release(1, value);
         glDeleteBuffers(1, &value);
     }
 }
@@ -1105,6 +1111,7 @@ UniqueBuffer::UniqueBuffer(UniqueBuffer&& other) noexcept : value(std::exchange(
 auto UniqueBuffer::operator=(UniqueBuffer&& other) noexcept -> UniqueBuffer& {
     if (this != &other) {
         if (value != 0) {
+            test_only::GpuStorage::release(1, value);
             glDeleteBuffers(1, &value);
         }
         value = std::exchange(other.value, 0);
@@ -1133,6 +1140,7 @@ auto UniqueVertexArray::operator=(UniqueVertexArray&& other) noexcept -> UniqueV
 
 UniqueTexture::~UniqueTexture() {
     if (value != 0) {
+        test_only::GpuStorage::release(2, value);
         glDeleteTextures(1, &value);
     }
 }
@@ -1143,6 +1151,7 @@ UniqueTexture::UniqueTexture(UniqueTexture&& other) noexcept
 auto UniqueTexture::operator=(UniqueTexture&& other) noexcept -> UniqueTexture& {
     if (this != &other) {
         if (value != 0) {
+            test_only::GpuStorage::release(2, value);
             glDeleteTextures(1, &value);
         }
         value = std::exchange(other.value, 0);
@@ -1625,6 +1634,7 @@ auto OpenGlBackend::renderPresentation(const playback::FrameSnapshot& snapshot,
             glUniformMatrix4fv(viewProjectionLocation_, 1, GL_FALSE, viewProjection.data());
             glBindVertexArray(debugVertexArray_);
             glBindBuffer(GL_ARRAY_BUFFER, debugVertexBuffer_);
+            test_only::GpuStorage::charge(1, debugVertexBuffer_, state.debugVerticesScratch.size() * sizeof(DebugVertex));
             glBufferData(
                 GL_ARRAY_BUFFER,
                 static_cast<GLsizeiptr>(state.debugVerticesScratch.size() * sizeof(DebugVertex)),

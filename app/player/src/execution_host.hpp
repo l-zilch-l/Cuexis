@@ -59,14 +59,25 @@ class ExecutionHost final {
                             playback::GameplayTick, const ClockSource&) -> core::Result<void>;
     [[nodiscard]] auto sample(std::int64_t presentationTick, playback::RuntimeFrame, bool frozen)
         -> core::Result<playback::detail::FrameEnvelope>;
+    [[nodiscard]] auto trySample(std::int64_t presentationTick, playback::RuntimeFrame, bool frozen)
+        -> core::Result<std::optional<playback::detail::FrameEnvelope>>;
+    [[nodiscard]] auto revokeRetained() -> core::Result<void>;
+    [[nodiscard]] auto deliveryStatus() const noexcept -> playback::detail::DeliveryStatus {
+        return deliveryStatus_;
+    }
+    [[nodiscard]] auto storageMetrics() const -> playback::detail::StorageMetrics {
+        return session_->storageMetrics();
+    }
     [[nodiscard]] auto present(const playback::detail::FrameEnvelope&)
         -> core::Result<playback::detail::PresentReceipt>;
+    [[nodiscard]] auto observationInfo() -> core::Result<playback::detail::ObservationInfo>;
     [[nodiscard]] auto queryGameplay() -> core::Result<playback::GameplayResult>;
     [[nodiscard]] auto archive() -> core::Result<playback::GameplayReplay>;
     [[nodiscard]] auto evaluateReplay(const playback::GameplayReplay&)
         -> core::Result<playback::GameplayReplayEvaluation>;
     [[nodiscard]] auto lag(const playback::ClockObservation&)
         -> core::Result<playback::GameplayExecutionLag>;
+    [[nodiscard]] auto snapshotGameplay() -> core::Result<playback::GameplaySnapshot>;
     [[nodiscard]] auto replayCut(const playback::GameplayReplay&, playback::GameplayTick)
         -> core::Result<playback::GameplayReplayCut>;
     [[nodiscard]] auto close() -> core::Result<void>;
@@ -119,6 +130,9 @@ class ExecutionHost final {
     void audioStep(playback::detail::AudioWorkerCommandKind, playback::StepPhase);
     void softwarePrepared();
     void finish();
+    void registerRenderer();
+    void retireRenderer();
+    void invalidateRetained();
     void flush(const playback::ClockObservation&, bool normalPrefix);
     void cleanup();
     void finishTail(const playback::TailClockTransition&, playback::TailProfile);
@@ -150,6 +164,12 @@ class ExecutionHost final {
     std::optional<playback::ClockObservation> lastObservation_;
     std::optional<playback::TailClockTransition> tail_;
     std::optional<playback::TailProfile> pendingTailProfile_;
+    playback::detail::RetainedPresentation retainedPresentation_;
+    playback::detail::RendererConsumerGate rendererGate_;
+    std::optional<playback::detail::ConsumerRegistration> consumer_;
+    playback::detail::DeliveryStatus deliveryStatus_{playback::detail::DeliveryStatus::pending};
+    std::uint64_t registrationOperation_{1};
+    std::shared_ptr<const playback::detail::FrameEnvelope> pendingFrame_;
     std::vector<std::pair<playback::GameplayInput, bool>> clockTransitionInputs_;
     bool tailPreparing_{}, tailFrozen_{};
     std::optional<std::int64_t> lastObservedTick_;

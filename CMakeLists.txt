@@ -64,6 +64,14 @@ option(CUEXIS_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSa
 option(CUEXIS_ENABLE_CLANG_TIDY "Run clang-tidy while compiling Cuexis targets" OFF)
 option(CUEXIS_ENABLE_COVERAGE "Enable compiler coverage instrumentation" OFF)
 option(CUEXIS_PD_METRICS_TEST_ONLY "Enable bounded internal PD stage measurements (not production)" OFF)
+option(CUEXIS_ALLOCATION_LIFETIME_OBSERVER "Enable opt-in PD allocation lifetime observer (not production)" OFF)
+option(CUEXIS_PLAYBACK_TRACE_HARNESS "Enable internal scripted Player measurement (not production)" OFF)
+if(CUEXIS_ALLOCATION_LIFETIME_OBSERVER)
+    if(NOT WIN32 OR NOT CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
+        message(FATAL_ERROR "PD allocation observer requires Windows STATIC")
+    endif()
+    add_compile_definitions(CUEXIS_ALLOCATION_LIFETIME_OBSERVER=1)
+endif()
 if(CUEXIS_PD_METRICS_TEST_ONLY)
     add_compile_definitions(CUEXIS_PD_METRICS_TEST_ONLY=1)
 endif()
@@ -140,8 +148,11 @@ endif()
 if(BUILD_TESTING AND CUEXIS_BUILD_TESTS AND CUEXIS_ENABLE_CHART_V5_CANDIDATE
    AND TARGET cuexis_platform_sdl AND TARGET cuexis_audio_sdl AND TARGET cuexis_render_opengl)
     find_package(Catch2 CONFIG REQUIRED)
+    find_package(glad CONFIG REQUIRED)
     add_executable(cuexis_execution_device_probe
         tests/player/execution_device_probe.cpp
+        tests/pd/pd5_device_probe.cpp
+        engine/render_opengl/src/gpu_timer.cpp
         app/player/src/execution_host.cpp
         app/player/src/snapshot_scene.cpp
     )
@@ -152,8 +163,17 @@ if(BUILD_TESTING AND CUEXIS_BUILD_TESTS AND CUEXIS_ENABLE_CHART_V5_CANDIDATE
     target_link_libraries(cuexis_execution_device_probe PRIVATE
         cuexis::execution_host_support
         cuexis::playback cuexis::audio_sdl cuexis::platform_sdl cuexis::render_opengl cuexis::render
-        cuexis::judgement cuexis::gameplay_packed Catch2::Catch2WithMain
+        cuexis::judgement cuexis::gameplay_packed Catch2::Catch2WithMain glad::glad
     )
+endif()
+
+if(CUEXIS_ALLOCATION_LIFETIME_OBSERVER)
+    foreach(probe cuexis_pd_host_probe cuexis_execution_device_probe)
+        if(TARGET ${probe})
+            target_sources(${probe} PRIVATE tests/pd/pd5_memory_observer.cpp)
+            target_link_libraries(${probe} PRIVATE psapi)
+        endif()
+    endforeach()
 endif()
 
 set(CUEXIS_ACTIVE_TARGETS
@@ -1090,6 +1110,7 @@ if(TARGET cuexis_player)
             cuexis::render_opengl
             cuexis::player_support
             spdlog::spdlog
+            ole32 uuid
     )
 endif()
 if(TARGET cuexis_chart_migrator)
@@ -1296,7 +1317,8 @@ if(CUEXIS_BUILD_TESTS)
     if(TARGET cuexis_pd_host_probe)
         cuexis_verify_target_dependencies(cuexis_pd_host_probe
             ALLOWED cuexis::execution_host_support cuexis::playback cuexis::presentation_renderer
-                cuexis::render cuexis::judgement cuexis::gameplay_packed Catch2::Catch2WithMain)
+                cuexis::render cuexis::judgement cuexis::gameplay_packed Catch2::Catch2WithMain
+                psapi)
     endif()
     cuexis_verify_target_dependencies(cuexis_rpa_tests
         ALLOWED
@@ -1321,7 +1343,8 @@ if(CUEXIS_BUILD_TESTS)
     if(TARGET cuexis_execution_device_probe)
         cuexis_verify_target_dependencies(cuexis_execution_device_probe
             ALLOWED cuexis::execution_host_support cuexis::playback cuexis::audio_sdl cuexis::platform_sdl cuexis::render_opengl cuexis::render
-                    cuexis::judgement cuexis::gameplay_packed Catch2::Catch2WithMain
+                    cuexis::judgement cuexis::gameplay_packed Catch2::Catch2WithMain glad::glad
+                    psapi
         )
     endif()
     cuexis_verify_target_dependencies(cuexis_gameplay_packed_tests

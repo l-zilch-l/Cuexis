@@ -8,6 +8,7 @@ add_library(cuexis_playback ${CUEXIS_LIBRARY_TYPE}
     src/presentation_internal.hpp
     src/playback_candidate_internal.hpp
     src/playback_session.cpp
+    src/presentation_materializer.cpp
     src/playback_source.cpp
     src/playback_source_state.hpp
     src/runtime_timeline.cpp
@@ -30,7 +31,8 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
     target_compile_definitions(cuexis_playback PRIVATE CUEXIS_ENABLE_CHART_V5_CANDIDATE=1)
     target_compile_definitions(cuexis_playback PUBLIC CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE=1)
     target_include_directories(cuexis_playback PRIVATE ${PROJECT_SOURCE_DIR}/engine/judgement/internal)
-    target_sources(cuexis_playback PRIVATE src/gameplay_candidate.cpp src/gameplay_configuration.cpp src/gameplay_entry.cpp)
+    target_sources(cuexis_playback PRIVATE src/gameplay_candidate.cpp src/gameplay_configuration.cpp src/gameplay_entry.cpp
+        src/presentation_projection.cpp src/presentation_projection.hpp)
     target_link_libraries(cuexis_playback PRIVATE cuexis::judgement cuexis::gameplay_packed cuexis::json_support)
 endif()
 
@@ -78,3 +80,5 @@ target_link_libraries(cuexis_playback
         cuexis::render
         cuexis::world
 )
+
+target_include_directories(cuexis_playback PRIVATE "${PROJECT_SOURCE_DIR}/engine/runtime/internal")

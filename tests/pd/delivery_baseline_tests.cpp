@@ -1,4 +1,4 @@
-#include "frame_observation.hpp"
+#include "legacy_frame_observation.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cuexis/playback/playback_session.hpp>
 #include <cuexis/playback/playback_source.hpp>
@@ -12,6 +12,9 @@ namespace {
 using namespace cuexis;
 using namespace playback;
 using namespace playback::detail;
+using FrameObservationLedger = playback::detail::baseline::FrameObservationLedger;
+using FrameEnvelope = playback::detail::baseline::FrameEnvelope;
+using PresentStatus = playback::detail::baseline::PresentStatus;
 template <class T> auto take(core::Result<T> value) -> T {
     if (!value)
         throw std::runtime_error(std::string{value.error().code()});

@@ -250,11 +250,13 @@ auto PlayerSmokeBinding::afterTimelineAdvance(PlayerClockContext& context) -> co
         if (!legacyReplacement) {
             return core::unexpected(std::move(legacyReplacement.error()));
         }
+        if (legacyReplacement->presentationManifest() != nullptr) {
+            return core::unexpected(core::Error{"player.smoke_test.legacy_fixture_portable",
+                                                "The legacy fixture unexpectedly became portable"});
+        }
         const auto legacyPresentation =
             context.renderer.prepare(*legacyReplacement, {.enableDebugPass = true});
-        if (legacyPresentation ||
-            legacyPresentation.error().code() !=
-                "render.opengl.presentation.portable_candidate_required" ||
+        if (legacyPresentation || legacyPresentation.error().code() != "host.rpa.context_stale" ||
             !backend_.hasActivePresentation()) {
             return core::unexpected(core::Error{
                 "player.smoke_test.legacy_adapter_prepare_accepted",

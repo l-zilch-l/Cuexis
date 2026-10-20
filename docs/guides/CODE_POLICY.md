@@ -2,7 +2,7 @@
 
 状态：已接受
 
-更新日期：2026-07-27
+更新日期：2026-10-20
 
 ## 文件与命名
 
@@ -16,6 +16,11 @@ C++ 文件              snake_case.hpp / snake_case.cpp
 ```
 
 公共头位于 `include/cuexis/<module>/`，实现位于模块 `src/`。不再允许 PascalCase 文件名与 snake_case 混用。
+
+`app/`、`engine/`、`tools/` 中的源码、脚本和配置文件按功能命名，不使用 `pd5_` 等实施阶段编号作为文件名或目录名。
+阶段信息保存在测试目录、阶段计划、报告和测量协议身份中。例如测量工具归入
+`tools/verification/playback_performance/`，分配观测头使用 `allocation_observer.hpp`。
+修改路径时同步更新 include、构建输入、Python 导入、命令和文档链接；冻结日志与归档保留原时点路径。
 
 ## Result 与异常
 
