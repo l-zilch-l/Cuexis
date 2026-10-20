@@ -16,32 +16,31 @@ struct PresentationWindow final {
     PresentationState state;
 };
 
-auto PresentationRead::checkedWindow() const -> core::Result<std::shared_ptr<PresentationWindow>> {
-    auto window = window_.lock();
-    if (!window || window->owner != std::this_thread::get_id())
-        return core::unexpected(core::Error{"runtime.presentation.view_unavailable",
-                                            "Presentation read belongs to another owner"});
-    if (!window->active || window->serial != serial_)
-        return core::unexpected(core::Error{"runtime.presentation.view_unavailable",
-                                            "Presentation read window has ended"});
-    return window;
+auto PresentationRead::available() const noexcept -> bool {
+    return window_ != nullptr && window_->owner == std::this_thread::get_id() && window_->active &&
+           window_->serial == serial_;
+}
+auto PresentationRead::availableError() const -> core::Error {
+    if (window_ == nullptr || window_->owner != std::this_thread::get_id())
+        return core::Error{"runtime.presentation.view_unavailable",
+                           "Presentation read belongs to another owner"};
+    return core::Error{"runtime.presentation.view_unavailable",
+                       "Presentation read window has ended"};
 }
 auto PresentationRead::state() const -> core::Result<PresentationState> {
-    auto window = checkedWindow();
-    if (!window)
-        return core::unexpected(std::move(window.error()));
-    return (*window)->state;
+    if (!available())
+        return core::unexpected(availableError());
+    return window_->state;
 }
 auto PresentationRead::readObject(std::size_t index) const -> core::Result<ObjectPresentation> {
-    auto window = checkedWindow();
-    if (!window)
-        return core::unexpected(std::move(window.error()));
-    const auto& entries = (*window)->objects->entries();
+    if (!available())
+        return core::unexpected(availableError());
+    const auto& entries = window_->objects->entries();
     if (index >= entries.size())
         return core::unexpected(core::Error{"runtime.presentation.layout_stale",
                                             "Presentation object index is outside the layout"});
     const auto& entry = entries[index];
-    const auto& registry = *(*window)->registry;
+    const auto& registry = *window_->registry;
     ObjectPresentation object;
     object.id = entry.objectId.value;
     if (!registry.valid(entry.entity))
@@ -61,15 +60,14 @@ auto PresentationRead::readObject(std::size_t index) const -> core::Result<Objec
     return object;
 }
 auto PresentationRead::readCamera() const -> core::Result<CameraPresentation> {
-    auto window = checkedWindow();
-    if (!window)
-        return core::unexpected(std::move(window.error()));
+    if (!available())
+        return core::unexpected(availableError());
     CameraPresentation value;
-    const auto selected = (*window)->camera;
+    const auto selected = window_->camera;
     value.selected = selected.has_value();
     if (!selected)
         return value;
-    const auto& registry = *(*window)->registry;
+    const auto& registry = *window_->registry;
     if (!registry.valid(*selected))
         return value;
     const auto* camera = registry.try_get<render::CameraComponent>(*selected);

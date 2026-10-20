@@ -46,10 +46,16 @@ class PresentationRead final {
 
   private:
     friend struct PresentationAccess;
-    PresentationRead(std::weak_ptr<PresentationWindow> window, std::uint64_t serial) noexcept
+    // The window is validated once, when the read gate hands the view to its callback. Promoting
+    // it here costs one strong-count operation per read window instead of one per object, camera
+    // and state read. A client copy keeps the window alive, yet the window still ends with the
+    // callback, so an escaped view cannot observe a later frame.
+    PresentationRead(std::shared_ptr<PresentationWindow> window, std::uint64_t serial) noexcept
         : window_(std::move(window)), serial_(serial) {}
-    auto checkedWindow() const -> core::Result<std::shared_ptr<PresentationWindow>>;
-    std::weak_ptr<PresentationWindow> window_;
+    // Scalar owner, window and generation checks are the whole per-read cost.
+    [[nodiscard]] auto available() const noexcept -> bool;
+    [[nodiscard]] auto availableError() const -> core::Error;
+    std::shared_ptr<PresentationWindow> window_;
     std::uint64_t serial_;
 };
 struct PresentationAccess final {
