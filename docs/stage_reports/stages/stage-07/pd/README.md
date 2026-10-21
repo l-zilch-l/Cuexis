@@ -22,6 +22,7 @@
 
 ## 测量与基线
 
+- [C2 单候选验证与交回核验](2026-10-21-c2-read-result-candidate.md)
 - [Gameplay-host 字符串字典与预算独立核查](2026-10-21-gameplay-host-string-budget.md)
 - [PD-5 门禁核查、有限诊断与处置交接](2026-10-21-pd5-followup.md)
 

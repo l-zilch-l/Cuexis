@@ -84,3 +84,9 @@ ACK/present-return 原字段继续分别报告；enqueue/drain/GPU 无边界时�
 它的外层正常结束仍可能包含容量单元失败，须读取 run-result.json 的 failures，不能仅看控制器退出码。
 `compare_read_candidates.py` 是一候选、三侧固定进程的规模对照；先审计归档方法，再绑定新方法，
 不恢复旧正式窗口或修改其日志。全部结果仍是有限诊断。
+
+`read_result_candidate.py bind` 只绑定已预登记的 F1/C2 候选与两套新正常 Release 树，要求独立
+语义/代码生成验证已经完成。它校验历史 F1 库存及原始归档，再比较编译输入并核对 CMake 源目录；
+历史 `out/pd5-followup-20261021-62ca993` 是必需证据，缺失时拒绝绑定，不能把任意输入命名为 F1。
+`run --output <已绑定候选根>` 仅运行固定 12 个独立进程，无补样；结果保留 pending_review=true、
+acceptance=false。数值自检通过也不授权保留候选或建立正式 preparation/registration。
