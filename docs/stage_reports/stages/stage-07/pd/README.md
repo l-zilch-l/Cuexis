@@ -22,6 +22,7 @@
 
 ## 测量与基线
 
+- [40k Gameplay-host B0 预算裁决交回（待 owner 接受）](2026-10-22-gameplay-admission-b0-budget-ruling.md)
 - [40k Gameplay-host 准入阶段 A 定量交接](2026-10-21-gameplay-admission-stage-a.md)
 - [C2 单候选验证与交回核验](2026-10-21-c2-read-result-candidate.md)
 - [Gameplay-host 字符串字典与预算独立核查](2026-10-21-gameplay-host-string-budget.md)

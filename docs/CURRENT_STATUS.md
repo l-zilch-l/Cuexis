@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-10-21
+更新日期：2026-10-22
 
 本文只维护当前阶段、正在进行的任务和未解决的问题。实施与测量细节见带日期的阶段报告。
 
@@ -27,7 +27,7 @@ PD-5 Python 测量工具及 profile 已整理到 [tools/verification/playback_pe
 
 [注册完整性与容量短测修正](stage_reports/stages/stage-07/pd/2026-10-20-measurement-preparation-integrity.md)补齐注册外层哈希、跨窗口/pilot 原始文件独立性及完整控制次数拒绝检查，64 实体 low/high 的 Snapshot/Seek/Replay 端到端工具短测通过；40k、真实 Player/设备观察和完整测量就绪仍待验证。
 
-PD-5 40k 准入阶段 A：[定量交接](stage_reports/stages/stage-07/pd/2026-10-21-gameplay-admission-stage-a.md)与[revision 4/hash 会计草案](proposals/implementation-input/stage-07/pd5-capsule-r4-accounting.md)已完成，六配置原样观察无补样。40k low/high 提议完整文件为 6818424/6746664 bytes，原 semantic preimage 均为 99588531 bytes；新布局尺寸不是已接受 wire。新工作量上限、scratch 上界与入口载体尚待接受，B/C 未开始，现有准入拒绝未修复。全部工作在隔离 codex/pd5-gameplay-40k-admission，主树 F1、C2、旧证据和窗口 3 保持原状。
+PD-5 40k 准入阶段 A：[定量交接](stage_reports/stages/stage-07/pd/2026-10-21-gameplay-admission-stage-a.md)与[revision 4/hash 会计草案](proposals/implementation-input/stage-07/pd5-capsule-r4-accounting.md)已完成，六配置原样观察无补样。40k low/high 提议完整文件为 6818424/6746664 bytes，原 semantic preimage 均为 99588531 bytes；新布局尺寸不是已接受 wire。[B0 预算裁决报告](stage_reports/stages/stage-07/pd/2026-10-22-gameplay-admission-b0-budget-ruling.md)已交回：四维具体 envelope、完整 Ix 口径、scratch 分配账本和内部 profile 仍待 owner 接受；B/C 未开始，现有准入拒绝未修复。全部工作在隔离 codex/pd5-gameplay-40k-admission，主树 F1、C2、旧证据和窗口 3 保持原状。
 
 PD-5 本轮补充：[Gameplay-host 字典/预算核查](stage_reports/stages/stage-07/pd/2026-10-21-gameplay-host-string-budget.md)及[C2 单候选交接](stage_reports/stages/stage-07/pd/2026-10-21-c2-read-result-candidate.md)。C2 完整 Release CTest 1272 通过、1 跳过、0 失败，12 个固定被测进程完成；主指标及规模重复性未达冻结条件，未合入主树，交回核验后再决定处置；未新建正式 preparation/registration，旧窗口 3 继续停止。
 
