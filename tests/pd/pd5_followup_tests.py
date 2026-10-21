@@ -21,7 +21,7 @@ class FollowupTests(unittest.TestCase):
                     for block in range(3):
                         rows.append('PD_FOLLOW_ROW '+json.dumps(dict(objects=n,mode=mode,block=block,
                             operations=count,elapsed_us=200000,digest=42,ordinal=64)))
-            rows.append('PD5_PROCESS_START {"pid":1}')
+            rows.append('PD5_PROCESS_START {"pid":1,"qpc":10}')
             path.write_text('\n'.join(rows),encoding='utf-8')
             record = dict(log=str(path),exit_code=0,log_sha256=f.sha(path),side='A',
                           name='scale-0-A',binary_sha256='a'*64)

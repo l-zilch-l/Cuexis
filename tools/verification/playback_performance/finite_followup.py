@@ -126,7 +126,8 @@ def scale_records(record, plan):
     contents = {r['objects']: r['sha256'] for r in m.records(text, 'PD_FOLLOW_CONTENT ')}
     if len(rows) != 24 or len(contents) != 4:
         raise ValueError('Missing scale configuration/block')
-    pid = m.records(text, 'PD5_PROCESS_START ')[-1]['pid']
+    started = m.records(text, 'PD5_PROCESS_START ')[-1]
+    pid = started['pid']
     result = {}
     for n in (1, 8, 64, 256):
         for mode in ('read', 'updated'):
@@ -147,6 +148,7 @@ def scale_records(record, plan):
             process = dict(schema='playback.diagnostic-process.v1', method=d.METHOD, protocol=d.PROTOCOL,
                 source_sha256=plan['builds'][record['side']]['source_identity']['sha256'],
                 binary_sha256=record['binary_sha256'], run_id=record['name'], pid=pid,
+                native_start_qpc=started['qpc'], log_sha256=record['log_sha256'],
                 output_validated=record['exit_code'] == 0,
                 workload=dict(objects=n, cameras=1, registry_entities=n+1, U=64+(total if mode=='updated' else 0),
                               F=64+total, R=0, content_sha256=contents[n],

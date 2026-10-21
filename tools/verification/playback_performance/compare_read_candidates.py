@@ -16,6 +16,16 @@ def freeze(args):
     original = json.loads(args.f1_plan.read_text(encoding='utf-8-sig'))
     plan = copy.deepcopy(original)
     plan['builds']['B']['source'] = str(args.f1_source.resolve())
+    snapshot_path = args.f1_plan.parent.parent/'historical-tool-snapshot.json'
+    snapshot = json.loads(snapshot_path.read_text(encoding='utf-8-sig'))
+    # Audit the historical method's archived bytes, separately from today's tool eligibility.
+    archived = {}
+    for path, expected in original['tools'].items():
+        saved = snapshot[path]
+        if saved['sha256'] != expected:
+            raise ValueError('Historical tool snapshot does not match original plan')
+        archived[saved['path']] = expected
+    plan['tools'] = archived
     f.verify(plan)
     build = args.candidate_build.resolve()
     exe = build/'bin/cuexis_pd_baseline_probe.exe'
@@ -23,13 +33,16 @@ def freeze(args):
     metadata.update({str(p):sha(p) for p in sorted((build/'lib').glob('*.lib'))})
     plan['builds']['C'] = dict(source=str(f.ROOT), source_identity=f.source_identity(f.ROOT),
                              bindings={'baseline':dict(path=str(exe),sha256=sha(exe))},build_files=metadata)
-    plan.update(schema='pd5.read-candidate-plan.v1', formal=False,
+    plan.update(schema='pd5.read-candidate-plan.v1', formal=False, method=d.METHOD,
                 scope='Scale read/update only; host and 40k results remain F1 evidence',
                 head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=f.ROOT,text=True).strip(),
                 previous_plan_sha256=sha(args.f1_plan),
+                historical_tools_snapshot_sha256=sha(snapshot_path),
                 order=[['A','B','C'],['C','B','A'],['A','B','C']],
                 candidate_limit=1,
                 retention='C/F1: read64 CI upper < 1; all read noise <=15%; read1 CI upper <=1.10; no updated definite >1.10; exact output and applicable semantic checks required')
+    for key in ('production','host'):
+        plan.pop(key,None)
     plan['tools'] = {str(p):sha(p) for p in Path(__file__).parent.glob('*.py')}
     args.output.mkdir(parents=True,exist_ok=True)
     f.save(args.output/'plan.json',plan)

@@ -186,3 +186,30 @@ F1 源码字节已按原冻结清单复制到 f1-source，指纹完全相等；�
 read1 CI 上界 ≤1.10，updated 不出现 CI 下界 >1.10，输出精确相等且适用语义/分配/架构
 验证通过。否则记录并放弃此候选；不追加进程。原 A 的 1.10 门禁仍独立报告，
 候选内部改进不等于通过原门禁。最终保留代码须完整 Release 验证。
+
+
+### 候选前验证与方法 v2
+
+C1 新 Release 全量构建退出 0。直接运行 runtime/playback/allocation/world 四套分别退出 0，
+用例数 50/171/9/24（断言 11298/27741/342/422）；含组件删除/重建、跨线程、过期/逃逸、
+重入和暖态分配约束。架构检查通过，改动 C++ 格式通过。初次 CTest 按可执行文件名过滤仅
+命中架构项，所以另用四个实际二进制验证，未把 1 项 CTest 冒充四套语义检查。
+完整 Release CTest 在独立计时前运行，最终状态在第 5 批记录。
+
+方法补强：v1 只查 run_id，仍可被同一 native 进程改名记录绕过。v2 新增 native PID/QPC 起点
+及 raw log SHA256 的独立性拒绝，原 v1 的 15 个工具文件已逐一匹配旧 plan 哈希并另存 f1-tools；
+historical-tool-snapshot.json 保存原路径→归档路径及 SHA。历史方法审计与当前源码/工具身份分别处理。
+原 v1 日志、JSON、失败与结论不改写，v2 新输出另存，不宣称旧输入已按 v2 注册。
+
+新增 host-contract-v2.json 是旧原始 host 日志的只读 addendum，记录 source/binary、内容与序列
+SHA、2 Snapshot 对象、1 camera、3 声明 registry entities、U=F=1056/R=0、起止点及输出摘要。
+相机/registry 数由冻结 Chart 与 instantiator 推导，U/F/R 由冻结循环推导，非独立运行计数器；U/F/R 仅计被测 host 会话循环，排除 reference oracle、load/close；
+native 仍逐帧验证 Snapshot 与 reference，所有 1024 操作均保留。v2 比值/区间与 v1 相同，
+仍因噪声不可判定；ACK/present-return 未合并。新增重复 native / raw log 与双方缺字段拒绝测试，
+本次 Python 50 项通过（method-v2-tests.log）。候选采样将使用新 v2 工具身份。
+
+
+完整 Release CTest 已完成（c1-release-ctest.log，退出 0）：1273 项，0 失败，1 项 Windows
+symlink 权限相关测试跳过，793.73 秒。其余本机适用项包括安装/外部消费者、包边界、版本及架构。
+此结果不代表 Linux/MinGW/shared/真实设备矩阵已执行。两条独立审阅因对话中断未收到最终报告，
+不将其计作独立复审通过；后续只按实际收到的报告记录。

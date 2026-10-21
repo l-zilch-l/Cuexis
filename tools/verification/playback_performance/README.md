@@ -61,7 +61,7 @@ owner runner 按需从 `tests/pd/` 加载既有 PD-0 support，没有迁移冻�
 
 ## 有限诊断与历史完整性
 
-`diagnostic.py <input.json>` 使用 pd5.followup.v1 / local-reference-v1-diagnostic，
+`diagnostic.py <input.json>` 当前使用 pd5.followup.v2 / local-reference-v1-diagnostic，
 显式校验 source/binary SHA256、内容/操作序列摘要、Snapshot/registry/camera 计数、U/F/R、
 viewport、输出摘要、单位及起止点。恰好三对独立进程，每进程先取中位；块不增加自由度，
 block_average 不产生操作 p95/p99。区间及 15% 进程重复性分开披露，结果始终 acceptance=false。
@@ -73,3 +73,11 @@ block_average 不产生操作 p95/p99。区间及 15% 进程重复性分开披�
 `build_profiles.py --build-dir <fresh-directory> --output <log-directory>` 可显式选新构建目录；
 仅改变 --output 不改变默认 pd5-ready-* 构建目录。显式目录已存在时非 incremental 拒绝，
 构建最多 4 并行、BelowNormal 优先级。历史绑定构建不用于本轮重建。
+
+2026-10-21 v2 进一步以 native PID/QPC 起点和原始日志 SHA256 拒绝改名进程/日志复用；
+v1 输入与结果保持原含义，不能直接当 v2 输入。保留的 v1 分析文件可用于历史只读复算。
+`host_diagnostics.py <frozen-folder> --output <new-json>` 补全 host 的内容/序列、相机、U/F/R、
+公共 ready 端点和输出合同；相机/registry 数与 U/F/R 明确来自冻结内容/循环，非独立 Runtime 计数器。
+ACK/present-return 原字段继续分别报告；enqueue/drain/GPU 无边界时仍 unavailable。
+`compare_read_candidates.py` 是一候选、三侧固定进程的规模对照；先审计归档方法，再绑定新方法，
+不恢复旧正式窗口或修改其日志。全部结果仍是有限诊断。

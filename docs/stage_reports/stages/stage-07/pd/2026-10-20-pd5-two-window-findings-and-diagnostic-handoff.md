@@ -93,20 +93,20 @@ ACK 与 present-return 的结束边界不同，也不能直接相加比较。新
 - Q4−Q3 为 8.7 ns（8%）：窗口注册写入、门禁比较、回调间接调用与 `read` 内的异常边界。
 - Q3−A 为 20.6 ns（本梯；前一梯 9.0 ns，即 1.0423）：即使完全去掉中性窗口，B 仍比 A 慢。
   这部分是 `materialize` 前置检查（owner/re-entry/committed/视口）、对象映射间接与一次 Registry 锁，
-  不在读取窗口内，改读取边界无法消除。
+  不在读取窗口内；这些差分不证明它不可回收或构成固定下限。
 
 机制与代码结构一致：`extractFrame` → `materializeSnapshot`（`cuexis_playback`）→
 `PresentationRead::state/readObject/readCamera`（`cuexis_runtime`）是三次跨翻译单元调用；
-Release 只用 `/O2 /Ob2`、没有 `/GL`，因此无法内联，每个调用以隐藏指针返回约 96 字节的
-`Result<ObjectPresentation>`/`Result<CameraPresentation>`，再由 `fillObjects`/`fillCamera`
+Release 只用 `/O2 /Ob2`、没有 `/GL`，因此无法内联，每个调用通过隐式返回存储传递
+`Result<ObjectPresentation>`/`Result<CameraPresentation>`（不在此推定 ABI 字节数），再由 `fillObjects`/`fillCamera`
 逐字段复制进 `FrameSnapshot`。pre-PD 的 A 把同一份工作内联在 `playback_session.cpp` 里，
 既没有逐对象调用也没有中性结构体。
 
 这些差额不是可相加预算（机制解释仍属假设）：24.8+17.2+65.4+8.7 比 111.9 超出约 4%，因为去掉一次调用边界会让 MSVC
 重新内联相邻代码，Q2 省下的 24.8 ns 多于引用计数本身的成本。因此上表是区间证据，不是账本。
 
-被证伪的候选：把中性结构体换成标量访问器、或"批量读取写入调用方存储"的原型（V2/V3/V4）相对 V1
-不省反而多 5.7–10.2 ns（1.3290–1.3504，同一梯次 A 209.9、B 328.1、V1 1.3016），单独实施无效；
+当时未见收益的有限候选：把中性结构体换成标量访问器、或"批量读取写入调用方存储"的原型（V2/V3/V4）相对 V1
+不省反而多 5.7–10.2 ns（1.3290–1.3504，同一梯次 A 209.9、B 328.1、V1 1.3016），该轮未观察到改善；
 取消异常边界（Q1）在同梯次只值 4.8 ns；对象 ID 的 36 字符分配不存在（`id`/`material` 为
 `string_view`，正常路径不分配）。
 

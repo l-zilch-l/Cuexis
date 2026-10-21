@@ -10,7 +10,7 @@ if __package__ in (None, ''):
     sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from tools.verification.playback_performance import measurement as m
 
-METHOD = 'pd5.followup.v1'
+METHOD = 'pd5.followup.v2'
 PROTOCOL = 'local-reference-v1-diagnostic'
 WORK = ('objects', 'cameras', 'registry_entities', 'U', 'F', 'R', 'content_sha256',
         'sequence_sha256', 'viewport', 'output_digest')
@@ -30,6 +30,9 @@ def validate(process, expected):
             raise ValueError('Source/binary identity mismatch')
     if not process['run_id'] or type(process['pid']) is not int or process['pid'] <= 0:
         raise ValueError('Missing independent process identity')
+    if type(process['native_start_qpc']) is not int or process['native_start_qpc'] <= 0:
+        raise ValueError('Missing native process start identity')
+    digest(process['log_sha256'])
     if process['output_validated'] is not True:
         raise ValueError('Output semantics not validated')
     work = process['workload']
@@ -69,15 +72,20 @@ def compare(pairs, identities):
     if len(pairs) != 3:
         raise ValueError('Finite diagnostic requires exactly 3 independent process pairs')
     seen = set()
+    native_starts = set()
+    raw_logs = set()
     observations = []
     summaries = []
     common = None
     for a, b in pairs:
         stats = []
         for side, process in (('A', a), ('B', b)):
-            if process['run_id'] in seen:
+            native = (process['pid'], process['native_start_qpc'])
+            if process['run_id'] in seen or native in native_starts or process['log_sha256'] in raw_logs:
                 raise ValueError('Blocks/reused records cannot count as independent processes')
             seen.add(process['run_id'])
+            native_starts.add(native)
+            raw_logs.add(process['log_sha256'])
             stats.append(validate(process, identities[side]))
             contract = (process['method'], process['protocol'], process['workload'], process['metric'])
             if common is None:

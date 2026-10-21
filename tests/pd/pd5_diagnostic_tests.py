@@ -1,4 +1,5 @@
 import copy
+import hashlib
 from pathlib import Path
 import sys
 import unittest
@@ -17,6 +18,8 @@ def inputs():
         for side in ('A', 'B'):
             pair.append(dict(schema='playback.diagnostic-process.v1', method=d.METHOD,
                              protocol=d.PROTOCOL, **identities[side], run_id=f'{side}-{i}', pid=i+1,
+                             native_start_qpc=10+i*2+(side=='B'),
+                             log_sha256=hashlib.sha256(f'{side}-{i}'.encode()).hexdigest(),
                              output_validated=True,
                              workload=dict(objects=1, cameras=1, registry_entities=2, U=1, F=1000,
                                            R=0, content_sha256='c'*64, sequence_sha256='d'*64,
@@ -67,6 +70,16 @@ class DiagnosticTests(unittest.TestCase):
         pairs, ids = inputs()
         pairs[2][1]['samples'] = [dict(elapsed_us=200, operations=1)]*1000
         self.assertEqual(d.compare(pairs, ids)['effect']['status'], 'inconclusive')
+
+    def test_relabelled_process_or_raw_log_is_not_independent(self):
+        for duplicate in ('native', 'log'):
+            pairs, ids = inputs()
+            if duplicate == 'native':
+                pairs[1][0]['pid'] = pairs[0][0]['pid']
+                pairs[1][0]['native_start_qpc'] = pairs[0][0]['native_start_qpc']
+            else:
+                pairs[1][0]['log_sha256'] = pairs[0][0]['log_sha256']
+            with self.assertRaises(ValueError): d.compare(pairs,ids)
 
     def test_build_override_does_not_resolve_to_historical_tree(self):
         root = Path.cwd()

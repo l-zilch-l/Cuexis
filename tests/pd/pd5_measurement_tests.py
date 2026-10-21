@@ -42,6 +42,12 @@ class Pd5MeasurementTests(unittest.TestCase):
         a, b = m.parse_host(host()), m.parse_host(host().replace('"digest": 42','"digest": 43'))
         with self.assertRaises(ValueError): m.require_comparable(a,b,'request_to_ready_us')
 
+    def test_both_missing_identity_fields_do_not_compare_equal(self):
+        a, b = m.parse_host(host()), m.parse_host(host())
+        del a['identity']['digest']
+        del b['identity']['digest']
+        with self.assertRaises(ValueError): m.require_comparable(a,b,'request_to_ready_us')
+
     def test_noise_slow_sample_and_cross_window_drift_retained(self):
         windows = [[100]*3 for _ in range(3)]
         self.assertEqual(m.repeatability(windows)['status'],'pass')
