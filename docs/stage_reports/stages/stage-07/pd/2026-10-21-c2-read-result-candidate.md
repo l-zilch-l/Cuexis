@@ -55,7 +55,17 @@ C2 在 0x5F9–0x61F 仍初始化 Result<void> 的 Error 存储；输出默认�
 测试用临时归档独立构造，不依赖本机 out。工具初次审查发现只记录来源不足以固定 F1，已在绑定
 和采样前修正；没有替换原生测量样本。
 
-完整 Release CTest 与有限诊断结果待本轮执行后写入。
+独立完整 Release CTest 退出 0：1273 项中 1272 通过、1 项 Windows symlink 能力相关跳过，
+0 失败，耗时 849.03 秒。架构、外部消费、安装、reference host、Player 分发与版本合同门禁通过。
+`release-ctest.log` 和 `validation-summary.json` 保留实际结果，没有把跳过项说成已执行通过。
+
+采样前绑定 plan.json SHA256 为
+`63ad989f39e3ee086478ea299790e8ccd7366c205b244a34abd4eba84661df49`，formal=false、pending_review=true；
+预登记方案摘要仍为 `09411990ae0cb2db35f3f80ad18f01dc919c78997c74323656d4ebeb13a11587`。
+F1 / C2 baseline probe 新摘要分别为
+`c17f8ddbfcf99b840111f5f14da214edd75484cd3309fb05644c82199e80287f` /
+`dc1ec17d39b8015047f18bcc411679923f63e9cd2121d74cf8feb127c2befcb7`。
+工具快照、源码库存、host probe、库与全部构建绑定在该 plan 中逐项保存；有限诊断结果待执行后写入。
 
 ## Standards
 
