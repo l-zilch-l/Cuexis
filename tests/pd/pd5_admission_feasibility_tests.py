@@ -1,6 +1,7 @@
 from pathlib import Path
 import sys
 import unittest
+import tempfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from tools.verification.playback_performance import admission_feasibility as audit
@@ -28,6 +29,18 @@ def text(rows):
 
 
 class AdmissionContractTests(unittest.TestCase):
+    def test_different_build_or_changed_executable_rejected(self):
+        with tempfile.TemporaryDirectory() as folder:
+            build=Path(folder).resolve();(build/'bin').mkdir()
+            exe=build/'bin/cuexis_pd_host_probe.exe';exe.write_bytes(b'frozen')
+            binding=dict(build=str(build),executable=str(exe),files={str(exe):audit.f.sha(exe)})
+            self.assertEqual(exe,audit.bound_executable(binding,build))
+            with self.assertRaisesRegex(ValueError,'not the frozen binding'):
+                audit.bound_executable(binding,build/'other')
+            exe.write_bytes(b'changed')
+            with self.assertRaisesRegex(ValueError,'bytes changed'):
+                audit.bound_executable(binding,build)
+
     def test_original_rejection_and_proposed_count_are_distinct(self):
         for n in (1,64,40000):
             self.assertFalse(audit.parse_log(text(observation(n)),n)['counts']['proposed_wire_accepted'])

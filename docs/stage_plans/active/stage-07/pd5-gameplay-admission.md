@@ -1,6 +1,10 @@
 # PD-5 40k Gameplay-host 准入：阶段 A 实施登记
 
-状态：阶段 A 定量实施；不是已接受的 revision 4 或新工作量预算。日期：2026-10-21。
+状态：active
+
+更新日期：2026-10-21
+
+阶段 A 定量实施；不是已接受的 revision 4 或新工作量预算。
 当前状态由 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 汇总。桌面方案
 `Cuexis-Stage7-PD5-40k-Gameplay-host-准入修复实施方案-2026-10-21.md` 是本轮实施输入；
 既有[字典调查](../../../stage_reports/stages/stage-07/pd/2026-10-21-gameplay-host-string-budget.md)

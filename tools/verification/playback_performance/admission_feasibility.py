@@ -54,20 +54,23 @@ def instrument(source):
     replace_once(cpp, '            tag(kind);\n            text(v);', '''            if (admissionCounters) admissionCounters->projection(v);
             tag(kind);
             text(v);''')
-    replace_once(cpp, '    auto expected = projection(subdomain, tokens, identity), actual = expected;', '''    if constexpr (!A::reading) {
+    replace_once(cpp, '    auto expected = projection(subdomain, tokens, identity), actual = expected;', '''    if constexpr (std::is_same_v<A, Output>) {
         if (a.admissionProposed && ((kind == 12 && subdomain == 0) || (kind == 13 && subdomain == 1)))
             return;
     }
     auto expected = projection(subdomain, tokens, identity), actual = expected;''')
     replace_once(cpp, '    a.value(hasKey);\n    require(hasKey', '''    bool physicalKey = true;
-    if constexpr (!A::reading) physicalKey = !a.admissionProposed;
+    if constexpr (std::is_same_v<A, Output>) physicalKey = !a.admissionProposed;
     if (physicalKey) a.value(hasKey);
     require(hasKey''')
     replace_once(cpp, '    if (hasKey) {\n        if constexpr (defersGraphLinks<A>())',
                  '    if (hasKey && physicalKey) {\n        if constexpr (defersGraphLinks<A>())')
-    replace_once(cpp, '        row(a, table[i]);', '''        const auto before = a.size;
+    replace_once(cpp, '        row(a, table[i]);', '''        const auto before = [&] {
+            if constexpr (std::is_same_v<A, Output>) return a.size;
+            else return std::size_t{};
+        }();
         row(a, table[i]);
-        if (a.admissionCounters) {
+        if constexpr (std::is_same_v<A, Output>) if (a.admissionCounters) {
             std::string_view kind = "other";
             if constexpr (std::is_same_v<T, PatternDeclaration>) kind = "pattern";
             else if constexpr (std::is_same_v<T, MeasureDefinition>) kind = "measure";
@@ -135,7 +138,7 @@ def prepare(folder):
         configs=CONFIGS, native_processes=6, repeats=1,
         original_source=original, instrumented_source=f.source_identity(source),
         fixture_base_sha256=original['files'][FIXTURE],
-        tools={str(p):f.sha(p) for p in (Path(__file__), SUPPORT/'admission_counting.hpp', SUPPORT/'admission_counting.inc')},
+        tools={str(p):f.sha(p) for p in [*SUPPORT.glob('*.py'), SUPPORT/'admission_counting.hpp', SUPPORT/'admission_counting.inc']},
         audit_files={str(p):f.sha(p) for p in audit_files(source)},
         archive_sha256=f.sha(folder/'source-input.zip'), instrumentation_sha256=f.sha(folder/'instrumentation.diff'),
         frozen_limits=LIMITS, work_budget_accepted=False,
@@ -160,8 +163,16 @@ def bind(folder,build):
     paths=[build/name for name in ('CMakeCache.txt','compile_commands.json','build.ninja')]
     paths+=sorted((build/'lib').glob('*.lib'))
     paths+=[build/'bin/cuexis_pd_host_probe.exe']
-    f.save(folder/'build-binding.json',dict(plan_sha256=f.sha(folder/'plan.json'),
+    f.save(folder/'build-binding.json',dict(build=str(build),executable=str(build/'bin/cuexis_pd_host_probe.exe'),plan_sha256=f.sha(folder/'plan.json'),
         source_identity=f.source_identity(source),files={str(p):f.sha(p) for p in paths}))
+
+
+def bound_executable(binding,build):
+    exe=build/'bin/cuexis_pd_host_probe.exe'
+    if build!=Path(binding['build']) or str(exe)!=binding['executable'] or str(exe) not in binding['files']:
+        raise ValueError('Requested build/executable is not the frozen binding')
+    if f.sha(exe)!=binding['files'][str(exe)]:raise ValueError('Frozen executable bytes changed')
+    return exe
 
 
 def parse_log(text, n):
@@ -217,7 +228,7 @@ def run(folder,build):
     for path,expected in binding['files'].items():
         if f.sha(Path(path))!=expected:raise ValueError('Diagnostic build changed')
     if binding['source_identity']!=plan['instrumented_source']:raise ValueError('Build/source binding mismatch')
-    exe=build/'bin/cuexis_pd_host_probe.exe'
+    exe=bound_executable(binding,build)
     f.save(folder/'run.claim.json',dict(binary=str(exe),binary_sha256=f.sha(exe),plan_sha256=f.sha(folder/'plan.json'),formal=False))
     records=[]
     for n,reuse in plan['configs']:
