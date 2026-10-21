@@ -1,5 +1,6 @@
 """Bind and run the sole F1/C2 finite candidate; always hand back before retention."""
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import subprocess
@@ -11,6 +12,38 @@ from tools.verification.playback_performance import diagnostic as d, finite_foll
 from tools.verification.playback_performance import host_diagnostics as h, measurement as m
 from tools.verification.playback_performance import process_control as control
 
+F1_INVENTORY_SHA256='1bfebe4b6e49dcc291136d3d2dec13e64e296341493e3e3d28023afcdecd6da3'
+
+
+def compiled_source_identity(source):
+    # Git archives use LF; the original Windows checkout can use CRLF.
+    files=f.source_identity(source)['files']
+    return {name:hashlib.sha256((source/name).read_bytes().replace(b'\r\n',b'\n')).hexdigest()
+            for name in files if not (name.startswith('tests/') and name.endswith('.py'))}
+
+
+def verify_f1_source(source):
+    original=f.ROOT/'out/pd5-followup-20261021-62ca993'
+    frozen=json.loads((original/'diagnostic/plan.json').read_text(encoding='utf-8'))['builds']['B']['source_identity']
+    digest=hashlib.sha256(json.dumps(frozen['files'],sort_keys=True).encode()).hexdigest()
+    if digest!=F1_INVENTORY_SHA256 or frozen['sha256']!=digest:
+        raise ValueError('Fixed F1 inventory identity changed')
+    archive=original/'f1-source'
+    if f.source_identity(archive)!=frozen:
+        raise ValueError('Original F1 source bytes changed')
+    expected=compiled_source_identity(archive)
+    if compiled_source_identity(source)!=expected:
+        raise ValueError('Comparison source is not the fixed F1 product/build/harness')
+    return dict(original_inventory_sha256=digest,
+                compiled_inputs_sha256=hashlib.sha256(json.dumps(expected,sort_keys=True).encode()).hexdigest(),
+                normalization='CRLF to LF; excludes only tests/**/*.py, which are not compiled probe inputs')
+
+
+def verify_build_source(source,cache):
+    entries=dict(line.split('=',1) for line in cache.splitlines() if line.startswith('CMAKE_HOME_DIRECTORY:INTERNAL='))
+    if Path(entries.get('CMAKE_HOME_DIRECTORY:INTERNAL','')).resolve()!=source.resolve():
+        raise ValueError('Build cache belongs to a different source directory')
+
 
 def build_identity(source,build):
     bindings={kind:dict(path=str(build/'bin'/name),sha256=f.sha(build/'bin'/name))
@@ -18,6 +51,7 @@ def build_identity(source,build):
     paths=[build/name for name in ('CMakeCache.txt','compile_commands.json','build.ninja')]
     paths+=sorted((build/'lib').glob('*.lib'))
     cache=(build/'CMakeCache.txt').read_text(encoding='utf-8-sig')
+    verify_build_source(source,cache)
     for entry in ('CMAKE_BUILD_TYPE:STRING=Release','CUEXIS_LIBRARY_TYPE:STRING=STATIC',
                   'CUEXIS_PD_METRICS_TEST_ONLY:BOOL=OFF','CUEXIS_PLAYBACK_TRACE_HARNESS:BOOL=OFF',
                   'CUEXIS_ALLOCATION_LIFETIME_OBSERVER:BOOL=OFF','CUEXIS_ENABLE_CHART_V5_CANDIDATE:BOOL=ON'):
@@ -41,6 +75,9 @@ def environment():
 
 def bind(args):
     folder=args.output.resolve()
+    f1_anchor=verify_f1_source(args.f1_source.resolve())
+    if args.f1_build.resolve()==args.candidate_build.resolve():
+        raise ValueError('F1 and candidate require distinct build directories')
     validation=json.loads(args.validation.read_text(encoding='utf-8'))
     if validation['release_ctest_exit'] != 0 or validation['codegen_supported'] is not True:
         raise ValueError('Semantic/codegen validation required before timing')
@@ -54,6 +91,7 @@ def bind(args):
         order=registration['order'],scale_mask=4,host_mask=control.affinity(),warmup_seconds=30,
         host=dict(warmup=32,measured=1024,frame_capacity=2048),
         preregistration_sha256=f.sha(folder/'preregistration.json'),
+        fixed_f1_anchor=f1_anchor,
         validation_sha256=f.sha(args.validation),validation_path=str(args.validation.resolve()),
         builds={'A':build_identity(args.f1_source.resolve(),args.f1_build.resolve()),
                 'B':build_identity(args.candidate_source.resolve(),args.candidate_build.resolve())},
