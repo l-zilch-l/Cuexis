@@ -111,7 +111,7 @@ TEST_CASE("PD5 admission checked arithmetic", "[.][pd][admission][math]") {
         const auto audit = gameplay_packed::admissionAudit(
             {fixture->chart, *prepared, fixture->owners,
              {"normalization.one", "coordinator.policy.greedy_v1"}, {}, {}, 3});
-        INFO(audit ? "" : std::string{audit.error().message()});
+        INFO((audit ? "" : std::string{audit.error().message()}));
         REQUIRE(audit);
         return;
     }
