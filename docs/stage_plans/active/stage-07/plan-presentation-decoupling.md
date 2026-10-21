@@ -497,3 +497,5 @@ RPA-F4 接受前若集成 PD，其最终矩阵/预算直接覆盖该实现；F4 
 - [ ] 最终回归、适用消费者/版本门禁、迁移路径清理与交接。
 
 当前快照证据见[PD 设计演进记录](../../../stage_reports/stages/stage-07/pd/2026-10-16-design-evolution.md)。
+
+40k Gameplay-host 的隔离定量实施见 [PD-5 准入阶段 A](pd5-gameplay-admission.md)；新会计尚未接受。
