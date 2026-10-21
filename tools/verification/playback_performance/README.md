@@ -58,3 +58,18 @@ owner runner 按需从 `tests/pd/` 加载既有 PD-0 support，没有迁移冻�
 功能命名同时覆盖既有基线方法：旧 `tools/measure_pd0_method.py` 与
 `tools/verification/measure_pd0_method.py` 改为 [根级功能入口](../../measure_playback_method.py) 和
 [baseline_method.py](baseline_method.py)。当前调用方已更新；冻结归档中的原命令按原时点解释。
+
+## 有限诊断与历史完整性
+
+`diagnostic.py <input.json>` 使用 pd5.followup.v1 / local-reference-v1-diagnostic，
+显式校验 source/binary SHA256、内容/操作序列摘要、Snapshot/registry/camera 计数、U/F/R、
+viewport、输出摘要、单位及起止点。恰好三对独立进程，每进程先取中位；块不增加自由度，
+block_average 不产生操作 p95/p99。区间及 15% 进程重复性分开披露，结果始终 acceptance=false。
+共同 request→ready 可比较；ACK、present-return、enqueue、drain、GPU 完成各自命名，
+不能用 total 别名合并。诊断标签 diagnostic_pass 不构成正式接受；正式 runner 仍用原三窗协议。
+旧 local_measure.py 的历史 PASS 只表示汇总点估计，不修改其日志。
+
+`historical_integrity.py` 只核对旧暂停快照及绑定文件，不依赖当前 HEAD，也不评估当前可登记性。
+`build_profiles.py --build-dir <fresh-directory> --output <log-directory>` 可显式选新构建目录；
+仅改变 --output 不改变默认 pd5-ready-* 构建目录。显式目录已存在时非 incremental 拒绝，
+构建最多 4 并行、BelowNormal 优先级。历史绑定构建不用于本轮重建。

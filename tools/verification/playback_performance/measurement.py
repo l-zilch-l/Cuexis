@@ -142,7 +142,9 @@ def require_comparable(a, b, metric):
         'digest', 'source', 'viewport', 'objects', 'warmup', 'measured', 'audio', 'gpu')
     if not owner and a['schema'] != b['schema'] and metric != 'request_to_ready_us':
         raise ValueError('Different host completion endpoints')
-    if any(a['identity'].get(k) != b['identity'].get(k) for k in keys):
+    if any(k not in a['identity'] or k not in b['identity'] for k in keys):
+        raise ValueError('Missing exact workload/output identity')
+    if any(a['identity'][k] != b['identity'][k] for k in keys):
         raise ValueError('Exact workload/output identity mismatch')
 
 

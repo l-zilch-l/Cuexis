@@ -15,6 +15,9 @@ from tools.verification.playback_performance import prepare_profiles as prepare
 
 def build(args):
     root = prepare.ROOT
+    directory = build_directory(root, args.mode, args.build_dir)
+    if args.build_dir is not None and directory.exists() and not args.incremental:
+        raise ValueError('Explicit build directory already exists; use a fresh directory')
     args.output.mkdir(parents=True, exist_ok=True)
     setup = args.output / ('environment-' + str(time.time_ns()) + '.cmd')
     setup.write_text('@echo off\ncall "' + str(args.vcvars) + '" >nul\n'
@@ -28,7 +31,6 @@ def build(args):
     metrics = args.mode == 'observer'
     config = 'Debug' if args.mode == 'debug' else 'Release'
     name = 'pd5-ready-' + args.mode
-    directory = root / 'out/build' / name
     preset = 'headless-debug' if config == 'Debug' else 'release'
     targets = ['cuexis_pd_baseline_probe', 'cuexis_pd_host_probe']
     if config == 'Release':
@@ -54,7 +56,8 @@ def build(args):
             path = args.output / (args.mode + '-' + phase + '-' + str(time.time_ns()) + '.log')
             print(name, phase, flush=True)
             with path.open('xb') as stream:
-                result = subprocess.run(command, cwd=root, stdout=stream, stderr=subprocess.STDOUT)
+                result = subprocess.run(command, cwd=root, stdout=stream, stderr=subprocess.STDOUT,
+                                        creationflags=subprocess.BELOW_NORMAL_PRIORITY_CLASS)
             results.append({'command': command, 'phase': phase, 'exit_code': result.returncode,
                             'log': str(path), 'sha256': prepare.sha(path)})
             prepare.save_new(args.output / (args.mode + '-' + phase + '-' + str(time.time_ns()) + '.json'), results)
@@ -65,6 +68,10 @@ def build(args):
         kernel.SetConsoleOutputCP(old[1])
 
 
+def build_directory(root, mode, explicit=None):
+    return (explicit if explicit is not None else root / 'out/build' / ('pd5-ready-' + mode)).resolve()
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('mode', choices=['release', 'debug', 'observer', 'memory'])
@@ -72,6 +79,7 @@ def main():
     p.add_argument('--vcpkg', type=Path, default=Path('D:/vcpkg'))
     p.add_argument('--output', type=Path, default=prepare.ROOT / 'out/pd5-complete-preparation-20261019/build')
     p.add_argument('--incremental', action='store_true')
+    p.add_argument('--build-dir', type=Path, help='Explicit fresh build directory; --output is only for logs')
     build(p.parse_args())
 
 

@@ -35,3 +35,18 @@
 
 验证命令与日志：`python -B tools/check_docs.py` → `batch1-docs.log`；
 `git diff --check` → `batch1-diff-check.log`。本批不要求 C++ 构建。
+
+
+## 第 2 批：工具契约
+
+新增有限诊断分析入口，复用 measurement.py 的进程配对 log-ratio CI 和原阈值；
+不把诊断写入 formal manifest。身份、计数、工作量、端点、输出和进程完整性先校验，
+不同完成终点拒绝。旧 require_comparable 补上双方都缺身份字段时的拒绝。
+构建入口增加显式 --build-dir，默认行为兼容，并为新路径拒绝误覆盖。
+
+旧行为例：local_measure.py 的 1.0988 打印 PASS；新行为仅返回 diagnostic_*，acceptance=false，
+3 对不足/重复进程、短块、不同 ready/completion 端点会拒绝。相同 ready 则允许比较。
+块统计不会升级为单操作 p99；样本不足仍保留 None。原阈值 1.10/15% 及绝对预算未改。
+
+本次 `python -B -m unittest discover -s tests/pd -p 'pd5*_tests.py' -v` 47 项通过，
+日志 batch2-tests.log；文档与 diff 检查分别记 batch2-docs.log、batch2-diff-check.log。
