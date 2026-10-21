@@ -598,3 +598,5 @@ TEST_CASE("PD4 journal charge covers the exact owning error tree allocations",
     CHECK(ledger.journalBytes() == beforeBytes);
 }
 #endif
+
+#include "read_scaling_probe.hpp"

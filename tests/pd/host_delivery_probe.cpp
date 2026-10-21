@@ -1,4 +1,5 @@
 #include "../../app/player/src/execution_host.hpp"
+#include "../support/environment.hpp"
 #include "measurement_environment.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cuexis/playback/frame_digest.hpp>
@@ -17,7 +18,7 @@ namespace {
 using namespace cuexis;
 using namespace playback;
 using Clock = std::chrono::steady_clock;
-constexpr unsigned warmup = 32, measured = 512, frameCapacity = 1024;
+constexpr unsigned warmup = 32;
 
 template <class T> auto take(core::Result<T> value) -> T {
     if (!value)
@@ -39,6 +40,11 @@ TEST_CASE("PD host delivery and receipt acknowledgement baseline", "[.][pd][host
     using namespace cuexis;
     using namespace playback;
     using namespace playback::detail;
+    // The existing formal harness remains 512 frames. The finite diagnostic opts in before launch.
+    const bool extended =
+        test_support::environmentVariable("CUEXIS_PD_HOST_DIAGNOSTIC_1024") == "1";
+    const unsigned measured = extended ? 1024U : 512U;
+    const unsigned frameCapacity = extended ? 2048U : 1024U;
     // Recording on main is only enabled around host calls; reference work is excluded.
     // A worker inherits the process-level observation mode when its metrics are initialized.
 #if defined(CUEXIS_PD_METRICS_TEST_ONLY)

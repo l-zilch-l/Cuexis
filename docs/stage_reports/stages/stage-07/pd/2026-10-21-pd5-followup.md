@@ -50,3 +50,53 @@
 
 本次 `python -B -m unittest discover -s tests/pd -p 'pd5*_tests.py' -v` 47 项通过，
 日志 batch2-tests.log；文档与 diff 检查分别记 batch2-docs.log、batch2-diff-check.log。
+
+
+## 第 3 批：有限诊断预声明
+
+假设 H1：F1 仍有每对象中性读取/复制成本；H2：真实更新→提取与未更新热读的相对表现不同；
+H3：公共 request→ready 的延迟仍须独立于 ACK/present-return 解释。主指标为各规模 read 的
+每进程块中位；updated 为 update-start→Snapshot-ready 的组合成本，不能相减得到子项归因。
+不采纳任何子项 p99 推断，不增加插桩或 IPO。
+
+新正常计时构建为 out/build/pd5-followup-62ca993-f1；A 从冻结 implementation-inputs.zip
+在证据根 baseline-source 解包，另建 out/build/pd5-followup-62ca993-a，仅增加同一个
+read_scaling_probe.hpp include，host 两侧固定 32 预热+1024 测量、capacity=2048。
+原冻结 A 不改动；适配 A 不等于原二进制，其归档/补丁/库与工具链另登记。
+实际 build/cache/source/exe SHA256 在采样前冻结于 plan.json 并提交其摘要；运行时重新复核。
+
+每侧 3 独立进程，顺序 AB/BA/AB；规模每进程固定 1/8/64/256，各自 read 与 updated：
+3 块，read 次数分别 2097152/1048576/262144/65536，updated 次数分别
+262144/131072/32768/8192。每配置先 64 次 update+extract；仅首对象有真实移动 Behavior。
+每进程前 30 秒机器预热；本次不作校准。短块小于 100 ms 停单元并保留失败，不补样。
+scale 仍绑定 mask=4（沿既定核心策略），host/生产使用冻结默认允许集合；不按结果挑核心。
+normal allocator、Release STATIC、candidate ON、metrics OFF，无 ETW/GPU/audio。
+环境快照随日志记录；OEM/后台安静程度不能独立保证时明确列为限制，不借诊断接受正式环境。
+
+内容 chart SHA256、资源字节、序列、viewport、U/F/R、Snapshot 对象与相机数均绑定。
+规模 registry 为 N 对象+1 camera，无 Gameplay requirement；更新轨迹不 Reset，不追加历史；
+每块检查输出 digest，updated 必须变化，A/F1 必须精确相等。宿主在固定合法容量内完整走
+1056 帧并逐帧对 reference oracle；任何容量/EOF/身份/输出错误停止该单元，无事后截短。
+ACK 与 present-return 分项，enqueue/drain/GPU 缺无侵入边界，保持 unavailable。
+宿主每进程 1024 操作可报告 p99，scale 仅块均值，不能报告操作 p99。
+
+生产单元 B-only 每种 low/high reuse 固定 3 进程，40k entities/requirements，使用已有
+PD5 full content Snapshot Seek Replay boundary；它与原 RPA-F3 Packed probe 内容分别命名，
+检查完整 Snapshot/Replay/Seek/Close。次数少只报成本/max 与正确性，不作生产或尾部接受。
+
+运行入口 finite_followup.py freeze/run，先冻结再提交登记摘要再执行；原始日志、进程退出码、
+哈希及全部样本输出到独立证据根。错误停该单元；噪声与超界保留固定全部进程，不追加替代。
+工具错误只可新身份再登记，不能覆盖旧 log。有限诊断始终 acceptance=false。
+
+预检全量 Release 构建发现原有 gameplay_author 同时编译 gameplay_entry.cpp 却缺少
+Judgement 私有 include 路径（build-f1.log C1083）。补齐 PRIVATE 路径，不导出 internal 头；
+重建日志 build-f1-r2.log，受影响完整构建/架构验证随本轮留下。
+
+
+构建准备记录：F1 全量 Release 第一次因上述 PRIVATE include 失败；第二次暴露本轮探针误拷
+move-only PlaybackSource，已在每模式独立建立并 move，第三次完整构建退出 0，失败日志不覆盖。
+A 冻结 implementation archive 未收录完整 tools/，首次配置因开发工具 allowlist 缺 target 拒绝；
+适配 A 配置仅关闭不参与计时的 CUEXIS_BUILD_DEVELOPER_TOOLS，正常计时库仍为同工具链
+Release /O2 /Ob2 STATIC、candidate ON、metrics OFF；不补入 B 库或产品源码。
+此构建差异记入 plan 与比较限制，原 A 不重建。本轮 host 扩展通过显式
+CUEXIS_PD_HOST_DIAGNOSTIC_1024=1 启用，原 formal 默认仍为 512/1024。
