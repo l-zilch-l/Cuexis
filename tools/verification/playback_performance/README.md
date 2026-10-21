@@ -90,3 +90,9 @@ ACK/present-return 原字段继续分别报告；enqueue/drain/GPU 无边界时�
 历史 `out/pd5-followup-20261021-62ca993` 是必需证据，缺失时拒绝绑定，不能把任意输入命名为 F1。
 `run --output <已绑定候选根>` 仅运行固定 12 个独立进程，无补样；结果保留 pending_review=true、
 acceptance=false。数值自检通过也不授权保留候选或建立正式 preparation/registration。
+
+`admission_feasibility.py` 是 40k 准入阶段 A 的隔离计数工具：prepare 在全新输出根归档并插桩，
+bind 绑定新 Release 诊断构建，run 执行 N=1/64/40000×low/high 固定六配置。原 Writer 预算不改；
+提议布局 sizing、原 semantic hash 需求与 wire accepted 分别记录，不进入 Host 或正式测量。
+小规模实际输出校验 sizing/hash；40k 的提议 Gameplay payload 仅计数。工作量上限与 revision 4
+Reader/Writer 尚待合同接受，参见 docs/stage_plans/active/stage-07/pd5-gameplay-admission.md。

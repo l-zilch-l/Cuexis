@@ -73,6 +73,12 @@ artifactIdentity 随 wire bytes 改变。Judgement 四分量及 Replay canonical
 本轮实测只能给这些字段的必要需求，不能将需求自动当成许可上限。是否按明确复杂度 profile
 接受工作量 envelope、硬上限取值与诊断码/path，均须先核验决定。
 
+原样 40k 两种数值输入的实测必要需求为 99,588,531 preimage bytes、400,001 Ix 展开访问、
+最大 274-byte projection key。完整 scratch 上界尚未证明；已测 prefix capacity 及局部 key
+payload 只构成部分会计。所有四维允许值仍为未接受，不按这些最低需求直接赋默认值。
+现有入口的 PackedChartLimits 只有七项物理限额；新增会计使用独立类型还是内部 accepted profile
+载体、是否影响公共接口，须在 B 前列明决定，不能把新限额隐塞回旧 decoded 字段。
+
 计数步骤建议：先在唯一 typed record 上复用语义 atom visitor，checked 计算每个定义的 cost
 摘要；无环的声明引用用已验证拓扑传播 `(bytes, referenceVisits, maxKey, scratch)`。
 每次引用按 cost 累加，重复列表用 checked 乘法；不在计数阶段先把恶意共享大定义展开一万次。

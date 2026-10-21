@@ -27,6 +27,8 @@ PD-5 Python 测量工具及 profile 已整理到 [tools/verification/playback_pe
 
 [注册完整性与容量短测修正](stage_reports/stages/stage-07/pd/2026-10-20-measurement-preparation-integrity.md)补齐注册外层哈希、跨窗口/pilot 原始文件独立性及完整控制次数拒绝检查，64 实体 low/high 的 Snapshot/Seek/Replay 端到端工具短测通过；40k、真实 Player/设备观察和完整测量就绪仍待验证。
 
+PD-5 40k 准入阶段 A：[定量交接](stage_reports/stages/stage-07/pd/2026-10-21-gameplay-admission-stage-a.md)与[revision 4/hash 会计草案](proposals/implementation-input/stage-07/pd5-capsule-r4-accounting.md)已完成，六配置原样观察无补样。40k low/high 提议完整文件为 6818424/6746664 bytes，原 semantic preimage 均为 99588531 bytes；新布局尺寸不是已接受 wire。新工作量上限、scratch 上界与入口载体尚待接受，B/C 未开始，现有准入拒绝未修复。全部工作在隔离 codex/pd5-gameplay-40k-admission，主树 F1、C2、旧证据和窗口 3 保持原状。
+
 PD-5 本轮补充：[Gameplay-host 字典/预算核查](stage_reports/stages/stage-07/pd/2026-10-21-gameplay-host-string-budget.md)及[C2 单候选交接](stage_reports/stages/stage-07/pd/2026-10-21-c2-read-result-candidate.md)。C2 完整 Release CTest 1272 通过、1 跳过、0 失败，12 个固定被测进程完成；主指标及规模重复性未达冻结条件，未合入主树，交回核验后再决定处置；未新建正式 preparation/registration，旧窗口 3 继续停止。
 
 PD-5 前轮证据：[两窗报告（2026-10-21 更正）](stage_reports/stages/stage-07/pd/2026-10-20-pd5-two-window-findings-and-diagnostic-handoff.md)及[有限核查与交接](stage_reports/stages/stage-07/pd/2026-10-21-pd5-followup.md)。修复前正式 RPA read_long 两窗超界；前轮 F1/A 的 1/8/64/256 对象长块 read 比值为 1.2368/1.3441/1.3742/1.3967，各诊断区间下界 >1.10。真实 update→ready 另列，不能代替孤立读取；公共 request→ready 的 A 进程波动 49.55%，不可判定。40k Gameplay-host 两种 reuse 均在 Packed 字符串预算处失败，未进入 Snapshot/Seek/Replay；独立原 Packed codec 40k 通过不替代它。唯一 C1 候选按事前标准放弃并撤回，有限尝试不证明成本下限。旧宿主 ACK/present-return 仍分项，enqueue/drain/GPU 未判。五批材料交回核验；旧窗口 3 保持停止，原 1.10/15% 与全部生命周期门禁保留，未作性能偏离接受或正式验收。
