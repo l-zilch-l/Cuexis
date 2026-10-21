@@ -22,6 +22,7 @@
 
 ## 测量与基线
 
+- [Gameplay-host 字符串字典与预算独立核查](2026-10-21-gameplay-host-string-budget.md)
 - [PD-5 门禁核查、有限诊断与处置交接](2026-10-21-pd5-followup.md)
 
 - [PD-5 P0 两窗结果、初步归因与诊断接手](2026-10-20-pd5-two-window-findings-and-diagnostic-handoff.md)
