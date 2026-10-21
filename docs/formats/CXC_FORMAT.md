@@ -4,7 +4,7 @@
 已实现；CFU-F hosted consumer/determinism/safety gates 已关闭；G3 hosted、G4、G5 report-SHA
 revalidation 与 G6 owner acceptance 已完成；最终产品封存已记录
 
-更新日期：2026-09-05
+更新日期：2026-10-22
 
 依据：[ADR 0038](../adr/0038-cxc-v1-and-chart-v4-boundary.md)
 
@@ -433,6 +433,9 @@ hosted 跨平台 consumer/determinism/safety gates 与 owner acceptance 已关�
 ## S7A-7/8 Gameplay Entry 闭包首用（2026-10-08）
 
 project optional `cuexis.gameplay-entry.v1` 的物理合同归 [Chart Entry](CHART_ENTRY_V1_FORMAT.md)。
+2026-10-22 的 revision 4 增量只把 packed-chart 的合法 encoding 扩为 capsule.3/capsule.4；
+gameplay-graph 仍只有 graph.1。容器仍检查严格闭集、路径与 exact hash；Header/encoding 匹配、
+compiled identity 和 accepted hash profile 由显式 Gameplay factory 验证，不改变 CXC v1/ZIP 语义。
 CXC v1 容器不解释 Gameplay kernel/Ruleset，也不依赖 Judgement；仅把严格满足该 metadata 根字段、
 format/version、闭集 kind/encoding、playback=true、portable path 和 exact artifact SHA256 的
 目录中所有已存在且 path 唯一的 entry 纳入 project-declared closure。不存在、hash 不匹配或非法物理引用不能通过

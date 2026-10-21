@@ -2,7 +2,7 @@
 
 状态：candidate（Stage 6 候选格式合同，阶段已关闭）
 
-更新日期：2026-10-13
+更新日期：2026-10-22
 
 Status: Stage 6 candidate contract recorded by S6-A2. Explicit entry factories and static
 candidate Playback are implemented. The additional Behavior source profile below is a
@@ -253,14 +253,19 @@ Gameplay 入口使用独立 `cuexis.gameplay-entry` / version 1 metadata 文档�
 该 metadata 存于 project optional `cuexis.gameplay-entry.v1` extension 的严格 `{entries:[metadata,...]}` 目录，
 只有显式 Gameplay factory 选择后才准入；旧 factory 不自动发现、编译或回退。
 一个文档只描述一个显式 portable `path`，`playback=true`；闭集 `entryKind` 为
-`packed-chart` / `gameplay-graph`，其 encoding 分别为 `capsule.3` / `graph.1`。
+`packed-chart` / `gameplay-graph`；前者 encoding 为 `capsule.3` 或 `capsule.4`，后者为 `graph.1`。
+2026-10-22 owner 接受 [Capsule §13](GAMEPLAY_CAPSULE_V2_FORMAT.md) 的 revision 4：
+capsule.3/4 必须分别匹配 Header revision 3/4，未知或不匹配即拒绝，即使 compiled hash 相同。
+metadata version 1 不变，旧 factory 不自动发现新入口；graph.1 原义和预算不升级。
 `author-source` 非播放入口，不能作为上述 encoding 的别名。
 
 根对象所有字段均必需、禁止未知/重复键：format、version、path、playback、entryKind、encoding、
 compilerProfile、expandedEntityCount、expandedRequirementCount，以及以下七项中的后六项
 （entryKind 为第一项）：compiledSemanticIdentity、artifactIdentity、rulesetBinding、
 capabilityClosure、resourcePresentationClosure、sourceOf。
-compiledSemanticIdentity 是沿 Capsule 3 规范 preimage 的 SHA256；artifactIdentity 是 exact entry
+compiledSemanticIdentity 是沿显式 Gameplay.2 semantic codec（Capsule 3/4 同完整 preimage）的 SHA256；
+revision 4 的 Reader/Writer/metadata 共用 §13 的 count+digest，不能先构造旧版冗余字典或绕过 profile。
+artifactIdentity 是 exact entry
 bytes SHA256，均为 lowercase 64 hex。先核验物理 metadata、路径和 exact hash，再解码所选载荷一次，
 重建并比较 compiled identity、计数及完整闭包；任一失败不发布 source。
 compilerProfile 是 canonical sourceClosure 的实际 token，不能由读取方补默认值。

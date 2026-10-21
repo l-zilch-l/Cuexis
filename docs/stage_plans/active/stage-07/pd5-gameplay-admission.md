@@ -2,9 +2,14 @@
 
 状态：active
 
-更新日期：2026-10-21
+更新日期：2026-10-22
 
-阶段 A 定量实施；不是已接受的 revision 4 或新工作量预算。
+阶段 A 定量交回完成；2026-10-22 owner 已接受
+[B0](../../../stage_reports/stages/stage-07/pd/2026-10-22-gameplay-admission-b0-budget-ruling.md)
+的四维 envelope、Ix/拒绝顺序、内部 profile、revision 4 差异和兼容矩阵，并授权阶段 B。
+阶段 B 限合同、Reader/Writer、有界 counting/hash、metadata 和相关测试。
+scratch 高水位、身份、旧版兼容或完整物理预算验证失败立即停止交回。
+阶段 C、正式测量、主树合并及 SDK/公共 API 升级未授权。下文阶段 A 登记保留原观察范围。
 当前状态由 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 汇总。桌面方案
 `Cuexis-Stage7-PD5-40k-Gameplay-host-准入修复实施方案-2026-10-21.md` 是本轮实施输入；
 既有[字典调查](../../../stage_reports/stages/stage-07/pd/2026-10-21-gameplay-host-string-budget.md)

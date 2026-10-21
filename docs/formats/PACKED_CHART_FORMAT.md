@@ -164,6 +164,11 @@ Foundation revision 1 的可执行硬预算如下。单位是 wire 语义单位�
 payload 为上界；IDN0 iteration 与 CNS0 lane 是 u32 字段，超宽值拒绝而不截断。Header 计数
 只作预检，解码后按 STR0/REF0/IDN0/REQ0/ENT0/ARCH 实际行数重新计数比对。
 
+2026-10-22 owner 接受的 Capsule revision 4 另受
+[Capsule §13](GAMEPLAY_CAPSULE_V2_FORMAT.md) 的 `capsule4.hash-work.v1` 四维工作量门禁。
+其 preimage bytes 不再借用 physical decoded bytes 计费；本表七项、revision 1/2/3 的原行为
+与 installed PackedChartLimits 不变。物理 revision/semantic codec 必须显式分派，不猜未知版本。
+
 只作观测、未接受阈值的项目：prepare 峰值内存（`preparePeakBytes`）、展开/编译耗时、
 decoded section bytes 解释成堆占用，以及 IDN0 scope/path 表解码后的对象内存。本阶段不为
 尚未实现的 Playback prepare 承诺预算，也不得用这些观测值放宽上表硬门禁。
