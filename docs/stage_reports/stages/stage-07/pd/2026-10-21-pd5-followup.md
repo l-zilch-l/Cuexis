@@ -152,3 +152,37 @@ SHA256 `9aeb17c3a666a23364720b4e90d089bf772519ba433b24bf47af103714852886`。它�
 不能用它的通过取代 Snapshot/Seek/Replay。先提交本段，再执行此单元。
 
 F1 源码字节已按原冻结清单复制到 f1-source，指纹完全相等；后续候选单独构建，F1 构建保持不动。
+
+
+原 Packed 独立单元 native 退出 0，三 profile 均 status=ok 且重编码精确相等；low/high
+均 40,000 entities/requirements，分别 1,232,408 / 1,247,446 bytes，字符串 5/13。
+原始 packed-capacity.log 和 packed-capacity-result.json 保留。采集后的展示语句误用 profile
+而非 id，导致外层 Python KeyError/退出 1；结果已在异常前落盘，后续只读解析确认 native=0，
+没有重跑或替换。该工具是 codec 规模证据；完整 Gameplay 编码拥有额外字段与字典增长，
+两者不混称同一内容，也不据此放宽 maxPackedStrings 或宣称 40k Gameplay 可用。
+
+## 第 4 批：C1 有界候选预声明
+
+只尝试一个产品候选，不进行无界参数搜索。F1 读斜率 57.52 对 A 41.09 ns/对象，
+且实际 readObject 反汇编仍有逐对象的 component storage 查找。C1 在每次已验证只读窗口
+建立时查询 const WorldTransform/Appearance/Renderable storage，后续 contains/get 只复用
+这三个指针；不缓存对象值、不更改中性接口、唯一物化职责或资源匹配。
+
+容量固定 3 指针（平台指针大小计费），只活在该窗口，随同 owner/serial/active 的现有窗口
+建立与结束刷新/清空；没有跨更新、内容、布局或注册复用。World 只读锁和重入 guard 下，
+组件存储不可被 mutation 替换。空池、缺组件仍按原 presence/default 返回，越界与所有
+错误次序不变；owner/thread、active/serial、旧状态/布局、逃逸与跨 Close 保活规则保持。
+维护成本是 Window 的三个字段与统一入口/结束的赋值，不增加 owner、线程、全局缓存或回收协议。
+风险为误用旧池或缺组件时非法 get；新增测试覆盖窗口间组件删除/重建与新窗口读值，
+既有跨线程/逃逸/重入/零分配等继续执行。回退点为 5cf4e2b（仅撤回 C1 产品 diff）。
+
+受控运行使用原 A、保留 F1、新 C1 三侧：每侧 3 进程，顺序 ABC/CBA/ABC；
+与第 3 批相同内容、序列、counts、3 块、64 预热、30 秒机器热身、mask=4。
+运行前冻结所有身份与脚本；每次只一个计时进程，构建/测试与计时分开。
+同时报告 F1/A、C1/F1、C1/A 的独立进程配对区间，不从不同轮比值乘出正式 CI。
+本组只针对 read/updated，不把先前 host 或失败 40k 结果冒充 C1 结果。
+
+预声明保留条件：C1/F1 的 read64 CI 上界 <1，所有 read 的进程波动 ≤15%，
+read1 CI 上界 ≤1.10，updated 不出现 CI 下界 >1.10，输出精确相等且适用语义/分配/架构
+验证通过。否则记录并放弃此候选；不追加进程。原 A 的 1.10 门禁仍独立报告，
+候选内部改进不等于通过原门禁。最终保留代码须完整 Release 验证。
