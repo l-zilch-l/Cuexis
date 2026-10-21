@@ -79,5 +79,7 @@ v1 输入与结果保持原含义，不能直接当 v2 输入。保留的 v1 分
 `host_diagnostics.py <frozen-folder> --output <new-json>` 补全 host 的内容/序列、相机、U/F/R、
 公共 ready 端点和输出合同；相机/registry 数与 U/F/R 明确来自冻结内容/循环，非独立 Runtime 计数器。
 ACK/present-return 原字段继续分别报告；enqueue/drain/GPU 无边界时仍 unavailable。
+`finite_followup.py` 的 host 汇总复用同一完整契约，拒绝将改名后的两个 native 日志计作三对进程；
+它的外层正常结束仍可能包含容量单元失败，须读取 run-result.json 的 failures，不能仅看控制器退出码。
 `compare_read_candidates.py` 是一候选、三侧固定进程的规模对照；先审计归档方法，再绑定新方法，
 不恢复旧正式窗口或修改其日志。全部结果仍是有限诊断。

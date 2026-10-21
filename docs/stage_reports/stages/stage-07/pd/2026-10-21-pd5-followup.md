@@ -9,6 +9,10 @@
 基础 HEAD 为 2ab7b44，工作区干净；先做空提交留档 62ca993。SDK 0.9.0，构建 26.10.19-1。
 证据根为 `out/pd5-followup-20261021-62ca993/`。旧窗口 3 不续跑，所有历史证据只读。
 本轮只授权到第 5 批交回核验，不启动正式注册/窗口，不 push/PR/merge/release。
+开工核对的分支为 stage-7，对本地 origin/stage-7 记录 ahead 23；没有联网刷新远端。
+阅读依据为桌面交接第 1–4 节、AGENTS 与 docs/README 权威图、CURRENT_STATUS、
+已接受测量协议、PD 计划/设计、两窗报告、F1 提交及读取/唯一物化器/语义与测量源码。
+交接第 6 节仅作为未来正式复测进入条件，不视为本轮启动命令。
 
 ## 第 1 批：问题表与纠正
 
@@ -72,6 +76,11 @@ read_scaling_probe.hpp include，host 两侧固定 32 预热+1024 测量、capac
 scale 仍绑定 mask=4（沿既定核心策略），host/生产使用冻结默认允许集合；不按结果挑核心。
 normal allocator、Release STATIC、candidate ON、metrics OFF，无 ETW/GPU/audio。
 环境快照随日志记录；OEM/后台安静程度不能独立保证时明确列为限制，不借诊断接受正式环境。
+
+实际环境记录范围：原始 PD_ENV begin/end 包含 PID/TID、亲和集合/处理器组、进程/线程优先级
+与 power-throttling control/state；另绑定工具链/构建配置、预热策略与 PID/QPC。
+它不包含整机电源方案、OEM 温控/频率及完整后台竞争快照。
+不将运行后机器状态倒填为采样前证据，因此没有正式环境就绪结论；host 与 C1/A 噪声超限保留。
 
 内容 chart SHA256、资源字节、序列、viewport、U/F/R、Snapshot 对象与相机数均绑定。
 规模 registry 为 N 对象+1 camera，无 Gameplay requirement；更新轨迹不 Reset，不追加历史；
@@ -145,6 +154,8 @@ enqueue/drain/GPU 仍不可用，未据内部往返“解释掉”公共 ready�
 不修改预算或 Gameplay/Replay。每种余下 2 进程按停止规则未运行，不补样。原始日志/退出码见
 capacity-low-0-B.*、capacity-high-0-B.*、run-result.json。这是未通过的生产规模准入项，
 需要独立归因 fixture、完整 Gameplay 字典增长与既有容量合同，不用读取优化豁免。
+该 runner 外层退出 0 仅表示有限控制流程结束；run-result.json 的两项 failures 及 native 42
+才是容量单元状态，不能将外层退出码当作整组验证通过。
 
 额外预声明一个独立、一次性原 RPA-F3 Packed codec 核查：packed-capacity-plan.json，
 SHA256 `9aeb17c3a666a23364720b4e90d089bf772519ba433b24bf47af103714852886`。它运行原 cuexis_chart_capacity_probe
@@ -230,7 +241,7 @@ A=适配 pre-PD，B=保留 F1，C=C1。v2 方法、ABC/CBA/ABC 九进程、计�
 
 ### C1 结果与放弃决定
 
-固定九个原生进程全部退出 0，24 个配置/块行每进程齐全，输出精确相等，无替换或补样。
+固定九个计时原生进程全部退出 0，24 个配置/块行每进程齐全，输出精确相等，无替换或补样。
 candidate/analysis.json 保留全部三种配对；下表是 C1/F1 的进程配对比值及双侧 95% CI。
 
 | Snapshot 对象数 | read | updated（真实 update→ready） |
@@ -302,7 +313,91 @@ raw log SHA 独立性拒绝；将两个日志改名成六个记录可冒充三�
 | 原 Packed codec 40k | 独立三 profile 重编码精确，通过 | 仅接受本工具的 codec 事实；不能替代前项或 Seek/Replay |
 | 操作 p99 与绝对预算 | host 有每进程样本；read 仅长块平均 | Snapshot p99 ≤2 ms、ready p99 ≤4.167 ms 仍按原协议，块平均不给单帧 p99 |
 | 设备/完整矩阵 | 本机 MSVC Release STATIC、无 GPU/音频有限轨迹 | Linux/MinGW/shared、真实设备、组合 renderer/captures、完整内存/P1–P8 等未运行 |
+| 环境记录 | 工具链/配置、PD_ENV 进程/线程策略、亲和、预热与 PID/QPC 已绑定；整机电源/OEM/后台完整快照缺失 | 后续新登记前补齐实际采集入口与字段，不用事后状态倒填或据此复用旧组 |
 
 40k 编码失败应先形成独立生产准入问题：明确 low/high 的实体、requirements、独立字符串计数
 及失败所在的编码前/后阶段，再由对应设计决定合法容量或 fixture 修正；读取优化不覆盖此失败。
 该调查和未来正式测量属于本轮交回后的工作，不把它们伪称本轮完成。
+
+### 实际运行清单
+
+| 单元 | 预声明计时/检查进程 | 实际完成与缺失 | 原始证据位置（证据根内） |
+| --- | --- | --- | --- |
+| A/F1 read+updated | 3 对；每进程 8 配置×3 块 | 6 个计时进程退出 0，144 行块记录 | diagnostic/scale-*.log、*.process.json、8 个 input.json |
+| A/F1 公共 host | 3 对；32 预热+1024 操作/进程 | 6 个计时进程退出 0，6144 条被测操作，逐帧输出核验 | diagnostic/host-*、host-contract-v2.json |
+| F1 Gameplay-host 40k | low/high 各最多 3 个，失败停该单元 | 各首个 native 42；各余 2 个按规则未运行 | diagnostic/capacity-*、run-result.json |
+| 原 Packed codec | 1 个进程，3 个固定 profile | native 0、重编码精确；展示脚本后续错误独立记录 | packed-capacity.log、packed-capacity-result.json |
+| A/F1/C1 read+updated | ABC/CBA/ABC；每进程 8 配置×3 块 | 9 个计时进程退出 0，216 行块记录；C1 放弃 | candidate/plan.json、scale-*、analysis.json、retention-decision.json |
+
+有限 runner 在每个待测进程前另起一个 30 秒机器热身子进程，相关 PID/QPC 与输出也在同一
+原始日志内；它不是统计观察值。分析使用最后的被测进程起点，不将热身、内部块或配置数增加 n。
+codec 单元只有一次正确性核查，不以机器热身结果构成计时证据。C1 不包含新的 host/40k 测量。
+
+### 提交与证据导航
+
+| 批次 | 可审阅提交 | 主要原始输出 |
+| --- | --- | --- |
+| 开工留档 | 62ca993（基础 2ab7b44，空提交） | 起点为干净工作区；history-before.json、protected-history-files.json |
+| 1 证据纠正 | e3999fb | batch1-docs.log、batch1-diff-check.log |
+| 2 测量契约 | c0f93cd；v2 补强 3bc842f | batch2-tests.log、method-v2-tests.log、历史/候选工具快照 |
+| 3 F1 有限诊断 | 4060c65、041486e、5cf4e2b | configure/build 日志（含失败）、diagnostic、packed-capacity-* |
+| 4 唯一候选 | 6699adc、e89b472、01380d2；放弃/撤回 e82b914 | candidate、C1 语义/格式/完整 CTest 日志、c1-source、c1-tools |
+| 5 runner 修正/交回 | ef97a83 与本报告最终提交（handoff-manifest.json 记录完整 HEAD） | final-method-tests*.log、runner-reanalysis、final-f1-release-ctest.log、最终完整性/文档/格式记录 |
+
+所有上述相对证据路径都位于 `D:\Cuexis-worktree\out\pd5-followup-20261021-62ca993\`。
+最终 handoff-manifest.json 记录完整基础/当前 SHA、提交列表、git status 和改动文件；
+evidence-index.json 列出证据文件 SHA256，verify_packet.py 只读验证包内文件。
+gate-evidence.zip 与外置 delivery-receipt.json 提供封包及 ZIP SHA256；不覆盖前述旧历史根。
+build-evidence 保存六个 probe 二进制和 CMakeCache/compile_commands/build.ninja 副本，
+完整库/对象仍在原新建冻结构建目录，哈希由原 plan 绑定；本包不是独立可安装 SDK。
+frozen-diagnostic-integrity.json 对 A/F1/C1 源码/工具/构建/二进制分别审计，属于历史完整性，
+不能用来跳过当前源码的新 preparation 身份检查。
+
+### 下一步只读核验命令
+
+以下可复核本轮结果，不启动新的采样或正式窗口：
+
+```powershell
+Set-Location D:\Cuexis-worktree
+$pd5EvidenceRoot = 'D:\Cuexis-worktree\out\pd5-followup-20261021-62ca993'
+git status --short --branch
+git log 2ab7b44..HEAD --oneline
+python -B "$pd5EvidenceRoot\verify_packet.py"
+python -B tools/verification/playback_performance/historical_integrity.py
+python -B tools/verification/playback_performance/diagnostic.py "$pd5EvidenceRoot\runner-reanalysis\64-read.input.json"
+python -B tools/verification/playback_performance/diagnostic.py "$pd5EvidenceRoot\candidate\C-over-B-64-read.input.json"
+```
+
+两个分析命令分别复算 F1/A 与 C1/F1 的新方法输入，均保持 acceptance=false。
+历史 v1 input 不能直接交给当前 v2 工具冒充已按新方法登记；原字节保存在 f1-tools。
+如需重新检查工具/文档，可执行 `python -B -m unittest discover -s tests/pd -p 'pd5*_tests.py' -v`、
+`python -B tools/check_docs.py`、`git diff --check`。本次实际日志与最终验证结果分开记录。
+
+交回所需决定是当前具体失败/不可判定项的下一段有限修复范围。任何新的正式测量仍须先满足
+交接第 6 节进入条件，使用全新、当前源码绑定的正常计时构建、preparation 与 registration；
+已有诊断 plan 不具备该资格，旧窗口 3 继续停止。
+
+### 最终状态验证（本轮实际运行）
+
+最终产品热路径与基础 F1 完全相同，runtime 读取实现及原语义测试对基础提交的净 diff 为零。
+final-source-identity.json 逐文件核对最终 C++/构建输入与新建 F1 构建绑定输入相等；
+仅三个 Python 测试文件与早期 F1 冻结清单不同，这些按最终工具状态另行运行，
+不能把整个 source identity 称为未变。构建前置的 gameplay_author PRIVATE include 修正保留，
+不导出 Judgement internal 路径，不改变 Gameplay/Replay 合同或新增依赖。
+作用域读取的协调、owner/thread、active/serial、失效与异常/错误传播成本维持 F1，
+没有留下 C1 缓存字段、第二个物化器、owner 或线程。
+
+| 验证 | 实际命令/范围 | 退出与原始日志 |
+| --- | --- | --- |
+| 最终 F1 完整 Release CTest | `. .\.buildenv.ps1` 后 `ctest --test-dir out/build/pd5-followup-62ca993-f1 -C Release --output-on-failure --no-tests=error --parallel 1` | 0；1272 项、0 失败、1 跳过，874.71 秒；final-f1-release-ctest.log |
+| 最终 Python 工具 | `python -B -m unittest discover -s tests/pd -p 'pd5*_tests.py' -v` | 0；51 项通过；final-method-tests-2.log（首次 fixture 失败日志另存） |
+| 受影响 C++ 格式 | `clang-format --dry-run --Werror tests/pd/read_scaling_probe.hpp tests/pd/host_delivery_probe.cpp tests/pd/measurement_method_tests.cpp` | 0；final-format.log |
+| 文档/空白 | `python -B tools/check_docs.py`、`git diff --check` | 0；最终交回日志 final-handoff-docs.log、final-handoff-diff-check.log |
+| 旧历史完整性 | historical_integrity.py 与开工全量清单逐文件比较 | 341/442 快照、301 绑定构建文件通过；四保护根 1184 文件无增加/删除/修改；history-after.json、protected-history-final.json |
+| 冻结诊断身份 | 对归档源码/工具及原新建构建/二进制逐项核验 | A/F1/C1 均通过；frozen-diagnostic-integrity.json；仅历史完整性资格 |
+
+最终 F1 跳过项为编号 72 的 Windows symlink 物理 containment 测试，因符号链接权限条件跳过；
+不称所有测试均执行。完整 CTest 包含 runtime/playback/allocation/world、架构、安装/外部消费者、
+包边界与合同/版本检查；与 C1 的 1273 项记录分开，新增 C1 语义用例随候选撤回而移除。
+本机 Release STATIC 验证不替代前表所列未运行矩阵，也不推翻 40k 生产准入失败或接受性能门禁。
+最终提交与干净工作区状态由封包后的 handoff-manifest.json / delivery-receipt.json 给出。

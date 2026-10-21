@@ -8,7 +8,7 @@
 
 ## 当前任务
 
-**Stage 7-PD / PD-0 testOnly 基线与行为表征、PD-1 发布视图、PD-2 绑定索引/Projection Adapter 的内部实施与本地适用门禁已完成；PD-3-a 已补正 reload 资源 OOM 门禁并经 GPT-6-Luna 复审通过；PD-3-b 状态修订、只读桥与唯一物化器的内部实施、本地适用门禁及独立复审通过；PD-3-c 内部实施与适用本地门禁完成（SDK 0.8.1 已获接受，新建无上下文 GPT-6-Luna 独立审核通过）；PD-4 三项合同/SDK 0.9.0 已获接受，内部实施与适用本地门禁完成，新的无上下文独立复审通过；PD-5 P0 已完成两窗各 36 个正式进程，发现局部性能回归；owner 要求先核查与修复后重新测量；读取边界为已支持的成本候选，保语义修复 F1 已实施（有限诊断点比值约 1.58→1.30，未完成修复后正式配对验收）；IPO 噪声及有限变体不证明剩余成本下限，现按 2026-10-21 更正继续有限核查与优化，完整正式接受未完成。**
+**Stage 7-PD / PD-0 testOnly 基线与行为表征、PD-1 发布视图、PD-2 绑定索引/Projection Adapter 的内部实施与本地适用门禁已完成；PD-3-a 已补正 reload 资源 OOM 门禁并经 GPT-6-Luna 复审通过；PD-3-b 状态修订、只读桥与唯一物化器的内部实施、本地适用门禁及独立复审通过；PD-3-c 内部实施与适用本地门禁完成（SDK 0.8.1 已获接受，新建无上下文 GPT-6-Luna 独立审核通过）；PD-4 三项合同/SDK 0.9.0 已获接受，内部实施与适用本地门禁完成，新的无上下文独立复审通过；PD-5 P0 已完成两窗各 36 个正式进程，发现局部性能回归；owner 要求先核查与修复后重新测量；保语义修复 F1 已实施。2026-10-21 有限诊断中 F1/A 的 1–256 对象 read 配对比值为 1.2368–1.3967，各区间下界 >1.10；唯一 C1 候选未满足预登记保留条件，已撤回。公共 ready 因噪声不可判定，40k Gameplay-host 在 Packed 编码准入失败。原 1.10/15% 与生命周期门禁保留，交回核验；完整正式接受未完成。**
 
 以下性能结论属于冻结的 PD-0 实施输入，不代表 PD-4 当前源码的正式性能验收。该固定环境与干净重建后的完整注册组满足原定 15% 门槛，owner 最大进程级波动 3.89%，宿主均值最大波动 11.11%。测量前修复并验证了 MSVC/Ninja 编码不一致造成的头文件依赖丢失；历史慢态根因仍未确定，旧失败组和源码绑定失败组均保留。该结论限于已登记的有限 testOnly profile，不接受生产预算或关闭 Stage 7。
 
@@ -27,7 +27,7 @@ PD-5 Python 测量工具及 profile 已整理到 [tools/verification/playback_pe
 
 [注册完整性与容量短测修正](stage_reports/stages/stage-07/pd/2026-10-20-measurement-preparation-integrity.md)补齐注册外层哈希、跨窗口/pilot 原始文件独立性及完整控制次数拒绝检查，64 实体 low/high 的 Snapshot/Seek/Replay 端到端工具短测通过；40k、真实 Player/设备观察和完整测量就绪仍待验证。
 
-PD-5 最新证据：[两窗报告（2026-10-21 更正）](stage_reports/stages/stage-07/pd/2026-10-20-pd5-two-window-findings-and-diagnostic-handoff.md)及[有限核查与交接](stage_reports/stages/stage-07/pd/2026-10-21-pd5-followup.md)。修复前正式 RPA read_long 两窗超界；F1 同轮诊断点比约 1.30、回收差额约 49%，不是正式接受。IPO 高波动和有限变体不证明剩余成本下限；旧宿主 total 混用 ACK/present-return，不能比较共同完成成本。旧规模拟合仅描述修复前 1–256 Snapshot 对象，差额约 71.6765+27.0590N ns；固定 owner 探针是 1 Snapshot 对象。公共 request→ready 增幅仍需调查。窗口 3 保持停止；保留 1.10/15% 与全部生命周期门禁，进入预声明有限诊断和少量保语义优化，未作性能偏离接受。
+PD-5 最新证据：[两窗报告（2026-10-21 更正）](stage_reports/stages/stage-07/pd/2026-10-20-pd5-two-window-findings-and-diagnostic-handoff.md)及[有限核查与交接](stage_reports/stages/stage-07/pd/2026-10-21-pd5-followup.md)。修复前正式 RPA read_long 两窗超界；本轮 F1/A 的 1/8/64/256 对象长块 read 比值为 1.2368/1.3441/1.3742/1.3967，各诊断区间下界 >1.10。真实 update→ready 另列，不能代替孤立读取；公共 request→ready 的 A 进程波动 49.55%，不可判定。40k Gameplay-host 两种 reuse 均在 Packed 字符串预算处失败，未进入 Snapshot/Seek/Replay；独立原 Packed codec 40k 通过不替代它。唯一 C1 候选按事前标准放弃并撤回，有限尝试不证明成本下限。旧宿主 ACK/present-return 仍分项，enqueue/drain/GPU 未判。五批材料交回核验；旧窗口 3 保持停止，原 1.10/15% 与全部生命周期门禁保留，未作性能偏离接受或正式验收。
 
 ## 阶段状态
 
@@ -35,7 +35,7 @@ PD-5 最新证据：[两窗报告（2026-10-21 更正）](stage_reports/stages/s
 | --- | --- | --- |
 | Stage 7A | S7A-3/4、5/6、7/8 的受限功能验收完成；整体关闭仍待 RPA 收尾 | [Stage 7A 计划](stage_plans/active/stage-07/plan-a.md) |
 | Stage 7-RPA | testOnly 实施与自动化证据已具备；实体设备、生产预算和最终接受未完成 | [RPA 计划](stage_plans/active/stage-07/plan-rpa.md)、[交接状态](stage_reports/stages/stage-07/rpa/2026-10-15-rpa-f4-handoff.md) |
-| Stage 7-PD | PD-0 基线与 PD-1/PD-2 完成；PD-3-a 补正、PD-3-b 内部实施及本地适用门禁与独立复审通过；PD-3-c 内部实施与本地门禁完成，公共查询/0.8.1 已获接受，新建无上下文 GPT-6-Luna 独立审核通过；PD-4 内部实施、本地适用门禁及新的无上下文独立复审完成（已接受 SDK 0.9.0）；PD-5 P0 两窗完成，局部回归已定位到中性读取边界并完成成本分解，保语义修复 F1 已提交（1.30，未过门禁），修复后重新测量未开始，完整正式接受未完成，子阶段未退出 | [PD 计划](stage_plans/active/stage-07/plan-presentation-decoupling.md) |
+| Stage 7-PD | PD-0 基线与 PD-1/PD-2 完成；PD-3-a 补正、PD-3-b 内部实施及本地适用门禁与独立复审通过；PD-3-c 内部实施与本地门禁完成，公共查询/0.8.1 已获接受，新建无上下文 GPT-6-Luna 独立审核通过；PD-4 内部实施、本地适用门禁及新的无上下文独立复审完成（已接受 SDK 0.9.0）；PD-5 P0 两窗完成；F1 有限规模 read 仍超原相对约束，C1 候选已撤回；公共 ready 不可判定、40k Gameplay-host 编码准入失败；五批处置材料交回核验，修复后正式复测未开始，完整正式接受未完成，子阶段未退出 | [PD 计划](stage_plans/active/stage-07/plan-presentation-decoupling.md) |
 | Stage 7B+ | 未开始，等待 RPA 完整退出 | [Stage 7B+ 计划](stage_plans/active/stage-07/plan-b.md) |
 
 Stage 0–6 已完成；Stage 8–14 尚未开始。整体 Stage 7 未关闭。
