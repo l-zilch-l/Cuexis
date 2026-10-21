@@ -213,3 +213,17 @@ native 仍逐帧验证 Snapshot 与 reference，所有 1024 操作均保留。v2
 symlink 权限相关测试跳过，793.73 秒。其余本机适用项包括安装/外部消费者、包边界、版本及架构。
 此结果不代表 Linux/MinGW/shared/真实设备矩阵已执行。两条独立审阅因对话中断未收到最终报告，
 不将其计作独立复审通过；后续只按实际收到的报告记录。
+
+
+### C1 采样前冻结
+
+候选代码提交 e89b472，方法补强提交 3bc842f。candidate/plan.json SHA256：
+`9217caab2e0b0f5aeb50f3277ed4559fd93efeeaeaa0268e58f779a426ea42bc`。
+A=适配 pre-PD，B=保留 F1，C=C1。v2 方法、ABC/CBA/ABC 九进程、计数和保留条件不变；
+全部构建/测试已停止，随后一次只运行一个计时进程。
+
+| 侧 | source SHA256 | baseline probe SHA256 |
+| --- | --- | --- |
+| A | `e3a79bec89fac999a0e0ff503851e68fd265aab9fe7476d31139b7aba66dd109` | `cb3b133a649ec48c85b1557cf41a832babfce611661cd334eb96fa2bbe02665f` |
+| B | `1bfebe4b6e49dcc291136d3d2dec13e64e296341493e3e3d28023afcdecd6da3` | `ef1efdb280135cca40e573dd945706787cc8dc8191b0afb277b7e23c0b84ff6b` |
+| C | `a875f9991a2febab950431a3fe61e04e35bf7123cce0db9ce9dc7863efa56f55` | `57e7b3657cf4e968876f28194b632084724de85710badda10eb8c06e615b1c05` |
