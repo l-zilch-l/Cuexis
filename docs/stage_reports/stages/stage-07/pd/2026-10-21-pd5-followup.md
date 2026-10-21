@@ -100,3 +100,16 @@ A 冻结 implementation archive 未收录完整 tools/，首次配置因开发�
 Release /O2 /Ob2 STATIC、candidate ON、metrics OFF；不补入 B 库或产品源码。
 此构建差异记入 plan 与比较限制，原 A 不重建。本轮 host 扩展通过显式
 CUEXIS_PD_HOST_DIAGNOSTIC_1024=1 启用，原 formal 默认仍为 512/1024。
+
+
+### 采样前身份冻结
+
+登记 HEAD：4060c65。diagnostic/plan.json SHA256：
+`8aaf06be862d2d838a72b957f3d3df7fe5876c5247ff5e7710dbb07c4b6b315e`。
+
+| 侧 | 源码清单 SHA256 | baseline probe SHA256 | host probe SHA256 |
+| --- | --- | --- | --- |
+| A | `e3a79bec89fac999a0e0ff503851e68fd265aab9fe7476d31139b7aba66dd109` | `cb3b133a649ec48c85b1557cf41a832babfce611661cd334eb96fa2bbe02665f` | `2eee6441caffd56c0e0512fc3937d2f6da7ff40a20f3e7c8360160a48f363be7` |
+| B | `1bfebe4b6e49dcc291136d3d2dec13e64e296341493e3e3d28023afcdecd6da3` | `ef1efdb280135cca40e573dd945706787cc8dc8191b0afb277b7e23c0b84ff6b` | `09408e92d05581748161cff660f0eecbb0381216987ca4e9671ef4777e2ff1ca` |
+
+完整文件/库/cache/compile_commands、工具与配置身份见不可覆盖 plan.json；本段先提交再运行。
