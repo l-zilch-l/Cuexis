@@ -18,6 +18,7 @@
 | [build_profiles.py](build_profiles.py) | 独立正常计时、阶段观测及分配观测构建 |
 | [device_inventory.py](device_inventory.py) | 只读盘点默认音频端点、显示、驱动和音乐/DFJK 内容，不启动播放 |
 | [measurement.py](measurement.py) | 日志解析、独立进程统计和预算判定支持库 |
+| [string_budget_audit.py](string_budget_audit.py) | 在独立源码副本观察 Gameplay-host 实际 STR0/REF0 与字节增长；保持预算，不能用作性能/正式注册 |
 | [window_protocol.py](window_protocol.py) | 排他领取、窗口间隔和原始证据链支持库 |
 | [process_control.py](process_control.py) | Windows Job 进程树及内部 child 支持，不是面向用户的独立入口 |
 | [profiles.json](profiles.json) | 有限工具 profile、容量声明和显式就绪阻断项 |
