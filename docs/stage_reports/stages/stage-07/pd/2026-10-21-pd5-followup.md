@@ -350,7 +350,8 @@ evidence-index.json 列出证据文件 SHA256，verify_packet.py 只读验证包
 gate-evidence.zip 与外置 delivery-receipt.json 提供封包及 ZIP SHA256；不覆盖前述旧历史根。
 build-evidence 保存六个 probe 二进制和 CMakeCache/compile_commands/build.ninja 副本，
 完整库/对象仍在原新建冻结构建目录，哈希由原 plan 绑定；本包不是独立可安装 SDK。
-frozen-diagnostic-integrity.json 对 A/F1/C1 源码/工具/构建/二进制分别审计，属于历史完整性，
+frozen-diagnostic-integrity.json 是完整 F1 CTest 之前对 A/F1/C1 的审计；完整 CTest 后的 B 构建
+路径变化见末尾补充。handoff-integrity.json 通过单独路径映射核对封存原字节，属于历史完整性，
 不能用来跳过当前源码的新 preparation 身份检查。
 
 ### 下一步只读核验命令
@@ -392,12 +393,31 @@ final-source-identity.json 逐文件核对最终 C++/构建输入与新建 F1 �
 | 最终 F1 完整 Release CTest | `. .\.buildenv.ps1` 后 `ctest --test-dir out/build/pd5-followup-62ca993-f1 -C Release --output-on-failure --no-tests=error --parallel 1` | 0；1272 项、0 失败、1 跳过，874.71 秒；final-f1-release-ctest.log |
 | 最终 Python 工具 | `python -B -m unittest discover -s tests/pd -p 'pd5*_tests.py' -v` | 0；51 项通过；final-method-tests-2.log（首次 fixture 失败日志另存） |
 | 受影响 C++ 格式 | `clang-format --dry-run --Werror tests/pd/read_scaling_probe.hpp tests/pd/host_delivery_probe.cpp tests/pd/measurement_method_tests.cpp` | 0；final-format.log |
-| 文档/空白 | `python -B tools/check_docs.py`、`git diff --check` | 0；最终交回日志 final-handoff-docs.log、final-handoff-diff-check.log |
+| 文档/空白 | `python -B tools/check_docs.py`、`git diff --check` | 0；最终交回日志 final-handoff-docs-2.log、final-handoff-diff-check-2.log |
 | 旧历史完整性 | historical_integrity.py 与开工全量清单逐文件比较 | 341/442 快照、301 绑定构建文件通过；四保护根 1184 文件无增加/删除/修改；history-after.json、protected-history-final.json |
-| 冻结诊断身份 | 对归档源码/工具及原新建构建/二进制逐项核验 | A/F1/C1 均通过；frozen-diagnostic-integrity.json；仅历史完整性资格 |
+| 冻结诊断身份 | 对归档源码/工具/二进制逐项核验；B 的原 library 另存审计 | CTest 前全部匹配；CTest 后 B 原路径不匹配，原字节归档可完整核对；见下方补充及 handoff-integrity.json |
 
 最终 F1 跳过项为编号 72 的 Windows symlink 物理 containment 测试，因符号链接权限条件跳过；
 不称所有测试均执行。完整 CTest 包含 runtime/playback/allocation/world、架构、安装/外部消费者、
 包边界与合同/版本检查；与 C1 的 1273 项记录分开，新增 C1 语义用例随候选撤回而移除。
 本机 Release STATIC 验证不替代前表所列未运行矩阵，也不推翻 40k 生产准入失败或接受性能门禁。
 最终提交与干净工作区状态由封包后的 handoff-manifest.json / delivery-receipt.json 给出。
+
+### 封包预检发现的构建路径变化
+
+完整 F1 CTest 后首次封包预检拒绝：B 的 cuexis_runtime.lib 从原绑定
+`7bf35e945dffc3f90d21f7b6c8c593a64cf38fd8ec8eb9d620bfbec62583054e`
+变为 `8d27ee45c50b507dc28d4f08e4af45ab95e2d18fdec054af766c8fe313059e4c`。
+CTest 第 25 项 cuexis_player_distribution 在 VerifyPlayerDistribution.cmake:53 调用主构建的
+cuexis_player_dist；撤回 C1 时恢复 F1 源码内容更新了 mtime，Ninja 因而重新编译
+presentation_read.cpp、生成 runtime.lib 并重链接 Player。这次验证对冻结目录的影响事前未隔离，
+不能再声称原 F1 构建目录的全部绑定字节保持不变。
+
+原 F1 library 的精确字节仍存在于第 25 项之前的安装 staging 两份副本；已逐 SHA 确认后，
+另存 runtime-library-transition/original-frozen-runtime.lib，并保留 post-ctest-runtime.lib、
+LastTest/.ninja_log、验证脚本和 binding-addendum.json。不覆盖原 plan，也不回填或恢复原构建路径。
+全部计时 probe 二进制仍精确匹配冻结 SHA，A/C1 的构建文件也匹配，原四历史根均未改变；
+因此本轮既有有限统计仍对应实际封存的测量二进制，重编译没有进入采样。
+原目录完整性失败保留为 post-ctest-build-binding-audit.json / packet-preflight-failure.json。
+最终历史审计仅对原 library 的归档路径使用显式映射，不能把它说成原路径通过或当前可登记。
+后续完整 CTest（尤其会调用 build 的分发/安装 gate）应在独立验证树运行；测量树先封存，不再用于此类验证。
