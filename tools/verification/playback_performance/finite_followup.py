@@ -13,6 +13,7 @@ if __package__ in (None, ''):
     sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from tools.verification.playback_performance import diagnostic as d, measurement as m
 from tools.verification.playback_performance import process_control as control
+from tools.verification.playback_performance import host_diagnostics as host
 from tools.verification.playback_performance.historical_integrity import sha
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -171,32 +172,18 @@ def analyze(folder, plan):
         data = {'identities': ids, 'pairs': [[scale['A'][i][key], scale['B'][i][key]] for i in range(3)]}
         save(folder/(key+'.input.json'),data)
         result['scale'][key] = d.compare(data['pairs'],ids)
-    hosts = {side: [host_record(json.loads((folder/f'host-{i}-{side}.process.json').read_text(encoding='utf-8-sig')),plan)
+    host_data = host.analyze(folder, plan)
+    # Use the same complete native-process and workload contract as the standalone addendum.
+    result['host'] = d.compare(host_data['pairs'], host_data['identities'])
+    hosts = {side: [host.host_record(json.loads((folder/f'host-{i}-{side}.process.json').read_text(encoding='utf-8-sig')),plan)
                     for i in range(3)] for side in ('A','B')}
-    pairs = []
     for i in range(3):
-        m.require_comparable(hosts['A'][i],hosts['B'][i],'request_to_ready_us')
-        pairs.append(tuple(hosts[s][i]['statistics']['request_to_ready_us']['median_us'] for s in ('A','B')))
-    spreads = {s: m.noise([p[j] for p in pairs]) for j,s in enumerate(('A','B'))}
-    effect = m.paired_interval(pairs)
-    effect['status'] = 'inconclusive' if max(spreads.values()) > m.NOISE_LIMIT else 'diagnostic_'+effect['status']
-    result['host'] = {'effect': effect, 'noise': spreads, 'process_pairs': pairs,
-                      'statistics_by_endpoint': {s: [h['statistics'] for h in hosts[s]] for s in hosts},
-                      'completion_comparable': False,
-                      'unavailable': ['receipt-enqueue', 'receipt-drain', 'GPU-complete']}
+        m.require_comparable(hosts['A'][i], hosts['B'][i], 'request_to_ready_us')
+    result['host'].update(statistics_by_endpoint={s: [h['statistics'] for h in hosts[s]] for s in hosts},
+                          completion_comparable=False,
+                          unavailable=['receipt-enqueue', 'receipt-drain', 'GPU-complete'])
     save(folder/'analysis.json',result)
     return result
-
-
-def host_record(record, plan):
-    if record['exit_code'] != 0 or sha(Path(record['log'])) != record['log_sha256']:
-        raise ValueError('Failed or modified host process')
-    parsed = m.parse_host(Path(record['log']).read_text(encoding='utf-8-sig'))
-    identity = parsed['identity']
-    expected = dict(plan['host'], objects=2, frames_published=1056, successful_receipts=1056)
-    if any(identity.get(k) != v for k,v in expected.items()):
-        raise ValueError('Host run does not match frozen counts/capacity')
-    return parsed
 
 
 def run(args):
@@ -212,7 +199,7 @@ def run(args):
                 for side in order:
                     record = launch(folder, plan, side, kind, index)
                     if kind == 'scale': pair[side] = scale_records(record,plan)
-                    else: pair[side] = host_record(record,plan)
+                    else: pair[side] = host.host_record(record,plan)
                 if kind == 'scale':
                     if any(pair['A'][key]['workload'] != pair['B'][key]['workload'] for key in pair['A']):
                         raise ValueError('A/B output or logical work mismatch')

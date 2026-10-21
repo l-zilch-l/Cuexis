@@ -7,15 +7,26 @@ import sys
 
 if __package__ in (None, ''):
     sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-from tools.verification.playback_performance import finite_followup as f, diagnostic as d
+from tools.verification.playback_performance import diagnostic as d, measurement as m
+from tools.verification.playback_performance.historical_integrity import sha
 
 
 def hashed(value):
     return hashlib.sha256(json.dumps(value,sort_keys=True).encode()).hexdigest()
 
 
+def host_record(record, plan):
+    if record['exit_code'] != 0 or sha(Path(record['log'])) != record['log_sha256']:
+        raise ValueError('Failed or modified host process')
+    parsed = m.parse_host(Path(record['log']).read_text(encoding='utf-8-sig'))
+    expected = dict(plan['host'], objects=2, frames_published=1056, successful_receipts=1056)
+    if any(parsed['identity'].get(k) != v for k,v in expected.items()):
+        raise ValueError('Host run does not match frozen counts/capacity')
+    return parsed
+
+
 def process(record,plan):
-    parsed = f.host_record(record,plan)
+    parsed = host_record(record,plan)
     side = record['side']
     source = plan['builds'][side]
     content = {p:h for p,h in source['source_identity']['files'].items()
@@ -24,13 +35,13 @@ def process(record,plan):
         raise ValueError('Missing frozen host content inventory')
     chart_path = 'assets/projects/stage3_project/assets/charts/stage3_example.cuexis.chart.json'
     path = Path(source['source'])/chart_path
-    if f.sha(path) != content[chart_path]:
+    if sha(path) != content[chart_path]:
         raise ValueError('Host chart changed since freeze')
     chart = json.loads(path.read_text(encoding='utf-8-sig'))
     objects, cameras = len(chart['objects']), int(bool(chart.get('camera')))
     if objects != parsed['identity']['objects'] or cameras != 1:
         raise ValueError('Host source count differs from the fixed harness')
-    started = f.m.records(Path(record['log']).read_text(encoding='utf-8-sig'), 'PD5_PROCESS_START ')[-1]
+    started = m.records(Path(record['log']).read_text(encoding='utf-8-sig'), 'PD5_PROCESS_START ')[-1]
     count = parsed['identity']['warmup'] + parsed['identity']['measured']
     sequence = dict(warmup=parsed['identity']['warmup'],measured=parsed['identity']['measured'],
                     tick='(ordinal+1)*10',delta_ms=10,mode='closed-loop update/extract/present',
@@ -48,8 +59,9 @@ def process(record,plan):
                 samples=[dict(operations=1,elapsed_us=row['request_to_ready_us']) for row in parsed['samples']])
 
 
-def analyze(folder):
-    plan = json.loads((folder/'plan.json').read_text(encoding='utf-8-sig'))
+def analyze(folder, plan=None):
+    if plan is None:
+        plan = json.loads((folder/'plan.json').read_text(encoding='utf-8-sig'))
     ids = {s:dict(source_sha256=plan['builds'][s]['source_identity']['sha256'],
                   binary_sha256=plan['builds'][s]['bindings']['host']['sha256']) for s in 'AB'}
     pairs = [[process(json.loads((folder/f'host-{i}-{s}.process.json').read_text(encoding='utf-8-sig')),plan)
@@ -64,9 +76,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
     data = analyze(args.folder)
     result = d.compare(data['pairs'],data['identities'])
-    result.update(tool_sha256=f.sha(Path(__file__)),input=data,
+    result.update(tool_sha256=sha(Path(__file__)),input=data,
                   count_provenance='Camera/registry counts derived from frozen chart and instantiator; U/F/R from fixed harness loop, not independent runtime counters',
                   completion_endpoints_comparable=False,
                   unavailable=['receipt-enqueue','receipt-drain','GPU-complete'])
-    f.save(args.output,result)
+    with args.output.open('x',encoding='utf-8') as stream:
+        json.dump(result,stream,indent=2)
+        stream.write('\n')
     print(result['effect'])

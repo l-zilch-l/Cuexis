@@ -253,3 +253,56 @@ candidate/retention-decision.json 保存逐条件决定；candidate/c1-product.p
 c1-tools 与 candidate-tool-snapshot.json 封存被放弃的代码、工具字节和身份。
 既有完整 Release CTest 是 C1 状态的验证；最终 F1 状态另验证，不能将 C1 二进制称为最终产品。
 有限失败不证明架构下限，也不构成安全检查或 1.10/15% 的偏离接受。
+
+## 第 5 批：门禁处置与交回核验
+
+处置选择：继续执行原协议的 1.10 相对回归、15% 进程重复性及全部绝对/生命周期预算。
+当前相对门禁未通过，PD-5 与 Stage 7 均不退出；没有以小样本绝对增量申请全 SDK 豁免。
+最大生产内容、提取频率、消费者数、容量和端到端尾部尚无完整共同证据，无法形成有数值边界的
+偏离接受依据。本轮不需要改比较目标或协议；未来若提出偏离/新协议，应先独立接受、再以新身份登记。
+
+### 双轴只读复核
+
+首次两条审阅因中断没有最终结果，随后进行了四文件范围的有界替代审阅；并非全库审计。
+
+#### Standards
+
+适用 AGENTS、CODE_POLICY、DOCUMENTATION_POLICY；未发现所审四文件违反文档标准。
+一项可选 Message Chains 建议：host_diagnostics 经 f.m 使用 measurement，依赖了另一模块的
+偶然 import。已改为直接 import measurement，并将 host 原始解析归到 host_diagnostics，消除循环依赖。
+这属于维护性建议，不计为硬性违规。
+
+#### Spec
+
+发现一项 P2：finite_followup 的 host 汇总曾直接计算区间，绕过 v2 的 native PID/QPC 与
+raw log SHA 独立性拒绝；将两个日志改名成六个记录可冒充三对进程。已改走与独立 host addendum
+相同的完整 diagnostic.compare 契约，保留原公共端点/工作量检查。
+新增回归测试直接调用 runner analyze，拒绝上述复用且不生成 analysis.json；后续只读复核确认
+该 P2 已修复、依赖无循环，未发现此修复引入新问题。审阅者未运行构建、测试或计时。
+
+复核计数：Standards 硬性 0、可选建议 1（已采纳）；Spec P2 1（已修复）。
+对应的最终 Python 51 项通过（final-method-tests-2.log）。初次新增测试 fixture 漏填 baseline
+身份失败，保留 final-method-tests.log；补全 fixture 后才通过，未删除失败记录。
+
+工具修正在九进程采样结束、c1-tools 封存后实施。runner-reanalysis 是对旧原始六个 host/
+六个 scale 记录的只读 v2 复算，不是新采样或登记；host 的 effect/noise 与旧结果精确相同，
+仍不可判定。原 v1 分析及候选冻结方法均不改写。
+
+### 未完成矩阵与处置边界
+
+| 项目 | 本轮实际状态 | 核验后的下一步 |
+| --- | --- | --- |
+| 原 P0 三正式窗口 | 历史仅 72/108 进程；旧窗口 3 停止 | 后续授权后另建 preparation/registration；不接续旧组 |
+| F1 规模 read | 本轮 1–256 对象诊断均超相对约束 | 保留失败，独立决定下一项有界代码机制或工程目标；不宣称下限 |
+| C1 产品候选 | 唯一候选未满足保留条件，已撤回 | 交回补丁/全部结果，无第二候选或重采样 |
+| 真实更新后提取 | 组合成本已测，1/8 对象 CI 跨 1.10 | 不是孤立 extract，也不分离推导内部子项 |
+| 公共 request→ready | 1024 操作/进程；A 波动 49.55%，不可判定 | 在独立登记前审计调度/后台/请求节奏；先确定有限整改，不循环重采直到通过 |
+| 完成端点 | ACK 与 present-return 分列；enqueue/drain/GPU 未测 | 无相同完成边界的成本比较，不能豁免 ready |
+| 生产 Gameplay-host 40k | 两种 reuse 编码均拒绝，后续正确性/成本缺失 | 独立调查完整 Gameplay 字典条数、fixture 与既有 maxPackedStrings 合同；不直接增大预算 |
+| 原 Packed codec 40k | 独立三 profile 重编码精确，通过 | 仅接受本工具的 codec 事实；不能替代前项或 Seek/Replay |
+| 操作 p99 与绝对预算 | host 有每进程样本；read 仅长块平均 | Snapshot p99 ≤2 ms、ready p99 ≤4.167 ms 仍按原协议，块平均不给单帧 p99 |
+| 设备/完整矩阵 | 本机 MSVC Release STATIC、无 GPU/音频有限轨迹 | Linux/MinGW/shared、真实设备、组合 renderer/captures、完整内存/P1–P8 等未运行 |
+
+40k 编码失败应先形成独立生产准入问题：明确 low/high 的实体、requirements、独立字符串计数
+及失败所在的编码前/后阶段，再由对应设计决定合法容量或 fixture 修正；读取优化不覆盖此失败。
+该调查和未来正式测量属于本轮交回后的工作，不把它们伪称本轮完成。
