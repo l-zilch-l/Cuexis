@@ -120,6 +120,48 @@ TEST_CASE("PD3b mutable callback publishes actual state on success error and exc
     }
 }
 
+TEST_CASE("PD read refreshes component storage and presence for each window",
+          "[pd][presentation-read]") {
+    Fixture f{false, false};
+    using Access = runtime::detail::PresentationAccess;
+    REQUIRE(f.session.withWorld([&](world::World& w) {
+        return w.withRegistry([&](entt::registry& registry) {
+            registry.remove<world::WorldTransformComponent>(f.child);
+            registry.remove<render::AppearanceComponent>(f.child);
+            registry.remove<render::RenderableComponent>(f.child);
+        });
+    }));
+    REQUIRE(Access::read(f.session, Access::state(f.session)->stamp,
+                         [](const auto& view) -> core::Result<void> {
+                             const auto child = view.readObject(0);
+                             REQUIRE(child);
+                             CHECK_FALSE(child->hasTransform);
+                             CHECK_FALSE(child->hasAppearance);
+                             CHECK_FALSE(child->hasRenderable);
+                             return {};
+                         }));
+    REQUIRE(f.session.withWorld([&](world::World& w) {
+        return w.withRegistry([&](entt::registry& registry) {
+            core::Mat4 matrix;
+            matrix.values[12] = 7;
+            registry.emplace<world::WorldTransformComponent>(f.child, matrix);
+            auto& appearance = registry.emplace<render::AppearanceComponent>(f.child);
+            appearance.opacity = 0.25;
+        });
+    }));
+    REQUIRE(Access::read(f.session, Access::state(f.session)->stamp,
+                         [](const auto& view) -> core::Result<void> {
+                             const auto child = view.readObject(0);
+                             REQUIRE(child);
+                             CHECK(child->hasTransform);
+                             CHECK(child->matrix.values[12] == 7);
+                             CHECK(child->hasAppearance);
+                             CHECK(child->opacity == 0.25);
+                             CHECK_FALSE(child->hasRenderable);
+                             return {};
+                         }));
+}
+
 TEST_CASE("PD3b revision covers Runtime writers and rejects old content and failed updates",
           "[pd][presentation-read]") {
     using Access = runtime::detail::PresentationAccess;

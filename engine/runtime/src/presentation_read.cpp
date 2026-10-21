@@ -12,6 +12,10 @@ struct PresentationWindow final {
     bool active{};
     const entt::registry* registry{};
     const ObjectEntityMap* objects{};
+    // Reacquired under the const registry lock for each window; never retained across writes.
+    const entt::storage<world::WorldTransformComponent>* transforms{};
+    const entt::storage<render::AppearanceComponent>* appearances{};
+    const entt::storage<render::RenderableComponent>* renderables{};
     std::optional<entt::entity> camera;
     PresentationState state;
 };
@@ -45,17 +49,18 @@ auto PresentationRead::readObject(std::size_t index) const -> core::Result<Objec
     object.id = entry.objectId.value;
     if (!registry.valid(entry.entity))
         return object;
-    if (const auto* matrix = registry.try_get<world::WorldTransformComponent>(entry.entity)) {
+    if (const auto* storage = window_->transforms; storage && storage->contains(entry.entity)) {
         object.hasTransform = true;
-        object.matrix = matrix->matrix;
+        object.matrix = storage->get(entry.entity).matrix;
     }
-    object.hasRenderable = registry.all_of<render::RenderableComponent>(entry.entity);
-    if (const auto* appearance = registry.try_get<render::AppearanceComponent>(entry.entity)) {
+    object.hasRenderable = window_->renderables && window_->renderables->contains(entry.entity);
+    if (const auto* storage = window_->appearances; storage && storage->contains(entry.entity)) {
+        const auto& appearance = storage->get(entry.entity);
         object.hasAppearance = true;
-        object.visible = appearance->visible;
-        object.material = appearance->materialAssetId;
-        object.opacity = appearance->opacity;
-        object.tint = appearance->tint;
+        object.visible = appearance.visible;
+        object.material = appearance.materialAssetId;
+        object.opacity = appearance.opacity;
+        object.tint = appearance.tint;
     }
     return object;
 }
@@ -80,9 +85,9 @@ auto PresentationRead::readCamera() const -> core::Result<CameraPresentation> {
     value.pitch = camera->pitch;
     value.yaw = camera->yaw;
     value.roll = camera->roll;
-    if (const auto* matrix = registry.try_get<world::WorldTransformComponent>(*selected)) {
+    if (const auto* storage = window_->transforms; storage && storage->contains(*selected)) {
         value.hasTransform = true;
-        value.matrix = matrix->matrix;
+        value.matrix = storage->get(*selected).matrix;
     }
     return value;
 }
@@ -126,6 +131,9 @@ auto PresentationAccess::read(const RuntimeSession& session, PresentationStamp e
             ++window.serial;
             window.registry = &registry;
             window.objects = &session.objects_;
+            window.transforms = registry.storage<world::WorldTransformComponent>();
+            window.appearances = registry.storage<render::AppearanceComponent>();
+            window.renderables = registry.storage<render::RenderableComponent>();
             window.camera = session.presentationCamera_;
             window.state = *current;
             window.active = true;
@@ -135,6 +143,9 @@ auto PresentationAccess::read(const RuntimeSession& session, PresentationStamp e
                     window.active = false;
                     window.registry = nullptr;
                     window.objects = nullptr;
+                    window.transforms = nullptr;
+                    window.appearances = nullptr;
+                    window.renderables = nullptr;
                 }
             } end{window};
             const PresentationRead view{session.presentationWindow_, window.serial};
