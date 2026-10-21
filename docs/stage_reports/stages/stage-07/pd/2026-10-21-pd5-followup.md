@@ -113,3 +113,42 @@ CUEXIS_PD_HOST_DIAGNOSTIC_1024=1 启用，原 formal 默认仍为 512/1024。
 | B | `1bfebe4b6e49dcc291136d3d2dec13e64e296341493e3e3d28023afcdecd6da3` | `ef1efdb280135cca40e573dd945706787cc8dc8191b0afb277b7e23c0b84ff6b` | `09408e92d05581748161cff660f0eecbb0381216987ca4e9671ef4777e2ff1ca` |
 
 完整文件/库/cache/compile_commands、工具与配置身份见不可覆盖 plan.json；本段先提交再运行。
+
+
+### F1 有限诊断结果
+
+12 个 A/F1 进程（规模 6、公共宿主 6）完成，无身份/输出错误。规模每配置 3 对进程，
+每进程 3 块，最短块仍满足 100 ms。以下仅为诊断，acceptance=false：
+
+| Snapshot 对象 | F1/A read 95% CI | F1/A updated 95% CI | read 判定 |
+| --- | --- | --- | --- |
+| 1 | 1.2368 [1.2244, 1.2492] | 1.1046 [1.0663, 1.1444] | diagnostic_over_budget |
+| 8 | 1.3441 [1.2979, 1.3919] | 1.0748 [1.0301, 1.1214] | diagnostic_over_budget |
+| 64 | 1.3742 [1.3517, 1.3970] | 1.0417 [1.0278, 1.0558] | diagnostic_over_budget |
+| 256 | 1.3967 [1.3523, 1.4425] | 1.0645 [1.0384, 1.0912] | diagnostic_over_budget |
+
+read 各侧进程重复性均 <2.4%。updated 的 1/8 对象区间跨 1.10，64/256 的区间上界在
+1.10 内；组合成本包含真实更新，不能当孤立 extract 成本。输出摘要在每个配置/块精确一致。
+四点拟合 A 固定 181.4895 ns、斜率 41.0936 ns/对象；
+F1 固定 205.6491 ns、斜率 57.5190 ns/对象；
+只描述本轮 1–256 范围。拟合数据与全部每进程统计见 diagnostic/scale-fit.json、analysis.json
+及各配置 input.json，可用 diagnostic.py 独立复算。
+
+共同 request→ready 的进程中位（µs）：A [22.0,30.1,19.2]，F1 [38.5,40.4,37.6]。
+配对几何比 1.6631，95% CI [1.0272,2.6927]，A/F1 波动 49.55%/7.27%，故不可判定。
+A 每进程 ready p99 为 51.8/56.7/49.5 µs，F1 为 84.1/86.9/77.6 µs；样本均为 1024，
+只覆盖这条短闭环轨迹，不接受整个 host/SDK。ACK/present-return 原样分项，禁止 total 比值。
+enqueue/drain/GPU 仍不可用，未据内部往返“解释掉”公共 ready。
+
+40k Gameplay-host 的 low/high 首进程均退出 42，Packed 编码拒绝 Packed string budget exceeded，
+未进入宿主加载/提取/Snapshot/Seek/Replay。原默认 maxPackedStrings=100000，实际字典条数未报告；
+不修改预算或 Gameplay/Replay。每种余下 2 进程按停止规则未运行，不补样。原始日志/退出码见
+capacity-low-0-B.*、capacity-high-0-B.*、run-result.json。这是未通过的生产规模准入项，
+需要独立归因 fixture、完整 Gameplay 字典增长与既有容量合同，不用读取优化豁免。
+
+额外预声明一个独立、一次性原 RPA-F3 Packed codec 核查：packed-capacity-plan.json，
+SHA256 `9aeb17c3a666a23364720b4e90d089bf772519ba433b24bf47af103714852886`。它运行原 cuexis_chart_capacity_probe
+的 low/high 40k 与 ladder profile，一次进程，无替换；与失败的 Gameplay-host 内容明确分开，
+不能用它的通过取代 Snapshot/Seek/Replay。先提交本段，再执行此单元。
+
+F1 源码字节已按原冻结清单复制到 f1-source，指纹完全相等；后续候选单独构建，F1 构建保持不动。
