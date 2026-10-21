@@ -22,6 +22,8 @@
 
 ## 测量与基线
 
+- [PD-5 门禁核查、有限诊断与处置交接](2026-10-21-pd5-followup.md)
+
 - [PD-5 P0 两窗结果、初步归因与诊断接手](2026-10-20-pd5-two-window-findings-and-diagnostic-handoff.md)
 - [测量准备的注册完整性与容量短测修正](2026-10-20-measurement-preparation-integrity.md)
 - [Playback 测量工具与内部观测实现的功能命名修正](2026-10-20-performance-tool-functional-naming.md)
