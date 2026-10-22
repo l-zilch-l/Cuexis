@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <chrono>
 #include <cuexis_internal/execution_diagnostics.hpp>
-#include <cuexis_internal/execution_stop.hpp>
 #include <limits>
 #include <type_traits>
 
@@ -852,8 +851,6 @@ auto SessionWorker::create(SessionWorkerConfiguration configuration)
 }
 SessionWorker::~SessionWorker() noexcept {
     requestShutdown();
-    // The owner borrows shutdown_ only until this join. Kernel checkpoints abandon
-    // its unsealed draft and retain the sealed prefix; no detached access to this.
     if (thread_.joinable())
         thread_.join();
 }
@@ -997,12 +994,6 @@ auto SessionWorker::fault() const noexcept -> OwnerChannel<SessionCommand, Sessi
 }
 void SessionWorker::run() noexcept {
     internal::execution_diagnostics::Trace diagnostic{"SessionWorker"};
-    internal::execution_stop::Binding executionStop{shutdown_
-#if defined(CUEXIS_EXECUTION_DIAGNOSTICS_TEST_ONLY)
-                                                    ,
-                                                    configuration_.executionGate.get()
-#endif
-    };
     try {
         SessionOwner owner{configuration_, delivery_};
         auto maintain = [&]() {
@@ -1055,13 +1046,7 @@ void SessionWorker::run() noexcept {
                             ? "SessionCoherentAdvanceDispatch"
                             : "SessionDispatch",
                         0, 0, next->first};
-                    if (shutdown_.load(std::memory_order_acquire))
-                        channel_.complete(
-                            next->first,
-                            core::unexpected(workerError("owner_closed",
-                                                         "Worker shutdown before job execution")));
-                    else
-                        channel_.complete(next->first, owner.dispatch(std::move(next->second)));
+                    channel_.complete(next->first, owner.dispatch(std::move(next->second)));
                 } catch (...) {
                     channel_.complete(
                         next->first, core::unexpected(workerError("capacity_exceeded",

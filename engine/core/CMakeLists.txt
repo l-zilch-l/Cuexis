@@ -23,7 +23,6 @@ target_sources(cuexis_core
     PRIVATE
         src/error.cpp
         src/diagnostic.cpp
-        src/execution_context.cpp
         src/log_sink.cpp
         src/math.cpp
         src/portable_path.cpp

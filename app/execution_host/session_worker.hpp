@@ -9,9 +9,6 @@
 #include <functional>
 #include <thread>
 #include <variant>
-#if defined(CUEXIS_EXECUTION_DIAGNOSTICS_TEST_ONLY)
-#include <cuexis_internal/execution_stop.hpp>
-#endif
 
 namespace cuexis::playback::detail {
 struct SessionPrepareSource final {
@@ -210,9 +207,6 @@ struct SessionWorkerConfiguration final {
     DeliveryLimits delivery{8, 8, 64U * 1024U * 1024U, 32};
     std::size_t maxFrameMembers{4096}, receiptCapacity{128};
     FrameObservationLedger::Limits observation;
-#if defined(CUEXIS_EXECUTION_DIAGNOSTICS_TEST_ONLY)
-    std::shared_ptr<internal::execution_stop::BoundaryGate> executionGate;
-#endif
 };
 class SessionWorker final {
   public:

@@ -12,7 +12,6 @@ enum class Part { copy, timers, validate, ledger, reserve, foldCopy, fold, idleD
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
-#include <cuexis/core/core_export.hpp>
 #include <exception>
 #include <functional>
 #include <mutex>
@@ -36,28 +35,25 @@ inline auto enabled() noexcept -> bool {
 #endif
 }
 struct Trace;
-struct ObserverState final {
-    std::mutex outputMutex;
-    std::atomic<std::uint64_t> nextId{};
-};
-[[nodiscard]] CUEXIS_CORE_API auto observerState() noexcept -> ObserverState&;
-[[nodiscard]] CUEXIS_CORE_API auto activeTrace() noexcept -> Trace*&;
+inline thread_local Trace* current{};
+inline std::mutex outputMutex;
+inline std::atomic<std::uint64_t> nextId{};
 struct Trace final {
     const char* name;
     Trace* previous;
     bool recording;
-    std::uint64_t id{}, timers{}, cursor{}, sealedCursor{}, ticks{}, job{};
+    std::uint64_t id{}, timers{}, cursor{}, ticks{}, job{};
     std::int64_t horizon{}, tick{}, started{};
     int exceptions{};
     std::array<std::uint64_t, static_cast<unsigned>(Part::count)> calls{}, nanoseconds{};
     explicit Trace(const char* stage, std::int64_t target = 0, std::uint64_t count = 0,
                    std::uint64_t request = 0) noexcept
-        : name(stage), previous(activeTrace()), recording(enabled()), timers(count), job(request),
+        : name(stage), previous(current), recording(enabled()), timers(count), job(request),
           horizon(target), exceptions(std::uncaught_exceptions()) {
         if (recording) {
-            id = ++observerState().nextId;
+            id = ++nextId;
             started = now();
-            activeTrace() = this;
+            current = this;
             emit("begin");
         }
     }
@@ -65,14 +61,13 @@ struct Trace final {
         if (!recording)
             return;
         try {
-            std::lock_guard lock(observerState().outputMutex);
+            std::lock_guard lock(outputMutex);
             std::fprintf(stderr,
                          "EXECUTION_DIAGNOSTIC {\"stage\":\"%s\",\"state\":\"%s\","
                          "\"id\":%llu,\"job_id\":%llu,\"parent_id\":%llu,\"thread\":%llu,\"time_"
                          "ns\":%lld,\"started_ns\":%lld,"
                          "\"elapsed_ns\":%lld,\"horizon\":%lld,\"timers\":%llu,"
-                         "\"timer_cursor\":%llu,\"sealed_timer_cursor\":%llu,\"ticks\":%llu,"
-                         "\"tick\":%lld,\"calls\":[",
+                         "\"timer_cursor\":%llu,\"ticks\":%llu,\"tick\":%lld,\"calls\":[",
                          name, state, static_cast<unsigned long long>(id),
                          static_cast<unsigned long long>(job),
                          static_cast<unsigned long long>(previous ? previous->id : 0),
@@ -82,7 +77,6 @@ struct Trace final {
                          static_cast<long long>(now() - started), static_cast<long long>(horizon),
                          static_cast<unsigned long long>(timers),
                          static_cast<unsigned long long>(cursor),
-                         static_cast<unsigned long long>(sealedCursor),
                          static_cast<unsigned long long>(ticks), static_cast<long long>(tick));
             for (unsigned i = 0; i < calls.size(); ++i)
                 std::fprintf(stderr, "%s%llu", i ? "," : "",
@@ -100,7 +94,6 @@ struct Trace final {
     void progress(std::int64_t at, std::uint64_t position) noexcept {
         tick = at;
         cursor = position;
-        sealedCursor = position;
         ++ticks;
         if ((ticks & (ticks - 1)) == 0)
             emit("progress");
@@ -108,20 +101,16 @@ struct Trace final {
     void sealed(std::int64_t at, std::uint64_t position) noexcept {
         tick = at;
         cursor = position;
-        sealedCursor = position;
-    }
-    void inFlight(std::uint64_t position) noexcept {
-        cursor = position;
     }
     ~Trace() noexcept {
         if (recording) {
             emit(std::uncaught_exceptions() > exceptions ? "unwinding" : "end");
-            activeTrace() = previous;
+            current = previous;
         }
     }
 };
 struct PartScope final {
-    Trace* trace{activeTrace()};
+    Trace* trace{current};
     unsigned part;
     std::int64_t started{};
     explicit PartScope(Part value) noexcept : part(static_cast<unsigned>(value)) {
@@ -143,7 +132,6 @@ struct Trace final {
     void emit(const char*) const noexcept {}
     void progress(std::int64_t, std::uint64_t) noexcept {}
     void sealed(std::int64_t, std::uint64_t) noexcept {}
-    void inFlight(std::uint64_t) noexcept {}
 };
 struct PartScope final {
     explicit PartScope(Part) noexcept {}

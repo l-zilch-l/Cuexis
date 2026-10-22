@@ -88,14 +88,6 @@ TEST_CASE("PD5 full content Snapshot Seek Replay boundary", "[.][pd][pd5][capaci
     options.captureCapacity = 64;
     options.captureReserve = 16;
     options.replyDeadline = std::chrono::seconds{30};
-#if defined(CUEXIS_EXECUTION_DIAGNOSTICS_TEST_ONLY)
-    if (test_support::environmentVariable("CUEXIS_PD5_DIAGNOSTIC_STALL") == "1") {
-        REQUIRE(diagnosticOnly);
-        options.session.executionGate = std::make_shared<internal::execution_stop::BoundaryGate>();
-        // A synthetic timeout proof, not the frozen 30-second functional profile.
-        options.replyDeadline = std::chrono::milliseconds{100};
-    }
-#endif
     options.viewport = {1280, 720};
     options.realtime =
         SessionRealtimeStart{{1000000, 10, 65536, "", true}, mapping, {}, "pd5.capacity"};
