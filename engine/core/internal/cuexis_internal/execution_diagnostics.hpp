@@ -3,7 +3,7 @@
 #include <cstdint>
 
 namespace cuexis::internal::execution_diagnostics {
-enum class Part { copy, timers, validate, ledger, reserve, foldCopy, fold, count };
+enum class Part { copy, timers, validate, ledger, reserve, foldCopy, fold, idleDeadline, count };
 } // namespace cuexis::internal::execution_diagnostics
 
 #if defined(CUEXIS_EXECUTION_DIAGNOSTICS_TEST_ONLY)

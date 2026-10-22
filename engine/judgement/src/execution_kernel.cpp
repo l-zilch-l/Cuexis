@@ -141,6 +141,8 @@ struct ExecutionKernel::Impl final {
     std::shared_ptr<const ReplayData> seekSource;
     core::Error failureResult;
     core::Error foldFailureResult;
+    // Derived from one immutable PreparedGameplay; never serialized or globally cached.
+    std::vector<std::size_t> phaseOffsets, timerRequirements;
 
     Impl(SessionConfiguration c, PreparedGameplay p, std::shared_ptr<const RuntimeState> state)
         : configuration(std::move(c)), prepared(std::move(p)), active(std::move(state)),
@@ -152,6 +154,21 @@ struct ExecutionKernel::Impl final {
                   .withContext("category", "invalid_relation")
                   .withContext("severity", "error")
                   .withContext("faulted", "true")) {
+        std::map<RequirementIdentity, std::size_t> indices;
+        phaseOffsets.push_back(0);
+        for (std::size_t i = 0; i < graph().requirements.size(); ++i) {
+            const auto& r = graph().requirements[i];
+            if (!indices.emplace(r.identity, i).second)
+                throw std::logic_error{"duplicate prepared requirement"};
+            phaseOffsets.push_back(phaseOffsets.back() + r.phases.size());
+        }
+        for (const auto& timer : prepared.timers()) {
+            const auto found = indices.find(timer.requirement);
+            if (found == indices.end())
+                throw std::logic_error{"timer requirement missing"};
+            timerRequirements.push_back(found->second);
+        }
+        validatePhaseLayout(*active);
         recoveryInputs =
             std::make_shared<const RecoveryInputs>(RecoveryInputs{configuration, prepared});
         recording = std::make_shared<const ReplayData>(
@@ -188,14 +205,15 @@ struct ExecutionKernel::Impl final {
         }
     }
     auto phase(RuntimeState& d, std::size_t i, PhaseKind kind) const -> KernelPhaseState& {
-        auto& rows = d.projection.phases;
-        auto found = std::find_if(rows.begin(), rows.end(), [&](const auto& row) {
-            return row.requirement == graph().requirements[i].identity && row.phase == kind;
-        });
-        if (found == rows.end()) {
+        const auto& declared = graph().requirements[i].phases;
+        const auto found = std::find_if(declared.begin(), declared.end(),
+                                        [kind](const auto& p) { return p.kind == kind; });
+        if (found == declared.end()) {
             throw std::logic_error{"phase not declared"};
         }
-        return found->state;
+        return d.projection.phases
+            .at(phaseOffsets[i] + static_cast<std::size_t>(found - declared.begin()))
+            .state;
     }
     auto pendingPhase(RuntimeState& d, std::size_t i, PhaseKind kind) const -> bool {
         return phase(d, i, kind) == KernelPhaseState::Pending;
@@ -327,14 +345,11 @@ struct ExecutionKernel::Impl final {
     }
 
     void timer(RuntimeState& d, std::vector<FactDescriptor>& facts, const PreparedTimerKey& timer,
-               std::span<const AdmittedObservation> inputs) const {
-        auto ri = std::find_if(graph().requirements.begin(), graph().requirements.end(),
-                               [&](const auto& r) { return r.identity == timer.requirement; });
-        const auto i = static_cast<std::size_t>(ri - graph().requirements.begin());
+               std::size_t i, std::span<const AdmittedObservation> inputs) const {
+        const auto ri = graph().requirements.begin() + static_cast<std::ptrdiff_t>(i);
         const OriginId origin = TimerOrigin{timer.tick, ri->identity};
         if (timer.kind == PreparedTimerKind::activation) {
             d.activeRequirements.push_back(i);
-            std::sort(d.activeRequirements.begin(), d.activeRequirements.end());
             for (const auto& p : ri->phases) {
                 if (phase(d, i, p.kind) == KernelPhaseState::Dormant) {
                     phase(d, i, p.kind) = KernelPhaseState::Pending;
@@ -615,13 +630,17 @@ struct ExecutionKernel::Impl final {
             deferred.end());
     }
 
-    void validateDraft(const RuntimeState& d) const {
+    void validatePhaseLayout(const RuntimeState& d) const {
         std::set<std::pair<RequirementIdentity, PhaseKind>> phases;
         for (const auto& p : d.projection.phases) {
             if (!phases.emplace(p.requirement, p.phase).second) {
                 throw std::logic_error{"duplicate phase draft"};
             }
         }
+    }
+    void validateDraft(const RuntimeState& d, bool phaseLayout = true) const {
+        if (phaseLayout)
+            validatePhaseLayout(d);
         std::set<std::tuple<std::string, std::string, std::string>> channels;
         for (const auto& c : d.projection.contacts) {
             if (!channels.emplace(c.domainToken, c.sourceClass, c.channelToken).second) {
@@ -662,6 +681,46 @@ struct ExecutionKernel::Impl final {
                 }
             }
         }
+    }
+    // A deadline on already-terminal phases cannot change semantic state. Reuse only
+    // a private state created in this advance and its private fault mirror. A preceding
+    // full, fact-free Fold establishes that only workTick can change in the Fold view.
+    auto idleDeadlineEnd(const RuntimeState& d, Tick tick, std::size_t& end) const -> bool {
+        if (!pending.empty() || !d.projection.contacts.empty() || !d.projection.ownership.empty() ||
+            (configuration.ruleset && !configuration.ruleset->declaration().hooks.empty()))
+            return false;
+        if (testControls &&
+            (testControls->forceReferenceAdvance || testControls->failedTick == tick ||
+             testControls->duplicatePhaseTick == tick ||
+             testControls->invalidRegisterTick == tick ||
+             std::find(testControls->signalTicks.begin(), testControls->signalTicks.end(), tick) !=
+                 testControls->signalTicks.end()))
+            return false;
+        const auto timers = prepared.timers();
+        end = d.timerCursor;
+        while (end < timers.size() && timers[end].tick == tick) {
+            if (timers[end].kind != PreparedTimerKind::hardDeadline)
+                return false;
+            const auto i = timerRequirements[end];
+            for (auto p = phaseOffsets[i]; p < phaseOffsets[i + 1]; ++p)
+                if (d.projection.phases[p].state == KernelPhaseState::Pending)
+                    return false;
+            ++end;
+        }
+        return end != d.timerCursor;
+    }
+    static void sealIdleDeadline(RuntimeState& d, Tick tick, std::size_t cursor) noexcept {
+        d.timerCursor = cursor;
+        d.projection.processedFrontier = tick;
+        d.projection.kernelWorkTick = tick;
+        d.projection.sealedFactCursor = static_cast<std::uint64_t>(d.projection.facts.size());
+        if (d.projection.rpa) {
+            d.projection.rpa->foldBaseTick = tick;
+            if (d.projection.fold)
+                d.projection.rpa->foldAtTickStart->workTick = d.projection.fold->workTick;
+        }
+        if (d.projection.fold)
+            d.projection.fold->workTick = tick;
     }
     void fold(RuntimeState& d, Tick tick) const {
         if (!configuration.ruleset) {
@@ -1671,6 +1730,8 @@ auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
     bool foldFailed = false;
     try {
         const auto timers = impl_->prepared.timers();
+        std::shared_ptr<RuntimeState> writable;
+        bool idleFoldReady = false;
         while (true) {
             std::optional<Tick> tick;
             auto cursor = impl_->active->timerCursor;
@@ -1711,6 +1772,23 @@ auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
             }
             failedTick = *tick;
             diagnostic.progress(tick->value(), impl_->active->timerCursor);
+            std::size_t idleEnd{};
+            if (idleFoldReady && writable && writable.get() == impl_->active.get() &&
+                writable.use_count() == 2 && impl_->idleDeadlineEnd(*writable, *tick, idleEnd)) {
+                internal::execution_diagnostics::PartScope part{
+                    internal::execution_diagnostics::Part::idleDeadline};
+                if (impl_->testControls && impl_->testControls->work) {
+                    ++impl_->testControls->work->idleDeadlineTicks;
+                    impl_->testControls->work->timers += idleEnd - writable->timerCursor;
+                }
+                Impl::sealIdleDeadline(*writable, *tick, idleEnd);
+                Impl::sealIdleDeadline(*impl_->faultReserve, *tick, idleEnd);
+                diagnostic.sealed(tick->value(), idleEnd);
+                failedTick.reset();
+                continue;
+            }
+            if (impl_->testControls && impl_->testControls->work)
+                ++impl_->testControls->work->fullTickTransactions;
             auto draft = [&] {
                 internal::execution_diagnostics::PartScope part{
                     internal::execution_diagnostics::Part::copy};
@@ -1723,11 +1801,18 @@ auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
                 }
             }
             std::vector<FactDescriptor> facts;
+            const auto activeCount = draft->activeRequirements.size();
             while (draft->timerCursor < timers.size() && timers[draft->timerCursor].tick == *tick) {
+                if (impl_->testControls && impl_->testControls->work)
+                    ++impl_->testControls->work->timers;
                 internal::execution_diagnostics::PartScope part{
                     internal::execution_diagnostics::Part::timers};
-                impl_->timer(*draft, facts, timers[draft->timerCursor++], inputs);
+                const auto timerIndex = draft->timerCursor++;
+                impl_->timer(*draft, facts, timers[timerIndex],
+                             impl_->timerRequirements[timerIndex], inputs);
             }
+            if (draft->activeRequirements.size() != activeCount)
+                std::sort(draft->activeRequirements.begin(), draft->activeRequirements.end());
             impl_->failIfRequested(*tick, KernelFailurePoint::afterTimers);
             for (const auto& input : inputs) {
                 impl_->input(*draft, facts, input);
@@ -1741,7 +1826,9 @@ auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
             {
                 internal::execution_diagnostics::PartScope part{
                     internal::execution_diagnostics::Part::validate};
-                impl_->validateDraft(*draft);
+                // Normal execution changes phase states, never their identity/layout.
+                impl_->validateDraft(*draft, impl_->testControls &&
+                                                 impl_->testControls->duplicatePhaseTick == *tick);
             }
             impl_->failIfRequested(*tick, KernelFailurePoint::beforeLedger);
             {
@@ -1796,8 +1883,17 @@ auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
                     internal::execution_diagnostics::Part::reserve};
                 return impl_->reserveFault(*folded);
             }();
-            impl_->active = std::move(folded);
+            impl_->active = folded;
+            writable = std::move(folded);
             impl_->faultReserve = std::move(foldedReserve);
+            idleFoldReady =
+                facts.empty() &&
+                (!writable->projection.fold ||
+                 (writable->projection.fold->produced.empty() &&
+                  writable->projection.fold->factCursor == writable->projection.facts.size())) &&
+                (!writable->projection.rpa ||
+                 writable->projection.rpa->foldAtTickStart.has_value() ==
+                     writable->projection.fold.has_value());
             foldFailed = false;
             diagnostic.sealed(tick->value(), impl_->active->timerCursor);
             failedTick.reset();

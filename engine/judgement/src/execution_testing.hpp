@@ -1,5 +1,6 @@
 #pragma once
 #include <functional>
+#include <memory>
 
 #include <cuexis/judgement/judgement_session.hpp>
 
@@ -17,6 +18,9 @@ enum class RegisterFault : std::uint8_t {
     duplicateContribution,
     directDerived
 };
+struct KernelWorkObservation final {
+    std::uint64_t fullTickTransactions{}, idleDeadlineTicks{}, timers{};
+};
 struct KernelTestControls final {
     std::optional<Tick> failedTick;
     KernelFailurePoint failurePoint;
@@ -28,6 +32,8 @@ struct KernelTestControls final {
     std::optional<Tick> failRecordReservationHorizon;
     bool failSubmitRecordReservation{false};
     bool failAdvanceFinalization{false};
+    bool forceReferenceAdvance{false};
+    std::shared_ptr<KernelWorkObservation> work;
 };
 // Internal checking fixture, unavailable in installed headers or Playback.
 class KernelTestAccess final {
