@@ -139,6 +139,11 @@ Waiting、BusyNotAccepted、以及原协议以值返回的 Failed decision 均�
 所有新 overload 都是“原参数 + 必选 `PlaybackOperation&`”，没有隐式默认全局 source。
 旧 overload 的签名、Result 和拒绝行为保持，委托同一实现的 NoStop 上下文。
 新路径不得调用一个丢失 token 的旧 public overload；内部委托显式借用同一上下文。
+对带 class export 标注的类型，private member 也可能成为 DLL 符号，因此不能直接给
+`PlaybackSource::fromGameplayEncoded`、`PlaybackSession::prepare/attachGameplay` 加私有 overload
+或改成带 context 的导出签名。旧签名按需保留 NoStop 转发，带 context 的共用实现提取到
+`src` 中未导出的 State/implementation helper；不得用公共类白名单放过新增私有 helper。
+实际导出差异必须按声明的公共 API 清单逐项核对，不能只检查是否含 `detail` 字样。
 
 ## 3. 同步入核入口完整清单
 
