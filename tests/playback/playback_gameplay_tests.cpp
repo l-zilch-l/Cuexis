@@ -2239,6 +2239,8 @@ TEST_CASE("Revision4 explicit entry reuses verified Header identity and rejects 
           "[candidate][gameplay][entry][revision4]") {
     TestContent fixture;
     const auto bytes = fixture.packed(4);
+    CHECK(playback::detail::packedGameplayRevision(bytes) == 4);
+    CHECK_FALSE(playback::detail::packedGameplayRevision(std::span{bytes}.first(95)));
     const auto content = playback::GameplayContent::fromPacked(bytes, fixture.config);
     REQUIRE(content);
     auto metadata = playback::detail::gameplayEntryMetadata(*content, fixture.config, "main.packed",

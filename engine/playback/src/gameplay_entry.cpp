@@ -39,12 +39,10 @@ auto gameplayEntryMetadata(const GameplayContent& content, const GameplayConfigu
     if (!capsule.verifiedSemanticDigest)
         return core::unexpected(invalid("Gameplay content lacks a verified semantic digest"));
     if (kind == "packed-chart") {
-        if (bytes.size() < 96)
+        const auto revision = packedGameplayRevision(bytes);
+        if (!revision)
             return core::unexpected(invalid("Truncated Gameplay artifact"));
-        std::uint32_t revision = 0;
-        for (unsigned i = 0; i < 4; ++i)
-            revision |= std::uint32_t{std::to_integer<std::uint8_t>(bytes[88 + i])} << (8 * i);
-        if (revision != capsule.candidateRevision || (revision != 3 && revision != 4))
+        if (*revision != capsule.candidateRevision || (*revision != 3 && *revision != 4))
             return core::unexpected(invalid("Gameplay artifact and content revision mismatch"));
         if (!std::equal(capsule.verifiedSemanticDigest->begin(),
                         capsule.verifiedSemanticDigest->end(), bytes.begin() + 32,

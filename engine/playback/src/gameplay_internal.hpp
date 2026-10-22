@@ -9,8 +9,10 @@
 
 namespace cuexis::playback::detail {
 // Reads only the dispatch field. The selected Reader still validates the full Header.
-inline auto packedGameplayRevision(std::span<const std::byte> bytes) noexcept -> std::optional<std::uint32_t> {
-    if (bytes.size() < 96) return std::nullopt;
+inline auto packedGameplayRevision(std::span<const std::byte> bytes) noexcept
+    -> std::optional<std::uint32_t> {
+    if (bytes.size() < 96)
+        return std::nullopt;
     std::uint32_t revision = 0;
     for (unsigned i = 0; i < 4; ++i)
         revision |= std::uint32_t{std::to_integer<std::uint8_t>(bytes[88 + i])} << (8 * i);
