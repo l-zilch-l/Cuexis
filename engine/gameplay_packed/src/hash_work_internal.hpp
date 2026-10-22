@@ -34,8 +34,9 @@ struct HashWorkFailure final {
 };
 
 [[noreturn]] inline void hashBudget(std::string_view budget, std::string_view field,
-                                    std::uint64_t limit, std::uint64_t required,
-                                    bool exact = true) {
+                                    std::uint64_t limit, std::uint64_t required, bool exact = true,
+                                    std::string_view phase = "count",
+                                    std::string_view origin = "semanticHash.total") {
     throw HashWorkFailure{
         core::Error{"capability.budget_insufficient", "Capsule hash work exceeds accepted profile"}
             .withContext("category", "budget_exceeded")
@@ -44,8 +45,8 @@ struct HashWorkFailure final {
             .withContext("profile", std::string{kHashWorkProfile})
             .withContext("budgetId", std::string{budget})
             .withContext("fieldPath", std::string{field})
-            .withContext("originPath", "semanticHash.total")
-            .withContext("phase", "count")
+            .withContext("originPath", std::string{origin})
+            .withContext("phase", std::string{phase})
             .withContext("limit", std::to_string(limit))
             .withContext(exact ? "required" : "requiredAtLeast", std::to_string(required))
             .withContext("exact", exact ? "true" : "false")};

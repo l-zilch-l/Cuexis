@@ -1,7 +1,9 @@
 #include "../judgement/execution_test_fixture.hpp"
 #include "gameplay_test_fixture.hpp"
+#include "hash_work_internal.hpp"
 #include "packed_fixture_support.hpp"
 #include "packed_gameplay_internal.hpp"
+#include "semantic_stream_internal.hpp"
 
 #include <cuexis/chart/packed_chart_io.hpp>
 #include <cuexis/gameplay_packed/gameplay_capsule.hpp>
@@ -1108,4 +1110,97 @@ TEST_CASE("Compiled Graph SAX rejects header shape counts and identity without f
     rejected = capsule::decodeGraph(*graph, context, production);
     REQUIRE_FALSE(rejected);
     CHECK(rejected.error().code() == "capability.budget_insufficient");
+}
+
+TEST_CASE("Bounded Gameplay2 static sink preserves complete legacy prefix bytes",
+          "[gameplay_packed][capsule4][identity]") {
+    CapsuleFixture f;
+    SECTION("explicit UUID identities") {}
+    SECTION("generated paths retain little endian identity order") {
+        for (unsigned i = 0; i < 2; ++i)
+            f.chart.entities[i].identity = chart::GeneratedEntityIdentity{
+                f.chart.chartId, "binding", "module", "export", {{"loop", 255 + i}, {"leaf", 0}}};
+        f.chart.entities[1].parent = f.chart.entities[0].identity;
+        f.owners[0].entity = f.chart.entities[0].identity;
+    }
+    std::vector<chart::CanonicalEntityIdentity> owners{f.owners[0].entity};
+    const auto expected = packed::gameplay_detail::staticPreimage(f.chart, owners, 3);
+    REQUIRE(expected);
+    capsule::detail::HashScratch scratch{{}};
+    std::pmr::vector<std::byte> actual{&scratch};
+    actual.reserve(expected->size());
+    const auto append = [](void* state, std::span<const std::byte> bytes) {
+        auto& output = *static_cast<std::pmr::vector<std::byte>*>(state);
+        output.insert(output.end(), bytes.begin(), bytes.end());
+    };
+    const auto streamed =
+        packed::gameplay_detail::streamStaticPreimage(f.chart, owners, {&actual, append, &scratch});
+    REQUIRE(streamed);
+    CHECK(std::equal(expected->begin(), expected->end(), actual.begin(), actual.end()));
+    CHECK(scratch.highWater() <= capsule::detail::kAcceptedHashWork.maxHashScratchBytes);
+}
+
+TEST_CASE("Shared semantic traversal counts hashes and exports legacy bytes",
+          "[capsule][semantic-sinks]") {
+    for (const auto revision : {2U, 3U}) {
+        DYNAMIC_SECTION("revision " << revision) {
+            CapsuleFixture f;
+            if (revision == 3) {
+                f.base.latePolicy = executionLate();
+                executionFields(f.request.assembly);
+                f.profiles = {f.request.assembly.normalizationProfileToken,
+                              f.request.assembly.coordinatorPolicyToken};
+            }
+            const auto prepared = f.prepare();
+            capsule::EncodeRequest request{f.chart, prepared, f.owners, f.profiles,
+                                           {},      {},       revision};
+            const auto expected = capsule::semanticPreimage(request);
+            REQUIRE(expected);
+            capsule::detail::HashScratch scratch{capsule::detail::kAcceptedHashWork};
+            const auto count = capsule::detail::streamSemanticPreimage(
+                request, {nullptr, [](void*, std::span<const std::byte>) {}, &scratch});
+            REQUIRE(count);
+            REQUIRE(count->bytes == expected->size());
+            CHECK(count->visits == 12); // Includes the direct ENT0 lookup and E-only claim owner.
+            CHECK(count->maxKey <= 4096);
+            capsule::detail::checkHashCost(*count, capsule::detail::kAcceptedHashWork);
+            core::detail::Sha256 sha;
+            const auto hashed = capsule::detail::streamSemanticPreimage(
+                request, {&sha,
+                          [](void* state, auto bytes) {
+                              static_cast<core::detail::Sha256*>(state)->update(bytes);
+                          },
+                          &scratch});
+            REQUIRE(hashed);
+            CHECK(hashed->bytes == count->bytes);
+            CHECK(hashed->visits == count->visits);
+            CHECK(sha.finish() == core::detail::sha256(*expected));
+            struct Export final {
+                std::pmr::vector<std::byte> bytes;
+                std::size_t limit;
+            } output{std::pmr::vector<std::byte>{&scratch}, expected->size()};
+            output.bytes.reserve(output.limit);
+            const auto append = [](void* state, std::span<const std::byte> bytes) {
+                auto& destination = *static_cast<Export*>(state);
+                if (bytes.size() > destination.limit - destination.bytes.size())
+                    capsule::detail::hashBudget(
+                        "maxSemanticPreimageBytes", "semanticHash.preimageBytes", destination.limit,
+                        destination.bytes.size() + bytes.size(), true, "export");
+                destination.bytes.insert(destination.bytes.end(), bytes.begin(), bytes.end());
+            };
+            const auto exported =
+                capsule::detail::streamSemanticPreimage(request, {&output, append, &scratch});
+            REQUIRE(exported);
+            CHECK(std::equal(output.bytes.begin(), output.bytes.end(), expected->begin(),
+                             expected->end()));
+            output.bytes.clear();
+            --output.limit;
+            const auto refused =
+                capsule::detail::streamSemanticPreimage(request, {&output, append, &scratch});
+            REQUIRE_FALSE(refused);
+            CHECK(refused.error().code() == "capability.budget_insufficient");
+            CHECK(output.bytes.size() <= output.limit);
+            CHECK(scratch.highWater() <= capsule::detail::kAcceptedHashWork.maxHashScratchBytes);
+        }
+    }
 }

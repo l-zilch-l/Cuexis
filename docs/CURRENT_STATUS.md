@@ -27,7 +27,7 @@ PD-5 Python 测量工具及 profile 已整理到 [tools/verification/playback_pe
 
 [注册完整性与容量短测修正](stage_reports/stages/stage-07/pd/2026-10-20-measurement-preparation-integrity.md)补齐注册外层哈希、跨窗口/pilot 原始文件独立性及完整控制次数拒绝检查，64 实体 low/high 的 Snapshot/Seek/Replay 端到端工具短测通过；40k、真实 Player/设备观察和完整测量就绪仍待验证。
 
-PD-5 40k 准入：[阶段 A](stage_reports/stages/stage-07/pd/2026-10-21-gameplay-admission-stage-a.md)定量交回已完成。2026-10-22 owner 已接受 [B0](stage_reports/stages/stage-07/pd/2026-10-22-gameplay-admission-b0-budget-ruling.md) 的四维 envelope、Ix 口径、拒绝顺序、内部 profile、revision 4 差异与兼容矩阵；[阶段 B](stage_reports/stages/stage-07/pd/2026-10-22-gameplay-admission-stage-b.md)实施中，第一批内部计费基础与适用测试通过，尚无完整 Reader/Writer/身份/scratch/物理包络验收。四类验证失败立即停止交回。阶段 C、正式测量、主树合并与 SDK/公共 API 升级未授权；隔离分支 codex/pd5-gameplay-40k-admission，主树 F1、C2、旧证据及窗口 3 保持原状。
+PD-5 40k 准入：[阶段 A](stage_reports/stages/stage-07/pd/2026-10-21-gameplay-admission-stage-a.md)定量交回已完成。2026-10-22 owner 已接受 [B0](stage_reports/stages/stage-07/pd/2026-10-22-gameplay-admission-b0-budget-ruling.md) 的四维 envelope、Ix 口径、拒绝顺序、内部 profile、revision 4 差异与兼容矩阵；[阶段 B](stage_reports/stages/stage-07/pd/2026-10-22-gameplay-admission-stage-b.md)第一批内部计费基础与适用测试通过；第二批共享字段收敛后交回审阅，模型复制未完整计费且共享定义成本缓存尚未接入，分配会计核查未通过，已停止后续接入；尚无完整 Reader/Writer/身份/scratch/物理包络验收。四类验证失败立即停止交回。阶段 C、正式测量、主树合并与 SDK/公共 API 升级未授权；隔离分支 codex/pd5-gameplay-40k-admission，主树 F1、C2、旧证据及窗口 3 保持原状。
 
 PD-5 本轮补充：[Gameplay-host 字典/预算核查](stage_reports/stages/stage-07/pd/2026-10-21-gameplay-host-string-budget.md)及[C2 单候选交接](stage_reports/stages/stage-07/pd/2026-10-21-c2-read-result-candidate.md)。C2 完整 Release CTest 1272 通过、1 跳过、0 失败，12 个固定被测进程完成；主指标及规模重复性未达冻结条件，未合入主树，交回核验后再决定处置；未新建正式 preparation/registration，旧窗口 3 继续停止。
 

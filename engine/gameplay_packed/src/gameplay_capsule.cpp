@@ -5,6 +5,7 @@
 #include "packed_gameplay_internal.hpp"
 #include "packed_identity_internal.hpp"
 #include "packed_limits_internal.hpp"
+#include "semantic_stream_internal.hpp"
 
 #include <cuexis/chart/packed_chart_primitives.hpp>
 #include <cuexis/core/error.hpp>
@@ -22,6 +23,7 @@
 #include <map>
 #include <set>
 #include <tuple>
+#include <type_traits>
 
 namespace cuexis::gameplay_packed {
 namespace {
@@ -120,6 +122,8 @@ struct Output final {
     static constexpr bool reading = false;
     Mode mode{Mode::wire};
     ByteWriter writer;
+    gp::SemanticByteSink* sink{};
+    detail::HashCost* cost{};
     bool sizing{};
     std::size_t size{};
     std::size_t limit{std::numeric_limits<std::size_t>::max()};
@@ -139,31 +143,29 @@ struct Output final {
         }
         add(bytes.size());
         if (!sizing) {
-            writer.writeBytes(bytes);
+            if (sink)
+                sink->write(sink->context, bytes);
+            else
+                writer.writeBytes(bytes);
         }
     }
     void tag(std::uint8_t v) {
         if (mode == Mode::collect) {
             return;
         }
-        add(1);
-        if (!sizing) {
-            writer.writeU8(v);
-        }
+        const auto byte = static_cast<std::byte>(v);
+        raw(std::span{&byte, 1});
     }
     void unsignedValue(std::uint64_t v, bool wide) {
         if (mode == Mode::collect) {
             return;
         }
         if (mode == Mode::hash) {
-            add(wide ? 8 : 4);
-            if (!sizing) {
-                if (wide) {
-                    writer.writeU64(v);
-                } else {
-                    writer.writeU32(static_cast<std::uint32_t>(v));
-                }
-            }
+            std::array<std::byte, 8> bytes{};
+            const auto width = wide ? 8U : 4U;
+            for (std::size_t i = 0; i < width; ++i)
+                bytes[i] = static_cast<std::byte>((v >> (8U * i)) & 255U);
+            raw(std::span{bytes}.first(width));
         } else {
             auto copy = v;
             std::size_t n = 1;
@@ -210,6 +212,17 @@ struct Output final {
             require(it != strings->end() && *it == v, "STR0", "token missing from dictionary");
             unsignedValue(u32(static_cast<std::size_t>(it - strings->begin())), false);
         }
+    }
+    void value(const std::string& v) {
+        text(v);
+    }
+    void value(const std::uint64_t& v) {
+        unsignedValue(v, true);
+    }
+    template <typename T> void value(const std::vector<T>& rows) {
+        count(rows.size());
+        for (const auto& row : rows)
+            value(row);
     }
     void value(std::string& v) {
         text(v);
@@ -398,12 +411,24 @@ template <typename A> void visit(A& a, PreparedGrace& v) {
 template <typename A> void visit(A& a, StableDeclarationId& v) {
     a.fields(v.sourceDocumentId, v.declarationOrdinal);
 }
-template <typename A> void visit(A& a, EmissionPathStep& v) {
+template <typename A, typename T> void emissionStepFields(A& a, T& v) {
     a.fields(v.nodeId, v.repeatIndex);
 }
-template <typename A> void visit(A& a, RequirementIdentity& v) {
+template <typename A> void visit(A& a, EmissionPathStep& v) {
+    emissionStepFields(a, v);
+}
+void visit(Output& a, const EmissionPathStep& v) {
+    emissionStepFields(a, v);
+}
+template <typename A, typename T> void emissionIdentityFields(A& a, T& v) {
     a.fields(v.chartEntryId, v.invocationId, v.moduleId, v.exportId, v.emissionPath,
              v.requirementLocalId);
+}
+template <typename A> void visit(A& a, RequirementIdentity& v) {
+    emissionIdentityFields(a, v);
+}
+void visit(Output& a, const RequirementIdentity& v) {
+    emissionIdentityFields(a, v);
 }
 template <typename A> void visit(A& a, PhaseDeclaration& v) {
     enumeration(a, v.kind);
@@ -444,25 +469,43 @@ auto hex(std::span<const std::byte> bytes) -> std::string {
     }
     return result;
 }
+void projectionFields(Output& a, std::uint8_t subdomain,
+                      std::initializer_list<std::string_view> tokens,
+                      const RequirementIdentity* identity) {
+    a.tag(subdomain);
+    for (auto token : tokens)
+        a.text(token);
+    if (identity)
+        a.value(*identity);
+}
+
 auto projection(std::uint8_t subdomain, std::initializer_list<std::string_view> tokens,
                 const RequirementIdentity* identity = nullptr) -> std::string {
     Output a;
     a.mode = Mode::hash;
     a.limit = chart::PackedChartLimits{}.maxPackedSectionBytes;
-    a.tag(subdomain);
-    for (auto token : tokens) {
-        a.text(token);
-    }
-    if (identity) {
-        auto copy = *identity;
-        a.value(copy);
-    }
+    projectionFields(a, subdomain, tokens, identity);
     return "cxgp2:" + hex(a.writer.bytes());
 }
+
 template <typename A>
 void projected(A& a, std::uint8_t kind, std::uint8_t subdomain,
                std::initializer_list<std::string_view> tokens,
                const RequirementIdentity* identity = nullptr) {
+    if constexpr (std::is_same_v<A, Output>) {
+        if (a.sink) {
+            Output count;
+            count.mode = Mode::hash;
+            count.sizing = true;
+            projectionFields(count, subdomain, tokens, identity);
+            const auto length =
+                detail::cappedAdd(6, detail::cappedMultiply(2, count.size, 4096), 4096);
+            if (length > 4096)
+                detail::hashBudget("maxProjectionKeyBytes", "semanticHash.projectionKeyBytes", 4096,
+                                   length, false);
+            a.cost->maxKey = std::max(a.cost->maxKey, length);
+        }
+    }
     auto expected = projection(subdomain, tokens, identity), actual = expected;
     a.ref(kind, actual);
     require(actual == expected, "REF0", "typed reference subdomain or structural key mismatch");
@@ -686,8 +729,10 @@ template <typename A> void optionalRef(A& a, std::uint8_t kind, std::optional<st
         v.reset();
     }
 }
-auto nodes(PatternNodeDeclaration& root) -> std::vector<PatternNodeDeclaration*> {
-    std::vector<PatternNodeDeclaration*> result, pending{&root};
+auto nodes(PatternNodeDeclaration& root, std::pmr::memory_resource* resource)
+    -> std::pmr::vector<PatternNodeDeclaration*> {
+    std::pmr::vector<PatternNodeDeclaration*> result{resource}, pending{resource};
+    pending.push_back(&root);
     while (!pending.empty()) {
         auto* node = pending.back();
         pending.pop_back();
@@ -787,7 +832,11 @@ template <typename A> void patternRow(A& a, PatternDeclaration& v) {
         }
         require(pending == 0, "patterns.nodes", "incomplete Pattern tree");
     } else {
-        auto flat = nodes(v.root);
+        auto* resource = std::pmr::get_default_resource();
+        if constexpr (std::is_same_v<A, Output>)
+            if (a.sink)
+                resource = a.sink->scratch;
+        auto flat = nodes(v.root, resource);
         a.count(flat.size());
         for (auto* node : flat) {
             auto n = u32(node->operands.size());
@@ -860,6 +909,9 @@ void index(A& a, std::uint32_t& i, std::vector<T>& table, F row) {
         a.value(i);
     } else if (a.mode == Mode::hash) {
         require(i < table.size(), "gameplay.index", "table index is out of range");
+        if constexpr (std::is_same_v<A, Output>)
+            if (a.cost)
+                ++a.cost->visits;
         row(a, table[i]);
     } else {
         a.value(i);
@@ -923,7 +975,15 @@ template <typename A> void claimRow(A& a, ClaimRow& row, Model& m) {
     require(ns.has_value() == hasKey && (!ns || !ns->empty()), "claims.namespace",
             "namespace presence disagrees with intent");
     if (hasKey) {
-        if constexpr (defersGraphLinks<A>()) {
+        if constexpr (std::is_same_v<A, Output>) {
+            if (a.mode == Mode::hash) {
+                projected(a, 11, 0, {*ns}, &m.graph.requirements[row.requirement].identity);
+            } else {
+                const auto expected = judgement::detail::structuralClaimKey(
+                    *ns, m.graph.requirements[row.requirement].identity);
+                a.ref(11, expected);
+            }
+        } else if constexpr (defersGraphLinks<A>()) {
             std::string key;
             a.ref(11, key);
             row.deferredClaimKey = std::move(key);
@@ -972,10 +1032,21 @@ void requirementRow(A& a, RequirementRecord& v, RequirementIndices& ix, Model& m
         a.value(ix.entity);
     } else if (a.mode == Mode::hash) {
         require(ix.entity < m.entities.size(), "requirements.entity", "dangling entity");
-        const auto bytes =
-            checked(chart::packed::identity_detail::canonicalIdentityBytes(m.entities[ix.entity]));
-        a.count(bytes.size());
-        a.raw(bytes);
+        if constexpr (std::is_same_v<A, Output>) {
+            if (a.cost)
+                ++a.cost->visits;
+            const auto size = checked(
+                chart::packed::identity_detail::canonicalIdentitySize(m.entities[ix.entity]));
+            a.count(size);
+            checked(chart::packed::identity_detail::streamCanonicalIdentity(
+                m.entities[ix.entity],
+                {&a, [](void* context, auto data) { static_cast<Output*>(context)->raw(data); }}));
+        } else {
+            const auto bytes = checked(
+                chart::packed::identity_detail::canonicalIdentityBytes(m.entities[ix.entity]));
+            a.count(bytes.size());
+            a.raw(bytes);
+        }
     } else {
         a.value(ix.entity);
     }
@@ -1653,22 +1724,25 @@ auto staticTables(Model& m, chart::PackedChartLimits limits) -> gp::StaticTables
     counts(m, result.references.size());
     return result;
 }
+void semanticRows(Output& a, Model& m) {
+    globalRow(a, m);
+    a.count(m.graph.requirements.size());
+    for (std::size_t i = 0; i < m.graph.requirements.size(); ++i)
+        requirementRow(a, m.graph.requirements[i], m.indices[i], m);
+    definitions(a, m);
+    coordination(a, m);
+}
+
 auto preimage(Model& m, chart::PackedChartLimits limits) -> Bytes {
     m.bind();
     auto prefix = checked(gp::staticPreimage(m.chart, m.owners, m.candidateRevision));
     bound(prefix.size(), limits.maxPackedDecodedBytes, "packed.budget.decoded_bytes");
-    const auto visitRows = [&prefix](auto& a, auto& model) {
+    return output(Mode::hash, m, limits, nullptr, nullptr, [&prefix](auto& a, auto& model) {
         a.raw(prefix);
-        globalRow(a, model);
-        a.count(model.graph.requirements.size());
-        for (std::size_t i = 0; i < model.graph.requirements.size(); ++i) {
-            requirementRow(a, model.graph.requirements[i], model.indices[i], model);
-        }
-        definitions(a, model);
-        coordination(a, model);
-    };
-    return output(Mode::hash, m, limits, nullptr, nullptr, visitRows);
+        semanticRows(a, model);
+    });
 }
+
 auto framed(std::array<char, 4> code, Bytes payload, std::uint32_t rows,
             chart::PackedChartLimits limits) -> gp::Section {
     bound(16 + payload.size(), limits.maxPackedSectionBytes, "packed.budget.section_bytes");
@@ -2003,6 +2077,8 @@ template <typename T, typename F> auto boundary(F operation) -> core::Result<T> 
         } else {
             return operation();
         }
+    } catch (detail::HashWorkFailure& error) {
+        return core::unexpected(std::move(error.error));
     } catch (Failure& error) {
         return core::unexpected(std::move(error.error));
     } catch (const std::exception&) {
@@ -2099,6 +2175,28 @@ auto encodeGraph(const EncodeRequest& request, GraphWriterLimits graphLimits,
         return out.take();
     });
 }
+auto detail::streamSemanticPreimage(const EncodeRequest& request, gp::SemanticByteSink sink,
+                                    chart::PackedChartLimits limits)
+    -> core::Result<detail::HashCost> {
+    return boundary<detail::HashCost>([&] {
+        auto model = makeModel(request, limits);
+        model.bind();
+        detail::HashCost cost;
+        Output out;
+        out.mode = Mode::hash;
+        out.sink = &sink;
+        out.cost = &cost;
+        gp::SemanticByteSink prefixSink{
+            &out, [](void* context, auto data) { static_cast<Output*>(context)->raw(data); },
+            sink.scratch};
+        checked(gp::streamStaticPreimage(model.chart, model.owners, prefixSink,
+                                         model.candidateRevision));
+        semanticRows(out, model);
+        cost.bytes = out.size;
+        return cost;
+    });
+}
+
 auto semanticPreimage(const EncodeRequest& request, chart::PackedChartLimits limits)
     -> core::Result<Bytes> {
     return boundary<Bytes>([&] {
