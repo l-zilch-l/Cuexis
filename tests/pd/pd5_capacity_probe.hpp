@@ -132,9 +132,21 @@ TEST_CASE("PD5 full content Snapshot Seek Replay boundary", "[.][pd][pd5][capaci
     });
     auto snapshot = trace.run("snapshot", [&] { return trace.take(host->snapshotGameplay()); });
     auto bytes = trace.run("snapshot-encode", [&] { return trace.take(snapshot.toBytes()); });
+    // TEST ONLY: the saved 40k low R4 Snapshot charges 63,782,206 elements, including
+    // header identity bytes. Declare a finite 64 Mi-element workload bound for R4;
+    // revision 3 retains its original declaration. This does not accept production budgets.
+    const GameplayCodecBudget snapshotBudget{268435456, 100000,
+                                             r4 ? 64U * 1024U * 1024U : 20000000U, true};
     const auto decodedSnapshot = trace.run("snapshot-decode", [&] {
-        const auto decodedSnapshot = trace.take(
-            GameplaySnapshot::fromBytes(bytes, content, {268435456, 100000, 20000000, true}));
+        if (r4)
+            std::cout << "PD5_C_SNAPSHOT_DECODE {\"snapshot_bytes\":" << bytes.size()
+                      << ",\"max_bytes\":" << snapshotBudget.maxBytes
+                      << ",\"max_records\":" << snapshotBudget.maxRecords
+                      << ",\"max_elements\":" << snapshotBudget.maxElements
+                      << ",\"test_only\":" << (snapshotBudget.testOnly ? "true" : "false") << '}'
+                      << std::endl;
+        const auto decodedSnapshot =
+            trace.take(GameplaySnapshot::fromBytes(bytes, content, snapshotBudget));
         REQUIRE(decodedSnapshot.valid());
         return decodedSnapshot;
     });

@@ -4,6 +4,8 @@
 
 ## 实施与回归
 
+- [PD-5 Snapshot probe 测试预算最小修复与验证](2026-10-23-snapshot-probe-budget-repair.md)
+
 - [PD-5 现有生命周期最小修复与有界关闭验证](2026-10-23-minimal-lifecycle-repair.md)
 
 - [PD-5 执行内核受控诊断、修复与关闭合同阻塞](2026-10-23-execution-core-diagnostic-and-repair.md)

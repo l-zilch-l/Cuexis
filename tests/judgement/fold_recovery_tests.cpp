@@ -4,6 +4,7 @@
 #include "../../engine/judgement/src/recovery_wire.hpp"
 #include "execution_reference.hpp"
 #include "execution_test_fixture.hpp"
+#include <catch2/matchers/catch_matchers.hpp>
 #include <cuexis/judgement/recovery_codec.hpp>
 
 #include <algorithm>
@@ -578,6 +579,83 @@ TEST_CASE("W2 Replay and full Snapshot roundtrip reject corruption version and b
         std::ofstream snapshot{std::string{path} + ".snapshot", std::ios::binary};
         snapshot.write(reinterpret_cast<const char*>(encoded->data()),
                        static_cast<std::streamsize>(encoded->size()));
+    }
+}
+
+TEST_CASE("W2 element budget counts identity bytes and aggregate nested body elements",
+          "[recovery][codec][element-budget]") {
+    FoldFixture f;
+    auto s = f.session();
+    const auto initial = s.query()->kernelView();
+    const std::vector<std::byte> identity{std::byte{1}, std::byte{2}, std::byte{3}};
+    const std::vector<std::string> strings{"a", "bc"};
+    const std::vector<std::uint64_t> numbers{7, 8};
+    detail::wire::Writer writer;
+    writer(identity, strings, numbers);
+    std::vector<std::byte> decodedIdentity;
+    std::vector<std::string> decodedStrings;
+    std::vector<std::uint64_t> decodedNumbers;
+    // Three identity bytes + two strings + their 1/2 bytes + two numbers = 10 elements.
+    CodecBudget budget{writer.bytes.size(), 100, 10, true};
+    detail::wire::Reader exact{writer.bytes, 0, 0, budget, initial};
+    exact(decodedIdentity);
+    CHECK(decodedIdentity == identity);
+    CHECK(exact.elements == 3);
+    exact(decodedStrings);
+    CHECK(decodedStrings == strings);
+    CHECK(exact.elements == 8);
+    exact(decodedNumbers);
+    CHECK(decodedNumbers == numbers);
+    CHECK(exact.elements == 10);
+    CHECK(exact.pos == writer.bytes.size());
+
+    budget.maxElements = 9;
+    detail::wire::Reader below{writer.bytes, 0, 0, budget, initial};
+    CHECK_THROWS_WITH(below(decodedIdentity, decodedStrings, decodedNumbers),
+                      "codec.budget_exceeded");
+    budget.maxElements = 2;
+    detail::wire::Reader headerBelow{writer.bytes, 0, 0, budget, initial};
+    CHECK_THROWS_WITH(headerBelow(decodedIdentity), "codec.budget_exceeded");
+}
+
+TEST_CASE("W2 Snapshot element budget includes header and body at the exact limit",
+          "[recovery][codec][element-budget]") {
+    FoldFixture f{true};
+    auto s = f.session();
+    REQUIRE(s.submit({raw(900, 1), raw(1000, 2, InputAction::release)}));
+    REQUIRE(s.advance(Tick{1103}));
+    const auto snapshot = s.snapshot();
+    REQUIRE(snapshot);
+    const auto bytes = encodeSnapshot(*snapshot);
+    REQUIRE(bytes);
+    const auto& kernel = snapshot->state().kernel;
+    const auto identityElements = kernel.judgementIdentity.canonicalBytes().bytes().size();
+    const auto headerElements = identityElements + kernel.effectiveFactSemanticRevision.size() +
+                                std::string_view{"canonical.discrete.le.v1"}.size();
+    // Use the existing typed wire helper for the small body; the header charge above is
+    // independent. Public decode must carry that header charge into the body Reader.
+    detail::wire::Writer body;
+    body(snapshot->state());
+    detail::wire::Reader reader{body.bytes, 0, 0, {}, kernel};
+    auto dto = reader.seed<SnapshotDTO>();
+    reader(dto);
+    REQUIRE(reader.pos == body.bytes.size());
+    REQUIRE(reader.elements > 0);
+    const auto totalElements = headerElements + reader.elements;
+    CodecBudget budget{bytes->size(), 100, totalElements, true};
+    const auto decoded = decodeSnapshot(*bytes, f.inputs(), budget);
+    REQUIRE(decoded);
+    CHECK(sameSnapshot(snapshot->state(), decoded->state()));
+    const auto reencoded = encodeSnapshot(*decoded);
+    REQUIRE(reencoded);
+    CHECK(*reencoded == *bytes);
+    for (const auto limit :
+         {identityElements - 1, headerElements, reader.elements, totalElements - 1}) {
+        CAPTURE(limit, headerElements, reader.elements, totalElements);
+        budget.maxElements = limit;
+        const auto rejected = decodeSnapshot(*bytes, f.inputs(), budget);
+        REQUIRE_FALSE(rejected);
+        CHECK(rejected.error().code() == "codec.budget_exceeded");
     }
 }
 
