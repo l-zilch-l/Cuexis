@@ -8,6 +8,8 @@
 
 ## 当前任务
 
+**最新执行状态（2026-10-23）**：已核对并将五文件 Snapshot probe 修复提交为 `54e8c2a1d770a90e1d7a2728f00510b1b19aabaf`。全新 Release STATIC 构建及 source/binary/archive 绑定通过；[新阶段 C invocation](stage_reports/stages/stage-07/pd/2026-10-23-stage-c-snapshot-bound-preflight-stop.md)在 native discovery 前因 `out/pd5-stage-c-snapshot-rerun-20261023/agent-events.jsonl` 保护哈希变化停止。40k low/high 均未运行，未重试，阶段 C 未通过；本轮未验证 Snapshot 解码、Replay/Seek 或显式 close。R4 TEST ONLY maxElements 确实从 20,000,000 提高至 67,108,864，其余所列预算、生产默认及 revision 3 声明保持。主树保持 F1；公开停止接口方案、旧窗口 3、正式测量/注册、merge/push 继续停止。
+
 **Stage 7-PD / PD-0 testOnly 基线与行为表征、PD-1 发布视图、PD-2 绑定索引/Projection Adapter 的内部实施与本地适用门禁已完成；PD-3-a 已补正 reload 资源 OOM 门禁并经 GPT-6-Luna 复审通过；PD-3-b 状态修订、只读桥与唯一物化器的内部实施、本地适用门禁及独立复审通过；PD-3-c 内部实施与适用本地门禁完成（SDK 0.8.1 已获接受，新建无上下文 GPT-6-Luna 独立审核通过）；PD-4 三项合同/SDK 0.9.0 已获接受，内部实施与适用本地门禁完成，新的无上下文独立复审通过；PD-5 P0 已完成两窗各 36 个正式进程，发现局部性能回归；owner 要求先核查与修复后重新测量；保语义修复 F1 已实施。2026-10-21 有限诊断中 F1/A 的 1–256 对象 read 配对比值为 1.2368–1.3967，各区间下界 >1.10；唯一 C1 候选未满足预登记保留条件，已撤回。公共 ready 因噪声不可判定；57b604d 已完成现有合同内最小生命周期修复，最新 R4 40k low 已通过 advance/query/Snapshot 编码，在 Snapshot 解码处 codec.budget_exceeded 停止，阶段 C 未通过；根因为测试 workload 的元素声明不足，本轮仅提高 R4 probe 的 TEST ONLY maxElements 至 67,108,864 并补边界测试，尚未运行修复后的 40k 或解码保存的 40k wire；公开操作级停止方案继续暂停。原 revision 3 独立核查确认 40k 字典 160048 strings / 120013 refs / 31283429 STR0 bytes，超过冻结联合预算，上限未调。唯一 C2 输出槽候选完成独立 Release 验证及固定 F1 对照，read64 比值 1.0214、区间 0.6515–1.6011 且重复性超限，未达自检；候选留独立分支交回核验，主树保持 F1。原 1.10/15% 与生命周期门禁保留；完整正式接受未完成。**
 
 以下性能结论属于冻结的 PD-0 实施输入，不代表 PD-4 当前源码的正式性能验收。该固定环境与干净重建后的完整注册组满足原定 15% 门槛，owner 最大进程级波动 3.89%，宿主均值最大波动 11.11%。测量前修复并验证了 MSVC/Ninja 编码不一致造成的头文件依赖丢失；历史慢态根因仍未确定，旧失败组和源码绑定失败组均保留。该结论限于已登记的有限 testOnly profile，不接受生产预算或关闭 Stage 7。
