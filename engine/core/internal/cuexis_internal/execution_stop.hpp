@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <cstdint>
+#include <cuexis/core/core_export.hpp>
 #include <exception>
 
 #if defined(CUEXIS_EXECUTION_DIAGNOSTICS_TEST_ONLY)
@@ -29,7 +30,9 @@ struct Context final {
     BoundaryGate* gate{};
 #endif
 };
-inline thread_local Context current;
+// Out-of-line Core storage is shared by host EXEs and Playback DLLs. Header TLS
+// would silently create a separate cancellation context in each Windows module.
+[[nodiscard]] CUEXIS_CORE_API auto context() noexcept -> Context&;
 class Binding final {
     Context previous_;
 
@@ -40,35 +43,37 @@ class Binding final {
                      BoundaryGate* gate = nullptr
 #endif
                      ) noexcept
-        : previous_(current) {
-        current.requested = &requested;
+        : previous_(context()) {
+        context().requested = &requested;
 #if defined(CUEXIS_EXECUTION_DIAGNOSTICS_TEST_ONLY)
-        current.gate = gate;
+        context().gate = gate;
 #endif
     }
     Binding(const Binding&) = delete;
     auto operator=(const Binding&) -> Binding& = delete;
     ~Binding() noexcept {
-        current = previous_;
+        context() = previous_;
     }
 };
 inline void checkpoint() {
+    const auto& current = context();
     if (current.requested && current.requested->load(std::memory_order_acquire)) {
 #if defined(CUEXIS_EXECUTION_DIAGNOSTICS_TEST_ONLY)
-        if (execution_diagnostics::current)
-            execution_diagnostics::current->emit("shutdown-interrupted");
+        if (auto* trace = execution_diagnostics::activeTrace())
+            trace->emit("shutdown-interrupted");
 #endif
         throw Interrupted{};
     }
 }
 inline void timerCheckpoint(std::uint64_t cursor) {
 #if defined(CUEXIS_EXECUTION_DIAGNOSTICS_TEST_ONLY)
+    const auto& current = context();
     if (current.gate && cursor >= current.gate->timerCursor &&
         !current.gate->released.load(std::memory_order_acquire)) {
         current.gate->entered.store(true, std::memory_order_release);
-        if (execution_diagnostics::current) {
-            execution_diagnostics::current->inFlight(cursor);
-            execution_diagnostics::current->emit("test-boundary-held");
+        if (auto* trace = execution_diagnostics::activeTrace()) {
+            trace->inFlight(cursor);
+            trace->emit("test-boundary-held");
         }
         while (!current.gate->released.load(std::memory_order_acquire) && current.requested &&
                !current.requested->load(std::memory_order_acquire))

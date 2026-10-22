@@ -12,6 +12,7 @@ enum class Part { copy, timers, validate, ledger, reserve, foldCopy, fold, idleD
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
+#include <cuexis/core/core_export.hpp>
 #include <exception>
 #include <functional>
 #include <mutex>
@@ -35,9 +36,12 @@ inline auto enabled() noexcept -> bool {
 #endif
 }
 struct Trace;
-inline thread_local Trace* current{};
-inline std::mutex outputMutex;
-inline std::atomic<std::uint64_t> nextId{};
+struct ObserverState final {
+    std::mutex outputMutex;
+    std::atomic<std::uint64_t> nextId{};
+};
+[[nodiscard]] CUEXIS_CORE_API auto observerState() noexcept -> ObserverState&;
+[[nodiscard]] CUEXIS_CORE_API auto activeTrace() noexcept -> Trace*&;
 struct Trace final {
     const char* name;
     Trace* previous;
@@ -48,12 +52,12 @@ struct Trace final {
     std::array<std::uint64_t, static_cast<unsigned>(Part::count)> calls{}, nanoseconds{};
     explicit Trace(const char* stage, std::int64_t target = 0, std::uint64_t count = 0,
                    std::uint64_t request = 0) noexcept
-        : name(stage), previous(current), recording(enabled()), timers(count), job(request),
+        : name(stage), previous(activeTrace()), recording(enabled()), timers(count), job(request),
           horizon(target), exceptions(std::uncaught_exceptions()) {
         if (recording) {
-            id = ++nextId;
+            id = ++observerState().nextId;
             started = now();
-            current = this;
+            activeTrace() = this;
             emit("begin");
         }
     }
@@ -61,7 +65,7 @@ struct Trace final {
         if (!recording)
             return;
         try {
-            std::lock_guard lock(outputMutex);
+            std::lock_guard lock(observerState().outputMutex);
             std::fprintf(stderr,
                          "EXECUTION_DIAGNOSTIC {\"stage\":\"%s\",\"state\":\"%s\","
                          "\"id\":%llu,\"job_id\":%llu,\"parent_id\":%llu,\"thread\":%llu,\"time_"
@@ -112,12 +116,12 @@ struct Trace final {
     ~Trace() noexcept {
         if (recording) {
             emit(std::uncaught_exceptions() > exceptions ? "unwinding" : "end");
-            current = previous;
+            activeTrace() = previous;
         }
     }
 };
 struct PartScope final {
-    Trace* trace{current};
+    Trace* trace{activeTrace()};
     unsigned part;
     std::int64_t started{};
     explicit PartScope(Part value) noexcept : part(static_cast<unsigned>(value)) {

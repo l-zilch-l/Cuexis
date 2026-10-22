@@ -60,7 +60,8 @@ class Trace final {
         if (!result) {
             if (enabled_) {
 #if defined(CUEXIS_EXECUTION_DIAGNOSTICS_TEST_ONLY)
-                std::lock_guard outputLock(cuexis::internal::execution_diagnostics::outputMutex);
+                std::lock_guard outputLock(
+                    cuexis::internal::execution_diagnostics::observerState().outputMutex);
 #endif
                 for (const auto* error = &result.error(); error; error = error->cause()) {
                     std::cout << "PD5_C_ERROR {\"code\":";
@@ -94,7 +95,8 @@ class Trace final {
         if (!enabled_)
             return;
 #if defined(CUEXIS_EXECUTION_DIAGNOSTICS_TEST_ONLY)
-        std::lock_guard outputLock(cuexis::internal::execution_diagnostics::outputMutex);
+        std::lock_guard outputLock(
+            cuexis::internal::execution_diagnostics::observerState().outputMutex);
 #endif
         std::cout << "PD5_C_STAGE {\"stage\":";
         jsonString(std::cout, stage);
