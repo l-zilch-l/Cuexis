@@ -2,8 +2,8 @@
 
 #include <cuexis/runtime/runtime_session.hpp>
 #include <cuexis/runtime/transaction_access.hpp>
-#include <cuexis_internal/presentation_metrics.hpp>
 #include <cuexis_internal/allocation_observer.hpp>
+#include <cuexis_internal/presentation_metrics.hpp>
 
 #include <cuexis/animation/animation_program.hpp>
 #include <cuexis/animation/animation_system.hpp>
@@ -657,13 +657,20 @@ void installRuntimeState(RuntimeEvaluationState& state, world::detail::Transform
     structure("candidate.runtime", 1, 1);
     structure("candidate.cameras", state.cameras.size(), state.cameras.capacity());
     structure("candidate.appearances", state.appearances.size(), state.appearances.capacity());
-    structure("candidate.animation-bindings", state.animationBindings.size(), state.animationBindings.capacity());
-    structure("candidate.animation-baselines", state.animationBaselines.size(), state.animationBaselines.capacity());
-    structure("candidate.animation-contributions", state.animationLayerContributions.size(), state.animationLayerContributions.capacity());
-    structure("candidate.host-overrides", state.hostOverrides.size(), state.hostOverrides.capacity());
-    structure("candidate.preview-overrides", state.previewOverrides.size(), state.previewOverrides.capacity());
-    structure("candidate.gameplay-writes", state.gameplayWrites.size(), state.gameplayWrites.capacity());
-    structure("scratch.runtime-transform-writes", state.transformWrites.size(), state.transformWrites.capacity());
+    structure("candidate.animation-bindings", state.animationBindings.size(),
+              state.animationBindings.capacity());
+    structure("candidate.animation-baselines", state.animationBaselines.size(),
+              state.animationBaselines.capacity());
+    structure("candidate.animation-contributions", state.animationLayerContributions.size(),
+              state.animationLayerContributions.capacity());
+    structure("candidate.host-overrides", state.hostOverrides.size(),
+              state.hostOverrides.capacity());
+    structure("candidate.preview-overrides", state.previewOverrides.size(),
+              state.previewOverrides.capacity());
+    structure("candidate.gameplay-writes", state.gameplayWrites.size(),
+              state.gameplayWrites.capacity());
+    structure("scratch.runtime-transform-writes", state.transformWrites.size(),
+              state.transformWrites.capacity());
     static_assert(std::is_nothrow_move_assignable_v<world::OverrideToken>);
     plan.apply();
     installPresentation(state);

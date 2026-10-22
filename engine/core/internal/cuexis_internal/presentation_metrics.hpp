@@ -31,8 +31,8 @@ enum class Stage : unsigned {
     count
 };
 inline constexpr std::array names{
-    "judgement",          "projection",      "runtime",         "snapshot", "renderer",
-    "runtime_state_copy", "runtime_prepare", "runtime_commit",  "feedback", "receipt",
+    "judgement",          "projection",      "runtime",          "snapshot", "renderer",
+    "runtime_state_copy", "runtime_prepare", "runtime_commit",   "feedback", "receipt",
     "ledger_take",        "ledger_publish",  "renderer_present", "queue"};
 struct Samples final {
     // A separate observer process owns this bounded storage. The largest declared
@@ -121,7 +121,8 @@ inline void observe(Stage stage, double inclusive, double exclusive,
 class Timer final {
   public:
     explicit Timer(Stage stage) noexcept : stage_(stage) {
-        enabled_ = metrics.path && metrics.recording && processRecording.load(std::memory_order_acquire);
+        enabled_ =
+            metrics.path && metrics.recording && processRecording.load(std::memory_order_acquire);
         if (enabled_) {
             parent_ = active_;
             active_ = this;

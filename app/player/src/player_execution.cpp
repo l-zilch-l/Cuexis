@@ -266,7 +266,8 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
                     quitting = true;
                 else if (actions.size() < 64) {
 #if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
-                    if (action == PlayerInputAction::PlayPause || action == PlayerInputAction::Reload)
+                    if (action == PlayerInputAction::PlayPause ||
+                        action == PlayerInputAction::Reload)
                         pd5Trace.action(action == PlayerInputAction::Reload,
                                         host && host->state() == HostState::paused);
 #endif
@@ -325,7 +326,8 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
                             event.rawTimestamps.audioFrame = clock->presented->frame;
                         auto captured = host->capture(std::move(event));
 #if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
-                        if (captured) pd5Trace.captured();
+                        if (captured)
+                            pd5Trace.captured();
 #endif
                         if (!captured) {
                             if (host->tail() &&

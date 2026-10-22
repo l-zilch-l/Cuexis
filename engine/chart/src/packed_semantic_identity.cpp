@@ -448,9 +448,9 @@ auto writeStaticHeader(Preimage& out, const CanonicalSemanticChart& chart, bool 
     unique(derived);
     unique(declared);
     if (derived != declared)
-        return core::unexpected(
-            fail("packed.identity.closure", "The declared resource closure must equal the closure "
-                                            "derived from the chart's asset references"));
+        return core::unexpected(fail("packed.identity.closure",
+                                     "The declared resource closure must equal the closure "
+                                     "derived from the chart's asset references"));
     std::uint32_t assetCount = 0;
     for (std::size_t i = 0; i < derived.size(); ++i)
         if (i == 0 || derived[i].id != derived[i - 1].id)
