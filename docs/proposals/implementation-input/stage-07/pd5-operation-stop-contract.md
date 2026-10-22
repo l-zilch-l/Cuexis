@@ -9,6 +9,8 @@
 保留 `be84f7a` 内核修复、现有 owner/thread/fence/Closing 规则和禁止私有导出规则。
 不恢复已撤回的 `3df6046`、`9d51cd3`；不引入全局、进程注册表或 TLS 停止通道。
 现行 API 和关闭行为在接受、实施及验证之前保持原样。
+本轮生命周期/错误路径收敛从干净 `ea60b1fbe9d18f39f0d001126f775e76eec91578` 开始；
+以下源码审计是静态证据，不表示失败注入或新关闭实现已经通过。
 
 现行权威是 [ADR 0033](../../../adr/0033-cpp-shared-library-preview-boundary.md)、
 [实时宿主边界 §2/§5/§7](../../../api/realtime-host-boundary.md)、
@@ -279,7 +281,25 @@ owner 在更新这些记录后才发布 channel reply；未能可靠发布时保
 hash 入口新增适配缓冲仍纳入既定同一 scratch 账本，不能改名为 operation 存储绕过预算；
 七项物理预算和四维 accepted ceilings 均不提高。实现时需列真实分配及边界失败清理证据。
 
-## 7. 两阶段关闭与析构前置条件
+## 7. 生命周期、错误收尾与析构前置条件
+
+### 7.1 线程寿命与 Host 状态分开
+
+下表是拟议的 worker 寿命合同，不新增 Playback 执行状态，也不把 HostState::closed 当作线程证明。
+成功创建线程的事实须单独保留；不能只凭 exited=false 判定它仍在运行。
+
+| worker 状态 | 确认依据与允许的清理 |
+| --- | --- |
+| NotStarted（未启动） | 从未成功取得线程；可能尚未构造 delivery，也可能 std::thread 创建失败。只清理已构造成员，不访问空 delivery、不等 exited、不 join；可正常销毁 |
+| Running（运行中） | 已成功启动，尚无 owner 退出确认；即使空闲、SDK 返回或装配尚未完成，也存在活动 owner，不能销毁包装 |
+| Closing | 已发出显式关闭意图，关闭普通 admission，但保留必要 control/query/cleanup；worker 可能仍执行或阻塞，不能销毁包装 |
+| Exited（已退出） | owner 对象与资源已经在正确线程清理，终态已保存，再 release 发布退出、由宿主 acquire 确认；线程句柄仍可能 joinable，不等于已 join |
+| Joined（已 join） | 已确认 Exited 并成功 join，句柄不再 joinable；可释放线程包装，Host 还须满足独立责任域收尾条件 |
+
+普通路径为 NotStarted → Running → Closing → Exited → Joined；启动后的 owner 初始化失败也可
+Running → Exited，但须记录实际启动失败、清理部分构造成员并发布终态。线程可能在工厂交出 Host
+前已退出，不能用“工厂返回成功”代替 Running/Exited 的真实观察。构造函数未完成时，只有已构造
+成员展开，没有完整对象析构；尚未启动的失败无须伪造 Exited/Joined。
 
 拟议宿主顺序为：明确 beginShutdown → 关闭普通 admission 并保持 Closing → 请求当前 SDK source 停止 →
 owner 取得实际结局并终结/回复原 job → 沿预留的 control/query/cleanup 通道完成原 Close/K1 及责任域确认 →
@@ -295,14 +315,61 @@ requestShutdown 在锁内标 Closing 并复制当前 source，在锁外 requestS
 锁内不执行 SDK/provider、等待、join 或用户回调；它是实例内控制交接，不是全局停止通道。
 排队未开始 job 在原 ID 下终结，已执行 job 不伪报未执行；owner 仍负责其全部对象析构。
 
-worker exited 和单次 SDK 返回是两件事；后者不能确认 renderer/audio 退出，不能将 Host 改成 Closed。
-未确认退出或 provider 仍阻塞时，保留 Closing 以及 owning 对象，继续泵/查询，不进入析构。
+### 7.2 现行返回/展开路径审计与后续责任
 
-**推荐的析构合同也须 owner 接受**：SessionWorker/宿主包装仅允许在 exited 已确认后析构，
-析构只 join 已退出线程；强行丢弃仍在运行的 owner 属宿主合同违例，采用 noexcept fail-fast，
-不恢复无限等待、不 detach、不释放线程仍访问的内存。此为新前置条件，不是已经实施的行为。
-正常关闭必须用显式两阶段 API 完成；fail-fast 不是合法超时处理、不是 worker 退出证明。
-它不改变 PlaybackSession/PreparedPlayback 必须在创建 owner 上析构的旧规则。
+以下位置以本轮固定基线为准，指出待实施缺口；本轮不修产品代码。
+
+| 调用方/位置 | 当前可达路径与缺口 | 接受后必须承担收尾的 owner |
+| --- | --- | --- |
+| [SessionWorker::create / 析构 / requestShutdown](../../../../app/execution_host/session_worker.cpp) | create 在 worker 分配后才创建 delivery，再启动 thread。delivery 创建失败会返回错误、展开 worker；现析构无条件 requestShutdown，而该函数无条件访问 delivery_。线程创建抛异常时则 delivery 已存在、thread 未启动；构造中途抛异常只展开已构造成员。不能以同一个 exited 前置条件覆盖三者 | 工厂内 construction owner 区分 NotStarted；未启动资源必须可局部、空值安全地清理，不调用活动 owner 的关闭协议。FrameDelivery::create 的零 consumers 等返回错误可静态到达上述缺口，尚未做运行复现 |
+| [ExecutionHost::create / 构造](../../../../app/player/src/execution_host.cpp) | 先 SessionWorker::create 启动线程，之后 new Host/成员装配仍可能失败；catch 返回裸错误，局部/成员 unique_ptr 展开会落入现有 worker 析构 join。尚未交出 Host 不代表未启动 | 工厂持有 construction owner；推荐先装配 Host 外壳、ports、renderer 借用和全部可失败资源，最后启动 worker，并用 noexcept 所有权交接完成发布。后启动异常不得随错误返回丢失活动 owner，见下文 |
+| [Host load](../../../../app/player/src/execution_host.cpp)、[AudioWorker::start](../../../../app/execution_host/audio_worker.cpp)、[Player audio factory](../../../../app/player/src/player_execution.cpp) | load 才启动可选 audio owner；线程创建失败、设备/provider/decoder 的 Result 错误或捕获异常会沿 audio reply/load 返回，先前 session worker 仍可能存活。AudioWorker 未启动失败也不能套用 exited=true 条件 | 已交出的 Host 仍由 Player/test 持有，保留各 worker 的独立寿命和已生效 load 阶段；音频设备/transport 的部分构造在其实际 owner 上清理，设备失败不隐式终止别的 owner |
+| [Player runExecutionPlayer](../../../../app/player/src/player_execution.cpp) | load 中 Host 创建后，内容读取/load、advance、sample/present、reload 的 close 或最终 close 均可经 take 抛 Failure。函数级 catch 在体内局部变量展开后才接住；不能再持有 Host 驱动收尾。host 早于 actions 等泵所借用变量声明，故展开中的 Host 析构也不能假设这些捕获仍存活 | Player 的外层寿命持有者保留 Host、ports/pump 的全部捕获、backend/window/runtime；操作置于其内部 try/catch。保存首错后转入关闭驱动，不在此处直接返回 Result<void> 或重建 backend |
+| [PD capacity](../../../../tests/pd/pd5_capacity_probe.hpp)、[Trace](../../../../tests/pd/pd5_capacity_r4_support.hpp) | Trace::take 把错误记录后抛异常；Trace::run 记录失败再重抛，REQUIRE 也可能展开。显式 host-close/diagnostic-close 仅在已到达该步骤时执行；当前无覆盖失败路径的外层持有者 | test case 的外层寿命持有者保存 fixture/renderer/Host、原始错误或 exception_ptr 与实际阶段；内层执行测试，退出内层后先驱动关闭/查询/最终 join，再重抛原断言或报告失败 |
+| [PD host probe](../../../../tests/pd/pd5_host_probe.cpp)、[host delivery probe](../../../../tests/pd/host_delivery_probe.cpp) | pd5Take/take 或 REQUIRE 可跳过尾部 close；host probe reset 分支也是 close 成功后才 reset，失败仍展开。各自局部 Host 的应急析构不能替代显式收尾 | 同一测试 owner 在失败后继续持有 Host 及 renderer/设备上下文；重置/重载前必须完成旧 Host 关闭和 join。无设备 probe 可无平台泵，但仍需驱动/查询控制与退出 |
+| [PD matrix probe](../../../../tests/pd/pd5_matrix_probe.cpp) | 主 matrix case 直接持有 owner-thread PlaybackSession/renderer/delivery，没有 SessionWorker；尾部 renderer.close 同样会被异常跳过。非 device 目标另 include capacity case，后者按上行处理 | 主 matrix 的 Session 在创建线程清理，renderer 生命周期/显式 close 仍受测试外层持有者保护；不把它误记为异步 Host worker，也不为了本方案更改共享 fixture |
+
+工厂推荐采取 **start-last**：construction owner、泵上下文和失败记录先就位，线程启动成功之后
+不再做可失败的主线程装配/分配，仅执行已证明 noexcept 的交接；worker 自身初始化失败由 worker
+记录、在 owner 上展开后发布 Exited。若仍存在启动后装配/发布失败，必须由工厂仍然持有的 construction
+owner 在内部捕获、驱动 Closing、泵主线程并保存终态，直至安全 join 后才返回错误；其清理不能靠
+guard 析构临时启动，也不能将活动 unique_ptr 藏在已返回的 unexpected 中或交给全局回收器。
+尚无已发布的软件/设备会话时只做对应的局部关闭，不虚构 K1/设备确认。
+工厂若要提前返回，必须另有已明确交给调用方的 owning Closing 对象；当前裸 Result<unique_ptr<Host>>
+错误分支没有这种能力，本方案推荐不增加第二种工厂返回协议。
+
+Player/测试的关闭驱动在原 owner 上运行：关闭普通操作接纳，登记首个业务失败与原 job/request/StepKey，
+显式请求协作停止，推进原 Close/K1，继续泵必要的主线程/设备事件、查询原 ID 的真实终态并保留 owning
+前缀，最后确认退出和 join。关闭期泵不再排入 reload/advance/普通输入；pump 的错误作为次级收尾诊断
+保存，不能抛出越过寿命持有者或覆盖首错。不能通过新 ID 重做原失败操作来“查询”结果。
+close 返回 Pending 或其他尚未确认关闭的错误后，继续保留同一持有者和上下文，推进/查询原关闭操作；
+不 reset Host、不卸载 DLL、不提前释放 renderer/ports，也不在下一轮无条件创建新的 Close/K1。
+SDK 会话销毁前取得终态副本，销毁后只查询宿主已保留记录，不能调用已销毁的 Session。
+
+当前 Player 的 Result<void> 和测试的普通返回都不能承载活动 Host；因此关闭尚未确认时不能用该返回
+退出持有者作用域。保持 Closing、继续有节制地等待/泵/查询；provider/allocator/系统调用阻塞可能使
+它长期不能返回，协作停止不提供固定退出时限。测试框架可展开的断言/C++ 异常须延后重抛；清理阶段
+避免新的致命断言跳过 join。abort、不可恢复硬断言、OS 强杀不承诺执行 C++ 收尾，外部测试观察只能
+记录未确认退出，不能据进程消失宣称 close/join 成功。
+
+### 7.3 合法销毁与 fail-fast 的严格适用域
+
+**以下为待 owner 接受的前置条件，须先完成上面的调用方迁移才能启用违例处理：**
+
+- NotStarted 的完整包装可正常销毁；部分构造成员按 C++ 规则清理。线程创建失败和资源装配失败
+  本身是普通错误，不要求 exited=true，也不触发 fail-fast。
+- 已启动的 SessionWorker 包装须先确认 Exited；可由显式 joinExited 转为 Joined，析构最多只 join
+  已确认 Exited 的句柄。Exited 与 Joined 仍分别记录，不把析构开始当作退出证明。
+- Host 析构前还须保存终态、完成适用的软件/设备责任域确认，并确认全部 worker Exited 或 Joined。
+  推荐显式完成 join；析构至多补 join 已确认 Exited 的 worker，包装释放前全部转为 Joined，不等待 Running/Closing。
+  owner-bound 对象仍在创建 owner 释放；无会话的启动失败按实际构造范围清理，不强求不存在的 Close 证据。
+- 只有调用方违反上述已明确前置条件、强行销毁仍活动的 owner，才属于 noexcept fail-fast 的候选违约场景；
+  不 detach、不释放线程仍访问的内存。实现前还须验证所有内置错误路径符合前置条件。
+
+普通 Result 错误、advance 失败、超时、close Pending、OOM、可展开的断言/异常、provider 阻塞均不是
+fail-fast 触发条件。不得把“处理错误时栈展开至析构”当作正常收尾策略，再把该错误自动升级为违约终止。
+超时本身不请求取消；上述显式关闭意图才请求停止。未确认 owner 退出、终态或责任域确认时保持 Closing，
+即使超时反复发生也不自动 fail-fast。它不改变 PlaybackSession/PreparedPlayback 在创建 owner 上析构的旧规则。
 
 ## 8. 后续验证矩阵（本轮不执行）
 
@@ -323,11 +390,18 @@ barrier/计数器仅测试构建，需被显式启用且正常产品构建不存
 | V8 | Waiting 返回后的旧 source、delivery 新 source、重复 token、原 ID 重传/ACK/retire | 旧 token 不控制未来调用；新 token 停止间接执行；尚未开始的逻辑 request 保持 Waiting，原 Close/K1 后才有取消终态；已执行的 Failed 前缀可查；重复不重跑，retired prefix 拒绝旧 ID |
 | V9 | route Applied 后 Resume 中断；Seek 已 fence 后中断；仅输入已承认 | A1/ResumeAborted、Suspended/Closing 和原 StepKey 不丢；不谎报 CanceledNotApplied 或全局回滚 |
 | V10 | 两阶段 shutdown 的 publish-source/close-admission 竞态、队列剩余 job、所有子调用间隙 | 无遗漏当前 source、无新作业开始；每个已接纳 ID 有真实终态或明确 pending，无复活 |
-| V11 | Source/Token 不同顺序销毁、不同线程不同副本、候选/Prepared/Session 析构和最终 join | 无 UAF/跨 owner 析构；worker 内全部析构先于 exited；只在 exited 后 join；强行错误析构的 fail-fast 单独子进程验证 |
+| V11 | Source/Token 不同顺序销毁、不同线程不同副本、候选/Prepared/Session 析构和最终 join | 无 UAF/跨 owner 析构；worker 内全部析构先于 exited；只 join 已确认退出线程；只有违反 §7.3 前置条件的强行析构才单独子进程验证 fail-fast |
 | V12 | 可控 provider/分配器/system-call barrier（有限释放，不模拟可任意打断） | 停止不假装中断阻塞；未释放时 Closing、无假 exited/Closed；释放后 checkpoint/清理/正常 join 可观测；不靠测试超时证明成功 |
 | V13 | source.create/适配器预留/发布/前缀包装 OOM，重复请求与错误清理 | 无泄漏、无 stop-path 深拷贝；原错误/context/cause 保留；无可靠终态时不确认 Close；完整分配/预算清单可审阅 |
 | V14 | 无 token 的旧 golden/拒绝/Replay-Snapshot bytes、R4 metadata 顺序/单次 SHA、预算边界 | 字节/身份/预算/旧拒绝不变；停止时丢弃不完整 SHA，不产生第二编码器；R4 没有被旁路 |
 | V15 | 新 candidate 安装消费者、SHARED exports/imports/不兼容包拒绝、架构/格式/文档、相关 Release 回归 | 只导出真实 public stop classes/重载；candidate OFF 不暴露；内部 Judgement/Runtime/worker 不泄漏；版本决定先接受再实施 |
+| V16 | 启动前参数拒绝、成员部分构造/OOM、FrameDelivery 失败、std::thread 创建失败 | NotStarted 可正常销毁；只清理已构造成员，空 delivery 不访问，无 join/等待 exited/stop/fail-fast；保留原始启动错误 |
+| V17 | Host 启动后装配/发布失败、worker owner 初始化失败 | 证明 start-last 的分配顺序；对残余后启动故障注入，construction owner 保活并泵/查询，原错误保留，owner 清理→Exited→Joined 后才能返回错误，无提前展开活动 owner |
+| V18 | load/首次及后续 advance 的 Result 错误与 Player/test take 抛出 | 首错、实际阶段、原 ID 与 sealed prefix 保留；外层持有者不丢 Host；显式关闭前不因失败自行取消，关闭后只终结适用的原请求；无 fail-fast |
+| V19 | close 返回 Pending、pump 返回错误、provider barrier 导致关闭不能完成 | 未释放 barrier 时仍 Closing，Host/回调捕获/renderer/DLL 保活；次级错误不覆盖首错；继续原操作终态查询，无新 Close ID/普通任务；释放后真实确认退出并 join |
+| V20 | Player 与三类 Host probe 的可展开 REQUIRE/异常退出、reload close 失败 | 关闭驱动运行时所有泵捕获仍有效；先保存断言/exception_ptr，后收尾，再重抛/返回错误；清理无新致命断言绕过 join；硬 abort 只记录非正常退出，不伪造成功 |
+| V21 | 正常关闭后析构、未发布会话的启动失败、已 Exited 尚未 join 的销毁 | 分别观察 NotStarted 或 Running/Closing/Exited/Joined；worker 内析构、exited 发布、join、包装/设备释放有序且各一次；无会话不造 K1；未启动与普通错误路径不进入 fail-fast |
+
 
 终态验证同时断言 code/message/fieldPath/category/severity/faulted/sourceCode/cause、原 ID、
 实际 failedTick/faultStage、prefixTarget/effects、query 结果和退出状态，不能只以进程返回 0 判定。
@@ -343,25 +417,48 @@ barrier/计数器仅测试构建，需被显式启用且正常产品构建不存
 | `docs/adr/0033-cpp-shared-library-preview-boundary.md` | 若需补例，只说明新增的是实际 public 类型；禁止私有导出正文不放宽 |
 | `engine/playback/include/cuexis/playback/operation_stop.hpp`（拟新增），`gameplay_candidate.hpp`、`playback_source.hpp`、`playback_session.hpp`；`engine/playback/CMakeLists.txt` 与 `cmake/VerifySharedExports.cmake` | 上述两类 owning handles、output record、E 表 overload；只 candidate 安装；真实公开符号的精确清单 |
 | Playback/内部 Scheduler、session/kernel、recovery codec | 一份显式 borrowed context 和统一操作边界；结果/停止适配不复制语义编码；内部函数不加 DLL export |
-| `app/execution_host`、Player Host | 实例内 active source 交接、Result+receipt 归原 job 账本、两阶段关闭与析构检查 |
-| 包版本与消费门禁 | 本轮不改 SDK/日期版本；此新增 public candidate surface 属 API 合同扩展，后续实施前 owner 单独接受 preview 版本及包兼容处置 |
+| `app/execution_host`、Player Host/Player、PD probes | 实例内 active source 交接、原 job 账本、五态寿命/start-last、外层持有者与显式关闭驱动；先迁移全部失败路径再启用析构违例检查 |
+| 包版本与消费门禁 | 推荐下述 SDK API 0.10.0 一次性裁决；接受后统一更新 SDK 元数据/安装消费者/导出与兼容拒绝门禁，本轮不改 SDK/日期版本 |
 
 主要成本是 E 表的参数贯通、live/candidate/codec 的失败适配和两种链接模式矩阵。
 通过一个内部 context、一个 public receipt 定义、既有 ID 账本和同一 semantic codec 控制维护面；
 不追加全局缓存、回调系统、每会话跨线程 mutation API、第二份调度器或新异步 query 服务。
 没有 token 的路径须维持快速 NoStop 分支；检查开销只做受控观察，不产生正式性能接受结论。
 
+### 9.1 推荐版本与包兼容处置（待一次性裁决）
+
+推荐 **candidate SDK API 0.10.0**，不在 0.9.x 内追加这组类型/overload 与更严格的宿主销毁前置条件。
+依据 [ADR 0030](../../../adr/0030-playback-preview-api-version-and-result.md) 和
+[ADR 0033](../../../adr/0033-cpp-shared-library-preview-boundary.md)：这是新增公开 preview 合同，
+当前仍为 matching-toolchain C++ preview；现有 `CMakeLists.txt` 使用 SameMinorVersion，
+`cmake/CuexisLibraryType.cmake` 的 SHARED 名称/SOVERSION 使用 SDK major.minor。
+
+| 组合 | 推荐处置 |
+| --- | --- |
+| 原 0.9 consumer + 原 0.9 包 | 保持原合同；不回填 fail-fast 或悄然改变关闭行为 |
+| 请求 0.10 的 consumer + 0.9 包；请求 0.9 的 consumer + 0.10 包 | SameMinorVersion 双向拒绝跨 minor 的带版本请求；分别做负向 configure 检查，不以手工链接侥幸成功作为兼容 |
+| 0.9 源码迁移到 0.10 candidate | 原无 token overload 保留签名/NoStop 与既有 wire 行为；需要全量重新编译，Host 错误收尾按 §7 迁移，不承诺免改宿主集成或二进制替换兼容 |
+| 0.10 candidate STATIC / Windows SHARED | 同一 SDK minor、同一 package build、matching toolchain/runtime/config；独立干净 build/install/consumer。SHARED 以 `-candidate-0.10` 身份区分，不混用旧头/库/DLL |
+| candidate OFF 或未声明接受 experimental 的 consumer | 不安装/导出 stop surface；沿现有 build-flavor/experimental 同意门禁拒绝候选包误消费，不伪装为稳定 SDK |
+
+未来验证消费者使用 `find_package(Cuexis 0.10.0 EXACT CONFIG REQUIRED ...)` 固定本次候选，
+并检查 package build/flavor、头/导入库/实际 DLL 身份；EXACT 版本自身不证明这些身份。
+保留仓库 SameMinorVersion 规则，不引入只针对 stop API 的第二套包版本或独立 stop DLL。
+SDK API 值、生成头、包版本/库名、安装 consumer 和负向兼容测试须在接受后同一轮实施/验证；
+日期构建身份按独立版本政策处置，不随本建议自动改变。Capsule revision、Gameplay.2、Replay/Snapshot
+wire、golden、七项物理预算、四维 ceilings 和 1.10/15% 门禁均不变化。
+
 ## 10. 本次交回与待接受项
 
-提交范围仅本方案、索引与 CURRENT_STATUS；没有修改 C++、CMake、SDK/版本、golden、冻结证据。
-本轮实际只做静态调用审计、文档检查和 git diff 检查；V1–V15 全部为后续计划，未执行。
+本轮提交范围仅本方案与 CURRENT_STATUS；已有索引保留。没有修改 C++、CMake、SDK/版本、golden、冻结证据。
+本轮实际只做静态调用审计、文档检查和 git diff 检查；V1–V21 全部为后续计划，未执行。
 未运行 40k，未进入阶段 C，未创建正式 preparation/registration，旧窗口 3 保持停止。
 
 请核验以下一组方案决定后再授权实现：
 
 1. 同步操作级 public owning token；Waiting 后用后续同步调用的新 token，保留原逻辑 ID。
 2. 同 Result 签名加显式 output operation record、首错/前缀/实际效果及 completion-versus-stop 规则。
-3. 明确两阶段关闭，未退出保留 Closing；已退出才析构/join，违约强行析构采用 fail-fast。
-4. 以 V1–V15 和公开 candidate API/包兼容决定作为后续实施入口，保持禁止私有导出及所有冻结预算。
+3. §7 五态寿命、start-last 与错误收尾持有者；NotStarted 正常销毁，活动 owner 保持 Closing；仅明确的销毁前置条件违例采用 fail-fast。
+4. 一并裁决 §9.1 的 candidate SDK API 0.10.0/包兼容建议，以 V1–V21 为后续实施入口，保持禁止私有导出及所有冻结预算。
 
 本次提交不代表这些决定已被接受，也不授权恢复候选或继续阶段 C。
