@@ -4,6 +4,7 @@
 #include "../../engine/gameplay_packed/src/semantic_stream_internal.hpp"
 #include <algorithm>
 #include <array>
+#include <cuexis_internal/execution_diagnostics.hpp>
 #include <cuexis_internal/sha256.hpp>
 #include <fstream>
 #include <iostream>
@@ -58,6 +59,9 @@ class Trace final {
     template <class T> auto take(cuexis::core::Result<T> result) -> T {
         if (!result) {
             if (enabled_) {
+#if defined(CUEXIS_EXECUTION_DIAGNOSTICS_TEST_ONLY)
+                std::lock_guard outputLock(cuexis::internal::execution_diagnostics::outputMutex);
+#endif
                 for (const auto* error = &result.error(); error; error = error->cause()) {
                     std::cout << "PD5_C_ERROR {\"code\":";
                     jsonString(std::cout, error->code());
@@ -89,6 +93,9 @@ class Trace final {
     void emit(std::string_view stage, std::string_view state, std::string_view message = {}) {
         if (!enabled_)
             return;
+#if defined(CUEXIS_EXECUTION_DIAGNOSTICS_TEST_ONLY)
+        std::lock_guard outputLock(cuexis::internal::execution_diagnostics::outputMutex);
+#endif
         std::cout << "PD5_C_STAGE {\"stage\":";
         jsonString(std::cout, stage);
         std::cout << ",\"state\":";
