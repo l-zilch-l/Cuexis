@@ -4,6 +4,8 @@
 
 ## 实施与回归
 
+- [PD-5 执行内核受控诊断、修复与关闭合同阻塞](2026-10-23-execution-core-diagnostic-and-repair.md)
+
 - [PD-5 阶段 C：原样 40k R4 功能验收阻塞交回](2026-10-22-gameplay-admission-stage-c.md)
 
 - [PD-5 阶段 B：R4 metadata 拒绝顺序修复](2026-10-22-gameplay-admission-r4-metadata-order.md)

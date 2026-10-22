@@ -2,13 +2,13 @@
 
 状态：current
 
-更新日期：2026-10-22
+更新日期：2026-10-23
 
 本文只维护当前阶段、正在进行的任务和未解决的问题。实施与测量细节见带日期的阶段报告。
 
 ## 当前任务
 
-**Stage 7-PD / PD-0 testOnly 基线与行为表征、PD-1 发布视图、PD-2 绑定索引/Projection Adapter 的内部实施与本地适用门禁已完成；PD-3-a 已补正 reload 资源 OOM 门禁并经 GPT-6-Luna 复审通过；PD-3-b 状态修订、只读桥与唯一物化器的内部实施、本地适用门禁及独立复审通过；PD-3-c 内部实施与适用本地门禁完成（SDK 0.8.1 已获接受，新建无上下文 GPT-6-Luna 独立审核通过）；PD-4 三项合同/SDK 0.9.0 已获接受，内部实施与适用本地门禁完成，新的无上下文独立复审通过；PD-5 P0 已完成两窗各 36 个正式进程，发现局部性能回归；owner 要求先核查与修复后重新测量；保语义修复 F1 已实施。2026-10-21 有限诊断中 F1/A 的 1–256 对象 read 配对比值为 1.2368–1.3967，各区间下界 >1.10；唯一 C1 候选未满足预登记保留条件，已撤回。公共 ready 因噪声不可判定，旧 revision 3 的 40k Gameplay-host 在 Packed 编码准入失败；本轮 R4 已通过编码/Reader/load，但原样 40k low 首次 advance 返回 control_pending，阶段 C 失败停止。原 revision 3 独立核查确认 40k 字典 160048 strings / 120013 refs / 31283429 STR0 bytes，超过冻结联合预算，上限未调。唯一 C2 输出槽候选完成独立 Release 验证及固定 F1 对照，read64 比值 1.0214、区间 0.6515–1.6011 且重复性超限，未达自检；候选留独立分支交回核验，主树保持 F1。原 1.10/15% 与生命周期门禁保留；完整正式接受未完成。**
+**Stage 7-PD / PD-0 testOnly 基线与行为表征、PD-1 发布视图、PD-2 绑定索引/Projection Adapter 的内部实施与本地适用门禁已完成；PD-3-a 已补正 reload 资源 OOM 门禁并经 GPT-6-Luna 复审通过；PD-3-b 状态修订、只读桥与唯一物化器的内部实施、本地适用门禁及独立复审通过；PD-3-c 内部实施与适用本地门禁完成（SDK 0.8.1 已获接受，新建无上下文 GPT-6-Luna 独立审核通过）；PD-4 三项合同/SDK 0.9.0 已获接受，内部实施与适用本地门禁完成，新的无上下文独立复审通过；PD-5 P0 已完成两窗各 36 个正式进程，发现局部性能回归；owner 要求先核查与修复后重新测量；保语义修复 F1 已实施。2026-10-21 有限诊断中 F1/A 的 1–256 对象 read 配对比值为 1.2368–1.3967，各区间下界 >1.10；唯一 C1 候选未满足预登记保留条件，已撤回。公共 ready 因噪声不可判定，旧 revision 3 的 40k Gameplay-host 在 Packed 编码准入失败；本轮 R4 已通过编码/Reader/load，但原样 40k low 首次 advance 返回 control_pending，阶段 C 失败停止；执行内核已完成受控规模修复与本地回归，worker 收尾仍受跨 DLL 停止合同阻塞，尚未重进阶段 C。原 revision 3 独立核查确认 40k 字典 160048 strings / 120013 refs / 31283429 STR0 bytes，超过冻结联合预算，上限未调。唯一 C2 输出槽候选完成独立 Release 验证及固定 F1 对照，read64 比值 1.0214、区间 0.6515–1.6011 且重复性超限，未达自检；候选留独立分支交回核验，主树保持 F1。原 1.10/15% 与生命周期门禁保留；完整正式接受未完成。**
 
 以下性能结论属于冻结的 PD-0 实施输入，不代表 PD-4 当前源码的正式性能验收。该固定环境与干净重建后的完整注册组满足原定 15% 门槛，owner 最大进程级波动 3.89%，宿主均值最大波动 11.11%。测量前修复并验证了 MSVC/Ninja 编码不一致造成的头文件依赖丢失；历史慢态根因仍未确定，旧失败组和源码绑定失败组均保留。该结论限于已登记的有限 testOnly profile，不接受生产预算或关闭 Stage 7。
 
@@ -29,6 +29,8 @@ PD-5 Python 测量工具及 profile 已整理到 [tools/verification/playback_pe
 
 PD-5 40k 准入：[阶段 A](stage_reports/stages/stage-07/pd/2026-10-21-gameplay-admission-stage-a.md)、owner 接受的 [B0 envelope](stage_reports/stages/stage-07/pd/2026-10-22-gameplay-admission-b0-budget-ruling.md)、[阶段 B 有界核心](stage_reports/stages/stage-07/pd/2026-10-22-gameplay-admission-stage-b.md)、[R4 entries](stage_reports/stages/stage-07/pd/2026-10-22-gameplay-admission-revision4-entries.md) 和 [metadata 拒绝顺序修复](stage_reports/stages/stage-07/pd/2026-10-22-gameplay-admission-r4-metadata-order.md)保持。owner 本轮授权阶段 C；[原样 40k R4 功能验收](stage_reports/stages/stage-07/pd/2026-10-22-gameplay-admission-stage-c.md)在固定源码 c544e07 的全新 Release 上执行一次 low：R4 编码、实际 Reader/内容构建和 Host load 通过，首次 advance 返回 host.rpa.control_pending，未进入 query/Snapshot/Replay/Seek/显式 close 及 after-close checkpoint。high 按首个配置失败即停止的边界未启动；未重试、换 profile、放宽预算/deadline 或修产品逻辑。相关九组 Release 回归、架构及格式检查通过，完整 40k 功能链路没有通过，已停止交回核验。旧版默认、旧 golden、七项物理预算和四维 ceilings 均保持；性能接受、PD-5/RPA/生产接受及 Stage 7 关闭均未完成。隔离分支 codex/pd5-gameplay-40k-admission；主树 F1、C2、旧证据和旧窗口 3 停止状态保持。
 
+PD-5 执行阻塞跟进：[受控诊断、内核修复与关闭合同交回](stage_reports/stages/stage-07/pd/2026-10-23-execution-core-diagnostic-and-repair.md)已完成低/中规模内部计时、保语义内核修复、1/64 × low/high 全链路 plumbing 和九组 Release 回归。worker 关闭候选因 Windows DLL 上下文传递及禁止私有导出合同已撤回，关闭风险仍在，需先裁决跨 DLL 停止合同；本轮未运行新的 40k、未重进阶段 C，未作性能接受。
+
 PD-5 本轮补充：[Gameplay-host 字典/预算核查](stage_reports/stages/stage-07/pd/2026-10-21-gameplay-host-string-budget.md)及[C2 单候选交接](stage_reports/stages/stage-07/pd/2026-10-21-c2-read-result-candidate.md)。C2 完整 Release CTest 1272 通过、1 跳过、0 失败，12 个固定被测进程完成；主指标及规模重复性未达冻结条件，未合入主树，交回核验后再决定处置；未新建正式 preparation/registration，旧窗口 3 继续停止。
 
 PD-5 前轮证据：[两窗报告（2026-10-21 更正）](stage_reports/stages/stage-07/pd/2026-10-20-pd5-two-window-findings-and-diagnostic-handoff.md)及[有限核查与交接](stage_reports/stages/stage-07/pd/2026-10-21-pd5-followup.md)。修复前正式 RPA read_long 两窗超界；前轮 F1/A 的 1/8/64/256 对象长块 read 比值为 1.2368/1.3441/1.3742/1.3967，各诊断区间下界 >1.10。真实 update→ready 另列，不能代替孤立读取；公共 request→ready 的 A 进程波动 49.55%，不可判定。40k Gameplay-host 两种 reuse 均在 Packed 字符串预算处失败，未进入 Snapshot/Seek/Replay；独立原 Packed codec 40k 通过不替代它。唯一 C1 候选按事前标准放弃并撤回，有限尝试不证明成本下限。旧宿主 ACK/present-return 仍分项，enqueue/drain/GPU 未判。五批材料交回核验；旧窗口 3 保持停止，原 1.10/15% 与全部生命周期门禁保留，未作性能偏离接受或正式验收。
@@ -39,7 +41,7 @@ PD-5 前轮证据：[两窗报告（2026-10-21 更正）](stage_reports/stages/s
 | --- | --- | --- |
 | Stage 7A | S7A-3/4、5/6、7/8 的受限功能验收完成；整体关闭仍待 RPA 收尾 | [Stage 7A 计划](stage_plans/active/stage-07/plan-a.md) |
 | Stage 7-RPA | testOnly 实施与自动化证据已具备；实体设备、生产预算和最终接受未完成 | [RPA 计划](stage_plans/active/stage-07/plan-rpa.md)、[交接状态](stage_reports/stages/stage-07/rpa/2026-10-15-rpa-f4-handoff.md) |
-| Stage 7-PD | PD-0 基线与 PD-1/PD-2 完成；PD-3-a 补正、PD-3-b 内部实施及本地适用门禁与独立复审通过；PD-3-c 内部实施与本地门禁完成，公共查询/0.8.1 已获接受，新建无上下文 GPT-6-Luna 独立审核通过；PD-4 内部实施、本地适用门禁及新的无上下文独立复审完成（已接受 SDK 0.9.0）；PD-5 P0 两窗完成；F1 有限规模 read 仍超原相对约束，C1 候选已撤回；公共 ready 不可判定；R4 原样 40k low 已通过编码/Reader/load，但首次 advance 返回 control_pending，阶段 C 失败停止；字典预算独立核查及唯一 C2 验证完成；C2 未达自检，独立分支待核验，主树 F1 不变；修复后正式复测未开始，完整正式接受未完成，子阶段未退出 | [PD 计划](stage_plans/active/stage-07/plan-presentation-decoupling.md) |
+| Stage 7-PD | PD-0 基线与 PD-1/PD-2 完成；PD-3-a 补正、PD-3-b 内部实施及本地适用门禁与独立复审通过；PD-3-c 内部实施与本地门禁完成，公共查询/0.8.1 已获接受，新建无上下文 GPT-6-Luna 独立审核通过；PD-4 内部实施、本地适用门禁及新的无上下文独立复审完成（已接受 SDK 0.9.0）；PD-5 P0 两窗完成；F1 有限规模 read 仍超原相对约束，C1 候选已撤回；公共 ready 不可判定；R4 原样 40k low 已通过编码/Reader/load，但首次 advance 返回 control_pending，阶段 C 失败停止；执行内核受控修复与本地回归通过，worker 关闭合同仍阻塞重入；字典预算独立核查及唯一 C2 验证完成；C2 未达自检，独立分支待核验，主树 F1 不变；修复后正式复测未开始，完整正式接受未完成，子阶段未退出 | [PD 计划](stage_plans/active/stage-07/plan-presentation-decoupling.md) |
 | Stage 7B+ | 未开始，等待 RPA 完整退出 | [Stage 7B+ 计划](stage_plans/active/stage-07/plan-b.md) |
 
 Stage 0–6 已完成；Stage 8–14 尚未开始。整体 Stage 7 未关闭。
@@ -51,6 +53,7 @@ Stage 0–6 已完成；Stage 8–14 尚未开始。整体 Stage 7 未关闭。
 - **历史慢态及尾延迟未归因**：PD-0 最新登记组重复性通过，但不解释历史近两倍慢态；该组 Debug 宿主仍保留 15.93 ms 的单帧请求到回执尖峰。PD-5 本机有限 Release 门槛已接受，生产尾延迟预算未接受，不能据均值重复性通过推断生产延迟合格。
 - **控制附近帧率波动待量化**：PD-4 实体 DFJK 完整课程与控制观察已完成，旧版容量错误本轮未复现；Reset/暂停恢复时约 240→130→240，持续时间与模块成本未测量。设备失效/恢复仍未验收。
 - **局部偶发故障未定位**：B5 Pause 的 `capture_gap` 与 CXC unpack 的 `Access Denied` 尚无根因结论。
+- **40k 后续重入被阻塞**：内核 low 受控规模修复已通过本地验证；worker 的关闭修复尚无符合 DLL 合同的跨模块停止入口，现有长作业 join 风险保留。不得据小规模通过恢复阶段 C 或正式测量。
 - **RPA 验收未完成**：已取得 PD-4 受限实体键盘与听音观察；精确音画同步、设备失效与压力验证、生产参数及预算接受仍待完成。
 - **预算证据缺项**：端到端 Seek 延迟、prepare-only 峰值堆和 decoded semantic heap 尚未完成有效测量与接受。
 
