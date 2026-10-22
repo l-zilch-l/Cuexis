@@ -4,6 +4,8 @@
 
 ## 实施与回归
 
+- [PD-5 阶段 B：R4 metadata 拒绝顺序修复](2026-10-22-gameplay-admission-r4-metadata-order.md)
+
 - [PD-4 按需交付、真实回收与紧凑观察记录](2026-10-19-pd4-delivery-retirement-and-observation.md)
 - [PD-3-c host refinement and SDK decision proposal](2026-10-19-pd3c-contract-and-version-decision.md)
 - [PD-3-b committed revisions, neutral read and unique materializer](2026-10-19-pd3b-state-read-and-materialization.md)
