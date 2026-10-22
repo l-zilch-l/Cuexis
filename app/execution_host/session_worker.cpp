@@ -974,7 +974,8 @@ void SessionWorker::waitForReply(std::uint64_t id, std::chrono::steady_clock::du
 }
 void SessionWorker::requestShutdown() noexcept {
     internal::execution_diagnostics::Trace diagnostic{"requestShutdown"};
-    delivery_->closeAdmission();
+    if (delivery_)
+        delivery_->closeAdmission();
     channel_.closeAdmission();
     shutdown_.store(true, std::memory_order_release);
     channel_.wake();

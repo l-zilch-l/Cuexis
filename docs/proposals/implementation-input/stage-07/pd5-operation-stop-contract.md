@@ -1,8 +1,10 @@
 # PD-5 操作级协作停止合同与 candidate Playback 接口方案
 
-状态：candidate / owner verification pending / not implemented
+状态：paused candidate / not accepted / not implemented
 
 更新日期：2026-10-23
+
+本次暂缓：公开停止接口与 SDK 0.10.0 方向保持未接受候选，暂停推进；不作为现有合同内 factory、Player 生命周期和原 job 保活验证的必需前置。先处理有源码证据的最小缺陷，不恢复撤回候选，不宣称旧 40k 关闭阻塞已归因或解决。以下原方案作为候选保留。
 
 本方案只定义后续接口与验收输入，不授权产品实现。审计基线是隔离分支
 `codex/pd5-gameplay-40k-admission` 的干净 `115e4e64b066f87fc21274f3d64514ce138b69d9`。

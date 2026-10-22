@@ -205,6 +205,14 @@ TEST_CASE("B5 Session owner has separate thread and preserves control reply capa
     config.testOnly = false;
     REQUIRE_FALSE(SessionWorker::create(config));
 }
+TEST_CASE("B5 worker safely rejects invalid delivery after local construction",
+          "[rpa][b5][worker]") {
+    auto config = configuration();
+    config.delivery.consumers = 0;
+    auto rejected = SessionWorker::create(config);
+    REQUIRE_FALSE(rejected);
+    CHECK(rejected.error().code() == "host.rpa.context_stale");
+}
 TEST_CASE("B5 Prepared and software commit stay on worker with owning frame transfer",
           "[rpa][b5][worker]") {
     auto worker = SessionWorker::create(configuration());
