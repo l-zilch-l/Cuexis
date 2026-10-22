@@ -110,7 +110,7 @@ ordinal 从 0 开始且 checked 递增，不回绕。SDK 不创建全局 ID 分�
 
 | 拟议字段 | 语义 |
 | --- | --- |
-| `key` | 本次同步调用的关联身份，复制自 token，不采信 receipt 的输入值 |
+| `key` | 可缺省的本次同步调用关联身份，复制自 token；NoStop 时 absent，不采信 receipt 的输入值 |
 | `disposition` | `NotStarted` 初始值；终态为 `Completed`、`StoppedBeforeExecution`、`Stopped`、`Failed` |
 | `stage` | 实际阶段：Preflight、Preparation、InputAdmission、ReplayRebuild、Kernel、Ledger、Fold、Reconciliation、Publication、Commit；成功为 Completed |
 | `stopRequested` / `stopObserved` | 终态输出时的快照；有意图不等于已停止，正常完成可有 requested=true、observed=false；返回后的意图不追写 receipt |
@@ -162,8 +162,8 @@ snapshot、archive、controlRpa 和隐式历史执行。矩阵的 E 编号同时
 | E16 `GameplayReplay::toBytes` | `encodeReplay → initial → Kernel::prepare`；不是仅把已有 vector 写出 | 新 overload；也覆盖 E13 的 archive identity 计算前段 |
 | E17 `controlGameplay(Reset/Stop)` | `makeGameplaySession → prepare`，随后替换活动 Gameplay；Pause/Resume 只切旧非 RPA 状态 | 新 overload，控制值校验和现有 lifecycle 拒绝先保持 |
 | E18 `snapshotGameplay/archiveGameplay` | `Kernel::snapshot/captureState`、`canArchive/archive`；复制/取得 owning 快照/记录，不重放 | 新 overload，为规模循环和候选输出设检查点；不声称会 advance |
-| E19 `beginRealtimeGameplay`、`beginRealtimeTail`、`queryGameplay`、`gameplayState`、`queryGameplayPresentation`、`executionOwnerState`、`executionStepEffects`、`gameplayExecutionLag`、`controlGameplay(Pause/Resume)`、`deliver/request/resume` 的预查、`sampleGameplayPresentation` | 进入或间接读取 `Kernel::query`；Scheduler.create/状态同步亦只读；这些读取自身不执行 timer/advance | 单纯 query 保持原签名和 owner 规则；复合方法内部由外层 context 控制，不能在线程外 query Session |
-| E20 `acceptExecutionControl/acceptGameplayControl`、`invalidateGameplayClock/mapGameplayClock`、advance query/retire、fence/commit/release/close/retire、Replay cut/feedback/receipt | Scheduler K1/账本/时钟、已提交缓存或控制证明；关联状态检查可读取 E19，但没有隐藏 tryStart/advance | 不新增“跨线程取消 Session”重载；已有 K1 负责未开始的 Waiting request；Close 收尾不能被普通停止 token 再次取消 |
+| E19 `beginRealtimeGameplay`、`queryGameplay`、`executionOwnerState`、`executionStepEffects`、`gameplayExecutionLag`、`controlGameplay(Pause/Resume)`、`deliver/request/resume` 的预查、`sampleGameplayPresentation` | 进入或间接读取 `Kernel::query`；Scheduler.create/状态同步亦只读；这些读取自身不执行 timer/advance | 单纯 query 保持原签名和 owner 规则；复合方法内部由外层 context 控制，不能在线程外 query Session |
+| E20 `gameplayState/queryGameplayPresentation`、`beginRealtimeTail`、`acceptExecutionControl/acceptGameplayControl`、`invalidateGameplayClock/mapGameplayClock`、advance query/retire、fence/commit/release/close/retire、Replay cut/feedback/receipt | 已提交缓存、准备好的 timer/requirements 扫描、Scheduler K1/账本/时钟或控制证明；其中状态缓存不入核，关联状态检查可读取 E19，但没有隐藏 tryStart/advance | 不新增“跨线程取消 Session”重载；已有 K1 负责未开始的 Waiting request；Close 收尾不能被普通停止 token 再次取消 |
 
 补充排除与边界：普通 Chart JSON/typed-project/CXC Chart 的 source 工厂及 JSON 的 prepare/load/reload，
 在基线不构造 Gameplay kernel；`PlaybackSession::update` 只做 Runtime update，不隐式 advance Gameplay。
@@ -194,6 +194,8 @@ Source 先销毁不撤销 token，不自动 requestStop；旧 token 不能带入
 不得并发移动/析构正在使用的同一个 handle 对象；线程各持自己的副本。
 PlaybackOperation 及 Session 方法仍受 owner/reentry 约束，输出未发布前不能跨线程读取。
 这些类型从不允许另一个线程析构 PlaybackSession/PreparedPlayback。
+handle 的 copy/move 依赖匹配工具链，均不得分配；moved-from Source 仅允许析构或赋值，
+不能从无效 Source 静默取得 NoStop 来满足一次要求可停止的调用。默认空 Token 只用于显式 NoStop。
 
 Windows SHARED 验证必须是 EXE 中 host/requestStop 经**实际公开导入**到 Playback DLL，
 DLL 内 checkpoint 读取同一 owning state；不能用 EXE 内静态 judgement 代替证明。
@@ -259,7 +261,8 @@ owner 在更新这些记录后才发布 channel reply；未能可靠发布时保
 前后有检查点也不能承诺固定墙钟收尾时间。不得为停止响应重写 comparator 以抛异常破坏容器不变量。
 可拆的自有循环才加有界检查；任何后续算法重构另作保语义 diff/验证。
 
-每操作一份固定 stop state/认领状态与预留错误/结果包装；容量随既有有限 channel/请求保留数受控。
+每操作一份固定 stop state/认领状态与预留错误/结果包装；内置宿主的数量随既有有限 channel/
+请求保留数受控，不声称 SDK 能限制任意外部调用方自行保存的 handle 数量。
 公开 receipt 的 owning prefix 优先复用既有不可变投影，必要的小包装在执行前预留；
 停止/错误路径不能新增全模型复制。Source/Token 清理无 join、无 callback。
 hash 入口新增适配缓冲仍纳入既定同一 scratch 账本，不能改名为 operation 存储绕过预算；
@@ -325,7 +328,7 @@ barrier/计数器仅测试构建，需被显式启用且正常产品构建不存
 | `docs/api/GAMEPLAY_V2_ABI.md` | 新类型/overload、owner 并发、Result+receipt、兼容/安装；不暴露内部 kernel 类型 |
 | `docs/formats/rpa-execution-contract.md` | 原 request/StepKey 终态、控制 drain/Resume/间接 advance 的停止效果；不改 wire 字段或算法 |
 | `docs/adr/0033-cpp-shared-library-preview-boundary.md` | 若需补例，只说明新增的是实际 public 类型；禁止私有导出正文不放宽 |
-| `engine/playback/include/...`、Playback 安装/导出清单 | 上述两类 owning handles、output record、E 表 overload；只 candidate 安装；真实公开符号的精确清单 |
+| `engine/playback/include/cuexis/playback/operation_stop.hpp`（拟新增），`gameplay_candidate.hpp`、`playback_source.hpp`、`playback_session.hpp`；`engine/playback/CMakeLists.txt` 与 `cmake/VerifySharedExports.cmake` | 上述两类 owning handles、output record、E 表 overload；只 candidate 安装；真实公开符号的精确清单 |
 | Playback/内部 Scheduler、session/kernel、recovery codec | 一份显式 borrowed context 和统一操作边界；结果/停止适配不复制语义编码；内部函数不加 DLL export |
 | `app/execution_host`、Player Host | 实例内 active source 交接、Result+receipt 归原 job 账本、两阶段关闭与析构检查 |
 | 包版本与消费门禁 | 本轮不改 SDK/日期版本；此新增 public candidate surface 属 API 合同扩展，后续实施前 owner 单独接受 preview 版本及包兼容处置 |
