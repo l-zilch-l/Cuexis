@@ -1147,7 +1147,7 @@ static auto inspectImpl(std::span<const std::byte> bytes, PackedChartLimits limi
         return core::unexpected(fail("packed.header.crc", "Packed header CRC mismatch"));
     // Spec 5.1: only the implemented candidate revision may be read, and the Foundation profile
     // declares no schedule events. Neither declaration may be ignored as "nothing to do".
-    if (gameplay ? (*revision != 2U && *revision != 3U) : (*revision != 1U))
+    if (gameplay ? (*revision != 2U && *revision != 3U && *revision != 4U) : (*revision != 1U))
         return core::unexpected(
             fail("packed.header.unsupported_revision", "Packed candidate revision is unsupported"));
     if (*events != 0U)
@@ -1263,7 +1263,7 @@ static auto decodeImpl(std::span<const std::byte> bytes, PackedChartLimits limit
     auto headerCrc = header.readU32();
     if (!entityCount || !requirementCount || !eventCount || !decodedBytes || !stringCount ||
         !refCount || !revision || !headerCrc ||
-        (gameplay ? (*revision != 2U && *revision != 3U) : (*revision != 1U)))
+        (gameplay ? (*revision != 2U && *revision != 3U && *revision != 4U) : (*revision != 1U)))
         return core::unexpected(
             fail("packed.header.invalid", "Packed header counters are invalid"));
     std::vector<Directory> directories;
@@ -1401,6 +1401,15 @@ static auto decodeImpl(std::span<const std::byte> bytes, PackedChartLimits limit
         if (gameplay && (*kind == 0U || *kind > 13U))
             return core::unexpected(fail("packed.references.kind",
                                          "Reference kind is outside the revision-2 registry"));
+        if (gameplay && *revision == 4U) {
+            if (*kind == 11U || *kind == 12U)
+                return core::unexpected(
+                    fail("packed.references.kind", "Revision 4 omits derived physical references"));
+            if (*kind == 13U && (value->size() < 8 || !value->starts_with("cxgp2:0") ||
+                                 ((*value)[7] != '0' && ((*value)[7] < '2' || (*value)[7] > '8'))))
+                return core::unexpected(
+                    fail("packed.references.kind", "Illegal revision-4 projection subdomain"));
+        }
         refs.emplace_back(*kind, std::move(*value));
     }
     if (!refReader.empty())

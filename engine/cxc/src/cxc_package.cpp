@@ -727,7 +727,8 @@ validateDependencyGraph(core::Diagnostics& diagnostics,
                                 version->unsignedInteger() && *version->unsignedInteger() == 1 &&
                                 playback && playback->boolean() && *playback->boolean() &&
                                 ((stringIs("entryKind", "packed-chart") &&
-                                  stringIs("encoding", "capsule.3")) ||
+                                  (stringIs("encoding", "capsule.3") ||
+                                   stringIs("encoding", "capsule.4"))) ||
                                  (stringIs("entryKind", "gameplay-graph") &&
                                   stringIs("encoding", "graph.1"))) &&
                                 path && path->string() && detail::isPortablePath(*path->string()) &&

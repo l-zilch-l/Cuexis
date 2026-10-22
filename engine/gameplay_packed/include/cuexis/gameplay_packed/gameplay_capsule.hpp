@@ -4,6 +4,7 @@
 #include <cuexis/chart/limits.hpp>
 #include <cuexis/judgement/gameplay_prepare.hpp>
 
+#include <array>
 #include <filesystem>
 #include <span>
 
@@ -54,6 +55,8 @@ struct PreparedCapsule final {
     std::vector<judgement::PatternDeclaration> patterns;
     std::vector<MeasureDefinition> measures;
     std::uint32_t candidateRevision{2};
+    // Verified once by the Reader; immutable GameplayContent reuses it for metadata.
+    std::optional<std::array<std::uint8_t, 32>> verifiedSemanticDigest{};
 };
 
 // Explicit candidate-only bounds. No Graph production defaults are selected.

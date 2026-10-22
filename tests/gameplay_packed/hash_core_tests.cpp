@@ -538,3 +538,19 @@ TEST_CASE("Hash core matches complete legacy oracle for validated mixed and empt
             dump(count ? "mixed-64-legacy-oracle" : "empty-legacy-oracle", value);
         }
 }
+
+TEST_CASE("Entry relation index adaptation is charged by the same hash operation",
+          "[capsule][hash-core][revision4]") {
+    HashCoreFixture f;
+    const auto borrowed = observe(f.input());
+    cleanSuccess(borrowed);
+    auto input = f.input();
+    input.relationResources = {};
+    const auto adapted = observe(input);
+    cleanSuccess(adapted);
+    CHECK(adapted.result->digest == borrowed.result->digest);
+    CHECK(adapted.result->cost.bytes == borrowed.result->cost.bytes);
+    CHECK(adapted.work.allocationCount == borrowed.work.allocationCount + 1);
+    CHECK(adapted.work.allocationBytes == borrowed.work.allocationBytes + sizeof(std::uint32_t));
+    dump("entry-relation-adapter", adapted);
+}

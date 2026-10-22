@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <array>
+#include <catch2/generators/catch_generators.hpp>
 #include <chrono>
 #include <cmath>
 #include <fstream>
@@ -587,18 +588,19 @@ TEST_CASE("Capsule revision 3 preserves executable fields and mutually rejects o
 
 TEST_CASE("Revision3 hostile bytes and file publication preserve the previous artifact",
           "[capsule][revision3][hostile][atomic]") {
+    const auto revision = GENERATE(3U, 4U);
     CapsuleFixture f;
     f.base.latePolicy = executionLate();
     executionFields(f.request.assembly);
     f.profiles = {f.request.assembly.normalizationProfileToken,
                   f.request.assembly.coordinatorPolicyToken};
     const auto prepared = f.prepare();
-    capsule::EncodeRequest request{f.chart, prepared, f.owners, f.profiles, {}, {}, 3};
+    capsule::EncodeRequest request{f.chart, prepared, f.owners, f.profiles, {}, {}, revision};
     auto encoded = capsule::encode(request);
     REQUIRE(encoded);
     auto bytes = *encoded;
     auto context = f.context();
-    context.candidateRevision = 3;
+    context.candidateRevision = revision;
     std::optional<capsule::PreparedCapsule> active;
     REQUIRE(capsule::decodeInto(active, bytes, context));
     const auto identity = active->gameplay.assembled().prepared;
@@ -734,13 +736,13 @@ TEST_CASE("Revision3 hostile bytes and file publication preserve the previous ar
     auto badChart = f.chart;
     badChart.features.clear();
     CHECK_FALSE(
-        capsule::writeAtomic({badChart, prepared, f.owners, f.profiles, {}, {}, 3}, target));
+        capsule::writeAtomic({badChart, prepared, f.owners, f.profiles, {}, {}, revision}, target));
     CHECK(readBytes(target) == *encoded);
     auto permuted = capsule::decode(rewrite(*encoded, true), context);
     REQUIRE(permuted);
     auto rewritten =
         capsule::encode({permuted->chart, permuted->gameplay, permuted->owners, permuted->profiles,
-                         permuted->patterns, permuted->measures, 3});
+                         permuted->patterns, permuted->measures, revision});
     REQUIRE(rewritten);
     CHECK(*rewritten == *encoded);
 }

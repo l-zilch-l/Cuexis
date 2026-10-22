@@ -22,6 +22,7 @@
 
 ## 测量与基线
 
+- [Capsule revision 4 入口接入与阶段 B 交回](2026-10-22-gameplay-admission-revision4-entries.md)
 - [Capsule revision 4 阶段 B 实施记录](2026-10-22-gameplay-admission-stage-b.md)
 - [40k Gameplay-host B0 预算裁决交回（接受记录见阶段 B）](2026-10-22-gameplay-admission-b0-budget-ruling.md)
 - [40k Gameplay-host 准入阶段 A 定量交接](2026-10-21-gameplay-admission-stage-a.md)

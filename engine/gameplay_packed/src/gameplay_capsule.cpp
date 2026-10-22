@@ -39,6 +39,9 @@ using detail::ClaimRow;
 using detail::RequirementIndices;
 constexpr std::string_view kResolver = "grace.resolver.s2.v1";
 constexpr std::string_view kClose = "local.close.t4.v1";
+auto executionRevision(std::uint32_t revision) -> bool {
+    return revision == 3 || revision == 4;
+}
 
 struct Failure final {
     core::Error error;
@@ -121,6 +124,12 @@ auto textLess(std::string_view left, std::string_view right) -> bool {
 // Shared visitors collect dictionaries, emit compact wire, or emit the fixed-width preimage.
 // Sizing traverses the same fields without allocating output.
 enum class Mode { collect, wire, hash };
+template <typename A, typename M> auto storesProjection(const A& a, const M& m) -> bool {
+    if constexpr (A::reading)
+        return m.candidateRevision != 4;
+    else
+        return m.candidateRevision != 4 || a.mode == Mode::hash;
+}
 #include "hash_core_work_internal.hpp"
 
 struct Output final {
@@ -813,7 +822,7 @@ struct Model final {
         timebase.unitToken = unit;
         graph.timebase = &timebase;
         graph.latePolicy = &latePolicy;
-        if (candidateRevision == 3) {
+        if (executionRevision(candidateRevision)) {
             graph.normalizationProfileToken = profiles.normalizationProfileToken;
             graph.coordinatorPolicyToken = profiles.coordinatorPolicyToken;
         }
@@ -1083,7 +1092,8 @@ template <typename A, typename V, typename M> void relationRow(A& a, V& v, M& m)
     if constexpr (!A::reading) {
         if constexpr (std::is_same_v<std::remove_cv_t<M>, detail::SemanticInput>) {
             const auto ordinal = static_cast<std::size_t>(&v - m.graph.relations.data());
-            resource = m.relationResources[ordinal];
+            resource = m.relationResources.empty() ? a.operation->relationResources[ordinal]
+                                                   : m.relationResources[ordinal];
             require(resource < m.graph.resources.size(), "relations.resource", "dangling resource");
         } else {
             const auto it =
@@ -1134,12 +1144,13 @@ template <typename A, typename V, typename M> void claimRow(A& a, V& row, M& m) 
     }
     a.value(ns);
     bool hasKey = v.intent != ResourceClaimIntent::observe;
-    a.value(hasKey);
+    if (storesProjection(a, m))
+        a.value(hasKey);
     require(hasKey == (v.intent != ResourceClaimIntent::observe), "claims.claimKey",
             "claim-key presence disagrees with intent");
     require(ns.has_value() == hasKey && (!ns || !ns->empty()), "claims.namespace",
             "namespace presence disagrees with intent");
-    if (hasKey) {
+    if (hasKey && storesProjection(a, m)) {
         if constexpr (std::is_same_v<A, Output>) {
             if (a.mode == Mode::hash) {
                 projectedClaim(a, *ns, m.graph.requirements[row.requirement].identity);
@@ -1234,8 +1245,10 @@ void requirementRow(A& a, V& v, I& ix, M& m) {
         a.value(ix.entity);
     }
     a.fields(v.stableId, v.identity);
-    projected(a, 12, 0, {}, &v.identity);
-    projected(a, 13, 1, {}, &v.identity);
+    if (storesProjection(a, m)) {
+        projected(a, 12, 0, {}, &v.identity);
+        projected(a, 13, 1, {}, &v.identity);
+    }
     if constexpr (A::reading) {
         const auto n = a.count();
         for (std::size_t i = 0; i < n; ++i) {
@@ -1281,7 +1294,7 @@ void requirementRow(A& a, V& v, I& ix, M& m) {
     a.fields(v.required, v.timing);
     if constexpr (!A::reading) {
         if (a.mode == Mode::hash) {
-            if (m.candidateRevision == 3) {
+            if (executionRevision(m.candidateRevision)) {
                 executionFields(a, v);
             }
             return;
@@ -1302,7 +1315,7 @@ void requirementRow(A& a, V& v, I& ix, M& m) {
     if constexpr (A::reading) {
         v.grace.inheritedFromDeclarationId = inherited.value_or("");
     }
-    if (m.candidateRevision == 3) {
+    if (executionRevision(m.candidateRevision)) {
         executionFields(a, v);
     }
 }
@@ -1350,7 +1363,7 @@ template <typename A, typename M> void globalRow(A& a, M& m) {
             a.value(n);
         }
     }
-    if (m.candidateRevision == 3) {
+    if (executionRevision(m.candidateRevision)) {
         a.value(g.executionProfile);
     }
 }
@@ -1701,7 +1714,7 @@ void validate(Model& m, chart::PackedChartLimits limits,
         refsValid(r.required);
         ordered(r.phases, "requirements.phases");
         ordered(r.patternArmRefs, "requirements.patternArmRefs");
-        if (m.candidateRevision == 3) {
+        if (executionRevision(m.candidateRevision)) {
             ordered(
                 r.atomBindings,
                 [](const auto& l, const auto& rr) { return textLess(l.atomRef, rr.atomRef); },
@@ -1749,6 +1762,16 @@ void validate(Model& m, chart::PackedChartLimits limits,
     }
     require(std::all_of(usedClaims.begin(), usedClaims.end(), [](auto n) { return n == 1; }),
             "GRC0.claims", "orphaned or multiply-owned claim");
+    if (m.candidateRevision == 4) {
+        // n <= the frozen u32 requirement budget; these u64 products cannot overflow.
+        const auto n = static_cast<std::uint64_t>(g.requirements.size());
+        const auto occupying = static_cast<std::uint64_t>(
+            std::count_if(m.claims.begin(), m.claims.end(), [](const auto& claim) {
+                return claim.declaration.intent != ResourceClaimIntent::observe;
+            }));
+        require(2 * n + occupying <= 3 * n, "GRC0.logicalProjections",
+                "Derived role fanout exceeds the subset");
+    }
     for (const auto& t : g.resources) {
         refsValid(t.required);
     }
@@ -1765,7 +1788,7 @@ auto makeModel(const EncodeRequest& request, chart::PackedChartLimits limits) ->
     m.chart = request.chart;
     m.graph = request.gameplay.assembled().graph;
     m.candidateRevision = request.candidateRevision;
-    require(m.candidateRevision == 2 || m.candidateRevision == 3, "candidateRevision",
+    require(m.candidateRevision == 2 || executionRevision(m.candidateRevision), "candidateRevision",
             "unsupported Writer revision");
     if (m.candidateRevision == 2) {
         require(m.graph.executionProfile.empty() && m.graph.normalizationProfileToken.empty() &&
@@ -1945,6 +1968,15 @@ auto preimage(Model& m, chart::PackedChartLimits limits) -> Bytes {
     });
 }
 
+auto hashModel(const Model& m, detail::HashOptions options = {},
+               detail::HashObservation* observation = nullptr) -> detail::SemanticHashResult {
+    const detail::SemanticInput input{
+        m.chart,    m.graph,  m.entities, m.owners,   m.indices,    m.patterns,
+        m.measures, m.claims, m.profiles, m.timebase, m.latePolicy, m.profileId,
+        m.unit,     3,        m.resolver, m.close,    m.counts,     m.deferredRelationResources};
+    return checked(detail::calculateSemanticHash(input, options, observation));
+}
+
 auto framed(std::array<char, 4> code, Bytes payload, std::uint32_t rows,
             chart::PackedChartLimits limits) -> gp::Section {
     bound(16 + payload.size(), limits.maxPackedSectionBytes, "packed.budget.section_bytes");
@@ -1970,7 +2002,8 @@ void patchU32(Bytes& bytes, std::size_t offset, std::uint32_t value) {
         bytes[offset + i] = static_cast<std::byte>((value >> (8 * i)) & 255U);
     }
 }
-auto envelope(Model& m, gp::StaticTables tables, chart::PackedChartLimits limits) -> Bytes {
+auto physicalTables(Model& m, gp::StaticTables tables, chart::PackedChartLimits limits)
+    -> gp::StaticTables {
     const auto rows = [&](auto f) {
         return output(Mode::wire, m, limits, &tables.strings, &tables.references, f);
     };
@@ -2001,7 +2034,20 @@ auto envelope(Model& m, gp::StaticTables tables, chart::PackedChartLimits limits
     const auto directoryBytes = tables.sections.size() * 32;
     const auto total = 96 + directoryBytes + static_cast<std::size_t>(decoded);
     bound(total, limits.maxPackedFileBytes, "packed.budget.file_bytes");
-    const auto digest = core::detail::sha256(preimage(m, limits));
+    return tables;
+}
+
+auto envelope(Model& m, gp::StaticTables tables, chart::PackedChartLimits limits,
+              detail::HashOptions hashOptions = {}, detail::HashObservation* observation = nullptr)
+    -> Bytes {
+    tables = physicalTables(m, std::move(tables), limits);
+    std::size_t decoded = 0;
+    for (const auto& section : tables.sections)
+        decoded += section.bytes.size();
+    const auto directoryBytes = tables.sections.size() * 32;
+    const auto total = 96 + directoryBytes + decoded;
+    const auto digest = m.candidateRevision == 4 ? hashModel(m, hashOptions, observation).digest
+                                                 : core::detail::sha256(preimage(m, limits));
     ByteWriter out;
     constexpr std::array magic{std::byte{'C'}, std::byte{'X'}, std::byte{'P'}, std::byte{'K'},
                                std::byte{'5'}, std::byte{0},   std::byte{0},   std::byte{0}};
@@ -2204,11 +2250,12 @@ auto reconstruct(Model& m, const DecodeContext& context) -> PreparedGameplay {
     return prepared;
 }
 auto decoded(std::span<const std::byte> bytes, const DecodeContext& context,
-             chart::PackedChartLimits limits) -> PreparedCapsule {
+             chart::PackedChartLimits limits, detail::HashOptions hashOptions = {},
+             detail::HashObservation* observation = nullptr) -> PreparedCapsule {
     require(bytes.size() >= 96, "Header", "truncated Capsule header");
     ByteReader revisionReader{bytes.subspan(88, 4)};
     const auto revision = checked(revisionReader.readU32());
-    if (revision != context.candidateRevision || (revision != 2 && revision != 3)) {
+    if (revision != context.candidateRevision || (revision != 2 && !executionRevision(revision))) {
         fail("packed.header.unsupported_revision", "Capsule Reader revision mismatch", "Header");
     }
     const auto statistics = checked(gp::inspect(bytes, limits));
@@ -2255,7 +2302,8 @@ auto decoded(std::span<const std::byte> bytes, const DecodeContext& context,
     const auto canonicalStatic = staticTables(m, limits);
     require(canonicalStatic.references == base.references, "REF0",
             "reference closure differs from typed records");
-    const auto digest = core::detail::sha256(preimage(m, limits));
+    const auto digest = m.candidateRevision == 4 ? hashModel(m, hashOptions, observation).digest
+                                                 : core::detail::sha256(preimage(m, limits));
     if (!std::equal(digest.begin(), digest.end(), bytes.begin() + 32,
                     [](auto l, auto r) { return l == std::to_integer<std::uint8_t>(r); })) {
         fail("packed.identity.mismatch", "structural semantic identity mismatch",
@@ -2267,7 +2315,7 @@ auto decoded(std::span<const std::byte> bytes, const DecodeContext& context,
         owners.push_back({m.graph.requirements[i].identity, m.entities[m.indices[i].entity]});
     }
     return {std::move(m.chart),    std::move(prepared),   std::move(owners), std::move(m.profiles),
-            std::move(m.patterns), std::move(m.measures), revision};
+            std::move(m.patterns), std::move(m.measures), revision,          digest};
 }
 #include "gameplay_graph_reader_internal.hpp"
 
@@ -2290,14 +2338,22 @@ template <typename T, typename F> auto boundary(F operation) -> core::Result<T> 
 }
 } // namespace
 
-auto encode(const EncodeRequest& request, chart::PackedChartLimits limits) -> core::Result<Bytes> {
+auto detail::encodeBounded(const EncodeRequest& request, chart::PackedChartLimits limits,
+                           HashOptions options, HashObservation* observation)
+    -> core::Result<Bytes> {
+    if (observation)
+        *observation = {};
     return boundary<Bytes>([&] {
         limits = chart::packed::limits_detail::effectiveLimits(limits);
         auto m = makeModel(request, limits);
         m.bind();
         auto tables = staticTables(m, limits);
-        return envelope(m, std::move(tables), limits);
+        return envelope(m, std::move(tables), limits, options, observation);
     });
+}
+
+auto encode(const EncodeRequest& request, chart::PackedChartLimits limits) -> core::Result<Bytes> {
+    return detail::encodeBounded(request, limits);
 }
 
 auto encodeGraph(const EncodeRequest& request, GraphWriterLimits graphLimits,
@@ -2389,7 +2445,8 @@ auto detail::calculateSemanticHash(const SemanticInput& input, HashOptions optio
                 "Unknown semantic codec selector");
         require(input.indices.size() == input.graph.requirements.size(), "semanticHash.indices",
                 "Requirement index count disagrees");
-        require(input.relationResources.size() == input.graph.relations.size(),
+        require(input.relationResources.empty() ||
+                    input.relationResources.size() == input.graph.relations.size(),
                 "semanticHash.relations", "Relation index count disagrees");
         HashCoreWork work{input, options, observed};
         for (std::size_t i = 0; i < input.graph.requirements.size(); ++i) {
@@ -2458,9 +2515,27 @@ auto detail::calculateSemanticHash(const SemanticInput& input, HashOptions optio
     }
 }
 
+auto detail::hashRequest(const EncodeRequest& request, chart::PackedChartLimits limits,
+                         HashOptions options, HashObservation* observation)
+    -> core::Result<SemanticHashResult> {
+    if (observation)
+        *observation = {};
+    return boundary<SemanticHashResult>([&] {
+        require(request.candidateRevision == 4, "candidateRevision",
+                "Bounded request hash requires revision 4");
+        limits = chart::packed::limits_detail::effectiveLimits(limits);
+        auto m = makeModel(request, limits);
+        m.bind();
+        const auto tables = physicalTables(m, staticTables(m, limits), limits);
+        (void)tables;
+        return hashModel(m, options, observation);
+    });
+}
 auto semanticPreimage(const EncodeRequest& request, chart::PackedChartLimits limits)
     -> core::Result<Bytes> {
     return boundary<Bytes>([&] {
+        require(request.candidateRevision != 4, "semanticHash.export",
+                "Revision 4 byte export requires the bounded hashRequest API");
         limits = chart::packed::limits_detail::effectiveLimits(limits);
         auto m = makeModel(request, limits);
         m.bind();
@@ -2469,11 +2544,20 @@ auto semanticPreimage(const EncodeRequest& request, chart::PackedChartLimits lim
         return preimage(m, limits);
     });
 }
+auto detail::decodeBounded(std::span<const std::byte> bytes, const DecodeContext& context,
+                           chart::PackedChartLimits limits, HashOptions options,
+                           HashObservation* observation) -> core::Result<PreparedCapsule> {
+    if (observation)
+        *observation = {};
+    return boundary<PreparedCapsule>([&] {
+        return decoded(bytes, context, chart::packed::limits_detail::effectiveLimits(limits),
+                       options, observation);
+    });
+}
+
 auto decode(std::span<const std::byte> bytes, const DecodeContext& context,
             chart::PackedChartLimits limits) -> core::Result<PreparedCapsule> {
-    return boundary<PreparedCapsule>([&] {
-        return decoded(bytes, context, chart::packed::limits_detail::effectiveLimits(limits));
-    });
+    return detail::decodeBounded(bytes, context, limits);
 }
 
 auto decodeGraph(std::string_view text, const DecodeContext& context, GraphReaderLimits graphLimits,

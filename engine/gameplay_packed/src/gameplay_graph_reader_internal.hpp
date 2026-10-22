@@ -1019,9 +1019,13 @@ auto graphDecoded(std::string_view text, const DecodeContext& context, GraphRead
     (void)canonical;
     if (model.counts != declared)
         fail("graph.closure.invalid", "Graph derived REF0 count differs from header");
-    if (core::detail::sha256Hex(graphClosure([&] { return preimage(model, physical); })) !=
-        sink.identity())
-        fail("graph.identity.mismatch", "Graph structural semantic identity mismatch");
+    const auto digest = [&] {
+        const auto bytes = graphClosure([&] { return preimage(model, physical); });
+        const auto result = core::detail::sha256(bytes);
+        if (core::detail::sha256Hex(result) != sink.identity())
+            fail("graph.identity.mismatch", "Graph structural semantic identity mismatch");
+        return result;
+    }();
     auto prepared = reconstruct(model, context);
     std::vector<RequirementOwner> owners;
     for (std::size_t i = 0; i < model.graph.requirements.size(); ++i)
@@ -1033,5 +1037,6 @@ auto graphDecoded(std::string_view text, const DecodeContext& context, GraphRead
             std::move(model.profiles),
             std::move(model.patterns),
             std::move(model.measures),
-            3};
+            3,
+            digest};
 }

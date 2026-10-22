@@ -47,6 +47,7 @@ struct HashCoreWork final {
     detail::HashScratch scratch;
     detail::HashFrames frames;
     std::pmr::vector<detail::HashCostSlot> costs{&scratch};
+    std::pmr::vector<std::uint32_t> relationResources{&scratch};
     std::array<std::span<detail::HashCostSlot>, 11> groups{};
     std::size_t currentEmission{SIZE_MAX};
     bool counting{true};
@@ -88,6 +89,20 @@ struct HashCoreWork final {
         for (std::size_t i = 0; i < sizes.size(); ++i) {
             groups[i] = std::span{costs}.subspan(start, sizes[i]);
             start += sizes[i];
+        }
+        if (input.relationResources.empty()) {
+            relationResources.reserve(input.graph.relations.size());
+            for (const auto& relation : input.graph.relations) {
+                const auto it =
+                    std::lower_bound(input.graph.resources.begin(), input.graph.resources.end(),
+                                     relation.resourceRef, [](const auto& row, const auto& ref) {
+                                         return row.ref < ref;
+                                     });
+                require(it != input.graph.resources.end() && it->ref == relation.resourceRef,
+                        "relations.resource", "Dangling semantic relation resource");
+                relationResources.push_back(
+                    static_cast<std::uint32_t>(it - input.graph.resources.begin()));
+            }
         }
     }
     auto group(CostGroup value) -> std::span<detail::HashCostSlot> {

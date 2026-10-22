@@ -72,9 +72,20 @@ struct SemanticHashResult final {
 
 // Only entry to the new core: count -> budget acceptance -> one SHA, optionally teeing
 // bytes into a charged caller buffer. Header and metadata can reuse this fixed result.
-// This does not register a revision-4 production entry.
+// Revision-4 entries below borrow their already validated physical operation model.
 [[nodiscard]] auto calculateSemanticHash(const SemanticInput& input, HashOptions options = {},
                                          HashObservation* observation = nullptr)
+    -> core::Result<SemanticHashResult>;
+
+// Private candidate entry controls, also used for boundary and allocation tests.
+[[nodiscard]] auto encodeBounded(const EncodeRequest&, chart::PackedChartLimits = {},
+                                 HashOptions = {}, HashObservation* = nullptr)
+    -> core::Result<std::vector<std::byte>>;
+[[nodiscard]] auto decodeBounded(std::span<const std::byte>, const DecodeContext&,
+                                 chart::PackedChartLimits = {}, HashOptions = {},
+                                 HashObservation* = nullptr) -> core::Result<PreparedCapsule>;
+[[nodiscard]] auto hashRequest(const EncodeRequest&, chart::PackedChartLimits = {},
+                               HashOptions = {}, HashObservation* = nullptr)
     -> core::Result<SemanticHashResult>;
 
 } // namespace cuexis::gameplay_packed::detail
