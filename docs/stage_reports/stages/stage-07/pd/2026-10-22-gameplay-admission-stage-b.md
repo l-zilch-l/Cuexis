@@ -237,7 +237,7 @@ bookkeeping 不冒充被 C++ new 钩子逐项观测到的 payload，也不被当
 
 新增 hash_core_tests 覆盖：
 
-- revision 2/3 小输入逐字节等于原 semanticPreimage；count B=实际 bytes，原 SHA 相等；
+- revision 2/3 的单 Requirement、合法空图与 N=64 混合 observe/consume/claim 输入先通过旧 prepare/Writer/Reader，再逐字节等于原 semanticPreimage；N=64 的 E 长度不同，count B=实际 bytes，原 SHA 相等；
   result digest 可重复读取，不重算；输入地址/身份不变。
 - 四维等号、收紧一单位、字面 0、UINT64_MAX 放宽后 min-clamp；原 checked 加乘溢出测试保留。
   实际 vector reserve 的旧+新 capacity 同时存活峰值及失败后旧内容保持。
@@ -259,5 +259,15 @@ bookkeeping 不冒充被 C++ new 钩子逐项观测到的 payload，也不被当
 开发构建/测试、编译失败与观测器失败全部留原始日志。默认 PMR 在本机未被全局 new 钩子捕获，
 所以补透明可观测上游；没有调整账本断言来掩盖差异。补充布局观测字段后又发现增量构建依赖
 #deps=0、msvc_deps_prefix 乱码，新测试误连旧库；test-layout.log 的字段错位数据作废，
-不作为预算/身份结论。最终改用新目录、VSLANG=1033、fresh+clean-first，检查真实依赖并
-固定源码/二进制清单后核验。最终结果由下节及证据 receipt 登记，不以开发快照替代。
+不作为预算/身份结论。VSLANG=1033 单独未改变本机输出；改用证据目录中的
+showincludes-override.cmake（CMAKE_USER_MAKE_RULES_OVERRIDE）校正实际 UTF-8 前缀，
+不修改仓库构建规则。开发重建的真实依赖已为 #deps=75，包含本批所有关键私有头。最终再用
+新目录 fresh+clean-first，固定源码/二进制清单后核验。最终结果由下节及证据 receipt 登记，不以开发快照替代。
+
+
+独立审阅针对首个固定候选 0c985ec：Standards 无硬性违规，提出一个旧 sink-only 探针残留
+的维护性发现；Spec 无实现发现，指出多 Requirement/observe/consume/claim/空图独立 oracle
+的验证缺口。前者已删除，后者已补充真实合法源，经未改旧入口往返后比较；不再保留第三种
+预算探针模式。新增测试夹具最初的空图 META feature closure 与 observe Hold 不合法，旧入口
+正确拒绝；仅修正夹具为正确 closure、zero-grace observer Tap，未调整产品拒绝规则或 golden。
+最终复核另行登记。

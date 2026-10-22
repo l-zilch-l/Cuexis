@@ -56,6 +56,7 @@ struct HashOptions final {
     // The operation allocates this entire capacity through scratch before filling it.
     // A present zero requests literal zero-byte export; absence requests no export.
     std::optional<std::uint64_t> exportCapacity;
+    // Transparent upstream for allocation observation/OOM injection; no unmetered pools.
     // Like a PMR container's allocator, this must outlive returned exported bytes.
     std::pmr::memory_resource* upstream{std::pmr::new_delete_resource()};
 };

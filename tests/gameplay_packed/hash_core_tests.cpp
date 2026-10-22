@@ -520,3 +520,21 @@ TEST_CASE("Hash core accounts large static prefix sorting and identity storage",
     CHECK(actual.result->cost.bytes == expected->size());
     CHECK(actual.result->digest == core::detail::sha256(*expected));
 }
+
+TEST_CASE("Hash core matches complete legacy oracle for validated mixed and empty graphs",
+          "[capsule][hash-core]") {
+    for (auto revision : {2U, 3U})
+        for (auto count : {0U, 64U}) {
+            HashCoreFixture f{revision, count, true};
+            const auto expected = f.legacyBytes();
+            work::HashOptions options;
+            options.exportCapacity = expected.size();
+            const auto value = observe(f.input(), options);
+            cleanSuccess(value, expected.size());
+            CHECK(std::ranges::equal(value.result->bytes(), expected));
+            CHECK(value.result->cost.bytes == expected.size());
+            CHECK(value.result->digest == core::detail::sha256(expected));
+            CHECK(value.result->cost.visits == (count ? 11 * count + 1 : 0));
+            dump(count ? "mixed-64-legacy-oracle" : "empty-legacy-oracle", value);
+        }
+}

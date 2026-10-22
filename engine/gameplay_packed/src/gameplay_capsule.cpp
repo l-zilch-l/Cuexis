@@ -592,17 +592,6 @@ template <typename A, typename Emit> void projectedFromFields(A& a, std::uint8_t
             }
             return;
         }
-        if (a.sink) {
-            Output count;
-            count.mode = Mode::hash;
-            count.sizing = true;
-            emit(count);
-            const auto length = judgement::detail::structuralProjectionKeySize(count.size, 4096);
-            if (length > 4096)
-                detail::hashBudget("maxProjectionKeyBytes", "semanticHash.projectionKeyBytes", 4096,
-                                   length, false);
-            a.cost->maxKey = std::max(a.cost->maxKey, length);
-        }
     }
     auto expected = projection(emit), actual = expected;
     a.ref(kind, actual);
@@ -987,11 +976,7 @@ template <typename A, typename V> void patternRow(A& a, V& v) {
                 return;
             }
         }
-        auto* resource = std::pmr::get_default_resource();
-        if constexpr (std::is_same_v<A, Output>)
-            if (a.sink)
-                resource = a.sink->scratch;
-        auto flat = nodes(v.root, resource);
+        auto flat = nodes(v.root, std::pmr::get_default_resource());
         a.count(flat.size());
         for (auto* node : flat) {
             auto n = u32(node->operands.size());
