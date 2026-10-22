@@ -2,6 +2,7 @@
 #include "diagnostic_policy.hpp"
 #include "execution_log.hpp"
 #include "execution_testing.hpp"
+#include <cuexis_internal/execution_diagnostics.hpp>
 
 #include <algorithm>
 #include <bit>
@@ -1648,6 +1649,8 @@ auto ExecutionKernel::advance(Tick horizon, bool controlDrain) -> core::Result<v
 }
 
 auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
+    internal::execution_diagnostics::Trace diagnostic{"advanceRecorded", horizon.value(),
+                                                      impl_->prepared.timers().size()};
     if ((impl_->active->projection.rpa && impl_->active->projection.rpa->paused) ||
         impl_->active->projection.state != KernelSessionState::Prepared ||
         (impl_->active->projection.lastAdvanceHorizon &&
@@ -1707,7 +1710,12 @@ auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
                 break;
             }
             failedTick = *tick;
-            auto draft = std::make_shared<RuntimeState>(*impl_->active);
+            diagnostic.progress(tick->value(), impl_->active->timerCursor);
+            auto draft = [&] {
+                internal::execution_diagnostics::PartScope part{
+                    internal::execution_diagnostics::Part::copy};
+                return std::make_shared<RuntimeState>(*impl_->active);
+            }();
             std::vector<AdmittedObservation> inputs;
             for (const auto& input : impl_->pending) {
                 if (input.dispatchTick == *tick) {
@@ -1716,6 +1724,8 @@ auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
             }
             std::vector<FactDescriptor> facts;
             while (draft->timerCursor < timers.size() && timers[draft->timerCursor].tick == *tick) {
+                internal::execution_diagnostics::PartScope part{
+                    internal::execution_diagnostics::Part::timers};
                 impl_->timer(*draft, facts, timers[draft->timerCursor++], inputs);
             }
             impl_->failIfRequested(*tick, KernelFailurePoint::afterTimers);
@@ -1728,9 +1738,17 @@ auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
                 !draft->projection.phases.empty()) {
                 draft->projection.phases.push_back(draft->projection.phases[0]);
             }
-            impl_->validateDraft(*draft);
+            {
+                internal::execution_diagnostics::PartScope part{
+                    internal::execution_diagnostics::Part::validate};
+                impl_->validateDraft(*draft);
+            }
             impl_->failIfRequested(*tick, KernelFailurePoint::beforeLedger);
-            impl_->ledger(*draft, facts, *tick);
+            {
+                internal::execution_diagnostics::PartScope part{
+                    internal::execution_diagnostics::Part::ledger};
+                impl_->ledger(*draft, facts, *tick);
+            }
             if (impl_->testControls && std::find(impl_->testControls->signalTicks.begin(),
                                                  impl_->testControls->signalTicks.end(),
                                                  *tick) != impl_->testControls->signalTicks.end()) {
@@ -1745,7 +1763,11 @@ auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
             draft->projection.kernelWorkTick = *tick;
             draft->projection.sealedFactCursor =
                 static_cast<std::uint64_t>(draft->projection.facts.size());
-            auto reserve = impl_->reserveFault(*draft);
+            auto reserve = [&] {
+                internal::execution_diagnostics::PartScope part{
+                    internal::execution_diagnostics::Part::reserve};
+                return impl_->reserveFault(*draft);
+            }();
             reserve->projection.faultDiagnostic = impl_->foldFailureResult;
             impl_->active = std::move(draft);
             impl_->faultReserve = std::move(reserve);
@@ -1754,17 +1776,30 @@ auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
                                [&](const auto& v) { return v.dispatchTick <= *tick; }),
                 impl_->pending.end());
             foldFailed = true;
-            auto folded = std::make_shared<RuntimeState>(*impl_->active);
+            auto folded = [&] {
+                internal::execution_diagnostics::PartScope part{
+                    internal::execution_diagnostics::Part::foldCopy};
+                return std::make_shared<RuntimeState>(*impl_->active);
+            }();
             impl_->failIfRequested(*tick, KernelFailurePoint::beforeFold);
             if (folded->projection.rpa) {
                 folded->projection.rpa->foldAtTickStart = folded->projection.fold;
                 folded->projection.rpa->foldBaseTick = *tick;
             }
-            impl_->fold(*folded, *tick);
-            auto foldedReserve = impl_->reserveFault(*folded);
+            {
+                internal::execution_diagnostics::PartScope part{
+                    internal::execution_diagnostics::Part::fold};
+                impl_->fold(*folded, *tick);
+            }
+            auto foldedReserve = [&] {
+                internal::execution_diagnostics::PartScope part{
+                    internal::execution_diagnostics::Part::reserve};
+                return impl_->reserveFault(*folded);
+            }();
             impl_->active = std::move(folded);
             impl_->faultReserve = std::move(foldedReserve);
             foldFailed = false;
+            diagnostic.sealed(tick->value(), impl_->active->timerCursor);
             failedTick.reset();
         }
         if (impl_->testControls && impl_->testControls->failAdvanceFinalization)

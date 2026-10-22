@@ -1,6 +1,7 @@
 #include "execution_host.hpp"
 #include "../../../engine/core/internal/cuexis_internal/sha256.hpp"
 #include <algorithm>
+#include <cuexis_internal/execution_diagnostics.hpp>
 #include <cuexis_internal/presentation_metrics.hpp>
 #include <limits>
 #include <thread>
@@ -119,6 +120,8 @@ auto ExecutionHost::session(SessionCommand command, bool control) -> SessionRepl
     return awaitSession();
 }
 auto ExecutionHost::awaitSession() -> SessionReply {
+    internal::execution_diagnostics::Trace diagnostic{"awaitSession", 0, 0,
+                                                      sessionJob_.value_or(0)};
     if (!sessionJob_)
         throw Failure{error("control_pending")};
     const auto deadline = std::chrono::steady_clock::now() + options_.replyDeadline;
@@ -131,8 +134,11 @@ auto ExecutionHost::awaitSession() -> SessionReply {
                 pendingControlAccept_ = false;
             return take(std::move(*result));
         }
-        if (std::chrono::steady_clock::now() >= deadline)
+        if (std::chrono::steady_clock::now() >= deadline) {
+            diagnostic.emit("deadline");
+            diagnostic.emit(session_->exited() ? "worker-exited" : "worker-running");
             throw Failure{error("control_pending")};
+        }
         pump(deadline);
     }
 }

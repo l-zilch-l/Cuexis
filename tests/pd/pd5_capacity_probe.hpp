@@ -12,6 +12,15 @@ TEST_CASE("PD5 full content Snapshot Seek Replay boundary", "[.][pd][pd5][capaci
     const auto revision = test_support::environmentVariable("CUEXIS_PD5_CAPSULE_REVISION");
     REQUIRE((revision.empty() || revision == "3" || revision == "4"));
     const bool r4 = revision == "4";
+    const bool diagnosticOnly =
+        test_support::environmentVariable("CUEXIS_PD5_ADVANCE_DIAGNOSTIC_ONLY") == "1";
+    if (diagnosticOnly) {
+        REQUIRE(r4);
+        REQUIRE(scale <= 2048);
+#if !defined(CUEXIS_EXECUTION_DIAGNOSTICS_TEST_ONLY)
+        FAIL("Advance diagnostics require the explicit test-only build");
+#endif
+    }
     pd5_capacity::Trace trace{r4};
     if (r4)
         trace.run("identity", [&] { pd5_capacity::identity(scale, reuse); });
@@ -106,6 +115,16 @@ TEST_CASE("PD5 full content Snapshot Seek Replay boundary", "[.][pd][pd5][capaci
         REQUIRE(decision.disposition == GameplayAdvanceDisposition::Executed);
         return decision;
     });
+    if (diagnosticOnly) {
+        trace.run("diagnostic-close", [&] {
+            trace.take(host->close());
+            host.reset();
+        });
+        std::cout << "PD5_ADVANCE_DIAGNOSTIC {\"entities\":" << scale
+                  << ",\"advance_executed\":true,\"closed\":true,\"formal_measurement\":false}"
+                  << std::endl;
+        return;
+    }
     const auto expected = trace.run("host-query", [&] {
         auto result = trace.take(host->queryGameplay());
         REQUIRE(trace.take(result.score()).misses == scale);
