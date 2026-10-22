@@ -4,6 +4,8 @@
 
 ## 实施与回归
 
+- [PD-5 阶段 C：原样 40k R4 功能验收阻塞交回](2026-10-22-gameplay-admission-stage-c.md)
+
 - [PD-5 阶段 B：R4 metadata 拒绝顺序修复](2026-10-22-gameplay-admission-r4-metadata-order.md)
 
 - [PD-4 按需交付、真实回收与紧凑观察记录](2026-10-19-pd4-delivery-retirement-and-observation.md)
