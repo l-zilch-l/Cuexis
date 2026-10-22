@@ -1,6 +1,6 @@
 # Capsule revision 4 入口接入与阶段 B 交回
 
-日期：2026-10-22。状态：实施候选，待固定提交验证与 owner 核验。
+日期：2026-10-22。状态：本轮实现及适用本地核验完成，停止交回 owner 核验；未接受阶段 C。
 
 ## 范围与起点
 
@@ -82,6 +82,86 @@ active 不替换。原 Revision3 hostile/atomic matrix 也保留原用例并新�
 
 ## 最终固定提交、审阅与验证
 
-待最终源码固定后填写。证据仅新增于 out/pd5-r4-entry-20261022-243021e；start/frozen-before
-登记起点与 6386 个冻结文件，失败开发日志保留。最终 scratch/身份/兼容/物理预算若失败立即
-交回，不上调预算、不修改旧 golden、不换轻输入。
+最终实现提交：72c7716ea8e249a93cfaef214b8fc76346ccdce2。e29a741 为首个完整候选；
+f169d09/72c7716 提取并接入共享 Header revision helper 后，另建最终 Release 目录，
+不复用首个候选的验收绑定。最终交回提交仅更新本文与 CURRENT_STATUS，见新证据 receipt.json。
+
+最终配置 Release/STATIC、WARNINGS_AS_ERRORS=ON、CHART_V5_CANDIDATE=ON；metrics、trace、
+lifetime observer 均 OFF；IMPLEMENTATION_SHA=72c7716。fresh configure + clean-first 相关五目标
+构建退出 0。沿用已验证的 UTF-8 showIncludes override，capsule 对象 #deps=75，含全部关键私有头。
+2041 个 tracked 文件的实际 worktree bytes 已归档，运行前固定 30 个 exe/lib/构建与编译器配置
+payload；运行后源码与全部构建文件哈希相同。没有把开发增量构建或旧候选视为最终同 SHA 结果。
+
+| 最终核验 | 结果 |
+| --- | --- |
+| Capsule | 44 cases / 5399 assertions，全通过；旧 golden/拒绝与新核心/入口矩阵 |
+| Playback | 172 cases / 27905 assertions，全通过；metadata/CXC/file/memory/generation/lifecycle 含 3/4 |
+| Chart | 227 cases / 42425 assertions，全通过 |
+| Judgement | 216 cases / 35624 assertions，全通过 |
+| CXC | 64 cases / 975 assertions，全通过 |
+| 原样离线 wire matrix | 另 1 case / 344 assertions，六配置全通过 |
+| Architecture | 1/1 通过 |
+| 全仓 cuexis_format_check | 通过 |
+| tools/check_docs.py / git diff --check | 通过；477 Markdown / 20 candidate files |
+
+五组完整回归合计 723 cases / 112328 assertions。没有全仓 CTest、Linux sanitizer/coverage、
+跨平台新格式 byte acceptance 或公共发行接受声明。本轮 40k 核验包含同一 Reader 的 shared
+prepare/proof；没有运行 40k Host/Snapshot/Seek/Replay，也没有登记性能阈值或性能通过结论。
+
+### 原样六配置的完整物理结果
+
+| N / 数值模式 | file bytes | decoded bytes | 最大 section | STR0 rows | REF0 rows | semantic bytes | Writer / Reader scratch peak |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 / low | 2295 | 1751 | 1213 | 49 | 13 | 4296 | 66086 / 66086 |
+| 1 / high | 2295 | 1751 | 1213 | 49 | 13 | 4296 | 66086 / 66086 |
+| 64 / low | 9962 | 9418 | 4092 | 112 | 13 | 158979 | 77237 / 77237 |
+| 64 / high | 9954 | 9410 | 4084 | 112 | 13 | 158979 | 77237 / 77237 |
+| 40000 / low | 6818424 | 6817880 | 3725942 | 40048 | 13 | 99588531 | 7145909 / 7145909 |
+| 40000 / high | 6746664 | 6746120 | 3654182 | 40048 | 13 | 99588531 | 7145909 / 7145909 |
+
+两种 40k 均为 40000 entities / 40000 requirements，与另外五项物理值联合落在原七限额内。
+每个配置 Writer 与 Reader 各一次语义 SHA；两种 40k preimage=99588531 <134217728，
+scratch=7145909 <8388608。未导出大 preimage vector，未改变 accepted ceiling。
+完整 preimage 的字节、Ix、单 key 与 scratch 四维由同一核心在 SHA 前接受；计数/摘要分配
+在同一账本，返回 workspace live=0。完整受控分配回归 24 行均满足成功 global count/bytes
+与账本一致、global heap peak+65536=ledger peak；新增 relation 适配只增 4 bytes，
+实测 HashCoreWork=4656 bytes，仍由固定控制额度覆盖。所有新旧 workspace 路径和失败清理
+沿用前批对账；原始结果在 allocation-observations.json 与单测日志，不以本机进程 RSS 代替。
+
+finalize_validation.py 在进程退出 0 后独立解析六个完整实际文件：每个 Header/section CRC、
+decoded sum、七预算、逐 section 大小与行数、Header digest 均通过；所有六个文件的精确 sizing
+及完整 Gameplay.2 SHA 与冻结 Stage A audit-r3 记录相等。Stage A 仅记录过提议，未被改写成当时
+已经准入；本轮的新 wire 成功与 Reader 验证单独登记。原样 fixture 构造段除格式空白与原代码
+逐字符一致，fixture-construction-proof.json 可复核；没有换较轻内容。
+
+40k low 完整 semantic digest：
+78c23507481084ba7aa900efd56f72065992d8ad2409f657fcf194784252038d。
+40k high：e41eccde1593ca70b4b9c17696827f36b8884523d66e6c0ecb111a92ffc1cfcf。
+artifact SHA、六个新 wire 文件、逐 section 数值和历史引用哈希见 physical-results.json。
+旧日志只复制到新 packet 的 frozen-stage-a-reference，原件哈希不变。
+
+### Standards
+
+独立只读范围 243021e..72c7716：硬性违规 0、可行动异味 0。首轮 P3 重复 Header 小端解析
+已提取为共享 packedGameplayRevision，保留两入口各自的截断、选择与错误适配，并补齐 4/
+95-byte 测试。复核不替代上述同 SHA 执行证据。
+
+### Spec
+
+独立只读范围 243021e..72c7716：发现 0。共享字段/完整 Gameplay.2、无旁路新入口、物理省略、
+unused REF0、统一 scratch、旧版/Graph.1 与预算/生命周期边界均经复核。原有公共 capability
+的 requiredFormat 仍保留 capsule.3 语义描述，未改同一 capability ID/revision 的冻结记录；
+这不是新 Capsule4 registry 宣告。新4支持由显式 metadata/Header/Reader 合同登记，不升级 SDK。
+依据为 GAMEPLAY_V2_ABI §capability description、Capsule §13 和 Chart Entry Gameplay metadata。
+两轴最终未关闭发现均为 0；完整原始 review 记录见新 packet 的 review.md。
+
+### 冻结、绑定与停止点
+
+6386 个既有冻结证据文件逐项核验字节不变；旧 golden、七物理预算及四维 profile 未改。
+主树保持干净 F1 eed36648a692333e47f798aa45be36ca850d08de；C2、旧失败证据及窗口3均未恢复。
+新证据根 out/pd5-r4-entry-20261022-243021e，最终运行在 final-72c7716；receipt/index/zip
+绑定源码、diff、工具/配置、二进制、原始测试、六个 wire 与历史对照。
+verify_packet.py 仅只读校验完整性，不能代替 owner 的代码与阶段接受。
+
+本轮提交后停止交回。阶段 C 的 40k Host 功能链路、正式 preparation/registration/测量、
+主树合并及 SDK/公共 API 升级均未执行；F1、1.10/15% 与全部生命周期规则保持。
