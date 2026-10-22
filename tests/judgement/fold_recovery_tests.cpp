@@ -5,6 +5,7 @@
 #include "execution_reference.hpp"
 #include "execution_test_fixture.hpp"
 #include <cuexis/judgement/recovery_codec.hpp>
+#include <cuexis_internal/execution_stop.hpp>
 
 #include <algorithm>
 #include <cstdlib>
@@ -1731,6 +1732,54 @@ TEST_CASE("Idle deadlines retain finalization duplicate phase register and signa
                 CHECK(sameSnapshot(*x, *y));
                 CHECK(detail::KernelTestAccess::visibleSignalCount(optimized, Tick{21}) ==
                       detail::KernelTestAccess::visibleSignalCount(reference, Tick{21}));
+            }
+        }
+}
+
+TEST_CASE("Explicit owner shutdown preserves the last sealed tick and retained views",
+          "[kernel][recovery][shutdown]") {
+    for (const bool rpa : {false, true})
+        for (const auto stopTick : {Tick{0}, Tick{20}}) {
+            DYNAMIC_SECTION("rpa=" << rpa << " tick=" << stopTick.value()) {
+                FoldFixture f;
+                deadlineFixture(f, 32, rpa);
+                auto stopped = deadlineSession(f, rpa);
+                auto reference = deadlineSession(f, rpa);
+                std::atomic<bool> stop{};
+                detail::KernelTestControls controls{};
+                controls.beforeTick = [&](Tick tick) {
+                    if (tick == stopTick)
+                        stop.store(true, std::memory_order_release);
+                };
+                REQUIRE(detail::KernelTestAccess::inject(stopped, controls));
+                controls = {};
+                controls.failedTick = stopTick;
+                controls.failurePoint = detail::KernelFailurePoint::beforeSeal;
+                controls.forceReferenceAdvance = true;
+                REQUIRE(detail::KernelTestAccess::inject(reference, controls));
+                const auto retained = stopped.query();
+                REQUIRE(retained);
+                const auto result = [&] {
+                    cuexis::internal::execution_stop::Binding binding{stop};
+                    return stopped.advance(Tick{1000});
+                }();
+                REQUIRE_FALSE(result);
+                const auto expected = reference.advance(Tick{1000});
+                REQUIRE_FALSE(expected);
+                CHECK(result.error().code() == expected.error().code());
+                const auto a = detail::KernelTestAccess::captureDTO(stopped);
+                const auto b = detail::KernelTestAccess::captureDTO(reference);
+                REQUIRE(a);
+                REQUIRE(b);
+                CHECK(sameSnapshot(*a, *b));
+                CHECK(retained->kernelView().facts.empty());
+                CHECK_FALSE(retained->kernelView().processedFrontier);
+                CHECK(a->kernel.state == KernelSessionState::Faulted);
+                CHECK(a->kernel.failedTick == stopTick);
+                // The binding is scoped to its owner: a later unbound operation
+                // must not inherit the destroyed owner's terminal stop request.
+                auto independent = deadlineSession(f, rpa);
+                CHECK(independent.advance(Tick{1000}));
             }
         }
 }

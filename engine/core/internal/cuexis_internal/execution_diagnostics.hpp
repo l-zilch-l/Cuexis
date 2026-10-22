@@ -42,7 +42,7 @@ struct Trace final {
     const char* name;
     Trace* previous;
     bool recording;
-    std::uint64_t id{}, timers{}, cursor{}, ticks{}, job{};
+    std::uint64_t id{}, timers{}, cursor{}, sealedCursor{}, ticks{}, job{};
     std::int64_t horizon{}, tick{}, started{};
     int exceptions{};
     std::array<std::uint64_t, static_cast<unsigned>(Part::count)> calls{}, nanoseconds{};
@@ -67,7 +67,8 @@ struct Trace final {
                          "\"id\":%llu,\"job_id\":%llu,\"parent_id\":%llu,\"thread\":%llu,\"time_"
                          "ns\":%lld,\"started_ns\":%lld,"
                          "\"elapsed_ns\":%lld,\"horizon\":%lld,\"timers\":%llu,"
-                         "\"timer_cursor\":%llu,\"ticks\":%llu,\"tick\":%lld,\"calls\":[",
+                         "\"timer_cursor\":%llu,\"sealed_timer_cursor\":%llu,\"ticks\":%llu,"
+                         "\"tick\":%lld,\"calls\":[",
                          name, state, static_cast<unsigned long long>(id),
                          static_cast<unsigned long long>(job),
                          static_cast<unsigned long long>(previous ? previous->id : 0),
@@ -77,6 +78,7 @@ struct Trace final {
                          static_cast<long long>(now() - started), static_cast<long long>(horizon),
                          static_cast<unsigned long long>(timers),
                          static_cast<unsigned long long>(cursor),
+                         static_cast<unsigned long long>(sealedCursor),
                          static_cast<unsigned long long>(ticks), static_cast<long long>(tick));
             for (unsigned i = 0; i < calls.size(); ++i)
                 std::fprintf(stderr, "%s%llu", i ? "," : "",
@@ -94,12 +96,17 @@ struct Trace final {
     void progress(std::int64_t at, std::uint64_t position) noexcept {
         tick = at;
         cursor = position;
+        sealedCursor = position;
         ++ticks;
         if ((ticks & (ticks - 1)) == 0)
             emit("progress");
     }
     void sealed(std::int64_t at, std::uint64_t position) noexcept {
         tick = at;
+        cursor = position;
+        sealedCursor = position;
+    }
+    void inFlight(std::uint64_t position) noexcept {
         cursor = position;
     }
     ~Trace() noexcept {
@@ -132,6 +139,7 @@ struct Trace final {
     void emit(const char*) const noexcept {}
     void progress(std::int64_t, std::uint64_t) noexcept {}
     void sealed(std::int64_t, std::uint64_t) noexcept {}
+    void inFlight(std::uint64_t) noexcept {}
 };
 struct PartScope final {
     explicit PartScope(Part) noexcept {}

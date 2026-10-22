@@ -34,6 +34,7 @@ struct KernelTestControls final {
     bool failAdvanceFinalization{false};
     bool forceReferenceAdvance{false};
     std::shared_ptr<KernelWorkObservation> work;
+    std::function<void(Tick)> beforeTick;
 };
 // Internal checking fixture, unavailable in installed headers or Playback.
 class KernelTestAccess final {

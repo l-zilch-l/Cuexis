@@ -3,6 +3,7 @@
 #include "execution_log.hpp"
 #include "execution_testing.hpp"
 #include <cuexis_internal/execution_diagnostics.hpp>
+#include <cuexis_internal/execution_stop.hpp>
 
 #include <algorithm>
 #include <bit>
@@ -157,6 +158,8 @@ struct ExecutionKernel::Impl final {
         std::map<RequirementIdentity, std::size_t> indices;
         phaseOffsets.push_back(0);
         for (std::size_t i = 0; i < graph().requirements.size(); ++i) {
+            if (i % 64 == 0)
+                internal::execution_stop::checkpoint();
             const auto& r = graph().requirements[i];
             if (!indices.emplace(r.identity, i).second)
                 throw std::logic_error{"duplicate prepared requirement"};
@@ -633,6 +636,7 @@ struct ExecutionKernel::Impl final {
     void validatePhaseLayout(const RuntimeState& d) const {
         std::set<std::pair<RequirementIdentity, PhaseKind>> phases;
         for (const auto& p : d.projection.phases) {
+            internal::execution_stop::checkpoint();
             if (!phases.emplace(p.requirement, p.phase).second) {
                 throw std::logic_error{"duplicate phase draft"};
             }
@@ -743,6 +747,8 @@ struct ExecutionKernel::Impl final {
         std::vector<RegisterContribution> hookWrites;
         for (std::size_t i = static_cast<std::size_t>(v.factCursor); i < d.projection.facts.size();
              ++i) {
+            if (i % 64 == 0)
+                internal::execution_stop::checkpoint();
             const auto* f = std::get_if<PhaseOutcomeFact>(&d.projection.facts[i]);
             if (!f) {
                 const auto& receipt = std::get<ReceiptFact>(d.projection.facts[i]);
@@ -1772,6 +1778,9 @@ auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
             }
             failedTick = *tick;
             diagnostic.progress(tick->value(), impl_->active->timerCursor);
+            if (impl_->testControls && impl_->testControls->beforeTick)
+                impl_->testControls->beforeTick(*tick);
+            internal::execution_stop::checkpoint();
             std::size_t idleEnd{};
             if (idleFoldReady && writable && writable.get() == impl_->active.get() &&
                 writable.use_count() == 2 && impl_->idleDeadlineEnd(*writable, *tick, idleEnd)) {
@@ -1803,6 +1812,8 @@ auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
             std::vector<FactDescriptor> facts;
             const auto activeCount = draft->activeRequirements.size();
             while (draft->timerCursor < timers.size() && timers[draft->timerCursor].tick == *tick) {
+                if (draft->timerCursor % 64 == 0)
+                    internal::execution_stop::timerCheckpoint(draft->timerCursor);
                 if (impl_->testControls && impl_->testControls->work)
                     ++impl_->testControls->work->timers;
                 internal::execution_diagnostics::PartScope part{
