@@ -2,6 +2,7 @@
 
 #include <cuexis/judgement/gameplay_graph.hpp>
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -58,6 +59,12 @@ template <typename Adapter> class StructuralKeyEncoder final {
         for (const auto& step : path)
             value(step);
     }
+    void emission(const RequirementIdentity& identity) {
+        if constexpr (requires { adapter_.tryEmission(identity); })
+            if (adapter_.tryEmission(identity))
+                return;
+        emissionIdentityFields(*this, identity);
+    }
     template <typename... T> void fields(const T&... values) {
         (value(values), ...);
     }
@@ -74,7 +81,7 @@ void structuralProjectionFields(Encoder& out, std::uint8_t subdomain,
     for (auto token : tokens)
         out.text(token);
     if (identity)
-        emissionIdentityFields(out, *identity);
+        out.emission(*identity);
 }
 template <typename Encoder>
 void claimKeyFields(Encoder& out, std::string_view explicitNamespace,
@@ -93,6 +100,22 @@ inline auto structuralProjectionKeySize(std::uint64_t binaryBytes, std::uint64_t
     return kStructuralKeyPrefix.size() + 2 * binaryBytes;
 }
 
+// Bounded hex chunks are shared by owning legacy keys and incremental hash output.
+template <typename Write> void structuralHexChunks(std::span<const std::byte> bytes, Write write) {
+    constexpr char digits[] = "0123456789abcdef";
+    std::array<std::byte, 1024> chunk{};
+    while (!bytes.empty()) {
+        const auto size = std::min<std::size_t>(bytes.size(), chunk.size() / 2);
+        for (std::size_t i = 0; i < size; ++i) {
+            const auto value = std::to_integer<unsigned char>(bytes[i]);
+            chunk[2 * i] = static_cast<std::byte>(digits[value >> 4U]);
+            chunk[2 * i + 1] = static_cast<std::byte>(digits[value & 15U]);
+        }
+        write(std::span<const std::byte>{chunk}.first(2 * size));
+        bytes = bytes.subspan(size);
+    }
+}
+
 // The overflow callback must reject an unrepresentable string using the caller's error policy.
 template <typename Overflow>
 auto formatStructuralProjectionKey(std::span<const std::byte> bytes, Overflow overflow)
@@ -101,14 +124,11 @@ auto formatStructuralProjectionKey(std::span<const std::byte> bytes, Overflow ov
     const auto size = structuralProjectionKeySize(bytes.size(), limit);
     if (size > limit)
         overflow();
-    constexpr char digits[] = "0123456789abcdef";
     std::string key{kStructuralKeyPrefix};
     key.reserve(static_cast<std::size_t>(size));
-    for (auto byte : bytes) {
-        const auto value = std::to_integer<unsigned char>(byte);
-        key.push_back(digits[value >> 4U]);
-        key.push_back(digits[value & 15U]);
-    }
+    structuralHexChunks(bytes, [&](auto chunk) {
+        key.append(reinterpret_cast<const char*>(chunk.data()), chunk.size());
+    });
     return key;
 }
 

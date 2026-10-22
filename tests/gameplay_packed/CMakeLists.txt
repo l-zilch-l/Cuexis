@@ -1,4 +1,4 @@
-add_executable(cuexis_gameplay_packed_tests gameplay_capsule_tests.cpp hash_work_tests.cpp)
+add_executable(cuexis_gameplay_packed_tests gameplay_capsule_tests.cpp hash_work_tests.cpp hash_core_tests.cpp)
 target_compile_features(cuexis_gameplay_packed_tests PRIVATE cxx_std_20)
 target_include_directories(cuexis_gameplay_packed_tests PRIVATE
     ../judgement

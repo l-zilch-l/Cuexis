@@ -1,4 +1,5 @@
 #include "../judgement/execution_test_fixture.hpp"
+#include "capsule_fixture.hpp"
 #include "gameplay_test_fixture.hpp"
 #include "hash_work_internal.hpp"
 #include "packed_fixture_support.hpp"
@@ -25,68 +26,7 @@ namespace packed = chart::packed;
 namespace support = chart::packed::test;
 using Bytes = std::vector<std::byte>;
 
-struct CapsuleFixture final {
-    Fixture base;
-    ResolvedGameplayPrepareRequest request;
-    chart::CanonicalSemanticChart chart;
-    std::vector<capsule::RequirementOwner> owners;
-    capsule::CapsuleProfiles profiles{"normalization.one", "coordination.policy.one"};
-
-    CapsuleFixture() : request{base.request(), {}} {
-        auto& r = request.assembly.sources[0].document.requirements[0];
-        r.localClosePolicyToken = "local.close.t4.v1";
-        r.phases.push_back({PhaseKind::tail, 3});
-        r.patternArmRefs = {"atom.one"};
-        r.timing = RequirementRecord::Timing{Tick{100},
-                                             {{Tick{10}, Tick{20}, {PhaseKind::head, 1}},
-                                              {Tick{100}, Tick{103}, {PhaseKind::tail, 3}}},
-                                             TimeInterval{Tick{20}, Tick{100}}};
-        r.resourceClaims[0].claimPolicy.competition = ClaimPolicyDeclaration::CompetitionKey{-1, 7};
-        request.assembly.sources[0].document.relations[0].policy.claimKeyToken.clear();
-        chart.chartId.value = "019b0000-0000-7abc-8def-000000000001";
-        chart.features = {{std::string{kFeatureId}, 1}, {std::string{kRulesetFeatureId}, 1}};
-        chart.mainMusic = chart::AssetId{"music.one"};
-        chart.resourceClosure.resources = {
-            {*chart.mainMusic, chart::CanonicalResourceUseKind::MainMusic},
-            {chart::AssetId{"mesh.one"}, chart::CanonicalResourceUseKind::RenderableMesh},
-            {chart::AssetId{"material.one"}, chart::CanonicalResourceUseKind::RenderableMaterial}};
-        std::sort(chart.resourceClosure.resources.begin(), chart.resourceClosure.resources.end());
-        chart::CanonicalEntity entity;
-        entity.identity = chart::ExplicitEntityIdentity{
-            chart::ChartObjectId{"019b0000-0000-7abc-8def-000000000002"}};
-        entity.components = {chart::CanonicalTransform{},
-                             chart::CanonicalRenderable{chart::AssetId{"mesh.one"},
-                                                        chart::AssetId{"material.one"}, 37}};
-        chart.entities.push_back(entity);
-        auto visual = entity;
-        visual.identity = chart::ExplicitEntityIdentity{
-            chart::ChartObjectId{"019b0000-0000-7abc-8def-000000000003"}};
-        visual.parent = entity.identity;
-        chart.entities.push_back(visual);
-        owners.push_back({r.identity, entity.identity});
-    }
-    auto prepare() const -> PreparedGameplay {
-        auto result = prepareResolvedGameplay(request);
-        INFO((result ? ""
-                     : std::string{result.error().code()} + ": " +
-                           std::string{result.error().message()}));
-        REQUIRE(result);
-        return *result;
-    }
-    auto context() const -> capsule::DecodeContext {
-        return {request.assembly.capabilityContext, request.assembly.contentProfileLimits,
-                request.patternBudget, request.assembly.identityDeclarations,
-                profiles.coordinatorPolicyToken};
-    }
-    auto encode(const PreparedGameplay& prepared) const -> Bytes {
-        const auto result = capsule::encode({chart, prepared, owners, profiles});
-        INFO((result ? ""
-                     : std::string{result.error().code()} + ": " +
-                           std::string{result.error().message()}));
-        REQUIRE(result);
-        return *result;
-    }
-};
+using cuexis::gameplay_packed::testing::CapsuleFixture;
 
 auto u32(const Bytes& bytes, std::size_t at) -> std::uint32_t {
     packed::ByteReader r{std::span{bytes}.subspan(at, 4)};
@@ -1138,69 +1078,4 @@ TEST_CASE("Bounded Gameplay2 static sink preserves complete legacy prefix bytes"
     REQUIRE(streamed);
     CHECK(std::equal(expected->begin(), expected->end(), actual.begin(), actual.end()));
     CHECK(scratch.highWater() <= capsule::detail::kAcceptedHashWork.maxHashScratchBytes);
-}
-
-TEST_CASE("Shared semantic traversal counts hashes and exports legacy bytes",
-          "[capsule][semantic-sinks]") {
-    for (const auto revision : {2U, 3U}) {
-        DYNAMIC_SECTION("revision " << revision) {
-            CapsuleFixture f;
-            if (revision == 3) {
-                f.base.latePolicy = executionLate();
-                executionFields(f.request.assembly);
-                f.profiles = {f.request.assembly.normalizationProfileToken,
-                              f.request.assembly.coordinatorPolicyToken};
-            }
-            const auto prepared = f.prepare();
-            capsule::EncodeRequest request{f.chart, prepared, f.owners, f.profiles,
-                                           {},      {},       revision};
-            const auto expected = capsule::semanticPreimage(request);
-            REQUIRE(expected);
-            capsule::detail::HashScratch scratch{capsule::detail::kAcceptedHashWork};
-            const auto count = capsule::detail::streamSemanticPreimage(
-                request, {nullptr, [](void*, std::span<const std::byte>) {}, &scratch});
-            REQUIRE(count);
-            REQUIRE(count->bytes == expected->size());
-            CHECK(count->visits == 12); // Includes the direct ENT0 lookup and E-only claim owner.
-            CHECK(count->maxKey <= 4096);
-            capsule::detail::checkHashCost(*count, capsule::detail::kAcceptedHashWork);
-            core::detail::Sha256 sha;
-            const auto hashed = capsule::detail::streamSemanticPreimage(
-                request, {&sha,
-                          [](void* state, auto bytes) {
-                              static_cast<core::detail::Sha256*>(state)->update(bytes);
-                          },
-                          &scratch});
-            REQUIRE(hashed);
-            CHECK(hashed->bytes == count->bytes);
-            CHECK(hashed->visits == count->visits);
-            CHECK(sha.finish() == core::detail::sha256(*expected));
-            struct Export final {
-                std::pmr::vector<std::byte> bytes;
-                std::size_t limit;
-            } output{std::pmr::vector<std::byte>{&scratch}, expected->size()};
-            output.bytes.reserve(output.limit);
-            const auto append = [](void* state, std::span<const std::byte> bytes) {
-                auto& destination = *static_cast<Export*>(state);
-                if (bytes.size() > destination.limit - destination.bytes.size())
-                    capsule::detail::hashBudget(
-                        "maxSemanticPreimageBytes", "semanticHash.preimageBytes", destination.limit,
-                        destination.bytes.size() + bytes.size(), true, "export");
-                destination.bytes.insert(destination.bytes.end(), bytes.begin(), bytes.end());
-            };
-            const auto exported =
-                capsule::detail::streamSemanticPreimage(request, {&output, append, &scratch});
-            REQUIRE(exported);
-            CHECK(std::equal(output.bytes.begin(), output.bytes.end(), expected->begin(),
-                             expected->end()));
-            output.bytes.clear();
-            --output.limit;
-            const auto refused =
-                capsule::detail::streamSemanticPreimage(request, {&output, append, &scratch});
-            REQUIRE_FALSE(refused);
-            CHECK(refused.error().code() == "capability.budget_insufficient");
-            CHECK(output.bytes.size() <= output.limit);
-            CHECK(scratch.highWater() <= capsule::detail::kAcceptedHashWork.maxHashScratchBytes);
-        }
-    }
 }

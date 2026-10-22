@@ -1,6 +1,7 @@
 #include <cuexis/gameplay_packed/gameplay_capsule.hpp>
 
 #include "claim_key_internal.hpp"
+#include "hash_frames_internal.hpp"
 #include "packed_file_internal.hpp"
 #include "packed_gameplay_internal.hpp"
 #include "packed_identity_internal.hpp"
@@ -34,6 +35,8 @@ using chart::packed::crc32;
 namespace gp = chart::packed::gameplay_detail;
 using Bytes = std::vector<std::byte>;
 using Ref = gp::Reference;
+using detail::ClaimRow;
+using detail::RequirementIndices;
 constexpr std::string_view kResolver = "grace.resolver.s2.v1";
 constexpr std::string_view kClose = "local.close.t4.v1";
 
@@ -118,12 +121,15 @@ auto textLess(std::string_view left, std::string_view right) -> bool {
 // Shared visitors collect dictionaries, emit compact wire, or emit the fixed-width preimage.
 // Sizing traverses the same fields without allocating output.
 enum class Mode { collect, wire, hash };
+#include "hash_core_work_internal.hpp"
+
 struct Output final {
     static constexpr bool reading = false;
     Mode mode{Mode::wire};
     ByteWriter writer;
     gp::SemanticByteSink* sink{};
     detail::HashCost* cost{};
+    HashCoreWork* operation{};
     bool sizing{};
     std::size_t size{};
     std::size_t limit{std::numeric_limits<std::size_t>::max()};
@@ -132,6 +138,14 @@ struct Output final {
     const std::vector<std::string>* strings{};
     const std::vector<Ref>* references{};
     void add(std::size_t n) {
+        if (operation && cost) {
+            cost->bytes =
+                operation->counting
+                    ? detail::cappedAdd(cost->bytes, n, operation->limits.maxSemanticPreimageBytes)
+                    : cost->bytes + n;
+            size = static_cast<std::size_t>(cost->bytes);
+            return;
+        }
         if (n > limit - size) {
             fail("packed.budget.decoded_bytes", "expanded payload exceeds budget");
         }
@@ -142,7 +156,7 @@ struct Output final {
             return;
         }
         add(bytes.size());
-        if (!sizing) {
+        if (!sizing && (!operation || !operation->counting)) {
             if (sink)
                 sink->write(sink->context, bytes);
             else
@@ -179,24 +193,24 @@ struct Output final {
             }
         }
     }
-    void value(std::uint32_t& v) {
+    void value(const std::uint32_t& v) {
         unsignedValue(v, false);
     }
-    void value(std::uint64_t& v) {
+    void value(const std::uint64_t& v) {
         unsignedValue(v, true);
     }
-    void value(std::int64_t& v) {
+    void value(const std::int64_t& v) {
         if (mode == Mode::hash) {
             unsignedValue(std::bit_cast<std::uint64_t>(v), true);
         } else {
             unsignedValue((std::bit_cast<std::uint64_t>(v) << 1U) ^ (v < 0 ? UINT64_MAX : 0), true);
         }
     }
-    void value(bool& v) {
+    void value(const bool& v) {
         tag(v ? 1 : 0);
     }
     void text(std::string_view v) {
-        if (!utf8(v)) {
+        if (!operation && !utf8(v)) {
             fail("packed.strings.bounds", "token is not valid UTF-8");
         }
         if (mode == Mode::collect) {
@@ -213,7 +227,10 @@ struct Output final {
             unsignedValue(u32(static_cast<std::size_t>(it - strings->begin())), false);
         }
     }
-    void value(std::string& v) {
+    void value(const std::string& v) {
+        text(v);
+    }
+    void value(std::string_view v) {
         text(v);
     }
     void ref(std::uint8_t kind, std::string_view v) {
@@ -239,19 +256,53 @@ struct Output final {
     template <typename... T> void fields(T&... v) {
         (value(v), ...);
     }
-    template <typename T> void list(std::vector<T>& v) {
+    template <typename T> void list(const std::vector<T>& v) {
         count(v.size());
         for (auto& row : v) {
             value(row);
         }
     }
-    template <typename T> void option(std::optional<T>& v) {
+    template <typename T> void option(const std::optional<T>& v) {
         tag(v ? 1 : 0);
         if (v) {
             value(*v);
         }
     }
 };
+void HashCoreWork::combine(Output& out, const detail::HashCost& value) const {
+    require(out.cost != nullptr, "semanticHash.cost", "Missing cost accumulator");
+    add(*out.cost, value);
+    out.size = static_cast<std::size_t>(out.cost->bytes);
+}
+void HashCoreWork::visitEdge(Output& out) const {
+    require(out.cost != nullptr, "semanticHash.cost", "Missing cost accumulator");
+    out.cost->visits =
+        counting ? detail::cappedAdd(out.cost->visits, 1, limits.maxExpandedReferenceVisits)
+                 : out.cost->visits + 1;
+}
+template <typename Emit>
+auto HashCoreWork::resolve(CostGroup groupId, std::size_t index, Emit emit) -> detail::HashCost {
+    auto slots = group(groupId);
+    require(index < slots.size(), "semanticHash.cache", "Cache index is out of range");
+    auto& slot = slots[index];
+    if (slot.flags == 1) {
+        ++observation.cacheHits;
+        return slot.cost;
+    }
+    require(slot.flags == 0, "semanticHash.cache", "Cyclic semantic cost dependency");
+    slot.flags = 2;
+    detail::HashCost cost;
+    Output child;
+    child.mode = Mode::hash;
+    child.operation = this;
+    child.cost = &cost;
+    emit(child);
+    slot.cost = cost;
+    slot.flags = 1;
+    ++observation.uniqueRows;
+    return cost;
+}
+
 struct Input final {
     static constexpr bool reading = true;
     ByteReader reader;
@@ -363,7 +414,7 @@ template <> auto registry<InputAction>() {
     return std::array{InputAction::press, InputAction::release, InputAction::update};
 }
 template <typename A, typename E> void enumeration(A& a, E& v) {
-    const auto table = registry<E>();
+    const auto table = registry<std::remove_cv_t<E>>();
     std::uint8_t ordinal{};
     if constexpr (!A::reading) {
         const auto it = std::find(table.begin(), table.end(), v);
@@ -376,28 +427,29 @@ template <typename A, typename E> void enumeration(A& a, E& v) {
         v = table[ordinal - 1];
     }
 }
-template <typename A> void visit(A& a, Tick& v) {
+template <typename A, typename V> void visitFields(A& a, V& v, std::type_identity<Tick>) {
     auto n = v.value();
     a.value(n);
     if constexpr (A::reading) {
         v = Tick{n};
     }
 }
-template <typename A> void visit(A& a, TickSpan& v) {
+template <typename A, typename V> void visitFields(A& a, V& v, std::type_identity<TickSpan>) {
     auto n = v.value();
     a.value(n);
     if constexpr (A::reading) {
         v = TickSpan{n};
     }
 }
-template <typename A> void visit(A& a, PreparedGrace& v) {
+template <typename A, typename V> void visitFields(A& a, V& v, std::type_identity<PreparedGrace>) {
     auto n = v.span();
     a.value(n);
     if constexpr (A::reading) {
         v = PreparedGrace{n};
     }
 }
-template <typename A> void visit(A& a, StableDeclarationId& v) {
+template <typename A, typename V>
+void visitFields(A& a, V& v, std::type_identity<StableDeclarationId>) {
     a.fields(v.sourceDocumentId, v.declarationOrdinal);
 }
 struct StructuralOutputAdapter final {
@@ -408,18 +460,34 @@ struct StructuralOutputAdapter final {
     auto checkedCount(std::size_t value) const -> std::uint32_t {
         return u32(value);
     }
+    auto tryEmission(const RequirementIdentity& identity) -> bool {
+        if (out.operation && out.sizing)
+            if (const auto* cost = out.operation->emission(identity)) {
+                out.add(static_cast<std::size_t>(cost->bytes));
+                return true;
+            }
+        return false;
+    }
     void validateText(std::string_view text) const {
-        if (!utf8(text))
+        if (!out.operation && !utf8(text))
             fail("packed.strings.bounds", "token is not valid UTF-8");
     }
 };
 
-template <typename A> void visit(A& a, EmissionPathStep& v) {
+template <typename A, typename V>
+void visitFields(A& a, V& v, std::type_identity<EmissionPathStep>) {
     judgement::detail::emissionStepFields(a, v);
 }
-template <typename A> void visit(A& a, RequirementIdentity& v) {
+template <typename A, typename V>
+void visitFields(A& a, V& v, std::type_identity<RequirementIdentity>) {
     if constexpr (std::is_same_v<A, Output>) {
         if (a.mode == Mode::hash) {
+            if (a.operation && a.operation->counting && a.cost)
+                if (const auto* cost = a.operation->emission(v)) {
+                    a.operation->combine(a, *cost);
+                    ++a.operation->observation.cacheHits;
+                    return;
+                }
             StructuralOutputAdapter adapter{a};
             judgement::detail::StructuralKeyEncoder encoder{adapter};
             judgement::detail::emissionIdentityFields(encoder, v);
@@ -429,32 +497,40 @@ template <typename A> void visit(A& a, RequirementIdentity& v) {
     judgement::detail::emissionIdentityFields(a, v);
 }
 
-template <typename A> void visit(A& a, PhaseDeclaration& v) {
+template <typename A, typename V>
+void visitFields(A& a, V& v, std::type_identity<PhaseDeclaration>) {
     enumeration(a, v.kind);
     a.value(v.declarationOrdinal);
 }
-template <typename A> void visit(A& a, PhaseTarget& v) {
+template <typename A, typename V> void visitFields(A& a, V& v, std::type_identity<PhaseTarget>) {
     enumeration(a, v.phase);
     a.value(v.chartTick);
 }
-template <typename A> void visit(A& a, AmountMatchRange& v) {
+template <typename A, typename V>
+void visitFields(A& a, V& v, std::type_identity<AmountMatchRange>) {
     a.fields(v.minimum, v.maximum);
 }
-template <typename A> void visit(A& a, AtomBinding& v) {
+template <typename A, typename V> void visitFields(A& a, V& v, std::type_identity<AtomBinding>) {
     a.fields(v.atomRef, v.domainToken, v.sourceClass, v.channelToken);
     enumeration(a, v.action);
     a.fields(v.amountRange, v.tailOnly);
 }
-template <typename A> void visit(A& a, TimeInterval& v) {
+template <typename A, typename V> void visitFields(A& a, V& v, std::type_identity<TimeInterval>) {
     a.fields(v.start, v.end);
 }
-template <typename A> void visit(A& a, ClaimPolicyDeclaration::CompetitionKey& v) {
+template <typename A, typename V>
+void visitFields(A& a, V& v, std::type_identity<ClaimPolicyDeclaration::CompetitionKey>) {
     a.fields(v.priority, v.tieRank);
 }
-template <typename A> void visit(A& a, FeatureRef& v) {
+template <typename A, typename V> void visitFields(A& a, V& v, std::type_identity<FeatureRef>) {
     a.ref(7, v.featureId);
 }
-template <typename A> void visit(A& a, ResourceRef& v) {
+template <typename A, typename V>
+void visitFields(A& a, V& v, std::type_identity<std::string_view>) {
+    static_assert(!A::reading);
+    a.text(v);
+}
+template <typename A, typename V> void visitFields(A& a, V& v, std::type_identity<ResourceRef>) {
     a.ref(10, v.resourceId);
 }
 void projectionFields(Output& a, std::uint8_t subdomain,
@@ -482,6 +558,40 @@ auto projection(std::uint8_t subdomain, std::initializer_list<std::string_view> 
 
 template <typename A, typename Emit> void projectedFromFields(A& a, std::uint8_t kind, Emit emit) {
     if constexpr (std::is_same_v<A, Output>) {
+        if (a.operation) {
+            Output count;
+            count.mode = Mode::hash;
+            count.sizing = true;
+            count.operation = a.operation;
+            emit(count);
+            const auto length = judgement::detail::structuralProjectionKeySize(
+                count.size, a.operation->limits.maxProjectionKeyBytes);
+            if (length > a.operation->limits.maxProjectionKeyBytes)
+                detail::hashBudget("maxProjectionKeyBytes", "semanticHash.projectionKeyBytes",
+                                   a.operation->limits.maxProjectionKeyBytes, length, false);
+            a.cost->maxKey = std::max(a.cost->maxKey, length);
+            a.tag(kind);
+            a.unsignedValue(length, false);
+            if (a.operation->counting)
+                a.add(static_cast<std::size_t>(length));
+            else {
+                const auto prefix = judgement::detail::kStructuralKeyPrefix;
+                a.raw(std::as_bytes(std::span{prefix.data(), prefix.size()}));
+                gp::SemanticByteSink hexSink{&a,
+                                             [](void* context, auto bytes) {
+                                                 auto& parent = *static_cast<Output*>(context);
+                                                 judgement::detail::structuralHexChunks(
+                                                     bytes, [&](auto chunk) { parent.raw(chunk); });
+                                             },
+                                             &a.operation->scratch};
+                Output binary;
+                binary.mode = Mode::hash;
+                binary.operation = a.operation;
+                binary.sink = &hexSink;
+                emit(binary);
+            }
+            return;
+        }
         if (a.sink) {
             Output count;
             count.mode = Mode::hash;
@@ -516,7 +626,14 @@ void projectedClaim(Output& a, std::string_view explicitNamespace,
     });
 }
 
-template <typename A> void visit(A& a, CapabilityRef& v) {
+template <typename A> void capabilityFields(A& a, std::string_view id, std::string_view revision) {
+    projected(a, 13, 0, {id});
+    bool present = !revision.empty();
+    a.value(present);
+    if (present)
+        a.text(revision);
+}
+template <typename A, typename V> void visitFields(A& a, V& v, std::type_identity<CapabilityRef>) {
     if constexpr (A::reading) {
         std::string key;
         a.ref(13, key);
@@ -548,23 +665,16 @@ template <typename A> void visit(A& a, CapabilityRef& v) {
         v.capabilityId.assign(reinterpret_cast<const char*>(token.data()), token.size());
         require(!v.capabilityId.empty() && utf8(v.capabilityId), "REF0", "invalid capability ID");
         require(key == projection(0, {v.capabilityId}), "REF0", "noncanonical capability key");
-    } else {
-        projected(a, 13, 0, {v.capabilityId});
-    }
-    std::optional<std::string> revision;
-    if constexpr (!A::reading) {
-        if (!v.revision.empty()) {
-            revision = v.revision;
-        }
-    }
-    a.value(revision);
-    if constexpr (A::reading) {
+        std::optional<std::string> revision;
+        a.value(revision);
         require(!revision || !revision->empty(), "capability.revision",
                 "present empty revision cannot become absence");
         v.revision = revision.value_or("");
-    }
+    } else
+        capabilityFields(a, v.capabilityId, v.revision);
 }
-template <typename A> void visit(A& a, RequiredRefs& v) {
+
+template <typename A, typename V> void visitFields(A& a, V& v, std::type_identity<RequiredRefs>) {
     a.fields(v.features, v.capabilities);
 }
 template <typename A, typename R> void rational(A& a, R& v) {
@@ -578,31 +688,30 @@ template <typename A, typename R> void rational(A& a, R& v) {
                 "rational is not reduced");
     }
 }
-template <typename A> void visit(A& a, RationalBeat& v) {
+template <typename A, typename V> void visitFields(A& a, V& v, std::type_identity<RationalBeat>) {
     rational(a, v);
 }
-template <typename A> void visit(A& a, RationalDuration& v) {
+template <typename A, typename V>
+void visitFields(A& a, V& v, std::type_identity<RationalDuration>) {
     rational(a, v);
 }
-template <typename A> void visit(A& a, TempoSection& v) {
+template <typename A, typename V> void visitFields(A& a, V& v, std::type_identity<TempoSection>) {
     a.fields(v.startBeat, v.durationPerBeat);
 }
-template <typename A> void visit(A& a, StopSection& v) {
+template <typename A, typename V> void visitFields(A& a, V& v, std::type_identity<StopSection>) {
     a.fields(v.startBeat, v.endBeat, v.duration);
 }
-template <typename T> void visit(Output& a, std::vector<T>& v) {
+template <typename A, typename V, typename T>
+void visitFields(A& a, V& v, std::type_identity<std::vector<T>>) {
     a.list(v);
 }
-template <typename T> void visit(Input& a, std::vector<T>& v) {
-    a.list(v);
-}
-template <typename T> void visit(Output& a, std::optional<T>& v) {
+template <typename A, typename V, typename T>
+void visitFields(A& a, V& v, std::type_identity<std::optional<T>>) {
     a.option(v);
 }
-template <typename T> void visit(Input& a, std::optional<T>& v) {
-    a.option(v);
-}
-template <typename A, typename T> void measured(A& a, std::optional<MeasuredParameter<T>>& v) {
+
+template <typename A, typename V, typename T>
+void measuredOption(A& a, V& v, std::type_identity<T>) {
     std::uint8_t tag{};
     if constexpr (!A::reading) {
         tag = !v ? 0 : v->measuredValue() ? 2 : 1;
@@ -626,15 +735,22 @@ template <typename A, typename T> void measured(A& a, std::optional<MeasuredPara
         }
     }
 }
-template <typename A, typename T> void measured(A& a, MeasuredParameter<T>& v) {
-    std::optional<MeasuredParameter<T>> option = v;
+template <typename A, typename T> void measured(A& a, std::optional<MeasuredParameter<T>>& v) {
+    measuredOption(a, v, std::type_identity<T>{});
+}
+template <typename A, typename T>
+void measured(A& a, const std::optional<MeasuredParameter<T>>& v) {
+    measuredOption(a, v, std::type_identity<T>{});
+}
+template <typename A, typename V> void measured(A& a, V& v) {
+    std::optional option{v};
     measured(a, option);
     require(option.has_value(), "latePolicy", "late parameter cannot be absent");
     if constexpr (A::reading) {
         v = *option;
     }
 }
-template <typename A> void late(A& a, LatePolicyParameters& v) {
+template <typename A, typename V> void late(A& a, V& v) {
     bool present = v.policy.has_value();
     a.value(present);
     if (present) {
@@ -651,7 +767,7 @@ template <typename A> void late(A& a, LatePolicyParameters& v) {
     measured(a, v.windowCloseThreshold);
     measured(a, v.windowOpenThreshold);
 }
-template <typename A> void timebase(A& a, TimebaseProfile& v, std::string& id, std::string& unit) {
+template <typename A, typename V, typename S> void timebase(A& a, V& v, S& id, S& unit) {
     a.fields(id, unit, v.tickScale, v.originBeat);
     bool initial = v.initialTempo.has_value();
     a.value(initial);
@@ -686,15 +802,6 @@ template <typename A> void timebase(A& a, TimebaseProfile& v, std::string& id, s
         a.fields(v.tempoSections, v.stopSections);
     }
 }
-struct RequirementIndices final {
-    std::uint32_t entity{}, pattern{}, measure{}, domain{}, solver{};
-    std::vector<std::uint32_t> claims, bindings;
-};
-struct ClaimRow final {
-    std::uint32_t requirement{}, resource{};
-    ResourceClaimDeclaration declaration;
-    std::optional<std::string> deferredClaimKey{};
-};
 struct Model final {
     chart::CanonicalSemanticChart chart;
     CanonicalGameplayGraph graph{};
@@ -724,23 +831,26 @@ struct Model final {
     }
 };
 
-template <typename A> void optionalRef(A& a, std::uint8_t kind, std::optional<std::string>& v) {
+template <typename A, typename V> void optionalRef(A& a, std::uint8_t kind, V& v) {
     bool present = v.has_value();
     a.value(present);
-    if (present) {
+    if constexpr (!A::reading) {
+        if (present) {
+            a.ref(kind, *v);
+            require(!v->empty(), "definitions.id", "present definition ID must not be empty");
+        }
+    } else if (present) {
         auto token = v.value_or("");
         a.ref(kind, token);
         require(!token.empty(), "definitions.id", "present definition ID must not be empty");
-        if constexpr (A::reading) {
-            v = std::move(token);
-        }
-    } else if constexpr (A::reading) {
+        v = std::move(token);
+    } else
         v.reset();
-    }
 }
-auto nodes(PatternNodeDeclaration& root, std::pmr::memory_resource* resource)
-    -> std::pmr::vector<PatternNodeDeclaration*> {
-    std::pmr::vector<PatternNodeDeclaration*> result{resource}, pending{resource};
+
+template <typename Node>
+auto nodes(Node& root, std::pmr::memory_resource* resource) -> std::pmr::vector<Node*> {
+    std::pmr::vector<Node*> result{resource}, pending{resource};
     pending.push_back(&root);
     while (!pending.empty()) {
         auto* node = pending.back();
@@ -752,7 +862,7 @@ auto nodes(PatternNodeDeclaration& root, std::pmr::memory_resource* resource)
     }
     return result;
 }
-template <typename A> void nodeFields(A& a, PatternNodeDeclaration& v, std::uint32_t& children) {
+template <typename A, typename V> void nodeFields(A& a, V& v, std::uint32_t& children) {
     enumeration(a, v.primitive);
     a.value(children);
     require(!v.unsupportedForm, "patterns.nodes", "unsupported Pattern form");
@@ -789,8 +899,29 @@ template <typename A> void nodeFields(A& a, PatternNodeDeclaration& v, std::uint
         break;
     }
 }
-template <typename A> void patternRow(A& a, PatternDeclaration& v) {
-    std::optional<std::string> id;
+template <typename Emit>
+auto walkPattern(HashCoreWork& work, const PatternNodeDeclaration& root, Emit emit) -> std::size_t {
+    require(work.frames.empty(), "patterns.nodes", "Reentrant Pattern traversal");
+    work.frames.push({&root, 0});
+    std::size_t count = 0;
+    while (!work.frames.empty()) {
+        auto& frame = work.frames.top();
+        if (frame.cursor == 0) {
+            emit(*frame.node);
+            ++count;
+            frame.cursor = 1;
+        }
+        if (frame.cursor <= frame.node->operands.size()) {
+            const auto* child = &frame.node->operands[static_cast<std::size_t>(frame.cursor++ - 1)];
+            work.frames.push({child, 0});
+        } else
+            work.frames.pop();
+    }
+    return count;
+}
+
+template <typename A, typename V> void patternRow(A& a, V& v) {
+    std::optional<std::conditional_t<A::reading, std::string, std::string_view>> id;
     if constexpr (!A::reading) {
         if (!v.patternId.empty()) {
             id = v.patternId;
@@ -841,6 +972,21 @@ template <typename A> void patternRow(A& a, PatternDeclaration& v) {
         }
         require(pending == 0, "patterns.nodes", "incomplete Pattern tree");
     } else {
+        if constexpr (std::is_same_v<A, Output>) {
+            if (a.operation) {
+                const auto count = walkPattern(*a.operation, v.root, [](const auto&) {});
+                a.count(count);
+                (void)walkPattern(*a.operation, v.root, [&](const auto& node) {
+                    auto children = u32(node.operands.size());
+                    nodeFields(a, node, children);
+                    if (a.operation->counting)
+                        ++a.operation->observation.patternCountNodes;
+                    else
+                        ++a.operation->observation.patternHashNodes;
+                });
+                return;
+            }
+        }
         auto* resource = std::pmr::get_default_resource();
         if constexpr (std::is_same_v<A, Output>)
             if (a.sink)
@@ -853,18 +999,20 @@ template <typename A> void patternRow(A& a, PatternDeclaration& v) {
         }
     }
 }
-template <typename A> void visit(A& a, MeasureComponentDeclaration& v) {
+template <typename A, typename V>
+void visitFields(A& a, V& v, std::type_identity<MeasureComponentDeclaration>) {
     enumeration(a, v.phase);
     a.fields(v.categoryToken, v.declaredGradeTokens);
 }
-template <typename A> void measureRow(A& a, MeasureDefinition& v) {
+template <typename A, typename V> void measureRow(A& a, V& v) {
     optionalRef(a, 9, v.id);
     a.fields(v.declaration.components, v.declaration.required);
 }
-template <typename A> void visit(A& a, JudgementAxisRange& v) {
+template <typename A, typename V>
+void visitFields(A& a, V& v, std::type_identity<JudgementAxisRange>) {
     a.fields(v.axisToken, v.minimum, v.maximum);
 }
-template <typename A> void domainRow(A& a, JudgementDomainRecord& v) {
+template <typename A, typename V> void domainRow(A& a, V& v) {
     a.ref(4, v.domainId);
     a.fields(v.coordinateSystemToken, v.axes);
     constant(a, 1);
@@ -873,54 +1021,66 @@ template <typename A> void domainRow(A& a, JudgementDomainRecord& v) {
             "domains.frame", "only static judgement geometry is accepted");
     a.fields(v.dynamicFrameProviderToken, v.required);
 }
-template <typename A> void mergedRow(A& a, MergedDeclaration& v) {
+template <typename A, typename V> void mergedRow(A& a, V& v) {
     a.value(v.stableId);
     enumeration(a, v.kind);
     a.fields(v.name, v.references);
-    RequiredRefs refs;
-    if constexpr (!A::reading) {
-        for (const auto& token : v.requiredFeatureIds) {
-            refs.features.push_back({token});
-        }
-        for (const auto& token : v.requiredCapabilityIds) {
-            refs.capabilities.push_back({token, ""});
-        }
-    }
-    a.value(refs);
     if constexpr (A::reading) {
-        for (const auto& row : refs.features) {
+        RequiredRefs refs;
+        a.value(refs);
+        for (const auto& row : refs.features)
             v.requiredFeatureIds.push_back(row.featureId);
-        }
         for (const auto& row : refs.capabilities) {
             require(row.revision.empty(), "mergedDeclarations.required",
                     "merged declaration cannot carry an unrepresented revision");
             v.requiredCapabilityIds.push_back(row.capabilityId);
         }
+    } else {
+        a.count(v.requiredFeatureIds.size());
+        for (const auto& token : v.requiredFeatureIds)
+            a.ref(7, token);
+        a.count(v.requiredCapabilityIds.size());
+        for (const auto& token : v.requiredCapabilityIds)
+            capabilityFields(a, token, {});
     }
 }
-template <typename A> void resourceRow(A& a, ResourceRecord& v) {
+
+template <typename A, typename V> void resourceRow(A& a, V& v) {
     require(v.unsupportedForms.empty(), "resources", "unsupported resource form");
     a.fields(v.ref, v.declaredCapacity, v.slotToken, v.decisionPolicyRef,
              v.terminalAfterTermination, v.declaredGapGrace, v.required);
 }
-template <typename A> void solverRow(A& a, SolverProfileDeclaration& v) {
+template <typename A, typename V> void solverRow(A& a, V& v) {
     a.fields(v.solverId, v.revision, v.algorithmToken, v.objective, v.tieBreak, v.rejectIfNonUnique,
              v.required);
     projected(a, 13, 5, {v.solverId, v.revision});
 }
-template <typename A> void bindingRow(A& a, FactBindingRef& v) {
+template <typename A, typename V> void bindingRow(A& a, V& v) {
     a.value(v.bindingId);
     projected(a, 13, 7, {v.bindingId});
 }
-template <typename A, typename T, typename F>
-void index(A& a, std::uint32_t& i, std::vector<T>& table, F row) {
+template <typename A, typename I, typename Rows, typename F>
+void index(A& a, I& i, Rows& table, F row) {
     if constexpr (A::reading) {
         a.value(i);
     } else if (a.mode == Mode::hash) {
         require(i < table.size(), "gameplay.index", "table index is out of range");
-        if constexpr (std::is_same_v<A, Output>)
-            if (a.cost)
+        if constexpr (std::is_same_v<A, Output>) {
+            if (a.operation) {
+                a.operation->visitEdge(a);
+                using T = std::remove_cvref_t<decltype(table[i])>;
+                if (a.operation->counting) {
+                    if constexpr (!std::is_same_v<T, RequirementRecord> &&
+                                  !std::is_same_v<T, ResourceRecord>) {
+                        const auto cost = a.operation->resolve(
+                            costGroup<T>(), i, [&](Output& child) { row(child, table[i]); });
+                        a.operation->combine(a, cost);
+                        return;
+                    }
+                }
+            } else if (a.cost)
                 ++a.cost->visits;
+        }
         row(a, table[i]);
     } else {
         a.value(i);
@@ -931,15 +1091,22 @@ template <typename A> constexpr auto defersGraphLinks() -> bool {
         return A::deferLinks;
     return false;
 }
-template <typename A> void relationRow(A& a, RelationDeclaration& v, Model& m) {
+template <typename A, typename V, typename M> void relationRow(A& a, V& v, M& m) {
     require(v.kind == RelationKind::exclusive, "relations.kind", "unsupported relation kind");
     constant(a, 1);
     std::uint32_t resource{};
     if constexpr (!A::reading) {
-        const auto it = std::find_if(m.graph.resources.begin(), m.graph.resources.end(),
-                                     [&v](const auto& r) { return r.ref == v.resourceRef; });
-        require(it != m.graph.resources.end(), "relations.resource", "dangling resource");
-        resource = u32(static_cast<std::size_t>(it - m.graph.resources.begin()));
+        if constexpr (std::is_same_v<std::remove_cv_t<M>, detail::SemanticInput>) {
+            const auto ordinal = static_cast<std::size_t>(&v - m.graph.relations.data());
+            resource = m.relationResources[ordinal];
+            require(resource < m.graph.resources.size(), "relations.resource", "dangling resource");
+        } else {
+            const auto it =
+                std::find_if(m.graph.resources.begin(), m.graph.resources.end(),
+                             [&v](const auto& row) { return row.ref == v.resourceRef; });
+            require(it != m.graph.resources.end(), "relations.resource", "dangling resource");
+            resource = u32(static_cast<std::size_t>(it - m.graph.resources.begin()));
+        }
     }
     index(a, resource, m.graph.resources, [](auto& out, auto& r) { out.value(r.ref.resourceId); });
     if constexpr (A::reading) {
@@ -955,7 +1122,11 @@ template <typename A> void relationRow(A& a, RelationDeclaration& v, Model& m) {
             "relation cannot carry requirement-side namespace or competition");
     a.fields(v.members, v.policy.policyToken, v.declaredCapacity, v.required);
 }
-template <typename A> void claimRow(A& a, ClaimRow& row, Model& m) {
+template <typename A, typename V, typename M> void claimRow(A& a, V& row, M& m) {
+    std::optional<HashCoreWork::EmissionScope> emissionScope;
+    if constexpr (std::is_same_v<A, Output>)
+        if (a.operation)
+            emissionScope.emplace(*a.operation, row.requirement);
     auto& v = row.declaration;
     index(a, row.requirement, m.graph.requirements,
           [](auto& out, auto& r) { out.value(r.identity); });
@@ -970,7 +1141,7 @@ template <typename A> void claimRow(A& a, ClaimRow& row, Model& m) {
     }
     enumeration(a, v.intent);
     a.value(v.claimPolicy.policyToken);
-    std::optional<std::string> ns;
+    std::optional<std::conditional_t<A::reading, std::string, std::string_view>> ns;
     if constexpr (!A::reading) {
         if (!v.claimPolicy.claimKeyToken.empty()) {
             ns = v.claimPolicy.claimKeyToken;
@@ -1025,31 +1196,49 @@ template <typename A> void claimRow(A& a, ClaimRow& row, Model& m) {
         v.claimPolicy.claimKeyToken = ns.value_or("");
     }
 }
-template <typename A> void visit(A& a, RequirementRecord::SuccessWindow& v) {
+template <typename A, typename V>
+void visitFields(A& a, V& v, std::type_identity<RequirementRecord::SuccessWindow>) {
     a.fields(v.phase, v.start, v.end);
 }
-template <typename A> void visit(A& a, RequirementRecord::Timing& v) {
+template <typename A, typename V>
+void visitFields(A& a, V& v, std::type_identity<RequirementRecord::Timing>) {
     a.fields(v.end, v.successWindows, v.body);
 }
-template <typename A> void executionFields(A& a, RequirementRecord& v) {
+template <typename A, typename V> void executionFields(A& a, V& v) {
     require(v.timing.has_value(), "requirements.timing", "revision 3 requires timing");
     a.fields(v.timing->phaseTargets, v.atomBindings, v.independentCompetition);
 }
-template <typename A>
-void requirementRow(A& a, RequirementRecord& v, RequirementIndices& ix, Model& m) {
+template <typename A, typename V, typename I, typename M>
+void requirementRow(A& a, V& v, I& ix, M& m) {
     if constexpr (A::reading) {
         a.value(ix.entity);
     } else if (a.mode == Mode::hash) {
         require(ix.entity < m.entities.size(), "requirements.entity", "dangling entity");
         if constexpr (std::is_same_v<A, Output>) {
-            if (a.cost)
-                ++a.cost->visits;
-            const auto size = checked(
-                chart::packed::identity_detail::canonicalIdentitySize(m.entities[ix.entity]));
-            a.count(size);
-            checked(chart::packed::identity_detail::streamCanonicalIdentity(
-                m.entities[ix.entity],
-                {&a, [](void* context, auto data) { static_cast<Output*>(context)->raw(data); }}));
+            if (a.operation) {
+                a.operation->visitEdge(a);
+                if (a.operation->counting) {
+                    a.operation->combine(a, a.operation->group(CostGroup::entity)[ix.entity].cost);
+                } else {
+                    const auto size = checked(chart::packed::identity_detail::canonicalIdentitySize(
+                        m.entities[ix.entity]));
+                    a.count(size);
+                    checked(chart::packed::identity_detail::streamCanonicalIdentity(
+                        m.entities[ix.entity], {&a, [](void* context, auto data) {
+                                                    static_cast<Output*>(context)->raw(data);
+                                                }}));
+                }
+            } else {
+                if (a.cost)
+                    ++a.cost->visits;
+                const auto size = checked(
+                    chart::packed::identity_detail::canonicalIdentitySize(m.entities[ix.entity]));
+                a.count(size);
+                checked(chart::packed::identity_detail::streamCanonicalIdentity(
+                    m.entities[ix.entity], {&a, [](void* context, auto data) {
+                                                static_cast<Output*>(context)->raw(data);
+                                            }}));
+            }
         } else {
             const auto bytes = checked(
                 chart::packed::identity_detail::canonicalIdentityBytes(m.entities[ix.entity]));
@@ -1132,7 +1321,7 @@ void requirementRow(A& a, RequirementRecord& v, RequirementIndices& ix, Model& m
         executionFields(a, v);
     }
 }
-template <typename A> void globalRow(A& a, Model& m) {
+template <typename A, typename M> void globalRow(A& a, M& m) {
     auto& g = m.graph;
     a.fields(g.gameplayVersion, g.graphRevision, g.rulesetRef);
     require(g.gameplayVersion == 2, "GPH0.gameplayVersion", "unsupported gameplay version");
@@ -1180,37 +1369,52 @@ template <typename A> void globalRow(A& a, Model& m) {
         a.value(g.executionProfile);
     }
 }
-template <typename A, typename T, typename F> void table(A& a, std::vector<T>& rows, F visitRow) {
+template <typename A, typename Rows, typename F> void table(A& a, Rows& rows, F visitRow) {
     if constexpr (A::reading) {
         const auto n = a.count();
         rows.reserve(n);
         for (std::size_t i = 0; i < n; ++i) {
-            T row{};
+            typename Rows::value_type row{};
             visitRow(a, row);
             rows.push_back(std::move(row));
         }
     } else {
         a.count(rows.size());
-        for (auto& row : rows) {
-            visitRow(a, row);
+        for (std::size_t i = 0; i < rows.size(); ++i) {
+            if constexpr (std::is_same_v<A, Output>) {
+                if (a.operation && a.operation->counting) {
+                    using T = std::remove_cvref_t<decltype(rows[i])>;
+                    const auto cost = a.operation->resolve(
+                        costGroup<T>(), i, [&](Output& child) { visitRow(child, rows[i]); });
+                    a.operation->combine(a, cost);
+                    continue;
+                }
+            }
+            visitRow(a, rows[i]);
         }
     }
 }
-template <typename A> void definitions(A& a, Model& m) {
+template <typename A, typename M> void definitions(A& a, M& m) {
     table(a, m.patterns, [](auto& out, auto& p) { patternRow(out, p); });
     table(a, m.measures, [](auto& out, auto& w) { measureRow(out, w); });
     table(a, m.graph.judgementDomains, [](auto& out, auto& h) { domainRow(out, h); });
     table(a, m.graph.mergedNamespace.declarations, [](auto& out, auto& k) { mergedRow(out, k); });
 }
-template <typename A> void coordination(A& a, Model& m) {
+template <typename A, typename M> void coordination(A& a, M& m) {
     table(a, m.graph.resources, [](auto& out, auto& t) { resourceRow(out, t); });
     table(a, m.graph.relations, [&m](auto& out, auto& f) { relationRow(out, f, m); });
     table(a, m.graph.solverProfiles, [](auto& out, auto& y) { solverRow(out, y); });
     table(a, m.graph.factBindings, [](auto& out, auto& b) { bindingRow(out, b); });
     table(a, m.claims, [&m](auto& out, auto& x) { claimRow(out, x, m); });
 }
+template <typename A, typename T> void visit(A& a, T& v) {
+    visitFields(a, v, std::type_identity<std::remove_cv_t<T>>{});
+}
 template <typename T> void Output::value(T& v) {
-    visit(*this, v);
+    if constexpr (std::is_arithmetic_v<T> || std::is_same_v<std::remove_cv_t<T>, std::string>)
+        value(static_cast<const std::remove_cv_t<T>&>(v));
+    else
+        visit(*this, v);
 }
 template <typename T> void Input::value(T& v) {
     visit(*this, v);
@@ -1733,11 +1937,15 @@ auto staticTables(Model& m, chart::PackedChartLimits limits) -> gp::StaticTables
     counts(m, result.references.size());
     return result;
 }
-void semanticRows(Output& a, Model& m) {
+template <typename M> void semanticRows(Output& a, M& m) {
     globalRow(a, m);
     a.count(m.graph.requirements.size());
-    for (std::size_t i = 0; i < m.graph.requirements.size(); ++i)
+    for (std::size_t i = 0; i < m.graph.requirements.size(); ++i) {
+        std::optional<HashCoreWork::EmissionScope> scope;
+        if (a.operation)
+            scope.emplace(*a.operation, i);
         requirementRow(a, m.graph.requirements[i], m.indices[i], m);
+    }
     definitions(a, m);
     coordination(a, m);
 }
@@ -2184,26 +2392,85 @@ auto encodeGraph(const EncodeRequest& request, GraphWriterLimits graphLimits,
         return out.take();
     });
 }
-auto detail::streamSemanticPreimage(const EncodeRequest& request, gp::SemanticByteSink sink,
-                                    chart::PackedChartLimits limits)
-    -> core::Result<detail::HashCost> {
-    return boundary<detail::HashCost>([&] {
-        auto model = makeModel(request, limits);
-        model.bind();
-        detail::HashCost cost;
-        Output out;
-        out.mode = Mode::hash;
-        out.sink = &sink;
-        out.cost = &cost;
-        gp::SemanticByteSink prefixSink{
-            &out, [](void* context, auto data) { static_cast<Output*>(context)->raw(data); },
-            sink.scratch};
-        checked(gp::streamStaticPreimage(model.chart, model.owners, prefixSink,
-                                         model.candidateRevision));
-        semanticRows(out, model);
-        cost.bytes = out.size;
-        return cost;
-    });
+
+auto detail::calculateSemanticHash(const SemanticInput& input, HashOptions options,
+                                   HashObservation* observation)
+    -> core::Result<SemanticHashResult> {
+    HashObservation local;
+    auto& observed = observation ? *observation : local;
+    observed = {};
+    try {
+        require(input.candidateRevision == 2 || input.candidateRevision == 3, "semanticHash.codec",
+                "Unknown semantic codec selector");
+        require(input.indices.size() == input.graph.requirements.size(), "semanticHash.indices",
+                "Requirement index count disagrees");
+        require(input.relationResources.size() == input.graph.relations.size(),
+                "semanticHash.relations", "Relation index count disagrees");
+        HashCoreWork work{input, options, observed};
+        for (std::size_t i = 0; i < input.graph.requirements.size(); ++i) {
+            HashCoreWork::EmissionScope scope{work, i};
+            Output size;
+            size.mode = Mode::hash;
+            size.operation = &work;
+            size.sizing = true;
+            StructuralOutputAdapter adapter{size};
+            judgement::detail::StructuralKeyEncoder encoder{adapter};
+            judgement::detail::emissionIdentityFields(encoder,
+                                                      input.graph.requirements[i].identity);
+            auto& slot = work.group(CostGroup::emission)[i];
+            slot.cost.bytes = size.size;
+            slot.flags = 1;
+            ++observed.uniqueRows;
+        }
+        for (std::size_t i = 0; i < input.entities.size(); ++i) {
+            auto& slot = work.group(CostGroup::entity)[i];
+            slot.cost.bytes =
+                4 +
+                checked(chart::packed::identity_detail::canonicalIdentitySize(input.entities[i]));
+            slot.flags = 1;
+            ++observed.uniqueRows;
+        }
+        const auto emit = [&](Output& out) {
+            gp::SemanticByteSink prefix{
+                &out, [](void* context, auto bytes) { static_cast<Output*>(context)->raw(bytes); },
+                &work.scratch};
+            checked(gp::streamStaticPreimage(input.chart, input.owners, prefix,
+                                             input.candidateRevision));
+            semanticRows(out, input);
+        };
+        HashCost counted;
+        Output count;
+        count.mode = Mode::hash;
+        count.operation = &work;
+        count.cost = &counted;
+        emit(count);
+        checkHashCost(counted, work.limits);
+        observed.budgetAccepted = true;
+        work.counting = false;
+        work.scratch.setStage("hash", "semanticHash.total");
+        work.sha.emplace();
+        ++observed.shaComputations;
+        gp::SemanticByteSink tee{
+            &work,
+            [](void* context, auto bytes) { static_cast<HashCoreWork*>(context)->write(bytes); },
+            &work.scratch};
+        HashCost actual;
+        Output hash;
+        hash.mode = Mode::hash;
+        hash.operation = &work;
+        hash.cost = &actual;
+        hash.sink = &tee;
+        emit(hash);
+        require(actual.bytes == counted.bytes && actual.visits == counted.visits &&
+                    actual.maxKey == counted.maxKey && work.emitted == counted.bytes,
+                "semanticHash.conformance", "Count and emitted semantic bytes disagree");
+        return SemanticHashResult{counted, work.sha->finish(), observed.exportedBytes,
+                                  work.exportBuffer.take()};
+    } catch (HashWorkFailure& failure) {
+        return core::unexpected(std::move(failure.error));
+    } catch (Failure& failure) {
+        return core::unexpected(std::move(failure.error));
+    }
 }
 
 auto semanticPreimage(const EncodeRequest& request, chart::PackedChartLimits limits)
