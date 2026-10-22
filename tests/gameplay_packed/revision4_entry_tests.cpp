@@ -41,6 +41,77 @@ void beforeSha(const work::HashObservation& observation) {
 }
 } // namespace
 
+TEST_CASE("Revision4 verified metadata identity gates reconstruction and shared prepare",
+          "[capsule][revision4][metadata-order]") {
+    HashCoreFixture f;
+    const auto bytes = take(encode(request(f)));
+    work::HashObservation baseline;
+    const auto raw = take(work::decodeBounded(bytes, context(f), {}, {}, &baseline));
+    REQUIRE(raw.verifiedSemanticDigest);
+    const auto expected = core::detail::sha256Hex(*raw.verifiedSemanticDigest);
+    const std::string wrong(64, '0');
+    auto c = context(f);
+    c.expectedCompiledSemanticIdentity = expected;
+    work::HashObservation observed;
+    const auto valid = take(work::decodeBounded(bytes, c, {}, {}, &observed));
+    CHECK(valid.verifiedSemanticDigest == raw.verifiedSemanticDigest);
+    CHECK(observed.shaComputations == 1);
+    CHECK(observed.shaBytes == baseline.shaBytes);
+    CHECK(observed.reconstructions == 1);
+    CHECK(observed.sharedPrepareCalls == 1);
+    CHECK(observed.scratchHighWater == baseline.scratchHighWater);
+    CHECK(observed.allocationCount == baseline.allocationCount);
+    CHECK(observed.allocationBytes == baseline.allocationBytes);
+    c.capabilities.enabledCapabilityIds.clear();
+    const auto prepareFailure = work::decodeBounded(bytes, c, {}, {}, &observed);
+    REQUIRE_FALSE(prepareFailure);
+    CHECK(prepareFailure.error().code() == "judgement.closure.capability_disabled");
+    CHECK(observed.shaComputations == 1);
+    CHECK(observed.reconstructions == 1);
+    CHECK(observed.sharedPrepareCalls == 1);
+    c.expectedCompiledSemanticIdentity = wrong;
+    const auto metadataFailure = work::decodeBounded(bytes, c, {}, {}, &observed);
+    REQUIRE_FALSE(metadataFailure);
+    CHECK(metadataFailure.error().code() == "packed.metadata.mismatch");
+    CHECK(std::any_of(metadataFailure.error().context().begin(),
+                      metadataFailure.error().context().end(), [](const auto& value) {
+                          return value.key == "fieldPath" &&
+                                 value.value == "metadata.compiledSemanticIdentity";
+                      }));
+    CHECK(observed.shaComputations == 1);
+    CHECK(observed.shaBytes == baseline.shaBytes);
+    CHECK(observed.reconstructions == 0);
+    CHECK(observed.sharedPrepareCalls == 0);
+    CHECK(observed.dynamicLiveBytes == 0);
+    auto badHeader = bytes;
+    badHeader[32] ^= std::byte{1};
+    wire::refreshHeaderCrc(badHeader);
+    const auto headerFailure = work::decodeBounded(badHeader, c, {}, {}, &observed);
+    REQUIRE_FALSE(headerFailure);
+    CHECK(headerFailure.error().code() == "packed.identity.mismatch");
+    CHECK(observed.shaComputations == 1);
+    CHECK(observed.reconstructions == 0);
+    CHECK(observed.sharedPrepareCalls == 0);
+    work::HashOptions noBytes;
+    noBytes.requested.maxSemanticPreimageBytes = 0;
+    const auto budgetFailure = work::decodeBounded(bytes, c, {}, noBytes, &observed);
+    REQUIRE_FALSE(budgetFailure);
+    CHECK(budgetFailure.error().code() == "capability.budget_insufficient");
+    beforeSha(observed);
+    CHECK(observed.reconstructions == 0);
+    CHECK(observed.sharedPrepareCalls == 0);
+    for (const auto revision : {2U, 3U}) {
+        HashCoreFixture legacy{revision};
+        const auto& d = *legacy.decoded;
+        const auto old = take(
+            encode({d.chart, d.gameplay, d.owners, d.profiles, d.patterns, d.measures, revision}));
+        auto oldContext = legacy.source.context();
+        oldContext.candidateRevision = revision;
+        oldContext.expectedCompiledSemanticIdentity = wrong;
+        CHECK(decode(old, oldContext));
+    }
+}
+
 TEST_CASE("Revision4 omits only physical projections and retains complete Gameplay2",
           "[capsule][revision4]") {
     for (auto count : {0U, 1U, 64U}) {

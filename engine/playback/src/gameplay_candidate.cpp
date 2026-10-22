@@ -305,9 +305,17 @@ auto makeGameplayContent(const GameplayConfiguration& c, Decoder decoder)
 
 auto GameplayContent::fromPacked(std::span<const std::byte> bytes, const GameplayConfiguration& c)
     -> core::Result<GameplayContent> {
+    return detail::gameplayContentFromPacked(bytes, c);
+}
+auto detail::gameplayContentFromPacked(
+    std::span<const std::byte> bytes, const GameplayConfiguration& c,
+    std::optional<std::string_view> expectedCompiledSemanticIdentity)
+    -> core::Result<GameplayContent> {
     return makeGameplayContent(c, [&](auto context) {
-        if (detail::packedGameplayRevision(bytes) == 4)
+        if (packedGameplayRevision(bytes) == 4) {
             context.candidateRevision = 4;
+            context.expectedCompiledSemanticIdentity = expectedCompiledSemanticIdentity;
+        }
         return gameplay_packed::decode(bytes, context);
     });
 }

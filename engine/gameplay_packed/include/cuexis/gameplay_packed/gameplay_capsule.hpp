@@ -6,7 +6,9 @@
 
 #include <array>
 #include <filesystem>
+#include <optional>
 #include <span>
+#include <string_view>
 
 namespace cuexis::gameplay_packed {
 
@@ -17,6 +19,8 @@ struct DecodeContext final {
     judgement::PreparedIdentityDeclarations identities;
     std::string coordinatorPolicyToken;
     std::uint32_t candidateRevision{2};
+    // R4 entry-only expectation, borrowed for the synchronous decode. Legacy paths ignore it.
+    std::optional<std::string_view> expectedCompiledSemanticIdentity{};
 };
 
 struct RequirementOwner final {

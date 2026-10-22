@@ -17,7 +17,9 @@
 #include <cstddef>
 #include <filesystem>
 #include <memory>
+#include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace cuexis::playback {
@@ -139,7 +141,9 @@ class CUEXIS_PLAYBACK_API PlaybackSource final {
         std::string sourceId, std::string entryPath, std::vector<std::byte> bytes,
         const GameplayConfiguration& configuration, std::vector<PlaybackAssetDescriptor> assets,
         std::shared_ptr<content::IContentProvider> provider, GameplayPrepareIntent intent,
-        std::optional<GameplayGraphDecodeBudget> graphBudget) -> core::Result<PlaybackSource>;
+        std::optional<GameplayGraphDecodeBudget> graphBudget,
+        std::optional<std::string_view> expectedCompiledSemanticIdentity = {})
+        -> core::Result<PlaybackSource>;
 #endif
     explicit PlaybackSource(std::unique_ptr<State> state) noexcept;
 

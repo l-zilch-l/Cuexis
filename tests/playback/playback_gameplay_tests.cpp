@@ -2276,3 +2276,112 @@ TEST_CASE("Revision4 explicit entry reuses verified Header identity and rejects 
     CHECK_FALSE(playback::detail::gameplayEntryMetadata(legacy, fixture.config, "main.packed",
                                                         "packed-chart", bytes, {}));
 }
+
+TEST_CASE("Revision4 metadata faults precede a shared prepare failure",
+          "[candidate][gameplay][entry][revision4][metadata-order]") {
+    TestContent fixture;
+    const auto provider = content::MemoryContentProvider::create({});
+    REQUIRE(provider);
+    const playback::GameplayConfigurationDecodeBudget budget{65536, 32, 16384, 4096, 1024, true};
+    const playback::GameplayGraphDecodeBudget graphBudget{65536, 32, 16384, 4096, 1024, 512, 16384};
+    auto disabled = fixture.config;
+    disabled.enabledCapabilities.clear();
+    for (const auto revision : {3U, 4U}) {
+        DYNAMIC_SECTION("revision " << revision) {
+            const auto bytes = fixture.packed(revision);
+            const auto content = playback::GameplayContent::fromPacked(bytes, fixture.config);
+            REQUIRE(content);
+            const auto metadata = playback::detail::gameplayEntryMetadata(
+                *content, fixture.config, "main.packed", "packed-chart", bytes, {});
+            REQUIRE(metadata);
+            const auto consume = [&](const json::Value& value, const auto& configuration) {
+                const auto text = json::serialize(value);
+                REQUIRE(text);
+                return playback::PlaybackSource::fromGameplayEntry(
+                    "metadata-order", *text, bytes, configuration, budget, graphBudget, {},
+                    *provider, playback::GameplayPrepareIntent::GameplayOnly);
+            };
+            REQUIRE(consume(*metadata, fixture.config));
+            const auto prepareFailure = consume(*metadata, disabled);
+            REQUIRE_FALSE(prepareFailure);
+            CHECK(prepareFailure.error().code() == "capability.disabled");
+            auto wrong = *metadata;
+            *wrong.find("compiledSemanticIdentity") = json::Value{std::string(64, '0')};
+            const auto semanticFailure = consume(wrong, disabled);
+            REQUIRE_FALSE(semanticFailure);
+            if (revision == 4) {
+                CHECK(semanticFailure.error().code() == "playback.gameplay.invalid");
+                CHECK(semanticFailure.error().message() ==
+                      "Gameplay metadata semantic identity mismatch");
+                wrong = *metadata;
+                *wrong.find("encoding") = json::Value{"capsule.3"};
+                const auto encodingFailure = consume(wrong, disabled);
+                REQUIRE_FALSE(encodingFailure);
+                CHECK(encodingFailure.error().code() == "playback.gameplay.invalid");
+                CHECK(encodingFailure.error().message() ==
+                      "Gameplay metadata encoding/Header mismatch");
+                *wrong.find("artifactIdentity") = json::Value{std::string(64, '0')};
+                const auto artifactFailure = consume(wrong, disabled);
+                REQUIRE_FALSE(artifactFailure);
+                CHECK(artifactFailure.error().message() == "Gameplay artifact hash mismatch");
+            } else {
+                CHECK(semanticFailure.error().code() == prepareFailure.error().code());
+                CHECK(semanticFailure.error().message() == prepareFailure.error().message());
+                wrong = *metadata;
+                *wrong.find("encoding") = json::Value{"capsule.4"};
+                const auto mismatch = consume(wrong, disabled);
+                REQUIRE_FALSE(mismatch);
+                CHECK(mismatch.error().message() == "Gameplay metadata encoding/Header mismatch");
+            }
+        }
+    }
+}
+
+TEST_CASE("Graph1 metadata faults retain their existing prepare rejection order",
+          "[candidate][gameplay][entry][metadata-order]") {
+    TestContent fixture;
+    const auto prepared = prepareResolvedGameplay(fixture.request);
+    REQUIRE(prepared);
+    const auto graph =
+        gameplay_packed::encodeGraph({fixture.chart,
+                                      *prepared,
+                                      fixture.owners,
+                                      {"normalization.one", "coordinator.policy.greedy_v1"},
+                                      {},
+                                      {},
+                                      3},
+                                     {65536, 8192, 8192, true});
+    REQUIRE(graph);
+    const auto view = std::as_bytes(std::span{graph->data(), graph->size()});
+    const std::vector<std::byte> bytes(view.begin(), view.end());
+    const playback::GameplayConfigurationDecodeBudget budget{65536, 32, 16384, 4096, 1024, true};
+    const playback::GameplayGraphDecodeBudget graphBudget{65536, 32, 16384, 4096, 1024, 512, 16384};
+    const auto content = playback::GameplayContent::fromGraph(*graph, fixture.config, graphBudget);
+    REQUIRE(content);
+    auto metadata = playback::detail::gameplayEntryMetadata(*content, fixture.config, "main.graph",
+                                                            "gameplay-graph", bytes, {});
+    REQUIRE(metadata);
+    const auto provider = content::MemoryContentProvider::create({});
+    REQUIRE(provider);
+    auto disabled = fixture.config;
+    disabled.enabledCapabilities.clear();
+    const auto consume = [&](const json::Value& value, const auto& configuration) {
+        const auto text = json::serialize(value);
+        REQUIRE(text);
+        return playback::PlaybackSource::fromGameplayEntry(
+            "graph-order", *text, bytes, configuration, budget, graphBudget, {}, *provider,
+            playback::GameplayPrepareIntent::GameplayOnly);
+    };
+    REQUIRE(consume(*metadata, fixture.config));
+    const auto prepareFailure = consume(*metadata, disabled);
+    REQUIRE_FALSE(prepareFailure);
+    CHECK(prepareFailure.error().code() == "capability.disabled");
+    *metadata->find("compiledSemanticIdentity") = json::Value{std::string(64, '0')};
+    const auto both = consume(*metadata, disabled);
+    REQUIRE_FALSE(both);
+    CHECK(both.error().code() == prepareFailure.error().code());
+    CHECK(both.error().message() == prepareFailure.error().message());
+    const auto metadataOnly = consume(*metadata, fixture.config);
+    REQUIRE_FALSE(metadataOnly);
+    CHECK(metadataOnly.error().message() == "Gameplay metadata closure mismatch");
+}

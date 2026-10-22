@@ -49,6 +49,7 @@ struct HashObservation final : HashAllocationStats {
     std::uint64_t inlineObjectBytes{};
     std::uint64_t uniqueRows{}, cacheHits{}, patternCountNodes{}, patternHashNodes{};
     std::uint64_t shaComputations{}, shaUpdates{}, shaBytes{}, exportedBytes{};
+    std::uint64_t reconstructions{}, sharedPrepareCalls{};
     bool budgetAccepted{};
 };
 struct HashOptions final {

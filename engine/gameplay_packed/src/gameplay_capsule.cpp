@@ -2159,7 +2159,10 @@ void link(Model& m, const std::vector<std::uint64_t>& masks) {
                 "Requirement presence disagrees with ownership");
     }
 }
-auto reconstruct(Model& m, const DecodeContext& context) -> PreparedGameplay {
+auto reconstruct(Model& m, const DecodeContext& context,
+                 detail::HashObservation* observation = nullptr) -> PreparedGameplay {
+    if (observation)
+        ++observation->reconstructions;
     m.bind();
     auto& g = m.graph;
     require(m.profiles.normalizationProfileToken ==
@@ -2241,6 +2244,8 @@ auto reconstruct(Model& m, const DecodeContext& context) -> PreparedGameplay {
     request.executionProfile = g.executionProfile;
     request.normalizationProfileToken = g.normalizationProfileToken;
     request.coordinatorPolicyToken = g.coordinatorPolicyToken;
+    if (observation)
+        ++observation->sharedPrepareCalls;
     auto prepared = checked(prepareResolvedGameplay({std::move(request), context.patternBudget}));
     const auto differences = semanticDiff(g, prepared.assembled().graph);
     require(differences.empty(), differences.empty() ? "gameplay" : differences.front().path,
@@ -2309,7 +2314,19 @@ auto decoded(std::span<const std::byte> bytes, const DecodeContext& context,
         fail("packed.identity.mismatch", "structural semantic identity mismatch",
              "Header.semanticIdentity");
     }
-    auto prepared = reconstruct(m, context);
+    if (revision == 4 && context.expectedCompiledSemanticIdentity) {
+        // Compare the one verified digest without exporting a preimage or allocating hex text.
+        const auto expected = *context.expectedCompiledSemanticIdentity;
+        constexpr std::string_view hex = "0123456789abcdef";
+        bool matches = expected.size() == digest.size() * 2;
+        for (std::size_t i = 0; matches && i < digest.size(); ++i)
+            matches = expected[2 * i] == hex[digest[i] >> 4] &&
+                      expected[2 * i + 1] == hex[digest[i] & 15];
+        if (!matches)
+            fail("packed.metadata.mismatch", "Gameplay metadata semantic identity mismatch",
+                 "metadata.compiledSemanticIdentity");
+    }
+    auto prepared = reconstruct(m, context, observation);
     std::vector<RequirementOwner> owners;
     for (std::size_t i = 0; i < m.graph.requirements.size(); ++i) {
         owners.push_back({m.graph.requirements[i].identity, m.entities[m.indices[i].entity]});

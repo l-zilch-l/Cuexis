@@ -30,6 +30,15 @@ struct GameplayPublicationAccess final {
 };
 inline auto projectGameplayError(core::Error error) -> core::Error {
     const auto code = error.code();
+    if (code == "packed.metadata.mismatch") {
+        core::Error projected{"playback.gameplay.invalid", std::string{error.message()}};
+        for (const auto& c : error.context())
+            projected.withContext(c.key, c.value);
+        return projected.withContext("category", "identity_closure_incomplete")
+            .withContext("severity", "error")
+            .withContext("faulted", "false")
+            .withContext("sourceCode", std::string{code});
+    }
     if (code.starts_with("graph.")) {
         const auto category = code == "graph.header.unsupported_revision" ? "unknown_capability"
                               : code == "graph.budget.exceeded"           ? "budget_exceeded"
@@ -67,6 +76,12 @@ inline auto projectGameplayError(core::Error error) -> core::Error {
     projected.withContext("sourceCode", std::string{code});
     return projected;
 }
+
+// The metadata view remains owned by fromGameplayEntry until synchronous decoding returns.
+[[nodiscard]] auto
+gameplayContentFromPacked(std::span<const std::byte>, const GameplayConfiguration&,
+                          std::optional<std::string_view> expectedCompiledSemanticIdentity = {})
+    -> core::Result<GameplayContent>;
 
 struct GameplayContentStorage final {
     gameplay_packed::PreparedCapsule capsule;
