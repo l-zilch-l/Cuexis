@@ -100,6 +100,9 @@ ordinal 从 0 开始且 checked 递增，不回绕。SDK 不创建全局 ID 分�
 均以拟议 `playback.operation.token_consumed` 拒绝；不重新执行旧请求。
 空 NoStop token 对应旧行为，不引入一次性限制。外部不能通过复制 token 获得第二次消费权。
 关联 key 不负责幂等性：重传请求先查询原账本，原终态不得因新 token 改写。
+这里的重传规则适用于新的有效 token 或旧 NoStop 入口；已消费 token 仍拒绝再次使用。
+cheap owner/context/身份检查、token 认领及既有终态查询均在第一次停止检查之前完成，
+已知终态重传只读原结果，不为一个迟到 stop 改写为 StoppedBeforeExecution。
 
 ### 2.1 输出字段
 
@@ -189,11 +192,14 @@ token 是 owning handle。Session 调用开始后在栈帧保留强引用，嵌�
 Source 先销毁不撤销 token，不自动 requestStop；旧 token 不能带入下一操作。
 有意长期保存的 owning receipt/result 只保留不可变前缀，不保留会话可写指针。
 
-跨线程只有对独立 owning Source handle 的 `requestStop()` 合法：幂等、noexcept、不分配、
+停止控制中，允许非 Session owner 线程调用的动词仅为独立 owning Source handle 的
+`requestStop()`：幂等、noexcept、不分配、
 不等待 owner、不调用用户代码，release 发布意图；owner acquire 检查。
 不得并发移动/析构正在使用的同一个 handle 对象；线程各持自己的副本。
 PlaybackOperation 及 Session 方法仍受 owner/reentry 约束，输出未发布前不能跨线程读取。
 这些类型从不允许另一个线程析构 PlaybackSession/PreparedPlayback。
+Source.create/token 及独立 handle 副本的特殊成员本身不绑定 Session owner；
+它们不能被用来从别的线程调用任何 Session 方法。
 handle 的 copy/move 依赖匹配工具链，均不得分配；moved-from Source 仅允许析构或赋值，
 不能从无效 Source 静默取得 NoStop 来满足一次要求可停止的调用。默认空 Token 只用于显式 NoStop。
 
@@ -279,6 +285,8 @@ beginShutdown 不能先关闭 Close 所需的控制/查询入口；最终退出�
 当前 source 发布与关闭需短锁串行化：worker 在锁内检查 Closing 并登记新的 owning source；
 requestShutdown 在锁内标 Closing 并复制当前 source，在锁外 requestStop。
 清除当前 source 与开始下一子调用也遵守该锁；先 Closing 后登记不能漏掉停止。
+内置 worker 的 E1–E18 调用必须登记有效的非空 source；创建/预留失败在产品副作用前终结，
+不能降级成 NoStop 继续该作业。
 锁内不执行 SDK/provider、等待、join 或用户回调；它是实例内控制交接，不是全局停止通道。
 排队未开始 job 在原 ID 下终结，已执行 job 不伪报未执行；owner 仍负责其全部对象析构。
 
