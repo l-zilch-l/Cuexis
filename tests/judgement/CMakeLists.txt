@@ -1,4 +1,5 @@
 add_executable(cuexis_judgement_tests
+    claim_key_tests.cpp
     fold_recovery_tests.cpp
     publication_tests.cpp
     execution_profile_tests.cpp
@@ -19,6 +20,7 @@ add_executable(cuexis_judgement_tests
 )
 
 target_include_directories(cuexis_judgement_tests PRIVATE ${PROJECT_SOURCE_DIR}/engine/judgement/internal)
+target_include_directories(cuexis_judgement_tests PRIVATE ${PROJECT_SOURCE_DIR}/engine/judgement/src)
 
 target_compile_features(cuexis_judgement_tests PRIVATE cxx_std_20)
 target_link_libraries(cuexis_judgement_tests

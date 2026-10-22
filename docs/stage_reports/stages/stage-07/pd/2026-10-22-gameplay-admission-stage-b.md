@@ -125,3 +125,47 @@ A 的 6161 个文件和 B0 的 32 个文件再次按原 packet 校验通过，�
 
 未启动 C、正式测量、主树合并或 SDK/公共 API 升级；旧窗口 3 继续停止，七项物理上限及
 1.10/15% 不变。本轮停在此交回点。
+
+## 审阅补正：Claim key/E 共用字段与 framing
+
+基点 f310df2。Owner 指出该快照仍有一处重复：hash 分支通过 projected 编码 Claim key，
+collect/wire/Reader 通过 Judgement structuralClaimKey 手写 namespace/E。
+输出虽一致，字段或 framing 变更仍需同步两处。本次仅修复这个维护性问题，阶段 B 接入
+保持停止；前述模型分配会计、共享成本缓存及强制预检/摘要复用三项阻塞继续保留。
+
+新增 Judgement 私有 structural_key_codec_internal.hpp：
+
+- emissionIdentityFields / emissionStepFields 是 E（RequirementIdentity）的唯一字段顺序。
+  Gameplay 的物理 Reader/Writer 仍由自己的 archive 解释 index/varint；hash 下的 E 使用
+  StructuralKeyEncoder 的固定宽度 framing。
+- claimKeyFields 唯一定义 Claim 前导 tag、namespace 和 E 的组合。
+  structuralClaimKey 与 projectedClaim 均通过它发射字段，后者的计数/字节输出复用同一 emit。
+- StructuralKeyEncoder 唯一定义小端数值、u32 文本长度、路径数量及 u64 repeat index。
+  structuralProjectionKeySize 和 formatStructuralProjectionKey 共用前缀、长度计算与小写 hex；
+  key 预算预检也调用这一长度函数，不能再与实际输出各维护一套 framing。
+
+```mermaid
+flowchart TD
+    J[structuralClaimKey / collect / wire / Reader expected key] --> A[Judgement string/error adapter]
+    G[projectedClaim / count / hash bytes / export bytes] --> B[Gameplay output/budget/error adapter]
+    A --> C[claimKeyFields]
+    B --> C
+    C --> E[emissionIdentityFields / emissionStepFields]
+    E --> F[StructuralKeyEncoder fixed framing]
+    F --> H[formatStructuralProjectionKey shared prefix/hex]
+```
+
+适配保留：Judgement 的 text 为原样字节，不新增 UTF-8 校验；u32/hex 超限仍使用原
+length_error 文案。Gameplay 保留 UTF-8 拒绝、packed.field.wire_range、原物理 section
+上限，以及私有 probe 4096-byte key 的 capability.budget_insufficient 预检。
+编码层无 SHA，未改变先 count/check 后 SHA 的测试顺序，也未新增生产 R4 入口。
+
+Release / warnings-as-errors 构建通过。Judgement 216 用例 / 35624 断言、Capsule 25 用例 /
+1966 断言通过，含旧 revision 2/3 artifact/preimage golden、Reader 互拒及既有拒绝回归。
+新增独立 Claim golden 固定 NUL、UTF-8、空文本、路径计数和 repeat index=256 的字节；
+覆盖字段拼接不歧义、key 长度界限/无回绕，以及调用方范围错误在写入前拒绝。
+这些结果限于本次重构及已覆盖的兼容场景，不代表完整 scratch 预算验收。
+
+原始证据另存 out/pd5-claim-key-convergence-20261022-f310df2；start.json 记录干净起点并
+校验上一批 32-file packet，build.log / judgement-tests.log / capsule-tests.log 为原始输出。
+本批 diff、构建绑定及只读复核随该证据包留存，不覆盖上一批或 A/B0 冻结证据。

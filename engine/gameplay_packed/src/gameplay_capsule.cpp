@@ -213,17 +213,6 @@ struct Output final {
             unsignedValue(u32(static_cast<std::size_t>(it - strings->begin())), false);
         }
     }
-    void value(const std::string& v) {
-        text(v);
-    }
-    void value(const std::uint64_t& v) {
-        unsignedValue(v, true);
-    }
-    template <typename T> void value(const std::vector<T>& rows) {
-        count(rows.size());
-        for (const auto& row : rows)
-            value(row);
-    }
     void value(std::string& v) {
         text(v);
     }
@@ -411,25 +400,35 @@ template <typename A> void visit(A& a, PreparedGrace& v) {
 template <typename A> void visit(A& a, StableDeclarationId& v) {
     a.fields(v.sourceDocumentId, v.declarationOrdinal);
 }
-template <typename A, typename T> void emissionStepFields(A& a, T& v) {
-    a.fields(v.nodeId, v.repeatIndex);
-}
+struct StructuralOutputAdapter final {
+    Output& out;
+    void write(std::span<const std::byte> bytes) {
+        out.raw(bytes);
+    }
+    auto checkedCount(std::size_t value) const -> std::uint32_t {
+        return u32(value);
+    }
+    void validateText(std::string_view text) const {
+        if (!utf8(text))
+            fail("packed.strings.bounds", "token is not valid UTF-8");
+    }
+};
+
 template <typename A> void visit(A& a, EmissionPathStep& v) {
-    emissionStepFields(a, v);
-}
-void visit(Output& a, const EmissionPathStep& v) {
-    emissionStepFields(a, v);
-}
-template <typename A, typename T> void emissionIdentityFields(A& a, T& v) {
-    a.fields(v.chartEntryId, v.invocationId, v.moduleId, v.exportId, v.emissionPath,
-             v.requirementLocalId);
+    judgement::detail::emissionStepFields(a, v);
 }
 template <typename A> void visit(A& a, RequirementIdentity& v) {
-    emissionIdentityFields(a, v);
+    if constexpr (std::is_same_v<A, Output>) {
+        if (a.mode == Mode::hash) {
+            StructuralOutputAdapter adapter{a};
+            judgement::detail::StructuralKeyEncoder encoder{adapter};
+            judgement::detail::emissionIdentityFields(encoder, v);
+            return;
+        }
+    }
+    judgement::detail::emissionIdentityFields(a, v);
 }
-void visit(Output& a, const RequirementIdentity& v) {
-    emissionIdentityFields(a, v);
-}
+
 template <typename A> void visit(A& a, PhaseDeclaration& v) {
     enumeration(a, v.kind);
     a.value(v.declarationOrdinal);
@@ -458,64 +457,74 @@ template <typename A> void visit(A& a, FeatureRef& v) {
 template <typename A> void visit(A& a, ResourceRef& v) {
     a.ref(10, v.resourceId);
 }
-auto hex(std::span<const std::byte> bytes) -> std::string {
-    constexpr char digits[] = "0123456789abcdef";
-    std::string result;
-    result.reserve(bytes.size() * 2);
-    for (auto v : bytes) {
-        const auto b = std::to_integer<unsigned>(v);
-        result += digits[b >> 4];
-        result += digits[b & 15];
-    }
-    return result;
-}
 void projectionFields(Output& a, std::uint8_t subdomain,
                       std::initializer_list<std::string_view> tokens,
                       const RequirementIdentity* identity) {
-    a.tag(subdomain);
-    for (auto token : tokens)
-        a.text(token);
-    if (identity)
-        a.value(*identity);
+    StructuralOutputAdapter adapter{a};
+    judgement::detail::StructuralKeyEncoder encoder{adapter};
+    judgement::detail::structuralProjectionFields(encoder, subdomain, tokens, identity);
+}
+
+template <typename Emit> auto projection(Emit emit) -> std::string {
+    Output a;
+    a.mode = Mode::hash;
+    a.limit = chart::PackedChartLimits{}.maxPackedSectionBytes;
+    emit(a);
+    return judgement::detail::formatStructuralProjectionKey(a.writer.bytes(), [] {
+        fail("packed.field.wire_range", "projection key hex length overflow");
+    });
 }
 
 auto projection(std::uint8_t subdomain, std::initializer_list<std::string_view> tokens,
                 const RequirementIdentity* identity = nullptr) -> std::string {
-    Output a;
-    a.mode = Mode::hash;
-    a.limit = chart::PackedChartLimits{}.maxPackedSectionBytes;
-    projectionFields(a, subdomain, tokens, identity);
-    return "cxgp2:" + hex(a.writer.bytes());
+    return projection([&](Output& out) { projectionFields(out, subdomain, tokens, identity); });
 }
 
-template <typename A>
-void projected(A& a, std::uint8_t kind, std::uint8_t subdomain,
-               std::initializer_list<std::string_view> tokens,
-               const RequirementIdentity* identity = nullptr) {
+template <typename A, typename Emit> void projectedFromFields(A& a, std::uint8_t kind, Emit emit) {
     if constexpr (std::is_same_v<A, Output>) {
         if (a.sink) {
             Output count;
             count.mode = Mode::hash;
             count.sizing = true;
-            projectionFields(count, subdomain, tokens, identity);
-            const auto length =
-                detail::cappedAdd(6, detail::cappedMultiply(2, count.size, 4096), 4096);
+            emit(count);
+            const auto length = judgement::detail::structuralProjectionKeySize(count.size, 4096);
             if (length > 4096)
                 detail::hashBudget("maxProjectionKeyBytes", "semanticHash.projectionKeyBytes", 4096,
                                    length, false);
             a.cost->maxKey = std::max(a.cost->maxKey, length);
         }
     }
-    auto expected = projection(subdomain, tokens, identity), actual = expected;
+    auto expected = projection(emit), actual = expected;
     a.ref(kind, actual);
     require(actual == expected, "REF0", "typed reference subdomain or structural key mismatch");
 }
+
+template <typename A>
+void projected(A& a, std::uint8_t kind, std::uint8_t subdomain,
+               std::initializer_list<std::string_view> tokens,
+               const RequirementIdentity* identity = nullptr) {
+    projectedFromFields(a, kind,
+                        [&](Output& out) { projectionFields(out, subdomain, tokens, identity); });
+}
+
+void projectedClaim(Output& a, std::string_view explicitNamespace,
+                    const RequirementIdentity& identity) {
+    projectedFromFields(a, 11, [&](Output& out) {
+        StructuralOutputAdapter adapter{out};
+        judgement::detail::StructuralKeyEncoder encoder{adapter};
+        judgement::detail::claimKeyFields(encoder, explicitNamespace, identity);
+    });
+}
+
 template <typename A> void visit(A& a, CapabilityRef& v) {
     if constexpr (A::reading) {
         std::string key;
         a.ref(13, key);
-        require(key.starts_with("cxgp2:00"), "REF0", "capability requires subdomain zero");
-        const auto encoded = key.substr(6);
+        require(key.starts_with(judgement::detail::kStructuralKeyPrefix) &&
+                    std::string_view{key}.substr(judgement::detail::kStructuralKeyPrefix.size(),
+                                                 2) == "00",
+                "REF0", "capability requires subdomain zero");
+        const auto encoded = key.substr(judgement::detail::kStructuralKeyPrefix.size());
         require(encoded.size() % 2 == 0, "REF0", "invalid reference hex");
         Bytes bytes;
         for (std::size_t i = 0; i < encoded.size(); i += 2) {
@@ -977,7 +986,7 @@ template <typename A> void claimRow(A& a, ClaimRow& row, Model& m) {
     if (hasKey) {
         if constexpr (std::is_same_v<A, Output>) {
             if (a.mode == Mode::hash) {
-                projected(a, 11, 0, {*ns}, &m.graph.requirements[row.requirement].identity);
+                projectedClaim(a, *ns, m.graph.requirements[row.requirement].identity);
             } else {
                 const auto expected = judgement::detail::structuralClaimKey(
                     *ns, m.graph.requirements[row.requirement].identity);
