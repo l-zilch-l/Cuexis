@@ -2279,6 +2279,12 @@ TEST_CASE("Revision4 explicit entry reuses verified Header identity and rejects 
 
 TEST_CASE("Revision4 metadata faults precede a shared prepare failure",
           "[candidate][gameplay][entry][revision4][metadata-order]") {
+    const auto encodingError =
+        core::Error{"playback.gameplay.invalid", "Gameplay metadata encoding/Header mismatch"}
+            .withContext("category", "identity_closure_incomplete")
+            .withContext("severity", "error")
+            .withContext("faulted", "false")
+            .withContext("fieldPath", "metadata.encoding");
     TestContent fixture;
     const auto provider = content::MemoryContentProvider::create({});
     REQUIRE(provider);
@@ -2310,16 +2316,19 @@ TEST_CASE("Revision4 metadata faults precede a shared prepare failure",
             const auto semanticFailure = consume(wrong, disabled);
             REQUIRE_FALSE(semanticFailure);
             if (revision == 4) {
-                CHECK(semanticFailure.error().code() == "playback.gameplay.invalid");
-                CHECK(semanticFailure.error().message() ==
-                      "Gameplay metadata semantic identity mismatch");
+                checkExactError(semanticFailure.error(),
+                                core::Error{"playback.gameplay.invalid",
+                                            "Gameplay metadata semantic identity mismatch"}
+                                    .withContext("fieldPath", "metadata.compiledSemanticIdentity")
+                                    .withContext("category", "identity_closure_incomplete")
+                                    .withContext("severity", "error")
+                                    .withContext("faulted", "false")
+                                    .withContext("sourceCode", "packed.metadata.mismatch"));
                 wrong = *metadata;
                 *wrong.find("encoding") = json::Value{"capsule.3"};
                 const auto encodingFailure = consume(wrong, disabled);
                 REQUIRE_FALSE(encodingFailure);
-                CHECK(encodingFailure.error().code() == "playback.gameplay.invalid");
-                CHECK(encodingFailure.error().message() ==
-                      "Gameplay metadata encoding/Header mismatch");
+                checkExactError(encodingFailure.error(), encodingError);
                 *wrong.find("artifactIdentity") = json::Value{std::string(64, '0')};
                 const auto artifactFailure = consume(wrong, disabled);
                 REQUIRE_FALSE(artifactFailure);
@@ -2331,7 +2340,7 @@ TEST_CASE("Revision4 metadata faults precede a shared prepare failure",
                 *wrong.find("encoding") = json::Value{"capsule.4"};
                 const auto mismatch = consume(wrong, disabled);
                 REQUIRE_FALSE(mismatch);
-                CHECK(mismatch.error().message() == "Gameplay metadata encoding/Header mismatch");
+                checkExactError(mismatch.error(), encodingError);
             }
         }
     }
