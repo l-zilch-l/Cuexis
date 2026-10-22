@@ -271,3 +271,96 @@ showincludes-override.cmake（CMAKE_USER_MAKE_RULES_OVERRIDE）校正实际 UTF-
 预算探针模式。新增测试夹具最初的空图 META feature closure 与 observe Hold 不合法，旧入口
 正确拒绝；仅修正夹具为正确 closure、zero-grace observer Tap，未调整产品拒绝规则或 golden。
 最终复核另行登记。
+
+### 本轮固定提交与最终核验（仅内部核心）
+
+最终实现提交为 fa497faf045bf461142f50ef4e0792e347800b72；从 865ce98 的完整差异为
+bounded-core.diff。source-tree.zip 保存编译器实际读取的 2,038 个 tracked 文件字节，
+source-inventory.json 逐项 SHA-256；binary-binding-before-tests.json 在运行前固定三个 exe、
+六个静态库与 CMakeCache/build.ninja/rules.ninja/compile_commands，运行后再次核对全部文件。
+本报告交回提交只更新报告与 CURRENT_STATUS，不改变该实现/二进制绑定。
+
+最终独立构建目录 out/build/pd5-hash-core-final-release-r2 使用 Release、STATIC、
+WARNINGS_AS_ERRORS=ON、CHART_V5_CANDIDATE=ON；METRICS_TEST_ONLY 与 TRACE_HARNESS 均 OFF，
+IMPLEMENTATION_SHA 明确等于 fa497fa。执行 fresh configure + clean-first 三个相关测试目标，
+全部退出 0；实际 UTF-8 showIncludes 前缀正确，capsule 对象 #deps=75，包含 hash core/work、
+semantic stream、Claim/E 共享 codec 私有头。证据保留 override 输入、配置/编译日志及构建快照。
+早先 0c985ec 的 fresh 目录没有作为最终验收构建；失效增量日志也未替换成通过日志。
+
+| 最终 Release 验证 | 结果 |
+| --- | --- |
+| cuexis_gameplay_packed_tests（含原 golden、拒绝行为、新 core/overflow） | 36 cases / 3,242 assertions，全通过 |
+| cuexis_judgement_tests（含共享 Claim/E） | 216 cases / 35,624 assertions，全通过 |
+| cuexis_chart_tests（含静态 prefix/旧格式） | 227 cases / 42,425 assertions，全通过 |
+| cuexis_architecture_tests | 1/1 通过 |
+| tools/check_docs.py | 476 Markdown / 20 candidate 文件通过 |
+| git diff --check | 通过 |
+| 全仓 cuexis_format_check | 退出 1：14 个文件的既有格式问题，全部 git blob 与 865ce98 相同 |
+| 本批全部 10 个 C++ 改动文件，同一个 clang-format 的 --dry-run --Werror | 退出 0 |
+
+format-disposition.json 列出全部 14 个旧文件及 base/final blob、检查工具版本和本批文件清单；
+final-r2-format.log 保留全量失败输出，没有将全仓格式门禁记作通过，也没有扩展改动修整历史文件。
+此结果是本地 Windows/MSVC 相关回归，不是 Linux sanitizer/coverage、全仓 CTest 或发行接受。
+旧 golden、旧七项物理预算与拒绝规则没有更新。
+
+### 最终分配/放大观测
+
+allocation-observations.json 从 final-r2-capsule-tests.log 原始 23 行受控观测提取；
+每个成功样本都已核对 global count/bytes 等于 ledger count/bytes、global peak+65536
+等于 scratch peak、workspace live=0、sha=1、sha.bytes=B。没有导出时返回保留为 0；
+有导出时仅保留账本已收费的结果容量。HashCoreWork 实测 sizeof=4624，含在固定控制额度内。
+不能把“累计 allocations bytes”误当成同时存活峰值，或把失败诊断保留误当成 hash cache。
+
+| 对抗/边界样本 | B / V / K | scratch 峰值 bytes | 关键观测 |
+| --- | --- | ---: | --- |
+| 共享 Measure 精确 preimage ceiling | 134217728 / 342 / 260 | 69272 | 25 次、4774 累计动态请求 bytes；heap peak=3736；无导出，SHA bytes 精确相等 |
+| 上述再增 1 semantic byte | 拒绝 preimage | 69272 | nodes.count=1；nodes.hash=0，SHA=0 |
+| 共享 10001-node Pattern ×1000 引用 | 拒绝 preimage | 162232 | Count node=10001，memo hits=8000；hash node/SHA=0 |
+| 密集短引用等号 | 48010731 / 1000000 / 260 | 193816 | 997002 cache hits 仍计逻辑 Ix；SHA 一次 |
+| 密集短引用增加一个边 | 拒绝 visits | 193848 | SHA=0 |
+| Claim key 等号 | 16253 / 12 / 4096 | 66328 | 共享 framing/hex 流式输出 |
+| Claim key 多一个 namespace byte | 拒绝 key（4098） | 66328 | SHA=0 |
+| 深 Pattern 20000 | 207827 / 12 / 276 | 385568 | Count nodes=20000，hash nodes=40000，无递归堆栈展开 |
+| 深 Pattern 530000 | 拒绝 scratch | 8385056 | 下一页分配前拒绝；SHA=0；没有上调 8388608 |
+| 8192 静态实体身份/排序 | 995985 / 12 / 276 | 1056424 | 65 次、3688358 累计动态请求 bytes；heap peak=990888；与旧 preimage 摘要相等 |
+
+小输入四维 exact requests 均通过；各维收紧 1、字面 0 均在 SHA 前拒绝；UINT64_MAX 请求
+仍按 accepted ceiling clamp，与原 digest 相同。export exact 成功、少 1/0 在 SHA 前拒绝，
+UINT64_MAX capacity 在分配前拒绝 scratch。checked 加乘溢出与拒绝顺序测试通过。
+真实 PMR vector 1024→2048 迁移以 65536+3072 为等号峰值；少 1 在调用上游前拒绝，旧内容
+与地址保持。600 深度输入含/不含导出的每个 count/hash allocation 位置均注入 bad_alloc，
+全部释放，未改称 budget；预算失败 workspace live=0、SHA/update/export=0，诊断保持有界。
+
+独立 legacy oracle 覆盖 revision 2/3 的单 Requirement、合法空图与 N=64 混合 intent：
+逐字节等于旧 semanticPreimage，count=导出长度，digest=原 SHA；N=64 的 Ix=705，
+Gameplay.1 B=133997、Gameplay.2 B=144363。empty 分别 B=1889/1935、Ix=0。
+不借助新 core 反向生成 oracle；source prepare→原 Writer→原 Reader 先通过再借用输入。
+完整原 Capsule/Judgement/Chart 回归同步通过，旧 golden 未改。
+
+### 独立 Standards 复核
+
+最终固定范围 865ce98..fa497fa，补查 0c985ec..fa497fa：硬性违规 0、可行动异味 0。
+原 sink-only 探针残留已删除；测试夹具在观测窗口外，报告保留非法夹具拒绝和构建依赖问题。
+该轴为只读代码复核，没有自行构建，不替代上述最终同 SHA 证据。
+
+### 独立 Spec 复核
+
+最终固定范围 865ce98..fa497fa：新增实现发现 0。原多 Requirement/混合 intent/不同 E 长度/
+空图 oracle 缺口已关闭，经旧入口往返再比较完整 bytes/长度/SHA/Ix。删除 sink-only 分支
+保留 operation 分支和共享字段定义，不改旧入口语义；仍限内部核心，未接 revision 4。
+该轴同为只读设计复核；最终构建/测试由本报告原始记录提供。
+
+两轴未关闭发现均为 0；全仓格式失败另按上表原样交回，不混入复核发现计数。
+
+### 冻结证据与交回边界
+
+最终只读重验 Stage A packet 6161 文件、B0 packet 32 文件及上一批 Claim-key packet 19 payload
+全部哈希不变。B0 verify 脚本中的“pending/stopped”是冻结时点文字，不覆盖后来的 owner 接受。
+主工作树仍为干净 F1 eed36648a692333e47f798aa45be36ca850d08de。
+本批证据 packet 的 receipt.json 登记最终报告提交、源码提交、二进制/原始日志/index/zip 绑定；
+verify_packet.py 只读复核完整性，不等于 owner 对实现或阶段 B 的接受。
+
+本轮完成后停止并交回 owner 核验。revision 4 正式 Reader/Writer/Header/metadata 入口接入、
+完整 revision 4 七项物理预算联合验收、阶段 C、正式 performance preparation/registration/
+measurement、主树合并与 SDK/公共 API 升级均未执行。旧窗口 3 继续停止；F1 比较基线、
+1.10/15%、四维 envelope、原七物理预算、旧 golden 与所有生命周期规则保持。
