@@ -8,9 +8,9 @@
 
 ## 当前任务
 
-**最新执行状态（2026-10-23）**：固定 native source `54e8c2a1d770a90e1d7a2728f00510b1b19aabaf`、invocation report commit `08e145cad6eeff1f3c171b3c346fc1f1f608f946` 的原 40k R4 low/high 已各一次完成；[独立验收、内存责任与 PD-5 退出缺口](stage_reports/stages/stage-07/pd/2026-10-23-stage-c-independent-acceptance-and-exit-gaps.md)核验各侧 24 阶段、51 断言、Replay/Seek sameResult、显式 close/reset 和 exit 0，参考 wire、源码/构建/归档绑定通过。功能部分通过，内存 observer 包络超限，完整分域预算与最终释放未验，Stage C 整体和 PD-5 均未通过。原 discovery/preflight 失败报告及旧清单失败保留；本批仅新增报告与审计封包，没有重跑或登记。R4 TEST ONLY maxElements=67,108,864 的既有声明修复已在真实解码使用，生产默认与 revision 3 不变。主树保持 F1，公开停止接口暂停；旧窗口 3、正式测量/注册、merge/push 继续停止。
+**最新执行状态（2026-10-23）**：[小规模寿命与读取噪声诊断](stage_reports/stages/stage-07/pd/2026-10-23-memory-lifetime-and-read-noise-diagnostics.md)已完成：无上下文 Luna 独立复算 21 个既有 scale 进程/504 block rows，保留 C2 高噪声、未达自检结论；主代理另建测试派生探针，固定 64/2048 × low/high 各一次，均 exit 0、45 断言，销毁全部测试局部后 C++ new live count/requested/CRT storage 精确回到入口基线。发现原 after-close 还保留 decision.result 等 owning 值；逐组释放证据仅覆盖小规模，40k 分域预算和最终释放仍未验收。原 40k R4 low/high 功能已独立核验，不重跑、不改原 exceeded=true；产品源码/主树 F1/C2 不变，未登记性能候选。下一步固定 F1 三进程 ETW control 工具准备要求管理员权限，当前仅 NOT RUN 前置核验，不自动提权。旧窗口 3、正式测量/注册、公开停止接口、merge/push 继续停止。
 
-**Stage 7-PD / PD-0 基线、PD-1/PD-2、PD-3-a/b/c 与 PD-4 内部实施及适用本地门禁/独立复审已完成；SDK 0.9.0 已获接受。PD-5 P0 旧两窗保留超界证据，F1 有限 read 对照仍超原相对约束，C1 已撤回，C2 未达保留自检且仅留独立分支。隔离树 40k R4 low/high 全链路功能已独立核验，但内存观察超包络，正常分配器正式复测、完整 profile/平台/消费者及 owner 拆分触发审查未完成。旧关闭故障未归因，大型停止候选暂停；主树 F1 不变，Stage 7-PD 尚未退出，RPA/生产与整个 Stage 7 未关闭。**
+**Stage 7-PD / PD-0 基线、PD-1/PD-2、PD-3-a/b/c 与 PD-4 内部实施及适用本地门禁/独立复审完成；SDK 0.9.0 已获接受。PD-5 原 40k R4 功能通过，当前增加小规模作用域最终释放证据和 F1/C1/C2 原数据复算；40k 完整内存与正常分配器正式性能仍未通过。F1 有限 read 对照仍超线，C1 撤回、C2 未达自检；未登记下一性能候选，先准备有界 F1-only 噪声采集。主树保持 F1，旧关闭风险未归因，停止接口暂停；Stage 7-PD、RPA、生产与整个 Stage 7 均未关闭。**
 
 以下性能结论属于冻结的 PD-0 实施输入，不代表 PD-4 当前源码的正式性能验收。该固定环境与干净重建后的完整注册组满足原定 15% 门槛，owner 最大进程级波动 3.89%，宿主均值最大波动 11.11%。测量前修复并验证了 MSVC/Ninja 编码不一致造成的头文件依赖丢失；历史慢态根因仍未确定，旧失败组和源码绑定失败组均保留。该结论限于已登记的有限 testOnly profile，不接受生产预算或关闭 Stage 7。
 
@@ -43,7 +43,7 @@ PD-5 前轮证据：[两窗报告（2026-10-21 更正）](stage_reports/stages/s
 | --- | --- | --- |
 | Stage 7A | S7A-3/4、5/6、7/8 的受限功能验收完成；整体关闭仍待 RPA 收尾 | [Stage 7A 计划](stage_plans/active/stage-07/plan-a.md) |
 | Stage 7-RPA | testOnly 实施与自动化证据已具备；实体设备、生产预算和最终接受未完成 | [RPA 计划](stage_plans/active/stage-07/plan-rpa.md)、[交接状态](stage_reports/stages/stage-07/rpa/2026-10-15-rpa-f4-handoff.md) |
-| Stage 7-PD | PD-0–4 内部实施与适用本地门禁完成；PD-5 P0 旧两窗超界，F1 有限 read 仍超线，C1 撤回、C2 未达自检且未合入。隔离树原 40k R4 low/high 功能已独立核验及封包；全进程 observer 超包络、完整内存/释放与正式性能待验，旧关闭风险未归因，公开停止候选暂停。主树保持 F1；新准备/注册和正式复测未开始，子阶段未退出 | [PD 计划](stage_plans/active/stage-07/plan-presentation-decoupling.md)、[退出缺口](stage_reports/stages/stage-07/pd/2026-10-23-stage-c-independent-acceptance-and-exit-gaps.md) |
+| Stage 7-PD | PD-0–4 内部实施及适用本地门禁完成；PD-5 原 40k R4 功能已独立核验；新增小规模最终作用域释放通过、既有读取噪声复算完成。40k 分域内存、正式性能与拆分触发审查未完成；F1 read 仍超线，C1 撤回、C2 不合入。下一 F1-only 诊断工具已准备，当前环境缺管理员采样条件，未启动计时或 ETW；主树保持 F1，子阶段未退出 | [PD 计划](stage_plans/active/stage-07/plan-presentation-decoupling.md)、[最新诊断](stage_reports/stages/stage-07/pd/2026-10-23-memory-lifetime-and-read-noise-diagnostics.md) |
 | Stage 7B+ | 未开始，等待 RPA 完整退出 | [Stage 7B+ 计划](stage_plans/active/stage-07/plan-b.md) |
 
 Stage 0–6 已完成；Stage 8–14 尚未开始。整体 Stage 7 未关闭。
@@ -55,7 +55,7 @@ Stage 0–6 已完成；Stage 8–14 尚未开始。整体 Stage 7 未关闭。
 - **历史慢态及尾延迟未归因**：PD-0 最新登记组重复性通过，但不解释历史近两倍慢态；该组 Debug 宿主仍保留 15.93 ms 的单帧请求到回执尖峰。PD-5 本机有限 Release 门槛已接受，生产尾延迟预算未接受，不能据均值重复性通过推断生产延迟合格。
 - **控制附近帧率波动待量化**：PD-4 实体 DFJK 完整课程与控制观察已完成，旧版容量错误本轮未复现；Reset/暂停恢复时约 240→130→240，持续时间与模块成本未测量。设备失效/恢复仍未验收。
 - **局部偶发故障未定位**：B5 Pause 的 `capture_gap` 与 CXC unpack 的 `Access Denied` 尚无根因结论。
-- **40k 功能已核验、内存和正式性能仍未通过**：low/high 已各一次完成 Snapshot 解码、Replay/Seek 等价与显式关闭；observer 固定包络 exceeded=true，完整分域峰值与全部 owning 值释放后的证明缺失。旧关闭故障仍未归因，大型停止方案暂停，不以功能 PASS 恢复旧窗口或接受正常分配器性能。详见[独立报告](stage_reports/stages/stage-07/pd/2026-10-23-stage-c-independent-acceptance-and-exit-gaps.md)。
+- **40k 功能已核验、内存和正式性能仍未通过**：原 low/high 不重跑、原超包络记录不改。新 64/2048 low/high 诊断中，释放 decision/result/Snapshot/Replay/content/fixture 并结束全部局部作用域后，tracked live 三项精确回到入口；这不替代 40k 分域预算/最终释放。F1/C1/C2 复算保留原回归与噪声结论，下一有界 ETW control 尚未运行；见[最新诊断](stage_reports/stages/stage-07/pd/2026-10-23-memory-lifetime-and-read-noise-diagnostics.md)。
 - **RPA 验收未完成**：已取得 PD-4 受限实体键盘与听音观察；精确音画同步、设备失效与压力验证、生产参数及预算接受仍待完成。
 - **预算证据缺项**：端到端 Seek 延迟、prepare-only 峰值堆和 decoded semantic heap 尚未完成有效测量与接受。
 

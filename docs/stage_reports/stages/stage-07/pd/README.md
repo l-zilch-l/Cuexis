@@ -4,6 +4,8 @@
 
 ## 实施与回归
 
+- [PD-5 小规模寿命诊断、读取噪声复算与下一步采集准备](2026-10-23-memory-lifetime-and-read-noise-diagnostics.md)
+
 - [PD-5 Stage C 独立功能验收、内存责任与退出缺口](2026-10-23-stage-c-independent-acceptance-and-exit-gaps.md)
 
 - [PD-5 独立绑定阶段 C：Catch discovery 参数失败，native test 未启动](2026-10-23-stage-c-bound-discovery-stop.md)
