@@ -4,6 +4,8 @@
 
 ## 实施与回归
 
+- [PD-5 只读管理员预检、工具组件验证与下一证据方案](2026-10-23-readonly-etw-preflight-and-next-evidence-plan.md)
+
 - [PD-5 ETW 启动包装器失败与独立修正版](2026-10-23-etw-wrapper-failure-and-repair.md)
 
 - [PD-5 小规模寿命诊断、读取噪声复算与下一步采集准备](2026-10-23-memory-lifetime-and-read-noise-diagnostics.md)

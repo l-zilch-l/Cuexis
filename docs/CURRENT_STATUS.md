@@ -8,7 +8,7 @@
 
 ## 当前任务
 
-**最新执行状态（2026-10-23）**：[小规模寿命与读取噪声诊断](stage_reports/stages/stage-07/pd/2026-10-23-memory-lifetime-and-read-noise-diagnostics.md)已完成：无上下文 Luna 独立复算 21 个既有 scale 进程/504 block rows，保留 C2 高噪声、未达自检结论；主代理另建测试派生探针，固定 64/2048 × low/high 各一次，均 exit 0、45 断言，销毁全部测试局部后 C++ new live count/requested/CRT storage 精确回到入口基线。发现原 after-close 还保留 decision.result 等 owning 值；逐组释放证据仅覆盖小规模，40k 分域预算和最终释放仍未验收。原 40k R4 low/high 功能已独立核验，不重跑、不改原 exceeded=true；产品源码/主树 F1/C2 不变，未登记性能候选。管理员运行第一版 ETW 准备后遇到包装器 null exit code 与无终端提示，失败已保留且无 F1 测量启动；[独立 v2 修正版](stage_reports/stages/stage-07/pd/2026-10-23-etw-wrapper-failure-and-repair.md)已验证退出码修复及权限拦截，但清理复审 HOLD；旧 ETW 临时文件继续增长后已由 owner 专属 stop 保存，最终 trace 稳定且无 F1 样本，不自动重跑或提权。旧窗口 3、正式测量/注册、公开停止接口、merge/push 继续停止。
+**最新执行状态（2026-10-23）**：[只读管理员预检与下一证据方案](stage_reports/stages/stage-07/pd/2026-10-23-readonly-etw-preflight-and-next-evidence-plan.md)已形成：14 项工具单元验证通过，新增 Job 超时/取消同步回收及实际 active=0 检查；实际 ETW 采集仍因看护/停止竞态保持 HOLD。v3 可运行入口仅管理员只读预检，capture 被禁用，普通权限已核验 NOT RUN；没有新 F1 样本、40k 重跑或正式注册。三个无上下文 Luna 分别完成一个低把握 ordered visitor 设计、内存分域采集方案和工具复审；候选未实施/登记，预算未改。主代理复算 31 项来源并保留一项原 binding 的手抄 SHA 错误。原 40k 功能及小规模最终释放证据保留，40k 分域内存与正式读取性能仍未通过；主树 F1/C2、历史证据不变。旧窗口3、公开停止接口、merge/push 继续停止。
 
 **Stage 7-PD / PD-0 基线、PD-1/PD-2、PD-3-a/b/c 与 PD-4 内部实施及适用本地门禁/独立复审完成；SDK 0.9.0 已获接受。PD-5 原 40k R4 功能通过，当前增加小规模作用域最终释放证据和 F1/C1/C2 原数据复算；40k 完整内存与正常分配器正式性能仍未通过。F1 有限 read 对照仍超线，C1 撤回、C2 未达自检；未登记下一性能候选，先准备有界 F1-only 噪声采集。主树保持 F1，旧关闭风险未归因，停止接口暂停；Stage 7-PD、RPA、生产与整个 Stage 7 均未关闭。**
 
@@ -43,7 +43,7 @@ PD-5 前轮证据：[两窗报告（2026-10-21 更正）](stage_reports/stages/s
 | --- | --- | --- |
 | Stage 7A | S7A-3/4、5/6、7/8 的受限功能验收完成；整体关闭仍待 RPA 收尾 | [Stage 7A 计划](stage_plans/active/stage-07/plan-a.md) |
 | Stage 7-RPA | testOnly 实施与自动化证据已具备；实体设备、生产预算和最终接受未完成 | [RPA 计划](stage_plans/active/stage-07/plan-rpa.md)、[交接状态](stage_reports/stages/stage-07/rpa/2026-10-15-rpa-f4-handoff.md) |
-| Stage 7-PD | PD-0–4 内部实施及适用本地门禁完成；PD-5 原 40k R4 功能已独立核验；新增小规模最终作用域释放通过、既有读取噪声复算完成。40k 分域内存、正式性能与拆分触发审查未完成；F1 read 仍超线，C1 撤回、C2 不合入。首个 ETW 启动包装失败，无 F1 样本，owner 已手动保存 trace；修正版因清理问题保持 HOLD。主树保持 F1，子阶段未退出 | [PD 计划](stage_plans/active/stage-07/plan-presentation-decoupling.md)、[ETW 失败与修复状态](stage_reports/stages/stage-07/pd/2026-10-23-etw-wrapper-failure-and-repair.md) |
+| Stage 7-PD | PD-0–4 内部实施及适用本地门禁完成；PD-5 原 40k 功能与小规模最终作用域释放已核验，40k 分域内存/正式性能/拆分触发审查未完。新增工具 Job 回收验证、一个未实施读取设计和内存方案；v3 仅交付管理员只读预检，采集仍 HOLD。F1 read 超线，C1 撤回、C2 不合入，主树保持 F1，子阶段未退出 | [PD 计划](stage_plans/active/stage-07/plan-presentation-decoupling.md)、[最新证据与未决项](stage_reports/stages/stage-07/pd/2026-10-23-readonly-etw-preflight-and-next-evidence-plan.md) |
 | Stage 7B+ | 未开始，等待 RPA 完整退出 | [Stage 7B+ 计划](stage_plans/active/stage-07/plan-b.md) |
 
 Stage 0–6 已完成；Stage 8–14 尚未开始。整体 Stage 7 未关闭。
