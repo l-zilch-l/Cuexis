@@ -4,6 +4,8 @@
 
 ## 实施与回归
 
+- [PD-5 独立绑定阶段 C：Catch discovery 参数失败，native test 未启动](2026-10-23-stage-c-bound-discovery-stop.md)
+
 - [PD-5 Snapshot-bound 阶段 C：保护哈希门禁在 native 前停止](2026-10-23-stage-c-snapshot-bound-preflight-stop.md)
 
 - [PD-5 Snapshot probe 测试预算最小修复与验证](2026-10-23-snapshot-probe-budget-repair.md)
