@@ -4,6 +4,8 @@
 
 ## 实施与回归
 
+- [PD-5 DiagTrack 命名会话核验与预检规则修正](2026-10-23-etw-background-session-classification.md)
+
 - [PD-5 管理员只读预检：已有 WPR 会话拦截与归属待查](2026-10-23-etw-existing-session-preflight-stop.md)
 
 - [PD-5 只读管理员预检、工具组件验证与下一证据方案](2026-10-23-readonly-etw-preflight-and-next-evidence-plan.md)

@@ -8,7 +8,7 @@
 
 ## 当前任务
 
-**最新执行状态（2026-10-23）**：[只读管理员预检与下一证据方案](stage_reports/stages/stage-07/pd/2026-10-23-readonly-etw-preflight-and-next-evidence-plan.md)已形成：14 项工具单元验证通过，新增 Job 超时/取消同步回收及实际 active=0 检查；实际 ETW 采集仍因看护/停止竞态保持 HOLD。v3 capture 被禁用；管理员只读预检已执行到 ETW 枚举，因已有 WPR 会话停止，名称/路径未记录。已另备只读 inventory 待管理员运行，详见[最新拦截报告](stage_reports/stages/stage-07/pd/2026-10-23-etw-existing-session-preflight-stop.md)；没有新 F1 样本、40k 重跑或正式注册。三个无上下文 Luna 分别完成一个低把握 ordered visitor 设计、内存分域采集方案和工具复审；候选未实施/登记，预算未改。主代理复算 31 项来源并保留一项原 binding 的手抄 SHA 错误。原 40k 功能及小规模最终释放证据保留，40k 分域内存与正式读取性能仍未通过；主树 F1/C2、历史证据不变。旧窗口3、公开停止接口、merge/push 继续停止。
+**最新执行状态（2026-10-23）**：[只读管理员预检与下一证据方案](stage_reports/stages/stage-07/pd/2026-10-23-readonly-etw-preflight-and-next-evidence-plan.md)已形成：14 项工具单元验证通过，新增 Job 超时/取消同步回收及实际 active=0 检查；实际 ETW 采集仍因看护/停止竞态保持 HOLD。管理员 inventory 已核验：39 项中四项为 DiagTrack 命名 WPR，会话清单中无旧 PD5 精确名称。v3 全前缀拦截过宽，已新增精确后台 tuple 分类与保留失败清单的只读入口，11 项测试通过；完整预检及实际 capture 仍 HOLD，详见[最新分类报告](stage_reports/stages/stage-07/pd/2026-10-23-etw-background-session-classification.md)；没有新 F1 样本、40k 重跑或正式注册。三个无上下文 Luna 分别完成一个低把握 ordered visitor 设计、内存分域采集方案和工具复审；候选未实施/登记，预算未改。主代理复算 31 项来源并保留一项原 binding 的手抄 SHA 错误。原 40k 功能及小规模最终释放证据保留，40k 分域内存与正式读取性能仍未通过；主树 F1/C2、历史证据不变。旧窗口3、公开停止接口、merge/push 继续停止。
 
 **Stage 7-PD / PD-0 基线、PD-1/PD-2、PD-3-a/b/c 与 PD-4 内部实施及适用本地门禁/独立复审完成；SDK 0.9.0 已获接受。PD-5 原 40k R4 功能通过，当前增加小规模作用域最终释放证据和 F1/C1/C2 原数据复算；40k 完整内存与正常分配器正式性能仍未通过。F1 有限 read 对照仍超线，C1 撤回、C2 未达自检；未登记下一性能候选，先准备有界 F1-only 噪声采集。主树保持 F1，旧关闭风险未归因，停止接口暂停；Stage 7-PD、RPA、生产与整个 Stage 7 均未关闭。**
 
