@@ -4,6 +4,8 @@
 
 ## 实施与回归
 
+- [PD-5 ETW 启动包装器失败与独立修正版](2026-10-23-etw-wrapper-failure-and-repair.md)
+
 - [PD-5 小规模寿命诊断、读取噪声复算与下一步采集准备](2026-10-23-memory-lifetime-and-read-noise-diagnostics.md)
 
 - [PD-5 Stage C 独立功能验收、内存责任与退出缺口](2026-10-23-stage-c-independent-acceptance-and-exit-gaps.md)

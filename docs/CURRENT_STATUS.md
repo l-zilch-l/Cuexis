@@ -8,7 +8,7 @@
 
 ## 当前任务
 
-**最新执行状态（2026-10-23）**：[小规模寿命与读取噪声诊断](stage_reports/stages/stage-07/pd/2026-10-23-memory-lifetime-and-read-noise-diagnostics.md)已完成：无上下文 Luna 独立复算 21 个既有 scale 进程/504 block rows，保留 C2 高噪声、未达自检结论；主代理另建测试派生探针，固定 64/2048 × low/high 各一次，均 exit 0、45 断言，销毁全部测试局部后 C++ new live count/requested/CRT storage 精确回到入口基线。发现原 after-close 还保留 decision.result 等 owning 值；逐组释放证据仅覆盖小规模，40k 分域预算和最终释放仍未验收。原 40k R4 low/high 功能已独立核验，不重跑、不改原 exceeded=true；产品源码/主树 F1/C2 不变，未登记性能候选。下一步固定 F1 三进程 ETW control 工具准备要求管理员权限，当前仅 NOT RUN 前置核验，不自动提权。旧窗口 3、正式测量/注册、公开停止接口、merge/push 继续停止。
+**最新执行状态（2026-10-23）**：[小规模寿命与读取噪声诊断](stage_reports/stages/stage-07/pd/2026-10-23-memory-lifetime-and-read-noise-diagnostics.md)已完成：无上下文 Luna 独立复算 21 个既有 scale 进程/504 block rows，保留 C2 高噪声、未达自检结论；主代理另建测试派生探针，固定 64/2048 × low/high 各一次，均 exit 0、45 断言，销毁全部测试局部后 C++ new live count/requested/CRT storage 精确回到入口基线。发现原 after-close 还保留 decision.result 等 owning 值；逐组释放证据仅覆盖小规模，40k 分域预算和最终释放仍未验收。原 40k R4 low/high 功能已独立核验，不重跑、不改原 exceeded=true；产品源码/主树 F1/C2 不变，未登记性能候选。管理员运行第一版 ETW 准备后遇到包装器 null exit code 与无终端提示，失败已保留且无 F1 测量启动；[独立 v2 修正版](stage_reports/stages/stage-07/pd/2026-10-23-etw-wrapper-failure-and-repair.md)已验证退出码修复及权限拦截，但清理复审 HOLD；旧 ETW 临时文件继续增长后已由 owner 专属 stop 保存，最终 trace 稳定且无 F1 样本，不自动重跑或提权。旧窗口 3、正式测量/注册、公开停止接口、merge/push 继续停止。
 
 **Stage 7-PD / PD-0 基线、PD-1/PD-2、PD-3-a/b/c 与 PD-4 内部实施及适用本地门禁/独立复审完成；SDK 0.9.0 已获接受。PD-5 原 40k R4 功能通过，当前增加小规模作用域最终释放证据和 F1/C1/C2 原数据复算；40k 完整内存与正常分配器正式性能仍未通过。F1 有限 read 对照仍超线，C1 撤回、C2 未达自检；未登记下一性能候选，先准备有界 F1-only 噪声采集。主树保持 F1，旧关闭风险未归因，停止接口暂停；Stage 7-PD、RPA、生产与整个 Stage 7 均未关闭。**
 
@@ -43,7 +43,7 @@ PD-5 前轮证据：[两窗报告（2026-10-21 更正）](stage_reports/stages/s
 | --- | --- | --- |
 | Stage 7A | S7A-3/4、5/6、7/8 的受限功能验收完成；整体关闭仍待 RPA 收尾 | [Stage 7A 计划](stage_plans/active/stage-07/plan-a.md) |
 | Stage 7-RPA | testOnly 实施与自动化证据已具备；实体设备、生产预算和最终接受未完成 | [RPA 计划](stage_plans/active/stage-07/plan-rpa.md)、[交接状态](stage_reports/stages/stage-07/rpa/2026-10-15-rpa-f4-handoff.md) |
-| Stage 7-PD | PD-0–4 内部实施及适用本地门禁完成；PD-5 原 40k R4 功能已独立核验；新增小规模最终作用域释放通过、既有读取噪声复算完成。40k 分域内存、正式性能与拆分触发审查未完成；F1 read 仍超线，C1 撤回、C2 不合入。下一 F1-only 诊断工具已准备，当前环境缺管理员采样条件，未启动计时或 ETW；主树保持 F1，子阶段未退出 | [PD 计划](stage_plans/active/stage-07/plan-presentation-decoupling.md)、[最新诊断](stage_reports/stages/stage-07/pd/2026-10-23-memory-lifetime-and-read-noise-diagnostics.md) |
+| Stage 7-PD | PD-0–4 内部实施及适用本地门禁完成；PD-5 原 40k R4 功能已独立核验；新增小规模最终作用域释放通过、既有读取噪声复算完成。40k 分域内存、正式性能与拆分触发审查未完成；F1 read 仍超线，C1 撤回、C2 不合入。首个 ETW 启动包装失败，无 F1 样本，owner 已手动保存 trace；修正版因清理问题保持 HOLD。主树保持 F1，子阶段未退出 | [PD 计划](stage_plans/active/stage-07/plan-presentation-decoupling.md)、[ETW 失败与修复状态](stage_reports/stages/stage-07/pd/2026-10-23-etw-wrapper-failure-and-repair.md) |
 | Stage 7B+ | 未开始，等待 RPA 完整退出 | [Stage 7B+ 计划](stage_plans/active/stage-07/plan-b.md) |
 
 Stage 0–6 已完成；Stage 8–14 尚未开始。整体 Stage 7 未关闭。
@@ -55,7 +55,7 @@ Stage 0–6 已完成；Stage 8–14 尚未开始。整体 Stage 7 未关闭。
 - **历史慢态及尾延迟未归因**：PD-0 最新登记组重复性通过，但不解释历史近两倍慢态；该组 Debug 宿主仍保留 15.93 ms 的单帧请求到回执尖峰。PD-5 本机有限 Release 门槛已接受，生产尾延迟预算未接受，不能据均值重复性通过推断生产延迟合格。
 - **控制附近帧率波动待量化**：PD-4 实体 DFJK 完整课程与控制观察已完成，旧版容量错误本轮未复现；Reset/暂停恢复时约 240→130→240，持续时间与模块成本未测量。设备失效/恢复仍未验收。
 - **局部偶发故障未定位**：B5 Pause 的 `capture_gap` 与 CXC unpack 的 `Access Denied` 尚无根因结论。
-- **40k 功能已核验、内存和正式性能仍未通过**：原 low/high 不重跑、原超包络记录不改。新 64/2048 low/high 诊断中，释放 decision/result/Snapshot/Replay/content/fixture 并结束全部局部作用域后，tracked live 三项精确回到入口；这不替代 40k 分域预算/最终释放。F1/C1/C2 复算保留原回归与噪声结论，下一有界 ETW control 尚未运行；见[最新诊断](stage_reports/stages/stage-07/pd/2026-10-23-memory-lifetime-and-read-noise-diagnostics.md)。
+- **40k 功能已核验、内存和正式性能仍未通过**：原 low/high 不重跑、原超包络记录不改。新 64/2048 low/high 诊断中，释放 decision/result/Snapshot/Replay/content/fixture 并结束全部局部作用域后，tracked live 三项精确回到入口；这不替代 40k 分域预算/最终释放。F1/C1/C2 复算保留原回归与噪声结论；ETW 首次包装失败且无 F1 样本，修正版清理复审 HOLD。见[寿命诊断](stage_reports/stages/stage-07/pd/2026-10-23-memory-lifetime-and-read-noise-diagnostics.md)与[最新失败/修复状态](stage_reports/stages/stage-07/pd/2026-10-23-etw-wrapper-failure-and-repair.md)。
 - **RPA 验收未完成**：已取得 PD-4 受限实体键盘与听音观察；精确音画同步、设备失效与压力验证、生产参数及预算接受仍待完成。
 - **预算证据缺项**：端到端 Seek 延迟、prepare-only 峰值堆和 decoded semantic heap 尚未完成有效测量与接受。
 
