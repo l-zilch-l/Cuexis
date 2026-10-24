@@ -1,6 +1,6 @@
 # Cuexis Stage 7-RPA 性能整改方案
 
-状态：candidate；设计建议，待评审；未实施、未运行新实验。
+状态：candidate；F1–F5 设计裁定已记录，待 owner 接受；准入树已有清理许可局部实现，R1 未退出；本轮未运行新实验。
 
 更新日期：2026-10-24。
 
@@ -8,7 +8,9 @@
 
 权威归属：[ADR 0046](../../../adr/0046-realtime-playback-coordination.md)（RPA 决定）、[RPA 补充 Spec](../../../formats/rpa-execution-contract.md)（语义）、[实时宿主边界](../../../api/realtime-host-boundary.md)（表示与所有权）、[RPA 分册](plan-rpa.md)（范围、批次、门禁与验收）、[性能修改方案](performance-modification-plan.md)、[PD-5 测量方案](pd5-measurement-proposal.md)。本文不改变这些来源的条款。
 
-审阅记录：[2026-10-24 候选设计审阅](../../../stage_reports/stages/stage-07/rpa/2026-10-24-performance-remediation-design-review.md)。已知待核项与实施前置条件以该记录为准，本文正文不因此改写。
+审阅记录：[2026-10-24 候选设计审阅](../../../stage_reports/stages/stage-07/rpa/2026-10-24-performance-remediation-design-review.md)。该记录保留送审版发现；本轮 F1–F5 裁定见本文 §1.1、§5.2、§6.2、§7.1 及审阅记录 §8，不把设计裁定记作实施退出。
+
+裁定核查基线（2026-10-24）：主树 `stage-7` 的 `f0c7e3230e3abd479fda18e009a7688df89c7672`，开始时干净；准入树 HEAD 仍为 `3e5837f63f76397429c9f7603fd7450d3ce9855d`，当前 54 个修改/未跟踪文件，含新增的 session_worker.cpp 清理许可差异及 rpa_b5_session_tests.cpp 用例。它们未合入主树；原设计基线与历史证据保持独立。
 
 本文的编写请求是“阅读文档，对当前设计进行性能整改，反复思考后给出方案”。此前的实施、实验和授权流程作为设计输入；本文不把它们转换成执行指令。编写过程只做只读核查和设计文档：不修改产品、不登记测量、不提交、不启动后台任务。
 
@@ -22,8 +24,8 @@
 
 | 主线 | 采用机制 | 可支持的效果判断 | 置信度与依赖 |
 | --- | --- | --- | --- |
-| Close | 定向清理与 fence 使用一致的 owner 授权；以原 job/operation 续行未完成的 Close；保留首因、cut、隔离及终态证据 | 可针对已知 fence 矛盾和超时后的阶段丢失分别设计修复；不能推断历史失败消除率或毫秒改善区间 | fence 矛盾为静态事实；续行存在静态风险与测试缺口，未动态复现。先 R0，再 R1 |
-| 读取 | 保留窗口，增加有界中性借用块；直接写最终 owning DTO，省去 136 B 值记录中的矩阵中转和未使用的 Renderable 检索；复用现有布局 | 有明确可删除的工作；实际比值区间未知，目标仍为 95% 区间上界 ≤1.10 | 语义可保真：中高；性能收益：待测。需当前 F1 重锚和 R2 实测 |
+| Close | 正常 fence 与受限清理许可分开；清理按 accepted binding 和 owner ledger 复核；以原 job/operation 续行未完成的 Close，保留首因、cut、隔离及终态证据 | 可针对已知 fence 矛盾和超时后的阶段丢失分别设计修复；不能推断历史失败消除率或毫秒改善区间 | 清理许可已有局部候选；续行存在静态风险与测试缺口，未动态复现。先闭合相关 R0，再判断 R1 退出 |
+| 读取 | 保留窗口，增加有界中性借用块；直接写最终 owning DTO，省去 ObjectPresentation 值记录中的矩阵中转和未使用的 Renderable 检索；复用现有布局 | 有明确可删除的工作；136 B 是历史反汇编口径、128 B 是字段推算，当前布局与 scratch 依 §7.1 实测；实际比值区间未知，目标仍为 95% 区间上界 ≤1.10 | 语义可保真：中高；性能收益：待测。需当前 F1 重锚和 R2 实测 |
 | Seek 准备与存储 | 保护现有 PreparedGameplay 共享和分块日志；只去除实测重复 prepare、派生表构建或 canonical 编码/hash | 有静态重复调用落点；PreparedGameplay handle 复制本身不是深复制证据；尾块仍有 batch/admission 值复制 | 落点已核实；占比及收益待 R0。进入 R3a 的对应子项 |
 | Seek 动态事务 | 分别计量 draft、fault reserve、Fold 和 finalization 的 RuntimeState 复制，并区分 full/idle Tick | checkpoint 不能自动消除后缀中的副本；是否需要调整表示、能否保留回滚，均未定 | 静态复制点已核实，主导成本未证实；R3a 内单独决策门，不预授权通用容器重构 |
 | Seek 恢复 | 重放/验证若经 R0 证明确有必要，再采用私有、来源受控 checkpoint；认证与恢复分离，恢复独占动态状态 | 可去掉可信前缀的重复执行/比较；恢复副本、单记录尾部、首次认证及发布仍需入账 | 条件候选；需状态闭包、来源证明和成本证据。R3a → R3b |
@@ -32,6 +34,18 @@
 **不建议现在承诺“40k Seek 能从约 6.3 秒降到 20 ms”。** 当前证据不足以知道序列化、准备、内部执行、完整比较、投影、发布、时钟和呈现各占多少。方案给出改变复杂度的机制、能证伪的实验和失败出口，不填未经测量的倍数或预测区间。
 
 PD-5 维持“未通过但定案”。后续证据归 Stage 7-RPA，不修改历史判定。完成本文中的性能整改也不等于 RPA、生产、F4 或整个 Stage 7 关闭。
+
+### 1.1 F1–F5 本轮裁定与实施边界
+
+本节 F1–F5 是审阅发现编号，不是 F1 冻结候选或既有 F1–F4 验收阶段。采用以下设计选择；不据此追认准入树局部实现通过，也不把本轮文档修改扩展为产品或实验执行授权。
+
+| 发现 | 裁定 | 退出约束 |
+| --- | --- | --- |
+| F1：清理 fence 与实际机制不同 | 选择“受限清理许可”，不新增清理 fence；正常控制 fence 不放宽。许可来自完整 accepted binding、owner ledger、cut 和隔离，不由 status 自授权 | 无 fence 分支的 fence 对象/代数为不适用，不记通过；现有“无 fence 拒绝位图”是观测证据缺口。绑定/decision/generation 与旧 fence 兼容性仍须闭合；见 §5.2、§6.2 |
+| F2：清理许可与续行混淆 | R1 保留一个批次，分别跟踪“清理许可局部候选”与“§6.3 四类续行未实施” | 审阅所载 542 assertions / 4 test cases 仅是清理许可单元证据，本轮未重跑；不是全部许可反例通过，更不是 R1 完成。两部分及 R0 观测、生命周期门均齐备后才可申请退出 |
+| F3：136 B / 128 B 口径 | 保留历史口径与当前推算的来源，不择一硬编码为现行布局；R2 首个提交现场登记 sizeof/alignof 并设置对应布局/预算的 static_assert | ObjectPresentation、Result 包装、借用行与完整 scratch 分别登记；没有新构建实证，不接受 scratch 预算。K=32 仍是预定候选，不扫描到过线 |
+| F4：failed 谓词层间差异 | 登记 worker 无 fence 分支与 retireSoftware/retireExecutionStep 的不同许可范围，保持本轮源码不变 | worker 的分支选择不等于所有入口已拒绝 failed Close；已有 fence 及直接调用反例待证。新增调用方或扩大路径前单独审查统一/下沉谓词，不能顺手放宽 |
+| F5：字段缺少观测载体 | R0 增加编译期可关闭、owner-local、只读导出的内部诊断通道，并先完成字段映射 | Close 阶段、首次 flush 失败阶段、实际 fence 拒绝及清理许可校验结果不得从通用错误码推测；缺字段记证据不足，不新增公开 API/ABI |
 
 ## 2. 设计前必须纠正的事实
 
@@ -145,20 +159,32 @@ M-TIME、M-TAIL、M-CAP、M-FINAL 均保留。testOnly 参数能支持证明机�
 
 ### 5.2 Close 最小可观测集
 
-预分配 owner-local 失败快照，保存：
+裁定 F5：采用内部只读诊断通道。以下是 R0 待实施的观测要求，不是现有 ControlReceipt 或公开 Playback API 已提供的字段。预分配 owner-local 失败快照，保存：
 
 - 首个 flush/delivery 错误及其最初阶段；之后 fence 错误另记，不能覆盖首因。
 - operationId、decisionOrdinal、controlSequence、kind、status、完整 context/scope/generation/candidate。
-- fence 拒绝位图：operationActive、已有 fence、无 accepted control、请求不符、status 不符、类型不符、cut 缺失；已有 fence 的完整身份单列。
+- 路径标识、是否实际调用正常 fence、已有 fence 是否存在；实际 fence 调用的拒绝位图记录 operationActive、已有 fence、无 accepted control、请求不符、status 不符、类型不符、cut 缺失。清理许可另记 accepted binding/cut/isolation/ledger 的校验结果，不合并成一个“fence 通过”；已有 fence 的完整身份单列。
 - cut、连续 delivery 的已确认末端和未 ACK 范围、close evidence 的计数与 owning 标识。
 - audio stop/isolate/callbackIsolated，各参与 owner 的 retire/close 终态、worker exited/joined。
 - coordinator 内部状态与门面对外状态，尤其 pump 期间所见 Closing/Closed。
 - 本地 Close 续行阶段、原在途 job 的命令/回复类型和归属；coordinator 是否已 finish、confirmation/shutdown/exited/join 各是否确认。
 - 外部首个 Close 请求时间、统一截止、各阶段实际等待及首次超预算；重入续行不得重置这条记录。
 
-快照只在对应 owner 串行执行处更新，故障后由正常控制通道导出；不为一条日志增加全局跨线程状态观察器。
+字段映射在 R0 编码前固定；新诊断只记录既有控制流，不担任 §6.3 的续行状态机，不得用于授权清理或推进业务：
 
-导出复用已有预留故障容量。通道本身不可用或字段缺失时，结论是归因证据不足，不能把“没有日志”解释为没有 flush/fence 失败。
+| 字段组 | 权威来源与采集点 | 诊断载体与读取方式 | 当前缺口 |
+| --- | --- | --- | --- |
+| Close 请求时间、阶段、原 job/回复类型、finish/confirm/shutdown/exited/join | ExecutionHost::close/cleanup 与原 session/audio 等待、确认处；在前置 cleanup 前记录首次请求 | 主线程 owner 的定长快照；只读复制已记录值 | 无独立 Close 阶段字段；不能用已有 worker 测试推定四类续行已实现 |
+| 首个 flush/delivery 错误及发生阶段 | ExecutionHost::flush 和 Close 首次捕获错误处；后续错误另列 | 首因固定槽 + 有界次因字段；只记录稳定码/枚举及原 ID，不在热路径格式化日志 | closeDeliveryError_ 不构成完整的首次发生阶段快照 |
+| 正常 fence 拒绝、已有 fence、清理许可路径 | SessionSoftwareRetire 路径选择、实际 enterExecutionFence 拒绝处、retireSoftware/retireExecutionStep 校验处 | 各 owner 本地位图/适用性/有效性字段，通过内部有界回复导出 | 无独立拒绝位图；跳过 fence 不能伪造空位图或 fence 通过 |
+| accepted request、scope、decision、controlSequence、expected/current generation | Playback acceptedHostControl/acceptedHostDecision/current generation；原请求和退休回执 | D2 owner 串行采集只读副本，含来源身份；不从 proof.status 反推 | 请求等式不等于额外 decision/当前代数比较已经执行；必须分项标记 |
+| cut、未 ACK 范围、隔离和步骤终态 | Capture/ControlReceipt/各 owner step ledger 与原 typed reply | 复用已有权威值；每份快照携带 operation/step/scope/generation 关联 | 不新增第二份可变 ledger；字段可读不等于跨 owner 同时快照 |
+
+所有新增记录均为编译期可关闭的定长 owner-local 数据；仅 owner 自己更新，外部只读导出，不触发新控制、正常 fence、ACK、计时重置或状态迁移。不引入全局观察器、跨线程裸读、公开 API/ABI 或新的 SDK 诊断语义。需要跨 worker 取值时只走有界内部通道，明确 reserve、reply 归属、释放与停止后的可用性；优先复用已确认足够的预留故障容量，未核实容量不能宣称失败时必可导出。
+
+裁定 F1 的证据规则：只有记录证明本次走“无 fence 清理许可”分支时，fence 对象/代数及本次未执行的 fence 检查才标记不适用；既有 fence 的身份仍须记录和核验。历史运行或当前构建缺少路径/拒绝字段时标记缺证据，不能事后填不适用或 0。清理许可检查失败另记原因；通道不可用、溢出或字段缺失均为归因证据不足，不能解释为没有 flush/fence 失败。
+
+R0 退出该观测项前，验证字段到源码分支的映射、首因不覆盖、无 fence 的不适用与缺证据区分、有/无旧 fence、导出容量失败和宏 OFF 的构建差异；诊断不改变原返回、消息次序、预算或清理权限。普通 allocator、诊断宏 OFF 的独立构建才可承担正式测时，不能用 runtime toggle 冒充插桩不存在。
 
 ### 5.3 Q4 当前 F1 重锚
 
@@ -168,7 +194,7 @@ M-TIME、M-TAIL、M-CAP、M-FINAL 均保留。testOnly 参数能支持证明机�
 2. 使用 tests/pd/measurement_method_tests.cpp 的公开 reusable extractFrame/read_long 路径。N=64 为主，保留原 viewport、资源、输入和 64-step fresh-session 预热；30 秒机器热身、每进程 8 块、每块 ≥100 ms；普通 allocator、无其他归因插桩，固定原核心策略。
 3. 预声明一次独立诊断窗口，3 轮 A/B/Q4 进程组，次序为 A-B-Q4、B-Q4-A、Q4-A-B；A 是原 pre-PD 对照，新建可复核构建，B 是当前 F1 正常语义。每轮产生 B/A、Q4/A 与 Q4/B 的诊断对照；不增加轮次到通过。若 A 无法合法重建，只能报告 Q4/B，不能宣称重现 Q4/A=1.14。
 4. 只把点估计和有限配对区间作为诊断，不算正式 3 窗口证据。若约 1.14，仍不能推论中性生产实现会达到它；若 ≥1.19，停止沿用旧阶梯的收益分解，先复核构建/成本结构。1.19 是此前交接约定的调查触发点，不是新验收线。
-5. R0-b 的 136 B owning record 批量化已经证明不足，不把同一机制换名再做。Q3 丢 owner/serial/expiry，继续排除。
+5. 历史 R0-b 的 owning record 批量化已经证明不足（136 B 是当时报告口径，非当前 sizeof 登记），不把同一机制换名再做。Q3 丢 owner/serial/expiry，继续排除。
 
 从 1.1404 到 1.10 需再减少 0.0404×A，约 Q4 成本的 3.54%；这是差额计算，不是可获得收益的证据。
 
@@ -187,6 +213,8 @@ M-TIME、M-TAIL、M-CAP、M-FINAL 均保留。testOnly 参数能支持证明机�
 
 ## 6. R1：定向清理许可与同一次 Close 的阶段续行
 
+当前局部候选位于准入树，主树未合入。裁定 F2：R1 保持一个总批次，不新增 R1a/R1b 计划编号；内部台账分别标记“清理许可局部实现/单元证据已有”与“§6.3 四类中断续行未实施”。审阅记录所载 542 assertions / 4 test cases green 只证明所跑清理许可用例，本轮未重新运行或核对该运行的完整原始日志/构建绑定，不能据此关闭全部许可反例、R0 观测项或 R1。§6.3、§6.4、相关 R0 字段和原适用门禁全部闭合后，才提交 R1 退出；不重命名剩余工作来提前记完成。
+
 | 字段 | 设计 |
 | --- | --- |
 | ID / 名称 | R1-directed-close-cleanup |
@@ -204,7 +232,7 @@ M-TIME、M-TAIL、M-CAP、M-FINAL 均保留。testOnly 参数能支持证明机�
 
 ### 6.1 已证矛盾与未证历史根因
 
-当前 close 的 flush 失败分支保存 closeDeliveryError_ 并调用 HostCoordinator::suspend。后者把 receipt.status 设为 suspended，Close 的协议状态仍是 closing。SessionSoftwareRetire 先调用 fence；PlaybackSession::enterExecutionFence 却只接受 preparing。后续 retireSoftware/retireExecutionStep 原本允许 Close 的定向清理并核对 capture cut/audio 隔离。因此“前置 fence 比清理动作本身更窄”是代码可到达的矛盾。
+原设计基线中，close 的 flush 失败分支保存 closeDeliveryError_ 并调用 HostCoordinator::suspend。后者把 receipt.status 设为 suspended，Close 的协议状态仍是 closing。SessionSoftwareRetire 原先先调用 fence；PlaybackSession::enterExecutionFence 却只接受 preparing。后续 retireSoftware/retireExecutionStep 原本允许 Close 的定向清理并核对 capture cut/audio 隔离。因此“前置 fence 比清理动作本身更窄”是该基线的静态矛盾。当前准入树的 worker 局部差异已对 suspended、以及非 Close 的 failed 分支跳过正常 fence；本轮将其准确命名为“受限清理许可候选”，不是新增或放宽了 fence。
 
 它还不是历史 40k 失败的根因定论：旧日志没有首个 flush 错误、proof 和拒绝位图。R0 应能证实或否定这条链；不通过改一条 if 就追认旧失败已解决。
 
@@ -216,20 +244,28 @@ M-TIME、M-TAIL、M-CAP、M-FINAL 均保留。testOnly 参数能支持证明机�
 | --- | --- |
 | 正常 Pause/Resume/Seek 等提交 | 保持 preparing、当前 owner、完整 accepted binding、generation 与既有阶段前置 |
 | 本 owner 已接受的 Close，preparing | 走既有关闭规则 |
-| 本 owner 已接受的 Close，suspended，处于明确 cleanup/retire 路径 | 允许建立或取得受限清理 fence；必须重验 accepted request、scope、decision/sequence/generation、capture cut、audio stop/isolate 与 owner ledger |
+| 本 owner 已接受的 Close，suspended，处于明确 cleanup/retire 路径 | 取得受限清理许可，不建立正常或新增清理 fence；沿 retireSoftware → retireExecutionStep 复核 accepted request/owner binding、capture cut、audio stop/isolate 与 owner ledger。scope、decision、sequence、generation 分项列证据，不能因 request 等式成立就将其全记通过 |
 | 任意非 Close 的 suspended/failed | 不因这个状态自动获得正常 fence；只在既有清理合同证明“旧已接受操作仅退休/卸载”后考虑内部清理路径 |
 | Close 的 failed 状态 | 首版不顺带放行；先给出来源、副作用和故障反例。当前已知主链是 suspended |
 | 已有 fence | 不能直接 return existing。普通提交要求完整同一绑定；Close 退休旧未解 fence 单列兼容规则，不把旧 fence 当本次普通提交凭据 |
 
 最小实现先在现有函数内区分 Close 的 cleanup 资格，复用已存在的 request/owner 状态，不新增公开签名。可信依据必须是 D2 保存的 acceptedHostControl/decision 与本 owner ledger；proof 是证据载体，传入的 status 不能自授权。cut/isolation 的现有校验继续存在，拒绝时保留原错误和原因。
 
+裁定 F1 选择清理许可路线的原因：当前退休/卸载已经有 accepted binding、owner 步骤幂等与隔离检查，新增 fence 会增加生成、复用、解除和超时保活责任，尚无证据证明必要。该选择只取消“必须创建一个清理 fence”的机制要求，不删除正常控制 fence 或 scope/代数/操作绑定合同；见实时宿主边界 §7。没有 fence 位图的现状按 §5.2 记观测缺口，不能靠改名记为验收通过。
+
+绑定检查须沿完整调用链记账：host_candidate.cpp::retireSoftware 先比较 acceptedControl 与 proof.request、target、operation、参与方和阶段；PlaybackSession::retireExecutionStep 再调用 validateExecutionControlBinding，后者显式核对 owner、sessionScope、operationId 与 accepted target。因此不能笼统记“整个退休路径没有 scope 比较”。但已有 request/target 等式也不证明 proof.decisionOrdinal 与 D2 acceptedHostDecision、或退休前当前 generation 与 expected generation 的独立一致性检查已完成；这些仍需来源映射与错值反例，缺项时保留 R1 退出阻断。
+
 旧 fence 的控制序列不能一刀切改成“必须等于新 Close”：当前 completeExecutionClose 已允许新 Close 退休较旧 fence，并要求 Close sequence 更大；同序列 Close 还走已有 leave/confirm 路径。实施必须分别测试这两条路径和代数，不扩大正常提交权限。
 
-generation 按阶段核验：建立/复用 cleanup fence 前检查已接受请求的 expected software generation；退休 unload 会合法增代，旧 fence 保留的是退休前 generation。终态核对实际退休回执的新 generation，不能要求退休后的 current generation 等于旧 fence generation。增加“正常退休增代仍可关闭”与“旧控制回执不能释放新 Close fence”测试。
+generation 按阶段核验：取得清理许可前，检查已接受请求的 expected software generation 与原 owner 步骤状态；不能用“没有新 fence”免除当前代数校验。退休 unload 会合法增代，旧 fence 保留的是退休前 generation。终态核对实际退休回执的新 generation，不能要求退休后的 current generation 等于旧 fence generation；重传已终态步骤须按原 ledger 结果处理，不能以退休后的代数误拒自己的重传。增加“正常退休增代仍可关闭”与“旧控制回执不能释放新 Close fence”测试。
+
+裁定 F4 为记录性限制：worker 只将 suspended 或 failed 且非 Close 导向“跳过 fence”分支；retireSoftware 的 directedCleanup 及下游 retireExecutionStep 仍把 failed 作为可选清理状态，但还要求 accepted binding/cut/isolation/ledger。当前非测试调用方是 worker，tests/rpa/rpa_b4_tests.cpp 还有直接调用；不能称底层合同已统一收窄。worker 不跳过 fence 也不等于显式拒绝 failed Close：其 fence() 可先返回已有 fence，故有/无旧 fence 的 failed Close 仍要反例验证。首版“不放行 failed Close”是待闭合要求，不是已获证的全路径性质。本轮不修改这些谓词；新增调用方、扩大清理场景或关闭此缺口前，单独审查将资格检查统一或下沉的最小变更，不能顺手扩大。
 
 特别前置：close() 一开始调用 cleanup()。若旧非 Close 控制在进入 fence 前失败，cleanup() 会 suspend 它，然后同样发送 SoftwareRetire。只修 Close/suspended 不能自动修好这条路径。R1 必须先覆盖这个反例；若失败，仅对“旧已接受操作的取消后退休/卸载”设计单独内部清理许可，保留不可提交条件，再评审；未解决时 R1 不得记退出。不能因此一次放宽所有 suspended/failed。
 
 ### 6.3 四类中断必须续行原操作
+
+以下四类的统一 Close 续行机制尚未实现；已有清理许可测试不提供此退出证据。继续实施时先补对应受控停顿反例，不把清理许可 green 当作跳过本节的前置。
 
 当前 tests/rpa/rpa_b5_host_tests.cpp:422–504 阻塞的是旧 Tail，第一次 Close 等待旧 job 超时，随后释放它，再次 Close 成功。它覆盖下表第 1 类；本轮没有运行该测试，也未发现它覆盖第 2–4 类。现有 Busy guard 已拒绝重入，保持它即可；问题是返回后的下一次 owner 调用如何续行。
 
@@ -283,7 +319,11 @@ pilot 可采用此前交接中 owner 已选的“关闭失败记 invalid-process
 
 ### 7.1 内部数据流与边界
 
-首版固定 K=32，实施前以 sizeof 核实 scratch 大小并登记；不是未经测量的最佳参数。实验不现场扫描 K 直到过线。若后续确需改变，作为有机制解释的新候选重新绑定。
+裁定 F3：首版固定 K=32，但它不是已测最优参数，也不是已接受的字节预算。136 B 保留为 F1 冻结反汇编报告的历史口径；128 B 仅为当前头文件及特定布局假设的推算。两者都不能直接作为当前 ObjectPresentation、Result 返回包装或借用块 scratch 的 sizeof；也不据此反推旧证据错误。
+
+R2 首个提交必须随同构建登记源 SHA/dirty diff、编译器与标准库、目标架构、Debug/Release 和编译选项，现场取得 sizeof/alignof(ObjectPresentation)、sizeof/alignof(Result<ObjectPresentation>)、sizeof/alignof(ObjectVisualRead) 及完整 scratch aggregate。对已登记的目标布局设置匹配的 static_assert，并对 scratch 总预算设置编译期上界断言；不把某工具链的 128/136 硬编码成所有 ABI 的承诺。登记须来自当前实际类型，不能另造替身结构算尺寸。
+
+完整 scratch 包含 K 个索引、K 个借用行、固定辅助状态和真实对齐/padding；用实际 aggregate 的 sizeof 或逐项保守汇总且明确未覆盖的栈开销，不以 K×旧值记录大小代算。布局断言是变更报警，不是性能收益或整函数栈峰值证明。缺少现场值/预算断言的 R2 首个提交不得通过入口。实验不现场扫描 K 直到过线；若后续确需改变，作为有机制解释的新候选重新绑定。
 
 内部接口形态如下，仅表达职责，不是新增 SDK API：
 
@@ -309,7 +349,7 @@ Playback 逐行消费，行内保持现有顺序。前行若发生 resource mism
 
 | 项目 | 决定与原因 |
 | --- | --- |
-| 136 B ObjectPresentation 中的 matrix 值 | Snapshot 新路径直接从组件复制到最终 DTO 一次；不再先复制进值记录 |
+| ObjectPresentation 中的 matrix 值（布局按 §7.1 现场登记） | Snapshot 新路径直接从组件复制到最终 DTO 一次；不再先复制进值记录 |
 | hasRenderable 检索 | 仅 Snapshot 专用 gather 省去。GameplayPublicationAccess::publish 的目标存在性判断仍使用 readObject/hasRenderable，不能全局删除 |
 | 布局 | 使用现有 ID/runtimeIndex/mesh/材料闭包和容量上界；不增加第二套实体或资源索引 |
 | 单材料闭包 | size()==1 且唯一 key 与当前材料完全相等时直取引用；否则保留原 find/失败语义。多材料仍使用现有 std::map |
@@ -584,7 +624,7 @@ B0 目前只有 14 个参考 profile，规模 1/200/201；64/2048/40k 尚无正�
 
 ### 12.1 下一批具体动作
 
-本轮到设计成稿为止。若后续接受本方案并授权静态实施，第一批只做 R0 的观测字段/拒绝门和 R1 的可控反例，不立即跑 40k 或启动正式窗口：
+本轮到 F1–F5 裁定与文档同步为止，准入树现有清理许可差异保留。若后续接受本方案并授权静态实施，第一批先补 R0 的观测字段/拒绝门与 R1 未覆盖反例，不因局部候选已存在就跳过它们，也不立即跑 40k 或启动正式窗口：
 
 1. 重读 CURRENT_STATUS、RPA B0/B1–B5、PD-5 定案和本文，重新核验两树 HEAD/status/diff；保护既有 dirty 文件，形成独立可审查起点。
 2. 先查清 Close accepted binding、旧 fence/new Close、generation 与状态暴露；加入 flush 失败、旧非 Close 清理和 §6.3 四阶段中断反例，验证原 typed reply、ID、增代与 pump query，随后再选最小修复。
@@ -644,7 +684,7 @@ B0 目前只有 14 个参考 profile，规模 1/200/201；64/2048/40k 尚无正�
 | RPA restore 有两次 prepare，Seek 也有重复准备落点 | execution_kernel.cpp:1983/1990/2689；Playback makeGameplaySession | 调用链确认，成本未测 | 消融保留当前配置 identity 和语义失败点；收益不足则不增加共享表 |
 | 日志已有分块，但尾块复制嵌套 payload | execution_log.hpp::reserveLogAppend；recovery.hpp:23–30 | 源码确认 | 0/31/32/33 及大 batch/admission，分别计次数、字节、旧 handle 与释放 |
 | 完整事务动态复制与 idle 快路径并存 | execution_kernel.cpp 的 full/control/finalization clone；fold_recovery_tests.cpp:1662–1693 | 源码与现有测试逻辑确认，均未运行 | 对真实 fixture 计 full/idle/各副本；保留 reference 全状态/wire/fault 对照 |
-| Close/suspended 的前置 fence 比退休许可更窄 | enterExecutionFence、SessionSoftwareRetire、retireExecutionStep | 静态条件矛盾，不是历史根因复现 | 可控 flush 失败，保存首因、binding、cut/isolation 和拒绝位图；反证链条不成立也保留 |
+| 原设计基线的 Close/suspended 前置 fence 比退休许可更窄；准入树已有无 fence 清理许可差异 | enterExecutionFence、SessionSoftwareRetire、retireSoftware/retireExecutionStep | 原矛盾与当前分支差异为源码事实；542/4 仅引用清理许可单元记录，本轮未重跑 | 按 §6.2 补绑定/decision/generation、failed Close 有无旧 fence 与 flush 反例；按 §5.2 区分无 fence 不适用和字段缺证据；不追认历史根因或 R1 完成 |
 | Close 自身各阶段超时的续行缺口 | close/cleanup；HostCoordinator::finish/completeCleanup/accept；rpa_b5_host_tests.cpp:422–504 只覆盖旧 Tail | 静态风险与覆盖缺口 | 四阶段受控停顿；原 job/typed reply/operation/step 不变，最终退出/join且首次预算失败可见 |
 | 门面对外状态可能与退出/join 不同步 | host_protocol::finish 先 Closed；execution_host::state/failed；close 成功在 join 后 | 静态时序风险；未发现成功返回早于 join | 在 pump 内 query，并在 finish/confirm/shutdown/exit 阶段分别中断 |
 | 早期 Seek 后 Snapshot→recover 可能重放过多历史 | seekSource→archive→captureState::rpaHistory→restore；现有早期 cut 和终点恢复测试未串联该链 | 静态风险，未复现 | 完整源含未来记录，分别 Seek 早期 complete cut/partialH，再恢复并比较全状态与未来行为 |
@@ -653,8 +693,8 @@ B0 目前只有 14 个参考 profile，规模 1/200/201；64/2048/40k 尚无正�
 
 ### 13.2 本轮交付与保全
 
-本文于 2026-10-24 迁入仓库，正文技术结论未改写；迁入只统一状态行、路径表述和链接，不保留外部备份路径、备份 hash 或外部交付描述。
+本文于 2026-10-24 首次迁入仓库时，正文技术结论未改写；迁入只统一状态行、路径表述和链接，不保留外部备份路径、备份 hash 或外部交付描述。同日后续 F1–F5 裁定更新 §1.1、§5.2、§6.2/§6.3、§7.1 与本节，属于明确的设计修订，不能继续称为仅迁入排版。
 
-保全核验：准入树 HEAD/status 与设计起点一致，原有 52 个修改/未跟踪文件的 SHA-256 全部一致；主树仍为 eed36648a692333e47f798aa45be36ca850d08de / stage-7，工作区干净。文档自身只做 UTF-8、结构、空白与链接核查，不以此替代产品测试。
+设计成稿时的历史保全核验：准入树 HEAD/status 与当时设计起点一致，原有 52 个修改/未跟踪文件的 SHA-256 全部一致；当时主树为 eed36648a692333e47f798aa45be36ca850d08de / stage-7，工作区干净。这不是本次裁定时的实时状态；本次开始于主树 f0c7e3230e3abd479fda18e009a7688df89c7672，准入树已有 54 个修改/未跟踪文件，见 §1.1 和审阅记录 §8。文档核查不替代产品测试。
 
 未经 owner 接受的部分仍是建议。本轮未修改产品、未构建或运行 CTest、未登记或执行新测量；静态调用链与测试覆盖审查没有证明历史失败根因、运行正确性或性能达标。

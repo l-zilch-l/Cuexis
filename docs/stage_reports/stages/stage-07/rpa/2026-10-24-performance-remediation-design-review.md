@@ -1,6 +1,7 @@
 # Stage 7-RPA 性能整改候选设计审阅（2026-10-24）
 
 状态：design review；本轮只读静态审阅，未构建、未运行 CTest、未登记或执行任何测量。
+下文 §1–§7 保留送审版的发现与建议；同日后续五点裁定及调用链校准见 §8。候选方案已按 §8 修订，以下送审行数/hash 不代表修订后文件。
 日期：2026-10-24（Asia/Shanghai）。
 审阅对象：[Stage 7-RPA 性能整改方案](../../../../stage_plans/active/stage-07/plan-rpa-performance-remediation.md)，
 660 行，SHA-256 `557F5DD489C06447CDCA93BB0FAD2D80ACCE15A0CC012B4B4A2308847F23A4C2`。
@@ -139,4 +140,38 @@ cleanupComplete/softwareApplied，但 fence 拒绝原因、flush 失败阶段和
 - 设计文档从外部稿迁入时只改状态行、路径表述和链接；正文技术结论与其内部分节编号未改，可按 §1–§13 对读。
 - 本轮只读源码、合同、冻结工具与已保存证据；未修改产品、未构建、未运行 CTest、未登记或执行测量、未提交。
 - 2026-10-23/24 的 PD 40k、读取归因与 B0/B1 报告目前只在准入树工作区，尚未进入主树；本报告按文件名引用它们，不建仓库链接，以免产生断链。
-- 主树改动仅为本文、[候选设计](../../../../stage_plans/active/stage-07/plan-rpa-performance-remediation.md)与两处索引/交叉引用；`git diff --check` 与 `tools/check_docs.py` 以最终工作区为准。
+- 主树改动仅为本文、[候选设计](../../../../stage_plans/active/stage-07/plan-rpa-performance-remediation.md)与三处索引/交叉引用（计划总索引、RPA 分册、RPA 证据索引）；该轮未提交，两者随后由 `f0c7e3230e3abd479fda18e009a7688df89c7672` 入库。`git diff --check` 与 `tools/check_docs.py` 以最终工作区为准。
+
+## 8. F1–F5 后续裁定（2026-10-24）
+
+本节响应 owner 提出的五点裁定请求。复核起点为主树 `stage-7` / `f0c7e3230e3abd479fda18e009a7688df89c7672`，开始时干净；准入树仍为 `3e5837f63f76397429c9f7603fd7450d3ce9855d`，有 54 个修改/未跟踪文件。session_worker.cpp 与 rpa_b5_session_tests.cpp 的局部清理许可改动只在准入树，尚未合入主树。本轮仅修改候选方案与本审阅记录，不更改产品源码、原有未提交差异、冻结证据或裁定门槛，不构成后续实施/实验授权。
+
+### 8.1 裁定表
+
+| 发现 | 本轮裁定 | 对接受/退出的影响 |
+| --- | --- | --- |
+| F1 | 选择“受限清理许可”，不补一套清理 fence。正常 fence 条件不动，退休走 accepted binding/owner ledger/cut/isolation 复核 | 机制与 §6.2 文字已统一；原“无 fence 位图”仍为观测缺口。只有采集证明无 fence 路径才将未执行检查标不适用，不能填 0/通过；R1 仍须关闭完整绑定与生命周期证据 |
+| F2 | 保留 R1 一个批次，台账区分清理许可局部候选与四类续行未实施，不用拆批来提前退出 | 542 assertions / 4 test cases 仅引用审阅记录/本轮反馈中的清理许可单元结果；本轮未重跑或核对完整原始运行绑定。它不证明许可全矩阵、Close 续行或 R1 完成 |
+| F3 | 136 B 历史反汇编口径与 128 B 头文件推算并列保留来源；当前尺寸不裁定为二者之一 | R2 首个提交以真实类型现场 sizeof/alignof 登记 ObjectPresentation、Result 包装、借用行及完整 scratch，并加目标布局/预算 static_assert；K=32 保留，缺登记不通过入口 |
+| F4 | 记录底层 failed 谓词比 worker 无 fence 分支宽，本轮不改变代码或扩大许可 | 新增调用者/扩大路径/关闭该缺口前，单独审查最小统一或下沉谓词；failed Close 有无旧 fence 均列反例，不能声称 worker 已提供全路径拒绝 |
+| F5 | 采用 owner-local、定长、编译期关闭、只读导出的内部诊断通道；字段映射已写入 §5.2 | Close 阶段、flush 首次失败阶段、fence 实际拒绝和清理许可结果仍待实现。没有字段就是证据不足；不新增公开 API/ABI，不改变 ACK/控制或时间预算 |
+
+方向与 R0→R4 次序维持，PD-5“未通过但定案”及各项冻结预算不变。上述是当前设计选择，不是产品修复、性能接受或整个方案已经获得 owner 接受的声明。
+
+### 8.2 F1/F4 调用链校准
+
+F1 的二选一结论成立，但原 §3“也没有显式 scope 比较”只描述 retireSoftware 的局部代码，不能外推整个退休路径。准入树 `retireExecutionStep`（playback_session.cpp:1879–1898）先调用 `validateExecutionControlBinding`（:1583–1595），显式检查 owner、request.key.sessionScope 与 accepted control 的 scope、operationId 和 target；随后再比较 accepted request、cut 与音频隔离。这些检查不能被方案改名删掉。
+
+同时，scope 已有检查不等于 decision/generation 全部获证。当前 `retireSoftware` 的 request/target 等式并不单独证明 `proof.decisionOrdinal` 已与 `acceptedHostDecision` 比较、或退休前当前代数已与 expected software generation 比较。需按 §6.2 分别映射来源、检查点、错值反例和终态重传；缺项继续阻塞 R1 退出，不增加 fence 来掩盖证据缺口。
+
+F4 的“当前唯一调用方”限定为非测试产品调用方：搜索确认 worker 的调用在 session_worker.cpp:806；tests/rpa/rpa_b4_tests.cpp:1092、1159 另有直接测试调用。host_candidate.cpp:226–228 与 Playback retireExecutionStep 的 failed 状态条件更宽，仍须 accepted binding 和 cut/isolation，不能误写成任意状态可绕过全部授权。
+
+worker 的 `suspended || (failed && kind != close)` 只选择是否跳过 fence；非该分支会调用 fence()，而该函数可能直接返回已有 fence（session_worker.cpp:248–251）。因此“failed Close 不走无 fence 分支”不等于“failed Close 在所有路径已被拒绝”。本轮将该情形列为静态待证反例，不声称已运行复现，也不顺手改宽/改窄底层谓词。
+
+### 8.3 核查范围与保全
+
+本轮核对了两树实时身份、准入树两处新增代码/测试差异、retireSoftware → retireExecutionStep → validateExecutionControlBinding 调用链、fence 复用与 confirmation 分支、ObjectPresentation/Mat4/Vec3 字段、历史 136 B 归因记录、主树 128 B 返回路径记录、诊断字段及实时宿主边界 §7。没有运行 C++ 构建、CTest、542 条断言、sizeof 探针、pilot、ETW、40k 或任何新测量。没有声称历史 Close 根因已闭合、四类续行已实现或性能达标。
+
+准入树 54 个修改/未跟踪文件按本轮开始快照保全；文档检查采用 `python -B tools/check_docs.py` 与 `git diff --check`，其结果仅说明文档满足仓库检查，不替代 R0/R1/R2 产品验证。当前执行摘要仍以 CURRENT_STATUS.md 为唯一权威；本节只限定本候选的审阅裁定与证据范围。
+
+修订后的候选方案为 700 行，SHA-256 `872D69ABA1509472B9FE2638AA02E2AAFC3648CB91AF82F0127BA6DDA24BF867`；该值只标识 §1.1/§5.2/§6.2/§7.1 修订后的当前文本，不冻结后续修改，本文不标注自身哈希。
