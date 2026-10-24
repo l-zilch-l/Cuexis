@@ -331,3 +331,6 @@ N3有效基线和独立授权；产品实施还需后续授权。
   保存原plan-a增补文本和迁移映射；历史RT78-0–7对应RPA-A0–A7，DN78-0–3对应RPA-N0–N3。
 - [Stage7总计划](plan.md)与[plan-a兼容入口](plan-a.md#3418-实时架构重审与规划2026-10-09)。
 - [ADR0046](../../../adr/0046-realtime-playback-coordination.md)和[实时宿主边界草案](../../../api/realtime-host-boundary.md)。
+- [性能整改候选设计](plan-rpa-performance-remediation.md)：2026-10-24 基于准入树静态核查的 R0–R4 候选机制与成本门；
+  状态 candidate，未实施，不改变本分册的批次、门禁与验收标准。审阅结论见
+  [设计审阅](../../../stage_reports/stages/stage-07/rpa/2026-10-24-performance-remediation-design-review.md)。

@@ -31,6 +31,7 @@
 - [Production acceptance inventory](2026-10-14-production-acceptance-inventory.md)
 - [Retention progress and wait boundaries](2026-10-17-retention-progress-and-wait-boundaries.md)
 - [Wait and retirement design review](2026-10-17-wait-and-retirement-design-review.md)
+- [Performance remediation design review](2026-10-24-performance-remediation-design-review.md)
 - [Diagnostic phase-name audit](../diagnostic-formalization/2026-10-09-diagnostic-phase-name-audit.md)
 - [Diagnostic phase-name audit evidence](../diagnostic-formalization/2026-10-09-diagnostic-phase-name-audit-evidence.zip)
 - [N0 diagnostic inventory](../diagnostic-formalization/2026-10-10-n0-diagnostic-inventory-review.md)
