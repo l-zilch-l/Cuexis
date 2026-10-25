@@ -8,13 +8,13 @@
 
 ## 当前任务
 
-**2026-10-26：两树整合后的唯一实施入口为 `D:/Cuexis-worktree`；`D:/Cuexis-pd5-40k-admission` 保留为只读历史证据树。R2 第三候选 direct borrowed Result 的源码已原样迁入；该候选于 2026-10-25 23:03:54 +08:00 停止，本次整合构建与正确性验证进行中，尚无第三候选性能结论。见[整合记录](stage_reports/stages/stage-07/rpa/2026-10-26-worktree-consolidation.md)。本次仅授权本地整合、构建测试及桌面接手更新，不授权新性能诊断、ETW、40k、pilot、正式窗口或新候选；R2/R4 未退出。**
+**2026-10-26：两树整合后的唯一实施入口为 `D:/Cuexis-worktree`；`D:/Cuexis-pd5-40k-admission` 保留为只读历史证据树。R2 第三候选 direct borrowed Result 的源码已原样迁入；该候选于 2026-10-25 23:03:20 +08:00 被要求停止（停止快照于 23:03:54 生成），本次五配置构建与适用正确性回归完成，消费者采用本次未受最终修复影响的原通过证据及库哈希核对，详见整合记录；尚无第三候选性能结论。见[整合记录](stage_reports/stages/stage-07/rpa/2026-10-26-worktree-consolidation.md)。本次仅授权本地整合、构建测试及桌面接手更新，不授权新性能诊断、ETW、40k、pilot、正式窗口或新候选；R2/R4 未退出。**
 
 **2026-10-25：R2 继续实施单行 typed visitor 第二候选；主代理亲自核对增量、实测 160 B 显式逻辑存储并运行聚焦正确性对照，五构建 47 项检查及 9 项消费者门通过；固定局部诊断四规模均 inconclusive 且有噪声限定，收益未确认。见 [R2 单行续做](stage_reports/stages/stage-07/rpa/2026-10-25-r2-single-row-continuation.md)。首版失败及其窗口保留，R2/R4 未退出。**
 
 **2026-10-25：Stage 7-RPA R2 首版借用行候选已实现，五构建正确性回归、适用 staged consumers 和九路径精确回滚验证通过；局部诊断显示单对象退化约 25.3%、N64 收益区间跨 1，当前候选未接受、R2 收益门仍未完成。结果与范围见 [R2 实施记录](stage_reports/stages/stage-07/rpa/2026-10-25-r2-borrowed-presentation.md)。R4 正式接受及 RPA/PD/Stage 7 关闭仍独立。**
 
-**2026-10-25：Stage 7-RPA R1 已退出。依据用户本次明确授权，完成首错修复后最终构建三项有限 headless pilot（3/3 首次 exit=0、Close + join 659 us）及退出门核验；当前五构建回归、适用消费者与独立补丁/回滚证据见[本地记录 §11](stage_reports/stages/stage-07/rpa/2026-10-25-r1-continuation.md#11-当前修复构建有限-pilot-与-r1-退出)。五条既有 PD 格式失败作为范围外限定保留，noIndependentContract 不算容量通过，R0 残余保持归属。RPA/PD/设备/生产接受及整个 Stage 7 未因此关闭，R2 当前进度见上条；R3/R4 未获授权，40k/ETW/正式窗口仍不在授权范围。PD-5 当前状态见下段，历史报告中的树身份与授权时点保留。**
+**2026-10-25：Stage 7-RPA R1 已退出。依据用户本次明确授权，完成首错修复后最终构建三项有限 headless pilot（3/3 首次 exit=0、Close + join 659 us）及退出门核验；当前五构建回归、适用消费者与独立补丁/回滚证据见[本地记录 §11](stage_reports/stages/stage-07/rpa/2026-10-25-r1-continuation.md#11-当前修复构建有限-pilot-与-r1-退出)。R1 当时五条既有 PD 格式失败的历史限定保留（本次整合已修复并补齐格式门），noIndependentContract 不算容量通过，R0 残余保持归属。RPA/PD/设备/生产接受及整个 Stage 7 未因此关闭，R2 当前进度见上条；R3/R4 未获授权，40k/ETW/正式窗口仍不在授权范围。PD-5 当前状态见下段，历史报告中的树身份与授权时点保留。**
 
 **ETW 工具当前状态**：[F1 工具包验收记录](stage_reports/stages/stage-07/pd/2026-10-23-f1-tool-package-and-acceptance-preparation.md)保留 r2 解析失败、r3 死亡证明失败与 r4 一次管理员运行三项全过的各自身份；r2/r3/r4 均为已运行包，不重跑、不改名。最小生命周期验收与 r4 全绿只证明工具合同，不认证产品性能或内存；Power 原 128 MiB 阈值中断仍为失败。正式性能测量仍为无 ETW。**
 
@@ -52,7 +52,7 @@ PD-5 前轮证据：[两窗报告（2026-10-21 更正）](stage_reports/stages/s
 | 阶段 | 当前状态 | 入口 |
 | --- | --- | --- |
 | Stage 7A | S7A-3/4、5/6、7/8 的受限功能验收完成；整体关闭仍待 RPA 收尾 | [Stage 7A 计划](stage_plans/active/stage-07/plan-a.md) |
-| Stage 7-RPA | R1 已退出，R0 残余、PD 格式及 noIndependentContract 限定保留。R2 前两候选正确性证据保留，但局部性能收益未确认；第三候选 direct borrowed Result 已停止并原样迁入，本次整合构建/正确性验证进行中，无第三候选性能结论。R2/R4 未退出；R3、正式测量、实体设备、生产预算和最终接受仍独立 | [RPA 性能整改](stage_plans/active/stage-07/plan-rpa-performance-remediation.md)、[R1 实施计划](stage_plans/active/stage-07/rpa-r1-implementation.md)、[整合记录](stage_reports/stages/stage-07/rpa/2026-10-26-worktree-consolidation.md) |
+| Stage 7-RPA | R1 已退出，R0 残余、历史 PD 格式限定及 noIndependentContract 事实保留；格式问题已在本次整合修复。R2 前两候选正确性证据保留，但局部性能收益未确认；第三候选 direct borrowed Result 已停止并原样迁入，本次整合构建/正确性回归已完成，消费者证据复用边界见整合记录，无第三候选性能结论。R2/R4 未退出；R3、正式测量、实体设备、生产预算和最终接受仍独立 | [RPA 性能整改](stage_plans/active/stage-07/plan-rpa-performance-remediation.md)、[R1 实施计划](stage_plans/active/stage-07/rpa-r1-implementation.md)、[整合记录](stage_reports/stages/stage-07/rpa/2026-10-26-worktree-consolidation.md) |
 | Stage 7-PD | PD-0–4 内部实施及适用门禁完成；PD-5 判定为「未通过但定案」，定案与 Stage 7-PD 退出清单尚待 owner 批准。原 40k 功能与小规模最终释放已核验，40k 分域内存仍未测量、正常分配器正式性能未通过。B0 已接受、B1 静态工具完成且未采数，B2/B3 未授权；ETW r4 三用例通过只证明工具合同。读取优化归 RPA R2，Seek 优化归其后续整改，旧窗口 3 停止，子阶段未退出 | [PD 计划](stage_plans/active/stage-07/plan-presentation-decoupling.md)、[PD-5 判定报告](stage_reports/stages/stage-07/pd/2026-10-24-pd5-verdict-and-stage-7-pd-exit.md) |
 | Stage 7B+ | 未开始，等待 RPA 完整退出 | [Stage 7B+ 计划](stage_plans/active/stage-07/plan-b.md) |
 
@@ -64,9 +64,9 @@ Stage 0–6 已完成；Stage 8–14 尚未开始。整体 Stage 7 未关闭。
 
 - **历史慢态及尾延迟未归因**：PD-0 最新登记组重复性通过，但不解释历史近两倍慢态；该组 Debug 宿主仍保留 15.93 ms 的单帧请求到回执尖峰。PD-5 本机有限 Release 门槛已接受，生产尾延迟预算未接受，不能据均值重复性通过推断生产延迟合格。
 - **控制附近帧率波动待量化**：PD-4 实体 DFJK 完整课程与控制观察已完成，旧版容量错误本轮未复现；Reset/暂停恢复时约 240→130→240，持续时间与模块成本未测量。设备失效/恢复仍未验收。
-- **局部偶发故障未定位**：B5 Pause 的 `capture_gap` 与 CXC unpack 的 `Access Denied` 尚无根因结论。
+- **局部偶发故障追踪**：B5 Pause 的 `capture_gap` 仍未定位。CXC unpack 目录提交已用不共享删除的读句柄复现阻塞机制，并加入有限原子重试与确定性测试；原始现场的具体持有者仍未知，详见[整合记录 §3.2](stage_reports/stages/stage-07/rpa/2026-10-26-worktree-consolidation.md#32-shared-probe-and-cxc-output-commit-regression-repairs)。
 - **40k 功能已核验，内存仍未测量、正式性能未通过**：原 low/high 不重跑，原超包络记录保留；后续归因将其改记为观察器量程产物，不能据此判产品超界或内存通过。小规模最终释放不替代 40k 分域预算和最终释放。B0 静态账本已接受，B1 通过静态工具门但未运行；B2/B3 的 caps 规模口径、覆盖/阶梯缺口及采数仍待授权和裁定。F1/C1/C2 原回归与噪声结论保留，读取整改由 RPA R2 承接；ETW r4 三用例已过，工具结果不替代性能接受。见[40k 包络归因](stage_reports/stages/stage-07/pd/2026-10-23-40k-memory-envelope-attribution.md)、[B0 账本](stage_reports/stages/stage-07/pd/2026-10-24-b0-memory-cap-ledger.md)、[B1 工具](stage_reports/stages/stage-07/pd/2026-10-24-b1-domain-attribution-tooling.md)与[判定/退出清单](stage_reports/stages/stage-07/pd/2026-10-24-pd5-verdict-and-stage-7-pd-exit.md)。
-- **RPA 验收未完成**：已取得 PD-4 受限实体键盘与听音观察；精确音画同步、设备失效与压力验证、生产参数及预算接受仍待完成。R0 的 Seek/ON-OFF、Close 软件退休观测、旧 fence 与导出容量 partial 均按[原报告](stage_reports/stages/stage-07/rpa/2026-10-24-r0-observation-and-anchor.md)保留历史结论。Q4 仍为 `inconclusive`（历史 B 探针缺失）。R1 已新增真实 owner 许可反例、独立 Close step 观测及四类续行证据，未回填 R0；Debug 和首错缺口已解决并经当前五构建复验；当前修复身份有限 pilot 通过，R1 已按本次授权完成退出核验，RPA 最终接受仍未完成；全仓格式限定及 noIndependentContract 导出事实见[新记录](stage_reports/stages/stage-07/rpa/2026-10-25-r1-continuation.md)。
+- **RPA 验收未完成**：已取得 PD-4 受限实体键盘与听音观察；精确音画同步、设备失效与压力验证、生产参数及预算接受仍待完成。R0 的 Seek/ON-OFF、Close 软件退休观测、旧 fence 与导出容量 partial 均按[原报告](stage_reports/stages/stage-07/rpa/2026-10-24-r0-observation-and-anchor.md)保留历史结论。Q4 仍为 `inconclusive`（历史 B 探针缺失）。R1 已新增真实 owner 许可反例、独立 Close step 观测及四类续行证据，未回填 R0；Debug 和首错缺口已解决并经当前五构建复验；当前修复身份有限 pilot 通过，R1 已按本次授权完成退出核验，RPA 最终接受仍未完成；历史全仓格式限定及 noIndependentContract 导出事实见[新记录](stage_reports/stages/stage-07/rpa/2026-10-25-r1-continuation.md)。
 - **预算证据缺项**：端到端 Seek 延迟、prepare-only 峰值堆和 decoded semantic heap 尚未完成有效测量与接受。
 
 问题证据与剩余门禁见 [PD-0 复测归档](stage_reports/stages/stage-07/pd/2026-10-17-pd0-supplemental-retests-and-archive.md)、
