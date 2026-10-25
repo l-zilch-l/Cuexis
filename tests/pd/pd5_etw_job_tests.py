@@ -55,13 +55,14 @@ class JobPrimitiveTests(unittest.TestCase):
         self.processes.append(process)
         return process, output_path
 
-    def _wait_until(self, predicate, timeout: float = 5.0):
-        deadline = time.monotonic() + timeout
+    def _wait_until(self, predicate, timeout: float = 5.0, *, deadline=None):
+        if deadline is None:
+            deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
             if predicate():
                 return
             time.sleep(0.02)
-        self.assertTrue(predicate(), "timed out waiting for probe condition")
+        self.fail("timed out waiting for probe condition")
 
     def _spawn_nested(self, output_name: str = "nested.log"):
         marker = self.case_dir / ("child-" + uuid.uuid4().hex + ".pid")
@@ -167,9 +168,14 @@ class JobPrimitiveTests(unittest.TestCase):
         process, child = self._spawn_nested()
         self.assertGreaterEqual(self.job.active(), 3)
         self.assertTrue(child.alive())
-        self.assertEqual(self.job.terminate_and_drain(time.monotonic() + 5.0), 0)
+        deadline = time.monotonic() + 5.0
+        self.assertEqual(self.job.terminate_and_drain(deadline), 0)
         self.assertEqual(self.job.active(), 0)
-        process.wait(timeout=5)
+        process.wait(timeout=max(0, deadline - time.monotonic()))
+        # Job accounting zero and the gate's exit do not synchronize this child's
+        # retained process handle. Observe its signal within the same deadline;
+        # do not terminate it here, which would hide failed Job reclamation.
+        self._wait_until(lambda: not child.alive(), deadline=deadline)
         self.assertFalse(child.alive())
 
     def test_kill_on_close_terminates_nested_python_child(self):
@@ -256,6 +262,56 @@ class JobPrimitiveTests(unittest.TestCase):
             duplicate.stdin.close()
             self.assertEqual(duplicate.wait(timeout=5), 2)
         self.assertFalse(marker.exists())
+
+
+class JobReapingSynchronizationTests(unittest.TestCase):
+    """Force the accounting-zero/handle-signal gap without scheduler luck."""
+
+    def _nested_case(self):
+        case = JobPrimitiveTests('test_terminate_and_drain_reaps_nested_python_child')
+        case.job = mock.Mock(spec=Job)
+        case.job.active.side_effect = [3, 0]
+        case.job.terminate_and_drain.return_value = 0
+        process = mock.Mock(spec=subprocess.Popen)
+        process.wait.return_value = 1
+        child = mock.Mock(spec=ProcessRef)
+        case._spawn_nested = mock.Mock(return_value=(process, child))
+        return case, process, child
+
+    def test_job_zero_and_gate_exit_still_wait_for_child_handle_signal(self):
+        case, process, child = self._nested_case()
+        child.alive.side_effect = [True, True, False, False]
+        with mock.patch.object(time, 'monotonic', return_value=0), \
+                mock.patch.object(time, 'sleep'):
+            case.test_terminate_and_drain_reaps_nested_python_child()
+        case.job.terminate_and_drain.assert_called_once_with(5.0)
+        process.wait.assert_called_once_with(timeout=5.0)
+        self.assertEqual(child.alive.call_count, 4)
+        child.terminate_and_wait.assert_not_called()
+
+    def test_unsignaled_child_fails_at_the_original_deadline(self):
+        case, process, child = self._nested_case()
+        child.alive.return_value = True
+        with mock.patch.object(time, 'monotonic', side_effect=[0, 0, 0, 5]), \
+                mock.patch.object(time, 'sleep'):
+            with self.assertRaisesRegex(AssertionError, 'timed out waiting'):
+                case.test_terminate_and_drain_reaps_nested_python_child()
+        case.job.terminate_and_drain.assert_called_once_with(5.0)
+        process.wait.assert_called_once_with(timeout=5.0)
+        child.terminate_and_wait.assert_not_called()
+
+    def test_child_signal_observed_after_the_deadline_does_not_pass(self):
+        case, process, child = self._nested_case()
+        # The third observation would see a signal, but only after budget expiry.
+        child.alive.side_effect = [True, True, False, False]
+        with mock.patch.object(time, 'monotonic', side_effect=[0, 0, 0, 5]), \
+                mock.patch.object(time, 'sleep'):
+            with self.assertRaisesRegex(AssertionError, 'timed out waiting'):
+                case.test_terminate_and_drain_reaps_nested_python_child()
+        self.assertEqual(child.alive.call_count, 2)
+        case.job.terminate_and_drain.assert_called_once_with(5.0)
+        process.wait.assert_called_once_with(timeout=5.0)
+        child.terminate_and_wait.assert_not_called()
 
 
 class ProcessIdentityAcquisitionTests(unittest.TestCase):
