@@ -463,6 +463,9 @@ class CUEXIS_PLAYBACK_API PlaybackSession final {
     friend struct detail::GameplayPublicationAccess;
     friend struct detail::HostCoordinationAccess;
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    [[nodiscard]] auto validateExecutionControlProof(const StepRequest&,
+                                                     const ControlReceipt&) const
+        -> core::Result<void>;
     [[nodiscard]] auto executionAdvanceRetention(
         GameplayExecutionContext& identityContext, std::optional<std::uint64_t>& lastAcceptedId,
         std::optional<std::uint64_t>& reclaimedThrough) const -> core::Result<void>;

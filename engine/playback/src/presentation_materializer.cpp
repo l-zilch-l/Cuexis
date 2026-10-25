@@ -55,11 +55,10 @@ auto fillObjects(const runtime::detail::PresentationRead& view, const SnapshotLa
     if (snapshot.objects.size() < layout.entities.size()) {
         snapshot.objects.resize(layout.entities.size());
     }
-
     const core::Mat4 identity;
     for (std::size_t index = 0; index < layout.entities.size(); ++index) {
         const auto& entry = layout.entities[index];
-        auto read = view.readObject(entry.runtimeIndex);
+        auto read = view.readSnapshotObject(entry.runtimeIndex);
         if (!read)
             return core::unexpected(std::move(read.error()));
         if (read->id != entry.id.value)
@@ -77,9 +76,9 @@ auto fillObjects(const runtime::detail::PresentationRead& view, const SnapshotLa
         if (object.id != entry.id.value) {
             object.id = entry.id.value;
         }
-        object.hasTransform = read->hasTransform;
-        if (object.hasTransform) {
-            copyMatrix(read->matrix, object.worldMatrix);
+        object.hasTransform = read->matrix != nullptr;
+        if (read->matrix != nullptr) {
+            copyMatrix(*read->matrix, object.worldMatrix);
         } else {
             copyMatrix(identity, object.worldMatrix);
         }
@@ -92,7 +91,11 @@ auto fillObjects(const runtime::detail::PresentationRead& view, const SnapshotLa
                                                     "Material exceeds prepared admission bound"});
             object.materialAssetId.assign(appearance.material);
             if (entry.mesh) {
-                const auto material = entry.materials.find(appearance.material);
+                const auto only = entry.materials.begin();
+                const auto material =
+                    entry.materials.size() == 1 && only->first == appearance.material
+                        ? only
+                        : entry.materials.find(appearance.material);
                 if (material == entry.materials.end()) {
                     return core::unexpected(
                         snapshotResourceMismatch(entry.id.value, appearance.material,
@@ -122,7 +125,6 @@ auto fillObjects(const runtime::detail::PresentationRead& view, const SnapshotLa
         }
     }
     snapshot.objects.resize(layout.entities.size());
-
     return {};
 }
 auto fillCamera(const runtime::detail::CameraPresentation& camera, const FrameViewport& viewport,

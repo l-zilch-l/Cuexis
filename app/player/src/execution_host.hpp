@@ -7,9 +7,45 @@
 #include "snapshot_scene.hpp"
 #include <chrono>
 #include <cuexis/presentation_renderer/presentation_renderer.hpp>
+#include <cuexis_internal/execution_diagnostics.hpp>
 #include <functional>
+#include <utility>
 
 namespace cuexis::player {
+// Local sequencing only; accepted identities and effects remain owned by the existing ledgers.
+enum class ExecutionClosePhase : std::uint8_t {
+    idle,
+    cleanup,
+    revokeConsumer,
+    confirmConsumer,
+    retainedInput,
+    archive,
+    inspect,
+    prepareTarget,
+    prepareControl,
+    postAcceptance,
+    awaitAcceptance,
+    acceptReplyReady,
+    confirmAcceptance,
+    cut,
+    flush,
+    audioStop,
+    audioIsolate,
+    softwareRetire,
+    rendererRetire,
+    audioRetire,
+    exportEvidence,
+    captureClose,
+    softwareClose,
+    rendererClose,
+    audioClose,
+    finish,
+    completedProof,
+    confirm,
+    shutdown,
+    exitWait,
+    joined
+};
 // Application assembly only. The SDK still creates no implicit threads.
 struct ExecutionHostOptions final {
     playback::PlaybackMode sourceMode{playback::PlaybackMode::ChartClock};
@@ -27,6 +63,10 @@ struct ExecutionHostPorts final {
     // Called on main while awaiting owner replies. It must keep polling events and may capture,
     // but must not recursively issue control or advance commands.
     std::function<core::Result<void>()> pumpMain;
+    // Optional deterministic interruption gate for this explicitly test-only application assembly.
+    std::function<core::Result<void>(ExecutionClosePhase)> beforeClosePhase;
+    // Optional owner-thread Close clock; defaults to steady_clock. Must not throw or rewind.
+    std::function<std::chrono::steady_clock::time_point()> closeNow;
 };
 class ExecutionHost final {
   public:
@@ -81,6 +121,18 @@ class ExecutionHost final {
     [[nodiscard]] auto replayCut(const playback::GameplayReplay&, playback::GameplayTick)
         -> core::Result<playback::GameplayReplayCut>;
     [[nodiscard]] auto close() -> core::Result<void>;
+    [[nodiscard]] auto closePhase() const noexcept -> ExecutionClosePhase {
+        return closePhase_;
+    }
+    [[nodiscard]] auto closeBudgetExceeded() const noexcept -> bool {
+        return closeBudgetExceeded_;
+    }
+    [[nodiscard]] auto closeOwnersExited() const noexcept -> bool {
+        return session_->exited() && (!audio_ || audio_->exited());
+    }
+    [[nodiscard]] auto closeFirstError() const noexcept -> const std::optional<core::Error>& {
+        return closeFirstError_;
+    }
     [[nodiscard]] auto resize(playback::FrameViewport) -> core::Result<void>;
     [[nodiscard]] auto audioPublication() const -> core::Result<playback::detail::AudioPublication>;
     void waitFor(std::chrono::milliseconds duration);
@@ -109,13 +161,38 @@ class ExecutionHost final {
     [[nodiscard]] auto closeDeliveryError() const noexcept -> const std::optional<core::Error>& {
         return closeDeliveryError_;
     }
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    [[nodiscard]] auto rpaObservation() const noexcept
+        -> const cuexis::internal::execution_diagnostics::rpa::Close& {
+        return rpaClose_;
+    }
+    [[nodiscard]] auto rpaSeekObservation() const noexcept
+        -> const cuexis::internal::execution_diagnostics::rpa::SeekLedger& {
+        return rpaSeek_;
+    }
+#endif
 
   private:
     ExecutionHost(presentation_renderer::IPresentationRenderer&, ExecutionHostOptions,
                   ExecutionHostPorts, std::unique_ptr<playback::detail::SessionWorker>);
-    [[nodiscard]] auto session(playback::detail::SessionCommand, bool control = true)
+    // Materialize the command variant in a short-lived dispatch frame. Large proof-bearing
+    // alternatives must not reserve a variant temporary at every call site in Debug builds.
+    template <class Command>
+    [[nodiscard]] auto session(Command&& command, bool control = true)
+        -> playback::detail::SessionReply {
+        return sessionCommand(playback::detail::SessionCommand{std::forward<Command>(command)},
+                              control);
+    }
+    [[nodiscard]] auto sessionCommand(playback::detail::SessionCommand, bool control)
         -> playback::detail::SessionReply;
     [[nodiscard]] auto awaitSession() -> playback::detail::SessionReply;
+    template <class Command>
+    [[nodiscard]] auto closeSession(Command&& command) -> playback::detail::SessionReply {
+        return sessionJob_ ? awaitSession() : session(std::forward<Command>(command));
+    }
+    [[nodiscard]] auto awaitAudio() -> playback::detail::AudioWorkerReply;
+    [[nodiscard]] auto closeNow() const -> std::chrono::steady_clock::time_point;
+    void closeBoundary(ExecutionClosePhase);
     [[nodiscard]] auto audio(playback::detail::AudioWorkerCommand)
         -> playback::detail::AudioWorkerReply;
     void pump(std::chrono::steady_clock::time_point deadline =
@@ -127,7 +204,8 @@ class ExecutionHost final {
     void postControl();
     void confirmControl(std::uint64_t decision);
     void observed(const playback::StepReceipt&);
-    void audioStep(playback::detail::AudioWorkerCommandKind, playback::StepPhase);
+    auto audioStep(playback::detail::AudioWorkerCommandKind, playback::StepPhase)
+        -> playback::StepReceipt;
     void softwarePrepared();
     void finish();
     void registerRenderer();
@@ -140,6 +218,21 @@ class ExecutionHost final {
     [[nodiscard]] auto step(playback::Participant, playback::StepPhase) const
         -> playback::StepRequest;
     void failed() noexcept;
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    void rpaMark(cuexis::internal::execution_diagnostics::rpa::CloseStage) noexcept;
+    void rpaCause(cuexis::internal::execution_diagnostics::rpa::Reason,
+                  const core::Error&) noexcept;
+    void rpaCaptureFence(
+        cuexis::internal::execution_diagnostics::rpa::CloseObservationPart) noexcept;
+    void rpaSyncIdentity() noexcept;
+    void rpaSeekFetch() noexcept;
+    cuexis::internal::execution_diagnostics::rpa::Close rpaClose_{};
+    std::optional<std::uint64_t> rpaObservationJob_, rpaSeekJob_;
+    cuexis::internal::execution_diagnostics::rpa::CloseObservationPart rpaObservationPart_{};
+    cuexis::internal::execution_diagnostics::rpa::SeekLedger rpaSeek_{};
+    cuexis::internal::execution_diagnostics::rpa::CloseStage rpaStage_{
+        cuexis::internal::execution_diagnostics::rpa::CloseStage::none};
+#endif
     core::ThreadChecker owner_;
     presentation_renderer::IPresentationRenderer& renderer_;
     ExecutionHostOptions options_;
@@ -156,6 +249,16 @@ class ExecutionHost final {
     playback::HostContext context_;
     playback::ControlRequest control_;
     std::optional<std::uint64_t> sessionJob_, audioJob_;
+    std::chrono::steady_clock::time_point sessionDeadline_{}, audioDeadline_{}, closeDeadline_{};
+    std::optional<std::chrono::steady_clock::time_point> closeOldSessionDeadline_,
+        closeOldAudioDeadline_;
+    ExecutionClosePhase closePhase_{ExecutionClosePhase::idle};
+    std::optional<playback::detail::RegistrationReceipt> closeConsumerReceipt_;
+    std::optional<playback::StepTarget> closeTarget_;
+    std::optional<playback::ControlReceipt> closeCompleted_;
+    std::optional<core::Error> closeFirstError_;
+    std::uint64_t closeInspectionGeneration_{}, closeDecision_{};
+    bool closeBudgetExceeded_{};
     std::optional<playback::StepReceipt> earlyCut_;
     std::vector<playback::GameplayCaptureDelivery> retained_;
     std::optional<playback::detail::CaptureCloseEvidence> closeEvidence_;
@@ -180,5 +283,18 @@ class ExecutionHost final {
     std::optional<audio::AudioClipHandle> clip_;
     std::optional<std::int64_t> cut_;
     bool busy_{}, closed_{}, suspended_{}, routePaused_{}, gpuTouched_{}, pendingControlAccept_{};
+};
+
+// Declare after all objects captured by the host callbacks. It drains on the original owner
+// during ordinary and exceptional scope exit before releasing that callback closure.
+class ExecutionHostLifetime final {
+  public:
+    explicit ExecutionHostLifetime(std::unique_ptr<ExecutionHost>& host) : host_(host) {}
+    ~ExecutionHostLifetime();
+    ExecutionHostLifetime(const ExecutionHostLifetime&) = delete;
+    auto operator=(const ExecutionHostLifetime&) -> ExecutionHostLifetime& = delete;
+
+  private:
+    std::unique_ptr<ExecutionHost>& host_;
 };
 } // namespace cuexis::player

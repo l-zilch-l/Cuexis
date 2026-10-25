@@ -4,6 +4,30 @@
 
 ## 实施与回归
 
+- [PD-5 判定报告与 Stage 7-PD 退出清单](2026-10-24-pd5-verdict-and-stage-7-pd-exit.md)（判定：未通过但定案；退出清单待 owner 接受）
+
+- [PD-5 B1 域归因工具完成](2026-10-24-b1-domain-attribution-tooling.md)（B1 门通过：29 项单测全绿、宏关闭零代码审计；未运行）
+
+- [PD-5 B0 静态内存上限账本与逐域上限推导](2026-10-24-b0-memory-cap-ledger.md)（B0 门已于 2026-10-24 接受：G1/G3/G4/G7 关闭，G9 顺延 B1）
+
+- [P8 40k 单侧完整规模定案表](2026-10-24-p8-40k-single-sided-complete-scale-ruling.md)
+
+- [关闭路径 `host.rpa.control_pending` 静态定性](2026-10-24-close-path-control-pending-static-qualification.md)
+
+- [PD-5 40k 内存包络的 owner 归因与需求/设计缺陷判定](2026-10-23-40k-memory-envelope-attribution.md)
+
+- [PD-5 读取回归的有界归因实验（R0-b）](2026-10-23-read-regression-bounded-attribution.md)
+
+- [PD-5 读取回归的静态指令归因（R0-a）](2026-10-23-read-regression-static-attribution.md)
+
+- [PD-5 F1 工具包合并封包与三用例验收准备](2026-10-23-f1-tool-package-and-acceptance-preparation.md)
+
+- [PD-5 最小 ETW 生命周期工具两项实机验收](2026-10-23-etw-minimal-lifecycle-acceptance.md)
+
+- [PD-5 管理员 canary 磁盘阈值中断与最小验证 profile](2026-10-23-etw-canary-disk-stop-and-minimal-profile.md)
+
+- [PD-5 正式测量前工具修复与方案准备](2026-10-23-preformal-tool-repair-and-readiness.md)
+
 - [PD-5 DiagTrack 命名会话核验与预检规则修正](2026-10-23-etw-background-session-classification.md)
 
 - [PD-5 管理员只读预检：已有 WPR 会话拦截与归属待查](2026-10-23-etw-existing-session-preflight-stop.md)

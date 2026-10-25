@@ -1,4 +1,7 @@
 #include <cuexis/judgement/recovery.hpp>
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+#include <cuexis_internal/execution_diagnostics.hpp>
+#endif
 
 namespace cuexis::judgement {
 auto sameRecoveryError(const std::optional<core::Error>& a, const std::optional<core::Error>& b)
@@ -22,6 +25,15 @@ auto sameRecoveryError(const std::optional<core::Error>& a, const std::optional<
     return left == nullptr && right == nullptr;
 }
 auto sameKernelResult(const KernelProjection& a, const KernelProjection& b) -> bool {
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    namespace rpa = cuexis::internal::execution_diagnostics::rpa;
+    rpa::seekAdd(rpa::SeekPhase::s3Validation, &rpa::SeekWork::sameKernelCalls);
+    rpa::seekAdd(rpa::SeekPhase::s3Validation, &rpa::SeekWork::comparedElements,
+                 static_cast<std::uint64_t>(a.facts.size() + a.contacts.size() +
+                                            a.observers.size() + a.receipts.size() +
+                                            a.ownership.size() + a.phases.size() +
+                                            a.resources.size()));
+#endif
     return a.phases == b.phases && a.resources == b.resources && a.contacts == b.contacts &&
            a.ownership == b.ownership && a.observers == b.observers && a.receipts == b.receipts &&
            a.facts == b.facts && a.processedFrontier == b.processedFrontier &&
@@ -34,6 +46,13 @@ auto sameKernelResult(const KernelProjection& a, const KernelProjection& b) -> b
            a.faultStage == b.faultStage && a.rpa == b.rpa;
 }
 auto sameSnapshot(const SnapshotDTO& a, const SnapshotDTO& b) -> bool {
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    namespace rpa = cuexis::internal::execution_diagnostics::rpa;
+    rpa::seekAdd(rpa::SeekPhase::s3Validation, &rpa::SeekWork::sameSnapshotCalls);
+    rpa::seekAdd(rpa::SeekPhase::s3Validation, &rpa::SeekWork::comparedElements,
+                 static_cast<std::uint64_t>(a.pending.size() + a.rpaHistory.size() +
+                                            a.matchers.size() + a.activeRequirements.size()));
+#endif
     if (!sameKernelResult(a.kernel, b.kernel) || a.matchers != b.matchers ||
         a.coverageHistory != b.coverageHistory || a.activeRequirements != b.activeRequirements ||
         a.timerCursor != b.timerCursor || a.nextCommitId != b.nextCommitId ||

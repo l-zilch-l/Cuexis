@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WindowsPerformanceRecorder Version="1.0" Author="Cuexis tool verification">
+  <Profiles>
+    <SystemCollector Id="F1ScaleSystem" Name="WPR System Collector">
+      <BufferSize Value="128"/>
+      <Buffers Value="64"/>
+    </SystemCollector>
+    <EventCollector Id="F1ScaleEvents" Name="WPR Event Collector">
+      <BufferSize Value="128"/>
+      <Buffers Value="32"/>
+    </EventCollector>
+    <SystemProvider Id="F1ScaleScheduler">
+      <Keywords>
+        <Keyword Value="CSwitch"/>
+        <Keyword Value="ReadyThread"/>
+        <Keyword Value="DPC"/>
+        <Keyword Value="Interrupt"/>
+        <Keyword Value="Power"/>
+        <Keyword Value="IdleStates"/>
+      </Keywords>
+    </SystemProvider>
+    <EventProvider Id="F1ScaleProcessorPower" Name="Microsoft-Windows-Kernel-Processor-Power">
+      <Keywords>
+        <Keyword Value="0x2ff"/>
+      </Keywords>
+    </EventProvider>
+    <Profile Id="PD5F1Scale.Verbose.File" Name="PD5F1Scale" Description="Diagnostic scheduler and processor-power attribution for the F1 read-scale workload" DetailLevel="Verbose" LoggingMode="File">
+      <Collectors>
+        <SystemCollectorId Value="F1ScaleSystem">
+          <SystemProviderId Value="F1ScaleScheduler"/>
+        </SystemCollectorId>
+        <EventCollectorId Value="F1ScaleEvents">
+          <EventProviders>
+            <EventProviderId Value="F1ScaleProcessorPower"/>
+          </EventProviders>
+        </EventCollectorId>
+      </Collectors>
+    </Profile>
+  </Profiles>
+</WindowsPerformanceRecorder>

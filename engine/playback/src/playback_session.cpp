@@ -10,6 +10,7 @@
 #include "presentation_materializer.hpp"
 #include "presentation_state.hpp"
 #include <cuexis_internal/allocation_observer.hpp>
+#include <cuexis_internal/execution_diagnostics.hpp>
 #include <cuexis_internal/presentation_metrics.hpp>
 #include <cuexis_internal/sha256.hpp>
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
@@ -156,6 +157,11 @@ using detail::SnapshotLayout;
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
 auto prepareProjection(const detail::GameplayContentStorage& content, const SnapshotLayout& layout)
     -> core::Result<detail::PreparedProjection> {
+#if defined(CUEXIS_ALLOCATION_LIFETIME_OBSERVER)
+    // Product tag: the projection index maps are session-scoped and capped as state.index.
+    const internal::pd::memory::TagScope tag{internal::pd::memory::ownerMain,
+                                             internal::pd::memory::domainIndex};
+#endif
     for (const auto& requirement :
          content.capsule.gameplay.assembled().graph.derivedCapabilities.capabilities) {
         if (std::ranges::none_of(detail::PresentationProjectionAdapter::capabilities,
@@ -913,6 +919,11 @@ assembleResourceIdentities(std::span<const chart::ChartResourceRequirement> requ
                                        const chart::ChartRuntime& chartRuntime,
                                        const detail::PreparedPresentation* presentation)
     -> core::Result<SnapshotLayout> {
+#if defined(CUEXIS_ALLOCATION_LIFETIME_OBSERVER)
+    // Product tag: the prepared snapshot layout is capped as state.candidate.
+    const internal::pd::memory::TagScope tag{internal::pd::memory::ownerMain,
+                                             internal::pd::memory::domainCandidate};
+#endif
     SnapshotLayout layout;
     layout.entities.reserve(chartRuntime.objects.size());
     for (const auto& object : chartRuntime.objects) {
@@ -1576,14 +1587,56 @@ auto PlaybackSession::validateExecutionControlBinding(const StepRequest& request
     const auto& s = *session.state_;
     if (!s.ownerThread.isCurrent())
         return core::unexpected(ownerError("control_binding"));
-    if (!s.acceptedHostControl || request.key.participant != Participant::software ||
-        request.key.sessionScope != s.acceptedHostControl->context.sessionScope ||
-        request.key.operationId != s.acceptedHostControl->operationId ||
-        request.target != s.acceptedHostControl->target)
+    const bool participant = request.key.participant == Participant::software;
+    const bool scope = s.acceptedHostControl &&
+                       request.key.sessionScope == s.acceptedHostControl->context.sessionScope;
+    const bool operation =
+        s.acceptedHostControl && request.key.operationId == s.acceptedHostControl->operationId;
+    const bool target = s.acceptedHostControl && request.target == s.acceptedHostControl->target;
+    const bool accepted = s.acceptedHostControl.has_value();
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    if (auto* sink = internal::execution_diagnostics::rpa::fenceSink) {
+        sink->bindingChecked = true;
+        sink->bindingOwner = true;
+        sink->bindingParticipant = participant;
+        sink->bindingScope = scope;
+        sink->bindingOperation = operation;
+        sink->bindingTarget = target;
+        if (!accepted) {
+            sink->bindingChecked = true;
+            internal::execution_diagnostics::rpa::noteReason(
+                internal::execution_diagnostics::rpa::Reason::bindingMissing);
+        } else if (!participant)
+            internal::execution_diagnostics::rpa::noteReason(
+                internal::execution_diagnostics::rpa::Reason::bindingParticipant);
+        else if (!scope)
+            internal::execution_diagnostics::rpa::noteReason(
+                internal::execution_diagnostics::rpa::Reason::bindingScope);
+        else if (!operation)
+            internal::execution_diagnostics::rpa::noteReason(
+                internal::execution_diagnostics::rpa::Reason::bindingOperation);
+        else if (!target)
+            internal::execution_diagnostics::rpa::noteReason(
+                internal::execution_diagnostics::rpa::Reason::bindingTarget);
+    }
+#endif
+    if (!accepted || !participant || !scope || !operation || !target)
         return core::unexpected(
             core::Error{"host.rpa.context_stale", "Software step lacks accepted target"});
     return {};
 }
+auto PlaybackSession::validateExecutionControlProof(const StepRequest& request,
+                                                    const ControlReceipt& proof) const
+    -> core::Result<void> {
+    if (auto valid = validateExecutionControlBinding(request); !valid)
+        return valid;
+    if (!state_->acceptedHostDecision || proof.decisionOrdinal != *state_->acceptedHostDecision ||
+        proof.request != *state_->acceptedHostControl)
+        return core::unexpected(core::Error{
+            "host.rpa.context_stale", "Control proof differs from the accepted owner decision"});
+    return {};
+}
+
 auto PlaybackSession::validateExecutionFrameContext(const HostContext& context) const
     -> core::Result<void> {
     auto& session = *this;
@@ -1625,6 +1678,17 @@ auto PlaybackSession::acceptExecutionControl(const ControlRequest& request)
          request.context.controlSequence <= s.confirmedHostContext->controlSequence))
         return core::unexpected(
             core::Error{"host.rpa.context_stale", "Confirmed owner identity mismatch"});
+    // Validate a new Close against its admission generation. Legitimate post-cut delivery can
+    // advance the owner before retire; a retransmitted accepted request returned above keeps
+    // its original binding and decision.
+    if (request.kind == ControlKind::close &&
+        generationFor(request.target, Participant::software) != s.generation)
+        return core::unexpected(
+            core::Error{"host.rpa.context_stale", "Close admission generation is stale"});
+    if (request.kind == ControlKind::close && s.hostFence &&
+        request.context.controlSequence <= s.hostFence->controlSequence())
+        return core::unexpected(core::Error{
+            "host.rpa.context_stale", "A new Close cannot reuse an older control fence identity"});
     // Reserve the complete binding before K1 changes any execution state.
     auto binding = request;
     if (s.hostFence && request.kind != ControlKind::close)
@@ -1692,18 +1756,67 @@ auto PlaybackSession::enterExecutionFence(const ControlReceipt& proof)
     auto& s = *session.state_;
     if (!s.ownerThread.isCurrent())
         return core::unexpected(ownerError("control_fence"));
-    if (s.operationActive || s.hostFence || !s.acceptedHostControl ||
-        *s.acceptedHostControl != proof.request || proof.status != ControlStatus::preparing ||
-        proof.request.kind == ControlKind::load || proof.request.kind == ControlKind::reload)
+    const bool operationActive = s.operationActive;
+    const bool existingFence = s.hostFence.has_value();
+    const bool noAcceptedControl = !s.acceptedHostControl;
+    const bool requestMismatch = !noAcceptedControl && *s.acceptedHostControl != proof.request;
+    const bool statusMismatch = proof.status != ControlStatus::preparing;
+    const bool typeMismatch =
+        proof.request.kind == ControlKind::load || proof.request.kind == ControlKind::reload;
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    if (auto* sink = internal::execution_diagnostics::rpa::fenceSink) {
+        using Predicate = internal::execution_diagnostics::rpa::FencePredicate;
+        sink->identity.valid = true;
+        sink->identity.scope = proof.request.context.sessionScope;
+        sink->identity.candidateId = proof.request.target.candidateId;
+        sink->identity.controlSequence = proof.request.context.controlSequence;
+        sink->identity.operationId = proof.request.operationId;
+        sink->identity.kind = static_cast<std::uint8_t>(proof.request.kind);
+        sink->identity.status = static_cast<std::uint8_t>(proof.status);
+        if (operationActive)
+            internal::execution_diagnostics::rpa::reject(Predicate::operationActive);
+        if (existingFence)
+            internal::execution_diagnostics::rpa::reject(Predicate::existingFence);
+        if (noAcceptedControl)
+            internal::execution_diagnostics::rpa::reject(Predicate::noAcceptedControl);
+        if (requestMismatch)
+            internal::execution_diagnostics::rpa::reject(Predicate::requestMismatch);
+        if (statusMismatch)
+            internal::execution_diagnostics::rpa::reject(Predicate::statusMismatch);
+        if (typeMismatch)
+            internal::execution_diagnostics::rpa::reject(Predicate::typeMismatch);
+        if (operationActive || existingFence || noAcceptedControl || requestMismatch ||
+            statusMismatch || typeMismatch)
+            internal::execution_diagnostics::rpa::noteReason(
+                operationActive ? internal::execution_diagnostics::rpa::Reason::operationActive
+                : existingFence ? internal::execution_diagnostics::rpa::Reason::existingFence
+                : noAcceptedControl
+                    ? internal::execution_diagnostics::rpa::Reason::noAcceptedControl
+                : requestMismatch ? internal::execution_diagnostics::rpa::Reason::requestMismatch
+                : statusMismatch  ? internal::execution_diagnostics::rpa::Reason::statusMismatch
+                                  : internal::execution_diagnostics::rpa::Reason::typeMismatch);
+    }
+#endif
+    if (operationActive || existingFence || noAcceptedControl || requestMismatch ||
+        statusMismatch || typeMismatch)
         return core::unexpected(
             core::Error{"host.rpa.control_pending", "Control cannot enter its software fence"});
     const auto phase =
         proof.request.kind == ControlKind::resume || proof.request.kind == ControlKind::seek
             ? StepPhase::resumeRoute
             : StepPhase::cut;
-    if (proof.request.participants[0] && !matchingStep(proof, Participant::capture, phase))
+    if (proof.request.participants[0] && !matchingStep(proof, Participant::capture, phase)) {
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        if (internal::execution_diagnostics::rpa::fenceSink) {
+            internal::execution_diagnostics::rpa::reject(
+                internal::execution_diagnostics::rpa::FencePredicate::cutMissing);
+            internal::execution_diagnostics::rpa::noteReason(
+                internal::execution_diagnostics::rpa::Reason::cutMissing);
+        }
+#endif
         return core::unexpected(
             core::Error{"host.rpa.control_pending", "Final capture boundary is unconfirmed"});
+    }
     s.hostFence =
         ExecutionFence{proof.request.context.sessionScope, s.generation,
                        proof.request.target.candidateId, proof.request.context.controlSequence};
@@ -1868,24 +1981,71 @@ auto PlaybackSession::executionStepEffects() const -> core::Result<StepEffects> 
 
 auto PlaybackSession::retireExecutionStep(const StepRequest& request, const ControlReceipt& proof)
     -> core::Result<void> {
-    if (auto valid = validateExecutionControlBinding(request); !valid)
+    if (auto valid = validateExecutionControlProof(request, proof); !valid)
         return valid;
-    if (request.key.phase != StepPhase::retire || request.target != proof.request.target ||
-        *state_->acceptedHostControl != proof.request ||
-        (proof.request.kind != ControlKind::close && proof.status != ControlStatus::suspended &&
-         proof.status != ControlStatus::failed))
+    if (proof.request.kind == ControlKind::close && proof.status == ControlStatus::failed)
+        return core::unexpected(
+            core::Error{"host.rpa.control_pending", "Failed Close cannot retire software"});
+    const bool directedPhase = request.key.phase == StepPhase::retire;
+    const bool directedTarget = request.target == proof.request.target;
+    const bool directedRequest = *state_->acceptedHostControl == proof.request;
+    const bool directedKind = proof.request.kind == ControlKind::close ||
+                              proof.status == ControlStatus::suspended ||
+                              proof.status == ControlStatus::failed;
+    const bool captureCleared =
+        !proof.request.participants[0] ||
+        matchingStep(proof, Participant::capture, StepPhase::cut) != nullptr;
+    const bool audioCleared = [&] {
+        if (!proof.request.participants[2])
+            return true;
+        const auto* isolation = matchingStep(proof, Participant::audio, StepPhase::isolate);
+        return matchingStep(proof, Participant::audio, StepPhase::stop) != nullptr && isolation &&
+               isolation->effects.callbackIsolated;
+    }();
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    if (auto* sink = internal::execution_diagnostics::rpa::fenceSink) {
+        sink->permitAttempted = true;
+        sink->permitDirected = directedPhase && directedTarget && directedRequest && directedKind;
+        sink->permitRequestMatch = directedRequest;
+        sink->permitTargetMatch = directedTarget;
+        sink->permitOperationMatch = request.key.operationId == proof.request.operationId;
+        sink->permitParticipantMatch = request.key.participant == Participant::software;
+        sink->permitCaptureCut = captureCleared;
+        sink->permitAudioIsolated = audioCleared;
+        if (!directedPhase)
+            internal::execution_diagnostics::rpa::noteReason(
+                internal::execution_diagnostics::rpa::Reason::retirePhase);
+        else if (!directedTarget)
+            internal::execution_diagnostics::rpa::noteReason(
+                internal::execution_diagnostics::rpa::Reason::retireTarget);
+        else if (!directedRequest)
+            internal::execution_diagnostics::rpa::noteReason(
+                internal::execution_diagnostics::rpa::Reason::requestMismatch);
+        else if (!directedKind)
+            internal::execution_diagnostics::rpa::noteReason(
+                internal::execution_diagnostics::rpa::Reason::retireKind);
+        else if (!captureCleared)
+            internal::execution_diagnostics::rpa::noteReason(
+                internal::execution_diagnostics::rpa::Reason::captureActive);
+        else if (!audioCleared)
+            internal::execution_diagnostics::rpa::noteReason(
+                internal::execution_diagnostics::rpa::Reason::audioActive);
+    }
+#endif
+    if (!directedPhase || !directedTarget || !directedRequest || !directedKind)
         return core::unexpected(
             core::Error{"host.rpa.context_stale", "Retirement lacks directed cleanup"});
-    if (proof.request.participants[0] && !matchingStep(proof, Participant::capture, StepPhase::cut))
+    if (!captureCleared)
         return core::unexpected(core::Error{"host.rpa.device_pending", "Capture is active"});
-    if (proof.request.participants[2]) {
-        const auto* isolation = matchingStep(proof, Participant::audio, StepPhase::isolate);
-        if (!matchingStep(proof, Participant::audio, StepPhase::stop) || !isolation ||
-            !isolation->effects.callbackIsolated)
-            return core::unexpected(core::Error{"host.rpa.device_pending", "Audio is active"});
-    }
+    if (!audioCleared)
+        return core::unexpected(core::Error{"host.rpa.device_pending", "Audio is active"});
     HostMutationPermission permission{state_->hostCommitAuthorized};
-    return unload();
+    auto unloaded = unload();
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    if (auto* sink = internal::execution_diagnostics::rpa::fenceSink)
+        sink->retireApplied = bool(unloaded);
+#endif
+    return unloaded;
 }
 auto PlaybackSession::pauseExecutionStep(const StepRequest& request, std::int64_t now)
     -> core::Result<void> {
@@ -2993,6 +3153,11 @@ auto detail::PresentationAccess::materialize(const PlaybackSession& session,
                                              std::optional<std::uint64_t> exactVersion,
                                              const FrameViewport& viewport, FrameSnapshot& snapshot)
     -> core::Result<void> try {
+#if defined(CUEXIS_ALLOCATION_LIFETIME_OBSERVER)
+    // Product tag: extract-frame materialization is the per-call snapshot DTO, not session state.
+    const internal::pd::memory::TagScope tag{internal::pd::memory::ownerMain,
+                                             internal::pd::memory::domainSnapshot};
+#endif
     auto* state_ = session.state_.get();
     internal::pd::Timer measurement{internal::pd::Stage::snapshot};
     if (!state_->ownerThread.isCurrent()) {
@@ -4053,7 +4218,57 @@ auto PlaybackSession::seekGameplay(const GameplayReplay& a, GameplayTick h,
     if (!archive || !state_->gameplay)
         return core::unexpected(gameplayError("Replay or active Gameplay absent"));
     // Seek constructs a fresh kernel with the current dependencies before replacing active state.
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    auto s2 = internal::execution_diagnostics::rpa::SeekScope{
+        internal::execution_diagnostics::rpa::SeekPhase::s2CandidatePrep};
+#endif
     auto candidate = makeGameplaySession(state_->gameplayContent);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    {
+        using Phase = internal::execution_diagnostics::rpa::SeekPhase;
+        using Work = internal::execution_diagnostics::rpa::SeekWork;
+        internal::execution_diagnostics::rpa::seekAdd(Phase::s2CandidatePrep,
+                                                      &Work::candidateCalls);
+        internal::execution_diagnostics::rpa::seekSet(Phase::s2CandidatePrep,
+                                                      &Work::validCandidates, candidate ? 1 : 0);
+        internal::execution_diagnostics::rpa::seekSet(
+            Phase::s2CandidatePrep, &Work::discardedCandidates, candidate ? 0 : 1);
+        // One fresh JudgementSession borrows the prepared content; the content is not copied.
+        internal::execution_diagnostics::rpa::seekSet(Phase::s2CandidatePrep,
+                                                      &Work::preparedHandles, candidate ? 1 : 0);
+        // configure() copies the configuration object once. The number of scalar members is not
+        // exposed by the public configuration type, so configValues keeps its not-available zero
+        // rather than inventing a field count.
+        internal::execution_diagnostics::rpa::seekSet(Phase::s2CandidatePrep, &Work::configCopies,
+                                                      1);
+        const auto* content = detail::GameplayAccess::content(state_->gameplayContent);
+        if (content != nullptr) {
+            const auto& prepared = content->capsule.gameplay;
+            internal::execution_diagnostics::rpa::seekSet(
+                Phase::s2CandidatePrep, &Work::entities,
+                static_cast<std::uint64_t>(content->capsule.chart.entities.size()));
+            internal::execution_diagnostics::rpa::seekSet(
+                Phase::s2CandidatePrep, &Work::requirements,
+                static_cast<std::uint64_t>(prepared.requirements().size()));
+            internal::execution_diagnostics::rpa::seekSet(
+                Phase::s2CandidatePrep, &Work::timerRequirements,
+                static_cast<std::uint64_t>(prepared.timers().size()));
+            internal::execution_diagnostics::rpa::seekSet(
+                Phase::s2CandidatePrep, &Work::timerElements,
+                static_cast<std::uint64_t>(prepared.timers().size()));
+            std::uint64_t phaseOffsets = 0;
+            std::uint64_t matcherElements = 0;
+            for (const auto& requirement : prepared.requirements()) {
+                phaseOffsets += requirement.measure.componentCount();
+                matcherElements += requirement.pattern.stateCount().value_or(0);
+            }
+            internal::execution_diagnostics::rpa::seekSet(Phase::s2CandidatePrep,
+                                                          &Work::phaseOffsets, phaseOffsets);
+            internal::execution_diagnostics::rpa::seekSet(Phase::s2CandidatePrep,
+                                                          &Work::matcherElements, matcherElements);
+        }
+    }
+#endif
     if (!candidate)
         return core::unexpected(detail::projectGameplayError(std::move(candidate.error())));
     std::vector<judgement::ReplayCheckpoint> certificates;
@@ -4068,14 +4283,51 @@ auto PlaybackSession::seekGameplay(const GameplayReplay& a, GameplayTick h,
                                      cut.partialHorizon
                                          ? std::optional{judgement::Tick{cut.partialHorizon->value}}
                                          : std::nullopt};
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    // Certificate assembly is part of candidate preparation: the vectors above are sized and
+    // filled here, so the S2 scope must not close before this point.
+    internal::execution_diagnostics::rpa::seekSet(
+        internal::execution_diagnostics::rpa::SeekPhase::s2CandidatePrep,
+        &internal::execution_diagnostics::rpa::SeekWork::requirementSets,
+        static_cast<std::uint64_t>(certificates.size()));
+    s2.finish();
+    internal::execution_diagnostics::rpa::SeekScope s3{
+        internal::execution_diagnostics::rpa::SeekPhase::s3Validation};
+    internal::execution_diagnostics::rpa::seekSet(
+        internal::execution_diagnostics::rpa::SeekPhase::s3Validation,
+        &internal::execution_diagnostics::rpa::SeekWork::actualRecords,
+        static_cast<std::uint64_t>(cut.completeRecords));
+#endif
     if (auto seek =
             candidate->seek(archive->archive, judgement::Tick{h.value}, internalCut, certificates);
         !seek)
         return core::unexpected(detail::projectGameplayError(std::move(seek.error())));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    s3.finish();
+    internal::execution_diagnostics::rpa::SeekScope s5{
+        internal::execution_diagnostics::rpa::SeekPhase::s5PublishSwap};
+#endif
     auto replacement = std::make_unique<judgement::JudgementSession>(std::move(*candidate));
     auto q = replacement->query();
     if (!q)
         return core::unexpected(detail::projectGameplayError(std::move(q.error())));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    using PublishPhase = internal::execution_diagnostics::rpa::SeekPhase;
+    using PublishWork = internal::execution_diagnostics::rpa::SeekWork;
+    const auto& projection = q->kernelView();
+    internal::execution_diagnostics::rpa::seekSet(
+        PublishPhase::s5PublishSwap, &PublishWork::objects,
+        static_cast<std::uint64_t>(projection.phases.size() + projection.resources.size()));
+    internal::execution_diagnostics::rpa::seekSet(
+        PublishPhase::s5PublishSwap, &PublishWork::publishedFacts,
+        static_cast<std::uint64_t>(projection.facts.size()));
+    internal::execution_diagnostics::rpa::seekSet(
+        PublishPhase::s5PublishSwap, &PublishWork::copyAllocations, 1); // owning session
+    internal::execution_diagnostics::rpa::seekSet(
+        PublishPhase::s5PublishSwap, &PublishWork::oldOwnersRetained, state_->gameplay ? 1 : 0);
+    internal::execution_diagnostics::rpa::seekSet(PublishPhase::s5PublishSwap,
+                                                  &PublishWork::releases, state_->gameplay ? 1 : 0);
+#endif
     if (auto published =
             detail::GameplayPublicationAccess::publish(*this, *replacement, t, frame, false, true);
         !published)
@@ -4088,6 +4340,9 @@ auto PlaybackSession::seekGameplay(const GameplayReplay& a, GameplayTick h,
     state_->executionContext.reset();
     state_->realtimeWasStarted = false;
     state_->gameplay.swap(replacement);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    s5.finish();
+#endif
     state_->gameplayState = q->kernelView().rpa && q->kernelView().rpa->paused
                                 ? GameplayState::Paused
                                 : GameplayState::Running;

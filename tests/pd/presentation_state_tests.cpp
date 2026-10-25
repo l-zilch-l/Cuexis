@@ -362,3 +362,5 @@ TEST_CASE("PD3c public committed source query preserves absence and revisions",
     CHECK(session.presentationSource()->activationRevision == projected->activationRevision);
 #endif
 }
+
+#include "r2_snapshot_tests.hpp"

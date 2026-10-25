@@ -10,6 +10,8 @@ struct AdvanceRetentionProgress final {
 };
 // Prepared stays on its owner; only CPU-owning data crosses this non-installed bridge.
 struct HostCoordinationAccess final {
+    [[nodiscard]] static auto validateControlProof(const PlaybackSession&, const StepRequest&,
+                                                   const ControlReceipt&) -> core::Result<void>;
     [[nodiscard]] static auto
     materialize(PreparedPlayback&, const PresentationCapabilities&, const PresentationRequest&,
                 std::uint64_t rendererInstance, std::uint64_t rendererGeneration,

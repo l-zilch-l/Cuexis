@@ -7,6 +7,36 @@
 
 namespace cuexis::playback::detail {
 namespace {
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+namespace rpa = cuexis::internal::execution_diagnostics::rpa;
+auto fenceIdentity(const ExecutionFence& fence) -> rpa::Identity {
+    rpa::Identity identity{};
+    identity.valid = true;
+    identity.scope = fence.scope();
+    identity.generation = fence.generation();
+    identity.candidateId = fence.candidateId();
+    identity.controlSequence = fence.controlSequence();
+    return identity;
+}
+auto proofIdentity(const ControlReceipt& proof) -> rpa::Identity {
+    rpa::Identity identity{};
+    identity.valid = true;
+    identity.scope = proof.request.context.sessionScope;
+    identity.generation = proof.request.target.expectedGeneration;
+    identity.candidateId = proof.request.target.candidateId;
+    identity.controlSequence = proof.request.context.controlSequence;
+    identity.operationId = proof.request.operationId;
+    identity.decisionOrdinal = proof.decisionOrdinal;
+    identity.kind = static_cast<std::uint8_t>(proof.request.kind);
+    identity.status = static_cast<std::uint8_t>(proof.status);
+    identity.clockSegment = proof.request.context.clockSegment;
+    identity.runEpoch = proof.request.context.runEpoch;
+    identity.resourceGeneration = proof.request.context.resourceGeneration;
+    identity.rendererGeneration = proof.request.context.rendererGeneration;
+    identity.contentIdentity = proof.request.context.contentIdentity.sha256;
+    return identity;
+}
+#endif
 auto workerError(std::string_view code, std::string_view message) -> core::Error {
     return {"host.rpa." + std::string{code}, std::string{message}};
 }
@@ -44,6 +74,11 @@ struct SessionOwner final {
     std::optional<PresentationSourceInfo> currentSource;
     std::vector<FeedbackId> currentMembership;
     std::uint64_t membershipScope{};
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpa::Fence rpaFence{};
+    rpa::OwnerCloseObservation rpaClose{};
+    rpa::SeekLedger rpaSeek{};
+#endif
     enum class FramePath { unselected, legacy, requested };
     FramePath framePath{FramePath::unselected};
     SessionOwner(SessionWorkerConfiguration& config, std::shared_ptr<FrameDelivery> frameDelivery)
@@ -246,16 +281,49 @@ struct SessionOwner final {
         software.emplace(std::move(*created));
         return {};
     }
-    [[nodiscard]] auto fence(const ControlReceipt& proof) -> core::Result<CommitFence> {
+    [[nodiscard]] auto fence(const ControlReceipt& proof
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+                             ,
+                             rpa::Fence* destination = nullptr
+#endif
+                             ) -> core::Result<CommitFence> {
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        auto& observationFence = destination ? *destination : rpaFence;
+#endif
         auto existing = HostCoordinationAccess::currentFence(session);
-        if (existing)
+        if (existing) {
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+            observationFence.path = rpa::FencePath::existingFence;
+            observationFence.applicability = rpa::FenceApplicability::applicable;
+            observationFence.existingFence = true;
+            observationFence.existingIdentity = fenceIdentity(*existing);
+#endif
             return existing;
+        }
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        observationFence.applicability = rpa::FenceApplicability::applicable;
+        observationFence.attempted = true;
+        observationFence.path =
+            proof.request.kind == ControlKind::load || proof.request.kind == ControlKind::reload
+                ? rpa::FencePath::candidate
+                : rpa::FencePath::normalControl;
+        observationFence.rejected = 0;
+        auto observation = rpa::FenceScope{&observationFence};
+#endif
         if (proof.request.kind == ControlKind::load || proof.request.kind == ControlKind::reload) {
             if (!candidate)
                 return core::unexpected(workerError("context_stale", "Owning candidate is absent"));
-            return HostCoordinationAccess::enterFence(session, *candidate);
+            auto entered = HostCoordinationAccess::enterFence(session, *candidate);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+            observationFence.succeeded = bool(entered);
+#endif
+            return entered;
         }
-        return HostCoordinationAccess::enterControlFence(session, proof);
+        auto entered = HostCoordinationAccess::enterControlFence(session, proof);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        observationFence.succeeded = bool(entered);
+#endif
+        return entered;
     }
     [[nodiscard]] auto simpleStep(const StepRequest& request, bool retired = false)
         -> core::Result<StepReceipt> {
@@ -279,7 +347,20 @@ struct SessionOwner final {
     [[nodiscard]] auto dispatch(SessionCommand&& command) -> core::Result<SessionReply> {
         return std::visit(
             [&]<typename T>(T& job) -> core::Result<SessionReply> {
-                if constexpr (std::is_same_v<T, SessionInspect>) {
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+                if constexpr (std::is_same_v<T, SessionRpaObservation>) {
+                    auto observation = rpaClose;
+                    if (auto current = HostCoordinationAccess::currentFence(session))
+                        observation.currentFence = fenceIdentity(*current);
+                    return SessionReply{std::move(observation)};
+                } else if constexpr (std::is_same_v<T, SessionRpaSeekObservation>) {
+                    // Read-and-clear: the host merges each seek's worker samples once.
+                    auto ledger = rpaSeek;
+                    rpaSeek = {};
+                    return SessionReply{ledger};
+                } else
+#endif
+                    if constexpr (std::is_same_v<T, SessionInspect>) {
                     auto state = session.state();
                     auto generation = HostCoordinationAccess::generation(session);
                     if (!state)
@@ -413,6 +494,18 @@ struct SessionOwner final {
                     }
                     return reply(std::move(retired));
                 } else if constexpr (std::is_same_v<T, SessionConfirmControl>) {
+                    if (job.proof.request.kind == ControlKind::close) {
+                        const auto& closed =
+                            job.proof.steps[static_cast<unsigned>(Participant::software)]
+                                           [static_cast<unsigned>(StepPhase::close)];
+                        if (!closed)
+                            return core::unexpected(
+                                workerError("device_pending", "Software close proof absent"));
+                        auto binding = HostCoordinationAccess::validateControlProof(
+                            session, closed->request, job.proof);
+                        if (!binding)
+                            return core::unexpected(binding.error());
+                    }
                     auto current = HostCoordinationAccess::currentFence(session);
                     if (!current) {
                         if (job.proof.request.kind != ControlKind::close ||
@@ -767,6 +860,17 @@ struct SessionOwner final {
                             session, *software, job.request, job.reconciliation, job.context,
                             job.clock, now(), &job.routeReceipt));
                     } else if constexpr (std::is_same_v<T, SessionSeek>) {
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+                        rpa::SeekSinkScope seekSinkScope{&rpaSeek};
+                        rpa::SeekScope seekPhase{&rpaSeek, rpa::SeekPhase::s4InternalExecution};
+                        rpa::seekSet(rpaSeek, rpa::SeekPhase::s4InternalExecution,
+                                     &rpa::SeekWork::actualRecords,
+                                     static_cast<std::uint64_t>(job.cut.completeRecords));
+                    // S4 work volume is recorded by the judgement seek itself, where the
+                    // ticks, matchers, folds and runtime state are actually touched. The host
+                    // only contributes the record count; overwriting the rest here would
+                    // replace measured values with host-side placeholders.
+#endif
                         auto old = software->query(job.request.key);
                         if (old && old->status != StepStatus::pending && realtime)
                             return reply(HostCoordinationAccess::applySeek(
@@ -785,11 +889,65 @@ struct SessionOwner final {
                             job.cut, job.checkpoints, job.presentationTick, job.runtimeFrame,
                             realtime->profile, realtime->mapping, realtime->monotonicDomain));
                     } else if constexpr (std::is_same_v<T, SessionSoftwareRetire>) {
-                        auto entered = fence(job.proof);
-                        if (!entered)
-                            return core::unexpected(entered.error());
+                        // A directed cleanup retire (suspended or failed owner) must not establish
+                        // a normal software fence: enterExecutionFence accepts only a preparing
+                        // proof, and the retire path already re-verifies the accepted request,
+                        // target, participants, capture cut and audio isolation. Close cleanup
+                        // therefore proceeds on the owner ledger, and the later Close either
+                        // completes an older fence with a larger sequence or takes the no-fence
+                        // confirm branch.
+                        // Design 6.2: a suspended Close may take the explicit cleanup path, but a
+                        // failed Close is not permitted in v1, so only non-Close failures qualify.
+                        const bool directedCleanup = job.proof.status == ControlStatus::suspended ||
+                                                     (job.proof.status == ControlStatus::failed &&
+                                                      job.proof.request.kind != ControlKind::close);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+                        auto& retirement = job.proof.request.kind == ControlKind::close
+                                               ? rpaClose.closeRetire
+                                               : rpaClose.cleanup;
+                        retirement = {};
+                        retirement.identity = proofIdentity(job.proof);
+                        retirement.permitDirected = directedCleanup;
+                        retirement.path = directedCleanup ? rpa::FencePath::cleanupPermit
+                                                          : rpa::FencePath::normalControl;
+                        retirement.applicability = directedCleanup
+                                                       ? rpa::FenceApplicability::notApplicable
+                                                       : rpa::FenceApplicability::applicable;
+                        // The no-fence permit path must still record an existing fence identity:
+                        // "not applicable" is not the same as "not checked".
+                        if (directedCleanup) {
+                            if (auto existing = HostCoordinationAccess::currentFence(session)) {
+                                retirement.existingFence = true;
+                                retirement.existingIdentity = fenceIdentity(*existing);
+                            }
+                        }
+#endif
+                        if (job.proof.request.kind == ControlKind::close &&
+                            job.proof.status == ControlStatus::failed)
+                            return core::unexpected(workerError(
+                                "control_pending", "Failed Close cannot retire software"));
+                        if (!directedCleanup) {
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+                            auto entered = fence(job.proof, &retirement);
+#else
+                            auto entered = fence(job.proof);
+#endif
+                            if (!entered)
+                                return core::unexpected(entered.error());
+                        }
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+                        retirement.permitAttempted = true;
+                        rpa::FenceScope permitScope{&retirement};
+#endif
                         auto retired = HostCoordinationAccess::retireSoftware(
                             session, *software, job.request, job.proof);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+                        retirement.retireCalled = true;
+                        retirement.retireApplied =
+                            retired && retired->status == StepStatus::applied;
+                        retirement.referencesReleased =
+                            retired && retired->effects.referencesReleased;
+#endif
                         if (session.state() == SessionState::Empty) {
                             prepared.reset();
                             candidate.reset();
@@ -797,26 +955,69 @@ struct SessionOwner final {
                         }
                         return reply(std::move(retired));
                     } else if constexpr (std::is_same_v<T, SessionSoftwareClose>) {
-                        auto binding =
-                            HostCoordinationAccess::validateControlBinding(session, job.request);
-                        if (!binding)
-                            return core::unexpected(binding.error());
-                        if (job.request.key.phase != StepPhase::close ||
-                            job.proof.request.kind != ControlKind::close ||
-                            job.request.target != job.proof.request.target ||
-                            session.state() != SessionState::Empty)
-                            return core::unexpected(
-                                workerError("device_pending", "Software is not retired"));
-                        auto retiredKey = job.request.key;
-                        retiredKey.phase = StepPhase::retire;
-                        auto retired = software->query(retiredKey);
-                        if (!retired || retired->status != StepStatus::applied ||
-                            !retired->effects.referencesReleased)
-                            return core::unexpected(workerError(
-                                "device_pending", "Software retirement is unconfirmed"));
-                        candidate.reset();
-                        prepared.reset();
-                        return reply(simpleStep(job.request, true));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+                        auto& closeStep = rpaClose.closeStep;
+                        const auto identity = proofIdentity(job.proof);
+                        if (closeStep.identity.scope != identity.scope ||
+                            closeStep.identity.operationId != identity.operationId ||
+                            closeStep.identity.decisionOrdinal != identity.decisionOrdinal)
+                            closeStep = {};
+                        closeStep.identity = identity;
+                        closeStep.closeAttempted = true;
+                        closeStep.closeApplied = false;
+                        closeStep.closeState = rpa::CloseStepState::resultPending;
+                        auto execute = [&]() -> core::Result<SessionReply> {
+#endif
+                            auto binding = HostCoordinationAccess::validateControlProof(
+                                session, job.request, job.proof);
+                            if (!binding)
+                                return core::unexpected(binding.error());
+                            if (job.proof.request.kind == ControlKind::close &&
+                                job.proof.status == ControlStatus::failed)
+                                return core::unexpected(workerError(
+                                    "control_pending", "Failed Close cannot apply software close"));
+                            if (job.request.key.phase != StepPhase::close ||
+                                job.proof.request.kind != ControlKind::close ||
+                                job.request.target != job.proof.request.target ||
+                                session.state() != SessionState::Empty)
+                                return core::unexpected(
+                                    workerError("device_pending", "Software is not retired"));
+                            auto retiredKey = job.request.key;
+                            retiredKey.phase = StepPhase::retire;
+                            auto retired = software->query(retiredKey);
+                            if (!retired || retired->status != StepStatus::applied ||
+                                !retired->effects.referencesReleased)
+                                return core::unexpected(workerError(
+                                    "device_pending", "Software retirement is unconfirmed"));
+                            candidate.reset();
+                            prepared.reset();
+                            auto closed = simpleStep(job.request, true);
+                            return reply(std::move(closed));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+                        };
+                        try {
+                            auto result = execute();
+                            const auto* receipt =
+                                result ? std::get_if<StepReceipt>(&*result) : nullptr;
+                            closeStep.closeApplied =
+                                receipt && receipt->status == StepStatus::applied;
+                            closeStep.closeState = closeStep.closeApplied
+                                                       ? rpa::CloseStepState::applied
+                                                       : rpa::CloseStepState::rejected;
+                            if (!result && closeStep.firstErrorCode[0] == '\0')
+                                rpa::copyCode(closeStep.firstErrorCode, result.error().code());
+                            else if (receipt && receipt->cause &&
+                                     closeStep.firstErrorCode[0] == '\0')
+                                rpa::copyCode(closeStep.firstErrorCode, receipt->cause->code());
+                            return result;
+                        } catch (...) {
+                            closeStep.closeState = rpa::CloseStepState::rejected;
+                            if (closeStep.firstErrorCode[0] == '\0')
+                                rpa::copyCode(closeStep.firstErrorCode,
+                                              "host.rpa.capacity_exceeded");
+                            throw;
+                        }
+#endif
                     }
                 }
             },
@@ -864,7 +1065,10 @@ auto SessionWorker::poll(std::uint64_t id)
     return channel_.poll(id);
 }
 auto SessionWorker::acknowledge(std::uint64_t id) -> core::Result<void> {
-    return channel_.ack(id);
+    auto result = channel_.ack(id);
+    if (result && configuration_.replyAcknowledged)
+        configuration_.replyAcknowledged(id);
+    return result;
 }
 auto SessionWorker::takeDelivery(std::uint64_t consumer, std::uint64_t request)
     -> core::Result<std::optional<FrameEnvelope>> {
@@ -1047,6 +1251,8 @@ void SessionWorker::run() noexcept {
                             ? "SessionCoherentAdvanceDispatch"
                             : "SessionDispatch",
                         0, 0, next->first};
+                    if (configuration_.beforeDispatch)
+                        configuration_.beforeDispatch(next->first, next->second);
                     channel_.complete(next->first, owner.dispatch(std::move(next->second)));
                 } catch (...) {
                     channel_.complete(

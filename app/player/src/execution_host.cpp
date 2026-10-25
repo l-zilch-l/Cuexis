@@ -9,6 +9,9 @@
 namespace cuexis::player {
 using namespace playback;
 using namespace playback::detail;
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+namespace rpa = cuexis::internal::execution_diagnostics::rpa;
+#endif
 namespace {
 struct Failure {
     core::Error error;
@@ -52,7 +55,11 @@ ExecutionHost::ExecutionHost(presentation_renderer::IPresentationRenderer& rende
                              ExecutionHostOptions options, ExecutionHostPorts ports,
                              std::unique_ptr<SessionWorker> session)
     : renderer_(renderer), options_(std::move(options)), ports_(std::move(ports)),
-      session_(std::move(session)) {}
+      session_(std::move(session)) {
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpaSeek_.timerCostNs = rpa::calibrateTimer();
+#endif
+}
 auto ExecutionHost::create(presentation_renderer::IPresentationRenderer& renderer,
                            ExecutionHostOptions options, ExecutionHostPorts ports)
     -> core::Result<std::unique_ptr<ExecutionHost>> try {
@@ -94,12 +101,31 @@ void ExecutionHost::checkOwner() const {
     if (closed_)
         throw Failure{error("owner_closed")};
 }
+ExecutionHostLifetime::~ExecutionHostLifetime() {
+    while (host_ && host_->state() != HostState::closed) {
+        const auto result = host_->close();
+        if (!result && host_->state() != HostState::closed)
+            host_->waitFor(std::chrono::milliseconds{1});
+    }
+    host_.reset();
+}
 void ExecutionHost::pump(std::chrono::steady_clock::time_point deadline) {
     if (pumpCount_ == UINT64_MAX)
         throw Failure{error("capacity_exceeded")};
     ++pumpCount_;
     if (ports_.pumpMain)
         take(ports_.pumpMain());
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    if (closePhase_ != ExecutionClosePhase::idle && !rpaClose_.closedFlag) {
+        ++rpaClose_.pumpSamples;
+        const auto observedState =
+            host_ ? static_cast<std::uint8_t>(host_->state()) : std::uint8_t{};
+        if (observedState == static_cast<std::uint8_t>(HostState::closing))
+            ++rpaClose_.pumpClosing;
+        else if (observedState == static_cast<std::uint8_t>(HostState::closed))
+            ++rpaClose_.pumpClosed;
+    }
+#endif
     auto duration = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
         std::chrono::milliseconds{1});
     if (deadline != std::chrono::steady_clock::time_point::max()) {
@@ -113,40 +139,74 @@ void ExecutionHost::pump(std::chrono::steady_clock::time_point deadline) {
     else if (audioJob_)
         audio_->waitForReply(*audioJob_, duration);
 }
-auto ExecutionHost::session(SessionCommand command, bool control) -> SessionReply {
+auto ExecutionHost::sessionCommand(SessionCommand command, bool control) -> SessionReply {
     if (sessionJob_)
         throw Failure{error("control_pending")};
     sessionJob_ = take(session_->post(std::move(command), control));
+    sessionDeadline_ = closeNow() + options_.replyDeadline;
     return awaitSession();
+}
+auto ExecutionHost::closeNow() const -> std::chrono::steady_clock::time_point {
+    if (closePhase_ != ExecutionClosePhase::idle && ports_.closeNow)
+        return ports_.closeNow();
+    return std::chrono::steady_clock::now();
+}
+void ExecutionHost::closeBoundary(ExecutionClosePhase phase) {
+    if (ports_.beforeClosePhase)
+        take(ports_.beforeClosePhase(phase));
 }
 auto ExecutionHost::awaitSession() -> SessionReply {
     internal::execution_diagnostics::Trace diagnostic{"awaitSession", 0, 0,
                                                       sessionJob_.value_or(0)};
     if (!sessionJob_)
         throw Failure{error("control_pending")};
-    const auto deadline = std::chrono::steady_clock::now() + options_.replyDeadline;
+    const auto deadline = closePhase_ == ExecutionClosePhase::idle
+                              ? sessionDeadline_
+                              : std::min(sessionDeadline_, closeDeadline_);
     for (;;) {
         auto result = take(session_->poll(*sessionJob_));
         if (result) {
+            if (closePhase_ == ExecutionClosePhase::awaitAcceptance)
+                closeBoundary(ExecutionClosePhase::acceptReplyReady);
             take(session_->acknowledge(*sessionJob_));
             sessionJob_.reset();
             if (!*result)
                 pendingControlAccept_ = false;
             return take(std::move(*result));
         }
-        if (std::chrono::steady_clock::now() >= deadline) {
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        const auto waitStarted = rpa::nowUs();
+#endif
+        if (closeNow() >= deadline) {
+            pump(deadline);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+            rpa::seekWait(rpa::seekPhaseSink,
+                          rpa::seekWaitReply | rpa::seekWaitDeadline |
+                              (session_->exited() ? rpa::seekWaitExited : 0),
+                          rpa::nowUs() - waitStarted);
+#endif
             diagnostic.emit("deadline");
             diagnostic.emit(session_->exited() ? "worker-exited" : "worker-running");
             throw Failure{error("control_pending")};
         }
         pump(deadline);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        rpa::seekWait(rpa::seekPhaseSink, rpa::seekWaitReply | rpa::seekWaitPump,
+                      rpa::nowUs() - waitStarted);
+#endif
     }
 }
 auto ExecutionHost::audio(AudioWorkerCommand command) -> AudioWorkerReply {
     if (!audio_ || audioJob_)
         throw Failure{error("control_pending")};
     audioJob_ = take(audio_->post(std::move(command), true));
-    const auto deadline = std::chrono::steady_clock::now() + options_.replyDeadline;
+    audioDeadline_ = closeNow() + options_.replyDeadline;
+    return awaitAudio();
+}
+auto ExecutionHost::awaitAudio() -> AudioWorkerReply {
+    const auto deadline = closePhase_ == ExecutionClosePhase::idle
+                              ? audioDeadline_
+                              : std::min(audioDeadline_, closeDeadline_);
     for (;;) {
         auto result = take(audio_->poll(*audioJob_));
         if (result) {
@@ -154,8 +214,10 @@ auto ExecutionHost::audio(AudioWorkerCommand command) -> AudioWorkerReply {
             audioJob_.reset();
             return take(std::move(*result));
         }
-        if (std::chrono::steady_clock::now() >= deadline)
+        if (closeNow() >= deadline) {
+            pump(deadline);
             throw Failure{error("control_pending")};
+        }
         pump(deadline);
     }
 }
@@ -212,6 +274,7 @@ void ExecutionHost::postControl() {
     if (sessionJob_)
         throw Failure{error("control_pending")};
     sessionJob_ = take(session_->post(SessionAcceptControl{control_}, true));
+    sessionDeadline_ = closeNow() + options_.replyDeadline;
     pendingControlAccept_ = true;
     ++operation_;
 }
@@ -237,16 +300,18 @@ void ExecutionHost::observed(const StepReceipt& receipt) {
     if (receipt.status != StepStatus::applied)
         throw Failure{receipt.cause.value_or(error("device_pending"))};
 }
-void ExecutionHost::audioStep(AudioWorkerCommandKind kind, StepPhase phase) {
+auto ExecutionHost::audioStep(AudioWorkerCommandKind kind, StepPhase phase) -> StepReceipt {
     if (!control_.participants[2])
-        return;
+        return {};
     AudioWorkerCommand command;
     command.kind = kind;
     command.step = step(Participant::audio, phase);
-    auto result = audio(std::move(command));
+    auto result = closePhase_ != ExecutionClosePhase::idle && audioJob_ ? awaitAudio()
+                                                                        : audio(std::move(command));
     if (!result.step)
         throw Failure{error("message_conflict")};
     observed(*result.step);
+    return *result.step;
 }
 void ExecutionHost::softwarePrepared() {
     observed(value<StepReceipt>(
@@ -320,6 +385,8 @@ auto ExecutionHost::revokeRetained() -> core::Result<void> try {
     return core::unexpected(error("capacity_exceeded"));
 }
 void ExecutionHost::failed() noexcept {
+    if (closePhase_ != ExecutionClosePhase::idle)
+        return;
     suspended_ = true;
     if (host_) {
         auto result = host_->suspend(control_.operationId);
@@ -439,7 +506,10 @@ void ExecutionHost::flush(const ClockObservation& clock, bool normalPrefix) {
     }
     auto deliveries = take(capture_->pending());
     for (const auto& delivery : deliveries) {
-        static_cast<void>(session(SessionCaptureDelivery{delivery, clock}, false));
+        if (closePhase_ != ExecutionClosePhase::idle)
+            static_cast<void>(closeSession(SessionCaptureDelivery{delivery, clock}));
+        else
+            static_cast<void>(session(SessionCaptureDelivery{delivery, clock}, false));
         take(capture_->acknowledge(delivery.context, delivery.deliverySequence));
     }
 }
@@ -854,12 +924,37 @@ auto ExecutionHost::seek(const GameplayReplay& archive, const GameplayReplayCut&
     -> core::Result<void> try {
     checkOwner();
     Busy operation{busy_};
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    // The worker ledger belongs to the previous seek; harvesting it here keeps this seek's
+    // envelope free of the observation round trip.
+    rpaSeekFetch();
+    rpa::SeekEnvelope rpaEnvelope{&rpaSeek_};
+#endif
+    StepTarget target;
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpa::SeekScope phase{&rpaSeek_, rpa::SeekPhase::s0HostIdentity};
+#endif
     if (suspended_ || state() != HostState::paused || !capture_ || !cut_ || !source)
         throw Failure{error("control_pending")};
     if (context_.runEpoch == UINT64_MAX || context_.clockSegment == UINT64_MAX)
         throw Failure{error("capacity_exceeded")};
     auto encoded = take(archive.toBytes());
-    StepTarget target;
+    target.archiveIdentity = PreparedSemanticIdentity{core::detail::sha256(encoded)};
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    // The public Replay handle does not expose its sealed identity, so the fact that the
+    // identity is unknown is recorded separately from the identity value (zero).
+    rpa::seekSet(rpaSeek_, rpa::SeekPhase::s0HostIdentity, &rpa::SeekWork::sealedIdentityKnown, 0);
+    rpa::seekSet(rpaSeek_, rpa::SeekPhase::s0HostIdentity, &rpa::SeekWork::sealedIdentityPresent,
+                 archive.valid() ? 1 : 0);
+    rpa::seekSet(rpaSeek_, rpa::SeekPhase::s0HostIdentity, &rpa::SeekWork::archiveBytes,
+                 static_cast<std::uint64_t>(encoded.size()));
+    rpa::seekAdd(rpaSeek_, rpa::SeekPhase::s0HostIdentity, &rpa::SeekWork::encodeCalls);
+    // toBytes() materializes one owning byte vector; the digest reads it without another copy.
+    rpa::seekAdd(rpaSeek_, rpa::SeekPhase::s0HostIdentity, &rpa::SeekWork::encodeAllocations);
+    rpa::seekAdd(rpaSeek_, rpa::SeekPhase::s0HostIdentity, &rpa::SeekWork::encodeCopies);
+#endif
+    const auto mapped =
+        take(RealtimeClock::seekPosition(options_.realtime->mapping, horizon.value));
     target.candidateId = candidate_->candidateId;
     target.tick = *cut_;
     target.pauseEpoch = pauseEpoch_;
@@ -867,29 +962,43 @@ auto ExecutionHost::seek(const GameplayReplay& archive, const GameplayReplayCut&
     target.seekCompleteRecords = cut.completeRecords;
     target.seekPartialHorizon =
         cut.partialHorizon ? std::optional{cut.partialHorizon->value} : std::nullopt;
-    target.archiveIdentity = PreparedSemanticIdentity{core::detail::sha256(encoded)};
     target.nextContext = context_;
     ++target.nextContext->clockSegment;
     ++target.nextContext->runEpoch;
     ++target.nextContext->controlSequence;
     target.audioClip = clip_;
-    const auto mapped =
-        take(RealtimeClock::seekPosition(options_.realtime->mapping, horizon.value));
     target.audioPositionMs =
         static_cast<double>(static_cast<long double>(mapped.sourceUs.numerator) /
                             mapped.sourceUs.denominator / 1000.0L);
+    const GameplayExecutionContext next{context_.sessionScope, target.nextContext->clockSegment,
+                                        target.nextContext->runEpoch};
+    SessionSeek seekRequest;
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpa::SeekScope seekS1{&rpaSeek_, rpa::SeekPhase::s1HostProtocol};
+#endif
     begin(ControlKind::seek, std::move(target), {true, true, bool(audio_), true});
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpa::seekSet(rpaSeek_, rpa::SeekPhase::s1HostProtocol, &rpa::SeekWork::operationId,
+                 control_.operationId);
+    rpa::seekSet(rpaSeek_, rpa::SeekPhase::s1HostProtocol, &rpa::SeekWork::generation,
+                 context_.runEpoch);
+    rpa::seekSet(rpaSeek_, rpa::SeekPhase::s1HostProtocol, &rpa::SeekWork::participants,
+                 audio_ ? 4 : 3);
+    // One prepare/fence per participating stage: capture, software, renderer, audio.
+    rpa::seekSet(rpaSeek_, rpa::SeekPhase::s1HostProtocol, &rpa::SeekWork::prepareCalls,
+                 audio_ ? 4 : 3);
+    rpa::seekSet(rpaSeek_, rpa::SeekPhase::s1HostProtocol, &rpa::SeekWork::fenceCalls,
+                 audio_ ? 4 : 3);
+    rpa::seekSet(rpaSeek_, rpa::SeekPhase::s1HostProtocol, &rpa::SeekWork::activateCalls,
+                 audio_ ? 3 : 2);
+#endif
     observed(take(capture_->prepare(step(Participant::capture, StepPhase::prepare))));
     softwarePrepared();
     observed(take(rendererOwner_->prepareActive(step(Participant::renderer, StepPhase::prepare))));
     audioStep(AudioWorkerCommandKind::prepareActive, StepPhase::prepare);
-    const GameplayExecutionContext next{context_.sessionScope,
-                                        control_.target.nextContext->clockSegment,
-                                        control_.target.nextContext->runEpoch};
     observed(take(capture_->resumeRoute(step(Participant::capture, StepPhase::resumeRoute), next)));
     routePaused_ = false;
     observed(take(rendererOwner_->fence(step(Participant::renderer, StepPhase::fence))));
-    SessionSeek seekRequest;
     observed(take(capture_->fence(step(Participant::capture, StepPhase::fence))));
     audioStep(AudioWorkerCommandKind::fence, StepPhase::fence);
     observed(value<StepReceipt>(
@@ -903,10 +1012,18 @@ auto ExecutionHost::seek(const GameplayReplay& archive, const GameplayReplayCut&
     seekRequest.runtimeFrame = {static_cast<double>(mapped.presentationTick) / 1000.0, 0,
                                 next.clockSegment};
     observed(value<StepReceipt>(session(std::move(seekRequest))));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    seekS1.finish();
+#endif
+    // Activation/finish are the host tail of the seek. The publish/swap work itself is recorded
+    // at its real owner in playback_session.cpp; counting it here would double it.
     observed(take(rendererOwner_->activate(step(Participant::renderer, StepPhase::activate))));
     audioStep(AudioWorkerCommandKind::activate, StepPhase::activate);
     finish();
     take(capture_->enableOrdinary(proof()));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpa::SeekScope s6{&rpaSeek_, rpa::SeekPhase::s6ClockPresent};
+#endif
     // Explicit Seek can move the clock backwards; create a fresh mapper for its new epoch.
     tail_.reset();
     tailFrozen_ = false;
@@ -918,8 +1035,23 @@ auto ExecutionHost::seek(const GameplayReplay& archive, const GameplayReplayCut&
     waitingAdvance_.reset();
     cut_.reset();
     lastObservedTick_ = horizon.value;
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpa::seekSet(rpaSeek_, rpa::SeekPhase::s6ClockPresent, &rpa::SeekWork::clockValid, 1);
+    rpa::seekSet(rpaSeek_, rpa::SeekPhase::s6ClockPresent, &rpa::SeekWork::targetGeneration,
+                 context_.clockSegment);
+    rpa::seekSet(rpaSeek_, rpa::SeekPhase::s6ClockPresent, &rpa::SeekWork::targetPresentationTick,
+                 static_cast<std::uint64_t>(mapped.presentationTick));
+    rpa::seekSet(rpaSeek_, rpa::SeekPhase::s6ClockPresent, &rpa::SeekWork::endToEndUs,
+                 static_cast<std::uint64_t>(rpa::nowUs() - rpaSeek_.seekStartedUs));
+    s6.finish();
+    rpa::SeekScope inspectPhase{&rpaSeek_, rpa::SeekPhase::s1HostProtocol};
+#endif
     reconciliationOrdinal_ =
         value<SessionInspection>(session(SessionInspect{})).reconciliationOrdinal.value_or(0);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpa::seekSet(rpaSeek_, rpa::SeekPhase::s1HostProtocol, &rpa::SeekWork::confirmCalls, 1);
+    inspectPhase.finish();
+#endif
     return {};
 } catch (const Failure& failure) {
     failed();
@@ -931,13 +1063,35 @@ auto ExecutionHost::seek(const GameplayReplay& archive, const GameplayReplayCut&
 void ExecutionHost::cleanup() {
     // A lost transport reply is queried under its original ID before any retirement. Timeout
     // never manufactures Cancel or authorizes an alternative operation.
-    const auto deadline = std::chrono::steady_clock::now() + options_.replyDeadline;
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpaMark(rpa::CloseStage::cleanupEnter);
+    const auto cleanupStarted = rpa::nowUs();
+    const auto cleanupBudgetUs =
+        std::chrono::duration_cast<std::chrono::microseconds>(options_.replyDeadline).count();
+#endif
+    auto deadline = closePhase_ == ExecutionClosePhase::idle ? closeNow() + options_.replyDeadline
+                                                             : closeDeadline_;
+    if (sessionJob_)
+        deadline = std::min(deadline, closeOldSessionDeadline_.value_or(sessionDeadline_));
+    if (audioJob_)
+        deadline = std::min(deadline, closeOldAudioDeadline_.value_or(audioDeadline_));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpaMark(rpa::CloseStage::cleanupDeadline);
+#endif
+    const auto retainReplyError = [&](const core::Error& failure) {
+        if (!closeFirstError_)
+            closeFirstError_ = failure;
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        rpaCause(rpa::Reason::operationFailed, failure);
+#endif
+    };
     while (sessionJob_ || audioJob_) {
         if (sessionJob_) {
             auto result = take(session_->poll(*sessionJob_));
             if (result) {
                 take(session_->acknowledge(*sessionJob_));
                 sessionJob_.reset();
+                closeOldSessionDeadline_.reset();
                 if (*result) {
                     if (pendingControlAccept_) {
                         confirmControl(value<std::uint64_t>(std::move(**result)));
@@ -946,13 +1100,23 @@ void ExecutionHost::cleanup() {
                         finishTail(value<TailClockTransition>(std::move(**result)),
                                    *pendingTailProfile_);
                     } else if (const auto* receipt = std::get_if<StepReceipt>(&**result)) {
+                        if (receipt->cause)
+                            retainReplyError(*receipt->cause);
                         take(host_->observe(*receipt));
+                        if (receipt->status == StepStatus::applied &&
+                            receipt->request.key.participant == Participant::software)
+                            softwareGeneration_ = receipt->effects.generation;
                         if (receipt->request.key.phase == StepPhase::softwareCommit &&
                             receipt->status == StepStatus::applied)
                             take(host_->markSoftwareApplied());
-                    }
-                } else
+                    } else if (const auto* archive = std::get_if<GameplayReplay>(&**result))
+                        retainedArchive_ = *archive;
+                    else if (const auto* inspection = std::get_if<SessionInspection>(&**result))
+                        softwareGeneration_ = inspection->generation;
+                } else {
+                    retainReplyError(result->error());
                     pendingControlAccept_ = false;
+                }
             }
         }
         if (audioJob_) {
@@ -960,16 +1124,31 @@ void ExecutionHost::cleanup() {
             if (result) {
                 take(audio_->acknowledge(*audioJob_));
                 audioJob_.reset();
-                if (*result && (**result).step)
+                closeOldAudioDeadline_.reset();
+                if (*result && (**result).step) {
+                    if ((**result).step->cause)
+                        retainReplyError(*(**result).step->cause);
                     take(host_->observe(*(**result).step));
+                    if ((**result).step->status == StepStatus::applied)
+                        audioGeneration_ = (**result).step->effects.generation;
+                } else if (!*result)
+                    retainReplyError(result->error());
             }
         }
         if (!sessionJob_ && !audioJob_)
             break;
-        if (std::chrono::steady_clock::now() >= deadline)
+        pump(deadline);
+        if (closeNow() >= deadline)
             throw Failure{error("control_pending")};
-        pump();
     }
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpaMark(rpa::CloseStage::cleanupWait);
+    const auto cleanupElapsed = rpa::nowUs() - cleanupStarted;
+    rpaClose_.cleanupWaitUs += static_cast<std::uint64_t>(cleanupElapsed);
+    ++rpaClose_.cleanupWaitSamples;
+    rpa::addWait(rpaClose_, rpa::CloseStage::cleanupWait, cleanupElapsed,
+                 cleanupElapsed > cleanupBudgetUs);
+#endif
     if (!host_ || !control_.operationId)
         return;
     auto originalResult = host_->query(control_.operationId);
@@ -979,24 +1158,54 @@ void ExecutionHost::cleanup() {
         return;
     }
     auto original = std::move(*originalResult);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpaClose_.cleanupQueryStatus = static_cast<std::uint8_t>(original.status);
+#endif
     if (original.status == ControlStatus::complete || original.cleanupComplete)
         return;
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpaClose_.coordinatorBeforeSuspend = host_ ? static_cast<std::uint8_t>(host_->state()) : 0;
+    rpaClose_.cleanupSuspendCalled = true;
+    rpaMark(rpa::CloseStage::cleanupSuspend);
+#endif
     take(host_->suspend(control_.operationId));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpaClose_.coordinatorAfterSuspend = host_ ? static_cast<std::uint8_t>(host_->state()) : 0;
+#endif
     if (control_.kind == ControlKind::resume) {
         auto aborted = host_->abortResume();
         if (aborted && capture_)
             capture_->abortResume();
     }
     audioStep(AudioWorkerCommandKind::stop, StepPhase::stop);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpaMark(rpa::CloseStage::cleanupAudioStop);
+#endif
     audioStep(AudioWorkerCommandKind::isolate, StepPhase::isolate);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpaMark(rpa::CloseStage::cleanupAudioIsolate);
+#endif
     if (rendererOwner_)
         observed(take(rendererOwner_->retire(step(Participant::renderer, StepPhase::retire))));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpaMark(rpa::CloseStage::cleanupRendererRetire);
+#endif
     auto canceled = value<StepReceipt>(
         session(SessionCancelStep{step(Participant::software, StepPhase::softwareCommit)}));
     take(host_->observe(canceled));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpaMark(rpa::CloseStage::cleanupCancelStep);
+#endif
     observed(value<StepReceipt>(
         session(SessionSoftwareRetire{step(Participant::software, StepPhase::retire), proof()})));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpaMark(rpa::CloseStage::cleanupSoftwareRetire);
+    rpaCaptureFence(rpa::CloseObservationPart::cleanup);
+#endif
     take(host_->completeCleanup());
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpaMark(rpa::CloseStage::cleanupComplete);
+#endif
     const auto cleaned = proof();
     if (cleaned.finalizedContext)
         context_ = *cleaned.finalizedContext;
@@ -1024,30 +1233,109 @@ auto ExecutionHost::close() -> core::Result<void> try {
     if (closed_)
         return {};
     Busy operation{busy_};
-    cleanup();
-    retireRenderer();
-    pendingFrame_.reset();
-    retainedPresentation_ = {};
-    if (capture_ && !clockTransitionInputs_.empty()) {
-        for (const auto& queued : clockTransitionInputs_) {
-            auto kept = capture_->capture(queued.first, queued.second);
-            if (!kept)
-                throw Failure{kept.error()};
-        }
-        clockTransitionInputs_.clear();
-        tailPreparing_ = false;
+    const bool first = closePhase_ == ExecutionClosePhase::idle;
+    if (first) {
+        const auto realStart = std::chrono::steady_clock::now();
+        const auto start = ports_.closeNow ? ports_.closeNow() : realStart;
+        // Translate an already-running transport deadline once; keep its remaining interval,
+        // including an already-expired deadline, without restarting the original request.
+        if (sessionJob_)
+            closeOldSessionDeadline_ = start + (sessionDeadline_ - realStart);
+        if (audioJob_)
+            closeOldAudioDeadline_ = start + (audioDeadline_ - realStart);
+        closeDeadline_ = start + std::chrono::milliseconds{1000};
+        closePhase_ = ExecutionClosePhase::cleanup;
     }
-    if (!host_) {
-        // No device candidate was published. Only local CPU/thread cleanup exists.
-        if (audio_)
-            audio_->requestShutdown();
-        session_->requestShutdown();
-    } else {
-        if (options_.realtime) {
-            auto archived = archive();
-            if (archived)
-                retainedArchive_ = *archived;
+    if (closeNow() > closeDeadline_)
+        closeBudgetExceeded_ = true;
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    constexpr auto budgetUs = std::int64_t{1000000};
+    if (first) {
+        rpaStage_ = rpa::CloseStage::none;
+        rpaClose_ = {};
+        rpaClose_.requestedUs =
+            std::chrono::duration_cast<std::chrono::microseconds>(
+                (closeDeadline_ - std::chrono::milliseconds{1000}).time_since_epoch())
+                .count();
+        rpaClose_.deadlineUs = rpaClose_.requestedUs + budgetUs;
+        rpaClose_.facadeBefore = static_cast<std::uint8_t>(state());
+    }
+    rpaMark(rpa::CloseStage::closeEnter);
+    ++rpaClose_.attempts;
+    if (rpaClose_.attempts > 1)
+        ++rpaClose_.reentries;
+    if (sessionJob_) {
+        rpaClose_.pendingSessionJobAtEntry = true;
+        rpaClose_.pendingJobOwner = 1;
+        rpaClose_.pendingJobKind = static_cast<std::uint8_t>(control_.kind);
+    } else if (audioJob_) {
+        rpaClose_.pendingAudioJobAtEntry = true;
+        rpaClose_.pendingJobOwner = 2;
+        rpaClose_.pendingJobKind = static_cast<std::uint8_t>(control_.kind);
+    }
+#endif
+    if (closePhase_ == ExecutionClosePhase::cleanup) {
+        closeBoundary(ExecutionClosePhase::cleanup);
+        cleanup();
+        closePhase_ = ExecutionClosePhase::revokeConsumer;
+    }
+    if (closePhase_ == ExecutionClosePhase::revokeConsumer) {
+        closeBoundary(ExecutionClosePhase::revokeConsumer);
+        if (consumer_) {
+            auto retiring = value<ConsumerRegistration>(
+                closeSession(SessionRevokeConsumer{consumer_->consumerId}));
+            closeConsumerReceipt_ = take(rendererGate_.revoke(retiring));
         }
+        pendingFrame_.reset();
+        retainedPresentation_ = {};
+        closePhase_ = ExecutionClosePhase::confirmConsumer;
+    }
+    if (closePhase_ == ExecutionClosePhase::confirmConsumer) {
+        closeBoundary(ExecutionClosePhase::confirmConsumer);
+        if (closeConsumerReceipt_)
+            static_cast<void>(closeSession(SessionConfirmConsumer{*closeConsumerReceipt_, true}));
+        consumer_.reset();
+        closePhase_ = ExecutionClosePhase::retainedInput;
+    }
+    if (closePhase_ == ExecutionClosePhase::retainedInput) {
+        closeBoundary(ExecutionClosePhase::retainedInput);
+        if (capture_ && !clockTransitionInputs_.empty()) {
+            for (const auto& queued : clockTransitionInputs_) {
+                auto kept = capture_->capture(queued.first, queued.second);
+                if (!kept)
+                    throw Failure{kept.error()};
+            }
+            clockTransitionInputs_.clear();
+            tailPreparing_ = false;
+        }
+
+        closePhase_ = ExecutionClosePhase::archive;
+    }
+    if (!host_ && closePhase_ == ExecutionClosePhase::archive)
+        closePhase_ = ExecutionClosePhase::shutdown;
+    if (closePhase_ == ExecutionClosePhase::archive) {
+        closeBoundary(ExecutionClosePhase::archive);
+        if (options_.realtime) {
+            try {
+                retainedArchive_ = value<GameplayReplay>(closeSession(SessionArchive{}));
+            } catch (const Failure& failure) {
+                if (sessionJob_)
+                    throw;
+                // No gameplay archive is available on an incompletely loaded session.
+                if (!closeFirstError_)
+                    closeFirstError_ = failure.error;
+            }
+        }
+        closePhase_ = ExecutionClosePhase::inspect;
+    }
+    if (closePhase_ == ExecutionClosePhase::inspect) {
+        closeBoundary(ExecutionClosePhase::inspect);
+        closeInspectionGeneration_ =
+            value<SessionInspection>(closeSession(SessionInspect{})).generation;
+        closePhase_ = ExecutionClosePhase::prepareTarget;
+    }
+    if (closePhase_ == ExecutionClosePhase::prepareTarget) {
+        closeBoundary(ExecutionClosePhase::prepareTarget);
         StepTarget target;
         target.candidateId = 0; // Explicitly retire all retained active/pending owner resources.
         target.audioClip = clip_;
@@ -1060,70 +1348,390 @@ auto ExecutionHost::close() -> core::Result<void> try {
             }
             target.pauseEpoch = pauseEpoch_;
         }
-        const bool audioParticipates = audio_ && !audio_->exited();
-        begin(ControlKind::close, std::move(target),
-              {bool(capture_), true, audioParticipates, gpuTouched_});
+        closeTarget_ = std::move(target);
+        closePhase_ = ExecutionClosePhase::prepareControl;
+    }
+    if (closePhase_ == ExecutionClosePhase::prepareControl) {
+        closeBoundary(ExecutionClosePhase::prepareControl);
+        prepareControl(ControlKind::close, *closeTarget_,
+                       {bool(capture_), true, bool(audio_ && !audio_->exited()), gpuTouched_},
+                       closeInspectionGeneration_);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        rpaMark(rpa::CloseStage::beginClose);
+#endif
+        closePhase_ = ExecutionClosePhase::postAcceptance;
+    }
+    if (closePhase_ == ExecutionClosePhase::postAcceptance) {
+        closeBoundary(ExecutionClosePhase::postAcceptance);
+        postControl();
+        closePhase_ = ExecutionClosePhase::awaitAcceptance;
+    }
+    if (closePhase_ == ExecutionClosePhase::awaitAcceptance) {
+        closeBoundary(ExecutionClosePhase::awaitAcceptance);
+        const auto decision = value<std::uint64_t>(awaitSession());
+        // Retain the decision independently of the acknowledged transport reply.
+        closeDecision_ = decision;
+        closePhase_ = ExecutionClosePhase::confirmAcceptance;
+    }
+    if (closePhase_ == ExecutionClosePhase::confirmAcceptance) {
+        closeBoundary(ExecutionClosePhase::confirmAcceptance);
+        confirmControl(closeDecision_);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        rpaSyncIdentity();
+        rpaClose_.identity.decisionOrdinal = proof().decisionOrdinal;
+        rpaClose_.identity.status = static_cast<std::uint8_t>(proof().status);
+        rpaClose_.firstDecisionOrdinal = rpaClose_.identity.decisionOrdinal;
+        rpaClose_.closeTick = static_cast<std::uint64_t>(control_.target.tick.value_or(0));
+#endif
+        closePhase_ = ExecutionClosePhase::cut;
+    }
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    const bool audioParticipates = host_ && control_.participants[2];
+#endif
+    if (closePhase_ == ExecutionClosePhase::cut) {
+        closeBoundary(ExecutionClosePhase::cut);
         if (capture_)
             observed(take(capture_->cut(step(Participant::capture, StepPhase::cut))));
-        if (capture_ && capture_->fault().reason == FaultSlot::Reason::none && lastObservation_) {
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        if (capture_) {
+            rpaMark(rpa::CloseStage::captureCut);
+            rpaClose_.captureTerminal = 1; // cut crossed
+        }
+#endif
+
+        closePhase_ = ExecutionClosePhase::flush;
+    }
+    if (closePhase_ == ExecutionClosePhase::flush) {
+        closeBoundary(ExecutionClosePhase::flush);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        const bool injectedFlushFailure = rpa::takeFlushFault();
+#else
+        constexpr bool injectedFlushFailure = false;
+#endif
+        if (capture_ && capture_->fault().reason == FaultSlot::Reason::none &&
+            (lastObservation_ || injectedFlushFailure)) {
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+            const auto flushStarted = rpa::nowUs();
+#endif
             try {
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+                if (injectedFlushFailure)
+                    throw Failure{error("capacity_exceeded")};
+#endif
                 flush(*lastObservation_, false);
             } catch (const Failure& failure) {
                 if (sessionJob_)
                     throw;
                 closeDeliveryError_ = failure.error;
+                if (!closeFirstError_)
+                    closeFirstError_ = failure.error;
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+                // The first delivery failure happens inside flush(), before any later mark, so
+                // attribute it to closeFlush instead of the preceding captureCut boundary.
+                rpaStage_ = rpa::CloseStage::closeFlush;
+                rpaCause(rpa::Reason::deliveryFailed, failure.error);
+                rpaClose_.coordinatorBeforeSuspend =
+                    host_ ? static_cast<std::uint8_t>(host_->state()) : 0;
+                rpaMark(rpa::CloseStage::closeSuspend);
+#endif
                 take(host_->suspend(control_.operationId));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+                rpaClose_.coordinatorAfterSuspend =
+                    host_ ? static_cast<std::uint8_t>(host_->state()) : 0;
+#endif
                 // Actual undelivered records remain in D1 and the owning Close export.
                 // Software retirement below forbids future admission; no ACK is fabricated.
             }
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+            const auto flushElapsed = rpa::nowUs() - flushStarted;
+            rpa::addWait(rpaClose_, rpa::CloseStage::closeFlush, flushElapsed,
+                         flushElapsed > budgetUs);
+#endif
         }
+
+        closePhase_ = ExecutionClosePhase::audioStop;
+    }
+    if (closePhase_ == ExecutionClosePhase::audioStop) {
+        closeBoundary(ExecutionClosePhase::audioStop);
         audioStep(AudioWorkerCommandKind::stop, StepPhase::stop);
-        audioStep(AudioWorkerCommandKind::isolate, StepPhase::isolate);
-        observed(value<StepReceipt>(session(
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        rpaMark(rpa::CloseStage::closeAudioStop);
+        rpaClose_.audioStopCalled = audioParticipates;
+#endif
+
+        closePhase_ = ExecutionClosePhase::audioIsolate;
+    }
+    if (closePhase_ == ExecutionClosePhase::audioIsolate) {
+        closeBoundary(ExecutionClosePhase::audioIsolate);
+        {
+            const auto isolated = audioStep(AudioWorkerCommandKind::isolate, StepPhase::isolate);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+            rpaMark(rpa::CloseStage::closeAudioIsolate);
+            rpaClose_.audioIsolateCalled = audioParticipates;
+            rpaClose_.audioCallbackIsolated =
+                audioParticipates && isolated.effects.callbackIsolated;
+#else
+            static_cast<void>(isolated);
+#endif
+        }
+
+        closePhase_ = ExecutionClosePhase::softwareRetire;
+    }
+    if (closePhase_ == ExecutionClosePhase::softwareRetire) {
+        closeBoundary(ExecutionClosePhase::softwareRetire);
+        observed(value<StepReceipt>(closeSession(
             SessionSoftwareRetire{step(Participant::software, StepPhase::retire), proof()})));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        rpaMark(rpa::CloseStage::closeSoftwareRetire);
+        rpaClose_.softwareRetired = true;
+        rpaClose_.softwareTerminal = 1;
+        rpaCaptureFence(rpa::CloseObservationPart::closeRetire);
+#endif
+
+        closePhase_ = ExecutionClosePhase::rendererRetire;
+    }
+    if (closePhase_ == ExecutionClosePhase::rendererRetire) {
+        closeBoundary(ExecutionClosePhase::rendererRetire);
         if (gpuTouched_)
             observed(take(rendererOwner_->retire(step(Participant::renderer, StepPhase::retire))));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        rpaMark(rpa::CloseStage::closeRendererRetire);
+        rpaClose_.rendererRetired = gpuTouched_;
+        rpaClose_.rendererTerminal = gpuTouched_ ? 1 : 0;
+#endif
+
+        closePhase_ = ExecutionClosePhase::audioRetire;
+    }
+    if (closePhase_ == ExecutionClosePhase::audioRetire) {
+        closeBoundary(ExecutionClosePhase::audioRetire);
         audioStep(AudioWorkerCommandKind::retire, StepPhase::retire);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        rpaMark(rpa::CloseStage::closeAudioRetire);
+        rpaClose_.audioRetireCalled = audioParticipates;
+        rpaClose_.audioTerminal = audioParticipates ? 1 : 0;
+#endif
+
+        closePhase_ = ExecutionClosePhase::exportEvidence;
+    }
+    if (closePhase_ == ExecutionClosePhase::exportEvidence) {
+        closeBoundary(ExecutionClosePhase::exportEvidence);
         if (capture_) {
-            closeEvidence_ = take(capture_->exportCloseEvidence());
-            retained_ = closeEvidence_->pending();
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+            try {
+#endif
+                if (!closeEvidence_)
+                    closeEvidence_ = take(capture_->exportCloseEvidence());
+                retained_ = closeEvidence_->pending();
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+            } catch (const Failure& failure) {
+                // Export allocates the D1 copy. A capacity failure is attributed here and then
+                // rethrown unchanged, so the caller sees exactly the same error as before.
+                rpaStage_ = rpa::CloseStage::exportEvidence;
+                rpaCause(rpa::Reason::operationFailed, failure.error);
+                throw;
+            } catch (...) {
+                rpaStage_ = rpa::CloseStage::exportEvidence;
+                rpa::firstCause(rpaClose_, rpa::Reason::operationFailed, rpaStage_, "");
+                throw;
+            }
+#endif
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+            rpaMark(rpa::CloseStage::exportEvidence);
+            rpaClose_.evidenceDeliveries =
+                static_cast<std::uint32_t>(closeEvidence_->pending().size());
+            for (const auto& delivery : closeEvidence_->pending()) {
+                if (const auto* batch = std::get_if<GameplayClosedBatch>(&delivery.payload)) {
+                    rpaClose_.evidenceMembers += batch->members.size();
+                    if (!rpaClose_.unackedFirstTick)
+                        rpaClose_.unackedFirstTick =
+                            static_cast<std::uint64_t>(batch->originalTick.value);
+                    rpaClose_.unackedLastTick =
+                        static_cast<std::uint64_t>(batch->observedTick.value);
+                }
+            }
+            rpaClose_.unackedDeliveries = rpaClose_.evidenceDeliveries;
+#endif
+        }
+        closePhase_ = ExecutionClosePhase::captureClose;
+    }
+    if (closePhase_ == ExecutionClosePhase::captureClose) {
+        closeBoundary(ExecutionClosePhase::captureClose);
+        if (capture_) {
             observed(take(capture_->close(step(Participant::capture, StepPhase::close), proof(),
                                           *closeEvidence_)));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+            rpaClose_.captureClosed = true;
+            rpaClose_.captureTerminal = 2;
+#endif
         }
-        observed(value<StepReceipt>(
-            session(SessionSoftwareClose{step(Participant::software, StepPhase::close), proof()})));
+
+        closePhase_ = ExecutionClosePhase::softwareClose;
+    }
+    if (closePhase_ == ExecutionClosePhase::softwareClose) {
+        closeBoundary(ExecutionClosePhase::softwareClose);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        rpaClose_.fence.closeState = rpa::CloseStepState::resultPending;
+        rpaClose_.fence.identity = rpaClose_.identity;
+#endif
+        const auto receipt = value<StepReceipt>(closeSession(
+            SessionSoftwareClose{step(Participant::software, StepPhase::close), proof()}));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        rpaClose_.fence.closeAttempted = true;
+        rpaClose_.fence.closeApplied = receipt.status == StepStatus::applied;
+        rpaClose_.fence.closeState = rpaClose_.fence.closeApplied ? rpa::CloseStepState::applied
+                                                                  : rpa::CloseStepState::rejected;
+        if (receipt.cause)
+            rpa::copyCode(rpaClose_.fence.firstErrorCode, receipt.cause->code());
+#endif
+        observed(receipt);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        rpaCaptureFence(rpa::CloseObservationPart::closeStep);
+        rpaMark(rpa::CloseStage::softwareClose);
+        rpaClose_.softwareClosed = true;
+        rpaClose_.softwareTerminal = 2;
+#endif
+
+        closePhase_ = ExecutionClosePhase::rendererClose;
+    }
+    if (closePhase_ == ExecutionClosePhase::rendererClose) {
+        closeBoundary(ExecutionClosePhase::rendererClose);
         if (gpuTouched_)
             observed(take(rendererOwner_->close(step(Participant::renderer, StepPhase::close))));
-        audioStep(AudioWorkerCommandKind::close, StepPhase::close);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        if (gpuTouched_) {
+            rpaClose_.rendererClosed = true;
+            rpaClose_.rendererTerminal = 2;
+        }
+#endif
+
+        closePhase_ = ExecutionClosePhase::audioClose;
+    }
+    if (closePhase_ == ExecutionClosePhase::audioClose) {
+        closeBoundary(ExecutionClosePhase::audioClose);
+        {
+            const auto audioClosed = audioStep(AudioWorkerCommandKind::close, StepPhase::close);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+            rpaClose_.audioTerminal =
+                audioParticipates ? (audioClosed.status == StepStatus::applied ? 2 : 1) : 0;
+#else
+            static_cast<void>(audioClosed);
+#endif
+        }
+
+        closePhase_ = ExecutionClosePhase::finish;
+    }
+    if (closePhase_ == ExecutionClosePhase::finish) {
+        closeBoundary(ExecutionClosePhase::finish);
         take(host_->finish());
-        auto completed = proof();
-        if (!completed.finalizedContext)
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        rpaMark(rpa::CloseStage::finish);
+        rpaClose_.finishCalled = true;
+        rpaClose_.coordinatorAtFinish = static_cast<std::uint8_t>(host_->state());
+#endif
+
+        closePhase_ = ExecutionClosePhase::completedProof;
+    }
+    if (closePhase_ == ExecutionClosePhase::completedProof) {
+        closeBoundary(ExecutionClosePhase::completedProof);
+        closeCompleted_ = proof();
+        if (!closeCompleted_->finalizedContext)
             throw Failure{error("message_conflict")};
-        context_ = *completed.finalizedContext;
-        static_cast<void>(session(SessionConfirmControl{completed}));
+        context_ = *closeCompleted_->finalizedContext;
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        rpaClose_.receiptStatus = static_cast<std::uint8_t>(closeCompleted_->status);
+        rpaClose_.identity.status = rpaClose_.receiptStatus;
+#endif
+        closePhase_ = ExecutionClosePhase::confirm;
+    }
+    if (closePhase_ == ExecutionClosePhase::confirm) {
+        closeBoundary(ExecutionClosePhase::confirm);
+        static_cast<void>(closeSession(SessionConfirmControl{*closeCompleted_}));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        rpaMark(rpa::CloseStage::confirm);
+        rpaClose_.confirmCalled = true;
+#endif
+
+        closePhase_ = ExecutionClosePhase::shutdown;
+    }
+    if (closePhase_ == ExecutionClosePhase::shutdown) {
+        closeBoundary(ExecutionClosePhase::shutdown);
         if (audio_)
             audio_->requestShutdown();
         session_->requestShutdown();
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        rpaMark(rpa::CloseStage::shutdown);
+        rpaClose_.shutdownRequested = true;
+#endif
+
+        closePhase_ = ExecutionClosePhase::exitWait;
     }
-    const auto deadline = std::chrono::steady_clock::now() + options_.replyDeadline;
-    while (!session_->exited() || (audio_ && !audio_->exited())) {
-        if (std::chrono::steady_clock::now() >= deadline)
-            throw Failure{error("control_pending")};
-        pump();
+    if (closePhase_ == ExecutionClosePhase::exitWait) {
+        closeBoundary(ExecutionClosePhase::exitWait);
+        while (!closeOwnersExited()) {
+            if (closeNow() >= closeDeadline_) {
+                pump(closeDeadline_);
+                throw Failure{error("control_pending")};
+            }
+            pump(closeDeadline_);
+        }
+        if (audio_)
+            take(audio_->joinExited());
+        take(session_->joinExited());
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        rpaMark(rpa::CloseStage::joins);
+        rpaClose_.workerExited = session_->exited();
+        rpaClose_.workerJoined = true;
+        rpaClose_.audioJoined = audio_ != nullptr;
+#endif
+        rendererOwner_.reset();
+        closed_ = true;
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        rpaMark(rpa::CloseStage::closed);
+        rpaClose_.closedFlag = true;
+        rpaClose_.facadeAfter = static_cast<std::uint8_t>(state());
+#endif
+        closePhase_ = ExecutionClosePhase::joined;
     }
-    if (audio_)
-        take(audio_->joinExited());
-    take(session_->joinExited());
-    rendererOwner_.reset();
-    closed_ = true;
+    if (closeNow() > closeDeadline_) {
+        closeBudgetExceeded_ = true;
+        throw Failure{error("control_pending")};
+    }
     return {};
 } catch (const Failure& failure) {
-    failed();
+    if (closePhase_ != ExecutionClosePhase::idle && closeNow() >= closeDeadline_)
+        closeBudgetExceeded_ = true;
+    if (closePhase_ != ExecutionClosePhase::idle && !closeFirstError_) {
+        try {
+            closeFirstError_ = failure.error;
+        } catch (...) {
+        }
+    }
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpaCause(rpa::Reason::operationFailed, failure.error);
+    if (closeBudgetExceeded_ && rpaClose_.firstOverBudget == rpa::CloseStage::none)
+        rpaClose_.firstOverBudget = rpaStage_;
+    if (rpaClose_.fence.closeState == rpa::CloseStepState::resultPending)
+        rpaCaptureFence(rpa::CloseObservationPart::closeStep);
+#endif
     return core::unexpected(failure.error);
 } catch (...) {
-    failed();
-    return core::unexpected(error("capacity_exceeded"));
+    const auto failure = error("capacity_exceeded");
+    if (closePhase_ != ExecutionClosePhase::idle && !closeFirstError_) {
+        try {
+            closeFirstError_ = failure;
+        } catch (...) {
+        }
+    }
+    if (closePhase_ != ExecutionClosePhase::idle && closeNow() >= closeDeadline_)
+        closeBudgetExceeded_ = true;
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpa::firstCause(rpaClose_, rpa::Reason::operationFailed, rpaStage_, failure.code());
+    if (rpaClose_.fence.closeState == rpa::CloseStepState::resultPending)
+        rpaCaptureFence(rpa::CloseObservationPart::closeStep);
+#endif
+    return core::unexpected(failure);
 }
+
 auto ExecutionHost::audioPublication() const -> core::Result<AudioPublication> {
     if (!owner_.isCurrent() || !audio_)
         return core::unexpected(error("device_pending"));
@@ -1150,9 +1758,121 @@ auto ExecutionHost::context() const noexcept -> const HostContext& {
     return context_;
 }
 auto ExecutionHost::state() const noexcept -> HostState {
-    return closed_      ? HostState::closed
-           : suspended_ ? HostState::suspended
-           : host_      ? host_->state()
-                        : HostState::controlPreparing;
+    return closed_                                    ? HostState::closed
+           : closePhase_ != ExecutionClosePhase::idle ? HostState::closing
+           : suspended_                               ? HostState::suspended
+           : host_                                    ? host_->state()
+                                                      : HostState::controlPreparing;
 }
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+void ExecutionHost::rpaMark(rpa::CloseStage stage) noexcept {
+    rpaStage_ = stage;
+    rpa::mark(rpaClose_, stage);
+}
+void ExecutionHost::rpaCause(rpa::Reason reason, const core::Error& failure) noexcept {
+    rpa::firstCause(rpaClose_, reason, rpaStage_, failure.code());
+}
+void ExecutionHost::rpaSyncIdentity() noexcept {
+    rpaClose_.identity.valid = true;
+    rpaClose_.identity.operationId = control_.operationId;
+    rpaClose_.identity.generation = control_.target.expectedGeneration;
+    rpaClose_.identity.candidateId = control_.target.candidateId;
+    rpaClose_.identity.scope = context_.sessionScope;
+    rpaClose_.identity.controlSequence = context_.controlSequence;
+    rpaClose_.identity.kind = static_cast<std::uint8_t>(control_.kind);
+    rpaClose_.identity.clockSegment = context_.clockSegment;
+    rpaClose_.identity.runEpoch = context_.runEpoch;
+    rpaClose_.identity.resourceGeneration = context_.resourceGeneration;
+    rpaClose_.identity.rendererGeneration = context_.rendererGeneration;
+    rpaClose_.identity.contentIdentity = context_.contentIdentity.sha256;
+}
+void ExecutionHost::rpaCaptureFence(rpa::CloseObservationPart part) noexcept {
+    // Diagnostic replies have their own IDs and destinations. They must never occupy the
+    // production in-flight slot or be consumed as a later Close step's typed reply.
+    if (sessionJob_)
+        return;
+    const auto harvest = [&]() -> bool {
+        auto result = take(session_->poll(*rpaObservationJob_));
+        if (!result)
+            return false;
+        take(session_->acknowledge(*rpaObservationJob_));
+        rpaObservationJob_.reset();
+        const auto* observation =
+            *result ? std::get_if<rpa::OwnerCloseObservation>(&**result) : nullptr;
+        if (!observation) {
+            if (rpaObservationPart_ == rpa::CloseObservationPart::closeStep)
+                rpaClose_.fence.closeState = rpa::CloseStepState::observationMissing;
+            return true;
+        }
+        switch (rpaObservationPart_) {
+        case rpa::CloseObservationPart::cleanup:
+            rpaClose_.cleanupFence = observation->cleanup;
+            break;
+        case rpa::CloseObservationPart::closeRetire:
+            rpaClose_.closeRetireFence = observation->closeRetire;
+            break;
+        case rpa::CloseObservationPart::closeStep:
+            rpaClose_.fence = observation->closeStep;
+            break;
+        }
+        return true;
+    };
+    try {
+        if (rpaObservationJob_ && !harvest())
+            return;
+        if (closeNow() >= closeDeadline_)
+            return;
+        rpaObservationPart_ = part;
+        rpaObservationJob_ = take(session_->post(SessionRpaObservation{}, false));
+        // A diagnostic-only wait cap; production budget decisions use closeNow/closeDeadline.
+        const auto observationLimit =
+            std::chrono::steady_clock::now() + std::chrono::milliseconds{5};
+        while (!harvest()) {
+            if (closeNow() >= closeDeadline_ ||
+                std::chrono::steady_clock::now() >= observationLimit)
+                return;
+            session_->waitForReply(*rpaObservationJob_, std::chrono::milliseconds{1});
+        }
+    } catch (...) {
+        if (part == rpa::CloseObservationPart::closeStep)
+            rpaClose_.fence.closeState = rpa::CloseStepState::observationMissing;
+    }
+    rpaSeekFetch();
+}
+void ExecutionHost::rpaSeekFetch() noexcept {
+    // One control round trip outside every seek phase; its cost is recorded as perturbation.
+    const auto started = rpa::nowUs();
+    try {
+        if (closePhase_ != ExecutionClosePhase::idle) {
+            if (sessionJob_ || closeNow() >= closeDeadline_)
+                return;
+            if (!rpaSeekJob_)
+                rpaSeekJob_ = take(session_->post(SessionRpaSeekObservation{}, false));
+            const auto limit = std::chrono::steady_clock::now() + std::chrono::milliseconds{5};
+            for (;;) {
+                auto result = take(session_->poll(*rpaSeekJob_));
+                if (result) {
+                    take(session_->acknowledge(*rpaSeekJob_));
+                    rpaSeekJob_.reset();
+                    if (*result) {
+                        if (const auto* ledger = std::get_if<rpa::SeekLedger>(&**result))
+                            rpa::mergeSeek(rpaSeek_, *ledger);
+                    }
+                    break;
+                }
+                if (closeNow() >= closeDeadline_ || std::chrono::steady_clock::now() >= limit)
+                    break;
+                session_->waitForReply(*rpaSeekJob_, std::chrono::milliseconds{1});
+            }
+            rpa::seekFetch(rpaSeek_, rpa::nowUs() - started);
+            return;
+        }
+        auto reply = session(SessionRpaSeekObservation{}, false);
+        if (const auto* ledger = std::get_if<rpa::SeekLedger>(&reply))
+            rpa::mergeSeek(rpaSeek_, *ledger);
+    } catch (...) {
+    }
+    rpa::seekFetch(rpaSeek_, rpa::nowUs() - started);
+}
+#endif
 } // namespace cuexis::player

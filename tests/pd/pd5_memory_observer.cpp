@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <atomic>
+#include <bit>
 #include <chrono>
 #include <cstdlib>
 #include <cstring>
@@ -21,17 +22,26 @@
 namespace cuexis::internal::pd::memory {
 namespace {
 using Clock = std::chrono::steady_clock;
-constexpr std::uint64_t magic = 0x5044354d454d4f52ULL;
+constexpr std::uint32_t magicSignature = 0x5044354dU; // "PD5M"
 constexpr std::uint64_t maxCount = 2097152, maxRequested = 1073741824, maxStorage = 1342177280;
+// The header keeps its frozen 56-byte layout: the old 8-byte signature slot now
+// carries signature(32) | tag(16) | flags(16), so storage accounting is unchanged.
+constexpr std::uint64_t flagTagged = 1ULL;
+constexpr unsigned tagShift = 16, signatureShift = 32;
 struct Header final {
     Header* previous{};
     Header* next{};
     void* base{};
-    std::uint64_t signature{}, requested{}, charge{}, born{};
+    std::uint64_t packed{};
+    std::uint64_t requested{}, charge{}, born{};
 };
+static_assert(sizeof(Header) == 56, "observer header must keep its frozen size");
 std::atomic_flag lock = ATOMIC_FLAG_INIT;
 Header* first{};
 Snapshot totals{};
+thread_local std::uint16_t activeTag = untaggedCell;
+std::array<Cell, cellCapacity> cells;
+std::size_t usedCells{};
 struct Structure final {
     const char* name{};
     std::size_t peakCount{}, peakCapacity{};
@@ -51,6 +61,25 @@ auto now() noexcept -> std::uint64_t {
         std::chrono::duration_cast<std::chrono::microseconds>(Clock::now().time_since_epoch())
             .count());
 }
+auto packCell(std::uint16_t tag) noexcept -> std::uint64_t {
+    return (static_cast<std::uint64_t>(tag) << tagShift) | flagTagged;
+}
+auto unpackCell(std::uint64_t packed) noexcept -> std::uint16_t {
+    if (!(packed & flagTagged))
+        return untaggedCell;
+    const auto tag = static_cast<std::uint16_t>((packed >> tagShift) & 0xffffU);
+    return tag < cellCount ? tag : untaggedCell;
+}
+auto cellFor(std::uint16_t tag) noexcept -> Cell& {
+    auto& cell = cells[tag];
+    if (!cell.used) {
+        cell.used = true;
+        cell.owner = static_cast<std::uint8_t>(tag / domainCount);
+        cell.domain = static_cast<std::uint8_t>(tag % domainCount);
+        ++usedCells;
+    }
+    return cell;
+}
 } // namespace
 
 auto allocate(std::size_t bytes, std::size_t alignment) -> void* {
@@ -64,7 +93,13 @@ auto allocate(std::size_t bytes, std::size_t alignment) -> void* {
     const auto address = (reinterpret_cast<std::uintptr_t>(base) + sizeof(Header) + alignment - 1) &
                          ~(alignment - 1);
     auto* header = reinterpret_cast<Header*>(address - sizeof(Header));
-    *header = {nullptr, nullptr, base, magic, bytes, _msize(base), now()};
+    *header = {nullptr,
+               nullptr,
+               base,
+               (static_cast<std::uint64_t>(magicSignature) << signatureShift) | packCell(activeTag),
+               bytes,
+               _msize(base),
+               now()};
     {
         Guard guard;
         header->next = first;
@@ -79,6 +114,13 @@ auto allocate(std::size_t bytes, std::size_t alignment) -> void* {
         totals.peakStorageBytes = std::max(totals.peakStorageBytes, totals.storageBytes);
         totals.exceeded = totals.exceeded || totals.liveCount > maxCount ||
                           totals.requestedBytes > maxRequested || totals.storageBytes > maxStorage;
+        auto& cell = cellFor(unpackCell(header->packed));
+        ++cell.liveCount;
+        cell.requestedBytes += bytes;
+        cell.storageBytes += header->charge;
+        cell.peakLiveCount = std::max(cell.peakLiveCount, cell.liveCount);
+        cell.peakRequestedBytes = std::max(cell.peakRequestedBytes, cell.requestedBytes);
+        cell.peakStorageBytes = std::max(cell.peakStorageBytes, cell.storageBytes);
     }
     return reinterpret_cast<void*>(address);
 }
@@ -87,7 +129,7 @@ void release(void* pointer) noexcept {
         return;
     auto* header =
         reinterpret_cast<Header*>(reinterpret_cast<std::uintptr_t>(pointer) - sizeof(Header));
-    if (header->signature != magic)
+    if ((header->packed >> signatureShift) != magicSignature)
         std::terminate(); // Mixed allocator or corrupt lifetime record invalidates this process.
     {
         Guard guard;
@@ -100,7 +142,14 @@ void release(void* pointer) noexcept {
         --totals.liveCount;
         totals.requestedBytes -= header->requested;
         totals.storageBytes -= header->charge;
-        header->signature = 0;
+        const auto tag = unpackCell(header->packed);
+        if (tag < cellCount) {
+            auto& cell = cells[tag];
+            --cell.liveCount;
+            cell.requestedBytes -= header->requested;
+            cell.storageBytes -= header->charge;
+        }
+        header->packed = 0;
     }
     std::free(header->base);
 }
@@ -108,9 +157,55 @@ auto snapshot() noexcept -> Snapshot {
     Guard guard;
     auto result = totals;
     const auto stamp = now();
-    for (auto* block = first; block; block = block->next)
+    for (auto* block = first; block; block = block->next) {
         result.oldestAgeUs = std::max(result.oldestAgeUs, stamp - block->born);
+        const auto requested = block->requested;
+        const auto shift = requested ? std::min<std::size_t>(
+                                           static_cast<std::size_t>(std::bit_width(requested)) - 1,
+                                           sizeBucketCount - 1)
+                                     : 0;
+        ++result.sizeCount[shift];
+        result.sizeBytes[shift] += requested;
+    }
     return result;
+}
+auto partition() noexcept -> Partition {
+    Guard guard;
+    Partition result;
+    result.cells = cells;
+    result.usedCells = usedCells;
+    result.liveCount = totals.liveCount;
+    result.requestedBytes = totals.requestedBytes;
+    result.storageBytes = totals.storageBytes;
+    const auto stamp = now();
+    for (auto* block = first; block; block = block->next) {
+        const auto tag = unpackCell(block->packed);
+        auto& cell = result.cells[tag];
+        cell.oldestAgeUs = std::max(cell.oldestAgeUs, stamp - block->born);
+    }
+    for (std::size_t index = 0; index < cellCapacity; ++index) {
+        const auto& cell = result.cells[index];
+        if (!cell.used)
+            continue;
+        result.sumLiveCount += cell.liveCount;
+        result.sumRequestedBytes += cell.requestedBytes;
+        result.sumStorageBytes += cell.storageBytes;
+        if (index == untaggedCell)
+            result.untaggedLiveCount = cell.liveCount;
+    }
+    result.exact = result.sumLiveCount == result.liveCount &&
+                   result.sumRequestedBytes == result.requestedBytes &&
+                   result.sumStorageBytes == result.storageBytes;
+    return result;
+}
+TagScope::TagScope(std::uint8_t owner, std::uint8_t domain) noexcept : previous_(activeTag) {
+    activeTag = owner < ownerCount && domain < domainCount ? cellId(owner, domain) : untaggedCell;
+}
+TagScope::~TagScope() {
+    activeTag = previous_;
+}
+auto currentTag() noexcept -> std::uint16_t {
+    return activeTag;
 }
 void recordStructure(const char* name, std::size_t count, std::size_t capacity) noexcept {
     Guard guard;
@@ -161,6 +256,20 @@ void checkpoint(const char* label) {
               << ",\"exceeded\":" << (value.exceeded ? "true" : "false")
               << ",\"coverage\":\"all linked C++ new/delete including aligned/array/nothrow; "
                  "excludes direct malloc, SDL, driver and OS heaps\"}\n";
+    std::cout << "PD5_MEMORY_SIZE {\"schema\":\"pd5.memory.size.v1\",\"label\":\"" << label
+              << "\",\"unit\":\"requested_cpp_bytes\",\"buckets\":[";
+    bool firstBucket = true;
+    for (std::size_t shift = 0; shift < sizeBucketCount; ++shift) {
+        if (!value.sizeCount[shift])
+            continue;
+        if (!firstBucket)
+            std::cout << ',';
+        firstBucket = false;
+        std::cout << "{\"shift\":" << shift << ",\"upper\":" << (std::uint64_t{1} << shift)
+                  << ",\"count\":" << value.sizeCount[shift]
+                  << ",\"bytes\":" << value.sizeBytes[shift] << '}';
+    }
+    std::cout << "]}\n";
     for (const auto& row : copied)
         if (row.name)
             std::cout << "PD5_STRUCTURE {\"label\":\"" << label << "\",\"domain\":\"" << row.name
@@ -168,6 +277,37 @@ void checkpoint(const char* label) {
                       << ",\"peak_capacity\":" << row.peakCapacity
                       << ",\"scope\":\"per-instance high-water; bytes covered by overlapping "
                          "process_cpp_new envelope\"}\n";
+    const auto parts = partition();
+    for (std::size_t index = 0; index < cellCapacity; ++index) {
+        const auto& cell = parts.cells[index];
+        if (!cell.used || (!cell.liveCount && !cell.peakLiveCount))
+            continue;
+        std::cout << "PD5_MEMORY_DOMAIN {\"schema\":\"pd5.memory.domain.v1\",\"label\":\"" << label
+                  << "\",\"owner\":\"" << ownerNames[cell.owner] << "\",\"domain\":\""
+                  << domainNames[cell.domain] << "\",\"cell\":\"" << ownerNames[cell.owner] << '.'
+                  << domainNames[cell.domain] << "\",\"live_count\":" << cell.liveCount
+                  << ",\"requested_cpp_bytes\":" << cell.requestedBytes
+                  << ",\"crt_usable_storage_bytes\":" << cell.storageBytes
+                  << ",\"peak_live_count\":" << cell.peakLiveCount
+                  << ",\"peak_requested_cpp_bytes\":" << cell.peakRequestedBytes
+                  << ",\"peak_crt_usable_storage_bytes\":" << cell.peakStorageBytes
+                  << ",\"oldest_live_age_us\":" << cell.oldestAgeUs << "}\n";
+    }
+    std::cout << "PD5_MEMORY_PARTITION {\"schema\":\"pd5.memory.partition.v1\",\"label\":\"" << label
+              << "\",\"exact\":" << (parts.exact ? "true" : "false")
+              << ",\"sum_live_count\":" << parts.sumLiveCount
+              << ",\"global_live_count\":" << parts.liveCount
+              << ",\"sum_requested_cpp_bytes\":" << parts.sumRequestedBytes
+              << ",\"global_requested_cpp_bytes\":" << parts.requestedBytes
+              << ",\"sum_crt_usable_storage_bytes\":" << parts.sumStorageBytes
+              << ",\"global_crt_usable_storage_bytes\":" << parts.storageBytes
+              << ",\"cells\":" << parts.usedCells
+              << ",\"untagged_live_count\":" << parts.untaggedLiveCount
+              << ",\"coverage\":\"linked C++ new/delete only; direct malloc, SDL, driver and OS "
+                 "heaps excluded\""
+              << ",\"exceeded\":" << (parts.exact ? "false" : "true")
+              << ",\"notes\":\"tag is carried in the frozen header signature slot; untagged "
+                 "allocations fall into unknown.other\"}\n";
 }
 } // namespace cuexis::internal::pd::memory
 

@@ -59,6 +59,36 @@ auto PresentationRead::readObject(std::size_t index) const -> core::Result<Objec
     }
     return object;
 }
+auto PresentationRead::readSnapshotObject(std::size_t index) const
+    -> core::Result<ObjectVisualRead> {
+    if (!available())
+        return core::unexpected(availableError());
+    const auto& entries = window_->objects->entries();
+    if (index >= entries.size())
+        return core::unexpected(core::Error{"runtime.presentation.layout_stale",
+                                            "Presentation object index is outside the layout"});
+    ObjectVisualRead row{};
+    // Gathering only borrows const registry state. Borrowed fields stay within the read callback.
+    const auto gather = [&]() noexcept {
+        const auto& entry = entries[index];
+        const auto& registry = *window_->registry;
+        row.id = entry.objectId.value;
+        if (!registry.valid(entry.entity))
+            return;
+        if (const auto* transform = registry.try_get<world::WorldTransformComponent>(entry.entity))
+            row.matrix = &transform->matrix;
+        if (const auto* appearance = registry.try_get<render::AppearanceComponent>(entry.entity)) {
+            row.hasAppearance = true;
+            row.visible = appearance->visible;
+            row.material = appearance->materialAssetId;
+            row.opacity = appearance->opacity;
+            row.tint = appearance->tint;
+        }
+    };
+    gather();
+    return row;
+}
+
 auto PresentationRead::readCamera() const -> core::Result<CameraPresentation> {
     if (!available())
         return core::unexpected(availableError());

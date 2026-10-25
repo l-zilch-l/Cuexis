@@ -5,8 +5,10 @@
 #include "../../app/execution_host/renderer_owner.hpp"
 #include "../audio/fake_audio_transport.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 #include <cuexis/presentation_renderer/presentation_renderer.hpp>
 #include <filesystem>
+#include <iostream>
 #include <thread>
 
 using namespace cuexis;
@@ -96,6 +98,139 @@ class PartialLoadTransport final : public audio::IAudioTransport {
     }
 };
 } // namespace
+
+TEST_CASE("R1 C7b records failed Close retirement at both direct owner entrances",
+          "[rpa][r1][c7b][b4]") {
+    const bool useLedger = GENERATE(false, true);
+    PlaybackSession session;
+    auto prepared = preparedProject(session);
+    REQUIRE(session.commit(std::move(prepared)));
+    auto before = session.executionOwnerState();
+    REQUIRE(before);
+    auto request = control(ControlKind::close);
+    request.context.sessionScope = before->sessionScope;
+    request.operationId = 1;
+    request.commandOrdinal = 0;
+    request.participants = {false, true, false, false};
+    request.target = {};
+    request.target.context = request.context;
+    request.target.participantGenerations[1] = before->generation;
+    auto decision = session.acceptExecutionControl(request);
+    REQUIRE(decision);
+    auto proof = std::make_unique<ControlReceipt>();
+    proof->request = request;
+    proof->decisionOrdinal = *decision;
+    proof->status = ControlStatus::failed;
+    StepRequest retirement{{before->sessionScope, 1, Participant::software, StepPhase::retire, 0},
+                           request.target};
+    auto ledger = OwnerStepLedger::create(before->sessionScope, Participant::software, 16, 4);
+    REQUIRE(ledger);
+    bool accepted{};
+    std::string code;
+    if (useLedger) {
+        auto result = HostCoordinationAccess::retireSoftware(session, *ledger, retirement, *proof);
+        accepted = result && result->status == StepStatus::applied;
+        code = result ? (result->cause ? std::string{result->cause->code()} : "none")
+                      : std::string{result.error().code()};
+    } else {
+        auto result = session.retireExecutionStep(retirement, *proof);
+        accepted = bool(result);
+        code = result ? "none" : std::string{result.error().code()};
+    }
+    const auto after = session.executionOwnerState();
+    REQUIRE(after);
+    std::cout << "R1.C7b.layer=" << (useLedger ? "retireSoftware" : "retireExecutionStep")
+              << ",accepted=" << accepted << ",error=" << code
+              << ",generation=" << before->generation << "->" << after->generation << '\n';
+    CHECK_FALSE(accepted);
+    CHECK(code == "host.rpa.control_pending");
+    CHECK(after->generation == before->generation);
+    CHECK(session.state() == SessionState::Ready);
+    CHECK_FALSE(ledger->query(retirement.key));
+}
+
+TEST_CASE("R1 C10 a new Close with stale software generation cannot unload", "[rpa][r1][c10][b4]") {
+    const bool viaLedger = GENERATE(false, true);
+    PlaybackSession session;
+    auto prepared = preparedProject(session);
+    REQUIRE(session.commit(std::move(prepared)));
+    const auto before = session.executionOwnerState();
+    REQUIRE(before);
+    auto request = control(ControlKind::close);
+    request.context.sessionScope = before->sessionScope;
+    request.participants = {false, true, false, false};
+    request.target = {};
+    request.target.context = request.context;
+    request.target.participantGenerations[1] = before->generation - 1;
+    const auto decision = session.acceptExecutionControl(request);
+    if (!decision) {
+        CHECK(decision.error().code() == "host.rpa.context_stale");
+        CHECK(session.executionOwnerState()->generation == before->generation);
+        CHECK(session.state() == SessionState::Ready);
+        return;
+    }
+    auto proof = std::make_unique<ControlReceipt>();
+    proof->request = request;
+    proof->decisionOrdinal = *decision;
+    proof->status = ControlStatus::preparing;
+    StepRequest retirement{
+        {before->sessionScope, request.operationId, Participant::software, StepPhase::retire, 0},
+        request.target};
+    auto ledger = OwnerStepLedger::create(before->sessionScope, Participant::software, 16, 4);
+    REQUIRE(ledger);
+    if (viaLedger) {
+        const auto result =
+            HostCoordinationAccess::retireSoftware(session, *ledger, retirement, *proof);
+        CHECK_FALSE((result && result->status == StepStatus::applied));
+        CHECK_FALSE((result && result->effects.referencesReleased));
+    } else {
+        CHECK_FALSE(session.retireExecutionStep(retirement, *proof));
+    }
+    const auto after = session.executionOwnerState();
+    REQUIRE(after);
+    CHECK(after->generation == before->generation);
+    CHECK(session.state() == SessionState::Ready);
+}
+
+TEST_CASE("R1 C2 foreign owner cannot retire an otherwise matching accepted Close",
+          "[rpa][r1][c2][b4]") {
+    const bool viaLedger = GENERATE(false, true);
+    PlaybackSession session;
+    auto prepared = preparedProject(session);
+    REQUIRE(session.commit(std::move(prepared)));
+    const auto before = session.executionOwnerState();
+    REQUIRE(before);
+    auto request = control(ControlKind::close);
+    request.context.sessionScope = before->sessionScope;
+    request.participants = {false, true, false, false};
+    request.target = {};
+    request.target.context = request.context;
+    request.target.participantGenerations[1] = before->generation;
+    const auto decision = session.acceptExecutionControl(request);
+    REQUIRE(decision);
+    auto proof = std::make_unique<ControlReceipt>();
+    proof->request = request;
+    proof->decisionOrdinal = *decision;
+    proof->status = ControlStatus::preparing;
+    StepRequest retirement{
+        {before->sessionScope, request.operationId, Participant::software, StepPhase::retire, 0},
+        request.target};
+    auto ledger = OwnerStepLedger::create(before->sessionScope, Participant::software, 16, 4);
+    REQUIRE(ledger);
+    bool rejected{};
+    std::thread foreign{[&] {
+        if (viaLedger)
+            rejected =
+                !HostCoordinationAccess::retireSoftware(session, *ledger, retirement, *proof);
+        else
+            rejected = !session.retireExecutionStep(retirement, *proof);
+    }};
+    foreign.join();
+    CHECK(rejected);
+    CHECK(session.executionOwnerState()->generation == before->generation);
+    CHECK(session.state() == SessionState::Ready);
+    CHECK_FALSE(ledger->query(retirement.key));
+}
 TEST_CASE("B4 uncertain partial audio load requires real stop evidence", "[rpa][b4][audio]") {
     audio::AudioClipStore store;
     auto clip = audio::AudioClip::create(48000, 1, std::vector<float>(96000, 0.2F));
@@ -1106,6 +1241,10 @@ TEST_CASE("B4 real joint owners preserve SoftwareApplied through failure and dir
         close.target.context = close.context;
         close.target.nextContext.reset();
         close.target.commandOrdinal = 1;
+        // A new Close binds the current software owner, not the old Load generation.
+        const auto closeGeneration = HostCoordinationAccess::generation(session);
+        REQUIRE(closeGeneration);
+        close.target.participantGenerations[1] = *closeGeneration;
         REQUIRE(HostCoordinationAccess::acceptControl(session, *host, close));
         CHECK(host->state() == HostState::closing);
     }
@@ -1146,6 +1285,10 @@ TEST_CASE("B4 real joint owners preserve SoftwareApplied through failure and dir
         close.target.commandOrdinal = 1;
         close.target.participantGenerations[2] = 1;
         close.target.participantGenerations[3] = renderer.identity().generation;
+        // A new Close binds the current software owner, not the old Load generation.
+        const auto closeGeneration = HostCoordinationAccess::generation(session);
+        REQUIRE(closeGeneration);
+        close.target.participantGenerations[1] = *closeGeneration;
         REQUIRE(HostCoordinationAccess::acceptControl(session, *host, close));
         const auto closeStep = [&](Participant p, StepPhase phase) {
             return StepRequest{{initial.sessionScope, 2, p, phase, 0}, close.target};

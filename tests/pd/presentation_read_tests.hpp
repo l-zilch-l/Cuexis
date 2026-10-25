@@ -210,3 +210,166 @@ TEST_CASE("PD3b revision reservation rejects exhaustion before writing without w
     CHECK(clock.updates == maximum);
     CHECK_FALSE(Mutation::reserve(clock));
 }
+
+TEST_CASE("R2 borrowed row preserves owner window serial and mutation exclusion",
+          "[pd][presentation-read][r2]") {
+    using namespace runtime::detail;
+    Fixture f;
+    const auto state = *PresentationAccess::state(f.session);
+    std::optional<PresentationRead> escaped;
+    REQUIRE(PresentationAccess::read(
+        f.session, state.stamp, [&](const PresentationRead& view) -> core::Result<void> {
+            escaped = view;
+            auto row = view.readSnapshotObject(0);
+            REQUIRE(row);
+            CHECK(row->id == "child");
+            CHECK_FALSE(f.session.update({0, 0, 0}));
+            CHECK_FALSE(f.session.unload());
+            CHECK_FALSE(f.session.withWorld([](world::World&) {}));
+            CHECK_FALSE(PresentationAccess::read(
+                f.session, state.stamp, [](const auto&) -> core::Result<void> { return {}; }));
+            auto wrongOwner =
+                std::async(std::launch::async, [&] { return view.readSnapshotObject(0); }).get();
+            REQUIRE_FALSE(wrongOwner);
+            CHECK(wrongOwner.error().code() == "runtime.presentation.view_unavailable");
+            return {};
+        }));
+    REQUIRE(escaped);
+    CHECK_FALSE(escaped->readSnapshotObject(0));
+    REQUIRE(PresentationAccess::read(f.session, state.stamp,
+                                     [&](const PresentationRead&) -> core::Result<void> {
+                                         CHECK_FALSE(escaped->readSnapshotObject(0));
+                                         return {};
+                                     }));
+    CHECK(PresentationAccess::state(f.session)->stamp == state.stamp);
+}
+
+TEST_CASE("R2 borrowed row reports boundaries missing components and actual World matrix",
+          "[pd][presentation-read][r2]") {
+    using namespace runtime::detail;
+    Fixture f;
+    const auto address = std::as_const(f.session).withWorld([&](const world::World& w) {
+        return w.withRegistry([&](const entt::registry& registry) {
+            return reinterpret_cast<std::uintptr_t>(
+                &registry.get<world::WorldTransformComponent>(f.child).matrix);
+        });
+    });
+    REQUIRE(address);
+    const auto stamp = PresentationAccess::state(f.session)->stamp;
+    REQUIRE(PresentationAccess::read(
+        f.session, stamp, [&](const PresentationRead& view) -> core::Result<void> {
+            for (const auto index : {std::size_t{0}, std::size_t{1}}) {
+                auto row = view.readSnapshotObject(index);
+                REQUIRE(row);
+                if (index == 0) {
+                    CHECK(row->id == "child");
+                    CHECK(row->matrix != nullptr);
+                    if (row->matrix != nullptr) {
+                        CHECK(reinterpret_cast<std::uintptr_t>(row->matrix) == *address);
+                        auto object = view.readObject(index);
+                        CHECK(object.has_value());
+                        if (object)
+                            CHECK(*row->matrix == object->matrix);
+                    }
+                    CHECK(row->hasAppearance);
+                } else {
+                    CHECK(index == 1);
+                    CHECK(row->id == "parent");
+                    CHECK_FALSE(row->hasAppearance);
+                    CHECK(row->visible);
+                    CHECK(row->material.empty());
+                    CHECK(row->opacity == 1);
+                    CHECK(row->tint == core::Vec3{1, 1, 1});
+                }
+            }
+            for (const auto index : {std::size_t{2}, std::numeric_limits<std::size_t>::max()}) {
+                auto outside = view.readSnapshotObject(index);
+                REQUIRE_FALSE(outside);
+                const auto owning = view.readObject(index);
+                REQUIRE_FALSE(owning);
+                CHECK(outside.error().code() == owning.error().code());
+                CHECK(outside.error().message() == owning.error().message());
+            }
+            return {};
+        }));
+    REQUIRE(f.session.withWorld([&](world::World& w) {
+        return w.withRegistry([&](entt::registry& r) {
+            r.remove<world::WorldTransformComponent>(f.child);
+            r.remove<render::AppearanceComponent>(f.child);
+        });
+    }));
+    REQUIRE(PresentationAccess::read(f.session, PresentationAccess::state(f.session)->stamp,
+                                     [&](const PresentationRead& view) -> core::Result<void> {
+                                         auto row = view.readSnapshotObject(0);
+                                         REQUIRE(row);
+                                         CHECK(row->matrix == nullptr);
+                                         CHECK_FALSE(row->hasAppearance);
+                                         CHECK(row->visible);
+                                         CHECK(row->material.empty());
+                                         CHECK(row->opacity == 1);
+                                         CHECK(row->tint == core::Vec3{1, 1, 1});
+                                         return {};
+                                     }));
+}
+
+TEST_CASE("R2 consumer errors exceptions and allocation failures end the read window",
+          "[pd][presentation-read][r2]") {
+    using namespace runtime::detail;
+    Fixture f;
+    std::optional<PresentationRead> escaped;
+    for (int outcome = 0; outcome < 3; ++outcome) {
+        CAPTURE(outcome);
+        const auto invoke = [&]() {
+            return PresentationAccess::read(
+                f.session, PresentationAccess::state(f.session)->stamp,
+                [&](const PresentationRead& view) -> core::Result<void> {
+                    escaped = view;
+                    auto row = view.readSnapshotObject(0);
+                    if (!row)
+                        return core::unexpected(std::move(row.error()));
+                    CHECK(row->id == "child");
+                    if (outcome == 1)
+                        throw std::runtime_error{"R2 outer read callback threw"};
+                    if (outcome == 2)
+                        throw std::bad_alloc{};
+                    return core::unexpected(core::Error{"r2.callback", "Outer callback failed"});
+                });
+        };
+        if (outcome == 2) {
+            CHECK_THROWS_AS(invoke(), std::bad_alloc);
+        } else {
+            auto failed = invoke();
+            REQUIRE_FALSE(failed);
+            CHECK(failed.error().code() ==
+                  (outcome == 0 ? "r2.callback" : "world.callback.exception"));
+        }
+        REQUIRE(escaped);
+        CHECK_FALSE(escaped->state());
+        REQUIRE(f.session.update({0, 0, 0}));
+    }
+}
+
+TEST_CASE("R2 warmed borrowed gather and consumption allocate nothing",
+          "[pd][presentation-read][r2][allocation]") {
+    using namespace runtime::detail;
+    Fixture f;
+    const auto stamp = PresentationAccess::state(f.session)->stamp;
+    bool observed{};
+    const auto read = [&]() {
+        return PresentationAccess::read(f.session, stamp,
+                                        [&](const PresentationRead& view) -> core::Result<void> {
+                                            auto row = view.readSnapshotObject(0);
+                                            if (!row)
+                                                return core::unexpected(std::move(row.error()));
+                                            observed = row->id == "child" && row->matrix != nullptr;
+                                            return {};
+                                        });
+    };
+    REQUIRE(read());
+    pd_allocations::begin();
+    auto result = read();
+    const auto allocations = pd_allocations::end();
+    REQUIRE(result);
+    CHECK(observed);
+    CHECK(allocations == 0);
+}

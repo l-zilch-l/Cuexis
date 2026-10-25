@@ -2699,6 +2699,22 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
             containsLegacyDiagnostic(*record.result->faultDiagnostic))
             return core::unexpected(
                 error("execution.relation_invalid", "Replay diagnostic dialect invalid"));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    std::uint64_t rpaBatchInputs = 0;
+    std::uint64_t rpaControlHorizons = 0;
+    std::uint64_t rpaAdvanceCalls = 0;
+    std::uint64_t rpaIdleAdvances = 0;
+    std::uint64_t rpaMatcherSteps = 0;
+    std::uint64_t rpaMaxBatch = 0;
+    std::uint64_t rpaMaxRecordElements = 0;
+    const auto rpaElements = [](const KernelProjection& p) {
+        return static_cast<std::uint64_t>(p.facts.size() + p.contacts.size() + p.observers.size() +
+                                          p.receipts.size() + p.ownership.size() +
+                                          p.phases.size() + p.resources.size());
+    };
+    std::uint64_t rpaRestores = 0;
+    std::uint64_t rpaReplayPrefixCopies = 0;
+#endif
     std::uint64_t begin = 0;
     const ReplayCheckpoint* chosen = nullptr;
     for (const auto& checkpoint : checkpoints) {
@@ -2735,12 +2751,18 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
             if (restored) {
                 candidate = std::move(restored);
                 begin = chosen->cut.completeRecords;
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+                ++rpaRestores;
+#endif
                 auto prefix = std::make_shared<ReplayData>(archive.data());
                 prefix->records.resize(static_cast<std::size_t>(begin));
                 prefix->eventCount = 0;
                 for (const auto& r : prefix->records) {
                     prefix->eventCount += static_cast<std::uint64_t>(r.batch.size());
                 }
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+                ++rpaReplayPrefixCopies;
+#endif
                 (*candidate)->impl_->recording = std::move(prefix);
                 (*candidate)->impl_->historyAvailable = true;
             }
@@ -2760,15 +2782,27 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
                 !record.batch.empty())
                 return core::unexpected(
                     error("execution.relation_invalid", "Seek RPA control invalid"));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+            ++rpaControlHorizons;
+#endif
             auto result = k.controlRpa(*record.control);
             if (!result || !sameKernelResult(k.query()->projection, *record.result))
                 return core::unexpected(
                     error("execution.relation_invalid", "Seek RPA result mismatch"));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+            rpaMaxRecordElements = std::max(rpaMaxRecordElements, rpaElements(*record.result));
+#endif
         } else if (record.horizon) {
             if (!record.result || !record.batch.empty() || *record.horizon > horizon) {
                 return core::unexpected(
                     error("execution.relation_invalid", "Seek complete control invalid"));
             }
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+            ++rpaControlHorizons;
+            ++rpaAdvanceCalls;
+            if (record.controlDrain)
+                ++rpaIdleAdvances;
+#endif
             auto result = k.advance(*record.horizon, record.controlDrain);
             if (!result) {
                 return core::unexpected(result.error());
@@ -2777,10 +2811,19 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
                 return core::unexpected(
                     error("execution.relation_invalid", "Seek complete control mismatch"));
             }
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+            rpaMaxRecordElements = std::max(rpaMaxRecordElements, rpaElements(*record.result));
+#endif
         } else {
             if (record.result || record.batch.empty()) {
                 return core::unexpected(error("execution.relation_invalid", "Seek batch invalid"));
             }
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+            rpaBatchInputs += static_cast<std::uint64_t>(record.batch.size());
+            rpaMatcherSteps += static_cast<std::uint64_t>(record.batch.size());
+            rpaMaxBatch = std::max(rpaMaxBatch,
+                                   static_cast<std::uint64_t>(record.batch.size()));
+#endif
             auto accepted = k.submitCanonical(record.batch);
             if (record.rejection
                     ? accepted.has_value() || !sameRecoveryError(accepted.error(), record.rejection)
@@ -2803,10 +2846,67 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
         if (!result) {
             return core::unexpected(result.error());
         }
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        ++rpaAdvanceCalls;
+#endif
     } else if (k.query()->projection.lastAdvanceHorizon != horizon) {
         return core::unexpected(
             error("execution.relation_invalid", "Seek full cut horizon mismatch"));
     }
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    {
+        using Phase = internal::execution_diagnostics::rpa::SeekPhase;
+        using Work = internal::execution_diagnostics::rpa::SeekWork;
+        const auto set = [](Phase phase, std::uint64_t Work::*member, std::uint64_t value) {
+            internal::execution_diagnostics::rpa::seekSet(phase, member, value);
+        };
+        const auto& projection = k.query()->projection;
+        const auto facts = static_cast<std::uint64_t>(projection.facts.size());
+        const auto elements = facts +
+                              static_cast<std::uint64_t>(projection.contacts.size()) +
+                              static_cast<std::uint64_t>(projection.observers.size()) +
+                              static_cast<std::uint64_t>(projection.receipts.size()) +
+                              static_cast<std::uint64_t>(projection.ownership.size()) +
+                              static_cast<std::uint64_t>(projection.phases.size()) +
+                              static_cast<std::uint64_t>(projection.resources.size());
+        const auto bytes =
+            static_cast<std::uint64_t>(projection.facts.capacity() * sizeof(KernelFact) +
+                                       projection.contacts.capacity() * sizeof(ContactHandle) +
+                                       projection.observers.capacity() * sizeof(ObservationRecord) +
+                                       projection.receipts.capacity() * sizeof(InputReceipt) +
+                                       projection.ownership.capacity() *
+                                           sizeof(HeadContactOwnership) +
+                                       projection.phases.capacity() * sizeof(PhaseProjection) +
+                                       projection.resources.capacity() * sizeof(ResourceProjection));
+        const auto peakElements =
+            static_cast<std::uint64_t>(projection.facts.capacity() +
+                                       projection.contacts.capacity() +
+                                       projection.observers.capacity() +
+                                       projection.receipts.capacity() +
+                                       projection.ownership.capacity() +
+                                       projection.phases.capacity() +
+                                       projection.resources.capacity());
+        set(Phase::s3Validation, &Work::actualRecords, cut.completeRecords);
+        set(Phase::s3Validation, &Work::batchInputs, rpaBatchInputs);
+        set(Phase::s3Validation, &Work::controlHorizons, rpaControlHorizons);
+        set(Phase::s3Validation, &Work::nestedResultElements, elements);
+        set(Phase::s3Validation, &Work::nestedResultBytes, bytes);
+        set(Phase::s4InternalExecution, &Work::fullTicks, rpaAdvanceCalls);
+        set(Phase::s4InternalExecution, &Work::idleTicks, rpaIdleAdvances);
+        set(Phase::s4InternalExecution, &Work::timers,
+                     static_cast<std::uint64_t>(archive.dependencies().prepared.timers().size()));
+        set(Phase::s4InternalExecution, &Work::matcherSteps, rpaMatcherSteps);
+        set(Phase::s4InternalExecution, &Work::folds, rpaAdvanceCalls);
+        set(Phase::s4InternalExecution, &Work::facts, facts);
+        set(Phase::s4InternalExecution, &Work::runtimeCopies,
+                     1 + rpaRestores + rpaReplayPrefixCopies);
+        set(Phase::s4InternalExecution, &Work::runtimeElements, elements);
+        set(Phase::s4InternalExecution, &Work::runtimePayloadBytes, bytes);
+        set(Phase::s4InternalExecution, &Work::runtimePeakElements, peakElements);
+        set(Phase::s4InternalExecution, &Work::recordPeakElements,
+            std::max({rpaMaxRecordElements, rpaMaxBatch, elements}));
+    }
+#endif
     k.impl_->seekSource = archive.anchor();
     return std::move(*candidate);
 } catch (const std::exception&) {

@@ -350,12 +350,7 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
         makeExecutionAudioFactory(app.profile, static_cast<float>(app.app.requested.gain)),
         audio_sdl::WavDecoder::decode, pumpMain};
     // Close while the callbacks' local dependencies still exist during error unwinding.
-    struct HostLifetime {
-        std::unique_ptr<ExecutionHost>& host;
-        ~HostLifetime() {
-            host.reset();
-        }
-    } hostLifetime{host};
+    ExecutionHostLifetime hostLifetime{host};
     auto load = [&]() {
         host = take(ExecutionHost::create(*backend, hostOptions, ports));
         std::optional<GameplayContent> gameplay;

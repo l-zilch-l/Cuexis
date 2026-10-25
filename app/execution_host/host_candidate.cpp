@@ -1,5 +1,6 @@
 #include "host_candidate.hpp"
 #include "capture_route.hpp"
+#include <cuexis_internal/execution_diagnostics.hpp>
 #include <cuexis_internal/sha256.hpp>
 namespace cuexis::playback::detail {
 namespace {
@@ -31,6 +32,13 @@ auto softwareReceipt(PlaybackSession& session, OwnerStepLedger& ledger, const St
     return receipt;
 }
 } // namespace
+auto HostCoordinationAccess::validateControlProof(const PlaybackSession& session,
+                                                  const StepRequest& request,
+                                                  const ControlReceipt& proof)
+    -> core::Result<void> {
+    return session.validateExecutionControlProof(request, proof);
+}
+
 auto HostCoordinationAccess::materialize(PreparedPlayback& prepared,
                                          const PresentationCapabilities& capabilities,
                                          const PresentationRequest& request,
@@ -220,33 +228,66 @@ auto HostCoordinationAccess::retireSoftware(PlaybackSession& session, OwnerStepL
     if (!snapshot)
         return core::unexpected(snapshot.error());
     const auto& s = *snapshot;
+    if (proof.request.kind == ControlKind::close && proof.status == ControlStatus::failed)
+        return core::unexpected(
+            core::Error{"host.rpa.control_pending", "Failed Close cannot retire software"});
+    if (auto valid = validateControlProof(session, request, proof); !valid)
+        return core::unexpected(valid.error());
     auto old = ledger.query(request.key);
     if (old && old->status != StepStatus::pending)
         return ledger.apply(request);
     const bool directedCleanup = proof.request.kind == ControlKind::close ||
                                  proof.status == ControlStatus::suspended ||
                                  proof.status == ControlStatus::failed;
-    if (!s.acceptedControl || !directedCleanup || *s.acceptedControl != proof.request ||
-        request.target != proof.request.target ||
-        request.key.operationId != proof.request.operationId ||
-        request.key.participant != Participant::software || request.key.phase != StepPhase::retire)
+    const bool accepted = s.acceptedControl.has_value();
+    const bool requestMatch = accepted && *s.acceptedControl == proof.request;
+    const bool targetMatch = request.target == proof.request.target;
+    const bool operationMatch = request.key.operationId == proof.request.operationId;
+    const bool participantMatch = request.key.participant == Participant::software;
+    const bool phaseMatch = request.key.phase == StepPhase::retire;
+    const bool captureCleared =
+        !proof.request.participants[0] ||
+        matchingStep(proof, Participant::capture, StepPhase::cut) != nullptr;
+    const bool audioCleared = [&] {
+        if (!proof.request.participants[2])
+            return true;
+        const auto* isolation = matchingStep(proof, Participant::audio, StepPhase::isolate);
+        return matchingStep(proof, Participant::audio, StepPhase::stop) != nullptr && isolation &&
+               isolation->effects.callbackIsolated;
+    }();
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    if (auto* sink = internal::execution_diagnostics::rpa::fenceSink) {
+        sink->permitAttempted = true;
+        sink->permitAcceptedControl = accepted;
+        sink->permitDirected = directedCleanup;
+        sink->permitRequestMatch = requestMatch;
+        sink->permitTargetMatch = targetMatch;
+        sink->permitOperationMatch = operationMatch;
+        sink->permitParticipantMatch = participantMatch;
+        sink->permitCaptureCut = captureCleared;
+        sink->permitAudioIsolated = audioCleared;
+        sink->retireCalled = true;
+    }
+#endif
+    if (!accepted || !directedCleanup || !requestMatch || !targetMatch || !operationMatch ||
+        !participantMatch || !phaseMatch)
         return core::unexpected(core::Error{"host.rpa.context_stale",
                                             "Software retirement lacks accepted directed cleanup"});
-    if (proof.request.participants[0] && !matchingStep(proof, Participant::capture, StepPhase::cut))
+    if (!captureCleared)
         return core::unexpected(
             core::Error{"host.rpa.device_pending", "Capture route remains active"});
-    if (proof.request.participants[2]) {
-        const auto* isolation = matchingStep(proof, Participant::audio, StepPhase::isolate);
-        if (!matchingStep(proof, Participant::audio, StepPhase::stop) || !isolation ||
-            !isolation->effects.callbackIsolated)
-            return core::unexpected(core::Error{"host.rpa.device_pending",
-                                                "Audio callback still retains software resources"});
-    }
+    if (!audioCleared)
+        return core::unexpected(core::Error{"host.rpa.device_pending",
+                                            "Audio callback still retains software resources"});
     auto started = ledger.start(request);
     if (!started)
         return core::unexpected(started.error());
     if (!*started)
         return ledger.query(request.key);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    if (auto* sink = internal::execution_diagnostics::rpa::fenceSink)
+        sink->permitLedgerStart = true;
+#endif
     auto result = session.retireExecutionStep(request, proof);
     StepReceipt receipt{request,
                         result ? StepStatus::applied : StepStatus::failed,

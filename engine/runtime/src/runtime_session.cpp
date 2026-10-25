@@ -397,6 +397,11 @@ void tickOverrideLifetimes(std::vector<world::OverrideToken>& tokens) noexcept {
                                         const ObjectEntityMap& objects, world::World& world,
                                         animation::AnimationProgram animation)
     -> core::Result<std::unique_ptr<RuntimeEvaluationState>> {
+#if defined(CUEXIS_ALLOCATION_LIFETIME_OBSERVER)
+    // Product tag: candidate evaluation state is owned by the session, not by the caller thread.
+    const internal::pd::memory::TagScope tag{internal::pd::memory::ownerMain,
+                                             internal::pd::memory::domainCandidate};
+#endif
     std::size_t requiredWrites = 0;
     for (std::size_t objectIndex = 0; objectIndex < runtime.objects.size(); ++objectIndex) {
         const auto& reference = runtime.objects[objectIndex].components.behavior;

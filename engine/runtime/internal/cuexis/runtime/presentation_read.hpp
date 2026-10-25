@@ -33,6 +33,18 @@ struct ObjectPresentation final {
     double opacity{1};
     core::Vec3 tint{1, 1, 1};
 };
+// Every borrowed field is consumed only inside the enclosing PresentationAccess::read callback.
+// Borrowed fields never escape into snapshots, layouts, caches or messages.
+struct ObjectVisualRead final {
+    std::string_view id;
+    const core::Mat4* matrix{};
+    bool hasAppearance{}, visible{true};
+    std::string_view material;
+    double opacity{1};
+    core::Vec3 tint{1, 1, 1};
+};
+static_assert(std::is_trivially_copyable_v<ObjectVisualRead>);
+static_assert(std::is_nothrow_copy_constructible_v<ObjectVisualRead>);
 struct CameraPresentation final {
     bool selected{}, present{}, hasTransform{};
     core::Mat4 matrix;
@@ -41,6 +53,8 @@ struct CameraPresentation final {
 class PresentationRead final {
   public:
     auto readObject(std::size_t index) const -> core::Result<ObjectPresentation>;
+    // Consume every borrowed field before the enclosing PresentationAccess::read callback ends.
+    auto readSnapshotObject(std::size_t index) const -> core::Result<ObjectVisualRead>;
     auto readCamera() const -> core::Result<CameraPresentation>;
     auto state() const -> core::Result<PresentationState>;
 

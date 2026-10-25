@@ -35,6 +35,13 @@ target_include_directories(cuexis_playback_tests
         ${PROJECT_SOURCE_DIR}/tests/presentation
 )
 
+# The frozen R2 materializer oracle uses real Runtime components only in static tests.
+if(CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
+    target_include_directories(cuexis_playback_tests PRIVATE
+        ${PROJECT_SOURCE_DIR}/engine/render/include
+        ${PROJECT_SOURCE_DIR}/engine/world/include)
+endif()
+
 target_link_libraries(cuexis_playback_tests
     PRIVATE
         cuexis::audio

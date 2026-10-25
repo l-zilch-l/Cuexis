@@ -1,6 +1,9 @@
 #include "capture_route.hpp"
 #include <algorithm>
 #include <cuexis_internal/sha256.hpp>
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+#include <cuexis_internal/execution_diagnostics.hpp>
+#endif
 #include <span>
 #include <tuple>
 
@@ -123,6 +126,14 @@ auto CaptureRouteOwner::readiness(const StepRequest& request, StepPhase phase)
 auto CaptureRouteOwner::exportCloseEvidence() const -> core::Result<CaptureCloseEvidence> try {
     if (!owner_.isCurrent())
         return core::unexpected(error("owner_mismatch"));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    // Test-only capacity failure at the same point the real allocation would fail. The ordinary
+    // catch below would observe the same error, so this exercises the production failure path.
+    if (cuexis::internal::execution_diagnostics::rpa::takeExportFault()) {
+        fault_ = {FaultSlot::Reason::allocation, {}};
+        return core::unexpected(error("capacity_exceeded"));
+    }
+#endif
     CaptureCloseEvidence result;
     result.owner_ = this;
     result.context_ = context_;

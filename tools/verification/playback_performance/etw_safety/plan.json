@@ -1,0 +1,271 @@
+{
+  "schema": "pd5.f1-noise-control-plan.v1",
+  "prepared_on": "2026-10-23",
+  "formal": false,
+  "registered": false,
+  "candidate": "none",
+  "formal_acceptance": false,
+  "performance_acceptance": false,
+  "retention_or_merge_inferred": false,
+  "objective": "Observe whether existing finite F1 read/update process variation coincides with scheduler, DPC/ISR, or available processor-power events. This trace is diagnostic only.",
+  "input_binding": {
+    "plan_path": "D:\\Cuexis-worktree\\out\\pd5-c2-20261021-020a5ff\\plan.json",
+    "plan_sha256": "63ad989f39e3ee086478ea299790e8ccd7366c205b244a34abd4eba84661df49",
+    "build_key": "A",
+    "build_source_path": "D:\\Cuexis-worktree\\out\\pd5-c2-20261021-020a5ff\\f1-source",
+    "build_source_identity_sha256": "e019fb974abbe1002534262ab51e69b75b5d31ce1d29ef02ddfc88283e0e0fc0",
+    "fixed_f1_original_inventory_sha256": "1bfebe4b6e49dcc291136d3d2dec13e64e296341493e3e3d28023afcdecd6da3",
+    "compiled_inputs_sha256": "7863dfad81342ac1d8da8dc1c39d74a299df6b14620a76b3f9a50da82627b304",
+    "baseline_executable": "D:\\Cuexis-worktree\\out\\build\\pd5-c2-020a5ff-f1-normal\\bin\\cuexis_pd_baseline_probe.exe",
+    "baseline_executable_sha256": "c17f8ddbfcf99b840111f5f14da214edd75484cd3309fb05644c82199e80287f",
+    "repository_root": "D:\\Cuexis-worktree",
+    "runtime_source_root": "D:\\Cuexis-worktree\\out\\pd5-c2-20261021-020a5ff\\f1-source"
+  },
+  "workload": {
+    "kind": "PD finite read and update scaling",
+    "warmup_filter": "PD machine CPU warmup",
+    "measurement_filter": "PD finite read and update scaling",
+    "counts": "1 2097152 262144 8 1048576 131072 64 262144 32768 256 65536 8192",
+    "objects": [
+      1,
+      8,
+      64,
+      256
+    ],
+    "modes": [
+      "read",
+      "updated"
+    ],
+    "blocks_per_metric": 3,
+    "prewarm_updates_and_extracts": 64,
+    "minimum_read_block_us": 100000,
+    "mask": 4,
+    "processes": 3,
+    "process_indexes": [
+      0,
+      1,
+      2
+    ],
+    "warmup_seconds_before_each_measured_process": 30,
+    "native_launches": 6,
+    "launch_environment": {
+      "CUEXIS_FOLLOW_COUNTS": "1 2097152 262144 8 1048576 131072 64 262144 32768 256 65536 8192",
+      "CUEXIS_PD_HOST_DIAGNOSTIC_1024": "1",
+      "inherited_CUEXIS_PD_and_CUEXIS_FOLLOW_variables": "removed"
+    },
+    "native_command_shapes": {
+      "warmup": [
+        "<baseline_executable>",
+        "PD machine CPU warmup",
+        "--reporter",
+        "compact"
+      ],
+      "measurement": [
+        "<baseline_executable>",
+        "PD finite read and update scaling",
+        "--rng-seed",
+        "1",
+        "--reporter",
+        "compact"
+      ]
+    },
+    "timeout_seconds": {
+      "one_warmup_process": 45,
+      "one_measurement_process": 90,
+      "whole_capture_hard_limit": 420
+    },
+    "stop_rule": "First failed identity, launch, output, timeout, or workload check stops the sequence. No retry or replacement process.",
+    "metric_fields": [
+      "elapsed_us",
+      "cpu_us",
+      "cycles"
+    ],
+    "expected_pd_env_labels": [
+      "begin",
+      "end"
+    ]
+  },
+  "wpr": {
+    "executable": "D:\\Windows Kits\\10\\Windows Performance Toolkit\\wpr.exe",
+    "observed_version": "10.0.26100 (CoreSystem)",
+    "profile": "PD5F1Scale",
+    "recording_mode": "filemode",
+    "record_temp_directory": "new run directory trace-temp subdirectory",
+    "unique_instance_name_required": true,
+    "start_command_shape": "wpr -start <sealed-package>\\f1_scale.wprp!PD5F1Scale -filemode -recordtempto <run-dir\\trace-temp> -instancename <unique-name>",
+    "stop_command_shape": "wpr -stop <new-run-dir\\f1-scale.etl> <description> -instancename <same-unique-name>",
+    "instance_name_argument_must_be_last": true,
+    "required_profile_details_tokens": [
+      "CSwitch",
+      "ReadyThread",
+      "DPC",
+      "Interrupt",
+      "Microsoft-Windows-Kernel-Processor-Power"
+    ],
+    "bounded_capture_seconds": 420,
+    "capture_begins_before_each_30_second_warmup": true,
+    "capture_is_diagnostic_only": true,
+    "profile_inspection_observation": "Serial wpr -profiledetails on the sealed f1_scale.wprp!PD5F1Scale exits 0 and reports PD5F1Scale.Verbose.File, WPR System Collector 128 KB x 64 with keywords CSwitch, DPC, IdleStates, Interrupt, Power, ReadyThread and Microsoft-Windows-Kernel-Processor-Power 0x2ff: 0xff, plus WPR Event Collector 128 KB x 32. It warns that the profile does not support memory mode and selects file mode instead.",
+    "collector_budget_seconds": 250,
+    "start_cli_timeout_seconds": 20,
+    "stop_cli_timeout_seconds": 110,
+    "inspection_collision_note": "One earlier concurrent read-only profile-details invocation returned duplicate control-library error 0xc5580601. A subsequent serial Power profile-details read succeeded. No WPR capture was started.",
+    "preflight_status_scope": "wpr -status without -instancename checks the unnamed/default session only; it does not enumerate all possible named sessions.",
+    "ambiguous_start_cleanup": "After any start attempt, finally issues stop only for the unique instance name attempted by this invocation. It never uses global cancel. Cleanup failure is recorded separately from the first failure.",
+    "guardian_emergency_seconds": 380,
+    "hard_deadline_seconds": 420,
+    "disk_emergency_bytes": 2147483648
+  },
+  "limits": {
+    "per_block_qpc_anchors_in_pd_follow_row": false,
+    "etw_can_be_correlated_to_native_pid_and_process_lifetime": true,
+    "precise_block_to_etw_event_attribution": false,
+    "processor_effective_frequency_or_temperature_is_guaranteed": false,
+    "thread_cycle_counter_is_not_frequency_telemetry": true,
+    "p95_or_p99_computed": false,
+    "normal_untraced_performance_acceptance": false,
+    "process_qpc_anchor_boundary": "PD5_PROCESS_START is sampled immediately before native CreateProcess",
+    "pd_env_begin_end_records_required": true
+  },
+  "required_preflight": {
+    "administrator_token": true,
+    "SeSystemProfilePrivilege": "must be present in token; Enabled or Disabled is logged and accepted",
+    "wpr_global_status": "unnamed/default instance must report WPR is not recording; this does not enumerate named instances",
+    "existing_wpr_recording_action": "abort before capture; never stop, cancel, or attach to it",
+    "binary_sha256_must_match_input_plan": true,
+    "script_and_input_hashes_must_match_binding_json": true,
+    "system_power_or_affinity_policy_changes": false,
+    "self_elevation_or_automatic_uac": false
+  },
+  "output_policy": {
+    "top_level_not_run_receipts": "unique preflight-<UTC>-<GUID>.json names, create-new only",
+    "run_results": "Each invocation creates a unique run-<UTC>-<GUID> directory; WPR/intents/owned-capture receipt live there and collector output lives in a dedicated initially empty native subdirectory.",
+    "wpr_temp_and_final_trace": "inside that unique run directory",
+    "first_failure": "stop; preserve partial logs; no retry",
+    "wpr_cleanup": "finally stop only the unique instance started by this invocation",
+    "capture_receipt": "The sealed controller creates f1-owned-capture.json after its successful WPR start; the collector verifies plan/binding hashes, exact instance name, controller source and claim hashes, admin token, privilege presence, and named WPR status before any F1 launch."
+  },
+  "support": {
+    "frozen_process_control": "D:\\Cuexis-worktree\\out\\pd5-c2-20261021-020a5ff\\f1-source\\tools\\verification\\playback_performance\\process_control.py",
+    "frozen_process_control_sha256": "701afa34c9b5f36cfaf31c28bae85783086fceec4ac747057826b25df4f3aeb0",
+    "frozen_finite_followup": "D:\\Cuexis-worktree\\out\\pd5-c2-20261021-020a5ff\\f1-source\\tools\\verification\\playback_performance\\finite_followup.py",
+    "frozen_finite_followup_sha256": "698b6126a533e08a6c77e0d6c2a4a31408e23b299607407a34552f7acbfeeecd",
+    "read_scaling_probe": "D:\\Cuexis-worktree\\out\\pd5-c2-20261021-020a5ff\\f1-source\\tests\\pd\\read_scaling_probe.hpp",
+    "read_scaling_probe_sha256": "ed458a3f9320f6b91d4b7632e37422cf2d2cd461804b5a47aaeb011b92f9297b",
+    "measurement_environment": "D:\\Cuexis-worktree\\out\\pd5-c2-20261021-020a5ff\\f1-source\\tests\\pd\\measurement_environment.hpp",
+    "measurement_environment_sha256": "0ce176ff2a23c6a3f74734f513426c13509546317caf72c504c3979ab0e02ba7",
+    "runtime_source_root": "D:\\Cuexis-worktree\\out\\pd5-c2-20261021-020a5ff\\f1-source",
+    "runtime_source_root_resolution": "The compiled cuexis_pd_baseline_probe CUEXIS_SOURCE_DIR macro is PROJECT_SOURCE_DIR; this is the f1-source root confirmed by CMakeCache CMAKE_HOME_DIRECTORY and the measurement_method_tests.cpp compile command.",
+    "runtime_asset_resolver_header": "D:\\Cuexis-worktree\\out\\pd5-c2-20261021-020a5ff\\f1-source\\tests\\pd\\read_scaling_probe.hpp",
+    "runtime_asset_include_source": "D:\\Cuexis-worktree\\out\\pd5-c2-20261021-020a5ff\\f1-source\\tests\\pd\\measurement_method_tests.cpp",
+    "runtime_target_definition_source": "D:\\Cuexis-worktree\\out\\pd5-c2-20261021-020a5ff\\f1-source\\tests\\pd\\CMakeLists.txt",
+    "runtime_source_root_cmake": "D:\\Cuexis-worktree\\out\\pd5-c2-20261021-020a5ff\\f1-source\\CMakeLists.txt",
+    "runtime_build_cache": "D:\\Cuexis-worktree\\out\\build\\pd5-c2-020a5ff-f1-normal\\CMakeCache.txt",
+    "runtime_compile_commands": "D:\\Cuexis-worktree\\out\\build\\pd5-c2-020a5ff-f1-normal\\compile_commands.json",
+    "runtime_assets": [
+      {
+        "role": "mesh",
+        "logical_source": "meshes/triangle.mesh.bin",
+        "path": "D:\\Cuexis-worktree\\out\\pd5-c2-20261021-020a5ff\\f1-source\\assets\\projects\\stage3_project\\assets\\meshes\\triangle.mesh.bin",
+        "sha256": "c7910110532d3f2bad3486f61079446f6cf2718dcde7144dc7598494f122ceae",
+        "resolved_from": "CUEXIS_SOURCE_DIR/assets/projects/stage3_project/assets/meshes/triangle.mesh.bin"
+      },
+      {
+        "role": "material",
+        "logical_source": "materials/opaque.material.bin",
+        "path": "D:\\Cuexis-worktree\\out\\pd5-c2-20261021-020a5ff\\f1-source\\assets\\projects\\stage3_project\\assets\\materials\\opaque.material.bin",
+        "sha256": "77a6d5ca69dec6d286226f0a80abc3e136903d18509054c954561b33387483de",
+        "resolved_from": "CUEXIS_SOURCE_DIR/assets/projects/stage3_project/assets/materials/opaque.material.bin"
+      }
+    ],
+    "runtime_resolution_evidence": [
+      {
+        "path": "D:\\Cuexis-worktree\\out\\pd5-c2-20261021-020a5ff\\f1-source\\tests\\pd\\read_scaling_probe.hpp",
+        "sha256": "ed458a3f9320f6b91d4b7632e37422cf2d2cd461804b5a47aaeb011b92f9297b",
+        "lines": "14-21",
+        "purpose": "scalePresentation resolves the mesh and material below CUEXIS_SOURCE_DIR"
+      },
+      {
+        "path": "D:\\Cuexis-worktree\\out\\pd5-c2-20261021-020a5ff\\f1-source\\tests\\pd\\measurement_method_tests.cpp",
+        "sha256": "68a7b235bdeac5a16b2d0b669a0e8fe750ff30965cfb9342a5fa289dbf710eaf",
+        "lines": "458-468,602",
+        "purpose": "contains the 30-second CPU warmup and includes read_scaling_probe.hpp in the baseline probe translation unit"
+      },
+      {
+        "path": "D:\\Cuexis-worktree\\out\\pd5-c2-20261021-020a5ff\\f1-source\\tests\\pd\\CMakeLists.txt",
+        "sha256": "4b3cf59598a9212bc632a10df9a0024dc9134c7b4113793bc98f35d480c86d3b",
+        "lines": "4-6",
+        "purpose": "defines CUEXIS_SOURCE_DIR as PROJECT_SOURCE_DIR for cuexis_pd_baseline_probe"
+      },
+      {
+        "path": "D:\\Cuexis-worktree\\out\\pd5-c2-20261021-020a5ff\\f1-source\\CMakeLists.txt",
+        "sha256": "09dcb84ad678b8e713b9c2c3888f073e88b901bbd38eb38d1dac92faf1f6ac8f",
+        "lines": "5,144",
+        "purpose": "sets the project root and adds tests"
+      },
+      {
+        "path": "D:\\Cuexis-worktree\\out\\build\\pd5-c2-020a5ff-f1-normal\\CMakeCache.txt",
+        "sha256": "53590ceb2c2ff8cfdc0861da821288cd54e93e531e5a84d0c676f12ebd775620",
+        "lines": "540",
+        "purpose": "CMAKE_HOME_DIRECTORY identifies archived f1-source as build source root"
+      },
+      {
+        "path": "D:\\Cuexis-worktree\\out\\build\\pd5-c2-020a5ff-f1-normal\\compile_commands.json",
+        "sha256": "e11c1e1180727750978dd774ddb373f99859fcd92ecff3a30ecc46b83e82b62f",
+        "lines": "1637,1661",
+        "purpose": "baseline probe translation unit command defines CUEXIS_SOURCE_DIR to archived f1-source"
+      }
+    ],
+    "python_executable": "C:\\msys64\\ucrt64\\bin\\python.exe",
+    "python_executable_sha256": "09162faf445d60fd856490a9ed3860bd6a3b14fa13612b310d0e6d08b0655edf"
+  },
+  "review_corrections": [
+    "Collector output moved to a dedicated empty native subdirectory.",
+    "SeSystemProfilePrivilege is required to be present; Enabled or Disabled is recorded, not gated.",
+    "WPR and collector helper processes use hidden windows.",
+    "Ambiguous WPR start cleanup targets only the unique attempted instance and preserves primary and cleanup failures separately.",
+    "Collector requires an owned-capture receipt and confirms the exact named WPR instance before native launch.",
+    "Capture intent/hash construction and write are fail-closed before any WPR start; failures produce a NOT RUN receipt.",
+    "Capture authorization is issued by the sealed controller as pd5.f1-controller-capture.v1; the wrapper-script hash check was replaced by a controller-source hash and claim-hash check, so no wrapper provenance is forged and the collector still refuses to run outside one supervised capture."
+  ],
+  "direct_collector_guard": {
+    "administrator_token_required": true,
+    "SeSystemProfilePrivilege_must_be_present": true,
+    "sealed_controller_owned_capture_receipt_required": true,
+    "plan_and_binding_hashes_verified": true,
+    "exact_named_wpr_instance_status_checked_before_native": true
+  },
+  "supervising_controller": {
+    "role": "f1",
+    "job_containment": "the collector runs as one member of the controller's named worker Job, which is the only Job the controller can terminate",
+    "native_containment": "the collector keeps its own pinned inner Job with KILL_ON_JOB_CLOSE, so native F1 processes are reaped when the collector dies and are never members of the outer Job",
+    "reclamation_evidence": "outer Job active count zero plus per-pid ProcessRef liveness capture and death proof parsed from the collector's native logs",
+    "stop_authority": "the controller owns the exact instance name; the guardian performs the single raw stop and exact absence proof"
+  },
+  "runtime_asset_binding_scope": "The finite read/update measurement resolves these two binary assets through compiled CUEXIS_SOURCE_DIR; warmup does not use sparseSource. All paths and hashes are additionally pinned in binding.json.",
+  "preparation_revision": 4,
+  "supersedes_for_future_launch_only": "D:\\Cuexis-pd5-40k-admission\\out\\pd5-f1-noise-control-v3-20261023-e6959a9",
+  "previous_failed_run_preserved": "run-20261023T075318Z-1c28748529334603b99715aec1219127",
+  "wrapper_repair": [
+    "Cache process handles before polling and explicitly wait before reading exit codes.",
+    "Fail closed on unavailable exit codes; report progress and all failure outcomes to console.",
+    "Pin WPR and Python absolute paths and hashes across ordinary/elevated shells."
+  ],
+  "review_status": "TOOL ACCEPTANCE ONLY; ONE BOUNDED DIAGNOSTIC CAPTURE PER DECLARED CASE; NO FORMAL MEASUREMENT",
+  "capture_enabled": true,
+  "delivery": {
+    "allowed_action": "administrator tool-acceptance cases only, exactly once each, no retry",
+    "capture_action": "enabled for the three declared f1-scale cases through the sealed controller role f1",
+    "preflight_operations": [
+      "hash files",
+      "check elevated token",
+      "whoami /priv",
+      "QueryAllTracesW read-only inventory",
+      "wpr -status",
+      "wpr -profiledetails <sealed-package>\\f1_scale.wprp!PD5F1Scale"
+    ],
+    "new_F1_samples": 18,
+    "new_ETW_recordings": 3,
+    "draft_capture_review": "not accepted; the draft controller is superseded by the sealed controller role f1 in this package"
+  }
+}

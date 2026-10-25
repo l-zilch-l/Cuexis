@@ -6,6 +6,7 @@
 #include "owner_channel.hpp"
 #include <atomic>
 #include <chrono>
+#include <cuexis_internal/execution_diagnostics.hpp>
 #include <functional>
 #include <thread>
 #include <variant>
@@ -172,6 +173,10 @@ struct SessionCancelStep final {
 struct SessionQueryStep final {
     StepKey key;
 };
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+struct SessionRpaObservation final {};
+struct SessionRpaSeekObservation final {};
+#endif
 struct SessionInspect final {};
 struct SessionGameplayResult final {};
 struct SessionInspection final {
@@ -190,13 +195,24 @@ using SessionCommand = std::variant<
     SessionRegisterConsumer, SessionConfirmConsumer, SessionRevokeConsumer, SessionRequestFrame,
     SessionRevokeRetained, SessionDeliveryMetrics, SessionFeedbackQuery, SessionObservationQuery,
     SessionArchive, SessionSnapshot, SessionEvaluateReplay, SessionLag, SessionArchiveCut,
-    SessionSeek, SessionSoftwareRetire, SessionSoftwareClose, SessionCancelStep, SessionQueryStep>;
+    SessionSeek, SessionSoftwareRetire, SessionSoftwareClose, SessionCancelStep, SessionQueryStep
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    ,
+    SessionRpaObservation, SessionRpaSeekObservation
+#endif
+    >;
 using SessionReply =
     std::variant<std::monostate, PresentationCandidateInput, std::uint64_t, StepReceipt,
                  GameplayAdvanceDecision, FrameEnvelope, GameplayReplay, GameplayReplayCut,
                  SessionInspection, TailClockTransition, GameplayReplayEvaluation, GameplaySnapshot,
                  GameplayExecutionLag, GameplayResult, ConsumerRegistration, DeliveryInfo,
-                 FrameDeliveryLayout, StorageMetrics, FeedbackObservation, ObservationInfo>;
+                 FrameDeliveryLayout, StorageMetrics, FeedbackObservation, ObservationInfo
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+                 ,
+                 cuexis::internal::execution_diagnostics::rpa::OwnerCloseObservation,
+                 cuexis::internal::execution_diagnostics::rpa::SeekLedger
+#endif
+                 >;
 struct SessionWorkerConfiguration final {
     std::size_t capacity{}, controlReserve{}, stepCapacity{}, stepReserve{}, frameCapacity{},
         feedbackCapacity{};
@@ -207,6 +223,9 @@ struct SessionWorkerConfiguration final {
     DeliveryLimits delivery{8, 8, 64U * 1024U * 1024U, 32};
     std::size_t maxFrameMembers{4096}, receiptCapacity{128};
     FrameObservationLedger::Limits observation;
+    // Optional test-only command gate; called on the session owner before dispatch.
+    std::function<void(std::uint64_t, const SessionCommand&)> beforeDispatch;
+    std::function<void(std::uint64_t)> replyAcknowledged;
 };
 class SessionWorker final {
   public:

@@ -21,7 +21,14 @@
 | [string_budget_audit.py](string_budget_audit.py) | 在独立源码副本观察 Gameplay-host 实际 STR0/REF0 与字节增长；保持预算，不能用作性能/正式注册 |
 | [window_protocol.py](window_protocol.py) | 排他领取、窗口间隔和原始证据链支持库 |
 | [process_control.py](process_control.py) | Windows Job 进程树及内部 child 支持，不是面向用户的独立入口 |
-| [profiles.json](profiles.json) | 有限工具 profile、容量声明和显式就绪阻断项 |
+| [prepare_etw_canary.py](prepare_etw_canary.py) / [etw_safety](etw_safety/README.md) | 只封包两项空载 ETW 生命周期 canary；不执行 Cuexis/F1，不注册正式测量 |
+| [prepare_etw_tools.py](prepare_etw_tools.py) | 把 canary 与三项 F1 用例合并封包为一个自校验工具包并生成两个启动器；不启动采集 |
+| [profiles.json](profiles.json) | 有限工具 profile、容量声明、逐 profile `content_entities` 和显式就绪阻断项 |
+| [memory_caps.py](memory_caps.py) | PD-5 B0：由已声明容量静态推导 `pd5.memory.caps.v1` 逐单元上限；缺项记 `NA:<原因>`，不运行工作负载 |
+| [memory_caps.v1.json](memory_caps.v1.json) | 上者的生成物；`--check` 逐字节比对 |
+| [audit_element_sizes.py](audit_element_sizes.py) | PD-5 B0：编译期 `sizeof` 审计账本元素尺寸，供 `memory_caps.py` 折算字节上限 |
+| [element_sizes.v1.json](element_sizes.v1.json) | 上者的生成物；`--check` 重新编译比对 |
+| [memory_domains.py](memory_domains.py) | PD-5 B1：把 `PD5_MEMORY_DOMAIN`/`PD5_MEMORY_PARTITION` 归到 owner×domain 并对照 B0 上限；只解析已采集日志，不运行工作负载 |
 
 ## 调用
 
@@ -33,6 +40,10 @@ python -B tools/verification/playback_performance/prepare_profiles.py prepare --
 python -B tools/verification/playback_performance/prepare_profiles.py verify --manifest <manifest.json>
 python -B tools/verification/playback_performance/owner_runner.py prepare --output out/pd5-owner
 python -B tools/verification/playback_performance/device_inventory.py --output <new-inventory.json>
+python -B tools/verification/playback_performance/memory_caps.py --check
+python -B tools/verification/playback_performance/audit_element_sizes.py --check
+python -B tools/verification/playback_performance/memory_domains.py collect-domains <observer.log> --json <domains.json>
+python -B tools/verification/playback_performance/memory_domains.py check-domains <observer.log> --caps tools/verification/playback_performance/memory_caps.v1.json --profile cpu-stream-v1 --entities 1 --json <verdict.json>
 python -B -m unittest discover -s tests/pd -p 'pd5*_tests.py' -v
 ```
 
@@ -96,3 +107,49 @@ bind 绑定新 Release 诊断构建，run 执行 N=1/64/40000×low/high 固定�
 提议布局 sizing、原 semantic hash 需求与 wire accepted 分别记录，不进入 Host 或正式测量。
 小规模实际输出校验 sizing/hash；40k 的提议 Gameplay payload 仅计数。工作量上限与 revision 4
 Reader/Writer 尚待合同接受，参见 docs/stage_plans/active/stage-07/pd5-gameplay-admission.md。
+
+## F1 工具包（canary 与 F1 用例合并封包）
+
+[prepare_etw_tools.py](prepare_etw_tools.py) 把 [etw_safety](etw_safety/README.md) 的全部源模块、
+`README.md`、`lifecycle.wprp`、`f1_scale.wprp` 和 `plan.json` 封成一个自校验工具包，
+在封包时写入 `binding.json` 并生成两个管理员启动器：
+
+```powershell
+python -B tools/verification/playback_performance/prepare_etw_tools.py `
+    --output out/<全新目录> --wpr "D:\Windows Kits\10\Windows Performance Toolkit\wpr.exe"
+```
+
+`--output` 必须是尚不存在的路径（create-new，已存在的封包不可更新），`--wpr` 必须与
+`plan.json` 的 `wpr.executable` 一致。封包不启动 WPR，不执行 Cuexis/F1，`executed: false`。
+封包内 `run_tool_canary.ps1`（role `canary`）执行两项空载生命周期用例，
+`run_f1_scale.ps1`（role `f1`）执行三项 F1 用例；两者都先核对 `binding.json` 与 `bootstrap.py`
+的哈希，再以 `-B -I -S -u` 运行 `bootstrap.py`，把退出码原样返回并打印本次证据目录。
+启动器返回的是 harness 的退出码：`0` 表示全部固定用例通过，`1` 表示 `FAILED/UNRESOLVED`；
+个别用例自己的控制器退出码（`f1-scale` 0、`f1-scale-timeout` 74、`f1-scale-death` 73）是
+判定条件之一，记录在该用例的 `result.json` 里，不是启动器退出码。两者都不是重试许可。
+`f1-scale` 走“一次运行全部三项”，任一项失败即停止，不重试、不补样。
+
+`binding.json` 使用 `pd5.etw-tool-canary.binding.v3`：`sources`（逐模块 SHA256）、
+`controller_source_sha256`、`artifact_sha256`（每个交付文件的 SHA256，含 `plan.json`）、
+`input_sha256`（frozen 输入/支持/运行时资产/解析证据）、`profiles`（两个 profile 的文件名、profile
+名与 SHA256）、`cases`/`case_envelopes`、`wpr`、`python`，并显式写 `formal: false`、
+`native_launches: 0`、`formal_acceptance: false`、`performance_acceptance: false`。
+`bootstrap.py` 在 import 控制器之前复核 schema、源集合、profile 绑定、控制器哈希、
+全部 artifact 哈希、用例表、解释器身份与 `wpr.exe` 哈希，任一不符即
+`FAILED BEFORE ROLE` 并以 2 退出；因此被篡改的 `plan.json` 在第一个 WPR 动作之前就被拒绝。
+控制器签发的 `f1-owned-capture.json` 同时记录 `controller_source_sha256` 与
+`controller_claim_sha256`，collector 再用 `binding.json` 与命令行 claim 双向核对，
+这取代了旧包装器才能诚实写入的 `wrapper_script_sha256` 合同；包装器哈希不入链，也不伪造。
+
+`plan.json` 是 F1 数值的唯一真源，封包时与 `etw_safety/cases.py` 交叉核对：
+整次采集硬上限 420 s、守护者接管 380 s、磁盘上限 2 GiB、collector 预算 250 s、WPR 停止 110 s、
+启动 20 s、harness 480 s、监督者工作负载预算 300 s（250 + 50 宽限）、6 次 native 启动、
+3 个进程、mask 4、预热 30 s，超时探针落在预热内的 20 s。canary 保持 120/95/128 MiB 的原有数值。
+`f1-scale` 要求退出码 0 且 6 次启动全部完成；`f1-scale-timeout` 要求退出码 74、Job 与每个 native
+PID 都被证明死亡且完成有序停止与缺席证明；`f1-scale-death` 要求退出码 73、死亡瞬间有存活的
+native 身份证据，并在控制器与守护者都不存在后证明该 PID 已死。
+
+三项 F1 用例都是工具验收，不是正式测量、不是性能接受、不是 PD-5 完成，也不扩大 ETW 故障覆盖；
+每项只允许运行一次，失败即保留，不重试、不补样。相关断言在
+`tests/pd/pd5_etw_f1_scale_tests.py`（`pd5_etw*_tests.py` 发现集共 88 项）：计划与用例表一致性、
+claim 合同、签发收据、工作负载/超时/死亡三条路径、启动记录解析、profile 选择、preflight 与判定。
