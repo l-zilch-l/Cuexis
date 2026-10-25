@@ -1,7 +1,10 @@
 #include "../judgement/execution_test_fixture.hpp"
+#include "capsule_fixture.hpp"
 #include "gameplay_test_fixture.hpp"
+#include "hash_work_internal.hpp"
 #include "packed_fixture_support.hpp"
 #include "packed_gameplay_internal.hpp"
+#include "semantic_stream_internal.hpp"
 
 #include <cuexis/chart/packed_chart_io.hpp>
 #include <cuexis/gameplay_packed/gameplay_capsule.hpp>
@@ -10,6 +13,7 @@
 
 #include <algorithm>
 #include <array>
+#include <catch2/generators/catch_generators.hpp>
 #include <chrono>
 #include <cmath>
 #include <fstream>
@@ -23,68 +27,7 @@ namespace packed = chart::packed;
 namespace support = chart::packed::test;
 using Bytes = std::vector<std::byte>;
 
-struct CapsuleFixture final {
-    Fixture base;
-    ResolvedGameplayPrepareRequest request;
-    chart::CanonicalSemanticChart chart;
-    std::vector<capsule::RequirementOwner> owners;
-    capsule::CapsuleProfiles profiles{"normalization.one", "coordination.policy.one"};
-
-    CapsuleFixture() : request{base.request(), {}} {
-        auto& r = request.assembly.sources[0].document.requirements[0];
-        r.localClosePolicyToken = "local.close.t4.v1";
-        r.phases.push_back({PhaseKind::tail, 3});
-        r.patternArmRefs = {"atom.one"};
-        r.timing = RequirementRecord::Timing{Tick{100},
-                                             {{Tick{10}, Tick{20}, {PhaseKind::head, 1}},
-                                              {Tick{100}, Tick{103}, {PhaseKind::tail, 3}}},
-                                             TimeInterval{Tick{20}, Tick{100}}};
-        r.resourceClaims[0].claimPolicy.competition = ClaimPolicyDeclaration::CompetitionKey{-1, 7};
-        request.assembly.sources[0].document.relations[0].policy.claimKeyToken.clear();
-        chart.chartId.value = "019b0000-0000-7abc-8def-000000000001";
-        chart.features = {{std::string{kFeatureId}, 1}, {std::string{kRulesetFeatureId}, 1}};
-        chart.mainMusic = chart::AssetId{"music.one"};
-        chart.resourceClosure.resources = {
-            {*chart.mainMusic, chart::CanonicalResourceUseKind::MainMusic},
-            {chart::AssetId{"mesh.one"}, chart::CanonicalResourceUseKind::RenderableMesh},
-            {chart::AssetId{"material.one"}, chart::CanonicalResourceUseKind::RenderableMaterial}};
-        std::sort(chart.resourceClosure.resources.begin(), chart.resourceClosure.resources.end());
-        chart::CanonicalEntity entity;
-        entity.identity = chart::ExplicitEntityIdentity{
-            chart::ChartObjectId{"019b0000-0000-7abc-8def-000000000002"}};
-        entity.components = {chart::CanonicalTransform{},
-                             chart::CanonicalRenderable{chart::AssetId{"mesh.one"},
-                                                        chart::AssetId{"material.one"}, 37}};
-        chart.entities.push_back(entity);
-        auto visual = entity;
-        visual.identity = chart::ExplicitEntityIdentity{
-            chart::ChartObjectId{"019b0000-0000-7abc-8def-000000000003"}};
-        visual.parent = entity.identity;
-        chart.entities.push_back(visual);
-        owners.push_back({r.identity, entity.identity});
-    }
-    auto prepare() const -> PreparedGameplay {
-        auto result = prepareResolvedGameplay(request);
-        INFO((result ? ""
-                     : std::string{result.error().code()} + ": " +
-                           std::string{result.error().message()}));
-        REQUIRE(result);
-        return *result;
-    }
-    auto context() const -> capsule::DecodeContext {
-        return {request.assembly.capabilityContext, request.assembly.contentProfileLimits,
-                request.patternBudget, request.assembly.identityDeclarations,
-                profiles.coordinatorPolicyToken};
-    }
-    auto encode(const PreparedGameplay& prepared) const -> Bytes {
-        const auto result = capsule::encode({chart, prepared, owners, profiles});
-        INFO((result ? ""
-                     : std::string{result.error().code()} + ": " +
-                           std::string{result.error().message()}));
-        REQUIRE(result);
-        return *result;
-    }
-};
+using cuexis::gameplay_packed::testing::CapsuleFixture;
 
 auto u32(const Bytes& bytes, std::size_t at) -> std::uint32_t {
     packed::ByteReader r{std::span{bytes}.subspan(at, 4)};
@@ -645,18 +588,19 @@ TEST_CASE("Capsule revision 3 preserves executable fields and mutually rejects o
 
 TEST_CASE("Revision3 hostile bytes and file publication preserve the previous artifact",
           "[capsule][revision3][hostile][atomic]") {
+    const auto revision = GENERATE(3U, 4U);
     CapsuleFixture f;
     f.base.latePolicy = executionLate();
     executionFields(f.request.assembly);
     f.profiles = {f.request.assembly.normalizationProfileToken,
                   f.request.assembly.coordinatorPolicyToken};
     const auto prepared = f.prepare();
-    capsule::EncodeRequest request{f.chart, prepared, f.owners, f.profiles, {}, {}, 3};
+    capsule::EncodeRequest request{f.chart, prepared, f.owners, f.profiles, {}, {}, revision};
     auto encoded = capsule::encode(request);
     REQUIRE(encoded);
     auto bytes = *encoded;
     auto context = f.context();
-    context.candidateRevision = 3;
+    context.candidateRevision = revision;
     std::optional<capsule::PreparedCapsule> active;
     REQUIRE(capsule::decodeInto(active, bytes, context));
     const auto identity = active->gameplay.assembled().prepared;
@@ -792,13 +736,13 @@ TEST_CASE("Revision3 hostile bytes and file publication preserve the previous ar
     auto badChart = f.chart;
     badChart.features.clear();
     CHECK_FALSE(
-        capsule::writeAtomic({badChart, prepared, f.owners, f.profiles, {}, {}, 3}, target));
+        capsule::writeAtomic({badChart, prepared, f.owners, f.profiles, {}, {}, revision}, target));
     CHECK(readBytes(target) == *encoded);
     auto permuted = capsule::decode(rewrite(*encoded, true), context);
     REQUIRE(permuted);
     auto rewritten =
         capsule::encode({permuted->chart, permuted->gameplay, permuted->owners, permuted->profiles,
-                         permuted->patterns, permuted->measures, 3});
+                         permuted->patterns, permuted->measures, revision});
     REQUIRE(rewritten);
     CHECK(*rewritten == *encoded);
 }
@@ -1108,4 +1052,32 @@ TEST_CASE("Compiled Graph SAX rejects header shape counts and identity without f
     rejected = capsule::decodeGraph(*graph, context, production);
     REQUIRE_FALSE(rejected);
     CHECK(rejected.error().code() == "capability.budget_insufficient");
+}
+
+TEST_CASE("Bounded Gameplay2 static sink preserves complete legacy prefix bytes",
+          "[gameplay_packed][capsule4][identity]") {
+    CapsuleFixture f;
+    SECTION("explicit UUID identities") {}
+    SECTION("generated paths retain little endian identity order") {
+        for (unsigned i = 0; i < 2; ++i)
+            f.chart.entities[i].identity = chart::GeneratedEntityIdentity{
+                f.chart.chartId, "binding", "module", "export", {{"loop", 255 + i}, {"leaf", 0}}};
+        f.chart.entities[1].parent = f.chart.entities[0].identity;
+        f.owners[0].entity = f.chart.entities[0].identity;
+    }
+    std::vector<chart::CanonicalEntityIdentity> owners{f.owners[0].entity};
+    const auto expected = packed::gameplay_detail::staticPreimage(f.chart, owners, 3);
+    REQUIRE(expected);
+    capsule::detail::HashScratch scratch{{}};
+    std::pmr::vector<std::byte> actual{&scratch};
+    actual.reserve(expected->size());
+    const auto append = [](void* state, std::span<const std::byte> bytes) {
+        auto& output = *static_cast<std::pmr::vector<std::byte>*>(state);
+        output.insert(output.end(), bytes.begin(), bytes.end());
+    };
+    const auto streamed =
+        packed::gameplay_detail::streamStaticPreimage(f.chart, owners, {&actual, append, &scratch});
+    REQUIRE(streamed);
+    CHECK(std::equal(expected->begin(), expected->end(), actual.begin(), actual.end()));
+    CHECK(scratch.highWater() <= capsule::detail::kAcceptedHashWork.maxHashScratchBytes);
 }

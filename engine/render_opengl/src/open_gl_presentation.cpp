@@ -1,5 +1,5 @@
-#include "open_gl_presentation_internal.hpp"
 #include "../internal/cuexis_internal/gpu_storage_observer.hpp"
+#include "open_gl_presentation_internal.hpp"
 #include <cuexis/playback/presentation_candidate.hpp>
 
 #include <cuexis/core/error.hpp>
@@ -1634,7 +1634,8 @@ auto OpenGlBackend::renderPresentation(const playback::FrameSnapshot& snapshot,
             glUniformMatrix4fv(viewProjectionLocation_, 1, GL_FALSE, viewProjection.data());
             glBindVertexArray(debugVertexArray_);
             glBindBuffer(GL_ARRAY_BUFFER, debugVertexBuffer_);
-            test_only::GpuStorage::charge(1, debugVertexBuffer_, state.debugVerticesScratch.size() * sizeof(DebugVertex));
+            test_only::GpuStorage::charge(1, debugVertexBuffer_,
+                                          state.debugVerticesScratch.size() * sizeof(DebugVertex));
             glBufferData(
                 GL_ARRAY_BUFFER,
                 static_cast<GLsizeiptr>(state.debugVerticesScratch.size() * sizeof(DebugVertex)),

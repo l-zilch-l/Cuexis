@@ -9,8 +9,8 @@
 #include "presentation_internal.hpp"
 #include "presentation_materializer.hpp"
 #include "presentation_state.hpp"
-#include <cuexis_internal/presentation_metrics.hpp>
 #include <cuexis_internal/allocation_observer.hpp>
+#include <cuexis_internal/presentation_metrics.hpp>
 #include <cuexis_internal/sha256.hpp>
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
 #include "gameplay_internal.hpp"
@@ -3690,12 +3690,18 @@ auto detail::GameplayPublicationAccess::publish(
     auto* state_ = session.state_.get();
     internal::pd::Timer measurement{internal::pd::Stage::projection};
     using internal::pd::memory::structure;
-    structure("index.snapshot-layout", state_->snapshotLayout.entities.size(), state_->snapshotLayout.entities.capacity());
-    structure("index.projection-rows", state_->gameplayProjectionIndex.rows.size(), state_->gameplayProjectionIndex.rows.capacity());
-    structure("index.projection-sources", state_->gameplayProjectionIndex.sources.size(), state_->gameplayProjectionIndex.sources.size());
-    structure("index.projection-targets", state_->gameplayProjectionIndex.targets.size(), state_->gameplayProjectionIndex.targets.size());
-    structure("current.projection-active", state_->gameplayProjection.active.size(), state_->gameplayProjection.active.capacity());
-    structure("current.projection-future", state_->gameplayProjection.future.size(), state_->gameplayProjection.future.size());
+    structure("index.snapshot-layout", state_->snapshotLayout.entities.size(),
+              state_->snapshotLayout.entities.capacity());
+    structure("index.projection-rows", state_->gameplayProjectionIndex.rows.size(),
+              state_->gameplayProjectionIndex.rows.capacity());
+    structure("index.projection-sources", state_->gameplayProjectionIndex.sources.size(),
+              state_->gameplayProjectionIndex.sources.size());
+    structure("index.projection-targets", state_->gameplayProjectionIndex.targets.size(),
+              state_->gameplayProjectionIndex.targets.size());
+    structure("current.projection-active", state_->gameplayProjection.active.size(),
+              state_->gameplayProjection.active.capacity());
+    structure("current.projection-future", state_->gameplayProjection.future.size(),
+              state_->gameplayProjection.future.size());
     if (failureStage)
         *failureStage = GameplayPublicationFailureStage::Projection;
     if (auto valid = validateGameplayFrame(frame, state_->lastFrame); !valid)

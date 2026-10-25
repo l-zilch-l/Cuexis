@@ -36,11 +36,20 @@ auto gameplayEntryMetadata(const GameplayContent& content, const GameplayConfigu
         return core::unexpected(invalid("Invalid Gameplay entry content or kind"));
     const auto& capsule = storage->capsule;
     const auto& graph = capsule.gameplay.assembled().graph;
-    auto preimage = gameplay_packed::semanticPreimage({capsule.chart, capsule.gameplay,
-                                                       capsule.owners, capsule.profiles,
-                                                       capsule.patterns, capsule.measures, 3});
-    if (!preimage)
-        return core::unexpected(projectGameplayError(std::move(preimage.error())));
+    if (!capsule.verifiedSemanticDigest)
+        return core::unexpected(invalid("Gameplay content lacks a verified semantic digest"));
+    if (kind == "packed-chart") {
+        const auto revision = packedGameplayRevision(bytes);
+        if (!revision)
+            return core::unexpected(invalid("Truncated Gameplay artifact"));
+        if (*revision != capsule.candidateRevision || (*revision != 3 && *revision != 4))
+            return core::unexpected(invalid("Gameplay artifact and content revision mismatch"));
+        if (!std::equal(capsule.verifiedSemanticDigest->begin(),
+                        capsule.verifiedSemanticDigest->end(), bytes.begin() + 32,
+                        [](auto a, auto b) { return a == std::to_integer<std::uint8_t>(b); }))
+            return core::unexpected(
+                invalid("Gameplay artifact and content semantic digest mismatch"));
+    }
     auto configuration = encodeGameplayConfiguration(config);
     if (!configuration)
         return core::unexpected(std::move(configuration.error()));
@@ -75,11 +84,14 @@ auto gameplayEntryMetadata(const GameplayContent& content, const GameplayConfigu
         {"path", Value{std::string{path}}},
         {"playback", Value{true}},
         {"entryKind", Value{std::string{kind}}},
-        {"encoding", Value{kind == "packed-chart" ? "capsule.3" : "graph.1"}},
+        {"encoding",
+         Value{kind == "packed-chart" ? (capsule.candidateRevision == 4 ? "capsule.4" : "capsule.3")
+                                      : "graph.1"}},
         {"compilerProfile", Value{graph.sourceClosure.compilerProfileToken}},
         {"expandedEntityCount", Value{static_cast<std::uint64_t>(capsule.chart.entities.size())}},
         {"expandedRequirementCount", Value{static_cast<std::uint64_t>(graph.requirements.size())}},
-        {"compiledSemanticIdentity", Value{core::detail::sha256Hex(*preimage)}},
+        {"compiledSemanticIdentity",
+         Value{core::detail::sha256Hex(*capsule.verifiedSemanticDigest)}},
         {"artifactIdentity", Value{core::detail::sha256Hex(bytes)}},
         {"rulesetBinding", std::move(*configurationValue)},
         {"capabilityClosure",
@@ -150,7 +162,8 @@ auto parseGameplayEntryMetadata(std::string_view text, GameplayConfigurationDeco
     const auto* playback = parsed->find("playback")->boolean();
     if (!stringIs("format", "cuexis.gameplay-entry") || !version || *version != 1 || !playback ||
         !*playback ||
-        (!(stringIs("entryKind", "packed-chart") && stringIs("encoding", "capsule.3")) &&
+        (!(stringIs("entryKind", "packed-chart") &&
+           (stringIs("encoding", "capsule.3") || stringIs("encoding", "capsule.4"))) &&
          !(stringIs("entryKind", "gameplay-graph") && stringIs("encoding", "graph.1"))))
         return core::unexpected(invalid("Unsupported Gameplay metadata header"));
     for (const auto* key : {"artifactIdentity", "compiledSemanticIdentity"}) {

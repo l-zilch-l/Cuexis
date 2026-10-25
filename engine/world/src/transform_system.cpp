@@ -2,8 +2,8 @@
 #include <algorithm>
 #include <cuexis/core/error.hpp>
 #include <cuexis/world/transform_system.hpp>
-#include <cuexis_internal/allocation_observer.hpp>
 #include <cuexis/world/transform_update.hpp>
+#include <cuexis_internal/allocation_observer.hpp>
 #include <exception>
 #include <unordered_map>
 namespace cuexis::world {
@@ -57,10 +57,16 @@ auto detail::TransformUpdate::prepare(World& world, std::span<const TransformWri
         auto result = prepareLocked(writes);
 #if defined(CUEXIS_ALLOCATION_LIFETIME_OBSERVER)
         using internal::pd::memory::structure;
-        structure("world.transform-cache", world.transformCache_.size(), world.transformCache_.capacity());
-        structure("world.transform-order", world.transformOrder_.size(), world.transformOrder_.capacity());
-        structure("world.transform-components", world.registry_.storage<TransformComponent>().size(), world.registry_.storage<TransformComponent>().capacity());
-        structure("world.derived-components", world.registry_.storage<WorldTransformComponent>().size(), world.registry_.storage<WorldTransformComponent>().capacity());
+        structure("world.transform-cache", world.transformCache_.size(),
+                  world.transformCache_.capacity());
+        structure("world.transform-order", world.transformOrder_.size(),
+                  world.transformOrder_.capacity());
+        structure("world.transform-components",
+                  world.registry_.storage<TransformComponent>().size(),
+                  world.registry_.storage<TransformComponent>().capacity());
+        structure("world.derived-components",
+                  world.registry_.storage<WorldTransformComponent>().size(),
+                  world.registry_.storage<WorldTransformComponent>().capacity());
         structure("scratch.transform-cache", cache_.size(), cache_.capacity());
         structure("scratch.transform-order", order_.size(), order_.capacity());
         structure("scratch.local-matrices", localScratch_.size(), localScratch_.capacity());

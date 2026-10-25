@@ -35,7 +35,7 @@ filesystem 多产物使用内容派生 immutable generation、现有 manifest �
 
 状态：candidate
 
-更新日期：2026-10-11
+更新日期：2026-10-22
 
 本 Spec 是 Stage 7A 的候选合同正文，不是字段、公共头、Schema、Replay 或 Snapshot 的实现证据。
 
@@ -1785,6 +1785,11 @@ Gameplay 运行时预算在 S7A-9 前**保持未冻结**，实现只提供计数
 GPU、真实设备、音频和网络输入无法在当前环境复现时，单列为"未执行 / 环境限制"。
 
 ### 8.5 预算分层、成本归属与最坏值计数入口（`P1-10`，第 7 轮裁定，2026-10-03，`S7A7-R05`）
+
+2026-10-22 的 PD-5 owner 接受了 [Capsule §13](GAMEPLAY_CAPSULE_V2_FORMAT.md) 的物理 revision 4
+与内部 hash 工作量 profile。它属于内容 prepare-time 分层内的有限 codec 工作会计，不新增第六类
+profile，不接受生产 Gameplay/RT 数值，也不把 physical decoded bytes 当堆峰值或 hash 展开量。
+完整结构身份、Ix 重复计费与 proof/lifetime 门禁不变，阶段 B 实施不授权 40k Host 功能验收或测量。
 
 本节承载第 7 轮（收尾澄清与缺陷）裁定中的 `P1-10`，**首次消费批次为 S7A-9**。provenance：thread
 `01a0fe61-b7a3-7853-a380-0793fee14e14`（consult，模型 `gpt-6-astra`，verdict `adopt`、confidence

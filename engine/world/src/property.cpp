@@ -771,10 +771,14 @@ auto detail::ResolverAccess::prepareTransforms(PropertyResolver& resolver,
     resolver.collectCommitEntries();
     using internal::pd::memory::structure;
     structure("index.resolver", resolver.entries_.size(), resolver.entries_.capacity());
-    structure("scratch.resolver-touched", resolver.touchedEntries_.size(), resolver.touchedEntries_.capacity());
-    structure("current.resolver-committed", resolver.committedEntries_.size(), resolver.committedEntries_.capacity());
-    structure("candidate.resolver-commit", resolver.thisCommit_.size(), resolver.thisCommit_.capacity());
-    structure("scratch.resolver-conflicts", resolver.conflicts_.size(), resolver.conflicts_.capacity());
+    structure("scratch.resolver-touched", resolver.touchedEntries_.size(),
+              resolver.touchedEntries_.capacity());
+    structure("current.resolver-committed", resolver.committedEntries_.size(),
+              resolver.committedEntries_.capacity());
+    structure("candidate.resolver-commit", resolver.thisCommit_.size(),
+              resolver.thisCommit_.capacity());
+    structure("scratch.resolver-conflicts", resolver.conflicts_.size(),
+              resolver.conflicts_.capacity());
     writes.clear();
     writes.reserve(resolver.entries_.size());
     for (auto index : resolver.thisCommit_) {

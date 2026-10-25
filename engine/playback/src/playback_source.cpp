@@ -1168,9 +1168,23 @@ auto PlaybackSource::fromGameplayEntry(
                 .withContext("severity", "error")
                 .withContext("faulted", "false"));
     const auto& kind = *metadata->find("entryKind")->string();
+    const auto& encoding = *metadata->find("encoding")->string();
+    const auto revision = detail::packedGameplayRevision(entryBytes);
+    std::optional<std::string_view> expectedCompiledSemanticIdentity;
+    if (kind == "packed-chart" && (revision == 4 || encoding == "capsule.4")) {
+        if (revision != 4 || encoding != "capsule.4")
+            return core::unexpected(core::Error{"playback.gameplay.invalid",
+                                                "Gameplay metadata encoding/Header mismatch"}
+                                        .withContext("category", "identity_closure_incomplete")
+                                        .withContext("severity", "error")
+                                        .withContext("faulted", "false")
+                                        .withContext("fieldPath", "metadata.encoding"));
+        expectedCompiledSemanticIdentity = *metadata->find("compiledSemanticIdentity")->string();
+    }
     auto source = fromGameplayEncoded(
         std::move(sourceId), *path, entryBytes, configuration, assets, std::move(provider), intent,
-        kind == "gameplay-graph" ? std::optional{graphBudget} : std::nullopt);
+        kind == "gameplay-graph" ? std::optional{graphBudget} : std::nullopt,
+        expectedCompiledSemanticIdentity);
     if (!source)
         return core::unexpected(std::move(source.error()));
     auto expected = detail::gameplayEntryMetadata(source->state_->gameplayContent, configuration,
@@ -1192,7 +1206,9 @@ auto PlaybackSource::fromGameplayEncoded(
     std::string sourceId, std::string entryPath, std::vector<std::byte> bytes,
     const GameplayConfiguration& configuration, std::vector<PlaybackAssetDescriptor> assets,
     std::shared_ptr<content::IContentProvider> provider, GameplayPrepareIntent intent,
-    std::optional<GameplayGraphDecodeBudget> graphBudget) -> core::Result<PlaybackSource> try {
+    std::optional<GameplayGraphDecodeBudget> graphBudget,
+    std::optional<std::string_view> expectedCompiledSemanticIdentity)
+    -> core::Result<PlaybackSource> try {
     if (intent != GameplayPrepareIntent::Presentation &&
         intent != GameplayPrepareIntent::GameplayOnly)
         return core::unexpected(core::Error{"playback.gameplay.invalid", "Unknown prepare intent"});
@@ -1214,7 +1230,8 @@ auto PlaybackSource::fromGameplayEncoded(
     auto content = graphBudget ? GameplayContent::fromGraph(
                                      {reinterpret_cast<const char*>(bytes.data()), bytes.size()},
                                      configuration, *graphBudget)
-                               : GameplayContent::fromPacked(bytes, configuration);
+                               : detail::gameplayContentFromPacked(
+                                     bytes, configuration, expectedCompiledSemanticIdentity);
     if (!content)
         return core::unexpected(std::move(content.error()));
     const auto* typed = detail::GameplayAccess::content(*content);

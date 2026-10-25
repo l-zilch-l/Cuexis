@@ -3,11 +3,11 @@
 #include "../support/environment.hpp"
 #include "measurement_clocks.hpp"
 #include "measurement_environment.hpp"
-#include <cuexis_internal/presentation_metrics.hpp>
-#include <cuexis_internal/allocation_observer.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cstdlib>
 #include <cuexis/playback/frame_digest.hpp>
+#include <cuexis_internal/allocation_observer.hpp>
+#include <cuexis_internal/presentation_metrics.hpp>
 #include <iomanip>
 #include <iostream>
 #include <map>
@@ -107,19 +107,22 @@ class Pd5GpuRenderer final : public IPresentationRenderer {
             auto ended = timer_.end();
             if (!ended)
                 return core::unexpected(ended.error());
-            cpuSubmit_.push_back(std::chrono::duration<double, std::micro>(Clock::now() - start).count());
+            cpuSubmit_.push_back(
+                std::chrono::duration<double, std::micro>(Clock::now() - start).count());
             return result;
         }
         auto result = backend_.submit(s, d);
         if (record)
-            cpuSubmit_.push_back(std::chrono::duration<double, std::micro>(Clock::now() - start).count());
+            cpuSubmit_.push_back(
+                std::chrono::duration<double, std::micro>(Clock::now() - start).count());
         return result;
     }
     auto present() -> core::Result<void> override {
         const auto start = Clock::now();
         auto result = backend_.present();
         if (record)
-            cpuPresent_.push_back(std::chrono::duration<double, std::micro>(Clock::now() - start).count());
+            cpuPresent_.push_back(
+                std::chrono::duration<double, std::micro>(Clock::now() - start).count());
         return result;
     }
     auto resize(std::uint32_t w, std::uint32_t h) -> core::Result<void> override {
@@ -177,7 +180,8 @@ class Pd5GpuRenderer final : public IPresentationRenderer {
 #endif
 
 #if defined(CUEXIS_ALLOCATION_LIFETIME_OBSERVER)
-TEST_CASE("PD5 allocation observer tracks transient and cross-thread ownership", "[pd][pd5][memory]") {
+TEST_CASE("PD5 allocation observer tracks transient and cross-thread ownership",
+          "[pd][pd5][memory]") {
     const auto before = cuexis::internal::pd::memory::snapshot();
     auto* block = ::operator new(12345, std::align_val_t{256});
     REQUIRE(reinterpret_cast<std::uintptr_t>(block) % 256 == 0);
@@ -439,10 +443,9 @@ TEST_CASE("PD5 scripted host timing probe", "[.][pd][pd5][timing-probe]") {
 #else
               << "normal"
 #endif
-              << "\",\"smoke\":"
-              << (smoke ? "true" : "false") << ",\"gpu_timer\":" << (timing ? "true" : "false")
-              << ",\"frames\":" << frames << ",\"warmup_frames\":" << warmup
-              << ",\"cycles\":" << cycles << ",\"rate\":" << rate
+              << "\",\"smoke\":" << (smoke ? "true" : "false")
+              << ",\"gpu_timer\":" << (timing ? "true" : "false") << ",\"frames\":" << frames
+              << ",\"warmup_frames\":" << warmup << ",\"cycles\":" << cycles << ",\"rate\":" << rate
               << ",\"source_step_ticks\":7000,\"source_tick_rate\":1000000"
               << ",\"payload_peak_count\":" << storageBeforeClose.peakCount
               << ",\"payload_peak_bytes\":" << storageBeforeClose.peakBytes

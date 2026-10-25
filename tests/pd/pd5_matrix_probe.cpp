@@ -5,8 +5,8 @@
 #include "measurement_environment.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cuexis/playback/frame_digest.hpp>
-#include <cuexis_internal/presentation_metrics.hpp>
 #include <cuexis_internal/allocation_observer.hpp>
+#include <cuexis_internal/presentation_metrics.hpp>
 #include <iomanip>
 #include <iostream>
 #include <map>
@@ -126,9 +126,12 @@ TEST_CASE("PD5 presentation workload matrix", "[.][pd][pd5][matrix]") {
     auto window = matrixTake(platform_sdl::SdlWindow::create(sdl, wc));
     if (smoke)
         REQUIRE(SDL_HideWindow(static_cast<SDL_Window*>(window.lease().nativeHandle())));
-    auto backend = matrixTake(render_opengl::OpenGlBackend::create(window, std::move(configuration)));
-    Pd5GpuRenderer renderer{std::move(backend), test_support::environmentVariable("CUEXIS_PD5_GPU_TIMER") == "1"};
-    auto initialPrepared = matrixTake(session->prepareLoad(test_support::presentation(), PlaybackMode::ChartClock));
+    auto backend =
+        matrixTake(render_opengl::OpenGlBackend::create(window, std::move(configuration)));
+    Pd5GpuRenderer renderer{std::move(backend),
+                            test_support::environmentVariable("CUEXIS_PD5_GPU_TIMER") == "1"};
+    auto initialPrepared =
+        matrixTake(session->prepareLoad(test_support::presentation(), PlaybackMode::ChartClock));
     auto presentation = matrixTake(renderer.prepare(initialPrepared, {}));
     matrixTake(renderer.accepts(presentation));
     matrixTake(session->commit(std::move(initialPrepared)));
@@ -147,8 +150,8 @@ TEST_CASE("PD5 presentation workload matrix", "[.][pd][pd5][matrix]") {
     std::vector<ConsumerRegistration> registrations;
     const auto registerConsumers = [&] {
         for (unsigned i = 0; i < totalConsumers; ++i) {
-            ConsumerProfile consumer{ConsumerMode::exactCapture, false, 1, 1024U * 1024U,
-                                     1024U * 1024U, 0, 0, 1};
+            ConsumerProfile consumer{
+                ConsumerMode::exactCapture, false, 1, 1024U * 1024U, 1024U * 1024U, 0, 0, 1};
 #if defined(CUEXIS_PD5_MATRIX_DEVICE)
             if (i == consumers) {
                 consumer.mode = ConsumerMode::realtimeLatest;
@@ -157,8 +160,7 @@ TEST_CASE("PD5 presentation workload matrix", "[.][pd][pd5][matrix]") {
                 consumer.rendererGeneration = renderer.identity().generation;
             }
 #endif
-            auto registration = matrixTake(delivery->registerConsumer(
-                i + 1, context, consumer));
+            auto registration = matrixTake(delivery->registerConsumer(i + 1, context, consumer));
             matrixTake(delivery->confirmRegistration({registration, true}));
             registrations.push_back(registration);
         }
@@ -280,7 +282,8 @@ TEST_CASE("PD5 presentation workload matrix", "[.][pd][pd5][matrix]") {
             held.push_back(std::move(*taken));
             if (measured) {
                 sample("materialize", readStart, readEnd);
-                sample(registration.profile.renderer ? "renderer_delivery" : "capture_delivery", start, end);
+                sample(registration.profile.renderer ? "renderer_delivery" : "capture_delivery",
+                       start, end);
                 ++materializations;
             }
         }
@@ -315,8 +318,7 @@ TEST_CASE("PD5 presentation workload matrix", "[.][pd][pd5][matrix]") {
     REQUIRE(observedSnapshot.omitted == 0);
 #endif
     pd_measure::environmentJson("end");
-    std::cout << "PD5_ID {\"schema\":\"pd5.probe.v1\",\"mode\":\"" << mode
-              << "\",\"harness\":\""
+    std::cout << "PD5_ID {\"schema\":\"pd5.probe.v1\",\"mode\":\"" << mode << "\",\"harness\":\""
 #if defined(CUEXIS_PD5_MATRIX_DEVICE)
               << "renderer-matrix"
 #else
@@ -338,8 +340,7 @@ TEST_CASE("PD5 presentation workload matrix", "[.][pd][pd5][matrix]") {
               << "\"smoke\":" << (smoke ? "true" : "false") << ",\"frames\":" << frames
               << ",\"warmup_frames\":" << warmup << ",\"updates\":" << updates
               << ",\"materializations\":" << materializations
-              << ",\"capture_consumers\":" << consumers
-              << ",\"renderer_consumers\":" << renderers
+              << ",\"capture_consumers\":" << consumers << ",\"renderer_consumers\":" << renderers
               << ",\"source_step_ticks\":7000,\"source_tick_rate\":1000000"
               << ",\"base_entities\":" << (sparse ? 200 : 1) << ",\"max_entities\":"
               << (mode == "topology" ? 201
@@ -350,9 +351,8 @@ TEST_CASE("PD5 presentation workload matrix", "[.][pd][pd5][matrix]") {
               << ",\"payload_charge_per_frame\":1048576,\"payload_live_after_close\":0,\"attempt_"
                  "live_after_close\":0"
               << ",\"gameplay\":false,\"replay_equal\":null,\"audio\":false,\"gpu\":"
-              << (renderers ? "true" : "false")
-              << ",\"closed\":true,\"digest\":"
-              << digest << ",\"counts\":{";
+              << (renderers ? "true" : "false") << ",\"closed\":true,\"digest\":" << digest
+              << ",\"counts\":{";
     bool comma = false;
     for (const auto& [name, count] : counts) {
         if (comma)

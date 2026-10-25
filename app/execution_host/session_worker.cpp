@@ -1,6 +1,7 @@
 #include "session_worker.hpp"
 #include <algorithm>
 #include <chrono>
+#include <cuexis_internal/execution_diagnostics.hpp>
 #include <limits>
 #include <type_traits>
 
@@ -351,6 +352,7 @@ struct SessionOwner final {
                     return reply(
                         session.beginRealtimeTail(job.eof, job.segment, job.profile, now()));
                 } else if constexpr (std::is_same_v<T, SessionCoherentAdvance>) {
+                    internal::execution_diagnostics::Trace diagnostic{"SessionCoherentAdvance"};
                     auto progress = HostCoordinationAccess::advanceRetention(session);
                     if (!progress)
                         return core::unexpected(progress.error());
@@ -971,7 +973,9 @@ void SessionWorker::waitForReply(std::uint64_t id, std::chrono::steady_clock::du
     channel_.waitForReply(id, duration);
 }
 void SessionWorker::requestShutdown() noexcept {
-    delivery_->closeAdmission();
+    internal::execution_diagnostics::Trace diagnostic{"requestShutdown"};
+    if (delivery_)
+        delivery_->closeAdmission();
     channel_.closeAdmission();
     shutdown_.store(true, std::memory_order_release);
     channel_.wake();
@@ -990,6 +994,7 @@ auto SessionWorker::fault() const noexcept -> OwnerChannel<SessionCommand, Sessi
     return channel_.fault();
 }
 void SessionWorker::run() noexcept {
+    internal::execution_diagnostics::Trace diagnostic{"SessionWorker"};
     try {
         SessionOwner owner{configuration_, delivery_};
         auto maintain = [&]() {
@@ -1037,6 +1042,11 @@ void SessionWorker::run() noexcept {
                 next = channel_.take();
             if (next) {
                 try {
+                    internal::execution_diagnostics::Trace dispatchDiagnostic{
+                        std::holds_alternative<SessionCoherentAdvance>(next->second)
+                            ? "SessionCoherentAdvanceDispatch"
+                            : "SessionDispatch",
+                        0, 0, next->first};
                     channel_.complete(next->first, owner.dispatch(std::move(next->second)));
                 } catch (...) {
                     channel_.complete(

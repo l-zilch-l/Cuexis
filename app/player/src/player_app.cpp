@@ -132,8 +132,9 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
 #if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
     ScriptedPlaybackTrace measurementTrace;
     if (measurementTrace.active())
-        surface = std::make_unique<ScriptedPlaybackSurface>(std::move(surface),
-            static_cast<SDL_Window*>(window.lease().nativeHandle()), measurementTrace);
+        surface = std::make_unique<ScriptedPlaybackSurface>(
+            std::move(surface), static_cast<SDL_Window*>(window.lease().nativeHandle()),
+            measurementTrace);
 #endif
     auto backendResult = createPlayerBackend(sdlRuntime, window, appConfig->app.requested.vsync,
                                              options.shaderCacheDirectory, logger);
@@ -209,15 +210,20 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
 #if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
     std::int64_t measuredRequest{}, measuredReady{};
     if (measurementTrace.active()) {
-        const auto stamp = [] { return std::chrono::duration_cast<std::chrono::microseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count(); };
+        const auto stamp = [] {
+            return std::chrono::duration_cast<std::chrono::microseconds>(
+                       std::chrono::steady_clock::now().time_since_epoch())
+                .count();
+        };
         if (options.smokeTest || options.audioSmokeTest)
-            return core::unexpected(core::Error{"player.measurement.mode", "Script and smoke cannot share a run"});
+            return core::unexpected(
+                core::Error{"player.measurement.mode", "Script and smoke cannot share a run"});
         hooks.beforeAudioService = [&, stamp](std::uint32_t) -> core::Result<void> {
             measuredRequest = stamp();
             return {};
         };
-        hooks.beforeSubmit = [&, stamp](const playback::FrameSnapshot&, std::uint32_t) -> core::Result<void> {
+        hooks.beforeSubmit = [&, stamp](const playback::FrameSnapshot&,
+                                        std::uint32_t) -> core::Result<void> {
             measuredReady = stamp();
             return {};
         };

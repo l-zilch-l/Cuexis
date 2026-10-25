@@ -2,11 +2,24 @@
 
 #include <cuexis/chart/packed_chart_tables.hpp>
 
+#include <memory_resource>
 #include <utility>
 
 namespace cuexis::chart::packed::gameplay_detail {
 
 using Reference = std::pair<std::uint8_t, std::string>;
+
+// Internal bounded sink; the caller owns and meters every scratch allocation.
+struct SemanticByteSink final {
+    void* context;
+    void (*write)(void*, std::span<const std::byte>);
+    std::pmr::memory_resource* scratch;
+};
+
+[[nodiscard]] auto streamStaticPreimage(const CanonicalSemanticChart& chart,
+                                        std::span<const CanonicalEntityIdentity> gameplayOwners,
+                                        SemanticByteSink sink, std::uint32_t candidateRevision = 3)
+    -> core::Result<void>;
 
 struct Section final {
     std::array<char, 4> code{};

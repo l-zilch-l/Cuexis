@@ -4,6 +4,32 @@
 
 ## 实施与回归
 
+- [PD-5 DiagTrack 命名会话核验与预检规则修正](2026-10-23-etw-background-session-classification.md)
+
+- [PD-5 管理员只读预检：已有 WPR 会话拦截与归属待查](2026-10-23-etw-existing-session-preflight-stop.md)
+
+- [PD-5 只读管理员预检、工具组件验证与下一证据方案](2026-10-23-readonly-etw-preflight-and-next-evidence-plan.md)
+
+- [PD-5 ETW 启动包装器失败与独立修正版](2026-10-23-etw-wrapper-failure-and-repair.md)
+
+- [PD-5 小规模寿命诊断、读取噪声复算与下一步采集准备](2026-10-23-memory-lifetime-and-read-noise-diagnostics.md)
+
+- [PD-5 Stage C 独立功能验收、内存责任与退出缺口](2026-10-23-stage-c-independent-acceptance-and-exit-gaps.md)
+
+- [PD-5 独立绑定阶段 C：Catch discovery 参数失败，native test 未启动](2026-10-23-stage-c-bound-discovery-stop.md)
+
+- [PD-5 Snapshot-bound 阶段 C：保护哈希门禁在 native 前停止](2026-10-23-stage-c-snapshot-bound-preflight-stop.md)
+
+- [PD-5 Snapshot probe 测试预算最小修复与验证](2026-10-23-snapshot-probe-budget-repair.md)
+
+- [PD-5 现有生命周期最小修复与有界关闭验证](2026-10-23-minimal-lifecycle-repair.md)
+
+- [PD-5 执行内核受控诊断、修复与关闭合同阻塞](2026-10-23-execution-core-diagnostic-and-repair.md)
+
+- [PD-5 阶段 C：原样 40k R4 功能验收阻塞交回](2026-10-22-gameplay-admission-stage-c.md)
+
+- [PD-5 阶段 B：R4 metadata 拒绝顺序修复](2026-10-22-gameplay-admission-r4-metadata-order.md)
+
 - [PD-4 按需交付、真实回收与紧凑观察记录](2026-10-19-pd4-delivery-retirement-and-observation.md)
 - [PD-3-c host refinement and SDK decision proposal](2026-10-19-pd3c-contract-and-version-decision.md)
 - [PD-3-b committed revisions, neutral read and unique materializer](2026-10-19-pd3b-state-read-and-materialization.md)
@@ -22,6 +48,10 @@
 
 ## 测量与基线
 
+- [Capsule revision 4 入口接入与阶段 B 交回](2026-10-22-gameplay-admission-revision4-entries.md)
+- [Capsule revision 4 阶段 B 实施记录](2026-10-22-gameplay-admission-stage-b.md)
+- [40k Gameplay-host B0 预算裁决交回（接受记录见阶段 B）](2026-10-22-gameplay-admission-b0-budget-ruling.md)
+- [40k Gameplay-host 准入阶段 A 定量交接](2026-10-21-gameplay-admission-stage-a.md)
 - [C2 单候选验证与交回核验](2026-10-21-c2-read-result-candidate.md)
 - [Gameplay-host 字符串字典与预算独立核查](2026-10-21-gameplay-host-string-budget.md)
 - [PD-5 门禁核查、有限诊断与处置交接](2026-10-21-pd5-followup.md)

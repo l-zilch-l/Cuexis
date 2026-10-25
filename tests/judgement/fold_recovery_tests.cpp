@@ -4,6 +4,7 @@
 #include "../../engine/judgement/src/recovery_wire.hpp"
 #include "execution_reference.hpp"
 #include "execution_test_fixture.hpp"
+#include <catch2/matchers/catch_matchers.hpp>
 #include <cuexis/judgement/recovery_codec.hpp>
 
 #include <algorithm>
@@ -578,6 +579,83 @@ TEST_CASE("W2 Replay and full Snapshot roundtrip reject corruption version and b
         std::ofstream snapshot{std::string{path} + ".snapshot", std::ios::binary};
         snapshot.write(reinterpret_cast<const char*>(encoded->data()),
                        static_cast<std::streamsize>(encoded->size()));
+    }
+}
+
+TEST_CASE("W2 element budget counts identity bytes and aggregate nested body elements",
+          "[recovery][codec][element-budget]") {
+    FoldFixture f;
+    auto s = f.session();
+    const auto initial = s.query()->kernelView();
+    const std::vector<std::byte> identity{std::byte{1}, std::byte{2}, std::byte{3}};
+    const std::vector<std::string> strings{"a", "bc"};
+    const std::vector<std::uint64_t> numbers{7, 8};
+    detail::wire::Writer writer;
+    writer(identity, strings, numbers);
+    std::vector<std::byte> decodedIdentity;
+    std::vector<std::string> decodedStrings;
+    std::vector<std::uint64_t> decodedNumbers;
+    // Three identity bytes + two strings + their 1/2 bytes + two numbers = 10 elements.
+    CodecBudget budget{writer.bytes.size(), 100, 10, true};
+    detail::wire::Reader exact{writer.bytes, 0, 0, budget, initial};
+    exact(decodedIdentity);
+    CHECK(decodedIdentity == identity);
+    CHECK(exact.elements == 3);
+    exact(decodedStrings);
+    CHECK(decodedStrings == strings);
+    CHECK(exact.elements == 8);
+    exact(decodedNumbers);
+    CHECK(decodedNumbers == numbers);
+    CHECK(exact.elements == 10);
+    CHECK(exact.pos == writer.bytes.size());
+
+    budget.maxElements = 9;
+    detail::wire::Reader below{writer.bytes, 0, 0, budget, initial};
+    CHECK_THROWS_WITH(below(decodedIdentity, decodedStrings, decodedNumbers),
+                      "codec.budget_exceeded");
+    budget.maxElements = 2;
+    detail::wire::Reader headerBelow{writer.bytes, 0, 0, budget, initial};
+    CHECK_THROWS_WITH(headerBelow(decodedIdentity), "codec.budget_exceeded");
+}
+
+TEST_CASE("W2 Snapshot element budget includes header and body at the exact limit",
+          "[recovery][codec][element-budget]") {
+    FoldFixture f{true};
+    auto s = f.session();
+    REQUIRE(s.submit({raw(900, 1), raw(1000, 2, InputAction::release)}));
+    REQUIRE(s.advance(Tick{1103}));
+    const auto snapshot = s.snapshot();
+    REQUIRE(snapshot);
+    const auto bytes = encodeSnapshot(*snapshot);
+    REQUIRE(bytes);
+    const auto& kernel = snapshot->state().kernel;
+    const auto identityElements = kernel.judgementIdentity.canonicalBytes().bytes().size();
+    const auto headerElements = identityElements + kernel.effectiveFactSemanticRevision.size() +
+                                std::string_view{"canonical.discrete.le.v1"}.size();
+    // Use the existing typed wire helper for the small body; the header charge above is
+    // independent. Public decode must carry that header charge into the body Reader.
+    detail::wire::Writer body;
+    body(snapshot->state());
+    detail::wire::Reader reader{body.bytes, 0, 0, {}, kernel};
+    auto dto = reader.seed<SnapshotDTO>();
+    reader(dto);
+    REQUIRE(reader.pos == body.bytes.size());
+    REQUIRE(reader.elements > 0);
+    const auto totalElements = headerElements + reader.elements;
+    CodecBudget budget{bytes->size(), 100, totalElements, true};
+    const auto decoded = decodeSnapshot(*bytes, f.inputs(), budget);
+    REQUIRE(decoded);
+    CHECK(sameSnapshot(snapshot->state(), decoded->state()));
+    const auto reencoded = encodeSnapshot(*decoded);
+    REQUIRE(reencoded);
+    CHECK(*reencoded == *bytes);
+    for (const auto limit :
+         {identityElements - 1, headerElements, reader.elements, totalElements - 1}) {
+        CAPTURE(limit, headerElements, reader.elements, totalElements);
+        budget.maxElements = limit;
+        const auto rejected = decodeSnapshot(*bytes, f.inputs(), budget);
+        REQUIRE_FALSE(rejected);
+        CHECK(rejected.error().code() == "codec.budget_exceeded");
     }
 }
 
@@ -1532,4 +1610,205 @@ TEST_CASE("diagnostic envelope and structural first errors remain ordered before
           "judgement.execution.profile_incomplete");
     CHECK(decodeReplay(truncated, f.inputs(), CodecBudget{1, 1, 1, false}).error().code() ==
           "codec.budget_unaccepted");
+}
+
+namespace {
+void deadlineFixture(FoldFixture& f, unsigned count, bool rpa) {
+    f.tap();
+    auto& a = f.assembly;
+    if (rpa) {
+        a.executionProfile = "gameplay.execution.t4-k4.rpa.v1";
+        a.identityDeclarations.engine.executionProfileToken = a.executionProfile;
+        a.identityDeclarations.engine.lateAlgorithmToken = "late.window.batch.v1";
+        a.identityDeclarations.engine.factSemanticRevision = "fact.semantic.rpa.v1";
+    }
+    auto& document = a.sources[0].document;
+    const auto prototype = document.requirements[0];
+    document.requirements.clear();
+    std::erase_if(document.declarations,
+                  [](const auto& d) { return d.kind == DeclarationKind::requirement; });
+    document.relations[0].members.clear();
+    a.contentProfileLimits.maxRequirements = MeasuredParameter<std::uint64_t>::measured(count);
+    for (unsigned i = 0; i < count; ++i) {
+        auto r = prototype;
+        r.stableId.declarationOrdinal = 100 + i;
+        r.identity.requirementLocalId = "deadline." + std::to_string(i);
+        r.resourceClaims[0].claimPolicy.competition = ClaimPolicyDeclaration::CompetitionKey{-1, i};
+        r.timing->end = Tick{8 + i};
+        document.declarations.push_back(
+            testDeclaration(DeclarationKind::requirement, r.identity.requirementLocalId, 100 + i));
+        document.relations[0].members.push_back(r.stableId);
+        document.requirements.push_back(std::move(r));
+    }
+}
+auto deadlineConfiguration(FoldFixture& f, bool rpa) -> SessionConfiguration {
+    auto c = f.configuration();
+    if (rpa) {
+        c.executionProfileToken = "gameplay.execution.t4-k4.rpa.v1";
+        c.lateAlgorithmToken = "late.window.batch.v1";
+        c.factSemanticRevision = "fact.semantic.rpa.v1";
+    }
+    return c;
+}
+auto deadlineSession(FoldFixture& f, bool rpa) -> JudgementSession {
+    auto session = JudgementSession::create();
+    REQUIRE(session);
+    REQUIRE(session->configure(deadlineConfiguration(f, rpa)));
+    REQUIRE(session->prepare(f.prepared()));
+    return std::move(*session);
+}
+} // namespace
+
+TEST_CASE("Deadline-only ticks preserve full state and bounded transaction work",
+          "[kernel][recovery][deadline]") {
+    for (const bool rpa : {false, true}) {
+        DYNAMIC_SECTION("rpa=" << rpa) {
+            FoldFixture f;
+            deadlineFixture(f, 64, rpa);
+            auto optimized = deadlineSession(f, rpa);
+            auto reference = deadlineSession(f, rpa);
+            auto work = std::make_shared<detail::KernelWorkObservation>();
+            detail::KernelTestControls controls{};
+            controls.work = work;
+            REQUIRE(detail::KernelTestAccess::inject(optimized, controls));
+            controls.work.reset();
+            controls.forceReferenceAdvance = true;
+            REQUIRE(detail::KernelTestAccess::inject(reference, controls));
+            auto before = optimized.query();
+            REQUIRE(before);
+            REQUIRE(optimized.advance(Tick{1000}));
+            REQUIRE(reference.advance(Tick{1000}));
+            auto a = optimized.snapshot();
+            auto b = reference.snapshot();
+            REQUIRE(a);
+            REQUIRE(b);
+            CHECK(sameSnapshot(a->state(), b->state()));
+            CHECK(*encodeSnapshot(*a) == *encodeSnapshot(*b));
+            CHECK(*encodeReplay(*optimized.archive()) == *encodeReplay(*reference.archive()));
+            CHECK(before->kernelView().facts.empty());
+            CHECK_FALSE(before->kernelView().processedFrontier);
+            CHECK(work->timers == 256);
+            CHECK(work->fullTickTransactions <= 4);
+            CHECK(work->idleDeadlineTicks >= 60);
+        }
+    }
+}
+
+TEST_CASE("Idle deadline optimization preserves tick fault and Fold boundaries",
+          "[kernel][recovery][deadline]") {
+    for (const bool rpa : {false, true})
+        for (const auto point :
+             {detail::KernelFailurePoint::afterTimers, detail::KernelFailurePoint::afterInput,
+              detail::KernelFailurePoint::beforeLedger, detail::KernelFailurePoint::beforeSeal,
+              detail::KernelFailurePoint::beforeFold}) {
+            DYNAMIC_SECTION("rpa=" << rpa << " point=" << static_cast<unsigned>(point)) {
+                FoldFixture f;
+                deadlineFixture(f, 32, rpa);
+                auto optimized = deadlineSession(f, rpa);
+                auto reference = deadlineSession(f, rpa);
+                detail::KernelTestControls controls{};
+                controls.failedTick = Tick{20};
+                controls.failurePoint = point;
+                REQUIRE(detail::KernelTestAccess::inject(optimized, controls));
+                controls.forceReferenceAdvance = true;
+                REQUIRE(detail::KernelTestAccess::inject(reference, controls));
+                auto a = optimized.advance(Tick{1000});
+                auto b = reference.advance(Tick{1000});
+                REQUIRE_FALSE(a);
+                REQUIRE_FALSE(b);
+                CHECK(a.error().code() == b.error().code());
+                auto x = detail::KernelTestAccess::captureDTO(optimized);
+                auto y = detail::KernelTestAccess::captureDTO(reference);
+                REQUIRE(x);
+                REQUIRE(y);
+                CHECK(sameSnapshot(*x, *y));
+            }
+        }
+}
+
+TEST_CASE("Idle deadlines preserve split advances hooks inputs and recovery bytes",
+          "[kernel][recovery][deadline]") {
+    for (const bool rpa : {false, true})
+        for (const bool hooks : {false, true}) {
+            DYNAMIC_SECTION("rpa=" << rpa << " hooks=" << hooks) {
+                FoldFixture f{hooks};
+                deadlineFixture(f, 32, rpa);
+                auto optimized = deadlineSession(f, rpa);
+                auto reference = deadlineSession(f, rpa);
+                detail::KernelTestControls controls{};
+                controls.forceReferenceAdvance = true;
+                REQUIRE(detail::KernelTestAccess::inject(reference, controls));
+                REQUIRE(optimized.advance(Tick{3}));
+                REQUIRE(reference.advance(Tick{3}));
+                auto retained = optimized.query();
+                REQUIRE(retained);
+                if (!rpa) {
+                    REQUIRE(optimized.submit({raw(5, 1)}));
+                    REQUIRE(reference.submit({raw(5, 1)}));
+                }
+                REQUIRE(optimized.advance(Tick{1000}));
+                REQUIRE(reference.advance(Tick{1000}));
+                CHECK(retained->kernelView().facts.empty());
+                CHECK(retained->kernelView().processedFrontier == Tick{0});
+                auto a = optimized.snapshot();
+                auto b = reference.snapshot();
+                REQUIRE(a);
+                REQUIRE(b);
+                CHECK(sameSnapshot(a->state(), b->state()));
+                auto encoded = encodeSnapshot(*a);
+                REQUIRE(encoded);
+                CHECK(*encoded == *encodeSnapshot(*b));
+                const RecoveryInputs dependencies{deadlineConfiguration(f, rpa), f.prepared()};
+                auto decoded = decodeSnapshot(*encoded, dependencies);
+                REQUIRE(decoded);
+                auto recovered = JudgementSession::recover(*decoded, dependencies);
+                REQUIRE(recovered);
+                CHECK(sameSnapshot(a->state(), recovered->snapshot()->state()));
+                auto archive = optimized.archive();
+                REQUIRE(archive);
+                auto evaluated = JudgementSession::evaluateReplay(*archive);
+                REQUIRE(evaluated);
+                CHECK(sameKernelResult(a->state().kernel, *evaluated->result));
+                REQUIRE(optimized.seek(*archive, Tick{1000}));
+                CHECK(sameSnapshot(a->state(), optimized.snapshot()->state()));
+            }
+        }
+}
+
+TEST_CASE("Idle deadlines retain finalization duplicate phase register and signal behavior",
+          "[kernel][recovery][deadline]") {
+    for (const bool rpa : {false, true})
+        for (unsigned scenario = 0; scenario < 4; ++scenario) {
+            DYNAMIC_SECTION("rpa=" << rpa << " scenario=" << scenario) {
+                FoldFixture f;
+                deadlineFixture(f, 32, rpa);
+                auto optimized = deadlineSession(f, rpa);
+                auto reference = deadlineSession(f, rpa);
+                detail::KernelTestControls controls{};
+                if (scenario == 0)
+                    controls.failAdvanceFinalization = true;
+                if (scenario == 1)
+                    controls.duplicatePhaseTick = Tick{20};
+                if (scenario == 2) {
+                    controls.invalidRegisterTick = Tick{20};
+                    controls.registerFault = detail::RegisterFault::secondExclusive;
+                }
+                if (scenario == 3)
+                    controls.signalTicks = {Tick{20}};
+                REQUIRE(detail::KernelTestAccess::inject(optimized, controls));
+                controls.forceReferenceAdvance = true;
+                REQUIRE(detail::KernelTestAccess::inject(reference, controls));
+                const auto a = optimized.advance(Tick{1000});
+                const auto b = reference.advance(Tick{1000});
+                CHECK(a.has_value() == b.has_value());
+                CHECK(a.has_value() == (scenario == 3));
+                const auto x = detail::KernelTestAccess::captureDTO(optimized);
+                const auto y = detail::KernelTestAccess::captureDTO(reference);
+                REQUIRE(x);
+                REQUIRE(y);
+                CHECK(sameSnapshot(*x, *y));
+                CHECK(detail::KernelTestAccess::visibleSignalCount(optimized, Tick{21}) ==
+                      detail::KernelTestAccess::visibleSignalCount(reference, Tick{21}));
+            }
+        }
 }

@@ -7,8 +7,8 @@
 
 #include <cuexis/render_opengl/open_gl_backend.hpp>
 
-#include "open_gl_presentation_internal.hpp"
 #include "../internal/cuexis_internal/gpu_storage_observer.hpp"
+#include "open_gl_presentation_internal.hpp"
 
 #include <cuexis/core/error.hpp>
 #include <cuexis/platform_sdl/sdl_window.hpp>

@@ -29,6 +29,8 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE AND CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
             "${PROJECT_SOURCE_DIR}/app/player/src/snapshot_scene.cpp")
         target_compile_features(cuexis_pd_host_probe PRIVATE cxx_std_20)
         target_compile_definitions(cuexis_pd_host_probe PRIVATE CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
+        target_compile_definitions(cuexis_pd_host_probe PRIVATE
+            CUEXIS_PD5_CAPACITY_SOURCE_SHA="${CUEXIS_IMPLEMENTATION_SHA}")
         target_link_libraries(cuexis_pd_host_probe PRIVATE cuexis::execution_host_support
             cuexis::playback cuexis::presentation_renderer cuexis::render cuexis::judgement cuexis::gameplay_packed Catch2::Catch2WithMain)
         catch_discover_tests(cuexis_pd_host_probe ADD_TAGS_AS_LABELS PROPERTIES LABELS "pd")

@@ -4,8 +4,11 @@
 #include <cuexis/chart/limits.hpp>
 #include <cuexis/judgement/gameplay_prepare.hpp>
 
+#include <array>
 #include <filesystem>
+#include <optional>
 #include <span>
+#include <string_view>
 
 namespace cuexis::gameplay_packed {
 
@@ -16,6 +19,8 @@ struct DecodeContext final {
     judgement::PreparedIdentityDeclarations identities;
     std::string coordinatorPolicyToken;
     std::uint32_t candidateRevision{2};
+    // R4 entry-only expectation, borrowed for the synchronous decode. Legacy paths ignore it.
+    std::optional<std::string_view> expectedCompiledSemanticIdentity{};
 };
 
 struct RequirementOwner final {
@@ -54,6 +59,8 @@ struct PreparedCapsule final {
     std::vector<judgement::PatternDeclaration> patterns;
     std::vector<MeasureDefinition> measures;
     std::uint32_t candidateRevision{2};
+    // Verified once by the Reader; immutable GameplayContent reuses it for metadata.
+    std::optional<std::array<std::uint8_t, 32>> verifiedSemanticDigest{};
 };
 
 // Explicit candidate-only bounds. No Graph production defaults are selected.

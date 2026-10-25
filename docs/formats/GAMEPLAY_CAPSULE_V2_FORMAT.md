@@ -3,7 +3,7 @@
 状态：candidate；2026-10-04 按 owner 的文档设计授权闭合 S7A-3 首次消费合同；
 不是生产 wire、Reader/Writer 实现证据或 S7A-3 整批关闭证明。
 
-更新日期：2026-10-05
+更新日期：2026-10-22
 
 依据：[Gameplay V2 Spec](GAMEPLAY_V2_SPEC.md) §3.8–§3.12、§5、§8，
 [Foundation Packed](PACKED_CHART_FORMAT.md) 与
@@ -461,3 +461,66 @@ phase/body/tail validation 不使用 admitsSuccess 的无 phase union helper 来
 normalization/coordinator 约束在 revision3 的 owning graph/AssemblyRequest 必须保留，
 不能只存在 CapsuleProfiles 中而被 identity generator 丢弃；其既有 GPH0 wire 位置不改。
 Reader 的 DecodeContext/coordinator/identity 声明与保存的约束逐字段对账。
+
+## 13. Capsule 物理 revision 4 与 accepted hash work
+
+决策日期：2026-10-22。Owner 已接受
+[B0 裁决](../stage_reports/stages/stage-07/pd/2026-10-22-gameplay-admission-b0-budget-ruling.md)
+的 envelope、完整 Ix 口径、拒绝顺序、内部 profile、字段差异与兼容矩阵。
+实现状态：阶段 B 进行中；没有 revision 4 验收成功声明。阶段 C、正式性能测量、主树合并与
+SDK/公共 API 升级未授权。
+
+revision 4 保持 packedVersion=1、chartVersion=5、gameplayVersion=2、graphRevision=2，
+Header=96 bytes、directory entry=32 bytes，Gameplay framing 的 schemaRevision=1、rowCodec=1、
+flags=0 和全部 CRC/codec/七项物理预算不变。Writer 显式选择 4，旧默认不切换。
+
+| 位置 | revision 4 相对 3 的完整差异 |
+| --- | --- |
+| GPR0 第 1 组 | entityOrdinal:Ix(ENT0), stableId:D, identity:E；删除 emissionRef:R12、identityProjection:R13:1 |
+| GPR0 其余 | §§6/12 全部字段及次序保留，包括完整 E/path、phaseTargets、atomBindings、independentCompetition |
+| GRC0 Claim | requirement:Ix(GPR0), resource:Ix(resources), intent:u8, policyToken:S, explicitNamespace:O(S), competition:O(priority:Z,tieRank:V), slot:O(U), graceOverride:u8=0 |
+| Claim 省略 | 整个 claimKey:O(R11) 含 presence byte；observe 的 namespace/competition/slot 全 absent，占用型全 present、namespace 非空且 slot=0；consume/claim 不合并 |
+| REF0 | 原 kind 1–10 合法子集；11/12/13:1 即使 unused 也拒绝；13 只允许 0、2–8；其他未知 kind/subdomain 拒绝 |
+| counts/STR0 | referenceCount 是实际 REF0 行数；字典只收实际 wire 字段，保留仍有真实用途的 token/引用及规范要求的 unused 定义 |
+
+emission、identityProjection、claimKey 的逻辑角色仍由完整 E/namespace 派生。
+checked 算 `2*requirements+occupyingClaims <= 3*requirements`；不建隐藏长文本字典，
+不套用物理 REF0 上限。owner/backlink、最多一 claim、E/K4 唯一性与闭包不放宽。
+
+物理 revision 显式映射 semantic codec：1→原 Foundation，2→Gameplay.1，3/4→Gameplay.2；
+未知在 Header 早拒绝，禁止 >=3 或 else 猜测。Gameplay.2 domain 为
+`cuexis.chart.semantic.v5.gameplay.2` 接 NUL+u16 LE(5)，4 的完整 preimage 与 3 逐 byte 相同。
+在原位置 hash 全部 R12/R13:1 与 Claim 原 presence/R11/full projection text，保留 framing、
+lowercase hex、顺序、重复展开及 execution 字段。省略 wire 不省略语义，不 hash dictionary indices。
+Header digest 与 metadata compiledSemanticIdentity 相同，artifactIdentity 对 exact bytes 求 SHA。
+
+内部 accepted profile ID 为 `capsule4.hash-work.v1`，四维同时满足，等于允许、超出拒绝：
+
+| 字段 | accepted ceiling | 单位 |
+| --- | ---: | --- |
+| maxSemanticPreimageBytes | 134217728 | 原 semantic codec 完全展开、送 SHA 的全部 bytes，含 prefix 和每次重复 |
+| maxExpandedReferenceVisits | 1000000 | 每次语义 Ix 展开边计 1，含 ENT0 直接 lookup、嵌套及 memo 命中的逻辑重复 |
+| maxProjectionKeyBytes | 4096 | 每个完整 cxgp2: UTF-8 key 的逻辑 bytes，含前缀，不含 NUL/外层 R framing |
+| maxHashScratchBytes | 8388608 | count/hash 专用同时保留 workspace 的请求容量，含 cache/sort/stack/chunk/export/固定工作集 |
+
+四字段属私有 HashWorkLimits/profile；入口 min(requested,accepted)，0 是字面上限；
+不扩展 installed PackedChartLimits、Playback 配置或 SDK。额度不进入 wire/metadata/身份。
+自有 hash 副本不冒充 borrowed 输入；按 capacity、迁移同时存活的两份计费，分配前检查。
+先复用唯一 typed cost 计数，checked 加乘或证明超限后饱和到 limit+1，不先完整展开。
+Pattern tree 迭代遍历，repeat 不展开语言轨迹；prefix/key/定义内部同样以有界 sink 输出。
+
+拒绝顺序：物理/Header/directory/CRC/七预算 → 有界 typed decode/counts/closure/owner/形状 →
+hash workspace 安全预检与计数 → 完整 cost 按 key、visits、preimage 判断 → 同 visitor 增量 hash
+与 count 对账 → Header/metadata digest 比对 → 原 shared prepare/proof/执行/资源门禁 → 原子发布。
+scratch/结构安全失败可先于尚未求出的维度，不能为错误码排序继续超限分配。
+各入口统一 count+digest，失败保留原 active、有效文件与全部生命周期保证。
+
+四预算复用 capability.budget_insufficient / budget_exceeded / severity=error / faulted=false；
+budgetId 为上述字段名，fieldPath 分别为 semanticHash.preimageBytes、
+semanticHash.expandedReferenceVisits、semanticHash.projectionKeyBytes、semanticHash.scratchBytes。
+另有 profile/phase/limit/required；仅知下界时用 requiredAtLeast 且 exact=false，不经 f64。
+诊断有界，不复制攻击 key；非法结构/宽度和预算内 OOM 不伪称工作量超限。
+
+旧 revision 1/2/3 的 wire/golden、语义、预算及拒绝顺序保持；旧 Reader 早拒 4。
+新 dispatcher 显式保留旧路径，旧图不补零进入 execution。graph.1 不变；capsule.4 是显式
+packed-chart metadata encoding，与 Header 4 严格匹配，不隐式升级/降级或 fallback。

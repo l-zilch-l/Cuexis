@@ -419,6 +419,90 @@ TEST_CASE("B5 tail reply interruption is queried before main closes the new cloc
     CHECK((*host)->context().clockSegment == original.clockSegment + 1);
     CHECK((*host)->state() == HostState::closed);
 }
+TEST_CASE("B5 deadline retains original tail job until pumped Close completes",
+          "[b5][host][fault][deadline]") {
+    presentation_renderer::TestPresentationRenderer renderer;
+    std::atomic<unsigned> pumps{}, blockedCalls{};
+    std::atomic<bool> blockOwner{};
+    std::promise<void> release;
+    auto released = release.get_future().share();
+    auto settings = options();
+    settings.replyDeadline = std::chrono::milliseconds{100};
+    settings.session.monotonicNow = [&] {
+        if (blockOwner.load()) {
+            ++blockedCalls;
+            // A failed assertion must not leave the owner join blocked indefinitely.
+            released.wait();
+        }
+        return std::chrono::duration_cast<std::chrono::microseconds>(
+                   std::chrono::steady_clock::now().time_since_epoch())
+            .count();
+    };
+    const ClockMappingConfiguration mapping{{0, 1}, {0, 1}, {0, 1}, {1, 1}};
+    settings.realtime =
+        SessionRealtimeStart{{1000000, 10, 128, "", true}, mapping, {}, "b5.deadline"};
+    bool didRelease{}, releaseOnPump{};
+    auto wired = ports(pumps);
+    wired.pumpMain = [&]() -> core::Result<void> {
+        ++pumps;
+        if (releaseOnPump && !didRelease) {
+            didRelease = true;
+            release.set_value();
+        }
+        return {};
+    };
+    test_support::SessionTestContent fixture;
+    test_support::rpa(fixture, mapping);
+    auto host = player::ExecutionHost::create(renderer, settings, std::move(wired));
+    REQUIRE(host);
+    struct ReleaseOnExit {
+        std::promise<void>& promise;
+        bool& done;
+        ~ReleaseOnExit() {
+            if (!done) {
+                done = true;
+                promise.set_value();
+            }
+        }
+    } releaseOnExit{release, didRelease};
+    REQUIRE((*host)->load(test_support::presentation(), fixture.content()));
+    const auto original = (*host)->context();
+    ClockObservation eof{};
+    eof.monotonicDomain = "b5.deadline";
+    eof.segment = original.clockSegment;
+    eof.publicationSequence = 1;
+    eof.sampleMonotonicUs = std::chrono::duration_cast<std::chrono::microseconds>(
+                                std::chrono::steady_clock::now().time_since_epoch())
+                                .count();
+    eof.validUntilMonotonicUs = eof.sampleMonotonicUs + 1000000;
+    eof.source = eof.presented = ClockFramePosition{0, 1000000};
+    eof.quality = ClockQuality::Exact;
+    eof.playback = ClockPlaybackState::EndOfStream;
+    blockOwner.store(true);
+    const auto beforeWait = std::chrono::steady_clock::now();
+    auto tail = (*host)->beginTail(eof, {{1, 1}, 100000, 0, "explicit deadline fixture", true});
+    REQUIRE_FALSE(tail);
+    CHECK(tail.error().code() == "host.rpa.control_pending");
+    CHECK(std::chrono::steady_clock::now() - beforeWait >= settings.replyDeadline);
+    REQUIRE(blockedCalls.load() > 0);
+    const auto beforeClose = pumps.load();
+    auto pending = (*host)->close();
+    REQUIRE_FALSE(pending);
+    CHECK(pending.error().code() == "host.rpa.control_pending");
+    CHECK((*host)->state() != HostState::closed);
+    CHECK(pumps.load() > beforeClose);
+    releaseOnPump = true;
+    auto closed = (*host)->close();
+    INFO((closed
+              ? ""
+              : std::string{closed.error().code()} + ": " + std::string{closed.error().message()}));
+    REQUIRE(closed);
+    CHECK(didRelease);
+    // No second Tail request: cleanup collected its original reply exactly once.
+    CHECK((*host)->context().clockSegment == original.clockSegment + 1);
+    CHECK((*host)->state() == HostState::closed);
+    REQUIRE((*host)->close());
+}
 TEST_CASE("B5 host rejects unaccepted budgets and closes CPU preparation failure", "[b5][host]") {
     presentation_renderer::TestPresentationRenderer renderer;
     std::atomic<unsigned> pumps{};

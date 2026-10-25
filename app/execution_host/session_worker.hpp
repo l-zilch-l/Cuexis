@@ -189,8 +189,8 @@ using SessionCommand = std::variant<
     SessionSample, SessionPresentReceipt, SessionUpdatePresentation, SessionDeliveryLayout,
     SessionRegisterConsumer, SessionConfirmConsumer, SessionRevokeConsumer, SessionRequestFrame,
     SessionRevokeRetained, SessionDeliveryMetrics, SessionFeedbackQuery, SessionObservationQuery,
-    SessionArchive, SessionSnapshot, SessionEvaluateReplay, SessionLag, SessionArchiveCut, SessionSeek,
-    SessionSoftwareRetire, SessionSoftwareClose, SessionCancelStep, SessionQueryStep>;
+    SessionArchive, SessionSnapshot, SessionEvaluateReplay, SessionLag, SessionArchiveCut,
+    SessionSeek, SessionSoftwareRetire, SessionSoftwareClose, SessionCancelStep, SessionQueryStep>;
 using SessionReply =
     std::variant<std::monostate, PresentationCandidateInput, std::uint64_t, StepReceipt,
                  GameplayAdvanceDecision, FrameEnvelope, GameplayReplay, GameplayReplayCut,
