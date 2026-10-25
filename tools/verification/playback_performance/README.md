@@ -21,7 +21,7 @@
 | [string_budget_audit.py](string_budget_audit.py) | 在独立源码副本观察 Gameplay-host 实际 STR0/REF0 与字节增长；保持预算，不能用作性能/正式注册 |
 | [window_protocol.py](window_protocol.py) | 排他领取、窗口间隔和原始证据链支持库 |
 | [process_control.py](process_control.py) | Windows Job 进程树及内部 child 支持，不是面向用户的独立入口 |
-| [prepare_etw_canary.py](prepare_etw_canary.py) / [etw_safety](etw_safety/README.md) | 只封包两项空载 ETW 生命周期 canary；不执行 Cuexis/F1，不注册正式测量 |
+| [prepare_etw_canary.py](prepare_etw_canary.py) / [etw_safety](etw_safety/README.md) | 旧独立封包入口已退役；调用与 CLI 均在创建目录前拒绝并指向 `prepare_etw_tools.py`，历史封包不变 |
 | [prepare_etw_tools.py](prepare_etw_tools.py) | 把 canary 与三项 F1 用例合并封包为一个自校验工具包并生成两个启动器；不启动采集 |
 | [profiles.json](profiles.json) | 有限工具 profile、容量声明、逐 profile `content_entities` 和显式就绪阻断项 |
 | [memory_caps.py](memory_caps.py) | PD-5 B0：由已声明容量静态推导 `pd5.memory.caps.v1` 逐单元上限；缺项记 `NA:<原因>`，不运行工作负载 |
@@ -41,7 +41,7 @@ python -B tools/verification/playback_performance/prepare_profiles.py verify --m
 python -B tools/verification/playback_performance/owner_runner.py prepare --output out/pd5-owner
 python -B tools/verification/playback_performance/device_inventory.py --output <new-inventory.json>
 python -B tools/verification/playback_performance/memory_caps.py --check
-python -B tools/verification/playback_performance/audit_element_sizes.py --check
+python -B tools/verification/playback_performance/audit_element_sizes.py --check --generated out/build/<本次配置目录>/generated
 python -B tools/verification/playback_performance/memory_domains.py collect-domains <observer.log> --json <domains.json>
 python -B tools/verification/playback_performance/memory_domains.py check-domains <observer.log> --caps tools/verification/playback_performance/memory_caps.v1.json --profile cpu-stream-v1 --entities 1 --json <verdict.json>
 python -B -m unittest discover -s tests/pd -p 'pd5*_tests.py' -v
@@ -50,6 +50,13 @@ python -B -m unittest discover -s tests/pd -p 'pd5*_tests.py' -v
 入口也支持 `python -B -m tools.verification.playback_performance.prepare_profiles ...` 的模块调用。
 仓库根目录和默认 profile 从工具文件自身定位；显式相对路径参数仍相对于调用者工作目录。
 owner runner 按需从 `tests/pd/` 加载既有 PD-0 support，没有迁移冻结的 PD-0 实现。
+
+`audit_element_sizes.py --check` 会重新编译尺寸探针并运行只输出 `sizeof` 的程序。
+`--generated` 必须指向含 `cuexis/playback/playback_export.hpp` 的 configured build generated
+目录；仅有一个完整候选时可省略，多个候选必须显式选择，不再按修改时间猜选。
+本次工具修复没有修改历史 `element_sizes.v1.json`、B0 caps、哈希或预算；该 JSON 的
+`tool_sha256` 仍是原审计脚本身份，不代表修复后脚本已重新审计。新审计须显式指定
+`--generated` 重新验证，不能把历史记录当成本次验证证据。
 
 ## 迁移与兼容
 
@@ -151,5 +158,13 @@ native 身份证据，并在控制器与守护者都不存在后证明该 PID �
 
 三项 F1 用例都是工具验收，不是正式测量、不是性能接受、不是 PD-5 完成，也不扩大 ETW 故障覆盖；
 每项只允许运行一次，失败即保留，不重试、不补样。相关断言在
-`tests/pd/pd5_etw_f1_scale_tests.py`（`pd5_etw*_tests.py` 发现集共 88 项）：计划与用例表一致性、
+`tests/pd/pd5_etw_f1_scale_tests.py`（`pd5_etw*_tests.py` 发现集共 124 项）：计划与用例表一致性、
 claim 合同、签发收据、工作负载/超时/死亡三条路径、启动记录解析、profile 选择、preflight 与判定。
+其中 `pd5_etw_job_tests.py` 在 64 位 Windows 上创建真实 benign Python 进程与 Windows Job，
+验证进程树回收；不调用 WPR、ETW 或 Cuexis。其他 ETW 流程测试使用替身，不执行采集角色。
+实际失败日志回归优先读取
+[固定 fixture](../../../tests/fixtures/pd5_etw_f1_parse/README.md)，核对原始字节与 SHA256；
+历史 `out/` 只作回退，两处均缺失时失败而非跳过。
+新增 `tests/pd/pd5_tool_contract_tests.py` 有 12 项纯标准库离线合同测试，覆盖退役入口、
+generated 选择与 CLI 透传；其临时目录只在主树 `out/pd5-tool-contract-tests/` 内，
+不调用编译器、WPR 或任何采集角色。上述计数按当前测试源的 `test_*` 方法 AST 统计。

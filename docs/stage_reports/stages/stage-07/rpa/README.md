@@ -4,6 +4,8 @@
 
 ## 设计与实施
 
+- [2026-10-26 两树整合与统一实施入口](2026-10-26-worktree-consolidation.md)：主树与准入树的实现/文档汇总、本次迁移构建验证及授权边界；R2 第三候选停止与性能未知状态保留。
+
 - [Realtime architecture review](2026-10-09-realtime-architecture-review.md)
 - [Realtime architecture evidence](2026-10-09-realtime-architecture-review-evidence.zip)
 - [Realtime stage separation](2026-10-09-realtime-stage-separation.md)

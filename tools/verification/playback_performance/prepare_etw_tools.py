@@ -66,7 +66,7 @@ def cross_check(plan, cases, profile_config):
         raise RuntimeError('fixed F1 profile name changed')
     if tuple(wpr['required_profile_details_tokens']) != cases.PROFILE_PREFLIGHT_TOKENS['f1-scale']:
         raise RuntimeError('F1 profile preflight tokens changed')
-    if f1['deadline_seconds'] != wpr['hard_deadline_seconds'] != wpr['bounded_capture_seconds']:
+    if not (f1['deadline_seconds'] == wpr['hard_deadline_seconds'] == wpr['bounded_capture_seconds']):
         raise RuntimeError('F1 hard deadline differs from the plan')
     if f1['takeover_seconds'] != wpr['guardian_emergency_seconds']:
         raise RuntimeError('F1 guardian takeover differs from the plan')

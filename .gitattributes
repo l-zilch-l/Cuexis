@@ -29,3 +29,5 @@ vcpkg-overlays/** text eol=lf
 examples/reference_host/tests/commands/*.cmd text eol=lf
 examples/reference_host/tests/commands/*.expect text eol=lf
 examples/reference_host/tests/commands/c11b-line-endings-bom.cmd binary
+# Preserve the registered failing F1 log across Windows checkouts.
+tests/fixtures/pd5_etw_f1_parse/*.log binary

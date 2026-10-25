@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-10-10
+更新日期：2026-10-26
 
 阶段计划定义目标、范围、批次、门禁和交接。当前实现状态只以
 [CURRENT_STATUS.md](../CURRENT_STATUS.md) 为准；完成证据只以
@@ -94,11 +94,12 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
 - [Stage 7 总计划](active/stage-07/plan.md)：全局边界、依赖路线、统一证据和跨阶段交接。
   - [Stage 7A 分册](active/stage-07/plan-a.md)：S7A-0–9批次、核验台账、实施记录与接手决策。
   - [诊断码正式化独立前置](active/stage-07/plan-diagnostic-formalization.md)：沿用原RPA-N0–N3追溯编号，独立完成审计、合同、迁移、验收；不是新增编号阶段，N3退出先于RPA新架构原型和A4–A6。
-  - [Stage 7-RPA 性能整改候选设计](active/stage-07/plan-rpa-performance-remediation.md)：读取、Seek 准备/存储/恢复、Close 清理许可与续行的候选机制、成本门与证据计划；2026-10-25 R1 已退出；R2 已获用户另行授权在下一对话规划并实施，本轮仅整理文档、未启动 R2。R3/R4、40k、ETW、正式测量与设备接受未因此获授权，不改变 RPA 批次与验收标准。
+  - [Stage 7-RPA 性能整改候选设计](active/stage-07/plan-rpa-performance-remediation.md)：读取、Seek 准备/存储/恢复、Close 清理许可与续行的候选机制、成本门与证据计划；2026-10-25 R1 已退出；R2 前两候选局部收益未确认，第三候选 direct borrowed Result 于 2026-10-25 23:03:54 +08:00 停止并原样迁入主树；本次整合构建/正确性验证进行中，无第三候选性能结论，R2/R4 未退出。R3/R4、40k、ETW、正式测量与设备接受未因此获授权，不改变 RPA 批次与验收标准。
   - [Stage 7-RPA R1 实施与验证计划](active/stage-07/rpa-r1-implementation.md)：按先补文档后实施完成许可/身份、四类续行、获批时钟/生命周期与后续 Debug 栈修复；首错修复后五构建适用本地门及新登记同范围三项 pilot 通过，按用户本次授权核验后 R1 退出。全仓五条 PD 格式失败与导出 noIndependentContract 限定保留，RPA/PD/Stage 7 未关闭。
   - [Stage 7-RPA 历史范围计划（2026-10-11，已归档）](../archive/stage-07-planning/2026-10-11-rpa-plan.md)：实时架构、实体设备/同步及原S7A-9矩阵、预算、交接的历史快照；旧路径保留兼容入口，供既有引用追溯。
   - [Stage 7 RPA 性能修改方案（2026-10-14，已归档）](../archive/stage-07-planning/2026-10-14-rpa-performance-modification-plan.md)：当时的分阶段等待、通道、历史存储、事务复制与验证proposal；已由当前性能整改方案逐项归属，不代表已实施或F3/B5已关闭。
   - [Stage 7-PD 判定/表现解耦计划](active/stage-07/plan-presentation-decoupling.md)：候选架构、单一状态源/修订读取/独立交付绑定、迁移与维护成本、后续 owner 拆分条件；独立于7A和RPA，不代表已实施。
+  - [PD-5 读取归因与分域内存计划](active/stage-07/pd5-read-candidate-and-memory-domains-plan.md)：R0-a/b 已结案为已量化超界，B0 已接受、B1 静态工具完成；B2/B3 未授权采数，PD-5「未通过但定案」及子阶段退出待 owner 批准。
   - [Stage 7-PD 内部设计与验收细则](active/stage-07/presentation-decoupling-design.md)：发布视图、投影、事务 prepare/apply、按需物化、消费者注册/撤销、响应移交与显式寿命、receipt/Close、合同差异、性能判据及 7B+/Stage 8–14 接入条件；配套设计，不是实施授权。
   - [Stage 7B+ 分册](active/stage-07/plan-b.md)：RPA完成后实施S7B-0–4、S7C-1/2；当前计划范围验收并接受后进入Stage 8。
   - 历史路径见[legacy-paths](active/stage-07/legacy-paths.md)；当前实现状态以CURRENT_STATUS为准。

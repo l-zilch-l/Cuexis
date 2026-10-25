@@ -2,9 +2,10 @@
 
 These pin the shape the frozen F1 executable really prints, because an earlier
 sealed collector assumed one PD_FOLLOW_CONTENT record per objects count instead
-of the observed identity pair. The real log from that failure is preserved and
-is validated here when the evidence directory is still present.
+of the observed identity pair. The original failure log is a fixed, hash-pinned
+fixture; a historical out/ copy is only a fallback when that fixture is absent.
 """
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -19,6 +20,9 @@ import collect_f1_scale as collector
 ARCHIVED_FAILURE = (ROOT / 'out/pd5-etw-f1-tools-20261023-3e5837f-r2'
                     / 'f1-20261023T122949Z-8ca88299bbd24d30a8c40ba75ec191b5'
                     / 'f1-scale/f1-native/f1-scale-0.log')
+FIXED_FAILURE = ROOT / 'tests/fixtures/pd5_etw_f1_parse/f1-scale-0.log'
+REGRESSION_LOG = FIXED_FAILURE if FIXED_FAILURE.is_file() else ARCHIVED_FAILURE
+FAILURE_SHA256 = '458df31dcacf96ad900715204f304fcb6883978232c6ac773d9d98255a86e459'
 
 
 def plan():
@@ -235,11 +239,12 @@ class WorkloadShapeTests(unittest.TestCase):
                 collector.validate_workload_shape(self.broken(mutate))
 
 
-@unittest.skipUnless(ARCHIVED_FAILURE.exists(),
-                     'archived failing F1 log is not on this machine')
 class ArchivedFailureLogTests(unittest.TestCase):
     def test_preserved_failing_log_matches_the_fixed_contract(self):
-        text = ARCHIVED_FAILURE.read_text(encoding='utf-8-sig')
+        raw = REGRESSION_LOG.read_bytes()
+        self.assertEqual(len(raw), 6549)
+        self.assertEqual(hashlib.sha256(raw).hexdigest(), FAILURE_SHA256)
+        text = raw.decode('utf-8-sig')
         rows = collector.marker_records(text, 'PD_FOLLOW_ROW')
         contents = collector.marker_records(text, 'PD_FOLLOW_CONTENT')
         starts = collector.marker_records(text, 'PD5_PROCESS_START')

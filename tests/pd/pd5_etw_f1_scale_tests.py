@@ -45,6 +45,29 @@ class CaseTableTests(unittest.TestCase):
             with self.assertRaises(RuntimeError, msg=key):
                 prepare_etw_tools.cross_check(broken, case_table, profile_config)
 
+    def test_hard_deadline_single_drift_is_refused(self):
+        self.plan['wpr']['hard_deadline_seconds'] += 1
+        with self.assertRaisesRegex(RuntimeError, 'F1 hard deadline'):
+            prepare_etw_tools.cross_check(self.plan, case_table, profile_config)
+
+    def test_bounded_capture_single_drift_is_refused(self):
+        self.plan['wpr']['bounded_capture_seconds'] += 1
+        with self.assertRaisesRegex(RuntimeError, 'F1 hard deadline'):
+            prepare_etw_tools.cross_check(self.plan, case_table, profile_config)
+
+    def test_case_deadline_single_drift_is_refused(self):
+        original = case_table.spec
+
+        def changed(name):
+            value = dict(original(name))
+            if name == 'f1-scale':
+                value['deadline_seconds'] += 1
+            return value
+
+        with mock.patch.object(case_table, 'spec', side_effect=changed):
+            with self.assertRaisesRegex(RuntimeError, 'F1 hard deadline'):
+                prepare_etw_tools.cross_check(self.plan, case_table, profile_config)
+
     def test_workload_and_profile_drift_are_refused(self):
         for mutate in (lambda p: p['workload'].__setitem__('native_launches', 5),
                        lambda p: p['workload'].__setitem__('processes', 2),

@@ -6,7 +6,7 @@
 
 - [PD-5 判定报告与 Stage 7-PD 退出清单](2026-10-24-pd5-verdict-and-stage-7-pd-exit.md)（判定：未通过但定案；退出清单待 owner 接受）
 
-- [PD-5 B1 域归因工具完成](2026-10-24-b1-domain-attribution-tooling.md)（B1 门通过：29 项单测全绿、宏关闭零代码审计；未运行）
+- [PD-5 B1 域归因工具完成](2026-10-24-b1-domain-attribution-tooling.md)（B1 门通过：30 项单测全绿、宏关闭零代码审计；未运行）
 
 - [PD-5 B0 静态内存上限账本与逐域上限推导](2026-10-24-b0-memory-cap-ledger.md)（B0 门已于 2026-10-24 接受：G1/G3/G4/G7 关闭，G9 顺延 B1）
 

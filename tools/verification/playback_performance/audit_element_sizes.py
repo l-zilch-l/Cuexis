@@ -142,15 +142,20 @@ def _source() -> str:
 
 def _generated_dir(explicit: Path | None) -> Path:
     if explicit is not None:
-        return explicit
+        generated = explicit.resolve()
+        header = generated / "cuexis" / "playback" / "playback_export.hpp"
+        if not header.is_file():
+            raise SystemExit(f"generated export header not found: {header}")
+        return generated
     candidates = sorted(
         (path for path in ROOT.glob("out/build/*/generated")
          if (path / "cuexis" / "playback" / "playback_export.hpp").is_file()),
-        key=lambda path: path.stat().st_mtime,
-        reverse=True,
     )
     if not candidates:
         raise SystemExit("no configured build tree with generated export headers; pass --generated")
+    if len(candidates) != 1:
+        choices = ", ".join(str(path) for path in candidates)
+        raise SystemExit(f"multiple configured build trees; pass --generated explicitly: {choices}")
     return candidates[0]
 
 
@@ -299,12 +304,14 @@ def main() -> int:
     parser.add_argument("--check", action="store_true", help="重新测量并与文件比对")
     parser.add_argument("--markdown", action="store_true", help="输出报告用表格")
     parser.add_argument("--vcpkg-include", type=Path, default=DEFAULT_VCPKG_INCLUDE)
+    parser.add_argument("--generated", type=Path,
+                        help="configured build's generated directory; required when several exist")
     args = parser.parse_args()
     if not (args.write or args.check or args.markdown):
         parser.error("需要 --write、--check 或 --markdown 之一")
 
     sys.stdout.reconfigure(encoding="utf-8")
-    reference = measure(args.vcpkg_include)
+    reference = measure(args.vcpkg_include, args.generated)
 
     if args.check:
         if not OUTPUT.is_file():

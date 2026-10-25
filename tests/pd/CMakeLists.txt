@@ -36,3 +36,36 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE AND CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
         catch_discover_tests(cuexis_pd_host_probe ADD_TAGS_AS_LABELS PROPERTIES LABELS "pd")
     endif()
 endif()
+
+# Offline tool contracts do not launch WPR, ETW roles, or Cuexis measurements.
+if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+    find_package(Python3 COMPONENTS Interpreter REQUIRED)
+    set(pd5_tool_test_tmp "${PROJECT_BINARY_DIR}/pd5-tool-test-tmp")
+    file(MAKE_DIRECTORY "${pd5_tool_test_tmp}")
+    set(pd5_tool_suites
+            pd5_etw_collect_f1_parse_tests
+            pd5_memory_domains_tests
+            pd5_tool_contract_tests
+            pd5_admission_feasibility_tests
+            test_gameplay_admission_evidence)
+    # Controller/Job tests require Windows process APIs and the ETW x64 ABI.
+    if(WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)
+        list(APPEND pd5_tool_suites
+            pd5_etw_controller_tests
+            pd5_etw_f1_scale_tests
+            pd5_etw_flow_tests
+            pd5_etw_job_tests)
+    endif()
+    foreach(suite IN LISTS pd5_tool_suites)
+        add_test(NAME "cuexis_${suite}"
+            COMMAND "${Python3_EXECUTABLE}" -B
+                "${CMAKE_CURRENT_SOURCE_DIR}/${suite}.py")
+        set_tests_properties("cuexis_${suite}" PROPERTIES
+            LABELS "pd;tools;contract"
+            WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+            RESOURCE_LOCK cuexis_pd5_tool_processes
+            TIMEOUT 300
+            ENVIRONMENT
+                "PYTHONIOENCODING=utf-8;PYTHONDONTWRITEBYTECODE=1;TMPDIR=${pd5_tool_test_tmp};TEMP=${pd5_tool_test_tmp};TMP=${pd5_tool_test_tmp}")
+    endforeach()
+endif()

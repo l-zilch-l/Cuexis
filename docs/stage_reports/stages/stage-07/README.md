@@ -2,7 +2,7 @@
 
 状态：current index
 
-更新日期：2026-10-25
+更新日期：2026-10-26
 
 本索引只负责导航，不复制合同、裁定或当前实现状态。当前状态以 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 为准；范围与验收门禁见 [Stage 7 总计划](../../../stage_plans/active/stage-07/plan.md)、[Stage 7A](../../../stage_plans/active/stage-07/plan-a.md)、[RPA 历史计划（已归档）](../../../archive/stage-07-planning/2026-10-11-rpa-plan.md) 和 [PD](../../../stage_plans/active/stage-07/plan-presentation-decoupling.md)；当前 RPA 工作入口见[性能整改](../../../stage_plans/active/stage-07/plan-rpa-performance-remediation.md)与 [R1 实施计划](../../../stage_plans/active/stage-07/rpa-r1-implementation.md)。
 
@@ -17,7 +17,7 @@
 
 ## 当前工作线
 
-PD 当前仍处于 PD-0。无插桩基线、补充复测和测量方法演进都集中在 [PD 证据索引](pd/README.md)；历史原始测量包按 owner 要求清理后，不再将旧临时路径当作可复核入口。
+PD-0–4、PD-5 准入/归因、ETW 工具及 B0/B1 证据集中在 [PD 证据索引](pd/README.md)；R1/R2 和本次整合记录集中在 [RPA 证据索引](rpa/README.md)。当前结论与唯一实施入口仍以 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 为准。两树报告成组保留；历史失败、通过、绑定身份和绝对路径不因整合而改写，迁移构建或工具通过不构成性能接受。
 
 RPA 与 Stage 7A 的历史报告继续保留原日期和证据范围。报告中的历史“下一步”不覆盖当前计划；新的实现状态只写入 [CURRENT_STATUS](../../../CURRENT_STATUS.md)。
 

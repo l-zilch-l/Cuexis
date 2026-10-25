@@ -1,17 +1,16 @@
 # Stage 7-PD: Judgement/Presentation Decoupling Plan
 
-状态：active，PD-0 testOnly 基线与行为表征、PD-1/PD-2 内部实施及本地适用门禁完成，PD-3-a 补正、PD-3-b 内部实施及本地适用门禁与独立审核通过，PD-3-c 内部实施与本地门禁完成（公共来源查询/0.8.1 已获接受，新建无上下文 GPT-6-Luna 独立审核通过），PD-4 三项合同/SDK 0.9.0 已获接受，内部实施、本地适用门禁及新的无上下文独立复审完成，PD-5 P0 两窗完成，owner 要求先核查与修复性能问题后重新测量，完整正式接受未完成；独立于 Stage 7A 与 Stage 7-RPA 的 Stage 7 子阶段。整个子阶段未退出，Stage 7A/RPA 与发布门禁不因此关闭。
+状态：active；PD-0–4 内部实施及适用门禁完成，SDK 0.9.0 已获接受。PD-5 原 40k 功能已核验，内存仍未测量、正式性能未通过；判定报告提出「未通过但定案」及子阶段退出清单，尚待 owner 批准。B0 已接受，B1 静态工具完成，B2/B3 未授权采数；当前实施仅在主树，R2/R4 未退出，Stage 7-PD、RPA、生产与 Stage 7 均未关闭。
 
-2026-10-16 最新授权：owner 要求“阅读接手文档并阅读相关文档，本次任务是完成PD计划”，随后要求先提交当前状态存档、后续显示 todolist。此前设计阶段关于不得启动实施的限制不再适用于本次已授权工作；正式合同接受、公共版本、逐批验收与发行门禁仍分别成立。内部接口名仍须以实际实现与证据核对。
+2026-10-16 历史实施授权：owner 要求“阅读接手文档并阅读相关文档，本次任务是完成PD计划”，随后要求先提交当前状态存档、后续显示 todolist。此前设计阶段关于不得启动实施的限制不再适用于本次已授权工作；正式合同接受、公共版本、逐批验收与发行门禁仍分别成立。内部接口名仍须以实际实现与证据核对。
 
 本计划拥有目标、批次与退出条件；配套[内部设计与验收细则](presentation-decoupling-design.md)拥有本计划的接口字段、状态转移、数据寿命、线程时序和测量方法。既有 Gameplay/RPA 语义仍以其正式 Spec/ABI 为准，细则不替代它们。
 
-2026-10-21 后续唯一读取候选的机制、F1 比较基线和事前保留条件见
-[C2 输出槽预登记](pd5-read-result-candidate.md)；它不构成正式测量注册或性能接受。
+2026-10-21 历史读取候选的机制、F1 比较基线和事前保留条件见
+[C2 输出槽预登记](pd5-read-result-candidate.md)；C2 已关闭，该历史登记不构成正式测量注册或性能接受。
 
 2026-10-23 C2 关闭后，读取侧归因与 40k 分域内存观测的候选路径见
-[PD-5 读取候选与分域内存观测实施方案](pd5-read-candidate-and-memory-domains-plan.md)；它是候选方案，
-尚未授权实施，不登记测量，也不改变本计划的退出条件。
+[PD-5 读取候选与分域内存观测实施方案](pd5-read-candidate-and-memory-domains-plan.md)；R0-a/R0-b 已执行并判定，B0 已接受、B1 静态工具完成；剩余 B2/B3 采数未授权，不登记正式测量，也不改变本计划的退出条件。
 
 本子阶段处理判定结果、表现绑定、Runtime/World 求值和画面交付之间的实现耦合。2026-10-16 重审后，采用单一表现状态源、轻量提交修订描述、中性只读物化和独立交付绑定；首版不再要求每次更新保存完整结果副本。完整帧只为取得额度的请求生成，观察历史独立有界。方向比较、迁移成本和未来扩展影响见[设计重审记录](../../../stage_reports/stages/stage-07/pd/2026-10-16-pd-transaction-and-delivery-design-review.md)。
 
@@ -497,9 +496,9 @@ RPA-F4 接受前若集成 PD，其最终矩阵/预算直接覆盖该实现；F4 
 - [x] PD-3-b——状态修订、中性 PresentationRead、唯一物化器与内部 ExactVersion；本地四配置回归、static/shared 包消费者及 GPT-6-Luna 独立复审通过，见 [PD-3-b 报告](../../../stage_reports/stages/stage-07/pd/2026-10-19-pd3b-state-read-and-materialization.md)。不表示控制绑定、按额度交付或设备验收完成。
 - [x] PD-3-c——正式宿主差异、确认绑定与保留画面来源；已形成[来源查询和版本决策方案](../../../stage_reports/stages/stage-07/pd/2026-10-19-pd3c-contract-and-version-decision.md)，owner 已接受，控制/保留路径已接入，适用本地门禁已完成，新建无上下文 GPT-6-Luna 独立审核通过。
 - [x] PD-4——消费注册、按需交付、显式反馈寿命、紧凑 journal 与真实回收；三项合同/SDK 0.9.0 已获接受，内部实施、本地适用门禁与新的无上下文独立复审完成；[实施与验证](../../../stage_reports/stages/stage-07/pd/2026-10-19-pd4-delivery-retirement-and-observation.md)。实体设备、正式预算与子阶段退出另行验收。
-- [ ] PD-5——就绪检查与阈值方案已完成；判据已接受，待补齐工具/profile 后开展配对测量及 owner 拆分触发审查，缺少有效阈值则记录证据不足。
+- [ ] PD-5——原两窗、40k 功能与读取归因证据已登记；判定报告为「未通过但定案」，定案与 Stage 7-PD 退出清单仍待 owner 批准。B0 静态账本已接受，B1 静态工具完成且未运行；B2/B3 未授权采数，内存仍未测量，正常分配器正式性能未通过；见 [CURRENT_STATUS](../../../CURRENT_STATUS.md)。
 - [ ] 最终回归、适用消费者/版本门禁、迁移路径清理与交接。
 
 当前快照证据见[PD 设计演进记录](../../../stage_reports/stages/stage-07/pd/2026-10-16-design-evolution.md)。
 
-40k Gameplay-host 的隔离定量实施见 [PD-5 准入阶段 A](pd5-gameplay-admission.md)；新会计尚未接受。
+40k Gameplay-host 的隔离定量实施见 [PD-5 准入登记](pd5-gameplay-admission.md)：revision 4 的准入预算/合同已获接受，原 40k 功能已核验；这不接受完整 PD-5 内存或正式性能。后续 B0 静态账本已接受、B1 静态工具完成，B2/B3 采数仍未授权，见[读取归因与分域内存计划](pd5-read-candidate-and-memory-domains-plan.md)。当前实施入口统一为 `D:/Cuexis-worktree`，准入树只读保留；历史报告及绑定中的绝对路径不改写。

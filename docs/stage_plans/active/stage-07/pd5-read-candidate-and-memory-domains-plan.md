@@ -1,8 +1,8 @@
 # PD-5 读取候选与分域内存观测实施方案
 
-状态：candidate plan；未取得实施授权，不登记正式测量，不替代任何已接受方案、预登记或证据，不构成性能、内存或阶段接受。
+状态：active evidence plan；R0-a/R0-b 已执行并判定，B0 已接受、B1 静态工具完成；剩余 B2/B3 采数未授权，不登记正式测量，不替代已接受方案或原证据，不构成性能、内存或阶段接受。
 
-更新日期：2026-10-23
+更新日期：2026-10-26
 
 归属：Stage 7-PD / PD-5。上游为[已接受的 PD-5 测量方案](pd5-measurement-proposal.md)、[C2 输出槽预登记](pd5-read-result-candidate.md)和[内部设计与验收细则](presentation-decoupling-design.md)；证据基线见[读取噪声与寿命诊断](../../../stage_reports/stages/stage-07/pd/2026-10-23-memory-lifetime-and-read-noise-diagnostics.md)、[Stage C 独立验收与退出缺口](../../../stage_reports/stages/stage-07/pd/2026-10-23-stage-c-independent-acceptance-and-exit-gaps.md)和[C2 结果](../../../stage_reports/stages/stage-07/pd/2026-10-21-c2-read-result-candidate.md)。
 
@@ -272,12 +272,12 @@ before-load → after-load → after-prepare → after-snapshot → after-advanc
 
 1. read-long 正式主指标口径：延续 read64（建议）、重新登记消费者 mix、聚合块。后两者须在测量前书面论证并冻结。
 2. 读取回归的处置已依预授权规则落定：R0-a 判灰区、R0-b 判上界不足，两轮均未达预期，故取“记录超界”的退路——owner 选定 §2.5 第一项“接受偏差并记录”（2026-10-23），读取项记为已量化超界、不视为通过，判据 1.10 不改，本轮不再提名候选、不做存储形态大改。R0-b 的授权已用尽，不再有 R1/R2 分支。
-3. 内存侧是否接受产品内受保护 tag 作用域（产品源差异，但一次 40k 覆盖 §5 的逐域字节），还是只做阶段级账本（无产品差异，但 World/current/candidate/scratch 逐域字节仍缺）。
-4. 40k 包络处置：保留并记录、登记新包络加 fixture 分离，并确认旧失败保留不撤销。
-5. 可选：由管理员运行已备好的 F1-only ETW 噪声控制一次，仅供调度归因，不是门。
-6. B0 静态账本与上限登记仍待做，不依赖读取侧的处置结果。
+3. B1 已完成受宏保护的产品/探针 tag 与域分析器；其 World、delivery、command 覆盖和 label/释放阶梯缺口仍待 B2 前裁定，不把工具静态门当作逐域内存接受。
+4. B0 已接受逐内容参考包络与 fixture/product 分账；原包络记录保留，40k 内存项仍记未测量。64/2048/40k 的 caps 规模口径尚未登记，B2/B3 前仍须裁定。
+5. F1-only ETW 噪声控制仍仅是可选诊断，不是门；本次整合未授权该采集或重跑 r2/r3/r4。
+6. B0 静态账本已于 2026-10-24 获接受（G1/G3/G4/G7 关闭，G9 顺延 B1）；B1 观察器/tag/分析器完成并通过静态门，30 项单测通过，未运行工作负载。B2 的 64/2048、B3 的 40k 采数与 caps 规模口径、覆盖/阶梯缺口仍待 owner 授权和裁定。
 
-本文件落盘不等于授权实施。R0-a 与 R0-b 已执行完毕并判定；获得新的明确许可后，下一步只做 B0 的静态账本与上限登记，不建候选、不建包、不运行、不提交。
+本文件落盘不等于剩余批次获授权。R0-a/R0-b 已执行并判定，本 PD 读取归因批次不再提名候选；RPA R2 为另行授权的整改线。B0 已接受，B1 静态完成，B2/B3 未获采数授权。当前只在 `D:/Cuexis-worktree` 实施，准入树只读保留；本次两树整合构建/正确性验证不授权新性能诊断、ETW、40k、pilot、正式窗口或新候选。
 
 ## 证据位置
 
