@@ -1,6 +1,7 @@
 #include <cuexis/tools/cxc_tool.hpp>
 
 #include "cxc_tool_internal.hpp"
+#include "cxc_unpack_commit_internal.hpp"
 
 #include <cuexis/cxc/cxc_package.hpp>
 #include <cuexis/filesystem/secure_file.hpp>
@@ -113,7 +114,7 @@ namespace {
         return false;
     }
     std::error_code error;
-    std::filesystem::rename(backup, outputPath, error);
+    detail::renameUnpackDirectory(backup, outputPath, error);
     return !error;
 }
 
@@ -133,10 +134,12 @@ namespace {
             return detail::failure("cxc.unpack.output_commit_failed", "$/output",
                                    "Unpack output backup path could not be reserved");
         }
-        std::filesystem::rename(outputPath, backup, error);
+        detail::renameUnpackDirectory(outputPath, backup, error);
         if (error) {
             return detail::failure("cxc.unpack.output_commit_failed", "$/output",
-                                   "Existing empty output could not be staged for replacement");
+                                   "Existing empty output could not be staged for replacement (" +
+                                       std::string{error.category().name()} + ":" +
+                                       std::to_string(error.value()) + ")");
         }
         if (detail::testFailureEnabled("CUEXIS_CXC_UNPACK_FAIL_AFTER_BACKUP")) {
             if (!restoreOutputBackup(backup, outputPath)) {
@@ -147,13 +150,15 @@ namespace {
         }
     }
 
-    std::filesystem::rename(staging, outputPath, error);
+    detail::renameUnpackDirectory(staging, outputPath, error);
     if (error) {
         if (existed && !restoreOutputBackup(backup, outputPath)) {
             return outputRestoreFailure();
         }
         return detail::failure("cxc.unpack.output_commit_failed", "$/output",
-                               "Unpack staging directory could not be committed");
+                               "Unpack staging directory could not be committed (" +
+                                   std::string{error.category().name()} + ":" +
+                                   std::to_string(error.value()) + ")");
     }
     if (existed) {
         detail::removeTree(backup);

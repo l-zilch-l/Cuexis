@@ -1,5 +1,12 @@
 add_executable(cuexis_gameplay_packed_tests gameplay_capsule_tests.cpp hash_work_tests.cpp hash_core_tests.cpp revision4_entry_tests.cpp ../chart/packed_fixture_support.cpp)
 target_compile_features(cuexis_gameplay_packed_tests PRIVATE cxx_std_20)
+if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
+    # Header-prefixed global new/delete replacements cannot cross a DLL's CRT boundary.
+    # Keep every test, observing the explicit hash PMR upstream in this topology instead.
+    target_compile_definitions(cuexis_gameplay_packed_tests PRIVATE
+        CUEXIS_PD_ALLOCATION_PROBE_RESOURCE_ONLY=1
+    )
+endif()
 target_include_directories(cuexis_gameplay_packed_tests PRIVATE
     ../judgement
     ../chart

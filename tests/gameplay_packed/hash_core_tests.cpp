@@ -11,7 +11,13 @@ using namespace cuexis;
 namespace work = gameplay_packed::detail;
 using gameplay_packed::testing::HashCoreFixture;
 // MSVC's default PMR resource need not route through the executable's replacement new.
-// This upstream requests the identical capacities/alignment through an observable C++ allocator.
+// Static tests observe all C++ allocations. Shared tests observe only this explicit upstream:
+// its allocation and deallocation callbacks own the probe headers within this executable.
+#if defined(CUEXIS_PD_ALLOCATION_PROBE_RESOURCE_ONLY)
+constexpr auto allocationScope = "explicit-pmr-upstream";
+#else
+constexpr auto allocationScope = "global-cpp-allocations";
+#endif
 struct ObservableResource final : std::pmr::memory_resource {
     std::size_t remaining{SIZE_MAX};
     std::size_t allocationCount{}, liveBytes{};
@@ -20,14 +26,23 @@ struct ObservableResource final : std::pmr::memory_resource {
             throw std::bad_alloc{};
         if (remaining != SIZE_MAX)
             --remaining;
+#if defined(CUEXIS_PD_ALLOCATION_PROBE_RESOURCE_ONLY)
+        auto* result = pd_allocation::allocate(bytes, alignment);
+#else
         auto* result = ::operator new(bytes, std::align_val_t{alignment});
+#endif
         ++allocationCount;
         liveBytes += bytes;
         return result;
     }
     void do_deallocate(void* pointer, std::size_t bytes, std::size_t alignment) override {
         liveBytes -= bytes;
+#if defined(CUEXIS_PD_ALLOCATION_PROBE_RESOURCE_ONLY)
+        (void)alignment;
+        pd_allocation::release(pointer);
+#else
         ::operator delete(pointer, std::align_val_t{alignment});
+#endif
     }
     auto do_is_equal(const std::pmr::memory_resource& other) const noexcept -> bool override {
         return this == &other;
@@ -49,7 +64,7 @@ struct AllocationWindow final {
 struct Observed final {
     core::Result<work::SemanticHashResult> result;
     work::HashObservation work;
-    std::uint64_t allocations{}, bytes{}, heapPeak{}, retained{};
+    std::uint64_t allocations{}, bytes{}, allocationPeak{}, retained{};
 };
 auto observe(const work::SemanticInput& input, work::HashOptions options = {}) -> Observed {
     work::HashObservation state;
@@ -80,24 +95,25 @@ void cleanSuccess(const Observed& value, std::size_t exportCapacity = 0) {
     CHECK(value.work.dynamicLiveBytes == 0);
     CHECK(value.allocations == value.work.allocationCount);
     CHECK(value.bytes == value.work.allocationBytes);
-    CHECK(value.heapPeak + 65536 == value.work.scratchHighWater);
+    CHECK(value.allocationPeak + 65536 == value.work.scratchHighWater);
     CHECK(value.retained == exportCapacity);
 }
 void dump(const char* label, const Observed& value) {
     const auto& s = value.work;
     const auto u = [](std::uint64_t v) { return static_cast<unsigned long long>(v); };
-    std::printf("hash-observation %s ok=%d B=%llu V=%llu K=%llu scratch=%llu allocations=%llu "
-                "bytes=%llu peak=%llu retained=%llu unique=%llu hits=%llu nodes.count=%llu "
-                "nodes.hash=%llu sha=%llu sha.bytes=%llu export=%llu meter.allocations=%llu "
-                "meter.bytes=%llu meter.live=%llu inline=%llu\n",
-                label, static_cast<int>(static_cast<bool>(value.result)),
-                u(value.result ? value.result->cost.bytes : 0),
-                u(value.result ? value.result->cost.visits : 0),
-                u(value.result ? value.result->cost.maxKey : 0), u(s.scratchHighWater),
-                u(value.allocations), u(value.bytes), u(value.heapPeak), u(value.retained),
-                u(s.uniqueRows), u(s.cacheHits), u(s.patternCountNodes), u(s.patternHashNodes),
-                u(s.shaComputations), u(s.shaBytes), u(s.exportedBytes), u(s.allocationCount),
-                u(s.allocationBytes), u(s.dynamicLiveBytes), u(s.inlineObjectBytes));
+    std::printf(
+        "hash-observation %s scope=%s ok=%d B=%llu V=%llu K=%llu scratch=%llu allocations=%llu "
+        "bytes=%llu peak=%llu retained=%llu unique=%llu hits=%llu nodes.count=%llu "
+        "nodes.hash=%llu sha=%llu sha.bytes=%llu export=%llu meter.allocations=%llu "
+        "meter.bytes=%llu meter.live=%llu inline=%llu\n",
+        label, allocationScope, static_cast<int>(static_cast<bool>(value.result)),
+        u(value.result ? value.result->cost.bytes : 0),
+        u(value.result ? value.result->cost.visits : 0),
+        u(value.result ? value.result->cost.maxKey : 0), u(s.scratchHighWater),
+        u(value.allocations), u(value.bytes), u(value.allocationPeak), u(value.retained),
+        u(s.uniqueRows), u(s.cacheHits), u(s.patternCountNodes), u(s.patternHashNodes),
+        u(s.shaComputations), u(s.shaBytes), u(s.exportedBytes), u(s.allocationCount),
+        u(s.allocationBytes), u(s.dynamicLiveBytes), u(s.inlineObjectBytes));
 }
 void cleanFailure(const Observed& value, std::string_view expected) {
     REQUIRE_FALSE(value.result);
@@ -121,7 +137,8 @@ void cleanFailure(const Observed& value, std::string_view expected) {
     CHECK(value.work.dynamicLiveBytes == 0);
     // Bounded diagnostics use the fixed control allowance, not attacker-owned strings.
     CHECK(value.retained < 16384);
-    CHECK(value.heapPeak + 8192 <= std::max<std::uint64_t>(65536, value.work.scratchHighWater));
+    CHECK(value.allocationPeak + 8192 <=
+          std::max<std::uint64_t>(65536, value.work.scratchHighWater));
     for (const auto& context : value.result.error().context())
         CHECK(context.value.size() < 128);
 }
@@ -246,14 +263,26 @@ TEST_CASE("Hash allocation observer has independent positive controls", "[capsul
     {
         AllocationWindow window;
         plain.reserve(128);
+#if defined(CUEXIS_PD_ALLOCATION_PROBE_RESOURCE_ONLY)
+        // A plain allocation is deliberately outside a shared test's PMR-only scope.
+        pd_allocation::tracking = false;
+        CHECK(pd_allocation::count.load() == 0);
+        CHECK(pd_allocation::bytes.load() == 0);
+        pd_allocation::tracking = true;
+#endif
         auto* block = observableResource.allocate(256, 64);
         observableResource.deallocate(block, 256, 64);
         pd_allocation::tracking = false;
         count = pd_allocation::count.load();
         bytes = pd_allocation::bytes.load();
     }
+#if defined(CUEXIS_PD_ALLOCATION_PROBE_RESOURCE_ONLY)
+    CHECK(count == 1);
+    CHECK(bytes == 256);
+#else
     CHECK(count == 2);
     CHECK(bytes == 384);
+#endif
 }
 
 TEST_CASE("Hash core four dimensions use exact literal and clamped limits",

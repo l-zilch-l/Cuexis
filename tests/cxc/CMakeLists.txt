@@ -18,6 +18,7 @@ if(TARGET cuexis::cxc_tool_common)
     list(APPEND cuexis_cxc_test_sources
         cxc_candidate_extension_tests.cpp
         cxc_candidate_roundtrip_tests.cpp
+        cxc_unpack_commit_tests.cpp
     )
 else()
     message(STATUS "cuexis_cxc_tests: developer tool layer absent; candidate CXC cases excluded")

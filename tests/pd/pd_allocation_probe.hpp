@@ -1,6 +1,7 @@
 #pragma once
 
-// Standalone static probe only: counts requested C++ allocation bytes, not CRT heap overhead.
+// Counts requested allocation bytes, not CRT heap overhead. Global replacement is static-only:
+// shared-library tests must use RESOURCE_ONLY and explicitly pair allocate/release in a resource.
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
@@ -49,6 +50,7 @@ inline void release(void* value) noexcept {
 }
 } // namespace pd_allocation
 
+#if !defined(CUEXIS_PD_ALLOCATION_PROBE_RESOURCE_ONLY)
 void* operator new(std::size_t size) {
     return pd_allocation::allocate(size, alignof(std::max_align_t));
 }
@@ -125,3 +127,4 @@ void operator delete(void* value, std::align_val_t, const std::nothrow_t&) noexc
 void operator delete[](void* value, std::align_val_t, const std::nothrow_t&) noexcept {
     pd_allocation::release(value);
 }
+#endif

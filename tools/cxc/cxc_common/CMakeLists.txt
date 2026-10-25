@@ -8,6 +8,7 @@ target_sources(cuexis_cxc_tool_common
         src/cxc_tool_common.cpp
         src/cxc_tool_internal.hpp
         src/cxc_unpack.cpp
+        src/cxc_unpack_commit_internal.hpp
     PUBLIC
         FILE_SET HEADERS
         BASE_DIRS include
