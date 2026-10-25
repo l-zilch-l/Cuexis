@@ -14,14 +14,19 @@ using gameplay_packed::testing::HashCoreFixture;
 // This upstream requests the identical capacities/alignment through an observable C++ allocator.
 struct ObservableResource final : std::pmr::memory_resource {
     std::size_t remaining{SIZE_MAX};
+    std::size_t allocationCount{}, liveBytes{};
     auto do_allocate(std::size_t bytes, std::size_t alignment) -> void* override {
         if (remaining == 0)
             throw std::bad_alloc{};
         if (remaining != SIZE_MAX)
             --remaining;
-        return ::operator new(bytes, std::align_val_t{alignment});
+        auto* result = ::operator new(bytes, std::align_val_t{alignment});
+        ++allocationCount;
+        liveBytes += bytes;
+        return result;
     }
-    void do_deallocate(void* pointer, std::size_t, std::size_t alignment) override {
+    void do_deallocate(void* pointer, std::size_t bytes, std::size_t alignment) override {
+        liveBytes -= bytes;
         ::operator delete(pointer, std::align_val_t{alignment});
     }
     auto do_is_equal(const std::pmr::memory_resource& other) const noexcept -> bool override {
@@ -237,9 +242,9 @@ TEST_CASE("Bounded semantic operation matches legacy bytes with one reusable dig
 
 TEST_CASE("Hash allocation observer has independent positive controls", "[capsule][hash-core]") {
     std::uint64_t count{}, bytes{};
+    std::vector<std::byte> plain;
     {
         AllocationWindow window;
-        std::vector<std::byte> plain;
         plain.reserve(128);
         auto* block = observableResource.allocate(256, 64);
         observableResource.deallocate(block, 256, 64);
@@ -291,6 +296,13 @@ TEST_CASE("Hash core four dimensions use exact literal and clamped limits",
     cleanSuccess(observe(f.input(), options), static_cast<std::size_t>(c.bytes));
     options.exportCapacity = UINT64_MAX;
     cleanFailure(observe(f.input(), options), "maxHashScratchBytes");
+}
+
+TEST_CASE("Hash core returns a budget error at the fixed workspace floor", "[capsule][hash-core]") {
+    HashCoreFixture fixture;
+    work::HashOptions options;
+    options.requested.maxHashScratchBytes = 65536;
+    cleanFailure(observe(fixture.input(), options), "maxHashScratchBytes");
 }
 
 TEST_CASE("Hash core counts shared Pattern definitions once before amplification refusal",
@@ -447,9 +459,16 @@ TEST_CASE("Hash workspace unwinds every injected allocation failure without misr
 }
 
 TEST_CASE("Hash scratch meters both capacities during vector migration", "[capsule][hash-core]") {
+    std::size_t metadataAllocations{}, metadataBytes{};
+    {
+        ObservableResource upstream;
+        std::pmr::vector<std::byte> empty{&upstream};
+        metadataAllocations = upstream.allocationCount;
+        metadataBytes = upstream.liveBytes;
+    }
     for (bool enough : {false, true}) {
         auto limits = work::kAcceptedHashWork;
-        limits.maxHashScratchBytes = 65536 + 3072 - (enough ? 0 : 1);
+        limits.maxHashScratchBytes = 65536 + metadataBytes + 3072 - (enough ? 0 : 1);
         work::HashAllocationStats state;
         ObservableResource upstream;
         work::HashScratch scratch{limits, &upstream, &state};
@@ -468,14 +487,14 @@ TEST_CASE("Hash scratch meters both capacities during vector migration", "[capsu
             CHECK(bytes.front() == std::byte{3});
             CHECK(bytes.back() == std::byte{3});
             if (enough) {
-                CHECK(state.scratchHighWater == 65536 + 3072);
-                CHECK(state.dynamicLiveBytes == 2048);
-                CHECK(state.allocationCount == 2);
+                CHECK(state.scratchHighWater == 65536 + metadataBytes + 3072);
+                CHECK(state.dynamicLiveBytes == metadataBytes + 2048);
+                CHECK(state.allocationCount == metadataAllocations + 2);
             } else {
                 CHECK(bytes.data() == previous);
-                CHECK(state.scratchHighWater == 65536 + 1024);
-                CHECK(state.dynamicLiveBytes == 1024);
-                CHECK(state.allocationCount == 1);
+                CHECK(state.scratchHighWater == 65536 + metadataBytes + 1024);
+                CHECK(state.dynamicLiveBytes == metadataBytes + 1024);
+                CHECK(state.allocationCount == metadataAllocations + 1);
             }
         }
         CHECK(state.dynamicLiveBytes == 0);

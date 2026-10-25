@@ -62,9 +62,9 @@ auto gameplay_detail::streamStaticPreimage(const CanonicalSemanticChart& chart,
                     fail("packed.identity.generated_path", "Invalid generated identity path"));
         }
     }
-    std::pmr::vector<std::byte> keys{sink.scratch};
+    core::detail::PmrBuffer<std::byte> keys{sink.scratch};
     keys.resize(static_cast<std::size_t>(keyBytes));
-    std::pmr::vector<PrefixEntity> entities{sink.scratch};
+    core::detail::PmrBuffer<PrefixEntity> entities{sink.scratch};
     entities.reserve(chart.entities.size());
     std::size_t offset = 0;
     for (const auto& entity : chart.entities) {
@@ -81,7 +81,7 @@ auto gameplay_detail::streamStaticPreimage(const CanonicalSemanticChart& chart,
             return core::unexpected(
                 fail("packed.identity.duplicate_identity", "Duplicate canonical entity identity"));
     {
-        std::pmr::vector<std::byte> lookup{sink.scratch};
+        core::detail::PmrBuffer<std::byte> lookup{sink.scratch};
         const auto find = [&](const CanonicalEntityIdentity& identity) {
             lookup.resize(staticValue(identity_detail::canonicalIdentitySize(identity)));
             identityInto(identity, lookup);

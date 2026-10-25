@@ -46,8 +46,8 @@ struct HashCoreWork final {
     detail::HashObservation& observation;
     detail::HashScratch scratch;
     detail::HashFrames frames;
-    std::pmr::vector<detail::HashCostSlot> costs{&scratch};
-    std::pmr::vector<std::uint32_t> relationResources{&scratch};
+    core::detail::PmrBuffer<detail::HashCostSlot> costs{&scratch};
+    core::detail::PmrBuffer<std::uint32_t> relationResources{&scratch};
     std::array<std::span<detail::HashCostSlot>, 11> groups{};
     std::size_t currentEmission{SIZE_MAX};
     bool counting{true};

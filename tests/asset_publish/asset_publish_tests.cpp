@@ -24,6 +24,9 @@
 #include <cstdlib>
 #include <filesystem>
 #if defined(_WIN32)
+#include "../../tools/common/asset_publish/src/publish_fs_internal.hpp"
+
+#include <Windows.h>
 #include <process.h>
 #endif
 #include <fstream>
@@ -51,7 +54,11 @@ constexpr std::string_view candidateEntryPath{"compiled/chart.packed"};
 // explains itself. Mirrors REQUIRE semantics: a failure stops the case.
 template <typename T> void requireOk(const T& result) {
     if (!result.has_value()) {
-        FAIL(std::string{result.error().message()});
+        std::ostringstream diagnostic;
+        diagnostic << result.error().code() << ": " << result.error().message();
+        for (const auto& item : result.error().context())
+            diagnostic << " [" << item.key << "=" << item.value << "]";
+        FAIL(diagnostic.str());
     }
 }
 
@@ -252,7 +259,109 @@ void spawnLockHolder() {
 #endif
 }
 
+#if defined(_WIN32)
+class ScopedNativeHandle final {
+  public:
+    explicit ScopedNativeHandle(HANDLE handle) noexcept : handle_(handle) {}
+    ScopedNativeHandle(const ScopedNativeHandle&) = delete;
+    auto operator=(const ScopedNativeHandle&) -> ScopedNativeHandle& = delete;
+    ~ScopedNativeHandle() {
+        (void)close();
+    }
+
+    [[nodiscard]] auto valid() const noexcept -> bool {
+        return handle_ != INVALID_HANDLE_VALUE;
+    }
+
+    auto close() noexcept -> bool {
+        if (!valid()) {
+            return true;
+        }
+        if (CloseHandle(handle_) == 0) {
+            return false;
+        }
+        handle_ = INVALID_HANDLE_VALUE;
+        return true;
+    }
+
+  private:
+    HANDLE handle_;
+};
+#endif
+
 } // namespace
+
+#if defined(_WIN32)
+TEST_CASE("E3 Windows atomic publication survives a briefly held reader",
+          "[s6-e3][asset-publish][windows]") {
+    const auto root = scratchRoot("rename-reader-released");
+    const auto source = root / "staged";
+    const auto target = root / "published";
+    const auto payload = asBytes(std::string_view{"prefix\0suffix", 13});
+    const auto metadata = asBytes("complete generation metadata");
+    writeBytes(source / "nested" / "payload.bin", payload);
+    writeBytes(source / "metadata.bin", metadata);
+    ScopedNativeHandle reader{CreateFileW((source / "nested" / "payload.bin").c_str(), GENERIC_READ,
+                                          FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+                                          OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr)};
+    REQUIRE(reader.valid());
+    const bool unsharedRename =
+        MoveFileExW(source.c_str(), target.c_str(),
+                    MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH) != 0;
+    const auto blockedError = GetLastError();
+    REQUIRE_FALSE(unsharedRename);
+    REQUIRE(blockedError == ERROR_ACCESS_DENIED);
+
+    bool readerClosed = false;
+    std::jthread releaser{[&] {
+        std::this_thread::sleep_for(std::chrono::milliseconds{25});
+        readerClosed = reader.close();
+    }};
+    const auto replaced = cuexis::tools::detail::replaceAtomically(source, target);
+    releaser.join();
+    REQUIRE(readerClosed);
+    requireOk(replaced);
+    CHECK_FALSE(fs::exists(source));
+    CHECK(readBytes(target / "nested" / "payload.bin") == payload);
+    CHECK(readBytes(target / "metadata.bin") == metadata);
+}
+
+TEST_CASE("E3 Windows atomic publication refuses a reader that remains held",
+          "[s6-e3][asset-publish][windows]") {
+    const auto root = scratchRoot("rename-reader-held");
+    const auto source = root / "staged";
+    const auto target = root / "published";
+    const auto payload = asBytes(std::string_view{"prefix\0suffix", 13});
+    const auto metadata = asBytes("complete generation metadata");
+    writeBytes(source / "nested" / "payload.bin", payload);
+    writeBytes(source / "metadata.bin", metadata);
+    ScopedNativeHandle reader{CreateFileW((source / "nested" / "payload.bin").c_str(), GENERIC_READ,
+                                          FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+                                          OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr)};
+    REQUIRE(reader.valid());
+    const auto replaced = cuexis::tools::detail::replaceAtomically(source, target);
+    REQUIRE_FALSE(replaced.has_value());
+    CHECK(errorCode(replaced.error()) == "asset.publish.replace_failed");
+    CHECK(std::ranges::any_of(replaced.error().context(), [](const auto& item) {
+        return item.key == "platform_error" &&
+               (item.value == "5" || item.value == "32" || item.value == "33");
+    }));
+    CHECK(std::ranges::any_of(replaced.error().context(), [&](const auto& item) {
+        return item.key == "source" && item.value == source.generic_string();
+    }));
+    CHECK(std::ranges::any_of(replaced.error().context(), [&](const auto& item) {
+        return item.key == "target" && item.value == target.generic_string();
+    }));
+    CHECK_FALSE(fs::exists(target));
+    CHECK(readBytes(source / "nested" / "payload.bin") == payload);
+    CHECK(readBytes(source / "metadata.bin") == metadata);
+    REQUIRE(reader.close());
+    std::error_code status;
+    fs::remove_all(source, status);
+    CHECK_FALSE(status);
+    CHECK_FALSE(fs::exists(source));
+}
+#endif
 
 TEST_CASE("E3 generation publication writes an immutable content-addressed generation",
           "[s6-e3][asset-publish]") {

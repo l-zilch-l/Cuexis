@@ -99,14 +99,29 @@ auto writeFileExclusive(const fs::path& file, std::span<const std::byte> bytes)
 }
 
 auto replaceAtomically(const fs::path& source, const fs::path& target) -> core::Result<void> {
-    if (MoveFileExW(source.c_str(), target.c_str(),
-                    MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH) == 0) {
-        return core::unexpected(platformFailure(publishReplaceCode, "Atomic replacement failed",
-                                                static_cast<int>(GetLastError()))
-                                    .withContext("source", source.generic_string())
-                                    .withContext("target", target.generic_string()));
+    // A reader without FILE_SHARE_DELETE can temporarily prevent a directory rename even after
+    // our own files are closed. Keep each attempt an atomic rename, and bound the total backoff.
+    constexpr int maxAttempts = 8;
+    constexpr DWORD retryDelayMs = 10;
+    DWORD platformError = ERROR_SUCCESS;
+    for (int attempt = 0; attempt < maxAttempts; ++attempt) {
+        if (MoveFileExW(source.c_str(), target.c_str(),
+                        MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH) != 0) {
+            return {};
+        }
+        platformError = GetLastError();
+        const bool retryable = platformError == ERROR_ACCESS_DENIED ||
+                               platformError == ERROR_SHARING_VIOLATION ||
+                               platformError == ERROR_LOCK_VIOLATION;
+        if (!retryable || attempt + 1 == maxAttempts) {
+            break;
+        }
+        Sleep(retryDelayMs);
     }
-    return {};
+    return core::unexpected(platformFailure(publishReplaceCode, "Atomic replacement failed",
+                                            static_cast<int>(platformError))
+                                .withContext("source", source.generic_string())
+                                .withContext("target", target.generic_string()));
 }
 
 auto syncDirectory(const fs::path& directory) -> core::Result<void> {

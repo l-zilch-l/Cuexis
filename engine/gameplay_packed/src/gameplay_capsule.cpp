@@ -12,6 +12,7 @@
 #include <cuexis/core/error.hpp>
 #include <cuexis/filesystem/secure_file.hpp>
 #include <cuexis/json/parse.hpp>
+#include <cuexis_internal/pmr_buffer.hpp>
 #include <cuexis_internal/sha256.hpp>
 
 #include <algorithm>
@@ -135,7 +136,7 @@ template <typename A, typename M> auto storesProjection(const A& a, const M& m) 
 struct Output final {
     static constexpr bool reading = false;
     Mode mode{Mode::wire};
-    ByteWriter writer;
+    std::optional<ByteWriter> writer;
     gp::SemanticByteSink* sink{};
     detail::HashCost* cost{};
     HashCoreWork* operation{};
@@ -146,6 +147,11 @@ struct Output final {
     std::set<Ref>* collectedRefs{};
     const std::vector<std::string>* strings{};
     const std::vector<Ref>* references{};
+    auto bufferedWriter() -> ByteWriter& {
+        if (!writer)
+            writer.emplace();
+        return *writer;
+    }
     void add(std::size_t n) {
         if (operation && cost) {
             cost->bytes =
@@ -169,7 +175,7 @@ struct Output final {
             if (sink)
                 sink->write(sink->context, bytes);
             else
-                writer.writeBytes(bytes);
+                bufferedWriter().writeBytes(bytes);
         }
     }
     void tag(std::uint8_t v) {
@@ -198,7 +204,7 @@ struct Output final {
             }
             add(n);
             if (!sizing) {
-                writer.writeUnsignedLeb128(v);
+                bufferedWriter().writeUnsignedLeb128(v);
             }
         }
     }
@@ -555,7 +561,7 @@ template <typename Emit> auto projection(Emit emit) -> std::string {
     a.mode = Mode::hash;
     a.limit = chart::PackedChartLimits{}.maxPackedSectionBytes;
     emit(a);
-    return judgement::detail::formatStructuralProjectionKey(a.writer.bytes(), [] {
+    return judgement::detail::formatStructuralProjectionKey(a.bufferedWriter().bytes(), [] {
         fail("packed.field.wire_range", "projection key hex length overflow");
     });
 }
@@ -847,12 +853,12 @@ template <typename A, typename V> void optionalRef(A& a, std::uint8_t kind, V& v
 }
 
 template <typename Node>
-auto nodes(Node& root, std::pmr::memory_resource* resource) -> std::pmr::vector<Node*> {
-    std::pmr::vector<Node*> result{resource}, pending{resource};
+auto nodes(Node& root, std::pmr::memory_resource* resource) -> core::detail::PmrBuffer<Node*> {
+    core::detail::PmrBuffer<Node*> result{resource}, pending{resource};
     pending.push_back(&root);
     while (!pending.empty()) {
         auto* node = pending.back();
-        pending.pop_back();
+        pending.resize(pending.size() - 1);
         result.push_back(node);
         for (auto i = node->operands.rbegin(); i != node->operands.rend(); ++i) {
             pending.push_back(&*i);
@@ -1921,7 +1927,7 @@ auto output(Mode mode, Model& m, chart::PackedChartLimits limits,
     out.strings = strings;
     out.references = references;
     visitRows(out, m);
-    return std::move(out.writer).takeBytes();
+    return std::move(out.bufferedWriter()).takeBytes();
 }
 void allRows(Output& a, Model& m) {
     globalRow(a, m);

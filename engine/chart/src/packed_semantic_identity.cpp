@@ -9,6 +9,8 @@
 #include "packed_identity_internal.hpp"
 #include "sha256_internal.hpp"
 
+#include <cuexis_internal/pmr_buffer.hpp>
+
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -16,6 +18,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <map>
+#include <optional>
 #include <set>
 #include <span>
 #include <string>
@@ -37,15 +40,18 @@ auto fail(std::string code, std::string message) -> core::Error {
 
 // Fixed-width little-endian preimage buffer. Spec 10.1 deliberately uses no varint encoding.
 struct Preimage final {
-    std::vector<std::byte> bytes;
+    std::optional<std::vector<std::byte>> bytes;
     gameplay_detail::SemanticByteSink* sink{};
 };
 
 void append(Preimage& out, std::span<const std::byte> data) {
     if (out.sink)
         out.sink->write(out.sink->context, data);
-    else
-        out.bytes.insert(out.bytes.end(), data.begin(), data.end());
+    else {
+        if (!out.bytes)
+            out.bytes.emplace();
+        out.bytes->insert(out.bytes->end(), data.begin(), data.end());
+    }
 }
 
 void writeU8(Preimage& out, std::uint8_t value) {
@@ -351,7 +357,7 @@ auto writeStaticHeader(Preimage& out, const CanonicalSemanticChart& chart, bool 
         }
     }
 
-    auto features = std::pmr::vector<const CanonicalFeature*>{resource};
+    auto features = core::detail::PmrBuffer<const CanonicalFeature*>{resource};
     features.reserve(chart.features.size());
     for (const auto& feature : chart.features) {
         features.push_back(&feature);
@@ -376,7 +382,7 @@ auto writeStaticHeader(Preimage& out, const CanonicalSemanticChart& chart, bool 
     if (auto result = writeF64(out, chart.timing.defaultBpm); !result) {
         return core::unexpected(std::move(result.error()));
     }
-    auto tempos = std::pmr::vector<const TempoEvent*>{resource};
+    auto tempos = core::detail::PmrBuffer<const TempoEvent*>{resource};
     tempos.reserve(chart.timing.tempoEvents.size());
     for (const auto& tempo : chart.timing.tempoEvents) {
         tempos.push_back(&tempo);
@@ -390,7 +396,7 @@ auto writeStaticHeader(Preimage& out, const CanonicalSemanticChart& chart, bool 
                 fail("packed.identity.timing_order", "Tempo events must not share a start beat"));
         }
     }
-    auto stops = std::pmr::vector<const TimingStop*>{resource};
+    auto stops = core::detail::PmrBuffer<const TimingStop*>{resource};
     stops.reserve(chart.timing.stops.size());
     for (const auto& stop : chart.timing.stops) {
         stops.push_back(&stop);
@@ -428,7 +434,7 @@ auto writeStaticHeader(Preimage& out, const CanonicalSemanticChart& chart, bool 
         }
     }
 
-    std::pmr::vector<PrefixResource> derived{resource}, declared{resource};
+    core::detail::PmrBuffer<PrefixResource> derived{resource}, declared{resource};
     if (chart.mainMusic)
         derived.push_back({chart.mainMusic->value, CanonicalResourceUseKind::MainMusic});
     for (const auto& entity : chart.entities)
@@ -443,11 +449,12 @@ auto writeStaticHeader(Preimage& out, const CanonicalSemanticChart& chart, bool 
         declared.push_back({use.assetId.value, use.use});
     const auto unique = [](auto& rows) {
         std::sort(rows.begin(), rows.end());
-        rows.erase(std::unique(rows.begin(), rows.end()), rows.end());
+        const auto last = std::unique(rows.begin(), rows.end());
+        rows.resize(static_cast<std::size_t>(last - rows.begin()));
     };
     unique(derived);
     unique(declared);
-    if (derived != declared)
+    if (!std::equal(derived.begin(), derived.end(), declared.begin(), declared.end()))
         return core::unexpected(fail("packed.identity.closure",
                                      "The declared resource closure must equal the closure "
                                      "derived from the chart's asset references"));
@@ -475,7 +482,7 @@ static auto semanticPreimageImpl(const CanonicalSemanticChart& chart, bool gamep
                                  std::uint32_t candidateRevision = 2)
     -> core::Result<std::vector<std::byte>> {
     Preimage out;
-    out.bytes.reserve(256U + chart.entities.size() * 128U);
+    out.bytes.emplace().reserve(256U + chart.entities.size() * 128U);
 
     if (auto result = writeStaticHeader(out, chart, gameplay, candidateRevision,
                                         std::pmr::get_default_resource());
@@ -579,7 +586,7 @@ static auto semanticPreimageImpl(const CanonicalSemanticChart& chart, bool gamep
     // Foundation has no Behavior, Animation or Effect definitions.
     writeStaticDefinitionTail(out);
 
-    return std::move(out.bytes);
+    return std::move(*out.bytes);
 }
 
 #include "packed_bounded_preimage_internal.hpp"

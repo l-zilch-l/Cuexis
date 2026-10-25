@@ -19,7 +19,6 @@ auto receive(AudioWorker& worker, std::uint64_t id) -> AudioWorkerReply {
         std::this_thread::sleep_for(std::chrono::milliseconds{1});
     }
     FAIL("Audio owner did not publish a terminal reply");
-    return {};
 }
 struct Device final : OwnedAudioDevice {
     explicit Device(audio::AudioClipStore& store, std::atomic<unsigned>& destroyed,
