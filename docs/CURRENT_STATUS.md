@@ -2,11 +2,17 @@
 
 状态：current
 
-更新日期：2026-10-21
+更新日期：2026-10-25
 
 本文只维护当前阶段、正在进行的任务和未解决的问题。实施与测量细节见带日期的阶段报告。
 
 ## 当前任务
+
+**2026-10-25：R2 继续实施单行 typed visitor 第二候选；主代理亲自核对增量、实测 160 B 显式逻辑存储并运行聚焦正确性对照，五构建 47 项检查及 9 项消费者门通过；固定局部诊断四规模均 inconclusive 且有噪声限定，收益未确认。见 [R2 单行续做](stage_reports/stages/stage-07/rpa/2026-10-25-r2-single-row-continuation.md)。首版失败及其窗口保留，R2/R4 未退出。**
+
+**2026-10-25：Stage 7-RPA R2 首版借用行候选已实现，五构建正确性回归、适用 staged consumers 和九路径精确回滚验证通过；局部诊断显示单对象退化约 25.3%、N64 收益区间跨 1，当前候选未接受、R2 收益门仍未完成。结果与范围见 [R2 实施记录](stage_reports/stages/stage-07/rpa/2026-10-25-r2-borrowed-presentation.md)。R4 正式接受及 RPA/PD/Stage 7 关闭仍独立。**
+
+**2026-10-25：Stage 7-RPA R1 已退出。依据用户本次明确授权，完成首错修复后最终构建三项有限 headless pilot（3/3 首次 exit=0、Close + join 659 us）及退出门核验；当前五构建回归、适用消费者与独立补丁/回滚证据见[本地记录 §11](stage_reports/stages/stage-07/rpa/2026-10-25-r1-continuation.md#11-当前修复构建有限-pilot-与-r1-退出)。五条既有 PD 格式失败作为范围外限定保留，noIndependentContract 不算容量通过，R0 残余保持归属。RPA/PD/设备/生产接受及整个 Stage 7 未因此关闭，R2 当前进度见上条；R3/R4 未获授权，40k/ETW/正式窗口仍不在授权范围。下段 PD-5 保留此前交回状态。**
 
 **Stage 7-PD / PD-0 testOnly 基线与行为表征、PD-1 发布视图、PD-2 绑定索引/Projection Adapter 的内部实施与本地适用门禁已完成；PD-3-a 已补正 reload 资源 OOM 门禁并经 GPT-6-Luna 复审通过；PD-3-b 状态修订、只读桥与唯一物化器的内部实施、本地适用门禁及独立复审通过；PD-3-c 内部实施与适用本地门禁完成（SDK 0.8.1 已获接受，新建无上下文 GPT-6-Luna 独立审核通过）；PD-4 三项合同/SDK 0.9.0 已获接受，内部实施与适用本地门禁完成，新的无上下文独立复审通过；PD-5 P0 已完成两窗各 36 个正式进程，发现局部性能回归；owner 要求先核查与修复后重新测量；保语义修复 F1 已实施。2026-10-21 有限诊断中 F1/A 的 1–256 对象 read 配对比值为 1.2368–1.3967，各区间下界 >1.10；唯一 C1 候选未满足预登记保留条件，已撤回。公共 ready 因噪声不可判定，40k Gameplay-host 在 Packed 编码准入失败。后续独立核查确认 40k 字典 160048 strings / 120013 refs / 31283429 STR0 bytes，超过冻结联合预算，上限未调。唯一 C2 输出槽候选完成独立 Release 验证及固定 F1 对照，read64 比值 1.0214、区间 0.6515–1.6011 且重复性超限，未达自检；候选留独立分支交回核验，主树保持 F1。原 1.10/15% 与生命周期门禁保留；完整正式接受未完成。**
 
@@ -36,7 +42,7 @@ PD-5 前轮证据：[两窗报告（2026-10-21 更正）](stage_reports/stages/s
 | 阶段 | 当前状态 | 入口 |
 | --- | --- | --- |
 | Stage 7A | S7A-3/4、5/6、7/8 的受限功能验收完成；整体关闭仍待 RPA 收尾 | [Stage 7A 计划](stage_plans/active/stage-07/plan-a.md) |
-| Stage 7-RPA | testOnly 实施与自动化证据已具备；实体设备、生产预算和最终接受未完成 | [RPA 计划](stage_plans/active/stage-07/plan-rpa.md)、[交接状态](stage_reports/stages/stage-07/rpa/2026-10-15-rpa-f4-handoff.md) |
+| Stage 7-RPA | R1 已按用户本次授权完成最终身份有限 pilot 与退出核验；R0 带残余关闭、PD 格式与 noIndependentContract 限定保留。R2 首版候选已实施并通过本地正确性/消费者门，但性能候选未接受、收益门仍未完成；R3/R4 与正式测量未获授权。实体设备、生产预算和最终接受未完成，RPA 未退出 | [R1 本地记录 §11](stage_reports/stages/stage-07/rpa/2026-10-25-r1-continuation.md#11-当前修复构建有限-pilot-与-r1-退出)、[RPA 性能整改](stage_plans/active/stage-07/plan-rpa-performance-remediation.md)、[R1 实施计划](stage_plans/active/stage-07/rpa-r1-implementation.md) |
 | Stage 7-PD | PD-0 基线与 PD-1/PD-2 完成；PD-3-a 补正、PD-3-b 内部实施及本地适用门禁与独立复审通过；PD-3-c 内部实施与本地门禁完成，公共查询/0.8.1 已获接受，新建无上下文 GPT-6-Luna 独立审核通过；PD-4 内部实施、本地适用门禁及新的无上下文独立复审完成（已接受 SDK 0.9.0）；PD-5 P0 两窗完成；F1 有限规模 read 仍超原相对约束，C1 候选已撤回；公共 ready 不可判定、40k Gameplay-host 编码准入失败；字典预算独立核查及唯一 C2 验证完成；C2 未达自检，独立分支待核验，主树 F1 不变；修复后正式复测未开始，完整正式接受未完成，子阶段未退出 | [PD 计划](stage_plans/active/stage-07/plan-presentation-decoupling.md) |
 | Stage 7B+ | 未开始，等待 RPA 完整退出 | [Stage 7B+ 计划](stage_plans/active/stage-07/plan-b.md) |
 
@@ -49,7 +55,7 @@ Stage 0–6 已完成；Stage 8–14 尚未开始。整体 Stage 7 未关闭。
 - **历史慢态及尾延迟未归因**：PD-0 最新登记组重复性通过，但不解释历史近两倍慢态；该组 Debug 宿主仍保留 15.93 ms 的单帧请求到回执尖峰。PD-5 本机有限 Release 门槛已接受，生产尾延迟预算未接受，不能据均值重复性通过推断生产延迟合格。
 - **控制附近帧率波动待量化**：PD-4 实体 DFJK 完整课程与控制观察已完成，旧版容量错误本轮未复现；Reset/暂停恢复时约 240→130→240，持续时间与模块成本未测量。设备失效/恢复仍未验收。
 - **局部偶发故障未定位**：B5 Pause 的 `capture_gap` 与 CXC unpack 的 `Access Denied` 尚无根因结论。
-- **RPA 验收未完成**：已取得 PD-4 受限实体键盘与听音观察；精确音画同步、设备失效与压力验证、生产参数及预算接受仍待完成。
+- **RPA 验收未完成**：已取得 PD-4 受限实体键盘与听音观察；精确音画同步、设备失效与压力验证、生产参数及预算接受仍待完成。R0 的 Seek/ON-OFF、Close 软件退休观测、旧 fence 与导出容量 partial 均按[原报告](stage_reports/stages/stage-07/rpa/2026-10-24-r0-observation-and-anchor.md)保留历史结论。Q4 仍为 `inconclusive`（历史 B 探针缺失）。R1 已新增真实 owner 许可反例、独立 Close step 观测及四类续行证据，未回填 R0；Debug 和首错缺口已解决并经当前五构建复验；当前修复身份有限 pilot 通过，R1 已按本次授权完成退出核验，RPA 最终接受仍未完成；全仓格式限定及 noIndependentContract 导出事实见[新记录](stage_reports/stages/stage-07/rpa/2026-10-25-r1-continuation.md)。
 - **预算证据缺项**：端到端 Seek 延迟、prepare-only 峰值堆和 decoded semantic heap 尚未完成有效测量与接受。
 
 问题证据与剩余门禁见 [PD-0 复测归档](stage_reports/stages/stage-07/pd/2026-10-17-pd0-supplemental-retests-and-archive.md)、

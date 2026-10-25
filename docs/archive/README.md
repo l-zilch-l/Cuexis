@@ -2,7 +2,7 @@
 
 状态：现行历史文档索引
 
-更新日期：2026-10-10
+更新日期：2026-10-25
 
 本目录保存被后续 ADR、规范、路线图或实现取代的历史材料。归档文件保留当时的背景、计划和
 证据，不作为当前产品、格式或阶段状态的权威来源。
@@ -22,7 +22,7 @@
 
 - [Chart v4 作者指南原文](CHART_V4_AUTHORING_2026-09-02.md)：保留旧格式手写说明；2026-10-13按 owner 要求更新现行入口为 [v5 指南](../guides/CHART_V5_AUTHORING.md)，旧 v4 路径继续兼容。
 
-- [Stage 7历史规划与接手快照](stage-07-planning/README.md)：3/4、旧单批5、联合5/6接手、5–9评估及RPA v0.5讨论初稿；当前决策归Stage 7主计划与RPA分册。
+- [Stage 7历史规划与接手快照](stage-07-planning/README.md)：3/4、旧单批5、联合5/6接手、5–9评估、RPA v0.5讨论初稿、RPA 2026-10-11计划及2026-10-14性能proposal；当前RPA工作归性能整改与R1计划。
 
 - [Simple Chart v1 历史格式](SIMPLE_CHART_FORMAT.md)
 - [Stage 0 项目审视](PROJECT_REVIEW_STAGE0.md)

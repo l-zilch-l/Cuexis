@@ -32,6 +32,11 @@
 - [Retention progress and wait boundaries](2026-10-17-retention-progress-and-wait-boundaries.md)
 - [Wait and retirement design review](2026-10-17-wait-and-retirement-design-review.md)
 - [Performance remediation design review](2026-10-24-performance-remediation-design-review.md)
+- [R0 observation and anchor](2026-10-24-r0-observation-and-anchor.md)
+- [R1 observation, C6 and failed Close stop review](2026-10-25-r1-stop-review.md)：历史停审记录：当时 C7/C7a 在 ON/OFF 同样复现，最小拒绝候选未应用，R1 尚未退出；后续退出结论见下项 §11。
+- [R1 继续实施与本地验证](2026-10-25-r1-continuation.md)：许可/身份、四类续行、时钟与保活、Debug 栈及首错复核修复；§10 为当前五构建复验、独立 red/green 与回滚证据。§11 为当前修复构建新登记三项有限 pilot 与按本次授权核验后的 R1 退出；旧 pilot 身份、五条 PD 格式与导出容量限定保留，RPA/PD/Stage 7 未关闭。前项停审报告保留历史状态。该记录生成时 R2 尚未启动，当前进度见下项；R3/R4、40k、ETW、正式测量与设备接受仍独立受限。
+- [R2 单行借用候选续做](2026-10-25-r2-single-row-continuation.md)：父代理设计与亲自核验，移除批量数组后采用同步单行借用；160 B 显式逻辑存储，五构建/消费者通过；固定诊断四规模 inconclusive，收益门未退出。
+- [R2 有界借用行实施与本地验证](2026-10-25-r2-borrowed-presentation.md)：首版内部借用行、原序 owning DTO 物化、真实 scratch 布局、五构建回归、适用消费者与独立回滚通过；固定局部诊断显示单对象退化、N64 收益区间跨 1，首版性能候选未接受，R2 收益门未完成。
 - [Diagnostic phase-name audit](../diagnostic-formalization/2026-10-09-diagnostic-phase-name-audit.md)
 - [Diagnostic phase-name audit evidence](../diagnostic-formalization/2026-10-09-diagnostic-phase-name-audit-evidence.zip)
 - [N0 diagnostic inventory](../diagnostic-formalization/2026-10-10-n0-diagnostic-inventory-review.md)

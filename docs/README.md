@@ -12,7 +12,8 @@
 - 查RPA领域词义：[Glossary](api/GLOSSARY.md)。
 - 查当前进度：[CURRENT_STATUS](CURRENT_STATUS.md)。
 - 实施 Stage 7A：[plan-a S7A-7/8接手与决策](stage_plans/active/stage-07/plan-a.md#34-s7a-78-下一轮决策首用合同与接手2026-10-07)；全局路线见[Stage 7总计划](stage_plans/active/stage-07/plan.md)。
-- 查高级判定路线：[Stage7B+](stage_plans/active/stage-07/plan-b.md)；实时架构、命名及实体设备/同步验收：[Stage 7-RPA子阶段](stage_plans/active/stage-07/plan-rpa.md)；性能修改方案：[RPA性能修改方案](stage_plans/active/stage-07/performance-modification-plan.md)；判定/表现解耦重构：[Stage 7-PD计划](stage_plans/active/stage-07/plan-presentation-decoupling.md)。
+- 查高级判定路线：[Stage7B+](stage_plans/active/stage-07/plan-b.md)；实时架构、命名及实体设备/同步验收：[RPA计划（2026-10-11，已归档）](archive/stage-07-planning/2026-10-11-rpa-plan.md)；判定/表现解耦重构：[Stage 7-PD计划](stage_plans/active/stage-07/plan-presentation-decoupling.md)。
+- 查 RPA 性能整改、已退出的 R1 与下一对话获授权规划实施的 R2（本轮未启动）：[RPA性能整改候选设计](stage_plans/active/stage-07/plan-rpa-performance-remediation.md)、[R1实施计划](stage_plans/active/stage-07/rpa-r1-implementation.md)；历史性能修改方案：[2026-10-14 已归档](archive/stage-07-planning/2026-10-14-rpa-performance-modification-plan.md)。
 - 查方案与反例：[5/6候选实施输入](proposals/implementation-input/stage-07/s7a-5-6-design-selection.md)。
 - 查已有证据：[Stage 7分类报告索引](stage_reports/stages/stage-07/README.md)。
 

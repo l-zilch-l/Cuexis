@@ -2,14 +2,13 @@
 
 状态：historical
 
-更新日期：2026-10-10
+更新日期：2026-10-25
 
-以下旧逻辑路径已迁入按角色归档的 canonical 文档。映射用于历史引用迁移，不保留逐文件
-compatibility stub。
+以下旧逻辑路径已迁入按角色归档的 canonical 文档。映射用于历史引用迁移；RPA 旧计划因现行文档仍有直接引用，另在[Stage 7路径映射](stage_plans/active/stage-07/legacy-paths.md)保留最小兼容入口。
 
 ## 仓库根目录讨论稿
 
-- 仓库根目录`rpa-target-architecture-draft.md` -> [RPA v0.5历史初稿](archive/stage-07-planning/2026-10-10-rpa-target-architecture-draft.md)（2026-10-10归档）。按owner要求移出项目根目录，不保留旧路径文件；当前规划归[plan-rpa](stage_plans/active/stage-07/plan-rpa.md)。
+- 仓库根目录`rpa-target-architecture-draft.md` -> [RPA v0.5历史初稿](archive/stage-07-planning/2026-10-10-rpa-target-architecture-draft.md)（2026-10-10归档）。按owner要求移出项目根目录，不保留旧路径文件；旧RPA计划正文见[2026-10-11归档](archive/stage-07-planning/2026-10-11-rpa-plan.md)，当前工作归[性能整改](stage_plans/active/stage-07/plan-rpa-performance-remediation.md)与[R1实施计划](stage_plans/active/stage-07/rpa-r1-implementation.md)。
 
 ## 原docs根目录文档
 

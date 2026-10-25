@@ -2,9 +2,9 @@
 
 状态：current index
 
-更新日期：2026-10-17
+更新日期：2026-10-25
 
-本索引只负责导航，不复制合同、裁定或当前实现状态。当前状态以 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 为准；范围与验收门禁以 [Stage 7 总计划](../../../stage_plans/active/stage-07/plan.md)、[Stage 7A](../../../stage_plans/active/stage-07/plan-a.md)、[RPA](../../../stage_plans/active/stage-07/plan-rpa.md) 和 [PD](../../../stage_plans/active/stage-07/plan-presentation-decoupling.md) 为准。
+本索引只负责导航，不复制合同、裁定或当前实现状态。当前状态以 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 为准；范围与验收门禁见 [Stage 7 总计划](../../../stage_plans/active/stage-07/plan.md)、[Stage 7A](../../../stage_plans/active/stage-07/plan-a.md)、[RPA 历史计划（已归档）](../../../archive/stage-07-planning/2026-10-11-rpa-plan.md) 和 [PD](../../../stage_plans/active/stage-07/plan-presentation-decoupling.md)；当前 RPA 工作入口见[性能整改](../../../stage_plans/active/stage-07/plan-rpa-performance-remediation.md)与 [R1 实施计划](../../../stage_plans/active/stage-07/rpa-r1-implementation.md)。
 
 ## 分类入口
 

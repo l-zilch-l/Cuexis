@@ -1,8 +1,10 @@
 # Cuexis Stage 7-RPA 性能整改方案
 
-状态：candidate；F1–F5 设计裁定已记录，待 owner 接受；准入树已有清理许可局部实现，R1 未退出；本轮未运行新实验。
+状态：总体仍为 candidate；F1–F5 裁定保留。2026-10-25 按用户本次授权完成首错修复后最终身份三项有限 pilot 与退出门核验，R1 已退出，见 R1 本地记录 §11。五条既有 PD 格式失败作为范围外限定保留，noIndependentContract 不算容量通过，R0 残余不回填；RPA/PD/Stage 7 未关闭，R2 首版候选已实现并通过本地正确性/包边界门，但局部诊断显示单对象退化、主点收益未确认，候选未接受、收益门未完成，见 §7；R3/R4、40k、ETW、正式测量与设备接受不随之获授权。
 
-更新日期：2026-10-24。
+更新日期：2026-10-25。
+
+本轮执行入口：[R1 实施与验证计划](rpa-r1-implementation.md)。当前进展见 [R1 继续实施记录](../../../stage_reports/stages/stage-07/rpa/2026-10-25-r1-continuation.md)，前次 ON/OFF 红色证据见 [R1 停审报告](../../../stage_reports/stages/stage-07/rpa/2026-10-25-r1-stop-review.md)，历史记录不回填。下列“设计基线”“裁定核查基线”和编写请求保留 2026-10-24 的历史语境，不替代本轮授权或现场身份。
 
 设计基线：准入树 `codex/pd5-gameplay-40k-admission`，HEAD `3e5837f63f76397429c9f7603fd7450d3ce9855d`，包含本设计开始前已有的未提交插桩、工具和报告；主树 `stage-7`，HEAD `eed36648a692333e47f798aa45be36ca850d08de`，工作区干净。以下源码位置均相对于准入树，行号是 2026-10-24 静态核查定位，实施前应按函数重新定位。
 
@@ -12,7 +14,7 @@
 
 裁定核查基线（2026-10-24）：主树 `stage-7` 的 `f0c7e3230e3abd479fda18e009a7688df89c7672`，开始时干净；准入树 HEAD 仍为 `3e5837f63f76397429c9f7603fd7450d3ce9855d`，当前 54 个修改/未跟踪文件，含新增的 session_worker.cpp 清理许可差异及 rpa_b5_session_tests.cpp 用例。它们未合入主树；原设计基线与历史证据保持独立。
 
-本文的编写请求是“阅读文档，对当前设计进行性能整改，反复思考后给出方案”。此前的实施、实验和授权流程作为设计输入；本文不把它们转换成执行指令。编写过程只做只读核查和设计文档：不修改产品、不登记测量、不提交、不启动后台任务。
+本文最初的编写请求是“阅读文档，对当前设计进行性能整改，反复思考后给出方案”。2026-10-24 编写过程只做只读核查和设计文档，不修改产品、不登记测量、不提交、不启动后台任务。2026-10-25 的 R1 授权及先补文档约束单列于上方执行入口；用户随后另行授权下一对话规划并实施 R2，该次文档整理未启动产品修改；本次由主代理规划并实施首版候选，当前未获性能接受，见 §7。不扩展到 R3/R4 或正式测量。
 
 源码定位约定：execution_host.cpp、player_execution.cpp 在 app/player/src/；session_worker.cpp、host_protocol.cpp、host_candidate.cpp、audio_worker.cpp 在 app/execution_host/；playback_session.cpp 与 presentation_materializer.* 在 engine/playback/src/；execution_kernel.cpp、session.cpp 与恢复实现位于 engine/judgement/src/。避免将同名“宿主”代码误定位到 Playback 模块。
 
@@ -120,6 +122,21 @@ PD-5 维持“未通过但定案”。后续证据归 Stage 7-RPA，不修改历
 
 M-TIME、M-TAIL、M-CAP、M-FINAL 均保留。testOnly 参数能支持证明机制，不能补作生产默认容量或生产调度 profile。
 
+### 4.1 R0 残留的批次承接
+
+R0 已按“带残余”口径关闭，历史 partial、`inconclusive` 和未知量保持原样，不随后续批次回填。本表只规定承接归属、被阻塞的结论和销项证据；逐项证据口径以 R0 报告 §8.1 为准，销项写入承接批次自己的报告。
+
+| R0 残留 | 承接批次 | 阻塞什么结论 | 销项证据 |
+| --- | --- | --- | --- |
+| 旧 fence/cleanup permit 只有固定槽/局部证据；cleanup 与 Close 路径的软件退休共用 `Fence` 槽；当前捕获点在 Close 步骤之前，只导出软件退休记录 | R1 | R1 退出；不得声明旧 fence 跨代、暂停清理、错误 binding/decision 或 Close 步骤本身已被真实 owner 路径覆盖 | cleanup、Close 路径软件退休与 `SessionSoftwareClose` 步骤分开观测；Close 步骤后单独捕获；Close 未执行记 `notExecuted`，已发出未取得记 `executing/resultPending`，只有查询也失败记 `observationMissing`，已执行被拒记 `rejected` 并保留 `closeAttempted=true`、`closeApplied=false`、身份和首错；Close 步骤入口先置 `closeAttempted=true`、`closeApplied=false`，只有 receipt.status 为 applied（含明确合法的幂等 applied 回执）才置 true，`Result` 有值不等于 applied，`StepStatus::failed` 回执不得置 true，拒绝不得沿用旧值。`path` 只作软件退休/cleanup 路由证据，不作 Close 步骤分支证据；Close 步骤用 `closeAttempted/closeApplied` 五态判定。真实路径覆盖正常/错误 binding、decision、generation、旧 fence/新 Close、正常退休增代、合法重传、迟到/重复回执。`permitDirected=true` 不作分支证据；不新增 fence，不扩大 failed Close，failed Close 必须有/无旧 fence 分别拒绝。 |
+| `pending_` 队列容量已有反例，但 `exportCloseEvidence()` 的复制没有独立显式上限，现有证据只有注入 allocation/flush 失败 | R1，优先与 Close 失败留证/续行一并验证 | 不得声明导出容量边界通过；若 R1 的失败留证或续行依赖它，则阻塞 R1 退出 | 队列未满/恰好满/下一次拒绝已有真实反例，不重复；导出侧核查是否存在独立上限合同，且只归入 `noIndependentContract`/`contractUnverified`/`verificationFailed`/`verificationPassed` 之一，只有 `verificationPassed` 算通过。合法填满后导出并核对复制量、拒绝码、首因、状态保留；不制造上限或越界写。 |
+| 注入 fault 不等于现场设备/宿主根因 | RPA B5 及后续真实设备/宿主验证 | 不自动阻塞 R1 功能验证；阻塞“设备/宿主根因已定位” | 首因、操作身份、owner 相位与设备侧证据的因果链；注入仅作可控回归。 |
+| `configValues=0`、S0 sealed identity 未知、无独立公开 DTO 字节复制计数 | R2/R3，仅当对应决策依赖时 | 阻塞“配置复制成本已测得”“产品无身份校验”“DTO 复制成本已量化”等依赖结论 | 决策前补测字段/字节/分配；未知量保持不可得；R3b 独立证明来源与绑定。 |
+| Q4 `inconclusive`，历史 B 探针缺失且不可重哈希 | 历史限制保留；R2 建新对照，R4 正式验收 | Q4 已复现、旧窗口已通过、正式 read gate 已过均不得声明 | R2 重新登记当前 A/B/Q4 的树、构建、二进制、窗口；新 B 不套旧身份；R4 按既有 95% 配对门槛重做正式矩阵。 |
+| R0 patch 只覆盖 12 路径 | R0 限定关闭；R1 起各批自保 | 不得声明整树/PD-5 其余脏路径可一键回滚 | 每批保存起始字节、既有脏差异、新文件清单，生成独立 patch，验证限定反向恢复；保留 R0 patch/快照。 |
+
+按上表，R1 进入时直接承接第 1、2 行；第 3–6 行不得被 R1 顺手吸收或改写。R0 第 4、5 项仍为 partial，R1 不得用既有 542 条断言替代其许可或容量证据。R1 的执行顺序固定为 **保全起点 → 补观测与可控反例 → 做最小修复 → 验证完整续行和生命周期**。
+
 ## 5. R0：先闭合事实，不从总耗时猜根因
 
 | 字段 | 设计 |
@@ -213,19 +230,21 @@ R0 退出该观测项前，验证字段到源码分支的映射、首因不覆�
 
 ## 6. R1：定向清理许可与同一次 Close 的阶段续行
 
-当前局部候选位于准入树，主树未合入。裁定 F2：R1 保持一个总批次，不新增 R1a/R1b 计划编号；内部台账分别标记“清理许可局部实现/单元证据已有”与“§6.3 四类中断续行未实施”。审阅记录所载 542 assertions / 4 test cases green 只证明所跑清理许可用例，本轮未重新运行或核对该运行的完整原始日志/构建绑定，不能据此关闭全部许可反例、R0 观测项或 R1。§6.3、§6.4、相关 R0 字段和原适用门禁全部闭合后，才提交 R1 退出；不重命名剩余工作来提前记完成。
+实现位于准入树，主树未合入。裁定 F2 保持 R1 一个总批次，不新增 R1a/R1b。以下为实施过程历史说明，当前 R1 退出结论见本地记录 §11。原裁定时“清理许可局部实现/单元证据已有”“§6.3 四类中断续行未实施”是历史状态；2026-10-25 两部分均已有新实现和绑定当前源码的 Release 回归，见上方本地记录，不使用旧 542 assertions / 4 cases 代替。§6.3、§6.4、相关 R0 字段和适用门禁按新记录逐项核对，pilot 与 owner 退出仍独立，不重命名剩余工作来提前记完成。
+
+R1 进入后按 **保全起点 → 补观测与可控反例 → 做最小修复 → 验证完整续行和生命周期** 推进，不跳阶段。§6.3 的四类中断必须分别实现、分别留证；任何一类通过都不抵消其余类别失败，542 条断言也不能替代其中任何一类。R0 第 4、5 项仍为 partial：第 4 项的许可/观测由 R1 直接承接，第 5 项若被 R1 的失败留证或续行依赖，同样阻塞 R1 退出。
 
 | 字段 | 设计 |
 | --- | --- |
 | ID / 名称 | R1-directed-close-cleanup |
 | 目标 | 消除已有 Close/suspend/retire 授权矛盾；覆盖 Close 接受前、接受后、finish 后和 shutdown 后的续行；所有必需终态前保留 Closing |
 | 机制 | 从 D2 accepted binding、decision 和 owner step ledger 推导有限 cleanup 许可；增加 owner-local 单调进度，按原 job/operation 消费回复并继续。正常 fence 保留 preparing 条件；Closed 在必需退出/join 后可见 |
-| 改动点 | playback_session.cpp::enterExecutionFence（约 1699）及 retireExecutionStep（约 1879）；session_worker.cpp::fence、SessionSoftwareRetire、SessionConfirmControl（约 249/787/415）；host_candidate.cpp::retireSoftware（约 216）；execution_host.cpp::cleanup/close/failed/state（约 930/1020/322/1152）；host_protocol.cpp::suspend/finish（约 705/664） |
+| 改动点 | playback_session.cpp::enterExecutionFence（约 1730）及 retireExecutionStep（约 1961）；session_worker.cpp::fence、SessionSoftwareRetire、SessionConfirmControl（约 283/867/484）；host_candidate.cpp::retireSoftware（约 217）；execution_host.cpp::cleanup/close/failed/state（约 1027/1165/354/1506）；host_protocol.cpp::suspend/finish（约 705/658） |
 | 不变量 | 保留首次 delivery 错误与未准入输入；核对完整绑定和 cut；音频隔离前不退休软件；无清理许可的普通 suspended/failed 不得继续执行；不伪造 ACK 或回滚已经发生的副作用 |
 | 等价性证明 | 同可控轨迹比较完整 owner 历史和 Close evidence；许可与四阶段中断分别做反例；原 job/operation/step 一致、已应用副作用不重复、generation 单调核验；完整有向路径持续到退出/join |
-| 测试 | preparing 正常关闭；flush 失败有/无 job；cut/隔离缺失；错 operation/seq/scope/gen；旧 fence/旧非 Close 失败；四阶段 timeout；inspection/archive 原 typed reply；迟到/重复 receipt 与退休增代；pump query/reentry；旧 handle；共享总预算与超时后保活/exit/join |
+| 测试 | preparing 正常关闭；flush 失败有/无 job；cut/隔离缺失；错 operation/seq/scope/gen；旧 fence/旧非 Close 失败；failed Close 无/有旧 fence；inspection/archive 原 typed reply；迟到/重复 receipt；合法重传幂等与退役 generation 只增一次；四阶段 timeout；pump query/reentry；旧 handle；共享总预算与超时后保活/exit/join |
 | 证据计划 | 先同线程可控调度与 headless 小规模；后获批一次有限 pilot，明确功能与 ≤1000 ms Close 边界。40k 及真实 audio/GPU 另列，不能由小规模成功替代 |
-| 回滚 | R1 独立 patch/差异清单；仅撤本批，不重置整个 dirty 工作树。已运行失败仍保留；回滚后新实验身份不能冒用原 binding |
+| 回滚 | 先保存 64 条 dirty 字节、预计触碰的干净文件起始字节和新路径不存在记录；R1 独立 patch/差异清单；在一次性副本走“起始哈希 → 正向 check/apply → 结束哈希 → 反向 check/apply → 起始哈希恢复”；仅撤本批，不重置整个 dirty 工作树。已运行失败仍保留；回滚后新实验身份不能冒用原 binding |
 | 风险 | status 自授权；旧 fence 跨代；重复 Close 或 SessionInspect 发往已关闭 owner；通用 cleanup 丢掉原回复/漏记增代；suspended 掩盖 Closing；提前 Closed；析构捕获失效引用 |
 | 预期效果 | 针对已证 fence 矛盾和未闭合续行路径；后者仍需动态反例确认。故障概率和延迟区间未知；一次 pilot 成功只支持该次声明样本 |
 | 依赖 | R0 close 字段、可控反例、RPA B4 清理合同；实际线程/设备由 B5 补证。若修复需要新公开取消/清理 API，停止扩张，先提交最小接口与版本决定 |
@@ -238,6 +257,8 @@ R0 退出该观测项前，验证字段到源码分支的映射、首因不覆�
 
 另有独立的静态风险：close() 每次从 cleanup() 重新进入，再发起新的 Close；当前没有保存本次 Close 进度。generic completeCleanup 明确拒绝旧 kind=Close；Close 已在 coordinator finish 后，再次 accept 也被拒绝。因此，不能仅凭“旧 Tail 超时后再次 close 能成功”的测试源码，推断 Close 自己在任意阶段超时都能恢复。这条链尚未在本轮运行复现，不与历史 control_pending 直接画等号。
 
+观测捕获点还有一层必须写进 R1 设计：当前 `rpaCaptureFence()` 在 `execution_host.cpp:1330` 的 `SessionSoftwareRetire` 之后、`:1386` 的 `SessionSoftwareClose` 之前调用。因此 R0 的 `rpaClose_.fence` 是 Close 路径上的**软件退休**记录，不是 `SessionSoftwareClose` 步骤记录；`:925/:949` 写入的 `closeAttempted/closeApplied` 没有被之后导出。R0 的 `path=normalControl` 活体断言只能证明软件退休走了正常 fence，不能证明 Close 步骤路径。R1 必须在 Close 步骤之后单独捕获，并把该缺口计入第 4 项残余；不得用当前记录补写 Close 步骤证据。
+
 ### 6.2 许可矩阵与最小改动范围
 
 | 情况 | 推荐规则 |
@@ -246,7 +267,7 @@ R0 退出该观测项前，验证字段到源码分支的映射、首因不覆�
 | 本 owner 已接受的 Close，preparing | 走既有关闭规则 |
 | 本 owner 已接受的 Close，suspended，处于明确 cleanup/retire 路径 | 取得受限清理许可，不建立正常或新增清理 fence；沿 retireSoftware → retireExecutionStep 复核 accepted request/owner binding、capture cut、audio stop/isolate 与 owner ledger。scope、decision、sequence、generation 分项列证据，不能因 request 等式成立就将其全记通过 |
 | 任意非 Close 的 suspended/failed | 不因这个状态自动获得正常 fence；只在既有清理合同证明“旧已接受操作仅退休/卸载”后考虑内部清理路径 |
-| Close 的 failed 状态 | 首版不顺带放行；先给出来源、副作用和故障反例。当前已知主链是 suspended |
+| Close 的 failed 状态 | 首版不顺带放行；先给出来源、副作用和故障反例，并分别覆盖无旧 fence、有旧 fence 两条真实 worker 路径，同时覆盖 Close 步骤入口本身（软件已退休/旧 fence 已满足时 `SessionSoftwareClose` 仍拒绝 failed proof）；`fence()` 返回 existing 不能当作许可。当前已知主链是 suspended |
 | 已有 fence | 不能直接 return existing。普通提交要求完整同一绑定；Close 退休旧未解 fence 单列兼容规则，不把旧 fence 当本次普通提交凭据 |
 
 最小实现先在现有函数内区分 Close 的 cleanup 资格，复用已存在的 request/owner 状态，不新增公开签名。可信依据必须是 D2 保存的 acceptedHostControl/decision 与本 owner ledger；proof 是证据载体，传入的 status 不能自授权。cut/isolation 的现有校验继续存在，拒绝时保留原错误和原因。
@@ -267,7 +288,7 @@ generation 按阶段核验：取得清理许可前，检查已接受请求的 ex
 
 以下四类的统一 Close 续行机制尚未实现；已有清理许可测试不提供此退出证据。继续实施时先补对应受控停顿反例，不把清理许可 green 当作跳过本节的前置。
 
-当前 tests/rpa/rpa_b5_host_tests.cpp:422–504 阻塞的是旧 Tail，第一次 Close 等待旧 job 超时，随后释放它，再次 Close 成功。它覆盖下表第 1 类；本轮没有运行该测试，也未发现它覆盖第 2–4 类。现有 Busy guard 已拒绝重入，保持它即可；问题是返回后的下一次 owner 调用如何续行。
+当前 `tests/rpa/rpa_b5_host_tests.cpp` 的 `B5 deadline retains original tail job until pumped Close completes`（`[b5][host][fault][deadline]`）阻塞的是旧 Tail：第一次 Close 等待旧 job 超时，随后释放它，再次 Close 成功。它覆盖下表第 1 类；本轮没有运行该测试，也未发现它覆盖第 2–4 类。行号会随 R1 改动漂移，定位以测试名和 tag 为准。现有 Busy guard 已拒绝重入，保持它即可；问题是返回后的下一次 owner 调用如何续行。
 
 | 中断位置 | 下次 owner 调用的合法动作 | 需要拦住的反例 |
 | --- | --- | --- |
@@ -282,7 +303,7 @@ session()/audio() 超时保留原 job 的现有行为继续使用。迟到回复
 
 记录已发命令、原 job/operation/step 与其终态后，重试只查询原 ID；若需重传，保持同一 ID 与载荷。archive/cut/evidence 只在其原阶段取得和固定；已经取得的 owning 证据保留。错误阶段留下原错误及未完成责任域，不能为了进入下一阶段假造成功。
 
-四类测试还需分别在 post 前、post 后未获回复、已获终态未更新后续阶段处受控停住；验证原 ID、实际副作用次数、generation、未确认输入、状态可见性及最终 join。第 1 类通过不抵消其余类别失败。
+四类测试之外，第 2 类还需分别在四个停顿点受控停住：acceptance/request 已准备但尚未 post；已 post 但未取得 decision；已取得/接受 decision 但原 typed reply 尚未消费；已接受但 cut/delivery/隔离/退休/关闭未完成。验证原 ID、实际副作用次数、generation、未确认输入、状态可见性及最终 join。第 1 类通过不抵消其余类别失败，2d 也不能代替 2a–2c。
 
 ### 6.4 Closing、Closed、共享预算与超时保活
 
@@ -300,7 +321,15 @@ Close 的 ≤1000 ms 从外部首个关闭请求起算，时间戳和续行记�
 
 pilot 可采用此前交接中 owner 已选的“关闭失败记 invalid-process、整窗最多重跑一次”规则，但只适用于明确登记的 pilot、实际执行仍需授权。原失败与重跑原因同时保留；不得扩展为正式慢样本、性能超限、身份错误或语义错误的替换规则。
 
+### 6.5 R1 执行清单与停审
+
+按 [R1 实施与验证计划](rpa-r1-implementation.md) 执行：先检查文档，再保全起点、只拆观测、补旧行为反例，随后才做逐项最小修复。C6 第一优先；C6 失败，或 C7/C7a 不能证明 failed Close 在无/有旧 fence 时被拒绝，均先留证并提交具体最小变更审查，不能把候选修复表当授权。failed Close 的 Close 步骤入口也必须拒绝，不能只修 retire 层。
+
+该执行计划集中登记三类观测与 Close 五态、C0–C10、四类续行（含 2a–2d）、显式 started/固定 1000 ms 总预算、导出容量四类事实、ON/OFF 等价、R1-only 正反向回滚和 G0–G11。G0–G11 只支持“实现及本地验证完成，提交 R1 退出评审”；有限 pilot 另需具体计划及明确授权，适用回归、架构/消费者门和 owner 退出评审未完成前不得记 R1 退出。
+
 ## 7. R2：有界借用行，原序写入最终 Snapshot
+
+2026-10-25 实施进度：用户本次授权主代理设计、规划并实施 R2；首版候选、五构建回归、适用消费者和独立代码补丁验证已完成，唯一局部诊断已完成：单对象退化、N64 收益区间跨 1，当前候选未接受，R2 收益门未完成。实现与证据见 [R2 本地记录](../../../stage_reports/stages/stage-07/rpa/2026-10-25-r2-borrowed-presentation.md)。以下设计与门禁继续适用；不将本地实现写成 R4 正式通过。
 
 | 字段 | 设计 |
 | --- | --- |
@@ -316,6 +345,8 @@ pilot 可采用此前交接中 owner 已选的“关闭失败记 invalid-process
 | 风险 | 临时矩阵地址悬空；块级预检抢先报告后行错误；借用被缓存；过大的 scratch 增加栈/缓存成本；单材料快路径忽略动态 override |
 | 预期效果 | 收益区间未知；已有代码能证明删除哪些工作，不能证明节省多少 ns。保持 95% 区间上界 ≤1.10 目标；局部收益不足时不扩张成缓存框架 |
 | 依赖 | R0 当前 F1 重锚；现有中性同步借用合同；若需借用跨窗口或公开 DTO 布局变化，停止本批另过合同门 |
+
+R2 的 Q4 重锚必须建立新的证据身份：对当前生产候选重新登记树、构建、二进制和窗口，不得复用 R0 的 A/B/Q4 身份，也不得把历史缺失的 B 探针补成旧窗口。R2 只产出候选对照与局部收益证据，正式读取验收仍在 R4；Q4 本身不作为产品候选。新 B 无法建立时，保持 R0 的 `inconclusive`，不能用旧 A 或新构建拼出新结论。
 
 ### 7.1 内部数据流与边界
 
@@ -366,9 +397,17 @@ Playback 逐行消费，行内保持现有顺序。前行若发生 resource mism
 
 调用方将一个可复用 DTO 的所有公开字段污染，包括对象数、ID、mesh/material ref 的 type/identity/assetId、矩阵、visible/opacity/tint、camera/viewport/clear，再次提帧应与新 DTO 的成功结果完全一致。两个 DTO 交错、跨 session/reload、缺 transform/appearance/mesh、Behavior/override 换材、非法/超长材质及旧 owning 值跨 unload/Close 均需覆盖。失败路径也比较与旧实现相同的首错及已写字段。
 
+### 7.4 第二候选：同一窗口内的逐对象 typed visitor
+
+2026-10-25 用户继续授权 R2 后，由主代理决定改用同步单行 visitor，子代理仅实施、主代理亲自核验。首版批量候选因局部退化未接受，旧 K=32 源码与窗口冻结保留；本次不是扫描 K，而是直接删除索引/行数组与两阶段批量搬运。Runtime 在同一读取窗口内借用一个真实组件行，Playback 原序立即写最终 owning DTO；owner/stamp/window/serial、mutation/reentry、首错/部分写入、旧 owning API 和公共 SDK 合同全部保留。
+
+§7.1 的固定块说明保留为首版设计记录，不要求当前候选继续预构造 32 行。当前单行实际对象与消费上下文须分别按真实类型取值、保守汇总并设上界，明确未计入的栈开销。完整回归、包边界、原字段/错误等价与新身份局部收益门继续适用；不得通过缓存、池或 raw registry 扩张。本次实际进度与限定见 [单行续做报告](../../../stage_reports/stages/stage-07/rpa/2026-10-25-r2-single-row-continuation.md)，不将子代理实施结论当作父代理核验。
+
 ## 8. R3：按归因选择准备、动态复制与可信恢复子项
 
 不选择“前缀 digest 代替完整语义验证”，也不选择“只加密集周期 checkpoint”。R3a 先保留现有共享并分项归因；只有 R0 支持且状态闭包成立时才进入 R3b；R3c 是单记录内部工作仍超预算时的独立设计门。原点重放路径保留为不可信输入验证路径与对照 oracle，但不能以它慢为由缩小适用 Seek。
+
+R3 进入前须保留 R0 的三个未知量，不得把它们当作零成本：`configValues=0` 只表示该字段未导出，不表示配置复制成本为零；S0 `sealedIdentityKnown=0` 不证明产品没有身份校验；当前也没有独立的公开 DTO 字节复制计数，`copyAllocations`/`objects` 是次数或个数，不是字节数。R3a 若以删除 config 复制或身份/哈希工作作为收益来源，必须先补测该项成本；R3b 若以 S0 缺失推断无身份校验，必须先独立证明来源与绑定。未知量不为填表扩大观测范围。
 
 ### 8.1 R3a：不可变存储、准备与身份成本
 
@@ -616,7 +655,7 @@ B0 目前只有 14 个参考 profile，规模 1/200/201；64/2048/40k 尚无正�
 | 5. 读取组合与公开头 | Playback 栈上收集≤32 个索引，Runtime 同步借用行；现有布局、单材料精确快路径、原序物化，矩阵写最终 DTO。字符串原已有条件赋值，仍保留全部字段恢复/错误检查。只改内部头/src。见 §7 |
 | 6. Q4 重锚如何做 | 必须先做当前 F1 重锚；read_long/N64，独立诊断窗口 3 轮 A/B/Q4，8 块≥100ms，固定热身；有合法 A 才报告 Q4/A。它不进入正式九对。见 §5.3 |
 | 7. suspend/状态机/pilot | suspended 与 Closing 分轴；补 cleanup 授权和四阶段续行，原 ID/typed reply/generation 一致。原请求总预算不重置，超预算后仍要安全完成清理。先可控反例，观测本身不证明修复；pilot 保留失败且最多整窗重跑一次。见 §5.2/§6 |
-| 8. 顺序与授权 | R0 → R1 许可/续行反例；R2 与获支持的 R3a 子项可独立开展；R3b 先过闭包和来源门；集成后 R4。当前仅设计，后续按明确范围授权，不将外部输入转成执行指令，也不把条件子项统称已可开工。见 §4/§12 |
+| 8. 顺序与授权 | R0 → R1 许可/续行反例；R2 与获支持的 R3a 子项可独立开展；R3b 先过闭包和来源门；集成后 R4。R1 已退出；R2 首版已实施并做本地验证，局部诊断不支持接受，下一步仍归 R2；R3/R4 仍需独立授权。不将外部输入转成执行指令，也不把条件子项统称已可开工。见 §4/§12 |
 | 9. 正式窗口与冻结 | 每可比单元九对、新产品/工具/fixture/设备绑定；pilot 不混入，invalid 事前定义；P8 仍单侧独立。两个冻结目录/F1r4/B0 不动。见 §9 |
 | 10. 失败出口 | 固定成本、首次认证、尾工作或内存约束使预算无法满足时，提交原始数据、闭包/反例、三选裁定包；保持未通过，不自动改门或拆线程。见 §12.2 |
 
@@ -624,7 +663,7 @@ B0 目前只有 14 个参考 profile，规模 1/200/201；64/2048/40k 尚无正�
 
 ### 12.1 下一批具体动作
 
-本轮到 F1–F5 裁定与文档同步为止，准入树现有清理许可差异保留。若后续接受本方案并授权静态实施，第一批先补 R0 的观测字段/拒绝门与 R1 未覆盖反例，不因局部候选已存在就跳过它们，也不立即跑 40k 或启动正式窗口：
+2026-10-24 到 F1–F5 裁定与文档同步为止，准入树现有清理许可差异保留。2026-10-25 R1 已按 [R1 执行计划](rpa-r1-implementation.md) 完成退出，当前结论见本地记录 §11；R0 保持带残余关闭，不重跑其批次。用户本次授权的 R2 首版已实施并完成正确性、包边界和固定局部诊断；当前候选未接受，R2 收益门仍未完成。下一批先定位固定 scratch 初始化与两阶段借用物化成本，保持 §7 的身份、字节起点与登记要求；不重跑本窗或追加样本。R3/R4、40k、ETW、正式窗口与设备接受仍未获授权。下列原设计顺序仅保留为历史来源，不作为当前未完成的 R1 清单：
 
 1. 重读 CURRENT_STATUS、RPA B0/B1–B5、PD-5 定案和本文，重新核验两树 HEAD/status/diff；保护既有 dirty 文件，形成独立可审查起点。
 2. 先查清 Close accepted binding、旧 fence/new Close、generation 与状态暴露；加入 flush 失败、旧非 Close 清理和 §6.3 四阶段中断反例，验证原 typed reply、ID、增代与 pump query，随后再选最小修复。
