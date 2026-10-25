@@ -29,10 +29,9 @@ auto sameKernelResult(const KernelProjection& a, const KernelProjection& b) -> b
     namespace rpa = cuexis::internal::execution_diagnostics::rpa;
     rpa::seekAdd(rpa::SeekPhase::s3Validation, &rpa::SeekWork::sameKernelCalls);
     rpa::seekAdd(rpa::SeekPhase::s3Validation, &rpa::SeekWork::comparedElements,
-                 static_cast<std::uint64_t>(a.facts.size() + a.contacts.size() +
-                                            a.observers.size() + a.receipts.size() +
-                                            a.ownership.size() + a.phases.size() +
-                                            a.resources.size()));
+                 static_cast<std::uint64_t>(
+                     a.facts.size() + a.contacts.size() + a.observers.size() + a.receipts.size() +
+                     a.ownership.size() + a.phases.size() + a.resources.size()));
 #endif
     return a.phases == b.phases && a.resources == b.resources && a.contacts == b.contacts &&
            a.ownership == b.ownership && a.observers == b.observers && a.receipts == b.receipts &&

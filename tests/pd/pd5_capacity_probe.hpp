@@ -38,8 +38,9 @@ TEST_CASE("PD5 full content Snapshot Seek Replay boundary", "[.][pd][pd5][capaci
         document.requirements.clear();
         fixture->chart.entities.clear();
         fixture->owners.clear();
-        std::erase_if(document.declarations,
-                      [](const auto& d) { return d.kind == judgement::DeclarationKind::requirement; });
+        std::erase_if(document.declarations, [](const auto& d) {
+            return d.kind == judgement::DeclarationKind::requirement;
+        });
         document.relations[0].members.clear();
         fixture->request.assembly.contentProfileLimits.maxRequirements =
             judgement::MeasuredParameter<std::uint64_t>::measured(scale);
@@ -190,8 +191,7 @@ TEST_CASE("PD5 full content Snapshot Seek Replay boundary", "[.][pd][pd5][capaci
         const memory::TagScope tag{memory::ownerProbe, memory::domainReplay};
         return trace.take(host->replayCut(replay, {tick}));
     });
-    trace.run("after-replay-cut-memory",
-              [&] { memory::checkpoint("after-replay-cut"); });
+    trace.run("after-replay-cut-memory", [&] { memory::checkpoint("after-replay-cut"); });
     const auto started = matrixNow();
     trace.run("seek", [&] {
         const memory::TagScope tag{memory::ownerProbe, memory::domainSnapshot};

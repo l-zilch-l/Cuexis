@@ -2709,8 +2709,8 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
     std::uint64_t rpaMaxRecordElements = 0;
     const auto rpaElements = [](const KernelProjection& p) {
         return static_cast<std::uint64_t>(p.facts.size() + p.contacts.size() + p.observers.size() +
-                                          p.receipts.size() + p.ownership.size() +
-                                          p.phases.size() + p.resources.size());
+                                          p.receipts.size() + p.ownership.size() + p.phases.size() +
+                                          p.resources.size());
     };
     std::uint64_t rpaRestores = 0;
     std::uint64_t rpaReplayPrefixCopies = 0;
@@ -2821,8 +2821,7 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
 #if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
             rpaBatchInputs += static_cast<std::uint64_t>(record.batch.size());
             rpaMatcherSteps += static_cast<std::uint64_t>(record.batch.size());
-            rpaMaxBatch = std::max(rpaMaxBatch,
-                                   static_cast<std::uint64_t>(record.batch.size()));
+            rpaMaxBatch = std::max(rpaMaxBatch, static_cast<std::uint64_t>(record.batch.size()));
 #endif
             auto accepted = k.submitCanonical(record.batch);
             if (record.rejection
@@ -2857,35 +2856,30 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
     {
         using Phase = internal::execution_diagnostics::rpa::SeekPhase;
         using Work = internal::execution_diagnostics::rpa::SeekWork;
-        const auto set = [](Phase phase, std::uint64_t Work::*member, std::uint64_t value) {
+        const auto set = [](Phase phase, std::uint64_t Work::* member, std::uint64_t value) {
             internal::execution_diagnostics::rpa::seekSet(phase, member, value);
         };
         const auto& projection = k.query()->projection;
         const auto facts = static_cast<std::uint64_t>(projection.facts.size());
-        const auto elements = facts +
-                              static_cast<std::uint64_t>(projection.contacts.size()) +
+        const auto elements = facts + static_cast<std::uint64_t>(projection.contacts.size()) +
                               static_cast<std::uint64_t>(projection.observers.size()) +
                               static_cast<std::uint64_t>(projection.receipts.size()) +
                               static_cast<std::uint64_t>(projection.ownership.size()) +
                               static_cast<std::uint64_t>(projection.phases.size()) +
                               static_cast<std::uint64_t>(projection.resources.size());
-        const auto bytes =
-            static_cast<std::uint64_t>(projection.facts.capacity() * sizeof(KernelFact) +
-                                       projection.contacts.capacity() * sizeof(ContactHandle) +
-                                       projection.observers.capacity() * sizeof(ObservationRecord) +
-                                       projection.receipts.capacity() * sizeof(InputReceipt) +
-                                       projection.ownership.capacity() *
-                                           sizeof(HeadContactOwnership) +
-                                       projection.phases.capacity() * sizeof(PhaseProjection) +
-                                       projection.resources.capacity() * sizeof(ResourceProjection));
-        const auto peakElements =
-            static_cast<std::uint64_t>(projection.facts.capacity() +
-                                       projection.contacts.capacity() +
-                                       projection.observers.capacity() +
-                                       projection.receipts.capacity() +
-                                       projection.ownership.capacity() +
-                                       projection.phases.capacity() +
-                                       projection.resources.capacity());
+        const auto bytes = static_cast<std::uint64_t>(
+            projection.facts.capacity() * sizeof(KernelFact) +
+            projection.contacts.capacity() * sizeof(ContactHandle) +
+            projection.observers.capacity() * sizeof(ObservationRecord) +
+            projection.receipts.capacity() * sizeof(InputReceipt) +
+            projection.ownership.capacity() * sizeof(HeadContactOwnership) +
+            projection.phases.capacity() * sizeof(PhaseProjection) +
+            projection.resources.capacity() * sizeof(ResourceProjection));
+        const auto peakElements = static_cast<std::uint64_t>(
+            projection.facts.capacity() + projection.contacts.capacity() +
+            projection.observers.capacity() + projection.receipts.capacity() +
+            projection.ownership.capacity() + projection.phases.capacity() +
+            projection.resources.capacity());
         set(Phase::s3Validation, &Work::actualRecords, cut.completeRecords);
         set(Phase::s3Validation, &Work::batchInputs, rpaBatchInputs);
         set(Phase::s3Validation, &Work::controlHorizons, rpaControlHorizons);
@@ -2894,12 +2888,12 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
         set(Phase::s4InternalExecution, &Work::fullTicks, rpaAdvanceCalls);
         set(Phase::s4InternalExecution, &Work::idleTicks, rpaIdleAdvances);
         set(Phase::s4InternalExecution, &Work::timers,
-                     static_cast<std::uint64_t>(archive.dependencies().prepared.timers().size()));
+            static_cast<std::uint64_t>(archive.dependencies().prepared.timers().size()));
         set(Phase::s4InternalExecution, &Work::matcherSteps, rpaMatcherSteps);
         set(Phase::s4InternalExecution, &Work::folds, rpaAdvanceCalls);
         set(Phase::s4InternalExecution, &Work::facts, facts);
         set(Phase::s4InternalExecution, &Work::runtimeCopies,
-                     1 + rpaRestores + rpaReplayPrefixCopies);
+            1 + rpaRestores + rpaReplayPrefixCopies);
         set(Phase::s4InternalExecution, &Work::runtimeElements, elements);
         set(Phase::s4InternalExecution, &Work::runtimePayloadBytes, bytes);
         set(Phase::s4InternalExecution, &Work::runtimePeakElements, peakElements);

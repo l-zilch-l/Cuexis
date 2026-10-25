@@ -160,10 +160,11 @@ auto snapshot() noexcept -> Snapshot {
     for (auto* block = first; block; block = block->next) {
         result.oldestAgeUs = std::max(result.oldestAgeUs, stamp - block->born);
         const auto requested = block->requested;
-        const auto shift = requested ? std::min<std::size_t>(
-                                           static_cast<std::size_t>(std::bit_width(requested)) - 1,
-                                           sizeBucketCount - 1)
-                                     : 0;
+        const auto shift =
+            requested
+                ? std::min<std::size_t>(static_cast<std::size_t>(std::bit_width(requested)) - 1,
+                                        sizeBucketCount - 1)
+                : 0;
         ++result.sizeCount[shift];
         result.sizeBytes[shift] += requested;
     }
@@ -293,8 +294,8 @@ void checkpoint(const char* label) {
                   << ",\"peak_crt_usable_storage_bytes\":" << cell.peakStorageBytes
                   << ",\"oldest_live_age_us\":" << cell.oldestAgeUs << "}\n";
     }
-    std::cout << "PD5_MEMORY_PARTITION {\"schema\":\"pd5.memory.partition.v1\",\"label\":\"" << label
-              << "\",\"exact\":" << (parts.exact ? "true" : "false")
+    std::cout << "PD5_MEMORY_PARTITION {\"schema\":\"pd5.memory.partition.v1\",\"label\":\""
+              << label << "\",\"exact\":" << (parts.exact ? "true" : "false")
               << ",\"sum_live_count\":" << parts.sumLiveCount
               << ",\"global_live_count\":" << parts.liveCount
               << ",\"sum_requested_cpp_bytes\":" << parts.sumRequestedBytes

@@ -64,7 +64,6 @@ auto receive(AudioWorker& worker, std::uint64_t id) -> AudioWorkerReply {
         std::this_thread::sleep_for(std::chrono::milliseconds{1});
     }
     FAIL("Actual audio owner timed out");
-    return {};
 }
 auto wave() -> std::vector<std::byte> {
     std::vector<std::byte> bytes;
