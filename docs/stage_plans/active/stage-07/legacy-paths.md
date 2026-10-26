@@ -11,17 +11,17 @@
 
 | 旧逻辑路径（仓库相对） | canonical位置 / 角色 |
 | --- | --- |
-| `docs/stage_plans/active/stage-07/s7a-3-4-implementation-handoff.md` | [3/4历史接手](../../../archive/stage-07-planning/s7a-3-4-implementation-handoff.md) |
-| `docs/stage_plans/active/stage-07/s7a-5-implementation-handoff.md` | [5历史单批接手](../../../archive/stage-07-planning/s7a-5-implementation-handoff.md) |
-| `docs/stage_plans/active/stage-07/s7a-5-6-implementation-handoff.md` | [5/6历史联合接手](../../../archive/stage-07-planning/s7a-5-6-implementation-handoff.md) |
-| `docs/stage_plans/active/stage-07/s7a-5-9-delivery-plan.md` | [5–9历史评估](../../../archive/stage-07-planning/s7a-5-9-delivery-plan.md) |
+| `docs/stage_plans/active/stage-07/s7a-3-4-implementation-handoff.md` | [3/4历史接手](../../../archive/stage-07-planning/01-a/s7a-3-4-implementation-handoff.md) |
+| `docs/stage_plans/active/stage-07/s7a-5-implementation-handoff.md` | [5历史单批接手](../../../archive/stage-07-planning/01-a/s7a-5-implementation-handoff.md) |
+| `docs/stage_plans/active/stage-07/s7a-5-6-implementation-handoff.md` | [5/6历史联合接手](../../../archive/stage-07-planning/01-a/s7a-5-6-implementation-handoff.md) |
+| `docs/stage_plans/active/stage-07/s7a-5-9-delivery-plan.md` | [5–9历史评估](../../../archive/stage-07-planning/01-a/s7a-5-9-delivery-plan.md) |
 | `docs/stage_plans/active/stage-07/s7a-5-6-design-selection.md` | [5/6候选实施输入](../../../proposals/implementation-input/stage-07/s7a-5-6-design-selection.md) |
-| `docs/stage_plans/active/stage-07/plan-rpa.md` | [2026-10-11 RPA计划归档](../../../archive/stage-07-planning/2026-10-11-rpa-plan.md)；旧路径保留[兼容入口](plan-rpa.md) |
-| `docs/stage_plans/active/stage-07/performance-modification-plan.md` | [2026-10-14 性能修改方案归档](../../../archive/stage-07-planning/2026-10-14-rpa-performance-modification-plan.md)；旧路径保留[兼容入口](performance-modification-plan.md) |
+| `docs/stage_plans/active/stage-07/plan-rpa.md` | [2026-10-11 RPA计划归档](../../../archive/stage-07-planning/03-rpa-legacy/2026-10-11-rpa-plan.md)；旧路径保留[兼容入口](03-rpa-legacy/plan.md) |
+| `docs/stage_plans/active/stage-07/performance-modification-plan.md` | [2026-10-14 性能修改方案归档](../../../archive/stage-07-planning/03-rpa-legacy/2026-10-14-rpa-performance-modification-plan.md)；旧路径保留[兼容入口](03-rpa-legacy/performance-modification-plan.md) |
 
 S7A-5/6的方向、U01–U13首用台账和J0–J7执行卡由
 [主计划§3.2](plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入) 维护，实施记录归§3.3。
-S7A-7/8的推荐方案、补查决策、首用合同核对和执行顺序由[plan-a §3.4](plan-a.md#34-s7a-78-下一轮决策首用合同与接手2026-10-07)维护；
+S7A-7/8的推荐方案、补查决策、首用合同核对和执行顺序由[plan-a §3.4](01-a/plan.md#34-s7a-78-下一轮决策首用合同与接手2026-10-07)维护；
 推荐不等于合同已冻结、产品已实施或owner门禁已退出。
 active/stage-07由plan.md总览、plan-a.md、plan-b.md、plan-diagnostic-formalization.md、
 plan-rpa-performance-remediation.md、rpa-r1-implementation.md、PD计划及本文件组成。
@@ -29,6 +29,39 @@ plan-rpa-performance-remediation.md、rpa-r1-implementation.md、PD计划及本�
 
 RPA旧版分册与性能proposal已于2026-10-25归档；`plan-rpa.md`与`performance-modification-plan.md`
 旧路径保留兼容入口至少一个整理周期。当前RPA工作入口为
-[性能整改候选设计](plan-rpa-performance-remediation.md)与[R1实施计划](rpa-r1-implementation.md)；
+[性能整改候选设计](05-rpa-new/plan.md)与[R1实施计划](05-rpa-new/r1/plan.md)；
 future不再维护RPA阶段计划。RPA早期单文件迁移的
 [旧路径兼容入口](../../future/realtime-playback-foundation/plan.md)继续保留，统一指向本目录归档说明。
+
+## 2026-10-26 阶段与批次重组
+
+旧逻辑路径以代码文字保留至少一个整理周期；右栏为实际入口。历史绝对路径与封包内身份保持原样。
+
+| 旧逻辑路径 | 当前文档位置 |
+| --- | --- |
+| `docs/stage_plans/active/stage-07/pd5-gameplay-admission.md` | [pd5-gameplay-admission.md](04-pd/pd-5/pd5-gameplay-admission.md) |
+| `docs/stage_plans/active/stage-07/pd5-measurement-proposal.md` | [pd5-measurement-proposal.md](04-pd/pd-5/pd5-measurement-proposal.md) |
+| `docs/stage_plans/active/stage-07/pd5-read-candidate-and-memory-domains-plan.md` | [pd5-read-candidate-and-memory-domains-plan.md](04-pd/pd-5/pd5-read-candidate-and-memory-domains-plan.md) |
+| `docs/stage_plans/active/stage-07/pd5-read-result-candidate.md` | [pd5-read-result-candidate.md](04-pd/pd-5/pd5-read-result-candidate.md) |
+| `docs/stage_plans/active/stage-07/performance-modification-plan.md` | [performance-modification-plan.md](03-rpa-legacy/performance-modification-plan.md) |
+| `docs/stage_plans/active/stage-07/plan-a.md` | [plan.md](01-a/plan.md) |
+| `docs/stage_plans/active/stage-07/plan-b.md` | [plan.md](06-b/plan.md) |
+| `docs/stage_plans/active/stage-07/plan-diagnostic-formalization.md` | [plan.md](02-diagnostics/plan.md) |
+| `docs/stage_plans/active/stage-07/plan-presentation-decoupling.md` | [plan.md](04-pd/plan.md) |
+| `docs/stage_plans/active/stage-07/plan-rpa-performance-remediation.md` | [plan.md](05-rpa-new/plan.md) |
+| `docs/stage_plans/active/stage-07/plan-rpa.md` | [plan.md](03-rpa-legacy/plan.md) |
+| `docs/stage_plans/active/stage-07/presentation-decoupling-design.md` | [design.md](04-pd/design.md) |
+| `docs/stage_plans/active/stage-07/rpa-r1-implementation.md` | [plan.md](05-rpa-new/r1/plan.md) |
+
+## 2026-10-26 实施顺序编号
+
+数字前缀用于文件夹排序，旧逻辑路径映射保留；不新增阶段编号或接受结论。
+
+| 旧逻辑路径 | 当前入口 |
+| --- | --- |
+| `docs/stage_plans/active/stage-07/a/` | [当前目录入口](01-a/README.md) |
+| `docs/stage_plans/active/stage-07/diagnostics/` | [当前目录入口](02-diagnostics/README.md) |
+| `docs/stage_plans/active/stage-07/rpa-legacy/` | [当前目录入口](03-rpa-legacy/README.md) |
+| `docs/stage_plans/active/stage-07/pd/` | [当前目录入口](04-pd/README.md) |
+| `docs/stage_plans/active/stage-07/rpa-new/` | [当前目录入口](05-rpa-new/README.md) |
+| `docs/stage_plans/active/stage-07/b/` | [当前目录入口](06-b/README.md) |

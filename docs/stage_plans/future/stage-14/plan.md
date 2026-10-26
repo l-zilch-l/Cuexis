@@ -26,7 +26,7 @@
 - 至少一个正式宿主 adapter、纯 C external consumer、安装/升级/部署/许可证文档。
 - 不增加第二套 Playback、Judgement、Replay 或 Presentation 语义。
 
-若采用 PD 基线，沿[细则 §12.7](../../active/stage-07/presentation-decoupling-design.md)核对
+若采用 PD 基线，沿[细则 §12.7](../../active/stage-07/04-pd/design.md)核对
 跨 Close owning 结果、取消终态和释放责任。内部 shared_ptr、optional、span 和借用读桥
 不成为 C ABI 布局；opaque handle 的 allocator、有效期、释放线程、CRT/模块卸载限制必须
 独立接受，不能由引用计数推断安全。若 v1 纳入未来重建任务，补任务 handle/取消/关闭矩阵；

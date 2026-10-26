@@ -208,7 +208,7 @@ owner未编辑评论准确绑定base/head/tree、版本及UTC日期。checker仍
 
 该例外接受同名Actions检查可被替换且平台无法强制锁定workflow的剩余风险；
 人工/代理核对日志是补偿措施，不是不可伪造保证。裁定及配置证据见
-[接受记录](../stage_reports/stages/stage-07/s7a/decisions/2026-10-10-single-maintainer-workflow-source-exception.md)。
+[接受记录](../stage_reports/stages/stage-07/90-shared/release-gates/2026-10-10-single-maintainer-workflow-source-exception.md)。
 
 ### Windows double-click approval assistant
 
@@ -304,7 +304,7 @@ Stage 14 必须另行冻结 `1.x` 的 API/ABI 兼容、弃用和版本递增政�
 
 ### 2026-10-10诊断正式化版本裁定
 
-owner明确指定[独立诊断正式化工作包](../stage_plans/active/stage-07/plan-diagnostic-formalization.md)
+owner明确指定[独立诊断正式化工作包](../stage_plans/active/stage-07/02-diagnostics/plan.md)
 目标SDK API为`0.7.5`，同时保留此前已接受的新Recovery版本拒绝旧版本方向。
 这是本工作包的具体版本裁定；版本文件与消费者已在N2集成，N1/N3已退出，
 诊断基线为0.7.5；当前分支为0.9.0。具体证据与交付状态归[CURRENT_STATUS](../CURRENT_STATUS.md)。
@@ -407,7 +407,7 @@ PD-3-c 新增独立命名的 `PresentationSource`、`PresentationSourceInfo` 与
 FrameSnapshot、HostContext 或 FeedbackObservation。按兼容新增 preview API 的 patch 规则，
 owner 已在 2026-10-19 接受 0.8.0 → 0.8.1；使用新查询的消费者须请求至少 0.8.1。
 原 0.8.0 源码可重建，但不承诺旧二进制兼容，也不宣称 0.8.0 库含新符号。
-具体决定与验证归 [PD-3-c 记录](../stage_reports/stages/stage-07/pd/2026-10-19-pd3c-contract-and-version-decision.md)。
+具体决定与验证归 [PD-3-c 记录](../stage_reports/stages/stage-07/04-pd/pd-3/c/2026-10-19-pd3c-contract-and-version-decision.md)。
 
 ### 0.9.0 显式反馈寿命迁移
 
@@ -415,4 +415,4 @@ owner 于 2026-10-19 接受 [ADR 0047](../adr/0047-pd-feedback-lifetime-and-deli
 `FeedbackObservation::expiry` 从整数改为 `optional<GameplayPresentationTick>`：有值为有限 exclusive end，
 无值为 UntilReset，有限 INT64_MAX 不再与无期限混同。消费者须检查 optional、读取 `expiry->value`，
 修改源码并使用 0.9.0 头/库干净重建。旧 0.8.x minor 与新包互相拒绝版本请求；不支持替换 DLL 混用。
-FrameSnapshot 布局、Gameplay/Replay identity 与 wire 不因此改变。内部实施和适用本地消费者验证完成，不构成发行；见 [PD-4 报告](../stage_reports/stages/stage-07/pd/2026-10-19-pd4-delivery-retirement-and-observation.md)。
+FrameSnapshot 布局、Gameplay/Replay identity 与 wire 不因此改变。内部实施和适用本地消费者验证完成，不构成发行；见 [PD-4 报告](../stage_reports/stages/stage-07/04-pd/pd-4/2026-10-19-pd4-delivery-retirement-and-observation.md)。

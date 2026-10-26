@@ -5,10 +5,10 @@
 更新日期：2026-10-02
 
 上级文档：[Gameplay V2 acceptance package](README.md) ·
-[Stage 7A 实施计划](../../stage_plans/active/stage-07/plan-a.md)
+[Stage 7A 实施计划](../../stage_plans/active/stage-07/01-a/plan.md)
 
 2026-10-10归属更新：下文原S7A-9预算/最终矩阵/关闭引用现映射至
-[RPA-F1–F4](../../stage_plans/active/stage-07/plan-rpa.md#综合收尾工作线原s7a-9)，
+[RPA-F1–F4](../../stage_plans/active/stage-07/03-rpa-legacy/plan.md#综合收尾工作线原s7a-9)，
 其中预算测量与阈值接受由RPA-F3负责；旧证据文件名保留，不另排S7A-9任务。
 本次只迁移责任，不改变计数口径、预算合同或接受任何生产限额。
 
@@ -17,7 +17,7 @@
 
 ## 0. 为什么单独写这一份
 
-[Stage 7A 计划](../../stage_plans/active/stage-07/plan-a.md) 的 S7A-0.3 要求为内容、稳态、
+[Stage 7A 计划](../../stage_plans/active/stage-07/01-a/plan.md) 的 S7A-0.3 要求为内容、稳态、
 快照/Seek、Replay、Packed 五类预算建立 profile 草案，并在 S7A-0 输出中区分阈值与实测。
 现有仓库里已经存在一组**可被误用**的数字：`docs/stage_reports/reviews/gameplay-ruleset-2026-10/2026-10-01-fold-spike.md`
 记录了 96 条 requirement、672 个输入事件、activity peak 3、Gap timer peak 2、4,777 字节快照。

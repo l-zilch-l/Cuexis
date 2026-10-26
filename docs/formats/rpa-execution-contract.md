@@ -8,7 +8,7 @@
 只在下述明确列出的 RPA profile 中替代旧条款；SDK 0.7.5 的实现行为仍见
 [CURRENT_STATUS](../CURRENT_STATUS.md)。选择理由归 [ADR 0046](../adr/0046-realtime-playback-coordination.md)，
 载体/所有权归 [实时宿主边界](../api/realtime-host-boundary.md)，实施门禁归
-[RPA 计划](../stage_plans/active/stage-07/plan-rpa.md)。术语见 [Glossary](../api/GLOSSARY.md)。
+[RPA 计划](../stage_plans/active/stage-07/03-rpa-legacy/plan.md)。术语见 [Glossary](../api/GLOSSARY.md)。
 
 授权来源：owner 直接选择 C1、T2、O1、I1、T2-C1、T2-L1、G1、Q1、K1、TB-05 和 R2；
 2026-10-11 随后授权其余事项由代理合理裁定，仅极难决定者再询问。

@@ -79,7 +79,7 @@ six-process range must satisfy the unchanged 15% limit. Machine CPU warmup and f
 warmup are distinct. No recording A/B or ETW is used. Host defaults to the inherited CPU set,
 uses independent below-capacity trajectories and separately reports mean repetition and tails.
 Unknown tail budgets, OEM conditions, thread-query failures and missing quantiles are explicit.
-See `docs/stage_reports/stages/stage-07/pd/2026-10-17-pd0-uninstrumented-baseline.md`.
+See `docs/stage_reports/stages/stage-07/04-pd/pd-0/2026-10-17-pd0-uninstrumented-baseline.md`.
 
 On the recorded Chinese MSVC installation, a console input code page of 936 and output code page
 of 65001 produced a misdecoded `msvc_deps_prefix` and zero recorded header dependencies. Matching
@@ -91,7 +91,7 @@ timing variation remains unproven.
 
 The completed controlled-environment registration, same-source characterization, frozen inputs
 and PD-0 exit evidence are recorded in
-`docs/stage_reports/stages/stage-07/pd/2026-10-18-pd0-controlled-environment-and-build-binding.md`.
+`docs/stage_reports/stages/stage-07/04-pd/pd-0/2026-10-18-pd0-controlled-environment-and-build-binding.md`.
 Historical failed groups remain unchanged. Current batch status is owned by
 `docs/CURRENT_STATUS.md`; later implementation checks do not replace this frozen PD-0 evidence.
 
@@ -121,7 +121,7 @@ python -B tests/pd/diagnose_core_contention.py run --registration <formal-regist
 ```
 
 The fixed-core formal result and bounded diagnostic are recorded in
-`docs/stage_reports/stages/stage-07/pd/2026-10-18-pd0-core-policy-and-contention.md`.
+`docs/stage_reports/stages/stage-07/04-pd/pd-0/2026-10-18-pd0-core-policy-and-contention.md`.
 
 `capture_formal_runtime.py` prepares one CPU/Power ETW diagnostic against the frozen formal
 probe binaries, independent of the historical instrumented collector's deleted calibration.
@@ -145,7 +145,7 @@ QPC coverage and whether slow blocks actually reproduced before making an attrib
 The owner-requested three-round supplement uses the same frozen binaries and counts, with
 three processes per cell per round and at least five minutes between completed rounds.
 Its registration, results and archive inventory are documented in
-`docs/stage_reports/stages/stage-07/pd/2026-10-17-pd0-supplemental-retests-and-archive.md`.
+`docs/stage_reports/stages/stage-07/04-pd/pd-0/2026-10-17-pd0-supplemental-retests-and-archive.md`.
 The one-off runner is preserved with that evidence, rather than added as another permanent tool.
 Historical instrumented collectors below remain reproducibility/diagnostic entrypoints;
 their recording comparisons do not replace the uninstrumented performance baseline.
@@ -162,7 +162,7 @@ test renderer. The fault is an expected defect baseline, not a successful bounde
 session trajectories, outer block timing, read-only Snapshot blocks, controlled process affinity
 and active/dormant runtime recording pairs. Single-call timings remain diagnostic. Both workloads
 validate complete Replay/Snapshot bytes and FrameDigest exactly. See
-`docs/stage_reports/stages/stage-07/pd/2026-10-17-measurement-method-history.md` for evidence.
+`docs/stage_reports/stages/stage-07/04-pd/pd-0/2026-10-17-measurement-method-history.md` for evidence.
 
 `measure_scheduling.py` retains the historical instrumented Windows calibration and validation
 (current output uses the v3 QPC schema). It keeps
@@ -180,7 +180,7 @@ python -B tests/pd/measure_scheduling.py validate --calibration <calibration-dir
 The runner requires the existing Debug/Release static candidate probes with PD metrics enabled.
 Each invocation prints its evidence directory. Validation requires unchanged calibration inputs;
 it retains all samples, keeps the 15% absolute wall-noise gate, and does not retry failed groups.
-See `docs/stage_reports/stages/stage-07/pd/2026-10-17-measurement-method-history.md`
+See `docs/stage_reports/stages/stage-07/04-pd/pd-0/2026-10-17-measurement-method-history.md`
 for results, alternatives and limits. Statistics checks cover drift, known effects, incomplete
 quartets and retention of a slow sample.
 
@@ -199,7 +199,7 @@ The collector preserves individual latencies and gates three independent process
 retaining all long delays. Its first acceptance group was inconclusive; do not retry it until
 passing or substitute a median for its preregistered mean. The source and proposed follow-up
 are recorded in
-`docs/stage_reports/stages/stage-07/pd/2026-10-17-measurement-method-history.md`.
+`docs/stage_reports/stages/stage-07/04-pd/pd-0/2026-10-17-measurement-method-history.md`.
 
 `compare_host_affinity.py` preregisters one 24-process diagnostic contrasting the inherited
 allowed CPU mask with its lowest single bit. It rotates configuration/order, keeps all samples,
@@ -216,7 +216,7 @@ and default/single affinity. Latches and join force the interleaving without sle
 The original v1 hidden diagnostic expected the old behavior. The current v2 uses target reply
 waits for in-flight/completed cases and checks that a completed reply returns promptly;
 its old evidence remains historical. See
-`docs/stage_reports/stages/stage-07/rpa/2026-10-17-retention-progress-and-wait-boundaries.md`.
+`docs/stage_reports/stages/stage-07/03-rpa-legacy/performance/2026-10-17-retention-progress-and-wait-boundaries.md`.
 
 `owner_channel_wait_tests.cpp` adds ordinary `pd` CTest cases for reply readiness, queued/unrelated
 jobs, worker command waiting, retained replies and shutdown errors. Reply publication requires nothrow-movable reply types.
@@ -225,13 +225,13 @@ retained holes, duplicate ACK, old-ID rejection before clock sampling and SDK Se
 The worker reads scoped retention metadata; it does not query complete results to reclaim identities.
 These are independent defect regressions preceding the new PD-0 baseline. Current evidence belongs to
 `docs/CURRENT_STATUS.md`; the dated design comparison is
-`docs/stage_reports/stages/stage-07/rpa/2026-10-17-wait-and-retirement-design-review.md`.
+`docs/stage_reports/stages/stage-07/03-rpa-legacy/performance/2026-10-17-wait-and-retirement-design-review.md`.
 
 These measurement cases are hidden Catch cases and run by explicit name through the runner;
 they are not automatically registered as CTest `pd` cases. Method validation alone does not close
 PD-0. The ordinary ledger/renderer cases are discoverable. The earlier B5 Pause failure remains
 unexplained; subsequent unchanged-code retests passed, as recorded in
-`docs/stage_reports/stages/stage-07/pd/2026-10-17-measurement-method-history.md`.
+`docs/stage_reports/stages/stage-07/04-pd/pd-0/2026-10-17-measurement-method-history.md`.
 
 
 PD-3-c source/control regressions live in `control_binding_tests.cpp` (existing protocol
@@ -337,4 +337,4 @@ python -B tools/verification/playback_performance/device_inventory.py --output <
 Prepare validates tooling and identities only. Do not invoke pilot/register/window with a stale
 preparation after source/profile/document changes. Finite pilot, formal windows and actual audio
 still require the readiness conditions in the accepted proposal. Current evidence and remaining
-scope are recorded in `docs/stage_reports/stages/stage-07/pd/2026-10-19-pd5-window-and-matrix-preparation.md`.
+scope are recorded in `docs/stage_reports/stages/stage-07/04-pd/pd-5/preparation/2026-10-19-pd5-window-and-matrix-preparation.md`.

@@ -26,26 +26,30 @@ prepare、Judgement、Ruleset、Snapshot 和 Replay 路径；不得形成第二�
 实施顺序为Stage 7A既有成果 → RPA（含原S7A-9收尾）→ Stage 7B+ → Stage 8。
 Stage 7B+当前计划范围完成并经owner接受后，才能进入Stage 8；发行选入另由明确矩阵决定。任意运行时脚本、逐帧脚本回调、宿主字节码和通用 Script VM 始终不在 Stage 7 范围内。
 
+定位入口：[Stage 7 分阶段文档位置表](README.md)；报告、批次与原始证据从该表直接进入。
+
 ## 分册与子阶段
 
 Stage 7包含以下子阶段，统一遵守本总计划的边界和交接规则：
 
 | 子阶段 | 分册 | 职责 |
 | --- | --- | --- |
-| Stage 7A | [plan-a](plan-a.md) | 既有内核、7/8集成与证据；原S7A-9剩余收尾已移交RPA，不再独立排期 |
-| Stage 7-RPA | [plan-rpa](plan-rpa.md) | 实时架构、实体设备/同步及原S7A-9矩阵/预算/交接统一收尾；消费独立诊断前置退出记录 |
-| Stage 7-PD | [plan-presentation-decoupling](plan-presentation-decoupling.md) / [内部设计细则](presentation-decoupling-design.md) | 单一状态源、修订读取、独立交付绑定与观察历史；事务、扩展成本及合同迁移门禁；独立于 7A 和 RPA |
-| Stage 7B+ | [plan-b](plan-b.md) | RPA完成后实施高级能力；本分册范围验收关闭后交给Stage 8 |
+| Stage 7A | [plan-a](01-a/plan.md) | 既有内核、7/8集成与证据；原S7A-9剩余收尾已移交RPA，不再独立排期 |
+| 独立诊断前置 | [diagnostics](02-diagnostics/plan.md) | N0–N3，先于新架构原型及 A4–A6 产品实施；不作为新增项目阶段编号 |
+| Stage 7-RPA | [plan-rpa](03-rpa-legacy/plan.md) | 实时架构、实体设备/同步及原S7A-9矩阵/预算/交接统一收尾；消费独立诊断前置退出记录 |
+| Stage 7-PD | [plan-presentation-decoupling](04-pd/plan.md) / [内部设计细则](04-pd/design.md) | 单一状态源、修订读取、独立交付绑定与观察历史；事务、扩展成本及合同迁移门禁；独立于 7A 和 RPA |
+| 新 RPA 性能整改 | [remediation](05-rpa-new/plan.md) / [R1](05-rpa-new/r1/plan.md) | PD 后的性能整改实施线，R0/R1/R2 报告按批次导航；原 RPA 验收范围和接受边界继续适用 |
+| Stage 7B+ | [plan-b](06-b/plan.md) | RPA完成后实施高级能力；本分册范围验收关闭后交给Stage 8 |
 
 RPA独立管理批次与验收，归属Stage 7；不归入S7A-7/8新增任务，也不替代7B+。
-Stage 7-PD 独立管理判定到表现的架构重构；它不改变 7A 的 Gameplay 语义、不接管 RPA 的实时控制合同，也不因列入 Stage 7 就表示产品代码已实施。其候选架构比较、推荐基线、后续 owner 拆分触发条件、实施批次和复用评估见[独立计划](plan-presentation-decoupling.md)。
+Stage 7-PD 独立管理判定到表现的架构重构；它不改变 7A 的 Gameplay 语义、不接管 RPA 的实时控制合同，也不因列入 Stage 7 就表示产品代码已实施。其候选架构比较、推荐基线、后续 owner 拆分触发条件、实施批次和复用评估见[独立计划](04-pd/plan.md)。
 PD 与后续 7B+/Stage 8–14 的设计边界、实际集成基线交接及条件性门禁见该计划 §12；
 若 F4 接受后再集成 PD，须补新 SHA 的受影响矩阵/预算及 owner 接受记录，不能沿用旧 F4
 作为新实现证据。PD 不等待后续能力实现，研究准备也不因此新增全局串行前置。
 2026-10-10规划修订：维护性优先，再比较性能与扩展性；多方案筛选和有限验证先于架构选型。
-owner同日最新要求将诊断码正式化N0–N3剥离为[独立前置工作包](plan-diagnostic-formalization.md)，
+owner同日最新要求将诊断码正式化N0–N3剥离为[独立前置工作包](02-diagnostics/plan.md)，
 不新增编号阶段，不计RPA内部进度；其N3必须在新架构原型和A4–A6产品实施前退出。
-RPA纸面规划、既有行为只读基线盘点与测量设计可并行；架构顺序归[plan-rpa](plan-rpa.md)，
+RPA纸面规划、既有行为只读基线盘点与测量设计可并行；架构顺序归[plan-rpa](03-rpa-legacy/plan.md)，
 诊断合同收敛/迁移/验证归独立前置计划，各自维护唯一批次入口。
 owner同日将剩余S7A-9.1–9.4全部划入RPA-F1–F4；原7A关闭包在RPA退出前一并接受，
 Stage8消费统一交接，不再安排RPA完成后返回7A收尾。迁移不等于已完成最终验收。
@@ -128,7 +132,7 @@ Gameplay V2 acceptance package owner acceptance
 
 **执行顺序偏差（2026-10-02 如实记录）。** 第 3 步（Gameplay I 标注 `superseded`）在第 2 步的限定冻结
 之前就已执行；**不倒填**冻结时间，纠正动作是限定冻结后重新核验替代链接与 retained 映射，记录见
-[S7A-0 接受记录 §4.2](../../../stage_reports/stages/stage-07/s7a/readiness/2026-10-02-s7a-0-acceptance.md)。
+[S7A-0 接受记录 §4.2](../../../stage_reports/stages/stage-07/01-a/s7a-0/2026-10-02-s7a-0-acceptance.md)。
 
 如果实现阶段发现 V2 合同、历史 Gameplay I 文档、研究证据或真实内容预算之间矛盾，先建立可复现失败报告并停止
 受影响批次；不得在代码中隐式选择替代语义。修改四层边界、identity 分区、grace 语义、
@@ -152,7 +156,7 @@ Stage 6 关闭后由 Stage 7A 承接四项未完成内容。它们是关闭前�
 的关闭事实不被改写；只把剩余证据归入当前阶段。
 
 2026-10-06 逐项源码与门禁核对及实施建议见
-[四项交接复核](../../../stage_reports/stages/stage-07/s7a/verification/2026-10-07-stage6-handover-implementation.md)。
+[四项交接复核](../../../stage_reports/stages/stage-07/01-a/stage-06-handover/2026-10-07-stage6-handover-implementation.md)。
 该报告更新旧台账事实，记录 S7A-8.1–8.4 的建议顺序与退出证据；不表示已实施 S7A-7/8/9、
 接受生产预算或批准新的版本/门禁合同。
 
@@ -236,91 +240,91 @@ Stage 7B+当前计划范围完成并接受是Stage 8启动前置；发行矩阵�
 
 ## 3. Stage 7A 交付批次
 
-S7A 的详细目标、执行卡、实施决策和关闭标准拆至[Stage 7A 分册](plan-a.md)。下列标题保留为导航锚点。
+S7A 的详细目标、执行卡、实施决策和关闭标准拆至[Stage 7A 分册](01-a/plan.md)。下列标题保留为导航锚点。
 
 
 
 
-详见 [plan-a.md：3. Stage 7A 交付批次](plan-a.md).
+详见 [plan-a.md：3. Stage 7A 交付批次](01-a/plan.md).
 
 ### S7A-0：实施准入、基线和合同表征
 
-详见 [plan-a.md：S7A-0：实施准入、基线和合同表征](plan-a.md).
+详见 [plan-a.md：S7A-0：实施准入、基线和合同表征](01-a/plan.md).
 
 ### S7A-1：Typed Kernel 边界和模块骨架
 
-详见 [plan-a.md：S7A-1：Typed Kernel 边界和模块骨架](plan-a.md).
+详见 [plan-a.md：S7A-1：Typed Kernel 边界和模块骨架](01-a/plan.md).
 
 ### S7A-2：输入规范化、映射和时钟边界
 
-详见 [plan-a.md：S7A-2：输入规范化、映射和时钟边界](plan-a.md).
+详见 [plan-a.md：S7A-2：输入规范化、映射和时钟边界](01-a/plan.md).
 
 ### S7A-3：Requirement prepare、编译和离线 typed assembler
 
-详见 [plan-a.md：S7A-3：Requirement prepare、编译和离线 typed assembler](plan-a.md).
+详见 [plan-a.md：S7A-3：Requirement prepare、编译和离线 typed assembler](01-a/plan.md).
 
 ### S7A-4：Judgement Kernel 生命周期、Tap/Hold/Release 和仲裁
 
-详见 [plan-a.md：S7A-4：Judgement Kernel 生命周期、Tap/Hold/Release 和仲裁](plan-a.md).
+详见 [plan-a.md：S7A-4：Judgement Kernel 生命周期、Tap/Hold/Release 和仲裁](01-a/plan.md).
 
 ### 后续实施队列（2026-10-06）
 
-详见 [plan-a.md：后续实施队列（2026-10-06）](plan-a.md).
+详见 [plan-a.md：后续实施队列（2026-10-06）](01-a/plan.md).
 
 ### S7A-5：Ruleset Fold、Score、Combo 和 Statistics
 
-详见 [plan-a.md：S7A-5：Ruleset Fold、Score、Combo 和 Statistics](plan-a.md).
+详见 [plan-a.md：S7A-5：Ruleset Fold、Score、Combo 和 Statistics](01-a/plan.md).
 
 ### S7A-6：Identity、Replay、Snapshot 和 Seek
 
-详见 [plan-a.md：S7A-6：Identity、Replay、Snapshot 和 Seek](plan-a.md).
+详见 [plan-a.md：S7A-6：Identity、Replay、Snapshot 和 Seek](01-a/plan.md).
 
 ### S7A-7：Playback、Chart candidate、Headless、Player 和 external consumer 集成
 
-详见 [plan-a.md：S7A-7：Playback、Chart candidate、Headless、Player 和 external consumer 集成](plan-a.md).
+详见 [plan-a.md：S7A-7：Playback、Chart candidate、Headless、Player 和 external consumer 集成](01-a/plan.md).
 
 ### S7A-8：Stage 6 交接收口和版本门禁
 
-详见 [plan-a.md：S7A-8：Stage 6 交接收口和版本门禁](plan-a.md).
+详见 [plan-a.md：S7A-8：Stage 6 交接收口和版本门禁](01-a/plan.md).
 
 ### S7A-9：最终硬化、跨平台证据、Stage 8 handoff 和关闭
 
-旧编号保留为导航；工作及验收整体移入[RPA-F1–F4综合收尾](plan-rpa.md#综合收尾工作线原s7a-9)，plan-a不再单独排期。
+旧编号保留为导航；工作及验收整体移入[RPA-F1–F4综合收尾](03-rpa-legacy/plan.md#综合收尾工作线原s7a-9)，plan-a不再单独排期。
 
 ### 3.1 Stage 7A 小目标核验台账
 
-详见 [plan-a.md：3.1 Stage 7A 小目标核验台账](plan-a.md).
+详见 [plan-a.md：3.1 Stage 7A 小目标核验台账](01-a/plan.md).
 
 ### 3.2 S7A-5 / S7A-6 联合实施目标、决策和准入
 
-详见 [plan-a.md：3.2 S7A-5 / S7A-6 联合实施目标、决策和准入](plan-a.md).
+详见 [plan-a.md：3.2 S7A-5 / S7A-6 联合实施目标、决策和准入](01-a/plan.md).
 
 #### 3.2.1 本轮目标与后续批次
 
-详见 [plan-a.md：3.2.1 本轮目标与后续批次](plan-a.md).
+详见 [plan-a.md：3.2.1 本轮目标与后续批次](01-a/plan.md).
 
 #### 3.2.2 已选实现方向
 
-详见 [plan-a.md：3.2.2 已选实现方向](plan-a.md).
+详见 [plan-a.md：3.2.2 已选实现方向](01-a/plan.md).
 
 #### 3.2.3 复核后仍须落定的项目
 
-详见 [plan-a.md：3.2.3 复核后仍须落定的项目](plan-a.md).
+详见 [plan-a.md：3.2.3 复核后仍须落定的项目](01-a/plan.md).
 
 #### 3.2.4 实施顺序与退出
 
-详见 [plan-a.md：3.2.4 实施顺序与退出](plan-a.md).
+详见 [plan-a.md：3.2.4 实施顺序与退出](01-a/plan.md).
 
 ### 3.3 S7A-5/6 本轮实施记录（2026-10-06）
 
-详见 [plan-a.md：3.3 S7A-5/6 本轮实施记录（2026-10-06）](plan-a.md).
+详见 [plan-a.md：3.3 S7A-5/6 本轮实施记录（2026-10-06）](01-a/plan.md).
 
 ### 3.4 S7A-7/8 下一轮决策、首用合同与接手（2026-10-07）
 
-详见 [plan-a.md：3.4 S7A-7/8 下一轮决策、首用合同与接手（2026-10-07）](plan-a.md).
+详见 [plan-a.md：3.4 S7A-7/8 下一轮决策、首用合同与接手（2026-10-07）](01-a/plan.md).
 
 2026-10-09 owner最新指令将架构重构与正式命名迁移作为Stage 7内独立验收的子阶段，详见
-[Stage 7-RPA](plan-rpa.md)。S7A-7/8保留原有集成收口，
+[Stage 7-RPA](03-rpa-legacy/plan.md)。S7A-7/8保留原有集成收口，
 不再计入RT78/DN78新增工作。实体设备/实时同步实施和最终验收整体归RPA，旧失败随交接保留；
 2026-10-10后续将原S7A-9整体移入RPA-F1–F4，不再保留独立7A收尾队列。
 后续顺序为RPA完整退出 → Stage7B+实施与验收 → Stage8发行收敛；
@@ -328,101 +332,101 @@ S7A 的详细目标、执行卡、实施决策和关闭标准拆至[Stage 7A 分
 
 #### 3.4.1 已定边界与仍然待办的区分
 
-详见 [plan-a.md：3.4.1 已定边界与仍然待办的区分](plan-a.md).
+详见 [plan-a.md：3.4.1 已定边界与仍然待办的区分](01-a/plan.md).
 
 #### 3.4.2 九组主干选择：每组五方案及选优
 
-详见 [plan-a.md：3.4.2 九组主干选择：每组五方案及选优](plan-a.md).
+详见 [plan-a.md：3.4.2 九组主干选择：每组五方案及选优](01-a/plan.md).
 
 #### 3.4.3 复核补出的六组选择：每组五方案及选优
 
-详见 [plan-a.md：3.4.3 复核补出的六组选择：每组五方案及选优](plan-a.md).
+详见 [plan-a.md：3.4.3 复核补出的六组选择：每组五方案及选优](01-a/plan.md).
 
 #### 3.4.4 十二行首用合同核对：字段、所有权、失败与证据
 
-详见 [plan-a.md：3.4.4 十二行首用合同核对：字段、所有权、失败与证据](plan-a.md).
+详见 [plan-a.md：3.4.4 十二行首用合同核对：字段、所有权、失败与证据](01-a/plan.md).
 
 #### 3.4.5 下一轮执行顺序与退出
 
-详见 [plan-a.md：3.4.5 下一轮执行顺序与退出](plan-a.md).
+详见 [plan-a.md：3.4.5 下一轮执行顺序与退出](01-a/plan.md).
 
 #### 3.4.6 重审补充：消费者组合门禁（2026-10-07）
 
-详见 [plan-a §3.4.6](plan-a.md#346-重审补充消费者组合门禁2026-10-07)。
+详见 [plan-a §3.4.6](01-a/plan.md#346-重审补充消费者组合门禁2026-10-07)。
 
 #### 3.4.7 重审缺口的五方向方案与选优（2026-10-07）
 
-详见 [plan-a §3.4.7](plan-a.md#347-重审缺口的五方向方案与选优2026-10-07)。
+详见 [plan-a §3.4.7](01-a/plan.md#347-重审缺口的五方向方案与选优2026-10-07)。
 
 ## 4. Stage 7A 关闭标准
 
-详见 [plan-a.md：4. Stage 7A 关闭标准](plan-a.md).
+详见 [plan-a.md：4. Stage 7A 关闭标准](01-a/plan.md).
 
 ## 5. Stage 7B+ 能力线的统一规则
 
-S7B/S7C 的完整准入包、实现退出门禁和 W 类缺口规则见[Stage 7B+ 分册](plan-b.md)。下列标题保留为导航锚点。
+S7B/S7C 的完整准入包、实现退出门禁和 W 类缺口规则见[Stage 7B+ 分册](06-b/plan.md)。下列标题保留为导航锚点。
 
 
 
 
-详见 [plan-b.md：5. Stage 7B+ 能力线的统一规则](plan-b.md).
+详见 [plan-b.md：5. Stage 7B+ 能力线的统一规则](06-b/plan.md).
 
 ### 5.1 新能力准入包
 
-详见 [plan-b.md：5.1 新能力准入包](plan-b.md).
+详见 [plan-b.md：5.1 新能力准入包](06-b/plan.md).
 
 ### 5.2 统一实现和退出门禁
 
-详见 [plan-b.md：5.2 统一实现和退出门禁](plan-b.md).
+详见 [plan-b.md：5.2 统一实现和退出门禁](06-b/plan.md).
 
 ### 5.3 W 类缺口记录（W-class gap record）
 
-详见 [plan-b.md：5.3 W 类缺口记录（W-class gap record）](plan-b.md).
+详见 [plan-b.md：5.3 W 类缺口记录（W-class gap record）](06-b/plan.md).
 
 ## 6. Stage 7B+ 分批规划
 
-详见 [plan-b.md：6. Stage 7B+ 分批规划](plan-b.md).
+详见 [plan-b.md：6. Stage 7B+ 分批规划](06-b/plan.md).
 
 ### S7B-0：Capability registry、版本和扩展测试骨架
 
-详见 [plan-b.md：S7B-0：Capability registry、版本和扩展测试骨架](plan-b.md).
+详见 [plan-b.md：S7B-0：Capability registry、版本和扩展测试骨架](06-b/plan.md).
 
 ### S7B-1：连续输入、区域采样、Slide 和 handoff continuity（新增 capability）
 
-详见 [plan-b.md：S7B-1：连续输入、区域采样、Slide 和 handoff continuity（新增 capability）](plan-b.md).
+详见 [plan-b.md：S7B-1：连续输入、区域采样、Slide 和 handoff continuity（新增 capability）](06-b/plan.md).
 
 ### S7B-2：Flick、方向、速度和位移约束
 
-详见 [plan-b.md：S7B-2：Flick、方向、速度和位移约束](plan-b.md).
+详见 [plan-b.md：S7B-2：Flick、方向、速度和位移约束](06-b/plan.md).
 
 ### S7B-3：多接触点、和弦、资源占用和跨 requirement 聚合（新增 capability）
 
-详见 [plan-b.md：S7B-3：多接触点、和弦、资源占用和跨 requirement 聚合（新增 capability）](plan-b.md).
+详见 [plan-b.md：S7B-3：多接触点、和弦、资源占用和跨 requirement 聚合（新增 capability）](06-b/plan.md).
 
 ### S7B-4：高级尾判、Lift、计数和连续动作族（新增 capability）
 
-详见 [plan-b.md：S7B-4：高级尾判、Lift、计数和连续动作族（新增 capability）](plan-b.md).
+详见 [plan-b.md：S7B-4：高级尾判、Lift、计数和连续动作族（新增 capability）](06-b/plan.md).
 
 ### S7C-1：校准、设备延迟和 Judgement Policy
 
-详见 [plan-b.md：S7C-1：校准、设备延迟和 Judgement Policy](plan-b.md).
+详见 [plan-b.md：S7C-1：校准、设备延迟和 Judgement Policy](06-b/plan.md).
 
 ### S7C-2：Ruleset package、模块扩展和 Replay 演进
 
-详见 [plan-b.md：S7C-2：Ruleset package、模块扩展和 Replay 演进](plan-b.md).
+详见 [plan-b.md：S7C-2：Ruleset package、模块扩展和 Replay 演进](06-b/plan.md).
 
 ### 6.1 Stage 7B+ 小目标核验台账
 
-详见 [plan-b.md：6.1 Stage 7B+ 小目标核验台账](plan-b.md).
+详见 [plan-b.md：6.1 Stage 7B+ 小目标核验台账](06-b/plan.md).
 
 ## 7. 7B+ 与 Stage 8 的选入规则
 
-详见 [plan-b.md：7. 7B+ 与 Stage 8 的选入规则](plan-b.md).
+详见 [plan-b.md：7. 7B+ 与 Stage 8 的选入规则](06-b/plan.md).
 
 
 ## 验收标准
 
-Stage 7整体验收包含RPA对既有7A及原S7A-9的统一收尾，以及随后7B+当前计划范围的逐项退出与owner接受。S7A 详细关闭标准见[plan-a §4](plan-a.md#4-stage-7a-关闭标准)；7B+准入与 Stage 8 选入标准见[plan-b §7](plan-b.md#7-7b-与-stage-8-的选入规则)。研究 spike、单平台结果、只测正例的 golden 或历史报告均不能替代当前实现证据。
+Stage 7整体验收包含RPA对既有7A及原S7A-9的统一收尾，以及随后7B+当前计划范围的逐项退出与owner接受。S7A 详细关闭标准见[plan-a §4](01-a/plan.md#4-stage-7a-关闭标准)；7B+准入与 Stage 8 选入标准见[plan-b §7](06-b/plan.md#7-7b-与-stage-8-的选入规则)。研究 spike、单平台结果、只测正例的 golden 或历史报告均不能替代当前实现证据。
 
 ## 8. 统一验收矩阵和证据要求
 

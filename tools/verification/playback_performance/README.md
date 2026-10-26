@@ -72,7 +72,7 @@ owner runner 按需从 `tests/pd/` 加载既有 PD-0 support，没有迁移冻�
 新注册还须生成 preparation 外层的 `registration.seal.json`；窗口开始及历史窗口加载会复核它，
 旧的未封存注册不能继续。正式窗口与 pilot 的 process record/原始日志必须独立，硬链接也不能重复使用。
 本次不运行 pilot 或正式窗口，也不改变已接受阈值。范围及剩余项见
-[窗口协议与矩阵报告](../../../docs/stage_reports/stages/stage-07/pd/2026-10-19-pd5-window-and-matrix-preparation.md)。
+[窗口协议与矩阵报告](../../../docs/stage_reports/stages/stage-07/04-pd/pd-5/preparation/2026-10-19-pd5-window-and-matrix-preparation.md)。
 
 功能命名同时覆盖既有基线方法：旧 `tools/measure_pd0_method.py` 与
 `tools/verification/measure_pd0_method.py` 改为 [根级功能入口](../../measure_playback_method.py) 和
@@ -113,7 +113,7 @@ acceptance=false。数值自检通过也不授权保留候选或建立正式 pre
 bind 绑定新 Release 诊断构建，run 执行 N=1/64/40000×low/high 固定六配置。原 Writer 预算不改；
 提议布局 sizing、原 semantic hash 需求与 wire accepted 分别记录，不进入 Host 或正式测量。
 小规模实际输出校验 sizing/hash；40k 的提议 Gameplay payload 仅计数。工作量上限与 revision 4
-Reader/Writer 尚待合同接受，参见 docs/stage_plans/active/stage-07/pd5-gameplay-admission.md。
+Reader/Writer 尚待合同接受，参见 docs/stage_plans/active/stage-07/04-pd/pd-5/pd5-gameplay-admission.md。
 
 ## F1 工具包（canary 与 F1 用例合并封包）
 

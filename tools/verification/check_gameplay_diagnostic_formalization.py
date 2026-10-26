@@ -13,7 +13,7 @@ import tempfile
 
 def check(root: Path) -> list[str]:
     failures: list[str] = []
-    rows = json.loads((root / "docs/stage_reports/stages/stage-07/diagnostic-formalization/2026-10-10-n1-branch-mapping.json").read_text(encoding="utf-8"))
+    rows = json.loads((root / "docs/stage_reports/stages/stage-07/02-diagnostics/n1/2026-10-10-n1-branch-mapping.json").read_text(encoding="utf-8"))
     targets = [r["proposed_name"] for r in rows if r["proposed_name"]] + ["judgement.grace.value_source_conflict", "judgement.input.occurrence_conflict", "judgement.control.reconciliation_invalid"]
     if len(targets) != len(set(targets)):
         failures.append("mapping target collision")
@@ -89,7 +89,7 @@ def self_test(root: Path) -> None:
     """Prove actual CTest -> CMake -> Python nonzero propagation in isolated input."""
     with tempfile.TemporaryDirectory(prefix="cuexis-diagnostic-gate-") as temporary:
         copy = Path(temporary) / "source"
-        for directory in ("engine", "app", "tools", "tests", "cmake", "schemas", "docs/stage_reports/stages/stage-07/diagnostic-formalization"):
+        for directory in ("engine", "app", "tools", "tests", "cmake", "schemas", "docs/stage_reports/stages/stage-07/02-diagnostics"):
             shutil.copytree(root / directory, copy / directory)
         assert not check(copy), check(copy)
         build = Path(temporary) / "test"

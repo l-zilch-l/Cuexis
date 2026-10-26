@@ -18,7 +18,7 @@
 [实时宿主边界 §2/§5/§7](../../../api/realtime-host-boundary.md)、
 [Gameplay V2 ABI](../../../api/GAMEPLAY_V2_ABI.md) 和
 [RPA 执行合同](../../../formats/rpa-execution-contract.md)。
-既有修复证据见[内核诊断与关闭阻塞交回](../../../stage_reports/stages/stage-07/pd/2026-10-23-execution-core-diagnostic-and-repair.md)。
+既有修复证据见[内核诊断与关闭阻塞交回](../../../stage_reports/stages/stage-07/04-pd/pd-5/lifecycle/2026-10-23-execution-core-diagnostic-and-repair.md)。
 本文件是待核验方案的唯一正文；不把以下设计写成已支持能力。
 
 ## 1. 选择与适用范围

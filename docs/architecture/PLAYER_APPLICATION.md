@@ -8,7 +8,7 @@
 
 2026-10-09 实时架构重审：本文现有同步循环不是异步实时架构的实现声明。
 实际candidate Gameplay接线、时钟/Replay增长和owner耦合见
-[审查报告](../stage_reports/stages/stage-07/rpa/2026-10-09-realtime-architecture-review.md)。
+[审查报告](../stage_reports/stages/stage-07/03-rpa-legacy/design/2026-10-09-realtime-architecture-review.md)。
 [ADR0046](../adr/0046-realtime-playback-coordination.md)与[宿主边界草案](../api/realtime-host-boundary.md)
 只规划整改，不改变本文现有线程和生命周期；不能直接把PreparedPlayback或SDL renderer移到worker。
 

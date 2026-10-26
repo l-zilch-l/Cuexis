@@ -61,7 +61,7 @@ Chart v8
 - 预计无法在同步调用预算完成的重建，只能走已接受的显式任务，分片期间为可诊断 building；超过任务总工作/内存/deadline 则明确失败。旧同步入口不得以 rebuilding 冒充成功，不显示不可复现近似结果。
 - GPU 路径不得静默替代具备确定性要求的 CPU 语义。
 
-采用 PD 基线时，消费[细则 §12.2、§12.5–12.7](../../active/stage-07/presentation-decoupling-design.md)
+采用 PD 基线时，消费[细则 §12.2、§12.5–12.7](../../active/stage-07/04-pd/design.md)
 的完整表现域与候选重建边界。先在所属 ADR/Spec/ABI 接受显式任务、进度/取消/终态、时钟与
 版本迁移；原同步 update/Seek 的成功仍表示完成。每会话一个有界候选，固定目标后分片推进；
 中间步不发布状态修订、不推进 projection cursor、不扣 RemainingFrames。全部必需域完成

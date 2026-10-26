@@ -6,7 +6,7 @@
 
 决策归 [ADR 0046](../adr/0046-realtime-playback-coordination.md)，执行/时间/控制语义归
 [RPA 补充 Spec](../formats/rpa-execution-contract.md)，批次和门禁归
-[RPA 计划](../stage_plans/active/stage-07/plan-rpa.md)。本页拥有载体、接口、所有权和宿主状态。
+[RPA 计划](../stage_plans/active/stage-07/03-rpa-legacy/plan.md)。本页拥有载体、接口、所有权和宿主状态。
 旧候选 TB-01–07 表由补充 Spec 的已选合同替代；不改变当前头文件或宣称已通过设备验证。
 
 ## 1. 表示与接口
@@ -212,7 +212,7 @@ T2/R2 oracle 用扫描式 reducer，不调用生产调度/advance 充当预期�
 B4 已增加非安装的 `host_protocol`、`host_candidate`、`capture_route`、`audio_owner`、
 `renderer_owner` 和 `frame_observation` 实施入口；同线程显式驱动，不创建线程。
 生产源码身份、实际调用测试和验证边界见
-[B4 实施记录](../stage_reports/stages/stage-07/rpa/2026-10-12-b4-host-and-resources.md)。
+[B4 实施记录](../stage_reports/stages/stage-07/03-rpa-legacy/b4/2026-10-12-b4-host-and-resources.md)。
 这里的接口实施不替代 B5 的设备、callback 隔离和线程部署验收。
 
 B5 应用装配位于 Player 的 `execution_host` / `player_execution`，AudioWorker 与
@@ -228,7 +228,7 @@ Player 的候选入口为 `--execution-test-only`；EOF 要求显式
 `--execution-tail-input-deadline`。当前 A 来自 app profile output correction，I/V=0、rate=1，
 calibration 不匹配则拒绝。主音乐使用显式 Audio clock，Playback 内部由 HostClock
 接收 owner 供给的 RuntimeFrame。全部容量/误差/有效期为 testOnly，不能据此接受生产参数。
-实施、测量和自动化边界见 [B5 记录](../stage_reports/stages/stage-07/rpa/2026-10-13-worker-deployment.md)。
+实施、测量和自动化边界见 [B5 记录](../stage_reports/stages/stage-07/03-rpa-legacy/deployment/2026-10-13-worker-deployment.md)。
 
 ## 7. DLL 与内置宿主实施边界（2026-10-14 修复）
 
@@ -261,10 +261,10 @@ ADR 0033 禁止私有导出的规则保留；共享库白名单仅登记实际�
 
 本节区分 PD 的已接受接入与后续候选：§8.1 的内部宿主细化已随 PD-3-c 授权实施，
 新增只读来源 API 与 SDK 0.8.1 已获 owner 接受，实施验证见
-[PD-3-c 记录](../stage_reports/stages/stage-07/pd/2026-10-19-pd3c-contract-and-version-decision.md)。
-§8.2–8.4 已于 2026-10-19 随 ADR 0047 获 owner 接受；PD-4 内部实施及适用本地门禁完成，证据见 [PD-4 实施报告](../stage_reports/stages/stage-07/pd/2026-10-19-pd4-delivery-retirement-and-observation.md)；尚未作为正式发行交付。
-[PD 计划](../stage_plans/active/stage-07/plan-presentation-decoupling.md)拥有批次，
-[设计细则](../stage_plans/active/stage-07/presentation-decoupling-design.md)拥有内部接入和待验收项。
+[PD-3-c 记录](../stage_reports/stages/stage-07/04-pd/pd-3/c/2026-10-19-pd3c-contract-and-version-decision.md)。
+§8.2–8.4 已于 2026-10-19 随 ADR 0047 获 owner 接受；PD-4 内部实施及适用本地门禁完成，证据见 [PD-4 实施报告](../stage_reports/stages/stage-07/04-pd/pd-4/2026-10-19-pd4-delivery-retirement-and-observation.md)；尚未作为正式发行交付。
+[PD 计划](../stage_plans/active/stage-07/04-pd/plan.md)拥有批次，
+[设计细则](../stage_plans/active/stage-07/04-pd/design.md)拥有内部接入和待验收项。
 
 ### 8.1 状态来源与使用许可
 
@@ -314,7 +314,7 @@ scope 替换/取消和证据 TTL 仍分别处理；TTL 不能改变效果寿命�
 不能只核对 HostContext/资源代。注册激活和撤销须经 Renderer owner 串行确认，沿可靠生命周期
 设施传递；撤销确认前不得让同端新注册生效。迟到激活、撤销与确认不复活旧注册，也不清除
 新注册。注册前沿独立于可淘汰历史，帧执行标记只有在旧注册失效已确认后才能为新身份初始化。
-具体状态/容量归[PD 细则 §6.3.1](../stage_plans/active/stage-07/presentation-decoupling-design.md)。
+具体状态/容量归[PD 细则 §6.3.1](../stage_plans/active/stage-07/04-pd/design.md)。
 注册确认不解除控制/fence，撤销确认不证明 GPU 已完成或外部 CPU 引用已释放；公开 HostContext
 及 Gameplay/Replay identity 不因此增加字段。
 同一 Renderer instance/generation 的控制或资源换代可保留注册，但仍更新已确认交付绑定；
@@ -347,6 +347,6 @@ NotSubmitted。旧注册的合法 receipt 仍只补原 attempt 的反馈证据�
 暂停时精确保留画面已丢失，必须显式报告无可重绘图，不能用当前较新修订替代或运行 frozen
 update 补图。该结局在 PD 文档中称 NoRetainedFrame，尚未指定公共错误码或安装类型。
 恢复沿合法更新/控制和设备确认；跨资源代的精确暂停画面恢复需另行接受资源重新取得合同。
-细节及验收归[PD 细则 §12.4](../stage_plans/active/stage-07/presentation-decoupling-design.md)。
+细节及验收归[PD 细则 §12.4](../stage_plans/active/stage-07/04-pd/design.md)。
 实施前须接受触发条件、可观察状态与恢复保证；如影响公共合同，补版本/安装消费者差异，
 不得把压力驱逐直接当成现有 SDK 已允许的行为。

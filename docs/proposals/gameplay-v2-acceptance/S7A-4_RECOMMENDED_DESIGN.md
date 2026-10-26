@@ -5,7 +5,7 @@
 2026-10-05 后续：本文件保留方案比较与当时的未决清单；当前完整选定方案已落入
 [ADR 0045](../../adr/0045-gameplay-v2-execution-profile.md)、
 [execution Spec](../../formats/gameplay-v2-execution-profile.md) 和
-[实施交接](../../archive/stage-07-planning/s7a-3-4-implementation-handoff.md)。
+[实施交接](../../archive/stage-07-planning/01-a/s7a-3-4-implementation-handoff.md)。
 本文件中“仍需细化”的历史文字不再作为新增语义阻塞；运行验证/容量证据仍按交接计划补齐。
 
 日期：2026-10-05（Asia/Shanghai）
@@ -168,4 +168,4 @@ FactId/CommitId codec、SolverProfile 默认列表、具体窗口半宽和 max* 
 gap/handoff/capacity>1/sameContact/连续轨迹。归属按 Spec §S7A-4 / ABI §未决项执行。
 
 S7A-3 的既有实现与剩余证据见
-[S7A 验证索引](../../stage_reports/stages/stage-07/s7a/README.md)。
+[S7A 验证索引](../../stage_reports/stages/stage-07/01-a/README.md)。

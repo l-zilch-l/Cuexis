@@ -4,11 +4,11 @@
 
 更新日期：2026-10-21
 
-本文件是[准入阶段 A 计划](../../../stage_plans/active/stage-07/pd5-gameplay-admission.md)的交回输入。
+本文件是[准入阶段 A 计划](../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-gameplay-admission.md)的交回输入。
 尚未接受新格式或预算，没有 Reader/Writer revision 4 实现。现行合同仍归
 [Capsule](../../../formats/GAMEPLAY_CAPSULE_V2_FORMAT.md)、
 [Packed](../../../formats/PACKED_CHART_FORMAT.md)和 [Gameplay Spec](../../../formats/GAMEPLAY_V2_SPEC.md)。
-需求实测与未知事项另见[阶段 A 报告](../../../stage_reports/stages/stage-07/pd/2026-10-21-gameplay-admission-stage-a.md)。
+需求实测与未知事项另见[阶段 A 报告](../../../stage_reports/stages/stage-07/04-pd/pd-5/admission/stage-a/2026-10-21-gameplay-admission-stage-a.md)。
 
 ## 提议的物理差异
 

@@ -63,27 +63,74 @@ DIRECTORY_INDEXES = (
     "stage_reports/stages/chart-format-foundation/README.md",
     "stage_reports/stages/stage-06/README.md",
     "stage_reports/stages/stage-07/README.md",
-    "stage_reports/stages/stage-07/s7a/README.md",
-    "stage_reports/stages/stage-07/rpa/README.md",
-    "stage_reports/stages/stage-07/pd/README.md",
-    "stage_reports/stages/stage-07/shared/README.md",
+    "stage_reports/stages/stage-07/01-a/README.md",
+    "stage_reports/stages/stage-07/06-b/README.md",
+    "stage_reports/stages/stage-07/05-rpa-new/README.md",
+    "stage_plans/active/stage-07/README.md",
+    "stage_reports/stages/stage-07/03-rpa-legacy/README.md",
+    "stage_reports/stages/stage-07/04-pd/README.md",
+    "stage_reports/stages/stage-07/90-shared/README.md",
 )
 STAGE_NAVIGATION_INDEXES = {
     "stage_plans/README.md",
+    "stage_plans/active/stage-07/README.md",
+    "stage_plans/active/stage-07/01-a/README.md",
+    "stage_plans/active/stage-07/06-b/README.md",
+    "stage_plans/active/stage-07/02-diagnostics/README.md",
+    "stage_plans/active/stage-07/04-pd/README.md",
+    "stage_plans/active/stage-07/03-rpa-legacy/README.md",
+    "stage_plans/active/stage-07/05-rpa-new/README.md",
     "stage_reports/README.md",
     "stage_reports/chart-format-update/README.md",
     "stage_reports/reviews/full-review-2026-08/README.md",
+    "stage_reports/stages/chart-format-foundation/README.md",
     "stage_reports/stages/stage-01/README.md",
     "stage_reports/stages/stage-04/README.md",
     "stage_reports/stages/stage-05/README.md",
-    "stage_reports/stages/chart-format-foundation/README.md",
     "stage_reports/stages/stage-06/README.md",
     "stage_reports/stages/stage-07/README.md",
-    "stage_reports/stages/stage-07/diagnostic-formalization/README.md",
-    "stage_reports/stages/stage-07/s7a/README.md",
-    "stage_reports/stages/stage-07/rpa/README.md",
-    "stage_reports/stages/stage-07/pd/README.md",
-    "stage_reports/stages/stage-07/shared/README.md",
+    "stage_reports/stages/stage-07/01-a/README.md",
+    "stage_reports/stages/stage-07/01-a/s7a-0/README.md",
+    "stage_reports/stages/stage-07/01-a/s7a-2/README.md",
+    "stage_reports/stages/stage-07/01-a/s7a-3-4/README.md",
+    "stage_reports/stages/stage-07/01-a/s7a-3/README.md",
+    "stage_reports/stages/stage-07/01-a/s7a-5-6/README.md",
+    "stage_reports/stages/stage-07/01-a/s7a-7-8/README.md",
+    "stage_reports/stages/stage-07/01-a/s7a-8-4/README.md",
+    "stage_reports/stages/stage-07/06-b/README.md",
+    "stage_reports/stages/stage-07/02-diagnostics/README.md",
+    "stage_reports/stages/stage-07/02-diagnostics/audit/README.md",
+    "stage_reports/stages/stage-07/02-diagnostics/n0/README.md",
+    "stage_reports/stages/stage-07/02-diagnostics/n1/README.md",
+    "stage_reports/stages/stage-07/02-diagnostics/n3/README.md",
+    "stage_reports/stages/stage-07/04-pd/README.md",
+    "stage_reports/stages/stage-07/04-pd/design/README.md",
+    "stage_reports/stages/stage-07/04-pd/pd-0/README.md",
+    "stage_reports/stages/stage-07/04-pd/pd-2/README.md",
+    "stage_reports/stages/stage-07/04-pd/pd-3/c/README.md",
+    "stage_reports/stages/stage-07/04-pd/pd-4/README.md",
+    "stage_reports/stages/stage-07/04-pd/pd-5/README.md",
+    "stage_reports/stages/stage-07/04-pd/pd-5/admission/stage-a/README.md",
+    "stage_reports/stages/stage-07/04-pd/pd-5/admission/stage-b/README.md",
+    "stage_reports/stages/stage-07/04-pd/pd-5/admission/stage-c/README.md",
+    "stage_reports/stages/stage-07/04-pd/pd-5/etw-tools/README.md",
+    "stage_reports/stages/stage-07/04-pd/pd-5/lifecycle/README.md",
+    "stage_reports/stages/stage-07/04-pd/pd-5/measurement/README.md",
+    "stage_reports/stages/stage-07/04-pd/pd-5/memory-attribution/README.md",
+    "stage_reports/stages/stage-07/04-pd/pd-5/preparation/README.md",
+    "stage_reports/stages/stage-07/03-rpa-legacy/README.md",
+    "stage_reports/stages/stage-07/03-rpa-legacy/b1/README.md",
+    "stage_reports/stages/stage-07/03-rpa-legacy/deployment/README.md",
+    "stage_reports/stages/stage-07/03-rpa-legacy/design/README.md",
+    "stage_reports/stages/stage-07/03-rpa-legacy/device/README.md",
+    "stage_reports/stages/stage-07/03-rpa-legacy/f1-f2/README.md",
+    "stage_reports/stages/stage-07/03-rpa-legacy/f3/README.md",
+    "stage_reports/stages/stage-07/03-rpa-legacy/performance/README.md",
+    "stage_reports/stages/stage-07/05-rpa-new/README.md",
+    "stage_reports/stages/stage-07/05-rpa-new/r1/README.md",
+    "stage_reports/stages/stage-07/05-rpa-new/r2/README.md",
+    "stage_reports/stages/stage-07/90-shared/README.md",
+    "stage_reports/stages/stage-07/90-shared/release-gates/README.md",
 }
 ROOT_DOCUMENTATION_FILES = {
     "README.md",
@@ -230,7 +277,8 @@ def heading_anchors(text: str) -> set[str]:
 def check_stage7_section_links(files: list[Path], failures: list[CheckFailure], root: Path = ROOT) -> None:
     """Check live contract links to the split Stage 7 plans, without rewriting dated evidence."""
     stage = (root / "docs/stage_plans/active/stage-07").resolve()
-    owners = {"1.1": "plan.md", "5.3": "plan-b.md", "10": "plan.md"}
+    owners = {"1.1": "plan.md", "5.3": "06-b/plan.md", "10": "plan.md"}
+    plan_paths = {"plan.md", "01-a/plan.md", "06-b/plan.md"}
     for path in files:
         relative = path.resolve().relative_to(root.resolve()).as_posix()
         if not relative.startswith(("docs/api/", "docs/formats/", "docs/stage_plans/active/")):
@@ -238,14 +286,14 @@ def check_stage7_section_links(files: list[Path], failures: list[CheckFailure], 
         for label, target in re.findall(r"\[([^\]]*)\]\(([^)]+)\)", "\n".join(lines_outside_fences(path.read_text(encoding="utf-8")))):
             destination, _, fragment = target.partition("#")
             resolved = (path.parent / destination).resolve()
-            if resolved.parent != stage or resolved.name not in {"plan.md", "plan-a.md", "plan-b.md"} or not resolved.is_file():
+            if not resolved.is_relative_to(stage) or resolved.relative_to(stage).as_posix() not in plan_paths or not resolved.is_file():
                 continue
             if fragment and unquote(fragment) not in heading_anchors(resolved.read_text(encoding="utf-8")):
                 failures.append(CheckFailure(path, f"Stage 7 section link: missing anchor {target}"))
             section = re.search(r"§\s*(\d+(?:\.\d+)*)", label)
             expected = owners.get(section[1]) if section else None
-            if expected and resolved.name != expected:
-                failures.append(CheckFailure(path, f"Stage 7 section link: section {section[1]} belongs to {expected}, found {resolved.name}"))
+            if expected and resolved.relative_to(stage).as_posix() != expected:
+                failures.append(CheckFailure(path, f"Stage 7 section link: section {section[1]} belongs to {expected}, found {resolved.relative_to(stage).as_posix()}"))
 
 
 def normalize_whitespace(text: str) -> str:

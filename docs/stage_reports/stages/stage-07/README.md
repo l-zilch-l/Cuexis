@@ -1,28 +1,31 @@
-# Stage 7 Evidence Index
+# Stage 7 Reports and Evidence
 
 状态：current index
 
 更新日期：2026-10-26
 
-本索引只负责导航，不复制合同、裁定或当前实现状态。当前状态以 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 为准；范围与验收门禁见 [Stage 7 总计划](../../../stage_plans/active/stage-07/plan.md)、[Stage 7A](../../../stage_plans/active/stage-07/plan-a.md)、[RPA 历史计划（已归档）](../../../archive/stage-07-planning/2026-10-11-rpa-plan.md) 和 [PD](../../../stage_plans/active/stage-07/plan-presentation-decoupling.md)；当前 RPA 工作入口见[性能整改](../../../stage_plans/active/stage-07/plan-rpa-performance-remediation.md)与 [R1 实施计划](../../../stage_plans/active/stage-07/rpa-r1-implementation.md)。
+当前状态只以 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 为准；本页只负责定位，不新增实施、测量或阶段接受结论。
 
-## 分类入口
 
-- [Stage 7A](s7a/README.md)：准入、裁定、实施、验证和交接。
-- [RPA](rpa/README.md)：实时播放、宿主、设备、性能和生产验收。
-- [PD](pd/README.md)：Presentation Decoupling 设计与 PD-0 测量。
-- [诊断正式化](diagnostic-formalization/README.md)：N0-N3 独立诊断前置证据。
-- [共享证据](shared/README.md)：跨子阶段门禁、文档恢复和发布历史。
-- [旧路径映射](legacy-paths.md)：整理前路径到 canonical 文档的映射。
+实施脉络：A → 独立诊断前置 → 旧 RPA → PD → 新 RPA；B+ 尚未实施，作为后续阶段置后。共享材料列于末尾。数字是目录排序号，不是项目阶段编号，也不表示阶段已验收关闭。A、诊断与旧 RPA 的设计/设备材料存在日期交叉，旧 RPA 与 PD 也有重叠；按实际实施主线和前置关系定位，不将交叉材料解释为严格串行。
 
-## 当前工作线
+## 阶段与批次总表
 
-PD-0–4、PD-5 准入/归因、ETW 工具及 B0/B1 证据集中在 [PD 证据索引](pd/README.md)；R1/R2 和本次整合记录集中在 [RPA 证据索引](rpa/README.md)。当前结论与唯一实施入口仍以 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 为准。两树报告成组保留；历史失败、通过、绑定身份和绝对路径不因整合而改写，迁移构建或工具通过不构成性能接受。
+同一批次的报告、审查、交接与 ZIP/JSON/LOG 附件集中在同一英文目录。每阶段索引列出全部批次；证据清单直接列出历史原始路径，避免逐篇翻找。
 
-RPA 与 Stage 7A 的历史报告继续保留原日期和证据范围。报告中的历史“下一步”不覆盖当前计划；新的实现状态只写入 [CURRENT_STATUS](../../../CURRENT_STATUS.md)。
+| 阶段 | 批次结构 | 报告入口 | 原始证据路径 |
+| --- | --- | --- | --- |
+| Stage 7A | `s7a-0 / s7a-1 / s7a-2 / s7a-3 / s7a-3-4 / s7a-4 / s7a-5-6 / s7a-6-7 / s7a-7-8 / s7a-8-4 / cross-batch / stage-06-handover` | [批次总表](01-a/README.md) | [证据清单](01-a/evidence-catalog.md) |
+| Diagnostics | `audit / n0 / n1 / n3` | [批次总表](02-diagnostics/README.md) | [证据清单](02-diagnostics/evidence-catalog.md) |
+| Legacy RPA | `design / b0–b4 / deployment / f1-f2 / f3 / f4 / performance / device` | [批次总表](03-rpa-legacy/README.md) | [证据清单](03-rpa-legacy/evidence-catalog.md) |
+| Presentation Decoupling | `design / pd-0 / pd-1 / pd-2 / pd-3/a–c / pd-4 / pd-5` | [批次总表](04-pd/README.md) | [证据清单](04-pd/evidence-catalog.md) |
+| New RPA | `design / r0 / r1 / r2` | [批次总表](05-rpa-new/README.md) | [证据清单](05-rpa-new/evidence-catalog.md) |
+| Stage 7B+ | `现有材料中无独立报告` | [批次总表](06-b/README.md) | [证据清单](06-b/evidence-catalog.md) |
+| Shared Evidence | `ci / release-gates / document-restoration / worktree-consolidation / documentation` | [批次总表](90-shared/README.md) | [证据清单](90-shared/evidence-catalog.md) |
 
-## 归档原则
+## 计划与回溯
 
-- 报告按证据用途归类，正文中的日期、源码身份和验收范围保持不变。
-- 已被摘要替代的临时测量记录不再单独挂在索引中；摘要保留其限制和结论边界。
-- ZIP、JSON 和日志等原始证据跟随所属报告保存，不在本索引复制内容。
+- [五阶段计划与配套文档总表](../../../stage_plans/active/stage-07/README.md)；[Stage 7 全局计划](../../../stage_plans/active/stage-07/plan.md)。
+- [旧路径到当前位置映射](legacy-paths.md)：保留至少一个整理周期。
+- 原始 out、ETL、claim/seal、登记组、失败窗口与封包内部路径保持原位；本次只移动 docs 中附件，原始字节不变。
+- 历史报告的日期、结论、绝对路径与源码身份保留；历史“下一步”不覆盖当前状态和授权。

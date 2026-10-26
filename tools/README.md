@@ -165,7 +165,7 @@ PD 测量的当前无编译插桩入口是 [formal_baseline.py](../tests/pd/form
 `verification/playback_performance/baseline_method.py` 的插桩测量入口保留用于历史复现，其身份与 child 运行函数
 仍被新入口依赖，不能作为过时工具删除。根级功能入口为 `measure_playback_method.py`；阶段命名旧入口通过上表提供迁移说明，不保留同名文件。
 一次性本机构建脚本与临时产物不提升为仓库工具；归档、删除明细见
-[PD 复测与归档报告](../docs/stage_reports/stages/stage-07/pd/2026-10-17-pd0-supplemental-retests-and-archive.md)。
+[PD 复测与归档报告](../docs/stage_reports/stages/stage-07/04-pd/pd-0/2026-10-17-pd0-supplemental-retests-and-archive.md)。
 
 后续目录变更需同步检查以下位置：
 

@@ -33,4 +33,4 @@ Reference Host 的二进制由安装 consumer gate 生成。检查器的固定 C
 现行实体谱面应依照 [Chart v5 作者指南](../guides/CHART_V5_AUTHORING.md)，将几何、
 动画和反馈定义在内容中，显式选择候选 entry；输入和判定能力单独准备与验证。
 B5 当前进展见 [CURRENT_STATUS](../CURRENT_STATUS.md) 与
-[B5 工作记录](../stage_reports/stages/stage-07/rpa/2026-10-13-worker-deployment.md)。
+[B5 工作记录](../stage_reports/stages/stage-07/03-rpa-legacy/deployment/2026-10-13-worker-deployment.md)。

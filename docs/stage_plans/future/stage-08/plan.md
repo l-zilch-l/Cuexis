@@ -27,18 +27,18 @@ Stage 7-RPA完整退出（实时/设备及原S7A-9矩阵/预算/关闭）
 而不是首次开始设计 Chart v5。Stage 7B+当前计划范围完成并接受是本阶段启动前置；
 能力是否默认发行，另由本阶段的发行矩阵明确决定。
 
-[诊断独立前置](../../active/stage-07/plan-diagnostic-formalization.md)承接正式命名迁移，
-[Stage 7-RPA子阶段](../../active/stage-07/plan-rpa.md)承接实时架构与实体设备/实时同步验收，
+[诊断独立前置](../../active/stage-07/02-diagnostics/plan.md)承接正式命名迁移，
+[Stage 7-RPA子阶段](../../active/stage-07/03-rpa-legacy/plan.md)承接实时架构与实体设备/实时同步验收，
 本阶段验证发行兼容。实施顺序为诊断独立前置 → RPA → Stage 7B+ → Stage 8；
 规划登记不表示这些前置已完成。
 
 ### PD 集成基线的发行准入
 
-发行基线若包含 [Stage 7-PD](../../active/stage-07/plan-presentation-decoupling.md)，须消费其
+发行基线若包含 [Stage 7-PD](../../active/stage-07/04-pd/plan.md)，须消费其
 已接受的宿主/反馈寿命合同、实际 SDK 版本、安装消费者矩阵与新 SHA 预算交接；未接受的
 proposal 不能作为发行行为。Graph/Packed 两入口须恢复同一能力/FactBinding 支持表，未知必需
 phase/outcome/聚合稳定拒绝，旧绑定和 presentation-only identity 回归保持一致。
-见[PD 细则 §12.1、§12.7](../../active/stage-07/presentation-decoupling-design.md)。
+见[PD 细则 §12.1、§12.7](../../active/stage-07/04-pd/design.md)。
 该要求约束实际采用的实现，不要求提前实现 Stage 9–14 能力，也不改变 RPA → 7B+ → Stage 8 顺序。
 
 ## 1. 阶段目标

@@ -50,7 +50,7 @@ dense ordinal 作为首版语义会混淆容器位置与逻辑因果；不选。
 若实施中发现本合同的真实矛盾，先给出最小反例与受影响条款并修订合同，不能静默改变语义。
 S7A-5/6/7/9 的范围和 Stage 6 owner-only 版本门禁仍按各自计划执行。
 
-同日后续[歧义复核](../stage_reports/stages/stage-07/s7a/verification/2026-10-05-s7a-3-4-ambiguity-audit.md)
+同日后续[歧义复核](../stage_reports/stages/stage-07/01-a/s7a-3-4/2026-10-05-s7a-3-4-ambiguity-audit.md)
 补齐 partial advance、matcher/observer、真实 CXT、identity 与验收命令；选择仍由现行补充合同拥有。
 
 ## 对应权威
@@ -60,4 +60,4 @@ S7A-5/6/7/9 的范围和 Stage 6 owner-only 版本门禁仍按各自计划执行
 - [Author profile](../formats/gameplay-v2-author-profile.md)：本轮源字段和 lowering。
 - [Capsule](../formats/GAMEPLAY_CAPSULE_V2_FORMAT.md) §12：revision 3 物理字段。
 - [Typed supplement](../api/gameplay-v2-execution-types.md)：表示、所有权、错误与生命周期。
-- [历史实施交接](../archive/stage-07-planning/s7a-3-4-implementation-handoff.md)：原3/4顺序与验收门禁；当前排期归 [Stage 7计划](../stage_plans/active/stage-07/plan.md)。
+- [历史实施交接](../archive/stage-07-planning/01-a/s7a-3-4-implementation-handoff.md)：原3/4顺序与验收门禁；当前排期归 [Stage 7计划](../stage_plans/active/stage-07/plan.md)。

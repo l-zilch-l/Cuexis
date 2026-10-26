@@ -88,7 +88,7 @@ Chart Format Foundation -> Foundation Hardening -> Stage 6 v5-first candidate pa
 Chart v5/CXT v2/Packed Chart formal release -> Stage 9 Presentation/Chart v6 -> Stage 10 Studio
 -> Stage 11 Chart v7 geometry -> Stage 12 scale/platform -> Stage 13 Chart v8 advanced presentation
 -> Stage 14 稳定 ABI。
-诊断码正式化N0–N3归[独立前置工作包](stage_plans/active/stage-07/plan-diagnostic-formalization.md)，
+诊断码正式化N0–N3归[独立前置工作包](stage_plans/active/stage-07/02-diagnostics/plan.md)，
 退出先于RPA新架构原型及A4–A6；Stage 7-RPA承担实时架构、实体设备/同步及原S7A-9矩阵、预算和关闭。
 RPA完成并接受后实施7B+，7B+当前计划范围完成并接受后进入Stage 8。
 Stage 8发行矩阵另行决定能力的默认选入。

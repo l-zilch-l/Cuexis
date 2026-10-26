@@ -7,7 +7,7 @@
 
 依据：[Gameplay V2 Spec](GAMEPLAY_V2_SPEC.md) §3.8–§3.12、§5、§8，
 [Foundation Packed](PACKED_CHART_FORMAT.md) 与
-[决策登记](../stage_reports/stages/stage-07/s7a/decisions/2026-10-03-s7a-3-decision-register.md)。
+[决策登记](../stage_reports/stages/stage-07/01-a/s7a-3/2026-10-03-s7a-3-decision-register.md)。
 本文唯一拥有 Capsule 的物理字段；时间消费与仲裁语义仍由 Gameplay V2 Spec 拥有。
 
 2026-10-05 新增 §12 的 execution candidate revision 3；§§1–11 的 revision 2 合同与
@@ -465,7 +465,7 @@ Reader 的 DecodeContext/coordinator/identity 声明与保存的约束逐字段�
 ## 13. Capsule 物理 revision 4 与 accepted hash work
 
 决策日期：2026-10-22。Owner 已接受
-[B0 裁决](../stage_reports/stages/stage-07/pd/2026-10-22-gameplay-admission-b0-budget-ruling.md)
+[B0 裁决](../stage_reports/stages/stage-07/04-pd/pd-5/admission/stage-b/2026-10-22-gameplay-admission-b0-budget-ruling.md)
 的 envelope、完整 Ix 口径、拒绝顺序、内部 profile、字段差异与兼容矩阵。
 实现状态：阶段 B 进行中；没有 revision 4 验收成功声明。阶段 C、正式性能测量、主树合并与
 SDK/公共 API 升级未授权。

@@ -14,7 +14,7 @@ RPA T2及AD06-G1/Q1/K1已裁定、未实施；剩余控制/Fact/版本合同现�
 [ADR 0045](../adr/0045-gameplay-v2-execution-profile.md) 拥有；字段所有权与接口由
 [typed 补充](../api/gameplay-v2-execution-types.md) 拥有；实施顺序由
 [Stage 7计划](../stage_plans/active/stage-07/plan.md) 拥有；原3/4执行卡见
-[历史交接](../archive/stage-07-planning/s7a-3-4-implementation-handoff.md)。
+[历史交接](../archive/stage-07-planning/01-a/s7a-3-4-implementation-handoff.md)。
 本文件补齐首次运行消费的空白，不重开 T4/K4、19 条拒绝面或已有第 1–7 轮裁定。
 引用“待首次消费冻结”的历史文字时，本文件在明确覆盖的字段上给出本轮选择；不冒充旧裁定。
 
@@ -660,7 +660,7 @@ arm/deadline 包含性 missing/pending 是 gate_incomplete，prepare 原子失�
 编译状态数测量 missing。后者保留 measured/unknown/证得下界状态，不当作超限，也不写通过。
 若实际测得值或下界超过显式 acceptedThreshold，budget_exceeded；没有接受阈值不编造一个。
 状态/稳态性能数值整体证明仍归 S7A-9，S7A-3/4 仅允许按
-[交接计划](../archive/stage-07-planning/s7a-3-4-implementation-handoff.md) 的受限功能验收关闭。
+[交接计划](../archive/stage-07-planning/01-a/s7a-3-4-implementation-handoff.md) 的受限功能验收关闭。
 这不解除 Stage 7A 整阶段关闭门禁，也不为 future stage 创建默认可执行承诺。
 
 ## S7A-5/6 首用 profile（2026-10-06）

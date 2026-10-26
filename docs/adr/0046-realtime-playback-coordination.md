@@ -7,8 +7,8 @@
 ## 背景和授权
 
 实际 Player 存在随运行失速与时间来源问题。owner 要求维护性优先，再考虑性能与扩展性，
-本轮只做设计与文档。最初比较见 [10-09审查](../stage_reports/stages/stage-07/rpa/2026-10-09-realtime-architecture-review.md)
-及 [五方向比较](../stage_reports/stages/stage-07/rpa/2026-10-11-design-and-entry-review.md)。
+本轮只做设计与文档。最初比较见 [10-09审查](../stage_reports/stages/stage-07/03-rpa-legacy/design/2026-10-09-realtime-architecture-review.md)
+及 [五方向比较](../stage_reports/stages/stage-07/03-rpa-legacy/design/2026-10-11-design-and-entry-review.md)。
 owner 已逐项选择 capture-time、T2/O1/I1/C1/L1、G1/Q1/K1、offset 各用一次与 R2；
 随后授权剩余普通设计自行给出合理方案。以下补充决定依据该授权，不表示逐项另获 owner 点选。
 同日子代理复审发现 Resume 最终切段后准备失败、NotApplied 查询后迟到 Apply 两处缺口；
@@ -64,7 +64,7 @@ A1减少半完成Resume的状态与重试分支，代价是这类故障后不能
 ## 合同、实施与后果
 
 字段/语义的唯一落点是 [RPA补充Spec](../formats/rpa-execution-contract.md) 和
-[宿主边界](../api/realtime-host-boundary.md)；批次、测量与验收归 [RPA计划](../stage_plans/active/stage-07/plan-rpa.md)。
+[宿主边界](../api/realtime-host-boundary.md)；批次、测量与验收归 [RPA计划](../stage_plans/active/stage-07/03-rpa-legacy/plan.md)。
 新 execution/Fact token、Recovery rev3 和下一 SDK minor 是实施设计；当前 API 仍是 0.7.5。
 不修改 Chart/CXC/CXT 内容格式，不安装内部 Kernel/Recovery，不引入脚本或第二判定路径。
 

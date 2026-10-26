@@ -57,7 +57,7 @@ Studio 的判定结果必须与 Player 和 external consumer 一致。
 
 ### 作者版本与活动预览版本
 
-采用 PD 基线时遵守[细则 §12.3](../../active/stage-07/presentation-decoupling-design.md)：作者
+采用 PD 基线时遵守[细则 §12.3](../../active/stage-07/04-pd/design.md)：作者
 文档的 Undo/Redo 不使用 Runtime mutation guard 实现。编辑后沿共同 compile/prepare 构建
 带文档 revision/请求身份的候选；编译/prepare 失败不替换旧软件预览。已进入控制的候选，
 只有在所有相关 owner 确认终态未生效且没有其他控制副作用时，才可保证旧组合保持。

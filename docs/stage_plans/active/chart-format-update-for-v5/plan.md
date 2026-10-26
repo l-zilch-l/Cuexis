@@ -18,9 +18,9 @@ SDK 版本遵循 [版本规范](../../../guides/VERSIONING.md)。本文“v5 发
 [Chart v4 格式合同](../../../formats/CHART_V4_FORMAT.md)、[谱面格式审计记录](../../../stage_reports/reviews/stage-verification-2026-09/2026-09-01-findings.md)
 与前置 [Stage 6 计划](../../completed/stage-06/plan.md)。
 
-2026-10-10路线补充：诊断码审计与正式化归[独立前置N0–N3](../stage-07/plan-diagnostic-formalization.md)；
-[Stage 7-RPA子阶段](../stage-07/plan-rpa.md)承接实时架构、实体设备/同步及原S7A-9的矩阵、预算、交接和关闭。
-实施顺序为7A既有成果 → 诊断独立前置N3退出 → RPA完整退出 → [Stage 7B+](../stage-07/plan-b.md)实施与验收
+2026-10-10路线补充：诊断码审计与正式化归[独立前置N0–N3](../stage-07/02-diagnostics/plan.md)；
+[Stage 7-RPA子阶段](../stage-07/03-rpa-legacy/plan.md)承接实时架构、实体设备/同步及原S7A-9的矩阵、预算、交接和关闭。
+实施顺序为7A既有成果 → 诊断独立前置N3退出 → RPA完整退出 → [Stage 7B+](../stage-07/06-b/plan.md)实施与验收
 → Stage 8发行收敛。本跨阶段工作包不复制分册计划，也不因归属调整接受生产预算。
 
 ## 计划定位

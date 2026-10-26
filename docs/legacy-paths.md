@@ -8,7 +8,7 @@
 
 ## 仓库根目录讨论稿
 
-- 仓库根目录`rpa-target-architecture-draft.md` -> [RPA v0.5历史初稿](archive/stage-07-planning/2026-10-10-rpa-target-architecture-draft.md)（2026-10-10归档）。按owner要求移出项目根目录，不保留旧路径文件；旧RPA计划正文见[2026-10-11归档](archive/stage-07-planning/2026-10-11-rpa-plan.md)，当前工作归[性能整改](stage_plans/active/stage-07/plan-rpa-performance-remediation.md)与[R1实施计划](stage_plans/active/stage-07/rpa-r1-implementation.md)。
+- 仓库根目录`rpa-target-architecture-draft.md` -> [RPA v0.5历史初稿](archive/stage-07-planning/03-rpa-legacy/2026-10-10-rpa-target-architecture-draft.md)（2026-10-10归档）。按owner要求移出项目根目录，不保留旧路径文件；旧RPA计划正文见[2026-10-11归档](archive/stage-07-planning/03-rpa-legacy/2026-10-11-rpa-plan.md)，当前工作归[性能整改](stage_plans/active/stage-07/05-rpa-new/plan.md)与[R1实施计划](stage_plans/active/stage-07/05-rpa-new/r1/plan.md)。
 
 ## 原docs根目录文档
 
