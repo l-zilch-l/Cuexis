@@ -8,54 +8,16 @@
 
 ## 当前任务
 
-**2026-10-26 R2 退出报告已编制，状态为待评审。实现/正确性、布局、回滚及受控配置的四规模局部收益已有证据；原独立构建 N1 inconclusive、R0/Q4 重锚和默认配置推广缺口仍保留，完整退出条件尚未闭合。用户本次授权为报告与证据整理，未记录为 R2 退出接受或 R4 授权。见[退出评审报告](stage_reports/stages/stage-07/05-rpa-new/r2/2026-10-26-r2-exit-report.md)及其 SHA-256 清单、轻量证据包。**
+- **R2 退出评审**：第三候选的实现、适用正确性验证及受控配置下四规模局部收益已有证据，退出报告与证据包已编制。
+  原独立构建 N1 inconclusive、R0/Q4 重锚及默认配置推广缺口仍需处置，完整退出条件尚未闭合。
+  见[退出评审报告](stage_reports/stages/stage-07/05-rpa-new/r2/2026-10-26-r2-exit-report.md)。
+- **R3 实施准备**：接手材料已准备，产品实施尚未开始。下一步从 Seek 相位/复制归因、重复准备审计及小规模早期 cut 恢复链验证起步；
+  各子项依赖与停止条件见[整改计划 §4、§5、§8](stage_plans/active/stage-07/05-rpa-new/plan.md)。
+- **PD-5 定案与 Stage 7-PD 退出裁定**：判定报告已提出“未通过但定案”及退出清单，尚待 owner 接受；读取与 Seek 整改由 RPA 线承接，
+  分域内存及正式/设备/生产验收缺口仍按下文跟踪。见[判定报告](stage_reports/stages/stage-07/04-pd/pd-5/exit/2026-10-24-pd5-verdict-and-stage-7-pd-exit.md)。
 
-**2026-10-26 R2 公开 N1 续做：三进程同会话公开路径消融均改善约 9.0%–9.3%；公开外层目标码在仅归一化匿名编译单元标记后相同。新登记的共用未变目标文件 B/E 六进程窗口完成，本机 HighQoS / 共用未变目标文件配置的局部收益及不退化门通过，提交 R2 退出评审核对。原独立构建 N1 inconclusive 与短块停止均保留，未自动记 R2 owner 接受或 R4 通过。见[公开 N1 与共用目标文件对照](stage_reports/stages/stage-07/05-rpa-new/r2/2026-10-26-r2-public-n1-and-common-objects.md)。**
-
-**2026-10-26 R2 HighQoS 对照：用户补充旧 B 测量期间运行 IDEA 服务，并要求再次确认后继续 R2。默认策略 B-only 再次出现 3722→3040 MHz 状态变化；单进程 HighQoS 控制后新登记一次同一第三候选 B/E 窗口。六进程/192 块有效、四规模噪声门通过，N8/N64/N256 局部收益确认，主点 N64 改善 20.19%（E/B 95% 区间 0.7814–0.8151）；N1 区间仍为 inconclusive。同进程内部物化器消融约降低 4.84% 成本，不能替代公开 N1 接受。R2/R4 未退出，下一步只聚焦公开 N1 差异；见 [HighQoS 局部收益与 N1 消融](stage_reports/stages/stage-07/05-rpa-new/r2/2026-10-26-r2-high-qos-local-benefit.md)。旧样本/窗口和整机电源配置保持。**
-
-**2026-10-26 R2 B-only 状态诊断：一次独立诊断复现 B 读取变慢与目标核系统报告频率 3722→3040 MHz、性能计数约 97%→80% 同时出现。用户显式要求重跑后，新一次 N1/N64 块内范围为 11.23%/3.85%，读取区间报告频率保持 3722 MHz；两次均独立登记，没有修改电源/进程策略、替换旧样本或改变原六进程结论。具体触发原因和跨进程稳定性仍未闭合，R2/R4 未退出。见 [B 基线状态诊断](stage_reports/stages/stage-07/05-rpa-new/r2/2026-10-26-r2-baseline-state-diagnostics.md)。**
-
-**2026-10-26 R2 续接：第三候选固定 B/E 六进程诊断完成；N1/N8/N64/N256 超过 15% 噪声门，R2 整体收益门仍未完成，R2/R4 未退出。主树九个 R2 源码哈希相符；增量五路径/累计九路径精确回滚、实际布局、Release 对象码及四规模身份对照完成，五配置 46 项适用 R2/架构检查通过。六进程首次退出成功、192 块有效，独立复算一致；没有追加样本或第四机制。详见 [第三候选续接报告](stage_reports/stages/stage-07/05-rpa-new/r2/2026-10-26-r2-direct-result-continuation.md)。本次继续指令覆盖这一轮局部诊断，未扩展至 R3/R4、40k、ETW、正式或设备接受。**
-
-**2026-10-26 整合批（历史节点）：两树整合后的唯一实施入口为 `D:/Cuexis-worktree`；`D:/Cuexis-pd5-40k-admission` 保留为只读历史证据树。R2 第三候选 direct borrowed Result 的源码已原样迁入；该候选于 2026-10-25 23:03:20 +08:00 被要求停止（停止快照于 23:03:54 生成），本次五配置构建与适用正确性回归完成，消费者采用本次未受最终修复影响的原通过证据及库哈希核对，详见整合记录；整合批结束时尚无第三候选性能结论。见[整合记录](stage_reports/stages/stage-07/90-shared/worktree-consolidation/2026-10-26-worktree-consolidation.md)。该整合批仅授权本地整合、构建测试及桌面接手更新，不授权新性能诊断、ETW、40k、pilot、正式窗口或新候选；R2/R4 未退出。**
-
-**2026-10-25：R2 继续实施单行 typed visitor 第二候选；主代理亲自核对增量、实测 160 B 显式逻辑存储并运行聚焦正确性对照，五构建 47 项检查及 9 项消费者门通过；固定局部诊断四规模均 inconclusive 且有噪声限定，收益未确认。见 [R2 单行续做](stage_reports/stages/stage-07/05-rpa-new/r2/2026-10-25-r2-single-row-continuation.md)。首版失败及其窗口保留，R2/R4 未退出。**
-
-**2026-10-25：Stage 7-RPA R2 首版借用行候选已实现，五构建正确性回归、适用 staged consumers 和九路径精确回滚验证通过；局部诊断显示单对象退化约 25.3%、N64 收益区间跨 1，当前候选未接受、R2 收益门仍未完成。结果与范围见 [R2 实施记录](stage_reports/stages/stage-07/05-rpa-new/r2/2026-10-25-r2-borrowed-presentation.md)。R4 正式接受及 RPA/PD/Stage 7 关闭仍独立。**
-
-**2026-10-25：Stage 7-RPA R1 已退出。依据用户本次明确授权，完成首错修复后最终构建三项有限 headless pilot（3/3 首次 exit=0、Close + join 659 us）及退出门核验；当前五构建回归、适用消费者与独立补丁/回滚证据见[本地记录 §11](stage_reports/stages/stage-07/05-rpa-new/r1/2026-10-25-r1-continuation.md#11-当前修复构建有限-pilot-与-r1-退出)。R1 当时五条既有 PD 格式失败的历史限定保留（本次整合已修复并补齐格式门），noIndependentContract 不算容量通过，R0 残余保持归属。RPA/PD/设备/生产接受及整个 Stage 7 未因此关闭，R2 当前进度见上条；R3/R4 未获授权，40k/ETW/正式窗口仍不在授权范围。PD-5 当前状态见下段，历史报告中的树身份与授权时点保留。**
-
-**ETW 工具当前状态**：[F1 工具包验收记录](stage_reports/stages/stage-07/04-pd/pd-5/etw-tools/2026-10-23-f1-tool-package-and-acceptance-preparation.md)保留 r2 解析失败、r3 死亡证明失败与 r4 一次管理员运行三项全过的各自身份；r2/r3/r4 均为已运行包，不重跑、不改名。最小生命周期验收与 r4 全绿只证明工具合同，不认证产品性能或内存；Power 原 128 MiB 阈值中断仍为失败。正式性能测量仍为无 ETW。**
-
-**Stage 7-PD / PD-0–4 内部实施、适用本地门禁和独立复审完成，SDK 0.9.0 已获接受。PD-5 原 40k R4 功能通过，完整内存仍未测量（原包络超限改记为观察器量程产物），正常分配器正式性能未通过；F1 read 超线、C1 撤回、C2 未达自检，R0-a/b 未产生可提名候选，读取项按原判据记为已量化超界、不视为通过。冻结 PD 性能基线仍为 F1；当前整合树另含未接受的 RPA R2 第三候选，不套用旧性能身份。B0 静态内存账本已获接受，B1 域归因工具通过静态门但未采数，B2/B3 未授权。[PD-5 判定报告](stage_reports/stages/stage-07/04-pd/pd-5/exit/2026-10-24-pd5-verdict-and-stage-7-pd-exit.md)提出「未通过但定案」及 Stage 7-PD 退出清单，二者尚待 owner 批准；Stage 7-PD、RPA、生产与整个 Stage 7 均未关闭。读取与 40k Seek 优化由 RPA 性能整改线承接，原阈值及生命周期门不改，旧窗口 3 停止、公开停止接口暂停。**
-
-读取侧归因与 40k 分域内存观测的候选路径见[PD-5 读取候选与分域内存观测实施方案](stage_plans/active/stage-07/04-pd/pd-5/pd5-read-candidate-and-memory-domains-plan.md)；其 §2.1（R0-a）与 §2.2（R0-b）已执行并判定：读取候选不提名（证据：[静态指令归因](stage_reports/stages/stage-07/04-pd/pd-5/read-attribution/r0-a/2026-10-23-read-regression-static-attribution.md)、[有界归因实验](stage_reports/stages/stage-07/04-pd/pd-5/read-attribution/r0-b/2026-10-23-read-regression-bounded-attribution.md)），owner 已依预授权规则把读取项记为已量化超界、不视为通过；§3（分域内存）的 [B0 静态上限账本](stage_reports/stages/stage-07/04-pd/pd-5/memory-attribution/2026-10-24-b0-memory-cap-ledger.md) 已由 owner 接受（G1 逐 profile `content_entities`、G4 `state.*` 13,312 B/实体、G3 逐域 age 上限、G7 逐内容参考包络 + fixture/product 分账），[B1 域归因工具](stage_reports/stages/stage-07/04-pd/pd-5/memory-attribution/2026-10-24-b1-domain-attribution-tooling.md) 已完成并通过静态门（未运行），B2 64/2048 与 B3 40k 采数、规模上限口径（caps 未登记 64/2048/40k 规模）待 owner 授权与裁定，内存项仍未测量。
-
-以下性能结论属于冻结的 PD-0 实施输入，不代表 PD-4 当前源码的正式性能验收。该固定环境与干净重建后的完整注册组满足原定 15% 门槛，owner 最大进程级波动 3.89%，宿主均值最大波动 11.11%。测量前修复并验证了 MSVC/Ninja 编码不一致造成的头文件依赖丢失；历史慢态根因仍未确定，旧失败组和源码绑定失败组均保留。该结论限于已登记的有限 testOnly profile，不接受生产预算或关闭 Stage 7。
-
-方案记录：[PD-0 测量波动方案实施](stage_reports/stages/stage-07/04-pd/pd-0/2026-10-17-pd0-measurement-variance-resolution.md)。
-最新证据：[受控环境、构建绑定与 PD-0 退出](stage_reports/stages/stage-07/04-pd/pd-0/2026-10-18-pd0-controlled-environment-and-build-binding.md)。
-PD-1 证据：[Judgement 发布桥、读取失效与包边界](stage_reports/stages/stage-07/04-pd/pd-1/2026-10-18-pd1-publication-bridge.md)。
-PD-2 证据：[prepare 绑定索引、候选投影与等价回归](stage_reports/stages/stage-07/04-pd/pd-2/2026-10-18-pd2-projection-adapter.md)。
-PD-3-a 证据：[Runtime/World 事务、派生状态与安装后失败](stage_reports/stages/stage-07/04-pd/pd-3/a/2026-10-18-pd3a-software-transaction.md)。
-PD-3-b 证据：[提交修订、中性读取与唯一 Snapshot 物化](stage_reports/stages/stage-07/04-pd/pd-3/b/2026-10-19-pd3b-state-read-and-materialization.md)。
-PD-3-c 实施与版本决定：[宿主细化与公共来源查询/版本决策](stage_reports/stages/stage-07/04-pd/pd-3/c/2026-10-19-pd3c-contract-and-version-decision.md)。
-PD-4 的 SDK 0.9.0、消费注册/交付、真实 CPU/attempt 回收、有界观察与 NoRetainedFrame 内部实施及适用本地门禁完成；见[实施与验证](stage_reports/stages/stage-07/04-pd/pd-4/2026-10-19-pd4-delivery-retirement-and-observation.md)。[三项 owner 决策](stage_reports/stages/stage-07/04-pd/pd-4/2026-10-19-pd4-readiness-and-owner-decisions.md)已接受；不代表物理设备、正式性能或发行接受。
-设备观察：PD-4 Release 独立音乐 1 轮、DFJK 2 轮均退出 0；DFJK 首轮实际执行完整 terminal horizon，第二轮 Pause/Reset/Resume 正常。owner 报告控制附近 FPS 约 240→130 后恢复 240，待量化；音乐听感正常，underruns=2 经 owner 说明发生于切换 Codex 打字，不据此判定播放故障。见[PD-4 实体观察](stage_reports/stages/stage-07/04-pd/pd-4/2026-10-19-pd4-physical-music-and-keyboard-observations.md)。[旧版 DFJK 约 17.6 秒 capacity_exceeded/退出 1](stage_reports/stages/stage-07/04-pd/pd-3/c/2026-10-19-pd3c-physical-music-and-keyboard-observations.md)保持失败历史；设备失效/恢复与正式预算门禁仍未完成。
-PD-5 准备：owner 已接受[本机范围、全部阈值和三窗口协议](stage_plans/active/stage-07/04-pd/pd-5/pd5-measurement-proposal.md)；[首批工具/profile](stage_reports/stages/stage-07/04-pd/pd-5/preparation/2026-10-19-pd5-tools-and-profile-preparation.md)具备显式端点 collector、传递构建绑定、CPU/GPU 短流式与完整控制脚本验证。[窗口协议与矩阵扩展](stage_reports/stages/stage-07/04-pd/pd-5/preparation/2026-10-19-pd5-window-and-matrix-preparation.md)已验证 P0 不可变 runner、七种独立 SDK/delivery 短轨迹与内部物化计数，完成稳定音频端点盘点和 Packed 规模工具回绑；[初始就绪检查](stage_reports/stages/stage-07/04-pd/pd-5/preparation/2026-10-19-pd5-measurement-readiness.md)保持原时点证据。P0 已完成一次 12 进程 pilot 和两个各 36 进程的正式窗口；第三窗按 owner 要求暂停，后续转入核查与修复后重新测量。组合 renderer/captures、observer、完整内存、真实音频/输入及正常分配器规模 Seek 延迟仍待补齐，无完整正式接受或生产性能通过结论。
-
-PD-5 Python 测量工具及 profile 已整理到 [tools/verification/playback_performance](../tools/verification/playback_performance/README.md)，测试和 C++ 探针留在 `tests/pd/`；非测试源码、工具与配置已按功能命名并更新引用，见[命名修正与验证](stage_reports/stages/stage-07/04-pd/pd-5/preparation/2026-10-20-performance-tool-functional-naming.md)。测试目录的旧 Python 入口保留兼容；历史证据不改写，后续运行需重新 prepare。
-
-[注册完整性与容量短测修正](stage_reports/stages/stage-07/04-pd/pd-5/preparation/2026-10-20-measurement-preparation-integrity.md)补齐注册外层哈希、跨窗口/pilot 原始文件独立性及完整控制次数拒绝检查，64 实体 low/high 的 Snapshot/Seek/Replay 端到端工具短测通过；40k 功能现已独立核验；正常分配器性能、真实 Player/设备和完整测量就绪仍待验证。
-
-PD-5 40k 准入：[阶段 A](stage_reports/stages/stage-07/04-pd/pd-5/admission/stage-a/2026-10-21-gameplay-admission-stage-a.md)、[B0](stage_reports/stages/stage-07/04-pd/pd-5/admission/stage-b/2026-10-22-gameplay-admission-b0-budget-ruling.md)、[阶段 B](stage_reports/stages/stage-07/04-pd/pd-5/admission/stage-b/2026-10-22-gameplay-admission-stage-b.md)、[R4 entries](stage_reports/stages/stage-07/04-pd/pd-5/admission/stage-b/2026-10-22-gameplay-admission-revision4-entries.md)和[metadata 顺序修复](stage_reports/stages/stage-07/04-pd/pd-5/admission/stage-b/2026-10-22-gameplay-admission-r4-metadata-order.md)保持。历史 advance、Snapshot budget、protected-input 和 CLI discovery 失败各自保留。最新原 40k low/high 的功能与 wire 身份已独立核验，Snapshot 均 90,823,328 bytes；[本批报告](stage_reports/stages/stage-07/04-pd/pd-5/admission/stage-c/2026-10-23-stage-c-independent-acceptance-and-exit-gaps.md)明确全进程内存包络超限、after-close 仍持有测试 owning 值、各域内存/最终释放及正常分配器 Seek 延迟未通过。七项 Packed 物理预算、四项 hash ceilings、deadline 和 1.10/15% 不变；这不是完整 PD-5 接受。该次"全进程内存包络超限"的后续归因见[40k 包络归因](stage_reports/stages/stage-07/04-pd/pd-5/memory-attribution/2026-10-23-40k-memory-envelope-attribution.md)：判定改记为未测量，原因是观测器量程，不是产品超界。
-
-PD-5 执行阻塞跟进：[受控诊断、内核修复与关闭合同交回](stage_reports/stages/stage-07/04-pd/pd-5/lifecycle/2026-10-23-execution-core-diagnostic-and-repair.md)已完成低/中规模内部计时、保语义内核修复、1/64 × low/high 全链路 plumbing 和九组 Release 回归。worker 关闭候选因 Windows DLL 上下文传递及禁止私有导出合同已撤回；[公开操作级停止合同与接口方案](proposals/implementation-input/stage-07/pd5-operation-stop-contract.md)现已暂停，保持未接受、未实施候选，不再作为现有合同内最小修复的必需前置。[现有生命周期最小修复](stage_reports/stages/stage-07/04-pd/pd-5/lifecycle/2026-10-23-minimal-lifecycle-repair.md)已随 57b604d 完成 factory 空 delivery 防护、Player 回调依赖析构顺序修正及有界原 Tail job 的 Close 验证；其后固定 54e8c2a 的原 40k low/high 已实际完成显式 close/reset 和进程退出。旧 40k 关闭阻塞仍未归因，本次成功只证明固定功能 profile，不构成一般生命周期或性能接受。
-
-PD-5 本轮补充：[Gameplay-host 字典/预算核查](stage_reports/stages/stage-07/04-pd/pd-5/admission/stage-a/2026-10-21-gameplay-host-string-budget.md)及[C2 单候选交接](stage_reports/stages/stage-07/04-pd/pd-5/read-candidate/2026-10-21-c2-read-result-candidate.md)。C2 完整 Release CTest 1272 通过、1 跳过、0 失败，12 个固定被测进程完成；主指标及规模重复性未达冻结条件，C2 未合入，历史交回核验身份保留；未新建正式 preparation/registration，旧窗口 3 继续停止。
-
-PD-5 前轮证据：[两窗报告（2026-10-21 更正）](stage_reports/stages/stage-07/04-pd/pd-5/measurement/2026-10-20-pd5-two-window-findings-and-diagnostic-handoff.md)及[有限核查与交接](stage_reports/stages/stage-07/04-pd/pd-5/measurement/2026-10-21-pd5-followup.md)。修复前正式 RPA read_long 两窗超界；前轮 F1/A 的 1/8/64/256 对象长块 read 比值为 1.2368/1.3441/1.3742/1.3967，各诊断区间下界 >1.10。真实 update→ready 另列，不能代替孤立读取；公共 request→ready 的 A 进程波动 49.55%，不可判定。40k Gameplay-host 两种 reuse 均在 Packed 字符串预算处失败，未进入 Snapshot/Seek/Replay；独立原 Packed codec 40k 通过不替代它。唯一 C1 候选按事前标准放弃并撤回，有限尝试不证明成本下限。旧宿主 ACK/present-return 仍分项，enqueue/drain/GPU 未判。五批材料交回核验；旧窗口 3 保持停止，原 1.10/15% 与全部生命周期门禁保留，未作性能偏离接受或正式验收。
+唯一实施入口为 `D:/Cuexis-worktree`；`D:/Cuexis-pd5-40k-admission` 保留为只读历史证据树。
+已完成工作、候选处置和逐轮测试记录见[Stage 7 报告索引](stage_reports/stages/stage-07/README.md)。
 
 ## 阶段状态
 
