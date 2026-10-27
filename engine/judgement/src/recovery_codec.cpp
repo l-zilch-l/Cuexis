@@ -17,17 +17,31 @@ auto failure(std::string_view code) -> core::Error {
         .withContext("severity", "error")
         .withContext("faulted", "false");
 }
-void section(Writer& out, std::uint8_t id, const Writer& payload) {
-    out(id, static_cast<std::uint64_t>(payload.bytes.size()));
-    out.bytes.insert(out.bytes.end(), payload.bytes.begin(), payload.bytes.end());
-}
-auto envelope(const Writer& payload, std::uint8_t kind) -> std::vector<std::byte> {
+auto beginEnvelope(std::uint32_t revision, std::uint8_t kind) -> Writer {
     Writer out;
+    out.revision = revision;
     out.bytes.insert(out.bytes.end(), magic.begin(), magic.end());
-    out(payload.revision, kind, static_cast<std::uint64_t>(payload.bytes.size()),
-        digest(payload.bytes));
-    out.bytes.insert(out.bytes.end(), payload.bytes.begin(), payload.bytes.end());
-    return out.bytes;
+    out(revision, kind, std::uint64_t{0}, std::uint64_t{0});
+    return out;
+}
+void patchInteger(Writer& out, std::size_t offset, std::uint64_t value) noexcept {
+    for (unsigned i = 0; i < 8; ++i)
+        out.bytes[offset + i] = static_cast<std::byte>((value >> (i * 8)) & 255U);
+}
+auto beginSection(Writer& out, std::uint8_t id) -> std::size_t {
+    out(id);
+    const auto lengthAt = out.bytes.size();
+    out(std::uint64_t{0});
+    return lengthAt;
+}
+void endSection(Writer& out, std::size_t lengthAt) noexcept {
+    patchInteger(out, lengthAt, static_cast<std::uint64_t>(out.bytes.size() - lengthAt - 8));
+}
+auto endEnvelope(Writer out) -> std::vector<std::byte> {
+    const auto payload = std::span<const std::byte>{out.bytes}.subspan(29);
+    patchInteger(out, 13, static_cast<std::uint64_t>(payload.size()));
+    patchInteger(out, 21, digest(payload));
+    return std::move(out.bytes);
 }
 struct Envelope final {
     std::span<const std::byte> payload;
@@ -89,15 +103,12 @@ struct Header final {
     std::uint64_t events, facts;
     std::string eventCodecId;
 };
-auto header(const KernelProjection& p, const RecoveryInputs& inputs, std::uint64_t events)
-    -> Writer {
-    static_cast<void>(inputs);
-    Writer h;
-    h.revision = p.rpa ? 3 : 2;
+void writeHeader(Writer& h, const KernelProjection& p, std::uint64_t events) {
+    const auto lengthAt = beginSection(h, 1);
     h(p.judgementIdentity.canonicalBytes().bytes(), p.effectiveFactSemanticRevision,
       std::uint32_t{p.rpa ? 2U : 1U}, events, static_cast<std::uint64_t>(p.facts.size()),
       std::string{p.rpa ? "canonical.discrete.rpa.le.v1" : "canonical.discrete.le.v1"});
-    return h;
+    endSection(h, lengthAt);
 }
 auto readHeader(Reader& r) -> Header {
     auto section = readSection(r, 1);
@@ -125,28 +136,28 @@ auto initial(const RecoveryInputs& inputs)
 }
 } // namespace
 auto encodeReplay(const ReplayArchive& archive) -> core::Result<std::vector<std::byte>> try {
-    auto base = initial(archive.dependencies());
+    auto base = detail::ExecutionKernel::initialProjection(archive);
     if (!base) {
-        return core::unexpected(base.error());
+        return core::unexpected(std::move(base.error()));
     }
-    if ((*base)->query()->projection.judgementIdentity != archive.data().identity) {
+    if ((*base)->projection.judgementIdentity != archive.data().identity) {
         throw Failure{"codec.identity_mismatch"};
     }
-    auto p = (*base)->query();
+    const auto* p = &(*base)->projection;
     for (const auto& r : archive.data().records) {
         if (r.result) {
             if (r.result->faultDiagnostic &&
                 detail::containsLegacyDiagnostic(*r.result->faultDiagnostic))
                 throw Failure{"codec.record_invalid"};
-            p = std::make_shared<const detail::ProjectionStorage>(*r.result);
+            p = r.result.get();
         }
     }
-    Writer out, body;
-    out.revision = body.revision = p->projection.rpa ? 3 : 2;
-    section(out, 1, header(p->projection, archive.dependencies(), archive.data().eventCount));
-    body(archive.data().records);
-    section(out, 2, body);
-    return envelope(out, 1);
+    auto out = beginEnvelope(p->rpa ? 3U : 2U, 1);
+    writeHeader(out, *p, archive.data().eventCount);
+    const auto bodyAt = beginSection(out, 2);
+    out(archive.data().records);
+    endSection(out, bodyAt);
+    return endEnvelope(std::move(out));
 } catch (const detail::wire::Failure& e) {
     return core::unexpected(failure(e.what()));
 } catch (const std::exception&) {
@@ -245,14 +256,13 @@ auto encodeSnapshot(const SnapshotPayload& value) -> core::Result<std::vector<st
     if (value.state().kernel.faultDiagnostic &&
         detail::containsLegacyDiagnostic(*value.state().kernel.faultDiagnostic))
         throw Failure{"codec.record_invalid"};
-    Writer out, body;
-    out.revision = body.revision = value.state().kernel.rpa ? 3 : 2;
-    section(out, 1,
-            header(value.state().kernel, *value.storage_->inputs,
-                   static_cast<std::uint64_t>(value.state().ingress.accepted.size())));
-    body(value.state());
-    section(out, 2, body);
-    return envelope(out, 2);
+    auto out = beginEnvelope(value.state().kernel.rpa ? 3U : 2U, 2);
+    writeHeader(out, value.state().kernel,
+                static_cast<std::uint64_t>(value.state().ingress.accepted.size()));
+    const auto bodyAt = beginSection(out, 2);
+    out(value.state());
+    endSection(out, bodyAt);
+    return endEnvelope(std::move(out));
 } catch (const detail::wire::Failure& e) {
     return core::unexpected(failure(e.what()));
 } catch (const std::exception&) {

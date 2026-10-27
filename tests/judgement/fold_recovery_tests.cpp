@@ -113,7 +113,7 @@ auto canonical(std::int64_t tick, std::uint64_t sequence, std::optional<std::int
 }
 // Independent Fold oracle: consumes a canonical Fact stream, uses explicit fixture constants,
 // and never calls production sorting, reducer, checkedScore or transaction helpers.
-auto oracle(const std::vector<KernelFact>& facts) -> std::array<std::int64_t, 5> {
+auto oracle(const auto& facts) -> std::array<std::int64_t, 5> {
     std::array<std::int64_t, 5> out{};
     for (const auto& fact : facts) {
         if (const auto* f = std::get_if<PhaseOutcomeFact>(&fact)) {
@@ -831,17 +831,23 @@ TEST_CASE("Snapshot rejects lost pending lost activation invalid Fact rank and f
     }
     SECTION("rank") {
         auto dto = saved->state();
-        std::get<PhaseOutcomeFact>(dto.kernel.facts[0]).canonicalOrdinal.phaseRank = 255;
+        dto.kernel.facts.update(0, [](auto& fact) {
+            std::get<PhaseOutcomeFact>(fact).canonicalOrdinal.phaseRank = 255;
+        });
         CHECK_FALSE(detail::ExecutionKernel::restore({dto, inputs}, *inputs));
     }
     SECTION("kind") {
         auto dto = saved->state();
-        std::get<PhaseOutcomeFact>(dto.kernel.facts[0]).canonicalOrdinal.factKind = FactKind::stray;
+        dto.kernel.facts.update(0, [](auto& fact) {
+            std::get<PhaseOutcomeFact>(fact).canonicalOrdinal.factKind = FactKind::stray;
+        });
         CHECK_FALSE(detail::ExecutionKernel::restore({dto, inputs}, *inputs));
     }
     SECTION("grade") {
         auto dto = saved->state();
-        std::get<PhaseOutcomeFact>(dto.kernel.facts[0]).grade = "fake";
+        dto.kernel.facts.update(0, [](auto& fact) {
+            std::get<PhaseOutcomeFact>(fact).grade = "fake";
+        });
         CHECK_FALSE(detail::ExecutionKernel::restore({dto, inputs}, *inputs));
     }
     SECTION("fake fault") {
@@ -893,6 +899,69 @@ TEST_CASE("partial checkpoint resumes remaining source control and preserves ori
     REQUIRE(s.advance(Tick{10}));
     REQUIRE(JudgementSession::evaluateReplay(*s.archive()));
     CHECK(archive.data().records.back().horizon == Tick{20});
+}
+
+TEST_CASE("R3 checkpoint cannot certify an externally mutated archive owner",
+          "[recovery][checkpoint][r3][provenance]") {
+    FoldFixture f;
+    f.tap();
+    auto live = f.session();
+    REQUIRE(live.submitCanonical({canonical(1, 0)}));
+    REQUIRE(live.advance(Tick{10}));
+    auto original = live.archive();
+    REQUIRE(original);
+    auto mutableData = std::make_shared<ReplayData>(original->data());
+    ReplayArchive external{mutableData, std::make_shared<const RecoveryInputs>(f.inputs())};
+    auto checkpoint = JudgementSession::checkpoint(external, Tick{10});
+    REQUIRE(checkpoint);
+    // Valid shape/count/identity, but an admission no longer matches its batch.
+    mutableData->records[0].batch[0] = canonical(2, 0);
+    auto origin = f.session();
+    auto accelerated = f.session();
+    const auto old = accelerated.snapshot();
+    REQUIRE(old);
+    auto rejected = origin.seek(external, Tick{10});
+    REQUIRE_FALSE(rejected);
+    auto checked = accelerated.seek(external, Tick{10}, replayCutAt(external, Tick{10}),
+                                    std::span{&*checkpoint, 1});
+    REQUIRE_FALSE(checked);
+    CHECK(sameRecoveryError(rejected.error(), checked.error()));
+    CHECK(sameSnapshot(old->state(), accelerated.snapshot()->state()));
+}
+
+TEST_CASE("R3 Seek export cannot seal a mutable source through another checkpoint",
+          "[recovery][checkpoint][r3][provenance]") {
+    FoldFixture f;
+    f.tap();
+    auto first = f.session();
+    REQUIRE(first.submitCanonical({canonical(1, 0)}));
+    REQUIRE(first.advance(Tick{10}));
+    auto second = f.session();
+    REQUIRE(second.submitCanonical({canonical(2, 0)}));
+    REQUIRE(second.advance(Tick{10}));
+    const auto a = first.archive();
+    const auto b = second.archive();
+    REQUIRE(a);
+    REQUIRE(b);
+    auto mutableData = std::make_shared<ReplayData>(a->data());
+    ReplayArchive external{mutableData, std::make_shared<const RecoveryInputs>(f.inputs())};
+    auto middle = f.session();
+    REQUIRE(middle.seek(external, Tick{10}));
+    const auto exported = middle.archive();
+    REQUIRE(exported);
+    REQUIRE(exported->anchor() == external.anchor());
+    auto checkpoint = JudgementSession::checkpoint(*exported, Tick{10});
+    REQUIRE(checkpoint);
+    // A different fully valid history, rather than merely an invalid admission.
+    *mutableData = b->data();
+    auto origin = f.session();
+    auto checked = f.session();
+    REQUIRE(origin.seek(*exported, Tick{10}));
+    REQUIRE(checked.seek(*exported, Tick{10}, replayCutAt(*exported, Tick{10}),
+                         std::span{&*checkpoint, 1}));
+    CHECK(sameSnapshot(origin.snapshot()->state(), checked.snapshot()->state()));
+    CHECK(sameKernelResult(second.query()->kernelView(), checked.query()->kernelView()));
+    CHECK_FALSE(sameKernelResult(first.query()->kernelView(), checked.query()->kernelView()));
 }
 TEST_CASE("real body break error grades and timer Miss absence remain distinct",
           "[fold][grade][break]") {

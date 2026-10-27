@@ -235,6 +235,9 @@ class Writer final {
             bytes.push_back(static_cast<std::byte>((v >> (i * 8)) & 255U));
         }
     }
+    void append(std::span<const std::byte> value) {
+        bytes.insert(bytes.end(), value.begin(), value.end());
+    }
 };
 class Reader final {
   public:
@@ -282,6 +285,9 @@ class Reader final {
 };
 template <class T> struct Vector : std::false_type {};
 template <class T, class A> struct Vector<std::vector<T, A>> : std::true_type {
+    using Value = T;
+};
+template <class T, std::size_t N> struct Vector<SharedSequence<T, N>> : std::true_type {
     using Value = T;
 };
 template <class T> struct Optional : std::false_type {};
@@ -337,9 +343,7 @@ template <class T> void put(Writer& a, const T& v) {
             throw Failure{"codec.utf8_invalid"};
         }
         a.integer(static_cast<std::uint64_t>(v.size()), 8);
-        for (const unsigned char c : v) {
-            a.integer(c, 1);
-        }
+        a.append(std::as_bytes(std::span{v.data(), v.size()}));
     } else if constexpr (std::is_same_v<T, Tick> || std::is_same_v<T, TickDelta> ||
                          std::is_same_v<T, IngressSequence>) {
         a(v.value());
@@ -347,8 +351,11 @@ template <class T> void put(Writer& a, const T& v) {
         a(v.tick());
     } else if constexpr (Vector<T>::value) {
         a.integer(static_cast<std::uint64_t>(v.size()), 8);
-        for (const auto& x : v) {
-            a(x);
+        if constexpr (std::is_same_v<typename Vector<T>::Value, std::byte>) {
+            a.append(v);
+        } else {
+            for (const auto& x : v)
+                a(x);
         }
     } else if constexpr (Optional<T>::value || Shared<T>::value) {
         a(static_cast<bool>(v));

@@ -57,3 +57,16 @@
 | [R2 HighQoS 局部收益与 N1 同进程消融](r2/2026-10-26-r2-high-qos-local-benefit.md) | `D:/Cuexis-worktree/out/r2-noise-confirm-20261026T065945Z/`、`out/r2-qos-20261026/`、`out/r2-qos-window-20261026/`、`out/r2-n1-ablation-20261026/`（均位于唯一主树） |
 | [R2 公开 N1 归因与共用目标文件对照](r2/2026-10-26-r2-public-n1-and-common-objects.md) | `D:/Cuexis-worktree/out/r2-n1-public-ablation-20261026/`（短块停止保留）、`out/r2-n1-public-ablation-v2-20261026/`、`out/r2-common-objects-20261026/`（均位于主树） |
 | [R2 退出评审报告与证据汇总](r2/2026-10-26-r2-exit-report.md) | [归档清单](r2/2026-10-26-r2-exit-evidence.json)、[轻量证据包](r2/2026-10-26-r2-exit-evidence.zip)；整理/保全记录 `D:/Cuexis-worktree/out/r2-exit-report-20261026/`；原源/库/二进制及历史树原位保留 |
+| [R2 技术收尾复核与退出范围](r2/2026-10-26-r2-technical-closure-review.md) | [审计清单](r2/2026-10-26-r2-technical-closure-audit.json)、[审计轻量包](r2/2026-10-26-r2-technical-closure-audit.zip)；`D:/Cuexis-worktree/out/r2-closure-audit-20261026/`；历史新重锚原始材料 `D:/Cuexis-pd5-40k-admission/out/rpa-r2-20261025/diagnostic/` |
+| [R2 owner 退出接受](r2/2026-10-26-r2-technical-closure-review.md#4-owner-退出接受2026-10-26) | [退出接受 JSON](r2/2026-10-26-r2-owner-exit-acceptance.json)；`D:/Cuexis-worktree/out/r2-owner-exit-20261026/`；原测量/审计归档不变 |
+
+## r3
+
+| 来源报告 | 原始证据引用 |
+| --- | --- |
+| [R3 首次身份与体积归因](r3/2026-10-27-r3-cold-identity-attribution.md) | `D:/Cuexis-redesign/out/redesign-cold-20261027/`（分段及 reserve 诊断消融）、`out/redesign-cold-records-20261027/`（固定 requirements 的记录数对照）；两组独立登记、源码、raw logs、结果，产品源码不变 |
+| [R3 分页与自然锚点重构](r3/2026-10-27-r3-redesign.md) | `D:/Cuexis-redesign/out/redesign-20261027/`（起点快照及首轮对照）、`out/redesign-continue-20261027/`（回归及首次诊断）、`out/redesign-codec-20261027/`（单缓冲编码后独立诊断）、`out/redesign-final-20261027/`（最终源码和固定诊断）；旧登记不覆盖 |
+| [R3a 恢复闭包与准备去重核验](r3/2026-10-27-r3a-recovery-and-prepare.md) | `D:/Cuexis-worktree/out/rpa-r3-20261026/`；`entry*`、red/green logs、`cost-registration.json`/`cost-result.json`、`final-*`、`symbol-audit.json`、`transcript-matched.txt`、`r3a-rollback-verification.json`；独立构建以各日志登记为准 |
+| [R3b 可信前缀与成本核验](r3/2026-10-27-r3b-certified-prefix-and-cost.md) | `D:/Cuexis-worktree/out/rpa-r3-20261026/`；`r3b-entry*`、`r3b-final-*`、`r3b-latest-targeted.log`、`r3b-wrapper-debug.log`、`r3b-cert-failure-raw.log`、`r3b-profile-*`、`r3b-rollback-verification.json` |
+| [R3 空推进 reserve 限定尝试](r3/2026-10-27-r3-empty-reserve-attempt.md) | `D:/Cuexis-worktree/out/rpa-r3-empty-reserve-20261027/`；`entry.json`、源副本、设计、构建/回归日志、`registration.json`、`baseline/candidate-raw.log`、`result.json`、`analysis.json` |
+| [R3 高 requirements 耗时归因](r3/2026-10-27-r3-high-requirements-attribution.md) | `D:/Cuexis-worktree/out/rpa-r3-attribution-20261027/`；入口源哈希、临时诊断 translation unit/header、普通/诊断/分配观察进程登记与 raw logs、`analysis.json`、`refine/`、MAP、`binding.json` |

@@ -2,8 +2,6 @@
 
 #include <cuexis/playback/playback_session.hpp>
 
-#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
-#endif
 #include "playback_candidate_internal.hpp"
 #include "playback_source_state.hpp"
 #include "presentation_internal.hpp"
@@ -16,6 +14,7 @@
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
 #include "gameplay_internal.hpp"
 #include "presentation_projection.hpp"
+#include "replay_identity.hpp"
 #include <cuexis/judgement/execution_scheduler.hpp>
 #endif
 
@@ -2122,13 +2121,13 @@ auto PlaybackSession::seekExecutionStep(const StepRequest& request, const Contro
                                         const std::string& domain) -> core::Result<void> try {
     if (auto valid = validateExecutionControlBinding(request); !valid)
         return valid;
-    auto bytes = archive.toBytes();
-    if (!bytes)
-        return core::unexpected(bytes.error());
+    auto archiveIdentity = detail::archiveIdentity(archive);
+    if (!archiveIdentity)
+        return core::unexpected(archiveIdentity.error());
     if (*state_->acceptedHostControl != proof.request || proof.request.kind != ControlKind::seek ||
         request.key.phase != StepPhase::softwareCommit || !request.target.nextContext ||
         !state_->hostFence || !controlReadyForCommit(proof) ||
-        request.target.archiveIdentity != PreparedSemanticIdentity{core::detail::sha256(*bytes)} ||
+        request.target.archiveIdentity != PreparedSemanticIdentity{*archiveIdentity} ||
         request.target.seekHorizon != horizon.value ||
         request.target.seekCompleteRecords != cut.completeRecords ||
         request.target.seekPartialHorizon !=
@@ -4217,30 +4216,15 @@ auto PlaybackSession::seekGameplay(const GameplayReplay& a, GameplayTick h,
     const auto* archive = detail::GameplayAccess::replay(a);
     if (!archive || !state_->gameplay)
         return core::unexpected(gameplayError("Replay or active Gameplay absent"));
-    // Seek constructs a fresh kernel with the current dependencies before replacing active state.
+    // Reuse the active run's validated identity and construct one independent Seek candidate.
 #if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
     auto s2 = internal::execution_diagnostics::rpa::SeekScope{
         internal::execution_diagnostics::rpa::SeekPhase::s2CandidatePrep};
 #endif
-    auto candidate = makeGameplaySession(state_->gameplayContent);
 #if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
     {
         using Phase = internal::execution_diagnostics::rpa::SeekPhase;
         using Work = internal::execution_diagnostics::rpa::SeekWork;
-        internal::execution_diagnostics::rpa::seekAdd(Phase::s2CandidatePrep,
-                                                      &Work::candidateCalls);
-        internal::execution_diagnostics::rpa::seekSet(Phase::s2CandidatePrep,
-                                                      &Work::validCandidates, candidate ? 1 : 0);
-        internal::execution_diagnostics::rpa::seekSet(
-            Phase::s2CandidatePrep, &Work::discardedCandidates, candidate ? 0 : 1);
-        // One fresh JudgementSession borrows the prepared content; the content is not copied.
-        internal::execution_diagnostics::rpa::seekSet(Phase::s2CandidatePrep,
-                                                      &Work::preparedHandles, candidate ? 1 : 0);
-        // configure() copies the configuration object once. The number of scalar members is not
-        // exposed by the public configuration type, so configValues keeps its not-available zero
-        // rather than inventing a field count.
-        internal::execution_diagnostics::rpa::seekSet(Phase::s2CandidatePrep, &Work::configCopies,
-                                                      1);
         const auto* content = detail::GameplayAccess::content(state_->gameplayContent);
         if (content != nullptr) {
             const auto& prepared = content->capsule.gameplay;
@@ -4269,8 +4253,6 @@ auto PlaybackSession::seekGameplay(const GameplayReplay& a, GameplayTick h,
         }
     }
 #endif
-    if (!candidate)
-        return core::unexpected(detail::projectGameplayError(std::move(candidate.error())));
     std::vector<judgement::ReplayCheckpoint> certificates;
     certificates.reserve(checkpoints.size());
     for (const auto& c : checkpoints) {
@@ -4298,10 +4280,24 @@ auto PlaybackSession::seekGameplay(const GameplayReplay& a, GameplayTick h,
         &internal::execution_diagnostics::rpa::SeekWork::actualRecords,
         static_cast<std::uint64_t>(cut.completeRecords));
 #endif
-    if (auto seek =
-            candidate->seek(archive->archive, judgement::Tick{h.value}, internalCut, certificates);
-        !seek)
-        return core::unexpected(detail::projectGameplayError(std::move(seek.error())));
+    auto candidate = state_->gameplay->forkForSeek(archive->archive, judgement::Tick{h.value},
+                                                   internalCut, certificates);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    using CandidatePhase = internal::execution_diagnostics::rpa::SeekPhase;
+    using CandidateWork = internal::execution_diagnostics::rpa::SeekWork;
+    internal::execution_diagnostics::rpa::seekAdd(CandidatePhase::s2CandidatePrep,
+                                                  &CandidateWork::candidateCalls);
+    internal::execution_diagnostics::rpa::seekSet(
+        CandidatePhase::s2CandidatePrep, &CandidateWork::validCandidates, candidate ? 1 : 0);
+    internal::execution_diagnostics::rpa::seekSet(
+        CandidatePhase::s2CandidatePrep, &CandidateWork::discardedCandidates, candidate ? 0 : 1);
+    internal::execution_diagnostics::rpa::seekSet(
+        CandidatePhase::s2CandidatePrep, &CandidateWork::preparedHandles, candidate ? 1 : 0);
+    internal::execution_diagnostics::rpa::seekSet(CandidatePhase::s2CandidatePrep,
+                                                  &CandidateWork::configCopies, candidate ? 1 : 0);
+#endif
+    if (!candidate)
+        return core::unexpected(detail::projectGameplayError(std::move(candidate.error())));
 #if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
     s3.finish();
     internal::execution_diagnostics::rpa::SeekScope s5{

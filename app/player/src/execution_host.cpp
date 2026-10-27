@@ -1,5 +1,5 @@
 #include "execution_host.hpp"
-#include "../../../engine/core/internal/cuexis_internal/sha256.hpp"
+#include "../../../engine/playback/src/replay_identity.hpp"
 #include <algorithm>
 #include <cuexis_internal/execution_diagnostics.hpp>
 #include <cuexis_internal/presentation_metrics.hpp>
@@ -929,6 +929,7 @@ auto ExecutionHost::seek(const GameplayReplay& archive, const GameplayReplayCut&
     // envelope free of the observation round trip.
     rpaSeekFetch();
     rpa::SeekEnvelope rpaEnvelope{&rpaSeek_};
+    rpa::SeekSinkScope rpaHostSink{&rpaSeek_};
 #endif
     StepTarget target;
 #if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
@@ -938,20 +939,11 @@ auto ExecutionHost::seek(const GameplayReplay& archive, const GameplayReplayCut&
         throw Failure{error("control_pending")};
     if (context_.runEpoch == UINT64_MAX || context_.clockSegment == UINT64_MAX)
         throw Failure{error("capacity_exceeded")};
-    auto encoded = take(archive.toBytes());
-    target.archiveIdentity = PreparedSemanticIdentity{core::detail::sha256(encoded)};
+    target.archiveIdentity = PreparedSemanticIdentity{take(playback::detail::archiveIdentity(archive))};
 #if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
-    // The public Replay handle does not expose its sealed identity, so the fact that the
-    // identity is unknown is recorded separately from the identity value (zero).
-    rpa::seekSet(rpaSeek_, rpa::SeekPhase::s0HostIdentity, &rpa::SeekWork::sealedIdentityKnown, 0);
+    rpa::seekSet(rpaSeek_, rpa::SeekPhase::s0HostIdentity, &rpa::SeekWork::sealedIdentityKnown, 1);
     rpa::seekSet(rpaSeek_, rpa::SeekPhase::s0HostIdentity, &rpa::SeekWork::sealedIdentityPresent,
                  archive.valid() ? 1 : 0);
-    rpa::seekSet(rpaSeek_, rpa::SeekPhase::s0HostIdentity, &rpa::SeekWork::archiveBytes,
-                 static_cast<std::uint64_t>(encoded.size()));
-    rpa::seekAdd(rpaSeek_, rpa::SeekPhase::s0HostIdentity, &rpa::SeekWork::encodeCalls);
-    // toBytes() materializes one owning byte vector; the digest reads it without another copy.
-    rpa::seekAdd(rpaSeek_, rpa::SeekPhase::s0HostIdentity, &rpa::SeekWork::encodeAllocations);
-    rpa::seekAdd(rpaSeek_, rpa::SeekPhase::s0HostIdentity, &rpa::SeekWork::encodeCopies);
 #endif
     const auto mapped =
         take(RealtimeClock::seekPosition(options_.realtime->mapping, horizon.value));

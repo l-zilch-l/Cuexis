@@ -7,12 +7,33 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace {
 
 using cuexis::core::detail::Sha256;
 using cuexis::core::detail::sha256;
 using cuexis::core::detail::sha256Hex;
+
+TEST_CASE("Core SHA-256 handles every padding boundary across arbitrary update splits",
+          "[core][sha256]") {
+    std::vector<std::byte> payload(257);
+    for (std::size_t i = 0; i < payload.size(); ++i)
+        payload[i] = static_cast<std::byte>(i & 255U);
+    for (const std::size_t length : {0U, 1U, 55U, 56U, 63U, 64U, 65U, 119U, 120U, 127U,
+                                   128U, 129U, 257U}) {
+        const auto bytes = std::span<const std::byte>{payload}.first(length);
+        const auto expected = sha256(bytes);
+        for (std::size_t split = 0; split <= length; ++split) {
+            Sha256 hash;
+            hash.update(bytes.first(split));
+            hash.update({});
+            hash.update(bytes.subspan(split));
+            CHECK(hash.finish() == expected);
+            CHECK(hash.finish() == expected);
+        }
+    }
+}
 
 TEST_CASE("Core SHA-256 matches NIST known-answer vectors", "[core][sha256]") {
     CHECK(sha256Hex(sha256(std::string_view{})) ==

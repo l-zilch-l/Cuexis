@@ -119,6 +119,12 @@ class JudgementSession final {
     [[nodiscard]] auto seek(const ReplayArchive&, Tick horizon) -> core::Result<void>;
     [[nodiscard]] auto seek(const ReplayArchive&, Tick horizon, const ReplayCut&,
                             std::span<const ReplayCheckpoint> = {}) -> core::Result<void>;
+    // Internal transactional reconstruction for Playback: use the already validated current
+    // identity, prepare one independent candidate, and leave this session unchanged on all paths.
+    // The current run must be Prepared, preserving the existing Seek lifecycle rejection.
+    [[nodiscard]] auto forkForSeek(const ReplayArchive&, Tick horizon, const ReplayCut&,
+                                   std::span<const ReplayCheckpoint> = {}) const
+        -> core::Result<JudgementSession>;
     [[nodiscard]] auto advance(Tick horizon, bool controlDrain = false)
         -> core::Result<JudgementProjection>;
 

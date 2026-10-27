@@ -33,6 +33,7 @@ struct KernelTestControls final {
     bool failSubmitRecordReservation{false};
     bool failAdvanceFinalization{false};
     bool forceReferenceAdvance{false};
+    bool failCertifiedRestore{false};
     std::shared_ptr<KernelWorkObservation> work;
 };
 // Internal checking fixture, unavailable in installed headers or Playback.
@@ -44,5 +45,7 @@ class KernelTestAccess final {
     static auto snapshotValue(SnapshotDTO, RecoveryInputs) -> SnapshotPayload;
     static auto captureDTO(const JudgementSession&) -> core::Result<SnapshotDTO>;
     static auto visibleSignalCount(const JudgementSession&, Tick) -> std::size_t;
+    static auto certifiedPrefixRecords(const JudgementSession&) -> std::uint64_t;
+    static auto nativePrefixRecords(const JudgementSession&) -> std::uint64_t;
 };
 } // namespace cuexis::judgement::detail

@@ -1999,6 +1999,68 @@ TEST_CASE("Candidate realtime execution uses explicit profile and coherent clock
     CHECK(std::to_integer<unsigned>((*wire)[8]) == 3);
 }
 
+TEST_CASE("R3b RPA checkpoint survives Playback wrapping and transactional replacement",
+          "[candidate][gameplay][rpa][r3b]") {
+    TestContent f;
+    auto& a = f.request.assembly;
+    const std::string capability = "cuexis.gameplay.rpa.v1";
+    a.executionProfile = "gameplay.execution.t4-k4.rpa.v1";
+    a.identityDeclarations.engine.executionProfileToken = a.executionProfile;
+    a.identityDeclarations.engine.lateAlgorithmToken = "late.window.batch.v1";
+    a.identityDeclarations.engine.factSemanticRevision = "fact.semantic.rpa.v1";
+    a.capabilityContext = {{capability}, {capability}};
+    a.declaredCapabilities = {{{capability, "1"}}};
+    a.closureContributions.capabilities = {{capability, "1"}};
+    a.sources[0].document.requirements[0].required.capabilities = {{capability, "1"}};
+    f.config.engine[1] = "fact.semantic.rpa.v1";
+    f.config.engine[4] = a.executionProfile;
+    f.config.engine[5] = "late.window.batch.v1";
+    f.config.enabledCapabilities = {capability};
+    const auto content = f.content();
+    const auto* immutable = playback::detail::GameplayAccess::content(content);
+    REQUIRE(immutable);
+    auto reference = JudgementSession::create();
+    REQUIRE(reference);
+    REQUIRE(reference->configure(immutable->configuration));
+    REQUIRE(reference->prepare(immutable->capsule.gameplay));
+    REQUIRE(reference->advance(Tick{20}));
+    REQUIRE(reference->advance(Tick{21}));
+    REQUIRE(reference->advance(Tick{22}));
+    auto sourceArchive = reference->archive();
+    REQUIRE(sourceArchive);
+    auto archive = playback::detail::GameplayAccess::replay(*sourceArchive);
+    auto provider = content::MemoryContentProvider::create({});
+    REQUIRE(provider);
+    auto source = playback::PlaybackSource::fromGameplayPacked(
+        "r3b-wrapper", "compiled/main.packed", f.packed(), f.config, {}, *provider,
+        playback::GameplayPrepareIntent::GameplayOnly);
+    REQUIRE(source);
+    playback::PlaybackSession session;
+    REQUIRE(session.load(std::move(*source), playback::PlaybackMode::ChartClock));
+    auto checkpoint = session.checkpointGameplay(archive, {20});
+    REQUIRE(checkpoint);
+    REQUIRE(
+        playback::detail::GameplayAccess::checkpoint(*checkpoint)->checkpoint.state->kernel.rpa);
+    auto cut = archive.cutAt({22});
+    REQUIRE(cut);
+    REQUIRE(session.seekGameplay(archive, {22}, *cut, {}, {22}, {0, 0, 1}));
+    auto origin = session.snapshotGameplay();
+    REQUIRE(origin);
+    auto oldResult = session.queryGameplay();
+    REQUIRE(oldResult);
+    REQUIRE(session.seekGameplay(archive, {22}, *cut, std::span{&*checkpoint, 1}, {22}, {0, 0, 2}));
+    auto restored = session.snapshotGameplay();
+    REQUIRE(restored);
+    CHECK(sameSnapshot(playback::detail::GameplayAccess::snapshot(*origin)->snapshot.state(),
+                       playback::detail::GameplayAccess::snapshot(*restored)->snapshot.state()));
+    CHECK(*oldResult->sameResult(*session.queryGameplay()));
+    REQUIRE(session.unload());
+    CHECK(checkpoint->valid());
+    REQUIRE(archive.toBytes());
+    CHECK(sameSnapshot(playback::detail::GameplayAccess::snapshot(*origin)->snapshot.state(),
+                       playback::detail::GameplayAccess::snapshot(*restored)->snapshot.state()));
+}
+
 TEST_CASE("B4 actual K1 Pause and R2 Resume preserve exactly one software effect",
           "[candidate][gameplay][rpa][b4]") {
     TestContent f;

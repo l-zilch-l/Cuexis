@@ -1,4 +1,5 @@
 #include "gameplay_internal.hpp"
+#include "replay_identity.hpp"
 #include <algorithm>
 #include <cuexis/core/error.hpp>
 #include <cuexis/judgement/recovery_codec.hpp>
@@ -403,6 +404,14 @@ auto GameplayReplay::toBytes() const -> core::Result<std::vector<std::byte>> try
     return judgement::encodeReplay(storage_->archive);
 } catch (...) {
     return core::unexpected(invalid("Replay encode failed"));
+}
+auto GameplayReplay::canonicalIdentity() const
+    -> core::Result<std::array<std::uint8_t, 32>> try {
+    if (!storage_)
+        return core::unexpected(invalid("Empty Replay"));
+    return storage_->archive.canonicalIdentity();
+} catch (...) {
+    return core::unexpected(invalid("Replay identity failed"));
 }
 auto GameplaySnapshot::fromBytes(std::span<const std::byte> bytes, const GameplayContent& content,
                                  GameplayCodecBudget budget) -> core::Result<GameplaySnapshot> try {

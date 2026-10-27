@@ -1,9 +1,45 @@
-#include <cuexis/judgement/recovery.hpp>
+#include "execution_kernel.hpp"
+#include <cuexis/judgement/recovery_codec.hpp>
+#include <cuexis_internal/sha256.hpp>
+#include <mutex>
 #if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
 #include <cuexis_internal/execution_diagnostics.hpp>
 #endif
 
 namespace cuexis::judgement {
+namespace detail {
+struct CanonicalReplayIdentityCache final {
+    std::once_flag ready;
+    std::array<std::uint8_t, 32> digest{};
+};
+auto makeCanonicalReplayIdentityCache() -> std::shared_ptr<CanonicalReplayIdentityCache> {
+    return std::make_shared<CanonicalReplayIdentityCache>();
+}
+} // namespace detail
+auto ReplayArchive::canonicalIdentity() const -> core::Result<std::array<std::uint8_t, 32>> try {
+    const auto encode = [&] {
+        auto bytes = encodeReplay(*this);
+        if (!bytes)
+            throw bytes.error();
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        namespace rpa = internal::execution_diagnostics::rpa;
+        rpa::seekAdd(rpa::SeekPhase::s0HostIdentity, &rpa::SeekWork::encodeCalls);
+        rpa::seekAdd(rpa::SeekPhase::s0HostIdentity, &rpa::SeekWork::encodeAllocations);
+        rpa::seekAdd(rpa::SeekPhase::s0HostIdentity, &rpa::SeekWork::encodeCopies);
+        rpa::seekAdd(rpa::SeekPhase::s0HostIdentity, &rpa::SeekWork::archiveBytes, bytes->size());
+#endif
+        return core::detail::sha256(*bytes);
+    };
+    if (!canonicalCache_)
+        return encode();
+    std::call_once(canonicalCache_->ready, [&] { canonicalCache_->digest = encode(); });
+    return canonicalCache_->digest;
+} catch (const core::Error& error) {
+    return core::unexpected(error);
+} catch (const std::exception&) {
+    return core::unexpected(core::Error{"codec.allocation_failed", "Replay identity failed"});
+}
+
 auto sameRecoveryError(const std::optional<core::Error>& a, const std::optional<core::Error>& b)
     -> bool {
     const auto* left = a ? &*a : nullptr;

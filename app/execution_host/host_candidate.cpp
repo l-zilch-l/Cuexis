@@ -1,7 +1,7 @@
 #include "host_candidate.hpp"
 #include "capture_route.hpp"
+#include "../../engine/playback/src/replay_identity.hpp"
 #include <cuexis_internal/execution_diagnostics.hpp>
-#include <cuexis_internal/sha256.hpp>
 namespace cuexis::playback::detail {
 namespace {
 auto matchingStep(const ControlReceipt& proof, Participant participant, StepPhase phase)
@@ -446,10 +446,10 @@ auto HostCoordinationAccess::applySeek(PlaybackSession& session, OwnerStepLedger
     if (!snapshot)
         return core::unexpected(snapshot.error());
     const auto& s = *snapshot;
-    auto bytes = archive.toBytes();
-    if (!bytes)
-        return core::unexpected(bytes.error());
-    const PreparedSemanticIdentity identity{core::detail::sha256(*bytes)};
+    auto canonicalIdentity = archiveIdentity(archive);
+    if (!canonicalIdentity)
+        return core::unexpected(canonicalIdentity.error());
+    const PreparedSemanticIdentity identity{*canonicalIdentity};
     if (request.target.archiveIdentity != identity || request.target.seekHorizon != horizon.value ||
         request.target.seekCompleteRecords != cut.completeRecords ||
         request.target.seekPartialHorizon !=

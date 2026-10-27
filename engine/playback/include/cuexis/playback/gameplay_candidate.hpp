@@ -190,6 +190,7 @@ struct GameplayReplayStorage;
 struct GameplaySnapshotStorage;
 struct GameplayCheckpointStorage;
 struct GameplayAccess;
+struct ReplayIdentityAccess;
 } // namespace detail
 class CUEXIS_PLAYBACK_API GameplayContent final {
   public:
@@ -250,6 +251,9 @@ class CUEXIS_PLAYBACK_API GameplayReplay final {
 
   private:
     friend struct detail::GameplayAccess;
+    friend struct detail::ReplayIdentityAccess;
+    [[nodiscard]] auto canonicalIdentity() const
+        -> core::Result<std::array<std::uint8_t, 32>>;
     std::shared_ptr<const detail::GameplayReplayStorage> storage_;
 };
 class CUEXIS_PLAYBACK_API GameplaySnapshot final {

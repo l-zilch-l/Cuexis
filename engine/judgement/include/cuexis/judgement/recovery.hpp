@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cuexis/judgement/kernel_types.hpp>
+#include <array>
 
 namespace cuexis::judgement {
 struct CanonicalInput final {
@@ -50,6 +51,11 @@ struct ReplayData final {
     std::uint64_t eventCount;
     PreparedIdentity identity;
 };
+namespace detail {
+struct ExecutionPreparation;
+struct NativeRecoveryIndex;
+struct CanonicalReplayIdentityCache;
+}
 class ReplayArchive final {
   public:
     [[nodiscard]] auto data() const noexcept -> const ReplayData& {
@@ -61,13 +67,25 @@ class ReplayArchive final {
     [[nodiscard]] auto dependencies() const noexcept -> const RecoveryInputs& {
         return *inputs_;
     }
+    [[nodiscard]] auto canonicalIdentity() const
+        -> core::Result<std::array<std::uint8_t, 32>>;
     ReplayArchive(std::shared_ptr<const ReplayData> data,
                   std::shared_ptr<const RecoveryInputs> inputs)
         : data_(std::move(data)), inputs_(std::move(inputs)) {}
 
   private:
+    friend class detail::ExecutionKernel;
+    // Only the kernel can attest that no mutable source alias escaped construction.
+    // Public construction, even from an identical anchor, never grants this provenance.
+    bool internallySealed_{false};
     std::shared_ptr<const ReplayData> data_;
     std::shared_ptr<const RecoveryInputs> inputs_;
+    // Exact, immutable internal preparation. Public construction never creates this binding.
+    std::shared_ptr<const detail::ExecutionPreparation> preparation_;
+    std::shared_ptr<const detail::NativeRecoveryIndex> nativeRecovery_;
+    // Only a kernel-created immutable owner may cache the canonical identity. External
+    // constructors never mint this binding and always encode on request.
+    std::shared_ptr<detail::CanonicalReplayIdentityCache> canonicalCache_;
 };
 struct ReplayCut final {
     std::uint64_t completeRecords;

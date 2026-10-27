@@ -2,6 +2,7 @@
 #include "../../engine/core/internal/cuexis_internal/sha256.hpp"
 #include "../audio/fake_audio_transport.hpp"
 #include "execution_fixture.hpp"
+#include "../support/environment.hpp"
 #include <atomic>
 #include <bit>
 #include <catch2/catch_test_macros.hpp>
@@ -340,10 +341,10 @@ TEST_CASE("B5 realtime main host cuts after inspection and drives Pause Resume S
     CHECK(phaseCount(rpa::SeekPhase::s6ClockPresent) >= 1);
     const auto& work = seekLedger.work;
     CHECK(work[static_cast<std::size_t>(rpa::SeekPhase::s0HostIdentity)].archiveBytes > 0);
-    CHECK(work[static_cast<std::size_t>(rpa::SeekPhase::s0HostIdentity)].encodeCalls >= 1);
+    CHECK(work[static_cast<std::size_t>(rpa::SeekPhase::s0HostIdentity)].encodeCalls == 1);
+    CHECK(work[static_cast<std::size_t>(rpa::SeekPhase::s0HostIdentity)].sealedIdentityKnown == 1);
     CHECK(work[static_cast<std::size_t>(rpa::SeekPhase::s0HostIdentity)].sealedIdentityPresent ==
           1);
-    CHECK(work[static_cast<std::size_t>(rpa::SeekPhase::s0HostIdentity)].sealedIdentityKnown == 0);
     CHECK(work[static_cast<std::size_t>(rpa::SeekPhase::s1HostProtocol)].operationId > 0);
     CHECK(work[static_cast<std::size_t>(rpa::SeekPhase::s1HostProtocol)].participants >= 3);
     CHECK(work[static_cast<std::size_t>(rpa::SeekPhase::s2CandidatePrep)].validCandidates == 1);
@@ -351,6 +352,9 @@ TEST_CASE("B5 realtime main host cuts after inspection and drives Pause Resume S
     CHECK(work[static_cast<std::size_t>(rpa::SeekPhase::s2CandidatePrep)].requirements >= 1);
     CHECK(work[static_cast<std::size_t>(rpa::SeekPhase::s2CandidatePrep)].preparedHandles == 1);
     CHECK(work[static_cast<std::size_t>(rpa::SeekPhase::s2CandidatePrep)].configCopies == 1);
+    // Canonical encoding and the Seek candidate both reuse their immutable preparation.
+    CHECK(work[static_cast<std::size_t>(rpa::SeekPhase::s2CandidatePrep)].kernelPrepareCalls == 0);
+    CHECK(work[static_cast<std::size_t>(rpa::SeekPhase::s2CandidatePrep)].derivedIndexBuilds == 0);
     CHECK(work[static_cast<std::size_t>(rpa::SeekPhase::s3Validation)].actualRecords >= 1);
     CHECK(work[static_cast<std::size_t>(rpa::SeekPhase::s3Validation)].batchInputs >= 1);
     // This fixture's cut contains admission batches but no recorded result rows, so the archive
@@ -1999,4 +2003,113 @@ TEST_CASE("B5 main closes after audio factory failure before Load acceptance",
               : std::string{closed.error().code()} + ": " + std::string{closed.error().message()}));
     REQUIRE(closed);
     CHECK((*host)->state() == HostState::closed);
+}
+
+
+TEST_CASE("R3 CPU host Seek measures first and repeated requests through target present",
+          "[.][b5][redesign-host-perf]") {
+    if (test_support::environmentVariable("CUEXIS_REDESIGN_BARRIER") == "1") {
+        static const bool admitted = [] {
+            std::string line;
+            return static_cast<bool>(std::getline(std::cin, line)) && line == "go";
+        }();
+        REQUIRE(admitted);
+    }
+    const auto count = GENERATE(std::size_t{64}, std::size_t{256}, std::size_t{2048});
+    auto fixture = std::make_unique<test_support::SessionTestContent>();
+    const ClockMappingConfiguration mapping{{0, 1}, {0, 1}, {0, 1}, {1, 1}};
+    test_support::rpa(*fixture, mapping);
+    auto& document = fixture->request.assembly.sources[0].document;
+    const auto prototype = document.requirements[0];
+    document.requirements.clear();
+    std::erase_if(document.declarations, [](const auto& d) {
+        return d.kind == judgement::DeclarationKind::requirement;
+    });
+    document.relations[0].members.clear();
+    fixture->owners.clear();
+    fixture->request.assembly.contentProfileLimits.maxRequirements =
+        judgement::MeasuredParameter<std::uint64_t>::measured(count);
+    for (std::size_t i = 0; i < count; ++i) {
+        auto requirement = prototype;
+        requirement.stableId.declarationOrdinal = static_cast<std::uint32_t>(100 + i);
+        requirement.identity.requirementLocalId = "redesign.host." + std::to_string(i);
+        requirement.resourceClaims[0].claimPolicy.competition =
+            judgement::ClaimPolicyDeclaration::CompetitionKey{-1, static_cast<std::uint64_t>(i)};
+        document.declarations.push_back(judgement::testing::testDeclaration(
+            judgement::DeclarationKind::requirement, requirement.identity.requirementLocalId,
+            requirement.stableId.declarationOrdinal));
+        document.relations[0].members.push_back(requirement.stableId);
+        fixture->owners.push_back({requirement.identity, fixture->chart.entities[0].identity});
+        document.requirements.push_back(std::move(requirement));
+    }
+    presentation_renderer::TestPresentationRenderer renderer;
+    std::atomic<unsigned> pumps{};
+    auto settings = options();
+    settings.realtime = SessionRealtimeStart{{1000000, 10, 128, "", true}, mapping, {},
+                                             "redesign.host"};
+    auto host = player::ExecutionHost::create(renderer, settings, ports(pumps));
+    REQUIRE(host);
+    REQUIRE((*host)->load(test_support::presentation(), fixture->content()));
+    std::int64_t target = 1103;
+    std::uint64_t sequence{};
+    player::ExecutionHost::ClockSource clock = [&](const HostContext& context)
+        -> core::Result<ClockObservation> {
+        ClockObservation observation{};
+        observation.monotonicDomain = "redesign.host";
+        observation.segment = context.clockSegment;
+        observation.publicationSequence = ++sequence;
+        observation.sampleMonotonicUs = std::chrono::duration_cast<std::chrono::microseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
+        observation.validUntilMonotonicUs = observation.sampleMonotonicUs + 1000000;
+        observation.presented = ClockFramePosition{target, 1000000};
+        observation.source = observation.presented;
+        observation.maximumPresented = observation.presented;
+        observation.playback = ClockPlaybackState::Playing;
+        observation.quality = ClockQuality::Exact;
+        return observation;
+    };
+    for (unsigned record = 0; record < 33; ++record) {
+        target = 1103 + record;
+        const auto observation = clock((*host)->context());
+        REQUIRE(observation);
+        const auto decision = (*host)->advance(*observation);
+        INFO((decision ? "" : std::string{decision.error().code()}));
+        REQUIRE(decision);
+        REQUIRE(decision->disposition == GameplayAdvanceDisposition::Executed);
+    }
+    const auto archiveStart = std::chrono::steady_clock::now();
+    const auto archive = (*host)->archive();
+    const auto archiveUs = std::chrono::duration_cast<std::chrono::microseconds>(
+        std::chrono::steady_clock::now() - archiveStart).count();
+    REQUIRE(archive);
+    const auto cut = archive->cutAt({1135});
+    REQUIRE(cut);
+    const auto expected = (*host)->queryGameplay();
+    REQUIRE(expected);
+    for (unsigned attempt = 0; attempt < 3; ++attempt) {
+        target = 1135;
+        REQUIRE((*host)->pause(clock));
+        const auto started = std::chrono::steady_clock::now();
+        auto sought = (*host)->seek(*archive, *cut, {1135}, clock);
+        const auto seekUs = std::chrono::duration_cast<std::chrono::microseconds>(
+            std::chrono::steady_clock::now() - started).count();
+        INFO((sought ? "" : std::string{sought.error().code()} + ": " +
+            std::string{sought.error().message()}));
+        REQUIRE(sought);
+        auto frame = (*host)->sample(1135, {1.135, 0, (*host)->context().clockSegment}, false);
+        REQUIRE(frame);
+        const auto presented = (*host)->present(*frame);
+        REQUIRE(presented);
+        CHECK(presented->status == PresentStatus::succeeded);
+        const auto totalUs = std::chrono::duration_cast<std::chrono::microseconds>(
+            std::chrono::steady_clock::now() - started).count();
+        const auto actual = (*host)->queryGameplay();
+        REQUIRE(actual);
+        CHECK(actual->sameResult(*expected).value());
+        std::cout << "{\"event\":\"r3.redesign.host\",\"requirements\":" << count
+                  << ",\"attempt\":" << attempt << ",\"seek_us\":" << seekUs
+                  << ",\"request_to_present_us\":" << totalUs << ",\"archive_us\":"
+                  << archiveUs << ",\"renderer\":\"cpu-test\",\"audio\":false,\"formal\":false}\n";
+    }
+    REQUIRE((*host)->close());
 }

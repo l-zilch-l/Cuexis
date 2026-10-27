@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cuexis/judgement/ruleset.hpp>
+#include <cuexis/judgement/shared_sequence.hpp>
 
 #include <tuple>
 #include <variant>
@@ -261,13 +262,13 @@ struct InputReceipt final {
     friend auto operator==(const InputReceipt&, const InputReceipt&) -> bool = default;
 };
 struct KernelProjection final {
-    std::vector<PhaseProjection> phases;
+    detail::SharedSequence<PhaseProjection> phases;
     std::vector<ResourceProjection> resources;
     std::vector<ContactHandle> contacts;
     std::vector<HeadContactOwnership> ownership;
     std::vector<ObservationRecord> observers;
     std::vector<InputReceipt> receipts;
-    std::vector<KernelFact> facts;
+    detail::SharedSequence<KernelFact> facts;
     std::optional<Tick> processedFrontier, lastAdvanceHorizon;
     KernelSessionState state;
     std::optional<core::Error> faultDiagnostic;

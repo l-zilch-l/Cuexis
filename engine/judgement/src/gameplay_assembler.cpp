@@ -1950,8 +1950,8 @@ struct PatternDeclarationShape final {
 auto CanonicalIdentityBytes::toHex() const -> std::string {
     constexpr std::string_view digits{"0123456789abcdef"};
     std::string text;
-    text.reserve(bytes_.size() * 2U);
-    for (const std::byte value : bytes_) {
+    text.reserve(bytes().size() * 2U);
+    for (const std::byte value : bytes()) {
         const auto raw = static_cast<unsigned>(value);
         text.push_back(digits[(raw >> 4U) & 0x0FU]);
         text.push_back(digits[raw & 0x0FU]);

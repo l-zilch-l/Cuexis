@@ -230,17 +230,20 @@ class PreparedIdentity;
 class CanonicalIdentityBytes final {
   public:
     [[nodiscard]] auto bytes() const noexcept -> const std::vector<std::byte>& {
-        return bytes_;
+        static const std::vector<std::byte> empty;
+        return bytes_ ? *bytes_ : empty;
     }
     [[nodiscard]] auto empty() const noexcept -> bool {
-        return bytes_.empty();
+        return bytes().empty();
     }
     //  A stable hexadecimal rendering, for diagnostics and for test evidence. It is a rendering of
     //  the bytes and never a replacement for the field-by-field semantic diff of Spec 3.5.
     [[nodiscard]] auto toHex() const -> std::string;
 
-    friend auto operator==(const CanonicalIdentityBytes&, const CanonicalIdentityBytes&) noexcept
-        -> bool = default;
+    friend auto operator==(const CanonicalIdentityBytes& a,
+                           const CanonicalIdentityBytes& b) noexcept -> bool {
+        return a.bytes_ == b.bytes_ || a.bytes() == b.bytes();
+    }
 
   private:
     friend auto makeRuntimePreparedIdentity(const CanonicalGameplayGraph&,
@@ -253,10 +256,10 @@ class CanonicalIdentityBytes final {
                                      const PreparedIdentityDeclarations& declarations)
         -> PreparedIdentity;
 
-    explicit CanonicalIdentityBytes(std::vector<std::byte> bytes) noexcept
-        : bytes_(std::move(bytes)) {}
+    explicit CanonicalIdentityBytes(std::vector<std::byte> bytes)
+        : bytes_(std::make_shared<const std::vector<std::byte>>(std::move(bytes))) {}
 
-    std::vector<std::byte> bytes_;
+    std::shared_ptr<const std::vector<std::byte>> bytes_;
 };
 
 //  The *chart* component of the judgement identity (ABI domain 7 `ChartIdentity`): the compiled

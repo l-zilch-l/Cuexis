@@ -480,7 +480,23 @@ struct SeekPhaseSlot final {
     X(clockValid)                                                                                  \
     X(targetGeneration)                                                                            \
     X(targetPresentationTick)                                                                      \
-    X(endToEndUs)
+    X(endToEndUs)                                                                                  \
+    X(kernelPrepareCalls)                                                                          \
+    X(kernelPrepareSuccesses)                                                                      \
+    X(kernelPrepareUs)                                                                             \
+    X(derivedIndexBuilds)                                                                          \
+    X(derivedIndexUs)                                                                              \
+    X(initialReserveCopies)                                                                        \
+    X(recoveryConfigCopies)                                                                        \
+    X(rpaRestoreValidationUs)                                                                      \
+    X(draftCopies)                                                                                 \
+    X(faultReserveCopies)                                                                          \
+    X(foldCopies)                                                                                  \
+    X(finalizationCopies)                                                                          \
+    X(tailRecordCopies)                                                                            \
+    X(tailBatchElements)                                                                           \
+    X(tailAdmissionElements)                                                                       \
+    X(tailControlElements)
 struct SeekWork final {
 #define CUEXIS_RPA_SEEK_WORK_DECLARE(name) std::uint64_t name{};
     CUEXIS_RPA_SEEK_WORK_FIELDS(CUEXIS_RPA_SEEK_WORK_DECLARE)
@@ -570,6 +586,26 @@ inline auto nowUs() noexcept -> std::int64_t {
                std::chrono::steady_clock::now().time_since_epoch())
         .count();
 }
+
+// A nested cost belongs to its enclosing phase and is never added to the seek envelope.
+// No clock read is needed when an observation build has no owner-local sink bound.
+struct SeekWorkTimer final {
+    SeekWork* work;
+    std::uint64_t SeekWork::* field;
+    std::int64_t started;
+    SeekWorkTimer(SeekPhase phase, std::uint64_t SeekWork::* member) noexcept
+        : work(seekWork(phase)), field(member), started(work ? nowUs() : 0) {}
+    void finish() noexcept {
+        if (work)
+            work->*field += static_cast<std::uint64_t>(nowUs() - started);
+        work = nullptr;
+    }
+    ~SeekWorkTimer() {
+        finish();
+    }
+    SeekWorkTimer(const SeekWorkTimer&) = delete;
+    SeekWorkTimer& operator=(const SeekWorkTimer&) = delete;
+};
 
 inline void mark(Close& close, CloseStage stage) noexcept {
     if (close.markCount < closeMarkCapacity)

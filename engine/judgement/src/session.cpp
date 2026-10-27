@@ -79,6 +79,14 @@ constexpr std::string_view kAbsent{};
                      path);
 }
 
+auto validateSeekIdentity(const PreparedIdentity& current, const ReplayArchive& archive)
+    -> core::Result<void> {
+    if (current != archive.data().identity)
+        return core::unexpected(rejection("replay.identity_mismatch", "identity_closure_incomplete",
+                                          "Seek identity mismatch", kSeekPath));
+    return {};
+}
+
 } // namespace
 
 //  会话的全部可变状态。每个成员都标注 owner thread、读取时点、快照归属和重置行为。
@@ -379,7 +387,7 @@ auto JudgementSession::submitCanonical(std::vector<CanonicalInput> batch)
     }
     return impl_->kernel->submitCanonical(std::move(batch));
 }
-auto JudgementSession::archive() const -> core::Result<ReplayArchive> {
+auto JudgementSession::archive() const -> core::Result<ReplayArchive> try {
     assertUsable();
     if (!impl_->kernel) {
         return core::unexpected(lifecycleOrderError(kQueryPath));
@@ -388,6 +396,9 @@ auto JudgementSession::archive() const -> core::Result<ReplayArchive> {
         return core::unexpected(lifecycleOrderError(kQueryPath));
     }
     return impl_->kernel->archive();
+} catch (const std::exception&) {
+    return core::unexpected(rejection("replay.state_invalid", "invalid_relation",
+                                      "Archive allocation failed", kQueryPath));
 }
 auto JudgementSession::evaluateReplay(const ReplayArchive& archive)
     -> core::Result<ReplayEvaluation> {
@@ -443,9 +454,9 @@ auto JudgementSession::checkpoint(const ReplayArchive& archive, Tick horizon)
         return core::unexpected(state.error());
     }
     ReplayCheckpoint checkpoint{archive, cut, horizon,
-                                std::make_shared<const SnapshotDTO>((*state)->dto)};
-    checkpoint.certificate_ = std::make_shared<const detail::CheckpointCertificate>(
-        detail::CheckpointCertificate{archive.anchor(), cut, horizon, checkpoint.state});
+                                std::shared_ptr<const SnapshotDTO>{*state, &(*state)->dto}};
+    checkpoint.certificate_ =
+        (*candidate)->checkpointCertificate(archive, cut, horizon, checkpoint.state);
     return checkpoint;
 } catch (const std::exception&) {
     return core::unexpected(rejection("replay.state_invalid", "invalid_relation",
@@ -465,10 +476,10 @@ auto JudgementSession::seek(const ReplayArchive& archive, Tick horizon, const Re
         impl_->kernel->query()->projection.state != KernelSessionState::Prepared) {
         return core::unexpected(lifecycleOrderError(kSeekPath));
     }
-    if (impl_->kernel->query()->projection.judgementIdentity != archive.data().identity) {
-        return core::unexpected(rejection("replay.identity_mismatch", "identity_closure_incomplete",
-                                          "Seek identity mismatch", kSeekPath));
-    }
+    if (auto identity =
+            validateSeekIdentity(impl_->kernel->query()->projection.judgementIdentity, archive);
+        !identity)
+        return core::unexpected(identity.error());
     auto candidate =
         detail::ExecutionKernel::seekCandidate(archive, horizon, nullptr, &cut, checkpoints);
     if (!candidate) {
@@ -481,6 +492,44 @@ auto JudgementSession::seek(const ReplayArchive& archive, Tick horizon, const Re
 } catch (const std::exception&) {
     return core::unexpected(
         rejection("replay.state_invalid", "invalid_relation", "Seek allocation failed", kSeekPath));
+}
+
+auto JudgementSession::forkForSeek(const ReplayArchive& archive, Tick horizon, const ReplayCut& cut,
+                                   std::span<const ReplayCheckpoint> checkpoints) const
+    -> core::Result<JudgementSession> try {
+    assertUsable();
+    if (!impl_->kernel || impl_->kernel->query()->projection.state != KernelSessionState::Prepared)
+        return core::unexpected(lifecycleOrderError(kSeekPath));
+    if (auto identity =
+            validateSeekIdentity(impl_->kernel->query()->projection.judgementIdentity, archive);
+        !identity)
+        return core::unexpected(identity.error());
+    auto kernel =
+        detail::ExecutionKernel::seekCandidate(archive, horizon, nullptr, &cut, checkpoints);
+    if (!kernel)
+        return core::unexpected(kernel.error());
+    auto candidate = create();
+    if (!candidate)
+        return core::unexpected(candidate.error());
+    candidate->impl_->configuration = archive.dependencies().configuration;
+    candidate->impl_->configured = true;
+    candidate->impl_->prepared = true;
+    candidate->impl_->kernel = std::move(*kernel);
+    return std::move(*candidate);
+} catch (const std::exception&) {
+    return core::unexpected(
+        rejection("replay.state_invalid", "invalid_relation", "Seek allocation failed", kSeekPath));
+}
+
+auto detail::KernelTestAccess::certifiedPrefixRecords(const JudgementSession& session)
+    -> std::uint64_t {
+    session.assertUsable();
+    return session.impl_->kernel ? session.impl_->kernel->certifiedPrefixRecords() : 0;
+}
+auto detail::KernelTestAccess::nativePrefixRecords(const JudgementSession& session)
+    -> std::uint64_t {
+    session.assertUsable();
+    return session.impl_->kernel ? session.impl_->kernel->nativePrefixRecords() : 0;
 }
 
 auto detail::PublicationAccess::scope(const JudgementSession& session)

@@ -8,7 +8,7 @@
 
 返回 [Stage 7 阶段总表](../../README.md) / [本阶段导航](../README.md)。
 
-退出核对入口：[2026-10-26 · R2 退出评审报告与证据汇总](2026-10-26-r2-exit-report.md)。报告请求不等于退出接受。
+退出核对入口：[2026-10-26 · R2 技术收尾复核与退出范围](2026-10-26-r2-technical-closure-review.md)。owner 于 2026-10-26 接受 R2 按原计划退出；[接受记录](2026-10-26-r2-owner-exit-acceptance.json)。原评审报告和审计包保留形成时快照。
 
 ## 报告与同批附件
 
@@ -21,3 +21,4 @@
 | [2026-10-26 · R2 HighQoS 局部收益与 N1 同进程消融](2026-10-26-r2-high-qos-local-benefit.md) | 新窗口、QoS 控制与单进程消融原始材料见报告 |
 | [2026-10-26 · R2 公开 N1 归因与共用目标文件对照](2026-10-26-r2-public-n1-and-common-objects.md) | 短块停止、三进程消融、对象码及新独立窗口见报告 |
 | [2026-10-26 · R2 退出评审报告与证据汇总](2026-10-26-r2-exit-report.md) | [SHA-256 清单](2026-10-26-r2-exit-evidence.json)、[轻量证据包](2026-10-26-r2-exit-evidence.zip) |
+| [2026-10-26 · R2 技术收尾复核与退出范围](2026-10-26-r2-technical-closure-review.md) | [审计清单](2026-10-26-r2-technical-closure-audit.json)、[审计轻量包](2026-10-26-r2-technical-closure-audit.zip)、[退出接受记录](2026-10-26-r2-owner-exit-acceptance.json) |

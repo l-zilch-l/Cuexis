@@ -2,6 +2,7 @@
 #include "diagnostic_policy.hpp"
 #include "execution_log.hpp"
 #include "execution_testing.hpp"
+#include <cuexis/judgement/recovery_codec.hpp>
 #include <cuexis_internal/execution_diagnostics.hpp>
 
 #include <algorithm>
@@ -56,9 +57,9 @@ struct MatcherState final {
     bool epsilonAttempted{false};
 };
 struct RuntimeState final : ProjectionStorage {
-    RuntimeState(KernelProjection projection, std::vector<MatcherState> matchers)
+    RuntimeState(KernelProjection projection, SharedSequence<MatcherState> matchers)
         : ProjectionStorage(std::move(projection)), matchers(std::move(matchers)) {}
-    std::vector<MatcherState> matchers;
+    SharedSequence<MatcherState> matchers;
     std::vector<HeadContactOwnership> coverageHistory;
     std::vector<std::size_t> activeRequirements;
     std::vector<Tick> signalVisibility;
@@ -66,6 +67,11 @@ struct RuntimeState final : ProjectionStorage {
     std::uint64_t nextCommitId{0};
     bool idsExhausted{false};
 };
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+namespace rpaObservation = cuexis::internal::execution_diagnostics::rpa;
+using SeekWork = rpaObservation::SeekWork;
+using SeekPhase = rpaObservation::SeekPhase;
+#endif
 struct FactDescriptor final {
     OriginId origin;
     std::optional<RequirementIdentity> requirement;
@@ -76,6 +82,26 @@ struct FactDescriptor final {
     std::optional<CanonicalObservationKey> evidence;
 };
 } // namespace
+
+// Owned by one immutable preparation and its archives. Mutable run state never lives here.
+struct ExecutionPreparation final {
+    std::shared_ptr<const RuntimeState> initial;
+    std::shared_ptr<const RecoveryInputs> inputs;
+    std::vector<std::size_t> phaseOffsets, timerRequirements;
+};
+struct NativeRecoveryPoint final {
+    std::shared_ptr<const RuntimeState> state;
+    std::shared_ptr<const ExecutionLogChunk> prefix;
+    std::shared_ptr<const ReplayData> recording;
+    std::uint64_t completeRecords{};
+};
+struct NativeRecoveryIndex final {
+    // One anchor after the first eligible record, then at existing chunk boundaries.
+    // This optional cache never rejects content or changes record cadence. Empty pending
+    // is a closed subset; other states retain explicit checkpoint/origin recovery.
+    static constexpr std::size_t maxAnchors = 64;
+    std::vector<std::shared_ptr<const NativeRecoveryPoint>> points;
+};
 
 auto validateSessionConfiguration(const SessionConfiguration& c) -> core::Result<void> try {
     const auto& engine = c.identityDeclarations.engine;
@@ -139,12 +165,20 @@ struct ExecutionKernel::Impl final {
     std::shared_ptr<const ExecutionLogChunk> logTail;
     std::shared_ptr<ExecutionLogChunk> reservedLog;
     std::shared_ptr<const ReplayData> seekSource;
+    bool seekSourceSealed{false};
     core::Error failureResult;
     core::Error foldFailureResult;
     // Derived from one immutable PreparedGameplay; never serialized or globally cached.
-    std::vector<std::size_t> phaseOffsets, timerRequirements;
+    std::shared_ptr<const ExecutionPreparation> preparation;
+    std::vector<std::shared_ptr<const NativeRecoveryPoint>> nativePoints;
+    std::shared_ptr<const NativeRecoveryIndex> seekNativeSource;
+    std::shared_ptr<CanonicalReplayIdentityCache> seekCanonicalCache;
+    bool nativeAnchorEligible{true};
+    std::uint64_t appliedRecords{};
+    std::uint64_t nativeBaseRecords{};
 
-    Impl(SessionConfiguration c, PreparedGameplay p, std::shared_ptr<const RuntimeState> state)
+    Impl(SessionConfiguration c, PreparedGameplay p, std::shared_ptr<const RuntimeState> state,
+         std::shared_ptr<const ExecutionPreparation> cached = {})
         : configuration(std::move(c)), prepared(std::move(p)), active(std::move(state)),
           faultReserve(std::make_shared<RuntimeState>(*active)),
           failureResult(
@@ -154,23 +188,47 @@ struct ExecutionKernel::Impl final {
                   .withContext("category", "invalid_relation")
                   .withContext("severity", "error")
                   .withContext("faulted", "true")) {
-        std::map<RequirementIdentity, std::size_t> indices;
-        phaseOffsets.push_back(0);
-        for (std::size_t i = 0; i < graph().requirements.size(); ++i) {
-            const auto& r = graph().requirements[i];
-            if (!indices.emplace(r.identity, i).second)
-                throw std::logic_error{"duplicate prepared requirement"};
-            phaseOffsets.push_back(phaseOffsets.back() + r.phases.size());
+        const bool reused = static_cast<bool>(cached);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        rpaObservation::seekAdd(SeekPhase::s2CandidatePrep, &SeekWork::initialReserveCopies);
+        rpaObservation::SeekWorkTimer indexTimer{SeekPhase::s2CandidatePrep,
+                                                 &SeekWork::derivedIndexUs};
+        if (!reused)
+            rpaObservation::seekAdd(SeekPhase::s2CandidatePrep, &SeekWork::derivedIndexBuilds);
+#endif
+        if (cached) {
+            preparation = std::move(cached);
+            recoveryInputs = preparation->inputs;
+        } else {
+            auto plan = std::make_shared<ExecutionPreparation>();
+            plan->initial = active;
+            std::map<RequirementIdentity, std::size_t> indices;
+            plan->phaseOffsets.push_back(0);
+            for (std::size_t i = 0; i < graph().requirements.size(); ++i) {
+                const auto& r = graph().requirements[i];
+                if (!indices.emplace(r.identity, i).second)
+                    throw std::logic_error{"duplicate prepared requirement"};
+                plan->phaseOffsets.push_back(plan->phaseOffsets.back() + r.phases.size());
+            }
+            for (const auto& timer : prepared.timers()) {
+                const auto found = indices.find(timer.requirement);
+                if (found == indices.end())
+                    throw std::logic_error{"timer requirement missing"};
+                plan->timerRequirements.push_back(found->second);
+            }
+            plan->inputs = std::make_shared<const RecoveryInputs>(RecoveryInputs{configuration, prepared});
+            recoveryInputs = plan->inputs;
+            preparation = std::move(plan);
         }
-        for (const auto& timer : prepared.timers()) {
-            const auto found = indices.find(timer.requirement);
-            if (found == indices.end())
-                throw std::logic_error{"timer requirement missing"};
-            timerRequirements.push_back(found->second);
-        }
-        validatePhaseLayout(*active);
-        recoveryInputs =
-            std::make_shared<const RecoveryInputs>(RecoveryInputs{configuration, prepared});
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        indexTimer.finish();
+#endif
+        if (!reused)
+            validatePhaseLayout(*active);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        if (!reused)
+            rpaObservation::seekAdd(SeekPhase::s2CandidatePrep, &SeekWork::recoveryConfigCopies);
+#endif
         recording = std::make_shared<const ReplayData>(
             ReplayData{{}, 0, active->projection.judgementIdentity});
         faultReserve->projection.state = KernelSessionState::Faulted;
@@ -188,9 +246,37 @@ struct ExecutionKernel::Impl final {
             value->records.clear();
         }
         recording = std::move(value);
+        ++appliedRecords;
+        // Capture existing immutable owners, not a DTO/encoding or a second dynamic state.
+        // Optional allocation failure cannot retroactively fail a sealed operation.
+        if (nativeAnchorEligible && active->projection.rpa && !testControls && pending.empty() &&
+            active->projection.state == KernelSessionState::Prepared &&
+            active->projection.lastAdvanceHorizon &&
+            active->signalVisibility.empty() &&
+            (nativePoints.empty() || appliedRecords % ExecutionLogChunk::capacity == 0)) {
+            try {
+                auto point = std::make_shared<const NativeRecoveryPoint>(
+                    NativeRecoveryPoint{active, logTail, recording, appliedRecords});
+                if (nativePoints.size() == NativeRecoveryIndex::maxAnchors) {
+                    // Preserve the earliest anchor; evict the oldest later anchor. Eviction
+                    // affects only acceleration, never validity or the owning source history.
+                    nativePoints.erase(nativePoints.begin() + 1);
+                }
+                nativePoints.push_back(std::move(point));
+            } catch (const std::exception&) {
+            }
+        }
+    }
+    void releaseSeekSource() noexcept {
+        seekSource.reset();
+        seekNativeSource.reset();
+        seekCanonicalCache.reset();
     }
     auto reserveFault(const RuntimeState& value) const -> std::shared_ptr<RuntimeState> {
         auto backup = std::make_shared<RuntimeState>(value);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        rpaObservation::seekAdd(SeekPhase::s4InternalExecution, &SeekWork::faultReserveCopies);
+#endif
         backup->projection.state = KernelSessionState::Faulted;
         backup->projection.faultDiagnostic = failureResult;
         return backup;
@@ -204,16 +290,21 @@ struct ExecutionKernel::Impl final {
             throw std::bad_alloc{};
         }
     }
-    auto phase(RuntimeState& d, std::size_t i, PhaseKind kind) const -> KernelPhaseState& {
+    auto phaseIndex(std::size_t i, PhaseKind kind) const -> std::size_t {
         const auto& declared = graph().requirements[i].phases;
         const auto found = std::find_if(declared.begin(), declared.end(),
                                         [kind](const auto& p) { return p.kind == kind; });
         if (found == declared.end()) {
             throw std::logic_error{"phase not declared"};
         }
-        return d.projection.phases
-            .at(phaseOffsets[i] + static_cast<std::size_t>(found - declared.begin()))
-            .state;
+        return preparation->phaseOffsets[i] + static_cast<std::size_t>(found - declared.begin());
+    }
+    auto phase(const RuntimeState& d, std::size_t i, PhaseKind kind) const -> KernelPhaseState {
+        return d.projection.phases.at(phaseIndex(i, kind)).state;
+    }
+    void setPhase(RuntimeState& d, std::size_t i, PhaseKind kind, KernelPhaseState value) const {
+        d.projection.phases.update(phaseIndex(i, kind),
+                                  [value](auto& row) { row.state = value; });
     }
     auto pendingPhase(RuntimeState& d, std::size_t i, PhaseKind kind) const -> bool {
         return phase(d, i, kind) == KernelPhaseState::Pending;
@@ -235,11 +326,12 @@ struct ExecutionKernel::Impl final {
                  Outcome outcome, const OriginId& origin,
                  std::optional<CanonicalObservationKey> evidence = {},
                  bool observedError = false) const {
-        auto& value = phase(d, i, kind);
+        const auto value = phase(d, i, kind);
         if (value != KernelPhaseState::Pending) {
             return;
         }
-        value = outcome == Outcome::hit ? KernelPhaseState::Hit : KernelPhaseState::Miss;
+        setPhase(d, i, kind,
+                 outcome == Outcome::hit ? KernelPhaseState::Hit : KernelPhaseState::Miss);
         std::optional<TickDelta> delta;
         if (observedError && evidence) {
             auto checked = differenceTicks(evidence->observationTick.tick(),
@@ -352,7 +444,7 @@ struct ExecutionKernel::Impl final {
             d.activeRequirements.push_back(i);
             for (const auto& p : ri->phases) {
                 if (phase(d, i, p.kind) == KernelPhaseState::Dormant) {
-                    phase(d, i, p.kind) = KernelPhaseState::Pending;
+                    setPhase(d, i, p.kind, KernelPhaseState::Pending);
                 }
             }
         }
@@ -391,7 +483,7 @@ struct ExecutionKernel::Impl final {
             }
             if (timer.tick == last) {
                 if (observer(*ri)) {
-                    phase(d, i, timer.phase) = KernelPhaseState::Expired;
+                    setPhase(d, i, timer.phase, KernelPhaseState::Expired);
                 } else if (timer.phase == PhaseKind::head) {
                     failPending(d, facts, i, origin);
                 } else {
@@ -403,7 +495,7 @@ struct ExecutionKernel::Impl final {
         if (timer.kind == PreparedTimerKind::hardDeadline) {
             if (observer(*ri)) {
                 if (pendingPhase(d, i, rootPhase(*ri))) {
-                    phase(d, i, rootPhase(*ri)) = KernelPhaseState::Expired;
+                    setPhase(d, i, rootPhase(*ri), KernelPhaseState::Expired);
                 }
             } else {
                 failPending(d, facts, i, origin);
@@ -413,12 +505,11 @@ struct ExecutionKernel::Impl final {
              timer.kind == PreparedTimerKind::windowOpen) &&
             timer.phase == rootPhase(*ri) && pendingPhase(d, i, timer.phase) &&
             inWindow(*ri, timer.phase, timer.tick) && !d.matchers[i].epsilonAttempted) {
-            auto& matcher = d.matchers[i];
             const auto& program = *prepared.requirements()[i].executionProgram;
             if (program.accepting[program.start]) {
-                matcher.epsilonAttempted = true;
+                d.matchers.update(i, [](auto& matcher) { matcher.epsilonAttempted = true; });
                 if (observer(*ri)) {
-                    phase(d, i, timer.phase) = KernelPhaseState::Observed;
+                    setPhase(d, i, timer.phase, KernelPhaseState::Observed);
                     d.projection.observers.push_back(
                         {ri->identity, origin, timer.tick, {}, false, true});
                 } else if (available(d, i, {})) {
@@ -540,10 +631,10 @@ struct ExecutionKernel::Impl final {
                 d.projection.observers.push_back(
                     {r.identity, origin, tick, key, !next.empty(), accepted});
                 if (!next.empty()) {
-                    d.matchers[i].states = next;
+                    d.matchers.update(i, [&](auto& matcher) { matcher.states = next; });
                 }
                 if (accepted) {
-                    phase(d, i, root) = KernelPhaseState::Observed;
+                    setPhase(d, i, root, KernelPhaseState::Observed);
                 }
             } else if (!next.empty() && (root != PhaseKind::head || !accepted || newPress)) {
                 candidates.push_back({i, std::move(next), accepted});
@@ -564,7 +655,9 @@ struct ExecutionKernel::Impl final {
                 if (!available(d, candidate.index, contact, candidate.accepted)) {
                     continue;
                 }
-                d.matchers[candidate.index].states = std::move(candidate.next);
+                d.matchers.update(candidate.index, [&](auto& matcher) {
+                    matcher.states = std::move(candidate.next);
+                });
                 receipt.consumedBy = graph().requirements[candidate.index].identity;
                 if (candidate.accepted) {
                     success(d, facts, candidate.index, origin, tick, key, contact);
@@ -701,8 +794,8 @@ struct ExecutionKernel::Impl final {
         while (end < timers.size() && timers[end].tick == tick) {
             if (timers[end].kind != PreparedTimerKind::hardDeadline)
                 return false;
-            const auto i = timerRequirements[end];
-            for (auto p = phaseOffsets[i]; p < phaseOffsets[i + 1]; ++p)
+            const auto i = preparation->timerRequirements[end];
+            for (auto p = preparation->phaseOffsets[i]; p < preparation->phaseOffsets[i + 1]; ++p)
                 if (d.projection.phases[p].state == KernelPhaseState::Pending)
                     return false;
             ++end;
@@ -940,6 +1033,10 @@ ExecutionKernel::~ExecutionKernel() = default;
 
 auto ExecutionKernel::prepare(const SessionConfiguration& c, const PreparedGameplay& prepared)
     -> core::Result<std::unique_ptr<ExecutionKernel>> try {
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpaObservation::SeekWorkTimer timer{SeekPhase::s2CandidatePrep, &SeekWork::kernelPrepareUs};
+    rpaObservation::seekAdd(SeekPhase::s2CandidatePrep, &SeekWork::kernelPrepareCalls);
+#endif
     if (auto valid = validateSessionConfiguration(c); !valid) {
         return core::unexpected(valid.error());
     }
@@ -1004,7 +1101,7 @@ auto ExecutionKernel::prepare(const SessionConfiguration& c, const PreparedGamep
     if (hasGradeTables) {
         actual.engine.factSemanticRevision += ";grade.signed-interval.v1";
     }
-    std::vector<MatcherState> matchers;
+    SharedSequence<MatcherState> matchers;
     KernelProjection projection{.phases = {},
                                 .resources = {},
                                 .contacts = {},
@@ -1210,6 +1307,9 @@ auto ExecutionKernel::prepare(const SessionConfiguration& c, const PreparedGamep
     }
     auto state = std::make_shared<const RuntimeState>(std::move(projection), std::move(matchers));
     auto impl = std::make_unique<Impl>(std::move(c), std::move(prepared), std::move(state));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpaObservation::seekAdd(SeekPhase::s2CandidatePrep, &SeekWork::kernelPrepareSuccesses);
+#endif
     return std::unique_ptr<ExecutionKernel>{new ExecutionKernel{std::move(impl)}};
 } catch (const std::exception&) {
     return core::unexpected(
@@ -1218,6 +1318,16 @@ auto ExecutionKernel::prepare(const SessionConfiguration& c, const PreparedGamep
 
 auto ExecutionKernel::query() const noexcept -> std::shared_ptr<const ProjectionStorage> {
     return impl_->active;
+}
+auto ExecutionKernel::initialProjection(const ReplayArchive& archive)
+    -> core::Result<std::shared_ptr<const ProjectionStorage>> {
+    const auto& plan = archive.preparation_;
+    if (archive.internallySealed_ && plan && plan->inputs == archive.inputs_)
+        return std::static_pointer_cast<const ProjectionStorage>(plan->initial);
+    auto kernel = prepare(archive.dependencies().configuration, archive.dependencies().prepared);
+    if (!kernel)
+        return core::unexpected(std::move(kernel.error()));
+    return (*kernel)->query();
 }
 
 auto ExecutionKernel::inject(KernelTestControls controls) -> core::Result<void> try {
@@ -1239,6 +1349,93 @@ auto ExecutionKernel::visibleSignalCount(Tick tick) const noexcept -> std::size_
         [tick](Tick visible) { return visible <= tick; }));
 }
 
+auto ExecutionKernel::certifiedPrefixRecords() const noexcept -> std::uint64_t {
+    for (auto chunk = impl_->logTail.get(); chunk; chunk = chunk->previous.get())
+        if (chunk->baseState)
+            return static_cast<std::uint64_t>(chunk->baseRecords);
+    return 0;
+}
+auto ExecutionKernel::nativePrefixRecords() const noexcept -> std::uint64_t {
+    return impl_->nativeBaseRecords;
+}
+
+auto ExecutionKernel::checkpointCertificate(const ReplayArchive& archive, ReplayCut cut,
+                                            Tick horizon,
+                                            std::shared_ptr<const SnapshotDTO> state) const
+    -> std::shared_ptr<const CheckpointCertificate> {
+    auto cert = std::make_shared<CheckpointCertificate>(
+        CheckpointCertificate{archive.anchor(), cut, horizon, std::move(state)});
+    // Ordinary legacy certificates retain their existing behavior. Partial checkpoints and
+    // external mutable owners continue through the original validation path.
+    if (!archive.internallySealed_ || !cert->state->kernel.rpa || cut.partialHorizon ||
+        !cut.completeRecords || cut.completeRecords > archive.data().records.size() ||
+        archive.data().records[static_cast<std::size_t>(cut.completeRecords - 1)].horizon !=
+            horizon ||
+        impl_->testControls || !impl_->active->signalVisibility.empty() ||
+        impl_->ingress.lastObservedTick_ || impl_->ingress.nextObservationId_ ||
+        impl_->ingress.observationIdsExhausted_ || !impl_->ingress.admittedSubjects_.empty() ||
+        !impl_->ingress.ownedSubjects_.empty() || !impl_->ingress.admittedSequences_.empty() ||
+        cert->state->rpaHistory.size() != cut.completeRecords)
+        return cert;
+    try {
+        auto identity = archive.canonicalIdentity();
+        if (!identity)
+            return cert; // Optional certification failure is a miss, not a kernel fault.
+        cert->canonicalIdentity = *identity;
+        cert->prefixEventCount = impl_->recording->eventCount;
+        cert->rpaStateVersion = 1;
+    } catch (const std::exception&) {
+        // The required owning checkpoint still succeeds when the optional certificate cannot.
+    }
+    return cert;
+}
+
+auto ExecutionKernel::restoreCertifiedRpa(const CheckpointCertificate& cert,
+                                          const KernelTestControls* controls) noexcept -> bool try {
+    const auto& dto = *cert.state;
+    SharedSequence<MatcherState> matchers;
+    matchers.reserve(dto.matchers.size());
+    for (const auto& saved : dto.matchers) {
+        MatcherState matcher{{}, saved.epsilonAttempted};
+        matcher.states.reserve(saved.states.size());
+        for (const auto state : saved.states)
+            matcher.states.push_back(static_cast<std::size_t>(state));
+        matchers.push_back(std::move(matcher));
+    }
+    auto state = std::make_shared<RuntimeState>(dto.kernel, std::move(matchers));
+    state->projection.runScope = impl_->active->projection.runScope;
+    state->coverageHistory = dto.coverageHistory;
+    state->activeRequirements.reserve(dto.activeRequirements.size());
+    for (const auto index : dto.activeRequirements)
+        state->activeRequirements.push_back(static_cast<std::size_t>(index));
+    state->timerCursor = static_cast<std::size_t>(dto.timerCursor);
+    state->nextCommitId = dto.nextCommitId;
+    state->idsExhausted = dto.commitIdsExhausted;
+    auto pending = dto.pending;
+    if (controls && controls->failCertifiedRestore)
+        throw std::bad_alloc{};
+    auto reserve = impl_->reserveFault(*state);
+    auto base = std::make_shared<ExecutionLogChunk>();
+    base->baseState = cert.state;
+    base->baseRecords = static_cast<std::size_t>(cert.cut.completeRecords);
+    auto recording = std::make_shared<const ReplayData>(
+        ReplayData{{}, cert.prefixEventCount, dto.kernel.judgementIdentity});
+    // Every fallible copy/reserve precedes publication. Legacy ingress remains at its
+    // prepared defaults: ordinary RPA admission stores its accepted keys in the projection.
+    impl_->pending = std::move(pending);
+    impl_->faultReserve = std::move(reserve);
+    impl_->active = std::move(state);
+    impl_->recording = std::move(recording);
+    impl_->logTail = std::move(base);
+    impl_->appliedRecords = cert.cut.completeRecords;
+    // This journal borrows a checkpoint DTO. Exported native anchors must not extend its
+    // lifetime after the run retires; ordinary recovery and the explicit hint remain valid.
+    impl_->nativeAnchorEligible = false;
+    return true;
+} catch (const std::exception&) {
+    return false;
+}
+
 auto ExecutionKernel::submit(std::vector<ClockedIngress> batch)
     -> core::Result<std::vector<InputReceiptPending>> {
     if (impl_->active->projection.rpa) {
@@ -1251,8 +1448,9 @@ auto ExecutionKernel::submit(std::vector<ClockedIngress> batch)
 auto ExecutionKernel::submitCanonical(std::vector<CanonicalInput> batch)
     -> core::Result<std::vector<InputReceiptPending>> try {
     if (impl_->active->projection.rpa) {
-        auto result = submitRpa(batch);
-        if (!result && !batch.empty()) {
+        bool transientAllocationFailure{false};
+        auto result = submitRpa(batch, transientAllocationFailure);
+        if (!result && !transientAllocationFailure && !batch.empty()) {
             auto record = impl_->recordingCandidate();
             std::sort(batch.begin(), batch.end(),
                       [](const auto& a, const auto& b) { return a.key < b.key; });
@@ -1261,6 +1459,7 @@ auto ExecutionKernel::submitCanonical(std::vector<CanonicalInput> batch)
             record->eventCount += static_cast<std::uint64_t>(batch.size());
             record->records.push_back({std::move(batch), {}, {}, {}, {}, result.error()});
             impl_->publishRecording(std::move(record));
+            impl_->releaseSeekSource();
         }
         return result;
     }
@@ -1294,6 +1493,7 @@ auto ExecutionKernel::submitCanonical(std::vector<CanonicalInput> batch)
     }
     return submitBatch(inputs, amounts);
 } catch (const std::exception&) {
+    impl_->reservedLog.reset();
     return core::unexpected(
         error("execution.relation_invalid", "canonical submission allocation failed"));
 }
@@ -1404,21 +1604,25 @@ auto ExecutionKernel::submitBatch(std::span<const ClockedIngress> batch,
     std::sort(impl_->pending.begin(), impl_->pending.end(),
               [](const auto& a, const auto& b) { return a.dispatchTick < b.dispatchTick; });
     impl_->publishRecording(std::move(recording));
-    impl_->seekSource.reset();
+    impl_->releaseSeekSource();
     return receipts;
 } catch (const std::exception&) {
     return core::unexpected(
         error("execution.relation_invalid", "submission storage allocation failed"));
 }
 
-auto ExecutionKernel::submitRpa(std::vector<CanonicalInput> batch)
+auto ExecutionKernel::submitRpa(std::vector<CanonicalInput> batch, bool& transientAllocationFailure)
     -> core::Result<std::vector<InputReceiptPending>> try {
+    transientAllocationFailure = false;
     const auto& p = impl_->active->projection;
     if (p.state != KernelSessionState::Prepared || p.rpa->paused) {
         return core::unexpected(
             error("session.lifecycle_order", "RPA admission requires running state"));
     }
     auto draft = std::make_shared<RuntimeState>(*impl_->active);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpaObservation::seekAdd(SeekPhase::s4InternalExecution, &SeekWork::draftCopies);
+#endif
     auto pending = impl_->pending;
     auto recording = impl_->recordingCandidate();
     std::vector<InputReceiptPending> receipts;
@@ -1506,8 +1710,14 @@ auto ExecutionKernel::submitRpa(std::vector<CanonicalInput> batch)
     impl_->faultReserve = std::move(reserve);
     impl_->pending = std::move(pending);
     impl_->publishRecording(std::move(recording));
-    impl_->seekSource.reset();
+    impl_->releaseSeekSource();
     return receipts;
+} catch (const std::bad_alloc&) {
+    // No admission completed. A transient resource failure is not a deterministic Replay
+    // rejection; preserve both the applied journal and an existing complete Seek source.
+    transientAllocationFailure = true;
+    impl_->reservedLog.reset();
+    return core::unexpected(error("execution.relation_invalid", "occurrence reservation failed"));
 } catch (const std::exception&) {
     return core::unexpected(error("execution.relation_invalid", "occurrence reservation failed"));
 }
@@ -1574,6 +1784,9 @@ auto ExecutionKernel::controlRpa(const RpaControlRecord& control) -> core::Resul
     recording->records.push_back({{}, {}, {}, {}, control});
     auto draft = std::make_shared<RuntimeState>(*impl_->active);
     auto& logical = *draft->projection.rpa;
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    rpaObservation::seekAdd(SeekPhase::s4InternalExecution, &SeekWork::draftCopies);
+#endif
     std::vector<FactDescriptor> facts;
     if (control.kind == RpaControlKind::pause) {
         logical.paused = true;
@@ -1651,6 +1864,9 @@ auto ExecutionKernel::controlRpa(const RpaControlRecord& control) -> core::Resul
     impl_->faultReserve = std::move(reserve);
     try {
         auto folded = std::make_shared<RuntimeState>(*impl_->active);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        rpaObservation::seekAdd(SeekPhase::s4InternalExecution, &SeekWork::foldCopies);
+#endif
         if (control.kind == RpaControlKind::resume && folded->projection.fold) {
             auto& rpa = *folded->projection.rpa;
             if (rpa.foldBaseTick == control.cutTick)
@@ -1674,13 +1890,13 @@ auto ExecutionKernel::controlRpa(const RpaControlRecord& control) -> core::Resul
         recording->records.back().result =
             std::shared_ptr<const KernelProjection>(impl_->active, &impl_->active->projection);
         impl_->publishRecording(std::move(recording));
-        impl_->seekSource.reset();
+        impl_->releaseSeekSource();
         return core::unexpected(std::move(impl_->foldFailureResult));
     }
     recording->records.back().result =
         std::shared_ptr<const KernelProjection>(impl_->active, &impl_->active->projection);
     impl_->publishRecording(std::move(recording));
-    impl_->seekSource.reset();
+    impl_->releaseSeekSource();
     return {};
 } catch (const std::exception&) {
     return core::unexpected(
@@ -1699,7 +1915,7 @@ auto ExecutionKernel::advance(Tick horizon, bool controlDrain) -> core::Result<v
         record->records.back().result =
             std::shared_ptr<const KernelProjection>(impl_->active, &impl_->active->projection);
         impl_->publishRecording(std::move(record));
-        impl_->seekSource.reset();
+        impl_->releaseSeekSource();
     }
     return outcome;
 } catch (const std::exception&) {
@@ -1732,6 +1948,7 @@ auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
         const auto timers = impl_->prepared.timers();
         std::shared_ptr<RuntimeState> writable;
         bool idleFoldReady = false;
+        bool executedTick = false;
         while (true) {
             std::optional<Tick> tick;
             auto cursor = impl_->active->timerCursor;
@@ -1770,6 +1987,7 @@ auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
             if (!tick) {
                 break;
             }
+            executedTick = true;
             failedTick = *tick;
             diagnostic.progress(tick->value(), impl_->active->timerCursor);
             std::size_t idleEnd{};
@@ -1792,7 +2010,11 @@ auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
             auto draft = [&] {
                 internal::execution_diagnostics::PartScope part{
                     internal::execution_diagnostics::Part::copy};
-                return std::make_shared<RuntimeState>(*impl_->active);
+                auto copy = std::make_shared<RuntimeState>(*impl_->active);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+                rpaObservation::seekAdd(SeekPhase::s4InternalExecution, &SeekWork::draftCopies);
+#endif
+                return copy;
             }();
             std::vector<AdmittedObservation> inputs;
             for (const auto& input : impl_->pending) {
@@ -1809,7 +2031,7 @@ auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
                     internal::execution_diagnostics::Part::timers};
                 const auto timerIndex = draft->timerCursor++;
                 impl_->timer(*draft, facts, timers[timerIndex],
-                             impl_->timerRequirements[timerIndex], inputs);
+                             impl_->preparation->timerRequirements[timerIndex], inputs);
             }
             if (draft->activeRequirements.size() != activeCount)
                 std::sort(draft->activeRequirements.begin(), draft->activeRequirements.end());
@@ -1866,7 +2088,11 @@ auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
             auto folded = [&] {
                 internal::execution_diagnostics::PartScope part{
                     internal::execution_diagnostics::Part::foldCopy};
-                return std::make_shared<RuntimeState>(*impl_->active);
+                auto copy = std::make_shared<RuntimeState>(*impl_->active);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+                rpaObservation::seekAdd(SeekPhase::s4InternalExecution, &SeekWork::foldCopies);
+#endif
+                return copy;
             }();
             impl_->failIfRequested(*tick, KernelFailurePoint::beforeFold);
             if (folded->projection.rpa) {
@@ -1901,9 +2127,21 @@ auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
         if (impl_->testControls && impl_->testControls->failAdvanceFinalization)
             throw std::bad_alloc{};
         auto final = std::make_shared<RuntimeState>(*impl_->active);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        rpaObservation::seekAdd(SeekPhase::s4InternalExecution, &SeekWork::finalizationCopies);
+#endif
         final->projection.processedFrontier = *frontier;
         final->projection.lastAdvanceHorizon = horizon;
-        auto reserve = impl_->reserveFault(*final);
+        // With no Tick work, the private reserve already mirrors every payload member.
+        // Test injection can change active alone, so injected runs keep the reference path.
+        const bool reuseReserve = !executedTick && final->projection.rpa && !impl_->testControls &&
+                                  impl_->faultReserve.use_count() == 1;
+        auto reserve = reuseReserve ? impl_->faultReserve : impl_->reserveFault(*final);
+        // All fallible work is complete. Only these nonthrowing scalars changed on this path.
+        if (reuseReserve) {
+            reserve->projection.processedFrontier = *frontier;
+            reserve->projection.lastAdvanceHorizon = horizon;
+        }
         impl_->active = std::move(final);
         impl_->faultReserve = std::move(reserve);
         return {};
@@ -1948,7 +2186,9 @@ auto ExecutionKernel::captureState() const
                      impl_->ingress.observationIdsExhausted_},
                     impl_->pending};
     if (dto.kernel.rpa) {
-        dto.rpaHistory = archive().data().records;
+        // Recovery replays the applied journal, including a synthetic partial advance.
+        // archive() may still expose the complete Seek source with an unapplied suffix.
+        dto.rpaHistory = flattenLog(impl_->logTail);
     }
     dto.kernel.runScope.reset();
     for (const auto& m : impl_->active->matchers) {
@@ -1987,18 +2227,29 @@ auto ExecutionKernel::restore(const SnapshotStorage& saved, const RecoveryInputs
     auto& k = **initialCandidate;
     const auto& dto = saved.dto;
     if (dto.kernel.rpa) {
-        auto candidate = prepare(inputs.configuration, inputs.prepared);
-        if (!candidate || !(*candidate)->query()->projection.rpa)
+        // The initial candidate already owns fresh matchers, indices and fault reserve.
+        // Reuse it for validation replay; no state has been applied to it yet.
+        auto& candidate = initialCandidate;
+        if (!(*candidate)->query()->projection.rpa)
             return core::unexpected(
                 error("execution.relation_invalid", "RPA snapshot profile mismatch"));
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+        // Includes replay, full DTO materialization and full comparison, excludes prepare.
+        rpaObservation::SeekWorkTimer timer{SeekPhase::s3Validation,
+                                            &SeekWork::rpaRestoreValidationUs};
+#endif
         for (const auto& record : dto.rpaHistory) {
-            if (record.result && record.result->state == KernelSessionState::Faulted &&
-                record.result->failedTick) {
+            if (record.result && record.result->state == KernelSessionState::Faulted) {
                 KernelTestControls controls{};
                 controls.failedTick = record.result->failedTick;
                 controls.failurePoint = record.result->faultStage == FaultStage::fold
                                             ? KernelFailurePoint::beforeFold
                                             : KernelFailurePoint::beforeSeal;
+                // A finalization fault has no failed Tick: replay its last sealed prefix and
+                // fail the horizon commit, then compare every diagnostic/progress field below.
+                controls.failAdvanceFinalization =
+                    record.horizon && record.result->faultStage == FaultStage::control &&
+                    !record.result->failedTick;
                 auto injected = (*candidate)->inject(controls);
                 if (!injected)
                     return core::unexpected(injected.error());
@@ -2030,7 +2281,7 @@ auto ExecutionKernel::restore(const SnapshotStorage& saved, const RecoveryInputs
         if (!actual || !sameSnapshot((*actual)->dto, dto))
             return core::unexpected(
                 error("execution.relation_invalid", "RPA snapshot state unreachable"));
-        return candidate;
+        return std::move(candidate);
     }
 
     const auto& p = dto.kernel;
@@ -2352,7 +2603,7 @@ auto ExecutionKernel::restore(const SnapshotStorage& saved, const RecoveryInputs
         return core::unexpected(
             error("execution.relation_invalid", "Snapshot activation closure invalid"));
     }
-    std::vector<MatcherState> matchers;
+    SharedSequence<MatcherState> matchers;
     for (std::size_t i = 0; i < dto.matchers.size(); ++i) {
         const auto& program = *inputs.prepared.requirements()[i].executionProgram;
         if (dto.matchers[i].states.empty() ||
@@ -2542,12 +2793,31 @@ auto ExecutionKernel::restore(const SnapshotStorage& saved, const RecoveryInputs
 }
 auto ExecutionKernel::archive() const -> ReplayArchive {
     if (impl_->active->projection.rpa && !impl_->seekSource) {
-        auto data = std::make_shared<ReplayData>(*impl_->recording);
-        data->records = flattenLog(impl_->logTail);
-        return ReplayArchive{std::move(data), impl_->recoveryInputs};
+        auto data = *impl_->recording;
+        data.records = flattenLog(impl_->logTail);
+        ReplayArchive archive{std::make_shared<const ReplayData>(std::move(data)),
+                              impl_->recoveryInputs};
+        archive.internallySealed_ = true;
+        archive.preparation_ = impl_->preparation;
+        auto index = std::make_shared<NativeRecoveryIndex>();
+        index->points = impl_->nativePoints;
+        // The index is rebound only while sealing this exact append-only journal. Every
+        // point retains the immutable prefix from this branch; no address/hash matching.
+        archive.nativeRecovery_ = std::move(index);
+        archive.canonicalCache_ = makeCanonicalReplayIdentityCache();
+        return archive;
     }
-    return ReplayArchive{impl_->seekSource ? impl_->seekSource : impl_->recording,
-                         impl_->recoveryInputs};
+    ReplayArchive archive{impl_->seekSource ? impl_->seekSource : impl_->recording,
+                          impl_->recoveryInputs};
+    // Returning an untrusted Seek source cannot launder it into an internal source.
+    archive.internallySealed_ = !impl_->seekSource || impl_->seekSourceSealed;
+    if (archive.internallySealed_)
+        archive.preparation_ = impl_->preparation;
+    if (impl_->seekSource)
+        archive.nativeRecovery_ = impl_->seekNativeSource;
+    if (impl_->seekSource)
+        archive.canonicalCache_ = impl_->seekCanonicalCache;
+    return archive;
 }
 auto ExecutionKernel::canArchive() const noexcept -> bool {
     return impl_->historyAvailable;
@@ -2686,7 +2956,18 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
                 error("execution.relation_invalid", "Seek full cut horizon mismatch"));
         }
     }
-    auto candidate = prepare(archive.dependencies().configuration, archive.dependencies().prepared);
+    auto candidate = [&]() -> core::Result<std::unique_ptr<ExecutionKernel>> {
+        const auto& plan = archive.preparation_;
+        if (!archive.internallySealed_ || !plan || plan->inputs != archive.inputs_)
+            return prepare(archive.dependencies().configuration, archive.dependencies().prepared);
+        // This exact immutable owner already passed full preparation. A run owns its
+        // scope, matchers and fault reserve independently; only immutable data is reused.
+        auto initial = std::make_shared<RuntimeState>(*plan->initial);
+        initial->projection.runScope = std::make_shared<const std::uint8_t>(0);
+        auto impl = std::make_unique<Impl>(plan->inputs->configuration, plan->inputs->prepared,
+                                          std::move(initial), plan);
+        return std::unique_ptr<ExecutionKernel>{new ExecutionKernel{std::move(impl)}};
+    }();
     if (!candidate) {
         return core::unexpected(candidate.error());
     }
@@ -2717,26 +2998,77 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
 #endif
     std::uint64_t begin = 0;
     const ReplayCheckpoint* chosen = nullptr;
-    for (const auto& checkpoint : checkpoints) {
-        if (checkpoint.state && checkpoint.horizon <= horizon &&
+    const bool rpa = (*candidate)->query()->projection.rpa.has_value();
+    if (rpa && checkpoints.empty() && !controls && archive.internallySealed_ &&
+        archive.nativeRecovery_) {
+        const NativeRecoveryPoint* chosenNative = nullptr;
+        for (const auto& point : archive.nativeRecovery_->points) {
+            const auto& p = point->state->projection;
+            if (point->completeRecords <= cut.completeRecords &&
+                p.lastAdvanceHorizon && *p.lastAdvanceHorizon <= horizon &&
+                (!chosenNative || point->completeRecords > chosenNative->completeRecords))
+                chosenNative = point.get();
+        }
+        if (chosenNative) {
+            try {
+                auto& run = *(*candidate)->impl_;
+                auto state = std::make_shared<RuntimeState>(*chosenNative->state);
+                state->projection.runScope = run.active->projection.runScope;
+                auto reserve = run.reserveFault(*state);
+                run.active = std::move(state);
+                run.faultReserve = std::move(reserve);
+                run.logTail = chosenNative->prefix;
+                run.recording = chosenNative->recording;
+                run.appliedRecords = chosenNative->completeRecords;
+                run.nativeBaseRecords = chosenNative->completeRecords;
+                begin = chosenNative->completeRecords;
+            } catch (const std::exception&) {
+                // All fallible work precedes publication. Optional cache miss uses origin.
+            }
+        }
+    }
+    if (rpa && checkpoints.size() == 1) {
+        const auto& checkpoint = checkpoints.front();
+        const auto& cert = checkpoint.certificate_;
+        // Only one already-certified hint is inspected. Neither an external mutable owner
+        // nor a substituted public field can acquire a private state certificate.
+        if ((!controls || controls->failCertifiedRestore) && archive.internallySealed_ &&
+            checkpoint.archive.internallySealed_ && checkpoint.state && cert &&
+            cert->rpaStateVersion == 1 && cert->archive == archive.anchor() &&
+            checkpoint.archive.anchor() == cert->archive && checkpoint.state == cert->state &&
+            checkpoint.cut == cert->cut && checkpoint.horizon == cert->horizon &&
+            !checkpoint.cut.partialHorizon && checkpoint.horizon <= horizon &&
             checkpoint.cut.completeRecords <= cut.completeRecords &&
-            (checkpoint.cut.completeRecords != cut.completeRecords ||
-             !checkpoint.cut.partialHorizon ||
-             (cut.partialHorizon && *checkpoint.cut.partialHorizon <= *cut.partialHorizon)) &&
-            (!chosen || checkpoint.horizon > chosen->horizon ||
-             (checkpoint.horizon == chosen->horizon &&
-              checkpoint.cut.completeRecords > chosen->cut.completeRecords)) &&
-            sameReplayHistory(checkpoint.archive, archive)) {
-            chosen = &checkpoint;
+            cert->state->kernel.judgementIdentity == archive.data().identity &&
+            (*candidate)->restoreCertifiedRpa(*cert, controls)) {
+            begin = checkpoint.cut.completeRecords;
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+            ++rpaRestores;
+#endif
+        }
+    }
+    if (!rpa) {
+        for (const auto& checkpoint : checkpoints) {
+            if (checkpoint.state && checkpoint.horizon <= horizon &&
+                checkpoint.cut.completeRecords <= cut.completeRecords &&
+                (checkpoint.cut.completeRecords != cut.completeRecords ||
+                 !checkpoint.cut.partialHorizon ||
+                 (cut.partialHorizon && *checkpoint.cut.partialHorizon <= *cut.partialHorizon)) &&
+                (!chosen || checkpoint.horizon > chosen->horizon ||
+                 (checkpoint.horizon == chosen->horizon &&
+                  checkpoint.cut.completeRecords > chosen->cut.completeRecords)) &&
+                sameReplayHistory(checkpoint.archive, archive)) {
+                chosen = &checkpoint;
+            }
         }
     }
     if (chosen && !(*candidate)->query()->projection.rpa) {
         // A same-identity, structurally valid state is insufficient. Bind the full archive,
         // exact cut/H and compare every private member from the origin before trusting it.
         const auto& cert = chosen->certificate_;
-        bool verified = cert && cert->archive == archive.anchor() && cert->cut == chosen->cut &&
-                        cert->horizon == chosen->horizon && cert->state == chosen->state &&
-                        !controls;
+        bool verified = archive.internallySealed_ && cert && cert->archive == archive.anchor() &&
+                        cert->cut == chosen->cut && cert->horizon == chosen->horizon &&
+                        cert->state == chosen->state && !controls;
         if (!verified) {
             auto origin = seekCandidate(archive, chosen->horizon, controls, &chosen->cut);
             if (origin) {
@@ -2775,6 +3107,19 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
             return core::unexpected(applied.error());
         }
     }
+    const auto shareValidatedPages = [&](const KernelProjection& expected) {
+        if (!rpa || !archive.internallySealed_ || controls)
+            return;
+        // Called only AFTER full exact comparison. Rebind equal immutable pages to the
+        // source owner, so later unchanged records compare in O(page directory) or O(1).
+        // Do not mutate an already published state or any source/checkpoint owner.
+        auto state = std::make_shared<RuntimeState>(*k.impl_->active);
+        state->projection.phases = expected.phases;
+        state->projection.facts = expected.facts;
+        auto reserve = k.impl_->reserveFault(*state);
+        k.impl_->active = std::move(state);
+        k.impl_->faultReserve = std::move(reserve);
+    };
     for (std::uint64_t i = begin; i < cut.completeRecords; ++i) {
         const auto& record = archive.data().records[static_cast<std::size_t>(i)];
         if (record.control) {
@@ -2789,6 +3134,7 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
             if (!result || !sameKernelResult(k.query()->projection, *record.result))
                 return core::unexpected(
                     error("execution.relation_invalid", "Seek RPA result mismatch"));
+            shareValidatedPages(*record.result);
 #if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
             rpaMaxRecordElements = std::max(rpaMaxRecordElements, rpaElements(*record.result));
 #endif
@@ -2811,6 +3157,7 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
                 return core::unexpected(
                     error("execution.relation_invalid", "Seek complete control mismatch"));
             }
+            shareValidatedPages(*record.result);
 #if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
             rpaMaxRecordElements = std::max(rpaMaxRecordElements, rpaElements(*record.result));
 #endif
@@ -2880,7 +3227,7 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
             projection.observers.capacity() + projection.receipts.capacity() +
             projection.ownership.capacity() + projection.phases.capacity() +
             projection.resources.capacity());
-        set(Phase::s3Validation, &Work::actualRecords, cut.completeRecords);
+        set(Phase::s3Validation, &Work::actualRecords, cut.completeRecords - begin);
         set(Phase::s3Validation, &Work::batchInputs, rpaBatchInputs);
         set(Phase::s3Validation, &Work::controlHorizons, rpaControlHorizons);
         set(Phase::s3Validation, &Work::nestedResultElements, elements);
@@ -2902,6 +3249,9 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
     }
 #endif
     k.impl_->seekSource = archive.anchor();
+    k.impl_->seekSourceSealed = archive.internallySealed_;
+    k.impl_->seekNativeSource = archive.nativeRecovery_;
+    k.impl_->seekCanonicalCache = archive.canonicalCache_;
     return std::move(*candidate);
 } catch (const std::exception&) {
     return core::unexpected(

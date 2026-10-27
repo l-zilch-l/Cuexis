@@ -1,6 +1,10 @@
 # R2 退出评审报告与证据汇总
 
-状态：candidate / exit review pending；实现及受控局部验证已有证据，完整退出条件尚未闭合。
+状态：historical review snapshot / superseded status classification。
+
+本报告形成时将历史限制统称为退出缺口。后续[技术收尾复核与退出范围](2026-10-26-r2-technical-closure-review.md)
+已核实新重锚/触发调查的完成证据，并更正该分类；owner 于 2026-10-26 已接受 R2 按原计划退出。
+以下保留当时评审文本，原证据包保持原字节；当前结论以上述后续报告及 CURRENT_STATUS 为准。
 
 快照日期：2026-10-26（Asia/Shanghai）。本报告依据用户“编写 R2 退出报告并整理证据和文档”的请求编制，
 该请求不记录为 R2 退出接受。当前任务状态以 [CURRENT_STATUS](../../../../../CURRENT_STATUS.md) 为准；

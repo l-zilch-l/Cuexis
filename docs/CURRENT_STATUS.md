@@ -2,21 +2,20 @@
 
 状态：current
 
-更新日期：2026-10-26
+更新日期：2026-10-27
 
 本文只维护当前阶段、正在进行的任务和未解决的问题。实施与测量细节见带日期的阶段报告。
 
 ## 当前任务
 
-- **R2 退出评审**：第三候选的实现、适用正确性验证及受控配置下四规模局部收益已有证据，退出报告与证据包已编制。
-  原独立构建 N1 inconclusive、R0/Q4 重锚及默认配置推广缺口仍需处置，完整退出条件尚未闭合。
-  见[退出评审报告](stage_reports/stages/stage-07/05-rpa-new/r2/2026-10-26-r2-exit-report.md)。
-- **R3 实施准备**：接手材料已准备，产品实施尚未开始。下一步从 Seek 相位/复制归因、重复准备审计及小规模早期 cut 恢复链验证起步；
-  各子项依赖与停止条件见[整改计划 §4、§5、§8](stage_plans/active/stage-07/05-rpa-new/plan.md)。
+- **R3 实施中**：R3a 当前恢复修复与准备去重已通过六套本地配置、STATIC/SHARED clean consumers 和宏隔离核验。
+  最新[首次身份归因](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-cold-identity-attribution.md)确认完整归档的重复结果写出、FNV 与 SHA 全量扫描是首次主要成本；该轮仅诊断，产品代码未改。
+  R3b 首个候选的[裁定包](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3b-certified-prefix-and-cost.md)与后续[高 requirements 归因](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-high-requirements-attribution.md)保持历史身份。当前分支已实施[分页共享状态、自然恢复锚点及精确身份缓存重构](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-redesign.md)。局部内核恢复与重复 Seek 明显加快，但 2048 requirements 的 CPU 宿主首次请求到目标帧仍约 310 ms，20 ms 目标未通过。R3 未退出，R3c 尚未进入；局部结果不代替 R4、设备或生产接受，见[实施登记](stage_plans/active/stage-07/05-rpa-new/r3/plan.md)。
 - **PD-5 定案与 Stage 7-PD 退出裁定**：判定报告已提出“未通过但定案”及退出清单，尚待 owner 接受；读取与 Seek 整改由 RPA 线承接，
   分域内存及正式/设备/生产验收缺口仍按下文跟踪。见[判定报告](stage_reports/stages/stage-07/04-pd/pd-5/exit/2026-10-24-pd5-verdict-and-stage-7-pd-exit.md)。
 
-唯一实施入口为 `D:/Cuexis-worktree`；`D:/Cuexis-pd5-40k-admission` 保留为只读历史证据树。
+本重构分支的唯一实施入口为 `D:/Cuexis-redesign`，分支 `Cuexis-redesign`。
+接手资料中的其他 worktree 和分支均为历史来源，本批不在其中执行操作。
 已完成工作、候选处置和逐轮测试记录见[Stage 7 报告索引](stage_reports/stages/stage-07/README.md)。
 
 ## 阶段状态
@@ -24,7 +23,7 @@
 | 阶段 | 当前状态 | 入口 |
 | --- | --- | --- |
 | Stage 7A | S7A-3/4、5/6、7/8 的受限功能验收完成；整体关闭仍待 RPA 收尾 | [Stage 7A 计划](stage_plans/active/stage-07/01-a/plan.md) |
-| Stage 7-RPA | R1 已退出；R2 退出报告/证据包已编制，待评审；受控局部门通过，原独立构建 N1 和 R0/Q4 缺口未闭合，R2 退出/R4 正式、设备与生产接受均未登记 | [整改计划](stage_plans/active/stage-07/05-rpa-new/plan.md)、[退出报告](stage_reports/stages/stage-07/05-rpa-new/r2/2026-10-26-r2-exit-report.md) |
+| Stage 7-RPA | R1、R2 已退出；owner 于 2026-10-26 接受 R2 按原计划退出，受控局部结果及历史限制保留；R3 实施中，R4 正式、设备与生产接受未登记 | [整改计划](stage_plans/active/stage-07/05-rpa-new/plan.md)、[退出复核](stage_reports/stages/stage-07/05-rpa-new/r2/2026-10-26-r2-technical-closure-review.md) |
 | Stage 7-PD | PD-0–4 内部实施及适用门禁完成；PD-5 判定为「未通过但定案」，定案与 Stage 7-PD 退出清单尚待 owner 批准。原 40k 功能与小规模最终释放已核验，40k 分域内存仍未测量、正常分配器正式性能未通过。B0 已接受、B1 静态工具完成且未采数，B2/B3 未授权；ETW r4 三用例通过只证明工具合同。读取优化归 RPA R2，Seek 优化归其后续整改，旧窗口 3 停止，子阶段未退出 | [PD 计划](stage_plans/active/stage-07/04-pd/plan.md)、[PD-5 判定报告](stage_reports/stages/stage-07/04-pd/pd-5/exit/2026-10-24-pd5-verdict-and-stage-7-pd-exit.md) |
 | Stage 7B+ | 未开始，等待 RPA 完整退出 | [Stage 7B+ 计划](stage_plans/active/stage-07/06-b/plan.md) |
 

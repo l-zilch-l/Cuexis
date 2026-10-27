@@ -1,5 +1,6 @@
 add_executable(cuexis_judgement_tests
     claim_key_tests.cpp
+    shared_sequence_tests.cpp
     fold_recovery_tests.cpp
     publication_tests.cpp
     execution_profile_tests.cpp

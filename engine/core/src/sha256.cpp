@@ -3,19 +3,32 @@
 #include <algorithm>
 #include <bit>
 #include <cstddef>
+#include <cstring>
 #include <span>
 
 namespace cuexis::core::detail {
 
 void Sha256::update(std::span<const std::byte> bytes) noexcept {
     totalBytes_ += bytes.size();
-    for (const auto value : bytes) {
-        block_[blockSize_++] = std::to_integer<std::uint8_t>(value);
-        if (blockSize_ == block_.size()) {
-            transform(block_);
-            blockSize_ = 0;
-        }
+    if (blockSize_ != 0) {
+        const auto copied = std::min(bytes.size(), block_.size() - blockSize_);
+        if (copied != 0)
+            std::memcpy(block_.data() + blockSize_, bytes.data(), copied);
+        blockSize_ += copied;
+        bytes = bytes.subspan(copied);
+        if (blockSize_ != block_.size())
+            return;
+        transform(block_);
+        blockSize_ = 0;
     }
+    while (bytes.size() >= block_.size()) {
+        std::memcpy(block_.data(), bytes.data(), block_.size());
+        transform(block_);
+        bytes = bytes.subspan(block_.size());
+    }
+    if (!bytes.empty())
+        std::memcpy(block_.data(), bytes.data(), bytes.size());
+    blockSize_ = bytes.size();
 }
 
 auto Sha256::finish() const noexcept -> std::array<std::uint8_t, 32> {
