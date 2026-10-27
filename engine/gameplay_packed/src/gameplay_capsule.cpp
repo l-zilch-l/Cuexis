@@ -1504,19 +1504,22 @@ auto findIndex(const std::vector<T>& rows, F predicate, std::string_view path) -
     require(it != rows.end(), path, "dangling table reference");
     return u32(static_cast<std::size_t>(it - rows.begin()));
 }
+// Prepared Writer graphs are canonical; the Reader verifies declaration order
+// before these lookups. Never search an unvalidated physical input table here.
+auto findDeclaration(const StableDeclarationId& id, const Model& m) -> const MergedDeclaration* {
+    const auto& rows = m.graph.mergedNamespace.declarations;
+    const auto found =
+        std::lower_bound(rows.begin(), rows.end(), id,
+                         [](const auto& row, const auto& key) { return row.stableId < key; });
+    return found != rows.end() && found->stableId == id ? &*found : nullptr;
+}
 auto namedMeasure(const RequirementRecord& r, const Model& m) -> std::optional<std::string> {
-    const auto declaration = std::find_if(m.graph.mergedNamespace.declarations.begin(),
-                                          m.graph.mergedNamespace.declarations.end(),
-                                          [&r](const auto& d) { return d.stableId == r.stableId; });
-    require(declaration != m.graph.mergedNamespace.declarations.end(), "requirements.stableId",
-            "missing declaration");
+    const auto* declaration = findDeclaration(r.stableId, m);
+    require(declaration != nullptr, "requirements.stableId", "missing declaration");
     std::optional<std::string> result;
     for (const auto& ref : declaration->references) {
-        const auto d = std::find_if(m.graph.mergedNamespace.declarations.begin(),
-                                    m.graph.mergedNamespace.declarations.end(),
-                                    [&ref](const auto& k) { return k.stableId == ref; });
-        require(d != m.graph.mergedNamespace.declarations.end(), "mergedDeclarations.references",
-                "dangling declaration");
+        const auto* d = findDeclaration(ref, m);
+        require(d != nullptr, "mergedDeclarations.references", "dangling declaration");
         if (d->kind == DeclarationKind::measureDefinition) {
             require(!result, "requirements.measure", "multiple named Measure references");
             result = d->name;
@@ -1639,6 +1642,11 @@ void validate(Model& m, chart::PackedChartLimits limits,
             "domains.axes");
         checked(validateJudgementDomain(d));
     }
+    // Stable IDs need not have the same order as Requirement identities. Retain
+    // all matches so malformed duplicate IDs keep the original existence check.
+    std::multimap<StableDeclarationId, const RequirementRecord*> requirementsByDeclaration;
+    for (const auto& r : g.requirements)
+        requirementsByDeclaration.emplace(r.stableId, &r);
     for (const auto& d : g.mergedNamespace.declarations) {
         require(!d.name.empty() && names.insert(d.name).second, "mergedDeclarations.name",
                 "conflicting declaration name");
@@ -1646,20 +1654,19 @@ void validate(Model& m, chart::PackedChartLimits limits,
         ordered(d.requiredFeatureIds, "mergedDeclarations.features");
         ordered(d.requiredCapabilityIds, "mergedDeclarations.capabilities");
         for (const auto& ref : d.references) {
-            require(std::any_of(g.mergedNamespace.declarations.begin(),
-                                g.mergedNamespace.declarations.end(),
-                                [&ref](const auto& k) { return k.stableId == ref; }),
-                    "mergedDeclarations.references", "dangling declaration");
+            require(findDeclaration(ref, m) != nullptr, "mergedDeclarations.references",
+                    "dangling declaration");
         }
         bool exists = false;
         switch (d.kind) {
-        case DeclarationKind::requirement:
-            exists =
-                std::any_of(g.requirements.begin(), g.requirements.end(), [&d, &g](const auto& r) {
-                    return r.stableId == d.stableId &&
-                           (!g.executionProfile.empty() || r.identity.requirementLocalId == d.name);
-                });
+        case DeclarationKind::requirement: {
+            const auto [first, last] = requirementsByDeclaration.equal_range(d.stableId);
+            exists = std::any_of(first, last, [&d, &g](const auto& entry) {
+                return !g.executionProfile.empty() ||
+                       entry.second->identity.requirementLocalId == d.name;
+            });
             break;
+        }
         case DeclarationKind::patternDefinition:
             exists = patternNames.contains(d.name);
             break;
@@ -1830,11 +1837,14 @@ auto makeModel(const EncodeRequest& request, chart::PackedChartLimits limits) ->
     });
     require(request.owners.size() == m.graph.requirements.size(), "GPR0.entity",
             "explicit ownership must cover every Requirement exactly once");
-    std::set<RequirementIdentity> ownerIds;
+    std::map<RequirementIdentity, const RequirementOwner*> ownersByRequirement;
     for (const auto& owner : request.owners) {
-        require(ownerIds.insert(owner.requirement).second, "GPR0.entity", "duplicate ownership");
-        require(std::any_of(m.graph.requirements.begin(), m.graph.requirements.end(),
-                            [&owner](const auto& r) { return r.identity == owner.requirement; }),
+        require(ownersByRequirement.try_emplace(owner.requirement, &owner).second, "GPR0.entity",
+                "duplicate ownership");
+        const auto found = std::lower_bound(
+            m.graph.requirements.begin(), m.graph.requirements.end(), owner.requirement,
+            [](const auto& row, const auto& key) { return row.identity < key; });
+        require(found != m.graph.requirements.end() && found->identity == owner.requirement,
                 "GPR0.entity", "ownership names no Requirement");
     }
     m.patterns.assign(request.additionalPatterns.begin(), request.additionalPatterns.end());
@@ -1858,9 +1868,9 @@ auto makeModel(const EncodeRequest& request, chart::PackedChartLimits limits) ->
     m.measures.erase(std::unique(m.measures.begin(), m.measures.end()), m.measures.end());
     for (std::size_t i = 0; i < m.graph.requirements.size(); ++i) {
         const auto& r = m.graph.requirements[i];
-        const auto owner =
-            std::find_if(request.owners.begin(), request.owners.end(),
-                         [&r](const auto& o) { return o.requirement == r.identity; });
+        const auto foundOwner = ownersByRequirement.find(r.identity);
+        require(foundOwner != ownersByRequirement.end(), "GPR0.entity", "missing ownership");
+        const auto* owner = foundOwner->second;
         RequirementIndices ix;
         ix.entity = findIndex(
             m.entities, [&owner](const auto& e) { return e == owner->entity; },
@@ -1870,10 +1880,11 @@ auto makeModel(const EncodeRequest& request, chart::PackedChartLimits limits) ->
         }
         ix.pattern = findIndex(
             m.patterns, [&r](const auto& p) { return p == r.pattern; }, "requirements.pattern");
+        const auto measureId = namedMeasure(r, m);
         ix.measure = findIndex(
             m.measures,
-            [&r, &m](const auto& w) {
-                return w.id == namedMeasure(r, m) && w.declaration == r.measure;
+            [&r, &measureId](const auto& w) {
+                return w.id == measureId && w.declaration == r.measure;
             },
             "requirements.measure");
         ix.domain = findIndex(

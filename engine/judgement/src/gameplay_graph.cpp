@@ -30,7 +30,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <map>
 #include <optional>
+#include <set>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -545,6 +547,17 @@ void compareValue(DifferenceRecorder& recorder, std::string path, const Value& l
     return ref.featureId;
 }
 
+// Keep the first row for a key, matching the original linear lookup even for
+// noncanonical inputs. Keys are materialized once, never inside a candidate scan.
+template <typename Value, typename Key>
+auto indexRows(const std::vector<Value>& rows, Key key)
+    -> std::map<std::string, const Value*, std::less<>> {
+    std::map<std::string, const Value*, std::less<>> index;
+    for (const auto& value : rows)
+        index.try_emplace(key(value), &value);
+    return index;
+}
+
 //  Compares two canonically ordered tables keyed by a stable identity. A key that only one side has
 //  is reported as a presence difference, so a missing or extra table row can never be hidden by a
 //  size-only comparison.
@@ -555,25 +568,23 @@ void compareKeyedTable(DifferenceRecorder& recorder, std::string path,
     if (left.size() != right.size()) {
         recorder.add(path + ".size", std::to_string(left.size()), std::to_string(right.size()));
     }
+    const auto rightIndex = indexRows(right, key);
+    std::set<std::string, std::less<>> leftKeys;
     for (const auto& value : left) {
         const std::string valueKey = key(value);
-        const auto found = std::find_if(right.begin(), right.end(), [&](const Value& candidate) {
-            return key(candidate) == valueKey;
-        });
-        if (found == right.end()) {
+        leftKeys.insert(valueKey);
+        const auto found = rightIndex.find(valueKey);
+        if (found == rightIndex.end()) {
             recorder.add(path + "[" + valueKey + "]", render(value), "<absent>");
             continue;
         }
-        if (!(value == *found)) {
-            recorder.add(path + "[" + valueKey + "]", render(value), render(*found));
+        if (!(value == *found->second)) {
+            recorder.add(path + "[" + valueKey + "]", render(value), render(*found->second));
         }
     }
     for (const auto& value : right) {
         const std::string valueKey = key(value);
-        const auto found = std::find_if(left.begin(), left.end(), [&](const Value& candidate) {
-            return key(candidate) == valueKey;
-        });
-        if (found == left.end()) {
+        if (!leftKeys.contains(valueKey)) {
             recorder.add(path + "[" + valueKey + "]", "<absent>", render(value));
         }
     }
@@ -846,26 +857,25 @@ void compareRequirementTable(DifferenceRecorder& recorder, std::string path,
     if (left.size() != right.size()) {
         recorder.add(path + ".size", std::to_string(left.size()), std::to_string(right.size()));
     }
+    const auto keyOf = [](const RequirementRecord& value) {
+        return renderRequirementIdentity(value.identity);
+    };
+    const auto rightIndex = indexRows(right, keyOf);
+    std::set<std::string, std::less<>> leftKeys;
     for (const auto& requirement : left) {
         const std::string key = renderRequirementIdentity(requirement.identity);
-        const auto found =
-            std::find_if(right.begin(), right.end(), [&](const RequirementRecord& candidate) {
-                return renderRequirementIdentity(candidate.identity) == key;
-            });
-        if (found == right.end()) {
+        leftKeys.insert(key);
+        const auto found = rightIndex.find(key);
+        if (found == rightIndex.end()) {
             recorder.add(path + "[" + key + "]", renderRequirementIdentity(requirement.identity),
                          "<absent>");
             continue;
         }
-        compareRequirement(recorder, path + "[" + key + "]", requirement, *found);
+        compareRequirement(recorder, path + "[" + key + "]", requirement, *found->second);
     }
     for (const auto& requirement : right) {
         const std::string key = renderRequirementIdentity(requirement.identity);
-        const auto found =
-            std::find_if(left.begin(), left.end(), [&](const RequirementRecord& candidate) {
-                return renderRequirementIdentity(candidate.identity) == key;
-            });
-        if (found == left.end()) {
+        if (!leftKeys.contains(key)) {
             recorder.add(path + "[" + key + "]", "<absent>",
                          renderRequirementIdentity(requirement.identity));
         }

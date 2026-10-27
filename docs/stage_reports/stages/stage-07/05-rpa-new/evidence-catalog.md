@@ -75,3 +75,4 @@
 | [R3 来源绑定实验](r3/2026-10-27-r3-source-binding-experiment.md) | `D:/Cuexis-redesign/out/seek-binding-20261027/`；`diagnostics-registration.json`、`diagnostics-result.json`、四份 `diagnostic-*.log`；各配置 `build-*.log`、回归/安装消费者日志及 `final-manifest.json` |
 
 | [R3 完整 Packed 准备归因](r3/2026-10-27-r3-packed-prepare-attribution.md) | `D:/Cuexis-redesign/out/packed-probe-20261027/`（阶段与 Capsule 函数探针）、`out/packed-probe-deep-20261027/`（图比较深探针、消融与按表探针）；独立登记/raw logs/结果、源码副本/patch、`analysis.json` |
+| [R3 完整 Packed 索引优化](r3/2026-10-27-r3-packed-index-optimization.md) | `D:/Cuexis-redesign/out/packed-opt-20261027/`；恢复点快照、六进程普通结果与三进程阶段诊断、`registration-clarification.json`、96 场景差异 oracle、wire 对照、四配置相关回归与安装/导出门、`audit.json` / `final-manifest.json` / `commit-receipt.json` |

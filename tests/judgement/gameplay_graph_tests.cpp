@@ -33,6 +33,7 @@
 #include <cuexis/judgement/gameplay_graph.hpp>
 #include <cuexis/judgement/input_boundary.hpp>
 
+#include <algorithm>
 #include <cstdint>
 #include <limits>
 #include <string>
@@ -478,6 +479,60 @@ TEST_CASE("S7A-3 semantic diff is field by field", "[judgement][s7a-3][p1-15]") 
     REQUIRE_FALSE(featureDifferences.empty());
     CHECK(featureDifferences[0].path.rfind("closureContributionFeatures", 0U) == 0U);
     CHECK_FALSE(judgement::equivalent(contributed, otherFeature));
+}
+
+TEST_CASE("Semantic diff preserves field and presence reports across large table permutations",
+          "[judgement][semantic-diff][indexed]") {
+    const auto timebase = makeTestTimebase();
+    const auto latePolicy = makeTestLatePolicy();
+    auto left = makeGraph(timebase, latePolicy);
+    const auto prototype = makeTestRequirement();
+    for (std::uint32_t i = 0; i < 257; ++i) {
+        auto requirement = prototype;
+        requirement.identity.requirementLocalId = "indexed." + std::to_string(i);
+        requirement.stableId.declarationOrdinal = 1000 + i;
+        left.mergedNamespace.declarations.push_back({requirement.stableId,
+                                                     judgement::DeclarationKind::requirement,
+                                                     requirement.identity.requirementLocalId,
+                                                     {},
+                                                     {},
+                                                     {}});
+        left.requirements.push_back(std::move(requirement));
+    }
+    auto right = left;
+    std::reverse(right.requirements.begin(), right.requirements.end());
+    std::reverse(right.mergedNamespace.declarations.begin(),
+                 right.mergedNamespace.declarations.end());
+    CHECK(judgement::semanticDiff(left, right).empty());
+    auto changed = right;
+    std::erase_if(changed.requirements,
+                  [](const auto& r) { return r.stableId.declarationOrdinal == 1001; });
+    std::erase_if(changed.mergedNamespace.declarations,
+                  [](const auto& d) { return d.stableId.declarationOrdinal == 1001; });
+    auto extra = prototype;
+    extra.identity.requirementLocalId = "indexed.extra";
+    extra.stableId.declarationOrdinal = 2000;
+    changed.mergedNamespace.declarations.push_back({extra.stableId,
+                                                    judgement::DeclarationKind::requirement,
+                                                    extra.identity.requirementLocalId,
+                                                    {},
+                                                    {},
+                                                    {}});
+    changed.requirements.push_back(extra);
+    for (auto& r : changed.requirements)
+        if (r.stableId.declarationOrdinal == 1000)
+            r.preparedGrace = PreparedGrace{TickSpan{9}};
+    const auto differences = judgement::semanticDiff(left, changed);
+    REQUIRE(differences.size() == 5);
+    CHECK(differences.front().path.ends_with(".preparedGrace"));
+    CHECK(differences.front().left == "3");
+    CHECK(differences.front().right == "9");
+    CHECK(std::count_if(differences.begin(), differences.end(),
+                        [](const auto& d) { return d.left == "<absent>"; }) == 2);
+    CHECK(std::count_if(differences.begin(), differences.end(),
+                        [](const auto& d) { return d.right == "<absent>"; }) == 2);
+    CHECK(judgement::semanticDiff(changed, left).size() == 5);
+    CHECK(judgement::semanticDiff(left, right).empty());
 }
 
 TEST_CASE("S7A-3 requirement capacities use one four-state ordering",

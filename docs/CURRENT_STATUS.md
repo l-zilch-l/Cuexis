@@ -34,7 +34,7 @@ Stage 0–6 已完成；Stage 8–14 尚未开始。整体 Stage 7 未关闭。
 
 ## 当前问题与关闭前置
 
-- **完整 Packed 准备扩展性瓶颈已定位、未修复**：[精确探针](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-packed-prepare-attribution.md)确认 10K 原实现准备主要停在解码后 `semanticDiff`：重复平方扫描中生成约一亿次显示 identity；Writer owner/声明匹配和 diff 的 mergedNamespace 亦有独立平方成本。40K 完整准备此前 600 s 未完成；类型化内存路径测得的约 14.9 ms Seek 不代替该入口接受。本轮仅在 `out/` 诊断副本插桩与消融，产品代码未改。
+- **完整 Packed 已实施索引优化，prepare 仍需优化**：[精确探针](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-packed-prepare-attribution.md)定位的重复平方查找已在 Graph 比较、Writer owner 与声明匹配中替换为局部索引/二分。[规模复验](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-packed-index-optimization.md)中 10K 完整准备由约 54.7 s 降至 2.90–3.01 s，40K 由 600 s 未完成变为约 27.3 s 完成，首次请求到 CPU 测试呈现约 16.2–16.5 ms。四配置相关回归及字节/差异兼容检查通过；独立阶段诊断显示剩余主要在 source prepare 和包含 re-prepare 的 Reader。点值不替代正式、设备、内存或生产接受，R3 未退出。
 
 
 - **历史慢态及尾延迟未归因**：PD-0 最新登记组重复性通过，但不解释历史近两倍慢态；该组 Debug 宿主仍保留 15.93 ms 的单帧请求到回执尖峰。PD-5 本机有限 Release 门槛已接受，生产尾延迟预算未接受，不能据均值重复性通过推断生产延迟合格。

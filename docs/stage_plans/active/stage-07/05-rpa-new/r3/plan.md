@@ -26,6 +26,12 @@ R3b 的首个候选见[显式可信恢复提案](trusted-restore-candidate.md)�
 [来源绑定实验](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-source-binding-experiment.md)。
 下表 S0 为原诊断路径，当前所选来源路径不执行 canonical 编码/hash。局部延迟改善不代表 R3/R4 退出。
 
+后续[完整 Packed 索引优化](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-packed-index-optimization.md)
+已按精确归因替换 Graph/owner/声明重复查找；普通完整入口的 10K 准备为 2.90–3.01 s，
+40K 为约 27.3 s，首次请求到 CPU 测试呈现约 16.2–16.5 ms。
+四配置相关回归、字节指纹和差异报告对照通过；prepare 内部剩余成本待进一步细分，
+本地规模点值不作为 R3/R4 退出或设备/生产接受。
+
 
 ## 1. 起点和独立差异
 

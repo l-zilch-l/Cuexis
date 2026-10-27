@@ -1081,3 +1081,54 @@ TEST_CASE("Bounded Gameplay2 static sink preserves complete legacy prefix bytes"
     CHECK(std::equal(expected->begin(), expected->end(), actual.begin(), actual.end()));
     CHECK(scratch.highWater() <= capsule::detail::kAcceptedHashWork.maxHashScratchBytes);
 }
+
+TEST_CASE("Capsule ownership index preserves coverage rejection and canonical owner order",
+          "[capsule][ownership][indexed]") {
+    CapsuleFixture fixture;
+    auto& document = fixture.request.assembly.sources[0].document;
+    auto second = document.requirements[0];
+    second.stableId.declarationOrdinal = 5;
+    second.identity.requirementLocalId = "requirement.two";
+    second.identity.emissionPath[0].repeatIndex = 1;
+    second.resourceClaims[0].claimPolicy.competition =
+        ClaimPolicyDeclaration::CompetitionKey{-1, 3};
+    document.declarations.push_back(
+        testDeclaration(DeclarationKind::requirement, "requirement.two", 5));
+    document.relations[0].members.push_back(second.stableId);
+    fixture.owners.push_back({second.identity, fixture.chart.entities[0].identity});
+    document.requirements.push_back(second);
+    const auto prepared = fixture.prepare();
+    const auto original = fixture.encode(prepared);
+    auto owners = fixture.owners;
+    SECTION("owner order does not affect bytes or roundtrip") {
+        std::reverse(owners.begin(), owners.end());
+        const auto encoded = capsule::encode({fixture.chart, prepared, owners, fixture.profiles});
+        REQUIRE(encoded);
+        CHECK(*encoded == original);
+        const auto decoded = capsule::decode(*encoded, fixture.context());
+        REQUIRE(decoded);
+        CHECK(
+            semanticDiff(prepared.assembled().graph, decoded->gameplay.assembled().graph).empty());
+    }
+    SECTION("duplicate ownership is still rejected") {
+        owners[1] = owners[0];
+        const auto encoded = capsule::encode({fixture.chart, prepared, owners, fixture.profiles});
+        REQUIRE_FALSE(encoded);
+        CHECK(encoded.error().code() == "packed.requirements.invalid");
+        CHECK(encoded.error().message() == "duplicate ownership");
+    }
+    SECTION("unknown ownership is still rejected") {
+        owners[0].requirement.requirementLocalId = "not.present";
+        const auto encoded = capsule::encode({fixture.chart, prepared, owners, fixture.profiles});
+        REQUIRE_FALSE(encoded);
+        CHECK(encoded.error().message() == "ownership names no Requirement");
+    }
+    SECTION("missing ownership is still rejected") {
+        owners.pop_back();
+        const auto encoded = capsule::encode({fixture.chart, prepared, owners, fixture.profiles});
+        REQUIRE_FALSE(encoded);
+        CHECK(encoded.error().message() ==
+              "explicit ownership must cover every Requirement exactly once");
+    }
+    CHECK(fixture.encode(prepared) == original);
+}
