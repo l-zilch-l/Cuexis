@@ -882,6 +882,10 @@ install(FILES
     "${PROJECT_SOURCE_DIR}/THIRD_PARTY_NOTICES.md"
     DESTINATION "${CMAKE_INSTALL_DATADIR}/Cuexis"
 )
+install(FILES "${PROJECT_SOURCE_DIR}/third_party/sha_intrinsics/LICENSE"
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/Cuexis/licenses" RENAME sha-intrinsics-copyright)
+install(FILES "${PROJECT_SOURCE_DIR}/third_party/fnv/LICENSE"
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/Cuexis/licenses" RENAME fnv-copyright)
 
 set(CUEXIS_DISTRIBUTED_VCPKG_PORTS
     entt

@@ -5,8 +5,49 @@
 #include <cstddef>
 #include <cstring>
 #include <span>
+#if defined(CUEXIS_SHA_X86)
+#include "sha256_x86.hpp"
+#if defined(_MSC_VER)
+#include <intrin.h>
+#else
+#include <cpuid.h>
+#endif
+#endif
 
 namespace cuexis::core::detail {
+
+auto Sha256::hardwareAvailable() noexcept -> bool {
+#if defined(CUEXIS_SHA_X86)
+    static const bool available = [] {
+#if defined(_MSC_VER)
+        int cpu[4]{};
+        __cpuid(cpu, 0);
+        if (cpu[0] < 7)
+            return false;
+        __cpuidex(cpu, 1, 0);
+        if ((cpu[2] & (1 << 9)) == 0 || (cpu[2] & (1 << 19)) == 0)
+            return false;
+        __cpuidex(cpu, 7, 0);
+        return (cpu[1] & (1 << 29)) != 0;
+#else
+        unsigned a{}, b{}, c{}, d{};
+        if (__get_cpuid_max(0, nullptr) < 7)
+            return false;
+        __cpuid_count(1, 0, a, b, c, d);
+        if ((c & (1U << 9)) == 0 || (c & (1U << 19)) == 0)
+            return false;
+        __cpuid_count(7, 0, a, b, c, d);
+        return (b & (1U << 29)) != 0;
+#endif
+    }();
+    return available;
+#else
+    return false;
+#endif
+}
+
+Sha256::Sha256(Sha256Backend backend) noexcept
+    : hardware_(backend == Sha256Backend::automatic && hardwareAvailable()) {}
 
 void Sha256::update(std::span<const std::byte> bytes) noexcept {
     totalBytes_ += bytes.size();
@@ -21,6 +62,17 @@ void Sha256::update(std::span<const std::byte> bytes) noexcept {
         transform(block_);
         blockSize_ = 0;
     }
+#if defined(CUEXIS_SHA_X86)
+    if (hardware_) {
+        while (bytes.size() >= block_.size()) {
+            constexpr std::size_t maxChunk = UINT32_MAX & ~std::size_t{63};
+            const auto length = std::min(bytes.size() & ~std::size_t{63}, maxChunk);
+            sha256ProcessX86(state_.data(), reinterpret_cast<const std::uint8_t*>(bytes.data()),
+                             static_cast<std::uint32_t>(length));
+            bytes = bytes.subspan(length);
+        }
+    }
+#endif
     while (bytes.size() >= block_.size()) {
         std::memcpy(block_.data(), bytes.data(), block_.size());
         transform(block_);
@@ -59,6 +111,16 @@ auto Sha256::finish() const noexcept -> std::array<std::uint8_t, 32> {
 }
 
 void Sha256::transform(const std::array<std::uint8_t, 64>& block) noexcept {
+#if defined(CUEXIS_SHA_X86)
+    if (hardware_) {
+        sha256ProcessX86(state_.data(), block.data(), 64);
+        return;
+    }
+#endif
+    transformPortable(block);
+}
+
+void Sha256::transformPortable(const std::array<std::uint8_t, 64>& block) noexcept {
     static constexpr std::array<std::uint32_t, 64> constants{
         0x428A2F98U, 0x71374491U, 0xB5C0FBCFU, 0xE9B5DBA5U, 0x3956C25BU, 0x59F111F1U, 0x923F82A4U,
         0xAB1C5ED5U, 0xD807AA98U, 0x12835B01U, 0x243185BEU, 0x550C7DC3U, 0x72BE5D74U, 0x80DEB1FEU,

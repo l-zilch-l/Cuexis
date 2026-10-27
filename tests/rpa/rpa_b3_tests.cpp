@@ -22,6 +22,72 @@
 using namespace cuexis::judgement;
 using namespace cuexis::judgement::testing;
 
+TEST_CASE("Recovery wire cached sequence bytes remain exact after growth and detached mutation",
+          "[rpa][wire][redesign]") {
+    detail::SharedSequence<std::uint64_t> values;
+    for (std::uint64_t i = 0; i < 257; ++i) values.push_back(i * i);
+    detail::wire::Writer cached, reference;
+    cached(values);
+    reference(values.materialize());
+    for (unsigned i = 0; i < 31; ++i) {
+        cached(values);
+        reference(values.materialize());
+    }
+    values.update(128, [](auto& value) { value = UINT64_MAX; });
+    cached(values);
+    reference(values.materialize());
+    values.push_back(12);
+    cached(values);
+    reference(values.materialize());
+    CHECK(cached.bytes == reference.bytes);
+    detail::SharedSequence<std::uint64_t> independent;
+    for (const auto value : values) independent.push_back(value);
+    cached(independent);
+    reference(independent.materialize());
+    CHECK(cached.bytes == reference.bytes);
+    detail::wire::Writer measuring{true};
+    measuring(values, values, independent);
+    detail::wire::Writer materialized;
+    materialized(values.materialize(), values.materialize(), independent.materialize());
+    CHECK(measuring.bytes.empty());
+    CHECK(measuring.size() == materialized.bytes.size());
+    // Writer is reused by malformed-wire tests. Its public output can be cleared or edited.
+    cached.bytes.clear();
+    cached(values);
+    detail::wire::Writer fresh;
+    fresh(values.materialize());
+    CHECK(cached.bytes == fresh.bytes);
+    std::fill(cached.bytes.begin(), cached.bytes.end(), std::byte{0xff});
+    cached(values);
+    CHECK(std::equal(fresh.bytes.begin(), fresh.bytes.end(),
+                     cached.bytes.begin() + static_cast<std::ptrdiff_t>(fresh.bytes.size())));
+    detail::wire::Writer bounded, uncached, boundedMeasure{true};
+    for (std::uint64_t i = 0; i < 160; ++i) {
+        detail::SharedSequence<std::uint64_t> distinct{i, i + 1};
+        bounded(distinct, distinct);
+        boundedMeasure(distinct, distinct);
+        uncached(distinct.materialize(), distinct.materialize());
+    }
+    CHECK(bounded.bytes == uncached.bytes);
+    CHECK(boundedMeasure.size() == uncached.bytes.size());
+}
+
+TEST_CASE("Vendored FNV-1a preserves exact serial recurrence and continuation",
+          "[rpa][wire][fnv]") {
+    std::vector<std::byte> bytes(1025);
+    for (std::size_t i = 0; i < bytes.size(); ++i) bytes[i] = static_cast<std::byte>(i & 255U);
+    for (std::size_t n = 0; n <= bytes.size(); ++n) {
+        const auto input = std::span<const std::byte>{bytes}.first(n);
+        std::uint64_t expected = 14695981039346656037ULL;
+        for (const auto value : input)
+            expected = (expected ^ std::to_integer<unsigned>(value)) * 1099511628211ULL;
+        CHECK(detail::wire::digest(input) == expected);
+        const auto split = n / 2;
+        const auto partial = cuexis::third_party::fnv1a64(input.first(split));
+        CHECK(cuexis::third_party::fnv1a64(input.subspan(split), partial) == expected);
+    }
+}
+
 namespace {
 struct Fixture3 {
     Fixture base;

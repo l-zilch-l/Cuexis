@@ -128,6 +128,10 @@ template <class T, std::size_t PageSize = 64> class SharedSequence final {
     [[nodiscard]] auto empty() const noexcept -> bool {
         return size_ == 0;
     }
+    // Encoder-local identity only. Holding this owner also forces future writes to detach.
+    [[nodiscard]] auto storageOwner() const noexcept -> std::shared_ptr<const void> {
+        return pages_;
+    }
     [[nodiscard]] auto max_size() const noexcept -> std::size_t {
         return Page{}.max_size();
     }

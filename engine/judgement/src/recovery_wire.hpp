@@ -1,9 +1,12 @@
 #pragma once
+#include "../../../third_party/fnv/fnv1a64.hpp"
 #include "execution_kernel.hpp"
 #include <bit>
+#include <cstring>
 #include <limits>
 #include <stdexcept>
 #include <type_traits>
+#include <unordered_map>
 
 namespace cuexis::judgement::detail::wire {
 struct Failure final : std::runtime_error {
@@ -224,19 +227,104 @@ class Reader;
 template <class T> void put(Writer&, const T&);
 template <class T> void get(Reader&, T&);
 class Writer final {
+    struct EncodedSequence final {
+        std::shared_ptr<const void> owner;
+        std::vector<std::byte> bytes;
+        std::size_t length;
+        std::uint32_t revision;
+    };
+    std::unordered_map<const void*, EncodedSequence> sequences_;
+    // Optional per-encoding cache. Full caches use ordinary encoding for new owners.
+    static constexpr std::size_t maxCachedBytes = 8 * 1024 * 1024;
+    static constexpr std::size_t maxCachedSequences = 128;
+    std::size_t cachedBytes_{};
+    bool measuring_{};
+    std::size_t measured_{};
+    void measure(std::size_t extra) {
+        if (extra > bytes.max_size() - measured_)
+            throw Failure{"codec.length_invalid"};
+        measured_ += extra;
+    }
+    void grow(std::size_t extra) {
+        if (extra > bytes.max_size() - bytes.size())
+            throw Failure{"codec.length_invalid"};
+        const auto required = bytes.size() + extra;
+        if (required <= bytes.capacity())
+            return;
+        const auto capacity = bytes.capacity();
+        const auto doubled = capacity > bytes.max_size() / 2 ? bytes.max_size() : capacity * 2;
+        bytes.reserve(
+            std::max(required, std::max(std::min<std::size_t>(4096, bytes.max_size()), doubled)));
+    }
+
   public:
+    explicit Writer(bool measuring = false) : measuring_(measuring) {}
     std::vector<std::byte> bytes;
     std::uint32_t revision{2};
+    [[nodiscard]] auto size() const noexcept -> std::size_t {
+        return measuring_ ? measured_ : bytes.size();
+    }
+    [[nodiscard]] auto measuring() const noexcept -> bool {
+        return measuring_;
+    }
     template <class... T> void operator()(const T&... v) {
         (put(*this, v), ...);
     }
     void integer(std::uint64_t v, unsigned width) {
+        if (measuring_) {
+            measure(width);
+            return;
+        }
+        grow(width);
+        const auto offset = bytes.size();
+        bytes.resize(offset + width);
         for (unsigned i = 0; i < width; ++i) {
-            bytes.push_back(static_cast<std::byte>((v >> (i * 8)) & 255U));
+            bytes[offset + i] = static_cast<std::byte>((v >> (i * 8)) & 255U);
         }
     }
     void append(std::span<const std::byte> value) {
+        if (measuring_) {
+            measure(value.size());
+            return;
+        }
+        grow(value.size());
         bytes.insert(bytes.end(), value.begin(), value.end());
+    }
+    template <class T, std::size_t N> void sequence(const SharedSequence<T, N>& value) {
+        auto owner = value.storageOwner();
+        if (owner) {
+            const auto found = sequences_.find(owner.get());
+            if (found != sequences_.end() && found->second.revision == revision) {
+                const auto length = found->second.length;
+                if (measuring_) {
+                    measure(length);
+                    return;
+                }
+                append(found->second.bytes);
+                return;
+            }
+            if (found != sequences_.end()) {
+                cachedBytes_ -= found->second.length;
+                sequences_.erase(found);
+            }
+        }
+        const auto offset = size();
+        integer(static_cast<std::uint64_t>(value.size()), 8);
+        for (const auto& element : value)
+            (*this)(element);
+        if (owner) {
+            const auto length = size() - offset;
+            if (length > maxCachedBytes - cachedBytes_ || sequences_.size() >= maxCachedSequences)
+                return;
+            const auto key = owner.get();
+            std::vector<std::byte> encoded;
+            if (!measuring_) {
+                encoded.assign(bytes.begin() + static_cast<std::ptrdiff_t>(offset), bytes.end());
+            }
+            sequences_.insert_or_assign(
+                key, EncodedSequence{std::move(owner), std::move(encoded), length, revision});
+            cachedBytes_ += length;
+        }
     }
 };
 class Reader final {
@@ -284,6 +372,8 @@ class Reader final {
     }
 };
 template <class T> struct Vector : std::false_type {};
+template <class T> struct PagedSequence : std::false_type {};
+template <class T, std::size_t N> struct PagedSequence<SharedSequence<T, N>> : std::true_type {};
 template <class T, class A> struct Vector<std::vector<T, A>> : std::true_type {
     using Value = T;
 };
@@ -349,6 +439,8 @@ template <class T> void put(Writer& a, const T& v) {
         a(v.value());
     } else if constexpr (std::is_same_v<T, ObservationTick>) {
         a(v.tick());
+    } else if constexpr (PagedSequence<T>::value) {
+        a.sequence(v);
     } else if constexpr (Vector<T>::value) {
         a.integer(static_cast<std::uint64_t>(v.size()), 8);
         if constexpr (std::is_same_v<typename Vector<T>::Value, std::byte>) {
@@ -503,10 +595,6 @@ template <class T> void get(Reader& a, T& v) {
     }
 }
 inline auto digest(std::span<const std::byte> bytes) noexcept -> std::uint64_t {
-    std::uint64_t h = 14695981039346656037ULL;
-    for (const auto b : bytes) {
-        h = (h ^ std::to_integer<unsigned>(b)) * 1099511628211ULL;
-    }
-    return h;
+    return cuexis::third_party::fnv1a64(bytes);
 }
 } // namespace cuexis::judgement::detail::wire

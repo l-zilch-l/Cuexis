@@ -28,6 +28,16 @@ This file is the source-tree notice inventory for the current Cuexis Stage 3 tre
 | libFLAC | 1.5.0 | https://github.com/xiph/flac | Optional native FLAC decode / internal `cuexis_media_import` only when feature `media-tools` is enabled | BSD-3-Clause | Not linked into Playback, Player, or the base SDK package | Replace behind `cuexis_media_import`; a profile change requires owner re-ruling |
 | zlib | 1.3.2#1 | https://github.com/madler/zlib | Transitive decompression dependency of the optional libpng port | Zlib | Not linked into Playback, Player, or the base SDK package | Follows the libpng dependency |
 
+## Vendored Hash Implementations
+
+| Component | Fixed upstream revision | License | Distribution and boundary |
+| --- | --- | --- | --- |
+| SHA-Intrinsics (Jeffrey Walton; based on Intel and Sean Gulley / miTLS) | `https://github.com/noloader/SHA-Intrinsics` @ `d03795497f3e4576083fc2cd8fe0b924f24d0bb2` | Public-domain declaration retained in source | x86 SHA-256 compression compiled privately into Core; runtime CPU checks and portable fallback; `third_party/sha_intrinsics/LICENSE` installed as `sha-intrinsics-copyright` |
+| FNV (Landon Curt Noll, Fowler/Noll/Vo) | `https://github.com/lcn2/fnv` @ `4001d0d4f6d81b29a02bda592c7712c68434525a` | Unlicense / public domain, full declaration retained | Adapted FNV-1a 64-bit buffer loop compiled into recovery; constants and byte order unchanged; `third_party/fnv/LICENSE` installed as `fnv-copyright` |
+
+Original source hashes and Cuexis adaptation notes are recorded in each vendored directory's
+`upstream.json`. No new runtime DLL, vcpkg port, or upstream baseline change is introduced.
+
 ## Generated Registry Inputs
 
 The glad package is generated from Khronos OpenGL/EGL registry inputs. The installed registry files carry per-file MIT, Apache-2.0 or Khronos notices. Packaging must preserve the notices required by the generated glad sources.

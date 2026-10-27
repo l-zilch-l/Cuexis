@@ -27,6 +27,24 @@ vcpkg / CMake 集成
 
 MIT、BSD、Apache-2.0 和 zlib 等宽松许可证通常可以接受。MPL、LGPL 和 GPL 依赖必须逐项审查其链接、修改公开和再分发义务；未经 ADR 和明确合规方案不得进入正式发布依赖。
 
+## 内置哈希实现（2026-10-27）
+
+`cuexis_core` 的 x86 SHA-256 压缩采用 Jeffrey Walton 的 SHA-Intrinsics，固定上游
+`https://github.com/noloader/SHA-Intrinsics` revision `d03795497f3e4576083fc2cd8fe0b924f24d0bb2`。
+源文件声明 public domain；保留原声明，适配标准整数、命名空间并移除 Windows 头和示例 main。
+仅在运行时确认 SHA、SSSE3、SSE4.1 后调用；其他 CPU/架构继续走经已知向量核验的标量路径。
+不导出第三方 API，不要求消费者开启 ISA 编译选项。没有新增运行库或系统加密依赖。
+
+Recovery 的 FNV-1a 64-bit buffer 实现采用 `https://github.com/lcn2/fnv` revision
+`4001d0d4f6d81b29a02bda592c7712c68434525a` 的 64-bit multiply 分支，适配 const byte span
+与顺序展开循环；保留 Unlicense/public-domain 声明、原 offset basis、prime 和逐字节递推顺序。
+这不是替换成另一种哈希算法，不接受摘要值变化。
+
+两项均在 `third_party/` 内随源码固定，上游文件 SHA-256、版本及适配清单见各自 `upstream.json`。
+它们不是 vcpkg port，因此 `vcpkg.json` 的 `$comment` 登记内置来源，不添加虚构 port 或改变 baseline。
+对应 LICENSE 随 SDK 安装至 `share/Cuexis/licenses`，构建产物包含相应代码。
+退出路径是保留 Cuexis 内部窄接口并替换压缩/散列实现，须重过精确结果、wire、STATIC/SHARED 与消费者门。
+
 ## 依赖记录
 
 每个直接依赖至少记录：

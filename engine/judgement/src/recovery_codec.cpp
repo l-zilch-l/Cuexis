@@ -25,17 +25,19 @@ auto beginEnvelope(std::uint32_t revision, std::uint8_t kind) -> Writer {
     return out;
 }
 void patchInteger(Writer& out, std::size_t offset, std::uint64_t value) noexcept {
+    if (out.measuring())
+        return;
     for (unsigned i = 0; i < 8; ++i)
         out.bytes[offset + i] = static_cast<std::byte>((value >> (i * 8)) & 255U);
 }
 auto beginSection(Writer& out, std::uint8_t id) -> std::size_t {
     out(id);
-    const auto lengthAt = out.bytes.size();
+    const auto lengthAt = out.size();
     out(std::uint64_t{0});
     return lengthAt;
 }
 void endSection(Writer& out, std::size_t lengthAt) noexcept {
-    patchInteger(out, lengthAt, static_cast<std::uint64_t>(out.bytes.size() - lengthAt - 8));
+    patchInteger(out, lengthAt, static_cast<std::uint64_t>(out.size() - lengthAt - 8));
 }
 auto endEnvelope(Writer out) -> std::vector<std::byte> {
     const auto payload = std::span<const std::byte>{out.bytes}.subspan(29);
@@ -152,11 +154,20 @@ auto encodeReplay(const ReplayArchive& archive) -> core::Result<std::vector<std:
             p = r.result.get();
         }
     }
-    auto out = beginEnvelope(p->rpa ? 3U : 2U, 1);
-    writeHeader(out, *p, archive.data().eventCount);
-    const auto bodyAt = beginSection(out, 2);
-    out(archive.data().records);
-    endSection(out, bodyAt);
+    const auto payload = [&](Writer& writer) {
+        writeHeader(writer, *p, archive.data().eventCount);
+        const auto bodyAt = beginSection(writer, 2);
+        writer(archive.data().records);
+        endSection(writer, bodyAt);
+    };
+    Writer measure{true};
+    measure.revision = p->rpa ? 3U : 2U;
+    payload(measure);
+    auto out = beginEnvelope(measure.revision, 1);
+    if (measure.size() > out.bytes.max_size() - out.size())
+        throw Failure{"codec.length_invalid"};
+    out.bytes.reserve(out.size() + measure.size());
+    payload(out);
     return endEnvelope(std::move(out));
 } catch (const detail::wire::Failure& e) {
     return core::unexpected(failure(e.what()));
@@ -256,12 +267,21 @@ auto encodeSnapshot(const SnapshotPayload& value) -> core::Result<std::vector<st
     if (value.state().kernel.faultDiagnostic &&
         detail::containsLegacyDiagnostic(*value.state().kernel.faultDiagnostic))
         throw Failure{"codec.record_invalid"};
-    auto out = beginEnvelope(value.state().kernel.rpa ? 3U : 2U, 2);
-    writeHeader(out, value.state().kernel,
-                static_cast<std::uint64_t>(value.state().ingress.accepted.size()));
-    const auto bodyAt = beginSection(out, 2);
-    out(value.state());
-    endSection(out, bodyAt);
+    const auto payload = [&](Writer& writer) {
+        writeHeader(writer, value.state().kernel,
+                    static_cast<std::uint64_t>(value.state().ingress.accepted.size()));
+        const auto bodyAt = beginSection(writer, 2);
+        writer(value.state());
+        endSection(writer, bodyAt);
+    };
+    Writer measure{true};
+    measure.revision = value.state().kernel.rpa ? 3U : 2U;
+    payload(measure);
+    auto out = beginEnvelope(measure.revision, 2);
+    if (measure.size() > out.bytes.max_size() - out.size())
+        throw Failure{"codec.length_invalid"};
+    out.bytes.reserve(out.size() + measure.size());
+    payload(out);
     return endEnvelope(std::move(out));
 } catch (const detail::wire::Failure& e) {
     return core::unexpected(failure(e.what()));

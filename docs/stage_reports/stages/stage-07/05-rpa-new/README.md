@@ -22,7 +22,7 @@
 | `r0` | 1 / 0 | [2026-10-24 · R0 observation and anchor](r0/2026-10-24-r0-observation-and-anchor.md) |
 | `r1` | 2 / 0 | [New RPA / r1](r1/README.md) |
 | `r2` | 8 / 5 | [New RPA / r2](r2/README.md) |
-| `r3` | 6 / 0 | [R3a 恢复闭包与准备去重](r3/2026-10-27-r3a-recovery-and-prepare.md)、[R3b 可信前缀与成本核验](r3/2026-10-27-r3b-certified-prefix-and-cost.md)、[空推进 reserve 限定尝试](r3/2026-10-27-r3-empty-reserve-attempt.md)、[高 requirements 耗时归因](r3/2026-10-27-r3-high-requirements-attribution.md)、[分页与自然锚点重构](r3/2026-10-27-r3-redesign.md)、[首次身份与体积归因](r3/2026-10-27-r3-cold-identity-attribution.md) |
+| `r3` | 7 / 0 | [R3a 恢复闭包与准备去重](r3/2026-10-27-r3a-recovery-and-prepare.md)、[R3b 可信前缀与成本核验](r3/2026-10-27-r3b-certified-prefix-and-cost.md)、[空推进 reserve 限定尝试](r3/2026-10-27-r3-empty-reserve-attempt.md)、[高 requirements 耗时归因](r3/2026-10-27-r3-high-requirements-attribution.md)、[分页与自然锚点重构](r3/2026-10-27-r3-redesign.md)、[首次身份与体积归因](r3/2026-10-27-r3-cold-identity-attribution.md)、[哈希与编码器恢复点](r3/2026-10-27-r3-hash-and-wire-checkpoint.md) |
 
 ## 原始材料与历史位置
 
