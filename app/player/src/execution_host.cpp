@@ -939,11 +939,15 @@ auto ExecutionHost::seek(const GameplayReplay& archive, const GameplayReplayCut&
         throw Failure{error("control_pending")};
     if (context_.runEpoch == UINT64_MAX || context_.clockSegment == UINT64_MAX)
         throw Failure{error("capacity_exceeded")};
-    target.archiveIdentity = PreparedSemanticIdentity{take(playback::detail::archiveIdentity(archive))};
+    if (options_.seekIdentity == SeekIdentityPolicy::owningSource)
+        target.replaySourceIdentity = take(playback::detail::ReplayIdentityAccess::source(archive));
+    else
+        target.archiveIdentity =
+            PreparedSemanticIdentity{take(playback::detail::archiveIdentity(archive))};
 #if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
     rpa::seekSet(rpaSeek_, rpa::SeekPhase::s0HostIdentity, &rpa::SeekWork::sealedIdentityKnown, 1);
     rpa::seekSet(rpaSeek_, rpa::SeekPhase::s0HostIdentity, &rpa::SeekWork::sealedIdentityPresent,
-                 archive.valid() ? 1 : 0);
+                 target.archiveIdentity.has_value() ? 1 : 0);
 #endif
     const auto mapped =
         take(RealtimeClock::seekPosition(options_.realtime->mapping, horizon.value));

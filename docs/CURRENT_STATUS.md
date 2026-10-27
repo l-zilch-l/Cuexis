@@ -8,9 +8,11 @@
 
 ## 当前任务
 
-- **R3 实施中**：R3a 当前恢复修复与准备去重已通过六套本地配置、STATIC/SHARED clean consumers 和宏隔离核验。
-  最新[首次身份归因](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-cold-identity-attribution.md)确认完整归档的重复结果写出、FNV 与 SHA 全量扫描是首次主要成本；该轮仅诊断，产品代码未改。
-  R3b 首个候选的[裁定包](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3b-certified-prefix-and-cost.md)与后续[高 requirements 归因](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-high-requirements-attribution.md)保持历史身份。当前分支已实施[分页共享状态、自然恢复锚点及精确身份缓存重构](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-redesign.md)。局部内核恢复与重复 Seek 明显加快，但 2048 requirements 的 CPU 宿主首次请求到目标帧仍约 310 ms，20 ms 目标未通过。R3 未退出，R3c 尚未进入；局部结果不代替 R4、设备或生产接受，见[实施登记](stage_plans/active/stage-07/05-rpa-new/r3/plan.md)。
+- **R3 实施中**：已有分页共享状态、不可变准备复用、自然恢复锚点，以及 SHA 加速和有界编码器恢复点 `198ab96`。
+  最新[来源绑定实验](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-source-binding-experiment.md)用同一 Release 二进制比较 canonical SHA 与进程内 owning source binding。
+  2048 requirements、33 条历史的 CPU 宿主首次请求到目标帧由 91.809 ms 降至 1.016 ms；129 条历史由 333.624 ms 降至 1.057 ms。
+  这是固定本地诊断的点值，wire/导入验证保持原合同，candidate C++ 消费者须重建；R3 未退出、R3c 尚未进入，R4、设备与生产接受仍独立。
+  原始归因及历史失败保留，后续门禁见[实施登记](stage_plans/active/stage-07/05-rpa-new/r3/plan.md)。
 - **PD-5 定案与 Stage 7-PD 退出裁定**：判定报告已提出“未通过但定案”及退出清单，尚待 owner 接受；读取与 Seek 整改由 RPA 线承接，
   分域内存及正式/设备/生产验收缺口仍按下文跟踪。见[判定报告](stage_reports/stages/stage-07/04-pd/pd-5/exit/2026-10-24-pd5-verdict-and-stage-7-pd-exit.md)。
 

@@ -2121,13 +2121,13 @@ auto PlaybackSession::seekExecutionStep(const StepRequest& request, const Contro
                                         const std::string& domain) -> core::Result<void> try {
     if (auto valid = validateExecutionControlBinding(request); !valid)
         return valid;
-    auto archiveIdentity = detail::archiveIdentity(archive);
-    if (!archiveIdentity)
-        return core::unexpected(archiveIdentity.error());
+    const auto binding = detail::replayBindingMatches(archive, request.target.archiveIdentity,
+                                                      request.target.replaySourceIdentity);
+    if (!binding)
+        return core::unexpected(binding.error());
     if (*state_->acceptedHostControl != proof.request || proof.request.kind != ControlKind::seek ||
         request.key.phase != StepPhase::softwareCommit || !request.target.nextContext ||
-        !state_->hostFence || !controlReadyForCommit(proof) ||
-        request.target.archiveIdentity != PreparedSemanticIdentity{*archiveIdentity} ||
+        !state_->hostFence || !controlReadyForCommit(proof) || !*binding ||
         request.target.seekHorizon != horizon.value ||
         request.target.seekCompleteRecords != cut.completeRecords ||
         request.target.seekPartialHorizon !=

@@ -13,6 +13,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace cuexis::playback {
@@ -192,6 +193,22 @@ struct GameplayCheckpointStorage;
 struct GameplayAccess;
 struct ReplayIdentityAccess;
 } // namespace detail
+// Process-local identity of one owning Replay source. It grants no validation authority.
+class ReplaySourceIdentity final {
+  public:
+    ReplaySourceIdentity() noexcept = default;
+    [[nodiscard]] auto valid() const noexcept -> bool {
+        return static_cast<bool>(token_);
+    }
+    friend auto operator==(const ReplaySourceIdentity&, const ReplaySourceIdentity&)
+        -> bool = default;
+
+  private:
+    friend class GameplayReplay;
+    explicit ReplaySourceIdentity(std::shared_ptr<const std::uint8_t> token) noexcept
+        : token_(std::move(token)) {}
+    std::shared_ptr<const std::uint8_t> token_;
+};
 class CUEXIS_PLAYBACK_API GameplayContent final {
   public:
     GameplayContent() noexcept = default;
@@ -252,8 +269,8 @@ class CUEXIS_PLAYBACK_API GameplayReplay final {
   private:
     friend struct detail::GameplayAccess;
     friend struct detail::ReplayIdentityAccess;
-    [[nodiscard]] auto canonicalIdentity() const
-        -> core::Result<std::array<std::uint8_t, 32>>;
+    [[nodiscard]] auto canonicalIdentity() const -> core::Result<std::array<std::uint8_t, 32>>;
+    [[nodiscard]] auto sourceIdentity() const -> core::Result<ReplaySourceIdentity>;
     std::shared_ptr<const detail::GameplayReplayStorage> storage_;
 };
 class CUEXIS_PLAYBACK_API GameplaySnapshot final {

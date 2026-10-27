@@ -19,6 +19,14 @@ R3b 的首个候选见[显式可信恢复提案](trusted-restore-candidate.md)�
 后续[首次身份归因](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-cold-identity-attribution.md)
 已确认完整归档重复结果及 SHA/FNV 全量扫描为主要成本；该轮只做独立诊断，未进一步改产品。
 
+用户随后授权先提交恢复点再比较不同优化方案。`198ab96` 固定 SHA 加速和有界编码器。
+当前内置宿主采用运行时 owning source binding，canonical SHA 路径保留作对照及外部消费。
+来源绑定不是 validation/native recovery 凭证，wire 不变；candidate C++ 布局改变须整体 rebuild。
+固定 33/129 条历史与 64/256/2048 requirements 的首次/重复 Seek 对照及最终回归见
+[来源绑定实验](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-source-binding-experiment.md)。
+下表 S0 为原诊断路径，当前所选来源路径不执行 canonical 编码/hash。局部延迟改善不代表 R3/R4 退出。
+
+
 ## 1. 起点和独立差异
 
 实施树 `D:/Cuexis-worktree`，分支 `stage-7`，起始 HEAD

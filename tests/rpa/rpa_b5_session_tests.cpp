@@ -1,6 +1,7 @@
 #include "../../app/execution_host/capture_route.hpp"
 #include "../../app/execution_host/session_worker.hpp"
 #include "../../engine/core/internal/cuexis_internal/sha256.hpp"
+#include "../../engine/playback/src/replay_identity.hpp"
 #include "execution_fixture.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -377,7 +378,7 @@ void closePausedScenario(PausedScenario& scene) {
 
     close(*worker, loaded.host, finalizedContext(loaded.host, 2), 3, 3);
 }
-void seekPausedScenario(PausedScenario& scene) {
+void seekPausedScenario(PausedScenario& scene, bool sourceBinding) {
     auto& worker = scene.worker;
     auto& loaded = scene.loaded;
     auto& capture = scene.capture;
@@ -389,6 +390,7 @@ void seekPausedScenario(PausedScenario& scene) {
     const GameplayTick horizon{4};
     auto archiveCut =
         std::get<GameplayReplayCut>(send(*worker, SessionArchiveCut{archive, horizon}));
+    auto alternate = std::get<GameplayReplay>(send(*worker, SessionArchive{}));
     auto bytes = archive.toBytes();
     REQUIRE(bytes);
     ControlRequest seek;
@@ -407,7 +409,13 @@ void seekPausedScenario(PausedScenario& scene) {
     seek.target.nextContext->runEpoch = 2;
     seek.target.participantGenerations[0] = execution.runEpoch;
     seek.target.participantGenerations[1] = generation;
-    seek.target.archiveIdentity = PreparedSemanticIdentity{core::detail::sha256(*bytes)};
+    if (sourceBinding) {
+        auto source = ReplayIdentityAccess::source(archive);
+        REQUIRE(source);
+        seek.target.replaySourceIdentity = *source;
+    } else {
+        seek.target.archiveIdentity = PreparedSemanticIdentity{core::detail::sha256(*bytes)};
+    }
     seek.target.seekHorizon = horizon.value;
     seek.target.seekCompleteRecords = archiveCut.completeRecords;
     if (archiveCut.partialHorizon)
@@ -441,6 +449,34 @@ void seekPausedScenario(PausedScenario& scene) {
         std::get<StepReceipt>(send(*worker, SessionSoftwareFence{step, *loaded.host.query(3)}))));
     step.key.phase = StepPhase::softwareCommit;
     auto proof = *loaded.host.query(3);
+    const auto rejected = [&](const GameplayReplay& candidate, GameplayReplayCut candidateCut,
+                              const StepRequest& attempted) {
+        const auto generationBefore =
+            std::get<SessionInspection>(send(*worker, SessionInspect{})).generation;
+        auto command = std::make_unique<SessionCommand>(SessionSeek{
+            attempted, proof, candidate, horizon, candidateCut, {}, {4}, {0.004, 0, 1}});
+        const auto posted = worker->post(std::move(*command), true);
+        REQUIRE(posted);
+        CHECK_FALSE(await(*worker, *posted));
+        CHECK(std::get<SessionInspection>(send(*worker, SessionInspect{})).generation ==
+              generationBefore);
+    };
+    if (sourceBinding)
+        rejected(alternate, archiveCut, step);
+    auto wrongCut = archiveCut;
+    ++wrongCut.completeRecords;
+    rejected(archive, wrongCut, step);
+    auto missing = step;
+    missing.target.archiveIdentity.reset();
+    missing.target.replaySourceIdentity.reset();
+    rejected(archive, archiveCut, missing);
+    auto both = step;
+    both.target.archiveIdentity = PreparedSemanticIdentity{core::detail::sha256(*bytes)};
+    both.target.replaySourceIdentity = *ReplayIdentityAccess::source(archive);
+    rejected(archive, archiveCut, both);
+    auto invalidToken = missing;
+    invalidToken.target.replaySourceIdentity = ReplaySourceIdentity{};
+    rejected(archive, archiveCut, invalidToken);
     auto applied = std::get<StepReceipt>(send(
         *worker, SessionSeek{step, proof, archive, horizon, archiveCut, {}, {4}, {0.004, 0, 1}}));
     INFO((applied.cause ? std::string{applied.cause->message()} : std::string{}));
@@ -458,6 +494,11 @@ void seekPausedScenario(PausedScenario& scene) {
               .status == StepStatus::applied);
     CHECK(std::get<SessionInspection>(send(*worker, SessionInspect{})).generation ==
           appliedGeneration);
+    if (sourceBinding)
+        rejected(alternate, archiveCut, step);
+    rejected(archive, wrongCut, step);
+    rejected(archive, archiveCut, both);
+    rejected(archive, archiveCut, missing);
     auto nextClock = clock;
     nextClock.segment = 2;
     nextClock.source = ClockFramePosition{4, 1000000};
@@ -575,7 +616,8 @@ TEST_CASE("B5 Load ordinals continue into realtime while Waiting leaves owner in
         closePausedScenario(*scene);
     }
     SECTION("Actual owning Replay Seek restarts execution ordinals in a new epoch") {
-        seekPausedScenario(*scene);
+        const auto sourceBinding = GENERATE(false, true);
+        seekPausedScenario(*scene, sourceBinding);
     }
     SECTION("Actual R2 consumes owning final trace once on worker") {
         resumePausedScenario(*scene);

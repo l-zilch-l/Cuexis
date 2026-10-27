@@ -42,6 +42,8 @@ struct StepTarget final {
     std::optional<std::uint64_t> seekCompleteRecords;
     std::optional<std::int64_t> seekPartialHorizon;
     std::optional<std::int64_t> tailPauseAt;
+    // Exactly one source/content binding is required for a Seek commit.
+    std::optional<ReplaySourceIdentity> replaySourceIdentity;
     friend auto operator==(const StepTarget&, const StepTarget&) -> bool = default;
 };
 [[nodiscard]] inline auto generationFor(const StepTarget& target, Participant participant)

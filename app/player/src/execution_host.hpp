@@ -47,6 +47,7 @@ enum class ExecutionClosePhase : std::uint8_t {
     joined
 };
 // Application assembly only. The SDK still creates no implicit threads.
+enum class SeekIdentityPolicy { canonicalContent, owningSource };
 struct ExecutionHostOptions final {
     playback::PlaybackMode sourceMode{playback::PlaybackMode::ChartClock};
     playback::detail::SessionWorkerConfiguration session;
@@ -56,6 +57,7 @@ struct ExecutionHostOptions final {
     std::optional<playback::detail::SessionRealtimeStart> realtime;
     playback::FrameViewport viewport{};
     bool showFps{};
+    SeekIdentityPolicy seekIdentity{SeekIdentityPolicy::owningSource};
 };
 struct ExecutionHostPorts final {
     playback::detail::AudioWorker::DeviceFactory audioDevice;

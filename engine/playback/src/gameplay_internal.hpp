@@ -96,6 +96,8 @@ struct GameplayResultStorage final {
 };
 struct GameplayReplayStorage final {
     judgement::ReplayArchive archive;
+    // A proof retains only this lightweight allocation, not the complete source history.
+    std::shared_ptr<const std::uint8_t> source{std::make_shared<const std::uint8_t>(0)};
 };
 struct GameplaySnapshotStorage final {
     judgement::SnapshotPayload snapshot;

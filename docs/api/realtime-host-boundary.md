@@ -249,6 +249,12 @@ fence/软件提交与完成确认、受控退休/Pause/Resume/Seek、时钟映�
 Resume 传最终 route 回执并校验同一 trace identity；Seek 校验 owning archive identity 与 cut；
 软件清理仍需 capture cut、audio stop/isolation 证据。scope、代数和操作绑定不得省略。
 
+2026-10-27 的 R3 分支候选允许 Seek 在 canonical SHA-256 与进程内 owning source token
+之间选择一种绑定，具体拒绝和生命周期语义见 [RPA 合同 §4](../formats/rpa-execution-contract.md#4-t2-fact-identityreplay-与-seek)。
+`StepTarget` 及包含它的请求、回执与 proof 的 C++ 布局随新增字段改变；当前 candidate
+消费者须整体重新编译，不能混用旧二进制。此变更未发行，不声称 SDK 二进制兼容。
+
+
 通用 [`presentation_candidate.hpp`](../../engine/playback/include/cuexis/playback/presentation_candidate.hpp)
 也用于旧同步 renderer prepare，拥有 manifest、portable resources 和编码音频副本，不拥有
 Prepared、provider 回调或设备句柄。其物化使用原有 acquire 路径，没有新增深拷贝资源策略。

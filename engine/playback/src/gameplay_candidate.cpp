@@ -405,13 +405,18 @@ auto GameplayReplay::toBytes() const -> core::Result<std::vector<std::byte>> try
 } catch (...) {
     return core::unexpected(invalid("Replay encode failed"));
 }
-auto GameplayReplay::canonicalIdentity() const
-    -> core::Result<std::array<std::uint8_t, 32>> try {
+auto GameplayReplay::canonicalIdentity() const -> core::Result<std::array<std::uint8_t, 32>> try {
     if (!storage_)
         return core::unexpected(invalid("Empty Replay"));
     return storage_->archive.canonicalIdentity();
 } catch (...) {
     return core::unexpected(invalid("Replay identity failed"));
+}
+
+auto GameplayReplay::sourceIdentity() const -> core::Result<ReplaySourceIdentity> {
+    if (!storage_)
+        return core::unexpected(invalid("Empty Replay"));
+    return ReplaySourceIdentity{storage_->source};
 }
 auto GameplaySnapshot::fromBytes(std::span<const std::byte> bytes, const GameplayContent& content,
                                  GameplayCodecBudget budget) -> core::Result<GameplaySnapshot> try {

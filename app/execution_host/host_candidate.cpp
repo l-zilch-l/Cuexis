@@ -1,6 +1,6 @@
 #include "host_candidate.hpp"
-#include "capture_route.hpp"
 #include "../../engine/playback/src/replay_identity.hpp"
+#include "capture_route.hpp"
 #include <cuexis_internal/execution_diagnostics.hpp>
 namespace cuexis::playback::detail {
 namespace {
@@ -446,11 +446,11 @@ auto HostCoordinationAccess::applySeek(PlaybackSession& session, OwnerStepLedger
     if (!snapshot)
         return core::unexpected(snapshot.error());
     const auto& s = *snapshot;
-    auto canonicalIdentity = archiveIdentity(archive);
-    if (!canonicalIdentity)
-        return core::unexpected(canonicalIdentity.error());
-    const PreparedSemanticIdentity identity{*canonicalIdentity};
-    if (request.target.archiveIdentity != identity || request.target.seekHorizon != horizon.value ||
+    const auto binding = replayBindingMatches(archive, request.target.archiveIdentity,
+                                              request.target.replaySourceIdentity);
+    if (!binding)
+        return core::unexpected(binding.error());
+    if (!*binding || request.target.seekHorizon != horizon.value ||
         request.target.seekCompleteRecords != cut.completeRecords ||
         request.target.seekPartialHorizon !=
             (cut.partialHorizon ? std::optional{cut.partialHorizon->value} : std::nullopt))
@@ -463,8 +463,8 @@ auto HostCoordinationAccess::applySeek(PlaybackSession& session, OwnerStepLedger
         proof.request.kind != ControlKind::seek || request.target != proof.request.target ||
         request.key.operationId != proof.request.operationId ||
         request.key.participant != Participant::software ||
-        request.key.phase != StepPhase::softwareCommit ||
-        request.target.archiveIdentity != identity || request.target.seekHorizon != horizon.value ||
+        request.key.phase != StepPhase::softwareCommit || !*binding ||
+        request.target.seekHorizon != horizon.value ||
         request.target.seekCompleteRecords != cut.completeRecords ||
         request.target.seekPartialHorizon !=
             (cut.partialHorizon ? std::optional{cut.partialHorizon->value} : std::nullopt) ||

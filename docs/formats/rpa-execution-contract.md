@@ -304,6 +304,19 @@ quarantine 和必要 trace 前缀；运行线程/指针/原设备句柄不入 pa
 Seek identity 必须同时指定 archive identity、log cut 与 H；同 H、不同 control cut 是不同状态。
 恢复前后同 q 的快照不能按 H 命中同一个缓存。旧 archive 不原地改写，回退程序保留原件。
 
+2026-10-27 R3 分支候选将 archive 绑定区分为两种表示：`StepTarget.archiveIdentity`
+是完整 canonical Replay 字节的 SHA-256；`StepTarget.replaySourceIdentity` 是进程内
+`ReplaySourceIdentity`。Seek 提交必须恰好携带一种，两种同时存在、全部缺失或空 token 均拒绝。
+来源标识仅识别同一 owning `GameplayReplay` storage：副本共享标识，独立 capture 或 decode
+产生新标识，即使 canonical 字节完全相同也不能替换原请求来源。内置宿主通过非安装桥取得
+来源标识，安装版外部宿主可继续使用 canonical 绑定。token 只保活独立小对象，不保活 Replay
+历史，不写入 Replay/Snapshot，不作为内容摘要、跨进程身份、输入验证或 native recovery 凭证。
+完整 request/proof/ledger 比较包含所选绑定；首次应用校验活动 context、fence 和 proof。
+已记录的同 key 重传校验原不可变请求以及来源、cut、H，并返回原回执，不重新应用，
+也不要求已完成操作的 fence 仍然存活。
+文件解码及外部 Replay 的验证路径保持原合同。
+
+
 ## 5. 新错误与状态的边界
 
 宿主调度结果是 typed variant，不新增 kernel SessionState：

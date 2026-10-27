@@ -70,3 +70,6 @@
 | [R3b 可信前缀与成本核验](r3/2026-10-27-r3b-certified-prefix-and-cost.md) | `D:/Cuexis-worktree/out/rpa-r3-20261026/`；`r3b-entry*`、`r3b-final-*`、`r3b-latest-targeted.log`、`r3b-wrapper-debug.log`、`r3b-cert-failure-raw.log`、`r3b-profile-*`、`r3b-rollback-verification.json` |
 | [R3 空推进 reserve 限定尝试](r3/2026-10-27-r3-empty-reserve-attempt.md) | `D:/Cuexis-worktree/out/rpa-r3-empty-reserve-20261027/`；`entry.json`、源副本、设计、构建/回归日志、`registration.json`、`baseline/candidate-raw.log`、`result.json`、`analysis.json` |
 | [R3 高 requirements 耗时归因](r3/2026-10-27-r3-high-requirements-attribution.md) | `D:/Cuexis-worktree/out/rpa-r3-attribution-20261027/`；入口源哈希、临时诊断 translation unit/header、普通/诊断/分配观察进程登记与 raw logs、`analysis.json`、`refine/`、MAP、`binding.json` |
+
+| [R3 哈希与编码器恢复点](r3/2026-10-27-r3-hash-and-wire-checkpoint.md) | `D:/Cuexis-redesign/out/hash-opt-20261027/`（回归与 portable/wire）；`out/hash-perf-v1-20261027/`、`out/hash-cold-v1-20261027/`（第一版独立诊断，不冒充最终代码结果） |
+| [R3 来源绑定实验](r3/2026-10-27-r3-source-binding-experiment.md) | `D:/Cuexis-redesign/out/seek-binding-20261027/`；`diagnostics-registration.json`、`diagnostics-result.json`、四份 `diagnostic-*.log`；各配置 `build-*.log`、回归/安装消费者日志及 `final-manifest.json` |

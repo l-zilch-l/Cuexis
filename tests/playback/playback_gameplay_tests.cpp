@@ -6,6 +6,7 @@
 #include "../support/environment.hpp"
 #include "gameplay_entry_internal.hpp"
 #include "gameplay_internal.hpp"
+#include "replay_identity.hpp"
 #include <algorithm>
 #include <catch2/generators/catch_generators.hpp>
 #include <chrono>
@@ -2455,4 +2456,71 @@ TEST_CASE("Graph1 metadata faults retain their existing prepare rejection order"
     const auto metadataOnly = consume(*metadata, fixture.config);
     REQUIRE_FALSE(metadataOnly);
     CHECK(metadataOnly.error().message() == "Gameplay metadata closure mismatch");
+}
+
+TEST_CASE("Replay source binding owns only a token and preserves content validation",
+          "[candidate][gameplay][source-binding]") {
+    using playback::detail::replayBindingMatches;
+    using playback::detail::ReplayIdentityAccess;
+    TestContent fixture;
+    const auto content = fixture.content();
+    playback::PlaybackSession session;
+    fixture.load(session);
+    REQUIRE(session.advanceGameplay({20}, {20}, {20, 0, 0}));
+    auto captured = session.archiveGameplay();
+    REQUIRE(captured);
+    auto copy = *captured;
+    auto separate = session.archiveGameplay();
+    REQUIRE(separate);
+    const auto identity = ReplayIdentityAccess::source(*captured);
+    REQUIRE(identity);
+    REQUIRE(identity->valid());
+    CHECK(*ReplayIdentityAccess::source(copy) == *identity);
+    CHECK(*ReplayIdentityAccess::source(*separate) != *identity);
+    CHECK(replayBindingMatches(copy, {}, *identity).value());
+    CHECK_FALSE(replayBindingMatches(*separate, {}, *identity).value());
+    CHECK_FALSE(replayBindingMatches(copy, {}, {}).value());
+    CHECK_FALSE(replayBindingMatches(copy, {}, playback::ReplaySourceIdentity{}).value());
+    CHECK_FALSE(ReplayIdentityAccess::source(playback::GameplayReplay{}));
+    auto bytes = captured->toBytes();
+    REQUIRE(bytes);
+    const playback::PreparedSemanticIdentity digest{core::detail::sha256(*bytes)};
+    CHECK(replayBindingMatches(*separate, digest, {}).value());
+    CHECK_FALSE(replayBindingMatches(copy, digest, *identity).value());
+    const playback::GameplayCodecBudget budget{1024 * 1024, 100, 100000, true};
+    auto imported = playback::GameplayReplay::fromBytes(*bytes, content, budget);
+    REQUIRE(imported);
+    CHECK_FALSE(replayBindingMatches(*imported, {}, *identity).value());
+    CHECK(replayBindingMatches(*imported, digest, {}).value());
+    auto corrupted = *bytes;
+    corrupted.back() ^= std::byte{1};
+    CHECK_FALSE(playback::GameplayReplay::fromBytes(corrupted, content, budget));
+    const auto before = session.queryGameplay();
+    REQUIRE(before);
+    const auto cut = imported->cutAt({20});
+    REQUIRE(cut);
+    REQUIRE(session.seekGameplay(*imported, {20}, *cut, {}, {20}, {20, 0, 1}));
+    CHECK(before->sameResult(*session.queryGameplay()).value());
+    // A source token identifies even an invalid internal test wrapper; it cannot certify it.
+    auto mutableData = std::make_shared<ReplayData>(
+        playback::detail::GameplayAccess::replay(*imported)->archive.data());
+    ++mutableData->eventCount;
+    auto untrusted = playback::detail::GameplayAccess::replay(ReplayArchive{
+        mutableData,
+        std::make_shared<RecoveryInputs>(
+            playback::detail::GameplayAccess::replay(*imported)->archive.dependencies())});
+    auto untrustedSource = ReplayIdentityAccess::source(untrusted);
+    REQUIRE(untrustedSource);
+    CHECK(replayBindingMatches(untrusted, {}, *untrustedSource).value());
+    CHECK_FALSE(session.seekGameplay(untrusted, {20}, *cut, {}, {20}, {20, 0, 1}));
+    CHECK(before->sameResult(*session.queryGameplay()).value());
+    const std::weak_ptr<const ReplayData> history =
+        playback::detail::GameplayAccess::replay(*captured)->archive.anchor();
+    REQUIRE_FALSE(history.expired());
+    REQUIRE(session.unload());
+    *captured = {};
+    copy = {};
+    *separate = {};
+    CHECK(history.expired());
+    CHECK(identity->valid());
 }
