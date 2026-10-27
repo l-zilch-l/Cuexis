@@ -40,6 +40,7 @@ add_executable(cuexis_execution_host_tests
     "${PROJECT_SOURCE_DIR}/app/player/src/snapshot_scene.cpp"
 )
 target_compile_features(cuexis_execution_host_tests PRIVATE cxx_std_20)
+target_include_directories(cuexis_execution_host_tests PRIVATE "${PROJECT_SOURCE_DIR}/engine/judgement/internal")
 target_compile_definitions(cuexis_execution_host_tests PRIVATE CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
 target_link_libraries(cuexis_execution_host_tests PRIVATE cuexis::execution_host_support cuexis::playback cuexis::presentation_renderer cuexis::render cuexis::judgement cuexis::gameplay_packed Catch2::Catch2WithMain)
 catch_discover_tests(cuexis_execution_host_tests ADD_TAGS_AS_LABELS PROPERTIES LABELS "execution-host")

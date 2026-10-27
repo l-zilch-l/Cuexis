@@ -1,5 +1,6 @@
 #include "../../app/player/src/execution_host.hpp"
 #include "../../engine/core/internal/cuexis_internal/sha256.hpp"
+#include "../../engine/playback/src/gameplay_internal.hpp"
 #include "../../engine/playback/src/replay_identity.hpp"
 #include "../audio/fake_audio_transport.hpp"
 #include "../support/environment.hpp"
@@ -2027,7 +2028,20 @@ TEST_CASE("R3 CPU host Seek measures first and repeated requests through target 
     REQUIRE((recordSetting.empty() || recordSetting == "33" || recordSetting == "129"));
     const unsigned records = recordSetting == "129" ? 129 : 33;
     const std::int64_t horizon = 1103 + records - 1;
-    const auto count = GENERATE(std::size_t{64}, std::size_t{256}, std::size_t{2048});
+    const auto requirementSetting = test_support::environmentVariable("CUEXIS_SEEK_REQUIREMENTS");
+    REQUIRE((requirementSetting.empty() || requirementSetting == "1000" ||
+             requirementSetting == "10000" || requirementSetting == "40000"));
+    const auto count = requirementSetting.empty()
+                           ? GENERATE(std::size_t{64}, std::size_t{256}, std::size_t{2048})
+                           : (requirementSetting == "1000"    ? std::size_t{1000}
+                              : requirementSetting == "10000" ? std::size_t{10000}
+                                                              : std::size_t{40000});
+    const auto contentPath = test_support::environmentVariable("CUEXIS_SEEK_CONTENT");
+    REQUIRE((contentPath.empty() || contentPath == "packed" || contentPath == "typed"));
+    REQUIRE((contentPath != "typed" || !requirementSetting.empty()));
+    const auto setupStart = std::chrono::steady_clock::now();
+    std::cout << "{\"event\":\"r3.redesign.setup_start\",\"requirements\":" << count
+              << ",\"records\":" << records << "}" << std::endl;
     auto fixture = std::make_unique<test_support::SessionTestContent>();
     const ClockMappingConfiguration mapping{{0, 1}, {0, 1}, {0, 1}, {1, 1}};
     test_support::rpa(*fixture, mapping);
@@ -2062,7 +2076,57 @@ TEST_CASE("R3 CPU host Seek measures first and repeated requests through target 
         SessionRealtimeStart{{1000000, 10, 128, "", true}, mapping, {}, "redesign.host"};
     auto host = player::ExecutionHost::create(renderer, settings, ports(pumps));
     REQUIRE(host);
-    REQUIRE((*host)->load(test_support::presentation(), fixture->content()));
+    const auto content = [&]() -> GameplayContent {
+        if (requirementSetting.empty())
+            return fixture->content();
+        // The existing revision 4 path streams the semantic preimage separately from
+        // the unchanged 16 MiB physical Packed envelope used by large fixtures.
+        const auto prepared = judgement::prepareResolvedGameplay(fixture->request);
+        INFO((prepared ? "" : std::string{prepared.error().message()}));
+        REQUIRE(prepared);
+        REQUIRE(prepared->assembled().graph.requirements.size() == count);
+        if (contentPath == "typed") {
+            // Test-only typed fixture: retain the same validated configuration and
+            // pattern/measure definitions, replacing the owning prepared graph.
+            test_support::SessionTestContent prototypeFixture;
+            test_support::rpa(prototypeFixture, mapping);
+            const auto prototypeContent = prototypeFixture.content();
+            const auto* basis = GameplayAccess::content(prototypeContent);
+            REQUIRE(basis);
+            auto capsule = basis->capsule;
+            capsule.chart = fixture->chart;
+            capsule.gameplay = *prepared;
+            capsule.owners = fixture->owners;
+            capsule.verifiedSemanticDigest.reset();
+            return GameplayAccess::content(std::move(capsule), basis->configuration,
+                                           basis->bindings, basis->enabledCapabilities,
+                                           basis->publicConfiguration);
+        }
+        const auto packed =
+            gameplay_packed::encode({fixture->chart,
+                                     *prepared,
+                                     fixture->owners,
+                                     {"normalization.one", "coordinator.policy.greedy_v1"},
+                                     {},
+                                     {},
+                                     4});
+        INFO((packed ? "" : std::string{packed.error().message()}));
+        REQUIRE(packed);
+        const auto decoded = GameplayContent::fromPacked(*packed, fixture->config);
+        INFO((decoded ? "" : std::string{decoded.error().message()}));
+        REQUIRE(decoded);
+        return *decoded;
+    }();
+    const auto loaded = (*host)->load(test_support::presentation(), content);
+    INFO((loaded
+              ? ""
+              : std::string{loaded.error().code()} + ": " + std::string{loaded.error().message()}));
+    REQUIRE(loaded);
+    const auto setupUs = std::chrono::duration_cast<std::chrono::microseconds>(
+                             std::chrono::steady_clock::now() - setupStart)
+                             .count();
+    std::cout << "{\"event\":\"r3.redesign.setup_done\",\"requirements\":" << count
+              << ",\"records\":" << records << ",\"setup_us\":" << setupUs << "}" << std::endl;
     std::int64_t target = 1103;
     std::uint64_t sequence{};
     player::ExecutionHost::ClockSource clock =
@@ -2105,6 +2169,9 @@ TEST_CASE("R3 CPU host Seek measures first and repeated requests through target 
                            .count();
     const auto expected = (*host)->queryGameplay();
     REQUIRE(expected);
+    const auto expectedScore = expected->score();
+    REQUIRE(expectedScore);
+    CHECK(expectedScore->misses == count);
     for (unsigned attempt = 0; attempt < 3; ++attempt) {
         target = horizon;
         REQUIRE((*host)->pause(clock));
@@ -2133,7 +2200,11 @@ TEST_CASE("R3 CPU host Seek measures first and repeated requests through target 
         std::cout << "{\"event\":\"r3.redesign.host\",\"requirements\":" << count
                   << ",\"attempt\":" << attempt << ",\"seek_us\":" << seekUs
                   << ",\"request_to_present_us\":" << totalUs << ",\"archive_us\":" << archiveUs
-                  << ",\"cut_us\":" << cutUs << ",\"records\":" << records << ",\"identity\":\""
+                  << ",\"capsule_revision\":"
+                  << (contentPath == "typed" ? 0 : (requirementSetting.empty() ? 3 : 4))
+                  << ",\"content_path\":\"" << (contentPath == "typed" ? "typed" : "packed") << "\""
+                  << ",\"setup_us\":" << setupUs << ",\"cut_us\":" << cutUs
+                  << ",\"records\":" << records << ",\"identity\":\""
                   << (policy == "canonical" ? "canonical" : "source") << "\""
                   << ",\"renderer\":\"cpu-test\",\"audio\":false,\"formal\":false}\n";
     }
