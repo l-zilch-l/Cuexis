@@ -32,6 +32,11 @@ R3b 的首个候选见[显式可信恢复提案](trusted-restore-candidate.md)�
 四配置相关回归、字节指纹和差异报告对照通过；prepare 内部剩余成本待进一步细分，
 本地规模点值不作为 R3/R4 退出或设备/生产接受。
 
+后续[prepare 声明查找优化](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-prepare-declaration-optimization.md)
+已用实际扫描量定位 assembler merge/验证中的两处平方查找并改为二分；独立普通对照中
+40K 完整准备由 27.6–27.8 s 降至 7.44–7.63 s。新旧成功/拒绝行为、字节及四配置相关回归
+通过，timer/identity/closure 等剩余成本继续跟踪；接受范围不变。
+
 
 ## 1. 起点和独立差异
 

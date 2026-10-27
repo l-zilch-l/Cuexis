@@ -954,12 +954,14 @@ template <typename Value> void sortUnique(std::vector<Value>& values) {
 
 [[nodiscard]] auto findDeclarationById(const MergedNamespace& merged, const StableDeclarationId& id)
     -> const MergedDeclaration* {
-    for (const auto& declaration : merged.declarations) {
-        if (declaration.stableId == id) {
-            return &declaration;
-        }
-    }
-    return nullptr;
+    // Merge sorts and rejects duplicate stable IDs before resolving references.
+    // Stabilization retains that order for content validation and relation members.
+    const auto found =
+        std::lower_bound(merged.declarations.begin(), merged.declarations.end(), id,
+                         [](const MergedDeclaration& declaration, const StableDeclarationId& key) {
+                             return declaration.stableId < key;
+                         });
+    return found != merged.declarations.end() && found->stableId == id ? &*found : nullptr;
 }
 
 [[nodiscard]] auto findDeclarationByName(const MergedNamespace& merged, DeclarationKind kind,
@@ -1198,23 +1200,25 @@ struct DeclarationInput final {
             resolved.push_back(wanted);
         }
         sortUnique(resolved);
-        for (auto& declaration : merged.declarations) {
-            if (!(declaration.stableId == input.stableId)) {
-                continue;
-            }
-            declaration.references = std::move(resolved);
-            declaration.requiredFeatureIds = {};
-            for (const auto& feature : input.required.features) {
-                declaration.requiredFeatureIds.push_back(feature.featureId);
-            }
-            declaration.requiredCapabilityIds = {};
-            for (const auto& capability : input.required.capabilities) {
-                declaration.requiredCapabilityIds.push_back(capability.capabilityId);
-            }
-            sortUnique(declaration.requiredFeatureIds);
-            sortUnique(declaration.requiredCapabilityIds);
-            break;
+        // Every input was inserted before sorting and duplicate rejection above.
+        // Only non-key fields change while references are resolved.
+        const auto found = std::lower_bound(
+            merged.declarations.begin(), merged.declarations.end(), input.stableId,
+            [](const MergedDeclaration& declaration, const StableDeclarationId& key) {
+                return declaration.stableId < key;
+            });
+        auto& declaration = *found;
+        declaration.references = std::move(resolved);
+        declaration.requiredFeatureIds = {};
+        for (const auto& feature : input.required.features) {
+            declaration.requiredFeatureIds.push_back(feature.featureId);
         }
+        declaration.requiredCapabilityIds = {};
+        for (const auto& capability : input.required.capabilities) {
+            declaration.requiredCapabilityIds.push_back(capability.capabilityId);
+        }
+        sortUnique(declaration.requiredFeatureIds);
+        sortUnique(declaration.requiredCapabilityIds);
     }
     return merged;
 }

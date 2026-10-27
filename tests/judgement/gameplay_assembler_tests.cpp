@@ -335,6 +335,96 @@ TEST_CASE("S7A-3 P1-02 merge rejects instead of merging", "[judgement][s7a-3][me
           crossChecked.value().graph.mergedNamespace);
 }
 
+TEST_CASE("Declaration lookup preserves sparse cross-document metadata and boundary rejections",
+          "[judgement][merge][declaration-lookup]") {
+    const Fixture fixture;
+    auto request = fixture.request();
+    for (const auto documentId : {"doc.beta", "doc.gamma"}) {
+        GameplaySource source{};
+        source.form = SourceForm::memory;
+        source.document.sourceDocumentId = documentId;
+        source.document.chartVersion = 5;
+        source.document.gameplayVersion = 2;
+        request.sources.push_back(std::move(source));
+    }
+    constexpr std::uint32_t count = 257;
+    for (std::size_t sourceIndex = 0; sourceIndex < request.sources.size(); ++sourceIndex) {
+        auto& source = request.sources[sourceIndex];
+        const auto& target = request.sources[(sourceIndex + 1) % request.sources.size()];
+        for (std::uint32_t i = 0; i < count; ++i) {
+            auto declaration = testing::testDeclaration(
+                judgement::DeclarationKind::patternDefinition,
+                source.document.sourceDocumentId + ".pattern." + std::to_string(i), 100 + 2 * i,
+                source.document.sourceDocumentId);
+            declaration.references = {
+                {judgement::ReferenceScope::explicitCrossDocument, target.document.sourceDocumentId,
+                 100 + 2 * ((i + 1) % count)},
+                {judgement::ReferenceScope::explicitCrossDocument, target.document.sourceDocumentId,
+                 100 + 2 * ((i + 1) % count)}};
+            if (i % 2 == 0) {
+                declaration.required.features = {{std::string{testing::kFeatureId}}};
+            } else {
+                declaration.required.capabilities = {{std::string{testing::kCapabilityId}, {}}};
+            }
+            source.document.declarations.push_back(std::move(declaration));
+        }
+    }
+    const auto canonical = judgement::assembleGameplay(request);
+    REQUIRE(canonical);
+    for (const auto& source : request.sources) {
+        for (const auto& declaration : source.document.declarations) {
+            const auto& rows = canonical->graph.mergedNamespace.declarations;
+            const auto found = std::find_if(rows.begin(), rows.end(), [&](const auto& row) {
+                return row.stableId == declaration.stableId;
+            });
+            REQUIRE(found != rows.end());
+            CHECK(found->name == declaration.localName);
+            if (declaration.stableId.declarationOrdinal >= 100) {
+                const auto& ref = declaration.references.front();
+                CHECK(found->references == std::vector<judgement::StableDeclarationId>{
+                                               {ref.sourceDocumentId, ref.declarationOrdinal}});
+                CHECK(found->requiredFeatureIds ==
+                      (declaration.required.features.empty()
+                           ? std::vector<std::string>{}
+                           : std::vector<std::string>{std::string{testing::kFeatureId}}));
+                CHECK(found->requiredCapabilityIds ==
+                      (declaration.required.capabilities.empty()
+                           ? std::vector<std::string>{}
+                           : std::vector<std::string>{std::string{testing::kCapabilityId}}));
+            }
+        }
+    }
+    auto reordered = request;
+    std::reverse(reordered.sources.begin(), reordered.sources.end());
+    for (auto& source : reordered.sources) {
+        std::reverse(source.document.declarations.begin(), source.document.declarations.end());
+    }
+    const auto shuffled = judgement::assembleGameplay(reordered);
+    REQUIRE(shuffled);
+    CHECK(shuffled->graph.mergedNamespace == canonical->graph.mergedNamespace);
+    CHECK(shuffled->prepared.canonicalBytes() == canonical->prepared.canonicalBytes());
+
+    SECTION("reference before the first declaration") {
+        request.sources[0].document.declarations.back().references[0].declarationOrdinal = 0;
+    }
+    SECTION("reference in an ordinal gap") {
+        request.sources[0].document.declarations.back().references[0].declarationOrdinal = 101;
+    }
+    SECTION("reference after the last declaration") {
+        request.sources[0].document.declarations.back().references[0].declarationOrdinal = 999;
+    }
+    SECTION("reference names a document before the namespace") {
+        request.sources[0].document.declarations.back().references[0].sourceDocumentId = "aaa";
+    }
+    SECTION("reference names a document after the namespace") {
+        request.sources[0].document.declarations.back().references[0].sourceDocumentId = "zzz";
+    }
+    const auto invalid = judgement::assembleGameplay(request);
+    REQUIRE_FALSE(invalid);
+    expectRejection(invalid.error(), "judgement.merge.reference_dangling", "invalid_relation",
+                    "references");
+}
+
 TEST_CASE("S7A-3 P1-02 merge is invariant under a permutation", "[judgement][s7a-3][reorder]") {
     const Fixture fixture;
     AssemblyRequest canonical = fixture.request();
