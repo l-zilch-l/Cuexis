@@ -156,6 +156,9 @@ TEST_CASE("PD5 presentation workload matrix", "[.][pd][pd5][matrix]") {
             if (i == consumers) {
                 consumer.mode = ConsumerMode::realtimeLatest;
                 consumer.renderer = true;
+                consumer.maxPayloads = 2;
+                consumer.maxBytes = consumer.maxPayloads * consumer.frameByteBound;
+                consumer.maxAttempts = 2;
                 consumer.rendererInstance = renderer.identity().instance;
                 consumer.rendererGeneration = renderer.identity().generation;
             }
