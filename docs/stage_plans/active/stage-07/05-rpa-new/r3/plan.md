@@ -13,6 +13,11 @@
 定位恢复后的完整 Fact 投影为当前 40K 主要成本，确认零绑定下仍构造 40K owning keys；同映像及 A/A
 未支持把原差值直接判为复制候选的算法退化。1K 原高点与具体运行态机制仍未裁定；本轮未改产品实现。
 
+2026-10-29 [零绑定投影修复与通用方案撤回](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-29-r3-projection-empty-and-general-attempt.md)
+保留逐 Fact 校验后跳过空索引 key 构造的最小修复，固定普通 Host 对照中 40K 首次中位数下降 84.5%。
+通用方案微基准改善但 10K Host 三对均变慢，已恢复最小修复并保留失败证据；
+旧窗口与 15% / 20 ms 门限不改，正式、设备、内存和 R3/R4 接受仍独立。
+
 R3b 的首个候选见[显式可信恢复提案](trusted-restore-candidate.md)，已按总计划 §8.2 允许的最终 archive 工厂入口实施并完成本地核验；当前候选预算未通过，R3 未退出，按 §12.2 交裁定包。不再要求重复授权，也不声称自然 checkpoint 已覆盖首次 Seek。
 2026-10-27 本地功能/兼容、反例、宏隔离和成本范围见[核验报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3a-recovery-and-prepare.md)。
 后续可信前缀候选另见 [R3b 核验报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3b-certified-prefix-and-cost.md)，不复用 R3a 的性能身份。

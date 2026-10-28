@@ -2,7 +2,7 @@
 
 状态：current index
 
-更新日期：2026-10-28
+更新日期：2026-10-29
 
 当前状态只以 [CURRENT_STATUS](../../../../CURRENT_STATUS.md) 为准；本页只负责定位，不新增实施、测量或阶段接受结论。
 
@@ -81,3 +81,5 @@
 | [SDK 0.9.1 与架构同步](r3/2026-10-28-sdk-091-architecture-sync.md) | `D:/Cuexis-redesign/out/verification-20261028/sdk-091/`；`verify.ps1`、`results.json`、独立 STATIC/SHARED clean build / install prefix 与消费者、版本请求接受/拒绝及文档日志 |
 | [R3 已冻结 prepare 复制消除](r3/2026-10-28-r3-resolved-prepare-copy.md) | `D:/Cuexis-redesign/out/verification-20261028/r3-p1-resolved-copy-v1/`；两侧 0.9.1 源/库/二进制绑定、20 份字节/错误对照、四套回归、固定 18 进程登记/全部样本及最终差异清单；1K 重复性超门和首次 Seek 变化保留 |
 | [R3 setup 与首次 Seek 轻量归因](r3/2026-10-28-r3-seek-noise-attribution.md) | `D:/Cuexis-redesign/out/verification-20261028/r3-seek-noise-probe-v1/`；源副本/独立对象探针、同映像 copy/borrow、A/A、42 个有效进程、v3 导出失效停止与 v4 新组、逐项工作计数和 QPC 嵌套审计；原始超门不改判 |
+
+| [R3 零绑定投影优化与通用匹配撤回](r3/2026-10-29-r3-projection-empty-and-general-attempt.md) | `D:/Cuexis-redesign/out/verification-20261028/projection-matching-v1/`；A/B 固定 18 进程、adapter-only 固定 36 进程、B/C Host 固定 18 进程及全部原值；撤回的 C 源副本、最终 B STATIC/SHARED 回归与 `final-manifest.json`；不追加样本改判 |

@@ -2,7 +2,7 @@
 
 状态：candidate；当前分支的内部实现参考，不是稳定 SDK 或生产验收声明
 
-更新日期：2026-10-28
+更新日期：2026-10-29
 
 本文说明 R3 重构后保留的所有权、复用和缓存设计。产品边界仍由
 [ADR 0027](../adr/0027-playback-sdk-product-boundary.md) 定义，实时职责与线程部署由
@@ -101,6 +101,14 @@ content-only completeness 通过私有 `gameplay_closure.hpp` collector 显式�
 公开 full closure 入口仍包含原 contributions，两者共享同一内容遍历与精确 revision 比较、排序和去重。
 assembler 保持全 unknown 检查、全 disabled 检查、capability completeness、feature completeness 的顺序。
 继续扩展 closure 时应修改共享 collector，不能另建一套规则或依赖图的临时可变副本。
+
+## Fact 投影与空索引
+
+没有 presentation source binding 时，逐 Fact PublicationRead 和 kind / phase / outcome 校验仍执行，
+校验通过后才跳过 owning source key 构造和匹配。不能在函数入口按空索引直接返回，
+游标、scope、已有 future / active 状态、group、target 与 lastTick 仍沿共同路径处理。
+非空索引继续拥有完整身份 key，查询与匹配排序保持原算法；不缓存 Fact 借用视图，
+也不减少 owner / 线程 / epoch / ordinal 检查。后续优化必须维持首错和失败不修改输入状态的保证。
 
 ## 编码、缓冲与哈希
 

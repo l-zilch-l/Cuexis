@@ -2,6 +2,8 @@
 #include "gameplay_internal.hpp"
 #include "presentation_projection.hpp"
 
+#include <limits>
+
 using namespace cuexis;
 using namespace cuexis::playback;
 using namespace cuexis::playback::detail;
@@ -76,7 +78,7 @@ TEST_CASE("PD projection uses full prepared source predicates in Fact order",
           "[pd][projection][index]") {
     AdapterFixture f;
     std::vector<GameplayFactBinding> bindings{f.binding()};
-    for (int field = 0; field < 8; ++field) {
+    for (int field = 0; field < 11; ++field) {
         auto other = f.binding("other" + std::to_string(field), "wrong");
         switch (field) {
         case 0:
@@ -102,6 +104,15 @@ TEST_CASE("PD projection uses full prepared source predicates in Fact order",
             break;
         case 7:
             other.outcome = GameplayOutcome::Miss;
+            break;
+        case 8:
+            other.source.emissionPath.front().nodeId += "x";
+            break;
+        case 9:
+            ++other.source.emissionPath.front().repeatIndex;
+            break;
+        case 10:
+            other.source.emissionPath.clear();
             break;
         }
         bindings.push_back(other);
@@ -329,5 +340,139 @@ TEST_CASE("PD projection refuses stale scope and prefix without reading or insta
         CHECK_FALSE(invoked);
         CHECK(first->state.cursor == 1);
         CHECK(first->state.active.front().published);
+    }
+}
+
+TEST_CASE("PD projection validates the full Fact prefix without source bindings",
+          "[pd][projection][empty][failure]") {
+    AdapterFixture f;
+    auto empty = PresentationProjectionAdapter::prepare({}, {});
+    auto bound = PresentationProjectionAdapter::prepare(std::array{f.binding()}, {{"target", 0}});
+    REQUIRE(empty);
+    REQUIRE(bound);
+    auto stray = f.fact();
+    stray.kind = judgement::FactKind::stray;
+    auto consumed = stray;
+    consumed.kind = judgement::FactKind::consumeEmpty;
+    const auto valid = f.project(*empty, {}, 0, {f.fact(), stray, consumed, f.fact(3)});
+    REQUIRE(valid);
+    CHECK(valid->state.cursor == 4);
+    CHECK(valid->state.scope);
+    REQUIRE(valid->state.lastTick);
+    CHECK(valid->state.lastTick->value == 0);
+    CHECK(valid->state.active.empty());
+    CHECK(valid->state.future.empty());
+    CHECK(valid->writes.empty());
+    for (int field = 0; field < 6; ++field) {
+        auto bad = f.fact(1);
+        if (field == 0)
+            bad.kind = static_cast<judgement::FactKind>(255);
+        if (field == 1)
+            bad.requirement = nullptr;
+        if (field == 2)
+            bad.phase.reset();
+        if (field == 3)
+            bad.outcome.reset();
+        if (field == 4)
+            bad.phase = static_cast<judgement::PhaseKind>(255);
+        if (field == 5)
+            bad.outcome = static_cast<judgement::Outcome>(255);
+        const ProjectionState current;
+        const auto withoutBindings = f.project(*empty, current, 0, {f.fact(), bad});
+        const auto withBindings = f.project(*bound, current, 0, {f.fact(), bad});
+        REQUIRE_FALSE(withoutBindings);
+        REQUIRE_FALSE(withBindings);
+        CHECK(withoutBindings.error().code() == withBindings.error().code());
+        CHECK(withoutBindings.error().message() == withBindings.error().message());
+        CHECK(current.cursor == 0);
+        CHECK_FALSE(current.scope);
+        CHECK(current.active.empty());
+    }
+}
+
+TEST_CASE("PD projection merges timing rows in canonical order without losing repeats",
+          "[pd][projection][index][timing]") {
+    AdapterFixture f;
+    auto exactA = f.binding("a-exact", "target-a");
+    exactA.timing = GameplayTimingClass::Exact;
+    auto anyB = f.binding("b-any", "target-b");
+    auto exactC = f.binding("c-exact", "target-c");
+    exactC.timing = GameplayTimingClass::Exact;
+    auto anyD = f.binding("d-any", "target-d");
+    auto prepared = PresentationProjectionAdapter::prepare(
+        std::array{exactA, anyB, exactC, anyD},
+        {{"target-a", 0}, {"target-b", 1}, {"target-c", 2}, {"target-d", 3}});
+    REQUIRE(prepared);
+    std::vector<std::size_t> visited;
+    const auto target = [&](std::size_t index, std::string_view) -> core::Result<bool> {
+        visited.push_back(index);
+        return true;
+    };
+    const auto result = f.project(*prepared, {}, 0, {f.fact()}, target);
+    REQUIRE(result);
+    CHECK(result->matchedRows == 4);
+    CHECK(visited == std::vector<std::size_t>{0, 1, 2, 3});
+    CHECK(result->state.active.size() == 4);
+    CHECK(result->writes.size() == 4);
+    // Even a repeated row supplied by an internal caller retains the old multiplicity.
+    for (auto& [key, rows] : prepared->sources)
+        if (std::get<8>(key) == GameplayTimingClass::Any)
+            rows.insert(rows.begin(), 0);
+    visited.clear();
+    const auto repeated = f.project(*prepared, {}, 0, {f.fact()}, target);
+    REQUIRE(repeated);
+    CHECK(repeated->matchedRows == 5);
+    CHECK(visited == std::vector<std::size_t>{0, 0, 1, 2, 3});
+    CHECK(repeated->state.active.size() == 5);
+    CHECK(repeated->writes.size() == 4);
+}
+
+TEST_CASE("PD projection matches exact identity bytes and full-width repeat indices",
+          "[pd][projection][index][identity]") {
+    AdapterFixture f;
+    for (const auto& text : {std::string{"prefix\0right", 12},
+                             std::string{"\xE6\x9D\xB1\xE4\xBA\xAC"}, std::string(4096, 'p')}) {
+        auto identity = f.identity;
+        identity.chartEntryId = text;
+        identity.invocationId = text;
+        identity.moduleId = text;
+        identity.exportId = text;
+        identity.requirementLocalId = text;
+        identity.emissionPath = {{text, std::numeric_limits<std::uint64_t>::max()}, {"tail", 0}};
+        auto row = f.binding();
+        row.source = {identity.chartEntryId, identity.invocationId,       identity.moduleId,
+                      identity.exportId,     identity.requirementLocalId, {}};
+        for (const auto& step : identity.emissionPath)
+            row.source.emissionPath.push_back({step.nodeId, step.repeatIndex});
+        const auto prepared =
+            PresentationProjectionAdapter::prepare(std::array{row}, {{"target", 0}});
+        REQUIRE(prepared);
+        auto fact = f.fact();
+        fact.requirement = &identity;
+        const auto exact = f.project(*prepared, {}, 0, {fact});
+        REQUIRE(exact);
+        CHECK(exact->matchedRows == 1);
+        CHECK(exact->writes.size() == 1);
+        auto near = identity;
+        --near.emissionPath.front().repeatIndex;
+        fact.requirement = &near;
+        const auto differentRepeat = f.project(*prepared, {}, 0, {fact});
+        REQUIRE(differentRepeat);
+        CHECK(differentRepeat->matchedRows == 0);
+        near = identity;
+        near.emissionPath.pop_back();
+        const auto shorter = f.project(*prepared, {}, 0, {fact});
+        REQUIRE(shorter);
+        CHECK(shorter->matchedRows == 0);
+        near = identity;
+        near.chartEntryId += 'x';
+        const auto differentText = f.project(*prepared, {}, 0, {fact});
+        REQUIRE(differentText);
+        CHECK(differentText->matchedRows == 0);
+        near = identity;
+        near.chartEntryId = std::string{"prefix\0wrong", 12};
+        const auto differentSuffix = f.project(*prepared, {}, 0, {fact});
+        REQUIRE(differentSuffix);
+        CHECK(differentSuffix->matchedRows == 0);
     }
 }

@@ -138,6 +138,8 @@ auto PresentationProjectionAdapter::project(
         }
         if (*fact->outcome != judgement::Outcome::hit && *fact->outcome != judgement::Outcome::miss)
             return core::unexpected(invalid("Unsupported publication outcome"));
+        if (prepared.sources.empty())
+            continue;
         const auto outcome = *fact->outcome == judgement::Outcome::hit ? GameplayOutcome::Hit
                                                                        : GameplayOutcome::Miss;
         auto key = sourceKey(*fact->requirement, phase, outcome, GameplayTimingClass::Any);

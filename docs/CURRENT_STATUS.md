@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-10-28
+更新日期：2026-10-29
 
 本文只维护当前阶段、正在进行的任务和未解决的问题。实施与测量细节见带日期的阶段报告。
 
@@ -14,6 +14,10 @@
   [轻量探针](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-28-r3-seek-noise-attribution.md)已确认 40K 主成本在恢复后的 Fact 投影：
   零绑定仍读取/构造 40K Fact/key。同映像切换未稳定复现原约 11% 差距，A/A 也有慢点；诊断出现 20.591 ms，
   原因机制及正式/Seek 接受仍未关闭，不能改判原窗口或门限。
+  后续[零绑定投影修复与通用方案撤回](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-29-r3-projection-empty-and-general-attempt.md)
+  保留完整 Fact 校验，只跳过空索引下的 owning key 构造；固定普通 CPU Host 对照的 40K 首次中位数
+  从 16.531 ms 降至 2.562 ms（下降 84.5%）。相对重复性仍超 15%，不代表正式接受。
+  通用借用 key / 有序合并虽改善微基准，但 10K Host 首次三对均上升，已撤回并留档。
   已有分页共享状态、不可变准备复用、自然恢复锚点，以及 SHA 加速和有界编码器恢复点 `198ab96`。
   最新[来源绑定实验](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-source-binding-experiment.md)用同一 Release 二进制比较 canonical SHA 与进程内 owning source binding。
   2048 requirements、33 条历史的 CPU 宿主首次请求到目标帧由 91.809 ms 降至 1.016 ms；129 条历史由 333.624 ms 降至 1.057 ms。
