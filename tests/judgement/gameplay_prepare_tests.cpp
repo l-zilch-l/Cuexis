@@ -212,6 +212,54 @@ TEST_CASE("S7A-3 prepared storage outlives all input bindings",
     CHECK(copy.admitsSuccess(0, Tick{102}));
 }
 
+TEST_CASE("S7A-3 resolved prepare owns profiles and leaves frozen input unchanged",
+          "[judgement][s7a-3][prepare][resolved][ownership]") {
+    const auto make = [] {
+        Fixture fixture;
+        std::string profileId{fixture.timebase.profileId};
+        std::string unitToken{fixture.timebase.unitToken};
+        fixture.timebase.profileId = profileId;
+        fixture.timebase.unitToken = unitToken;
+        const auto author = requestFor(fixture);
+        const auto expected = prepareGameplay(author);
+        REQUIRE(expected);
+        auto frozen = ResolvedGameplayPrepareRequest{author.assembly, author.patternBudget};
+        const auto requirements = frozen.assembly.sources.front().document.requirements;
+        const auto declarations = frozen.assembly.sources.front().document.declarations;
+        auto prepared = prepareResolvedGameplay(frozen);
+        REQUIRE(prepared);
+        CHECK(frozen.assembly.sources.front().document.requirements == requirements);
+        CHECK(frozen.assembly.sources.front().document.declarations == declarations);
+        CHECK(prepared->assembled().graph.timebase != frozen.assembly.timebase);
+        CHECK(prepared->assembled().graph.latePolicy != frozen.assembly.latePolicy);
+        CHECK(semanticDiff(expected->assembled().graph, prepared->assembled().graph).empty());
+        CHECK(prepared->assembled().chart == expected->assembled().chart);
+        CHECK(prepared->assembled().content == expected->assembled().content);
+        CHECK(prepared->assembled().prepared == expected->assembled().prepared);
+        profileId.assign(256, 'x');
+        unitToken.assign(256, 'y');
+        fixture.latePolicy.maxQueueHop = MeasuredParameter<TickSpan>::measured(TickSpan{999});
+        frozen.assembly.sources.front().document.requirements.clear();
+        return prepared;
+    };
+    const auto prepared = make();
+    REQUIRE(prepared);
+    const auto copy = *prepared;
+    const auto& assembled = copy.assembled();
+    CHECK(assembled.graph.timebase->profileId == "engine.tick.us.v1");
+    CHECK(assembled.graph.timebase->unitToken == "us");
+    CHECK(assembled.graph.latePolicy->maxQueueHop !=
+          MeasuredParameter<TickSpan>::measured(TickSpan{999}));
+    CHECK(makeChartIdentity(assembled.graph) == assembled.chart);
+    CHECK(makeContentIdentity(assembled.graph) == assembled.content);
+    CHECK(makePreparedIdentity(assembled.graph, copy.identityDeclarations()) == assembled.prepared);
+    REQUIRE(copy.requirements().size() == 1);
+    CHECK(copy.requirements().front().deadline == Tick{103});
+    REQUIRE(copy.resources().size() == 1);
+    CHECK(copy.resources().front().requirementIndices == std::vector<std::size_t>{0});
+    CHECK(copy.admitsSuccess(0, Tick{102}));
+}
+
 TEST_CASE("S7A-3 inheritance is one named literal and zero grace does not extend body",
           "[judgement][s7a-3][prepare][grace]") {
     Fixture fixture;

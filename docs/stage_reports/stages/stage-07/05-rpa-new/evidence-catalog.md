@@ -79,3 +79,5 @@
 | [R3 prepare 声明查找优化](r3/2026-10-27-r3-prepare-declaration-optimization.md) | `D:/Cuexis-redesign/out/prepare-probe-20261027/`（基线细探针）、`out/prepare-baseline-20261027/`（普通基线）、`out/prepare-detail-20261027/`（优化后细探针）、`out/prepare-opt-20261027/`（普通候选、外层阶段、兼容 oracle、四配置相关回归、最终审计及旧诊断 exe 覆盖说明） |
 
 | [SDK 0.9.1 与架构同步](r3/2026-10-28-sdk-091-architecture-sync.md) | `D:/Cuexis-redesign/out/verification-20261028/sdk-091/`；`verify.ps1`、`results.json`、独立 STATIC/SHARED clean build / install prefix 与消费者、版本请求接受/拒绝及文档日志 |
+| [R3 已冻结 prepare 复制消除](r3/2026-10-28-r3-resolved-prepare-copy.md) | `D:/Cuexis-redesign/out/verification-20261028/r3-p1-resolved-copy-v1/`；两侧 0.9.1 源/库/二进制绑定、20 份字节/错误对照、四套回归、固定 18 进程登记/全部样本及最终差异清单；1K 重复性超门和首次 Seek 变化保留 |
+| [R3 setup 与首次 Seek 轻量归因](r3/2026-10-28-r3-seek-noise-attribution.md) | `D:/Cuexis-redesign/out/verification-20261028/r3-seek-noise-probe-v1/`；源副本/独立对象探针、同映像 copy/borrow、A/A、42 个有效进程、v3 导出失效停止与 v4 新组、逐项工作计数和 QPC 嵌套审计；原始超门不改判 |

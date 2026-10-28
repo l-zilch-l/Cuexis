@@ -8,16 +8,22 @@
 
 ## 当前任务
 
-- **R3 未退出；本轮按用户要求停止**：已有分页共享状态、不可变准备复用、自然恢复锚点，以及 SHA 加速和有界编码器恢复点 `198ab96`。
+- **R3 继续重构优化，尚未退出**：已冻结 prepare 输入的两次整份复制已消除，生命周期、相关回归和身份/Packed 字节对照通过。
+  新 0.9.1 普通固定对照的 setup 中位数在 1K/10K/40K 分别下降约 7.6%/6.8%/6.2%；1K 基线重复性超 15%，
+  其历史高点尚不能唯一归因，见[本轮准备复制优化](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-28-r3-resolved-prepare-copy.md)。
+  [轻量探针](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-28-r3-seek-noise-attribution.md)已确认 40K 主成本在恢复后的 Fact 投影：
+  零绑定仍读取/构造 40K Fact/key。同映像切换未稳定复现原约 11% 差距，A/A 也有慢点；诊断出现 20.591 ms，
+  原因机制及正式/Seek 接受仍未关闭，不能改判原窗口或门限。
+  已有分页共享状态、不可变准备复用、自然恢复锚点，以及 SHA 加速和有界编码器恢复点 `198ab96`。
   最新[来源绑定实验](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-source-binding-experiment.md)用同一 Release 二进制比较 canonical SHA 与进程内 owning source binding。
   2048 requirements、33 条历史的 CPU 宿主首次请求到目标帧由 91.809 ms 降至 1.016 ms；129 条历史由 333.624 ms 降至 1.057 ms。
   这是固定本地诊断的点值，wire/导入验证保持原合同，candidate C++ 消费者须重建；R3 未退出、R3c 尚未进入，R4、设备与生产接受仍独立。
   原始归因及历史失败保留，后续门禁见[实施登记](stage_plans/active/stage-07/05-rpa-new/r3/plan.md)。
   本轮保留 GPU 测试配额修复和 content-only closure 无复制优化（产品恢复点 `5fd84fd`）；身份 writer 范围插入试验
-  未取得稳定收益，已撤销。恢复后的四套相关回归、架构门与 96 份身份字节对照通过，未继续推进其他热点。
+  未取得稳定收益，已撤销。该轮恢复后的四套相关回归、架构门与 96 份身份字节对照通过；新复制候选另行登记。
   架构 / 设计变更、对照结果与停止边界见[本轮登记 §5](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-28-r3-redesign-verification-and-optimization.md#5-后续取证和修复顺序)。
   现行内部设计集中在[执行状态、恢复与准备路径](architecture/execution-state-and-recovery.md)，
-  架构/API 入口已同步；本轮文档修正不重启性能优化。
+  架构/API 入口已同步；后续继续跟踪首次 Seek 与 Packed/prepare 剩余热点。
 - **PD-5 定案与 Stage 7-PD 退出裁定**：判定报告已提出“未通过但定案”及退出清单，尚待 owner 接受；读取与 Seek 整改由 RPA 线承接，
   分域内存及正式/设备/生产验收缺口仍按下文跟踪。见[判定报告](stage_reports/stages/stage-07/04-pd/pd-5/exit/2026-10-24-pd5-verdict-and-stage-7-pd-exit.md)。
 

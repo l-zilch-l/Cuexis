@@ -191,7 +191,14 @@ auto PreparedGameplay::admitsSuccess(std::size_t index, Tick tick) const noexcep
 
 namespace {
 
-auto prepareStorage(const GameplayPrepareRequest& request, bool resolved)
+struct PreparationInputs final {
+    const AssemblyRequest& assembly;
+    std::span<const RequirementGraceInput> graceInputs;
+    std::span<const NamedGraceDuration> namedGraceDurations;
+    const PatternCompileBudget& patternBudget;
+};
+
+auto prepareStorage(const PreparationInputs& request, bool resolved)
     -> core::Result<std::shared_ptr<const detail::PreparedGameplayStorage>> try {
 #if defined(CUEXIS_PD_METRICS_TEST_ONLY)
     std::optional<internal::pd::Timer> measurement;
@@ -256,10 +263,17 @@ auto prepareStorage(const GameplayPrepareRequest& request, bool resolved)
 #endif
     auto storage = std::make_shared<detail::PreparedGameplayStorage>(*request.assembly.timebase,
                                                                      *request.assembly.latePolicy);
-    auto assembly = request.assembly;
-    storage->identities = assembly.identityDeclarations;
-    assembly.timebase = &storage->timebase;
-    assembly.latePolicy = &storage->latePolicy;
+    storage->identities = request.assembly.identityDeclarations;
+    // Only author input needs a mutable copy for grace lowering. Resolved input is read
+    // synchronously by the shared assembler, which owns every graph field except the two
+    // profile pointers. Rebind those pointers to storage before using the assembled result.
+    std::optional<AssemblyRequest> mutableAssembly;
+    if (!resolved) {
+        mutableAssembly.emplace(request.assembly);
+        mutableAssembly->timebase = &storage->timebase;
+        mutableAssembly->latePolicy = &storage->latePolicy;
+    }
+    const auto& assembly = resolved ? request.assembly : *mutableAssembly;
 #if defined(CUEXIS_PD_METRICS_TEST_ONLY)
     measurement.reset();
     measurement.emplace(internal::pd::Stage::gameplayPrepareGraceResolution);
@@ -281,7 +295,7 @@ auto prepareStorage(const GameplayPrepareRequest& request, bool resolved)
             }
         }
         std::set<StableDeclarationId> used;
-        for (auto& source : assembly.sources) {
+        for (auto& source : mutableAssembly->sources) {
             for (auto& requirement : source.document.requirements) {
                 const auto binding = bindings.find(requirement.stableId);
                 if (binding == bindings.end()) {
@@ -334,6 +348,8 @@ auto prepareStorage(const GameplayPrepareRequest& request, bool resolved)
     if (!assembled) {
         return core::unexpected(assembled.error());
     }
+    assembled->graph.timebase = &storage->timebase;
+    assembled->graph.latePolicy = &storage->latePolicy;
 #if defined(CUEXIS_PD_METRICS_TEST_ONLY)
     measurement.emplace(internal::pd::Stage::gameplayPrepareRequirements);
 #endif
@@ -476,7 +492,9 @@ auto prepareStorage(const GameplayPrepareRequest& request, bool resolved)
 } // namespace
 
 auto prepareGameplay(const GameplayPrepareRequest& request) -> core::Result<PreparedGameplay> {
-    auto storage = prepareStorage(request, false);
+    auto storage = prepareStorage(
+        {request.assembly, request.graceInputs, request.namedGraceDurations, request.patternBudget},
+        false);
     if (!storage) {
         return core::unexpected(std::move(storage.error()));
     }
@@ -485,8 +503,7 @@ auto prepareGameplay(const GameplayPrepareRequest& request) -> core::Result<Prep
 
 auto prepareResolvedGameplay(const ResolvedGameplayPrepareRequest& request)
     -> core::Result<PreparedGameplay> {
-    auto storage = prepareStorage(
-        GameplayPrepareRequest{request.assembly, {}, {}, request.patternBudget}, true);
+    auto storage = prepareStorage({request.assembly, {}, {}, request.patternBudget}, true);
     if (!storage) {
         return core::unexpected(std::move(storage.error()));
     }

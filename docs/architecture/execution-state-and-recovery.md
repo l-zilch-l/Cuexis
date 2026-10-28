@@ -88,6 +88,10 @@ Runtime 的事务式属性求值通过 `TransformUpdate::prepare(..., false, tru
 
 ## Packed 准备与 closure
 
+已冻结输入通过私有只读视图同步进入共享 assembler，不为 grace lowering 复制整份输入；
+作者输入仍保留可变副本。assembler 构造拥有型图，prepare 在成功后立即将图的 timebase / latePolicy
+指针重绑到 prepared storage 的自有配置；输入视图不得逃逸，也不能借此信任外部对象。
+
 Packed 解码仍重建 typed 内容，并走共享 gameplay prepare 及语义比较。
 调用期索引替代 graph 匹配的重复扫描，已有 canonical 声明顺序支持二分查找；
 这些索引不会成为跨调用全局缓存，查找加速不能改变输入次序、重复判定或首错选择。

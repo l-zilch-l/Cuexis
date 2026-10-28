@@ -4,6 +4,15 @@
 本登记从 [总计划](../plan.md) §8 消费范围和依赖，不扩展到 R4 正式接受或 Stage 7 关闭。
 返回 [New RPA 索引](../README.md)。
 
+2026-10-28 owner 重新要求接手 R3 重构优化，唯一实施树仍为 `D:/Cuexis-redesign` / `Cuexis-redesign`。
+[已冻结 prepare 复制消除](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-28-r3-resolved-prepare-copy.md)
+已完成本地回归、所有权与字节核验及新 0.9.1 固定诊断；setup 有局部收益，1K 基线重复性超门和
+40K 首次 Seek 上升保留，不追加样本改判，不作为 R3/R4 退出。下文历史证据不回填。
+
+后续[setup / Seek 轻量归因](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-28-r3-seek-noise-attribution.md)
+定位恢复后的完整 Fact 投影为当前 40K 主要成本，确认零绑定下仍构造 40K owning keys；同映像及 A/A
+未支持把原差值直接判为复制候选的算法退化。1K 原高点与具体运行态机制仍未裁定；本轮未改产品实现。
+
 R3b 的首个候选见[显式可信恢复提案](trusted-restore-candidate.md)，已按总计划 §8.2 允许的最终 archive 工厂入口实施并完成本地核验；当前候选预算未通过，R3 未退出，按 §12.2 交裁定包。不再要求重复授权，也不声称自然 checkpoint 已覆盖首次 Seek。
 2026-10-27 本地功能/兼容、反例、宏隔离和成本范围见[核验报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3a-recovery-and-prepare.md)。
 后续可信前缀候选另见 [R3b 核验报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3b-certified-prefix-and-cost.md)，不复用 R3a 的性能身份。
