@@ -19,6 +19,8 @@ namespace {
 using namespace cuexis::playback;
 static_assert(
     std::is_same_v<decltype(FeedbackObservation::expiry), std::optional<GameplayPresentationTick>>);
+static_assert(std::is_same_v<decltype(StepTarget::replaySourceIdentity),
+                             std::optional<ReplaySourceIdentity>>);
 template <typename T> auto take(cuexis::core::Result<T> result) -> T {
     if (!result)
         throw std::runtime_error{std::string{result.error().code()} + ": " +

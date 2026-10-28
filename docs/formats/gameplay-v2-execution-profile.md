@@ -2,11 +2,11 @@
 
 状态：candidate；S7A-3 / S7A-4选定基线及RPA T2已裁定补充，不是运行验证或生产发布
 
-更新日期：2026-10-11
+更新日期：2026-10-28（当前状态导航订正）
 
 实现状态：分批实现与受限功能验收只由 [CURRENT_STATUS](../CURRENT_STATUS.md) 汇总；
 本候选合同的状态不等同于Stage 7A关闭或容量证明。
-RPA T2及AD06-G1/Q1/K1已裁定、未实施；剩余控制/Fact/版本合同现由
+RPA T2 及 AD06-G1/Q1/K1 的后续分批实施不由本基线文档汇总；控制/Fact/版本合同由
 [RPA补充Spec](rpa-execution-contract.md)闭合。下文S7A-3/4旧类型和token只描述旧profile，
 不能在RPA中继续沿用旧表示而改变含义。
 

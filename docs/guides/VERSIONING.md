@@ -2,7 +2,7 @@
 
 状态：已接受
 
-更新日期：2026-10-11
+更新日期：2026-10-28
 
 ## 格式
 
@@ -76,7 +76,7 @@ suffix 只来自允许集合或 exp.<name>
 
 ```text
 Cuexis display version     仓库/发行构建身份
-C++ SDK API version        CMake package 与源码兼容版本；当前分支 static/shared preview 为 0.9.0
+C++ SDK API version        CMake package 与源码兼容版本；当前分支 static/shared preview 为 0.9.1
 C ABI version              稳定 shared-library 二进制契约，阶段 12 首次冻结
 Chart/Project/Asset format 各自持久化 format + version
 ReplayData format          阶段 11 冻结的独立持久化版本
@@ -128,7 +128,7 @@ Stage 7 originally prepared SDK `0.7.1` as a compatible patch candidate for expl
 factories and experimental package isolation. This repair preserves installed public layouts,
 signatures, vtables and default production source selection. `0.7.0` consumers rebuild against
 the new package; the original Entry additions required at least `0.7.1`. This is the historical
-Entry baseline, not the current package version. The branch now uses `0.9.0`; its diagnostic and
+Entry baseline, not the current package version. The branch now uses `0.9.1`; its diagnostic and
 Recovery compatibility changes and consumer minimum are specified below. Delivery status belongs
 to [CURRENT_STATUS](../CURRENT_STATUS.md); approval and release gates remain separate.
 
@@ -307,7 +307,7 @@ Stage 14 必须另行冻结 `1.x` 的 API/ABI 兼容、弃用和版本递增政�
 owner明确指定[独立诊断正式化工作包](../stage_plans/active/stage-07/02-diagnostics/plan.md)
 目标SDK API为`0.7.5`，同时保留此前已接受的新Recovery版本拒绝旧版本方向。
 这是本工作包的具体版本裁定；版本文件与消费者已在N2集成，N1/N3已退出，
-诊断基线为0.7.5；当前分支为0.9.0。具体证据与交付状态归[CURRENT_STATUS](../CURRENT_STATUS.md)。
+诊断基线为0.7.5；当前分支为0.9.1。具体证据与交付状态归[CURRENT_STATUS](../CURRENT_STATUS.md)。
 N1已记录production/candidate公共差异及迁移影响，不将patch数字当作可观察合同兼容证明。
 若实际差异属于常规规则要求升minor的不兼容公开变化，本工作包按owner指定的`0.7.5`
 记录限定例外及具体影响，不反向放宽Reader来制造兼容，也不推广为其他阶段可使用breaking patch。
@@ -416,3 +416,20 @@ owner 于 2026-10-19 接受 [ADR 0047](../adr/0047-pd-feedback-lifetime-and-deli
 无值为 UntilReset，有限 INT64_MAX 不再与无期限混同。消费者须检查 optional、读取 `expiry->value`，
 修改源码并使用 0.9.0 头/库干净重建。旧 0.8.x minor 与新包互相拒绝版本请求；不支持替换 DLL 混用。
 FrameSnapshot 布局、Gameplay/Replay identity 与 wire 不因此改变。内部实施和适用本地消费者验证完成，不构成发行；见 [PD-4 报告](../stage_reports/stages/stage-07/04-pd/pd-4/2026-10-19-pd4-delivery-retirement-and-observation.md)。
+
+### 0.9.1 R3 candidate 来源绑定
+
+2026-10-28 owner 明确要求：若查到 API 有变化则更新至 `0.9.1`。核对提交 `e8fce1f` 后确认：
+安装版 candidate 头新增 `ReplaySourceIdentity`，`StepTarget` 末尾新增
+`optional<ReplaySourceIdentity> replaySourceIdentity`，嵌套 request / proof / receipt 布局随之改变。
+canonical SHA 绑定仍可选择，Seek 必须恰好选择一种绑定；没有新文件格式或哈希算法版本。
+
+本次按 owner 指定使用 `0.9.1`，是未发行 candidate 布局变化的明确例外，不修改上文通常要求
+布局不兼容时递增 minor 的规则，也不将此变化描述为纯实现重构或已证明所有旧源码兼容。
+分页状态、准备复用、Transform、closure、编码与哈希实现优化本身不要求升版。
+普通生产播放路径未因本次版本标记增加入口；新 candidate 使用者须请求至少 `0.9.1`。
+
+`SameMinorVersion` 仍是 package/source 请求策略：新包可接受较低的 `0.9.0` 请求，不证明旧包提供
+新字段或旧 shared binary 可混用。所有 candidate consumer 使用同一套新头/库干净重建；
+依赖公开结构大小、聚合分解等假设的源码须重新检查。不支持仅替换 DLL。
+本次只改独立 SDK API 版本，日期构建身份和 vcpkg `version-string` 保持 `26.10.19-1`。

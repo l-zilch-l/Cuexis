@@ -1,14 +1,16 @@
 # RPA 执行与控制补充合同
 
-状态：candidate contract；SDK 0.8.0的B3执行协调实施中，未发行
+状态：candidate contract；当前分支 SDK 0.9.1 preview，未发行
 
-更新日期：2026-10-11
+更新日期：2026-10-28
 
 本文补充 [Gameplay V2 Spec](GAMEPLAY_V2_SPEC.md) 和 [execution profile](gameplay-v2-execution-profile.md)。
-只在下述明确列出的 RPA profile 中替代旧条款；SDK 0.7.5 的实现行为仍见
+只在下述明确列出的 RPA profile 中替代旧条款；SDK 0.7.5 是历史诊断基线，当前实施状态见
 [CURRENT_STATUS](../CURRENT_STATUS.md)。选择理由归 [ADR 0046](../adr/0046-realtime-playback-coordination.md)，
 载体/所有权归 [实时宿主边界](../api/realtime-host-boundary.md)，实施门禁归
-[RPA 计划](../stage_plans/active/stage-07/03-rpa-legacy/plan.md)。术语见 [Glossary](../api/GLOSSARY.md)。
+[RPA 整改计划](../stage_plans/active/stage-07/05-rpa-new/plan.md)。术语见 [Glossary](../api/GLOSSARY.md)。
+当前内部分页状态、准备/锚点复用与编码缓存见
+[架构参考](../architecture/execution-state-and-recovery.md)，不另定义执行语义或 wire。
 
 授权来源：owner 直接选择 C1、T2、O1、I1、T2-C1、T2-L1、G1、Q1、K1、TB-05 和 R2；
 2026-10-11 随后授权其余事项由代理合理裁定，仅极难决定者再询问。
@@ -341,7 +343,7 @@ Executed(receipt)、Failed(stage,error,actualPrefix)。前五项及 Retired 不�
 | fact semantic | `fact.semantic.rpa.v1` | 新 occurrence origin 与 reconciliation rank 进 engine identity |
 | state schema / event codec | schema `2` / `canonical.discrete.rpa.le.v1` | 当前 schema1 / canonical.discrete.le.v1 不承载新 occurrence/control；旧 snapshot 不冒充新状态 |
 | Recovery envelope | revision 3 | RPA reader/writer 只接纳 rev3；rev1/2 稳定 version_unsupported，原件保留，无隐式升级 |
-| SDK API | SDK 0.8.0（下一 minor） | 新连贯时钟/批次输入及控制能力的公共差异需要 minor；B3公共增量已按此门禁更新版本 |
+| SDK API | B3 首用 0.8.0；当前分支 0.9.1 preview | PD 迁移及本轮来源绑定沿革见[版本政策](../guides/VERSIONING.md)；0.9.1 按 owner 指定，candidate 消费者须整体重建，不保证旧二进制布局兼容 |
 
 RPA profile 与旧 engine identity 不相等，即使某条轨迹得到相同分数也不能混合 archive。
 未来实现保留显式 legacy 同步路径；新 Player 用显式 RPA 配置，不能让旧入口默认启用新语义。

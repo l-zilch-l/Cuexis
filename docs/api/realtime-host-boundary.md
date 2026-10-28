@@ -1,13 +1,15 @@
 # 实时宿主边界合同
 
-状态：candidate contract；B3在SDK 0.8.0提供同owner执行首用；跨owner/设备宿主协议仍待B4/B5
+状态：candidate contract；当前分支 SDK 0.9.1 preview；发行、设备与生产接受独立
 
-更新日期：2026-10-16（新增未实施的 PD 候选修订；既有实施状态不变）
+更新日期：2026-10-28
 
 决策归 [ADR 0046](../adr/0046-realtime-playback-coordination.md)，执行/时间/控制语义归
 [RPA 补充 Spec](../formats/rpa-execution-contract.md)，批次和门禁归
-[RPA 计划](../stage_plans/active/stage-07/03-rpa-legacy/plan.md)。本页拥有载体、接口、所有权和宿主状态。
-旧候选 TB-01–07 表由补充 Spec 的已选合同替代；不改变当前头文件或宣称已通过设备验证。
+[RPA 整改计划](../stage_plans/active/stage-07/05-rpa-new/plan.md)。本页拥有载体、接口、所有权和宿主状态。
+旧候选 TB-01–07 表由补充 Spec 的已选合同替代；当前实施状态以
+[CURRENT_STATUS](../CURRENT_STATUS.md) 为准，内部存储与复用设计见
+[执行状态、恢复与准备路径](../architecture/execution-state-and-recovery.md)。
 
 ## 1. 表示与接口
 
@@ -261,7 +263,8 @@ Prepared、provider 回调或设备句柄。其物化使用原有 acquire 路径
 
 candidate OFF 不构建宿主支持模块、不安装 execution control，不保存 RPA 控制/fence 状态。
 ADR 0033 禁止私有导出的规则保留；共享库白名单仅登记实际公共类型/函数，不能放行 detail。
-上述接口仍属 SDK 0.8.0 preview；修复不接受生产 profile、设备验收或 Stage 7 关闭。
+上述接口首用于 SDK 0.8.0 preview；当前分支为 0.9.1 preview，版本沿革见
+[版本政策](../guides/VERSIONING.md)。本页不宣布生产 profile、设备验收或 Stage 7 关闭。
 
 ## 8. PD 候选修订：来源、许可与反馈寿命（2026-10-16）
 

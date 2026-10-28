@@ -16,6 +16,8 @@
   本轮保留 GPU 测试配额修复和 content-only closure 无复制优化（产品恢复点 `5fd84fd`）；身份 writer 范围插入试验
   未取得稳定收益，已撤销。恢复后的四套相关回归、架构门与 96 份身份字节对照通过，未继续推进其他热点。
   架构 / 设计变更、对照结果与停止边界见[本轮登记 §5](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-28-r3-redesign-verification-and-optimization.md#5-后续取证和修复顺序)。
+  现行内部设计集中在[执行状态、恢复与准备路径](architecture/execution-state-and-recovery.md)，
+  架构/API 入口已同步；本轮文档修正不重启性能优化。
 - **PD-5 定案与 Stage 7-PD 退出裁定**：判定报告已提出“未通过但定案”及退出清单，尚待 owner 接受；读取与 Seek 整改由 RPA 线承接，
   分域内存及正式/设备/生产验收缺口仍按下文跟踪。见[判定报告](stage_reports/stages/stage-07/04-pd/pd-5/exit/2026-10-24-pd5-verdict-and-stage-7-pd-exit.md)。
 
@@ -61,7 +63,11 @@ Cuexis 由可嵌入的 Playback SDK、独立 Cuexis Player 和 Cuexis Studio 构
 
 ## 当前格式与 SDK 合同
 
-- 当前工作树 SDK API 为 **`0.9.0` preview**（PD-4 内部实施与适用本地门禁完成），日期构建为 **`26.10.19-1`**；这不代表已经发行。
+- 当前工作树 SDK API 为 **`0.9.1` preview**：按 2026-10-28 owner 指定，登记 R3 来源绑定新增 candidate 类型和 `StepTarget` 字段；
+  消费者须整体重建，不能混用旧二进制。版本决定见[版本政策](guides/VERSIONING.md#091-r3-candidate-来源绑定)。
+  PD-4 历史基线仍为 0.9.0，日期构建仍为 **`26.10.19-1`**；这不代表已经发行。
+  新版本 STATIC/SHARED 干净构建、安装消费者、版本接受/拒绝和架构/导出定向门已通过，详见
+  [0.9.1 与架构同步记录](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-28-sdk-091-architecture-sync.md)；未重跑完整矩阵或性能接受。
 - Gameplay v2 是当前实施基线，顶层合同仍为 candidate；局部实现不等于整批验收。语义与运行边界见
   [Gameplay V2 Spec](formats/GAMEPLAY_V2_SPEC.md)、[ABI](api/GAMEPLAY_V2_ABI.md)及[RPA 补充合同](formats/rpa-execution-contract.md)。
 - Chart v1–v4 的既有兼容路径保留；Chart v5、CXT v2、Packed Chart 与 Canonical Gameplay Graph 仍为显式候选路径，正式发行收敛归 Stage 8。

@@ -1,19 +1,20 @@
 # Gameplay V2 execution typed boundary supplement
 
-状态：candidate；S7A-3 / S7A-4 首次消费的选定表示
+状态：candidate；S7A-3 / S7A-4 字段基线参考，RPA 增量按补充合同
 
-更新日期：2026-10-11
+更新日期：2026-10-28
 
 本文件补充 [Gameplay V2 ABI](GAMEPLAY_V2_ABI.md)，只拥有表示、所有权和接口。
 运行语义以[执行 Spec](../formats/gameplay-v2-execution-profile.md) 为准。
 所有类型属于内部 `cuexis::judgement`，不安装 judgement headers、不增加 SDK API、
 不定义 wire/struct padding/稳定 C ABI。ABI 的 9 域 / 126 角色计数不因实现 helper 增加。
 
-下文具体C++载体描述S7A-3 / S7A-4基线。RPA T2的I1发生身份与
-[T2-L1执行批合并](../formats/gameplay-v2-execution-profile.md#36-rpa-t2-执行批合并t2-l1已裁定未实施)
-已裁定、未实施；现有key/contact/receipt/projection字段不能被视为已经承载T2。
-RPA表示由[宿主边界](realtime-host-boundary.md)与[RPA补充Spec](../formats/rpa-execution-contract.md)闭合；
-下表旧C++字段须在B3升级为occurrence/control载体，不能把旧key直接用于新profile。
+下文具体 C++ 载体保留 S7A-3 / S7A-4 基线，不是当前 RPA 字段的完整镜像。
+后续 T2 / I1 发生身份、批合并及 occurrence/control 表示归
+[宿主边界](realtime-host-boundary.md)与 [RPA 补充 Spec](../formats/rpa-execution-contract.md)，
+当前实施状态见 [CURRENT_STATUS](../CURRENT_STATUS.md)；不能把下表旧 key 直接用于新 profile。
+分页共享状态及恢复实现另见
+[执行状态、恢复与准备路径](../architecture/execution-state-and-recovery.md)。
 
 ## 1. 表示与字段
 

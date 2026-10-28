@@ -240,7 +240,7 @@ source query case in `presentation_state_tests.cpp`. They cover complete confirm
 late receipts, source-time frontier preservation, older successful snapshots, resize from retained
 values, once-only attempts, no retained source, Resume/EOF, Seek revocation and renderer failure.
 They do not register consumers, reclaim the frame ledger or certify physical devices/PD-5 timing.
-The public query was introduced in SDK 0.8.1; the current package requires SDK 0.9.0 after the PD-4 expiry migration. Original PD-0 evidence remains historical.
+The public query was introduced in SDK 0.8.1; the current package is SDK 0.9.1 after the R3 source-binding update; the PD-4 expiry migration first required 0.9.0. Original PD-0 evidence remains historical.
 
 ## PD-4 delivery and retirement
 

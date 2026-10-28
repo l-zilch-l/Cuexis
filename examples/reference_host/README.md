@@ -6,7 +6,7 @@
 （`cuexis_player_support`），也不读取 Cuexis 源码树。
 
 本工程由 [ADR 0042](../../docs/adr/0042-stage-6-productization-boundaries.md) 的 `S6-D08` 冻结在
-`examples/reference_host/`；它当前对齐的 SDK API 基线是 `0.9.0`。工程是**宿主模板**，
+`examples/reference_host/`；它当前对齐的 SDK API 基线是 `0.9.1`。工程是**宿主模板**，
 不是 SDK 交付面——它的内部结构不是公共承诺。
 
 ## 1. 组成
@@ -80,12 +80,12 @@ usage: cuexis_reference_host --content <project-directory> [options]
 
 ## 5. SDK API 基线校验
 
-`CMakeLists.txt` 声明 `CUEXIS_HOST_API_VERSION`（默认 `0.9.0`）作为宿主编写时对齐的基线，
+`CMakeLists.txt` 声明 `CUEXIS_HOST_API_VERSION`（默认 `0.9.1`）作为宿主编写时对齐的基线，
 并在 configure 阶段拒绝**不兼容的 SDK minor**：`find_package` 的
 `COMPATIBILITY SameMinorVersion` 与显式的
 
 ```cmake
-if(Cuexis_API_VERSION VERSION_LESS "0.9.0" OR NOT Cuexis_API_VERSION VERSION_LESS "0.10.0")
+if(Cuexis_API_VERSION VERSION_LESS "0.9.1" OR NOT Cuexis_API_VERSION VERSION_LESS "0.10.0")
     message(FATAL_ERROR "The reference host supports SDK API 0.9.x; found ${Cuexis_API_VERSION}")
 endif()
 ```
@@ -125,7 +125,7 @@ ctest --preset debug -R cuexis_reference_host_staging --output-on-failure
 
 ## 8. Experimental candidate entry
 
-The updated host requests SDK API 0.9.0, including the diagnostic formalization baseline.
+The updated host requests SDK API 0.9.1, including the diagnostic formalization baseline.
 The original additive Entry factories were introduced at 0.7.1. See
 [version compatibility](../../docs/guides/VERSIONING.md#075具体兼容差异) for diagnostic and Recovery changes. To consume an
 experimental install, explicitly pass `-DCuexis_ALLOW_EXPERIMENTAL=ON` when configuring.

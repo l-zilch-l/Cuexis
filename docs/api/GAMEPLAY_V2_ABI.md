@@ -5,7 +5,9 @@
 连续前缀/时钟观察、Replay/Seek及新profile/Recovery版本归
 [RPA补充Spec](../formats/rpa-execution-contract.md)。
 该补充只替代明确列出的RPA行为；下文旧profile/SDK0.7.5合同仍描述已实现基线。
-RPA设计已落约不等于产品已实现；当前公共头、格式字节与SDK版本未在本轮修改。
+上述是 2026-10-11 的合同修订记录，不是后续实现状态；当前公共头、格式与 SDK 版本及接受状态见
+[CURRENT_STATUS](../CURRENT_STATUS.md)。内部状态与恢复设计见
+[架构参考](../architecture/execution-state-and-recovery.md)。
 
 ## S7A-7/8 公共首用补充 revision 1（2026-10-07）
 

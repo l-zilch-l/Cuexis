@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.25)
 # configuration implementation.
 #
 # ADR 0042 S6-D08 freezes this example's location and installed-consumer boundary.
-# ADR 0047 migrates the current SDK API baseline to 0.9.0.
+# ADR 0047 introduced the 0.9.0 baseline; the R3 source-binding update uses 0.9.1.
 
 project(CuexisReferenceHost LANGUAGES CXX)
 
@@ -17,7 +17,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 if(NOT DEFINED CUEXIS_HOST_API_VERSION OR CUEXIS_HOST_API_VERSION STREQUAL "")
     # The baseline the host was written against. An incompatible SDK minor must
     # be refused at configure time rather than fail at run time.
-    set(CUEXIS_HOST_API_VERSION 0.9.0)
+    set(CUEXIS_HOST_API_VERSION 0.9.1)
 endif()
 
 find_package(Cuexis ${CUEXIS_HOST_API_VERSION} CONFIG REQUIRED COMPONENTS Playback)
@@ -25,7 +25,7 @@ find_package(Cuexis ${CUEXIS_HOST_API_VERSION} CONFIG REQUIRED COMPONENTS Playba
 if(NOT TARGET Cuexis::Playback)
     message(FATAL_ERROR "Cuexis::Playback is required by the reference host")
 endif()
-if(Cuexis_API_VERSION VERSION_LESS "0.9.0" OR NOT Cuexis_API_VERSION VERSION_LESS "0.10.0")
+if(Cuexis_API_VERSION VERSION_LESS "0.9.1" OR NOT Cuexis_API_VERSION VERSION_LESS "0.10.0")
     message(FATAL_ERROR
         "The reference host supports SDK API 0.9.x; found ${Cuexis_API_VERSION}")
 endif()

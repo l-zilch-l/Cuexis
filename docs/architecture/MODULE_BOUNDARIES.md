@@ -2,7 +2,7 @@
 
 状态：现行模块边界摘要
 
-更新日期：2026-09-23
+更新日期：2026-10-28
 
 本文总结稳定依赖方向。构建时的精确 allowlist 和 architecture tests 仍由根 CMake 配置拥有。
 
@@ -15,6 +15,7 @@
 | `cuexis_project` | ProjectConfig、路径和项目准备 | World、Render、Audio backend |
 | `cuexis_assets` | AssetDatabase、ResourceManager、Handle/Lease/Scope | OpenGL、Chart JSON |
 | `cuexis_chart` | Chart/CXT typed model、校验、迁移和编译 | EnTT、World、SDL、OpenGL |
+| `cuexis_judgement` | 内部 typed graph prepare、单一执行 kernel / Fold、恢复与发布 | 仅依赖 Core；不安装 Judgement 头，不依赖 World、Runtime、JSON、平台、音频或渲染 |
 | `cuexis_animation` | typed `AnimationProgramInput` compile、绝对局部 Beat 采样与 Layer 混合 | JSON、CXC、CXT 解析、SDL、OpenGL、Playback 公共头 |
 | `cuexis_behavior` | Behavior 数据和采样 | SDL、OpenGL、JSON |
 | `cuexis_world` | EnTT World、Entity、统一 PropertyResolver 与 OverrideToken | Chart 文档、SDL、OpenGL |
@@ -49,7 +50,12 @@ Stage 6 的新增依赖方向已在
 OpenGL adapter 都实现 `IPresentationRenderer`；Player 正式帧调用 `submit`/`present`。Playback、Runtime 和底层 render 不反向依赖它，也不安装其
 头文件为公共 SDK。内部 `cuexis_player_support` 已提供偏好、音频 profile 匹配和 session config identity，
 仍不进入 Playback 依赖。参考播放器的源文件边界见
-[Player 应用结构](PLAYER_APPLICATION.md)。离线 `cuexis_media_import` 仍未实现。
+[Player 应用结构](PLAYER_APPLICATION.md)。离线 `cuexis_media_import` 已位于 `tools/media/`，
+由媒体工具选项控制，不进入 Runtime 实时路径。
+
+当前 candidate 的分页状态、prepare / 自然锚点复用、来源身份和缓存实现见
+[执行状态、恢复与准备路径](execution-state-and-recovery.md)。Packed prepare 仍复用
+Judgement 的 typed 准备和验证，不建立另一套 kernel；内部辅助头不成为安装版 SDK 类型。
 
 ## JSON 和第三方类型
 

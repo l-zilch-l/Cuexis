@@ -4,9 +4,11 @@
 
 决策状态：本轮方案已选定；作为下一对话的实施输入，不冒充既往 owner 裁定或阶段验收
 
-更新日期：2026-10-05
+更新日期：2026-10-28（实施状态注释订正；原决定与授权范围保留）
 
-实现状态：本 ADR 的新增合同未实施
+实现状态：本 ADR 保留 S7A-3/4 设计基线与当时授权；后续分批实施已发生，当前状态见
+[CURRENT_STATUS](../CURRENT_STATUS.md)。RPA 增量归 [补充合同](../formats/rpa-execution-contract.md)，
+内部存储与恢复设计见 [当前架构参考](../architecture/execution-state-and-recovery.md)。
 
 ## 背景与授权
 

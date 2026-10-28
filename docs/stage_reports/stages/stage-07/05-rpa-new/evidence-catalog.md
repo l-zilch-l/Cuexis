@@ -2,7 +2,7 @@
 
 状态：current index
 
-更新日期：2026-10-26
+更新日期：2026-10-28
 
 当前状态只以 [CURRENT_STATUS](../../../../CURRENT_STATUS.md) 为准；本页只负责定位，不新增实施、测量或阶段接受结论。
 
@@ -77,3 +77,5 @@
 | [R3 完整 Packed 准备归因](r3/2026-10-27-r3-packed-prepare-attribution.md) | `D:/Cuexis-redesign/out/packed-probe-20261027/`（阶段与 Capsule 函数探针）、`out/packed-probe-deep-20261027/`（图比较深探针、消融与按表探针）；独立登记/raw logs/结果、源码副本/patch、`analysis.json` |
 | [R3 完整 Packed 索引优化](r3/2026-10-27-r3-packed-index-optimization.md) | `D:/Cuexis-redesign/out/packed-opt-20261027/`；恢复点快照、六进程普通结果与三进程阶段诊断、`registration-clarification.json`、96 场景差异 oracle、wire 对照、四配置相关回归与安装/导出门、`audit.json` / `final-manifest.json` / `commit-receipt.json` |
 | [R3 prepare 声明查找优化](r3/2026-10-27-r3-prepare-declaration-optimization.md) | `D:/Cuexis-redesign/out/prepare-probe-20261027/`（基线细探针）、`out/prepare-baseline-20261027/`（普通基线）、`out/prepare-detail-20261027/`（优化后细探针）、`out/prepare-opt-20261027/`（普通候选、外层阶段、兼容 oracle、四配置相关回归、最终审计及旧诊断 exe 覆盖说明） |
+
+| [SDK 0.9.1 与架构同步](r3/2026-10-28-sdk-091-architecture-sync.md) | `D:/Cuexis-redesign/out/verification-20261028/sdk-091/`；`verify.ps1`、`results.json`、独立 STATIC/SHARED clean build / install prefix 与消费者、版本请求接受/拒绝及文档日志 |

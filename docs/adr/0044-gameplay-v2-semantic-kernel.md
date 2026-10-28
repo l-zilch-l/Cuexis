@@ -2,11 +2,11 @@
 
 状态：candidate（本 ADR 是 V2 文档组之一；按 2026-10-02 owner 接受的**限定冻结**口径，它在下方"接受门禁"限定的范围内授权受限 S7A-1 骨架，范围外——含未列出的字段表示、宽度、序列化与后续轮次语义——不授权。决策本身已被 owner 接受，见下一行）
 
-决策状态：已接受（owner 于 2026-10-02 接受[未决语义分轮裁决清单](../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md)第 1 轮经 Codex 修订后的 14 行文本）；实施状态：**未实施**——本 ADR 自身不定义字段集合与 typed 边界，不冻结公共头，也不表示 `engine/` 已有任何实现
+决策状态：已接受（owner 于 2026-10-02 接受[未决语义分轮裁决清单](../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md)第 1 轮经 Codex 修订后的 14 行文本）；本 ADR 保留当时限定冻结的授权范围，不定义字段集合或冻结公共头。后续分批实施已发生，当前状态只见 [CURRENT_STATUS](../CURRENT_STATUS.md)，不能由本 ADR 的原始授权推断后续验收。
 
 决策日期：2026-10-02
 
-更新日期：2026-10-03
+更新日期：2026-10-28（实施状态注释订正；原决定与授权范围保留）
 
 关系：本 ADR 与 [Gameplay V2 Spec](../formats/GAMEPLAY_V2_SPEC.md)（字段与运行语义的唯一权威 Spec，当前 `candidate`）、[Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md)（typed 内部 / preview C++ 边界，当前 `candidate`）互链，构成 S7A-0 冻结顺序要求的三份文档。本 ADR 只写决策、影响、威胁模型与接受门禁，不复制 Spec 的字段参考，不复制逐次测试日志或构建结果，不写出研究切片数值。本 ADR 不改动 [ADR 0043](0043-gameplay-judgement-ruleset-convergence.md)、[Gameplay Judgement Spec](../formats/GAMEPLAY_JUDGEMENT_SPEC.md) 与 [Gameplay Judgement ABI](../api/GAMEPLAY_JUDGEMENT_ABI.md)；它们的替代关系标注晚于本 ADR 与两份 V2 文档的冻结。
 

@@ -1,6 +1,6 @@
 # Execution coordination preview
 
-适用版本：SDK API `0.9.0`；更新日期：2026-10-17。
+适用版本：SDK API `0.9.1`；更新日期：2026-10-28。
 
 本入口属于显式 candidate SDK，复用 PlaybackSession 内的唯一 JudgementSession。
 选择 `gameplay.execution.t4-k4.rpa.v1`、`late.window.batch.v1`、`fact.semantic.rpa.v1`
@@ -81,5 +81,10 @@ Reset、Seek 或 restore 创建替换 scope，再显式 begin；旧上下文失�
 
 完整 Replay、Snapshot、checkpoint/cut/H 与 owning 生命周期见
 [Recovery wire revision3](../formats/execution-recovery-wire-v3.md)。
+0.9.1 的 candidate 控制载体增加进程内 Replay 来源绑定；canonical 内容绑定仍可选择。
+两种身份的用途和拒绝规则见 [实时宿主边界](realtime-host-boundary.md)及
+[RPA 合同 §4](../formats/rpa-execution-contract.md#4-t2-fact-identityreplay-与-seek)。
+此公开结构变化要求 consumer 用同一套新头/库整体重建，具体迁移见
+[版本政策](../guides/VERSIONING.md#091-r3-candidate-来源绑定)。
 `gameplayExecutionLag` 分别返回 clock H - lastAdvanceHorizon 与 F(clock H) - processedFrontier，
 并独立报告 folded work tick、sealed/folded cursor；不得将最终 score 或一个 lag 当全部证据。

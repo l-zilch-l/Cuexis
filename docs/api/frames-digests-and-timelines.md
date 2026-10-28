@@ -2,9 +2,9 @@
 
 状态：active
 
-更新日期：2026-10-10
+更新日期：2026-10-28
 
-适用版本：SDK API `0.9.0`
+适用版本：SDK API `0.9.1`
 
 文档角色：公共 API 参考
 
@@ -96,4 +96,4 @@ Runtime-only 更新有实际 frame，但不伪造 Gameplay cursor。该描述不
 读取结果独立存活；它不锁定随后另一次查询的修订。需要配对时，宿主在同一不重入 owner
 操作中读取来源和 Snapshot。Pause/Resume 控制完成及纯 clock 换段不更新来源；其后真正
 sample 才发布新描述。保留重绘继续携带原描述，不从当前 session 的较新 drain 前缀补字段。
-新 API 消费者应 `find_package(Cuexis 0.9.0 CONFIG REQUIRED COMPONENTS Playback)`。
+新 API 消费者应 `find_package(Cuexis 0.9.1 CONFIG REQUIRED COMPONENTS Playback)`。
