@@ -179,3 +179,56 @@ closure 的对应段约下降 79%；shared prepare 的对应点值约下降 8.6%
 不将局部下降外推成完整路径同比例改善。原始 registration / results / JSONL / logs 在
 `out/verification-20261028/performance/packed-{assembly,closure}-stages-v1-*`。
 测试失败的 assembly 不再产生虚假的 requirements 子阶段样本；成功路径计时口径不变。
+
+### 5.3 身份 writer 批量插入试验：未保留
+
+在恢复点 `5fd84fd` 上尝试将身份的固定 8-byte unsigned 和 text 从逐字节 push 改为 vector 范围插入，
+保持 big-endian、长度前缀和字段顺序。普通 metrics-OFF 构建完成，初次 1K / 10K / 40K 各一次有效采样，
+40K setup 点值约下降 1.4%，但 1K 点值上升，故没有据单次结果保留变更。
+
+随后预先固定三规模、每规模三对、顺序 before/after、after/before、before/after；18 个新进程全部有效，
+每个进程仍验证真实 Packed 准备及三次 Seek / 目标帧呈现。BelowNormal、mask 4、HighQoS、正常分配器、
+33 records 和 metrics OFF 保持相同。setup 中位数如下，不是置信区间或正式性能接受：
+
+| requirements | 原 writer | 范围插入试验 | 变化 |
+| ---: | ---: | ---: | ---: |
+| 1K | 136.223 ms | 141.373 ms | +3.78% |
+| 10K | 1680.205 ms | 1702.801 ms | +1.34% |
+| 40K | 7309.735 ms | 7480.344 ms | +2.33% |
+
+本组没有支持稳定收益，故撤销 writer 差异，源码恢复至 `5fd84fd` 的原 writer；不将该试验计为已完成优化。
+试验源码、patch、二进制和恢复决定保存在 `performance/identity-bulk-rejected-*` 与
+`host-identity-bulk-rejected.exe`；固定登记、全部样本与汇总在 `performance/identity-balanced-v1-*`。
+旧原始登记不覆盖，后续不追加样本以改变本组结论。
+
+### 5.4 架构与设计改动范围
+
+本轮连续重构的设计变化主要集中在状态所有权与恢复身份，不是重新划分 SDK 产品或模块职责：
+
+- [分页共享状态](2026-10-27-r3-redesign.md)：phase / fact / matcher 状态采用拥有所有权的共享页与
+  写时分离；canonical identity 使用共享不可变字节。prepare 派生数据和自然恢复锚点的复用依赖封存来源，
+  不能凭摘要相同就信任外部对象。新增了页分离和缓存生命周期的维护责任。
+- [运行时来源绑定](2026-10-27-r3-source-binding-experiment.md)：内置 Host 的 Seek 默认绑定拥有所有权的
+  Replay source token，避免每次为同一内存来源完整编码和哈希；文件 / 外部导入校验及可选 canonical SHA
+  路径仍保留。candidate C++ 的 StepTarget 和嵌套 request / proof / receipt 布局发生过变化，消费者须整体重建，
+  不声称旧二进制兼容。
+- [哈希与有界编码](2026-10-27-r3-hash-and-wire-checkpoint.md)：沿用原 FNV / SHA-256 算法和 wire，
+  引入有来源许可记录的实现与硬件能力检测 / portable 回退；编码采用单缓冲回填、精确测量预留和有界共享序列缓存。
+- [Packed 索引](2026-10-27-r3-packed-index-optimization.md)与
+  [声明二分](2026-10-27-r3-prepare-declaration-optimization.md)：调用期索引和已有 canonical 顺序替代平方扫描，
+  没有新增跨调用全局缓存或独立 prepare 实现。
+- 本报告第 3.1 节的 Transform 改动增加 Runtime 自有缓存可信快路径；可变 World 回调会使其失效，
+  默认路径仍执行完整验证。第 5.2 节将 full closure 与 content-only completeness 的输入区分放在私有 collector，
+  公开接口和输出语义不变。均增加了明确的缓存 / 校验边界，而非移除安全检查。
+- GPU 配额、snapshot view 和许可清单修复属于测试 / 验证设施修复；八段探针只在 test-only metrics 开启时生效。
+  当前 writer 批量插入试验已撤销，不构成最终设计变化。原模块分层、Judgement / Fold 语义和正式接受要求保留。
+
+按用户要求，本轮完成恢复核验后停止，不继续扩展到身份投影复用、timer、资源准备或其他热点。
+R3 / R4、40K 分域内存、设备及生产接受仍未因此退出；历史参考文件缺项仍按未判定保留。
+
+最终恢复核验已完成：产品源码相对 `5fd84fd5e0882055ea097df0a6787eea132295ad` 无差异。
+普通构建串行恢复成功；Judgement 231 / 55,999、Packed 49 / 5,614、Playback 181 / 34,528、
+Host 61 / 41,929（cases / assertions）全部通过，架构门 1/1 通过。身份诊断另通过
+24 场景 / 1,898 assertions，96 份最终身份原始字节与优化前完全相同。
+证据为 `out/verification-20261028/final-restored-*`、`performance/identity-final/` 及
+`identity-final-comparison.json`。已确认没有残留编译、链接或设备 / Host 探针进程；本轮工作在此停止。
