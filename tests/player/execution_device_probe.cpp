@@ -334,5 +334,5 @@ TEST_CASE("B5 physical OpenGL device submits reads pixels and directed closes", 
     INFO((closed ? "" : std::string{closed.error().code()}));
     REQUIRE(closed);
     REQUIRE((*host)->state() == HostState::closed);
-    REQUIRE_FALSE(frame->snapshot.objects.empty());
+    REQUIRE_FALSE(frame->snapshotView().objects.empty());
 }
