@@ -280,6 +280,19 @@ GPU timestamps surround submit, excluding present/VSync. No new SDK export or no
 instrumentation is introduced. Hidden timing cases are explicit invocations, not unit/device
 acceptance gates.
 
+The explicit device executable also provides `GPU visible entity throughput probe`
+(`[.][device][gpu][throughput]`). It uses 40,000 independent renderable grid entities,
+a 1280x720 visible framebuffer and verified swap interval zero. Set `CUEXIS_GPU_MODE` to
+`render-only`, `static` or `animated`; the latter updates every entity through a legacy Chart v1
+transform keyframe behavior. Keep `CUEXIS_GPU_ENTITIES=40000` for this verified grid; other counts are outside its current
+reference scope. `CUEXIS_GPU_FRAMES`,
+`CUEXIS_GPU_WARMUP` and `CUEXIS_GPU_TIMER` control finite runs. The fixture checks all entity
+centers in clip space, all opaque draw commands, the material-colored center pixel and actual
+animation changes. It emits `GPU_THROUGHPUT_ID` and per-frame `GPU_THROUGHPUT_SAMPLE` records
+after timing. GPU timestamps include submission gaps and the backend's normal pixel readback;
+they do not measure pure shader utilization. These throughput diagnostics do not use or alter
+the formal PD5 profiles, and exclude Gameplay, audio and Player coordination.
+
 [profiles.json](../../tools/verification/playback_performance/profiles.json) lists finite CPU/GPU stream/control tool profiles and explicitly lists the
 remaining P0-P8 coverage gaps. The native fixture has no audio and is not the real music/DFJK
 course. Host-local Load is named `load_host`; it does not establish process-start latency.

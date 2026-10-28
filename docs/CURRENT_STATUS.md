@@ -18,6 +18,11 @@
   保留完整 Fact 校验，只跳过空索引下的 owning key 构造；固定普通 CPU Host 对照的 40K 首次中位数
   从 16.531 ms 降至 2.562 ms（下降 84.5%）。相对重复性仍超 15%，不代表正式接受。
   通用借用 key / 有序合并虽改善微基准，但 10K Host 首次三对均上升，已撤回并留档。
+  [40K 可见实体真实 GPU 测试](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-29-r3-40k-physical-gpu-throughput.md)
+  已完成：RTX 4060 Laptop、1280×720、VSync OFF，12 个有效进程 / 1440 帧均超 4.167 ms。
+  无 timestamp 对照的复用快照、静态提帧、全量 Chart v1 行为分别约 18.25 / 13.39 / 4.47 FPS；
+  当前不能达到 240 FPS，正常帧的 update / extract / submit 成本尚待优化。初版相机夹具作废并保留，
+  有效结果来自补充可见性与材质像素验证后的新登记；不作为 R3/R4 或生产接受。
   已有分页共享状态、不可变准备复用、自然恢复锚点，以及 SHA 加速和有界编码器恢复点 `198ab96`。
   最新[来源绑定实验](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-source-binding-experiment.md)用同一 Release 二进制比较 canonical SHA 与进程内 owning source binding。
   2048 requirements、33 条历史的 CPU 宿主首次请求到目标帧由 91.809 ms 降至 1.016 ms；129 条历史由 333.624 ms 降至 1.057 ms。

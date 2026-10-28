@@ -165,6 +165,7 @@ if(BUILD_TESTING AND CUEXIS_BUILD_TESTS AND CUEXIS_ENABLE_CHART_V5_CANDIDATE
     find_package(glad CONFIG REQUIRED)
     add_executable(cuexis_execution_device_probe
         tests/player/execution_device_probe.cpp
+        tests/player/gpu_throughput_probe.cpp
         tests/pd/pd5_device_probe.cpp
         engine/render_opengl/src/gpu_timer.cpp
         app/player/src/execution_host.cpp
