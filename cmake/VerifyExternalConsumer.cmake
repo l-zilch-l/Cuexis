@@ -256,7 +256,9 @@ else()
         share/Cuexis/licenses/glm-copyright.txt
         share/Cuexis/licenses/json-schema-validator-copyright.txt
         share/Cuexis/licenses/nlohmann-json-copyright.txt
+        share/Cuexis/licenses/sha-intrinsics-copyright
         share/Cuexis/licenses/tl-expected-copyright.txt
+        share/Cuexis/licenses/fnv-copyright
     )
     if(CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
         list(APPEND required_package_files
@@ -406,7 +408,9 @@ else()
         glm-copyright.txt
         json-schema-validator-copyright.txt
         nlohmann-json-copyright.txt
+        sha-intrinsics-copyright
         tl-expected-copyright.txt
+        fnv-copyright
     )
     if(CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
         list(APPEND expected_license_files minizip-ng-copyright.txt)

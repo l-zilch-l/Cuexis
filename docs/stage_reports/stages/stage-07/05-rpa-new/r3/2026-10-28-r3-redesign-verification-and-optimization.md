@@ -24,14 +24,16 @@
 | Observation STATIC | 1249 | 1244 | 4 | 1 |
 | Release SHARED | 1224 | 1213 | 6 | 5 |
 
-所有配置的四个共同失败是 `cuexis_external_consumer_find_package`、
+基线配置的四个共同失败是 `cuexis_external_consumer_find_package`、
 `cuexis_external_consumer_find_package_playback`、
 `cuexis_external_consumer_find_package_core` 和
 `cuexis_external_consumer_find_package_audio_sdl`。保存的完整套件输出在许可证清单核验处报告了
 `fnv-copyright` 未登记；之后的精确重跑又在嵌套消费者 configure 的 MSVC try-link 处遇到
-`LNK1104 kernel32.lib`。因此许可证合同目前仍是待核实状态，不能把两种输出合并成一个产品结论。
+`LNK1104 kernel32.lib`。在 VS Developer shell 中补齐 gate 清单后，verification-full 的四个
+Release consumers 通过 4/4，redesign-shared 的四个 SHARED consumers 通过 4/4，两个 Shared
+import checks 通过 2/2。许可证合同本身未改，修复的是验证清单与已安装文件不一致的问题。
 
-SHARED 的两个 import 失败复用了这些消费者路径，当前只作为依赖许可证门禁的连带失败，不作为独立运行时回归。
+SHARED 的两个 import 失败复用了这些消费者路径；清单修复后已通过 2/2，不再构成连带失败。
 唯一的普遍跳过是测试环境没有可用目录 symlink；其余跳过和适用性见对应 JUnit。
 
 Python 验证共尝试 28 个模块，26 个直接通过，共 299 个 unittest 用例，2 个显式跳过。
