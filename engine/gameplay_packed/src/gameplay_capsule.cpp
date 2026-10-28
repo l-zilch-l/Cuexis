@@ -13,6 +13,7 @@
 #include <cuexis/filesystem/secure_file.hpp>
 #include <cuexis/json/parse.hpp>
 #include <cuexis_internal/pmr_buffer.hpp>
+#include <cuexis_internal/presentation_metrics.hpp>
 #include <cuexis_internal/sha256.hpp>
 
 #include <algorithm>
@@ -2263,8 +2264,22 @@ auto reconstruct(Model& m, const DecodeContext& context,
     request.coordinatorPolicyToken = g.coordinatorPolicyToken;
     if (observation)
         ++observation->sharedPrepareCalls;
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    auto prepared = [&] {
+        internal::pd::Timer measurement{internal::pd::Stage::packedSharedPrepare};
+        return checked(prepareResolvedGameplay({std::move(request), context.patternBudget}));
+    }();
+#else
     auto prepared = checked(prepareResolvedGameplay({std::move(request), context.patternBudget}));
+#endif
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    const auto differences = [&] {
+        internal::pd::Timer measurement{internal::pd::Stage::packedSemanticCompare};
+        return semanticDiff(g, prepared.assembled().graph);
+    }();
+#else
     const auto differences = semanticDiff(g, prepared.assembled().graph);
+#endif
     require(differences.empty(), differences.empty() ? "gameplay" : differences.front().path,
             "shared prepare changed a decoded semantic field");
     require(g.sourceClosure == prepared.assembled().graph.sourceClosure, "sourceClosure",
@@ -2274,6 +2289,9 @@ auto reconstruct(Model& m, const DecodeContext& context,
 auto decoded(std::span<const std::byte> bytes, const DecodeContext& context,
              chart::PackedChartLimits limits, detail::HashOptions hashOptions = {},
              detail::HashObservation* observation = nullptr) -> PreparedCapsule {
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    internal::pd::Timer decodeMeasurement{internal::pd::Stage::packedDecode};
+#endif
     require(bytes.size() >= 96, "Header", "truncated Capsule header");
     ByteReader revisionReader{bytes.subspan(88, 4)};
     const auto revision = checked(revisionReader.readU32());
@@ -2317,22 +2335,33 @@ auto decoded(std::span<const std::byte> bytes, const DecodeContext& context,
                 sections.at("GPD0").rows == sum(std::span{m.counts}.subspan(1, 4)) &&
                 sections.at("GRC0").rows == sum(std::span{m.counts}.subspan(5, 5)),
             "GPH0.counts", "Header, directory and actual table counts disagree");
-    link(m, base.entityMasks);
-    validate(m, limits, context.patternBudget);
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    {
+        internal::pd::Timer validationMeasurement{internal::pd::Stage::packedLinkValidate};
+#endif
+        link(m, base.entityMasks);
+        validate(m, limits, context.patternBudget);
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    }
+#endif
     // Reconstruct dictionaries from typed fields, not from a canonical whole-file comparison.
     // This keeps section permutation and validated inspection independent of judgement.
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    std::optional<internal::pd::Timer> identityMeasurement;
+    identityMeasurement.emplace(internal::pd::Stage::packedIdentity);
+#endif
     const auto canonicalStatic = staticTables(m, limits);
     require(canonicalStatic.references == base.references, "REF0",
             "reference closure differs from typed records");
     const auto digest = m.candidateRevision == 4 ? hashModel(m, hashOptions, observation).digest
                                                  : core::detail::sha256(preimage(m, limits));
-    if (!std::equal(digest.begin(), digest.end(), bytes.begin() + 32,
-                    [](auto l, auto r) { return l == std::to_integer<std::uint8_t>(r); })) {
+    if (!std::equal(digest.begin(), digest.end(), bytes.begin() + 32, [](auto left, auto right) {
+            return left == std::to_integer<std::uint8_t>(right);
+        }))
         fail("packed.identity.mismatch", "structural semantic identity mismatch",
              "Header.semanticIdentity");
-    }
     if (revision == 4 && context.expectedCompiledSemanticIdentity) {
-        // Compare the one verified digest without exporting a preimage or allocating hex text.
+        // Compare the verified digest without exporting a preimage or allocating hex text.
         const auto expected = *context.expectedCompiledSemanticIdentity;
         constexpr std::string_view hex = "0123456789abcdef";
         bool matches = expected.size() == digest.size() * 2;
@@ -2343,7 +2372,17 @@ auto decoded(std::span<const std::byte> bytes, const DecodeContext& context,
             fail("packed.metadata.mismatch", "Gameplay metadata semantic identity mismatch",
                  "metadata.compiledSemanticIdentity");
     }
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    identityMeasurement.reset();
+#endif
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    auto prepared = [&] {
+        internal::pd::Timer reconstructMeasurement{internal::pd::Stage::packedReconstruct};
+        return reconstruct(m, context, observation);
+    }();
+#else
     auto prepared = reconstruct(m, context, observation);
+#endif
     std::vector<RequirementOwner> owners;
     for (std::size_t i = 0; i < m.graph.requirements.size(); ++i) {
         owners.push_back({m.graph.requirements[i].identity, m.entities[m.indices[i].entity]});

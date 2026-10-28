@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
+#include <functional>
 #include <string>
 #include <thread>
 
@@ -28,12 +29,66 @@ enum class Stage : unsigned {
     ledgerPublish,
     rendererPresent,
     queue,
+    packedDecode,
+    packedLinkValidate,
+    packedIdentity,
+    packedReconstruct,
+    gameplayContentCreate,
+    packedSharedPrepare,
+    packedSemanticCompare,
+    gameplayPreparePreflight,
+    gameplayPrepareCopy,
+    gameplayPrepareGraceResolution,
+    gameplayPrepareAssembly,
+    gameplayPrepareRequirements,
+    gameplayPrepareResources,
+    gameplayPrepareFinalize,
+    gameplayAssemblyEntryCheck,
+    gameplayAssemblyNamespaceMerge,
+    gameplayAssemblyGraphBuild,
+    gameplayAssemblyStabilize,
+    gameplayAssemblyDeclarations,
+    gameplayAssemblyClosures,
+    gameplayAssemblyBudget,
+    gameplayAssemblyIdentities,
     count
 };
-inline constexpr std::array names{
-    "judgement",          "projection",      "runtime",          "snapshot", "renderer",
-    "runtime_state_copy", "runtime_prepare", "runtime_commit",   "feedback", "receipt",
-    "ledger_take",        "ledger_publish",  "renderer_present", "queue"};
+inline constexpr std::array names{"judgement",
+                                  "projection",
+                                  "runtime",
+                                  "snapshot",
+                                  "renderer",
+                                  "runtime_state_copy",
+                                  "runtime_prepare",
+                                  "runtime_commit",
+                                  "feedback",
+                                  "receipt",
+                                  "ledger_take",
+                                  "ledger_publish",
+                                  "renderer_present",
+                                  "queue",
+                                  "packed_decode",
+                                  "packed_link_validate",
+                                  "packed_identity",
+                                  "packed_reconstruct",
+                                  "gameplay_content_create",
+                                  "packed_shared_prepare",
+                                  "packed_semantic_compare",
+                                  "gameplay_prepare_preflight",
+                                  "gameplay_prepare_copy",
+                                  "gameplay_prepare_grace_resolution",
+                                  "gameplay_prepare_assembly",
+                                  "gameplay_prepare_requirements",
+                                  "gameplay_prepare_resources",
+                                  "gameplay_prepare_finalize",
+                                  "gameplay_assembly_entry_check",
+                                  "gameplay_assembly_namespace_merge",
+                                  "gameplay_assembly_graph_build",
+                                  "gameplay_assembly_stabilize",
+                                  "gameplay_assembly_declarations",
+                                  "gameplay_assembly_closures",
+                                  "gameplay_assembly_budget",
+                                  "gameplay_assembly_identities"};
 struct Samples final {
     // A separate observer process owns this bounded storage. The largest declared
     // trajectory has 115200 updates; omissions are rejected by the collector.

@@ -6,8 +6,10 @@
 #include <cuexis/core/error.hpp>
 
 #include <algorithm>
+#include <cuexis_internal/presentation_metrics.hpp>
 #include <exception>
 #include <map>
+#include <optional>
 #include <set>
 
 namespace cuexis::judgement {
@@ -191,6 +193,10 @@ namespace {
 
 auto prepareStorage(const GameplayPrepareRequest& request, bool resolved)
     -> core::Result<std::shared_ptr<const detail::PreparedGameplayStorage>> try {
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    std::optional<internal::pd::Timer> measurement;
+    measurement.emplace(internal::pd::Stage::gameplayPreparePreflight);
+#endif
     if (!request.assembly.timebase || !request.assembly.latePolicy) {
         return core::unexpected(invalid("timebaseRef", "prepare requires profile and late policy"));
     }
@@ -244,12 +250,20 @@ auto prepareStorage(const GameplayPrepareRequest& request, bool resolved)
             }
         }
     }
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    measurement.reset();
+    measurement.emplace(internal::pd::Stage::gameplayPrepareCopy);
+#endif
     auto storage = std::make_shared<detail::PreparedGameplayStorage>(*request.assembly.timebase,
                                                                      *request.assembly.latePolicy);
     auto assembly = request.assembly;
     storage->identities = assembly.identityDeclarations;
     assembly.timebase = &storage->timebase;
     assembly.latePolicy = &storage->latePolicy;
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    measurement.reset();
+    measurement.emplace(internal::pd::Stage::gameplayPrepareGraceResolution);
+#endif
     if (!resolved) {
         std::map<StableDeclarationId, const GraceResolutionInputs*> bindings;
         for (const auto& binding : request.graceInputs) {
@@ -309,10 +323,20 @@ auto prepareStorage(const GameplayPrepareRequest& request, bool resolved)
                 invalid("graceInputs", "grace binding references no requirement"));
         }
     }
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    measurement.reset();
+    measurement.emplace(internal::pd::Stage::gameplayPrepareAssembly);
+#endif
     auto assembled = assembleGameplay(assembly);
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    measurement.reset();
+#endif
     if (!assembled) {
         return core::unexpected(assembled.error());
     }
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    measurement.emplace(internal::pd::Stage::gameplayPrepareRequirements);
+#endif
     auto solverProfiles = validateSolverProfiles(assembled->graph);
     if (!solverProfiles) {
         return core::unexpected(std::move(solverProfiles.error()));
@@ -363,6 +387,10 @@ auto prepareStorage(const GameplayPrepareRequest& request, bool resolved)
         storage->requirements.push_back(
             {requirement.stableId, *pattern, *measure, *deadline, std::move(executable)});
     }
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    measurement.reset();
+    measurement.emplace(internal::pd::Stage::gameplayPrepareResources);
+#endif
     for (const auto& resource : assembled->graph.resources) {
         ResourceClaimResolutionInputs input{.declaredCapacity = resource.declaredCapacity,
                                             .intents = {},
@@ -425,6 +453,10 @@ auto prepareStorage(const GameplayPrepareRequest& request, bool resolved)
         }
         storage->resources.push_back({resource.ref.resourceId, *claims, std::move(indices)});
     }
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    measurement.reset();
+    measurement.emplace(internal::pd::Stage::gameplayPrepareFinalize);
+#endif
     if (!assembled->graph.executionProfile.empty()) {
         auto timers = makeExecutionTimers(assembled->graph);
         if (!timers) {
@@ -433,6 +465,9 @@ auto prepareStorage(const GameplayPrepareRequest& request, bool resolved)
         storage->timers = std::move(*timers);
     }
     storage->assembled = std::move(*assembled);
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    measurement.reset();
+#endif
     return std::shared_ptr<const detail::PreparedGameplayStorage>{std::move(storage)};
 } catch (const std::exception&) {
     return core::unexpected(invalid("prepare", "prepare could not produce an owning publication"));

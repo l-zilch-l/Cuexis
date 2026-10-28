@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cuexis/core/error.hpp>
 #include <cuexis/judgement/recovery_codec.hpp>
+#include <cuexis_internal/presentation_metrics.hpp>
 #include <exception>
 
 namespace cuexis::playback {
@@ -57,6 +58,9 @@ namespace {
 template <typename Decoder>
 auto makeGameplayContent(const GameplayConfiguration& c, Decoder decoder)
     -> core::Result<GameplayContent> try {
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    internal::pd::Timer measurement{internal::pd::Stage::gameplayContentCreate};
+#endif
     using namespace judgement;
     std::array<std::string, 6> actual{
         "judgement.t4-k4.v1",          "fact.semantic.phase-local.v1",

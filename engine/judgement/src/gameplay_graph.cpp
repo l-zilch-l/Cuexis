@@ -22,6 +22,7 @@
 
 #include <cuexis/judgement/gameplay_graph.hpp>
 
+#include "gameplay_closure.hpp"
 #include "source_codes.hpp"
 
 #include <cuexis/judgement/diagnostic.hpp>
@@ -1199,15 +1200,14 @@ void sortUniqueResources(std::vector<ResourceRef>& refs) {
     refs.erase(std::unique(refs.begin(), refs.end()), refs.end());
 }
 
-} // namespace
-
-auto deriveCapabilityClosure(const CanonicalGameplayGraph& graph) -> DerivedCapabilityClosure {
+auto collectCapabilityClosure(const CanonicalGameplayGraph& graph,
+                              const ClosureContributions& contributions)
+    -> DerivedCapabilityClosure {
     std::vector<CapabilityRef> refs;
     //  The declared set of the source side is deliberately not an input: the declared set and the
     //  derived closure are two separately queryable things and no operation merges them (ABI domain
     //  8). Only the needs stated by ruleset, presentation and content take part.
-    refs.insert(refs.end(), graph.closureContributions.capabilities.begin(),
-                graph.closureContributions.capabilities.end());
+    refs.insert(refs.end(), contributions.capabilities.begin(), contributions.capabilities.end());
     for (const auto& requirement : graph.requirements) {
         collectCapabilities(requirement.required, refs);
         collectCapabilities(requirement.pattern.required, refs);
@@ -1234,10 +1234,10 @@ auto deriveCapabilityClosure(const CanonicalGameplayGraph& graph) -> DerivedCapa
     return DerivedCapabilityClosure{.capabilities = std::move(refs)};
 }
 
-auto deriveFeatureClosure(const CanonicalGameplayGraph& graph) -> FeatureClosure {
+auto collectFeatureClosure(const CanonicalGameplayGraph& graph,
+                           const ClosureContributions& contributions) -> FeatureClosure {
     std::vector<FeatureRef> refs;
-    refs.insert(refs.end(), graph.closureContributions.features.begin(),
-                graph.closureContributions.features.end());
+    refs.insert(refs.end(), contributions.features.begin(), contributions.features.end());
     for (const auto& requirement : graph.requirements) {
         collectFeatures(requirement.required, refs);
         collectFeatures(requirement.pattern.required, refs);
@@ -1262,6 +1262,25 @@ auto deriveFeatureClosure(const CanonicalGameplayGraph& graph) -> FeatureClosure
     }
     sortUniqueFeatures(refs);
     return FeatureClosure{.features = std::move(refs)};
+}
+
+} // namespace
+
+auto deriveCapabilityClosure(const CanonicalGameplayGraph& graph) -> DerivedCapabilityClosure {
+    return collectCapabilityClosure(graph, graph.closureContributions);
+}
+
+auto deriveFeatureClosure(const CanonicalGameplayGraph& graph) -> FeatureClosure {
+    return collectFeatureClosure(graph, graph.closureContributions);
+}
+
+auto detail::deriveContentCapabilityClosure(const CanonicalGameplayGraph& graph)
+    -> DerivedCapabilityClosure {
+    return collectCapabilityClosure(graph, {});
+}
+
+auto detail::deriveContentFeatureClosure(const CanonicalGameplayGraph& graph) -> FeatureClosure {
+    return collectFeatureClosure(graph, {});
 }
 
 auto deriveResourceClosure(const CanonicalGameplayGraph& graph) -> ResourceClosure {

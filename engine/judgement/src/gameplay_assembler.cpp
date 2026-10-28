@@ -27,10 +27,13 @@
 
 #include <cuexis/judgement/gameplay_assembler.hpp>
 
+#include "gameplay_closure.hpp"
 #include "pattern_dfa.hpp"
 #include "source_codes.hpp"
 
 #include <cuexis/judgement/diagnostic.hpp>
+
+#include <cuexis_internal/presentation_metrics.hpp>
 
 #include <algorithm>
 #include <cstddef>
@@ -38,6 +41,7 @@
 #include <limits>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <string_view>
@@ -1890,10 +1894,9 @@ struct PatternDeclarationShape final {
     //  Dropping them from a field the identity covers would make two different content values share
     //  one identity, and letting them into this comparison would demand a source-side declaration
     //  for something the source does not own.
-    CanonicalGameplayGraph contentOnly = graph;
-    contentOnly.closureContributions = ClosureContributions{};
-    const DerivedCapabilityClosure contentCapabilities = deriveCapabilityClosure(contentOnly);
-    const FeatureClosure contentFeatures = deriveFeatureClosure(contentOnly);
+    const DerivedCapabilityClosure contentCapabilities =
+        detail::deriveContentCapabilityClosure(graph);
+    const FeatureClosure contentFeatures = detail::deriveContentFeatureClosure(graph);
     for (const auto& capability : contentCapabilities.capabilities) {
         if (!containsCapability(graph.declaredCapabilities.capabilities, capability)) {
             return core::unexpected(closureIncompleteError(
@@ -2162,15 +2165,27 @@ auto checkContentProfile(const ContentProfileCounts& counts, const ContentProfil
 }
 
 auto assembleGameplay(const AssemblyRequest& request) -> core::Result<AssembledGameplay> {
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    std::optional<internal::pd::Timer> measurement;
+    measurement.emplace(internal::pd::Stage::gameplayAssemblyEntryCheck);
+#endif
     const auto entryChecked = validateEntry(request);
     if (!entryChecked.has_value()) {
         return core::unexpected(entryChecked.error());
     }
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    measurement.reset();
+    measurement.emplace(internal::pd::Stage::gameplayAssemblyNamespaceMerge);
+#endif
     const auto merged = mergeNamespace(request);
     if (!merged.has_value()) {
         return core::unexpected(merged.error());
     }
 
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    measurement.reset();
+    measurement.emplace(internal::pd::Stage::gameplayAssemblyGraphBuild);
+#endif
     CanonicalGameplayGraph graph{};
     graph.gameplayVersion = 2U;
     graph.graphRevision = request.graphRevision;
@@ -2205,13 +2220,25 @@ auto assembleGameplay(const AssemblyRequest& request) -> core::Result<AssembledG
     graph.sourceClosure.compilerProfileToken = request.compilerProfileToken;
     graph.diagnosticMap = buildDiagnosticMap(request);
 
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    measurement.reset();
+    measurement.emplace(internal::pd::Stage::gameplayAssemblyStabilize);
+#endif
     stabilizeGraph(graph);
 
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    measurement.reset();
+    measurement.emplace(internal::pd::Stage::gameplayAssemblyDeclarations);
+#endif
     const auto declarationsChecked = validateContentDeclarations(graph);
     if (!declarationsChecked.has_value()) {
         return core::unexpected(declarationsChecked.error());
     }
 
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    measurement.reset();
+    measurement.emplace(internal::pd::Stage::gameplayAssemblyClosures);
+#endif
     graph.derivedCapabilities = deriveCapabilityClosure(graph);
     graph.derivedFeatures = deriveFeatureClosure(graph);
     graph.resourceClosure = deriveResourceClosure(graph);
@@ -2221,6 +2248,10 @@ auto assembleGameplay(const AssemblyRequest& request) -> core::Result<AssembledG
         return core::unexpected(closuresChecked.error());
     }
 
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    measurement.reset();
+    measurement.emplace(internal::pd::Stage::gameplayAssemblyBudget);
+#endif
     const ContentProfileCounts counts = countContentProfile(graph);
     const auto verdict = checkContentProfile(counts, request.contentProfileLimits);
     if (!verdict.has_value()) {
@@ -2229,9 +2260,16 @@ auto assembleGameplay(const AssemblyRequest& request) -> core::Result<AssembledG
 
     //  The identities are computed while the graph is still here, and the value is assembled from
     //  its parts in one aggregate initialization so that no partially built result can exist.
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    measurement.reset();
+    measurement.emplace(internal::pd::Stage::gameplayAssemblyIdentities);
+#endif
     const ChartIdentity chart = makeChartIdentity(graph);
     const ContentIdentity content = makeContentIdentity(graph);
     const PreparedIdentity prepared = makePreparedIdentity(graph, request.identityDeclarations);
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    measurement.reset();
+#endif
     return AssembledGameplay{.graph = std::move(graph),
                              .chart = chart,
                              .content = content,

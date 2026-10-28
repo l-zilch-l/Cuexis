@@ -148,3 +148,34 @@ source prepare / decoded re-prepare 的 assembly inclusive 分别为 896.580 / 7
 四路 clean build 因占用过多用户机器资源而停止，
 该中断构建及日志保留，不视为有效测量。后续构建统一单路、低优先级，限制在两个逻辑处理器上，
 禁止子代理或其他配置同时构建。已清理中断编译的进程；后续恢复采用增量构建。
+
+### 5.2 Content-only closure 无复制取证与优化
+
+`validateClosures` 原先为排除 ruleset / presentation contributions 而深拷贝整张
+`CanonicalGameplayGraph`。现改为私有 closure collector 显式接收 contribution 集合；公开入口仍包含
+原 contributions，content completeness 入口仅传空集合，不复制 graph。内容遍历、revision 精确比较、
+排序和去重保留；全 unknown、全 disabled、capability completeness、feature completeness 的首错顺序不变。
+新增两个用例、六个 sections，覆盖贡献与内容重叠 / 重复、错误 revision 和多错误优先级，并检查输入不变。
+
+普通 MSVC Release STATIC（metrics OFF）四个相关测试可执行文件全部通过：Judgement
+231 cases / 55,999 assertions，Packed 49 / 5,614，Playback 181 / 34,528，Host 61 / 41,125。
+独立身份诊断在优化前、后分别验证 24 个场景 / 1,898 assertions；chart / content / prepared / runtime
+共 96 份原始字节文件逐文件完全相同。证据为 `performance/identity-before/`、
+`identity-after-closure/`、`identity-after-closure-comparison.json`；不是仅比较两个新实现入口。
+
+同一 MSVC Release STATIC、正常分配器、metrics ON、单逻辑处理器 affinity 4、BelowNormal / HighQoS、
+40K requirements / 33 records 的诊断组对照如下；每组只有一次 setup，不能代替重复性或正式性能接受：
+
+| 阶段 | assembly-stages-v1 | closure-stages-v1 |
+| --- | ---: | ---: |
+| source prepare 的 closure | 188.279 ms | 38.072 ms |
+| decoded re-prepare 的 closure | 186.856 ms | 38.946 ms |
+| decoded re-prepare 的 assembly | 773.779 ms | 630.821 ms |
+| packed shared prepare | 1857.310 ms | 1697.230 ms |
+| content 创建 | 3692.030 ms | 3553.320 ms |
+| setup 合计 | 7722.368 ms | 7453.577 ms |
+
+closure 的对应段约下降 79%；shared prepare 的对应点值约下降 8.6%。外层其余成本和运行波动仍保留，
+不将局部下降外推成完整路径同比例改善。原始 registration / results / JSONL / logs 在
+`out/verification-20261028/performance/packed-{assembly,closure}-stages-v1-*`。
+测试失败的 assembly 不再产生虚假的 requirements 子阶段样本；成功路径计时口径不变。

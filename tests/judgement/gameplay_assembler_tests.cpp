@@ -657,6 +657,116 @@ TEST_CASE("S7A-3 closure completeness is never filled in", "[judgement][s7a-3][c
                        }));
 }
 
+TEST_CASE("S7A-3 overlapping closure contributions do not satisfy content declarations",
+          "[judgement][s7a-3][closure]") {
+    const Fixture fixture;
+    AssemblyRequest request = fixture.request();
+    auto& document = request.sources.front().document;
+    const auto contentNeeds = document.requirements.front().required;
+    document.requirements.front().required.capabilities.push_back(
+        contentNeeds.capabilities.front());
+    document.requirements.front().required.features.push_back(contentNeeds.features.front());
+    document.requirements.front().pattern.required = contentNeeds;
+    document.declarations.front().required = contentNeeds;
+    const auto rulesetNeeds = request.closureContributions;
+    request.closureContributions.capabilities.push_back(contentNeeds.capabilities.front());
+    request.closureContributions.capabilities.push_back(contentNeeds.capabilities.front());
+    request.closureContributions.capabilities.push_back(rulesetNeeds.capabilities.front());
+    request.closureContributions.features.push_back(contentNeeds.features.front());
+    request.closureContributions.features.push_back(contentNeeds.features.front());
+    request.closureContributions.features.push_back(rulesetNeeds.features.front());
+
+    std::string missingPath;
+    SECTION("overlapping repeated needs still report missing content capabilities first") {
+        request.declaredCapabilities.capabilities.clear();
+        request.declaredFeatures.features.clear();
+        missingPath = "declaredCapabilities.capabilityId";
+    }
+    SECTION("overlapping repeated features still need a content declaration") {
+        request.declaredFeatures.features.clear();
+        missingPath = "declaredFeatures.featureId";
+    }
+    SECTION("a declaration of another capability revision does not cover the content need") {
+        request.declaredCapabilities.capabilities.front().revision = "revision.other";
+        missingPath = "declaredCapabilities.capabilityId";
+    }
+    SECTION("one declaration covers repeats while contribution-only needs stay out") {}
+
+    const AssemblyRequest original = request;
+    const auto assembled = judgement::assembleGameplay(request);
+    //  Neither successful derivation nor a completeness rejection may sort, erase or fill the
+    //  caller's repeated source needs, contributions or declarations in place.
+    CHECK(request.declaredCapabilities == original.declaredCapabilities);
+    CHECK(request.declaredFeatures == original.declaredFeatures);
+    CHECK(request.closureContributions == original.closureContributions);
+    CHECK(document.requirements.front().required ==
+          original.sources.front().document.requirements.front().required);
+    CHECK(document.requirements.front().pattern.required ==
+          original.sources.front().document.requirements.front().pattern.required);
+    CHECK(document.declarations == original.sources.front().document.declarations);
+    if (!missingPath.empty()) {
+        REQUIRE_FALSE(assembled.has_value());
+        expectRejection(assembled.error(), "judgement.closure.declared_incomplete",
+                        "identity_closure_incomplete", missingPath);
+        expectSection(assembled.error(), "judgement.gameplay.closure");
+    } else {
+        REQUIRE(assembled.has_value());
+        const auto& graph = assembled.value().graph;
+        REQUIRE(graph.derivedCapabilities.capabilities.size() == 2U);
+        CHECK(graph.derivedCapabilities.capabilities.front() == contentNeeds.capabilities.front());
+        CHECK(graph.derivedCapabilities.capabilities.back() == rulesetNeeds.capabilities.front());
+        REQUIRE(graph.derivedFeatures.features.size() == 2U);
+        CHECK(graph.derivedFeatures.features.front() == contentNeeds.features.front());
+        CHECK(graph.derivedFeatures.features.back() == rulesetNeeds.features.front());
+        CHECK(graph.declaredCapabilities == original.declaredCapabilities);
+        CHECK(graph.declaredFeatures == original.declaredFeatures);
+    }
+}
+
+TEST_CASE("S7A-3 closure unknown checks precede disabled and completeness checks",
+          "[judgement][s7a-3][closure]") {
+    const Fixture fixture;
+    AssemblyRequest request = fixture.request();
+    //  Both unknown ids sort after the fixture's disabled content capability. Their input order
+    //  is reversed so the first diagnostic must follow the canonical closure, not input order.
+    request.closureContributions.capabilities.push_back(
+        judgement::CapabilityRef{.capabilityId = "test.capability.unknown.z", .revision = {}});
+    request.closureContributions.capabilities.push_back(
+        judgement::CapabilityRef{.capabilityId = "test.capability.unknown.a", .revision = {}});
+    request.capabilityContext.enabledCapabilityIds.clear();
+    request.declaredCapabilities.capabilities.clear();
+    request.declaredFeatures.features.clear();
+
+    std::string expectedCode = "capability.unknown";
+    std::string expectedCategory = "unknown_capability";
+    std::string expectedCapability = "test.capability.unknown.a";
+    SECTION("the first unknown wins over earlier disabled capabilities and missing declarations") {}
+    SECTION("after all ids are recognised the first disabled wins over missing declarations") {
+        request.capabilityContext.recognisedCapabilityIds.push_back("test.capability.unknown.z");
+        request.capabilityContext.recognisedCapabilityIds.push_back("test.capability.unknown.a");
+        expectedCode = "judgement.closure.capability_disabled";
+        expectedCategory = "capability_disabled";
+        expectedCapability = "test.capability.one";
+    }
+
+    const AssemblyRequest original = request;
+    const auto assembled = judgement::assembleGameplay(request);
+    CHECK(request.declaredCapabilities == original.declaredCapabilities);
+    CHECK(request.declaredFeatures == original.declaredFeatures);
+    CHECK(request.closureContributions == original.closureContributions);
+    CHECK(request.capabilityContext.recognisedCapabilityIds ==
+          original.capabilityContext.recognisedCapabilityIds);
+    CHECK(request.capabilityContext.enabledCapabilityIds ==
+          original.capabilityContext.enabledCapabilityIds);
+    CHECK(request.sources.front().document.requirements.front().required ==
+          original.sources.front().document.requirements.front().required);
+    REQUIRE_FALSE(assembled.has_value());
+    expectRejection(assembled.error(), expectedCode, expectedCategory,
+                    "derivedCapabilities.capabilityId");
+    expectSection(assembled.error(), "judgement.gameplay.closure");
+    CHECK(contextValue(assembled.error(), "capabilityId") == expectedCapability);
+}
+
 //  The ruleset / presentation contributions have one disposition in each of the three places they
 //  could be read, and the three dispositions are different on purpose: the Spec 6.2 completeness
 //  comparison ignores them (their subsystem owns them, so the content does not have to declare
