@@ -1128,7 +1128,7 @@ auto RuntimeSession::updatePrepared(world::World& targetWorld, RuntimeEvaluation
         world::detail::ResolverAccess::prepareTransforms(state.resolver, state.transformWrites);
     if (!transforms)
         return transforms;
-    auto planned = transformUpdate_->prepare(targetWorld, state.transformWrites);
+    auto planned = transformUpdate_->prepare(targetWorld, state.transformWrites, false, true);
     if (!planned)
         return planned;
     struct PreparedWindow final {

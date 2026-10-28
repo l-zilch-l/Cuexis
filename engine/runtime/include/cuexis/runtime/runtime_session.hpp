@@ -268,9 +268,11 @@ class RuntimeSession final {
         // The callback runs synchronously on the owner thread and is never retained. It must not
         // re-enter this RuntimeSession or retain World references beyond the call.
         CallbackScope callbackScope{callbackActive_};
-        return core::invokeGuarded("runtime.session.callback_exception",
-                                   "RuntimeSession World callback raised an exception",
-                                   std::forward<Callback>(callback), *world_);
+        auto result = core::invokeGuarded("runtime.session.callback_exception",
+                                          "RuntimeSession World callback raised an exception",
+                                          std::forward<Callback>(callback), *world_);
+        world_->transformCacheValid_ = false;
+        return result;
     }
 
     template <typename Callback>

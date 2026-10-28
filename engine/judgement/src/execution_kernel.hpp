@@ -4,6 +4,10 @@
 #include <array>
 #include <cuexis/judgement/recovery.hpp>
 
+namespace cuexis::judgement {
+class JudgementSession;
+}
+
 namespace cuexis::judgement::detail {
 struct KernelTestControls;
 auto makeCanonicalReplayIdentityCache() -> std::shared_ptr<CanonicalReplayIdentityCache>;

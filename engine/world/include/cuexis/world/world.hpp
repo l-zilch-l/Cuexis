@@ -19,6 +19,10 @@
 #include <cuexis/core/thread_checker.hpp>
 #include <cuexis/world/components.hpp>
 
+namespace cuexis::runtime {
+class RuntimeSession;
+}
+
 namespace cuexis::world {
 namespace detail {
 class TransformUpdate;
@@ -105,11 +109,13 @@ class World final {
         core::Mat4 localMatrix{};
         core::Mat4 world{};
         std::vector<std::size_t> children;
+        std::size_t orderIndex{};
     };
 
     friend auto updateWorldTransforms(World& world) -> core::Result<void>;
     friend class detail::TransformUpdate;
     friend struct detail::WorldTestAccess;
+    friend class cuexis::runtime::RuntimeSession;
 
     entt::registry registry_{};
     std::vector<TransformCacheEntry> transformCache_;

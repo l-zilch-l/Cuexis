@@ -20,8 +20,8 @@ class TransformUpdate final {
         cancel();
     }
 
-    auto prepare(World&, std::span<const TransformWrite> = {}, bool legacySignals = false)
-        -> core::Result<void>;
+    auto prepare(World&, std::span<const TransformWrite> = {}, bool legacySignals = false,
+                 bool cacheTrusted = false) -> core::Result<void>;
     // Called only after all Runtime preparation, in the same uninterrupted owner operation.
     void apply() noexcept;
     void finish() noexcept;
@@ -53,11 +53,12 @@ class TransformUpdate final {
     };
     World* owner_{};
     entt::storage<WorldTransformComponent>* activeStorage_{};
-    bool coldCache_{}, storageReplacement_{}, prepared_{}, legacySignals_{};
+    bool coldCache_{}, storageReplacement_{}, prepared_{}, legacySignals_{}, cacheTrusted_{};
     std::vector<World::TransformCacheEntry> cache_;
     std::vector<std::size_t> order_;
     std::vector<core::Mat4> localScratch_, scratch_;
     std::vector<bool> localDirty_, dirty_;
+    std::vector<std::size_t> dirtyOrder_;
     std::vector<LocalWrite> localWrites_;
     std::vector<MatrixWrite> matrixWrites_;
     std::vector<entt::entity> stale_;

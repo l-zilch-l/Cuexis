@@ -63,6 +63,23 @@ Player 图形 smoke 和 audio smoke 均通过。Release 桌面构建成功，文
 在 40K read/update 探针中，read 为约 428–431 ms / 64 次（约 6.7 ms/次），updated 为约
 619–623 ms / 32 次（约 19.4 ms/次）。这些是下一轮细分的热点，尚未证明存在可安全删除的语义步骤。
 
+### 3.1 Transform 增量路径取证与修复
+
+本轮将 Runtime 的 Transform prepare 分为两条明确路径：默认 `prepare()` 保留完整缓存结构、
+层级和本地变换验证；只有 Runtime 在连续帧中确认缓存仍由自身拥有时才传入 `cacheTrusted=true`，
+并只传播写入节点及其后代。Runtime 的可变 World 回调会使缓存失效，下一帧自动回到冷缓存重建。
+脏节点按缓存中的拓扑序提交，避免实体 ID 顺序与父子顺序不一致；新增反向实体创建顺序回归用例。
+
+验证结果：World 25 cases / 421 assertions、Runtime 53 cases / 10,768 assertions 全部通过；此前
+World 的 `PD3a World allocation failures and derived overflow preserve active state` 回归已恢复。
+Playback 先前同一优化批次的 130 cases / 17,185 assertions 全部通过。
+
+同一 40K Release MinGW 静态候选探针（64 read、32 updated、分段计时）输出保存在
+`out/verification-20261028/transform-followup-20261028-mingw-release.txt`：read 提取
+282.952 ms / 64（4.421 ms/次）；updated 的 update 为 360.041 ms / 32（11.251 ms/次），
+extract 为 153.705 ms / 32（4.803 ms/次），合计 513.746 ms / 32（16.055 ms/次）。相对本报告
+基线区间，read 总提取约下降 34%，updated 合计约下降 17%；这是本机诊断结果，不是 R4 或设备接受。
+
 ## 4. CPU / GPU 诊断结果
 
 - CPU stream 1200 样本：request-to-ready p99 0.352 ms，request-to-present-return p99 0.377 ms。
@@ -83,7 +100,7 @@ Player 图形 smoke 和 audio smoke 均通过。Release 桌面构建成功，文
 2. 已将设备探针的过时平铺快照断言改为 `snapshotView()`；上述精确实体设备用例通过。
 3. 独立复现 GPU capture 的 stale context，记录 session、frame delivery 和 renderer 生命周期；没有证据前不绕过该门禁。
 4. 为 40K Capacity/Snapshot/Replay 寻找已登记且身份匹配的参考 Packed 文件；找不到则保留为未判定。
-5. 继续细分 40K decode/re-prepare 和 updated 提帧路径，任何优化必须保持 Packed 字节、FrameDigest、Replay/Snapshot
-   wire、错误顺序和资源所有权不变，并用独立提交保存恢复点。
+5. Transform updated 热点已完成一轮增量取证和修复；继续细分 40K decode/re-prepare 与剩余提帧成本，任何优化必须保持
+   Packed 字节、FrameDigest、Replay/Snapshot wire、错误顺序和资源所有权不变，并用独立提交保存恢复点。
 
 本报告只记录当前证据和下一步，不宣布 R3、设备或生产性能接受。

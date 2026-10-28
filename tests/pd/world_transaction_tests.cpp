@@ -1,5 +1,6 @@
 #include "transaction_allocations.hpp"
 #include "transaction_state.hpp"
+#include <array>
 #include <catch2/catch_test_macros.hpp>
 #include <cuexis/world/transform_system.hpp>
 #include <cuexis/world/transform_update.hpp>
@@ -151,6 +152,40 @@ TEST_CASE("PD3a World allocation failures and derived overflow preserve active s
         CHECK(scene.state() == before);
         CHECK(world::detail::WorldTestAccess::cache(scene.world) == cacheBefore);
     }
+}
+
+TEST_CASE("PD3a trusted transform updates preserve parent-before-child order",
+          "[pd][transaction][world][transform]") {
+    world::World world;
+    entt::entity child{}, parent{};
+    REQUIRE(world.withRegistry([&](entt::registry& registry) {
+        child = registry.create();
+        parent = registry.create();
+        registry.emplace<world::TransformComponent>(child);
+        registry.emplace<world::TransformComponent>(parent);
+        registry.emplace<world::HierarchyComponent>(child, parent);
+    }));
+    REQUIRE(world::updateWorldTransforms(world));
+
+    world::TransformComponent childTransform;
+    childTransform.position.y = 4;
+    world::TransformComponent parentTransform;
+    parentTransform.position.x = 3;
+    const std::array writes{world::detail::TransformWrite{child, childTransform},
+                            world::detail::TransformWrite{parent, parentTransform}};
+    world::detail::TransformUpdate plan;
+    REQUIRE(plan.prepare(world, writes, false, true));
+    plan.apply();
+    plan.finish();
+
+    REQUIRE(world.withRegistry([&](const entt::registry& registry) {
+        const auto& parentWorld = registry.get<world::WorldTransformComponent>(parent).matrix;
+        const auto& childWorld = registry.get<world::WorldTransformComponent>(child).matrix;
+        CHECK(parentWorld.values[12] == 3);
+        CHECK(parentWorld.values[13] == 0);
+        CHECK(childWorld.values[12] == 3);
+        CHECK(childWorld.values[13] == 4);
+    }));
 }
 
 TEST_CASE("PD3a World refuses observed structural replacement without invalidating groups",

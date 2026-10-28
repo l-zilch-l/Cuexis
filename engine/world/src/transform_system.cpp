@@ -35,6 +35,13 @@ void detail::TransformUpdate::cancel() noexcept {
     prepared_ = false;
     activeStorage_ = nullptr;
     storage_.reset();
+    for (const auto index : dirtyOrder_) {
+        if (index < localDirty_.size())
+            localDirty_[index] = false;
+        if (index < dirty_.size())
+            dirty_[index] = false;
+    }
+    dirtyOrder_.clear();
     cache_.clear();
     order_.clear();
     localWrites_.clear();
@@ -45,7 +52,7 @@ void detail::TransformUpdate::finish() noexcept {
     cancel();
 }
 auto detail::TransformUpdate::prepare(World& world, std::span<const TransformWrite> writes,
-                                      bool legacySignals) -> core::Result<void> {
+                                      bool legacySignals, bool cacheTrusted) -> core::Result<void> {
     cancel();
     if (!world.threadChecker_.isCurrent() || world.callbackActive_)
         return core::unexpected(core::Error{"world.callback.reentrant",
@@ -53,6 +60,7 @@ auto detail::TransformUpdate::prepare(World& world, std::span<const TransformWri
     owner_ = &world;
     world.callbackActive_ = true;
     legacySignals_ = legacySignals;
+    cacheTrusted_ = cacheTrusted;
     try {
         auto result = prepareLocked(writes);
 #if defined(CUEXIS_ALLOCATION_LIFETIME_OBSERVER)
@@ -135,7 +143,7 @@ auto detail::TransformUpdate::prepareLocked(std::span<const TransformWrite> writ
                             "Hierarchy entities must also have a local transform"}
                     .withContext("entity", entityText(entity)));
     bool valid = world.transformCacheValid_ && world.transformCache_.size() == transformView.size();
-    if (valid)
+    if (valid && (!cacheTrusted_ || legacySignals_))
         for (const auto& entry : world.transformCache_) {
             const auto* h = registry.valid(entry.entity)
                                 ? registry.try_get<HierarchyComponent>(entry.entity)
@@ -241,6 +249,9 @@ auto detail::TransformUpdate::prepareLocked(std::span<const TransformWrite> writ
             return core::unexpected(std::move(error));
         }
 
+        for (std::size_t orderIndex = 0; orderIndex < candidateOrder.size(); ++orderIndex)
+            candidateCache[candidateOrder[orderIndex]].orderIndex = orderIndex;
+
         for (const auto index : candidateOrder) {
             auto& entry = candidateCache[index];
             entry.world =
@@ -263,7 +274,7 @@ auto detail::TransformUpdate::prepareLocked(std::span<const TransformWrite> writ
                                      {},
                                      {}});
         }
-    } else {
+    } else if (legacySignals_ || !cacheTrusted_) {
         const auto count = world.transformCache_.size();
         for (std::size_t i = 0; i < count; ++i) {
             const auto& entry = world.transformCache_[i];
@@ -288,11 +299,12 @@ auto detail::TransformUpdate::prepareLocked(std::span<const TransformWrite> writ
                 continue;
             const auto& local = localDirty_[i] ? localScratch_[i] : entry.localMatrix;
             if (entry.parentIndex) {
-                auto parent = *entry.parentIndex;
+                const auto parent = *entry.parentIndex;
                 scratch_[i] = core::multiply(
                     dirty_[parent] ? scratch_[parent] : world.transformCache_[parent].world, local);
-            } else
+            } else {
                 scratch_[i] = local;
+            }
             if (!core::isFinite(scratch_[i]))
                 return core::unexpected(core::Error{"world.transform.invalid_world_transform",
                                                     "A world transform is not finite"}
@@ -302,12 +314,80 @@ auto detail::TransformUpdate::prepareLocked(std::span<const TransformWrite> writ
                  i, localDirty_[i] ? std::optional{effectiveTransform(entry.entity)} : std::nullopt,
                  local});
         }
+    } else {
+        // The mutable Registry callback invalidates the cache before any external edit. When the
+        // cache is valid, Runtime writes are the only possible local changes, so propagate only
+        // from changed nodes through their descendants instead of scanning every transform.
+        dirtyOrder_.clear();
+        for (const auto& write : writes) {
+            const auto found =
+                std::lower_bound(world.transformCache_.begin(), world.transformCache_.end(),
+                                 write.entity, [](const auto& entry, entt::entity entity) {
+                                     return entityValue(entry.entity) < entityValue(entity);
+                                 });
+            if (found == world.transformCache_.end() || found->entity != write.entity)
+                return core::unexpected(
+                    core::Error{"world.property.transform_missing",
+                                "A captured Transform baseline is no longer available"}
+                        .withContext("entity", entityText(write.entity)));
+            const auto index = static_cast<std::size_t>(found - world.transformCache_.begin());
+            if (sameTransform(write.value, found->local))
+                continue;
+            auto matrix = core::composeTransform(write.value.position, write.value.rotation,
+                                                 write.value.scale);
+            if (!matrix)
+                return core::unexpected(core::Error{"world.transform.invalid_local_transform",
+                                                    "A local transform could not be composed"}
+                                            .withContext("entity", entityText(write.entity))
+                                            .withCause(matrix.error()));
+            localScratch_[index] = *matrix;
+            localDirty_[index] = true;
+            if (!dirty_[index]) {
+                dirty_[index] = true;
+                dirtyOrder_.push_back(index);
+            }
+        }
+        for (std::size_t cursor = 0; cursor < dirtyOrder_.size(); ++cursor) {
+            const auto index = dirtyOrder_[cursor];
+            for (const auto child : world.transformCache_[index].children) {
+                if (!dirty_[child]) {
+                    dirty_[child] = true;
+                    dirtyOrder_.push_back(child);
+                }
+            }
+        }
+        std::ranges::sort(dirtyOrder_, [&world](const auto left, const auto right) {
+            return world.transformCache_[left].orderIndex < world.transformCache_[right].orderIndex;
+        });
+        for (const auto index : dirtyOrder_) {
+            const auto& entry = world.transformCache_[index];
+            const auto& local = localDirty_[index] ? localScratch_[index] : entry.localMatrix;
+            if (entry.parentIndex) {
+                const auto parent = *entry.parentIndex;
+                scratch_[index] = core::multiply(
+                    dirty_[parent] ? scratch_[parent] : world.transformCache_[parent].world, local);
+            } else {
+                scratch_[index] = local;
+            }
+            if (!core::isFinite(scratch_[index]))
+                return core::unexpected(core::Error{"world.transform.invalid_world_transform",
+                                                    "A world transform is not finite"}
+                                            .withContext("entity", entityText(entry.entity)));
+            matrixWrites_.push_back(
+                {entry.entity, registry.try_get<WorldTransformComponent>(entry.entity),
+                 scratch_[index], index,
+                 localDirty_[index] ? std::optional{effectiveTransform(entry.entity)}
+                                    : std::nullopt,
+                 local});
+        }
     }
     auto& pool = registry.storage<WorldTransformComponent>();
     activeStorage_ = &static_cast<entt::storage<WorldTransformComponent>&>(pool);
-    for (auto entity : registry.view<WorldTransformComponent>())
-        if (!registry.all_of<TransformComponent>(entity))
-            stale_.push_back(entity);
+    if (coldCache_ || !cacheTrusted_) {
+        for (auto entity : registry.view<WorldTransformComponent>())
+            if (!registry.all_of<TransformComponent>(entity))
+                stale_.push_back(entity);
+    }
     storageReplacement_ = !stale_.empty() ||
                           std::ranges::any_of(matrixWrites_, [](const auto& w) { return !w.slot; });
     if (storageReplacement_ && !legacySignals_) {
