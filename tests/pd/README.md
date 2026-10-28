@@ -281,15 +281,20 @@ instrumentation is introduced. Hidden timing cases are explicit invocations, not
 acceptance gates.
 
 The explicit device executable also provides `GPU visible entity throughput probe`
-(`[.][device][gpu][throughput]`). It uses 40,000 independent renderable grid entities,
-a 1280x720 visible framebuffer and verified swap interval zero. Set `CUEXIS_GPU_MODE` to
+(`[.][device][gpu][throughput]`). It uses independent renderable grid entities,
+a visible framebuffer and verified swap interval zero. Set `CUEXIS_GPU_MODE` to
 `render-only`, `static` or `animated`; the latter updates every entity through a legacy Chart v1
-transform keyframe behavior. Keep `CUEXIS_GPU_ENTITIES=40000` for this verified grid; other counts are outside its current
-reference scope. `CUEXIS_GPU_FRAMES`,
-`CUEXIS_GPU_WARMUP` and `CUEXIS_GPU_TIMER` control finite runs. The fixture checks all entity
+transform keyframe behavior. `CUEXIS_GPU_ENTITIES` supports the 10-40000 entity capacity study;
+the grid keeps a real mesh over the center pixel at every count. `CUEXIS_GPU_WIDTH` /
+`CUEXIS_GPU_HEIGHT` select the framebuffer (1280x720 by default; 1920x1080 is verified).
+`CUEXIS_GPU_FRAMES`, `CUEXIS_GPU_WARMUP` and `CUEXIS_GPU_TIMER` control finite runs.
+Optional `CUEXIS_GPU_SECONDS` selects a bounded wall-duration run, and `CUEXIS_GPU_WARMUP_MS`
+sets a minimum warmup duration. The fixture checks all entity
 centers in clip space, all opaque draw commands, the material-colored center pixel and actual
 animation changes. It emits `GPU_THROUGHPUT_ID` and per-frame `GPU_THROUGHPUT_SAMPLE` records
-after timing. GPU timestamps include submission gaps and the backend's normal pixel readback;
+after timing. `cycle_us` covers the complete interval between presents, including event pump
+and loop overhead; `end_us` supports per-second completion windows. `total_us` retains the
+narrower update-to-present boundary. GPU timestamps include submission gaps and normal pixel readback;
 they do not measure pure shader utilization. These throughput diagnostics do not use or alter
 the formal PD5 profiles, and exclude Gameplay, audio and Player coordination.
 

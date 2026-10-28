@@ -22,6 +22,11 @@
 完成有限设备诊断：正常帧路径仍远超 240 FPS 预算，需继续细分 update / extract / render submit。
 旧 Seek 的 40K requirements 与本轮 40K renderable entities 不同，不混用其成本或接受结论。
 
+后续 [1080P 实体容量扫描](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-29-r3-1080p-entity-capacity.md)
+以完整帧 cycle p99、平均及每秒窗口共同判断稳定 240；确认本机简单实体模型的仅渲染 1800、
+静态 update / extract / render 1300 实体，各三次 20 秒持续通过。更高档位的尾部失败保留，
+未以平均 FPS 或补样改判；正常帧扩容仍是后续优化项，不作为 R3/R4 接受。
+
 R3b 的首个候选见[显式可信恢复提案](trusted-restore-candidate.md)，已按总计划 §8.2 允许的最终 archive 工厂入口实施并完成本地核验；当前候选预算未通过，R3 未退出，按 §12.2 交裁定包。不再要求重复授权，也不声称自然 checkpoint 已覆盖首次 Seek。
 2026-10-27 本地功能/兼容、反例、宏隔离和成本范围见[核验报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3a-recovery-and-prepare.md)。
 后续可信前缀候选另见 [R3b 核验报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3b-certified-prefix-and-cost.md)，不复用 R3a 的性能身份。

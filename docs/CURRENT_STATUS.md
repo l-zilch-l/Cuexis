@@ -23,6 +23,10 @@
   无 timestamp 对照的复用快照、静态提帧、全量 Chart v1 行为分别约 18.25 / 13.39 / 4.47 FPS；
   当前不能达到 240 FPS，正常帧的 update / extract / submit 成本尚待优化。初版相机夹具作废并保留，
   有效结果来自补充可见性与材质像素验证后的新登记；不作为 R3/R4 或生产接受。
+  后续 [1080P 实体容量](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-29-r3-1080p-entity-capacity.md)
+  已完成 10–40K 粗扫、边界重复和持续验证：按完整帧周期 p99≤4.167 ms、平均及每秒窗口≥240 FPS，
+  已确认仅渲染 1800 实体、静态 update / extract / render 1300 实体，各通过三次独立 20 秒。
+  1900 render-only、1400 / 1500 static 有持续超预算，全部保留；此为本夹具的保守测试点，不是绝对容量或正式退出。
   已有分页共享状态、不可变准备复用、自然恢复锚点，以及 SHA 加速和有界编码器恢复点 `198ab96`。
   最新[来源绑定实验](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-source-binding-experiment.md)用同一 Release 二进制比较 canonical SHA 与进程内 owning source binding。
   2048 requirements、33 条历史的 CPU 宿主首次请求到目标帧由 91.809 ms 降至 1.016 ms；129 条历史由 333.624 ms 降至 1.057 ms。

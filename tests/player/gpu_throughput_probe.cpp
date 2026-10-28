@@ -64,11 +64,18 @@ auto throughputSource(unsigned count, bool animated) -> PlaybackSource {
 "templates":[],"behaviors":[{"id":"move","type":"behavior.transform.keyframe","version":1,"tracks":[
 {"property":"transform.position.z","keys":[{"beat":{"numerator":0,"denominator":1},"value":0},
 {"beat":{"numerator":2400,"denominator":1},"value":1,"easing":"linear"}]}]}],"objects":[)";
+    const auto columns = static_cast<unsigned>(std::ceil(std::sqrt(count)));
+    const auto rows = (count + columns - 1) / columns;
+    const auto center = std::min(count - 1, (rows / 2) * columns + columns / 2);
     for (unsigned i = 0; i < count; ++i) {
         if (i)
             chart << ',';
-        const auto x = (static_cast<int>(i % 200) - 100) * 0.09;
-        const auto y = (static_cast<int>(i / 200) - 100) * 0.05;
+        // Keep a real mesh over the center pixel even for a small or incomplete grid.
+        const auto cell = i == 0 ? center : i == center ? 0 : i;
+        const auto x =
+            (static_cast<int>(cell % columns) - static_cast<int>(center % columns)) * 0.09;
+        const auto y =
+            (static_cast<int>(cell / columns) - static_cast<int>(center / columns)) * 0.05;
         chart << "{\"id\":\"019b0000-0000-7abc-8def-" << std::hex << std::setw(12)
               << std::setfill('0') << i + 2 << std::dec << "\",\"parent\":null,\"components\":{"
               << "\"cuexis.transform\":{\"version\":1,\"position\":[" << x << ',' << y
@@ -127,8 +134,13 @@ TEST_CASE("GPU visible entity throughput probe", "[.][device][gpu][throughput]")
         REQUIRE(go == "go");
     }
     const auto count = throughputCount("CUEXIS_GPU_ENTITIES", 40000, 40000);
-    const auto frames = throughputCount("CUEXIS_GPU_FRAMES", 600, 10000);
+    const auto frames = throughputCount("CUEXIS_GPU_FRAMES", 600, 2000000);
     const auto warmup = throughputCount("CUEXIS_GPU_WARMUP", 120, 10000);
+    const auto seconds = throughputCount("CUEXIS_GPU_SECONDS", 0, 120);
+    const auto warmupMs = throughputCount("CUEXIS_GPU_WARMUP_MS", 0, 10000);
+    const auto viewportWidth = throughputCount("CUEXIS_GPU_WIDTH", 1280, 3840);
+    const auto viewportHeight = throughputCount("CUEXIS_GPU_HEIGHT", 720, 2160);
+    const FrameViewport viewport{viewportWidth, viewportHeight};
     const auto mode = test_support::environmentVariable("CUEXIS_GPU_MODE");
     REQUIRE((mode == "render-only" || mode == "static" || mode == "animated"));
     const bool timing = test_support::environmentVariable("CUEXIS_GPU_TIMER") != "0";
@@ -137,10 +149,10 @@ TEST_CASE("GPU visible entity throughput probe", "[.][device][gpu][throughput]")
     config.vsync = false;
     auto configuration = throughputTake(render_opengl::configureOpenGlContext(runtime, config));
     platform_sdl::WindowConfig wc;
-    wc.width = 1280;
-    wc.height = 720;
+    wc.width = static_cast<int>(viewportWidth);
+    wc.height = static_cast<int>(viewportHeight);
     wc.highDpi = false;
-    wc.title = "Cuexis 40000 visible entities GPU throughput";
+    wc.title = "Cuexis visible entities GPU throughput";
     auto window = throughputTake(platform_sdl::SdlWindow::create(runtime, wc));
     auto* nativeWindow = static_cast<SDL_Window*>(window.lease().nativeHandle());
     auto backend =
@@ -150,8 +162,8 @@ TEST_CASE("GPU visible entity throughput probe", "[.][device][gpu][throughput]")
     REQUIRE(interval == 0);
     int width{}, height{};
     REQUIRE(SDL_GetWindowSizeInPixels(nativeWindow, &width, &height));
-    REQUIRE(width == 1280);
-    REQUIRE(height == 720);
+    REQUIRE(width == static_cast<int>(viewportWidth));
+    REQUIRE(height == static_cast<int>(viewportHeight));
     PlaybackSession session;
     auto prepared = throughputTake(
         session.prepareLoad(throughputSource(count, mode == "animated"), PlaybackMode::ChartClock));
@@ -160,19 +172,20 @@ TEST_CASE("GPU visible entity throughput probe", "[.][device][gpu][throughput]")
     throughputTake(session.commit(std::move(prepared)));
     backend.activate(std::move(presentation));
     throughputTake(session.update({0, 0, 1}));
-    auto snapshot = throughputTake(session.extractFrame({1280, 720}));
+    auto snapshot = throughputTake(session.extractFrame(viewport));
     REQUIRE(snapshot.objects.size() == count);
     REQUIRE(throughputInView(snapshot) == count);
     render_opengl::test_only::GpuTimer timer;
     if (timing)
         throughputTake(timer.initialize());
     struct Row {
-        double update{}, extract{}, submit{}, present{}, total{};
+        double update{}, extract{}, submit{}, present{}, total{}, cycle{}, end{};
     };
     std::vector<Row> samples;
     std::vector<std::uint64_t> gpuNs;
-    samples.reserve(frames);
-    gpuNs.reserve(frames);
+    const auto reserve = seconds ? std::max(frames, seconds * 5000) : frames;
+    samples.reserve(reserve);
+    gpuNs.reserve(timing ? reserve : 0);
     const auto collect = [&](bool drain) {
         const auto deadline = Clock::now() + std::chrono::seconds{5};
         while (timer.pending()) {
@@ -191,12 +204,19 @@ TEST_CASE("GPU visible entity throughput probe", "[.][device][gpu][throughput]")
         }
     };
     Clock::time_point measuredStart, measuredEnd;
-    for (unsigned i = 0; i < warmup + frames; ++i) {
+    const auto warmupStart = Clock::now();
+    auto lastPresented = warmupStart;
+    bool measuring = false;
+    unsigned warmupCount = 0;
+    for (unsigned i = 0; i < 2100000; ++i) {
+        if (!measuring && warmupCount >= warmup &&
+            throughputUs(warmupStart, lastPresented) >= warmupMs * 1000.) {
+            measuring = true;
+            measuredStart = lastPresented;
+        }
         SDL_PumpEvents();
         if (timing)
             collect(false);
-        if (i == warmup)
-            measuredStart = Clock::now();
         Row row;
         const auto begin = Clock::now();
         auto updated = begin;
@@ -205,33 +225,47 @@ TEST_CASE("GPU visible entity throughput probe", "[.][device][gpu][throughput]")
             throughputTake(
                 session.update({static_cast<double>(i + 1) * 1000. / 240., 1000. / 240., 1}));
             updated = Clock::now();
-            throughputTake(session.extractFrame({1280, 720}, snapshot));
+            throughputTake(session.extractFrame(viewport, snapshot));
             extracted = Clock::now();
         }
-        if (timing && i >= warmup)
-            throughputTake(timer.begin(i - warmup));
+        if (timing && measuring)
+            throughputTake(timer.begin(samples.size()));
         {
             const auto draw = throughputTake(backend.submit(snapshot, nullptr));
             if (!draw.cameraActive || draw.opaque.size() != count || !draw.transparent.empty() ||
                 !backend.lastPixelProbe().presentationDrawn)
                 throw std::runtime_error("Not all expected visible entities were drawn");
         }
-        if (timing && i >= warmup)
+        if (timing && measuring)
             throughputTake(timer.end());
         const auto submitted = Clock::now();
         throughputTake(backend.present());
         const auto presented = Clock::now();
-        row = {throughputUs(begin, updated), throughputUs(updated, extracted),
-               throughputUs(extracted, submitted), throughputUs(submitted, presented),
-               throughputUs(begin, presented)};
-        if (i >= warmup)
+        row = {throughputUs(begin, updated),
+               throughputUs(updated, extracted),
+               throughputUs(extracted, submitted),
+               throughputUs(submitted, presented),
+               throughputUs(begin, presented),
+               throughputUs(lastPresented, presented),
+               measuring ? throughputUs(measuredStart, presented) : 0.};
+        lastPresented = presented;
+        if (measuring)
             samples.push_back(row);
+        else
+            ++warmupCount;
+        if (measuring && (seconds ? row.end >= seconds * 1000000. : samples.size() >= frames))
+            break;
     }
-    measuredEnd = Clock::now();
+    measuredEnd = lastPresented;
     if (timing)
         collect(true);
-    REQUIRE(samples.size() == frames);
-    REQUIRE(gpuNs.size() == (timing ? frames : 0));
+    REQUIRE_FALSE(samples.empty());
+    REQUIRE(samples.size() <= 2000000);
+    if (seconds)
+        REQUIRE(throughputUs(measuredStart, measuredEnd) >= seconds * 1000000.);
+    else
+        REQUIRE(samples.size() == frames);
+    REQUIRE(gpuNs.size() == (timing ? samples.size() : 0));
     const auto inView = throughputInView(snapshot);
     REQUIRE(inView == count);
     // The opaque fixture is orange. A background-only frame cannot pass this proof.
@@ -245,9 +279,10 @@ TEST_CASE("GPU visible entity throughput probe", "[.][device][gpu][throughput]")
     REQUIRE(moved == (mode == "animated" ? count : 0));
     std::cout << std::setprecision(17) << "GPU_THROUGHPUT_ID {\"mode\":\"" << mode
               << "\",\"entities\":" << count << ",\"draws_per_frame\":" << count
-              << ",\"in_view_centers\":" << inView << ",\"fixture_revision\":2"
-              << ",\"moved_entities\":" << moved << ",\"frames\":" << frames
-              << ",\"warmup_frames\":" << warmup << ",\"timer\":" << (timing ? "true" : "false")
+              << ",\"in_view_centers\":" << inView << ",\"fixture_revision\":3"
+              << ",\"moved_entities\":" << moved << ",\"frames\":" << samples.size()
+              << ",\"duration_seconds\":" << seconds << ",\"warmup_frames\":" << warmupCount
+              << ",\"warmup_ms\":" << warmupMs << ",\"timer\":" << (timing ? "true" : "false")
               << ",\"vsync\":" << interval << ",\"width\":" << width << ",\"height\":" << height
               << ",\"vendor\":" << std::quoted(backend.info().vendor)
               << ",\"renderer\":" << std::quoted(backend.info().renderer)
@@ -262,7 +297,8 @@ TEST_CASE("GPU visible entity throughput probe", "[.][device][gpu][throughput]")
         const auto& s = samples[i];
         std::cout << "GPU_THROUGHPUT_SAMPLE {\"ordinal\":" << i << ",\"update_us\":" << s.update
                   << ",\"extract_us\":" << s.extract << ",\"submit_us\":" << s.submit
-                  << ",\"present_us\":" << s.present << ",\"total_us\":" << s.total;
+                  << ",\"present_us\":" << s.present << ",\"total_us\":" << s.total
+                  << ",\"cycle_us\":" << s.cycle << ",\"end_us\":" << s.end;
         if (timing)
             std::cout << ",\"gpu_interval_us\":" << static_cast<double>(gpuNs[i]) / 1000.;
         std::cout << "}\n";

@@ -85,3 +85,5 @@
 | [R3 零绑定投影优化与通用匹配撤回](r3/2026-10-29-r3-projection-empty-and-general-attempt.md) | `D:/Cuexis-redesign/out/verification-20261028/projection-matching-v1/`；A/B 固定 18 进程、adapter-only 固定 36 进程、B/C Host 固定 18 进程及全部原值；撤回的 C 源副本、最终 B STATIC/SHARED 回归与 `final-manifest.json`；不追加样本改判 |
 
 | [40K 实体真实 GPU 吞吐核验](r3/2026-10-29-r3-40k-physical-gpu-throughput.md) | `D:/Cuexis-redesign/out/verification-20261029/gpu-40k-v1/`；`pilot-v1/` 与 `measure-v1/` 整组作废保留，`fixture-v1.cpp/.exe`；有效 `pilot-v2/` 及固定 `measure-v2/`（12 进程 / 1440 帧）、全量原值、独立摘要、设备信息、source / library / binary 哈希及 `final-manifest.json` |
+
+| [1080P 入镜实体容量与 240 FPS 边界](r3/2026-10-29-r3-1080p-entity-capacity.md) | `D:/Cuexis-redesign/out/verification-20261029/gpu-1080p-scale-v1/`；107 个有效进程 / 150171 帧，32 点粗扫、三进程细测 / 补点、各三次 20 秒的持续组及所有更高档位失败；`audit.json`、`measurements.csv`、`capacity-1080p.png/.svg`、只读运行库绑定与 `final-manifest.json` |
