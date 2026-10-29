@@ -381,7 +381,15 @@ auto PropertyResolver::ensureEntry(entt::entity entity) -> Entry& {
         entries_.begin(), entries_.end(), entity, [](const Entry& candidate, entt::entity target) {
             return entityValue(candidate.entity) < entityValue(target);
         });
+    const auto insertedIndex = static_cast<std::size_t>(insert - entries_.begin());
     auto& inserted = *entries_.insert(insert, std::move(entry));
+    // Membership follows each Entry; all saved indices must follow sorted insertion as well.
+    for (auto* indices : {&touchedEntries_, &committedEntries_, &thisCommit_}) {
+        for (auto& index : *indices) {
+            if (index >= insertedIndex)
+                ++index;
+        }
+    }
     touchedEntries_.reserve(entries_.size());
     committedEntries_.reserve(entries_.size());
     thisCommit_.reserve(entries_.size());
@@ -504,6 +512,7 @@ void PropertyResolver::reserveStringCapacity(entt::entity entity, PropertyId pro
 }
 
 void PropertyResolver::resetEntry(Entry& entry) noexcept {
+    entry.touched = false;
     entry.transformCandidate = entry.transformBaseline;
     entry.transformSeenMask = 0;
     for (auto& state : entry.properties) {
@@ -622,10 +631,10 @@ auto PropertyResolver::applyWrite(const PropertyWrite& write, PropertyLayer laye
 }
 
 void PropertyResolver::markTouched(std::size_t entryIndex) {
-    const bool alreadyTouched = std::find(touchedEntries_.begin(), touchedEntries_.end(),
-                                          entryIndex) != touchedEntries_.end();
-    if (!alreadyTouched) {
+    auto& entry = entries_[entryIndex];
+    if (!entry.touched) {
         touchedEntries_.push_back(entryIndex);
+        entry.touched = true;
     }
 }
 

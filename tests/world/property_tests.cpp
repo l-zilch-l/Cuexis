@@ -359,6 +359,115 @@ TEST_CASE("Appearance reads preserve sparse baselines and layer fallback",
     CHECK(std::get<double>(*checkRead(entity)[2]) == 1.0);
 }
 
+TEST_CASE("Touched membership survives resolver copies and aborted frames",
+          "[world][property][appearance][r3]") {
+    using cuexis::world::PropertyLayer;
+    using cuexis::world::detail::ResolverAccess;
+    cuexis::world::PropertyResolver resolver;
+    constexpr std::array entities{entt::entity{2}, entt::entity{37}, entt::entity{101}};
+    for (const auto entity : entities) {
+        REQUIRE(resolver.registerBaseline(entity, PropertyId::RenderVisible, true));
+        REQUIRE(resolver.registerBaseline(entity, PropertyId::MaterialOpacity, 1.0));
+    }
+    // First-touch order differs from entity order; multiple properties and layers reuse entries.
+    const std::array writes{PropertyWrite{entities[2], PropertyId::RenderVisible, false},
+                            PropertyWrite{entities[0], PropertyId::MaterialOpacity, 0.25},
+                            PropertyWrite{entities[2], PropertyId::MaterialOpacity, 0.5},
+                            PropertyWrite{entities[1], PropertyId::RenderVisible, false}};
+    resolver.beginFrame();
+    REQUIRE(resolver.applyLayer(writes, PropertyLayer::Behavior, true));
+    const PropertyWrite higher{entities[2], PropertyId::MaterialOpacity, 0.75};
+    REQUIRE(resolver.applyLayer(std::span{&higher, 1}, PropertyLayer::Animation, true));
+    REQUIRE(resolver.finalize());
+    auto copy = resolver;
+    auto moved = std::move(copy);
+    std::vector<cuexis::world::detail::TransformWrite> transforms;
+    REQUIRE(ResolverAccess::prepareTransforms(resolver, transforms));
+    ResolverAccess::installed(resolver);
+    for (auto* current : {&resolver, &moved}) {
+        // Both committed and only-prepared copies must reset their own touched entries.
+        current->beginFrame();
+        for (const auto entity : entities) {
+            CHECK(std::get<bool>(*current->resolvedValue(entity, PropertyId::RenderVisible)));
+            CHECK(std::get<double>(*current->resolvedValue(entity, PropertyId::MaterialOpacity)) ==
+                  1.0);
+        }
+        REQUIRE(current->applyBaseProperty(entities[0], PropertyId::MaterialOpacity, 0.8));
+        REQUIRE(current->applyLayer(writes, PropertyLayer::Behavior, true));
+        const PropertyWrite invalid{entities[1], PropertyId::MaterialOpacity, 2.0};
+        REQUIRE_FALSE(current->applyLayer(std::span{&invalid, 1}, PropertyLayer::Animation, true));
+        current->beginFrame();
+        REQUIRE(current->applyLayer(writes, PropertyLayer::Behavior, true));
+        REQUIRE(current->finalize());
+        REQUIRE(ResolverAccess::prepareTransforms(*current, transforms));
+        ResolverAccess::installed(*current);
+        current->beginFrame();
+        CHECK(std::get<double>(*current->resolvedValue(entities[0], PropertyId::MaterialOpacity)) ==
+              0.8);
+        CHECK(std::get<bool>(*current->resolvedValue(entities[2], PropertyId::RenderVisible)));
+    }
+}
+
+TEST_CASE("Late baseline insertion preserves touched indices across subsequent frames",
+          "[world][property][appearance][r3]") {
+    using cuexis::world::PropertyLayer;
+    using cuexis::world::detail::ResolverAccess;
+    for (const bool installed : {false, true}) {
+        cuexis::world::PropertyResolver resolver;
+        const entt::entity high{101}, low{2};
+        REQUIRE(resolver.registerBaseline(high, PropertyId::MaterialOpacity, 1.0));
+        resolver.beginFrame();
+        const PropertyWrite first{high, PropertyId::MaterialOpacity, 0.5};
+        REQUIRE(resolver.applyLayer(std::span{&first, 1}, PropertyLayer::Behavior, true));
+        REQUIRE(resolver.finalize());
+        std::vector<cuexis::world::detail::TransformWrite> transforms;
+        REQUIRE(ResolverAccess::prepareTransforms(resolver, transforms));
+        if (installed)
+            ResolverAccess::installed(resolver);
+        REQUIRE(resolver.registerBaseline(low, PropertyId::MaterialOpacity, 1.0));
+        resolver.beginFrame();
+        const PropertyWrite second{high, PropertyId::MaterialOpacity, 0.25};
+        REQUIRE(resolver.applyLayer(std::span{&second, 1}, PropertyLayer::Animation, true));
+        REQUIRE(resolver.finalize());
+        REQUIRE(ResolverAccess::prepareTransforms(resolver, transforms));
+        ResolverAccess::installed(resolver);
+        resolver.beginFrame();
+        CHECK(std::get<double>(*resolver.resolvedValue(high, PropertyId::MaterialOpacity)) == 1.0);
+    }
+}
+
+TEST_CASE("Late baseline insertion keeps saved transform rollback indices",
+          "[world][property][rollback][r3]") {
+    World world;
+    entt::entity low{}, high{};
+    registryAction(world, [&](entt::registry& registry) {
+        low = registry.create();
+        high = registry.create();
+        registry.emplace<TransformComponent>(high, Vec3{1, 2, 3}, Quat{}, Vec3{1, 1, 1});
+    });
+    auto captured = TransformPropertyResolver::capture(world);
+    REQUIRE(captured);
+    auto resolver = std::move(*captured);
+    const PropertyWrite write{high, PropertyId::TransformPositionX, 9.0};
+    REQUIRE(resolver.prepare(std::span{&write, 1}));
+    REQUIRE(resolver.commit(world));
+    CHECK(registryValue(world, [&](const entt::registry& registry) {
+              return registry.get<TransformComponent>(high).position.x;
+          }) == 9.0F);
+    // Insertion happens after commit, so rollback must consume the shifted saved index directly.
+    REQUIRE(resolver.registerBaseline(low, PropertyId::RenderVisible, true));
+    resolver.rollback(world);
+    CHECK(registryValue(world, [&](const entt::registry& registry) {
+              return registry.get<TransformComponent>(high).position;
+          }) == Vec3{1, 2, 3});
+    const PropertyWrite later{high, PropertyId::TransformPositionY, 8.0};
+    REQUIRE(resolver.prepare(std::span{&later, 1}));
+    REQUIRE(resolver.commit(world));
+    CHECK(registryValue(world, [&](const entt::registry& registry) {
+              return registry.get<TransformComponent>(high).position;
+          }) == Vec3{1, 8, 3});
+}
+
 TEST_CASE("Base property command replaces the captured baseline and increments revision",
           "[world][property][base][s4-d]") {
     World world;

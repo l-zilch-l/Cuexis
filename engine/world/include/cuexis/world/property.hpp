@@ -214,6 +214,7 @@ class PropertyResolver final {
     struct Entry final {
         entt::entity entity{entt::null};
         bool hasTransform{};
+        bool touched{};
         TransformComponent transformBaseline{};
         TransformComponent transformCandidate{};
         TransformComponent transformPrevious{};
