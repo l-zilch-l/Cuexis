@@ -336,3 +336,5 @@ TEST_CASE("B5 physical OpenGL device submits reads pixels and directed closes", 
     REQUIRE((*host)->state() == HostState::closed);
     REQUIRE_FALSE(frame->snapshotView().objects.empty());
 }
+
+#include "r3_seek_gpu_tests.hpp"

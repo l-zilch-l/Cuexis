@@ -11,7 +11,7 @@ namespace cuexis::test_support {
 using namespace judgement;
 using namespace judgement::testing;
 using namespace playback;
-inline auto presentation() -> playback::PlaybackSource {
+inline auto presentation(bool cameraFacingScene = false) -> playback::PlaybackSource {
     const auto read = [](std::string_view path) {
         std::ifstream in{std::filesystem::path{CUEXIS_SOURCE_DIR} /
                              "assets/projects/stage3_project/assets" / path,
@@ -26,9 +26,7 @@ inline auto presentation() -> playback::PlaybackSource {
         {{"main", "triangle.mesh.bin", read("meshes/triangle.mesh.bin")},
          {"main", "opaque.material.bin", read("materials/opaque.material.bin")}});
     REQUIRE(provider);
-    auto s = playback::PlaybackSource::fromTypedProject(
-        {.sourceId = "gameplay-presentation",
-         .chartJson = R"({"format":"cuexis.chart","version":1,
+    std::string chartJson = R"({"format":"cuexis.chart","version":1,
     "chartId":"019b0000-0000-7abc-8def-000000000001","metadata":{},
     "timing":{"offsetMs":0,"defaultBpm":120,"bpmChanges":[],"stops":[]},
     "camera":{"type":"perspective","fovY":60,"near":0.1,"far":1000,
@@ -36,7 +34,16 @@ inline auto presentation() -> playback::PlaybackSource {
     "templates":[],"behaviors":[],"objects":[{"id":"019b0000-0000-7abc-8def-000000000002","parent":null,
     "components":{"cuexis.transform":{"version":1,"position":[0,0,0],"rotation":[0,0,0,1],"scale":[1,1,1]},
     "cuexis.renderable":{"version":1,"mesh":{"domain":"asset","id":"mesh"},"material":{"domain":"asset","id":"material"}}},"extensions":{}}],
-    "requiredExtensions":[],"extensions":{}})",
+    "requiredExtensions":[],"extensions":{}})";
+    if (cameraFacingScene) {
+        const auto position = chartJson.find("\"position\":[0,0,-10]");
+        REQUIRE(position != std::string::npos);
+        chartJson.replace(position, std::string_view{"\"position\":[0,0,-10]"}.size(),
+                          "\"position\":[0,0,10]");
+    }
+    auto s = playback::PlaybackSource::fromTypedProject(
+        {.sourceId = "gameplay-presentation",
+         .chartJson = std::move(chartJson),
          .assets = {{.id = "mesh",
                      .type = playback::PlaybackAssetType::Mesh,
                      .rootId = "main",

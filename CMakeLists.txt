@@ -172,6 +172,8 @@ if(BUILD_TESTING AND CUEXIS_BUILD_TESTS AND CUEXIS_ENABLE_CHART_V5_CANDIDATE
         app/player/src/snapshot_scene.cpp
     )
     target_compile_features(cuexis_execution_device_probe PRIVATE cxx_std_20)
+    target_include_directories(cuexis_execution_device_probe PRIVATE
+        "${PROJECT_SOURCE_DIR}/engine/judgement/internal")
     target_compile_definitions(cuexis_execution_device_probe PRIVATE
         CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
     )

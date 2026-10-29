@@ -13,10 +13,10 @@
 | 项目 | 本批实施/调查 | 尚需完成的核验 |
 | --- | --- | --- |
 | P1 Packed / re-prepare | 名称索引与随后独立 Packed 查找候选分别通过固定诊断保护条件；后者 40K unique 总耗时 23.58 → 7.09 s | identity 投影仍重复生成；最终 fresh 回归与原端到端 load 门未完成 |
-| P2 准备热点 | 保留名称索引，消除逐 requirement 的 namespace 全表查找；40K unique source prepare 6.404 → 1.533 s | identity/timer/resource 不因这次局部改善而宣布完成 |
+| P2 准备热点 | 保留名称索引，消除逐 requirement 的 namespace 全表查找；40K unique source prepare 6.404 → 1.533 s；identity 复用候选正在 fresh 编译与字节回归 | 候选尚无测量结论；timer/resource 不因这次局部改善而宣布完成 |
 | P3 update / Snapshot | 保留先前四属性合并查找和 touched 优化；新增 resolver 索引提示因真实 GPU 保护条件失败而撤回 | 最终源码完整矩阵；extract 仍有可调查成本，不重做 R2 表示 |
 | P4 编码与真实内存 | 第二次使用 admission 和测量预遍历计划均无实际峰值收益，已放弃，恢复旧独立字节缓存；已取得至 40K 的实际峰值及最终释放 | 本地轨迹不替代原 caps 或历史 R4 身份参考；编码输出本身占用及同时持有范围必须明示 |
-| P5 端到端 Seek | 内置 Host 可转发既有 checkpoint span；新增 33/129 历史、early/full/partial、native/external、无/有/不可信 hint 的 36 组合 | 独立外部 origin snapshot 全字节、目标 tick/context/receipt、原尾延迟及重复性；worker 替换并非当前 Host 能力 |
+| P5 端到端 Seek | 内置 Host 可转发既有 checkpoint span；CPU 36 组合与 1080p GPU 96 组合核对独立 origin 全字节、目标 tick/context/receipt/像素 | 原尾延迟及重复性、观察路径与故障覆盖；worker 替换并非当前 Host 能力 |
 | P6 维护/工具/矩阵 | metrics TLS 改为函数内每线程对象，消费者同步；全仓格式债处理；候选版 Release 全套通过、Debug 编译通过 | 撤回/新候选后的最终 fresh STATIC/SHARED、Debug/Release/MinGW、安装消费者与完整 CTest |
 
 这些是候选及核验账目，不将“已写代码”记成完成，也不以 R3 技术工作代替设备/生产或 owner 接受。
@@ -96,6 +96,33 @@ Packed 和三种身份的完整 raw 字节一致；unique 1K/10K/40K 总和中�
 12.427108 → 1.797437 s，decode 9.488453 → 3.723324 s；source prepare 未被本候选修改。
 uniform 总和 +4.06%/-5.04%/-2.20%，通过预设 5% guard；各组 relative range 最大 11.27%，
 原始变动完整保留。该候选保留；不同登记组不能直接相加声称连续基线收益或正式接受。
+
+## Seek 目标图像与异常复测
+
+`seek-gpu-v1` 命令抽取失败和 v2 缺少内部测试 include 的编译失败保留；v3 初次执行在
+FactBinding 内容校验停止，原因是测试夹具使用了未声明的新 binding ID，尚未进入 Seek。
+修正夹具后，v5 / `seek-gpu-measure-v2` 在 RTX 4060、1920×1080、VSync OFF 完成 96 组合，
+21,154 assertions 通过。覆盖 33/129 记录、origin/early/final/partial、native/external、
+无/候选/剥离证书 hint，以及 owning-source/canonical 两种身份策略；外部 hint 从未成为可信证书。
+native checkpoint 生成会计算 canonical identity，因此其创建也纳入计时，并单独报告该耗时。
+独立 oracle 从外部解码来源原点重放，计时外比较完整状态 wire；Host 帧、receipt、scope 和
+实际橙色/背景像素一起检查。窗口隐藏，只证明实际 GPU back-buffer readback，不是可见扫描输出。
+
+v6 补齐 eligibility/horizon/viewport/GL/swap 诊断并编译；v7 继续分解 sample、Host present、
+第二次相同图像的 direct submit 与 swap。第二次 draw 是归因探针，不替换原首次 Host 区间。
+`seek-display-rounds-v1` 预登记 3 轮×隐藏/显示共 6 个新进程；owner 质疑复测范围时中止，
+实际完成两整轮及第三轮隐藏组，共 5×96=480 组合，最后显示组的部分日志保留，不补样或称三轮完整。
+用户随后明确允许优先复测方法可能有错或初测异常的测试，既有停止组仍保持原状。
+
+v5 的请求到读回记录为 0.711–200.402 ms。新分段组首次 Host present 中位数为
+0.348–0.634 ms，未稳定复现原首次慢点；第二次 GPU submit 则在隐藏/显示两种窗口下稳定出现
+约 178–189 ms 中位数，swap 本身约 0.044–0.048 ms。这将当前稳定问题定位到第二次 GPU
+submit/readback 路径，尚未证明具体 GL/驱动机制；窗口是否隐藏不解释它。
+原首次慢点标为偶发/未稳定复现，保留原记录，不能删除或据此宣布尾延迟通过。
+
+后续复测优先选可能有方法错误、初测异常或相互矛盾的代表场景；无相关代码或条件变化时，
+不反复运行已有稳定结论的完整矩阵。新增对照另行登记轮数、停止条件和判据，保留每次结果；
+正式 15% / CI 与原预算继续适用。
 
 ## 构建、版本与原门限
 
