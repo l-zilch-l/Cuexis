@@ -100,6 +100,10 @@ Packed 解码仍重建 typed 内容，并走共享 gameplay prepare 及语义比
 调用期索引替代 graph 匹配的重复扫描，已有 canonical 声明顺序支持二分查找；
 这些索引不会成为跨调用全局缓存，查找加速不能改变输入次序、重复判定或首错选择。
 
+namespace merge 在原重复检查中生成的名称排序索引可供本次组装的 requirement 校验复用。
+索引保存声明位置；复制到 graph 及 stable-ID stabilization 必须保持位置一致，不能在其有效期内
+重排声明或保留到下一次组装。按名称定位后仍检查声明 kind，引用与 capability 校验次序不变。
+
 content-only completeness 通过私有 `gameplay_closure.hpp` collector 显式传入空 contributions，
 不再为删除 contributions 而复制整张 `CanonicalGameplayGraph`。
 公开 full closure 入口仍包含原 contributions，两者共享同一内容遍历与精确 revision 比较、排序和去重。

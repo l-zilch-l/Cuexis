@@ -2218,8 +2218,8 @@ auto assembleGameplay(const AssemblyRequest& request) -> core::Result<AssembledG
     graph.declaredCapabilities = request.declaredCapabilities;
     graph.declaredFeatures = request.declaredFeatures;
     graph.closureContributions = request.closureContributions;
-    // Merge and stabilization preserve stable-ID order; the existing name index stays valid.
-    graph.mergedNamespace = std::move(merged->value);
+    // The copy and stabilization retain stable-ID order, so the index positions stay valid.
+    graph.mergedNamespace = merged->value;
     graph.sourceClosure.sourceDocumentIds.reserve(request.sources.size());
     for (const auto& source : request.sources) {
         graph.sourceClosure.sourceDocumentIds.push_back(source.document.sourceDocumentId);

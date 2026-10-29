@@ -12,8 +12,8 @@
 
 | 项目 | 本批实施/调查 | 尚需完成的核验 |
 | --- | --- | --- |
-| P1 Packed / re-prepare | Pattern 编译复用未通过固定收益条件，已撤回；完整字节和普通 allocator 对照已取得 | 新方向为复用已有名称索引及 immutable chart 投影；均需另开候选与固定组 |
-| P2 准备热点 | unique named Pattern 输入暴露 namespace 查找平方项；compiler 复用及重复树检查删除一并撤回 | 消除已确认的名称线性扫描，保留首错；timer/resource 不因这次归因而宣布完成 |
+| P1 Packed / re-prepare | Pattern 编译复用已撤回；单独复用名称索引通过固定诊断保护条件，40K unique 总耗时下降 32.52% | Packed 编码仍约 11.92 s，另开候选处理已确认的重复扫描；immutable chart 投影尚未实施 |
+| P2 准备热点 | 保留名称索引，消除逐 requirement 的 namespace 全表查找；40K unique source prepare 6.404 → 1.533 s | identity/timer/resource 不因这次局部改善而宣布完成 |
 | P3 update / Snapshot | 保留先前四属性合并查找和 touched 优化；新增 resolver 索引提示因真实 GPU 保护条件失败而撤回 | 最终源码完整矩阵；extract 仍有可调查成本，不重做 R2 表示 |
 | P4 编码与真实内存 | 第二次使用 admission 和测量预遍历计划均无实际峰值收益，已放弃，恢复旧独立字节缓存；已取得至 40K 的实际峰值及最终释放 | 本地轨迹不替代原 caps 或历史 R4 身份参考；编码输出本身占用及同时持有范围必须明示 |
 | P5 端到端 Seek | 内置 Host 可转发既有 checkpoint span；新增 33/129 历史、early/full/partial、native/external、无/有/不可信 hint 的 36 组合 | 独立外部 origin snapshot 全字节、目标 tick/context/receipt、原尾延迟及重复性；worker 替换并非当前 Host 能力 |
@@ -76,6 +76,16 @@ Packed 原始字节对照通过；unique Pattern 的 1K/10K/40K 总和中位数�
 40K 为 33.319309 → 23.554490 s。但 uniform 40K 增加 6.74%，超过预设 5% guard，当前组合不保留。
 下一候选拆除附带的 namespace move，单独检验复用既有排序索引，另建源码/二进制/固定组；
 不能把这次大规模 named 改善描述为整个组合已经通过。
+
+`name-index-v2` 恢复原 namespace copy，仅保留 merge 已生成的名称索引。索引是调用期的声明位置，
+copy 和随后 stabilization 保持 stable-ID 顺序；重复检查和首错顺序不变，无跨调用缓存或借用逃逸。
+独立 overlay 的 Judgement 233 cases / 56,071 assertions 再次通过；这不是 fresh SDK 全套结果。
+`name-index-measure-v2` 新登记 36 个普通 allocator 进程，完整 Packed / 三种身份 raw 字节一致。
+unique 1K/10K/40K 总和中位数下降 2.65%/20.23%/32.52%，40K 为 33.709632 → 22.745950 s；
+其中 source prepare 6.403610 → 1.532572 s，Packed encode 11.960856 → 11.924411 s，
+decode 14.852734 → 9.286722 s。uniform 总和分别 -0.98%/-0.06%/+4.85%，均在预设 5% guard 内，
+各组 relative range 均小于 10%。因此保留单独名称索引，不保留 move。4.85% 上升必须保留，
+不描述为普通路径无变化；该准入仍不是原 15%/置信区间正式性能接受。
 
 ## 构建、版本与原门限
 
