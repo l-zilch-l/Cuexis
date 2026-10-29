@@ -87,3 +87,4 @@
 | [40K 实体真实 GPU 吞吐核验](r3/2026-10-29-r3-40k-physical-gpu-throughput.md) | `D:/Cuexis-redesign/out/verification-20261029/gpu-40k-v1/`；`pilot-v1/` 与 `measure-v1/` 整组作废保留，`fixture-v1.cpp/.exe`；有效 `pilot-v2/` 及固定 `measure-v2/`（12 进程 / 1440 帧）、全量原值、独立摘要、设备信息、source / library / binary 哈希及 `final-manifest.json` |
 
 | [1080P 入镜实体容量与 240 FPS 边界](r3/2026-10-29-r3-1080p-entity-capacity.md) | `D:/Cuexis-redesign/out/verification-20261029/gpu-1080p-scale-v1/`；107 个有效进程 / 150171 帧，32 点粗扫、三进程细测 / 补点、各三次 20 秒的持续组及所有更高档位失败；`audit.json`、`measurements.csv`、`capacity-1080p.png/.svg`、只读运行库绑定与 `final-manifest.json` |
+| [Runtime 外观重复查询优化](r3/2026-10-29-r3-runtime-appearance-lookup.md) | `D:/Cuexis-redesign/out/verification-20261029/runtime-presentation-v1/`；独立分段 Runtime 探针、固定 18 个普通 GPU 进程 / 2160 帧、逐组 raw logs / registration、四套定向回归、源码/对象/库/二进制绑定、原观察器无效动画记录及首次测试编译失败均保留；`audit.json`、`comparison-summary.json` |

@@ -28,6 +28,9 @@
   已确认仅渲染 1800 实体、静态 update / extract / render 1300 实体，各通过三次独立 20 秒。
   1900 render-only、1400 / 1500 static 有持续超预算，全部保留；此为本夹具的保守测试点，不是绝对容量或正式退出。
   已有分页共享状态、不可变准备复用、自然恢复锚点，以及 SHA 加速和有界编码器恢复点 `198ab96`。
+  P3 后续[Runtime 外观重复查询优化](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-29-r3-runtime-appearance-lookup.md)
+  已将同实体四次查询合为一次，固定 18 进程对照的 40K 静态 update 中位数由 11.414 降至 5.555 ms，
+  完整 cycle 约下降 7.8%；1K 候选 update 重复性仍超 15%，不作为正式接受或容量重测。
   最新[来源绑定实验](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-source-binding-experiment.md)用同一 Release 二进制比较 canonical SHA 与进程内 owning source binding。
   2048 requirements、33 条历史的 CPU 宿主首次请求到目标帧由 91.809 ms 降至 1.016 ms；129 条历史由 333.624 ms 降至 1.057 ms。
   这是固定本地诊断的点值，wire/导入验证保持原合同，candidate C++ 消费者须重建；R3 未退出、R3c 尚未进入，R4、设备与生产接受仍独立。

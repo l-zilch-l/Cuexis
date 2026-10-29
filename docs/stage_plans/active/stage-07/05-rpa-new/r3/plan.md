@@ -28,6 +28,9 @@
 未以平均 FPS 或补样改判；正常帧扩容仍是后续优化项，不作为 R3/R4 接受。
 
 R3b 的首个候选见[显式可信恢复提案](trusted-restore-candidate.md)，已按总计划 §8.2 允许的最终 archive 工厂入口实施并完成本地核验；当前候选预算未通过，R3 未退出，按 §12.2 交裁定包。不再要求重复授权，也不声称自然 checkpoint 已覆盖首次 Seek。
+2026-10-29 P3 [Runtime 外观重复查询优化](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-29-r3-runtime-appearance-lookup.md)
+保留一次实体定位代替四次查询，固定普通对照 40K 静态 update 下降约 51.3%，完整周期下降约 7.8%。
+四套相关定向回归通过；1K 候选 update 相对波动超原门，正式、容量及全矩阵接受不改判。
 2026-10-27 本地功能/兼容、反例、宏隔离和成本范围见[核验报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3a-recovery-and-prepare.md)。
 后续可信前缀候选另见 [R3b 核验报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3b-certified-prefix-and-cost.md)，不复用 R3a 的性能身份。
 后续 [空推进 reserve 限定尝试](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-empty-reserve-attempt.md)

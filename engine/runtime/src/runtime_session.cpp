@@ -306,26 +306,24 @@ void tickOverrideLifetimes(std::vector<world::OverrideToken>& tokens) noexcept {
         appearance.candidate.opacity = appearance.baseline.opacity;
         appearance.candidate.tint = appearance.baseline.tint;
         appearance.candidate.materialAssetId.assign(appearance.baseline.materialAssetId);
-        if (const auto* visible = state.resolver.resolvedValuePtr(
-                appearance.entity, world::PropertyId::RenderVisible)) {
+        const auto [visible, material, opacity, tint] =
+            world::detail::ResolverAccess::resolvedAppearance(state.resolver, appearance.entity);
+        if (visible) {
             if (const auto* value = std::get_if<bool>(visible)) {
                 appearance.candidate.visible = *value;
             }
         }
-        if (const auto* material = state.resolver.resolvedValuePtr(
-                appearance.entity, world::PropertyId::RenderMaterial)) {
+        if (material) {
             if (const auto* value = std::get_if<std::string>(material)) {
                 appearance.candidate.materialAssetId.assign(value->data(), value->size());
             }
         }
-        if (const auto* opacity = state.resolver.resolvedValuePtr(
-                appearance.entity, world::PropertyId::MaterialOpacity)) {
+        if (opacity) {
             if (const auto* value = std::get_if<double>(opacity)) {
                 appearance.candidate.opacity = *value;
             }
         }
-        if (const auto* tint = state.resolver.resolvedValuePtr(appearance.entity,
-                                                               world::PropertyId::MaterialTint)) {
+        if (tint) {
             if (const auto* value = std::get_if<core::Vec3>(tint)) {
                 appearance.candidate.tint = *value;
             }

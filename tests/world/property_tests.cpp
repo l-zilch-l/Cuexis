@@ -1,4 +1,5 @@
 #include <cuexis/world/property.hpp>
+#include <cuexis/world/resolver_access.hpp>
 #include <cuexis/world/world.hpp>
 
 #include <catch2/catch_approx.hpp>
@@ -296,6 +297,66 @@ TEST_CASE("Property resolver registers camera and appearance baselines without r
     CHECK(std::get<bool>(*resolver.resolvedValue(entity, PropertyId::RenderVisible)) == false);
     CHECK(std::get<std::string>(*resolver.resolvedValue(entity, PropertyId::RenderMaterial)) ==
           "mat.a");
+}
+
+TEST_CASE("Appearance reads preserve sparse baselines and layer fallback",
+          "[world][property][appearance][r3]") {
+    using cuexis::world::PropertyLayer;
+    using cuexis::world::detail::ResolverAccess;
+    const auto entity = static_cast<entt::entity>(37);
+    const auto camera = static_cast<entt::entity>(2);
+    cuexis::world::PropertyResolver resolver;
+    REQUIRE(resolver.registerBaseline(camera, PropertyId::CameraFovY, 60.0));
+    REQUIRE(resolver.registerBaseline(entity, PropertyId::RenderVisible, true));
+    REQUIRE(resolver.registerBaseline(entity, PropertyId::RenderMaterial, std::string{"initial"}));
+    REQUIRE(resolver.registerBaseline(entity, PropertyId::MaterialOpacity, 1.0));
+    REQUIRE(resolver.registerBaseline(entity, PropertyId::MaterialTint, Vec3{1, 1, 1}));
+    const auto checkRead = [&](entt::entity target) {
+        const auto values = ResolverAccess::resolvedAppearance(resolver, target);
+        constexpr std::array properties{PropertyId::RenderVisible, PropertyId::RenderMaterial,
+                                        PropertyId::MaterialOpacity, PropertyId::MaterialTint};
+        for (std::size_t i = 0; i < properties.size(); ++i)
+            CHECK(values[i] == resolver.resolvedValuePtr(target, properties[i]));
+        return values;
+    };
+    for (const auto target :
+         {camera, static_cast<entt::entity>(entt::null), static_cast<entt::entity>(38)})
+        for (const auto* value : checkRead(target))
+            CHECK(value == nullptr);
+    const auto sparse = static_cast<entt::entity>(13);
+    REQUIRE(resolver.registerBaseline(sparse, PropertyId::RenderMaterial, true));
+    REQUIRE(resolver.registerBaseline(sparse, PropertyId::MaterialOpacity, 0.5));
+    const auto sparseValues = checkRead(sparse);
+    CHECK(sparseValues[0] == nullptr);
+    CHECK(std::get<bool>(*sparseValues[1]));
+    CHECK(std::get<double>(*sparseValues[2]) == 0.5);
+    CHECK(sparseValues[3] == nullptr);
+    CHECK(std::get<bool>(*checkRead(entity)[0]));
+    const std::string material(256, 'm');
+    const std::array writes{
+        PropertyWrite{entity, PropertyId::RenderVisible, false},
+        PropertyWrite{entity, PropertyId::RenderMaterial, std::string_view{material}},
+        PropertyWrite{entity, PropertyId::MaterialOpacity, 0.25},
+        PropertyWrite{entity, PropertyId::MaterialTint, Vec3{0, 0.5F, 1}}};
+    resolver.beginFrame();
+    REQUIRE(resolver.applyLayer(writes, PropertyLayer::Behavior, true));
+    REQUIRE(resolver.finalize());
+    auto values = checkRead(entity);
+    CHECK_FALSE(std::get<bool>(*values[0]));
+    CHECK(std::get<std::string>(*values[1]) == material);
+    CHECK(std::get<double>(*values[2]) == 0.25);
+    CHECK(std::get<Vec3>(*values[3]) == Vec3{0, 0.5F, 1});
+    resolver.beginFrame();
+    values = checkRead(entity);
+    CHECK(std::get<bool>(*values[0]));
+    CHECK(std::get<std::string>(*values[1]) == "initial");
+    CHECK(std::get<double>(*values[2]) == 1.0);
+    CHECK(std::get<Vec3>(*values[3]) == Vec3{1, 1, 1});
+    const PropertyWrite invalid{entity, PropertyId::MaterialOpacity, 2.0};
+    const auto rejected =
+        resolver.applyLayer(std::span{&invalid, 1}, PropertyLayer::Behavior, true);
+    REQUIRE_FALSE(rejected);
+    CHECK(std::get<double>(*checkRead(entity)[2]) == 1.0);
 }
 
 TEST_CASE("Base property command replaces the captured baseline and increments revision",

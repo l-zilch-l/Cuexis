@@ -762,6 +762,20 @@ auto PropertyResolver::finalize() -> core::Result<void> {
     return {};
 }
 
+auto detail::ResolverAccess::resolvedAppearance(const PropertyResolver& resolver,
+                                                entt::entity entity) noexcept
+    -> std::array<const PropertyValue*, 4> {
+    const auto* entry = resolver.findEntry(entity);
+    if (!entry)
+        return {};
+    const auto value = [entry](PropertyId property) -> const PropertyValue* {
+        const auto& state = entry->properties[propertyIndex(property)];
+        return state.present ? &state.candidate : nullptr;
+    };
+    return {value(PropertyId::RenderVisible), value(PropertyId::RenderMaterial),
+            value(PropertyId::MaterialOpacity), value(PropertyId::MaterialTint)};
+}
+
 auto detail::ResolverAccess::prepareTransforms(PropertyResolver& resolver,
                                                std::vector<TransformWrite>& writes)
     -> core::Result<void> {
