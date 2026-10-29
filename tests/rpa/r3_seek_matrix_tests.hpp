@@ -3,7 +3,8 @@
 TEST_CASE("R3 Host Seek verifies origin state and target frame across cuts and hints",
           "[rpa][b5][seek-matrix]") {
     const auto records = GENERATE(33U, 129U);
-    const auto cutKind = GENERATE(0U, 1U, 2U); // early exact, final exact, partial
+    // Include partial targets inside the first long record, before any native anchor.
+    const auto cutKind = GENERATE(0U, 1U, 2U, 3U, 4U);
     const bool externalSource = GENERATE(false, true);
     const auto hintKind = GENERATE(0U, 1U, 2U); // none, checkpoint, uncertified copy
     test_support::SessionTestContent fixture;
@@ -52,7 +53,10 @@ TEST_CASE("R3 Host Seek verifies origin state and target frame across cuts and h
         GameplayReplay::fromBytes(*encoded, content, {encoded->size(), 10000, 10000000, true});
     REQUIRE(decoded);
     const auto archive = externalSource ? *decoded : *original;
-    const std::int64_t horizon = cutKind == 1 ? target : 1103 + 2 * (records / 2) + (cutKind == 2);
+    const std::int64_t horizon = cutKind == 1   ? target
+                                 : cutKind == 3 ? 902
+                                 : cutKind == 4 ? 5
+                                                : 1103 + 2 * (records / 2) + (cutKind == 2);
 
     // A distinct external owner has no native checkpoint index: the oracle takes origin replay.
     const auto* basis = GameplayAccess::content(content);
@@ -78,7 +82,8 @@ TEST_CASE("R3 Host Seek verifies origin state and target frame across cuts and h
         auto checkpoint =
             judgement::JudgementSession::checkpoint(source->archive, judgement::Tick{1103});
         REQUIRE(checkpoint);
-        if (hintKind == 1 && !externalSource)
+        if (hintKind == 1 && !externalSource && checkpoint->horizon <= judgement::Tick{horizon} &&
+            checkpoint->cut.completeRecords <= oracleCut.completeRecords)
             expectedRestoredRecords = checkpoint->cut.completeRecords;
         if (hintKind == 2) {
             // Rebuilding the public carrier deliberately omits its private certificate.
@@ -92,7 +97,7 @@ TEST_CASE("R3 Host Seek verifies origin state and target frame across cuts and h
     const auto requestStart = std::chrono::steady_clock::now();
     auto cut = host->replayCut(archive, {horizon});
     REQUIRE(cut);
-    CHECK(cut->partialHorizon.has_value() == (cutKind == 2));
+    CHECK(cut->partialHorizon.has_value() == (cutKind >= 2));
     auto sought = host->seek(archive, *cut, {horizon}, clock, checkpoints);
     INFO((sought
               ? ""

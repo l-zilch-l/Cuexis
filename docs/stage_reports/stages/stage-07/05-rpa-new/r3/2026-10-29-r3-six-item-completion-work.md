@@ -196,6 +196,46 @@ source prepare + Packed encode + decode 总和 6.740689 → 3.731611 s，下降 
 最终 source prepare 中位数 1.687775 → 0.319911 s，下降约 81.05%；总和
 6.446277 → 3.697551 s，下降约 42.64%。因此保留这两处扫描消除，不扩展为持久资源缓存。
 
+## 首条长记录内部 Seek 的遗漏与局部修复
+
+此前 CPU 矩阵的 partial 目标在首条 H=1103 记录之后，不能覆盖该记录内部的成本。
+新增 H=5（活动状态）及 H=902（已产生 miss）代表点；正常 Host 流程不增加任何 advance。
+首个 `partial-seek-measure-v1` 在暂停前错误地回调到旧时刻，触发正常倒退时钟拒绝，尚未进入
+Seek，保留失败组。v2 修正为按当前时刻暂停后再发起回溯，另行登记 10 个普通 allocator 进程，
+每场景两个进程、每进程首次及两次重复请求；计时从 replayCut 前至 CPU test renderer present 返回。
+
+129 条记录、owning source、Packed rev4 下，40K H=5 的 request-to-present 为 53.520–59.192 ms，
+H=902 为 573.133–647.635 ms；final H=1231 为 2.113–2.972 ms。source setup、archive 与原点
+oracle 在计时外，不能将 setup 约 6.28–6.50 s 混入 Seek，亦不能把 final 快点泛化为任意目标。
+public constructor 重建的 unsealed archive 不带 native 索引，作为原点 oracle；每个请求都比较
+完整 `sameSnapshot`。全部有效。独立只读审阅核对绑定、进程、clock、cut 和口径，未发现使该结论
+失效的问题。该组仍不是 GPU 或正式性能接受。
+
+`partial-seek-phase-measure-v1` 只取 40K H=5/902 各一个观察进程、三次请求。探针插在源码副本中，
+使用独立类型避免跨 TU 混用 inline 观察器定义，不进入产品。native prepare 约 9–11 us；
+H=5 的 advance 约 57–64 ms，其中 80K timer 调用约 55–62 ms。H=902 的 advance 约
+593–638 ms，其中 160K timer 约 163–170 ms、ledger 约 399–441 ms，Fold 约 0.7 ms。
+这些含时钟开销的分段只用于归因，不能替代普通时间。
+
+修复不新增恢复状态：timer 按需构造 owning OriginId，保留 activation/windowOpen 后的 epsilon
+逻辑；hardDeadline 无 Pending phase 时仍执行 endOwnership。有 Pending 的分支继续 failPending，
+增加一次小型 phase 扫描。ledger 的排序比较改用局部 rank 与引用 tuple，避免每次比较复制
+OriginId / RequirementIdentity，排序键及事实拥有型身份不变。独立审阅确认同步消费与比较等价性。
+
+`timer-ledger-candidate-v1` 的 Judgement 235 cases / 56,126 assertions、两版 Host 各 62 cases
+通过；Host 分别为 54,531 / 54,612 assertions，含完整 CPU 60 组合。不同断言数保留，
+不据此声称执行轨迹完全相同；分配失败枚举等测试会随被消除的分配机会变化。
+`timer-ledger-measure-v1` 固定 18 个普通进程：四个 partial 场景各两对 AB/BA，40K final 一对 guard；
+每个进程三次请求。每进程先取三次请求中位数，再汇总进程中位数，40K H=5 为
+57.3115 → 21.9735 ms（-61.66%），H=902 为 607.931 → 270.5975 ms（-55.49%）；
+1K 两点分别 -37.40% / -55.27%，40K final 为 2.441 → 2.424 ms，通过预设 guard。
+
+首次请求单独保留：候选 40K H=5 为 18.414 / 18.710 ms，重复为 21.935–22.833 ms；
+H=902 首次 230.347 / 238.367 ms，重复 264.213–299.831 ms。不能选择首次快点宣布 20 ms 通过。
+完整 snapshot wire 的大小和 SHA-256 全部一致，partial raw 完整字节逐块一致；wire 编码在三次
+计时后执行。final 129 记录 wire 达 3,532,762,976 bytes，不是 40K 内存接受。
+因此保留局部修复，剩余长 record 成本及原门继续开放；R3c 尚未实施。
+
 ## Snapshot 组件池借用候选撤回
 
 `pool-candidate-v1` 首次探针因未使用的 SDL include 缺少搜索路径而编译失败，未进入测量；

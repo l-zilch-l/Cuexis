@@ -439,7 +439,9 @@ struct ExecutionKernel::Impl final {
     void timer(RuntimeState& d, std::vector<FactDescriptor>& facts, const PreparedTimerKey& timer,
                std::size_t i, std::span<const AdmittedObservation> inputs) const {
         const auto ri = graph().requirements.begin() + static_cast<std::ptrdiff_t>(i);
-        const OriginId origin = TimerOrigin{timer.tick, ri->identity};
+        // Activation/window timers often publish no fact; construct an owning origin only
+        // when a fact or observer actually needs one. All consumers copy it synchronously.
+        const auto origin = [&]() -> OriginId { return TimerOrigin{timer.tick, ri->identity}; };
         if (timer.kind == PreparedTimerKind::activation) {
             d.activeRequirements.push_back(i);
             for (const auto& p : ri->phases) {
@@ -460,9 +462,9 @@ struct ExecutionKernel::Impl final {
                 });
             if (owned == d.projection.ownership.end() || interrupted ||
                 owned->acquiredTick > ri->timing->body->start) {
-                failPending(d, facts, i, origin);
+                failPending(d, facts, i, origin());
             } else {
-                outcome(d, facts, i, PhaseKind::body, Outcome::hit, origin);
+                outcome(d, facts, i, PhaseKind::body, Outcome::hit, origin());
                 if (std::none_of(ri->phases.begin(), ri->phases.end(),
                                  [](const auto& p) { return p.kind == PhaseKind::tail; })) {
                     endOwnership(d, i);
@@ -485,9 +487,9 @@ struct ExecutionKernel::Impl final {
                 if (observer(*ri)) {
                     setPhase(d, i, timer.phase, KernelPhaseState::Expired);
                 } else if (timer.phase == PhaseKind::head) {
-                    failPending(d, facts, i, origin);
+                    failPending(d, facts, i, origin());
                 } else {
-                    outcome(d, facts, i, timer.phase, Outcome::miss, origin);
+                    outcome(d, facts, i, timer.phase, Outcome::miss, origin());
                     endOwnership(d, i);
                 }
             }
@@ -497,8 +499,11 @@ struct ExecutionKernel::Impl final {
                 if (pendingPhase(d, i, rootPhase(*ri))) {
                     setPhase(d, i, rootPhase(*ri), KernelPhaseState::Expired);
                 }
+            } else if (std::any_of(ri->phases.begin(), ri->phases.end(),
+                                   [&](const auto& p) { return pendingPhase(d, i, p.kind); })) {
+                failPending(d, facts, i, origin());
             } else {
-                failPending(d, facts, i, origin);
+                endOwnership(d, i);
             }
         }
         if ((timer.kind == PreparedTimerKind::activation ||
@@ -511,9 +516,9 @@ struct ExecutionKernel::Impl final {
                 if (observer(*ri)) {
                     setPhase(d, i, timer.phase, KernelPhaseState::Observed);
                     d.projection.observers.push_back(
-                        {ri->identity, origin, timer.tick, {}, false, true});
+                        {ri->identity, origin(), timer.tick, {}, false, true});
                 } else if (available(d, i, {})) {
-                    success(d, facts, i, origin, timer.tick, {}, {});
+                    success(d, facts, i, origin(), timer.tick, {}, {});
                 }
             }
         }
@@ -962,8 +967,10 @@ struct ExecutionKernel::Impl final {
             return v.phase ? static_cast<unsigned>(*v.phase) + 1 : 0U;
         };
         std::sort(facts.begin(), facts.end(), [&](const auto& a, const auto& b) {
-            return std::tuple{a.origin, rank(a), a.kind, a.requirement} <
-                   std::tuple{b.origin, rank(b), b.kind, b.requirement};
+            const auto aRank = rank(a);
+            const auto bRank = rank(b);
+            return std::tie(a.origin, aRank, a.kind, a.requirement) <
+                   std::tie(b.origin, bRank, b.kind, b.requirement);
         });
         std::optional<OriginId> previous;
         std::uint64_t commit = 0, local = 0;

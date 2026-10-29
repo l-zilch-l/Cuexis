@@ -40,7 +40,9 @@
   Pattern 编译复用、外观索引提示和新编码缓存因固定对照未达预设收益/保护条件已撤回；
   名称索引、Packed 字典查找及内部 identity 投影复用分别通过独立诊断并提交；
   OpenGL 普通提交的同步诊断读回已分离，烟雾测试/像素探针显式开启，最终完整矩阵仍待执行。
-  Host Seek 已有 CPU 36 组合与实际 GPU 96 组合的功能证据；原性能门及最终完整矩阵仍未关闭。
+  Host Seek 的 CPU 功能矩阵扩为 60 组合，新增首条长记录内部 H=5/902，实际 GPU 仍为 96 组合。
+  这两处目标的 timer/ledger 无用身份复制已消除；40K 请求到 CPU present 的进程中位数分别
+  57.312 → 21.974 ms、607.931 → 270.598 ms，仍有适用请求超过 20 ms。原性能门及最终完整矩阵未关闭。
   最新[来源绑定实验](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-source-binding-experiment.md)用同一 Release 二进制比较 canonical SHA 与进程内 owning source binding。
   2048 requirements、33 条历史的 CPU 宿主首次请求到目标帧由 91.809 ms 降至 1.016 ms；129 条历史由 333.624 ms 降至 1.057 ms。
   这是固定本地诊断的点值，wire/导入验证保持原合同，candidate C++ 消费者须重建；R3 未退出、R3c 尚未进入，R4、设备与生产接受仍独立。

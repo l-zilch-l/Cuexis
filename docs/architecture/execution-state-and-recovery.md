@@ -28,6 +28,10 @@
 `SharedSequence::update()` 先在局部值上运行修改回调，再分离并发布；回调抛异常不发布该修改。
 相等比较仍比较精确值，只在共享同一不可变目录或页时跳过重复遍历。
 encoder 的 `storageOwner()` 会保活目录，后续写入因此必须分离。
+
+timer 仅在产生事实或 observer 时构造拥有型 origin，消费者同步复制，不保存对 timer 或图的借用。
+hard deadline 即使没有 Pending phase 也继续清理 ownership。ledger 比较只借用本次排序元素的键，
+保持 origin / phase rank / kind / requirement 的原比较顺序；事实仍拥有身份，借用不跨比较调用。
 需要平铺数据时显式物化，调用方不得把分页状态当成 `std::vector` 的连续存储。
 
 共享页和历史引用可能延长内存存活期。锚点数量有界不等于总内存峰值已验收，
