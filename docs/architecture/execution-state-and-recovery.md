@@ -104,6 +104,11 @@ namespace merge 在原重复检查中生成的名称排序索引可供本次组�
 索引保存声明位置；复制到 graph 及 stable-ID stabilization 必须保持位置一致，不能在其有效期内
 重排声明或保留到下一次组装。按名称定位后仍检查声明 kind，引用与 capability 校验次序不变。
 
+Packed Writer 已排序的 Pattern 字典使用二分定位等价区间，再以完整相等性选择首个精确匹配。
+排序比较可省略字段，不能直接把 lower_bound 的首项当作相等；单项字典保留无排序 scratch 的查找。
+模型验证复用本次重复名称检查的名称/kind 索引；索引借用模型自有字符串，仅在不修改声明表的
+验证调用内有效，不能据此跳过 typed-record 存在性或改变首错顺序。
+
 content-only completeness 通过私有 `gameplay_closure.hpp` collector 显式传入空 contributions，
 不再为删除 contributions 而复制整张 `CanonicalGameplayGraph`。
 公开 full closure 入口仍包含原 contributions，两者共享同一内容遍历与精确 revision 比较、排序和去重。

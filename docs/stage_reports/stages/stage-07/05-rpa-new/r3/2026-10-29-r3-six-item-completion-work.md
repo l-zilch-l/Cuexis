@@ -12,7 +12,7 @@
 
 | 项目 | 本批实施/调查 | 尚需完成的核验 |
 | --- | --- | --- |
-| P1 Packed / re-prepare | Pattern 编译复用已撤回；单独复用名称索引通过固定诊断保护条件，40K unique 总耗时下降 32.52% | Packed 编码仍约 11.92 s，另开候选处理已确认的重复扫描；immutable chart 投影尚未实施 |
+| P1 Packed / re-prepare | 名称索引与随后独立 Packed 查找候选分别通过固定诊断保护条件；后者 40K unique 总耗时 23.58 → 7.09 s | identity 投影仍重复生成；最终 fresh 回归与原端到端 load 门未完成 |
 | P2 准备热点 | 保留名称索引，消除逐 requirement 的 namespace 全表查找；40K unique source prepare 6.404 → 1.533 s | identity/timer/resource 不因这次局部改善而宣布完成 |
 | P3 update / Snapshot | 保留先前四属性合并查找和 touched 优化；新增 resolver 索引提示因真实 GPU 保护条件失败而撤回 | 最终源码完整矩阵；extract 仍有可调查成本，不重做 R2 表示 |
 | P4 编码与真实内存 | 第二次使用 admission 和测量预遍历计划均无实际峰值收益，已放弃，恢复旧独立字节缓存；已取得至 40K 的实际峰值及最终释放 | 本地轨迹不替代原 caps 或历史 R4 身份参考；编码输出本身占用及同时持有范围必须明示 |
@@ -86,6 +86,16 @@ unique 1K/10K/40K 总和中位数下降 2.65%/20.23%/32.52%，40K 为 33.709632 
 decode 14.852734 → 9.286722 s。uniform 总和分别 -0.98%/-0.06%/+4.85%，均在预设 5% guard 内，
 各组 relative range 均小于 10%。因此保留单独名称索引，不保留 move。4.85% 上升必须保留，
 不描述为普通路径无变化；该准入仍不是原 15%/置信区间正式性能接受。
+
+`packed-lookup-v1` 隔离 Packed 字典查找及重复名称索引复用，两版共同使用已保留的 namespace
+索引与原 prepare/codec，common 库冻结。独立审阅核实了模型字符串生命周期、首错顺序和
+Pattern 排序忽略字段时的完整相等性要求。新增字典顺序/重复项/排序等价非法项测试；新旧两版
+各 51 cases / 5,641 assertions 通过。`packed-lookup-measure-v1` 固定 36 个新进程完成，
+Packed 和三种身份的完整 raw 字节一致；unique 1K/10K/40K 总和中位数分别下降
+3.09%/39.15%/69.92%，40K 为 23.580411 → 7.091884 s。其中 Packed encode
+12.427108 → 1.797437 s，decode 9.488453 → 3.723324 s；source prepare 未被本候选修改。
+uniform 总和 +4.06%/-5.04%/-2.20%，通过预设 5% guard；各组 relative range 最大 11.27%，
+原始变动完整保留。该候选保留；不同登记组不能直接相加声称连续基线收益或正式接受。
 
 ## 构建、版本与原门限
 

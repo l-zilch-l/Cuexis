@@ -465,6 +465,51 @@ TEST_CASE("Capsule named and unused definitions survive canonical dictionary reu
               .value() == *bytes);
 }
 
+TEST_CASE("Capsule requirement selects its exact Pattern from a canonical dictionary",
+          "[capsule][roundtrip][definitions]") {
+    CapsuleFixture f;
+    const auto prepared = f.prepare();
+    auto before = f.request.assembly.sources[0].document.requirements[0].pattern;
+    auto after = before;
+    before.root.atomRef = "atom.aaa";
+    after.root.atomRef = "atom.zzz";
+    std::vector patterns{after, before, before};
+    const auto bytes = capsule::encode({f.chart, prepared, f.owners, f.profiles, patterns});
+    REQUIRE(bytes);
+    const auto decoded = capsule::decode(*bytes, f.context());
+    REQUIRE(decoded);
+    CHECK(decoded->patterns.size() == 3);
+    CHECK(decoded->gameplay.assembled().prepared == prepared.assembled().prepared);
+    CHECK(decoded->gameplay.assembled().graph.requirements[0].pattern ==
+          prepared.assembled().graph.requirements[0].pattern);
+    std::reverse(patterns.begin(), patterns.end());
+    const auto permuted = capsule::encode({f.chart, prepared, f.owners, f.profiles, patterns});
+    REQUIRE(permuted);
+    CHECK(*permuted == *bytes);
+    const auto reencoded =
+        capsule::encode({decoded->chart, decoded->gameplay, decoded->owners, decoded->profiles,
+                         decoded->patterns, decoded->measures});
+    REQUIRE(reencoded);
+    CHECK(*reencoded == *bytes);
+}
+
+TEST_CASE("Capsule ordering-equivalent Patterns retain the original validation error",
+          "[capsule][definitions][hostile]") {
+    CapsuleFixture f;
+    const auto prepared = f.prepare();
+    auto invalid = f.request.assembly.sources[0].document.requirements[0].pattern;
+    invalid.matchPolicy = static_cast<MatchPolicy>(255);
+    const std::vector patterns{invalid};
+    const auto bytes = capsule::encode({f.chart, prepared, f.owners, f.profiles, patterns});
+    REQUIRE_FALSE(bytes);
+    CHECK(bytes.error().code() == "packed.requirements.invalid");
+    CHECK(bytes.error().message() == "set must be strictly sorted and unique");
+    const auto& context = bytes.error().context();
+    REQUIRE(context.size() == 1);
+    CHECK(context[0].key == "fieldPath");
+    CHECK(context[0].value == "GPD0.patterns");
+}
+
 TEST_CASE("Capsule file and memory bridge replace only validated artifacts",
           "[capsule][file][atomic]") {
     CapsuleFixture f;

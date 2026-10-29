@@ -1505,6 +1505,18 @@ auto findIndex(const std::vector<T>& rows, F predicate, std::string_view path) -
     require(it != rows.end(), path, "dangling table reference");
     return u32(static_cast<std::size_t>(it - rows.begin()));
 }
+template <typename T, typename Less>
+auto findSortedIndex(const std::vector<T>& rows, const T& wanted, Less less, std::string_view path)
+    -> std::uint32_t {
+    // The single-definition path needs no ordering comparisons or traversal scratch.
+    if (rows.size() < 2)
+        return findIndex(rows, [&wanted](const auto& row) { return row == wanted; }, path);
+    const auto [first, last] = std::equal_range(rows.begin(), rows.end(), wanted, less);
+    // Ordering can omit a field. Retain the first exact match within its equivalent range.
+    const auto found = std::find(first, last, wanted);
+    require(found != last, path, "dangling table reference");
+    return u32(static_cast<std::size_t>(found - rows.begin()));
+}
 // Prepared Writer graphs are canonical; the Reader verifies declaration order
 // before these lookups. Never search an unvalidated physical input table here.
 auto findDeclaration(const StableDeclarationId& id, const Model& m) -> const MergedDeclaration* {
@@ -1588,7 +1600,10 @@ void validate(Model& m, chart::PackedChartLimits limits,
     }
     require(features == derived, "META.requiredFeatures",
             "META and Gameplay feature closures differ");
-    std::set<std::string> names, patternNames, measureNames;
+    // The model owns every name for this entire validation call. This local view index
+    // also retains kind, so later definition checks need not scan the declaration table.
+    std::map<std::string_view, DeclarationKind, std::less<>> names;
+    std::set<std::string> patternNames, measureNames;
     const auto definitionNeeds = [&g](const RequiredRefs& required) {
         refsValid(required);
         for (const auto& feature : required.features) {
@@ -1649,7 +1664,7 @@ void validate(Model& m, chart::PackedChartLimits limits,
     for (const auto& r : g.requirements)
         requirementsByDeclaration.emplace(r.stableId, &r);
     for (const auto& d : g.mergedNamespace.declarations) {
-        require(!d.name.empty() && names.insert(d.name).second, "mergedDeclarations.name",
+        require(!d.name.empty() && names.emplace(d.name, d.kind).second, "mergedDeclarations.name",
                 "conflicting declaration name");
         ordered(d.references, "mergedDeclarations.references");
         ordered(d.requiredFeatureIds, "mergedDeclarations.features");
@@ -1690,19 +1705,13 @@ void validate(Model& m, chart::PackedChartLimits limits,
         require(exists, "mergedDeclarations.kind", "declaration does not locate its typed record");
     }
     for (const auto& p : patternNames) {
-        require(std::any_of(g.mergedNamespace.declarations.begin(),
-                            g.mergedNamespace.declarations.end(),
-                            [&p](const auto& d) {
-                                return d.kind == DeclarationKind::patternDefinition && d.name == p;
-                            }),
+        const auto found = names.find(p);
+        require(found != names.end() && found->second == DeclarationKind::patternDefinition,
                 "patterns.id", "named Pattern is not declared");
     }
     for (const auto& w : measureNames) {
-        require(std::any_of(g.mergedNamespace.declarations.begin(),
-                            g.mergedNamespace.declarations.end(),
-                            [&w](const auto& d) {
-                                return d.kind == DeclarationKind::measureDefinition && d.name == w;
-                            }),
+        const auto found = names.find(w);
+        require(found != names.end() && found->second == DeclarationKind::measureDefinition,
                 "measures.id", "named Measure is not declared");
     }
     ordered(
@@ -1879,8 +1888,7 @@ auto makeModel(const EncodeRequest& request, chart::PackedChartLimits limits) ->
         if (std::find(m.owners.begin(), m.owners.end(), owner->entity) == m.owners.end()) {
             m.owners.push_back(owner->entity);
         }
-        ix.pattern = findIndex(
-            m.patterns, [&r](const auto& p) { return p == r.pattern; }, "requirements.pattern");
+        ix.pattern = findSortedIndex(m.patterns, r.pattern, patternLess, "requirements.pattern");
         const auto measureId = namedMeasure(r, m);
         ix.measure = findIndex(
             m.measures,
