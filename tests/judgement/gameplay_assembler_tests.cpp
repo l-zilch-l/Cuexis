@@ -1184,4 +1184,57 @@ TEST_CASE("S7A-3 resource plan rejects incomplete occupying declarations",
     }
 }
 
+TEST_CASE("Named pattern lookup preserves kind and merge errors after namespace movement",
+          "[judgement][assembler][namespace]") {
+    Fixture fixture;
+    auto request = fixture.request();
+    auto& document = request.sources.front().document;
+    document.requirements.front().pattern.patternId = "zz.pattern";
+    document.declarations.push_back(testing::testDeclaration(
+        judgement::DeclarationKind::patternDefinition, "zz.pattern", 1000));
+    document.declarations.push_back(testing::testDeclaration(
+        judgement::DeclarationKind::patternDefinition, "aa.pattern", 1001));
+    std::reverse(document.declarations.begin(), document.declarations.end());
+
+    SECTION("name order differs from stable ID and input order") {
+        auto assembled = judgement::assembleGameplay(request);
+        REQUIRE(assembled);
+        CHECK(document.declarations.front().stableId.declarationOrdinal == 1001);
+        CHECK(assembled->chart.canonicalBytes().bytes() ==
+              judgement::makeChartIdentity(assembled->graph).canonicalBytes().bytes());
+        CHECK(assembled->content.canonicalBytes().bytes() ==
+              judgement::makeContentIdentity(assembled->graph).canonicalBytes().bytes());
+        CHECK(assembled->prepared.canonicalBytes().bytes() ==
+              judgement::makePreparedIdentity(assembled->graph, request.identityDeclarations)
+                  .canonicalBytes()
+                  .bytes());
+    }
+    SECTION("the same name in another declaration kind is not a pattern") {
+        auto named = std::find_if(document.declarations.begin(), document.declarations.end(),
+                                  [](const auto& d) { return d.localName == "zz.pattern"; });
+        REQUIRE(named != document.declarations.end());
+        named->kind = judgement::DeclarationKind::resourceRecord;
+        auto rejected = judgement::assembleGameplay(request);
+        REQUIRE_FALSE(rejected);
+        expectRejection(rejected.error(), "judgement.merge.reference_dangling", "invalid_relation",
+                        "requirements[0].pattern");
+    }
+    SECTION("a missing name beyond the final entry stays dangling") {
+        document.requirements.front().pattern.patternId = "zzzz.missing";
+        auto rejected = judgement::assembleGameplay(request);
+        REQUIRE_FALSE(rejected);
+        expectRejection(rejected.error(), "judgement.merge.reference_dangling", "invalid_relation",
+                        "requirements[0].pattern");
+    }
+    SECTION("duplicate merge names precede a dangling pattern") {
+        document.requirements.front().pattern.patternId = "missing";
+        document.declarations.push_back(testing::testDeclaration(
+            judgement::DeclarationKind::patternDefinition, "aa.pattern", 1002));
+        auto rejected = judgement::assembleGameplay(request);
+        REQUIRE_FALSE(rejected);
+        expectRejection(rejected.error(), "judgement.merge.declaration_name_duplicate",
+                        "invalid_relation", "localName");
+    }
+}
+
 } // namespace

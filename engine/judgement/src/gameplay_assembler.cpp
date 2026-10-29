@@ -43,6 +43,7 @@
 #include <memory>
 #include <optional>
 #include <set>
+#include <span>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -968,12 +969,17 @@ template <typename Value> void sortUnique(std::vector<Value>& values) {
     return found != merged.declarations.end() && found->stableId == id ? &*found : nullptr;
 }
 
-[[nodiscard]] auto findDeclarationByName(const MergedNamespace& merged, DeclarationKind kind,
+[[nodiscard]] auto findDeclarationByName(const MergedNamespace& merged,
+                                         std::span<const std::size_t> byName, DeclarationKind kind,
                                          std::string_view name) -> const MergedDeclaration* {
-    for (const auto& declaration : merged.declarations) {
-        if (declaration.kind == kind && declaration.name == name) {
+    const auto found = std::lower_bound(byName.begin(), byName.end(), name,
+                                        [&](std::size_t index, std::string_view key) {
+                                            return merged.declarations[index].name < key;
+                                        });
+    if (found != byName.end()) {
+        const auto& declaration = merged.declarations[*found];
+        if (declaration.name == name && declaration.kind == kind)
             return &declaration;
-        }
     }
     return nullptr;
 }
@@ -1074,7 +1080,13 @@ struct DeclarationInput final {
     std::string enclosingDocumentId;
 };
 
-[[nodiscard]] auto mergeNamespace(const AssemblyRequest& request) -> core::Result<MergedNamespace> {
+struct MergedNamespaceBuild final {
+    MergedNamespace value;
+    std::vector<std::size_t> byName;
+};
+
+[[nodiscard]] auto mergeNamespace(const AssemblyRequest& request)
+    -> core::Result<MergedNamespaceBuild> {
     std::vector<DeclarationInput> inputs;
     for (const auto& source : request.sources) {
         for (const auto& declaration : source.document.declarations) {
@@ -1148,8 +1160,9 @@ struct DeclarationInput final {
     }
     //  A duplicate name is rejected, never merged (P1-02). The comparison is over names, not over
     //  the array, so the verdict cannot depend on the order the documents arrived in.
+    std::vector<std::size_t> byName;
     {
-        std::vector<std::size_t> byName(merged.declarations.size());
+        byName.resize(merged.declarations.size());
         for (std::size_t index = 0; index < byName.size(); ++index) {
             byName[index] = index;
         }
@@ -1224,7 +1237,7 @@ struct DeclarationInput final {
         sortUnique(declaration.requiredFeatureIds);
         sortUnique(declaration.requiredCapabilityIds);
     }
-    return merged;
+    return MergedNamespaceBuild{std::move(merged), std::move(byName)};
 }
 
 //  ---------------------------------------------------------------------------------------------
@@ -1457,7 +1470,8 @@ struct PatternDeclarationShape final {
 }
 
 [[nodiscard]] auto validateRequirement(const CanonicalGameplayGraph& graph,
-                                       const RequirementRecord& requirement, std::size_t index)
+                                       const RequirementRecord& requirement, std::size_t index,
+                                       std::span<const std::size_t> declarationNames)
     -> core::Result<void> {
     const std::string path =
         std::string{codes::kRequirementsPath} + "[" + std::to_string(index) + "]";
@@ -1540,7 +1554,8 @@ struct PatternDeclarationShape final {
             "the Pattern containment gate is incomplete and the requirement cannot be published"));
     }
     if (!requirement.pattern.patternId.empty() &&
-        findDeclarationByName(graph.mergedNamespace, DeclarationKind::patternDefinition,
+        findDeclarationByName(graph.mergedNamespace, declarationNames,
+                              DeclarationKind::patternDefinition,
                               requirement.pattern.patternId) == nullptr) {
         return core::unexpected(declarationInvalidError(
             codes::kReferenceDanglingCode, codes::kGraphSection,
@@ -1728,7 +1743,8 @@ struct PatternDeclarationShape final {
     return {};
 }
 
-[[nodiscard]] auto validateContentDeclarations(const CanonicalGameplayGraph& graph)
+[[nodiscard]] auto validateContentDeclarations(const CanonicalGameplayGraph& graph,
+                                               std::span<const std::size_t> declarationNames)
     -> core::Result<void> {
     for (std::size_t index = 0; index < graph.judgementDomains.size(); ++index) {
         const auto checked = validateJudgementDomain(graph.judgementDomains[index]);
@@ -1782,7 +1798,8 @@ struct PatternDeclarationShape final {
         }
     }
     for (std::size_t index = 0; index < graph.resources.size(); ++index) {
-        if (findDeclarationByName(graph.mergedNamespace, DeclarationKind::resourceRecord,
+        if (findDeclarationByName(graph.mergedNamespace, declarationNames,
+                                  DeclarationKind::resourceRecord,
                                   graph.resources[index].ref.resourceId) == nullptr) {
             return core::unexpected(declarationInvalidError(
                 codes::kDeclarationIncompleteCode, codes::kMergeSection,
@@ -1791,7 +1808,8 @@ struct PatternDeclarationShape final {
         }
     }
     for (std::size_t index = 0; index < graph.judgementDomains.size(); ++index) {
-        if (findDeclarationByName(graph.mergedNamespace, DeclarationKind::judgementDomain,
+        if (findDeclarationByName(graph.mergedNamespace, declarationNames,
+                                  DeclarationKind::judgementDomain,
                                   graph.judgementDomains[index].domainId) == nullptr) {
             return core::unexpected(declarationInvalidError(
                 codes::kDeclarationIncompleteCode, codes::kMergeSection,
@@ -1801,7 +1819,8 @@ struct PatternDeclarationShape final {
         }
     }
     for (std::size_t index = 0; index < graph.solverProfiles.size(); ++index) {
-        if (findDeclarationByName(graph.mergedNamespace, DeclarationKind::solverProfile,
+        if (findDeclarationByName(graph.mergedNamespace, declarationNames,
+                                  DeclarationKind::solverProfile,
                                   graph.solverProfiles[index].solverId) == nullptr) {
             return core::unexpected(declarationInvalidError(
                 codes::kDeclarationIncompleteCode, codes::kMergeSection,
@@ -1819,7 +1838,8 @@ struct PatternDeclarationShape final {
         }
     }
     for (std::size_t index = 0; index < graph.requirements.size(); ++index) {
-        const auto checked = validateRequirement(graph, graph.requirements[index], index);
+        const auto checked =
+            validateRequirement(graph, graph.requirements[index], index, declarationNames);
         if (!checked.has_value()) {
             return core::unexpected(checked.error());
         }
@@ -2177,7 +2197,7 @@ auto assembleGameplay(const AssemblyRequest& request) -> core::Result<AssembledG
     measurement.reset();
     measurement.emplace(internal::pd::Stage::gameplayAssemblyNamespaceMerge);
 #endif
-    const auto merged = mergeNamespace(request);
+    auto merged = mergeNamespace(request);
     if (!merged.has_value()) {
         return core::unexpected(merged.error());
     }
@@ -2198,7 +2218,8 @@ auto assembleGameplay(const AssemblyRequest& request) -> core::Result<AssembledG
     graph.declaredCapabilities = request.declaredCapabilities;
     graph.declaredFeatures = request.declaredFeatures;
     graph.closureContributions = request.closureContributions;
-    graph.mergedNamespace = merged.value();
+    // Merge and stabilization preserve stable-ID order; the existing name index stays valid.
+    graph.mergedNamespace = std::move(merged->value);
     graph.sourceClosure.sourceDocumentIds.reserve(request.sources.size());
     for (const auto& source : request.sources) {
         graph.sourceClosure.sourceDocumentIds.push_back(source.document.sourceDocumentId);
@@ -2230,7 +2251,7 @@ auto assembleGameplay(const AssemblyRequest& request) -> core::Result<AssembledG
     measurement.reset();
     measurement.emplace(internal::pd::Stage::gameplayAssemblyDeclarations);
 #endif
-    const auto declarationsChecked = validateContentDeclarations(graph);
+    const auto declarationsChecked = validateContentDeclarations(graph, merged->byName);
     if (!declarationsChecked.has_value()) {
         return core::unexpected(declarationsChecked.error());
     }

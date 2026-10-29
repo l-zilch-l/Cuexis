@@ -70,6 +70,13 @@
 回退只撤回本批无收益候选，保留 `4e9cea6` 的已验证 Runtime/world 优化，以及本批 Seek 覆盖、TLS
 修复、格式债清理和恢复输出可编辑/版本测试。新方向必须有新源码、登记和固定对照，不追加旧组。
 
+`name-index-v1` 是随后独立构建的 namespace 名称索引 + 内部 namespace move 组合，定向 Judgement
+233 cases / 56,071 assertions 通过。`name-index-measure-v1` 的 36 个新进程完成，所有身份和
+Packed 原始字节对照通过；unique Pattern 的 1K/10K/40K 总和中位数下降 2.19%/28.44%/29.31%，
+40K 为 33.319309 → 23.554490 s。但 uniform 40K 增加 6.74%，超过预设 5% guard，当前组合不保留。
+下一候选拆除附带的 namespace move，单独检验复用既有排序索引，另建源码/二进制/固定组；
+不能把这次大规模 named 改善描述为整个组合已经通过。
+
 ## 构建、版本与原门限
 
 所有新构建串行、BelowNormal、affinity 3，由既有 Windows Job 包装器约束后代。
