@@ -71,12 +71,15 @@ TEST_CASE("R3 Host Seek verifies origin state and target frame across cuts and h
     auto expectedBytes = judgement::encodeSnapshot(*expected);
     REQUIRE(expectedBytes);
     std::vector<GameplayCheckpoint> checkpoints;
+    std::uint64_t expectedRestoredRecords{};
     if (hintKind) {
         const auto* source = GameplayAccess::replay(archive);
         REQUIRE(source);
         auto checkpoint =
             judgement::JudgementSession::checkpoint(source->archive, judgement::Tick{1103});
         REQUIRE(checkpoint);
+        if (hintKind == 1 && !externalSource)
+            expectedRestoredRecords = checkpoint->cut.completeRecords;
         if (hintKind == 2) {
             // Rebuilding the public carrier deliberately omits its private certificate.
             checkpoint = judgement::ReplayCheckpoint{checkpoint->archive, checkpoint->cut,
@@ -123,4 +126,14 @@ TEST_CASE("R3 Host Seek verifies origin state and target frame across cuts and h
         << std::chrono::duration_cast<std::chrono::microseconds>(presented - requestStart).count()
         << ",\"renderer\":\"cpu-test\",\"formal\":false}\n";
     REQUIRE(host->close());
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    if (hintKind || externalSource) {
+        namespace rpa = cuexis::internal::execution_diagnostics::rpa;
+        const auto& work =
+            host->rpaSeekObservation().work[static_cast<std::size_t>(rpa::SeekPhase::s3Validation)];
+        CHECK(work.actualRecords == cut->completeRecords - expectedRestoredRecords);
+    }
+#else
+    static_cast<void>(expectedRestoredRecords);
+#endif
 }

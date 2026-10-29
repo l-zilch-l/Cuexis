@@ -47,5 +47,13 @@
 拆分失败，原目录与错误保留；有效新构建是 `release-static-v2`，参数由 Python argv 传递。
 当前 SDK 仍为 0.9.1，未添加公开安装字段或改变 wire / codec 版本。
 
+`release-static-v2` 已完成 fresh Release STATIC 全量构建及 CTest：1,408 项，0 失败，
+1 项物理符号链接测试跳过。恢复构建日志为 `release-resume1-build.log`，全量测试日志为
+`release-resume1-ctest.log`，退出码及命令见 `release-resume1-results.json`。
+首次构建因新测试错误地默认构造必须携带 PreparedIdentity 的 KernelProjection 而失败，
+原日志保留；测试改为使用真实 assembler 产生的身份后再构建、运行全套，不删除该反例。
+该结果覆盖当前候选的常规功能回归，不能替代性能测量、观察通道路径证明或其他工具链矩阵。
+后续独立 Debug 构建目录为 `debug-static-v1`。
+
 原适用 Seek ≤20 ms、request/ready/GPU p99≤4.167 ms、初次 load≤2000 ms、15% 重复性和正式
 配对置信区间要求均未放宽。未完成、失败、不可比与缺外部证据的项必须分别记录，不追加到通过。

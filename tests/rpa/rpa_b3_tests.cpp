@@ -74,6 +74,35 @@ TEST_CASE("Recovery wire cached sequence bytes remain exact after growth and det
     CHECK(boundedMeasure.size() == uncached.bytes.size());
 }
 
+TEST_CASE("Recovery cache admission preserves output edits and revision changes",
+          "[rpa][wire][redesign]") {
+    detail::SharedSequence<std::uint64_t> values{1, 2, 3};
+    detail::wire::Writer cached, fresh;
+    fresh(values.materialize());
+    cached(values);
+    cached.bytes.clear();
+    cached(values);
+    CHECK(cached.bytes == fresh.bytes);
+    std::fill(cached.bytes.begin(), cached.bytes.end(), std::byte{0xff});
+    cached(values);
+    CHECK(std::equal(fresh.bytes.begin(), fresh.bytes.end(),
+                     cached.bytes.begin() + static_cast<std::ptrdiff_t>(fresh.bytes.size())));
+    Fixture fixture;
+    auto assembled = assembleGameplay(fixture.request());
+    REQUIRE(assembled);
+    detail::SharedSequence<KernelProjection> projections{
+        KernelProjection{.judgementIdentity = assembled->prepared}};
+    detail::wire::Writer revisions, reference, measuring{true};
+    for (const auto revision : {2U, 2U, 3U, 3U, 3U, 2U}) {
+        revisions.revision = reference.revision = measuring.revision = revision;
+        revisions(projections);
+        reference(projections.materialize());
+        measuring(projections);
+    }
+    CHECK(revisions.bytes == reference.bytes);
+    CHECK(measuring.size() == reference.size());
+}
+
 TEST_CASE("Vendored FNV-1a preserves exact serial recurrence and continuation",
           "[rpa][wire][fnv]") {
     std::vector<std::byte> bytes(1025);
