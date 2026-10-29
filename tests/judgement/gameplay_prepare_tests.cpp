@@ -286,6 +286,72 @@ TEST_CASE("S7A-3 inheritance is one named literal and zero grace does not extend
     CHECK_FALSE(prepareGameplay(request));
 }
 
+TEST_CASE("Multiple resource plans preserve canonical claimant order and unused resources",
+          "[judgement][s7a-3][prepare][resource]") {
+    Fixture fixture;
+    const auto author = requestFor(fixture);
+    ResolvedGameplayPrepareRequest request{author.assembly, author.patternBudget};
+    auto& document = request.assembly.sources[0].document;
+    auto first = document.resources[0];
+    first.ref.resourceId = "resource.a";
+    auto unused = first;
+    unused.ref.resourceId = "resource.zzz.unused";
+    document.resources.push_back(unused);
+    document.resources.push_back(first);
+    document.declarations.push_back(
+        testDeclaration(DeclarationKind::resourceRecord, first.ref.resourceId, 21));
+    document.declarations.push_back(
+        testDeclaration(DeclarationKind::resourceRecord, unused.ref.resourceId, 24));
+    const auto prototype = document.requirements[0];
+    auto second = prototype;
+    second.stableId.declarationOrdinal = 22;
+    second.identity.requirementLocalId = "requirement.two";
+    second.resourceClaims[0].resourceRef = first.ref;
+    second.resourceClaims[0].claimPolicy.competition =
+        ClaimPolicyDeclaration::CompetitionKey{-1, 3};
+    auto third = second;
+    third.stableId.declarationOrdinal = 23;
+    third.identity.requirementLocalId = "requirement.three";
+    third.resourceClaims[0].claimPolicy.competition = ClaimPolicyDeclaration::CompetitionKey{-1, 1};
+    document.declarations.push_back(
+        testDeclaration(DeclarationKind::requirement, second.identity.requirementLocalId, 22));
+    document.declarations.push_back(
+        testDeclaration(DeclarationKind::requirement, third.identity.requirementLocalId, 23));
+    document.requirements.push_back(second);
+    document.requirements.push_back(third);
+    auto relation = document.relations[0];
+    relation.resourceRef = first.ref;
+    relation.members = {second.stableId, third.stableId};
+    document.relations.push_back(std::move(relation));
+    const auto prepared = prepareResolvedGameplay(request);
+    REQUIRE(prepared);
+    REQUIRE(prepared->resources().size() == 3);
+    const auto& plan = prepared->resources()[0];
+    CHECK(plan.resourceId == "resource.a");
+    REQUIRE(plan.requirementIndices.size() == 2);
+    CHECK(prepared->assembled()
+              .graph.requirements[plan.requirementIndices[0]]
+              .identity.requirementLocalId == "requirement.three");
+    CHECK(prepared->assembled()
+              .graph.requirements[plan.requirementIndices[1]]
+              .identity.requirementLocalId == "requirement.two");
+    CHECK(prepared->resources()[2].claims.candidates().empty());
+    CHECK(prepared->resources()[2].requirementIndices.empty());
+    std::reverse(document.resources.begin(), document.resources.end());
+    std::reverse(document.requirements.begin(), document.requirements.end());
+    std::reverse(document.declarations.begin(), document.declarations.end());
+    const auto permuted = prepareResolvedGameplay(request);
+    REQUIRE(permuted);
+    CHECK(permuted->assembled().prepared == prepared->assembled().prepared);
+    CHECK(permuted->assembled().content == prepared->assembled().content);
+    for (std::size_t i = 0; i < prepared->resources().size(); ++i) {
+        CHECK(permuted->resources()[i].claims.candidates() ==
+              prepared->resources()[i].claims.candidates());
+        CHECK(permuted->resources()[i].requirementIndices ==
+              prepared->resources()[i].requirementIndices);
+    }
+}
+
 TEST_CASE("S7A-3 competition keys have no identity fallback",
           "[judgement][s7a-3][prepare][resource]") {
     ResourceClaimResolutionInputs input{

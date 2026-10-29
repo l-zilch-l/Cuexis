@@ -978,12 +978,14 @@ template <typename Value> void sortUnique(std::vector<Value>& values) {
 
 [[nodiscard]] auto findResource(const CanonicalGameplayGraph& graph, std::string_view resourceId)
     -> const ResourceRecord* {
-    for (const auto& resource : graph.resources) {
-        if (resource.ref.resourceId == resourceId) {
-            return &resource;
-        }
-    }
-    return nullptr;
+    const auto& rows = graph.resources;
+    if (rows.size() < 2)
+        return !rows.empty() && rows.front().ref.resourceId == resourceId ? &rows.front() : nullptr;
+    // Content validation follows stabilization; resource ID is the primary canonical key.
+    const auto found = std::lower_bound(
+        rows.begin(), rows.end(), resourceId,
+        [](const auto& row, std::string_view wanted) { return row.ref.resourceId < wanted; });
+    return found != rows.end() && found->ref.resourceId == resourceId ? &*found : nullptr;
 }
 
 [[nodiscard]] auto findDomain(const CanonicalGameplayGraph& graph, std::string_view domainId)

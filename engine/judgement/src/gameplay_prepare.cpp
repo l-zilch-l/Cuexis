@@ -407,6 +407,18 @@ auto prepareStorage(const PreparationInputs& request, bool resolved)
     measurement.reset();
     measurement.emplace(internal::pd::Stage::gameplayPrepareResources);
 #endif
+    struct ClaimLocation final {
+        std::size_t requirement;
+        const ResourceClaimDeclaration* claim;
+    };
+    // Group once, in the same requirement/claim order as the original per-resource scan.
+    // Views borrow the immutable assembled graph only for this preparation call.
+    std::map<std::string_view, std::vector<ClaimLocation>, std::less<>> claimsByResource;
+    if (assembled->graph.resources.size() > 1) {
+        for (std::size_t i = 0; i < assembled->graph.requirements.size(); ++i)
+            for (const auto& claim : assembled->graph.requirements[i].resourceClaims)
+                claimsByResource[claim.resourceRef.resourceId].push_back({i, &claim});
+    }
     for (const auto& resource : assembled->graph.resources) {
         ResourceClaimResolutionInputs input{.declaredCapacity = resource.declaredCapacity,
                                             .intents = {},
@@ -414,35 +426,45 @@ auto prepareStorage(const PreparationInputs& request, bool resolved)
                                             .preparedGrace = PreparedGrace{TickSpan{0}}};
         std::map<std::string, std::size_t> owners;
         std::vector<std::size_t> observeIndices;
-        for (std::size_t i = 0; i < assembled->graph.requirements.size(); ++i) {
-            for (const auto& claim : assembled->graph.requirements[i].resourceClaims) {
-                if (claim.resourceRef.resourceId != resource.ref.resourceId) {
-                    continue;
+        const auto addClaim = [&](std::size_t i,
+                                  const ResourceClaimDeclaration& claim) -> core::Result<void> {
+            if (claim.intent != ResourceClaimIntent::observe && !claim.claimPolicy.competition) {
+                return core::unexpected(invalid("resourceClaims.competition",
+                                                "occupying candidates require an explicit pair"));
+            }
+            const auto claimKey =
+                claim.intent == ResourceClaimIntent::observe
+                    ? claim.claimPolicy.claimKeyToken
+                    : detail::structuralClaimKey(claim.claimPolicy.claimKeyToken,
+                                                 assembled->graph.requirements[i].identity);
+            if (claim.intent != ResourceClaimIntent::observe &&
+                claim.claimPolicy.claimKeyToken.empty()) {
+                return core::unexpected(invalid("resourceClaims.explicitNamespace",
+                                                "an occupying namespace must be nonempty"));
+            }
+            input.candidates.push_back({claim.intent, claim.claimPolicy.policyToken, claimKey,
+                                        claim.graceOverride.mode, claim.claimPolicy.competition});
+            if (claim.intent == ResourceClaimIntent::observe) {
+                observeIndices.push_back(i);
+            } else {
+                owners.emplace(claimKey, i);
+            }
+            return {};
+        };
+        if (assembled->graph.resources.size() == 1) {
+            for (std::size_t i = 0; i < assembled->graph.requirements.size(); ++i) {
+                for (const auto& claim : assembled->graph.requirements[i].resourceClaims) {
+                    if (claim.resourceRef.resourceId != resource.ref.resourceId)
+                        continue;
+                    if (auto added = addClaim(i, claim); !added)
+                        return core::unexpected(std::move(added.error()));
                 }
-                if (claim.intent != ResourceClaimIntent::observe &&
-                    !claim.claimPolicy.competition) {
-                    return core::unexpected(
-                        invalid("resourceClaims.competition",
-                                "occupying candidates require an explicit pair"));
-                }
-                const auto claimKey =
-                    claim.intent == ResourceClaimIntent::observe
-                        ? claim.claimPolicy.claimKeyToken
-                        : detail::structuralClaimKey(claim.claimPolicy.claimKeyToken,
-                                                     assembled->graph.requirements[i].identity);
-                if (claim.intent != ResourceClaimIntent::observe &&
-                    claim.claimPolicy.claimKeyToken.empty()) {
-                    return core::unexpected(invalid("resourceClaims.explicitNamespace",
-                                                    "an occupying namespace must be nonempty"));
-                }
-                input.candidates.push_back({claim.intent, claim.claimPolicy.policyToken, claimKey,
-                                            claim.graceOverride.mode,
-                                            claim.claimPolicy.competition});
-                if (claim.intent == ResourceClaimIntent::observe) {
-                    observeIndices.push_back(i);
-                } else {
-                    owners.emplace(claimKey, i);
-                }
+            }
+        } else if (const auto found = claimsByResource.find(resource.ref.resourceId);
+                   found != claimsByResource.end()) {
+            for (const auto& location : found->second) {
+                if (auto added = addClaim(location.requirement, *location.claim); !added)
+                    return core::unexpected(std::move(added.error()));
             }
         }
         auto claims = resolveResourceClaims(input);
@@ -469,6 +491,8 @@ auto prepareStorage(const PreparationInputs& request, bool resolved)
         }
         storage->resources.push_back({resource.ref.resourceId, *claims, std::move(indices)});
     }
+    // End all borrowed claim/name references before finalization transfers the owning graph.
+    claimsByResource.clear();
 #if defined(CUEXIS_PD_METRICS_TEST_ONLY)
     measurement.reset();
     measurement.emplace(internal::pd::Stage::gameplayPrepareFinalize);

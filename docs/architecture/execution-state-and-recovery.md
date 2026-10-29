@@ -109,6 +109,11 @@ Packed Writer 已排序的 Pattern 字典使用二分定位等价区间，再以
 模型验证复用本次重复名称检查的名称/kind 索引；索引借用模型自有字符串，仅在不修改声明表的
 验证调用内有效，不能据此跳过 typed-record 存在性或改变首错顺序。
 
+资源存在性查找只在 graph stabilization 后按主键 resource ID 二分；重复键时仍定位首个相同键。
+多资源 prepare 按原 requirement / claim 顺序一次分组，再沿原资源顺序生成各自计划；单资源
+保留原线性扫描。分组借用 assembled graph 的名称与 claim，资源计划完成后立即清空，早于
+finalization 转移 graph 所有权。该索引不跨调用保存，不改变 competition、observer 或首错规则。
+
 content-only completeness 通过私有 `gameplay_closure.hpp` collector 显式传入空 contributions，
 不再为删除 contributions 而复制整张 `CanonicalGameplayGraph`。
 公开 full closure 入口仍包含原 contributions，两者共享同一内容遍历与精确 revision 比较、排序和去重。

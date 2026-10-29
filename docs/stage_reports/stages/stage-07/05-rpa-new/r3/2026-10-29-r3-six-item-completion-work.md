@@ -13,7 +13,7 @@
 | 项目 | 本批实施/调查 | 尚需完成的核验 |
 | --- | --- | --- |
 | P1 Packed / re-prepare | 名称索引与随后独立 Packed 查找候选分别通过固定诊断保护条件；后者 40K unique 总耗时 23.58 → 7.09 s | identity 投影仍重复生成；最终 fresh 回归与原端到端 load 门未完成 |
-| P2 准备热点 | 保留名称索引与内部 identity 投影复用；后者 fresh 相关回归及固定普通字节/时间对照通过 | timer/resource 尚待独立诊断；不能将局部收益当成 load 原预算通过 |
+| P2 准备热点 | 保留名称索引、identity 投影复用及多资源查找/claim 分组；相关字节、回归和固定对照通过 | timer 剩余成本与最终完整矩阵；不能将局部收益当成 load 原预算通过 |
 | P3 update / Snapshot | 保留四属性合并查找、touched 和 OpenGL 诊断读回分离；resolver hint 已撤回 | 最终源码完整矩阵；extract 仍有可调查成本，不重做 R2 表示 |
 | P4 编码与真实内存 | 第二次使用 admission 和测量预遍历计划均无实际峰值收益，已放弃，恢复旧独立字节缓存；已取得至 40K 的实际峰值及最终释放 | 本地轨迹不替代原 caps 或历史 R4 身份参考；编码输出本身占用及同时持有范围必须明示 |
 | P5 端到端 Seek | 内置 Host 可转发既有 checkpoint span；CPU 36 组合与 1080p GPU 96 组合核对独立 origin 全字节、目标 tick/context/receipt/像素 | 原尾延迟及重复性、观察路径与故障覆盖；worker 替换并非当前 Host 能力 |
@@ -172,6 +172,29 @@ submit/readback 路径，尚未证明具体 GL/驱动机制；窗口是否隐藏
 transparent 顺序、通用 shader 和资源语义，不因简单场景收益扩张 SDK 边界。
 OpenGL 3.3 的实例化调用机制见 [Khronos 原始规范 §2.8](https://registry.khronos.org/OpenGL/specs/gl/glspec33.core.pdf)，
 此处仅登记探索方向，当前没有实例化实现或相应性能接受。
+
+## 多资源准备的平方扫描
+
+`resource-diagnostic-v1` 只在独立源码副本插入资源阶段时钟，产品实现未加探针。
+`resource-phase-attribution-v1` 固定三个一次性诊断：64 个独立资源的完整 encode/decode canary
+通过；10K requirements 共用一个资源时，资源阶段约 31–34 ms，分为 10K 资源后约
+956–1,013 ms，source prepare 总计约 1.657 s。观测时间只用于归因，不当作普通性能接受。
+
+资源候选用已有 canonical 顺序替代 `findResource` 全扫描，并仅在多资源输入时一次性分组
+claims，沿原顺序继续校验和解算。新增三资源（含未使用资源）、competition 顺序及输入置换
+回归，新旧两版各 235 cases / 56,126 assertions 通过。独立审阅确认排序前提、相同键首项、
+分组遍历/错误顺序及 Result 传播；最终版在 finalization 前清空借用索引，明确生命周期。
+
+`resource-measure-v1` 的 2 个小 canary + 16 个固定普通 allocator 进程全部有效，原始 Packed /
+三种身份字节一致。10K 独立资源的 source prepare 中位数 1.703996 → 0.318486 s，下降 81.31%；
+source prepare + Packed encode + decode 总和 6.740689 → 3.731611 s，下降 44.64%。
+1K 独立资源总和下降 11.51%；1K/40K 共用单资源总和下降 4.37%/1.33%，通过 5% guard。
+该组 relative range 均小于 10%，没有以它替换原组或正式窗口。
+
+`resource-candidate-v2` 提前结束借用索引生命周期后，两版完整 Judgement 回归再次通过；
+`resource-final-measure-v1` 只对变化相关的 10K 独立资源另登记两对 AB/BA，完整字节仍一致。
+最终 source prepare 中位数 1.687775 → 0.319911 s，下降约 81.05%；总和
+6.446277 → 3.697551 s，下降约 42.64%。因此保留这两处扫描消除，不扩展为持久资源缓存。
 
 ## 构建、版本与原门限
 
