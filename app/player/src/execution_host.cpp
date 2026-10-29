@@ -920,7 +920,8 @@ auto ExecutionHost::archive() -> core::Result<GameplayReplay> try {
     return core::unexpected(error("capacity_exceeded"));
 }
 auto ExecutionHost::seek(const GameplayReplay& archive, const GameplayReplayCut& cut,
-                         GameplayTick horizon, const ClockSource& source)
+                         GameplayTick horizon, const ClockSource& source,
+                         std::span<const GameplayCheckpoint> checkpoints)
     -> core::Result<void> try {
     checkOwner();
     Busy operation{busy_};
@@ -969,6 +970,7 @@ auto ExecutionHost::seek(const GameplayReplay& archive, const GameplayReplayCut&
     const GameplayExecutionContext next{context_.sessionScope, target.nextContext->clockSegment,
                                         target.nextContext->runEpoch};
     SessionSeek seekRequest;
+    seekRequest.checkpoints.assign(checkpoints.begin(), checkpoints.end());
 #if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
     rpa::SeekScope seekS1{&rpaSeek_, rpa::SeekPhase::s1HostProtocol};
 #endif

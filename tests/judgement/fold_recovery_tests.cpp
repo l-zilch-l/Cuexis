@@ -845,9 +845,8 @@ TEST_CASE("Snapshot rejects lost pending lost activation invalid Fact rank and f
     }
     SECTION("grade") {
         auto dto = saved->state();
-        dto.kernel.facts.update(0, [](auto& fact) {
-            std::get<PhaseOutcomeFact>(fact).grade = "fake";
-        });
+        dto.kernel.facts.update(
+            0, [](auto& fact) { std::get<PhaseOutcomeFact>(fact).grade = "fake"; });
         CHECK_FALSE(detail::ExecutionKernel::restore({dto, inputs}, *inputs));
     }
     SECTION("fake fault") {

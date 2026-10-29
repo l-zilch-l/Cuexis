@@ -25,7 +25,8 @@ using namespace cuexis::judgement::testing;
 TEST_CASE("Recovery wire cached sequence bytes remain exact after growth and detached mutation",
           "[rpa][wire][redesign]") {
     detail::SharedSequence<std::uint64_t> values;
-    for (std::uint64_t i = 0; i < 257; ++i) values.push_back(i * i);
+    for (std::uint64_t i = 0; i < 257; ++i)
+        values.push_back(i * i);
     detail::wire::Writer cached, reference;
     cached(values);
     reference(values.materialize());
@@ -41,7 +42,8 @@ TEST_CASE("Recovery wire cached sequence bytes remain exact after growth and det
     reference(values.materialize());
     CHECK(cached.bytes == reference.bytes);
     detail::SharedSequence<std::uint64_t> independent;
-    for (const auto value : values) independent.push_back(value);
+    for (const auto value : values)
+        independent.push_back(value);
     cached(independent);
     reference(independent.materialize());
     CHECK(cached.bytes == reference.bytes);
@@ -75,7 +77,8 @@ TEST_CASE("Recovery wire cached sequence bytes remain exact after growth and det
 TEST_CASE("Vendored FNV-1a preserves exact serial recurrence and continuation",
           "[rpa][wire][fnv]") {
     std::vector<std::byte> bytes(1025);
-    for (std::size_t i = 0; i < bytes.size(); ++i) bytes[i] = static_cast<std::byte>(i & 255U);
+    for (std::size_t i = 0; i < bytes.size(); ++i)
+        bytes[i] = static_cast<std::byte>(i & 255U);
     for (std::size_t n = 0; n <= bytes.size(); ++n) {
         const auto input = std::span<const std::byte>{bytes}.first(n);
         std::uint64_t expected = 14695981039346656037ULL;
@@ -1803,7 +1806,6 @@ TEST_CASE("R3 fixed ordinary allocator recovery cost", "[.r3-cost]") {
     }
 }
 
-
 TEST_CASE("R3 redesign fixed scaling diagnostic compares origin and checkpoint forks",
           "[.][rpa][redesign-perf]") {
     if (cuexis::test_support::environmentVariable("CUEXIS_REDESIGN_BARRIER") == "1") {
@@ -1818,9 +1820,8 @@ TEST_CASE("R3 redesign fixed scaling diagnostic compares origin and checkpoint f
     auto& document = f.assembly.sources[0].document;
     const auto prototype = document.requirements[0];
     document.requirements.clear();
-    std::erase_if(document.declarations, [](const auto& d) {
-        return d.kind == DeclarationKind::requirement;
-    });
+    std::erase_if(document.declarations,
+                  [](const auto& d) { return d.kind == DeclarationKind::requirement; });
     document.relations[0].members.clear();
     f.assembly.contentProfileLimits.maxRequirements =
         MeasuredParameter<std::uint64_t>::measured(count);
@@ -1831,17 +1832,20 @@ TEST_CASE("R3 redesign fixed scaling diagnostic compares origin and checkpoint f
         requirement.resourceClaims[0].claimPolicy.competition =
             ClaimPolicyDeclaration::CompetitionKey{-1, static_cast<std::uint64_t>(i)};
         document.declarations.push_back(testDeclaration(DeclarationKind::requirement,
-            requirement.identity.requirementLocalId, requirement.stableId.declarationOrdinal));
+                                                        requirement.identity.requirementLocalId,
+                                                        requirement.stableId.declarationOrdinal));
         document.relations[0].members.push_back(requirement.stableId);
         document.requirements.push_back(std::move(requirement));
     }
     const auto ns = [](auto start) {
         return std::chrono::duration_cast<std::chrono::nanoseconds>(
-            std::chrono::steady_clock::now() - start).count();
+                   std::chrono::steady_clock::now() - start)
+            .count();
     };
     auto source = f.session();
     REQUIRE(source.advance(Tick{1103}));
-    for (std::int64_t i = 1; i <= 32; ++i) REQUIRE(source.advance(Tick{1103 + i}));
+    for (std::int64_t i = 1; i <= 32; ++i)
+        REQUIRE(source.advance(Tick{1103 + i}));
     const auto archiveStart = std::chrono::steady_clock::now();
     const auto archive = source.archive();
     const auto archiveNs = ns(archiveStart);
@@ -1857,7 +1861,8 @@ TEST_CASE("R3 redesign fixed scaling diagnostic compares origin and checkpoint f
         for (const bool hinted : {false, true}) {
             auto started = std::chrono::steady_clock::now();
             auto forked = source.forkForSeek(*archive, Tick{1135}, cut,
-                hinted ? std::span{&*checkpoint, 1} : std::span<const ReplayCheckpoint>{});
+                                             hinted ? std::span{&*checkpoint, 1}
+                                                    : std::span<const ReplayCheckpoint>{});
             const auto forkNs = ns(started);
             REQUIRE(forked);
             CHECK(detail::KernelTestAccess::certifiedPrefixRecords(*forked) == (hinted ? 17 : 0));
@@ -1874,20 +1879,19 @@ TEST_CASE("R3 redesign fixed scaling diagnostic compares origin and checkpoint f
             std::cout << "{\"event\":\"r3.redesign\",\"requirements\":" << count
                       << ",\"pair\":" << pair << ",\"hinted\":" << hinted
                       << ",\"fork_ns\":" << forkNs << ",\"snapshot_ns\":" << snapshotNs
-                      << ",\"release_ns\":" << releaseNs << ",\"checkpoint_ns\":"
-                      << checkpointNs << ",\"archive_ns\":" << archiveNs
-                      << ",\"formal\":false}\n";
+                      << ",\"release_ns\":" << releaseNs << ",\"checkpoint_ns\":" << checkpointNs
+                      << ",\"archive_ns\":" << archiveNs << ",\"formal\":false}\n";
         }
     }
 }
-
 
 TEST_CASE("R3 native chunk anchors preserve exact prefixes partial cuts and source ownership",
           "[rpa][redesign][native][recovery]") {
     Fixture3 f;
     auto source = f.session();
     REQUIRE(source.advance(Tick{1103}));
-    for (std::int64_t i = 1; i <= 96; ++i) REQUIRE(source.advance(Tick{1103 + i}));
+    for (std::int64_t i = 1; i <= 96; ++i)
+        REQUIRE(source.advance(Tick{1103 + i}));
     const auto archive = source.archive();
     REQUIRE(archive);
     const auto identity = archive->canonicalIdentity();
@@ -1896,7 +1900,7 @@ TEST_CASE("R3 native chunk anchors preserve exact prefixes partial cuts and sour
     REQUIRE(wire);
     CHECK(*identity == cuexis::core::detail::sha256(*wire));
     const ReplayArchive external{archive->anchor(),
-        std::make_shared<const RecoveryInputs>(archive->dependencies())};
+                                 std::make_shared<const RecoveryInputs>(archive->dependencies())};
     const auto externalIdentity = external.canonicalIdentity();
     REQUIRE(externalIdentity);
     CHECK(*externalIdentity == *identity);
@@ -1946,39 +1950,38 @@ TEST_CASE("R3 external altered suffix never inherits native source trust",
     Fixture3 f;
     auto source = f.session();
     REQUIRE(source.advance(Tick{1103}));
-    for (std::int64_t i = 1; i <= 33; ++i) REQUIRE(source.advance(Tick{1103 + i}));
+    for (std::int64_t i = 1; i <= 33; ++i)
+        REQUIRE(source.advance(Tick{1103 + i}));
     const auto archive = source.archive();
     REQUIRE(archive);
     const auto before = source.snapshot();
     REQUIRE(before);
     auto data = archive->data();
     auto changed = std::make_shared<KernelProjection>(*data.records[32].result);
-    changed->facts.update(0, [](auto& fact) {
-        std::get<PhaseOutcomeFact>(fact).commitId += 1;
-    });
+    changed->facts.update(0, [](auto& fact) { std::get<PhaseOutcomeFact>(fact).commitId += 1; });
     data.records[32].result = changed;
     ReplayArchive external{std::make_shared<const ReplayData>(std::move(data)),
-        std::make_shared<const RecoveryInputs>(archive->dependencies())};
+                           std::make_shared<const RecoveryInputs>(archive->dependencies())};
     CHECK_FALSE(source.forkForSeek(external, Tick{1136}, replayCutAt(external, Tick{1136})));
     CHECK(sameSnapshot(before->state(), source.snapshot()->state()));
     CHECK(archive->data().records[32].result->facts != changed->facts);
     CHECK(source.forkForSeek(*archive, Tick{1136}, replayCutAt(*archive, Tick{1136})));
 }
 
-
 TEST_CASE("R3 native branch drops source suffix and external identity never gains cache trust",
           "[rpa][redesign][native][lifetime][identity]") {
     Fixture3 f;
     auto source = f.session();
     REQUIRE(source.advance(Tick{1103}));
-    for (int i = 1; i <= 64; ++i) REQUIRE(source.advance(Tick{1103 + i}));
+    for (int i = 1; i <= 64; ++i)
+        REQUIRE(source.advance(Tick{1103 + i}));
     auto archive = source.archive();
     REQUIRE(archive);
     const auto firstIdentity = archive->canonicalIdentity();
     REQUIRE(firstIdentity);
     auto mutableData = std::make_shared<ReplayData>(archive->data());
     ReplayArchive external{mutableData,
-        std::make_shared<const RecoveryInputs>(archive->dependencies())};
+                           std::make_shared<const RecoveryInputs>(archive->dependencies())};
     auto externalBefore = external.canonicalIdentity();
     REQUIRE(externalBefore);
     CHECK(*externalBefore == *firstIdentity);
@@ -2006,7 +2009,6 @@ TEST_CASE("R3 native branch drops source suffix and external identity never gain
     CHECK(sameKernelResult(*evaluated->result, branch->query()->kernelView()));
 }
 
-
 TEST_CASE("R3 canonical wire fingerprint matches the preserved implementation",
           "[.][rpa][redesign-wire]") {
     const auto legacy = GENERATE(false, true);
@@ -2015,7 +2017,8 @@ TEST_CASE("R3 canonical wire fingerprint matches the preserved implementation",
         f.assembly.executionProfile = "gameplay.execution.t4-k4.v1";
         f.assembly.identityDeclarations.engine.executionProfileToken = f.assembly.executionProfile;
         f.assembly.identityDeclarations.engine.lateAlgorithmToken = "late.window.logical.v1";
-        f.assembly.identityDeclarations.engine.factSemanticRevision = "fact.semantic.phase-local.v1";
+        f.assembly.identityDeclarations.engine.factSemanticRevision =
+            "fact.semantic.phase-local.v1";
     }
     auto configuration = f.configuration();
     if (legacy) {
@@ -2038,7 +2041,8 @@ TEST_CASE("R3 canonical wire fingerprint matches the preserved implementation",
         REQUIRE(session->controlRpa({RpaControlKind::pause, Tick{900}, 0, 1, 0, {}}));
         REQUIRE(session->controlRpa({RpaControlKind::resume, Tick{900}, 0, 1, 0, {}}));
     }
-    for (int i = 0; i < 5; ++i) REQUIRE(session->advance(Tick{1103 + i}));
+    for (int i = 0; i < 5; ++i)
+        REQUIRE(session->advance(Tick{1103 + i}));
     const auto archive = session->archive();
     const auto snapshot = session->snapshot();
     REQUIRE(archive);
@@ -2047,11 +2051,11 @@ TEST_CASE("R3 canonical wire fingerprint matches the preserved implementation",
     const auto snapshotBytes = encodeSnapshot(*snapshot);
     REQUIRE(replayBytes);
     REQUIRE(snapshotBytes);
-    std::cout << "R3_WIRE legacy=" << legacy << " replay="
-              << cuexis::core::detail::sha256Hex(*replayBytes) << " replay_bytes="
-              << replayBytes->size() << " snapshot="
-              << cuexis::core::detail::sha256Hex(*snapshotBytes) << " snapshot_bytes="
-              << snapshotBytes->size() << '\n';
+    std::cout << "R3_WIRE legacy=" << legacy
+              << " replay=" << cuexis::core::detail::sha256Hex(*replayBytes)
+              << " replay_bytes=" << replayBytes->size()
+              << " snapshot=" << cuexis::core::detail::sha256Hex(*snapshotBytes)
+              << " snapshot_bytes=" << snapshotBytes->size() << '\n';
 }
 
 TEST_CASE("R3 native anchors preserve pending input and pause resume suffixes",
@@ -2059,8 +2063,8 @@ TEST_CASE("R3 native anchors preserve pending input and pause resume suffixes",
     Fixture3 f;
     f.rules = controlRules(true);
     auto source = f.session();
-    REQUIRE(source.submitCanonical({occurrence(900, 0, InputAction::press),
-                                    occurrence(1000, 1, InputAction::release)}));
+    REQUIRE(source.submitCanonical(
+        {occurrence(900, 0, InputAction::press), occurrence(1000, 1, InputAction::release)}));
     REQUIRE(source.advance(Tick{903}));
     const auto pending = source.archive();
     REQUIRE(pending);
@@ -2068,14 +2072,15 @@ TEST_CASE("R3 native anchors preserve pending input and pause resume suffixes",
     REQUIRE(pendingBranch);
     CHECK(detail::KernelTestAccess::nativePrefixRecords(*pendingBranch) == 0);
     REQUIRE(source.advance(Tick{1003}));
-    for (int i = 1; i <= 36; ++i) REQUIRE(source.advance(Tick{1003 + i}));
+    for (int i = 1; i <= 36; ++i)
+        REQUIRE(source.advance(Tick{1003 + i}));
     REQUIRE(source.controlRpa({RpaControlKind::pause, Tick{1036}, 0, 1, 0, {}}));
     REQUIRE(source.controlRpa({RpaControlKind::resume, Tick{1036}, 0, 1, 0, {}}));
     REQUIRE(source.advance(Tick{1103}));
     const auto archive = source.archive();
     REQUIRE(archive);
     const ReplayArchive external{archive->anchor(),
-        std::make_shared<const RecoveryInputs>(archive->dependencies())};
+                                 std::make_shared<const RecoveryInputs>(archive->dependencies())};
     for (const auto horizon : {903, 999, 1003, 1035, 1103}) {
         INFO(horizon);
         const auto cut = replayCutAt(*archive, Tick{horizon});
@@ -2108,7 +2113,8 @@ TEST_CASE("R3 archive copies share a concurrent first canonical identity",
         for (std::size_t i = 0; i < actual.size(); ++i) {
             workers.emplace_back([copy = *archive, &actual, i] {
                 const auto identity = copy.canonicalIdentity();
-                if (identity) actual[i] = *identity;
+                if (identity)
+                    actual[i] = *identity;
             });
         }
     }

@@ -9,6 +9,7 @@
 #include <bit>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
+#include <cuexis/judgement/recovery_codec.hpp>
 #include <filesystem>
 #include <future>
 #include <iostream>
@@ -2210,3 +2211,4 @@ TEST_CASE("R3 CPU host Seek measures first and repeated requests through target 
     }
     REQUIRE((*host)->close());
 }
+#include "r3_seek_matrix_tests.hpp"

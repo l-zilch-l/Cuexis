@@ -152,16 +152,20 @@ struct Metrics final {
         }
     }
 };
-inline thread_local Metrics metrics;
+inline auto threadMetrics() noexcept -> Metrics& {
+    static thread_local Metrics value;
+    return value;
+}
 inline std::atomic<bool> processRecording{true};
 inline void setProcessRecording(bool enabled) noexcept {
     processRecording.store(enabled, std::memory_order_release);
 }
 inline void setRecording(bool enabled) noexcept {
-    metrics.recording = enabled;
+    threadMetrics().recording = enabled;
 }
 inline void observe(Stage stage, double inclusive, double exclusive,
                     std::uint64_t correlation = 0) noexcept {
+    auto& metrics = threadMetrics();
     if (!metrics.path || !metrics.recording || !processRecording.load(std::memory_order_acquire))
         return;
     auto& sample = metrics.stages[static_cast<unsigned>(stage)];
@@ -176,6 +180,7 @@ inline void observe(Stage stage, double inclusive, double exclusive,
 class Timer final {
   public:
     explicit Timer(Stage stage) noexcept : stage_(stage) {
+        auto& metrics = threadMetrics();
         enabled_ =
             metrics.path && metrics.recording && processRecording.load(std::memory_order_acquire);
         if (enabled_) {
@@ -197,22 +202,24 @@ class Timer final {
     auto operator=(const Timer&) -> Timer& = delete;
     void items(std::size_t count) noexcept {
         if (enabled_)
-            metrics.stages[static_cast<unsigned>(stage_)].items += count;
+            threadMetrics().stages[static_cast<unsigned>(stage_)].items += count;
     }
     void logicalCopy(std::size_t bytes) noexcept {
         if (enabled_)
-            metrics.stages[static_cast<unsigned>(stage_)].logicalCopyBytes += bytes;
+            threadMetrics().stages[static_cast<unsigned>(stage_)].logicalCopyBytes += bytes;
     }
     static void allocated(std::size_t bytes) noexcept {
         if (active_) {
-            auto& sample = metrics.stages[static_cast<unsigned>(active_->stage_)];
+            auto& sample = threadMetrics().stages[static_cast<unsigned>(active_->stage_)];
             ++sample.allocationCount;
             sample.requestedAllocationBytes += bytes;
         }
     }
     static void released(std::size_t bytes) noexcept {
         if (active_)
-            metrics.stages[static_cast<unsigned>(active_->stage_)].releasedAllocationBytes += bytes;
+            threadMetrics()
+                .stages[static_cast<unsigned>(active_->stage_)]
+                .releasedAllocationBytes += bytes;
     }
 
   private:

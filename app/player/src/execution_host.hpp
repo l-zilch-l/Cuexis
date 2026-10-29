@@ -98,7 +98,9 @@ class ExecutionHost final {
     [[nodiscard]] auto pause(const ClockSource&) -> core::Result<void>;
     [[nodiscard]] auto resume(const ClockSource&) -> core::Result<void>;
     [[nodiscard]] auto seek(const playback::GameplayReplay&, const playback::GameplayReplayCut&,
-                            playback::GameplayTick, const ClockSource&) -> core::Result<void>;
+                            playback::GameplayTick, const ClockSource&,
+                            std::span<const playback::GameplayCheckpoint> checkpoints = {})
+        -> core::Result<void>;
     [[nodiscard]] auto sample(std::int64_t presentationTick, playback::RuntimeFrame, bool frozen)
         -> core::Result<playback::detail::FrameEnvelope>;
     [[nodiscard]] auto trySample(std::int64_t presentationTick, playback::RuntimeFrame, bool frozen)

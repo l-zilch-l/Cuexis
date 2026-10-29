@@ -314,9 +314,9 @@ TEST_CASE("PD5 presentation workload matrix", "[.][pd][pd5][matrix]") {
 #endif
     internal::pd::memory::checkpoint("after-close");
 #if defined(CUEXIS_PD_METRICS_TEST_ONLY)
-    REQUIRE(internal::pd::metrics.path);
+    REQUIRE(internal::pd::threadMetrics().path);
     const auto& observedSnapshot =
-        internal::pd::metrics.stages[static_cast<unsigned>(internal::pd::Stage::snapshot)];
+        internal::pd::threadMetrics().stages[static_cast<unsigned>(internal::pd::Stage::snapshot)];
     REQUIRE(observedSnapshot.count == materializations);
     REQUIRE(observedSnapshot.omitted == 0);
 #endif

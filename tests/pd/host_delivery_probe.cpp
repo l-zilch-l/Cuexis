@@ -48,7 +48,7 @@ TEST_CASE("PD host delivery and receipt acknowledgement baseline", "[.][pd][host
     // Recording on main is only enabled around host calls; reference work is excluded.
     // A worker inherits the process-level observation mode when its metrics are initialized.
 #if defined(CUEXIS_PD_METRICS_TEST_ONLY)
-    const bool recording = internal::pd::metrics.path != nullptr;
+    const bool recording = internal::pd::threadMetrics().path != nullptr;
 #else
     const bool recording = false;
 #endif

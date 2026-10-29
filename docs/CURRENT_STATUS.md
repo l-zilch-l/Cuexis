@@ -35,6 +35,9 @@
   新固定对照的 40K 全量动画 update 由 147.933 降至 47.343 ms，完整 cycle 由 209.573 降至 109.652 ms；
   静态路径未见对应退化。只加标记的初版因晚插入基线的语义回归停止并撤回；最终版同步索引并通过反例及相关回归。
   当前渲染仍超预算，P3 和其余待优化项继续开放。
+  owner 已要求连续完成六项剩余工作，当前候选与完整验证进度统一见
+  [六项实施与验证账本](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-29-r3-six-item-completion-work.md)。
+  Pattern 复用、带校验的外观索引、编码缓存候选和 Host Seek 场景扩展正在 fresh 全矩阵验证，尚不作接受结论。
   最新[来源绑定实验](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-source-binding-experiment.md)用同一 Release 二进制比较 canonical SHA 与进程内 owning source binding。
   2048 requirements、33 条历史的 CPU 宿主首次请求到目标帧由 91.809 ms 降至 1.016 ms；129 条历史由 333.624 ms 降至 1.057 ms。
   这是固定本地诊断的点值，wire/导入验证保持原合同，candidate C++ 消费者须重建；R3 未退出、R3c 尚未进入，R4、设备与生产接受仍独立。

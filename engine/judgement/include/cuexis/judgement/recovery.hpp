@@ -1,7 +1,7 @@
 #pragma once
 
-#include <cuexis/judgement/kernel_types.hpp>
 #include <array>
+#include <cuexis/judgement/kernel_types.hpp>
 
 namespace cuexis::judgement {
 struct CanonicalInput final {
@@ -55,7 +55,7 @@ namespace detail {
 struct ExecutionPreparation;
 struct NativeRecoveryIndex;
 struct CanonicalReplayIdentityCache;
-}
+} // namespace detail
 class ReplayArchive final {
   public:
     [[nodiscard]] auto data() const noexcept -> const ReplayData& {
@@ -67,8 +67,7 @@ class ReplayArchive final {
     [[nodiscard]] auto dependencies() const noexcept -> const RecoveryInputs& {
         return *inputs_;
     }
-    [[nodiscard]] auto canonicalIdentity() const
-        -> core::Result<std::array<std::uint8_t, 32>>;
+    [[nodiscard]] auto canonicalIdentity() const -> core::Result<std::array<std::uint8_t, 32>>;
     ReplayArchive(std::shared_ptr<const ReplayData> data,
                   std::shared_ptr<const RecoveryInputs> inputs)
         : data_(std::move(data)), inputs_(std::move(inputs)) {}

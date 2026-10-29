@@ -216,7 +216,8 @@ struct ExecutionKernel::Impl final {
                     throw std::logic_error{"timer requirement missing"};
                 plan->timerRequirements.push_back(found->second);
             }
-            plan->inputs = std::make_shared<const RecoveryInputs>(RecoveryInputs{configuration, prepared});
+            plan->inputs =
+                std::make_shared<const RecoveryInputs>(RecoveryInputs{configuration, prepared});
             recoveryInputs = plan->inputs;
             preparation = std::move(plan);
         }
@@ -251,8 +252,7 @@ struct ExecutionKernel::Impl final {
         // Optional allocation failure cannot retroactively fail a sealed operation.
         if (nativeAnchorEligible && active->projection.rpa && !testControls && pending.empty() &&
             active->projection.state == KernelSessionState::Prepared &&
-            active->projection.lastAdvanceHorizon &&
-            active->signalVisibility.empty() &&
+            active->projection.lastAdvanceHorizon && active->signalVisibility.empty() &&
             (nativePoints.empty() || appliedRecords % ExecutionLogChunk::capacity == 0)) {
             try {
                 auto point = std::make_shared<const NativeRecoveryPoint>(
@@ -303,8 +303,7 @@ struct ExecutionKernel::Impl final {
         return d.projection.phases.at(phaseIndex(i, kind)).state;
     }
     void setPhase(RuntimeState& d, std::size_t i, PhaseKind kind, KernelPhaseState value) const {
-        d.projection.phases.update(phaseIndex(i, kind),
-                                  [value](auto& row) { row.state = value; });
+        d.projection.phases.update(phaseIndex(i, kind), [value](auto& row) { row.state = value; });
     }
     auto pendingPhase(RuntimeState& d, std::size_t i, PhaseKind kind) const -> bool {
         return phase(d, i, kind) == KernelPhaseState::Pending;
@@ -2965,7 +2964,7 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
         auto initial = std::make_shared<RuntimeState>(*plan->initial);
         initial->projection.runScope = std::make_shared<const std::uint8_t>(0);
         auto impl = std::make_unique<Impl>(plan->inputs->configuration, plan->inputs->prepared,
-                                          std::move(initial), plan);
+                                           std::move(initial), plan);
         return std::unique_ptr<ExecutionKernel>{new ExecutionKernel{std::move(impl)}};
     }();
     if (!candidate) {
@@ -3004,8 +3003,8 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
         const NativeRecoveryPoint* chosenNative = nullptr;
         for (const auto& point : archive.nativeRecovery_->points) {
             const auto& p = point->state->projection;
-            if (point->completeRecords <= cut.completeRecords &&
-                p.lastAdvanceHorizon && *p.lastAdvanceHorizon <= horizon &&
+            if (point->completeRecords <= cut.completeRecords && p.lastAdvanceHorizon &&
+                *p.lastAdvanceHorizon <= horizon &&
                 (!chosenNative || point->completeRecords > chosenNative->completeRecords))
                 chosenNative = point.get();
         }
