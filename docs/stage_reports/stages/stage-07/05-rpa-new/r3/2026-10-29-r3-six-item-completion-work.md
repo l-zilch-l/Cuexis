@@ -14,7 +14,7 @@
 | --- | --- | --- |
 | P1 Packed / re-prepare | 名称索引与随后独立 Packed 查找候选分别通过固定诊断保护条件；后者 40K unique 总耗时 23.58 → 7.09 s | identity 投影仍重复生成；最终 fresh 回归与原端到端 load 门未完成 |
 | P2 准备热点 | 保留名称索引与内部 identity 投影复用；后者 fresh 相关回归及固定普通字节/时间对照通过 | timer/resource 尚待独立诊断；不能将局部收益当成 load 原预算通过 |
-| P3 update / Snapshot | 保留先前四属性合并查找和 touched 优化；新增 resolver 索引提示因真实 GPU 保护条件失败而撤回 | 最终源码完整矩阵；extract 仍有可调查成本，不重做 R2 表示 |
+| P3 update / Snapshot | 保留四属性合并查找、touched 和 OpenGL 诊断读回分离；resolver hint 已撤回 | 最终源码完整矩阵；extract 仍有可调查成本，不重做 R2 表示 |
 | P4 编码与真实内存 | 第二次使用 admission 和测量预遍历计划均无实际峰值收益，已放弃，恢复旧独立字节缓存；已取得至 40K 的实际峰值及最终释放 | 本地轨迹不替代原 caps 或历史 R4 身份参考；编码输出本身占用及同时持有范围必须明示 |
 | P5 端到端 Seek | 内置 Host 可转发既有 checkpoint span；CPU 36 组合与 1080p GPU 96 组合核对独立 origin 全字节、目标 tick/context/receipt/像素 | 原尾延迟及重复性、观察路径与故障覆盖；worker 替换并非当前 Host 能力 |
 | P6 维护/工具/矩阵 | metrics TLS 改为函数内每线程对象，消费者同步；全仓格式债处理；候选版 Release 全套通过、Debug 编译通过 | 撤回/新候选后的最终 fresh STATIC/SHARED、Debug/Release/MinGW、安装消费者与完整 CTest |
@@ -142,6 +142,36 @@ submit/readback 路径，尚未证明具体 GL/驱动机制；窗口是否隐藏
 后续复测优先选可能有方法错误、初测异常或相互矛盾的代表场景；无相关代码或条件变化时，
 不反复运行已有稳定结论的完整矩阵。新增对照另行登记轮数、停止条件和判据，保留每次结果；
 正式 15% / CI 与原预算继续适用。
+
+## 普通 GPU 提交与诊断读回分离
+
+实际源码核实 `OpenGlBackend::submit()` 原来每帧都传入 pixelProbe，触发同步 `glReadPixels`。
+当前以现有私有 pimpl 的默认关闭开关控制该读回，owner-only 私有桥供诊断开启，没有新增 SDK
+配置字段、公开方法、全局开关或 backend 对象布局。`renderPresentation()` 本身继续更新 draw 标志，
+移除 submit 的冗余覆盖，避免关闭读回时把有效 `presentationDrawn` 清零。
+
+`pixel-policy-v1` 重编两个 OpenGL TU、设备测试及 Player smoke TU，公共实现依赖优先使用
+已验证的 fresh identity 构建，其他冻结适配器只读复用。四个固定进程的默认关闭/显式开启及
+前后橙色像素核验通过；Player 实体烟雾测试完成 6 帧，resize/故障/重载相关颜色 golden 通过。
+`pixel-seek-regression-v1` 的 96 组合、22,018 assertions 通过。该 overlay 不是最终 fresh 全矩阵。
+
+`pixel-policy-v2` 的吞吐探针显式区分计时帧是否读回，两份实际像素核验放在稳态计时外。
+复用对象的 source/object 哈希和父 binding 另有 `reuse-receipt.json`，不改原绑定。
+`readback-throughput-v1` 预登记 1K/40K render-only，各两对 AB/BA，共 8 个新进程、512 个
+计时帧；1080p、真实入镜与绘制数量、普通 allocator、GPU 时间戳、VSync OFF 均核验。
+关闭/开启读回的完整 CPU cycle 中位数在 1K 为 1.631925 / 1.855300 ms，下降 12.04%；
+40K 为 54.781325 / 55.558800 ms，下降 1.40%，通过预设 5% guard。两份额外 proof 帧不计入
+512 个稳态样本；没有沿用旧读回策略的容量结论或声称 40K 达到 240 FPS。
+
+1K GPU timestamp 区间关闭/开启约 0.023552 / 0.179456 ms，40K 约 15.421696 / 15.633152 ms；
+开启读回会影响 end query 发出时机，不能把该差值全部解释为 GPU 着色耗时下降。
+四个小探针的第二次 proof 提交仍有 183.602–195.782 ms 冷等待，保留为待归因图形启动问题，
+不声称 CPU 不再等待就证明 GPU 提前完成。基于可验证收益与更清晰的诊断职责，保留读回分离。
+
+40K 仍有逐对象命令构造及提交成本。后续若探索批量绘制，应先独立量化其占比，保留 opaque /
+transparent 顺序、通用 shader 和资源语义，不因简单场景收益扩张 SDK 边界。
+OpenGL 3.3 的实例化调用机制见 [Khronos 原始规范 §2.8](https://registry.khronos.org/OpenGL/specs/gl/glspec33.core.pdf)，
+此处仅登记探索方向，当前没有实例化实现或相应性能接受。
 
 ## 构建、版本与原门限
 

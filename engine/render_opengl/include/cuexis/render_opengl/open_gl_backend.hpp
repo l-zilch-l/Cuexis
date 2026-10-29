@@ -30,7 +30,8 @@ namespace cuexis::render_opengl {
 
 namespace detail {
 struct OpenGlPresentationBackendState;
-}
+struct OpenGlDiagnosticsAccess;
+} // namespace detail
 
 struct OpenGlConfig final {
     int majorVersion{3};
@@ -174,7 +175,8 @@ class OpenGlBackend final : public render::RenderBackend,
         -> core::Result<void> override;
     [[nodiscard]] auto rebuild() -> core::Result<void> override;
     [[nodiscard]] auto close() -> core::Result<void> override;
-    // Smoke and tests read the probe captured by the latest submit. Formal playback does not.
+    // Diagnostic opt-in captures RGBA; ordinary submit leaves color bytes zero.
+    // presentationDrawn is populated by every successful submit.
     [[nodiscard]] auto lastPixelProbe() const noexcept -> const OpenGlPixelProbe&;
     void injectPresentFailure(presentation_renderer::PresentationFailureClass failure) noexcept;
     // Adapter-private CXSCCH01 directory. Empty means parameterized prepare requires
@@ -193,6 +195,7 @@ class OpenGlBackend final : public render::RenderBackend,
     auto renderFrame(const render::RenderFrame& frame) -> core::Result<void> override;
 
   private:
+    friend struct detail::OpenGlDiagnosticsAccess;
     OpenGlBackend(platform_sdl::SdlWindowLease window, void* context, OpenGlInfo info,
                   std::uint32_t debugProgram, std::uint32_t debugVertexArray,
                   std::uint32_t debugVertexBuffer, int viewProjectionLocation,

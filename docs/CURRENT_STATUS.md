@@ -38,7 +38,8 @@
   owner 已要求连续完成六项剩余工作，当前候选与完整验证进度统一见
   [六项实施与验证账本](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-29-r3-six-item-completion-work.md)。
   Pattern 编译复用、外观索引提示和新编码缓存因固定对照未达预设收益/保护条件已撤回；
-  名称索引与 Packed 字典查找优化分别通过独立诊断并提交，当前继续验证 identity 投影复用。
+  名称索引、Packed 字典查找及内部 identity 投影复用分别通过独立诊断并提交；
+  OpenGL 普通提交的同步诊断读回已分离，烟雾测试/像素探针显式开启，最终完整矩阵仍待执行。
   Host Seek 已有 CPU 36 组合与实际 GPU 96 组合的功能证据；原性能门及最终完整矩阵仍未关闭。
   最新[来源绑定实验](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-source-binding-experiment.md)用同一 Release 二进制比较 canonical SHA 与进程内 owning source binding。
   2048 requirements、33 条历史的 CPU 宿主首次请求到目标帧由 91.809 ms 降至 1.016 ms；129 条历史由 333.624 ms 降至 1.057 ms。

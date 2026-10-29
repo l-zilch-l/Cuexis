@@ -7,6 +7,7 @@
 #include <cuexis/platform_sdl/sdl_runtime.hpp>
 #include <cuexis/platform_sdl/sdl_window.hpp>
 #include <cuexis/render_opengl/open_gl_backend.hpp>
+#include <cuexis_internal/pixel_probe.hpp>
 #include <filesystem>
 #include <iostream>
 #include <thread>
@@ -255,6 +256,7 @@ TEST_CASE("B5 physical OpenGL device submits reads pixels and directed closes", 
     REQUIRE(SDL_HideWindow(static_cast<SDL_Window*>(window->lease().nativeHandle())));
     auto backend = render_opengl::OpenGlBackend::create(*window, std::move(*configured));
     REQUIRE(backend);
+    REQUIRE(render_opengl::detail::OpenGlDiagnosticsAccess::setPixelReadback(*backend, true));
     std::cout << "GPU: " << backend->info().vendor << " / " << backend->info().renderer << "\n";
     player::ExecutionHostPorts ports{factory(), audio_sdl::WavDecoder::decode,
                                      []() -> core::Result<void> { return {}; }};

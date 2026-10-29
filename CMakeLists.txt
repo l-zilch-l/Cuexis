@@ -166,6 +166,7 @@ if(BUILD_TESTING AND CUEXIS_BUILD_TESTS AND CUEXIS_ENABLE_CHART_V5_CANDIDATE
     add_executable(cuexis_execution_device_probe
         tests/player/execution_device_probe.cpp
         tests/player/gpu_throughput_probe.cpp
+        tests/player/pixel_readback_probe.cpp
         tests/pd/pd5_device_probe.cpp
         engine/render_opengl/src/gpu_timer.cpp
         app/player/src/execution_host.cpp
@@ -173,7 +174,8 @@ if(BUILD_TESTING AND CUEXIS_BUILD_TESTS AND CUEXIS_ENABLE_CHART_V5_CANDIDATE
     )
     target_compile_features(cuexis_execution_device_probe PRIVATE cxx_std_20)
     target_include_directories(cuexis_execution_device_probe PRIVATE
-        "${PROJECT_SOURCE_DIR}/engine/judgement/internal")
+        "${PROJECT_SOURCE_DIR}/engine/judgement/internal"
+        "${PROJECT_SOURCE_DIR}/engine/render_opengl/internal")
     target_compile_definitions(cuexis_execution_device_probe PRIVATE
         CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
     )

@@ -1,4 +1,5 @@
 #include "../internal/cuexis_internal/gpu_storage_observer.hpp"
+#include "../internal/cuexis_internal/pixel_probe.hpp"
 #include "open_gl_presentation_internal.hpp"
 #include <cuexis/playback/presentation_candidate.hpp>
 
@@ -1804,12 +1805,13 @@ auto OpenGlBackend::submit(const playback::FrameSnapshot& snapshot,
     }
     presentation_renderer::DrawSummary summary;
     OpenGlPixelProbe probe;
-    auto drawn = renderPresentation(snapshot, debugScene, &summary, &probe, false);
+    auto drawn = renderPresentation(
+        snapshot, debugScene, &summary,
+        presentation_ && presentation_->pixelReadbackEnabled ? &probe : nullptr, false);
     if (!drawn) {
         return core::unexpected(std::move(drawn.error()));
     }
     frameSubmitted_ = true;
-    lastProbe_ = probe;
     // The neutral builder already produced the authoritative summary; no second conversion.
     return summary;
 }
@@ -1908,6 +1910,21 @@ auto OpenGlBackend::rebuild() -> core::Result<void> {
 
 auto OpenGlBackend::lastPixelProbe() const noexcept -> const OpenGlPixelProbe& {
     return lastProbe_;
+}
+
+auto detail::OpenGlDiagnosticsAccess::setPixelReadback(OpenGlBackend& backend, bool enabled)
+    -> core::Result<void> {
+    if (!SDL_IsMainThread() || !backend.ownerThread_.isCurrent())
+        return core::unexpected(core::Error{"render.opengl.not_main_thread",
+                                            "Pixel readback configuration belongs to the owner"});
+    if (!backend.presentation_)
+        return core::unexpected(core::Error{"render.opengl.backend_unavailable",
+                                            "Pixel readback requires a live backend"});
+    if (backend.presentation_->pixelReadbackEnabled != enabled) {
+        backend.presentation_->pixelReadbackEnabled = enabled;
+        backend.lastProbe_ = {};
+    }
+    return {};
 }
 
 void OpenGlBackend::injectPresentFailure(

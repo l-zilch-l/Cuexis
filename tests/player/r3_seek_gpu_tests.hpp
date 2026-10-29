@@ -45,6 +45,7 @@ TEST_CASE("R3 physical GPU Seek verifies target pixels and origin state",
     REQUIRE(height == 1080);
     auto backend = render_opengl::OpenGlBackend::create(*window, std::move(*configured));
     REQUIRE(backend);
+    REQUIRE(render_opengl::detail::OpenGlDiagnosticsAccess::setPixelReadback(*backend, true));
     int swapInterval{};
     REQUIRE(SDL_GL_GetSwapInterval(&swapInterval));
     REQUIRE(swapInterval == 0);

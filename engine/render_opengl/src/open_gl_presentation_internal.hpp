@@ -159,6 +159,7 @@ struct PresentationResourceSet final {
 };
 
 struct OpenGlPresentationBackendState final {
+    bool pixelReadbackEnabled{};
     PresentationPipeline pipeline;
     std::optional<PresentationResourceSet> active;
     std::optional<PresentationResourceSet> pending;

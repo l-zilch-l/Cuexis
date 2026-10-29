@@ -6,6 +6,7 @@
 #include <cuexis/platform_sdl/sdl_runtime.hpp>
 #include <cuexis/platform_sdl/sdl_window.hpp>
 #include <cuexis/render_opengl/open_gl_backend.hpp>
+#include <cuexis_internal/pixel_probe.hpp>
 
 #include <algorithm>
 #include <array>
@@ -157,6 +158,7 @@ TEST_CASE("GPU visible entity throughput probe", "[.][device][gpu][throughput]")
     auto* nativeWindow = static_cast<SDL_Window*>(window.lease().nativeHandle());
     auto backend =
         throughputTake(render_opengl::OpenGlBackend::create(window, std::move(configuration)));
+    throughputTake(render_opengl::detail::OpenGlDiagnosticsAccess::setPixelReadback(backend, true));
     int interval{};
     REQUIRE(SDL_GL_GetSwapInterval(&interval));
     REQUIRE(interval == 0);
@@ -175,6 +177,15 @@ TEST_CASE("GPU visible entity throughput probe", "[.][device][gpu][throughput]")
     auto snapshot = throughputTake(session.extractFrame(viewport));
     REQUIRE(snapshot.objects.size() == count);
     REQUIRE(throughputInView(snapshot) == count);
+    const bool readback = test_support::environmentVariable("CUEXIS_GPU_PIXEL_READBACK") != "0";
+    // Pixel proof is explicit and outside steady-frame timing in both modes.
+    throughputTake(backend.submit(snapshot));
+    throughputTake(backend.present());
+    REQUIRE(backend.lastPixelProbe().rgba[0] > 200);
+    REQUIRE(backend.lastPixelProbe().rgba[1] > 100);
+    REQUIRE(backend.lastPixelProbe().rgba[2] < 160);
+    throughputTake(
+        render_opengl::detail::OpenGlDiagnosticsAccess::setPixelReadback(backend, readback));
     render_opengl::test_only::GpuTimer timer;
     if (timing)
         throughputTake(timer.initialize());
@@ -268,6 +279,9 @@ TEST_CASE("GPU visible entity throughput probe", "[.][device][gpu][throughput]")
     REQUIRE(gpuNs.size() == (timing ? samples.size() : 0));
     const auto inView = throughputInView(snapshot);
     REQUIRE(inView == count);
+    throughputTake(render_opengl::detail::OpenGlDiagnosticsAccess::setPixelReadback(backend, true));
+    throughputTake(backend.submit(snapshot));
+    throughputTake(backend.present());
     // The opaque fixture is orange. A background-only frame cannot pass this proof.
     REQUIRE(backend.lastPixelProbe().rgba[0] > 200);
     REQUIRE(backend.lastPixelProbe().rgba[1] > 100);
@@ -282,6 +296,8 @@ TEST_CASE("GPU visible entity throughput probe", "[.][device][gpu][throughput]")
               << ",\"in_view_centers\":" << inView << ",\"fixture_revision\":3"
               << ",\"moved_entities\":" << moved << ",\"frames\":" << samples.size()
               << ",\"duration_seconds\":" << seconds << ",\"warmup_frames\":" << warmupCount
+              << ",\"pixel_readback\":" << (readback ? "true" : "false")
+              << ",\"outside_timing_pixel_proof_frames\":2"
               << ",\"warmup_ms\":" << warmupMs << ",\"timer\":" << (timing ? "true" : "false")
               << ",\"vsync\":" << interval << ",\"width\":" << width << ",\"height\":" << height
               << ",\"vendor\":" << std::quoted(backend.info().vendor)

@@ -39,6 +39,8 @@ if(CUEXIS_PLAYBACK_TRACE_HARNESS)
 endif()
 
 target_compile_features(cuexis_player PRIVATE cxx_std_20)
+target_include_directories(cuexis_player PRIVATE
+    "${PROJECT_SOURCE_DIR}/engine/render_opengl/internal")
 
 target_link_libraries(
     cuexis_player

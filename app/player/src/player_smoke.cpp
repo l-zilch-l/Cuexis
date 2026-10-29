@@ -1,4 +1,5 @@
 #include "player_smoke.hpp"
+#include <cuexis_internal/pixel_probe.hpp>
 
 #include "player_log.hpp"
 #include "snapshot_scene.hpp"
@@ -327,6 +328,10 @@ auto PlayerSmokeBinding::afterTimelineAdvance(PlayerClockContext& context) -> co
 
 auto PlayerSmokeBinding::beforeSubmit(const playback::FrameSnapshot& snapshot,
                                       std::uint32_t renderedFrames) -> core::Result<void> {
+    if (auto enabled =
+            render_opengl::detail::OpenGlDiagnosticsAccess::setPixelReadback(backend_, true);
+        !enabled)
+        return core::unexpected(std::move(enabled.error()));
     if (renderedFrames != 1) {
         return {};
     }
