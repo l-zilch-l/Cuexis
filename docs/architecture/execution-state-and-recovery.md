@@ -136,6 +136,13 @@ CPU 能力满足时调用，其余走 portable fallback。第三方来源、适�
 [依赖政策](../guides/DEPENDENCY_POLICY.md)及 [Third-party notices](../../THIRD_PARTY_NOTICES.md)。
 身份 writer 的范围插入试验已撤销，不属于当前实现。
 
+身份构造在同一 translation unit 内复用本次 chart identity 的不可变 chart 投影，分别复制到
+Content / Prepared 的自有输出，不保留借用 span，也不缓存可变 graph。私有 IdentityFactory
+只接受本次组装图或同一 PreparedGameplay owner；运行身份仍使用 kernel 根据实际 ruleset / grade
+推导后的声明，并保留 mapping / late / calibration 后缀。提取时核对签名和组件前缀，未匹配则
+回到 graph writer；长度计数与字段写入共享遍历，以便在大段复制前预留完整尾部容量。
+graph-based 生成器继续作为独立字节参考，内部复用不改变身份语义或建立外部信任。
+
 ## 维护与验证入口
 
 | 修改区域 | 必须保持的约束与回归方向 |

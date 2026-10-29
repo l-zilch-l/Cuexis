@@ -202,6 +202,9 @@ class CanonicalIdentityBytes;
 class ChartIdentity;
 class ContentIdentity;
 class PreparedIdentity;
+namespace detail {
+struct IdentityFactory;
+}
 
 [[nodiscard]] auto makeRuntimePreparedIdentity(const CanonicalGameplayGraph& graph,
                                                const PreparedIdentityDeclarations& declarations,
@@ -246,6 +249,7 @@ class CanonicalIdentityBytes final {
     }
 
   private:
+    friend struct detail::IdentityFactory;
     friend auto makeRuntimePreparedIdentity(const CanonicalGameplayGraph&,
                                             const PreparedIdentityDeclarations&,
                                             const InputMappingProfile&, const LatePolicyParameters&,
@@ -302,6 +306,7 @@ class ContentIdentity final {
         -> bool = default;
 
   private:
+    friend struct detail::IdentityFactory;
     friend auto makeContentIdentity(const CanonicalGameplayGraph& graph) -> ContentIdentity;
 
     explicit ContentIdentity(CanonicalIdentityBytes bytes) noexcept : bytes_(std::move(bytes)) {}
@@ -322,6 +327,7 @@ class PreparedIdentity final {
         -> bool = default;
 
   private:
+    friend struct detail::IdentityFactory;
     friend auto makeRuntimePreparedIdentity(const CanonicalGameplayGraph&,
                                             const PreparedIdentityDeclarations&,
                                             const InputMappingProfile&, const LatePolicyParameters&,

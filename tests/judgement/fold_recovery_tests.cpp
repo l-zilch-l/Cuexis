@@ -1192,6 +1192,51 @@ TEST_CASE("Statistics includes declared absent grade keys and real stray receipt
     CHECK(rulesetIdentityToken(*a) == rulesetIdentityToken(*b));
 }
 
+TEST_CASE("Runtime identity matches graph reference with actual ruleset and grade declarations",
+          "[fold][recovery][identity]") {
+    for (const bool graded : {false, true}) {
+        FoldFixture f;
+        if (graded) {
+            auto& component = f.assembly.sources[0].document.requirements[0].measure.components[0];
+            component.declaredGradeTokens = {"tight"};
+            component.gradeTable = std::vector<GradeInterval>{{-50, -1, "tight"}, {0, 0, "tight"}};
+            f.rules.score.rules.push_back({PhaseKind::head, Outcome::hit, "tight", 2, true});
+        }
+        const auto prepared = f.prepared();
+        const auto configuration = f.configuration();
+        REQUIRE(configuration.ruleset);
+        auto actual = configuration.identityDeclarations;
+        actual.engine.judgementSemanticRevision += ";gameplay.fold.finite.v1";
+        if (graded)
+            actual.engine.factSemanticRevision += ";grade.signed-interval.v1";
+        actual.ruleset.interfaceProjectionToken = rulesetIdentityToken(*configuration.ruleset);
+        actual.ruleset.buildHash = configuration.ruleset->declaration().compiledBuild;
+        actual.ruleset.moduleOrder.clear();
+        for (const auto& module : configuration.ruleset->declaration().modules)
+            actual.ruleset.moduleOrder.push_back(module.id);
+        actual.session.loadoutToken = configuration.ruleset->declaration().loadoutId;
+        const auto expected = makeRuntimePreparedIdentity(
+            prepared.assembled().graph, actual, configuration.inputMapping.view(),
+            configuration.latePolicy, configuration.calibrationIdentityToken);
+        std::optional<PreparedIdentity> retained;
+        {
+            auto session = JudgementSession::create();
+            REQUIRE(session);
+            REQUIRE(session->configure(configuration));
+            REQUIRE(session->prepare(prepared));
+            auto query = session->query();
+            REQUIRE(query);
+            retained = query->kernelView().judgementIdentity;
+        }
+        REQUIRE(retained);
+        CHECK(*retained == expected);
+        CHECK_FALSE(*retained == makeRuntimePreparedIdentity(
+                                     prepared.assembled().graph, configuration.identityDeclarations,
+                                     configuration.inputMapping.view(), configuration.latePolicy,
+                                     configuration.calibrationIdentityToken));
+    }
+}
+
 TEST_CASE("actual identity isolates Loadout scoring chart and rejects fake engine revision",
           "[fold][recovery][identity]") {
     const auto components = [](const PreparedIdentity& identity) {

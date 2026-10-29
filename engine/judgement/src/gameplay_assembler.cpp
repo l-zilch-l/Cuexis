@@ -28,6 +28,7 @@
 #include <cuexis/judgement/gameplay_assembler.hpp>
 
 #include "gameplay_closure.hpp"
+#include "identity_factory.hpp"
 #include "pattern_dfa.hpp"
 #include "source_codes.hpp"
 
@@ -44,6 +45,7 @@
 #include <optional>
 #include <set>
 #include <span>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -425,6 +427,7 @@ struct UnsupportedMapping final {
 //  host math library take part, so two toolchains produce the same bytes for the same content.
 class IdentityByteWriter final {
   public:
+    IdentityByteWriter() = default;
     explicit IdentityByteWriter(std::string_view signature) {
         writeText(signature);
     }
@@ -467,18 +470,62 @@ class IdentityByteWriter final {
         return std::move(bytes_);
     }
 
+    void reserveAdditional(std::size_t additional) {
+        if (additional > bytes_.max_size() - bytes_.size())
+            throw std::length_error{"Identity bytes exceed vector capacity"};
+        bytes_.reserve(bytes_.size() + additional);
+    }
+
+    void append(std::span<const std::byte> bytes) {
+        bytes_.insert(bytes_.end(), bytes.begin(), bytes.end());
+    }
+
   private:
     std::vector<std::byte> bytes_;
 };
 
-void writeFeatureRefs(IdentityByteWriter& writer, const std::vector<FeatureRef>& refs) {
+// Counts metadata without serializing a second large projection or provenance buffer.
+class IdentitySizeWriter final {
+  public:
+    void beginComponent(std::string_view name) {
+        writeText(name);
+    }
+    void writeBool(bool) {
+        add(1);
+    }
+    void writeUnsigned(std::uint64_t) {
+        add(8);
+    }
+    void writeCount(std::size_t) {
+        add(8);
+    }
+    void writeText(std::string_view text) {
+        add(8);
+        add(text.size());
+    }
+    auto size() const noexcept -> std::size_t {
+        return size_;
+    }
+
+  private:
+    void add(std::size_t amount) {
+        if (amount > std::numeric_limits<std::size_t>::max() - size_)
+            throw std::length_error{"Identity size overflow"};
+        size_ += amount;
+    }
+    std::size_t size_{};
+};
+
+template <typename Writer>
+void writeFeatureRefs(Writer& writer, const std::vector<FeatureRef>& refs) {
     writer.writeCount(refs.size());
     for (const auto& ref : refs) {
         writer.writeText(ref.featureId);
     }
 }
 
-void writeCapabilityRefs(IdentityByteWriter& writer, const std::vector<CapabilityRef>& refs) {
+template <typename Writer>
+void writeCapabilityRefs(Writer& writer, const std::vector<CapabilityRef>& refs) {
     writer.writeCount(refs.size());
     for (const auto& ref : refs) {
         writer.writeText(ref.capabilityId);
@@ -494,7 +541,8 @@ void writeCapabilityRefs(IdentityByteWriter& writer, const std::vector<Capabilit
     }
 }
 
-void writeStableIds(IdentityByteWriter& writer, const std::vector<StableDeclarationId>& ids) {
+template <typename Writer>
+void writeStableIds(Writer& writer, const std::vector<StableDeclarationId>& ids) {
     writer.writeCount(ids.size());
     for (const auto& id : ids) {
         writer.writeText(id.sourceDocumentId);
@@ -829,7 +877,8 @@ void writeChartProjection(IdentityByteWriter& writer, const CanonicalGameplayGra
 //  The provenance the content projection adds. None of it is judgement content: it is authoring
 //  identity, toolchain identity and the source of a resolved value, which Spec 5.2 attributes to
 //  the content projection and to the diagnostic context.
-void writeContentProvenance(IdentityByteWriter& writer, const CanonicalGameplayGraph& graph) {
+template <typename Writer>
+void writeContentProvenance(Writer& writer, const CanonicalGameplayGraph& graph) {
     writer.writeCount(graph.sourceClosure.sourceDocumentIds.size());
     for (const auto& documentId : graph.sourceClosure.sourceDocumentIds) {
         writer.writeText(documentId);
@@ -2007,9 +2056,9 @@ auto makeContentIdentity(const CanonicalGameplayGraph& graph) -> ContentIdentity
     return ContentIdentity{CanonicalIdentityBytes{writer.take()}};
 }
 
-auto makePreparedIdentity(const CanonicalGameplayGraph& graph,
-                          const PreparedIdentityDeclarations& declarations) -> PreparedIdentity {
-    IdentityByteWriter writer{"cuexis.judgement.identity.prepared.v1"};
+namespace {
+void writePreparedPrefix(IdentityByteWriter& writer,
+                         const PreparedIdentityDeclarations& declarations) {
     writer.beginComponent("engine");
     writer.writeText(declarations.engine.judgementSemanticRevision);
     writer.writeText(declarations.engine.factSemanticRevision);
@@ -2036,7 +2085,10 @@ auto makePreparedIdentity(const CanonicalGameplayGraph& graph,
     }
     writer.writeText(declarations.ruleset.buildHash);
     writer.beginComponent("chart");
-    writeChartProjection(writer, graph);
+}
+
+template <typename Writer>
+void writePreparedSession(Writer& writer, const PreparedIdentityDeclarations& declarations) {
     writer.beginComponent("session");
     //  The discrete-input normalization profile and the default grace source belong to the session
     //  component, where Spec 5.2 puts them.
@@ -2044,16 +2096,11 @@ auto makePreparedIdentity(const CanonicalGameplayGraph& graph,
     writer.writeText(declarations.session.defaultGraceSourceToken);
     writer.writeText(declarations.session.normalizationProfileToken);
     writer.writeText(declarations.session.judgementConfigToken);
-    return PreparedIdentity{CanonicalIdentityBytes{writer.take()}};
 }
 
-auto makeRuntimePreparedIdentity(const CanonicalGameplayGraph& graph,
-                                 const PreparedIdentityDeclarations& declarations,
-                                 const InputMappingProfile& mapping,
-                                 const LatePolicyParameters& late, std::string_view calibration)
-    -> PreparedIdentity {
-    auto bytes = makePreparedIdentity(graph, declarations).canonicalBytes().bytes();
-    IdentityByteWriter writer{"cuexis.judgement.identity.session.execution.v1"};
+void writeExecutionSession(IdentityByteWriter& writer, const InputMappingProfile& mapping,
+                           const LatePolicyParameters& late, std::string_view calibration) {
+    writer.writeText("cuexis.judgement.identity.session.execution.v1");
     writer.writeText(mapping.profileId);
     writer.writeText(mapping.profileVersion);
     writer.writeText(mapping.sourceClass.token());
@@ -2083,9 +2130,99 @@ auto makeRuntimePreparedIdentity(const CanonicalGameplayGraph& graph,
                                                                      : "queue_next_tick");
     }
     writer.writeText(calibration);
-    auto session = writer.take();
-    bytes.insert(bytes.end(), session.begin(), session.end());
-    return PreparedIdentity{CanonicalIdentityBytes{std::move(bytes)}};
+}
+
+auto chartProjection(const ChartIdentity& chart) -> std::optional<std::span<const std::byte>> {
+    IdentityByteWriter header{"cuexis.judgement.identity.chart.v1"};
+    header.beginComponent("chart");
+    const auto prefix = header.take();
+    const auto& bytes = chart.canonicalBytes().bytes();
+    if (bytes.size() < prefix.size() || !std::equal(prefix.begin(), prefix.end(), bytes.begin()))
+        return std::nullopt;
+    return std::span<const std::byte>{bytes}.subspan(prefix.size());
+}
+
+auto preparedFromProjection(std::span<const std::byte> projection,
+                            const PreparedIdentityDeclarations& declarations,
+                            std::span<const std::byte> execution = {}) -> std::vector<std::byte> {
+    IdentityByteWriter writer{"cuexis.judgement.identity.prepared.v1"};
+    writePreparedPrefix(writer, declarations);
+    IdentitySizeWriter suffix;
+    writePreparedSession(suffix, declarations);
+    // Reserve the tail before the large append to avoid a second full-buffer allocation.
+    if (execution.size() > std::numeric_limits<std::size_t>::max() - suffix.size() ||
+        projection.size() >
+            std::numeric_limits<std::size_t>::max() - suffix.size() - execution.size())
+        throw std::length_error{"Identity size overflow"};
+    writer.reserveAdditional(projection.size() + suffix.size() + execution.size());
+    writer.append(projection);
+    writePreparedSession(writer, declarations);
+    writer.append(execution);
+    return writer.take();
+}
+} // namespace
+
+auto makePreparedIdentity(const CanonicalGameplayGraph& graph,
+                          const PreparedIdentityDeclarations& declarations) -> PreparedIdentity {
+    IdentityByteWriter writer{"cuexis.judgement.identity.prepared.v1"};
+    writePreparedPrefix(writer, declarations);
+    writeChartProjection(writer, graph);
+    writePreparedSession(writer, declarations);
+    return PreparedIdentity{CanonicalIdentityBytes{writer.take()}};
+}
+
+auto makeRuntimePreparedIdentity(const CanonicalGameplayGraph& graph,
+                                 const PreparedIdentityDeclarations& declarations,
+                                 const InputMappingProfile& mapping,
+                                 const LatePolicyParameters& late, std::string_view calibration)
+    -> PreparedIdentity {
+    IdentityByteWriter writer{"cuexis.judgement.identity.prepared.v1"};
+    writePreparedPrefix(writer, declarations);
+    writeChartProjection(writer, graph);
+    writePreparedSession(writer, declarations);
+    writeExecutionSession(writer, mapping, late, calibration);
+    return PreparedIdentity{CanonicalIdentityBytes{writer.take()}};
+}
+
+auto detail::IdentityFactory::assemble(const CanonicalGameplayGraph& graph,
+                                       const PreparedIdentityDeclarations& declarations)
+    -> std::tuple<ChartIdentity, ContentIdentity, PreparedIdentity> {
+    auto chart = makeChartIdentity(graph);
+    const auto projection = chartProjection(chart);
+    if (!projection)
+        return {std::move(chart), makeContentIdentity(graph),
+                makePreparedIdentity(graph, declarations)};
+    IdentityByteWriter content{"cuexis.judgement.identity.content.v1"};
+    content.beginComponent("chart");
+    IdentitySizeWriter suffix;
+    suffix.beginComponent("provenance");
+    writeContentProvenance(suffix, graph);
+    if (projection->size() > std::numeric_limits<std::size_t>::max() - suffix.size())
+        throw std::length_error{"Identity size overflow"};
+    content.reserveAdditional(projection->size() + suffix.size());
+    content.append(*projection);
+    content.beginComponent("provenance");
+    writeContentProvenance(content, graph);
+    auto contentIdentity = ContentIdentity{CanonicalIdentityBytes{content.take()}};
+    auto preparedIdentity =
+        PreparedIdentity{CanonicalIdentityBytes{preparedFromProjection(*projection, declarations)}};
+    return {std::move(chart), std::move(contentIdentity), std::move(preparedIdentity)};
+}
+
+auto detail::IdentityFactory::runtime(const PreparedGameplay& prepared,
+                                      const PreparedIdentityDeclarations& declarations,
+                                      const InputMappingProfile& mapping,
+                                      const LatePolicyParameters& late,
+                                      std::string_view calibration) -> PreparedIdentity {
+    const auto projection = chartProjection(prepared.assembled().chart);
+    if (!projection)
+        return makeRuntimePreparedIdentity(prepared.assembled().graph, declarations, mapping, late,
+                                           calibration);
+    IdentityByteWriter suffix;
+    writeExecutionSession(suffix, mapping, late, calibration);
+    const auto execution = suffix.take();
+    return PreparedIdentity{
+        CanonicalIdentityBytes{preparedFromProjection(*projection, declarations, execution)}};
 }
 
 //  Counts every content-profile dimension of one canonical graph. The pattern dimensions are
@@ -2285,9 +2422,8 @@ auto assembleGameplay(const AssemblyRequest& request) -> core::Result<AssembledG
     measurement.reset();
     measurement.emplace(internal::pd::Stage::gameplayAssemblyIdentities);
 #endif
-    const ChartIdentity chart = makeChartIdentity(graph);
-    const ContentIdentity content = makeContentIdentity(graph);
-    const PreparedIdentity prepared = makePreparedIdentity(graph, request.identityDeclarations);
+    const auto [chart, content, prepared] =
+        detail::IdentityFactory::assemble(graph, request.identityDeclarations);
 #if defined(CUEXIS_PD_METRICS_TEST_ONLY)
     measurement.reset();
 #endif

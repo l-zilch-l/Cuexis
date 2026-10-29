@@ -2,6 +2,7 @@
 #include "diagnostic_policy.hpp"
 #include "execution_log.hpp"
 #include "execution_testing.hpp"
+#include "identity_factory.hpp"
 #include <cuexis/judgement/recovery_codec.hpp>
 #include <cuexis_internal/execution_diagnostics.hpp>
 
@@ -1101,27 +1102,28 @@ auto ExecutionKernel::prepare(const SessionConfiguration& c, const PreparedGamep
         actual.engine.factSemanticRevision += ";grade.signed-interval.v1";
     }
     SharedSequence<MatcherState> matchers;
-    KernelProjection projection{.phases = {},
-                                .resources = {},
-                                .contacts = {},
-                                .ownership = {},
-                                .observers = {},
-                                .receipts = {},
-                                .facts = {},
-                                .processedFrontier = {},
-                                .lastAdvanceHorizon = {},
-                                .state = KernelSessionState::Prepared,
-                                .faultDiagnostic = {},
-                                .judgementIdentity = makeRuntimePreparedIdentity(
-                                    g, actual, mapping, c.latePolicy, c.calibrationIdentityToken),
-                                .runScope = {},
-                                .failedTick = {},
-                                .requestedHorizon = {},
-                                .kernelWorkTick = {},
-                                .sealedFactCursor = 0,
-                                .fold = {},
-                                .effectiveFactSemanticRevision = {},
-                                .faultStage = {}};
+    KernelProjection projection{
+        .phases = {},
+        .resources = {},
+        .contacts = {},
+        .ownership = {},
+        .observers = {},
+        .receipts = {},
+        .facts = {},
+        .processedFrontier = {},
+        .lastAdvanceHorizon = {},
+        .state = KernelSessionState::Prepared,
+        .faultDiagnostic = {},
+        .judgementIdentity = IdentityFactory::runtime(prepared, actual, mapping, c.latePolicy,
+                                                      c.calibrationIdentityToken),
+        .runScope = {},
+        .failedTick = {},
+        .requestedHorizon = {},
+        .kernelWorkTick = {},
+        .sealedFactCursor = 0,
+        .fold = {},
+        .effectiveFactSemanticRevision = {},
+        .faultStage = {}};
     projection.effectiveFactSemanticRevision = actual.engine.factSemanticRevision;
     if (c.executionProfileToken == "gameplay.execution.t4-k4.rpa.v1") {
         projection.rpa.emplace();

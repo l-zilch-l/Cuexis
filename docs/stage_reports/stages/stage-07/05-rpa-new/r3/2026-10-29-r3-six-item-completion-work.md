@@ -13,7 +13,7 @@
 | 项目 | 本批实施/调查 | 尚需完成的核验 |
 | --- | --- | --- |
 | P1 Packed / re-prepare | 名称索引与随后独立 Packed 查找候选分别通过固定诊断保护条件；后者 40K unique 总耗时 23.58 → 7.09 s | identity 投影仍重复生成；最终 fresh 回归与原端到端 load 门未完成 |
-| P2 准备热点 | 保留名称索引，消除逐 requirement 的 namespace 全表查找；40K unique source prepare 6.404 → 1.533 s；identity 复用候选正在 fresh 编译与字节回归 | 候选尚无测量结论；timer/resource 不因这次局部改善而宣布完成 |
+| P2 准备热点 | 保留名称索引与内部 identity 投影复用；后者 fresh 相关回归及固定普通字节/时间对照通过 | timer/resource 尚待独立诊断；不能将局部收益当成 load 原预算通过 |
 | P3 update / Snapshot | 保留先前四属性合并查找和 touched 优化；新增 resolver 索引提示因真实 GPU 保护条件失败而撤回 | 最终源码完整矩阵；extract 仍有可调查成本，不重做 R2 表示 |
 | P4 编码与真实内存 | 第二次使用 admission 和测量预遍历计划均无实际峰值收益，已放弃，恢复旧独立字节缓存；已取得至 40K 的实际峰值及最终释放 | 本地轨迹不替代原 caps 或历史 R4 身份参考；编码输出本身占用及同时持有范围必须明示 |
 | P5 端到端 Seek | 内置 Host 可转发既有 checkpoint span；CPU 36 组合与 1080p GPU 96 组合核对独立 origin 全字节、目标 tick/context/receipt/像素 | 原尾延迟及重复性、观察路径与故障覆盖；worker 替换并非当前 Host 能力 |
@@ -96,6 +96,25 @@ Packed 和三种身份的完整 raw 字节一致；unique 1K/10K/40K 总和中�
 12.427108 → 1.797437 s，decode 9.488453 → 3.723324 s；source prepare 未被本候选修改。
 uniform 总和 +4.06%/-5.04%/-2.20%，通过预设 5% guard；各组 relative range 最大 11.27%，
 原始变动完整保留。该候选保留；不同登记组不能直接相加声称连续基线收益或正式接受。
+
+`identity-candidate-v1` 独立 fresh MSVC Release STATIC 编译 165 个命令并通过 Judgement
+234 cases / 56,103 assertions、Packed 51 / 5,641、Host 62 / 49,645。新增实际 ruleset 与
+grade table 的 runtime 身份对照及 session 销毁后 owning 字节检查；独立审阅未发现字段顺序、
+借用生命周期、溢出预留或实际声明使用的缺陷。该候选没有额外安装 API 或新持久缓存。
+相关构建不是所有工具链/共享包完整矩阵。测量 runner 首次生成有 Python 语法错误，尚未启动
+任何测量进程；失败脚本保留，修正后才创建有效登记。
+
+`identity-measure-v1` 预登记每规模/输入两对 AB/BA，共 24 个普通 allocator 新进程；完整
+Packed / Chart / Content / Prepared raw 字节一致。uniform 1K/10K/40K 总和中位数下降
+3.79%/8.50%/15.79%，unique 下降 7.04%/5.34%/5.93%，符合预设大规模改善与小规模 5% guard。
+但 40K uniform 原 baseline relative range 为 21.43%，该组 15.79% 受慢点影响，不能用作稳定
+收益或原 15% 门通过。其余组 relative range 均小于 10%。
+
+针对这一初测异常另登记 `identity-uniform-anomaly-v1`，只跑 40K uniform 两对，共 4 个新进程；
+未改原组或二进制，raw 字节仍一致。baseline 总和 6.185123 / 5.738604 s，candidate
+5.379228 / 5.360227 s；中位数 5.961864 → 5.369728 s，下降约 9.93%，两边 relative range
+为 7.49% / 0.35%。原更高慢点未稳定复现，按偶发/未复现保留，不删除，也不并入原组改判。
+两项固定组支持保留该内部复用，正式 CI、端到端 load 和 Seek 原门仍独立开放。
 
 ## Seek 目标图像与异常复测
 
