@@ -373,3 +373,43 @@ TEST_CASE("R2 warmed borrowed gather and consumption allocate nothing",
     CHECK(observed);
     CHECK(allocations == 0);
 }
+
+TEST_CASE("Presentation reads observe removed and recreated component storage",
+          "[pd][presentation-read][r3]") {
+    using namespace runtime::detail;
+    Fixture f;
+    const auto read = [&](const auto& inspect) {
+        return PresentationAccess::read(f.session, PresentationAccess::state(f.session)->stamp,
+                                        [&](const PresentationRead& view) -> core::Result<void> {
+                                            auto row = view.readSnapshotObject(0);
+                                            REQUIRE(row);
+                                            inspect(*row);
+                                            return {};
+                                        });
+    };
+    REQUIRE(read([](const auto& row) { CHECK(row.hasAppearance); }));
+    REQUIRE(f.session.withWorld([&](world::World& w) {
+        return w.withRegistry([&](entt::registry& registry) {
+            REQUIRE(registry.reset(entt::type_hash<render::AppearanceComponent>::value()));
+        });
+    }));
+    REQUIRE(read([](const auto& row) {
+        CHECK_FALSE(row.hasAppearance);
+        CHECK(row.material.empty());
+    }));
+    REQUIRE(f.session.withWorld([&](world::World& w) {
+        return w.withRegistry([&](entt::registry& registry) {
+            render::AppearanceComponent appearance;
+            appearance.visible = false;
+            appearance.materialAssetId = "material.recreated";
+            appearance.opacity = 0.25;
+            registry.emplace<render::AppearanceComponent>(f.child, std::move(appearance));
+        });
+    }));
+    REQUIRE(read([](const auto& row) {
+        CHECK(row.hasAppearance);
+        CHECK_FALSE(row.visible);
+        CHECK(row.material == "material.recreated");
+        CHECK(row.opacity == 0.25);
+    }));
+}

@@ -196,6 +196,20 @@ source prepare + Packed encode + decode 总和 6.740689 → 3.731611 s，下降 
 最终 source prepare 中位数 1.687775 → 0.319911 s，下降约 81.05%；总和
 6.446277 → 3.697551 s，下降约 42.64%。因此保留这两处扫描消除，不扩展为持久资源缓存。
 
+## Snapshot 组件池借用候选撤回
+
+`pool-candidate-v1` 首次探针因未使用的 SDL include 缺少搜索路径而编译失败，未进入测量；
+v2 移除无关 include，沿相同普通 Release 依赖只覆盖 presentation read TU。
+新增组件池整体移除、缺失读取及重新创建后的字段读取回归，两版 Runtime 各
+54 cases / 11,614 assertions、候选 Playback 184 / 34,747 通过。
+
+`pool-measure-v1` 预登记 10 个普通 allocator 进程、每进程 20 帧预热和 100 帧测量：
+1K/40K static 各两对 AB/BA，40K animated 一对 guard。最终 FrameDigest 全部一致。
+40K static extraction 中位数 7.113125 → 7.143575 ms，反而增加约 0.43%；
+1K 下降约 2.30%，40K animated 增加约 0.28%。没有达到预设 40K extraction 至少改善 10%
+的保留判据，因此撤回产品代码，不为该结果追加复测。保留源码、二进制、登记与全部样本；
+保留独立的存储移除/重建生命周期回归，作为既有只读窗口合同检查，不引入新的组件池缓存。
+
 ## 构建、版本与原门限
 
 所有新构建串行、BelowNormal、affinity 3，由既有 Windows Job 包装器约束后代。
@@ -208,7 +222,8 @@ source prepare + Packed encode + decode 总和 6.740689 → 3.731611 s，下降 
 `release-resume1-ctest.log`，退出码及命令见 `release-resume1-results.json`。
 首次构建因新测试错误地默认构造必须携带 PreparedIdentity 的 KernelProjection 而失败，
 原日志保留；测试改为使用真实 assembler 产生的身份后再构建、运行全套，不删除该反例。
-该结果覆盖当前候选的常规功能回归，不能替代性能测量、观察通道路径证明或其他工具链矩阵。
+该结果覆盖当时 b2 候选的常规功能回归，不覆盖此后保留或撤回的所有变更；
+不能替代最终源码矩阵、性能测量、观察通道路径证明或其他工具链矩阵。
 后续独立 Debug 构建目录为 `debug-static-v1`。
 
 `debug-static-v1` 全量编译成功；CTest 在预先设置的性能分阶段等待处被对话中断，尚未执行，
