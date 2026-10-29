@@ -772,20 +772,11 @@ auto PropertyResolver::finalize() -> core::Result<void> {
 }
 
 auto detail::ResolverAccess::resolvedAppearance(const PropertyResolver& resolver,
-                                                entt::entity entity,
-                                                std::size_t* cachedIndex) noexcept
+                                                entt::entity entity) noexcept
     -> std::array<const PropertyValue*, 4> {
-    const auto* entry = cachedIndex && *cachedIndex < resolver.entries_.size() &&
-                                resolver.entries_[*cachedIndex].entity == entity
-                            ? &resolver.entries_[*cachedIndex]
-                            : resolver.findEntry(entity);
-    if (!entry) {
-        if (cachedIndex)
-            *cachedIndex = std::numeric_limits<std::size_t>::max();
+    const auto* entry = resolver.findEntry(entity);
+    if (!entry)
         return {};
-    }
-    if (cachedIndex)
-        *cachedIndex = static_cast<std::size_t>(entry - resolver.entries_.data());
     const auto value = [entry](PropertyId property) -> const PropertyValue* {
         const auto& state = entry->properties[propertyIndex(property)];
         return state.present ? &state.candidate : nullptr;

@@ -86,6 +86,10 @@ Runtime 的事务式属性求值通过 `TransformUpdate::prepare(..., false, tru
 新增 Runtime 内部可变入口时，必须维持这些信任前提或显式使缓存失效。
 生命周期与事务边界见 [RuntimeSession](RUNTIME_SESSION.md)。
 
+外观求值在一次查找中读取四个属性，借用指针在当前求值中立即消费，不跨帧保存。
+resolver 的 touched 标记代替重复成员扫描；有序 entry 插入时同步平移 touched / committed /
+本次提交索引，reset 清除标记，不能让优化改变先前已记录 entry 的指向。
+
 ## Packed 准备与 closure
 
 已冻结输入通过私有只读视图同步进入共享 assembler，不为 grace lowering 复制整份输入；

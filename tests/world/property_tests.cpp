@@ -468,27 +468,6 @@ TEST_CASE("Late baseline insertion keeps saved transform rollback indices",
           }) == Vec3{1, 8, 3});
 }
 
-TEST_CASE("Appearance index hints validate entity after insertion and resolver copy",
-          "[world][property][appearance][r3]") {
-    using cuexis::world::detail::ResolverAccess;
-    cuexis::world::PropertyResolver resolver;
-    const entt::entity high{101}, low{2};
-    REQUIRE(resolver.registerBaseline(high, PropertyId::RenderVisible, true));
-    std::size_t hint = std::numeric_limits<std::size_t>::max();
-    CHECK(std::get<bool>(*ResolverAccess::resolvedAppearance(resolver, high, &hint)[0]));
-    CHECK(hint == 0);
-    REQUIRE(resolver.registerBaseline(low, PropertyId::RenderVisible, false));
-    CHECK(std::get<bool>(*ResolverAccess::resolvedAppearance(resolver, high, &hint)[0]));
-    CHECK(hint == 1);
-    auto copy = resolver;
-    REQUIRE(copy.applyBaseProperty(high, PropertyId::RenderVisible, false));
-    CHECK_FALSE(std::get<bool>(*ResolverAccess::resolvedAppearance(copy, high, &hint)[0]));
-    CHECK(std::get<bool>(*ResolverAccess::resolvedAppearance(resolver, high, &hint)[0]));
-    for (const auto* value : ResolverAccess::resolvedAppearance(resolver, entt::null, &hint))
-        CHECK(value == nullptr);
-    CHECK(hint == std::numeric_limits<std::size_t>::max());
-}
-
 TEST_CASE("Base property command replaces the captured baseline and increments revision",
           "[world][property][base][s4-d]") {
     World world;

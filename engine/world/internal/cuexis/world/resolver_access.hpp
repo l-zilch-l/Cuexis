@@ -6,8 +6,7 @@
 namespace cuexis::world::detail {
 struct ResolverAccess final {
     // Borrowed values are valid only until the resolver is mutated.
-    static auto resolvedAppearance(const PropertyResolver&, entt::entity,
-                                   std::size_t* cachedIndex = nullptr) noexcept
+    static auto resolvedAppearance(const PropertyResolver&, entt::entity) noexcept
         -> std::array<const PropertyValue*, 4>;
     static auto prepareTransforms(PropertyResolver&, std::vector<TransformWrite>&)
         -> core::Result<void>;

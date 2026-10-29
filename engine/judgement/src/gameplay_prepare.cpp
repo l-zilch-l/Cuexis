@@ -1,7 +1,6 @@
 #include <cuexis/judgement/gameplay_prepare.hpp>
 
 #include "claim_key_internal.hpp"
-#include "pattern_compile_reuse.hpp"
 #include "source_codes.hpp"
 
 #include <cuexis/core/error.hpp>
@@ -250,10 +249,9 @@ auto prepareStorage(const PreparationInputs& request, bool resolved)
         }
     }
     // Enforce accepted compiler limits before the assembler performs its semantic proofs.
-    detail::PatternCompileReuse patterns{request.patternBudget};
     for (const auto& source : request.assembly.sources) {
         for (const auto& requirement : source.document.requirements) {
-            auto compiled = patterns.compile(requirement.pattern);
+            auto compiled = compilePattern(requirement.pattern, request.patternBudget);
             if (!compiled) {
                 return core::unexpected(std::move(compiled.error()));
             }
@@ -360,7 +358,7 @@ auto prepareStorage(const PreparationInputs& request, bool resolved)
         return core::unexpected(std::move(solverProfiles.error()));
     }
     for (const auto& requirement : assembled->graph.requirements) {
-        const auto pattern = patterns.compile(requirement.pattern);
+        const auto pattern = compilePattern(requirement.pattern, request.patternBudget);
         if (!pattern) {
             return core::unexpected(pattern.error());
         }

@@ -1,5 +1,4 @@
 #include "gameplay_test_fixture.hpp"
-#include "pattern_compile_reuse.hpp"
 
 #include <cuexis/judgement/gameplay_prepare.hpp>
 
@@ -9,36 +8,6 @@
 namespace {
 using namespace cuexis::judgement;
 using namespace cuexis::judgement::testing;
-
-TEST_CASE("Pattern reuse owns exact input and preserves compiler budget failures",
-          "[judgement][prepare][pattern][reuse]") {
-    auto pattern = makeTestRequirement().pattern;
-    detail::PatternCompileReuse reuse;
-    const auto first = reuse.compile(pattern);
-    REQUIRE(first);
-    pattern.root.atomRef = "atom.changed";
-    const auto changed = reuse.compile(pattern);
-    const auto fresh = compilePattern(pattern);
-    REQUIRE(changed);
-    REQUIRE(fresh);
-    CHECK(changed->atomRefs() == fresh->atomRefs());
-    CHECK(first->atomRefs() == std::vector<std::string>{"atom.one"});
-    CHECK(changed->evaluationSteps() == fresh->evaluationSteps());
-    CHECK(changed->compiledBytes() == fresh->compiledBytes());
-    pattern.root.atomRef.clear();
-    const auto rejected = reuse.compile(pattern);
-    const auto freshRejected = compilePattern(pattern);
-    REQUIRE_FALSE(rejected);
-    REQUIRE_FALSE(freshRejected);
-    CHECK(rejected.error().code() == freshRejected.error().code());
-    pattern.root.atomRef = "atom.changed";
-    REQUIRE(reuse.compile(pattern));
-    PatternCompileBudget budget;
-    budget.maxCompiledBytes = MeasuredParameter<std::uint64_t>::measured(0);
-    detail::PatternCompileReuse strict{budget};
-    CHECK_FALSE(strict.compile(pattern));
-    CHECK(reuse.compile(pattern));
-}
 
 auto requestFor(const Fixture& fixture) -> GameplayPrepareRequest {
     auto assembly = fixture.request();

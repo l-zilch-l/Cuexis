@@ -292,7 +292,6 @@ class Writer final {
     }
     template <class T, std::size_t N> void sequence(const SharedSequence<T, N>& value) {
         auto owner = value.storageOwner();
-        bool repeated = false;
         if (owner) {
             const auto found = sequences_.find(owner.get());
             if (found != sequences_.end() && found->second.revision == revision) {
@@ -301,13 +300,10 @@ class Writer final {
                     measure(length);
                     return;
                 }
-                if (!found->second.bytes.empty()) {
-                    append(found->second.bytes);
-                    return;
-                }
-                repeated = true;
+                append(found->second.bytes);
+                return;
             }
-            if (found != sequences_.end() && !repeated) {
+            if (found != sequences_.end()) {
                 cachedBytes_ -= found->second.length;
                 sequences_.erase(found);
             }
@@ -318,17 +314,13 @@ class Writer final {
             (*this)(element);
         if (owner) {
             const auto length = size() - offset;
-            if (repeated) {
-                // Materialize a private copy only after this owner is actually reused.
-                // Output remains freely mutable without changing any later cache hit.
-                auto& encoded = sequences_.at(owner.get()).bytes;
-                encoded.assign(bytes.begin() + static_cast<std::ptrdiff_t>(offset), bytes.end());
-                return;
-            }
             if (length > maxCachedBytes - cachedBytes_ || sequences_.size() >= maxCachedSequences)
                 return;
             const auto key = owner.get();
             std::vector<std::byte> encoded;
+            if (!measuring_) {
+                encoded.assign(bytes.begin() + static_cast<std::ptrdiff_t>(offset), bytes.end());
+            }
             sequences_.insert_or_assign(
                 key, EncodedSequence{std::move(owner), std::move(encoded), length, revision});
             cachedBytes_ += length;

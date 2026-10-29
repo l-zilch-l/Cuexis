@@ -28,7 +28,6 @@
 #include <cuexis/judgement/gameplay_assembler.hpp>
 
 #include "gameplay_closure.hpp"
-#include "pattern_compile_reuse.hpp"
 #include "pattern_dfa.hpp"
 #include "source_codes.hpp"
 
@@ -1458,8 +1457,7 @@ struct PatternDeclarationShape final {
 }
 
 [[nodiscard]] auto validateRequirement(const CanonicalGameplayGraph& graph,
-                                       const RequirementRecord& requirement, std::size_t index,
-                                       detail::PatternCompileReuse& patterns)
+                                       const RequirementRecord& requirement, std::size_t index)
     -> core::Result<void> {
     const std::string path =
         std::string{codes::kRequirementsPath} + "[" + std::to_string(index) + "]";
@@ -1513,7 +1511,11 @@ struct PatternDeclarationShape final {
     if (!measureChecked.has_value()) {
         return core::unexpected(measureChecked.error());
     }
-    const auto compiledPattern = patterns.compile(requirement.pattern);
+    const auto patternShape = measurePatternTree(requirement.pattern.root);
+    if (!patternShape.has_value()) {
+        return core::unexpected(patternShape.error());
+    }
+    const auto compiledPattern = compilePattern(requirement.pattern);
     if (!compiledPattern.has_value()) {
         return core::unexpected(compiledPattern.error());
     }
@@ -1816,9 +1818,8 @@ struct PatternDeclarationShape final {
                 "two requirements carry the same canonical identity"));
         }
     }
-    detail::PatternCompileReuse patterns;
     for (std::size_t index = 0; index < graph.requirements.size(); ++index) {
-        const auto checked = validateRequirement(graph, graph.requirements[index], index, patterns);
+        const auto checked = validateRequirement(graph, graph.requirements[index], index);
         if (!checked.has_value()) {
             return core::unexpected(checked.error());
         }

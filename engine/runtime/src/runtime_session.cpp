@@ -26,7 +26,6 @@
 #include <atomic>
 #include <cmath>
 #include <exception>
-#include <limits>
 #include <memory>
 #include <new>
 #include <optional>
@@ -53,7 +52,6 @@ class RuntimeEvaluationState final {
 
     struct AppearanceEntry final {
         entt::entity entity{entt::null};
-        std::size_t resolverIndex{std::numeric_limits<std::size_t>::max()};
         render::AppearanceComponent baseline;
         render::AppearanceComponent candidate;
         render::AppearanceComponent* slot{};
@@ -309,8 +307,7 @@ void tickOverrideLifetimes(std::vector<world::OverrideToken>& tokens) noexcept {
         appearance.candidate.tint = appearance.baseline.tint;
         appearance.candidate.materialAssetId.assign(appearance.baseline.materialAssetId);
         const auto [visible, material, opacity, tint] =
-            world::detail::ResolverAccess::resolvedAppearance(state.resolver, appearance.entity,
-                                                              &appearance.resolverIndex);
+            world::detail::ResolverAccess::resolvedAppearance(state.resolver, appearance.entity);
         if (visible) {
             if (const auto* value = std::get_if<bool>(visible)) {
                 appearance.candidate.visible = *value;
