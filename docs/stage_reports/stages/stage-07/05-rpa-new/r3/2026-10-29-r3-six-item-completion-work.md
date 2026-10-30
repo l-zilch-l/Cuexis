@@ -347,6 +347,22 @@ global allocation replacement，普通计时二进制不含这些探针。3 case
 候选 0.481/0.438 ms，完整目标 Snapshot 字节一致。预设仅以至少 30% 改善判断是否值得继续
 故障/内存验证，不是保留决定、40K 结论或 20 ms 正式接受。生成开销、保留预算和其余原门仍开放。
 
+随后 `tick-writer-measure-v1` 固定 12 个普通 allocator 进程，每进程三个新 writer，分别测
+1K dense、40K dense、1536 分六波。只计 advance，prepare、archive、Snapshot 编码在计时外。
+baseline 使用同一私有实现的 advanceForReplay 禁用收集，candidate 使用 writer advance；
+mask 4、BelowNormal、QoS OFF 逐进程核对。40K dense 中位数 623.478 → 597.606 ms，
+1K 10.835 → 10.736 ms，六波 14.656 → 14.865 ms；最大进程中位数相对波动 10.27%，
+未触发预设 40K +5%、其余 +10% 保护条件。完整最终 Snapshot 大小和 SHA 一致。
+此比较用于检查是否转移生成成本，不将小幅点值下降归因成 cache 的直接性能收益。
+
+`tick-screen-40k-v1` 另取固定四个普通 Host 进程、两对 AB/BA、每进程三请求，只探索 40K
+第一记录内 H=902。进程中位数再汇总为 237.105 → 2.7385 ms（-98.845%），
+首次为 baseline 227.763/209.507 ms、candidate 2.899/2.952 ms；候选重复 2.401–3.056 ms。
+完整目标 Snapshot 为 92,623,328 B，SHA 及 raw 全字节一致。两候选进程中位数相对波动
+16.91%，超过原 15%；本组预设仅要求至少 50% 改善以决定是否值得继续字节预算设计，
+不能将 screen_pass 写成原重复性门通过。setup 包含夹具、Packed 和 Host 准备，不是 SDK load。
+仍缺跨旧 archive 生命周期的字节准入；原型不进入产品，原性能接受保持开放。
+
 ## 构建、版本与原门限
 
 2026-10-30 恢复批次：`release-mingw-metrics-v4` 完成独立 MinGW GCC 16.1.0 配置，
