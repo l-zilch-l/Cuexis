@@ -89,3 +89,33 @@ TEST_CASE("Shared sequence failed detachment leaves published pages intact",
     CHECK(source[1].value == 1);
     CHECK(branch[1].value == 99);
 }
+
+TEST_CASE("Shared sequence scalar writes preserve captures and failed detachment",
+          "[judgement][redesign][ownership][fault]") {
+    SharedSequence<Payload, 4> source;
+    for (int i = 0; i < 5; ++i)
+        source.emplace_back(i);
+    auto branch = source;
+    Payload::copies = 0;
+    branch.assignScalar(1, &Payload::value, 99);
+    CHECK(Payload::copies == 4);
+    CHECK(source[1].value == 1);
+    CHECK(branch[1].value == 99);
+    CHECK(&branch[4] == &source[4]);
+
+    // No row copy is needed after this page is exclusive, even if row copies throw.
+    Payload::fail = true;
+    CHECK_NOTHROW(branch.assignScalar(2, &Payload::value, 88));
+    const auto captured = branch.storageOwner();
+    REQUIRE(captured);
+    CHECK_THROWS_AS(branch.assignScalar(1, &Payload::value, 77), std::bad_alloc);
+    Payload::fail = false;
+    CHECK(branch[1].value == 99);
+    CHECK(branch[2].value == 88);
+    CHECK(source[2].value == 2);
+    CHECK_THROWS_AS(branch.assignScalar(5, &Payload::value, 77), std::out_of_range);
+    const auto retained = branch;
+    branch.assignScalar(1, &Payload::value, 77);
+    CHECK(retained[1].value == 99);
+    CHECK(branch[1].value == 77);
+}

@@ -304,7 +304,7 @@ struct ExecutionKernel::Impl final {
         return d.projection.phases.at(phaseIndex(i, kind)).state;
     }
     void setPhase(RuntimeState& d, std::size_t i, PhaseKind kind, KernelPhaseState value) const {
-        d.projection.phases.update(phaseIndex(i, kind), [value](auto& row) { row.state = value; });
+        d.projection.phases.assignScalar(phaseIndex(i, kind), &PhaseProjection::state, value);
     }
     auto pendingPhase(RuntimeState& d, std::size_t i, PhaseKind kind) const -> bool {
         return phase(d, i, kind) == KernelPhaseState::Pending;

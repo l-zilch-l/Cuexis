@@ -29,6 +29,11 @@
 相等比较仍比较精确值，只在共享同一不可变目录或页时跳过重复遍历。
 encoder 的 `storageOwner()` 会保活目录，后续写入因此必须分离。
 
+仅修改内建标量成员时可用内部 `assignScalar()`：先分离目录/页，再进行不抛异常的内建赋值，
+避免为枚举状态复制整行身份。它要求同一行类型的有效非空成员指针，不接受回调或类类型赋值；
+当前产品调用只使用固定的 `PhaseProjection::state`。任意可抛或会捕获 owner 的变换仍使用
+`update()`，不能为省复制而向调用方暴露可变行引用。
+
 timer 仅在产生事实或 observer 时构造拥有型 origin，消费者同步复制，不保存对 timer 或图的借用。
 hard deadline 即使没有 Pending phase 也继续清理 ownership。ledger 比较只借用本次排序元素的键，
 保持 origin / phase rank / kind / requirement 的原比较顺序；事实仍拥有身份，借用不跨比较调用。

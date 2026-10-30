@@ -12,11 +12,11 @@
 
 | 项目 | 本批实施/调查 | 尚需完成的核验 |
 | --- | --- | --- |
-| P1 Packed / re-prepare | 名称索引与随后独立 Packed 查找候选分别通过固定诊断保护条件；后者 40K unique 总耗时 23.58 → 7.09 s | identity 投影仍重复生成；最终 fresh 回归与原端到端 load 门未完成 |
-| P2 准备热点 | 保留名称索引、identity 投影复用及多资源查找/claim 分组；相关字节、回归和固定对照通过 | timer 剩余成本与最终完整矩阵；不能将局部收益当成 load 原预算通过 |
-| P3 update / Snapshot | 保留四属性合并查找、touched 和 OpenGL 诊断读回分离；resolver hint 已撤回 | 最终源码完整矩阵；extract 仍有可调查成本，不重做 R2 表示 |
+| P1 Packed / re-prepare | 名称索引与随后独立 Packed 查找候选分别通过固定诊断保护条件；后者 40K unique 总耗时 23.58 → 7.09 s；身份投影复用另见 P2 | 多资源 Packed 剩余扫描、最终 fresh 回归与原端到端 load 门未完成 |
+| P2 准备热点 | 保留名称索引、identity 投影复用及多资源查找/claim 分组；timer/ledger 及 scalar phase 写入均通过固定对照 | 最终完整矩阵及原 load 门未完成 |
+| P3 update / Snapshot | 保留四属性合并查找、touched 和 OpenGL 诊断读回分离；resolver hint 及组件池借用候选均因对照不达预期撤回 | 最终源码完整矩阵；extract 仍有成本，不重做 R2 表示 |
 | P4 编码与真实内存 | 第二次使用 admission 和测量预遍历计划均无实际峰值收益，已放弃，恢复旧独立字节缓存；已取得至 40K 的实际峰值及最终释放 | 本地轨迹不替代原 caps 或历史 R4 身份参考；编码输出本身占用及同时持有范围必须明示 |
-| P5 端到端 Seek | 内置 Host 可转发既有 checkpoint span；CPU 36 组合与 1080p GPU 96 组合核对独立 origin 全字节、目标 tick/context/receipt/像素 | 原尾延迟及重复性、观察路径与故障覆盖；worker 替换并非当前 Host 能力 |
+| P5 端到端 Seek | 内置 Host 可转发既有 checkpoint span；CPU 60 组合与 1080p GPU 96 组合核对独立 origin、目标 tick/context/receipt/像素；已发现并减轻首条记录内部成本 | 40K partial Seek 仍超 20 ms；尾延迟及重复性、观察路径与故障覆盖未完；worker 替换并非当前 Host 能力 |
 | P6 维护/工具/矩阵 | metrics TLS 改为函数内每线程对象，消费者同步；全仓格式债处理；候选版 Release 全套通过、Debug 编译通过 | 撤回/新候选后的最终 fresh STATIC/SHARED、Debug/Release/MinGW、安装消费者与完整 CTest |
 
 这些是候选及核验账目，不将“已写代码”记成完成，也不以 R3 技术工作代替设备/生产或 owner 接受。
@@ -235,6 +235,37 @@ H=902 首次 230.347 / 238.367 ms，重复 264.213–299.831 ms。不能选择�
 完整 snapshot wire 的大小和 SHA-256 全部一致，partial raw 完整字节逐块一致；wire 编码在三次
 计时后执行。final 129 记录 wire 达 3,532,762,976 bytes，不是 40K 内存接受。
 因此保留局部修复，剩余长 record 成本及原门继续开放；R3c 尚未实施。
+
+## 标量 phase 写入
+
+`SharedSequence::update()` 为保障任意回调可捕获旧 owner、抛异常而不泄漏修改，先复制完整行，
+再分离目标页。phase 只改一个枚举，因此增加仅接受同类型行的内建标量成员指针的
+`assignScalar()`，分离后直接执行内建赋值，不运行回调。原 update 合同保持；有效非空成员
+指针是前提，产品唯一调用传固定 `&PhaseProjection::state`。独立审阅确认旧 owner、encoder
+storageOwner 和失败分离安全；SharedSequence<int> 仍可实例化，不提供通用 callable 检测合同。
+新增回归覆盖共享/独占页、encoder owner 保活、复制失败、越界与后续分支隔离。
+
+`scalar-candidate-v1` 全相关依赖 fresh 编译 165 个命令约 716.9 s，避免混合新旧模板定义；
+Judgement 236 cases / 56,139 assertions、Packed 51 / 5,641、Host 62 / 54,683 全通过。
+首个探针链接遗漏 Host 实现对象而失败，尚未测量；原日志保留。`scalar-candidate-ready-v1`
+仅补齐已 fresh 编译的 Host 对象重新链接，不重跑构建/单测，绑定父 manifest、对象、库与二进制。
+
+`scalar-measure-v1` 固定 14 个普通 allocator 新进程、42 次请求；1K H=5、40K H=5/902 各
+两对 AB/BA，40K final 一对 guard。mask 4、BelowNormal、QoS OFF 逐进程核对，AC line 均为 1。
+每进程三次请求的中位数再汇总，40K H=5 为 22.873 → 16.678 ms（-27.08%），
+H=902 为 265.5015 → 232.6405 ms（-12.38%）；1K H=5 下降 33.75%，final 未触发保护条件。
+候选 H=5 首次 13.108 / 14.314 ms，重复 16.577–17.798 ms；H=902 首次
+215.819 / 220.393 ms，重复 227.313–259.486 ms。当前局部 H=5 诊断样本低于 20 ms，
+不能据此宣布全 Seek 通过，H=902 仍明显超界。final guard 只有一对且不执行此 phase 写入，
+其点值下降不归因为该方法的直接收益。
+
+四场景完整 snapshot wire 大小/SHA-256 一致，partial raw 全字节一致；wire 仍在全部计时后
+编码。通过预设 40K H=5 至少改善 15% 及其他场景 guard，保留该内部原语。全仓 647 文件
+format dry-run 通过；该 fresh 相关构建尚不是最终 SDK、RPA 观察通道或工具链全矩阵。
+
+R3c 仅形成 sealed Tick 条件设计草案，尚未实施；设计审阅已发现 writer-only capture、记录 ordinal
+绑定、nativeAnchorEligible / history / ingress 闭包，以及故障注入覆盖等必须先解决的门。
+不能把普通最终 Snapshot 改名当作续点，也不能为通过本地目标而跳过这些条件。
 
 ## Snapshot 组件池借用候选撤回
 

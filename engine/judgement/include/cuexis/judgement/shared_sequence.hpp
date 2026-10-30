@@ -203,6 +203,15 @@ template <class T, std::size_t PageSize = 64> class SharedSequence final {
         std::forward<F>(write)(value);
         writablePage(i / PageSize)[i % PageSize] = std::move(value);
     }
+    // A built-in scalar assignment cannot run a callback or publish a writable alias.
+    // Detach before writing; retain update() for arbitrary fallible transformations.
+    template <class Owner, class Scalar>
+    void assignScalar(std::size_t i, Scalar Owner::* member, Scalar value) {
+        static_assert(std::is_same_v<Owner, T> && std::is_scalar_v<Scalar>);
+        if (i >= size_)
+            throw std::out_of_range{"SharedSequence scalar assignment"};
+        writablePage(i / PageSize)[i % PageSize].*member = value;
+    }
     [[nodiscard]] auto materialize() const -> std::vector<T> {
         return {begin(), end()};
     }
