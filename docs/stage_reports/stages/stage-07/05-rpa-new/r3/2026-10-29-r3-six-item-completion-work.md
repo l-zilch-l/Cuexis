@@ -175,6 +175,26 @@ OpenGL 3.3 的实例化调用机制见 [Khronos 原始规范 §2.8](https://regi
 
 ## 多资源准备的平方扫描
 
+2026-10-30 后续 Packed 候选 `packed-exists-v1` 只替换 validate 中 resource / domain / solver
+声明的三处 typed-existence 查询。表在同一调用中已先通过严格顺序检查，单行/空表继续原扫描，
+多行二分；不增加索引或改变声明遍历、首错选择及写入顺序。resource / solver 使用与既有表排序
+一致的字符串序，domain 保持 textLess。两版 Packed 各 51 cases / 5,641 assertions 通过。
+
+`packed-exists-measure-v1` 预登记 10 个普通进程：64 split canary 一对，1K shared 与
+10K split 各两对 AB/BA。完整 Packed 和 Chart / Content / Prepared 三身份 raw 字节逐块一致。
+10K split 的 encode + decode 中位数 3.183242 → 2.608776 s，下降 18.05%；1K shared
+下降 2.83%，source prepare 两场景均未触发 5% guard，各相对范围低于 4%。满足预设 10K
+codec 至少改善 10% 的局部保留条件，已将该独立源码副本提升为产品改动。未解决 makeModel
+的 claim 资源 findIndex 或 reconstruct 的 definitionSource 扫描，也不替代正式 CI / load 门。
+
+R3c 前置普查 `tick-census-measure-v1` 仅运行 1K/40K H902 各一个观察进程、每进程三请求。
+两者均在 Tick 8 分别产生 1,000 / 40,000 个本 Tick FactDescriptor，idleFoldReady=false、pending=0、
+historyAvailable/nativeAnchorEligible=true；完整 Snapshot 原点对照通过。该副本尚未加入 cache，
+只证明拟议事实门槛可满足，不证明完整采集资格、命中或恢复收益，观察时间不作普通时间接受。
+R3c v2 草案和独立调用点审阅还确认 decodeReplay 是另一重放入口，不能遗漏；其 source writer
+与验证 replay 必须显式区分，失败 record 发布不能自动晋升候选，真实故障路径不能被
+testControls 的 cache 禁用条件掩盖。闭包、容量/内存和故障覆盖尚未关闭，产品续点仍未实施。
+
 `resource-diagnostic-v1` 只在独立源码副本插入资源阶段时钟，产品实现未加探针。
 `resource-phase-attribution-v1` 固定三个一次性诊断：64 个独立资源的完整 encode/decode canary
 通过；10K requirements 共用一个资源时，资源阶段约 31–34 ms，分为 10K 资源后约

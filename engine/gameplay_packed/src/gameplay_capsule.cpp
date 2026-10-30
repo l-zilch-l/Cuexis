@@ -1663,6 +1663,17 @@ void validate(Model& m, chart::PackedChartLimits limits,
     std::multimap<StableDeclarationId, const RequirementRecord*> requirementsByDeclaration;
     for (const auto& r : g.requirements)
         requirementsByDeclaration.emplace(r.stableId, &r);
+    // These typed tables have passed their ordering checks in this call.
+    const auto containsTypedName = [](const auto& rows, std::string_view name, const auto& key,
+                                      const auto& less) {
+        if (rows.size() < 2)
+            return std::any_of(rows.begin(), rows.end(),
+                               [&](const auto& row) { return key(row) == name; });
+        const auto found = std::lower_bound(
+            rows.begin(), rows.end(), name,
+            [&](const auto& row, std::string_view wanted) { return less(key(row), wanted); });
+        return found != rows.end() && key(*found) == name;
+    };
     for (const auto& d : g.mergedNamespace.declarations) {
         require(!d.name.empty() && names.emplace(d.name, d.kind).second, "mergedDeclarations.name",
                 "conflicting declaration name");
@@ -1690,16 +1701,21 @@ void validate(Model& m, chart::PackedChartLimits limits,
             exists = measureNames.contains(d.name);
             break;
         case DeclarationKind::resourceRecord:
-            exists = std::any_of(g.resources.begin(), g.resources.end(),
-                                 [&d](const auto& r) { return r.ref.resourceId == d.name; });
+            exists = containsTypedName(
+                g.resources, d.name,
+                [](const auto& r) -> std::string_view { return r.ref.resourceId; },
+                [](std::string_view l, std::string_view r) { return l < r; });
             break;
         case DeclarationKind::judgementDomain:
-            exists = std::any_of(g.judgementDomains.begin(), g.judgementDomains.end(),
-                                 [&d](const auto& h) { return h.domainId == d.name; });
+            exists = containsTypedName(
+                g.judgementDomains, d.name,
+                [](const auto& h) -> std::string_view { return h.domainId; }, textLess);
             break;
         case DeclarationKind::solverProfile:
-            exists = std::any_of(g.solverProfiles.begin(), g.solverProfiles.end(),
-                                 [&d](const auto& s) { return s.solverId == d.name; });
+            exists = containsTypedName(
+                g.solverProfiles, d.name,
+                [](const auto& s) -> std::string_view { return s.solverId; },
+                [](std::string_view l, std::string_view r) { return l < r; });
             break;
         }
         require(exists, "mergedDeclarations.kind", "declaration does not locate its typed record");
