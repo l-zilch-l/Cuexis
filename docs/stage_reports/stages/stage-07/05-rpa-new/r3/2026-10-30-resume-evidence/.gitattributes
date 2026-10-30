@@ -1,4 +1,5 @@
 # Frozen evidence keeps original bytes.
 *.txt binary
 *.json binary
+*.patch binary
 .gitattributes text eol=lf

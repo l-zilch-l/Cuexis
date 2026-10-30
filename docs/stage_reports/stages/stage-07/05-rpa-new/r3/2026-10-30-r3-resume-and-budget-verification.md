@@ -114,3 +114,116 @@ CRT usable 包含观察器 header/alignment；private/working set 为含夹具�
 exact source floor 将源保活到 ticks/points 析构之后，保持 index 不可独立导出；并以真实 deleter
 事件验证 copy/move assignment，而不是只查看最终 live==0。
 另需让 reference 独立 decodeReplay，避免同一个 anchor 的外部参考意外保活待验证的旧源。
+
+## R3c v4：共享页计费与 exact source floor
+
+v3 候选只对 append-only Fact 完整页免重复计费，仍计目录、partial tail 容量和嵌套字段；
+其他所有状态仍全额保守计费。成功原记录先发布，再核对每个完整 Fact 页的 owner 身份，
+不同 owner 即 miss，值相等不能代替 provenance。暂存阶段仍依赖 ledger 不改写完整页的证明。
+
+独立审阅发现归档默认赋值顺序问题后，v4 在私有 NativeRecoveryIndex 的首成员持有
+exactSourceFloor，源先绑定、ticks/points 后复制，析构时先释放点与 lease、最后释放精确源。
+不修改 ReplayArchive 的安装载体或默认赋值，也不允许独立导出 index。Seek 分歧先释放索引，
+再释放原 source。新的分支反例采用独立 decodeReplay，并检查原 ReplayData weak owner 确实过期，
+不再用共享同一 anchor 的 reference 掩盖生命周期缺口。
+
+v3 四目标做完整 fresh Release STATIC，随后 v4 只变 kernel 私有定义及 B3 测试。
+逐 tracked 源码比较确认所有 header/template/其他 cpp 与 fresh v3 完全一致，因此显式重编两个 TU，
+四个套件重新链接并运行，不借助不完整的增量依赖推断。
+
+| v4 套件 | cases / assertions |
+| --- | ---: |
+| RPA | 79 / 27,258 |
+| Judgement | 236 / 56,139 |
+| Host | 62 / 54,548 |
+| Packed | 51 / 5,641 |
+
+总计 428 cases。原型 writer 性能用例已隐藏，普通 CTest 不会默认进入 stdin barrier。
+相关[构建身份](2026-10-30-resume-evidence/r3c-v4-build-complete.json)和日志已归档。
+Judgement 头仍不安装；当前差异不增加安装版 Playback carrier/wire 字段，API/date 版本未改。
+这不是 Debug/SHARED/MinGW/安装消费者或完整 CTest 的最终矩阵。
+
+独立 observer 故障/边界等 **14 cases / 1006 assertions** 通过，包括真实 lease 后 allocation 失败，
+故障不提升、退款、原点回退，以及 copy/move assignment 时源 deleter 直接观察 point 已过期、live=0。
+故意删除 source-floor 绑定的 mutant 为 exit 42、32 assertions 中 4 项失败。
+实际 promotion guard 用例对最终首个/最后一个完整 Fact 页执行 no-op COW，状态值与独立参考及
+Snapshot wire 相同，实际 point 拒绝提升并退款，**58 assertions** 通过；绕过 guard 的 mutant
+为 exit 42、58 assertions 中 4 项失败。完整页谓词测试不再是唯一 guard 接线证明。
+
+v4 实际堆组 **1 case / 103 assertions** 通过。40K dense 收到一个点，payload charge 为
+45,263,048 B，较无捕获 writer 的实际 requested 多保留 323,303 B；峰值 requested
+两版均为 463,568,877 B。最终 requested/CRT storage 差值均 0。
+观察器对 source owner 使用自定义 deleter 记录顺序，其 header/control-block 与进程样本包含扰动，
+不能把该绝对值直接当普通进程生产峰值。
+
+原始工作目录为 `out/verification-20261030/r3-resume-v1/`，v4 源码为 `budget-source-v4`，
+完整 fresh 公共库为 `budget-build-v3`，最终四套件为 `budget-build-v4`。
+[未选用源码补丁](2026-10-30-resume-evidence/r3c-v4-unselected.patch)相对当前产品树生成，
+仅做 apply --check，未应用产品树；[selection](2026-10-30-resume-evidence/r3c-v4-selection.json) 为 false。
+[独立审阅记录](2026-10-30-resume-evidence/r3c-v4-independent-review.txt)、
+[最终 observer 身份](2026-10-30-resume-evidence/v4-observer-identity-supplement.json)
+明确区分 preparatory draft binding 与最后实际源码，原绑定的旧标签未追改。
+
+## 最新普通 writer / Seek：收益与重复性分开
+
+全部普通子进程 mask=4、BelowNormal、execution throttling OFF，controller mask=3；
+没有与构建并行。观察器与故障 hook 不参与普通性能。每进程三个全新 writer 或三个 Seek 请求；
+固定 AB/BA，不补样、不丢慢值。
+
+[Writer 固定 12 进程](2026-10-30-resume-evidence/v4-writer-registration.json)：
+
+| 场景 | baseline advance 中位数 | candidate | 变化 |
+| --- | ---: | ---: | ---: |
+| 1K dense | 11.525 ms | 11.76615 ms | +2.0924% |
+| 40K dense | 654.013 ms | 628.591 ms | -3.8871% |
+| 1536 六波 | 14.2997 ms | 15.1941 ms | +6.2547% |
+
+40K <=5%、两保护项 <=10% 及原相对范围 <=15% 的本地 guard 通过，Snapshot wire hash/长度相同。
+prepare/encode 在这项 advance 计时外，不能当 SDK load 或整体生成成本接受。
+
+[Seek 固定 14 进程](2026-10-30-resume-evidence/v4-seek-registration.json)：
+
+| 场景 | baseline 请求到 CPU target present 中位数 | candidate | 变化 |
+| --- | ---: | ---: | ---: |
+| 1K H902 | 4.171 ms | 0.3165 ms | -92.4119% |
+| 40K H5 | 16.439 ms | 16.549 ms | +0.6691% |
+| 40K H902 | 250.021 ms | 2.655 ms | -98.9381% |
+| 1K final guard | 0.326 ms | 0.337 ms | +3.3742% |
+
+所有候选请求 <=20 ms，保护项未超 5%；40K H902 candidate 首次 2.419/2.842 ms，
+重复 2.338–3.047 ms。完整 Snapshot hash/长度及四组 raw 文件逐字节相同。
+但是候选 process medians 的原 `(max-min)/median`：1K H902 为 **22.4329%**，
+40K H902 为 **17.7778%**；40K baseline 为 17.0458%。**本地数值收益门通过、重复性 screen 未过**。
+保留失败，不重复到通过，不把旧无预算版成绩换入新组；不是正式/CI、GPU、设备或生产接受。
+原始[结果](2026-10-30-resume-evidence/v4-seek-results.json)及
+[判定](2026-10-30-resume-evidence/v4-seek-decision.json)已版本化。
+
+## 固定 quota / 成本曲线：没有选定产品额度
+
+[固定登记](2026-10-30-resume-evidence/v4-quota-frontier-registration.json)为 40K 六波、六代归档，
+额度事先固定为 0/32/64/128/256/512 MiB；100 assertions 通过，各自最终 requested/storage 差值为 0。
+Snapshot 对照使用相同六次 advance 的无点参考，数据无差异。
+
+| 额度 | H904→1904 的当前索引点数 | 六代保活收费 | writer 销毁后实际额外 requested |
+| --- | --- | ---: | ---: |
+| 0 / 32 MiB | 0,0,0,0,0,0 | 0 | 0 |
+| 64 MiB | 1,1,1,1,1,1 | 45,053,456 B | 56,639 B |
+| 128 MiB | 1,2,2,2,2,2 | 90,159,856 B | 166,550 B |
+| 256 MiB | 1,2,3,4,4,4 | 225,868,160 B | 843,776 B |
+| 512 MiB | 1,2,3,4,4,4 | 271,139,384 B | 1,176,174 B |
+
+256 MiB 下第六点被拒，旧归档仍保活被当前索引淘汰的点；512 MiB 收了全部六点但当前索引仍最多4。
+因此“当前四槽”与“跨代全部存活点”必须分别计账。曲线说明保守收费仍远大于实际新增内存，
+以及 128 MiB 会影响多代覆盖；**它不推荐把额度调到512 MiB，也不证明128 MiB合理**。
+目前缺少设备/整条播放链 headroom 和一般内容上界，因此产品额度仍未选定。
+完整[成本曲线](2026-10-30-resume-evidence/v4-quota-frontier-summary.json)留档。
+
+## 当前处置与未完成项
+
+P1 v2 不选用；R3c v4 的可恢复补丁与证据已留档，但仍未提升产品树。产品源码继续保持 ff93484。
+后续先处理普通 Seek 重复性来源、合适的缓存预算/保留策略及全部适用目标覆盖，再决定产品选择。
+不能因 H902 数值很好而跳过外部/首次/cold/fallback、load 原门或最终 Debug/Release/STATIC/SHARED
+消费者与全 CTest。40K 实际整进程/headroom、原历史 reference、R4/PD-5/设备/生产/owner 仍独立开放。
+本轮还观察到 fresh v3 的 Ninja deps 记录为空（中文 showIncludes 前缀未被消费）；因此未用增量
+依赖图推断可复用范围，而逐文件核对头与源码并显式编译/链接。后续完整配置须单独修正本地依赖跟踪，
+不修改冻结成功构建以补写历史证据。

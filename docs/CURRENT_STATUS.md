@@ -57,6 +57,9 @@
   最新预算 v2 的 fresh Release STATIC 四目标回归共 426 cases 通过；恢复后独立故障/边界等
   11 cases / 935 assertions 通过，真实堆确认最终 requested/storage 差值归零，但 40K 在旧额度下
   不收任何点。128 MiB 缺乏产品预算推导；当前先建立实际保留成本依据，普通 Seek/writer 仍待测。
+  后续未选用 v4 修正共享 Fact 页重复计费和归档赋值 source-floor 生命周期，四套件共428 cases通过。
+  普通40K H902为250.021→2.655 ms，writer保护通过；Seek重复性仍超15%，不作正式接受。
+  固定40K六代成本曲线已记录：允许全部六点时实际额外requested约1.18MB；128MiB仍无产品预算依据。
   两项均未进入产品实现或完成接受；恢复前暂停现场、统计口径更正及版本化实验材料见
   [2026-10-30 暂停与候选交接](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-30-r3-pause-and-candidate-handoff.md)。
   历史[来源绑定实验](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-source-binding-experiment.md)用同一 Release 二进制比较 canonical SHA 与进程内 owning source binding。

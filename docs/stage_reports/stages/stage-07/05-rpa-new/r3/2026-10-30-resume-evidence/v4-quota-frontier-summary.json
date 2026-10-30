@@ -1,0 +1,96 @@
+{
+  "exit": 0,
+  "scope": "Cost/coverage curve only; no memory budget selected.",
+  "rows": [
+    {
+      "mib": 0,
+      "points_by_h": {
+        "904": 0,
+        "1104": 0,
+        "1304": 0,
+        "1504": 0,
+        "1704": 0,
+        "1904": 0
+      },
+      "charge_after_writer": 0,
+      "extra_requested_after_writer": 0,
+      "extra_storage_after_writer": 0,
+      "released_zero": true
+    },
+    {
+      "mib": 32,
+      "points_by_h": {
+        "904": 0,
+        "1104": 0,
+        "1304": 0,
+        "1504": 0,
+        "1704": 0,
+        "1904": 0
+      },
+      "charge_after_writer": 0,
+      "extra_requested_after_writer": 0,
+      "extra_storage_after_writer": 0,
+      "released_zero": true
+    },
+    {
+      "mib": 64,
+      "points_by_h": {
+        "904": 1,
+        "1104": 1,
+        "1304": 1,
+        "1504": 1,
+        "1704": 1,
+        "1904": 1
+      },
+      "charge_after_writer": 45053456,
+      "extra_requested_after_writer": 56639,
+      "extra_storage_after_writer": 56895,
+      "released_zero": true
+    },
+    {
+      "mib": 128,
+      "points_by_h": {
+        "904": 1,
+        "1104": 2,
+        "1304": 2,
+        "1504": 2,
+        "1704": 2,
+        "1904": 2
+      },
+      "charge_after_writer": 90159856,
+      "extra_requested_after_writer": 166550,
+      "extra_storage_after_writer": 167030,
+      "released_zero": true
+    },
+    {
+      "mib": 256,
+      "points_by_h": {
+        "904": 1,
+        "1104": 2,
+        "1304": 3,
+        "1504": 4,
+        "1704": 4,
+        "1904": 4
+      },
+      "charge_after_writer": 225868160,
+      "extra_requested_after_writer": 843776,
+      "extra_storage_after_writer": 845312,
+      "released_zero": true
+    },
+    {
+      "mib": 512,
+      "points_by_h": {
+        "904": 1,
+        "1104": 2,
+        "1304": 3,
+        "1504": 4,
+        "1704": 4,
+        "1904": 4
+      },
+      "charge_after_writer": 271139384,
+      "extra_requested_after_writer": 1176174,
+      "extra_storage_after_writer": 1178062,
+      "released_zero": true
+    }
+  ]
+}

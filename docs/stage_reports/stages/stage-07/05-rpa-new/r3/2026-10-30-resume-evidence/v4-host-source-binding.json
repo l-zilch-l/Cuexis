@@ -1,0 +1,8 @@
+{
+  "scope": "Ordinary v4 kernel against self-consistent fresh-v3 template/common libraries. Baseline disables tick capture; candidate same128MiB historical diagnostic quota, not selected budget. Source-floor correction included.",
+  "sources": {
+    "host_probe.cpp": "a6fded967d5ce703c192d921891575970a750ba291b39bf9b099dbe8b043ae8d",
+    "kernel_disabled.cpp": "09080d86835aa9f0450b0dd1ea1d7718f2d1a9e3566b62a8891983ca1a7174ef"
+  },
+  "candidate_kernel_sha256": "9ef90b44badf0c3ad4e295c7acc5012c92eb4654a3f1aab0faa3244cf649c870"
+}
