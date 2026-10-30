@@ -1,0 +1,1 @@
+{"reason": "40K conservative full-state charge rejects all points under 128MiB. No cap raised. CHECK failure inside measured owner scope then adds Catch2 allocations; 248B/280B residual is confounded and requires independent no-failure observation.", "selected": false}

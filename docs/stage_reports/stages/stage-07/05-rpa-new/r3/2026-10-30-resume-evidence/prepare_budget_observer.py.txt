@@ -1,0 +1,200 @@
+from pathlib import Path
+import hashlib
+import json
+import re
+import subprocess
+
+root = Path.cwd()
+base = Path(__file__).resolve().parent
+old = root / 'out/verification-20261029/r3-completion/tick-prototype-v1'
+source = old / 'budget-source-v2'
+out = base / 'budget-observer-v2'
+out.mkdir(exist_ok=False)
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+complete = json.loads((old / 'budget-build-v2/complete.json').read_text())
+binding = old / 'budget-build-v2/source-binding.json'
+assert sha(binding) == complete['source_binding_sha256']
+for name, digest in json.loads(binding.read_text())['sources'].items():
+    assert sha(source / name) == digest, name
+
+s = (source / 'engine/judgement/src/execution_kernel.cpp').read_text(encoding='utf-8')
+def edit(a, b):
+    global s
+    assert s.count(a) == 1, (a[:100], s.count(a))
+    s = s.replace(a, b)
+
+edit('namespace cuexis::judgement::detail {', '''extern "C" void r3c_cache_event(unsigned, std::int64_t, std::uint64_t) noexcept;
+extern "C" void r3c_staged_point(std::int64_t, std::uint64_t, std::uint64_t) noexcept;
+namespace cuexis::judgement::detail {''')
+edit('            impl_->tickPoints.remember(std::move(capture.points[i]));', '''            impl_->tickPoints.remember(std::move(capture.points[i]));
+    if (outcome && collecting)
+        r3c_cache_event(7, horizon.value(), capture.count);''')
+edit('                        TickPayloadLease lease{budget, *bytes};', '''                        TickPayloadLease lease{budget, *bytes};
+                        r3c_cache_event(0, tick->value(), capture->count);''')
+edit('                        writable.reset();', '''                        writable.reset();
+                        r3c_cache_event(1, tick->value(), capture->count);
+                        r3c_staged_point(tick->value(), facts.size(), capture->ordinal);''')
+edit('                    // Optional cache admission never faults an already sealed Tick.', '''                    r3c_cache_event(9, tick->value(), capture->count);
+                    // Optional cache admission never faults an already sealed Tick.''')
+edit('        auto final = std::make_shared<RuntimeState>(*impl_->active);', '''        if (capture) r3c_cache_event(2, horizon.value(), capture->count);
+        auto final = std::make_shared<RuntimeState>(*impl_->active);''')
+edit('''                auto copy = std::make_shared<RuntimeState>(*impl_->active);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+                rpaObservation::seekAdd(SeekPhase::s4InternalExecution, &SeekWork::foldCopies);''', '''                if (capture) r3c_cache_event(3, tick->value(), capture->count);
+                auto copy = std::make_shared<RuntimeState>(*impl_->active);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+                rpaObservation::seekAdd(SeekPhase::s4InternalExecution, &SeekWork::foldCopies);''')
+edit('                return impl_->reserveFault(*draft);', '''                if (capture) r3c_cache_event(4, tick->value(), capture->count);
+                return impl_->reserveFault(*draft);''')
+edit('                auto state = std::make_shared<RuntimeState>(*selected->state);', '''                r3c_cache_event(5, selected->state->projection.processedFrontier->value(), 0);
+                auto state = std::make_shared<RuntimeState>(*selected->state);''')
+edit('                run.logTail = selected->prefix;', '                run.logTail = selected->prefix;')
+edit('''                state->projection.runScope = run.active->projection.runScope;
+                auto reserve = run.reserveFault(*state);
+                run.active = std::move(state);
+                run.faultReserve = std::move(reserve);
+                run.logTail = selected->prefix;''', '''                state->projection.runScope = run.active->projection.runScope;
+                r3c_cache_event(10, selected->state->projection.processedFrontier->value(), 0);
+                auto reserve = run.reserveFault(*state);
+                run.active = std::move(state);
+                run.faultReserve = std::move(reserve);
+                run.logTail = selected->prefix;''')
+edit('                ++run.tickRestores;', '''                ++run.tickRestores;
+                r3c_cache_event(6, selected->state->projection.processedFrontier->value(), 0);''')
+edit('                // Restoration is transactional; original record/origin fallback remains.', '''                r3c_cache_event(8, selected->state->projection.processedFrontier->value(), 0);
+                // Restoration is transactional; original record/origin fallback remains.''')
+s += '''
+extern "C" bool r3c_counter_boundaries() noexcept {
+    using cuexis::judgement::detail::TickPayloadCounter;
+    TickPayloadCounter exact{SIZE_MAX}; exact.add(SIZE_MAX,1);
+    if (exact.bytes()!=SIZE_MAX) return false;
+    exact.add(1,1); if (exact.bytes()) return false;
+    TickPayloadCounter multiply{SIZE_MAX}; multiply.add(SIZE_MAX,2);
+    if (multiply.bytes()) return false;
+    TickPayloadCounter tight{17}; tight.add(8,2); tight.add(1,1);
+    if (tight.bytes()!=17) return false;
+    tight.add(1,1); if (tight.bytes()) return false;
+    TickPayloadCounter zero{0}; zero.add(0,SIZE_MAX);
+    if (zero.bytes()!=0) return false;
+    zero.add(1,1); return !zero.bytes();
+}
+'''
+(out / 'execution_kernel.cpp').write_text(s, encoding='utf-8')
+
+probe = (old / 'fault-source-v1/tests/rpa/tick_fault_probe.hpp').read_text(encoding='utf-8')
+probe = probe.replace('#include <new>', '#include <new>\n#include <malloc.h>')
+probe = probe.replace('    std::int64_t restoredFrontier{};', '''    std::int64_t restoredFrontier{};
+    struct Point { std::int64_t frontier{}; std::uint64_t facts{}, ordinal{}; };
+    Point staged[16]{};
+    std::size_t stagedCount{};''')
+probe = probe.replace('inline std::atomic<std::size_t> live{}, peak{}, count{}, bytes{};', 'inline std::atomic<std::size_t> live{}, peak{}, count{}, bytes{}, storage{}, storagePeak{};')
+probe = probe.replace('    std::size_t size;', '    std::size_t size;\n    std::size_t usable;')
+probe = probe.replace('    *header = {base, size};', '''    const auto usable = _msize(base);
+    *header = {base, size, usable};
+    const auto storageNow = storage.fetch_add(usable) + usable;
+    auto storageHigh = storagePeak.load();
+    while(storageNow>storageHigh && !storagePeak.compare_exchange_weak(storageHigh,storageNow)) {}''')
+probe = probe.replace('    std::free(header->base);', '    storage.fetch_sub(header->usable);\n    std::free(header->base);')
+(out / 'tick_fault_probe.hpp').write_text(probe, encoding='utf-8')
+
+testpath = source / 'tests/rpa/rpa_b3_tests.cpp'
+t = testpath.read_text(encoding='utf-8')
+t = re.sub(r'#include "(\.\.[^"]+)"', lambda m: '#include "'+(testpath.parent/m[1]).resolve().as_posix()+'"', t)
+t = '#include "tick_fault_probe.hpp"\n#include <Windows.h>\n#include <psapi.h>\n' + t
+oldtests = (old / 'fault-source-v1/tests/rpa/rpa_b3_tests.cpp').read_text(encoding='utf-8')
+extra = oldtests[oldtests.index('extern "C" void r3c_cache_event'):oldtests.index('TEST_CASE("R3c observed source owners')]
+extra = extra.replace('    CHECK(detail::ExecutionKernel::tickPointCount(*archive) == 0);', '    CHECK(detail::ExecutionKernel::tickPointCount(*archive) == 0);\n    CHECK(detail::ExecutionKernel::tickPayloadBytes(*archive) == 0);')
+extra = extra.replace('        CHECK(detail::ExecutionKernel::tickPointCount(archive) == 0);', '        CHECK(detail::ExecutionKernel::tickPointCount(archive) == 0);\n        CHECK(detail::ExecutionKernel::tickPayloadBytes(archive) == 0);')
+extra = extra.replace('''    REQUIRE((*made)->advance(Tick{2503}));
+    auto archive = (*made)->archive();''', '''    tick_probe::plan = {};
+    REQUIRE((*made)->advance(Tick{2503}));
+    const auto staged = tick_probe::plan;
+    tick_probe::plan = {};
+    REQUIRE(staged.stagedCount == 6);
+    for (std::size_t i=0;i<6;++i) {
+        CHECK(staged.staged[i].frontier == 901+static_cast<std::int64_t>(i)*200);
+        CHECK(staged.staged[i].facts >= 512);
+        CHECK(staged.staged[i].ordinal == 0);
+        std::cout << "R3C_STAGE " << staged.staged[i].frontier << " " << staged.staged[i].facts << " " << staged.staged[i].ordinal << "\\n";
+    }
+    auto archive = (*made)->archive();''')
+t += extra
+t += '''
+extern "C" void r3c_staged_point(std::int64_t frontier,std::uint64_t facts,std::uint64_t ordinal) noexcept {
+    auto& p=tick_probe::plan;
+    if (p.stagedCount<16) p.staged[p.stagedCount++]={frontier,facts,ordinal};
+}
+extern "C" bool r3c_counter_boundaries() noexcept;
+TEST_CASE("R3c budget observer rejects counter overflow and remaining quota overflow", "[r3c-fault]") {
+    CHECK(r3c_counter_boundaries());
+}
+
+namespace {
+struct BudgetHeapSample { std::size_t requested{},storage{},charge{},privateBytes{},workingSet{}; };
+auto budgetHeapSample(const ReplayArchive& archive) -> BudgetHeapSample {
+    PROCESS_MEMORY_COUNTERS_EX info{};
+    const bool ok=GetProcessMemoryInfo(GetCurrentProcess(),reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&info),sizeof(info))!=0;
+    REQUIRE(ok);
+    return {tick_probe::live.load(),tick_probe::storage.load(),detail::ExecutionKernel::tickPayloadBytes(archive),info.PrivateUsage,info.WorkingSetSize};
+}
+}
+TEST_CASE("R3c budget actual heap tracks multiple generations and last archive release", "[r3c-memory]") {
+    const auto n=GENERATE(1000U,1536U,40000U);
+    const unsigned wave=n==1536?256:0;
+    Fixture3 f; expandTickFixture(f,n,wave);
+    const auto config=f.configuration(); const auto prepared=f.prepared();
+    { auto warm=detail::ExecutionKernel::prepare(config,prepared); REQUIRE(warm); }
+    for (const bool capture:{false,true}) {
+        const auto requestedBefore=tick_probe::live.load();
+        const auto storageBefore=tick_probe::storage.load();
+        tick_probe::peak.store(requestedBefore); tick_probe::storagePeak.store(storageBefore);
+        std::array<BudgetHeapSample,5> samples{};
+        std::size_t points{};
+        {
+            auto made=detail::ExecutionKernel::prepare(config,prepared); REQUIRE(made);
+            auto empty=(*made)->archive();
+            samples[0]=budgetHeapSample(empty);
+            {
+                std::vector<ReplayArchive> generations; generations.reserve(wave?6:1);
+                if (wave) {
+                    for (const auto h:{904,1104,1304,1504,1704,1904}) {
+                        REQUIRE((capture?(*made)->advance(Tick{h}):(*made)->advanceForReplay(Tick{h})));
+                        generations.push_back((*made)->archive());
+                    }
+                } else {
+                    REQUIRE((capture?(*made)->advance(Tick{1203}):(*made)->advanceForReplay(Tick{1203})));
+                    generations.push_back((*made)->archive());
+                }
+                points=detail::ExecutionKernel::tickPointCount(generations.back());
+                samples[1]=budgetHeapSample(empty);
+                made->reset(); samples[2]=budgetHeapSample(empty);
+                CHECK(samples[1].charge==samples[2].charge);
+                if(capture) CHECK(points>0); else CHECK(points==0);
+            }
+            samples[3]=budgetHeapSample(empty);
+            CHECK(samples[3].charge==0);
+        }
+        const auto requestedAfter=tick_probe::live.load();
+        const auto storageAfter=tick_probe::storage.load();
+        CHECK(requestedAfter==requestedBefore); CHECK(storageAfter==storageBefore);
+        for(std::size_t i=0;i<4;++i)
+            std::cout << "{\\"event\\":\\"r3c.budget_heap\\",\\"n\\":" << n << ",\\"wave\\":" << wave
+                      << ",\\"capture\\":" << capture << ",\\"phase\\":" << i
+                      << ",\\"requested_delta\\":" << samples[i].requested-requestedBefore
+                      << ",\\"crt_usable_delta\\":" << samples[i].storage-storageBefore
+                      << ",\\"payload_charge\\":" << samples[i].charge
+                      << ",\\"process_private_bytes\\":" << samples[i].privateBytes
+                      << ",\\"working_set\\":" << samples[i].workingSet
+                      << ",\\"points\\":" << points << "}\\n";
+        std::cout << "{\\"event\\":\\"r3c.budget_release\\",\\"n\\":" << n << ",\\"capture\\":" << capture
+                  << ",\\"requested_peak_delta\\":" << tick_probe::peak.load()-requestedBefore
+                  << ",\\"crt_usable_peak_delta\\":" << tick_probe::storagePeak.load()-storageBefore
+                  << ",\\"requested_release_delta\\":" << requestedAfter-requestedBefore
+                  << ",\\"storage_release_delta\\":" << storageAfter-storageBefore << "}\\n";
+    }
+}
+'''
+(out / 'rpa_b3_tests.cpp').write_text(t, encoding='utf-8')
+subprocess.run(['clang-format','-i',*[str(out/n) for n in ('execution_kernel.cpp','rpa_b3_tests.cpp','tick_fault_probe.hpp')]],check=True)
+(out/'source-binding.json').write_text(json.dumps(dict(scope='Instrumented observer only. Same budget-v2 class definitions and frozen common libraries; two TUs recompiled. Real global fail-next after payload lease acquire. CRT usable includes observer metadata/alignment; process samples are absolute and include observer.',parent_source_binding_sha256=sha(binding),sources={n:sha(out/n) for n in ('execution_kernel.cpp','rpa_b3_tests.cpp','tick_fault_probe.hpp')}),indent=2))
+print(out)

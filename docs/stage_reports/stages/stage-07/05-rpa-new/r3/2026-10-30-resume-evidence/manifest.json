@@ -1,14 +1,26 @@
 {
   "selection": false,
-  "scope": "P1 v2 fixed group rejected; raw bytes and logs remain in original out directory. User resumed ordinary implementation; formal acceptance unchanged.",
+  "scope": "P1 rejected fixed group plus unselected budget-v2 real faults/heap/negative control. No product acceptance.",
   "files": {
-    ".gitattributes": "4b427680b71021aaec87c941243cc2df0bf3e02978865265c452dd48f8890daf",
+    ".gitattributes": "e19c739743cf6177f144d85b24549082a8108c059a679ab288d2b4e49512d320",
     "analyze_packed_remaining_v2.py.txt": "ea808144ee09dd2b386ddb585ad6933f56424b4d327068292e70fd9305691af8",
+    "budget-v2-allocation-observer.hpp.txt": "ed0641caad2037485ce326ee40cef5f4e0a8225bd42cd2d6a471fda228584ecd",
+    "budget-v2-failed-memory-note.json": "48ef0a4eed98f9878bb769840218533439b25e3a5769ee917cab16dad627921f",
+    "budget-v2-failed-memory.log.txt": "3684f4608f34056c2c2416b2429e12b48fdf7513a244829b5518e9e51a8c48d3",
+    "budget-v2-fault.log.txt": "c4b4e395e6bedcbf1e2f5c90fb42e1d75740810a67130728f839f7ac7f30c0f5",
+    "budget-v2-memory.log.txt": "0a305930b57bafbf64aaa1419f93e8a5a23902c06de9dfe07ed42d3f8e9dc8e1",
+    "budget-v2-negative-result.json": "86c358f7bf3f04f6508a79ef5698566fc7d0946018f64b41d356259559b52b95",
+    "budget-v2-negative.log.txt": "b57fbcb67172592be11f4869e91690793c677a0a615f9538f0baac34a6b2f939",
+    "budget-v2-observer-binding.json": "8b9ecfa5d553880e66cb7fbc71168810dad7395bd44d0df53c44fa0a7033c226",
+    "budget-v2-observer-kernel.cpp.txt": "ec9aa0b2288376c84bb3ab4028b84fdbcabc0f0ffcbb435ad2b5d9a0d016c03a",
+    "budget-v2-observer-tests.cpp.txt": "ae02fad99dc9e948d87a203bca487ed8e2f4e35e12b7b78273f07c69ea9fc941",
+    "build_budget_observer_v3.py.txt": "26fabebce28cb84a97a11ef6afc3f5480e78889a985e894295746060a2036433",
     "entry-verification.json": "928c7c4b6f70ee23578eb917a78145b8c03f79817c23e53d222fce4e39486425",
     "p1-v2-comparison.json": "ad29e537d3ddfa37d1a7fb060249fabe97437dd234dc831f0298cc36dfe325d8",
     "p1-v2-decision.json": "1e0dbd91f7671ef921cc74d9f5277e9bc6cc7ce5ad47a96a54c46d99aec7f405",
     "p1-v2-registration.json": "270cec049036411692963a14fbde75ac3eccf1340e53b5a9472985c140bbd6b0",
     "p1-v2-results.json": "f13e4eedbcfa0218b07cb2d6bd43c7082121923e65e743209f82ef94a7c87ca1",
+    "prepare_budget_observer.py.txt": "dd7ac4671d4161e62f49e3561ef8c98e36bc1f66c34528ccbb61e39c949d5d06",
     "run_packed_remaining_v2.py.txt": "d476fdec6216709b14ef02b1779cbed3ab79ec966640e471175038a2e0c5be33"
   }
 }

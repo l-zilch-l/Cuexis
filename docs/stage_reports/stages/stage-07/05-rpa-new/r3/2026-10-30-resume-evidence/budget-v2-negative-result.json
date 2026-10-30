@@ -1,0 +1,6 @@
+{
+  "exit": 42,
+  "expected_failure": true,
+  "binary_sha256": "c96f13cce9e95a80a3758acebe92d485baad887bd9e9fbc1565abfbb84dfd45d",
+  "scope": "Deliberately promote staged points after failed advance. Negative control only; not a product failure."
+}

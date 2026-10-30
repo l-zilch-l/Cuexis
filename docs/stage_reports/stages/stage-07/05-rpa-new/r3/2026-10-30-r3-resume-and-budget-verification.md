@@ -43,3 +43,46 @@ Counter overflow/remaining 边界、六个暂存 frontier/facts/ordinal 和多�
 随后使用相同 SharedSequence 定义的普通探针测 first/repeat Seek 和 writer 开销。
 128 MiB 仍只是未接受的 payload charge 参数，不是进程内存 cap。
 本报告后续仅记录本次新增证据，不沿用旧无预算版成绩作新版本接受。
+
+## 预算 v2：新增故障、退款和实际堆证据
+
+隔离观察器与 budget-v2 使用同一 SharedSequence/类定义；仅 event kernel 与 B3 两个 TU
+重新编译，其他对象/库来自同一个已冻结的 fresh 构建。全局 fail-next 在 lease acquire 后、
+point make_shared 前注入。新增故障/边界与已有相关回归共 **11 cases / 935 assertions** 通过。
+包括 staged 后 finalization/Fold/pre-seal 故障不提升、restore copy/reserve 失败回退、
+计费加法/乘法溢出、紧额度及 retired/fork owner。
+六个实际暂存 frontier 为 901/1101/1301/1501/1701/1901，每个新增 768 facts，ordinal=0；
+后续选中的 earliest/latest 点与预期一致。见[故障日志](2026-10-30-resume-evidence/budget-v2-fault.log.txt)。
+
+故意让失败 advance 也提升暂存点的 mutant，exit 42，102 assertions 中 6 项失败，
+明确检出 point/charge 残留；这是测试有效性反例，见[negative 日志](2026-10-30-resume-evidence/budget-v2-negative.log.txt)。
+
+实际 requested / CRT usable / private bytes / working set 独立观察显示：
+
+| 场景 | 可选点 | writer 销毁后的 requested 增量（相对无点） | 计费 | 最后全部 owner 释放 |
+| --- | ---: | ---: | ---: | --- |
+| 1K dense | 1 | 11,303 B | 6,115,528 B | requested/storage 差值均 0 |
+| 1536 六代 archive | 当前最多 4，旧代保活 | 99,103 B | 37,172,064 B | requested/storage 差值均 0 |
+| 40K dense | 0 | 0 B | 准入失败，charge=0 | requested/storage 差值均 0 |
+
+40K 完整保守估计为 244,028,048 B，其中 Facts 198,803,392 B、phases 43,275,024 B；
+超过历史试验参数 134,217,728 B。**这只证明该计费/额度组合无法提供 40K 续点加速，
+不证明实际新增 244 MB 或续点机制不可行。** 40K requested 峰值差值为 0，因为没有收点；
+观察器绝对进程 private peak/sample 含夹具与 allocator 滞留，不能归作产品单域峰值。
+见[实际堆日志](2026-10-30-resume-evidence/budget-v2-memory.log.txt)。
+
+第一版堆检查错误地断言 40K 必须收点，失败后 Catch2 在 owner 范围内保存失败信息，
+导致 requested/storage 表观残留 248/280 B；原失败日志完整保留。改为独立检查实际拒绝行为后，
+所有最终差值归零。因此原残留不能判为产品泄漏，也不能删掉原失败记录。
+
+## 预算依据与后续方向
+
+用户要求审视 128 MiB 是否合理。本轮核对它只是原型代码中的试验参数，尚无设备 headroom、
+完整播放链内存分配或 40K profile 推导；不能把它变成候选去留或生产接受的硬门。
+下一步先做固定成本 census：1K/40K dense、40K 六代 owning archive，区分无缓存、旧额度拒绝、
+禁用字节准入但保留四槽上限时的实际成本。此诊断不把允许收点的设置推荐为产品 cap。
+
+另有尚未构建/选用的 append-only Fact 页候选：只对必需源日志持续持有的完整 Fact 页免重复收费，
+目录与 partial tail 仍计费；promotion 检查精确共享页身份。需要证明整个暂存、fault、分支和归档
+生命周期均有 mandatory owner，不能因某个引用计数或值相等就扣除。只有数据与证明支持才继续，
+不为守住任意 128 MiB 引入难以维护的复杂机制。原正式/内存/profile 与最终矩阵缺口保持开放。
