@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-10-29
+更新日期：2026-10-30
 
 本文只维护当前阶段、正在进行的任务和未解决的问题。实施与测量细节见带日期的阶段报告。
 
@@ -48,7 +48,10 @@
   有限通道 canary 的 runtime / snapshot 等阶段各 1,088 样本且无遗漏。两处移植性修复和失败记录
   见六项账本；这不替代其余配置、安装消费者或正式性能接受。
   随后 fresh RPA observation ON 构建的 Host / Judgement / RPA 回归及显式 60 组合 Seek 路径通过；
-  R3c 的共享封存 Tick 原型仍在隔离副本中，尚未完成故障和内存门，不属于当前产品实现。
+  R3c 的共享封存 Tick 原型仍在隔离副本中；正向恢复、实际分配失败及反例探针已通过有限验证，
+  后续分支完整 Replay 字节亦与原点一致，首轮堆观察最终释放差值为零。
+  通用保留字节预算和普通 writer 开销仍待完成，
+  不属于当前产品实现或 R3c 接受。
   最新[来源绑定实验](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-source-binding-experiment.md)用同一 Release 二进制比较 canonical SHA 与进程内 owning source binding。
   2048 requirements、33 条历史的 CPU 宿主首次请求到目标帧由 91.809 ms 降至 1.016 ms；129 条历史由 333.624 ms 降至 1.057 ms。
   这是固定本地诊断的点值，wire/导入验证保持原合同，candidate C++ 消费者须重建；R3 未退出、R3c 尚未进入，R4、设备与生产接受仍独立。

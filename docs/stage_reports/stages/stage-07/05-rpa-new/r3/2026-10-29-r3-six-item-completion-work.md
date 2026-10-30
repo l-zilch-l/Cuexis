@@ -301,6 +301,52 @@ v2 移除无关 include，沿相同普通 Release 依赖只覆盖 presentation r
 的保留判据，因此撤回产品代码，不为该结果追加复测。保留源码、二进制、登记与全部样本；
 保留独立的存储移除/重建生命周期回归，作为既有只读窗口合同检查，不引入新的组件池缓存。
 
+## 隔离 sealed Tick 原型与故障反例
+
+R3c 仍未提升为产品实现。`tick-census-measure-v1` 仅观察 1K/40K 各一进程、每进程三请求，
+确认 Tick 8 产生 1K/40K 个事实，pending 为空、idleFoldReady 为 false，候选位置实际可达；
+其观察时间不作为性能成绩。`tick-prototype-v1` 在 tracked 源码独立副本中实现 writer-only 收集，
+每次 advance 本地暂存，成功 finalization 且原记录实际发布后才提升。Replay、Seek 和导入验证
+显式禁用收集；私有状态不进入 SDK 安装头或 recovery wire。
+
+点位拥有已经完成 kernel、Fold 和 fault reserve 的不可变 RuntimeState，绑定该记录开始前的
+prefix、recording 和 ordinal；不伪造 advance，不把中间状态当最终 Snapshot。单个索引暂限四点，
+超过后保留最早点和最近三点。这是实验结构上限，尚非已接受的保留字节或长期 retired-owner 预算。
+
+`build-v3` 的有限正向测试为 2 cases / 525 assertions；普通 RPA 回归为 72 / 27,029。
+包含前缀 ordinal 0/1/2/3、重复 advance、Pause/Resume、输入批次、source writer 销毁后恢复，
+以及超过四点的轨迹；当前 Snapshot 全成员及编码字节、后续推进与独立外部原点一致。
+独立审阅指出还应比较后续分支完整 Replay 输出，正在补充，不把现有检查写成全部闭包完成。
+随后 `writer-build-v2` 的同两用例扩为 625 assertions，增加后续分支完整 Replay history 与
+encodeReplay 字节比较，全部通过；普通 writer 开销另以 stdin barrier 后的独立进程观察。
+该探针首次编译因直接 getenv 触发 MSVC Werror 而停止，失败目录保留；新副本使用仓库现有
+environmentVariable，不放宽警告，也不把测试方法错误解释为产品故障。
+初版 test include 跨物理目录导致重复定义的构建失败保留；修复仅统一 Core 内部头路径。
+`build-v3/reuse-receipt.json` 明确四个生产对象实际复用 build-v1；原 binding 的“全部 fresh”措辞
+不准确，补充回执记录真实对象和格式化后的源码 hash，不追改原回执。
+
+`fault-build-v1` 是另一个观察副本：仅 Kernel CPP 插入不分配的阶段事件，测试 TU 使用静态
+global allocation replacement，普通计时二进制不含这些探针。3 cases / 196 assertions 通过：
+在实际暂存一个点后，分别让 finalization、下一 Tick Fold copy 和 kernel seal 前 reserve 分配失败，
+确认故障记录仍发布、原错误状态与独立 controls oracle 完整一致，但暂存点均不提升。
+可选点分配及恢复 state/reserve 分配失败均走原回退，完整 Snapshot 字节一致；实际命中事件
+还证明四槽淘汰后选择 frontier 901、1501、1701、1901，而不只是检查“某点命中”。
+
+`fault-negative-v1` 故意改成失败 advance 也提升暂存点，同一故障测试以 exit 42 拒绝，
+99 assertions 中 6 个失败，实际发现提升计数及 tickPointCount 为 1；该反例源码与日志保留，
+永不进入产品。四槽提升不分配内存，因此没有虚构“提升分配失败”的测试位置。
+
+同一观察构建的 1 case / 30 assertions 取得 requested heap：1K/40K 无缓存峰值分别为
+11,741,098 / 463,568,453 B，候选峰值相同；writer 销毁但 archive 仍持有时，候选比基线多保留
+11,279 / 323,279 B。两版最后 owner 释放后的差值均为 0。此为 typed fixture 单条长记录，
+不含 CRT usable、RSS、GPU 或通用 caps；旧 owning archive 可延长被淘汰点存活，四槽并不证明
+整个进程总保留量有界，多点、较长输入/控制历史及 retired owner 成本继续开放。
+
+`tick-screen-v1` 先做 1K H=902、两对 AB/BA、三请求的普通 allocator 探索筛选，
+进程内三请求中位数再汇总为 3.5505 → 0.2520 ms；首次为基线 3.158/3.133 ms、
+候选 0.481/0.438 ms，完整目标 Snapshot 字节一致。预设仅以至少 30% 改善判断是否值得继续
+故障/内存验证，不是保留决定、40K 结论或 20 ms 正式接受。生成开销、保留预算和其余原门仍开放。
+
 ## 构建、版本与原门限
 
 2026-10-30 恢复批次：`release-mingw-metrics-v4` 完成独立 MinGW GCC 16.1.0 配置，
