@@ -1,0 +1,28 @@
+{
+  "scope": "Observed attribution only: fixed2 processes each1K/40K,3 original requests per process, H902. Unique per-call QPC wall/threadCPU/threadcycles; functional Snapshot equality retained. No normal timing or 15% acceptance; not replacement/addition of frozen ordinary group.",
+  "plan": [
+    {
+      "n": 1000,
+      "process": 0
+    },
+    {
+      "n": 1000,
+      "process": 1
+    },
+    {
+      "n": 40000,
+      "process": 0
+    },
+    {
+      "n": 40000,
+      "process": 1
+    }
+  ],
+  "binary_sha256": "aa2c0dc761ed904de29e851ec643161fa67923c2f7ea6cd91cc7d893484f1a72",
+  "binding_sha256": "f53744bc44ca8c38a1c9c8f21b881aa31c218cfaced9826cf41d57db5a628f1c",
+  "runner_sha256": "67bd19ba9df04ddd57272f36cd529e62bb23e289eddd98711b73ee3240f3d298",
+  "affinity": 4,
+  "priority": "BelowNormal",
+  "qos": "execution throttling OFF",
+  "stop": "Invalid process stops; no replacement/extension. No concurrent builds."
+}

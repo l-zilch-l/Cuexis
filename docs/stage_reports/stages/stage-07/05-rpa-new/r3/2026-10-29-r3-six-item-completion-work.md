@@ -10,6 +10,7 @@
 [CURRENT_STATUS](../../../../../CURRENT_STATUS.md)。owner 要求连续完成桌面接手文档 P1–P6，
 按六项剩余工作持续推进；原预算、错误语义、身份字节和历史证据保持原要求。
 最新 P1 否决、R3c v4 及预算/真实成本证据见[恢复实施记录](2026-10-30-r3-resume-and-budget-verification.md)。
+新[Seek 发布归因与批量候选处置](2026-10-30-r3-publication-attribution.md)区分 H902 发布与 H5 activation 成本；批量候选未过保护门，不选用。
 恢复前 P1/R3c v2 现场及未选用源码归档见
 [2026-10-30 暂停与候选交接](2026-10-30-r3-pause-and-candidate-handoff.md)。下文各批记录保留当时范围，
 不将某个旧版本的“尚未实施”或通过结果误作最新预算副本的结论。

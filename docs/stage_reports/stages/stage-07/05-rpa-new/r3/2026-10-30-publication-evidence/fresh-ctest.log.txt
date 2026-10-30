@@ -1,0 +1,13 @@
+Test project D:/Cuexis-redesign/out/verification-20261030/r3-next-v1/publication-build-v2
+    Start 1: cuexis_architecture_tests
+1/2 Test #1: cuexis_architecture_tests .........   Passed    1.54 sec
+    Start 2: cuexis_msvc_dependency_tracking
+2/2 Test #2: cuexis_msvc_dependency_tracking ...   Passed   13.90 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Label Time Summary:
+build           =  13.90 sec*proc (1 test)
+dependencies    =  13.90 sec*proc (1 test)
+
+Total Test time (real) =  15.73 sec

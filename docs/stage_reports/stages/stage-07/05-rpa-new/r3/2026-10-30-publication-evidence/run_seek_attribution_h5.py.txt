@@ -1,0 +1,7 @@
+from pathlib import Path
+base=Path(__file__).resolve().parent
+s=(base/'run_seek_attribution_v2.py').read_text()
+s=s.replace("out=base/'seek-attribution-measure-v2'", "out=base/'seek-attribution-measure-h5-v1'")
+s=s.replace("R3_PARTIAL_HORIZON='902'", "R3_PARTIAL_HORIZON='5'")
+s=s.replace('H902.', 'H5.')
+exec(compile(s,str(base/'run_seek_attribution_v2.py'),'exec'))

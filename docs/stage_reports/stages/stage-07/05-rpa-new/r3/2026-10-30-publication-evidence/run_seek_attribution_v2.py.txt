@@ -1,0 +1,37 @@
+from pathlib import Path
+import sys
+root=Path.cwd();sys.path.insert(0,str(root/'out/verification-20261029/r3-completion'))
+from native import *
+import csv,io
+base=Path(__file__).resolve().parent;build=base/'seek-attribution-v2';out=base/'seek-attribution-measure-v2';out.mkdir(exist_ok=False)
+plan=[dict(n=n,process=p) for n in (1000,40000) for p in range(2)]
+write(out/'registration.json',dict(scope='Observed attribution only: fixed2 processes each1K/40K,3 original requests per process, H902. Unique per-call QPC wall/threadCPU/threadcycles; functional Snapshot equality retained. No normal timing or 15% acceptance; not replacement/addition of frozen ordinary group.',plan=plan,binary_sha256=sha(build/'probe.exe'),binding_sha256=sha(build/'binding.json'),runner_sha256=sha(Path(__file__)),affinity=4,priority='BelowNormal',qos='execution throttling OFF',stop='Invalid process stops; no replacement/extension. No concurrent builds.'))
+rows=[]
+for ordinal,item in enumerate(plan):
+ active=list(csv.reader(io.StringIO(subprocess.check_output(['tasklist','/FO','CSV','/NH'],text=True,encoding='utf-8',errors='replace'))))
+ assert not [r for r in active if r and r[0].lower() in ('cl.exe','link.exe','ninja.exe','gcc.exe','g++.exe','cc1.exe','cc1plus.exe')], 'Concurrent build'
+ env={key:value for key,value in os.environ.items() if not key.startswith(('CUEXIS_PD','CUEXIS_GPU_','CUEXIS_CPU_','R3_','CUEXIS_SEEK_','CUEXIS_REDESIGN_'))}
+ env.update(CUEXIS_REDESIGN_BARRIER='1',CUEXIS_SEEK_REQUIREMENTS=str(item['n']),CUEXIS_SEEK_RECORDS='129',CUEXIS_SEEK_IDENTITY='source',CUEXIS_SEEK_CONTENT='packed',R3_PARTIAL_HORIZON='902')
+ log=out/f'{ordinal:02}-{item["n"]}.log'
+ with log.open('x',encoding='utf-8') as stream:
+  child=subprocess.Popen([str(build/'probe.exe'),'[redesign-host-perf]','--rng-seed','1'],cwd=root,env=env,stdin=subprocess.PIPE,stdout=stream,stderr=subprocess.STDOUT,creationflags=subprocess.CREATE_NO_WINDOW|subprocess.BELOW_NORMAL_PRIORITY_CLASS)
+  handle=k.OpenProcess(0x0200|0x1000,False,child.pid)
+  try:
+   power=Power(1,1,0);assert handle and k.SetProcessAffinityMask(handle,4) and k.SetProcessInformation(handle,4,ct.byref(power),ct.sizeof(power))
+   observed=Power(1,0,0);mask=ct.c_size_t();system=ct.c_size_t()
+   assert k.GetProcessAffinityMask(handle,ct.byref(mask),ct.byref(system)) and k.GetProcessInformation(handle,4,ct.byref(observed),ct.sizeof(observed))
+   controls=dict(affinity=mask.value,priority=k.GetPriorityClass(handle),qos_control=observed.ControlMask,qos_state=observed.StateMask);assert controls==dict(affinity=4,priority=16384,qos_control=1,qos_state=0)
+   child.stdin.write(b'go\n');child.stdin.flush();child.stdin.close()
+   try:code=child.wait(timeout=300)
+   except subprocess.TimeoutExpired:child.kill();child.wait();code='timeout'
+  finally:
+   if handle:k.CloseHandle(handle)
+   if child.poll() is None:child.kill();child.wait()
+ text=log.read_text(encoding='utf-8',errors='replace')
+ events=[json.loads(l) for l in text.splitlines() if l.startswith('{"event":"r3.redesign.host"')]
+ splits=[json.loads(l.split(' ',1)[1]) for l in text.splitlines() if l.startswith('R3_SPLIT ')]
+ valid=code==0 and 'All tests passed' in text and len(events)==3 and all(any(s['attempt']==i and s['stage']==10 for s in splits) for i in range(3))
+ row=dict(item,exit=code,valid=valid,controls=controls,events=events,splits=splits,log_sha256=sha(log));rows.append(row);write(out/'results.json',rows)
+ print(json.dumps(dict(item,exit=code,valid=valid,stages=len(splits))),flush=True)
+ if not valid:raise SystemExit('Invalid original process retained; stopped')
+print('Observed wall/CPU/cycle attribution complete; no ordinary acceptance claim',flush=True)

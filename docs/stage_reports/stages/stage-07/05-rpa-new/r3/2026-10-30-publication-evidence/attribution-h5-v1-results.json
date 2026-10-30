@@ -1,0 +1,4910 @@
+[
+  {
+    "n": 1000,
+    "process": 0,
+    "exit": 0,
+    "valid": true,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 0,
+        "seek_us": 566,
+        "request_to_present_us": 701,
+        "archive_us": 42,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 116895,
+        "cut_us": 23,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 1,
+        "seek_us": 664,
+        "request_to_present_us": 735,
+        "archive_us": 42,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 116895,
+        "cut_us": 24,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 2,
+        "seek_us": 576,
+        "request_to_present_us": 637,
+        "archive_us": 42,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 116895,
+        "cut_us": 22,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "splits": [
+      {
+        "attempt": 0,
+        "stage": 233,
+        "thread": 14476,
+        "wall_us": 1.3,
+        "thread_cpu_us": 0,
+        "cycles": 4551
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 0.8,
+        "thread_cpu_us": 0,
+        "cycles": 3035
+      },
+      {
+        "attempt": 0,
+        "stage": 133,
+        "thread": 17976,
+        "wall_us": 14.7,
+        "thread_cpu_us": 0,
+        "cycles": 26171
+      },
+      {
+        "attempt": 0,
+        "stage": 200,
+        "thread": 14476,
+        "wall_us": 1.2,
+        "thread_cpu_us": 0,
+        "cycles": 4172
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 0.9,
+        "thread_cpu_us": 0,
+        "cycles": 3034
+      },
+      {
+        "attempt": 0,
+        "stage": 100,
+        "thread": 17976,
+        "wall_us": 12.4,
+        "thread_cpu_us": 0,
+        "cycles": 20103
+      },
+      {
+        "attempt": 0,
+        "stage": 203,
+        "thread": 14476,
+        "wall_us": 1.3,
+        "thread_cpu_us": 0,
+        "cycles": 4931
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 0.8,
+        "thread_cpu_us": 0,
+        "cycles": 2655
+      },
+      {
+        "attempt": 0,
+        "stage": 204,
+        "thread": 14476,
+        "wall_us": 2.6,
+        "thread_cpu_us": 0,
+        "cycles": 10241
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 1,
+        "thread_cpu_us": 0,
+        "cycles": 3793
+      },
+      {
+        "attempt": 0,
+        "stage": 104,
+        "thread": 17976,
+        "wall_us": 14.4,
+        "thread_cpu_us": 0,
+        "cycles": 21620
+      },
+      {
+        "attempt": 0,
+        "stage": 205,
+        "thread": 14476,
+        "wall_us": 2.4,
+        "thread_cpu_us": 0,
+        "cycles": 9103
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 1,
+        "thread_cpu_us": 0,
+        "cycles": 3793
+      },
+      {
+        "attempt": 0,
+        "stage": 105,
+        "thread": 17976,
+        "wall_us": 17.4,
+        "thread_cpu_us": 0,
+        "cycles": 28446
+      },
+      {
+        "attempt": 0,
+        "stage": 11,
+        "thread": 14476,
+        "wall_us": 5.7,
+        "thread_cpu_us": 0,
+        "cycles": 21620
+      },
+      {
+        "attempt": 0,
+        "stage": 13,
+        "thread": 14476,
+        "wall_us": 265.6,
+        "thread_cpu_us": 0,
+        "cycles": 997558
+      },
+      {
+        "attempt": 0,
+        "stage": 10,
+        "thread": 14476,
+        "wall_us": 276.8,
+        "thread_cpu_us": 0,
+        "cycles": 1039660
+      },
+      {
+        "attempt": 0,
+        "stage": 23,
+        "thread": 14476,
+        "wall_us": 279.4,
+        "thread_cpu_us": 0,
+        "cycles": 1049523
+      },
+      {
+        "attempt": 0,
+        "stage": 24,
+        "thread": 14476,
+        "wall_us": 0.7,
+        "thread_cpu_us": 0,
+        "cycles": 2275
+      },
+      {
+        "attempt": 0,
+        "stage": 25,
+        "thread": 14476,
+        "wall_us": 52.8,
+        "thread_cpu_us": 0,
+        "cycles": 174478
+      },
+      {
+        "attempt": 0,
+        "stage": 21,
+        "thread": 14476,
+        "wall_us": 341.1,
+        "thread_cpu_us": 0,
+        "cycles": 1264585
+      },
+      {
+        "attempt": 0,
+        "stage": 26,
+        "thread": 14476,
+        "wall_us": 0.7,
+        "thread_cpu_us": 0,
+        "cycles": 2656
+      },
+      {
+        "attempt": 0,
+        "stage": 27,
+        "thread": 14476,
+        "wall_us": 1.7,
+        "thread_cpu_us": 0,
+        "cycles": 6068
+      },
+      {
+        "attempt": 0,
+        "stage": 22,
+        "thread": 14476,
+        "wall_us": 7.1,
+        "thread_cpu_us": 0,
+        "cycles": 26170
+      },
+      {
+        "attempt": 0,
+        "stage": 20,
+        "thread": 14476,
+        "wall_us": 350.3,
+        "thread_cpu_us": 0,
+        "cycles": 1298341
+      },
+      {
+        "attempt": 0,
+        "stage": 28,
+        "thread": 14476,
+        "wall_us": 353.5,
+        "thread_cpu_us": 0,
+        "cycles": 1310859
+      },
+      {
+        "attempt": 0,
+        "stage": 234,
+        "thread": 14476,
+        "wall_us": 361.4,
+        "thread_cpu_us": 0,
+        "cycles": 1340444
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 1.3,
+        "thread_cpu_us": 0,
+        "cycles": 4551
+      },
+      {
+        "attempt": 0,
+        "stage": 134,
+        "thread": 17976,
+        "wall_us": 378.1,
+        "thread_cpu_us": 0,
+        "cycles": 31860
+      },
+      {
+        "attempt": 0,
+        "stage": 216,
+        "thread": 14476,
+        "wall_us": 1.3,
+        "thread_cpu_us": 0,
+        "cycles": 4551
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 1.1,
+        "thread_cpu_us": 0,
+        "cycles": 3793
+      },
+      {
+        "attempt": 0,
+        "stage": 116,
+        "thread": 17976,
+        "wall_us": 41.4,
+        "thread_cpu_us": 0,
+        "cycles": 121754
+      },
+      {
+        "attempt": 0,
+        "stage": 200,
+        "thread": 14476,
+        "wall_us": 1.1,
+        "thread_cpu_us": 0,
+        "cycles": 4172
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 0.8,
+        "thread_cpu_us": 0,
+        "cycles": 3034
+      },
+      {
+        "attempt": 0,
+        "stage": 100,
+        "thread": 17976,
+        "wall_us": 12.8,
+        "thread_cpu_us": 0,
+        "cycles": 21999
+      },
+      {
+        "attempt": 0,
+        "stage": 219,
+        "thread": 14476,
+        "wall_us": 20,
+        "thread_cpu_us": 0,
+        "cycles": 75860
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 0.8,
+        "thread_cpu_us": 0,
+        "cycles": 3035
+      },
+      {
+        "attempt": 0,
+        "stage": 119,
+        "thread": 17976,
+        "wall_us": 32,
+        "thread_cpu_us": 0,
+        "cycles": 20862
+      },
+      {
+        "attempt": 0,
+        "stage": 224,
+        "thread": 14476,
+        "wall_us": 22.7,
+        "thread_cpu_us": 0,
+        "cycles": 86480
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 0.9,
+        "thread_cpu_us": 0,
+        "cycles": 3034
+      },
+      {
+        "attempt": 0,
+        "stage": 124,
+        "thread": 17976,
+        "wall_us": 35.7,
+        "thread_cpu_us": 0,
+        "cycles": 21619
+      },
+      {
+        "attempt": 1,
+        "stage": 233,
+        "thread": 14476,
+        "wall_us": 1.1,
+        "thread_cpu_us": 0,
+        "cycles": 3793
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 17976,
+        "wall_us": 13.1,
+        "thread_cpu_us": 0,
+        "cycles": 18964
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 14.8,
+        "thread_cpu_us": 0,
+        "cycles": 25033
+      },
+      {
+        "attempt": 1,
+        "stage": 133,
+        "thread": 17976,
+        "wall_us": 20.2,
+        "thread_cpu_us": 0,
+        "cycles": 44376
+      },
+      {
+        "attempt": 1,
+        "stage": 200,
+        "thread": 14476,
+        "wall_us": 1.2,
+        "thread_cpu_us": 0,
+        "cycles": 4552
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 17976,
+        "wall_us": 13,
+        "thread_cpu_us": 0,
+        "cycles": 18586
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 14.7,
+        "thread_cpu_us": 0,
+        "cycles": 24276
+      },
+      {
+        "attempt": 1,
+        "stage": 100,
+        "thread": 17976,
+        "wall_us": 18.7,
+        "thread_cpu_us": 0,
+        "cycles": 39448
+      },
+      {
+        "attempt": 1,
+        "stage": 203,
+        "thread": 14476,
+        "wall_us": 1.5,
+        "thread_cpu_us": 0,
+        "cycles": 5689
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 17976,
+        "wall_us": 13.4,
+        "thread_cpu_us": 0,
+        "cycles": 18964
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 14.9,
+        "thread_cpu_us": 0,
+        "cycles": 24654
+      },
+      {
+        "attempt": 1,
+        "stage": 204,
+        "thread": 14476,
+        "wall_us": 2.9,
+        "thread_cpu_us": 0,
+        "cycles": 10620
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 17976,
+        "wall_us": 14.9,
+        "thread_cpu_us": 0,
+        "cycles": 18585
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 16.5,
+        "thread_cpu_us": 0,
+        "cycles": 24275
+      },
+      {
+        "attempt": 1,
+        "stage": 104,
+        "thread": 17976,
+        "wall_us": 20.7,
+        "thread_cpu_us": 0,
+        "cycles": 39447
+      },
+      {
+        "attempt": 1,
+        "stage": 205,
+        "thread": 14476,
+        "wall_us": 2.5,
+        "thread_cpu_us": 0,
+        "cycles": 9103
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 17976,
+        "wall_us": 15.4,
+        "thread_cpu_us": 0,
+        "cycles": 18966
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 17.2,
+        "thread_cpu_us": 0,
+        "cycles": 25414
+      },
+      {
+        "attempt": 1,
+        "stage": 105,
+        "thread": 17976,
+        "wall_us": 23.3,
+        "thread_cpu_us": 0,
+        "cycles": 47793
+      },
+      {
+        "attempt": 1,
+        "stage": 11,
+        "thread": 14476,
+        "wall_us": 6.8,
+        "thread_cpu_us": 0,
+        "cycles": 25413
+      },
+      {
+        "attempt": 1,
+        "stage": 13,
+        "thread": 14476,
+        "wall_us": 308.2,
+        "thread_cpu_us": 0,
+        "cycles": 1168624
+      },
+      {
+        "attempt": 1,
+        "stage": 10,
+        "thread": 14476,
+        "wall_us": 321.8,
+        "thread_cpu_us": 0,
+        "cycles": 1219070
+      },
+      {
+        "attempt": 1,
+        "stage": 23,
+        "thread": 14476,
+        "wall_us": 325,
+        "thread_cpu_us": 0,
+        "cycles": 1230449
+      },
+      {
+        "attempt": 1,
+        "stage": 24,
+        "thread": 14476,
+        "wall_us": 0.7,
+        "thread_cpu_us": 0,
+        "cycles": 2655
+      },
+      {
+        "attempt": 1,
+        "stage": 25,
+        "thread": 14476,
+        "wall_us": 19.6,
+        "thread_cpu_us": 0,
+        "cycles": 74343
+      },
+      {
+        "attempt": 1,
+        "stage": 21,
+        "thread": 14476,
+        "wall_us": 412.3,
+        "thread_cpu_us": 0,
+        "cycles": 1560820
+      },
+      {
+        "attempt": 1,
+        "stage": 26,
+        "thread": 14476,
+        "wall_us": 0.7,
+        "thread_cpu_us": 0,
+        "cycles": 2276
+      },
+      {
+        "attempt": 1,
+        "stage": 27,
+        "thread": 14476,
+        "wall_us": 2,
+        "thread_cpu_us": 0,
+        "cycles": 7206
+      },
+      {
+        "attempt": 1,
+        "stage": 22,
+        "thread": 14476,
+        "wall_us": 7.3,
+        "thread_cpu_us": 0,
+        "cycles": 26930
+      },
+      {
+        "attempt": 1,
+        "stage": 20,
+        "thread": 14476,
+        "wall_us": 421.7,
+        "thread_cpu_us": 0,
+        "cycles": 1594957
+      },
+      {
+        "attempt": 1,
+        "stage": 28,
+        "thread": 14476,
+        "wall_us": 423.5,
+        "thread_cpu_us": 0,
+        "cycles": 1601784
+      },
+      {
+        "attempt": 1,
+        "stage": 234,
+        "thread": 14476,
+        "wall_us": 428.6,
+        "thread_cpu_us": 0,
+        "cycles": 1620748
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 17976,
+        "wall_us": 442.8,
+        "thread_cpu_us": 0,
+        "cycles": 19344
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 444.8,
+        "thread_cpu_us": 0,
+        "cycles": 26172
+      },
+      {
+        "attempt": 1,
+        "stage": 134,
+        "thread": 17976,
+        "wall_us": 450.4,
+        "thread_cpu_us": 0,
+        "cycles": 47412
+      },
+      {
+        "attempt": 1,
+        "stage": 216,
+        "thread": 14476,
+        "wall_us": 1.6,
+        "thread_cpu_us": 0,
+        "cycles": 6069
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 17976,
+        "wall_us": 15.4,
+        "thread_cpu_us": 0,
+        "cycles": 19345
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 17.3,
+        "thread_cpu_us": 0,
+        "cycles": 25793
+      },
+      {
+        "attempt": 1,
+        "stage": 116,
+        "thread": 17976,
+        "wall_us": 27.4,
+        "thread_cpu_us": 0,
+        "cycles": 63723
+      },
+      {
+        "attempt": 1,
+        "stage": 200,
+        "thread": 14476,
+        "wall_us": 1.2,
+        "thread_cpu_us": 0,
+        "cycles": 4172
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 17976,
+        "wall_us": 13,
+        "thread_cpu_us": 0,
+        "cycles": 18586
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 14.5,
+        "thread_cpu_us": 0,
+        "cycles": 24276
+      },
+      {
+        "attempt": 1,
+        "stage": 100,
+        "thread": 17976,
+        "wall_us": 18.5,
+        "thread_cpu_us": 0,
+        "cycles": 39069
+      },
+      {
+        "attempt": 1,
+        "stage": 219,
+        "thread": 14476,
+        "wall_us": 7,
+        "thread_cpu_us": 0,
+        "cycles": 26551
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 17976,
+        "wall_us": 19,
+        "thread_cpu_us": 0,
+        "cycles": 18965
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 20.5,
+        "thread_cpu_us": 0,
+        "cycles": 24276
+      },
+      {
+        "attempt": 1,
+        "stage": 119,
+        "thread": 17976,
+        "wall_us": 24.3,
+        "thread_cpu_us": 0,
+        "cycles": 38689
+      },
+      {
+        "attempt": 1,
+        "stage": 224,
+        "thread": 14476,
+        "wall_us": 10.2,
+        "thread_cpu_us": 0,
+        "cycles": 38309
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 17976,
+        "wall_us": 22.6,
+        "thread_cpu_us": 0,
+        "cycles": 18965
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 24.2,
+        "thread_cpu_us": 0,
+        "cycles": 25034
+      },
+      {
+        "attempt": 1,
+        "stage": 124,
+        "thread": 17976,
+        "wall_us": 28.3,
+        "thread_cpu_us": 0,
+        "cycles": 40206
+      },
+      {
+        "attempt": 2,
+        "stage": 233,
+        "thread": 14476,
+        "wall_us": 1,
+        "thread_cpu_us": 0,
+        "cycles": 3793
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 17976,
+        "wall_us": 12.9,
+        "thread_cpu_us": 0,
+        "cycles": 18586
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 14.5,
+        "thread_cpu_us": 0,
+        "cycles": 24275
+      },
+      {
+        "attempt": 2,
+        "stage": 133,
+        "thread": 17976,
+        "wall_us": 19.3,
+        "thread_cpu_us": 0,
+        "cycles": 41724
+      },
+      {
+        "attempt": 2,
+        "stage": 200,
+        "thread": 14476,
+        "wall_us": 1,
+        "thread_cpu_us": 0,
+        "cycles": 3793
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 17976,
+        "wall_us": 12.9,
+        "thread_cpu_us": 0,
+        "cycles": 18964
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 14.5,
+        "thread_cpu_us": 0,
+        "cycles": 24653
+      },
+      {
+        "attempt": 2,
+        "stage": 100,
+        "thread": 17976,
+        "wall_us": 18.3,
+        "thread_cpu_us": 0,
+        "cycles": 39067
+      },
+      {
+        "attempt": 2,
+        "stage": 203,
+        "thread": 14476,
+        "wall_us": 1.2,
+        "thread_cpu_us": 0,
+        "cycles": 4172
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 17976,
+        "wall_us": 13.1,
+        "thread_cpu_us": 0,
+        "cycles": 18585
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 14.7,
+        "thread_cpu_us": 0,
+        "cycles": 23896
+      },
+      {
+        "attempt": 2,
+        "stage": 204,
+        "thread": 14476,
+        "wall_us": 2.2,
+        "thread_cpu_us": 0,
+        "cycles": 8344
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 17976,
+        "wall_us": 14,
+        "thread_cpu_us": 0,
+        "cycles": 18585
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 15.6,
+        "thread_cpu_us": 0,
+        "cycles": 24275
+      },
+      {
+        "attempt": 2,
+        "stage": 104,
+        "thread": 17976,
+        "wall_us": 19.7,
+        "thread_cpu_us": 0,
+        "cycles": 39068
+      },
+      {
+        "attempt": 2,
+        "stage": 205,
+        "thread": 14476,
+        "wall_us": 2.1,
+        "thread_cpu_us": 0,
+        "cycles": 7965
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 17976,
+        "wall_us": 15,
+        "thread_cpu_us": 0,
+        "cycles": 18586
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 16.8,
+        "thread_cpu_us": 0,
+        "cycles": 25035
+      },
+      {
+        "attempt": 2,
+        "stage": 105,
+        "thread": 17976,
+        "wall_us": 22.4,
+        "thread_cpu_us": 0,
+        "cycles": 45517
+      },
+      {
+        "attempt": 2,
+        "stage": 11,
+        "thread": 14476,
+        "wall_us": 5.6,
+        "thread_cpu_us": 0,
+        "cycles": 21241
+      },
+      {
+        "attempt": 2,
+        "stage": 13,
+        "thread": 14476,
+        "wall_us": 256.8,
+        "thread_cpu_us": 0,
+        "cycles": 974043
+      },
+      {
+        "attempt": 2,
+        "stage": 10,
+        "thread": 14476,
+        "wall_us": 275.7,
+        "thread_cpu_us": 0,
+        "cycles": 1026386
+      },
+      {
+        "attempt": 2,
+        "stage": 23,
+        "thread": 14476,
+        "wall_us": 278.6,
+        "thread_cpu_us": 0,
+        "cycles": 1036249
+      },
+      {
+        "attempt": 2,
+        "stage": 24,
+        "thread": 14476,
+        "wall_us": 0.7,
+        "thread_cpu_us": 0,
+        "cycles": 2655
+      },
+      {
+        "attempt": 2,
+        "stage": 25,
+        "thread": 14476,
+        "wall_us": 11,
+        "thread_cpu_us": 0,
+        "cycles": 41343
+      },
+      {
+        "attempt": 2,
+        "stage": 21,
+        "thread": 14476,
+        "wall_us": 345.6,
+        "thread_cpu_us": 0,
+        "cycles": 1289620
+      },
+      {
+        "attempt": 2,
+        "stage": 26,
+        "thread": 14476,
+        "wall_us": 0.7,
+        "thread_cpu_us": 0,
+        "cycles": 2275
+      },
+      {
+        "attempt": 2,
+        "stage": 27,
+        "thread": 14476,
+        "wall_us": 1.5,
+        "thread_cpu_us": 0,
+        "cycles": 5310
+      },
+      {
+        "attempt": 2,
+        "stage": 22,
+        "thread": 14476,
+        "wall_us": 6.4,
+        "thread_cpu_us": 0,
+        "cycles": 22377
+      },
+      {
+        "attempt": 2,
+        "stage": 20,
+        "thread": 14476,
+        "wall_us": 354.1,
+        "thread_cpu_us": 0,
+        "cycles": 1319204
+      },
+      {
+        "attempt": 2,
+        "stage": 28,
+        "thread": 14476,
+        "wall_us": 355.8,
+        "thread_cpu_us": 0,
+        "cycles": 1325273
+      },
+      {
+        "attempt": 2,
+        "stage": 234,
+        "thread": 14476,
+        "wall_us": 360.3,
+        "thread_cpu_us": 0,
+        "cycles": 1342341
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 17976,
+        "wall_us": 374.9,
+        "thread_cpu_us": 0,
+        "cycles": 19723
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 377,
+        "thread_cpu_us": 0,
+        "cycles": 26929
+      },
+      {
+        "attempt": 2,
+        "stage": 134,
+        "thread": 17976,
+        "wall_us": 382.5,
+        "thread_cpu_us": 0,
+        "cycles": 47031
+      },
+      {
+        "attempt": 2,
+        "stage": 216,
+        "thread": 14476,
+        "wall_us": 1.6,
+        "thread_cpu_us": 0,
+        "cycles": 5690
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 17976,
+        "wall_us": 14.6,
+        "thread_cpu_us": 0,
+        "cycles": 18586
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 16.4,
+        "thread_cpu_us": 0,
+        "cycles": 24655
+      },
+      {
+        "attempt": 2,
+        "stage": 116,
+        "thread": 17976,
+        "wall_us": 24.9,
+        "thread_cpu_us": 0,
+        "cycles": 56517
+      },
+      {
+        "attempt": 2,
+        "stage": 200,
+        "thread": 14476,
+        "wall_us": 1.1,
+        "thread_cpu_us": 0,
+        "cycles": 4173
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 17976,
+        "wall_us": 13,
+        "thread_cpu_us": 0,
+        "cycles": 18965
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 14.6,
+        "thread_cpu_us": 0,
+        "cycles": 24654
+      },
+      {
+        "attempt": 2,
+        "stage": 100,
+        "thread": 17976,
+        "wall_us": 18.7,
+        "thread_cpu_us": 0,
+        "cycles": 39447
+      },
+      {
+        "attempt": 2,
+        "stage": 219,
+        "thread": 14476,
+        "wall_us": 6.9,
+        "thread_cpu_us": 0,
+        "cycles": 25793
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 17976,
+        "wall_us": 18.8,
+        "thread_cpu_us": 0,
+        "cycles": 18965
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 20.3,
+        "thread_cpu_us": 0,
+        "cycles": 24275
+      },
+      {
+        "attempt": 2,
+        "stage": 119,
+        "thread": 17976,
+        "wall_us": 24.2,
+        "thread_cpu_us": 0,
+        "cycles": 38688
+      },
+      {
+        "attempt": 2,
+        "stage": 224,
+        "thread": 14476,
+        "wall_us": 6.5,
+        "thread_cpu_us": 0,
+        "cycles": 24276
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 17976,
+        "wall_us": 18.6,
+        "thread_cpu_us": 0,
+        "cycles": 18586
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 17976,
+        "wall_us": 20.2,
+        "thread_cpu_us": 0,
+        "cycles": 24275
+      },
+      {
+        "attempt": 2,
+        "stage": 124,
+        "thread": 17976,
+        "wall_us": 24.3,
+        "thread_cpu_us": 0,
+        "cycles": 39826
+      }
+    ],
+    "log_sha256": "c178bc47f919141b3f0149dab92d37b2aa893df27a25fc2f847c7b8530acee7b"
+  },
+  {
+    "n": 1000,
+    "process": 1,
+    "exit": 0,
+    "valid": true,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 0,
+        "seek_us": 573,
+        "request_to_present_us": 731,
+        "archive_us": 23,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 117256,
+        "cut_us": 21,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 1,
+        "seek_us": 705,
+        "request_to_present_us": 779,
+        "archive_us": 23,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 117256,
+        "cut_us": 25,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 2,
+        "seek_us": 557,
+        "request_to_present_us": 615,
+        "archive_us": 23,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 117256,
+        "cut_us": 20,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "splits": [
+      {
+        "attempt": 0,
+        "stage": 233,
+        "thread": 460,
+        "wall_us": 1.6,
+        "thread_cpu_us": 0,
+        "cycles": 5690
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 0.8,
+        "thread_cpu_us": 0,
+        "cycles": 3035
+      },
+      {
+        "attempt": 0,
+        "stage": 133,
+        "thread": 22568,
+        "wall_us": 14.3,
+        "thread_cpu_us": 0,
+        "cycles": 22758
+      },
+      {
+        "attempt": 0,
+        "stage": 200,
+        "thread": 460,
+        "wall_us": 1.1,
+        "thread_cpu_us": 0,
+        "cycles": 4172
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 0.8,
+        "thread_cpu_us": 0,
+        "cycles": 2655
+      },
+      {
+        "attempt": 0,
+        "stage": 100,
+        "thread": 22568,
+        "wall_us": 12.2,
+        "thread_cpu_us": 0,
+        "cycles": 18207
+      },
+      {
+        "attempt": 0,
+        "stage": 203,
+        "thread": 460,
+        "wall_us": 1.3,
+        "thread_cpu_us": 0,
+        "cycles": 4552
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 0.9,
+        "thread_cpu_us": 0,
+        "cycles": 3034
+      },
+      {
+        "attempt": 0,
+        "stage": 204,
+        "thread": 460,
+        "wall_us": 2.9,
+        "thread_cpu_us": 0,
+        "cycles": 11000
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 0.9,
+        "thread_cpu_us": 0,
+        "cycles": 3414
+      },
+      {
+        "attempt": 0,
+        "stage": 104,
+        "thread": 22568,
+        "wall_us": 14.7,
+        "thread_cpu_us": 0,
+        "cycles": 21241
+      },
+      {
+        "attempt": 0,
+        "stage": 205,
+        "thread": 460,
+        "wall_us": 2.3,
+        "thread_cpu_us": 0,
+        "cycles": 8724
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 1.1,
+        "thread_cpu_us": 0,
+        "cycles": 4172
+      },
+      {
+        "attempt": 0,
+        "stage": 105,
+        "thread": 22568,
+        "wall_us": 17.6,
+        "thread_cpu_us": 0,
+        "cycles": 28827
+      },
+      {
+        "attempt": 0,
+        "stage": 11,
+        "thread": 460,
+        "wall_us": 6.5,
+        "thread_cpu_us": 0,
+        "cycles": 25034
+      },
+      {
+        "attempt": 0,
+        "stage": 13,
+        "thread": 460,
+        "wall_us": 229.6,
+        "thread_cpu_us": 0,
+        "cycles": 870873
+      },
+      {
+        "attempt": 0,
+        "stage": 10,
+        "thread": 460,
+        "wall_us": 242.8,
+        "thread_cpu_us": 0,
+        "cycles": 920183
+      },
+      {
+        "attempt": 0,
+        "stage": 23,
+        "thread": 460,
+        "wall_us": 245.8,
+        "thread_cpu_us": 0,
+        "cycles": 930803
+      },
+      {
+        "attempt": 0,
+        "stage": 24,
+        "thread": 460,
+        "wall_us": 0.7,
+        "thread_cpu_us": 0,
+        "cycles": 2655
+      },
+      {
+        "attempt": 0,
+        "stage": 25,
+        "thread": 460,
+        "wall_us": 49.6,
+        "thread_cpu_us": 0,
+        "cycles": 188133
+      },
+      {
+        "attempt": 0,
+        "stage": 21,
+        "thread": 460,
+        "wall_us": 304.8,
+        "thread_cpu_us": 0,
+        "cycles": 1154590
+      },
+      {
+        "attempt": 0,
+        "stage": 26,
+        "thread": 460,
+        "wall_us": 0.7,
+        "thread_cpu_us": 0,
+        "cycles": 2276
+      },
+      {
+        "attempt": 0,
+        "stage": 27,
+        "thread": 460,
+        "wall_us": 1.4,
+        "thread_cpu_us": 0,
+        "cycles": 5690
+      },
+      {
+        "attempt": 0,
+        "stage": 22,
+        "thread": 460,
+        "wall_us": 7.2,
+        "thread_cpu_us": 0,
+        "cycles": 26551
+      },
+      {
+        "attempt": 0,
+        "stage": 20,
+        "thread": 460,
+        "wall_us": 314.1,
+        "thread_cpu_us": 0,
+        "cycles": 1188348
+      },
+      {
+        "attempt": 0,
+        "stage": 28,
+        "thread": 460,
+        "wall_us": 317.5,
+        "thread_cpu_us": 0,
+        "cycles": 1200865
+      },
+      {
+        "attempt": 0,
+        "stage": 234,
+        "thread": 460,
+        "wall_us": 328.4,
+        "thread_cpu_us": 0,
+        "cycles": 1241449
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 1.2,
+        "thread_cpu_us": 0,
+        "cycles": 4172
+      },
+      {
+        "attempt": 0,
+        "stage": 134,
+        "thread": 22568,
+        "wall_us": 345.4,
+        "thread_cpu_us": 0,
+        "cycles": 31103
+      },
+      {
+        "attempt": 0,
+        "stage": 216,
+        "thread": 460,
+        "wall_us": 1.3,
+        "thread_cpu_us": 0,
+        "cycles": 4551
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 0.9,
+        "thread_cpu_us": 0,
+        "cycles": 3413
+      },
+      {
+        "attempt": 0,
+        "stage": 116,
+        "thread": 22568,
+        "wall_us": 43.4,
+        "thread_cpu_us": 0,
+        "cycles": 129340
+      },
+      {
+        "attempt": 0,
+        "stage": 200,
+        "thread": 460,
+        "wall_us": 1.2,
+        "thread_cpu_us": 0,
+        "cycles": 4172
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 0.9,
+        "thread_cpu_us": 0,
+        "cycles": 3035
+      },
+      {
+        "attempt": 0,
+        "stage": 100,
+        "thread": 22568,
+        "wall_us": 12.3,
+        "thread_cpu_us": 0,
+        "cycles": 18587
+      },
+      {
+        "attempt": 0,
+        "stage": 219,
+        "thread": 460,
+        "wall_us": 18.6,
+        "thread_cpu_us": 0,
+        "cycles": 70170
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 0.8,
+        "thread_cpu_us": 0,
+        "cycles": 3035
+      },
+      {
+        "attempt": 0,
+        "stage": 119,
+        "thread": 22568,
+        "wall_us": 30.4,
+        "thread_cpu_us": 0,
+        "cycles": 18964
+      },
+      {
+        "attempt": 0,
+        "stage": 224,
+        "thread": 460,
+        "wall_us": 34.2,
+        "thread_cpu_us": 0,
+        "cycles": 108480
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 1.2,
+        "thread_cpu_us": 0,
+        "cycles": 3413
+      },
+      {
+        "attempt": 0,
+        "stage": 124,
+        "thread": 22568,
+        "wall_us": 47.2,
+        "thread_cpu_us": 0,
+        "cycles": 21619
+      },
+      {
+        "attempt": 1,
+        "stage": 233,
+        "thread": 460,
+        "wall_us": 1.5,
+        "thread_cpu_us": 0,
+        "cycles": 5310
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 22568,
+        "wall_us": 14.6,
+        "thread_cpu_us": 0,
+        "cycles": 20483
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 16.5,
+        "thread_cpu_us": 0,
+        "cycles": 27310
+      },
+      {
+        "attempt": 1,
+        "stage": 133,
+        "thread": 22568,
+        "wall_us": 21.6,
+        "thread_cpu_us": 0,
+        "cycles": 45137
+      },
+      {
+        "attempt": 1,
+        "stage": 200,
+        "thread": 460,
+        "wall_us": 1.3,
+        "thread_cpu_us": 0,
+        "cycles": 4931
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 22568,
+        "wall_us": 14.2,
+        "thread_cpu_us": 0,
+        "cycles": 20103
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 16,
+        "thread_cpu_us": 0,
+        "cycles": 26172
+      },
+      {
+        "attempt": 1,
+        "stage": 100,
+        "thread": 22568,
+        "wall_us": 20.5,
+        "thread_cpu_us": 0,
+        "cycles": 42482
+      },
+      {
+        "attempt": 1,
+        "stage": 203,
+        "thread": 460,
+        "wall_us": 1.1,
+        "thread_cpu_us": 0,
+        "cycles": 4172
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 22568,
+        "wall_us": 12.9,
+        "thread_cpu_us": 0,
+        "cycles": 18586
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 14.5,
+        "thread_cpu_us": 0,
+        "cycles": 24275
+      },
+      {
+        "attempt": 1,
+        "stage": 204,
+        "thread": 460,
+        "wall_us": 4.7,
+        "thread_cpu_us": 0,
+        "cycles": 17827
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 22568,
+        "wall_us": 17.3,
+        "thread_cpu_us": 0,
+        "cycles": 18586
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 19,
+        "thread_cpu_us": 0,
+        "cycles": 24654
+      },
+      {
+        "attempt": 1,
+        "stage": 104,
+        "thread": 22568,
+        "wall_us": 22.8,
+        "thread_cpu_us": 0,
+        "cycles": 38308
+      },
+      {
+        "attempt": 1,
+        "stage": 205,
+        "thread": 460,
+        "wall_us": 2.2,
+        "thread_cpu_us": 0,
+        "cycles": 7965
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 22568,
+        "wall_us": 15.5,
+        "thread_cpu_us": 0,
+        "cycles": 18585
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 17.3,
+        "thread_cpu_us": 0,
+        "cycles": 25034
+      },
+      {
+        "attempt": 1,
+        "stage": 105,
+        "thread": 22568,
+        "wall_us": 23.1,
+        "thread_cpu_us": 0,
+        "cycles": 46654
+      },
+      {
+        "attempt": 1,
+        "stage": 11,
+        "thread": 460,
+        "wall_us": 8.3,
+        "thread_cpu_us": 0,
+        "cycles": 31103
+      },
+      {
+        "attempt": 1,
+        "stage": 13,
+        "thread": 460,
+        "wall_us": 347.6,
+        "thread_cpu_us": 0,
+        "cycles": 1287724
+      },
+      {
+        "attempt": 1,
+        "stage": 10,
+        "thread": 460,
+        "wall_us": 363.7,
+        "thread_cpu_us": 0,
+        "cycles": 1347653
+      },
+      {
+        "attempt": 1,
+        "stage": 23,
+        "thread": 460,
+        "wall_us": 366.8,
+        "thread_cpu_us": 0,
+        "cycles": 1358652
+      },
+      {
+        "attempt": 1,
+        "stage": 24,
+        "thread": 460,
+        "wall_us": 0.7,
+        "thread_cpu_us": 0,
+        "cycles": 2275
+      },
+      {
+        "attempt": 1,
+        "stage": 25,
+        "thread": 460,
+        "wall_us": 27.3,
+        "thread_cpu_us": 0,
+        "cycles": 103548
+      },
+      {
+        "attempt": 1,
+        "stage": 21,
+        "thread": 460,
+        "wall_us": 463.4,
+        "thread_cpu_us": 0,
+        "cycles": 1723537
+      },
+      {
+        "attempt": 1,
+        "stage": 26,
+        "thread": 460,
+        "wall_us": 0.6,
+        "thread_cpu_us": 0,
+        "cycles": 2275
+      },
+      {
+        "attempt": 1,
+        "stage": 27,
+        "thread": 460,
+        "wall_us": 1.9,
+        "thread_cpu_us": 0,
+        "cycles": 6827
+      },
+      {
+        "attempt": 1,
+        "stage": 22,
+        "thread": 460,
+        "wall_us": 7.9,
+        "thread_cpu_us": 0,
+        "cycles": 28446
+      },
+      {
+        "attempt": 1,
+        "stage": 20,
+        "thread": 460,
+        "wall_us": 473.3,
+        "thread_cpu_us": 0,
+        "cycles": 1759190
+      },
+      {
+        "attempt": 1,
+        "stage": 28,
+        "thread": 460,
+        "wall_us": 475.1,
+        "thread_cpu_us": 0,
+        "cycles": 1765638
+      },
+      {
+        "attempt": 1,
+        "stage": 234,
+        "thread": 460,
+        "wall_us": 480.3,
+        "thread_cpu_us": 0,
+        "cycles": 1785362
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 22568,
+        "wall_us": 495.4,
+        "thread_cpu_us": 0,
+        "cycles": 19723
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 497.3,
+        "thread_cpu_us": 0,
+        "cycles": 26551
+      },
+      {
+        "attempt": 1,
+        "stage": 134,
+        "thread": 22568,
+        "wall_us": 502.8,
+        "thread_cpu_us": 0,
+        "cycles": 47033
+      },
+      {
+        "attempt": 1,
+        "stage": 216,
+        "thread": 460,
+        "wall_us": 1.7,
+        "thread_cpu_us": 0,
+        "cycles": 6069
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 22568,
+        "wall_us": 15.3,
+        "thread_cpu_us": 0,
+        "cycles": 18206
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 17,
+        "thread_cpu_us": 0,
+        "cycles": 23896
+      },
+      {
+        "attempt": 1,
+        "stage": 116,
+        "thread": 22568,
+        "wall_us": 25.1,
+        "thread_cpu_us": 0,
+        "cycles": 53861
+      },
+      {
+        "attempt": 1,
+        "stage": 200,
+        "thread": 460,
+        "wall_us": 1.1,
+        "thread_cpu_us": 0,
+        "cycles": 3793
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 22568,
+        "wall_us": 12.7,
+        "thread_cpu_us": 0,
+        "cycles": 18585
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 14.2,
+        "thread_cpu_us": 0,
+        "cycles": 23516
+      },
+      {
+        "attempt": 1,
+        "stage": 100,
+        "thread": 22568,
+        "wall_us": 17.7,
+        "thread_cpu_us": 0,
+        "cycles": 36413
+      },
+      {
+        "attempt": 1,
+        "stage": 219,
+        "thread": 460,
+        "wall_us": 7.4,
+        "thread_cpu_us": 0,
+        "cycles": 28069
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 22568,
+        "wall_us": 19,
+        "thread_cpu_us": 0,
+        "cycles": 18206
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 20.5,
+        "thread_cpu_us": 0,
+        "cycles": 23137
+      },
+      {
+        "attempt": 1,
+        "stage": 119,
+        "thread": 22568,
+        "wall_us": 24.1,
+        "thread_cpu_us": 0,
+        "cycles": 36413
+      },
+      {
+        "attempt": 1,
+        "stage": 224,
+        "thread": 460,
+        "wall_us": 12.2,
+        "thread_cpu_us": 0,
+        "cycles": 46274
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 22568,
+        "wall_us": 24.5,
+        "thread_cpu_us": 0,
+        "cycles": 18587
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 25.9,
+        "thread_cpu_us": 0,
+        "cycles": 23897
+      },
+      {
+        "attempt": 1,
+        "stage": 124,
+        "thread": 22568,
+        "wall_us": 29.6,
+        "thread_cpu_us": 0,
+        "cycles": 37931
+      },
+      {
+        "attempt": 2,
+        "stage": 233,
+        "thread": 460,
+        "wall_us": 1,
+        "thread_cpu_us": 0,
+        "cycles": 3414
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 22568,
+        "wall_us": 12.8,
+        "thread_cpu_us": 0,
+        "cycles": 18586
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 14.3,
+        "thread_cpu_us": 0,
+        "cycles": 24276
+      },
+      {
+        "attempt": 2,
+        "stage": 133,
+        "thread": 22568,
+        "wall_us": 18.1,
+        "thread_cpu_us": 0,
+        "cycles": 38310
+      },
+      {
+        "attempt": 2,
+        "stage": 200,
+        "thread": 460,
+        "wall_us": 0.9,
+        "thread_cpu_us": 0,
+        "cycles": 3413
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 22568,
+        "wall_us": 12.7,
+        "thread_cpu_us": 0,
+        "cycles": 19345
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 14.1,
+        "thread_cpu_us": 0,
+        "cycles": 24275
+      },
+      {
+        "attempt": 2,
+        "stage": 100,
+        "thread": 22568,
+        "wall_us": 17.6,
+        "thread_cpu_us": 0,
+        "cycles": 37170
+      },
+      {
+        "attempt": 2,
+        "stage": 203,
+        "thread": 460,
+        "wall_us": 1,
+        "thread_cpu_us": 0,
+        "cycles": 3414
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 22568,
+        "wall_us": 12.8,
+        "thread_cpu_us": 0,
+        "cycles": 18965
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 14.3,
+        "thread_cpu_us": 0,
+        "cycles": 23897
+      },
+      {
+        "attempt": 2,
+        "stage": 204,
+        "thread": 460,
+        "wall_us": 2.2,
+        "thread_cpu_us": 0,
+        "cycles": 7966
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 22568,
+        "wall_us": 14.1,
+        "thread_cpu_us": 0,
+        "cycles": 18965
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 15.7,
+        "thread_cpu_us": 0,
+        "cycles": 24655
+      },
+      {
+        "attempt": 2,
+        "stage": 104,
+        "thread": 22568,
+        "wall_us": 19.3,
+        "thread_cpu_us": 0,
+        "cycles": 37931
+      },
+      {
+        "attempt": 2,
+        "stage": 205,
+        "thread": 460,
+        "wall_us": 2.1,
+        "thread_cpu_us": 0,
+        "cycles": 7965
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 22568,
+        "wall_us": 15,
+        "thread_cpu_us": 0,
+        "cycles": 18965
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 16.6,
+        "thread_cpu_us": 0,
+        "cycles": 24655
+      },
+      {
+        "attempt": 2,
+        "stage": 105,
+        "thread": 22568,
+        "wall_us": 21.8,
+        "thread_cpu_us": 0,
+        "cycles": 43999
+      },
+      {
+        "attempt": 2,
+        "stage": 11,
+        "thread": 460,
+        "wall_us": 5.1,
+        "thread_cpu_us": 0,
+        "cycles": 18965
+      },
+      {
+        "attempt": 2,
+        "stage": 13,
+        "thread": 460,
+        "wall_us": 255.2,
+        "thread_cpu_us": 0,
+        "cycles": 942940
+      },
+      {
+        "attempt": 2,
+        "stage": 10,
+        "thread": 460,
+        "wall_us": 265.9,
+        "thread_cpu_us": 0,
+        "cycles": 982009
+      },
+      {
+        "attempt": 2,
+        "stage": 23,
+        "thread": 460,
+        "wall_us": 268.6,
+        "thread_cpu_us": 0,
+        "cycles": 991870
+      },
+      {
+        "attempt": 2,
+        "stage": 24,
+        "thread": 460,
+        "wall_us": 0.6,
+        "thread_cpu_us": 0,
+        "cycles": 2275
+      },
+      {
+        "attempt": 2,
+        "stage": 25,
+        "thread": 460,
+        "wall_us": 10.1,
+        "thread_cpu_us": 0,
+        "cycles": 38310
+      },
+      {
+        "attempt": 2,
+        "stage": 21,
+        "thread": 460,
+        "wall_us": 334,
+        "thread_cpu_us": 0,
+        "cycles": 1239553
+      },
+      {
+        "attempt": 2,
+        "stage": 26,
+        "thread": 460,
+        "wall_us": 0.7,
+        "thread_cpu_us": 0,
+        "cycles": 2276
+      },
+      {
+        "attempt": 2,
+        "stage": 27,
+        "thread": 460,
+        "wall_us": 1.5,
+        "thread_cpu_us": 0,
+        "cycles": 5311
+      },
+      {
+        "attempt": 2,
+        "stage": 22,
+        "thread": 460,
+        "wall_us": 6.2,
+        "thread_cpu_us": 0,
+        "cycles": 22379
+      },
+      {
+        "attempt": 2,
+        "stage": 20,
+        "thread": 460,
+        "wall_us": 342.1,
+        "thread_cpu_us": 0,
+        "cycles": 1268760
+      },
+      {
+        "attempt": 2,
+        "stage": 28,
+        "thread": 460,
+        "wall_us": 343.8,
+        "thread_cpu_us": 0,
+        "cycles": 1274450
+      },
+      {
+        "attempt": 2,
+        "stage": 234,
+        "thread": 460,
+        "wall_us": 348.3,
+        "thread_cpu_us": 0,
+        "cycles": 1291518
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 22568,
+        "wall_us": 362.9,
+        "thread_cpu_us": 0,
+        "cycles": 20103
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 364.8,
+        "thread_cpu_us": 0,
+        "cycles": 26551
+      },
+      {
+        "attempt": 2,
+        "stage": 134,
+        "thread": 22568,
+        "wall_us": 369.8,
+        "thread_cpu_us": 0,
+        "cycles": 45516
+      },
+      {
+        "attempt": 2,
+        "stage": 216,
+        "thread": 460,
+        "wall_us": 1.5,
+        "thread_cpu_us": 0,
+        "cycles": 5310
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 22568,
+        "wall_us": 15,
+        "thread_cpu_us": 0,
+        "cycles": 19724
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 16.7,
+        "thread_cpu_us": 0,
+        "cycles": 25414
+      },
+      {
+        "attempt": 2,
+        "stage": 116,
+        "thread": 22568,
+        "wall_us": 23.6,
+        "thread_cpu_us": 0,
+        "cycles": 51207
+      },
+      {
+        "attempt": 2,
+        "stage": 200,
+        "thread": 460,
+        "wall_us": 1,
+        "thread_cpu_us": 0,
+        "cycles": 3414
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 22568,
+        "wall_us": 12.9,
+        "thread_cpu_us": 0,
+        "cycles": 19344
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 14.3,
+        "thread_cpu_us": 0,
+        "cycles": 24274
+      },
+      {
+        "attempt": 2,
+        "stage": 100,
+        "thread": 22568,
+        "wall_us": 17.9,
+        "thread_cpu_us": 0,
+        "cycles": 37548
+      },
+      {
+        "attempt": 2,
+        "stage": 219,
+        "thread": 460,
+        "wall_us": 6.3,
+        "thread_cpu_us": 0,
+        "cycles": 23516
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 22568,
+        "wall_us": 18,
+        "thread_cpu_us": 0,
+        "cycles": 18585
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 19.5,
+        "thread_cpu_us": 0,
+        "cycles": 23895
+      },
+      {
+        "attempt": 2,
+        "stage": 119,
+        "thread": 22568,
+        "wall_us": 23.1,
+        "thread_cpu_us": 0,
+        "cycles": 37170
+      },
+      {
+        "attempt": 2,
+        "stage": 224,
+        "thread": 460,
+        "wall_us": 6.1,
+        "thread_cpu_us": 0,
+        "cycles": 23137
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 22568,
+        "wall_us": 18.4,
+        "thread_cpu_us": 0,
+        "cycles": 19345
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 22568,
+        "wall_us": 19.8,
+        "thread_cpu_us": 0,
+        "cycles": 24275
+      },
+      {
+        "attempt": 2,
+        "stage": 124,
+        "thread": 22568,
+        "wall_us": 23.5,
+        "thread_cpu_us": 0,
+        "cycles": 37550
+      }
+    ],
+    "log_sha256": "e538bc7b335aa424d4e31e9d45d9d93c065c0a14b60fc88b9b9bafca00f72a2a"
+  },
+  {
+    "n": 40000,
+    "process": 0,
+    "exit": 0,
+    "valid": true,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 0,
+        "seek_us": 14386,
+        "request_to_present_us": 14548,
+        "archive_us": 40,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6474231,
+        "cut_us": 24,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 1,
+        "seek_us": 16619,
+        "request_to_present_us": 16724,
+        "archive_us": 40,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6474231,
+        "cut_us": 30,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 2,
+        "seek_us": 16197,
+        "request_to_present_us": 16306,
+        "archive_us": 40,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6474231,
+        "cut_us": 30,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "splits": [
+      {
+        "attempt": 0,
+        "stage": 233,
+        "thread": 22488,
+        "wall_us": 1.7,
+        "thread_cpu_us": 0,
+        "cycles": 6069
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 0.9,
+        "thread_cpu_us": 0,
+        "cycles": 3414
+      },
+      {
+        "attempt": 0,
+        "stage": 133,
+        "thread": 24892,
+        "wall_us": 14.8,
+        "thread_cpu_us": 0,
+        "cycles": 23895
+      },
+      {
+        "attempt": 0,
+        "stage": 200,
+        "thread": 22488,
+        "wall_us": 1.9,
+        "thread_cpu_us": 0,
+        "cycles": 6827
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 0.8,
+        "thread_cpu_us": 0,
+        "cycles": 3034
+      },
+      {
+        "attempt": 0,
+        "stage": 100,
+        "thread": 24892,
+        "wall_us": 13,
+        "thread_cpu_us": 0,
+        "cycles": 19723
+      },
+      {
+        "attempt": 0,
+        "stage": 203,
+        "thread": 22488,
+        "wall_us": 2.9,
+        "thread_cpu_us": 0,
+        "cycles": 10999
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 0.8,
+        "thread_cpu_us": 0,
+        "cycles": 3034
+      },
+      {
+        "attempt": 0,
+        "stage": 204,
+        "thread": 22488,
+        "wall_us": 4.1,
+        "thread_cpu_us": 0,
+        "cycles": 15552
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 0.9,
+        "thread_cpu_us": 0,
+        "cycles": 3413
+      },
+      {
+        "attempt": 0,
+        "stage": 104,
+        "thread": 24892,
+        "wall_us": 15.7,
+        "thread_cpu_us": 0,
+        "cycles": 21621
+      },
+      {
+        "attempt": 0,
+        "stage": 205,
+        "thread": 22488,
+        "wall_us": 3.7,
+        "thread_cpu_us": 0,
+        "cycles": 14414
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 1,
+        "thread_cpu_us": 0,
+        "cycles": 3793
+      },
+      {
+        "attempt": 0,
+        "stage": 105,
+        "thread": 24892,
+        "wall_us": 22.8,
+        "thread_cpu_us": 0,
+        "cycles": 31862
+      },
+      {
+        "attempt": 0,
+        "stage": 11,
+        "thread": 22488,
+        "wall_us": 11.1,
+        "thread_cpu_us": 0,
+        "cycles": 42102
+      },
+      {
+        "attempt": 0,
+        "stage": 13,
+        "thread": 22488,
+        "wall_us": 13950.8,
+        "thread_cpu_us": 15625,
+        "cycles": 52508398
+      },
+      {
+        "attempt": 0,
+        "stage": 10,
+        "thread": 22488,
+        "wall_us": 13977.5,
+        "thread_cpu_us": 15625,
+        "cycles": 52605120
+      },
+      {
+        "attempt": 0,
+        "stage": 23,
+        "thread": 22488,
+        "wall_us": 13984.6,
+        "thread_cpu_us": 15625,
+        "cycles": 52631671
+      },
+      {
+        "attempt": 0,
+        "stage": 24,
+        "thread": 22488,
+        "wall_us": 1.1,
+        "thread_cpu_us": 0,
+        "cycles": 3793
+      },
+      {
+        "attempt": 0,
+        "stage": 25,
+        "thread": 22488,
+        "wall_us": 69.6,
+        "thread_cpu_us": 0,
+        "cycles": 263993
+      },
+      {
+        "attempt": 0,
+        "stage": 21,
+        "thread": 22488,
+        "wall_us": 14080.1,
+        "thread_cpu_us": 15625,
+        "cycles": 52992385
+      },
+      {
+        "attempt": 0,
+        "stage": 26,
+        "thread": 22488,
+        "wall_us": 0.7,
+        "thread_cpu_us": 0,
+        "cycles": 2275
+      },
+      {
+        "attempt": 0,
+        "stage": 27,
+        "thread": 22488,
+        "wall_us": 2.8,
+        "thread_cpu_us": 0,
+        "cycles": 10621
+      },
+      {
+        "attempt": 0,
+        "stage": 22,
+        "thread": 22488,
+        "wall_us": 10.2,
+        "thread_cpu_us": 0,
+        "cycles": 37929
+      },
+      {
+        "attempt": 0,
+        "stage": 20,
+        "thread": 22488,
+        "wall_us": 14092.6,
+        "thread_cpu_us": 15625,
+        "cycles": 53037899
+      },
+      {
+        "attempt": 0,
+        "stage": 28,
+        "thread": 22488,
+        "wall_us": 14096.2,
+        "thread_cpu_us": 15625,
+        "cycles": 53051554
+      },
+      {
+        "attempt": 0,
+        "stage": 234,
+        "thread": 22488,
+        "wall_us": 14111.3,
+        "thread_cpu_us": 15625,
+        "cycles": 53108071
+      },
+      {
+        "attempt": 0,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 13712.5,
+        "thread_cpu_us": 0,
+        "cycles": 36792
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 13717,
+        "thread_cpu_us": 0,
+        "cycles": 52723
+      },
+      {
+        "attempt": 0,
+        "stage": 134,
+        "thread": 24892,
+        "wall_us": 14146.3,
+        "thread_cpu_us": 0,
+        "cycles": 80411
+      },
+      {
+        "attempt": 0,
+        "stage": 216,
+        "thread": 22488,
+        "wall_us": 2.7,
+        "thread_cpu_us": 0,
+        "cycles": 9861
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 1.1,
+        "thread_cpu_us": 0,
+        "cycles": 3793
+      },
+      {
+        "attempt": 0,
+        "stage": 116,
+        "thread": 24892,
+        "wall_us": 60.4,
+        "thread_cpu_us": 0,
+        "cycles": 173719
+      },
+      {
+        "attempt": 0,
+        "stage": 200,
+        "thread": 22488,
+        "wall_us": 1.8,
+        "thread_cpu_us": 0,
+        "cycles": 6448
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 0.8,
+        "thread_cpu_us": 0,
+        "cycles": 3035
+      },
+      {
+        "attempt": 0,
+        "stage": 100,
+        "thread": 24892,
+        "wall_us": 13.7,
+        "thread_cpu_us": 0,
+        "cycles": 21620
+      },
+      {
+        "attempt": 0,
+        "stage": 219,
+        "thread": 22488,
+        "wall_us": 26,
+        "thread_cpu_us": 0,
+        "cycles": 98239
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 0.8,
+        "thread_cpu_us": 0,
+        "cycles": 3035
+      },
+      {
+        "attempt": 0,
+        "stage": 119,
+        "thread": 24892,
+        "wall_us": 38.5,
+        "thread_cpu_us": 0,
+        "cycles": 20103
+      },
+      {
+        "attempt": 0,
+        "stage": 224,
+        "thread": 22488,
+        "wall_us": 26.7,
+        "thread_cpu_us": 0,
+        "cycles": 100894
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 0.9,
+        "thread_cpu_us": 0,
+        "cycles": 3035
+      },
+      {
+        "attempt": 0,
+        "stage": 124,
+        "thread": 24892,
+        "wall_us": 39.3,
+        "thread_cpu_us": 0,
+        "cycles": 21241
+      },
+      {
+        "attempt": 1,
+        "stage": 233,
+        "thread": 22488,
+        "wall_us": 1.6,
+        "thread_cpu_us": 0,
+        "cycles": 5689
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 18.2,
+        "thread_cpu_us": 0,
+        "cycles": 38688
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 19.8,
+        "thread_cpu_us": 0,
+        "cycles": 44757
+      },
+      {
+        "attempt": 1,
+        "stage": 133,
+        "thread": 24892,
+        "wall_us": 25,
+        "thread_cpu_us": 0,
+        "cycles": 61067
+      },
+      {
+        "attempt": 1,
+        "stage": 200,
+        "thread": 22488,
+        "wall_us": 1.7,
+        "thread_cpu_us": 0,
+        "cycles": 6069
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 17.8,
+        "thread_cpu_us": 0,
+        "cycles": 38689
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 19.4,
+        "thread_cpu_us": 0,
+        "cycles": 44378
+      },
+      {
+        "attempt": 1,
+        "stage": 100,
+        "thread": 24892,
+        "wall_us": 22.7,
+        "thread_cpu_us": 0,
+        "cycles": 56515
+      },
+      {
+        "attempt": 1,
+        "stage": 203,
+        "thread": 22488,
+        "wall_us": 4.3,
+        "thread_cpu_us": 0,
+        "cycles": 15930
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 19.8,
+        "thread_cpu_us": 0,
+        "cycles": 37551
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 21.5,
+        "thread_cpu_us": 0,
+        "cycles": 43240
+      },
+      {
+        "attempt": 1,
+        "stage": 204,
+        "thread": 22488,
+        "wall_us": 4.1,
+        "thread_cpu_us": 0,
+        "cycles": 15172
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 20.3,
+        "thread_cpu_us": 0,
+        "cycles": 38309
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 22.1,
+        "thread_cpu_us": 0,
+        "cycles": 43999
+      },
+      {
+        "attempt": 1,
+        "stage": 104,
+        "thread": 24892,
+        "wall_us": 25.4,
+        "thread_cpu_us": 0,
+        "cycles": 56137
+      },
+      {
+        "attempt": 1,
+        "stage": 205,
+        "thread": 22488,
+        "wall_us": 2.8,
+        "thread_cpu_us": 0,
+        "cycles": 10621
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 19.9,
+        "thread_cpu_us": 0,
+        "cycles": 37172
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 21.7,
+        "thread_cpu_us": 0,
+        "cycles": 43241
+      },
+      {
+        "attempt": 1,
+        "stage": 105,
+        "thread": 24892,
+        "wall_us": 27.1,
+        "thread_cpu_us": 0,
+        "cycles": 63344
+      },
+      {
+        "attempt": 1,
+        "stage": 11,
+        "thread": 22488,
+        "wall_us": 10.6,
+        "thread_cpu_us": 0,
+        "cycles": 39826
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 7934.5,
+        "thread_cpu_us": 0,
+        "cycles": 103550
+      },
+      {
+        "attempt": 1,
+        "stage": 13,
+        "thread": 22488,
+        "wall_us": 12204.1,
+        "thread_cpu_us": 15625,
+        "cycles": 45826644
+      },
+      {
+        "attempt": 1,
+        "stage": 10,
+        "thread": 22488,
+        "wall_us": 12228.8,
+        "thread_cpu_us": 15625,
+        "cycles": 45918053
+      },
+      {
+        "attempt": 1,
+        "stage": 23,
+        "thread": 22488,
+        "wall_us": 12235.2,
+        "thread_cpu_us": 15625,
+        "cycles": 45941571
+      },
+      {
+        "attempt": 1,
+        "stage": 24,
+        "thread": 22488,
+        "wall_us": 0.9,
+        "thread_cpu_us": 0,
+        "cycles": 3413
+      },
+      {
+        "attempt": 1,
+        "stage": 25,
+        "thread": 22488,
+        "wall_us": 30.7,
+        "thread_cpu_us": 0,
+        "cycles": 116445
+      },
+      {
+        "attempt": 1,
+        "stage": 21,
+        "thread": 22488,
+        "wall_us": 16246.7,
+        "thread_cpu_us": 15625,
+        "cycles": 61038468
+      },
+      {
+        "attempt": 1,
+        "stage": 26,
+        "thread": 22488,
+        "wall_us": 1.1,
+        "thread_cpu_us": 0,
+        "cycles": 4172
+      },
+      {
+        "attempt": 1,
+        "stage": 27,
+        "thread": 22488,
+        "wall_us": 5.5,
+        "thread_cpu_us": 0,
+        "cycles": 20483
+      },
+      {
+        "attempt": 1,
+        "stage": 22,
+        "thread": 22488,
+        "wall_us": 16.8,
+        "thread_cpu_us": 0,
+        "cycles": 62964
+      },
+      {
+        "attempt": 1,
+        "stage": 20,
+        "thread": 22488,
+        "wall_us": 16266.5,
+        "thread_cpu_us": 15625,
+        "cycles": 61110536
+      },
+      {
+        "attempt": 1,
+        "stage": 28,
+        "thread": 22488,
+        "wall_us": 16268.7,
+        "thread_cpu_us": 15625,
+        "cycles": 61118122
+      },
+      {
+        "attempt": 1,
+        "stage": 234,
+        "thread": 22488,
+        "wall_us": 16282.6,
+        "thread_cpu_us": 15625,
+        "cycles": 61171224
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 8378.7,
+        "thread_cpu_us": 0,
+        "cycles": 65999
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 16322.1,
+        "thread_cpu_us": 0,
+        "cycles": 199134
+      },
+      {
+        "attempt": 1,
+        "stage": 134,
+        "thread": 24892,
+        "wall_us": 16327.3,
+        "thread_cpu_us": 0,
+        "cycles": 218099
+      },
+      {
+        "attempt": 1,
+        "stage": 216,
+        "thread": 22488,
+        "wall_us": 4.4,
+        "thread_cpu_us": 0,
+        "cycles": 16310
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 45.6,
+        "thread_cpu_us": 0,
+        "cycles": 64101
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 47.7,
+        "thread_cpu_us": 0,
+        "cycles": 71308
+      },
+      {
+        "attempt": 1,
+        "stage": 116,
+        "thread": 24892,
+        "wall_us": 61.3,
+        "thread_cpu_us": 0,
+        "cycles": 122514
+      },
+      {
+        "attempt": 1,
+        "stage": 200,
+        "thread": 22488,
+        "wall_us": 1.8,
+        "thread_cpu_us": 0,
+        "cycles": 6448
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 18.1,
+        "thread_cpu_us": 0,
+        "cycles": 38690
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 19.7,
+        "thread_cpu_us": 0,
+        "cycles": 44379
+      },
+      {
+        "attempt": 1,
+        "stage": 100,
+        "thread": 24892,
+        "wall_us": 23,
+        "thread_cpu_us": 0,
+        "cycles": 56517
+      },
+      {
+        "attempt": 1,
+        "stage": 219,
+        "thread": 22488,
+        "wall_us": 21.4,
+        "thread_cpu_us": 0,
+        "cycles": 80791
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 37.3,
+        "thread_cpu_us": 0,
+        "cycles": 37931
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 38.9,
+        "thread_cpu_us": 0,
+        "cycles": 43620
+      },
+      {
+        "attempt": 1,
+        "stage": 119,
+        "thread": 24892,
+        "wall_us": 42.2,
+        "thread_cpu_us": 0,
+        "cycles": 55378
+      },
+      {
+        "attempt": 1,
+        "stage": 224,
+        "thread": 22488,
+        "wall_us": 14.8,
+        "thread_cpu_us": 0,
+        "cycles": 56136
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 31.1,
+        "thread_cpu_us": 0,
+        "cycles": 37171
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 32.9,
+        "thread_cpu_us": 0,
+        "cycles": 43239
+      },
+      {
+        "attempt": 1,
+        "stage": 124,
+        "thread": 24892,
+        "wall_us": 36.2,
+        "thread_cpu_us": 0,
+        "cycles": 55757
+      },
+      {
+        "attempt": 2,
+        "stage": 233,
+        "thread": 22488,
+        "wall_us": 1.6,
+        "thread_cpu_us": 0,
+        "cycles": 5689
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 17.7,
+        "thread_cpu_us": 0,
+        "cycles": 37550
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 19.4,
+        "thread_cpu_us": 0,
+        "cycles": 43619
+      },
+      {
+        "attempt": 2,
+        "stage": 133,
+        "thread": 24892,
+        "wall_us": 24.3,
+        "thread_cpu_us": 0,
+        "cycles": 59550
+      },
+      {
+        "attempt": 2,
+        "stage": 200,
+        "thread": 22488,
+        "wall_us": 1.7,
+        "thread_cpu_us": 0,
+        "cycles": 6448
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 17.7,
+        "thread_cpu_us": 0,
+        "cycles": 37931
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 19.3,
+        "thread_cpu_us": 0,
+        "cycles": 43999
+      },
+      {
+        "attempt": 2,
+        "stage": 100,
+        "thread": 24892,
+        "wall_us": 22.4,
+        "thread_cpu_us": 0,
+        "cycles": 55378
+      },
+      {
+        "attempt": 2,
+        "stage": 203,
+        "thread": 22488,
+        "wall_us": 2.9,
+        "thread_cpu_us": 0,
+        "cycles": 10620
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 18.4,
+        "thread_cpu_us": 0,
+        "cycles": 37171
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 20,
+        "thread_cpu_us": 0,
+        "cycles": 42860
+      },
+      {
+        "attempt": 2,
+        "stage": 204,
+        "thread": 22488,
+        "wall_us": 3.7,
+        "thread_cpu_us": 0,
+        "cycles": 14413
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 19.6,
+        "thread_cpu_us": 0,
+        "cycles": 37551
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 21.3,
+        "thread_cpu_us": 0,
+        "cycles": 43620
+      },
+      {
+        "attempt": 2,
+        "stage": 104,
+        "thread": 24892,
+        "wall_us": 24.7,
+        "thread_cpu_us": 0,
+        "cycles": 55758
+      },
+      {
+        "attempt": 2,
+        "stage": 205,
+        "thread": 22488,
+        "wall_us": 3,
+        "thread_cpu_us": 0,
+        "cycles": 11000
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 20.5,
+        "thread_cpu_us": 0,
+        "cycles": 37550
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 22.4,
+        "thread_cpu_us": 0,
+        "cycles": 43999
+      },
+      {
+        "attempt": 2,
+        "stage": 105,
+        "thread": 24892,
+        "wall_us": 27.6,
+        "thread_cpu_us": 0,
+        "cycles": 63343
+      },
+      {
+        "attempt": 2,
+        "stage": 11,
+        "thread": 22488,
+        "wall_us": 11.1,
+        "thread_cpu_us": 0,
+        "cycles": 42103
+      },
+      {
+        "attempt": 2,
+        "stage": 13,
+        "thread": 22488,
+        "wall_us": 11854.6,
+        "thread_cpu_us": 0,
+        "cycles": 44683813
+      },
+      {
+        "attempt": 2,
+        "stage": 10,
+        "thread": 22488,
+        "wall_us": 11879,
+        "thread_cpu_us": 15625,
+        "cycles": 44773328
+      },
+      {
+        "attempt": 2,
+        "stage": 23,
+        "thread": 22488,
+        "wall_us": 11885.7,
+        "thread_cpu_us": 15625,
+        "cycles": 44798362
+      },
+      {
+        "attempt": 2,
+        "stage": 24,
+        "thread": 22488,
+        "wall_us": 0.8,
+        "thread_cpu_us": 0,
+        "cycles": 3034
+      },
+      {
+        "attempt": 2,
+        "stage": 25,
+        "thread": 22488,
+        "wall_us": 31.7,
+        "thread_cpu_us": 0,
+        "cycles": 120238
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 12478.6,
+        "thread_cpu_us": 0,
+        "cycles": 34895
+      },
+      {
+        "attempt": 2,
+        "stage": 21,
+        "thread": 22488,
+        "wall_us": 15860.3,
+        "thread_cpu_us": 15625,
+        "cycles": 59697645
+      },
+      {
+        "attempt": 2,
+        "stage": 26,
+        "thread": 22488,
+        "wall_us": 0.9,
+        "thread_cpu_us": 0,
+        "cycles": 3035
+      },
+      {
+        "attempt": 2,
+        "stage": 27,
+        "thread": 22488,
+        "wall_us": 4.5,
+        "thread_cpu_us": 0,
+        "cycles": 16690
+      },
+      {
+        "attempt": 2,
+        "stage": 22,
+        "thread": 22488,
+        "wall_us": 13.8,
+        "thread_cpu_us": 0,
+        "cycles": 51964
+      },
+      {
+        "attempt": 2,
+        "stage": 20,
+        "thread": 22488,
+        "wall_us": 15876.7,
+        "thread_cpu_us": 15625,
+        "cycles": 59757954
+      },
+      {
+        "attempt": 2,
+        "stage": 28,
+        "thread": 22488,
+        "wall_us": 15878.6,
+        "thread_cpu_us": 15625,
+        "cycles": 59764402
+      },
+      {
+        "attempt": 2,
+        "stage": 234,
+        "thread": 22488,
+        "wall_us": 15890.3,
+        "thread_cpu_us": 15625,
+        "cycles": 59808401
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 3437,
+        "thread_cpu_us": 0,
+        "cycles": 57274
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 15921.9,
+        "thread_cpu_us": 0,
+        "cycles": 115306
+      },
+      {
+        "attempt": 2,
+        "stage": 134,
+        "thread": 24892,
+        "wall_us": 15926.7,
+        "thread_cpu_us": 0,
+        "cycles": 133892
+      },
+      {
+        "attempt": 2,
+        "stage": 216,
+        "thread": 22488,
+        "wall_us": 4.2,
+        "thread_cpu_us": 0,
+        "cycles": 15930
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 29.3,
+        "thread_cpu_us": 0,
+        "cycles": 39825
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 31.3,
+        "thread_cpu_us": 0,
+        "cycles": 46273
+      },
+      {
+        "attempt": 2,
+        "stage": 116,
+        "thread": 24892,
+        "wall_us": 44.6,
+        "thread_cpu_us": 0,
+        "cycles": 96719
+      },
+      {
+        "attempt": 2,
+        "stage": 200,
+        "thread": 22488,
+        "wall_us": 1.7,
+        "thread_cpu_us": 0,
+        "cycles": 6069
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 17.6,
+        "thread_cpu_us": 0,
+        "cycles": 36792
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 19.3,
+        "thread_cpu_us": 0,
+        "cycles": 42860
+      },
+      {
+        "attempt": 2,
+        "stage": 100,
+        "thread": 24892,
+        "wall_us": 22.4,
+        "thread_cpu_us": 0,
+        "cycles": 54998
+      },
+      {
+        "attempt": 2,
+        "stage": 219,
+        "thread": 22488,
+        "wall_us": 18.1,
+        "thread_cpu_us": 0,
+        "cycles": 68654
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 34.2,
+        "thread_cpu_us": 0,
+        "cycles": 37172
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 35.9,
+        "thread_cpu_us": 0,
+        "cycles": 43240
+      },
+      {
+        "attempt": 2,
+        "stage": 119,
+        "thread": 24892,
+        "wall_us": 39.1,
+        "thread_cpu_us": 0,
+        "cycles": 55378
+      },
+      {
+        "attempt": 2,
+        "stage": 224,
+        "thread": 22488,
+        "wall_us": 22.2,
+        "thread_cpu_us": 0,
+        "cycles": 67516
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 24892,
+        "wall_us": 38.1,
+        "thread_cpu_us": 0,
+        "cycles": 36793
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 24892,
+        "wall_us": 39.8,
+        "thread_cpu_us": 0,
+        "cycles": 42483
+      },
+      {
+        "attempt": 2,
+        "stage": 124,
+        "thread": 24892,
+        "wall_us": 43.1,
+        "thread_cpu_us": 0,
+        "cycles": 54620
+      }
+    ],
+    "log_sha256": "2aca5fcf41c48f866c7732bb932adbd5f4b18e36503ab088775eadc120aed9c0"
+  },
+  {
+    "n": 40000,
+    "process": 1,
+    "exit": 0,
+    "valid": true,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 0,
+        "seek_us": 12996,
+        "request_to_present_us": 13147,
+        "archive_us": 40,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6160053,
+        "cut_us": 24,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 1,
+        "seek_us": 17241,
+        "request_to_present_us": 17348,
+        "archive_us": 40,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6160053,
+        "cut_us": 30,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 2,
+        "seek_us": 17025,
+        "request_to_present_us": 17127,
+        "archive_us": 40,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6160053,
+        "cut_us": 31,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "splits": [
+      {
+        "attempt": 0,
+        "stage": 233,
+        "thread": 20436,
+        "wall_us": 1.8,
+        "thread_cpu_us": 0,
+        "cycles": 6069
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 0.8,
+        "thread_cpu_us": 0,
+        "cycles": 2655
+      },
+      {
+        "attempt": 0,
+        "stage": 133,
+        "thread": 22532,
+        "wall_us": 16.1,
+        "thread_cpu_us": 0,
+        "cycles": 28068
+      },
+      {
+        "attempt": 0,
+        "stage": 200,
+        "thread": 20436,
+        "wall_us": 1.8,
+        "thread_cpu_us": 0,
+        "cycles": 6827
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 0.8,
+        "thread_cpu_us": 0,
+        "cycles": 2655
+      },
+      {
+        "attempt": 0,
+        "stage": 100,
+        "thread": 22532,
+        "wall_us": 13.5,
+        "thread_cpu_us": 0,
+        "cycles": 25034
+      },
+      {
+        "attempt": 0,
+        "stage": 203,
+        "thread": 20436,
+        "wall_us": 3,
+        "thread_cpu_us": 0,
+        "cycles": 11379
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 0.8,
+        "thread_cpu_us": 0,
+        "cycles": 2655
+      },
+      {
+        "attempt": 0,
+        "stage": 204,
+        "thread": 20436,
+        "wall_us": 4.2,
+        "thread_cpu_us": 0,
+        "cycles": 15552
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 0.8,
+        "thread_cpu_us": 0,
+        "cycles": 3034
+      },
+      {
+        "attempt": 0,
+        "stage": 104,
+        "thread": 22532,
+        "wall_us": 16.1,
+        "thread_cpu_us": 0,
+        "cycles": 21241
+      },
+      {
+        "attempt": 0,
+        "stage": 205,
+        "thread": 20436,
+        "wall_us": 2.6,
+        "thread_cpu_us": 0,
+        "cycles": 9482
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 1,
+        "thread_cpu_us": 0,
+        "cycles": 3413
+      },
+      {
+        "attempt": 0,
+        "stage": 105,
+        "thread": 22532,
+        "wall_us": 18.5,
+        "thread_cpu_us": 0,
+        "cycles": 30344
+      },
+      {
+        "attempt": 0,
+        "stage": 11,
+        "thread": 20436,
+        "wall_us": 12.1,
+        "thread_cpu_us": 0,
+        "cycles": 45896
+      },
+      {
+        "attempt": 0,
+        "stage": 13,
+        "thread": 20436,
+        "wall_us": 12592,
+        "thread_cpu_us": 15625,
+        "cycles": 47329809
+      },
+      {
+        "attempt": 0,
+        "stage": 10,
+        "thread": 20436,
+        "wall_us": 12619.2,
+        "thread_cpu_us": 15625,
+        "cycles": 47429565
+      },
+      {
+        "attempt": 0,
+        "stage": 23,
+        "thread": 20436,
+        "wall_us": 12625.2,
+        "thread_cpu_us": 15625,
+        "cycles": 47452323
+      },
+      {
+        "attempt": 0,
+        "stage": 24,
+        "thread": 20436,
+        "wall_us": 1,
+        "thread_cpu_us": 0,
+        "cycles": 3793
+      },
+      {
+        "attempt": 0,
+        "stage": 25,
+        "thread": 20436,
+        "wall_us": 65.9,
+        "thread_cpu_us": 0,
+        "cycles": 239339
+      },
+      {
+        "attempt": 0,
+        "stage": 21,
+        "thread": 20436,
+        "wall_us": 12713.6,
+        "thread_cpu_us": 15625,
+        "cycles": 47775867
+      },
+      {
+        "attempt": 0,
+        "stage": 26,
+        "thread": 20436,
+        "wall_us": 0.6,
+        "thread_cpu_us": 0,
+        "cycles": 2276
+      },
+      {
+        "attempt": 0,
+        "stage": 27,
+        "thread": 20436,
+        "wall_us": 2.1,
+        "thread_cpu_us": 0,
+        "cycles": 7965
+      },
+      {
+        "attempt": 0,
+        "stage": 22,
+        "thread": 20436,
+        "wall_us": 9.1,
+        "thread_cpu_us": 0,
+        "cycles": 33758
+      },
+      {
+        "attempt": 0,
+        "stage": 20,
+        "thread": 20436,
+        "wall_us": 12724.6,
+        "thread_cpu_us": 15625,
+        "cycles": 47816074
+      },
+      {
+        "attempt": 0,
+        "stage": 28,
+        "thread": 20436,
+        "wall_us": 12729,
+        "thread_cpu_us": 15625,
+        "cycles": 47828970
+      },
+      {
+        "attempt": 0,
+        "stage": 234,
+        "thread": 20436,
+        "wall_us": 12742.9,
+        "thread_cpu_us": 15625,
+        "cycles": 47884728
+      },
+      {
+        "attempt": 0,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 10083.5,
+        "thread_cpu_us": 0,
+        "cycles": 42102
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 10087.7,
+        "thread_cpu_us": 0,
+        "cycles": 56893
+      },
+      {
+        "attempt": 0,
+        "stage": 134,
+        "thread": 22532,
+        "wall_us": 12770.1,
+        "thread_cpu_us": 0,
+        "cycles": 93685
+      },
+      {
+        "attempt": 0,
+        "stage": 216,
+        "thread": 20436,
+        "wall_us": 2.5,
+        "thread_cpu_us": 0,
+        "cycles": 9103
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 1.1,
+        "thread_cpu_us": 0,
+        "cycles": 3793
+      },
+      {
+        "attempt": 0,
+        "stage": 116,
+        "thread": 22532,
+        "wall_us": 51.1,
+        "thread_cpu_us": 0,
+        "cycles": 147547
+      },
+      {
+        "attempt": 0,
+        "stage": 200,
+        "thread": 20436,
+        "wall_us": 2,
+        "thread_cpu_us": 0,
+        "cycles": 7207
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 0.8,
+        "thread_cpu_us": 0,
+        "cycles": 2655
+      },
+      {
+        "attempt": 0,
+        "stage": 100,
+        "thread": 22532,
+        "wall_us": 14,
+        "thread_cpu_us": 0,
+        "cycles": 22378
+      },
+      {
+        "attempt": 0,
+        "stage": 219,
+        "thread": 20436,
+        "wall_us": 23.5,
+        "thread_cpu_us": 0,
+        "cycles": 89136
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 0.8,
+        "thread_cpu_us": 0,
+        "cycles": 2655
+      },
+      {
+        "attempt": 0,
+        "stage": 119,
+        "thread": 22532,
+        "wall_us": 35.4,
+        "thread_cpu_us": 0,
+        "cycles": 18965
+      },
+      {
+        "attempt": 0,
+        "stage": 224,
+        "thread": 20436,
+        "wall_us": 25.4,
+        "thread_cpu_us": 0,
+        "cycles": 96342
+      },
+      {
+        "attempt": 0,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 0.8,
+        "thread_cpu_us": 0,
+        "cycles": 3034
+      },
+      {
+        "attempt": 0,
+        "stage": 124,
+        "thread": 22532,
+        "wall_us": 39.5,
+        "thread_cpu_us": 0,
+        "cycles": 22379
+      },
+      {
+        "attempt": 1,
+        "stage": 233,
+        "thread": 20436,
+        "wall_us": 1.5,
+        "thread_cpu_us": 0,
+        "cycles": 5690
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 17.9,
+        "thread_cpu_us": 0,
+        "cycles": 38310
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 19.6,
+        "thread_cpu_us": 0,
+        "cycles": 44758
+      },
+      {
+        "attempt": 1,
+        "stage": 133,
+        "thread": 22532,
+        "wall_us": 24.6,
+        "thread_cpu_us": 0,
+        "cycles": 61826
+      },
+      {
+        "attempt": 1,
+        "stage": 200,
+        "thread": 20436,
+        "wall_us": 1.6,
+        "thread_cpu_us": 0,
+        "cycles": 5689
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 17.2,
+        "thread_cpu_us": 0,
+        "cycles": 37171
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 18.8,
+        "thread_cpu_us": 0,
+        "cycles": 42861
+      },
+      {
+        "attempt": 1,
+        "stage": 100,
+        "thread": 22532,
+        "wall_us": 22.1,
+        "thread_cpu_us": 0,
+        "cycles": 54998
+      },
+      {
+        "attempt": 1,
+        "stage": 203,
+        "thread": 20436,
+        "wall_us": 2.9,
+        "thread_cpu_us": 0,
+        "cycles": 10621
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 18.5,
+        "thread_cpu_us": 0,
+        "cycles": 36791
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 20.1,
+        "thread_cpu_us": 0,
+        "cycles": 42101
+      },
+      {
+        "attempt": 1,
+        "stage": 204,
+        "thread": 20436,
+        "wall_us": 3.9,
+        "thread_cpu_us": 0,
+        "cycles": 14414
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 20.8,
+        "thread_cpu_us": 0,
+        "cycles": 36793
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 23.4,
+        "thread_cpu_us": 0,
+        "cycles": 42861
+      },
+      {
+        "attempt": 1,
+        "stage": 104,
+        "thread": 22532,
+        "wall_us": 27.8,
+        "thread_cpu_us": 0,
+        "cycles": 62963
+      },
+      {
+        "attempt": 1,
+        "stage": 205,
+        "thread": 20436,
+        "wall_us": 2.8,
+        "thread_cpu_us": 0,
+        "cycles": 10621
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 20.3,
+        "thread_cpu_us": 0,
+        "cycles": 36791
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 22.1,
+        "thread_cpu_us": 0,
+        "cycles": 43239
+      },
+      {
+        "attempt": 1,
+        "stage": 105,
+        "thread": 22532,
+        "wall_us": 27.1,
+        "thread_cpu_us": 0,
+        "cycles": 61825
+      },
+      {
+        "attempt": 1,
+        "stage": 11,
+        "thread": 20436,
+        "wall_us": 10.1,
+        "thread_cpu_us": 0,
+        "cycles": 38309
+      },
+      {
+        "attempt": 1,
+        "stage": 13,
+        "thread": 20436,
+        "wall_us": 12632.2,
+        "thread_cpu_us": 15625,
+        "cycles": 47610496
+      },
+      {
+        "attempt": 1,
+        "stage": 10,
+        "thread": 20436,
+        "wall_us": 12655.9,
+        "thread_cpu_us": 15625,
+        "cycles": 47699253
+      },
+      {
+        "attempt": 1,
+        "stage": 23,
+        "thread": 20436,
+        "wall_us": 12661.6,
+        "thread_cpu_us": 15625,
+        "cycles": 47721252
+      },
+      {
+        "attempt": 1,
+        "stage": 24,
+        "thread": 20436,
+        "wall_us": 0.9,
+        "thread_cpu_us": 0,
+        "cycles": 3414
+      },
+      {
+        "attempt": 1,
+        "stage": 25,
+        "thread": 20436,
+        "wall_us": 34.8,
+        "thread_cpu_us": 0,
+        "cycles": 123273
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 14465.3,
+        "thread_cpu_us": 0,
+        "cycles": 38309
+      },
+      {
+        "attempt": 1,
+        "stage": 21,
+        "thread": 20436,
+        "wall_us": 16885.4,
+        "thread_cpu_us": 15625,
+        "cycles": 63316170
+      },
+      {
+        "attempt": 1,
+        "stage": 26,
+        "thread": 20436,
+        "wall_us": 1.3,
+        "thread_cpu_us": 0,
+        "cycles": 4551
+      },
+      {
+        "attempt": 1,
+        "stage": 27,
+        "thread": 20436,
+        "wall_us": 4.5,
+        "thread_cpu_us": 0,
+        "cycles": 17069
+      },
+      {
+        "attempt": 1,
+        "stage": 22,
+        "thread": 20436,
+        "wall_us": 19.3,
+        "thread_cpu_us": 0,
+        "cycles": 72067
+      },
+      {
+        "attempt": 1,
+        "stage": 20,
+        "thread": 20436,
+        "wall_us": 16907.5,
+        "thread_cpu_us": 31250,
+        "cycles": 63396961
+      },
+      {
+        "attempt": 1,
+        "stage": 28,
+        "thread": 20436,
+        "wall_us": 16909.5,
+        "thread_cpu_us": 31250,
+        "cycles": 63404167
+      },
+      {
+        "attempt": 1,
+        "stage": 234,
+        "thread": 20436,
+        "wall_us": 16923,
+        "thread_cpu_us": 31250,
+        "cycles": 63454994
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 2486.4,
+        "thread_cpu_us": 0,
+        "cycles": 59550
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 16958.3,
+        "thread_cpu_us": 0,
+        "cycles": 121375
+      },
+      {
+        "attempt": 1,
+        "stage": 134,
+        "thread": 22532,
+        "wall_us": 16963.3,
+        "thread_cpu_us": 0,
+        "cycles": 140340
+      },
+      {
+        "attempt": 1,
+        "stage": 216,
+        "thread": 20436,
+        "wall_us": 4.1,
+        "thread_cpu_us": 0,
+        "cycles": 15172
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 30.5,
+        "thread_cpu_us": 0,
+        "cycles": 42103
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 32.4,
+        "thread_cpu_us": 0,
+        "cycles": 48551
+      },
+      {
+        "attempt": 1,
+        "stage": 116,
+        "thread": 22532,
+        "wall_us": 46.4,
+        "thread_cpu_us": 0,
+        "cycles": 100895
+      },
+      {
+        "attempt": 1,
+        "stage": 200,
+        "thread": 20436,
+        "wall_us": 1.9,
+        "thread_cpu_us": 0,
+        "cycles": 10241
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 19.7,
+        "thread_cpu_us": 0,
+        "cycles": 35275
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 21.3,
+        "thread_cpu_us": 0,
+        "cycles": 40965
+      },
+      {
+        "attempt": 1,
+        "stage": 100,
+        "thread": 22532,
+        "wall_us": 24.6,
+        "thread_cpu_us": 0,
+        "cycles": 53103
+      },
+      {
+        "attempt": 1,
+        "stage": 219,
+        "thread": 20436,
+        "wall_us": 24.5,
+        "thread_cpu_us": 0,
+        "cycles": 92549
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 40.6,
+        "thread_cpu_us": 0,
+        "cycles": 37171
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 42.1,
+        "thread_cpu_us": 0,
+        "cycles": 42482
+      },
+      {
+        "attempt": 1,
+        "stage": 119,
+        "thread": 22532,
+        "wall_us": 45.3,
+        "thread_cpu_us": 0,
+        "cycles": 54240
+      },
+      {
+        "attempt": 1,
+        "stage": 224,
+        "thread": 20436,
+        "wall_us": 15.2,
+        "thread_cpu_us": 0,
+        "cycles": 57274
+      },
+      {
+        "attempt": 1,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 31.2,
+        "thread_cpu_us": 0,
+        "cycles": 37550
+      },
+      {
+        "attempt": 1,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 32.7,
+        "thread_cpu_us": 0,
+        "cycles": 43240
+      },
+      {
+        "attempt": 1,
+        "stage": 124,
+        "thread": 22532,
+        "wall_us": 36,
+        "thread_cpu_us": 0,
+        "cycles": 55757
+      },
+      {
+        "attempt": 2,
+        "stage": 233,
+        "thread": 20436,
+        "wall_us": 1.7,
+        "thread_cpu_us": 0,
+        "cycles": 6069
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 18.9,
+        "thread_cpu_us": 0,
+        "cycles": 38687
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 20.6,
+        "thread_cpu_us": 0,
+        "cycles": 44376
+      },
+      {
+        "attempt": 2,
+        "stage": 133,
+        "thread": 22532,
+        "wall_us": 25.7,
+        "thread_cpu_us": 0,
+        "cycles": 61065
+      },
+      {
+        "attempt": 2,
+        "stage": 200,
+        "thread": 20436,
+        "wall_us": 1.8,
+        "thread_cpu_us": 0,
+        "cycles": 6449
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 17.6,
+        "thread_cpu_us": 0,
+        "cycles": 38309
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 19.2,
+        "thread_cpu_us": 0,
+        "cycles": 43998
+      },
+      {
+        "attempt": 2,
+        "stage": 100,
+        "thread": 22532,
+        "wall_us": 22.4,
+        "thread_cpu_us": 0,
+        "cycles": 55755
+      },
+      {
+        "attempt": 2,
+        "stage": 203,
+        "thread": 20436,
+        "wall_us": 3.5,
+        "thread_cpu_us": 0,
+        "cycles": 12897
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 19.3,
+        "thread_cpu_us": 0,
+        "cycles": 37551
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 20.8,
+        "thread_cpu_us": 0,
+        "cycles": 42861
+      },
+      {
+        "attempt": 2,
+        "stage": 204,
+        "thread": 20436,
+        "wall_us": 3.9,
+        "thread_cpu_us": 0,
+        "cycles": 14413
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 20.1,
+        "thread_cpu_us": 0,
+        "cycles": 38309
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 21.7,
+        "thread_cpu_us": 0,
+        "cycles": 44378
+      },
+      {
+        "attempt": 2,
+        "stage": 104,
+        "thread": 22532,
+        "wall_us": 25.2,
+        "thread_cpu_us": 0,
+        "cycles": 56896
+      },
+      {
+        "attempt": 2,
+        "stage": 205,
+        "thread": 20436,
+        "wall_us": 2.9,
+        "thread_cpu_us": 0,
+        "cycles": 10620
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 20.6,
+        "thread_cpu_us": 0,
+        "cycles": 38689
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 22.4,
+        "thread_cpu_us": 0,
+        "cycles": 45516
+      },
+      {
+        "attempt": 2,
+        "stage": 105,
+        "thread": 22532,
+        "wall_us": 27.7,
+        "thread_cpu_us": 0,
+        "cycles": 64861
+      },
+      {
+        "attempt": 2,
+        "stage": 11,
+        "thread": 20436,
+        "wall_us": 13.5,
+        "thread_cpu_us": 0,
+        "cycles": 51205
+      },
+      {
+        "attempt": 2,
+        "stage": 13,
+        "thread": 20436,
+        "wall_us": 12599.9,
+        "thread_cpu_us": 15625,
+        "cycles": 47396950
+      },
+      {
+        "attempt": 2,
+        "stage": 10,
+        "thread": 20436,
+        "wall_us": 12629,
+        "thread_cpu_us": 15625,
+        "cycles": 47504292
+      },
+      {
+        "attempt": 2,
+        "stage": 23,
+        "thread": 20436,
+        "wall_us": 12635.7,
+        "thread_cpu_us": 15625,
+        "cycles": 47529326
+      },
+      {
+        "attempt": 2,
+        "stage": 24,
+        "thread": 20436,
+        "wall_us": 0.9,
+        "thread_cpu_us": 0,
+        "cycles": 3413
+      },
+      {
+        "attempt": 2,
+        "stage": 25,
+        "thread": 20436,
+        "wall_us": 39.5,
+        "thread_cpu_us": 0,
+        "cycles": 131237
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 15838.1,
+        "thread_cpu_us": 0,
+        "cycles": 46654
+      },
+      {
+        "attempt": 2,
+        "stage": 21,
+        "thread": 20436,
+        "wall_us": 16670.3,
+        "thread_cpu_us": 15625,
+        "cycles": 62530639
+      },
+      {
+        "attempt": 2,
+        "stage": 26,
+        "thread": 20436,
+        "wall_us": 1,
+        "thread_cpu_us": 0,
+        "cycles": 3793
+      },
+      {
+        "attempt": 2,
+        "stage": 27,
+        "thread": 20436,
+        "wall_us": 4.5,
+        "thread_cpu_us": 0,
+        "cycles": 16689
+      },
+      {
+        "attempt": 2,
+        "stage": 22,
+        "thread": 20436,
+        "wall_us": 15.6,
+        "thread_cpu_us": 0,
+        "cycles": 59171
+      },
+      {
+        "attempt": 2,
+        "stage": 20,
+        "thread": 20436,
+        "wall_us": 16696,
+        "thread_cpu_us": 15625,
+        "cycles": 62598533
+      },
+      {
+        "attempt": 2,
+        "stage": 28,
+        "thread": 20436,
+        "wall_us": 16698,
+        "thread_cpu_us": 15625,
+        "cycles": 62605361
+      },
+      {
+        "attempt": 2,
+        "stage": 234,
+        "thread": 20436,
+        "wall_us": 16709.7,
+        "thread_cpu_us": 15625,
+        "cycles": 62649360
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 894.1,
+        "thread_cpu_us": 0,
+        "cycles": 53102
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 16739.1,
+        "thread_cpu_us": 0,
+        "cycles": 124412
+      },
+      {
+        "attempt": 2,
+        "stage": 134,
+        "thread": 22532,
+        "wall_us": 16744.1,
+        "thread_cpu_us": 0,
+        "cycles": 142618
+      },
+      {
+        "attempt": 2,
+        "stage": 216,
+        "thread": 20436,
+        "wall_us": 4.1,
+        "thread_cpu_us": 0,
+        "cycles": 15172
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 30.5,
+        "thread_cpu_us": 0,
+        "cycles": 39826
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 32.5,
+        "thread_cpu_us": 0,
+        "cycles": 47413
+      },
+      {
+        "attempt": 2,
+        "stage": 116,
+        "thread": 22532,
+        "wall_us": 47.4,
+        "thread_cpu_us": 0,
+        "cycles": 103928
+      },
+      {
+        "attempt": 2,
+        "stage": 200,
+        "thread": 20436,
+        "wall_us": 1.7,
+        "thread_cpu_us": 0,
+        "cycles": 6069
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 18.1,
+        "thread_cpu_us": 0,
+        "cycles": 37551
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 19.7,
+        "thread_cpu_us": 0,
+        "cycles": 43242
+      },
+      {
+        "attempt": 2,
+        "stage": 100,
+        "thread": 22532,
+        "wall_us": 23.1,
+        "thread_cpu_us": 0,
+        "cycles": 55758
+      },
+      {
+        "attempt": 2,
+        "stage": 219,
+        "thread": 20436,
+        "wall_us": 20.2,
+        "thread_cpu_us": 0,
+        "cycles": 76239
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 36,
+        "thread_cpu_us": 0,
+        "cycles": 37171
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 37.5,
+        "thread_cpu_us": 0,
+        "cycles": 42481
+      },
+      {
+        "attempt": 2,
+        "stage": 119,
+        "thread": 22532,
+        "wall_us": 40.9,
+        "thread_cpu_us": 0,
+        "cycles": 54998
+      },
+      {
+        "attempt": 2,
+        "stage": 224,
+        "thread": 20436,
+        "wall_us": 13.8,
+        "thread_cpu_us": 0,
+        "cycles": 51964
+      },
+      {
+        "attempt": 2,
+        "stage": 3,
+        "thread": 22532,
+        "wall_us": 30.1,
+        "thread_cpu_us": 0,
+        "cycles": 37551
+      },
+      {
+        "attempt": 2,
+        "stage": 2,
+        "thread": 22532,
+        "wall_us": 31.7,
+        "thread_cpu_us": 0,
+        "cycles": 43241
+      },
+      {
+        "attempt": 2,
+        "stage": 124,
+        "thread": 22532,
+        "wall_us": 35.1,
+        "thread_cpu_us": 0,
+        "cycles": 55379
+      }
+    ],
+    "log_sha256": "decdfbe9a47c825e40ab68bbef7388ecc31eb62b3751723f66a413449b5d9f28"
+  }
+]

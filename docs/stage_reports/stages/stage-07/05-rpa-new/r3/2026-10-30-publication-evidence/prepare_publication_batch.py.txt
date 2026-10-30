@@ -1,0 +1,138 @@
+from pathlib import Path
+import hashlib,json,shutil,subprocess
+root=Path.cwd();base=Path(__file__).resolve().parent
+old=root/'out/verification-20261030/r3-resume-v1/budget-source-v4'
+out=base/'publication-source-v1';out.mkdir(exist_ok=False)
+paths=subprocess.check_output(['git','ls-files','-z']).decode().split('\0')
+paths=[p for p in paths if p and not p.startswith('docs/stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-30-')]
+for p in paths:
+ original=old/p if (old/p).is_file() else root/p
+ if not original.is_file():continue
+ dest=out/p;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(original,dest)
+for p in ('CMakeLists.txt','cmake/CuexisMsvcDependencies.cmake','cmake/VerifyMsvcDependencyTracking.cmake'):
+ shutil.copyfile(root/p,out/p)
+p=out/'engine/judgement/internal/cuexis/judgement/publication.hpp';s=p.read_text(encoding='utf-8')
+s=s.replace('#include <functional>', '#include <functional>\n#include <span>')
+needle='    auto fact(std::uint64_t ordinal) const -> core::Result<PublicationFact>;'
+assert s.count(needle)==1
+s=s.replace(needle,needle+'''
+    // Copy a bounded batch of borrowed Fact descriptors within this read's prefix.
+    // Validate owner/epoch once per batch. References retain the same lifetime as fact().
+    // No caller may keep a batch across a session mutation.
+    auto readFacts(std::uint64_t first, std::span<PublicationFact> output) const
+        -> core::Result<std::size_t>;
+''')
+p.write_text(s,encoding='utf-8')
+p=out/'engine/judgement/src/publication.cpp';s=p.read_text(encoding='utf-8');s='#include <algorithm>\n'+s
+pos=s.index('\nauto classifyPublicDiagnostic(')
+impl='''
+auto PublicationRead::readFacts(std::uint64_t first, std::span<PublicationFact> output) const
+    -> core::Result<std::size_t> {
+    if (auto valid = validate(); !valid)
+        return core::unexpected(std::move(valid.error()));
+    if (first < metadata_.fromCursor || first > metadata_.publishableCursor)
+        return core::unexpected(publicationError("Fact ordinal outside requested prefix"));
+    const auto count = static_cast<std::size_t>(
+        std::min<std::uint64_t>(output.size(), metadata_.publishableCursor - first));
+    for (std::size_t i = 0; i < count; ++i) {
+        const auto& value = projection_->facts[static_cast<std::size_t>(first) + i];
+        if (const auto* phase = std::get_if<PhaseOutcomeFact>(&value))
+            output[i] = {FactKind::phaseOutcome, phase->factId, &phase->requirement,
+                         phase->phase, phase->outcome, phase->error};
+        else {
+            const auto& receipt = std::get<ReceiptFact>(value);
+            output[i] = {receipt.kind, receipt.factId, nullptr, {}, {}, {}};
+        }
+    }
+    return count;
+}
+'''
+s=s[:pos]+impl+s[pos:];p.write_text(s,encoding='utf-8')
+p=out/'engine/playback/src/playback_session.cpp';s=p.read_text(encoding='utf-8')
+needle='    auto candidate = PresentationProjectionAdapter::project('
+assert s.count(needle)==1
+s=s.replace(needle,'''    // This synchronous projection cannot mutate its Judgement source. Buffer borrowed
+    // descriptors locally; each refill checks owner, lifetime and epoch. The adapter still
+    // validates every Fact, including when no presentation bindings are configured.
+    std::array<judgement::detail::PublicationFact, 64> factBatch{};
+    std::uint64_t batchFirst{};
+    std::size_t batchSize{};
+'''+needle)
+needle='        [&](std::uint64_t ordinal) { return read->fact(ordinal); },'
+assert s.count(needle)==1
+s=s.replace(needle,'''        [&](std::uint64_t ordinal) -> core::Result<judgement::detail::PublicationFact> {
+            if (ordinal < batchFirst || ordinal - batchFirst >= batchSize) {
+                auto filled = read->readFacts(ordinal, factBatch);
+                if (!filled)
+                    return core::unexpected(std::move(filled.error()));
+                batchFirst = ordinal;
+                batchSize = *filled;
+            }
+            if (batchSize == 0)
+                return core::unexpected(gameplayError("Publication Fact batch is empty"));
+            return factBatch[static_cast<std::size_t>(ordinal - batchFirst)];
+        },''')
+p.write_text(s,encoding='utf-8')
+p=out/'tests/judgement/publication_tests.cpp';s=p.read_text(encoding='utf-8');s=s.replace('#include <thread>','#include <array>\n#include <thread>')
+s+='''
+TEST_CASE("Publication batches preserve prefix boundaries and reject invalidated reads",
+          "[judgement][publication][batch]") {
+    PublicationFixture fixture;
+    auto session = fixture.session();
+    REQUIRE(session.advance(Tick{1103}));
+    auto view = read(session);
+    const auto metadata = view.metadata();
+    REQUIRE(metadata);
+    const auto end = metadata->get().publishableCursor;
+    REQUIRE(end > 0);
+    for (const std::size_t width : {std::size_t{1}, std::size_t{3}, std::size_t{64}}) {
+        std::array<detail::PublicationFact, 64> batch{};
+        std::uint64_t ordinal{};
+        while (ordinal < end) {
+            auto count = view.readFacts(ordinal, std::span{batch}.first(width));
+            REQUIRE(count);
+            REQUIRE(*count > 0);
+            REQUIRE(*count <= width);
+            REQUIRE(*count <= end - ordinal);
+            for (std::size_t i = 0; i < *count; ++i) {
+                const auto single = view.fact(ordinal + i);
+                REQUIRE(single);
+                CHECK(batch[i].kind == single->kind);
+                CHECK(batch[i].factId == single->factId);
+                CHECK(batch[i].requirement == single->requirement);
+                CHECK(batch[i].phase == single->phase);
+                CHECK(batch[i].outcome == single->outcome);
+                CHECK(batch[i].error == single->error);
+            }
+            ordinal += *count;
+        }
+    }
+    std::array<detail::PublicationFact, 3> batch{};
+    CHECK(view.readFacts(end, batch).value() == 0);
+    CHECK(view.readFacts(0, {}).value() == 0);
+    CHECK_FALSE(view.readFacts(UINT64_MAX, batch));
+    bool rejected{};
+    std::thread foreign([&] { rejected = !view.readFacts(0, batch); });
+    foreign.join();
+    CHECK(rejected);
+    REQUIRE(session.submit({}));
+    CHECK_FALSE(view.readFacts(0, batch));
+    {
+        auto tail = read(session, end);
+        CHECK_FALSE(tail.readFacts(end - 1, batch));
+        CHECK(tail.readFacts(end, batch).value() == 0);
+    }
+    std::optional<detail::PublicationRead> dead;
+    {
+        auto temporary = fixture.session();
+        REQUIRE(temporary.advance(Tick{1103}));
+        dead.emplace(read(temporary));
+    }
+    CHECK_FALSE(dead->readFacts(0, batch));
+}
+'''
+p.write_text(s,encoding='utf-8')
+changed=['engine/judgement/internal/cuexis/judgement/publication.hpp','engine/judgement/src/publication.cpp','engine/playback/src/playback_session.cpp','tests/judgement/publication_tests.cpp']
+subprocess.run(['clang-format','-i',*[str(out/p) for p in changed]],check=True)
+(base/'publication-source-v1.json').write_text(json.dumps(dict(scope='Unselected bounded Publication Fact descriptor batch. All Fact semantics remain in unchanged projection adapter. No installed API/wire/class layout changes; fresh source/build required for internal class method addition. R3c v4 kernel retained for this independent experiment.',candidate_sources={p:hashlib.sha256((out/p).read_bytes()).hexdigest() for p in changed},parent=str(old)),indent=2),encoding='utf-8')
+print(out)

@@ -61,6 +61,7 @@
   后续未选用 v4 修正共享 Fact 页重复计费和归档赋值 source-floor 生命周期，四套件共428 cases通过。
   普通40K H902为250.021→2.655 ms，writer保护通过；Seek重复性仍超15%，不作正式接受。
   固定40K六代成本曲线已记录：允许全部六点时实际额外requested约1.18MB；128MiB仍无产品预算依据。
+  [新发布归因](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-30-r3-publication-attribution.md)确认H902主要在Fact投影，H5主要在首次activation；批量Fact候选虽改善H902约33%，但保护项及重复性未过，未选用。
   两项均未进入产品实现或完成接受；恢复前暂停现场、统计口径更正及版本化实验材料见
   [2026-10-30 暂停与候选交接](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-30-r3-pause-and-candidate-handoff.md)。
   历史[来源绑定实验](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-source-binding-experiment.md)用同一 Release 二进制比较 canonical SHA 与进程内 owning source binding。

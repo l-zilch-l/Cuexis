@@ -24,7 +24,7 @@
     "cmake/VerifyMsvcDependencyTracking.cmake": "054a7b9e40ff4f0a55ab3111652c507bc45106b5ecf9fa959718df84f7bf8c94"
   },
   "files": {
-    ".gitattributes": "4a82159ae6377440404b62dc3d553c2563994691640d328a75d3ce7d8434db5c",
+    ".gitattributes": "39e2506312c5d76b8e3fdb171b75b2755c3242401ce13b444eaeb401e4895589",
     "old-prefix-results.json": "41e5edd9f91c77eef0cb79fc63637cfc6d7184dd64cb1ab07013b0db109cee5d",
     "raw-prefix-dependencies.txt": "181107784196de607932b1807b88b85ea71bb4de3607bb681bf33cbc1c4a3c36",
     "raw-prefix-rebuild.txt": "311f8d82e2c3258ed4fa5dce2c11e271da0c3d7491d1420a2c8f694b2a5e972e",
