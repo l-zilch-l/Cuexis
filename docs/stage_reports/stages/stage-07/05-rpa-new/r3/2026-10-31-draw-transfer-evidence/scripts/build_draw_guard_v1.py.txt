@@ -1,0 +1,14 @@
+from pathlib import Path
+import json,shutil
+
+root=Path.cwd();base=Path(__file__).resolve().parent;old=base/'draw-transfer-build-v1';out=base/'draw-transfer-guard-build-v1'
+script=(base/'build_gl_state_v3_generated.py').read_text();script=script[:script.index('adapter_objects=[]')]
+script=script.replace("out=base/'gl-state-build-v3'","out=base/'draw-transfer-guard-build-v1'")
+exec(compile(script,str(base/'build_gl_state_v3_generated.py'),'exec'))
+probe=compile('gpu_throughput_probe.cpp',base/'draw_transfer_guard.cpp','guard-probe')
+for variant in ('baseline','candidate'):
+    args=next(c['args'] for c in json.loads((old/'commands.json').read_text()) if c['label']=='link-gpu-'+variant)
+    args=[('/OUT:'+str(out/('guard-'+variant+'.exe'))) if a.startswith('/OUT:') else probe if a==str(base/'gl-startup-build-v2/gpu-probe.obj') else a for a in args]
+    run(args,'link-'+variant)
+for dll in old.glob('*.dll'):shutil.copyfile(dll,out/dll.name)
+(out/'binding.json').write_text(json.dumps(dict(scope='Same ordinary baseline/candidate objects as fixed GPU group, CPU-only adverse-order guard; no physical window. Only warmup and 8 timed neutral command builds per order/scale.',parent_binding_sha256=sha(old/'binding.json'),probe_sha256=sha(base/'draw_transfer_guard.cpp'),commands_sha256=sha(out/'commands.json'),binaries={p.name:sha(p) for p in out.glob('*.exe')}),indent=2),encoding='utf-8')

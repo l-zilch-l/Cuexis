@@ -1,0 +1,57 @@
+#include "D:/Cuexis-redesign/tests/presentation_renderer/presentation_renderer_tests.cpp"
+#include <algorithm>
+#include <iostream>
+#include <numeric>
+#include <vector>
+
+TEST_CASE("Neutral command order and owning data survive all source permutations", "[draw-transfer]") {
+    using namespace cuexis;
+    playback::PortableMesh meshValue;
+    playback::PortableUnlitMaterial opaqueValue;
+    playback::PortableUnlitMaterial blendValue;
+    blendValue.alphaMode = playback::PresentationAlphaMode::Blend;
+    auto mesh = resource(playback::PresentationResourceType::Mesh, std::string(40, 'm'), meshValue);
+    auto opaque = resource(playback::PresentationResourceType::UnlitMaterial, std::string(40, 'o'), opaqueValue);
+    auto blend = resource(playback::PresentationResourceType::UnlitMaterial, std::string(40, 'b'), blendValue);
+    const std::array resources{mesh, opaque, blend};
+    std::array<unsigned, 4> permutation{0, 1, 2, 3};
+    unsigned ordinal = 0;
+    do {
+        playback::FrameSnapshot snapshot;
+        identityMatrix(snapshot.camera.viewMatrix);
+        identityMatrix(snapshot.camera.projectionMatrix);
+        snapshot.camera.active = true;
+        snapshot.viewportWidth = 16;
+        snapshot.viewportHeight = 9;
+        for (auto index : permutation) {
+            playback::FrameSnapshot::ObjectSnapshot object;
+            object.id = std::string(40, index < 2 ? 'a' : 't');
+            identityMatrix(object.worldMatrix);
+            object.worldMatrix[14] = -static_cast<float>(index);
+            object.visible = true;
+            object.mesh = mesh->reference;
+            object.material = (index < 2 ? opaque : blend)->reference;
+            object.materialAssetId = object.material->assetId;
+            object.materialTint[0] = static_cast<float>(index) * .25F;
+            snapshot.objects.push_back(std::move(object));
+        }
+        auto summary = presentation_renderer::buildPresentationCommands(snapshot, resources, false, false, nullptr);
+        REQUIRE(summary);
+        snapshot.objects.clear();
+        REQUIRE(summary->opaque.size() == 2);
+        REQUIRE(summary->transparent.size() == 2);
+        CHECK(summary->opaque[0].objectIndex < summary->opaque[1].objectIndex);
+        CHECK(summary->transparent[0].depthMeters > summary->transparent[1].depthMeters);
+        std::cout << "DRAW_TRANSFER " << ordinal++ << " " << summary->digest;
+        for (const auto* pass : {&summary->opaque, &summary->transparent}) {
+            for (const auto& draw : *pass) {
+                CHECK(draw.mesh.assetId == std::string(40, 'm'));
+                CHECK(draw.objectId.size() == 40);
+                std::cout << " " << draw.objectId << ":" << draw.objectIndex << ":"
+                          << draw.material.assetId << ":" << draw.worldMatrix[14] << ":"
+                          << draw.effectiveColor[0];
+            }
+        }
+        std::cout << "\n";
+    } while (std::next_permutation(permutation.begin(), permutation.end()));
+}

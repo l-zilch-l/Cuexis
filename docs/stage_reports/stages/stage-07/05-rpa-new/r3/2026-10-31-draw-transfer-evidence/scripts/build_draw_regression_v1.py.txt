@@ -1,0 +1,15 @@
+from pathlib import Path
+import json,shutil
+
+root=Path.cwd();base=Path(__file__).resolve().parent;old=base/'gl-state-build-v3';out=base/'draw-transfer-regression-v1'
+script=(base/'build_gl_state_v3_generated.py').read_text();script=script[:script.index('adapter_objects=[]')]
+script=script.replace("out=base/'gl-state-build-v3'","out=base/'draw-transfer-regression-v1'")
+exec(compile(script,str(base/'build_gl_state_v3_generated.py'),'exec'))
+tests=[compile(name,root/'tests/render'/name,Path(name).stem) for name in ('open_gl_config_tests.cpp','open_gl_presentation_tests.cpp')]
+_,libs=commands_for('cuexis_render_opengl_tests')
+adapters=[str(p) for p in old.glob('cuexis_*.obj')]
+libraries=[p for p in libs if Path(p).is_absolute() or not p.lower().endswith('.lib') or (build/p).is_file()]
+run([cache['CMAKE_LINKER:FILEPATH'],'/NOLOGO','/machine:x64','/INCREMENTAL:NO','/subsystem:console',
+     '/OUT:'+str(out/'opengl-tests.exe'),*tests,str(base/'draw-transfer-build-v1/draw-candidate.obj'),*adapters,*libraries],'link-opengl')
+for dll in (base/'json-sax-runtime-v3').glob('*.dll'):shutil.copyfile(dll,out/dll.name)
+(out/'binding.json').write_text(json.dumps(dict(scope='Original root OpenGL configuration/CPU builder characterization tests with only neutral draw candidate CPP. Original parser and GL algorithms; adapter objects from matching source reused. Actual immutable common paged-active library definitions, no observers.',commands_sha256=sha(out/'commands.json'),parent_sha256=sha(base/'draw-transfer-build-v1/binding.json'),files={p.name:sha(p) for p in out.iterdir() if p.suffix in ('.exe','.dll')}),indent=2),encoding='utf-8')

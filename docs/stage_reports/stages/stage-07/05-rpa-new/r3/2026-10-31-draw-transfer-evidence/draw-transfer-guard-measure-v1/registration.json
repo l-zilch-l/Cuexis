@@ -1,0 +1,15 @@
+{
+  "scope": "Review-driven adverse-input protection: 1K/40K late inversion and reversed. CPU only, same fixed-production objects as prior GPU group. No changed implementation or retry.",
+  "plan": [
+    "baseline",
+    "candidate",
+    "candidate",
+    "baseline"
+  ],
+  "processes": 4,
+  "affinity": 4,
+  "priority": 16384,
+  "throttling": false,
+  "gate": "All scenario medians <=5% regression; original 15% repeatability, equal digest. 8 per-process measurements reduce to median before process aggregation.",
+  "binding_sha256": "1983547bf0623f77ce478053ebd94832a9aa29dd4528ff8d6a9b9bca42041691"
+}

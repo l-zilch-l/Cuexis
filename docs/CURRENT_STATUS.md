@@ -68,6 +68,9 @@
   JSON回调DOM解析存在宽数组平方扫描；SAX/legacy parse-once组合的40K prepare约17.555→2.028秒，身份与帧摘要一致，但完整重复性未过，未选用且不算首画面≤2秒通过。
   实例化原型仍未达预设收益门；诊断显示剩余约30ms主要在命令构造/排序/复制/摘要，下一步继续消除CPU侧重复物化。
   早期GL组缺精确Release DLL绑定的限制已留档，后续组显式绑定同工具链Release运行库；原组不回填接受。
+  随后[中立命令转移及顺序检测](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-31-r3-neutral-command-transfer.md)已选用：
+  保留原比较器/digest，避免重复排序与临时命令字符串复制；16进程普通GPU组40K render-only/static cycle改善10.33%/12.05%，收益/保护/重复性通过。
+  逆序保护组与最终格式化CPP相关回归通过；未达到40K 240FPS，完整矩阵和其余接受仍开放。
   这些候选均未进入产品实现或完成接受；恢复前暂停现场、统计口径更正及版本化实验材料见
   [2026-10-30 暂停与候选交接](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-30-r3-pause-and-candidate-handoff.md)。
   历史[来源绑定实验](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-source-binding-experiment.md)用同一 Release 二进制比较 canonical SHA 与进程内 owning source binding。

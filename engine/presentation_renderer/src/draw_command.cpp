@@ -509,24 +509,32 @@ auto buildPresentationCommands(const playback::FrameSnapshot& snapshot,
         }
     }
 
-    std::sort(opaque.begin(), opaque.end(), [](const auto& left, const auto& right) {
+    const auto opaqueLess = [](const auto& left, const auto& right) {
         return std::tie(left.command.objectId, left.objectIndex) <
                std::tie(right.command.objectId, right.objectIndex);
-    });
-    std::sort(transparent.begin(), transparent.end(), [](const auto& left, const auto& right) {
+    };
+    const auto transparentLess = [](const auto& left, const auto& right) {
         if (left.command.transparentDepthKey != right.command.transparentDepthKey) {
             return left.command.transparentDepthKey > right.command.transparentDepthKey;
         }
         return std::tie(left.command.objectId, left.objectIndex) <
                std::tie(right.command.objectId, right.objectIndex);
-    });
+    };
+    if (!std::is_sorted(opaque.begin(), opaque.end(), opaqueLess)) {
+        std::sort(opaque.begin(), opaque.end(), opaqueLess);
+    }
+    if (!std::is_sorted(transparent.begin(), transparent.end(), transparentLess)) {
+        std::sort(transparent.begin(), transparent.end(), transparentLess);
+    }
     summary.opaque.reserve(opaque.size());
     summary.transparent.reserve(transparent.size());
-    for (const auto& draw : opaque) {
-        summary.opaque.push_back(draw.command);
+    // The temporary ordered arrays are dead after transfer. Preserve all command fields,
+    // including owning IDs and references, without allocating another copy of each string.
+    for (auto& draw : opaque) {
+        summary.opaque.push_back(std::move(draw.command));
     }
-    for (const auto& draw : transparent) {
-        summary.transparent.push_back(draw.command);
+    for (auto& draw : transparent) {
+        summary.transparent.push_back(std::move(draw.command));
     }
     summary.digest = summaryDigest(summary);
     return summary;

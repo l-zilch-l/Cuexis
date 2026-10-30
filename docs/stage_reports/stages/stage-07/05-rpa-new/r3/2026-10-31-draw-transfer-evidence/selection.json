@@ -1,0 +1,9 @@
+{
+  "selected": true,
+  "scope": "Neutral draw transfer and existing-order detection only, no cache/SAX/instancing/R3c/public changes.",
+  "root_sha256": "45dc935f891d2811c90640ec6006c91c5f3d4fe8fd64597859ea83381249cd03",
+  "regression": "Final formatted CPP recompiled; neutral 3 cases/399 assertions, OpenGL 22/140. 24 source permutations output/digest equal versus original.",
+  "performance": "16-process physical GPU group numerical/protection/repeatability passed; 40K render-only cycle -10.33%, static -12.05%. Timer/readback OFF, ordinary allocator. Same SAX v2 used only for startup on both variants, common libraries include independent paged-active kernel but neither rendering fixture uses Gameplay.",
+  "review": "Read-only review found no correctness blocker; near-sorted late inversion extra scan guarded by separate 4-process CPU group, numerical and repetition passed.",
+  "limitation": "Local diagnostic and focused regression only. Not fresh full final matrix, 240FPS/load/R3/R4/Stage7 acceptance."
+}

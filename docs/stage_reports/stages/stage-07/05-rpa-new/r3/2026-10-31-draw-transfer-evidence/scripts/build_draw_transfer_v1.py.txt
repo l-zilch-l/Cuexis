@@ -1,0 +1,20 @@
+from pathlib import Path
+import json,shutil
+
+root=Path.cwd();base=Path(__file__).resolve().parent;old=base/'gl-state-build-v3';out=base/'draw-transfer-build-v1'
+script=(base/'build_gl_state_v3_generated.py').read_text();script=script[:script.index('adapter_objects=[]')]
+script=script.replace("out=base/'gl-state-build-v3'","out=base/'draw-transfer-build-v1'")
+exec(compile(script,str(base/'build_gl_state_v3_generated.py'),'exec'))
+candidate=compile('draw_command.cpp',base/'draw-transfer-source-v1/draw_command.cpp','draw-candidate')
+baseline=compile('draw_command.cpp',root/'engine/presentation_renderer/src/draw_command.cpp','draw-baseline')
+tests=compile('presentation_renderer_tests.cpp',root/'tests/presentation_renderer/presentation_renderer_tests.cpp','neutral-tests')
+_,libs=commands_for('cuexis_presentation_renderer_tests')
+for variant,obj in (('baseline',baseline),('candidate',candidate)):
+    run([cache['CMAKE_LINKER:FILEPATH'],'/NOLOGO','/machine:x64','/INCREMENTAL:NO','/subsystem:console',
+         '/OUT:'+str(out/('neutral-'+variant+'.exe')),tests,obj,*libs],'link-neutral-'+variant)
+args=next(c['args'] for c in json.loads((base/'gl-startup-build-v2/commands.json').read_text()) if c['label']=='link-baseline')
+for variant,obj in (('baseline',baseline),('candidate',candidate)):
+    command=[('/OUT:'+str(out/('gpu-'+variant+'.exe'))) if a.startswith('/OUT:') else a for a in args]
+    run([command[0],obj,str(base/'json-sax-build-v2/parse-candidate.obj'),*command[1:]],'link-gpu-'+variant)
+for dll in (base/'json-sax-runtime-v3').glob('*.dll'):shutil.copyfile(dll,out/dll.name)
+(out/'binding.json').write_text(json.dumps(dict(scope='Only neutral draw CPP differs. Both physical binaries share SAX v2 for startup, no instancing or state cache. Original public/template definitions and shared paged-active libraries. Correct Release DLLs.',source_binding_sha256=sha(base/'draw-transfer-source-v1/binding.json'),commands_sha256=sha(out/'commands.json'),files={p.name:sha(p) for p in out.iterdir() if p.suffix in ('.exe','.dll')}),indent=2),encoding='utf-8')

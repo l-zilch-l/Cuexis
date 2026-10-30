@@ -1,0 +1,10 @@
+{
+  "scope": "Same ordinary baseline/candidate objects as fixed GPU group, CPU-only adverse-order guard; no physical window. Only warmup and 8 timed neutral command builds per order/scale.",
+  "parent_binding_sha256": "4c8db5bd0fe3f176ea8edeb385ad0c593eeb3f47740138e0d39447d74575484a",
+  "probe_sha256": "2183227ce12ba833b353d2e7381eeef3577bc3ef0c9d57aceeb6ac9120a03906",
+  "commands_sha256": "ed1406e8483a3b3bc457b834bc70230ad0471017dce910c9b4e0d087543527ad",
+  "binaries": {
+    "guard-baseline.exe": "eb7de85f030fb78c76f105748e02d1ab60a7b553a0070408375d22499ed5fd54",
+    "guard-candidate.exe": "c14c3abe5ae947b617261d8ad86f0b4784eca0a6727882c047cec8b9332db131"
+  }
+}

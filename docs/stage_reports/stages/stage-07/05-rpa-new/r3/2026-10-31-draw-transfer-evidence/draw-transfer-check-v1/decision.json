@@ -1,0 +1,8 @@
+{
+  "complete_permutation_digest_and_output_equal": true,
+  "permutations": 24,
+  "logs": {
+    "baseline.log": "0cd04aeeee41597172da42c26c22d238e6db00c831b4a12854c99887466fb5da",
+    "candidate.log": "0cd04aeeee41597172da42c26c22d238e6db00c831b4a12854c99887466fb5da"
+  }
+}
