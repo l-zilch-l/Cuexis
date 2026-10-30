@@ -1,0 +1,3 @@
+CMakeFiles/canary.dir/main.cpp.obj: #deps 1, deps mtime 8150681465679729 (VALID)
+    ../source/value.hpp
+

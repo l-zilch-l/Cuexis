@@ -1,6 +1,6 @@
 # R3 六项优化实施与验证账本
 
-状态：active；实施按 owner 要求暂停，候选尚未全部验证，不是 R3/R4 退出
+状态：active；owner 已要求恢复并完成剩余任务，候选尚未全部验证，不是 R3/R4 退出
 
 日期：2026-10-29
 
@@ -8,8 +8,9 @@
 
 返回 [RPA 报告索引](../README.md)。当前阶段状态只见
 [CURRENT_STATUS](../../../../../CURRENT_STATUS.md)。owner 要求连续完成桌面接手文档 P1–P6，
-恢复后不再按单个局部候选结束工作；当前暂停要求优先，原预算、错误语义、身份字节和历史证据保持原要求。
-后续 P1/R3c v2 现场及未选用源码归档见
+按六项剩余工作持续推进；原预算、错误语义、身份字节和历史证据保持原要求。
+最新 P1 否决、R3c v4 及预算/真实成本证据见[恢复实施记录](2026-10-30-r3-resume-and-budget-verification.md)。
+恢复前 P1/R3c v2 现场及未选用源码归档见
 [2026-10-30 暂停与候选交接](2026-10-30-r3-pause-and-candidate-handoff.md)。下文各批记录保留当时范围，
 不将某个旧版本的“尚未实施”或通过结果误作最新预算副本的结论。
 
@@ -17,12 +18,12 @@
 
 | 项目 | 本批实施/调查 | 尚需完成的核验 |
 | --- | --- | --- |
-| P1 Packed / re-prepare | 名称索引、Packed 查找及 typed-existence 二分已保留；claim/definitionSource 待确认候选 v2 已构建并通过 Packed 回归，未选用 | v2 最终固定性能对照、选择/提交、最终组合回归与原端到端 load 门 |
+| P1 Packed / re-prepare | 名称索引、Packed 查找及 typed-existence 二分已保留；claim/definitionSource v2 最终固定组收益/保护门未过，已否决并保留证据 | 剩余热点按实测价值取舍；最终组合回归与原端到端 load 门 |
 | P2 准备热点 | 保留名称索引、identity 投影复用及多资源查找/claim 分组；timer/ledger 及 scalar phase 写入均通过固定对照 | 最终完整矩阵及原 load 门未完成 |
 | P3 update / Snapshot | 保留四属性合并查找、touched 和 OpenGL 诊断读回分离；resolver hint 及组件池借用候选均因对照不达预期撤回 | 最终源码完整矩阵；extract 仍有成本，不重做 R2 表示 |
-| P4 编码与真实内存 | 无峰值收益的编码 admission/预遍历已撤回；已有本地 40K 峰值/释放；跨代 payload 预算 v2 原型仅通过功能回归 | 最新预算版实际内存及 retired-owner 观察；原 caps/profile/历史 R4 参考仍缺；128 MiB 不是进程 cap |
-| P5 端到端 Seek | 产品 CPU 60/GPU 96 组合通过有限功能核验，产品 H902 仍慢；无预算 R3c 原型明显改善，预算 v2 共 426 个相关用例通过但未选用 | 预算 v2 的实际故障、普通 Seek/writer、内存及独立闭包/版本审阅；原适用预算/重复性/CI未关闭 |
-| P6 维护/工具/矩阵 | metrics TLS 改为函数内每线程对象，消费者同步；全仓格式债处理；旧 b2 候选 Release 全套通过、旧 Debug 编译通过 | 撤回/新候选后的最终 fresh STATIC/SHARED、Debug/Release/MinGW、安装消费者与完整 CTest |
+| P4 编码与真实内存 | 无峰值收益的编码 admission/预遍历已撤回；已有本地 40K 峰值/释放；v4 与六代归档实际 requested/storage 已测，故障退款和最终释放通过 | 通用上界、合理预算与保留策略、完整播放链 headroom；原 caps/profile/历史 R4 参考仍缺 |
+| P5 端到端 Seek | 产品 CPU 60/GPU 96 组合通过有限功能核验，产品 H902 仍慢；R3c v4 相关428 cases、真实故障/字节/释放通过，普通H902明显改善但未选用 | 归因重复性超15%；合理预算/策略及全部适用场景；决定产品取舍，原CI门仍开放 |
+| P6 维护/工具/矩阵 | metrics TLS 改为函数内每线程对象，消费者同步；全仓格式债处理；旧 b2 Release 全套通过；新增 Ninja 依赖漏记已由真实头文件修改反例定位并修复验证 | 构建修复已完成审阅及独立/嵌入定向门；最终 fresh STATIC/SHARED、Debug/Release/MinGW、安装消费者与完整 CTest |
 
 这些是候选及核验账目，不将“已写代码”记成完成，也不以 R3 技术工作代替设备/生产或 owner 接受。
 40K 历史 Packed reference 缺失、B0 caps 的规模适用性与原 R4 固定窗口保持原证据边界。

@@ -4,6 +4,8 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CuexisVersion.cmake")
 
 project(Cuexis VERSION ${CUEXIS_CMAKE_VERSION} LANGUAGES CXX)
 
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CuexisMsvcDependencies.cmake")
+
 # Catch2 and all C++ dependencies must use the same ABI as the active compiler.
 # Fail during configure instead of deferring a toolchain mismatch to the linker.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND
@@ -349,6 +351,19 @@ if(CUEXIS_BUILD_TESTS)
             "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
             -P "${PROJECT_SOURCE_DIR}/cmake/VerifyArchitecture.cmake"
     )
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND CMAKE_GENERATOR MATCHES "^Ninja"
+       AND NOT CMAKE_CROSSCOMPILING)
+        add_test(NAME cuexis_msvc_dependency_tracking
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                "-DCUEXIS_VERIFY_DIR=${PROJECT_BINARY_DIR}/verification"
+                "-DCUEXIS_VERIFY_COMPILER=${CMAKE_CXX_COMPILER}"
+                "-DCUEXIS_VERIFY_COMPILER_ARG1=${CMAKE_CXX_COMPILER_ARG1}"
+                "-DCUEXIS_VERIFY_NINJA=${CMAKE_MAKE_PROGRAM}"
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyMsvcDependencyTracking.cmake")
+        set_tests_properties(cuexis_msvc_dependency_tracking PROPERTIES
+            LABELS "build;dependencies" RUN_SERIAL TRUE TIMEOUT 120)
+    endif()
     #  Round-6 diagnostic gate (CM-D04 / P1-09): the Gameplay V2 diagnostic code table must
     #  be registered centrally and validate before any code string may enter a public header.
     #  Script mode only, so it adds no cuexis_* target.

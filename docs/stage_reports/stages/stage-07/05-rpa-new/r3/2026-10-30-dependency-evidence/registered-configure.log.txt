@@ -1,0 +1,9 @@
+-- The CXX compiler identification is MSVC 19.51.36256.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: D:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Configuring done (3.2s)
+-- Generating done (0.3s)
+-- Build files have been written to: D:/Cuexis-redesign/out/verification-20261030/r3-next-v1/dependency-root-v2/verification/msvc-includes-e9932bc5cb77/build

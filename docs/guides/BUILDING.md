@@ -159,6 +159,13 @@ vcpkg
 
 使用 Visual Studio Developer PowerShell/Command Prompt，或确保 `cl.exe`、Ninja 和 CMake 已处于 PATH。
 
+MSVC + Ninja 配置会探测 `/showIncludes` 前缀。当前复现环境的输入代码页为 936、输出代码页为
+65001：CMake 按输入代码页误解码 UTF-8 编译器输出，修复使用 UTF-8 前缀。非 UTF-8 输出保留
+CMake 原有处理；尚未验证其他代码页组合。
+`cuexis_msvc_dependency_tracking` 在非交叉编译时修改独立及嵌入布局夹具的头文件，检查 Ninja
+依赖记录及重编后的实际程序结果。已有目录须重新 configure 并完整重建，排除先前漏记导致的
+陈旧对象；冻结的验证目录保持原样，后续验证使用新目录。
+
 ## 配置、构建和测试
 
 ```powershell

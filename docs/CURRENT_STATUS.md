@@ -38,6 +38,7 @@
   新固定对照的 40K 全量动画 update 由 147.933 降至 47.343 ms，完整 cycle 由 209.573 降至 109.652 ms；
   静态路径未见对应退化。只加标记的初版因晚插入基线的语义回归停止并撤回；最终版同步索引并通过反例及相关回归。
   当前渲染仍超预算，P3 和其余待优化项继续开放。
+  [MSVC Ninja 头依赖漏记](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-30-r3-dependency-tracking.md)已修复，独立/嵌入夹具的真实重编通过；最终完整矩阵仍待执行。
   owner 要求恢复后连续完成六项剩余工作，候选与完整验证进度统一见
   [六项实施与验证账本](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-29-r3-six-item-completion-work.md)。
   Pattern 编译复用、外观索引提示和新编码缓存因固定对照未达预设收益/保护条件已撤回；

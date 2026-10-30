@@ -1,0 +1,26 @@
+[
+  {
+    "language": "original",
+    "VSLANG": null,
+    "initial": 41,
+    "expected_after_header_edit": 42,
+    "actual_after_header_edit": 41,
+    "header_dependency_observed": false,
+    "rebuilt_correctly": false,
+    "rules_prefix": [
+      "msvc_deps_prefix = \u5a09\u3126\u5270: \u9356\u546d\u60c8\u93c2\u56e6\u6b22:  "
+    ]
+  },
+  {
+    "language": "english",
+    "VSLANG": "1033",
+    "initial": 42,
+    "expected_after_header_edit": 41,
+    "actual_after_header_edit": 42,
+    "header_dependency_observed": false,
+    "rebuilt_correctly": false,
+    "rules_prefix": [
+      "msvc_deps_prefix = \u5a09\u3126\u5270: \u9356\u546d\u60c8\u93c2\u56e6\u6b22:  "
+    ]
+  }
+]

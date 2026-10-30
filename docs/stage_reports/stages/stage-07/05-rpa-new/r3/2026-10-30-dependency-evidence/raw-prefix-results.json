@@ -1,0 +1,7 @@
+{
+  "initial": 41,
+  "after_header_edit": 42,
+  "header_dependency_observed": true,
+  "correct": true,
+  "scope": "Raw ENCODING NONE showIncludes prefix, preserving compiler bytes in Ninja rules"
+}
