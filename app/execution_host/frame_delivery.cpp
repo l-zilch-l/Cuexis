@@ -211,11 +211,11 @@ auto FrameDelivery::admit(const FrameRequest& r, std::uint64_t version, std::int
         if (old->fingerprint != f)
             return core::unexpected(conflict());
         expire(*c, now);
-        return DeliveryAdmission{old->info, {}, false};
+        return DeliveryAdmission{old->info, {}, false, {}};
     }
     if (r.requestId <= c->requestHighWater)
         return DeliveryAdmission{
-            {r.consumerId, r.requestId, 0, 0, DeliveryStatus::historyUnavailable}, {}, false};
+            {r.consumerId, r.requestId, 0, 0, DeliveryStatus::historyUnavailable}, {}, false, {}};
     expire(*c, now);
     if (c->current && !terminal(c->current->info.status)) {
         if (c->registration.profile.mode == ConsumerMode::exactCapture)
@@ -241,7 +241,7 @@ auto FrameDelivery::admit(const FrameRequest& r, std::uint64_t version, std::int
         info.status = DeliveryStatus::versionUnavailable;
     c->current = RequestRecord{f, info};
     if (info.status != DeliveryStatus::pending)
-        return DeliveryAdmission{info, {}, false};
+        return DeliveryAdmission{info, {}, false, {}};
     auto attempt = c->attempts->reserve(attemptBytes);
     if (!attempt) {
         finish(*c, DeliveryStatus::skippedNoCredit);
@@ -252,7 +252,7 @@ auto FrameDelivery::admit(const FrameRequest& r, std::uint64_t version, std::int
         auto reserved = c->storage->reserve(c->registration.profile.frameByteBound);
         if (!reserved) {
             finish(*c, DeliveryStatus::skippedNoCredit);
-            return DeliveryAdmission{c->current->info, {}, false};
+            return DeliveryAdmission{c->current->info, {}, false, {}};
         }
         reservation = std::move(*reserved);
     }

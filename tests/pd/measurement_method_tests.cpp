@@ -217,6 +217,8 @@ auto trace(PlaybackSession& session, bool realtime, bool recording,
         verify(result.digest == 17504891284788938091ULL, "legacy trajectory digest changed");
     return result;
 }
+#if defined(_WIN32) && !defined(CUEXIS_PD_ALLOCATION_OBSERVER) &&                                  \
+    !defined(CUEXIS_PD_METRICS_TEST_ONLY)
 auto playbackOnly(PlaybackSession& session, bool realtime, pd_measure::Sample* clocks = nullptr)
     -> pd_measure::Sample {
     for (std::size_t i = 0; i < warmupSteps; ++i)
@@ -230,6 +232,7 @@ auto playbackOnly(PlaybackSession& session, bool realtime, pd_measure::Sample* c
         *clocks = sample;
     return sample;
 }
+#endif
 } // namespace
 
 TEST_CASE("PD fixed trajectory measurement", "[.][pd][method]") {

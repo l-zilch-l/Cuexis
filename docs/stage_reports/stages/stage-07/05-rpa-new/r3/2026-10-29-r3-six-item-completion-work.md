@@ -283,7 +283,26 @@ v2 移除无关 include，沿相同普通 Release 依赖只覆盖 presentation r
 
 ## 构建、版本与原门限
 
-所有新构建串行、BelowNormal、affinity 3，由既有 Windows Job 包装器约束后代。
+2026-10-30 恢复批次：`release-mingw-metrics-v4` 完成独立 MinGW GCC 16.1.0 配置，
+metrics ON、Release STATIC、warnings-as-errors。原 v3 的 owner 暂停记录保留，不恢复或覆盖旧组。
+v4 在实际项目编译中发现四处 DeliveryAdmission 省略 attempt 初始化，被 missing-field-initializers
+拒绝。修复仅显式补上原本即为空的第四项；`mingw-metrics-resume-v1` 又发现 playbackOnly
+只在未插桩正式测量中调用，metrics ON 却编译其未使用定义。其定义现使用与调用方相同的条件，
+不放宽警告、不执行正式测量。原始源码、失败日志及两次显式增量恢复绑定全部保留。
+
+`mingw-metrics-resume-v2` 的 Core 37 cases / 2,610 assertions、PD baseline 6 / 16,844、
+Host 62 / 56,642、PD host 6 / 3,543 均通过，合计 111 cases。该项目级多 TU 构建和链接
+未再出现旧 TLS multiple-definition 问题。显式有限 deterministic presentation canary 通过，
+runtime / snapshot / judgement / projection 等阶段各 1,088 个样本；数组长度一致、非空且
+omitted 为 0。它证明 metrics 实际通道和 MinGW 相关目标，不是普通性能、完整桌面包或全部
+STATIC/SHARED / Debug/Release 矩阵接受。项目编译使用 --parallel 1、BelowNormal 和 affinity 3；
+vcpkg 同样设置并发数 1，但其 helper 的 Debug/Release 配置探测仍可能并行，不将其描述为全程串行。
+
+另在当前源码直接执行 VerifyArchitecture.cmake，退出 0。Packed typed-existence 候选和
+R3c 逐 Tick 事实普查均先准备独立源码副本，未混入本次 MinGW 冻结构建。
+
+项目目标构建使用串行、BelowNormal、affinity 3，由既有 Windows Job 包装器约束后代；
+第三方配置 helper 的并行例外见本节恢复批次。
 旧绑定构建/二进制只读，采用新的独立构建目录。Release 首次配置因 PowerShell 对未引用 suffix
 拆分失败，原目录与错误保留；有效新构建是 `release-static-v2`，参数由 Python argv 传递。
 当前 SDK 仍为 0.9.1，未添加公开安装字段或改变 wire / codec 版本。
