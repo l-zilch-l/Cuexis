@@ -1,0 +1,5 @@
+from pathlib import Path
+base=Path(__file__).resolve().parent
+s=(base/'prepare_activation_observer.py').read_text().replace("out=base/'activation-observer-v1'", "out=base/'activation-observer-v3'")
+s=s.replace('judgement::testing::sameSnapshot','judgement::sameSnapshot')
+exec(compile(s,str(base/'prepare_activation_observer.py'),'exec'))

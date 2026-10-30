@@ -1,0 +1,125 @@
+{
+  "formal": false,
+  "scope": "Fixed ordinary v4 original vs v6 active-requirement paging, activation and lazy batch. New private source representation and fixed group; original groups frozen. No production memory quota decision. Same candidate class definitions and fresh libraries; all timings exclude fault/heap observers.",
+  "plan": [
+    {
+      "n": 1000,
+      "wave": 0,
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "wave": 0,
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "wave": 0,
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "wave": 0,
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "wave": 0,
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "wave": 0,
+      "pair": 2,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "wave": 0,
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "wave": 0,
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "wave": 0,
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "wave": 0,
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "wave": 0,
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "wave": 0,
+      "pair": 2,
+      "variant": "candidate"
+    },
+    {
+      "n": 1536,
+      "wave": 256,
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 1536,
+      "wave": 256,
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 1536,
+      "wave": 256,
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 1536,
+      "wave": 256,
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 1536,
+      "wave": 256,
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 1536,
+      "wave": 256,
+      "pair": 2,
+      "variant": "candidate"
+    }
+  ],
+  "attempts": 3,
+  "gate": "Dense40K process-median advance overhead <=5%; 1K and six-wave overhead <=10%; original (max-min)/median<=15% screen. Exact full Snapshot wire hash/size. Preparation/encoding outside advance timer, not load acceptance.",
+  "binaries": {
+    "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-next-v1\\publication-build-v2\\bin\\cuexis_rpa_tests.exe": "91c097db772ae226c3a3589efcfdbae4ef82ad9e8b65d6ffbea9c30b64ca76d4",
+    "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-next-v1\\active-sequence-build-v1\\cuexis_rpa_tests.exe": "4e4e23d2487f050496270d6668ac9efe007b7e3ba515576a10eacbde438ecea2"
+  },
+  "runner_sha256": "0d03ad537b26f800f714dc611a91276c32490b1e8a80a90fb21b376f42906b3d",
+  "affinity": 4,
+  "priority": "BelowNormal",
+  "qos": "execution throttling OFF",
+  "failure": "Invalid process stops; original failed/noisy groups retained; no replacement/extension. Builds must be absent."
+}

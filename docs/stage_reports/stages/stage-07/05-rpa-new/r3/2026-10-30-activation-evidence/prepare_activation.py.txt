@@ -1,0 +1,94 @@
+from pathlib import Path
+import hashlib,json,subprocess
+root=Path.cwd();base=Path(__file__).resolve().parent
+parent=root/'out/verification-20261030/r3-resume-v1';source=parent/'budget-source-v4'
+out=base/'activation-source-v1';out.mkdir(exist_ok=False)
+s=(source/'engine/judgement/src/execution_kernel.cpp').read_text(encoding='utf-8')
+needle='            if (draft->activeRequirements.size() != activeCount)\n'
+assert s.count(needle)==1
+s=s.replace(needle,'''            // Activation can copy many phase pages without publishing any Facts.
+            // Count actual newly activated requirements, not unrelated window/deadline timers.
+            const auto activationsThisTick = draft->activeRequirements.size() - activeCount;
+'''+needle)
+needle='            if (capture && facts.size() >= 512 && impl_->pending.empty() &&'
+assert s.count(needle)==1
+s=s.replace(needle,'''            if (capture && (facts.size() >= 512 || activationsThisTick >= 512) &&
+                impl_->pending.empty() &&''')
+(out/'execution_kernel.cpp').write_text(s,encoding='utf-8')
+s=(source/'tests/rpa/rpa_b3_tests.cpp').read_text(encoding='utf-8')
+s+='''
+TEST_CASE("R3c captures dense activation without Facts at exact frontier and preserves continuation",
+          "[rpa][r3c][activation]") {
+    const auto count = GENERATE(511U, 512U, 1024U);
+    Fixture3 fixture;
+    expandTickFixture(fixture, count);
+    auto writer = detail::ExecutionKernel::prepare(fixture.configuration(), fixture.prepared());
+    REQUIRE(writer);
+    REQUIRE((*writer)->advance(Tick{1203}));
+    const auto archive = (*writer)->archive();
+    const ReplayArchive external{archive.anchor(),
+                                 std::make_shared<const RecoveryInputs>(archive.dependencies())};
+    writer->reset();
+    for (const auto horizon : {852, 853, 854, 902, 904, 1003, 1203}) {
+        INFO(count);
+        INFO(horizon);
+        const auto cut = replayCutAt(archive, Tick{horizon});
+        auto actual = detail::ExecutionKernel::seekCandidate(archive, Tick{horizon}, nullptr, &cut);
+        auto expected = detail::ExecutionKernel::seekCandidate(external, Tick{horizon}, nullptr, &cut);
+        REQUIRE(actual);
+        REQUIRE(expected);
+        const auto restore = count >= 512 && horizon >= 853 && horizon < 1203;
+        if (horizon < 904)
+            CHECK((*actual)->tickRestoreCount() == (restore ? 1 : 0));
+        auto left = (*actual)->snapshot();
+        auto right = (*expected)->snapshot();
+        REQUIRE(left);
+        REQUIRE(right);
+        CHECK(sameSnapshot((*left)->dto, (*right)->dto));
+        if (horizon == 853 || horizon == 854) {
+            CHECK((*left)->dto.kernel.facts.empty());
+            CHECK(std::ranges::any_of((*left)->dto.kernel.phases, [](const auto& phase) {
+                return phase.state == KernelPhaseState::Pending;
+            }));
+        }
+        REQUIRE((*actual)->advance(Tick{1203}));
+        REQUIRE((*expected)->advance(Tick{1203}));
+        left = (*actual)->snapshot();
+        right = (*expected)->snapshot();
+        REQUIRE(left);
+        REQUIRE(right);
+        CHECK(sameSnapshot((*left)->dto, (*right)->dto));
+        auto actualWire = encodeReplay((*actual)->archive());
+        auto expectedWire = encodeReplay((*expected)->archive());
+        REQUIRE(actualWire);
+        REQUIRE(expectedWire);
+        CHECK(*actualWire == *expectedWire);
+    }
+}
+TEST_CASE("R3c activation with exhausted budget keeps exact origin fallback", "[rpa][r3c][activation]") {
+    Fixture3 fixture;
+    expandTickFixture(fixture, 512);
+    auto writer = detail::ExecutionKernel::prepare(fixture.configuration(), fixture.prepared());
+    REQUIRE(writer);
+    REQUIRE((*writer)->setTickPayloadLimitForProbe(0));
+    REQUIRE((*writer)->advance(Tick{1203}));
+    auto archive = (*writer)->archive();
+    CHECK(detail::ExecutionKernel::tickPointCount(archive) == 0);
+    CHECK(detail::ExecutionKernel::tickPayloadBytes(archive) == 0);
+    const auto cut = replayCutAt(archive, Tick{854});
+    auto candidate = detail::ExecutionKernel::seekCandidate(archive, Tick{854}, nullptr, &cut);
+    REQUIRE(candidate);
+    CHECK((*candidate)->tickRestoreCount() == 0);
+    const ReplayArchive external{archive.anchor(),
+                                 std::make_shared<const RecoveryInputs>(archive.dependencies())};
+    auto reference = detail::ExecutionKernel::seekCandidate(external, Tick{854}, nullptr, &cut);
+    REQUIRE(reference);
+    CHECK(sameSnapshot((*candidate)->snapshot().value()->dto,
+                       (*reference)->snapshot().value()->dto));
+}
+'''
+(out/'rpa_b3_tests.cpp').write_text(s,encoding='utf-8')
+subprocess.run(['clang-format','-i',str(out/'execution_kernel.cpp'),str(out/'rpa_b3_tests.cpp')],check=True)
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+(out/'binding.json').write_text(json.dumps(dict(selected=False,scope='R3c v5 private activation trigger only, >=512 newly activated requirements. All v4 charge/source-floor/transaction rules retained. No batch publication. Extra phase retention must be measured separately; no production quota acceptance.',sources={p.name:sha(p) for p in out.iterdir() if p.suffix=='.cpp'},parent=str(source)),indent=2),encoding='utf-8')
+print(out)

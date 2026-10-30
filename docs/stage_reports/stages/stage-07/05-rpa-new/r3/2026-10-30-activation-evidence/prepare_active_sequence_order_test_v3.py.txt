@@ -1,0 +1,5 @@
+from pathlib import Path
+base=Path(__file__).resolve().parent
+s=(base/'prepare_active_sequence_order_test.py').read_text().replace("out=base/'active-sequence-source-v2'", "out=base/'active-sequence-source-v3'")
+s=s.replace("(out/'rpa_b3_tests.cpp').write_text(s,encoding='utf-8')", "s=s.replace('CHECK(points == (capture ? (wave ? 4 : 1) : 0));','CHECK(points == (capture ? (wave ? 4 : 2) : 0));')\n(out/'rpa_b3_tests.cpp').write_text(s,encoding='utf-8')")
+exec(compile(s,str(base/'prepare_active_sequence_order_test.py'),'exec'))

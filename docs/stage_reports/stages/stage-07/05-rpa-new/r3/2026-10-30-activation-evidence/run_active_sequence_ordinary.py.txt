@@ -1,0 +1,80 @@
+from pathlib import Path
+import sys
+root=Path.cwd()
+sys.path.insert(0,str(root/'out/verification-20261029/r3-completion'))
+from native import *
+import csv,io
+base=Path(__file__).resolve().parent
+mode=sys.argv[1];assert mode in ('writer','seek')
+out=base/('active-sequence-'+mode+'-measure-v1');out.mkdir(exist_ok=False)
+build=base/'active-sequence-host-v1'
+if mode=='writer':
+    cases=[(1000,0),(40000,0),(1536,256)]
+    plan=[dict(n=n,wave=wave,pair=pair,variant=variant) for n,wave in cases for pair in range(3) for variant in (('baseline','candidate') if pair%2==0 else ('candidate','baseline'))]
+    gate='Dense40K process-median advance overhead <=5%; 1K and six-wave overhead <=10%; original (max-min)/median<=15% screen. Exact full Snapshot wire hash/size. Preparation/encoding outside advance timer, not load acceptance.'
+else:
+    cases=[(1000,'5',3),(40000,'5',3),(40000,'902',3),(1000,'final',3)]
+    plan=[dict(n=n,horizon=h,pair=pair,variant=variant) for n,h,pairs in cases for pair in range(pairs) for variant in (('baseline','candidate') if pair%2==0 else ('candidate','baseline'))]
+    gate='40K first-record H5 median improves >=50%; every candidate request <=20ms; 40K H902 and1K final guard <=5% regression; 1K H5 <=10% regression. Original relative range <=15% reported, no new samples to force pass. first/repeats separate; exact full Snapshot raw bytes/hash/size. CPU Host request through target present only, not physical GPU or formal acceptance.'
+def binary(item):return build/('probe-'+item['variant']+'.exe') if mode=='seek' else (base/'publication-build-v2/bin/cuexis_rpa_tests.exe' if item['variant']=='baseline' else base/'active-sequence-build-v1/cuexis_rpa_tests.exe')
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+write(out/'registration.json',dict(formal=False,scope='Fixed ordinary v4 original vs v6 active-requirement paging, activation and lazy batch. New private source representation and fixed group; original groups frozen. No production memory quota decision. Same candidate class definitions and fresh libraries; all timings exclude fault/heap observers.',plan=plan,attempts=3,gate=gate,binaries={str(binary(i)):sha(binary(i)) for i in plan},runner_sha256=sha(Path(__file__)),affinity=4,priority='BelowNormal',qos='execution throttling OFF',failure='Invalid process stops; original failed/noisy groups retained; no replacement/extension. Builds must be absent.'))
+rows=[];wires={}
+for ordinal,item in enumerate(plan):
+    active=list(csv.reader(io.StringIO(subprocess.check_output(['tasklist','/FO','CSV','/NH'],text=True,encoding='utf-8',errors='replace'))))
+    assert not [r for r in active if r and r[0].lower() in ('cl.exe','link.exe','ninja.exe','gcc.exe','g++.exe','cc1.exe','cc1plus.exe')], 'Concurrent build'
+    env={k:v for k,v in os.environ.items() if not k.startswith(('CUEXIS_PD','CUEXIS_GPU_','CUEXIS_CPU_','R3_','CUEXIS_SEEK_','CUEXIS_REDESIGN_'))}
+    if mode=='writer':
+        env.update(R3_WRITER_N=str(item['n']),R3_WRITER_WAVE=str(item['wave']),R3_WRITER_CAPTURE='1')
+    else:
+        env.update(CUEXIS_REDESIGN_BARRIER='1',CUEXIS_SEEK_REQUIREMENTS=str(item['n']),CUEXIS_SEEK_RECORDS='129',CUEXIS_SEEK_IDENTITY='source',CUEXIS_SEEK_CONTENT='packed',R3_PARTIAL_HORIZON=item['horizon'])
+        if item['pair']==0:env['R3_SNAPSHOT_DUMP']=str(out/f'raw-{item["n"]}-{item["horizon"]}-{item["variant"]}.bin')
+    log=out/f'{ordinal:02}-{item["n"]}-{item["variant"]}.log'
+    battery=Battery();assert k.GetSystemPowerStatus(ct.byref(battery))
+    start=time.monotonic()
+    with log.open('x',encoding='utf-8') as f:
+        child=subprocess.Popen([str(binary(item)),'[r3c-writer]' if mode=='writer' else '[redesign-host-perf]','--rng-seed','1'],cwd=root,env=env,stdin=subprocess.PIPE,stdout=f,stderr=subprocess.STDOUT,creationflags=subprocess.CREATE_NO_WINDOW|subprocess.BELOW_NORMAL_PRIORITY_CLASS)
+        handle=k.OpenProcess(0x0200|0x1000,False,child.pid)
+        try:
+            power=Power(1,1,0);assert handle and k.SetProcessAffinityMask(handle,4) and k.SetProcessInformation(handle,4,ct.byref(power),ct.sizeof(power))
+            observed=Power(1,0,0);mask=ct.c_size_t();system=ct.c_size_t()
+            assert k.GetProcessAffinityMask(handle,ct.byref(mask),ct.byref(system)) and k.GetProcessInformation(handle,4,ct.byref(observed),ct.sizeof(observed))
+            controls=dict(affinity=mask.value,priority=k.GetPriorityClass(handle),qos_control=observed.ControlMask,qos_state=observed.StateMask)
+            assert controls==dict(affinity=4,priority=16384,qos_control=1,qos_state=0)
+            child.stdin.write(b'go\n');child.stdin.flush();child.stdin.close()
+            try:code=child.wait(timeout=900)
+            except subprocess.TimeoutExpired:child.kill();child.wait();code='timeout'
+        finally:
+            if handle:k.CloseHandle(handle)
+            if child.poll() is None:child.kill();child.wait()
+    output=log.read_text(encoding='utf-8',errors='replace')
+    event='r3c.writer' if mode=='writer' else 'r3.redesign.host'
+    events=[json.loads(l) for l in output.splitlines() if l.startswith('{"event":"'+event+'"')]
+    wire=[l.split()[1:] for l in output.splitlines() if l.startswith('R3_WRITER_WIRE ')] if mode=='writer' else [json.loads(l.split(' ',1)[1]) for l in output.splitlines() if l.startswith('R3_SEEK_WIRE ')]
+    key=(item['n'],item.get('wave',item.get('horizon')))
+    valid=code==0 and 'All tests passed' in output and len(events)==3 and [e['attempt'] for e in events]==[0,1,2] and len(wire)==1 and wires.setdefault(key,wire[0])==wire[0]
+    row=dict(item,valid=valid,exit=code,controls=controls,seconds=time.monotonic()-start,ac_line=battery.ACLineStatus,events=events,wire=wire,log_sha256=sha(log));rows.append(row);write(out/'results.json',rows)
+    print(json.dumps({key:row[key] for key in (*item.keys(),'valid','exit','seconds')}),flush=True)
+    if not valid:raise SystemExit('Invalid original process retained; stopped without replacement')
+
+summary=[]
+field='advance_us' if mode=='writer' else 'request_to_present_us'
+for case in cases:
+    n,c=case[:2]
+    groups={v:[r for r in rows if r['n']==n and r.get('wave',r.get('horizon'))==c and r['variant']==v] for v in ('baseline','candidate')}
+    samples={v:[statistics.median(e[field] for e in r['events']) for r in group] for v,group in groups.items()}
+    values={v:statistics.median(xs) for v,xs in samples.items()}
+    ranges={v:(max(xs)-min(xs))/statistics.median(xs)*100 for v,xs in samples.items()}
+    summary.append(dict(n=n,case=c,median_us=values,process_samples=samples,change_percent=(values['candidate']/values['baseline']-1)*100,relative_range_percent=ranges,first_us={v:[r['events'][0][field] for r in group] for v,group in groups.items()},repeat_us={v:[e[field] for r in group for e in r['events'][1:]] for v,group in groups.items()}))
+if mode=='seek':
+    for left in out.glob('raw-*-baseline.bin'):
+        right=out/left.name.replace('-baseline.bin','-candidate.bin');assert right.is_file()
+        with left.open('rb') as a,right.open('rb') as b:
+            while True:
+                x=a.read(1048576);y=b.read(1048576);assert x==y,(left,right)
+                if not x:break
+    numeric=all(s['change_percent']<=(-50 if s['n']==40000 and s['case']=='5' else 10 if s['n']==1000 and s['case']=='5' else 5) and max(s['first_us']['candidate']+s['repeat_us']['candidate'])<=20000 for s in summary)
+else:numeric=all(s['change_percent']<=(5 if s['n']==40000 else 10) for s in summary)
+repeatability=all(max(s['relative_range_percent'].values())<=15 for s in summary)
+write(out/'decision.json',dict(local_numeric_gate=numeric,repeatability_screen=repeatability,local_screen_pass=numeric and repeatability,summary=summary,scope='Fixed diagnostic only; no formal CI, physical GPU, load, product memory quota or stage acceptance. Raw output/logs remain immutable.'))
+print(json.dumps(dict(local_numeric_gate=numeric,repeatability_screen=repeatability,summary=summary)),flush=True)

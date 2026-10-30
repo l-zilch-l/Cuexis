@@ -1,0 +1,9 @@
+{
+  "scope": "Observed v5 activation real allocation faults and heap, not ordinary timing. Identical fresh class definitions; explicit kernel/host recompile. No batch publication.",
+  "source_binding_sha256": "dd474b15a3e53151a170bb253996f6ffadeaf52b146bbbd6d7203382e32752a5",
+  "commands_sha256": "01799d908afa5cb32a8970557c2980604df645d2dc2ffee329707a20317170b5",
+  "fresh_complete_sha256": "76aa46686565ca68e578d2ca81c65dc502a7ca087ed47e970e27d29043c6f443",
+  "binaries": {
+    "observer.exe": "a6d26ac9baae410803dfbf5c8c209563cfb908e34919a389757f3cdd0e7cdceb"
+  }
+}

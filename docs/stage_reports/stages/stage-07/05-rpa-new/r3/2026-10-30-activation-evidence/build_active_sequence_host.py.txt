@@ -1,0 +1,34 @@
+from pathlib import Path
+import ctypes,hashlib,json,shutil,subprocess
+root=Path.cwd();base=Path(__file__).resolve().parent;build=base/'publication-build-v2';out=base/'active-sequence-host-v1';out.mkdir(exist_ok=False)
+assert (base/'active-sequence-build-v1/complete.json').is_file()
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+shell=ctypes.WinDLL('shell32');shell.CommandLineToArgvW.argtypes=[ctypes.c_wchar_p,ctypes.POINTER(ctypes.c_int)];shell.CommandLineToArgvW.restype=ctypes.POINTER(ctypes.c_wchar_p)
+k=ctypes.WinDLL('kernel32');k.LocalFree.argtypes=[ctypes.c_void_p]
+def split(line):
+ n=ctypes.c_int();p=shell.CommandLineToArgvW(line,ctypes.byref(n))
+ try:return [p[i] for i in range(n.value)]
+ finally:k.LocalFree(p)
+cache=dict(l.split('=',1) for l in (build/'CMakeCache.txt').read_text().splitlines() if '=' in l and not l.startswith(('#','//')))
+block=(build/'build.ninja').read_text().split('build bin\\cuexis_execution_host_tests.exe',1)[1].split('\n\n',1)[0]
+objects=split(block.split(': CXX_EXECUTABLE_LINKER__cuexis_execution_host_tests_Release ',1)[1].split(' | ',1)[0])
+objects=[str(base/'combined-source-v2/host_probe.obj') if 'rpa_b5_host_tests.cpp.obj' in p else p for p in objects]
+libs=split(next(l.split(' = ',1)[1] for l in block.splitlines() if l.startswith('  LINK_LIBRARIES = ')))
+args=[cache['CMAKE_LINKER:FILEPATH'],'/NOLOGO','/machine:x64','/INCREMENTAL:NO','/subsystem:console','/OUT:'+str(out/'probe-candidate.exe'),str(base/'active-sequence-build-v1/execution_kernel.obj'),str(base/'combined-source-v2/playback_session.obj'),*objects,*libs]
+with (out/'link.log').open('x',encoding='utf-8') as stream:r=subprocess.run(args,cwd=build,stdout=stream,stderr=subprocess.STDOUT)
+assert r.returncode==0,r.returncode
+shutil.copyfile(base/'publication-host-v1/probe-baseline.exe',out/'probe-baseline.exe')
+for dll in (build/'bin').glob('*.dll'):shutil.copyfile(dll,out/dll.name)
+with (out/'test-boundaries.log').open('x',encoding='utf-8') as stream:r=subprocess.run([str(out/'probe-candidate.exe'),'[publication-large]','--rng-seed','1'],stdout=stream,stderr=subprocess.STDOUT)
+assert r.returncode==0
+(out/'binding.json').write_text(json.dumps(dict(scope='Ordinary v4 original vs v6 active-requirement paging plus activation and lazy batch. Common fresh library/header definitions unchanged. Private RuntimeState only in replaced kernel TU; complete large-boundary tests use real linked code.',commands=[args],kernel_complete_sha256=sha(base/'active-sequence-build-v1/complete.json'),kernel_obj_sha256=sha(base/'active-sequence-build-v1/execution_kernel.obj'),playback_obj_sha256=sha(base/'combined-source-v2/playback_session.obj'),large_fixture_obj_sha256=sha(base/'combined-source-v2/host_probe.obj'),binaries={p.name:sha(p) for p in out.glob('*.exe')}),indent=2),encoding='utf-8')
+s=(base/'run_activation_ordinary.py').read_text()
+s=s.replace("out=base/('activation-'+mode+'-measure-v1')", "out=base/('active-sequence-'+mode+'-measure-v1')")
+s=s.replace("build=base/'activation-host-v1'", "build=base/'active-sequence-host-v1'")
+s=s.replace('Fixed ordinary v4 vs v5 activation capture diagnostic. Neither variant uses batch publication.', 'Fixed ordinary v4 original vs v6 active-requirement paging, activation and lazy batch. New private source representation and fixed group; original groups frozen.')
+s=s.replace('cases=[(1000,0),(40000,0),(1536,256)]', 'cases=[(1000,0),(40000,0),(1536,256)]')
+s=s.replace('for pair in range(2) for variant', 'for pair in range(3) for variant')
+s=s.replace("if mode=='seek' else build/'cuexis_rpa_tests.exe'", "if mode=='seek' else (base/'publication-build-v2/bin/cuexis_rpa_tests.exe' if item['variant']=='baseline' else base/'active-sequence-build-v1/cuexis_rpa_tests.exe')")
+s=s.replace("R3_WRITER_CAPTURE=str(int(item['variant']=='candidate'))", "R3_WRITER_CAPTURE='1'")
+(base/'run_active_sequence_ordinary.py').write_text(s,encoding='utf-8')
+print(out)

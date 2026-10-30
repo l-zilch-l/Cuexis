@@ -1,0 +1,13 @@
+{
+  "scope": "Frozen build receipts contain inherited scope text v4/v5; actual linked commands are authoritative. This supplement binds actual v6 private kernel + activation + lazy batch. Public/internal header definitions from publication fresh build are consistent.",
+  "actual_kernel": {
+    "source_sha256": "cac5e82e4d2e28b2aecaaf298ef0d616c89449f69b0837a7213c510edf57e322",
+    "object_sha256": "ea3e8c5d19ad3d2459836a664a8c61525ceafdf7024e8d3a2ca6f378aa5cb34f"
+  },
+  "actual_playback": {
+    "source_sha256": "1c0a0c60beb3f3a1e1b95a419c779fa651530d6606230ab4d6a97d52d63c7234",
+    "object_sha256": "8d8536fbc8156ef270c62c90b9ca543c6e2a9aeeef475b642d4d0c62f1c0eba8"
+  },
+  "baseline": "v4 kernel and original single read",
+  "selected": false
+}

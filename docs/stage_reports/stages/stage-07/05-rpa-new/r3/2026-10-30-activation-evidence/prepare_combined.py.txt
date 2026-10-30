@@ -1,0 +1,121 @@
+from pathlib import Path
+import hashlib,json,subprocess
+root=Path.cwd();base=Path(__file__).resolve().parent;out=base/'combined-source-v1';out.mkdir(exist_ok=False)
+source=base/'publication-source-v1'
+s=(source/'engine/playback/src/playback_session.cpp').read_text(encoding='utf-8')
+s=s.replace('    std::array<judgement::detail::PublicationFact, 64> factBatch{};', '    std::optional<std::array<judgement::detail::PublicationFact, 64>> factBatch;')
+s=s.replace('''            if (ordinal < batchFirst || ordinal - batchFirst >= batchSize) {
+                auto filled = read->readFacts(ordinal, factBatch);''','''            if (!factBatch && publication.publishableCursor - ordinal < 64)
+                return read->fact(ordinal);
+            if (ordinal < batchFirst || ordinal - batchFirst >= batchSize) {
+                if (!factBatch)
+                    factBatch.emplace();
+                auto filled = read->readFacts(ordinal, *factBatch);''')
+s=s.replace('return factBatch[static_cast<std::size_t>(ordinal - batchFirst)];','return (*factBatch)[static_cast<std::size_t>(ordinal - batchFirst)];')
+assert 'read->readFacts(ordinal, *factBatch)' in s
+(out/'playback_session.cpp').write_text(s,encoding='utf-8')
+s=(base/'publication-host-v1/host_probe.cpp').read_text(encoding='utf-8')
+s='#include <array>\n#include <limits>\n'+s
+s+='''
+namespace {
+auto largePublicationFixture(bool bindings) -> std::unique_ptr<test_support::SessionTestContent> {
+    auto fixture = std::make_unique<test_support::SessionTestContent>();
+    auto& doc = fixture->request.assembly.sources[0].document;
+    const auto prototype = doc.requirements.front();
+    doc.requirements.clear();fixture->owners.clear();doc.factBindings.clear();
+    std::erase_if(doc.declarations,[](const auto& d){return d.kind==judgement::DeclarationKind::requirement;});
+    doc.relations.front().members.clear();
+    fixture->request.assembly.contentProfileLimits.maxRequirements=
+        judgement::MeasuredParameter<std::uint64_t>::measured(129);
+    for(unsigned i=0;i<129;++i) {
+        auto r=prototype;r.stableId.declarationOrdinal=100+i;
+        r.identity.requirementLocalId="batch."+std::to_string(i);
+        r.resourceClaims.front().claimPolicy.competition=judgement::ClaimPolicyDeclaration::CompetitionKey{-1,i};
+        const auto binding="batch.binding."+std::to_string(i);
+        r.factBindingRefs={binding};doc.factBindings.push_back({binding});
+        doc.declarations.push_back(judgement::testing::testDeclaration(
+            judgement::DeclarationKind::requirement,r.identity.requirementLocalId,100+i));
+        doc.relations.front().members.push_back(r.stableId);
+        fixture->owners.push_back({r.identity,fixture->chart.entities[0].identity});
+        if(bindings) {
+            playback::GameplayRequirementRef ref{r.identity.chartEntryId,r.identity.invocationId,
+                r.identity.moduleId,r.identity.exportId,r.identity.requirementLocalId,{}};
+            for(const auto& step:r.identity.emissionPath)ref.emissionPath.push_back({step.nodeId,step.repeatIndex});
+            fixture->config.bindings.push_back({binding,std::move(ref),GameplayPhase::Tap,
+                GameplayOutcome::Miss,GameplayTimingClass::Any,
+                "019b0000-0000-7abc-8def-000000000002",false,{0},{}});
+        }
+        doc.requirements.push_back(std::move(r));
+    }
+    return fixture;
+}
+}
+TEST_CASE("Real Publication batches cross64 and128 preserve receipts and invalidate between refills",
+          "[publication-large]") {
+    auto fixture=largePublicationFixture(false);const auto content=fixture->content();
+    const auto* storage=GameplayAccess::content(content);
+    auto made=judgement::JudgementSession::create();REQUIRE(made);
+    auto& session=*made;REQUIRE(session.configure(storage->configuration));
+    REQUIRE(session.prepare(storage->capsule.gameplay));REQUIRE(session.advance(judgement::Tick{20}));
+    judgement::RawIngress raw{{judgement::ObservationTick{judgement::Tick{30}},
+        {judgement::IngressSequence{1},judgement::InputAction::press,*judgement::ChannelRef::fromToken("lane.one"),
+         "domain.binding.one",{},{false,false,false},judgement::ContinuityKind::discrete,{}}}};
+    // Add a real receipt after the 129 phase Facts.
+    REQUIRE(session.submit(raw));REQUIRE(session.advance(judgement::Tick{40}));
+    auto scope=judgement::detail::PublicationAccess::scope(session);REQUIRE(scope);
+    {
+        auto view=judgement::detail::PublicationAccess::readSince(session,*scope,0);REQUIRE(view);
+        auto meta=view->metadata();REQUIRE(meta);const auto end=meta->get().publishableCursor;REQUIRE(end>=130);
+        unsigned receipts{};
+        for(const auto first:{std::uint64_t{0},std::uint64_t{1},std::uint64_t{63},std::uint64_t{64},std::uint64_t{127},std::uint64_t{128}}) {
+            std::array<judgement::detail::PublicationFact,64> batch{};
+            auto count=view->readFacts(first,batch);REQUIRE(count);
+            CHECK(*count==std::min<std::uint64_t>(64,end-first));
+            for(std::size_t i=0;i<*count;++i) {
+                auto one=view->fact(first+i);REQUIRE(one);
+                CHECK(batch[i].kind==one->kind);CHECK(batch[i].factId==one->factId);
+                CHECK(batch[i].requirement==one->requirement);CHECK(batch[i].phase==one->phase);
+                CHECK(batch[i].outcome==one->outcome);CHECK(batch[i].error==one->error);
+                receipts+=batch[i].kind==judgement::FactKind::stray;
+            }
+        }
+        CHECK(receipts>0);
+        std::array<judgement::detail::PublicationFact,64> batch{};
+        REQUIRE(view->readFacts(0,batch).value()==64);
+        REQUIRE(session.submit({}));CHECK_FALSE(view->readFacts(64,batch));
+    }
+    auto tail=judgement::detail::PublicationAccess::readSince(session,*scope,64);REQUIRE(tail);
+    std::array<judgement::detail::PublicationFact,64> batch{};
+    CHECK_FALSE(tail->readFacts(63,batch));CHECK(tail->readFacts(64,batch).value()==64);
+}
+TEST_CASE("Actual Gameplay publication across batches retries all effects after Runtime failure",
+          "[publication-large]") {
+    const bool bindings=GENERATE(false,true);
+    auto fixture=largePublicationFixture(bindings);PlaybackSession retry,control;
+    fixture->load(retry);fixture->load(control);REQUIRE(retry.update({0,0,0}));
+    auto before=retry.extractFrame({640,480});REQUIRE(before);
+    REQUIRE_FALSE(retry.advanceGameplay({20},{0},{std::numeric_limits<double>::max(),0,0}));
+    auto receipt=retry.gameplayAdvanceReceipt();REQUIRE(receipt);
+    CHECK(receipt->publicationFailureStage==GameplayPublicationFailureStage::Runtime);
+    CHECK(receipt->publishableFacts==129);CHECK_FALSE(receipt->runtimeUpdated);
+    CHECK(retry.queryGameplayPresentation()->sources.empty());
+    auto unchanged=retry.extractFrame({640,480});REQUIRE(unchanged);
+    CHECK(unchanged->objects[0].visible==before->objects[0].visible);
+    REQUIRE(retry.sampleGameplayPresentation({0},{0,0,0}));
+    REQUIRE(control.advanceGameplay({20},{0},{0,0,0}));
+    auto effects=retry.queryGameplayPresentation();REQUIRE(effects);
+    CHECK(effects->sources.size()==(bindings?129:0));
+    CHECK(*retry.queryGameplay()->sameResult(*control.queryGameplay()));
+    REQUIRE(retry.sampleGameplayPresentation({0},{0,0,0}));
+    CHECK(retry.queryGameplayPresentation()->sources.size()==effects->sources.size());
+    CHECK(retry.queryGameplayPresentation()->projectionScope==effects->projectionScope);
+    CHECK(retry.extractFrame({640,480})->objects[0].visible==!bindings);
+}
+'''
+# Match the actual public submit() argument type without adding a new fixture type.
+s=s.replace('judgement::RawIngress raw', 'std::vector<judgement::ClockedIngress> raw')
+(out/'host_probe.cpp').write_text(s,encoding='utf-8')
+subprocess.run(['clang-format','-i',str(out/'playback_session.cpp'),str(out/'host_probe.cpp')],check=True)
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+(out/'binding.json').write_text(json.dumps(dict(selected=False,scope='Combined activation and lazy bounded Fact batch. Small prefixes retain original single read; buffer initialized only for >=64. No class/header definition changes from fresh publication build. v5 kernel separately compiled.',files={p.name:sha(p) for p in out.iterdir() if p.suffix=='.cpp'}),indent=2),encoding='utf-8')
+print(out)

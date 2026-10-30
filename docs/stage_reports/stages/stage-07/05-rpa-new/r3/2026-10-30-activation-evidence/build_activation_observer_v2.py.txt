@@ -1,0 +1,4 @@
+from pathlib import Path
+base=Path(__file__).resolve().parent
+s=(base/'build_activation_observer.py').read_text().replace("out=base/'activation-observer-v1'", "out=base/'activation-observer-v2'")
+exec(compile(s,str(base/'build_activation_observer.py'),'exec'))

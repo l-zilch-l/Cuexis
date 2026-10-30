@@ -1,0 +1,42 @@
+from pathlib import Path
+import hashlib,json,shutil,subprocess
+base=Path(__file__).resolve().parent;old=base/'combined-source-v1';out=base/'combined-source-v2';out.mkdir(exist_ok=False)
+shutil.copyfile(old/'playback_session.cpp',out/'playback_session.cpp')
+s=(old/'host_probe.cpp').read_text(encoding='utf-8')
+s+='''
+TEST_CASE("Second batch invalid Fact aborts all projection writes and retry keeps the prefix",
+          "[publication-large]") {
+    const bool bindings=GENERATE(false,true);
+    auto fixture=largePublicationFixture(bindings);PlaybackSession presentation;fixture->load(presentation);
+    const auto content=fixture->content();const auto* inputs=GameplayAccess::content(content);
+    auto source=judgement::JudgementSession::create();REQUIRE(source);
+    REQUIRE(source->configure(inputs->configuration));REQUIRE(source->prepare(inputs->capsule.gameplay));
+    REQUIRE(source->advance(judgement::Tick{20}));auto query=source->query();REQUIRE(query);
+    REQUIRE(query->kernelView().facts.size()==129);
+    // Checking-only corruption: advance allocated this RuntimeState as a non-const draft.
+    // It has no concurrent readers; restore the Fact before any further source operation.
+    auto& facts=const_cast<judgement::KernelProjection&>(query->kernelView()).facts;
+    const auto original=std::get<judgement::PhaseOutcomeFact>(facts[64]).phase;
+    facts.update(64,[](auto& value) {
+        std::get<judgement::PhaseOutcomeFact>(value).phase=static_cast<judgement::PhaseKind>(255);
+    });
+    auto failed=GameplayPublicationAccess::publish(presentation,*source,{0},{0,0,0},false,true);
+    facts.update(64,[&](auto& value) {std::get<judgement::PhaseOutcomeFact>(value).phase=original;});
+    REQUIRE_FALSE(failed);
+    CHECK(failed.error().message()=="Unsupported publication phase");
+    CHECK(presentation.queryGameplayPresentation()->sources.empty());
+    CHECK(presentation.queryGameplayPresentation()->projectionScope==0);
+    CHECK(presentation.extractFrame({640,480})->objects[0].visible);
+    REQUIRE(GameplayPublicationAccess::publish(presentation,*source,{0},{0,0,0},false,true));
+    auto effects=presentation.queryGameplayPresentation();REQUIRE(effects);
+    CHECK(effects->sources.size()==(bindings?129:0));
+    CHECK(presentation.extractFrame({640,480})->objects[0].visible==!bindings);
+    REQUIRE(GameplayPublicationAccess::publish(presentation,*source,{0},{0,0,0},false,false));
+    CHECK(presentation.queryGameplayPresentation()->sources.size()==effects->sources.size());
+}
+'''
+(out/'host_probe.cpp').write_text(s,encoding='utf-8')
+subprocess.run(['clang-format','-i',str(out/'host_probe.cpp')],check=True)
+m=json.loads((old/'binding.json').read_text());m['files']={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in out.glob('*.cpp')};m['scope']+=' Test-only second batch malformed Fact supplement; production CPP unchanged.'
+(out/'binding.json').write_text(json.dumps(m,indent=2),encoding='utf-8')
+print(out)

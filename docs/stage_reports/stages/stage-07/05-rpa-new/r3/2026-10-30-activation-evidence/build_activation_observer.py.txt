@@ -1,0 +1,15 @@
+from pathlib import Path
+base=Path(__file__).resolve().parent
+s=(base/'build_publication_host.py').read_text(encoding='utf-8')
+s=s.replace("out=base/'publication-host-v1'","out=base/'activation-observer-v1'")
+s=s.replace("baseline=compile('playback_session.cpp','playback_baseline')", "kernel=compile('execution_kernel.cpp','execution_kernel')")
+a=s.index("for variant in ('baseline','candidate'):");b=s.index('for dll in ',a)
+s=s[:a]+'''run([cache['CMAKE_LINKER:FILEPATH'],'/NOLOGO','/machine:x64','/INCREMENTAL:NO','/subsystem:console','/OUT:'+str(out/'observer.exe'),kernel,str(base/'publication-host-v1/playback_baseline.obj'),*objects,*libs],'link')
+'''+s[b:]
+s=s.replace("scope='Ordinary one-at-a-time vs bounded batch Playback publication. Identical fresh library/public/internal class definitions, v4 kernel and exact fixture. No timing or heap observers.'", "scope='Observed v5 activation real allocation faults and heap, not ordinary timing. Identical fresh class definitions; explicit kernel/host recompile. No batch publication.'")
+s+='''
+for mode in ('fault','memory'):
+ run([str(out/'observer.exe'),'[activation-'+mode+']','--rng-seed','1'],'test-'+mode)
+ assert 'All tests passed' in (out/('test-'+mode+'.log')).read_text(encoding='utf-8')
+'''
+exec(compile(s,str(base/'build_publication_host.py'),'exec'))

@@ -1,0 +1,1898 @@
+[
+  {
+    "n": 1000,
+    "horizon": "5",
+    "pair": 0,
+    "variant": "baseline",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 0.27226259999588365,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 0,
+        "seek_us": 570,
+        "request_to_present_us": 739,
+        "archive_us": 28,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 116116,
+        "cut_us": 13,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 1,
+        "seek_us": 493,
+        "request_to_present_us": 562,
+        "archive_us": 28,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 116116,
+        "cut_us": 11,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 2,
+        "seek_us": 440,
+        "request_to_present_us": 514,
+        "archive_us": 28,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 116116,
+        "cut_us": 11,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 1270972,
+        "sha256": "ca3995547f9223a55d8acbffb45f4dcc3212172095c1d4d5b2475e6aa64a5d02"
+      }
+    ],
+    "log_sha256": "13bba990ba95c8ef425ec6a7b5bf640293f65f2ff9402df1d4a546e83771dfe3"
+  },
+  {
+    "n": 1000,
+    "horizon": "5",
+    "pair": 0,
+    "variant": "candidate",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 0.29674379999778466,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 0,
+        "seek_us": 275,
+        "request_to_present_us": 437,
+        "archive_us": 27,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 127830,
+        "cut_us": 15,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 1,
+        "seek_us": 170,
+        "request_to_present_us": 238,
+        "archive_us": 27,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 127830,
+        "cut_us": 12,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 2,
+        "seek_us": 158,
+        "request_to_present_us": 222,
+        "archive_us": 27,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 127830,
+        "cut_us": 11,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 1270972,
+        "sha256": "ca3995547f9223a55d8acbffb45f4dcc3212172095c1d4d5b2475e6aa64a5d02"
+      }
+    ],
+    "log_sha256": "48fad57115a39a7d2d50a08e6fc896c43e2387213e843c3a7acde5b18c2de5fe"
+  },
+  {
+    "n": 1000,
+    "horizon": "5",
+    "pair": 1,
+    "variant": "candidate",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 0.2501382999980706,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 0,
+        "seek_us": 238,
+        "request_to_present_us": 401,
+        "archive_us": 24,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 124205,
+        "cut_us": 15,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 1,
+        "seek_us": 154,
+        "request_to_present_us": 218,
+        "archive_us": 24,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 124205,
+        "cut_us": 10,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 2,
+        "seek_us": 155,
+        "request_to_present_us": 216,
+        "archive_us": 24,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 124205,
+        "cut_us": 10,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 1270972,
+        "sha256": "ca3995547f9223a55d8acbffb45f4dcc3212172095c1d4d5b2475e6aa64a5d02"
+      }
+    ],
+    "log_sha256": "ab5b1bab5750e370cd0ef07e1155f5db121ce349147ea393ea8ae810d691dd36"
+  },
+  {
+    "n": 1000,
+    "horizon": "5",
+    "pair": 1,
+    "variant": "baseline",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 0.246715100001893,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 0,
+        "seek_us": 606,
+        "request_to_present_us": 741,
+        "archive_us": 20,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 123262,
+        "cut_us": 12,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 1,
+        "seek_us": 554,
+        "request_to_present_us": 629,
+        "archive_us": 20,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 123262,
+        "cut_us": 12,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 2,
+        "seek_us": 471,
+        "request_to_present_us": 540,
+        "archive_us": 20,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 123262,
+        "cut_us": 12,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 1270972,
+        "sha256": "ca3995547f9223a55d8acbffb45f4dcc3212172095c1d4d5b2475e6aa64a5d02"
+      }
+    ],
+    "log_sha256": "23d722b2577056d8f791260eba5a11ebad146d383c45c903bc87576a8b8a0a80"
+  },
+  {
+    "n": 1000,
+    "horizon": "5",
+    "pair": 2,
+    "variant": "baseline",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 0.37816409999504685,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 0,
+        "seek_us": 648,
+        "request_to_present_us": 787,
+        "archive_us": 33,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 158354,
+        "cut_us": 13,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 1,
+        "seek_us": 576,
+        "request_to_present_us": 659,
+        "archive_us": 33,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 158354,
+        "cut_us": 12,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 2,
+        "seek_us": 555,
+        "request_to_present_us": 635,
+        "archive_us": 33,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 158354,
+        "cut_us": 13,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 1270972,
+        "sha256": "ca3995547f9223a55d8acbffb45f4dcc3212172095c1d4d5b2475e6aa64a5d02"
+      }
+    ],
+    "log_sha256": "a6bdb20336eca5bc51127fa41e2f2e882ed296d1ccb594a96d442cbe3c38134c"
+  },
+  {
+    "n": 1000,
+    "horizon": "5",
+    "pair": 2,
+    "variant": "candidate",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 0.2733284999994794,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 0,
+        "seek_us": 249,
+        "request_to_present_us": 381,
+        "archive_us": 31,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 124698,
+        "cut_us": 16,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 1,
+        "seek_us": 173,
+        "request_to_present_us": 239,
+        "archive_us": 31,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 124698,
+        "cut_us": 12,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 5,
+        "attempt": 2,
+        "seek_us": 153,
+        "request_to_present_us": 216,
+        "archive_us": 31,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 124698,
+        "cut_us": 10,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 1270972,
+        "sha256": "ca3995547f9223a55d8acbffb45f4dcc3212172095c1d4d5b2475e6aa64a5d02"
+      }
+    ],
+    "log_sha256": "a18918849fd750d8eb7b49d2302788190342edb4828de1776d0d05b6fdbaef2d"
+  },
+  {
+    "n": 40000,
+    "horizon": "5",
+    "pair": 0,
+    "variant": "baseline",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 8.131671600000118,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 0,
+        "seek_us": 13258,
+        "request_to_present_us": 13399,
+        "archive_us": 57,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6422845,
+        "cut_us": 23,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 1,
+        "seek_us": 17441,
+        "request_to_present_us": 17541,
+        "archive_us": 57,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6422845,
+        "cut_us": 22,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 2,
+        "seek_us": 16311,
+        "request_to_present_us": 16420,
+        "archive_us": 57,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6422845,
+        "cut_us": 14,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 50929972,
+        "sha256": "4492d19ad6506e8f33eb49468561f53a5781859a8f23e04b5ec917b3d9274f9a"
+      }
+    ],
+    "log_sha256": "39fe945b62eecfb8cea590038be5eb5869a7505b28030575ec84137d41c37265"
+  },
+  {
+    "n": 40000,
+    "horizon": "5",
+    "pair": 0,
+    "variant": "candidate",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 8.009612800000468,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 0,
+        "seek_us": 496,
+        "request_to_present_us": 675,
+        "archive_us": 31,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6130138,
+        "cut_us": 16,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 1,
+        "seek_us": 288,
+        "request_to_present_us": 375,
+        "archive_us": 31,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6130138,
+        "cut_us": 14,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 2,
+        "seek_us": 293,
+        "request_to_present_us": 381,
+        "archive_us": 31,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6130138,
+        "cut_us": 14,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 50929972,
+        "sha256": "4492d19ad6506e8f33eb49468561f53a5781859a8f23e04b5ec917b3d9274f9a"
+      }
+    ],
+    "log_sha256": "47b098be44ce93150a8a4d64e806e415baa844a15e6bc618bf88bea6f0bd9336"
+  },
+  {
+    "n": 40000,
+    "horizon": "5",
+    "pair": 1,
+    "variant": "candidate",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 7.713016899993818,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 0,
+        "seek_us": 440,
+        "request_to_present_us": 562,
+        "archive_us": 34,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6141305,
+        "cut_us": 23,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 1,
+        "seek_us": 270,
+        "request_to_present_us": 367,
+        "archive_us": 34,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6141305,
+        "cut_us": 14,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 2,
+        "seek_us": 268,
+        "request_to_present_us": 361,
+        "archive_us": 34,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6141305,
+        "cut_us": 14,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 50929972,
+        "sha256": "4492d19ad6506e8f33eb49468561f53a5781859a8f23e04b5ec917b3d9274f9a"
+      }
+    ],
+    "log_sha256": "c53979f196bdcdf8fa477c8218a082b44555ced1cee46be7f8d44e8b73d95376"
+  },
+  {
+    "n": 40000,
+    "horizon": "5",
+    "pair": 1,
+    "variant": "baseline",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 7.761770400000387,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 0,
+        "seek_us": 12745,
+        "request_to_present_us": 12887,
+        "archive_us": 42,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6138843,
+        "cut_us": 15,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 1,
+        "seek_us": 16529,
+        "request_to_present_us": 16650,
+        "archive_us": 42,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6138843,
+        "cut_us": 15,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 2,
+        "seek_us": 16138,
+        "request_to_present_us": 16226,
+        "archive_us": 42,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6138843,
+        "cut_us": 14,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 50929972,
+        "sha256": "4492d19ad6506e8f33eb49468561f53a5781859a8f23e04b5ec917b3d9274f9a"
+      }
+    ],
+    "log_sha256": "6e9723c73815b41a58d6264576e078a47cd29aa45a0d6fcfc1348a34291c6906"
+  },
+  {
+    "n": 40000,
+    "horizon": "5",
+    "pair": 2,
+    "variant": "baseline",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 7.818856200006849,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 0,
+        "seek_us": 12573,
+        "request_to_present_us": 12706,
+        "archive_us": 69,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6204256,
+        "cut_us": 20,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 1,
+        "seek_us": 17094,
+        "request_to_present_us": 17181,
+        "archive_us": 69,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6204256,
+        "cut_us": 22,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 2,
+        "seek_us": 16747,
+        "request_to_present_us": 16839,
+        "archive_us": 69,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6204256,
+        "cut_us": 14,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 50929972,
+        "sha256": "4492d19ad6506e8f33eb49468561f53a5781859a8f23e04b5ec917b3d9274f9a"
+      }
+    ],
+    "log_sha256": "d8ded962bbbfc4a04533f322f5499ba7163d476a4ad98f64c74d5b85c5f16e6e"
+  },
+  {
+    "n": 40000,
+    "horizon": "5",
+    "pair": 2,
+    "variant": "candidate",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 7.745593200001167,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 0,
+        "seek_us": 381,
+        "request_to_present_us": 522,
+        "archive_us": 32,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6062907,
+        "cut_us": 16,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 1,
+        "seek_us": 272,
+        "request_to_present_us": 360,
+        "archive_us": 32,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6062907,
+        "cut_us": 14,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 5,
+        "attempt": 2,
+        "seek_us": 276,
+        "request_to_present_us": 364,
+        "archive_us": 32,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6062907,
+        "cut_us": 14,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 50929972,
+        "sha256": "4492d19ad6506e8f33eb49468561f53a5781859a8f23e04b5ec917b3d9274f9a"
+      }
+    ],
+    "log_sha256": "71a03bd34c71f670703bcf30bbb5805451857be0a87d5ae7176f25ec6c0e58b1"
+  },
+  {
+    "n": 40000,
+    "horizon": "902",
+    "pair": 0,
+    "variant": "baseline",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 8.250368799999706,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 902,
+        "attempt": 0,
+        "seek_us": 2331,
+        "request_to_present_us": 2487,
+        "archive_us": 45,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6107787,
+        "cut_us": 14,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 902,
+        "attempt": 1,
+        "seek_us": 2248,
+        "request_to_present_us": 2349,
+        "archive_us": 45,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6107787,
+        "cut_us": 15,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 902,
+        "attempt": 2,
+        "seek_us": 2171,
+        "request_to_present_us": 2258,
+        "archive_us": 45,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6107787,
+        "cut_us": 26,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 92623328,
+        "sha256": "9391d9a2e9fb01a8705ba6609765280622ce758e35d96a3badeab75eb49b0989"
+      }
+    ],
+    "log_sha256": "9edaed42eeae7f15574ca049f04c626839ac537b3c7a5f06f10a28f35841002a"
+  },
+  {
+    "n": 40000,
+    "horizon": "902",
+    "pair": 0,
+    "variant": "candidate",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 8.351368299998285,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 902,
+        "attempt": 0,
+        "seek_us": 3113,
+        "request_to_present_us": 3236,
+        "archive_us": 30,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6186820,
+        "cut_us": 17,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 902,
+        "attempt": 1,
+        "seek_us": 2976,
+        "request_to_present_us": 3053,
+        "archive_us": 30,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6186820,
+        "cut_us": 22,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 902,
+        "attempt": 2,
+        "seek_us": 3039,
+        "request_to_present_us": 3126,
+        "archive_us": 30,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6186820,
+        "cut_us": 21,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 92623328,
+        "sha256": "9391d9a2e9fb01a8705ba6609765280622ce758e35d96a3badeab75eb49b0989"
+      }
+    ],
+    "log_sha256": "646035fb9b4241a648acc06777ec6745947019730d37e4cb65eb9eb70606e4d1"
+  },
+  {
+    "n": 40000,
+    "horizon": "902",
+    "pair": 1,
+    "variant": "candidate",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 8.129003099995316,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 902,
+        "attempt": 0,
+        "seek_us": 2792,
+        "request_to_present_us": 2917,
+        "archive_us": 43,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6097749,
+        "cut_us": 24,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 902,
+        "attempt": 1,
+        "seek_us": 2761,
+        "request_to_present_us": 2853,
+        "archive_us": 43,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6097749,
+        "cut_us": 14,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 902,
+        "attempt": 2,
+        "seek_us": 2453,
+        "request_to_present_us": 2544,
+        "archive_us": 43,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6097749,
+        "cut_us": 14,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 92623328,
+        "sha256": "9391d9a2e9fb01a8705ba6609765280622ce758e35d96a3badeab75eb49b0989"
+      }
+    ],
+    "log_sha256": "7a62fb169ee84c86ea7201b66e66b5f9db548dddd3042ac0f1f6b0812c5b7e52"
+  },
+  {
+    "n": 40000,
+    "horizon": "902",
+    "pair": 1,
+    "variant": "baseline",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 8.23236960000213,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 902,
+        "attempt": 0,
+        "seek_us": 2182,
+        "request_to_present_us": 2337,
+        "archive_us": 51,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6154759,
+        "cut_us": 14,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 902,
+        "attempt": 1,
+        "seek_us": 2053,
+        "request_to_present_us": 2239,
+        "archive_us": 51,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6154759,
+        "cut_us": 14,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 902,
+        "attempt": 2,
+        "seek_us": 2194,
+        "request_to_present_us": 2294,
+        "archive_us": 51,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6154759,
+        "cut_us": 14,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 92623328,
+        "sha256": "9391d9a2e9fb01a8705ba6609765280622ce758e35d96a3badeab75eb49b0989"
+      }
+    ],
+    "log_sha256": "848a8a0008f54d47e3930087e3d5724d1787df23c69b4c0fb479a6b98bb2005b"
+  },
+  {
+    "n": 40000,
+    "horizon": "902",
+    "pair": 2,
+    "variant": "baseline",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 8.142770700003894,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 902,
+        "attempt": 0,
+        "seek_us": 1981,
+        "request_to_present_us": 2133,
+        "archive_us": 63,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6096935,
+        "cut_us": 14,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 902,
+        "attempt": 1,
+        "seek_us": 2233,
+        "request_to_present_us": 2330,
+        "archive_us": 63,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6096935,
+        "cut_us": 14,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 902,
+        "attempt": 2,
+        "seek_us": 2661,
+        "request_to_present_us": 2738,
+        "archive_us": 63,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6096935,
+        "cut_us": 22,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 92623328,
+        "sha256": "9391d9a2e9fb01a8705ba6609765280622ce758e35d96a3badeab75eb49b0989"
+      }
+    ],
+    "log_sha256": "7b116d6ae136400f35e2bdd2a62785086aaac8896b09177ca84112b76a6c00ff"
+  },
+  {
+    "n": 40000,
+    "horizon": "902",
+    "pair": 2,
+    "variant": "candidate",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 8.088517600001069,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 902,
+        "attempt": 0,
+        "seek_us": 3037,
+        "request_to_present_us": 3174,
+        "archive_us": 25,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6048263,
+        "cut_us": 18,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 902,
+        "attempt": 1,
+        "seek_us": 2863,
+        "request_to_present_us": 2953,
+        "archive_us": 25,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6048263,
+        "cut_us": 24,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 40000,
+        "horizon": 902,
+        "attempt": 2,
+        "seek_us": 2895,
+        "request_to_present_us": 2987,
+        "archive_us": 25,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 6048263,
+        "cut_us": 14,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 92623328,
+        "sha256": "9391d9a2e9fb01a8705ba6609765280622ce758e35d96a3badeab75eb49b0989"
+      }
+    ],
+    "log_sha256": "9a486abaa2425c8f2c5c151103b1f932cb452aaf9d703864775117b346e0fbfd"
+  },
+  {
+    "n": 1000,
+    "horizon": "final",
+    "pair": 0,
+    "variant": "baseline",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 0.5597379999962868,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 1231,
+        "attempt": 0,
+        "seek_us": 345,
+        "request_to_present_us": 465,
+        "archive_us": 16,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 114904,
+        "cut_us": 20,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 1231,
+        "attempt": 1,
+        "seek_us": 228,
+        "request_to_present_us": 311,
+        "archive_us": 16,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 114904,
+        "cut_us": 12,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 1231,
+        "attempt": 2,
+        "seek_us": 250,
+        "request_to_present_us": 343,
+        "archive_us": 16,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 114904,
+        "cut_us": 14,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 87433976,
+        "sha256": "809695f884b51eff84116c3505b35a69d3209819ef9f7fbe65afb9c72e138b66"
+      }
+    ],
+    "log_sha256": "a6b428f3dc8556d385a5587227db326c95cdd481da97f27f1548c77d94d902d9"
+  },
+  {
+    "n": 1000,
+    "horizon": "final",
+    "pair": 0,
+    "variant": "candidate",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 0.5582942999972147,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 1231,
+        "attempt": 0,
+        "seek_us": 267,
+        "request_to_present_us": 395,
+        "archive_us": 24,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 116466,
+        "cut_us": 13,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 1231,
+        "attempt": 1,
+        "seek_us": 227,
+        "request_to_present_us": 321,
+        "archive_us": 24,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 116466,
+        "cut_us": 12,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 1231,
+        "attempt": 2,
+        "seek_us": 246,
+        "request_to_present_us": 330,
+        "archive_us": 24,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 116466,
+        "cut_us": 16,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 87433976,
+        "sha256": "809695f884b51eff84116c3505b35a69d3209819ef9f7fbe65afb9c72e138b66"
+      }
+    ],
+    "log_sha256": "148d00a8e032be2979dffa80bb6d7aa3e7ce6eef10e5a2dc1e40798266431421"
+  },
+  {
+    "n": 1000,
+    "horizon": "final",
+    "pair": 1,
+    "variant": "candidate",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 0.5083567000037874,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 1231,
+        "attempt": 0,
+        "seek_us": 278,
+        "request_to_present_us": 408,
+        "archive_us": 24,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 117409,
+        "cut_us": 14,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 1231,
+        "attempt": 1,
+        "seek_us": 231,
+        "request_to_present_us": 313,
+        "archive_us": 24,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 117409,
+        "cut_us": 12,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 1231,
+        "attempt": 2,
+        "seek_us": 229,
+        "request_to_present_us": 309,
+        "archive_us": 24,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 117409,
+        "cut_us": 12,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 87433976,
+        "sha256": "809695f884b51eff84116c3505b35a69d3209819ef9f7fbe65afb9c72e138b66"
+      }
+    ],
+    "log_sha256": "9936c8709fde44d95bce7421323d9dac1887be2406d6f541f7c5d89735200f40"
+  },
+  {
+    "n": 1000,
+    "horizon": "final",
+    "pair": 1,
+    "variant": "baseline",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 0.5005453999983729,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 1231,
+        "attempt": 0,
+        "seek_us": 282,
+        "request_to_present_us": 417,
+        "archive_us": 30,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 119109,
+        "cut_us": 12,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 1231,
+        "attempt": 1,
+        "seek_us": 262,
+        "request_to_present_us": 348,
+        "archive_us": 30,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 119109,
+        "cut_us": 14,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 1231,
+        "attempt": 2,
+        "seek_us": 244,
+        "request_to_present_us": 326,
+        "archive_us": 30,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 119109,
+        "cut_us": 19,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 87433976,
+        "sha256": "809695f884b51eff84116c3505b35a69d3209819ef9f7fbe65afb9c72e138b66"
+      }
+    ],
+    "log_sha256": "51e04ce269b4702f43a15699f89106e96ccf2bf6d9e4a5a36182b3c643a794bc"
+  },
+  {
+    "n": 1000,
+    "horizon": "final",
+    "pair": 2,
+    "variant": "baseline",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 0.5078485999983968,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 1231,
+        "attempt": 0,
+        "seek_us": 301,
+        "request_to_present_us": 444,
+        "archive_us": 17,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 122275,
+        "cut_us": 13,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 1231,
+        "attempt": 1,
+        "seek_us": 225,
+        "request_to_present_us": 307,
+        "archive_us": 17,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 122275,
+        "cut_us": 12,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 1231,
+        "attempt": 2,
+        "seek_us": 221,
+        "request_to_present_us": 301,
+        "archive_us": 17,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 122275,
+        "cut_us": 12,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 87433976,
+        "sha256": "809695f884b51eff84116c3505b35a69d3209819ef9f7fbe65afb9c72e138b66"
+      }
+    ],
+    "log_sha256": "9302af60b97f4b01740099773720c3fc50609011f92350ae645bd107bceae64d"
+  },
+  {
+    "n": 1000,
+    "horizon": "final",
+    "pair": 2,
+    "variant": "candidate",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 0.5054402999958256,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 1231,
+        "attempt": 0,
+        "seek_us": 357,
+        "request_to_present_us": 484,
+        "archive_us": 28,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 120344,
+        "cut_us": 23,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 1231,
+        "attempt": 1,
+        "seek_us": 288,
+        "request_to_present_us": 356,
+        "archive_us": 28,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 120344,
+        "cut_us": 19,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      },
+      {
+        "event": "r3.redesign.host",
+        "requirements": 1000,
+        "horizon": 1231,
+        "attempt": 2,
+        "seek_us": 240,
+        "request_to_present_us": 325,
+        "archive_us": 28,
+        "capsule_revision": 4,
+        "content_path": "packed",
+        "setup_us": 120344,
+        "cut_us": 13,
+        "records": 129,
+        "identity": "source",
+        "renderer": "cpu-test",
+        "audio": false,
+        "formal": false
+      }
+    ],
+    "wire": [
+      {
+        "bytes": 87433976,
+        "sha256": "809695f884b51eff84116c3505b35a69d3209819ef9f7fbe65afb9c72e138b66"
+      }
+    ],
+    "log_sha256": "178a9ff9e7be938af0357c2d2380151ebf70de722ffc932b677b5844440fd257"
+  }
+]
