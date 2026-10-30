@@ -1,0 +1,94 @@
+{
+  "retain": true,
+  "summary": [
+    {
+      "n": 1000,
+      "profile": "shared",
+      "values": {
+        "source": {
+          "baseline": {
+            "samples": [
+              21745,
+              21047
+            ],
+            "median": 21396.0,
+            "relative_range_percent": 3.2622920171994765
+          },
+          "candidate": {
+            "samples": [
+              20312,
+              21651
+            ],
+            "median": 20981.5,
+            "relative_range_percent": 6.3818125491504425
+          },
+          "change_percent": -1.9372779958870767
+        },
+        "codec": {
+          "baseline": {
+            "samples": [
+              76893,
+              79185
+            ],
+            "median": 78039.0,
+            "relative_range_percent": 2.936993041940568
+          },
+          "candidate": {
+            "samples": [
+              76138,
+              77349
+            ],
+            "median": 76743.5,
+            "relative_range_percent": 1.5779838031885436
+          },
+          "change_percent": -1.6600674021963413
+        }
+      }
+    },
+    {
+      "n": 10000,
+      "profile": "split",
+      "values": {
+        "source": {
+          "baseline": {
+            "samples": [
+              317059,
+              312033
+            ],
+            "median": 314546.0,
+            "relative_range_percent": 1.597858500823409
+          },
+          "candidate": {
+            "samples": [
+              319043,
+              315171
+            ],
+            "median": 317107.0,
+            "relative_range_percent": 1.2210389553053071
+          },
+          "change_percent": 0.8141893395560595
+        },
+        "codec": {
+          "baseline": {
+            "samples": [
+              2621020,
+              2677253
+            ],
+            "median": 2649136.5,
+            "relative_range_percent": 2.122691677080437
+          },
+          "candidate": {
+            "samples": [
+              2126289,
+              2138644
+            ],
+            "median": 2132466.5,
+            "relative_range_percent": 0.5793760417807267
+          },
+          "change_percent": -19.503336275801566
+        }
+      }
+    }
+  ],
+  "scope": "Predeclared local candidate gate only; original formal and CI unchanged; byte comparison receipt remains separate"
+}

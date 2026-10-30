@@ -1,23 +1,28 @@
 # R3 六项优化实施与验证账本
 
-状态：进行中；候选尚未全部验证，不是 R3/R4 退出
+状态：active；实施按 owner 要求暂停，候选尚未全部验证，不是 R3/R4 退出
 
 日期：2026-10-29
 
+更新日期：2026-10-30
+
 返回 [RPA 报告索引](../README.md)。当前阶段状态只见
 [CURRENT_STATUS](../../../../../CURRENT_STATUS.md)。owner 要求连续完成桌面接手文档 P1–P6，
-不再按单个局部候选结束工作；原预算、错误语义、身份字节和历史证据保持原要求。
+恢复后不再按单个局部候选结束工作；当前暂停要求优先，原预算、错误语义、身份字节和历史证据保持原要求。
+后续 P1/R3c v2 现场及未选用源码归档见
+[2026-10-30 暂停与候选交接](2026-10-30-r3-pause-and-candidate-handoff.md)。下文各批记录保留当时范围，
+不将某个旧版本的“尚未实施”或通过结果误作最新预算副本的结论。
 
 ## 当前工作与完成条件
 
 | 项目 | 本批实施/调查 | 尚需完成的核验 |
 | --- | --- | --- |
-| P1 Packed / re-prepare | 名称索引与随后独立 Packed 查找候选分别通过固定诊断保护条件；后者 40K unique 总耗时 23.58 → 7.09 s；身份投影复用另见 P2 | 多资源 Packed 剩余扫描、最终 fresh 回归与原端到端 load 门未完成 |
+| P1 Packed / re-prepare | 名称索引、Packed 查找及 typed-existence 二分已保留；claim/definitionSource 待确认候选 v2 已构建并通过 Packed 回归，未选用 | v2 最终固定性能对照、选择/提交、最终组合回归与原端到端 load 门 |
 | P2 准备热点 | 保留名称索引、identity 投影复用及多资源查找/claim 分组；timer/ledger 及 scalar phase 写入均通过固定对照 | 最终完整矩阵及原 load 门未完成 |
 | P3 update / Snapshot | 保留四属性合并查找、touched 和 OpenGL 诊断读回分离；resolver hint 及组件池借用候选均因对照不达预期撤回 | 最终源码完整矩阵；extract 仍有成本，不重做 R2 表示 |
-| P4 编码与真实内存 | 第二次使用 admission 和测量预遍历计划均无实际峰值收益，已放弃，恢复旧独立字节缓存；已取得至 40K 的实际峰值及最终释放 | 本地轨迹不替代原 caps 或历史 R4 身份参考；编码输出本身占用及同时持有范围必须明示 |
-| P5 端到端 Seek | 内置 Host 可转发既有 checkpoint span；CPU 60 组合与 1080p GPU 96 组合核对独立 origin、目标 tick/context/receipt/像素；已发现并减轻首条记录内部成本 | 40K partial Seek 仍超 20 ms；尾延迟及重复性、观察路径与故障覆盖未完；worker 替换并非当前 Host 能力 |
-| P6 维护/工具/矩阵 | metrics TLS 改为函数内每线程对象，消费者同步；全仓格式债处理；候选版 Release 全套通过、Debug 编译通过 | 撤回/新候选后的最终 fresh STATIC/SHARED、Debug/Release/MinGW、安装消费者与完整 CTest |
+| P4 编码与真实内存 | 无峰值收益的编码 admission/预遍历已撤回；已有本地 40K 峰值/释放；跨代 payload 预算 v2 原型仅通过功能回归 | 最新预算版实际内存及 retired-owner 观察；原 caps/profile/历史 R4 参考仍缺；128 MiB 不是进程 cap |
+| P5 端到端 Seek | 产品 CPU 60/GPU 96 组合通过有限功能核验，产品 H902 仍慢；无预算 R3c 原型明显改善，预算 v2 共 426 个相关用例通过但未选用 | 预算 v2 的实际故障、普通 Seek/writer、内存及独立闭包/版本审阅；原适用预算/重复性/CI未关闭 |
+| P6 维护/工具/矩阵 | metrics TLS 改为函数内每线程对象，消费者同步；全仓格式债处理；旧 b2 候选 Release 全套通过、旧 Debug 编译通过 | 撤回/新候选后的最终 fresh STATIC/SHARED、Debug/Release/MinGW、安装消费者与完整 CTest |
 
 这些是候选及核验账目，不将“已写代码”记成完成，也不以 R3 技术工作代替设备/生产或 owner 接受。
 40K 历史 Packed reference 缺失、B0 caps 的规模适用性与原 R4 固定窗口保持原证据边界。
@@ -358,10 +363,16 @@ mask 4、BelowNormal、QoS OFF 逐进程核对。40K dense 中位数 623.478 →
 `tick-screen-40k-v1` 另取固定四个普通 Host 进程、两对 AB/BA、每进程三请求，只探索 40K
 第一记录内 H=902。进程中位数再汇总为 237.105 → 2.7385 ms（-98.845%），
 首次为 baseline 227.763/209.507 ms、candidate 2.899/2.952 ms；候选重复 2.401–3.056 ms。
-完整目标 Snapshot 为 92,623,328 B，SHA 及 raw 全字节一致。两候选进程中位数相对波动
-16.91%，超过原 15%；本组预设仅要求至少 50% 改善以决定是否值得继续字节预算设计，
+完整目标 Snapshot 为 92,623,328 B，SHA 及 raw 全字节一致。两候选进程中位数为 2525/2952 us，
+按原 `(max-min)/median` 计算相对范围为 **15.5924776%**，超过 15%。此前版本写的 16.91%
+采用 `(max/min-1)` 的另一分母，本次更正统计表述，保留全部原样本和登记；这也不是正式注册窗的接受结果。
+本组预设仅要求至少 50% 改善以决定是否值得继续字节预算设计，
 不能将 screen_pass 写成原重复性门通过。setup 包含夹具、Packed 和 Host 准备，不是 SDK load。
 仍缺跨旧 archive 生命周期的字节准入；原型不进入产品，原性能接受保持开放。
+
+上述为无预算原型当批证据。之后共享 lineage payload 预算 v2 已在隔离副本完成 fresh 相关功能验证，
+但其性能/实际故障/内存未测；最新版本差异、426 cases 和 P1 待确认 v2 详见
+[暂停现场报告](2026-10-30-r3-pause-and-candidate-handoff.md)。两项实验材料已版本化留档，不表示正式选用或合入。
 
 ## 构建、版本与原门限
 
@@ -387,8 +398,9 @@ R3c 逐 Tick 事实普查均先准备独立源码副本，未混入本次 MinGW 
 Host 69 cases / 55,371 assertions、Judgement 236 / 56,139、RPA 71 / 26,545 全通过；
 显式 Seek matrix 1 case / 12,430 assertions 产生恰好 60 条矩阵记录，包含未来 checkpoint
 及第一条记录内 partial 的 actualRecords 断言。该通道核验不使用其观测时间作性能接受。
-原型仍放在 `tick-prototype-v1/source` 独立副本中，固定四点的共享 owner 方案先做有限 headless
-正向验证；故障注入、保留内存及普通 writer 开销未通过前，不提升为产品实现或记作 R3c 通过。
+该 RPA 观察构建使用产品 ff93484，不含 R3c 原型；同一时期的早期无预算原型另在
+`tick-prototype-v1/source`，后续隔离版本另见暂停现场报告。
+无预算版或预算版的有限功能通过均不表示 R3c 已进入产品或完成接受。
 
 项目目标构建使用串行、BelowNormal、affinity 3，由既有 Windows Job 包装器约束后代；
 第三方配置 helper 的并行例外见本节恢复批次。

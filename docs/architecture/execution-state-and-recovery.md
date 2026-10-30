@@ -2,7 +2,7 @@
 
 状态：candidate；当前分支的内部实现参考，不是稳定 SDK 或生产验收声明
 
-更新日期：2026-10-29
+更新日期：2026-10-30
 
 本文说明 R3 重构后保留的所有权、复用和缓存设计。产品边界仍由
 [ADR 0027](../adr/0027-playback-sdk-product-boundary.md) 定义，实时职责与线程部署由
@@ -10,6 +10,11 @@
 [CURRENT_STATUS](../CURRENT_STATUS.md)。字段与拒绝语义见
 [RPA 执行合同](../formats/rpa-execution-contract.md)和
 [实时宿主边界](../api/realtime-host-boundary.md)，本文不另定义协议。
+
+本文只描述已进入产品树的实现。P1 待确认候选 v2 与 R3c 预算原型 v2 的
+[暂停现场及实验归档](../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-30-r3-pause-and-candidate-handoff.md)
+是未选用研究材料，不加入下方当前所有权/恢复能力表。若后续选择 R3c，须独立核对状态闭包、
+事务回退、跨代 owner 与容量字段维护成本，并取得该版本的开销/内存证据；归档提交不改变这些前置。
 
 ## 状态与所有权
 

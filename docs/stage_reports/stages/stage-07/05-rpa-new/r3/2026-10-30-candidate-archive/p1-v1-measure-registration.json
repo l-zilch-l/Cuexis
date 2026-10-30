@@ -1,0 +1,99 @@
+{
+  "plan": [
+    {
+      "kind": "prepare-wire",
+      "n": 64,
+      "allocator": "normal",
+      "profile": "split",
+      "repeat": 0,
+      "variant": "baseline"
+    },
+    {
+      "kind": "prepare-wire",
+      "n": 64,
+      "allocator": "normal",
+      "profile": "split",
+      "repeat": 0,
+      "variant": "candidate"
+    },
+    {
+      "kind": "prepare-wire",
+      "n": 1000,
+      "allocator": "normal",
+      "profile": "shared",
+      "repeat": 0,
+      "variant": "baseline"
+    },
+    {
+      "kind": "prepare-wire",
+      "n": 1000,
+      "allocator": "normal",
+      "profile": "shared",
+      "repeat": 0,
+      "variant": "candidate"
+    },
+    {
+      "kind": "prepare-wire",
+      "n": 1000,
+      "allocator": "normal",
+      "profile": "shared",
+      "repeat": 1,
+      "variant": "candidate"
+    },
+    {
+      "kind": "prepare-wire",
+      "n": 1000,
+      "allocator": "normal",
+      "profile": "shared",
+      "repeat": 1,
+      "variant": "baseline"
+    },
+    {
+      "kind": "prepare-wire",
+      "n": 10000,
+      "allocator": "normal",
+      "profile": "split",
+      "repeat": 0,
+      "variant": "baseline"
+    },
+    {
+      "kind": "prepare-wire",
+      "n": 10000,
+      "allocator": "normal",
+      "profile": "split",
+      "repeat": 0,
+      "variant": "candidate"
+    },
+    {
+      "kind": "prepare-wire",
+      "n": 10000,
+      "allocator": "normal",
+      "profile": "split",
+      "repeat": 1,
+      "variant": "candidate"
+    },
+    {
+      "kind": "prepare-wire",
+      "n": 10000,
+      "allocator": "normal",
+      "profile": "split",
+      "repeat": 1,
+      "variant": "baseline"
+    }
+  ],
+  "binding_sha256": "01f65bc04db9d14940992946ab460c047519b3971150d2ca11e44671264c65f1",
+  "head": "b1534a1f7482c59f6771685437576107ad7b0b9f",
+  "affinity": 4,
+  "priority": "BelowNormal",
+  "qos": "execution throttling OFF",
+  "formal": false,
+  "scope": "R3 isolated fixed diagnostic; not a replacement of historical PD/R4 groups or B0 capacity acceptance",
+  "stop": "Invalid process stops. No replacement, extension, or excluded noise. All timings from observed allocator excluded from performance decision.",
+  "decision": "Fixed 10 ordinary processes: 64 split semantic canary pair; 1K shared and 10K split two AB/BA pairs each. Retain if 10K split Packed encode+decode median improves >=10%, shared encode+decode and source prepare guard <=5%. Exact raw Packed and three identity bytes mandatory. No original formal gate relaxed.",
+  "binaries": {
+    "D:\\Cuexis-redesign\\out\\verification-20261029\\r3-completion\\packed-remaining-v1\\prepare-wire-baseline.exe": "0f07f97a3a5e5441f11669273a73be2836243c537e1f0fb0339730bfa0f0f690",
+    "D:\\Cuexis-redesign\\out\\verification-20261029\\r3-completion\\packed-remaining-v1\\prepare-wire-candidate.exe": "61516d51b63e640f06ff33deee4e80ae6e0bdbc3273f63a5cc291760899d69ac"
+  },
+  "runner_sha256": "fbf3d25a7168f516296e25d034ff6a95a823325ff2b65b1352438e0e40de7da0",
+  "probe_sha256": "c8cefc6f476b033e4cb0961f991b7df5a47cb4628e6b23d3b306802a0ca37db5"
+}

@@ -1,0 +1,122 @@
+diff --git a/engine/gameplay_packed/src/gameplay_capsule.cpp b/engine/gameplay_packed/src/gameplay_capsule.cpp
+--- a/engine/gameplay_packed/src/gameplay_capsule.cpp
++++ b/engine/gameplay_packed/src/gameplay_capsule.cpp
+@@ -24,6 +24,7 @@
+ #include <exception>
+ #include <limits>
+ #include <map>
++#include <new>
+ #include <set>
+ #include <tuple>
+ #include <type_traits>
+@@ -1921,9 +1922,20 @@
+             [&r](const auto& s) { return s.solverId == r.solverProfileRef; },
+             "requirements.solver");
+         for (const auto& c : r.resourceClaims) {
+-            const auto resource = findIndex(
+-                m.graph.resources, [&c](const auto& t) { return t.ref == c.resourceRef; },
+-                "claims.resource");
++            const auto resource = [&] {
++                const auto& rows = m.graph.resources;
++                if (rows.size() < 2)
++                    return findIndex(
++                        rows, [&c](const auto& row) { return row.ref == c.resourceRef; },
++                        "claims.resource");
++                // The Prepared Writer table is canonical by ResourceRef then slot token.
++                const auto found = std::lower_bound(
++                    rows.begin(), rows.end(), c.resourceRef,
++                    [](const auto& row, const auto& wanted) { return row.ref < wanted; });
++                require(found != rows.end() && found->ref == c.resourceRef, "claims.resource",
++                        "dangling table reference");
++                return u32(static_cast<std::size_t>(found - rows.begin()));
++            }();
+             m.claims.push_back({u32(i), resource, c});
+         }
+         for (const auto& b : r.factBindingRefs) {
+@@ -2244,25 +2256,67 @@
+         sourceFor(r.stableId.sourceDocumentId).requirements.push_back(r);
+     }
+     require(!sources.empty(), "sourceClosure", "prepare requires an explicit source closure");
+-    // Typed records without a separate source field are located by their merged declarations.
+-    const auto definitionSource = [&](DeclarationKind kind,
+-                                      std::string_view name) -> GameplaySourceDocument& {
+-        const auto it = std::find_if(
+-            g.mergedNamespace.declarations.begin(), g.mergedNamespace.declarations.end(),
+-            [kind, name](const auto& d) { return d.kind == kind && d.name == name; });
+-        require(it != g.mergedNamespace.declarations.end(), "mergedDeclarations",
+-                "definition source is missing");
+-        return sourceFor(it->stableId.sourceDocumentId);
+-    };
+-    for (const auto& r : g.resources) {
+-        definitionSource(DeclarationKind::resourceRecord, r.ref.resourceId).resources.push_back(r);
+-    }
+-    for (const auto& s : g.solverProfiles) {
+-        definitionSource(DeclarationKind::solverProfile, s.solverId).solverProfiles.push_back(s);
+-    }
+-    for (const auto& d : g.judgementDomains) {
+-        definitionSource(DeclarationKind::judgementDomain, d.domainId)
+-            .judgementDomains.push_back(d);
++    {
++        // Index only kinds that actually issue repeated queries. All pointers stay in this call.
++        const auto repeatedKind = [&](DeclarationKind kind) {
++            return (kind == DeclarationKind::resourceRecord && g.resources.size() > 1) ||
++                   (kind == DeclarationKind::solverProfile && g.solverProfiles.size() > 1) ||
++                   (kind == DeclarationKind::judgementDomain && g.judgementDomains.size() > 1);
++        };
++        std::vector<const MergedDeclaration*> definitions;
++        bool indexed = false;
++        if (g.resources.size() > 1 || g.solverProfiles.size() > 1 ||
++            g.judgementDomains.size() > 1) {
++            try {
++                for (const auto& d : g.mergedNamespace.declarations)
++                    if (repeatedKind(d.kind))
++                        definitions.push_back(&d);
++                std::sort(definitions.begin(), definitions.end(), [](const auto* l, const auto* r) {
++                    const auto left = std::tie(l->kind, l->name);
++                    const auto right = std::tie(r->kind, r->name);
++                    // Same-array pointer order preserves first match even for equivalent keys.
++                    return left < right || (left == right && l < r);
++                });
++                indexed = true;
++            } catch (const std::bad_alloc&) {
++                // Optional scratch failure leaves the original validated lookup path available.
++                std::vector<const MergedDeclaration*>{}.swap(definitions);
++            }
++        }
++        // Typed records without a separate source field are located by their merged declarations.
++        const auto definitionSource = [&](DeclarationKind kind,
++                                          std::string_view name) -> GameplaySourceDocument& {
++            if (indexed && repeatedKind(kind)) {
++                const auto key = std::pair{kind, name};
++                const auto found = std::lower_bound(
++                    definitions.begin(), definitions.end(), key,
++                    [](const auto* d, const auto& wanted) {
++                        return std::pair{d->kind, std::string_view{d->name}} < wanted;
++                    });
++                require(found != definitions.end() && (*found)->kind == kind &&
++                            (*found)->name == name,
++                        "mergedDeclarations", "definition source is missing");
++                return sourceFor((*found)->stableId.sourceDocumentId);
++            }
++            const auto it = std::find_if(
++                g.mergedNamespace.declarations.begin(), g.mergedNamespace.declarations.end(),
++                [kind, name](const auto& d) { return d.kind == kind && d.name == name; });
++            require(it != g.mergedNamespace.declarations.end(), "mergedDeclarations",
++                    "definition source is missing");
++            return sourceFor(it->stableId.sourceDocumentId);
++        };
++        for (const auto& r : g.resources) {
++            definitionSource(DeclarationKind::resourceRecord, r.ref.resourceId)
++                .resources.push_back(r);
++        }
++        for (const auto& s : g.solverProfiles) {
++            definitionSource(DeclarationKind::solverProfile, s.solverId)
++                .solverProfiles.push_back(s);
++        }
++        for (const auto& d : g.judgementDomains) {
++            definitionSource(DeclarationKind::judgementDomain, d.domainId)
++                .judgementDomains.push_back(d);
++        }
+     }
+     sources.front().document.relations = g.relations;
+     sources.front().document.factBindings = g.factBindings;

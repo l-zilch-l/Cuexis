@@ -1,0 +1,333 @@
+{
+  "schema": "cuexis.r3.unselected-candidate-archive.v1",
+  "captured_at": "2026-10-30T18:11:57+08:00",
+  "baseline_head": "b1534a1f7482c59f6771685437576107ad7b0b9f",
+  "product_implementation_checkpoint": "ff934843663d2e59e80983da1e5fc2fddf77ee17",
+  "status": "UNSELECTED; documentation archive only; no implementation acceptance",
+  "patch_format": "UTF-8 normalized LF unified diff; byte hashes and normalized hashes are distinct. Restored line endings require a new source/build binding.",
+  "patches": [
+    {
+      "file": "p1-remaining-v2.patch",
+      "sha256": "80b58710c116934f7542bd342555d1cdb6feca6f534b14bb3810e68f39ef8bdf",
+      "scope": "UNSELECTED SOURCE DIFFERENCE ONLY; no application to product tree",
+      "files": {
+        "engine/gameplay_packed/src/gameplay_capsule.cpp": {
+          "baseline_sha256": "5359b434b406d3d270f2c43d6b56ec19e0ad1110a9cac224b2ebccb826ca1b1f",
+          "candidate_sha256": "fada9eb3d18a8c443209ea258783796e74924a9bbd43ead14bcac4a12935a6f8",
+          "baseline_normalized_lf_sha256": "364f6a308e3b9e2f44862733cad48fd3923428fcb8ee1d4bf5d5f373b2fbf6b7",
+          "candidate_normalized_lf_sha256": "8e45aadef389dcfb88b9033183bf4512e1f699f9cac8cb78ead22d366a96f55d",
+          "original_candidate_path": "D:\\Cuexis-redesign\\out\\verification-20261029\\r3-completion\\documentation-commit-20261030\\p1-source\\engine\\gameplay_packed\\src\\gameplay_capsule.cpp"
+        }
+      }
+    },
+    {
+      "file": "r3c-budget-v2.patch",
+      "sha256": "8f3ac48843e66b638ab88991f03f3233efaad676cdaf2512a36106e9386a0a95",
+      "scope": "UNSELECTED SOURCE DIFFERENCE ONLY; no application to product tree",
+      "files": {
+        "engine/judgement/include/cuexis/judgement/shared_sequence.hpp": {
+          "baseline_sha256": "6fde1ef626a85778922b0326b18b82cafb0e17ab082c544b8520aba5ac55b2f8",
+          "candidate_sha256": "28e1a8a4a576a8b2987245d60c5562a97895602d867e5002cb9f3ab1086059f1",
+          "baseline_normalized_lf_sha256": "6fde1ef626a85778922b0326b18b82cafb0e17ab082c544b8520aba5ac55b2f8",
+          "candidate_normalized_lf_sha256": "717a915206b645e46dc4453fd6d30c876d444b2f535e860cc50e7bb8b3783dc5",
+          "original_candidate_path": "D:\\Cuexis-redesign\\out\\verification-20261029\\r3-completion\\tick-prototype-v1\\budget-source-v2\\engine\\judgement\\include\\cuexis\\judgement\\shared_sequence.hpp"
+        },
+        "engine/judgement/src/execution_kernel.cpp": {
+          "baseline_sha256": "2d82200e1bf6c08009f810e46fcc3cf61f22a192526c9b68322b29d413d1805d",
+          "candidate_sha256": "f9b92881067ed56469a8be0888226f99ab64e5e898d18c09f8039010f0b5cdd3",
+          "baseline_normalized_lf_sha256": "c7eb9cfe1f6a762b381d6c77db1d489a66d1d282d72a239f2bd4185ffb16840a",
+          "candidate_normalized_lf_sha256": "889e9549bd243f243d99a040f1169cc6340cf39bcd0a2e19bbe7fe0c8fb8ca60",
+          "original_candidate_path": "D:\\Cuexis-redesign\\out\\verification-20261029\\r3-completion\\tick-prototype-v1\\budget-source-v2\\engine\\judgement\\src\\execution_kernel.cpp"
+        },
+        "engine/judgement/src/execution_kernel.hpp": {
+          "baseline_sha256": "c4de19514a78d3554aa3acd209da8f7d6aca40b64c1277b03104a6af430dadbd",
+          "candidate_sha256": "5481f8e9cfa808e2010e0e9f65d1ca763f4d976c786246647e42d1a3645a9f6c",
+          "baseline_normalized_lf_sha256": "6f4d9828ee61d377d87990dce2b7d5d8a867f7a2453b333210be625a61f80e16",
+          "candidate_normalized_lf_sha256": "14bf338660eef0ec5b366a0b70d979d0a78872cbf0f05b5016f0ad8c9b65d418",
+          "original_candidate_path": "D:\\Cuexis-redesign\\out\\verification-20261029\\r3-completion\\tick-prototype-v1\\budget-source-v2\\engine\\judgement\\src\\execution_kernel.hpp"
+        },
+        "engine/judgement/src/recovery_codec.cpp": {
+          "baseline_sha256": "56100d134bd5777785fa7bd847fd507e14db003addaa938c3ee0c3f8d4afc73d",
+          "candidate_sha256": "f9ae67c31b44309571bfbfecd9900d1d0aebbaa1c61f5ab708f963460ee8c8dc",
+          "baseline_normalized_lf_sha256": "f798f021a2163434b2088b12dc25cbbf2f89e8092658decca1976055e5773976",
+          "candidate_normalized_lf_sha256": "0ba74b7f2205eb93c086b7c50d8b949eb868aa1b813f92facb9571c4537e6479",
+          "original_candidate_path": "D:\\Cuexis-redesign\\out\\verification-20261029\\r3-completion\\tick-prototype-v1\\budget-source-v2\\engine\\judgement\\src\\recovery_codec.cpp"
+        },
+        "tests/rpa/rpa_b3_tests.cpp": {
+          "baseline_sha256": "d66ad447acb1b184355a120e5b7ed579399992a36b2ff9a8c05849bd0fa55235",
+          "candidate_sha256": "b459d4a9e04dd696115800ec6c824845415ef86fd71782532863e3768b8fd3d9",
+          "baseline_normalized_lf_sha256": "def3b1555742628433a1c8fd199809066cb099e077ce81693d05deca498b0548",
+          "candidate_normalized_lf_sha256": "b6fc908f44272ef091a914af4802fc80b987f5acf30bed06b23569be814be291",
+          "original_candidate_path": "D:\\Cuexis-redesign\\out\\verification-20261029\\r3-completion\\tick-prototype-v1\\budget-source-v2\\tests\\rpa\\rpa_b3_tests.cpp"
+        }
+      }
+    }
+  ],
+  "archived_copies": [
+    {
+      "archive_file": "r3c-sealed-tick-design-v3.md.txt",
+      "original_path": "out/verification-20261029/r3-completion/r3c-sealed-tick-design-v3.md",
+      "bytes": 4514,
+      "sha256": "7c56261d027cdc0926eeb614fc5aa43eff98f49d8e4e73c5d262d32c0804c086",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "native.py.txt",
+      "original_path": "out/verification-20261029/r3-completion/native.py",
+      "bytes": 1669,
+      "sha256": "44f9c49e8ec353a6386a7b481f178859abcf1c46b11688db70bb411ed21f15ce",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "build_packed_remaining_v2.py.txt",
+      "original_path": "out/verification-20261029/r3-completion/build_packed_remaining_v2.py",
+      "bytes": 3913,
+      "sha256": "9403c09313b429202e10ccd25f0abb161b8ba0ba34f6c6835beab3324374a2bc",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "run_packed_remaining_v2.py.txt",
+      "original_path": "out/verification-20261029/r3-completion/run_packed_remaining_v2.py",
+      "bytes": 12107,
+      "sha256": "d476fdec6216709b14ef02b1779cbed3ab79ec966640e471175038a2e0c5be33",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "analyze_packed_remaining_v2.py.txt",
+      "original_path": "out/verification-20261029/r3-completion/analyze_packed_remaining_v2.py",
+      "bytes": 1447,
+      "sha256": "ea808144ee09dd2b386ddb585ad6933f56424b4d327068292e70fd9305691af8",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "resource_probe.cpp.txt",
+      "original_path": "out/verification-20261029/r3-completion/resource_probe.cpp",
+      "bytes": 11969,
+      "sha256": "c8cefc6f476b033e4cb0961f991b7df5a47cb4628e6b23d3b306802a0ca37db5",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "prepare_tick_budget.py.txt",
+      "original_path": "out/verification-20261029/r3-completion/prepare_tick_budget.py",
+      "bytes": 12019,
+      "sha256": "1c8d0a8cc43d6a48839c0ca112b23c21af6b7633daaef779f16397a919f345f8",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "prepare_tick_budget_v2.py.txt",
+      "original_path": "out/verification-20261029/r3-completion/prepare_tick_budget_v2.py",
+      "bytes": 8173,
+      "sha256": "d53d05fc5ee89716d9fe5ca1c3efc4d381b9e43fca8bd9f2fb79d56c7ee0e460",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "build_tick_budget.py.txt",
+      "original_path": "out/verification-20261029/r3-completion/build_tick_budget.py",
+      "bytes": 2769,
+      "sha256": "044f2a2d0b9c91df2cab77101209d9977b5393a7739fe3404780a8f223e019de",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "resume_tick_budget_v1.py.txt",
+      "original_path": "out/verification-20261029/r3-completion/resume_tick_budget_v1.py",
+      "bytes": 2904,
+      "sha256": "ed19b9008343904f3313fe9f1e5475e81cb4fddc38ca26516c6bd327bf55d436",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "build_tick_budget_v2.py.txt",
+      "original_path": "out/verification-20261029/r3-completion/build_tick_budget_v2.py",
+      "bytes": 2793,
+      "sha256": "61f542c460a46a6f1b58ec49819d017c2d6119a3a5af8b093b67facd0183e273",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "prepare_tick_fault.py.txt",
+      "original_path": "out/verification-20261029/r3-completion/prepare_tick_fault.py",
+      "bytes": 12830,
+      "sha256": "fdae48cd9cb73a15f66c9647644ed9d905cca21b83d8a1bcdfdf35a471af4c24",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "run_tick_screen_40k.py.txt",
+      "original_path": "out/verification-20261029/r3-completion/run_tick_screen_40k.py",
+      "bytes": 5714,
+      "sha256": "5c90c56dbfe6353cf8977f7abb4ac63b8872ff30ee540c0bc03ee5eb94bef62b",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "run_tick_writer.py.txt",
+      "original_path": "out/verification-20261029/r3-completion/run_tick_writer.py",
+      "bytes": 4468,
+      "sha256": "b699f24c695ed4e13165b50b2d2c290e877fc1e3b36897f51e2c9935bf35eb00",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "p1-v2-binding.json",
+      "original_path": "out/verification-20261029/r3-completion/packed-remaining-v2/binding.json",
+      "bytes": 1073,
+      "sha256": "65f9fa8ea9114dfea6d525bca89c35b49663e7bc386a5e097e4d00388a339a84",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "p1-v2-commands.json",
+      "original_path": "out/verification-20261029/r3-completion/packed-remaining-v2/commands.json",
+      "bytes": 12616,
+      "sha256": "43e8c7746fda29490610231a49a1a68ba2c33975a3a321b6715aa2a7879b4a7a",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "p1-v2-test-baseline.log.txt",
+      "original_path": "out/verification-20261029/r3-completion/packed-remaining-v2/test-packed-baseline.log",
+      "bytes": 7183,
+      "sha256": "70d1eff8f4a56ceb79498a63d3c59778e350ae11163676ee36f16158ff30449f",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "p1-v2-test-candidate.log.txt",
+      "original_path": "out/verification-20261029/r3-completion/packed-remaining-v2/test-packed-candidate.log",
+      "bytes": 7183,
+      "sha256": "70d1eff8f4a56ceb79498a63d3c59778e350ae11163676ee36f16158ff30449f",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "p1-v1-measure-registration.json",
+      "original_path": "out/verification-20261029/r3-completion/packed-remaining-measure-v1/registration.json",
+      "bytes": 3149,
+      "sha256": "d181066b0a6b20f0e4d44b3ab3187f963c02e1671965f3f1188cc681c8c1405c",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "p1-v1-measure-results.json",
+      "original_path": "out/verification-20261029/r3-completion/packed-remaining-measure-v1/results.json",
+      "bytes": 28934,
+      "sha256": "0362e4f3a64fa0ee67893d2b5a26ee57882f0c0d2cf95d71714066f8abe7c325",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "p1-v1-measure-decision.json",
+      "original_path": "out/verification-20261029/r3-completion/packed-remaining-measure-v1/decision.json",
+      "bytes": 2404,
+      "sha256": "c1ab0dd389d3831b1d51ee3e9213db18fccf6c77ecd2c349c5ecdea2a8be9147",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "p1-v1-byte-comparison.json",
+      "original_path": "out/verification-20261029/r3-completion/packed-remaining-measure-v1/comparison.json",
+      "bytes": 3138,
+      "sha256": "ad29e537d3ddfa37d1a7fb060249fabe97437dd234dc831f0298cc36dfe325d8",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "r3c-budget-v2-source-binding.json",
+      "original_path": "out/verification-20261029/r3-completion/tick-prototype-v1/budget-build-v2/source-binding.json",
+      "bytes": 131950,
+      "sha256": "06e65cb8c05a9ba213cc30143fb19c7109c4d86c75c12a7edb56497deda0b95c",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "r3c-budget-v2-results.json",
+      "original_path": "out/verification-20261029/r3-completion/tick-prototype-v1/budget-build-v2/results.json",
+      "bytes": 2540,
+      "sha256": "c6932216517dbaf3149dc623647a4683adc17c47cbc7dc935b982f3037d03e1e",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "r3c-budget-v2-complete.json",
+      "original_path": "out/verification-20261029/r3-completion/tick-prototype-v1/budget-build-v2/complete.json",
+      "bytes": 627,
+      "sha256": "c02101bc654ca7cd25e6ae767947ca0697f1a74c16a3023492ab2e81cf82394b",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "r3c-budget-v2-test-rpa.log.txt",
+      "original_path": "out/verification-20261029/r3-completion/tick-prototype-v1/budget-build-v2/test-cuexis_rpa_tests.log",
+      "bytes": 1406,
+      "sha256": "c655d4147960ffa120d8f6b43731ea8981bbed0e53fc143eb8cc3d186a4dae06",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "r3c-budget-v2-test-judgement.log.txt",
+      "original_path": "out/verification-20261029/r3-completion/tick-prototype-v1/budget-build-v2/test-cuexis_judgement_tests.log",
+      "bytes": 187,
+      "sha256": "4fcab5044b01fa8ecc66c826d503df3d569fa07db53d17c7f52d68c93b0e39ff",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "r3c-budget-v2-test-host.log.txt",
+      "original_path": "out/verification-20261029/r3-completion/tick-prototype-v1/budget-build-v2/test-cuexis_execution_host_tests.log",
+      "bytes": 206306,
+      "sha256": "cad1b711774787fb1931b9ee245835e6ea3c04e59760334cc23b7a527c9e1536",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "r3c-budget-v2-test-packed.log.txt",
+      "original_path": "out/verification-20261029/r3-completion/tick-prototype-v1/budget-build-v2/test-cuexis_gameplay_packed_tests.log",
+      "bytes": 7207,
+      "sha256": "63bc19ead4b4d5489a74974fe340024adac996ab66ad9b744f8e2700186a0279",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "r3c-unbudgeted-40k-registration.json",
+      "original_path": "out/verification-20261029/r3-completion/tick-screen-40k-v1/registration.json",
+      "bytes": 1766,
+      "sha256": "28a9ec2d52006354407af59120099d85900c7461ea5e4efed99aaf11dede9dcd",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "r3c-unbudgeted-40k-results.json",
+      "original_path": "out/verification-20261029/r3-completion/tick-screen-40k-v1/results.json",
+      "bytes": 7977,
+      "sha256": "380419122093d8c0ca335ec9473cf065900a014de9c78a357b27174958439b74",
+      "execution": "archival copy; not invoked by this documentation update"
+    },
+    {
+      "archive_file": "r3c-unbudgeted-40k-decision.json",
+      "original_path": "out/verification-20261029/r3-completion/tick-screen-40k-v1/decision.json",
+      "bytes": 944,
+      "sha256": "94d205dcd23f6cf3f35dab2c9a7b350d8da882bb11afe0fefe345dab37898d59",
+      "execution": "archival copy; not invoked by this documentation update"
+    }
+  ],
+  "patch_applicability_checks": [
+    {
+      "command": [
+        "git",
+        "apply",
+        "--check",
+        "--whitespace=nowarn",
+        "D:\\Cuexis-redesign\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\r3\\2026-10-30-candidate-archive\\p1-remaining-v2.patch"
+      ],
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "command": [
+        "git",
+        "apply",
+        "--check",
+        "--whitespace=nowarn",
+        "D:\\Cuexis-redesign\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\r3\\2026-10-30-candidate-archive\\r3c-budget-v2.patch"
+      ],
+      "exit": 0,
+      "output": ""
+    }
+  ],
+  "selection": {
+    "p1_v2": false,
+    "r3c_budget_v2": false
+  },
+  "execution_during_archival": {
+    "builds": 0,
+    "product_tests": 0,
+    "performance_runs": 0,
+    "patches_applied_to_product": 0
+  },
+  "not_archived": [
+    "Compiled binaries/object files",
+    "Full vcpkg/build caches",
+    "Full original failure/paused groups and raw byte dumps; retain their original out paths"
+  ],
+  "limitations": "Archived controllers contain historical absolute paths and frozen directory names; text copies are not drop-in runnable tools. Patches preserve source only, not previous measurements or accepted defaults.",
+  "git_storage": "Nested .gitattributes stores .txt/.json/.patch evidence as binary byte-exact attachments; index.md remains LF text. No active source attributes changed."
+}

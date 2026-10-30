@@ -1,0 +1,44 @@
+from native import *
+import csv,io
+build=base/'tick-prototype-v1/writer-build-v2';out=base/'tick-writer-measure-v1';out.mkdir(exist_ok=False)
+cases=[(1000,0),(40000,0),(1536,256)]
+plan=[dict(n=n,wave=wave,pair=pair,capture=mode) for n,wave in cases for pair in range(2) for mode in ((0,1) if pair==0 else (1,0))]
+write(out/'registration.json',dict(formal=False,scope='Ordinary writer advance only; not SDK load, Seek or acceptance. Three newly prepared kernel writers per process. Preparation/encode outside timer; first advance separate.',plan=plan,gate='Dense40K process-median advance regression <=5%; other two guards<=10%; 15% repeatability screen; same full snapshot wire hash/size; no replacement or extension.',binary_sha256=sha(build/'rpa.exe'),binding_sha256=sha(build/'binding.json'),runner_sha256=sha(Path(__file__))))
+rows=[];wires={}
+for ordinal,item in enumerate(plan):
+ active=list(csv.reader(io.StringIO(subprocess.check_output(['tasklist','/FO','CSV','/NH'],text=True,encoding='utf-8',errors='replace'))))
+ assert not [r for r in active if r and r[0].lower() in ('cl.exe','link.exe','ninja.exe','gcc.exe','g++.exe','cc1.exe','cc1plus.exe')], 'Concurrent build'
+ env={key:value for key,value in os.environ.items() if not key.startswith(('CUEXIS_PD','CUEXIS_GPU_','CUEXIS_CPU_','R3_','CUEXIS_SEEK_','CUEXIS_REDESIGN_'))}
+ env.update(R3_WRITER_N=str(item['n']),R3_WRITER_WAVE=str(item['wave']),R3_WRITER_CAPTURE=str(item['capture']))
+ log=out/f'{ordinal:02}.log'
+ with log.open('x',encoding='utf-8') as stream:
+  child=subprocess.Popen([str(build/'rpa.exe'),'[r3c-writer]','--rng-seed','1'],env=env,cwd=root,stdin=subprocess.PIPE,stdout=stream,stderr=subprocess.STDOUT,creationflags=subprocess.CREATE_NO_WINDOW|subprocess.BELOW_NORMAL_PRIORITY_CLASS)
+  handle=k.OpenProcess(0x0200|0x1000,False,child.pid)
+  try:
+   power=Power(1,1,0);assert handle and k.SetProcessAffinityMask(handle,4) and k.SetProcessInformation(handle,4,ct.byref(power),ct.sizeof(power))
+   observed=Power(1,0,0);mask=ct.c_size_t();system=ct.c_size_t()
+   assert k.GetProcessAffinityMask(handle,ct.byref(mask),ct.byref(system)) and k.GetProcessInformation(handle,4,ct.byref(observed),ct.sizeof(observed))
+   controls=dict(affinity=mask.value,priority=k.GetPriorityClass(handle),qos_control=observed.ControlMask,qos_state=observed.StateMask)
+   assert controls==dict(affinity=4,priority=16384,qos_control=1,qos_state=0)
+   child.stdin.write(b'go\n');child.stdin.flush();child.stdin.close()
+   try:code=child.wait(timeout=300)
+   except subprocess.TimeoutExpired:child.kill();child.wait();code='timeout'
+  finally:
+   if handle:k.CloseHandle(handle)
+   if child.poll() is None:child.kill();child.wait()
+ output=log.read_text(encoding='utf-8',errors='replace')
+ events=[json.loads(line) for line in output.splitlines() if line.startswith('{"event":"r3c.writer"')]
+ wire=[line.split()[1:] for line in output.splitlines() if line.startswith('R3_WRITER_WIRE ')]
+ valid=code==0 and 'All tests passed' in output and len(events)==3 and len(wire)==1 and wires.setdefault((item['n'],item['wave']),wire[0])==wire[0]
+ row=dict(item,exit=code,valid=valid,controls=controls,events=events,wire=wire,log_sha256=sha(log));rows.append(row);write(out/'results.json',rows)
+ print(json.dumps(row),flush=True)
+ if not valid:raise SystemExit('Invalid original process retained; no replacement')
+summary=[]
+for n,wave in cases:
+ groups={v:[r for r in rows if r['n']==n and r['wave']==wave and r['capture']==v] for v in (0,1)}
+ values={str(v):statistics.median(statistics.median(e['advance_us'] for e in r['events']) for r in group) for v,group in groups.items()}
+ rr={str(v):(max(statistics.median(e['advance_us'] for e in r['events']) for r in group)/min(statistics.median(e['advance_us'] for e in r['events']) for r in group)-1)*100 for v,group in groups.items()}
+ summary.append(dict(n=n,wave=wave,median_us=values,change_percent=(values['1']/values['0']-1)*100,range_percent=rr,first_us={str(v):[r['events'][0]['advance_us'] for r in group] for v,group in groups.items()}))
+passed=all(s['change_percent']<=(5 if s['n']==40000 else 10) and max(s['range_percent'].values())<=15 for s in summary)
+write(out/'decision.json',dict(screen_pass=passed,summary=summary,scope='Finite writer diagnostic, not general production caps or acceptance. Failed/noisy outcomes preserved; no added rounds.'))
+print(json.dumps(dict(screen_pass=passed,summary=summary)),flush=True)

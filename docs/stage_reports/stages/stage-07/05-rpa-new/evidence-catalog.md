@@ -2,7 +2,7 @@
 
 状态：current index
 
-更新日期：2026-10-29
+更新日期：2026-10-30
 
 当前状态只以 [CURRENT_STATUS](../../../../CURRENT_STATUS.md) 为准；本页只负责定位，不新增实施、测量或阶段接受结论。
 
@@ -89,4 +89,6 @@
 | [1080P 入镜实体容量与 240 FPS 边界](r3/2026-10-29-r3-1080p-entity-capacity.md) | `D:/Cuexis-redesign/out/verification-20261029/gpu-1080p-scale-v1/`；107 个有效进程 / 150171 帧，32 点粗扫、三进程细测 / 补点、各三次 20 秒的持续组及所有更高档位失败；`audit.json`、`measurements.csv`、`capacity-1080p.png/.svg`、只读运行库绑定与 `final-manifest.json` |
 | [Runtime 外观重复查询优化](r3/2026-10-29-r3-runtime-appearance-lookup.md) | `D:/Cuexis-redesign/out/verification-20261029/runtime-presentation-v1/`；独立分段 Runtime 探针、固定 18 个普通 GPU 进程 / 2160 帧、逐组 raw logs / registration、四套定向回归、源码/对象/库/二进制绑定、原观察器无效动画记录及首次测试编译失败均保留；`audit.json`、`comparison-summary.json` |
 | [Runtime 本帧触及集合优化](r3/2026-10-29-r3-runtime-touched-membership.md) | `D:/Cuexis-redesign/out/verification-20261029/runtime-touched-v1/`（撤回 C：15 完整 / 1 中断、原源码、2 failures red 及停止记录）；`runtime-touched-v2/`（D 新固定 18 动画 + 6 静态进程 / 1800 帧，最终 World 29 cases、四套相关回归、layout、源码/库/二进制与全部 raw/统计审计、`final-manifest.json`） |
-| [R3 六项实施与验证账本](r3/2026-10-29-r3-six-item-completion-work.md) | `D:/Cuexis-redesign/out/verification-20261029/r3-completion/`；两个独立固定 36 进程 CPU 对照、撤回源码及原值、MinGW TLS 双 TU 红绿、全仓格式前后、fresh 完整矩阵、后续时间/内存/Seek 证据；当前进行中，以逐项记录为准 |
+| [R3 六项实施与验证账本](r3/2026-10-29-r3-six-item-completion-work.md) | `D:/Cuexis-redesign/out/verification-20261029/r3-completion/`；两个独立固定 36 进程 CPU 对照、撤回源码及原值、MinGW TLS 双 TU 红绿、全仓格式前后、fresh 完整矩阵、后续时间/内存/Seek 证据；实施按 owner 要求暂停，以逐项历史记录为准 |
+
+| [暂停现场与未选用实验归档](r3/2026-10-30-r3-pause-and-candidate-handoff.md) | `D:/Cuexis-redesign/out/verification-20261029/r3-completion/packed-remaining-v2/`、`tick-prototype-v1/budget-source-v2/`、`budget-build-v2/`；P1 v2 尚缺最终性能组，R3c v2 共 426 相关功能 cases，通过范围不含该版性能/实际故障/内存；[版本化源码补丁及证据清单](r3/2026-10-30-candidate-archive/index.md) 标记为未选用，不提升产品 |

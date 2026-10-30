@@ -1,0 +1,47 @@
+from pathlib import Path
+import ctypes,hashlib,json,shutil,subprocess
+root=Path.cwd();base=Path(__file__).resolve().parent
+build=base/'scalar-candidate-v1/build';out=base/'packed-remaining-v2'
+original=root/'engine/gameplay_packed/src/gameplay_capsule.cpp';source=out/'gameplay_capsule.cpp'
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+baseline=base/'packed-exists-v1/packed.obj';assert baseline.is_file()
+cache=dict(line.split('=',1) for line in (build/'CMakeCache.txt').read_text().splitlines() if '=' in line and not line.startswith(('#','//')))
+shell=ctypes.WinDLL('shell32');shell.CommandLineToArgvW.argtypes=[ctypes.c_wchar_p,ctypes.POINTER(ctypes.c_int)];shell.CommandLineToArgvW.restype=ctypes.POINTER(ctypes.c_wchar_p)
+kernel=ctypes.WinDLL('kernel32');kernel.LocalFree.argtypes=[ctypes.c_void_p]
+def split(line):
+ count=ctypes.c_int();values=shell.CommandLineToArgvW(line,ctypes.byref(count))
+ try:return [values[i] for i in range(count.value)]
+ finally:kernel.LocalFree(values)
+commands=[]
+def run(args,label):
+ commands.append(dict(label=label,args=args));(out/'commands.json').write_text(json.dumps(commands,indent=2))
+ with (out/(label+'.log')).open('x',encoding='utf-8') as stream:r=subprocess.run(args,cwd=build,stdout=stream,stderr=subprocess.STDOUT)
+ print(label,r.returncode,flush=True)
+ if r.returncode:raise SystemExit(r.returncode)
+def compile(target,path,name):
+ lines=subprocess.check_output([cache['CMAKE_MAKE_PROGRAM:FILEPATH'],'-t','commands',target],cwd=build,text=True).splitlines()
+ args=split(next(line for line in lines if ' -c ' in line or ' /c ' in line))
+ args=[a for a in args if not a.startswith(('/Fo','/Fd')) and not a.endswith('.cpp')]
+ obj=str(out/(name+'.obj'))
+ run([*args,'/I'+str(original.parent),'/Fo'+obj,'/Fd'+str(out/(name+'.pdb')),str(path)],'compile-'+name)
+ return obj
+packed=compile(r'engine\gameplay_packed\CMakeFiles\cuexis_gameplay_packed.dir\src\gameplay_capsule.cpp.obj',source,'packed')
+probe_source=base/'resource_probe.cpp'
+probe=compile(r'tests\rpa\CMakeFiles\cuexis_execution_host_tests.dir\rpa_b5_host_tests.cpp.obj',probe_source,'probe')
+ninja=(build/'build.ninja').read_text()
+def parts(target):
+ block=ninja.split('build bin\\'+target+'.exe',1)[1].split('\n\n',1)[0]
+ objects=split(block.split(': CXX_EXECUTABLE_LINKER__'+target+'_Release ',1)[1].split(' | ',1)[0])
+ libs=split(next(line.split(' = ',1)[1] for line in block.splitlines() if line.startswith('  LINK_LIBRARIES = ')))
+ return objects,libs
+prefix=[cache['CMAKE_LINKER:FILEPATH'],'/NOLOGO','/machine:x64','/INCREMENTAL:NO','/subsystem:console']
+objects,libs=parts('cuexis_gameplay_packed_tests')
+for v in ('baseline','candidate'):
+ run([*prefix,'/OUT:'+str(out/('packed-'+v+'.exe')),*([packed] if v=='candidate' else [str(baseline)]),*objects,*libs],'link-packed-'+v)
+_,libs=parts('cuexis_execution_host_tests')
+for v in ('baseline','candidate'):
+ run([*prefix,'/OUT:'+str(out/('prepare-wire-'+v+'.exe')),*([packed] if v=='candidate' else [str(baseline)]),probe,*libs,'Psapi.lib'],'link-probe-'+v)
+for dll in (build/'bin').glob('*.dll'):shutil.copyfile(dll,out/dll.name)
+for v in ('baseline','candidate'):run([str(out/('packed-'+v+'.exe')),'--rng-seed','1'],'test-packed-'+v)
+assert sha(original)==sha(out/'gameplay_capsule.original.cpp'),'Production source changed during build'
+(out/'binding.json').write_text(json.dumps(dict(scope='Claim ResourceRef binary lookup and local repeated-kind definition index only. Baseline explicitly overrides current typed-existence object from packed-exists-v1. Ordinary scalar common libs, no formal/final matrix claim.',head=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),original_sha256=sha(original),candidate_sha256=sha(source),probe_sha256=sha(probe_source),binaries={p.name:sha(p) for p in out.glob('*.exe')},commands_sha256=sha(out/'commands.json')),indent=2))

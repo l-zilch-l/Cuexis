@@ -8,7 +8,9 @@
 
 ## 当前任务
 
-- **R3 继续重构优化，尚未退出**：已冻结 prepare 输入的两次整份复制已消除，生命周期、相关回归和身份/Packed 字节对照通过。
+- **R3 已按 owner 要求暂停实施，尚未退出**：本次仅补充文档、归档未选用实验材料并更新桌面交接；
+  恢复后的目标仍为六项优化，当前不启动构建、产品测试、性能采样或新重构。
+  已冻结 prepare 输入的两次整份复制已消除，生命周期、相关回归和身份/Packed 字节对照通过。
   新 0.9.1 普通固定对照的 setup 中位数在 1K/10K/40K 分别下降约 7.6%/6.8%/6.2%；1K 基线重复性超 15%，
   其历史高点尚不能唯一归因，见[本轮准备复制优化](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-28-r3-resolved-prepare-copy.md)。
   [轻量探针](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-28-r3-seek-noise-attribution.md)已确认 40K 主成本在恢复后的 Fact 投影：
@@ -35,7 +37,7 @@
   新固定对照的 40K 全量动画 update 由 147.933 降至 47.343 ms，完整 cycle 由 209.573 降至 109.652 ms；
   静态路径未见对应退化。只加标记的初版因晚插入基线的语义回归停止并撤回；最终版同步索引并通过反例及相关回归。
   当前渲染仍超预算，P3 和其余待优化项继续开放。
-  owner 已要求连续完成六项剩余工作，当前候选与完整验证进度统一见
+  owner 要求恢复后连续完成六项剩余工作，候选与完整验证进度统一见
   [六项实施与验证账本](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-29-r3-six-item-completion-work.md)。
   Pattern 编译复用、外观索引提示和新编码缓存因固定对照未达预设收益/保护条件已撤回；
   名称索引、Packed 字典查找及内部 identity 投影复用分别通过独立诊断并提交；
@@ -48,13 +50,17 @@
   有限通道 canary 的 runtime / snapshot 等阶段各 1,088 样本且无遗漏。两处移植性修复和失败记录
   见六项账本；这不替代其余配置、安装消费者或正式性能接受。
   随后 fresh RPA observation ON 构建的 Host / Judgement / RPA 回归及显式 60 组合 Seek 路径通过；
-  R3c 的共享封存 Tick 原型仍在隔离副本中；正向恢复、实际分配失败及反例探针已通过有限验证，
-  后续分支完整 Replay 字节亦与原点一致，首轮堆观察最终释放差值为零。
-  通用保留字节预算和普通 writer 开销仍待完成，
-  不属于当前产品实现或 R3c 接受。
-  最新[来源绑定实验](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-source-binding-experiment.md)用同一 Release 二进制比较 canonical SHA 与进程内 owning source binding。
+  P1 待确认候选 v2 已构建并通过两版 Packed 回归，最终版固定性能对照尚未开始，未正式选用。
+  R3c 无预算隔离原型通过有限恢复、真实分配失败、分支 Replay 字节和堆观察；其 40K H902
+  CPU Host 诊断为 237.105 → 2.7385 ms，不能当作 GPU 或后续预算版的成绩。
+  最新预算 v2 的 fresh Release STATIC 四目标回归共 426 cases 通过；该版的实际分配失败、
+  普通 Seek/writer 开销和实际内存仍未测，128 MiB 只是 payload charge 实验参数。
+  两项均未进入产品实现或完成接受，暂停现场、统计口径更正及版本化实验材料见
+  [2026-10-30 暂停与候选交接](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-30-r3-pause-and-candidate-handoff.md)。
+  历史[来源绑定实验](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-source-binding-experiment.md)用同一 Release 二进制比较 canonical SHA 与进程内 owning source binding。
   2048 requirements、33 条历史的 CPU 宿主首次请求到目标帧由 91.809 ms 降至 1.016 ms；129 条历史由 333.624 ms 降至 1.057 ms。
-  这是固定本地诊断的点值，wire/导入验证保持原合同，candidate C++ 消费者须重建；R3 未退出、R3c 尚未进入，R4、设备与生产接受仍独立。
+  这是固定本地诊断的点值，wire/导入验证保持原合同，candidate C++ 消费者须重建；
+  R3 未退出，R3c 已有隔离原型但未纳入产品或接受，R4、设备与生产接受仍独立。
   原始归因及历史失败保留，后续门禁见[实施登记](stage_plans/active/stage-07/05-rpa-new/r3/plan.md)。
   本轮保留 GPU 测试配额修复和 content-only closure 无复制优化（产品恢复点 `5fd84fd`）；身份 writer 范围插入试验
   未取得稳定收益，已撤销。该轮恢复后的四套相关回归、架构门与 96 份身份字节对照通过；新复制候选另行登记。
@@ -73,7 +79,7 @@
 | 阶段 | 当前状态 | 入口 |
 | --- | --- | --- |
 | Stage 7A | S7A-3/4、5/6、7/8 的受限功能验收完成；整体关闭仍待 RPA 收尾 | [Stage 7A 计划](stage_plans/active/stage-07/01-a/plan.md) |
-| Stage 7-RPA | R1、R2 已退出；owner 于 2026-10-26 接受 R2 按原计划退出，受控局部结果及历史限制保留；R3 实施中，R4 正式、设备与生产接受未登记 | [整改计划](stage_plans/active/stage-07/05-rpa-new/plan.md)、[退出复核](stage_reports/stages/stage-07/05-rpa-new/r2/2026-10-26-r2-technical-closure-review.md) |
+| Stage 7-RPA | R1、R2 已退出；owner 于 2026-10-26 接受 R2 按原计划退出，受控局部结果及历史限制保留；R3 未退出，实施按 owner 要求暂停；R4 正式、设备与生产接受未登记 | [整改计划](stage_plans/active/stage-07/05-rpa-new/plan.md)、[退出复核](stage_reports/stages/stage-07/05-rpa-new/r2/2026-10-26-r2-technical-closure-review.md) |
 | Stage 7-PD | PD-0–4 内部实施及适用门禁完成；PD-5 判定为「未通过但定案」，定案与 Stage 7-PD 退出清单尚待 owner 批准。原 40k 功能与小规模最终释放已核验，40k 分域内存仍未测量、正常分配器正式性能未通过。B0 已接受、B1 静态工具完成且未采数，B2/B3 未授权；ETW r4 三用例通过只证明工具合同。读取优化归 RPA R2，Seek 优化归其后续整改，旧窗口 3 停止，子阶段未退出 | [PD 计划](stage_plans/active/stage-07/04-pd/plan.md)、[PD-5 判定报告](stage_reports/stages/stage-07/04-pd/pd-5/exit/2026-10-24-pd5-verdict-and-stage-7-pd-exit.md) |
 | Stage 7B+ | 未开始，等待 RPA 完整退出 | [Stage 7B+ 计划](stage_plans/active/stage-07/06-b/plan.md) |
 
