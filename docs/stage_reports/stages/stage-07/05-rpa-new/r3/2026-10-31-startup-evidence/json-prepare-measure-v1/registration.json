@@ -1,0 +1,101 @@
+{
+  "scope": "Finite ordinary CPU prepare comparison, one timed synchronous prepare per new process. No GPU/window, no observer, exact Release app-local DLLs. Not original first load or formal acceptance.",
+  "plan": [
+    {
+      "n": 1000,
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "pair": 2,
+      "variant": "candidate"
+    },
+    {
+      "n": 10000,
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 10000,
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 10000,
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 10000,
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 10000,
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 10000,
+      "pair": 2,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "pair": 2,
+      "variant": "candidate"
+    }
+  ],
+  "affinity": 4,
+  "priority": 16384,
+  "execution_throttling": false,
+  "gates": "Each scale >=30% improvement; all per-scale per-variant process relative ranges <=15%; semantic SHA and frame digest same. Fixed group no extension/replacement.",
+  "binding_sha256": "991b1efb3808eb01d97ad134bebee91e8eaa677b46e61612930f233f63f20110",
+  "runner_sha256": "f73d147aef620d6d8d691d91114015aa7f99b99add2b9e13cee2a85b6a303a5c"
+}

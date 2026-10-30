@@ -1,0 +1,185 @@
+{
+  "scope": "Ordinary physical GPU local unlit state cache only. Both libraries include the independent paged active sequence; this group isolates only GL state changes. Both variants matching fresh product-sequence libs; only candidate GL presentation TU overridden.",
+  "plan": [
+    {
+      "entities": 1000,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "render-only",
+      "repeat": 1,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "render-only",
+      "repeat": 1,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "static",
+      "repeat": 0,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "static",
+      "repeat": 0,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "static",
+      "repeat": 1,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "static",
+      "repeat": 1,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "animated",
+      "repeat": 0,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "animated",
+      "repeat": 0,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "animated",
+      "repeat": 1,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "animated",
+      "repeat": 1,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "render-only",
+      "repeat": 1,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "render-only",
+      "repeat": 1,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "static",
+      "repeat": 0,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "static",
+      "repeat": 0,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "static",
+      "repeat": 1,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "static",
+      "repeat": 1,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "animated",
+      "repeat": 0,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "animated",
+      "repeat": 0,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "animated",
+      "repeat": 1,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "animated",
+      "repeat": 1,
+      "variant": "baseline",
+      "frames": 60
+    }
+  ],
+  "binaries": {
+    "baseline": "0d1e20f6a165280ce1036bedbb0a691a7e1bd439246233bc350f85d01874a997",
+    "candidate": "8ac6ae9fb93506b82538fc90b3f3921d60b6dfb2450403db756572f649991e17"
+  },
+  "normal_allocator": true,
+  "pixel_readback": false,
+  "timer": false,
+  "viewport": [
+    1920,
+    1080
+  ],
+  "gate": "40K render-only submit median improves>=10%; all other total cycle<=5%regression. Report original(max-min)/median<=15% screen; no replacement/extension. Functionality and same pixels/draw counts required. No original240FPS or stage acceptance."
+}

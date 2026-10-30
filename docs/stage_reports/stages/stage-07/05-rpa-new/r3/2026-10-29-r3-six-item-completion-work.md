@@ -4,7 +4,7 @@
 
 日期：2026-10-29
 
-更新日期：2026-10-30
+更新日期：2026-10-31
 
 返回 [RPA 报告索引](../README.md)。当前阶段状态只见
 [CURRENT_STATUS](../../../../../CURRENT_STATUS.md)。owner 要求连续完成桌面接手文档 P1–P6，
@@ -12,6 +12,9 @@
 最新 P1 否决、R3c v4 及预算/真实成本证据见[恢复实施记录](2026-10-30-r3-resume-and-budget-verification.md)。
 新[Seek 发布归因与批量候选处置](2026-10-30-r3-publication-attribution.md)区分 H902 发布与 H5 activation 成本；批量候选未过保护门，不选用。
 后续[activation与活跃索引共享](2026-10-30-r3-activation-and-active-sequence.md)候选数值门改善，完整重复性仍未过；已新增真实多批事务反例及实际内存/分配失败证据。
+新[窗口启动响应与渲染归因](2026-10-31-r3-startup-and-render-attribution.md)修复测试探针建窗后同步准备导致的长时间无消息泵，支持关闭取消并记录启动阶段。
+独立产品分页无明显收益且Seek重复性失败，未选用。JSON回调宽数组平方扫描已定位，SAX/legacy parse-once组合的40K prepare约17.555→2.028秒，身份一致但整组重复性失败，未纳入产品。
+实例化未达预设收益门，带探针归因显示剩余主要在命令/排序/复制/digest。早期GL组的DLL身份缺口与后续精确Release运行库绑定均留档，不回填旧组接受。
 恢复前 P1/R3c v2 现场及未选用源码归档见
 [2026-10-30 暂停与候选交接](2026-10-30-r3-pause-and-candidate-handoff.md)。下文各批记录保留当时范围，
 不将某个旧版本的“尚未实施”或通过结果误作最新预算副本的结论。

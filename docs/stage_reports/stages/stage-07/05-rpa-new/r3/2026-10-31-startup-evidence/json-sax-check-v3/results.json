@@ -1,0 +1,44 @@
+[
+  {
+    "label": "baseline-all",
+    "args": [
+      "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-next-v1\\json-sax-runtime-v3\\json-baseline.exe",
+      "--rng-seed",
+      "1"
+    ],
+    "exit": 42,
+    "expected": 42
+  },
+  {
+    "label": "candidate-all",
+    "args": [
+      "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-next-v1\\json-sax-runtime-v3\\json-candidate.exe",
+      "--rng-seed",
+      "1"
+    ],
+    "exit": 0,
+    "expected": 0
+  },
+  {
+    "label": "baseline-corpus",
+    "args": [
+      "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-next-v1\\json-sax-runtime-v3\\json-baseline.exe",
+      "[corpus]",
+      "--rng-seed",
+      "1"
+    ],
+    "exit": 0,
+    "expected": 0
+  },
+  {
+    "label": "candidate-corpus",
+    "args": [
+      "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-next-v1\\json-sax-runtime-v3\\json-candidate.exe",
+      "[corpus]",
+      "--rng-seed",
+      "1"
+    ],
+    "exit": 0,
+    "expected": 0
+  }
+]

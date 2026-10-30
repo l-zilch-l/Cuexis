@@ -1,0 +1,25 @@
+from pathlib import Path
+import json, shutil
+
+root = Path.cwd()
+base = Path(__file__).resolve().parent
+old = base / 'gl-state-build-v3'
+out = base / 'render-attribution-build-v2'
+script = (base / 'build_gl_state_v3_generated.py').read_text()
+script = script[:script.index('adapter_objects=[]')]
+script = script.replace("out=base/'gl-state-build-v3'", "out=base/'render-attribution-build-v2'")
+exec(compile(script, str(base / 'build_gl_state_v3_generated.py'), 'exec'))
+objects = [compile(name, base / 'render-attribution-source-v2' / name, Path(name).stem)
+           for name in ('open_gl_presentation.cpp', 'draw_command.cpp')]
+args = next(c['args'] for c in json.loads((old / 'commands.json').read_text()) if c['label'] == 'link-baseline')
+args = [('/OUT:' + str(out / 'gpu-startup.exe')) if a.startswith('/OUT:') else
+        str(base / 'gl-startup-build-v1/gpu-probe.obj') if a == str(old / 'gpu-probe.obj') else a for a in args]
+args = [a for a in args if a != str(old/'cuexis_render_opengl-open_gl_presentation.obj')]
+run([args[0], *objects, str(base/'json-sax-build-v2/parse-candidate.obj'), *args[1:]], 'link-render-attribution')
+for dll in (base/'json-sax-runtime-v3').glob('*.dll'): shutil.copyfile(dll, out / dll.name)
+(out / 'binding.json').write_text(json.dumps(dict(
+    scope='Diagnostic render substage timers with instancing v2; SAX v2 speeds CPU startup only. Both changed CPPs explicitly compiled; exact app-local Release DLLs, matching unchanged definitions and immutable libraries.',
+    old_binding_sha256=sha(old / 'binding.json'),
+    source_binding_sha256=sha(base / 'render-attribution-source-v2/binding.json'),
+    commands_sha256=sha(out / 'commands.json'),
+    binary_sha256=sha(out / 'gpu-startup.exe')), indent=2), encoding='utf-8')

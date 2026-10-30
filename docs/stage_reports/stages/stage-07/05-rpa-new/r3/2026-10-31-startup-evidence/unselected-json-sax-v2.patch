@@ -1,0 +1,195 @@
+--- a/engine/json_support/src/parse.cpp
++++ b/engine/json_support/src/parse.cpp
+@@ -12,7 +12,7 @@
+ #include <cstddef>
+ #include <exception>
+ #include <functional>
+-#include <set>
++#include <optional>
+ #include <stdexcept>
+ #include <string>
+ #include <utility>
+@@ -64,74 +64,100 @@
+     std::size_t actualBytes_;
+ };
+ 
+-class ParseObserver final {
++// Build only Cuexis-owned values. In the DOM callback parser, completing each
++// object scans its parent for discarded children, even when the callback keeps
++// every item. Large arrays of objects therefore incur quadratic scans.
++class ValueSax final : public nlohmann::json_sax<nlohmann::json> {
+   public:
+-    ParseObserver(std::size_t maxDepth, std::size_t maxStringBytes)
++    ValueSax(std::size_t maxDepth, std::size_t maxStringBytes)
+         : maxDepth_(maxDepth), maxStringBytes_(maxStringBytes) {}
+ 
+-    bool operator()(int, nlohmann::json::parse_event_t event, nlohmann::json& parsed) {
+-        switch (event) {
+-        case nlohmann::json::parse_event_t::object_start:
+-            beginContainer();
+-            objectKeys_.emplace_back();
+-            break;
+-        case nlohmann::json::parse_event_t::array_start:
+-            beginContainer();
+-            break;
+-        case nlohmann::json::parse_event_t::object_end:
+-            objectKeys_.pop_back();
+-            endContainer();
+-            break;
+-        case nlohmann::json::parse_event_t::array_end:
+-            endContainer();
+-            break;
+-        case nlohmann::json::parse_event_t::key: {
+-            const auto& key = parsed.get_ref<const std::string&>();
+-            enforceStringLimit(key, JsonStringKind::ObjectKey);
+-            if (!objectKeys_.back().insert(key).second && duplicateKey_.empty()) {
+-                duplicateKey_ = key;
++    bool null() override { return append(Value{}); }
++    bool boolean(bool value) override { return append(Value{value}); }
++    bool number_integer(number_integer_t value) override {
++        return append(Value{static_cast<std::int64_t>(value)});
++    }
++    bool number_unsigned(number_unsigned_t value) override {
++        return append(Value{static_cast<std::uint64_t>(value)});
++    }
++    bool number_float(number_float_t value, const string_t&) override {
++        return append(Value{static_cast<double>(value)});
++    }
++    bool string(string_t& value) override {
++        enforceStringLimit(value, JsonStringKind::StringValue);
++        return append(Value{std::move(value)});
++    }
++    bool binary(binary_t&) override { return false; }
++    bool start_object(std::size_t) override { return beginContainer(true); }
++    bool start_array(std::size_t) override { return beginContainer(false); }
++    bool key(string_t& value) override {
++        enforceStringLimit(value, JsonStringKind::ObjectKey);
++        if (stack_.back().value.object()->contains(value) && !duplicateKey_) duplicateKey_ = value;
++        stack_.back().key = std::move(value);
++        return true;
++    }
++    bool end_object() override { return endContainer(); }
++    bool end_array() override { return endContainer(); }
++    bool parse_error(std::size_t position, const std::string&,
++                     const nlohmann::detail::exception& exception) override {
++        if (exception.id >= 100 && exception.id < 200) {
++            error_.emplace(core::Error{"json.parse.syntax_error", "JSON syntax is invalid"}
++                               .withContext("byte_offset", std::to_string(position)));
++        } else {
++            error_.emplace(core::Error{"json.parse.failed", "JSON parsing failed"}
++                               .withContext("exception", exception.what()));
++        }
++        return false;
++    }
++    [[nodiscard]] auto duplicateKey() const noexcept -> const std::optional<std::string>& {
++        return duplicateKey_;
++    }
++    [[nodiscard]] auto error() const -> const std::optional<core::Error>& { return error_; }
++    [[nodiscard]] auto take() -> Value { return std::move(root_); }
++
++  private:
++    struct Container final {
++        Value value;
++        std::string key;
++    };
++    bool beginContainer(bool object) {
++        if (stack_.size() >= maxDepth_) {
++            throw ParseLimitExceeded{"JSON nesting depth exceeds the configured limit"};
++        }
++        stack_.push_back({object ? Value{Value::Object{}} : Value{Value::Array{}}, {}});
++        return true;
++    }
++    bool endContainer() {
++        Value value = std::move(stack_.back().value);
++        stack_.pop_back();
++        return append(std::move(value));
++    }
++    bool append(Value value) {
++        if (stack_.empty()) {
++            root_ = std::move(value);
++        } else if (auto* array = stack_.back().value.array()) {
++            array->push_back(std::move(value));
++        } else {
++            auto& parent = stack_.back();
++            auto* object = parent.value.object();
++            const auto found = object->find(parent.key);
++            if (found != object->end()) {
++                found->second = std::move(value);
++            } else {
++                object->emplace(std::move(parent.key), std::move(value));
+             }
+-            break;
+-        }
+-        case nlohmann::json::parse_event_t::value:
+-            if (parsed.is_string()) {
+-                enforceStringLimit(parsed.get_ref<const std::string&>(),
+-                                   JsonStringKind::StringValue);
+-            }
+-            break;
+-        default:
+-            break;
+         }
+         return true;
+     }
+-
+-    [[nodiscard]] std::string_view duplicateKey() const noexcept {
+-        return duplicateKey_;
+-    }
+-
+-  private:
+-    void beginContainer() {
+-        if (containerDepth_ >= maxDepth_) {
+-            throw ParseLimitExceeded{"JSON nesting depth exceeds the configured limit"};
+-        }
+-        ++containerDepth_;
+-    }
+-
+-    void endContainer() noexcept {
+-        --containerDepth_;
+-    }
+-
+     void enforceStringLimit(std::string_view value, JsonStringKind kind) const {
+-        if (value.size() > maxStringBytes_) {
+-            throw StringLimitExceeded{kind, value.size()};
+-        }
+-    }
+-
++        if (value.size() > maxStringBytes_) throw StringLimitExceeded{kind, value.size()};
++    }
+     std::size_t maxDepth_;
+     std::size_t maxStringBytes_;
+-    std::size_t containerDepth_{0};
+-    std::vector<std::set<std::string, std::less<>>> objectKeys_;
+-    std::string duplicateKey_;
++    std::vector<Container> stack_;
++    Value root_;
++    std::optional<std::string> duplicateKey_;
++    std::optional<core::Error> error_;
+ };
+ 
+ } // namespace
+@@ -243,15 +269,17 @@
+     }
+ 
+     try {
+-        ParseObserver observer{limits.maxDepth, limits.maxStringBytes};
+-        const auto parsed =
+-            nlohmann::json::parse(text.begin(), text.end(), std::ref(observer), true, false);
+-        if (!observer.duplicateKey().empty()) {
++        ValueSax parser{limits.maxDepth, limits.maxStringBytes};
++        if (!nlohmann::json::sax_parse(text.begin(), text.end(), &parser)) {
++            if (parser.error()) return core::unexpected(*parser.error());
++            return core::unexpected(core::Error{"json.parse.failed", "JSON parsing failed"});
++        }
++        if (parser.duplicateKey()) {
+             return core::unexpected(
+                 core::Error{"json.parse.duplicate_key", "JSON object keys must be unique"}
+-                    .withContext("key", std::string{observer.duplicateKey()}));
+-        }
+-        return detail::fromNlohmann(parsed);
++                    .withContext("key", *parser.duplicateKey()));
++        }
++        return parser.take();
+     } catch (const ParseLimitExceeded& exception) {
+         return core::unexpected(core::Error{"json.parse.depth_limit", exception.what()}.withContext(
+             "max_depth", std::to_string(limits.maxDepth)));

@@ -1,0 +1,18 @@
+from pathlib import Path
+import json, hashlib
+
+base=Path(__file__).resolve().parent
+out=base/'render-attribution-source-v2';out.mkdir(exist_ok=False)
+for name in ('open_gl_presentation.cpp','draw_command.cpp'):
+    source=(base/'render-attribution-source-v1'/name).read_text(encoding='utf-8')
+    if name=='draw_command.cpp':
+        source=source.replace('    RenderStageTimer neutralStages;\n','')
+        source=source.replace('    DrawSummary summary;','    RenderStageTimer neutralStages;\n    DrawSummary summary;')
+    (out/name).write_text(source,encoding='utf-8')
+(out/'binding.json').write_text(json.dumps(dict(scope='v1 timer probe scope corrected for empty-manifest path. Diagnostic only; instancing v2 private GL plus neutral substage timers; no optimization change.',files={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in out.glob('*.cpp')}),indent=2),encoding='utf-8')
+source=(base/'build_render_attribution_v1.py').read_text().replace('render-attribution-build-v1','render-attribution-build-v2').replace('render-attribution-source-v1','render-attribution-source-v2')
+source=source.replace("run([args[0], *objects, *args[1:]], 'link-render-attribution')", "run([args[0], *objects, str(base/'json-sax-build-v2/parse-candidate.obj'), *args[1:]], 'link-render-attribution')")
+source=source.replace("for dll in old.glob('*.dll'):", "for dll in (base/'json-sax-runtime-v3').glob('*.dll'):")
+source=source.replace('Diagnostic prepare stage timers; both private source files explicitly recompiled; matching old definitions and remaining immutable libraries.',
+    'Diagnostic render substage timers with instancing v2; SAX v2 speeds CPU startup only. Both changed CPPs explicitly compiled; exact app-local Release DLLs, matching unchanged definitions and immutable libraries.')
+(base/'build_render_attribution_v2.py').write_text(source,encoding='utf-8')

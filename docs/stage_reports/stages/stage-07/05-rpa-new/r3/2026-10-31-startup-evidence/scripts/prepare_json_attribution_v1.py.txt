@@ -1,0 +1,51 @@
+from pathlib import Path
+import json, hashlib
+
+root = Path.cwd()
+base = Path(__file__).resolve().parent
+out = base / 'json-attribution-source-v1'
+out.mkdir(exist_ok=False)
+source = (root / 'engine/json_support/src/parse.cpp').read_text(encoding='utf-8')
+source = '#include <chrono>\n#include <iostream>\n' + source
+source = source.replace('    recordParseCall();', '''    recordParseCall();
+    const bool trace = text.size() > 1'000'000;
+    auto begin = std::chrono::steady_clock::now();
+    const auto mark = [&](const char* label) {
+        if (!trace) return;
+        const auto end = std::chrono::steady_clock::now();
+        std::cout << "JSON_PREPARE " << label << " "
+                  << std::chrono::duration<double, std::micro>(end-begin).count() << std::endl;
+        begin = std::chrono::steady_clock::now();
+    };''')
+source = source.replace('        if (!observer.duplicateKey().empty()) {', '        mark("nlohmann_parse");\n        if (!observer.duplicateKey().empty()) {')
+source = source.replace('        return detail::fromNlohmann(parsed);', '''        auto value = detail::fromNlohmann(parsed);
+        mark("cuexis_dom_conversion");
+        return value;''')
+(out / 'parse.cpp').write_text(source, encoding='utf-8')
+source = (root / 'engine/chart/src/canonical_chart_loader.cpp').read_text(encoding='utf-8')
+source = '#include <chrono>\n#include <iostream>\n' + source
+needle = '''    auto objects = objectsReader
+                       ? parseObjects(*objectsReader, expandedTemplates, limits, diagnostics)
+                       : std::vector<ChartObject>{};'''
+assert source.count(needle) == 1
+source = source.replace(needle, '''    const auto objectsBegin = std::chrono::steady_clock::now();
+''' + needle + '''
+    if (objects.size() >= 1000) std::cout << "JSON_PREPARE typed_objects "
+        << std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now()-objectsBegin).count()
+        << std::endl;''')
+(out / 'canonical_chart_loader.cpp').write_text(source, encoding='utf-8')
+(out / 'binding.json').write_text(json.dumps(dict(scope='Private timer overlays only; diagnostics, not normal performance.',
+    files={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in out.glob('*.cpp')}), indent=2), encoding='utf-8')
+
+builder = (base / 'build_startup_attribution_v1.py').read_text()
+builder = builder.replace('startup-attribution-build-v1', 'json-attribution-build-v1')
+builder = builder.replace('objects = [compile(name, base / \'startup-attribution-source-v1\' / name, Path(name).stem)',
+'''objects = [compile(name, base / 'startup-attribution-source-v1' / name, Path(name).stem)''')
+needle = "args = next(c['args']"
+index = builder.index(needle)
+builder = builder[:index] + '''objects += [compile(name, base / 'json-attribution-source-v1' / name, Path(name).stem)
+            for name in ('parse.cpp', 'canonical_chart_loader.cpp')]
+''' + builder[index:]
+builder = builder.replace("source_binding_sha256=sha(base / 'startup-attribution-source-v1/binding.json'),",
+    "source_binding_sha256=sha(base / 'startup-attribution-source-v1/binding.json'), json_binding_sha256=sha(base/'json-attribution-source-v1/binding.json'),")
+(base / 'build_json_attribution_v1.py').write_text(builder, encoding='utf-8')

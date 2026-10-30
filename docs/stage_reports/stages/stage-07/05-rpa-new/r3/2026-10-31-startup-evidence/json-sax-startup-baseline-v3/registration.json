@@ -1,0 +1,17 @@
+{
+  "scope": "Finite one-process startup comparison with verified app-local Release DLLs. No ordinary throughput acceptance. Window message acknowledgements observed; no performance acceptance from these samples.",
+  "plan": [
+    {
+      "name": "40k-static",
+      "n": 40000,
+      "cancel": false
+    }
+  ],
+  "binary_sha256": "78842f8862c803790b49da06aec28549d1e790b75a0dc6473013b3223f6dabb1",
+  "poll_ms": 50,
+  "message_timeout_ms": 100,
+  "process_timeout_seconds": 180,
+  "frames": 8,
+  "warmup_ms": 2000,
+  "probe_sha256": "c6c832d0f4d07c1532f8588e2143f2e5bce0bff7c8a7976ce24c91b6293c4122"
+}

@@ -1,0 +1,40 @@
+{
+  "docs": {
+    "args": [
+      "python",
+      "-B",
+      "tools/check_docs.py"
+    ],
+    "exit": 0,
+    "output": "Documentation checks passed: 608 Markdown files and 20 candidate JSON/CXT files validated.\r\n"
+  },
+  "diff": {
+    "args": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0,
+    "output": ""
+  },
+  "architecture": {
+    "args": [
+      "cmake",
+      "-DCUEXIS_SOURCE_DIR=D:/Cuexis-redesign",
+      "-P",
+      "cmake/VerifyArchitecture.cmake"
+    ],
+    "exit": 0,
+    "output": ""
+  },
+  "probe-format": {
+    "args": [
+      "clang-format",
+      "--dry-run",
+      "--Werror",
+      "tests/player/gpu_throughput_probe.cpp"
+    ],
+    "exit": 0,
+    "output": ""
+  }
+}

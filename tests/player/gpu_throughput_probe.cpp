@@ -104,6 +104,25 @@ auto throughputSource(unsigned count, bool animated) -> PlaybackSource {
 auto throughputUs(Clock::time_point begin, Clock::time_point end) -> double {
     return std::chrono::duration<double, std::micro>(end - begin).count();
 }
+template <class Function> auto throughputStartupStage(const char* name, Function&& function) {
+    const auto begin = Clock::now();
+    std::cout << "GPU_STARTUP_BEGIN " << name << std::endl;
+    auto result = function();
+    std::cout << "GPU_STARTUP_END " << name << " " << std::setprecision(17)
+              << throughputUs(begin, Clock::now()) << std::endl;
+    return result;
+}
+
+void throughputPumpEvents() {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_EVENT_QUIT || event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED ||
+            (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_ESCAPE)) {
+            throw std::runtime_error("GPU throughput cancelled by window close or Escape");
+        }
+    }
+}
+
 auto throughputInView(const FrameSnapshot& snapshot) -> std::size_t {
     const auto transform = [](const float* matrix, const std::array<double, 4>& point) {
         std::array<double, 4> result{};
@@ -145,6 +164,14 @@ TEST_CASE("GPU visible entity throughput probe", "[.][device][gpu][throughput]")
     const auto mode = test_support::environmentVariable("CUEXIS_GPU_MODE");
     REQUIRE((mode == "render-only" || mode == "static" || mode == "animated"));
     const bool timing = test_support::environmentVariable("CUEXIS_GPU_TIMER") != "0";
+    // Complete synchronous CPU preparation before creating a window. Keep the real startup
+    // costs visible in the log; session and prepared state stay on their creating owner thread.
+    PlaybackSession session;
+    auto source = throughputStartupStage(
+        "fixture_source", [&] { return throughputSource(count, mode == "animated"); });
+    auto prepared = throughputStartupStage("playback_prepare", [&] {
+        return throughputTake(session.prepareLoad(std::move(source), PlaybackMode::ChartClock));
+    });
     auto runtime = throughputTake(platform_sdl::SdlRuntime::create());
     render_opengl::OpenGlConfig config;
     config.vsync = false;
@@ -155,6 +182,7 @@ TEST_CASE("GPU visible entity throughput probe", "[.][device][gpu][throughput]")
     wc.highDpi = false;
     wc.title = "Cuexis visible entities GPU throughput";
     auto window = throughputTake(platform_sdl::SdlWindow::create(runtime, wc));
+    throughputPumpEvents();
     auto* nativeWindow = static_cast<SDL_Window*>(window.lease().nativeHandle());
     auto backend =
         throughputTake(render_opengl::OpenGlBackend::create(window, std::move(configuration)));
@@ -166,20 +194,25 @@ TEST_CASE("GPU visible entity throughput probe", "[.][device][gpu][throughput]")
     REQUIRE(SDL_GetWindowSizeInPixels(nativeWindow, &width, &height));
     REQUIRE(width == static_cast<int>(viewportWidth));
     REQUIRE(height == static_cast<int>(viewportHeight));
-    PlaybackSession session;
-    auto prepared = throughputTake(
-        session.prepareLoad(throughputSource(count, mode == "animated"), PlaybackMode::ChartClock));
-    auto presentation = throughputTake(backend.prepare(prepared, {}));
+    auto presentation = throughputStartupStage(
+        "renderer_prepare", [&] { return throughputTake(backend.prepare(prepared, {})); });
     throughputTake(backend.accepts(presentation));
     throughputTake(session.commit(std::move(prepared)));
     backend.activate(std::move(presentation));
-    throughputTake(session.update({0, 0, 1}));
-    auto snapshot = throughputTake(session.extractFrame(viewport));
+    throughputPumpEvents();
+    throughputStartupStage("first_update", [&] {
+        throughputTake(session.update({0, 0, 1}));
+        return true;
+    });
+    auto snapshot = throughputStartupStage(
+        "first_extract", [&] { return throughputTake(session.extractFrame(viewport)); });
     REQUIRE(snapshot.objects.size() == count);
     REQUIRE(throughputInView(snapshot) == count);
     const bool readback = test_support::environmentVariable("CUEXIS_GPU_PIXEL_READBACK") != "0";
     // Pixel proof is explicit and outside steady-frame timing in both modes.
-    throughputTake(backend.submit(snapshot));
+    throughputPumpEvents();
+    throughputStartupStage("first_submit",
+                           [&] { return throughputTake(backend.submit(snapshot)); });
     throughputTake(backend.present());
     REQUIRE(backend.lastPixelProbe().rgba[0] > 200);
     REQUIRE(backend.lastPixelProbe().rgba[1] > 100);
@@ -225,7 +258,7 @@ TEST_CASE("GPU visible entity throughput probe", "[.][device][gpu][throughput]")
             measuring = true;
             measuredStart = lastPresented;
         }
-        SDL_PumpEvents();
+        throughputPumpEvents();
         if (timing)
             collect(false);
         Row row;

@@ -1,0 +1,8 @@
+from pathlib import Path
+
+base = Path(__file__).resolve().parent
+source = (base / 'run_startup_attribution_v1.py').read_text()
+source = source.replace("'startup-attribution-measure-v1'", "'json-attribution-measure-v1'")
+source = source.replace("'startup-attribution-build-v1/gpu-startup.exe'", "'json-attribution-build-v1/gpu-startup.exe'")
+source = source.replace("'CPU_PREPARE_'))", "'CPU_PREPARE_', 'JSON_PREPARE '))")
+exec(compile(source, str(base / 'run_startup_attribution_v1.py'), 'exec'))

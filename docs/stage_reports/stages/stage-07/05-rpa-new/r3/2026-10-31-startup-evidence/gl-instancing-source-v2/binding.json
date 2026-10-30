@@ -1,0 +1,5 @@
+{
+  "scope": "v1 plus explicit VAO detachment to avoid retaining per-pass temporary instance buffers on meshes used earlier in the pass. Only adjacent opaque groups, no reorder or public changes.",
+  "source_sha256": "04491b406cee0c4a0216752dc5dc7ba3b260bab1affbdea3e78f761e74c1c2f4",
+  "selected": false
+}

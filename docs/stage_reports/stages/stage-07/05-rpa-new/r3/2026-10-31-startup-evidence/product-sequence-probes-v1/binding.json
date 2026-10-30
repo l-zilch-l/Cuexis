@@ -1,0 +1,12 @@
+{
+  "scope": "Ordinary product private activeRequirements vector vs existing SharedSequence only. Full fresh root definitions/libraries; no R3c point methods, no quota, no batch publication. Same writer/host fixture in both variants. Baseline only overrides original root kernel CPP.",
+  "source_manifest_sha256": "0c91d8c96229780847f4f4d5c6d1f7479f8d7ca1259f029405c22fa177e45aa2",
+  "commands_sha256": "61cc50fa5debd3838dbd7d8b3be0ef96e4e4e561d4007cefb9faeddf4fa86f9c",
+  "fresh_complete_sha256": "bdf25d2bf7ef114901d24057d8a24c4ea0c6cc6c6ad3f124c309a331d3c50bb3",
+  "binaries": {
+    "host-baseline.exe": "2f70f67bf7d2a8b970250e3aca6224e45c8d46298d513e2aa0f870e991d78ad4",
+    "host-candidate.exe": "499274f607154ae70b705b53b4565e556d34b4ce182d6425e0b75bbe41f12a7f",
+    "writer-baseline.exe": "fa0512fa505594390ec05c2c4065ab8891c2ef995646a8870d19727327775689",
+    "writer-candidate.exe": "86f2b810b1e6c33c3765c682e64c03a054c0ef4f349151ddca2c9d26018d83a6"
+  }
+}

@@ -1,0 +1,58 @@
+from pathlib import Path
+import sys
+
+root = Path.cwd()
+sys.path.insert(0, str(root/'out/verification-20261029/r3-completion'))
+from native import *
+
+base = Path(__file__).resolve().parent
+build = base/'json-prepare-build-v1'
+out = base/'json-prepare-measure-v1'
+out.mkdir(exist_ok=False)
+plan = [dict(n=n, pair=pair, variant=v) for n in (1000,10000,40000) for pair in range(3)
+        for v in (('baseline','candidate') if pair%2 == 0 else ('candidate','baseline'))]
+write(out/'registration.json',dict(scope='Finite ordinary CPU prepare comparison, one timed synchronous prepare per new process. No GPU/window, no observer, exact Release app-local DLLs. Not original first load or formal acceptance.',
+    plan=plan, affinity=4, priority=16384, execution_throttling=False,
+    gates='Each scale >=30% improvement; all per-scale per-variant process relative ranges <=15%; semantic SHA and frame digest same. Fixed group no extension/replacement.',
+    binding_sha256=sha(build/'binding.json'), runner_sha256=sha(Path(__file__))))
+rows=[]
+for index,item in enumerate(plan):
+    exe=build/('prepare-'+item['variant']+'.exe')
+    env=dict(os.environ, CUEXIS_JSON_PREPARE_ENTITIES=str(item['n']))
+    log=out/(f'{index:02}-'+item['variant']+'-'+str(item['n'])+'.log')
+    with log.open('x',encoding='utf-8') as stream:
+        child=subprocess.Popen([str(exe),'CPU legacy preparation fixed diagnostic','--rng-seed','1'],
+            cwd=root,env=env,stdin=subprocess.PIPE,stdout=stream,stderr=subprocess.STDOUT,
+            creationflags=subprocess.CREATE_NO_WINDOW|subprocess.BELOW_NORMAL_PRIORITY_CLASS)
+        handle=k.OpenProcess(0x0200|0x1000,False,child.pid)
+        try:
+            power=Power(1,1,0)
+            assert handle and k.SetProcessAffinityMask(handle,4) and k.SetProcessInformation(handle,4,ct.byref(power),ct.sizeof(power))
+            mask=ct.c_size_t();system=ct.c_size_t();observed=Power(1,0,0)
+            assert k.GetProcessAffinityMask(handle,ct.byref(mask),ct.byref(system)) and k.GetProcessInformation(handle,4,ct.byref(observed),ct.sizeof(observed))
+            controls=dict(affinity=mask.value,priority=k.GetPriorityClass(handle),qos_control=observed.ControlMask,qos_state=observed.StateMask)
+            assert controls==dict(affinity=4,priority=16384,qos_control=1,qos_state=0)
+            child.stdin.write(b'go\n');child.stdin.flush();child.stdin.close()
+            code=child.wait(timeout=180)
+        finally:
+            if handle:k.CloseHandle(handle)
+            if child.poll() is None:child.kill();child.wait()
+    content=log.read_text(encoding='utf-8',errors='replace')
+    points=[json.loads(line.split(' ',1)[1]) for line in content.splitlines() if line.startswith('JSON_PREPARE_RESULT ')]
+    valid=code==0 and 'All tests passed' in content and len(points)==1 and points[0]['entities']==item['n']
+    row=dict(item,valid=valid,exit=code,controls=controls,result=points[0] if points else None,log_sha256=sha(log))
+    rows.append(row);write(out/'results.json',rows)
+    print(json.dumps(row),flush=True)
+    if not valid:raise SystemExit('Invalid process; no retry or further process')
+summary=[]
+for n in (1000,10000,40000):
+    selected=[r for r in rows if r['n']==n]
+    assert len({r['result']['identity'] for r in selected})==1
+    assert len({r['result']['frame_digest'] for r in selected})==1
+    values={v:dict(samples_us=(points:=[r['result']['prepare_us'] for r in selected if r['variant']==v]),median_us=statistics.median(points),relative_range_percent=(max(points)-min(points))/statistics.median(points)*100) for v in ('baseline','candidate')}
+    summary.append(dict(n=n,values=values,change_percent=(values['candidate']['median_us']/values['baseline']['median_us']-1)*100))
+numeric=all(s['change_percent']<=-30 for s in summary)
+repeatability=all(s['values'][v]['relative_range_percent']<=15 for s in summary for v in ('baseline','candidate'))
+write(out/'decision.json',dict(numeric_gate=numeric,repeatability_screen=repeatability,summary=summary,
+    same_prepared_sha256=True,same_frame_digest=True,selected=False,original_load_acceptance=False))
+print(json.dumps(dict(numeric=numeric,repeatability=repeatability,summary=summary)),flush=True)

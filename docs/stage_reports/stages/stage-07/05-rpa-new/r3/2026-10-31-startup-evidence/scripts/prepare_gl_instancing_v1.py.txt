@@ -1,0 +1,140 @@
+from pathlib import Path
+import hashlib, json
+
+root = Path.cwd()
+base = Path(__file__).resolve().parent
+out = base / 'gl-instancing-source-v1'
+out.mkdir(exist_ok=False)
+source_path = root / 'engine/render_opengl/src/open_gl_presentation.cpp'
+source = source_path.read_text(encoding='utf-8')
+
+old = '''layout(location = 1) in vec2 inUv;
+uniform mat4 world;'''
+new = '''layout(location = 1) in vec2 inUv;
+layout(location = 2) in mat4 instanceWorld;
+layout(location = 6) in vec4 instanceColor;
+uniform bool instanced;
+flat out vec4 vertexInstanceColor;
+uniform mat4 world;'''
+assert source.count(old) == 1
+source = source.replace(old, new)
+source = source.replace('gl_Position = viewProjection * world * vec4(inPosition, 1.0);',
+'''    mat4 objectWorld = instanced ? instanceWorld : world;
+    gl_Position = viewProjection * objectWorld * vec4(inPosition, 1.0);
+    vertexInstanceColor = instanceColor;''')
+old = '''in vec2 vertexUv;
+uniform vec4 effectiveColor;'''
+new = '''in vec2 vertexUv;
+flat in vec4 vertexInstanceColor;
+uniform bool instanced;
+uniform vec4 effectiveColor;'''
+assert source.count(old) == 1
+source = source.replace(old, new)
+source = source.replace('outColor = vec4(effectiveColor.rgb * sampled.rgb, effectiveColor.a * sampledAlpha);',
+'''vec4 color = instanced ? vertexInstanceColor : effectiveColor;
+    outColor = vec4(color.rgb * sampled.rgb, color.a * sampledAlpha);''')
+start = source.index('void drawUnlitCommands(')
+end = source.index('\nvoid setNumericUniform(', start)
+original = source[start:end]
+signature = original[:original.index('    for (const auto& draw : draws) {')]
+signature = signature.replace('std::span<const PreparedDraw> draws) noexcept',
+                              'std::span<const PreparedDraw> draws, bool transparent)')
+single = original[original.index('        if (draw.command.backFaceCulling)'):]
+assert single.endswith('    }\n}\n')
+single = single[:-len('    }\n}\n')]
+implementation = signature + '''    // Prototype: only adjacent opaque draws with identical raster/mesh/texture state
+    // are instanced. Transparent and parameterized draws retain their existing path.
+    // No shared definitions or installed headers change in this isolated experiment.
+    struct Instance final {
+        std::array<float, 16> world;
+        std::array<float, 4> color;
+    };
+    static_assert(sizeof(Instance) == 80);
+    const auto instanceLocation = glGetUniformLocation(pipeline.program.value, "instanced");
+    glUniform1i(instanceLocation, 0);
+    detail::UniqueBuffer instanceBuffer;
+    std::vector<Instance> instances;
+    for (std::size_t index = 0; index < draws.size();) {
+        const auto& draw = draws[index];
+        if (draw.program != nullptr) {
+            ++index;
+            continue;
+        }
+        std::size_t end = index + 1;
+        if (!transparent) {
+            while (end < draws.size()) {
+                const auto& next = draws[end];
+                if (next.program != nullptr || next.mesh != draw.mesh ||
+                    next.texture != draw.texture ||
+                    next.command.backFaceCulling != draw.command.backFaceCulling ||
+                    next.material->material.alphaMode != draw.material->material.alphaMode) {
+                    break;
+                }
+                ++end;
+            }
+        }
+        if (end - index >= 2) {
+            instances.clear();
+            instances.reserve(end - index);
+            for (std::size_t item = index; item < end; ++item) {
+                const auto& command = draws[item].command;
+                instances.push_back({command.worldMatrix,
+                    {static_cast<float>(command.effectiveColor[0]),
+                     static_cast<float>(command.effectiveColor[1]),
+                     static_cast<float>(command.effectiveColor[2]),
+                     static_cast<float>(command.effectiveColor[3])}});
+            }
+            if (!instanceBuffer.value) {
+                GLuint value = 0;
+                glGenBuffers(1, &value);
+                instanceBuffer = detail::UniqueBuffer{value};
+            }
+            glBindBuffer(GL_ARRAY_BUFFER, instanceBuffer.value);
+            test_only::GpuStorage::charge(1, instanceBuffer.value, instances.size() * sizeof(Instance));
+            glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(instances.size() * sizeof(Instance)),
+                         instances.data(), GL_STREAM_DRAW);
+            if (draw.command.backFaceCulling) glEnable(GL_CULL_FACE);
+            else glDisable(GL_CULL_FACE);
+            glUniform1i(pipeline.useTextureLocation, draw.texture != nullptr ? 1 : 0);
+            glUniform1i(pipeline.useTextureAlphaLocation, 0);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, draw.texture ? draw.texture->texture.value : 0);
+            glBindVertexArray(draw.mesh->vertexArray.value);
+            for (GLuint column = 0; column < 4; ++column) {
+                glEnableVertexAttribArray(2 + column);
+                glVertexAttribPointer(2 + column, 4, GL_FLOAT, GL_FALSE, sizeof(Instance),
+                    reinterpret_cast<const void*>(static_cast<std::uintptr_t>(column * 4 * sizeof(float))));
+                glVertexAttribDivisor(2 + column, 1);
+            }
+            glEnableVertexAttribArray(6);
+            glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Instance),
+                                  reinterpret_cast<const void*>(offsetof(Instance, color)));
+            glVertexAttribDivisor(6, 1);
+            glUniform1i(instanceLocation, 1);
+            glDrawElementsInstanced(GL_TRIANGLES, draw.mesh->indexCount, GL_UNSIGNED_INT, nullptr,
+                                   static_cast<GLsizei>(instances.size()));
+            glUniform1i(instanceLocation, 0);
+            for (GLuint attribute = 2; attribute <= 6; ++attribute) {
+                glDisableVertexAttribArray(attribute);
+                glVertexAttribDivisor(attribute, 0);
+            }
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            index = end;
+            continue;
+        }
+''' + single + '''        ++index;
+    }
+}
+'''
+source = source[:start] + implementation + source[end:]
+source = source.replace('std::span<const PreparedDraw> draws, bool transparent) noexcept',
+                        'std::span<const PreparedDraw> draws, bool transparent)')
+source = source.replace('drawUnlitCommands(pipeline, viewProjection, draws);',
+                        'drawUnlitCommands(pipeline, viewProjection, draws, transparent);')
+path = out / 'open_gl_presentation.cpp'
+path.write_text(source, encoding='utf-8')
+(out / 'binding.json').write_text(json.dumps(dict(
+    scope='Unselected ordinary opaque adjacent-run instancing prototype. Original product base; no GL state cache, no quota/recovery/public API changes. Local vector/buffer lifetime ends every pass.',
+    baseline_sha256=hashlib.sha256(source_path.read_bytes()).hexdigest(),
+    source_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
+    selected=False), indent=2), encoding='utf-8')

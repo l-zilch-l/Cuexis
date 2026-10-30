@@ -1,0 +1,12 @@
+[
+  {
+    "label": "baseline-all",
+    "args": [
+      "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-next-v1\\json-sax-build-v2\\json-baseline.exe",
+      "--rng-seed",
+      "1"
+    ],
+    "exit": 3221225477,
+    "expected": 42
+  }
+]

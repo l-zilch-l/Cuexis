@@ -1,0 +1,25 @@
+from pathlib import Path
+import json, hashlib, shutil
+
+root = Path.cwd()
+base = Path(__file__).resolve().parent
+old = base / 'gl-state-build-v3'
+out = base / 'gl-startup-build-v1'
+script = (base / 'build_gl_state_v3_generated.py').read_text()
+script = script[:script.index('adapter_objects=[]')]
+script = script.replace("out=base/'gl-state-build-v3'", "out=base/'gl-startup-build-v1'")
+exec(compile(script, str(base / 'build_gl_state_v3_generated.py'), 'exec'))
+probe = compile('gpu_throughput_probe.cpp', root / 'tests/player/gpu_throughput_probe.cpp', 'gpu-probe')
+old_commands = json.loads((old / 'commands.json').read_text())
+for variant in ('baseline', 'candidate'):
+    args = next(c['args'] for c in old_commands if c['label'] == 'link-' + variant)
+    args = [('/OUT:' + str(out / ('gpu-' + variant + '.exe'))) if a.startswith('/OUT:') else
+            probe if a == str(old / 'gpu-probe.obj') else a for a in args]
+    run(args, 'link-' + variant)
+for dll in old.glob('*.dll'): shutil.copyfile(dll, out / dll.name)
+(out / 'binding.json').write_text(json.dumps(dict(
+    scope='Startup diagnostic probe change only. CPU fixture/prepare precede window creation; startup timings separate; close/Escape cancellation. Old paired GL objects and libraries immutable.',
+    old_binding_sha256=sha(old / 'binding.json'),
+    probe_source_sha256=sha(root / 'tests/player/gpu_throughput_probe.cpp'),
+    binaries={p.name: sha(p) for p in out.glob('*.exe')},
+    commands_sha256=sha(out / 'commands.json')), indent=2), encoding='utf-8')

@@ -1,0 +1,12 @@
+from pathlib import Path
+
+base=Path(__file__).resolve().parent
+runner=(base/'run_gl_startup_response_v2.py').read_text(encoding='utf-8')
+runner=runner.replace('gl-startup-response-v2','render-attribution-measure-v2')
+runner=runner.replace("'gl-startup-build-v1/gpu-baseline.exe'","'render-attribution-build-v2/gpu-startup.exe'")
+start=runner.index('plan = [');end=runner.index("write(out / 'registration.json'",start)
+runner=runner[:start]+"plan = [dict(name='40k-render-stages', n=40000, cancel=False)]\n"+runner[end:]
+runner=runner.replace("CUEXIS_GPU_MODE='static'","CUEXIS_GPU_MODE='render-only'")
+runner=runner.replace('Finite startup diagnosis, not a throughput group. One 40K static process after small normal/close controls pass.',
+    'One instanced render-only 40K diagnostic with CPU substage timers; SAX startup, exact app-local Release DLLs. Not ordinary throughput or startup comparison.')
+exec(compile(runner,str(base/'run_gl_startup_response_v2.py'),'exec'))

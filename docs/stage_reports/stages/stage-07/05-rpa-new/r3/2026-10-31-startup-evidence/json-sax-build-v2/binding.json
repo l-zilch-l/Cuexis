@@ -1,0 +1,11 @@
+{
+  "scope": "Direct Value SAX versus original callback parser; both compiled explicitly with same fresh headers and immutable libs. Existing JSON suites plus corpus and semantic characterizations. GPU probe identical responsive startup.",
+  "source_binding_sha256": "d94b94ffefac1fb8445349245b0efe961d0e1c888dba3b7c64c12aae507c53cf",
+  "tests_sha256": "34e421cd0fe442bfe683722abc19ba8c1e92211392e7b92da9b26ff943fa6306",
+  "commands_sha256": "c48b7be4d79a2c30fff94d0d2ebe2795d3cdcbc9a8392195f42a71a9cb7e26db",
+  "binaries": {
+    "gpu-sax.exe": "0b41cb31c73f5f6c734c6e74d45d5dc2c67bc802b36ba4c3edd9cb66a47ac386",
+    "json-baseline.exe": "6facb85075bcdc9e4fe50ef6ca52dfb4eddbf5ed5b64f7c2e0e4eacafe7b4155",
+    "json-candidate.exe": "ff923782e68427f77a135952ac7c2f559ac29d92fafd0ec9c98ddafc257102ca"
+  }
+}

@@ -1,0 +1,3 @@
+draw_command.cpp
+D:\Cuexis-redesign\out\verification-20261030\r3-next-v1\render-attribution-source-v1\draw_command.cpp(310): error C2065: “neutralStages”: 未声明的标识符
+D:\Cuexis-redesign\out\verification-20261030\r3-next-v1\render-attribution-source-v1\draw_command.cpp(312): error C2065: “neutralStages”: 未声明的标识符

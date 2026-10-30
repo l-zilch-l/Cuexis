@@ -1,0 +1,14 @@
+from pathlib import Path
+
+base = Path(__file__).resolve().parent
+source = (base / 'run_gl_startup_response_v2.py').read_text()
+source = source.replace('gl-startup-response-v2', 'startup-attribution-measure-v1')
+source = source.replace("exe = base / 'gl-startup-build-v1/gpu-baseline.exe'",
+                        "exe = base / 'startup-attribution-build-v1/gpu-startup.exe'")
+start = source.index('plan = [')
+end = source.index("write(out / 'registration.json'", start)
+source = source[:start] + "plan = [dict(name='40k-stages', n=40000, cancel=False)]\n" + source[end:]
+source = source.replace('Finite startup diagnosis, not a throughput group. One 40K static process after small normal/close controls pass.',
+    'One 40K static diagnostic process with internal prepare-stage timers. Not ordinary timing or throughput acceptance.')
+source = source.replace("line.startswith('GPU_STARTUP_')", "line.startswith(('GPU_STARTUP_', 'CPU_PREPARE_'))")
+exec(compile(source, str(base / 'run_gl_startup_response_v2.py'), 'exec'))

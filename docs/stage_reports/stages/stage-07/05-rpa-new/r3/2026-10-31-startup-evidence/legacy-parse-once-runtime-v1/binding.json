@@ -1,0 +1,13 @@
+{
+  "scope": "Immutable baseline from first SAX-only group; candidate has material code change: SAX plus one parsed legacy tree shared with identity writer. Same probe/libs and exact Release DLLs.",
+  "candidate_binding_sha256": "f35c6c318318f26f980700cdc3f483cf42eb67cc2d819c5bcac3f1a13d5378db",
+  "baseline_binding_sha256": "991b1efb3808eb01d97ad134bebee91e8eaa677b46e61612930f233f63f20110",
+  "files": {
+    "fmt.dll": "8219387a1b0de304630a67564a0ec30271e061c1e92cc77ae7cf9753a5f75214",
+    "nlohmann_json_schema_validator.dll": "1c0a7cdcd718802c79052f323f52e63afcedac969dd7eb5a44d12c521502f248",
+    "prepare-baseline.exe": "5ae62d797f52cac3b30dbff41e0c417dc4f84c14999497f9460f30d6b16cb67d",
+    "prepare-candidate.exe": "9ed716c7c13254b3b99e8206d5ba6e2efcbf3cf8120a934dc8ace72db7f1fd9e",
+    "SDL3.dll": "cedddd9456105f8b2df78c33a0282c170b86b0d16146a8ccbb0c6e01571ee783",
+    "spdlog.dll": "a7c410914f4aff0cb84f642ff91da8a6b1a85d21cb0de11e88a3a37dc7575214"
+  }
+}

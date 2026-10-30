@@ -1,0 +1,40 @@
+from pathlib import Path
+base=Path(__file__).resolve().parent
+s=(base/'build_gl_state_v2.py').read_text()
+s=s.replace("out=base/'gl-state-build-v2'", "out=base/'gl-state-build-v3'")
+needle="run(['cmake','--build',str(build),'--parallel','1','--target','cuexis_execution_device_probe','cuexis_render_tests','cuexis_render_opengl_tests'],'build-adapters')"
+assert needle in s
+s=s.replace(needle,'''# Never mutate the successful common build. Compile missing adapter objects from
+# its exact compile commands into this new overlay and link them explicitly.
+''')
+a=s.index("gl=compile(");b=s.index("(out/'binding.json').write_text",a)
+s=s[:a]+'''
+def commands_for(target):
+ block=(build/'build.ninja').read_text().split('build bin\\\\'+target+'.exe',1)[1].split('\\n\\n',1)[0]
+ objects=split(block.split(': CXX_EXECUTABLE_LINKER__'+target+'_Release ',1)[1].split(' | ',1)[0])
+ libs=split(next(l.split(' = ',1)[1] for l in block.splitlines() if l.startswith('  LINK_LIBRARIES = ')))
+ return objects,libs
+adapter_objects=[]
+for target in ('cuexis_audio_sdl','cuexis_platform_sdl','cuexis_render_opengl','cuexis_shader_cache'):
+ for entry in cc:
+  if ('/'+target+'.dir/') not in entry['output'].replace('\\\\','/'):
+   continue
+  path=Path(entry['file']);name=target+'-'+path.stem
+  adapter_objects.append(compile(path.name,path,name))
+baseline_objects=adapter_objects[:]
+candidate_gl=compile('open_gl_presentation.cpp',base/'gl-state-source-v2/open_gl_presentation.cpp','gl-candidate')
+candidate_objects=[candidate_gl if Path(p).name=='cuexis_render_opengl-open_gl_presentation.obj' else p for p in adapter_objects]
+gpu=compile('gpu_throughput_probe.cpp',source/'tests/player/gpu_throughput_probe.cpp','gpu-probe')
+timer=compile('gpu_timer.cpp',source/'engine/render_opengl/src/gpu_timer.cpp','gpu-timer')
+state_test=compile('gpu_throughput_probe.cpp',base/'gl-state-source-v2/state_test.cpp','state-test')
+objects,libs=commands_for('cuexis_execution_device_probe')
+for variant in ('baseline','candidate'):
+ valid_libs=[p for p in libs if Path(p).is_absolute() or not p.lower().endswith('.lib') or (build/p).is_file()]
+ run([cache['CMAKE_LINKER:FILEPATH'],'/NOLOGO','/machine:x64','/INCREMENTAL:NO','/subsystem:console','/OUT:'+str(out/('gpu-'+variant+'.exe')),gpu,timer,state_test,*(baseline_objects if variant=='baseline' else candidate_objects),*valid_libs],'link-'+variant)
+for dll in (build/'bin').glob('*.dll'):shutil.copyfile(dll,out/dll.name)
+for dll in (root/'out/verification-20261030/r3-resume-v1/budget-build-v3/bin').glob('*.dll'):
+ if not (out/dll.name).exists():shutil.copyfile(dll,out/dll.name)
+''' +s[b:]
+s=s.replace('No code change affecting Runtime; all runtime frames remain normal allocator.', 'Missing adapters freshly compiled explicitly, common successful build left immutable. No Runtime change; normal allocator.')
+(base/'build_gl_state_v3_generated.py').write_text(s,encoding='utf-8')
+exec(compile(s,str(base/'build_gl_state_v3_generated.py'),'exec'))

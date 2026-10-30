@@ -1,0 +1,69 @@
+{
+  "scope": "CPP-only adjacent opaque instancing screen, no state-cache combination. Same immutable common paged-active libraries. Responsive startup in both. Finite local diagnostic, no formal/stage or 240FPS acceptance.",
+  "plan": [
+    {
+      "entities": 1000,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "render-only",
+      "repeat": 1,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "render-only",
+      "repeat": 1,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "render-only",
+      "repeat": 1,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "render-only",
+      "repeat": 1,
+      "variant": "baseline",
+      "frames": 60
+    }
+  ],
+  "binaries": {
+    "baseline": "85d6757fded4d5a99c1828765db5fa3480e75cded774af5d462a6b271e596bff",
+    "candidate": "8f1c1b2458dcad315523ca1ce39c0e991535ba97e7273eb6fb058d3e34967df6"
+  },
+  "gate": "40K submit improves at least 30%, 1K cycle regression <=5%; report original 15% process repeatability. No replacement or extension.",
+  "timer": false,
+  "pixel_readback": false,
+  "normal_allocator": true
+}

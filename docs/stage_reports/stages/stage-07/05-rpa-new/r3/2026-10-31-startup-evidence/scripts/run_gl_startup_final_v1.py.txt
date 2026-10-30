@@ -1,0 +1,11 @@
+from pathlib import Path
+
+base=Path(__file__).resolve().parent
+runner=(base/'run_gl_startup_response_v2.py').read_text(encoding='utf-8')
+runner=runner.replace('gl-startup-response-v2','gl-startup-final-check-v1')
+runner=runner.replace("'gl-startup-build-v1/gpu-baseline.exe'","'gl-startup-build-v2/gpu-baseline.exe'")
+start=runner.index('plan = [');end=runner.index("write(out / 'registration.json'",start)
+runner=runner[:start]+"plan = [dict(name='1k-normal', n=1000, cancel=False), dict(name='1k-window-close', n=1000, cancel=True)]\n"+runner[end:]
+runner=runner.replace('Finite startup diagnosis, not a throughput group. One 40K static process after small normal/close controls pass.',
+    'Final formatted root probe actual recompile, 1K normal/close controls. Exact Release DLLs, no throughput or load acceptance.')
+exec(compile(runner,str(base/'run_gl_startup_response_v2.py'),'exec'))

@@ -1,0 +1,9 @@
+Filters: "Unlit local state follows per-object colors and resets every frame"
+Randomness seeded to: 1
+GL_STATE_PIXEL 0 16669491920092391348 0 0 51 255
+GL_STATE_PIXEL 1 4668077663010909504 255 0 0 255
+GL_STATE_PIXEL 2 11910152564103518386 0 204 0 255
+GL_STATE_PIXEL 3 16669491920092391348 0 0 51 255
+===============================================================================
+All tests passed (38 assertions in 1 test case)
+

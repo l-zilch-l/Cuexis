@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-10-30
+更新日期：2026-10-31
 
 本文只维护当前阶段、正在进行的任务和未解决的问题。实施与测量细节见带日期的阶段报告。
 
@@ -62,7 +62,12 @@
   普通40K H902为250.021→2.655 ms，writer保护通过；Seek重复性仍超15%，不作正式接受。
   固定40K六代成本曲线已记录：允许全部六点时实际额外requested约1.18MB；128MiB仍无产品预算依据。
   [新发布归因](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-30-r3-publication-attribution.md)确认H902主要在Fact投影，H5主要在首次activation；批量Fact候选虽改善H902约33%，但保护项及重复性未过，未选用。
-  [activation与活跃索引候选](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-30-r3-activation-and-active-sequence.md)将40K H5/H902进一步降至0.355/1.517ms，数值保护通过但完整重复性未过，均未选用；正在独立验证活跃索引的产品改动。
+  [activation与活跃索引候选](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-30-r3-activation-and-active-sequence.md)将40K H5/H902进一步降至0.355/1.517ms，数值保护通过但完整重复性未过，均未选用；独立产品分页索引固定组无明显收益且Seek重复性失败，已不选用。
+  [窗口启动响应与新归因](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-31-r3-startup-and-render-attribution.md)：
+  owner反馈的40K长时间假死定位为探针建窗后同步CPU准备且无消息泵，测试探针已把准备移到建窗前并支持关闭取消，未声称产品加载已解决。
+  JSON回调DOM解析存在宽数组平方扫描；SAX/legacy parse-once组合的40K prepare约17.555→2.028秒，身份与帧摘要一致，但完整重复性未过，未选用且不算首画面≤2秒通过。
+  实例化原型仍未达预设收益门；诊断显示剩余约30ms主要在命令构造/排序/复制/摘要，下一步继续消除CPU侧重复物化。
+  早期GL组缺精确Release DLL绑定的限制已留档，后续组显式绑定同工具链Release运行库；原组不回填接受。
   这些候选均未进入产品实现或完成接受；恢复前暂停现场、统计口径更正及版本化实验材料见
   [2026-10-30 暂停与候选交接](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-30-r3-pause-and-candidate-handoff.md)。
   历史[来源绑定实验](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-source-binding-experiment.md)用同一 Release 二进制比较 canonical SHA 与进程内 owning source binding。

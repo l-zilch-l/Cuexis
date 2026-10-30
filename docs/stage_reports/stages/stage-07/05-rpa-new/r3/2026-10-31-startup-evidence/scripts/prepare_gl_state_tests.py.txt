@@ -1,0 +1,53 @@
+from pathlib import Path
+import subprocess
+root=Path.cwd();base=Path(__file__).resolve().parent;out=base/'gl-state-source-v1'
+s='''#include "'''+(base/'product-sequence-source-v1/tests/rpa/execution_fixture.hpp').as_posix()+'''"
+#include <cuexis/platform_sdl/sdl_runtime.hpp>
+#include <cuexis/platform_sdl/sdl_window.hpp>
+#include <cuexis/render_opengl/open_gl_backend.hpp>
+#include <cuexis_internal/pixel_probe.hpp>
+#include <array>
+#include <iostream>
+
+TEST_CASE("Unlit local state follows per-object colors and resets every frame", "[.][gl-state]") {
+    using namespace cuexis;using namespace playback;
+    auto runtime=platform_sdl::SdlRuntime::create();REQUIRE(runtime);
+    render_opengl::OpenGlConfig gl;gl.vsync=false;
+    auto context=render_opengl::configureOpenGlContext(*runtime,gl);REQUIRE(context);
+    platform_sdl::WindowConfig options;options.width=320;options.height=240;options.highDpi=false;
+    options.title="Cuexis local GL state characterization";
+    auto window=platform_sdl::SdlWindow::create(*runtime,options);REQUIRE(window);
+    auto backend=render_opengl::OpenGlBackend::create(*window,std::move(*context));REQUIRE(backend);
+    REQUIRE(render_opengl::detail::OpenGlDiagnosticsAccess::setPixelReadback(*backend,true));
+    PlaybackSession session;
+    auto prepared=session.prepareLoad(test_support::presentation(true),PlaybackMode::ChartClock);REQUIRE(prepared);
+    auto presentation=backend->prepare(*prepared,{});REQUIRE(presentation);
+    REQUIRE(backend->accepts(*presentation));REQUIRE(session.commit(std::move(*prepared)));
+    backend->activate(std::move(*presentation));REQUIRE(session.update({0,0,0}));
+    auto snapshot=session.extractFrame({320,240});REQUIRE(snapshot);REQUIRE(snapshot->objects.size()==1);
+    const auto prototype=snapshot->objects[0];
+    for(unsigned frame=0;frame<4;++frame) {
+        snapshot->objects.clear();
+        for(unsigned object=0;object<3;++object) {
+            auto value=prototype;
+            value.id="019b0000-0000-7abc-8def-00000000000"+std::to_string(2+object);
+            value.worldMatrix[14]=static_cast<float>(object);
+            for(unsigned c=0;c<3;++c)value.materialTint[c]=(c==(object+frame)%3)?1.0F:0.0F;
+            snapshot->objects.push_back(std::move(value));
+        }
+        const auto summary=backend->submit(*snapshot);REQUIRE(summary);
+        REQUIRE(summary->opaque.size()==3);CHECK(summary->transparent.empty());
+        const auto pixel=backend->lastPixelProbe().rgba;
+        std::array<std::uint8_t,4> expected{0,0,0,255};
+        const auto channel=(2+frame)%3;
+        expected[channel]=channel==0?255:channel==1?204:51;
+        CHECK(pixel==expected);
+        std::cout<<"GL_STATE_PIXEL "<<frame<<" "<<summary->digest<<" "
+                 <<unsigned(pixel[0])<<" "<<unsigned(pixel[1])<<" "<<unsigned(pixel[2])<<" "<<unsigned(pixel[3])<<"\\n";
+        REQUIRE(backend->present());
+    }
+    REQUIRE(backend->close());
+}
+'''
+(out/'state_test.cpp').write_text(s,encoding='utf-8')
+subprocess.run(['clang-format','-i',str(out/'state_test.cpp')],check=True)

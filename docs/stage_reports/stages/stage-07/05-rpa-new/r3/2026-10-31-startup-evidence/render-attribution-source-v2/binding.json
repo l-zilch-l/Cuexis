@@ -1,0 +1,7 @@
+{
+  "scope": "v1 timer probe scope corrected for empty-manifest path. Diagnostic only; instancing v2 private GL plus neutral substage timers; no optimization change.",
+  "files": {
+    "draw_command.cpp": "f0df30f4c1aae0304c46fad1f71cd87001bfbb08977ab0be2ce1119602c8a290",
+    "open_gl_presentation.cpp": "11b19466915cb49290873d5bec5c0a9f4c53a339e09769849f5226f734ae458a"
+  }
+}

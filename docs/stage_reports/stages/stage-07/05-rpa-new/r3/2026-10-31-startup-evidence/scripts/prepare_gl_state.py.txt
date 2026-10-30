@@ -1,0 +1,70 @@
+from pathlib import Path
+import hashlib,json,subprocess
+root=Path.cwd();base=Path(__file__).resolve().parent;out=base/'gl-state-source-v1';out.mkdir(exist_ok=False)
+s=(root/'engine/render_opengl/src/open_gl_presentation.cpp').read_text(encoding='utf-8')
+a=s.index('void drawUnlitCommands(');b=s.index('\nvoid setNumericUniform(',a)
+s=s[:a]+'''void drawUnlitCommands(const detail::PresentationPipeline& pipeline,
+                       const std::array<float, 16>& viewProjection,
+                       std::span<const PreparedDraw> draws) noexcept {
+    glUseProgram(pipeline.program.value);
+    glUniformMatrix4fv(pipeline.viewProjectionLocation, 1, GL_FALSE, viewProjection.data());
+    glUniform1i(pipeline.textureLocation, 0);
+    // This cache lives only inside this uninterrupted pass. The first draw writes every
+    // state explicitly, so no caller or previous frame's OpenGL state is assumed.
+    std::optional<bool> culling;
+    std::optional<bool> useTexture;
+    std::optional<bool> useTextureAlpha;
+    std::optional<GLuint> texture;
+    std::optional<GLuint> vertexArray;
+    std::optional<std::array<float, 4>> color;
+    glActiveTexture(GL_TEXTURE0);
+    for (const auto& draw : draws) {
+        if (draw.program != nullptr)
+            continue;
+        if (!culling || *culling != draw.command.backFaceCulling) {
+            culling = draw.command.backFaceCulling;
+            if (*culling)
+                glEnable(GL_CULL_FACE);
+            else
+                glDisable(GL_CULL_FACE);
+        }
+        glUniformMatrix4fv(pipeline.worldLocation, 1, GL_FALSE, draw.command.worldMatrix.data());
+        const std::array<float, 4> nextColor{
+            static_cast<float>(draw.command.effectiveColor[0]),
+            static_cast<float>(draw.command.effectiveColor[1]),
+            static_cast<float>(draw.command.effectiveColor[2]),
+            static_cast<float>(draw.command.effectiveColor[3])};
+        if (!color || *color != nextColor) {
+            color = nextColor;
+            glUniform4f(pipeline.effectiveColorLocation, nextColor[0], nextColor[1], nextColor[2],
+                        nextColor[3]);
+        }
+        const bool nextUseTexture = draw.texture != nullptr;
+        const bool nextUseAlpha = nextUseTexture &&
+            draw.material->material.alphaMode == playback::PresentationAlphaMode::Blend;
+        if (!useTexture || *useTexture != nextUseTexture) {
+            useTexture = nextUseTexture;
+            glUniform1i(pipeline.useTextureLocation, nextUseTexture ? 1 : 0);
+        }
+        if (!useTextureAlpha || *useTextureAlpha != nextUseAlpha) {
+            useTextureAlpha = nextUseAlpha;
+            glUniform1i(pipeline.useTextureAlphaLocation, nextUseAlpha ? 1 : 0);
+        }
+        const GLuint nextTexture = draw.texture ? draw.texture->texture.value : 0;
+        if (!texture || *texture != nextTexture) {
+            texture = nextTexture;
+            glBindTexture(GL_TEXTURE_2D, nextTexture);
+        }
+        if (!vertexArray || *vertexArray != draw.mesh->vertexArray.value) {
+            vertexArray = draw.mesh->vertexArray.value;
+            glBindVertexArray(*vertexArray);
+        }
+        glDrawElements(GL_TRIANGLES, draw.mesh->indexCount, GL_UNSIGNED_INT, nullptr);
+    }
+}
+'''+s[b:]
+(out/'open_gl_presentation.cpp').write_text(s,encoding='utf-8')
+subprocess.run(['clang-format','-i',str(out/'open_gl_presentation.cpp')],check=True)
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+(out/'binding.json').write_text(json.dumps(dict(selected=False,scope='Private per-call unlit GL state cache; draw order, world uniforms, shader semantics, neutral builder/digest untouched. First draw explicitly writes all GL state, no cross-frame cache. Parameterized draw path unchanged.',source_sha256=sha(out/'open_gl_presentation.cpp'),baseline_sha256=sha(root/'engine/render_opengl/src/open_gl_presentation.cpp')),indent=2),encoding='utf-8')
+print(out)

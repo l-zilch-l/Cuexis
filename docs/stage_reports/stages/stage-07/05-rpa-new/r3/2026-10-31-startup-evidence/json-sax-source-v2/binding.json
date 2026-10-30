@@ -1,0 +1,6 @@
+{
+  "scope": "v2 preserves first duplicate at key encounter, defers rejection for syntax/depth/string precedence. Correctly rejects empty duplicate keys under existing all-keys-unique contract; private CPP only.",
+  "preparation_failure": "Initial script read v1 under GBK; aborted before writing source. This explicit UTF8 resume produced the first v2 source.",
+  "source_sha256": "da64484ff83f7cb31ee27793aa4462f232d6a70d57e221f9d29d6743d3bec0e9",
+  "selected": false
+}
