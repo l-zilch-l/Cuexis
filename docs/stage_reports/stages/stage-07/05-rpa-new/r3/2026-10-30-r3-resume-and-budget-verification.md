@@ -86,3 +86,31 @@ point make_shared 前注入。新增故障/边界与已有相关回归共 **11 c
 目录与 partial tail 仍计费；promotion 检查精确共享页身份。需要证明整个暂存、fault、分支和归档
 生命周期均有 mandatory owner，不能因某个引用计数或值相等就扣除。只有数据与证明支持才继续，
 不为守住任意 128 MiB 引入难以维护的复杂机制。原正式/内存/profile 与最终矩阵缺口保持开放。
+
+## 固定成本 census：先量成本，再决定预算
+
+[登记](2026-10-30-resume-evidence/retention-census-registration.json)固定 1K dense、40K dense、
+40K 六波/六代 owning archive；每场景比较 quota=0、历史 128 MiB 和 SIZE_MAX。
+SIZE_MAX 只用于关闭字节准入、保留四槽上限以观察成本，不是候选生产上限或为了通过原门。
+1 case / 141 assertions 通过；所有 requested/CRT storage 在最后 owner 释放后差值归零。
+
+| 场景 | 收点版较 quota=0 多保留 requested | 多保留 CRT usable | 全额计费 |
+| --- | ---: | ---: | ---: |
+| 1K dense 单点 | 11,303 B | 11,559 B | 6,115,528 B |
+| 40K dense 单点 | 323,303 B | 323,559 B | 244,028,048 B |
+| 40K 六波、六代归档 | 1,176,174 B | 1,178,062 B | 966,657,872 B |
+
+上表在 writer 销毁、所有原始 owning generations 仍保留时配对相减。六代中只留下最早一代后，
+requested 额外保留回到 56,639 B；最后一代释放后 optional charge=0。40K dense 峰值 requested
+两版同为 463,568,821 B；六波峰值从 369,323,129 增至 370,166,905 B（+843,776 B）。
+这是单次固定夹具实际成本，不是一般内容的上界、统计性能接受或完整进程峰值。
+CRT usable 包含观察器 header/alignment；private/working set 为含夹具及分配器滞留的绝对采样。
+完整[原始结果](2026-10-30-resume-evidence/retention-census-results.json)与
+[摘要](2026-10-30-resume-evidence/retention-census-summary.json)已留档。
+
+当前证据支持避免重复计算 mandatory owner 共享页，但不直接推出某个合理产品预算。
+独立只读审阅确认普通 ledger append-only 路径，同时发现 ReplayArchive 默认赋值会先替换 data_
+再销毁 nativeRecovery_；若使用完整页豁免，必须先关闭这个生命周期窗口。计划用 index 自有的
+exact source floor 将源保活到 ticks/points 析构之后，保持 index 不可独立导出；并以真实 deleter
+事件验证 copy/move assignment，而不是只查看最终 live==0。
+另需让 reference 独立 decodeReplay，避免同一个 anchor 的外部参考意外保活待验证的旧源。

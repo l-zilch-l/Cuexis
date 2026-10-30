@@ -15,12 +15,18 @@
     "budget-v2-observer-kernel.cpp.txt": "ec9aa0b2288376c84bb3ab4028b84fdbcabc0f0ffcbb435ad2b5d9a0d016c03a",
     "budget-v2-observer-tests.cpp.txt": "ae02fad99dc9e948d87a203bca487ed8e2f4e35e12b7b78273f07c69ea9fc941",
     "build_budget_observer_v3.py.txt": "26fabebce28cb84a97a11ef6afc3f5480e78889a985e894295746060a2036433",
+    "build_retention_census.py.txt": "80026db99569dbffae81ae06165e60670db1fb1f98c906ba9c4196ddc5d11572",
     "entry-verification.json": "928c7c4b6f70ee23578eb917a78145b8c03f79817c23e53d222fce4e39486425",
     "p1-v2-comparison.json": "ad29e537d3ddfa37d1a7fb060249fabe97437dd234dc831f0298cc36dfe325d8",
     "p1-v2-decision.json": "1e0dbd91f7671ef921cc74d9f5277e9bc6cc7ce5ad47a96a54c46d99aec7f405",
     "p1-v2-registration.json": "270cec049036411692963a14fbde75ac3eccf1340e53b5a9472985c140bbd6b0",
     "p1-v2-results.json": "f13e4eedbcfa0218b07cb2d6bd43c7082121923e65e743209f82ef94a7c87ca1",
     "prepare_budget_observer.py.txt": "dd7ac4671d4161e62f49e3561ef8c98e36bc1f66c34528ccbb61e39c949d5d06",
+    "prepare_retention_census.py.txt": "8c887e5f93e7534185a0d9b02dc6689a9e488902657bf1fbecd40a59a0744fd9",
+    "retention-census-registration.json": "0e2db3506e64379e450eaae7f16b7b9cb78a5d4d8a1b04f2aa067dfc2d2cefff",
+    "retention-census-results.json": "aab0b76a283d0ba67773508b6cafdcd6b1d2666c3f35f55c1e81be87082ec81d",
+    "retention-census-summary.json": "4a98eb1a57a5488ae96f8027ebbd7f94895c9e99f2ef75ac11a3aea4b9316fb2",
+    "retention-census-test-census.log.txt": "2897a95a2f7f5741c71542f3fb752bee915683f12ae145b9cd291db695ebf2d4",
     "run_packed_remaining_v2.py.txt": "d476fdec6216709b14ef02b1779cbed3ab79ec966640e471175038a2e0c5be33"
   }
 }
