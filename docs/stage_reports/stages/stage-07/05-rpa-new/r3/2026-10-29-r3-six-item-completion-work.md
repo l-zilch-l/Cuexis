@@ -321,6 +321,13 @@ vcpkg 同样设置并发数 1，但其 helper 的 Debug/Release 配置探测仍�
 另在当前源码直接执行 VerifyArchitecture.cmake，退出 0。Packed typed-existence 候选和
 R3c 逐 Tick 事实普查均先准备独立源码副本，未混入本次 MinGW 冻结构建。
 
+`release-rpa-v1` 随后按 ff93484 的产品源码独立 fresh 构建，RPA observation ON、PD metrics OFF。
+Host 69 cases / 55,371 assertions、Judgement 236 / 56,139、RPA 71 / 26,545 全通过；
+显式 Seek matrix 1 case / 12,430 assertions 产生恰好 60 条矩阵记录，包含未来 checkpoint
+及第一条记录内 partial 的 actualRecords 断言。该通道核验不使用其观测时间作性能接受。
+原型仍放在 `tick-prototype-v1/source` 独立副本中，固定四点的共享 owner 方案先做有限 headless
+正向验证；故障注入、保留内存及普通 writer 开销未通过前，不提升为产品实现或记作 R3c 通过。
+
 项目目标构建使用串行、BelowNormal、affinity 3，由既有 Windows Job 包装器约束后代；
 第三方配置 helper 的并行例外见本节恢复批次。
 旧绑定构建/二进制只读，采用新的独立构建目录。Release 首次配置因 PowerShell 对未引用 suffix
