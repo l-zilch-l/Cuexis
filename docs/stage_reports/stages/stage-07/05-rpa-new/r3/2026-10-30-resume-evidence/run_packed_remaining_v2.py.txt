@@ -1,0 +1,121 @@
+from native import *
+import csv, io
+
+phase=sys.argv[1]
+build=base/(sys.argv[2] if len(sys.argv)>2 else 'packed-remaining-v2')
+out=base/(sys.argv[3] if len(sys.argv)>3 else 'packed-remaining-measure-v2');out.mkdir(exist_ok=False)
+if phase=='canary':
+ plan=[dict(kind='recovery',n=64,allocator=allocator,profile='uniform',repeat=0,variant=v) for allocator in ('normal','observed') for v in ('baseline','candidate')]
+ plan += [dict(kind='prepare-wire',n=64,allocator='normal',profile='unique',repeat=0,variant=v) for v in ('baseline','candidate')]
+elif phase=='prepare':
+ plan=[dict(kind='prepare-wire',n=64,allocator='normal',profile='split',repeat=0,variant=v) for v in ('baseline','candidate')] + [dict(kind='prepare-wire',n=n,allocator='normal',profile=profile,repeat=rep,variant=v) for n,profile in ((1000,'shared'),(1000,'split'),(10000,'split'),(40000,'shared')) for rep in range(2) for v in (('baseline','candidate') if rep%2==0 else ('candidate','baseline'))]
+elif phase=='prepare-memory':
+ plan=[dict(kind='prepare-observed',n=n,allocator='observed',profile=profile,repeat=0,variant=v) for n in (1000,10000,40000) for profile in ('uniform','unique') for v in ('baseline','candidate')]
+elif phase=='census':
+ plan=[dict(kind='recovery',n=n,allocator='observed',profile='uniform',repeat=0,variant=v) for n in (1000,40000) for v in ('baseline','candidate')]
+elif phase=='recovery':
+ plan=[dict(kind='recovery',n=n,allocator='normal',profile='uniform',repeat=rep,variant=v) for n in (1000,10000,40000) for rep in range(3) for v in (('baseline','candidate') if rep%2==0 else ('candidate','baseline'))]
+ plan += [dict(kind='recovery',n=n,allocator='observed',profile='uniform',repeat=0,variant=v) for n in (1000,10000,40000) for v in ('baseline','candidate')]
+elif phase=='seek':
+ plan=[dict(kind='prepare',n=n,allocator='normal',profile='uniform',identity=identity,records=records,repeat=rep,variant=v) for n in (1000,10000,40000) for identity in ('source','canonical') for records in (33,129) for rep in range(3) for v in (('baseline','candidate') if rep%2==0 else ('candidate','baseline'))]
+else:raise SystemExit('unknown phase')
+
+plan=[dict(kind='prepare-wire',n=n,allocator='normal',profile=profile,repeat=rep,variant=v) for n,profile,repeats in ((64,'split',1),(1000,'shared',2),(10000,'split',2)) for rep in range(repeats) for v in (('baseline','candidate') if rep==0 else ('candidate','baseline'))]
+
+def executable(item):
+ stem=('recovery-'+item['allocator']) if item['kind']=='recovery' else item['kind']
+ return build/(stem+'-'+item['variant']+'.exe')
+
+decision='Prepare: improve uniform aggregate source prepare+Packed encode+decode medians at each scale; unique guard <=5% regression. Recovery: byte/identity equality, exact release, lower actual encoding-domain peak and no >5% ordinary time regression. Seek: report cold first separately from repeats, original 15% repeatability and 20ms gate unchanged.'
+if build.name.startswith('resource-candidate'):
+ decision='Final-source targeted check after shortening borrowed-index lifetime: two AB/BA pairs only for 10K split. Original full guard group remains separate. 10K split source prepare improves >=30% and aggregate >=15%; other profiles guard <=5% regression. Exact Packed/three-identity raw bytes mandatory. No formal/CI budget acceptance.'
+elif build.name.startswith('identity-candidate'):
+ decision='Two predeclared AB/BA pairs per size/profile. Improve aggregate source prepare+Packed encode+decode medians at 10K and 40K in uniform and unique profiles; 1K guard <=5% regression. Byte/identity equality mandatory. Report relative ranges and retain anomalies; original formal 15%/CI and budgets are not relaxed.'
+elif build.name.startswith(('name-index','packed-lookup')):
+ decision='Target the measured named-declaration quadratic path: unique-pattern aggregate source prepare+Packed encode+decode medians improve at all three sizes; uniform guard <=5% regression. Exact bytes/errors unchanged. Original 15% repeatability and formal CI remain unchanged; this is an independent diagnostic registration.'
+decision='Fixed 10 ordinary processes: 64 split semantic canary pair; 1K shared and 10K split two AB/BA pairs each. Retain if 10K split Packed encode+decode median improves >=10%, shared encode+decode and source prepare guard <=5%. Exact raw Packed and three identity bytes mandatory. No original formal gate relaxed.'
+write(out/'registration.json',dict(plan=plan,binding_sha256=sha(build/'binding.json'),head=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),affinity=4,priority='BelowNormal',qos='execution throttling OFF',formal=False,scope='R3 isolated fixed diagnostic; not a replacement of historical PD/R4 groups or B0 capacity acceptance',stop='Invalid process stops. No replacement, extension, or excluded noise. All timings from observed allocator excluded from performance decision.',decision=decision,binaries={str(executable(item)):sha(executable(item)) for item in plan},runner_sha256=sha(Path(__file__)),probe_sha256=sha(base/'resource_probe.cpp')))
+rows=[];seen_signatures={}
+for ordinal,item in enumerate(plan):
+ active=list(csv.reader(io.StringIO(subprocess.check_output(['tasklist','/FO','CSV','/NH'],text=True,encoding='utf-8',errors='replace'))))
+ compilers=[r for r in active if r and r[0].lower() in ('cl.exe','link.exe','ninja.exe','gcc.exe','g++.exe','cc1.exe','cc1plus.exe')]
+ if compilers:
+  write(out/'stopped.json',dict(reason='Concurrent compiler/build process before measurement',processes=compilers,ordinal=ordinal))
+  raise SystemExit('Stopped before measurement: build process still active')
+ binary=executable(item);host=item['kind']=='prepare'
+ env={key:value for key,value in os.environ.items() if not key.startswith(('CUEXIS_PD','CUEXIS_GPU_','R3_','CUEXIS_SEEK_','CUEXIS_REDESIGN_'))}
+ if host:
+  env.update(CUEXIS_REDESIGN_BARRIER='1',CUEXIS_SEEK_REQUIREMENTS=str(item['n']),CUEXIS_SEEK_IDENTITY=item['identity'],CUEXIS_SEEK_RECORDS=str(item['records']),CUEXIS_SEEK_CONTENT='packed')
+ else:
+  env.update(R3_PROBE_BARRIER='1',R3_MEMORY_REQUIREMENTS=str(item['n']))
+  if item['profile']=='split':env['R3_UNIQUE_RESOURCES']='1'
+  if item['kind']=='prepare-wire':env['R3_PREPARE_ONLY']='1'
+  if item['kind']=='prepare-wire' and item['repeat']==0:env['R3_PREPARE_DUMP']=str(out/f'raw-{item["n"]}-{item["profile"]}-{item["variant"]}')
+  if item['kind']=='recovery' and item['allocator']=='normal' and item['repeat']==0:env['R3_RECOVERY_DUMP']=str(out/f'raw-{item["n"]}-{item["profile"]}-{item["variant"]}')
+ log=out/f'{ordinal:03}-{item["n"]}-{item["allocator"]}-{item["variant"]}.log'
+ started=time.monotonic()
+ battery=Battery();assert k.GetSystemPowerStatus(ct.byref(battery))
+ with log.open('x',encoding='utf-8') as stream:
+  child=subprocess.Popen([str(binary),'[redesign-host-perf]' if host else '[recovery-memory]','--rng-seed','1'],cwd=root,env=env,stdin=subprocess.PIPE,stdout=stream,stderr=subprocess.STDOUT,creationflags=subprocess.CREATE_NO_WINDOW|subprocess.BELOW_NORMAL_PRIORITY_CLASS)
+  handle=k.OpenProcess(0x0200|0x1000,False,child.pid)
+  try:
+   power=Power(1,1,0);assert handle and k.SetProcessAffinityMask(handle,4) and k.SetProcessInformation(handle,4,ct.byref(power),ct.sizeof(power))
+   observed=Power(1,0,0);mask=ct.c_size_t();system=ct.c_size_t()
+   assert k.GetProcessAffinityMask(handle,ct.byref(mask),ct.byref(system)) and k.GetProcessInformation(handle,4,ct.byref(observed),ct.sizeof(observed))
+   controls=dict(affinity=mask.value,priority=k.GetPriorityClass(handle),qos_control=observed.ControlMask,qos_state=observed.StateMask)
+   assert controls==dict(affinity=4,priority=16384,qos_control=1,qos_state=0)
+   child.stdin.write(b'go\n');child.stdin.flush();child.stdin.close()
+   try:code=child.wait(timeout=900)
+   except subprocess.TimeoutExpired:child.kill();child.wait();code='timeout'
+  finally:
+   if handle:k.CloseHandle(handle)
+   if child.poll() is None:child.kill();child.wait()
+ output=log.read_text(encoding='utf-8',errors='replace')
+ records={}
+ for line in output.splitlines():
+  if line.startswith(('R3_PREPARE ','R3_CODEC ','R3_MEMORY_FINAL ','PD5_MEMORY ','PD5_MEMORY_DOMAIN ','PD5_MEMORY_PARTITION ','R3_PROCESS_MEMORY ')):
+   key,payload=line.split(' ',1);records.setdefault(key,[]).append(json.loads(payload))
+  elif line.startswith('{"event":'):
+   event=json.loads(line);records.setdefault(event['event'],[]).append(event)
+ valid=code==0 and 'All tests passed' in output
+ if host:valid=valid and len(records.get('r3.redesign.host',[]))==3
+ else:
+  valid=valid and len(records.get('R3_PREPARE',[]))==1
+  if item['kind']=='recovery':valid=valid and len(records.get('R3_CODEC',[]))==1
+  if item['allocator']=='observed':
+   required_labels={'before-fixture','after-source-prepare','after-packed-encode','after-packed-decode','after-source-temporaries-release','after-session-prepare','after-history','after-owning-recovery','after-snapshot-encode','after-replay-encode','after-output-release','after-recovery-release','after-session-release','after-content-release','after-fixture-release','after-test-session'}
+   valid=valid and records.get('R3_MEMORY_FINAL')==[dict(tagged_live_count=0,tagged_requested_bytes=0,exact=1)]
+   valid=valid and required_labels.issubset({r['label'] for r in records.get('PD5_MEMORY',[])}) and required_labels.issubset({r['label'] for r in records.get('PD5_MEMORY_PARTITION',[])})
+   valid=valid and all(r['exact'] for r in records.get('PD5_MEMORY_PARTITION',[]))
+   valid=valid and all(any(r['owner']=='main' and r['domain']==domain and r['label']==label and r['peak_requested_cpp_bytes']>0 for r in records.get('PD5_MEMORY_DOMAIN',[])) for domain,label in (('snapshot','after-snapshot-encode'),('replay','after-replay-encode')))
+ row=dict(item,ordinal=ordinal,valid=valid,exit=code,seconds=time.monotonic()-started,controls=controls,ac_line=battery.ACLineStatus,records=records,log_sha256=sha(log))
+ for record_kind,fields in (('R3_PREPARE',('packed_bytes','packed_sha256','chart_sha256','content_sha256','prepared_sha256')),('R3_CODEC',('snapshot_bytes','replay_bytes','snapshot_sha256','replay_sha256'))):
+  if record_kind not in records:continue
+  signature=tuple(records[record_kind][0][field] for field in fields);key=(item['n'],item['profile'],record_kind)
+  prior_signature=seen_signatures.setdefault(key,signature)
+  if signature!=prior_signature:row['valid']=valid=False;row['semantic_mismatch']=record_kind
+ rows.append(row);write(out/'results.json',rows)
+ print(json.dumps({key:row[key] for key in ('ordinal','kind','n','allocator','profile','variant','valid','exit','seconds')}),flush=True)
+ if not valid:raise SystemExit('Invalid: stopped without replacement')
+
+# Compare all identity and output fields, independently of timing.
+wire_fields=('snapshot_bytes','replay_bytes','snapshot_sha256','replay_sha256')
+prepare_fields=('packed_bytes','packed_sha256','chart_sha256','content_sha256','prepared_sha256')
+comparison=[]
+for n in sorted({r['n'] for r in rows}):
+ for profile in sorted({r['profile'] for r in rows if r['n']==n}):
+  group=[r for r in rows if r['n']==n and r['profile']==profile]
+  for key,fields in (('R3_CODEC',wire_fields),('R3_PREPARE',prepare_fields)):
+   values=[tuple(row[key][0][f] for f in fields) for r in group if (row:=r['records']).get(key)]
+   if values:
+    comparison.append(dict(n=n,profile=profile,key=key,exact_hash_and_size_match=len(set(values))==1))
+    assert len(set(values))==1, (n,profile,key)
+for left in out.glob('raw-*-baseline-*.bin'):
+ right=out/left.name.replace('-baseline-','-candidate-');assert right.exists()
+ with left.open('rb') as a,right.open('rb') as b:
+  while True:
+   av=a.read(1048576);bv=b.read(1048576);assert av==bv,(left,right)
+   if not av:break
+ comparison.append(dict(raw=left.name,other=right.name,full_byte_comparison=True,sha256=sha(left)))
+write(out/'comparison.json',comparison)
+print('Fixed group completed; semantic bytes compared. Timing retention decision remains separate.',flush=True)

@@ -1,0 +1,14 @@
+{
+  "selection": false,
+  "scope": "P1 v2 fixed group rejected; raw bytes and logs remain in original out directory. User resumed ordinary implementation; formal acceptance unchanged.",
+  "files": {
+    ".gitattributes": "4b427680b71021aaec87c941243cc2df0bf3e02978865265c452dd48f8890daf",
+    "analyze_packed_remaining_v2.py.txt": "ea808144ee09dd2b386ddb585ad6933f56424b4d327068292e70fd9305691af8",
+    "entry-verification.json": "928c7c4b6f70ee23578eb917a78145b8c03f79817c23e53d222fce4e39486425",
+    "p1-v2-comparison.json": "ad29e537d3ddfa37d1a7fb060249fabe97437dd234dc831f0298cc36dfe325d8",
+    "p1-v2-decision.json": "1e0dbd91f7671ef921cc74d9f5277e9bc6cc7ce5ad47a96a54c46d99aec7f405",
+    "p1-v2-registration.json": "270cec049036411692963a14fbde75ac3eccf1340e53b5a9472985c140bbd6b0",
+    "p1-v2-results.json": "f13e4eedbcfa0218b07cb2d6bd43c7082121923e65e743209f82ef94a7c87ca1",
+    "run_packed_remaining_v2.py.txt": "d476fdec6216709b14ef02b1779cbed3ab79ec966640e471175038a2e0c5be33"
+  }
+}
