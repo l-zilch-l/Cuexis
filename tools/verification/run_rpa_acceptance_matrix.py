@@ -146,6 +146,15 @@ def main():
             ("ctest", ["ctest", "--test-dir", str(build), "--no-tests=error", "--output-on-failure", "-j", str(args.jobs)]),
         ]
         for phase, command in commands:
+            if phase == "ctest":
+                # CTest rewrites Testing/Temporary/LastTestsFailed.log only when a test fails, so a
+                # list left in the build directory by an earlier run survives a fully passing run and
+                # would be recorded as this row's result. Capture it as the prior state, then clear it
+                # so whatever is present afterwards belongs to this phase.
+                previous = build / "Testing/Temporary/LastTestsFailed.log"
+                if previous.is_file():
+                    (run / f"{row}-previous-LastTestsFailed.log").write_bytes(previous.read_bytes())
+                    previous.unlink()
             result = execute(row, phase, command, environment)
             record["phases"].append(result)
             if phase == "ctest":
@@ -155,7 +164,10 @@ def main():
                 record["skipped_tests"] = [line.strip() for line in text.splitlines()
                                            if "***Skipped" in line]
                 temporary = build / "Testing/Temporary"
-                for name in ("LastTest.log", "LastTestsFailed.log"):
+                artifacts = ["LastTest.log"]
+                if record["test_counts"] and record["test_counts"][1]:
+                    artifacts.append("LastTestsFailed.log")
+                for name in artifacts:
                     artifact = temporary / name
                     if artifact.exists():
                         (run / f"{row}-{name}").write_bytes(artifact.read_bytes())
