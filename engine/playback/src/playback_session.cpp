@@ -761,12 +761,21 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
     artifact.document.emplace(std::move(*loaded.legacyDocument));
     // Legacy ChartDocument is a runtime-facing projection. Identity must use the complete
     // canonical source bytes so legacy timing, template, and keyframe fields are not erased.
-    auto canonical = chart::ChartWriter::writeCanonicalJson(context.chartJson, context.limits);
-    if (!canonical) {
-        addErrorDiagnostic(diagnostics, canonical.error());
-        return core::unexpected(std::move(canonical.error()));
+    // The dispatcher canonicalizes the tree it already parsed, so this stage does not parse the
+    // document a second time. A value the canonical writer rejects has no bytes to reuse and
+    // travels the text entry point instead, which reports the writer error unchanged.
+    std::string canonicalText;
+    if (loaded.legacyCanonicalText.has_value()) {
+        canonicalText = std::move(*loaded.legacyCanonicalText);
+    } else {
+        auto canonical = chart::ChartWriter::writeCanonicalJson(context.chartJson, context.limits);
+        if (!canonical) {
+            addErrorDiagnostic(diagnostics, canonical.error());
+            return core::unexpected(std::move(canonical.error()));
+        }
+        canonicalText = std::move(*canonical);
     }
-    artifact.chartIdentity = chart::canonicalBytesIdentity(*canonical);
+    artifact.chartIdentity = chart::canonicalBytesIdentity(canonicalText);
     artifact.parameterIdentity = chart::emptyParameterIdentity();
     return {};
 }

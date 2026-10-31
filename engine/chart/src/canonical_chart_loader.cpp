@@ -1482,7 +1482,7 @@ void addError(core::Diagnostics& diagnostics, const core::Error& error, std::str
 
 } // namespace
 
-auto detail::loadCanonicalValue(json::Value parsed, const ChartLimits& limits)
+auto detail::loadCanonicalValue(const json::Value& parsed, const ChartLimits& limits)
     -> ChartDocumentResult {
     auto diagnostics = detail::makeDiagnostics(limits);
     if (detail::rejectInvalidDiagnosticLimit(diagnostics, limits)) {
@@ -1691,7 +1691,7 @@ auto CanonicalChartLoader::load(std::string_view jsonText, const ChartLimits& li
         return ChartDocumentResult{std::nullopt, std::move(diagnostics)};
     }
 
-    return detail::loadCanonicalValue(std::move(*parsed), limits);
+    return detail::loadCanonicalValue(*parsed, limits);
 }
 
 } // namespace cuexis::chart

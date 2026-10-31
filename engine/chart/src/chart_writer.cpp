@@ -685,6 +685,12 @@ auto detail::writeV4Value(json::Value value, const ChartLimits& limits)
     return serializeCanonical(std::move(value), true);
 }
 
+auto detail::writeCanonicalValue(json::Value value, const ChartLimits& limits)
+    -> core::Result<std::string> {
+    static_cast<void>(limits);
+    return serializeCanonical(std::move(value));
+}
+
 auto ChartWriter::write(const ChartDocument& document) -> core::Result<std::string> {
     auto value = chartDocumentValue(document);
     if (!value) {
@@ -702,7 +708,7 @@ auto ChartWriter::writeCanonicalJson(std::string_view jsonText, const ChartLimit
             core::Error{"chart.writer.source_invalid", "Chart source JSON is invalid"}.withCause(
                 std::move(parsed.error())));
     }
-    return serializeCanonical(std::move(*parsed));
+    return detail::writeCanonicalValue(std::move(*parsed), limits);
 }
 
 auto ChartWriter::writeV4(const ChartV4SourceDocument& document, const ChartLimits& limits)

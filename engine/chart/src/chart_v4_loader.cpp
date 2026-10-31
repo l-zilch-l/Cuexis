@@ -11,6 +11,7 @@
 #include "chart_v4_animation_reader_internal.hpp"
 #include "chart_v4_common_reader_internal.hpp"
 #include "chart_v4_loader_internal.hpp"
+#include "chart_writer_internal.hpp"
 #include "diagnostic_limit.hpp"
 
 #include <algorithm>
@@ -492,7 +493,7 @@ void sanitizeOwners(json::Value& root, std::string_view arrayName, const ChartLi
     }
     sanitizeOwners(source, "templates", limits, diagnostics, parameterUses);
     sanitizeOwners(source, "objects", limits, diagnostics, parameterUses);
-    auto projection = detail::loadCanonicalValue(std::move(source), limits);
+    auto projection = detail::loadCanonicalValue(source, limits);
     diagnostics.append(std::move(projection.diagnostics));
     if (!projection.document) {
         return std::nullopt;
@@ -853,7 +854,8 @@ auto detail::loadChartForPlayback(std::string_view jsonText, const ChartLimits& 
     -> ChartDispatchResult {
     auto diagnostics = detail::makeDiagnostics(limits);
     if (detail::rejectInvalidDiagnosticLimit(diagnostics, limits)) {
-        return ChartDispatchResult{false, std::nullopt, std::nullopt, {}, std::move(diagnostics)};
+        return ChartDispatchResult{false, std::nullopt, std::nullopt,
+                                   {},    std::nullopt, std::move(diagnostics)};
     }
     auto parsed =
         json::parse(jsonText, json::ParseLimits{limits.maxInputBytes, limits.maxNestingDepth,
@@ -861,7 +863,8 @@ auto detail::loadChartForPlayback(std::string_view jsonText, const ChartLimits& 
     if (!parsed) {
         addParseError(diagnostics, parsed.error());
         diagnostics.sortDeterministically();
-        return ChartDispatchResult{false, std::nullopt, std::nullopt, {}, std::move(diagnostics)};
+        return ChartDispatchResult{false, std::nullopt, std::nullopt,
+                                   {},    std::nullopt, std::move(diagnostics)};
     }
 
     bool isV4 = false;
@@ -875,13 +878,26 @@ auto detail::loadChartForPlayback(std::string_view jsonText, const ChartLimits& 
     if (isV4) {
         auto input = std::make_shared<ParsedChartInput>(ParsedChartInput{std::move(*parsed)});
         auto loaded = detail::loadV4Value(input->value, limits);
-        return ChartDispatchResult{true, std::nullopt, std::move(loaded.document), std::move(input),
+        return ChartDispatchResult{true,
+                                   std::nullopt,
+                                   std::move(loaded.document),
+                                   std::move(input),
+                                   std::nullopt,
                                    std::move(loaded.diagnostics)};
     }
 
-    auto loaded = detail::loadCanonicalValue(std::move(*parsed), limits);
-    return ChartDispatchResult{
-        false, std::move(loaded.document), std::nullopt, {}, std::move(loaded.diagnostics)};
+    auto loaded = detail::loadCanonicalValue(*parsed, limits);
+    std::optional<std::string> canonicalText;
+    if (loaded.hasValue()) {
+        // The typed reader only reads the tree, so this parse can also produce the canonical
+        // identity bytes. Producing them here is what lets a legacy prepare parse once instead of
+        // re-parsing the same document for its identity.
+        if (auto text = detail::writeCanonicalValue(std::move(*parsed), limits)) {
+            canonicalText = std::move(*text);
+        }
+    }
+    return ChartDispatchResult{false, std::move(loaded.document), std::nullopt,
+                               {},    std::move(canonicalText),   std::move(loaded.diagnostics)};
 }
 
 auto detail::loadV4IfPresent(std::string_view jsonText, const ChartLimits& limits)

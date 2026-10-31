@@ -260,7 +260,7 @@ void normalizeResolvedChart(ChartDocument& chart) {
     root->insert_or_assign("requiredExtensions", json::Value{json::Value::Array{}});
     eraseAnimators(source, "templates");
     eraseAnimators(source, "objects");
-    auto loaded = detail::loadCanonicalValue(std::move(source), limits);
+    auto loaded = detail::loadCanonicalValue(source, limits);
     diagnostics.append(std::move(loaded.diagnostics));
     if (!loaded.document) {
         return std::nullopt;

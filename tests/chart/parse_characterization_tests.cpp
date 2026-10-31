@@ -97,8 +97,7 @@ TEST_CASE("ChartLoader routing parses canonical charts once",
 
     // Canonical routing consumes the already-parsed value.
     CHECK(countOccurrences(body, "json::parse(") == 1U);
-    CHECK(body.find("detail::loadCanonicalValue(std::move(*parsed), limits)") !=
-          std::string_view::npos);
+    CHECK(body.find("detail::loadCanonicalValue(*parsed, limits)") != std::string_view::npos);
     CHECK(body.find("CanonicalChartLoader::load(jsonText, limits)") == std::string_view::npos);
 }
 
@@ -110,7 +109,7 @@ TEST_CASE("Chart v4 and CXC preparation use the shared parse layering",
     REQUIRE_FALSE(loaderBody.empty());
     REQUIRE_FALSE(projectionBody.empty());
     CHECK(countOccurrences(loaderBody, "json::parse(") == 1U);
-    CHECK(projectionBody.find("detail::loadCanonicalValue(std::move(source), limits)") !=
+    CHECK(projectionBody.find("detail::loadCanonicalValue(source, limits)") !=
           std::string_view::npos);
     CHECK(projectionBody.find("json::serialize(source)") == std::string_view::npos);
 
@@ -125,7 +124,7 @@ TEST_CASE("Chart v4 and CXC preparation use the shared parse layering",
     REQUIRE_FALSE(resolverBody.empty());
     REQUIRE_FALSE(concreteBody.empty());
     CHECK(countOccurrences(resolverBody, "json::parse(") == 1U);
-    CHECK(concreteBody.find("detail::loadCanonicalValue(std::move(source), limits)") !=
+    CHECK(concreteBody.find("detail::loadCanonicalValue(source, limits)") !=
           std::string_view::npos);
     CHECK(concreteBody.find("json::serialize(source)") == std::string_view::npos);
 
@@ -201,6 +200,7 @@ TEST_CASE("Shared Chart dispatch preserves legacy and v4 routing",
     CHECK_FALSE(v4.legacyDocument.has_value());
     REQUIRE(v4.v4Document.has_value());
     CHECK(v4.v4Document->legacyProjection.version == 4U);
+    CHECK_FALSE(v4.legacyCanonicalText.has_value());
 
     const auto legacyText =
         readSource("tests/fixtures/chart_format_update/valid/chart_v3_static_migration.json");
@@ -211,6 +211,13 @@ TEST_CASE("Shared Chart dispatch preserves legacy and v4 routing",
     CHECK_FALSE(legacy.v4Document.has_value());
     CHECK(legacy.legacyDocument->version == 3U);
     CHECK_FALSE(cuexis::chart::detail::loadV4IfPresent(legacyText).has_value());
+
+    // The dispatch hands back the identity bytes of the document it parsed, and those must be the
+    // exact bytes the text entry point produces for the same source.
+    REQUIRE(legacy.legacyCanonicalText.has_value());
+    const auto writerBytes = cuexis::chart::ChartWriter::writeCanonicalJson(legacyText);
+    REQUIRE(writerBytes.has_value());
+    CHECK(*legacy.legacyCanonicalText == *writerBytes);
 }
 
 TEST_CASE("Chart parse probe records one parse per reused v4 prepare chain",
