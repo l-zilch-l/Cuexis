@@ -1,0 +1,12 @@
+{
+  "commit": "f90c2e11ad06e2ca3f359af56c8997b07e402ed7",
+  "status": "",
+  "manifest_sha256": "13bd385bd2b948516483f7cf5cc91db9e60424b2bba1c3030dce4c067b8eca82",
+  "source_binary_and_evidence_reverified": true,
+  "valid_measurements": {
+    "processes": 12,
+    "frames": 1440
+  },
+  "invalid_v1_source_and_binary_preserved": true,
+  "scope": "physical GPU throughput diagnostic only; no push/merge/release or formal acceptance"
+}

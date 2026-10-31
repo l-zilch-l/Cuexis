@@ -1,0 +1,73 @@
+from pathlib import Path
+import ctypes as ct
+from ctypes import wintypes as w
+import datetime as dt,hashlib,json,math,os,statistics,subprocess,sys,time
+root=Path.cwd();base=Path(__file__).resolve().parent
+stage=sys.argv[1];assert stage in ('pilot','measure')
+out=base/(stage+'-v2');out.mkdir(exist_ok=False)
+exe=base/'build/bin/cuexis_execution_device_probe.exe'
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+write=lambda p,v:p.write_text(json.dumps(v,indent=2),encoding='utf-8')
+k=ct.WinDLL('kernel32',use_last_error=True)
+k.OpenProcess.argtypes=[w.DWORD,w.BOOL,w.DWORD];k.OpenProcess.restype=w.HANDLE
+k.SetProcessAffinityMask.argtypes=[w.HANDLE,ct.c_size_t]
+k.GetProcessAffinityMask.argtypes=[w.HANDLE,ct.POINTER(ct.c_size_t),ct.POINTER(ct.c_size_t)]
+k.SetProcessInformation.argtypes=[w.HANDLE,ct.c_int,ct.c_void_p,w.DWORD]
+k.GetProcessInformation.argtypes=[w.HANDLE,ct.c_int,ct.c_void_p,w.DWORD]
+k.GetPriorityClass.argtypes=[w.HANDLE];k.GetPriorityClass.restype=w.DWORD
+k.SetPriorityClass.argtypes=[w.HANDLE,w.DWORD]
+k.GetCurrentProcess.restype=w.HANDLE
+k.CloseHandle.argtypes=[w.HANDLE]
+class Power(ct.Structure):_fields_=[('Version',w.DWORD),('ControlMask',w.DWORD),('StateMask',w.DWORD)]
+class Battery(ct.Structure):_fields_=[('ACLineStatus',w.BYTE),('BatteryFlag',w.BYTE),('BatteryLifePercent',w.BYTE),('SystemStatusFlag',w.BYTE),('BatteryLifeTime',w.DWORD),('BatteryFullLifeTime',w.DWORD)]
+k.GetSystemPowerStatus.argtypes=[ct.POINTER(Battery)]
+allowed=ct.c_size_t();system_allowed=ct.c_size_t()
+assert k.GetProcessAffinityMask(k.GetCurrentProcess(),ct.byref(allowed),ct.byref(system_allowed))
+measurement_mask=allowed.value
+assert measurement_mask
+assert k.SetProcessAffinityMask(k.GetCurrentProcess(),3) and k.SetPriorityClass(k.GetCurrentProcess(),0x4000)
+plan=([dict(mode=mode,repeat=0,timer=True,frames=8,warmup=2) for mode in ('render-only','static','animated')] if stage=='pilot' else
+ [dict(mode=mode,repeat=rep,timer=True,frames=120,warmup=30) for rep,modes in enumerate((('render-only','static','animated'),('animated','static','render-only'),('render-only','static','animated'))) for mode in modes]+
+ [dict(mode=mode,repeat=0,timer=False,frames=120,warmup=30) for mode in ('render-only','static','animated')])
+registration={'scope':'finite physical GPU throughput diagnostic, not formal R3/R4 acceptance','created_utc':dt.datetime.now(dt.timezone.utc).isoformat(),'head':subprocess.check_output(['git','rev-parse','HEAD']).decode().strip(),'entities':40000,'viewport':[1280,720],'vsync':False,'audio':False,'normal_allocator':True,'metrics':'OFF','measurement_affinity':measurement_mask,'priority':'BelowNormal','execution_throttling':'OFF','selector':'GPU visible entity throughput probe','binary_sha256':sha(exe),'probe_source_sha256':sha(root/'tests/player/gpu_throughput_probe.cpp'),'runner_sha256':sha(Path(__file__)),'plan':plan,'stop':'first invalid/timeout; no replacement or extension','target_frame_us':1000000/240,'gpu_boundary':'timestamp around backend submit, includes GPU idle/driver submission gaps and production pixel readback; not pure shader busy time','fps_boundary':'measured wall includes update/extract (except render-only), submit, present, polling and pump; excludes load/warmup/drain/output'}
+write(out/'registration.json',registration)
+rows=[]
+def stats(v):
+ a=sorted(v);n=len(a)
+ return {'n':n,'mean_us':statistics.mean(a),'p50_us':a[math.ceil(.5*n)-1],'p95_us':a[math.ceil(.95*n)-1],'p99_us':a[math.ceil(.99*n)-1],'max_us':a[-1],'over_4_167_ms':sum(x>1000000/240 for x in a)}
+for index,item in enumerate(plan):
+ assert sha(exe)==registration['binary_sha256']
+ log=out/f'{index:02}-{item["mode"]}-timer{int(item["timer"])}.log'
+ env={key:value for key,value in os.environ.items() if not key.startswith(('CUEXIS_PD','CUEXIS_GPU_'))}
+ env.update(CUEXIS_GPU_BARRIER='1',CUEXIS_GPU_ENTITIES='40000',CUEXIS_GPU_MODE=item['mode'],CUEXIS_GPU_FRAMES=str(item['frames']),CUEXIS_GPU_WARMUP=str(item['warmup']),CUEXIS_GPU_TIMER=str(int(item['timer'])))
+ power_start=Battery();k.GetSystemPowerStatus(ct.byref(power_start))
+ controls=None;code=None
+ with log.open('x',encoding='utf-8') as stream:
+  child=subprocess.Popen([str(exe),registration['selector'],'--rng-seed','1'],cwd=root,env=env,stdin=subprocess.PIPE,stdout=stream,stderr=subprocess.STDOUT,creationflags=subprocess.CREATE_NO_WINDOW|subprocess.BELOW_NORMAL_PRIORITY_CLASS)
+  handle=k.OpenProcess(0x0200|0x1000,False,child.pid)
+  try:
+   power=Power(1,1,0)
+   if not handle or not k.SetProcessAffinityMask(handle,measurement_mask) or not k.SetProcessInformation(handle,4,ct.byref(power),ct.sizeof(power)):raise ct.WinError(ct.get_last_error())
+   mask=ct.c_size_t();system=ct.c_size_t();actual=Power(1,0,0)
+   assert k.GetProcessAffinityMask(handle,ct.byref(mask),ct.byref(system)) and k.GetProcessInformation(handle,4,ct.byref(actual),ct.sizeof(actual))
+   controls=dict(affinity=mask.value,priority=k.GetPriorityClass(handle),qos_control=actual.ControlMask,qos_state=actual.StateMask)
+   assert controls==dict(affinity=measurement_mask,priority=16384,qos_control=1,qos_state=0)
+   child.stdin.write(b'go\n');child.stdin.flush();child.stdin.close()
+   try:code=child.wait(timeout=300)
+   except subprocess.TimeoutExpired:child.kill();child.wait();code='timeout'
+  finally:
+   if handle:k.CloseHandle(handle)
+   if child.poll() is None:child.kill();child.wait()
+ output=log.read_text(encoding='utf-8',errors='replace')
+ identities=[json.loads(line.split(' ',1)[1]) for line in output.splitlines() if line.startswith('GPU_THROUGHPUT_ID ')]
+ samples=[json.loads(line.split(' ',1)[1]) for line in output.splitlines() if line.startswith('GPU_THROUGHPUT_SAMPLE ')]
+ valid=code==0 and 'All tests passed' in output and len(identities)==1 and len(samples)==item['frames']
+ identity=identities[0] if identities else None
+ if identity:valid=valid and all(identity[key]==value for key,value in {'entities':40000,'draws_per_frame':40000,'mode':item['mode'],'timer':item['timer'],'frames':item['frames'],'warmup_frames':item['warmup'],'width':1280,'height':720,'vsync':0,'fixture_revision':2,'in_view_centers':40000,'moved_entities':40000 if item['mode']=='animated' else 0}.items()) and 'NVIDIA' in identity['vendor'] and identity['pixel_rgba'][0]>200 and identity['pixel_rgba'][1]>100 and identity['pixel_rgba'][2]<160
+ summary={metric:stats([s[metric] for s in samples]) for metric in samples[0] if metric!='ordinal'} if samples else {}
+ row=dict(item,index=index,exit=code,valid=valid,controls=controls,ac_line=power_start.ACLineStatus,battery_percent=power_start.BatteryLifePercent,identity=identity,statistics=summary,log_sha256=sha(log))
+ if identity:row['wall_fps']=item['frames']*1000000/identity['measured_wall_us']
+ rows.append(row);write(out/'results.json',rows)
+ print(json.dumps({'index':index,'mode':item['mode'],'timer':item['timer'],'exit':code,'valid':valid,'wall_fps':row.get('wall_fps'),'frame_p99_us':summary.get('total_us',{}).get('p99_us'),'gpu_p99_us':summary.get('gpu_interval_us',{}).get('p99_us')}),flush=True)
+ if not valid:raise SystemExit('invalid group stopped; original evidence retained')
+write(out/'summary.json',[{key:value for key,value in r.items() if key not in ('controls','identity')} for r in rows])

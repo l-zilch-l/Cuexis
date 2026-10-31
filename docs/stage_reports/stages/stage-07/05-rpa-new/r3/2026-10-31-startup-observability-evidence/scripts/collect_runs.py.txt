@@ -1,0 +1,37 @@
+"""Collect the player startup run summaries into one table (staging helper)."""
+
+import glob
+import json
+import os
+import sys
+
+root = sys.argv[1]
+rows = []
+for directory in sorted(glob.glob(os.path.join(root, "run-*"))):
+    path = os.path.join(directory, "summary.json")
+    if not os.path.exists(path):
+        continue
+    with open(path, encoding="utf-8-sig") as stream:
+        text = stream.read()
+    if not text.strip():
+        continue
+    summary = json.loads(text)
+    rows.append(
+        {
+            "run": os.path.basename(directory),
+            "window_ms": summary.get("window_first_ms"),
+            "responsive_ms": summary.get("first_responsive_ms"),
+            "probe_ms": summary.get("unresponsive_probe_ms"),
+            "hung": summary.get("hung_samples"),
+            "waiting": summary.get("waiting_samples"),
+            "answering": summary.get("answering_samples"),
+            "span_seconds": summary.get("log_span_seconds"),
+            "phase_total_us": summary.get("player.startup_phase.total_us"),
+            "sampled_ms": summary.get("sampled_ms"),
+            "log_lines": summary.get("log_line_count"),
+            "exit_code": summary.get("exit_code"),
+            "forced_kill": summary.get("forced_kill"),
+        }
+    )
+for row in rows:
+    print(json.dumps(row, ensure_ascii=False))

@@ -1,0 +1,89 @@
+# Wait for the acceptance matrix to go idle, then run the fresh 2026-10-31 measurements one after
+# another on the quiet machine: 1080p verdict point, same-binary 720p A/B, the two sustained
+# capacity points, and the post-change product startup observation.
+#
+# Nothing here writes into the repository; every artefact lands under out/.
+$ErrorActionPreference = 'Stop'
+$root = 'D:\Cuexis-redesign'
+$refresh = Join-Path $root 'out\verification-20261031\r3-40k-throughput-refresh-v1'
+$startup = Join-Path $root 'out\verification-20261031\r3-product-startup-v1'
+$log = Join-Path $refresh 'after-matrix.log'
+$status = Join-Path $refresh 'after-matrix-status.json'
+
+function Say([string]$message) {
+    $line = "[{0}] {1}" -f (Get-Date -Format 'HH:mm:ss'), $message
+    Add-Content -Path $log -Value $line -Encoding utf8
+    Write-Output $line
+}
+
+Say 'waiting for the acceptance matrix to finish'
+while ($true) {
+    $matrix = Get-CimInstance Win32_Process -Filter "Name='python.exe'" |
+        Where-Object { $_.CommandLine -like '*run_rpa_acceptance_matrix*' }
+    $busy = Get-Process cmake, ctest, cl, link, ninja, cuexis_player -ErrorAction SilentlyContinue
+    if (-not $matrix -and -not $busy) { break }
+    Start-Sleep -Seconds 20
+}
+Say 'matrix idle'
+
+$exe = Join-Path $root 'out\build\rpa-candidate-release\bin\cuexis_execution_device_probe.exe'
+$env:PATH = (Join-Path $root 'out\build\rpa-candidate-release\bin') + ';' + $env:PATH
+$runner = Join-Path $refresh 'run_40k_refresh.py'
+$player = Join-Path $root 'out\build\release\bin\cuexis_player.exe'
+$fixture = Join-Path $startup 'fixture-40k'
+
+$steps = @(
+    @{ name = 'run-1'; out = (Join-Path $refresh 'run-1'); args = @(); note = '1080p 40000, 120 frames' },
+    @{ name = 'run-2-720p'; out = (Join-Path $refresh 'run-2-720p'); args = @('--width', '1280', '--height', '720'); note = '720p 40000, same binary' },
+    @{ name = 'run-3-1800-sustain'; out = (Join-Path $refresh 'run-3-1800-sustain'); args = @('--entities', '1800', '--seconds', '20'); note = '1080p 1800, 20 s windows' },
+    @{ name = 'run-4-1300-sustain'; out = (Join-Path $refresh 'run-4-1300-sustain'); args = @('--entities', '1300', '--seconds', '20'); note = '1080p 1300, 20 s windows' }
+)
+
+$records = @()
+$failed = $null
+foreach ($step in $steps) {
+    if (Test-Path $step.out) {
+        $failed = "output directory already exists: $($step.out)"
+        Say "stop: $failed"
+        break
+    }
+    Say "start $($step.name) ($($step.note))"
+    $stopwatch = [Diagnostics.Stopwatch]::StartNew()
+    & python -B $runner --exe $exe --out $step.out @($step.args) 2>&1 | Tee-Object -FilePath $log -Append | Out-Null
+    $code = $LASTEXITCODE
+    $stopwatch.Stop()
+    $records += [pscustomobject]@{
+        name = $step.name; exit = $code; seconds = [math]::Round($stopwatch.Elapsed.TotalSeconds, 1); note = $step.note
+    }
+    Say "$($step.name) exit $code in $([math]::Round($stopwatch.Elapsed.TotalSeconds, 1)) s"
+    if ($code -ne 0) { $failed = "$($step.name) exit $code"; Say "stop: $failed"; break }
+}
+
+if (-not $failed) {
+    $outDir = Join-Path $startup 'run-head-after-v8'
+    Say 'start run-head-after-v8 (product startup observation)'
+    $stopwatch = [Diagnostics.Stopwatch]::StartNew()
+    & (Join-Path $startup 'watch_startup.ps1') -Project $fixture -OutDir $outDir -Seconds 30 -Exe $player 2>&1 |
+        Tee-Object -FilePath $log -Append | Out-Null
+    $code = $LASTEXITCODE
+    $stopwatch.Stop()
+    $records += [pscustomobject]@{
+        name = 'run-head-after-v8'; exit = $code; seconds = [math]::Round($stopwatch.Elapsed.TotalSeconds, 1); note = 'product startup'
+    }
+    Say "run-head-after-v8 exit $code in $([math]::Round($stopwatch.Elapsed.TotalSeconds, 1)) s"
+    if ($code -ne 0) { $failed = "run-head-after-v8 exit $code" }
+}
+
+$payload = [ordered]@{
+    finished_utc = (Get-Date).ToUniversalTime().ToString('o')
+    head = (& git -C $root rev-parse HEAD)
+    worktree_dirty = [bool]((& git -C $root status --porcelain) | Where-Object { $_ })
+    probe = $exe
+    probe_sha256 = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLower()
+    player = $player
+    player_sha256 = (Get-FileHash $player -Algorithm SHA256).Hash.ToLower()
+    steps = $records
+    failed = $failed
+}
+$payload | ConvertTo-Json -Depth 4 | Set-Content -Path $status -Encoding utf8
+Say "chain finished; failed = $failed"

@@ -1,0 +1,168 @@
+# Observe a product Player startup: when the window appears, whether it answers window messages,
+# and (from the log timestamps) how long the startup phases took. The process is closed with
+# WM_CLOSE so the log is flushed by the normal shutdown path instead of being killed.
+#
+#   .\watch_startup.ps1 -Project <dir> -OutDir <dir> [-Seconds 30] [-Exe <path>]
+param(
+    [Parameter(Mandatory = $true)][string]$Project,
+    [Parameter(Mandatory = $true)][string]$OutDir,
+    [int]$Seconds = 30,
+    [string]$Exe = 'out\build\release\bin\cuexis_player.exe',
+    [int]$MessageTimeoutMs = 50,
+    [switch]$UseDebugExe
+)
+
+$ErrorActionPreference = 'Stop'
+if (-not (Test-Path $Exe)) { throw "player executable not found: $Exe" }
+New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
+$OutDir = (Resolve-Path $OutDir).Path
+$outLog = Join-Path $OutDir 'player.out.log'
+$errLog = Join-Path $OutDir 'player.err.log'
+Remove-Item $outLog, $errLog, (Join-Path $OutDir 'samples.csv') -ErrorAction SilentlyContinue
+
+Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+public static class WindowProbe {
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam,
+        uint flags, uint timeout, out IntPtr result);
+    public const uint WM_NULL = 0x0000;
+    public const uint SMTO_BLOCK = 0x0001;
+    public const uint SMTO_ABORTIFHUNG = 0x0002;
+    public static bool Answers(IntPtr hWnd, uint timeoutMs) {
+        IntPtr result;
+        IntPtr ok = SendMessageTimeout(hWnd, WM_NULL, IntPtr.Zero, IntPtr.Zero,
+            SMTO_BLOCK | SMTO_ABORTIFHUNG, timeoutMs, out result);
+        return ok != IntPtr.Zero;
+    }
+}
+'@
+
+$stopwatch = [Diagnostics.Stopwatch]::StartNew()
+$startedUtc = (Get-Date).ToUniversalTime().ToString('o')
+$process = Start-Process -FilePath (Resolve-Path $Exe).Path `
+    -ArgumentList '--project', (Resolve-Path $Project).Path `
+    -PassThru -NoNewWindow -RedirectStandardOutput $outLog -RedirectStandardError $errLog
+$samples = [System.Collections.Generic.List[object]]::new()
+$windowFirstMs = $null
+$unresponsiveMs = 0
+$firstResponsiveMs = $null
+while ($stopwatch.Elapsed.TotalSeconds -lt $Seconds) {
+    $process.Refresh()
+    if ($process.HasExited) { break }
+    $elapsedMs = [int]$stopwatch.Elapsed.TotalMilliseconds
+    $handle = $process.MainWindowHandle
+    if ($handle -eq [IntPtr]::Zero) {
+        $samples.Add([pscustomobject]@{ t_ms = $elapsedMs; kind = 'no_window'; window = ''; title_len = ''; answers = ''; probe_ms = '' })
+    }
+    else {
+        if ($null -eq $windowFirstMs) { $windowFirstMs = $elapsedMs }
+        $probe = [Diagnostics.Stopwatch]::StartNew()
+        $answers = [WindowProbe]::Answers($handle, [uint32]$MessageTimeoutMs)
+        $probe.Stop()
+        $probeMs = [int]$probe.Elapsed.TotalMilliseconds
+        if (-not $answers) { $unresponsiveMs += $probeMs }
+        elseif ($null -eq $firstResponsiveMs) { $firstResponsiveMs = $elapsedMs }
+        $title = ''
+        try { $title = $process.MainWindowTitle } catch { $title = '' }
+        $samples.Add([pscustomobject]@{
+                t_ms        = $elapsedMs
+                kind        = if ($answers) { 'answers' } else { 'hung' }
+                window      = 'yes'
+                title_len   = $title.Length
+                answers     = $answers
+                probe_ms    = $probeMs
+            })
+    }
+    Start-Sleep -Milliseconds 100
+}
+$sampledMs = [int]$stopwatch.Elapsed.TotalMilliseconds
+$alive = { $null -ne (Get-Process -Id $process.Id -ErrorAction SilentlyContinue) }
+$closeRequested = $false
+if (& $alive) { $closeRequested = $process.CloseMainWindow() }
+if ($closeRequested) {
+    for ($waited = 0; $waited -lt 300 -and (& $alive); $waited++) { Start-Sleep -Milliseconds 100 }
+}
+$forcedKill = $false
+if (& $alive) {
+    Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+    $forcedKill = $true
+    for ($waited = 0; $waited -lt 50 -and (& $alive); $waited++) { Start-Sleep -Milliseconds 100 }
+}
+$stillAlive = & $alive
+$stopwatch.Stop()
+$exitCode = $null
+try {
+    if (-not $stillAlive) {
+        $process.WaitForExit(5000) | Out-Null
+        $exitCode = $process.ExitCode
+    }
+} catch {
+    $exitCode = $null
+}
+$samples | Export-Csv -Path (Join-Path $OutDir 'samples.csv') -NoTypeInformation -Encoding utf8
+
+$phases = @()
+if (Test-Path $outLog) {
+    # spdlog pattern: %Y-%m-%dT%H:%M:%S.%e%z [%l] [logger] [category] message
+    $pattern = '^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3})[+-]\d{2}:?\d{2} \[(\w+)\] \[([^\]]+)\] \[([^\]]+)\] ?(.*)$'
+    foreach ($line in Get-Content $outLog) {
+        if ($line -match $pattern) {
+            $phases += [pscustomobject]@{
+                timestamp = $Matches[1]
+                level     = $Matches[2]
+                logger    = $Matches[3]
+                category  = $Matches[4]
+                message   = $Matches[5]
+            }
+        }
+        else {
+            $phases += [pscustomobject]@{ timestamp = ''; level = ''; logger = ''; category = ''; message = $line }
+        }
+    }
+}
+$phases | ConvertTo-Json -Depth 4 | Set-Content -Path (Join-Path $OutDir 'phases.json') -Encoding utf8
+
+$firstLine = $phases | Where-Object { $_.timestamp } | Select-Object -First 1
+$lastLine = $phases | Where-Object { $_.timestamp } | Select-Object -Last 1
+$firstStamp = if ($firstLine) { [datetime]::ParseExact($firstLine.timestamp, 'yyyy-MM-ddTHH:mm:ss.fff', $null) } else { $null }
+$spanSeconds = ''
+$phaseDurations = [ordered]@{}
+$phaseTotals = @{}
+if ($firstStamp) {
+    $spanSeconds = [math]::Round(((Get-Date $lastLine.timestamp) - $firstStamp).TotalSeconds, 3)
+    foreach ($entry in $phases) {
+        if ([string]::IsNullOrEmpty($entry.timestamp)) { continue }
+        $phaseTotals[$entry.category] = [math]::Round(((Get-Date $entry.timestamp) - $firstStamp).TotalSeconds, 3)
+        if ($entry.message -match 'total_us (\d+)') {
+            $phaseTotals["$($entry.category).total_us"] = [int]$Matches[1]
+        }
+        if ($entry.message -match 'elapsed_us (\d+)') {
+            $phaseTotals["$($entry.category).elapsed_us"] = [int]$Matches[1]
+        }
+    }
+}
+$summary = [ordered]@{
+    executable            = (Resolve-Path $Exe).Path
+    project               = (Resolve-Path $Project).Path
+    started_utc           = $startedUtc
+    sampled_ms            = $sampledMs
+    window_first_ms       = $windowFirstMs
+    first_responsive_ms   = $firstResponsiveMs
+    unresponsive_probe_ms = $unresponsiveMs
+    hung_samples          = ($samples | Where-Object { $_.kind -eq 'hung' }).Count
+    waiting_samples       = ($samples | Where-Object { $_.kind -eq 'no_window' }).Count
+    answering_samples     = ($samples | Where-Object { $_.kind -eq 'answers' }).Count
+    close_requested       = $closeRequested
+    forced_kill           = $forcedKill
+    still_alive           = $stillAlive
+    exit_code             = $exitCode
+    log_first_timestamp   = $firstLine.timestamp
+    log_last_timestamp    = $lastLine.timestamp
+    log_span_seconds      = $spanSeconds
+    log_line_count        = $phases.Count
+}
+foreach ($key in $phaseTotals.Keys) { $summary[$key] = $phaseTotals[$key] }
+$summary | ConvertTo-Json -Depth 4 | Set-Content -Path (Join-Path $OutDir 'summary.json') -Encoding utf8
+$summary | ConvertTo-Json -Depth 4

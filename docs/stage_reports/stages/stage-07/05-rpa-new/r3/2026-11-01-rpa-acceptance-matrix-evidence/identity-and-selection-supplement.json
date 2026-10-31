@@ -1,0 +1,632 @@
+{
+  "scope": "One local, unfiltered, same-source acceptance matrix at HEAD 466ff76 on one Windows laptop. Every row configures, builds and runs the full CTest suite from one worktree state. Test-only: this is not hosted validation, not owner acceptance, not R3 exit, and it produces no performance gate.",
+  "head": "466ff76a0b2a2f45b90280331bded77897ef6421",
+  "worktree_sha256": "9b6217829df4243771b7513e1c4ab64635b0e01d57143c380df5f9f119962078",
+  "implementation_sha256": "9325489520d69a7e6e7bbcb28c8d5122e58b81f343dac812b1bb975adbef6f8d",
+  "tracked_files_hashed": 3111,
+  "why_one_run": "Two partial runs would have to be unioned and the union would no longer be one worktree state. The runner hashes every tracked implementation file at start and re-hashes after every row, so a single run is the only form that supports the claim that all eleven rows saw the same source. The runner was left unmodified so the run binds to the committed tree rather than to a locally patched tool.",
+  "runner": {
+    "path": "tools/verification/run_rpa_acceptance_matrix.py",
+    "sha256": "a929f34e2fe7c8caeeeb0cfbe21977fd98a62b856fab097a0f358690dd5c4867",
+    "options": {
+      "jobs": 4,
+      "repeat_measurements": 5,
+      "vcvars": "D:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat",
+      "VCPKG_ROOT": "D:\\vcpkg"
+    },
+    "per_row": [
+      "cmake --preset <preset> --fresh -B out/build/<build> <options>",
+      "cmake --build out/build/<build> --clean-first --parallel 4",
+      "ctest --test-dir out/build/<build> --no-tests=error --output-on-failure -j 4",
+      "five repeats of <build>/bin/<target>.exe [measurement] when ctest passes"
+    ],
+    "row_table_source": "tools/verification/run_rpa_acceptance_matrix.py ROWS, read by ast at authoring time"
+  },
+  "environment": {
+    "os": "Windows-11-10.0.26300-SP0",
+    "machine": "AMD64",
+    "logical_processors": 16,
+    "compiler": "MSVC 19.51.36256 (Visual Studio 18 Community vcvars64)",
+    "cmake": "4.3.3",
+    "ninja": "1.13.2",
+    "gpu": "NVIDIA GeForce RTX 4060 Laptop, driver 616.64, 2560x1600@240 Hz",
+    "note": "The matrix is CPU-bound; the GPU is only exercised by the rows whose tests create a window."
+  },
+  "rows_planned": [
+    {
+      "name": "msvc-on-debug",
+      "build_directory": "candidate-debug",
+      "preset": "candidate-debug",
+      "options": []
+    },
+    {
+      "name": "msvc-on-release",
+      "build_directory": "rpa-candidate-release",
+      "preset": "release",
+      "options": [
+        "-DCUEXIS_ENABLE_CHART_V5_CANDIDATE=ON"
+      ]
+    },
+    {
+      "name": "msvc-on-shared-debug",
+      "build_directory": "rpa-candidate-shared-debug",
+      "preset": "candidate-shared-debug",
+      "options": []
+    },
+    {
+      "name": "msvc-off-debug",
+      "build_directory": "debug",
+      "preset": "debug",
+      "options": []
+    },
+    {
+      "name": "msvc-off-headless-debug",
+      "build_directory": "b3-default-off",
+      "preset": "headless-debug",
+      "options": []
+    },
+    {
+      "name": "msvc-off-release",
+      "build_directory": "release",
+      "preset": "release",
+      "options": []
+    },
+    {
+      "name": "msvc-off-headless-release",
+      "build_directory": "headless-release",
+      "preset": "headless-release",
+      "options": []
+    },
+    {
+      "name": "msvc-off-shared-debug",
+      "build_directory": "headless-shared-debug",
+      "preset": "headless-shared-debug",
+      "options": []
+    },
+    {
+      "name": "mingw-on-debug",
+      "build_directory": "mingw-headless-debug",
+      "preset": "mingw-headless-debug",
+      "options": [
+        "-DCUEXIS_ENABLE_CHART_V5_CANDIDATE=ON"
+      ]
+    },
+    {
+      "name": "mingw-on-shared-debug",
+      "build_directory": "rpa-boundary-mingw-shared",
+      "preset": "mingw-headless-debug",
+      "options": [
+        "-DCUEXIS_ENABLE_CHART_V5_CANDIDATE=ON",
+        "-DCUEXIS_LIBRARY_TYPE=SHARED"
+      ]
+    },
+    {
+      "name": "mingw-on-release",
+      "build_directory": "rpa-mingw-release",
+      "preset": "mingw-headless-debug",
+      "options": [
+        "-DCUEXIS_ENABLE_CHART_V5_CANDIDATE=ON",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCUEXIS_VERSION_SUFFIX=",
+        "-DCUEXIS_WARNINGS_AS_ERRORS=ON"
+      ]
+    }
+  ],
+  "rows_measured": [
+    {
+      "name": "msvc-on-debug",
+      "status": "local_pass",
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\candidate-debug",
+      "test_counts": [
+        100,
+        0,
+        1416
+      ],
+      "tests_passed": 1416,
+      "tests_total": 1416,
+      "elapsed_seconds": {
+        "configure": 21.98,
+        "build": 295.86,
+        "ctest": 461.21,
+        "cuexis_execution_host_tests-budget-1": 4.1,
+        "cuexis_execution_host_tests-budget-2": 3.88,
+        "cuexis_execution_host_tests-budget-3": 3.88,
+        "cuexis_execution_host_tests-budget-4": 3.9,
+        "cuexis_execution_host_tests-budget-5": 3.95,
+        "cuexis_rpa_tests-budget-1": 7.69,
+        "cuexis_rpa_tests-budget-2": 7.32,
+        "cuexis_rpa_tests-budget-3": 7.26,
+        "cuexis_rpa_tests-budget-4": 7.33,
+        "cuexis_rpa_tests-budget-5": 7.3
+      },
+      "failed_tests": [],
+      "skipped_tests": [
+        "1406/1416 Test   #78: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.04 sec"
+      ],
+      "measurement_processes": 20,
+      "source_unchanged": true,
+      "phase_exit_codes": {
+        "configure": 0,
+        "build": 0,
+        "ctest": 0,
+        "cuexis_execution_host_tests-budget-1": 0,
+        "cuexis_execution_host_tests-budget-2": 0,
+        "cuexis_execution_host_tests-budget-3": 0,
+        "cuexis_execution_host_tests-budget-4": 0,
+        "cuexis_execution_host_tests-budget-5": 0,
+        "cuexis_rpa_tests-budget-1": 0,
+        "cuexis_rpa_tests-budget-2": 0,
+        "cuexis_rpa_tests-budget-3": 0,
+        "cuexis_rpa_tests-budget-4": 0,
+        "cuexis_rpa_tests-budget-5": 0
+      },
+      "log_sha256_verified": true
+    },
+    {
+      "name": "msvc-on-release",
+      "status": "failed_ctest",
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release",
+      "test_counts": [
+        99,
+        1,
+        1416
+      ],
+      "tests_passed": 1415,
+      "tests_total": 1416,
+      "elapsed_seconds": {
+        "configure": 20.13,
+        "build": 405.93,
+        "ctest": 658.6
+      },
+      "failed_tests": [
+        {
+          "index": "904",
+          "test": "Audio publication preserves device observation time across service polls"
+        }
+      ],
+      "skipped_tests": [
+        "1405/1416 Test   #76: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.03 sec"
+      ],
+      "measurement_processes": 0,
+      "source_unchanged": true,
+      "phase_exit_codes": {
+        "configure": 0,
+        "build": 0,
+        "ctest": 8
+      },
+      "log_sha256_verified": true
+    },
+    {
+      "name": "msvc-on-shared-debug",
+      "status": "local_pass",
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-shared-debug",
+      "test_counts": [
+        100,
+        0,
+        1399
+      ],
+      "tests_passed": 1399,
+      "tests_total": 1399,
+      "elapsed_seconds": {
+        "configure": 20.15,
+        "build": 264.15,
+        "ctest": 472.17,
+        "cuexis_execution_host_tests-budget-1": 4.05,
+        "cuexis_execution_host_tests-budget-2": 4.01,
+        "cuexis_execution_host_tests-budget-3": 4.11,
+        "cuexis_execution_host_tests-budget-4": 3.95,
+        "cuexis_execution_host_tests-budget-5": 3.99,
+        "cuexis_rpa_tests-budget-1": 7.45,
+        "cuexis_rpa_tests-budget-2": 7.43,
+        "cuexis_rpa_tests-budget-3": 7.36,
+        "cuexis_rpa_tests-budget-4": 7.35,
+        "cuexis_rpa_tests-budget-5": 7.42
+      },
+      "failed_tests": [],
+      "skipped_tests": [
+        "1382/1399 Test   #80: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.05 sec",
+        "1383/1399 Test #1120: Playback v4 prepare reuses the initial Chart parse ..................................................***Skipped   0.05 sec",
+        "1384/1399 Test #1204: Playback legacy prepare reuses the initial Chart parse ..............................................***Skipped   0.06 sec",
+        "1385/1399 Test #1297: PB-08 owning-copy queries contain allocation failures at the Playback boundary ......................***Skipped   0.06 sec",
+        "1386/1399 Test #1298: PD3a extraction failure after install preserves committed state and override lifetime ...............***Skipped   0.04 sec",
+        "1387/1399 Test #1301: PD3b materializer allocation failure retains the public extraction error boundary ...................***Skipped   0.04 sec"
+      ],
+      "measurement_processes": 20,
+      "source_unchanged": true,
+      "phase_exit_codes": {
+        "configure": 0,
+        "build": 0,
+        "ctest": 0,
+        "cuexis_execution_host_tests-budget-1": 0,
+        "cuexis_execution_host_tests-budget-2": 0,
+        "cuexis_execution_host_tests-budget-3": 0,
+        "cuexis_execution_host_tests-budget-4": 0,
+        "cuexis_execution_host_tests-budget-5": 0,
+        "cuexis_rpa_tests-budget-1": 0,
+        "cuexis_rpa_tests-budget-2": 0,
+        "cuexis_rpa_tests-budget-3": 0,
+        "cuexis_rpa_tests-budget-4": 0,
+        "cuexis_rpa_tests-budget-5": 0
+      },
+      "log_sha256_verified": true
+    },
+    {
+      "name": "msvc-off-debug",
+      "status": "local_pass",
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\debug",
+      "test_counts": [
+        100,
+        0,
+        1209
+      ],
+      "tests_passed": 1209,
+      "tests_total": 1209,
+      "elapsed_seconds": {
+        "configure": 19.39,
+        "build": 211.18,
+        "ctest": 368.38
+      },
+      "failed_tests": [],
+      "skipped_tests": [
+        "1201/1209 Test   #76: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.04 sec"
+      ],
+      "measurement_processes": 0,
+      "source_unchanged": true,
+      "phase_exit_codes": {
+        "configure": 0,
+        "build": 0,
+        "ctest": 0
+      },
+      "log_sha256_verified": true
+    },
+    {
+      "name": "msvc-off-headless-debug",
+      "status": "local_pass",
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\b3-default-off",
+      "test_counts": [
+        100,
+        0,
+        1064
+      ],
+      "tests_passed": 1064,
+      "tests_total": 1064,
+      "elapsed_seconds": {
+        "configure": 16.08,
+        "build": 168.71,
+        "ctest": 361.22
+      },
+      "failed_tests": [],
+      "skipped_tests": [
+        "1056/1064 Test   #65: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.04 sec"
+      ],
+      "measurement_processes": 0,
+      "source_unchanged": true,
+      "phase_exit_codes": {
+        "configure": 0,
+        "build": 0,
+        "ctest": 0
+      },
+      "log_sha256_verified": true
+    },
+    {
+      "name": "msvc-off-release",
+      "status": "local_pass",
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\release",
+      "test_counts": [
+        100,
+        0,
+        1209
+      ],
+      "tests_passed": 1209,
+      "tests_total": 1209,
+      "elapsed_seconds": {
+        "configure": 18.54,
+        "build": 268.29,
+        "ctest": 512.84
+      },
+      "failed_tests": [],
+      "skipped_tests": [
+        "1199/1209 Test   #75: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.02 sec"
+      ],
+      "measurement_processes": 0,
+      "source_unchanged": true,
+      "phase_exit_codes": {
+        "configure": 0,
+        "build": 0,
+        "ctest": 0
+      },
+      "log_sha256_verified": true
+    },
+    {
+      "name": "msvc-off-headless-release",
+      "status": "local_pass",
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\headless-release",
+      "test_counts": [
+        100,
+        0,
+        1064
+      ],
+      "tests_passed": 1064,
+      "tests_total": 1064,
+      "elapsed_seconds": {
+        "configure": 15.58,
+        "build": 222.88,
+        "ctest": 509.76
+      },
+      "failed_tests": [],
+      "skipped_tests": [
+        "1055/1064 Test   #64: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.02 sec"
+      ],
+      "measurement_processes": 0,
+      "source_unchanged": true,
+      "phase_exit_codes": {
+        "configure": 0,
+        "build": 0,
+        "ctest": 0
+      },
+      "log_sha256_verified": true
+    },
+    {
+      "name": "msvc-off-shared-debug",
+      "status": "local_pass",
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\headless-shared-debug",
+      "test_counts": [
+        100,
+        0,
+        1062
+      ],
+      "tests_passed": 1062,
+      "tests_total": 1062,
+      "elapsed_seconds": {
+        "configure": 15.66,
+        "build": 157.08,
+        "ctest": 370.18
+      },
+      "failed_tests": [],
+      "skipped_tests": [
+        "57/1062 Test   #69: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.04 sec",
+        "956/1062 Test  #966: Playback legacy prepare reuses the initial Chart parse ..............................................***Skipped   0.13 sec",
+        "957/1062 Test  #967: Playback v4 prepare reuses the initial Chart parse ..................................................***Skipped   0.13 sec",
+        "1013/1062 Test #1023: PD3a extraction failure after install preserves committed state and override lifetime ...............***Skipped   0.08 sec",
+        "1015/1062 Test #1026: PD3b materializer allocation failure retains the public extraction error boundary ...................***Skipped   0.05 sec",
+        "1018/1062 Test #1028: PB-08 owning-copy queries contain allocation failures at the Playback boundary ......................***Skipped   0.06 sec"
+      ],
+      "measurement_processes": 0,
+      "source_unchanged": true,
+      "phase_exit_codes": {
+        "configure": 0,
+        "build": 0,
+        "ctest": 0
+      },
+      "log_sha256_verified": true
+    },
+    {
+      "name": "mingw-on-debug",
+      "status": "failed_build",
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\mingw-headless-debug",
+      "test_counts": null,
+      "tests_passed": null,
+      "tests_total": null,
+      "elapsed_seconds": {
+        "configure": 127.81,
+        "build": 296.93
+      },
+      "failed_tests": [],
+      "skipped_tests": [],
+      "measurement_processes": 0,
+      "source_unchanged": true,
+      "phase_exit_codes": {
+        "configure": 0,
+        "build": 1
+      },
+      "log_sha256_verified": true
+    },
+    {
+      "name": "mingw-on-shared-debug",
+      "status": "failed_build",
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\rpa-boundary-mingw-shared",
+      "test_counts": null,
+      "tests_passed": null,
+      "tests_total": null,
+      "elapsed_seconds": {
+        "configure": 18.18,
+        "build": 268.74
+      },
+      "failed_tests": [],
+      "skipped_tests": [],
+      "measurement_processes": 0,
+      "source_unchanged": true,
+      "phase_exit_codes": {
+        "configure": 0,
+        "build": 1
+      },
+      "log_sha256_verified": true
+    },
+    {
+      "name": "mingw-on-release",
+      "status": "failed_build",
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\rpa-mingw-release",
+      "test_counts": null,
+      "tests_passed": null,
+      "tests_total": null,
+      "elapsed_seconds": {
+        "configure": 17.8,
+        "build": 296.45
+      },
+      "failed_tests": [],
+      "skipped_tests": [],
+      "measurement_processes": 0,
+      "source_unchanged": true,
+      "phase_exit_codes": {
+        "configure": 0,
+        "build": 1
+      },
+      "log_sha256_verified": true
+    }
+  ],
+  "totals": {
+    "rows": 11,
+    "local_pass": 7,
+    "tests_executed": 9839,
+    "tests_failed": 1,
+    "measurement_events": 40,
+    "rows_with_measurements": 2
+  },
+  "source_unchanged": {
+    "manifest_level": true,
+    "per_row": {
+      "msvc-on-debug": true,
+      "msvc-on-release": true,
+      "msvc-on-shared-debug": true,
+      "msvc-off-debug": true,
+      "msvc-off-headless-debug": true,
+      "msvc-off-release": true,
+      "msvc-off-headless-release": true,
+      "msvc-off-shared-debug": true,
+      "mingw-on-debug": true,
+      "mingw-on-shared-debug": true,
+      "mingw-on-release": true
+    },
+    "meaning": "The runner hashed the tracked implementation files before and after each row. Equality means no row edited the tree it was testing."
+  },
+  "defects": {
+    "count": 1,
+    "entries": [
+      {
+        "row": "msvc-on-release",
+        "test_index_in_that_row": "904",
+        "test": "Audio publication preserves device observation time across service polls",
+        "row_status": "failed_ctest",
+        "consequence": "the runner skips that row's five [measurement] repeats, so the row contributes no measurement process"
+      }
+    ],
+    "numbering_caveat": "CTest numbers differ between runs: in the aborted 2026-10-31 22:06 run test #904 was a different test than in this run. Always match a failure by name, never by index.",
+    "diagnosis": {
+      "path": "out/verification-20261031/r3-matrix-flake-904/diagnosis.json",
+      "case": "Audio publication preserves device observation time across service polls",
+      "exe": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_execution_host_tests.exe",
+      "exe_sha256": "429a5f0c26b5d1047b981ca7f87c7ac768b41b20d58ad3d670d59940620f4ad3",
+      "exe_matches_the_matrix_build": true,
+      "runs": 108,
+      "failures": 0,
+      "classification": "not_reproduced_in_this_regime",
+      "regimes": {
+        "sequential_idle": {
+          "regime": "sequential-idle",
+          "runs": 60,
+          "passed": 60,
+          "failed": 0,
+          "elapsed_seconds_min": 0.108,
+          "elapsed_seconds_max": 0.139
+        },
+        "parallel": [
+          {
+            "regime": "parallel-1",
+            "runs": 8,
+            "passed": 8,
+            "failed": 0,
+            "elapsed_seconds_min": 0.122,
+            "elapsed_seconds_max": 0.153
+          },
+          {
+            "regime": "parallel-2",
+            "runs": 8,
+            "passed": 8,
+            "failed": 0,
+            "elapsed_seconds_min": 0.124,
+            "elapsed_seconds_max": 0.139
+          },
+          {
+            "regime": "parallel-3",
+            "runs": 8,
+            "passed": 8,
+            "failed": 0,
+            "elapsed_seconds_min": 0.131,
+            "elapsed_seconds_max": 0.135
+          },
+          {
+            "regime": "parallel-4",
+            "runs": 8,
+            "passed": 8,
+            "failed": 0,
+            "elapsed_seconds_min": 0.124,
+            "elapsed_seconds_max": 0.126
+          },
+          {
+            "regime": "parallel-5",
+            "runs": 8,
+            "passed": 8,
+            "failed": 0,
+            "elapsed_seconds_min": 0.124,
+            "elapsed_seconds_max": 0.156
+          }
+        ],
+        "background_load": {
+          "regime": "loaded",
+          "runs": 8,
+          "passed": 8,
+          "failed": 0,
+          "elapsed_seconds_min": 0.108,
+          "elapsed_seconds_max": 0.125
+        }
+      },
+      "verdict_rule": "Deterministic failure means every run fails; intermittent failure means at least one run passes and at least one fails. A pass under a lighter regime than CTest -j 4 does not clear the test; it only shows the outcome depends on timing or load.",
+      "reading": "108 isolated runs of the same case on the same binary produced 0 failures. A pass in an isolated regime does not clear the test and does not turn the matrix row green: the row's CTest failure is what was measured. What a pass does establish is that the outcome depends on timing or machine load rather than on a pure logic error, and that the failing assertion observed zeros because the worker had not published yet."
+    }
+  },
+  "mingw_availability": {
+    "compilers": {
+      "C:/msys64/ucrt64/bin/gcc.exe": {
+        "role": "UCRT64 GCC (present on this host)",
+        "exists": true
+      },
+      "C:/msys64/ucrt64/bin/g++.exe": {
+        "role": "UCRT64 G++ (present on this host)",
+        "exists": true
+      },
+      "C:/msys64/mingw64/bin/gcc.exe": {
+        "role": "MINGW64 GCC (absent on this host)",
+        "exists": false
+      },
+      "C:/msys64/clang64/bin/clang.exe": {
+        "role": "CLANG64 clang (absent on this host)",
+        "exists": false
+      }
+    },
+    "finding": "The matrix shell gets its PATH from vcvars64 only. No gcc, g++, mingw32-make or clang is on that PATH, and the mingw presets set only VCPKG_TARGET_TRIPLET without naming a compiler, so CMake would fall back to cl.exe for a triplet it cannot satisfy. If the mingw rows fail at configure, that is a host capability result and must be reported as such, never as a product defect and never as a pass.",
+    "consequence_if_failed": "The matrix then covers eight MSVC rows and does not cover MinGW on this host. That is reported per row with the exact configure error; it is not a reason to splice in a second run."
+  },
+  "unexecuted": [
+    "physical_keyboard",
+    "listening",
+    "device_loss_recovery",
+    "production_calibration",
+    "hosted_same_sha",
+    "owner_acceptance"
+  ],
+  "selection": {
+    "selected_as_evidence": "Every row whose status is local_pass is selected as evidence that this tree configures, builds and passes its full suite in that configuration, and that the row did not modify the tree it was testing.",
+    "not_selected": [
+      "The msvc-on-release row is not selected as passing: it failed one named test and its measurement repeats never ran.",
+      "No row is selected as a performance number. The [measurement] events are test-only observations and are not thresholds.",
+      "No row is selected as hosted validation, MinGW coverage, device coverage, or owner acceptance."
+    ],
+    "excluded_from_the_archive": [
+      "The failing test binary is preserved by digest, not by copy: a --clean-first rebuild of the same tree produced it, and any later diagnosis runs against the same hash or not at all.",
+      "The aborted 2026-10-31 22:06 run is not archived as part of this matrix and is not unioned with it."
+    ]
+  },
+  "limitations": [
+    "One Windows host, one MSVC toolchain version, one CMake/Ninja/vcpkg state.",
+    "Headless rows do not cover window, GPU or SDL paths; the graphical rows do not validate rendering throughput.",
+    "A local matrix cannot replace hosted Linux/MSVC/MinGW validation with the same SHA.",
+    "The row that failed is a timing-sensitive audio publication assertion; a repeated isolated pass does not retroactively make the row green.",
+    "Wall-clock phase durations are machine observations, not gates, and two runs on this host differ by build-artifact effects of the order of twenty percent."
+  ],
+  "verification": {
+    "logs_rehash_matched": true,
+    "problems": [],
+    "test_counts_rederived_from_log": true,
+    "manifest_rows_equal_runner_table": true
+  }
+}

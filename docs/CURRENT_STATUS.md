@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-10-31
+更新日期：2026-11-01
 
 本文只维护当前阶段、正在进行的任务和未解决的问题。实施与测量细节见带日期的阶段报告。
 
@@ -38,16 +38,16 @@
   新固定对照的 40K 全量动画 update 由 147.933 降至 47.343 ms，完整 cycle 由 209.573 降至 109.652 ms；
   静态路径未见对应退化。只加标记的初版因晚插入基线的语义回归停止并撤回；最终版同步索引并通过反例及相关回归。
   当前渲染仍超预算，P3 和其余待优化项继续开放。
-  [MSVC Ninja 头依赖漏记](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-30-r3-dependency-tracking.md)已修复，独立/嵌入夹具的真实重编通过；最终完整矩阵仍待执行。
+  [MSVC Ninja 头依赖漏记](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-30-r3-dependency-tracking.md)已修复，独立/嵌入夹具的真实重编通过。
   owner 要求恢复后连续完成六项剩余工作，候选与完整验证进度统一见
   [六项实施与验证账本](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-29-r3-six-item-completion-work.md)。
   Pattern 编译复用、外观索引提示和新编码缓存因固定对照未达预设收益/保护条件已撤回；
   名称索引、Packed 字典查找及内部 identity 投影复用分别通过独立诊断并提交；
-  OpenGL 普通提交的同步诊断读回已分离，烟雾测试/像素探针显式开启，最终完整矩阵仍待执行。
+  OpenGL 普通提交的同步诊断读回已分离，烟雾测试/像素探针显式开启，同源矩阵见下条。
   Host Seek 的 CPU 功能矩阵扩为 60 组合，新增首条长记录内部 H=5/902，实际 GPU 仍为 96 组合。
   这两处目标的 timer/ledger 无用身份复制已消除；后续标量 phase 写入再减少整行复制，独立对照中
   40K H=5 为 22.873 → 16.678 ms，H=902 为 265.502 → 232.641 ms。后者仍超 20 ms，
-  原性能门及最终完整矩阵未关闭；不同登记组不拼接为同一连续基线。
+  原性能门未关闭；不同登记组不拼接为同一连续基线。
   2026-10-30 MinGW metrics ON 的四个相关目标共 111 cases 通过，实际链接未再出现 TLS 重复定义；
   有限通道 canary 的 runtime / snapshot 等阶段各 1,088 样本且无遗漏。两处移植性修复和失败记录
   见六项账本；这不替代其余配置、安装消费者或正式性能接受。
@@ -86,6 +86,35 @@
   架构 / 设计变更、对照结果与停止边界见[本轮登记 §5](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-28-r3-redesign-verification-and-optimization.md#5-后续取证和修复顺序)。
   现行内部设计集中在[执行状态、恢复与准备路径](architecture/execution-state-and-recovery.md)，
   架构/API 入口已同步；后续继续跟踪首次 Seek 与 Packed/prepare 剩余热点。
+- **2026-11-01 同源本地矩阵已执行（test-only）**：`tools/verification/run_rpa_acceptance_matrix.py`
+  在 `466ff76`、worktree 干净的同一份源码上按固定行序跑完全部 11 行，逐行 configure / build /
+  CTest / `[measurement]` 重复与未执行项见
+  [同源验收矩阵](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-01-r3-same-source-acceptance-matrix.md)。
+  本轮 11 行里 7 行 `local_pass`、1 行有用例失败（`msvc-on-release` 的
+  `#904 Audio publication preserves device observation time across service polls`，同一二进制按其
+  sha256 隔离重跑 108 次未复现）、3 行 MinGW 在构建阶段被 GCC 报出的测试源码可移植性缺陷挡住而未进入
+  CTest；清单级 `source_unchanged` 为真，全部阶段日志按磁盘字节复核哈希。因此 P6「同源完整矩阵」本轮
+  **未达成**，这次运行不产生 240 FPS、容量或 R4 结论，也不因任何单行在隔离重跑中通过而改判；
+  [矩阵证据附件](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-01-rpa-acceptance-matrix-evidence/index.md)
+  登记每份日志的来源、字节与哈希。
+- **40K 启动响应已有可观测证据，仍未达“首帧 ≤2 秒”或首次加载**：同一 40K v3 夹具的八轮窗口观察中，
+  进程内首次可响应从设计改动前的 35,141 ms 降到 3,029 / 2,821 ms（v7 / v8），首个窗口帧 2,858 / 2,821 ms；
+  v8 首次把观察绑定到具体二进制哈希，v1–v7 无 exe 哈希。235 个采样里 3 次未应答，单次等待 61–63 ms、最长 66 ms。
+  窗口出现时间跨 `6ae7bd7` 设计改动不可比，可比指标是首次可响应；2.82 s 不是“进程到首帧 ≤2 秒”通过，
+  也不是冷缓存首次加载，`render_us 0` 表示未采到渲染计时。prepare 侧同源两轮探针显示 `prepareLoad`
+  从 2,876 ms 降到 2,172–2,202 ms、产品日志 `content_prepared` 从 3,191 ms 降到 2,286–2,323 ms；
+  两轮同源探针相差约 24%，故只作组合项方向性陈述，逐阶段差值不归因到单个提交。
+  见[启动可观测性与准备复用](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-31-r3-startup-observability-and-prepare-reuse.md)、
+  [证据附件](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-31-startup-observability-evidence/index.md)。
+- **40K @ 240 FPS 判定为不能，缺口是结构性的**：1080p、`466ff76`、真实 OpenGL 可见窗口下，40K 入镜实体的
+  完整周期 p99 为 50.282 ms（仅渲染）/ 61.325 ms（静态提帧），分别是 4.166667 ms 预算的 12.07× / 14.72×，
+  需要再快 10.71× / 13.71×；冻结点为 16.39× / 20.18×。降低分辨率无效（720P 同二进制对照：仅渲染 FPS 低 1.53%、
+  p99 高 7.00%，静态 FPS 高 0.09%、p99 高 1.39%）；实例化这一唯一被测量的架构杠杆只值 1.32×，差一个数量级。
+  容量前缘仍按冻结值 1800 仅渲染 / 1300 静态（HEAD 上两者仍有更多余量），不发布新值。
+  128 MiB 须分两层：作为进程上限装不下 40K 准备（峰值私有最小 254.7 MiB，为 128 MiB 的 50.3%）；
+  作为续点计费参数挡住的不是内存（计费 244,028,048 B，实际多留 323,303 B，755× 高估）。
+  见[40K 240 FPS 与预算判定](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-31-r3-40k-240fps-and-budget-verdict.md)、
+  [证据附件](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-31-40k-verdict-evidence/index.md)。
 - **PD-5 定案与 Stage 7-PD 退出裁定**：判定报告已提出“未通过但定案”及退出清单，尚待 owner 接受；读取与 Seek 整改由 RPA 线承接，
   分域内存及正式/设备/生产验收缺口仍按下文跟踪。见[判定报告](stage_reports/stages/stage-07/04-pd/pd-5/exit/2026-10-24-pd5-verdict-and-stage-7-pd-exit.md)。
 

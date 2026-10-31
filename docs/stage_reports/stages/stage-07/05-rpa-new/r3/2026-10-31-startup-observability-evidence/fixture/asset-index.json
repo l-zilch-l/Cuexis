@@ -1,0 +1,31 @@
+{
+  "format": "cuexis.asset-index",
+  "version": 1,
+  "assets": [
+    {
+      "id": "texture.checker",
+      "type": "texture",
+      "source": "textures/checker.texture.bin",
+      "dependencies": []
+    },
+    {
+      "id": "material.blend",
+      "type": "material",
+      "source": "materials/blend.material.bin",
+      "dependencies": ["texture.checker"]
+    },
+    {
+      "id": "mesh.triangle",
+      "type": "mesh",
+      "source": "meshes/triangle.mesh.bin",
+      "dependencies": []
+    },
+    {
+      "id": "material.opaque",
+      "type": "material",
+      "source": "materials/opaque.material.bin",
+      "dependencies": []
+    }
+  ],
+  "extensions": {}
+}

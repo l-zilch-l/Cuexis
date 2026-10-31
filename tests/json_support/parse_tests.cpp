@@ -264,7 +264,8 @@ TEST_CASE("Top-level integer scan reads one member without validating the docume
 
     CHECK(*scan(R"({"version":4})") == 4);
     CHECK(*scan(R"(  {  "format" : "cuexis.chart" , "version" : -7 }  )") == -7);
-    // Members before the requested one are skipped, including integer members and nested containers.
+    // Members before the requested one are skipped, including integer members and nested
+    // containers.
     CHECK(*scan(R"({"objects":0,"version":4})") == 4);
     CHECK(*scan(R"({"meta":{"version":9},"version":4})") == 4);
     CHECK(*scan(R"({"count":3,"items":[1,2,3],"version":4})") == 4);

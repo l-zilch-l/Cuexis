@@ -1,0 +1,74 @@
+{
+  "scope": "Cross-run comparison of one CTest case between two acceptance-matrix runs. It shows whether the two runs bind to the same source, and what each run recorded for the case, so an intermittent failure cannot be read as a source difference.",
+  "case": "Audio publication preserves device observation time across service polls",
+  "same_head": true,
+  "same_source_files": true,
+  "recorded_worktree_hashes_agree": true,
+  "same_configure_cache_sha256": true,
+  "runs": {
+    "prior": {
+      "run": "D:\\Cuexis-redesign\\out\\rpa-acceptance\\20261031-220604-9e3ab6ac",
+      "head": "466ff76a0b2a2f45b90280331bded77897ef6421",
+      "recorded_worktree_sha256": "9b6217829df4243771b7513e1c4ab64635b0e01d57143c380df5f9f119962078",
+      "recomputed_worktree_sha256": "9b6217829df4243771b7513e1c4ab64635b0e01d57143c380df5f9f119962078",
+      "implementation_sha256": "9325489520d69a7e6e7bbcb28c8d5122e58b81f343dac812b1bb975adbef6f8d",
+      "file_count": 3111,
+      "row": "msvc-on-release",
+      "row_status": "local_pass",
+      "row_test_counts": [
+        100,
+        0,
+        1416
+      ],
+      "cache_sha256": "0dbe461e8f566e776ba908c57b24566083aff2945299d213ef81db7efda09b1b",
+      "row_source_unchanged": true,
+      "case": {
+        "log": "D:\\Cuexis-redesign\\out\\rpa-acceptance\\20261031-220604-9e3ab6ac\\msvc-on-release-ctest.log",
+        "log_sha256": "e4bbc362b58f545cc1c7578a671c3ec95cd00fec6ea8aa67a1f9ec3b04de8742",
+        "matches": [
+          {
+            "index": 899,
+            "status": "Passed",
+            "line": " 886/1416 Test  #899: Audio publication preserves device observation time across service polls ............................   Passed    1.91 sec"
+          }
+        ]
+      }
+    },
+    "current": {
+      "run": "D:\\Cuexis-redesign\\out\\rpa-acceptance\\20261101-000420-1926fec6",
+      "head": "466ff76a0b2a2f45b90280331bded77897ef6421",
+      "recorded_worktree_sha256": "9b6217829df4243771b7513e1c4ab64635b0e01d57143c380df5f9f119962078",
+      "recomputed_worktree_sha256": "9b6217829df4243771b7513e1c4ab64635b0e01d57143c380df5f9f119962078",
+      "implementation_sha256": "9325489520d69a7e6e7bbcb28c8d5122e58b81f343dac812b1bb975adbef6f8d",
+      "file_count": 3111,
+      "row": "msvc-on-release",
+      "row_status": "failed_ctest",
+      "row_test_counts": [
+        99,
+        1,
+        1416
+      ],
+      "cache_sha256": "0dbe461e8f566e776ba908c57b24566083aff2945299d213ef81db7efda09b1b",
+      "row_source_unchanged": true,
+      "case": {
+        "log": "D:\\Cuexis-redesign\\out\\rpa-acceptance\\20261101-000420-1926fec6\\msvc-on-release-ctest.log",
+        "log_sha256": "dc000ae8293f7621badb5d43c1bb29eedb7e8f2185de802766efd11db71160ae",
+        "matches": [
+          {
+            "index": 904,
+            "status": "Failed",
+            "line": "  48/1416 Test  #904: Audio publication preserves device observation time across service polls ............................***Failed    1.50 sec"
+          }
+        ]
+      }
+    }
+  },
+  "outcome": {
+    "prior_status": "Passed",
+    "current_status": "Failed",
+    "prior_test_index": 899,
+    "current_test_index": 904
+  },
+  "reading": "Same HEAD, same per-file hash map and same configure cache: the case passed in the earlier run and failed in the later one under the same build configuration, so the failure is not attributable to a source or configuration change. The two CTest indices differ, which also shows why a case must be tracked by name rather than by number.",
+  "command": "python -B compare_runs.py --prior D:\\Cuexis-redesign\\out\\rpa-acceptance\\20261031-220604-9e3ab6ac --current D:\\Cuexis-redesign\\out\\rpa-acceptance\\20261101-000420-1926fec6 --case \"Audio publication preserves device observation time across service polls\" --row msvc-on-release --out D:\\Cuexis-redesign\\out\\verification-20261031\\r3-matrix-flake-904\\cross-run-comparison.json"
+}

@@ -1,0 +1,114 @@
+{
+  "valid_processes": 12,
+  "measured_frames": 1440,
+  "over_budget_frames": 1440,
+  "rows": [
+    {
+      "mode": "render-only",
+      "timer_on_fps": [
+        17.71812753587932,
+        17.749636058503985,
+        17.49052276024236
+      ],
+      "timer_on_frame_p99_ms": [
+        64.7156,
+        67.853,
+        67.6
+      ],
+      "timer_on_gpu_interval_p99_ms": [
+        22.40512,
+        24.264704000000002,
+        25.419776000000002
+      ],
+      "timer_off_fps": 18.25291438960292,
+      "timer_off_mean_ms": {
+        "update_us": 0.0,
+        "extract_us": 0.0,
+        "submit_us": 54.70027833333334,
+        "present_us": 0.07601583333333334,
+        "total_us": 54.776294166666666
+      },
+      "timer_off_p99_ms": 65.0195,
+      "timer_off_fps_change_percent": 3.0183034445409485,
+      "repeat_mean_range_percent": {
+        "submit_us": 1.4168379670897868,
+        "present_us": 7.352856699716218,
+        "total_us": 1.409292585360333,
+        "gpu_interval_us": 2.2480251082196867
+      }
+    },
+    {
+      "mode": "static",
+      "timer_on_fps": [
+        13.134582293466629,
+        13.1170922379716,
+        12.940254693112262
+      ],
+      "timer_on_frame_p99_ms": [
+        85.3442,
+        90.3205,
+        90.614
+      ],
+      "timer_on_gpu_interval_p99_ms": [
+        26.135552,
+        28.281856,
+        29.637632
+      ],
+      "timer_off_fps": 13.385419271710937,
+      "timer_off_mean_ms": {
+        "update_us": 11.603534166666666,
+        "extract_us": 7.2708683333333335,
+        "submit_us": 55.746785833333334,
+        "present_us": 0.07717416666666667,
+        "total_us": 74.6983625
+      },
+      "timer_off_p99_ms": 89.8887,
+      "timer_off_fps_change_percent": 2.045628931102428,
+      "repeat_mean_range_percent": {
+        "update_us": 0.8715778628094487,
+        "extract_us": 1.678569888457761,
+        "submit_us": 1.705305146931089,
+        "present_us": 1.9672131147540959,
+        "total_us": 1.2892288354335992,
+        "gpu_interval_us": 2.78180041913373
+      }
+    },
+    {
+      "mode": "animated",
+      "timer_on_fps": [
+        4.359563516722417,
+        4.37779119530244,
+        4.360237249519903
+      ],
+      "timer_on_frame_p99_ms": [
+        243.4638,
+        240.04520000000002,
+        241.4023
+      ],
+      "timer_on_gpu_interval_p99_ms": [
+        21.95968,
+        25.265151999999997,
+        25.87648
+      ],
+      "timer_off_fps": 4.466679192972165,
+      "timer_off_mean_ms": {
+        "update_us": 162.01182,
+        "extract_us": 7.183721666666666,
+        "submit_us": 54.59162416666667,
+        "present_us": 0.0804425,
+        "total_us": 223.86760833333335
+      },
+      "timer_off_p99_ms": 239.21779999999998,
+      "timer_off_fps_change_percent": 2.441196140507773,
+      "repeat_mean_range_percent": {
+        "update_us": 1.405081923793512,
+        "extract_us": 2.338520373058713,
+        "submit_us": 2.984275793773959,
+        "present_us": 5.7997619127087425,
+        "total_us": 0.4129855964978265,
+        "gpu_interval_us": 2.2048731806005226
+      }
+    }
+  ],
+  "formal_acceptance": false
+}

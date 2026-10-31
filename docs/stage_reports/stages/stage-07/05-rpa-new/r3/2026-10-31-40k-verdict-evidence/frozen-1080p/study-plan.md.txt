@@ -1,0 +1,17 @@
+# 1080p entity capacity study
+
+Baseline f90c2e1; physical NVIDIA GPU, 1920x1080, VSync OFF, normal allocator, metrics OFF, no audio.
+Builds use one task, mask 3, BelowNormal. Measurements use default CPU set, BelowNormal, execution throttling OFF, no simultaneous builds.
+
+The whole frame cycle includes SDL pumping and loop overhead. Stable 240 requires wall FPS >= 240 and nearest-rank cycle p99 <= 1000000/240 us in every registered repetition. Sustained runs also require >= 240 completed frames in every complete 1-second bin.
+
+1. Pilot verifies 10 and 40000 entities in both render-only and static update/extract/render modes. Pixel and clip-space proof required at all counts.
+2. Coarse: 10,25,50,100,250,500,1000,1500,2000,3000,4000,5000,7500,10000,20000,40000; one fresh process per mode/point. Fixed 360 measured frames up to 5000, 240 up to 10000, 120 above. At least 8 frames and 2 seconds warmup.
+3. Fine: highest passing coarse point and the next point above, subdivided into five intervals, rounded to 10 entities. Six or fewer points per mode, each three fresh processes, 600 measured frames. Do not silently discard nonmonotonic coarse observations.
+4. Sustain: highest fine point passing all three processes, three fresh 20-second runs per mode. If it fails, one lower capacity candidate may be registered as a separate three-run group; no replacement or extension of failed groups. If still unsuccessful, report the failure and observed bracket rather than assert stability.
+
+All groups are registered before launch, stop at first invalid output; budget failures are valid retained capacity points. No formal R3/R4, device or production acceptance.
+
+Before fine registration: include the previous passing coarse level as one lower control (at most seven levels per mode). This checks whether a short coarse boundary reproduces, without extending any coarse group. A separate one-second duration plumbing pilot precedes fine/sustain. Original runners remain unchanged.
+
+Before gap registration: after all fine repetitions, fill any interval larger than 100 entities between the highest all-repeat passing point and the next failing point. Only unmeasured entity counts are included, three fixed fresh processes each. This is capacity search across different workloads, not replacement samples. Sustain uses the highest all-repeat passing point from fine and gap combined.

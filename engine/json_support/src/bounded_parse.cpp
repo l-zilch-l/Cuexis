@@ -258,8 +258,8 @@ class TopLevelIntegerSink final : public ISaxEventSink {
   private:
     auto take(std::int64_t value) -> core::Result<void> {
         // Other members keep the scan going: only the requested top-level member ends it, so a
-        // document that places integers before it still answers correctly. A key is remembered until
-        // the next key, which is exactly the lifetime of the value that follows it.
+        // document that places integers before it still answers correctly. A key is remembered
+        // until the next key, which is exactly the lifetime of the value that follows it.
         if (depth_ != 1 || key_ != member_)
             return {};
         value_ = value;

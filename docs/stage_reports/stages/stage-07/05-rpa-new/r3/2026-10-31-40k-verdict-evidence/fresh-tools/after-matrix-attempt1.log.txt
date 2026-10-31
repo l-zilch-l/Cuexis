@@ -1,0 +1,16 @@
+[22:47:19] waiting for the acceptance matrix to finish
+[23:39:35] matrix idle
+[23:39:35] start run-1 (1080p 40000, 120 frames)
+Traceback (most recent call last):
+  File "D:\Cuexis-redesign\out\verification-20261031\r3-40k-throughput-refresh-v1\run_40k_refresh.py", line 431, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "D:\Cuexis-redesign\out\verification-20261031\r3-40k-throughput-refresh-v1\run_40k_refresh.py", line 323, in main
+    out.mkdir(parents=True, exist_ok=False)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\msys64\ucrt64\lib\python3.14\pathlib\__init__.py", line 1011, in mkdir
+    os.mkdir(self, mode)
+    ~~~~~~~~^^^^^^^^^^^^
+OSError: [WinError 112] ���̿ռ䲻�㡣: 'D:\\Cuexis-redesign\\out\\verification-20261031\\r3-40k-throughput-refresh-v1\\run-1'
+[23:39:36] run-1 exit 1 in 0.2 s
+[23:39:36] stop: run-1 exit 1

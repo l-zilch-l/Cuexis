@@ -1,0 +1,109 @@
+"""Build a filesystem project whose entry chart has many renderable objects.
+
+The chart keeps the Stage 3 project shape (Chart v3, mesh.triangle / material.opaque) so the
+product Player path resolves it exactly like the shipped example. Only the object list grows, so
+`prepare` cost is dominated by content volume and not by a new format or asset graph.
+
+Usage: python -B make_fixture.py <object-count> <output-project-directory>
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import math
+import shutil
+import struct
+import sys
+from pathlib import Path
+
+REPOSITORY = Path(__file__).resolve().parents[3]
+TEMPLATE = REPOSITORY / "assets" / "projects" / "stage3_project"
+CHART_MAX_BYTES = 16 * 1024 * 1024
+
+
+def build_chart(count: int) -> bytes:
+    columns = max(1, math.ceil(math.sqrt(count)))
+    objects = []
+    for index in range(count):
+        x = ((index % columns) - (columns // 2)) * 0.09
+        y = ((index // columns) - (count // columns // 2)) * 0.05
+        objects.append(
+            '{"id":"019f0000-0000-7abc-8def-%012x","parent":null,"components":{'
+            '"cuexis.transform":{"version":1,"position":[%s,%s,0],"rotation":[0,0,0,1],'
+            '"scale":[0.06,0.06,0.06]},'
+            '"cuexis.renderable":{"version":1,"mesh":{"domain":"asset","id":"mesh.triangle"},'
+            '"material":{"domain":"asset","id":"material.opaque"}}},"extensions":{}}'
+            % (0x310 + index, _number(x), _number(y))
+        )
+    head = (
+        '{"format":"cuexis.chart","version":3,'
+        '"chartId":"019f0000-0000-7abc-8def-000000000301",'
+        '"metadata":{"title":"R3 40K startup fixture","artist":"Cuexis"},'
+        '"timing":{"offsetMs":0.0,"defaultBpm":120.0,"tempoEvents":[],"stops":[]},'
+        '"camera":{"type":"perspective","fovY":60.0,"near":0.1,"far":1000.0,'
+        '"defaultTransform":{"position":[0.0,0.0,5.0]}},'
+        '"templates":[],"behaviors":[],"objects":['
+    )
+    # The camera object must not reuse a generated renderable id: `0x310 + 0x10` collides with the
+    # seventeenth object, and the content validator correctly rejects the duplicate. The camera id
+    # therefore sits at the top of the same namespace, far above any object id this generator emits.
+    tail = (
+        ',{"id":"019f0000-0000-7abc-8def-ffffffffffff","parent":null,"components":{'
+        '"cuexis.transform":{"version":1,"position":[0.0,0.0,5.0],"rotation":[0.0,0.0,0.0,1.0],'
+        '"scale":[1.0,1.0,1.0]},"cuexis.camera":{"version":1,"type":"perspective","fovY":60.0,'
+        '"near":0.1,"far":1000.0}},"extensions":{}}'
+        '],"requiredExtensions":[],"extensions":{}}'
+    )
+    return (head + ",".join(objects) + tail).encode("utf-8")
+
+
+def _number(value: float) -> str:
+    text = ("%.4f" % value).rstrip("0").rstrip(".")
+    return "0" if text in ("", "-0") else text
+
+
+def main(argv: list[str]) -> int:
+    if len(argv) != 3:
+        print("usage: make_fixture.py <object-count> <output-project-directory>", file=sys.stderr)
+        return 2
+    count = int(argv[1])
+    target = Path(argv[2]).resolve()
+    if target.exists():
+        shutil.rmtree(target)
+    shutil.copytree(TEMPLATE, target)
+
+    chart = build_chart(count)
+    if len(chart) > CHART_MAX_BYTES:
+        print(
+            "chart exceeds the product project-document bound: %d > %d bytes"
+            % (len(chart), CHART_MAX_BYTES),
+            file=sys.stderr,
+        )
+        return 1
+    chart_path = target / "assets" / "charts" / "stage3_example.cuexis.chart.json"
+    chart_path.write_bytes(chart)
+
+    index_path = target / "assets" / "cuexis.asset-index.json"
+    assets = sorted(
+        str(path.relative_to(target)).replace("\\", "/")
+        for path in (target / "assets").rglob("*")
+        if path.is_file()
+    )
+    report = {
+        "objects_requested": count,
+        "chart_bytes": len(chart),
+        "chart_sha256": hashlib.sha256(chart).hexdigest(),
+        "chart_sha256_crlf": hashlib.sha256(chart.replace(b"\n", b"\r\n")).hexdigest(),
+        "project_directory": str(target),
+        "project_files": assets,
+        "asset_index_bytes": index_path.stat().st_size,
+        "document_bound_bytes": CHART_MAX_BYTES,
+        "object_bytes": struct.calcsize("P"),
+    }
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv))
