@@ -1,0 +1,15 @@
+{
+  "scope": "Only the neutral draw CPP differs between the two physical binaries; same product-sequence Release libraries, same characterization object, same app-local Release DLLs. Focused regression and equivalence check, not a fresh whole-repo matrix.",
+  "source_binding_sha256": "233ec8073718301a752fb832d411c9a17adb5c9817ea5431fbf3136fbc20daf4",
+  "characterization_sha256": "39b66eb275e770c76a6ca3858bcb8b7513aee1d06b4edb6a30fd53fbe9765966",
+  "probe_source_sha256": "e98f1dac026e51cfebdfb331c657bdb9a6e77e6896a493f6c57a8040fdcd07f0",
+  "commands_sha256": "9120cafc50c0dc9f58647d3d66e7da14f468e9b326f0fa2c7b33a6bf991de330",
+  "binaries": {
+    "gpu-baseline.exe": "2281f4577aba3227f6d1312b9cf978c08cf0854a6ef72cbaa36cf8149de535d8",
+    "gpu-candidate.exe": "80b6c1886b7ee91191fa8d70b24f3e78d12eb3fbebc4209e8024662b99d0af77",
+    "neutral-baseline.exe": "4a2b6acae9f16c38bebe9fe3bac5e2aeaa9cbca2fa66503fc4cc822654e2d7c8",
+    "neutral-candidate.exe": "605e50e5ca1a7ead59f1e32fc0e07a1a83281e4fb8f4c4ca4fe5f805e52bc222",
+    "opengl-baseline.exe": "23f5a5dbf09a0da6f34cd10b0c4e2f4816b7393850ad21ef7723543f5f73e140",
+    "opengl-candidate.exe": "5817630799e94dbe7471dd9d1c3adfe3c1d3fb5bc93c8e7ad9693cc8de55bcc3"
+  }
+}

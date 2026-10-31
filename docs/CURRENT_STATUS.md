@@ -71,6 +71,9 @@
   随后[中立命令转移及顺序检测](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-31-r3-neutral-command-transfer.md)已选用：
   保留原比较器/digest，避免重复排序与临时命令字符串复制；16进程普通GPU组40K render-only/static cycle改善10.33%/12.05%，收益/保护/重复性通过。
   逆序保护组与最终格式化CPP相关回归通过；未达到40K 240FPS，完整矩阵和其余接受仍开放。
+  同一函数的工作树细化（就地构造、删除临时命令队列与move转移）经24排列摘要等价、399/140回归
+  及独立16进程非劣性组（40K −12.63%/−6.65%，四点均在+5%带内、相对范围≤6.82%）后提交为`97b2570`；
+  该组基线版本与日期不同，不与上一组数值拼接，仍不构成容量或正式接受。
   这些候选均未进入产品实现或完成接受；恢复前暂停现场、统计口径更正及版本化实验材料见
   [2026-10-30 暂停与候选交接](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-30-r3-pause-and-candidate-handoff.md)。
   历史[来源绑定实验](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-source-binding-experiment.md)用同一 Release 二进制比较 canonical SHA 与进程内 owning source binding。

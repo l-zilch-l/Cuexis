@@ -1,0 +1,449 @@
+{
+  "scope": "Original exact bytes copied. Frozen measurement groups are unmodified; the only product change is the neutral draw builder CPP.",
+  "files": [
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\commit-message-v1.txt",
+      "archive": "commit-message-v1.txt",
+      "bytes": 1228,
+      "sha256": "5e779010ac66d2bb3cc6e8f25149c6aaa68d2d8ec19c134fb06f9f7f2036340e"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\build_wip_v1.py",
+      "archive": "scripts/build_wip_v1.py.txt",
+      "bytes": 8616,
+      "sha256": "c810d782b6c5202eed18d32342691cad24ec9404639a867bdceebf98ae207212"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\run_wip_group_v1.py",
+      "archive": "scripts/run_wip_group_v1.py.txt",
+      "bytes": 4108,
+      "sha256": "cc6ffd4bb6430aea04931bb942a6a3ca374b0dccceb38080dd0ff8ee82c7ad9a"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-build-v1\\binding.json",
+      "archive": "wip-build-v1/binding.json",
+      "bytes": 1235,
+      "sha256": "41db65bb3960d4729cfddff64df9c37958e8b22f1b9295a85c9f64159faa4336"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-build-v1\\check\\decision.json",
+      "archive": "wip-build-v1/check/decision.json",
+      "bytes": 832,
+      "sha256": "171610d6eb44616c6c440e2bdf59adb5017e6ae9ea13a118ab60dc28bcbd60d8"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-build-v1\\check\\neutral-baseline.log",
+      "archive": "wip-build-v1/check/neutral-baseline.log.txt",
+      "bytes": 9809,
+      "sha256": "0cd04aeeee41597172da42c26c22d238e6db00c831b4a12854c99887466fb5da"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-build-v1\\check\\neutral-candidate.log",
+      "archive": "wip-build-v1/check/neutral-candidate.log.txt",
+      "bytes": 9809,
+      "sha256": "0cd04aeeee41597172da42c26c22d238e6db00c831b4a12854c99887466fb5da"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-build-v1\\check\\opengl-candidate.log",
+      "archive": "wip-build-v1/check/opengl-candidate.log.txt",
+      "bytes": 160,
+      "sha256": "58f6d891e86aa577e972f698c06d8f0d6e774c5785d5d176a3f04dff75779d18"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-build-v1\\commands.json",
+      "archive": "wip-build-v1/commands.json",
+      "bytes": 32238,
+      "sha256": "9120cafc50c0dc9f58647d3d66e7da14f468e9b326f0fa2c7b33a6bf991de330"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-build-v1\\compile-draw-baseline.log",
+      "archive": "wip-build-v1/compile-draw-baseline.log.txt",
+      "bytes": 23,
+      "sha256": "c4d8c90a5c602776eb7c8ce32757c40c30d9b502ccdb155437841d23c16c1942"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-build-v1\\compile-draw-candidate.log",
+      "archive": "wip-build-v1/compile-draw-candidate.log.txt",
+      "bytes": 22,
+      "sha256": "b251011b611fd0309e944691ceb273de0a6d456fecbb8bb8bb42b095e7401c65"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-build-v1\\compile-gpu-probe.log",
+      "archive": "wip-build-v1/compile-gpu-probe.log.txt",
+      "bytes": 26,
+      "sha256": "9eaf07948659d0dcc9d20ebd6be999c81b8c8c7801f2f44ec285e13f70269a8f"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-build-v1\\compile-neutral-characterization.log",
+      "archive": "wip-build-v1/compile-neutral-characterization.log.txt",
+      "bytes": 26,
+      "sha256": "bede1fceb843d48af2d1be273ade52df18d1999e79bb88eb6c71e03ed1271018"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-build-v1\\link-gpu-baseline.log",
+      "archive": "wip-build-v1/link-gpu-baseline.log.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-build-v1\\link-gpu-candidate.log",
+      "archive": "wip-build-v1/link-gpu-candidate.log.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-build-v1\\link-neutral-baseline.log",
+      "archive": "wip-build-v1/link-neutral-baseline.log.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-build-v1\\link-neutral-candidate.log",
+      "archive": "wip-build-v1/link-neutral-candidate.log.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-build-v1\\link-opengl-baseline.log",
+      "archive": "wip-build-v1/link-opengl-baseline.log.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-build-v1\\link-opengl-candidate.log",
+      "archive": "wip-build-v1/link-opengl-candidate.log.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\00-baseline\\00-render-only-1000.log",
+      "archive": "wip-group-v1/00-baseline/00-render-only-1000.log.txt",
+      "bytes": 12666,
+      "sha256": "d9f8167205d54cd2112162f68521dd80c000b3087fb19c74330c3ac52634ab54"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\00-baseline\\registration.json",
+      "archive": "wip-group-v1/00-baseline/registration.json",
+      "bytes": 1262,
+      "sha256": "e77dd22182e49e9b977f459b481a62cbea3c81223c61c997ff24698771dcaaf3"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\00-baseline\\results.json",
+      "archive": "wip-group-v1/00-baseline/results.json",
+      "bytes": 2580,
+      "sha256": "51aed1d42504ed496e551c213741b30e3b03f59ff1ac2e7b4afa96a922c60e17"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\01-candidate\\00-render-only-1000.log",
+      "archive": "wip-group-v1/01-candidate/00-render-only-1000.log.txt",
+      "bytes": 12469,
+      "sha256": "f8a1c22e2694bb6a16a498f7235721824c218c2ebe61e25ffe16a13562776321"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\01-candidate\\registration.json",
+      "archive": "wip-group-v1/01-candidate/registration.json",
+      "bytes": 1263,
+      "sha256": "31049b4e5bb8d4e40cc1ae28ff4297689458b826c111e2806b25920913365a18"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\01-candidate\\results.json",
+      "archive": "wip-group-v1/01-candidate/results.json",
+      "bytes": 2591,
+      "sha256": "e1321e450a9ce439ace727670d7bcadea67f7c4663a48e258fb50554bbbc75b2"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\02-candidate\\00-render-only-1000.log",
+      "archive": "wip-group-v1/02-candidate/00-render-only-1000.log.txt",
+      "bytes": 12893,
+      "sha256": "8481142b9706692332fa25fbd65feec3ac138bd229c474c4e51d68069258af48"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\02-candidate\\registration.json",
+      "archive": "wip-group-v1/02-candidate/registration.json",
+      "bytes": 1263,
+      "sha256": "bb17ffcd260928be7beb49e812cf3bb80cac7389fbbbd48db4dfcc8c3a8bef1a"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\02-candidate\\results.json",
+      "archive": "wip-group-v1/02-candidate/results.json",
+      "bytes": 2581,
+      "sha256": "97f1540f43c62b0f242ce6653c0809722072bca81b8c26c6344418a27bf2a3bc"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\03-baseline\\00-render-only-1000.log",
+      "archive": "wip-group-v1/03-baseline/00-render-only-1000.log.txt",
+      "bytes": 12477,
+      "sha256": "2ab226faa66297c87c150b57b3ff32294e0c943b9140a08a69676e5639892c64"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\03-baseline\\registration.json",
+      "archive": "wip-group-v1/03-baseline/registration.json",
+      "bytes": 1262,
+      "sha256": "380a24740b9dba35f13d4cbf0c7dfbefc79f8312729bb002ddf829aa49b7ca57"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\03-baseline\\results.json",
+      "archive": "wip-group-v1/03-baseline/results.json",
+      "bytes": 2591,
+      "sha256": "3f0ebbec64a18279a9a060cc98a5169210f99b87f318cfaa56dc878dc5680305"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\04-baseline\\00-static-1000.log",
+      "archive": "wip-group-v1/04-baseline/00-static-1000.log.txt",
+      "bytes": 14191,
+      "sha256": "f61a1d2880f02c344e3414540f9be94a0c492061e2239469aa483dfed4f1f586"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\04-baseline\\registration.json",
+      "archive": "wip-group-v1/04-baseline/registration.json",
+      "bytes": 1257,
+      "sha256": "ca089409028729d5dcc18157f89a018ec8db20ff4d7ddcc5ba24ad750601e9b5"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\04-baseline\\results.json",
+      "archive": "wip-group-v1/04-baseline/results.json",
+      "bytes": 2645,
+      "sha256": "c86574ec7f980c315635610ef902c7d93fbbbfe449801a188be03a2af91eac32"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\05-candidate\\00-static-1000.log",
+      "archive": "wip-group-v1/05-candidate/00-static-1000.log.txt",
+      "bytes": 14355,
+      "sha256": "70ef85f0639f182f027c2be9141e65bc3a6935636181aa591dc5a767cab517e7"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\05-candidate\\registration.json",
+      "archive": "wip-group-v1/05-candidate/registration.json",
+      "bytes": 1258,
+      "sha256": "c4e03bf962cc998011f76321648bec75e88c82c91a4a75a56e4c25aca8256133"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\05-candidate\\results.json",
+      "archive": "wip-group-v1/05-candidate/results.json",
+      "bytes": 2634,
+      "sha256": "1ae5add4f1d1177592862d108900fcda5e4b55b0fff89c3cf0c02a78c36767b1"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\06-candidate\\00-static-1000.log",
+      "archive": "wip-group-v1/06-candidate/00-static-1000.log.txt",
+      "bytes": 14018,
+      "sha256": "8c31ae1c49a01312bd500a2a77315e0b96e289c0483bb327bf70e21891f5ea05"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\06-candidate\\registration.json",
+      "archive": "wip-group-v1/06-candidate/registration.json",
+      "bytes": 1258,
+      "sha256": "fc322abb4268a3b90c837cd6a9823f97f2732c41e81e88a372a3d1e541352065"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\06-candidate\\results.json",
+      "archive": "wip-group-v1/06-candidate/results.json",
+      "bytes": 2623,
+      "sha256": "d1f0a9c92a35dbd78d7116d92a09af1501fa9167f3be7487566dfa6486ed330e"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\07-baseline\\00-static-1000.log",
+      "archive": "wip-group-v1/07-baseline/00-static-1000.log.txt",
+      "bytes": 14254,
+      "sha256": "0243293b1015a7fdd897e7d3b9a3da98da2053f6c4f7c5fec96e5a65b5589d8a"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\07-baseline\\registration.json",
+      "archive": "wip-group-v1/07-baseline/registration.json",
+      "bytes": 1257,
+      "sha256": "39b1dd5a45f078afaeb1b2f97d0d92c5f0e9d8c798212471df077b05d4f3852c"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\07-baseline\\results.json",
+      "archive": "wip-group-v1/07-baseline/results.json",
+      "bytes": 2637,
+      "sha256": "2c8ba4f51e0d60653ba5131ec56df3f9ee49d1772d709bed781a5ce50c6cc960"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\08-baseline\\00-render-only-40000.log",
+      "archive": "wip-group-v1/08-baseline/00-render-only-40000.log.txt",
+      "bytes": 13561,
+      "sha256": "6be19adb8a314acdaaab69b4f959553b7a723a44f0d68696aabe6fde349997ab"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\08-baseline\\registration.json",
+      "archive": "wip-group-v1/08-baseline/registration.json",
+      "bytes": 1263,
+      "sha256": "cd66922d5ca0b24812e1c2a2b0ceb41ebcd5b3abc6628b19880800e5e65a4657"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\08-baseline\\results.json",
+      "archive": "wip-group-v1/08-baseline/results.json",
+      "bytes": 2598,
+      "sha256": "8b89b540dc541795d96b400a1d235e3ef11ff839ee9019e66a3d044b6378f451"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\09-candidate\\00-render-only-40000.log",
+      "archive": "wip-group-v1/09-candidate/00-render-only-40000.log.txt",
+      "bytes": 13229,
+      "sha256": "86faa2d85433196c4832283cc04df6fac5c18f85035820c7f8186c7ce826600a"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\09-candidate\\registration.json",
+      "archive": "wip-group-v1/09-candidate/registration.json",
+      "bytes": 1264,
+      "sha256": "39c6155b137ebf99c10fdd5cd68454738a5359d4ad69eedcd5ffdc785cfcc645"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\09-candidate\\results.json",
+      "archive": "wip-group-v1/09-candidate/results.json",
+      "bytes": 2626,
+      "sha256": "e001ac28106851faca28d4de0b42878660d11f3f2068e0a37721fa32ecca7f27"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\10-candidate\\00-render-only-40000.log",
+      "archive": "wip-group-v1/10-candidate/00-render-only-40000.log.txt",
+      "bytes": 13366,
+      "sha256": "93b4d210bb7749717c8ef78fc4902b3d9c68de9ca6a020ba7249e0884ebcb1f4"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\10-candidate\\registration.json",
+      "archive": "wip-group-v1/10-candidate/registration.json",
+      "bytes": 1264,
+      "sha256": "67cc57cd6cfe86652472a2d249a5194aa0bfec0084687fba783004547a142daf"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\10-candidate\\results.json",
+      "archive": "wip-group-v1/10-candidate/results.json",
+      "bytes": 2602,
+      "sha256": "18347010bc16b74cda4224950ac45550ac66f3d470d42708c8c5165257010ac2"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\11-baseline\\00-render-only-40000.log",
+      "archive": "wip-group-v1/11-baseline/00-render-only-40000.log.txt",
+      "bytes": 13285,
+      "sha256": "520b8321866b7c84c834535fff1ec7c09215a447d2f558ed76feaccb1d89c691"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\11-baseline\\registration.json",
+      "archive": "wip-group-v1/11-baseline/registration.json",
+      "bytes": 1263,
+      "sha256": "66d247524a03247f6eee6c26e9830b88850f86d3e754558a24691470d1ade6ef"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\11-baseline\\results.json",
+      "archive": "wip-group-v1/11-baseline/results.json",
+      "bytes": 2619,
+      "sha256": "6f28e495fe5f5fcfac3a720103d17e160b9dcafb1b45c6bc742fdc3789dbc16b"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\12-baseline\\00-static-40000.log",
+      "archive": "wip-group-v1/12-baseline/00-static-40000.log.txt",
+      "bytes": 15315,
+      "sha256": "e31ef64cef9fab7946e85e97c673c186ab9888ed9b6cf361d7ec3ea5099a1620"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\12-baseline\\registration.json",
+      "archive": "wip-group-v1/12-baseline/registration.json",
+      "bytes": 1258,
+      "sha256": "ed800b28218063fb900f4ca1f728af2666deb5df3c15414fc50d55e6d68fe7c1"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\12-baseline\\results.json",
+      "archive": "wip-group-v1/12-baseline/results.json",
+      "bytes": 2660,
+      "sha256": "20a1b314dbd4687490b0789240cf6a6a9d0e15eda7898d17aaaad141ecfa7ae0"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\13-candidate\\00-static-40000.log",
+      "archive": "wip-group-v1/13-candidate/00-static-40000.log.txt",
+      "bytes": 15028,
+      "sha256": "3f8101c1c497cc14c79dea9f6e7072ceff8fbaf62767ab14b432eed53c691df5"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\13-candidate\\registration.json",
+      "archive": "wip-group-v1/13-candidate/registration.json",
+      "bytes": 1259,
+      "sha256": "f9d2c197e43d903330ad6fbe5f5c1465ad8c4b3ab0c31e8c38a5fa14d85c8afc"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\13-candidate\\results.json",
+      "archive": "wip-group-v1/13-candidate/results.json",
+      "bytes": 2660,
+      "sha256": "42914a6e42c9a1d10630422f9c0c1029db22ad228d40b4ba0c4b8eebd67ae06d"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\14-candidate\\00-static-40000.log",
+      "archive": "wip-group-v1/14-candidate/00-static-40000.log.txt",
+      "bytes": 14924,
+      "sha256": "b51af3df9d81cfbf06cbede873284eb1b63581a809579dcf45c4f7edbc0349ac"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\14-candidate\\registration.json",
+      "archive": "wip-group-v1/14-candidate/registration.json",
+      "bytes": 1259,
+      "sha256": "4e2001a5b26aab94057189cdf165f0aa198ae9555d40b88d419e1a52e19f5d08"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\14-candidate\\results.json",
+      "archive": "wip-group-v1/14-candidate/results.json",
+      "bytes": 2661,
+      "sha256": "cac408d5975ab56d8d31ec5f92303b5d100824ad45c8bee31870663057699df0"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\15-baseline\\00-static-40000.log",
+      "archive": "wip-group-v1/15-baseline/00-static-40000.log.txt",
+      "bytes": 15104,
+      "sha256": "a2d639b66df75f0bcf48add56d0beeb24f3e9a7554d06433de784164ba201890"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\15-baseline\\registration.json",
+      "archive": "wip-group-v1/15-baseline/registration.json",
+      "bytes": 1258,
+      "sha256": "14b9237ef51e376d8dfb3c4de20782f3407108ddfeeb7a49522b524347b5c8df"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\15-baseline\\results.json",
+      "archive": "wip-group-v1/15-baseline/results.json",
+      "bytes": 2673,
+      "sha256": "e2d8e4f48287f95f413d373b65ac44ba2ea8bc563efbcfdd1fd0a39ac1f2faf0"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\decision.json",
+      "archive": "wip-group-v1/decision.json",
+      "bytes": 5253,
+      "sha256": "d6a3841a3af59849e4c4b4bd8c257946a95d9d0b5dac89c2592d2382386534c0"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\plan.json",
+      "archive": "wip-group-v1/plan.json",
+      "bytes": 2936,
+      "sha256": "6aa3267bbc598df17f17c55441adfbc85215465d81a93de9c8231e00c70cc278"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1\\results.json",
+      "archive": "wip-group-v1/results.json",
+      "bytes": 41936,
+      "sha256": "e77cfc8b08da586de4ba59256dc5c6cbe0846294aab769524f854b4a6a722961"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-group-v1.stdout.log",
+      "archive": "wip-group-v1/wip-group-v1.stdout.log.txt",
+      "bytes": 3115,
+      "sha256": "c521b7900f34b7783d052a358b5faf0b6337ce15d3b013a5f76c6c8bf8570caa"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-source-v1\\binding.json",
+      "archive": "wip-source-v1/binding.json",
+      "bytes": 1272,
+      "sha256": "233ec8073718301a752fb832d411c9a17adb5c9817ea5431fbf3136fbc20daf4"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-source-v1\\draw_command_head.cpp",
+      "archive": "wip-source-v1/draw_command_head.cpp.txt",
+      "bytes": 23641,
+      "sha256": "483ef1b7fb0d6b2e28a072677e813609d800053b50969190b2ba12640e6a7ee9"
+    },
+    {
+      "source": "out\\verification-20261031\\r3-wip-validate-v1\\wip-source-v1\\draw_command_wip.cpp",
+      "archive": "wip-source-v1/draw_command_wip.cpp.txt",
+      "bytes": 23353,
+      "sha256": "634157c2f12da2e15c6974d9d09014240070ff976b9bebc181a11848e3807b2e"
+    }
+  ]
+}

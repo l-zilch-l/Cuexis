@@ -74,6 +74,37 @@ CPU mask 4、BelowNormal、节流 OFF，实际控件逐进程核验，无物理�
 真实分配器故障下新 move 路径会减少可失败分配位置，不声称异常中间态的内存地址或计数恒等。
 无缓存、额度或长期 owner 保留策略变化。
 
+## 工作树就地构造的核对与选用
+
+上一会话在 01:56 留下一个未提交的 `draw_command.cpp` 改动；恢复后先按规定核对再决定处置。
+该改动删除 `OrderedDraw` 临时数组：两遍各自预留最终 summary 容量并就地 append 刚构造的
+`DrawCommand`，因此不再有一次性 owning 队列和随后的逐命令 move 转移。比较器、
+`transparentDepthKey` 规则、digest 与 `is_sorted` 提前退出全部保留。
+
+核对不引用先前成绩，重新在 `out/verification-20261031/r3-wip-validate-v1` 绑源码重编：
+
+- `wip-source-v1/binding.json` 证明工作树 CRLF 字节与 HEAD blob 是同一内容的两种行尾形态。
+- `wip-build-v1/check/decision.json`：baseline 与 candidate 各 3 cases / 399 assertions 通过，
+  24 种源排列的完整记录与 digest 逐行相等，且与上一批 `draw-transfer-final-v1` 选用日志相同；
+  OpenGL 相关回归 22 cases / 140 assertions 通过。
+- 唯一差异是这一个 CPP，链接时换入的对象文件在 binding 中逐项固定。
+
+`wip-group-v1` 是**非劣性 screen**，不是收益选择：沿用上一批的 16 进程、四点 AB/BA 与同一
+Release 库、app-local DLL、1080p、节流 OFF、计时内无 timer/读回；预登记门限为四点 cycle
+变化都不超过 +5%、进程相对范围不超过 15%，不设 submit 改善门。
+
+| 场景 | 完整 cycle 中位数 baseline → candidate | cycle 变化 | 进程相对范围 |
+| --- | --- | --- | --- |
+| 1K render-only | 1.241 → 1.245 ms | +0.32% | 1.04% / 1.40% |
+| 1K static | 1.526 → 1.468 ms | -3.79% | 1.46% / 2.87% |
+| 40K render-only | 50.550 → 44.168 ms | -12.63% | 6.82% / 0.02% |
+| 40K static | 61.865 → 57.748 ms | -6.65% | 2.86% / 0.26% |
+
+四点都在非劣性带内且相对范围远小于 15%，`decision.json` 记录 `non_inferiority_gate` 与
+`repeatability_screen` 均为 true。40K 两点比本批上一段更低，但两次登记组的基线版本与日期不同，
+不拼接成同一连续序列，也不把本次差值加回上一批的 10.33% / 12.05%。
+按结果选用并提交为 `97b2570`（父 `0a575c4`），只改一个 CPP。
+
 ## 证据与后续
 
 原目录 `out/verification-20261030/r3-next-v1/draw-transfer-*` 原位冻结。
@@ -82,3 +113,7 @@ CPU mask 4、BelowNormal、节流 OFF，实际控件逐进程核验，无物理�
 [选用绑定](2026-10-31-draw-transfer-evidence/selection.json) 保存源码、命令、日志及结果。
 本次局部变更选用；完整新源码矩阵、其余六项工作、CPU 命令摘要热点、原 load/Seek/内存门、
 R3/R4、设备/生产与 Stage 7 接受继续开放。
+就地构造段的附件独立冻结在
+[细化附件索引](2026-10-31-draw-refinement-evidence/index.md)、
+[manifest](2026-10-31-draw-refinement-evidence/manifest.json) 与
+[选用绑定](2026-10-31-draw-refinement-evidence/selection.json)；上一批 manifest 不被改写。
