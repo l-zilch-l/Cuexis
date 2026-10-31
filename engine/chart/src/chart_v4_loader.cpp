@@ -886,17 +886,20 @@ auto detail::loadChartForPlayback(std::string_view jsonText, const ChartLimits& 
 
 auto detail::loadV4IfPresent(std::string_view jsonText, const ChartLimits& limits)
     -> std::optional<ChartV4SourceDocument> {
+    // The version alone decides whether this text is a v4 source at all, and the callers that ask
+    // are the ones that already hold the text for the real parse. Building the value tree only to
+    // read one member would make them pay twice for the whole document, so the top-level version is
+    // scanned first and a non-v4 document costs only the prefix in front of that member.
+    const auto version = json::scanTopLevelInteger(
+        jsonText, "version",
+        json::ParseLimits{limits.maxInputBytes, limits.maxNestingDepth, limits.maxStringBytes});
+    if (!version.has_value() || *version != 4) {
+        return std::nullopt;
+    }
     auto parsed =
         json::parse(jsonText, json::ParseLimits{limits.maxInputBytes, limits.maxNestingDepth,
                                                 limits.maxStringBytes});
     if (!parsed) {
-        return std::nullopt;
-    }
-    const auto* version = parsed->find("version");
-    const auto isV4 = version != nullptr &&
-                      ((version->signedInteger() != nullptr && *version->signedInteger() == 4) ||
-                       (version->unsignedInteger() != nullptr && *version->unsignedInteger() == 4));
-    if (!isV4) {
         return std::nullopt;
     }
     auto loaded = detail::loadV4Value(*parsed, limits);

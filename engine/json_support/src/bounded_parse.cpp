@@ -3,6 +3,7 @@
 #include <nlohmann/json.hpp>
 
 #include <exception>
+#include <limits>
 #include <optional>
 #include <set>
 #include <utility>
@@ -207,7 +208,91 @@ auto validateText(std::string_view text, ValueParseLimits limits) -> core::Resul
             core::Error{"json.parse.size_limit", "JSON input exceeds configured byte limit"});
     return {};
 }
+
+// Aborts a SAX scan as soon as the answer is known. The code never leaves this translation unit: it
+// is translated back into a successful scan by scanTopLevelInteger below.
+constexpr std::string_view scanCompleteCode = "json.scan.complete";
+
+// Records the integer value of one top-level member and then stops the scan. Keys are tracked per
+// container level, so a nested member with the same name is not mistaken for the top-level one.
+class TopLevelIntegerSink final : public ISaxEventSink {
+  public:
+    explicit TopLevelIntegerSink(std::string_view member) noexcept : member_{member} {}
+
+    auto onEvent(const SaxEvent& event) -> core::Result<void> override {
+        switch (event.kind) {
+        case SaxEventKind::ObjectStart:
+        case SaxEventKind::ArrayStart:
+            ++depth_;
+            return {};
+        case SaxEventKind::ObjectEnd:
+        case SaxEventKind::ArrayEnd:
+            if (depth_ == 0)
+                return abort();
+            --depth_;
+            if (depth_ == 0)
+                return abort();
+            return {};
+        case SaxEventKind::Key:
+            // The event text is borrowed for the callback only, and the reader reuses its buffer as
+            // soon as the callback returns, so a retained top-level key must be owned.
+            if (depth_ == 1)
+                key_.assign(event.text);
+            return {};
+        case SaxEventKind::SignedInteger:
+            return take(event.signedInteger);
+        case SaxEventKind::UnsignedInteger:
+            if (event.unsignedInteger >
+                static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max()))
+                return abort();
+            return take(static_cast<std::int64_t>(event.unsignedInteger));
+        default:
+            return {};
+        }
+    }
+
+    [[nodiscard]] auto value() const noexcept -> std::optional<std::int64_t> {
+        return value_;
+    }
+
+  private:
+    auto take(std::int64_t value) -> core::Result<void> {
+        // Other members keep the scan going: only the requested top-level member ends it, so a
+        // document that places integers before it still answers correctly. A key is remembered until
+        // the next key, which is exactly the lifetime of the value that follows it.
+        if (depth_ != 1 || key_ != member_)
+            return {};
+        value_ = value;
+        return abort();
+    }
+
+    auto abort() -> core::Result<void> {
+        return core::unexpected(core::Error{std::string{scanCompleteCode}, "JSON scan complete"});
+    }
+
+    std::string_view member_;
+    std::string key_;
+    std::size_t depth_{};
+    std::optional<std::int64_t> value_;
+};
+
 } // namespace
+
+auto scanTopLevelInteger(std::string_view text, std::string_view member, ParseLimits limits)
+    -> std::optional<std::int64_t> {
+    if (!limits.maxBytes || !limits.maxDepth || !limits.maxStringBytes ||
+        text.size() > limits.maxBytes)
+        return std::nullopt;
+    // The scanner knows only scalars, so the owning-value budgets are effectively unbounded here;
+    // the document itself is validated by the real parse that follows.
+    const ValueParseLimits scanLimits{limits, std::numeric_limits<std::size_t>::max(),
+                                      std::numeric_limits<std::size_t>::max()};
+    TopLevelIntegerSink sink{member};
+    const auto scanned = parseEvents(text, scanLimits, sink);
+    if (!scanned && scanned.error().code() != scanCompleteCode)
+        return std::nullopt;
+    return sink.value();
+}
 
 auto parseBounded(std::string_view text, ValueParseLimits limits) -> core::Result<Value> try {
     if (auto valid = validateText(text, limits); !valid)

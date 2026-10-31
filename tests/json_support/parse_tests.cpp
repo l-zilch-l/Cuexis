@@ -254,3 +254,39 @@ TEST_CASE("JSON serialization is deterministic and round trips", "[json][parse]"
     REQUIRE(reparsed.has_value());
     REQUIRE(*reparsed == *parsed);
 }
+
+TEST_CASE("Top-level integer scan reads one member without validating the document",
+          "[json][parse][scan]") {
+    const auto scan = [](std::string_view text) {
+        return cuexis::json::scanTopLevelInteger(text, "version",
+                                                 cuexis::json::ParseLimits{4096, 8, 1024});
+    };
+
+    CHECK(*scan(R"({"version":4})") == 4);
+    CHECK(*scan(R"(  {  "format" : "cuexis.chart" , "version" : -7 }  )") == -7);
+    // Members before the requested one are skipped, including integer members and nested containers.
+    CHECK(*scan(R"({"objects":0,"version":4})") == 4);
+    CHECK(*scan(R"({"meta":{"version":9},"version":4})") == 4);
+    CHECK(*scan(R"({"count":3,"items":[1,2,3],"version":4})") == 4);
+    // The scan stops at the member, so text that would fail a full parse after it is not read.
+    CHECK(*scan(R"({"version":4,"objects":[{"id":nonsense)") == 4);
+
+    CHECK_FALSE(scan(R"({"format":"cuexis.chart"})").has_value());
+    CHECK_FALSE(scan(R"({"meta":{"version":4}})").has_value());
+    CHECK_FALSE(scan(R"({"version":"4"})").has_value());
+    CHECK_FALSE(scan(R"({"version":4.5})").has_value());
+    CHECK_FALSE(scan(R"({"version":true})").has_value());
+    CHECK_FALSE(scan(R"({"version":null})").has_value());
+    CHECK_FALSE(scan(R"([{"version":4}])").has_value());
+    CHECK_FALSE(scan("").has_value());
+    CHECK_FALSE(scan(R"({"version")").has_value());
+    CHECK_FALSE(cuexis::json::scanTopLevelInteger("{\"version\":4}", "version",
+                                                  cuexis::json::ParseLimits{4, 8, 1024})
+                    .has_value());
+    CHECK_FALSE(cuexis::json::scanTopLevelInteger("{\"version\":4}", "version",
+                                                  cuexis::json::ParseLimits{0, 8, 1024})
+                    .has_value());
+    CHECK_FALSE(cuexis::json::scanTopLevelInteger("{\"version\":4}", "version",
+                                                  cuexis::json::ParseLimits{1024, 0, 8})
+                    .has_value());
+}

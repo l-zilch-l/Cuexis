@@ -10,6 +10,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -74,5 +75,17 @@ enum class SerializeStyle {
 [[nodiscard]] core::Result<Value> parse(std::string_view text, ParseLimits limits);
 [[nodiscard]] core::Result<std::string> serialize(const Value& value,
                                                   SerializeStyle style = SerializeStyle::Compact);
+
+// Reads the integer value of one top-level member of a JSON object without building a value tree.
+// Scanning stops at that value, which is the whole point: a caller that only needs to know the
+// format version of a large document pays for the prefix in front of the member instead of for the
+// complete document.
+//
+// This is a hint scanner and never validates the document. It returns nullopt when the text does
+// not start with a JSON object, when the member is absent from the part that was scanned, when its
+// value is not an integer, when the text ends early, or when a scan limit is reached. Callers must
+// still parse the document to validate it and to reject it.
+[[nodiscard]] auto scanTopLevelInteger(std::string_view text, std::string_view member,
+                                       ParseLimits limits) -> std::optional<std::int64_t>;
 
 } // namespace cuexis::json
