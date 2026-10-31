@@ -1,4 +1,5 @@
 #include "../rpa/execution_fixture.hpp"
+#include <algorithm>
 #include <cuexis/playback/frame_digest.hpp>
 #include <limits>
 

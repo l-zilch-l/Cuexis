@@ -67,19 +67,35 @@ TEST_CASE("Audio publication preserves device observation time across service po
             return audio::AudioClip::create(48000, 1, std::vector<float>(48000));
         });
     REQUIRE(worker);
-    std::this_thread::sleep_for(std::chrono::milliseconds{20});
-    auto before = (*worker)->publication();
-    REQUIRE(before);
-    std::this_thread::sleep_for(std::chrono::milliseconds{20});
-    auto after = (*worker)->publication();
-    REQUIRE(after);
-    CHECK(after->sequence > before->sequence);
-    CHECK(before->sampleMonotonicUs == 123);
-    CHECK(after->sampleMonotonicUs == 123);
-    CHECK(after->maximumPresentedFrame == 48000);
-    CHECK(after->errorBoundUs == 7);
-    (*worker)->requestShutdown();
+    // The worker publishes once per service interval from its own thread. Two fixed 20 ms
+    // sleeps made this case fail under parallel CTest load when the new thread had not been
+    // scheduled yet (both snapshots still sequence 0); the invariant under test is sequence
+    // monotonicity plus the preserved observation fields, not how fast a thread starts.
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds{3};
+    AudioPublication before{};
+    while (before.sequence == 0) {
+        REQUIRE(std::chrono::steady_clock::now() < deadline);
+        auto current = (*worker)->publication();
+        REQUIRE(current);
+        before = *current;
+        if (before.sequence == 0)
+            std::this_thread::sleep_for(std::chrono::milliseconds{1});
+    }
+    AudioPublication after = before;
+    while (after.sequence == before.sequence) {
+        REQUIRE(std::chrono::steady_clock::now() < deadline);
+        auto current = (*worker)->publication();
+        REQUIRE(current);
+        after = *current;
+        if (after.sequence == before.sequence)
+            std::this_thread::sleep_for(std::chrono::milliseconds{1});
+    }
+    CHECK(after.sequence > before.sequence);
+    CHECK(before.sampleMonotonicUs == 123);
+    CHECK(after.sampleMonotonicUs == 123);
+    CHECK(after.maximumPresentedFrame == 48000);
+    CHECK(after.errorBoundUs == 7);
+    (*worker)->requestShutdown();
     while (!(*worker)->exited() && std::chrono::steady_clock::now() < deadline)
         std::this_thread::sleep_for(std::chrono::milliseconds{1});
     REQUIRE((*worker)->joinExited());

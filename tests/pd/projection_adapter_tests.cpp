@@ -2,6 +2,7 @@
 #include "gameplay_internal.hpp"
 #include "presentation_projection.hpp"
 
+#include <algorithm>
 #include <limits>
 
 using namespace cuexis;

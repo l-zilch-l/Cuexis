@@ -1,6 +1,7 @@
 #include "hash_core_fixture.hpp"
 #include "packed_fixture_support.hpp"
 #include "packed_gameplay_internal.hpp"
+#include <algorithm>
 #include <chrono>
 #include <cuexis/chart/packed_chart_io.hpp>
 #include <cuexis_internal/sha256.hpp>

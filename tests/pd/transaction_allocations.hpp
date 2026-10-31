@@ -38,6 +38,15 @@ inline void observe(std::size_t size) {
     }
 }
 } // namespace cuexis::pd_allocations
+
+// These definitions replace the program's global allocation functions: `operator new` returns
+// malloc memory and the matching `operator delete` hands it back to free. GCC inlines both and
+// then reports the paired calls as a new/free mismatch, which is a false positive for a
+// replacement pair, so the diagnostic is disabled around the definitions.
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmismatched-new-delete"
+#endif
 void* operator new(std::size_t size) {
     cuexis::pd_allocations::observe(size);
     if (auto p = std::malloc(size ? size : 1))
@@ -90,3 +99,6 @@ void operator delete(void* p, std::size_t, std::align_val_t a) noexcept {
 void operator delete[](void* p, std::size_t, std::align_val_t a) noexcept {
     ::operator delete(p, a);
 }
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
