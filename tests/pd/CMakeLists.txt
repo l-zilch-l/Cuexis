@@ -12,7 +12,18 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE AND CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
     add_executable(cuexis_pd_allocation_probe measurement_method_tests.cpp)
     target_compile_features(cuexis_pd_allocation_probe PRIVATE cxx_std_20)
     target_compile_definitions(cuexis_pd_allocation_probe PRIVATE
-        CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}" CUEXIS_PD_ALLOCATION_OBSERVER=1)
+        CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
+    # measurement_method_tests.cpp includes the probe header; without a usable replacement it must
+    # not install one, and the global-traffic observer cases compile out instead of reporting zero.
+    if(CUEXIS_PD_ALLOCATION_PROBE_RESOURCE_ONLY)
+        target_compile_definitions(cuexis_pd_baseline_probe PRIVATE
+            CUEXIS_PD_ALLOCATION_PROBE_RESOURCE_ONLY=1)
+        target_compile_definitions(cuexis_pd_allocation_probe PRIVATE
+            CUEXIS_PD_ALLOCATION_PROBE_RESOURCE_ONLY=1)
+    else()
+        target_compile_definitions(cuexis_pd_allocation_probe PRIVATE
+            CUEXIS_PD_ALLOCATION_OBSERVER=1)
+    endif()
     target_link_libraries(cuexis_pd_allocation_probe PRIVATE cuexis::playback cuexis::judgement
         cuexis::gameplay_packed Catch2::Catch2WithMain)
     if(TARGET cuexis_execution_host_support)

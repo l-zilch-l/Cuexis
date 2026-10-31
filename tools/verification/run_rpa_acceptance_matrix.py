@@ -11,11 +11,16 @@ import os
 from pathlib import Path
 import platform
 import re
+import shutil
 import subprocess
 import time
 import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
+# `--fresh` plus eleven build trees, each with its own vcpkg install tree, once exhausted the volume
+# mid-row and produced twelve configure failures that looked like a source defect. Refuse to start,
+# and stop before a row, rather than record a truncated build as a test failure.
+FREE_SPACE_FLOOR = 12 * 1024**3
 ROWS = {
     "msvc-on-debug": ("candidate-debug", "candidate-debug", []),
     "msvc-on-release": ("rpa-candidate-release", "release", ["-DCUEXIS_ENABLE_CHART_V5_CANDIDATE=ON"]),
@@ -53,6 +58,13 @@ def save(path, value):
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def free_bytes(path):
+    probe = path
+    while not probe.exists():
+        probe = probe.parent
+    return shutil.disk_usage(probe).free
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--rows", nargs="+", choices=ROWS, default=list(ROWS))
@@ -66,9 +78,14 @@ def main():
     if args.vcvars and not args.vcvars.is_file():
         parser.error("vcvars must name an existing developer shell script")
     run = args.output.resolve() / (time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:8])
+    available = free_bytes(args.output.resolve())
+    if available < FREE_SPACE_FLOOR:
+        parser.exit(2, f"refusing to start: {available / 1024**3:.2f} GiB free, floor is "
+                       f"{FREE_SPACE_FLOOR / 1024**3:.0f} GiB for eleven fresh build trees\n")
     run.mkdir(parents=True)
     manifest = {"source": identity(), "os": platform.platform(), "machine": platform.machine(),
                 "logical_processors": os.cpu_count(), "test_only": True,
+                "free_space_floor_bytes": FREE_SPACE_FLOOR, "free_bytes_at_start": available,
                 "final_acceptance": False, "production_thresholds_accepted": False,
                 "rows": [], "unexecuted": ["physical_keyboard", "listening", "device_loss_recovery",
                                            "production_calibration", "hosted_same_sha", "owner_acceptance"]}
@@ -114,6 +131,15 @@ def main():
         record = {"name": row, "build_directory": str(build), "phases": [], "measurements": [],
                   "source_before": identity()}
         manifest["rows"].append(record)
+        free = free_bytes(args.output.resolve())
+        record["free_bytes_at_start"] = free
+        if free < FREE_SPACE_FLOOR:
+            # A truncated build must never be recorded as a row result.
+            record["status"] = "skipped_disk_space"
+            manifest["aborted"] = {"reason": "disk_space", "free_bytes": free, "row": row}
+            save(run / "manifest.json", manifest)
+            print(f"{row}: skipped, {free / 1024**3:.2f} GiB free < floor", flush=True)
+            break
         commands = [
             ("configure", ["cmake", "--preset", preset, "--fresh", "-B", str(build), *options]),
             ("build", ["cmake", "--build", str(build), "--clean-first", "--parallel", str(args.jobs)]),

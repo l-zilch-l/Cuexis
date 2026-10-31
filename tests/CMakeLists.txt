@@ -1,5 +1,17 @@
 find_package(Catch2 3 CONFIG REQUIRED)
 
+# `tests/pd/pd_allocation_probe.hpp` replaces global new/delete with a header-prefixed layout, which
+# is only sound while every delete of a payload runs that replacement. A shared product library owns
+# its allocator inside the DLL, and MinGW always links libstdc++-6.dll whose exported std::string and
+# std::ostringstream members call the DLL's own operator delete, so an offset payload reaches the
+# UCRT heap as garbage and surfaces as 0xc0000374 at a later heap call. Measured, not assumed: a
+# three-line Catch2 case including only that header fails this way with a dynamic libstdc++ and
+# passes with -static-libstdc++ -static-libgcc. Those topologies keep every test and observe explicit
+# allocate/release pairs through RESOURCE_ONLY instead of global operator traffic.
+if(MINGW OR CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
+    set(CUEXIS_PD_ALLOCATION_PROBE_RESOURCE_ONLY ON)
+endif()
+
 add_subdirectory(core)
 add_subdirectory(audio)
 add_subdirectory(filesystem)

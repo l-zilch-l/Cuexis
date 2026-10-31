@@ -155,6 +155,16 @@ the timing baseline retains the normal allocator. Requested C++ bytes/counts and
 observations exclude malloc/CRT/driver/GPU storage. Allocation-probe timings are not performance
 evidence. `collect_storage.py` registers independent repetitions and coverage checks.
 
+The replacement applies only where every `delete` of a payload reaches it, so shared product
+topologies and MinGW build with `CUEXIS_PD_ALLOCATION_PROBE_RESOURCE_ONLY` and observe explicitly
+paired `pd_allocation::allocate`/`release` calls instead of global operator traffic; the
+global-traffic cases then compile out rather than report a vacuous zero. MinGW always links
+`libstdc++-6.dll`, whose exported `std::string`/`std::ostringstream` members free through the DLL's
+own allocator, so an offset payload becomes heap garbage and surfaces as `0xc0000374` at a later
+heap call. That limit was measured with a three-line Catch2 case containing no Cuexis code, which
+crashed with a dynamic libstdc++ and passed with `-static-libstdc++ -static-libgcc`. Where the
+replacement is unavailable, no census of global C++ allocations may be claimed.
+
 `delivery_baseline_tests.cpp` characterizes the old ledger capacity fault and the portable CPU
 test renderer. The fault is an expected defect baseline, not a successful bounded-lifetime gate.
 
