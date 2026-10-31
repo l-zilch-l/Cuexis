@@ -401,15 +401,6 @@ auto PlayerController::sourceFor(PlayerCommand& command) -> core::Result<playbac
     return ports_.makeSource();
 }
 
-auto PlayerController::freezeConfig(playback::PlaybackMode mode) const
-    -> player_support::ResolvedSessionConfig {
-    player_support::ResolvedSessionConfig config;
-    config.clockMode = clockModeFor(mode);
-    config.outputCorrectionUs =
-        player_support::consumedOutputCorrectionUs(config.clockMode, profileCorrectionUs_);
-    return config;
-}
-
 auto PlayerController::discardClip(const std::optional<audio::AudioClipHandle>& clip) -> void {
     if (!clip.has_value()) {
         return;
@@ -419,6 +410,45 @@ auto PlayerController::discardClip(const std::optional<audio::AudioClipHandle>& 
     }
 }
 
+auto preparePlayerLoadBundle(playback::PlaybackSource source, playback::PlaybackMode mode,
+                             std::int64_t profileCorrectionUs) -> core::Result<PlayerLoadBundle> {
+    auto session = std::make_unique<playback::PlaybackSession>();
+    player_support::ResolvedSessionConfig config;
+    config.clockMode = clockModeFor(mode);
+    config.outputCorrectionUs =
+        player_support::consumedOutputCorrectionUs(config.clockMode, profileCorrectionUs);
+    auto prepared = session->prepareLoad(std::move(source), mode);
+    if (!prepared) {
+        return core::unexpected(std::move(prepared.error()));
+    }
+    return PlayerLoadBundle{std::move(session), std::move(*prepared), mode, config};
+}
+
+auto PlayerController::adoptStartupLoad(PlayerLoadBundle&& load) -> core::Result<void> {
+    if (session_ != nullptr) {
+        return core::unexpected(core::Error{"player.command.duplicate",
+                                            "A startup bundle can only be adopted into an Empty "
+                                            "application"});
+    }
+    if (load.session == nullptr) {
+        return core::unexpected(
+            core::Error{"player.playback.prepared_invalid", "The startup bundle has no session"});
+    }
+    TransactionGuard guard{transactionInProgress_};
+    // The session object outlives this call because `commitBundle` takes ownership of it. Reading
+    // the raw pointer first keeps the reference independent of argument evaluation order.
+    auto* const loaded = load.session.get();
+    if (auto committed = commitBundle(*loaded, std::move(load.session), std::move(load.prepared),
+                                      load.mode, load.config, true);
+        !committed) {
+        return committed;
+    }
+    // apply() publishes the decision state after a command. Adoption bypasses the command table
+    // only because the startup Load is not a user command, so it publishes the same state itself.
+    state_ = player_support::PlayerAppState::Loaded;
+    return {};
+}
+
 auto PlayerController::runLoad(PlayerCommand& command) -> core::Result<void> {
     TransactionGuard guard{transactionInProgress_};
 
@@ -426,12 +456,11 @@ auto PlayerController::runLoad(PlayerCommand& command) -> core::Result<void> {
     if (!source) {
         return core::unexpected(std::move(source.error()));
     }
-    auto session = std::make_unique<playback::PlaybackSession>();
-    auto mode = command.mode.value_or(playback::PlaybackMode::ChartClock);
-    auto config = freezeConfig(mode);
-    auto prepared = session->prepareLoad(std::move(*source), mode);
-    if (!prepared && !command.mode.has_value() &&
-        prepared.error().code() == "playback.mode.content_mismatch") {
+    auto bundle = preparePlayerLoadBundle(std::move(*source),
+                                          command.mode.value_or(playback::PlaybackMode::ChartClock),
+                                          profileCorrectionUs_);
+    if (!bundle && !command.mode.has_value() &&
+        bundle.error().code() == "playback.mode.content_mismatch") {
         // The mode is never guessed from a failed load and the source is never prepared twice.
         // Content that needs another clock must name it on Load, which is the explicit switch
         // ADR 0042 requires. An explicit source cannot be re-read either, so both paths refuse.
@@ -439,16 +468,16 @@ auto PlayerController::runLoad(PlayerCommand& command) -> core::Result<void> {
             core::Error{"player.command.mode_required",
                         "Content whose clock differs from the default must be loaded with an "
                         "explicit mode"}
-                .withCause(std::move(prepared.error())));
+                .withCause(std::move(bundle.error())));
     }
-    if (!prepared) {
-        return core::unexpected(std::move(prepared.error()).withContext("command", "load"));
+    if (!bundle) {
+        return core::unexpected(std::move(bundle.error()).withContext("command", "load"));
     }
-    // The session object outlives this call because `adopt` takes ownership of it. Reading the raw
-    // pointer first keeps the reference independent of argument evaluation order, which is
-    // unspecified between the two parameters.
-    auto* const loaded = session.get();
-    return commitBundle(*loaded, std::move(session), std::move(*prepared), mode, config, true);
+    // The session object outlives this call because `commitBundle` takes ownership of it. Reading
+    // the raw pointer first keeps the reference independent of argument evaluation order.
+    auto* const loaded = bundle->session.get();
+    return commitBundle(*loaded, std::move(bundle->session), std::move(bundle->prepared),
+                        bundle->mode, bundle->config, true);
 }
 
 auto PlayerController::runReload(PlayerCommand& command) -> core::Result<void> {

@@ -14,7 +14,10 @@
 #include <cuexis/player_support/config_location.hpp>
 #include <cuexis/version.hpp>
 
+#include <chrono>
+#include <cstdint>
 #include <filesystem>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <string>
@@ -26,6 +29,50 @@ namespace {
 
 constexpr std::string_view defaultProjectDirectory = "stage1d_project";
 constexpr std::string_view smokeTestProjectDirectory = "stage3_project";
+
+// Startup is one long sequence that the user experiences as "nothing happens". The phases below
+// are the units that already own the work, so a slow startup is attributable from the log alone:
+// each mark reports the elapsed microseconds since the previous mark and the total since the
+// first one. The clock starts when the Player has a logger, which is a few milliseconds after
+// process start, so the totals are startup totals and not process-to-first-frame totals.
+class StartupPhases final {
+  public:
+    explicit StartupPhases(PlayerLogger& logger) noexcept : logger_{logger}, last_{Clock::now()} {}
+
+    void mark(std::string_view phase) {
+        emit(phase, {});
+    }
+
+    // The first presented frame closes startup: it is the first moment content is on screen and the
+    // first moment the frame loop can be compared with the frame budget. The draw summary is part
+    // of the line because it names the size of the bundle that the timings above prepared.
+    void markFirstFrame(const PlayerPresentedFrame& presented) {
+        emit("first_frame_presented",
+             " opaque " + std::to_string(presented.summary.opaque.size()) + " transparent " +
+                 std::to_string(presented.summary.transparent.size()) + " render_us " +
+                 std::to_string(static_cast<std::int64_t>(presented.renderMicroseconds)));
+    }
+
+  private:
+    using Clock = std::chrono::steady_clock;
+
+    [[nodiscard]] static auto microseconds(Clock::duration span) -> std::int64_t {
+        return std::chrono::duration_cast<std::chrono::microseconds>(span).count();
+    }
+
+    void emit(std::string_view phase, const std::string& detail) {
+        const auto now = Clock::now();
+        logger_.info("player.startup_phase",
+                     std::string{phase} + " elapsed_us " +
+                         std::to_string(microseconds(now - last_)) + " total_us " +
+                         std::to_string(microseconds(now - started_)) + detail);
+        last_ = now;
+    }
+
+    PlayerLogger& logger_;
+    Clock::time_point started_{Clock::now()};
+    Clock::time_point last_;
+};
 
 } // namespace
 
@@ -93,16 +140,52 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
 
     // Content is resolved before any device exists. A content error is deterministic and must not
     // hide behind an environment error: on a machine that cannot create an OpenGL context, a
-    // missing chart still has to be reported as a missing chart. The transaction resolves the
-    // configured source again, so the audio mode probe can still re-read it.
-    if (auto content = openConfiguredPlaybackSource(options); !content) {
+    // missing chart still has to be reported as a missing chart. The resolved source is kept and
+    // handed to the startup prepare below, so one startup reads, parses, and validates the
+    // configured content exactly once instead of resolving it a second time inside the Load
+    // transaction.
+    StartupPhases startup{logger};
+    auto content = openConfiguredPlaybackSource(options);
+    if (!content) {
         return core::unexpected(std::move(content.error()));
     }
+    startup.mark("content_resolved");
 
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     if (options.executionTestOnly)
         return runExecutionPlayer(options, *appConfig, logger);
 #endif
+
+    // The startup Load names its clock. The audio smoke test is defined against the audio clock, so
+    // it selects CuexisAudio; otherwise an explicit --mode wins, and the default is the ChartClock
+    // the controller would use anyway. Nothing is probed from a failed load.
+    auto startupMode = playback::PlaybackMode::ChartClock;
+    if (options.clock.has_value()) {
+        switch (*options.clock) {
+        case PlayerClockOption::Host:
+            startupMode = playback::PlaybackMode::HostClock;
+            break;
+        case PlayerClockOption::Audio:
+            startupMode = playback::PlaybackMode::CuexisAudio;
+            break;
+        case PlayerClockOption::Chart:
+            startupMode = playback::PlaybackMode::ChartClock;
+            break;
+        }
+    } else if (options.audioSmokeTest) {
+        startupMode = playback::PlaybackMode::CuexisAudio;
+    }
+
+    // The CPU half of the startup Load runs before any device exists: no window, no GL context, no
+    // audio device. Preparing here means a large bundle never holds a message-free window on the
+    // desktop, and a content that cannot be prepared fails before the first device is created. The
+    // controller adopts the finished bundle once the presentation backend can accept it.
+    auto startupLoad = preparePlayerLoadBundle(std::move(*content), startupMode,
+                                               appConfig->profile.outputCorrectionUs);
+    if (!startupLoad) {
+        return core::unexpected(std::move(startupLoad.error()).withContext("command", "load"));
+    }
+    startup.mark("content_prepared");
 
     audio::AudioClipStore audioStore;
 
@@ -116,6 +199,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
         return core::unexpected(std::move(windowResult.error()));
     }
     auto window = std::move(*windowResult);
+    startup.mark("window_created");
     std::vector<std::uint32_t> gameplayKeys;
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     std::optional<PlayerGameplayProfile> gameplayProfile;
@@ -142,6 +226,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
         return core::unexpected(std::move(backendResult.error()));
     }
     auto backend = std::move(*backendResult);
+    startup.mark("backend_created");
 
     // The control layer owns the active bundle and drives every transaction. The assembly layer
     // only supplies the source, clip decoding, and the audio device opener.
@@ -161,30 +246,12 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                                 std::move(ports),
                                 logger};
 
-    // The startup Load names its clock. The audio smoke test is defined against the audio clock, so
-    // it selects CuexisAudio; otherwise an explicit --mode wins, and the default is the ChartClock
-    // the controller would use anyway. Nothing is probed from a failed load.
-    auto startupMode = playback::PlaybackMode::ChartClock;
-    if (options.clock.has_value()) {
-        switch (*options.clock) {
-        case PlayerClockOption::Host:
-            startupMode = playback::PlaybackMode::HostClock;
-            break;
-        case PlayerClockOption::Audio:
-            startupMode = playback::PlaybackMode::CuexisAudio;
-            break;
-        case PlayerClockOption::Chart:
-            startupMode = playback::PlaybackMode::ChartClock;
-            break;
-        }
-    } else if (options.audioSmokeTest) {
-        startupMode = playback::PlaybackMode::CuexisAudio;
+    // The bundle prepared before the device existed becomes the active bundle. Only the part of the
+    // Load transaction that needs a renderer, an audio device, and a published state runs here.
+    if (auto adopted = controller.adoptStartupLoad(std::move(*startupLoad)); !adopted) {
+        return core::unexpected(std::move(adopted.error()));
     }
-    if (auto loaded = controller.apply(
-            PlayerCommand{.kind = player_support::PlayerCommandKind::Load, .mode = startupMode});
-        !loaded) {
-        return core::unexpected(std::move(loaded.error()));
-    }
+    startup.mark("content_committed");
     if (auto recorded = logEffectiveWindow(
             window, appConfig->app.requested, appConfig->app.requested.vsync, controller.gain(),
             controller.audio() != nullptr, appConfig->profile.id, logger);
@@ -196,6 +263,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
         !played) {
         return core::unexpected(std::move(played.error()));
     }
+    startup.mark("transport_playing");
 
     std::optional<PlayerSmokeBinding> smokeBinding;
     PlayerHooks hooks;
@@ -240,6 +308,26 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
     }
     const bool measuredHasAudio = controller.audio() != nullptr;
 #endif
+    // The first presented frame ends startup, and both the smoke binding and the measurement trace
+    // already own notePresented, so the probe chains instead of replacing them.
+    {
+        std::function<core::Result<void>(const PlayerPresentedFrame&)> innerPresented;
+        if (hooks.notePresented) {
+            innerPresented = std::move(hooks.notePresented);
+        }
+        hooks.notePresented =
+            [&startup, firstFrameSeen = false, innerPresented = std::move(innerPresented)](
+                const PlayerPresentedFrame& presented) mutable -> core::Result<void> {
+            if (!firstFrameSeen) {
+                firstFrameSeen = true;
+                startup.markFirstFrame(presented);
+            }
+            if (innerPresented) {
+                return innerPresented(presented);
+            }
+            return {};
+        };
+    }
     if (options.frameStatsPrefix) {
         frameDiagnostics.emplace(*options.frameStatsPrefix);
     }

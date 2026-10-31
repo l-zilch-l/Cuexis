@@ -70,6 +70,26 @@ inline constexpr double playerSeekStepMs = 5000.0;
                                          player_support::PlayerAppState state,
                                          double currentChartTimeMs) -> PlayerCommand;
 
+// The renderer-free first half of a Load transaction. Content preparation is CPU-only: it reads
+// and validates the source, lowers it into a Prepared Playback bundle, and needs no window, no GL
+// context, and no audio device. The Player runs it before any device exists, so a large bundle
+// never forces a message-free window onto the screen, and the controller adopts the finished
+// bundle once the presentation backend can accept it. This keeps the two costs of the old startup
+// order apart: the CPU work now happens where no desktop window can be reported as unresponsive.
+struct PlayerLoadBundle final {
+    std::unique_ptr<playback::PlaybackSession> session;
+    playback::PreparedPlayback prepared;
+    playback::PlaybackMode mode{playback::PlaybackMode::ChartClock};
+    player_support::ResolvedSessionConfig config;
+};
+
+// Prepares one Load bundle without touching a renderer or an audio device. The caller owns the
+// result until it hands it to PlayerController::adoptStartupLoad.
+[[nodiscard]] auto preparePlayerLoadBundle(playback::PlaybackSource source,
+                                           playback::PlaybackMode mode,
+                                           std::int64_t profileCorrectionUs)
+    -> core::Result<PlayerLoadBundle>;
+
 // Owns the active content bundle, the application state, and the fixed transaction order for
 // load, reload, and rebuild. Every command runs on the owner thread and at most one transaction
 // owns the application at a time.
@@ -89,6 +109,12 @@ class PlayerController final {
     // The single command entry for every control surface. The command is taken by value because an
     // explicit source is move-only.
     [[nodiscard]] auto apply(PlayerCommand command) -> core::Result<void>;
+
+    // Commits a bundle that preparePlayerLoadBundle already prepared. It runs the part of a Load
+    // transaction that needs the presentation backend: the renderer candidate, the audio
+    // replacement, and the single no-failure content exchange. Only the startup path uses it,
+    // because every interactive Load goes through apply() to stay inside the command table.
+    [[nodiscard]] auto adoptStartupLoad(PlayerLoadBundle&& load) -> core::Result<void>;
 
     // Folds an observed audio transport state into the application state.
     void observeTransport(const audio::SourceClockSample& sample) noexcept;
@@ -136,8 +162,6 @@ class PlayerController final {
     [[nodiscard]] auto runSeek(double targetMs) -> core::Result<void>;
 
     [[nodiscard]] auto sourceFor(PlayerCommand& command) -> core::Result<playback::PlaybackSource>;
-    [[nodiscard]] auto freezeConfig(playback::PlaybackMode mode) const
-        -> player_support::ResolvedSessionConfig;
     // Steps 1 to 6 of the fixed transaction. `session` becomes the active bundle on success.
     [[nodiscard]] auto commitBundle(playback::PlaybackSession& session,
                                     std::unique_ptr<playback::PlaybackSession> adopt,
