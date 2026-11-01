@@ -1,0 +1,17 @@
+w1 p1 B median=205382.3 us valid=True
+w1 p1 A median=173812.9 us valid=True
+w1 p2 A median=174883.6 us valid=True
+w1 p2 B median=205319.6 us valid=True
+w1 p3 B median=205646.8 us valid=True
+w1 p3 A median=179744.3 us valid=True
+Traceback (most recent call last):
+  File "D:\Cuexis-redesign\out\verification-20261101\r3-gate-batch1\run_read_pair.py", line 187, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "D:\Cuexis-redesign\out\verification-20261101\r3-gate-batch1\run_read_pair.py", line 165, in main
+    window_record["interval"] = interval(ratios) if len(ratios) >= 2 else None
+                                ~~~~~~~~^^^^^^^^
+  File "D:\Cuexis-redesign\out\verification-20261101\r3-gate-batch1\run_read_pair.py", line 94, in interval
+    half = T975[len(logs)] * math.sqrt(variance / len(logs))
+           ~~~~^^^^^^^^^^^
+KeyError: 3

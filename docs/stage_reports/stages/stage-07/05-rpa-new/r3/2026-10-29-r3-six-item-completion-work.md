@@ -491,3 +491,25 @@ CTest 之前捕获为 `-previous-` 再删除，`summary.json` 把它记入 `stal
 当成容量增幅。**正式读取相对门、正式重复性、D2/D3/Snapshot/排队 p99、request→ready 与 GPU render
 p99、Pause/Resume/resize、Reset/Close、适用 Seek 在 `6256af8` 上仍未测**；R3 技术接受与退出仍是
 owner 的决定。
+
+## 第一批正式门测量（2026-11-01）
+
+预注册在任何测量之前写定，四组各自独立，判据逐字取自 [R3 计划](../../../../../stage_plans/active/stage-07/05-rpa-new/plan.md)
+§9.2–9.4。报告见[第一批正式门测量](2026-11-01-r3-first-gate-batch.md)，附件见
+[门测量证据](2026-11-01-r3-gate-batch1-evidence/index.md)。
+
+- **初次 load：通过（本场景）**。9 个新进程跑注册的 smoke 场景，进程创建→首张有效画面 present-return
+  为 395.1–426.5 ms（中位 410.7 ms），门 2000 ms，余量 4.7×；进程内 94.4% 的时间在窗口创建。场景关闭
+  音频，因此音频初始化不在本边界内。
+- **正式重复性：7.63 %**（同一组 9 个读数），在 15 % 之内；按单窗登记，不外推。
+- **适用 Seek：未判定**。唯一现成仪器是 CPU 测试渲染器上的功能矩阵（33/129 记录、`formal:false`），
+  180 次 seek 的 request→present 中位 533 µs、p95 1 019 µs、最大 1 292 µs，只作代价证据；计划禁止缩小
+  适用范围，所以 20 ms 门保持未判定。
+- **正式读取相对门：超界**。A 臂为 pre-PD `d344088` 的独立构建，B 臂为 `6256af8` 的 Release STATIC；
+  3 窗口 × 3 对、窗间 600 s、逐对 B/A 比值。全组几何平均 **1.1732，95 % 区间 [1.1574, 1.1893]**，
+  三个窗口各自的下界也都大于 1.10，按 §9.2 判为超界而非 inconclusive。每对两侧的图表 sha256 与快照
+  digest 全相等，说明两侧做的是同一份工作。
+
+直接后果：**读取相对门已明确超界，R3 技术接受不能判为通过**——除非有新的实现把比值拉回 ≤1.10，或一次
+新的登记窗口把它推翻。本批不修改任何判据、范围或阈值；其余门（D2/D3/Snapshot/排队、request→ready、
+GPU render、Pause/Resume/resize、Reset/Close）仍未测。

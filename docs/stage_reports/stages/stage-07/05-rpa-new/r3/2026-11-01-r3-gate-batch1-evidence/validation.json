@@ -1,0 +1,123 @@
+{
+  "scope": "Repository checks re-run after materializing this evidence directory; recorded verbatim, not summarized.",
+  "head": "c31f4f14e4a288d5147a42b754121b89e8bbf7ad",
+  "docs": {
+    "args": [
+      "python",
+      "-B",
+      "tools/check_docs.py"
+    ],
+    "exit": 0,
+    "output": "Documentation checks passed: 639 Markdown files and 20 candidate JSON/CXT files validated.\n"
+  },
+  "diff": {
+    "args": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0,
+    "output": ""
+  },
+  "architecture": {
+    "args": [
+      "cmake",
+      "-DCUEXIS_SOURCE_DIR=D:/Cuexis-redesign",
+      "-P",
+      "cmake/VerifyArchitecture.cmake"
+    ],
+    "exit": 0,
+    "output": ""
+  },
+  "format": {
+    "args": [
+      "clang-format",
+      "--dry-run",
+      "--Werror",
+      "app/execution_host/frame_delivery.cpp",
+      "app/player/src/execution_host.cpp",
+      "app/player/src/execution_host.hpp",
+      "app/player/src/player_app.cpp",
+      "app/player/src/player_control.cpp",
+      "app/player/src/player_control.hpp",
+      "app/player/src/player_smoke.cpp",
+      "engine/chart/include/cuexis/chart/detail/chart_dispatch_internal.hpp",
+      "engine/chart/src/canonical_chart_loader.cpp",
+      "engine/chart/src/canonical_chart_loader_internal.hpp",
+      "engine/chart/src/chart_loader.cpp",
+      "engine/chart/src/chart_v4_loader.cpp",
+      "engine/chart/src/chart_v4_resolver.cpp",
+      "engine/chart/src/chart_writer.cpp",
+      "engine/chart/src/chart_writer_internal.hpp",
+      "engine/core/internal/cuexis_internal/prepare_trace.hpp",
+      "engine/core/internal/cuexis_internal/presentation_metrics.hpp",
+      "engine/gameplay_packed/src/gameplay_capsule.cpp",
+      "engine/json_support/include/cuexis/json/parse.hpp",
+      "engine/json_support/src/bounded_parse.cpp",
+      "engine/json_support/src/parse.cpp",
+      "engine/json_support/src/serialize.cpp",
+      "engine/judgement/include/cuexis/judgement/gameplay_assembler.hpp",
+      "engine/judgement/include/cuexis/judgement/recovery.hpp",
+      "engine/judgement/include/cuexis/judgement/shared_sequence.hpp",
+      "engine/judgement/src/execution_kernel.cpp",
+      "engine/judgement/src/gameplay_assembler.cpp",
+      "engine/judgement/src/gameplay_prepare.cpp",
+      "engine/judgement/src/identity_factory.hpp",
+      "engine/playback/src/playback_session.cpp",
+      "engine/presentation_renderer/include/cuexis/presentation_renderer/draw_command.hpp",
+      "engine/presentation_renderer/src/draw_command.cpp",
+      "engine/render_opengl/include/cuexis/render_opengl/open_gl_backend.hpp",
+      "engine/render_opengl/internal/cuexis_internal/pixel_probe.hpp",
+      "engine/render_opengl/src/open_gl_presentation.cpp",
+      "engine/render_opengl/src/open_gl_presentation_internal.hpp",
+      "engine/runtime/src/runtime_session.cpp",
+      "engine/world/include/cuexis/world/property.hpp",
+      "engine/world/internal/cuexis/world/resolver_access.hpp",
+      "engine/world/src/property.cpp",
+      "tests/chart/parse_characterization_tests.cpp",
+      "tests/gameplay_packed/gameplay_capsule_tests.cpp",
+      "tests/gameplay_packed/revision4_entry_tests.cpp",
+      "tests/json_support/parse_tests.cpp",
+      "tests/json_support/serialize_golden.hpp",
+      "tests/json_support/serialize_tests.cpp",
+      "tests/judgement/fold_recovery_tests.cpp",
+      "tests/judgement/gameplay_assembler_tests.cpp",
+      "tests/judgement/gameplay_prepare_tests.cpp",
+      "tests/judgement/shared_sequence_tests.cpp",
+      "tests/pd/host_delivery_probe.cpp",
+      "tests/pd/measurement_method_tests.cpp",
+      "tests/pd/metrics_storage_other.cpp",
+      "tests/pd/metrics_storage_tests.cpp",
+      "tests/pd/pd5_matrix_probe.cpp",
+      "tests/pd/pd_allocation_probe.hpp",
+      "tests/pd/presentation_read_tests.hpp",
+      "tests/pd/projection_adapter_tests.cpp",
+      "tests/pd/projection_integration_tests.cpp",
+      "tests/pd/transaction_allocations.hpp",
+      "tests/playback/preparation_characterization_tests.cpp",
+      "tests/player/execution_device_probe.cpp",
+      "tests/player/gpu_throughput_probe.cpp",
+      "tests/player/pixel_readback_probe.cpp",
+      "tests/player/r3_seek_gpu_tests.hpp",
+      "tests/presentation_renderer/presentation_renderer_tests.cpp",
+      "tests/render/open_gl_presentation_tests.cpp",
+      "tests/rpa/execution_fixture.hpp",
+      "tests/rpa/r3_seek_matrix_tests.hpp",
+      "tests/rpa/rpa_b3_tests.cpp",
+      "tests/rpa/rpa_b5_audio_tests.cpp",
+      "tests/rpa/rpa_b5_host_tests.cpp",
+      "tests/world/property_tests.cpp"
+    ],
+    "exit": 0,
+    "output": "",
+    "note": "clang-format --dry-run --Werror over the C++ files changed between f90c2e1~1 and HEAD that live under app/, engine/, tests/, tools/ or cmake/ (73 of 77 changed files). 4 changed paths are archived evidence reproductions under docs/stage_reports/ (captured bytes kept for reproducibility); the project's cuexis_format_check target globs those five roots and never docs/, so the check is scoped to them."
+  },
+  "materialized_bytes_verified": [
+    {
+      "archive": "2026-11-01-r3-gate-batch1-evidence",
+      "checked": 53,
+      "mismatches": []
+    }
+  ],
+  "note": "Rewritten after the two reports were linked from the batch index (the first pass ran before that link existed, so check_docs could not pass) and after the formatting range was scoped to the roots cuexis_format_check covers. materialized_bytes_verified is unchanged: every archived byte still matches the archive manifest."
+}
