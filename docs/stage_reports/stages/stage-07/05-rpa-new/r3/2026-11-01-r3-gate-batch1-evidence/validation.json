@@ -119,5 +119,16 @@
       "mismatches": []
     }
   ],
-  "note": "Rewritten after the two reports were linked from the batch index (the first pass ran before that link existed, so check_docs could not pass) and after the formatting range was scoped to the roots cuexis_format_check covers. materialized_bytes_verified is unchanged: every archived byte still matches the archive manifest."
+  "note": "Rewritten after the two reports were linked from the batch index (the first pass ran before that link existed, so check_docs could not pass) and after the formatting range was scoped to the roots cuexis_format_check covers. materialized_bytes_verified is unchanged: every archived byte still matches the archive manifest. Also rewritten after the publishing commit was checked with `git diff --check`: 24 captured log lines end with an empty line, recorded in diff_over_commit. materialized_bytes_verified is unchanged.",
+  "diff_over_commit": {
+    "commit": "0ae7145262bb8a8342c224eb7ec8debf80084ef6",
+    "commit_subject": "Measure the first R3 gate batch, and record that the read gate is over",
+    "exit": 2,
+    "files_flagged": 24,
+    "findings": 24,
+    "finding_kinds": {
+      "new blank line at EOF": 24
+    },
+    "meaning": "Captured process output is stored byte-faithfully, so a log that ended with an empty line still ends with one. Every flagged path is a captured *.log under read/, seek/ or load/. The check is a source-cleanliness gate and not an evidence gate; trimming the bytes would break the sha256 binding."
+  }
 }
