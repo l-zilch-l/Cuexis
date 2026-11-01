@@ -124,5 +124,28 @@
       "mismatches": []
     }
   ],
-  "note": "Rewritten after the two reports were linked from the batch index (the first pass ran before that link existed, so check_docs could not pass) and after the formatting range was scoped to the roots cuexis_format_check covers. materialized_bytes_verified is unchanged: every archived byte still matches the archive manifest."
+  "note": "Rewritten after the two reports were linked from the batch index, after the formatting range was scoped to the roots cuexis_format_check covers, and after the commit that published these bytes was checked with `git diff --check`. materialized_bytes_verified is unchanged: every archived byte still matches the archive manifest.",
+  "diff_over_commit": {
+    "commit": "d0c35b474bea1bc3070ddf4c961d0e4b36fe6fb9",
+    "commit_subject": "Publish the fourth acceptance matrix and the re-derived frontier",
+    "exit": 2,
+    "files_flagged": 131,
+    "findings": 131,
+    "finding_kinds": {
+      "new blank line at EOF": 120,
+      "trailing whitespace": 11
+    },
+    "per_archive": {
+      "2026-11-01-rpa-acceptance-matrix-run4-evidence": {
+        "files": 71,
+        "findings": 71
+      },
+      "2026-11-01-capacity-frontier-rederive-evidence": {
+        "files": 60,
+        "findings": 60
+      }
+    },
+    "precedent": "9c392af (61 findings) and 2374180 (198 files, 320 findings) - the same property already exists in this history",
+    "meaning": "Captured output is stored byte-faithfully: lines that ended with whitespace still do, and a log that ended with an empty line still ends with one. This commit therefore fails `git diff --check`, which is a source-cleanliness gate and not an evidence gate. Trimming those bytes would break the sha256 binding that makes each capture verifiable, so the check is recorded rather than satisfied. No finding is in a hand-written file: every flagged path is a captured `*.log.txt` under one of the two archives."
+  }
 }
