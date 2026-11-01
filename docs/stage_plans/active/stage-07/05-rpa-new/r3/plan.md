@@ -35,6 +35,13 @@ R3b 的首个候选见[显式可信恢复提案](trusted-restore-candidate.md)�
 以每实体标记消除线性去重，保留有序插入的三份索引同步，40K 全量动画 update 下降约 68.0%，
 完整周期下降约 47.7%；两个新组 24 进程 / 1800 帧，静态路径无对应中位数退化。
 原 C 因晚插入反例失败停止，15 个完整及 1 个中断进程独立保留，不补完原组。P3 与 R3 仍未退出。
+2026-11-01 [40K 启动可观测性与 prepare 成本](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-01-r3-40k-startup-observability-and-cost.md)
+先提交 `451599f` 恢复点再改动：新增 14 个启动阶段与 19 个 prepare scope 的观测、外部窗口观察器和
+默认关闭的窗口优先顺序；随后 `59e43da` 让 canonical 文本直接由 `json::Value` 写出，不再经 nlohmann
+DOM 二次构造。40K 首次帧 2 476 121 → 2 148 938 µs（−13.2%），canonical dump 391 141 → 91 237 µs，
+仍高于 2000 ms 门 148.9 ms（7.4%），不声称过门。owner 已裁定 40K 属测试极端情况，不再为此做 SAX 型
+读取器重构；`chart_canonical_normalize` 的 21 次逐键探测合并为下一项最便宜改动，本轮只登记未实施。
+窗口优先顺序可提前约 2.08 s 出现窗口但不改善首帧，且 prepare 期间不泵消息，保留为默认关闭的诊断顺序。
 2026-10-27 本地功能/兼容、反例、宏隔离和成本范围见[核验报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3a-recovery-and-prepare.md)。
 后续可信前缀候选另见 [R3b 核验报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3b-certified-prefix-and-cost.md)，不复用 R3a 的性能身份。
 后续 [空推进 reserve 限定尝试](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-empty-reserve-attempt.md)

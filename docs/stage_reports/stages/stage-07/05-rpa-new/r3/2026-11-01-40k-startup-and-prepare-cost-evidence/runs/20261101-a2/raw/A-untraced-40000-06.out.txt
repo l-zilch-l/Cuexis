@@ -1,0 +1,64 @@
+Filters: "GPU visible entity throughput probe"
+Randomness seeded to: 2296872253
+GPU_STARTUP_ORIGIN 0
+GPU_STARTUP_BEGIN fixture_source
+GPU_STARTUP_END fixture_source 62382.900000000001
+GPU_STARTUP_AT fixture_source 62440.800000000003
+GPU_STARTUP_BEGIN playback_prepare
+GPU_STARTUP_HEARTBEAT playback_prepare 193706.29999999999 256184.29999999999
+GPU_STARTUP_HEARTBEAT playback_prepare 446266.20000000001 508744.20000000001
+GPU_STARTUP_HEARTBEAT playback_prepare 699690.69999999995 762168.69999999995
+GPU_STARTUP_HEARTBEAT playback_prepare 953973.19999999995 1016451.2
+GPU_STARTUP_HEARTBEAT playback_prepare 1205642.8 1268120.8
+GPU_STARTUP_HEARTBEAT playback_prepare 1456680.2 1519158.2
+GPU_STARTUP_HEARTBEAT playback_prepare 1710052 1772530
+GPU_STARTUP_HEARTBEAT playback_prepare 1964078.8999999999 2026556.8999999999
+GPU_STARTUP_END playback_prepare 2045567
+GPU_STARTUP_AT playback_prepare 2108045.8999999999
+GPU_STARTUP_BEGIN sdl_runtime
+GPU_STARTUP_END sdl_runtime 59553.599999999999
+GPU_STARTUP_AT sdl_runtime 2167653.8999999999
+GPU_STARTUP_BEGIN gl_context
+GPU_STARTUP_END gl_context 12.199999999999999
+GPU_STARTUP_AT gl_context 2167704.2999999998
+GPU_STARTUP_BEGIN window_create
+GPU_STARTUP_HEARTBEAT window_create 109302.60000000009 2277015.6000000001
+GPU_STARTUP_END window_create 236204.5
+GPU_STARTUP_AT window_create 2403917.7000000002
+GPU_STARTUP_WINDOW {"at_us":2404012.3999999999,"window_id":2,"hidden":false,"opengl":true,"width":1280,"height":720}
+GPU_STARTUP_BEGIN backend_create
+GPU_STARTUP_END backend_create 12936.799999999999
+GPU_STARTUP_AT backend_create 2416964.2999999998
+GPU_STARTUP_BEGIN pixel_readback
+GPU_STARTUP_END pixel_readback 5.7000000000000002
+GPU_STARTUP_AT pixel_readback 2417005.7999999998
+GPU_STARTUP_BEGIN renderer_prepare
+GPU_STARTUP_END renderer_prepare 350.10000000000002
+GPU_STARTUP_AT renderer_prepare 2417384.6000000001
+GPU_STARTUP_BEGIN session_commit
+GPU_STARTUP_END session_commit 11.300000000000001
+GPU_STARTUP_AT session_commit 2417405.7000000002
+GPU_STARTUP_BEGIN backend_activate
+GPU_STARTUP_END backend_activate 2.2000000000000002
+GPU_STARTUP_AT backend_activate 2417416
+GPU_STARTUP_BEGIN first_update
+GPU_STARTUP_END first_update 6122.8999999999996
+GPU_STARTUP_AT first_update 2423600.5
+GPU_STARTUP_BEGIN first_extract
+GPU_STARTUP_END first_extract 12060.1
+GPU_STARTUP_AT first_extract 2435699.3999999999
+GPU_STARTUP_BEGIN first_submit
+GPU_STARTUP_END first_submit 42229.699999999997
+GPU_STARTUP_AT first_submit 2478528
+GPU_STARTUP_BEGIN first_present
+GPU_STARTUP_END first_present 281.80000000000001
+GPU_STARTUP_AT first_present 2480800.1000000001
+GPU_STARTUP_SHOWN 2480832.3999999999
+GPU_STARTUP_TOTAL {"first_present_us":2480843.1000000001}
+GPU_THROUGHPUT_ID {"mode":"static","entities":40000,"draws_per_frame":40000,"in_view_centers":40000,"fixture_revision":3,"moved_entities":0,"frames":3,"duration_seconds":0,"warmup_frames":2,"pixel_readback":true,"outside_timing_pixel_proof_frames":2,"warmup_ms":0,"timer":false,"vsync":0,"width":1280,"height":720,"vendor":"NVIDIA Corporation","renderer":"NVIDIA GeForce RTX 4060 Laptop GPU/PCIe/SSE2","gl_version":"3.3.0 NVIDIA 616.64","measured_wall_us":163925.89999999999,"pixel_rgba":[255,204,51,255],"audio":false,"formal":false}
+GPU_THROUGHPUT_SAMPLE {"ordinal":0,"update_us":5156,"extract_us":7115.6999999999998,"submit_us":42534.199999999997,"present_us":94.299999999999997,"total_us":54900.199999999997,"cycle_us":54910.099999999999,"end_us":54910.099999999999}
+GPU_THROUGHPUT_SAMPLE {"ordinal":1,"update_us":5205,"extract_us":7097.6000000000004,"submit_us":41799.300000000003,"present_us":74.299999999999997,"total_us":54176.199999999997,"cycle_us":54187.099999999999,"end_us":109097.2}
+GPU_THROUGHPUT_SAMPLE {"ordinal":2,"update_us":5276.1999999999998,"extract_us":7281.8000000000002,"submit_us":42161.599999999999,"present_us":101.7,"total_us":54821.300000000003,"cycle_us":54828.699999999997,"end_us":163925.89999999999}
+===============================================================================
+All tests passed (21 assertions in 1 test case)
+

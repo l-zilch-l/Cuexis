@@ -1,0 +1,501 @@
+{
+  "tool": {
+    "migrator": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_chart_migrator.exe",
+    "migrator_sha256": "2e4a6ecda6c31e5b50085d0a785c3b8a902a31618a910859e725baaea08f3543",
+    "migrator_bytes": 847360
+  },
+  "corpus_size": 22,
+  "cases": [
+    {
+      "input": "assets/charts/stage1a_example.cuexis.chart.json",
+      "source_sha256": "0e24857e308d3762fccc41772581997bc3596e5af87d0f8a00a93fcaea364f39",
+      "source_bytes": 2789,
+      "status": "canonicalized",
+      "target": "3",
+      "output_sha256": "f83458f1ca94fc4c933b2de824542f73250be4c87ba8ec0ce34cfa408e278bd4",
+      "output_bytes": 2662,
+      "attempts": [
+        {
+          "target": "3",
+          "return_code": 0,
+          "stdout": "Migrated Cuexis Chart v1 to v3",
+          "stderr": "",
+          "wrote_output": true,
+          "output_sha256": "f83458f1ca94fc4c933b2de824542f73250be4c87ba8ec0ce34cfa408e278bd4",
+          "output_bytes": 2662
+        }
+      ]
+    },
+    {
+      "input": "assets/charts/stage2_example.cuexis.chart.json",
+      "source_sha256": "8c754537795ff118964516e83a2d2a3bfaa6a6f37999fbeaef2aad31431cf39c",
+      "source_bytes": 2499,
+      "status": "canonicalized",
+      "target": "4",
+      "output_sha256": "917eb1f11ff54f1938c58d5baa5224c7b2f96c6b6f6a50a714fe51710a32aa9a",
+      "output_bytes": 3145,
+      "attempts": [
+        {
+          "target": "3",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "chart.migration.source_version_unsupported $/version: Only canonical Chart v1 and v2 can be migrated to v3",
+          "wrote_output": false
+        },
+        {
+          "target": "4",
+          "return_code": 0,
+          "stdout": "Migrated Cuexis Chart v3 to v4",
+          "stderr": "",
+          "wrote_output": true,
+          "output_sha256": "917eb1f11ff54f1938c58d5baa5224c7b2f96c6b6f6a50a714fe51710a32aa9a",
+          "output_bytes": 3145
+        }
+      ]
+    },
+    {
+      "input": "assets/projects/demo20s/assets/charts/demo20s.cuexis.chart.json",
+      "source_sha256": "d77f9de5aca2a852b34a4e6d9e50e392ce31eda25ff56b74febc5852db590c3f",
+      "source_bytes": 15437,
+      "status": "canonicalized",
+      "target": "4",
+      "output_sha256": "0406b7225c9bce40896815880ec3b1f6c93f5b357f10d5f4ce679969335cb96e",
+      "output_bytes": 23837,
+      "attempts": [
+        {
+          "target": "3",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "chart.migration.source_version_unsupported $/version: Only canonical Chart v1 and v2 can be migrated to v3",
+          "wrote_output": false
+        },
+        {
+          "target": "4",
+          "return_code": 0,
+          "stdout": "Migrated Cuexis Chart v3 to v4",
+          "stderr": "",
+          "wrote_output": true,
+          "output_sha256": "0406b7225c9bce40896815880ec3b1f6c93f5b357f10d5f4ce679969335cb96e",
+          "output_bytes": 23837
+        }
+      ]
+    },
+    {
+      "input": "assets/projects/stage1b_project/assets/charts/stage1b_example.cuexis.chart.json",
+      "source_sha256": "9aed1b4ba9d80021892b6e555881f5554f354440d9f4a5f04bdd8928ec76d003",
+      "source_bytes": 3175,
+      "status": "canonicalized",
+      "target": "3",
+      "output_sha256": "58479254c62896008467bfbb8903e8b46bdce3de486ba4958af76ab0ce7692bd",
+      "output_bytes": 4010,
+      "attempts": [
+        {
+          "target": "3",
+          "return_code": 0,
+          "stdout": "Migrated Cuexis Chart v1 to v3",
+          "stderr": "",
+          "wrote_output": true,
+          "output_sha256": "58479254c62896008467bfbb8903e8b46bdce3de486ba4958af76ab0ce7692bd",
+          "output_bytes": 4010
+        }
+      ]
+    },
+    {
+      "input": "assets/projects/stage1c_project/assets/charts/stage1c_example.cuexis.chart.json",
+      "source_sha256": "8dc036c1a353d59de8655ab3b60622dcb663b34e2a14084a01372183e082f665",
+      "source_bytes": 4762,
+      "status": "canonicalized",
+      "target": "3",
+      "output_sha256": "fc9269daf92c5dd7eb32509ad7434808ddd8915d6040041a31c1b2c512feb30a",
+      "output_bytes": 6776,
+      "attempts": [
+        {
+          "target": "3",
+          "return_code": 0,
+          "stdout": "Migrated Cuexis Chart v1 to v3",
+          "stderr": "",
+          "wrote_output": true,
+          "output_sha256": "fc9269daf92c5dd7eb32509ad7434808ddd8915d6040041a31c1b2c512feb30a",
+          "output_bytes": 6776
+        }
+      ]
+    },
+    {
+      "input": "assets/projects/stage1d_project/assets/charts/stage1d_example.cuexis.chart.json",
+      "source_sha256": "59f869698722c62773b8f7ddc351cb519d94f52a9d7843bb84e85f745b5decaa",
+      "source_bytes": 4863,
+      "status": "canonicalized",
+      "target": "3",
+      "output_sha256": "92c6d4ccfceb4367d19f5bbec931e931efb1c0be10e540721509bf87543afea3",
+      "output_bytes": 6889,
+      "attempts": [
+        {
+          "target": "3",
+          "return_code": 0,
+          "stdout": "Migrated Cuexis Chart v2 to v3",
+          "stderr": "",
+          "wrote_output": true,
+          "output_sha256": "92c6d4ccfceb4367d19f5bbec931e931efb1c0be10e540721509bf87543afea3",
+          "output_bytes": 6889
+        }
+      ]
+    },
+    {
+      "input": "assets/projects/stage3_project/assets/charts/stage3_example.cuexis.chart.json",
+      "source_sha256": "9c19e4796fa68f6349294270fb80f51c3c4af36dab0dc3dd682b0b579bf4d93d",
+      "source_bytes": 3250,
+      "status": "canonicalized",
+      "target": "4",
+      "output_sha256": "de39676d17bae90ea6f061c402635ceb57810bbc4f512652f5aa9ff9420614b2",
+      "output_bytes": 4048,
+      "attempts": [
+        {
+          "target": "3",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "chart.migration.source_version_unsupported $/version: Only canonical Chart v1 and v2 can be migrated to v3",
+          "wrote_output": false
+        },
+        {
+          "target": "4",
+          "return_code": 0,
+          "stdout": "Migrated Cuexis Chart v3 to v4",
+          "stderr": "",
+          "wrote_output": true,
+          "output_sha256": "de39676d17bae90ea6f061c402635ceb57810bbc4f512652f5aa9ff9420614b2",
+          "output_bytes": 4048
+        }
+      ]
+    },
+    {
+      "input": "tests/fixtures/chart_format_update/cfu_f_reference_project/assets/charts/main.cuexis.chart.json",
+      "source_sha256": "4be7f8b3ca224a557bb69727bfa0ffeb046dc5107f1de3c0a512ce0b66eeb672",
+      "source_bytes": 3194,
+      "status": "unsupported",
+      "attempts": [
+        {
+          "target": "3",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "json.field.unknown $/animationClips: JSON field is not recognized\r\njson.field.unknown $/animationTemplateImports: JSON field is not recognized\r\njson.field.unknown $/parameters: JSON field is not recognized\r\nchart.version.unsupported $/version: Chart format version is unsupported",
+          "wrote_output": false
+        },
+        {
+          "target": "4",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "chart.migration.source_version_unsupported $/version: Only canonical Chart v1, v2, and v3 can be migrated to v4",
+          "wrote_output": false
+        }
+      ]
+    },
+    {
+      "input": "tests/fixtures/chart_format_update/source_project/assets/charts/main.cuexis.chart.json",
+      "source_sha256": "92f9d56e16b2cb5de3c65006c4086fda57d16d93880e0a19d42c10659618f1c2",
+      "source_bytes": 4211,
+      "status": "unsupported",
+      "attempts": [
+        {
+          "target": "3",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "json.field.unknown $/animationClips: JSON field is not recognized\r\njson.field.unknown $/animationTemplateImports: JSON field is not recognized\r\njson.field.unknown $/objects/2/components/cuexis.animator: JSON field is not recognized\r\njson.field.unknown $/objects/3/components/cuexis.animator: JSON field is not recognized\r\njson.field.unknown $/parameters: JSON field is not recognized\r\nchart.version.u",
+          "wrote_output": false
+        },
+        {
+          "target": "4",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "chart.migration.source_version_unsupported $/version: Only canonical Chart v1, v2, and v3 can be migrated to v4",
+          "wrote_output": false
+        }
+      ]
+    },
+    {
+      "input": "tests/fixtures/chart_format_update/static_project/assets/charts/main.cuexis.chart.json",
+      "source_sha256": "aec61d9ec074b424e5801020bb83905d6a1dcc1e9f4ada8bfed2a5e9531066a1",
+      "source_bytes": 904,
+      "status": "unsupported",
+      "attempts": [
+        {
+          "target": "3",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "json.field.unknown $/animationClips: JSON field is not recognized\r\njson.field.unknown $/animationTemplateImports: JSON field is not recognized\r\njson.field.unknown $/parameters: JSON field is not recognized\r\nchart.version.unsupported $/version: Chart format version is unsupported",
+          "wrote_output": false
+        },
+        {
+          "target": "4",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "chart.migration.source_version_unsupported $/version: Only canonical Chart v1, v2, and v3 can be migrated to v4",
+          "wrote_output": false
+        }
+      ]
+    },
+    {
+      "input": "tests/fixtures/chart_format_update/parameterized_project/assets/charts/main.cuexis.chart.json",
+      "source_sha256": "44a72269423f8da36efee1263ee264124a5a9b944e45fcaabe8f1ac3bee6a070",
+      "source_bytes": 1889,
+      "status": "unsupported",
+      "attempts": [
+        {
+          "target": "3",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "json.field.unknown $/animationClips: JSON field is not recognized\r\njson.field.unknown $/animationTemplateImports: JSON field is not recognized\r\nchart.camera.invalid_fov $/camera/fovY: Camera FOV must be finite and in (0, 179) degrees\r\njson.type.mismatch $/camera/fovY: JSON value has an unexpected type\r\njson.type.mismatch $/objects/0/components/cuexis.transform/position/0: JSON value has an unexpec",
+          "wrote_output": false
+        },
+        {
+          "target": "4",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "chart.migration.source_version_unsupported $/version: Only canonical Chart v1, v2, and v3 can be migrated to v4",
+          "wrote_output": false
+        }
+      ]
+    },
+    {
+      "input": "tests/fixtures/chart_format_update/golden/chart_v1_to_v4.cuexis.chart.json",
+      "source_sha256": "912b25083338b612ff830cec76a7bad04c98c158485a0d9c11c31fe9beccaa4e",
+      "source_bytes": 5698,
+      "status": "unsupported",
+      "attempts": [
+        {
+          "target": "3",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "json.field.unknown $/animationClips: JSON field is not recognized\r\njson.field.unknown $/animationTemplateImports: JSON field is not recognized\r\njson.field.unknown $/parameters: JSON field is not recognized\r\nchart.version.unsupported $/version: Chart format version is unsupported",
+          "wrote_output": false
+        },
+        {
+          "target": "4",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "chart.migration.source_version_unsupported $/version: Only canonical Chart v1, v2, and v3 can be migrated to v4",
+          "wrote_output": false
+        }
+      ]
+    },
+    {
+      "input": "tests/fixtures/chart_format_update/valid/chart_v3_static_migration.json",
+      "source_sha256": "9cfbe70c9b23b6fc46fcc84ab5e739f449632e386a843723bd16485d787c690f",
+      "source_bytes": 981,
+      "status": "canonicalized",
+      "target": "4",
+      "output_sha256": "1ca9f60feee215fdc4eca1f7cafbbea8704976eca18ed40e51333b6b2e7a5385",
+      "output_bytes": 1060,
+      "attempts": [
+        {
+          "target": "3",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "chart.migration.source_version_unsupported $/version: Only canonical Chart v1 and v2 can be migrated to v3",
+          "wrote_output": false
+        },
+        {
+          "target": "4",
+          "return_code": 0,
+          "stdout": "Migrated Cuexis Chart v3 to v4",
+          "stderr": "",
+          "wrote_output": true,
+          "output_sha256": "1ca9f60feee215fdc4eca1f7cafbbea8704976eca18ed40e51333b6b2e7a5385",
+          "output_bytes": 1060
+        }
+      ]
+    },
+    {
+      "input": "tests/fixtures/chart_format_update/valid/chart_v4_animation.json",
+      "source_sha256": "6da2612f4f192d7d525fb6125d5ad3094cffa64bbb9580af9a20b64010683811",
+      "source_bytes": 3789,
+      "status": "unsupported",
+      "attempts": [
+        {
+          "target": "3",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "json.field.unknown $/animationClips: JSON field is not recognized\r\njson.field.unknown $/animationTemplateImports: JSON field is not recognized\r\njson.field.unknown $/objects/0/components/cuexis.animator: JSON field is not recognized\r\njson.field.unknown $/parameters: JSON field is not recognized\r\nchart.version.unsupported $/version: Chart format version is unsupported",
+          "wrote_output": false
+        },
+        {
+          "target": "4",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "chart.migration.source_version_unsupported $/version: Only canonical Chart v1, v2, and v3 can be migrated to v4",
+          "wrote_output": false
+        }
+      ]
+    },
+    {
+      "input": "tests/fixtures/chart_format_update/valid/chart_v4_cxt_template_binding.json",
+      "source_sha256": "92f9d56e16b2cb5de3c65006c4086fda57d16d93880e0a19d42c10659618f1c2",
+      "source_bytes": 4211,
+      "status": "unsupported",
+      "attempts": [
+        {
+          "target": "3",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "json.field.unknown $/animationClips: JSON field is not recognized\r\njson.field.unknown $/animationTemplateImports: JSON field is not recognized\r\njson.field.unknown $/objects/2/components/cuexis.animator: JSON field is not recognized\r\njson.field.unknown $/objects/3/components/cuexis.animator: JSON field is not recognized\r\njson.field.unknown $/parameters: JSON field is not recognized\r\nchart.version.u",
+          "wrote_output": false
+        },
+        {
+          "target": "4",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "chart.migration.source_version_unsupported $/version: Only canonical Chart v1, v2, and v3 can be migrated to v4",
+          "wrote_output": false
+        }
+      ]
+    },
+    {
+      "input": "tests/fixtures/chart_format_update/valid/chart_v4_parameterized_rational.json",
+      "source_sha256": "6351e8ddf6ce8f7fff6375fb9463b92badce1b9bb1eb7e60478de18892a25b93",
+      "source_bytes": 1261,
+      "status": "unsupported",
+      "attempts": [
+        {
+          "target": "3",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "json.field.unknown $/animationClips: JSON field is not recognized\r\njson.field.unknown $/animationTemplateImports: JSON field is not recognized\r\njson.field.unknown $/parameters: JSON field is not recognized\r\nchart.version.unsupported $/version: Chart format version is unsupported",
+          "wrote_output": false
+        },
+        {
+          "target": "4",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "chart.migration.source_version_unsupported $/version: Only canonical Chart v1, v2, and v3 can be migrated to v4",
+          "wrote_output": false
+        }
+      ]
+    },
+    {
+      "input": "tests/fixtures/chart_format_update/valid/chart_v4_parameterized_transform.json",
+      "source_sha256": "44a72269423f8da36efee1263ee264124a5a9b944e45fcaabe8f1ac3bee6a070",
+      "source_bytes": 1889,
+      "status": "unsupported",
+      "attempts": [
+        {
+          "target": "3",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "json.field.unknown $/animationClips: JSON field is not recognized\r\njson.field.unknown $/animationTemplateImports: JSON field is not recognized\r\nchart.camera.invalid_fov $/camera/fovY: Camera FOV must be finite and in (0, 179) degrees\r\njson.type.mismatch $/camera/fovY: JSON value has an unexpected type\r\njson.type.mismatch $/objects/0/components/cuexis.transform/position/0: JSON value has an unexpec",
+          "wrote_output": false
+        },
+        {
+          "target": "4",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "chart.migration.source_version_unsupported $/version: Only canonical Chart v1, v2, and v3 can be migrated to v4",
+          "wrote_output": false
+        }
+      ]
+    },
+    {
+      "input": "tests/fixtures/chart_format_update/valid/chart_v4_template_animator.json",
+      "source_sha256": "9164e83a7c649952e3689e1ec07906ae781b7a1eb17aa8f84a572a3febe966ae",
+      "source_bytes": 3096,
+      "status": "unsupported",
+      "attempts": [
+        {
+          "target": "3",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "json.field.unknown $/animationClips: JSON field is not recognized\r\njson.field.unknown $/animationTemplateImports: JSON field is not recognized\r\njson.field.unknown $/objects/0/components/cuexis.animator: JSON field is not recognized\r\njson.field.unknown $/parameters: JSON field is not recognized\r\njson.field.unknown $/templates/0/prototype~1components/cuexis.animator: JSON field is not recognized\r\nch",
+          "wrote_output": false
+        },
+        {
+          "target": "4",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "chart.migration.source_version_unsupported $/version: Only canonical Chart v1, v2, and v3 can be migrated to v4",
+          "wrote_output": false
+        }
+      ]
+    },
+    {
+      "input": "tests/fixtures/chart_format_update/valid/chart_v4_static_migration.json",
+      "source_sha256": "aec61d9ec074b424e5801020bb83905d6a1dcc1e9f4ada8bfed2a5e9531066a1",
+      "source_bytes": 904,
+      "status": "unsupported",
+      "attempts": [
+        {
+          "target": "3",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "json.field.unknown $/animationClips: JSON field is not recognized\r\njson.field.unknown $/animationTemplateImports: JSON field is not recognized\r\njson.field.unknown $/parameters: JSON field is not recognized\r\nchart.version.unsupported $/version: Chart format version is unsupported",
+          "wrote_output": false
+        },
+        {
+          "target": "4",
+          "return_code": 1,
+          "stdout": "",
+          "stderr": "chart.migration.source_version_unsupported $/version: Only canonical Chart v1, v2, and v3 can be migrated to v4",
+          "wrote_output": false
+        }
+      ]
+    },
+    {
+      "input": "tests/fixtures/stage1b_project/assets/charts/stage1b_example.cuexis.chart.json",
+      "source_sha256": "9aed1b4ba9d80021892b6e555881f5554f354440d9f4a5f04bdd8928ec76d003",
+      "source_bytes": 3175,
+      "status": "canonicalized",
+      "target": "3",
+      "output_sha256": "58479254c62896008467bfbb8903e8b46bdce3de486ba4958af76ab0ce7692bd",
+      "output_bytes": 4010,
+      "attempts": [
+        {
+          "target": "3",
+          "return_code": 0,
+          "stdout": "Migrated Cuexis Chart v1 to v3",
+          "stderr": "",
+          "wrote_output": true,
+          "output_sha256": "58479254c62896008467bfbb8903e8b46bdce3de486ba4958af76ab0ce7692bd",
+          "output_bytes": 4010
+        }
+      ]
+    },
+    {
+      "input": "tests/fixtures/stage2_migration_v1.cuexis.chart.json",
+      "source_sha256": "407667026475d92f6e578767b635878dd915d38dea5b15b805fbf5f752e9f894",
+      "source_bytes": 4425,
+      "status": "canonicalized",
+      "target": "3",
+      "output_sha256": "b3b9582d95389de99f6d26da8e9a884365ef048ba1b28a527bf23160dfbfe950",
+      "output_bytes": 5620,
+      "attempts": [
+        {
+          "target": "3",
+          "return_code": 0,
+          "stdout": "Migrated Cuexis Chart v1 to v3",
+          "stderr": "",
+          "wrote_output": true,
+          "output_sha256": "b3b9582d95389de99f6d26da8e9a884365ef048ba1b28a527bf23160dfbfe950",
+          "output_bytes": 5620
+        }
+      ]
+    },
+    {
+      "input": "out/verification-20261101/r3-startup-observability-v1/player-40k-project/assets/charts/stress_40k.cuexis.chart.json",
+      "source_sha256": "247cb8ef1ae66eb829fff5f58cdb466cb819396afdbac418a5b9814db408a0ae",
+      "source_bytes": 12571828,
+      "status": "canonicalized",
+      "target": "3",
+      "output_sha256": "0cf308c86e0dcd98d63a01b2a342867cb6911bc976362da779e4de2d42656f52",
+      "output_bytes": 32180288,
+      "attempts": [
+        {
+          "target": "3",
+          "return_code": 0,
+          "stdout": "Migrated Cuexis Chart v1 to v3",
+          "stderr": "",
+          "wrote_output": true,
+          "output_sha256": "0cf308c86e0dcd98d63a01b2a342867cb6911bc976362da779e4de2d42656f52",
+          "output_bytes": 32180288
+        }
+      ],
+      "output_path": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\baseline\\work\\e107126d44c6da1f-t3.json"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "convertedBehaviors": 3,
+  "expandedTemplateObjects": 1,
+  "generatedEvents": 6,
+  "rewrittenBindings": 9,
+  "sourceVersion": 1,
+  "targetVersion": 3,
+  "unboundBehaviorIds": [
+    "unbound.motion"
+  ]
+}
