@@ -357,16 +357,18 @@ auto PlayerSmokeBinding::notePresented(const PlayerPresentedFrame& presented)
         return {};
     }
     const auto& drawSummary = presented.summary;
+    const auto omittedDigest = presentation_renderer::summaryDigest(*omittedDebugSummary_);
+    const auto emptyDigest = presentation_renderer::summaryDigest(*emptyDebugSummary_);
+    const auto populatedDigest = presentation_renderer::summaryDigest(drawSummary);
     if (omittedDebugSummary_->debugPassEnabled != emptyDebugSummary_->debugPassEnabled ||
         omittedDebugSummary_->debugPassEnabled != drawSummary.debugPassEnabled ||
-        omittedDebugSummary_->digest != emptyDebugSummary_->digest ||
-        omittedDebugSummary_->digest != drawSummary.digest) {
+        omittedDigest != emptyDigest || omittedDigest != populatedDigest) {
         return core::unexpected(
             core::Error{"player.smoke_test.debug_summary_mismatch",
                         "OpenGL Debug summary differs across scene argument forms"}
-                .withContext("omitted_digest", std::to_string(omittedDebugSummary_->digest))
-                .withContext("empty_digest", std::to_string(emptyDebugSummary_->digest))
-                .withContext("populated_digest", std::to_string(drawSummary.digest)));
+                .withContext("omitted_digest", std::to_string(omittedDigest))
+                .withContext("empty_digest", std::to_string(emptyDigest))
+                .withContext("populated_digest", std::to_string(populatedDigest)));
     }
     logger_.info("player.smoke_test",
                  "Debug summary parity held for omitted, empty, and populated scenes");
@@ -379,21 +381,20 @@ auto PlayerSmokeBinding::validatePresented(const PlayerPresentedFrame& presented
     -> core::Result<void> {
     const auto& drawSummary = presented.summary;
     const auto pixelProbe = backend_.lastPixelProbe();
+    const auto digest = presentation_renderer::summaryDigest(drawSummary);
     if (auto validated =
             validateFrame(presented.renderedFrames, presented.snapshot, drawSummary, pixelProbe);
         !validated) {
         return core::unexpected(std::move(validated.error()));
     }
     logger_.info("player.smoke_test",
-                 std::string{"Frame "} + std::to_string(presented.renderedFrames) +
-                     " summary=" + std::to_string(drawSummary.digest) +
-                     " pixel=" + std::to_string(pixelProbe.rgba[0]) + "," +
+                 std::string{"Frame "} + std::to_string(presented.renderedFrames) + " summary=" +
+                     std::to_string(digest) + " pixel=" + std::to_string(pixelProbe.rgba[0]) + "," +
                      std::to_string(pixelProbe.rgba[1]) + "," + std::to_string(pixelProbe.rgba[2]) +
                      "," + std::to_string(pixelProbe.rgba[3]) +
                      " render_us=" + std::to_string(presented.renderMicroseconds));
     if (presented.renderedFrames == 0) {
-        if (auto minimized = verifyMinimizeRestore(presented, drawSummary.digest, pixelProbe);
-            !minimized) {
+        if (auto minimized = verifyMinimizeRestore(presented, digest, pixelProbe); !minimized) {
             return core::unexpected(std::move(minimized.error()));
         }
     }
@@ -502,11 +503,12 @@ auto PlayerSmokeBinding::verifyMinimizeRestore(const PlayerPresentedFrame& prese
     if (auto presentedFrame = presented.renderer.present(); !presentedFrame) {
         return core::unexpected(std::move(presentedFrame.error()));
     }
-    if (submitted->digest != baselineDigest) {
+    const auto restoredDigest = presentation_renderer::summaryDigest(*submitted);
+    if (restoredDigest != baselineDigest) {
         return core::unexpected(core::Error{"player.smoke_test.restore_digest_mismatch",
                                             "Restoring the window changed the presentation digest"}
                                     .withContext("baseline", std::to_string(baselineDigest))
-                                    .withContext("restored", std::to_string(submitted->digest)));
+                                    .withContext("restored", std::to_string(restoredDigest)));
     }
     const auto probe = backend_.lastPixelProbe();
     for (std::size_t component = 0; component < 4; ++component) {
@@ -589,12 +591,15 @@ auto PlayerSmokeBinding::validateFrame(std::uint32_t frameIndex,
             core::Error{"player.smoke_test.textured_blend_pixel_invalid",
                         "Transparent smoke frame did not produce the expected textured blend"});
     }
-    if ((frameIndex == 1 || frameIndex == 5) && summary.digest != presentationSmokeDigest) {
-        return core::unexpected(
-            core::Error{"player.smoke_test.presentation_digest_mismatch",
-                        "OpenGL draw summary differs from the Validation Sink golden"}
-                .withContext("expected", std::to_string(presentationSmokeDigest))
-                .withContext("actual", std::to_string(summary.digest)));
+    if (frameIndex == 1 || frameIndex == 5) {
+        const auto digest = presentation_renderer::summaryDigest(summary);
+        if (digest != presentationSmokeDigest) {
+            return core::unexpected(
+                core::Error{"player.smoke_test.presentation_digest_mismatch",
+                            "OpenGL draw summary differs from the Validation Sink golden"}
+                    .withContext("expected", std::to_string(presentationSmokeDigest))
+                    .withContext("actual", std::to_string(digest)));
+        }
     }
     return {};
 }

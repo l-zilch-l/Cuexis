@@ -794,7 +794,7 @@ template <typename Resource>
 [[nodiscard]] auto resolveGpuDraw(const presentation_renderer::DrawCommand& command,
                                   const detail::PresentationResourceSet& resources,
                                   PreparedDraw& draw) -> core::Result<void> {
-    draw.command = command;
+    draw.command = &command;
     draw.mesh = findGpuResource(resources.meshes, command.mesh);
     draw.material = findGpuResource(resources.materials, command.material);
     if (draw.mesh == nullptr || draw.material == nullptr) {
@@ -869,17 +869,17 @@ void drawUnlitCommands(const detail::PresentationPipeline& pipeline,
         if (draw.program != nullptr) {
             continue;
         }
-        if (draw.command.backFaceCulling) {
+        if (draw.command->backFaceCulling) {
             glEnable(GL_CULL_FACE);
         } else {
             glDisable(GL_CULL_FACE);
         }
-        glUniformMatrix4fv(pipeline.worldLocation, 1, GL_FALSE, draw.command.worldMatrix.data());
+        glUniformMatrix4fv(pipeline.worldLocation, 1, GL_FALSE, draw.command->worldMatrix.data());
         glUniform4f(pipeline.effectiveColorLocation,
-                    static_cast<float>(draw.command.effectiveColor[0]),
-                    static_cast<float>(draw.command.effectiveColor[1]),
-                    static_cast<float>(draw.command.effectiveColor[2]),
-                    static_cast<float>(draw.command.effectiveColor[3]));
+                    static_cast<float>(draw.command->effectiveColor[0]),
+                    static_cast<float>(draw.command->effectiveColor[1]),
+                    static_cast<float>(draw.command->effectiveColor[2]),
+                    static_cast<float>(draw.command->effectiveColor[3]));
         glUniform1i(pipeline.useTextureLocation, draw.texture != nullptr ? 1 : 0);
         glUniform1i(pipeline.useTextureAlphaLocation,
                     draw.texture != nullptr && draw.material->material.alphaMode ==
@@ -928,19 +928,19 @@ void drawParameterizedCommands(const std::array<float, 16>& viewProjection,
         if (draw.program == nullptr) {
             continue;
         }
-        if (draw.command.backFaceCulling) {
+        if (draw.command->backFaceCulling) {
             glEnable(GL_CULL_FACE);
         } else {
             glDisable(GL_CULL_FACE);
         }
         glUseProgram(draw.program->program.value);
         CuexisObjectStd140 object{};
-        std::memcpy(object.world, draw.command.worldMatrix.data(), sizeof(object.world));
+        std::memcpy(object.world, draw.command->worldMatrix.data(), sizeof(object.world));
         std::memcpy(object.viewProjection, viewProjection.data(), sizeof(object.viewProjection));
-        object.tint[0] = static_cast<float>(draw.command.effectiveColor[0]);
-        object.tint[1] = static_cast<float>(draw.command.effectiveColor[1]);
-        object.tint[2] = static_cast<float>(draw.command.effectiveColor[2]);
-        object.opacity = static_cast<float>(draw.command.effectiveColor[3]);
+        object.tint[0] = static_cast<float>(draw.command->effectiveColor[0]);
+        object.tint[1] = static_cast<float>(draw.command->effectiveColor[1]);
+        object.tint[2] = static_cast<float>(draw.command->effectiveColor[2]);
+        object.opacity = static_cast<float>(draw.command->effectiveColor[3]);
         glBindBuffer(GL_UNIFORM_BUFFER, draw.program->cuexisObject.value);
         glBufferSubData(GL_UNIFORM_BUFFER, 0, static_cast<GLsizeiptr>(sizeof(object)), &object);
         glBindBufferBase(GL_UNIFORM_BUFFER, 0, draw.program->cuexisObject.value);
@@ -1553,8 +1553,8 @@ auto OpenGlBackend::renderPresentation(const playback::FrameSnapshot& snapshot,
                 std::min(debugScene->size(), render::RenderScene::maxCommandCount) * 2U);
         }
 
-        // Ordering, pass split, validation, and the digest all come from the backend-neutral
-        // builder. This adapter only resolves the GL handles the neutral layer cannot carry.
+        // Ordering, pass split, and validation all come from the backend-neutral builder. This
+        // adapter only resolves the GL handles the neutral layer cannot carry.
         auto built = presentation_renderer::buildPresentationCommands(
             snapshot, presentation_->active->resources,
             presentation_->active->manifest.entries.empty(),
@@ -1661,6 +1661,11 @@ auto OpenGlBackend::renderPresentation(const playback::FrameSnapshot& snapshot,
         if (pixelProbe != nullptr) {
             *pixelProbe = preparedProbe;
         }
+        // PreparedDraw holds non-owning command pointers into preparedSummary.opaque/transparent,
+        // which the move above consumes. Drop them with the summary they came from so the
+        // persistent scratch never outlives the commands it points at.
+        state.opaqueScratch.clear();
+        state.transparentScratch.clear();
         return {};
     } catch (const std::bad_alloc&) {
         return core::unexpected(

@@ -1,0 +1,92 @@
+from native import *
+BUDGET=1000000/240
+MODES=('render-only','static')
+
+def stats(values):
+ a=sorted(values);n=len(a)
+ return dict(n=n,mean_us=statistics.mean(a),p50_us=a[math.ceil(.5*n)-1],p95_us=a[math.ceil(.95*n)-1],p99_us=a[math.ceil(.99*n)-1],max_us=a[-1],over_budget=sum(v>BUDGET for v in a))
+
+def run_group(name,plan):
+ out=base/name;out.mkdir(exist_ok=False)
+ registration=dict(scope='P3 validated resolver index final physical GPU diagnostic; no formal acceptance',created_utc=dt.datetime.now(dt.timezone.utc).isoformat(),head=subprocess.check_output(['git','rev-parse','HEAD']).decode().strip(),plan=plan,binary_sha256=sha(exe),source_sha256=sha(root/'tests/player/gpu_throughput_probe.cpp'),runner_sha256=sha(Path(__file__)),native_sha256=sha(Path(__file__).with_name('native.py')),viewport=[1920,1080],affinity=measurement_mask,priority='BelowNormal',qos='execution throttling OFF',timer=False,normal_allocator=True,metrics='OFF',warmup='at least 8 frames and 2000ms',budget_us=BUDGET,pass_rule='wall FPS>=240 and cycle p99<=4.166667ms; duration runs additionally every full 1-second bin >=240 completed frames',stop='invalid process stops; budget failures are retained capacity points, never replaced or extended')
+ write(out/'registration.json',registration)
+ results=[]
+ for index,item in enumerate(plan):
+  assert sha(exe)==registration['binary_sha256']
+  assert sha(root/'tests/player/gpu_throughput_probe.cpp')==registration['source_sha256']
+  log=out/f'{index:02}-{item["mode"]}-{item["entities"]}.log'
+  env={key:value for key,value in os.environ.items() if not key.startswith(('CUEXIS_PD','CUEXIS_GPU_'))}
+  env.update(CUEXIS_GPU_BARRIER='1',CUEXIS_GPU_WIDTH='1920',CUEXIS_GPU_HEIGHT='1080',CUEXIS_GPU_ENTITIES=str(item['entities']),CUEXIS_GPU_MODE=item['mode'],CUEXIS_GPU_FRAMES=str(item['frames']),CUEXIS_GPU_WARMUP='8',CUEXIS_GPU_WARMUP_MS='2000',CUEXIS_GPU_TIMER='0')
+  if item.get('seconds'):env['CUEXIS_GPU_SECONDS']=str(item['seconds'])
+  battery=Battery();assert k.GetSystemPowerStatus(ct.byref(battery))
+  with log.open('x',encoding='utf-8') as stream:
+   child=subprocess.Popen([str(exe),'GPU visible entity throughput probe','--rng-seed','1'],cwd=root,env=env,stdin=subprocess.PIPE,stdout=stream,stderr=subprocess.STDOUT,creationflags=subprocess.CREATE_NO_WINDOW|subprocess.BELOW_NORMAL_PRIORITY_CLASS)
+   handle=k.OpenProcess(0x0200|0x1000,False,child.pid)
+   try:
+    power=Power(1,1,0)
+    assert handle and k.SetProcessAffinityMask(handle,measurement_mask) and k.SetProcessInformation(handle,4,ct.byref(power),ct.sizeof(power))
+    mask=ct.c_size_t();system=ct.c_size_t();observed=Power(1,0,0)
+    assert k.GetProcessAffinityMask(handle,ct.byref(mask),ct.byref(system)) and k.GetProcessInformation(handle,4,ct.byref(observed),ct.sizeof(observed))
+    controls=dict(affinity=mask.value,priority=k.GetPriorityClass(handle),qos_control=observed.ControlMask,qos_state=observed.StateMask)
+    assert controls==dict(affinity=measurement_mask,priority=16384,qos_control=1,qos_state=0)
+    child.stdin.write(b'go\n');child.stdin.flush();child.stdin.close()
+    try:code=child.wait(timeout=300)
+    except subprocess.TimeoutExpired:child.kill();child.wait();code='timeout'
+   finally:
+    if handle:k.CloseHandle(handle)
+    if child.poll() is None:child.kill();child.wait()
+  text=log.read_text(encoding='utf-8',errors='replace')
+  identities=[json.loads(line.split(' ',1)[1]) for line in text.splitlines() if line.startswith('GPU_THROUGHPUT_ID ')]
+  samples=[json.loads(line.split(' ',1)[1]) for line in text.splitlines() if line.startswith('GPU_THROUGHPUT_SAMPLE ')]
+  identity=identities[0] if len(identities)==1 else None
+  valid=code==0 and 'All tests passed' in text and identity is not None and bool(samples)
+  if valid:
+   expected=dict(mode=item['mode'],entities=item['entities'],draws_per_frame=item['entities'],in_view_centers=item['entities'],fixture_revision=3,timer=False,moved_entities=item['entities'] if item['mode']=='animated' else 0,width=1920,height=1080,vsync=0,warmup_ms=2000,duration_seconds=item.get('seconds',0))
+   valid=all(identity[key]==value for key,value in expected.items()) and len(samples)==identity['frames'] and identity['pixel_rgba']==[255,204,51,255] and 'NVIDIA' in identity['vendor'] and [s['ordinal'] for s in samples]==list(range(len(samples)))
+   valid=valid and ((identity['measured_wall_us']>=item['seconds']*1000000) if item.get('seconds') else len(samples)==item['frames'])
+   valid=valid and all(abs(sum(s[m] for m in ('update_us','extract_us','submit_us','present_us'))-s['total_us'])<.001 for s in samples)
+   valid=valid and abs(sum(s['cycle_us'] for s in samples)-identity['measured_wall_us'])<.01
+  summary={metric:stats([s[metric] for s in samples]) for metric in samples[0] if metric not in ('ordinal','end_us')} if samples else {}
+  fps=len(samples)*1000000/identity['measured_wall_us'] if identity else None
+  windows=[]
+  if valid and item.get('seconds'):
+   windows=[sum(int(s['end_us']//1000000)==second for s in samples) for second in range(item['seconds'])]
+  passed=bool(valid and fps>=240 and summary['cycle_us']['p99_us']<=BUDGET and (not windows or min(windows)>=240))
+  row=dict(item,index=index,exit=code,valid=valid,controls=controls,ac_line=battery.ACLineStatus,identity=identity,statistics=summary,wall_fps=fps,budget_pass=passed,one_second_completed_frames=windows,log_sha256=sha(log))
+  results.append(row);write(out/'results.json',results)
+  print(json.dumps(dict(group=name,index=index,mode=item['mode'],entities=item['entities'],valid=valid,fps=fps,p99_ms=summary.get('cycle_us',{}).get('p99_us',0)/1000,passed=passed,min_second_fps=min(windows) if windows else None)),flush=True)
+  if not valid:raise SystemExit('invalid process: group stopped, no retry')
+ return results
+
+def item(n,mode,rep=0,frames=600,seconds=0):return dict(entities=n,mode=mode,repeat=rep,frames=frames,seconds=seconds)
+
+if __name__=='__main__':
+ phase=sys.argv[1]
+ if phase=='pilot':run_group('pilot',[item(n,m,frames=8) for n in (10,40000) for m in MODES])
+ elif phase=='coarse':
+  counts=[10,25,50,100,250,500,1000,1500,2000,3000,4000,5000,7500,10000,20000,40000]
+  run_group('coarse',[item(n,m,frames=360 if n<=5000 else 240 if n<=10000 else 120) for n in counts for m in MODES])
+ elif phase=='fine':
+  coarse=json.loads((base/'coarse/results.json').read_text());plan=[];brackets={}
+  for mode in MODES:
+   rows=[r for r in coarse if r['mode']==mode];passing=[r['entities'] for r in rows if r['budget_pass']]
+   if not passing:raise SystemExit('10 entities fails; no supported capacity bracket')
+   low=passing[-1];high=next((r['entities'] for r in rows if r['entities']>low),low)
+   lower_control=passing[-2] if len(passing)>1 else low
+   points=sorted({lower_control,low,high,*[int(round((low+(high-low)*j/5)/10)*10) for j in range(1,5)]})
+   brackets[mode]=dict(low=low,high=high,points=points)
+   for rep in range(3):
+    for n in (points if rep%2==0 else points[::-1]):plan.append(item(n,mode,rep))
+  write(base/'fine-brackets.json',brackets);run_group('fine',plan)
+ elif phase=='sustain':
+  fine=json.loads((base/'fine/results.json').read_text());candidates={}
+  for mode in MODES:
+   counts=sorted({r['entities'] for r in fine if r['mode']==mode})
+   passes=[n for n in counts if all(r['budget_pass'] for r in fine if r['mode']==mode and r['entities']==n)]
+   if not passes:raise SystemExit('no fine all-process passing point')
+   candidates[mode]=passes[-1]
+  write(base/'sustain-candidates.json',candidates)
+  run_group('sustain',[item(candidates[mode],mode,rep,frames=600,seconds=20) for rep in range(3) for mode in MODES])
+ else:raise SystemExit('unknown phase')
+
+

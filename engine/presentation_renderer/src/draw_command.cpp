@@ -209,7 +209,31 @@ void hashCommand(SummaryHash& hash, const DrawCommand& command) noexcept {
     hash.writeU64(std::bit_cast<std::uint64_t>(command.transparentDepthKey));
 }
 
-[[nodiscard]] auto summaryDigest(const DrawSummary& summary) noexcept -> std::uint64_t {
+[[nodiscard]] auto validateDebugPass(bool debugPassEnabled, const render::RenderScene* debugScene,
+                                     std::size_t& debugCommandCount) -> core::Result<void> {
+    debugCommandCount = 0;
+    if (!debugPassEnabled || debugScene == nullptr) {
+        return {};
+    }
+    if (debugScene->size() > render::RenderScene::maxCommandCount) {
+        return core::unexpected(core::Error{"presentation.renderer.debug.limit",
+                                            "RenderScene command limit was exceeded"});
+    }
+    for (const auto& command : debugScene->commands()) {
+        if (command.type != render::RenderCommandType::DebugLine ||
+            !core::isFinite(command.start) || !core::isFinite(command.end) ||
+            !render::isValidColor(command.color)) {
+            return core::unexpected(core::Error{"presentation.renderer.debug.invalid",
+                                                "RenderScene contains an invalid Debug command"});
+        }
+    }
+    debugCommandCount = debugScene->size();
+    return {};
+}
+
+} // namespace
+
+auto summaryDigest(const DrawSummary& summary) noexcept -> std::uint64_t {
     SummaryHash hash;
     hash.writeU32(summary.version);
     hash.writeU32(summary.viewportWidth);
@@ -235,30 +259,6 @@ void hashCommand(SummaryHash& hash, const DrawCommand& command) noexcept {
     }
     return hash.value();
 }
-
-[[nodiscard]] auto validateDebugPass(bool debugPassEnabled, const render::RenderScene* debugScene,
-                                     std::size_t& debugCommandCount) -> core::Result<void> {
-    debugCommandCount = 0;
-    if (!debugPassEnabled || debugScene == nullptr) {
-        return {};
-    }
-    if (debugScene->size() > render::RenderScene::maxCommandCount) {
-        return core::unexpected(core::Error{"presentation.renderer.debug.limit",
-                                            "RenderScene command limit was exceeded"});
-    }
-    for (const auto& command : debugScene->commands()) {
-        if (command.type != render::RenderCommandType::DebugLine ||
-            !core::isFinite(command.start) || !core::isFinite(command.end) ||
-            !render::isValidColor(command.color)) {
-            return core::unexpected(core::Error{"presentation.renderer.debug.invalid",
-                                                "RenderScene contains an invalid Debug command"});
-        }
-    }
-    debugCommandCount = debugScene->size();
-    return {};
-}
-
-} // namespace
 
 auto buildPresentationCommands(const playback::FrameSnapshot& snapshot,
                                std::span<const playback::PortableResourcePtr> resources,
@@ -289,7 +289,6 @@ auto buildPresentationCommands(const playback::FrameSnapshot& snapshot,
         return core::unexpected(std::move(debug.error()));
     }
     if (manifestEmpty) {
-        summary.digest = summaryDigest(summary);
         return summary;
     }
     if (snapshot.objects.size() > maxNormalizedRecords) {
@@ -517,7 +516,6 @@ auto buildPresentationCommands(const playback::FrameSnapshot& snapshot,
     if (!std::is_sorted(summary.transparent.begin(), summary.transparent.end(), transparentLess)) {
         std::sort(summary.transparent.begin(), summary.transparent.end(), transparentLess);
     }
-    summary.digest = summaryDigest(summary);
     return summary;
 }
 

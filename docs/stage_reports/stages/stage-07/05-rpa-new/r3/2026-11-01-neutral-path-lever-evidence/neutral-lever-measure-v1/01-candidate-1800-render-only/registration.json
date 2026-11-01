@@ -1,0 +1,40 @@
+{
+  "scope": "Neutral-path lever A/B screen; exact app-local Release DLLs; no formal acceptance",
+  "created_utc": "2026-11-01T07:17:49.357003+00:00",
+  "head": "1474316d2bfd38809c38a1e6050c29d83351e369",
+  "plan": [
+    {
+      "entities": 1800,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "candidate",
+      "frames": 600,
+      "seconds": 20
+    }
+  ],
+  "binary_sha256": "9aaa34f7f7aaf43d0cb06fdb6e7750e3c72e4065777e292f6e95cce0a75ac58c",
+  "source_sha256": "ff25101217404dc4c26ba7c3423cd10c6d577317a20d347e7a1c15b232bc5dd1",
+  "runner_sha256": "424e1b619f786fcb0ea10f73dd3af0679e7adb63acd60b2c48f04d3c076e6904",
+  "native_sha256": "44f9c49e8ec353a6386a7b481f178859abcf1c46b11688db70bb411ed21f15ce",
+  "viewport": [
+    1920,
+    1080
+  ],
+  "affinity": 65535,
+  "priority": "BelowNormal",
+  "qos": "execution throttling OFF",
+  "timer": false,
+  "normal_allocator": true,
+  "metrics": "OFF",
+  "warmup": "at least 8 frames and 2000ms",
+  "budget_us": 4166.666666666667,
+  "pass_rule": "wall FPS>=240 and cycle p99<=4.166667ms; duration runs additionally every full 1-second bin >=240 completed frames",
+  "stop": "invalid process stops; budget failures are retained capacity points, never replaced or extended",
+  "group": "neutral-lever-measure-v1",
+  "arm": "candidate",
+  "cell_index": 1,
+  "diagnostic": null,
+  "wrapper_sha256": "5056873fc4c97fc713baf823f18a99abefa1c24ce8a4f8c2c66e00608650e7ca",
+  "template_runner_sha256": "424e1b619f786fcb0ea10f73dd3af0679e7adb63acd60b2c48f04d3c076e6904",
+  "binding_sha256": "1cd7361a909f817784ad1728ccf14f8b995d814f6cc13e3d476db784f7fc4124"
+}

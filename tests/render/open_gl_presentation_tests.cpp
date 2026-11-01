@@ -315,7 +315,9 @@ TEST_CASE("OpenGL summary characterization preserves command order and digest",
 
     REQUIRE(first->opaque.size() == second->opaque.size());
     REQUIRE(first->transparent.size() == second->transparent.size());
-    CHECK(first->digest == second->digest);
+    CHECK(cuexis::presentation_renderer::summaryDigest(*first) ==
+          cuexis::presentation_renderer::summaryDigest(*second));
+    CHECK(cuexis::presentation_renderer::summaryDigest(*first) != 0);
     REQUIRE(first->opaque.size() == 1);
     CHECK(first->opaque.front().objectId == second->opaque.front().objectId);
     CHECK(first->opaque.front().worldMatrix == second->opaque.front().worldMatrix);

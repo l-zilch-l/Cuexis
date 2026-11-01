@@ -17,6 +17,9 @@
 实例化未达预设收益门，带探针归因显示剩余主要在命令/排序/复制/digest。早期GL组的DLL身份缺口与后续精确Release运行库绑定均留档，不回填旧组接受。
 随后[中立命令转移及已有序检测](2026-10-31-r3-neutral-command-transfer.md)通过16进程普通GPU局部组与逆序保护，40K render-only/static cycle改善10.33%/12.05%，已选用。
 最终格式化CPP显式重编的中立3/399与OpenGL22/140回归通过，digest/order/拥有语义保持；完整矩阵及240FPS仍开放。
+新[中立路径 CPU 杠杆](2026-11-01-r3-neutral-path-cpu-lever.md)在 1800/2600 render-only 上把提交路径中位数
+压低 33.98%/36.16%、完整 cycle 压低 29.07%/34.63%，七个预注册门全过、重复性在 15% 内；40K 诊断同向，
+候选臂通过 2600 不构成新前沿点。
 恢复前 P1/R3c v2 现场及未选用源码归档见
 [2026-10-30 暂停与候选交接](2026-10-30-r3-pause-and-candidate-handoff.md)。下文各批记录保留当时范围，
 不将某个旧版本的“尚未实施”或通过结果误作最新预算副本的结论。
@@ -431,3 +434,31 @@ Host 69 cases / 55,371 assertions、Judgement 236 / 56,139、RPA 71 / 26,545 全
 
 原适用 Seek ≤20 ms、request/ready/GPU p99≤4.167 ms、初次 load≤2000 ms、15% 重复性和正式
 配对置信区间要求均未放宽。未完成、失败、不可比与缺外部证据的项必须分别记录，不追加到通过。
+
+## 中立路径 CPU 杠杆（2026-11-01）
+
+基于[提交路径停顿归因](2026-11-01-r3-submit-stall-wait-attribution.md)的中立路径分解（1800 上
+digest 513–588 us、resolve 155–165 us 属于中性开销），本批只做两处最便宜的结构改动：不重写 Reader、
+不加跨帧缓存、不改预算、不动任何原始门。
+
+- `DrawSummary::digest` 改为纯派生值：摘要不再携带自己算出的摘要，构造时不再写字段，改由
+  `presentation_renderer::summaryDigest(summary)` 派生；空清单早返回与正常返回共用同一派生函数，
+  域仍是 `cuexis.validation.summary.v1`。渲染适配器只持 `const DrawCommand*`，不再拷贝整帧命令。
+- 适配器每帧结束清空 `opaqueScratch` / `transparentScratch`，让 `PreparedDraw` 的非拥有指针在早返回
+  和探针路径上也有明确的生命周期边界。
+
+固定组 `neutral-lever-measure-v1` 为 1800 / 2600 两个 render-only 格、每臂每格 3 个新进程、ABBA 交错，
+两臂同时开逐帧像素回读、关 GPU timer。提交路径中位数 2 239.4 → 1 478.5 us（-33.98%）与
+3 213.2 → 2 051.2 us（-36.16%），完整 cycle 2 721.9 → 1 930.7 us（-29.07%）与
+3 864.9 → 2 526.6 us（-34.63%），cycle p99 同向下降（-24.93% / -29.95%）。重复性
+(max-min)/median 最大 8.29%（2600 基线提交路径），其余更小，全部在 15% 屏内；七个预注册门全过，
+`formal_acceptance` 保持 false。40000 诊断同向（-37.68% / -37.57% / -39.06%），只说明杠杆在压力规模
+仍然生效，不进门、不进阶梯。
+
+候选二进制在同一棵 Release 树上重建，A/B 二进制与库哈希、仪器补丁、逐进程日志、被撤回的首次启动与
+全部读数归档在[证据附件](2026-11-01-neutral-path-lever-evidence/index.md)。同树全量 CTest
+1418/1418 通过、0 失败、1 项按仓库设置跳过、退出 0、783.54 s。
+
+边界：本组只压中立路径成本，不改任何容量结论。候选臂在 2600 上通过不是新前沿点，括区必须用同一份源码
+在完整矩阵那一批里重新推导。正式读取相对门、正式重复性、D2/D3/Snapshot/排队 p99、request→ready 与
+GPU render p99、Pause/Resume/resize、Reset/Close、适用 Seek 仍未在本轮源码上测过。

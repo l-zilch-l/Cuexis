@@ -1,0 +1,11 @@
+# Frozen evidence keeps its original bytes. Copied records are CRLF and hashed as CRLF,
+# the per-process log streams are deterministic gzip archives, and manifest.json binds
+# every file by sha256, so git must not normalise any of them on checkout.
+*.txt binary
+*.json binary
+*.py binary
+*.log binary
+*.gz binary
+*.patch binary
+index.md text eol=lf
+.gitattributes text eol=lf

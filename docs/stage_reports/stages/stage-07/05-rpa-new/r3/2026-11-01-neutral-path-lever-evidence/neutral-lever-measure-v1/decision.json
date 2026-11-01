@@ -1,0 +1,168 @@
+{
+  "numeric_gate": true,
+  "submit_improvement_gate": true,
+  "cycle_non_regression_gate": true,
+  "repeatability_screen": true,
+  "value_identity": true,
+  "valid_processes": true,
+  "selected": true,
+  "summary": [
+    {
+      "n": 1800,
+      "mode": "render-only",
+      "processes": 6,
+      "values": {
+        "baseline": {
+          "submit_us": {
+            "samples_us": [
+              2259.42067229178,
+              2239.3510850279786,
+              2208.8607312763356
+            ],
+            "median_us": 2239.3510850279786,
+            "relative_range_percent": 2.2577942937792117
+          },
+          "cycle_us": {
+            "samples_us": [
+              2721.8879014697877,
+              2729.878340384878,
+              2718.689941552263
+            ],
+            "median_us": 2721.8879014697877,
+            "relative_range_percent": 0.41105288820209274
+          },
+          "cycle_p99_us": {
+            "samples_us": [
+              3496.3,
+              3504.8,
+              3489.2
+            ],
+            "median_us": 3496.3,
+            "relative_range_percent": 0.4461859680233493
+          }
+        },
+        "candidate": {
+          "submit_us": {
+            "samples_us": [
+              1502.5914664378338,
+              1467.9490637065637,
+              1478.4872505328424
+            ],
+            "median_us": 1478.4872505328424,
+            "relative_range_percent": 2.343097833193019
+          },
+          "cycle_us": {
+            "samples_us": [
+              1906.96751525553,
+              1930.651361003861,
+              1937.7035555124976
+            ],
+            "median_us": 1930.651361003861,
+            "relative_range_percent": 1.592003656267903
+          },
+          "cycle_p99_us": {
+            "samples_us": [
+              2612.8,
+              2639.2,
+              2624.7
+            ],
+            "median_us": 2624.7,
+            "relative_range_percent": 1.0058292376271436
+          }
+        }
+      },
+      "submit_change": -33.9769784015636,
+      "cycle_change": -29.06940216159043,
+      "cycle_p99_change": -24.929210880073228
+    },
+    {
+      "n": 2600,
+      "mode": "render-only",
+      "processes": 6,
+      "values": {
+        "baseline": {
+          "submit_us": {
+            "samples_us": [
+              3213.2117874396135,
+              3414.436727779992,
+              3148.0559760209817
+            ],
+            "median_us": 3213.2117874396135,
+            "relative_range_percent": 8.29017099962996
+          },
+          "cycle_us": {
+            "samples_us": [
+              3864.8829565217393,
+              3986.4869071343164,
+              3746.8400711877107
+            ],
+            "median_us": 3864.8829565217393,
+            "relative_range_percent": 6.200623373140375
+          },
+          "cycle_p99_us": {
+            "samples_us": [
+              4685.4,
+              4715.8,
+              4583.7
+            ],
+            "median_us": 4685.4,
+            "relative_range_percent": 2.819396422930814
+          }
+        },
+        "candidate": {
+          "submit_us": {
+            "samples_us": [
+              2050.682635264163,
+              2051.2219555330976,
+              2054.3395156230395
+            ],
+            "median_us": 2051.2219555330976,
+            "relative_range_percent": 0.17827814045244117
+          },
+          "cycle_us": {
+            "samples_us": [
+              2546.313418204965,
+              2526.577059120768,
+              2509.9581377839127
+            ],
+            "median_us": 2526.577059120768,
+            "relative_range_percent": 1.4389143719093038
+          },
+          "cycle_p99_us": {
+            "samples_us": [
+              3282,
+              3336.2,
+              3280.1
+            ],
+            "median_us": 3282,
+            "relative_range_percent": 1.7093235831809845
+          }
+        }
+      },
+      "submit_change": -36.16287717008612,
+      "cycle_change": -34.62733315488033,
+      "cycle_p99_change": -29.952618773210393
+    }
+  ],
+  "diagnostics": [
+    {
+      "n": 40000,
+      "mode": "render-only",
+      "variant": "baseline",
+      "submit_us": 44083.248565121416,
+      "cycle_us": 44204.100441501105,
+      "cycle_p99_us": 52501.1,
+      "wall_fps": 22.622335711217147
+    },
+    {
+      "n": 40000,
+      "mode": "render-only",
+      "variant": "candidate",
+      "submit_us": 27475.950206896552,
+      "cycle_us": 27594.988137931035,
+      "cycle_p99_us": 31994.2,
+      "wall_fps": 36.23846457195746
+    }
+  ],
+  "formal_acceptance": false
+}
