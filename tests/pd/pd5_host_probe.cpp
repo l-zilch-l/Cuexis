@@ -3,6 +3,7 @@
 #include "../support/environment.hpp"
 #include "measurement_clocks.hpp"
 #include "measurement_environment.hpp"
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cstdlib>
 #include <cuexis/playback/frame_digest.hpp>
@@ -204,6 +205,37 @@ TEST_CASE("PD5 allocation observer tracks transient and cross-thread ownership",
 } // namespace
 
 TEST_CASE("PD5 scripted host timing probe", "[.][pd][pd5][timing-probe]") {
+#if defined(CUEXIS_PD_METRICS_TEST_ONLY)
+    {
+        // Attribution only: these are compile-time instrumented stage timings, whose overhead is
+        // not subtracted and whose numbers the plan forbids accepting as the budget.
+        namespace pd = cuexis::internal::pd;
+        const auto& metrics = pd::threadMetrics();
+        const auto report = [&](pd::Stage stage, const char* name) {
+            const auto& samples = metrics.stages[static_cast<unsigned>(stage)];
+            if (samples.count == 0) {
+                std::cout << "PD5_STAGE {\"stage\":\"" << name << "\",\"count\":0}\n";
+                return;
+            }
+            std::vector<double> values(samples.exclusiveUs.begin(),
+                                       samples.exclusiveUs.begin() + samples.count);
+            std::sort(values.begin(), values.end());
+            const auto at = [&](double quantile) {
+                const auto index = std::min(
+                    values.size() - 1, static_cast<std::size_t>(quantile * (values.size() - 1)));
+                return values[index];
+            };
+            std::cout << "PD5_STAGE {\"stage\":\"" << name << "\",\"count\":" << samples.count
+                      << ",\"p50_us\":" << at(0.50) << ",\"p95_us\":" << at(0.95)
+                      << ",\"p99_us\":" << at(0.99) << ",\"max_us\":" << values.back() << "}\n";
+        };
+        report(pd::Stage::judgement, "judgement");
+        report(pd::Stage::projection, "projection");
+        report(pd::Stage::runtime, "runtime");
+        report(pd::Stage::snapshot, "snapshot");
+        report(pd::Stage::queue, "queue");
+    }
+#endif
     internal::pd::setProcessRecording(false);
     pd5Counts.clear();
     std::cout << std::setprecision(17);

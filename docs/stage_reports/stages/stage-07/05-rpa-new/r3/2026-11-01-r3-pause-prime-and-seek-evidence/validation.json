@@ -1,6 +1,6 @@
 {
   "scope": "Repository checks re-run after materializing this evidence directory; recorded verbatim, not summarized.",
-  "head": "84277a639a01d099f0f43c6d661248b5a9b99ba2",
+  "head": "d0e95df46efa4cd45fc9018e2820cb72eb9f0b40",
   "docs": {
     "args": [
       "python",
@@ -17,7 +17,7 @@
       "--check"
     ],
     "exit": 0,
-    "output": ""
+    "output": "warning: in the working copy of 'docs/stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-01-r3-pause-prime-and-seek-evidence/manifest.json', LF will be replaced by CRLF the next time Git touches it\n"
   },
   "architecture": {
     "args": [
@@ -69,6 +69,7 @@
       "engine/presentation_renderer/src/draw_command.cpp",
       "engine/render_opengl/include/cuexis/render_opengl/open_gl_backend.hpp",
       "engine/render_opengl/internal/cuexis_internal/pixel_probe.hpp",
+      "engine/render_opengl/src/open_gl_backend.cpp",
       "engine/render_opengl/src/open_gl_presentation.cpp",
       "engine/render_opengl/src/open_gl_presentation_internal.hpp",
       "engine/runtime/src/runtime_session.cpp",
@@ -89,6 +90,7 @@
       "tests/pd/measurement_method_tests.cpp",
       "tests/pd/metrics_storage_other.cpp",
       "tests/pd/metrics_storage_tests.cpp",
+      "tests/pd/pd5_host_probe.cpp",
       "tests/pd/pd5_matrix_probe.cpp",
       "tests/pd/pd_allocation_probe.hpp",
       "tests/pd/presentation_read_tests.hpp",
@@ -111,12 +113,12 @@
     ],
     "exit": 0,
     "output": "",
-    "note": "clang-format --dry-run --Werror over the C++ files changed between f90c2e1~1 and HEAD that live under app/, engine/, tests/, tools/ or cmake/ (74 of 78 changed files). 4 changed paths are archived evidence reproductions under docs/stage_reports/ (captured bytes kept for reproducibility); the project's cuexis_format_check target globs those five roots and never docs/, so the check is scoped to them."
+    "note": "clang-format --dry-run --Werror over the C++ files changed between f90c2e1~1 and HEAD that live under app/, engine/, tests/, tools/ or cmake/ (76 of 80 changed files). 4 changed paths are archived evidence reproductions under docs/stage_reports/ (captured bytes kept for reproducibility); the project's cuexis_format_check target globs those five roots and never docs/, so the check is scoped to them."
   },
   "materialized_bytes_verified": [
     {
       "archive": "2026-11-01-r3-pause-prime-and-seek-evidence",
-      "checked": 37,
+      "checked": 50,
       "mismatches": []
     }
   ],

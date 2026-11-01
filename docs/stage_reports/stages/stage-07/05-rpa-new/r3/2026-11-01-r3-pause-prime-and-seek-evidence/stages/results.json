@@ -1,0 +1,624 @@
+{
+  "scope": "D2/D3/snapshot/queue attribution from the compile-time stage timers.",
+  "instrument": {
+    "exe": "out/build/pd-metrics/bin/cuexis_execution_device_probe.exe",
+    "flags": "CUEXIS_PD_METRICS_TEST_ONLY=ON",
+    "note": "instrumented build; per-thread JSONL; overhead not subtracted; the plan forbids accepting these timings as the budget"
+  },
+  "runs": [
+    {
+      "run": 0,
+      "exit_code": 0,
+      "files": [
+        "metrics-run0.14636629735580373714.jsonl",
+        "metrics-run0.3785868569449726999.jsonl"
+      ],
+      "stages": {
+        "renderer": {
+          "count": 2400,
+          "median_us": 476.55,
+          "p95_us": 3862.2,
+          "p99_us": 3991.4,
+          "max_us": 1645130.0
+        },
+        "judgement": {
+          "count": 1200,
+          "median_us": 13.2,
+          "p95_us": 23,
+          "p99_us": 122.2,
+          "max_us": 184
+        },
+        "projection": {
+          "count": 1200,
+          "median_us": 9.1,
+          "p95_us": 12.3,
+          "p99_us": 19.2,
+          "max_us": 585.5
+        },
+        "runtime": {
+          "count": 1200,
+          "median_us": 3.8,
+          "p95_us": 4.9,
+          "p99_us": 6.2,
+          "max_us": 155.9
+        },
+        "snapshot": {
+          "count": 1200,
+          "median_us": 5.7,
+          "p95_us": 8.8,
+          "p99_us": 18.4,
+          "max_us": 135.7
+        },
+        "runtime_state_copy": {
+          "count": 1200,
+          "median_us": 5.6,
+          "p95_us": 7.6,
+          "p99_us": 12.5,
+          "max_us": 102.4
+        },
+        "runtime_prepare": {
+          "count": 1200,
+          "median_us": 11.8,
+          "p95_us": 15.8,
+          "p99_us": 25.6,
+          "max_us": 157.2
+        },
+        "runtime_commit": {
+          "count": 1200,
+          "median_us": 0.4,
+          "p95_us": 0.6,
+          "p99_us": 0.7,
+          "max_us": 13.8
+        },
+        "feedback": {
+          "count": 1200,
+          "median_us": 0.1,
+          "p95_us": 0.2,
+          "p99_us": 0.3,
+          "max_us": 0.4
+        },
+        "receipt": {
+          "count": 1201,
+          "median_us": 1,
+          "p95_us": 1.4,
+          "p99_us": 1.7,
+          "max_us": 129.9
+        },
+        "ledger_publish": {
+          "count": 1200,
+          "median_us": 1.1,
+          "p95_us": 1.5,
+          "p99_us": 1.8,
+          "max_us": 11.4
+        },
+        "queue": {
+          "count": 6000,
+          "median_us": 12.0,
+          "p95_us": 21.7,
+          "p99_us": 88.4,
+          "max_us": 1285.3
+        }
+      },
+      "log": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-refactor-v1\\pd-stages\\run-00.log.txt",
+      "valid": true
+    },
+    {
+      "run": 1,
+      "exit_code": 0,
+      "files": [
+        "metrics-run1.2826614761954232866.jsonl",
+        "metrics-run1.4149297889677847341.jsonl"
+      ],
+      "stages": {
+        "renderer": {
+          "count": 2400,
+          "median_us": 322.25,
+          "p95_us": 3870.8,
+          "p99_us": 3987.2,
+          "max_us": 17321.9
+        },
+        "judgement": {
+          "count": 1200,
+          "median_us": 13.4,
+          "p95_us": 21.6,
+          "p99_us": 45.8,
+          "max_us": 155.2
+        },
+        "projection": {
+          "count": 1200,
+          "median_us": 8.9,
+          "p95_us": 11.9,
+          "p99_us": 19.1,
+          "max_us": 276.9
+        },
+        "runtime": {
+          "count": 1200,
+          "median_us": 3.7,
+          "p95_us": 4.9,
+          "p99_us": 6.4,
+          "max_us": 50.7
+        },
+        "snapshot": {
+          "count": 1200,
+          "median_us": 5.8,
+          "p95_us": 8.1,
+          "p99_us": 11,
+          "max_us": 132.7
+        },
+        "runtime_state_copy": {
+          "count": 1200,
+          "median_us": 5.4,
+          "p95_us": 7.2,
+          "p99_us": 8.8,
+          "max_us": 119.5
+        },
+        "runtime_prepare": {
+          "count": 1200,
+          "median_us": 11.4,
+          "p95_us": 15.2,
+          "p99_us": 25.8,
+          "max_us": 155.5
+        },
+        "runtime_commit": {
+          "count": 1200,
+          "median_us": 0.4,
+          "p95_us": 0.6,
+          "p99_us": 0.7,
+          "max_us": 0.9
+        },
+        "feedback": {
+          "count": 1200,
+          "median_us": 0.1,
+          "p95_us": 0.2,
+          "p99_us": 0.3,
+          "max_us": 11.1
+        },
+        "receipt": {
+          "count": 1201,
+          "median_us": 1,
+          "p95_us": 1.4,
+          "p99_us": 1.5,
+          "max_us": 78.8
+        },
+        "ledger_publish": {
+          "count": 1200,
+          "median_us": 1.1,
+          "p95_us": 1.5,
+          "p99_us": 1.9,
+          "max_us": 116.2
+        },
+        "queue": {
+          "count": 6000,
+          "median_us": 11.9,
+          "p95_us": 20.3,
+          "p99_us": 40.2,
+          "max_us": 2244.5
+        }
+      },
+      "log": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-refactor-v1\\pd-stages\\run-01.log.txt",
+      "valid": true
+    },
+    {
+      "run": 2,
+      "exit_code": 0,
+      "files": [
+        "metrics-run2.12381055063590825383.jsonl",
+        "metrics-run2.15311054722416238495.jsonl"
+      ],
+      "stages": {
+        "renderer": {
+          "count": 2400,
+          "median_us": 368.45,
+          "p95_us": 3809.5,
+          "p99_us": 3865,
+          "max_us": 7575.6
+        },
+        "judgement": {
+          "count": 1200,
+          "median_us": 13.7,
+          "p95_us": 22.6,
+          "p99_us": 46.8,
+          "max_us": 157
+        },
+        "projection": {
+          "count": 1200,
+          "median_us": 9.5,
+          "p95_us": 12.5,
+          "p99_us": 17.9,
+          "max_us": 94.8
+        },
+        "runtime": {
+          "count": 1200,
+          "median_us": 3.6,
+          "p95_us": 4.6,
+          "p99_us": 6,
+          "max_us": 43.2
+        },
+        "snapshot": {
+          "count": 1200,
+          "median_us": 6.3,
+          "p95_us": 9.6,
+          "p99_us": 12.2,
+          "max_us": 23.8
+        },
+        "runtime_state_copy": {
+          "count": 1200,
+          "median_us": 5.9,
+          "p95_us": 7.9,
+          "p99_us": 11.5,
+          "max_us": 20.2
+        },
+        "runtime_prepare": {
+          "count": 1200,
+          "median_us": 12.8,
+          "p95_us": 16.4,
+          "p99_us": 22.5,
+          "max_us": 90
+        },
+        "runtime_commit": {
+          "count": 1200,
+          "median_us": 0.4,
+          "p95_us": 0.6,
+          "p99_us": 0.7,
+          "max_us": 11.5
+        },
+        "feedback": {
+          "count": 1200,
+          "median_us": 0.1,
+          "p95_us": 0.2,
+          "p99_us": 0.3,
+          "max_us": 0.5
+        },
+        "receipt": {
+          "count": 1201,
+          "median_us": 1,
+          "p95_us": 1.3,
+          "p99_us": 1.6,
+          "max_us": 78.4
+        },
+        "ledger_publish": {
+          "count": 1200,
+          "median_us": 1.3,
+          "p95_us": 1.8,
+          "p99_us": 2,
+          "max_us": 64
+        },
+        "queue": {
+          "count": 6000,
+          "median_us": 12.2,
+          "p95_us": 18.7,
+          "p99_us": 26.2,
+          "max_us": 11176.6
+        }
+      },
+      "log": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-refactor-v1\\pd-stages\\run-02.log.txt",
+      "valid": true
+    }
+  ],
+  "summary": {
+    "feedback": {
+      "count": [
+        1200,
+        1200,
+        1200
+      ],
+      "median_us": [
+        0.1,
+        0.1,
+        0.1
+      ],
+      "p95_us": [
+        0.2,
+        0.2,
+        0.2
+      ],
+      "p99_us": [
+        0.3,
+        0.3,
+        0.3
+      ],
+      "max_us": [
+        0.4,
+        11.1,
+        0.5
+      ]
+    },
+    "judgement": {
+      "count": [
+        1200,
+        1200,
+        1200
+      ],
+      "median_us": [
+        13.2,
+        13.4,
+        13.7
+      ],
+      "p95_us": [
+        23,
+        21.6,
+        22.6
+      ],
+      "p99_us": [
+        122.2,
+        45.8,
+        46.8
+      ],
+      "max_us": [
+        184,
+        155.2,
+        157
+      ]
+    },
+    "ledger_publish": {
+      "count": [
+        1200,
+        1200,
+        1200
+      ],
+      "median_us": [
+        1.1,
+        1.1,
+        1.3
+      ],
+      "p95_us": [
+        1.5,
+        1.5,
+        1.8
+      ],
+      "p99_us": [
+        1.8,
+        1.9,
+        2
+      ],
+      "max_us": [
+        11.4,
+        116.2,
+        64
+      ]
+    },
+    "projection": {
+      "count": [
+        1200,
+        1200,
+        1200
+      ],
+      "median_us": [
+        9.1,
+        8.9,
+        9.5
+      ],
+      "p95_us": [
+        12.3,
+        11.9,
+        12.5
+      ],
+      "p99_us": [
+        19.2,
+        19.1,
+        17.9
+      ],
+      "max_us": [
+        585.5,
+        276.9,
+        94.8
+      ]
+    },
+    "queue": {
+      "count": [
+        6000,
+        6000,
+        6000
+      ],
+      "median_us": [
+        12.0,
+        11.9,
+        12.2
+      ],
+      "p95_us": [
+        21.7,
+        20.3,
+        18.7
+      ],
+      "p99_us": [
+        88.4,
+        40.2,
+        26.2
+      ],
+      "max_us": [
+        1285.3,
+        2244.5,
+        11176.6
+      ]
+    },
+    "receipt": {
+      "count": [
+        1201,
+        1201,
+        1201
+      ],
+      "median_us": [
+        1,
+        1,
+        1
+      ],
+      "p95_us": [
+        1.4,
+        1.4,
+        1.3
+      ],
+      "p99_us": [
+        1.7,
+        1.5,
+        1.6
+      ],
+      "max_us": [
+        129.9,
+        78.8,
+        78.4
+      ]
+    },
+    "renderer": {
+      "count": [
+        2400,
+        2400,
+        2400
+      ],
+      "median_us": [
+        476.55,
+        322.25,
+        368.45
+      ],
+      "p95_us": [
+        3862.2,
+        3870.8,
+        3809.5
+      ],
+      "p99_us": [
+        3991.4,
+        3987.2,
+        3865
+      ],
+      "max_us": [
+        1645130.0,
+        17321.9,
+        7575.6
+      ]
+    },
+    "runtime": {
+      "count": [
+        1200,
+        1200,
+        1200
+      ],
+      "median_us": [
+        3.8,
+        3.7,
+        3.6
+      ],
+      "p95_us": [
+        4.9,
+        4.9,
+        4.6
+      ],
+      "p99_us": [
+        6.2,
+        6.4,
+        6
+      ],
+      "max_us": [
+        155.9,
+        50.7,
+        43.2
+      ]
+    },
+    "runtime_commit": {
+      "count": [
+        1200,
+        1200,
+        1200
+      ],
+      "median_us": [
+        0.4,
+        0.4,
+        0.4
+      ],
+      "p95_us": [
+        0.6,
+        0.6,
+        0.6
+      ],
+      "p99_us": [
+        0.7,
+        0.7,
+        0.7
+      ],
+      "max_us": [
+        13.8,
+        0.9,
+        11.5
+      ]
+    },
+    "runtime_prepare": {
+      "count": [
+        1200,
+        1200,
+        1200
+      ],
+      "median_us": [
+        11.8,
+        11.4,
+        12.8
+      ],
+      "p95_us": [
+        15.8,
+        15.2,
+        16.4
+      ],
+      "p99_us": [
+        25.6,
+        25.8,
+        22.5
+      ],
+      "max_us": [
+        157.2,
+        155.5,
+        90
+      ]
+    },
+    "runtime_state_copy": {
+      "count": [
+        1200,
+        1200,
+        1200
+      ],
+      "median_us": [
+        5.6,
+        5.4,
+        5.9
+      ],
+      "p95_us": [
+        7.6,
+        7.2,
+        7.9
+      ],
+      "p99_us": [
+        12.5,
+        8.8,
+        11.5
+      ],
+      "max_us": [
+        102.4,
+        119.5,
+        20.2
+      ]
+    },
+    "snapshot": {
+      "count": [
+        1200,
+        1200,
+        1200
+      ],
+      "median_us": [
+        5.7,
+        5.8,
+        6.3
+      ],
+      "p95_us": [
+        8.8,
+        8.1,
+        9.6
+      ],
+      "p99_us": [
+        18.4,
+        11,
+        12.2
+      ],
+      "max_us": [
+        135.7,
+        132.7,
+        23.8
+      ]
+    }
+  }
+}

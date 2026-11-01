@@ -12,6 +12,7 @@
 | `pause/` | 3 进程 × 20 周期的 PD5 controls：`results.json` 与逐进程日志（含每条 `PD5_SAMPLE`） |
 | `load/` | 预热后 9 个新进程的 `cuexis_player --smoke-test`：每进程的 load 读数、golden 行与日志 |
 | `seek/` | 2 个回放规模 × 6 进程 × 16 次 seek：`results.json` 与逐进程 `PD5_SEEK` 行 |
+| `stages/` | D2/D3/snapshot/queue 的阶段归因：插桩树 3 进程 × 1200 帧的逐次数组（JSONL）与分位数汇总 |
 | `tools/` | Seek 的预注册与两个驱动器 |
 
 ## 关键数值
