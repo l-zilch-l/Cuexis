@@ -1,9 +1,10 @@
-//  JSON parsing and serialization implementation.
+//  JSON parsing implementation.
 //  parse() is one SAX pass that builds the owning Value directly: nesting depth, string byte
 //  ceilings, container budgets and duplicate-key rejection are all enforced by the reader in
 //  bounded_parse.cpp, so no third-party DOM is built and no value tree is copied afterwards.
-//  serialize() still goes through the third-party DOM, which owns the escaping rules the canonical
-//  identity depends on.
+//  serialize() lives in serialize.cpp, which writes the owning Value straight to text.
+//  The two conversions in json_conversion.hpp remain for the schema validator, which has no
+//  choice but to hand a third-party DOM across.
 //  All third-party exceptions are caught at the module boundary and translated to
 //  cuexis::core::Error.
 
@@ -148,17 +149,6 @@ core::Result<Value> parse(std::string_view text, ParseLimits limits) {
     // invented here; the text budgets it does state are enforced by that same reader.
     return parseBounded(text, ValueParseLimits{limits, std::numeric_limits<std::size_t>::max(),
                                                std::numeric_limits<std::size_t>::max()});
-}
-
-core::Result<std::string> serialize(const Value& value, SerializeStyle style) {
-    try {
-        const auto converted = detail::toNlohmann(value);
-        return converted.dump(style == SerializeStyle::Pretty ? 2 : -1);
-    } catch (const std::exception& exception) {
-        return core::unexpected(
-            core::Error{"json.serialize.failed", "JSON serialization failed"}.withContext(
-                "exception", exception.what()));
-    }
 }
 
 } // namespace cuexis::json

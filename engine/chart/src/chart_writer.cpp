@@ -5,6 +5,8 @@
 #include <cuexis/json/parse.hpp>
 #include <cuexis/json/value.hpp>
 
+#include <cuexis_internal/prepare_trace.hpp>
+
 #include "chart_writer_internal.hpp"
 
 #include <algorithm>
@@ -575,11 +577,18 @@ template <typename ComparePrimary>
 
 [[nodiscard]] auto serializeCanonical(json::Value value, bool sortBehaviorArrays = false)
     -> core::Result<std::string> {
-    auto normalized = canonicalize(value, sortBehaviorArrays);
-    if (!normalized) {
+    if (auto normalized =
+            [&] {
+                const internal::PrepareTraceScope trace{"chart_canonical_normalize"};
+                return canonicalize(value, sortBehaviorArrays);
+            }();
+        !normalized) {
         return core::unexpected(std::move(normalized.error()));
     }
-    auto serialized = json::serialize(value, json::SerializeStyle::Pretty);
+    auto serialized = [&] {
+        const internal::PrepareTraceScope trace{"chart_canonical_dump"};
+        return json::serialize(value, json::SerializeStyle::Pretty);
+    }();
     if (!serialized) {
         return serialized;
     }

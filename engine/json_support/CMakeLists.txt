@@ -26,6 +26,7 @@ target_sources(cuexis_json_support
         src/parse.cpp
         src/reader.cpp
         src/schema.cpp
+        src/serialize.cpp
         src/value.cpp
     PRIVATE
         FILE_SET HEADERS

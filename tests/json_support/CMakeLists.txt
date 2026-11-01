@@ -3,6 +3,7 @@ add_executable(cuexis_json_support_tests
     reader_tests.cpp
     schema_artifact_tests.cpp
     schema_tests.cpp
+    serialize_tests.cpp
 )
 
 target_compile_definitions(cuexis_json_support_tests
