@@ -532,3 +532,19 @@ query），报告见[第二批正式门测量](2026-11-01-r3-second-gate-batch.m
 截至本批，R3 的门状态是：初次 load 通过、重复性通过、request→ready 通过、GPU render 通过、
 Resume/resize/Reset/Close 通过、**Pause 超界（首次使用）**、**读取相对门超界**、适用 Seek 与
 D2/D3/Snapshot/排队未判定。
+
+### 修复尝试：两个负结果与一次收窄（同日）
+
+报告见[修复尝试：读取路径与首次 Pause](2026-11-01-r3-gate-repair-attempt.md)，附件见
+[修复尝试证据](2026-11-01-r3-gate-repair-attempt-evidence/index.md)。本批**没有保留代码改动**。
+
+- **读取路径**：差距随实体数线性增长（每实体 5.6–8.6 ns），所以是逐对象成本。把"每对象构造 144 字节
+  `Result` + 重复验证读窗口"改成"每帧验证一次 + 就地填充"后，三对交替比较的几何平均是 **1.0175**——
+  没有变快、略有变慢。假设证伪，改动回滚；原二进制哈希 `5d5829a6…` 留档。
+- **同一批的对照**：`update+extract` 块 B 比 A 快 **2.27 倍**（350.1 对 794.1 ms），纯 `extract` 慢 16 %。
+  收益在 update 侧，回归只在 extract 侧。
+- **首次 Pause**：179 ms 全部在第一次冻结绘制里（`pause()` 本身只有 258 µs）。修法需要先归因到
+  submit 的 CPU 段/GPU 段/首次 present，本轮不做猜测性预热——预热会在 `load` 末尾多一次 present，
+  而 `first_frame_presented` 正是初次 load 门的边界。
+
+两个失败项的状态不变：读取相对门超界、Pause 超界。

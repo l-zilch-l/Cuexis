@@ -1,0 +1,30 @@
+{
+  "scope": "Read gap against object count, same probe and workload, one run per cell (diagnostic).",
+  "rows": [
+    {
+      "objects": 50,
+      "arm_a_us": 4641.8,
+      "arm_b_us": 5250.7,
+      "gap_us": 608.9
+    },
+    {
+      "objects": 200,
+      "arm_a_us": 16891.8,
+      "arm_b_us": 19128.2,
+      "gap_us": 2236.4
+    },
+    {
+      "objects": 800,
+      "arm_a_us": 68462.7,
+      "arm_b_us": 78666.6,
+      "gap_us": 10203.9
+    },
+    {
+      "objects": 1800,
+      "arm_a_us": 175878.4,
+      "arm_b_us": 206681.6,
+      "gap_us": 30803.2
+    }
+  ],
+  "note": "each cell is one process; per-read gap divided by object count gives the per-object gap"
+}
