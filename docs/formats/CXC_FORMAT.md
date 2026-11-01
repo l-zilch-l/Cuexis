@@ -426,7 +426,7 @@ Chart migration 是独立操作，见 [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md)�
 正反例见 [examples/chart_format_update](../examples/chart_format_update/README.md)。CFU-C1 已将 manifest
 副本提升到 `tests/fixtures/chart_format_update/`，由生产 Schema 与内部 typed manifest Reader 验证；
 CFU-C3 已实现 strict ZIP32 archive、闭包和 owning CXC package，CFU-C4 developer tools 的本地证据
-见 [C4 报告](../stage_reports/chart-format-update/2026-08-13-c4-tools.md)。公共 Playback 输入、
+见 [C4 报告](../stage_reports/stages/chart-format-update/2026-08-13-c4-tools.md)。公共 Playback 输入、
 hosted 跨平台 consumer/determinism/safety gates 与 owner acceptance 已关闭；本节只记录已
 封存的内部实现证据，不宣称交付公共 CXC package API。
 

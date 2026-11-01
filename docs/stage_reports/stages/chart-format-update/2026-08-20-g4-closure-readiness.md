@@ -7,7 +7,7 @@
 本地基线：`5964f4bf779a413e650f77d9e8e7a5cc98e98f59`（`Prepare CFU-G local
 candidate`）。该提交只存在于本地 detached HEAD，没有推送，也没有同 SHA hosted workflow。
 
-权威计划：[Stage Chart Format Update 实施计划](../../stage_plans/completed/chart-format-update/plan.md)
+权威计划：[Stage Chart Format Update 实施计划](../../../stage_plans/completed/chart-format-update/plan.md)
 §5.9 与 §11。
 
 ## 1. G4 结论

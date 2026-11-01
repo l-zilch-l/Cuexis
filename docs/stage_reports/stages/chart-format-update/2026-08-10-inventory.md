@@ -106,9 +106,9 @@ Chart 使用 animationTemplateImports[] 和 cuexis.animator.templateBindings[] �
 宿主参数仅在 prepare 前冻结，并只改变显式允许的 number、durationScale 和 weight 字段
 ```
 
-CXT 文件合同已写入 [CXT_FORMAT.md](../../formats/CXT_FORMAT.md)，Chart v4 字段与 lowering 已写入
-[CHART_V4_FORMAT.md](../../formats/CHART_V4_FORMAT.md)，CXC 容器与闭包已写入
-[CXC_FORMAT.md](../../formats/CXC_FORMAT.md)，并同步到 ADR 0038。该子决策不等于 ADR 0038 整体接受，
+CXT 文件合同已写入 [CXT_FORMAT.md](../../../formats/CXT_FORMAT.md)，Chart v4 字段与 lowering 已写入
+[CHART_V4_FORMAT.md](../../../formats/CHART_V4_FORMAT.md)，CXC 容器与闭包已写入
+[CXC_FORMAT.md](../../../formats/CXC_FORMAT.md)，并同步到 ADR 0038。该子决策不等于 ADR 0038 整体接受，
 也不解除 CFU-C 生产 Schema/Reader/Writer 门禁。
 
 ## 7. 下一步

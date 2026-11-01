@@ -7,7 +7,7 @@
 审计基线：`913639ca6049ce9c974a6d8fe210cd2d77ec4dd7`（`Close CFU-F after hosted
 verification`）加当前 G0 状态校准 worktree。该基线不是 CFU-G 最终实现 SHA。
 
-权威计划：[Stage Chart Format Update 实施计划](../../stage_plans/completed/chart-format-update/plan.md)
+权威计划：[Stage Chart Format Update 实施计划](../../../stage_plans/completed/chart-format-update/plan.md)
 §11。
 
 ## 1. 结论
@@ -41,7 +41,7 @@ completion report 尚未创建并由项目所有者接受，Stage 4 typed handof
 
 | # | §11 退出条件 | 状态 | 当前证据与结论 |
 | ---: | --- | --- | --- |
-| 1 | 格式身份、载体、版本、时间域、引用和扩展已有接受 ADR | PASS | [ADR 0038](../../adr/0038-cxc-v1-and-chart-v4-boundary.md) 已于 2026-08-11 接受；CXC、Chart v4、CXT 与 Animation Mixing 分离职责 |
+| 1 | 格式身份、载体、版本、时间域、引用和扩展已有接受 ADR | PASS | [ADR 0038](../../../adr/0038-cxc-v1-and-chart-v4-boundary.md) 已于 2026-08-11 接受；CXC、Chart v4、CXT 与 Animation Mixing 分离职责 |
 | 2 | 规范、Schema、typed Reader、Writer/Canonicalizer 和 validator 一致 | PASS | [C1](2026-08-11-c1-reader.md) 与 [C2](2026-08-11-c2-lowering.md) 已关闭 Schema/Reader/Writer/lowering；生产 Schema 位于 `schemas/`，合同测试位于 `tests/json_support/` 与 `tests/chart/` |
 | 3 | v1/v2/v3 历史读取与显式、非覆盖迁移 | PASS | [D1/D2](2026-08-13-d-migration.md)、[D3](2026-08-14-d3-equivalence.md) 和 [D close](2026-08-14-d-close.md) 保留旧 Reader、默认 CLI v3、显式 `--target 4`、原子输出与运行时等价 |
 | 4 | 合法/非法、预算、缺资源、缺 capability 和未知扩展 fixture | PASS | `tests/fixtures/chart_format_update/` 提交 valid/invalid/binary/golden；`tests/chart/cfu_f4_limits_tests.cpp`、`tests/cxc/cfu_f4_safety_tests.cpp`、`tests/playback/playback_v4_prepare_tests.cpp` 覆盖精确上限、缺资源、capability 和扩展失败 |

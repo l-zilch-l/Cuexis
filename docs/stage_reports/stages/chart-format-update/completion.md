@@ -4,7 +4,7 @@
 
 报告日期：2026-08-24
 
-权威计划：[Stage Chart Format Update 实施计划](../../stage_plans/completed/chart-format-update/plan.md) §5.9、§11。
+权威计划：[Stage Chart Format Update 实施计划](../../../stage_plans/completed/chart-format-update/plan.md) §5.9、§11。
 
 ## 1. 结论与接受状态
 
@@ -58,7 +58,7 @@ revalidation 已完成。项目所有者随后明确接受本报告，G6 记录�
 
 | # | 条件 | G6 状态 | 证据 |
 | ---: | --- | --- | --- |
-| 1 | ADR 已接受格式身份、载体、版本、时间域、引用和扩展合同 | PASS | [ADR 0038](../../adr/0038-cxc-v1-and-chart-v4-boundary.md) |
+| 1 | ADR 已接受格式身份、载体、版本、时间域、引用和扩展合同 | PASS | [ADR 0038](../../../adr/0038-cxc-v1-and-chart-v4-boundary.md) |
 | 2 | 规范、Schema、typed Reader、Writer 和 validator 一致 | PASS | CFU-C1/C2 reports、`schemas/`、Chart tests |
 | 3 | v1/v2/v3 历史读取与显式非覆盖迁移 | PASS | [D migration](2026-08-13-d-migration.md)、[D3](2026-08-14-d3-equivalence.md) |
 | 4 | 合法/非法、预算、资源、capability、未知扩展 fixtures | PASS | `tests/fixtures/chart_format_update/`、Chart/CXC/Playback tests |

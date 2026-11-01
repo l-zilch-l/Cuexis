@@ -6,7 +6,7 @@
 
 后续关闭：[CFU-D 关闭报告](2026-08-14-d-close.md) 已按项目所有者“未提供外部资产”决策关闭整包 CFU-D；兼容窗口不缩短。本文件仍是 D3 快照。
 
-权威计划：[Stage Chart Format Update 实施计划](../../stage_plans/completed/chart-format-update/plan.md) §5.6
+权威计划：[Stage Chart Format Update 实施计划](../../../stage_plans/completed/chart-format-update/plan.md) §5.6
 
 结构基线：[CFU-D1/D2 报告](2026-08-13-d-migration.md)
 
@@ -29,7 +29,7 @@ v2 的 migrateToV3 vs migrateToV4  FrameSnapshot 与 FrameDigest v3 位级相同
 
 ## 2. 测试矩阵
 
-新增 [`tests/playback/playback_migration_equivalence_tests.cpp`](../../../tests/playback/playback_migration_equivalence_tests.cpp)。内部测试链接 `cuexis::chart` 以调用 `ChartMigrator`，不改变安装头或 public consumer。既有 [`tests/runtime/migration_equivalence_tests.cpp`](../../../tests/runtime/migration_equivalence_tests.cpp) 仍只覆盖 v1↔v3 Runtime World 分量，不作为 D3 关闭证据。
+新增 [`tests/playback/playback_migration_equivalence_tests.cpp`](../../../../tests/playback/playback_migration_equivalence_tests.cpp)。内部测试链接 `cuexis::chart` 以调用 `ChartMigrator`，不改变安装头或 public consumer。既有 [`tests/runtime/migration_equivalence_tests.cpp`](../../../../tests/runtime/migration_equivalence_tests.cpp) 仍只覆盖 v1↔v3 Runtime World 分量，不作为 D3 关闭证据。
 
 | 用例 | 源 | 比较 |
 | --- | --- | --- |

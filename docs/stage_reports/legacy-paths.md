@@ -2,40 +2,44 @@
 
 状态：historical
 
-更新日期：2026-10-06
+更新日期：2026-11-01
 
 以下旧逻辑路径已迁入 canonical 目录。映射供历史引用迁移使用，不保留逐文件 compatibility stub。
+
+2026-11-01 目录级迁移：`docs/stage_reports/chart-format-update/` 整目录迁入
+[stages/chart-format-update/](stages/chart-format-update/README.md)，文件名与正文不变，只改链接前缀；
+下方逐文件映射的 canonical 目标随之更新。目录内 27 篇报告均在该次迁移中移动，字节内容未改。
 
 Stage 7的2026-10分类迁移另见 [阶段旧路径映射](stages/stage-07/legacy-paths.md)。
 
 - `260722-1c-review.md` -> [canonical](stages/stage-01/2026-07-22-stage-1c-review.md)
 - `260806-stage-2-review.md` -> [canonical](stages/stage-02/2026-08-06-review.md)
 - `260808-stage-3-review.md` -> [canonical](stages/stage-03/2026-08-08-review.md)
-- `260810-chart-format-update-inventory.md` -> [canonical](chart-format-update/2026-08-10-inventory.md)
-- `260811-chart-format-update-c0-baseline.md` -> [canonical](chart-format-update/2026-08-11-c0-baseline.md)
-- `260811-chart-format-update-c1-reader.md` -> [canonical](chart-format-update/2026-08-11-c1-reader.md)
-- `260811-chart-format-update-c2-lowering.md` -> [canonical](chart-format-update/2026-08-11-c2-lowering.md)
-- `260812-chart-format-update-c3-cxc.md` -> [canonical](chart-format-update/2026-08-12-c3-cxc.md)
-- `260813-chart-format-update-c4-tools.md` -> [canonical](chart-format-update/2026-08-13-c4-tools.md)
-- `260813-chart-format-update-d-migration.md` -> [canonical](chart-format-update/2026-08-13-d-migration.md)
-- `260814-chart-format-update-d-close.md` -> [canonical](chart-format-update/2026-08-14-d-close.md)
-- `260814-chart-format-update-d3-equivalence.md` -> [canonical](chart-format-update/2026-08-14-d3-equivalence.md)
-- `260814-chart-format-update-e-close.md` -> [canonical](chart-format-update/2026-08-14-e-close.md)
-- `260814-chart-format-update-e0-api.md` -> [canonical](chart-format-update/2026-08-14-e0-api.md)
-- `260814-chart-format-update-e1-source.md` -> [canonical](chart-format-update/2026-08-14-e1-source.md)
-- `260814-chart-format-update-e2-prepare.md` -> [canonical](chart-format-update/2026-08-14-e2-prepare.md)
-- `260814-chart-format-update-e3-identity.md` -> [canonical](chart-format-update/2026-08-14-e3-identity.md)
-- `260814-chart-format-update-e4-gates.md` -> [canonical](chart-format-update/2026-08-14-e4-gates.md)
-- `260815-chart-format-update-f1-headless.md` -> [canonical](chart-format-update/2026-08-15-f1-headless.md)
-- `260815-chart-format-update-f2-package-consumers.md` -> [canonical](chart-format-update/2026-08-15-f2-package-consumers.md)
-- `260815-chart-format-update-f3-determinism.md` -> [canonical](chart-format-update/2026-08-15-f3-determinism.md)
-- `260815-chart-format-update-f4-safety-performance.md` -> [canonical](chart-format-update/2026-08-15-f4-safety-performance.md)
-- `260816-chart-format-update-f-close.md` -> [canonical](chart-format-update/2026-08-16-f-close.md)
-- `260816-chart-format-update-g1-exit-audit.md` -> [canonical](chart-format-update/2026-08-16-g1-exit-audit.md)
-- `260816-chart-format-update-g2-stage4-handoff.md` -> [canonical](chart-format-update/2026-08-16-g2-stage4-handoff.md)
-- `260819-chart-format-update-g3-validation.md` -> [canonical](chart-format-update/2026-08-19-g3-validation.md)
-- `260820-chart-format-update-g4-closure-readiness.md` -> [canonical](chart-format-update/2026-08-20-g4-closure-readiness.md)
-- `260824-chart-format-update-g4-hosted.md` -> [canonical](chart-format-update/2026-08-24-g4-hosted.md)
+- `260810-chart-format-update-inventory.md` -> [canonical](stages/chart-format-update/2026-08-10-inventory.md)
+- `260811-chart-format-update-c0-baseline.md` -> [canonical](stages/chart-format-update/2026-08-11-c0-baseline.md)
+- `260811-chart-format-update-c1-reader.md` -> [canonical](stages/chart-format-update/2026-08-11-c1-reader.md)
+- `260811-chart-format-update-c2-lowering.md` -> [canonical](stages/chart-format-update/2026-08-11-c2-lowering.md)
+- `260812-chart-format-update-c3-cxc.md` -> [canonical](stages/chart-format-update/2026-08-12-c3-cxc.md)
+- `260813-chart-format-update-c4-tools.md` -> [canonical](stages/chart-format-update/2026-08-13-c4-tools.md)
+- `260813-chart-format-update-d-migration.md` -> [canonical](stages/chart-format-update/2026-08-13-d-migration.md)
+- `260814-chart-format-update-d-close.md` -> [canonical](stages/chart-format-update/2026-08-14-d-close.md)
+- `260814-chart-format-update-d3-equivalence.md` -> [canonical](stages/chart-format-update/2026-08-14-d3-equivalence.md)
+- `260814-chart-format-update-e-close.md` -> [canonical](stages/chart-format-update/2026-08-14-e-close.md)
+- `260814-chart-format-update-e0-api.md` -> [canonical](stages/chart-format-update/2026-08-14-e0-api.md)
+- `260814-chart-format-update-e1-source.md` -> [canonical](stages/chart-format-update/2026-08-14-e1-source.md)
+- `260814-chart-format-update-e2-prepare.md` -> [canonical](stages/chart-format-update/2026-08-14-e2-prepare.md)
+- `260814-chart-format-update-e3-identity.md` -> [canonical](stages/chart-format-update/2026-08-14-e3-identity.md)
+- `260814-chart-format-update-e4-gates.md` -> [canonical](stages/chart-format-update/2026-08-14-e4-gates.md)
+- `260815-chart-format-update-f1-headless.md` -> [canonical](stages/chart-format-update/2026-08-15-f1-headless.md)
+- `260815-chart-format-update-f2-package-consumers.md` -> [canonical](stages/chart-format-update/2026-08-15-f2-package-consumers.md)
+- `260815-chart-format-update-f3-determinism.md` -> [canonical](stages/chart-format-update/2026-08-15-f3-determinism.md)
+- `260815-chart-format-update-f4-safety-performance.md` -> [canonical](stages/chart-format-update/2026-08-15-f4-safety-performance.md)
+- `260816-chart-format-update-f-close.md` -> [canonical](stages/chart-format-update/2026-08-16-f-close.md)
+- `260816-chart-format-update-g1-exit-audit.md` -> [canonical](stages/chart-format-update/2026-08-16-g1-exit-audit.md)
+- `260816-chart-format-update-g2-stage4-handoff.md` -> [canonical](stages/chart-format-update/2026-08-16-g2-stage4-handoff.md)
+- `260819-chart-format-update-g3-validation.md` -> [canonical](stages/chart-format-update/2026-08-19-g3-validation.md)
+- `260820-chart-format-update-g4-closure-readiness.md` -> [canonical](stages/chart-format-update/2026-08-20-g4-closure-readiness.md)
+- `260824-chart-format-update-g4-hosted.md` -> [canonical](stages/chart-format-update/2026-08-24-g4-hosted.md)
 - `260824-stage-4-s4-a-module-wiring.md` -> [canonical](stages/stage-04/2026-08-24-s4-a-module-wiring.md)
 - `260825-stage-4-s4-b-absolute-sampling.md` -> [canonical](stages/stage-04/2026-08-25-s4-b-absolute-sampling.md)
 - `260826-stage-4-s4-c-layer-mixing.md` -> [canonical](stages/stage-04/2026-08-26-s4-c-layer-mixing.md)
@@ -81,5 +85,5 @@ Stage 7的2026-10分类迁移另见 [阶段旧路径映射](stages/stage-07/lega
 - `stage_2_completion_report.md` -> [canonical](stages/stage-02/completion.md)
 - `stage_3_completion_report.md` -> [canonical](stages/stage-03/completion.md)
 - `stage_4_completion_report.md` -> [canonical](stages/stage-04/completion.md)
-- `stage_chart_format_update_completion_report.md` -> [canonical](chart-format-update/completion.md)
+- `stage_chart_format_update_completion_report.md` -> [canonical](stages/chart-format-update/completion.md)
 - `stages/stage-06/2026-09-28-r9-reference-host-command-loop.md` -> [canonical](reviews/stage-06-review-2026-09/2026-09-28-r9-reference-host-command-loop.md)

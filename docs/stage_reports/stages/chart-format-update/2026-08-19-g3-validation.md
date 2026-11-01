@@ -4,7 +4,7 @@
 
 执行日期：2026-08-19
 
-权威计划：[Stage Chart Format Update 实施计划](../../stage_plans/completed/chart-format-update/plan.md)
+权威计划：[Stage Chart Format Update 实施计划](../../../stage_plans/completed/chart-format-update/plan.md)
 §5.9。
 
 ## 1. 结论

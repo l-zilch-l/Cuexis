@@ -6,7 +6,7 @@
 
 后续关闭：[CFU-E 关闭报告](2026-08-14-e-close.md) 已关闭整包 CFU-E。[CFU-D3 报告](2026-08-14-d3-equivalence.md) 已关闭运行时等价。[CFU-D 关闭报告](2026-08-14-d-close.md) 已按所有者“未提供外部资产”决策关闭整包 CFU-D。本文件仍是 D1/D2 快照。
 
-权威计划：[Stage Chart Format Update 实施计划](../../stage_plans/completed/chart-format-update/plan.md)
+权威计划：[Stage Chart Format Update 实施计划](../../../stage_plans/completed/chart-format-update/plan.md)
 
 ## 1. 结论
 

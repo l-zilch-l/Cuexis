@@ -7,7 +7,7 @@
 实施基线：`codex/cfu-f` on commit `819064556e7f6eb0fe32a075cbcf7b13e141d8a4`
 plus the uncommitted CFU-F1/CFU-F2/CFU-F3 surface closed by this report
 
-权威计划：[Stage Chart Format Update 实施计划](../../stage_plans/completed/chart-format-update/plan.md)
+权威计划：[Stage Chart Format Update 实施计划](../../../stage_plans/completed/chart-format-update/plan.md)
 
 ## 1. 结论
 

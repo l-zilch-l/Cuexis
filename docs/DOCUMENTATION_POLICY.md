@@ -87,7 +87,6 @@ docs/stage_plans/reviews/<topic>/
 docs/stage_plans/historical/<topic>/
 
 docs/stage_reports/stages/<stage>/
-docs/stage_reports/chart-format-update/
 docs/stage_reports/reviews/<topic>/
 docs/stage_reports/sdk-transition/
 ```

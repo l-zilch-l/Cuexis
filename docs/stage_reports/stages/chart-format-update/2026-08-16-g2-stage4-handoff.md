@@ -7,10 +7,10 @@
 实现基线：`913639ca6049ce9c974a6d8fe210cd2d77ec4dd7` 加当前 G0/G1/G2 文档 worktree。
 该基线不是 CFU-G 最终候选 SHA，也不是 Stage 4 实现。
 
-权威合同：[ADR 0038](../../adr/0038-cxc-v1-and-chart-v4-boundary.md)、
-[Chart v4](../../formats/CHART_V4_FORMAT.md)、[CXT v1](../../formats/CXT_FORMAT.md)、
-[CXC v1](../../formats/CXC_FORMAT.md)、[Animation Mixing](../../formats/ANIMATION_MIXING.md) 和
-[Stage 4 实施计划](../../stage_plans/completed/stage-04/plan.md)。
+权威合同：[ADR 0038](../../../adr/0038-cxc-v1-and-chart-v4-boundary.md)、
+[Chart v4](../../../formats/CHART_V4_FORMAT.md)、[CXT v1](../../../formats/CXT_FORMAT.md)、
+[CXC v1](../../../formats/CXC_FORMAT.md)、[Animation Mixing](../../../formats/ANIMATION_MIXING.md) 和
+[Stage 4 实施计划](../../../stage_plans/completed/stage-04/plan.md)。
 
 ## 1. 交接结论
 
@@ -294,7 +294,7 @@ Stage 4 接收 typed program 后负责：
 2. 从绝对 Chart/Session 时间得到 local Beat，并实现 start、durationScale、iterations、fill 和
    discontinuity 重建；
 3. 对 continuous/step Track 进行确定性采样；
-4. 按 [Animation Mixing](../../formats/ANIMATION_MIXING.md) 实现 Override、受限 Additive、priority、weight、
+4. 按 [Animation Mixing](../../../formats/ANIMATION_MIXING.md) 实现 Override、受限 Additive、priority、weight、
    mask 和离散 winner；
 5. 通过统一 PropertyResolver 合并 Initial、Behavior、Animation、HostOverride 和
    StudioPreviewOverride；

@@ -17,7 +17,7 @@ Standards / Spec 记录），由该专题自己的 `README.md` 承担导航；�
 - [Stage 1](stages/stage-01/README.md)
 - Stage 2：[completion](stages/stage-02/completion.md)、[review](stages/stage-02/2026-08-06-review.md)
 - Stage 3：[completion](stages/stage-03/completion.md)、[review](stages/stage-03/2026-08-08-review.md)
-- [Stage Chart Format Update](chart-format-update/README.md)
+- [Stage Chart Format Update](stages/chart-format-update/README.md)
 - [Stage 4](stages/stage-04/README.md)
 - [Stage 5](stages/stage-05/README.md)
 - [Chart Format Foundation](stages/chart-format-foundation/README.md)
