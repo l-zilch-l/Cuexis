@@ -12,6 +12,7 @@
 | `tools/run_read_pair_v2.py` | 驱动器：3 窗口 × 3 对、窗间 600 s、首臂交替、中位数比、配对 t 区间 |
 | `tools/read-remeasure.log.txt` | 运行期间的逐对输出 |
 | `read-remeasure/results.json` | 每对的 A/B 中位数与比值、逐窗区间、全组区间与 `decision` |
+| `recheck/load-results.json`、`recheck/pd5-results.json` | 裁剪后构建上重跑已通过的门：初次 load 9 进程与 PD5 controls/stream 的判定 |
 | `read-remeasure/w*-p*-*.log.txt` | 每个进程的原始 `PD_FOLLOW_ROW` 行，可重算任何分位数 |
 
 ## 关键数值

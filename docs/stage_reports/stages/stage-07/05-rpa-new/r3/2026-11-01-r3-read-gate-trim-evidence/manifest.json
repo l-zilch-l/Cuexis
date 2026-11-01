@@ -177,12 +177,28 @@
       "sha256": "dff65d9c87ae13ea103e6d3072f5b8923bf910c6d17673a9a3337fd0f815703b",
       "source_sha256": "dff65d9c87ae13ea103e6d3072f5b8923bf910c6d17673a9a3337fd0f815703b",
       "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\load-recheck\\results.json",
+      "archive": "recheck/load-results.json",
+      "bytes": 7571,
+      "sha256": "ce5291f110a55018a5e8d3a88e42d740bf2d818e93d118df6d5c1b02fe680c09",
+      "source_sha256": "f69246a1c49f47896dad8b39afa294217d3a1c4e3414a6eb891046ce5162d0f0",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\pd5-recheck\\results.json",
+      "archive": "recheck/pd5-results.json",
+      "bytes": 25375,
+      "sha256": "30e3fe6acaa133b3937229d6a3b66aea7a90c27d2e3b54f6f53ef7f112106986",
+      "source_sha256": "ed028fd82e95b26231f76ecca4b9926cd4ca3dcb37c07daec5dc6649d1c8f0f8",
+      "eol": "crlf"
     }
   ],
   "attached_files": [],
   "excluded": [],
   "generated_files": {
-    "index.md": "fc1e20d141e9de3582984e6204bf47cbb7e9e887eceac4dc08bddf1e860eafb0"
+    "index.md": "c28cb1f0b3645c4c5df5fb20cf8931c929ca0a256472f3e8e24986ea7a75e9e6"
   },
   "binding": {
     "head": "bc67670b1da902bec4585107c350d3442871c704",
@@ -264,6 +280,32 @@
           ]
         }
       }
-    ]
+    ],
+    "recheck": {
+      "load": {
+        "valid_runs": 9,
+        "min_ms": 394.762,
+        "median_ms": 401.472,
+        "max_ms": 424.858,
+        "relative_range": 0.074964,
+        "gate": "pass"
+      },
+      "controls": {
+        "pause_ms": 178.251,
+        "resume_ms": 5.204,
+        "reset_paused_ms": 73.08,
+        "reset_running_ms": 20.619,
+        "resize_ms": 1.014,
+        "close_ms": 1.445
+      },
+      "stream": {
+        "request_to_ready_p99_ms": [
+          0.43,
+          0.43,
+          0.439
+        ],
+        "gpu_render_p99_ms": 0.0031
+      }
+    }
   }
 }

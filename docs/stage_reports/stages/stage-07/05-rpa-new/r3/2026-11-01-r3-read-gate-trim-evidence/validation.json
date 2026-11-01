@@ -1,6 +1,6 @@
 {
   "scope": "Repository checks re-run after materializing this evidence directory; recorded verbatim, not summarized.",
-  "head": "bc67670b1da902bec4585107c350d3442871c704",
+  "head": "43ae1e9e160cefdbf613a299fa3f8cd72d8dd9a1",
   "docs": {
     "args": [
       "python",
@@ -17,7 +17,7 @@
       "--check"
     ],
     "exit": 0,
-    "output": ""
+    "output": "warning: in the working copy of 'docs/stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-01-r3-read-gate-trim-evidence/manifest.json', LF will be replaced by CRLF the next time Git touches it\n"
   },
   "architecture": {
     "args": [
@@ -64,6 +64,7 @@
       "engine/judgement/src/gameplay_prepare.cpp",
       "engine/judgement/src/identity_factory.hpp",
       "engine/playback/src/playback_session.cpp",
+      "engine/playback/src/presentation_materializer.cpp",
       "engine/presentation_renderer/include/cuexis/presentation_renderer/draw_command.hpp",
       "engine/presentation_renderer/src/draw_command.cpp",
       "engine/render_opengl/include/cuexis/render_opengl/open_gl_backend.hpp",
@@ -110,12 +111,12 @@
     ],
     "exit": 0,
     "output": "",
-    "note": "clang-format --dry-run --Werror over the C++ files changed between f90c2e1~1 and HEAD that live under app/, engine/, tests/, tools/ or cmake/ (73 of 77 changed files). 4 changed paths are archived evidence reproductions under docs/stage_reports/ (captured bytes kept for reproducibility); the project's cuexis_format_check target globs those five roots and never docs/, so the check is scoped to them."
+    "note": "clang-format --dry-run --Werror over the C++ files changed between f90c2e1~1 and HEAD that live under app/, engine/, tests/, tools/ or cmake/ (74 of 78 changed files). 4 changed paths are archived evidence reproductions under docs/stage_reports/ (captured bytes kept for reproducibility); the project's cuexis_format_check target globs those five roots and never docs/, so the check is scoped to them."
   },
   "materialized_bytes_verified": [
     {
       "archive": "2026-11-01-r3-read-gate-trim-evidence",
-      "checked": 23,
+      "checked": 25,
       "mismatches": []
     }
   ],
