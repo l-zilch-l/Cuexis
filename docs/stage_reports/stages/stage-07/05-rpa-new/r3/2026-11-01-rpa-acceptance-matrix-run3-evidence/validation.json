@@ -17,7 +17,8 @@
       "--check"
     ],
     "exit": 0,
-    "output": ""
+    "output": "",
+    "scope": "run with the working tree holding only the uncommitted documentation edits, before the archives were added to the index; exit 0 there describes the documents, not the captures"
   },
   "architecture": {
     "args": [
@@ -122,5 +123,30 @@
       "mismatches": []
     }
   ],
-  "note": "rewritten after the documentation edits that make these reports reachable from docs/README.md; materialized_bytes_verified is unchanged"
+  "note": "rewritten after the documentation edits that make these reports reachable from docs/README.md; materialized_bytes_verified is unchanged",
+  "diff_over_commit": {
+    "commit": "2374180d279ce667cce8b0aa92b9b1c9f6d6f4cb",
+    "commit_subject": "Publish run-2, run-3 and capacity-frontier evidence",
+    "exit": 2,
+    "files_flagged": 198,
+    "findings": 320,
+    "crlf_committed_log_files": 6,
+    "lf_text_with_real_trailing_spaces": 192,
+    "per_archive": {
+      "2026-11-01-capacity-frontier-evidence": {
+        "files": 80,
+        "findings": 80
+      },
+      "2026-11-01-mingw-allocation-probe-evidence": {
+        "files": 47,
+        "findings": 169
+      },
+      "2026-11-01-rpa-acceptance-matrix-run3-evidence": {
+        "files": 71,
+        "findings": 71
+      }
+    },
+    "precedent": "9c392af (matrix evidence, 61 findings) — the same property already exists in this history",
+    "meaning": "Captured log text is stored byte-faithfully, so lines that ended with whitespace in the original output still end with it here, and six .log captures are committed with CRLF. This commit therefore fails `git diff --check`, which is a source-cleanliness gate and not an evidence gate. Trimming those bytes would break the sha256 binding that makes each capture verifiable, so the check is recorded rather than satisfied."
+  }
 }
