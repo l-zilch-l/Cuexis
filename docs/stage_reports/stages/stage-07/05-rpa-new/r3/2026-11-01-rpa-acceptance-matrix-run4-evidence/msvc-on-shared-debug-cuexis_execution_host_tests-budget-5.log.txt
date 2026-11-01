@@ -1,0 +1,8 @@
+["D:\\Cuexis-redesign\\out\\build\\rpa-candidate-shared-debug\\bin\\cuexis_execution_host_tests.exe", "[measurement]"]
+Filters: [measurement]
+Randomness seeded to: 3076890941
+{"event":"b5.cpu.content_boundary","test_only":true,"requirements":1,"prepare_us":13320,"packed_bytes":3047,"sample_present_us":963,"misses":1}
+{"event":"b5.cpu.content_boundary","test_only":true,"requirements":256,"prepare_us":670850,"packed_bytes":229514,"sample_present_us":812,"misses":256}
+===============================================================================
+All tests passed (740 assertions in 1 test case)
+

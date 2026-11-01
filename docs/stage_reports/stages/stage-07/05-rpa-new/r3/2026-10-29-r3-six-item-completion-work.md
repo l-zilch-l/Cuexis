@@ -29,11 +29,11 @@
 | 项目 | 本批实施/调查 | 尚需完成的核验 |
 | --- | --- | --- |
 | P1 Packed / re-prepare | 名称索引、Packed 查找及 typed-existence 二分已保留；claim/definitionSource v2 最终固定组收益/保护门未过，已否决并保留证据 | 剩余热点按实测价值取舍；最终组合回归与原端到端 load 门 |
-| P2 准备热点 | 保留名称索引、identity 投影复用及多资源查找/claim 分组；timer/ledger 及 scalar phase 写入均通过固定对照 | 最终完整矩阵及原 load 门未完成 |
-| P3 update / Snapshot | 保留四属性合并查找、touched 和 OpenGL 诊断读回分离；resolver hint 及组件池借用候选均因对照不达预期撤回 | 最终源码完整矩阵；extract 仍有成本，不重做 R2 表示 |
+| P2 准备热点 | 保留名称索引、identity 投影复用及多资源查找/claim 分组；timer/ledger 及 scalar phase 写入均通过固定对照 | 原 load 门仍未作为门记录（40K 压力读数 2 148 938 µs，超门 148.9 ms；owner 已裁定 40K 属极端情形）；最终源码完整矩阵已在 `6256af8` 上达成（[第四次运行](2026-11-01-r3-acceptance-matrix-fourth-run.md)） |
+| P3 update / Snapshot | 保留四属性合并查找、touched 和 OpenGL 诊断读回分离；resolver hint 及组件池借用候选均因对照不达预期撤回 | 最终源码完整矩阵已在 `6256af8` 上达成（[第四次运行](2026-11-01-r3-acceptance-matrix-fourth-run.md) 的候选行即该矩阵）；extract 仍有成本，不重做 R2 表示 |
 | P4 编码与真实内存 | 无峰值收益的编码 admission/预遍历已撤回；已有本地 40K 峰值/释放；v4 与六代归档实际 requested/storage 已测，故障退款和最终释放通过 | 通用上界、合理预算与保留策略、完整播放链 headroom；原 caps/profile/历史 R4 参考仍缺 |
 | P5 端到端 Seek | 产品 CPU 60/GPU 96 组合通过有限功能核验，产品 H902 仍慢；R3c v4 相关428 cases、真实故障/字节/释放通过，普通H902明显改善但未选用 | 归因重复性超15%；合理预算/策略及全部适用场景；决定产品取舍，原CI门仍开放 |
-| P6 维护/工具/矩阵 | metrics TLS 改为函数内每线程对象，消费者同步；全仓格式债处理；旧 b2 Release 全套通过；新增 Ninja 依赖漏记已由真实头文件修改反例定位并修复验证；[2026-11-01 同源矩阵](2026-11-01-r3-same-source-acceptance-matrix.md) 已在 `466ff76` 的同一份源码上跑完全部 11 行：7 行 local_pass、1 行 CTest 失败（`#904`，同一二进制隔离重跑 108 次未复现）、3 行 MinGW 在构建阶段被 GCC 报出的测试源码可移植性缺陷挡住（五处测试源码修复已提交为 `3fbc31f`）；第二次运行在 `3fbc31f` 上 10 行里 8 行通过，`mingw-on-debug` 的 51 个失败由探针的 replacement 分配器造成（归因为仪器、不改产品），`mingw-on-shared-debug` 撞上磁盘写满，第 11 行未启动；补上探针加固与运行器磁盘下限（`8963889`）后，[第三次运行](2026-11-01-r3-acceptance-matrix-third-run.md) 在同一份源码上 11/11 行 `local_pass`、13,613 用例 0 失败 | 构建修复已完成审阅及独立/嵌入定向门；同源完整矩阵已在本地达成（11/11），仍缺 hosted 同 SHA 验证与 owner 接受，因此 P6 只记本地完成，不升级 R3 退出或任何阶段结论 |
+| P6 维护/工具/矩阵 | metrics TLS 改为函数内每线程对象，消费者同步；全仓格式债处理；旧 b2 Release 全套通过；新增 Ninja 依赖漏记已由真实头文件修改反例定位并修复验证；[2026-11-01 同源矩阵](2026-11-01-r3-same-source-acceptance-matrix.md) 已在 `466ff76` 的同一份源码上跑完全部 11 行：7 行 local_pass、1 行 CTest 失败（`#904`，同一二进制隔离重跑 108 次未复现）、3 行 MinGW 在构建阶段被 GCC 报出的测试源码可移植性缺陷挡住（五处测试源码修复已提交为 `3fbc31f`）；第二次运行在 `3fbc31f` 上 10 行里 8 行通过，`mingw-on-debug` 的 51 个失败由探针的 replacement 分配器造成（归因为仪器、不改产品），`mingw-on-shared-debug` 撞上磁盘写满，第 11 行未启动；补上探针加固与运行器磁盘下限（`8963889`）后，[第三次运行](2026-11-01-r3-acceptance-matrix-third-run.md) 在同一份源码上 11/11 行 `local_pass`、13,613 用例 0 失败 | 构建修复已完成审阅及独立/嵌入定向门；同源完整矩阵已在本地达成（11/11），仍缺 hosted 同 SHA 验证与 owner 接受；[第四次运行](2026-11-01-r3-acceptance-matrix-fourth-run.md) 在 `6256af8`（中立路径杠杆之后）上再次 11/11 `local_pass`、13,635 用例 0 失败、120 次测量事件，10 棵构建树从空目录重建；因此 P6 只记本地完成，不升级 R3 退出或任何阶段结论 |
 
 这些是候选及核验账目，不将“已写代码”记成完成，也不以 R3 技术工作代替设备/生产或 owner 接受。
 40K 历史 Packed reference 缺失、B0 caps 的规模适用性与原 R4 固定窗口保持原证据边界。
@@ -462,3 +462,32 @@ digest 513–588 us、resolve 155–165 us 属于中性开销），本批只做�
 边界：本组只压中立路径成本，不改任何容量结论。候选臂在 2600 上通过不是新前沿点，括区必须用同一份源码
 在完整矩阵那一批里重新推导。正式读取相对门、正式重复性、D2/D3/Snapshot/排队 p99、request→ready 与
 GPU render p99、Pause/Resume/resize、Reset/Close、适用 Seek 仍未在本轮源码上测过。
+
+## 第四次同源矩阵与 240 FPS 前缘重推（2026-11-01）
+
+以 `6256af8`（中立路径杠杆）为源码，两件事各跑一批，互不混用。
+
+**第四次同源矩阵**：11 行全部 `local_pass`、13,635 个用例 0 失败、120 次测量事件，墙钟 2.62 h；
+11 棵构建树里有 10 棵在 2026-11-01 的清理中被删过，因此每行都从空目录 `--clean-first` 重建。用例数
+比第三次运行（13,613）多 22 个，即每行多 2 个：杠杆提交在 `tests/json_support/serialize_tests.cpp`
+新增三个 `TEST_CASE`，其中 `[.serialize-capture]` 是隐藏标签、不进入默认注册。`msvc-on-release` 的
+构建目录里残留着上一次运行的 `LastTestsFailed.log`（一条 `cuexis_architecture_tests`），运行器在本行
+CTest 之前捕获为 `-previous-` 再删除，`summary.json` 把它记入 `stale_failure_lists`，归档按排除项处理。
+身份闭合的两份记录都归零：工作树 4,259 个文件逐字节相等；全新检出 3,702 字节相等 + 486 仅换行形式 +
+4 原生 CRLF + 67 混合换行、0 漂移、0 文档差异。见
+[第四次运行报告](2026-11-01-r3-acceptance-matrix-fourth-run.md)与
+[附件索引](2026-11-01-rpa-acceptance-matrix-run4-evidence/index.md)。
+
+**240 FPS 前缘重推**：预注册在任何测量之前冻结（十个实体数、交错顺序、判据、两个预测模型与锚点规则），
+十个点各跑一次、全部有效、探针哈希全程不变、没有作废尝试。判定：仅渲染 bracketed `[3600, 3800)`，
+静态 bracketed `[2600, 2800)`。仅渲染的预注册预测与实测一致；静态预测 `[3000, 3400)` 被否证（实测低
+两档），这个否证本身作为结果保留。锚点规则成立（1800 仅渲染 p99 中位数 2.3452 ms 低于冻结阶梯的
+2.7479 ms），但跨仪器的差值不构成效应量。见
+[前缘重推报告](2026-11-01-r3-capacity-frontier-rederive.md)与
+[附件索引](2026-11-01-capacity-frontier-rederive-evidence/index.md)。
+
+边界：这一批仍然只回答"能不能跑完全部配置"和"本源码上的前缘括区在哪"。冻结的容量确认列表（1080p
+仅渲染 1800、静态 1300）不变；前缘括区是诊断值，不做点间插值，也不允许把 3600 与冻结的 2400 相减
+当成容量增幅。**正式读取相对门、正式重复性、D2/D3/Snapshot/排队 p99、request→ready 与 GPU render
+p99、Pause/Resume/resize、Reset/Close、适用 Seek 在 `6256af8` 上仍未测**；R3 技术接受与退出仍是
+owner 的决定。

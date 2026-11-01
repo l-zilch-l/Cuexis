@@ -1,0 +1,107 @@
+{
+  "scope": "Pre-registration of the second 1080p p99 budget-crossing ladder, on HEAD 6256af8 after the neutral-path CPU lever. Diagnostic only; it does not replace the frozen 2026-10-29 capacity list or the 2026-10-31 ladder at 8e275a5, and it does not constitute R3/R4 or production acceptance.",
+  "registered_local": "2026-11-01 16:31",
+  "registered_utc": "2026-11-01T08:31Z",
+  "source": {
+    "head": "6256af8b7d349b14a6d5b006d7632711152e96fa",
+    "branch": "Cuexis-redesign",
+    "worktree": "clean at registration; the ladder runs after the 2026-11-01 fourth acceptance matrix finishes, and each point registers the probe binary hash it actually observes. If HEAD moves before the ladder starts, this registration is void and is registered again before any measurement.",
+    "supersedes_nothing": "The 2026-10-31 ladder (frontier-bracket-4, HEAD 8e275a5, probe daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8) stays frozen and is never overwritten or re-derived from this one."
+  },
+  "why_a_second_ladder": [
+    "The 2026-10-31 ladder bracketed render-only at [2400, 2600) and static at [2200, 2300) on HEAD 8e275a5. Those brackets describe the source before the neutral-path CPU lever.",
+    "Commit 6256af8 removes one per-frame digest over the draw commands and one resolved-command copy from the neutral path. In the fixed A/B group neutral-lever-measure-v1 the lever cut 2600 render-only submit from 3213.2 to 2051.2 us and cycle p99 from 4685.4 to 3282.0 us, so a 2600 point that failed on 8e275a5 passes on 6256af8. A bracket whose upper bound now passes is no longer a bracket.",
+    "The frozen list of confirmed passing counts must not be edited from a different session, so the honest way to move it is a fresh ladder that records its own points in one session on one build."
+  ],
+  "question": "At HEAD 6256af8 on 1080p, between which two entity counts does the per-frame p99 first exceed the 240 FPS budget of 4.166667 ms, separately for render-only and for static update/extract/render?",
+  "predictions_recorded_before_measurement": {
+    "note": "Predictions exist so the ladder can falsify them. None of these numbers may be quoted as a result. The render-only model is fitted to a different instrument than the one this ladder uses, and the static model stacks two extrapolations; both are planning arithmetic, not measurements.",
+    "render_only": {
+      "model": "affine p99(N) = 1145.8 us + 0.821625 us per entity",
+      "inputs": "neutral-lever-measure-v1 arm B (probe 9AAA34F7F7AAF43D..., instrument template native.py, 20 s per process, readback on, timer off): 1800 -> 2624.7 us, 2600 -> 3282.0 us p99 medians",
+      "budget_crossing": 3676,
+      "predicted_bracket": "[3600, 3800)"
+    },
+    "static": {
+      "model": "the 2026-10-31 static cliff (2200 passes at 3.7893 ms, 2300 fails at 7.1946 ms) transferred through the origin by the lever's own cycle-p99 ratio at 2600 render-only (0.7005), i.e. 2200 x 1.428 and 2300 x 1.428",
+      "inputs": "2026-10-31 ladder static points plus neutral-lever-measure-v1 arm B cycle p99 3282.0 / 4685.4",
+      "predicted_bracket": "[3000, 3400)",
+      "caveat": "A through-origin transfer of a cliff assumes the cliff is proportional to entity count; the frozen ladder already showed static carries a fixed per-frame cost the through-origin model omits, so this prediction may be off by a whole step."
+    },
+    "shared": [
+      "2400 and 2600 pass in both modes.",
+      "3000 render-only passes and 3800 render-only fails.",
+      "Every process is valid; no point is lost to a runner problem.",
+      "The ladder takes 25 to 35 minutes of wall clock for ten counts."
+    ]
+  },
+  "ladder": {
+    "note": "Every point is a fresh run of three processes, twenty seconds each, 1920x1080, one fixed entity count. run_40k_refresh.py always measures both modes at the entity count it is given, so each run yields one render-only point and one static point at that count; the second mode is reported as a grid, not discarded. No point is re-sampled; if a run is invalid the ladder is reported with the gap.",
+    "entity_counts": [
+      1800,
+      2400,
+      2600,
+      2800,
+      3000,
+      3200,
+      3400,
+      3600,
+      3800,
+      4000
+    ],
+    "modes": [
+      "render-only",
+      "static"
+    ],
+    "per_mode_expected_bracket": {
+      "render-only": "3600 (pass expected) to 3800 (fail expected)",
+      "static": "cliff expected between 3000 and 3400"
+    },
+    "anchor_1800": {
+      "purpose": "Session and build consistency anchor, and a directional check that the lever reproduces at group level. It is NOT an effect size: the 2026-10-31 ladder measured 1800 render-only p99 2.7479 ms and 1800 static 3.5700 ms with probe daa0c3cf..., a different build of a different source, so any difference here is source, build, session and instrument-length confounded.",
+      "rule": "If the ladder's 1800 render-only p99 median is not below 2.7479 ms, the lever does not reproduce at group level in this session: report that, claim no capacity extension from this ladder, and keep the frozen list as the only confirmed capacity statement. If it is below, the ladder's own upper points are the new diagnostic bracket."
+    },
+    "order": [
+      1800,
+      3000,
+      2400,
+      3400,
+      2600,
+      3600,
+      2800,
+      3800,
+      3200,
+      4000
+    ],
+    "order_reason": "Interleaved and ascending/descending alternately so a machine-level drift over half an hour cannot masquerade as a scale effect."
+  },
+  "pass_criteria": {
+    "per_process": "the runner's own rule, exactly: no validity problem, wall FPS >= 240, cycle p99 <= 4166.666666666667 us, and every complete one-second window >= 240 frames. A handful of individual frames over budget does not fail a process (the frozen 1300 static group passed with 24 over-budget frames in one process), so the individual over-budget count is reported as information only, never used to flip a pass.",
+    "per_group": "all three processes pass",
+    "repeatability": "the per-group relative range of p99 and of wall FPS is reported but does not gate the bracket; a range above 15% is recorded as a caveat and the group is used only for pass/fail, never as a speed reading"
+  },
+  "decision_rule": {
+    "bracketed": "Report [P, F): the largest passing count P and the smallest failing count above it, provided no count below P failed and no count above F passed.",
+    "non_monotonic": "If the ladder is non-monotonic (a higher count passes while a lower one fails), report every point and state that the frontier is not bracketed. Do not smooth, average or interpolate.",
+    "open_above": "If every point up to 4000 passes, report the frontier as open above 4000 rather than inventing a crossing.",
+    "never": "Never publish a single crossing number, never interpolate between points, and never overwrite the frozen 2026-10-29 confirmed list or the 2026-10-31 brackets."
+  },
+  "instrument": {
+    "runner": "run_40k_refresh.py",
+    "runner_sha256": "16a3f57a100613f85b823eb97300d9227fe8466a3692777cd82d7e2ab2a2648b",
+    "driver": "run_frontier_bracket.py",
+    "driver_sha256": "32bc24f39acb64650702e6d171e162e5e2221672ceda92a9c10609e36ee3e7e8",
+    "verdict": "summarize_frontier.py",
+    "verdict_sha256": "d5c72da818751905bf21c5f586fcb43dcef7bc0c9ec8de2dffe38e8396e5f77f",
+    "probe": "out/build/rpa-candidate-release/bin/cuexis_execution_device_probe.exe",
+    "probe_build": "MSVC Release STATIC, CUEXIS_ENABLE_CHART_V5_CANDIDATE=ON, rebuilt from a clean tree by the 2026-11-01 fourth acceptance matrix (row msvc-on-release)",
+    "probe_binary_sha256_at_registration": "6b01a30f8b01b79cf7d2314be989e89cd42dc63cb9694e5c2794dc5d3af9c790",
+    "config": "CUEXIS_GPU_BARRIER=1, TIMER=0, PIXEL_READBACK=1, WARMUP_MS=2000, WARMUP=8, SECONDS=20, 1920x1080, affinity 65535, BelowNormal, execution throttling off"
+  },
+  "artifacts": {
+    "per_group": "registration.json, results.json, six per-process frame logs",
+    "summary": "frontier-rederive-summary.json",
+    "verdict": "frontier-rederive-verdict.json",
+    "work_directory": "frontier-rederive-1"
+  }
+}

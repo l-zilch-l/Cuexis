@@ -1,0 +1,47 @@
+{
+  "kind": "registration addendum, not a new prediction set",
+  "supersedes": {
+    "file": "frontier-rederive-preregistration.json",
+    "sha256": "900c32e27a622429e6cdee2f03c65b64f42690d393ca58aa8667f036b9607e40",
+    "registered_local": "2026-11-01 16:31",
+    "recorded_head": "6256af8b7d349b14a6d5b006d7632711152e96fa"
+  },
+  "why": "clean at registration; the ladder runs after the 2026-11-01 fourth acceptance matrix finishes, and each point registers the probe binary hash it actually observes. If HEAD moves before the ladder starts, this registration is void and is registered again before any measurement.",
+  "event": "HEAD moved between the registration and the first ladder point, because the documentation reorganization landed as its own commit. The registration says a HEAD move before the first point voids it and requires registering again before any measurement; that is what this file does. No ladder point had run.",
+  "observed_head": "a93c9794c1d9772d1923178a6e49f11cb9d6d16b",
+  "observed_head_subject": "Move the Chart Format Update reports under stages/",
+  "diff_from_recorded_head": {
+    "files": 45,
+    "by_status": {
+      "M": 18,
+      "R": 27
+    },
+    "paths_outside_docs_and_the_documentation_checker": [],
+    "insertions_deletions": "45 files changed, 114 insertions(+), 111 deletions(-)"
+  },
+  "carried_over_unchanged": [
+    "ladder.entity_counts",
+    "ladder.order",
+    "pass_criteria",
+    "decision_rule",
+    "anchor_1800",
+    "predictions_recorded_before_measurement",
+    "instrument"
+  ],
+  "instrument": {
+    "runner": "run_40k_refresh.py",
+    "runner_sha256": "16a3f57a100613f85b823eb97300d9227fe8466a3692777cd82d7e2ab2a2648b",
+    "driver": "run_frontier_bracket.py",
+    "driver_sha256": "32bc24f39acb64650702e6d171e162e5e2221672ceda92a9c10609e36ee3e7e8",
+    "verdict": "summarize_frontier.py",
+    "verdict_sha256": "d5c72da818751905bf21c5f586fcb43dcef7bc0c9ec8de2dffe38e8396e5f77f",
+    "probe": "out/build/rpa-candidate-release/bin/cuexis_execution_device_probe.exe",
+    "probe_build": "MSVC Release STATIC, CUEXIS_ENABLE_CHART_V5_CANDIDATE=ON, rebuilt from a clean tree by the 2026-11-01 fourth acceptance matrix (row msvc-on-release)",
+    "probe_binary_sha256_at_registration": "6b01a30f8b01b79cf7d2314be989e89cd42dc63cb9694e5c2794dc5d3af9c790",
+    "config": "CUEXIS_GPU_BARRIER=1, TIMER=0, PIXEL_READBACK=1, WARMUP_MS=2000, WARMUP=8, SECONDS=20, 1920x1080, affinity 65535, BelowNormal, execution throttling off",
+    "probe_binary_sha256_observed_at_this_registration": "6b01a30f8b01b79cf7d2314be989e89cd42dc63cb9694e5c2794dc5d3af9c790"
+  },
+  "registered_local": "2026-11-01 18:37",
+  "registered_utc": "2026-11-01T10:37Z",
+  "note": "The ladder's own per-point registration.json records the head and the dirty-file list it observed, so the runs themselves prove which tree they ran on."
+}
