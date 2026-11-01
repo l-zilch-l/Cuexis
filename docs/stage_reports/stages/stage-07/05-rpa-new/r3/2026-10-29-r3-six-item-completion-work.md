@@ -513,3 +513,22 @@ owner 的决定。
 直接后果：**读取相对门已明确超界，R3 技术接受不能判为通过**——除非有新的实现把比值拉回 ≤1.10，或一次
 新的登记窗口把它推翻。本批不修改任何判据、范围或阈值；其余门（D2/D3/Snapshot/排队、request→ready、
 GPU render、Pause/Resume/resize、Reset/Close）仍未测。
+
+### 第二批：控制与时序（同日）
+
+仪器换成 PD5 脚本化 host 探针编译进的 `cuexis_execution_device_probe`（真实 OpenGL 后端 + GPU timer
+query），报告见[第二批正式门测量](2026-11-01-r3-second-gate-batch.md)，附件见
+[第二批证据](2026-11-01-r3-gate-batch2-evidence/index.md)。
+
+- **Pause 超界**：每进程 40 次读数中恰好一条超过 50 ms，且都是该进程的第一次 pause（174.966–184.929 ms）；
+  其余 39 次中位 0.79–1.86 ms。首次冻结绘制的一次性成本，不是稳态路径。
+- **Resume / resize / Reset / Close 全部通过**：最大 2.248 ms / 1.171 ms / 70.666 ms（暂停态）与
+  31.351 ms（运行态）/ 1.537 ms。
+- **request→ready 与 GPU render 通过**：每进程 p99 0.423/0.408/0.436 ms 与 3.072 µs（n=1200）。
+- **D2/D3/Snapshot/排队四项仍未判定**：本机没有可比较的无插桩子阶段边界，计划规定这种情形记未判定。
+- **适用 Seek 仍未判定**：设备探针的 host 探针没有 seek 场景，功能矩阵是 CPU 渲染器、33/129 记录、
+  `formal:false`，不能充作 20 ms 门。
+
+截至本批，R3 的门状态是：初次 load 通过、重复性通过、request→ready 通过、GPU render 通过、
+Resume/resize/Reset/Close 通过、**Pause 超界（首次使用）**、**读取相对门超界**、适用 Seek 与
+D2/D3/Snapshot/排队未判定。

@@ -1,0 +1,170 @@
+{
+  "scope": "Second R3 gate batch: Pause/Resume/resize, Reset, Close, request->ready and GPU render, measured on the device probe so the renderer is the real OpenGL backend. Diagnostic/test-only; D2/D3/Snapshot/queue and the applicable Seek gate stay undecided for the stated reasons.",
+  "source_run": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-gate-batch2",
+  "copied_files": [
+    {
+      "source": "out\\verification-20261101\\r3-gate-batch2\\controls\\run-00.log.txt",
+      "archive": "controls/run-00.log.txt",
+      "bytes": 24768,
+      "sha256": "b85a435e3a358d9d3647da0f92a96268945de43d4e9e24d19f75226e76cdfcda",
+      "source_sha256": "b85a435e3a358d9d3647da0f92a96268945de43d4e9e24d19f75226e76cdfcda",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-gate-batch2\\controls\\run-01.log.txt",
+      "archive": "controls/run-01.log.txt",
+      "bytes": 24763,
+      "sha256": "f2b80dd6b80c5fddcbe5183aa65bcc025bca8cd4143bc8e6613392e04663ab9c",
+      "source_sha256": "f2b80dd6b80c5fddcbe5183aa65bcc025bca8cd4143bc8e6613392e04663ab9c",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-gate-batch2\\controls\\run-02.log.txt",
+      "archive": "controls/run-02.log.txt",
+      "bytes": 24770,
+      "sha256": "7032b380685064a00cfc2a6535122fa51e655e1e1e5935e3c43170a2ca23e700",
+      "source_sha256": "7032b380685064a00cfc2a6535122fa51e655e1e1e5935e3c43170a2ca23e700",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-gate-batch2\\stream\\run-00.log.txt",
+      "archive": "stream/run-00.log.txt",
+      "bytes": 558626,
+      "sha256": "7afc43df71cbbe314e7812e95caa6039cd78014b7ff712fd01e24c52cf75af33",
+      "source_sha256": "7afc43df71cbbe314e7812e95caa6039cd78014b7ff712fd01e24c52cf75af33",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-gate-batch2\\stream\\run-01.log.txt",
+      "archive": "stream/run-01.log.txt",
+      "bytes": 559873,
+      "sha256": "3ef9c13447316f55a3c9b19a27d8957dd0e8440e934b9bb335b87b44ec923e9c",
+      "source_sha256": "3ef9c13447316f55a3c9b19a27d8957dd0e8440e934b9bb335b87b44ec923e9c",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-gate-batch2\\stream\\run-02.log.txt",
+      "archive": "stream/run-02.log.txt",
+      "bytes": 558873,
+      "sha256": "79952ff44fce37d4a04075ef8a0032e48c433a008f9beacb1db0d4ad2d139358",
+      "source_sha256": "79952ff44fce37d4a04075ef8a0032e48c433a008f9beacb1db0d4ad2d139358",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-gate-batch2\\controls.aborted-1\\run-00.log.txt",
+      "archive": "controls.aborted-1/run-00.log.txt",
+      "bytes": 24770,
+      "sha256": "47973d2fec005e631133a568433f96fec0377456eb620398a1e1db115aa05079",
+      "source_sha256": "47973d2fec005e631133a568433f96fec0377456eb620398a1e1db115aa05079",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-gate-batch2\\results.json",
+      "archive": "results.json",
+      "bytes": 25305,
+      "sha256": "75d14a3e4b361c7ba8a791718a6c4fdce1ec7478b92acf1d08870521d500a5c5",
+      "source_sha256": "5f879c03ae295bae65a9c845bdba4cd1e93d4ed1a6102d5fc2463f76563b872c",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-gate-batch2\\preregistration.json",
+      "archive": "tools/preregistration.json",
+      "bytes": 5735,
+      "sha256": "86861b77c5aa466ceb77bbd9a3e5ce6c6a478067452f41d788caf51569e1841d",
+      "source_sha256": "86861b77c5aa466ceb77bbd9a3e5ce6c6a478067452f41d788caf51569e1841d",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-gate-batch2\\run_pd5_gates.py",
+      "archive": "tools/run_pd5_gates.py",
+      "bytes": 8048,
+      "sha256": "931900208d46480ec18ed981406bdc9200e0af2dc4a6330d18adcdb690d7582f",
+      "source_sha256": "58c3a58dd0d39622dbe712664b6d2c00b5dc3171f9b43ffb60fae0a2c04a11a1",
+      "eol": "crlf"
+    }
+  ],
+  "attached_files": [],
+  "excluded": [],
+  "generated_files": {
+    "index.md": "e9c41db7d625f0861d93bcf99e1a1dfafba3f6a7a0118fd558d3b76fd2b80272"
+  },
+  "binding": {
+    "head": "1d1423fda03afe7169b8c06182d66d7db2e5c958",
+    "instrument": {
+      "exe": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_execution_device_probe.exe",
+      "sha256": "6b01a30f8b01b79cf7d2314be989e89cd42dc63cb9694e5c2794dc5d3af9c790",
+      "test": "PD5 scripted host timing probe"
+    },
+    "verdicts": {
+      "controls": {
+        "pause": {
+          "budget_ms": 50,
+          "max_ms": 184.929,
+          "decision": "over"
+        },
+        "resume": {
+          "budget_ms": 50,
+          "max_ms": 2.248,
+          "decision": "pass"
+        },
+        "reset_paused": {
+          "budget_ms": 1000,
+          "max_ms": 70.666,
+          "decision": "pass"
+        },
+        "reset_running": {
+          "budget_ms": 1000,
+          "max_ms": 31.351,
+          "decision": "pass"
+        },
+        "resize": {
+          "budget_ms": 50,
+          "max_ms": 1.171,
+          "decision": "pass"
+        },
+        "close": {
+          "budget_ms": 1000,
+          "max_ms": 1.537,
+          "decision": "pass"
+        }
+      },
+      "stream": {
+        "request_to_ready": {
+          "budget_ms": 4.166666666666667,
+          "p99_ms_per_process": [
+            0.423,
+            0.408,
+            0.436
+          ],
+          "worst_p99_ms": 0.436,
+          "decision": "pass"
+        },
+        "gpu_render": {
+          "budget_ms": 4.166666666666667,
+          "p99_ms_per_process": [
+            0.0031,
+            0.0031,
+            0.0031
+          ],
+          "worst_p99_ms": 0.0031,
+          "decision": "pass"
+        }
+      }
+    },
+    "environments": {
+      "controls": {
+        "CUEXIS_PD5_MODE": "controls",
+        "CUEXIS_PD5_CYCLES": "20",
+        "CUEXIS_PD5_SMOKE": "1"
+      },
+      "stream": {
+        "CUEXIS_PD5_MODE": "stream",
+        "CUEXIS_PD5_FRAMES": "1200",
+        "CUEXIS_PD5_WARMUP": "64",
+        "CUEXIS_PD5_RATE": "240",
+        "CUEXIS_PD5_GPU_TIMER": "1",
+        "CUEXIS_PD5_SMOKE": "1"
+      }
+    }
+  }
+}
