@@ -1,0 +1,108 @@
+{
+  "scope": "First-principles refactor round on the two over-budget gates. Baseline tagged r3-gate-baseline-2026-11-01 at 09a5b53a; every diagnostic instrument change and every candidate edit was reverted, so no code is kept.",
+  "baseline": {
+    "head": "09a5b53a",
+    "tag": "r3-gate-baseline-2026-11-01",
+    "binaries": {
+      "pd_probe": {
+        "path": "out/verification-20261101/r3-refactor-v1/bin/baseline-pd-probe.exe",
+        "sha256": "6d2555d843ba07ea1884ffca2bddee864b1540f624cc55f8aea421643c6ef7b2"
+      },
+      "device_probe": {
+        "path": "out/verification-20261101/r3-refactor-v1/bin/baseline-device-probe.exe",
+        "sha256": "e6bf6fef6a4805189c350de2d0744c9cb55243bb99490cee5988a10cc7b27963"
+      }
+    },
+    "gate_readings": {
+      "pause_first_ms": [
+        174.966,
+        178.703,
+        184.929
+      ],
+      "relative_read": 1.1732,
+      "relative_read_ci": [
+        1.1574,
+        1.1893
+      ]
+    }
+  },
+  "pause_discriminators": [
+    {
+      "test": "GPU timer on the stalling draw",
+      "result": "gpu_render 1.024 us",
+      "reading": "not GPU work"
+    },
+    {
+      "test": "split the draw",
+      "result": "pause() 258 us, sample 49 us, present 175836 us",
+      "reading": "SwapWindow"
+    },
+    {
+      "test": "hidden vs visible window",
+      "result": "178.7 ms vs 182.8 ms",
+      "reading": "not window visibility"
+    },
+    {
+      "test": "vsync on vs off",
+      "result": "176.4 ms vs 177.6 ms",
+      "reading": "not a vblank wait"
+    },
+    {
+      "test": "pump events 32 ms before the first frame",
+      "result": "182.9 ms vs 178.1 ms",
+      "reading": "not window readiness"
+    },
+    {
+      "test": "delay between first and second present",
+      "result": "20 ms -> 155 ms, 50 ms -> 128 ms, 200 ms -> 0.25 ms, 400 ms -> 0.28 ms",
+      "reading": "the stall is a catch-up that pure wall-clock time dissolves"
+    },
+    {
+      "test": "one warm live frame before the first control",
+      "result": "stall moves to the warm frame (174.9 ms); first frozen present 0.71 ms",
+      "reading": "not frozen-specific; it is the process's second present"
+    }
+  ],
+  "pause_conclusion": "no code change removes the stall. It is a property of the environment's second swap after window/context creation and can only be deferred by spacing the first two presents by >=200 ms, which does not reduce the visible startup cost.",
+  "read_ablations": [
+    {
+      "id": "E0",
+      "change": "no per-object Result and no repeated window validation",
+      "ratio": 1.0175,
+      "verdict": "no gain"
+    },
+    {
+      "id": "E1",
+      "change": "no registry reads at all",
+      "ratio": 0.8247,
+      "verdict": "the gap is the per-object component reads"
+    },
+    {
+      "id": "E2",
+      "change": "no registry.valid()",
+      "ratio": 1.0068,
+      "verdict": "the validity check is not the cost"
+    },
+    {
+      "id": "E3",
+      "change": "chunked bulk read inside the runtime translation unit",
+      "ratio": 1.0392,
+      "verdict": "the call boundary is not the cost"
+    },
+    {
+      "id": "E4",
+      "change": "transform read only (build failed)",
+      "ratio": null,
+      "verdict": "not measured; the generated variant did not compile and was abandoned rather than debugged at the end of the round"
+    },
+    {
+      "id": "E5",
+      "change": "appearance read only (build failed)",
+      "ratio": null,
+      "verdict": "not measured for the same reason"
+    }
+  ],
+  "read_conclusion": "the gap lives in the per-object transform and appearance reads. Removing the reads returns the arm to the pre-PD level; removing the wrapper, the validation or the call boundary does not. The remaining direction is a data-layout change (a compact per-frame presentation row that extract scans instead of touching the registry per object), which touches the read contract and is owner-scoped.",
+  "kept_code": [],
+  "recorded_local": "2026-11-01 22:59"
+}

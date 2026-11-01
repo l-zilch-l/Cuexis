@@ -1,0 +1,37 @@
+{
+  "scope": "First-principles refactor round on the two over-budget gates: five pause discriminators and four read ablations, all reverted; baseline tagged r3-gate-baseline-2026-11-01.",
+  "source_run": "out\\verification-20261101\\r3-refactor-v1",
+  "copied_files": [
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\refactor-round.json",
+      "archive": "attempt/refactor-round.json",
+      "bytes": 4063,
+      "sha256": "7594b2536c73d6a7447d74d5f3059226d594291e17a436bb6961489eff1c8bf8",
+      "source_sha256": "7594b2536c73d6a7447d74d5f3059226d594291e17a436bb6961489eff1c8bf8",
+      "eol": "crlf"
+    }
+  ],
+  "attached_files": [],
+  "excluded": [],
+  "generated_files": {
+    "index.md": "a58d33483ac6ab4180a81f8dfb95f6e5c1023a196fc8ea33c6df1aa94ec5eb3e"
+  },
+  "binding": {
+    "head": "09a5b53a",
+    "tag": "r3-gate-baseline-2026-11-01",
+    "baseline_binaries": {
+      "pd_probe": "6d2555d843ba07ea1884ffca2bddee864b1540f624cc55f8aea421643c6ef7b2",
+      "device_probe": "e6bf6fef6a4805189c350de2d0744c9cb55243bb99490cee5988a10cc7b27963"
+    },
+    "pause_discriminators": 7,
+    "read_ablations": {
+      "E0": 1.0175,
+      "E1": 0.8247,
+      "E2": 1.0068,
+      "E3": 1.0392,
+      "E4": null,
+      "E5": null
+    },
+    "kept_code": []
+  }
+}
