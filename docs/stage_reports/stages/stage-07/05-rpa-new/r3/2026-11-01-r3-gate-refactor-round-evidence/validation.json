@@ -1,6 +1,6 @@
 {
   "scope": "Repository checks re-run after materializing this evidence directory; recorded verbatim, not summarized.",
-  "head": "9c1d1d66a6dbd5125b86a197a311877011ec3c4d",
+  "head": "8a1961077baf7b99e44c0550ffb7b64b7b842a9f",
   "docs": {
     "args": [
       "python",

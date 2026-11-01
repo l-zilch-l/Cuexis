@@ -104,7 +104,7 @@
   ],
   "read_conclusion": "the gap lives in the per-object transform and appearance reads. Removing the reads returns the arm to the pre-PD level; removing the wrapper, the validation or the call boundary does not. The remaining direction is a data-layout change (a compact per-frame presentation row that extract scans instead of touching the registry per object), which touches the read contract and is owner-scoped.",
   "kept_code": [],
-  "recorded_local": "2026-11-01 23:20",
+  "recorded_local": "2026-11-01 23:31",
   "direction_compact_rows": {
     "design": "RuntimeSession refreshes a compact PresentationRow array in publishPresentation (once per published mutation); the materializer's extract scans that array instead of touching the registry per object, with a per-object fallback whenever the rows are absent or short.",
     "workload": "CUEXIS_FOLLOW_COUNTS=1800 2000 2000; five alternating pairs against baseline-pd-probe.exe",
@@ -123,5 +123,63 @@
     "ratio_read_block": 0.7968,
     "verdict": "rejected: extract falls 18.1% but update rises 49.0%, so the whole frame costs 10.5% more (180.40 -> 199.46 us). The row array is an extra memory pass over data that the snapshot already has to read once; it moves cost rather than removing it.",
     "kept": false
+  },
+  "direction_component_split": {
+    "design": "Two ablations against the same baseline binary, three alternating rounds each: E4 drops only the transform component read (identity matrices written instead), E5 drops only the appearance read (the same branch runs with the fixture's values).",
+    "per_frame_us": {
+      "base": {
+        "extract": 103.21,
+        "update_plus_extract": 187.56,
+        "implied_update": 84.35
+      },
+      "e4_no_transform_read": {
+        "extract": 96.46,
+        "update_plus_extract": 167.72,
+        "implied_update": 71.26
+      },
+      "e5_no_appearance_read": {
+        "extract": 96.19,
+        "update_plus_extract": 172.72,
+        "implied_update": 76.53
+      }
+    },
+    "read_ratios_vs_base": {
+      "e4_no_transform_read": 0.9346,
+      "e5_no_appearance_read": 0.932
+    },
+    "verdict": "the two component reads cost about the same, 6.5% and 6.8% of the read block, and they are additive (the earlier no-registry ablation measured 0.8247). No single hotspot exists to optimise; removing both requires changing where the data lives, not how the loop is written.",
+    "kept": false
+  },
+  "next_direction": {
+    "name": "single presentation component read in pool order",
+    "what": "Merge the world matrix and the appearance fields into one presentation component and, if the pool order equals the snapshot layout order, iterate that pool sequentially instead of doing two sparse-set lookups per object. Measured ceiling: the two reads together are 0.8247 of the current read block, which is the only measured change large enough to bring 1.1732 under 1.10.",
+    "precondition": "pool iteration order must equal the layout order; that has to be verified before the change, because the snapshot object order is a public contract and cannot be reordered.",
+    "cost": "touches the world components and every system that writes them, so it is a data-model change, not a local optimisation."
+  },
+  "pool_order_check": {
+    "question": "Does registry.view<WorldTransformComponent>() iterate in the same order as the object table (and therefore the snapshot layout)?",
+    "method": "temporary diagnostic inside PresentationAccess::read, counting entity mismatches at the same offset, reverted after one run",
+    "result": {
+      "compared": 1800,
+      "mismatches": 1799
+    },
+    "consequence": "the merge-and-scan direction cannot scan the pool sequentially. Serving rows in object order would need a permutation or a mapping array per object, which eats most of the 6.5-6.8% that reading the second component costs."
+  },
+  "read_gate_conclusion": {
+    "measured_local_space": [
+      "per-object Result and window validation",
+      "call boundary and inlining",
+      "chunked bulk read",
+      "compact row array refreshed at publish",
+      "transform read alone",
+      "appearance read alone",
+      "pool-order sequential scan"
+    ],
+    "result": "each of the two component reads costs 6.5-6.8%; together they are the whole gap; every attempt to restructure around them either did nothing or moved cost into update (compact rows: +10.5% on the whole frame). Pool order does not match object order, so a sequential scan is not available.",
+    "remaining_options": [
+      "change the public snapshot object ordering so the layout can follow pool order - a contract change and a digest break for every existing golden",
+      "merge the two components into one so a frame pays one sparse lookup and one dense stream - roughly half the needed margin for a sweeping data-model change"
+    ],
+    "verdict": "not closable within the current contracts by local work; needs an owner decision."
   }
 }

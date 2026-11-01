@@ -5,9 +5,9 @@
     {
       "source": "out\\verification-20261101\\r3-refactor-v1\\refactor-round.json",
       "archive": "attempt/refactor-round.json",
-      "bytes": 5116,
-      "sha256": "b7c101e8cfceae444c6f7c774306d31c93dfe59340e22e60718952283cc5dc89",
-      "source_sha256": "b7c101e8cfceae444c6f7c774306d31c93dfe59340e22e60718952283cc5dc89",
+      "bytes": 8845,
+      "sha256": "eacb03f39d089fbaae55b910830aa8819ea6959ced7060cb0a7c48651f42dc6a",
+      "source_sha256": "eacb03f39d089fbaae55b910830aa8819ea6959ced7060cb0a7c48651f42dc6a",
       "eol": "crlf"
     }
   ],
@@ -46,6 +46,16 @@
       }
     },
     "compact_rows_ratio_read_block": 0.7968,
-    "compact_rows_kept": false
+    "compact_rows_kept": false,
+    "component_split": {
+      "e4_no_transform_read": 0.9346,
+      "e5_no_appearance_read": 0.932
+    },
+    "next_direction": "single presentation component read in pool order",
+    "pool_order_check": {
+      "compared": 1800,
+      "mismatches": 1799
+    },
+    "read_gate_conclusion": "not closable within the current contracts by local work; needs an owner decision."
   }
 }
