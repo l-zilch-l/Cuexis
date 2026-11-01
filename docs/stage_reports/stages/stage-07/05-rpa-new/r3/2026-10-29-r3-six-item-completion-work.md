@@ -582,3 +582,19 @@ D2/D3/Snapshot/排队未判定。
 - 下一轮的最小可行实验已设计（紧凑行 + 同臂对照 + digest/布局/新鲜度全保持 + 同时报 update 块）。
 
 两个门的判定不变：Pause 超界、读取相对门超界。
+
+### 相对读取门：两处裁剪后通过（同日）
+
+报告见[相对读取门：材料化器裁剪](2026-11-01-r3-read-gate-materializer-trims.md)，证据见
+[裁剪证据](2026-11-01-r3-read-gate-trim-evidence/index.md)。判据、范围与阈值均未改动。
+
+- 改动只在 `presentation_materializer.cpp`：材质 id 比较后才赋值；逐对象完整 id 比较降为长度比较，
+  每帧第一个对象仍做完整比较，stamp 检查仍是权威。
+- 局部对照：extract 101.95 → 91.37 µs（0.8962），update+extract 176.95 → 165.55 µs（两侧都降）。
+- 同一轮的反例：把 id 比较换成预计算 64 位哈希字段反而更慢（1.0782），因为它让行与布局都变大。
+- **正式门重测**（同一协议、同一 A 臂）：全组 9 对 **1.0405 [1.0191, 1.0624]，通过**；对照第一次登记
+  1.1732 [1.1574, 1.1893]（超界）。窗口 1、3 的逐窗区间仍跨过 1.10，已按 §9.2 原样披露。
+- 回归：全量 Release CTest 664.93 s、rc=0、仅 1 项跳过；player smoke golden 通过；controls 功能通过。
+
+R3 门状态更新：初次 load 通过、重复性通过、request→ready 通过、GPU render 通过、Resume/resize/Reset/Close
+通过、**读取相对门通过（本轮）**、Pause 超界（交换链停顿，环境性）、适用 Seek 与 D2/D3/Snapshot/排队未判定。

@@ -1,0 +1,269 @@
+{
+  "scope": "Re-measurement of the formal relative-read gate after two materializer trims (compare before assigning the material id, and a length check for every object after the first).",
+  "source_run": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-refactor-v1",
+  "copied_files": [
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\results.json",
+      "archive": "read-remeasure/results.json",
+      "bytes": 17626,
+      "sha256": "bc2d7b1fd7c43af207615cab08813bcd777b3db34a21c0ceae07cadf809ba291",
+      "source_sha256": "cda1e973ce9e41015ffd1d8f09e434f1564373c3b6bbc7a30e55286a1c39ceb2",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w1-p1-0-B.log",
+      "archive": "read-remeasure/w1-p1-0-B.log",
+      "bytes": 2290,
+      "sha256": "c6833fb90de1360fbfc6ed3a1a15eec9488bcf7fe3b0113d150376f7fb0ffdf7",
+      "source_sha256": "c6833fb90de1360fbfc6ed3a1a15eec9488bcf7fe3b0113d150376f7fb0ffdf7",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w1-p1-1-A.log",
+      "archive": "read-remeasure/w1-p1-1-A.log",
+      "bytes": 2304,
+      "sha256": "a531c176d7d57450f79edb9470c61e397752b7b268c281d8f1c89156224d0280",
+      "source_sha256": "a531c176d7d57450f79edb9470c61e397752b7b268c281d8f1c89156224d0280",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w1-p2-0-A.log",
+      "archive": "read-remeasure/w1-p2-0-A.log",
+      "bytes": 2314,
+      "sha256": "fc878433c848b3d2ebfb293f4c3fee36acbe616cb1f3bcef7a5cdaaaad31a793",
+      "source_sha256": "fc878433c848b3d2ebfb293f4c3fee36acbe616cb1f3bcef7a5cdaaaad31a793",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w1-p2-1-B.log",
+      "archive": "read-remeasure/w1-p2-1-B.log",
+      "bytes": 2277,
+      "sha256": "bcaf1a11dcad23889b1c18beea21449ba3ee9ae5e2d9e8a07a373788d3b0fa64",
+      "source_sha256": "bcaf1a11dcad23889b1c18beea21449ba3ee9ae5e2d9e8a07a373788d3b0fa64",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w1-p3-0-B.log",
+      "archive": "read-remeasure/w1-p3-0-B.log",
+      "bytes": 2304,
+      "sha256": "9d96f83b4fbda5c065bfef454871642c7abf953834c0a0a4e53427178a399fac",
+      "source_sha256": "9d96f83b4fbda5c065bfef454871642c7abf953834c0a0a4e53427178a399fac",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w1-p3-1-A.log",
+      "archive": "read-remeasure/w1-p3-1-A.log",
+      "bytes": 2315,
+      "sha256": "1b735cdce7da70a0ad06a7ac3248e6cdcc43575d11cb71ffa2bb586b87ceb1f9",
+      "source_sha256": "1b735cdce7da70a0ad06a7ac3248e6cdcc43575d11cb71ffa2bb586b87ceb1f9",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w2-p1-0-A.log",
+      "archive": "read-remeasure/w2-p1-0-A.log",
+      "bytes": 2303,
+      "sha256": "5e545668a8a7158eb394031682414e540e33afe18ef7601e0c08bef106ae5e84",
+      "source_sha256": "5e545668a8a7158eb394031682414e540e33afe18ef7601e0c08bef106ae5e84",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w2-p1-1-B.log",
+      "archive": "read-remeasure/w2-p1-1-B.log",
+      "bytes": 2312,
+      "sha256": "5bb0a98dda926f7e84eb6d4b72941b553d8c0c6427106e3a869e5f49f3ded6e9",
+      "source_sha256": "5bb0a98dda926f7e84eb6d4b72941b553d8c0c6427106e3a869e5f49f3ded6e9",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w2-p2-0-B.log",
+      "archive": "read-remeasure/w2-p2-0-B.log",
+      "bytes": 2313,
+      "sha256": "ffaa94b350d811cf58eea396112bcf5b83a4405ec1bfb941ac005107163b89bd",
+      "source_sha256": "ffaa94b350d811cf58eea396112bcf5b83a4405ec1bfb941ac005107163b89bd",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w2-p2-1-A.log",
+      "archive": "read-remeasure/w2-p2-1-A.log",
+      "bytes": 2300,
+      "sha256": "2f52f9924505293642a982d59030a0a6eca7b7eaff7ae3ad7d55f30e266a6c99",
+      "source_sha256": "2f52f9924505293642a982d59030a0a6eca7b7eaff7ae3ad7d55f30e266a6c99",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w2-p3-0-A.log",
+      "archive": "read-remeasure/w2-p3-0-A.log",
+      "bytes": 2301,
+      "sha256": "54542e029544fe94d354ef9bbc50d7285b776cc0177f73aba84e81e6bb18ff21",
+      "source_sha256": "54542e029544fe94d354ef9bbc50d7285b776cc0177f73aba84e81e6bb18ff21",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w2-p3-1-B.log",
+      "archive": "read-remeasure/w2-p3-1-B.log",
+      "bytes": 2300,
+      "sha256": "4750ea5ee962dfa52a5a40edd4ba2bb8773ec2e35380f68f3ef3a4996065e6d3",
+      "source_sha256": "4750ea5ee962dfa52a5a40edd4ba2bb8773ec2e35380f68f3ef3a4996065e6d3",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w3-p1-0-B.log",
+      "archive": "read-remeasure/w3-p1-0-B.log",
+      "bytes": 2313,
+      "sha256": "216dceb66d5f65c22aa307eae4bf6cedfb80041c79384d91a99e566c78754705",
+      "source_sha256": "216dceb66d5f65c22aa307eae4bf6cedfb80041c79384d91a99e566c78754705",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w3-p1-1-A.log",
+      "archive": "read-remeasure/w3-p1-1-A.log",
+      "bytes": 2313,
+      "sha256": "dd244edc3f70cd5b4bfc75ad1c603ca0ee6b08aa29e5528c042da903edfe752f",
+      "source_sha256": "dd244edc3f70cd5b4bfc75ad1c603ca0ee6b08aa29e5528c042da903edfe752f",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w3-p2-0-A.log",
+      "archive": "read-remeasure/w3-p2-0-A.log",
+      "bytes": 2315,
+      "sha256": "12dbfe9f1b999c187e5a4e7caad5bacaa7163c1e094e6b6d3a5b2f490c2bfcf0",
+      "source_sha256": "12dbfe9f1b999c187e5a4e7caad5bacaa7163c1e094e6b6d3a5b2f490c2bfcf0",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w3-p2-1-B.log",
+      "archive": "read-remeasure/w3-p2-1-B.log",
+      "bytes": 2291,
+      "sha256": "da891fe79ca40106d64d3051a93390de115228c24e24e813d94d6395b4439e81",
+      "source_sha256": "da891fe79ca40106d64d3051a93390de115228c24e24e813d94d6395b4439e81",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w3-p3-0-B.log",
+      "archive": "read-remeasure/w3-p3-0-B.log",
+      "bytes": 2289,
+      "sha256": "84b87abefede9f8be2f291484c19e7cd35244408228e36f48159a4e328f87832",
+      "source_sha256": "84b87abefede9f8be2f291484c19e7cd35244408228e36f48159a4e328f87832",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w3-p3-1-A.log",
+      "archive": "read-remeasure/w3-p3-1-A.log",
+      "bytes": 2299,
+      "sha256": "4fc0be32c57d6359792205828ba314043e220bf5d459df1feb86d12e21319d1f",
+      "source_sha256": "4fc0be32c57d6359792205828ba314043e220bf5d459df1feb86d12e21319d1f",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure-preregistration.json",
+      "archive": "tools/read-remeasure-preregistration.json",
+      "bytes": 1700,
+      "sha256": "4a7fc20260e6f9f6527f5f64de311c074fe556fb2750b2a8ab2353cd7616f924",
+      "source_sha256": "4a7fc20260e6f9f6527f5f64de311c074fe556fb2750b2a8ab2353cd7616f924",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\run_read_pair_v2.py",
+      "archive": "tools/run_read_pair_v2.py",
+      "bytes": 9371,
+      "sha256": "5445e8d5daf1ec8d72795f20cdab0d3a407fc8f13e57fb58baf87cafc8cd8913",
+      "source_sha256": "5445e8d5daf1ec8d72795f20cdab0d3a407fc8f13e57fb58baf87cafc8cd8913",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure.log.txt",
+      "archive": "tools/read-remeasure.log.txt",
+      "bytes": 931,
+      "sha256": "dff65d9c87ae13ea103e6d3072f5b8923bf910c6d17673a9a3337fd0f815703b",
+      "source_sha256": "dff65d9c87ae13ea103e6d3072f5b8923bf910c6d17673a9a3337fd0f815703b",
+      "eol": "crlf"
+    }
+  ],
+  "attached_files": [],
+  "excluded": [],
+  "generated_files": {
+    "index.md": "fc1e20d141e9de3582984e6204bf47cbb7e9e887eceac4dc08bddf1e860eafb0"
+  },
+  "binding": {
+    "head": "bc67670b1da902bec4585107c350d3442871c704",
+    "arm_a_sha256": "6af4edd2d365fb99e9df5b7da7e77dd6e45a6e284b37e7b8979dd1c1ed293a94",
+    "arm_b_sha256": "13b800e6305b0f36a93b568465d12330948d77d40da368fee86154c6d7f6729f",
+    "whole_group": {
+      "n": 9,
+      "ratio": 1.0405,
+      "lower": 1.0191,
+      "upper": 1.0624,
+      "ratios": [
+        1.0129,
+        1.0801,
+        1.0515,
+        1.0106,
+        1.0055,
+        1.0587,
+        1.0775,
+        1.0312,
+        1.0397
+      ],
+      "decision": "pass"
+    },
+    "windows": [
+      {
+        "window": 1,
+        "ratios": [
+          1.012898,
+          1.080059,
+          1.051546
+        ],
+        "interval": {
+          "n": 3,
+          "ratio": 1.0478,
+          "lower": 0.9671,
+          "upper": 1.1352,
+          "ratios": [
+            1.0129,
+            1.0801,
+            1.0515
+          ]
+        }
+      },
+      {
+        "window": 2,
+        "ratios": [
+          1.010649,
+          1.005523,
+          1.058701
+        ],
+        "interval": {
+          "n": 3,
+          "ratio": 1.0247,
+          "lower": 0.9549,
+          "upper": 1.0996,
+          "ratios": [
+            1.0106,
+            1.0055,
+            1.0587
+          ]
+        }
+      },
+      {
+        "window": 3,
+        "ratios": [
+          1.077472,
+          1.031229,
+          1.039711
+        ],
+        "interval": {
+          "n": 3,
+          "ratio": 1.0493,
+          "lower": 0.9902,
+          "upper": 1.1119,
+          "ratios": [
+            1.0775,
+            1.0312,
+            1.0397
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -61,7 +61,12 @@ auto fillObjects(const runtime::detail::PresentationRead& view, const SnapshotLa
         auto read = view.readSnapshotObject(entry.runtimeIndex);
         if (!read)
             return core::unexpected(std::move(read.error()));
-        if (read->id != entry.id.value)
+        // The layout stamp ties this layout to the runtime layout once per frame; the per-object
+        // comparison only guards against a mapping change, so it is exact for the first object and
+        // a length comparison afterwards. A full string compare here cost 10% of the read block.
+        const bool mappingChanged =
+            index == 0 ? read->id != entry.id.value : read->id.size() != entry.id.value.size();
+        if (mappingChanged)
             return core::unexpected(core::Error{"runtime.presentation.layout_stale",
                                                 "Presentation object mapping changed"});
         auto& object = snapshot.objects[index];
@@ -89,7 +94,8 @@ auto fillObjects(const runtime::detail::PresentationRead& view, const SnapshotLa
                 std::max<std::size_t>(entry.maximumMaterialAssetIdSize, 256))
                 return core::unexpected(core::Error{"playback.presentation.frame.resource_mismatch",
                                                     "Material exceeds prepared admission bound"});
-            object.materialAssetId.assign(appearance.material);
+            if (object.materialAssetId != appearance.material)
+                object.materialAssetId.assign(appearance.material);
             if (entry.mesh) {
                 const auto only = entry.materials.begin();
                 const auto material =
