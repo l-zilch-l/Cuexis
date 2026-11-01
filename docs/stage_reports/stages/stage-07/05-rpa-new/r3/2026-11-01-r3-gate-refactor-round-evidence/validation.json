@@ -1,6 +1,6 @@
 {
   "scope": "Repository checks re-run after materializing this evidence directory; recorded verbatim, not summarized.",
-  "head": "09a5b53aa9852ba7ac8c847e304f68474da95060",
+  "head": "9c1d1d66a6dbd5125b86a197a311877011ec3c4d",
   "docs": {
     "args": [
       "python",
@@ -17,7 +17,7 @@
       "--check"
     ],
     "exit": 0,
-    "output": ""
+    "output": "warning: in the working copy of 'docs/stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-01-r3-gate-refactor-round-evidence/manifest.json', LF will be replaced by CRLF the next time Git touches it\n"
   },
   "architecture": {
     "args": [

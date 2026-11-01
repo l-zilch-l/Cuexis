@@ -5,16 +5,16 @@
     {
       "source": "out\\verification-20261101\\r3-refactor-v1\\refactor-round.json",
       "archive": "attempt/refactor-round.json",
-      "bytes": 4063,
-      "sha256": "7594b2536c73d6a7447d74d5f3059226d594291e17a436bb6961489eff1c8bf8",
-      "source_sha256": "7594b2536c73d6a7447d74d5f3059226d594291e17a436bb6961489eff1c8bf8",
+      "bytes": 5116,
+      "sha256": "b7c101e8cfceae444c6f7c774306d31c93dfe59340e22e60718952283cc5dc89",
+      "source_sha256": "b7c101e8cfceae444c6f7c774306d31c93dfe59340e22e60718952283cc5dc89",
       "eol": "crlf"
     }
   ],
   "attached_files": [],
   "excluded": [],
   "generated_files": {
-    "index.md": "a58d33483ac6ab4180a81f8dfb95f6e5c1023a196fc8ea33c6df1aa94ec5eb3e"
+    "index.md": "2fc49d1788fe104fc6c17d01fd640bd72a78852f98ea2186f2ca7e845a85261d"
   },
   "binding": {
     "head": "09a5b53a",
@@ -32,6 +32,20 @@
       "E4": null,
       "E5": null
     },
-    "kept_code": []
+    "kept_code": [],
+    "compact_rows": {
+      "baseline": {
+        "extract_only": 103.49,
+        "update_plus_extract": 180.4,
+        "implied_update": 76.91
+      },
+      "compact_rows": {
+        "extract_only": 84.78,
+        "update_plus_extract": 199.46,
+        "implied_update": 114.68
+      }
+    },
+    "compact_rows_ratio_read_block": 0.7968,
+    "compact_rows_kept": false
   }
 }

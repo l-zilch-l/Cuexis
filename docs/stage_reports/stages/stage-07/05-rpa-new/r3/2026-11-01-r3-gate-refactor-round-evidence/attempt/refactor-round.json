@@ -104,5 +104,24 @@
   ],
   "read_conclusion": "the gap lives in the per-object transform and appearance reads. Removing the reads returns the arm to the pre-PD level; removing the wrapper, the validation or the call boundary does not. The remaining direction is a data-layout change (a compact per-frame presentation row that extract scans instead of touching the registry per object), which touches the read contract and is owner-scoped.",
   "kept_code": [],
-  "recorded_local": "2026-11-01 22:59"
+  "recorded_local": "2026-11-01 23:20",
+  "direction_compact_rows": {
+    "design": "RuntimeSession refreshes a compact PresentationRow array in publishPresentation (once per published mutation); the materializer's extract scans that array instead of touching the registry per object, with a per-object fallback whenever the rows are absent or short.",
+    "workload": "CUEXIS_FOLLOW_COUNTS=1800 2000 2000; five alternating pairs against baseline-pd-probe.exe",
+    "per_frame_us": {
+      "baseline": {
+        "extract_only": 103.49,
+        "update_plus_extract": 180.4,
+        "implied_update": 76.91
+      },
+      "compact_rows": {
+        "extract_only": 84.78,
+        "update_plus_extract": 199.46,
+        "implied_update": 114.68
+      }
+    },
+    "ratio_read_block": 0.7968,
+    "verdict": "rejected: extract falls 18.1% but update rises 49.0%, so the whole frame costs 10.5% more (180.40 -> 199.46 us). The row array is an extra memory pass over data that the snapshot already has to read once; it moves cost rather than removing it.",
+    "kept": false
+  }
 }
