@@ -30,7 +30,7 @@
 | P3 update / Snapshot | 保留四属性合并查找、touched 和 OpenGL 诊断读回分离；resolver hint 及组件池借用候选均因对照不达预期撤回 | 最终源码完整矩阵；extract 仍有成本，不重做 R2 表示 |
 | P4 编码与真实内存 | 无峰值收益的编码 admission/预遍历已撤回；已有本地 40K 峰值/释放；v4 与六代归档实际 requested/storage 已测，故障退款和最终释放通过 | 通用上界、合理预算与保留策略、完整播放链 headroom；原 caps/profile/历史 R4 参考仍缺 |
 | P5 端到端 Seek | 产品 CPU 60/GPU 96 组合通过有限功能核验，产品 H902 仍慢；R3c v4 相关428 cases、真实故障/字节/释放通过，普通H902明显改善但未选用 | 归因重复性超15%；合理预算/策略及全部适用场景；决定产品取舍，原CI门仍开放 |
-| P6 维护/工具/矩阵 | metrics TLS 改为函数内每线程对象，消费者同步；全仓格式债处理；旧 b2 Release 全套通过；新增 Ninja 依赖漏记已由真实头文件修改反例定位并修复验证；[2026-11-01 同源矩阵](2026-11-01-r3-same-source-acceptance-matrix.md) 已在 `466ff76` 的同一份源码上跑完全部 11 行：7 行 local_pass、1 行 CTest 失败（`#904`，同一二进制隔离重跑 108 次未复现）、3 行 MinGW 在构建阶段被 GCC 报出的测试源码可移植性缺陷挡住 | 构建修复已完成审阅及独立/嵌入定向门；同源完整矩阵本轮未达成：先修 3 行 MinGW 的 `<algorithm>` 缺包含与 `-Wmismatched-new-delete` 测试源码缺陷并重跑，再补 fresh STATIC/SHARED、Debug/Release/MinGW、安装消费者与完整 CTest |
+| P6 维护/工具/矩阵 | metrics TLS 改为函数内每线程对象，消费者同步；全仓格式债处理；旧 b2 Release 全套通过；新增 Ninja 依赖漏记已由真实头文件修改反例定位并修复验证；[2026-11-01 同源矩阵](2026-11-01-r3-same-source-acceptance-matrix.md) 已在 `466ff76` 的同一份源码上跑完全部 11 行：7 行 local_pass、1 行 CTest 失败（`#904`，同一二进制隔离重跑 108 次未复现）、3 行 MinGW 在构建阶段被 GCC 报出的测试源码可移植性缺陷挡住（五处测试源码修复已提交为 `3fbc31f`）；第二次运行在 `3fbc31f` 上 10 行里 8 行通过，`mingw-on-debug` 的 51 个失败由探针的 replacement 分配器造成（归因为仪器、不改产品），`mingw-on-shared-debug` 撞上磁盘写满，第 11 行未启动；补上探针加固与运行器磁盘下限（`8963889`）后，[第三次运行](2026-11-01-r3-acceptance-matrix-third-run.md) 在同一份源码上 11/11 行 `local_pass`、13,613 用例 0 失败 | 构建修复已完成审阅及独立/嵌入定向门；同源完整矩阵已在本地达成（11/11），仍缺 hosted 同 SHA 验证与 owner 接受，因此 P6 只记本地完成，不升级 R3 退出或任何阶段结论 |
 
 这些是候选及核验账目，不将“已写代码”记成完成，也不以 R3 技术工作代替设备/生产或 owner 接受。
 40K 历史 Packed reference 缺失、B0 caps 的规模适用性与原 R4 固定窗口保持原证据边界。

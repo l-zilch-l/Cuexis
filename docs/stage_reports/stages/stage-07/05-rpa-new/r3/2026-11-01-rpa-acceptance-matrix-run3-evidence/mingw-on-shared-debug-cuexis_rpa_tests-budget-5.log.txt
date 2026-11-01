@@ -1,0 +1,9 @@
+["D:\\Cuexis-redesign\\out\\build\\rpa-boundary-mingw-shared\\bin\\cuexis_rpa_tests.exe", "[measurement]"]
+Filters: [measurement]
+Randomness seeded to: 2149896673
+{"testOnly":true,"samples":32,"unit":"us","clock":"std::chrono::steady_clock","H_lag_p50_p95_p99_max":[200,286,334,334],"frontier_lag_p50_p95_p99_max":[200,286,334,334]}
+{"event":"rpa.f3.kernel_budget","test_only":true,"requirements":1,"phases_per_requirement":3,"facts":3,"prepare_ns":663800,"timer_burst_ns":152300,"steady_samples":32,"steady_p50_ns":8900,"steady_p95_ns":19000,"steady_max_ns":20000,"snapshot_encode_ns":553600,"snapshot_bytes":75738,"snapshot_decode_recover_ns":5083000,"archive_encode_ns":480000,"replay_bytes":73543,"replay_decode_evaluate_ns":4295600,"kernel_seek_ns":651200,"replay_records":33,"prepare_peak_heap_bytes":null,"production_max_seek_latency_ns":null}
+{"event":"rpa.f3.kernel_budget","test_only":true,"requirements":256,"phases_per_requirement":3,"facts":768,"prepare_ns":60258600,"timer_burst_ns":14825500,"steady_samples":32,"steady_p50_ns":10400,"steady_p95_ns":22000,"steady_max_ns":25600,"snapshot_encode_ns":50123400,"snapshot_bytes":16921746,"snapshot_decode_recover_ns":863165400,"archive_encode_ns":54116000,"replay_bytes":16427167,"replay_decode_evaluate_ns":757743900,"kernel_seek_ns":56577500,"replay_records":33,"prepare_peak_heap_bytes":null,"production_max_seek_latency_ns":null}
+===============================================================================
+All tests passed (394 assertions in 2 test cases)
+

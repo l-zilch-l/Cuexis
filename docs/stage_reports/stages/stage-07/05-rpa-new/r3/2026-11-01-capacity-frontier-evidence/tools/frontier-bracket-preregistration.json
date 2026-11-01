@@ -1,0 +1,82 @@
+{
+  "scope": "Pre-registration of a 1080p p99 budget-crossing bracket at HEAD 466ff76. Diagnostic only; it does not replace the frozen capacity lower bound and does not constitute R3/R4 or production acceptance.",
+  "registered_local": "2026-11-01 00:45",
+  "registered_utc": "2026-10-31T16:45Z",
+  "source": {
+    "head": "466ff76a0b2a2f45b90280331bded77897ef6421",
+    "branch": "Cuexis-redesign",
+    "worktree": "clean at registration; the ladder runs after the 2026-11-01 acceptance matrix finishes and each group registers whatever probe binary hash it actually observes"
+  },
+  "question": "At HEAD 466ff76 on 1080p, between which two entity counts does the per-frame p99 first exceed the 240 FPS budget of 4.166667 ms, separately for render-only and for static update/extract/render?",
+  "why_this_is_worth_measuring": [
+    "The frozen 2026-10-29 capacity verdict confirmed 1800 render-only and 1300 static as the highest sustained counts that passed and explicitly left the region above them untested: 1900 render-only, 1400 static and 1500 static failed, 1800 static was never measured.",
+    "On HEAD the frozen confirmed points still pass with more headroom and 1800 static also passes, so the frozen frontier is now strictly below the truth.",
+    "The 2026-10-31 40K verdict could only state a frontier transfer, not a crossing. A measured bracket replaces that with a real interval.",
+    "The ladder is cheap: three processes of twenty seconds per group, roughly ten minutes of machine time for the whole bracket."
+  ],
+  "predictions_recorded_before_measurement": {
+    "note": "Predictions exist so the ladder can falsify them. None of these numbers may be quoted as a result, and none may be called a measurement.",
+    "models": {
+      "transfer_through_origin": "p99(N) = k x N, so a cost ratio r at one point transfers the affordable entity count by 1/r. This is the model behind the two frontier-transfer numbers already published in the 2026-10-31 40K verdict.",
+      "affine_p99_fit": "p99(N) = a + b x N fitted through two measured HEAD sustain points, i.e. it allows a fixed per-frame cost a."
+    },
+    "render_only": {
+      "transfer_through_origin": {
+        "formula": "1800 x p99_frozen_1800 / p99_head_1800 = 1800 x 4.0939 / 3.2105",
+        "value": 2295,
+        "inputs": "same-count ratio: frozen 1800 render-only p99 median 4.0939 ms vs HEAD 1800 render-only p99 median 3.2105 ms"
+      },
+      "affine_p99_fit": {
+        "formula": "p99(N) = 0.897 + 0.001285 x N  (ms, N in entities)",
+        "inputs": "HEAD sustain medians 1300 -> 2.5679 ms and 1800 -> 3.2105 ms",
+        "budget_crossing": 2544
+      },
+      "predicted_bracket_sources": "2400 and 2600 sit either side of the affine crossing; 2800 is included because the affine fit is itself an extrapolation from two low points."
+    },
+    "static": {
+      "transfer_through_origin": {
+        "formula": "1300 x p99_frozen_40k / p99_head_40k = 1300 x 84.073 / 61.325",
+        "value": 1782,
+        "inputs": "40K-level ratio, because no frozen 1800-static sustain group existed; this mixes a same-scale ratio (render-only) with a 40K ratio (static)",
+        "already_falsified": true,
+        "why_falsified": "HEAD 1800 static passes at p99 3.7251 ms. A through-origin transfer that puts the frontier at 1782 is contradicted by a higher count passing, so the static curve has a fixed cost the through-origin model omits."
+      },
+      "affine_p99_fit": {
+        "formula": "p99(N) = 1.371 + 0.001308 x N  (ms, N in entities)",
+        "inputs": "HEAD sustain medians 1300 -> 3.0710 ms and 1800 -> 3.7251 ms",
+        "budget_crossing": 2137
+      },
+      "predicted_bracket_sources": "2000, 2100, 2200, 2300 cover the affine crossing with one point of slack on each side plus one above."
+    }
+  },
+  "ladder": {
+    "note": "Every point is a fresh run of three processes, twenty seconds each, 1920x1080, one fixed entity count, same process-per-group rule as the refresh sustain groups. run_40k_refresh.py always measures both modes at the entity count it is given, so each run yields one render-only point and one static point at that count; the extra cross points are reported as a grid rather than discarded. No point is re-sampled; if a run is invalid the ladder is reported with the gap.",
+    "entity_counts": [1800, 2000, 2100, 2200, 2300, 2400, 2600, 2800],
+    "modes": ["render-only", "static"],
+    "per_mode_expected_bracket": {
+      "render-only": "2400 (pass expected) to 2600 (fail expected), 2800 as the confirming upper point",
+      "static": "2000 or 2100 (pass expected) to 2200 or 2300 (fail expected)"
+    },
+    "anchor_1800": {
+      "purpose": "Rebuild-drift anchor. The refresh measured 1800 render-only p99 median 3.2105 ms and 1800 static p99 median 3.7251 ms with probe binary 91ed0d303c09ef92e6abab9e30b63c87da77322d1dc7132c6b45204c220578b9, which the matrix --clean-first rebuilds destroyed. Re-measuring 1800 inside the new build separates a build effect from a scale effect.",
+      "rule": "If the ladder's 1800 medians differ from 3.2105 / 3.7251 ms by more than the ladder's own repeatability, every ladder number is reported as belonging to its own build and no cross-build delta is claimed. If they agree within that band, the ladder may be described as reproducing the refresh sustain points."
+    },
+    "order": [1800, 2400, 2000, 2600, 2100, 2800, 2200, 2300],
+    "order_reason": "Interleaved and ascending/descending alternately so a machine-level drift over the twenty minutes cannot masquerade as a scale effect."
+  },
+  "pass_criteria": {
+    "per_process": "the runner's own rule, exactly: no validity problem, wall FPS >= 240, cycle p99 <= 4166.666666666667 us, and every complete one-second window >= 240 frames. This is the capacity definition used by the frozen 2026-10-29 groups and by the refresh sustain groups; a handful of individual frames over budget does not fail a process (the frozen 1300 static group passed with 24 over-budget frames in one process), so the individual over-budget count is reported as information only, never used to flip a pass.",
+    "per_group": "all three processes pass",
+    "repeatability": "the per-group relative range of p99 and of wall FPS is reported but does not gate the bracket; a range above 15% is recorded as a caveat and the group is used only for pass/fail, never as a speed reading"
+  },
+  "decision_rule": {
+    "bracketed": "Report [P, F): the largest passing count P and the smallest failing count above it, provided no count below P failed and no count above F passed.",
+    "non_monotonic": "If the ladder is non-monotonic (a higher count passes while a lower one fails), report every point and state that the frontier is not bracketed. Do not smooth, average or interpolate.",
+    "never": "Never publish a single crossing number, never interpolate between points, and never overwrite the frozen 2026-10-29 confirmed list."
+  },
+  "artifacts": {
+    "runner": "out/verification-20261031/r3-40k-throughput-refresh-v1/run_40k_refresh.py",
+    "per_group": "registration.json, results.json, three per-process frame logs",
+    "summary": "out/verification-20261031/r3-40k-throughput-refresh-v1/frontier-bracket-summary.json"
+  }
+}

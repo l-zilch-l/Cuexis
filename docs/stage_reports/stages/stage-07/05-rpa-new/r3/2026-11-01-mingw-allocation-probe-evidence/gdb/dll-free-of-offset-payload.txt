@@ -1,0 +1,50 @@
+Breakpoint 1 at 0x140001ba3: file src/catch2/internal/catch_main.cpp, line 36.
+[New Thread 26064.0x4b98]
+[New Thread 26064.0x58b8]
+[New Thread 26064.0x2d3c]
+
+Thread 1 hit Breakpoint 1, main (argc=1, argv=0x769f00) at src/catch2/internal/catch_main.cpp:36
+From                To                  Syms Read   Shared Object Library
+0x00007fffefba1000  0x00007fffefe067f8  Yes (*)     C:\WINDOWS\SYSTEM32\ntdll.dll
+0x00007fffee7e1000  0x00007fffee8aa6bc  Yes (*)     C:\WINDOWS\System32\kernel32.dll
+0x00007fffed3f1000  0x00007fffed7f1c24  Yes (*)     C:\WINDOWS\System32\KernelBase.dll
+0x00007fffe9ba1000  0x00007fffe9c3e7b4  Yes (*)     C:\WINDOWS\SYSTEM32\apphelp.dll
+0x00007fffecda1000  0x00007fffeceebec0  Yes (*)     C:\WINDOWS\System32\ucrtbase.dll
+0x00007fffd9d01000  0x00007fffd9d2a04c  Yes (*)     C:\msys64\ucrt64\bin\libgcc_s_seh-1.dll
+0x00007fff5dc51000  0x00007fff5dedea00  Yes (*)     C:\msys64\ucrt64\bin\libstdc++-6.dll
+0x00007fffe4871000  0x00007fffe4885058  Yes (*)     C:\msys64\ucrt64\bin\libwinpthread-1.dll
+0x00007fffeece1000  0x00007fffeed9bad8  Yes (*)     C:\WINDOWS\System32\advapi32.dll
+0x00007fffef161000  0x00007fffef2085f4  Yes (*)     C:\WINDOWS\System32\msvcrt.dll
+0x00007fffee091000  0x00007fffee1385e0  Yes (*)     C:\WINDOWS\System32\sechost.dll
+0x00007fffede11000  0x00007fffedf27858  Yes (*)     C:\WINDOWS\System32\rpcrt4.dll
+0x00007fffec321000  0x00007fffec32b044  Yes (*)     C:\WINDOWS\SYSTEM32\cryptbase.dll
+0x00007fffed801000  0x00007fffed8ab860  Yes (*)     C:\WINDOWS\System32\bcryptprimitives.dll
+(*): Shared library is missing debugging information.
+Breakpoint 2 at 0x7fffecdaad80 (2 locations)
+Breakpoint 3 at 0x7fffecdaad80 (2 locations)
+FREE_BREAKPOINT_COVERAGE 1
+Randomness seeded to: 2220284707
+PROBE_BLOCK ptr=0000000000790060 w_minus_16=0x0000000000790050 w_minus_8=0x0000000000000041
+===============================================================================
+All tests passed (1 assertion in 1 test case)
+
+PAYLOAD_FREE 1 ptr=0x7928a0 wm16=0x0000000000792890 wm8=0x0000000000000178 probe_hit=0 ret=0x7ff6e8c514f7
+CALL_SITE return address belongs to:
+Catch::Detail::unique_ptr<std::__cxx11::basic_ostringstream<char, std::char_traits<char>, std::allocator<char> > >::~unique_ptr() + 39 in section .text of D:\Cuexis-redesign\out\verification-20261031\evidence-staging\r3-mingw-probe\trace\dynamic-runtime.exe
+CALL_SITE_CODE
+   0x7ff6e8c514eb <_ZN5Catch6Detail10unique_ptrINSt7__cxx1119basic_ostringstreamIcSt11char_traitsIcESaIcEEEED1Ev+27>:	add    $0x8,%rdx
+   0x7ff6e8c514ef <_ZN5Catch6Detail10unique_ptrINSt7__cxx1119basic_ostringstreamIcSt11char_traitsIcESaIcEEEED1Ev+31>:	mov    (%rdx),%rdx
+   0x7ff6e8c514f2 <_ZN5Catch6Detail10unique_ptrINSt7__cxx1119basic_ostringstreamIcSt11char_traitsIcESaIcEEEED1Ev+34>:	mov    %rax,%rcx
+   0x7ff6e8c514f5 <_ZN5Catch6Detail10unique_ptrINSt7__cxx1119basic_ostringstreamIcSt11char_traitsIcESaIcEEEED1Ev+37>:	call   *%rdx
+   0x7ff6e8c514f7 <_ZN5Catch6Detail10unique_ptrINSt7__cxx1119basic_ostringstreamIcSt11char_traitsIcESaIcEEEED1Ev+39>:	nop
+BACKTRACE
+#0  0x00007fffecdaad80 in ucrtbase!free () from C:\WINDOWS\System32\ucrtbase.dll
+#1  0x00007ff6e8c514f7 in Catch::Detail::unique_ptr<std::__cxx11::basic_ostringstream<char, std::char_traits<char>, std::allocator<char> > >::~unique_ptr (this=0x792c40) at src/catch2/internal/catch_unique_ptr.hpp:60
+#2  0x00007ff6e8cc8ea8 in std::_Destroy<Catch::Detail::unique_ptr<std::__cxx11::basic_ostringstream<char, std::char_traits<char>, std::allocator<char> > > > (__pointer=0x792c40) at C:/msys64/ucrt64/include/c++/16.1.0/bits/stl_construct.h:166
+#3  0x00007ff6e8cc9836 in std::_Destroy<Catch::Detail::unique_ptr<std::__cxx11::basic_ostringstream<char, std::char_traits<char>, std::allocator<char> > >*> (__first=0x792c40, __last=0x792c50) at C:/msys64/ucrt64/include/c++/16.1.0/bits/stl_construct.h:226
+
+Thread 1 received signal SIGTRAP, Trace/breakpoint trap.
+0x00007fffefc36ba5 in ntdll!LdrResSearchResource () from C:\WINDOWS\SYSTEM32\ntdll.dll
+PAYLOAD_FREE_HITS 1
+warning: 36	src/catch2/internal/catch_main.cpp: No such file or directory
+warning: Critical error detected c0000374

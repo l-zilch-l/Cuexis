@@ -94,9 +94,40 @@
   `#904 Audio publication preserves device observation time across service polls`，同一二进制按其
   sha256 隔离重跑 108 次未复现）、3 行 MinGW 在构建阶段被 GCC 报出的测试源码可移植性缺陷挡住而未进入
   CTest；清单级 `source_unchanged` 为真，全部阶段日志按磁盘字节复核哈希。因此 P6「同源完整矩阵」本轮
-  **未达成**，这次运行不产生 240 FPS、容量或 R4 结论，也不因任何单行在隔离重跑中通过而改判；
+  **未达成**（第三轮在同一批配置上 11/11 达成，见下一条），这次运行不产生 240 FPS、容量或 R4 结论，也不因任何单行在隔离重跑中通过而改判；
   [矩阵证据附件](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-01-rpa-acceptance-matrix-evidence/index.md)
   登记每份日志的来源、字节与哈希。
+- **2026-11-01 第二次运行止于仪器与磁盘，MinGW 崩溃归因于探针而不是产品**：在 `3fbc31f` 的干净工作树上，
+  10 行里 8 行 `local_pass`；`mingw-on-debug` 在 CTest 里 51/1264 失败、其中 102 次 `0xc0000374`；
+  `mingw-on-shared-debug` 撞上磁盘写满而没有留下判定；第 11 行未启动。把探针的 replacement
+  `operator new/delete` 从构建里去掉，同一套用例全部通过；gdb 把破坏点钉在
+  `Catch::Detail::unique_ptr<T>::~unique_ptr()` 经虚表派发进 `libstdc++-6.dll` 的 deleting
+  destructor，载荷位于 16 字节偏移处；隔离矩阵显示同样的偏移载荷在两套运行时的所有匹配释放路径上都存活，
+  只在 `new` 配 `std::free` 的错配路径上致命。结论是**仪器缺陷**，不改产品；当 replacement 被编译掉时
+  也不得声称任何分配普查（`scope=explicit-pmr-upstream`）。见
+  [第二次运行与 MinGW 分配探针极限](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-01-r3-run2-and-mingw-allocation-probe-limit.md)、
+  [证据附件](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-01-mingw-allocation-probe-evidence/index.md)。
+- **2026-11-01 同源完整矩阵第三次运行为 11/11（test-only，本地）**：修好探针与磁盘下限后，同一条固定行序在
+  一份源码上跑完 11 行，全部 `local_pass`，共 13,613 个用例、0 失败，6 行记录 120 次测量事件，清单级
+  `source_unchanged` 为真；启动时磁盘下限 12.0 GiB、当时空闲 19.9 GiB。六处修复（三份测试
+  `CMakeLists.txt` 的探针可用性条件、探针头文件的 magic/foreign-free 加固与 LF 固定、`tests/pd/README.md`、
+  运行器的磁盘下限与 `skipped_disk_space`）已提交为 `8963889`；内容层闭合由
+  `verify_identity_closure.py` 证明——该 commit 的检出与运行记录在 3388 个文件上逐字节相等、两个聚合哈希相同，
+  换一处全新检出时只有换行形式不同（2829 原样 + 488 纯 LF + 4 纯 CRLF + 67 混合，0 处漂移），可见
+  `worktree_sha256` 记录的是工作树历史而不是内容。这**只**说明每个配置在同一份工作树上可构建、可跑完全部
+  CTest，`skipped_disk_space` 之外没有静默跳过的用例；它不证明性能门、设备路径、听音或 hosted 同 SHA，
+  也不改变 40K 结论与 R3 退出状态。见
+  [同源验收矩阵第三次运行](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-01-r3-acceptance-matrix-third-run.md)、
+  [证据附件](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-01-rpa-acceptance-matrix-run3-evidence/index.md)。
+- **2026-11-01 1080p 容量前缘是实测区间，不是容量值**：预注册阶梯跑完 8 个实体数 × 两种模式 × 3 个新进程
+  × 20 s，`仅渲染`在 1800–2400 通过、2600 与 2800 未通过，区间 [2400, 2600)；`静态提帧`在 1800–2200 通过、
+  2300 起未通过，区间 [2200, 2300)。冻结的 1800 / 1300 仍是唯一登记过的容量值，本阶梯不升级任何通过点。
+  1800 锚点的 `仅渲染` 中位数比 2026-10-31 刷新低 14.41%（超出 ±10% 漂移带），所以两次不是同一测量条件下的
+  同一份数据；因此 1300→1800 段拟合出的 2544 / 2137 这类外推被实测证伪。越界形状是台阶而非斜率：
+  额外时间是 `backend.submit` 调用内部一段约 7.15 ms 的 CPU 停顿，间隔中位数 4 帧，与实体数几乎无关，
+  根因尚未定位。见
+  [1080p 容量前缘区间](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-01-r3-capacity-frontier-bracket.md)、
+  [证据附件](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-01-capacity-frontier-evidence/index.md)。
 - **40K 启动响应已有可观测证据，仍未达“首帧 ≤2 秒”或首次加载**：同一 40K v3 夹具的八轮窗口观察中，
   进程内首次可响应从设计改动前的 35,141 ms 降到 3,029 / 2,821 ms（v7 / v8），首个窗口帧 2,858 / 2,821 ms；
   v8 首次把观察绑定到具体二进制哈希，v1–v7 无 exe 哈希。235 个采样里 3 次未应答，单次等待 61–63 ms、最长 66 ms。

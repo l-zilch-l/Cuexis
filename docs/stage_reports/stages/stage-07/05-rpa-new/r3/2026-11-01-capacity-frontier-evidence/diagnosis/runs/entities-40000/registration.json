@@ -1,0 +1,33 @@
+{
+  "scope": "GPU-timer diagnosis of the submit-path stall at 1080p; separate instrument, diagnostic only, not the pre-registered ladder and not acceptance",
+  "created_utc": "2026-11-01T00:21:40.207121+00:00",
+  "head": "8e275a59d6ff18d88a8193643254dc0d3fb9c034",
+  "dirty_files": [],
+  "plan": {
+    "groups": [
+      "render-only",
+      "static"
+    ],
+    "processes_per_group": 2,
+    "entities": 40000,
+    "frames_per_process": 120,
+    "seconds_per_process": null,
+    "warmup": "at least 8 frames and 2000 ms",
+    "viewport": [
+      1920,
+      1080
+    ],
+    "affinity": 65535,
+    "priority": "BelowNormal",
+    "qos": "execution throttling OFF",
+    "timer": true,
+    "pixel_readback": true,
+    "budget_us": 4166.666666666667,
+    "pass_rule": "wall FPS >= 240 and cycle p99 <= 4.166667 ms",
+    "stop": "an invalid process stops the run; budget failures are retained"
+  },
+  "binary": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_execution_device_probe.exe",
+  "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8",
+  "probe_source_sha256": "e98f1dac026e51cfebdfb331c657bdb9a6e77e6896a493f6c57a8040fdcd07f0",
+  "runner_sha256": "30a34162c5ded51c06fbe01796349966f215e37554a2150f093dad5680000a01"
+}

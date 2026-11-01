@@ -1,0 +1,8 @@
+["D:\\Cuexis-redesign\\out\\build\\candidate-debug\\bin\\cuexis_execution_host_tests.exe", "[measurement]"]
+Filters: [measurement]
+Randomness seeded to: 1925053007
+{"event":"b5.cpu.content_boundary","test_only":true,"requirements":1,"prepare_us":12804,"packed_bytes":3047,"sample_present_us":1040,"misses":1}
+{"event":"b5.cpu.content_boundary","test_only":true,"requirements":256,"prepare_us":686532,"packed_bytes":229514,"sample_present_us":923,"misses":256}
+===============================================================================
+All tests passed (797 assertions in 1 test case)
+

@@ -1,0 +1,144 @@
+{
+  "gdb": "GNU gdb (GDB) 17.2",
+  "breakpoint": "free (the CRT export both modules reach); set after main, not before the DLLs load",
+  "predicate": "$rcx > 0x10000 && *(unsigned long long*)($rcx - 16) == $rcx - 16",
+  "predicate_meaning": "the pointer being freed carries the as-run header's own {base, size} pair in front of it, so it is a payload of the replacement and not a block start",
+  "command_file": "gdb\\payload-free.cmd",
+  "command_file_sha256": "6f6c0757063996566d0fea4f37ddfbeb5c9b8abae6db42d93b6d5b728f850c27",
+  "header": {
+    "source": "git show 3fbc31f6:tests/pd/pd_allocation_probe.hpp",
+    "commit": "3fbc31f68430ce2d0ad576094ff617cc09772f10",
+    "staged_to": "trace\\as-run-include\\pd_allocation_probe.hpp",
+    "sha256": "e8c9aaa7896fd5d538a94ba0d734988f0de51a83035f7e30fd843505ce6f284f",
+    "bytes": 4481,
+    "manifest_run": "out\\rpa-acceptance\\20261101-021741-4daf2bb2",
+    "manifest_sha256": "e8c9aaa7896fd5d538a94ba0d734988f0de51a83035f7e30fd843505ce6f284f",
+    "repro_copy": "repro\\pd_allocation_probe.as-run-2.hpp",
+    "repro_copy_sha256": "e8c9aaa7896fd5d538a94ba0d734988f0de51a83035f7e30fd843505ce6f284f"
+  },
+  "source": "archive-src\\tiny-repro.cpp",
+  "source_sha256": "022dac3b63037db4430fea3226f6a9e425e6202924197bb33dba9bf8a1fb04a9",
+  "runs": [
+    {
+      "build": "dynamic-runtime",
+      "why": "the deleting destructor of a DLL-defined class runs the DLL's own operator delete",
+      "extra_flags": [],
+      "expected_payload_free_hits": 1,
+      "expected_libstdcxx": true,
+      "transcript": "gdb\\dll-free-of-offset-payload.txt",
+      "transcript_sha256": "110a0a0f44d7221624ccec2d21809bb9cd2282715e34fb0f9bbadb751dfe940c",
+      "transcript_bytes": 4132,
+      "gdb_exit": 0,
+      "exit_code_unattended": "0xc0000374",
+      "command": [
+        "C:\\msys64\\ucrt64\\bin\\c++.exe",
+        "-std=c++20",
+        "-O0",
+        "-g",
+        "-ID:\\Cuexis-redesign\\out\\verification-20261031\\evidence-staging\\r3-mingw-probe\\trace\\as-run-include",
+        "-ID:\\Cuexis-redesign\\out\\build\\mingw-headless-debug\\vcpkg_installed\\x64-mingw-static\\include",
+        "-ID:\\Cuexis-redesign\\engine\\core\\internal",
+        "-o",
+        "D:\\Cuexis-redesign\\out\\verification-20261031\\evidence-staging\\r3-mingw-probe\\trace\\dynamic-runtime.exe",
+        "D:\\Cuexis-redesign\\out\\verification-20261031\\evidence-staging\\r3-mingw-probe\\archive-src\\tiny-repro.cpp",
+        "-LD:\\Cuexis-redesign\\out\\build\\mingw-headless-debug\\vcpkg_installed\\x64-mingw-static\\debug\\lib",
+        "-LD:\\Cuexis-redesign\\out\\build\\mingw-headless-debug\\vcpkg_installed\\x64-mingw-static\\debug\\lib\\manual-link",
+        "-lCatch2Maind",
+        "-lCatch2d"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "D:\\Cuexis-redesign\\out\\verification-20261031\\evidence-staging\\r3-mingw-probe\\archive-src\\tiny-repro.cpp:11:18: warning: 'cux_probe_buffer' initialized and declared 'extern'\n   11 | extern \"C\" void* cux_probe_buffer = nullptr;\n      |                  ^~~~~~~~~~~~~~~~\n",
+      "binary": "trace\\dynamic-runtime.exe",
+      "binary_bytes": 20814385,
+      "binary_sha256": "9f74cadd4b69410cd6dc11ad2747f50771cd0dea7c1c9d31b6d9ca10481c7985",
+      "payload_free_hits": 1,
+      "free_breakpoint_coverage": 1,
+      "libstdcxx_loaded": true,
+      "killed_after_second_hit": false,
+      "crash_in_transcript": true,
+      "payload_free_lines": [
+        "PAYLOAD_FREE 1 ptr=0x7928a0 wm16=0x0000000000792890 wm8=0x0000000000000178 probe_hit=0 ret=0x7ff6e8c514f7",
+        "PAYLOAD_FREE_HITS 1"
+      ],
+      "call_site_symbols": [
+        "Catch::Detail::unique_ptr<std::__cxx11::basic_ostringstream<char, std::char_traits<char>, std::allocator<char> > >::~unique_ptr() + 39 in section .text of D:\\Cuexis-redesign\\out\\verification-20261031\\evidence-staging\\r3-mingw-probe\\trace\\dynamic-runtime.exe"
+      ],
+      "call_site_code": [
+        [
+          "0x7ff6e8c514eb <_ZN5Catch6Detail10unique_ptrINSt7__cxx1119basic_ostringstreamIcSt11char_traitsIcESaIcEEEED1Ev+27>:\tadd    $0x8,%rdx",
+          "0x7ff6e8c514ef <_ZN5Catch6Detail10unique_ptrINSt7__cxx1119basic_ostringstreamIcSt11char_traitsIcESaIcEEEED1Ev+31>:\tmov    (%rdx),%rdx",
+          "0x7ff6e8c514f2 <_ZN5Catch6Detail10unique_ptrINSt7__cxx1119basic_ostringstreamIcSt11char_traitsIcESaIcEEEED1Ev+34>:\tmov    %rax,%rcx",
+          "0x7ff6e8c514f5 <_ZN5Catch6Detail10unique_ptrINSt7__cxx1119basic_ostringstreamIcSt11char_traitsIcESaIcEEEED1Ev+37>:\tcall   *%rdx",
+          "0x7ff6e8c514f7 <_ZN5Catch6Detail10unique_ptrINSt7__cxx1119basic_ostringstreamIcSt11char_traitsIcESaIcEEEED1Ev+39>:\tnop"
+        ]
+      ],
+      "counted_hits": 1,
+      "checks": {
+        "payload_free_hits": true,
+        "free_breakpoint_resolved": true,
+        "libstdcxx_presence": true,
+        "transcript_self_consistent": true,
+        "call_site_named": true,
+        "virtual_dispatch_visible": true
+      },
+      "matches_expectation": true
+    },
+    {
+      "build": "static-runtime",
+      "why": "the same destructor is linked into the executable and reaches our own delete",
+      "extra_flags": [
+        "-static-libstdc++",
+        "-static-libgcc"
+      ],
+      "expected_payload_free_hits": 0,
+      "expected_libstdcxx": false,
+      "transcript": "gdb\\static-runtime-clean-free.txt",
+      "transcript_sha256": "5c4d6622014c45bbe1b279b09fcd316189d6e6d35739a22d0269c70a9bd67695",
+      "transcript_bytes": 2048,
+      "gdb_exit": 0,
+      "exit_code_unattended": "0x00000000",
+      "command": [
+        "C:\\msys64\\ucrt64\\bin\\c++.exe",
+        "-std=c++20",
+        "-O0",
+        "-g",
+        "-ID:\\Cuexis-redesign\\out\\verification-20261031\\evidence-staging\\r3-mingw-probe\\trace\\as-run-include",
+        "-ID:\\Cuexis-redesign\\out\\build\\mingw-headless-debug\\vcpkg_installed\\x64-mingw-static\\include",
+        "-ID:\\Cuexis-redesign\\engine\\core\\internal",
+        "-static-libstdc++",
+        "-static-libgcc",
+        "-o",
+        "D:\\Cuexis-redesign\\out\\verification-20261031\\evidence-staging\\r3-mingw-probe\\trace\\static-runtime.exe",
+        "D:\\Cuexis-redesign\\out\\verification-20261031\\evidence-staging\\r3-mingw-probe\\archive-src\\tiny-repro.cpp",
+        "-LD:\\Cuexis-redesign\\out\\build\\mingw-headless-debug\\vcpkg_installed\\x64-mingw-static\\debug\\lib",
+        "-LD:\\Cuexis-redesign\\out\\build\\mingw-headless-debug\\vcpkg_installed\\x64-mingw-static\\debug\\lib\\manual-link",
+        "-lCatch2Maind",
+        "-lCatch2d"
+      ],
+      "compile_exit": 0,
+      "compile_stderr": "D:\\Cuexis-redesign\\out\\verification-20261031\\evidence-staging\\r3-mingw-probe\\archive-src\\tiny-repro.cpp:11:18: warning: 'cux_probe_buffer' initialized and declared 'extern'\n   11 | extern \"C\" void* cux_probe_buffer = nullptr;\n      |                  ^~~~~~~~~~~~~~~~\n",
+      "binary": "trace\\static-runtime.exe",
+      "binary_bytes": 23548799,
+      "binary_sha256": "0a0b418fc1869619fa0b38c1d99695fae3ee0f3201704240beb6289e95acb44e",
+      "payload_free_hits": 0,
+      "free_breakpoint_coverage": 1,
+      "libstdcxx_loaded": false,
+      "killed_after_second_hit": false,
+      "crash_in_transcript": false,
+      "payload_free_lines": [
+        "PAYLOAD_FREE_HITS 0"
+      ],
+      "call_site_symbols": [],
+      "call_site_code": [],
+      "counted_hits": 0,
+      "checks": {
+        "payload_free_hits": true,
+        "free_breakpoint_resolved": true,
+        "libstdcxx_presence": true,
+        "transcript_self_consistent": true
+      },
+      "matches_expectation": true
+    }
+  ],
+  "mismatches": []
+}

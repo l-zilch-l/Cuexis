@@ -1,0 +1,158 @@
+{
+  "later_commit": "8963889",
+  "run2": {
+    "run": "out\\rpa-acceptance\\20261101-021741-4daf2bb2",
+    "head": "3fbc31f68430ce2d0ad576094ff617cc09772f10",
+    "worktree_sha256": "cfd039e8a8bc4e458d137a08cde8dc7a38c5528433b4eb73f439077337833035",
+    "implementation_sha256": "2294be30ee2733045e0afad56724c8da3f50e29da037bce6aac2e3de5594ba0f",
+    "files_recorded": 3388,
+    "states": {
+      "unmodified": 3388,
+      "modified": 0,
+      "added": 0
+    },
+    "forms": {
+      "blob": 1634,
+      "blob-crlf": 1687,
+      "worktree-eol": 67
+    },
+    "deltas": [],
+    "repaired": [
+      {
+        "path": "tests/CMakeLists.txt",
+        "run_sha256": "769b2d91e0cb97084750a13b2501c2b80855cb0b473e12630e24b1f74afdee01",
+        "later_sha256": "1bb1562c78f4b2b8dd1b44684e4da8b4819849f4bb04d71d07423a1fc1580412"
+      },
+      {
+        "path": "tests/gameplay_packed/CMakeLists.txt",
+        "run_sha256": "17c992d397a7fb91db29ae27287868356fcdd504a0e4fbb6b106bfc9e5b0b4ea",
+        "later_sha256": "b715f9e8637f55bcfc90f66c899b2ee524cdec1a19014d3e04ab098964deaaa5"
+      },
+      {
+        "path": "tests/pd/CMakeLists.txt",
+        "run_sha256": "0cf90d0904d0f96992e9bd036efcd3d5432da77daef6cf7aae51fc725b9b78d7",
+        "later_sha256": "fe4f19d146381815771b77e0bb7eb0356fad4a7908acf0a008576194a4539c51"
+      },
+      {
+        "path": "tests/pd/README.md",
+        "run_sha256": "3f00c067103d085dfd5819cbbcf7be462db4466e9acc4d00daaa4408d9d34cc8",
+        "later_sha256": "d740dcd1a462f5dcd80d90a74c785eee6b312298151e2d1b1e94935233f38cb7"
+      },
+      {
+        "path": "tests/pd/pd_allocation_probe.hpp",
+        "run_sha256": "e8c9aaa7896fd5d538a94ba0d734988f0de51a83035f7e30fd843505ce6f284f",
+        "later_sha256": "92c7313ff424add52bb28e077e7010dd0cb55698b0058048c23125438f641d8f"
+      },
+      {
+        "path": "tools/verification/run_rpa_acceptance_matrix.py",
+        "run_sha256": "a929f34e2fe7c8caeeeb0cfbe21977fd98a62b856fab097a0f358690dd5c4867",
+        "later_sha256": "6fb1a5a99de231023d16367761f162a785ca3d223b33b1c7b8336f006aa132a6"
+      }
+    ]
+  },
+  "run3": {
+    "run": "out\\rpa-acceptance\\20261101-051925-efdc7b6e",
+    "head": "3fbc31f68430ce2d0ad576094ff617cc09772f10",
+    "worktree_sha256": "df091e437d832afb25ccc68f5204075567dbf5b6fb6c3739d8a21eedfb93b571",
+    "implementation_sha256": "9682ef140391fc2820faed2767dfc6e5d5b13a83dfbbacd35d6ea783f8c91ddc",
+    "files_recorded": 3388,
+    "states": {
+      "unmodified": 3382,
+      "modified": 6,
+      "added": 0
+    },
+    "forms": {
+      "blob": 1633,
+      "blob-crlf": 1682,
+      "worktree-eol": 67
+    },
+    "deltas": [
+      {
+        "path": "tests/CMakeLists.txt",
+        "run_sha256": "90fb929cbf9f2503d770d94dd56557bc3442eeb43cbe50c54778b8a2a772f1a8",
+        "head_sha256": "fa676936e6adfc3129856ac8e78b9ec640a66074c8bb48ed81da62f2f6e94544",
+        "later_sha256": "1bb1562c78f4b2b8dd1b44684e4da8b4819849f4bb04d71d07423a1fc1580412",
+        "state": "modified",
+        "form": null,
+        "run_equals_later": true
+      },
+      {
+        "path": "tests/gameplay_packed/CMakeLists.txt",
+        "run_sha256": "ee599b1f8166672f0958ea9696a221de8537787b4e35dffe704de63a28643b59",
+        "head_sha256": "80f30f2e29acd8e03f027a2f925b540f0d6966397c9a212756963d75ca3f11de",
+        "later_sha256": "b715f9e8637f55bcfc90f66c899b2ee524cdec1a19014d3e04ab098964deaaa5",
+        "state": "modified",
+        "form": null,
+        "run_equals_later": true
+      },
+      {
+        "path": "tests/pd/CMakeLists.txt",
+        "run_sha256": "9584cd7a476cb5f5a9bf417079c17f1384f474f6b924515778e19b2caee90503",
+        "head_sha256": "782c14c21254d0c3b58f75225d7295055510891d67d108404d69905cf9a401d7",
+        "later_sha256": "fe4f19d146381815771b77e0bb7eb0356fad4a7908acf0a008576194a4539c51",
+        "state": "modified",
+        "form": null,
+        "run_equals_later": true
+      },
+      {
+        "path": "tests/pd/README.md",
+        "run_sha256": "d455357e08c42007a67e5828df1db495c3e93e9eeb7f4cc3172b96d219205843",
+        "head_sha256": "038f1e37533e8732e379e3dca8895d4f73720151f93b5d25bcd8e677d86fe404",
+        "later_sha256": "d740dcd1a462f5dcd80d90a74c785eee6b312298151e2d1b1e94935233f38cb7",
+        "state": "modified",
+        "form": null,
+        "run_equals_later": true
+      },
+      {
+        "path": "tests/pd/pd_allocation_probe.hpp",
+        "run_sha256": "92c7313ff424add52bb28e077e7010dd0cb55698b0058048c23125438f641d8f",
+        "head_sha256": "e8c9aaa7896fd5d538a94ba0d734988f0de51a83035f7e30fd843505ce6f284f",
+        "later_sha256": "92c7313ff424add52bb28e077e7010dd0cb55698b0058048c23125438f641d8f",
+        "state": "modified",
+        "form": null,
+        "run_equals_later": true
+      },
+      {
+        "path": "tools/verification/run_rpa_acceptance_matrix.py",
+        "run_sha256": "a90d5d965442a1dda8bcf1e02c6ca646b87ff5e8227cf2d9600621dd2a259cd8",
+        "head_sha256": "5d0f42f43659db460943e195fc0e9896f571cd3d53f3a28105d5e1df46bb36d0",
+        "later_sha256": "6fb1a5a99de231023d16367761f162a785ca3d223b33b1c7b8336f006aa132a6",
+        "state": "modified",
+        "form": null,
+        "run_equals_later": true
+      }
+    ],
+    "repaired": [
+      {
+        "path": "tests/CMakeLists.txt",
+        "run_sha256": "90fb929cbf9f2503d770d94dd56557bc3442eeb43cbe50c54778b8a2a772f1a8",
+        "later_sha256": "1bb1562c78f4b2b8dd1b44684e4da8b4819849f4bb04d71d07423a1fc1580412"
+      },
+      {
+        "path": "tests/gameplay_packed/CMakeLists.txt",
+        "run_sha256": "ee599b1f8166672f0958ea9696a221de8537787b4e35dffe704de63a28643b59",
+        "later_sha256": "b715f9e8637f55bcfc90f66c899b2ee524cdec1a19014d3e04ab098964deaaa5"
+      },
+      {
+        "path": "tests/pd/CMakeLists.txt",
+        "run_sha256": "9584cd7a476cb5f5a9bf417079c17f1384f474f6b924515778e19b2caee90503",
+        "later_sha256": "fe4f19d146381815771b77e0bb7eb0356fad4a7908acf0a008576194a4539c51"
+      },
+      {
+        "path": "tests/pd/README.md",
+        "run_sha256": "d455357e08c42007a67e5828df1db495c3e93e9eeb7f4cc3172b96d219205843",
+        "later_sha256": "d740dcd1a462f5dcd80d90a74c785eee6b312298151e2d1b1e94935233f38cb7"
+      },
+      {
+        "path": "tests/pd/pd_allocation_probe.hpp",
+        "run_sha256": "92c7313ff424add52bb28e077e7010dd0cb55698b0058048c23125438f641d8f",
+        "later_sha256": "92c7313ff424add52bb28e077e7010dd0cb55698b0058048c23125438f641d8f"
+      },
+      {
+        "path": "tools/verification/run_rpa_acceptance_matrix.py",
+        "run_sha256": "a90d5d965442a1dda8bcf1e02c6ca646b87ff5e8227cf2d9600621dd2a259cd8",
+        "later_sha256": "6fb1a5a99de231023d16367761f162a785ca3d223b33b1c7b8336f006aa132a6"
+      }
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+Randomness seeded to: 161451407
+PD_RENDERER {"kind":"CPU TestPresentationRenderer","pairs":4096,"viewport":[1280,720],"objects":2,"logical_snapshot_bytes":987,"renderer_generation":1,"zero_surface_rejected":true,"gpu_time":null}
+PD_LEDGER {"capacity":4,"frozen_tick":false,"successful_receipts":4,"first_rejected_publish":5,"unknown":1,"reclaim":false,"scope":1,"resource_generation":1}
+PD_LEDGER {"capacity":4,"frozen_tick":true,"successful_receipts":4,"first_rejected_publish":5,"unknown":1,"reclaim":false,"scope":1,"resource_generation":1}
+PD_LEDGER {"capacity":4096,"frozen_tick":false,"successful_receipts":4096,"first_rejected_publish":4097,"unknown":1,"reclaim":false,"scope":1,"resource_generation":1}
+PD_LEDGER {"capacity":4096,"frozen_tick":true,"successful_receipts":4096,"first_rejected_publish":4097,"unknown":1,"reclaim":false,"scope":1,"resource_generation":1}
+===============================================================================
+All tests passed (16414 assertions in 2 test cases)
+

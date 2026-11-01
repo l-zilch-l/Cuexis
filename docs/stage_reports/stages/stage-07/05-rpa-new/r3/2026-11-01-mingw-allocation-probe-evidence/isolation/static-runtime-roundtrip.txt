@@ -1,0 +1,8 @@
+MODE roundtrip
+PROBE_BLOCK ptr=0000021d4ea1b160 w_minus_16=0000021d4ea1b150 w_minus_8=65
+STRING ok size=64
+ARRAY ok last=121
+ARRAY released
+ALIGNED ok
+ALIGNED released
+DONE
