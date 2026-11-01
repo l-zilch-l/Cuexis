@@ -1,0 +1,38 @@
+{
+  "scope": "instruction pointer sampling of the submit-path stall at 1080p; separate instrument, diagnostic only, not the pre-registered ladder and not acceptance",
+  "created_utc": "2026-11-01T01:35:59.934879+00:00",
+  "head": "04b6fa3c193accdd8914357b6b98d933cdeda1c5",
+  "dirty_files": [],
+  "plan": {
+    "groups": [
+      "static"
+    ],
+    "processes_per_group": 1,
+    "entities": 2800,
+    "seconds_per_process": 20.0,
+    "viewport": [
+      1920,
+      1080
+    ],
+    "affinity": 65535,
+    "sampler_affinity": 32768,
+    "priority": "BelowNormal",
+    "qos": "execution throttling OFF",
+    "timer": false,
+    "pixel_readback": true,
+    "budget_us": 4166.666666666667,
+    "pass_rule": "wall FPS >= 240 and cycle p99 <= 4.166667 ms and every complete one-second window >= 240 frames",
+    "stop": "an invalid process stops the run; budget failures are retained",
+    "instrument": "sample_rip.py instruction pointer sampling, roughly 13 kHz per thread"
+  },
+  "binary": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_execution_device_probe.exe",
+  "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8",
+  "probe_source_sha256": "e98f1dac026e51cfebdfb331c657bdb9a6e77e6896a493f6c57a8040fdcd07f0",
+  "sampler": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\sample_rip.py",
+  "sampler_sha256": "70cbd75e45bca327019bf2b8d00c5fb032c4ba3c91afa78396b6a2991c715291",
+  "analyzer": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\analyze_rip.py",
+  "analyzer_sha256": "326bc47795ed5e7d6b6b1bf1baa69d5c95b229352fd174998b93648aaf339544",
+  "driver": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\run_sample.py",
+  "driver_sha256": "242eb859581851e0d9012f1e5fd7053e5ebcfa944f4b8cde3e3dc2c392c09bf3",
+  "runner_sha256": "30a34162c5ded51c06fbe01796349966f215e37554a2150f093dad5680000a01"
+}

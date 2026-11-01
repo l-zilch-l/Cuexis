@@ -2,7 +2,7 @@
 
 状态：current index
 
-更新日期：2026-10-30
+更新日期：2026-11-01
 
 当前状态只以 [CURRENT_STATUS](../../../../CURRENT_STATUS.md) 为准；本页只负责定位，不新增实施、测量或阶段接受结论。
 
@@ -100,3 +100,5 @@
 | [第二次运行与 MinGW 分配探针极限](r3/2026-11-01-r3-run2-and-mingw-allocation-probe-limit.md) | `D:/Cuexis-redesign/out/rpa-acceptance/20261101-021741-4daf2bb2/`（10 行的 configure/build/ctest 日志与命令、`[measurement]` 重复、MinGW 两行的失败清单与 102 次 `0xc0000374`）；`out/verification-20261031/evidence-staging/r3-mingw-probe/`（`gdb/` 断点轨迹、`isolation/` 隔离矩阵、`post-fix/` 修复后复核、`repro/` 最小复现、`archive-src/` 源码副本）；[整包附件](r3/2026-11-01-mingw-allocation-probe-evidence/index.md) 逐项登记来源/字节/哈希 |
 | [同源验收矩阵第三次运行](r3/2026-11-01-r3-acceptance-matrix-third-run.md) | `D:/Cuexis-redesign/out/rpa-acceptance/20261101-051925-efdc7b6e/`（11 行全新配置、从零构建与全量 CTest，13,613 个用例、120 次测量事件、磁盘下限与 `source_unchanged`）；`out/verification-20261031/evidence-staging/r3-matrix-run3/`（`verify_identity_closure.py` 与两份 `identity-closure*.json`，把运行记录的工作树哈希按内容闭合到 `8963889`）；[整包附件](r3/2026-11-01-rpa-acceptance-matrix-run3-evidence/index.md) 逐项登记来源/字节/哈希 |
 | [1080p 容量前缘区间](r3/2026-11-01-r3-capacity-frontier-bracket.md) | `D:/Cuexis-redesign/out/verification-20261031/r3-40k-throughput-refresh-v1/`（预注册的 `frontier-bracket-4/` 八点两模式阶梯、作废的 `-2`/`-3` 两次尝试与起跑前即中止的 `-1`、只重读日志的 `stall-shapes/`、另一台仪器的 `stall-diagnosis-1/`）；[整包附件](r3/2026-11-01-capacity-frontier-evidence/index.md) 逐项登记来源/字节/哈希与 `superseded_attempts` |
+
+| [提交路径停顿归因](r3/2026-11-01-r3-submit-stall-wait-attribution.md) | `D:/Cuexis-redesign/out/verification-20261101/r3-stall-mechanism-v1/`（三份预注册、十二份等待期仪器、七个登记进程的原始样本流与逐帧日志、四次栈回溯、GPU 计时器仪器的 `n1800`/`n2400`/`n2800` 三组）；[整包附件](r3/2026-11-01-submit-stall-wait-evidence/index.md) 逐文件登记 `source_sha256`/`sha256`/`eol`，自带 `verify_wait_evidence.py --rebuild` 可从归档重推导并逐字节复算汇总表 |

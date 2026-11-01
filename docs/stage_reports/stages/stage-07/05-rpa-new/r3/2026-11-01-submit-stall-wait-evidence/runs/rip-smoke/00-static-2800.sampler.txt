@@ -1,0 +1,8 @@
+pid=3868 threads=4 opened=4
+elapsed_s=7.716 samples=76779 rate=9950/s failures=2821 handles=0 reason=process_exit
+  tid=2740 samples=19610 failures=290
+  tid=24180 samples=19057 failures=843
+  tid=9376 samples=19056 failures=844
+  tid=4128 samples=19056 failures=844
+  failure_codes [('suspend 5', 2821)]
+  failure_seconds 1 buckets, first [(7, 2821)] last [(7, 2821)]

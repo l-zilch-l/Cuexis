@@ -1,0 +1,20 @@
+{
+  "scope": "Archive self-check: every copied file is present and hashes to its manifest entry, every gzip stream decompresses to the recorded source hash, every normalised text copy contains no bare LF, and no file exists that the manifest does not list.",
+  "checked_utc": "2026-11-01T02:39:41.584175+00:00",
+  "result": "pass",
+  "file_set": {
+    "expected": 134,
+    "present": 133,
+    "stray": [],
+    "missing": []
+  },
+  "checks_run": 260,
+  "checks_failed": [],
+  "modes": {
+    "text": 88,
+    "gzip": 42,
+    "binary": 0
+  },
+  "raw_bytes": 473156453,
+  "archived_bytes": 31243556
+}

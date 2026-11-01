@@ -1,0 +1,343 @@
+# value type name
+0x1 ? - duplicate 6 
+0x3 ? - duplicate 6 
+0x4 Event -  
+0x5 Event -  
+0x6 Event -  
+0x7 Event -  
+0x8 Event -  
+0x9 Event -  
+0xa Event -  
+0xc Key \REGISTRY\MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options  
+0xd Key \REGISTRY\MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options  
+0xe Key \REGISTRY\MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options  
+0xf Key \REGISTRY\MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options  
+0x10 WaitCompletionPacket -  
+0x1a TpWorkerFactory -  
+0x1c IoCompletion -  
+0x1d IoCompletion -  
+0x1e IoCompletion -  
+0x22 IRTimer -  
+0x25 WaitCompletionPacket -  
+0x27 WaitCompletionPacket -  
+0x2c WaitCompletionPacket -  
+0x30 Event -  
+0x32 Event -  
+0x37 WaitCompletionPacket -  
+0x3c ? - duplicate 50 
+0x3d ? - duplicate 50 
+0x3e ? - duplicate 50 
+0x40 ? - duplicate 50 
+0x46 ? - duplicate 50 
+0x4a Directory -  
+0x70 Mutant \Sessions\1\BaseNamedObjects\SM0:29644:304:WilStaging_02  
+0x75 Directory -  
+0x85 ? - duplicate 50 
+0xac TpWorkerFactory -  
+0xb7 WaitCompletionPacket -  
+0xbf WaitCompletionPacket -  
+0xc9 ? - duplicate 50 
+0xd4 IoCompletion -  
+0xee ? - duplicate 50 
+0xfc Key \REGISTRY\MACHINE  
+0x100 Key \REGISTRY\MACHINE  
+0x113 Key \REGISTRY\USER\S-1-5-21-2299238047-2416774458-1100952286-1001_Classes\Local Settings  
+0x118 ? - duplicate 50 
+0x12e Event -  
+0x134 Event -  
+0x13c ? - duplicate 50 
+0x141 ? - duplicate 50 
+0x144 ? - duplicate 50 
+0x14e ? - duplicate 50 
+0x158 ? - duplicate 50 
+0x15e ? - duplicate 50 
+0x161 ? - duplicate 50 
+0x162 ? - duplicate 50 
+0x164 ? - duplicate 6 
+0x167 ? - duplicate 50 
+0x168 ? - duplicate 50 
+0x169 ? - duplicate 50 
+0x17c ? - duplicate 50 
+0x183 ? - duplicate 50 
+0x1fc File -  
+0x210 File -  
+0x21f ? - duplicate 50 
+0x230 ALPC Port -  
+0x244 ALPC Port -  
+0x264 ? - duplicate 6 
+0x282 ? - duplicate 50 
+0x2b2 Mutant \Sessions\1\BaseNamedObjects\AudioDevProps2Mtx64  
+0x2b8 Section -  
+0x2c2 Thread -  id=25480 pid=29644 image=-
+0x2f0 Section -  
+0x2f4 ? - duplicate 6 
+0x300 File -  
+0x30c ? - duplicate 6 
+0x316 Semaphore -  
+0x318 ? - duplicate 6 
+0x31c Key \REGISTRY\MACHINE\SYSTEM\ControlSet001\Control\Nls\CustomLocale  
+0x320 ? - duplicate 6 
+0x324 Key \REGISTRY\MACHINE\SYSTEM\ControlSet001\Control\Nls\ExtendedLocale  
+0x340 ? - duplicate 6 
+0x378 Semaphore -  
+0x381 Semaphore -  
+0x3a0 ? - duplicate 6 
+0x3ac ? - duplicate 6 
+0x3d2 Event -  
+0x3fb ? - duplicate 50 
+0x3fc Semaphore -  
+0x400 ? - duplicate 6 
+0x403 ? - duplicate 6 
+0x423 Event -  
+0x430 Process -  id=29644 pid=? image=D:\Cuexis-redesign\out\build\rpa-candidate-release\bin\cuexis_execution_device_probe.exe
+0x43f Event -  
+0x458 Section -  
+0x45c Process -  id=29644 pid=? image=D:\Cuexis-redesign\out\build\rpa-candidate-release\bin\cuexis_execution_device_probe.exe
+0x460 Event -  
+0x464 ? - duplicate 6 
+0x468 ? - duplicate 6 
+0x4d3 Thread -  id=27848 pid=29644 image=-
+0x504 ? - duplicate 6 
+0x52b ? - duplicate 50 
+0x557 Event -  
+0x559 Event -  
+0x55a Event -  
+0x584 ? - duplicate 50 
+0x628 Thread -  id=24960 pid=29644 image=-
+0x640 ? - duplicate 6 
+0x720 Semaphore -  
+0x726 Timer -  
+0x73d Timer -  
+0x750 Semaphore -  
+0x753 Semaphore -  
+0x758 Semaphore -  
+0x810 ? - duplicate 6 
+0x846 ? - duplicate 6 
+0x9a7 ? - duplicate 6 
+0x9b2 ? - duplicate 6 
+0x9b7 ? - duplicate 6 
+0xa21 ? - duplicate 6 
+0xef0 ? - duplicate 6 
+0xf6e ? - duplicate 6 
+0xfd0 ? - duplicate 6 
+0xfd6 ? - duplicate 6 
+0x1010 ? - duplicate 6 
+0x1018 ? - duplicate 6 
+0x1080 ? - duplicate 6 
+0x1414 ? - duplicate 6 
+0x18c0 ? - duplicate 6 
+0x1a0a ? - duplicate 6 
+0x1a0c ? - duplicate 6 
+0x2010 ? - duplicate 6 
+0x2508 ? - duplicate 6 
+0x281e ? - duplicate 6 
+0x29a9 ? - duplicate 6 
+0x2a0b ? - duplicate 6 
+0x2a23 ? - duplicate 6 
+0x2a2f ? - duplicate 6 
+0x2a30 ? - duplicate 6 
+0x2b34 ? - duplicate 6 
+0x2cbf ? - duplicate 6 
+0x2d52 ? - duplicate 6 
+0x2d59 ? - duplicate 6 
+0x2d6b ? - duplicate 6 
+0x2d84 ? - duplicate 6 
+0x2da2 ? - duplicate 6 
+0x4010 ? - duplicate 6 
+0x4030 ? - duplicate 6 
+0x8010 ? - duplicate 6 
+0x8020 ? - duplicate 6 
+0xc7f3 ? - duplicate 6 
+0xdac3 ? - duplicate 6 
+0x10040 ? - duplicate 6 
+0x11050 ? - duplicate 6 
+0x20060 ? - duplicate 6 
+0x22010 ? - duplicate 6 
+0xdac30 ? - duplicate 6 
+0x10000f ? - duplicate 6 
+0x35277c01 ? - duplicate 6 
+0xa25ace3d ? - duplicate 6 
+0xb067e75000 ? - duplicate 6 
+0xb0680f63b0 ? - duplicate 6 
+0xb0680fa0d0 ? - duplicate 6 
+0xb0680fa150 ? - duplicate 6 
+0xb0680fa550 ? - duplicate 6 
+0xb0680fa768 ? - duplicate 6 
+0xb0680fa798 ? - duplicate 6 
+0xb0680fad48 ? - duplicate 6 
+0xb0680faec0 ? - duplicate 6 
+0xb0680faf38 ? - duplicate 6 
+0xb0680fb280 ? - duplicate 6 
+0xb0680fb2b8 ? - duplicate 6 
+0xb0680fbab8 ? - duplicate 6 
+0xb0680fc820 ? - duplicate 6 
+0xb0680fc960 ? - duplicate 6 
+0xb0680fcbb0 ? - duplicate 6 
+0xb0680fcbb8 ? - duplicate 6 
+0xb0680fd308 ? - duplicate 6 
+0xb0680fd490 ? - duplicate 6 
+0xb0680fd530 ? - duplicate 6 
+0xb0680fd560 ? - duplicate 6 
+0xb0680fd5d0 ? - duplicate 6 
+0xb0680fd600 ? - duplicate 6 
+0xb0680fd680 ? - duplicate 6 
+0xb0680fd790 ? - duplicate 6 
+0xb0680fd830 ? - duplicate 6 
+0xb0680fda40 ? - duplicate 6 
+0xb0680fdae0 ? - duplicate 6 
+0xb0680fdc28 ? - duplicate 6 
+0xb0680fdc38 ? - duplicate 6 
+0xb0680fdcc2 ? - duplicate 6 
+0xb0680fdcc4 ? - duplicate 6 
+0xb0680fdcc8 ? - duplicate 6 
+0xb0680fdcd8 ? - duplicate 6 
+0xb0680fdce0 ? - duplicate 6 
+0xb0680fdf90 ? - duplicate 6 
+0xb0683ff538 ? - duplicate 6 
+0x1d200684790 ? - duplicate 6 
+0x1d2006ac82c ? - duplicate 6 
+0x1d2006d490c ? - duplicate 6 
+0x1d201918794 ? - duplicate 6 
+0x1d201950880 ? - duplicate 6 
+0x1d201978968 ? - duplicate 6 
+0x1d24bb90000 ? - duplicate 6 
+0x1d24bc1001c ? - duplicate 6 
+0x1d24bca0000 ? - duplicate 6 
+0x1d24bca00f0 ? - duplicate 6 
+0x1d24bca0120 ? - duplicate 6 
+0x1d24bca0150 ? - duplicate 6 
+0x1d24bca0180 ? - duplicate 6 
+0x1d24bca01b0 ? - duplicate 6 
+0x1d24bca01e0 ? - duplicate 6 
+0x1d24bca0210 ? - duplicate 6 
+0x1d24bca0d80 ? - duplicate 6 
+0x1d24bca1050 ? - duplicate 6 
+0x1d24be50000 ? - duplicate 6 
+0x1d24be563d8 ? - duplicate 6 
+0x1d24be563e4 ? - duplicate 6 
+0x1d24be563e8 ? - duplicate 6 
+0x1d24be563f0 ? - duplicate 6 
+0x1d24be563f8 ? - duplicate 6 
+0x1d24be56400 ? - duplicate 6 
+0x1d24be56408 ? - duplicate 6 
+0x1d24be56414 ? - duplicate 6 
+0x1d24be56418 ? - duplicate 6 
+0x1d24be56428 ? - duplicate 6 
+0x1d24be56438 ? - duplicate 6 
+0x1d24be56444 ? - duplicate 6 
+0x1d24be74b18 ? - duplicate 6 
+0x1d24be940c0 ? - duplicate 6 
+0x1d24bef2180 ? - duplicate 6 
+0x1d24bf13010 ? - duplicate 6 
+0x1d24bf35020 ? - duplicate 6 
+0x1d24d874510 ? - duplicate 6 
+0x1d24d90c010 ? - duplicate 6 
+0x1d24d91aab0 ? - duplicate 6 
+0x1d24db65010 ? - duplicate 6 
+0x1d24db7b020 ? - duplicate 6 
+0x1d24dcc6010 ? - duplicate 6 
+0x1d24dda6010 ? - duplicate 6 
+0x1d24ddda020 ? - duplicate 6 
+0x1d24ddfc740 ? - duplicate 6 
+0x1d24de73040 ? - duplicate 6 
+0x1d24def4010 ? - duplicate 6 
+0x1d24dfc4010 ? - duplicate 6 
+0x1d24e060080 ? - duplicate 6 
+0x1d24e14f020 ? - duplicate 6 
+0x1d24e2b2010 ? - duplicate 6 
+0x1d24e3166c0 ? - duplicate 6 
+0x1d24e3176d0 ? - duplicate 6 
+0x1d24e3186d0 ? - duplicate 6 
+0x1d24e3196e0 ? - duplicate 6 
+0x1d24e31b6f0 ? - duplicate 6 
+0x1d24e31bf00 ? - duplicate 6 
+0x1d24e31cf20 ? - duplicate 6 
+0x1d24e31d710 ? - duplicate 6 
+0x1d24e31e720 ? - duplicate 6 
+0x1d24e31f730 ? - duplicate 6 
+0x1d24e31ff40 ? - duplicate 6 
+0x1d24e323750 ? - duplicate 6 
+0x1d24e323f60 ? - duplicate 6 
+0x1d24e324760 ? - duplicate 6 
+0x1d24e324770 ? - duplicate 6 
+0x1d24e325770 ? - duplicate 6 
+0x1d24e325fa0 ? - duplicate 6 
+0x1d24e327780 ? - duplicate 6 
+0x1d24e329790 ? - duplicate 6 
+0x1d24e32b7a0 ? - duplicate 6 
+0x1d24e32c7b0 ? - duplicate 6 
+0x1d24e32f7b0 ? - duplicate 6 
+0x1d24e3307b0 ? - duplicate 6 
+0x1d24e3307c0 ? - duplicate 6 
+0x1d24e3317b0 ? - duplicate 6 
+0x1d24e3347d0 ? - duplicate 6 
+0x1d24e3377d0 ? - duplicate 6 
+0x1d24e3387e0 ? - duplicate 6 
+0x1d24e33c7f0 ? - duplicate 6 
+0x1d24e344800 ? - duplicate 6 
+0x1d24e349020 ? - duplicate 6 
+0x1d24e34c810 ? - duplicate 6 
+0x1d24e354820 ? - duplicate 6 
+0x1d24e359810 ? - duplicate 6 
+0x1d24e35b820 ? - duplicate 6 
+0x1d24e35c830 ? - duplicate 6 
+0x1d24e377b10 ? - duplicate 6 
+0x1d24e377b90 ? - duplicate 6 
+0x1d24e377ef0 ? - duplicate 6 
+0x1d24e387f00 ? - duplicate 6 
+0x1d24e5cd430 ? - duplicate 6 
+0x1d24e5ce290 ? - duplicate 6 
+0x1d24e6750d0 ? - duplicate 6 
+0x1d24e675150 ? - duplicate 6 
+0x1d24e6751d0 ? - duplicate 6 
+0x1d24e675250 ? - duplicate 6 
+0x1d24e675290 ? - duplicate 6 
+0x1d24e6752d0 ? - duplicate 6 
+0x1d24e675350 ? - duplicate 6 
+0x1d24e675670 ? - duplicate 6 
+0x1d24e675690 ? - duplicate 6 
+0x1d24e6756f0 ? - duplicate 6 
+0x1d24e675730 ? - duplicate 6 
+0x1d24e675770 ? - duplicate 6 
+0x1d24e675810 ? - duplicate 6 
+0x1d24e675830 ? - duplicate 6 
+0x1d24e675910 ? - duplicate 6 
+0x1d24e675990 ? - duplicate 6 
+0x1d24e73a010 ? - duplicate 6 
+0x1d24eaf2010 ? - duplicate 6 
+0x1d24eec8bd0 ? - duplicate 6 
+0x1d24eec8c90 ? - duplicate 6 
+0x1d24eec8cd0 ? - duplicate 6 
+0x1d24eec8d10 ? - duplicate 6 
+0x1d24eec8d50 ? - duplicate 6 
+0x1d24eec8dd0 ? - duplicate 6 
+0x1d24eec8e10 ? - duplicate 6 
+0x1d24eec8e50 ? - duplicate 6 
+0x1d24eec8e90 ? - duplicate 6 
+0x1d24eec8ed0 ? - duplicate 6 
+0x1d24eec8f10 ? - duplicate 6 
+0x7fff6d4d4b50 ? - duplicate 6 
+0x7fff7b2600f8 ? - duplicate 6 
+0x7fffe96ac860 ? - duplicate 6 
+0x7fffe9996190 ? - duplicate 6 
+0x7fffe99d0000 ? - duplicate 6 
+0x7fffe9bb9be0 ? - duplicate 6 
+0x7fffee72a6b0 ? - duplicate 6 
+0x7fffefd18378 ? - duplicate 6 
+0x7fffefd6cfb0 ? - duplicate 6 
+0x7fffefd87458 ? - duplicate 6 
+0x7fffefd87488 ? - duplicate 6 
+0x7fffefd874a0 ? - duplicate 6 
+0x7fffefd874b8 ? - duplicate 6 
+0x7fffefd87620 ? - duplicate 6 
+0x7fffefd87710 ? - duplicate 6 
+0x7fffefd87728 ? - duplicate 6 
+0x7fffefd87800 ? - duplicate 6 
+0x7fffefd878f0 ? - duplicate 6 
+0x7fffefd87980 ? - duplicate 6 
+0x7fffefd879c8 ? - duplicate 6 
+0x7fffefd87a58 ? - duplicate 6 
+0x7fffefd87a88 ? - duplicate 6 
+0x7fffefd87ab8 ? - duplicate 6 
+0xfffffffffffffffe Thread -  id=17092 pid=24856 image=-
+0xffffffffffffffff Process -  id=29644 pid=? image=D:\Cuexis-redesign\out\build\rpa-candidate-release\bin\cuexis_execution_device_probe.exe

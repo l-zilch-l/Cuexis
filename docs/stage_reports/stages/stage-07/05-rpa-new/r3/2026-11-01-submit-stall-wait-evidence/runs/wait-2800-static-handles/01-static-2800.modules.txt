@@ -1,0 +1,172 @@
+# module snapshot; modules appear as they are loaded
+00007ff68e4b0000 5754880 cuexis_execution_device_probe.exe D:\Cuexis-redesign\out\build\rpa-candidate-release\bin\cuexis_execution_device_probe.exe
+00007fffefba0000 2519040 ntdll.dll C:\WINDOWS\SYSTEM32\ntdll.dll
+00007fffee7e0000 831488 KERNEL32.DLL C:\WINDOWS\System32\KERNEL32.DLL
+00007fffed3f0000 4202496 KERNELBASE.dll C:\WINDOWS\System32\KERNELBASE.dll
+00007fffe9ba0000 651264 apphelp.dll C:\WINDOWS\SYSTEM32\apphelp.dll
+00007fffecda0000 1359872 ucrtbase.dll C:\WINDOWS\System32\ucrtbase.dll
+00007fffe9930000 643072 MSVCP140.dll C:\WINDOWS\SYSTEM32\MSVCP140.dll
+00007fffe4150000 36864 MSVCP140_1.dll C:\WINDOWS\SYSTEM32\MSVCP140_1.dll
+00007fffe99d0000 180224 VCRUNTIME140.dll C:\WINDOWS\SYSTEM32\VCRUNTIME140.dll
+00007fff6d380000 2514944 SDL3.dll D:\Cuexis-redesign\out\build\rpa-candidate-release\bin\SDL3.dll
+00007fffe9a00000 49152 VCRUNTIME140_1.dll C:\WINDOWS\SYSTEM32\VCRUNTIME140_1.dll
+00007fffed8c0000 1896448 USER32.dll C:\WINDOWS\System32\USER32.dll
+00007fffecf00000 159744 win32u.dll C:\WINDOWS\System32\win32u.dll
+00007fffee140000 176128 GDI32.dll C:\WINDOWS\System32\GDI32.dll
+00007fffed0a0000 1216512 gdi32full.dll C:\WINDOWS\System32\gdi32full.dll
+00007fffecf30000 667648 msvcp_win.dll C:\WINDOWS\System32\msvcp_win.dll
+00007fffef210000 200704 IMM32.dll C:\WINDOWS\System32\IMM32.dll
+00007fffee640000 1679360 ole32.dll C:\WINDOWS\System32\ole32.dll
+00007fffeedb0000 3690496 combase.dll C:\WINDOWS\System32\combase.dll
+00007fffede10000 1146880 RPCRT4.dll C:\WINDOWS\System32\RPCRT4.dll
+00007fffd97d0000 221184 WINMM.dll C:\WINDOWS\SYSTEM32\WINMM.dll
+00007fffeeb00000 888832 OLEAUT32.dll C:\WINDOWS\System32\OLEAUT32.dll
+00007fffeece0000 770048 ADVAPI32.dll C:\WINDOWS\System32\ADVAPI32.dll
+00007fffef160000 692224 msvcrt.dll C:\WINDOWS\System32\msvcrt.dll
+00007fffee090000 692224 sechost.dll C:\WINDOWS\System32\sechost.dll
+00007fffe4470000 45056 VERSION.dll C:\WINDOWS\SYSTEM32\VERSION.dll
+00007fffee180000 4747264 SETUPAPI.dll C:\WINDOWS\System32\SETUPAPI.dll
+00007fffef260000 7962624 SHELL32.dll C:\WINDOWS\System32\SHELL32.dll
+00007fffec8c0000 335872 cfgmgr32.DLL C:\WINDOWS\SYSTEM32\cfgmgr32.DLL
+00007fffec320000 49152 CRYPTBASE.DLL C:\WINDOWS\SYSTEM32\CRYPTBASE.DLL
+00007fffed800000 704512 bcryptPrimitives.dll C:\WINDOWS\System32\bcryptPrimitives.dll
+# phase=before t_us=1288
+00007fffedb30000 1028096 SHCORE.DLL C:\WINDOWS\System32\SHCORE.DLL
+00007fffea0d0000 192512 DWMAPI.DLL C:\WINDOWS\SYSTEM32\DWMAPI.DLL
+00007fffe9f70000 1290240 DXGI.DLL C:\WINDOWS\SYSTEM32\DXGI.DLL
+00007fffecc00000 385024 powrprof.dll C:\WINDOWS\SYSTEM32\powrprof.dll
+00007fffecbe0000 86016 UMPDC.dll C:\WINDOWS\SYSTEM32\UMPDC.dll
+00007fffe9f20000 278528 dxcore.dll C:\WINDOWS\SYSTEM32\dxcore.dll
+00007fffe5960000 385024 directxdatabasehelper.dll C:\WINDOWS\SYSTEM32\directxdatabasehelper.dll
+00007fffeba70000 110592 kernel.appcore.dll C:\WINDOWS\SYSTEM32\kernel.appcore.dll
+00007fffe9e20000 688128 uxtheme.dll C:\WINDOWS\system32\uxtheme.dll
+00007fff7ff30000 1257472 AudioDevProps2.dll C:\ProgramData\A-Volute\A-Volute.Nahimic\Modules\Scheduled\x64\AudioDevProps2.dll
+00007fffedaa0000 524288 WS2_32.dll C:\WINDOWS\System32\WS2_32.dll
+00007fffee8e0000 417792 SHLWAPI.dll C:\WINDOWS\System32\SHLWAPI.dll
+# phase=mid t_us=251137
+00007fffeb0a0000 61440 hid.dll C:\WINDOWS\SYSTEM32\hid.dll
+00007fffec920000 192512 DEVOBJ.dll C:\WINDOWS\SYSTEM32\DEVOBJ.dll
+00007fff7b260000 1097728 OPENGL32.DLL C:\WINDOWS\SYSTEM32\OPENGL32.DLL
+00007fffb2e60000 184320 GLU32.dll C:\WINDOWS\SYSTEM32\GLU32.dll
+00007fffefa00000 1421312 MSCTF.dll C:\WINDOWS\System32\MSCTF.dll
+00007fffce0c0000 122880 windows.staterepositorycore.dll C:\WINDOWS\SYSTEM32\windows.staterepositorycore.dll
+00007fff538b0000 48857088 nvoglv64.dll C:\WINDOWS\System32\DriverStore\FileRepository\nvtfi.inf_amd64_6a9c26f621569ba3\nvoglv64.dll
+00007fffe9c90000 172032 WTSAPI32.dll C:\WINDOWS\SYSTEM32\WTSAPI32.dll
+00007fffed260000 1564672 CRYPT32.dll C:\WINDOWS\System32\CRYPT32.dll
+00007fffebd30000 299008 SspiCli.dll C:\WINDOWS\SYSTEM32\SspiCli.dll
+00007fffec3a0000 77824 msasn1.dll C:\WINDOWS\SYSTEM32\msasn1.dll
+00007fffe4250000 241664 cryptnet.dll C:\WINDOWS\SYSTEM32\cryptnet.dll
+00007fffec420000 434176 wldp.dll C:\WINDOWS\SYSTEM32\wldp.dll
+00007fffe3e90000 1548288 drvstore.dll C:\WINDOWS\SYSTEM32\drvstore.dll
+00007fffebba0000 221184 ntmarta.dll C:\WINDOWS\SYSTEM32\ntmarta.dll
+00007fffed1d0000 532480 WINTRUST.dll C:\WINDOWS\System32\WINTRUST.dll
+00007fffee8b0000 131072 imagehlp.dll C:\WINDOWS\System32\imagehlp.dll
+00007fffec340000 110592 CRYPTSP.dll C:\WINDOWS\System32\CRYPTSP.dll
+00007fffeb9d0000 233472 rsaenh.dll C:\WINDOWS\system32\rsaenh.dll
+00007fffecc90000 172032 bcrypt.dll C:\WINDOWS\System32\bcrypt.dll
+00007fffda940000 110784512 nvgpucomp64.dll C:\WINDOWS\System32\DriverStore\FileRepository\nvtfi.inf_amd64_6a9c26f621569ba3\nvgpucomp64.dll
+00007fffea7e0000 9101312 windows.storage.dll C:\WINDOWS\SYSTEM32\windows.storage.dll
+# phase=mid t_us=503191
+00007fffec990000 409600 WINSTA.dll C:\WINDOWS\SYSTEM32\WINSTA.dll
+00007fffe5cc0000 782336 mscms.dll C:\WINDOWS\SYSTEM32\mscms.dll
+00007fffca5a0000 1318912 textinputframework.dll C:\WINDOWS\SYSTEM32\textinputframework.dll
+00007fffee950000 712704 clbcatq.dll C:\WINDOWS\System32\clbcatq.dll
+00007fffb8020000 376832 dataexchange.dll C:\WINDOWS\system32\dataexchange.dll
+00007fffe20d0000 2424832 twinapi.appcore.dll C:\WINDOWS\system32\twinapi.appcore.dll
+00007fffe8cb0000 2490368 d3d11.dll C:\WINDOWS\system32\d3d11.dll
+00007fffe4480000 843776 nvldumdx.dll C:\WINDOWS\System32\DriverStore\FileRepository\nvtfi.inf_amd64_6a9c26f621569ba3\nvldumdx.dll
+00007fffd9810000 1421312 NvMemMapStoragex.dll C:\WINDOWS\System32\DriverStore\FileRepository\nvtfi.inf_amd64_6a9c26f621569ba3\NvMemMapStoragex.dll
+00007fffd2f40000 90202112 nvwgf2umx.dll C:\WINDOWS\System32\DriverStore\FileRepository\nvtfi.inf_amd64_6a9c26f621569ba3\nvwgf2umx.dll
+# phase=mid t_us=755984
+00007fffcb660000 7499776 nvppex.dll C:\WINDOWS\System32\DriverStore\FileRepository\nvtfi.inf_amd64_6a9c26f621569ba3\nvppex.dll
+00007fffcf020000 561152 nvapi64.dll C:\WINDOWS\SYSTEM32\nvapi64.dll
+00007fffcea80000 5840896 nvapi64_impl.dll C:\WINDOWS\system32\DriverStore\FileRepository\nvtfi.inf_amd64_6a9c26f621569ba3\nvapi64_impl.dll
+00007fffe8f20000 2248704 dcomp.dll C:\WINDOWS\SYSTEM32\dcomp.dll
+00007fffe7f40000 106496 Microsoft.Internal.WarpPal.dll C:\WINDOWS\SYSTEM32\Microsoft.Internal.WarpPal.dll
+# phase=mid t_us=1006548
+# phase=mid t_us=1259152
+# phase=mid t_us=1509737
+# phase=mid t_us=1762908
+# phase=mid t_us=2015123
+# phase=mid t_us=2266575
+# phase=mid t_us=2519094
+# phase=mid t_us=2772092
+# phase=mid t_us=3025131
+# phase=mid t_us=3277235
+# phase=mid t_us=3528403
+# phase=mid t_us=3779444
+# phase=mid t_us=4030278
+# phase=mid t_us=4282096
+# phase=mid t_us=4533917
+# phase=mid t_us=4787378
+# phase=mid t_us=5038438
+# phase=mid t_us=5288897
+# phase=mid t_us=5541459
+# phase=mid t_us=5795987
+# phase=mid t_us=6047961
+# phase=mid t_us=6298985
+# phase=mid t_us=6551630
+# phase=mid t_us=6803023
+# phase=mid t_us=7056609
+# phase=mid t_us=7309206
+# phase=mid t_us=7563535
+# phase=mid t_us=7813408
+# phase=mid t_us=8064087
+# phase=mid t_us=8315168
+# phase=mid t_us=8567513
+# phase=mid t_us=8817883
+# phase=mid t_us=9071345
+# phase=mid t_us=9322547
+# phase=mid t_us=9574926
+# phase=mid t_us=9827686
+# phase=mid t_us=10078501
+# phase=mid t_us=10330427
+# phase=mid t_us=10583340
+# phase=mid t_us=10836163
+# phase=mid t_us=11088905
+# phase=mid t_us=11341006
+# phase=mid t_us=11592796
+# phase=mid t_us=11844207
+# phase=mid t_us=12094407
+# phase=mid t_us=12346417
+# phase=mid t_us=12597783
+# phase=mid t_us=12849450
+# phase=mid t_us=13100011
+# phase=mid t_us=13352059
+# phase=mid t_us=13604417
+# phase=mid t_us=13856530
+# phase=mid t_us=14108702
+# phase=mid t_us=14359902
+# phase=mid t_us=14610590
+# phase=mid t_us=14862536
+# phase=mid t_us=15112763
+# phase=mid t_us=15362862
+# phase=mid t_us=15615580
+# phase=mid t_us=15866885
+# phase=mid t_us=16119233
+# phase=mid t_us=16374080
+# phase=mid t_us=16625429
+# phase=mid t_us=16875522
+# phase=mid t_us=17125950
+# phase=mid t_us=17377702
+# phase=mid t_us=17629905
+# phase=mid t_us=17880246
+# phase=mid t_us=18132419
+# phase=mid t_us=18383399
+# phase=mid t_us=18636722
+# phase=mid t_us=18887910
+# phase=mid t_us=19139823
+# phase=mid t_us=19392559
+# phase=mid t_us=19642896
+# phase=mid t_us=19894980
+# phase=mid t_us=20145096
+# phase=mid t_us=20397368
+# phase=mid t_us=20648900
+# phase=mid t_us=20900009
+# phase=mid t_us=21151921
+# phase=mid t_us=21403707
+# phase=mid t_us=21653905
+# phase=mid t_us=21905345
+# phase=mid t_us=22155971
+# phase=mid t_us=22407176
+# phase=mid t_us=22657603
