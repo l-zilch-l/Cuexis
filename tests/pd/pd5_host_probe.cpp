@@ -462,4 +462,100 @@ TEST_CASE("PD5 scripted host timing probe", "[.][pd][pd5][timing-probe]") {
     }
     std::cout << "}}\n";
 }
+
+#if defined(CUEXIS_PD5_DEVICE)
+// Seek gate probe: the full host seek on the real OpenGL backend. The functional matrix measures
+// the same operations on the CPU test renderer, which is why its readings cannot stand for the
+// gate.
+TEST_CASE("PD5 scripted seek timing probe", "[.][pd][pd5][seek-gate]") {
+    std::cout << std::setprecision(17);
+    const auto recordCount = pd5Count("CUEXIS_PD5_SEEK_RECORDS", 129, 20000);
+    const auto seekCount = pd5Count("CUEXIS_PD5_SEEK_COUNT", 16, 4096);
+    auto runtime = pd5Take(platform_sdl::SdlRuntime::create());
+    render_opengl::OpenGlConfig glConfig;
+    glConfig.vsync = false;
+    std::optional<render_opengl::OpenGlContextConfiguration> config{
+        pd5Take(render_opengl::configureOpenGlContext(runtime, glConfig))};
+    platform_sdl::WindowConfig windowConfig;
+    windowConfig.title = "Cuexis PD5 seek probe";
+    auto window = pd5Take(platform_sdl::SdlWindow::create(runtime, windowConfig));
+    REQUIRE(SDL_HideWindow(static_cast<SDL_Window*>(window.lease().nativeHandle())));
+    Pd5GpuRenderer renderer{
+        pd5Take(render_opengl::OpenGlBackend::create(window, std::move(*config))), false};
+    const ClockMappingConfiguration mapping{{0, 1}, {0, 1}, {0, 1}, {1, 1}};
+    test_support::SessionTestContent fixture;
+    test_support::rpa(fixture, mapping);
+    player::ExecutionHostOptions settings;
+    settings.session = {64, 16, 128, 32, 4, 4, true, {}};
+    settings.session.observation.bytes = 16384;
+    settings.session.observation.tombstones = 2;
+    settings.session.observation.coverageIntervals = 2;
+    settings.session.observation.retentionUs = 1000000;
+    settings.session.observation.receiptDeadlineUs = 5000000;
+    settings.session.observation.members = 4096;
+    settings.session.delivery = {8, 8, 64U * 1024U * 1024U, 32, 64};
+    settings.session.maxFrameMembers = 4096;
+    settings.session.receiptCapacity = 128;
+    settings.audio.testOnly = true;
+    settings.hostCapacity = 16;
+    settings.captureCapacity = 64;
+    settings.captureReserve = 16;
+    settings.replyDeadline = std::chrono::seconds{5};
+    settings.viewport = {1280, 720};
+    // Repeated seeks in one session each take a control reservation, so the probe sizes the host
+    // for the whole seek loop instead of the single seek the functional matrix performs.
+    settings.hostCapacity = 256;
+    settings.captureCapacity = 256;
+    settings.captureReserve = 64;
+    settings.seekIdentity = player::SeekIdentityPolicy::owningSource;
+    settings.realtime = SessionRealtimeStart{{1000000, 10, 128, "", true}, mapping, {}, "pd5.seek"};
+    std::int64_t logicalTick{};
+    std::uint64_t sequence{};
+    auto clock = [&](const HostContext& context) -> core::Result<ClockObservation> {
+        ClockObservation observation{};
+        observation.monotonicDomain = "pd5.seek";
+        observation.segment = context.clockSegment;
+        observation.publicationSequence = ++sequence;
+        observation.sampleMonotonicUs = pd5Now();
+        observation.validUntilMonotonicUs = observation.sampleMonotonicUs + 1000000;
+        logicalTick += 7000;
+        observation.presented = ClockFramePosition{logicalTick, 1000000};
+        observation.maximumPresented = observation.presented;
+        observation.source = observation.presented;
+        observation.playback = ClockPlaybackState::Playing;
+        observation.quality = ClockQuality::Exact;
+        return observation;
+    };
+    auto host = pd5Take(player::ExecutionHost::create(renderer, settings, {}));
+    pd5Take(host->load(test_support::presentation(), fixture.content()));
+    for (unsigned i = 0; i < recordCount; ++i) {
+        pd5Take(host->advance(pd5Take(clock(host->context()))));
+        auto frame = pd5Take(host->sample(
+            logicalTick,
+            {static_cast<double>(logicalTick) / 1000., 0, host->context().clockSegment}, false));
+        pd5Take(host->present(frame));
+    }
+    auto archive = pd5Take(host->archive());
+    std::cout << "PD5_SEEK_ID {\"schema\":\"pd5.seek.v1\",\"records\":" << recordCount
+              << ",\"seeks\":" << seekCount << "}\n";
+    for (unsigned index = 0; index < seekCount; ++index) {
+        const auto horizon = 1103 + static_cast<std::int64_t>(index) * 7000;
+        pd5Take(host->pause(clock));
+        const auto started = pd5Now();
+        auto cut = pd5Take(host->replayCut(archive, GameplayTick{horizon}));
+        pd5Take(host->seek(archive, cut, GameplayTick{horizon}, clock));
+        const auto ready = pd5Now();
+        auto frame = pd5Take(host->sample(
+            horizon, {static_cast<double>(horizon) / 1000., 0, host->context().clockSegment},
+            false));
+        pd5Take(host->present(frame));
+        const auto presented = pd5Now();
+        std::cout << "PD5_SEEK {\"records\":" << recordCount << ",\"index\":" << index
+                  << ",\"horizon\":" << horizon << ",\"request_to_ready_us\":" << (ready - started)
+                  << ",\"request_to_present_us\":" << (presented - started) << "}\n";
+    }
+    pd5Take(host->close());
+}
+#endif
+
 #endif

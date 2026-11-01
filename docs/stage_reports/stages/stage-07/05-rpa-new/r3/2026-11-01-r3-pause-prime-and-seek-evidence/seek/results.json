@@ -1,0 +1,177 @@
+{
+  "scope": "Applicable-Seek gate readings.",
+  "runs": [
+    {
+      "records": 129,
+      "run": 0,
+      "exit_code": 0,
+      "rows": 16,
+      "ready_median": 351.0,
+      "ready_max": 414,
+      "present_median": 518.0,
+      "present_max": 709,
+      "log": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-129-run-0.log.txt",
+      "valid": true
+    },
+    {
+      "records": 129,
+      "run": 1,
+      "exit_code": 0,
+      "rows": 16,
+      "ready_median": 366.5,
+      "ready_max": 525,
+      "present_median": 551.0,
+      "present_max": 756,
+      "log": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-129-run-1.log.txt",
+      "valid": true
+    },
+    {
+      "records": 129,
+      "run": 2,
+      "exit_code": 0,
+      "rows": 16,
+      "ready_median": 375.5,
+      "ready_max": 567,
+      "present_median": 570.0,
+      "present_max": 811,
+      "log": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-129-run-2.log.txt",
+      "valid": true
+    },
+    {
+      "records": 129,
+      "run": 3,
+      "exit_code": 0,
+      "rows": 16,
+      "ready_median": 365.5,
+      "ready_max": 499,
+      "present_median": 558.0,
+      "present_max": 819,
+      "log": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-129-run-3.log.txt",
+      "valid": true
+    },
+    {
+      "records": 129,
+      "run": 4,
+      "exit_code": 0,
+      "rows": 16,
+      "ready_median": 346.5,
+      "ready_max": 498,
+      "present_median": 568.0,
+      "present_max": 722,
+      "log": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-129-run-4.log.txt",
+      "valid": true
+    },
+    {
+      "records": 129,
+      "run": 5,
+      "exit_code": 0,
+      "rows": 16,
+      "ready_median": 359.0,
+      "ready_max": 536,
+      "present_median": 529.0,
+      "present_max": 941,
+      "log": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-129-run-5.log.txt",
+      "valid": true
+    },
+    {
+      "records": 1024,
+      "run": 0,
+      "exit_code": 0,
+      "rows": 16,
+      "ready_median": 387.5,
+      "ready_max": 696,
+      "present_median": 610.0,
+      "present_max": 956,
+      "log": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-1024-run-0.log.txt",
+      "valid": true
+    },
+    {
+      "records": 1024,
+      "run": 1,
+      "exit_code": 0,
+      "rows": 16,
+      "ready_median": 363.0,
+      "ready_max": 514,
+      "present_median": 534.5,
+      "present_max": 735,
+      "log": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-1024-run-1.log.txt",
+      "valid": true
+    },
+    {
+      "records": 1024,
+      "run": 2,
+      "exit_code": 0,
+      "rows": 16,
+      "ready_median": 387.0,
+      "ready_max": 605,
+      "present_median": 605.0,
+      "present_max": 996,
+      "log": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-1024-run-2.log.txt",
+      "valid": true
+    },
+    {
+      "records": 1024,
+      "run": 3,
+      "exit_code": 0,
+      "rows": 16,
+      "ready_median": 380.5,
+      "ready_max": 523,
+      "present_median": 551.0,
+      "present_max": 779,
+      "log": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-1024-run-3.log.txt",
+      "valid": true
+    },
+    {
+      "records": 1024,
+      "run": 4,
+      "exit_code": 0,
+      "rows": 16,
+      "ready_median": 346.0,
+      "ready_max": 477,
+      "present_median": 892.0,
+      "present_max": 1012,
+      "log": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-1024-run-4.log.txt",
+      "valid": true
+    },
+    {
+      "records": 1024,
+      "run": 5,
+      "exit_code": 0,
+      "rows": 16,
+      "ready_median": 378.0,
+      "ready_max": 547,
+      "present_median": 566.5,
+      "present_max": 805,
+      "log": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-1024-run-5.log.txt",
+      "valid": true
+    }
+  ],
+  "summary": {
+    "129": {
+      "valid_processes": 6,
+      "per_process_max_us": [
+        709,
+        756,
+        811,
+        819,
+        722,
+        941
+      ],
+      "worst_us": 941,
+      "gate_20ms": "pass"
+    },
+    "1024": {
+      "valid_processes": 6,
+      "per_process_max_us": [
+        956,
+        735,
+        996,
+        779,
+        1012,
+        805
+      ],
+      "worst_us": 1012,
+      "gate_20ms": "pass"
+    }
+  }
+}

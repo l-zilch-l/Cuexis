@@ -598,3 +598,22 @@ D2/D3/Snapshot/排队未判定。
 
 R3 门状态更新：初次 load 通过、重复性通过、request→ready 通过、GPU render 通过、Resume/resize/Reset/Close
 通过、**读取相对门通过（本轮）**、Pause 超界（交换链停顿，环境性）、适用 Seek 与 D2/D3/Snapshot/排队未判定。
+
+### Pause 与适用 Seek：两项门落地（同日）
+
+报告见[Pause 预热与适用 Seek 门](2026-11-01-r3-pause-prime-and-seek-gate.md)，证据见
+[预热与 Seek 证据](2026-11-01-r3-pause-prime-and-seek-evidence/index.md)。判据未改动。
+
+- **Pause 通过**：根因是窗口/上下文创建后的第二次 `SwapWindow` 阻塞 170–190 ms（GPU≈1 µs，与 vsync、可见性、
+  冻结标志均无关）。修法是在 `OpenGlBackend::create` 返回前清屏并 present 两次，把停顿吸收进 backend 创建。
+  读数从 174.966–184.929 ms 降到 **最大 16.754 ms**（120 次）；初次 load 从 394.8–424.9 ms 涨到
+  580.0–603.2 ms，仍在 2000 ms 内（余量 3.3×）。
+- **适用 Seek 在两类场景上通过**：设备探针新增 `PD5 scripted seek timing probe`（真实 OpenGL 后端、
+  真实回放归档、pause→replayCut→seek→sample→present）。2 个回放规模 × 6 进程 × 16 次 seek：129 记录最差
+  941 µs、1024 记录最差 1012 µs，判据 20 ms。只覆盖"同档重复热使用"与"冷进程"，其余三类未覆盖。
+- **D2/D3/Snapshot/排队仍未判定**：仓库里唯一的逐阶段计时是 `presentation_metrics` 的编译期 test-only
+  `Stage`/`Timer`，开启即改二进制、且计划禁止据插桩时间接受预算、也没有任何打印入口，因此本轮不产出读数。
+- 回归：CTest 663.41 s、rc=0、1 项跳过；player smoke golden 保持。
+
+R3 门状态：初次 load、重复性、request→ready、GPU render、Pause/Resume/resize、Reset/Close、读取相对门、
+适用 Seek（两类）全部通过；D2/D3/Snapshot/排队未判定。

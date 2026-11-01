@@ -469,6 +469,19 @@ auto OpenGlBackend::create(platform_sdl::SdlWindow& window,
     }
     const DebugPipeline pipeline = *pipelineResult;
 
+    // Prime the swap chain before any content is submitted. On this host the second SwapWindow
+    // after a fresh window and context blocks for 170-190 ms with essentially no GPU work in it
+    // (2026-11-01: gpu timer 1.024 us on that frame, unchanged by vsync, by window visibility and
+    // by a frozen or live frame; waiting after the window exists does not help, only the gap
+    // between the first two presents does, and 200 ms of spacing dissolves it). Paying it here
+    // keeps the first presented content frame and the first user pause free of the stall; the cost
+    // lands inside backend creation, which the initial-load budget has room for.
+    glClearColor(0.0F, 0.0F, 0.0F, 1.0F);
+    glClear(GL_COLOR_BUFFER_BIT);
+    SDL_GL_SwapWindow(nativeWindow);
+    glClear(GL_COLOR_BUFFER_BIT);
+    SDL_GL_SwapWindow(nativeWindow);
+
     return OpenGlBackend{std::move(windowLease),
                          contextGuard.release(),
                          std::move(info),
