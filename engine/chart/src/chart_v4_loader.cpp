@@ -5,6 +5,7 @@
 #include <cuexis/chart/uuid.hpp>
 #include <cuexis/json/parse.hpp>
 #include <cuexis/json/reader.hpp>
+#include <cuexis_internal/prepare_trace.hpp>
 
 #include "canonical_chart_loader_internal.hpp"
 #include "chart_project_path_internal.hpp"
@@ -857,9 +858,11 @@ auto detail::loadChartForPlayback(std::string_view jsonText, const ChartLimits& 
         return ChartDispatchResult{false, std::nullopt, std::nullopt,
                                    {},    std::nullopt, std::move(diagnostics)};
     }
-    auto parsed =
-        json::parse(jsonText, json::ParseLimits{limits.maxInputBytes, limits.maxNestingDepth,
-                                                limits.maxStringBytes});
+    auto parsed = [&] {
+        const internal::PrepareTraceScope trace{"json_dom_parse"};
+        return json::parse(jsonText, json::ParseLimits{limits.maxInputBytes, limits.maxNestingDepth,
+                                                       limits.maxStringBytes});
+    }();
     if (!parsed) {
         addParseError(diagnostics, parsed.error());
         diagnostics.sortDeterministically();
@@ -877,7 +880,10 @@ auto detail::loadChartForPlayback(std::string_view jsonText, const ChartLimits& 
     }
     if (isV4) {
         auto input = std::make_shared<ParsedChartInput>(ParsedChartInput{std::move(*parsed)});
-        auto loaded = detail::loadV4Value(input->value, limits);
+        auto loaded = [&] {
+            const internal::PrepareTraceScope trace{"chart_typed_read"};
+            return detail::loadV4Value(input->value, limits);
+        }();
         return ChartDispatchResult{true,
                                    std::nullopt,
                                    std::move(loaded.document),
@@ -886,14 +892,20 @@ auto detail::loadChartForPlayback(std::string_view jsonText, const ChartLimits& 
                                    std::move(loaded.diagnostics)};
     }
 
-    auto loaded = detail::loadCanonicalValue(*parsed, limits);
+    auto loaded = [&] {
+        const internal::PrepareTraceScope trace{"chart_typed_read"};
+        return detail::loadCanonicalValue(*parsed, limits);
+    }();
     std::optional<std::string> canonicalText;
     if (loaded.hasValue()) {
         // The typed reader only reads the tree, so this parse can also produce the canonical
         // identity bytes. Producing them here is what lets a legacy prepare parse once instead of
         // re-parsing the same document for its identity.
-        if (auto text = detail::writeCanonicalValue(std::move(*parsed), limits)) {
-            canonicalText = std::move(*text);
+        {
+            const internal::PrepareTraceScope trace{"chart_canonical_write"};
+            if (auto text = detail::writeCanonicalValue(std::move(*parsed), limits)) {
+                canonicalText = std::move(*text);
+            }
         }
     }
     return ChartDispatchResult{false, std::move(loaded.document), std::nullopt,

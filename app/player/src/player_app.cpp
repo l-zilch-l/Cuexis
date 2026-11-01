@@ -12,10 +12,13 @@
 
 #include <cuexis/audio/audio_transport.hpp>
 #include <cuexis/player_support/config_location.hpp>
+#include <cuexis/render/render_backend.hpp>
 #include <cuexis/version.hpp>
 
+#include <algorithm>
 #include <chrono>
 #include <cstdint>
+#include <cstdlib>
 #include <filesystem>
 #include <functional>
 #include <memory>
@@ -73,6 +76,26 @@ class StartupPhases final {
     Clock::time_point started_{Clock::now()};
     Clock::time_point last_;
 };
+
+// The still frame the window presents while the content prepares. It is deliberately dark: a
+// bright flash would be more startling than the previous total absence of a window.
+constexpr render::Color stillClearColor{0.06F, 0.06F, 0.08F, 1.0F};
+
+// Opt-in start-up order: create the window before the content is prepared. Off by default, because
+// a recorded startup measurement describes the historical order and the two orders are not
+// interchangeable evidence.
+[[nodiscard]] auto windowFirstStartupRequested() -> bool {
+    static const bool requested = [] {
+        char buffer[2]{};
+        std::size_t length = 0;
+        if (getenv_s(&length, buffer, sizeof buffer, "CUEXIS_PLAYER_WINDOW_FIRST") != 0 ||
+            length != 2) {
+            return false;
+        }
+        return buffer[0] == '1';
+    }();
+    return requested;
+}
 
 } // namespace
 
@@ -176,10 +199,100 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
         startupMode = playback::PlaybackMode::CuexisAudio;
     }
 
-    // The CPU half of the startup Load runs before any device exists: no window, no GL context, no
-    // audio device. Preparing here means a large bundle never holds a message-free window on the
-    // desktop, and a content that cannot be prepared fails before the first device is created. The
-    // controller adopts the finished bundle once the presentation backend can accept it.
+    // The CPU half of the startup Load normally runs before any device exists: no window, no GL
+    // context, no audio device. Preparing there means a large bundle never holds a message-free
+    // window on the desktop, and content that cannot be prepared fails before the first device is
+    // created. The controller adopts the finished bundle once the presentation backend can accept
+    // it.
+    //
+    // That order hides the whole cost inside one silent phase. Preparing the 40 000 entity chart
+    // spends about two seconds of CPU before the process owns a window, so there is nothing on the
+    // desktop to look at and nothing to close, and a user who started the wrong file can only kill
+    // the process. The opt-in order below reverses the two steps: the runtime, the window, the
+    // surface and the GL backend exist first and one still frame is presented, so the application
+    // is visible from about 0.4 s. Prepare itself stays on this thread: a PlaybackSession owns the
+    // thread that constructed it and terminates if a prepared bundle is destroyed anywhere else,
+    // so the window cannot repaint while prepare runs. Reversing the order is still worth it, since
+    // a visible loading window that honours a close request beats a process that owns no window at
+    // all. The default order is unchanged, because every recorded startup number describes it.
+    const bool deviceFirst = windowFirstStartupRequested();
+    std::optional<platform_sdl::SdlRuntime> runtimeHolder;
+    std::optional<platform_sdl::SdlWindow> windowHolder;
+    std::optional<render_opengl::OpenGlBackend> backendHolder;
+    std::unique_ptr<PlayerSurface> surfaceHolder;
+    std::vector<std::uint32_t> gameplayKeys;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    std::optional<PlayerGameplayProfile> gameplayProfile;
+#endif
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+    ScriptedPlaybackTrace measurementTrace;
+#endif
+
+    auto openDevices = [&]() -> core::Result<void> {
+        auto runtimeResult = createPlayerRuntime(logger);
+        if (!runtimeResult) {
+            return core::unexpected(std::move(runtimeResult.error()));
+        }
+        runtimeHolder.emplace(std::move(*runtimeResult));
+        auto windowResult = createPlayerWindow(*runtimeHolder, appConfig->app.requested);
+        if (!windowResult) {
+            return core::unexpected(std::move(windowResult.error()));
+        }
+        windowHolder.emplace(std::move(*windowResult));
+        startup.mark("window_created");
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+        if (options.gameplayConfiguration) {
+            auto profile = readPlayerGameplay(options);
+            if (!profile) {
+                return core::unexpected(std::move(profile.error()));
+            }
+            for (const auto& key : profile->keys) {
+                gameplayKeys.push_back(key.scanCode);
+            }
+            gameplayProfile = std::move(*profile);
+        }
+#endif
+        surfaceHolder = makePlayerSurface(*windowHolder, std::move(gameplayKeys));
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+        if (measurementTrace.active()) {
+            surfaceHolder = std::make_unique<ScriptedPlaybackSurface>(
+                std::move(surfaceHolder),
+                static_cast<SDL_Window*>(windowHolder->lease().nativeHandle()), measurementTrace);
+        }
+#endif
+        auto backendResult =
+            createPlayerBackend(*runtimeHolder, *windowHolder, appConfig->app.requested.vsync,
+                                options.shaderCacheDirectory, logger);
+        if (!backendResult) {
+            return core::unexpected(std::move(backendResult.error()));
+        }
+        backendHolder.emplace(std::move(*backendResult));
+        startup.mark("backend_created");
+        return {};
+    };
+
+    if (deviceFirst) {
+        if (auto opened = openDevices(); !opened) {
+            return core::unexpected(std::move(opened.error()));
+        }
+        render::RenderFrame still{};
+        still.clearColor = stillClearColor;
+        if (auto size = surfaceHolder->drawableSize(); size) {
+            still.extent.width = static_cast<std::uint32_t>(std::max(size->width, 0));
+            still.extent.height = static_cast<std::uint32_t>(std::max(size->height, 0));
+        }
+        if (auto presented = backendHolder->renderFrame(still); !presented) {
+            logger.warn("player.startup_still_frame",
+                        std::string{"The startup still frame failed: "} +
+                            std::string{presented.error().message()});
+        }
+        if (auto input = surfaceHolder->pollInput(); input && input->quitRequested) {
+            logger.info("player.startup_close_requested",
+                        "The window closed before the content began to prepare");
+            return {};
+        }
+    }
+
     auto startupLoad = preparePlayerLoadBundle(std::move(*content), startupMode,
                                                appConfig->profile.outputCorrectionUs);
     if (!startupLoad) {
@@ -187,46 +300,20 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
     }
     startup.mark("content_prepared");
 
-    audio::AudioClipStore audioStore;
+    if (!deviceFirst) {
+        if (auto opened = openDevices(); !opened) {
+            return core::unexpected(std::move(opened.error()));
+        }
+    } else if (auto input = surfaceHolder->pollInput(); input && input->quitRequested) {
+        logger.info("player.startup_close_requested",
+                    "The window closed while the content was preparing");
+        return {};
+    }
 
-    auto runtimeResult = createPlayerRuntime(logger);
-    if (!runtimeResult) {
-        return core::unexpected(std::move(runtimeResult.error()));
-    }
-    auto sdlRuntime = std::move(*runtimeResult);
-    auto windowResult = createPlayerWindow(sdlRuntime, appConfig->app.requested);
-    if (!windowResult) {
-        return core::unexpected(std::move(windowResult.error()));
-    }
-    auto window = std::move(*windowResult);
-    startup.mark("window_created");
-    std::vector<std::uint32_t> gameplayKeys;
-#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
-    std::optional<PlayerGameplayProfile> gameplayProfile;
-    if (options.gameplayConfiguration) {
-        auto profile = readPlayerGameplay(options);
-        if (!profile)
-            return core::unexpected(std::move(profile.error()));
-        for (const auto& key : profile->keys)
-            gameplayKeys.push_back(key.scanCode);
-        gameplayProfile = std::move(*profile);
-    }
-#endif
-    auto surface = makePlayerSurface(window, std::move(gameplayKeys));
-#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
-    ScriptedPlaybackTrace measurementTrace;
-    if (measurementTrace.active())
-        surface = std::make_unique<ScriptedPlaybackSurface>(
-            std::move(surface), static_cast<SDL_Window*>(window.lease().nativeHandle()),
-            measurementTrace);
-#endif
-    auto backendResult = createPlayerBackend(sdlRuntime, window, appConfig->app.requested.vsync,
-                                             options.shaderCacheDirectory, logger);
-    if (!backendResult) {
-        return core::unexpected(std::move(backendResult.error()));
-    }
-    auto backend = std::move(*backendResult);
-    startup.mark("backend_created");
+    audio::AudioClipStore audioStore;
+    auto& window = *windowHolder;
+    auto& backend = *backendHolder;
+    auto surface = std::move(surfaceHolder);
 
     // The control layer owns the active bundle and drives every transaction. The assembly layer
     // only supplies the source, clip decoding, and the audio device opener.

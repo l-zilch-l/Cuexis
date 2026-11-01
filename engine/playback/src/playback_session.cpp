@@ -9,6 +9,7 @@
 #include "presentation_state.hpp"
 #include <cuexis_internal/allocation_observer.hpp>
 #include <cuexis_internal/execution_diagnostics.hpp>
+#include <cuexis_internal/prepare_trace.hpp>
 #include <cuexis_internal/presentation_metrics.hpp>
 #include <cuexis_internal/sha256.hpp>
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
@@ -744,7 +745,10 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
 
 [[nodiscard]] auto loadDocumentStage(const PrepareContext& context, PrepareArtifact& artifact,
                                      core::Diagnostics& diagnostics) -> core::Result<void> {
-    auto loaded = chart::detail::loadChartForPlayback(context.chartJson, context.limits);
+    auto loaded = [&] {
+        const internal::PrepareTraceScope trace{"load_chart"};
+        return chart::detail::loadChartForPlayback(context.chartJson, context.limits);
+    }();
     artifact.isV4 = loaded.isV4;
     const bool valid = loaded.hasValue();
     diagnostics.append(std::move(loaded.diagnostics));
@@ -764,6 +768,7 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
     // The dispatcher canonicalizes the tree it already parsed, so this stage does not parse the
     // document a second time. A value the canonical writer rejects has no bytes to reuse and
     // travels the text entry point instead, which reports the writer error unchanged.
+    const internal::PrepareTraceScope traceCanonical{"load_canonical"};
     std::string canonicalText;
     if (loaded.legacyCanonicalText.has_value()) {
         canonicalText = std::move(*loaded.legacyCanonicalText);
@@ -2564,7 +2569,10 @@ auto PlaybackSession::prepareLoad(std::string_view jsonText, PlaybackMode mode,
         return core::unexpected(std::move(error));
     }
     try {
-        auto source = PlaybackSource::fromChartText(std::string{jsonText});
+        auto source = [&] {
+            const internal::PrepareTraceScope trace{"source_parse"};
+            return PlaybackSource::fromChartText(std::string{jsonText});
+        }();
         if (!source) {
             publishPrepareBoundaryDiagnostic(state_->lastOperationDiagnostics, source.error());
             return core::unexpected(std::move(source.error()));
@@ -2773,7 +2781,11 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
             compiledAnimation = animation::AnimationProgram{};
             chartRuntimeStorage = std::move(*candidateRuntime);
         } else {
-            if (auto loaded = loadDocumentStage(context, artifact, diagnostics); !loaded) {
+            auto loaded = [&] {
+                const internal::PrepareTraceScope trace{"load_document"};
+                return loadDocumentStage(context, artifact, diagnostics);
+            }();
+            if (!loaded) {
                 const auto message = artifact.isV4 ? "Chart v4 loading produced errors"
                                                    : "Chart loading produced errors";
                 return core::unexpected(operationError(context.replacement
@@ -2781,9 +2793,12 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
                                                            : "playback.chart.load_failed",
                                                        message, diagnostics));
             }
-            if (auto resolved = resolveParametersStage(context, artifact,
-                                                       sourceState.projectDocuments, diagnostics);
-                !resolved) {
+            auto resolved = [&] {
+                const internal::PrepareTraceScope trace{"resolve_parameters"};
+                return resolveParametersStage(context, artifact, sourceState.projectDocuments,
+                                              diagnostics);
+            }();
+            if (!resolved) {
                 return core::unexpected(
                     operationError(context.replacement ? "playback.chart.reload_load_failed"
                                                        : "playback.chart.load_failed",
@@ -2792,15 +2807,21 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
                                    diagnostics));
             }
 
-            if (!preflightCapabilities(*document, additionalCapabilities, context.capabilities,
-                                       diagnostics)) {
+            const bool preflightOk = [&] {
+                const internal::PrepareTraceScope trace{"preflight"};
+                return preflightCapabilities(*document, additionalCapabilities,
+                                             context.capabilities, diagnostics);
+            }();
+            if (!preflightOk) {
                 return core::unexpected(operationError("playback.capability.preflight_failed",
                                                        "Playback capability preflight failed",
                                                        diagnostics));
             }
 
-            compiledAnimation =
-                compileAnimationProgram(std::move(animationProgram), limits, diagnostics);
+            compiledAnimation = [&] {
+                const internal::PrepareTraceScope trace{"animation_compile"};
+                return compileAnimationProgram(std::move(animationProgram), limits, diagnostics);
+            }();
             if (!compiledAnimation) {
                 return core::unexpected(
                     operationError(replacement ? "playback.animation.reload_compile_failed"
@@ -2808,7 +2829,10 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
                                    "Animation program compilation produced errors", diagnostics));
             }
 
-            auto runtimeResult = chart::ChartCompiler::compile(*document, limits);
+            auto runtimeResult = [&] {
+                const internal::PrepareTraceScope trace{"chart_compile"};
+                return chart::ChartCompiler::compile(*document, limits);
+            }();
             const bool runtimeValid = runtimeResult.hasValue();
             diagnostics.append(std::move(runtimeResult.diagnostics));
             if (!runtimeValid) {
@@ -2832,12 +2856,19 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
             return core::unexpected(std::move(error));
         }
 
-        if (sourceState.database) {
-            resourceManager = std::make_unique<assets::ResourceManager>(
-                std::move(*sourceState.database), sourceState.provider);
+        {
+            const internal::PrepareTraceScope trace{"resources"};
+            if (sourceState.database) {
+                resourceManager = std::make_unique<assets::ResourceManager>(
+                    std::move(*sourceState.database), sourceState.provider);
+            }
         }
 
-        if (auto acquired = acquireAudioStage(artifact, chartRuntime, diagnostics); !acquired) {
+        auto acquired = [&] {
+            const internal::PrepareTraceScope trace{"audio"};
+            return acquireAudioStage(artifact, chartRuntime, diagnostics);
+        }();
+        if (!acquired) {
             if (diagnostics.empty()) {
                 addErrorDiagnostic(diagnostics, acquired.error());
             }
@@ -2850,39 +2881,59 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
                 return core::unexpected(std::move(presentation.error()));
             artifact.snapshotLayout.emplace();
         } else {
-            if (auto runtime = prepareRuntimeStage(artifact, chartRuntime,
-                                                   std::move(*compiledAnimation), diagnostics);
-                !runtime) {
+            auto runtime = [&] {
+                const internal::PrepareTraceScope trace{"runtime"};
+                return prepareRuntimeStage(artifact, chartRuntime, std::move(*compiledAnimation),
+                                           diagnostics);
+            }();
+            if (!runtime) {
                 return core::unexpected(std::move(runtime.error()));
             }
-            if (auto presentation =
-                    preparePresentationStage(context, artifact, chartRuntime, diagnostics);
-                !presentation) {
+            auto presentation = [&] {
+                const internal::PrepareTraceScope trace{"presentation"};
+                return preparePresentationStage(context, artifact, chartRuntime, diagnostics);
+            }();
+            if (!presentation) {
                 return core::unexpected(std::move(presentation.error()));
             }
-            if (auto committed = commitRuntimeStage(artifact); !committed) {
+            auto committed = [&] {
+                const internal::PrepareTraceScope trace{"commit_runtime"};
+                return commitRuntimeStage(artifact);
+            }();
+            if (!committed) {
                 addErrorDiagnostic(diagnostics, committed.error());
                 return core::unexpected(std::move(committed.error()));
             }
-            if (auto sampled = commitFrameStage(context, artifact, diagnostics); !sampled) {
+            auto sampled = [&] {
+                const internal::PrepareTraceScope trace{"commit_frame"};
+                return commitFrameStage(context, artifact, diagnostics);
+            }();
+            if (!sampled) {
                 return core::unexpected(std::move(sampled.error()));
             }
 
             const auto* presentationCandidate =
                 artifact.presentation ? &*artifact.presentation : nullptr;
-            auto layout =
-                buildSnapshotLayout(*artifact.runtimeSession, chartRuntime, presentationCandidate);
+            auto layout = [&] {
+                const internal::PrepareTraceScope trace{"snapshot_layout"};
+                return buildSnapshotLayout(*artifact.runtimeSession, chartRuntime,
+                                           presentationCandidate);
+            }();
             if (!layout) {
                 addErrorDiagnostic(diagnostics, layout.error());
                 return core::unexpected(std::move(layout.error()));
             }
             artifact.snapshotLayout = std::move(*layout);
         }
-        auto assembledIdentity = assembleIdentityStage(artifact, diagnostics);
+        auto assembledIdentity = [&] {
+            const internal::PrepareTraceScope trace{"identity"};
+            return assembleIdentityStage(artifact, diagnostics);
+        }();
         if (!assembledIdentity) {
             return core::unexpected(std::move(assembledIdentity.error()));
         }
 
+        const internal::PrepareTraceScope traceAssemble{"assemble"};
         diagnostics.sortDeterministically();
         auto prepared = std::make_unique<PreparedPlayback::State>();
         prepared->owner = &context.owner;

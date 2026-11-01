@@ -10,15 +10,19 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <chrono>
 #include <cmath>
+#include <cstdint>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <mutex>
 #include <sstream>
 #include <stdexcept>
+#include <string>
 #include <thread>
 
 namespace {
@@ -88,6 +92,14 @@ auto throughputSource(unsigned count, bool animated) -> PlaybackSource {
         chart << "},\"extensions\":{}}";
     }
     chart << "],\"requiredExtensions\":[],\"extensions\":{}}";
+    // The host applications cannot otherwise be driven with the same stress chart, because the
+    // fixture only ever existed in this process. Writing the exact text the loader receives lets a
+    // product-level run reuse it byte for byte.
+    const auto fixtureDump = test_support::environmentVariable("CUEXIS_GPU_FIXTURE_DUMP");
+    if (!fixtureDump.empty()) {
+        std::ofstream dump{std::filesystem::path{fixtureDump}, std::ios::binary | std::ios::trunc};
+        dump << chart.str();
+    }
     return throughputTake(
         PlaybackSource::fromTypedProject({.sourceId = "gpu-throughput-grid",
                                           .chartJson = chart.str(),
@@ -104,12 +116,89 @@ auto throughputSource(unsigned count, bool animated) -> PlaybackSource {
 auto throughputUs(Clock::time_point begin, Clock::time_point end) -> double {
     return std::chrono::duration<double, std::micro>(end - begin).count();
 }
+// Startup observability (probe instrument v2). The registered measurement contract runs the
+// whole synchronous startup before the window exists, which is what made the first seconds
+// unobservable: nothing was printed while a stage ran and nothing recorded when the window
+// appeared. The heartbeat only exists while a startup stage is active, prints nothing once the
+// window is live, and is joined before warmup, so the measured loop keeps its previous shape.
+struct StartupTrace final {
+    std::mutex mutex;
+    std::atomic<const char*> stage{nullptr};
+    std::atomic<std::int64_t> stageBeginUs{0};
+    std::atomic<bool> stop{false};
+    std::thread heartbeat;
+    Clock::time_point origin = Clock::now();
+};
+
+auto startupTrace() -> StartupTrace& {
+    static StartupTrace trace;
+    return trace;
+}
+
+auto startupUs(Clock::time_point point) -> double {
+    return throughputUs(startupTrace().origin, point);
+}
+
+void startupLine(const std::string& line) {
+    auto& trace = startupTrace();
+    const std::lock_guard<std::mutex> lock{trace.mutex};
+    std::cout << line << std::endl;
+}
+
+void startupHeartbeat() {
+    auto& trace = startupTrace();
+    while (!trace.stop.load(std::memory_order_relaxed)) {
+        std::this_thread::sleep_for(std::chrono::milliseconds{250});
+        if (trace.stop.load(std::memory_order_relaxed))
+            break;
+        const auto* name = trace.stage.load(std::memory_order_relaxed);
+        if (name == nullptr)
+            continue;
+        const auto nowUs = startupUs(Clock::now());
+        const auto beginUs =
+            static_cast<double>(trace.stageBeginUs.load(std::memory_order_relaxed));
+        std::ostringstream line;
+        line << std::setprecision(17) << "GPU_STARTUP_HEARTBEAT " << name << ' ' << nowUs - beginUs
+             << ' ' << nowUs;
+        startupLine(line.str());
+    }
+}
+
+void startupBegin() {
+    auto& trace = startupTrace();
+    trace.origin = Clock::now();
+    trace.stop.store(false, std::memory_order_relaxed);
+    trace.stage.store(nullptr, std::memory_order_relaxed);
+    trace.heartbeat = std::thread{startupHeartbeat};
+}
+
+void startupFinish() {
+    auto& trace = startupTrace();
+    trace.stop.store(true, std::memory_order_relaxed);
+    if (trace.heartbeat.joinable())
+        trace.heartbeat.join();
+}
+
 template <class Function> auto throughputStartupStage(const char* name, Function&& function) {
+    auto& trace = startupTrace();
     const auto begin = Clock::now();
-    std::cout << "GPU_STARTUP_BEGIN " << name << std::endl;
+    trace.stageBeginUs.store(static_cast<std::int64_t>(startupUs(begin)),
+                             std::memory_order_relaxed);
+    trace.stage.store(name, std::memory_order_relaxed);
+    {
+        const std::lock_guard<std::mutex> lock{trace.mutex};
+        std::cout << "GPU_STARTUP_BEGIN " << name << std::endl;
+    }
     auto result = function();
-    std::cout << "GPU_STARTUP_END " << name << " " << std::setprecision(17)
-              << throughputUs(begin, Clock::now()) << std::endl;
+    const auto end = Clock::now();
+    trace.stage.store(nullptr, std::memory_order_relaxed);
+    {
+        const std::lock_guard<std::mutex> lock{trace.mutex};
+        std::cout << "GPU_STARTUP_END " << name << " " << std::setprecision(17)
+                  << throughputUs(begin, end) << std::endl;
+        std::cout << std::setprecision(17) << "GPU_STARTUP_AT " << name << ' ' << startupUs(end)
+                  << std::endl;
+    }
     return result;
 }
 
@@ -166,27 +255,52 @@ TEST_CASE("GPU visible entity throughput probe", "[.][device][gpu][throughput]")
     const bool timing = test_support::environmentVariable("CUEXIS_GPU_TIMER") != "0";
     // Complete synchronous CPU preparation before creating a window. Keep the real startup
     // costs visible in the log; session and prepared state stay on their creating owner thread.
+    startupBegin();
+    startupLine("GPU_STARTUP_ORIGIN 0");
     PlaybackSession session;
     auto source = throughputStartupStage(
         "fixture_source", [&] { return throughputSource(count, mode == "animated"); });
     auto prepared = throughputStartupStage("playback_prepare", [&] {
         return throughputTake(session.prepareLoad(std::move(source), PlaybackMode::ChartClock));
     });
-    auto runtime = throughputTake(platform_sdl::SdlRuntime::create());
+    auto runtime = throughputStartupStage(
+        "sdl_runtime", [&] { return throughputTake(platform_sdl::SdlRuntime::create()); });
     render_opengl::OpenGlConfig config;
     config.vsync = false;
-    auto configuration = throughputTake(render_opengl::configureOpenGlContext(runtime, config));
+    auto configuration = throughputStartupStage("gl_context", [&] {
+        return throughputTake(render_opengl::configureOpenGlContext(runtime, config));
+    });
     platform_sdl::WindowConfig wc;
     wc.width = static_cast<int>(viewportWidth);
     wc.height = static_cast<int>(viewportHeight);
     wc.highDpi = false;
     wc.title = "Cuexis visible entities GPU throughput";
-    auto window = throughputTake(platform_sdl::SdlWindow::create(runtime, wc));
+    auto window = throughputStartupStage("window_create", [&] {
+        return throughputTake(platform_sdl::SdlWindow::create(runtime, wc));
+    });
     throughputPumpEvents();
     auto* nativeWindow = static_cast<SDL_Window*>(window.lease().nativeHandle());
-    auto backend =
-        throughputTake(render_opengl::OpenGlBackend::create(window, std::move(configuration)));
-    throughputTake(render_opengl::detail::OpenGlDiagnosticsAccess::setPixelReadback(backend, true));
+    {
+        const auto flags = SDL_GetWindowFlags(nativeWindow);
+        int windowWidth{}, windowHeight{};
+        REQUIRE(SDL_GetWindowSize(nativeWindow, &windowWidth, &windowHeight));
+        std::ostringstream line;
+        line << std::setprecision(17) << "GPU_STARTUP_WINDOW {\"at_us\":" << startupUs(Clock::now())
+             << ",\"window_id\":" << SDL_GetWindowID(nativeWindow)
+             << ",\"hidden\":" << ((flags & SDL_WINDOW_HIDDEN) ? "true" : "false")
+             << ",\"opengl\":" << ((flags & SDL_WINDOW_OPENGL) ? "true" : "false")
+             << ",\"width\":" << windowWidth << ",\"height\":" << windowHeight << '}';
+        startupLine(line.str());
+    }
+    auto backend = throughputStartupStage("backend_create", [&] {
+        return throughputTake(
+            render_opengl::OpenGlBackend::create(window, std::move(configuration)));
+    });
+    throughputStartupStage("pixel_readback", [&] {
+        throughputTake(
+            render_opengl::detail::OpenGlDiagnosticsAccess::setPixelReadback(backend, true));
+        return true;
+    });
     int interval{};
     REQUIRE(SDL_GL_GetSwapInterval(&interval));
     REQUIRE(interval == 0);
@@ -197,8 +311,14 @@ TEST_CASE("GPU visible entity throughput probe", "[.][device][gpu][throughput]")
     auto presentation = throughputStartupStage(
         "renderer_prepare", [&] { return throughputTake(backend.prepare(prepared, {})); });
     throughputTake(backend.accepts(presentation));
-    throughputTake(session.commit(std::move(prepared)));
-    backend.activate(std::move(presentation));
+    throughputStartupStage("session_commit", [&] {
+        throughputTake(session.commit(std::move(prepared)));
+        return true;
+    });
+    throughputStartupStage("backend_activate", [&] {
+        backend.activate(std::move(presentation));
+        return true;
+    });
     throughputPumpEvents();
     throughputStartupStage("first_update", [&] {
         throughputTake(session.update({0, 0, 1}));
@@ -213,10 +333,25 @@ TEST_CASE("GPU visible entity throughput probe", "[.][device][gpu][throughput]")
     throughputPumpEvents();
     throughputStartupStage("first_submit",
                            [&] { return throughputTake(backend.submit(snapshot)); });
-    throughputTake(backend.present());
+    throughputStartupStage("first_present", [&] {
+        throughputTake(backend.present());
+        return true;
+    });
     REQUIRE(backend.lastPixelProbe().rgba[0] > 200);
     REQUIRE(backend.lastPixelProbe().rgba[1] > 100);
     REQUIRE(backend.lastPixelProbe().rgba[2] < 160);
+    {
+        // Everything after this point is measured: the window exists, shows a proven frame and
+        // the heartbeat is stopped so no reporting thread can add wakeups to the measurement.
+        std::ostringstream line;
+        line << std::setprecision(17) << "GPU_STARTUP_SHOWN " << startupUs(Clock::now());
+        startupLine(line.str());
+        std::ostringstream total;
+        total << std::setprecision(17)
+              << "GPU_STARTUP_TOTAL {\"first_present_us\":" << startupUs(Clock::now()) << '}';
+        startupLine(total.str());
+    }
+    startupFinish();
     throughputTake(
         render_opengl::detail::OpenGlDiagnosticsAccess::setPixelReadback(backend, readback));
     render_opengl::test_only::GpuTimer timer;
