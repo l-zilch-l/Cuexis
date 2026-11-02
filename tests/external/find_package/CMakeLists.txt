@@ -26,6 +26,11 @@ endif()
 add_executable(cuexis_external_consumer
     ../consumer.cpp
     ../../presentation/validation_sink.cpp
+    ../../presentation/validation_sink_canonical.hpp
+    ../../presentation/validation_sink_common.hpp
+    ../../presentation/validation_sink_digest.hpp
+    ../../presentation/validation_sink_frame.cpp
+    ../../presentation/validation_sink_model.hpp
 )
 target_compile_definitions(cuexis_external_consumer
     PRIVATE CUEXIS_SOURCE_DIR="${CUEXIS_SOURCE_DIR}")
