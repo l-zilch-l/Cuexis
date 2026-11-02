@@ -13,6 +13,9 @@ add_executable(
     src/player_assembly.hpp
     src/player_control.cpp
     src/player_control.hpp
+    src/player_control_frame_loop.cpp
+    src/player_control_internal.hpp
+    src/player_control_transaction.cpp
     src/player_gameplay.cpp
     src/player_smoke.cpp
     src/player_smoke.hpp
