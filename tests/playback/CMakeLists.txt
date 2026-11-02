@@ -13,6 +13,8 @@ add_executable(cuexis_playback_tests
     presentation_shader_budget_tests.cpp
     presentation_shader_tests.cpp
     presentation_tests.cpp
+    presentation_extraction_tests.cpp
+    presentation_fixture.hpp
     runtime_timeline_tests.cpp
     ../presentation/validation_sink.cpp
     ${PROJECT_SOURCE_DIR}/engine/playback/src/frame_digest_version.cpp
