@@ -7,6 +7,11 @@ target_sources(cuexis_chart
     PRIVATE
         src/animation_template_loader.cpp
         src/cxt_v2_loader.cpp
+        src/cxt_v2_loader_expand.cpp
+        src/cxt_v2_loader_parse_nodes.cpp
+        src/cxt_v2_loader_parse_values.cpp
+        src/cxt_v2_loader_reader.cpp
+        src/cxt_v2_loader_units_internal.hpp
         src/canonical_chart_loader.cpp
         src/canonical_chart_loader_behaviors.cpp
         src/canonical_chart_loader_primitives.cpp
