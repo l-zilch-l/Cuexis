@@ -4,6 +4,10 @@ add_library(cuexis::asset_publish ALIAS cuexis_asset_publish)
 target_sources(cuexis_asset_publish
     PRIVATE
         src/asset_publish.cpp
+        src/asset_publish_generation.cpp
+        src/asset_publish_internal.hpp
+        src/asset_publish_marker.cpp
+        src/asset_publish_package.cpp
         src/publish_fs_internal.cpp
         src/publish_fs_internal.hpp
     PUBLIC
