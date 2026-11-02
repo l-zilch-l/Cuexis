@@ -1,8 +1,8 @@
 # Cuexis Stage 7-RPA 性能整改方案
 
-状态：总体仍为 candidate；F1–F5 裁定保留，R1、R2 已退出，owner 于 2026-10-26 明确接受 R2 按原计划退出；受控局部门通过，旧不确定结果与证据范围限制保留，R4 正式接受未登记。当前承接见 §7.11；原判据保持。
+状态：总体仍为 candidate；F1–F5 裁定保留，R1、R2 已退出，owner 于 2026-10-26 明确接受 R2 按原计划退出；受控局部门通过，旧不确定结果与证据范围限制保留，R4 正式接受未登记。当前承接见 §7.11；原判据保持。2026-11-02 owner 就四项 R3 阶段门、40K 240 FPS 与内存上限作出裁定，见 §9.3、§9.4、§12.2。
 
-更新日期：2026-10-27。
+更新日期：2026-11-02。
 
 当前 R3 实施中，最新核验见 [R3 实施登记](r3/plan.md)；依赖与范围见 §4、§5、§8。历史 R1 执行入口：[R1 实施与验证计划](r1/plan.md)。R1 进展见 [R1 继续实施记录](../../../../stage_reports/stages/stage-07/05-rpa-new/r1/2026-10-25-r1-continuation.md)，前次 ON/OFF 红色证据见 [R1 停审报告](../../../../stage_reports/stages/stage-07/05-rpa-new/r1/2026-10-25-r1-stop-review.md)，历史记录不回填。下列“设计基线”“裁定核查基线”和编写请求保留 2026-10-24 的历史语境，不替代本轮授权或现场身份。
 
@@ -689,11 +689,15 @@ CPU owning lease 可跨 Close 保留且不阻塞关闭；GPU、设备或 worker 
 
 若缺少可比较的无插桩子阶段计时边界，对应预算记未判定；归因探针绝对时间不能直接接受它。各阶段 p99 不相加，CPU submit/present-return/receipt/ACK/GPU complete 也不互换。
 
+**2026-11-02 owner 裁定（本节的唯一例外）**：D2 / D3 / Snapshot / 排队 四项接受“可开关阶段计时 + 归因 + 开销披露”作为登记方式。四条须同时成立才可登记：计时设施由编译期开关控制、关闭时不进入产品路径；只登归因读数并逐进程报 p99，不改判据与范围；必须用同负载对照披露插桩开销；不与任何无插桩预算读数混用。本次登记读数（judgement / projection / runtime / snapshot / queue 的每进程 p99 分别为 45.8–122.2 / 17.9–19.2 / 6.0–6.4 / 11.0–18.4 / 26.2–88.4 µs）与约 +12 % 开销对照见[四项门裁定](../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-02-r3-owner-gate-rulings.md)。该例外只覆盖这四项；其余预算仍按“缺少无插桩边界记未判定”执行。
+
 Seek 预声明五类：本会话自然 checkpoint 首次使用、同档重复热使用、外部归档首次认证、冷进程、无合法 checkpoint 回退。全部保留真实必要成本，目标 H 不专门预制 checkpoint。首次认证即使移到 load，也要在 load/capture/p99/内存里完整入账；合同未改变前不能仅凭热路径接受该能力。
 
 ### 9.4 内存与物理门
 
 B0 目前只有 14 个参考 profile，规模 1/200/201；64/2048/40k 尚无正式登记 caps。本方案推荐沿 B1 建议另建 derived_scale 工具，import 冻结常量并标记 formal_registration:false，供诊断与设计比较；这不是本轮对新 caps 的接受，也不修改 memory_caps.py、memory_caps.v1.json。
+
+**2026-11-02 owner 裁定**：内存预算超过 128 MiB 已被接受，128 MiB 不再作为 R3 的适用上限判据。40K prepare 的实测私有峰值（最小 254.7 MiB）与续点预算计费（244,028,048 B；同一构建实际多留 323,303 B，计费高估 755×）按各自口径登记，不判超界；本裁定不设新的数字上限，也不替代本节要求的正式 caps/profile 注册。见[四项门裁定](../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-02-r3-owner-gate-rulings.md)。
 
 参考规模正式预算有缺口时提交 owner 接受具体 profile/caps，不能以“分域零泄漏”代替上限接受，不能把派生结果自动升级为正式注册。World/current/candidate/scratch/index、payload/attempt/journal/receipt/command/delivery 的标签覆盖与峰值/age 均需核对；缺标签为 N/A/缺证据，不填 0。
 
@@ -757,6 +761,8 @@ R1、R2 已退出，R0 保持历史残余。owner 于 2026-10-26 接受 R2 按�
 - 足够密度的 checkpoint 导致已接受 caps、D2 p99、capture 队列 age、load 或最后释放预算失败。
 - 动态事务复制被确认阻断预算，但尚无可保留 rollback、FaultPrefix、旧 owning 结果与有界物化的具体表示；新增 checkpoint 不能代替此决定。
 - Close 最小许可修复仍无法在原宿主 owner 内证明超时保活和可泵终态，需要重新决定生命周期合同。
+
+**2026-11-02 已裁定的一项**：40K @ 240 FPS 的“结构性不可能”判定已由 owner 接受，按选项 2 处理——明确改变适用能力范围，40K 不再作为 240 FPS 的适用规模；240 FPS 边界仍以冻结容量值（1080p 仅渲染 1800、静态 1300）与实测前缘括区表述，不发布新容量值。判定文本、读数与全部累计证据保留；本裁定不关闭 R4、设备或生产接受。见[四项门裁定](../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-02-r3-owner-gate-rulings.md)。
 
 裁定包应包含：源/工具/构建/fixture 身份；所有失败和原始数据；端到端边界与实际工作量；冷/首次/热/回退分层；逐窗 CI/15%/observer 扰动；相位包络与排他量；每份状态大小/生成成本/active-retired-final 内存；闭包与安全反例；已测/未测清单；可回滚最小差异。没有数学或实验下界时只能写“当前候选达不到”，不能断言所有设计都不可能。
 

@@ -1,6 +1,6 @@
 # R3 implementation and verification
 
-状态：in progress。用户于 2026-10-26 授权本次接手完成 R3。
+状态：in progress。用户于 2026-10-26 授权本次接手完成 R3；owner 于 2026-11-02 作出四项门裁定，门账收口为 14 项通过 + 1 项部分（适用 Seek 2/5 类），R3 仍未退出，见文末 §6。
 本登记从 [总计划](../plan.md) §8 消费范围和依赖，不扩展到 R4 正式接受或 Stage 7 关闭。
 返回 [New RPA 索引](../README.md)。
 
@@ -137,3 +137,16 @@ archive 明确物化日志。旧结果持有自身 owner，关闭/替换不能�
 
 配置首尝试因 PowerShell 未引用 `exp.candidate` 失败，错误日志和失败目录保留；
 新有效 Debug 构建为 `out/build/rpa-r3-entry-debug-v2-20261026`。
+
+## 6. 2026-11-02 owner 裁定
+
+owner 于 2026-11-02 作出四项裁定：本轮不运行 hosted CI；接受“可开关阶段计时 + 归因 + 开销披露”
+作为 D2 / D3 / Snapshot / 排队 的登记方式；接受 40K @ 240 FPS 判定为结构性不可能；接受内存预算超过
+128 MiB。
+
+后果：四项阶段门由未判定转为通过（判据不变，读数来自 `out/build/pd-metrics`，约 +12 % 插桩开销已披露），
+R3 门账为 **14 项通过 + 1 项部分（适用 Seek 覆盖 2/5 类）+ 0 项未判定**。仍未完成：适用 Seek 余下 3 类、
+最终源码上的同源矩阵重跑（矩阵绑 `6256af8`，其后 `presentation_materializer.cpp` 与
+`open_gl_backend.cpp` 有产品改动）、hosted 同 SHA、R3b 预算候选与 R3c 原型的采用决定、
+owner 对 R3 退出的裁定。裁定文本与边界见
+[四项门裁定](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-02-r3-owner-gate-rulings.md)。
