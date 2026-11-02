@@ -27,7 +27,9 @@ add_executable(cuexis_judgement_tests
     judgement_diagnostic_tests.cpp
     judgement_session_tests.cpp
     observation_normalization_tests.cpp
-    timebase_tests.cpp
+    timebase_mapping_tests.cpp
+    timebase_policy_tests.cpp
+    timebase_test_fixture.hpp
 )
 
 target_include_directories(cuexis_judgement_tests PRIVATE ${PROJECT_SOURCE_DIR}/engine/judgement/internal)
