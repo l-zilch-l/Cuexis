@@ -18,7 +18,9 @@ add_executable(cuexis_judgement_tests
     gameplay_graph_tests.cpp
     gameplay_identity_tests.cpp
     gameplay_measure_compile_tests.cpp
-    gameplay_pattern_compile_tests.cpp
+    gameplay_pattern_budget_tests.cpp
+    gameplay_pattern_compile_fixture.hpp
+    gameplay_pattern_primitive_tests.cpp
     gameplay_prepare_tests.cpp
     input_mapping_tests.cpp
     judgement_boundary_tests.cpp
