@@ -11,6 +11,7 @@ target_sources(cuexis_cxc
         src/cxc_candidate.cpp
         src/cxc_manifest_loader.cpp
         src/cxc_package.cpp
+        src/cxc_package_helpers.hpp
         src/cxc_path_internal.cpp
         src/cxc_writer.cpp
         src/zip32_envelope_internal.cpp
