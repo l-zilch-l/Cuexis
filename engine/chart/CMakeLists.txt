@@ -17,6 +17,9 @@ target_sources(cuexis_chart
         src/candidate_assembler.cpp
         src/behavior_candidate.cpp
         src/chart_v4_loader.cpp
+        src/chart_v4_loader_animators.cpp
+        src/chart_v4_loader_parameters.cpp
+        src/chart_v4_loader_projection.cpp
         src/chart_v4_resolver.cpp
         src/chart_writer.cpp
         src/prepared_semantic_identity.cpp

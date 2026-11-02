@@ -105,7 +105,8 @@ TEST_CASE("Chart v4 and CXC preparation use the shared parse layering",
           "[chart][cxc][parse][characterization][count]") {
     const auto loaderSource = readSource("engine/chart/src/chart_v4_loader.cpp");
     const auto loaderBody = functionBody(loaderSource, "ChartV4Loader::load");
-    const auto projectionBody = functionBody(loaderSource, "makeLegacyProjection");
+    const auto projectionSource = readSource("engine/chart/src/chart_v4_loader_projection.cpp");
+    const auto projectionBody = functionBody(projectionSource, "makeLegacyProjection");
     REQUIRE_FALSE(loaderBody.empty());
     REQUIRE_FALSE(projectionBody.empty());
     CHECK(countOccurrences(loaderBody, "json::parse(") == 1U);
