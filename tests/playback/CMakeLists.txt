@@ -58,7 +58,12 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
         ../pd/software_transaction_integration_tests.cpp
         "${PROJECT_SOURCE_DIR}/engine/playback/src/presentation_projection.cpp")
     target_link_libraries(cuexis_playback_tests PRIVATE cuexis::execution_host_support)
-    target_sources(cuexis_playback_tests PRIVATE ../pd/revision4_physical_budget_tests.cpp playback_gameplay_tests.cpp ../judgement/execution_reference.cpp
+    target_sources(cuexis_playback_tests PRIVATE ../pd/revision4_physical_budget_tests.cpp
+        playback_gameplay_tests.cpp
+        playback_gameplay_diagnostics_tests.cpp
+        playback_gameplay_execution_tests.cpp
+        playback_gameplay_fixture.hpp
+        ../judgement/execution_reference.cpp
         "${PROJECT_SOURCE_DIR}/engine/playback/src/gameplay_entry.cpp")
     target_link_libraries(cuexis_playback_tests PRIVATE cuexis::gameplay_packed cuexis::judgement cuexis::json_support)
     target_compile_definitions(cuexis_playback_tests
