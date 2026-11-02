@@ -163,10 +163,18 @@ function(cuexis_verify_source_architecture source_dir)
     # S7A-2 keeps the input normalization surface inside the same input-layer partition instead of
     # adding a second input header or a cuexis_input target, so the header that this batch extends is
     # checked for the declarations it now owns. The check is a presence check, not a semantic one:
-    # the frozen role and boundary rules themselves are asserted by the judgement tests.
-    file(READ
-        "${source_dir}/engine/judgement/include/cuexis/judgement/input_boundary.hpp"
-        judgement_input_boundary_contents)
+    # the frozen role and boundary rules themselves are asserted by the judgement tests. The
+    # partition is an umbrella plus two included parts, so all three files are read as one surface.
+    set(judgement_input_boundary_contents "")
+    foreach(judgement_input_part IN ITEMS
+            input_boundary.hpp
+            input_boundary_amount.hpp
+            input_boundary_mapping.hpp)
+        file(READ
+            "${source_dir}/engine/judgement/include/cuexis/judgement/${judgement_input_part}"
+            judgement_input_part_contents)
+        string(APPEND judgement_input_boundary_contents "${judgement_input_part_contents}")
+    endforeach()
     foreach(judgement_input_surface IN ITEMS
             "struct AmountSpec"
             "struct InputDomainDeclaration"
