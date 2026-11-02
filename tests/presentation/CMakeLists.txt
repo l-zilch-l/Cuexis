@@ -1,5 +1,10 @@
 add_executable(cuexis_presentation_validation_tests
     validation_sink.cpp
+    validation_sink_canonical.hpp
+    validation_sink_common.hpp
+    validation_sink_digest.hpp
+    validation_sink_frame.cpp
+    validation_sink_model.hpp
     validation_sink_tests.cpp
 )
 
