@@ -1,5 +1,6 @@
 add_library(cuexis_execution_host_support STATIC
-    host_protocol.cpp host_candidate.cpp audio_owner.cpp frame_observation.cpp capture_route.cpp
+    host_protocol.cpp host_protocol_helpers.hpp host_protocol_ledger.cpp
+    host_candidate.cpp audio_owner.cpp frame_observation.cpp capture_route.cpp
     audio_worker.cpp session_worker.cpp frame_storage.cpp frame_delivery.cpp)
 add_library(cuexis::execution_host_support ALIAS cuexis_execution_host_support)
 target_compile_features(cuexis_execution_host_support PUBLIC cxx_std_20)
