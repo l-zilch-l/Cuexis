@@ -37,6 +37,8 @@ add_executable(cuexis_reference_host
     src/host_content.cpp
     src/host_report.cpp
     src/host_runner.cpp
+    src/host_runner_command.cpp
+    src/host_runner_internal.hpp
     src/host_gameplay.cpp
     src/host_realtime.cpp)
 target_include_directories(cuexis_reference_host PRIVATE src)
