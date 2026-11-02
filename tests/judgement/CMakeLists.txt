@@ -2,6 +2,10 @@ add_executable(cuexis_judgement_tests
     claim_key_tests.cpp
     shared_sequence_tests.cpp
     fold_recovery_tests.cpp
+    fold_recovery_seek_tests.cpp
+    fold_recovery_diagnostic_tests.cpp
+    fold_recovery_deadline_tests.cpp
+    fold_recovery_fixture.hpp
     publication_tests.cpp
     execution_profile_tests.cpp
     execution_kernel_tests.cpp
