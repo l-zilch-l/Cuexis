@@ -3,6 +3,10 @@ add_library(cuexis_playback ${CUEXIS_LIBRARY_TYPE}
     src/frame_digest_internal.hpp
     src/frame_digest_version.cpp
     src/presentation.cpp
+    src/presentation_identity.cpp
+    src/presentation_parse.cpp
+    src/presentation_reader.cpp
+    src/presentation_units_internal.hpp
     src/presentation_extraction.cpp
     src/presentation_extraction.hpp
     src/presentation_internal.hpp
