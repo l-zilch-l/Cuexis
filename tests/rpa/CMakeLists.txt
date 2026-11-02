@@ -3,7 +3,13 @@ add_executable(cuexis_rpa_tests
     rpa_b1_tests.cpp
     rpa_b2_fixture.cpp
     rpa_b2_tests.cpp
-    rpa_b3_tests.cpp
+    rpa_b3_fixture.cpp
+    rpa_b3_fixture.hpp
+    rpa_b3_checkpoint_tests.cpp
+    rpa_b3_control_tests.cpp
+    rpa_b3_native_tests.cpp
+    rpa_b3_recovery_tests.cpp
+    rpa_b3_schedule_tests.cpp
     rpa_b3_clock_tests.cpp
     ../judgement/execution_reference.cpp
 )
