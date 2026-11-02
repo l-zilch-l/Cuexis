@@ -12,6 +12,9 @@ add_library(cuexis_playback ${CUEXIS_LIBRARY_TYPE}
     src/presentation_internal.hpp
     src/playback_candidate_internal.hpp
     src/playback_session.cpp
+    src/playback_session_gameplay.cpp
+    src/playback_session_internal.hpp
+    src/playback_session_realtime.cpp
     src/presentation_materializer.cpp
     src/playback_source.cpp
     src/playback_source_gameplay.cpp
