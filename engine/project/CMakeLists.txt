@@ -8,6 +8,9 @@ target_sources(cuexis_project
         src/asset_index_reader.cpp
         src/project_validation.hpp
         src/project_loader.cpp
+        src/project_loader_read_helpers.hpp
+        src/project_loader_write_helpers.hpp
+        src/project_loader_save.cpp
     PRIVATE
         FILE_SET HEADERS
         BASE_DIRS include
