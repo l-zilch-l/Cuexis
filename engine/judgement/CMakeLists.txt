@@ -9,7 +9,17 @@ target_sources(cuexis_judgement
         src/execution_profile.cpp
         src/execution_scheduler.cpp
         src/execution_kernel.cpp
-        src/gameplay_assembler.cpp
+        src/gameplay_assembler_assemble.cpp
+        src/gameplay_assembler_compile.cpp
+        src/gameplay_assembler_compile_internal.hpp
+        src/gameplay_assembler_compile_measure.cpp
+        src/gameplay_assembler_diagnostics.cpp
+        src/gameplay_assembler_grace.cpp
+        src/gameplay_assembler_graph.cpp
+        src/gameplay_assembler_identity.cpp
+        src/gameplay_assembler_internal.hpp
+        src/gameplay_assembler_pattern.cpp
+        src/gameplay_assembler_validate.cpp
         src/gameplay_graph.cpp
         src/gameplay_graph_diff.cpp
         src/gameplay_graph_render.cpp
