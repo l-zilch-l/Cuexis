@@ -280,6 +280,17 @@ function(cuexis_verify_source_architecture source_dir)
     file(READ
         "${source_dir}/engine/judgement/include/cuexis/judgement/gameplay_assembler.hpp"
         judgement_assembler_contents)
+    # The assembler partition is an umbrella plus three included parts, so the declaration
+    # surface is the concatenation of all four files.
+    foreach(judgement_assembler_part IN ITEMS
+            gameplay_assembler_identity.hpp
+            gameplay_assembler_publication.hpp
+            gameplay_assembler_compiled.hpp)
+        file(READ
+            "${source_dir}/engine/judgement/include/cuexis/judgement/${judgement_assembler_part}"
+            judgement_assembler_part_contents)
+        string(APPEND judgement_assembler_contents "${judgement_assembler_part_contents}")
+    endforeach()
     foreach(judgement_assembler_surface IN ITEMS
             "struct LocalDeclaration"
             "struct GameplaySourceDocument"
