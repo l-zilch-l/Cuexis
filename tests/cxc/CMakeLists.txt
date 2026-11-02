@@ -6,7 +6,9 @@ set(cuexis_cxc_test_sources
     cfu_f4_safety_tests.cpp
     cxc_binary_fixture_tests.cpp
     cxc_candidate_bridge_tests.cpp
-    cxc_package_tests.cpp
+    cxc_package_loader_tests.cpp
+    cxc_package_test_fixture.hpp
+    cxc_package_writer_tests.cpp
     cxc_manifest_loader_tests.cpp
     cxc_test_support.cpp
     cxc_test_support.hpp
