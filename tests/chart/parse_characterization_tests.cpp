@@ -121,7 +121,8 @@ TEST_CASE("Chart v4 and CXC preparation use the shared parse layering",
 
     const auto resolverSource = readSource("engine/chart/src/chart_v4_resolver.cpp");
     const auto resolverBody = functionBody(resolverSource, "ChartV4Resolver::resolve");
-    const auto concreteBody = functionBody(resolverSource, "makeConcreteChart");
+    const auto patchingSource = readSource("engine/chart/src/chart_v4_resolver_patching.cpp");
+    const auto concreteBody = functionBody(patchingSource, "makeConcreteChart");
     REQUIRE_FALSE(resolverBody.empty());
     REQUIRE_FALSE(concreteBody.empty());
     CHECK(countOccurrences(resolverBody, "json::parse(") == 1U);
