@@ -24,7 +24,9 @@ target_sources(cuexis_chart
         src/chart_writer.cpp
         src/prepared_semantic_identity.cpp
         src/chart_v4_common_reader_internal.cpp
-        src/chart_v4_animation_reader_internal.cpp
+        src/chart_v4_animation_reader_animator.cpp
+        src/chart_v4_animation_reader_clip.cpp
+        src/chart_v4_animation_reader_values.cpp
         src/chart_project_path_internal.cpp
         src/packed_chart_primitives.cpp
         src/packed_chart_tables.cpp
