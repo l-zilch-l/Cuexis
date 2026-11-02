@@ -2,6 +2,8 @@ find_package(EnTT CONFIG REQUIRED)
 
 add_library(cuexis_world STATIC
     src/property.cpp
+    src/property_helpers.hpp
+    src/property_resolver.cpp
     src/transform_system.cpp
     src/world.cpp
 )
