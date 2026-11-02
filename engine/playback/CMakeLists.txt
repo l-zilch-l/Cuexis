@@ -10,7 +10,10 @@ add_library(cuexis_playback ${CUEXIS_LIBRARY_TYPE}
     src/playback_session.cpp
     src/presentation_materializer.cpp
     src/playback_source.cpp
+    src/playback_source_gameplay.cpp
+    src/playback_source_internal.hpp
     src/playback_source_state.hpp
+    src/playback_source_support.cpp
     src/runtime_timeline.cpp
     src/realtime_clock.cpp
 )
