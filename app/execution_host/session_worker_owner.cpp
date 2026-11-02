@@ -217,7 +217,7 @@ void SessionOwner::reclaimCoherent(const AdvanceRetentionProgress& progress) noe
 [[nodiscard]] auto SessionOwner::fence(const ControlReceipt& proof
 #if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
                                        ,
-                                       rpa::Fence* destination = nullptr
+                                       rpa::Fence* destination
 #endif
                                        ) -> core::Result<CommitFence> {
 #if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
