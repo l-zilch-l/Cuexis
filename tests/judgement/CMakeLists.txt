@@ -10,7 +10,9 @@ add_executable(cuexis_judgement_tests
     execution_profile_tests.cpp
     execution_kernel_tests.cpp
     execution_reference.cpp
-    gameplay_assembler_tests.cpp
+    gameplay_assembler_budget_tests.cpp
+    gameplay_assembler_entry_tests.cpp
+    gameplay_assembler_test_fixture.hpp
     gameplay_graph_tests.cpp
     gameplay_identity_tests.cpp
     gameplay_measure_compile_tests.cpp
