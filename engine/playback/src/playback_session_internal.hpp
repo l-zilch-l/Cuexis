@@ -261,4 +261,34 @@ struct PlaybackSession::State final {
 #endif
 };
 
+struct PreparedPlayback::State final {
+    PlaybackSession* owner{};
+    std::uint64_t ownerToken{};
+    std::uint64_t expectedGeneration{};
+    bool replacement{};
+    core::ThreadChecker ownerThread;
+    std::shared_ptr<content::IContentProvider> contentProvider;
+    std::unique_ptr<assets::ResourceManager> resourceManager;
+    std::string chartJson;
+    std::unique_ptr<runtime::RuntimeSession> runtimeSession;
+    SnapshotLayout snapshotLayout;
+    ChartInfo chartInfo;
+    PlaybackContentInfo contentInfo;
+    ChartParameterSet parameters;
+    PreparedSemanticIdentity semanticIdentity;
+    std::optional<chart::CandidateRuntimeMetadata> candidateMetadata;
+    std::optional<assets::AudioSourceLease> audioSourceLease;
+    core::Diagnostics diagnostics;
+    core::Diagnostics lastOperationDiagnostics;
+    std::optional<RuntimeFrame> targetFrame;
+    SessionState committedState{SessionState::Ready};
+    std::optional<detail::PreparedPresentation> presentation;
+    std::uint64_t candidateGeneration{};
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    GameplayContent gameplayContent;
+    std::unique_ptr<judgement::JudgementSession> gameplay;
+    detail::PreparedProjection gameplayProjectionIndex;
+#endif
+};
+
 } // namespace cuexis::playback
