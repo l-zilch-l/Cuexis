@@ -40,7 +40,11 @@ add_executable(cuexis_execution_host_tests
     rpa_b5_audio_tests.cpp
     rpa_b5_session_tests.cpp
     rpa_b5_capture_tests.cpp
-    rpa_b5_host_tests.cpp
+    rpa_b5_audio_tail_tests.cpp
+    rpa_b5_close_tests.cpp
+    rpa_b5_host_fixture.hpp
+    rpa_b5_seek_host_tests.cpp
+    rpa_b5_transcript_tests.cpp
     ../pd/retained_control_tests.cpp
     ${CUEXIS_EXECUTION_HOST_SOURCES}
     "${PROJECT_SOURCE_DIR}/app/player/src/snapshot_scene.cpp"
