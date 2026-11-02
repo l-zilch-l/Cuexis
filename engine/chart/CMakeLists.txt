@@ -41,7 +41,11 @@ target_sources(cuexis_chart
         src/chart_v4_animation_reader_values.cpp
         src/chart_project_path_internal.cpp
         src/packed_chart_primitives.cpp
-        src/packed_chart_tables.cpp
+        src/packed_chart_tables_decoder.cpp
+        src/packed_chart_tables_inspect.cpp
+        src/packed_chart_tables_sections.cpp
+        src/packed_chart_tables_units_internal.hpp
+        src/packed_chart_tables_writer.cpp
         src/packed_profile.cpp
         src/packed_semantic_identity.cpp
         src/packed_chart_io.cpp

@@ -583,13 +583,22 @@ TEST_CASE("SPEC-02 wire-range representability has its own code, not a budget co
     // causes apart. The guard is intentionally source-level, because the branch is defensive -
     // every budget sits far below the uint32 ceiling, so no public input can reach it and a
     // behavioural test cannot construct the state that would exercise it.
-    const auto source =
-        fs::path{CUEXIS_SOURCE_DIR} / "engine" / "chart" / "src" / "packed_chart_tables.cpp";
-    REQUIRE(fs::exists(source));
-    std::ifstream stream{source, std::ios::binary};
-    REQUIRE(stream);
-    const std::string text{std::istreambuf_iterator<char>{stream},
-                           std::istreambuf_iterator<char>{}};
+    // The writer is split across four units; the guards below are named by their message, so every
+    // unit is read into one text.
+    constexpr std::array<std::string_view, 4> units{
+        "packed_chart_tables_writer.cpp", "packed_chart_tables_sections.cpp",
+        "packed_chart_tables_inspect.cpp", "packed_chart_tables_decoder.cpp"};
+    std::string text;
+    for (const auto unit : units) {
+        const auto source =
+            fs::path{CUEXIS_SOURCE_DIR} / "engine" / "chart" / "src" / std::string{unit};
+        REQUIRE(fs::exists(source));
+        std::ifstream stream{source, std::ios::binary};
+        REQUIRE(stream);
+        text +=
+            std::string{std::istreambuf_iterator<char>{stream}, std::istreambuf_iterator<char>{}};
+        text.push_back('\n');
+    }
 
     // The three header/directory narrowing guards report the dedicated code. Each is a
     // `fail("<code>", "<message>")` call, so the code and message must be adjacent literals on
