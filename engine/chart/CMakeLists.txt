@@ -8,6 +8,10 @@ target_sources(cuexis_chart
         src/animation_template_loader.cpp
         src/cxt_v2_loader.cpp
         src/canonical_chart_loader.cpp
+        src/canonical_chart_loader_behaviors.cpp
+        src/canonical_chart_loader_primitives.cpp
+        src/canonical_chart_loader_sections.cpp
+        src/canonical_chart_loader_units_internal.hpp
         src/canonical_chart_template_internal.cpp
         src/chart_loader.cpp
         src/chart_migrator.cpp
