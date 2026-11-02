@@ -15,6 +15,9 @@ add_library(cuexis_playback ${CUEXIS_LIBRARY_TYPE}
     src/playback_session_execution.cpp
     src/playback_session_gameplay.cpp
     src/playback_session_internal.hpp
+    src/playback_session_prepare_capabilities.cpp
+    src/playback_session_prepare_internal.hpp
+    src/playback_session_prepare_stages.cpp
     src/playback_session_realtime.cpp
     src/presentation_materializer.cpp
     src/playback_source.cpp

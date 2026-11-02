@@ -107,7 +107,8 @@ inline auto gameplayError(std::string_view detail) -> core::Error {
         .withContext("faulted", "false");
 }
 
-inline auto prepareProjection(const detail::GameplayContentStorage& content, const SnapshotLayout& layout)
+inline auto prepareProjection(const detail::GameplayContentStorage& content,
+                              const SnapshotLayout& layout)
     -> core::Result<detail::PreparedProjection> {
 #if defined(CUEXIS_ALLOCATION_LIFETIME_OBSERVER)
     // Product tag: the projection index maps are session-scoped and capped as state.index.
