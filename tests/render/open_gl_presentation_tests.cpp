@@ -93,14 +93,24 @@ auto hasContext(const cuexis::core::Error& error, std::string_view key, std::str
     return false;
 }
 
+// The backend is split across four units; the characterization checks below name functions, not
+// files, so every unit is read into one text.
 [[nodiscard]] auto renderImplementationSource() -> std::string {
-    const auto path = std::filesystem::path{CUEXIS_SOURCE_DIR} / "engine" / "render_opengl" /
-                      "src" / "open_gl_presentation.cpp";
-    std::ifstream input{path, std::ios::binary};
-    REQUIRE(input.good());
-    std::ostringstream contents;
-    contents << input.rdbuf();
-    return contents.str();
+    static constexpr std::array<std::string_view, 4> units{
+        "open_gl_presentation.cpp", "open_gl_presentation_gl_objects.cpp",
+        "open_gl_presentation_draws.cpp", "open_gl_presentation_frame.cpp"};
+    std::string text;
+    for (const auto unit : units) {
+        const auto path = std::filesystem::path{CUEXIS_SOURCE_DIR} / "engine" / "render_opengl" /
+                          "src" / std::string{unit};
+        std::ifstream input{path, std::ios::binary};
+        REQUIRE(input.good());
+        std::ostringstream contents;
+        contents << input.rdbuf();
+        text += contents.str();
+        text.push_back('\n');
+    }
+    return text;
 }
 
 [[nodiscard]] auto renderPublicHeaderSource() -> std::string {
@@ -113,23 +123,61 @@ auto hasContext(const cuexis::core::Error& error, std::string_view key, std::str
     return contents.str();
 }
 
+// The control layer is split across three units; the checks below name functions, not files.
 [[nodiscard]] auto playerImplementationSource() -> std::string {
-    const auto path =
-        std::filesystem::path{CUEXIS_SOURCE_DIR} / "app" / "player" / "src" / "player_control.cpp";
-    std::ifstream input{path, std::ios::binary};
-    REQUIRE(input.good());
-    std::ostringstream contents;
-    contents << input.rdbuf();
-    return contents.str();
+    static constexpr std::array<std::string_view, 3> units{
+        "player_control.cpp", "player_control_transaction.cpp", "player_control_frame_loop.cpp"};
+    std::string text;
+    for (const auto unit : units) {
+        const auto path =
+            std::filesystem::path{CUEXIS_SOURCE_DIR} / "app" / "player" / "src" / std::string{unit};
+        std::ifstream input{path, std::ios::binary};
+        REQUIRE(input.good());
+        std::ostringstream contents;
+        contents << input.rdbuf();
+        text += contents.str();
+        text.push_back('\n');
+    }
+    return text;
+}
+
+// The backend is split across units, so a name can appear at a call site before its definition.
+// A definition is the first occurrence whose argument list closes before any semicolon and which
+// is then followed by an opening brace.
+[[nodiscard]] auto definitionStart(const std::string& source, std::string_view functionName)
+    -> std::optional<std::size_t> {
+    std::size_t position = 0;
+    while ((position = source.find(functionName, position)) != std::string::npos) {
+        std::size_t depth = 0;
+        for (std::size_t index = position + functionName.size(); index < source.size(); ++index) {
+            const char character = source[index];
+            if (character == '(') {
+                ++depth;
+            } else if (character == ')') {
+                if (depth > 0) {
+                    --depth;
+                }
+            } else if (depth == 0) {
+                if (character == ';') {
+                    break;
+                }
+                if (character == '{') {
+                    return position;
+                }
+            }
+        }
+        position += functionName.size();
+    }
+    return std::nullopt;
 }
 
 [[nodiscard]] auto functionRegion(const std::string& source, std::string_view functionName)
     -> std::optional<std::string_view> {
-    const auto functionStart = source.find(functionName);
-    if (functionStart == std::string::npos) {
+    const auto functionStart = definitionStart(source, functionName);
+    if (!functionStart) {
         return std::nullopt;
     }
-    const auto openBrace = source.find('{', functionStart);
+    const auto openBrace = source.find('{', *functionStart);
     if (openBrace == std::string::npos) {
         return std::nullopt;
     }
@@ -146,15 +194,15 @@ auto hasContext(const cuexis::core::Error& error, std::string_view key, std::str
 
 [[nodiscard]] auto functionSignature(const std::string& source, std::string_view functionName)
     -> std::optional<std::string_view> {
-    const auto functionStart = source.find(functionName);
-    if (functionStart == std::string::npos) {
+    const auto functionStart = definitionStart(source, functionName);
+    if (!functionStart) {
         return std::nullopt;
     }
-    const auto openBrace = source.find('{', functionStart);
+    const auto openBrace = source.find('{', *functionStart);
     if (openBrace == std::string::npos) {
         return std::nullopt;
     }
-    return std::string_view{source}.substr(functionStart, openBrace - functionStart);
+    return std::string_view{source}.substr(*functionStart, openBrace - *functionStart);
 }
 
 } // namespace
