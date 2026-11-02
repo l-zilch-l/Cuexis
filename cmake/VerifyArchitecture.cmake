@@ -201,6 +201,18 @@ function(cuexis_verify_source_architecture source_dir)
     file(READ
         "${source_dir}/engine/judgement/include/cuexis/judgement/gameplay_graph.hpp"
         judgement_graph_contents)
+    # The graph partition is an umbrella plus four included parts, so the declaration surface is
+    # the concatenation of all five files.
+    foreach(judgement_graph_part IN ITEMS
+            gameplay_graph_reference.hpp
+            gameplay_graph_pattern.hpp
+            gameplay_graph_phase.hpp
+            gameplay_graph_record.hpp)
+        file(READ
+            "${source_dir}/engine/judgement/include/cuexis/judgement/${judgement_graph_part}"
+            judgement_graph_part_contents)
+        string(APPEND judgement_graph_contents "${judgement_graph_part_contents}")
+    endforeach()
     foreach(judgement_graph_surface IN ITEMS
             "enum class ReferenceClosure"
             "enum class ReferenceKind"
