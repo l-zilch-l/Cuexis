@@ -1,5 +1,7 @@
 add_executable(cuexis_asset_publish_tests
-    asset_publish_tests.cpp
+    asset_publish_generation_tests.cpp
+    asset_publish_package_tests.cpp
+    asset_publish_test_fixture.hpp
 )
 
 target_compile_features(cuexis_asset_publish_tests PRIVATE cxx_std_20)
