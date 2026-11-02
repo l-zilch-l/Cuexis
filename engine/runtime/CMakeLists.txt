@@ -1,6 +1,9 @@
 add_library(cuexis_runtime STATIC
     src/chart_world_instantiator.cpp
     src/runtime_session.cpp
+    src/runtime_session_evaluation.cpp
+    src/runtime_session_overrides.cpp
+    src/runtime_session_units_internal.hpp
     src/presentation_read.cpp
 )
 add_library(cuexis::runtime ALIAS cuexis_runtime)
