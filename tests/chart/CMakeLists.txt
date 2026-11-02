@@ -12,7 +12,9 @@ add_executable(cuexis_chart_tests
     chart_migrator_tests.cpp
     chart_runtime_tests.cpp
     chart_v4_loader_tests.cpp
-    chart_v4_c2_contract_tests.cpp
+    chart_v4_c2_animation_tests.cpp
+    chart_v4_c2_closure_tests.cpp
+    chart_v4_c2_fixture.hpp
     chart_v4_resolver_tests.cpp
     chart_writer_tests.cpp
     example_chart_tests.cpp
