@@ -147,6 +147,17 @@ include("${PROJECT_SOURCE_DIR}/cmake/CuexisWarnings.cmake")
 include("${PROJECT_SOURCE_DIR}/cmake/VerifyArchitecture.cmake")
 include("${PROJECT_SOURCE_DIR}/cmake/CuexisLibraryType.cmake")
 
+# The execution host is one owner-thread state machine split across units, so every target that
+# exercises it compiles the same list. Keeping the list in one place is what stops a probe or a
+# test target from linking only part of the state machine.
+set(CUEXIS_EXECUTION_HOST_SOURCES
+    "${PROJECT_SOURCE_DIR}/app/player/src/execution_host.cpp"
+    "${PROJECT_SOURCE_DIR}/app/player/src/execution_host_close.cpp"
+    "${PROJECT_SOURCE_DIR}/app/player/src/execution_host_frame.cpp"
+    "${PROJECT_SOURCE_DIR}/app/player/src/execution_host_replay.cpp"
+    "${PROJECT_SOURCE_DIR}/app/player/src/execution_host_rpa.cpp"
+)
+
 add_subdirectory(engine)
 if(CUEXIS_BUILD_PLAYER)
     add_subdirectory(app)
@@ -171,7 +182,7 @@ if(BUILD_TESTING AND CUEXIS_BUILD_TESTS AND CUEXIS_ENABLE_CHART_V5_CANDIDATE
         tests/player/pixel_readback_probe.cpp
         tests/pd/pd5_device_probe.cpp
         engine/render_opengl/src/gpu_timer.cpp
-        app/player/src/execution_host.cpp
+        ${CUEXIS_EXECUTION_HOST_SOURCES}
         app/player/src/snapshot_scene.cpp
     )
     target_compile_features(cuexis_execution_device_probe PRIVATE cxx_std_20)

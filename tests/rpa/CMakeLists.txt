@@ -36,7 +36,7 @@ add_executable(cuexis_execution_host_tests
     rpa_b5_capture_tests.cpp
     rpa_b5_host_tests.cpp
     ../pd/retained_control_tests.cpp
-    "${PROJECT_SOURCE_DIR}/app/player/src/execution_host.cpp"
+    ${CUEXIS_EXECUTION_HOST_SOURCES}
     "${PROJECT_SOURCE_DIR}/app/player/src/snapshot_scene.cpp"
 )
 target_compile_features(cuexis_execution_host_tests PRIVATE cxx_std_20)
