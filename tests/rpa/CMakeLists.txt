@@ -28,7 +28,13 @@ catch_discover_tests(cuexis_rpa_tests ADD_TAGS_AS_LABELS PROPERTIES LABELS "rpa"
 
 if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
 # Owner/resource tests have a separate executable from the baseline oracle.
-add_executable(cuexis_host_protocol_tests rpa_b4_tests.cpp execution_boundary_tests.cpp
+add_executable(cuexis_host_protocol_tests
+    rpa_b4_capacity_tests.cpp
+    rpa_b4_close_tests.cpp
+    rpa_b4_fixture.hpp
+    rpa_b4_owner_tests.cpp
+    rpa_b4_renderer_tests.cpp
+    execution_boundary_tests.cpp
     ../pd/control_binding_tests.cpp ../pd/delivery_retirement_tests.cpp)
 target_compile_features(cuexis_host_protocol_tests PRIVATE cxx_std_20)
 target_compile_definitions(cuexis_host_protocol_tests PRIVATE CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
