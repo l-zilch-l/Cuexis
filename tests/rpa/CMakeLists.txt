@@ -44,7 +44,11 @@ catch_discover_tests(cuexis_host_protocol_tests ADD_TAGS_AS_LABELS PROPERTIES LA
 add_executable(cuexis_execution_host_tests
     rpa_b5_failure_tests.cpp
     rpa_b5_audio_tests.cpp
-    rpa_b5_session_tests.cpp
+    rpa_b5_session_close_fixture.hpp
+    rpa_b5_session_close_tests.cpp
+    rpa_b5_session_fixture.hpp
+    rpa_b5_session_paused_fixture.hpp
+    rpa_b5_session_worker_tests.cpp
     rpa_b5_capture_tests.cpp
     rpa_b5_audio_tail_tests.cpp
     rpa_b5_close_tests.cpp
