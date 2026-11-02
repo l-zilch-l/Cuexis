@@ -13,6 +13,8 @@ target_sources(cuexis_judgement
         src/gameplay_graph.cpp
         src/gameplay_prepare.cpp
         src/input.cpp
+        src/input_helpers.hpp
+        src/input_mapping.cpp
         src/kernel_types.cpp
         src/recovery_codec.cpp
         src/recovery.cpp
