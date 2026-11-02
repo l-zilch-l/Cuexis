@@ -17,6 +17,11 @@ add_executable(cuexis_playback_tests
     presentation_fixture.hpp
     runtime_timeline_tests.cpp
     ../presentation/validation_sink.cpp
+    ../presentation/validation_sink_canonical.hpp
+    ../presentation/validation_sink_common.hpp
+    ../presentation/validation_sink_digest.hpp
+    ../presentation/validation_sink_frame.cpp
+    ../presentation/validation_sink_model.hpp
     ${PROJECT_SOURCE_DIR}/engine/playback/src/frame_digest_version.cpp
     ${PROJECT_SOURCE_DIR}/engine/playback/src/presentation_extraction.cpp
 )
@@ -61,7 +66,8 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
         "${PROJECT_SOURCE_DIR}/engine/playback/src/presentation_projection.cpp")
     target_link_libraries(cuexis_playback_tests PRIVATE cuexis::execution_host_support)
     target_sources(cuexis_playback_tests PRIVATE ../pd/revision4_physical_budget_tests.cpp
-        playback_gameplay_tests.cpp
+        playback_gameplay_contract_tests.cpp
+    playback_gameplay_recovery_tests.cpp
         playback_gameplay_diagnostics_tests.cpp
         playback_gameplay_execution_tests.cpp
         playback_gameplay_fixture.hpp
@@ -80,6 +86,11 @@ catch_discover_tests(cuexis_playback_tests)
 
 add_executable(cuexis_playback_allocation_tests
     ../presentation/validation_sink.cpp
+    ../presentation/validation_sink_canonical.hpp
+    ../presentation/validation_sink_common.hpp
+    ../presentation/validation_sink_digest.hpp
+    ../presentation/validation_sink_frame.cpp
+    ../presentation/validation_sink_model.hpp
     playback_allocation_tests.cpp
     ${PROJECT_SOURCE_DIR}/engine/playback/src/presentation_extraction.cpp
 )
@@ -116,6 +127,11 @@ catch_discover_tests(cuexis_playback_allocation_tests)
 
 add_executable(stage3_performance_probe EXCLUDE_FROM_ALL
     ../presentation/validation_sink.cpp
+    ../presentation/validation_sink_canonical.hpp
+    ../presentation/validation_sink_common.hpp
+    ../presentation/validation_sink_digest.hpp
+    ../presentation/validation_sink_frame.cpp
+    ../presentation/validation_sink_model.hpp
     stage3_performance_probe.cpp
 )
 
