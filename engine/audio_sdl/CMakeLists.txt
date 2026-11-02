@@ -2,6 +2,8 @@ find_package(SDL3 CONFIG REQUIRED)
 
 add_library(cuexis_audio_sdl ${CUEXIS_LIBRARY_TYPE}
     src/sdl_audio.cpp
+    src/sdl_audio_impl.hpp
+    src/sdl_audio_transport.cpp
     src/wav_decoder.cpp
 )
 add_library(cuexis::audio_sdl ALIAS cuexis_audio_sdl)
