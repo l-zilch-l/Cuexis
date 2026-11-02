@@ -155,7 +155,7 @@ B0 不修改生产行为，只完善报告和建立分支清单。
 
 - [chart_v4_loader.cpp](../../../../engine/chart/src/chart_v4_loader.cpp)
 - [chart_v4_resolver.cpp](../../../../engine/chart/src/chart_v4_resolver.cpp)
-- [chart_v4_animation_reader_internal.cpp](../../../../engine/chart/src/chart_v4_animation_reader_internal.cpp)
+- `engine/chart/src/chart_v4_animation_reader_*.cpp`
 - [chart_parameter_resolver.cpp](../../../../engine/chart/src/chart_parameter_resolver.cpp)
 
 主要测试文件：

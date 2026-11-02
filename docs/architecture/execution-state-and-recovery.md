@@ -65,7 +65,7 @@ matcher 的可变视图和故障预留仍属于新执行实例。
 及私有 certificate 的精确绑定；可变外部对象不能通过替换公共字段取得凭证。
 外部 Replay、Snapshot 和文件仍通过原有解码、关系和版本校验，不因缓存路径而获豁免。
 
-实现入口为 `execution_kernel.cpp` 中的 `ExecutionPreparation`、`publishRecording()` 和 Seek。
+实现入口为 `execution_kernel_*.cpp` 单元中的 `ExecutionPreparation`、`publishRecording()` 和 Seek。
 协议与 wire 仍分别归 [RPA 合同 §4](../formats/rpa-execution-contract.md#4-t2-fact-identityreplay-与-seek)
 及 [Recovery rev3 wire](../formats/execution-recovery-wire-v3.md)。
 

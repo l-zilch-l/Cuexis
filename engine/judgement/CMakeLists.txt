@@ -8,7 +8,17 @@ target_sources(cuexis_judgement
         src/diagnostic.cpp
         src/execution_profile.cpp
         src/execution_scheduler.cpp
-        src/execution_kernel.cpp
+        src/execution_kernel_advance.cpp
+        src/execution_kernel_archive.cpp
+        src/execution_kernel_impl_fold.cpp
+        src/execution_kernel_impl_phases.cpp
+        src/execution_kernel_impl_setup.cpp
+        src/execution_kernel_impl_signals.cpp
+        src/execution_kernel_internal.hpp
+        src/execution_kernel_prepare.cpp
+        src/execution_kernel_query.cpp
+        src/execution_kernel_restore.cpp
+        src/execution_kernel_submit.cpp
         src/gameplay_assembler_assemble.cpp
         src/gameplay_assembler_compile.cpp
         src/gameplay_assembler_compile_internal.hpp

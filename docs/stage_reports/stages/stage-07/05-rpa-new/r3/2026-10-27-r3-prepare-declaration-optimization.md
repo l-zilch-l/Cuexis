@@ -31,7 +31,7 @@ Requirement 编译/验证约 0.203 s、timer 阶段约 0.591 s。声明重复扫
 
 ## 2. 产品改动与排序依据
 
-仅修改[assembler](../../../../../../engine/judgement/src/gameplay_assembler.cpp)：
+仅修改 assembler（`engine/judgement/src/gameplay_assembler_*.cpp`）：
 
 - `findDeclarationById` 从线性扫描改为按完整 `StableDeclarationId` 二分，缺失项继续返回空指针。
 - 合并回填同样按完整 stable ID 二分定位，然后填写 references、required features/capabilities。

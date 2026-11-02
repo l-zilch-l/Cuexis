@@ -66,7 +66,7 @@ finding；后续所有 CTest 证据均在 Developer shell 内取得。
 
 | 层 | 入口 | 位置 |
 | --- | --- | --- |
-| typed 编码 | `chart::packed::encode` | [packed_chart_tables.cpp](../../../../engine/chart/src/packed_chart_tables.cpp) |
+| typed 编码 | `chart::packed::encode` | `engine/chart/src/packed_chart_tables_*.cpp` |
 | 结构检查 | `chart::packed::inspect` | 同上 |
 | 语义解码 | `chart::packed::decode` | 同上 |
 | 文件/原子输出与读取桥 | `PackedChartWriter::size/writeAtomic`、`PackedChartReader::read/decode` | [packed_chart_io.cpp](../../../../engine/chart/src/packed_chart_io.cpp) |

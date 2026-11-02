@@ -38,7 +38,7 @@ SDK0.7.0、build26.10.05-1；容量整体保持S7A-9 INCOMPLETE GATE。
    [第5轮裁定](../../../stage_reports/stages/stage-07/01-a/s7a-5-6/2026-10-03-s7a-5-6-gate-rulings.md)。
 4. [kernel类型](../../../../engine/judgement/include/cuexis/judgement/kernel_types.hpp)、
    [session接口](../../../../engine/judgement/include/cuexis/judgement/judgement_session.hpp)、
-   [kernel实现](../../../../engine/judgement/src/execution_kernel.cpp) 和既有独立S1/L2测试。
+   kernel实现（`engine/judgement/src/execution_kernel_*.cpp`）和既有独立S1/L2测试。
    typed动词已有3/4行为；无参数旧动词与snapshot/seek的拒绝不是本批可用成功入口。
 
 ## 2. 不变语义与本批范围

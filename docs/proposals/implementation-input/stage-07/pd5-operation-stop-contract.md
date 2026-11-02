@@ -184,7 +184,7 @@ Replay.cutAt 和能力查询不调用 Kernel 执行；其复制/扫描仍遵循�
 test-only KernelTestAccess 不属于 SDK 入口。后续新增入核调用必须补 E 表及测试，不能默认 NoStop。
 
 内部传递覆盖：`session.cpp` 的 prepare/submit/submitCanonical/controlRpa/advance/recover/checkpoint/seek，
-`execution_scheduler.cpp` 的 deliver/request/tryStart/pause/resume，`execution_kernel.cpp` 的
+`execution_scheduler.cpp` 的 deliver/request/tryStart/pause/resume，`execution_kernel_*.cpp` 的
 prepare/restore/evaluate/seekCandidate/advanceRecorded/controlRpa/captureState，
 `recovery_codec.cpp` 的 initial/encodeReplay/decodeReplay/decodeSnapshot 都接受显式上下文。
 一个 context 贯通新建的候选 kernel；不可在 restore 的重验证或 codec 的 replay 中丢失。

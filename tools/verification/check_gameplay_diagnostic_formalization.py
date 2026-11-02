@@ -35,11 +35,16 @@ def check(root: Path) -> list[str]:
     live_constants = re.findall(r'k\w+Code\s*\{\s*"(judgement\.[^"]+)"', header)
     if len(live_constants) != len(set(live_constants)) or not set(live_constants) <= set(targets):
         failures.append("live private diagnostic collision or unregistered projection policy")
-    for file, helper in (("execution_kernel.cpp", "error"), ("execution_profile.cpp", "rejection")):
-        producer = (root / "engine/judgement/src" / file).read_text(encoding="utf-8")
+    kernel_units = sorted((root / "engine/judgement/src").glob("execution_kernel*.cpp"))
+    kernel_units.append(root / "engine/judgement/src/execution_profile.cpp")
+    for path in kernel_units:
+        producer = path.read_text(encoding="utf-8")
+        helper = "rejection" if path.name == "execution_profile.cpp" else "error"
         suffixes = re.findall(r'\b' + helper + r'\(\s*"([^"]+)"', producer)
         if any("judgement." + suffix not in targets for suffix in suffixes):
-            failures.append(f"{file}: dynamic reason has no finite policy")
+            failures.append(
+                f"{path.relative_to(root).as_posix()}: dynamic reason has no finite policy"
+            )
     projection = (root / "engine/playback/src/gameplay_internal.hpp").read_text(encoding="utf-8")
     if "judgement::detail::classifyPublicDiagnostic(code)" not in projection:
         failures.append("explicit projection is not used")
@@ -49,8 +54,12 @@ def check(root: Path) -> list[str]:
     if "judgement/src/diagnostic_policy.hpp" in projection:
         failures.append("Playback bypasses the internal diagnostic bridge")
     exceptions = {
-        "tests/judgement/fold_recovery_tests.cpp": {'"judgement.s7a4.kernel.transaction_failed"'},
-        "tests/playback/playback_gameplay_tests.cpp": {'"judgement.s7a2.artificial.undefined"'},
+        "tests/judgement/fold_recovery_diagnostic_tests.cpp": {
+            '"judgement.s7a4.kernel.transaction_failed"'
+        },
+        "tests/playback/playback_gameplay_diagnostics_tests.cpp": {
+            '"judgement.s7a2.artificial.undefined"'
+        },
     }
     for directory in ("engine", "app", "tools", "tests", "cmake", "schemas"):
         for path in (root / directory).rglob("*"):
@@ -108,7 +117,7 @@ def self_test(root: Path) -> None:
             ("engine/playback/src/gameplay_internal.hpp", lambda s: s.replace('judgement::detail::classifyPublicDiagnostic(code)', 'false', 1), "missing bridge consumer"),
             ("engine/judgement/src/publication.cpp", lambda s: s.replace('return categoryProjectedDiagnostic(code);', 'return false;', 1), "disconnected finite policy"),
             ("engine/judgement/src/source_codes.hpp", lambda s: s + '\nconstexpr auto missed = "judgement.s7a2.input.missed";\n', "old constant"),
-            ("engine/judgement/src/execution_kernel.cpp", lambda s: s.replace('"judgement." +', '"judgement.s7a4." +', 1), "old dynamic prefix"),
+            ("engine/judgement/src/execution_kernel_internal.hpp", lambda s: s.replace('"judgement." +', '"judgement.s7a4." +', 1), "old dynamic prefix"),
             ("engine/judgement/src/diagnostic_policy.hpp", lambda s: s.replace('    "judgement.grace.value_source_conflict",', '', 1), "missing projection"),
             ("engine/judgement/src/diagnostic_policy.hpp", lambda s: s.replace('    "judgement.grace.value_source_conflict",', '    "judgement.grace.value_source_conflict",\n    "judgement.grace.value_source_conflict",', 1), "collision"),
         ]

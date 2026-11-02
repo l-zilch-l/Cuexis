@@ -57,7 +57,7 @@ prepare 是另一条必须同时审查的路径：`PreparedPlayback` 由 Session
 | 判定到动画 | [playback_session.cpp](../../../../../../engine/playback/src/playback_session.cpp) `advanceGameplay/publishGameplayProjection` | kernel后同步投影和Runtime更新；不是独立纯判定调度入口 |
 | 动画与事务 | [runtime_session.cpp](../../../../../../engine/runtime/src/runtime_session.cpp) `updateGameplay/updatePrepared` | 复制evaluation候选后运行Behavior、Animation、resolver，再提交；不能在renderer再造一份求值器 |
 | 资源准备 | [presentation_renderer.hpp](../../../../../../engine/presentation_renderer/include/cuexis/presentation_renderer/presentation_renderer.hpp) `prepare` | 参数为owner-bound PreparedPlayback引用；不是已可跨线程传输的资源包 |
-| 状态和历史 | [execution_kernel.cpp](../../../../../../engine/judgement/src/execution_kernel.cpp)、[gameplay_internal.hpp](../../../../../../engine/playback/src/gameplay_internal.hpp) | journal、RuntimeState以及公开结果存在复制；不能把所有query都称作O(1)共享句柄 |
+| 状态和历史 | `engine/judgement/src/execution_kernel_*.cpp`、[gameplay_internal.hpp](../../../../../../engine/playback/src/gameplay_internal.hpp) | journal、RuntimeState以及公开结果存在复制；不能把所有query都称作O(1)共享句柄 |
 
 ## 3. 逐项发现、最小反例与责任
 
