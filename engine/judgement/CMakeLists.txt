@@ -11,6 +11,9 @@ target_sources(cuexis_judgement
         src/execution_kernel.cpp
         src/gameplay_assembler.cpp
         src/gameplay_graph.cpp
+        src/gameplay_graph_diff.cpp
+        src/gameplay_graph_render.cpp
+        src/gameplay_graph_render_internal.hpp
         src/gameplay_prepare.cpp
         src/input.cpp
         src/input_helpers.hpp
