@@ -8,7 +8,9 @@ add_executable(cuexis_judgement_tests
     fold_recovery_fixture.hpp
     publication_tests.cpp
     execution_profile_tests.cpp
-    execution_kernel_tests.cpp
+    execution_kernel_oracle_tests.cpp
+    execution_kernel_phase_tests.cpp
+    execution_kernel_test_fixture.hpp
     execution_reference.cpp
     gameplay_assembler_budget_tests.cpp
     gameplay_assembler_entry_tests.cpp
