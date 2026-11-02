@@ -8,6 +8,10 @@ find_package(ZLIB REQUIRED)
 add_library(cuexis_media_import STATIC
     src/audio_import.cpp
     src/image_import.cpp
+    src/image_import_jpeg.cpp
+    src/image_import_png.cpp
+    src/image_import_tail.cpp
+    src/image_import_units_internal.hpp
     src/media_cache.cpp
     src/media_identity.cpp
     src/media_json_internal.cpp
