@@ -1,3 +1,53 @@
+# The declaration checks below read header text without running a preprocessor. Strip comments and
+# `#if 0` blocks first, so a declaration has to be live code: a commented-out or disabled definition
+# must not satisfy the gate. This is a lexical approximation; `#if 0 ... #else ... #endif` is left
+# alone deliberately, because removing that block would drop the live `#else` branch.
+function(_cuexis_strip_inactive text output_variable)
+    string(REGEX REPLACE "/\\*([^*]|\\*+[^*/])*\\*+/" " " stripped "${text}")
+    string(REGEX REPLACE "//[^\n]*" " " stripped "${stripped}")
+    # Repeat so nested `#if 0` blocks collapse from the inside out.
+    foreach(iteration RANGE 0 7)
+        string(REGEX REPLACE "#[ \t]*if[ \t]+0[^#]*#[ \t]*endif" "" disabled "${stripped}")
+        if(disabled STREQUAL stripped)
+            break()
+        endif()
+        set(stripped "${disabled}")
+    endforeach()
+    set(${output_variable} "${stripped}" PARENT_SCOPE)
+endfunction()
+
+# Build the pattern that a surface entry must match. A type entry has to be a definition, not a
+# forward declaration: the optional group after the name starts with whitespace or ':' so that a
+# longer name (`AmountSpecification`) cannot satisfy `AmountSpec`, while `struct X final {`,
+# `struct X{` and `enum class X : std::uint8_t {` all still match. A function entry has to look like
+# a declaration or definition: the name followed by its parameter list.
+function(_cuexis_declaration_pattern surface output_variable)
+    if(surface MATCHES "^(struct|class|enum class) ")
+        set(${output_variable} "${surface}([ \t\r\n:][^;{}]*)?[{]" PARENT_SCOPE)
+    else()
+        set(${output_variable} "${surface}[ \t\r\n]*\\(" PARENT_SCOPE)
+    endif()
+endfunction()
+
+# A split public header is an umbrella that includes its parts. The declaration checks read the
+# parts directly, so a stale umbrella would still pass while consumers of the umbrella lost the
+# declarations; require every part to be included by the umbrella or by another part.
+function(_cuexis_require_partition_includes source_dir directory umbrella)
+    set(partition_files ${umbrella} ${ARGN})
+    set(include_text "")
+    foreach(partition_file IN LISTS partition_files)
+        file(READ "${source_dir}/${directory}/${partition_file}" partition_contents)
+        string(APPEND include_text "${partition_contents}\n")
+    endforeach()
+    foreach(part IN LISTS ARGN)
+        if(NOT include_text MATCHES "#[ \t]*include[ \t]*[<\"]${part}[>\"]")
+            message(FATAL_ERROR
+                "Partition header ${part} is not included by ${umbrella} or by another part of the "
+                "same partition, so the umbrella no longer exposes it")
+        endif()
+    endforeach()
+endfunction()
+
 function(cuexis_verify_source_architecture source_dir)
     file(GLOB_RECURSE core_sources
         "${source_dir}/engine/core/*.cpp"
@@ -175,6 +225,12 @@ function(cuexis_verify_source_architecture source_dir)
             judgement_input_part_contents)
         string(APPEND judgement_input_boundary_contents "${judgement_input_part_contents}")
     endforeach()
+    _cuexis_strip_inactive("${judgement_input_boundary_contents}" judgement_input_boundary_contents)
+    _cuexis_require_partition_includes("${source_dir}"
+        "engine/judgement/include/cuexis/judgement"
+        input_boundary.hpp
+        input_boundary_amount.hpp
+        input_boundary_mapping.hpp)
     foreach(judgement_input_surface IN ITEMS
             "struct AmountSpec"
             "struct InputDomainDeclaration"
@@ -186,12 +242,7 @@ function(cuexis_verify_source_architecture source_dir)
             "validateInputMapping"
             "normalizeObservation"
             "admitLateQueueEntry")
-        # A type entry must be the definition, not a forward declaration: `class X;` would
-        # otherwise satisfy the `class X` pattern, including through `class XStorage;`.
-        set(judgement_input_pattern "${judgement_input_surface}")
-        if(judgement_input_surface MATCHES "^(struct|class|enum class) ")
-            set(judgement_input_pattern "${judgement_input_surface}[^;{}]*{")
-        endif()
+        _cuexis_declaration_pattern("${judgement_input_surface}" judgement_input_pattern)
         if(NOT judgement_input_boundary_contents MATCHES "${judgement_input_pattern}")
             message(FATAL_ERROR
                 "Judgement S7A-2 input boundary declaration is missing: "
@@ -219,6 +270,14 @@ function(cuexis_verify_source_architecture source_dir)
             judgement_graph_part_contents)
         string(APPEND judgement_graph_contents "${judgement_graph_part_contents}")
     endforeach()
+    _cuexis_strip_inactive("${judgement_graph_contents}" judgement_graph_contents)
+    _cuexis_require_partition_includes("${source_dir}"
+        "engine/judgement/include/cuexis/judgement"
+        gameplay_graph.hpp
+        gameplay_graph_reference.hpp
+        gameplay_graph_pattern.hpp
+        gameplay_graph_phase.hpp
+        gameplay_graph_record.hpp)
     foreach(judgement_graph_surface IN ITEMS
             "enum class ReferenceClosure"
             "enum class ReferenceKind"
@@ -288,10 +347,7 @@ function(cuexis_verify_source_architecture source_dir)
             "struct GraphFieldDifference"
             "semanticDiff"
             "equivalent")
-        set(judgement_graph_pattern "${judgement_graph_surface}")
-        if(judgement_graph_surface MATCHES "^(struct|class|enum class) ")
-            set(judgement_graph_pattern "${judgement_graph_surface}[^;{}]*{")
-        endif()
+        _cuexis_declaration_pattern("${judgement_graph_surface}" judgement_graph_pattern)
         if(NOT judgement_graph_contents MATCHES "${judgement_graph_pattern}")
             message(FATAL_ERROR
                 "Judgement S7A-3 canonical graph declaration is missing: "
@@ -313,6 +369,13 @@ function(cuexis_verify_source_architecture source_dir)
             judgement_assembler_part_contents)
         string(APPEND judgement_assembler_contents "${judgement_assembler_part_contents}")
     endforeach()
+    _cuexis_strip_inactive("${judgement_assembler_contents}" judgement_assembler_contents)
+    _cuexis_require_partition_includes("${source_dir}"
+        "engine/judgement/include/cuexis/judgement"
+        gameplay_assembler.hpp
+        gameplay_assembler_identity.hpp
+        gameplay_assembler_publication.hpp
+        gameplay_assembler_compiled.hpp)
     foreach(judgement_assembler_surface IN ITEMS
             "struct LocalDeclaration"
             "struct GameplaySourceDocument"
@@ -357,10 +420,7 @@ function(cuexis_verify_source_architecture source_dir)
             "compilePattern"
             "compileMeasure"
             "resolveResourceClaims")
-        set(judgement_assembler_pattern "${judgement_assembler_surface}")
-        if(judgement_assembler_surface MATCHES "^(struct|class|enum class) ")
-            set(judgement_assembler_pattern "${judgement_assembler_surface}[^;{}]*{")
-        endif()
+        _cuexis_declaration_pattern("${judgement_assembler_surface}" judgement_assembler_pattern)
         if(NOT judgement_assembler_contents MATCHES "${judgement_assembler_pattern}")
             message(FATAL_ERROR
                 "Judgement S7A-3 offline assembler declaration is missing: "
