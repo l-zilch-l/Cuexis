@@ -171,6 +171,13 @@
   `input_boundary` / `gameplay_assembler` / `gameplay_graph` 三个分区按“伞头 + 分区头”拼接后比对
   （文件存在性与声明清单不变）；`tests/external` 的两个整包消费者补齐拆分后的 Validation Sink 源文件。
   末次拆分后完整 Debug CTest 全绿（仅保留既有 symlink 跳过项）。该批只改组织方式，不改行为契约。
+  收口复核同样由实施侧完成，四项独立校验通过：架构门变异自测 4/4（改掉被检查类型必失败、改未检查类型
+  必通过）、解码器 12 个阶段按原文重建后逐 token 一致 12/12、9 组拆分头拆前 514 个命名空间级声明缺失
+  0 个、`GraphSink` 21 个类外定义逐字一致 21/21、20 个新头各自单独编译通过。复核另发现并修复两处真缺陷：
+  架构门的类型条目此前用子串匹配，`class CompiledPatternStorage;` 这类前向声明即可满足
+  `class CompiledPattern`（拆前即如此），已改为必须匹配定义；`timebase_rational.hpp` 缺
+  `<cuexis/core/result.hpp>`，此前靠伞头先包含才通过。终树 Release 全量构建通过，
+  `ctest --preset release` 1211/1211 通过；格式门、文档门与诊断形式化门（含 `--self-test`）通过。
 
 本重构分支的唯一实施入口为 `D:/Cuexis-redesign`，分支 `Cuexis-redesign`。
 接手资料中的其他 worktree 和分支均为历史来源，本批不在其中执行操作。
