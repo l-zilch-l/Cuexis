@@ -250,9 +250,9 @@ inline void addWarning(core::Diagnostics& diagnostics, std::string code, std::st
            static_cast<std::size_t>(std::distance(candidate.begin(), candidate.end()));
 }
 
-[[nodiscard]] inline std::optional<fs::path> inline canonicalDirectory(
-    const fs::path& path, core::Diagnostics& diagnostics, std::string fieldPath,
-    std::string_view missingCode, std::string_view outsideMessage = {}) {
+[[nodiscard]] inline std::optional<fs::path>
+canonicalDirectory(const fs::path& path, core::Diagnostics& diagnostics, std::string fieldPath,
+                   std::string_view missingCode, std::string_view outsideMessage = {}) {
     std::error_code error;
     const auto status = fs::status(path, error);
     if (error || !fs::is_directory(status)) {

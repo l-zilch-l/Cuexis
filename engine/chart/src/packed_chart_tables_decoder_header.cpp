@@ -38,20 +38,21 @@ auto Decoder::readHeader() -> core::Result<void> {
     if (!directoryCount || !directoryBytes)
         return core::unexpected(
             fail("packed.directory.truncated", "Packed directory is truncated"));
-    auto semanticHash = header.readBytes(32);
-    if (!semanticHash)
-        return core::unexpected(std::move(semanticHash.error()));
-    auto entityCount = header.readU32();
-    auto requirementCount = header.readU32();
+    auto semanticHashField = header.readBytes(32);
+    if (!semanticHashField)
+        return core::unexpected(std::move(semanticHashField.error()));
+    auto entityCountField = header.readU32();
+    auto requirementCountField = header.readU32();
     auto eventCount = header.readU32();
     auto decodedBytes = header.readU32();
-    auto stringCount = header.readU32();
-    auto refCount = header.readU32();
-    auto revision = header.readU32();
+    auto stringCountField = header.readU32();
+    auto refCountField = header.readU32();
+    auto revisionField = header.readU32();
     auto headerCrc = header.readU32();
-    if (!entityCount || !requirementCount || !eventCount || !decodedBytes || !stringCount ||
-        !refCount || !revision || !headerCrc ||
-        (gameplay ? (*revision != 2U && *revision != 3U && *revision != 4U) : (*revision != 1U)))
+    if (!entityCountField || !requirementCountField || !eventCount || !decodedBytes ||
+        !stringCountField || !refCountField || !revisionField || !headerCrc ||
+        (gameplay ? (*revisionField != 2U && *revisionField != 3U && *revisionField != 4U)
+                  : (*revisionField != 1U)))
         return core::unexpected(
             fail("packed.header.invalid", "Packed header counters are invalid"));
     directories.reserve(*directoryCount);
@@ -102,23 +103,25 @@ auto Decoder::readHeader() -> core::Result<void> {
                     fail("packed.directory.required", "Gameplay required section is missing"));
             }
         }
-        if (section("STR0")->records != *stringCount || section("REF0")->records != *refCount ||
-            section("ENT0")->records != *entityCount || section("IDN0")->records != *entityCount ||
-            section("META")->records != 1U || section("TIME")->records != 1U ||
-            section("GPH0")->records != 1U || section("GPR0")->records != *requirementCount ||
-            section("REQ0")->records != 0U || section("CNS0")->records != 0U ||
-            section("REQ0")->data.size() != 2U || !section("CNS0")->data.empty()) {
+        if (section("STR0")->records != *stringCountField ||
+            section("REF0")->records != *refCountField ||
+            section("ENT0")->records != *entityCountField ||
+            section("IDN0")->records != *entityCountField || section("META")->records != 1U ||
+            section("TIME")->records != 1U || section("GPH0")->records != 1U ||
+            section("GPR0")->records != *requirementCountField || section("REQ0")->records != 0U ||
+            section("CNS0")->records != 0U || section("REQ0")->data.size() != 2U ||
+            !section("CNS0")->data.empty()) {
             return core::unexpected(
                 fail("packed.header.invalid", "Revision-2 section counters are inconsistent"));
         }
     }
 
-    this->semanticHash = *semanticHash;
-    this->entityCount = *entityCount;
-    this->requirementCount = *requirementCount;
-    this->stringCount = *stringCount;
-    this->refCount = *refCount;
-    this->revision = *revision;
+    this->semanticHash = *semanticHashField;
+    this->entityCount = *entityCountField;
+    this->requirementCount = *requirementCountField;
+    this->stringCount = *stringCountField;
+    this->refCount = *refCountField;
+    this->revision = *revisionField;
     return {};
 }
 

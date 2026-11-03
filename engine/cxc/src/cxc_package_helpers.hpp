@@ -217,10 +217,10 @@ validateClipResources(core::Diagnostics& diagnostics,
     }
 }
 
-[[nodiscard]] inline auto inline validateDependencyGraph(
-    core::Diagnostics& diagnostics,
-    const std::map<std::string, AssetDeclaration, std::less<>>& assets,
-    std::size_t maxDependencyDepth) -> bool {
+[[nodiscard]] inline auto
+validateDependencyGraph(core::Diagnostics& diagnostics,
+                        const std::map<std::string, AssetDeclaration, std::less<>>& assets,
+                        std::size_t maxDependencyDepth) -> bool {
     enum class VisitState {
         Visiting,
         Visited,
