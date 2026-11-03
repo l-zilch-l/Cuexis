@@ -186,7 +186,13 @@ function(cuexis_verify_source_architecture source_dir)
             "validateInputMapping"
             "normalizeObservation"
             "admitLateQueueEntry")
-        if(NOT judgement_input_boundary_contents MATCHES "${judgement_input_surface}")
+        # A type entry must be the definition, not a forward declaration: `class X;` would
+        # otherwise satisfy the `class X` pattern, including through `class XStorage;`.
+        set(judgement_input_pattern "${judgement_input_surface}")
+        if(judgement_input_surface MATCHES "^(struct|class|enum class) ")
+            set(judgement_input_pattern "${judgement_input_surface}[^;{}]*{")
+        endif()
+        if(NOT judgement_input_boundary_contents MATCHES "${judgement_input_pattern}")
             message(FATAL_ERROR
                 "Judgement S7A-2 input boundary declaration is missing: "
                 "${judgement_input_surface}")
@@ -282,7 +288,11 @@ function(cuexis_verify_source_architecture source_dir)
             "struct GraphFieldDifference"
             "semanticDiff"
             "equivalent")
-        if(NOT judgement_graph_contents MATCHES "${judgement_graph_surface}")
+        set(judgement_graph_pattern "${judgement_graph_surface}")
+        if(judgement_graph_surface MATCHES "^(struct|class|enum class) ")
+            set(judgement_graph_pattern "${judgement_graph_surface}[^;{}]*{")
+        endif()
+        if(NOT judgement_graph_contents MATCHES "${judgement_graph_pattern}")
             message(FATAL_ERROR
                 "Judgement S7A-3 canonical graph declaration is missing: "
                 "${judgement_graph_surface}")
@@ -347,7 +357,11 @@ function(cuexis_verify_source_architecture source_dir)
             "compilePattern"
             "compileMeasure"
             "resolveResourceClaims")
-        if(NOT judgement_assembler_contents MATCHES "${judgement_assembler_surface}")
+        set(judgement_assembler_pattern "${judgement_assembler_surface}")
+        if(judgement_assembler_surface MATCHES "^(struct|class|enum class) ")
+            set(judgement_assembler_pattern "${judgement_assembler_surface}[^;{}]*{")
+        endif()
+        if(NOT judgement_assembler_contents MATCHES "${judgement_assembler_pattern}")
             message(FATAL_ERROR
                 "Judgement S7A-3 offline assembler declaration is missing: "
                 "${judgement_assembler_surface}")
