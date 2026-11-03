@@ -150,3 +150,21 @@ R3 门账为 **14 项通过 + 1 项部分（适用 Seek 覆盖 2/5 类）+ 0 项
 `open_gl_backend.cpp` 有产品改动）、hosted 同 SHA、R3b 预算候选与 R3c 原型的采用决定、
 owner 对 R3 退出的裁定。裁定文本与边界见
 [四项门裁定](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-02-r3-owner-gate-rulings.md)。
+
+## 7. 2026-11-03 owner 口径裁定
+
+owner 于 2026-11-03 裁定：父计划 §9.2 的 15% `(max-min)/median` 只在正式单元（3 个预声明窗口 ×
+每窗 3 对独立进程）上绑定，本地 guard 组的相对极差只作披露；A/B 裁决改用同表的配对对数比值 +
+Student-t 区间（上界 ≤1.10）。判据、阈值、样本规则与失败保留规则一条未改，历史记录文本不追改。
+
+同日测出被替换的 screen 的分辨力并登记：同一份未改动二进制、每进程 3 次请求时，9 个进程的 36 个
+两两组合有 11 个越过 15%、4 个不亚于 R3c v4 的 22.43%；每进程改成 16 次后 0 个越界。按比值读，
+v4 的两个收益项为 0.0754 [0.0187, 0.3041] 与 0.0106 [0.0101, 0.0111]，**在 n=2 下不能判的是
+40K H5 保护项**（1.0067 [0.8602, 1.1782]）。因此正式单元登记须同时写定每进程请求数（父计划未规定，
+Seek 建议 16 次）。R3c v4 与既有 parse-once 原型仍为 `selected: false`，本裁定不采用任何候选。
+
+同一批修复了文件拆分留下的 candidate 配置编译错误（`publicTick` 缺声明）：`debug` / `release` /
+`headless-*` 不编译该配置，故拆分后的全绿不覆盖它。裁定文本见
+[口径裁定](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-03-r3-repeatability-scope-ruling.md)，
+读数、复算与预注册见
+[分辨率报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-03-r3-seek-repeatability-resolution/index.md)。

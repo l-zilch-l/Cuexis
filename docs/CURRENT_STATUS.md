@@ -98,6 +98,16 @@
   适用 Seek 两类最差 941 / 1012 µs。仍未完成：适用 Seek 余下 3 类、最终源码上的同源矩阵重跑、
   hosted 同 SHA、R3b 预算候选与 R3c 原型的采用决定、owner 对 R3 退出的裁定。
   见[四项门裁定](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-02-r3-owner-gate-rulings.md)。
+- **2026-11-03 重复性口径归位，门账不变**：owner 裁定 §9.2 的 15% `(max-min)/median` 只在**正式单元**
+  （3 窗 × 每窗 3 对独立进程）上绑定，本地 guard 组的相对极差只作披露；A/B 裁决改用同表的配对对数比值
+  + Student-t 区间（上界 ≤1.10）。判据、阈值、样本规则与失败保留规则一条未改，历史记录文本不追改。
+  同日测出被替换的 screen 的分辨力：同一份**未改动二进制**、每进程 3 次请求时，9 个进程的 36 个两两组合
+  有 11 个越过 15%、4 个不亚于 R3c v4 的 22.43%；改成每进程 16 次后 0 个越界。按比值读，v4 的两个收益项为
+  0.0754 [0.0187, 0.3041] 与 0.0106 [0.0101, 0.0111]，保护项 40K H5 为 1.0067 [0.8602, 1.1782]——后者才是
+  真正需要九对正式单元的项。因此正式单元登记须同时写定每进程请求数（§9.2 未规定）。同一批修复了文件
+  拆分留下的 candidate 配置编译错误（`publicTick` 缺声明）：Debug/Release 全绿是因为它们不编译该配置，
+  这也是本轮唯一一次实际构建该配置。见[口径裁定](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-03-r3-repeatability-scope-ruling.md)
+  与[分辨率报告](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-03-r3-seek-repeatability-resolution/index.md)。
 - **2026-11-01 同源本地矩阵已执行（test-only）**：`tools/verification/run_rpa_acceptance_matrix.py`
   在 `466ff76`、worktree 干净的同一份源码上按固定行序跑完全部 11 行，逐行 configure / build /
   CTest / `[measurement]` 重复与未执行项见

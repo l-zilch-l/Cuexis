@@ -206,6 +206,23 @@ Release 与 `headless-release` 预设强制 `CUEXIS_WARNINGS_AS_ERRORS=ON`。基
 `cuexis_cxc_tests: developer tool layer absent; candidate CXC cases excluded`。需要这些用例
 时使用非 headless 预设，或显式设置 `CUEXIS_BUILD_DEVELOPER_TOOLS=ON`。
 
+`candidate-*` 预设（`candidate-debug`、`candidate-headless-debug`、`candidate-shared-debug`）打开
+`CUEXIS_ENABLE_CHART_V5_CANDIDATE`，因而会编译 `#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)`
+这类候选代码块。**上面的日常门禁用的是 `debug` / `release` / `headless-*`，它们不编译这些块**，
+所以日常门禁全绿并不说明候选配置可编译。2026-11-03 就有一次这样的缺陷：一次按文件拆分把
+`publicTick` 留在 `playback_session_gameplay.cpp`，新拆出的 `playback_session_gameplay_seek.cpp`
+调用它却没有声明；`debug` 与 `release` 全绿，只有构建 candidate 预设才报 C3861。
+
+因此任何“候选配置可用”的说法都必须以实际构建过对应 candidate 预设为依据：
+
+```powershell
+cmake --preset candidate-debug --fresh
+cmake --build --preset candidate-debug
+```
+
+物理设备的探针目标（`cuexis_execution_device_probe`、`cuexis_pd_host_probe`）也只在 candidate
+预设下存在，需要它们时同样先构建 candidate 预设。
+
 构建目录固定在 `out/build/<preset>`，安装或打包目录不得与源码混合。
 
 ## vcpkg

@@ -1,0 +1,421 @@
+{
+  "source": "stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-30-resume-evidence/v4-seek-results.json",
+  "statistic": "(max-min)/median over the per-process medians; plan 9.2 defines it per formal window of three processes and over the merged nine",
+  "caveat": "Each arm has two processes, below the plan's three per window. A range over two samples is not the plan's statistic and the paired interval at df=1 is too wide to decide anything; both are reported as disclosure only.",
+  "t_quantile_975": 12.706204736174705,
+  "scenarios": [
+    {
+      "n": 1000,
+      "horizon": "902",
+      "arms": {
+        "baseline": {
+          "processes": [
+            {
+              "pair": 0,
+              "valid": true,
+              "attempts_us": [
+                3680,
+                4378,
+                4183
+              ],
+              "first_us": 3680,
+              "median_all_us": 4183,
+              "median_repeat_us": 4280.5,
+              "max_all_us": 4378
+            },
+            {
+              "pair": 1,
+              "valid": true,
+              "attempts_us": [
+                3523,
+                4159,
+                4298
+              ],
+              "first_us": 3523,
+              "median_all_us": 4159,
+              "median_repeat_us": 4228.5,
+              "max_all_us": 4298
+            }
+          ],
+          "all": {
+            "n": 2,
+            "values_us": [
+              4183,
+              4159
+            ],
+            "min_us": 4159,
+            "median_us": 4171.0,
+            "max_us": 4183,
+            "relative_range_pct": 0.5754
+          },
+          "repeat": {
+            "n": 2,
+            "values_us": [
+              4280.5,
+              4228.5
+            ],
+            "min_us": 4228.5,
+            "median_us": 4254.5,
+            "max_us": 4280.5,
+            "relative_range_pct": 1.2222
+          }
+        },
+        "candidate": {
+          "processes": [
+            {
+              "pair": 0,
+              "valid": true,
+              "attempts_us": [
+                516,
+                352,
+                301
+              ],
+              "first_us": 516,
+              "median_all_us": 352,
+              "median_repeat_us": 326.5,
+              "max_all_us": 516
+            },
+            {
+              "pair": 1,
+              "valid": true,
+              "attempts_us": [
+                449,
+                281,
+                262
+              ],
+              "first_us": 449,
+              "median_all_us": 281,
+              "median_repeat_us": 271.5,
+              "max_all_us": 449
+            }
+          ],
+          "all": {
+            "n": 2,
+            "values_us": [
+              352,
+              281
+            ],
+            "min_us": 281,
+            "median_us": 316.5,
+            "max_us": 352,
+            "relative_range_pct": 22.4329
+          },
+          "repeat": {
+            "n": 2,
+            "values_us": [
+              326.5,
+              271.5
+            ],
+            "min_us": 271.5,
+            "median_us": 299.0,
+            "max_us": 326.5,
+            "relative_range_pct": 18.3946
+          }
+        }
+      },
+      "paired_ratio": {
+        "n": 2,
+        "df": 1,
+        "log_mean": -2.5849140331266334,
+        "ratio": 0.07540256144496311,
+        "lower": 0.018693810744535945,
+        "upper": 0.30414057091721
+      },
+      "absolute_gap_us": -3854.5,
+      "absolute_gap_pct": -92.4119
+    },
+    {
+      "n": 1000,
+      "horizon": "final",
+      "arms": {
+        "baseline": {
+          "processes": [
+            {
+              "pair": 0,
+              "valid": true,
+              "attempts_us": [
+                490,
+                316,
+                326
+              ],
+              "first_us": 490,
+              "median_all_us": 326,
+              "median_repeat_us": 321.0,
+              "max_all_us": 490
+            }
+          ],
+          "all": null,
+          "repeat": null
+        },
+        "candidate": {
+          "processes": [
+            {
+              "pair": 0,
+              "valid": true,
+              "attempts_us": [
+                557,
+                337,
+                337
+              ],
+              "first_us": 557,
+              "median_all_us": 337,
+              "median_repeat_us": 337.0,
+              "max_all_us": 557
+            }
+          ],
+          "all": null,
+          "repeat": null
+        }
+      },
+      "paired_ratio": {
+        "n": 1,
+        "log_mean": 0.03318554898565411,
+        "lower": null,
+        "upper": null,
+        "df": 0
+      },
+      "absolute_gap_us": 11,
+      "absolute_gap_pct": 3.3742
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "arms": {
+        "baseline": {
+          "processes": [
+            {
+              "pair": 0,
+              "valid": true,
+              "attempts_us": [
+                13046,
+                17001,
+                16565
+              ],
+              "first_us": 13046,
+              "median_all_us": 16565,
+              "median_repeat_us": 16783.0,
+              "max_all_us": 17001
+            },
+            {
+              "pair": 1,
+              "valid": true,
+              "attempts_us": [
+                13061,
+                16649,
+                16313
+              ],
+              "first_us": 13061,
+              "median_all_us": 16313,
+              "median_repeat_us": 16481.0,
+              "max_all_us": 16649
+            }
+          ],
+          "all": {
+            "n": 2,
+            "values_us": [
+              16565,
+              16313
+            ],
+            "min_us": 16313,
+            "median_us": 16439.0,
+            "max_us": 16565,
+            "relative_range_pct": 1.5329
+          },
+          "repeat": {
+            "n": 2,
+            "values_us": [
+              16783.0,
+              16481.0
+            ],
+            "min_us": 16481.0,
+            "median_us": 16632.0,
+            "max_us": 16783.0,
+            "relative_range_pct": 1.8158
+          }
+        },
+        "candidate": {
+          "processes": [
+            {
+              "pair": 0,
+              "valid": true,
+              "attempts_us": [
+                13095,
+                17008,
+                16471
+              ],
+              "first_us": 13095,
+              "median_all_us": 16471,
+              "median_repeat_us": 16739.5,
+              "max_all_us": 17008
+            },
+            {
+              "pair": 1,
+              "valid": true,
+              "attempts_us": [
+                12654,
+                16627,
+                16732
+              ],
+              "first_us": 12654,
+              "median_all_us": 16627,
+              "median_repeat_us": 16679.5,
+              "max_all_us": 16732
+            }
+          ],
+          "all": {
+            "n": 2,
+            "values_us": [
+              16471,
+              16627
+            ],
+            "min_us": 16471,
+            "median_us": 16549.0,
+            "max_us": 16627,
+            "relative_range_pct": 0.9427
+          },
+          "repeat": {
+            "n": 2,
+            "values_us": [
+              16739.5,
+              16679.5
+            ],
+            "min_us": 16679.5,
+            "median_us": 16709.5,
+            "max_us": 16739.5,
+            "relative_range_pct": 0.3591
+          }
+        }
+      },
+      "paired_ratio": {
+        "n": 2,
+        "df": 1,
+        "log_mean": 0.006687383576378122,
+        "ratio": 1.0067097940538947,
+        "lower": 0.8601985379078659,
+        "upper": 1.178175229068554
+      },
+      "absolute_gap_us": 110.0,
+      "absolute_gap_pct": 0.6691
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "arms": {
+        "baseline": {
+          "processes": [
+            {
+              "pair": 0,
+              "valid": true,
+              "attempts_us": [
+                206892,
+                241148,
+                228712
+              ],
+              "first_us": 206892,
+              "median_all_us": 228712,
+              "median_repeat_us": 234930.0,
+              "max_all_us": 241148
+            },
+            {
+              "pair": 1,
+              "valid": true,
+              "attempts_us": [
+                271330,
+                257151,
+                278782
+              ],
+              "first_us": 271330,
+              "median_all_us": 271330,
+              "median_repeat_us": 267966.5,
+              "max_all_us": 278782
+            }
+          ],
+          "all": {
+            "n": 2,
+            "values_us": [
+              228712,
+              271330
+            ],
+            "min_us": 228712,
+            "median_us": 250021.0,
+            "max_us": 271330,
+            "relative_range_pct": 17.0458
+          },
+          "repeat": {
+            "n": 2,
+            "values_us": [
+              234930.0,
+              267966.5
+            ],
+            "min_us": 234930.0,
+            "median_us": 251448.25,
+            "max_us": 267966.5,
+            "relative_range_pct": 13.1385
+          }
+        },
+        "candidate": {
+          "processes": [
+            {
+              "pair": 0,
+              "valid": true,
+              "attempts_us": [
+                2419,
+                2945,
+                2338
+              ],
+              "first_us": 2419,
+              "median_all_us": 2419,
+              "median_repeat_us": 2641.5,
+              "max_all_us": 2945
+            },
+            {
+              "pair": 1,
+              "valid": true,
+              "attempts_us": [
+                2842,
+                2891,
+                3047
+              ],
+              "first_us": 2842,
+              "median_all_us": 2891,
+              "median_repeat_us": 2969.0,
+              "max_all_us": 3047
+            }
+          ],
+          "all": {
+            "n": 2,
+            "values_us": [
+              2419,
+              2891
+            ],
+            "min_us": 2419,
+            "median_us": 2655.0,
+            "max_us": 2891,
+            "relative_range_pct": 17.7778
+          },
+          "repeat": {
+            "n": 2,
+            "values_us": [
+              2641.5,
+              2969.0
+            ],
+            "min_us": 2641.5,
+            "median_us": 2805.25,
+            "max_us": 2969.0,
+            "relative_range_pct": 11.6745
+          }
+        }
+      },
+      "paired_ratio": {
+        "n": 2,
+        "df": 1,
+        "log_mean": -4.545421333861072,
+        "ratio": 0.01061569902040243,
+        "lower": 0.01012971722223579,
+        "upper": 0.011124996208620714
+      },
+      "absolute_gap_us": -247366.0,
+      "absolute_gap_pct": -98.9381
+    }
+  ]
+}

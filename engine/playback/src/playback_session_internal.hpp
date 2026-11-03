@@ -167,6 +167,9 @@ class SessionOperation final {
 
 [[nodiscard]] auto publicDecision(const judgement::AdvanceDecision& decision)
     -> GameplayAdvanceDecision;
+
+// Shared by the gameplay and gameplay Seek translation units.
+[[nodiscard]] auto publicTick(std::optional<judgement::Tick> tick) -> std::optional<GameplayTick>;
 #endif
 
 struct PlaybackSession::State final {
