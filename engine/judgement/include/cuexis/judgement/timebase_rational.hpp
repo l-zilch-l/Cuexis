@@ -2,6 +2,8 @@
 
 //  Judgement typed kernel - exact rational beat and duration values.
 
+#include <cuexis/core/result.hpp>
+
 #include <compare>
 #include <cstdint>
 

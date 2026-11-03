@@ -1,6 +1,9 @@
 #pragma once
 
 // Pattern DFA node description and the minimal automaton builder.
+//
+// Fragment of the automaton layer: include "pattern_dfa.hpp", never this file directly. The
+// parts wire each other in one order and are not individually self-contained.
 
 #include "pattern_dfa_ops.hpp"
 

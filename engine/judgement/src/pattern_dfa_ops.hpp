@@ -1,6 +1,9 @@
 #pragma once
 
 // Pattern DFA combinators: union, concatenation, complement and repeats.
+//
+// Fragment of the automaton layer: include "pattern_dfa.hpp", never this file directly. The
+// parts wire each other in one order and are not individually self-contained.
 
 #include "pattern_dfa_reduce.hpp"
 

@@ -1,6 +1,9 @@
 #pragma once
 
 // Pattern DFA construction: the materialised NFA, repeats and determinisation.
+//
+// Fragment of the automaton layer: include "pattern_dfa.hpp", never this file directly. The
+// parts wire each other in one order and are not individually self-contained.
 
 #include "pattern_dfa.hpp"
 
