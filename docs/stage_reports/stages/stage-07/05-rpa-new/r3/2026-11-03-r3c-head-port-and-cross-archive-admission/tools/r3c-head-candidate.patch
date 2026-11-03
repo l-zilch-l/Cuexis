@@ -1,0 +1,1370 @@
+diff --git a/engine/judgement/include/cuexis/judgement/shared_sequence.hpp b/engine/judgement/include/cuexis/judgement/shared_sequence.hpp
+index 1dbffce2..19a40839 100644
+--- a/engine/judgement/include/cuexis/judgement/shared_sequence.hpp
++++ b/engine/judgement/include/cuexis/judgement/shared_sequence.hpp
+@@ -132,6 +132,48 @@ template <class T, std::size_t PageSize = 64> class SharedSequence final {
+     [[nodiscard]] auto storageOwner() const noexcept -> std::shared_ptr<const void> {
+         return pages_;
+     }
++    // Report owning container and buffer capacities without exposing mutable storage.
++    // Shared owners are deliberately reported in full; allocator/control-block overhead is absent.
++    template <class Visitor> void visitStorageCapacity(Visitor&& visitor) const {
++        const auto owner = pages_;
++        if (!owner)
++            return;
++        visitor(1, sizeof(Directory));
++        visitor(owner->capacity(), sizeof(typename Directory::value_type));
++        for (const auto& page : *owner) {
++            visitor(1, sizeof(Page));
++            visitor(page->capacity(), sizeof(T));
++        }
++    }
++    // For an externally proven append-only source: full pages remain in the mandatory
++    // journal; only the directory and a partial tail can be retained exclusively.
++    // Returns the first element whose nested payload must still be charged.
++    template <class Visitor> auto visitAppendOnlyRetention(Visitor&& visitor) const -> std::size_t {
++        const auto owner = pages_;
++        const auto count = size_;
++        if (!owner)
++            return 0;
++        visitor(1, sizeof(Directory));
++        visitor(owner->capacity(), sizeof(typename Directory::value_type));
++        const auto full = count / PageSize;
++        if (count % PageSize) {
++            const auto& tail = (*owner)[full];
++            visitor(1, sizeof(Page));
++            visitor(tail->capacity(), sizeof(T));
++        }
++        return full * PageSize;
++    }
++    // Identity check, not value equality: used before publishing an append-only exemption.
++    [[nodiscard]] auto sharesCompletePrefixPagesWith(const SharedSequence& later) const noexcept
++        -> bool {
++        if (later.size_ < size_)
++            return false;
++        const auto full = size_ / PageSize;
++        for (std::size_t i = 0; i < full; ++i)
++            if ((*pages_)[i] != (*later.pages_)[i])
++                return false;
++        return true;
++    }
+     [[nodiscard]] auto max_size() const noexcept -> std::size_t {
+         return Page{}.max_size();
+     }
+diff --git a/engine/judgement/src/execution_kernel.hpp b/engine/judgement/src/execution_kernel.hpp
+index 17b83fec..4a7b59f6 100644
+--- a/engine/judgement/src/execution_kernel.hpp
++++ b/engine/judgement/src/execution_kernel.hpp
+@@ -10,6 +10,7 @@ class JudgementSession;
+ 
+ namespace cuexis::judgement::detail {
+ struct KernelTestControls;
++struct TickCapture;
+ auto makeCanonicalReplayIdentityCache() -> std::shared_ptr<CanonicalReplayIdentityCache>;
+ class ProjectionStorage {
+   public:
+@@ -60,6 +61,17 @@ class ExecutionKernel final {
+                               std::span<const ReplayCheckpoint> = {})
+         -> core::Result<std::unique_ptr<ExecutionKernel>>;
+     auto advance(Tick horizon, bool controlDrain = false) -> core::Result<void>;
++    // Internal validation/replay entry: never collects writer continuations.
++    auto advanceForReplay(Tick horizon, bool controlDrain = false) -> core::Result<void>;
++    static auto tickPointCount(const ReplayArchive&) noexcept -> std::size_t;
++    auto tickRestoreCount() const noexcept -> std::uint64_t;
++    static auto tickPayloadBytes(const ReplayArchive&) noexcept -> std::size_t;
++    static auto tickPayloadLimit(const ReplayArchive&) noexcept -> std::size_t;
++    // Payload this archive's own index admitted, and the cross-generation refusals it recorded.
++    static auto tickPayloadAdmittedBytes(const ReplayArchive&) noexcept -> std::size_t;
++    static auto tickAdmissionRefused(const ReplayArchive&) noexcept -> std::size_t;
++    // Probe-only: caller must quiesce the entire preparation lineage, not just its live counter.
++    auto setTickPayloadLimitForProbe(std::size_t) noexcept -> bool;
+     [[nodiscard]] auto query() const noexcept -> std::shared_ptr<const ProjectionStorage>;
+     auto inject(KernelTestControls) -> core::Result<void>;
+     auto visibleSignalCount(Tick) const noexcept -> std::size_t;
+@@ -77,7 +89,8 @@ class ExecutionKernel final {
+     auto submitBatch(std::span<const ClockedIngress>,
+                      std::span<const std::optional<std::int64_t>> = {})
+         -> core::Result<std::vector<InputReceiptPending>>;
+-    auto advanceRecorded(Tick horizon) -> core::Result<void>;
++    auto advanceImpl(Tick, bool controlDrain, bool capture) -> core::Result<void>;
++    auto advanceRecorded(Tick horizon, TickCapture* capture = nullptr) -> core::Result<void>;
+     auto submitRpa(std::vector<CanonicalInput>, bool& transientAllocationFailure)
+         -> core::Result<std::vector<InputReceiptPending>>;
+     auto restoreCertifiedRpa(const CheckpointCertificate&, const KernelTestControls*) noexcept
+diff --git a/engine/judgement/src/execution_kernel_advance.cpp b/engine/judgement/src/execution_kernel_advance.cpp
+index 572460c3..71411af6 100644
+--- a/engine/judgement/src/execution_kernel_advance.cpp
++++ b/engine/judgement/src/execution_kernel_advance.cpp
+@@ -185,27 +185,51 @@ auto ExecutionKernel::controlRpa(const RpaControlRecord& control) -> core::Resul
+         error("control.reconciliation_invalid", "RPA pre-seal reservation failed"));
+ }
+ 
+-auto ExecutionKernel::advance(Tick horizon, bool controlDrain) -> core::Result<void> try {
++auto ExecutionKernel::advance(Tick horizon, bool controlDrain) -> core::Result<void> {
++    return advanceImpl(horizon, controlDrain, true);
++}
++auto ExecutionKernel::advanceForReplay(Tick horizon, bool controlDrain) -> core::Result<void> {
++    return advanceImpl(horizon, controlDrain, false);
++}
++// Internal validation/replay path: same transaction, but it never collects writer continuations.
++auto ExecutionKernel::advanceImpl(Tick horizon, bool controlDrain, bool writer)
++    -> core::Result<void> try {
++    TickCapture capture;
++    const bool collecting = writer && impl_->canCaptureTicks();
++    if (collecting) {
++        capture.prefix = impl_->logTail;
++        capture.recording = impl_->recording;
++        capture.ordinal = impl_->appliedRecords;
++        capture.sourceHorizon = horizon;
++    }
+     if (impl_->testControls && impl_->testControls->failRecordReservationHorizon == horizon) {
+         throw std::bad_alloc{};
+     }
+     auto record = impl_->recordingCandidate();
+     record->records.push_back({{}, {}, horizon, {}, {}, {}, controlDrain});
+     const auto before = impl_->active;
+-    auto outcome = advanceRecorded(horizon);
++    auto outcome = advanceRecorded(horizon, collecting ? &capture : nullptr);
+     if (outcome || before != impl_->active) {
+         record->records.back().result =
+             std::shared_ptr<const KernelProjection>(impl_->active, &impl_->active->projection);
+         impl_->publishRecording(std::move(record));
+         impl_->releaseSeekSource();
+     }
++    if (outcome && collecting)
++        for (std::size_t i = 0; i < capture.count; ++i) {
++            // Ledger appends only: full Fact pages already belong to the actual published
++            // result in the mandatory exact journal. Unknown future mutation is a miss.
++            if (capture.points[i]->state->projection.facts.sharesCompletePrefixPagesWith(
++                    impl_->active->projection.facts))
++                impl_->tickPoints.remember(std::move(capture.points[i]));
++        }
+     return outcome;
+ } catch (const std::exception&) {
+     return core::unexpected(
+         error("execution.relation_invalid", "Replay control reservation failed"));
+ }
+ 
+-auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
++auto ExecutionKernel::advanceRecorded(Tick horizon, TickCapture* capture) -> core::Result<void> {
+     internal::execution_diagnostics::Trace diagnostic{"advanceRecorded", horizon.value(),
+                                                       impl_->prepared.timers().size()};
+     if ((impl_->active->projection.rpa && impl_->active->projection.rpa->paused) ||
+@@ -402,6 +426,30 @@ auto ExecutionKernel::advanceRecorded(Tick horizon) -> core::Result<void> {
+                 (!writable->projection.rpa ||
+                  writable->projection.rpa->foldAtTickStart.has_value() ==
+                      writable->projection.fold.has_value());
++            if (capture && facts.size() >= 512 && impl_->pending.empty() &&
++                impl_->active->signalVisibility.empty()) {
++                try {
++                    const auto& budget = impl_->preparation->tickBudget;
++                    const auto used = budget->live.load(std::memory_order_relaxed);
++                    TickPayloadCounter charge{budget->limit - std::min(budget->limit, used)};
++                    charge.add(1, sizeof(NativeTickPoint));
++                    charge.state(*impl_->active);
++                    charge.prefix(capture->prefix);
++                    charge.add(1, sizeof(ReplayData));
++                    charge.add(capture->recording->records.capacity(), sizeof(ReplayRecord));
++                    const auto bytes = charge.bytes();
++                    if (bytes && capture->recording->records.empty() && budget->acquire(*bytes)) {
++                        TickPayloadLease lease{budget, *bytes};
++                        auto point = std::make_shared<const NativeTickPoint>(NativeTickPoint{
++                            std::move(lease), impl_->active, capture->prefix, capture->recording,
++                            capture->ordinal, capture->sourceHorizon});
++                        capture->remember(std::move(point));
++                        writable.reset();
++                    }
++                } catch (const std::exception&) {
++                    // Optional cache admission never faults an already sealed Tick.
++                }
++            }
+             foldFailed = false;
+             diagnostic.sealed(tick->value(), impl_->active->timerCursor);
+             failedTick.reset();
+diff --git a/engine/judgement/src/execution_kernel_archive.cpp b/engine/judgement/src/execution_kernel_archive.cpp
+index c2dda095..6e32e57f 100644
+--- a/engine/judgement/src/execution_kernel_archive.cpp
++++ b/engine/judgement/src/execution_kernel_archive.cpp
+@@ -16,7 +16,14 @@ auto ExecutionKernel::archive() const -> ReplayArchive {
+         archive.internallySealed_ = true;
+         archive.preparation_ = impl_->preparation;
+         auto index = std::make_shared<NativeRecoveryIndex>();
++        index->exactSourceFloor = archive.anchor();
+         index->points = impl_->nativePoints;
++        // Admit the writer's slots against the budget this archive publishes, so the index can
++        // never retain a charge it cannot refund or report.
++        index->ticksRefused = impl_->tickPoints.count;
++        index->ticksBytes =
++            admitTickPoints(impl_->tickPoints, impl_->preparation->tickBudget, index->ticks);
++        index->ticksRefused -= index->ticks.count;
+         // The index is rebound only while sealing this exact append-only journal. Every
+         // point retains the immutable prefix from this branch; no address/hash matching.
+         archive.nativeRecovery_ = std::move(index);
+@@ -29,12 +36,46 @@ auto ExecutionKernel::archive() const -> ReplayArchive {
+     archive.internallySealed_ = !impl_->seekSource || impl_->seekSourceSealed;
+     if (archive.internallySealed_)
+         archive.preparation_ = impl_->preparation;
+-    if (impl_->seekSource)
+-        archive.nativeRecovery_ = impl_->seekNativeSource;
++    if (impl_->seekSource && impl_->seekNativeSource && archive.internallySealed_ &&
++        impl_->preparation) {
++        // Cross-generation admission: the inherited native index is republished only with the
++        // points this preparation's budget still owns. Reaching here before the branch diverged
++        // keeps the source generation visible; a foreign budget is refused rather than carried.
++        auto index = std::make_shared<NativeRecoveryIndex>(*impl_->seekNativeSource);
++        index->ticksRefused = index->ticks.count;
++        index->ticksBytes = admitTickPoints(impl_->seekNativeSource->ticks,
++                                            impl_->preparation->tickBudget, index->ticks);
++        index->ticksRefused -= index->ticks.count;
++        archive.nativeRecovery_ = std::move(index);
++    }
+     if (impl_->seekSource)
+         archive.canonicalCache_ = impl_->seekCanonicalCache;
+     return archive;
+ }
++auto ExecutionKernel::tickPayloadBytes(const ReplayArchive& source) noexcept -> std::size_t {
++    return source.preparation_ && source.preparation_->tickBudget
++               ? source.preparation_->tickBudget->live.load(std::memory_order_relaxed)
++               : 0;
++}
++auto ExecutionKernel::tickPayloadLimit(const ReplayArchive& source) noexcept -> std::size_t {
++    return source.preparation_ && source.preparation_->tickBudget
++               ? source.preparation_->tickBudget->limit
++               : 0;
++}
++auto ExecutionKernel::tickPayloadAdmittedBytes(const ReplayArchive& source) noexcept
++    -> std::size_t {
++    return source.nativeRecovery_ ? source.nativeRecovery_->ticksBytes : 0;
++}
++auto ExecutionKernel::tickAdmissionRefused(const ReplayArchive& source) noexcept -> std::size_t {
++    return source.nativeRecovery_ ? source.nativeRecovery_->ticksRefused : 0;
++}
++auto ExecutionKernel::setTickPayloadLimitForProbe(std::size_t limit) noexcept -> bool {
++    const auto& budget = impl_->preparation->tickBudget;
++    if (!budget || budget->live.load(std::memory_order_relaxed) != 0)
++        return false;
++    budget->limit = limit;
++    return true;
++}
+ auto ExecutionKernel::canArchive() const noexcept -> bool {
+     return impl_->historyAvailable;
+ }
+@@ -87,7 +128,7 @@ auto ExecutionKernel::evaluate(const ReplayArchive& archive, const KernelTestCon
+                 return core::unexpected(
+                     error("execution.relation_invalid", "Replay control structure invalid"));
+             }
+-            auto result = (*k)->advance(*record.horizon, record.controlDrain);
++            auto result = (*k)->advanceForReplay(*record.horizon, record.controlDrain);
+             const auto& current = (*k)->query()->projection;
+             if ((!result && current.state != KernelSessionState::Faulted) ||
+                 !sameKernelResult(current, *record.result)) {
+@@ -243,6 +284,53 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
+             }
+         }
+     }
++    // A partial-horizon cut can be served from a Tick point of this exact journal: the point must
++    // sit on the cut record, its source horizon must be beyond the requested horizon, and its
++    // processed frontier must be closed below the late-window frontier.
++    if (rpa && checkpoints.empty() && !controls && cut.partialHorizon &&
++        archive.internallySealed_ && archive.nativeRecovery_) {
++        const auto frontier = offsetTicks(
++            horizon, TickSpan{-archive.dependencies()
++                                   .configuration.latePolicy.windowCloseThreshold.measuredValue()
++                                   ->value()});
++        const NativeTickPoint* selected = nullptr;
++        const auto& points = archive.nativeRecovery_->ticks;
++        if (frontier && cut.completeRecords < archive.data().records.size()) {
++            const auto& record =
++                archive.data().records[static_cast<std::size_t>(cut.completeRecords)];
++            for (std::size_t i = 0; i < points.count; ++i) {
++                const auto& point = points.points[i];
++                if (point->ordinal == cut.completeRecords &&
++                    record.horizon == point->sourceHorizon && point->sourceHorizon > horizon &&
++                    point->state->projection.processedFrontier &&
++                    *point->state->projection.processedFrontier <= *frontier &&
++                    (!selected || *point->state->projection.processedFrontier >
++                                      *selected->state->projection.processedFrontier))
++                    selected = point.get();
++            }
++        }
++        if (selected) {
++            try {
++                auto& run = *(*candidate)->impl_;
++                auto state = std::make_shared<RuntimeState>(*selected->state);
++                state->projection.runScope = run.active->projection.runScope;
++                auto reserve = run.reserveFault(*state);
++                run.active = std::move(state);
++                run.faultReserve = std::move(reserve);
++                run.logTail = selected->prefix;
++                run.recording = selected->recording;
++                run.appliedRecords = selected->ordinal;
++                run.nativeBaseRecords = selected->ordinal;
++                begin = selected->ordinal;
++                ++run.tickRestores;
++#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
++                ++rpaRestores;
++#endif
++            } catch (const std::exception&) {
++                // Restoration is transactional; original record/origin fallback remains.
++            }
++        }
++    }
+     if (rpa && checkpoints.size() == 1) {
+         const auto& checkpoint = checkpoints.front();
+         const auto& cert = checkpoint.certificate_;
+@@ -365,7 +453,7 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
+             if (record.controlDrain)
+                 ++rpaIdleAdvances;
+ #endif
+-            auto result = k.advance(*record.horizon, record.controlDrain);
++            auto result = k.advanceForReplay(*record.horizon, record.controlDrain);
+             if (!result) {
+                 return core::unexpected(result.error());
+             }
+@@ -404,7 +492,7 @@ auto ExecutionKernel::seekCandidate(const ReplayArchive& archive, Tick horizon,
+                     error("execution.relation_invalid", "Seek partial control invalid"));
+             }
+         }
+-        auto result = k.advance(horizon);
++        auto result = k.advanceForReplay(horizon);
+         if (!result) {
+             return core::unexpected(result.error());
+         }
+diff --git a/engine/judgement/src/execution_kernel_impl_setup.cpp b/engine/judgement/src/execution_kernel_impl_setup.cpp
+index 13c16675..1ecb6fd2 100644
+--- a/engine/judgement/src/execution_kernel_impl_setup.cpp
++++ b/engine/judgement/src/execution_kernel_impl_setup.cpp
+@@ -76,6 +76,7 @@ ExecutionKernel::Impl::Impl(SessionConfiguration c, PreparedGameplay p,
+         recoveryInputs = preparation->inputs;
+     } else {
+         auto plan = std::make_shared<ExecutionPreparation>();
++        plan->tickBudget = std::make_shared<TickPayloadBudget>();
+         plan->initial = active;
+         std::map<RequirementIdentity, std::size_t> indices;
+         plan->phaseOffsets.push_back(0);
+diff --git a/engine/judgement/src/execution_kernel_internal.hpp b/engine/judgement/src/execution_kernel_internal.hpp
+index 16c4c8a5..cf6304d5 100644
+--- a/engine/judgement/src/execution_kernel_internal.hpp
++++ b/engine/judgement/src/execution_kernel_internal.hpp
+@@ -9,15 +9,21 @@
+ #include "execution_log.hpp"
+ #include "execution_testing.hpp"
+ #include "identity_factory.hpp"
++#include "recovery_wire.hpp"
+ #include <cuexis/judgement/recovery_codec.hpp>
+ #include <cuexis_internal/execution_diagnostics.hpp>
+ 
+ #include <algorithm>
++#include <array>
++#include <atomic>
+ #include <bit>
+ #include <map>
++#include <optional>
+ #include <set>
+ #include <stdexcept>
+ #include <tuple>
++#include <type_traits>
++#include <utility>
+ 
+ namespace cuexis::judgement::detail {
+ 
+@@ -88,6 +94,140 @@ struct RuntimeState final : ProjectionStorage {
+     bool idsExhausted{false};
+ };
+ 
++// Optional tick payload budget: one live counter shared by every point of one preparation, so the
++// retained payload of all points is bounded without changing the pending subset or record cadence.
++struct TickPayloadBudget final {
++    std::atomic<std::size_t> live{};
++    std::size_t limit{128 * 1024 * 1024};
++    auto acquire(std::size_t bytes) noexcept -> bool {
++        if (bytes > limit)
++            return false;
++        auto value = live.load(std::memory_order_relaxed);
++        while (value <= limit - bytes) {
++            if (live.compare_exchange_weak(value, value + bytes, std::memory_order_relaxed))
++                return true;
++        }
++        return false;
++    }
++};
++struct TickPayloadLease final {
++    std::shared_ptr<TickPayloadBudget> budget;
++    std::size_t bytes{};
++    TickPayloadLease(std::shared_ptr<TickPayloadBudget> owner, std::size_t count) noexcept
++        : budget(std::move(owner)), bytes(count) {}
++    [[nodiscard]] auto charge() const noexcept -> std::size_t {
++        return bytes;
++    }
++    [[nodiscard]] auto owner() const noexcept -> const std::shared_ptr<TickPayloadBudget>& {
++        return budget;
++    }
++    TickPayloadLease(TickPayloadLease&& other) noexcept
++        : budget(std::move(other.budget)), bytes(std::exchange(other.bytes, 0)) {}
++    TickPayloadLease(const TickPayloadLease&) = delete;
++    auto operator=(const TickPayloadLease&) -> TickPayloadLease& = delete;
++    ~TickPayloadLease() {
++        if (budget)
++            budget->live.fetch_sub(bytes, std::memory_order_relaxed);
++    }
++};
++
++// Capacity accounting reuses the existing field traversal, not serialized byte length.
++// Unknown/error owners cannot acquire a charge. All shared pages are charged per point.
++class TickPayloadCounter final {
++    std::size_t total_{};
++    std::size_t limit_;
++    bool valid_{true};
++
++  public:
++    explicit TickPayloadCounter(std::size_t limit) noexcept : limit_(limit) {}
++    static constexpr std::uint32_t revision = 3;
++    void add(std::size_t count, std::size_t width) noexcept {
++        if (!valid_)
++            return;
++        if (width && count > (limit_ - total_) / width) {
++            valid_ = false;
++            return;
++        }
++        total_ += count * width;
++    }
++    auto bytes() const noexcept -> std::optional<std::size_t> {
++        return valid_ ? std::optional{total_} : std::nullopt;
++    }
++    template <class... T> void operator()(const T&... values) {
++        (dynamic(values), ...);
++    }
++    template <class T> void dynamic(const T& value) {
++        if (!valid_)
++            return;
++        if constexpr (std::is_same_v<T, std::string>) {
++            add(value.capacity(), 1);
++            add(1, 1);
++        } else if constexpr (std::is_same_v<T, SharedSequence<KernelFact>>) {
++            // Only the append-only Fact journal has the mandatory full-page floor.
++            // Every other owning sequence remains conservatively charged in full.
++            const auto first = value.visitAppendOnlyRetention(
++                [&](std::size_t n, std::size_t width) { add(n, width); });
++            for (auto i = first; valid_ && i < value.size(); ++i)
++                dynamic(value[i]);
++        } else if constexpr (wire::PagedSequence<T>::value) {
++            value.visitStorageCapacity([&](std::size_t n, std::size_t width) { add(n, width); });
++            for (const auto& row : value) {
++                if (!valid_)
++                    break;
++                dynamic(row);
++            }
++        } else if constexpr (wire::Vector<T>::value) {
++            add(value.capacity(), sizeof(typename T::value_type));
++            for (const auto& row : value) {
++                if (!valid_)
++                    break;
++                dynamic(row);
++            }
++        } else if constexpr (wire::Optional<T>::value) {
++            if (value)
++                dynamic(*value);
++        } else if constexpr (wire::Variant<T>::value) {
++            std::visit([&](const auto& row) { dynamic(row); }, value);
++        } else if constexpr (std::is_same_v<T, core::Error> || wire::Shared<T>::value) {
++            // Error's private string capacities and arbitrary shared payload are not inspectable.
++            valid_ = false;
++        } else if constexpr (std::is_trivially_copyable_v<T>) {
++            static_cast<void>(value);
++        } else {
++            wire::fields(*this, value);
++        }
++    }
++    void state(const RuntimeState& state) {
++        add(1, sizeof(RuntimeState));
++        dynamic(state.projection);
++        state.matchers.visitStorageCapacity(
++            [&](std::size_t n, std::size_t width) { add(n, width); });
++        for (const auto& matcher : state.matchers) {
++            if (!valid_)
++                break;
++            dynamic(matcher.states);
++        }
++        (*this)(state.coverageHistory, state.activeRequirements, state.signalVisibility);
++    }
++    void prefix(const std::shared_ptr<const ExecutionLogChunk>& prefix) {
++        for (auto current = prefix.get(); current && valid_; current = current->previous.get()) {
++            if (current->baseState) {
++                valid_ = false;
++                return;
++            }
++            add(1, sizeof(ExecutionLogChunk));
++            add(current->records.capacity(), sizeof(ReplayRecord));
++            for (const auto& record : current->records) {
++                if (!valid_)
++                    break;
++                (*this)(record.batch, record.admission, record.control, record.rejection);
++            }
++            // result owners also occur in the mandatory exact source journal/archive.
++            // They are not introduced by this optional prefix metadata owner.
++        }
++    }
++};
++
+ struct FactDescriptor final {
+     OriginId origin;
+     std::optional<RequirementIdentity> requirement;
+@@ -99,6 +239,7 @@ struct FactDescriptor final {
+ };
+ 
+ struct ExecutionPreparation final {
++    std::shared_ptr<TickPayloadBudget> tickBudget;
+     std::shared_ptr<const RuntimeState> initial;
+     std::shared_ptr<const RecoveryInputs> inputs;
+     std::vector<std::size_t> phaseOffsets, timerRequirements;
+@@ -110,13 +251,78 @@ struct NativeRecoveryPoint final {
+     std::shared_ptr<const ReplayData> recording;
+     std::uint64_t completeRecords{};
+ };
++struct NativeTickPoint final {
++    TickPayloadLease payload;
++    std::shared_ptr<const RuntimeState> state;
++    std::shared_ptr<const ExecutionLogChunk> prefix;
++    std::shared_ptr<const ReplayData> recording;
++    std::uint64_t ordinal{};
++    Tick sourceHorizon;
++};
++struct TickPoints {
++    static constexpr std::size_t capacity = 4;
++    std::array<std::shared_ptr<const NativeTickPoint>, capacity> points{};
++    std::size_t count{};
++    void remember(std::shared_ptr<const NativeTickPoint> point) noexcept {
++        if (count < capacity) {
++            points[count++] = std::move(point);
++        } else {
++            // Preserve the earliest point and the three most recent later points.
++            for (std::size_t i = 1; i + 1 < capacity; ++i)
++                points[i] = std::move(points[i + 1]);
++            points.back() = std::move(point);
++        }
++    }
++    // Retained payload of these slots only. Shared point objects are counted once per slot set,
++    // so an archive reports what its own index keeps alive, not the whole preparation lineage.
++    [[nodiscard]] auto bytes() const noexcept -> std::size_t {
++        auto total = std::size_t{};
++        for (std::size_t i = 0; i < count; ++i)
++            if (points[i])
++                total += points[i]->payload.charge();
++        return total;
++    }
++};
++
++// Cross-generation admission: an archive index accepts a point only while the point is charged to
++// the budget that the archive itself publishes. Points of a foreign or already released budget are
++// refused instead of being retained by an index that could not refund or account for them.
++// Refusal keeps the writer's own slots untouched; the lease is released when the writer drops it.
++inline auto admitTickPoints(const TickPoints& source,
++                            const std::shared_ptr<const TickPayloadBudget>& owner,
++                            TickPoints& admitted) noexcept -> std::size_t {
++    admitted = {};
++    if (!owner)
++        return 0;
++    for (std::size_t i = 0; i < source.count; ++i) {
++        const auto& point = source.points[i];
++        if (!point || point->payload.owner() != owner)
++            continue;
++        admitted.points[admitted.count++] = point;
++    }
++    return admitted.bytes();
++}
++struct TickCapture final : TickPoints {
++    std::shared_ptr<const ExecutionLogChunk> prefix;
++    std::shared_ptr<const ReplayData> recording;
++    std::uint64_t ordinal{};
++    Tick sourceHorizon{0};
++};
+ 
+ struct NativeRecoveryIndex final {
++    // Destroyed last: even archive assignment must keep the exact mandatory Fact owner
++    // alive until every optional point and its payload lease have been released.
++    std::shared_ptr<const ReplayData> exactSourceFloor;
+     // One anchor after the first eligible record, then at existing chunk boundaries.
+     // This optional cache never rejects content or changes record cadence. Empty pending
+     // is a closed subset; other states retain explicit checkpoint/origin recovery.
+     static constexpr std::size_t maxAnchors = 64;
+     std::vector<std::shared_ptr<const NativeRecoveryPoint>> points;
++    TickPoints ticks;
++    // Admitted payload of this index's own Tick slots, and how many candidates were refused
++    // because they belonged to another budget (older generation or foreign preparation).
++    std::size_t ticksBytes{};
++    std::size_t ticksRefused{};
+ };
+ 
+ struct ExecutionKernel::Impl final {
+@@ -142,6 +348,19 @@ struct ExecutionKernel::Impl final {
+     std::shared_ptr<const NativeRecoveryIndex> seekNativeSource;
+     std::shared_ptr<CanonicalReplayIdentityCache> seekCanonicalCache;
+     bool nativeAnchorEligible{true};
++    TickPoints tickPoints;
++    std::uint64_t tickRestores{};
++    auto canCaptureTicks() const noexcept -> bool {
++        return preparation && preparation->tickBudget &&
++               preparation->tickBudget->live.load(std::memory_order_relaxed) <
++                   preparation->tickBudget->limit &&
++               nativeAnchorEligible && historyAvailable && !testControls &&
++               active->projection.rpa && active->projection.state == KernelSessionState::Prepared &&
++               preparation && preparation->inputs == recoveryInputs && !ingress.lastObservedTick_ &&
++               !ingress.nextObservationId_ && !ingress.observationIdsExhausted_ &&
++               ingress.admittedSubjects_.empty() && ingress.ownedSubjects_.empty() &&
++               ingress.admittedSequences_.empty();
++    }
+     std::uint64_t appliedRecords{};
+     std::uint64_t nativeBaseRecords{};
+ 
+diff --git a/engine/judgement/src/execution_kernel_query.cpp b/engine/judgement/src/execution_kernel_query.cpp
+index 7bf1652e..c701a120 100644
+--- a/engine/judgement/src/execution_kernel_query.cpp
++++ b/engine/judgement/src/execution_kernel_query.cpp
+@@ -43,6 +43,12 @@ auto ExecutionKernel::certifiedPrefixRecords() const noexcept -> std::uint64_t {
+             return static_cast<std::uint64_t>(chunk->baseRecords);
+     return 0;
+ }
++auto ExecutionKernel::tickPointCount(const ReplayArchive& archive) noexcept -> std::size_t {
++    return archive.nativeRecovery_ ? archive.nativeRecovery_->ticks.count : 0;
++}
++auto ExecutionKernel::tickRestoreCount() const noexcept -> std::uint64_t {
++    return impl_->tickRestores;
++}
+ auto ExecutionKernel::nativePrefixRecords() const noexcept -> std::uint64_t {
+     return impl_->nativeBaseRecords;
+ }
+diff --git a/engine/judgement/src/execution_kernel_restore.cpp b/engine/judgement/src/execution_kernel_restore.cpp
+index 3db3b80c..e850aa87 100644
+--- a/engine/judgement/src/execution_kernel_restore.cpp
++++ b/engine/judgement/src/execution_kernel_restore.cpp
+@@ -100,7 +100,7 @@ auto ExecutionKernel::restore(const SnapshotStorage& saved, const RecoveryInputs
+                     (*candidate)->query()->projection.state != KernelSessionState::Faulted)
+                     return core::unexpected(result.error());
+             } else if (record.horizon) {
+-                auto result = (*candidate)->advance(*record.horizon, record.controlDrain);
++                auto result = (*candidate)->advanceForReplay(*record.horizon, record.controlDrain);
+                 if (!result &&
+                     (*candidate)->query()->projection.state != KernelSessionState::Faulted)
+                     return core::unexpected(result.error());
+diff --git a/engine/judgement/src/recovery_codec.cpp b/engine/judgement/src/recovery_codec.cpp
+index 58c24090..26576841 100644
+--- a/engine/judgement/src/recovery_codec.cpp
++++ b/engine/judgement/src/recovery_codec.cpp
+@@ -228,7 +228,7 @@ auto decodeReplay(std::span<const std::byte> bytes, const RecoveryInputs& inputs
+                 throw Failure{"codec.record_invalid"};
+             }
+             horizon = record.horizon;
+-            const auto advanced = (*base)->advance(*horizon, record.controlDrain);
++            const auto advanced = (*base)->advanceForReplay(*horizon, record.controlDrain);
+             if (!advanced && record.result->state != KernelSessionState::Faulted) {
+                 throw Failure{"codec.record_invalid"};
+             }
+diff --git a/tests/rpa/CMakeLists.txt b/tests/rpa/CMakeLists.txt
+index feb6227a..876d94f2 100644
+--- a/tests/rpa/CMakeLists.txt
++++ b/tests/rpa/CMakeLists.txt
+@@ -8,6 +8,7 @@ add_executable(cuexis_rpa_tests
+     rpa_b3_checkpoint_tests.cpp
+     rpa_b3_control_tests.cpp
+     rpa_b3_native_tests.cpp
++    rpa_b3_r3c_tests.cpp
+     rpa_b3_recovery_tests.cpp
+     rpa_b3_schedule_tests.cpp
+     rpa_b3_clock_tests.cpp
+diff --git a/tests/rpa/rpa_b3_r3c_tests.cpp b/tests/rpa/rpa_b3_r3c_tests.cpp
+new file mode 100644
+index 00000000..d6dc8177
+--- /dev/null
++++ b/tests/rpa/rpa_b3_r3c_tests.cpp
+@@ -0,0 +1,691 @@
++#include "rpa_b3_fixture.hpp"
++
++// R3c candidate: optional sealed Tick points, payload admission and restore accounting.
++
++using namespace cuexis::judgement;
++using namespace cuexis::judgement::testing;
++using namespace cuexis::rpa::testing;
++
++namespace {
++
++void expandTickFixture(Fixture3& f, unsigned count, unsigned wave = 0) {
++    f.rules = controlRules(false);
++    auto& doc = f.assembly.sources.front().document;
++    const auto prototype = doc.requirements.front();
++    doc.requirements.clear();
++    std::erase_if(doc.declarations,
++                  [](const auto& d) { return d.kind == DeclarationKind::requirement; });
++    doc.relations.front().members.clear();
++    f.assembly.contentProfileLimits.maxRequirements =
++        MeasuredParameter<std::uint64_t>::measured(count);
++    for (unsigned i = 0; i < count; ++i) {
++        auto r = prototype;
++        r.stableId.declarationOrdinal = 100 + i;
++        r.identity.requirementLocalId = "tick.prototype." + std::to_string(i);
++        r.resourceClaims.front().claimPolicy.competition =
++            ClaimPolicyDeclaration::CompetitionKey{-1, i};
++        if (wave) {
++            const auto shift = static_cast<std::int64_t>(i / wave) * 200;
++            auto moveTick = [shift](Tick& t) { t = Tick{t.value() + shift}; };
++            moveTick(r.timing->end);
++            for (auto& w : r.timing->successWindows) {
++                moveTick(w.start);
++                moveTick(w.end);
++            }
++            if (r.timing->body) {
++                moveTick(r.timing->body->start);
++                moveTick(r.timing->body->end);
++            }
++            for (auto& t : r.timing->phaseTargets)
++                moveTick(t.chartTick);
++        }
++        doc.declarations.push_back(
++            testDeclaration(DeclarationKind::requirement, r.identity.requirementLocalId, 100 + i));
++        doc.relations.front().members.push_back(r.stableId);
++        doc.requirements.push_back(std::move(r));
++    }
++}
++
++} // namespace
++
++// Mirrors the writer's optional slot capacity; four slots are a coverage policy, not the bound.
++constexpr std::size_t kTickSlots = 4;
++
++TEST_CASE("R3c exploratory sealed Tick restores exact partial state", "[rpa][r3c][prototype]") {
++    Fixture3 f;
++    expandTickFixture(f, 256);
++    const auto prefix = GENERATE(0U, 1U, 2U, 3U, 4U);
++    auto made = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
++    REQUIRE(made);
++    auto writer = std::move(*made);
++    if (prefix >= 1 && prefix <= 3)
++        REQUIRE(writer->advance(Tick{100}));
++    if (prefix == 2)
++        REQUIRE(writer->advance(Tick{100}));
++    if (prefix == 3) {
++        REQUIRE(writer->controlRpa({RpaControlKind::pause, Tick{97}, 0, 1, 0, {}}));
++        REQUIRE(writer->controlRpa({RpaControlKind::resume, Tick{97}, 0, 1, 0, {}}));
++    }
++    if (prefix == 4)
++        REQUIRE(writer->submitCanonical({occurrence(900, 0, InputAction::press)}));
++    REQUIRE(writer->advance(Tick{1203}));
++    auto archive = writer->archive();
++    REQUIRE(detail::ExecutionKernel::tickPointCount(archive) > 0);
++    const auto originalWire = encodeReplay(archive);
++    REQUIRE(originalWire);
++    const ReplayArchive external{archive.anchor(),
++                                 std::make_shared<const RecoveryInputs>(archive.dependencies())};
++    CHECK(detail::ExecutionKernel::tickPointCount(external) == 0);
++    writer.reset();
++    for (const auto h : {902, 904, 1003, 1103, 1203}) {
++        INFO(h);
++        const auto cut = replayCutAt(archive, Tick{h});
++        auto expected = detail::ExecutionKernel::seekCandidate(external, Tick{h}, nullptr, &cut);
++        auto actual = detail::ExecutionKernel::seekCandidate(archive, Tick{h}, nullptr, &cut);
++        REQUIRE(expected);
++        REQUIRE(actual);
++        CHECK((*actual)->tickRestoreCount() == (h >= 904 && h < 1203 ? 1 : 0));
++        auto a = (*actual)->snapshot();
++        auto b = (*expected)->snapshot();
++        REQUIRE(a);
++        REQUIRE(b);
++        CHECK(sameSnapshot((*a)->dto, (*b)->dto));
++        const auto av = detail::KernelTestAccess::snapshotValue((*a)->dto, archive.dependencies());
++        const auto bv = detail::KernelTestAccess::snapshotValue((*b)->dto, archive.dependencies());
++        auto aw = encodeSnapshot(av);
++        auto bw = encodeSnapshot(bv);
++        REQUIRE(aw);
++        REQUIRE(bw);
++        CHECK(*aw == *bw);
++        if (prefix == 4) {
++            REQUIRE((*actual)->submitCanonical({occurrence(1300, 1, InputAction::release)}));
++            REQUIRE((*expected)->submitCanonical({occurrence(1300, 1, InputAction::release)}));
++        }
++        REQUIRE((*actual)->advance(Tick{1303}));
++        REQUIRE((*expected)->advance(Tick{1303}));
++        a = (*actual)->snapshot();
++        b = (*expected)->snapshot();
++        REQUIRE(a);
++        REQUIRE(b);
++        CHECK(sameSnapshot((*a)->dto, (*b)->dto));
++        const auto actualBranch = (*actual)->archive();
++        const auto expectedBranch = (*expected)->archive();
++        CHECK(sameReplayHistory(actualBranch, expectedBranch));
++        const auto actualReplayWire = encodeReplay(actualBranch);
++        const auto expectedReplayWire = encodeReplay(expectedBranch);
++        REQUIRE(actualReplayWire);
++        REQUIRE(expectedReplayWire);
++        CHECK(*actualReplayWire == *expectedReplayWire);
++    }
++    auto finalWire = encodeReplay(archive);
++    REQUIRE(finalWire);
++    CHECK(*finalWire == *originalWire);
++}
++
++TEST_CASE("R3c exploratory slots preserve earliest point and exact replay",
++          "[rpa][r3c][prototype]") {
++    Fixture3 f;
++    expandTickFixture(f, 1536, 256);
++    auto made = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
++    REQUIRE(made);
++    auto writer = std::move(*made);
++    REQUIRE(writer->advance(Tick{2503}));
++    auto archive = writer->archive();
++    CHECK(detail::ExecutionKernel::tickPointCount(archive) == 4);
++    const ReplayArchive external{archive.anchor(),
++                                 std::make_shared<const RecoveryInputs>(archive.dependencies())};
++    writer.reset();
++    for (const auto h : {902, 904, 1104, 1304, 1504, 1704, 1904, 2503}) {
++        INFO(h);
++        const auto cut = replayCutAt(archive, Tick{h});
++        auto a = detail::ExecutionKernel::seekCandidate(archive, Tick{h}, nullptr, &cut);
++        auto b = detail::ExecutionKernel::seekCandidate(external, Tick{h}, nullptr, &cut);
++        REQUIRE(a);
++        REQUIRE(b);
++        CHECK((*a)->tickRestoreCount() == (h >= 904 && h < 2503 ? 1 : 0));
++        auto av = (*a)->snapshot();
++        auto bv = (*b)->snapshot();
++        REQUIRE(av);
++        REQUIRE(bv);
++        CHECK(sameSnapshot((*av)->dto, (*bv)->dto));
++        auto aw = encodeSnapshot(
++            detail::KernelTestAccess::snapshotValue((*av)->dto, archive.dependencies()));
++        auto bw = encodeSnapshot(
++            detail::KernelTestAccess::snapshotValue((*bv)->dto, archive.dependencies()));
++        REQUIRE(aw);
++        REQUIRE(bw);
++        CHECK(*aw == *bw);
++    }
++}
++
++TEST_CASE("R3c ordinary writer capture diagnostic", "[.][r3c-writer]") {
++    std::string barrier;
++    REQUIRE(static_cast<bool>(std::getline(std::cin, barrier)));
++    const auto size = cuexis::test_support::environmentVariable("R3_WRITER_N");
++    const auto mode = cuexis::test_support::environmentVariable("R3_WRITER_CAPTURE");
++    const auto waveValue = cuexis::test_support::environmentVariable("R3_WRITER_WAVE");
++    REQUIRE_FALSE(size.empty());
++    REQUIRE_FALSE(mode.empty());
++    const auto n = static_cast<unsigned>(std::stoul(size));
++    const auto wave = !waveValue.empty() ? static_cast<unsigned>(std::stoul(waveValue)) : 0;
++    const bool capture = std::string_view{mode} == "1";
++    Fixture3 f;
++    expandTickFixture(f, n, wave);
++    const auto config = f.configuration();
++    const auto prepared = f.prepared();
++    const Tick target{wave ? 2503 : 1203};
++    std::optional<SnapshotDTO> expected;
++    for (unsigned attempt = 0; attempt < 3; ++attempt) {
++        auto made = detail::ExecutionKernel::prepare(config, prepared);
++        REQUIRE(made);
++        const auto start = std::chrono::steady_clock::now();
++        auto result = capture ? (*made)->advance(target) : (*made)->advanceForReplay(target);
++        const auto end = std::chrono::steady_clock::now();
++        REQUIRE(result);
++        const auto archive = (*made)->archive();
++        const auto points = detail::ExecutionKernel::tickPointCount(archive);
++        CHECK(points == (capture ? (wave ? 4 : 1) : 0));
++        auto snapshot = (*made)->snapshot();
++        REQUIRE(snapshot);
++        if (expected)
++            CHECK(sameSnapshot(*expected, (*snapshot)->dto));
++        else
++            expected = (*snapshot)->dto;
++        std::cout << "{\"event\":\"r3c.writer\",\"n\":" << n << ",\"wave\":" << wave
++                  << ",\"capture\":" << capture << ",\"attempt\":" << attempt << ",\"advance_us\":"
++                  << std::chrono::duration<double, std::micro>(end - start).count()
++                  << ",\"points\":" << points << "}\n";
++    }
++    auto wire =
++        encodeSnapshot(detail::KernelTestAccess::snapshotValue(*expected, {config, prepared}));
++    REQUIRE(wire);
++    std::cout << "R3_WRITER_WIRE " << wire->size() << " " << cuexis::core::detail::sha256Hex(*wire)
++              << "\n";
++}
++
++TEST_CASE("R3c payload limit refuses optional points without changing replay", "[r3c-budget]") {
++    Fixture3 f;
++    expandTickFixture(f, 256);
++    auto made = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
++    REQUIRE(made);
++    REQUIRE((*made)->setTickPayloadLimitForProbe(0));
++    REQUIRE((*made)->advance(Tick{1203}));
++    auto archive = (*made)->archive();
++    CHECK(detail::ExecutionKernel::tickPointCount(archive) == 0);
++    CHECK(detail::ExecutionKernel::tickPayloadBytes(archive) == 0);
++    const ReplayArchive external{archive.anchor(),
++                                 std::make_shared<const RecoveryInputs>(archive.dependencies())};
++    auto cut = replayCutAt(archive, Tick{1003});
++    auto actual = detail::ExecutionKernel::seekCandidate(archive, Tick{1003}, nullptr, &cut);
++    auto expected = detail::ExecutionKernel::seekCandidate(external, Tick{1003}, nullptr, &cut);
++    REQUIRE(actual);
++    REQUIRE(expected);
++    auto a = (*actual)->snapshot();
++    auto b = (*expected)->snapshot();
++    REQUIRE(a);
++    REQUIRE(b);
++    CHECK(sameSnapshot((*a)->dto, (*b)->dto));
++}
++
++TEST_CASE("R3c payload lease counts retired generations and refunds at last owner",
++          "[r3c-budget]") {
++    Fixture3 f;
++    expandTickFixture(f, 1536, 256);
++    auto made = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
++    REQUIRE(made);
++    auto writer = std::move(*made);
++    auto empty = writer->archive();
++    REQUIRE(writer->advance(Tick{904}));
++    auto oldest = writer->archive();
++    const auto first = detail::ExecutionKernel::tickPayloadBytes(oldest);
++    REQUIRE(first > 0);
++    std::vector<ReplayArchive> generations;
++    for (const auto h : {1104, 1304, 1504, 1704, 1904}) {
++        REQUIRE(writer->advance(Tick{h}));
++        generations.push_back(writer->archive());
++        CHECK(detail::ExecutionKernel::tickPayloadBytes(empty) <=
++              detail::ExecutionKernel::tickPayloadLimit(empty));
++    }
++    const auto before = detail::ExecutionKernel::tickPayloadBytes(empty);
++    CHECK(before > first);
++    CHECK_FALSE(writer->setTickPayloadLimitForProbe(0));
++    writer.reset();
++    CHECK(detail::ExecutionKernel::tickPayloadBytes(empty) == before);
++    generations.clear();
++    CHECK(detail::ExecutionKernel::tickPayloadBytes(empty) == first);
++    oldest = empty;
++    CHECK(detail::ExecutionKernel::tickPayloadBytes(empty) == 0);
++}
++
++TEST_CASE("R3c capacity visit keeps entry storage alive during reentrant mutation",
++          "[r3c-budget]") {
++    detail::SharedSequence<int> values;
++    for (int i = 0; i < 130; ++i)
++        values.push_back(i);
++    auto saved = values;
++    std::vector<std::pair<std::size_t, std::size_t>> expected, actual;
++    saved.visitStorageCapacity([&](auto n, auto width) { expected.emplace_back(n, width); });
++    values.visitStorageCapacity([&](auto n, auto width) {
++        actual.emplace_back(n, width);
++        values.clear();
++        values.push_back(7);
++    });
++    CHECK(actual == expected);
++    CHECK(saved.size() == 130);
++    CHECK(saved[129] == 129);
++    CHECK(values.size() == 1);
++    CHECK(values[0] == 7);
++}
++
++TEST_CASE("R3c nonzero remaining budget preserves old point and rejects larger new point",
++          "[r3c-budget]") {
++    Fixture3 f;
++    expandTickFixture(f, 1536, 256);
++    const auto config = f.configuration();
++    const auto prepared = f.prepared();
++    auto calibrate = detail::ExecutionKernel::prepare(config, prepared);
++    REQUIRE(calibrate);
++    REQUIRE((*calibrate)->advance(Tick{904}));
++    const auto first = detail::ExecutionKernel::tickPayloadBytes((*calibrate)->archive());
++    REQUIRE(first > 0);
++    auto made = detail::ExecutionKernel::prepare(config, prepared);
++    REQUIRE(made);
++    REQUIRE((*made)->setTickPayloadLimitForProbe(first * 2 - 1));
++    REQUIRE((*made)->advance(Tick{904}));
++    const auto original = (*made)->archive();
++    REQUIRE(detail::ExecutionKernel::tickPointCount(original) == 1);
++    REQUIRE(detail::ExecutionKernel::tickPayloadBytes(original) == first);
++    REQUIRE((*made)->advance(Tick{1104}));
++    auto archive = (*made)->archive();
++    CHECK(detail::ExecutionKernel::tickPointCount(archive) == 1);
++    CHECK(detail::ExecutionKernel::tickPayloadBytes(archive) == first);
++    const ReplayArchive external{archive.anchor(),
++                                 std::make_shared<const RecoveryInputs>(archive.dependencies())};
++    const auto cut = replayCutAt(archive, Tick{1103});
++    auto a = detail::ExecutionKernel::seekCandidate(archive, Tick{1103}, nullptr, &cut);
++    auto b = detail::ExecutionKernel::seekCandidate(external, Tick{1103}, nullptr, &cut);
++    REQUIRE(a);
++    REQUIRE(b);
++    auto av = (*a)->snapshot();
++    auto bv = (*b)->snapshot();
++    REQUIRE(av);
++    REQUIRE(bv);
++    CHECK(sameSnapshot((*av)->dto, (*bv)->dto));
++}
++
++TEST_CASE("R3c seek fork shares preparation payload charges", "[r3c-budget]") {
++    Fixture3 f;
++    expandTickFixture(f, 1536, 256);
++    auto made = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
++    REQUIRE(made);
++    auto empty = (*made)->archive();
++    REQUIRE((*made)->advance(Tick{904}));
++    auto original = (*made)->archive();
++    const auto first = detail::ExecutionKernel::tickPayloadBytes(empty);
++    REQUIRE(first > 0);
++    const auto cut = replayCutAt(original, Tick{904});
++    auto branch = detail::ExecutionKernel::seekCandidate(original, Tick{904}, nullptr, &cut);
++    REQUIRE(branch);
++    REQUIRE((*branch)->advance(Tick{1104}));
++    auto later = (*branch)->archive();
++    const auto both = detail::ExecutionKernel::tickPayloadBytes(empty);
++    CHECK(both > first);
++    CHECK(detail::ExecutionKernel::tickPayloadBytes(later) == both);
++    made->reset();
++    branch->reset();
++    original = empty;
++    CHECK(detail::ExecutionKernel::tickPayloadBytes(empty) == both - first);
++    later = empty;
++    CHECK(detail::ExecutionKernel::tickPayloadBytes(empty) == 0);
++}
++
++TEST_CASE("R3c append only floor requires shared complete pages and charges partial tail",
++          "[r3c-budget]") {
++    detail::SharedSequence<std::uint64_t> original;
++    for (std::uint64_t i = 0; i < 130; ++i)
++        original.push_back(i);
++    auto later = original;
++    std::size_t full = 0, retained = 0;
++    original.visitStorageCapacity([&](auto n, auto width) { full += n * width; });
++    const auto first =
++        original.visitAppendOnlyRetention([&](auto n, auto width) { retained += n * width; });
++    CHECK(first == 128);
++    CHECK(retained < full);
++    later.push_back(130);
++    CHECK(original.sharesCompletePrefixPagesWith(later));
++    later.update(129, [](auto& x) { x = 900; });
++    CHECK(original.sharesCompletePrefixPagesWith(later));
++    later.update(1, [](auto& x) { x = 901; });
++    CHECK_FALSE(original.sharesCompletePrefixPagesWith(later));
++    detail::SharedSequence<std::uint64_t> sameValues;
++    for (std::uint64_t i = 0; i < 130; ++i)
++        sameValues.push_back(i);
++    CHECK_FALSE(original.sharesCompletePrefixPagesWith(sameValues));
++    CHECK_FALSE(original.sharesCompletePrefixPagesWith({}));
++    detail::SharedSequence<std::uint64_t> empty;
++    CHECK(empty.sharesCompletePrefixPagesWith(original));
++    CHECK(empty.visitAppendOnlyRetention([](auto, auto) {}) == 0);
++    detail::SharedSequence<std::uint64_t> exact;
++    for (std::uint64_t i = 0; i < 128; ++i)
++        exact.push_back(i);
++    CHECK(exact.visitAppendOnlyRetention([](auto, auto) {}) == 128);
++    auto saved = original;
++    std::size_t reentrant = 0;
++    CHECK(original.visitAppendOnlyRetention([&](auto n, auto width) {
++        reentrant += n * width;
++        original.clear();
++        original.push_back(7);
++    }) == 128);
++    CHECK(reentrant == retained);
++    CHECK(saved.size() == 130);
++}
++
++TEST_CASE("R3c ordinary writer after origin archive release retains exact Fact floor",
++          "[r3c-budget]") {
++    Fixture3 f;
++    expandTickFixture(f, 1536, 256);
++    auto made = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
++    REQUIRE(made);
++    auto empty = (*made)->archive();
++    REQUIRE((*made)->advance(Tick{2503}));
++    auto archive = (*made)->archive();
++    auto wire = encodeReplay(archive);
++    REQUIRE(wire);
++    auto independent = decodeReplay(*wire, archive.dependencies());
++    REQUIRE(independent);
++    CHECK(independent->anchor() != archive.anchor());
++    std::weak_ptr<const ReplayData> original = archive.anchor();
++    const auto cut = replayCutAt(archive, Tick{1504});
++    auto branch = detail::ExecutionKernel::seekCandidate(archive, Tick{1504}, nullptr, &cut);
++    REQUIRE(branch);
++    auto expected = detail::ExecutionKernel::seekCandidate(*independent, Tick{1504}, nullptr, &cut);
++    REQUIRE(expected);
++    made->reset();
++    archive = empty;
++    CHECK_FALSE(original.expired());
++    REQUIRE((*branch)->advance(Tick{2504}));
++    CHECK(original.expired());
++    REQUIRE((*expected)->advanceForReplay(Tick{2504}));
++    auto a = (*branch)->snapshot();
++    auto b = (*expected)->snapshot();
++    REQUIRE(a);
++    REQUIRE(b);
++    CHECK(sameSnapshot((*a)->dto, (*b)->dto));
++    const auto av = (*branch)->archive();
++    const auto bv = (*expected)->archive();
++    CHECK(sameReplayHistory(av, bv));
++    auto aw = encodeReplay(av);
++    auto bw = encodeReplay(bv);
++    REQUIRE(aw);
++    REQUIRE(bw);
++    CHECK(*aw == *bw);
++}
++
++TEST_CASE("R3c cross generation admission reports each archive own payload", "[r3c-cross]") {
++    Fixture3 f;
++    expandTickFixture(f, 1536, 256);
++    auto made = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
++    REQUIRE(made);
++    auto writer = std::move(*made);
++    auto empty = writer->archive();
++    CHECK(detail::ExecutionKernel::tickPayloadAdmittedBytes(empty) == 0);
++    CHECK(detail::ExecutionKernel::tickAdmissionRefused(empty) == 0);
++    std::vector<ReplayArchive> generations;
++    for (const auto h : {904, 1104, 1304, 1504, 1704, 1904}) {
++        REQUIRE(writer->advance(Tick{h}));
++        generations.push_back(writer->archive());
++    }
++    std::size_t previous = 0;
++    for (const auto& archive : generations) {
++        const auto points = detail::ExecutionKernel::tickPointCount(archive);
++        const auto admitted = detail::ExecutionKernel::tickPayloadAdmittedBytes(archive);
++        const auto live = detail::ExecutionKernel::tickPayloadBytes(archive);
++        INFO(points << " " << admitted << " " << live);
++        REQUIRE(points > 0);
++        REQUIRE(points <= kTickSlots);
++        CHECK(admitted > 0);
++        CHECK(admitted >= previous);
++        CHECK(admitted <= live);
++        CHECK(live <= detail::ExecutionKernel::tickPayloadLimit(archive));
++        CHECK(detail::ExecutionKernel::tickAdmissionRefused(archive) == 0);
++        previous = admitted;
++    }
++    const auto liveBefore = detail::ExecutionKernel::tickPayloadBytes(empty);
++    const auto firstAdmitted = detail::ExecutionKernel::tickPayloadAdmittedBytes(generations[0]);
++    CHECK(liveBefore > firstAdmitted);
++    generations[0] = empty;
++    CHECK(detail::ExecutionKernel::tickPayloadBytes(empty) == liveBefore);
++    writer.reset();
++    CHECK(detail::ExecutionKernel::tickPayloadBytes(empty) == liveBefore);
++    generations[1] = empty;
++    generations[2] = empty;
++    CHECK(detail::ExecutionKernel::tickPayloadBytes(empty) == liveBefore);
++    generations.clear();
++    CHECK(detail::ExecutionKernel::tickPayloadBytes(empty) == 0);
++    CHECK(detail::ExecutionKernel::tickPayloadAdmittedBytes(empty) == 0);
++}
++
++TEST_CASE("R3c cross generation admission keeps retained generations under the limit",
++          "[r3c-cross]") {
++    Fixture3 f;
++    expandTickFixture(f, 1536, 256);
++    const auto config = f.configuration();
++    const auto prepared = f.prepared();
++    auto calibrate = detail::ExecutionKernel::prepare(config, prepared);
++    REQUIRE(calibrate);
++    REQUIRE((*calibrate)->advance(Tick{904}));
++    const auto first = detail::ExecutionKernel::tickPayloadBytes((*calibrate)->archive());
++    REQUIRE(first > 0);
++    // Room for more than the four writer slots: old archives must keep evicted points alive
++    // and still stay inside the same preparation limit.
++    const auto limit = first * 12;
++    auto made = detail::ExecutionKernel::prepare(config, prepared);
++    REQUIRE(made);
++    REQUIRE((*made)->setTickPayloadLimitForProbe(limit));
++    auto empty = (*made)->archive();
++    CHECK(detail::ExecutionKernel::tickPayloadLimit(empty) == limit);
++    std::vector<ReplayArchive> generations;
++    std::size_t peak = 0;
++    for (const auto h : {904, 1104, 1304, 1504, 1704, 1904}) {
++        REQUIRE((*made)->advance(Tick{h}));
++        generations.push_back((*made)->archive());
++        const auto live = detail::ExecutionKernel::tickPayloadBytes(empty);
++        CHECK(live <= limit);
++        peak = std::max(peak, live);
++    }
++    CHECK(peak > detail::ExecutionKernel::tickPayloadAdmittedBytes(generations[0]));
++    CHECK(detail::ExecutionKernel::tickPointCount(generations.back()) > 1);
++    // Exact replay of every retained generation stays inside the same bound.
++    for (const auto& archive : generations) {
++        const ReplayArchive external{
++            archive.anchor(), std::make_shared<const RecoveryInputs>(archive.dependencies())};
++        for (const auto h : {904, 1504, 1904}) {
++            const auto cut = replayCutAt(archive, Tick{h});
++            auto a = detail::ExecutionKernel::seekCandidate(archive, Tick{h}, nullptr, &cut);
++            auto b = detail::ExecutionKernel::seekCandidate(external, Tick{h}, nullptr, &cut);
++            REQUIRE(a);
++            REQUIRE(b);
++            auto av = (*a)->snapshot();
++            auto bv = (*b)->snapshot();
++            REQUIRE(av);
++            REQUIRE(bv);
++            CHECK(sameSnapshot((*av)->dto, (*bv)->dto));
++            CHECK(detail::ExecutionKernel::tickPayloadBytes(empty) <= limit);
++        }
++    }
++    made->reset();
++    generations.clear();
++    CHECK(detail::ExecutionKernel::tickPayloadBytes(empty) == 0);
++}
++
++TEST_CASE("R3c cross generation refusal keeps exact replay bytes", "[r3c-cross]") {
++    Fixture3 f;
++    expandTickFixture(f, 1536, 256);
++    auto made = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
++    REQUIRE(made);
++    REQUIRE((*made)->setTickPayloadLimitForProbe(0));
++    std::vector<ReplayArchive> generations;
++    for (const auto h : {904, 1104, 1904}) {
++        REQUIRE((*made)->advance(Tick{h}));
++        generations.push_back((*made)->archive());
++        CHECK(detail::ExecutionKernel::tickPointCount(generations.back()) == 0);
++        CHECK(detail::ExecutionKernel::tickPayloadAdmittedBytes(generations.back()) == 0);
++        CHECK(detail::ExecutionKernel::tickPayloadBytes(generations.back()) == 0);
++    }
++    const auto& last = generations.back();
++    const ReplayArchive external{last.anchor(),
++                                 std::make_shared<const RecoveryInputs>(last.dependencies())};
++    const auto cut = replayCutAt(last, Tick{1904});
++    auto actual = detail::ExecutionKernel::seekCandidate(last, Tick{1904}, nullptr, &cut);
++    auto expected = detail::ExecutionKernel::seekCandidate(external, Tick{1904}, nullptr, &cut);
++    REQUIRE(actual);
++    REQUIRE(expected);
++    CHECK((*actual)->tickRestoreCount() == 0);
++    CHECK(sameReplayHistory((*actual)->archive(), (*expected)->archive()));
++    made->reset();
++    generations.clear();
++    CHECK(detail::ExecutionKernel::tickPayloadBytes(external) == 0);
++}
++
++TEST_CASE("R3c unsealed and independent archives admit no payload", "[r3c-cross]") {
++    Fixture3 f;
++    expandTickFixture(f, 256);
++    auto made = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
++    REQUIRE(made);
++    REQUIRE((*made)->advance(Tick{1203}));
++    const auto archive = (*made)->archive();
++    REQUIRE(detail::ExecutionKernel::tickPointCount(archive) > 0);
++    const ReplayArchive external{archive.anchor(),
++                                 std::make_shared<const RecoveryInputs>(archive.dependencies())};
++    CHECK(detail::ExecutionKernel::tickPointCount(external) == 0);
++    CHECK(detail::ExecutionKernel::tickPayloadAdmittedBytes(external) == 0);
++    CHECK(detail::ExecutionKernel::tickPayloadBytes(external) == 0);
++    CHECK(detail::ExecutionKernel::tickPayloadLimit(external) == 0);
++    const auto wire = encodeReplay(archive);
++    REQUIRE(wire);
++    auto decoded = decodeReplay(*wire, archive.dependencies());
++    REQUIRE(decoded);
++    const auto replayCut = replayCutAt(*decoded, Tick{1303});
++    auto replayed =
++        detail::ExecutionKernel::seekCandidate(*decoded, Tick{1303}, nullptr, &replayCut);
++    REQUIRE(replayed);
++    const auto independent = (*replayed)->archive();
++    CHECK(independent.anchor() != archive.anchor());
++    CHECK(detail::ExecutionKernel::tickPointCount(independent) == 0);
++    CHECK(detail::ExecutionKernel::tickPayloadAdmittedBytes(independent) == 0);
++    CHECK(detail::ExecutionKernel::tickPayloadBytes(independent) == 0);
++    // A diagnostic-controlled writer never stages payload either.
++    auto controlled = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
++    REQUIRE(controlled);
++    REQUIRE((*controlled)->inject({}));
++    REQUIRE((*controlled)->advance(Tick{1203}));
++    const auto controlledArchive = (*controlled)->archive();
++    CHECK(detail::ExecutionKernel::tickPointCount(controlledArchive) == 0);
++    CHECK(detail::ExecutionKernel::tickPayloadAdmittedBytes(controlledArchive) == 0);
++    CHECK(detail::ExecutionKernel::tickPayloadBytes(controlledArchive) == 0);
++}
++
++TEST_CASE("R3c cross generation admission republishes inherited branch index", "[r3c-cross]") {
++    Fixture3 f;
++    expandTickFixture(f, 1536, 256);
++    auto made = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
++    REQUIRE(made);
++    REQUIRE((*made)->advance(Tick{1504}));
++    const auto archive = (*made)->archive();
++    const auto points = detail::ExecutionKernel::tickPointCount(archive);
++    const auto admitted = detail::ExecutionKernel::tickPayloadAdmittedBytes(archive);
++    REQUIRE(points > 1);
++    REQUIRE(admitted > 0);
++    const auto cut = replayCutAt(archive, Tick{1504});
++    auto branch = detail::ExecutionKernel::seekCandidate(archive, Tick{1504}, nullptr, &cut);
++    REQUIRE(branch);
++    // Before divergence the branch republishes the source generation through its own admission.
++    const auto inherited = (*branch)->archive();
++    CHECK(detail::ExecutionKernel::tickPointCount(inherited) == points);
++    CHECK(detail::ExecutionKernel::tickPayloadAdmittedBytes(inherited) == admitted);
++    CHECK(detail::ExecutionKernel::tickAdmissionRefused(inherited) == 0);
++    CHECK(detail::ExecutionKernel::tickPayloadBytes(inherited) ==
++          detail::ExecutionKernel::tickPayloadBytes(archive));
++    // After divergence the branch seals its own journal and admits only its own slots.
++    REQUIRE((*branch)->advance(Tick{1704}));
++    auto diverged = (*branch)->archive();
++    CHECK(diverged.anchor() != archive.anchor());
++    CHECK(detail::ExecutionKernel::tickPayloadAdmittedBytes(diverged) > 0);
++    CHECK(detail::ExecutionKernel::tickPayloadAdmittedBytes(diverged) <=
++          detail::ExecutionKernel::tickPayloadBytes(diverged));
++    CHECK(detail::ExecutionKernel::tickPayloadBytes(diverged) <=
++          detail::ExecutionKernel::tickPayloadLimit(diverged));
++    branch->reset();
++    diverged = archive;
++    made->reset();
++    CHECK(detail::ExecutionKernel::tickPayloadBytes(archive) == admitted);
++}
++
++TEST_CASE("R3c accounting diagnostic", "[.][r3c-accounting]") {
++    std::string barrier;
++    REQUIRE(static_cast<bool>(std::getline(std::cin, barrier)));
++    const auto size = cuexis::test_support::environmentVariable("R3C_ACCOUNTING_N");
++    REQUIRE_FALSE(size.empty());
++    const auto n = static_cast<unsigned>(std::stoul(size));
++    const auto waveValue = cuexis::test_support::environmentVariable("R3C_ACCOUNTING_WAVE");
++    const auto wave =
++        !waveValue.empty() ? static_cast<unsigned>(std::stoul(waveValue)) : (n == 1536 ? 256U : 0U);
++    const auto limitValue = cuexis::test_support::environmentVariable("R3C_ACCOUNTING_LIMIT_MIB");
++    const auto limitMib = !limitValue.empty() ? static_cast<unsigned>(std::stoul(limitValue)) : 0U;
++    const auto captureValue = cuexis::test_support::environmentVariable("R3C_ACCOUNTING_CAPTURE");
++    const bool capture = captureValue.empty() || std::string_view{captureValue} != "0";
++    // Stepwise mode: every printed line is followed by a barrier so an external sampler can read
++    // the process at that exact point instead of racing the whole run.
++    const bool stepwise = !cuexis::test_support::environmentVariable("R3C_ACCOUNTING_STEP").empty();
++    const auto visit = [stepwise] {
++        if (stepwise) {
++            std::string step;
++            REQUIRE(static_cast<bool>(std::getline(std::cin, step)));
++        }
++    };
++    Fixture3 f;
++    expandTickFixture(f, n, wave);
++    const auto config = f.configuration();
++    const auto prepared = f.prepared();
++    auto made = detail::ExecutionKernel::prepare(config, prepared);
++    REQUIRE(made);
++    std::optional<ReplayArchive> probe;
++    if (limitMib) {
++        // Quota probe: only a quiescent preparation may retune its own admission limit.
++        REQUIRE((*made)->setTickPayloadLimitForProbe(static_cast<std::size_t>(limitMib) << 20));
++    }
++    probe.emplace((*made)->archive());
++    std::vector<ReplayArchive> generations;
++    for (const auto h : {904, 1104, 1304, 1504, 1704, 1904}) {
++        const auto advanced =
++            capture ? (*made)->advance(Tick{h}) : (*made)->advanceForReplay(Tick{h});
++        REQUIRE(advanced);
++        generations.push_back((*made)->archive());
++        const auto& archive = generations.back();
++        std::cout << "{\"event\":\"r3c.accounting\",\"n\":" << n << ",\"wave\":" << wave
++                  << ",\"capture\":" << (capture ? 1 : 0) << ",\"horizon\":" << h
++                  << ",\"points\":" << detail::ExecutionKernel::tickPointCount(archive)
++                  << ",\"admitted_bytes\":"
++                  << detail::ExecutionKernel::tickPayloadAdmittedBytes(archive)
++                  << ",\"live_bytes\":" << detail::ExecutionKernel::tickPayloadBytes(archive)
++                  << ",\"limit\":" << detail::ExecutionKernel::tickPayloadLimit(archive)
++                  << ",\"refused\":" << detail::ExecutionKernel::tickAdmissionRefused(archive)
++                  << "}" << std::endl;
++        visit();
++    }
++    made->reset();
++    std::cout << "{\"event\":\"r3c.accounting_release\",\"n\":" << n << ",\"wave\":" << wave
++              << ",\"live_bytes\":" << detail::ExecutionKernel::tickPayloadBytes(*probe) << "}"
++              << std::endl;
++    visit();
++    generations.clear();
++    std::cout << "{\"event\":\"r3c.accounting_final\",\"n\":" << n << ",\"wave\":" << wave
++              << ",\"live_bytes\":" << detail::ExecutionKernel::tickPayloadBytes(*probe) << "}"
++              << std::endl;
++    // Optional second barrier: lets an external sampler read the process after every owner is
++    // released, without keeping any measurement code inside the product test.
++    if (!cuexis::test_support::environmentVariable("R3C_ACCOUNTING_HOLD").empty()) {
++        std::string released;
++        REQUIRE(static_cast<bool>(std::getline(std::cin, released)));
++    }
++}

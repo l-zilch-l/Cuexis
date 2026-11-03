@@ -1,0 +1,9 @@
+n=1000 wave=0 limit=0MiB capture=1: 8 events private_delta=69.43MiB
+n=1536 wave=256 limit=0MiB capture=1: 8 events private_delta=100.83MiB
+n=1536 wave=256 limit=0MiB capture=0: 8 events private_delta=100.70MiB
+n=40000 wave=0 limit=0MiB capture=1: 8 events private_delta=2694.57MiB
+n=40000 wave=256 limit=0MiB capture=1: 8 events private_delta=1877.87MiB
+n=40000 wave=256 limit=0MiB capture=0: 8 events private_delta=1877.40MiB
+n=40000 wave=256 limit=256MiB capture=1: 8 events private_delta=1876.84MiB
+n=40000 wave=256 limit=512MiB capture=1: 8 events private_delta=1889.43MiB
+wrote tools\accounting-results.json

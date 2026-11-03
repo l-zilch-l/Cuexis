@@ -248,7 +248,18 @@ auto PlaybackSession::acceptExecutionControl(const ControlRequest& request)
         return core::unexpected(core::Error{
             "host.rpa.context_stale", "A new Close cannot reuse an older control fence identity"});
     // Reserve the complete binding before K1 changes any execution state.
+    // GCC inlines the copy of the engaged optional<ReplaySourceIdentity> (a shared_ptr holder) and
+    // then reports reads of its control block as possibly uninitialised. The value is a complete
+    // copy of a const request that was fully constructed by the caller, so this is a false
+    // positive; the diagnostic is disabled around this one statement instead of the whole file.
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     auto binding = request;
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
     if (s.hostFence && request.kind != ControlKind::close)
         return core::unexpected(
             core::Error{"host.rpa.control_pending", "Only Close can retire an unresolved fence"});

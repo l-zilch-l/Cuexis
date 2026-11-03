@@ -165,7 +165,7 @@ constexpr std::array parameterizedPresentationLimitRules{
                                   &PresentationCapabilities::maxTextureBindings},
 };
 
-inline [[nodiscard]] auto prepareExceptionError(std::string_view operation, bool allocationFailure,
+[[nodiscard]] inline auto prepareExceptionError(std::string_view operation, bool allocationFailure,
                                                 const std::exception* exception = nullptr)
     -> core::Error {
     auto error = core::Error{allocationFailure ? "playback.prepare.budget_exceeded"

@@ -21,14 +21,13 @@ namespace cuexis::chart {
 
 using core::DiagnosticSeverity;
 
-[[nodiscard]] void addError(core::Diagnostics& diagnostics, std::string code, std::string message,
-                            std::string path);
+void addError(core::Diagnostics& diagnostics, std::string code, std::string message,
+              std::string path);
 
-[[nodiscard]] void addWarning(core::Diagnostics& diagnostics, std::string code, std::string message,
-                              std::string path);
+void addWarning(core::Diagnostics& diagnostics, std::string code, std::string message,
+                std::string path);
 
-[[nodiscard]] void addError(core::Diagnostics& diagnostics, const core::Error& error,
-                            std::string path);
+void addError(core::Diagnostics& diagnostics, const core::Error& error, std::string path);
 
 [[nodiscard]] auto isChartEntityUuid(std::string_view value) noexcept -> bool;
 

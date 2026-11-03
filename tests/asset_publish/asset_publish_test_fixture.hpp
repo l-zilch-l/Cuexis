@@ -58,7 +58,7 @@ template <typename T> void requireOk(const T& result) {
     }
 }
 
-inline [[nodiscard]] auto scratchRoot(std::string_view name) -> fs::path {
+[[nodiscard]] inline auto scratchRoot(std::string_view name) -> fs::path {
     const auto root = fs::temp_directory_path() / "cuexis-s6e3-asset-publish" / std::string{name};
     std::error_code status;
     fs::remove_all(root, status);
@@ -67,7 +67,7 @@ inline [[nodiscard]] auto scratchRoot(std::string_view name) -> fs::path {
     return root;
 }
 
-inline [[nodiscard]] auto readBytes(const fs::path& path) -> std::vector<std::byte> {
+[[nodiscard]] inline auto readBytes(const fs::path& path) -> std::vector<std::byte> {
     std::ifstream stream{path, std::ios::binary};
     REQUIRE(stream.good());
     stream.seekg(0, std::ios::end);
@@ -81,7 +81,7 @@ inline [[nodiscard]] auto readBytes(const fs::path& path) -> std::vector<std::by
     return bytes;
 }
 
-inline [[nodiscard]] auto asBytes(std::string_view text) -> std::vector<std::byte> {
+[[nodiscard]] inline auto asBytes(std::string_view text) -> std::vector<std::byte> {
     const auto* data = reinterpret_cast<const std::byte*>(text.data());
     return std::vector<std::byte>{data, data + text.size()};
 }
@@ -133,18 +133,18 @@ class ScopedEnv final {
     std::string name_;
 };
 
-inline [[nodiscard]] auto fixtureProjectRoot() -> fs::path {
+[[nodiscard]] inline auto fixtureProjectRoot() -> fs::path {
     return fs::path{CUEXIS_SOURCE_DIR} / "tests" / "fixtures" / "chart_format_update" /
            "static_project";
 }
 
-inline [[nodiscard]] auto textEntry(std::string path, const fs::path& file)
+[[nodiscard]] inline auto textEntry(std::string path, const fs::path& file)
     -> cuexis::cxc::CxcWriteEntry {
     return cuexis::cxc::CxcWriteEntry{std::move(path), readBytes(file)};
 }
 
 // The committed static fixture project is a complete, valid v4 CXC input.
-inline [[nodiscard]] auto staticProjectEntries() -> std::vector<cuexis::cxc::CxcWriteEntry> {
+[[nodiscard]] inline auto staticProjectEntries() -> std::vector<cuexis::cxc::CxcWriteEntry> {
     const auto root = fixtureProjectRoot();
     return {
         textEntry("cuexis.project.json", root / "cuexis.project.json"),
@@ -161,7 +161,7 @@ struct CandidateFixture final {
 
 // A real packed candidate chart plus the registered extension document that declares it, so the
 // package closure admits the entry through the candidate path rather than a test shortcut.
-inline [[nodiscard]] auto candidateFixture() -> CandidateFixture {
+[[nodiscard]] inline auto candidateFixture() -> CandidateFixture {
     using namespace cuexis::chart;
     CanonicalSemanticChart chart;
     chart.chartId = ChartId{"019b0000-0000-7abc-8def-000000000001"};
@@ -198,17 +198,17 @@ inline [[nodiscard]] auto candidateFixture() -> CandidateFixture {
     return CandidateFixture{std::move(*encoded), json.str()};
 }
 
-inline [[nodiscard]] auto loadPackage(const fs::path& path) -> cuexis::cxc::CxcPackage {
+[[nodiscard]] inline auto loadPackage(const fs::path& path) -> cuexis::cxc::CxcPackage {
     auto loaded = cuexis::cxc::CxcPackageLoader::loadFile(path);
     REQUIRE(loaded.package.has_value());
     return *loaded.package;
 }
 
-inline [[nodiscard]] auto errorCode(const cuexis::core::Error& error) -> std::string {
+[[nodiscard]] inline auto errorCode(const cuexis::core::Error& error) -> std::string {
     return std::string{error.code()};
 }
 
-inline [[nodiscard]] auto waitForFile(const fs::path& path, std::chrono::milliseconds timeout)
+[[nodiscard]] inline auto waitForFile(const fs::path& path, std::chrono::milliseconds timeout)
     -> bool {
     const auto deadline = std::chrono::steady_clock::now() + timeout;
     while (std::chrono::steady_clock::now() < deadline) {
@@ -221,7 +221,7 @@ inline [[nodiscard]] auto waitForFile(const fs::path& path, std::chrono::millise
     return false;
 }
 
-inline [[nodiscard]] auto readEnv(std::string_view name) -> std::string {
+[[nodiscard]] inline auto readEnv(std::string_view name) -> std::string {
     const std::string key{name};
     // _dupenv_s is MSVC-only; MinGW links no such symbol.
 #if defined(_MSC_VER)

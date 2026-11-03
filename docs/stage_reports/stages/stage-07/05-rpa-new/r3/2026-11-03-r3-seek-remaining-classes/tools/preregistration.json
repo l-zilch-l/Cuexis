@@ -1,0 +1,66 @@
+{
+  "scope": "Third R3 Seek increment: the three pre-declared Seek classes that the earlier hot/cold gate left uncovered. Instrument is the repository's own PD5 scripted seek timing probe compiled into cuexis_execution_device_probe, so the backend is the real OpenGL adapter, the window is hidden and vsync is off. Diagnostic/test-only: it decides the 20 ms seek gate for these three classes only and does not close R3.",
+  "registered_local": "2026-11-03 19:55",
+  "registered_utc": "2026-11-03T11:55Z",
+  "source": {
+    "head": "c085688a3a58bc99d531f66aefb1d90ed73e33b7",
+    "instrument": "out/build/rpa-candidate-release/bin/cuexis_execution_device_probe.exe",
+    "instrument_build": "Release, STATIC, CUEXIS_ENABLE_CHART_V5_CANDIDATE=ON, CUEXIS_PD_METRICS_TEST_ONLY=OFF, developer tools OFF",
+    "why_this_instrument": "tests/pd/pd5_device_probe.cpp defines CUEXIS_PD5_DEVICE and includes tests/pd/pd5_host_probe.cpp, so the seek runs through app/player ExecutionHost on OpenGlBackend. The plain cuexis_pd_host_probe target compiles the CPU TestPresentationRenderer instead and cannot stand for the 20 ms gate.",
+    "authority": "docs/stage_plans/active/stage-07/05-rpa-new/plan.md 9.2 (applicable Seek <= 20 ms) and the five pre-declared classes; docs/stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-01-r3-pause-prime-and-seek-gate.md section 2 (existing protocol for the hot and cold classes)"
+  },
+  "classes": [
+    {
+      "id": "natural-checkpoint-first-use",
+      "plan_name": "ben hui hua zi ran checkpoint shou ci shi yong",
+      "environment": "CUEXIS_PD5_SEEK_CLASS=natural",
+      "fixture": "One certificate-carrying checkpoint minted by JudgementSession::checkpoint from the session's own archive at horizon 7000, handed to every seek as its only hint. A certified restore requires the checkpoint cut to end exactly on a record horizon, so 7000 (the fixture's first record) is the earliest usable one; the first target at or after it is 8103 and carries the first-use cost. Minting happens before the request is timed; certificate consumption, cut validation and restore happen inside it.",
+      "why_it_is_the_class": "The checkpoint comes from this session's own archive and is consumed for the first time in this process, so the request pays first-use certification instead of a repeat hot restore."
+    },
+    {
+      "id": "external-archive-first-certification",
+      "plan_name": "wai bu gui dang shou ci ren zheng",
+      "environment": "CUEXIS_PD5_SEEK_CLASS=external",
+      "fixture": "The session archive is serialized to bytes and decoded back through GameplayReplay::fromBytes, and the decoded owner is the source of every measured seek. Decoding happens before the request is timed.",
+      "why_it_is_the_class": "The decoded archive is a distinct owning source with no native checkpoint index, so the first seek on it must fully certify the external source. No hint is passed."
+    },
+    {
+      "id": "no-legal-checkpoint-fallback",
+      "plan_name": "wu he fa checkpoint hui tui",
+      "environment": "CUEXIS_PD5_SEEK_CLASS=fallback",
+      "fixture": "The only hint is a certificate minted from an independent decoded archive at the last target horizon. The sought archive is the session's own, so neither the source identity nor (for every earlier target) the horizon can match.",
+      "why_it_is_the_class": "A hint that can never be legal must be rejected and the request must still finish from the legal record/origin path inside 20 ms, with the same published state."
+    }
+  ],
+  "protocol": {
+    "scales_records": [
+      129,
+      1024
+    ],
+    "processes_per_class_scale": 6,
+    "seeks_per_process": 16,
+    "every_process_is_fresh": true,
+    "no_retries": true,
+    "measurement_boundary": "request_to_present_us runs from immediately before host->replayCut to after host->present returns a successful receipt over the target frame; request_to_ready_us (replayCut + seek) is disclosed separately and never substituted.",
+    "criterion": "every seek in every valid process <= 20000 us",
+    "decision_quantity": "the maximum request_to_present_us of each process; a class passes only if all 12 valid processes pass",
+    "oracle": "for every measured seek the probe compares host->snapshotGameplay()->toBytes() against an unhinted CPU JudgementSession::forkForSeek snapshot at the same horizon; a process with any mismatch is invalid and does not count as a pass"
+  },
+  "validity": [
+    "exit code 0",
+    "PD5_SEEK_ID present with records, seeks and seek_class matching the requested process",
+    "PD5_SEEK_ID reports the class precondition verdict: certified_records>0 for natural, ==0 for external and fallback",
+    "exactly 16 PD5_SEEK lines, each with state_matches_oracle=true and the expected horizon sequence",
+    "PD5_SEEK_VERIFY present with verified=16 and mismatched=0",
+    "PD_ENV line present for the process environment record"
+  ],
+  "failure_rule": "A process that fails any validity check is recorded with its log and leaves its group short. A group with fewer than 6 valid processes cannot pass. Slow readings are kept; the run is not repeated to obtain a pass.",
+  "out_of_scope": [
+    "hosted same-SHA CI",
+    "R3 exit ruling",
+    "R4 integrated evidence and physical device acceptance",
+    "product memory quota acceptance (the R3c candidate material is separate)",
+    "B-only/per-frame budgets that this probe does not measure"
+  ],
+  "precondition": "Outside the timed region the probe re-runs the same forkForSeek the host performs, with the class fixture, and records how many records the certificate actually restored. A natural class run whose certificate restores nothing, or a fallback run whose foreign hint is accepted, is invalid: the label would otherwise describe only the input."
+}

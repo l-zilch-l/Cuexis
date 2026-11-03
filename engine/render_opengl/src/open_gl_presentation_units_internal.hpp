@@ -45,7 +45,7 @@ struct CuexisObjectStd140 final {
     float opacity{1.0F};
 };
 
-inline [[nodiscard]] auto
+[[nodiscard]] inline auto
 referenceKey(const playback::PresentationResourceRef& reference) noexcept {
     return std::tie(reference.assetId, reference.type);
 }

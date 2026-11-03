@@ -97,21 +97,21 @@ constexpr std::string_view objectlessChart = R"json(
 }
 )json";
 
-inline [[nodiscard]] auto projectSource(std::string_view project) -> Result<PlaybackSource> {
+[[nodiscard]] inline auto projectSource(std::string_view project) -> Result<PlaybackSource> {
     const auto root = std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" / "projects" / project;
     return PlaybackSource::fromFilesystemProject(root);
 }
 
 // One second of silence. The tests never decode the chart's main music; the clip preparation port
 // is what a real decoder would sit behind.
-inline [[nodiscard]] auto silentClip() -> Result<AudioClip> {
+[[nodiscard]] inline auto silentClip() -> Result<AudioClip> {
     constexpr std::uint32_t sampleRate = 48000;
     constexpr std::uint32_t channels = 2;
     std::vector<float> samples(static_cast<std::size_t>(sampleRate) * channels, 0.0F);
     return AudioClip::create(sampleRate, channels, std::move(samples));
 }
 
-inline [[nodiscard]] auto contextValue(const Error& error, std::string_view key) -> std::string {
+[[nodiscard]] inline auto contextValue(const Error& error, std::string_view key) -> std::string {
     for (const auto& entry : error.context()) {
         if (entry.key == key) {
             return entry.value;
@@ -368,7 +368,7 @@ class Fixture final {
     std::optional<PlayerController> controller;
 };
 
-inline [[nodiscard]] auto snapshotBundle(Fixture& fixture) -> BundleSnapshot {
+[[nodiscard]] inline auto snapshotBundle(Fixture& fixture) -> BundleSnapshot {
     REQUIRE(fixture.controller.has_value());
     BundleSnapshot bundle;
     const auto info = fixture.controller->session().contentInfo();

@@ -371,7 +371,16 @@ TEST_CASE("R3 CPU host Seek measures first and repeated requests through target 
     const auto recordSetting = test_support::environmentVariable("CUEXIS_SEEK_RECORDS");
     REQUIRE((recordSetting.empty() || recordSetting == "33" || recordSetting == "129"));
     const unsigned records = recordSetting == "129" ? 129 : 33;
-    const std::int64_t horizon = 1103 + records - 1;
+    const auto lastRecordHorizon = std::int64_t{1103 + records - 1};
+    const auto attemptsSetting = test_support::environmentVariable("CUEXIS_SEEK_ATTEMPTS");
+    const unsigned attempts =
+        attemptsSetting.empty() ? 3U : static_cast<unsigned>(std::stoul(attemptsSetting));
+    REQUIRE((attempts >= 1U && attempts <= 64U));
+    const auto seekHorizonSetting = test_support::environmentVariable("CUEXIS_SEEK_HORIZON");
+    const auto seekHorizon = seekHorizonSetting.empty()
+                                 ? lastRecordHorizon
+                                 : static_cast<std::int64_t>(std::stoll(seekHorizonSetting));
+    REQUIRE((seekHorizon > 0));
     const auto requirementSetting = test_support::environmentVariable("CUEXIS_SEEK_REQUIREMENTS");
     REQUIRE((requirementSetting.empty() || requirementSetting == "1000" ||
              requirementSetting == "10000" || requirementSetting == "40000"));
@@ -506,7 +515,7 @@ TEST_CASE("R3 CPU host Seek measures first and repeated requests through target 
                                .count();
     REQUIRE(archive);
     const auto cutStart = std::chrono::steady_clock::now();
-    const auto cut = archive->cutAt({horizon});
+    const auto cut = archive->cutAt({seekHorizon});
     REQUIRE(cut);
     const auto cutUs = std::chrono::duration_cast<std::chrono::microseconds>(
                            std::chrono::steady_clock::now() - cutStart)
@@ -516,11 +525,13 @@ TEST_CASE("R3 CPU host Seek measures first and repeated requests through target 
     const auto expectedScore = expected->score();
     REQUIRE(expectedScore);
     CHECK(expectedScore->misses == count);
-    for (unsigned attempt = 0; attempt < 3; ++attempt) {
-        target = horizon;
+    for (unsigned attempt = 0; attempt < attempts; ++attempt) {
+        // The first pause observes the current advanced head; seeking backwards is the request.
+        target = attempt == 0 ? lastRecordHorizon : seekHorizon;
         REQUIRE((*host)->pause(clock));
+        target = seekHorizon;
         const auto started = std::chrono::steady_clock::now();
-        auto sought = (*host)->seek(*archive, *cut, {horizon}, clock);
+        auto sought = (*host)->seek(*archive, *cut, {seekHorizon}, clock);
         const auto seekUs = std::chrono::duration_cast<std::chrono::microseconds>(
                                 std::chrono::steady_clock::now() - started)
                                 .count();
@@ -529,8 +540,8 @@ TEST_CASE("R3 CPU host Seek measures first and repeated requests through target 
                            std::string{sought.error().message()}));
         REQUIRE(sought);
         auto frame = (*host)->sample(
-            horizon, {static_cast<double>(horizon) / 1000.0, 0, (*host)->context().clockSegment},
-            false);
+            seekHorizon,
+            {static_cast<double>(seekHorizon) / 1000.0, 0, (*host)->context().clockSegment}, false);
         REQUIRE(frame);
         const auto presented = (*host)->present(*frame);
         REQUIRE(presented);
@@ -540,11 +551,12 @@ TEST_CASE("R3 CPU host Seek measures first and repeated requests through target 
                                  .count();
         const auto actual = (*host)->queryGameplay();
         REQUIRE(actual);
-        CHECK(actual->sameResult(*expected).value());
+        if (seekHorizon == lastRecordHorizon)
+            CHECK(actual->sameResult(*expected).value());
         std::cout << "{\"event\":\"r3.redesign.host\",\"requirements\":" << count
-                  << ",\"attempt\":" << attempt << ",\"seek_us\":" << seekUs
-                  << ",\"request_to_present_us\":" << totalUs << ",\"archive_us\":" << archiveUs
-                  << ",\"capsule_revision\":"
+                  << ",\"attempt\":" << attempt << ",\"horizon\":" << seekHorizon
+                  << ",\"seek_us\":" << seekUs << ",\"request_to_present_us\":" << totalUs
+                  << ",\"archive_us\":" << archiveUs << ",\"capsule_revision\":"
                   << (contentPath == "typed" ? 0 : (requirementSetting.empty() ? 3 : 4))
                   << ",\"content_path\":\"" << (contentPath == "typed" ? "typed" : "packed") << "\""
                   << ",\"setup_us\":" << setupUs << ",\"cut_us\":" << cutUs

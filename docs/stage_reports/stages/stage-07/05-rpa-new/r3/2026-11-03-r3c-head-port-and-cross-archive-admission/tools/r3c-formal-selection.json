@@ -1,0 +1,27 @@
+{
+  "schema": "cuexis.r3c-formal-selection.v1",
+  "selected": false,
+  "product_promoted": false,
+  "quota_mib": null,
+  "formal_unit": {
+    "registration": "2026-11-04-r3c-formal-adoption-v4/registration.json",
+    "results": "2026-11-04-r3c-formal-adoption-v4/results.json",
+    "requested_processes": 54,
+    "valid_processes": 0,
+    "status": "inconclusive",
+    "no_retry_or_replacement": true
+  },
+  "reason": "The pre-registered formal unit produced no valid process. The v4 baseline process completed 30 seconds of warmup and 7 measured requests, then failed at repeated pause; the runner stopped under the no-retry rule. No ratio interval or performance verdict was formed.",
+  "failed_attempts": [
+    "2026-11-04-r3c-formal-adoption/",
+    "2026-11-04-r3c-formal-adoption-v2/",
+    "2026-11-04-r3c-formal-adoption-v3/",
+    "2026-11-04-r3c-formal-adoption-v4/"
+  ],
+  "boundaries": [
+    "Not a performance failure finding.",
+    "R3 exit is owner-only.",
+    "Hosted same-SHA verification remains unverified.",
+    "R3b trusted recovery and the old 128 MiB absolute memory ceiling are not reopened."
+  ]
+}

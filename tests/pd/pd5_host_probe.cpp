@@ -6,6 +6,9 @@
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cstdlib>
+#include <cuexis/judgement/judgement_session.hpp>
+#include <cuexis/judgement/recovery.hpp>
+#include <cuexis/judgement/recovery_codec.hpp>
 #include <cuexis/playback/frame_digest.hpp>
 #include <cuexis_internal/allocation_observer.hpp>
 #include <cuexis_internal/presentation_metrics.hpp>
@@ -15,6 +18,10 @@
 #include <thread>
 
 #if defined(CUEXIS_PD5_DEVICE)
+// The playback internals need the judgement internal tree; only the device probe target carries
+// that include path, and only the device build compiles the seek class fixtures that use it.
+#include "../../engine/judgement/src/execution_testing.hpp"
+#include "../../engine/playback/src/gameplay_internal.hpp"
 #include "../../engine/render_opengl/internal/cuexis_internal/gpu_timer.hpp"
 #include <SDL3/SDL.h>
 #include <cuexis/platform_sdl/sdl_runtime.hpp>
@@ -499,10 +506,24 @@ TEST_CASE("PD5 scripted host timing probe", "[.][pd][pd5][timing-probe]") {
 // Seek gate probe: the full host seek on the real OpenGL backend. The functional matrix measures
 // the same operations on the CPU test renderer, which is why its readings cannot stand for the
 // gate.
+//
+// CUEXIS_PD5_SEEK_CLASS selects one of the pre-declared Seek classes. The hot and cold classes
+// are carried by the record-count axis (a fresh process is the cold class); this probe adds the
+// three classes that need a different fixture:
+//   natural  - a certificate-carrying checkpoint minted by the session itself, first use
+//   external - an archive that arrives as bytes, so the request pays first certification
+//   fallback - a hint that can never be legal for the target, so the request pays origin replay
 TEST_CASE("PD5 scripted seek timing probe", "[.][pd][pd5][seek-gate]") {
     std::cout << std::setprecision(17);
     const auto recordCount = pd5Count("CUEXIS_PD5_SEEK_RECORDS", 129, 20000);
     const auto seekCount = pd5Count("CUEXIS_PD5_SEEK_COUNT", 16, 4096);
+    const auto seekClass = [] {
+        const auto text = test_support::environmentVariable("CUEXIS_PD5_SEEK_CLASS");
+        return text.empty() ? std::string{"hot"} : text;
+    }();
+    if (seekClass != "hot" && seekClass != "natural" && seekClass != "external" &&
+        seekClass != "fallback")
+        throw std::runtime_error("Invalid CUEXIS_PD5_SEEK_CLASS");
     auto runtime = pd5Take(platform_sdl::SdlRuntime::create());
     render_opengl::OpenGlConfig glConfig;
     glConfig.vsync = false;
@@ -558,8 +579,10 @@ TEST_CASE("PD5 scripted seek timing probe", "[.][pd][pd5][seek-gate]") {
         observation.quality = ClockQuality::Exact;
         return observation;
     };
+    // Keep the owning content alive: the access view and every replay decode borrow from it.
+    const auto content = fixture.content();
     auto host = pd5Take(player::ExecutionHost::create(renderer, settings, {}));
-    pd5Take(host->load(test_support::presentation(), fixture.content()));
+    pd5Take(host->load(test_support::presentation(), content));
     for (unsigned i = 0; i < recordCount; ++i) {
         pd5Take(host->advance(pd5Take(clock(host->context()))));
         auto frame = pd5Take(host->sample(
@@ -568,24 +591,120 @@ TEST_CASE("PD5 scripted seek timing probe", "[.][pd][pd5][seek-gate]") {
         pd5Take(host->present(frame));
     }
     auto archive = pd5Take(host->archive());
+    const auto* basis = GameplayAccess::content(content);
+    const auto* naturalSource = GameplayAccess::replay(archive);
+    REQUIRE(basis);
+    REQUIRE(naturalSource);
+    // Fixture preparation happens before any request is timed: only consuming the certificate,
+    // certifying an external source or replaying an unusable hint belongs inside the 20 ms gate.
+    std::vector<GameplayCheckpoint> hints;
+    std::optional<GameplayReplay> externalReplay;
+    std::optional<GameplayReplay> foreignReplay;
+    if (seekClass == "natural") {
+        // A certified restore needs the checkpoint cut to end exactly on a record horizon, and the
+        // fixture's first record sits at 7000. Every target at or after 8103 can consume it; the
+        // first such request carries the first-use cost and the later ones reuse the carrier.
+        auto minted = cuexis::judgement::JudgementSession::checkpoint(
+            naturalSource->archive, cuexis::judgement::Tick{7000});
+        REQUIRE(minted);
+        hints.push_back(GameplayAccess::checkpoint(std::move(*minted)));
+    }
+    if (seekClass == "external") {
+        const auto encoded = pd5Take(archive.toBytes());
+        auto decoded =
+            GameplayReplay::fromBytes(encoded, content, {encoded.size(), 10000, 10000000, true});
+        REQUIRE(decoded);
+        externalReplay = std::move(*decoded);
+    }
+    if (seekClass == "fallback") {
+        // A checkpoint minted from an independent decoded archive can never bind this source, and
+        // its horizon is the last target, so most requests also exceed it.
+        const auto encoded = pd5Take(archive.toBytes());
+        auto decoded =
+            GameplayReplay::fromBytes(encoded, content, {encoded.size(), 10000, 10000000, true});
+        REQUIRE(decoded);
+        const auto* foreign = GameplayAccess::replay(*decoded);
+        REQUIRE(foreign);
+        const auto lastHorizon =
+            cuexis::judgement::Tick{1103 + static_cast<std::int64_t>(seekCount - 1) * 7000};
+        auto minted =
+            cuexis::judgement::JudgementSession::checkpoint(foreign->archive, lastHorizon);
+        REQUIRE(minted);
+        hints.push_back(GameplayAccess::checkpoint(std::move(*minted)));
+        foreignReplay = std::move(*decoded);
+    }
+    const auto& sought = externalReplay ? *externalReplay : archive;
+    // Oracle: the unhinted origin path on the CPU, one per horizon. Neither host nor device work
+    // is reused, so the comparison proves the measured request produced the same published state.
+    auto oracle = cuexis::judgement::JudgementSession::create();
+    REQUIRE(oracle);
+    REQUIRE(oracle->configure(basis->configuration));
+    REQUIRE(oracle->prepare(basis->capsule.gameplay));
+    // Precondition of the class, measured once outside the timed region: a session-natural
+    // certificate must actually be consumed, an unusable hint must actually be rejected. Without
+    // this the class label would only describe the input, not the path the request took.
+    const auto* preconditionSource = GameplayAccess::replay(sought);
+    REQUIRE(preconditionSource);
+    std::vector<cuexis::judgement::ReplayCheckpoint> judgementHints;
+    for (const auto& hint : hints) {
+        const auto* storage = GameplayAccess::checkpoint(hint);
+        REQUIRE(storage);
+        judgementHints.push_back(storage->checkpoint);
+    }
+    const auto preconditionHorizon = cuexis::judgement::Tick{seekClass == "natural" ? 8103 : 1103};
+    const auto preconditionCut =
+        cuexis::judgement::replayCutAt(preconditionSource->archive, preconditionHorizon);
+    auto precondition = oracle->forkForSeek(preconditionSource->archive, preconditionHorizon,
+                                            preconditionCut, judgementHints);
+    REQUIRE(precondition);
+    const auto certifiedRecords =
+        cuexis::judgement::detail::KernelTestAccess::certifiedPrefixRecords(*precondition);
+    if (seekClass == "natural")
+        REQUIRE(certifiedRecords > 0);
+    else
+        REQUIRE(certifiedRecords == 0);
+    std::size_t verified{};
+    std::size_t mismatched{};
+    pd_measure::environmentJson("seek-begin");
     std::cout << "PD5_SEEK_ID {\"schema\":\"pd5.seek.v1\",\"records\":" << recordCount
-              << ",\"seeks\":" << seekCount << "}\n";
+              << ",\"seeks\":" << seekCount << ",\"seek_class\":\"" << seekClass
+              << "\",\"hints\":" << hints.size() << ",\"certified_records\":" << certifiedRecords
+              << "}\n";
     for (unsigned index = 0; index < seekCount; ++index) {
         const auto horizon = 1103 + static_cast<std::int64_t>(index) * 7000;
         pd5Take(host->pause(clock));
         const auto started = pd5Now();
-        auto cut = pd5Take(host->replayCut(archive, GameplayTick{horizon}));
-        pd5Take(host->seek(archive, cut, GameplayTick{horizon}, clock));
+        auto cut = pd5Take(host->replayCut(sought, GameplayTick{horizon}));
+        pd5Take(host->seek(sought, cut, GameplayTick{horizon}, clock, hints));
         const auto ready = pd5Now();
         auto frame = pd5Take(host->sample(
             horizon, {static_cast<double>(horizon) / 1000., 0, host->context().clockSegment},
             false));
         pd5Take(host->present(frame));
         const auto presented = pd5Now();
-        std::cout << "PD5_SEEK {\"records\":" << recordCount << ",\"index\":" << index
-                  << ",\"horizon\":" << horizon << ",\"request_to_ready_us\":" << (ready - started)
-                  << ",\"request_to_present_us\":" << (presented - started) << "}\n";
+        const auto oracleCut = cuexis::judgement::replayCutAt(naturalSource->archive,
+                                                              cuexis::judgement::Tick{horizon});
+        auto expected = oracle->forkForSeek(naturalSource->archive,
+                                            cuexis::judgement::Tick{horizon}, oracleCut);
+        REQUIRE(expected);
+        auto expectedSnapshot = expected->snapshot();
+        REQUIRE(expectedSnapshot);
+        auto expectedBytes = encodeSnapshot(*expectedSnapshot);
+        REQUIRE(expectedBytes);
+        auto actual = pd5Take(host->snapshotGameplay());
+        auto actualBytes = pd5Take(actual.toBytes());
+        const bool matches = actualBytes == *expectedBytes;
+        ++verified;
+        if (!matches)
+            ++mismatched;
+        std::cout << "PD5_SEEK {\"records\":" << recordCount << ",\"seek_class\":\"" << seekClass
+                  << "\",\"index\":" << index << ",\"horizon\":" << horizon
+                  << ",\"request_to_ready_us\":" << (ready - started)
+                  << ",\"request_to_present_us\":" << (presented - started)
+                  << ",\"state_matches_oracle\":" << (matches ? "true" : "false") << "}\n";
     }
+    std::cout << "PD5_SEEK_VERIFY {\"records\":" << recordCount << ",\"seek_class\":\"" << seekClass
+              << "\",\"verified\":" << verified << ",\"mismatched\":" << mismatched << "}\n";
     pd5Take(host->close());
 }
 #endif

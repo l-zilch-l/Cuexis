@@ -2,7 +2,7 @@
 
 状态：current index
 
-更新日期：2026-11-01
+更新日期：2026-11-04
 
 当前状态只以 [CURRENT_STATUS](../../../../CURRENT_STATUS.md) 为准；本页只负责定位，不新增实施、测量或阶段接受结论。
 
@@ -103,3 +103,13 @@
 
 | [提交路径停顿归因](r3/2026-11-01-r3-submit-stall-wait-attribution.md) | `D:/Cuexis-redesign/out/verification-20261101/r3-stall-mechanism-v1/`（三份预注册、十二份等待期仪器、七个登记进程的原始样本流与逐帧日志、四次栈回溯、GPU 计时器仪器的 `n1800`/`n2400`/`n2800` 三组）；[整包附件](r3/2026-11-01-submit-stall-wait-evidence/index.md) 逐文件登记 `source_sha256`/`sha256`/`eol`，自带 `verify_wait_evidence.py --rebuild` 可从归档重推导并逐字节复算汇总表 |
 | [40K 启动可观测性与 prepare 成本](r3/2026-11-01-r3-40k-startup-observability-and-cost.md) | `D:/Cuexis-redesign/out/verification-20261101/r3-startup-observability-v1/`（19 个 prepare scope 与 14 个启动阶段的分段耗时、`a`/`a2`/`b`/`c`/`w1`/`w2` 六组探针进程、traced 与 untraced 的配对扰动、1800–40000 的实体规模阶梯、40K v1 项目图）；`out/verification-20261101/r3-prepare-cost-v1/`（序列化改写前后的同源分段与逐行对照、22 个 fixture 的 canonical 字节扫描、三份 32 MB canonical 副本、golden 生成器与构建/CTest 日志）；[整包附件](r3/2026-11-01-40k-startup-and-prepare-cost-evidence/index.md) 229 个文件，逐文件登记 `source_sha256`/`sha256`/`content_sha256`/`eol`，自带 `verify/verify_startup_evidence.py` 可从归档字节重推导 671 项检查并打印 `PASS`，派生汇总表由 `tabulate_startup.py` 的 39 项检查与 9 条 findings 支持 |
+
+| [Seek 重复性分辨率与 v4 复算](r3/2026-11-03-r3-seek-repeatability-resolution/index.md) | 同一未改动二进制的 9 进程分辨率组、36 个两两组合的分布、v4 两个收益项与保护项的配对对数比值区间；`tools/` 内的复算脚本与预注册 |
+
+| [legacy parse-once 产品读数](r3/2026-11-03-r3-parse-once-product-reading/index.md) | `out/_parseonce` 三臂可执行文件（A 生产两次解析 / B 产品一次解析）、18 个进程的逐次读数与 `results.json`、身份与帧摘要一致性；`tools/superseded-consume-only/` 保留首轮方法论作废组 |
+
+| [R3c 移植与跨代字节准入](r3/2026-11-03-r3c-head-port-and-cross-archive-admission/index.md) | `D:/Cuexis-r3c-v4`（`c085688a` + 候选补丁的独立工作树，未合入）；候选补丁 11 文件 +1120/−11、`manifest.json` 逐文件哈希、`tools/accounting-results.json`（8 组 fixture：预算、跨代全留、进程内存归因）、隐藏用例 `[.][r3c-accounting]` 的驱动器与运行日志、`tools/r3c-formal-selection.json`（正式单元 0/54 有效，不采用） |
+
+| [适用 Seek 余下三类](r3/2026-11-03-r3-seek-remaining-classes/index.md) | `out/build/rpa-candidate-release/bin/cuexis_execution_device_probe.exe`（sha256 `0ac53b9c…`）；`tools/preregistration.json`、`tools/results.json`（3 类 × 2 规模 × 6 进程 × 16 次 seek 的逐次读数与类前置）、36 份原始日志、`tools/environment.json`、逐文件 `manifest.json` |
+| [Seek 证据独立复核](r3/2026-11-04-r3-seek-recheck/index.md) | `out/verification-20261103/r3-seek-classes-v1/cuexis_execution_device_probe.exe`（sha256 `0ac53b9c…`）；独立工作树 `D:/Cuexis-r3seek-verify` 的 36 进程 / 576 请求重放、36 份原始日志、`tools/results.json`、`tools/run.log.txt` 与逐文件 `manifest.json` |
+| [最终本地验证与 R3c 决定](r3/2026-11-04-r3-final-validation-and-r3c-decision.md) | `r3/2026-11-04-r3c-formal-adoption*/` 四次正式尝试的 registration、runner、results 与原始日志；v4 为 1 行无效、0 个有效进程；另登记四套冻结前本地 CTest 计数与最终 11 行矩阵入口 |

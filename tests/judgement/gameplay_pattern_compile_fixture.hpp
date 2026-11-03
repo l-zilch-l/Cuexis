@@ -51,17 +51,17 @@ inline void expectRejection(const cuexis::core::Error& error, std::string_view c
 
 //  --- declaration builders -----------------------------------------------------------------------
 
-inline [[nodiscard]] auto atomNode(std::string atomRef) -> PatternNodeDeclaration {
+[[nodiscard]] inline auto atomNode(std::string atomRef) -> PatternNodeDeclaration {
     return PatternNodeDeclaration{PatternPrimitive::atom, {}, std::move(atomRef), {}, {}};
 }
 
-inline [[nodiscard]] auto composeNode(PatternPrimitive primitive,
+[[nodiscard]] inline auto composeNode(PatternPrimitive primitive,
                                       std::vector<PatternNodeDeclaration> operands)
     -> PatternNodeDeclaration {
     return PatternNodeDeclaration{primitive, std::move(operands), {}, {}, {}};
 }
 
-inline [[nodiscard]] auto repeatNode(PatternNodeDeclaration operand, std::uint64_t minimum,
+[[nodiscard]] inline auto repeatNode(PatternNodeDeclaration operand, std::uint64_t minimum,
                                      std::uint64_t maximum) -> PatternNodeDeclaration {
     return PatternNodeDeclaration{PatternPrimitive::boundedRepeat,
                                   {std::move(operand)},
@@ -70,14 +70,14 @@ inline [[nodiscard]] auto repeatNode(PatternNodeDeclaration operand, std::uint64
                                   {}};
 }
 
-inline [[nodiscard]] auto declarationOf(PatternNodeDeclaration root) -> PatternDeclaration {
+[[nodiscard]] inline auto declarationOf(PatternNodeDeclaration root) -> PatternDeclaration {
     return PatternDeclaration{.patternId = {},
                               .matchPolicy = MatchPolicy::leftmostFirst,
                               .root = std::move(root),
                               .required = judgement::RequiredRefs{}};
 }
 
-inline [[nodiscard]] auto trace(std::initializer_list<std::string_view> refs)
+[[nodiscard]] inline auto trace(std::initializer_list<std::string_view> refs)
     -> std::vector<std::string> {
     std::vector<std::string> result;
     result.reserve(refs.size());
@@ -89,7 +89,7 @@ inline [[nodiscard]] auto trace(std::initializer_list<std::string_view> refs)
 
 //  A budget in which `depth` is the only measured dimension, so a rejection can be attributed to
 //  it.
-inline [[nodiscard]] auto depthBudget(std::uint64_t depth) -> PatternCompileBudget {
+[[nodiscard]] inline auto depthBudget(std::uint64_t depth) -> PatternCompileBudget {
     PatternCompileBudget budget;
     budget.maxDeclarationDepth = MeasuredParameter<std::uint64_t>::measured(depth);
     return budget;
@@ -98,7 +98,7 @@ inline [[nodiscard]] auto depthBudget(std::uint64_t depth) -> PatternCompileBudg
 //  A `sequence` chain of `depth` nested nodes over one atom, built iteratively. The declaration
 //  type owns its operands recursively, so the chain is kept well inside the host stack of the test
 //  process; the property under test is that the *compiler* imposes no depth bound of its own.
-inline [[nodiscard]] auto nestedChain(std::size_t depth) -> PatternNodeDeclaration {
+[[nodiscard]] inline auto nestedChain(std::size_t depth) -> PatternNodeDeclaration {
     PatternNodeDeclaration chain = atomNode("atom.one");
     for (std::size_t level = 1; level < depth; ++level) {
         chain = composeNode(PatternPrimitive::sequence, {std::move(chain), atomNode("atom.one")});
@@ -120,7 +120,7 @@ inline [[nodiscard]] auto nestedChain(std::size_t depth) -> PatternNodeDeclarati
 //  It is exact only while `window` is wide enough to tell the live residuals apart: past that the
 //  truncation saturates and the number under-reports. The empty residual is the implicit dead state
 //  of a partial automaton and is not counted, which is the same counting object `stateCount` uses.
-inline [[nodiscard]] auto distinctNonEmptyResiduals(const CompiledPattern& pattern,
+[[nodiscard]] inline auto distinctNonEmptyResiduals(const CompiledPattern& pattern,
                                                     std::size_t window) -> std::size_t {
     const std::vector<std::string> symbols{"atom.one", "atom.two"};
     std::vector<std::vector<std::string>> words{{}};

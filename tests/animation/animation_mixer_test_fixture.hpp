@@ -31,18 +31,18 @@
 
 namespace animation_mixer_fixture {
 
-inline [[nodiscard]] auto beat(std::int64_t numerator, std::int64_t denominator = 1)
+[[nodiscard]] inline auto beat(std::int64_t numerator, std::int64_t denominator = 1)
     -> cuexis::chart::RationalBeat {
     auto value = cuexis::chart::RationalBeat::create(numerator, denominator);
     REQUIRE(value.has_value());
     return *value;
 }
 
-inline [[nodiscard]] auto entity(std::uint32_t value) -> entt::entity {
+[[nodiscard]] inline auto entity(std::uint32_t value) -> entt::entity {
     return static_cast<entt::entity>(value);
 }
 
-inline [[nodiscard]] auto constantScalarClip(cuexis::chart::AnimationProperty property,
+[[nodiscard]] inline auto constantScalarClip(cuexis::chart::AnimationProperty property,
                                              double value) -> cuexis::chart::AnimationClip {
     return {
         .id = {},
@@ -62,7 +62,7 @@ inline [[nodiscard]] auto constantScalarClip(cuexis::chart::AnimationProperty pr
     };
 }
 
-inline [[nodiscard]] auto constantVec3Clip(cuexis::chart::AnimationProperty property,
+[[nodiscard]] inline auto constantVec3Clip(cuexis::chart::AnimationProperty property,
                                            cuexis::core::Vec3 value)
     -> cuexis::chart::AnimationClip {
     return {
@@ -83,7 +83,7 @@ inline [[nodiscard]] auto constantVec3Clip(cuexis::chart::AnimationProperty prop
     };
 }
 
-inline [[nodiscard]] auto constantQuatClip(cuexis::core::Quat value)
+[[nodiscard]] inline auto constantQuatClip(cuexis::core::Quat value)
     -> cuexis::chart::AnimationClip {
     return {
         .id = {},
@@ -103,7 +103,7 @@ inline [[nodiscard]] auto constantQuatClip(cuexis::core::Quat value)
     };
 }
 
-inline [[nodiscard]] auto constantVisibleClip(bool visible) -> cuexis::chart::AnimationClip {
+[[nodiscard]] inline auto constantVisibleClip(bool visible) -> cuexis::chart::AnimationClip {
     return {
         .id = {},
         .durationBeats = beat(4),
@@ -116,14 +116,14 @@ inline [[nodiscard]] auto constantVisibleClip(bool visible) -> cuexis::chart::An
     };
 }
 
-inline [[nodiscard]] auto makeProgramClip(cuexis::chart::AnimationRecordIdentity identity,
+[[nodiscard]] inline auto makeProgramClip(cuexis::chart::AnimationRecordIdentity identity,
                                           std::string clipId, cuexis::chart::AnimationClip clip)
     -> cuexis::chart::AnimationProgramClip {
     clip.id = std::move(clipId);
     return {.identity = std::move(identity), .clip = std::move(clip)};
 }
 
-inline [[nodiscard]] auto makeInstance(cuexis::chart::AnimationRecordIdentity identity,
+[[nodiscard]] inline auto makeInstance(cuexis::chart::AnimationRecordIdentity identity,
                                        cuexis::chart::AnimationRecordIdentity clipIdentity,
                                        double weight, cuexis::chart::PropertyMask mask)
     -> cuexis::chart::ResolvedClipInstance {
@@ -139,7 +139,7 @@ inline [[nodiscard]] auto makeInstance(cuexis::chart::AnimationRecordIdentity id
     };
 }
 
-inline [[nodiscard]] auto compile(cuexis::chart::AnimationProgramInput input)
+[[nodiscard]] inline auto compile(cuexis::chart::AnimationProgramInput input)
     -> cuexis::animation::AnimationProgram {
     auto compiled = cuexis::animation::AnimationCompiler::compile(std::move(input));
     REQUIRE(compiled.hasValue());
@@ -147,13 +147,13 @@ inline [[nodiscard]] auto compile(cuexis::chart::AnimationProgramInput input)
     return std::move(*compiled.program);
 }
 
-inline [[nodiscard]] auto hasCode(const cuexis::core::Diagnostics& diagnostics,
+[[nodiscard]] inline auto hasCode(const cuexis::core::Diagnostics& diagnostics,
                                   std::string_view code) -> bool {
     return std::ranges::any_of(diagnostics.items(),
                                [code](const auto& item) { return item.code() == code; });
 }
 
-inline [[nodiscard]] auto findWrite(const cuexis::world::PropertyWriteBuffer& writes,
+[[nodiscard]] inline auto findWrite(const cuexis::world::PropertyWriteBuffer& writes,
                                     cuexis::world::PropertyId property)
     -> std::optional<cuexis::world::PropertyWrite> {
     for (const auto& write : writes.writes()) {
@@ -164,7 +164,7 @@ inline [[nodiscard]] auto findWrite(const cuexis::world::PropertyWriteBuffer& wr
     return {};
 }
 
-inline [[nodiscard]] auto scalarWrite(const cuexis::world::PropertyWriteBuffer& writes,
+[[nodiscard]] inline auto scalarWrite(const cuexis::world::PropertyWriteBuffer& writes,
                                       cuexis::world::PropertyId property) -> double {
     const auto write = findWrite(writes, property);
     REQUIRE(write.has_value());
@@ -173,7 +173,7 @@ inline [[nodiscard]] auto scalarWrite(const cuexis::world::PropertyWriteBuffer& 
     return *value;
 }
 
-inline [[nodiscard]] auto vec3Write(const cuexis::world::PropertyWriteBuffer& writes,
+[[nodiscard]] inline auto vec3Write(const cuexis::world::PropertyWriteBuffer& writes,
                                     cuexis::world::PropertyId property) -> cuexis::core::Vec3 {
     const auto write = findWrite(writes, property);
     REQUIRE(write.has_value());
@@ -182,7 +182,7 @@ inline [[nodiscard]] auto vec3Write(const cuexis::world::PropertyWriteBuffer& wr
     return *value;
 }
 
-inline [[nodiscard]] auto quatWrite(const cuexis::world::PropertyWriteBuffer& writes)
+[[nodiscard]] inline auto quatWrite(const cuexis::world::PropertyWriteBuffer& writes)
     -> cuexis::core::Quat {
     const auto write = findWrite(writes, cuexis::world::PropertyId::TransformRotation);
     REQUIRE(write.has_value());
@@ -191,7 +191,7 @@ inline [[nodiscard]] auto quatWrite(const cuexis::world::PropertyWriteBuffer& wr
     return *value;
 }
 
-inline [[nodiscard]] auto boolWrite(const cuexis::world::PropertyWriteBuffer& writes) -> bool {
+[[nodiscard]] inline auto boolWrite(const cuexis::world::PropertyWriteBuffer& writes) -> bool {
     const auto write = findWrite(writes, cuexis::world::PropertyId::RenderVisible);
     REQUIRE(write.has_value());
     const auto* value = std::get_if<bool>(&write->value);
@@ -199,28 +199,28 @@ inline [[nodiscard]] auto boolWrite(const cuexis::world::PropertyWriteBuffer& wr
     return *value;
 }
 
-inline [[nodiscard]] auto objectId() -> cuexis::chart::ChartObjectId {
+[[nodiscard]] inline auto objectId() -> cuexis::chart::ChartObjectId {
     return cuexis::chart::ChartObjectId{"note"};
 }
 
-inline [[nodiscard]] auto mask(std::vector<std::string> properties,
+[[nodiscard]] inline auto mask(std::vector<std::string> properties,
                                std::vector<std::string> prefixes = {})
     -> cuexis::chart::PropertyMask {
     return {.properties = std::move(properties), .prefixes = std::move(prefixes)};
 }
 
-inline [[nodiscard]] auto binding() -> cuexis::animation::AnimationObjectBinding {
+[[nodiscard]] inline auto binding() -> cuexis::animation::AnimationObjectBinding {
     return {.objectId = objectId(), .entity = entity(1)};
 }
 
-inline [[nodiscard]] auto baseline(cuexis::world::PropertyId property,
+[[nodiscard]] inline auto baseline(cuexis::world::PropertyId property,
                                    cuexis::world::PropertyValue value)
     -> cuexis::animation::AnimationObjectBaseline {
     return {.objectId = objectId(),
             .properties = {{.property = property, .value = std::move(value)}}};
 }
 
-inline [[nodiscard]] auto
+[[nodiscard]] inline auto
 evaluate(const cuexis::animation::AnimationProgram& program,
          std::span<const cuexis::animation::AnimationObjectBinding> bindings,
          std::span<const cuexis::animation::AnimationObjectBaseline> baselines,

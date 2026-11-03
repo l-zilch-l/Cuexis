@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-11-03
+更新日期：2026-11-04
 
 本文只维护当前阶段、正在进行的任务和未解决的问题。实施与测量细节见带日期的阶段报告。
 
@@ -80,14 +80,14 @@
   历史[来源绑定实验](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-source-binding-experiment.md)用同一 Release 二进制比较 canonical SHA 与进程内 owning source binding。
   2048 requirements、33 条历史的 CPU 宿主首次请求到目标帧由 91.809 ms 降至 1.016 ms；129 条历史由 333.624 ms 降至 1.057 ms。
   这是固定本地诊断的点值，wire/导入验证保持原合同，candidate C++ 消费者须重建；
-  R3 未退出，R3c 已有隔离原型但未纳入产品或接受，R4、设备与生产接受仍独立。
+  R3 未退出，R3c 已完成隔离原型与正式采用尝试但未采用，R4、设备与生产接受仍独立。
   原始归因及历史失败保留，后续门禁见[实施登记](stage_plans/active/stage-07/05-rpa-new/r3/plan.md)。
   本轮保留 GPU 测试配额修复和 content-only closure 无复制优化（产品恢复点 `5fd84fd`）；身份 writer 范围插入试验
   未取得稳定收益，已撤销。该轮恢复后的四套相关回归、架构门与 96 份身份字节对照通过；新复制候选另行登记。
   架构 / 设计变更、对照结果与停止边界见[本轮登记 §5](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-28-r3-redesign-verification-and-optimization.md#5-后续取证和修复顺序)。
   现行内部设计集中在[执行状态、恢复与准备路径](architecture/execution-state-and-recovery.md)，
   架构/API 入口已同步；后续继续跟踪首次 Seek 与 Packed/prepare 剩余热点。
-- **R3 门账已于 2026-11-02 收口，R3 仍未退出**：十五项门为 **14 项通过 + 1 项部分通过（适用 Seek 覆盖 2/5 类）+ 0 项未判定**。
+- **R3 门账已于 2026-11-04 收口，R3 仍未退出**：十五项门为 **15 项通过 + 0 项部分通过 + 0 项未判定**。
   owner 同日作出四项裁定：接受“可开关阶段计时 + 归因 + 开销披露”作为 D2/D3/Snapshot/排队 的登记方式
   （四项按该方法通过：judgement/projection/runtime/snapshot/queue 每进程 p99 为 45.8–122.2 / 17.9–19.2 /
   6.0–6.4 / 11.0–18.4 / 26.2–88.4 µs，余量 8–300×，插桩开销约 +12% 已披露，判据未改）；
@@ -95,8 +95,9 @@
   （128 MiB 不再作为 R3 上限判据）；本轮不运行 hosted CI。其余通过项读数：初次 load 580.0–603.2 ms、
   重复性 3.95%、request→ready p99 0.439–0.474 ms、GPU render 3.1 µs、Pause 16.754 ms、Resume 4.844 ms、
   resize 3.978 ms、Reset 17.062/16.270 ms、Close 5.059 ms、相对读取门 1.0405 [1.0191, 1.0624]、
-  适用 Seek 两类最差 941 / 1012 µs。仍未完成：适用 Seek 余下 3 类、最终源码上的同源矩阵重跑、
-  hosted 同 SHA、R3b 预算候选与 R3c 原型的采用决定、owner 对 R3 退出的裁定。
+  适用 Seek 五类最差在独立批次中为 1,880 µs，独立复核批次最差 1,249 µs。仍未完成：最终源码上的同源矩阵重跑、
+  hosted 同 SHA、owner 对 R3 退出的裁定。R3b 可信恢复边界不重开；R3c 正式单元未形成有效样本，
+  候选与 128 MiB quota 均未采用。
   见[四项门裁定](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-02-r3-owner-gate-rulings.md)。
 - **2026-11-03 重复性口径归位，门账不变**：owner 裁定 §9.2 的 15% `(max-min)/median` 只在**正式单元**
   （3 窗 × 每窗 3 对独立进程）上绑定，本地 guard 组的相对极差只作披露；A/B 裁决改用同表的配对对数比值
@@ -113,7 +114,13 @@
   prepare 比值 0.7139 [0.6574, 0.7753] / 0.6747 [0.6504, 0.7000] / 0.6949 [0.6660, 0.7250]（1K/10K/40K，
   即 −28.6% / −32.5% / −30.5%），18 个进程的 identity 与 frame digest 全程一致。见
   [parse-once 产品读数](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-03-r3-parse-once-product-reading/index.md)。
-- **2026-11-01 同源本地矩阵已执行（test-only）**：`tools/verification/run_rpa_acceptance_matrix.py`
+- **2026-11-04 R3c 正式采用单元未形成结论，候选不采用**：3 窗 × 每窗 3 对、每进程 16 次 Seek 的
+  预注册 A/B 单元经历四次启动修正，v4 的首个 baseline 进程完成 30 秒预热并取得 7 个请求后，第 8 次
+  重复 `pause` 失败；控制器按“不重试、不替换”停止，最终 0 个有效进程、三个 case 均 `inconclusive`。
+  R3c 与 128 MiB quota 均未进入产品，主树未应用候选补丁；四次失败与原始日志全部保留。适用 Seek
+  余下三类的独立复核为 36/36 进程有效、576/576 oracle 一致、最差 1,249 µs，不改变原批次 1,880 µs。
+  见[最终验证与 R3c 决定](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-final-validation-and-r3c-decision.md)、
+  [Seek 复核](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-seek-recheck/index.md)。- **2026-11-01 同源本地矩阵已执行（test-only）**：`tools/verification/run_rpa_acceptance_matrix.py`
   在 `466ff76`、worktree 干净的同一份源码上按固定行序跑完全部 11 行，逐行 configure / build /
   CTest / `[measurement]` 重复与未执行项见
   [同源验收矩阵](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-01-r3-same-source-acceptance-matrix.md)。
@@ -217,7 +224,7 @@
 | 阶段 | 当前状态 | 入口 |
 | --- | --- | --- |
 | Stage 7A | S7A-3/4、5/6、7/8 的受限功能验收完成；整体关闭仍待 RPA 收尾 | [Stage 7A 计划](stage_plans/active/stage-07/01-a/plan.md) |
-| Stage 7-RPA | R1、R2 已退出；owner 于 2026-10-26 接受 R2 按原计划退出，受控局部结果及历史限制保留；R3 未退出，实施已按 owner 本次要求恢复，2026-11-02 门账收口为 14 项通过 + 1 项部分（适用 Seek 2/5 类）、0 项未判定，四项阶段门按 owner 接受的插桩登记方式通过，退出裁定仍待 owner；R4 正式、设备与生产接受未登记 | [整改计划](stage_plans/active/stage-07/05-rpa-new/plan.md)、[退出复核](stage_reports/stages/stage-07/05-rpa-new/r2/2026-10-26-r2-technical-closure-review.md) |
+| Stage 7-RPA | R1、R2 已退出；owner 于 2026-10-26 接受 R2 按原计划退出，受控局部结果及历史限制保留；R3 未退出，实施已按 owner 本次要求恢复，2026-11-04 门账收口为 15 项通过 + 0 项部分、0 项未判定，R3c 候选未采用，四项阶段门按 owner 接受的插桩登记方式通过，退出裁定仍待 owner；R4 正式、设备与生产接受未登记 | [整改计划](stage_plans/active/stage-07/05-rpa-new/plan.md)、[退出复核](stage_reports/stages/stage-07/05-rpa-new/r2/2026-10-26-r2-technical-closure-review.md) |
 | Stage 7-PD | PD-0–4 内部实施及适用门禁完成；PD-5 判定为「未通过但定案」，定案与 Stage 7-PD 退出清单尚待 owner 批准。原 40k 功能与小规模最终释放已核验，40k 分域内存仍未测量、正常分配器正式性能未通过。B0 已接受、B1 静态工具完成且未采数，B2/B3 未授权；ETW r4 三用例通过只证明工具合同。读取优化归 RPA R2，Seek 优化归其后续整改，旧窗口 3 停止，子阶段未退出 | [PD 计划](stage_plans/active/stage-07/04-pd/plan.md)、[PD-5 判定报告](stage_reports/stages/stage-07/04-pd/pd-5/exit/2026-10-24-pd5-verdict-and-stage-7-pd-exit.md) |
 | Stage 7B+ | 未开始，等待 RPA 完整退出 | [Stage 7B+ 计划](stage_plans/active/stage-07/06-b/plan.md) |
 

@@ -1,6 +1,6 @@
 # R3 implementation and verification
 
-状态：in progress。用户于 2026-10-26 授权本次接手完成 R3；owner 于 2026-11-02 作出四项门裁定，门账收口为 14 项通过 + 1 项部分（适用 Seek 2/5 类），R3 仍未退出，见文末 §6。
+状态：in progress。用户于 2026-10-26 授权本次接手完成 R3；owner 于 2026-11-02 作出四项门裁定，门账收口为 15 项通过 + 0 项部分，R3 仍未退出，见文末 §9–§11。
 本登记从 [总计划](../plan.md) §8 消费范围和依赖，不扩展到 R4 正式接受或 Stage 7 关闭。
 返回 [New RPA 索引](../README.md)。
 
@@ -178,3 +178,35 @@ dispatch 给出的身份字节，取不到时回落文本入口。本轮按当�
 第一组 A 侧只切断消费、保留生产的读数（−34~−37%）高估收益，原样归档为 superseded。
 单窗口三对，不是九对正式单元，不构成 load 或阶段接受。见
 [parse-once 产品读数](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-03-r3-parse-once-product-reading/index.md)。
+
+## 9. 2026-11-04 适用 Seek 五类闭包
+
+原 [适用 Seek 余下三类](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-03-r3-seek-remaining-classes/index.md)
+已完成 36 个进程 / 576 次请求，原批次最差 1,880 µs。磁盘事故后又在独立工作树
+`D:/Cuexis-r3seek-verify` 上用同一归档探针重放同一预注册：36/36 进程有效、576/576 oracle 一致、
+最差 1,249 µs，六组均通过。复核证据见
+[2026-11-04-r3-seek-recheck](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-seek-recheck/index.md)，
+原批次不回填。
+
+结合既有“同档重复热使用”和“冷进程”，五类适用 Seek 均有独立本地读数。R3 门账因此由
+**14 项通过 + 1 项部分**更新为 **15 项通过 + 0 项部分**；这不改变设备、hosted、生产或 R3 退出边界。
+
+## 10. 2026-11-04 R3c 正式采用单元与决定
+
+按 2026-11-03 owner 口径建立 3 窗 × 每窗 3 对、每进程 16 次 Seek 的正式 A/B 单元。v1/v2 在测量前
+因 harness 错误停止；v3 在 `GetProcessInformation` 处停止；v4 的首个 baseline 进程完成 30 秒预热并
+取得 7 个请求后，在第 8 次重复 `pause` 处失败。控制器按“不重试、不替换”规则立即停止，最终为
+1 行无效、0 个有效进程、三个 case 均 `inconclusive`。
+
+因此 R3c 记为 **不采用**：`selected: false`、`product_promoted: false`；128 MiB 只是准备正式单元的
+技术倾向，未升级为产品 quota 决定，主树未应用候选补丁。四次尝试、`registration.json`、`results.json`
+和原始日志全部保留。完整记录见
+[最终本地验证与 R3c 决定](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-final-validation-and-r3c-decision.md)。
+R3b 可信恢复边界、40K @ 240 FPS 和旧 128 MiB 绝对内存上限均不重开。
+
+## 11. 剩余工作
+
+- 在冻结源码上重跑 11 行本地同源验收矩阵，并要求逐行 `local_pass`、清单级
+  `source_unchanged=true`；这是本轮尚未执行的唯一本地工程门。
+- hosted 同 SHA 仍未验证，按 owner 2026-11-02 裁定本轮不运行；不得标记通过或豁免。
+- R3 退出只由 owner 裁定，文档和测试不得自封。

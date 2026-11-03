@@ -56,7 +56,7 @@ class TemporaryCxcFile final {
     std::filesystem::path path_;
 };
 
-inline [[nodiscard]] auto findRequestEntry(CxcWriteRequest& request, std::string_view path)
+[[nodiscard]] inline auto findRequestEntry(CxcWriteRequest& request, std::string_view path)
     -> CxcWriteEntry& {
     const auto found = std::ranges::find(request.entries, path, &CxcWriteEntry::path);
     REQUIRE(found != request.entries.end());
@@ -69,13 +69,13 @@ inline void eraseRequestEntry(CxcWriteRequest& request, std::string_view path) {
     request.entries.erase(found);
 }
 
-inline [[nodiscard]] auto contentRequest(std::string_view root, std::string_view source,
+[[nodiscard]] inline auto contentRequest(std::string_view root, std::string_view source,
                                          std::size_t maxBytes = 1024U)
     -> cuexis::content::ContentRequest {
     return {.rootId = root, .source = source, .maxBytes = maxBytes};
 }
 
-inline [[nodiscard]] auto packageRequest(const CxcPackage& package) -> CxcWriteRequest {
+[[nodiscard]] inline auto packageRequest(const CxcPackage& package) -> CxcWriteRequest {
     CxcWriteRequest request;
     request.requiredExtensions = package.manifest().requiredExtensions;
     request.extensionsJson = package.manifest().canonicalExtensionsJson;
@@ -89,7 +89,7 @@ inline [[nodiscard]] auto packageRequest(const CxcPackage& package) -> CxcWriteR
     return request;
 }
 
-inline [[nodiscard]] auto twoRootProject(std::string_view firstPath = "a",
+[[nodiscard]] inline auto twoRootProject(std::string_view firstPath = "a",
                                          std::string_view secondPath = "b") -> std::string {
     std::string result = R"({
   "format":"cuexis.project",
@@ -110,7 +110,7 @@ inline [[nodiscard]] auto twoRootProject(std::string_view firstPath = "a",
     return result;
 }
 
-inline [[nodiscard]] auto twoRootRequest(std::string firstIndex, std::string secondIndex,
+[[nodiscard]] inline auto twoRootRequest(std::string firstIndex, std::string secondIndex,
                                          std::string_view firstRoot = "a",
                                          std::string_view secondRoot = "b") -> CxcWriteRequest {
     CxcWriteRequest request;
@@ -126,12 +126,12 @@ inline [[nodiscard]] auto twoRootRequest(std::string firstIndex, std::string sec
     return request;
 }
 
-inline [[nodiscard]] auto emptyIndex(std::uint32_t version = 1) -> std::string {
+[[nodiscard]] inline auto emptyIndex(std::uint32_t version = 1) -> std::string {
     return "{\"format\":\"cuexis.asset-index\",\"version\":" + std::to_string(version) +
            ",\"assets\":[],\"extensions\":{}}";
 }
 
-inline [[nodiscard]] auto referenceV4Request() -> CxcWriteRequest {
+[[nodiscard]] inline auto referenceV4Request() -> CxcWriteRequest {
     const auto root = support::sourceRoot() / "tests" / "fixtures" / "chart_format_update" /
                       "cfu_f_reference_project";
     CxcWriteRequest request;

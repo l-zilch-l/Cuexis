@@ -39,6 +39,12 @@ struct DecodedArch final {
 };
 
 struct Decoder final {
+    // Explicit constructor: the remaining tables are default-initialised here, so an aggregate
+    // initialisation list can never leave a member uninitialised under GCC's -Wextra.
+    Decoder(std::span<const std::byte> input, bool candidate,
+            gameplay_detail::DecodedStatic* out) noexcept
+        : bytes(input), gameplay(candidate), staticResult(out) {}
+
     std::span<const std::byte> bytes;
     bool gameplay{};
     gameplay_detail::DecodedStatic* staticResult{};

@@ -43,13 +43,13 @@ constexpr std::int64_t kInt64Max = std::numeric_limits<std::int64_t>::max();
 //  Fixture construction
 //  -------------------------------------------------------------------------------------------
 
-inline [[nodiscard]] auto beat(std::int64_t numerator, std::int64_t denominator) -> RationalBeat {
+[[nodiscard]] inline auto beat(std::int64_t numerator, std::int64_t denominator) -> RationalBeat {
     const auto value = RationalBeat::create(numerator, denominator);
     REQUIRE(value.has_value());
     return *value;
 }
 
-inline [[nodiscard]] auto duration(std::int64_t numerator, std::int64_t denominator)
+[[nodiscard]] inline auto duration(std::int64_t numerator, std::int64_t denominator)
     -> RationalDuration {
     const auto value = RationalDuration::create(numerator, denominator);
     REQUIRE(value.has_value());
@@ -57,14 +57,14 @@ inline [[nodiscard]] auto duration(std::int64_t numerator, std::int64_t denomina
 }
 
 //  The declared engine.tick.us.v1 binding with one explicit positive tempo and no sections.
-inline [[nodiscard]] auto plainProfile(RationalDuration tempo) -> TimebaseProfile {
+[[nodiscard]] inline auto plainProfile(RationalDuration tempo) -> TimebaseProfile {
     TimebaseProfile profile = judgement::makeMicrosecondTimebase();
     profile.initialTempo = tempo;
     return profile;
 }
 
 //  All four late-policy parameters measured and a policy declared. The numbers are presence probes.
-inline [[nodiscard]] auto measuredPolicy() -> LatePolicyParameters {
+[[nodiscard]] inline auto measuredPolicy() -> LatePolicyParameters {
     LatePolicyParameters parameters;
     parameters.finalizationWatermark = MeasuredParameter<TickSpan>::measured(TickSpan{0});
     parameters.maxQueueHop = MeasuredParameter<TickSpan>::measured(TickSpan{1});
@@ -74,7 +74,7 @@ inline [[nodiscard]] auto measuredPolicy() -> LatePolicyParameters {
     return parameters;
 }
 
-inline [[nodiscard]] auto contextValue(const cuexis::core::Error& error, std::string_view key)
+[[nodiscard]] inline auto contextValue(const cuexis::core::Error& error, std::string_view key)
     -> std::string {
     for (const auto& entry : error.context()) {
         if (entry.key == key) {
@@ -133,7 +133,7 @@ struct KeyCase final {
     std::uint64_t canonicalOrdinal;
 };
 
-inline [[nodiscard]] auto key(const KeyCase& item) -> TickCollisionKey {
+[[nodiscard]] inline auto key(const KeyCase& item) -> TickCollisionKey {
     //  The origin kind is a required constructor argument: a key cannot be built by omitting it,
     //  because no member of TickCollisionKey has a default value.
     return TickCollisionKey{Tick{item.tick}, item.originKind,
@@ -143,7 +143,7 @@ inline [[nodiscard]] auto key(const KeyCase& item) -> TickCollisionKey {
 //  Sorts a set of canonical keys by the canonical order alone, whatever arrival order it was given
 //  in. This is the property Spec 3.7.2 item 4 protects: the result depends on the keys, never on
 //  the sequence the caller happened to hand over.
-inline [[nodiscard]] auto canonicalSort(const std::vector<KeyCase>& arrivalOrder)
+[[nodiscard]] inline auto canonicalSort(const std::vector<KeyCase>& arrivalOrder)
     -> std::vector<TickCollisionKey> {
     std::vector<TickCollisionKey> keys;
     keys.reserve(arrivalOrder.size());

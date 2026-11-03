@@ -1,0 +1,256 @@
+{
+  "schema": "cuexis.evidence-manifest.v1",
+  "scope": "Independent replay of the applicable-Seek remaining three classes against the archived probe; test-only. Original evidence bytes remain unchanged.",
+  "source_run": "D:/Cuexis-r3seek-verify at c085688a + tests/pd/pd5_host_probe.cpp; archived probe sha256 0ac53b9c03d19c078034da96859b5473024e2d99b10cd61b342980fbd9f0386b",
+  "content_sha256": "e226d384bf456da6d6b4b26ff237ecef04928adec135549fd961af9c47f78def",
+  "content_hash_algorithm": "sha256 over sorted UTF-8 records path + LF + sha256 + LF",
+  "files": [
+    {
+      "path": "04-r3-seek-recheck/archived-probe.sha256.txt",
+      "bytes": 146,
+      "sha256": "23189407c60b7ddfe3c1aac274ff2137abd2c7a31ee434d99ddb4c3db5791aa3",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/index.md",
+      "bytes": 2559,
+      "sha256": "e996d7b196b4418c06f38fc31b9450ecb9f7817742456c09ccd6eaea59842129",
+      "eol": "mixed"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/external/1024/run-00.log.txt",
+      "bytes": 3350,
+      "sha256": "181810303a01c70c474efdf8af9e86886e9f50d710504dabf0698854f898ffaf",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/external/1024/run-01.log.txt",
+      "bytes": 3351,
+      "sha256": "3cdb7e356d52f3b70e4c7a8b072317f6366107989c275291f836b0364157c26c",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/external/1024/run-02.log.txt",
+      "bytes": 3348,
+      "sha256": "e3edb345766450778d29a15115ec99bac9e04116291722bcf1ee179bc96ced7c",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/external/1024/run-03.log.txt",
+      "bytes": 3350,
+      "sha256": "030a768fb8cabbb98cb8167dbd25959514f480de9161f84b707dfc4e7701e0bd",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/external/1024/run-04.log.txt",
+      "bytes": 3352,
+      "sha256": "1646c2be30b0f2b186d44370a9d8f28a2c526ef612df9b3d8b11705f341099a2",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/external/1024/run-05.log.txt",
+      "bytes": 3348,
+      "sha256": "3d04dad88c84e0a5f661e8a949de7908a44230a89fda430d2194b3a7d3afe8e6",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/external/129/run-00.log.txt",
+      "bytes": 3332,
+      "sha256": "b4c44a9720c477fa7a1d4a9620ba7ce1b68a960948001da6f255b4dea6cba755",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/external/129/run-01.log.txt",
+      "bytes": 3331,
+      "sha256": "995f2e73df7568728973aa361e86ec1eb4657c79a47274d2af9f0b4397e991ea",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/external/129/run-02.log.txt",
+      "bytes": 3332,
+      "sha256": "c83d50fd31bb294701d9e56bf9746dd0ce4fcf30c7fe513b6a0fe7a7d01441d4",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/external/129/run-03.log.txt",
+      "bytes": 3330,
+      "sha256": "2ad78eb3f8f4d3b355eafe47d886a2cb6613fb42d6262559ccd9f77af7b3ccc2",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/external/129/run-04.log.txt",
+      "bytes": 3332,
+      "sha256": "4a79dd9d444060644f2272094a5d112f78b5abe42f0994e3fd174ba7f7bb0cb2",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/external/129/run-05.log.txt",
+      "bytes": 3331,
+      "sha256": "8f11a13e02ade99aa0c904c5478762f7bfea2c109fd3572aff373f91fecbf91d",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/fallback/1024/run-00.log.txt",
+      "bytes": 3349,
+      "sha256": "2f96d588a3d39d56ac76ccaa30205ac4a1d3e6ae0b9a5fd614d8263e41698a3d",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/fallback/1024/run-01.log.txt",
+      "bytes": 3349,
+      "sha256": "4b227d3dfe761dc951fa58ebc44a6576356d551f2ac0b11c88734096aafc0508",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/fallback/1024/run-02.log.txt",
+      "bytes": 3349,
+      "sha256": "365da995459bc31e34a3ae4e8e131215a90299ac24ddb08c11f0a6f24c44e3ca",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/fallback/1024/run-03.log.txt",
+      "bytes": 3350,
+      "sha256": "e6cf32217c9be0f98d17d7a9bac98c7b09a305ce4d276e5487eb66cdf90e22bd",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/fallback/1024/run-04.log.txt",
+      "bytes": 3350,
+      "sha256": "cca2e2208eaebaf5cd6d5230d4184e08167c737ff313d9da4dca77bc5cd91e89",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/fallback/1024/run-05.log.txt",
+      "bytes": 3351,
+      "sha256": "fea9ea0a2de4d759dffd6211475867d2450401b77a6276c233019039c67df562",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/fallback/129/run-00.log.txt",
+      "bytes": 3331,
+      "sha256": "eb54f058e1f194d3f458b8e43e23fe237999c930eb1e98f168b7ad058ed61719",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/fallback/129/run-01.log.txt",
+      "bytes": 3333,
+      "sha256": "8772dd3e71e0da0d8337cfad938269dfd800c4238e6070071b085c52e21a06de",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/fallback/129/run-02.log.txt",
+      "bytes": 3332,
+      "sha256": "7d22a0ffecadf0f02a940889b9c237d433dde1397264743436ba9a4f686de49d",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/fallback/129/run-03.log.txt",
+      "bytes": 3330,
+      "sha256": "7af593fefd48fc484bdb925ad5544c25f1ae7050b7d9846a95159be08cc00697",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/fallback/129/run-04.log.txt",
+      "bytes": 3333,
+      "sha256": "e99e183c5317366b658852db032de93fd9474f3e617725bddf3ea27b2eb36ee0",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/fallback/129/run-05.log.txt",
+      "bytes": 3332,
+      "sha256": "79796af376450402d3c26ee223f2fd854516e41c660ad9f1cffba1f20edbfc1b",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/natural/1024/run-00.log.txt",
+      "bytes": 3332,
+      "sha256": "df21cb46b24a6555067e38968cca8d81b59bee986d442d054817babbf52b228e",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/natural/1024/run-01.log.txt",
+      "bytes": 3332,
+      "sha256": "6f934c6529acfaadc0eef7864d13bd403682b8201d24cc5b73b9cc0d0e6fb379",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/natural/1024/run-02.log.txt",
+      "bytes": 3333,
+      "sha256": "3b1a2528f7bebc85fb001f1e369fb756605c5321557141b559c755fcbc979347",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/natural/1024/run-03.log.txt",
+      "bytes": 3328,
+      "sha256": "26a05cf69331ac8e5c09727a99b3d4e1c5293bc7d7daecf1ea1565811279df62",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/natural/1024/run-04.log.txt",
+      "bytes": 3330,
+      "sha256": "c12dc4d55883c63bd253ff76287ee452c041b5cb4ff686a32f9c73d9b79e0d0d",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/natural/1024/run-05.log.txt",
+      "bytes": 3331,
+      "sha256": "d17d6f255f3ed65f1c0cf630852667b01f927761b766c4524589b5269ea8f3ef",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/natural/129/run-00.log.txt",
+      "bytes": 3310,
+      "sha256": "299fbecae65dee41fcffe819e2d85f216dcfda0a6b731937c9c9b0f24b1ce8d1",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/natural/129/run-01.log.txt",
+      "bytes": 3313,
+      "sha256": "8c6c95fda1ab16b98210e60ebbe3af0d8b6e4ff0bd28b6d462296dca769a0b89",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/natural/129/run-02.log.txt",
+      "bytes": 3314,
+      "sha256": "406a6219a3dc90f5faffcd25d0b13df2fc374d2212925315808d8407bd208355",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/natural/129/run-03.log.txt",
+      "bytes": 3314,
+      "sha256": "44f8b598106b2f56e49240ecf8204715a0e6ed2d072b43c785f40e4b752d5bc4",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/natural/129/run-04.log.txt",
+      "bytes": 3314,
+      "sha256": "2cedfc4578de1ad5307fff38c8ea119bf56f31ea8510f45af6fd1f0d53e3f2ab",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/runs/natural/129/run-05.log.txt",
+      "bytes": 3313,
+      "sha256": "e9f64669c1eb7427d3febdf3be758f4d6cfc1c390e169663cecc8812836c6868",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/tools/results.json",
+      "bytes": 75051,
+      "sha256": "b845648fd75c26c957fe2da9af071e99d6c3443c6772f7f56248d9a3ca614987",
+      "eol": "crlf"
+    },
+    {
+      "path": "04-r3-seek-recheck/tools/run_r3_seek_classes.py",
+      "bytes": 8738,
+      "sha256": "fdb20178250d99c396226198ead5424be7b3fb9c78dd948d25b35c1d7cedef1b",
+      "eol": "lf"
+    },
+    {
+      "path": "04-r3-seek-recheck/tools/run.log.txt",
+      "bytes": 1811,
+      "sha256": "47d7b9c6cb2486ecabb982e1d00ee7711f45679221dfa9bd6e49ad2f3abdae6f",
+      "eol": "crlf"
+    }
+  ]
+}
+

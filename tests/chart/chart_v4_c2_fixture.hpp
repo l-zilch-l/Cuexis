@@ -35,7 +35,7 @@ struct ChartParts final {
     std::string extensions{"{}"};
 };
 
-inline [[nodiscard]] auto makeChart(const ChartParts& parts) -> std::string {
+[[nodiscard]] inline auto makeChart(const ChartParts& parts) -> std::string {
     auto result = std::string{R"({
       "format":"cuexis.chart","version":4,
       "chartId":"019f0000-0000-7abc-8def-0000000004c2",
@@ -58,7 +58,7 @@ inline [[nodiscard]] auto makeChart(const ChartParts& parts) -> std::string {
     return result;
 }
 
-inline [[nodiscard]] auto makeCxt(std::string_view templateId, std::string_view clip,
+[[nodiscard]] inline auto makeCxt(std::string_view templateId, std::string_view clip,
                                   std::string_view blendMode = "override",
                                   std::string_view requiredExtensions = "[]") -> std::string {
     auto result = std::string{R"({
@@ -76,7 +76,7 @@ inline [[nodiscard]] auto makeCxt(std::string_view templateId, std::string_view 
     return result;
 }
 
-inline [[nodiscard]] auto loadSource(std::string_view text)
+[[nodiscard]] inline auto loadSource(std::string_view text)
     -> cuexis::chart::ChartV4SourceDocument {
     auto result = cuexis::chart::ChartV4Loader::load(text);
     if (!result.hasValue()) {
@@ -85,19 +85,19 @@ inline [[nodiscard]] auto loadSource(std::string_view text)
     return std::move(*result.document);
 }
 
-inline [[nodiscard]] auto hasDiagnostic(const cuexis::chart::ChartV4ResolveResult& result,
+[[nodiscard]] inline auto hasDiagnostic(const cuexis::chart::ChartV4ResolveResult& result,
                                         std::string_view code) -> bool {
     return std::ranges::any_of(result.diagnostics.items(),
                                [code](const auto& item) { return item.code() == code; });
 }
 
-inline [[nodiscard]] auto hasDiagnostic(const cuexis::chart::ChartV4SourceResult& result,
+[[nodiscard]] inline auto hasDiagnostic(const cuexis::chart::ChartV4SourceResult& result,
                                         std::string_view code) -> bool {
     return std::ranges::any_of(result.diagnostics.items(),
                                [code](const auto& item) { return item.code() == code; });
 }
 
-inline [[nodiscard]] auto findDiagnostic(const cuexis::chart::ChartV4SourceResult& result,
+[[nodiscard]] inline auto findDiagnostic(const cuexis::chart::ChartV4SourceResult& result,
                                          std::string_view code) -> const cuexis::core::Diagnostic* {
     const auto item =
         std::ranges::find_if(result.diagnostics.items(),
@@ -105,7 +105,7 @@ inline [[nodiscard]] auto findDiagnostic(const cuexis::chart::ChartV4SourceResul
     return item != result.diagnostics.items().end() ? &*item : nullptr;
 }
 
-inline [[nodiscard]] auto findDiagnostic(const cuexis::chart::ChartV4ResolveResult& result,
+[[nodiscard]] inline auto findDiagnostic(const cuexis::chart::ChartV4ResolveResult& result,
                                          std::string_view code, std::string_view recordKind = {})
     -> const cuexis::core::Diagnostic* {
     const auto item = std::ranges::find_if(result.diagnostics.items(), [&](const auto& diagnostic) {
@@ -122,7 +122,7 @@ inline [[nodiscard]] auto findDiagnostic(const cuexis::chart::ChartV4ResolveResu
     return item != result.diagnostics.items().end() ? &*item : nullptr;
 }
 
-inline [[nodiscard]] auto contextValue(const cuexis::core::Diagnostic& diagnostic,
+[[nodiscard]] inline auto contextValue(const cuexis::core::Diagnostic& diagnostic,
                                        std::string_view key) -> std::optional<std::string_view> {
     const auto item = std::ranges::find_if(
         diagnostic.context(), [key](const auto& context) { return context.key == key; });
@@ -130,7 +130,7 @@ inline [[nodiscard]] auto contextValue(const cuexis::core::Diagnostic& diagnosti
                                               : std::nullopt;
 }
 
-inline [[nodiscard]] auto
+[[nodiscard]] inline auto
 continuousClip(std::string_view id, std::string_view property, std::string_view startValue,
                std::string_view endValue,
                std::string_view duration = R"({"numerator":1,"denominator":1})") -> std::string {
@@ -150,7 +150,7 @@ continuousClip(std::string_view id, std::string_view property, std::string_view 
     return result;
 }
 
-inline [[nodiscard]] auto cxtContinuousClip(std::string_view property, std::string_view startValue,
+[[nodiscard]] inline auto cxtContinuousClip(std::string_view property, std::string_view startValue,
                                             std::string_view endValue) -> std::string {
     auto clip = continuousClip("ignored", property, startValue, endValue);
     const auto id = clip.find("\"id\":\"ignored\",");
@@ -161,7 +161,7 @@ inline [[nodiscard]] auto cxtContinuousClip(std::string_view property, std::stri
     return clip;
 }
 
-inline [[nodiscard]] auto stepMaterialClip(std::string_view id, std::string_view assetId,
+[[nodiscard]] inline auto stepMaterialClip(std::string_view id, std::string_view assetId,
                                            bool includeId = true) -> std::string {
     auto result = std::string{"{"};
     if (includeId) {
@@ -177,12 +177,12 @@ inline [[nodiscard]] auto stepMaterialClip(std::string_view id, std::string_view
     return result;
 }
 
-inline [[nodiscard]] auto transformComponent() -> std::string_view {
+[[nodiscard]] inline auto transformComponent() -> std::string_view {
     return R"("cuexis.transform":{"version":1,"position":[0,0,0],
       "rotation":[0,0,0,1],"scale":[1,1,1]})";
 }
 
-inline [[nodiscard]] auto findResource(const cuexis::chart::ChartV4ResolvedArtifact& artifact,
+[[nodiscard]] inline auto findResource(const cuexis::chart::ChartV4ResolvedArtifact& artifact,
                                        std::string_view id)
     -> const cuexis::chart::ChartResourceRequirement* {
     const auto item = std::ranges::find_if(artifact.resourceRequirements, [id](const auto& value) {

@@ -1,5 +1,6 @@
 // Reference host legacy sequence: the scripted host clock, frame digests and the reload checks.
 
+#include "host_realtime.hpp"
 #include "host_runner.hpp"
 #include "host_runner_internal.hpp"
 
