@@ -1,18 +1,76 @@
 # The declaration checks below read header text without running a preprocessor. Strip comments and
-# `#if 0` blocks first, so a declaration has to be live code: a commented-out or disabled definition
-# must not satisfy the gate. This is a lexical approximation; `#if 0 ... #else ... #endif` is left
-# alone deliberately, because removing that block would drop the live `#else` branch.
+# the branches a preprocessor would not compile, so a declaration has to be live code: a commented-out
+# definition, one inside `#if 0`, or one in the dead half of `#if 0 ... #else ... #endif` must not
+# satisfy the gate. `#if`/`#ifdef`/`#ifndef` other than `#if 0` are treated as live.
 function(_cuexis_strip_inactive text output_variable)
     string(REGEX REPLACE "/\\*([^*]|\\*+[^*/])*\\*+/" " " stripped "${text}")
     string(REGEX REPLACE "//[^\n]*" " " stripped "${stripped}")
-    # Repeat so nested `#if 0` blocks collapse from the inside out.
-    foreach(iteration RANGE 0 7)
-        string(REGEX REPLACE "#[ \t]*if[ \t]+0[^#]*#[ \t]*endif" "" disabled "${stripped}")
-        if(disabled STREQUAL stripped)
-            break()
+    # A semicolon cannot live inside one CMake list element, so park it while the text is split into
+    # lines and put it back before returning.
+    string(REPLACE ";" "@cuexis_semicolon@" stripped "${stripped}")
+    string(REPLACE "\n" ";" lines "${stripped}")
+    set(live_stack "")
+    set(kept "")
+    foreach(line IN LISTS lines)
+        if(line MATCHES "^[ \t]*#[ \t]*if[ \t]+0[ \t]*$")
+            list(APPEND live_stack 0)
+        elseif(line MATCHES "^[ \t]*#[ \t]*if[ \t]+1[ \t]*$")
+            list(APPEND live_stack 1)
+        elseif(line MATCHES "^[ \t]*#[ \t]*if(n?def)?[ \t]")
+            # A condition this script cannot evaluate is assumed live, which keeps the check from
+            # failing on a declaration that a real build would see.
+            list(APPEND live_stack 2)
+        elseif(line MATCHES "^[ \t]*#[ \t]*(else|elif)")
+            list(LENGTH live_stack depth)
+            if(depth GREATER 0)
+                math(EXPR top "${depth} - 1")
+                list(GET live_stack ${top} branch)
+                if(branch EQUAL 0)
+                    list(REMOVE_AT live_stack ${top})
+                    list(APPEND live_stack 1)
+                elseif(branch EQUAL 1)
+                    list(REMOVE_AT live_stack ${top})
+                    list(APPEND live_stack 0)
+                endif()
+            endif()
+        elseif(line MATCHES "^[ \t]*#[ \t]*endif")
+            list(LENGTH live_stack depth)
+            if(depth GREATER 0)
+                math(EXPR top "${depth} - 1")
+                list(REMOVE_AT live_stack ${top})
+            endif()
         endif()
-        set(stripped "${disabled}")
+        list(FIND live_stack 0 dead)
+        if(dead EQUAL -1)
+            string(APPEND kept "${line}\n")
+        endif()
     endforeach()
+    string(REPLACE "@cuexis_semicolon@" ";" kept "${kept}")
+    set(${output_variable} "${kept}" PARENT_SCOPE)
+endfunction()
+
+# A declaration entry is "owning-file|surface". Both halves are needed: the surface names what must
+# exist, the owner names the partition header that has to declare it.
+function(_cuexis_split_entry entry owner_variable surface_variable)
+    string(REPLACE "|" ";" fields "${entry}")
+    list(GET fields 0 owner)
+    list(GET fields 1 surface)
+    set(${owner_variable} "${owner}" PARENT_SCOPE)
+    set(${surface_variable} "${surface}" PARENT_SCOPE)
+endfunction()
+
+# Stripped text of one partition header, read and processed once per gate run.
+function(_cuexis_partition_text source_dir directory file output_variable)
+    string(REPLACE "/" "_" cache_key "${directory}/${file}")
+    string(REPLACE "." "_" cache_key "${cache_key}")
+    get_property(cached GLOBAL PROPERTY "CUEXIS_PARTITION_${cache_key}")
+    if(cached)
+        set(${output_variable} "${cached}" PARENT_SCOPE)
+        return()
+    endif()
+    file(READ "${source_dir}/${directory}/${file}" contents)
+    _cuexis_strip_inactive("${contents}" stripped)
+    set_property(GLOBAL PROPERTY "CUEXIS_PARTITION_${cache_key}" "${stripped}")
     set(${output_variable} "${stripped}" PARENT_SCOPE)
 endfunction()
 
@@ -213,40 +271,33 @@ function(cuexis_verify_source_architecture source_dir)
     # S7A-2 keeps the input normalization surface inside the same input-layer partition instead of
     # adding a second input header or a cuexis_input target, so the header that this batch extends is
     # checked for the declarations it now owns. The check is a presence check, not a semantic one:
-    # the frozen role and boundary rules themselves are asserted by the judgement tests. The
-    # partition is an umbrella plus two included parts, so all three files are read as one surface.
-    set(judgement_input_boundary_contents "")
-    foreach(judgement_input_part IN ITEMS
-            input_boundary.hpp
-            input_boundary_amount.hpp
-            input_boundary_mapping.hpp)
-        file(READ
-            "${source_dir}/engine/judgement/include/cuexis/judgement/${judgement_input_part}"
-            judgement_input_part_contents)
-        string(APPEND judgement_input_boundary_contents "${judgement_input_part_contents}")
-    endforeach()
-    _cuexis_strip_inactive("${judgement_input_boundary_contents}" judgement_input_boundary_contents)
+    # the frozen role and boundary rules themselves are asserted by the judgement tests. Every entry
+    # names the partition header that owns it, so a declaration that drifts into a sibling file fails
+    # here instead of hiding in the concatenation of the whole partition.
     _cuexis_require_partition_includes("${source_dir}"
         "engine/judgement/include/cuexis/judgement"
         input_boundary.hpp
         input_boundary_amount.hpp
         input_boundary_mapping.hpp)
-    foreach(judgement_input_surface IN ITEMS
-            "struct AmountSpec"
-            "struct InputDomainDeclaration"
-            "struct InputMappingProfile"
-            "struct NormalizedObservation"
-            "struct RawIngressTimestamps"
-            "class SessionIngressState"
-            "quantizeAmount"
-            "validateInputMapping"
-            "normalizeObservation"
-            "admitLateQueueEntry")
+    foreach(judgement_input_entry IN ITEMS
+            "input_boundary_amount.hpp|struct AmountSpec"
+            "input_boundary_amount.hpp|struct InputDomainDeclaration"
+            "input_boundary_mapping.hpp|struct InputMappingProfile"
+            "input_boundary.hpp|struct NormalizedObservation"
+            "input_boundary.hpp|struct RawIngressTimestamps"
+            "input_boundary.hpp|class SessionIngressState"
+            "input_boundary_amount.hpp|quantizeAmount"
+            "input_boundary_mapping.hpp|validateInputMapping"
+            "input_boundary.hpp|normalizeObservation"
+            "input_boundary.hpp|admitLateQueueEntry")
+        _cuexis_split_entry("${judgement_input_entry}" judgement_input_owner judgement_input_surface)
+        _cuexis_partition_text("${source_dir}" "engine/judgement/include/cuexis/judgement"
+            "${judgement_input_owner}" judgement_input_text)
         _cuexis_declaration_pattern("${judgement_input_surface}" judgement_input_pattern)
-        if(NOT judgement_input_boundary_contents MATCHES "${judgement_input_pattern}")
+        if(NOT judgement_input_text MATCHES "${judgement_input_pattern}")
             message(FATAL_ERROR
                 "Judgement S7A-2 input boundary declaration is missing: "
-                "${judgement_input_surface}")
+                "${judgement_input_surface} (owner ${judgement_input_owner})")
         endif()
     endforeach()
 
@@ -255,22 +306,6 @@ function(cuexis_verify_source_architecture source_dir)
     # are checked for presence here. The check is a presence check, not a semantic one: the frozen
     # rules themselves are asserted by tests/judgement/gameplay_graph_tests.cpp,
     # gameplay_assembler_tests.cpp and gameplay_identity_tests.cpp.
-    file(READ
-        "${source_dir}/engine/judgement/include/cuexis/judgement/gameplay_graph.hpp"
-        judgement_graph_contents)
-    # The graph partition is an umbrella plus four included parts, so the declaration surface is
-    # the concatenation of all five files.
-    foreach(judgement_graph_part IN ITEMS
-            gameplay_graph_reference.hpp
-            gameplay_graph_pattern.hpp
-            gameplay_graph_phase.hpp
-            gameplay_graph_record.hpp)
-        file(READ
-            "${source_dir}/engine/judgement/include/cuexis/judgement/${judgement_graph_part}"
-            judgement_graph_part_contents)
-        string(APPEND judgement_graph_contents "${judgement_graph_part_contents}")
-    endforeach()
-    _cuexis_strip_inactive("${judgement_graph_contents}" judgement_graph_contents)
     _cuexis_require_partition_includes("${source_dir}"
         "engine/judgement/include/cuexis/judgement"
         gameplay_graph.hpp
@@ -278,153 +313,144 @@ function(cuexis_verify_source_architecture source_dir)
         gameplay_graph_pattern.hpp
         gameplay_graph_phase.hpp
         gameplay_graph_record.hpp)
-    foreach(judgement_graph_surface IN ITEMS
-            "enum class ReferenceClosure"
-            "enum class ReferenceKind"
-            "declareReference"
-            "struct StableDeclarationId"
-            "struct DeclarationRef"
-            "struct MergedDeclaration"
-            "struct MergedNamespace"
-            "struct CapabilityRef"
-            "struct FeatureRef"
-            "struct RequiredRefs"
-            "struct DeclaredCapabilitySet"
-            "struct FeatureClosure"
-            "struct DerivedCapabilityClosure"
-            "struct ResourceRef"
-            "struct ResourceClosure"
-            "struct ClosureContributions"
-            "struct EmissionPathStep"
-            "struct RequirementIdentity"
-            "class RequiredActionRef"
-            "class DomainBindingRef"
-            "enum class PatternPrimitive"
-            "enum class MatchPolicy"
-            "enum class UnsupportedContentKind"
-            "struct UnsupportedContentDeclaration"
-            "struct PatternNodeDeclaration"
-            "struct PatternDeclaration"
-            "enum class PhaseKind"
-            "enum class FactCategory"
-            "enum class Outcome"
-            "enum class GradePresence"
-            "factCategoryOfPhase"
-            "factCategoryToken"
-            "struct MeasureComponentDeclaration"
-            "struct MeasureSpecDeclaration"
-            "enum class ResourceClaimIntent"
-            "struct ClaimPolicyDeclaration"
-            "enum class GraceOverrideMode"
-            "struct GraceOverrideDeclaration"
-            "enum class GraceResolutionPolicy"
-            "class PreparedGrace"
-            "struct GraceDeclaration"
-            "struct ResourceClaimDeclaration"
-            "struct ResourceRecord"
-            "struct JudgementAxisRange"
-            "enum class FrameResolution"
-            "struct JudgementDomainRecord"
-            "validateJudgementDomain"
-            "geometryAdd"
-            "geometryMultiply"
-            "geometrySquare"
-            "axisExtent"
-            "narrowToAxis"
-            "struct RequirementRecord"
-            "enum class RelationKind"
-            "struct RelationDeclaration"
-            "struct SolverProfileDeclaration"
-            "struct FactBindingRef"
-            "enum class SourceForm"
-            "struct SourceClosure"
-            "struct DiagnosticMap"
-            "struct CanonicalGameplayGraph"
-            "canonicalCompare"
-            "deriveCapabilityClosure"
-            "deriveFeatureClosure"
-            "deriveResourceClosure"
-            "struct GraphFieldDifference"
-            "semanticDiff"
-            "equivalent")
+    foreach(judgement_graph_entry IN ITEMS
+            "gameplay_graph_reference.hpp|enum class ReferenceClosure"
+            "gameplay_graph_reference.hpp|enum class ReferenceKind"
+            "gameplay_graph_reference.hpp|declareReference"
+            "gameplay_graph_reference.hpp|struct StableDeclarationId"
+            "gameplay_graph_reference.hpp|struct DeclarationRef"
+            "gameplay_graph_reference.hpp|struct MergedDeclaration"
+            "gameplay_graph_reference.hpp|struct MergedNamespace"
+            "gameplay_graph_reference.hpp|struct CapabilityRef"
+            "gameplay_graph_reference.hpp|struct FeatureRef"
+            "gameplay_graph_reference.hpp|struct RequiredRefs"
+            "gameplay_graph_reference.hpp|struct DeclaredCapabilitySet"
+            "gameplay_graph_reference.hpp|struct FeatureClosure"
+            "gameplay_graph_reference.hpp|struct DerivedCapabilityClosure"
+            "gameplay_graph_reference.hpp|struct ResourceRef"
+            "gameplay_graph_reference.hpp|struct ResourceClosure"
+            "gameplay_graph_reference.hpp|struct ClosureContributions"
+            "gameplay_graph_pattern.hpp|struct EmissionPathStep"
+            "gameplay_graph_pattern.hpp|struct RequirementIdentity"
+            "gameplay_graph_pattern.hpp|class RequiredActionRef"
+            "gameplay_graph_pattern.hpp|class DomainBindingRef"
+            "gameplay_graph_pattern.hpp|enum class PatternPrimitive"
+            "gameplay_graph_pattern.hpp|enum class MatchPolicy"
+            "gameplay_graph_pattern.hpp|enum class UnsupportedContentKind"
+            "gameplay_graph_pattern.hpp|struct UnsupportedContentDeclaration"
+            "gameplay_graph_pattern.hpp|struct PatternNodeDeclaration"
+            "gameplay_graph_pattern.hpp|struct PatternDeclaration"
+            "gameplay_graph_phase.hpp|enum class PhaseKind"
+            "gameplay_graph_phase.hpp|enum class FactCategory"
+            "gameplay_graph_phase.hpp|enum class Outcome"
+            "gameplay_graph_phase.hpp|enum class GradePresence"
+            "gameplay_graph_phase.hpp|factCategoryOfPhase"
+            "gameplay_graph_phase.hpp|factCategoryToken"
+            "gameplay_graph_phase.hpp|struct MeasureComponentDeclaration"
+            "gameplay_graph_phase.hpp|struct MeasureSpecDeclaration"
+            "gameplay_graph_phase.hpp|enum class ResourceClaimIntent"
+            "gameplay_graph_phase.hpp|struct ClaimPolicyDeclaration"
+            "gameplay_graph_phase.hpp|enum class GraceOverrideMode"
+            "gameplay_graph_phase.hpp|struct GraceOverrideDeclaration"
+            "gameplay_graph_phase.hpp|enum class GraceResolutionPolicy"
+            "gameplay_graph_phase.hpp|class PreparedGrace"
+            "gameplay_graph_phase.hpp|struct GraceDeclaration"
+            "gameplay_graph_phase.hpp|struct ResourceClaimDeclaration"
+            "gameplay_graph_phase.hpp|struct ResourceRecord"
+            "gameplay_graph_record.hpp|struct JudgementAxisRange"
+            "gameplay_graph_record.hpp|enum class FrameResolution"
+            "gameplay_graph_record.hpp|struct JudgementDomainRecord"
+            "gameplay_graph_record.hpp|validateJudgementDomain"
+            "gameplay_graph_record.hpp|geometryAdd"
+            "gameplay_graph_record.hpp|geometryMultiply"
+            "gameplay_graph_record.hpp|geometrySquare"
+            "gameplay_graph_record.hpp|axisExtent"
+            "gameplay_graph_record.hpp|narrowToAxis"
+            "gameplay_graph_record.hpp|struct RequirementRecord"
+            "gameplay_graph_record.hpp|enum class RelationKind"
+            "gameplay_graph_record.hpp|struct RelationDeclaration"
+            "gameplay_graph_record.hpp|struct SolverProfileDeclaration"
+            "gameplay_graph_record.hpp|struct FactBindingRef"
+            "gameplay_graph_record.hpp|enum class SourceForm"
+            "gameplay_graph_record.hpp|struct SourceClosure"
+            "gameplay_graph_record.hpp|struct DiagnosticMap"
+            "gameplay_graph.hpp|struct CanonicalGameplayGraph"
+            "gameplay_graph.hpp|canonicalCompare"
+            "gameplay_graph.hpp|deriveCapabilityClosure"
+            "gameplay_graph.hpp|deriveFeatureClosure"
+            "gameplay_graph.hpp|deriveResourceClosure"
+            "gameplay_graph.hpp|struct GraphFieldDifference"
+            "gameplay_graph.hpp|semanticDiff"
+            "gameplay_graph.hpp|equivalent")
+        _cuexis_split_entry("${judgement_graph_entry}" judgement_graph_owner judgement_graph_surface)
+        _cuexis_partition_text("${source_dir}" "engine/judgement/include/cuexis/judgement"
+            "${judgement_graph_owner}" judgement_graph_text)
         _cuexis_declaration_pattern("${judgement_graph_surface}" judgement_graph_pattern)
-        if(NOT judgement_graph_contents MATCHES "${judgement_graph_pattern}")
+        if(NOT judgement_graph_text MATCHES "${judgement_graph_pattern}")
             message(FATAL_ERROR
                 "Judgement S7A-3 canonical graph declaration is missing: "
-                "${judgement_graph_surface}")
+                "${judgement_graph_surface} (owner ${judgement_graph_owner})")
         endif()
     endforeach()
 
-    file(READ
-        "${source_dir}/engine/judgement/include/cuexis/judgement/gameplay_assembler.hpp"
-        judgement_assembler_contents)
-    # The assembler partition is an umbrella plus three included parts, so the declaration
-    # surface is the concatenation of all four files.
-    foreach(judgement_assembler_part IN ITEMS
-            gameplay_assembler_identity.hpp
-            gameplay_assembler_publication.hpp
-            gameplay_assembler_compiled.hpp)
-        file(READ
-            "${source_dir}/engine/judgement/include/cuexis/judgement/${judgement_assembler_part}"
-            judgement_assembler_part_contents)
-        string(APPEND judgement_assembler_contents "${judgement_assembler_part_contents}")
-    endforeach()
-    _cuexis_strip_inactive("${judgement_assembler_contents}" judgement_assembler_contents)
     _cuexis_require_partition_includes("${source_dir}"
         "engine/judgement/include/cuexis/judgement"
         gameplay_assembler.hpp
         gameplay_assembler_identity.hpp
         gameplay_assembler_publication.hpp
         gameplay_assembler_compiled.hpp)
-    foreach(judgement_assembler_surface IN ITEMS
-            "struct LocalDeclaration"
-            "struct GameplaySourceDocument"
-            "struct GameplaySource"
-            "enum class EntryKind"
-            "struct CompileCapabilityContext"
-            "struct EngineIdentityDeclaration"
-            "struct RulesetIdentityDeclaration"
-            "struct SessionIdentityDeclaration"
-            "struct PreparedIdentityDeclarations"
-            "class CanonicalIdentityBytes"
-            "class ChartIdentity"
-            "class ContentIdentity"
-            "class PreparedIdentity"
-            "makeChartIdentity"
-            "makeContentIdentity"
-            "makePreparedIdentity"
-            "sharesJudgementIdentity"
-            "struct ContentProfileCounts"
-            "struct ContentProfileLimits"
-            "enum class ContentProfileVerdict"
-            "countContentProfile"
-            "checkContentProfile"
-            "struct AssemblyRequest"
-            "struct AssembledGameplay"
-            "assembleGameplay"
-            "class GameplayPublication"
-            "assembleInto"
-            "struct ReferenceClosurePartition"
-            "partitionReferences"
-            "struct PatternCompileBudget"
-            "struct PatternArmBound"
-            "checkPatternContainment"
-            "struct CompiledMeasureComponent"
-            "struct MeasurePhaseContext"
-            "class CompiledPattern"
-            "class CompiledMeasure"
-            "struct GraceResolutionInputs"
-            "resolvePreparedGrace"
-            "struct ResourceClaimResolutionInputs"
-            "class ResourceClaimResolution"
-            "compilePattern"
-            "compileMeasure"
-            "resolveResourceClaims")
+    foreach(judgement_assembler_entry IN ITEMS
+            "gameplay_assembler_identity.hpp|struct LocalDeclaration"
+            "gameplay_assembler_identity.hpp|struct GameplaySourceDocument"
+            "gameplay_assembler_identity.hpp|struct GameplaySource"
+            "gameplay_assembler_identity.hpp|enum class EntryKind"
+            "gameplay_assembler_identity.hpp|struct CompileCapabilityContext"
+            "gameplay_assembler_identity.hpp|struct EngineIdentityDeclaration"
+            "gameplay_assembler_identity.hpp|struct RulesetIdentityDeclaration"
+            "gameplay_assembler_identity.hpp|struct SessionIdentityDeclaration"
+            "gameplay_assembler_identity.hpp|struct PreparedIdentityDeclarations"
+            "gameplay_assembler_identity.hpp|class CanonicalIdentityBytes"
+            "gameplay_assembler_identity.hpp|class ChartIdentity"
+            "gameplay_assembler_identity.hpp|class ContentIdentity"
+            "gameplay_assembler_identity.hpp|class PreparedIdentity"
+            "gameplay_assembler_identity.hpp|makeChartIdentity"
+            "gameplay_assembler_identity.hpp|makeContentIdentity"
+            "gameplay_assembler_identity.hpp|makePreparedIdentity"
+            "gameplay_assembler_identity.hpp|sharesJudgementIdentity"
+            "gameplay_assembler_publication.hpp|struct ContentProfileCounts"
+            "gameplay_assembler_publication.hpp|struct ContentProfileLimits"
+            "gameplay_assembler_publication.hpp|enum class ContentProfileVerdict"
+            "gameplay_assembler_publication.hpp|countContentProfile"
+            "gameplay_assembler_publication.hpp|checkContentProfile"
+            "gameplay_assembler_publication.hpp|struct AssemblyRequest"
+            "gameplay_assembler_publication.hpp|struct AssembledGameplay"
+            "gameplay_assembler_publication.hpp|assembleGameplay"
+            "gameplay_assembler_publication.hpp|class GameplayPublication"
+            "gameplay_assembler_publication.hpp|assembleInto"
+            "gameplay_assembler_publication.hpp|struct ReferenceClosurePartition"
+            "gameplay_assembler_publication.hpp|partitionReferences"
+            "gameplay_assembler_compiled.hpp|struct PatternCompileBudget"
+            "gameplay_assembler_compiled.hpp|struct PatternArmBound"
+            "gameplay_assembler_compiled.hpp|checkPatternContainment"
+            "gameplay_assembler_compiled.hpp|struct CompiledMeasureComponent"
+            "gameplay_assembler_compiled.hpp|struct MeasurePhaseContext"
+            "gameplay_assembler_compiled.hpp|class CompiledPattern"
+            "gameplay_assembler_compiled.hpp|class CompiledMeasure"
+            "gameplay_assembler.hpp|struct GraceResolutionInputs"
+            "gameplay_assembler.hpp|resolvePreparedGrace"
+            "gameplay_assembler.hpp|struct ResourceClaimResolutionInputs"
+            "gameplay_assembler.hpp|class ResourceClaimResolution"
+            "gameplay_assembler_compiled.hpp|compilePattern"
+            "gameplay_assembler_compiled.hpp|compileMeasure"
+            "gameplay_assembler.hpp|resolveResourceClaims")
+        _cuexis_split_entry("${judgement_assembler_entry}" judgement_assembler_owner judgement_assembler_surface)
+        _cuexis_partition_text("${source_dir}" "engine/judgement/include/cuexis/judgement"
+            "${judgement_assembler_owner}" judgement_assembler_text)
         _cuexis_declaration_pattern("${judgement_assembler_surface}" judgement_assembler_pattern)
-        if(NOT judgement_assembler_contents MATCHES "${judgement_assembler_pattern}")
+        if(NOT judgement_assembler_text MATCHES "${judgement_assembler_pattern}")
             message(FATAL_ERROR
                 "Judgement S7A-3 offline assembler declaration is missing: "
-                "${judgement_assembler_surface}")
+                "${judgement_assembler_surface} (owner ${judgement_assembler_owner})")
         endif()
     endforeach()
 
