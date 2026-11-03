@@ -13,6 +13,25 @@ import tempfile
 
 def check(root: Path) -> list[str]:
     failures: list[str] = []
+    # A gate that silently loses its inputs is worse than no gate: name every file and directory
+    # the scan depends on, and stop before the scan when one of them is absent.
+    required_inputs = (
+        "docs/stage_reports/stages/stage-07/02-diagnostics/n1/2026-10-10-n1-branch-mapping.json",
+        "engine/judgement/src/diagnostic_policy.hpp",
+        "engine/judgement/src/source_codes.hpp",
+        "engine/judgement/src/publication.cpp",
+        "engine/playback/src/gameplay_internal.hpp",
+        "schemas/cuexis.gameplay-diagnostics.v2.codes.json",
+        "tests/fixtures/diagnostic_revision1/manifest.json",
+    )
+    for relative in required_inputs:
+        if not (root / relative).is_file():
+            failures.append(f"required gate input is missing: {relative}")
+    for directory in ("engine", "app", "tools", "tests", "cmake", "schemas"):
+        if not (root / directory).is_dir():
+            failures.append(f"scanned directory is missing: {directory}")
+    if failures:
+        return failures
     rows = json.loads((root / "docs/stage_reports/stages/stage-07/02-diagnostics/n1/2026-10-10-n1-branch-mapping.json").read_text(encoding="utf-8"))
     targets = [r["proposed_name"] for r in rows if r["proposed_name"]] + ["judgement.grace.value_source_conflict", "judgement.input.occurrence_conflict", "judgement.control.reconciliation_invalid"]
     if len(targets) != len(set(targets)):
@@ -36,6 +55,8 @@ def check(root: Path) -> list[str]:
     if len(live_constants) != len(set(live_constants)) or not set(live_constants) <= set(targets):
         failures.append("live private diagnostic collision or unregistered projection policy")
     kernel_units = sorted((root / "engine/judgement/src").glob("execution_kernel*.cpp"))
+    if len(kernel_units) < 2:
+        failures.append("execution kernel unit glob found fewer than two units")
     kernel_units.append(root / "engine/judgement/src/execution_profile.cpp")
     for path in kernel_units:
         producer = path.read_text(encoding="utf-8")
@@ -87,6 +108,15 @@ def check(root: Path) -> list[str]:
                 failures.append(f"{relative}: active legacy spelling or dynamic prefix")
             if "kSecondHalf" in text or "secondHalfError(" in text:
                 failures.append(f"{relative}: deleted placeholder consumer")
+    # A wholesale deletion inside a scanned directory would otherwise leave the scan green.
+    for directory, floor in (("engine", 200), ("app", 20), ("tools", 20), ("tests", 150), ("cmake", 10), ("schemas", 5)):
+        found = sum(
+            1
+            for path in (root / directory).rglob("*")
+            if path.is_file() and path.suffix in (".cpp", ".hpp", ".cmake", ".json")
+        )
+        if found < floor:
+            failures.append(f"{directory}: only {found} files scanned, expected at least {floor}")
     manifest = json.loads((root / "tests/fixtures/diagnostic_revision1/manifest.json").read_text(encoding="utf-8"))
     for entry in manifest["files"]:
         if hashlib.sha256((root / entry["path"]).read_bytes()).hexdigest() != entry["sha256"]:
@@ -113,6 +143,25 @@ def self_test(root: Path) -> None:
                 raise RuntimeError(f"{reason}: {result.stdout}\n{result.stderr}")
             print(f"{reason}: CTest exit={result.returncode}")
         run(True, "legal exact exceptions")
+        # Vacuity guards: losing an input must fail the gate instead of silently narrowing it.
+        schema = copy / "schemas/cuexis.gameplay-diagnostics.v2.codes.json"
+        parked_schema = schema.with_name(schema.name + ".parked")
+        schema.rename(parked_schema)
+        run(False, "missing codes schema")
+        parked_schema.rename(schema)
+        kernels = sorted((copy / "engine/judgement/src").glob("execution_kernel*.cpp"))
+        if len(kernels) < 2:
+            raise RuntimeError("self-test expects several execution kernel units")
+        for path in kernels:
+            path.rename(path.with_name(path.name + ".parked"))
+        run(False, "empty execution kernel glob")
+        for path in kernels:
+            path.with_name(path.name + ".parked").rename(path)
+        app = copy / "app"
+        parked_app = copy / "app.parked"
+        app.rename(parked_app)
+        run(False, "missing scanned directory")
+        parked_app.rename(app)
         mutations = [
             ("engine/playback/src/gameplay_internal.hpp", lambda s: s.replace('judgement::detail::classifyPublicDiagnostic(code)', 'false', 1), "missing bridge consumer"),
             ("engine/judgement/src/publication.cpp", lambda s: s.replace('return categoryProjectedDiagnostic(code);', 'return false;', 1), "disconnected finite policy"),
