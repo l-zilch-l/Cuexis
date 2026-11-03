@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-11-02
+更新日期：2026-11-03
 
 本文只维护当前阶段、正在进行的任务和未解决的问题。实施与测量细节见带日期的阶段报告。
 
@@ -163,6 +163,14 @@
   [证据附件](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-31-40k-verdict-evidence/index.md)。
 - **PD-5 定案与 Stage 7-PD 退出裁定**：判定报告已提出“未通过但定案”及退出清单，尚待 owner 接受；读取与 Seek 整改由 RPA 线承接，
   分域内存及正式/设备/生产验收缺口仍按下文跟踪。见[判定报告](stage_reports/stages/stage-07/04-pd/pd-5/exit/2026-10-24-pd5-verdict-and-stage-7-pd-exit.md)。
+- **超限源文件拆分完成（2026-11-03）**：`engine/`、`app/`、`tests/`、`tools/` 下已无超过 800 行的 `.cpp`
+  与超过 500 行的 `.hpp`（终检 0 个）。拆分覆盖源文件、测试文件与内部/公开头文件，每个文件一次独立提交，
+  提交说明记录拆分前后行数、增量构建、相关测试二进制、`cuexis_format_check` 与逐行等价校验的结果；
+  逐文件进度表见工作区 `out/_split-plan/PLAN.md`（`out/` 不入库）。拆分同步修正了三处门与链接面：
+  诊断形式化门改扫 `execution_kernel*.cpp` 与 `execution_kernel_internal.hpp`；架构门对
+  `input_boundary` / `gameplay_assembler` / `gameplay_graph` 三个分区按“伞头 + 分区头”拼接后比对
+  （文件存在性与声明清单不变）；`tests/external` 的两个整包消费者补齐拆分后的 Validation Sink 源文件。
+  末次拆分后完整 Debug CTest 全绿（仅保留既有 symlink 跳过项）。该批只改组织方式，不改行为契约。
 
 本重构分支的唯一实施入口为 `D:/Cuexis-redesign`，分支 `Cuexis-redesign`。
 接手资料中的其他 worktree 和分支均为历史来源，本批不在其中执行操作。
