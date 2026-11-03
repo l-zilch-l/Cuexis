@@ -108,6 +108,11 @@
   拆分留下的 candidate 配置编译错误（`publicTick` 缺声明）：Debug/Release 全绿是因为它们不编译该配置，
   这也是本轮唯一一次实际构建该配置。见[口径裁定](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-03-r3-repeatability-scope-ruling.md)
   与[分辨率报告](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-03-r3-seek-repeatability-resolution/index.md)。
+  同一批更正了一条记录：legacy parse-once 的树复用**不是待决候选**，重做版已在 `466ff76a` 进入产品
+  （归档 `decision.json` 的 `selected:false` 指的是更早那版带已知限制的原型）。按当前源码补的 A/B 读数为
+  prepare 比值 0.7139 [0.6574, 0.7753] / 0.6747 [0.6504, 0.7000] / 0.6949 [0.6660, 0.7250]（1K/10K/40K，
+  即 −28.6% / −32.5% / −30.5%），18 个进程的 identity 与 frame digest 全程一致。见
+  [parse-once 产品读数](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-03-r3-parse-once-product-reading/index.md)。
 - **2026-11-01 同源本地矩阵已执行（test-only）**：`tools/verification/run_rpa_acceptance_matrix.py`
   在 `466ff76`、worktree 干净的同一份源码上按固定行序跑完全部 11 行，逐行 configure / build /
   CTest / `[measurement]` 重复与未执行项见

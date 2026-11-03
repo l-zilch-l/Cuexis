@@ -35,7 +35,7 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE AND CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
         endforeach()
     endif()
     if(TARGET cuexis_execution_host_support)
-        add_executable(cuexis_pd_host_probe host_delivery_probe.cpp pd5_host_probe.cpp pd5_matrix_probe.cpp owner_wait_probe.cpp owner_channel_wait_tests.cpp coherent_retirement_tests.cpp
+        add_executable(cuexis_pd_host_probe host_delivery_probe.cpp pd5_host_probe.cpp pd5_matrix_probe.cpp owner_wait_probe.cpp owner_channel_wait_tests.cpp coherent_retirement_tests.cpp json_prepare_probe.cpp
             ${CUEXIS_EXECUTION_HOST_SOURCES}
             "${PROJECT_SOURCE_DIR}/app/player/src/snapshot_scene.cpp")
         target_compile_features(cuexis_pd_host_probe PRIVATE cxx_std_20)

@@ -1,0 +1,24 @@
+diff --git a/engine/chart/src/chart_v4_loader.cpp b/engine/chart/src/chart_v4_loader.cpp
+index 636fb396..ab50e310 100644
+--- a/engine/chart/src/chart_v4_loader.cpp
++++ b/engine/chart/src/chart_v4_loader.cpp
+@@ -257,17 +257,8 @@ auto detail::loadChartForPlayback(std::string_view jsonText, const ChartLimits&
+         return detail::loadCanonicalValue(*parsed, limits);
+     }();
+     std::optional<std::string> canonicalText;
+-    if (loaded.hasValue()) {
+-        // The typed reader only reads the tree, so this parse can also produce the canonical
+-        // identity bytes. Producing them here is what lets a legacy prepare parse once instead of
+-        // re-parsing the same document for its identity.
+-        {
+-            const internal::PrepareTraceScope trace{"chart_canonical_write"};
+-            if (auto text = detail::writeCanonicalValue(std::move(*parsed), limits)) {
+-                canonicalText = std::move(*text);
+-            }
+-        }
+-    }
++    // TEMPORARY MEASUREMENT A-SIDE: no bytes are produced here, so the stage's text entry point
++    // parses the document a second time, which is the behaviour before 466ff76a.
+     return ChartDispatchResult{false, std::move(loaded.document), std::nullopt,
+                                {},    std::move(canonicalText),   std::move(loaded.diagnostics)};
+ }

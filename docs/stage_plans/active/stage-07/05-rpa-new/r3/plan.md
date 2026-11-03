@@ -161,10 +161,20 @@ Student-t 区间（上界 ≤1.10）。判据、阈值、样本规则与失败�
 两两组合有 11 个越过 15%、4 个不亚于 R3c v4 的 22.43%；每进程改成 16 次后 0 个越界。按比值读，
 v4 的两个收益项为 0.0754 [0.0187, 0.3041] 与 0.0106 [0.0101, 0.0111]，**在 n=2 下不能判的是
 40K H5 保护项**（1.0067 [0.8602, 1.1782]）。因此正式单元登记须同时写定每进程请求数（父计划未规定，
-Seek 建议 16 次）。R3c v4 与既有 parse-once 原型仍为 `selected: false`，本裁定不采用任何候选。
+Seek 建议 16 次）。R3c v4 与归档的 parse-once 原型仍为 `selected: false`，本裁定不采用任何候选。
 
 同一批修复了文件拆分留下的 candidate 配置编译错误（`publicTick` 缺声明）：`debug` / `release` /
 `headless-*` 不编译该配置，故拆分后的全绿不覆盖它。裁定文本见
 [口径裁定](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-03-r3-repeatability-scope-ruling.md)，
 读数、复算与预注册见
 [分辨率报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-03-r3-seek-repeatability-resolution/index.md)。
+
+## 8. 2026-11-03 legacy parse-once 产品读数
+
+树复用（`legacyCanonicalText`）不是待决候选：重做版由 `466ff76a` 引入产品，`loadDocumentStage` 消费
+dispatch 给出的身份字节，取不到时回落文本入口。本轮按当前源码补了 A/B 读数：A 侧只把 dispatch 的
+产出切断（即 `466ff76a` 之前的形状），三对 × 三规模，配对比值为 0.7139 [0.6574, 0.7753]（1K）、
+0.6747 [0.6504, 0.7000]（10K）、0.6949 [0.6660, 0.7250]（40K），identity 与 frame digest 全程一致。
+第一组 A 侧只切断消费、保留生产的读数（−34~−37%）高估收益，原样归档为 superseded。
+单窗口三对，不是九对正式单元，不构成 load 或阶段接受。见
+[parse-once 产品读数](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-03-r3-parse-once-product-reading/index.md)。
