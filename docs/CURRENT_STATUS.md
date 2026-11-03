@@ -188,6 +188,10 @@
   不存在都仍通过），现固定七个输入文件、六个扫描目录、至少两个内核编译单元与每目录扫描文件下限，
   `--self-test` 增加三种输入缺失用例，均以 exit 8 失败（`64cf90a4`）。Release 另用 `--clean-first`
   全量重编 398 个编译单元，`/WX` 下 0 warning，`/WX` 覆盖不再是“只在部分单元上验证过”。
+  “27 个拆分头各自单独编译”仍是手工检查而非 CTest（MSVC 系统头路径来自 Developer Shell，注册成测试
+  会在无该环境的机器上假失败），脚本已入库为 `tools/verification/check_header_self_containment.py`
+  并写入[构建指南](guides/BUILDING.md)的头文件自包含检查一节；当次运行 27/27 通过，去掉
+  `timebase_rational.hpp` 的依赖包含后能稳定失败，证明该检查不是空跑。
 
 本重构分支的唯一实施入口为 `D:/Cuexis-redesign`，分支 `Cuexis-redesign`。
 接手资料中的其他 worktree 和分支均为历史来源，本批不在其中执行操作。

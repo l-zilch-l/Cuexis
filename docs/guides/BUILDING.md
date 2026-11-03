@@ -271,10 +271,11 @@ vcpkg ABI 哈希，改动它会触发依赖重建；不需要手工修改 `VCPKG
 
 ## 最低验证
 
-提交工程结构改动前必须完成 Debug configure/build/test 和格式检查：
+提交工程结构改动前必须完成 Debug configure/build/test、格式检查和头文件自包含检查：
 
 ```powershell
 cmake --build --preset debug --target cuexis_format_check
+python -B tools/verification/check_header_self_containment.py
 ```
 
 阶段完成、版本生成信息变更或正式验收必须在 fresh configure 后执行 clean build，避免旧对象文件保留过期的生成头内容：
@@ -288,6 +289,28 @@ cmake --preset release --fresh
 cmake --build --preset release --clean-first
 ctest --preset release --no-tests=error
 ```
+
+### 头文件自包含检查（手工）
+
+拆分后的公共头与内部分区头必须能被单独包含：一个只在特定包含顺序下才能编译的头，会把这个顺序变成
+消费者的隐含约定。构建证明不了这一点——它只证明某个编译单元在它恰好使用的顺序下能过。这条检查用一个
+**只包含该头**的探针编译单元逐个验证，当前覆盖 27 个头：`judgement` 的时间基、输入边界、离线汇编器、
+canonical 图四组公共头与内部 `recovery_wire` / `source_codes` / `pattern_dfa`，`core` 的三份诊断分区头，
+以及 `assets` 与 `chart` 的内部头。
+
+```powershell
+python -B tools/verification/check_header_self_containment.py
+```
+
+脚本从 `out/build/debug/compile_commands.json` 取同模块一个真实编译单元的编译参数，把原源文件换成探针、
+去掉 `/Fo` 与 `/Fd`，MSVC 下追加 `/Zs`、其他编译器下改用 `-fsyntax-only`，因此包含路径、宏与语言标准与
+构建完全一致。全部通过时输出 `headers=27 failures=0`；任一失败会打印该头的首条错误并以退出码 1 结束。
+
+**它刻意不是 CTest**：MSVC 的系统头路径来自 Developer Shell 的 `INCLUDE` 变量，注册成测试会在没有该环境
+的机器上假失败，而"失败"与"环境缺失"在 CTest 报告里无法区分。因此在 Developer PowerShell 中手工执行；
+修改公共头、调整 `include` 关系或再次拆分头文件之后都要跑一次。`pattern_dfa` 的四个分区头按构造只能经
+`pattern_dfa.hpp` 包含，不在清单内，其文件头已注明这一点。换编译器或换预设时用 `--build-dir` 指向对应构建
+目录，清单里的参考编译单元路径不变。
 
 ### Pre-push 检查
 
