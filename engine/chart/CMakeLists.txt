@@ -42,6 +42,11 @@ target_sources(cuexis_chart
         src/chart_project_path_internal.cpp
         src/packed_chart_primitives.cpp
         src/packed_chart_tables_decoder.cpp
+        src/packed_chart_tables_decoder_header.cpp
+        src/packed_chart_tables_decoder_identity.cpp
+        src/packed_chart_tables_decoder_internal.hpp
+        src/packed_chart_tables_decoder_model.cpp
+        src/packed_chart_tables_decoder_tables.cpp
         src/packed_chart_tables_inspect.cpp
         src/packed_chart_tables_sections.cpp
         src/packed_chart_tables_units_internal.hpp
