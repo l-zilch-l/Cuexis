@@ -8,7 +8,7 @@
 
 ## 当前任务
 
-- **R3 已按 owner 本次要求恢复实施，尚未退出**：继续六项重构优化；
+- **R3 已按 owner 本次要求恢复实施（当时尚未退出）**：继续六项重构优化；
   P1 v2 最终固定组未达收益/保护门，已不选用且保持产品源码不变；随后验证预算候选。
   新证据见[恢复实施与预算验证](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-30-r3-resume-and-budget-verification.md)。
   已冻结 prepare 输入的两次整份复制已消除，生命周期、相关回归和身份/Packed 字节对照通过。
@@ -80,14 +80,14 @@
   历史[来源绑定实验](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-source-binding-experiment.md)用同一 Release 二进制比较 canonical SHA 与进程内 owning source binding。
   2048 requirements、33 条历史的 CPU 宿主首次请求到目标帧由 91.809 ms 降至 1.016 ms；129 条历史由 333.624 ms 降至 1.057 ms。
   这是固定本地诊断的点值，wire/导入验证保持原合同，candidate C++ 消费者须重建；
-  R3 未退出，R3c 已完成隔离原型与正式采用尝试但未采用，R4、设备与生产接受仍独立。
+  当时 R3 尚未退出，R3c 已完成隔离原型与正式采用尝试但未采用，R4、设备与生产接受仍独立。
   原始归因及历史失败保留，后续门禁见[实施登记](stage_plans/active/stage-07/05-rpa-new/r3/plan.md)。
   本轮保留 GPU 测试配额修复和 content-only closure 无复制优化（产品恢复点 `5fd84fd`）；身份 writer 范围插入试验
   未取得稳定收益，已撤销。该轮恢复后的四套相关回归、架构门与 96 份身份字节对照通过；新复制候选另行登记。
   架构 / 设计变更、对照结果与停止边界见[本轮登记 §5](stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-28-r3-redesign-verification-and-optimization.md#5-后续取证和修复顺序)。
   现行内部设计集中在[执行状态、恢复与准备路径](architecture/execution-state-and-recovery.md)，
   架构/API 入口已同步；后续继续跟踪首次 Seek 与 Packed/prepare 剩余热点。
-- **R3 门账已于 2026-11-04 收口，R3 仍未退出**：十五项门为 **15 项通过 + 0 项部分通过 + 0 项未判定**。
+- **R3 门账已于 2026-11-04 收口，并由 owner 关闭**：十五项门为 **15 项通过 + 0 项部分通过 + 0 项未判定**。
   owner 同日作出四项裁定：接受“可开关阶段计时 + 归因 + 开销披露”作为 D2/D3/Snapshot/排队 的登记方式
   （四项按该方法通过：judgement/projection/runtime/snapshot/queue 每进程 p99 为 45.8–122.2 / 17.9–19.2 /
   6.0–6.4 / 11.0–18.4 / 26.2–88.4 µs，余量 8–300×，插桩开销约 +12% 已披露，判据未改）；
@@ -97,9 +97,13 @@
   resize 3.978 ms、Reset 17.062/16.270 ms、Close 5.059 ms、相对读取门 1.0405 [1.0191, 1.0624]、
   适用 Seek 五类最差在独立批次中为 1,880 µs，独立复核批次最差 1,249 µs。2026-11-04 最终同源矩阵
   11/11 行 `local_pass`（13,635 个用例、0 失败、120 个 measurement 事件，`source_unchanged=true`）。
-  仍未完成：hosted 同 SHA、owner 对 R3 退出的裁定。R3b 可信恢复边界不重开；R3c 正式单元
-  未形成有效样本，候选与 128 MiB quota 均未采用。
-  见[四项门裁定](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-02-r3-owner-gate-rulings.md)。
+  hosted 口径由 owner 同日 delta 裁定解决：矩阵证据绑定 `d70df15a`，hosted 三平台在 `de73aa2c` 全绿
+  （Linux Quality `41838690080`/`41838719915`、Windows MSVC `41838690136`/`41838719809`、
+  Windows MinGW `41838689826`/`41838720171`）；冻结点本身缺少四项平台修复，不单独 hosted。
+  R3 据此关闭，不扩展到 R4、设备或生产接受；R3b 可信恢复边界不重开，R3c 正式单元未形成有效样本，
+  候选与 128 MiB quota 均未采用。
+  见[四项门裁定](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-02-r3-owner-gate-rulings.md)、
+  [hosted 口径与退出裁定](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-hosted-delta-and-exit-ruling.md)。
 - **2026-11-03 重复性口径归位，门账不变**：owner 裁定 §9.2 的 15% `(max-min)/median` 只在**正式单元**
   （3 窗 × 每窗 3 对独立进程）上绑定，本地 guard 组的相对极差只作披露；A/B 裁决改用同表的配对对数比值
   + Student-t 区间（上界 ≤1.10）。判据、阈值、样本规则与失败保留规则一条未改，历史记录文本不追改。

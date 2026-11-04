@@ -1,6 +1,6 @@
 # R3 implementation and verification
 
-状态：local implementation and verification complete。用户于 2026-10-26 授权本次接手完成 R3；owner 于 2026-11-02 作出四项门裁定，门账收口为 15 项通过 + 0 项部分，最终本地同源矩阵已通过；R3 退出仍待 owner，hosted 同 SHA 未验证，见文末 §9–§11。
+状态：local implementation and verification complete。用户于 2026-10-26 授权本次接手完成 R3；owner 于 2026-11-02 作出四项门裁定，门账收口为 15 项通过 + 0 项部分，最终本地同源矩阵已通过；2026-11-04 owner 以 hosted delta 裁定确认 hosted 口径并关闭 R3，见 §9–§12。
 本登记从 [总计划](../plan.md) §8 消费范围和依赖，不扩展到 R4 正式接受或 Stage 7 关闭。
 返回 [New RPA 索引](../README.md)。
 
@@ -216,5 +216,16 @@ R3b 可信恢复边界、40K @ 240 FPS 和旧 128 MiB 绝对内存上限均不�
 
 剩余只有：
 
-- hosted 同 SHA 仍未验证，按 owner 2026-11-02 裁定本轮不运行；不得标记通过或豁免。
-- R3 退出只由 owner 裁定，文档和测试不得自封。
+- hosted 同 SHA：原判断为“仍未验证、不得标记通过或豁免”；2026-11-04 owner 以 delta 裁定确认口径，见 §12。
+- R3 退出：原判断为“只由 owner 裁定”；owner 已同日裁定关闭，见 §12。
+
+## 12. 2026-11-04 hosted 口径裁定与 R3 关闭
+
+owner 于 2026-11-04 裁定：同源矩阵证据继续绑定 `d70df15a`；hosted 三平台在 `de73aa2c` 全绿
+（Linux Quality `41838690080`/`41838719915`、Windows MSVC `41838690136`/`41838719809`、
+Windows MinGW `41838689826`/`41838720171`），两提交之间的 7 个提交只含 include-only、test-only、
+离线工具、版本字符串与一处等价重构，故接受为 R3 的 hosted 口径，并据此关闭 R3。冻结点 `d70df15a`
+本身缺少四项平台修复，直接 hosted 必然失败，因此这一缺口不是“可补跑而未跑”。裁定范围、准入类别
+与“不构成先例”边界见
+[R3 hosted 口径裁定与批次退出](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-hosted-delta-and-exit-ruling.md)。
+R3 关闭不扩展到 R4、设备验证、生产接受或 Stage 7 关闭。

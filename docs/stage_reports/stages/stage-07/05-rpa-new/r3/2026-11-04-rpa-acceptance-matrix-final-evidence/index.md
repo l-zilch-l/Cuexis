@@ -2,6 +2,10 @@
 
 状态：local matrix evidence；test-only；**不是** R3/R4 退出、设备验证、hosted 验证或生产接受。
 
+2026-11-04 补记：hosted 口径与 R3 关闭由 owner 同日裁定解决，见
+[R3 hosted 口径裁定与批次退出](../2026-11-04-r3-hosted-delta-and-exit-ruling.md)。本文 §4 的
+`hosted_same_sha` 未执行记录保持原字节，不回填。
+
 源码：`d70df15a463cb1fe4329bffb8f0c99bcac676c15`
 
 worktree SHA-256：`a3914f7a647d4d3bc19d93d46abe57d35c4761c6afe48fdccce75a7e0513723e`
