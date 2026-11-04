@@ -1,0 +1,968 @@
+diff --git a/engine/chart/src/canonical_chart_loader_units_internal.hpp b/engine/chart/src/canonical_chart_loader_units_internal.hpp
+index 27ef332f..24d061e0 100644
+--- a/engine/chart/src/canonical_chart_loader_units_internal.hpp
++++ b/engine/chart/src/canonical_chart_loader_units_internal.hpp
+@@ -21,14 +21,13 @@ namespace cuexis::chart {
+ 
+ using core::DiagnosticSeverity;
+ 
+-[[nodiscard]] void addError(core::Diagnostics& diagnostics, std::string code, std::string message,
+-                            std::string path);
++void addError(core::Diagnostics& diagnostics, std::string code, std::string message,
++              std::string path);
+ 
+-[[nodiscard]] void addWarning(core::Diagnostics& diagnostics, std::string code, std::string message,
+-                              std::string path);
++void addWarning(core::Diagnostics& diagnostics, std::string code, std::string message,
++                std::string path);
+ 
+-[[nodiscard]] void addError(core::Diagnostics& diagnostics, const core::Error& error,
+-                            std::string path);
++void addError(core::Diagnostics& diagnostics, const core::Error& error, std::string path);
+ 
+ [[nodiscard]] auto isChartEntityUuid(std::string_view value) noexcept -> bool;
+ 
+diff --git a/engine/chart/src/packed_chart_tables_decoder_internal.hpp b/engine/chart/src/packed_chart_tables_decoder_internal.hpp
+index f34f5f7c..c2dfc00d 100644
+--- a/engine/chart/src/packed_chart_tables_decoder_internal.hpp
++++ b/engine/chart/src/packed_chart_tables_decoder_internal.hpp
+@@ -39,6 +39,12 @@ struct DecodedArch final {
+ };
+ 
+ struct Decoder final {
++    // Explicit constructor: the remaining tables are default-initialised here, so an aggregate
++    // initialisation list can never leave a member uninitialised under GCC's -Wextra.
++    Decoder(std::span<const std::byte> input, bool candidate,
++            gameplay_detail::DecodedStatic* out) noexcept
++        : bytes(input), gameplay(candidate), staticResult(out) {}
++
+     std::span<const std::byte> bytes;
+     bool gameplay{};
+     gameplay_detail::DecodedStatic* staticResult{};
+diff --git a/engine/playback/src/playback_session_execution.cpp b/engine/playback/src/playback_session_execution.cpp
+index bb1d2f50..7dd2ac41 100644
+--- a/engine/playback/src/playback_session_execution.cpp
++++ b/engine/playback/src/playback_session_execution.cpp
+@@ -248,7 +248,18 @@ auto PlaybackSession::acceptExecutionControl(const ControlRequest& request)
+         return core::unexpected(core::Error{
+             "host.rpa.context_stale", "A new Close cannot reuse an older control fence identity"});
+     // Reserve the complete binding before K1 changes any execution state.
++    // GCC inlines the copy of the engaged optional<ReplaySourceIdentity> (a shared_ptr holder) and
++    // then reports reads of its control block as possibly uninitialised. The value is a complete
++    // copy of a const request that was fully constructed by the caller, so this is a false
++    // positive; the diagnostic is disabled around this one statement instead of the whole file.
++#if defined(__GNUC__)
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
++#endif
+     auto binding = request;
++#if defined(__GNUC__)
++#pragma GCC diagnostic pop
++#endif
+     if (s.hostFence && request.kind != ControlKind::close)
+         return core::unexpected(
+             core::Error{"host.rpa.control_pending", "Only Close can retire an unresolved fence"});
+diff --git a/engine/playback/src/playback_session_prepare_internal.hpp b/engine/playback/src/playback_session_prepare_internal.hpp
+index d3fb7464..fc0a2d54 100644
+--- a/engine/playback/src/playback_session_prepare_internal.hpp
++++ b/engine/playback/src/playback_session_prepare_internal.hpp
+@@ -165,7 +165,7 @@ constexpr std::array parameterizedPresentationLimitRules{
+                                   &PresentationCapabilities::maxTextureBindings},
+ };
+ 
+-inline [[nodiscard]] auto prepareExceptionError(std::string_view operation, bool allocationFailure,
++[[nodiscard]] inline auto prepareExceptionError(std::string_view operation, bool allocationFailure,
+                                                 const std::exception* exception = nullptr)
+     -> core::Error {
+     auto error = core::Error{allocationFailure ? "playback.prepare.budget_exceeded"
+diff --git a/engine/render_opengl/src/open_gl_presentation_units_internal.hpp b/engine/render_opengl/src/open_gl_presentation_units_internal.hpp
+index c3451632..5671815a 100644
+--- a/engine/render_opengl/src/open_gl_presentation_units_internal.hpp
++++ b/engine/render_opengl/src/open_gl_presentation_units_internal.hpp
+@@ -45,7 +45,7 @@ struct CuexisObjectStd140 final {
+     float opacity{1.0F};
+ };
+ 
+-inline [[nodiscard]] auto
++[[nodiscard]] inline auto
+ referenceKey(const playback::PresentationResourceRef& reference) noexcept {
+     return std::tie(reference.assetId, reference.type);
+ }
+diff --git a/examples/reference_host/src/host_runner.cpp b/examples/reference_host/src/host_runner.cpp
+index 4ac2af76..8d162d58 100644
+--- a/examples/reference_host/src/host_runner.cpp
++++ b/examples/reference_host/src/host_runner.cpp
+@@ -1,5 +1,6 @@
+ // Reference host legacy sequence: the scripted host clock, frame digests and the reload checks.
+ 
++#include "host_realtime.hpp"
+ #include "host_runner.hpp"
+ #include "host_runner_internal.hpp"
+ 
+diff --git a/tests/animation/animation_mixer_test_fixture.hpp b/tests/animation/animation_mixer_test_fixture.hpp
+index 4b7ecc3a..f4ecdfd2 100644
+--- a/tests/animation/animation_mixer_test_fixture.hpp
++++ b/tests/animation/animation_mixer_test_fixture.hpp
+@@ -31,18 +31,18 @@
+ 
+ namespace animation_mixer_fixture {
+ 
+-inline [[nodiscard]] auto beat(std::int64_t numerator, std::int64_t denominator = 1)
++[[nodiscard]] inline auto beat(std::int64_t numerator, std::int64_t denominator = 1)
+     -> cuexis::chart::RationalBeat {
+     auto value = cuexis::chart::RationalBeat::create(numerator, denominator);
+     REQUIRE(value.has_value());
+     return *value;
+ }
+ 
+-inline [[nodiscard]] auto entity(std::uint32_t value) -> entt::entity {
++[[nodiscard]] inline auto entity(std::uint32_t value) -> entt::entity {
+     return static_cast<entt::entity>(value);
+ }
+ 
+-inline [[nodiscard]] auto constantScalarClip(cuexis::chart::AnimationProperty property,
++[[nodiscard]] inline auto constantScalarClip(cuexis::chart::AnimationProperty property,
+                                              double value) -> cuexis::chart::AnimationClip {
+     return {
+         .id = {},
+@@ -62,7 +62,7 @@ inline [[nodiscard]] auto constantScalarClip(cuexis::chart::AnimationProperty pr
+     };
+ }
+ 
+-inline [[nodiscard]] auto constantVec3Clip(cuexis::chart::AnimationProperty property,
++[[nodiscard]] inline auto constantVec3Clip(cuexis::chart::AnimationProperty property,
+                                            cuexis::core::Vec3 value)
+     -> cuexis::chart::AnimationClip {
+     return {
+@@ -83,7 +83,7 @@ inline [[nodiscard]] auto constantVec3Clip(cuexis::chart::AnimationProperty prop
+     };
+ }
+ 
+-inline [[nodiscard]] auto constantQuatClip(cuexis::core::Quat value)
++[[nodiscard]] inline auto constantQuatClip(cuexis::core::Quat value)
+     -> cuexis::chart::AnimationClip {
+     return {
+         .id = {},
+@@ -103,7 +103,7 @@ inline [[nodiscard]] auto constantQuatClip(cuexis::core::Quat value)
+     };
+ }
+ 
+-inline [[nodiscard]] auto constantVisibleClip(bool visible) -> cuexis::chart::AnimationClip {
++[[nodiscard]] inline auto constantVisibleClip(bool visible) -> cuexis::chart::AnimationClip {
+     return {
+         .id = {},
+         .durationBeats = beat(4),
+@@ -116,14 +116,14 @@ inline [[nodiscard]] auto constantVisibleClip(bool visible) -> cuexis::chart::An
+     };
+ }
+ 
+-inline [[nodiscard]] auto makeProgramClip(cuexis::chart::AnimationRecordIdentity identity,
++[[nodiscard]] inline auto makeProgramClip(cuexis::chart::AnimationRecordIdentity identity,
+                                           std::string clipId, cuexis::chart::AnimationClip clip)
+     -> cuexis::chart::AnimationProgramClip {
+     clip.id = std::move(clipId);
+     return {.identity = std::move(identity), .clip = std::move(clip)};
+ }
+ 
+-inline [[nodiscard]] auto makeInstance(cuexis::chart::AnimationRecordIdentity identity,
++[[nodiscard]] inline auto makeInstance(cuexis::chart::AnimationRecordIdentity identity,
+                                        cuexis::chart::AnimationRecordIdentity clipIdentity,
+                                        double weight, cuexis::chart::PropertyMask mask)
+     -> cuexis::chart::ResolvedClipInstance {
+@@ -139,7 +139,7 @@ inline [[nodiscard]] auto makeInstance(cuexis::chart::AnimationRecordIdentity id
+     };
+ }
+ 
+-inline [[nodiscard]] auto compile(cuexis::chart::AnimationProgramInput input)
++[[nodiscard]] inline auto compile(cuexis::chart::AnimationProgramInput input)
+     -> cuexis::animation::AnimationProgram {
+     auto compiled = cuexis::animation::AnimationCompiler::compile(std::move(input));
+     REQUIRE(compiled.hasValue());
+@@ -147,13 +147,13 @@ inline [[nodiscard]] auto compile(cuexis::chart::AnimationProgramInput input)
+     return std::move(*compiled.program);
+ }
+ 
+-inline [[nodiscard]] auto hasCode(const cuexis::core::Diagnostics& diagnostics,
++[[nodiscard]] inline auto hasCode(const cuexis::core::Diagnostics& diagnostics,
+                                   std::string_view code) -> bool {
+     return std::ranges::any_of(diagnostics.items(),
+                                [code](const auto& item) { return item.code() == code; });
+ }
+ 
+-inline [[nodiscard]] auto findWrite(const cuexis::world::PropertyWriteBuffer& writes,
++[[nodiscard]] inline auto findWrite(const cuexis::world::PropertyWriteBuffer& writes,
+                                     cuexis::world::PropertyId property)
+     -> std::optional<cuexis::world::PropertyWrite> {
+     for (const auto& write : writes.writes()) {
+@@ -164,7 +164,7 @@ inline [[nodiscard]] auto findWrite(const cuexis::world::PropertyWriteBuffer& wr
+     return {};
+ }
+ 
+-inline [[nodiscard]] auto scalarWrite(const cuexis::world::PropertyWriteBuffer& writes,
++[[nodiscard]] inline auto scalarWrite(const cuexis::world::PropertyWriteBuffer& writes,
+                                       cuexis::world::PropertyId property) -> double {
+     const auto write = findWrite(writes, property);
+     REQUIRE(write.has_value());
+@@ -173,7 +173,7 @@ inline [[nodiscard]] auto scalarWrite(const cuexis::world::PropertyWriteBuffer&
+     return *value;
+ }
+ 
+-inline [[nodiscard]] auto vec3Write(const cuexis::world::PropertyWriteBuffer& writes,
++[[nodiscard]] inline auto vec3Write(const cuexis::world::PropertyWriteBuffer& writes,
+                                     cuexis::world::PropertyId property) -> cuexis::core::Vec3 {
+     const auto write = findWrite(writes, property);
+     REQUIRE(write.has_value());
+@@ -182,7 +182,7 @@ inline [[nodiscard]] auto vec3Write(const cuexis::world::PropertyWriteBuffer& wr
+     return *value;
+ }
+ 
+-inline [[nodiscard]] auto quatWrite(const cuexis::world::PropertyWriteBuffer& writes)
++[[nodiscard]] inline auto quatWrite(const cuexis::world::PropertyWriteBuffer& writes)
+     -> cuexis::core::Quat {
+     const auto write = findWrite(writes, cuexis::world::PropertyId::TransformRotation);
+     REQUIRE(write.has_value());
+@@ -191,7 +191,7 @@ inline [[nodiscard]] auto quatWrite(const cuexis::world::PropertyWriteBuffer& wr
+     return *value;
+ }
+ 
+-inline [[nodiscard]] auto boolWrite(const cuexis::world::PropertyWriteBuffer& writes) -> bool {
++[[nodiscard]] inline auto boolWrite(const cuexis::world::PropertyWriteBuffer& writes) -> bool {
+     const auto write = findWrite(writes, cuexis::world::PropertyId::RenderVisible);
+     REQUIRE(write.has_value());
+     const auto* value = std::get_if<bool>(&write->value);
+@@ -199,28 +199,28 @@ inline [[nodiscard]] auto boolWrite(const cuexis::world::PropertyWriteBuffer& wr
+     return *value;
+ }
+ 
+-inline [[nodiscard]] auto objectId() -> cuexis::chart::ChartObjectId {
++[[nodiscard]] inline auto objectId() -> cuexis::chart::ChartObjectId {
+     return cuexis::chart::ChartObjectId{"note"};
+ }
+ 
+-inline [[nodiscard]] auto mask(std::vector<std::string> properties,
++[[nodiscard]] inline auto mask(std::vector<std::string> properties,
+                                std::vector<std::string> prefixes = {})
+     -> cuexis::chart::PropertyMask {
+     return {.properties = std::move(properties), .prefixes = std::move(prefixes)};
+ }
+ 
+-inline [[nodiscard]] auto binding() -> cuexis::animation::AnimationObjectBinding {
++[[nodiscard]] inline auto binding() -> cuexis::animation::AnimationObjectBinding {
+     return {.objectId = objectId(), .entity = entity(1)};
+ }
+ 
+-inline [[nodiscard]] auto baseline(cuexis::world::PropertyId property,
++[[nodiscard]] inline auto baseline(cuexis::world::PropertyId property,
+                                    cuexis::world::PropertyValue value)
+     -> cuexis::animation::AnimationObjectBaseline {
+     return {.objectId = objectId(),
+             .properties = {{.property = property, .value = std::move(value)}}};
+ }
+ 
+-inline [[nodiscard]] auto
++[[nodiscard]] inline auto
+ evaluate(const cuexis::animation::AnimationProgram& program,
+          std::span<const cuexis::animation::AnimationObjectBinding> bindings,
+          std::span<const cuexis::animation::AnimationObjectBaseline> baselines,
+diff --git a/tests/asset_publish/asset_publish_test_fixture.hpp b/tests/asset_publish/asset_publish_test_fixture.hpp
+index f6491e64..7a9bcb9d 100644
+--- a/tests/asset_publish/asset_publish_test_fixture.hpp
++++ b/tests/asset_publish/asset_publish_test_fixture.hpp
+@@ -58,7 +58,7 @@ template <typename T> void requireOk(const T& result) {
+     }
+ }
+ 
+-inline [[nodiscard]] auto scratchRoot(std::string_view name) -> fs::path {
++[[nodiscard]] inline auto scratchRoot(std::string_view name) -> fs::path {
+     const auto root = fs::temp_directory_path() / "cuexis-s6e3-asset-publish" / std::string{name};
+     std::error_code status;
+     fs::remove_all(root, status);
+@@ -67,7 +67,7 @@ inline [[nodiscard]] auto scratchRoot(std::string_view name) -> fs::path {
+     return root;
+ }
+ 
+-inline [[nodiscard]] auto readBytes(const fs::path& path) -> std::vector<std::byte> {
++[[nodiscard]] inline auto readBytes(const fs::path& path) -> std::vector<std::byte> {
+     std::ifstream stream{path, std::ios::binary};
+     REQUIRE(stream.good());
+     stream.seekg(0, std::ios::end);
+@@ -81,7 +81,7 @@ inline [[nodiscard]] auto readBytes(const fs::path& path) -> std::vector<std::by
+     return bytes;
+ }
+ 
+-inline [[nodiscard]] auto asBytes(std::string_view text) -> std::vector<std::byte> {
++[[nodiscard]] inline auto asBytes(std::string_view text) -> std::vector<std::byte> {
+     const auto* data = reinterpret_cast<const std::byte*>(text.data());
+     return std::vector<std::byte>{data, data + text.size()};
+ }
+@@ -133,18 +133,18 @@ class ScopedEnv final {
+     std::string name_;
+ };
+ 
+-inline [[nodiscard]] auto fixtureProjectRoot() -> fs::path {
++[[nodiscard]] inline auto fixtureProjectRoot() -> fs::path {
+     return fs::path{CUEXIS_SOURCE_DIR} / "tests" / "fixtures" / "chart_format_update" /
+            "static_project";
+ }
+ 
+-inline [[nodiscard]] auto textEntry(std::string path, const fs::path& file)
++[[nodiscard]] inline auto textEntry(std::string path, const fs::path& file)
+     -> cuexis::cxc::CxcWriteEntry {
+     return cuexis::cxc::CxcWriteEntry{std::move(path), readBytes(file)};
+ }
+ 
+ // The committed static fixture project is a complete, valid v4 CXC input.
+-inline [[nodiscard]] auto staticProjectEntries() -> std::vector<cuexis::cxc::CxcWriteEntry> {
++[[nodiscard]] inline auto staticProjectEntries() -> std::vector<cuexis::cxc::CxcWriteEntry> {
+     const auto root = fixtureProjectRoot();
+     return {
+         textEntry("cuexis.project.json", root / "cuexis.project.json"),
+@@ -161,7 +161,7 @@ struct CandidateFixture final {
+ 
+ // A real packed candidate chart plus the registered extension document that declares it, so the
+ // package closure admits the entry through the candidate path rather than a test shortcut.
+-inline [[nodiscard]] auto candidateFixture() -> CandidateFixture {
++[[nodiscard]] inline auto candidateFixture() -> CandidateFixture {
+     using namespace cuexis::chart;
+     CanonicalSemanticChart chart;
+     chart.chartId = ChartId{"019b0000-0000-7abc-8def-000000000001"};
+@@ -198,17 +198,17 @@ inline [[nodiscard]] auto candidateFixture() -> CandidateFixture {
+     return CandidateFixture{std::move(*encoded), json.str()};
+ }
+ 
+-inline [[nodiscard]] auto loadPackage(const fs::path& path) -> cuexis::cxc::CxcPackage {
++[[nodiscard]] inline auto loadPackage(const fs::path& path) -> cuexis::cxc::CxcPackage {
+     auto loaded = cuexis::cxc::CxcPackageLoader::loadFile(path);
+     REQUIRE(loaded.package.has_value());
+     return *loaded.package;
+ }
+ 
+-inline [[nodiscard]] auto errorCode(const cuexis::core::Error& error) -> std::string {
++[[nodiscard]] inline auto errorCode(const cuexis::core::Error& error) -> std::string {
+     return std::string{error.code()};
+ }
+ 
+-inline [[nodiscard]] auto waitForFile(const fs::path& path, std::chrono::milliseconds timeout)
++[[nodiscard]] inline auto waitForFile(const fs::path& path, std::chrono::milliseconds timeout)
+     -> bool {
+     const auto deadline = std::chrono::steady_clock::now() + timeout;
+     while (std::chrono::steady_clock::now() < deadline) {
+@@ -221,7 +221,7 @@ inline [[nodiscard]] auto waitForFile(const fs::path& path, std::chrono::millise
+     return false;
+ }
+ 
+-inline [[nodiscard]] auto readEnv(std::string_view name) -> std::string {
++[[nodiscard]] inline auto readEnv(std::string_view name) -> std::string {
+     const std::string key{name};
+     // _dupenv_s is MSVC-only; MinGW links no such symbol.
+ #if defined(_MSC_VER)
+diff --git a/tests/chart/chart_v4_c2_fixture.hpp b/tests/chart/chart_v4_c2_fixture.hpp
+index 80cf5c59..5a29adc0 100644
+--- a/tests/chart/chart_v4_c2_fixture.hpp
++++ b/tests/chart/chart_v4_c2_fixture.hpp
+@@ -35,7 +35,7 @@ struct ChartParts final {
+     std::string extensions{"{}"};
+ };
+ 
+-inline [[nodiscard]] auto makeChart(const ChartParts& parts) -> std::string {
++[[nodiscard]] inline auto makeChart(const ChartParts& parts) -> std::string {
+     auto result = std::string{R"({
+       "format":"cuexis.chart","version":4,
+       "chartId":"019f0000-0000-7abc-8def-0000000004c2",
+@@ -58,7 +58,7 @@ inline [[nodiscard]] auto makeChart(const ChartParts& parts) -> std::string {
+     return result;
+ }
+ 
+-inline [[nodiscard]] auto makeCxt(std::string_view templateId, std::string_view clip,
++[[nodiscard]] inline auto makeCxt(std::string_view templateId, std::string_view clip,
+                                   std::string_view blendMode = "override",
+                                   std::string_view requiredExtensions = "[]") -> std::string {
+     auto result = std::string{R"({
+@@ -76,7 +76,7 @@ inline [[nodiscard]] auto makeCxt(std::string_view templateId, std::string_view
+     return result;
+ }
+ 
+-inline [[nodiscard]] auto loadSource(std::string_view text)
++[[nodiscard]] inline auto loadSource(std::string_view text)
+     -> cuexis::chart::ChartV4SourceDocument {
+     auto result = cuexis::chart::ChartV4Loader::load(text);
+     if (!result.hasValue()) {
+@@ -85,19 +85,19 @@ inline [[nodiscard]] auto loadSource(std::string_view text)
+     return std::move(*result.document);
+ }
+ 
+-inline [[nodiscard]] auto hasDiagnostic(const cuexis::chart::ChartV4ResolveResult& result,
++[[nodiscard]] inline auto hasDiagnostic(const cuexis::chart::ChartV4ResolveResult& result,
+                                         std::string_view code) -> bool {
+     return std::ranges::any_of(result.diagnostics.items(),
+                                [code](const auto& item) { return item.code() == code; });
+ }
+ 
+-inline [[nodiscard]] auto hasDiagnostic(const cuexis::chart::ChartV4SourceResult& result,
++[[nodiscard]] inline auto hasDiagnostic(const cuexis::chart::ChartV4SourceResult& result,
+                                         std::string_view code) -> bool {
+     return std::ranges::any_of(result.diagnostics.items(),
+                                [code](const auto& item) { return item.code() == code; });
+ }
+ 
+-inline [[nodiscard]] auto findDiagnostic(const cuexis::chart::ChartV4SourceResult& result,
++[[nodiscard]] inline auto findDiagnostic(const cuexis::chart::ChartV4SourceResult& result,
+                                          std::string_view code) -> const cuexis::core::Diagnostic* {
+     const auto item =
+         std::ranges::find_if(result.diagnostics.items(),
+@@ -105,7 +105,7 @@ inline [[nodiscard]] auto findDiagnostic(const cuexis::chart::ChartV4SourceResul
+     return item != result.diagnostics.items().end() ? &*item : nullptr;
+ }
+ 
+-inline [[nodiscard]] auto findDiagnostic(const cuexis::chart::ChartV4ResolveResult& result,
++[[nodiscard]] inline auto findDiagnostic(const cuexis::chart::ChartV4ResolveResult& result,
+                                          std::string_view code, std::string_view recordKind = {})
+     -> const cuexis::core::Diagnostic* {
+     const auto item = std::ranges::find_if(result.diagnostics.items(), [&](const auto& diagnostic) {
+@@ -122,7 +122,7 @@ inline [[nodiscard]] auto findDiagnostic(const cuexis::chart::ChartV4ResolveResu
+     return item != result.diagnostics.items().end() ? &*item : nullptr;
+ }
+ 
+-inline [[nodiscard]] auto contextValue(const cuexis::core::Diagnostic& diagnostic,
++[[nodiscard]] inline auto contextValue(const cuexis::core::Diagnostic& diagnostic,
+                                        std::string_view key) -> std::optional<std::string_view> {
+     const auto item = std::ranges::find_if(
+         diagnostic.context(), [key](const auto& context) { return context.key == key; });
+@@ -130,7 +130,7 @@ inline [[nodiscard]] auto contextValue(const cuexis::core::Diagnostic& diagnosti
+                                               : std::nullopt;
+ }
+ 
+-inline [[nodiscard]] auto
++[[nodiscard]] inline auto
+ continuousClip(std::string_view id, std::string_view property, std::string_view startValue,
+                std::string_view endValue,
+                std::string_view duration = R"({"numerator":1,"denominator":1})") -> std::string {
+@@ -150,7 +150,7 @@ continuousClip(std::string_view id, std::string_view property, std::string_view
+     return result;
+ }
+ 
+-inline [[nodiscard]] auto cxtContinuousClip(std::string_view property, std::string_view startValue,
++[[nodiscard]] inline auto cxtContinuousClip(std::string_view property, std::string_view startValue,
+                                             std::string_view endValue) -> std::string {
+     auto clip = continuousClip("ignored", property, startValue, endValue);
+     const auto id = clip.find("\"id\":\"ignored\",");
+@@ -161,7 +161,7 @@ inline [[nodiscard]] auto cxtContinuousClip(std::string_view property, std::stri
+     return clip;
+ }
+ 
+-inline [[nodiscard]] auto stepMaterialClip(std::string_view id, std::string_view assetId,
++[[nodiscard]] inline auto stepMaterialClip(std::string_view id, std::string_view assetId,
+                                            bool includeId = true) -> std::string {
+     auto result = std::string{"{"};
+     if (includeId) {
+@@ -177,12 +177,12 @@ inline [[nodiscard]] auto stepMaterialClip(std::string_view id, std::string_view
+     return result;
+ }
+ 
+-inline [[nodiscard]] auto transformComponent() -> std::string_view {
++[[nodiscard]] inline auto transformComponent() -> std::string_view {
+     return R"("cuexis.transform":{"version":1,"position":[0,0,0],
+       "rotation":[0,0,0,1],"scale":[1,1,1]})";
+ }
+ 
+-inline [[nodiscard]] auto findResource(const cuexis::chart::ChartV4ResolvedArtifact& artifact,
++[[nodiscard]] inline auto findResource(const cuexis::chart::ChartV4ResolvedArtifact& artifact,
+                                        std::string_view id)
+     -> const cuexis::chart::ChartResourceRequirement* {
+     const auto item = std::ranges::find_if(artifact.resourceRequirements, [id](const auto& value) {
+diff --git a/tests/cxc/cxc_package_test_fixture.hpp b/tests/cxc/cxc_package_test_fixture.hpp
+index ce125c82..478d82d6 100644
+--- a/tests/cxc/cxc_package_test_fixture.hpp
++++ b/tests/cxc/cxc_package_test_fixture.hpp
+@@ -56,7 +56,7 @@ class TemporaryCxcFile final {
+     std::filesystem::path path_;
+ };
+ 
+-inline [[nodiscard]] auto findRequestEntry(CxcWriteRequest& request, std::string_view path)
++[[nodiscard]] inline auto findRequestEntry(CxcWriteRequest& request, std::string_view path)
+     -> CxcWriteEntry& {
+     const auto found = std::ranges::find(request.entries, path, &CxcWriteEntry::path);
+     REQUIRE(found != request.entries.end());
+@@ -69,13 +69,13 @@ inline void eraseRequestEntry(CxcWriteRequest& request, std::string_view path) {
+     request.entries.erase(found);
+ }
+ 
+-inline [[nodiscard]] auto contentRequest(std::string_view root, std::string_view source,
++[[nodiscard]] inline auto contentRequest(std::string_view root, std::string_view source,
+                                          std::size_t maxBytes = 1024U)
+     -> cuexis::content::ContentRequest {
+     return {.rootId = root, .source = source, .maxBytes = maxBytes};
+ }
+ 
+-inline [[nodiscard]] auto packageRequest(const CxcPackage& package) -> CxcWriteRequest {
++[[nodiscard]] inline auto packageRequest(const CxcPackage& package) -> CxcWriteRequest {
+     CxcWriteRequest request;
+     request.requiredExtensions = package.manifest().requiredExtensions;
+     request.extensionsJson = package.manifest().canonicalExtensionsJson;
+@@ -89,7 +89,7 @@ inline [[nodiscard]] auto packageRequest(const CxcPackage& package) -> CxcWriteR
+     return request;
+ }
+ 
+-inline [[nodiscard]] auto twoRootProject(std::string_view firstPath = "a",
++[[nodiscard]] inline auto twoRootProject(std::string_view firstPath = "a",
+                                          std::string_view secondPath = "b") -> std::string {
+     std::string result = R"({
+   "format":"cuexis.project",
+@@ -110,7 +110,7 @@ inline [[nodiscard]] auto twoRootProject(std::string_view firstPath = "a",
+     return result;
+ }
+ 
+-inline [[nodiscard]] auto twoRootRequest(std::string firstIndex, std::string secondIndex,
++[[nodiscard]] inline auto twoRootRequest(std::string firstIndex, std::string secondIndex,
+                                          std::string_view firstRoot = "a",
+                                          std::string_view secondRoot = "b") -> CxcWriteRequest {
+     CxcWriteRequest request;
+@@ -126,12 +126,12 @@ inline [[nodiscard]] auto twoRootRequest(std::string firstIndex, std::string sec
+     return request;
+ }
+ 
+-inline [[nodiscard]] auto emptyIndex(std::uint32_t version = 1) -> std::string {
++[[nodiscard]] inline auto emptyIndex(std::uint32_t version = 1) -> std::string {
+     return "{\"format\":\"cuexis.asset-index\",\"version\":" + std::to_string(version) +
+            ",\"assets\":[],\"extensions\":{}}";
+ }
+ 
+-inline [[nodiscard]] auto referenceV4Request() -> CxcWriteRequest {
++[[nodiscard]] inline auto referenceV4Request() -> CxcWriteRequest {
+     const auto root = support::sourceRoot() / "tests" / "fixtures" / "chart_format_update" /
+                       "cfu_f_reference_project";
+     CxcWriteRequest request;
+diff --git a/tests/judgement/gameplay_pattern_compile_fixture.hpp b/tests/judgement/gameplay_pattern_compile_fixture.hpp
+index ed0b6f1d..615cd4fb 100644
+--- a/tests/judgement/gameplay_pattern_compile_fixture.hpp
++++ b/tests/judgement/gameplay_pattern_compile_fixture.hpp
+@@ -51,17 +51,17 @@ inline void expectRejection(const cuexis::core::Error& error, std::string_view c
+ 
+ //  --- declaration builders -----------------------------------------------------------------------
+ 
+-inline [[nodiscard]] auto atomNode(std::string atomRef) -> PatternNodeDeclaration {
++[[nodiscard]] inline auto atomNode(std::string atomRef) -> PatternNodeDeclaration {
+     return PatternNodeDeclaration{PatternPrimitive::atom, {}, std::move(atomRef), {}, {}};
+ }
+ 
+-inline [[nodiscard]] auto composeNode(PatternPrimitive primitive,
++[[nodiscard]] inline auto composeNode(PatternPrimitive primitive,
+                                       std::vector<PatternNodeDeclaration> operands)
+     -> PatternNodeDeclaration {
+     return PatternNodeDeclaration{primitive, std::move(operands), {}, {}, {}};
+ }
+ 
+-inline [[nodiscard]] auto repeatNode(PatternNodeDeclaration operand, std::uint64_t minimum,
++[[nodiscard]] inline auto repeatNode(PatternNodeDeclaration operand, std::uint64_t minimum,
+                                      std::uint64_t maximum) -> PatternNodeDeclaration {
+     return PatternNodeDeclaration{PatternPrimitive::boundedRepeat,
+                                   {std::move(operand)},
+@@ -70,14 +70,14 @@ inline [[nodiscard]] auto repeatNode(PatternNodeDeclaration operand, std::uint64
+                                   {}};
+ }
+ 
+-inline [[nodiscard]] auto declarationOf(PatternNodeDeclaration root) -> PatternDeclaration {
++[[nodiscard]] inline auto declarationOf(PatternNodeDeclaration root) -> PatternDeclaration {
+     return PatternDeclaration{.patternId = {},
+                               .matchPolicy = MatchPolicy::leftmostFirst,
+                               .root = std::move(root),
+                               .required = judgement::RequiredRefs{}};
+ }
+ 
+-inline [[nodiscard]] auto trace(std::initializer_list<std::string_view> refs)
++[[nodiscard]] inline auto trace(std::initializer_list<std::string_view> refs)
+     -> std::vector<std::string> {
+     std::vector<std::string> result;
+     result.reserve(refs.size());
+@@ -89,7 +89,7 @@ inline [[nodiscard]] auto trace(std::initializer_list<std::string_view> refs)
+ 
+ //  A budget in which `depth` is the only measured dimension, so a rejection can be attributed to
+ //  it.
+-inline [[nodiscard]] auto depthBudget(std::uint64_t depth) -> PatternCompileBudget {
++[[nodiscard]] inline auto depthBudget(std::uint64_t depth) -> PatternCompileBudget {
+     PatternCompileBudget budget;
+     budget.maxDeclarationDepth = MeasuredParameter<std::uint64_t>::measured(depth);
+     return budget;
+@@ -98,7 +98,7 @@ inline [[nodiscard]] auto depthBudget(std::uint64_t depth) -> PatternCompileBudg
+ //  A `sequence` chain of `depth` nested nodes over one atom, built iteratively. The declaration
+ //  type owns its operands recursively, so the chain is kept well inside the host stack of the test
+ //  process; the property under test is that the *compiler* imposes no depth bound of its own.
+-inline [[nodiscard]] auto nestedChain(std::size_t depth) -> PatternNodeDeclaration {
++[[nodiscard]] inline auto nestedChain(std::size_t depth) -> PatternNodeDeclaration {
+     PatternNodeDeclaration chain = atomNode("atom.one");
+     for (std::size_t level = 1; level < depth; ++level) {
+         chain = composeNode(PatternPrimitive::sequence, {std::move(chain), atomNode("atom.one")});
+@@ -120,7 +120,7 @@ inline [[nodiscard]] auto nestedChain(std::size_t depth) -> PatternNodeDeclarati
+ //  It is exact only while `window` is wide enough to tell the live residuals apart: past that the
+ //  truncation saturates and the number under-reports. The empty residual is the implicit dead state
+ //  of a partial automaton and is not counted, which is the same counting object `stateCount` uses.
+-inline [[nodiscard]] auto distinctNonEmptyResiduals(const CompiledPattern& pattern,
++[[nodiscard]] inline auto distinctNonEmptyResiduals(const CompiledPattern& pattern,
+                                                     std::size_t window) -> std::size_t {
+     const std::vector<std::string> symbols{"atom.one", "atom.two"};
+     std::vector<std::vector<std::string>> words{{}};
+diff --git a/tests/judgement/timebase_test_fixture.hpp b/tests/judgement/timebase_test_fixture.hpp
+index f86b2eb5..aad13038 100644
+--- a/tests/judgement/timebase_test_fixture.hpp
++++ b/tests/judgement/timebase_test_fixture.hpp
+@@ -43,13 +43,13 @@ constexpr std::int64_t kInt64Max = std::numeric_limits<std::int64_t>::max();
+ //  Fixture construction
+ //  -------------------------------------------------------------------------------------------
+ 
+-inline [[nodiscard]] auto beat(std::int64_t numerator, std::int64_t denominator) -> RationalBeat {
++[[nodiscard]] inline auto beat(std::int64_t numerator, std::int64_t denominator) -> RationalBeat {
+     const auto value = RationalBeat::create(numerator, denominator);
+     REQUIRE(value.has_value());
+     return *value;
+ }
+ 
+-inline [[nodiscard]] auto duration(std::int64_t numerator, std::int64_t denominator)
++[[nodiscard]] inline auto duration(std::int64_t numerator, std::int64_t denominator)
+     -> RationalDuration {
+     const auto value = RationalDuration::create(numerator, denominator);
+     REQUIRE(value.has_value());
+@@ -57,14 +57,14 @@ inline [[nodiscard]] auto duration(std::int64_t numerator, std::int64_t denomina
+ }
+ 
+ //  The declared engine.tick.us.v1 binding with one explicit positive tempo and no sections.
+-inline [[nodiscard]] auto plainProfile(RationalDuration tempo) -> TimebaseProfile {
++[[nodiscard]] inline auto plainProfile(RationalDuration tempo) -> TimebaseProfile {
+     TimebaseProfile profile = judgement::makeMicrosecondTimebase();
+     profile.initialTempo = tempo;
+     return profile;
+ }
+ 
+ //  All four late-policy parameters measured and a policy declared. The numbers are presence probes.
+-inline [[nodiscard]] auto measuredPolicy() -> LatePolicyParameters {
++[[nodiscard]] inline auto measuredPolicy() -> LatePolicyParameters {
+     LatePolicyParameters parameters;
+     parameters.finalizationWatermark = MeasuredParameter<TickSpan>::measured(TickSpan{0});
+     parameters.maxQueueHop = MeasuredParameter<TickSpan>::measured(TickSpan{1});
+@@ -74,7 +74,7 @@ inline [[nodiscard]] auto measuredPolicy() -> LatePolicyParameters {
+     return parameters;
+ }
+ 
+-inline [[nodiscard]] auto contextValue(const cuexis::core::Error& error, std::string_view key)
++[[nodiscard]] inline auto contextValue(const cuexis::core::Error& error, std::string_view key)
+     -> std::string {
+     for (const auto& entry : error.context()) {
+         if (entry.key == key) {
+@@ -133,7 +133,7 @@ struct KeyCase final {
+     std::uint64_t canonicalOrdinal;
+ };
+ 
+-inline [[nodiscard]] auto key(const KeyCase& item) -> TickCollisionKey {
++[[nodiscard]] inline auto key(const KeyCase& item) -> TickCollisionKey {
+     //  The origin kind is a required constructor argument: a key cannot be built by omitting it,
+     //  because no member of TickCollisionKey has a default value.
+     return TickCollisionKey{Tick{item.tick}, item.originKind,
+@@ -143,7 +143,7 @@ inline [[nodiscard]] auto key(const KeyCase& item) -> TickCollisionKey {
+ //  Sorts a set of canonical keys by the canonical order alone, whatever arrival order it was given
+ //  in. This is the property Spec 3.7.2 item 4 protects: the result depends on the keys, never on
+ //  the sequence the caller happened to hand over.
+-inline [[nodiscard]] auto canonicalSort(const std::vector<KeyCase>& arrivalOrder)
++[[nodiscard]] inline auto canonicalSort(const std::vector<KeyCase>& arrivalOrder)
+     -> std::vector<TickCollisionKey> {
+     std::vector<TickCollisionKey> keys;
+     keys.reserve(arrivalOrder.size());
+diff --git a/tests/pd/pd5_host_probe.cpp b/tests/pd/pd5_host_probe.cpp
+index 356361d5..915f8ab3 100644
+--- a/tests/pd/pd5_host_probe.cpp
++++ b/tests/pd/pd5_host_probe.cpp
+@@ -6,6 +6,9 @@
+ #include <algorithm>
+ #include <catch2/catch_test_macros.hpp>
+ #include <cstdlib>
++#include <cuexis/judgement/judgement_session.hpp>
++#include <cuexis/judgement/recovery.hpp>
++#include <cuexis/judgement/recovery_codec.hpp>
+ #include <cuexis/playback/frame_digest.hpp>
+ #include <cuexis_internal/allocation_observer.hpp>
+ #include <cuexis_internal/presentation_metrics.hpp>
+@@ -15,6 +18,10 @@
+ #include <thread>
+ 
+ #if defined(CUEXIS_PD5_DEVICE)
++// The playback internals need the judgement internal tree; only the device probe target carries
++// that include path, and only the device build compiles the seek class fixtures that use it.
++#include "../../engine/judgement/src/execution_testing.hpp"
++#include "../../engine/playback/src/gameplay_internal.hpp"
+ #include "../../engine/render_opengl/internal/cuexis_internal/gpu_timer.hpp"
+ #include <SDL3/SDL.h>
+ #include <cuexis/platform_sdl/sdl_runtime.hpp>
+@@ -499,10 +506,24 @@ TEST_CASE("PD5 scripted host timing probe", "[.][pd][pd5][timing-probe]") {
+ // Seek gate probe: the full host seek on the real OpenGL backend. The functional matrix measures
+ // the same operations on the CPU test renderer, which is why its readings cannot stand for the
+ // gate.
++//
++// CUEXIS_PD5_SEEK_CLASS selects one of the pre-declared Seek classes. The hot and cold classes
++// are carried by the record-count axis (a fresh process is the cold class); this probe adds the
++// three classes that need a different fixture:
++//   natural  - a certificate-carrying checkpoint minted by the session itself, first use
++//   external - an archive that arrives as bytes, so the request pays first certification
++//   fallback - a hint that can never be legal for the target, so the request pays origin replay
+ TEST_CASE("PD5 scripted seek timing probe", "[.][pd][pd5][seek-gate]") {
+     std::cout << std::setprecision(17);
+     const auto recordCount = pd5Count("CUEXIS_PD5_SEEK_RECORDS", 129, 20000);
+     const auto seekCount = pd5Count("CUEXIS_PD5_SEEK_COUNT", 16, 4096);
++    const auto seekClass = [] {
++        const auto text = test_support::environmentVariable("CUEXIS_PD5_SEEK_CLASS");
++        return text.empty() ? std::string{"hot"} : text;
++    }();
++    if (seekClass != "hot" && seekClass != "natural" && seekClass != "external" &&
++        seekClass != "fallback")
++        throw std::runtime_error("Invalid CUEXIS_PD5_SEEK_CLASS");
+     auto runtime = pd5Take(platform_sdl::SdlRuntime::create());
+     render_opengl::OpenGlConfig glConfig;
+     glConfig.vsync = false;
+@@ -558,8 +579,10 @@ TEST_CASE("PD5 scripted seek timing probe", "[.][pd][pd5][seek-gate]") {
+         observation.quality = ClockQuality::Exact;
+         return observation;
+     };
++    // Keep the owning content alive: the access view and every replay decode borrow from it.
++    const auto content = fixture.content();
+     auto host = pd5Take(player::ExecutionHost::create(renderer, settings, {}));
+-    pd5Take(host->load(test_support::presentation(), fixture.content()));
++    pd5Take(host->load(test_support::presentation(), content));
+     for (unsigned i = 0; i < recordCount; ++i) {
+         pd5Take(host->advance(pd5Take(clock(host->context()))));
+         auto frame = pd5Take(host->sample(
+@@ -568,24 +591,120 @@ TEST_CASE("PD5 scripted seek timing probe", "[.][pd][pd5][seek-gate]") {
+         pd5Take(host->present(frame));
+     }
+     auto archive = pd5Take(host->archive());
++    const auto* basis = GameplayAccess::content(content);
++    const auto* naturalSource = GameplayAccess::replay(archive);
++    REQUIRE(basis);
++    REQUIRE(naturalSource);
++    // Fixture preparation happens before any request is timed: only consuming the certificate,
++    // certifying an external source or replaying an unusable hint belongs inside the 20 ms gate.
++    std::vector<GameplayCheckpoint> hints;
++    std::optional<GameplayReplay> externalReplay;
++    std::optional<GameplayReplay> foreignReplay;
++    if (seekClass == "natural") {
++        // A certified restore needs the checkpoint cut to end exactly on a record horizon, and the
++        // fixture's first record sits at 7000. Every target at or after 8103 can consume it; the
++        // first such request carries the first-use cost and the later ones reuse the carrier.
++        auto minted = cuexis::judgement::JudgementSession::checkpoint(
++            naturalSource->archive, cuexis::judgement::Tick{7000});
++        REQUIRE(minted);
++        hints.push_back(GameplayAccess::checkpoint(std::move(*minted)));
++    }
++    if (seekClass == "external") {
++        const auto encoded = pd5Take(archive.toBytes());
++        auto decoded =
++            GameplayReplay::fromBytes(encoded, content, {encoded.size(), 10000, 10000000, true});
++        REQUIRE(decoded);
++        externalReplay = std::move(*decoded);
++    }
++    if (seekClass == "fallback") {
++        // A checkpoint minted from an independent decoded archive can never bind this source, and
++        // its horizon is the last target, so most requests also exceed it.
++        const auto encoded = pd5Take(archive.toBytes());
++        auto decoded =
++            GameplayReplay::fromBytes(encoded, content, {encoded.size(), 10000, 10000000, true});
++        REQUIRE(decoded);
++        const auto* foreign = GameplayAccess::replay(*decoded);
++        REQUIRE(foreign);
++        const auto lastHorizon =
++            cuexis::judgement::Tick{1103 + static_cast<std::int64_t>(seekCount - 1) * 7000};
++        auto minted =
++            cuexis::judgement::JudgementSession::checkpoint(foreign->archive, lastHorizon);
++        REQUIRE(minted);
++        hints.push_back(GameplayAccess::checkpoint(std::move(*minted)));
++        foreignReplay = std::move(*decoded);
++    }
++    const auto& sought = externalReplay ? *externalReplay : archive;
++    // Oracle: the unhinted origin path on the CPU, one per horizon. Neither host nor device work
++    // is reused, so the comparison proves the measured request produced the same published state.
++    auto oracle = cuexis::judgement::JudgementSession::create();
++    REQUIRE(oracle);
++    REQUIRE(oracle->configure(basis->configuration));
++    REQUIRE(oracle->prepare(basis->capsule.gameplay));
++    // Precondition of the class, measured once outside the timed region: a session-natural
++    // certificate must actually be consumed, an unusable hint must actually be rejected. Without
++    // this the class label would only describe the input, not the path the request took.
++    const auto* preconditionSource = GameplayAccess::replay(sought);
++    REQUIRE(preconditionSource);
++    std::vector<cuexis::judgement::ReplayCheckpoint> judgementHints;
++    for (const auto& hint : hints) {
++        const auto* storage = GameplayAccess::checkpoint(hint);
++        REQUIRE(storage);
++        judgementHints.push_back(storage->checkpoint);
++    }
++    const auto preconditionHorizon = cuexis::judgement::Tick{seekClass == "natural" ? 8103 : 1103};
++    const auto preconditionCut =
++        cuexis::judgement::replayCutAt(preconditionSource->archive, preconditionHorizon);
++    auto precondition = oracle->forkForSeek(preconditionSource->archive, preconditionHorizon,
++                                            preconditionCut, judgementHints);
++    REQUIRE(precondition);
++    const auto certifiedRecords =
++        cuexis::judgement::detail::KernelTestAccess::certifiedPrefixRecords(*precondition);
++    if (seekClass == "natural")
++        REQUIRE(certifiedRecords > 0);
++    else
++        REQUIRE(certifiedRecords == 0);
++    std::size_t verified{};
++    std::size_t mismatched{};
++    pd_measure::environmentJson("seek-begin");
+     std::cout << "PD5_SEEK_ID {\"schema\":\"pd5.seek.v1\",\"records\":" << recordCount
+-              << ",\"seeks\":" << seekCount << "}\n";
++              << ",\"seeks\":" << seekCount << ",\"seek_class\":\"" << seekClass
++              << "\",\"hints\":" << hints.size() << ",\"certified_records\":" << certifiedRecords
++              << "}\n";
+     for (unsigned index = 0; index < seekCount; ++index) {
+         const auto horizon = 1103 + static_cast<std::int64_t>(index) * 7000;
+         pd5Take(host->pause(clock));
+         const auto started = pd5Now();
+-        auto cut = pd5Take(host->replayCut(archive, GameplayTick{horizon}));
+-        pd5Take(host->seek(archive, cut, GameplayTick{horizon}, clock));
++        auto cut = pd5Take(host->replayCut(sought, GameplayTick{horizon}));
++        pd5Take(host->seek(sought, cut, GameplayTick{horizon}, clock, hints));
+         const auto ready = pd5Now();
+         auto frame = pd5Take(host->sample(
+             horizon, {static_cast<double>(horizon) / 1000., 0, host->context().clockSegment},
+             false));
+         pd5Take(host->present(frame));
+         const auto presented = pd5Now();
+-        std::cout << "PD5_SEEK {\"records\":" << recordCount << ",\"index\":" << index
+-                  << ",\"horizon\":" << horizon << ",\"request_to_ready_us\":" << (ready - started)
+-                  << ",\"request_to_present_us\":" << (presented - started) << "}\n";
++        const auto oracleCut = cuexis::judgement::replayCutAt(naturalSource->archive,
++                                                              cuexis::judgement::Tick{horizon});
++        auto expected = oracle->forkForSeek(naturalSource->archive,
++                                            cuexis::judgement::Tick{horizon}, oracleCut);
++        REQUIRE(expected);
++        auto expectedSnapshot = expected->snapshot();
++        REQUIRE(expectedSnapshot);
++        auto expectedBytes = encodeSnapshot(*expectedSnapshot);
++        REQUIRE(expectedBytes);
++        auto actual = pd5Take(host->snapshotGameplay());
++        auto actualBytes = pd5Take(actual.toBytes());
++        const bool matches = actualBytes == *expectedBytes;
++        ++verified;
++        if (!matches)
++            ++mismatched;
++        std::cout << "PD5_SEEK {\"records\":" << recordCount << ",\"seek_class\":\"" << seekClass
++                  << "\",\"index\":" << index << ",\"horizon\":" << horizon
++                  << ",\"request_to_ready_us\":" << (ready - started)
++                  << ",\"request_to_present_us\":" << (presented - started)
++                  << ",\"state_matches_oracle\":" << (matches ? "true" : "false") << "}\n";
+     }
++    std::cout << "PD5_SEEK_VERIFY {\"records\":" << recordCount << ",\"seek_class\":\"" << seekClass
++              << "\",\"verified\":" << verified << ",\"mismatched\":" << mismatched << "}\n";
+     pd5Take(host->close());
+ }
+ #endif
+diff --git a/tests/player/player_control_fixture.hpp b/tests/player/player_control_fixture.hpp
+index 190cc7d6..f7577035 100644
+--- a/tests/player/player_control_fixture.hpp
++++ b/tests/player/player_control_fixture.hpp
+@@ -97,21 +97,21 @@ constexpr std::string_view objectlessChart = R"json(
+ }
+ )json";
+ 
+-inline [[nodiscard]] auto projectSource(std::string_view project) -> Result<PlaybackSource> {
++[[nodiscard]] inline auto projectSource(std::string_view project) -> Result<PlaybackSource> {
+     const auto root = std::filesystem::path{CUEXIS_SOURCE_DIR} / "assets" / "projects" / project;
+     return PlaybackSource::fromFilesystemProject(root);
+ }
+ 
+ // One second of silence. The tests never decode the chart's main music; the clip preparation port
+ // is what a real decoder would sit behind.
+-inline [[nodiscard]] auto silentClip() -> Result<AudioClip> {
++[[nodiscard]] inline auto silentClip() -> Result<AudioClip> {
+     constexpr std::uint32_t sampleRate = 48000;
+     constexpr std::uint32_t channels = 2;
+     std::vector<float> samples(static_cast<std::size_t>(sampleRate) * channels, 0.0F);
+     return AudioClip::create(sampleRate, channels, std::move(samples));
+ }
+ 
+-inline [[nodiscard]] auto contextValue(const Error& error, std::string_view key) -> std::string {
++[[nodiscard]] inline auto contextValue(const Error& error, std::string_view key) -> std::string {
+     for (const auto& entry : error.context()) {
+         if (entry.key == key) {
+             return entry.value;
+@@ -368,7 +368,7 @@ class Fixture final {
+     std::optional<PlayerController> controller;
+ };
+ 
+-inline [[nodiscard]] auto snapshotBundle(Fixture& fixture) -> BundleSnapshot {
++[[nodiscard]] inline auto snapshotBundle(Fixture& fixture) -> BundleSnapshot {
+     REQUIRE(fixture.controller.has_value());
+     BundleSnapshot bundle;
+     const auto info = fixture.controller->session().contentInfo();
+diff --git a/tests/rpa/rpa_b5_seek_host_tests.cpp b/tests/rpa/rpa_b5_seek_host_tests.cpp
+index 319ec642..94ca8f0b 100644
+--- a/tests/rpa/rpa_b5_seek_host_tests.cpp
++++ b/tests/rpa/rpa_b5_seek_host_tests.cpp
+@@ -371,7 +371,16 @@ TEST_CASE("R3 CPU host Seek measures first and repeated requests through target
+     const auto recordSetting = test_support::environmentVariable("CUEXIS_SEEK_RECORDS");
+     REQUIRE((recordSetting.empty() || recordSetting == "33" || recordSetting == "129"));
+     const unsigned records = recordSetting == "129" ? 129 : 33;
+-    const std::int64_t horizon = 1103 + records - 1;
++    const auto lastRecordHorizon = std::int64_t{1103 + records - 1};
++    const auto attemptsSetting = test_support::environmentVariable("CUEXIS_SEEK_ATTEMPTS");
++    const unsigned attempts =
++        attemptsSetting.empty() ? 3U : static_cast<unsigned>(std::stoul(attemptsSetting));
++    REQUIRE((attempts >= 1U && attempts <= 64U));
++    const auto seekHorizonSetting = test_support::environmentVariable("CUEXIS_SEEK_HORIZON");
++    const auto seekHorizon = seekHorizonSetting.empty()
++                                 ? lastRecordHorizon
++                                 : static_cast<std::int64_t>(std::stoll(seekHorizonSetting));
++    REQUIRE((seekHorizon > 0));
+     const auto requirementSetting = test_support::environmentVariable("CUEXIS_SEEK_REQUIREMENTS");
+     REQUIRE((requirementSetting.empty() || requirementSetting == "1000" ||
+              requirementSetting == "10000" || requirementSetting == "40000"));
+@@ -506,7 +515,7 @@ TEST_CASE("R3 CPU host Seek measures first and repeated requests through target
+                                .count();
+     REQUIRE(archive);
+     const auto cutStart = std::chrono::steady_clock::now();
+-    const auto cut = archive->cutAt({horizon});
++    const auto cut = archive->cutAt({seekHorizon});
+     REQUIRE(cut);
+     const auto cutUs = std::chrono::duration_cast<std::chrono::microseconds>(
+                            std::chrono::steady_clock::now() - cutStart)
+@@ -516,11 +525,11 @@ TEST_CASE("R3 CPU host Seek measures first and repeated requests through target
+     const auto expectedScore = expected->score();
+     REQUIRE(expectedScore);
+     CHECK(expectedScore->misses == count);
+-    for (unsigned attempt = 0; attempt < 3; ++attempt) {
+-        target = horizon;
++    for (unsigned attempt = 0; attempt < attempts; ++attempt) {
++        target = seekHorizon;
+         REQUIRE((*host)->pause(clock));
+         const auto started = std::chrono::steady_clock::now();
+-        auto sought = (*host)->seek(*archive, *cut, {horizon}, clock);
++        auto sought = (*host)->seek(*archive, *cut, {seekHorizon}, clock);
+         const auto seekUs = std::chrono::duration_cast<std::chrono::microseconds>(
+                                 std::chrono::steady_clock::now() - started)
+                                 .count();
+@@ -529,8 +538,8 @@ TEST_CASE("R3 CPU host Seek measures first and repeated requests through target
+                            std::string{sought.error().message()}));
+         REQUIRE(sought);
+         auto frame = (*host)->sample(
+-            horizon, {static_cast<double>(horizon) / 1000.0, 0, (*host)->context().clockSegment},
+-            false);
++            seekHorizon,
++            {static_cast<double>(seekHorizon) / 1000.0, 0, (*host)->context().clockSegment}, false);
+         REQUIRE(frame);
+         const auto presented = (*host)->present(*frame);
+         REQUIRE(presented);
+@@ -540,11 +549,12 @@ TEST_CASE("R3 CPU host Seek measures first and repeated requests through target
+                                  .count();
+         const auto actual = (*host)->queryGameplay();
+         REQUIRE(actual);
+-        CHECK(actual->sameResult(*expected).value());
++        if (seekHorizon == lastRecordHorizon)
++            CHECK(actual->sameResult(*expected).value());
+         std::cout << "{\"event\":\"r3.redesign.host\",\"requirements\":" << count
+-                  << ",\"attempt\":" << attempt << ",\"seek_us\":" << seekUs
+-                  << ",\"request_to_present_us\":" << totalUs << ",\"archive_us\":" << archiveUs
+-                  << ",\"capsule_revision\":"
++                  << ",\"attempt\":" << attempt << ",\"horizon\":" << seekHorizon
++                  << ",\"seek_us\":" << seekUs << ",\"request_to_present_us\":" << totalUs
++                  << ",\"archive_us\":" << archiveUs << ",\"capsule_revision\":"
+                   << (contentPath == "typed" ? 0 : (requirementSetting.empty() ? 3 : 4))
+                   << ",\"content_path\":\"" << (contentPath == "typed" ? "typed" : "packed") << "\""
+                   << ",\"setup_us\":" << setupUs << ",\"cut_us\":" << cutUs

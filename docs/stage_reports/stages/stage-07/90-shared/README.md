@@ -2,7 +2,7 @@
 
 状态：current index
 
-更新日期：2026-10-26
+更新日期：2026-11-05
 
 跨阶段 CI、发布门禁、文档恢复与工作树整合；只在此保存一次并从所属阶段交叉导航。
 
@@ -22,6 +22,7 @@
 | `document-restoration` | 1 / 0 | [2026-10-03 · `docs/api/GAMEPLAY_V2_ABI.md` 事故性截断与重建的证据报告](document-restoration/2026-10-03-abi-document-restoration.md) |
 | `ci` | 1 / 0 | [2026-10-05 · Stage 7 CI runtime optimization](ci/2026-10-05-ci-runtime-optimization.md) |
 | `worktree-consolidation` | 1 / 0 | [2026-10-26 Worktree consolidation and verification](worktree-consolidation/2026-10-26-worktree-consolidation.md) |
+| `source-split-audit` | 2 / 7 | [2026-11-03 · 源码拆分安全网独立审计](source-split-audit/index.md) |
 
 ## 原始材料与历史位置
 

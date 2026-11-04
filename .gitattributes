@@ -35,3 +35,7 @@ tests/fixtures/pd5_etw_f1_parse/*.log binary
 # frozen evidence records the on-disk bytes. Pin it to LF so a checkout on a machine with
 # core.autocrlf=true materialises the same bytes the run measured instead of CRLF.
 tests/pd/pd_allocation_probe.hpp text eol=lf
+# The archived audit and R3c inputs are byte-bound by their manifest.json. Pin them to LF so a
+# checkout on a machine with core.autocrlf=true materialises the recorded bytes instead of CRLF.
+docs/stage_reports/stages/stage-07/90-shared/source-split-audit/** text eol=lf
+docs/stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3c-formal-adoption-v4/inputs/** text eol=lf

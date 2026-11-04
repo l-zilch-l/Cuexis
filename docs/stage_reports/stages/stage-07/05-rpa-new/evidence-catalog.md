@@ -2,7 +2,7 @@
 
 状态：current index
 
-更新日期：2026-11-04
+更新日期：2026-11-05
 
 当前状态只以 [CURRENT_STATUS](../../../../CURRENT_STATUS.md) 为准；本页只负责定位，不新增实施、测量或阶段接受结论。
 
@@ -114,3 +114,5 @@
 | [Seek 证据独立复核](r3/2026-11-04-r3-seek-recheck/index.md) | `out/verification-20261103/r3-seek-classes-v1/cuexis_execution_device_probe.exe`（sha256 `0ac53b9c…`）；独立工作树 `D:/Cuexis-r3seek-verify` 的 36 进程 / 576 请求重放、36 份原始日志、`tools/results.json`、`tools/run.log.txt` 与逐文件 `manifest.json` |
 | [最终本地验证与 R3c 决定](r3/2026-11-04-r3-final-validation-and-r3c-decision.md) | `r3/2026-11-04-r3c-formal-adoption*/` 四次正式尝试的 registration、runner、results 与原始日志；v4 为 1 行无效、0 个有效进程；另登记四套冻结前本地 CTest 计数与最终 11 行矩阵入口 |
 | [最终矩阵证据](r3/2026-11-04-rpa-acceptance-matrix-final-evidence/index.md) | `D:/Cuexis-redesign/out/rpa-acceptance/20261104-050730-f7d80b3f/`（11 行 configure/build/CTest/measurement 日志与 21 MB 原始 manifest）；`summary.json`、`verification.json`（阶段日志 SHA-256 与 5,052 文件内容闭合）、`source-content-sha256.json`、`identity-closure.json`（CRLF/LF 两个 checkout）、只读复算器与证据 manifest |
+| [R3c 正式采用单元](r3/2026-11-04-r3c-formal-adoption-v4/registration.json) | 补丁已入库 `r3/2026-11-04-r3c-formal-adoption-v4/inputs/`（`common-source.patch` 52,533 B、`seek-harness.patch` 4,875 B，附 `manifest.json`）；原始工作目录 `out/_r3c-formal/` |
+| [Seek 证据独立复核](r3/2026-11-04-r3-seek-recheck/index.md) | 工作目录 `out/_verify-seek-classes/`（`bin/` 探针与依赖、`seek-probe.patch`、`original-20261104/` 43 个文件、`replay/` 39 个文件）；入库的复算输入见该证据目录 `tools/` |

@@ -2,7 +2,7 @@
 
 状态：current index
 
-更新日期：2026-10-26
+更新日期：2026-11-05
 
 当前状态只以 [CURRENT_STATUS](../../../../CURRENT_STATUS.md) 为准；本页只负责定位，不新增实施、测量或阶段接受结论。
 
@@ -43,3 +43,9 @@
 | 来源报告 | 原始证据引用 |
 | --- | --- |
 | [2026-10-26 文档整理](documentation/2026-10-26-stage7-document-reorganization.md) | `D:/Cuexis-worktree/out/documentation-backups/20261026T031011-stage7-reorganization/` |
+
+## source-split-audit
+
+| 来源报告 | 原始证据引用 |
+| --- | --- |
+| [源码拆分安全网独立审计](source-split-audit/index.md) | `out/_audit-2026-11-03/gate-audit/`（`gate_*`／`probe_*`／`D1_*`／`C_*`／`B_*` 日志、探针源码与对象文件）；`out/_audit-2026-11-03/build-audit-logs/`（Release/Debug 构建与 CTest 日志、格式检查）；已入库部分见该目录 `tools/` 与 `manifest.json` |

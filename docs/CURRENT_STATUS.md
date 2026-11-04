@@ -199,7 +199,9 @@
 - **超限源文件拆分完成（2026-11-03）**：`engine/`、`app/`、`tests/`、`tools/` 下已无超过 800 行的 `.cpp`
   与超过 500 行的 `.hpp`（终检 0 个）。拆分覆盖源文件、测试文件与内部/公开头文件，每个文件一次独立提交，
   提交说明记录拆分前后行数、增量构建、相关测试二进制、`cuexis_format_check` 与逐行等价校验的结果；
-  逐文件进度表见工作区 `out/_split-plan/PLAN.md`（`out/` 不入库）。拆分同步修正了三处门与链接面：
+  逐文件进度表见工作区 `out/_split-plan/PLAN.md`（`out/` 不入库）。独立审计（2026-11-03）原文、复核脚本与
+  五个缺口的现状见[源码拆分安全网独立审计](stage_reports/stages/stage-07/90-shared/source-split-audit/index.md)。
+  拆分同步修正了三处门与链接面：
   诊断形式化门改扫 `execution_kernel*.cpp` 与 `execution_kernel_internal.hpp`；架构门对
   `input_boundary` / `gameplay_assembler` / `gameplay_graph` 三个分区按“伞头 + 分区头”拼接后比对
   （文件存在性与声明清单不变）；`tests/external` 的两个整包消费者补齐拆分后的 Validation Sink 源文件。
