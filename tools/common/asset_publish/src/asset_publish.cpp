@@ -2,6 +2,7 @@
 
 #include "publish_fs_internal.hpp"
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
