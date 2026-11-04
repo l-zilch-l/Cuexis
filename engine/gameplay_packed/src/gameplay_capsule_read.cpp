@@ -1,5 +1,7 @@
 #include "gameplay_capsule_operations_internal.hpp"
 
+#include <cmath>
+
 // Section decoding, graph linking, reconstruction and canonical re-hash.
 
 namespace cuexis::gameplay_packed {

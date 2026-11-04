@@ -1,6 +1,7 @@
 #include "host_protocol.hpp"
 #include "host_protocol_helpers.hpp"
 
+#include <cmath>
 #include <cstdint>
 #include <optional>
 #include <utility>

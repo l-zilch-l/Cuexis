@@ -1,5 +1,7 @@
 #include "gameplay_capsule_operations_internal.hpp"
 
+#include <cmath>
+
 // Public capsule entry points. Every fallible call crosses one boundary.
 
 namespace cuexis::gameplay_packed {

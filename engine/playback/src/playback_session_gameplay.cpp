@@ -2,6 +2,8 @@
 
 #include "playback_session_internal.hpp"
 
+#include <cmath>
+
 namespace cuexis::playback {
 
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)

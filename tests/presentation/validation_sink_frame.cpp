@@ -2,6 +2,8 @@
 
 #include "validation_sink_model.hpp"
 
+#include <cmath>
+
 // The ValidationSink activation and frame validation path.
 
 namespace cuexis::test_support {

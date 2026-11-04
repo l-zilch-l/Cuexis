@@ -4,6 +4,8 @@
 
 #include "validation_sink_canonical.hpp"
 
+#include <cmath>
+
 namespace cuexis::test_support {
 namespace validation_detail {
 
