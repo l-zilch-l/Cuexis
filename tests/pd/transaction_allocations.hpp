@@ -99,6 +99,44 @@ void operator delete(void* p, std::size_t, std::align_val_t a) noexcept {
 void operator delete[](void* p, std::size_t, std::align_val_t a) noexcept {
     ::operator delete(p, a);
 }
+// The nothrow forms belong to the same replaceable set. Without them libstdc++ allocates the
+// std::stable_sort temporary buffer (used to order diagnostics) through the library's nothrow
+// new, and the probe's malloc-backed delete then releases a library allocation, which
+// AddressSanitizer reports as an alloc-dealloc mismatch. Delegate to the tracked throwing forms
+// so the existing failure-injection counts keep their positions; an injected failure returns
+// nullptr instead of propagating out of a nothrow function.
+void* operator new(std::size_t size, const std::nothrow_t&) noexcept {
+    try {
+        return ::operator new(size);
+    } catch (...) {
+        return nullptr;
+    }
+}
+void* operator new[](std::size_t size, const std::nothrow_t&) noexcept {
+    return ::operator new(size, std::nothrow);
+}
+void operator delete(void* p, const std::nothrow_t&) noexcept {
+    ::operator delete(p);
+}
+void operator delete[](void* p, const std::nothrow_t&) noexcept {
+    ::operator delete[](p);
+}
+void* operator new(std::size_t size, std::align_val_t alignment, const std::nothrow_t&) noexcept {
+    try {
+        return ::operator new(size, alignment);
+    } catch (...) {
+        return nullptr;
+    }
+}
+void* operator new[](std::size_t size, std::align_val_t alignment, const std::nothrow_t&) noexcept {
+    return ::operator new(size, alignment, std::nothrow);
+}
+void operator delete(void* p, std::align_val_t alignment, const std::nothrow_t&) noexcept {
+    ::operator delete(p, alignment);
+}
+void operator delete[](void* p, std::align_val_t alignment, const std::nothrow_t&) noexcept {
+    ::operator delete[](p, alignment);
+}
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
