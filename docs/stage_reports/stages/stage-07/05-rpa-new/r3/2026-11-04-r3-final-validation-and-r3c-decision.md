@@ -12,7 +12,7 @@
 
 1. 磁盘事故后的源码已完成 Debug、Release、candidate Debug 与 candidate SHARED 四套本地构建/CTest
    复核；计数分别为 **1211/1211、1211/1211、73/73、1401/1401**，均为 0 失败。最终可审计的
-   11 行同源矩阵在本报告“最终矩阵”一节追加。
+   11 行同源矩阵已在冻结提交 `d70df15a` 上通过，见 §5。
 2. R3c 正式 A/B 单元按预注册规则执行，但四次启动尝试均未产生完整有效单元；最后一次 v4 的首个
    baseline 进程完成 30 秒预热并取得 7 个有效请求后，在重复 `pause` 处失败。控制器按
    `no_retry_or_replacement` 停止，未补样、未重跑求通过。
@@ -76,11 +76,37 @@ oracle 全部一致，最差 1,249 µs。结合已有两类，五类适用 Seek 
 
 仍未由本报告关闭的项目：
 
-- 最终 11 行同源验收矩阵：待源码与文档冻结后运行；结果在本报告后续章节追加。
+- 最终 11 行同源验收矩阵：已于 `d70df15a` 完成，11/11 `local_pass`、13,635 用例 0 失败、`source_unchanged=true`；证据见 §5。
 - hosted 同 SHA：owner 已裁定本轮不运行，仍未验证；不标记通过或豁免。
 - owner 对 R3 退出的裁定：只由 owner 作出。
 - 40K @ 240 FPS、R3b 可信恢复、旧 128 MiB 绝对内存上限：保持既有裁定，不重开。
 
 ## 5. 最终矩阵
 
-待追加。
+最终运行目录为 `out/rpa-acceptance/20261104-050730-f7d80b3f/`，源码身份
+`d70df15a463cb1fe4329bffb8f0c99bcac676c15`。11/11 行均为 `local_pass`，共 **13,635** 个 CTest
+用例、**0** 失败、**120** 个候选 `[measurement]` 事件；逐行和清单级 `source_unchanged=true`，
+运行期间没有改源码或文档。启动时磁盘可用 102.21 GiB。
+
+| 行 | 用例 / 失败 | measurement |
+| --- | --- | ---: |
+| `msvc-on-debug` | 1418 / 0 | 20 |
+| `msvc-on-release` | 1418 / 0 | 20 |
+| `msvc-on-shared-debug` | 1401 / 0 | 20 |
+| `msvc-off-debug` | 1211 / 0 | 0 |
+| `msvc-off-headless-debug` | 1066 / 0 | 0 |
+| `msvc-off-release` | 1211 / 0 | 0 |
+| `msvc-off-headless-release` | 1066 / 0 | 0 |
+| `msvc-off-shared-debug` | 1064 / 0 | 0 |
+| `mingw-on-debug` | 1266 / 0 | 20 |
+| `mingw-on-shared-debug` | 1248 / 0 | 20 |
+| `mingw-on-release` | 1266 / 0 | 20 |
+
+独立复算器验证了所有阶段日志 SHA-256、11 行状态与源码身份；`d70df15a` 的 5,052 个受检文件在主工作树
+逐字匹配运行清单，并与全新 checkout 在行结束符归一化后内容一致。
+证据与逐行 configure/build/CTest 时间见
+[最终矩阵证据](2026-11-04-rpa-acceptance-matrix-final-evidence/index.md)。
+
+CTest 中的 26 条 `***Skipped` 原样登记，不当作通过；`physical_keyboard`、`listening`、
+`device_loss_recovery`、`production_calibration`、`hosted_same_sha` 与 `owner_acceptance` 仍未执行。
+矩阵为 `test_only`，不产生最终接受、生产阈值、hosted 或 R3 退出结论。

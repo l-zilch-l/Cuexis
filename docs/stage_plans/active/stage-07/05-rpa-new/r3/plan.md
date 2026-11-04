@@ -1,6 +1,6 @@
 # R3 implementation and verification
 
-状态：in progress。用户于 2026-10-26 授权本次接手完成 R3；owner 于 2026-11-02 作出四项门裁定，门账收口为 15 项通过 + 0 项部分，R3 仍未退出，见文末 §9–§11。
+状态：local implementation and verification complete。用户于 2026-10-26 授权本次接手完成 R3；owner 于 2026-11-02 作出四项门裁定，门账收口为 15 项通过 + 0 项部分，最终本地同源矩阵已通过；R3 退出仍待 owner，hosted 同 SHA 未验证，见文末 §9–§11。
 本登记从 [总计划](../plan.md) §8 消费范围和依赖，不扩展到 R4 正式接受或 Stage 7 关闭。
 返回 [New RPA 索引](../README.md)。
 
@@ -204,9 +204,17 @@ dispatch 给出的身份字节，取不到时回落文本入口。本轮按当�
 [最终本地验证与 R3c 决定](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-final-validation-and-r3c-decision.md)。
 R3b 可信恢复边界、40K @ 240 FPS 和旧 128 MiB 绝对内存上限均不重开。
 
-## 11. 剩余工作
+## 11. 最终矩阵与剩余工作
 
-- 在冻结源码上重跑 11 行本地同源验收矩阵，并要求逐行 `local_pass`、清单级
-  `source_unchanged=true`；这是本轮尚未执行的唯一本地工程门。
+2026-11-04 在冻结提交 `d70df15a` 上完成最终 11 行本地同源验收矩阵：11/11 行 `local_pass`，
+13,635 个 CTest 用例、0 失败、120 个候选 measurement 事件；逐行及清单级
+`source_unchanged=true`。独立复算验证全部阶段日志 SHA-256，并将 5,052 个受检文件的主工作树字节
+与运行清单闭合、与同一提交的全新 checkout 做行结束符归一化内容闭合。证据见
+[最终矩阵证据](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-rpa-acceptance-matrix-final-evidence/index.md)；
+逐行结果与未执行边界也登记在
+[最终本地验证与 R3c 决定](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-final-validation-and-r3c-decision.md)。
+
+剩余只有：
+
 - hosted 同 SHA 仍未验证，按 owner 2026-11-02 裁定本轮不运行；不得标记通过或豁免。
 - R3 退出只由 owner 裁定，文档和测试不得自封。
