@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <optional>
 #include <set>
 #include <string>
 #include <utility>
@@ -46,8 +47,16 @@ void readAnimatorFromPatches(const json::Reader& patchesReader, AnimatorOwnerKin
         }
         const auto pathReader = patchReader->optionalField("path");
         const auto operationReader = patchReader->optionalField("op");
-        const auto path = pathReader ? pathReader->readString() : std::nullopt;
-        const auto operation = operationReader ? operationReader->readString() : std::nullopt;
+        // Assign through an explicit optional instead of a ternary: GCC 13 at -O3 reports the
+        // ternary construction as possibly uninitialized when the payload is later compared.
+        std::optional<std::string_view> path;
+        if (pathReader) {
+            path = pathReader->readString();
+        }
+        std::optional<std::string_view> operation;
+        if (operationReader) {
+            operation = operationReader->readString();
+        }
         if (!path) {
             continue;
         }
