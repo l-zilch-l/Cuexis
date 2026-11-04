@@ -19,8 +19,12 @@ void renameUnpackDirectoryWithRetry(const std::filesystem::path& source,
     for (int attempt = 0; attempt < maxAttempts; ++attempt) {
         rename(source, target, error);
 #if defined(_WIN32)
-        const bool retryable = error.category() == std::system_category() &&
-                               (error.value() == 5 || error.value() == 32 || error.value() == 33);
+        // MSVC reports the sharing failures natively. libstdc++ on MinGW forwards the CRT
+        // errno instead, so the same held-directory condition arrives as EBUSY.
+        const bool retryable =
+            (error.category() == std::system_category() &&
+             (error.value() == 5 || error.value() == 32 || error.value() == 33)) ||
+            error == std::make_error_code(std::errc::device_or_resource_busy);
 #else
         constexpr bool retryable = false;
 #endif

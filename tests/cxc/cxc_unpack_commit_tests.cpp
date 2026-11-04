@@ -43,6 +43,16 @@ TEST_CASE("CXC unpack directory commit retries only bounded native sharing failu
             CHECK(waits == 2);
         }
     }
+    SECTION("a held directory reported as EBUSY is retried like a native sharing failure") {
+        failure = std::make_error_code(std::errc::device_or_resource_busy);
+        attempts = 0;
+        waits = 0;
+        failureCount = 2;
+        cuexis::tools::detail::renameUnpackDirectoryWithRetry(source, target, error, rename, wait);
+        CHECK_FALSE(error);
+        CHECK(attempts == 3);
+        CHECK(waits == 2);
+    }
     SECTION("persistent sharing failure stops after eight atomic attempts") {
         failureCount = 100;
         cuexis::tools::detail::renameUnpackDirectoryWithRetry(source, target, error, rename, wait);
@@ -122,7 +132,12 @@ TEST_CASE("CXC unpack directory commit handles an actual Windows reader determin
             ++attempts;
             fs::rename(from, to, result);
             if (attempts == 1) {
-                CHECK(result == std::error_code{ERROR_SHARING_VIOLATION, std::system_category()});
+                // MSVC reports the held directory as ERROR_SHARING_VIOLATION; libstdc++ on
+                // MinGW forwards the CRT errno, which arrives as EBUSY in the generic category.
+                const auto sharing =
+                    std::error_code{ERROR_SHARING_VIOLATION, std::system_category()};
+                const auto busy = std::make_error_code(std::errc::device_or_resource_busy);
+                CHECK((result == sharing || result == busy));
             }
         },
         [&] {
