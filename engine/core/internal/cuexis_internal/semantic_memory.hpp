@@ -26,6 +26,8 @@ struct SemanticSnapshot final {
     bool valid{};
 };
 struct SemanticPage final {
+    // Actual typed payload, possibly inside a new allocation due to STL alignment.
+    // Only the union of these payload spans is charged in an instantaneous census.
     const void* allocation;
     std::size_t bytes;
 };

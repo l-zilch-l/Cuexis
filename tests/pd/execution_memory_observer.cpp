@@ -231,13 +231,18 @@ void recordSemanticPhase(const void* address, SemanticPhase phase) noexcept {
 }
 void recordSemanticCensus(const void* address, std::span<const SemanticPage> pages) noexcept {
     struct Entry final {
-        std::uint64_t id{}, requested{}, storage{}, age{};
+        std::uint64_t id{}, requested{}, storage{}, age{}, charged{};
         std::uint16_t origin{};
         bool instantaneous{};
     };
+    struct PageSpan final {
+        std::uint64_t id{}, offset{}, bytes{};
+    };
     std::array<Entry, 4096> entries{};
-    std::size_t count{};
-    std::uint64_t censusId{}, rootId{}, requested{}, storage{}, oldest{}, stamp{};
+    std::array<PageSpan, 512> spans{};
+    std::size_t count{}, spanCount{};
+    std::uint64_t censusId{}, rootId{}, requested{}, backingRequested{}, storage{}, oldest{},
+        stamp{};
     SemanticPhase phase{};
     bool valid{};
     {
@@ -258,11 +263,13 @@ void recordSemanticCensus(const void* address, std::span<const SemanticPage> pag
                     totals.exceeded = true;
                     return;
                 }
-                entries[count++] = {block.allocationId, block.requested,          block.charge,
-                                    stamp - block.born, unpackCell(block.packed), instantaneous};
-                requested += block.requested;
-                storage += block.charge;
-                oldest = std::max(oldest, stamp - block.born);
+                entries[count++] = {block.allocationId,
+                                    block.requested,
+                                    block.charge,
+                                    stamp - block.born,
+                                    instantaneous ? 0 : block.requested,
+                                    unpackCell(block.packed),
+                                    instantaneous};
             };
             for (auto* block = first; block; block = block->next)
                 if (rootSlot(*block) == index)
@@ -270,13 +277,19 @@ void recordSemanticCensus(const void* address, std::span<const SemanticPage> pag
             for (const auto& page : pages) {
                 bool found{};
                 for (auto* block = first; block; block = block->next) {
-                    if (reinterpret_cast<const void*>(reinterpret_cast<std::uintptr_t>(block) +
-                                                      sizeof(Header)) == page.allocation &&
-                        block->requested == page.bytes && page.bytes) {
+                    const auto start = reinterpret_cast<std::uintptr_t>(block) + sizeof(Header);
+                    const auto pointer = reinterpret_cast<std::uintptr_t>(page.allocation);
+                    if (pointer >= start && pointer - start <= block->requested && page.bytes &&
+                        page.bytes <= block->requested - (pointer - start)) {
                         const auto existing = rootSlot(*block);
                         if (existing != semanticRootCapacity && existing != index)
                             break;
                         append(*block, true);
+                        if (spanCount == spans.size()) {
+                            totals.exceeded = true;
+                            break;
+                        }
+                        spans[spanCount++] = {block->allocationId, pointer - start, page.bytes};
                         found = true;
                         break;
                     }
@@ -284,35 +297,72 @@ void recordSemanticCensus(const void* address, std::span<const SemanticPage> pag
                 if (!found)
                     totals.exceeded = true;
             }
+            std::sort(spans.begin(), spans.begin() + spanCount,
+                      [](const PageSpan& a, const PageSpan& b) {
+                          return a.id < b.id || (a.id == b.id && a.offset < b.offset);
+                      });
+            for (std::size_t row = 0; row < count; ++row) {
+                auto& entry = entries[row];
+                if (entry.instantaneous) {
+                    // Count the union of observed payload spans. Do not charge STL's
+                    // private alignment prefix/tail or the observer header to this proof.
+                    std::uint64_t end{};
+                    for (std::size_t span = 0; span < spanCount; ++span) {
+                        const auto& part = spans[span];
+                        if (part.id == entry.id) {
+                            const auto next = part.offset + part.bytes; // Range checked above.
+                            if (next > end)
+                                entry.charged += next - std::max(end, part.offset);
+                            end = std::max(end, next);
+                        }
+                    }
+                }
+                requested += entry.charged;
+                backingRequested += entry.requested;
+                storage += entry.storage;
+                oldest = std::max(oldest, entry.age);
+            }
         }
         valid = !totals.exceeded;
     }
     // Formatting happens outside the allocator lock and allocates no C++ objects.
-    std::printf("RPA_MEMORY_WORLD_PROOF {\"schema\":\"rpa.execution.memory.world-proof.v1\","
-                "\"census_id\":%llu,\"root_id\":%llu,\"phase\":\"%s\",\"stamp_us\":%llu,"
-                "\"domain\":\"state.world\",\"bound_kind\":\"instantaneous_unique_lower_bound\","
-                "\"complete_world_graph\":false,\"valid\":%s,\"live_count\":%zu,"
-                "\"requested_cpp_bytes\":%llu,\"crt_usable_storage_bytes\":%llu,"
-                "\"oldest_live_age_us\":%llu,\"census_stack_bytes\":%zu}\n",
-                static_cast<unsigned long long>(censusId), static_cast<unsigned long long>(rootId),
-                semanticPhaseNames[static_cast<unsigned>(phase)],
-                static_cast<unsigned long long>(stamp), valid ? "true" : "false", count,
-                static_cast<unsigned long long>(requested),
-                static_cast<unsigned long long>(storage), static_cast<unsigned long long>(oldest),
-                sizeof(entries));
+    std::printf(
+        "RPA_MEMORY_WORLD_PROOF {\"schema\":\"rpa.execution.memory.world-proof.v1\","
+        "\"census_id\":%llu,\"root_id\":%llu,\"phase\":\"%s\",\"stamp_us\":%llu,"
+        "\"domain\":\"state.world\",\"bound_kind\":\"instantaneous_unique_lower_bound\","
+        "\"complete_world_graph\":false,\"valid\":%s,\"live_count\":%zu,"
+        "\"lower_bound_requested_cpp_bytes\":%llu,\"backing_requested_cpp_bytes\":%llu,"
+        "\"backing_crt_usable_storage_bytes\":%llu,"
+        "\"oldest_live_age_us\":%llu,\"census_stack_bytes\":%zu}\n",
+        static_cast<unsigned long long>(censusId), static_cast<unsigned long long>(rootId),
+        semanticPhaseNames[static_cast<unsigned>(phase)], static_cast<unsigned long long>(stamp),
+        valid ? "true" : "false", count, static_cast<unsigned long long>(requested),
+        static_cast<unsigned long long>(backingRequested), static_cast<unsigned long long>(storage),
+        static_cast<unsigned long long>(oldest), sizeof(entries) + sizeof(spans));
     for (std::size_t row = 0; row < count; ++row) {
         const auto& entry = entries[row];
         std::printf(
             "RPA_MEMORY_WORLD_ALLOCATION {\"schema\":\"rpa.execution.memory.world-allocation.v1\","
             "\"census_id\":%llu,\"allocation_id\":%llu,\"root_id\":%llu,"
-            "\"requested_cpp_bytes\":%llu,\"crt_usable_storage_bytes\":%llu,"
+            "\"requested_cpp_bytes\":%llu,\"crt_usable_storage_bytes\":%llu,\"charged_cpp_bytes\":%"
+            "llu,"
             "\"age_us\":%llu,\"origin_cell\":%u,\"membership\":\"%s\"}\n",
             static_cast<unsigned long long>(censusId), static_cast<unsigned long long>(entry.id),
             static_cast<unsigned long long>(rootId),
             static_cast<unsigned long long>(entry.requested),
             static_cast<unsigned long long>(entry.storage),
+            static_cast<unsigned long long>(entry.charged),
             static_cast<unsigned long long>(entry.age), static_cast<unsigned>(entry.origin),
             entry.instantaneous ? "actual_component_page" : "stable_registry_subset");
+    }
+    for (std::size_t row = 0; row < spanCount; ++row) {
+        const auto& span = spans[row];
+        std::printf("RPA_MEMORY_WORLD_SPAN {\"schema\":\"rpa.execution.memory.world-span.v1\","
+                    "\"census_id\":%llu,\"allocation_id\":%llu,\"offset\":%llu,\"bytes\":%llu}\n",
+                    static_cast<unsigned long long>(censusId),
+                    static_cast<unsigned long long>(span.id),
+                    static_cast<unsigned long long>(span.offset),
+                    static_cast<unsigned long long>(span.bytes));
     }
 }
 } // namespace

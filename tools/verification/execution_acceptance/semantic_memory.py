@@ -11,6 +11,7 @@ def collect(text):
             raise ValueError("inexact allocation partition anywhere in log")
     proofs = records(text, "RPA_MEMORY_WORLD_PROOF ")
     allocations = records(text, "RPA_MEMORY_WORLD_ALLOCATION ")
+    spans = records(text, "RPA_MEMORY_WORLD_SPAN ")
     if not proofs:
         raise ValueError("missing instantaneous World proof")
     by_id = {}
@@ -41,22 +42,46 @@ def collect(text):
             origin = unsigned(row, "origin_cell")
             if requested > storage or origin >= 210:
                 raise ValueError("invalid storage or origin identity")
+            selected_spans = [part for part in spans if part.get("census_id") == census_id and
+                              part.get("allocation_id") == row["allocation_id"]]
+            intervals = []
+            for part in selected_spans:
+                if part.get("schema") != "rpa.execution.memory.world-span.v1":
+                    raise ValueError("invalid page span schema")
+                offset, size = unsigned(part, "offset"), unsigned(part, "bytes")
+                if not size or offset > requested or size > requested - offset:
+                    raise ValueError("page span leaves its backing new allocation")
+                intervals.append((offset, offset + size))
+            end, union = 0, 0
+            for start, stop in sorted(intervals):
+                if stop > end:
+                    union += stop - max(start, end)
+                end = max(end, stop)
+            charge = requested if row["membership"] == "stable_registry_subset" else union
+            if unsigned(row, "charged_cpp_bytes") != charge or not charge:
+                raise ValueError("page union or stable subset charge disagrees")
             identity = (requested, storage, origin)
             previous = identities.setdefault(row["allocation_id"], identity)
             if previous != identity:
                 raise ValueError("allocation identity changed between censuses")
             unsigned(row, "age_us")
-        for field in ("requested_cpp_bytes", "crt_usable_storage_bytes"):
-            if unsigned(proof, field) != sum(unsigned(row, field) for row in rows):
+        for field, local in (("lower_bound_requested_cpp_bytes", "charged_cpp_bytes"),
+                             ("backing_requested_cpp_bytes", "requested_cpp_bytes"),
+                             ("backing_crt_usable_storage_bytes", "crt_usable_storage_bytes")):
+            if unsigned(proof, field) != sum(unsigned(row, local) for row in rows):
                 raise ValueError("World lower-bound total disagrees with allocation ledger")
         if unsigned(proof, "oldest_live_age_us") != max(
                 (row["age_us"] for row in rows), default=0):
             raise ValueError("oldest allocation age disagrees")
         unsigned(proof, "stamp_us")
         unsigned(proof, "census_stack_bytes")
-        by_id[census_id] = {"proof": proof, "allocations": rows}
+        by_id[census_id] = {"proof": proof, "allocations": rows,
+                            "spans": [part for part in spans if part.get("census_id") == census_id]}
     if any(row.get("census_id") not in by_id for row in allocations):
         raise ValueError("orphan World allocation")
+    keys = {(row["census_id"], row["allocation_id"]) for row in allocations}
+    if any((part.get("census_id"), part.get("allocation_id")) not in keys for part in spans):
+        raise ValueError("orphan page span")
     return {"schema": "rpa.execution.memory.world-proofs.v1", "censuses": list(by_id.values())}
 
 
@@ -70,11 +95,11 @@ def rate(document, profile):
     for row in document["censuses"]:
         proof = row["proof"]
         # Use a real active instant. Scope peaks can contain construction temporaries.
-        if proof["phase"] == "active" and proof["requested_cpp_bytes"] > limit:
+        if proof["phase"] == "active" and proof["lower_bound_requested_cpp_bytes"] > limit:
             failures.append({"census_id": proof["census_id"], "root_id": proof["root_id"],
                              "domain": "state.world", "lower_bound_bytes":
-                             proof["requested_cpp_bytes"], "limit_bytes": limit,
-                             "excess_at_least_bytes": proof["requested_cpp_bytes"] - limit})
+                             proof["lower_bound_requested_cpp_bytes"], "limit_bytes": limit,
+                             "excess_at_least_bytes": proof["lower_bound_requested_cpp_bytes"] - limit})
     return {"schema": "rpa.execution.memory.semantic-rating.v1",
             "status": "proven_over_budget" if failures else "unrated", "failures": failures,
             "formal_acceptance": False, "complete_semantic_graph": False,

@@ -3,6 +3,7 @@
 #include <cuexis_internal/allocation_observer.hpp>
 #include <cuexis_internal/semantic_memory.hpp>
 #include <thread>
+#include <vector>
 
 namespace memory = cuexis::internal::pd::memory;
 
@@ -68,7 +69,10 @@ TEST_CASE("Execution semantic roots preserve identity through transfer and actua
     CHECK(initial.memory.requestedBytes == 12345);
     memory::semanticPhase(&identity, memory::SemanticPhase::prepared);
     // Repeated page aliases must be charged only once, and only in this census.
-    const memory::SemanticPage pages[] = {{page, 512}, {page, 512}, {block, 12345}};
+    const memory::SemanticPage pages[] = {{static_cast<char*>(page) + 16, 256},
+                                          {static_cast<char*>(page) + 128, 384},
+                                          {static_cast<char*>(page) + 16, 256},
+                                          {block, 12345}};
     memory::semanticCensus(&identity, pages);
     memory::semanticPhase(&identity, memory::SemanticPhase::installed);
     memory::semanticPhase(&identity, memory::SemanticPhase::active);
@@ -97,6 +101,22 @@ TEST_CASE("Execution semantic roots preserve identity through transfer and actua
     memory::checkpoint("semantic-contract-final");
 }
 
+TEST_CASE("Execution semantic census recognizes actual standard allocator pages",
+          "[execution][memory][semantic-contract]") {
+    int identity{};
+    memory::semanticPhase(&identity, memory::SemanticPhase::constructing);
+    std::vector<std::uint64_t> page(1024);
+    const memory::SemanticPage pages[] = {{page.data(), page.size() * sizeof(page[0])}};
+    memory::semanticPhase(&identity, memory::SemanticPhase::prepared);
+    const auto before = memory::snapshot();
+    memory::semanticCensus(&identity, pages);
+    const auto after = memory::snapshot();
+    CHECK_FALSE(after.exceeded);
+    CHECK(after.requestedBytes == before.requestedBytes);
+    CHECK(memory::semanticSnapshot(&identity).memory.requestedBytes == 0);
+    memory::semanticPhase(&identity, memory::SemanticPhase::retiring);
+}
+
 // These intentional-invalidity tests each need their own process. They never run
 // the capacity workload or contribute diagnostic/acceptance measurements.
 TEST_CASE("Execution semantic observer rejects an unregistered owner",
@@ -116,5 +136,17 @@ TEST_CASE("Execution semantic observer rejects root table exhaustion",
     std::array<int, memory::semanticRootLimit + 1> identities{};
     for (auto& identity : identities)
         memory::semanticPhase(&identity, memory::SemanticPhase::constructing);
+    CHECK(memory::snapshot().exceeded);
+}
+
+TEST_CASE("Execution semantic observer rejects a page span beyond its backing allocation",
+          "[.][execution][memory-invalid-contract]") {
+    int identity{};
+    memory::semanticPhase(&identity, memory::SemanticPhase::constructing);
+    auto* block = ::operator new(64);
+    const memory::SemanticPage pages[] = {{static_cast<char*>(block) + 32, 33}};
+    memory::semanticCensus(&identity, pages);
+    ::operator delete(block);
+    memory::semanticPhase(&identity, memory::SemanticPhase::retiring);
     CHECK(memory::snapshot().exceeded);
 }

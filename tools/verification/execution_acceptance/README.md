@@ -57,8 +57,12 @@ collector v2 adds an allocation ID (64-byte header versus v1's 56), a fixed 256-
 and bounded, allocation-free census storage. Narrow scopes capture only registry storage
 that cannot migrate into runtime candidates. Appearance/Camera nested strings, transform
 scratch, World object/member initialization and unvisited containers remain uncharged unknowns.
-Actual Appearance/Camera/WorldTransform pages are matched synchronously by pointer and exact
-requested size at prepared, runtime-installed, and Playback-active instants. No shared handles
+Actual Appearance/Camera/WorldTransform page spans are matched synchronously inside live
+backing new allocations at prepared, runtime-installed, and Playback-active instants. MSVC
+can return an interior aligned address for a standard allocator payload. Only the interval
+union of observed payload bytes contributes to this lower bound; private STL alignment bytes
+are excluded. Full backing requested/storage bytes and page offsets are reported separately.
+No shared handles
 are copied. Root generations and allocation IDs prevent address reuse and duplicate charges;
 subset retirement waits for real frees. A released root certifies only the tracked subset.
 Scope peaks are origin observations, never persistent-World verdicts. Only an active instant's
