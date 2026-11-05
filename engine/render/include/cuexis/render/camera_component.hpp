@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 //  CameraComponent - camera data component (owned by cuexis_render; exposes no graphics
 //  backend types)
 //  Holds viewport-independent projection parameters. Viewport-aware matrices belong to the
@@ -10,6 +12,8 @@
 namespace cuexis::render {
 
 struct CameraComponent final {
+    static constexpr std::size_t page_size = 128;
+
     std::string type{"perspective"};
     double fovY{60.0};
     double nearPlane{0.1};
