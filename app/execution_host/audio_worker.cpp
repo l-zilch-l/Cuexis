@@ -81,6 +81,9 @@ void AudioWorker::requestShutdown() {
 auto AudioWorker::exited() const noexcept -> bool {
     return state_->exited.load(std::memory_order_acquire);
 }
+auto AudioWorker::admissionClosed() const -> bool {
+    return state_->channel.admissionClosed();
+}
 auto AudioWorker::joinExited() -> core::Result<void> try {
     if (!exited())
         return core::unexpected(error("control_pending"));
@@ -286,6 +289,13 @@ void AudioWorker::run(State& state) noexcept {
     state.channel.closeAdmission();
     while (auto pending = state.channel.take())
         state.channel.complete(pending->first, core::unexpected(error("owner_closed")));
+    if (state.options.beforeExitForTest) {
+        try {
+            state.options.beforeExitForTest();
+        } catch (...) {
+            state.fault.store(AudioPublication::Fault::allocation, std::memory_order_release);
+        }
+    }
     state.exited.store(true, std::memory_order_release);
 }
 } // namespace cuexis::playback::detail

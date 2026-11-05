@@ -21,6 +21,10 @@ template <typename Command, typename Reply> class OwnerChannel final {
     static_assert(std::is_nothrow_move_constructible_v<core::Error>);
 
   public:
+    // Compile-time accounting of the actual private slot, including reply and optional storage.
+    [[nodiscard]] static constexpr auto slotStorageBytes() noexcept -> std::size_t {
+        return sizeof(std::optional<Record>);
+    }
     enum class Fault : std::uint8_t { none, allocation, conflict, exhausted };
     OwnerChannel(std::size_t capacity, std::size_t reserve) : slots_(capacity), reserve_(reserve) {}
     OwnerChannel(const OwnerChannel&) = delete;
@@ -163,6 +167,10 @@ template <typename Command, typename Reply> class OwnerChannel final {
         closed_ = true;
         ++wakeVersion_;
         cv_.notify_all();
+    }
+    [[nodiscard]] auto admissionClosed() const -> bool {
+        std::lock_guard lock{mutex_};
+        return closed_;
     }
     [[nodiscard]] auto fault() const -> Fault {
         std::lock_guard lock{mutex_};

@@ -65,10 +65,31 @@ def free_bytes(path):
     return shutil.disk_usage(probe).free
 
 
+def isolated_build_paths(build_root, invocation, rows, root=ROOT):
+    """Resolve fresh row directories without reconfiguring an existing build tree."""
+    allowed = (root / "out/build").resolve()
+    if not allowed.is_relative_to(root.resolve()):
+        raise ValueError("checkout build directory resolves outside this checkout")
+    build_root = build_root.resolve()
+    if not build_root.is_relative_to(allowed):
+        raise ValueError("isolated build root must be under this checkout's out/build")
+    for ancestor in (build_root, *build_root.parents):
+        if (ancestor / "CMakeCache.txt").exists():
+            raise ValueError("isolated build root must not be inside an existing build tree")
+        if ancestor == allowed:
+            break
+    destination = build_root / invocation
+    if destination.exists():
+        raise ValueError("isolated invocation directory already exists")
+    return {row: destination / row for row in rows}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--rows", nargs="+", choices=ROWS, default=list(ROWS))
     parser.add_argument("--output", type=Path, default=ROOT / "out/rpa-acceptance")
+    parser.add_argument("--build-root", type=Path,
+                        help="Use fresh per-invocation row trees under out/build")
     parser.add_argument("--vcvars", type=Path)
     parser.add_argument("--jobs", type=int, default=4)
     parser.add_argument("--repeat-measurements", type=int, default=5)
@@ -78,6 +99,11 @@ def main():
     if args.vcvars and not args.vcvars.is_file():
         parser.error("vcvars must name an existing developer shell script")
     run = args.output.resolve() / (time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:8])
+    try:
+        builds = isolated_build_paths(args.build_root, run.name, args.rows) if args.build_root else {
+            row: ROOT / "out/build" / ROWS[row][0] for row in args.rows}
+    except ValueError as error:
+        parser.error(str(error))
     available = free_bytes(args.output.resolve())
     if available < FREE_SPACE_FLOOR:
         parser.exit(2, f"refusing to start: {available / 1024**3:.2f} GiB free, floor is "
@@ -86,6 +112,7 @@ def main():
     manifest = {"source": identity(), "os": platform.platform(), "machine": platform.machine(),
                 "logical_processors": os.cpu_count(), "test_only": True,
                 "free_space_floor_bytes": FREE_SPACE_FLOOR, "free_bytes_at_start": available,
+                "isolated_builds": args.build_root is not None,
                 "final_acceptance": False, "production_thresholds_accepted": False,
                 "rows": [], "unexecuted": ["physical_keyboard", "listening", "device_loss_recovery",
                                            "production_calibration", "hosted_same_sha", "owner_acceptance"]}
@@ -124,7 +151,7 @@ def main():
 
     for row in args.rows:
         directory, preset, options = ROWS[row]
-        build = ROOT / "out/build" / directory
+        build = builds[row]
         environment = os.environ.copy()
         if row.startswith("mingw"):
             environment["PATH"] = "C:/msys64/ucrt64/bin;" + environment["PATH"]

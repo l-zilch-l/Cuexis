@@ -42,6 +42,9 @@ struct FaultSlot final {
 // Fixed records are allocated at create; fault publication never allocates.
 class OwnerStepLedger final {
   public:
+    [[nodiscard]] static constexpr auto slotStorageBytes() noexcept -> std::size_t {
+        return sizeof(std::optional<Record>);
+    }
     [[nodiscard]] static auto create(std::uint64_t scope, Participant, std::size_t capacity,
                                      std::size_t controlReserve) -> core::Result<OwnerStepLedger>;
     OwnerStepLedger(OwnerStepLedger&&) noexcept = default;

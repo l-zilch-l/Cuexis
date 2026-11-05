@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Catch2TestRun name="cuexis_rpa_tests.exe" rng-seed="3762021540" xml-format-version="3" catch2-version="3.15.2">
+  <TestCase name="B1.2 scan oracle derives closure, execution and Fact/Fold independently" tags="[b1][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b1_tests.cpp" line="153">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 cached sample keeps timestamp and invalid clock needs explicit new segment" tags="[b3][clock][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_clock_tests.cpp" line="106">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B1.1 records stage identity separately from canonical input identity" tags="[b1][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b1_tests.cpp" line="56">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 resumed clock below ControlDrain waits before request acceptance" tags="[b3][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_schedule_tests.cpp" line="322">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 clock maps 44.1 and 48 kHz with independent offset oracle" tags="[b3][clock][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_clock_tests.cpp" line="73">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 resume allocation rejection preserves paused kernel and Fold failure preserves seal" tags="[b3][fault][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_control_tests.cpp" line="225">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 scheduler factory rejects invalid configuration without exceptions" tags="[b3][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_schedule_tests.cpp" line="354">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B2 publish reserve failure is atomic" tags="[b2][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b2_tests.cpp" line="132">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 same H with different control cuts yields different reachable snapshots" tags="[b3][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_control_tests.cpp" line="123">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B2 owning results survive store destruction" tags="[b2][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b2_tests.cpp" line="175">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 Q1 K1 invalid control does not cancel and valid control cannot revive advance" tags="[b3][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_checkpoint_tests.cpp" line="449">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R3 early RPA cuts recover only the applied history and continue independently" tags="[r3][recovery][rpa][seek]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_recovery_tests.cpp" line="152">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R3b base releases source suffix and retired owning state independently" tags="[lifetime][r3b][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_checkpoint_tests.cpp" line="119">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B1.2 rational time oracle applies offsets once and rounds ties to even" tags="[b1][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b1_tests.cpp" line="128">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R3 external altered suffix never inherits native source trust" tags="[native][redesign][rejection][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_native_tests.cpp" line="200">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R3 reused empty reserve faults from the latest successful horizon" tags="[empty-reserve][r3][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_checkpoint_tests.cpp" line="316">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 occurrence golden wire includes signed Tick and maximum source position" tags="[b3][rpa][wire]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_control_tests.cpp" line="180">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B1.1 manifest keeps identity, missing samples and observation cost visible" tags="[b1][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b1_tests.cpp" line="75">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 clock rejects domain and quality changes instead of advancing silent frames" tags="[b3][clock][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_clock_tests.cpp" line="130">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B1 portable rational oracle preserves wide cancellation and i64 limits" tags="[b1][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b1_tests.cpp" line="10">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 R2 release preserves head and misses body tail without observation error" tags="[b3][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_checkpoint_tests.cpp" line="469">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R3b untrusted substituted partial and multiple hints retain origin behavior" tags="[checkpoint][provenance][r3b][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_checkpoint_tests.cpp" line="10">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 G1 waits at equal B and retains original horizon across reordered delivery" tags="[b3][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_checkpoint_tests.cpp" line="421">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 control termination closes the last batch without fictitious later observation" tags="[b3][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_control_tests.cpp" line="78">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 same q control suffix recomputes Fold and emits one hook at q plus one" tags="[b3][fold][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_control_tests.cpp" line="199">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 fragment gaps cannot authorize a prefix and fragments admit a single batch" tags="[b3][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_control_tests.cpp" line="98">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 R2 without declared tail never creates a tail phase" tags="[b3][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_schedule_tests.cpp" line="177">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R3 native chunk anchors preserve exact prefixes partial cuts and source ownership" tags="[native][recovery][redesign][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_native_tests.cpp" line="140">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B2 checkpoint identity keeps archive, cut and horizon distinct" tags="[b2][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b2_tests.cpp" line="99">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R3b immutable log base preserves large payload and tail boundaries" tags="[r3b][rpa][storage]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_checkpoint_tests.cpp" line="62">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 A1 final route failure terminates continuation and waiting trace is distinct" tags="[b3][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_control_tests.cpp" line="32">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R3 archive copies share a concurrent first canonical identity" tags="[concurrency][identity][redesign][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_native_tests.cpp" line="352">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 T2 complete kernel matches independent source scanning oracle" tags="[b3][oracle][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_control_tests.cpp" line="54">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 rev3 replay wire rejects rev1 rev2 and retains all fields" tags="[b3][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_control_tests.cpp" line="9">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R3 deterministic rejected admission still branches and recovers" tags="[r3][recovery][rejection][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_checkpoint_tests.cpp" line="345">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 clock rounds once with negative ties and rejects arithmetic overflow" tags="[b3][clock][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_clock_tests.cpp" line="89">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R3b restored prefix preserves future commit ID exhaustion" tags="[exhaustion][fault][r3b][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_checkpoint_tests.cpp" line="166">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 T2 same Tick press release press preserves occurrence and contact identity" tags="[b3][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_checkpoint_tests.cpp" line="382">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R3 recovered early RPA prefix preserves future semantic allocation failures" tags="[fault][r3][recovery][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_recovery_tests.cpp" line="277">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B2 read and restore retain explicit archive identity" tags="[b2][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b2_tests.cpp" line="190">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B2 reserve failure is atomic and retry is explicit" tags="[b2][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b2_tests.cpp" line="117">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R3 empty RPA finalization preserves private reserve and owning results" tags="[empty-reserve][r3][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_checkpoint_tests.cpp" line="211">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B1.2 controlled delivery changes transport order without changing captured identity" tags="[b1][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b1_tests.cpp" line="94">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 EOF final horizon stays reachable when fixed rate skips its exact Tick" tags="[b3][clock][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_clock_tests.cpp" line="182">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 occurrence duplicate and slot conflict are atomic and distinguish content" tags="[b3][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_checkpoint_tests.cpp" line="406">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 explicit EOF tail remains continuous and excludes paused wall time" tags="[b3][clock][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_clock_tests.cpp" line="156">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="RPA F3 kernel history measures recovery and Replay at declared content bounds" tags="[b3][budget][measurement][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_schedule_tests.cpp" line="10">
+    <OverallResult success="true" skips="0">
+      <StdOut>
+{"event":"rpa.f3.kernel_budget","test_only":true,"requirements":1,"phases_per_requirement":3,"facts":3,"prepare_ns":1922700,"timer_burst_ns":644500,"steady_samples":32,"steady_p50_ns":46800,"steady_p95_ns":103500,"steady_max_ns":112700,"snapshot_encode_ns":934800,"snapshot_bytes":75738,"snapshot_decode_recover_ns":16418800,"archive_encode_ns":824800,"replay_bytes":73543,"replay_decode_evaluate_ns":16744000,"kernel_seek_ns":2742300,"replay_records":33,"prepare_peak_heap_bytes":null,"production_max_seek_latency_ns":null}
+{"event":"rpa.f3.kernel_budget","test_only":true,"requirements":256,"phases_per_requirement":3,"facts":768,"prepare_ns":363944400,"timer_burst_ns":77406800,"steady_samples":32,"steady_p50_ns":47700,"steady_p95_ns":142400,"steady_max_ns":175500,"snapshot_encode_ns":70951800,"snapshot_bytes":16921746,"snapshot_decode_recover_ns":2697706600,"archive_encode_ns":69917100,"replay_bytes":16427167,"replay_decode_evaluate_ns":2149856100,"kernel_seek_ns":153778500,"replay_records":33,"prepare_peak_heap_bytes":null,"production_max_seek_latency_ns":null}
+      </StdOut>
+    </OverallResult>
+  </TestCase>
+  <TestCase name="B2 allocation failure is recorded before publication" tags="[b2][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b2_tests.cpp" line="142">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 real monotonic clock measures H and frontier lag separately" tags="[b3][measurement][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_control_tests.cpp" line="297">
+    <OverallResult success="true" skips="0">
+      <StdOut>
+{"testOnly":true,"samples":32,"unit":"us","clock":"std::chrono::steady_clock","H_lag_p50_p95_p99_max":[289,373,1352,1352],"frontier_lag_p50_p95_p99_max":[289,373,1352,1352]}
+      </StdOut>
+    </OverallResult>
+  </TestCase>
+  <TestCase name="B2 old handles are rejected after Close but owning results remain readable" tags="[b2][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b2_tests.cpp" line="153">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 repeated Pause Resume includes prior actual trace releases" tags="[b3][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_schedule_tests.cpp" line="129">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B1.2 fake clock exposes validity, publication and segment transitions" tags="[b1][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b1_tests.cpp" line="110">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B2 long history records peak, copy and final release work" tags="[b2][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b2_tests.cpp" line="210">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B2 publish cut excludes an existing active tail" tags="[b2][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b2_tests.cpp" line="70">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 incomplete staged fragment remains unacknowledged and detects conflicting retransmission" tags="[b3][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_schedule_tests.cpp" line="112">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="Recovery cache admission preserves output edits and revision changes" tags="[redesign][rpa][wire]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_recovery_tests.cpp" line="62">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B2 stores an immutable prefix while the active tail continues" tags="[b2][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b2_tests.cpp" line="56">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="Vendored FNV-1a preserves exact serial recurrence and continuation" tags="[fnv][rpa][wire]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_recovery_tests.cpp" line="91">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 control and ControlDrain record golden fix rev3 field order" tags="[b3][rpa][wire]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_schedule_tests.cpp" line="239">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 different original Ticks forwarded to one dispatch retain canonical occurrence order" tags="[b3][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_schedule_tests.cpp" line="158">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 pause release at body end and inside tail window preserves sealed outcomes" tags="[b3][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_schedule_tests.cpp" line="210">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 clock invalid cancels wait and epoch Tick overflow cannot fabricate drain" tags="[b3][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_control_tests.cpp" line="276">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R3 native anchors preserve pending input and pause resume suffixes" tags="[controls][native][redesign][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_native_tests.cpp" line="313">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R3b one sealed checkpoint restores full state and preserves canonical branches" tags="[checkpoint][r3b][recovery][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_recovery_tests.cpp" line="366">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B2 compares complete replay evaluation and fault prefix fields" tags="[b2][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b2_tests.cpp" line="82">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="Recovery wire cached sequence bytes remain exact after growth and detached mutation" tags="[redesign][rpa][wire]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_recovery_tests.cpp" line="10">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R3 native branch drops source suffix and external identity never gains cache trust" tags="[identity][lifetime][native][redesign][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_native_tests.cpp" line="223">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 clock calibration identity binds reduced judgement mapping and excludes display lead" tags="[b3][clock][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_clock_tests.cpp" line="37">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 future press release association interrupts only its actual paused contact" tags="[b3][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_control_tests.cpp" line="153">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B3 EOF clock drains remaining actual timer obligations through verified prefixes" tags="[b3][clock][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b3_schedule_tests.cpp" line="275">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <OverallResults successes="26504" failures="0" expectedFailures="0" skips="0"/>
+  <OverallResultsCases successes="70" failures="0" expectedFailures="0" skips="0"/>
+</Catch2TestRun>

@@ -144,6 +144,18 @@ auto ExecutionHost::close() -> core::Result<void> try {
     }
     if (closePhase_ == ExecutionClosePhase::prepareControl) {
         closeBoundary(ExecutionClosePhase::prepareControl);
+        // Startup failure seals admission and drains replies before publishing exit.
+        // Do not bind a participant that can no longer accept its directed Close.
+        // Only the actual exit permits omission; its wait keeps the original Close budget.
+        if (audio_ && audio_->admissionClosed()) {
+            while (!audio_->exited()) {
+                if (closeNow() >= closeDeadline_) {
+                    pump(closeDeadline_);
+                    throw Failure{error("control_pending")};
+                }
+                pump(closeDeadline_);
+            }
+        }
         prepareControl(ControlKind::close, *closeTarget_,
                        {bool(capture_), true, bool(audio_ && !audio_->exited()), gpuTouched_},
                        closeInspectionGeneration_);

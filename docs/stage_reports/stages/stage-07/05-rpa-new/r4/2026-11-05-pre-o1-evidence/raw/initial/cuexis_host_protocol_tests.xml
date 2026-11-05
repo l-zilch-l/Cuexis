@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Catch2TestRun name="cuexis_host_protocol_tests.exe" rng-seed="4128754107" xml-format-version="3" catch2-version="3.15.2">
+  <TestCase name="B4 Close stays directed until audio isolation and GPU retirement" tags="[b4][close][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_owner_tests.cpp" line="126">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 capture cut is terminal and A1 keeps new epoch inputs unadmitted" tags="[b4][capture][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_owner_tests.cpp" line="148">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 real device attempts retry only after separate terminal cleanup" tags="[b4][retry][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_capacity_tests.cpp" line="118">
+    <Section name="Audio keeps original failed effects and reuses an owning lease" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_capacity_tests.cpp" line="119">
+      <OverallResults successes="23" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <Section name="Renderer rebinds only physical generation after failed stale activation" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_capacity_tests.cpp" line="172">
+      <OverallResults successes="18" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 normal capacity exhaustion still permits real audio cleanup" tags="[b4][capacity][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_capacity_tests.cpp" line="5">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 owning renderer input survives Prepared and rejects stale generation" tags="[b4][resources][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_close_tests.cpp" line="388">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 Ready eviction before a later transfer leaves incomplete evidence" tags="[journal][pd][pd4]" filename="D:\Cuexis-worktree\tests\pd\delivery_retirement_tests.cpp" line="514">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 Ready take and cancel have one winner and never retract a transfer" tags="[delivery][pd][pd4]" filename="D:\Cuexis-worktree\tests\pd\delivery_retirement_tests.cpp" line="94">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 stale context cannot consume renderer execution frontier" tags="[pd][pd4][registration]" filename="D:\Cuexis-worktree\tests\pd\delivery_retirement_tests.cpp" line="387">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 host control command exhaustion is rejected before accepting a wrapped ordinal" tags="[b4][owner][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_close_tests.cpp" line="229">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 normal history eviction cannot poison a new activation or scope" tags="[journal][pd][pd4]" filename="D:\Cuexis-worktree\tests\pd\delivery_retirement_tests.cpp" line="354">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R1 C7b records failed Close retirement at both direct owner entrances" tags="[b4][c7b][r1][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_close_tests.cpp" line="6">
+    <OverallResult success="true" skips="0">
+      <StdOut>
+R1.C7b.layer=retireExecutionStep,accepted=0,error=host.rpa.control_pending,generation=2->2
+R1.C7b.layer=retireSoftware,accepted=0,error=host.rpa.control_pending,generation=2->2
+      </StdOut>
+    </OverallResult>
+  </TestCase>
+  <TestCase name="B4 Close completes only after every directed owner teardown" tags="[b4][close][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_renderer_tests.cpp" line="5">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 reliable owner work overtakes queued delivery while keeping reliable FIFO" tags="[pd][pd4][priority]" filename="D:\Cuexis-worktree\tests\pd\delivery_retirement_tests.cpp" line="559">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 old lost receipts do not contaminate a newer scope" tags="[journal][pd][pd4]" filename="D:\Cuexis-worktree\tests\pd\delivery_retirement_tests.cpp" line="472">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 lost software publication preserves actual prefix without repeating commit" tags="[b4][publication][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_capacity_tests.cpp" line="39">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 renderer retry publishes resolved context for actual first frame" tags="[b4][joint][retry][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_capacity_tests.cpp" line="221">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R1 C2 foreign owner cannot retire an otherwise matching accepted Close" tags="[b4][c2][r1][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_close_tests.cpp" line="99">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 A1 cleanup never restores direct Resume permission" tags="[b4][control][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_owner_tests.cpp" line="95">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 real joint owners preserve SoftwareApplied through failure and directed Close" tags="[b4][joint][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_renderer_tests.cpp" line="236">
+    <Section name="All owners confirmed" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_renderer_tests.cpp" line="324">
+      <OverallResults successes="6" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <Section name="Device retry never repeats successful software commit" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_renderer_tests.cpp" line="333">
+      <OverallResults successes="23" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <Section name="Protocol conflict can retire original software before Close" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_renderer_tests.cpp" line="373">
+      <OverallResults successes="16" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <Section name="Device failure keeps prefix and Close can retire fence" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_renderer_tests.cpp" line="411">
+      <OverallResults successes="39" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 CPU captures have independent credits and no presentation attempts" tags="[capture][pd][pd4]" filename="D:\Cuexis-worktree\tests\pd\delivery_retirement_tests.cpp" line="226">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 audio candidate owns encoded bytes beyond Prepared lifetime" tags="[b4][resources][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_capacity_tests.cpp" line="97">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 no credit is a delivery result and released readers immediately admit again" tags="[delivery][pd][pd4]" filename="D:\Cuexis-worktree\tests\pd\delivery_retirement_tests.cpp" line="164">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 journal distinguishes finite maximum tick from UntilReset" tags="[journal][pd][pd4]" filename="D:\Cuexis-worktree\tests\pd\delivery_retirement_tests.cpp" line="253">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 canceled renderer Reload retains the old active combination" tags="[b4][cancel][renderer][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_capacity_tests.cpp" line="324">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 journal metadata stays bounded beyond the historical 4097 failure" tags="[journal][pd][pd4]" filename="D:\Cuexis-worktree\tests\pd\delivery_retirement_tests.cpp" line="268">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 registration revocation frontier survives old activation and frame history eviction" tags="[pd][pd4][registration]" filename="D:\Cuexis-worktree\tests\pd\delivery_retirement_tests.cpp" line="185">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 actual audio calls retain leases until explicit isolation and retirement" tags="[audio][b4][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_owner_tests.cpp" line="240">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 receipt replacement accounts the difference and preserves the first known terminal" tags="[journal][pd][pd4]" filename="D:\Cuexis-worktree\tests\pd\delivery_retirement_tests.cpp" line="538">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 early receipt observes atomic transfer and timeout freezes feedback evidence" tags="[journal][pd][pd4]" filename="D:\Cuexis-worktree\tests\pd\delivery_retirement_tests.cpp" line="296">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD3c control rebind rejects stale and changed resource bindings" tags="[control-binding][pd]" filename="D:\Cuexis-worktree\tests\pd\control_binding_tests.cpp" line="86">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 SoftwareApplied survives missing device receipts and retry" tags="[b4][control][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_owner_tests.cpp" line="66">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 completion faults and retired replays preserve terminal identity" tags="[b4][owner][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_owner_tests.cpp" line="326">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD3c control rebind preserves feedback identity and source time" tags="[control-binding][pd]" filename="D:\Cuexis-worktree\tests\pd\control_binding_tests.cpp" line="19">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 late receipt updates a retained feedback tombstone" tags="[journal][pd][pd4]" filename="D:\Cuexis-worktree\tests\pd\delivery_retirement_tests.cpp" line="401">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 reused payload still consumes bounded attempt leases" tags="[delivery][pd][pd4]" filename="D:\Cuexis-worktree\tests\pd\delivery_retirement_tests.cpp" line="421">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 started Apply cannot be canceled and device attempts retain history" tags="[b4][owner][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_close_tests.cpp" line="330">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 commit fence rechecks generation and blocks mutation through device completion" tags="[b4][fence][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_owner_tests.cpp" line="6">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD3c retained resize preserves all source values and view matrix" tags="[control-binding][pd]" filename="D:\Cuexis-worktree\tests\pd\control_binding_tests.cpp" line="118">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 uncertain partial audio load requires real stop evidence" tags="[audio][b4][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_close_tests.cpp" line="137">
+    <Section name="Stop confirms an actual transport mutation" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_close_tests.cpp" line="159">
+      <OverallResults successes="6" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <Section name="Failed stop cannot claim an applied stop" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_close_tests.cpp" line="169">
+      <OverallResults successes="5" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <Section name="Fence also cannot infer paused from the missing load success" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_close_tests.cpp" line="179">
+      <OverallResults successes="3" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 pending audio retirement seals original activation before releasing candidate" tags="[audio][b4][cancel][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_close_tests.cpp" line="188">
+    <Section name="Cancel before first activation remains terminal on late Apply" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_close_tests.cpp" line="207">
+      <OverallResults successes="6" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <Section name="Started unknown activation cannot authorize candidate retirement" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_close_tests.cpp" line="217">
+      <OverallResults successes="6" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 capture reserves whole cut publication and can close an already paused route" tags="[b4][capture][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_renderer_tests.cpp" line="138">
+    <Section name="Full queue preserves unexecuted batch" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_renderer_tests.cpp" line="139">
+      <OverallResults successes="10" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <Section name="Paused cleanup preserves original cut and trace" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_renderer_tests.cpp" line="156">
+      <OverallResults successes="9" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 owning frames call actual renderer without advancing Playback" tags="[b4][present][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_renderer_tests.cpp" line="37">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="Frame feedback permits a forward EOF clock segment without a control command" tags="[b4][present][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_owner_tests.cpp" line="190">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 audio Reload prepares owning candidate while old playback stays active" tags="[audio][b4][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_renderer_tests.cpp" line="178">
+    <Section name="Canceled preparation retires only candidate" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_renderer_tests.cpp" line="213">
+      <OverallResults successes="4" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <Section name="Confirmed isolation permits actual device replacement" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_renderer_tests.cpp" line="221">
+      <OverallResults successes="6" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R1 C10 a new Close with stale software generation cannot unload" tags="[b4][c10][r1][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_close_tests.cpp" line="55">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 revoke arriving before activation prevents delayed activation" tags="[pd][pd4][registration]" filename="D:\Cuexis-worktree\tests\pd\delivery_retirement_tests.cpp" line="209">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 owner rejects cross thread calls without changing outcome" tags="[b4][owner][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_close_tests.cpp" line="377">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 storage credit follows the last reader across consumer retirement" tags="[pd][pd4][storage]" filename="D:\Cuexis-worktree\tests\pd\delivery_retirement_tests.cpp" line="71">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 request deadline and metadata dedup do not retain payloads" tags="[delivery][pd][pd4]" filename="D:\Cuexis-worktree\tests\pd\delivery_retirement_tests.cpp" line="141">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 feedback separates expiry Unknown and late old scope evidence" tags="[b4][present][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_owner_tests.cpp" line="208">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 superseded materialization is NotSubmitted without changing the newer request" tags="[delivery][pd][pd4]" filename="D:\Cuexis-worktree\tests\pd\delivery_retirement_tests.cpp" line="458">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 concurrent cancellation cannot duplicate or retract an owning take" tags="[delivery][pd][pd4]" filename="D:\Cuexis-worktree\tests\pd\delivery_retirement_tests.cpp" line="113">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 observation inbox overload does not fault reliable session commands" tags="[pd][pd4][receipt]" filename="D:\Cuexis-worktree\tests\pd\delivery_retirement_tests.cpp" line="329">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 Cancel before first Apply is terminal through retirement" tags="[b4][owner][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_close_tests.cpp" line="310">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 audio partial device failure is queryable without repeating playback" tags="[audio][b4][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_owner_tests.cpp" line="295">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 renderer steps cancel before GPU work and retain active presentation through Pause" tags="[b4][renderer][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_renderer_tests.cpp" line="91">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 prepared during active mutation becomes stale and can be rebuilt" tags="[b4][fence][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_owner_tests.cpp" line="49">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="Public execution candidates reject foreign owners and opaque fences" tags="[boundary][public][rpa]" filename="D:\Cuexis-worktree\tests\rpa\execution_boundary_tests.cpp" line="13">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="Public execution proof predicates reject out of range participants" tags="[boundary][public][rpa]" filename="D:\Cuexis-worktree\tests\rpa\execution_boundary_tests.cpp" line="48">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 control reserve and allocation fault slot remain available" tags="[b4][capacity][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_close_tests.cpp" line="357">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 all audio retirement cancels the pending target while retiring an active clip" tags="[audio][b4][cancel][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_close_tests.cpp" line="249">
+    <Section name="All retirement seals the original pending activation" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_close_tests.cpp" line="290">
+      <OverallResults successes="6" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <Section name="Unknown pending activation prevents all retirement and unload" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_close_tests.cpp" line="299">
+      <OverallResults successes="7" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B4 presentation scope ABA cannot resurrect canceled feedback" tags="[b4][present][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b4_renderer_tests.cpp" line="77">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <OverallResults successes="121976" failures="0" expectedFailures="0" skips="0"/>
+  <OverallResultsCases successes="62" failures="0" expectedFailures="0" skips="0"/>
+</Catch2TestRun>

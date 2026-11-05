@@ -1,0 +1,66 @@
+{
+  "python-tests": {
+    "command": [
+      "C:\\msys64\\ucrt64\\bin\\python.exe",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tools/verification/execution_acceptance",
+      "-p",
+      "test_*.py",
+      "-v"
+    ],
+    "exit_code": 0,
+    "log_sha256": "db7629ab155d69915f6c28eec789b899327a1284c8d3b165ab6991e4538e0d1d"
+  },
+  "docs": {
+    "command": [
+      "C:\\msys64\\ucrt64\\bin\\python.exe",
+      "-B",
+      "tools/check_docs.py"
+    ],
+    "exit_code": 0,
+    "log_sha256": "7badc31ddaa31bfe19bf54cab4e94c0e583cb52bd1612cf84179f197fe363e5a"
+  },
+  "frozen-b0": {
+    "command": [
+      "C:\\msys64\\ucrt64\\bin\\python.exe",
+      "-B",
+      "tools/verification/playback_performance/memory_caps.py",
+      "--check"
+    ],
+    "exit_code": 1,
+    "log_sha256": "1a37c5aed7f1adfe0ceccd34f3251b61eb392e859449b331e403b5fdd3c548ef"
+  },
+  "version": {
+    "command": [
+      "C:\\msys64\\ucrt64\\bin\\python.exe",
+      "-B",
+      "tools/update_version.py",
+      "--check"
+    ],
+    "exit_code": 0,
+    "log_sha256": "a8984136312bd4f1c60436230760bbde099797a68a55196173e2a169c432d416"
+  },
+  "whitespace": {
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit_code": 0,
+    "log_sha256": "6f0ea81975d298e5c1cc37adb3ba10d9597d182b108081250006298fd59d4809"
+  },
+  "format": {
+    "command": [
+      "cmd.exe",
+      "/d",
+      "/c",
+      "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\after-audio-fix\\msvc\\format.cmd"
+    ],
+    "exit_code": 0,
+    "log_sha256": "959a43c6eb84883c03227bc53a26ef6dd9ec6d88c3faa1e2df0655bdaf34c46a"
+  }
+}

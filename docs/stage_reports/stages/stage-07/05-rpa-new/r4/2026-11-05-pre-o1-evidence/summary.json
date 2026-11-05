@@ -1,0 +1,36 @@
+{
+  "schema": "rpa.r4.pre-o1-evidence.v1",
+  "status": "awaiting_O1",
+  "date": "2026-11-05",
+  "start_head": "8b499a86fae9616609c3ed76fd6bfc431ab6147b",
+  "branch": "codex/r4-integration",
+  "final_candidate_frozen": false,
+  "formal_sampling_started": false,
+  "owner_budgets_accepted": false,
+  "msvc": {
+    "total": 1419,
+    "passed": 1418,
+    "failed": 0,
+    "skipped": 1
+  },
+  "mingw": {
+    "total": 1267,
+    "passed": 1266,
+    "failed": 0,
+    "skipped": 1
+  },
+  "python_tests": 12,
+  "original_failures": {
+    "msvc_first_ctest_environment": 11,
+    "mingw_initial_product_failure": 1,
+    "deterministic_regression_red_exit": 42,
+    "b0_raw_check_exit": 1,
+    "b0_full_document_matches_canonical_lf": true
+  },
+  "limitations": [
+    "One permission-dependent symlink test skipped on each toolchain.",
+    "No final 11-row matrix or same-SHA hosted validation.",
+    "No formal performance, domain memory, P8, physical input/listening/disconnection or production acceptance.",
+    "Initial MinGW source_unchanged=false; final fix evidence has separate paths."
+  ]
+}

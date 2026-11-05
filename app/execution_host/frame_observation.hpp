@@ -118,6 +118,9 @@ template <typename Renderer, typename MonotonicNow>
 }
 class FrameObservationLedger final {
   public:
+    [[nodiscard]] static constexpr auto frameSlotStorageBytes() noexcept -> std::size_t {
+        return sizeof(std::optional<FrameRecord>);
+    }
     struct CoverageInterval final {
         std::uint64_t first{}, last{};
     };

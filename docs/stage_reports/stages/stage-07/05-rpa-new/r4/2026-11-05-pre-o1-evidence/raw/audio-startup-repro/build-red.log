@@ -1,0 +1,24 @@
+[0/2] Re-checking globbed directories...
+[1/21] Building CXX object app\execution_host\CMakeFiles\cuexis_execution_host_support.dir\session_worker_owner.cpp.obj
+[2/21] Building CXX object app\execution_host\CMakeFiles\cuexis_execution_host_support.dir\audio_worker.cpp.obj
+[3/21] Building CXX object app\execution_host\CMakeFiles\cuexis_execution_host_support.dir\session_worker_dispatch.cpp.obj
+[4/21] Building CXX object app\execution_host\CMakeFiles\cuexis_execution_host_support.dir\session_worker.cpp.obj
+[5/21] Linking CXX static library lib\cuexis_execution_host_support.lib
+[6/21] Building CXX object tests\rpa\CMakeFiles\cuexis_execution_host_tests.dir\rpa_b5_audio_tests.cpp.obj
+[7/21] Building CXX object tests\rpa\CMakeFiles\cuexis_execution_host_tests.dir\rpa_b5_failure_tests.cpp.obj
+[8/21] Building CXX object tests\rpa\CMakeFiles\cuexis_execution_host_tests.dir\rpa_b5_session_close_tests.cpp.obj
+[9/21] Building CXX object tests\rpa\CMakeFiles\cuexis_execution_host_tests.dir\rpa_b5_session_worker_tests.cpp.obj
+[10/21] Building CXX object tests\rpa\CMakeFiles\cuexis_execution_host_tests.dir\rpa_b5_audio_tail_tests.cpp.obj
+[11/21] Building CXX object tests\rpa\CMakeFiles\cuexis_execution_host_tests.dir\rpa_b5_close_tests.cpp.obj
+[12/21] Building CXX object tests\rpa\CMakeFiles\cuexis_execution_host_tests.dir\rpa_b5_seek_host_tests.cpp.obj
+[13/21] Building CXX object tests\rpa\CMakeFiles\cuexis_execution_host_tests.dir\rpa_b5_transcript_tests.cpp.obj
+[14/21] Building CXX object tests\rpa\CMakeFiles\cuexis_execution_host_tests.dir\__\pd\retained_control_tests.cpp.obj
+[15/21] Building CXX object tests\rpa\CMakeFiles\cuexis_execution_host_tests.dir\__\__\app\player\src\execution_host.cpp.obj
+[16/21] Building CXX object tests\rpa\CMakeFiles\cuexis_execution_host_tests.dir\__\__\app\player\src\execution_host_close.cpp.obj
+[17/21] Building CXX object tests\rpa\CMakeFiles\cuexis_execution_host_tests.dir\__\__\app\player\src\execution_host_frame.cpp.obj
+[18/21] Building CXX object tests\rpa\CMakeFiles\cuexis_execution_host_tests.dir\__\__\app\player\src\execution_host_rpa.cpp.obj
+[19/21] Building CXX object tests\rpa\CMakeFiles\cuexis_execution_host_tests.dir\__\__\app\player\src\execution_host_replay.cpp.obj
+[20/21] Linking CXX executable bin\cuexis_execution_host_tests.exe
+Checking XDG_RUNTIME_DIR env var
+Checking TMPDIR env var
+Checking TMP env var

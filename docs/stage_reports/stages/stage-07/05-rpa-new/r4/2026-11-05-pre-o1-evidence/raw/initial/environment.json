@@ -1,0 +1,48 @@
+{
+  "created_utc": "2026-11-05T04:29:41.783672+00:00",
+  "display": {
+    "driver_name": "CDD",
+    "width": 2560,
+    "height": 1600,
+    "refresh_hz": 240,
+    "method": "EnumDisplaySettingsW primary/current"
+  },
+  "audio_defaults": [
+    {
+      "role": "console",
+      "endpoint_id": "{0.0.0.00000000}.{0218a919-eb31-46ab-bba3-4b6beabe528c}",
+      "state": 1,
+      "device_description": "耳机",
+      "interface_name": "Senary Audio"
+    },
+    {
+      "role": "multimedia",
+      "endpoint_id": "{0.0.0.00000000}.{0218a919-eb31-46ab-bba3-4b6beabe528c}",
+      "state": 1,
+      "device_description": "耳机",
+      "interface_name": "Senary Audio"
+    },
+    {
+      "role": "communications",
+      "endpoint_id": "{0.0.0.00000000}.{0218a919-eb31-46ab-bba3-4b6beabe528c}",
+      "state": 1,
+      "device_description": "耳机",
+      "interface_name": "Senary Audio"
+    }
+  ],
+  "gpu": [
+    {
+      "Name": "AMD Radeon 780M Graphics",
+      "DriverVersion": "31.0.22032.1",
+      "PNPDeviceID": "PCI\\VEN_1002&DEV_1900&SUBSYS_13941D05&REV_C5\\4&A590989&0&0041"
+    },
+    {
+      "Name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "DriverVersion": "32.0.16.1664",
+      "PNPDeviceID": "PCI\\VEN_10DE&DEV_28A0&SUBSYS_13941D05&REV_A1\\4&F6D2A03&0&0009"
+    }
+  ],
+  "power_scheme": "电源方案 GUID: 381b4222-f694-41f0-9685-ff5bb260df2e  (平衡)",
+  "formal_ready": false,
+  "read_only": true
+}

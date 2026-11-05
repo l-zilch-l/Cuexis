@@ -69,6 +69,8 @@ struct AudioWorkerOptions final {
     std::size_t capacity{}, controlReserve{};
     audio::AudioClipStoreLimits clipLimits;
     std::chrono::milliseconds serviceInterval{2};
+    // Deterministic test gate after local retirement/draining, before exit publication.
+    std::function<void()> beforeExitForTest;
 };
 class AudioWorker final {
   public:
@@ -89,6 +91,7 @@ class AudioWorker final {
     [[nodiscard]] auto publication() const -> core::Result<AudioPublication>;
     void requestShutdown();
     [[nodiscard]] auto exited() const noexcept -> bool;
+    [[nodiscard]] auto admissionClosed() const -> bool;
     [[nodiscard]] auto joinExited() -> core::Result<void>;
 
   private:

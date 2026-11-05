@@ -1,0 +1,13 @@
+{
+  "command": [
+    "cmake",
+    "--build",
+    "D:\\Cuexis-worktree\\out\\build\\r4\\pre-o1\\msvc-on-debug",
+    "--target",
+    "cuexis_format_check"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 11.163007999999536,
+  "test_counts": null,
+  "log_sha256": "05429c5be3a4de4c2981e7c594ca1e1260bdd76d8fe5cbae14946939cc4fae7f"
+}

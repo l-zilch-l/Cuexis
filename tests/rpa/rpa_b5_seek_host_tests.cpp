@@ -357,6 +357,56 @@ TEST_CASE("B5 main closes after audio factory failure before Load acceptance",
     CHECK((*host)->state() == HostState::closed);
 }
 
+TEST_CASE("B5 Close waits for a failed audio owner's drained exit before binding participants",
+          "[b5][host][fault][retirement]") {
+    presentation_renderer::TestPresentationRenderer renderer;
+    std::atomic<unsigned> pumps{};
+    std::atomic<bool> exitGate{}, releaseExit{};
+    auto settings = options();
+    settings.sourceMode = PlaybackMode::HostClock;
+    settings.audio.beforeExitForTest = [&] {
+        exitGate.store(true, std::memory_order_release);
+        const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds{3};
+        while (!releaseExit.load(std::memory_order_acquire) &&
+               std::chrono::steady_clock::now() < deadline)
+            std::this_thread::yield();
+    };
+    auto wired = ports(pumps);
+    wired.audioDevice =
+        [](audio::AudioClipStore&) -> core::Result<std::unique_ptr<OwnedAudioDevice>> {
+        return core::unexpected(core::Error{"probe.factory_failure", "Injected startup failure"});
+    };
+    // Hold the failed owner until Close reaches participant binding. Earlier pumps
+    // cannot accidentally complete the exit and hide the race.
+    bool closePreparing{};
+    wired.beforeClosePhase = [&](player::ExecutionClosePhase phase) -> core::Result<void> {
+        if (phase == player::ExecutionClosePhase::prepareControl)
+            closePreparing = true;
+        return {};
+    };
+    wired.pumpMain = [&]() -> core::Result<void> {
+        ++pumps;
+        if (closePreparing && exitGate.load(std::memory_order_acquire))
+            releaseExit.store(true, std::memory_order_release);
+        return {};
+    };
+    auto host = player::ExecutionHost::create(renderer, settings, std::move(wired));
+    REQUIRE(host);
+    auto source = PlaybackSource::fromFilesystemProject(std::filesystem::path{CUEXIS_SOURCE_DIR} /
+                                                        "assets/projects/stage1d_project");
+    REQUIRE(source);
+    REQUIRE_FALSE((*host)->load(std::move(*source)));
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds{3};
+    while (!exitGate.load(std::memory_order_acquire) && std::chrono::steady_clock::now() < deadline)
+        std::this_thread::yield();
+    REQUIRE(exitGate.load(std::memory_order_acquire));
+    const auto closed = (*host)->close();
+    INFO((closed ? "" : std::string{closed.error().code()}));
+    REQUIRE(closed);
+    CHECK(releaseExit.load(std::memory_order_acquire));
+    CHECK((*host)->state() == HostState::closed);
+}
+
 TEST_CASE("R3 CPU host Seek measures first and repeated requests through target present",
           "[.][b5][redesign-host-perf]") {
     if (test_support::environmentVariable("CUEXIS_REDESIGN_BARRIER") == "1") {

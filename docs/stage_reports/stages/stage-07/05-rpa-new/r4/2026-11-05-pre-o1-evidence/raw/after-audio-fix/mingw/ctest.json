@@ -1,0 +1,19 @@
+{
+  "command": [
+    "ctest",
+    "--test-dir",
+    "D:\\Cuexis-worktree\\out\\build\\r4\\pre-o1\\preflight\\20261105-123139-c8af190f\\mingw-on-debug",
+    "--no-tests=error",
+    "--output-on-failure",
+    "-j",
+    "4"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 920.9917479000001,
+  "test_counts": [
+    100,
+    0,
+    1267
+  ],
+  "log_sha256": "a13e763dddd827c9f7c8165f42191cf88ab3cc799c692ce438cea26b53da3c5f"
+}

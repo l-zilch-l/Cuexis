@@ -75,6 +75,12 @@ struct DeliveryAdmission final {
 };
 class FrameDelivery final {
   public:
+    [[nodiscard]] static constexpr auto historySlotStorageBytes() noexcept -> std::size_t {
+        return sizeof(std::optional<RequestRecord>);
+    }
+    [[nodiscard]] static constexpr auto consumerSlotStorageBytes() noexcept -> std::size_t {
+        return sizeof(std::optional<Consumer>);
+    }
     [[nodiscard]] static auto create(DeliveryLimits)
         -> core::Result<std::shared_ptr<FrameDelivery>>;
     [[nodiscard]] auto registerConsumer(std::uint64_t operationId, HostContext, ConsumerProfile)
