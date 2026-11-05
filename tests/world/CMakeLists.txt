@@ -6,6 +6,7 @@ add_executable(cuexis_world_tests
 )
 target_include_directories(cuexis_world_tests PRIVATE "${PROJECT_SOURCE_DIR}/engine/world/internal")
 target_include_directories(cuexis_world_tests PRIVATE
+    "${PROJECT_SOURCE_DIR}/engine/assets/include"
     "${PROJECT_SOURCE_DIR}/engine/behavior/include"
     "${PROJECT_SOURCE_DIR}/engine/render/include"
 )
