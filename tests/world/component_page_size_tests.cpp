@@ -30,23 +30,22 @@ static_assert(entt::component_traits<cuexis::render::CameraComponent>::page_size
 template <typename Component>
 void checkPageBoundary(entt::registry& registry,
                        const std::array<entt::entity, pageBoundaryCount>& entities) {
-    auto* storage = registry.storage<Component>();
-    REQUIRE(storage != nullptr);
-    CHECK(storage->capacity() == 0);
+    auto& storage = registry.storage<Component>();
+    CHECK(storage.capacity() == 0);
 
     for (std::size_t index = 0; index < componentPageSize; ++index)
         registry.emplace<Component>(entities[index]);
 
-    CHECK(storage->size() == componentPageSize);
-    CHECK(storage->capacity() == componentPageSize);
+    CHECK(storage.size() == componentPageSize);
+    CHECK(storage.capacity() == componentPageSize);
 
     registry.emplace<Component>(entities.back());
-    CHECK(storage->size() == pageBoundaryCount);
-    CHECK(storage->capacity() == componentPageSize * 2);
+    CHECK(storage.size() == pageBoundaryCount);
+    CHECK(storage.capacity() == componentPageSize * 2);
 
     registry.remove<Component>(entities[componentPageSize / 2]);
-    CHECK(storage->size() == componentPageSize);
-    CHECK(storage->capacity() == componentPageSize * 2);
+    CHECK(storage.size() == componentPageSize);
+    CHECK(storage.capacity() == componentPageSize * 2);
     CHECK_FALSE(registry.all_of<Component>(entities[componentPageSize / 2]));
     CHECK(registry.all_of<Component>(entities.back()));
 }
