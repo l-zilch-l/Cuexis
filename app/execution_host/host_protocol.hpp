@@ -5,6 +5,7 @@
 #include <cuexis/audio/audio_clip.hpp>
 #include <cuexis/core/thread_checker.hpp>
 #include <cuexis/playback/playback_session.hpp>
+#include <cuexis_internal/allocation_observer.hpp>
 #include <optional>
 #include <vector>
 

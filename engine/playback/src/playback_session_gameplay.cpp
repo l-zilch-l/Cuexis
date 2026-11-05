@@ -508,6 +508,8 @@ auto PlaybackSession::gameplayAdvanceReceipt() const -> core::Result<GameplayAdv
     return core::unexpected(gameplayError("Gameplay receipt allocation failed"));
 }
 auto PlaybackSession::archiveGameplay() const -> core::Result<GameplayReplay> try {
+    const internal::pd::memory::ExecutionDomainScope memoryScope{
+        internal::pd::memory::domainOwning};
     if (!state_->ownerThread.isCurrent())
         return core::unexpected(ownerError("archive_gameplay"));
     if (state_->operationActive)
@@ -522,6 +524,8 @@ auto PlaybackSession::archiveGameplay() const -> core::Result<GameplayReplay> tr
     return core::unexpected(gameplayError("Gameplay archive allocation failed"));
 }
 auto PlaybackSession::snapshotGameplay() const -> core::Result<GameplaySnapshot> try {
+    const internal::pd::memory::ExecutionDomainScope memoryScope{
+        internal::pd::memory::domainOwning};
     if (!state_->ownerThread.isCurrent())
         return core::unexpected(ownerError("snapshot_gameplay"));
     if (state_->operationActive)
@@ -537,6 +541,8 @@ auto PlaybackSession::snapshotGameplay() const -> core::Result<GameplaySnapshot>
 }
 auto PlaybackSession::evaluateGameplayReplay(const GameplayReplay& a) const
     -> core::Result<GameplayReplayEvaluation> try {
+    const internal::pd::memory::ExecutionDomainScope memoryScope{
+        internal::pd::memory::domainOwning};
     if (!state_->ownerThread.isCurrent())
         return core::unexpected(ownerError("evaluate_gameplay"));
     if (state_->operationActive)

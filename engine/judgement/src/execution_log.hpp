@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cuexis/judgement/recovery.hpp>
+#include <cuexis_internal/allocation_observer.hpp>
 #include <cuexis_internal/execution_diagnostics.hpp>
 #include <stdexcept>
 
@@ -26,6 +27,8 @@ struct ExecutionLogChunk final {
 };
 inline auto reserveLogAppend(const std::shared_ptr<const ExecutionLogChunk>& tail)
     -> std::shared_ptr<ExecutionLogChunk> {
+    const internal::pd::memory::ExecutionDomainScope memoryScope{
+        internal::pd::memory::domainRetained};
     auto candidate = std::make_shared<ExecutionLogChunk>();
     if (tail && !tail->baseState && tail->records.size() < ExecutionLogChunk::capacity) {
         candidate->previous = tail->previous;

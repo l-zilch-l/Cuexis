@@ -7,6 +7,8 @@ namespace cuexis::playback::detail {
 using namespace worker_detail;
 
 [[nodiscard]] auto SessionOwner::dispatch(SessionCommand&& command) -> core::Result<SessionReply> {
+    const internal::pd::memory::ExecutionTagScope memoryScope{
+        internal::pd::memory::ownerPlaybackWorker, internal::pd::memory::domainCommandSession};
     return std::visit(
         [&]<typename T>(T& job) -> core::Result<SessionReply> {
 #if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)

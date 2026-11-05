@@ -43,6 +43,8 @@ CaptureRouteOwner::CaptureRouteOwner(GameplayExecutionContext c, std::size_t cap
 auto CaptureRouteOwner::create(GameplayExecutionContext c, std::size_t capacity,
                                std::size_t reserve, std::size_t dataReserve)
     -> core::Result<CaptureRouteOwner> try {
+    const internal::pd::memory::ExecutionTagScope memoryScope{
+        internal::pd::memory::ownerMain, internal::pd::memory::domainCommandCapture};
     if (!c.clockSegment || !c.runEpoch || dataReserve >= capacity)
         return core::unexpected(error("context_stale"));
     auto ledger = OwnerStepLedger::create(c.sessionScope, Participant::capture, capacity, reserve);

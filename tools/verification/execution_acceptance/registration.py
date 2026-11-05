@@ -24,6 +24,8 @@ def validate_draft(document):
             raise ValueError("explicit workload kind required")
         if unit.get("comparison") not in ("A/B", "B-only", "P8-single-sided"):
             raise ValueError("explicit comparison required")
+        if (unit["workload"] == "p8") != (unit["comparison"] == "P8-single-sided"):
+            raise ValueError("P8 workload requires its exclusive single-sided protocol")
         count = unit.get("requests_per_process")
         if type(count) is not int or count < 1:
             raise ValueError("finite request count required")

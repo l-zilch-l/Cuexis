@@ -1,5 +1,6 @@
 #include "frame_delivery.hpp"
 #include <algorithm>
+#include <cuexis_internal/allocation_observer.hpp>
 #include <limits>
 
 namespace cuexis::playback::detail {
@@ -21,6 +22,8 @@ bool terminal(DeliveryStatus s) {
 } // namespace
 auto FrameAttemptLease::create(StorageReservation reservation)
     -> std::shared_ptr<const FrameAttemptLease> {
+    const internal::pd::memory::ExecutionTagScope memoryScope{
+        internal::pd::memory::ownerPlaybackWorker, internal::pd::memory::domainAttempt};
     auto lease = std::make_shared<FrameAttemptLease>();
     lease->storage = std::move(reservation);
     return lease;
@@ -49,6 +52,8 @@ FrameDelivery::FrameDelivery(DeliveryLimits limits, std::shared_ptr<FrameStorage
       consumers_(limits.consumers) {}
 auto FrameDelivery::create(DeliveryLimits limits)
     -> core::Result<std::shared_ptr<FrameDelivery>> try {
+    const internal::pd::memory::ExecutionTagScope memoryScope{internal::pd::memory::ownerMain,
+                                                              internal::pd::memory::domainStatic};
     if (!limits.consumers || !limits.requestHistory)
         return core::unexpected(stale());
     auto storage = FrameStorage::create(limits.payloads, limits.bytes);
@@ -98,6 +103,8 @@ void FrameDelivery::expire(Consumer& c, std::int64_t now) {
 auto FrameDelivery::registerConsumer(std::uint64_t operation, HostContext context,
                                      ConsumerProfile profile)
     -> core::Result<ConsumerRegistration> try {
+    const internal::pd::memory::ExecutionTagScope memoryScope{
+        internal::pd::memory::ownerPlaybackWorker, internal::pd::memory::domainHistory};
     std::lock_guard lock(mutex_);
     if (!operation || !context.sessionScope || closing_)
         return core::unexpected(stale());

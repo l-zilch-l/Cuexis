@@ -1,0 +1,10 @@
+{
+  "schema": "rpa.r4.execution-authorization.v1",
+  "date": "2026-11-05",
+  "owner_instruction": "那么你继续完成",
+  "automatic_work_authorized": true,
+  "attempt_ledger": "D:\\Cuexis-worktree\\out\\evidence\\r4\\attempt-ledger",
+  "scope": "Continue R4-4 technical admission, then admitted fixed automatic evidence, same-SHA local/hosted validation and O3 technical handoff preparation. Physical O2 observations, final O3 acceptance, new budget/product boundary, extra P8 and exact-SHA version approval remain separate owner decisions.",
+  "formal_registration": false,
+  "condition": "No automatic workload before its exact source, tools, fixtures, binaries, semantic proof, environment, pilot and applicable observer/budget gates are admitted. Preserve original failures and finite attempt limits."
+}

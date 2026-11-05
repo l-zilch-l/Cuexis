@@ -151,6 +151,8 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
                               const RuntimeFrame* targetFrame, ReloadPolicy policy,
                               bool replacement, const PlaybackPrepareOptions& options)
     -> core::Result<PreparedPlayback> {
+    const internal::pd::memory::ExecutionDomainScope memoryScope{
+        internal::pd::memory::domainPrepare};
     core::Diagnostics diagnostics;
     std::optional<PrepareDiagnosticsRecorder> diagnosticsRecorder;
     try {
@@ -389,6 +391,8 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
         }
 
         const internal::PrepareTraceScope traceAssemble{"assemble"};
+        const internal::pd::memory::ExecutionDomainScope candidateMemoryScope{
+            internal::pd::memory::domainCandidate};
         diagnostics.sortDeterministically();
         auto prepared = std::make_unique<PreparedPlayback::State>();
         prepared->owner = &context.owner;

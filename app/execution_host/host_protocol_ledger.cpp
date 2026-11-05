@@ -14,6 +14,10 @@ OwnerStepLedger::OwnerStepLedger(std::uint64_t scope, Participant p, std::size_t
     : scope_(scope), participant_(p), reserve_(reserve), records_(std::move(records)) {}
 auto OwnerStepLedger::create(std::uint64_t scope, Participant p, std::size_t capacity,
                              std::size_t reserve) -> core::Result<OwnerStepLedger> try {
+    const internal::pd::memory::ExecutionTagScope memoryScope{
+        static_cast<std::uint8_t>(internal::pd::memory::currentTag() /
+                                  internal::pd::memory::domainCount),
+        internal::pd::memory::domainSteps};
     if (!scope || index(p) >= 4 || !reserve || reserve >= capacity)
         return core::unexpected(
             failure("profile_incomplete", "Explicit owner record and control capacity required"));

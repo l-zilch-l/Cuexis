@@ -51,6 +51,8 @@ HostCoordinator::HostCoordinator(HostContext context,
     : context_(context), records_(std::move(records)), nextCommand_(firstCommand) {}
 auto HostCoordinator::create(HostContext context, std::size_t capacity, std::uint64_t firstCommand)
     -> core::Result<HostCoordinator> try {
+    const internal::pd::memory::ExecutionTagScope memoryScope{
+        internal::pd::memory::ownerMain, internal::pd::memory::domainCommandHost};
     if (!context.sessionScope || !context.clockSegment || !context.runEpoch || capacity < 2)
         return core::unexpected(
             failure("profile_incomplete", "Explicit coordinator context and capacity required"));

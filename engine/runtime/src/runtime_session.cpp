@@ -115,6 +115,7 @@ auto RuntimeSession::prepare(chart::ChartRuntime chartRuntime) const
 auto RuntimeSession::prepare(chart::ChartRuntime chartRuntime,
                              animation::AnimationProgram&& animation) const
     -> PreparedRuntimeSessionResult {
+    const internal::pd::memory::ExecutionDomainScope memoryScope{internal::pd::memory::domainWorld};
     PreparedRuntimeSessionResult result;
     if (!threadChecker_.isCurrent()) {
         addSessionError(result.diagnostics, "runtime.session.not_owner_thread",

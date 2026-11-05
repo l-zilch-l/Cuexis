@@ -4,6 +4,7 @@
 #include <condition_variable>
 #include <cstdint>
 #include <cuexis/core/result.hpp>
+#include <cuexis_internal/allocation_observer.hpp>
 #include <cuexis_internal/presentation_metrics.hpp>
 #include <limits>
 #include <mutex>
@@ -26,7 +27,12 @@ template <typename Command, typename Reply> class OwnerChannel final {
         return sizeof(std::optional<Record>);
     }
     enum class Fault : std::uint8_t { none, allocation, conflict, exhausted };
-    OwnerChannel(std::size_t capacity, std::size_t reserve) : slots_(capacity), reserve_(reserve) {}
+    OwnerChannel(std::size_t capacity, std::size_t reserve,
+                 std::uint8_t allocationDomain = internal::pd::memory::domainCommandSession)
+        : slots_(internal::pd::memory::withExecutionTag(
+              internal::pd::memory::ownerMain, allocationDomain,
+              [&] { return std::vector<std::optional<Record>>(capacity); })),
+          reserve_(reserve) {}
     OwnerChannel(const OwnerChannel&) = delete;
     auto operator=(const OwnerChannel&) -> OwnerChannel& = delete;
     [[nodiscard]] auto post(Command command, bool control) -> core::Result<std::uint64_t> try {

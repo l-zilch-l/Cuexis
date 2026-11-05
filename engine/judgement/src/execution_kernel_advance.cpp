@@ -5,6 +5,8 @@ namespace cuexis::judgement::detail {
 using namespace kernel_detail;
 
 auto ExecutionKernel::controlRpa(const RpaControlRecord& control) -> core::Result<void> try {
+    const internal::pd::memory::ExecutionDomainScope memoryScope{
+        internal::pd::memory::domainCurrent};
     const auto& p = impl_->active->projection;
     const auto invalid = [] {
         return core::unexpected(
@@ -186,6 +188,8 @@ auto ExecutionKernel::controlRpa(const RpaControlRecord& control) -> core::Resul
 }
 
 auto ExecutionKernel::advance(Tick horizon, bool controlDrain) -> core::Result<void> try {
+    const internal::pd::memory::ExecutionDomainScope memoryScope{
+        internal::pd::memory::domainCurrent};
     if (impl_->testControls && impl_->testControls->failRecordReservationHorizon == horizon) {
         throw std::bad_alloc{};
     }

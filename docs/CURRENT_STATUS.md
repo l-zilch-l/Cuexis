@@ -14,8 +14,10 @@
   [具体预算与参数提案](stage_plans/active/stage-07/05-rpa-new/r4/caps-proposal.md)、工具和两平台预检已完成，
   owner 于 2026-11-05 裁定采用方案 B，接受三档 reference 设计预算；生产目标仍待校准验证。
   [预注册草案](stage_plans/active/stage-07/05-rpa-new/r4/formal-registration.md)保持未登记；
-  下一步进入 R4-4 工具准入、共同基线和候选冻结；正式采样、设备与生产接受尚未开始。实施审计和原始记录见
-  [O1 前集成与预算审计](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-pre-o1-integration-and-budget-audit.md)。
+  R4-4 已实现新 binding/claim/seal、普通组 runner 与 extended observer；原 pre-PD A 已重建并通过构建依赖核验，
+  共同固定轨迹语义检查一致。当前准备普通候选冻结及有限 pilot；分域内存语义归属、观察开销与 native/GPU 覆盖未闭合，
+  内存/P8 阻断；正式采样、设备与生产接受尚未开始。见
+  [O1 后工具准入与覆盖核验](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-post-o1-tool-admission.md)。
   必要实体设备证据、最终退出及条件性版本批准保持独立接受节点。
 - **R3 已关闭，证据范围保持**：门账为 15 项通过、0 项部分通过、0 项未判定；最终本地同源矩阵
   在 `d70df15a` 上为 11/11 行 `local_pass`、13,635 个用例、0 失败。
@@ -39,7 +41,7 @@
   [PD-5 判定与退出清单](stage_reports/stages/stage-07/04-pd/pd-5/exit/2026-10-24-pd5-verdict-and-stage-7-pd-exit.md)。
 
 当前工作树为 `D:/Cuexis-worktree`，执行分支 `codex/r4-integration`，起点为本地 `master` 的 `8b499a86`。
-原 `D:/Cuexis-redesign` 工作树与同名分支已删除；本轮构建使用独立的 `out/build/r4/pre-o1/`。
+原 `D:/Cuexis-redesign` 工作树与同名分支已删除；R4 构建分别使用独立的 `out/build/r4/pre-o1/` 与 `out/build/r4/post-o1/`。
 迁移后的原始运行字节位置见[证据清单](stage_reports/stages/stage-07/05-rpa-new/evidence-catalog.md)。
 源码拆分已完成，审计与复核材料见
 [源码拆分安全网独立审计](stage_reports/stages/stage-07/90-shared/source-split-audit/index.md)；
@@ -50,7 +52,7 @@
 | 阶段 | 当前状态 | 入口 |
 | --- | --- | --- |
 | Stage 7A | S7A-3/4、5/6、7/8 的受限功能验收完成；整体关闭仍待 RPA 收尾 | [Stage 7A 计划](stage_plans/active/stage-07/01-a/plan.md) |
-| Stage 7-RPA | R1、R2、R3 已退出；R4 O1 方案 B 已接受，下一步为工具准入及候选冻结；正式、设备与生产接受未登记 | [整改计划](stage_plans/active/stage-07/05-rpa-new/plan.md)、[R4 O1 核验](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-pre-o1-integration-and-budget-audit.md)、[R3 退出裁定](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-hosted-delta-and-exit-ruling.md) |
+| Stage 7-RPA | R1、R2、R3 已退出；R4 O1 方案 B 已接受，普通工具/候选准入进行中，内存/P8 阻断；正式、设备与生产接受未登记 | [整改计划](stage_plans/active/stage-07/05-rpa-new/plan.md)、[R4 准入核验](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-post-o1-tool-admission.md)、[R3 退出裁定](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-hosted-delta-and-exit-ruling.md) |
 | Stage 7-PD | PD-0–4 内部实施及适用门禁完成；PD-5“未通过但定案”，退出清单待 owner 接受；分域内存及正式性能缺口由 RPA/PD 后续取证承接 | [PD 计划](stage_plans/active/stage-07/04-pd/plan.md)、[PD-5 判定报告](stage_reports/stages/stage-07/04-pd/pd-5/exit/2026-10-24-pd5-verdict-and-stage-7-pd-exit.md) |
 | Stage 7B+ | 未开始，等待 RPA 完整退出 | [Stage 7B+ 计划](stage_plans/active/stage-07/06-b/plan.md) |
 
@@ -65,8 +67,9 @@ Stage 0–6 已完成；Stage 8–14 尚未开始。整体 Stage 7 未关闭。
   登记；R1/R2 局部结果与 R3 本地门不能拼接成 R4 接受。
 - **分域内存与上限接受缺证据**：40K 功能已核验，但完整分域预算和最终释放未完成接受；
   prepare-only 峰值堆与 decoded semantic heap 仍缺有效测量。既有局部峰值和小规模最终释放不代验。
-  B0 静态账本已接受、B1 静态工具已完成；PD 内存 B2/B3 未授权采数，64/2048/40K 尚无正式 caps。
-  原 low/high 不重跑，旧超包络记录保留，不能据观察器量程产物判产品超界或内存通过。见
+  B0/B1 历史边界保持；O1 已接受新的 64/2048/40K reference 设计预算，尚非分析堆上界或生产预算接受。
+  两轮 64/high 工具诊断仅验证 origin 分账及小规模最终释放，仍有语义归属、prepare 残留及设备覆盖缺口；
+  正式 memory/P8 未准入。原 low/high 不重跑，旧超包络记录保留，不能据观察器量程产物判产品超界或内存通过。见
   [B0 账本](stage_reports/stages/stage-07/04-pd/pd-5/memory-attribution/2026-10-24-b0-memory-cap-ledger.md)、
   [B1 工具](stage_reports/stages/stage-07/04-pd/pd-5/memory-attribution/2026-10-24-b1-domain-attribution-tooling.md)、
   [40K 包络归因](stage_reports/stages/stage-07/04-pd/pd-5/memory-attribution/2026-10-23-40k-memory-envelope-attribution.md)。
@@ -90,7 +93,7 @@ Cuexis 由可嵌入的 Playback SDK、独立 Cuexis Player 和 Cuexis Studio 构
 
 ## 当前格式与 SDK 合同
 
-- 当前工作树 SDK API 为 **`0.9.1` preview**，日期构建为 **`26.11.04-1`**；这不代表已经发行。
+- 当前工作树 SDK API 为 **`0.9.1` preview**，日期构建为 **`26.11.05-1`**；这不代表已经发行。
   R3 来源绑定新增 candidate 类型和 `StepTarget` 字段，消费者须整体重建，不能混用旧二进制。
   PD-4 历史基线仍为 0.9.0。版本决定见[版本政策](guides/VERSIONING.md#091-r3-candidate-来源绑定)，
   STATIC/SHARED、安装消费者及兼容门的最新本地证据见上方 R3 最终矩阵。

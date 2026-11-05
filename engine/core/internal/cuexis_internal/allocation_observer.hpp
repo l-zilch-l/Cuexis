@@ -11,17 +11,51 @@ inline constexpr std::size_t sizeBucketCount = 24;
 // Two-axis partition: owner x domain. The table is static and allocation-free; a
 // cell is live only while a tag scope or a tagged block references it.
 inline constexpr std::size_t ownerCount = 7;
+#if defined(CUEXIS_EXECUTION_ALLOCATION_OBSERVER)
+inline constexpr std::size_t domainCount = 30;
+#else
 inline constexpr std::size_t domainCount = 20;
+#endif
 inline constexpr std::size_t cellCount = ownerCount * domainCount;
 inline constexpr std::size_t cellCapacity = 256;
 static_assert(cellCount <= cellCapacity, "owner x domain must fit the static table");
 
 inline constexpr const char* ownerNames[ownerCount] = {
     "probe", "main", "playback-worker", "renderer-owner", "audio-owner", "audio-worker", "unknown"};
-inline constexpr const char* domainNames[domainCount] = {
-    "fixture",   "load",    "decode", "prepare",  "snapshot", "advance", "current",
-    "candidate", "scratch", "index",  "ready",    "history",  "receipt", "journal",
-    "replay",    "gpu",     "audio",  "retained", "static",   "other"};
+inline constexpr const char* domainNames[domainCount] = {"fixture",
+                                                         "load",
+                                                         "decode",
+                                                         "prepare",
+                                                         "snapshot",
+                                                         "advance",
+                                                         "current",
+                                                         "candidate",
+                                                         "scratch",
+                                                         "index",
+                                                         "ready",
+                                                         "history",
+                                                         "receipt",
+                                                         "journal",
+                                                         "replay",
+                                                         "gpu",
+                                                         "audio",
+                                                         "retained",
+                                                         "static",
+                                                         "other"
+#if defined(CUEXIS_EXECUTION_ALLOCATION_OBSERVER)
+                                                         ,
+                                                         "world",
+                                                         "payload",
+                                                         "attempt",
+                                                         "command-session",
+                                                         "command-audio",
+                                                         "command-host",
+                                                         "command-capture",
+                                                         "steps",
+                                                         "codec",
+                                                         "owning"
+#endif
+};
 
 inline constexpr std::uint8_t ownerProbe = 0, ownerMain = 1, ownerPlaybackWorker = 2,
                               ownerRendererOwner = 3, ownerAudioOwner = 4, ownerAudioWorker = 5,
@@ -33,6 +67,10 @@ inline constexpr std::uint8_t domainFixture = 0, domainLoad = 1, domainDecode = 
                               domainReceipt = 12, domainJournal = 13, domainReplay = 14,
                               domainGpu = 15, domainAudio = 16, domainRetained = 17,
                               domainStatic = 18, domainOther = 19;
+inline constexpr std::uint8_t domainWorld = 20, domainPayload = 21, domainAttempt = 22,
+                              domainCommandSession = 23, domainCommandAudio = 24,
+                              domainCommandHost = 25, domainCommandCapture = 26, domainSteps = 27,
+                              domainCodec = 28, domainOwning = 29;
 
 inline constexpr std::uint16_t untaggedCell =
     static_cast<std::uint16_t>(ownerUnknown * domainCount + domainOther);
@@ -98,4 +136,29 @@ inline auto currentTag() noexcept -> std::uint16_t {
     return untaggedCell;
 }
 #endif
+
+// Extended attribution is compiled out for ordinary and historical observer builds.
+#if defined(CUEXIS_EXECUTION_ALLOCATION_OBSERVER)
+using ExecutionTagScope = TagScope;
+struct ExecutionDomainScope final {
+    explicit ExecutionDomainScope(std::uint8_t domain) noexcept
+        : scope(static_cast<std::uint8_t>(currentTag() / domainCount == ownerProbe
+                                              ? ownerMain
+                                              : currentTag() / domainCount),
+                domain) {}
+    TagScope scope;
+};
+#else
+struct ExecutionTagScope final {
+    ExecutionTagScope(std::uint8_t, std::uint8_t) noexcept {}
+};
+struct ExecutionDomainScope final {
+    explicit ExecutionDomainScope(std::uint8_t) noexcept {}
+};
+#endif
+template <typename Function>
+decltype(auto) withExecutionTag(std::uint8_t owner, std::uint8_t domain, Function&& function) {
+    const ExecutionTagScope scope{owner, domain};
+    return static_cast<Function&&>(function)();
+}
 } // namespace cuexis::internal::pd::memory

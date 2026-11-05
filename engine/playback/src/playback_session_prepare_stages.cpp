@@ -64,6 +64,8 @@ namespace prepare_detail {
 
 [[nodiscard]] auto loadDocumentStage(const PrepareContext& context, PrepareArtifact& artifact,
                                      core::Diagnostics& diagnostics) -> core::Result<void> {
+    const internal::pd::memory::ExecutionDomainScope memoryScope{
+        internal::pd::memory::domainDecode};
     auto loaded = [&] {
         const internal::PrepareTraceScope trace{"load_chart"};
         return chart::detail::loadChartForPlayback(context.chartJson, context.limits);

@@ -16,7 +16,7 @@ auto nowUs() noexcept -> std::int64_t {
 struct AudioWorker::State final {
     State(AudioWorkerOptions o, DeviceFactory f, DecodeClip d)
         : options(o), factory(std::move(f)), decode(std::move(d)),
-          channel(o.capacity, o.controlReserve) {}
+          channel(o.capacity, o.controlReserve, internal::pd::memory::domainCommandAudio) {}
     AudioWorkerOptions options;
     DeviceFactory factory;
     DecodeClip decode;
@@ -94,6 +94,8 @@ auto AudioWorker::joinExited() -> core::Result<void> try {
     return core::unexpected(error("control_pending"));
 }
 void AudioWorker::run(State& state) noexcept {
+    const internal::pd::memory::ExecutionTagScope memoryScope{
+        internal::pd::memory::ownerAudioWorker, internal::pd::memory::domainAudio};
     OwnedAudioDevice* clockDevice{};
     const auto publish = [&](audio::IAudioTransport* transport,
                              std::optional<core::Error> failure = {}) {

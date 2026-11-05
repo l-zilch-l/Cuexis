@@ -164,6 +164,8 @@ SessionOwner::SessionOwner(SessionWorkerConfiguration& config,
             return delivery->finishRequest(request.consumerId, request.requestId,
                                            DeliveryStatus::skippedNoCredit);
         }
+        const internal::pd::memory::ExecutionTagScope payloadMemoryScope{
+            internal::pd::memory::ownerPlaybackWorker, internal::pd::memory::domainPayload};
         auto payload = std::make_shared<FramePayload>();
         payload->storage = std::move(admitted->reservation);
         auto extracted = request.frozen ? rematerializeRetainedSnapshot(original->snapshotView(),

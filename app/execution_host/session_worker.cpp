@@ -9,9 +9,13 @@ using namespace worker_detail;
 SessionWorker::SessionWorker(SessionWorkerConfiguration configuration)
     : configuration_(std::move(configuration)),
       channel_(configuration_.capacity, configuration_.controlReserve),
-      receipts_(configuration_.receiptCapacity) {}
+      receipts_(internal::pd::memory::withExecutionTag(
+          internal::pd::memory::ownerMain, internal::pd::memory::domainReceipt,
+          [&] { return decltype(receipts_)(configuration_.receiptCapacity); })) {}
 auto SessionWorker::create(SessionWorkerConfiguration configuration)
     -> core::Result<std::unique_ptr<SessionWorker>> try {
+    const internal::pd::memory::ExecutionTagScope memoryScope{internal::pd::memory::ownerMain,
+                                                              internal::pd::memory::domainStatic};
     if (!configuration.testOnly || configuration.capacity <= configuration.controlReserve ||
         !configuration.controlReserve || configuration.stepCapacity <= configuration.stepReserve ||
         !configuration.stepReserve || !configuration.frameCapacity ||
@@ -176,6 +180,8 @@ auto SessionWorker::fault() const noexcept -> OwnerChannel<SessionCommand, Sessi
     return channel_.fault();
 }
 void SessionWorker::run() noexcept {
+    const internal::pd::memory::ExecutionTagScope memoryScope{
+        internal::pd::memory::ownerPlaybackWorker, internal::pd::memory::domainStatic};
     internal::execution_diagnostics::Trace diagnostic{"SessionWorker"};
     try {
         SessionOwner owner{configuration_, delivery_};

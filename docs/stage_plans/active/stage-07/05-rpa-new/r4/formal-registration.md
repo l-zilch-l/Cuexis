@@ -1,6 +1,6 @@
 # R4 固定取证预注册草案
 
-状态：candidate；O1 前准备，formal_registration=false；没有 claim/seal 或正式运行
+状态：candidate；O1 已接受，技术准入进行中，formal_registration=false；没有正式运行
 
 更新日期：2026-11-05
 
@@ -53,7 +53,9 @@ P0–P7 的 fixture/脚本从既有权威轨迹展开，以上不是新发明的
 复用 measurement.py 的 t 区间、重复性、分位数规则；草案校验要求明确 workload/Seek class，
 Seek-cold 每进程 1 次，其他可比 Seek 每进程固定 16 次；非 Seek 工作单元使用各自协议计数。
 工具测试拒绝缺字段、旧 A、非法数值、替样、窗协议变更和将 cold 请求混成 hot。正式前必须补齐端到端工具及 seal
-拒绝门；当前 registration.py 只校验草案，不具备执行/批准/取证能力。
+拒绝门；registration.py 只校验草案，新增 admission/binding/runner 则分别承担准入、
+外部身份与不可变 claim/seal、固定组执行。它们当前只实现 owner/common-host 普通计时适配；
+工具测试通过不等于真实工作单元已经准入。内存语义拥有关系与设备适配仍未闭合。
 
 新预算未接受、observer 标签不全、比较边界不一致、语义不等价或缺少 immutable binding
 时停止对应单元准入。对未知设备归属/首次认证/未控制缓存等如实记录；

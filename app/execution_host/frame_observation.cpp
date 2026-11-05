@@ -1,5 +1,6 @@
 #include "frame_observation.hpp"
 #include <algorithm>
+#include <cuexis_internal/allocation_observer.hpp>
 #include <cuexis_internal/presentation_metrics.hpp>
 
 namespace cuexis::playback::detail {
@@ -274,6 +275,8 @@ auto FrameObservationLedger::retainedAttempts() const noexcept -> std::size_t {
 }
 auto FrameObservationLedger::create(HostContext c, std::uint64_t scope, std::size_t fc,
                                     std::size_t bc) -> core::Result<FrameObservationLedger> try {
+    const internal::pd::memory::ExecutionTagScope memoryScope{
+        internal::pd::memory::ownerPlaybackWorker, internal::pd::memory::domainJournal};
     if (!c.sessionScope || !scope || !fc || !bc || fc > SIZE_MAX - bc)
         return core::unexpected(error("profile_incomplete"));
     FrameObservationLedger result{c, scope, std::vector<std::optional<FrameRecord>>(fc),

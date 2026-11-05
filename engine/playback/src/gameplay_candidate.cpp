@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cuexis/core/error.hpp>
 #include <cuexis/judgement/recovery_codec.hpp>
+#include <cuexis_internal/allocation_observer.hpp>
 #include <cuexis_internal/presentation_metrics.hpp>
 #include <exception>
 
@@ -310,6 +311,8 @@ auto makeGameplayContent(const GameplayConfiguration& c, Decoder decoder)
 
 auto GameplayContent::fromPacked(std::span<const std::byte> bytes, const GameplayConfiguration& c)
     -> core::Result<GameplayContent> {
+    const internal::pd::memory::ExecutionDomainScope memoryScope{
+        internal::pd::memory::domainDecode};
     return detail::gameplayContentFromPacked(bytes, c);
 }
 auto detail::gameplayContentFromPacked(
@@ -326,6 +329,8 @@ auto detail::gameplayContentFromPacked(
 }
 auto GameplayContent::fromGraph(std::string_view text, const GameplayConfiguration& c,
                                 GameplayGraphDecodeBudget budget) -> core::Result<GameplayContent> {
+    const internal::pd::memory::ExecutionDomainScope memoryScope{
+        internal::pd::memory::domainDecode};
     return makeGameplayContent(c, [&](const auto& context) {
         return gameplay_packed::decodeGraph(text, context,
                                             {budget.maxBytes, budget.maxDepth,
@@ -389,6 +394,8 @@ auto GameplayCheckpoint::valid() const noexcept -> bool {
 }
 auto GameplayReplay::fromBytes(std::span<const std::byte> bytes, const GameplayContent& content,
                                GameplayCodecBudget budget) -> core::Result<GameplayReplay> try {
+    const internal::pd::memory::ExecutionDomainScope memoryScope{
+        internal::pd::memory::domainOwning};
     const auto* c = detail::GameplayAccess::content(content);
     if (!c || !budget.testOnly)
         return core::unexpected(invalid("Explicit content and test-only CodecBudget required"));
@@ -403,6 +410,7 @@ auto GameplayReplay::fromBytes(std::span<const std::byte> bytes, const GameplayC
     return core::unexpected(invalid("Replay decode failed"));
 }
 auto GameplayReplay::toBytes() const -> core::Result<std::vector<std::byte>> try {
+    const internal::pd::memory::ExecutionDomainScope memoryScope{internal::pd::memory::domainCodec};
     if (!storage_)
         return core::unexpected(invalid("Empty Replay"));
     return judgement::encodeReplay(storage_->archive);
@@ -424,6 +432,8 @@ auto GameplayReplay::sourceIdentity() const -> core::Result<ReplaySourceIdentity
 }
 auto GameplaySnapshot::fromBytes(std::span<const std::byte> bytes, const GameplayContent& content,
                                  GameplayCodecBudget budget) -> core::Result<GameplaySnapshot> try {
+    const internal::pd::memory::ExecutionDomainScope memoryScope{
+        internal::pd::memory::domainOwning};
     const auto* c = detail::GameplayAccess::content(content);
     if (!c || !budget.testOnly)
         return core::unexpected(invalid("Explicit content and test-only CodecBudget required"));
@@ -438,6 +448,7 @@ auto GameplaySnapshot::fromBytes(std::span<const std::byte> bytes, const Gamepla
     return core::unexpected(invalid("Snapshot decode failed"));
 }
 auto GameplaySnapshot::toBytes() const -> core::Result<std::vector<std::byte>> try {
+    const internal::pd::memory::ExecutionDomainScope memoryScope{internal::pd::memory::domainCodec};
     if (!storage_)
         return core::unexpected(invalid("Empty Snapshot"));
     return judgement::encodeSnapshot(storage_->snapshot);

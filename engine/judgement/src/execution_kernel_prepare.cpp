@@ -6,6 +6,8 @@ using namespace kernel_detail;
 
 auto ExecutionKernel::prepare(const SessionConfiguration& c, const PreparedGameplay& prepared)
     -> core::Result<std::unique_ptr<ExecutionKernel>> try {
+    const internal::pd::memory::ExecutionDomainScope memoryScope{
+        internal::pd::memory::domainCurrent};
 #if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
     rpaObservation::SeekWorkTimer timer{SeekPhase::s2CandidatePrep, &SeekWork::kernelPrepareUs};
     rpaObservation::seekAdd(SeekPhase::s2CandidatePrep, &SeekWork::kernelPrepareCalls);
