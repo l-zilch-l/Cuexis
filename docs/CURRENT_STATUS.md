@@ -73,10 +73,11 @@ Stage 0–6 已完成；Stage 8–14 尚未开始。整体 Stage 7 未关闭。
   B0/B1 历史边界保持；O1 已接受新的 64/2048/40K reference 设计预算，尚非分析堆上界或生产预算接受。
   原两轮 origin 诊断不判语义预算；后续获准的两轮语义整改已用尽，第二轮以实际 owning 子集证明
   state.world 下界超出原上限。完整图、其他域、prepare 与设备覆盖仍缺证据，正式 memory/P8 未准入。
-  原 low/high 和无效首轮均保留。owner 已选择保持 O1 并先完成产品存储设计；当前候选为组件级
-  `page_size=128`，仍待具体实施裁定，不是已接受配置或节省保证。未获后续授权前不改产品存储、
-  不运行 workload、不重开 memory/P8。设计说明见
-  [World 页存储整改设计](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-world-storage-remediation-design.md)；
+  原 low/high 和无效首轮均保留。owner 已批准按组件采用 `page_size=128`，并已实现、通过 Debug/Release
+  World/Runtime/Playback 正确性回归；构建版本为 `26.11.05-2`。该整改未运行 workload 或重新测内存，
+  不改变既有超界结论；memory/P8 保持停止，等待独立准入裁定。设计与实施记录见
+  [World 页存储整改设计](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-world-storage-remediation-design.md)、
+  [实施及验证报告](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-world-storage-remediation-implementation.md)；
   带限制暂停或范围/预算评审仍是替代路线。见
   [语义失败与三个后续方案](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-semantic-memory-remediation.md)、
   [B0 账本](stage_reports/stages/stage-07/04-pd/pd-5/memory-attribution/2026-10-24-b0-memory-cap-ledger.md)、
@@ -102,7 +103,7 @@ Cuexis 由可嵌入的 Playback SDK、独立 Cuexis Player 和 Cuexis Studio 构
 
 ## 当前格式与 SDK 合同
 
-- 当前工作树 SDK API 为 **`0.9.1` preview**，日期构建为 **`26.11.05-1`**；这不代表已经发行。
+- 当前工作树 SDK API 为 **`0.9.1` preview**，日期构建为 **`26.11.05-2`**；这不代表已经发行。
   R3 来源绑定新增 candidate 类型和 `StepTarget` 字段，消费者须整体重建，不能混用旧二进制。
   PD-4 历史基线仍为 0.9.0。版本决定见[版本政策](guides/VERSIONING.md#091-r3-candidate-来源绑定)，
   STATIC/SHARED、安装消费者及兼容门的最新本地证据见上方 R3 最终矩阵。

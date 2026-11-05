@@ -1,6 +1,6 @@
 # R4 World Component Page Storage Remediation Design
 
-状态：design proposal；owner approved design work only; implementation and new diagnostics are not authorized
+状态：design implemented under owner approval; correctness verified; memory/P8 re-admission is pending separate authorization
 
 日期：2026-11-05
 
@@ -73,6 +73,10 @@ EnTT 使用 `fast_mod`/分页索引，页大小需是正的二次幂。每种类
 求 `ceil(count / page_size)` 页；应另列实体稀疏索引页，它由 Entity traits/`ENTT_SPARSE_PAGE`
 控制，不应误认为本次改动会减少该索引页。
 
+owner 后续批准了该 128-slot 方案，七种组件已实施；Debug/Release 页边界和模块回归结果见
+[implementation report](2026-11-05-world-storage-remediation-implementation.md)。该批准没有涵盖
+memory/P8 重新准入或多规模性能比较。
+
 ### 4.2 布局应用边界
 
 首选在各组件类型定义旁提供 `static constexpr std::size_t page_size = 128`，利用当前 EnTT
@@ -126,14 +130,14 @@ payload；字符串字符 buffer 是另一分配，需按实际持有者/迁移�
 6. **停止条件**：任一已验证 required profile 的完整 requested bound 超 cap 时记录失败，不继续
    改类型标签或按观察值改 cap；页边界引入性能退化则重新设计，不能只接受小规模节省。
 
-## 6. 待裁定范围
+## 6. 后续待裁定范围
 
-owner 已裁定先完成本设计；以下尚未授权：
+owner 已于 2026-11-05 明确批准本设计实施；结果与正确性验证见
+[实施报告](2026-11-05-world-storage-remediation-implementation.md)。以下仍未授权：
 
-- 是否批准以 type-local page size=128 实施；
-- 若批准，是否为实现/平台正确性提供独立工作范围；
-- 是否另批最多具名、有时限的 memory diagnostic，以及各 profile 的合法 workload；
+- 是否另批具名、有时限的 memory diagnostic，以及各 profile 的合法 workload；
 - 组件表示/string ownership 是否另行纳入，或保留独立未闭合项；
 - 何时重开 memory/P8、是否采用不同适用范围；O1 不随实现自动变化。
 
-在收到具体实施裁定前，候选页值仍是设计参数；保留产品实现、当前失败和停止状态。
+实施保持 O1 与失败记录。正确性回归不重新裁定 358,241 B 的原有内存失败，也不代表新的
+memory upper-bound closure、正式准入或性能通过。

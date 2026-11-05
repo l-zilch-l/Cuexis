@@ -41,7 +41,9 @@ O1 方案 B 已接受，见[预算接受记录](r4/2026-11-05-o1-budget-acceptan
 新增获准的语义整改批次见[两轮诊断与 World 下界失败](r4/2026-11-05-semantic-memory-remediation.md)，
 原始字节与只读核验入口见[语义整改证据附件](r4/2026-11-05-semantic-memory-evidence/index.md)。
 owner 选择先完成存储设计；[World component page size 设计](r4/2026-11-05-world-storage-remediation-design.md)
-给出按类型缩页的建议和后续准入门，尚未授权产品实施或新诊断。
+记录了按类型缩页的建议；实施及 Debug/Release 正确性验证见
+[World storage remediation implementation](r4/2026-11-05-world-storage-remediation-implementation.md)。
+memory/P8 重新准入仍须单独裁定。
 后续 R4 附件和阶段结论由本入口继续导航，R3 原始证据保持。
 
 - [按批次列出的原始证据路径](evidence-catalog.md)
