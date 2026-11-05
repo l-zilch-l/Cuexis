@@ -52,6 +52,20 @@ The extended collector requires CUEXIS_ALLOCATION_LIFETIME_OBSERVER=ON and
 CUEXIS_EXECUTION_ALLOCATION_OBSERVER=ON in a separate Windows STATIC test build.
 It leaves the original observer and log prefixes unchanged in historical mode.
 
+`semantic_memory.py` validates a deliberately incomplete World lower bound. The extended
+collector v2 adds an allocation ID (64-byte header versus v1's 56), a fixed 256-root table,
+and bounded, allocation-free census storage. Narrow scopes capture only registry storage
+that cannot migrate into runtime candidates. Appearance/Camera nested strings, transform
+scratch, World object/member initialization and unvisited containers remain uncharged unknowns.
+Actual Appearance/Camera/WorldTransform pages are matched synchronously by pointer and exact
+requested size at prepared, runtime-installed, and Playback-active instants. No shared handles
+are copied. Root generations and allocation IDs prevent address reuse and duplicate charges;
+subset retirement waits for real frees. A released root certifies only the tracked subset.
+Scope peaks are origin observations, never persistent-World verdicts. Only an active instant's
+unique lower bound above the unchanged ceiling proves failure; all other outcomes remain
+unrated. Whole-log validity, exact origin books and final C++ product release are prerequisites.
+These proofs neither admit formal memory/P8 nor establish native/GPU or full semantic coverage.
+
 Scope, numbers, owner decisions and formal admission requirements are maintained in
 [the R4 plan](../../../docs/stage_plans/active/stage-07/05-rpa-new/r4/plan.md),
 [O1 proposal](../../../docs/stage_plans/active/stage-07/05-rpa-new/r4/caps-proposal.md) and

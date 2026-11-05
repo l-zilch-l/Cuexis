@@ -2,6 +2,9 @@
 
 #include "playback_session_internal.hpp"
 #include "playback_session_prepare_internal.hpp"
+#if defined(CUEXIS_EXECUTION_ALLOCATION_OBSERVER)
+#include <cuexis/runtime/transaction_access.hpp>
+#endif
 
 namespace cuexis::playback {
 
@@ -555,6 +558,10 @@ auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> 
     state_->bumpGeneration();
     state_->publishPresentation(*mutation, descriptor);
     prepared.state_.reset();
+#if defined(CUEXIS_EXECUTION_ALLOCATION_OBSERVER)
+    if (state_->runtimeSession)
+        runtime::detail::RuntimeTestAccess::observePlaybackActiveWorld(*state_->runtimeSession);
+#endif
     return {};
 }
 

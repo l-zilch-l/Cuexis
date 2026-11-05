@@ -2,6 +2,7 @@
 #include <cuexis/runtime/transaction_access.hpp>
 #include <cuexis_internal/allocation_observer.hpp>
 #include <cuexis_internal/presentation_metrics.hpp>
+#include <cuexis_internal/semantic_memory.hpp>
 
 #include "runtime_session_units_internal.hpp"
 
@@ -37,6 +38,51 @@
 #include <vector>
 
 namespace cuexis::runtime {
+namespace {
+void observeWorldPages(const world::World& world) noexcept {
+#if defined(CUEXIS_EXECUTION_ALLOCATION_OBSERVER)
+    // A synchronous address census takes no handles and never changes EnTT/COW state.
+    std::array<internal::pd::memory::SemanticPage, 256> pages{};
+    std::size_t count{};
+    bool valid = true;
+    const auto observed = world.withRegistry([&](const entt::registry& registry) {
+        auto append = [&]<typename Component>() {
+            const auto* storage = registry.storage<Component>();
+            constexpr auto pageSize = entt::component_traits<Component>::page_size;
+            if (storage) {
+                for (std::size_t page = 0; page < storage->capacity() / pageSize; ++page) {
+                    if (count == pages.size()) {
+                        valid = false;
+                        return;
+                    }
+                    pages[count++] = {storage->raw()[page], pageSize * sizeof(Component)};
+                }
+            }
+        };
+        append.template operator()<render::AppearanceComponent>();
+        append.template operator()<render::CameraComponent>();
+        append.template operator()<world::WorldTransformComponent>();
+    });
+    if (!observed || !valid) {
+        pages[0] = {nullptr, 0};
+        count = 1; // The collector makes any missing/range-invalid page sticky invalid.
+    }
+    internal::pd::memory::semanticCensus(&world, {pages.data(), count});
+#else
+    static_cast<void>(world);
+#endif
+}
+} // namespace
+
+#if defined(CUEXIS_EXECUTION_ALLOCATION_OBSERVER)
+void detail::RuntimeTestAccess::observePlaybackActiveWorld(const RuntimeSession& session) noexcept {
+    if (session.world_) {
+        internal::pd::memory::semanticPhase(session.world_.get(),
+                                            internal::pd::memory::SemanticPhase::active);
+        observeWorldPages(*session.world_);
+    }
+}
+#endif
 
 PreparedRuntimeSession::PreparedRuntimeSession(const RuntimeSession& owner,
                                                std::uint64_t ownerToken, std::uint64_t managerToken,
@@ -242,6 +288,9 @@ auto RuntimeSession::prepare(chart::ChartRuntime chartRuntime,
         *this, sessionToken_, managerToken_, std::move(chartRuntime), std::move(objects),
         result.diagnostics, std::move(*evaluation), std::move(resourceScope), std::move(world)});
     result.prepared->presentationCamera_ = *camera;
+    internal::pd::memory::semanticPhase(result.prepared->world_.get(),
+                                        internal::pd::memory::SemanticPhase::prepared);
+    observeWorldPages(*result.prepared->world_);
     return result;
 }
 
@@ -280,6 +329,9 @@ auto RuntimeSession::commit(PreparedRuntimeSession&& prepared) -> core::Result<v
     evaluation_ = std::move(prepared.evaluation_);
     resourceScope_ = std::move(prepared.resourceScope_);
     world_ = std::move(prepared.world_);
+    internal::pd::memory::semanticPhase(world_.get(),
+                                        internal::pd::memory::SemanticPhase::installed);
+    observeWorldPages(*world_);
     presentationCamera_ = prepared.presentationCamera_;
     lastFrame_.reset();
     publishPresentation(*mutation, internal::presentation::Source::Prepared);

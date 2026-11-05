@@ -5,9 +5,11 @@
 #include <atomic>
 #include <bit>
 #include <chrono>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <cuexis_internal/allocation_observer.hpp>
+#include <cuexis_internal/semantic_memory.hpp>
 #include <exception>
 #include <iostream>
 #include <limits>
@@ -27,8 +29,8 @@ constexpr std::uint32_t magicSignature = 0x5044354dU; // "PD5M"
 constexpr std::uint64_t maxCount = 8388608;
 // O1 process guard is independent of the per-domain product budgets.
 constexpr std::uint64_t maxRequested = 17179869184ULL, maxStorage = 17179869184ULL;
-// The header keeps its 56-byte layout: the old 8-byte signature slot now
-// carries signature(32) | tag(16) | flags(16), so storage accounting is unchanged.
+// Extended collector v2: signature(32) | origin tag(16) | root slot(15) | tagged(1).
+// The historical collector is unchanged. The additional allocation ID costs 8 bytes.
 constexpr std::uint64_t flagTagged = 1ULL;
 constexpr unsigned tagShift = 16, signatureShift = 32;
 struct Header final {
@@ -37,11 +39,19 @@ struct Header final {
     void* base{};
     std::uint64_t packed{};
     std::uint64_t requested{}, charge{}, born{};
+    std::uint64_t allocationId{};
 };
-static_assert(sizeof(Header) == 56, "observer header must keep its frozen size");
+static_assert(sizeof(Header) == 64, "extended observer v2 header identity changed");
 std::atomic_flag lock = ATOMIC_FLAG_INIT;
 Header* first{};
 Snapshot totals{};
+constexpr std::size_t semanticRootCapacity = 256;
+struct SemanticRoot final {
+    const void* address{};
+    SemanticSnapshot snapshot;
+};
+std::array<SemanticRoot, semanticRootCapacity> semanticRoots;
+std::uint64_t nextAllocationId{}, nextRootId{}, nextCensusId{};
 // Framework/bootstrap allocations are fixture overhead. Worker entry points establish
 // their product owner before constructing any session or device state.
 thread_local std::uint16_t activeTag = cellId(ownerProbe, domainFixture);
@@ -143,6 +153,164 @@ auto cellFor(std::uint16_t tag) noexcept -> Cell& {
     }
     return cell;
 }
+auto rootSlot(const void* address) noexcept -> std::size_t {
+    for (std::size_t index = 0; index < semanticRoots.size(); ++index)
+        if (semanticRoots[index].address == address &&
+            semanticRoots[index].snapshot.phase != SemanticPhase::released)
+            return index;
+    return semanticRootCapacity;
+}
+auto rootSlot(const Header& block) noexcept -> std::size_t {
+    const auto encoded = (block.packed & 0xfffeULL) >> 1;
+    return encoded ? static_cast<std::size_t>(encoded - 1) : semanticRootCapacity;
+}
+void attachRoot(Header& block, std::size_t index) noexcept {
+    const auto existing = rootSlot(block);
+    if (existing == index)
+        return; // An alias to the same allocation never incurs a second charge.
+    if (existing != semanticRootCapacity || index >= semanticRootCapacity) {
+        totals.exceeded = true;
+        return;
+    }
+    block.packed |= (static_cast<std::uint64_t>(index) + 1) << 1;
+    auto& cell = semanticRoots[index].snapshot.memory;
+    ++cell.liveCount;
+    cell.requestedBytes += block.requested;
+    cell.storageBytes += block.charge;
+    cell.peakLiveCount = std::max(cell.peakLiveCount, cell.liveCount);
+    cell.peakRequestedBytes = std::max(cell.peakRequestedBytes, cell.requestedBytes);
+    cell.peakStorageBytes = std::max(cell.peakStorageBytes, cell.storageBytes);
+}
+void recordSemanticPhase(const void* address, SemanticPhase phase) noexcept {
+    Guard guard;
+    auto index = rootSlot(address);
+    if (phase == SemanticPhase::constructing) {
+        if (!address || index != semanticRootCapacity) {
+            totals.exceeded = true;
+            return;
+        }
+        for (index = 0; index < semanticRoots.size(); ++index)
+            if (!semanticRoots[index].address)
+                break;
+        if (index == semanticRootCapacity || nextRootId == UINT64_MAX) {
+            totals.exceeded = true;
+            return;
+        }
+        auto& root = semanticRoots[index];
+        root.address = address;
+        root.snapshot.rootId = ++nextRootId;
+        root.snapshot.bornUs = now();
+        root.snapshot.valid = true;
+    } else if (index == semanticRootCapacity) {
+        totals.exceeded = true;
+        return;
+    }
+    auto& value = semanticRoots[index].snapshot;
+    const bool validTransition =
+        phase == SemanticPhase::constructing || phase == SemanticPhase::retiring ||
+        (phase == SemanticPhase::prepared && value.phase == SemanticPhase::constructing) ||
+        (phase == SemanticPhase::installed && value.phase == SemanticPhase::prepared) ||
+        (phase == SemanticPhase::active && value.phase == SemanticPhase::installed);
+    if (!validTransition) {
+        totals.exceeded = true;
+        value.valid = false;
+        return;
+    }
+    value.phase = phase;
+    if (phase == SemanticPhase::retiring) {
+        value.retiredUs = now();
+        if (!value.memory.liveCount) {
+            value.phase = SemanticPhase::released;
+            value.releasedUs = value.retiredUs;
+        }
+    }
+}
+void recordSemanticCensus(const void* address, std::span<const SemanticPage> pages) noexcept {
+    struct Entry final {
+        std::uint64_t id{}, requested{}, storage{}, age{};
+        std::uint16_t origin{};
+        bool instantaneous{};
+    };
+    std::array<Entry, 4096> entries{};
+    std::size_t count{};
+    std::uint64_t censusId{}, rootId{}, requested{}, storage{}, oldest{}, stamp{};
+    SemanticPhase phase{};
+    bool valid{};
+    {
+        Guard guard;
+        const auto index = rootSlot(address);
+        stamp = now();
+        if (nextCensusId == UINT64_MAX || index == semanticRootCapacity) {
+            totals.exceeded = true;
+        } else {
+            censusId = ++nextCensusId;
+            rootId = semanticRoots[index].snapshot.rootId;
+            phase = semanticRoots[index].snapshot.phase;
+            auto append = [&](const Header& block, bool instantaneous) {
+                for (std::size_t row = 0; row < count; ++row)
+                    if (entries[row].id == block.allocationId)
+                        return; // Repeated references to one live allocation are non-additive.
+                if (count == entries.size()) {
+                    totals.exceeded = true;
+                    return;
+                }
+                entries[count++] = {block.allocationId, block.requested,          block.charge,
+                                    stamp - block.born, unpackCell(block.packed), instantaneous};
+                requested += block.requested;
+                storage += block.charge;
+                oldest = std::max(oldest, stamp - block.born);
+            };
+            for (auto* block = first; block; block = block->next)
+                if (rootSlot(*block) == index)
+                    append(*block, false);
+            for (const auto& page : pages) {
+                bool found{};
+                for (auto* block = first; block; block = block->next) {
+                    if (reinterpret_cast<const void*>(reinterpret_cast<std::uintptr_t>(block) +
+                                                      sizeof(Header)) == page.allocation &&
+                        block->requested == page.bytes && page.bytes) {
+                        const auto existing = rootSlot(*block);
+                        if (existing != semanticRootCapacity && existing != index)
+                            break;
+                        append(*block, true);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                    totals.exceeded = true;
+            }
+        }
+        valid = !totals.exceeded;
+    }
+    // Formatting happens outside the allocator lock and allocates no C++ objects.
+    std::printf("RPA_MEMORY_WORLD_PROOF {\"schema\":\"rpa.execution.memory.world-proof.v1\","
+                "\"census_id\":%llu,\"root_id\":%llu,\"phase\":\"%s\",\"stamp_us\":%llu,"
+                "\"domain\":\"state.world\",\"bound_kind\":\"instantaneous_unique_lower_bound\","
+                "\"complete_world_graph\":false,\"valid\":%s,\"live_count\":%zu,"
+                "\"requested_cpp_bytes\":%llu,\"crt_usable_storage_bytes\":%llu,"
+                "\"oldest_live_age_us\":%llu,\"census_stack_bytes\":%zu}\n",
+                static_cast<unsigned long long>(censusId), static_cast<unsigned long long>(rootId),
+                semanticPhaseNames[static_cast<unsigned>(phase)],
+                static_cast<unsigned long long>(stamp), valid ? "true" : "false", count,
+                static_cast<unsigned long long>(requested),
+                static_cast<unsigned long long>(storage), static_cast<unsigned long long>(oldest),
+                sizeof(entries));
+    for (std::size_t row = 0; row < count; ++row) {
+        const auto& entry = entries[row];
+        std::printf(
+            "RPA_MEMORY_WORLD_ALLOCATION {\"schema\":\"rpa.execution.memory.world-allocation.v1\","
+            "\"census_id\":%llu,\"allocation_id\":%llu,\"root_id\":%llu,"
+            "\"requested_cpp_bytes\":%llu,\"crt_usable_storage_bytes\":%llu,"
+            "\"age_us\":%llu,\"origin_cell\":%u,\"membership\":\"%s\"}\n",
+            static_cast<unsigned long long>(censusId), static_cast<unsigned long long>(entry.id),
+            static_cast<unsigned long long>(rootId),
+            static_cast<unsigned long long>(entry.requested),
+            static_cast<unsigned long long>(entry.storage),
+            static_cast<unsigned long long>(entry.age), static_cast<unsigned>(entry.origin),
+            entry.instantaneous ? "actual_component_page" : "stable_registry_subset");
+    }
+}
 } // namespace
 
 auto allocate(std::size_t bytes, std::size_t alignment) -> void* {
@@ -165,6 +333,11 @@ auto allocate(std::size_t bytes, std::size_t alignment) -> void* {
                now()};
     {
         Guard guard;
+        if (nextAllocationId == UINT64_MAX)
+            totals.exceeded = true;
+        header->allocationId = ++nextAllocationId;
+        if (semanticOwner)
+            attachRoot(*header, rootSlot(semanticOwner));
         header->next = first;
         if (first)
             first->previous = header;
@@ -214,6 +387,17 @@ void release(void* pointer) noexcept {
         std::terminate(); // Mixed allocator or corrupt lifetime record invalidates this process.
     {
         Guard guard;
+        const auto semanticIndex = rootSlot(*header);
+        if (semanticIndex < semanticRootCapacity) {
+            auto& root = semanticRoots[semanticIndex].snapshot;
+            --root.memory.liveCount;
+            root.memory.requestedBytes -= header->requested;
+            root.memory.storageBytes -= header->charge;
+            if (!root.memory.liveCount && root.phase == SemanticPhase::retiring) {
+                root.phase = SemanticPhase::released;
+                root.releasedUs = now();
+            }
+        }
         if (header->previous)
             header->previous->next = header->next;
         else
@@ -307,6 +491,26 @@ TagScope::~TagScope() {
 auto currentTag() noexcept -> std::uint16_t {
     return activeTag;
 }
+auto semanticSnapshot(const void* address) noexcept -> SemanticSnapshot {
+    Guard guard;
+    // The newest generation wins if an address has already been reused.
+    const SemanticRoot* selected{};
+    for (const auto& root : semanticRoots)
+        if (root.address == address &&
+            (!selected || root.snapshot.rootId > selected->snapshot.rootId))
+            selected = &root;
+    auto result = selected ? selected->snapshot : SemanticSnapshot{};
+    if (selected) {
+        const auto index = static_cast<std::size_t>(selected - semanticRoots.data());
+        const auto stamp = now();
+        for (auto* block = first; block; block = block->next)
+            if (rootSlot(*block) == index)
+                result.memory.oldestAgeUs =
+                    std::max(result.memory.oldestAgeUs, stamp - block->born);
+    }
+    result.valid = result.valid && !totals.exceeded;
+    return result;
+}
 void recordStructure(const char* name, std::size_t count, std::size_t capacity) noexcept {
     Guard guard;
     for (auto& row : structures) {
@@ -323,6 +527,8 @@ namespace {
 struct Connect final {
     Connect() noexcept {
         structureSink = recordStructure;
+        semanticPhaseSink = recordSemanticPhase;
+        semanticCensusSink = recordSemanticCensus;
     }
 } connect;
 } // namespace
@@ -331,10 +537,18 @@ void checkpoint(const char* label) {
     Partition parts;
     std::array<Cell, budgetCount> budgetCopy;
     Snapshot product;
+    std::array<SemanticRoot, semanticRootCapacity> roots;
+    struct SemanticAllocation final {
+        std::uint64_t allocationId{}, rootId{}, requested{}, storage{}, age{};
+        std::uint16_t origin{};
+    };
+    std::array<SemanticAllocation, 4096> allocations{};
+    std::size_t allocationCount{};
     {
         Guard guard;
         budgetCopy = aggregate;
         product = productTotals;
+        roots = semanticRoots;
         value = totals;
         parts.cells = cells;
         parts.usedCells = usedCells;
@@ -343,6 +557,17 @@ void checkpoint(const char* label) {
         parts.storageBytes = totals.storageBytes;
         const auto stamp = now();
         for (auto* block = first; block; block = block->next) {
+            const auto semanticIndex = rootSlot(*block);
+            if (semanticIndex < semanticRootCapacity) {
+                auto& root = roots[semanticIndex].snapshot;
+                root.memory.oldestAgeUs = std::max(root.memory.oldestAgeUs, stamp - block->born);
+                if (allocationCount < allocations.size())
+                    allocations[allocationCount++] = {
+                        block->allocationId, root.rootId,         block->requested,
+                        block->charge,       stamp - block->born, unpackCell(block->packed)};
+                else
+                    totals.exceeded = true;
+            }
             const auto tag = unpackCell(block->packed);
             auto& cell = parts.cells[tag];
             cell.oldestAgeUs = std::max(cell.oldestAgeUs, stamp - block->born);
@@ -365,6 +590,7 @@ void checkpoint(const char* label) {
         parts.exact = parts.sumLiveCount == parts.liveCount &&
                       parts.sumRequestedBytes == parts.requestedBytes &&
                       parts.sumStorageBytes == parts.storageBytes;
+        value.exceeded = totals.exceeded;
     }
     std::array<Structure, 128> copied;
     {
@@ -401,7 +627,41 @@ void checkpoint(const char* label) {
               << ",\"peak_crt_usable_storage_bytes\":" << product.peakStorageBytes
               << ",\"observer_header_bytes\":" << value.liveCount * sizeof(Header)
               << ",\"observer_static_bytes\":"
-              << sizeof(cells) + sizeof(aggregate) + sizeof(structures) << "}\n";
+              << sizeof(cells) + sizeof(aggregate) + sizeof(structures) + sizeof(semanticRoots)
+              << ",\"observer_checkpoint_stack_bytes\":" << sizeof(roots) + sizeof(allocations)
+              << ",\"observer_header_version\":2,\"observer_header_size\":" << sizeof(Header)
+              << "}\n";
+    for (const auto& root : roots) {
+        const auto& state = root.snapshot;
+        if (!state.rootId)
+            continue;
+        const auto& cell = state.memory;
+        std::cout << "RPA_MEMORY_SEMANTIC_ROOT {\"schema\":\"rpa.execution.memory.root.v1\","
+                     "\"label\":\""
+                  << label << "\",\"root_id\":" << state.rootId
+                  << ",\"domain\":\"state.world\",\"phase\":\""
+                  << semanticPhaseNames[static_cast<unsigned>(state.phase)]
+                  << "\",\"bound_kind\":\"exclusive_registry_subset_lower_bound\","
+                     "\"complete_world_graph\":false,\"valid\":"
+                  << (state.valid && !value.exceeded ? "true" : "false")
+                  << ",\"live_count\":" << cell.liveCount
+                  << ",\"requested_cpp_bytes\":" << cell.requestedBytes
+                  << ",\"crt_usable_storage_bytes\":" << cell.storageBytes
+                  << ",\"scope_origin_peak_requested_bytes\":" << cell.peakRequestedBytes
+                  << ",\"oldest_live_age_us\":" << cell.oldestAgeUs
+                  << ",\"born_us\":" << state.bornUs << ",\"retired_us\":" << state.retiredUs
+                  << ",\"released_us\":" << state.releasedUs << "}\n";
+    }
+    for (std::size_t index = 0; index < allocationCount; ++index) {
+        const auto& block = allocations[index];
+        std::cout << "RPA_MEMORY_SEMANTIC_ALLOCATION {"
+                     "\"schema\":\"rpa.execution.memory.root-allocation.v1\",\"label\":\""
+                  << label << "\",\"allocation_id\":" << block.allocationId
+                  << ",\"root_id\":" << block.rootId
+                  << ",\"requested_cpp_bytes\":" << block.requested
+                  << ",\"crt_usable_storage_bytes\":" << block.storage
+                  << ",\"age_us\":" << block.age << ",\"origin_cell\":" << block.origin << "}\n";
+    }
     for (std::size_t index = 0; index < budgetCount; ++index) {
         const auto& total = budgetCopy[index];
         if (!total.used)

@@ -11,5 +11,8 @@ struct RuntimeTestAccess final {
     static auto sampleReload(RuntimeSession&, PreparedRuntimeSession&, const RuntimeFrame&)
         -> core::Result<void>;
     static auto state(const RuntimeSession&) -> RuntimeTransactionState;
+#if defined(CUEXIS_EXECUTION_ALLOCATION_OBSERVER)
+    static void observePlaybackActiveWorld(const RuntimeSession&) noexcept;
+#endif
 };
 } // namespace cuexis::runtime::detail
