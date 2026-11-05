@@ -19,7 +19,7 @@
 | Diagnostics | `audit / n0 / n1 / n3` | [批次总表](02-diagnostics/README.md) | [证据清单](02-diagnostics/evidence-catalog.md) |
 | Legacy RPA | `design / b0–b4 / deployment / f1-f2 / f3 / f4 / performance / device` | [批次总表](03-rpa-legacy/README.md) | [证据清单](03-rpa-legacy/evidence-catalog.md) |
 | Presentation Decoupling | `design / pd-0 / pd-1 / pd-2 / pd-3/a–c / pd-4 / pd-5` | [批次总表](04-pd/README.md) | [证据清单](04-pd/evidence-catalog.md) |
-| New RPA | `design / r0 / r1 / r2 / r3` | [批次总表](05-rpa-new/README.md) | [证据清单](05-rpa-new/evidence-catalog.md) |
+| New RPA | `design / r0 / r1 / r2 / r3 / r4` | [批次总表](05-rpa-new/README.md) | [证据清单](05-rpa-new/evidence-catalog.md) |
 | Stage 7B+ | `现有材料中无独立报告` | [批次总表](06-b/README.md) | [证据清单](06-b/evidence-catalog.md) |
 | Shared Evidence | `ci / release-gates / document-restoration / worktree-consolidation / documentation` | [批次总表](90-shared/README.md) | [证据清单](90-shared/evidence-catalog.md) |
 

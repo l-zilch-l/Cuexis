@@ -144,6 +144,8 @@ owner 于 2026-11-05 另批准保持预算的语义整改 A 批：最多新增�
 120 秒，不运行 40K/P8。该批已执行完，第二轮证明 active World 唯一下界超出原 cap，
 按停止条件暂停 memory/P8；原 O1 与所有正式额度保持。证据与待裁定的后续范围见
 [语义整改报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-semantic-memory-remediation.md)。
+owner 随后选择保持 O1、先完成存储整改设计；[World page storage 设计](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-world-storage-remediation-design.md)
+建议评估组件级 128 槽页容量，但具体实现和任何新 workload/诊断均须另行裁定。
 
 ### 3.5 R4-4：工具准入、预注册、平台预检与候选冻结
 
