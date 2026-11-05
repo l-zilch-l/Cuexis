@@ -38,6 +38,8 @@ R4 当前核验记录：[2026-11-05 · O1 前集成核验与预算审计](r4/202
 O1 方案 B 已接受，见[预算接受记录](r4/2026-11-05-o1-budget-acceptance.json)。
 后续实施见[O1 后工具准入与覆盖核验](r4/2026-11-05-post-o1-tool-admission.md)，
 自动执行依据见[执行授权](r4/2026-11-05-execution-authorization.json)。
+新增获准的语义整改批次见[两轮诊断与 World 下界失败](r4/2026-11-05-semantic-memory-remediation.md)，
+原始字节与只读核验入口见[语义整改证据附件](r4/2026-11-05-semantic-memory-evidence/index.md)。
 后续 R4 附件和阶段结论由本入口继续导航，R3 原始证据保持。
 
 - [按批次列出的原始证据路径](evidence-catalog.md)

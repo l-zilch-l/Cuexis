@@ -15,8 +15,11 @@
   owner 于 2026-11-05 裁定采用方案 B，接受三档 reference 设计预算；生产目标仍待校准验证。
   [预注册草案](stage_plans/active/stage-07/05-rpa-new/r4/formal-registration.md)保持未登记；
   R4-4 已实现新 binding/claim/seal、普通组 runner 与 extended observer；原 pre-PD A 已重建并通过构建依赖核验，
-  共同固定轨迹语义检查一致。当前准备普通候选冻结及有限 pilot；分域内存语义归属、观察开销与 native/GPU 覆盖未闭合，
-  内存/P8 阻断；正式采样、设备与生产接受尚未开始。见
+  共同固定轨迹语义检查一致。owner 随后批准保持预算的语义整改 A 批，新增两轮 64/high 已执行完：
+  首轮工具无效保留，第二轮证实 active World 唯一下界 358,241 B 超过原 327,680 B，至少超出 30,561 B。
+  本批停止 memory/P8，未消耗正式额度；完整语义图、观察开销与 native/GPU 覆盖仍未闭合。
+  普通 Debug 目标回归 268 cases 通过，尚非新候选完整 F1/F2；正式、实体设备与生产接受未完成。见
+  [语义整改结果及后续方案](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-semantic-memory-remediation.md)、
   [O1 后工具准入与覆盖核验](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-post-o1-tool-admission.md)。
   必要实体设备证据、最终退出及条件性版本批准保持独立接受节点。
 - **R3 已关闭，证据范围保持**：门账为 15 项通过、0 项部分通过、0 项未判定；最终本地同源矩阵
@@ -52,7 +55,7 @@
 | 阶段 | 当前状态 | 入口 |
 | --- | --- | --- |
 | Stage 7A | S7A-3/4、5/6、7/8 的受限功能验收完成；整体关闭仍待 RPA 收尾 | [Stage 7A 计划](stage_plans/active/stage-07/01-a/plan.md) |
-| Stage 7-RPA | R1、R2、R3 已退出；R4 O1 方案 B 已接受，普通工具/候选准入进行中，内存/P8 阻断；正式、设备与生产接受未登记 | [整改计划](stage_plans/active/stage-07/05-rpa-new/plan.md)、[R4 准入核验](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-post-o1-tool-admission.md)、[R3 退出裁定](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-hosted-delta-and-exit-ruling.md) |
+| Stage 7-RPA | R1、R2、R3 已退出；R4 O1 方案 B 有效，World 语义下界证实超界，新增诊断额度用尽，memory/P8 停止；其他准入和最终接受未完成 | [整改计划](stage_plans/active/stage-07/05-rpa-new/plan.md)、[R4 语义整改](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-semantic-memory-remediation.md)、[R3 退出裁定](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-hosted-delta-and-exit-ruling.md) |
 | Stage 7-PD | PD-0–4 内部实施及适用门禁完成；PD-5“未通过但定案”，退出清单待 owner 接受；分域内存及正式性能缺口由 RPA/PD 后续取证承接 | [PD 计划](stage_plans/active/stage-07/04-pd/plan.md)、[PD-5 判定报告](stage_reports/stages/stage-07/04-pd/pd-5/exit/2026-10-24-pd5-verdict-and-stage-7-pd-exit.md) |
 | Stage 7B+ | 未开始，等待 RPA 完整退出 | [Stage 7B+ 计划](stage_plans/active/stage-07/06-b/plan.md) |
 
@@ -68,8 +71,10 @@ Stage 0–6 已完成；Stage 8–14 尚未开始。整体 Stage 7 未关闭。
 - **分域内存与上限接受缺证据**：40K 功能已核验，但完整分域预算和最终释放未完成接受；
   prepare-only 峰值堆与 decoded semantic heap 仍缺有效测量。既有局部峰值和小规模最终释放不代验。
   B0/B1 历史边界保持；O1 已接受新的 64/2048/40K reference 设计预算，尚非分析堆上界或生产预算接受。
-  两轮 64/high 工具诊断仅验证 origin 分账及小规模最终释放，仍有语义归属、prepare 残留及设备覆盖缺口；
-  正式 memory/P8 未准入。原 low/high 不重跑，旧超包络记录保留，不能据观察器量程产物判产品超界或内存通过。见
+  原两轮 origin 诊断不判语义预算；后续获准的两轮语义整改已用尽，第二轮以实际 owning 子集证明
+  state.world 下界超出原上限。完整图、其他域、prepare 与设备覆盖仍缺证据，正式 memory/P8 未准入。
+  原 low/high 和无效首轮均保留；后续产品存储整改、带限制暂停或范围/预算评审待裁定。见
+  [语义失败与三个后续方案](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-semantic-memory-remediation.md)、
   [B0 账本](stage_reports/stages/stage-07/04-pd/pd-5/memory-attribution/2026-10-24-b0-memory-cap-ledger.md)、
   [B1 工具](stage_reports/stages/stage-07/04-pd/pd-5/memory-attribution/2026-10-24-b1-domain-attribution-tooling.md)、
   [40K 包络归因](stage_reports/stages/stage-07/04-pd/pd-5/memory-attribution/2026-10-23-40k-memory-envelope-attribution.md)。

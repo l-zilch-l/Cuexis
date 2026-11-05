@@ -45,8 +45,8 @@ P0–P7 的 fixture/脚本从既有权威轨迹展开，以上不是新发明的
 - 有限 pilot、语义和 observer 开销证据；pilot 与正式原始文件隔离；
   binding/claim/seal 在候选之外写入，避免为了填自身 SHA 改动 C。
 
-所有待绑定字段现在明确为待生成；草案不填虚构 SHA 或 0。原 pre-PD 资料已归档，
-重建可行性/对应 harness 仍需 R4-4 准入；无法合法重建时阻断相对门。
+最终候选的待绑定字段仍为待生成；草案不填虚构 SHA 或 0。原 pre-PD A 已合法重建并完成
+目标依赖绑定，后续每组仍需把该 A 与实际最终候选、对应 harness 及准入材料共同封存。
 
 ## 3. 裁定与阻断
 
@@ -56,6 +56,11 @@ Seek-cold 每进程 1 次，其他可比 Seek 每进程固定 16 次；非 Seek 
 拒绝门；registration.py 只校验草案，新增 admission/binding/runner 则分别承担准入、
 外部身份与不可变 claim/seal、固定组执行。它们当前只实现 owner/common-host 普通计时适配；
 工具测试通过不等于真实工作单元已经准入。内存语义拥有关系与设备适配仍未闭合。
+
+owner 追加授权的两轮 64/high 语义整改已用尽；有效第二轮证明 active World 唯一下界
+358,241 B 超过原 327,680 B，memory/P8 按停止条件保持未准入。其余域未完成语义闭合，
+不根据该下界抬高 caps 或追加负载；后续范围待裁定，见
+[语义整改证据与方案](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-semantic-memory-remediation.md)。
 
 新预算未接受、observer 标签不全、比较边界不一致、语义不等价或缺少 immutable binding
 时停止对应单元准入。对未知设备归属/首次认证/未控制缓存等如实记录；
