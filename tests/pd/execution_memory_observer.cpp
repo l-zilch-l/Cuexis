@@ -45,7 +45,7 @@ static_assert(sizeof(Header) == 64, "extended observer v2 header identity change
 std::atomic_flag lock = ATOMIC_FLAG_INIT;
 Header* first{};
 Snapshot totals{};
-constexpr std::size_t semanticRootCapacity = 256;
+constexpr std::size_t semanticRootCapacity = semanticRootLimit;
 struct SemanticRoot final {
     const void* address{};
     SemanticSnapshot snapshot;
@@ -165,10 +165,14 @@ auto rootSlot(const Header& block) noexcept -> std::size_t {
     return encoded ? static_cast<std::size_t>(encoded - 1) : semanticRootCapacity;
 }
 void attachRoot(Header& block, std::size_t index) noexcept {
+    if (index >= semanticRootCapacity) {
+        totals.exceeded = true;
+        return;
+    }
     const auto existing = rootSlot(block);
     if (existing == index)
         return; // An alias to the same allocation never incurs a second charge.
-    if (existing != semanticRootCapacity || index >= semanticRootCapacity) {
+    if (existing != semanticRootCapacity) {
         totals.exceeded = true;
         return;
     }

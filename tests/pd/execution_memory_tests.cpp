@@ -96,3 +96,25 @@ TEST_CASE("Execution semantic roots preserve identity through transfer and actua
     CHECK(memory::semanticSnapshot(&identity).phase == memory::SemanticPhase::released);
     memory::checkpoint("semantic-contract-final");
 }
+
+// These intentional-invalidity tests each need their own process. They never run
+// the capacity workload or contribute diagnostic/acceptance measurements.
+TEST_CASE("Execution semantic observer rejects an unregistered owner",
+          "[.][execution][memory-invalid-contract]") {
+    int unregistered{};
+    void* block{};
+    {
+        const memory::SemanticOwnerScope root{&unregistered};
+        block = ::operator new(64);
+    }
+    ::operator delete(block);
+    CHECK(memory::snapshot().exceeded);
+}
+
+TEST_CASE("Execution semantic observer rejects root table exhaustion",
+          "[.][execution][memory-invalid-contract]") {
+    std::array<int, memory::semanticRootLimit + 1> identities{};
+    for (auto& identity : identities)
+        memory::semanticPhase(&identity, memory::SemanticPhase::constructing);
+    CHECK(memory::snapshot().exceeded);
+}

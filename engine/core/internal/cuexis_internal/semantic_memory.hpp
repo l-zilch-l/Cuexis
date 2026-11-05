@@ -7,6 +7,7 @@
 #include <span>
 
 namespace cuexis::internal::pd::memory {
+inline constexpr std::size_t semanticRootLimit = 256;
 enum class SemanticPhase : std::uint8_t {
     constructing,
     prepared,
