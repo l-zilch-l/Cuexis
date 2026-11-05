@@ -2,7 +2,7 @@
 
 状态：active；O1 方案 B 已接受；正式取证与最终接受未登记
 
-更新日期：2026-11-05
+更新日期：2026-11-06
 
 返回 [New RPA 计划索引](../README.md)。当前进度只见
 [CURRENT_STATUS](../../../../../CURRENT_STATUS.md)。本方案消费
@@ -23,6 +23,12 @@ owner 于 2026-11-05 裁定采用方案 B；O1 接受的精确范围和输入哈
 [O1 接受记录](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-o1-budget-acceptance.json)。
 R4-4 工具/observer 准入、共同 pre-PD 基线重建绑定和最终候选冻结可独立推进；正式采样
 须在这些准入完成后登记，且生产目标仍待测量和独立接受。
+
+2026-11-06 owner 授权验证已实施的 128-slot 存储优化，效果不佳时继续限定优化；是否提高
+预算待实际结果再议。本批一个 64/high 进程验证同一 active World 下界子集降至 103,738 B，
+减少 71.04%，没有使用第二个容量进程或更改 O1；完整内存仍为 unrated，正式 memory/P8
+未恢复。见[效果报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-06-world-storage-effect.md)。
+owner 同时指定后续提交推送至 PR #32 的远端 `stage-7`；本地执行分支保持 `codex/r4-integration`。
 
 | 决定 | 实施安排 | 保留的接受边界 |
 | --- | --- | --- |

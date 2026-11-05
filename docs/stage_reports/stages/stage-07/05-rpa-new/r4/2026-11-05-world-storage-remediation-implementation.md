@@ -8,6 +8,9 @@
 [语义内存失败报告](2026-11-05-semantic-memory-remediation.md)。owner 明确批准按组件使用
 128-slot EnTT packed pages，并要求继续完成实施。O1 limits 未变更。
 
+后续获准的新批已于 2026-11-06 验证同一 active World 子集减少 71.04%，见
+[效果与结果边界](2026-11-06-world-storage-effect.md)。本报告仍保存 2026-11-05 实施批的原始范围。
+
 ## 1. 实施内容
 
 在七种非空 World registry 组件声明上加入 `static constexpr std::size_t page_size = 128`：

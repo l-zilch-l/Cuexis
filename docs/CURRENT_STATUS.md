@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-11-05
+更新日期：2026-11-06
 
 本文只维护当前阶段、正在进行的任务和未解决的问题。实施与测量细节见带日期的阶段报告。
 
@@ -17,10 +17,15 @@
   R4-4 已实现新 binding/claim/seal、普通组 runner 与 extended observer；原 pre-PD A 已重建并通过构建依赖核验，
   共同固定轨迹语义检查一致。owner 随后批准保持预算的语义整改 A 批，新增两轮 64/high 已执行完：
   首轮工具无效保留，第二轮证实 active World 唯一下界 358,241 B 超过原 327,680 B，至少超出 30,561 B。
-  本批停止 memory/P8，未消耗正式额度；完整语义图、观察开销与 native/GPU 覆盖仍未闭合。
+  该历史失败保留。owner 于 2026-11-06 授权验证 128-slot 整改，并在效果不佳时继续限定优化；
+  一个 64/high 进程验证同一 active World 子集降至 103,738 B，减少 254,503 B（71.04%）。
+  当前完整语义内存仍为 unrated，正式 memory/P8 未准入；本轮没有改预算或消耗正式额度。
   普通 Debug 目标回归 268 cases 通过，尚非新候选完整 F1/F2；正式、实体设备与生产接受未完成。见
   [语义整改结果及后续方案](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-semantic-memory-remediation.md)、
+  [缩页效果验证](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-06-world-storage-effect.md)、
   [O1 后工具准入与覆盖核验](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-post-o1-tool-admission.md)。
+  PR #32 已包含本轮受测源码 `e643cd5b`，该点三平台 PR 检查通过（Linux 下载 504 的失败 job
+  单独重跑成功）；Version Gate 仍待 owner 为所选候选提供有效 SDK API 审批，不自动豁免。
   必要实体设备证据、最终退出及条件性版本批准保持独立接受节点。
 - **R3 已关闭，证据范围保持**：门账为 15 项通过、0 项部分通过、0 项未判定；最终本地同源矩阵
   在 `d70df15a` 上为 11/11 行 `local_pass`、13,635 个用例、0 失败。
@@ -44,6 +49,7 @@
   [PD-5 判定与退出清单](stage_reports/stages/stage-07/04-pd/pd-5/exit/2026-10-24-pd5-verdict-and-stage-7-pd-exit.md)。
 
 当前工作树为 `D:/Cuexis-worktree`，执行分支 `codex/r4-integration`，起点为本地 `master` 的 `8b499a86`。
+owner 指定提交同步至 PR #32 的远端 `stage-7`；不得只推送独立 R4 分支而遗漏该 PR。
 原 `D:/Cuexis-redesign` 工作树与同名分支已删除；R4 构建分别使用独立的 `out/build/r4/pre-o1/` 与 `out/build/r4/post-o1/`。
 迁移后的原始运行字节位置见[证据清单](stage_reports/stages/stage-07/05-rpa-new/evidence-catalog.md)。
 源码拆分已完成，审计与复核材料见
@@ -55,7 +61,7 @@
 | 阶段 | 当前状态 | 入口 |
 | --- | --- | --- |
 | Stage 7A | S7A-3/4、5/6、7/8 的受限功能验收完成；整体关闭仍待 RPA 收尾 | [Stage 7A 计划](stage_plans/active/stage-07/01-a/plan.md) |
-| Stage 7-RPA | R1、R2、R3 已退出；R4 O1 方案 B 有效，World 语义下界证实超界，新增诊断额度用尽，memory/P8 停止；其他准入和最终接受未完成 | [整改计划](stage_plans/active/stage-07/05-rpa-new/plan.md)、[R4 语义整改](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-semantic-memory-remediation.md)、[R3 退出裁定](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-hosted-delta-and-exit-ruling.md) |
+| Stage 7-RPA | R1、R2、R3 已退出；R4 O1 方案 B 有效，缩页后同一 World 拥有子集减少 71.04%，完整内存仍 unrated、正式 memory/P8 未准入；其他准入和最终接受未完成 | [整改计划](stage_plans/active/stage-07/05-rpa-new/plan.md)、[缩页效果](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-06-world-storage-effect.md)、[R3 退出裁定](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-hosted-delta-and-exit-ruling.md) |
 | Stage 7-PD | PD-0–4 内部实施及适用门禁完成；PD-5“未通过但定案”，退出清单待 owner 接受；分域内存及正式性能缺口由 RPA/PD 后续取证承接 | [PD 计划](stage_plans/active/stage-07/04-pd/plan.md)、[PD-5 判定报告](stage_reports/stages/stage-07/04-pd/pd-5/exit/2026-10-24-pd5-verdict-and-stage-7-pd-exit.md) |
 | Stage 7B+ | 未开始，等待 RPA 完整退出 | [Stage 7B+ 计划](stage_plans/active/stage-07/06-b/plan.md) |
 
@@ -71,13 +77,15 @@ Stage 0–6 已完成；Stage 8–14 尚未开始。整体 Stage 7 未关闭。
 - **分域内存与上限接受缺证据**：40K 功能已核验，但完整分域预算和最终释放未完成接受；
   prepare-only 峰值堆与 decoded semantic heap 仍缺有效测量。既有局部峰值和小规模最终释放不代验。
   B0/B1 历史边界保持；O1 已接受新的 64/2048/40K reference 设计预算，尚非分析堆上界或生产预算接受。
-  原两轮 origin 诊断不判语义预算；后续获准的两轮语义整改已用尽，第二轮以实际 owning 子集证明
-  state.world 下界超出原上限。完整图、其他域、prepare 与设备覆盖仍缺证据，正式 memory/P8 未准入。
+  原两轮 origin 诊断不判语义预算；旧语义整改第二轮证明旧源码的 state.world 下界超出原上限，
   原 low/high 和无效首轮均保留。owner 已批准按组件采用 `page_size=128`，并已实现、通过 Debug/Release
-  World/Runtime/Playback 正确性回归；构建版本为 `26.11.05-2`。该整改未运行 workload 或重新测内存，
-  不改变既有超界结论；memory/P8 保持停止，等待独立准入裁定。设计与实施记录见
+  World/Runtime/Playback 正确性回归；构建版本为 `26.11.05-2`。2026-11-06 新批获准后，仅一个
+  64/high 进程验证 `e643cd5b` 的同一 owning 子集从 358,241 B 降至 103,738 B；效果明确，
+  未追加优化、未运行第二进程、未改 O1。完整图、其他域、prepare 与设备覆盖仍缺证据，
+  正式 memory/P8 未准入，不将下界低于 cap 当作通过。设计与实施、效果记录见
   [World 页存储整改设计](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-world-storage-remediation-design.md)、
-  [实施及验证报告](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-world-storage-remediation-implementation.md)；
+  [实施及验证报告](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-world-storage-remediation-implementation.md)、
+  [2026-11-06 效果与边界](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-06-world-storage-effect.md)；
   带限制暂停或范围/预算评审仍是替代路线。见
   [语义失败与三个后续方案](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-semantic-memory-remediation.md)、
   [B0 账本](stage_reports/stages/stage-07/04-pd/pd-5/memory-attribution/2026-10-24-b0-memory-cap-ledger.md)、

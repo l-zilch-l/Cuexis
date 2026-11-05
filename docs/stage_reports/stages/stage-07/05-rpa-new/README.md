@@ -2,7 +2,7 @@
 
 状态：current index
 
-更新日期：2026-11-05
+更新日期：2026-11-06
 
 性能整改工作线，设计与 R0、R1、R2 分组；停止、失败和后续报告保留在同批目录。
 
@@ -43,7 +43,10 @@ O1 方案 B 已接受，见[预算接受记录](r4/2026-11-05-o1-budget-acceptan
 owner 选择先完成存储设计；[World component page size 设计](r4/2026-11-05-world-storage-remediation-design.md)
 记录了按类型缩页的建议；实施及 Debug/Release 正确性验证见
 [World storage remediation implementation](r4/2026-11-05-world-storage-remediation-implementation.md)。
-memory/P8 重新准入仍须单独裁定。
+2026-11-06 owner 授权的新批仅运行一个 64/high 进程，同一 active owning 子集减少 71.04%；见
+[缩页效果验证](r4/2026-11-06-world-storage-effect.md)与
+[原始输出和只读复算](r4/2026-11-06-world-storage-effect-evidence/index.md)。
+完整内存仍为 unrated，正式 memory/P8 未准入；原失败和 O1 预算保留。
 后续 R4 附件和阶段结论由本入口继续导航，R3 原始证据保持。
 
 - [按批次列出的原始证据路径](evidence-catalog.md)
