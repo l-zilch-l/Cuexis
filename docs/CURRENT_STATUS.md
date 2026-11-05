@@ -12,11 +12,11 @@
   [R4 实施与验证方案](stage_plans/active/stage-07/05-rpa-new/r4/plan.md)已按 owner 指定的推荐组合编制，
   owner 于 2026-11-05 授权“独立完成到 O1”。B3/B4/B5 审计与本地正确性回归、
   [具体预算与参数提案](stage_plans/active/stage-07/05-rpa-new/r4/caps-proposal.md)、工具和两平台预检已完成，
-  O1 现在等待 owner 裁定具体预算及参数。
+  owner 于 2026-11-05 裁定采用方案 B，接受三档 reference 设计预算；生产目标仍待校准验证。
   [预注册草案](stage_plans/active/stage-07/05-rpa-new/r4/formal-registration.md)保持未登记；
-  正式采样、设备与生产接受尚未开始。实施审计和原始记录见
+  下一步进入 R4-4 工具准入、共同基线和候选冻结；正式采样、设备与生产接受尚未开始。实施审计和原始记录见
   [O1 前集成与预算审计](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-pre-o1-integration-and-budget-audit.md)。
-  新增具体预算、必要实体设备证据、最终退出及条件性版本批准保持独立接受节点。
+  必要实体设备证据、最终退出及条件性版本批准保持独立接受节点。
 - **R3 已关闭，证据范围保持**：门账为 15 项通过、0 项部分通过、0 项未判定；最终本地同源矩阵
   在 `d70df15a` 上为 11/11 行 `local_pass`、13,635 个用例、0 失败。
   owner 接受矩阵点到 hosted 点 `de73aa2c` 的限定 delta，后者 Linux Quality、Windows MSVC、
@@ -50,7 +50,7 @@
 | 阶段 | 当前状态 | 入口 |
 | --- | --- | --- |
 | Stage 7A | S7A-3/4、5/6、7/8 的受限功能验收完成；整体关闭仍待 RPA 收尾 | [Stage 7A 计划](stage_plans/active/stage-07/01-a/plan.md) |
-| Stage 7-RPA | R1、R2、R3 已退出；R3 由 owner 于 2026-11-04 裁定关闭；R4 O1 等待具体数值裁定，正式、设备与生产接受未登记 | [整改计划](stage_plans/active/stage-07/05-rpa-new/plan.md)、[R4 O1 核验](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-pre-o1-integration-and-budget-audit.md)、[R3 退出裁定](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-hosted-delta-and-exit-ruling.md) |
+| Stage 7-RPA | R1、R2、R3 已退出；R4 O1 方案 B 已接受，下一步为工具准入及候选冻结；正式、设备与生产接受未登记 | [整改计划](stage_plans/active/stage-07/05-rpa-new/plan.md)、[R4 O1 核验](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-pre-o1-integration-and-budget-audit.md)、[R3 退出裁定](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-hosted-delta-and-exit-ruling.md) |
 | Stage 7-PD | PD-0–4 内部实施及适用门禁完成；PD-5“未通过但定案”，退出清单待 owner 接受；分域内存及正式性能缺口由 RPA/PD 后续取证承接 | [PD 计划](stage_plans/active/stage-07/04-pd/plan.md)、[PD-5 判定报告](stage_reports/stages/stage-07/04-pd/pd-5/exit/2026-10-24-pd5-verdict-and-stage-7-pd-exit.md) |
 | Stage 7B+ | 未开始，等待 RPA 完整退出 | [Stage 7B+ 计划](stage_plans/active/stage-07/06-b/plan.md) |
 

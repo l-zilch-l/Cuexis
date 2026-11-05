@@ -1,0 +1,25 @@
+{
+  "schema": "rpa.r4.o1-acceptance.v1",
+  "accepted": true,
+  "date": "2026-11-05",
+  "owner_ruling": "裁定使用方案B",
+  "scope": "Accept the complete sections 3-6 reference design budget, three named scale workloads (64, 2048, 40000), CPU storage/process/GPU separate envelopes, lifecycle, alias and over-budget rules. 40000 remains full-scale single-sided low/high and is excluded from 240 FPS claims.",
+  "bound_artifacts": {
+    "docs/stage_plans/active/stage-07/05-rpa-new/r4/caps-proposal.md": "0bf60a1f047f564a674f5c70676ae6be124b8b95523466e3444124e7fe9b1ac3",
+    "tools/verification/execution_acceptance/budget-proposal.v1.json": "563cd5260db1389dfd1e703209deb44c80b28cc603a7d247b22ccf5197976133"
+  },
+  "production_parameters": {
+    "status": "calibration_targets_only",
+    "accepted_as_measured": false,
+    "testOnly_gate_removed": false,
+    "production_profile_enabled": false
+  },
+  "formal_registration": false,
+  "sampling_authorized": false,
+  "next_gate": "R4-4 technical admission: observer/domain closure, immutable workload/tool/fixture/binary bindings, common pre-PD baseline feasibility, isolated pilot admission, platform preflight, and candidate freeze.",
+  "accepted_input_source_commit": "739b6f34",
+  "accepted_input_sha256": {
+    "docs/stage_plans/active/stage-07/05-rpa-new/r4/caps-proposal.md": "8eccf24317749bec27b0c292401372feee43460d24aa01c64586ba423a3551ce",
+    "tools/verification/execution_acceptance/budget-proposal.v1.json": "563cd5260db1389dfd1e703209deb44c80b28cc603a7d247b22ccf5197976133"
+  }
+}

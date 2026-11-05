@@ -1,6 +1,6 @@
 # R4 O1 预算与生产参数裁定包
 
-状态：candidate；具体建议值待 owner 接受，未登记正式采样或生产 profile
+状态：owner 已接受 reference 设计预算；生产 profile 仍未接受或启用
 
 更新日期：2026-11-05
 
@@ -187,9 +187,13 @@ productionCodecBudget、实际生产启动路径和 measurementIdentity 的生�
 收敛。**推荐本次接受 reference 数值和生产校准目标，保留生产启用门。** 这是提交可实施的
 具体目标，不把未知硬件能力预先写成已测参数。
 
-## 8. O1 接受记录模板
+## 8. O1 接受记录
 
-owner 回复时可一次说明：“选择 B，接受本包 reference 各域/总量/设备预算与生命周期口径；
-生产数值作为待验证目标，保留 testOnly 与生产接受门。”如需调整，列出域/数值即可。
-接受记录随后绑定本文件和机器可读表 hash、日期及适用 workload；当前此段只是模板，
-accepted 仍为 null，不能由代理自行填 accepted 或生成正式运行许可。
+owner 于 **2026-11-05** 裁定：“裁定使用方案B”。该裁定接受本包 §3–§6 的 24 域预算、三个规模、
+storage/进程/设备独立口径、生命周期/别名与超限处置，适用于具名的 64、2048、40000
+reference workloads；40K 仍为完整规模单侧 low/high，不适用 240 FPS。§7 的生产参数只获准
+作为校准目标，不构成已测生产值、生产 profile 或移除任何 `testOnly` 门的授权。
+
+当次裁定的文档及机器表 SHA-256、当前登记版本与运行授权边界见
+[O1 接受记录](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-o1-budget-acceptance.json)。
+机器预算提案仍保持 `accepted: null` 与 `formal_registration: false`，避免把数值接受误写为正式注册或运行许可。
