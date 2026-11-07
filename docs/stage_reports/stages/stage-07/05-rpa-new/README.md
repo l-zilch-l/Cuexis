@@ -52,6 +52,8 @@ owner 选择先完成存储设计；[World component page size 设计](r4/2026-1
 [读取超界处置](r4/2026-11-07-read-long-over-budget-disposition.md)、
 [O2实体操作](r4/2026-11-07-o2-physical-checklist.md)、
 [F4/PD移交门账](r4/2026-11-07-f4-gate-and-handoff.md)。
+跨对话留档见[当前提交、hosted与待裁决方向](r4/2026-11-07-session-handoff.md)，
+其中区分已验证候选、已推送提交与按owner最新指示保留在本地的交接提交。
 后续 R4 附件和阶段结论由本入口继续导航，R3 原始证据保持。
 
 - [按批次列出的原始证据路径](evidence-catalog.md)

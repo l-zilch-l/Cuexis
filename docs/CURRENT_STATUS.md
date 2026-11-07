@@ -9,7 +9,9 @@
 ## 当前任务
 
 - **RPA 当前承接为 R4 集成取证**：R1、R2、R3 已退出，O1 方案 B 的 reference 设计预算保持。
-  本轮候选 `24f0a914` 已同步至 PR #32，日期版本为 `26.11.07-1`。
+  完整本地矩阵及正式 CPU 取证候选为 `24f0a914`，日期版本为 `26.11.07-1`。
+  已推送 PR #32 的后继提交为 `2ec3480e` / `26.11.07-3`，同 SHA 三平台 hosted 已通过；
+  本地交接留档版本为 `26.11.07-4`，按 owner 最新要求不推送，尚无该版本的本地完整矩阵或 hosted 证据。
   原 128-slot 优化的同子集 71.04% 降幅保留；扩大拥有覆盖后，64/high 与 low 的 active World
   唯一下界均为 119,534 B，完整图仍为 unrated、正式 memory/P8 未准入，未改预算或运行40K。
   首个正式 CPU 三窗九对组已完整结束：RPA validated_trace/playback_only 通过；legacy 对应两项
@@ -23,6 +25,8 @@
   [固定运行登记](stage_plans/active/stage-07/05-rpa-new/r4/formal-registration.md)继续持有剩余门。
   实体操作及移交准备见[O2清单](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-07-o2-physical-checklist.md)
   和[F4门账](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-07-f4-gate-and-handoff.md)。
+  跨对话承接、最新 hosted 身份及未裁定方向见
+  [交接留档](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-07-session-handoff.md)。
 - **R3 已关闭，证据范围保持**：门账为 15 项通过、0 项部分通过、0 项未判定；最终本地同源矩阵
   在 `d70df15a` 上为 11/11 行 `local_pass`、13,635 个用例、0 失败。
   owner 接受矩阵点到 hosted 点 `de73aa2c` 的限定 delta，后者 Linux Quality、Windows MSVC、
@@ -46,6 +50,7 @@
 
 当前工作树为 `D:/Cuexis-worktree`，执行分支 `codex/r4-integration`，起点为本地 `master` 的 `8b499a86`。
 owner 指定提交同步至 PR #32 的远端 `stage-7`；不得只推送独立 R4 分支而遗漏该 PR。
+owner 在本次交接最后明确要求“不要推送”；本轮只本地提交，后续推送等待 owner 新指示。
 原 `D:/Cuexis-redesign` 工作树与同名分支已删除；R4 构建分别使用独立的 `out/build/r4/pre-o1/` 与 `out/build/r4/post-o1/`。
 迁移后的原始运行字节位置见[证据清单](stage_reports/stages/stage-07/05-rpa-new/evidence-catalog.md)。
 源码拆分已完成，审计与复核材料见
@@ -96,12 +101,13 @@ Cuexis 由可嵌入的 Playback SDK、独立 Cuexis Player 和 Cuexis Studio 构
 
 ## 当前格式与 SDK 合同
 
-- 当前工作树 SDK API 为 **`0.9.1` preview**，日期构建已推进至 **`26.11.07-3`**；这不代表已经发行。
-  新日期版本随文档修正准备提交，尚未作为本地11行矩阵候选；矩阵与同SHA hosted evidence绑定C=`24f0a914`
-  / `26.11.07-1`，不能把E写成同SHA已验证。SDK批准仍由Version Gate独立处理。
+- 当前工作树 SDK API 为 **`0.9.1` preview**，本地日期构建为 **`26.11.07-4`**，未推送或发行。
+  完整本地11行矩阵绑定 `24f0a914` / `26.11.07-1`；远端 `2ec3480e` / `26.11.07-3`
+  具有独立的同SHA hosted通过证据，但未重跑完整本地矩阵。本地交接提交不继承它们的同SHA验证。
+  SDK批准仍由Version Gate独立处理。
   R3 来源绑定新增 candidate 类型和 `StepTarget` 字段，消费者须整体重建，不能混用旧二进制。
   PD-4 历史基线仍为 0.9.0。版本决定见[版本政策](guides/VERSIONING.md#091-r3-candidate-来源绑定)，
-  STATIC/SHARED、安装消费者及兼容门的最新本地证据见上方 R3 最终矩阵。
+  STATIC/SHARED、安装消费者及兼容门的最新完整本地证据见上方 R4 候选 `24f0a914` 的矩阵。
 - Gameplay v2 是当前实施基线，顶层合同仍为 candidate；局部实现不等于整批验收。语义与运行边界见
   [Gameplay V2 Spec](formats/GAMEPLAY_V2_SPEC.md)、[ABI](api/GAMEPLAY_V2_ABI.md)及[RPA 补充合同](formats/rpa-execution-contract.md)。
 - Chart v1–v4 的既有兼容路径保留；Chart v5、CXT v2、Packed Chart 与 Canonical Gameplay Graph 仍为显式候选路径，正式发行收敛归 Stage 8。

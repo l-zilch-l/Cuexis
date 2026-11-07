@@ -29,12 +29,15 @@ R4-4 工具/observer 准入、共同 pre-PD 基线重建绑定和最终候选冻
 减少 71.04%，没有使用第二个容量进程或更改 O1；完整内存仍为 unrated，正式 memory/P8
 未恢复。见[效果报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-06-world-storage-effect.md)。
 2026-11-07 owner 要求在下次推送前更新version；候选C已用26.11.07-1推送与取证，报告提交E前
-再推进日期构建至26.11.07-2；SDK保持0.9.1。E尚未作为本地矩阵/hosted的同SHA最终候选，
-不继承C的F1/F2。扩大owning覆盖的high/low诊断均为119,534 B下界，完整内存仍unrated，
+再推进日期构建至26.11.07-2；SDK保持0.9.1。后继2ec3480e / 26.11.07-3的三平台hosted已独立通过，
+但没有继承C的本地11行F1。本地交接版本26.11.07-4未验证或推送；最新留档见
+[交接记录](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-07-session-handoff.md)。
+扩大owning覆盖的high/low诊断均为119,534 B下界，完整内存仍unrated，
 O1与memory/P8停止边界保持。首个P0 legacy/RPA正式三窗组已结束，读取门超界、部分legacy重复性inconclusive；
 隔离单变量首轮未改善而停止。旧失败保留，不自动补样；11行矩阵及三平台CI通过。具体证据、平台与剩余门见
 [本轮报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-07-owning-and-cpu.md)。
 owner 同时指定后续提交推送至 PR #32 的远端 `stage-7`；本地执行分支保持 `codex/r4-integration`。
+本次交接最后的owner指示为“不要推送”，本轮只本地留档；恢复推送须有owner新指示。
 
 | 决定 | 实施安排 | 保留的接受边界 |
 | --- | --- | --- |
