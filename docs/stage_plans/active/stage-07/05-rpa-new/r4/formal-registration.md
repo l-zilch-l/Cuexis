@@ -1,8 +1,8 @@
-# R4 固定取证预注册草案
+# R4 固定取证登记与剩余预注册
 
-状态：candidate；O1 已接受，技术准入进行中，formal_registration=false；没有正式运行
+状态：active；O1 已接受；P0 legacy/RPA 首固定 CPU 组已登记并结束，其余单元未登记
 
-更新日期：2026-11-05
+更新日期：2026-11-07
 
 返回 [R4 实施方案](plan.md)；新增数值见 [O1 裁定包](caps-proposal.md)。
 本文件展开工作单元和待填身份，不代替总计划 §9 或既有测量合同。
@@ -45,8 +45,11 @@ P0–P7 的 fixture/脚本从既有权威轨迹展开，以上不是新发明的
 - 有限 pilot、语义和 observer 开销证据；pilot 与正式原始文件隔离；
   binding/claim/seal 在候选之外写入，避免为了填自身 SHA 改动 C。
 
-最终候选的待绑定字段仍为待生成；草案不填虚构 SHA 或 0。原 pre-PD A 已合法重建并完成
-目标依赖绑定，后续每组仍需把该 A 与实际最终候选、对应 harness 及准入材料共同封存。
+P0 legacy/RPA 首组已绑定候选24f0a914、原pre-PD d344088及匹配普通Release STATIC二进制，
+正式claim/seal和三窗36个测量进程的字节归档见
+[2026-11-07报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-07-owning-and-cpu.md)。该登记仅覆盖固定CPU trace相对成本与重复性，
+不认证端点p99；两read_long超界，legacy另两指标因重复性inconclusive，RPA另两项通过。
+其他单元字段保持待生成，不使用这一组身份或小夹具代替各自准入。
 
 ## 3. 裁定与阻断
 
@@ -58,7 +61,8 @@ Seek-cold 每进程 1 次，其他可比 Seek 每进程固定 16 次；非 Seek 
 工具测试通过不等于真实工作单元已经准入。内存语义拥有关系与设备适配仍未闭合。
 
 owner 追加授权的两轮 64/high 语义整改已用尽；有效第二轮证明 active World 唯一下界
-358,241 B 超过原 327,680 B，memory/P8 按停止条件保持未准入。其余域未完成语义闭合，
+358,241 B 超过原 327,680 B，历史失败保留。128-slot效果已验证，2026-11-07扩大
+owning覆盖后high/low下界均119,534 B且仍unrated，memory/P8保持未准入。其余域未完成语义闭合，
 不根据该下界抬高 caps 或追加负载；后续范围待裁定，见
 [语义整改证据与方案](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-semantic-memory-remediation.md)。
 

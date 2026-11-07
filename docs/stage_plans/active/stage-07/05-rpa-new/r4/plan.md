@@ -1,8 +1,8 @@
 # Cuexis Stage 7-RPA R4 实施与验证方案
 
-状态：active；O1 方案 B 已接受；正式取证与最终接受未登记
+状态：active；O1方案B已接受；P0首组完成且read_long超界，11行F1及同SHA hosted已完成，其余证据/接受未完成
 
-更新日期：2026-11-06
+更新日期：2026-11-07
 
 返回 [New RPA 计划索引](../README.md)。当前进度只见
 [CURRENT_STATUS](../../../../../CURRENT_STATUS.md)。本方案消费
@@ -28,6 +28,12 @@ R4-4 工具/observer 准入、共同 pre-PD 基线重建绑定和最终候选冻
 预算待实际结果再议。本批一个 64/high 进程验证同一 active World 下界子集降至 103,738 B，
 减少 71.04%，没有使用第二个容量进程或更改 O1；完整内存仍为 unrated，正式 memory/P8
 未恢复。见[效果报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-06-world-storage-effect.md)。
+2026-11-07 owner 要求在下次推送前更新version；候选C已用26.11.07-1推送与取证，报告提交E前
+再推进日期构建至26.11.07-2；SDK保持0.9.1。E尚未作为本地矩阵/hosted的同SHA最终候选，
+不继承C的F1/F2。扩大owning覆盖的high/low诊断均为119,534 B下界，完整内存仍unrated，
+O1与memory/P8停止边界保持。首个P0 legacy/RPA正式三窗组已结束，读取门超界、部分legacy重复性inconclusive；
+隔离单变量首轮未改善而停止。旧失败保留，不自动补样；11行矩阵及三平台CI通过。具体证据、平台与剩余门见
+[本轮报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-07-owning-and-cpu.md)。
 owner 同时指定后续提交推送至 PR #32 的远端 `stage-7`；本地执行分支保持 `codex/r4-integration`。
 
 | 决定 | 实施安排 | 保留的接受边界 |
@@ -306,3 +312,13 @@ python -B tools/check_docs.py、git diff --check 通过为完成条件；不要�
 - [原 PD-5 测量方案](../../04-pd/pd-5/pd5-measurement-proposal.md)及[B0 上限账本](../../../../../stage_reports/stages/stage-07/04-pd/pd-5/memory-attribution/2026-10-24-b0-memory-cap-ledger.md)。
 - [R3 退出与 delta 边界](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-hosted-delta-and-exit-ruling.md)、[四项门裁定](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-02-r3-owner-gate-rulings.md)、[重复性裁定](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-03-r3-repeatability-scope-ruling.md)。
 - [PD-5 退出清单](../../../../../stage_reports/stages/stage-07/04-pd/pd-5/exit/2026-10-24-pd5-verdict-and-stage-7-pd-exit.md)、[证据清单](../../../../../stage_reports/stages/stage-07/05-rpa-new/evidence-catalog.md)及[版本政策](../../../../../guides/VERSIONING.md)。
+
+
+
+2026-11-07 技术收尾与未关闭门见
+[本轮报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-07-owning-and-cpu.md)、
+[读取超界处置](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-07-read-long-over-budget-disposition.md)、
+[O2实体清单](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-07-o2-physical-checklist.md)及
+[F4/PD移交门账](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-07-f4-gate-and-handoff.md)。
+正式P0读取失败保留；本地/hosted平台范围仅认证候选24f0a914。memory/P8、其他单元、实体操作、生产目标、
+最终退出以及精确SDK owner批准仍未完成。版本批准不是自动豁免项。

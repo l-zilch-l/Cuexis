@@ -2,31 +2,27 @@
 
 状态：current
 
-更新日期：2026-11-06
+更新日期：2026-11-07
 
 本文只维护当前阶段、正在进行的任务和未解决的问题。实施与测量细节见带日期的阶段报告。
 
 ## 当前任务
 
-- **RPA 当前承接为 R4 集成准备**：R1、R2 已退出，R3 已于 2026-11-04 获 owner 裁定关闭；
-  [R4 实施与验证方案](stage_plans/active/stage-07/05-rpa-new/r4/plan.md)已按 owner 指定的推荐组合编制，
-  owner 于 2026-11-05 授权“独立完成到 O1”。B3/B4/B5 审计与本地正确性回归、
-  [具体预算与参数提案](stage_plans/active/stage-07/05-rpa-new/r4/caps-proposal.md)、工具和两平台预检已完成，
-  owner 于 2026-11-05 裁定采用方案 B，接受三档 reference 设计预算；生产目标仍待校准验证。
-  [预注册草案](stage_plans/active/stage-07/05-rpa-new/r4/formal-registration.md)保持未登记；
-  R4-4 已实现新 binding/claim/seal、普通组 runner 与 extended observer；原 pre-PD A 已重建并通过构建依赖核验，
-  共同固定轨迹语义检查一致。owner 随后批准保持预算的语义整改 A 批，新增两轮 64/high 已执行完：
-  首轮工具无效保留，第二轮证实 active World 唯一下界 358,241 B 超过原 327,680 B，至少超出 30,561 B。
-  该历史失败保留。owner 于 2026-11-06 授权验证 128-slot 整改，并在效果不佳时继续限定优化；
-  一个 64/high 进程验证同一 active World 子集降至 103,738 B，减少 254,503 B（71.04%）。
-  当前完整语义内存仍为 unrated，正式 memory/P8 未准入；本轮没有改预算或消耗正式额度。
-  普通 Debug 目标回归 268 cases 通过，尚非新候选完整 F1/F2；正式、实体设备与生产接受未完成。见
-  [语义整改结果及后续方案](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-semantic-memory-remediation.md)、
-  [缩页效果验证](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-06-world-storage-effect.md)、
-  [O1 后工具准入与覆盖核验](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-post-o1-tool-admission.md)。
-  PR #32 已包含本轮受测源码 `e643cd5b`，该点三平台 PR 检查通过（Linux 下载 504 的失败 job
-  单独重跑成功）；Version Gate 仍待 owner 为所选候选提供有效 SDK API 审批，不自动豁免。
-  必要实体设备证据、最终退出及条件性版本批准保持独立接受节点。
+- **RPA 当前承接为 R4 集成取证**：R1、R2、R3 已退出，O1 方案 B 的 reference 设计预算保持。
+  本轮候选 `24f0a914` 已同步至 PR #32，日期版本为 `26.11.07-1`。
+  原 128-slot 优化的同子集 71.04% 降幅保留；扩大拥有覆盖后，64/high 与 low 的 active World
+  唯一下界均为 119,534 B，完整图仍为 unrated、正式 memory/P8 未准入，未改预算或运行40K。
+  首个正式 CPU 三窗九对组已完整结束：RPA validated_trace/playback_only 通过；legacy 对应两项
+  因重复性为 inconclusive；两种 read_long 均超出原 1.10 相对门，失败及重开额度分别保留。
+  隔离读取原型首轮诊断反而变慢（legacy +1.7%、RPA +5.6%），依预注册停止、不采用。
+  11行本地矩阵全部通过（13,652项测试注册、0失败、26项显式skip）；同SHA的六个push和三个PR检查通过。
+  其他 P0–P7、Seek、完整内存、设备和生产接受未完成；O2 实体清单及 F4/PD 移交门账已准备。
+  本地最终矩阵和同 SHA hosted 状态见[本轮报告](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-07-owning-and-cpu.md)。
+  Version Gate 仍缺 owner 针对所选候选的有效 SDK 批准，按 owner 要求暂不修、不代签或豁免。
+  [实施方案](stage_plans/active/stage-07/05-rpa-new/r4/plan.md)及
+  [固定运行登记](stage_plans/active/stage-07/05-rpa-new/r4/formal-registration.md)继续持有剩余门。
+  实体操作及移交准备见[O2清单](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-07-o2-physical-checklist.md)
+  和[F4门账](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-07-f4-gate-and-handoff.md)。
 - **R3 已关闭，证据范围保持**：门账为 15 项通过、0 项部分通过、0 项未判定；最终本地同源矩阵
   在 `d70df15a` 上为 11/11 行 `local_pass`、13,635 个用例、0 失败。
   owner 接受矩阵点到 hosted 点 `de73aa2c` 的限定 delta，后者 Linux Quality、Windows MSVC、
@@ -61,7 +57,7 @@ owner 指定提交同步至 PR #32 的远端 `stage-7`；不得只推送独立 R
 | 阶段 | 当前状态 | 入口 |
 | --- | --- | --- |
 | Stage 7A | S7A-3/4、5/6、7/8 的受限功能验收完成；整体关闭仍待 RPA 收尾 | [Stage 7A 计划](stage_plans/active/stage-07/01-a/plan.md) |
-| Stage 7-RPA | R1、R2、R3 已退出；R4 O1 方案 B 有效，缩页后同一 World 拥有子集减少 71.04%，完整内存仍 unrated、正式 memory/P8 未准入；其他准入和最终接受未完成 | [整改计划](stage_plans/active/stage-07/05-rpa-new/plan.md)、[缩页效果](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-06-world-storage-effect.md)、[R3 退出裁定](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-hosted-delta-and-exit-ruling.md) |
+| Stage 7-RPA | R1、R2、R3 已退出；R4 O1 有效；扩大 World 下界为119,534 B且仍unrated；首CPU组读取超界，其他正式/设备/生产门及最终接受未完成 | [整改计划](stage_plans/active/stage-07/05-rpa-new/plan.md)、[缩页效果](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-06-world-storage-effect.md)、[R3 退出裁定](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-hosted-delta-and-exit-ruling.md) |
 | Stage 7-PD | PD-0–4 内部实施及适用门禁完成；PD-5“未通过但定案”，退出清单待 owner 接受；分域内存及正式性能缺口由 RPA/PD 后续取证承接 | [PD 计划](stage_plans/active/stage-07/04-pd/plan.md)、[PD-5 判定报告](stage_reports/stages/stage-07/04-pd/pd-5/exit/2026-10-24-pd5-verdict-and-stage-7-pd-exit.md) |
 | Stage 7B+ | 未开始，等待 RPA 完整退出 | [Stage 7B+ 计划](stage_plans/active/stage-07/06-b/plan.md) |
 
@@ -74,23 +70,12 @@ Stage 0–6 已完成；Stage 8–14 尚未开始。整体 Stage 7 未关闭。
   正式矩阵沿用共同 A 和三窗口九对协议，重复性口径及每进程请求数按
   [整改计划 §9](stage_plans/active/stage-07/05-rpa-new/plan.md#9-r4集成后取证区分时间内存与设备)
   登记；R1/R2 局部结果与 R3 本地门不能拼接成 R4 接受。
-- **分域内存与上限接受缺证据**：40K 功能已核验，但完整分域预算和最终释放未完成接受；
-  prepare-only 峰值堆与 decoded semantic heap 仍缺有效测量。既有局部峰值和小规模最终释放不代验。
-  B0/B1 历史边界保持；O1 已接受新的 64/2048/40K reference 设计预算，尚非分析堆上界或生产预算接受。
-  原两轮 origin 诊断不判语义预算；旧语义整改第二轮证明旧源码的 state.world 下界超出原上限，
-  原 low/high 和无效首轮均保留。owner 已批准按组件采用 `page_size=128`，并已实现、通过 Debug/Release
-  World/Runtime/Playback 正确性回归；构建版本为 `26.11.05-2`。2026-11-06 新批获准后，仅一个
-  64/high 进程验证 `e643cd5b` 的同一 owning 子集从 358,241 B 降至 103,738 B；效果明确，
-  未追加优化、未运行第二进程、未改 O1。完整图、其他域、prepare 与设备覆盖仍缺证据，
-  正式 memory/P8 未准入，不将下界低于 cap 当作通过。设计与实施、效果记录见
-  [World 页存储整改设计](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-world-storage-remediation-design.md)、
-  [实施及验证报告](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-world-storage-remediation-implementation.md)、
-  [2026-11-06 效果与边界](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-06-world-storage-effect.md)；
-  带限制暂停或范围/预算评审仍是替代路线。见
-  [语义失败与三个后续方案](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-semantic-memory-remediation.md)、
-  [B0 账本](stage_reports/stages/stage-07/04-pd/pd-5/memory-attribution/2026-10-24-b0-memory-cap-ledger.md)、
-  [B1 工具](stage_reports/stages/stage-07/04-pd/pd-5/memory-attribution/2026-10-24-b1-domain-attribution-tooling.md)、
-  [40K 包络归因](stage_reports/stages/stage-07/04-pd/pd-5/memory-attribution/2026-10-23-40k-memory-envelope-attribution.md)。
+- **分域内存仍缺完整拥有证据**：O1 接受的是 64/2048/40K reference 设计预算。
+  已实现 `page_size=128`，旧同子集下界从358,241降至103,738 B的效果有效；本轮扩大覆盖后
+  high/low均为119,534 B，增加来自World本体/cache/order等新覆盖，不是产品回归。
+  完整EnTT backing、scratch/transaction、其他语义域、shared retained/prepare峰值及设备/observer
+  扰动尚未闭合，不能以下界低于327,680 B当作预算通过。两容量诊断已用尽，正式memory/P8
+  未准入，预算保持；证据与覆盖边界见[本轮报告](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-07-owning-and-cpu.md)。
 - **真实设备与生产接受未完成**：已有 PD-4 受限实体 DFJK 键盘及听音观察，精确音画同步、设备失效/恢复、
   压力验证、生产参数与预算仍待验收；Reset/暂停恢复附近的帧率波动持续时间及模块成本尚未量化。
   R3 初次 load 的已通过读数不代表极端 40K 启动达标；40K 启动与 prepare 的有限证据见
@@ -111,7 +96,9 @@ Cuexis 由可嵌入的 Playback SDK、独立 Cuexis Player 和 Cuexis Studio 构
 
 ## 当前格式与 SDK 合同
 
-- 当前工作树 SDK API 为 **`0.9.1` preview**，日期构建为 **`26.11.05-2`**；这不代表已经发行。
+- 当前工作树 SDK API 为 **`0.9.1` preview**，日期构建已推进至 **`26.11.07-2`**；这不代表已经发行。
+  新日期版本随报告准备提交E，尚未作为本地11行矩阵候选；矩阵与同SHA hosted evidence绑定C=`24f0a914`
+  / `26.11.07-1`，不能把E写成同SHA已验证。SDK批准仍由Version Gate独立处理。
   R3 来源绑定新增 candidate 类型和 `StepTarget` 字段，消费者须整体重建，不能混用旧二进制。
   PD-4 历史基线仍为 0.9.0。版本决定见[版本政策](guides/VERSIONING.md#091-r3-candidate-来源绑定)，
   STATIC/SHARED、安装消费者及兼容门的最新本地证据见上方 R3 最终矩阵。

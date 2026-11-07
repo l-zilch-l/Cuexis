@@ -2,7 +2,7 @@
 
 状态：current index
 
-更新日期：2026-11-06
+更新日期：2026-11-07
 
 性能整改工作线，设计与 R0、R1、R2 分组；停止、失败和后续报告保留在同批目录。
 
@@ -47,6 +47,11 @@ owner 选择先完成存储设计；[World component page size 设计](r4/2026-1
 [缩页效果验证](r4/2026-11-06-world-storage-effect.md)与
 [原始输出和只读复算](r4/2026-11-06-world-storage-effect-evidence/index.md)。
 完整内存仍为 unrated，正式 memory/P8 未准入；原失败和 O1 预算保留。
+2026-11-07 R4收尾报告：[owning/CPU/矩阵与状态](r4/2026-11-07-owning-and-cpu.md)、
+[原始字节及只读复算](r4/2026-11-07-owning-and-cpu-evidence/index.md)、
+[读取超界处置](r4/2026-11-07-read-long-over-budget-disposition.md)、
+[O2实体操作](r4/2026-11-07-o2-physical-checklist.md)、
+[F4/PD移交门账](r4/2026-11-07-f4-gate-and-handoff.md)。
 后续 R4 附件和阶段结论由本入口继续导航，R3 原始证据保持。
 
 - [按批次列出的原始证据路径](evidence-catalog.md)

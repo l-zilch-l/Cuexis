@@ -55,9 +55,11 @@ It leaves the original observer and log prefixes unchanged in historical mode.
 `semantic_memory.py` validates a deliberately incomplete World lower bound. The extended
 collector v2 adds an allocation ID (64-byte header versus v1's 56), a fixed 256-root table,
 and bounded, allocation-free census storage. Narrow scopes capture only registry storage
-that cannot migrate into runtime candidates. Appearance/Camera nested strings, transform
-scratch, World object/member initialization and unvisited containers remain uncharged unknowns.
-Actual Appearance/Camera/WorldTransform page spans are matched synchronously inside live
+that cannot migrate into runtime candidates. The typed census also observes actual current heap strings, all seven nonempty component
+payload types, packed entity size ranges, World object, transform cache/children/order capacities.
+Inline strings are excluded, and moving a heap string changes its instantaneous owner rather
+than permanently attaching its allocation to the old root. Private EnTT backing, transform
+scratch/transactions and unvisited containers remain unknown. Observed spans are matched synchronously inside live
 backing new allocations at prepared, runtime-installed, and Playback-active instants. MSVC
 can return an interior aligned address for a standard allocator payload. Only the interval
 union of observed payload bytes contributes to this lower bound; private STL alignment bytes
