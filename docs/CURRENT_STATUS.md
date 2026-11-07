@@ -96,8 +96,8 @@ Cuexis 由可嵌入的 Playback SDK、独立 Cuexis Player 和 Cuexis Studio 构
 
 ## 当前格式与 SDK 合同
 
-- 当前工作树 SDK API 为 **`0.9.1` preview**，日期构建已推进至 **`26.11.07-2`**；这不代表已经发行。
-  新日期版本随报告准备提交E，尚未作为本地11行矩阵候选；矩阵与同SHA hosted evidence绑定C=`24f0a914`
+- 当前工作树 SDK API 为 **`0.9.1` preview**，日期构建已推进至 **`26.11.07-3`**；这不代表已经发行。
+  新日期版本随文档修正准备提交，尚未作为本地11行矩阵候选；矩阵与同SHA hosted evidence绑定C=`24f0a914`
   / `26.11.07-1`，不能把E写成同SHA已验证。SDK批准仍由Version Gate独立处理。
   R3 来源绑定新增 candidate 类型和 `StepTarget` 字段，消费者须整体重建，不能混用旧二进制。
   PD-4 历史基线仍为 0.9.0。版本决定见[版本政策](guides/VERSIONING.md#091-r3-candidate-来源绑定)，

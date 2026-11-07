@@ -8,7 +8,7 @@ Historical PD-5 collectors and their records remain separate.
 Run from the repository root:
 
 ~~~powershell
-python -B -m unittest discover -s tools/verification/execution_acceptance -p "test_*.py" -v
+python -B -m unittest discover -s tools/verification/execution_acceptance -t . -p "test_*.py" -v
 python -B tools/verification/execution_acceptance/audit_layout.py --build out/build/r4/pre-o1/msvc-on-debug --output out/evidence/r4/layout-new
 python -B -m tools.verification.execution_acceptance.budgets --layout tools/verification/execution_acceptance/element-sizes-msvc-release.v1.json --output out/evidence/r4/budget-new.json
 ~~~
