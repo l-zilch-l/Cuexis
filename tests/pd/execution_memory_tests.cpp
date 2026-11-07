@@ -2,6 +2,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <cuexis_internal/allocation_observer.hpp>
 #include <cuexis_internal/semantic_memory.hpp>
+#include <string>
 #include <thread>
 #include <vector>
 
@@ -114,6 +115,70 @@ TEST_CASE("Execution semantic census recognizes actual standard allocator pages"
     CHECK_FALSE(after.exceeded);
     CHECK(after.requestedBytes == before.requestedBytes);
     CHECK(memory::semanticSnapshot(&identity).memory.requestedBytes == 0);
+    memory::semanticPhase(&identity, memory::SemanticPhase::retiring);
+}
+
+TEST_CASE("Execution semantic buffer traversal preserves capacity and inline storage",
+          "[execution][memory][semantic-contract]") {
+    using Kind = memory::SemanticPage::Kind;
+    std::array<memory::SemanticPage, 4> storage{};
+    memory::SemanticPages pages{storage};
+    std::string inlineText;
+    std::string heapText(160, 'x');
+    heapText.reserve(512);
+    std::vector<unsigned> values;
+    values.reserve(64);
+    values.push_back(7);
+    const auto before = memory::snapshot();
+    pages.string(inlineText, Kind::cameraString);
+    pages.string(heapText, Kind::materialString);
+    pages.vector(values, Kind::transformOrder);
+    REQUIRE(pages.valid());
+    const auto spans = pages.pages();
+    REQUIRE(spans.size() == 2);
+    CHECK(spans[0].allocation == heapText.data());
+    CHECK(spans[0].bytes == heapText.capacity() + 1);
+    CHECK(spans[0].kind == Kind::materialString);
+    CHECK(spans[1].bytes == values.capacity() * sizeof(unsigned));
+    CHECK(spans[1].kind == Kind::transformOrder);
+    CHECK(memory::snapshot().requestedBytes == before.requestedBytes);
+    int identity{};
+    memory::semanticPhase(&identity, memory::SemanticPhase::constructing);
+    memory::semanticPhase(&identity, memory::SemanticPhase::prepared);
+    memory::semanticCensus(&identity, spans);
+    CHECK_FALSE(memory::snapshot().exceeded);
+    memory::semanticPhase(&identity, memory::SemanticPhase::retiring);
+
+    memory::SemanticPages bounded{std::span<memory::SemanticPage>{storage}.first(1)};
+    bounded.string(heapText, Kind::materialString);
+    bounded.vector(values, Kind::transformOrder);
+    CHECK_FALSE(bounded.valid());
+    REQUIRE(bounded.pages().size() == 1);
+    CHECK(bounded.pages()[0].allocation == nullptr);
+    CHECK(bounded.pages()[0].bytes == 0);
+}
+
+TEST_CASE("Execution semantic census handles a buffer moving between owners",
+          "[execution][memory][semantic-contract]") {
+    using Kind = memory::SemanticPage::Kind;
+    int identity{};
+    memory::semanticPhase(&identity, memory::SemanticPhase::constructing);
+    memory::semanticPhase(&identity, memory::SemanticPhase::prepared);
+    std::string component(160, 'x');
+    std::string candidate;
+    auto census = [&] {
+        std::array<memory::SemanticPage, 1> storage{};
+        memory::SemanticPages pages{storage};
+        pages.string(component, Kind::materialString);
+        memory::semanticCensus(&identity, pages.pages());
+    };
+    census();
+    component.swap(candidate);
+    census(); // The old component allocation now belongs only to the candidate.
+    CHECK(component.empty());
+    CHECK(candidate.size() == 160);
+    CHECK(memory::semanticSnapshot(&identity).memory.liveCount == 0);
+    CHECK_FALSE(memory::snapshot().exceeded);
     memory::semanticPhase(&identity, memory::SemanticPhase::retiring);
 }
 

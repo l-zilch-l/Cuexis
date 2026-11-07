@@ -8,6 +8,7 @@
 
 #include <cuexis/animation/animation_program.hpp>
 #include <cuexis/animation/animation_system.hpp>
+#include <cuexis/behavior/behavior_component.hpp>
 #include <cuexis/behavior/behavior_program.hpp>
 #include <cuexis/behavior/behavior_system.hpp>
 #include <cuexis/chart/animation_program_input.hpp>
@@ -16,6 +17,7 @@
 #include <cuexis/core/error.hpp>
 #include <cuexis/render/camera_component.hpp>
 #include <cuexis/render/renderable_component.hpp>
+#include <cuexis/world/memory_access.hpp>
 #include <cuexis/world/property.hpp>
 #include <cuexis/world/resolver_access.hpp>
 #include <cuexis/world/transform_system.hpp>
@@ -42,32 +44,42 @@ namespace {
 void observeWorldPages(const world::World& world) noexcept {
 #if defined(CUEXIS_EXECUTION_ALLOCATION_OBSERVER)
     // A synchronous address census takes no handles and never changes EnTT/COW state.
-    std::array<internal::pd::memory::SemanticPage, 256> pages{};
-    std::size_t count{};
-    bool valid = true;
+    using Kind = internal::pd::memory::SemanticPage::Kind;
+    std::array<internal::pd::memory::SemanticPage, 4096> storage{};
+    internal::pd::memory::SemanticPages pages{storage};
+    world::detail::WorldMemoryAccess::append(world, pages);
     const auto observed = world.withRegistry([&](const entt::registry& registry) {
-        auto append = [&]<typename Component>() {
+        auto append = [&]<typename Component>(Kind kind) {
             const auto* storage = registry.storage<Component>();
             constexpr auto pageSize = entt::component_traits<Component>::page_size;
             if (storage) {
                 for (std::size_t page = 0; page < storage->capacity() / pageSize; ++page) {
-                    if (count == pages.size()) {
-                        valid = false;
-                        return;
-                    }
-                    pages[count++] = {storage->raw()[page], pageSize * sizeof(Component)};
+                    pages.add(storage->raw()[page], pageSize * sizeof(Component), kind);
                 }
+                // EnTT's packed entity vector is observable; sparse pages and private
+                // page directories remain separate unvisited backing allocations.
+                if (storage->size())
+                    pages.add(storage->data(), storage->size() * sizeof(entt::entity),
+                              Kind::componentEntities);
             }
         };
-        append.template operator()<render::AppearanceComponent>();
-        append.template operator()<render::CameraComponent>();
-        append.template operator()<world::WorldTransformComponent>();
+        append.template operator()<world::TransformComponent>(Kind::transformPage);
+        append.template operator()<world::HierarchyComponent>(Kind::hierarchyPage);
+        append.template operator()<world::WorldTransformComponent>(Kind::worldTransformPage);
+        append.template operator()<behavior::BehaviorComponent>(Kind::behaviorPage);
+        append.template operator()<render::RenderableComponent>(Kind::renderablePage);
+        append.template operator()<render::AppearanceComponent>(Kind::appearancePage);
+        append.template operator()<render::CameraComponent>(Kind::cameraPage);
+        if (const auto* appearance = registry.storage<render::AppearanceComponent>())
+            for (const auto& value : *appearance)
+                pages.string(value.materialAssetId, Kind::materialString);
+        if (const auto* cameras = registry.storage<render::CameraComponent>())
+            for (const auto& value : *cameras)
+                pages.string(value.type, Kind::cameraString);
     });
-    if (!observed || !valid) {
-        pages[0] = {nullptr, 0};
-        count = 1; // The collector makes any missing/range-invalid page sticky invalid.
-    }
-    internal::pd::memory::semanticCensus(&world, {pages.data(), count});
+    if (!observed)
+        pages.add(nullptr, 0, Kind::worldObject);
+    internal::pd::memory::semanticCensus(&world, pages.pages());
 #else
     static_cast<void>(world);
 #endif

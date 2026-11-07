@@ -234,12 +234,14 @@ void recordSemanticCensus(const void* address, std::span<const SemanticPage> pag
         std::uint64_t id{}, requested{}, storage{}, age{}, charged{};
         std::uint16_t origin{};
         bool instantaneous{};
+        bool extended{};
     };
     struct PageSpan final {
         std::uint64_t id{}, offset{}, bytes{};
+        SemanticPage::Kind kind{};
     };
     std::array<Entry, 4096> entries{};
-    std::array<PageSpan, 512> spans{};
+    std::array<PageSpan, 4096> spans{};
     std::size_t count{}, spanCount{};
     std::uint64_t censusId{}, rootId{}, requested{}, backingRequested{}, storage{}, oldest{},
         stamp{};
@@ -275,6 +277,10 @@ void recordSemanticCensus(const void* address, std::span<const SemanticPage> pag
                 if (rootSlot(*block) == index)
                     append(*block, false);
             for (const auto& page : pages) {
+                if (page.kind >= SemanticPage::Kind::count) {
+                    totals.exceeded = true;
+                    continue;
+                }
                 bool found{};
                 for (auto* block = first; block; block = block->next) {
                     const auto start = reinterpret_cast<std::uintptr_t>(block) + sizeof(Header);
@@ -285,11 +291,16 @@ void recordSemanticCensus(const void* address, std::span<const SemanticPage> pag
                         if (existing != semanticRootCapacity && existing != index)
                             break;
                         append(*block, true);
+                        for (std::size_t row = 0; row < count; ++row)
+                            if (entries[row].id == block->allocationId)
+                                entries[row].extended |=
+                                    page.kind != SemanticPage::Kind::legacyComponentPage;
                         if (spanCount == spans.size()) {
                             totals.exceeded = true;
                             break;
                         }
-                        spans[spanCount++] = {block->allocationId, pointer - start, page.bytes};
+                        spans[spanCount++] = {block->allocationId, pointer - start, page.bytes,
+                                              page.kind};
                         found = true;
                         break;
                     }
@@ -353,16 +364,19 @@ void recordSemanticCensus(const void* address, std::span<const SemanticPage> pag
             static_cast<unsigned long long>(entry.storage),
             static_cast<unsigned long long>(entry.charged),
             static_cast<unsigned long long>(entry.age), static_cast<unsigned>(entry.origin),
-            entry.instantaneous ? "actual_component_page" : "stable_registry_subset");
+            entry.instantaneous ? (entry.extended ? "actual_owned_span" : "actual_component_page")
+                                : "stable_registry_subset");
     }
     for (std::size_t row = 0; row < spanCount; ++row) {
         const auto& span = spans[row];
         std::printf("RPA_MEMORY_WORLD_SPAN {\"schema\":\"rpa.execution.memory.world-span.v1\","
-                    "\"census_id\":%llu,\"allocation_id\":%llu,\"offset\":%llu,\"bytes\":%llu}\n",
+                    "\"census_id\":%llu,\"allocation_id\":%llu,\"offset\":%llu,\"bytes\":%llu,"
+                    "\"kind\":\"%s\"}\n",
                     static_cast<unsigned long long>(censusId),
                     static_cast<unsigned long long>(span.id),
                     static_cast<unsigned long long>(span.offset),
-                    static_cast<unsigned long long>(span.bytes));
+                    static_cast<unsigned long long>(span.bytes),
+                    semanticPageKindNames[static_cast<std::size_t>(span.kind)]);
     }
 }
 } // namespace

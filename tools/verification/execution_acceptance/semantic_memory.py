@@ -2,6 +2,12 @@
 from .memory_domains import collect as collect_origins, records, unsigned
 
 
+SPAN_KINDS = {"legacy_component_page", "transform_page", "hierarchy_page",
+              "world_transform_page", "behavior_page", "renderable_page", "appearance_page",
+              "camera_page", "component_entities", "world_object", "transform_cache",
+              "transform_children", "transform_order", "material_string", "camera_string"}
+
+
 def collect(text):
     for row in records(text, "RPA_MEMORY "):
         if row.get("exceeded") is not False:
@@ -35,7 +41,7 @@ def collect(text):
         for row in rows:
             if (row.get("schema") != "rpa.execution.memory.world-allocation.v1" or
                     row.get("root_id") != root_id or row.get("membership") not in
-                    {"actual_component_page", "stable_registry_subset"}):
+                    {"actual_component_page", "actual_owned_span", "stable_registry_subset"}):
                 raise ValueError("invalid allocation membership")
             requested = unsigned(row, "requested_cpp_bytes")
             storage = unsigned(row, "crt_usable_storage_bytes")
@@ -48,10 +54,15 @@ def collect(text):
             for part in selected_spans:
                 if part.get("schema") != "rpa.execution.memory.world-span.v1":
                     raise ValueError("invalid page span schema")
+                if part.get("kind", "legacy_component_page") not in SPAN_KINDS:
+                    raise ValueError("unknown observed span kind")
                 offset, size = unsigned(part, "offset"), unsigned(part, "bytes")
                 if not size or offset > requested or size > requested - offset:
                     raise ValueError("page span leaves its backing new allocation")
                 intervals.append((offset, offset + size))
+            if row["membership"] == "actual_owned_span" and (
+                    not selected_spans or any("kind" not in part for part in selected_spans)):
+                raise ValueError("typed owned span requires explicit kind")
             end, union = 0, 0
             for start, stop in sorted(intervals):
                 if stop > end:

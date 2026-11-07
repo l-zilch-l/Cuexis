@@ -86,6 +86,36 @@ class SemanticMemoryTests(unittest.TestCase):
             with self.subTest(spans=spans), self.assertRaises(ValueError):
                 collect(self.log(spans=spans))
 
+    def test_typed_owned_spans_require_known_categories(self):
+        block = dict(self.block, membership="actual_owned_span")
+        span = {"schema": "rpa.execution.memory.world-span.v1", "census_id": 1,
+                "allocation_id": 42, "offset": 0, "bytes": 150, "kind": "material_string"}
+        document = collect(self.log(blocks=[block], spans=[span]))
+        self.assertEqual(document["censuses"][0]["spans"][0]["kind"], "material_string")
+        for invalid in ({key: value for key, value in span.items() if key != "kind"},
+                        dict(span, kind="unvisited_buffer")):
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                collect(self.log(blocks=[block], spans=[invalid]))
+
+    def test_typed_span_aliases_do_not_add_to_stable_backing(self):
+        block = dict(self.block, membership="stable_registry_subset")
+        spans = [{"schema": "rpa.execution.memory.world-span.v1", "census_id": 1,
+                  "allocation_id": 42, "offset": 16, "bytes": 80, "kind": kind}
+                 for kind in ("transform_page", "component_entities")]
+        document = collect(self.log(blocks=[block], spans=spans))
+        self.assertEqual(document["censuses"][0]["proof"]["lower_bound_requested_cpp_bytes"], 150)
+
+    def test_swapped_buffer_disappears_without_root_adoption(self):
+        block = dict(self.block, membership="actual_owned_span")
+        span = {"schema": "rpa.execution.memory.world-span.v1", "census_id": 1,
+                "allocation_id": 42, "offset": 0, "bytes": 150, "kind": "material_string"}
+        later = dict(self.proof, census_id=2, live_count=0, lower_bound_requested_cpp_bytes=0,
+                     backing_requested_cpp_bytes=0, backing_crt_usable_storage_bytes=0,
+                     oldest_live_age_us=0)
+        document = collect(self.log(blocks=[block], spans=[span]) + "\n" +
+                           self.log(later, blocks=[], spans=[]))
+        self.assertEqual([row["proof"]["live_count"] for row in document["censuses"]], [1, 0])
+
 
 if __name__ == "__main__":
     unittest.main()

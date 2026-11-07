@@ -27,6 +27,7 @@ namespace cuexis::world {
 namespace detail {
 class TransformUpdate;
 struct WorldTestAccess;
+struct WorldMemoryAccess;
 } // namespace detail
 
 class World final {
@@ -115,6 +116,7 @@ class World final {
     friend auto updateWorldTransforms(World& world) -> core::Result<void>;
     friend class detail::TransformUpdate;
     friend struct detail::WorldTestAccess;
+    friend struct detail::WorldMemoryAccess;
     friend class cuexis::runtime::RuntimeSession;
 
     entt::registry registry_{};
